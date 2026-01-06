@@ -97,3 +97,43 @@ npm run dev
 1.  **Branching**: Use descriptive feature branches (e.g., `feat/event-system`, `fix/pixi-memory-leak`).
 2.  **Commits**: Use Conventional Commits (`feat:`, `fix:`, `docs:`).
 3.  **Checks**: Ensure the app builds (`npm run build`) before submitting.
+
+## Sub-Agent Architecture
+
+For domain-specific expertise and detailed conventions, consult these specialized agent documentation files:
+
+### 📂 src/scenes/scenes.agent.md
+**Scene Flow Expert** - Manages game states, navigation, and screen transitions.
+- Covers: MainMenu, Overworld, PreGig, Gig, PostGig, GameOver, Settings, Credits
+- Expertise: Scene navigation, state validation, game loop orchestration
+- Key Patterns: Navigation flow, state initialization, aesthetic enforcement
+
+### 📂 src/utils/utils.agent.md
+**Core Game Systems Architect** - Pure logic modules and game engines.
+- Covers: eventEngine, economyEngine, socialEngine, mapGenerator, AudioManager, simulationUtils, imageGen
+- Expertise: Event triggering, financial calculations, procedural generation, RNG
+- Key Patterns: Pure functions, state-agnostic design, testable logic
+
+### 📂 src/components/components.agent.md
+**Game Component Specialist** - Complex, game-specific reusable components.
+- Covers: PixiStage, GigHUD, ChatterOverlay, TutorialManager
+- Expertise: Pixi.js integration, real-time rendering, game-specific UI
+- Key Patterns: Canvas cleanup, performance optimization, animation
+
+### 📂 src/data/data.agent.md
+**Game Database Architect** - Static content and game balance.
+- Covers: events (all categories), venues, songs, characters, chatter, upgrades
+- Expertise: Content structure, balance tuning, referential integrity
+- Key Patterns: Data immutability, ID conventions, balance formulas
+
+### 📂 src/ui/ui.agent.md
+**UI Component Library Specialist** - Generic, reusable presentation components.
+- Covers: GlitchButton, HUD, EventModal, ToastOverlay, CrashHandler
+- Expertise: Design system, brutalist aesthetics, accessibility
+- Key Patterns: Stateless components, composition, CSS variables
+
+**When to Consult Sub-Agents:**
+- Before making changes to a specific module, read the relevant agent file
+- Each sub-agent contains detailed conventions, anti-patterns, and best practices
+- Sub-agents provide code examples and integration guidelines
+- Refer to sub-agents for testing and validation checklists
