@@ -1,0 +1,289 @@
+import React, { useState, useEffect } from 'react';
+import { useGameState } from '../context/GameState';
+import { motion } from 'framer-motion';
+import { ALL_VENUES } from '../data/venues';
+import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen';
+import { EXPENSE_CONSTANTS } from '../utils/economyEngine';
+import { ChatterOverlay } from '../components/ChatterOverlay';
+import { audioManager } from '../utils/AudioManager';
+
+export const Overworld = () => {
+  const { startGig, player, updatePlayer, triggerEvent, saveGame, gameMap, hasUpgrade, updateBand, band, activeEvent, resolveEvent, setActiveEvent, currentGig } = useGameState();
+  
+  const [isTraveling, setIsTraveling] = useState(false);
+  const [travelTarget, setTravelTarget] = useState(null);
+  const [hoveredNode, setHoveredNode] = useState(null);
+
+  // Helper to check connectivity
+  const isConnected = (targetNodeId) => {
+      if (!gameMap) return false;
+      const connections = gameMap.connections.filter(c => c.from === player.currentNodeId);
+      return connections.some(c => c.to === targetNodeId);
+  };
+  
+  const getNodeVisibility = (nodeLayer, currentLayer) => {
+      if (nodeLayer <= currentLayer + 1) return 'visible'; // 1 (Interactive)
+      if (nodeLayer === currentLayer + 2) return 'dimmed'; // 0.5 (Grayscale, Non-interactive)
+      return 'hidden'; // Hidden
+  };
+
+  const handleTravel = (node) => {
+    if (isTraveling || node.id === player.currentNodeId) return;
+
+    // Check connectivity and layer
+    const currentLayer = gameMap.nodes[player.currentNodeId]?.layer || 0;
+    const visibility = getNodeVisibility(node.layer, currentLayer);
+
+    if (visibility !== 'visible' || !isConnected(node.id)) {
+        return;
+    }
+
+    // Calculate Costs
+    const dist = Math.floor(Math.sqrt(Math.pow(node.venue.x - 50, 2) + Math.pow(node.venue.y - 50, 2)) * 5) + 50; 
+    const fuelLiters = (dist / 100) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM;
+    const fuelCost = Math.floor(fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE);
+    const foodCost = 3 * EXPENSE_CONSTANTS.FOOD.FAST_FOOD;
+    const totalCost = fuelCost + foodCost;
+
+    if (player.money < totalCost) {
+        alert("Not enough money for gas and food!");
+        return;
+    }
+
+    if (window.confirm(`Travel to ${node.venue.name} (${dist}km)?\nCost: ${totalCost}€ (Fuel: ${fuelCost}€, Food: ${foodCost}€)`)) {
+        // Start Travel Sequence
+        setTravelTarget(node);
+        setIsTraveling(true);
+        audioManager.playSFX('travel');
+    }
+  };
+
+  const onTravelComplete = () => {
+      // Logic executed after animation
+      const node = travelTarget;
+      
+      // Deduct Resources
+      const dist = Math.floor(Math.sqrt(Math.pow(node.venue.x - 50, 2) + Math.pow(node.venue.y - 50, 2)) * 5) + 50; 
+      const fuelLiters = (dist / 100) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM;
+      const fuelCost = Math.floor(fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE);
+      const foodCost = 3 * EXPENSE_CONSTANTS.FOOD.FAST_FOOD;
+      const totalCost = fuelCost + foodCost;
+
+      updatePlayer({
+          money: player.money - totalCost,
+          van: { ...player.van, fuel: Math.max(0, player.van.fuel - fuelLiters) },
+          location: node.venue.name,
+          currentNodeId: node.id,
+          day: player.day + 1
+      });
+
+      if (hasUpgrade('van_sound_system')) {
+        updateBand({ harmony: Math.min(100, band.harmony + 5) });
+      }
+
+      setIsTraveling(false);
+      setTravelTarget(null);
+
+      // Trigger Events
+      const eventHappened = triggerEvent('transport', 'travel');
+      if (!eventHappened) {
+          const bandEvent = triggerEvent('band', 'travel');
+          if (!bandEvent) {
+              startGig(node.venue);
+          }
+      }
+  };
+
+  const currentNode = gameMap?.nodes[player.currentNodeId];
+  const currentLayer = currentNode?.layer || 0;
+
+  return (
+    <div className={`w-full h-full bg-[var(--void-black)] relative overflow-hidden flex flex-col items-center justify-center p-8 ${isTraveling ? 'pointer-events-none' : ''}`}>
+      {/* Event Modal is handled in App.jsx via activeEvent, but we might have a local fallback if needed. 
+          The previous file had EventModalInternal. Since activeEvent is global, we rely on App.jsx. 
+          However, the previous code had a local EventModalInternal. 
+          If I remove it, I must ensure App.jsx handles it. 
+          App.jsx DOES handle it. I will remove the redundant local EventModalInternal.
+      */}
+
+      <h2 className="absolute top-20 text-4xl text-[var(--toxic-green)] font-[Metal_Mania] z-10 text-shadow-[0_0_10px_var(--toxic-green)] pointer-events-none">
+        TOUR PLAN: {player.location}
+      </h2>
+
+      {/* Instructions / Status */}
+      <div className="absolute top-32 z-20 bg-black/80 border border-[var(--toxic-green)] p-2 text-center pointer-events-none">
+          <div className="text-[var(--toxic-green)] font-bold text-sm uppercase">{isTraveling ? "TRAVELING..." : "Next Stop"}</div>
+          <div className="text-white text-xs">{isTraveling ? "On the road" : "Select a highlighted location"}</div>
+      </div>
+
+      {/* Radio Widget */}
+      <div className="absolute top-8 right-8 z-50 pointer-events-auto bg-black border border-gray-800 p-2 flex items-center gap-2 rounded">
+             <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+             <span className="text-xs text-gray-500 font-mono">FM 66.6</span>
+             <button onClick={() => audioManager.startAmbient()} className="text-[var(--toxic-green)] hover:text-white text-xs">
+                 ▶
+             </button>
+      </div>
+
+      <div className="absolute bottom-8 right-8 z-50 pointer-events-auto">
+        <button 
+            onClick={saveGame}
+            disabled={isTraveling}
+            className="bg-black border border-[var(--toxic-green)] text-[var(--toxic-green)] px-4 py-2 hover:bg-[var(--toxic-green)] hover:text-black font-mono text-sm disabled:opacity-50"
+        >
+            [SAVE GAME]
+        </button>
+      </div>
+
+      <div className="relative w-full h-full max-w-6xl max-h-[80vh] border-4 border-[var(--toxic-green)] bg-black/80 rounded-lg shadow-[0_0_50px_rgba(0,255,65,0.2)] overflow-hidden">
+        <div 
+            className="absolute inset-0 opacity-30 bg-cover bg-center grayscale invert"
+            style={{ backgroundImage: `url("${getGenImageUrl(IMG_PROMPTS.OVERWORLD_MAP)}")` }}
+        ></div>
+        
+        {/* Draw Connections */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none">
+            {/* Existing Connections */}
+            {gameMap && gameMap.connections.map((conn, i) => {
+                const start = gameMap.nodes[conn.from];
+                const end = gameMap.nodes[conn.to];
+                if (!start || !end) return null;
+                
+                // Visibility Check
+                const startVis = getNodeVisibility(start.layer, currentLayer);
+                const endVis = getNodeVisibility(end.layer, currentLayer);
+                if (startVis === 'hidden' || endVis === 'hidden') return null;
+
+                return (
+                    <line 
+                        key={i}
+                        x1={`${start.venue.x}%`} y1={`${start.venue.y}%`}
+                        x2={`${end.venue.x}%`} y2={`${end.venue.y}%`}
+                        stroke="var(--toxic-green)"
+                        strokeWidth="1"
+                        opacity={startVis === 'dimmed' || endVis === 'dimmed' ? 0.2 : 0.5}
+                    />
+                );
+            })}
+            
+            {/* Dynamic Hover Connection */}
+            {hoveredNode && isConnected(hoveredNode.id) && (
+                <line 
+                    x1={`${currentNode.venue.x}%`} y1={`${currentNode.venue.y}%`}
+                    x2={`${hoveredNode.venue.x}%`} y2={`${hoveredNode.venue.y}%`}
+                    stroke="var(--toxic-green)"
+                    strokeWidth="2"
+                    strokeDasharray="5,5"
+                    opacity="0.8"
+                />
+            )}
+        </svg>
+
+        {gameMap && Object.values(gameMap.nodes).map(node => {
+           const isCurrent = node.id === player.currentNodeId;
+           const visibility = getNodeVisibility(node.layer, currentLayer);
+           const isReachable = isConnected(node.id);
+           
+           if (visibility === 'hidden') {
+               // Render ??? Icon
+               return (
+                   <div 
+                        key={node.id}
+                        className="absolute w-6 h-6 flex items-center justify-center text-gray-700 pointer-events-none"
+                        style={{ left: `${node.venue.x}%`, top: `${node.venue.y}%` }}
+                   >
+                       ?
+                   </div>
+               );
+           }
+
+           const iconUrl = node.type === 'FESTIVAL' ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_FESTIVAL) : getGenImageUrl(IMG_PROMPTS.ICON_PIN_CLUB);
+           const vanUrl = getGenImageUrl(IMG_PROMPTS.ICON_VAN);
+
+           return (
+          <div
+            key={node.id}
+            className={`absolute flex flex-col items-center group
+                ${isCurrent ? 'z-50' : 'z-10'} 
+                ${visibility === 'dimmed' ? 'opacity-50 grayscale pointer-events-none' : ''}
+                ${isReachable ? 'cursor-pointer' : ''}
+            `}
+            style={{ left: `${node.venue.x}%`, top: `${node.venue.y}%` }}
+            onClick={() => handleTravel(node)}
+            onMouseEnter={() => setHoveredNode(node)}
+            onMouseLeave={() => setHoveredNode(null)}
+          >
+            {isCurrent && !isTraveling && (
+                 <div className="absolute pointer-events-none z-50" style={{ transform: 'translate(0, -50%)' }}>
+                    <img 
+                        src={vanUrl} 
+                        alt="Van" 
+                        className="w-12 h-8 object-contain drop-shadow-[0_0_10px_var(--toxic-green)]"
+                    />
+                    <ChatterOverlay />
+                 </div>
+            )}
+
+            <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: isCurrent ? 1 : 1 }}
+                whileHover={isReachable ? { scale: 1.2, zIndex: 60 } : {}}
+            >
+                <img 
+                    src={iconUrl} 
+                    alt="Pin" 
+                    className={`w-6 h-6 md:w-8 md:h-8 object-contain drop-shadow-md 
+                        ${isReachable ? 'drop-shadow-[0_0_10px_var(--toxic-green)] animate-pulse' : ''}`} 
+                />
+            </motion.div>
+            
+            {isReachable && (
+                <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[var(--toxic-green)] text-[10px] font-bold animate-bounce whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                    CLICK TO TRAVEL
+                </div>
+            )}
+
+            <div className="hidden group-hover:block absolute bottom-8 bg-black/90 border border-[var(--toxic-green)] p-2 rounded z-50 whitespace-nowrap pointer-events-none">
+                <div className="font-bold text-[var(--toxic-green)]">{node.venue.name}</div>
+                {node.type === 'GIG' && (
+                    <div className="text-[10px] text-gray-400 font-mono">
+                        Cap: {node.venue.capacity} | Pay: ~{node.venue.pay}€<br/>
+                        Ticket: {node.venue.price}€ | Diff: {'★'.repeat(node.venue.diff)}
+                    </div>
+                )}
+                {isCurrent && <div className="text-[var(--blood-red)] text-xs font-bold">[CURRENT LOCATION]</div>}
+            </div>
+          </div>
+        )})}
+        
+        {/* Animated Van (Global Overlay) - Refactored to motion.div */}
+        {isTraveling && currentNode && travelTarget && (
+            <motion.div
+                className="absolute z-[60] pointer-events-none"
+                initial={{ left: `${currentNode.venue.x}%`, top: `${currentNode.venue.y}%` }}
+                animate={{ left: `${travelTarget.venue.x}%`, top: `${travelTarget.venue.y}%` }}
+                transition={{ duration: 1.5, ease: "easeInOut" }}
+                onAnimationComplete={onTravelComplete}
+            >
+                <img
+                    src={getGenImageUrl(IMG_PROMPTS.ICON_VAN)}
+                    alt="Traveling Van"
+                    className="w-12 h-8 object-contain drop-shadow-[0_0_10px_var(--toxic-green)]"
+                    style={{ transform: 'translate(0, -50%)' }}
+                />
+            </motion.div>
+        )}
+
+      </div>
+      
+      <div className="absolute bottom-8 left-8 p-4 border border-[var(--ash-gray)] bg-black/90 max-w-sm z-20 pointer-events-none">
+        <h3 className="text-[var(--toxic-green)] font-bold mb-2">EVENT LOG:</h3>
+        <p className="text-xs text-[var(--ash-gray)] font-mono">
+          &gt; Locations loaded: {ALL_VENUES.length}<br/>
+          &gt; {player.day}.01.2026: Tour active.<br/>
+          &gt; {player.location} secured.
+        </p>
+      </div>
+    </div>
+  );
+};
