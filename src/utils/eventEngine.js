@@ -1,4 +1,4 @@
-import { EVENTS_DB } from '../data/events';
+import { EVENTS_DB } from '../data/events.js';
 
 export const eventEngine = {
     // Check if an event triggers
