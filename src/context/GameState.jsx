@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { eventEngine } from '../utils/eventEngine';
 import { MapGenerator } from '../utils/mapGenerator';
+import { applyEventDelta } from '../utils/gameStateUtils';
 import { CHARACTERS } from '../data/characters';
 
 // Initial State Definition
@@ -118,66 +119,7 @@ const gameReducer = (state, action) => {
       return { ...state, ...action.payload };
 
     case 'APPLY_EVENT_DELTA': {
-        const delta = action.payload;
-        const nextState = { ...state };
-
-        // Apply Player Updates
-        if (delta.player) {
-            const nextPlayer = { ...nextState.player };
-            if (delta.player.money) nextPlayer.money += delta.player.money;
-            if (delta.player.time) nextPlayer.time += delta.player.time;
-            if (delta.player.fame) nextPlayer.fame += delta.player.fame;
-            if (delta.player.van) {
-                nextPlayer.van = { 
-                    ...nextPlayer.van, 
-                    fuel: nextPlayer.van.fuel + (delta.player.van.fuel || 0),
-                    condition: nextPlayer.van.condition + (delta.player.van.condition || 0)
-                };
-            }
-            if (delta.player.location) nextPlayer.location = delta.player.location; // Direct set if needed? Usually handled by OVERWORLD logic but delta might enforce move
-            if (delta.player.currentNodeId) nextPlayer.currentNodeId = delta.player.currentNodeId;
-            if (delta.player.day) nextPlayer.day += delta.player.day;
-            
-            nextState.player = nextPlayer;
-        }
-
-        // Apply Band Updates
-        if (delta.band) {
-            const nextBand = { ...nextState.band };
-            if (delta.band.harmony) nextBand.harmony = Math.max(0, Math.min(100, nextBand.harmony + delta.band.harmony));
-            
-            if (delta.band.members) {
-                nextBand.members = nextBand.members.map(m => {
-                    let newMood = m.mood;
-                    let newStamina = m.stamina;
-                    if (delta.band.members.moodChange) newMood += delta.band.members.moodChange;
-                    if (delta.band.members.staminaChange) newStamina += delta.band.members.staminaChange;
-                    return { ...m, mood: Math.max(0, Math.min(100, newMood)), stamina: Math.max(0, Math.min(100, newStamina)) };
-                });
-            }
-            nextState.band = nextBand;
-        }
-
-        // Apply Social Updates
-        if (delta.social) {
-            const nextSocial = { ...nextState.social };
-            if (delta.social.viral) nextSocial.viral += delta.social.viral;
-            nextState.social = nextSocial;
-        }
-
-        // Apply Flags & Queue
-        if (delta.flags) {
-            if (delta.flags.addStoryFlag) {
-                if (!nextState.activeStoryFlags.includes(delta.flags.addStoryFlag)) {
-                    nextState.activeStoryFlags = [...nextState.activeStoryFlags, delta.flags.addStoryFlag];
-                }
-            }
-            if (delta.flags.queueEvent) {
-                nextState.pendingEvents = [...nextState.pendingEvents, delta.flags.queueEvent];
-            }
-        }
-
-        return nextState;
+        return applyEventDelta(state, action.payload);
     }
     
     case 'POP_PENDING_EVENT':
