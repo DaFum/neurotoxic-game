@@ -21,6 +21,7 @@ export class PixiStageController {
         this.app = null;
         this.colorMatrix = null;
         this.stageContainer = null;
+        this.rhythmContainer = null;
         this.crowdMembers = [];
         this.laneGraphics = [];
         this.noteContainer = null;
@@ -102,9 +103,9 @@ export class PixiStageController {
      * @returns {void}
      */
     createLanes() {
-        const rhythmContainer = new PIXI.Container();
-        rhythmContainer.y = this.app.screen.height * 0.6;
-        this.stageContainer.addChild(rhythmContainer);
+        this.rhythmContainer = new PIXI.Container();
+        this.rhythmContainer.y = this.app.screen.height * 0.6;
+        this.stageContainer.addChild(this.rhythmContainer);
 
         const laneTotalWidth = 360;
         const startX = calculateLaneStartX({
@@ -119,7 +120,7 @@ export class PixiStageController {
             graphics.fill({ color: 0x000000, alpha: 0.8 });
             graphics.stroke({ width: 2, color: 0x333333 });
 
-            rhythmContainer.addChild(graphics);
+            this.rhythmContainer.addChild(graphics);
             lane.renderX = laneX;
             this.laneGraphics[index] = graphics;
         });
@@ -131,7 +132,11 @@ export class PixiStageController {
      */
     createNoteContainer() {
         this.noteContainer = new PIXI.Container();
-        this.stageContainer.addChild(this.noteContainer);
+        if (this.rhythmContainer) {
+            this.rhythmContainer.addChild(this.noteContainer);
+        } else {
+            this.stageContainer.addChild(this.noteContainer);
+        }
     }
 
     /**
