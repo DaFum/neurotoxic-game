@@ -1,14 +1,17 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { useGameState } from '../context/GameState';
 import { calculateGigPhysics, getGigModifiers } from '../utils/simulationUtils';
-import { eventEngine } from '../utils/eventEngine';
 import { audioManager } from '../utils/AudioManager';
+import { buildGigStatsSnapshot, updateGigPerformanceStats } from '../utils/gigStats';
 
-export const useRhythmGameLogic = (containerRef) => {
+/**
+ * Provides rhythm game state, actions, and update loop for the gig scene.
+ * @returns {{gameStateRef: object, stats: object, actions: object, update: Function}} Rhythm game API.
+ */
+export const useRhythmGameLogic = () => {
     const { 
-        setlist, band, triggerEvent, activeEvent, resolveEvent, 
-        setActiveEvent, hasUpgrade, currentGig, setLastGigStats, 
-        consumeItem, addToast, gameMap, player, changeScene 
+        setlist, band, activeEvent, hasUpgrade, setLastGigStats, 
+        addToast, gameMap, player, changeScene 
     } = useGameState();
 
     // React State for UI
@@ -39,161 +42,132 @@ export const useRhythmGameLogic = (containerRef) => {
         health: 100,
         score: 0,
         isToxicMode: false,
+        isGameOver: false,
+        overload: 0,
         totalDuration: 0,
         toxicTimeTotal: 0,
         toxicModeEndTime: 0
     });
 
-    // Audio Sync
     const audioRef = useRef(null);
+    const hasInitializedRef = useRef(false);
 
-    // Initialization Logic
-    useEffect(() => {
-        // Physics Setup
-        const activeModifiers = getGigModifiers(band);
-        const physics = calculateGigPhysics(band, { bpm: 120 }); // Simplified
-        const layer = gameMap?.nodes[player.currentNodeId]?.layer || 0;
-        const speedMult = 1.0 + (layer * 0.05);
-
-        gameStateRef.current.modifiers = activeModifiers;
-        gameStateRef.current.speed = 500 * speedMult * physics.speedModifier;
-        if (activeModifiers.drumSpeedMult > 1.0) gameStateRef.current.speed *= activeModifiers.drumSpeedMult;
-
-        gameStateRef.current.lanes[0].hitWindow = physics.hitWindows.guitar;
-        gameStateRef.current.lanes[1].hitWindow = physics.hitWindows.drums;
-        gameStateRef.current.lanes[2].hitWindow = physics.hitWindows.bass;
-
-        // Note Generation
-        const notes = [];
-        let currentTimeOffset = 2000;
-        const activeSetlist = setlist.length > 0 ? setlist : [{ id: 'jam', name: "Jam", bpm: 120, duration: 60, difficulty: 2 }];
-
-        activeSetlist.forEach(song => {
-            const beatInterval = 60000 / song.bpm;
-            const totalBeats = Math.floor((song.duration * 1000) / beatInterval);
-            for(let i=0; i<totalBeats; i++) {
-                if (Math.random() > (0.8 - (song.difficulty * 0.1))) {
-                    notes.push({
-                        time: currentTimeOffset + (i * beatInterval),
-                        laneIndex: Math.floor(Math.random() * 3),
-                        hit: false,
-                        visible: true,
-                        songId: song.id
-                    });
-                }
-            }
-            currentTimeOffset += (song.duration * 1000) + 2000;
-        });
-        gameStateRef.current.notes = notes;
-        gameStateRef.current.totalDuration = currentTimeOffset;
-
-        // Start Audio
-        if (activeSetlist[0].id !== 'jam') {
-            audioRef.current = audioManager.playMusic(activeSetlist[0].id);
-        }
-
-        gameStateRef.current.startTime = Date.now();
-        gameStateRef.current.running = true;
-
-        // Cleanup
-        return () => {
-            if (audioRef.current) audioRef.current.stop();
-        };
-    }, []);
-
-    // Game Loop Update Function (To be called by Pixi Ticker or RAF)
-    const update = useCallback((deltaMS) => {
-        const state = gameStateRef.current;
-        if (!state.running || activeEvent || isGameOver) {
-            if (!state.pauseTime) state.pauseTime = Date.now();
-            if (audioRef.current && audioRef.current.playing()) audioRef.current.pause();
+    /**
+     * Initializes gig physics and note data once per gig.
+     * @returns {void}
+     */
+    const initializeGigState = useCallback(() => {
+        if (hasInitializedRef.current) {
             return;
         }
+        hasInitializedRef.current = true;
 
-        if (state.pauseTime) {
-            const durationPaused = Date.now() - state.pauseTime;
-            state.startTime += durationPaused;
-            state.pauseTime = null;
-            if (audioRef.current && !audioRef.current.playing()) audioRef.current.play();
-        }
+        try {
+            const activeModifiers = getGigModifiers(band);
+            const physics = calculateGigPhysics(band, { bpm: 120 });
+            const layer = gameMap?.nodes[player.currentNodeId]?.layer || 0;
+            const speedMult = 1.0 + (layer * 0.05);
 
-        const now = Date.now();
-        const elapsed = now - state.startTime;
-        
-        // Progress (Throttled State Update?)
-        // setProgress is React state, don't call every frame if possible or use Ref for UI
-        // For now we assume calling setProgress 60fps is okayish or React batches it.
-        // Better: Update renderable ref, let UI poll it? Or just set it.
-        setProgress(Math.min(100, (elapsed / state.totalDuration) * 100));
+            gameStateRef.current.modifiers = activeModifiers;
+            gameStateRef.current.speed = 500 * speedMult * physics.speedModifier;
+            if (activeModifiers.drumSpeedMult > 1.0) gameStateRef.current.speed *= activeModifiers.drumSpeedMult;
 
-        // Toxic Mode
-        if (isToxicMode) {
-            if (now > state.toxicModeEndTime) {
-                setIsToxicMode(false);
-            } else {
-                state.toxicTimeTotal += deltaMS;
-            }
-        }
+            gameStateRef.current.lanes[0].hitWindow = physics.hitWindows.guitar;
+            gameStateRef.current.lanes[1].hitWindow = physics.hitWindows.drums;
+            gameStateRef.current.lanes[2].hitWindow = physics.hitWindows.bass;
 
-        // Win Condition
-        if (elapsed > state.totalDuration) {
-            state.running = false;
-            setLastGigStats({
-                score: score, // Note: closure trap? 'score' is from render scope. 
-                // Fix: Read from Ref if we tracked score there too?
-                // Actually 'score' state updates might lag. 
-                // Let's rely on Ref stats? No, Ref stats doesn't have total score.
-                // We will use the 'score' from state but ensure this is called correctly.
-                // Or better: store Score in Ref for logic, sync to State for UI.
-                // I'll add score to Ref.
+            const notes = [];
+            let currentTimeOffset = 2000;
+            const activeSetlist = setlist.length > 0 ? setlist : [{ id: 'jam', name: 'Jam', bpm: 120, duration: 60, difficulty: 2 }];
+
+            activeSetlist.forEach(song => {
+                const beatInterval = 60000 / song.bpm;
+                const totalBeats = Math.floor((song.duration * 1000) / beatInterval);
+                for (let i = 0; i < totalBeats; i += 1) {
+                    if (Math.random() > (0.8 - (song.difficulty * 0.1))) {
+                        notes.push({
+                            time: currentTimeOffset + (i * beatInterval),
+                            laneIndex: Math.floor(Math.random() * 3),
+                            hit: false,
+                            visible: true,
+                            songId: song.id
+                        });
+                    }
+                }
+                currentTimeOffset += (song.duration * 1000) + 2000;
             });
-            changeScene('POSTGIG');
-            return;
-        }
+            gameStateRef.current.notes = notes;
+            gameStateRef.current.totalDuration = currentTimeOffset;
 
-        // Update Notes Logic (Movement is calculated in Render, but Hit Logic is here?)
-        // Actually, 'update' usually handles position updates in a decoupled loop.
-        // But for Rhythm games, Render *is* position.
-        // Let's calculate 'y' positions here so Render is dumb?
-        // Or let Render calculate 'y' based on time?
-        // Render calculating 'y' is smoother for high refresh rates.
-        // Logic only needs to check "Misses".
-        
-        const targetY = 600; // Arbitrary 'Hit Line' in logic space?
-        // We need screen height for accurate "Miss" check.
-        // Let's assume passed in or normalized.
-        // Let's handle Misses in Render loop? No, Logic should own rules.
-        
-        // Simplified: Logic checks time. If note.time < elapsed - window -> Miss.
-        state.notes.forEach(note => {
-            if (note.visible && !note.hit) {
-                if (elapsed > note.time + 300) { // Miss window
-                    note.visible = false; // logic miss
-                    handleMiss();
-                }
+            if (activeSetlist[0].id !== 'jam') {
+                audioRef.current = audioManager.playMusic(activeSetlist[0].id);
             }
-        });
 
-    }, [activeEvent, isGameOver, score, isToxicMode]); // Dependencies
+            gameStateRef.current.startTime = Date.now();
+            gameStateRef.current.running = true;
+        } catch (error) {
+            console.error('[useRhythmGameLogic] Failed to initialize gig state.', error);
+        }
+    }, [band, gameMap?.nodes, player.currentNodeId, setlist]);
 
-    // Handlers
-    const handleMiss = () => {
+    useEffect(() => {
+        initializeGigState();
+
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.stop();
+            }
+        };
+    }, [initializeGigState]);
+
+    /**
+     * Triggers toxic mode and schedules its end.
+     * @returns {void}
+     */
+    const activateToxicMode = useCallback(() => {
+        setIsToxicMode(true);
+        gameStateRef.current.isToxicMode = true;
+        gameStateRef.current.toxicModeEndTime = Date.now() + 10000;
+        addToast('TOXIC OVERLOAD!', 'success');
+    }, [addToast]);
+
+    /**
+     * Applies a miss penalty and updates state/refs.
+     * @returns {void}
+     */
+    const handleMiss = useCallback(() => {
         setCombo(0);
-        gameStateRef.current.combo = 0; // Sync Ref
-        setOverload(o => Math.max(0, o - 5));
+        gameStateRef.current.combo = 0;
+        setOverload(o => {
+            const next = Math.max(0, o - 5);
+            gameStateRef.current.overload = next;
+            gameStateRef.current.stats = updateGigPerformanceStats(
+                gameStateRef.current.stats,
+                { combo: gameStateRef.current.combo, overload: next }
+            );
+            return next;
+        });
         gameStateRef.current.stats.misses++;
         audioManager.playSFX('miss');
         
         const decay = hasUpgrade('bass_sansamp') ? 3 : 5;
         setHealth(h => {
             const next = Math.max(0, h - decay);
-            if (next <= 0) setIsGameOver(true);
-            gameStateRef.current.health = next; // Sync Ref
+            if (next <= 0) {
+                setIsGameOver(true);
+                gameStateRef.current.isGameOver = true;
+            }
+            gameStateRef.current.health = next;
             return next;
         });
-    };
+    }, [hasUpgrade]);
 
-    const handleHit = (laneIndex) => {
+    /**
+     * Attempts to register a hit for the active lane.
+     * @param {number} laneIndex - Index of the lane to check.
+     * @returns {boolean} True when the hit registers.
+     */
+    const handleHit = useCallback((laneIndex) => {
         const state = gameStateRef.current;
         const now = Date.now();
         const elapsed = now - state.startTime;
@@ -228,6 +202,10 @@ export const useRhythmGameLogic = (containerRef) => {
             setCombo(c => {
                 const next = c + 1;
                 gameStateRef.current.combo = next;
+                gameStateRef.current.stats = updateGigPerformanceStats(
+                    gameStateRef.current.stats,
+                    { combo: next, overload: gameStateRef.current.overload }
+                );
                 return next;
             });
             setHealth(h => {
@@ -240,28 +218,84 @@ export const useRhythmGameLogic = (containerRef) => {
             if (!isToxicMode) {
                 setOverload(o => {
                     const next = o + 1;
+                    const peakCandidate = Math.min(next, 100);
+                    gameStateRef.current.stats = updateGigPerformanceStats(
+                        gameStateRef.current.stats,
+                        { combo: gameStateRef.current.combo, overload: peakCandidate }
+                    );
                     if (next >= 100) {
                         activateToxicMode();
+                        gameStateRef.current.overload = 0;
                         return 0;
                     }
+                    gameStateRef.current.overload = next;
                     return next;
                 });
             }
-            return true; // Hit successful
+            return true;
         } else {
-            handleMiss(); // Ghost tap penalty
+            handleMiss();
             return false;
         }
-    };
+    }, [activateToxicMode, combo, handleMiss, hasUpgrade, isToxicMode]);
 
-    const activateToxicMode = () => {
-        setIsToxicMode(true);
-        gameStateRef.current.isToxicMode = true;
-        gameStateRef.current.toxicModeEndTime = Date.now() + 10000;
-        addToast("TOXIC OVERLOAD!", 'success');
-    };
+    /**
+     * Advances the gig logic by one frame.
+     * @param {number} deltaMS - Milliseconds elapsed since last frame.
+     * @returns {void}
+     */
+    const update = useCallback((deltaMS) => {
+        const state = gameStateRef.current;
+        if (!state.running || activeEvent || isGameOver) {
+            if (!state.pauseTime) state.pauseTime = Date.now();
+            if (audioRef.current && audioRef.current.playing()) audioRef.current.pause();
+            return;
+        }
+
+        if (state.pauseTime) {
+            const durationPaused = Date.now() - state.pauseTime;
+            state.startTime += durationPaused;
+            state.pauseTime = null;
+            if (audioRef.current && !audioRef.current.playing()) audioRef.current.play();
+        }
+
+        const now = Date.now();
+        const elapsed = now - state.startTime;
+        setProgress(Math.min(100, (elapsed / state.totalDuration) * 100));
+
+        if (isToxicMode) {
+            if (now > state.toxicModeEndTime) {
+                setIsToxicMode(false);
+                state.isToxicMode = false;
+            } else {
+                state.toxicTimeTotal += deltaMS;
+            }
+        }
+
+        if (elapsed > state.totalDuration) {
+            state.running = false;
+            setLastGigStats(buildGigStatsSnapshot(state.score, state.stats, state.toxicTimeTotal));
+            changeScene('POSTGIG');
+            return;
+        }
+
+        state.notes.forEach(note => {
+            if (note.visible && !note.hit) {
+                if (elapsed > note.time + 300) {
+                    note.visible = false;
+                    handleMiss();
+                }
+            }
+        });
+    }, [activeEvent, changeScene, handleMiss, isGameOver, isToxicMode, setLastGigStats]);
 
     // Input Handlers
+    /**
+     * Registers player input for a lane.
+     * @param {number} laneIndex - Lane index.
+     * @param {boolean} isDown - Whether the input is pressed.
+     * @returns {void}
+     */
     const registerInput = (laneIndex, isDown) => {
         if (gameStateRef.current.lanes[laneIndex]) {
             gameStateRef.current.lanes[laneIndex].active = isDown;
