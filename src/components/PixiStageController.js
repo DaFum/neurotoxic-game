@@ -1,6 +1,19 @@
 import * as PIXI from 'pixi.js';
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen';
-import { calculateCrowdY, calculateLaneStartX, calculateNoteY } from '../utils/pixiStageUtils';
+import { buildRhythmLayout, calculateCrowdY, calculateNoteY } from '../utils/pixiStageUtils';
+
+const CROWD_CONTAINER_Y_RATIO = 0.5;
+const CROWD_MEMBER_COUNT = 50;
+const CROWD_MIN_RADIUS = 3;
+const CROWD_RADIUS_VARIANCE = 2;
+const CROWD_Y_RANGE_RATIO = 0.1;
+const NOTE_SPAWN_LEAD_MS = 2000;
+const NOTE_JITTER_RANGE = 10;
+const NOTE_SPRITE_SIZE = 80;
+const NOTE_FALLBACK_WIDTH = 90;
+const NOTE_FALLBACK_HEIGHT = 20;
+const NOTE_INITIAL_Y = -50;
+const NOTE_CENTER_OFFSET = 50;
 
 /**
  * Manages Pixi.js stage lifecycle and rendering updates.
@@ -26,6 +39,10 @@ export class PixiStageController {
         this.laneGraphics = [];
         this.noteContainer = null;
         this.noteTexture = null;
+        this.laneLayout = null;
+        this.lastLayoutKey = null;
+        this.lastLaneActive = [];
+        this.isDisposed = false;
         this.handleTicker = this.handleTicker.bind(this);
     }
 
@@ -35,6 +52,7 @@ export class PixiStageController {
      */
     async init() {
         try {
+            this.isDisposed = false;
             this.app = new PIXI.Application();
             await this.app.init({
                 backgroundAlpha: 0,
@@ -42,17 +60,25 @@ export class PixiStageController {
                 antialias: true
             });
 
-            if (!this.containerRef.current || !this.app) {
+            if (this.isDisposed || !this.containerRef.current || !this.app) {
                 this.dispose();
                 return;
             }
 
+            if (!this.containerRef.current) {
+                this.dispose();
+                return;
+            }
             this.containerRef.current.appendChild(this.app.canvas);
             this.colorMatrix = new PIXI.ColorMatrixFilter();
             this.stageContainer = new PIXI.Container();
             this.app.stage.addChild(this.stageContainer);
 
             await this.loadAssets();
+            if (this.isDisposed) {
+                this.dispose();
+                return;
+            }
             this.createCrowd();
             this.createLanes();
             this.createNoteContainer();
@@ -83,16 +109,19 @@ export class PixiStageController {
      */
     createCrowd() {
         const crowdContainer = new PIXI.Container();
-        crowdContainer.y = this.app.screen.height * 0.5;
+        crowdContainer.y = this.app.screen.height * CROWD_CONTAINER_Y_RATIO;
         this.stageContainer.addChild(crowdContainer);
 
-        for (let i = 0; i < 50; i += 1) {
+        for (let i = 0; i < CROWD_MEMBER_COUNT; i += 1) {
             const crowd = new PIXI.Graphics();
-            crowd.circle(0, 0, 3 + Math.random() * 2);
+            const radius = CROWD_MIN_RADIUS + Math.random() * CROWD_RADIUS_VARIANCE;
+            crowd.circle(0, 0, radius);
             crowd.fill(0x333333);
             crowd.x = Math.random() * this.app.screen.width;
-            crowd.y = Math.random() * (this.app.screen.height * 0.1);
+            crowd.y = Math.random() * (this.app.screen.height * CROWD_Y_RANGE_RATIO);
             crowd.baseY = crowd.y;
+            crowd.radius = radius;
+            crowd.currentFillColor = 0x333333;
             crowdContainer.addChild(crowd);
             this.crowdMembers.push(crowd);
         }
@@ -104,21 +133,24 @@ export class PixiStageController {
      */
     createLanes() {
         this.rhythmContainer = new PIXI.Container();
-        this.rhythmContainer.y = this.app.screen.height * 0.6;
+        this.laneLayout = buildRhythmLayout({
+            screenWidth: this.app.screen.width,
+            screenHeight: this.app.screen.height
+        });
+        this.rhythmContainer.y = this.laneLayout.rhythmOffsetY;
         this.stageContainer.addChild(this.rhythmContainer);
 
-        const laneTotalWidth = 360;
-        const startX = calculateLaneStartX({
-            screenWidth: this.app.screen.width,
-            laneTotalWidth
-        });
+        const startX = this.laneLayout.startX;
+        const laneWidth = this.laneLayout.laneWidth;
+        const laneHeight = this.laneLayout.laneHeight;
+        const laneStrokeWidth = this.laneLayout.laneStrokeWidth;
 
         this.gameStateRef.current.lanes.forEach((lane, index) => {
             const laneX = startX + lane.x;
             const graphics = new PIXI.Graphics();
-            graphics.rect(laneX, 0, 100, this.app.screen.height * 0.4);
+            graphics.rect(laneX, 0, laneWidth, laneHeight);
             graphics.fill({ color: 0x000000, alpha: 0.8 });
-            graphics.stroke({ width: 2, color: 0x333333 });
+            graphics.stroke({ width: laneStrokeWidth, color: 0x333333 });
 
             this.rhythmContainer.addChild(graphics);
             lane.renderX = laneX;
@@ -145,20 +177,30 @@ export class PixiStageController {
      * @returns {void}
      */
     updateLaneGraphics(state) {
+        const layoutUpdated = this.updateLaneLayout();
+        const layout = this.laneLayout;
+
         state.lanes.forEach((lane, index) => {
             const graphics = this.laneGraphics[index];
+            if (!graphics) {
+                return;
+            }
+            const wasActive = this.lastLaneActive[index];
+            if (!layoutUpdated && wasActive === lane.active) {
+                return;
+            }
+            this.lastLaneActive[index] = lane.active;
             graphics.clear();
-            graphics.rect(lane.renderX, 0, 100, this.app.screen.height * 0.4);
+            graphics.rect(lane.renderX, 0, layout.laneWidth, layout.laneHeight);
             graphics.fill({ color: 0x000000, alpha: 0.8 });
-            graphics.stroke({ width: 2, color: 0x333333 });
+            graphics.stroke({ width: layout.laneStrokeWidth, color: 0x333333 });
 
-            const hitY = this.app.screen.height * 0.4 - 60;
-            graphics.rect(lane.renderX, hitY, 100, 20);
+            graphics.rect(lane.renderX, layout.hitLineY, layout.laneWidth, layout.hitLineHeight);
             if (lane.active) {
                 graphics.fill({ color: lane.color, alpha: 0.8 });
-                graphics.stroke({ width: 4, color: 0xFFFFFF });
+                graphics.stroke({ width: layout.hitLineStrokeWidth, color: 0xFFFFFF });
             } else {
-                graphics.stroke({ width: 4, color: lane.color });
+                graphics.stroke({ width: layout.hitLineStrokeWidth, color: lane.color });
             }
         });
     }
@@ -173,7 +215,13 @@ export class PixiStageController {
     updateCrowd(combo, isToxicMode, timeMs) {
         this.crowdMembers.forEach(member => {
             member.y = calculateCrowdY({ baseY: member.baseY, combo, timeMs });
-            member.fill(isToxicMode ? 0x00FF41 : (combo > 20 ? 0xFFFFFF : 0x555555));
+            const nextColor = isToxicMode ? 0x00FF41 : (combo > 20 ? 0xFFFFFF : 0x555555);
+            if (member.currentFillColor !== nextColor) {
+                member.currentFillColor = nextColor;
+                member.clear();
+                member.circle(0, 0, member.radius);
+                member.fill(nextColor);
+            }
         });
     }
 
@@ -184,10 +232,10 @@ export class PixiStageController {
      * @returns {void}
      */
     updateNotes(state, elapsed) {
-        const targetY = (this.app.screen.height * 0.4) - 60;
+        const targetY = this.laneLayout?.hitLineY ?? 0;
 
         state.notes.forEach(note => {
-            if (note.visible && !note.hit && !note.sprite && elapsed >= note.time - 2000) {
+            if (note.visible && !note.hit && !note.sprite && elapsed >= note.time - NOTE_SPAWN_LEAD_MS) {
                 const lane = state.lanes[note.laneIndex];
                 note.sprite = this.createNoteSprite(lane);
                 this.noteContainer.addChild(note.sprite);
@@ -198,19 +246,19 @@ export class PixiStageController {
             }
 
             if (!note.visible || note.hit) {
-                note.sprite.visible = false;
+                this.destroyNoteSprite(note);
                 return;
             }
 
             note.sprite.visible = true;
-            const jitterOffset = state.modifiers.noteJitter ? (Math.random() - 0.5) * 10 : 0;
+            const jitterOffset = state.modifiers.noteJitter ? (Math.random() - 0.5) * NOTE_JITTER_RANGE : 0;
             note.sprite.y = calculateNoteY({
                 elapsed,
                 noteTime: note.time,
                 targetY,
                 speed: state.speed
             });
-            note.sprite.x = state.lanes[note.laneIndex].renderX + 50 + jitterOffset;
+            note.sprite.x = state.lanes[note.laneIndex].renderX + NOTE_CENTER_OFFSET + jitterOffset;
         });
     }
 
@@ -222,21 +270,63 @@ export class PixiStageController {
     createNoteSprite(lane) {
         if (this.noteTexture) {
             const sprite = new PIXI.Sprite(this.noteTexture);
-            sprite.width = 80;
-            sprite.height = 80;
+            sprite.width = NOTE_SPRITE_SIZE;
+            sprite.height = NOTE_SPRITE_SIZE;
             sprite.anchor.set(0.5);
-            sprite.x = lane.renderX + 50;
-            sprite.y = -50;
+            sprite.x = lane.renderX + NOTE_CENTER_OFFSET;
+            sprite.y = NOTE_INITIAL_Y;
             sprite.tint = lane.color;
             return sprite;
         }
 
         const rect = new PIXI.Graphics();
-        rect.rect(0, 0, 90, 20);
-        rect.fill(lane.color);
+        rect.beginFill(lane.color);
+        rect.drawRect(0, 0, NOTE_FALLBACK_WIDTH, NOTE_FALLBACK_HEIGHT);
+        rect.endFill();
         rect.x = lane.renderX + 5;
-        rect.y = -50;
+        rect.y = NOTE_INITIAL_Y;
         return rect;
+    }
+
+    /**
+     * Removes a note sprite from the stage and releases its resources.
+     * @param {object} note - Note data entry.
+     * @returns {void}
+     */
+    destroyNoteSprite(note) {
+        if (!note.sprite) {
+            return;
+        }
+        if (this.noteContainer) {
+            this.noteContainer.removeChild(note.sprite);
+        }
+        if (note.sprite.destroy) {
+            note.sprite.destroy();
+        }
+        note.sprite = null;
+    }
+
+    /**
+     * Updates lane layout when the screen size changes.
+     * @returns {boolean} Whether the layout was updated.
+     */
+    updateLaneLayout() {
+        const layoutKey = `${this.app.screen.width}x${this.app.screen.height}`;
+        if (layoutKey === this.lastLayoutKey) {
+            return false;
+        }
+        this.lastLayoutKey = layoutKey;
+        this.laneLayout = buildRhythmLayout({
+            screenWidth: this.app.screen.width,
+            screenHeight: this.app.screen.height
+        });
+        if (this.rhythmContainer) {
+            this.rhythmContainer.y = this.laneLayout.rhythmOffsetY;
+        }
+        this.gameStateRef.current.lanes.forEach(lane => {
+            lane.renderX = this.laneLayout.startX + lane.x;
+        });
+        return true;
     }
 
     /**
@@ -276,16 +366,14 @@ export class PixiStageController {
      * @returns {void}
      */
     dispose() {
+        this.isDisposed = true;
         if (this.app && this.app.ticker) {
             this.app.ticker.remove(this.handleTicker);
         }
 
         if (this.gameStateRef?.current?.notes) {
             this.gameStateRef.current.notes.forEach(note => {
-                if (note.sprite?.destroy) {
-                    note.sprite.destroy();
-                    note.sprite = null;
-                }
+                this.destroyNoteSprite(note);
             });
         }
 

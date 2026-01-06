@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { calculateCrowdY, calculateLaneStartX, calculateNoteY } from '../src/utils/pixiStageUtils.js';
+import { buildRhythmLayout, calculateCrowdY, calculateLaneStartX, calculateNoteY, RHYTHM_LAYOUT } from '../src/utils/pixiStageUtils.js';
 
 test('calculateNoteY returns target position at hit time', () => {
     const result = calculateNoteY({
@@ -25,4 +25,13 @@ test('calculateLaneStartX centers lanes', () => {
     const startX = calculateLaneStartX({ screenWidth: 1200, laneTotalWidth: 360 });
 
     assert.equal(startX, 420);
+});
+
+test('buildRhythmLayout derives lane and hit line positions', () => {
+    const layout = buildRhythmLayout({ screenWidth: 1200, screenHeight: 600 });
+
+    assert.equal(layout.startX, 420);
+    assert.equal(layout.laneHeight, 600 * RHYTHM_LAYOUT.laneHeightRatio);
+    assert.equal(layout.hitLineY, layout.laneHeight - RHYTHM_LAYOUT.hitLineOffset);
+    assert.equal(layout.rhythmOffsetY, 600 * RHYTHM_LAYOUT.rhythmOffsetRatio);
 });

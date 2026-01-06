@@ -14,6 +14,8 @@ export const useRhythmGameLogic = () => {
         addToast, gameMap, player, changeScene 
     } = useGameState();
 
+    const NOTE_MISS_WINDOW_MS = 300;
+
     // React State for UI
     const [score, setScore] = useState(0);
     const [combo, setCombo] = useState(0);
@@ -141,26 +143,27 @@ export const useRhythmGameLogic = () => {
         setOverload(o => {
             const next = Math.max(0, o - 5);
             gameStateRef.current.overload = next;
-            gameStateRef.current.stats = updateGigPerformanceStats(
-                gameStateRef.current.stats,
+            const updatedStats = updateGigPerformanceStats(
+                { ...gameStateRef.current.stats, misses: gameStateRef.current.stats.misses + 1 },
                 { combo: gameStateRef.current.combo, overload: next }
             );
+            gameStateRef.current.stats = updatedStats;
             return next;
         });
-        gameStateRef.current.stats.misses++;
         audioManager.playSFX('miss');
         
         const decay = hasUpgrade('bass_sansamp') ? 3 : 5;
         setHealth(h => {
             const next = Math.max(0, h - decay);
-            if (next <= 0) {
+            if (next <= 0 && !gameStateRef.current.isGameOver) {
                 setIsGameOver(true);
                 gameStateRef.current.isGameOver = true;
+                addToast('BAND COLLAPSED', 'error');
             }
             gameStateRef.current.health = next;
             return next;
         });
-    }, [hasUpgrade]);
+    }, [addToast, hasUpgrade]);
 
     /**
      * Attempts to register a hit for the active lane.
@@ -171,6 +174,7 @@ export const useRhythmGameLogic = () => {
         const state = gameStateRef.current;
         const now = Date.now();
         const elapsed = now - state.startTime;
+        const toxicModeActive = state.isToxicMode;
         
         let hitWindow = state.lanes[laneIndex].hitWindow;
         if (state.modifiers.hitWindowBonus) hitWindow += state.modifiers.hitWindowBonus;
@@ -192,7 +196,7 @@ export const useRhythmGameLogic = () => {
             if (laneIndex === 0) points *= (state.modifiers.guitarScoreMult || 1.0);
             
             let finalScore = points + (combo * 10);
-            if (isToxicMode) finalScore *= 4;
+            if (toxicModeActive) finalScore *= 4;
 
             setScore(s => {
                 const next = s + finalScore;
@@ -209,13 +213,13 @@ export const useRhythmGameLogic = () => {
                 return next;
             });
             setHealth(h => {
-                const next = Math.min(100, h + (isToxicMode ? 4 : 2));
+                const next = Math.min(100, h + (toxicModeActive ? 4 : 2));
                 gameStateRef.current.health = next;
                 return next;
             });
             gameStateRef.current.stats.perfectHits++; 
 
-            if (!isToxicMode) {
+            if (!toxicModeActive) {
                 setOverload(o => {
                     const next = o + 1;
                     const peakCandidate = Math.min(next, 100);
@@ -237,7 +241,7 @@ export const useRhythmGameLogic = () => {
             handleMiss();
             return false;
         }
-    }, [activateToxicMode, combo, handleMiss, hasUpgrade, isToxicMode]);
+    }, [activateToxicMode, combo, handleMiss, hasUpgrade]);
 
     /**
      * Advances the gig logic by one frame.
@@ -281,7 +285,7 @@ export const useRhythmGameLogic = () => {
 
         state.notes.forEach(note => {
             if (note.visible && !note.hit) {
-                if (elapsed > note.time + 300) {
+                if (elapsed > note.time + NOTE_MISS_WINDOW_MS) {
                     note.visible = false;
                     handleMiss();
                 }

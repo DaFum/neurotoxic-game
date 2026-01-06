@@ -35,3 +35,40 @@ export const calculateCrowdY = ({ baseY, combo, timeMs }) => {
 export const calculateLaneStartX = ({ screenWidth, laneTotalWidth }) => (
     (screenWidth - laneTotalWidth) / 2
 );
+
+export const RHYTHM_LAYOUT = Object.freeze({
+    laneTotalWidth: 360,
+    laneWidth: 100,
+    laneHeightRatio: 0.4,
+    laneStrokeWidth: 2,
+    hitLineHeight: 20,
+    hitLineOffset: 60,
+    hitLineStrokeWidth: 4,
+    rhythmOffsetRatio: 0.6
+});
+
+/**
+ * Builds layout metrics for the rhythm lanes.
+ * @param {object} params - Layout inputs.
+ * @param {number} params.screenWidth - Current screen width.
+ * @param {number} params.screenHeight - Current screen height.
+ * @returns {{startX: number, laneWidth: number, laneHeight: number, laneStrokeWidth: number, hitLineY: number, hitLineHeight: number, hitLineStrokeWidth: number, rhythmOffsetY: number, laneTotalWidth: number}} Layout metrics.
+ */
+export const buildRhythmLayout = ({ screenWidth, screenHeight }) => {
+    const laneTotalWidth = RHYTHM_LAYOUT.laneTotalWidth;
+    const startX = calculateLaneStartX({ screenWidth, laneTotalWidth });
+    const laneHeight = screenHeight * RHYTHM_LAYOUT.laneHeightRatio;
+    const hitLineY = laneHeight - RHYTHM_LAYOUT.hitLineOffset;
+
+    return {
+        startX,
+        laneWidth: RHYTHM_LAYOUT.laneWidth,
+        laneHeight,
+        laneStrokeWidth: RHYTHM_LAYOUT.laneStrokeWidth,
+        hitLineY,
+        hitLineHeight: RHYTHM_LAYOUT.hitLineHeight,
+        hitLineStrokeWidth: RHYTHM_LAYOUT.hitLineStrokeWidth,
+        rhythmOffsetY: screenHeight * RHYTHM_LAYOUT.rhythmOffsetRatio,
+        laneTotalWidth
+    };
+};

@@ -36,7 +36,7 @@ export const PixiStage = ({ logic }) => {
                 controllerRef.current = null;
             }
         };
-    }, [gameStateRef]);
+    }, []);
 
     return <div className="absolute inset-0 z-20 pointer-events-none" ref={containerRef}></div>;
 };
