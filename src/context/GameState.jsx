@@ -79,7 +79,7 @@ const initialState = {
     promo: false,
     soundcheck: false,
     merch: false,
-    energy: false,
+    catering: false,
     guestlist: false
   }
 };
@@ -210,9 +210,11 @@ export const GameStateProvider = ({ children }) => {
   const setGigModifiers = (payload) => {
       // Direct merge dispatch to avoid stale state issues with functional updates
       if (typeof payload === 'function') {
-          // If legacy code uses function, warn or try to support (but safer to refactor callers)
-          // For now, execute with current state, but this is the anti-pattern we want to avoid if possible.
-          // Better: Consumers should pass { key: value } to update.
+          // For functional updates, we must ensure we get the latest state in the reducer if possible,
+          // but our reducer expects an object payload.
+          // Since we can't change the reducer signature easily without risk, we unwrap here using current 'state'.
+          // NOTE: 'state' here comes from the hook's closure. In high-frequency updates, this might be stale.
+          // However, for Budget Toggles (UI clicks), this is generally safe.
           dispatch({ type: 'SET_GIG_MODIFIERS', payload: payload(state.gigModifiers) });
       } else {
           dispatch({ type: 'SET_GIG_MODIFIERS', payload });

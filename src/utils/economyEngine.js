@@ -130,10 +130,10 @@ const calculateGigExpenses = (gigData, modifiers) => {
     expenses.total += foodCost;
 
     // Modifiers (Budget items)
-    if (modifiers.energy) {
-        const energyCost = 20;
-        expenses.breakdown.push({ label: 'Energy Drinks', value: energyCost, detail: 'Stamina Boost' });
-        expenses.total += energyCost;
+    if (modifiers.catering) {
+        const cateringCost = 20;
+        expenses.breakdown.push({ label: 'Catering / Energy', value: cateringCost, detail: 'Stamina Boost' });
+        expenses.total += cateringCost;
     }
 
     if (modifiers.promo) {
@@ -168,7 +168,7 @@ const calculateGigExpenses = (gigData, modifiers) => {
  * @param {object} gigData - { capacity, price, pay (guarantee), dist, diff }
  * @param {number} performanceScore - 0 to 100
  * @param {object} crowdStats - { hype (0-100) }
- * @param {object} modifiers - { merchTable: bool, promo: bool, catering: bool }
+ * @param {object} modifiers - { merch: bool, promo: bool, catering: bool, soundcheck: bool, guestlist: bool }
  * @param {object} bandInventory - { shirts, hoodies, etc }
  * @param {number} playerFame - Total player fame
  * @param {object} gigStats - Detailed gig stats (misses, peakHype, etc)

@@ -172,21 +172,20 @@ test('calculateGigFinancials includes transport costs based on distance', () => 
 });
 
 test('calculateGigFinancials includes catering when enabled', () => {
-    // Note: catering was removed/replaced by energy drinks in refactor, but energy drinks is new.
-    // If the requirement is to test energy drinks now:
+    // Note: catering replaced energy drinks in refactor
     const gigData = buildGigData();
     
-    const noEnergy = calculateGigFinancials(
-        gigData, 80, { hype: 80 }, buildModifiers({ energy: false }), buildInventory(), 100, buildGigStats()
+    const noCatering = calculateGigFinancials(
+        gigData, 80, { hype: 80 }, buildModifiers({ catering: false }), buildInventory(), 100, buildGigStats()
     );
     
-    const withEnergy = calculateGigFinancials(
-        gigData, 80, { hype: 80 }, buildModifiers({ energy: true }), buildInventory(), 100, buildGigStats()
+    const withCatering = calculateGigFinancials(
+        gigData, 80, { hype: 80 }, buildModifiers({ catering: true }), buildInventory(), 100, buildGigStats()
     );
     
-    const energyItem = withEnergy.expenses.breakdown.find(b => b.label && b.label.includes('Energy Drinks'));
+    const cateringItem = withCatering.expenses.breakdown.find(b => b.label && b.label.includes('Catering'));
     
-    assert.ok(energyItem && energyItem.value > 0, 'Should charge for Energy Drinks when enabled');
+    assert.ok(cateringItem && cateringItem.value > 0, 'Should charge for Catering/Energy when enabled');
 });
 
 test('calculateGigFinancials handles zero capacity venue', () => {

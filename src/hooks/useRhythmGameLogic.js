@@ -82,7 +82,7 @@ export const useRhythmGameLogic = () => {
             let hitWindowBonus = activeModifiers.hitWindowBonus || 0;
             if (activeModifiers.soundcheck) hitWindowBonus += 30; // Soundcheck bonus
 
-            if (activeModifiers.energy) {
+            if (activeModifiers.catering) {
                 // Energy boost: easier physics? Or just stamina?
                 // Already handled in physics via band stats if we mutated band, but here we can apply direct overrides
                 // For now, let's say it counteracts speed drag
@@ -273,6 +273,9 @@ export const useRhythmGameLogic = () => {
             if (laneIndex === 1 && hasUpgrade('drum_trigger')) points = 120;
             if (laneIndex === 0) points *= (state.modifiers.guitarScoreMult || 1.0);
             
+            // Guestlist Effect: +20% score
+            if (state.modifiers.guestlist) points *= 1.2;
+
             let finalScore = points + (combo * 10);
             if (toxicModeActive) finalScore *= 4;
 
