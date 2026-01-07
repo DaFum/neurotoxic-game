@@ -135,8 +135,12 @@ const gameReducer = (state, action) => {
     case 'REMOVE_TOAST':
       return { ...state, toasts: state.toasts.filter(t => t.id !== action.payload) };
     
-    case 'SET_GIG_MODIFIERS':
-      return { ...state, gigModifiers: { ...state.gigModifiers, ...action.payload } };
+    case 'SET_GIG_MODIFIERS': {
+      const updates = typeof action.payload === 'function'
+        ? action.payload(state.gigModifiers)
+        : action.payload;
+      return { ...state, gigModifiers: { ...state.gigModifiers, ...updates } };
+    }
       
     case 'LOAD_GAME':
       logger.info('GameState', 'Game Loaded');
@@ -208,17 +212,7 @@ export const GameStateProvider = ({ children }) => {
   const setLastGigStats = (stats) => dispatch({ type: 'SET_LAST_GIG_STATS', payload: stats });
   const setActiveEvent = (event) => dispatch({ type: 'SET_ACTIVE_EVENT', payload: event });
   const setGigModifiers = (payload) => {
-      // Direct merge dispatch to avoid stale state issues with functional updates
-      if (typeof payload === 'function') {
-          // For functional updates, we must ensure we get the latest state in the reducer if possible,
-          // but our reducer expects an object payload.
-          // Since we can't change the reducer signature easily without risk, we unwrap here using current 'state'.
-          // NOTE: 'state' here comes from the hook's closure. In high-frequency updates, this might be stale.
-          // However, for Budget Toggles (UI clicks), this is generally safe.
-          dispatch({ type: 'SET_GIG_MODIFIERS', payload: payload(state.gigModifiers) });
-      } else {
-          dispatch({ type: 'SET_GIG_MODIFIERS', payload });
-      }
+      dispatch({ type: 'SET_GIG_MODIFIERS', payload });
   };
 
   const addToast = (message, type = 'info') => {

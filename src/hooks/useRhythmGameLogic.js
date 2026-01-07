@@ -230,7 +230,7 @@ export const useRhythmGameLogic = () => {
                 gameStateRef.current.isGameOver = true;
                 addToast('BAND COLLAPSED', 'error');
 
-                // Schedule exit
+                // Schedule exit from Gig if failed (Softlock fix)
                 if (!gameOverTimerRef.current) {
                     gameOverTimerRef.current = setTimeout(() => {
                         setLastGigStats(buildGigStatsSnapshot(gameStateRef.current.score, gameStateRef.current.stats, gameStateRef.current.toxicTimeTotal));

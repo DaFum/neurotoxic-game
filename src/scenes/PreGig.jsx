@@ -57,7 +57,8 @@ export const PreGig = () => {
     }
 
     setGigModifiers({ [key]: !isActive });
-    // Removed immediate money deduction to prevent double billing in PostGig
+    // Removed immediate money deduction to prevent double billing in PostGig.
+    // Costs are calculated in economyEngine.js
   };
 
   const calculatedBudget = Object.entries(gigModifiers).reduce((acc, [key, active]) => {

@@ -155,6 +155,8 @@ export const PostGig = () => {
 
 
   const handleContinue = () => {
+    // Bankruptcy check: If net causes negative balance, GAME OVER
+    // Logic: player.money + financials.net < 0
     if (financials && (player.money + financials.net) < 0) {
         addToast("GAME OVER: BANKRUPT! The tour is over.", 'error');
         changeScene('GAMEOVER');
