@@ -176,7 +176,7 @@ const gameReducer = (state, action) => {
             nextBand.harmony = Math.min(100, nextBand.harmony + 5);
         }
         if (nextPlayer.passiveFollowers) {
-             // Distribute across platforms vaguely
+             // Passive followers currently funnel into Instagram only
              nextSocial.instagram = (nextSocial.instagram || 0) + nextPlayer.passiveFollowers;
         }
         
