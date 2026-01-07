@@ -77,9 +77,9 @@ useEffect(() => {
 
 ```jsx
 return (
-  <div className="w-full h-screen bg-[var(--void-black)] text-[var(--toxic-green)] flex flex-col">
+  <div className="w-full h-screen bg-(var(--void-black)) text-(var(--toxic-green)) flex flex-col">
     {/* Scene header with Metal Mania font */}
-    <h1 className="font-[Metal_Mania] text-4xl text-center py-8 uppercase">
+    <h1 className="font-['Metal_Mania'] text-4xl text-center py-8 uppercase">
       Scene Title
     </h1>
     

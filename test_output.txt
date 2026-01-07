@@ -1,0 +1,655 @@
+
+> neurotoxic-game@0.0.0 test
+> node --test
+
+TAP version 13
+# Subtest: calculateGigFinancials handles base case with ticket sales and guarantee
+ok 1 - calculateGigFinancials handles base case with ticket sales and guarantee
+  ---
+  duration_ms: 3.160086
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials applies fame scaling to fill rate
+ok 2 - calculateGigFinancials applies fame scaling to fill rate
+  ---
+  duration_ms: 0.517919
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials applies promo boost to fill rate
+ok 3 - calculateGigFinancials applies promo boost to fill rate
+  ---
+  duration_ms: 0.286527
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials applies price sensitivity penalty
+ok 4 - calculateGigFinancials applies price sensitivity penalty
+  ---
+  duration_ms: 0.236717
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials scales merch sales with performance
+ok 5 - calculateGigFinancials scales merch sales with performance
+  ---
+  duration_ms: 0.449523
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials applies S-rank merch bonus
+ok 6 - calculateGigFinancials applies S-rank merch bonus
+  ---
+  duration_ms: 0.473687
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials penalizes merch sales for misses
+ok 7 - calculateGigFinancials penalizes merch sales for misses
+  ---
+  duration_ms: 0.37941
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials handles sold out merch gracefully
+not ok 8 - calculateGigFinancials handles sold out merch gracefully
+  ---
+  duration_ms: 1.144284
+  type: 'test'
+  location: '/app/tests/economyEngine.test.js:151:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Sold out inventory should result in zero merch sales
+
+    1525 !== 0
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1525
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///app/tests/economyEngine.test.js:160:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: calculateGigFinancials includes transport costs based on distance
+ok 9 - calculateGigFinancials includes transport costs based on distance
+  ---
+  duration_ms: 0.624075
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials includes catering when enabled
+not ok 10 - calculateGigFinancials includes catering when enabled
+  ---
+  duration_ms: 0.707399
+  type: 'test'
+  location: '/app/tests/economyEngine.test.js:174:1'
+  failureType: 'testCodeFailure'
+  error: 'Should charge for catering when enabled'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///app/tests/economyEngine.test.js:189:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: calculateGigFinancials handles zero capacity venue
+ok 11 - calculateGigFinancials handles zero capacity venue
+  ---
+  duration_ms: 0.311008
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials handles extreme performance scores
+ok 12 - calculateGigFinancials handles extreme performance scores
+  ---
+  duration_ms: 0.188178
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials merch table modifier increases sales
+ok 13 - calculateGigFinancials merch table modifier increases sales
+  ---
+  duration_ms: 0.220267
+  type: 'test'
+  ...
+# Subtest: INCOME_CONSTANTS are properly defined
+ok 14 - INCOME_CONSTANTS are properly defined
+  ---
+  duration_ms: 0.120555
+  type: 'test'
+  ...
+# Subtest: EXPENSE_CONSTANTS are properly defined
+ok 15 - EXPENSE_CONSTANTS are properly defined
+  ---
+  duration_ms: 0.110971
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials net profit matches income minus expenses
+ok 16 - calculateGigFinancials net profit matches income minus expenses
+  ---
+  duration_ms: 0.138667
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials handles high fame with high price
+ok 17 - calculateGigFinancials handles high fame with high price
+  ---
+  duration_ms: 0.147383
+  type: 'test'
+  ...
+# Subtest: eventEngine.checkEvent returns null when category not found
+ok 18 - eventEngine.checkEvent returns null when category not found
+  ---
+  duration_ms: 1.809574
+  type: 'test'
+  ...
+# Subtest: eventEngine.checkEvent filters by trigger point
+ok 19 - eventEngine.checkEvent filters by trigger point
+  ---
+  duration_ms: 0.364535
+  type: 'test'
+  ...
+# Subtest: eventEngine.checkEvent respects cooldowns
+ok 20 - eventEngine.checkEvent respects cooldowns
+  ---
+  duration_ms: 0.223181
+  type: 'test'
+  ...
+# Subtest: eventEngine.checkEvent prioritizes pending events
+ok 21 - eventEngine.checkEvent prioritizes pending events
+  ---
+  duration_ms: 0.197031
+  type: 'test'
+  ...
+# Subtest: eventEngine.resolveChoice handles direct effect
+ok 22 - eventEngine.resolveChoice handles direct effect
+  ---
+  duration_ms: 0.30128
+  type: 'test'
+  ...
+# Subtest: eventEngine.resolveChoice handles skill check success
+ok 23 - eventEngine.resolveChoice handles skill check success
+  ---
+  duration_ms: 0.280662
+  type: 'test'
+  ...
+# Subtest: eventEngine.resolveChoice handles skill check failure
+ok 24 - eventEngine.resolveChoice handles skill check failure
+  ---
+  duration_ms: 0.31199
+  type: 'test'
+  ...
+# Subtest: eventEngine.resolveChoice uses luck stat for luck checks
+ok 25 - eventEngine.resolveChoice uses luck stat for luck checks
+  ---
+  duration_ms: 0.248682
+  type: 'test'
+  ...
+# Subtest: eventEngine.resolveChoice uses max member skill
+ok 26 - eventEngine.resolveChoice uses max member skill
+  ---
+  duration_ms: 0.470388
+  type: 'test'
+  ...
+# Subtest: eventEngine.resolveChoice preserves nextEventId
+ok 27 - eventEngine.resolveChoice preserves nextEventId
+  ---
+  duration_ms: 0.654818
+  type: 'test'
+  ...
+# Subtest: eventEngine.processOptions returns event when no processing needed
+ok 28 - eventEngine.processOptions returns event when no processing needed
+  ---
+  duration_ms: 1.467637
+  type: 'test'
+  ...
+# Subtest: eventEngine.processOptions handles van_breakdown with spare_tire
+ok 29 - eventEngine.processOptions handles van_breakdown with spare_tire
+  ---
+  duration_ms: 0.263911
+  type: 'test'
+  ...
+# Subtest: eventEngine.processOptions does not add spare tire option without inventory
+ok 30 - eventEngine.processOptions does not add spare tire option without inventory
+  ---
+  duration_ms: 0.167877
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles resource effects
+ok 31 - eventEngine.applyResult handles resource effects
+  ---
+  duration_ms: 0.353777
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles stat effects
+ok 32 - eventEngine.applyResult handles stat effects
+  ---
+  duration_ms: 0.168587
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles harmony stat
+ok 33 - eventEngine.applyResult handles harmony stat
+  ---
+  duration_ms: 0.132414
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles mood changes
+ok 34 - eventEngine.applyResult handles mood changes
+  ---
+  duration_ms: 0.11626
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles stamina changes
+ok 35 - eventEngine.applyResult handles stamina changes
+  ---
+  duration_ms: 0.108197
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles van fuel
+ok 36 - eventEngine.applyResult handles van fuel
+  ---
+  duration_ms: 0.109104
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles van condition stat
+ok 37 - eventEngine.applyResult handles van condition stat
+  ---
+  duration_ms: 0.102339
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles game over flag
+ok 38 - eventEngine.applyResult handles game over flag
+  ---
+  duration_ms: 0.109478
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles story flags
+ok 39 - eventEngine.applyResult handles story flags
+  ---
+  duration_ms: 0.256805
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles chain events
+ok 40 - eventEngine.applyResult handles chain events
+  ---
+  duration_ms: 0.122147
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles composite effects
+ok 41 - eventEngine.applyResult handles composite effects
+  ---
+  duration_ms: 0.145321
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult returns null for null result
+ok 42 - eventEngine.applyResult returns null for null result
+  ---
+  duration_ms: 0.105211
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles unlock effects
+ok 43 - eventEngine.applyResult handles unlock effects
+  ---
+  duration_ms: 0.106936
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult preserves nextEventId from result
+ok 44 - eventEngine.applyResult preserves nextEventId from result
+  ---
+  duration_ms: 0.107365
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles time stat
+ok 45 - eventEngine.applyResult handles time stat
+  ---
+  duration_ms: 0.17548
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles viral stat
+ok 46 - eventEngine.applyResult handles viral stat
+  ---
+  duration_ms: 0.119397
+  type: 'test'
+  ...
+# Subtest: resolveEventChoice returns delta for direct effects
+ok 47 - resolveEventChoice returns delta for direct effects
+  ---
+  duration_ms: 1.616356
+  type: 'test'
+  ...
+# Subtest: resolveEventChoice handles missing choices safely
+ok 48 - resolveEventChoice handles missing choices safely
+  ---
+  duration_ms: 0.278965
+  type: 'test'
+  ...
+# Subtest: applyEventDelta clamps player and band values
+ok 49 - applyEventDelta clamps player and band values
+  ---
+  duration_ms: 1.395033
+  type: 'test'
+  ...
+# Subtest: applyEventDelta updates social channels safely
+ok 50 - applyEventDelta updates social channels safely
+  ---
+  duration_ms: 0.296466
+  type: 'test'
+  ...
+# Subtest: updateGigPerformanceStats tracks peak combo and hype
+ok 51 - updateGigPerformanceStats tracks peak combo and hype
+  ---
+  duration_ms: 1.213677
+  type: 'test'
+  ...
+# Subtest: buildGigStatsSnapshot includes required economy fields
+ok 52 - buildGigStatsSnapshot includes required economy fields
+  ---
+  duration_ms: 1.0647
+  type: 'test'
+  ...
+# Subtest: calculateNoteY returns target position at hit time
+ok 53 - calculateNoteY returns target position at hit time
+  ---
+  duration_ms: 1.151089
+  type: 'test'
+  ...
+# Subtest: calculateCrowdY offsets by combo intensity
+ok 54 - calculateCrowdY offsets by combo intensity
+  ---
+  duration_ms: 0.33992
+  type: 'test'
+  ...
+# Subtest: calculateLaneStartX centers lanes
+ok 55 - calculateLaneStartX centers lanes
+  ---
+  duration_ms: 0.217087
+  type: 'test'
+  ...
+# Subtest: buildRhythmLayout derives lane and hit line positions
+ok 56 - buildRhythmLayout derives lane and hit line positions
+  ---
+  duration_ms: 0.275095
+  type: 'test'
+  ...
+# Subtest: getGigModifiers returns default modifiers for average band
+ok 57 - getGigModifiers returns default modifiers for average band
+  ---
+  duration_ms: 2.988755
+  type: 'test'
+  ...
+# Subtest: getGigModifiers grants telepathy bonus for high harmony
+ok 58 - getGigModifiers grants telepathy bonus for high harmony
+  ---
+  duration_ms: 0.416122
+  type: 'test'
+  ...
+# Subtest: getGigModifiers applies disconnect penalty for low harmony
+ok 59 - getGigModifiers applies disconnect penalty for low harmony
+  ---
+  duration_ms: 0.219438
+  type: 'test'
+  ...
+# Subtest: getGigModifiers has no special effects for mid harmony
+ok 60 - getGigModifiers has no special effects for mid harmony
+  ---
+  duration_ms: 0.181229
+  type: 'test'
+  ...
+# Subtest: getGigModifiers applies grumpy Matze penalty
+ok 61 - getGigModifiers applies grumpy Matze penalty
+  ---
+  duration_ms: 0.475845
+  type: 'test'
+  ...
+# Subtest: getGigModifiers does not apply Matze penalty when mood is okay
+ok 62 - getGigModifiers does not apply Matze penalty when mood is okay
+  ---
+  duration_ms: 0.198607
+  type: 'test'
+  ...
+# Subtest: getGigModifiers applies tired Lars speed increase
+ok 63 - getGigModifiers applies tired Lars speed increase
+  ---
+  duration_ms: 0.304915
+  type: 'test'
+  ...
+# Subtest: getGigModifiers does not apply Lars penalty when stamina is okay
+ok 64 - getGigModifiers does not apply Lars penalty when stamina is okay
+  ---
+  duration_ms: 0.249176
+  type: 'test'
+  ...
+# Subtest: getGigModifiers can apply multiple effects
+ok 65 - getGigModifiers can apply multiple effects
+  ---
+  duration_ms: 0.596287
+  type: 'test'
+  ...
+# Subtest: calculateGigPhysics returns physics object
+ok 66 - calculateGigPhysics returns physics object
+  ---
+  duration_ms: 0.758812
+  type: 'test'
+  ...
+# Subtest: calculateGigPhysics calculates hit windows based on skill
+ok 67 - calculateGigPhysics calculates hit windows based on skill
+  ---
+  duration_ms: 0.303217
+  type: 'test'
+  ...
+# Subtest: calculateGigPhysics skill increases hit windows
+ok 68 - calculateGigPhysics skill increases hit windows
+  ---
+  duration_ms: 0.23279
+  type: 'test'
+  ...
+# Subtest: calculateGigPhysics reduces speed for low stamina
+ok 69 - calculateGigPhysics reduces speed for low stamina
+  ---
+  duration_ms: 0.164805
+  type: 'test'
+  ...
+# Subtest: calculateGigPhysics normal speed for adequate stamina
+ok 70 - calculateGigPhysics normal speed for adequate stamina
+  ---
+  duration_ms: 0.139986
+  type: 'test'
+  ...
+# Subtest: calculateGigPhysics returns default multipliers
+ok 71 - calculateGigPhysics returns default multipliers
+  ---
+  duration_ms: 0.128613
+  type: 'test'
+  ...
+# Subtest: calculateGigPhysics applies blast machine trait for fast songs
+ok 72 - calculateGigPhysics applies blast machine trait for fast songs
+  ---
+  duration_ms: 0.305763
+  type: 'test'
+  ...
+# Subtest: calculateGigPhysics does not apply blast machine for slow songs
+ok 73 - calculateGigPhysics does not apply blast machine for slow songs
+  ---
+  duration_ms: 0.157868
+  type: 'test'
+  ...
+# Subtest: calculateGigPhysics includes avgStamina in result
+ok 74 - calculateGigPhysics includes avgStamina in result
+  ---
+  duration_ms: 0.147493
+  type: 'test'
+  ...
+# Subtest: calculateGigPhysics handles missing member gracefully
+ok 75 - calculateGigPhysics handles missing member gracefully
+  ---
+  duration_ms: 0.133067
+  type: 'test'
+  ...
+# Subtest: calculateGigPhysics handles missing skill property
+ok 76 - calculateGigPhysics handles missing skill property
+  ---
+  duration_ms: 0.143714
+  type: 'test'
+  ...
+# Subtest: SOCIAL_PLATFORMS contains expected platforms
+ok 77 - SOCIAL_PLATFORMS contains expected platforms
+  ---
+  duration_ms: 2.834556
+  type: 'test'
+  ...
+# Subtest: SOCIAL_PLATFORMS have multipliers
+ok 78 - SOCIAL_PLATFORMS have multipliers
+  ---
+  duration_ms: 0.330608
+  type: 'test'
+  ...
+# Subtest: calculateViralityScore returns base chance for average performance
+ok 79 - calculateViralityScore returns base chance for average performance
+  ---
+  duration_ms: 0.222428
+  type: 'test'
+  ...
+# Subtest: calculateViralityScore increases with high performance
+ok 80 - calculateViralityScore increases with high performance
+  ---
+  duration_ms: 0.17959
+  type: 'test'
+  ...
+# Subtest: calculateViralityScore applies performance multipliers
+ok 81 - calculateViralityScore applies performance multipliers
+  ---
+  duration_ms: 0.332392
+  type: 'test'
+  ...
+# Subtest: calculateViralityScore boosts for Kaminstube venue
+ok 82 - calculateViralityScore boosts for Kaminstube venue
+  ---
+  duration_ms: 0.196744
+  type: 'test'
+  ...
+# Subtest: calculateViralityScore boosts for stage diver event
+ok 83 - calculateViralityScore boosts for stage diver event
+  ---
+  duration_ms: 0.272295
+  type: 'test'
+  ...
+# Subtest: calculateViralityScore boosts for influencer event
+ok 84 - calculateViralityScore boosts for influencer event
+  ---
+  duration_ms: 0.174178
+  type: 'test'
+  ...
+# Subtest: calculateViralityScore is capped at 90%
+ok 85 - calculateViralityScore is capped at 90%
+  ---
+  duration_ms: 0.515733
+  type: 'test'
+  ...
+# Subtest: calculateViralityScore combines multiple bonuses
+ok 86 - calculateViralityScore combines multiple bonuses
+  ---
+  duration_ms: 0.640176
+  type: 'test'
+  ...
+# Subtest: generatePostOptions returns array of options
+ok 87 - generatePostOptions returns array of options
+  ---
+  duration_ms: 0.324324
+  type: 'test'
+  ...
+# Subtest: generatePostOptions includes moshpit option
+ok 88 - generatePostOptions includes moshpit option
+  ---
+  duration_ms: 0.182039
+  type: 'test'
+  ...
+# Subtest: generatePostOptions includes technical option
+ok 89 - generatePostOptions includes technical option
+  ---
+  duration_ms: 0.170287
+  type: 'test'
+  ...
+# Subtest: generatePostOptions includes band pic option
+ok 90 - generatePostOptions includes band pic option
+  ---
+  duration_ms: 0.161275
+  type: 'test'
+  ...
+# Subtest: generatePostOptions scales mosh viral chance
+ok 91 - generatePostOptions scales mosh viral chance
+  ---
+  duration_ms: 0.160807
+  type: 'test'
+  ...
+# Subtest: generatePostOptions all have required properties
+ok 92 - generatePostOptions all have required properties
+  ---
+  duration_ms: 0.155764
+  type: 'test'
+  ...
+# Subtest: resolvePost handles viral success
+ok 93 - resolvePost handles viral success
+  ---
+  duration_ms: 0.215015
+  type: 'test'
+  ...
+# Subtest: resolvePost handles non-viral post
+ok 94 - resolvePost handles non-viral post
+  ---
+  duration_ms: 0.149935
+  type: 'test'
+  ...
+# Subtest: resolvePost viral multiplies by 10
+ok 95 - resolvePost viral multiplies by 10
+  ---
+  duration_ms: 0.136021
+  type: 'test'
+  ...
+# Subtest: resolvePost handles edge case of 0 base followers
+ok 96 - resolvePost handles edge case of 0 base followers
+  ---
+  duration_ms: 1.263231
+  type: 'test'
+  ...
+# Subtest: resolvePost threshold at exact viral chance
+ok 97 - resolvePost threshold at exact viral chance
+  ---
+  duration_ms: 0.240297
+  type: 'test'
+  ...
+# Subtest: resolvePost preserves all platforms
+ok 98 - resolvePost preserves all platforms
+  ---
+  duration_ms: 0.200496
+  type: 'test'
+  ...
+# Subtest: resolvePost returns consistent structure
+ok 99 - resolvePost returns consistent structure
+  ---
+  duration_ms: 0.14111
+  type: 'test'
+  ...
+# Subtest: calculateViralityScore handles low performance
+ok 100 - calculateViralityScore handles low performance
+  ---
+  duration_ms: 0.105146
+  type: 'test'
+  ...
+# Subtest: generatePostOptions viral chances are reasonable
+ok 101 - generatePostOptions viral chances are reasonable
+  ---
+  duration_ms: 0.163164
+  type: 'test'
+  ...
+1..101
+# tests 101
+# suites 0
+# pass 99
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 322.360125

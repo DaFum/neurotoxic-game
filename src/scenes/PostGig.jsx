@@ -14,6 +14,8 @@ export const PostGig = () => {
   const [postResult, setPostResult] = useState(null);
 
   React.useEffect(() => {
+      if (!currentGig) return;
+
       if (!activeEvent) {
           const financialEvent = triggerEvent('financial', 'post_gig');
           if (!financialEvent) {
@@ -45,7 +47,7 @@ export const PostGig = () => {
           setVirality(vScore);
           setPostOptions(generatePostOptions({ viralityScore: vScore }));
       }
-  }, [financials]);
+  }, [financials, currentGig, lastGigStats, gigModifiers, player.fame]);
 
   const handlePostSelection = (option) => {
       const result = resolvePost(option, Math.random());

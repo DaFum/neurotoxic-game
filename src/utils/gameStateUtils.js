@@ -50,6 +50,21 @@ export const applyEventDelta = (state, delta) => {
                 return { ...m, mood: Math.max(0, Math.min(100, newMood)), stamina: Math.max(0, Math.min(100, newStamina)) };
             });
         }
+        if (delta.band.inventory) {
+            nextBand.inventory = { ...nextBand.inventory };
+            Object.entries(delta.band.inventory).forEach(([item, val]) => {
+                if (val === true || val === false) {
+                     nextBand.inventory[item] = val;
+                } else if (typeof val === 'number') {
+                     // Add to existing count or set if not exists (assuming count starts at 0 if undefined)
+                     const current = typeof nextBand.inventory[item] === 'number' ? nextBand.inventory[item] : 0;
+                     nextBand.inventory[item] = current + val;
+                }
+            });
+        }
+        if (typeof delta.band.luck === 'number') {
+            nextBand.luck = (nextBand.luck || 0) + delta.band.luck;
+        }
         nextState.band = nextBand;
     }
 

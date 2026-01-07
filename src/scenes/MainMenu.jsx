@@ -7,7 +7,7 @@ import { GlitchButton } from '../ui/GlitchButton';
 import { audioManager } from '../utils/AudioManager';
 
 export const MainMenu = () => {
-  const { changeScene, loadGame, player, updatePlayer } = useGameState();
+  const { changeScene, loadGame, player, updatePlayer, band, updateBand, updateSocial } = useGameState();
   const [showUpgrades, setShowUpgrades] = React.useState(false);
 
   React.useEffect(() => {
@@ -28,9 +28,60 @@ export const MainMenu = () => {
       const buyUpgrade = (upgrade) => {
           if (player.fame >= upgrade.cost) {
               if (window.confirm(`Buy ${upgrade.name} for ${upgrade.cost} Fame?`)) {
-                  updatePlayer({ 
+                  // 1. Deduct cost and save upgrade ID
+                  const nextPlayer = {
+                      ...player,
                       fame: player.fame - upgrade.cost,
                       van: { ...player.van, upgrades: [...player.van.upgrades, upgrade.id] } 
+                  };
+
+                  // 2. Apply Effect Logic
+                  if (upgrade.effect) {
+                      const eff = upgrade.effect;
+
+                      // STAT MODIFIERS
+                      if (eff.type === 'stat_modifier') {
+                          if (eff.stat === 'breakdown_chance') {
+                             nextPlayer.van.breakdownChance = (nextPlayer.van.breakdownChance || 0.05) + eff.value;
+                          }
+                          else if (eff.stat === 'inventory_slots') {
+                             updateBand({ inventorySlots: (band.inventorySlots || 0) + eff.value });
+                          }
+                          else if (eff.stat === 'guitar_difficulty') {
+                             updateBand({ performance: { ...band.performance, guitarDifficulty: (band.performance?.guitarDifficulty || 1.0) + eff.value } });
+                          }
+                          else if (eff.stat === 'drum_score_multiplier') {
+                             updateBand({ performance: { ...band.performance, drumMultiplier: (band.performance?.drumMultiplier || 1.0) + eff.value } });
+                          }
+                          else if (eff.stat === 'crowd_decay') {
+                             updateBand({ performance: { ...band.performance, crowdDecay: (band.performance?.crowdDecay || 1.0) + eff.value } });
+                          }
+                      }
+
+                      // START BONUS
+                      else if (eff.type === 'start_bonus') {
+                          if (eff.stat === 'fame') {
+                              nextPlayer.fame += eff.value;
+                          }
+                      }
+
+                      // PASSIVES
+                      else if (eff.type === 'passive') {
+                          if (eff.effect === 'harmony_regen_travel') {
+                              updateBand({ harmonyRegenTravel: true });
+                          }
+                          else if (eff.effect === 'passive_followers') {
+                                  // Update local variable so it commits in step 3
+                                  nextPlayer.passiveFollowers = (nextPlayer.passiveFollowers || 0) + 5;
+                          }
+                      }
+                  }
+
+                  // 3. Commit Player Updates
+                  updatePlayer({
+                      fame: nextPlayer.fame,
+                      van: nextPlayer.van,
+                          passiveFollowers: nextPlayer.passiveFollowers
                   });
               }
           } else {
