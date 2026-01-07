@@ -1,4 +1,5 @@
 import { EVENTS_DB } from '../data/events.js';
+import { logger } from './logger.js';
 
 /**
  * Filters and selects an event based on context, priority, and probability.
@@ -17,7 +18,12 @@ const selectEvent = (pool, gameState, triggerPoint) => {
     let eligibleEvents = pool.filter(e => !triggerPoint || e.trigger === triggerPoint);
     eligibleEvents = eligibleEvents.filter(e => {
         if (!e.condition) return true;
-        return e.condition(gameState);
+        try {
+            return e.condition(gameState);
+        } catch (err) {
+            logger.error('EventEngine', `Condition check failed for event ${e.id}`, err);
+            return false;
+        }
     });
 
     // 3. Filter by Cooldown
@@ -40,6 +46,7 @@ const selectEvent = (pool, gameState, triggerPoint) => {
         }
 
         if (Math.random() < chance) {
+            logger.debug('EventEngine', 'Event Selected', event.id);
             return event;
         }
     }

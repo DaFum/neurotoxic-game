@@ -5,6 +5,7 @@ import { MapGenerator } from '../utils/mapGenerator';
 import { applyEventDelta } from '../utils/gameStateUtils';
 import { calculateDailyUpdates } from '../utils/simulationUtils';
 import { CHARACTERS } from '../data/characters';
+import { logger } from '../utils/logger';
 
 // Initial State Definition
 const initialState = {
@@ -85,14 +86,19 @@ const initialState = {
 
 // Reducer Function
 const gameReducer = (state, action) => {
+  // logger.debug('GameState', `Action: ${action.type}`, action.payload); // Too spammy? Maybe INFO for major actions
+
   switch (action.type) {
     case 'CHANGE_SCENE':
+      logger.info('GameState', `Scene Change: ${state.currentScene} -> ${action.payload}`);
       return { ...state, currentScene: action.payload };
     
     case 'UPDATE_PLAYER':
+      logger.debug('GameState', 'Update Player', action.payload);
       return { ...state, player: { ...state.player, ...action.payload } };
     
     case 'UPDATE_BAND':
+      logger.debug('GameState', 'Update Band', action.payload);
       return { ...state, band: { ...state.band, ...action.payload } };
     
     case 'UPDATE_SOCIAL':
@@ -102,12 +108,15 @@ const gameReducer = (state, action) => {
       return { ...state, settings: { ...state.settings, ...action.payload } };
     
     case 'SET_MAP':
+      logger.info('GameState', 'Map Generated');
       return { ...state, gameMap: action.payload };
     
     case 'SET_GIG':
+      logger.info('GameState', 'Set Current Gig', action.payload?.name);
       return { ...state, currentGig: action.payload };
     
     case 'START_GIG':
+      logger.info('GameState', 'Starting Gig Sequence', action.payload?.name);
       return { ...state, currentGig: action.payload, currentScene: 'PREGIG' };
 
     case 'SET_SETLIST':
@@ -117,6 +126,7 @@ const gameReducer = (state, action) => {
       return { ...state, lastGigStats: action.payload };
     
     case 'SET_ACTIVE_EVENT':
+      if (action.payload) logger.info('GameState', 'Event Triggered', action.payload.title);
       return { ...state, activeEvent: action.payload };
     
     case 'ADD_TOAST':
@@ -129,9 +139,11 @@ const gameReducer = (state, action) => {
       return { ...state, gigModifiers: action.payload };
       
     case 'LOAD_GAME':
+      logger.info('GameState', 'Game Loaded');
       return { ...state, ...action.payload };
 
     case 'APPLY_EVENT_DELTA': {
+        logger.info('GameState', 'Applying Event Delta', action.payload);
         return applyEventDelta(state, action.payload);
     }
     
@@ -151,6 +163,7 @@ const gameReducer = (state, action) => {
 
     case 'ADVANCE_DAY': {
         const { player, band, social } = calculateDailyUpdates(state);
+        logger.info('GameState', `Day Advanced to ${player.day}`);
         return { ...state, player, band, social };
     }
 
@@ -243,8 +256,10 @@ export const GameStateProvider = ({ children }) => {
     try {
         localStorage.setItem('neurotoxic_v3_save', JSON.stringify(saveData));
         addToast("GAME SAVED!", 'success');
+        logger.info('System', 'Game Saved Successfully');
     } catch (e) {
         console.error("Save failed", e);
+        logger.error('System', 'Save Failed', e);
         addToast("Save failed!", 'error');
     }
   };

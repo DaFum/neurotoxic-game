@@ -1,3 +1,5 @@
+import { logger } from './logger.js';
+
 // Constants for the Economic System
 export const INCOME_CONSTANTS = {
     MERCH: {
@@ -172,6 +174,8 @@ const calculateGigExpenses = (gigData, modifiers) => {
  * @param {object} gigStats - Detailed gig stats (misses, peakHype, etc)
  */
 export const calculateGigFinancials = (gigData, performanceScore, crowdStats, modifiers, bandInventory, playerFame, gigStats) => {
+    logger.debug('Economy', 'Calculating Gig Financials', { gig: gigData.name, score: performanceScore, fame: playerFame });
+
     const report = {
         income: { total: 0, breakdown: [] },
         expenses: { total: 0, breakdown: [] },
@@ -221,5 +225,7 @@ export const calculateGigFinancials = (gigData, performanceScore, crowdStats, mo
     }
 
     report.net = report.income.total - report.expenses.total;
+
+    logger.info('Economy', 'Gig Report Generated', { net: report.net, income: report.income.total, expenses: report.expenses.total });
     return report;
 };
