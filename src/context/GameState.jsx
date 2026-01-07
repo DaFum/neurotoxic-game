@@ -381,9 +381,10 @@ export const GameStateProvider = ({ children }) => {
       if (outcomeText || description) {
         const message = outcomeText && description
           ? `${outcomeText} — ${description}`
-          : (outcomeText || description);
+          : outcomeText || description;
         addToast(message, 'info');
       }
+
       setActiveEvent(null);
       return { outcomeText, description, result };
     } catch (error) {
