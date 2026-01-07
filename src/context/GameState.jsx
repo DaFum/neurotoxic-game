@@ -374,9 +374,9 @@ export const GameStateProvider = ({ children }) => {
           changeScene('GAMEOVER');
           setActiveEvent(null);
           return { outcomeText, description, result };
-            setActiveEvent(null);
-            return { outcomeText: 'An error occurred.', description: 'Resolution failed.', result: null };
-          }
+        }
+      }
+
       // Show outcome feedback for non-game-over event resolutions
       if (outcomeText || description) {
         const message = outcomeText && description
