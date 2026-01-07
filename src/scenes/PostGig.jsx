@@ -6,6 +6,93 @@ import { calculateGigFinancials } from '../utils/economyEngine';
 import { calculateViralityScore, generatePostOptions, resolvePost } from '../utils/socialEngine';
 import { ChatterOverlay } from '../components/ChatterOverlay';
 
+/**
+ * Report Phase Component
+ */
+const ReportPhase = ({ financials, onNext }) => (
+    <>
+        <div className="grid grid-cols-2 gap-8 text-sm md:text-base font-mono">
+            <div>
+                <h3 className="text-(--toxic-green) border-b border-gray-700 mb-2">INCOME</h3>
+                {financials.income.breakdown.map((item, i) => (
+                    <div key={i} className="flex justify-between">
+                        <span>{item.label}</span>
+                        <span className="text-green-400">+{item.value}€</span>
+                    </div>
+                ))}
+                <div className="mt-2 pt-2 border-t border-gray-800 flex justify-between font-bold">
+                    <span>TOTAL</span>
+                    <span>{financials.income.total}€</span>
+                </div>
+            </div>
+            <div>
+                <h3 className="text-red-500 border-b border-gray-700 mb-2">EXPENSES</h3>
+                {financials.expenses.breakdown.map((item, i) => (
+                    <div key={i} className="flex justify-between">
+                        <span>{item.label}</span>
+                        <span className="text-red-400">-{item.value}€</span>
+                    </div>
+                ))}
+                <div className="mt-2 pt-2 border-t border-gray-800 flex justify-between font-bold">
+                    <span>TOTAL</span>
+                    <span>{financials.expenses.total}€</span>
+                </div>
+            </div>
+        </div>
+
+        <div className="text-center mt-4">
+            <div className="text-sm text-gray-500">NET PROFIT</div>
+            <div className={`text-4xl font-bold glitch-text ${financials.net >= 0 ? 'text-(--toxic-green)' : 'text-red-600'}`}>
+                {financials.net >= 0 ? '+' : ''}{financials.net}€
+            </div>
+        </div>
+
+        <button onClick={onNext} className="mt-4 w-full py-4 bg-(--toxic-green) text-black font-bold uppercase hover:bg-white transition-colors">
+            NEXT: SOCIAL MEDIA
+        </button>
+    </>
+);
+
+/**
+ * Social Phase Component
+ */
+const SocialPhase = ({ options, onSelect }) => (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {options.map((opt) => (
+            <button
+                key={opt.id}
+                onClick={() => onSelect(opt)}
+                className="p-4 border border-gray-700 hover:border-(--toxic-green) hover:bg-(--toxic-green)/10 text-left transition-all group"
+            >
+                <div className="text-xs text-gray-500 group-hover:text-white uppercase mb-1">{opt.platform}</div>
+                <div className="font-bold text-lg mb-2">{opt.title}</div>
+                <div className="text-sm text-gray-400 mb-4">{opt.description}</div>
+                <div className="flex justify-between text-xs font-mono">
+                    <span>Viral Chance: {Math.round(opt.viralChance * 100)}%</span>
+                    <span>Est. Gain: +{opt.effect.followers}</span>
+                </div>
+            </button>
+        ))}
+    </div>
+);
+
+/**
+ * Complete Phase Component
+ */
+const CompletePhase = ({ result, onContinue }) => (
+    <div className="text-center">
+        <div className="mb-8">
+            <h3 className="text-2xl text-(--toxic-green) mb-2">{result?.success ? 'VIRAL HIT!' : 'POST PUBLISHED'}</h3>
+            <p className="text-gray-300">{result?.message}</p>
+            <div className="text-4xl font-bold mt-4">+{result?.followers} Followers</div>
+            <div className="text-sm text-gray-500 uppercase mt-1">on {result?.platform}</div>
+        </div>
+        <button onClick={onContinue} className="w-full py-4 bg-(--toxic-green) text-black font-bold uppercase hover:bg-white transition-colors">
+            CONTINUE TOUR
+        </button>
+    </div>
+);
+
 export const PostGig = () => {
   const { changeScene, updatePlayer, player, currentGig, gigModifiers, triggerEvent, activeEvent, band, updateSocial, social, lastGigStats, addToast } = useGameState();
   const [phase, setPhase] = useState('REPORT'); // REPORT, SOCIAL, COMPLETE
@@ -30,7 +117,7 @@ export const PostGig = () => {
 
   // Initialize Results once (simulated)
   React.useEffect(() => {
-      if (!financials) {
+      if (!financials && currentGig && lastGigStats) {
           // Use real score normalized to 0-100 (approx)
           // Assume max score ~ 1000 per second of song. Setlist ~ 200s. Max ~ 200k.
           // Let's simplified normalize: score / (duration * 100).
@@ -102,81 +189,15 @@ export const PostGig = () => {
         </h2>
 
         {phase === 'REPORT' && (
-            <>
-                <div className="grid grid-cols-2 gap-8 text-sm md:text-base font-mono">
-                    <div>
-                        <h3 className="text-(--toxic-green) border-b border-gray-700 mb-2">INCOME</h3>
-                        {financials.income.breakdown.map((item, i) => (
-                            <div key={i} className="flex justify-between">
-                                <span>{item.label}</span>
-                                <span className="text-green-400">+{item.value}€</span>
-                            </div>
-                        ))}
-                        <div className="mt-2 pt-2 border-t border-gray-800 flex justify-between font-bold">
-                            <span>TOTAL</span>
-                            <span>{financials.income.total}€</span>
-                        </div>
-                    </div>
-                    <div>
-                        <h3 className="text-red-500 border-b border-gray-700 mb-2">EXPENSES</h3>
-                        {financials.expenses.breakdown.map((item, i) => (
-                            <div key={i} className="flex justify-between">
-                                <span>{item.label}</span>
-                                <span className="text-red-400">-{item.value}€</span>
-                            </div>
-                        ))}
-                        <div className="mt-2 pt-2 border-t border-gray-800 flex justify-between font-bold">
-                            <span>TOTAL</span>
-                            <span>{financials.expenses.total}€</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div className="text-center mt-4">
-                    <div className="text-sm text-gray-500">NET PROFIT</div>
-                    <div className={`text-4xl font-bold glitch-text ${financials.net >= 0 ? 'text-(--toxic-green)' : 'text-red-600'}`}>
-                        {financials.net >= 0 ? '+' : ''}{financials.net}€
-                    </div>
-                </div>
-
-                <button onClick={() => setPhase('SOCIAL')} className="mt-4 w-full py-4 bg-(--toxic-green) text-black font-bold uppercase hover:bg-white transition-colors">
-                    NEXT: SOCIAL MEDIA
-                </button>
-            </>
+            <ReportPhase financials={financials} onNext={() => setPhase('SOCIAL')} />
         )}
 
         {phase === 'SOCIAL' && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {postOptions.map((opt) => (
-                    <button 
-                        key={opt.id}
-                        onClick={() => handlePostSelection(opt)}
-                        className="p-4 border border-gray-700 hover:border-(--toxic-green) hover:bg-(--toxic-green)/10 text-left transition-all group"
-                    >
-                        <div className="text-xs text-gray-500 group-hover:text-white uppercase mb-1">{opt.platform}</div>
-                        <div className="font-bold text-lg mb-2">{opt.title}</div>
-                        <div className="text-sm text-gray-400 mb-4">{opt.description}</div>
-                        <div className="flex justify-between text-xs font-mono">
-                            <span>Viral Chance: {Math.round(opt.viralChance * 100)}%</span>
-                            <span>Est. Gain: +{opt.effect.followers}</span>
-                        </div>
-                    </button>
-                ))}
-            </div>
+            <SocialPhase options={postOptions} onSelect={handlePostSelection} />
         )}
 
         {phase === 'COMPLETE' && (
-            <div className="text-center">
-                <div className="mb-8">
-                    <h3 className="text-2xl text-(--toxic-green) mb-2">{postResult?.success ? 'VIRAL HIT!' : 'POST PUBLISHED'}</h3>
-                    <p className="text-gray-300">{postResult?.message}</p>
-                    <div className="text-4xl font-bold mt-4">+{postResult?.followers} Followers</div>
-                    <div className="text-sm text-gray-500 uppercase mt-1">on {postResult?.platform}</div>
-                </div>
-                <button onClick={handleContinue} className="w-full py-4 bg-(--toxic-green) text-black font-bold uppercase hover:bg-white transition-colors">
-                    CONTINUE TOUR
-                </button>
-            </div>
+            <CompletePhase result={postResult} onContinue={handleContinue} />
         )}
 
       </motion.div>
