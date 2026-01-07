@@ -2,6 +2,7 @@ import React from 'react';
 import { useGameState } from '../context/GameState';
 import { SONGS_DB } from '../data/songs';
 import { getGigModifiers } from '../utils/simulationUtils';
+import { ChatterOverlay } from '../components/ChatterOverlay';
 
 export const PreGig = () => {
   const { currentGig, changeScene, setSetlist, setlist, gigModifiers, setGigModifiers, player, updatePlayer, triggerEvent, activeEvent, band, updateBand, addToast } = useGameState();
@@ -61,6 +62,9 @@ export const PreGig = () => {
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-(--void-black) text-white relative">
+      <div className="absolute top-24 right-8 z-30">
+          <ChatterOverlay />
+      </div>
       <h2 className="text-4xl text-(--toxic-green) font-['Metal_Mania'] mb-4">PREPARATION</h2>
       <div className="text-xl mb-2 font-mono border-b border-(--toxic-green) pb-2 w-full max-w-2xl text-center">
         VENUE: {currentGig?.name}

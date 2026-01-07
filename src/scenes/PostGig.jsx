@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen';
 import { calculateGigFinancials } from '../utils/economyEngine';
 import { calculateViralityScore, generatePostOptions, resolvePost } from '../utils/socialEngine';
+import { ChatterOverlay } from '../components/ChatterOverlay';
 
 export const PostGig = () => {
   const { changeScene, updatePlayer, player, currentGig, gigModifiers, triggerEvent, activeEvent, band, updateSocial, social, lastGigStats, addToast } = useGameState();
@@ -83,6 +84,9 @@ export const PostGig = () => {
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-(--void-black) text-white relative">
+      <div className="absolute top-24 right-8 z-30">
+          <ChatterOverlay />
+      </div>
       <div 
         className="absolute inset-0 opacity-20 bg-cover bg-center"
         style={{ backgroundImage: `url("${getGenImageUrl(IMG_PROMPTS.POST_GIG_BG)}")` }}
