@@ -176,7 +176,7 @@ export const useRhythmGameLogic = () => {
         } catch (error) {
             console.error('[useRhythmGameLogic] Failed to initialize gig state.', error);
         }
-    }, [band, gameMap?.nodes, player.currentNodeId, setlist]);
+    }, [band, gameMap?.nodes, player.currentNodeId, setlist, gigModifiers]);
 
     useEffect(() => {
         initializeGigState();
