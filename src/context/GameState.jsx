@@ -3,6 +3,7 @@ import { eventEngine } from '../utils/eventEngine';
 import { resolveEventChoice } from '../utils/eventResolver';
 import { MapGenerator } from '../utils/mapGenerator';
 import { applyEventDelta } from '../utils/gameStateUtils';
+import { calculateDailyUpdates } from '../utils/simulationUtils';
 import { CHARACTERS } from '../data/characters';
 
 // Initial State Definition
@@ -149,42 +150,8 @@ const gameReducer = (state, action) => {
     }
 
     case 'ADVANCE_DAY': {
-        const nextPlayer = { ...state.player, day: state.player.day + 1 };
-        const nextBand = { ...state.band };
-        const nextSocial = { ...state.social };
-
-        // 1. Costs
-        // Rent/Food
-        const dailyCost = 25; 
-        nextPlayer.money -= dailyCost;
-
-        // 2. Mood Drift
-        // Drift towards 50
-        nextBand.members = nextBand.members.map(m => {
-            let mood = m.mood;
-            if (mood > 50) mood -= 2;
-            else if (mood < 50) mood += 2;
-            return { ...m, mood };
-        });
-
-        // 3. Social Decay
-        // Viral decay
-        if (nextSocial.viral > 0) nextSocial.viral -= 1;
-
-        // 4. Passive Effects
-        if (nextBand.harmonyRegenTravel) {
-            nextBand.harmony = Math.min(100, nextBand.harmony + 5);
-        }
-        if (nextPlayer.passiveFollowers) {
-             // Passive followers currently funnel into Instagram only
-             nextSocial.instagram = (nextSocial.instagram || 0) + nextPlayer.passiveFollowers;
-        }
-        
-        // Return state with toast handled by side effect or UI? 
-        // We can't dispatch side effects here easily.
-        // We will return the state, consumer triggers toast.
-        
-        return { ...state, player: nextPlayer, band: nextBand, social: nextSocial };
+        const { player, band, social } = calculateDailyUpdates(state);
+        return { ...state, player, band, social };
     }
 
     default:
