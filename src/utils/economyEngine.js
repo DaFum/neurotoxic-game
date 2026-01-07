@@ -140,16 +140,15 @@ export const calculateGigFinancials = (gigData, performanceScore, crowdStats, mo
     // Or "Venue provided catering" (free)?
     // Context implies user spends budget on modifiers. So catering modifier = cost.
     let foodCost = bandSize * EXPENSE_CONSTANTS.FOOD.FAST_FOOD; 
-    let foodLabel = 'Food & Drinks';
+    report.expenses.breakdown.push({ label: 'Food & Drinks', value: foodCost, detail: 'Subsistence' });
+    report.expenses.total += foodCost;
 
     if (modifiers.catering) {
         // Upgrade to Restaurant/Catering quality
-        foodCost = bandSize * EXPENSE_CONSTANTS.FOOD.RESTAURANT;
-        foodLabel = 'Food & Catering';
+        const cateringCost = bandSize * (EXPENSE_CONSTANTS.FOOD.RESTAURANT - EXPENSE_CONSTANTS.FOOD.FAST_FOOD);
+        report.expenses.breakdown.push({ label: 'Catering Upgrade', value: cateringCost, detail: 'Better food' });
+        report.expenses.total += cateringCost;
     }
-
-    report.expenses.breakdown.push({ label: foodLabel, value: foodCost, detail: 'Subsistence' });
-    report.expenses.total += foodCost;
 
     // 7. EXPENSES: PROMO
     if (modifiers.promo) {

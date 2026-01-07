@@ -78,11 +78,7 @@ export const MainMenu = () => {
                   }
 
                   // 3. Commit Player Updates
-                  updatePlayer({
-                      fame: nextPlayer.fame,
-                      van: nextPlayer.van,
-                          passiveFollowers: nextPlayer.passiveFollowers
-                  });
+                      updatePlayer(nextPlayer);
               }
           } else {
               alert("Not enough Fame!");
