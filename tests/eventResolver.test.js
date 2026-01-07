@@ -33,7 +33,7 @@ test('resolveEventChoice returns delta for direct effects', () => {
   assert.equal(outcomeText, 'You pay the fine.');
   assert.equal(description, '');
   assert.equal(result.outcome, 'direct');
-  assert.deepEqual(delta.player.money, -40);
+  assert.equal(delta.player.money, -40);
 });
 
 test('resolveEventChoice handles missing choices safely', () => {

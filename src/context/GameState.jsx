@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { eventEngine } from '../utils/eventEngine.js';
-import { resolveEventChoice } from '../utils/eventResolver.js';
-import { MapGenerator } from '../utils/mapGenerator.js';
-import { applyEventDelta } from '../utils/gameStateUtils.js';
-import { CHARACTERS } from '../data/characters.js';
+import { eventEngine } from '../utils/eventEngine';
+import { resolveEventChoice } from '../utils/eventResolver';
+import { MapGenerator } from '../utils/mapGenerator';
+import { applyEventDelta } from '../utils/gameStateUtils';
+import { CHARACTERS } from '../data/characters';
 
 // Initial State Definition
 const initialState = {
@@ -317,6 +317,11 @@ export const GameStateProvider = ({ children }) => {
   };
 
   const resolveEvent = (choice) => {
+    if (!choice) {
+      setActiveEvent(null);
+      return { outcomeText: '', description: '', result: null };
+    }
+
     try {
       const { result, delta, outcomeText, description } = resolveEventChoice(choice, {
         player: state.player,
@@ -328,16 +333,19 @@ export const GameStateProvider = ({ children }) => {
         dispatch({ type: 'APPLY_EVENT_DELTA', payload: delta });
 
         if (delta.flags?.unlock) {
+          let currentUnlocks = [];
           try {
-            const currentUnlocks = JSON.parse(localStorage.getItem('neurotoxic_unlocks') || '[]');
-            if (!currentUnlocks.includes(delta.flags.unlock)) {
-              currentUnlocks.push(delta.flags.unlock);
-              localStorage.setItem('neurotoxic_unlocks', JSON.stringify(currentUnlocks));
-              addToast(`UNLOCKED: ${delta.flags.unlock.toUpperCase()}!`, 'success');
+            const parsed = JSON.parse(localStorage.getItem('neurotoxic_unlocks') || '[]');
+            if (Array.isArray(parsed)) {
+              currentUnlocks = parsed;
             }
           } catch (e) {
-            console.error('Failed to save unlock progress:', e);
-            addToast('Error saving unlock progress.', 'error');
+            console.error('Failed to parse unlocks from localStorage:', e);
+          }
+          if (!currentUnlocks.includes(delta.flags.unlock)) {
+            currentUnlocks.push(delta.flags.unlock);
+            localStorage.setItem('neurotoxic_unlocks', JSON.stringify(currentUnlocks));
+            addToast(`UNLOCKED: ${delta.flags.unlock.toUpperCase()}!`, 'success');
           }
         }
 
@@ -346,16 +354,23 @@ export const GameStateProvider = ({ children }) => {
           changeScene('GAMEOVER');
           setActiveEvent(null);
           return { outcomeText, description, result };
-        }
+            setActiveEvent(null);
+            return { outcomeText: 'An error occurred.', description: 'Resolution failed.', result: null };
+          }
+      // Show outcome feedback for non-game-over event resolutions
+      if (outcomeText || description) {
+        const message = outcomeText && description
+          ? `${outcomeText} — ${description}`
+          : (outcomeText || description);
+        addToast(message, 'info');
       }
-
       setActiveEvent(null);
       return { outcomeText, description, result };
     } catch (error) {
       console.error('[Event] Failed to resolve event choice:', error);
       addToast('EVENT ERROR: Resolution failed.', 'error');
       setActiveEvent(null);
-      return { outcomeText: choice?.outcomeText ?? '', description: 'Resolution failed.', result: null };
+      return { outcomeText: choice.outcomeText ?? '', description: 'Resolution failed.', result: null };
     }
   };
 
