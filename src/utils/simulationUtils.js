@@ -1,0 +1,94 @@
+// Utility functions for Simulation <-> Action connection
+
+export const getGigModifiers = (bandState) => {
+    const modifiers = {
+        hitWindowBonus: 0,
+        noteJitter: false,
+        drumSpeedMult: 1.0,
+        guitarScoreMult: 1.0,
+        activeEffects: [] // Text descriptions for UI
+    };
+
+    // 1. Harmony Logic
+    if (bandState.harmony > 80) {
+        modifiers.hitWindowBonus = 20; // ms
+        modifiers.activeEffects.push("TELEPATHY (Harmony > 80): Easier Hits");
+    } else if (bandState.harmony < 30) {
+        modifiers.noteJitter = true;
+        modifiers.activeEffects.push("DISCONNECT (Harmony < 30): Notes Jitter");
+    }
+
+    // 2. Member Status
+    // Matze (Guitar)
+    const matze = bandState.members.find(m => m.name === "Matze");
+    if (matze && matze.mood < 20) {
+        modifiers.guitarScoreMult = 0.5;
+        modifiers.activeEffects.push("GRUMPY MATZE: Guitar Score -50%");
+    }
+
+    // Lars (Drums)
+    const lars = bandState.members.find(m => m.name === "Lars");
+    if (lars && lars.stamina < 20) {
+        modifiers.drumSpeedMult = 1.2; // 20% faster
+        modifiers.activeEffects.push("TIRED LARS: Rushing Tempo");
+    }
+
+    return modifiers;
+};
+
+/**
+ * Calculates derived physics variables for the Gig scene based on RPG stats.
+ * @param {object} bandState 
+ * @param {object} song 
+ */
+export const calculateGigPhysics = (bandState, song) => {
+    // 1. Hit Windows based on Skill
+    // Formula: Base 150ms + (Skill * 5ms)
+    const matze = bandState.members.find(m => m.name === "Matze");
+    const lars = bandState.members.find(m => m.name === "Lars");
+    const marius = bandState.members.find(m => m.name === "Marius");
+
+    const hitWindows = {
+        guitar: 150 + ((matze?.skill || 0) * 5),
+        drums: 150 + ((lars?.skill || 0) * 5),
+        bass: 150 + ((marius?.skill || 0) * 5)
+    };
+
+    // 2. Scroll Speed based on Global Stamina
+    // Avg Stamina:
+    const totalStamina = bandState.members.reduce((sum, m) => sum + m.stamina, 0);
+    const avgStamina = totalStamina / 3;
+    
+    // Normal Speed = 500 (pixels per second approx or whatever engine uses)
+    // If Stamina < 30, slow down draggingly
+    let speedModifier = 1.0;
+    if (avgStamina < 30) {
+        speedModifier = 0.8; // "Drag" effect
+    }
+
+    // 3. Score Multipliers based on Traits
+    const multipliers = {
+        guitar: 1.0,
+        drums: 1.0,
+        bass: 1.0
+    };
+
+    // Check Song Speed (High BPM)
+    const isFastSong = song.bpm > 160;
+    
+    // Lars: Blast Beat Machine
+    // Assuming we check 'traits' array on member objects
+    // Since state structure might vary, let's check safely
+    if (lars && lars.traits && isFastSong) {
+        // Simple check if trait ID exists (assuming data structure from characters.js)
+        const hasBlastTrait = lars.traits.some(t => t.id === 'blast_machine');
+        if (hasBlastTrait) multipliers.drums = 1.5;
+    }
+
+    return {
+        hitWindows,
+        speedModifier,
+        multipliers,
+        avgStamina
+    };
+};
