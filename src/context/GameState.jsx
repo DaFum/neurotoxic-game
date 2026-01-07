@@ -146,12 +146,20 @@ const gameReducer = (state, action) => {
       logger.info('GameState', 'Game Loaded');
 
       // Migration: energy -> catering
-      const loadedState = { ...action.payload };
-      if (loadedState.gigModifiers && loadedState.gigModifiers.energy !== undefined) {
-          loadedState.gigModifiers.catering = loadedState.gigModifiers.energy;
-          delete loadedState.gigModifiers.energy;
+      // Migration + deep-merge saved gigModifiers
+      let loadedState = { ...action.payload };
+      if (loadedState.gigModifiers) {
+          // Migrate legacy key
+          if (loadedState.gigModifiers.energy !== undefined) {
+              loadedState.gigModifiers.catering = loadedState.gigModifiers.energy;
+              delete loadedState.gigModifiers.energy;
+          }
+          // Merge with defaults to preserve new toggles
+          loadedState.gigModifiers = {
+              ...initialState.gigModifiers,
+              ...loadedState.gigModifiers
+          };
       }
-
       return { ...state, ...loadedState };
 
     case 'APPLY_EVENT_DELTA': {
