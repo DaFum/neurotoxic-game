@@ -104,8 +104,9 @@ export const calculateGigFinancials = (gigData, performanceScore, crowdStats, mo
     }
 
     // Check Inventory Availability
-    // Calculate max potential buyers based on inventory (simplified: 1 item per buyer)
-    // Assume shirt is the main limiter for now or total inventory count
+    // Calculate max potential buyers based on inventory (simplified: 1 generic item per buyer).
+    // NOTE: This currently treats all merch types (shirts/hoodies/cds) as interchangeable capacity and does NOT mutate bandInventory.
+    // TODO(economyEngine): Implement per-item merch mix & proper inventory depletion once detailed merch management is in place.
     const totalInventory = (bandInventory?.shirts || 0) + (bandInventory?.hoodies || 0) + (bandInventory?.cds || 0);
     const potentialBuyers = Math.floor(ticketsSold * Math.max(0, buyRate));
     const buyers = Math.min(potentialBuyers, totalInventory);
