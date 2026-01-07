@@ -7,7 +7,6 @@ import { ensureAudioContext } from '../utils/audioEngine';
 
 export const PreGig = () => {
   const { currentGig, changeScene, setSetlist, setlist, gigModifiers, setGigModifiers, player, updatePlayer, triggerEvent, activeEvent, band, updateBand, addToast } = useGameState();
-  const currentModifiers = getGigModifiers(band, gigModifiers);
 
   React.useEffect(() => {
       if (!currentGig) {
