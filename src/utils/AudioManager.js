@@ -1,39 +1,70 @@
 import { Howl, Howler } from 'howler';
 
-class AudioManager {
+class AudioSystem {
     constructor() {
         this.music = null;
         this.sfx = {};
-        
-        // Load preferences or defaults
-        this.musicVolume = parseFloat(localStorage.getItem('neurotoxic_vol_music') || '0.5');
-        this.sfxVolume = parseFloat(localStorage.getItem('neurotoxic_vol_sfx') || '0.5');
-        this.muted = localStorage.getItem('neurotoxic_muted') === 'true';
-
-        // Apply global mute
-        Howler.mute(this.muted);
-        
-        // SFX Preload
-        this.loadSFX();
+        this.musicVolume = 0.5;
+        this.sfxVolume = 0.5;
+        this.muted = false;
+        this.initialized = false;
     }
 
-    loadSFX() {
+    async init() {
+        if (this.initialized) return;
+
+        try {
+            // Load preferences
+            const savedMusicVol = localStorage.getItem('neurotoxic_vol_music');
+            const savedSfxVol = localStorage.getItem('neurotoxic_vol_sfx');
+            const savedMuted = localStorage.getItem('neurotoxic_muted');
+
+            this.musicVolume = savedMusicVol ? parseFloat(savedMusicVol) : 0.5;
+            this.sfxVolume = savedSfxVol ? parseFloat(savedSfxVol) : 0.5;
+            this.muted = savedMuted === 'true';
+
+            // Apply global mute
+            Howler.mute(this.muted);
+
+            // Preload SFX
+            await this.loadSFX();
+
+            this.initialized = true;
+        } catch (error) {
+            console.error('[AudioSystem] Initialization failed:', error);
+            // Graceful fallback: audio might just not play, but app shouldn't crash.
+        }
+    }
+
+    async loadSFX() {
         const sfxUrls = {
             hit: 'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3',
             miss: 'https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3',
             menu: 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3',
-            travel: 'https://assets.mixkit.co/active_storage/sfx/123/123-preview.mp3' // Placeholder engine
+            travel: 'https://assets.mixkit.co/active_storage/sfx/123/123-preview.mp3'
         };
 
-        for (const [key, url] of Object.entries(sfxUrls)) {
-            this.sfx[key] = new Howl({ 
-                src: [url],
-                volume: this.sfxVolume
+        const loadPromises = Object.entries(sfxUrls).map(([key, url]) => {
+            return new Promise((resolve) => {
+                const sound = new Howl({
+                    src: [url],
+                    volume: this.sfxVolume,
+                    onload: () => resolve(),
+                    onloaderror: () => {
+                        console.warn(`[AudioSystem] Failed to load SFX: ${key}`);
+                        resolve(); // Resolve anyway to not block init
+                    }
+                });
+                this.sfx[key] = sound;
             });
-        }
+        });
+
+        await Promise.all(loadPromises);
     }
 
     playMusic(songId) {
+        if (!this.initialized) return;
+
         if (this.music) {
             this.music.stop();
         }
@@ -52,6 +83,7 @@ class AudioManager {
     }
 
     startAmbient() {
+        if (!this.initialized) return;
         // Prevent restarting if already playing ambient
         if (this.music && this.music.loop()) return;
         this.playMusic('ambient');
@@ -62,6 +94,7 @@ class AudioManager {
     }
 
     playSFX(key) {
+        if (!this.initialized) return;
         if (this.sfx[key]) {
             // Update volume in case it changed
             this.sfx[key].volume(this.sfxVolume);
@@ -95,6 +128,19 @@ class AudioManager {
         if (songId === 'ambient') return 'https://assets.mixkit.co/active_storage/sfx/123/123-preview.mp3';
         return 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'; 
     }
+
+    dispose() {
+        this.stopMusic();
+        Howler.unload();
+        this.sfx = {};
+        this.initialized = false;
+    }
 }
 
-export const audioManager = new AudioManager();
+export const audioManager = new AudioSystem();
+// Auto-init for now, or let MainMenu call it?
+// Ideally MainMenu or App calls init.
+// For backward compatibility with existing usage, we can lazy init or call it here.
+// But mostly synchronous calls expect it ready.
+// We will trigger init but not await it here, allowing it to load in background.
+audioManager.init();
