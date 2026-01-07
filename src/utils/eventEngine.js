@@ -156,24 +156,9 @@ export const eventEngine = {
                     if (eff.stat === 'score') delta.flags.score = eff.value;
                     break;
                 case 'item':
-                    // Add item logic
+                    // Add item to band inventory; default to `true` when no explicit value is provided.
                     if (eff.item) {
-                        const currentVal = delta.band.inventory?.[eff.item] ?? 0; // Access needs check vs state or just write to delta?
-                        // Delta structure mirrors state usually but here we are building it.
-                        // We need to know if it's boolean or count.
-                        // For now, assume count if number, bool if boolean in state?
-                        // Or just set value?
-                        // The effect usually says "add X".
-                        // If effect has 'value', use it. Else toggle true?
-
-                        // We need a way to merge deep into band.inventory in applyEventDelta.
-                        // applyEventDelta supports `delta.band.inventory`? Let's check.
-                        // applyEventDelta handles `delta.band.members` and `harmony`.
-                        // It does NOT explicitly handle `inventory` in the snippet I saw.
-                        // I might need to update applyEventDelta too.
-
-                        // Let's assume applyEventDelta can handle generic merge or I add it.
-                        // Constructing delta:
+                        const currentVal = delta.band.inventory?.[eff.item] ?? 0;
                         const val = eff.value !== undefined ? eff.value : true;
                         if (!delta.band.inventory) delta.band.inventory = {};
                         delta.band.inventory[eff.item] = val;
