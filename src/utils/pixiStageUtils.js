@@ -56,6 +56,14 @@ export const RHYTHM_LAYOUT = Object.freeze({
     rhythmOffsetRatio: RHYTHM_OFFSET_RATIO
 });
 
+export const CROWD_LAYOUT = Object.freeze({
+    containerYRatio: 0.5,
+    memberCount: 50,
+    minRadius: 3,
+    radiusVariance: 2,
+    yRangeRatio: 0.1
+});
+
 /**
  * Builds layout metrics for the rhythm lanes.
  * @param {object} params - Layout inputs.

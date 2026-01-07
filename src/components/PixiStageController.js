@@ -1,12 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen';
-import { buildRhythmLayout, calculateCrowdY, calculateNoteY } from '../utils/pixiStageUtils';
+import { buildRhythmLayout, calculateCrowdY, calculateNoteY, CROWD_LAYOUT } from '../utils/pixiStageUtils';
 
-const CROWD_CONTAINER_Y_RATIO = 0.5;
-const CROWD_MEMBER_COUNT = 50;
-const CROWD_MIN_RADIUS = 3;
-const CROWD_RADIUS_VARIANCE = 2;
-const CROWD_Y_RANGE_RATIO = 0.1;
 const NOTE_SPAWN_LEAD_MS = 2000;
 const NOTE_JITTER_RANGE = 10;
 const NOTE_SPRITE_SIZE = 80;
@@ -66,17 +61,8 @@ export class PixiStageController {
                     antialias: true
                 });
 
-                if (this.isDisposed || !this.containerRef.current || !this.app) {
-                    this.dispose();
-                    return;
-                }
-
-                if (!this.containerRef.current) {
-                    this.dispose();
-                    return;
-                }
                 const container = this.containerRef.current;
-                if (!container || !this.app) {
+                if (this.isDisposed || !container || !this.app) {
                     this.dispose();
                     return;
                 }
@@ -125,16 +111,16 @@ export class PixiStageController {
      */
     createCrowd() {
         const crowdContainer = new PIXI.Container();
-        crowdContainer.y = this.app.screen.height * CROWD_CONTAINER_Y_RATIO;
+        crowdContainer.y = this.app.screen.height * CROWD_LAYOUT.containerYRatio;
         this.stageContainer.addChild(crowdContainer);
 
-        for (let i = 0; i < CROWD_MEMBER_COUNT; i += 1) {
+        for (let i = 0; i < CROWD_LAYOUT.memberCount; i += 1) {
             const crowd = new PIXI.Graphics();
-            const radius = CROWD_MIN_RADIUS + Math.random() * CROWD_RADIUS_VARIANCE;
+            const radius = CROWD_LAYOUT.minRadius + Math.random() * CROWD_LAYOUT.radiusVariance;
             crowd.circle(0, 0, radius);
             crowd.fill(0x333333);
             crowd.x = Math.random() * this.app.screen.width;
-            crowd.y = Math.random() * (this.app.screen.height * CROWD_Y_RANGE_RATIO);
+            crowd.y = Math.random() * (this.app.screen.height * CROWD_LAYOUT.yRangeRatio);
             crowd.baseY = crowd.y;
             crowd.radius = radius;
             crowd.currentFillColor = 0x333333;
