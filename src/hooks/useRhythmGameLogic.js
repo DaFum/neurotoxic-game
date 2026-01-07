@@ -86,21 +86,34 @@ export const useRhythmGameLogic = () => {
 
             activeSetlist.forEach(song => {
                 const beatInterval = 60000 / song.bpm;
-                const totalBeats = Math.floor((song.duration * 1000) / beatInterval);
+                // Generate notes only within the song duration
+                const songDurationMs = song.duration * 1000;
+                const totalBeats = Math.floor(songDurationMs / beatInterval);
+
                 for (let i = 0; i < totalBeats; i += 1) {
-                    if (Math.random() > (0.8 - (song.difficulty * 0.1))) {
-                        notes.push({
-                            time: currentTimeOffset + (i * beatInterval),
-                            laneIndex: Math.floor(Math.random() * 3),
-                            hit: false,
-                            visible: true,
-                            songId: song.id
-                        });
+                    const noteTime = currentTimeOffset + (i * beatInterval);
+                    // Ensure we don't exceed duration buffer
+                    if (noteTime < currentTimeOffset + songDurationMs) {
+                        if (Math.random() > (0.8 - (song.difficulty * 0.1))) {
+                            notes.push({
+                                time: noteTime,
+                                laneIndex: Math.floor(Math.random() * 3),
+                                hit: false,
+                                visible: true,
+                                songId: song.id
+                            });
+                        }
                     }
                 }
-                currentTimeOffset += (song.duration * 1000) + 2000;
+                // Add exact song duration to offset, no extra padding between songs if strictness is required
+                // But usually a small gap is nice. The user said "nur die Sekunden dauert wie angegeben".
+                // If setlist has multiple songs, the total duration is sum.
+                // Let's stick to sum of durations.
+                currentTimeOffset += songDurationMs;
             });
             gameStateRef.current.notes = notes;
+            // The total duration of the gig is the end of the last song.
+            // Adjust start time offset (2000ms lead-in) + sum of durations.
             gameStateRef.current.totalDuration = currentTimeOffset;
 
             if (activeSetlist[0].id !== 'jam') {

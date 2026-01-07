@@ -46,14 +46,15 @@ export async function setupAudio() {
 }
 
 // Die eigentliche Generierungs-Logik
-export function startMetalGenerator(song) {
-  if (!isSetup) setupAudio(); // Ensure setup if called before explicit setup
+export async function startMetalGenerator(song) {
+  if (!isSetup) await setupAudio(); // Ensure setup if called before explicit setup
 
-  // Reset
-  if (loop) loop.dispose();
+  // Reset & Cleanup before starting
+  stopAudio();
+  Tone.Transport.cancel(); // Clear previous schedules
+  Tone.Transport.position = 0; // Reset transport time
 
   // 1. BPM Setzen (Diff Logik)
-  // Use song.bpm if available, else fallback logic
   const bpm = song.bpm || (80 + (song.difficulty * 30));
   Tone.Transport.bpm.value = bpm;
 
@@ -62,6 +63,8 @@ export function startMetalGenerator(song) {
 
   // 3. Sequencer Loop
   loop = new Tone.Sequence((time, note) => {
+    if (!guitar || !drumKit) return; // Safety check
+
     // Guitar
     if (note) guitar.triggerAttackRelease(note, "16n", time);
 
@@ -71,6 +74,12 @@ export function startMetalGenerator(song) {
   }, pattern, "16n");
 
   loop.start(0);
+
+  // Ensure context is running (fixes "suspended" state if called after interaction)
+  if (Tone.context.state !== 'running') {
+      await Tone.context.resume();
+  }
+
   Tone.Transport.start();
 }
 

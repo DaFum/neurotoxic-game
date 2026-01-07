@@ -41,8 +41,11 @@ class AudioSystem {
     playMusic(songId) {
         if (!this.initialized) return;
 
+        // Clean up previous instance explicitly
         if (this.music) {
             this.music.stop();
+            this.music.unload(); // Free resources/pool slot
+            this.music = null;
         }
 
         const src = this.getAudioSrc(songId);
@@ -51,7 +54,13 @@ class AudioSystem {
             src: [src],
             html5: true, 
             loop: songId === 'ambient',
-            volume: this.musicVolume
+            volume: this.musicVolume,
+            onplayerror: (id, err) => {
+                console.warn('[AudioSystem] Play error, attempting unlock:', err);
+                this.music.once('unlock', () => {
+                    this.music.play();
+                });
+            }
         });
 
         this.music.play();
@@ -61,7 +70,14 @@ class AudioSystem {
     startAmbient() {
         if (!this.initialized) return;
         // Prevent restarting if already playing ambient
-        if (this.music && this.music.loop()) return;
+        // Check if current music is the ambient track to avoid reloading stream
+        // Note: checking loop() is weak if we change logic, better check source or id.
+        // Assuming single music track architecture for now.
+        const ambientSrc = this.getAudioSrc('ambient');
+        if (this.music && this.music.playing() && this.music._src && this.music._src.includes(ambientSrc)) {
+             return;
+        }
+
         const music = this.playMusic('ambient');
         if (music) {
             music.volume(this.musicVolume * 0.3); // Lower volume for background stream
