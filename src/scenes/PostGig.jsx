@@ -125,9 +125,10 @@ export const PostGig = () => {
           const rawScore = lastGigStats?.score || 0;
           const performanceScore = Math.min(100, Math.max(50, rawScore / 500)); // Rough normalization
           
-          // crowdStats is largely ignored by economyEngine (it calculates fillRate internally based on Fame/Promo),
-          // but we pass an object just in case future logic needs it or purely for consistent API.
-          // The previous 'fillRate' manual calculation was misleading.
+          // NOTE: economyEngine currently derives core gig economics (like fillRate) internally from Fame/Promo.
+          // We still pass a minimal `crowdStats` object as contextual metadata and to keep the API shape stable
+          // for future extensions (e.g., hype-driven bonuses or logging). It does not currently change the core
+          // financial outcome on its own.
           const crowdStats = { hype: lastGigStats?.peakHype || 0 };
           
           // Pass player.fame and lastGigStats
