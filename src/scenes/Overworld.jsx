@@ -62,12 +62,21 @@ export const Overworld = () => {
       // Logic executed after animation
       const node = travelTarget;
       
-      // Deduct Resources
+      // Re-calculate and re-validate costs before deducting
       const dist = Math.floor(Math.sqrt(Math.pow(node.venue.x - 50, 2) + Math.pow(node.venue.y - 50, 2)) * 5) + 50; 
       const fuelLiters = (dist / 100) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM;
       const fuelCost = Math.floor(fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE);
       const foodCost = 3 * EXPENSE_CONSTANTS.FOOD.FAST_FOOD;
       const totalCost = fuelCost + foodCost;
+
+      if (player.money < totalCost) {
+          // This case should be rare, but it's a safeguard.
+          // Maybe show a toast and cancel the gig start.
+          console.error("Travel completed but cannot afford costs. State might be inconsistent.");
+          setIsTraveling(false);
+          setTravelTarget(null);
+          return;
+      }
 
       updatePlayer({
           money: player.money - totalCost,
