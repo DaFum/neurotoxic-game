@@ -181,10 +181,11 @@ export const useRhythmGameLogic = () => {
     useEffect(() => {
         initializeGigState();
 
+        const audio = audioRef.current;
         return () => {
             stopAudio();
-            if (audioRef.current) {
-                audioRef.current.stop();
+            if (audio) {
+                audio.stop();
             }
         };
     }, [initializeGigState]);

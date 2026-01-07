@@ -175,10 +175,6 @@ test('calculateGigFinancials includes catering when enabled', () => {
     // Note: catering replaced energy drinks in refactor
     const gigData = buildGigData();
     
-    const noCatering = calculateGigFinancials(
-        gigData, 80, { hype: 80 }, buildModifiers({ catering: false }), buildInventory(), 100, buildGigStats()
-    );
-    
     const withCatering = calculateGigFinancials(
         gigData, 80, { hype: 80 }, buildModifiers({ catering: true }), buildInventory(), 100, buildGigStats()
     );
