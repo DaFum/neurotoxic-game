@@ -16,6 +16,7 @@ export const Gig = () => {
   // Keyboard Event Handling
   useEffect(() => {
     const handleKeyDown = (e) => {
+        if (e.repeat) return;
         const laneIndex = gameStateRef.current.lanes.findIndex(l => l.key === e.key);
         if (laneIndex !== -1) {
             actions.registerInput(laneIndex, true);
