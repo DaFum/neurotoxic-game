@@ -1,9 +1,10 @@
 import { Howl, Howler } from 'howler';
+import { SoundSynthesizer } from './SoundSynthesizer.js';
 
 class AudioSystem {
     constructor() {
         this.music = null;
-        this.sfx = {};
+        this.synth = new SoundSynthesizer();
         this.musicVolume = 0.5;
         this.sfxVolume = 0.5;
         this.muted = false;
@@ -26,40 +27,15 @@ class AudioSystem {
             // Apply global mute
             Howler.mute(this.muted);
 
-            // Preload SFX
-            await this.loadSFX();
+            // Initialize Synth
+            this.synth.init();
+            this.synth.setVolume(this.sfxVolume);
 
             this.initialized = true;
         } catch (error) {
             console.error('[AudioSystem] Initialization failed:', error);
             // Graceful fallback: audio might just not play, but app shouldn't crash.
         }
-    }
-
-    async loadSFX() {
-        const sfxUrls = {
-            hit: 'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3',
-            miss: 'https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3',
-            menu: 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3',
-            travel: 'https://assets.mixkit.co/active_storage/sfx/123/123-preview.mp3'
-        };
-
-        const loadPromises = Object.entries(sfxUrls).map(([key, url]) => {
-            return new Promise((resolve) => {
-                const sound = new Howl({
-                    src: [url],
-                    volume: this.sfxVolume,
-                    onload: () => resolve(),
-                    onloaderror: () => {
-                        console.warn(`[AudioSystem] Failed to load SFX: ${key}`);
-                        resolve(); // Resolve anyway to not block init
-                    }
-                });
-                this.sfx[key] = sound;
-            });
-        });
-
-        await Promise.all(loadPromises);
     }
 
     playMusic(songId) {
@@ -98,11 +74,7 @@ class AudioSystem {
 
     playSFX(key) {
         if (!this.initialized) return;
-        if (this.sfx[key]) {
-            // Update volume in case it changed
-            this.sfx[key].volume(this.sfxVolume);
-            this.sfx[key].play();
-        }
+        this.synth.play(key);
     }
 
     setMusicVolume(vol) {
@@ -116,8 +88,7 @@ class AudioSystem {
     setSFXVolume(vol) {
         this.sfxVolume = vol;
         localStorage.setItem('neurotoxic_vol_sfx', vol);
-        // Update all SFX instances
-        Object.values(this.sfx).forEach(sound => sound.volume(vol));
+        this.synth.setVolume(vol);
     }
 
     toggleMute() {
@@ -135,7 +106,7 @@ class AudioSystem {
     dispose() {
         this.stopMusic();
         Howler.unload();
-        this.sfx = {};
+        this.synth.dispose();
         this.initialized = false;
     }
 }
