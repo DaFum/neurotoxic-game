@@ -349,6 +349,13 @@ export const GameStateProvider = ({ children }) => {
         }
       }
 
+      // Show outcome feedback for non-game-over event resolutions
+      if (outcomeText || description) {
+        const message = outcomeText && description
+          ? `${outcomeText} — ${description}`
+          : (outcomeText || description);
+        addToast(message, 'info');
+      }
       setActiveEvent(null);
       return { outcomeText, description, result };
     } catch (error) {
