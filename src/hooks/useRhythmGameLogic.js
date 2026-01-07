@@ -2,6 +2,7 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import { useGameState } from '../context/GameState';
 import { calculateGigPhysics, getGigModifiers } from '../utils/simulationUtils';
 import { audioManager } from '../utils/AudioManager';
+import { startMetalGenerator, stopAudio } from '../utils/audioEngine';
 import { buildGigStatsSnapshot, updateGigPerformanceStats } from '../utils/gigStats';
 
 /**
@@ -103,7 +104,10 @@ export const useRhythmGameLogic = () => {
             gameStateRef.current.totalDuration = currentTimeOffset;
 
             if (activeSetlist[0].id !== 'jam') {
-                audioRef.current = audioManager.playMusic(activeSetlist[0].id);
+                // audioRef.current = audioManager.playMusic(activeSetlist[0].id);
+                // Switch to Metal Generator
+                const currentSong = activeSetlist[0];
+                startMetalGenerator(currentSong);
             }
 
             gameStateRef.current.startTime = Date.now();
@@ -117,6 +121,7 @@ export const useRhythmGameLogic = () => {
         initializeGigState();
 
         return () => {
+            stopAudio();
             if (audioRef.current) {
                 audioRef.current.stop();
             }
