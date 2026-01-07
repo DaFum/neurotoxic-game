@@ -333,11 +333,16 @@ export const GameStateProvider = ({ children }) => {
         dispatch({ type: 'APPLY_EVENT_DELTA', payload: delta });
 
         if (delta.flags?.unlock) {
-          const currentUnlocks = JSON.parse(localStorage.getItem('neurotoxic_unlocks') || '[]');
-          if (!currentUnlocks.includes(delta.flags.unlock)) {
-            currentUnlocks.push(delta.flags.unlock);
-            localStorage.setItem('neurotoxic_unlocks', JSON.stringify(currentUnlocks));
-            addToast(`UNLOCKED: ${delta.flags.unlock.toUpperCase()}!`, 'success');
+          try {
+            const currentUnlocks = JSON.parse(localStorage.getItem('neurotoxic_unlocks') || '[]');
+            if (!currentUnlocks.includes(delta.flags.unlock)) {
+              currentUnlocks.push(delta.flags.unlock);
+              localStorage.setItem('neurotoxic_unlocks', JSON.stringify(currentUnlocks));
+              addToast(`UNLOCKED: ${delta.flags.unlock.toUpperCase()}!`, 'success');
+            }
+          } catch (e) {
+            console.error('Failed to save unlock progress:', e);
+            addToast('Error saving unlock progress.', 'error');
           }
         }
 
