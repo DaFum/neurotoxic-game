@@ -48,14 +48,25 @@ export const PreGig = () => {
     }
 
     setGigModifiers(prev => ({ ...prev, [key]: !prev[key] }));
-    updatePlayer({ money: player.money + (isActive ? cost : -cost) });
+    // Removed immediate money deduction to prevent double billing in PostGig
   };
+
+  const calculatedBudget = Object.entries(gigModifiers).reduce((acc, [key, active]) => {
+      if (!active) return acc;
+      const costMap = {
+          soundcheck: 50, promo: 30, merch: 40, energy: 20, guestlist: 60
+      };
+      return acc + (costMap[key] || 0);
+  }, 0);
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-(--void-black) text-white relative">
       <h2 className="text-4xl text-(--toxic-green) font-['Metal_Mania'] mb-4">PREPARATION</h2>
-      <div className="text-xl mb-8 font-mono border-b border-(--toxic-green) pb-2 w-full max-w-2xl text-center">
+      <div className="text-xl mb-2 font-mono border-b border-(--toxic-green) pb-2 w-full max-w-2xl text-center">
         VENUE: {currentGig?.name}
+      </div>
+      <div className="mb-6 font-mono text-sm text-gray-400">
+          ESTIMATED COSTS: <span className="text-red-500">-{calculatedBudget}€</span> (Deducted after show)
       </div>
 
       <div className="grid grid-cols-2 gap-8 w-full max-w-4xl h-[60vh]">

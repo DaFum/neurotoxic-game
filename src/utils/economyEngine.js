@@ -136,26 +136,40 @@ export const calculateGigFinancials = (gigData, performanceScore, crowdStats, mo
 
     // 6. EXPENSES: FOOD & DRINK
     const bandSize = 3; 
-    // Catering logic: If modifier is catering, we pay EXTRA for quality catering or we assume venue pays?
-    // Usually catering modifier means "We bought catering" (better food) -> Costs more.
-    // Or "Venue provided catering" (free)?
-    // Context implies user spends budget on modifiers. So catering modifier = cost.
     let foodCost = bandSize * EXPENSE_CONSTANTS.FOOD.FAST_FOOD; 
     report.expenses.breakdown.push({ label: 'Food & Drinks', value: foodCost, detail: 'Subsistence' });
     report.expenses.total += foodCost;
 
-    if (modifiers.catering) {
-        // Upgrade to Restaurant/Catering quality
-        const cateringCost = bandSize * (EXPENSE_CONSTANTS.FOOD.RESTAURANT - EXPENSE_CONSTANTS.FOOD.FAST_FOOD);
-        report.expenses.breakdown.push({ label: 'Catering Upgrade', value: cateringCost, detail: 'Better food' });
-        report.expenses.total += cateringCost;
+    // Energy Drinks (New Modifier) - Replaces/Augments "Catering" idea
+    if (modifiers.energy) {
+        const energyCost = 20;
+        report.expenses.breakdown.push({ label: 'Energy Drinks', value: energyCost, detail: 'Stamina Boost' });
+        report.expenses.total += energyCost;
     }
 
-    // 7. EXPENSES: PROMO
+    // 7. EXPENSES: BUDGET ITEMS
     if (modifiers.promo) {
-        const promoCost = 50; 
+        const promoCost = 30; // Aligned with PreGig UI
         report.expenses.breakdown.push({ label: 'Social Ads', value: promoCost, detail: 'Promo Campaign' });
         report.expenses.total += promoCost;
+    }
+
+    if (modifiers.merch || modifiers.merchTable) { // Support both keys
+        const merchTableCost = 40; // Aligned with PreGig UI
+        report.expenses.breakdown.push({ label: 'Merch Stand', value: merchTableCost, detail: 'Better Display' });
+        report.expenses.total += merchTableCost;
+    }
+
+    if (modifiers.soundcheck) {
+        const soundcheckCost = 50;
+        report.expenses.breakdown.push({ label: 'Soundcheck', value: soundcheckCost, detail: 'Prep Time' });
+        report.expenses.total += soundcheckCost;
+    }
+
+    if (modifiers.guestlist) {
+        const guestlistCost = 60;
+        report.expenses.breakdown.push({ label: 'Guest List', value: guestlistCost, detail: 'VIP Treatment' });
+        report.expenses.total += guestlistCost;
     }
 
     // 8. SPONSORSHIP BONUSES

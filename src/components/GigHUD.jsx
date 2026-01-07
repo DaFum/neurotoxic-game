@@ -1,10 +1,16 @@
 import React from 'react';
+import { ChatterOverlay } from './ChatterOverlay';
 
 export const GigHUD = ({ stats, onLaneInput }) => {
     const { score, combo, health, overload, isToxicMode, isGameOver } = stats;
 
     return (
         <div className="absolute inset-0 z-30 pointer-events-none">
+            {/* Chatter Overlay Integration */}
+            <div className="absolute top-32 right-4 z-50">
+                <ChatterOverlay />
+            </div>
+
             {/* Input Zones */}
             <div className="absolute inset-0 z-40 flex pb-16 pt-32">
                 {[0, 1, 2].map(laneIndex => (
@@ -18,20 +24,6 @@ export const GigHUD = ({ stats, onLaneInput }) => {
                         onTouchEnd={(e) => { e.preventDefault(); onLaneInput && onLaneInput(laneIndex, false); }}
                     ></div>
                 ))}
-            </div>
-
-            {/* Social Feed Overlay (Meta Layer) */}
-            <div className="absolute top-32 right-4 w-64 bg-black/80 border border-(--toxic-green) p-2 z-10 text-xs font-mono">
-                <div className="text-(--toxic-green) font-bold mb-2 border-b border-gray-700">LIVE FEED 🔴</div>
-                <div className="space-y-1">
-                    <div className="text-gray-400">@metalhead88: BRUTAL! 🔥</div>
-                    <div className="text-gray-400">@grindcore_fan: Faster!!!</div>
-                    <div className="text-(--blood-red)">@hater: Boring riffs...</div>
-                </div>
-                <div className="mt-2 flex justify-between text-(--toxic-green)">
-                    <span>👁️ 2.4k</span>
-                    <span>❤️ 890</span>
-                </div>
             </div>
 
             {/* Stats Overlay */}

@@ -85,13 +85,8 @@ export const eventEngine = {
         }
 
         // Attach linked event if exists
-        if (choice.nextEventId && result.outcome === 'failure') {
-             // Usually bad choices lead to chains, or success leads to chains. 
-             // We need to support `result.nextEventId` in the data object.
-             // Currently `choice.nextEventId` is generic. Let's support `result.nextEventId`.
-        }
-        
-        // If result has specific nextEvent, use it. Else use choice default if any.
+        // If result has specific nextEvent (from skill check), use it.
+        // Else use choice default if any.
         if (!result.nextEventId && choice.nextEventId) {
             result.nextEventId = choice.nextEventId;
         }
