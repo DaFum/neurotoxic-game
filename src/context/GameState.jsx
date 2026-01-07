@@ -317,11 +317,6 @@ export const GameStateProvider = ({ children }) => {
   };
 
   const resolveEvent = (choice) => {
-    if (!choice) {
-      setActiveEvent(null);
-      return { outcomeText: '', description: '', result: null };
-    }
-
     try {
       const { result, delta, outcomeText, description } = resolveEventChoice(choice, {
         player: state.player,
