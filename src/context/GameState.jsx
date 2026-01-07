@@ -3,7 +3,9 @@ import { eventEngine } from '../utils/eventEngine';
 import { resolveEventChoice } from '../utils/eventResolver';
 import { MapGenerator } from '../utils/mapGenerator';
 import { applyEventDelta } from '../utils/gameStateUtils';
+import { calculateDailyUpdates } from '../utils/simulationUtils';
 import { CHARACTERS } from '../data/characters';
+import { logger } from '../utils/logger';
 
 // Initial State Definition
 const initialState = {
@@ -77,21 +79,26 @@ const initialState = {
     promo: false,
     soundcheck: false,
     merch: false,
-    energy: false,
+    catering: false,
     guestlist: false
   }
 };
 
 // Reducer Function
 const gameReducer = (state, action) => {
+  // logger.debug('GameState', `Action: ${action.type}`, action.payload); // Too spammy? Maybe INFO for major actions
+
   switch (action.type) {
     case 'CHANGE_SCENE':
+      logger.info('GameState', `Scene Change: ${state.currentScene} -> ${action.payload}`);
       return { ...state, currentScene: action.payload };
     
     case 'UPDATE_PLAYER':
+      logger.debug('GameState', 'Update Player', action.payload);
       return { ...state, player: { ...state.player, ...action.payload } };
     
     case 'UPDATE_BAND':
+      logger.debug('GameState', 'Update Band', action.payload);
       return { ...state, band: { ...state.band, ...action.payload } };
     
     case 'UPDATE_SOCIAL':
@@ -101,12 +108,15 @@ const gameReducer = (state, action) => {
       return { ...state, settings: { ...state.settings, ...action.payload } };
     
     case 'SET_MAP':
+      logger.info('GameState', 'Map Generated');
       return { ...state, gameMap: action.payload };
     
     case 'SET_GIG':
+      logger.info('GameState', 'Set Current Gig', action.payload?.name);
       return { ...state, currentGig: action.payload };
     
     case 'START_GIG':
+      logger.info('GameState', 'Starting Gig Sequence', action.payload?.name);
       return { ...state, currentGig: action.payload, currentScene: 'PREGIG' };
 
     case 'SET_SETLIST':
@@ -116,6 +126,7 @@ const gameReducer = (state, action) => {
       return { ...state, lastGigStats: action.payload };
     
     case 'SET_ACTIVE_EVENT':
+      if (action.payload) logger.info('GameState', 'Event Triggered', action.payload.title);
       return { ...state, activeEvent: action.payload };
     
     case 'ADD_TOAST':
@@ -124,13 +135,35 @@ const gameReducer = (state, action) => {
     case 'REMOVE_TOAST':
       return { ...state, toasts: state.toasts.filter(t => t.id !== action.payload) };
     
-    case 'SET_GIG_MODIFIERS':
-      return { ...state, gigModifiers: action.payload };
+    case 'SET_GIG_MODIFIERS': {
+      const updates = (typeof action.payload === 'function'
+        ? action.payload(state.gigModifiers)
+        : action.payload) || {};
+      return { ...state, gigModifiers: { ...state.gigModifiers, ...updates } };
+    }
       
     case 'LOAD_GAME':
-      return { ...state, ...action.payload };
+      logger.info('GameState', 'Game Loaded');
+
+      // Migration: energy -> catering
+      // Migration + deep-merge saved gigModifiers
+      let loadedState = { ...action.payload };
+      if (loadedState.gigModifiers) {
+          // Migrate legacy key
+          if (loadedState.gigModifiers.energy !== undefined) {
+              loadedState.gigModifiers.catering = loadedState.gigModifiers.energy;
+              delete loadedState.gigModifiers.energy;
+          }
+          // Merge with defaults to preserve new toggles
+          loadedState.gigModifiers = {
+              ...initialState.gigModifiers,
+              ...loadedState.gigModifiers
+          };
+      }
+      return { ...state, ...loadedState };
 
     case 'APPLY_EVENT_DELTA': {
+        logger.info('GameState', 'Applying Event Delta', action.payload);
         return applyEventDelta(state, action.payload);
     }
     
@@ -149,42 +182,9 @@ const gameReducer = (state, action) => {
     }
 
     case 'ADVANCE_DAY': {
-        const nextPlayer = { ...state.player, day: state.player.day + 1 };
-        const nextBand = { ...state.band };
-        const nextSocial = { ...state.social };
-
-        // 1. Costs
-        // Rent/Food
-        const dailyCost = 25; 
-        nextPlayer.money -= dailyCost;
-
-        // 2. Mood Drift
-        // Drift towards 50
-        nextBand.members = nextBand.members.map(m => {
-            let mood = m.mood;
-            if (mood > 50) mood -= 2;
-            else if (mood < 50) mood += 2;
-            return { ...m, mood };
-        });
-
-        // 3. Social Decay
-        // Viral decay
-        if (nextSocial.viral > 0) nextSocial.viral -= 1;
-
-        // 4. Passive Effects
-        if (nextBand.harmonyRegenTravel) {
-            nextBand.harmony = Math.min(100, nextBand.harmony + 5);
-        }
-        if (nextPlayer.passiveFollowers) {
-             // Passive followers currently funnel into Instagram only
-             nextSocial.instagram = (nextSocial.instagram || 0) + nextPlayer.passiveFollowers;
-        }
-        
-        // Return state with toast handled by side effect or UI? 
-        // We can't dispatch side effects here easily.
-        // We will return the state, consumer triggers toast.
-        
-        return { ...state, player: nextPlayer, band: nextBand, social: nextSocial };
+        const { player, band, social } = calculateDailyUpdates(state);
+        logger.info('GameState', `Day Advanced to ${player.day}`);
+        return { ...state, player, band, social };
     }
 
     default:
@@ -227,22 +227,8 @@ export const GameStateProvider = ({ children }) => {
   const setSetlist = (list) => dispatch({ type: 'SET_SETLIST', payload: list });
   const setLastGigStats = (stats) => dispatch({ type: 'SET_LAST_GIG_STATS', payload: stats });
   const setActiveEvent = (event) => dispatch({ type: 'SET_ACTIVE_EVENT', payload: event });
-  const setGigModifiers = (mods) => {
-      // If passing function, handle it (useState style) or just value
-      if (typeof mods === 'function') {
-          // This is tricky with useReducer as we don't have sync access to state in the same way 
-          // unless we read it from state.gigModifiers
-          // But consumers might expect (prev => ...)
-          // For now assume direct object or handle simple merge if needed.
-          // Simplification: Consumers pass new object.
-          // But looking at existing usage: setGigModifiers(prev => ...)
-          // We need to support that pattern or refactor consumers.
-          // Let's refactor the wrapper to support it.
-          const newMods = mods(state.gigModifiers);
-          dispatch({ type: 'SET_GIG_MODIFIERS', payload: newMods });
-      } else {
-          dispatch({ type: 'SET_GIG_MODIFIERS', payload: mods });
-      }
+  const setGigModifiers = (payload) => {
+      dispatch({ type: 'SET_GIG_MODIFIERS', payload });
   };
 
   const addToast = (message, type = 'info') => {
@@ -275,10 +261,12 @@ export const GameStateProvider = ({ children }) => {
     const saveData = { ...state, timestamp: Date.now() };
     try {
         localStorage.setItem('neurotoxic_v3_save', JSON.stringify(saveData));
-        alert("GAME SAVED!");
+        addToast("GAME SAVED!", 'success');
+        logger.info('System', 'Game Saved Successfully');
     } catch (e) {
         console.error("Save failed", e);
-        alert("Save failed!");
+        logger.error('System', 'Save Failed', e);
+        addToast("Save failed!", 'error');
     }
   };
 
@@ -294,7 +282,7 @@ export const GameStateProvider = ({ children }) => {
             
             if (missingKeys.length > 0) {
                 console.error("Corrupt Save File: Missing keys", missingKeys);
-                alert("Save file is corrupt or outdated. Starting fresh.");
+                addToast("Save file is corrupt or outdated. Starting fresh.", 'error');
                 return false;
             }
 
@@ -310,6 +298,14 @@ export const GameStateProvider = ({ children }) => {
 
   // Event System Integration
   const triggerEvent = (category, triggerPoint = null) => {
+    // Harte Regel: Events nur in Overworld/PreGig/PostGig, oder wenn explizit erlaubt (z.B. Pause)
+    // "GIG" scene should not be interrupted unless critical logic allows it.
+    if (state.currentScene === 'GIG') {
+        // Queue event instead? Or just return false.
+        // For now, return false to prevent interruption.
+        return false;
+    }
+
     // Pass full state context for flags/cooldowns
     const context = { 
         player: state.player, 
@@ -337,56 +333,61 @@ export const GameStateProvider = ({ children }) => {
   };
 
   const resolveEvent = (choice) => {
+    // 1. Validation
     if (!choice) {
       setActiveEvent(null);
       return { outcomeText: '', description: '', result: null };
     }
 
     try {
+      // 2. Logic Execution
       const { result, delta, outcomeText, description } = resolveEventChoice(choice, {
         player: state.player,
         band: state.band,
         social: state.social
       });
 
+      // 3. State Application
       if (delta) {
         dispatch({ type: 'APPLY_EVENT_DELTA', payload: delta });
 
+        // Unlocks
         if (delta.flags?.unlock) {
-          let currentUnlocks = [];
           try {
-            const parsed = JSON.parse(localStorage.getItem('neurotoxic_unlocks') || '[]');
-            if (Array.isArray(parsed)) {
-              currentUnlocks = parsed;
+            const currentUnlocks = JSON.parse(localStorage.getItem('neurotoxic_unlocks') || '[]');
+            if (Array.isArray(currentUnlocks) && !currentUnlocks.includes(delta.flags.unlock)) {
+              currentUnlocks.push(delta.flags.unlock);
+              localStorage.setItem('neurotoxic_unlocks', JSON.stringify(currentUnlocks));
+              addToast(`UNLOCKED: ${delta.flags.unlock.toUpperCase()}!`, 'success');
             }
           } catch (e) {
             console.error('Failed to parse unlocks from localStorage:', e);
           }
-          if (!currentUnlocks.includes(delta.flags.unlock)) {
-            currentUnlocks.push(delta.flags.unlock);
-            localStorage.setItem('neurotoxic_unlocks', JSON.stringify(currentUnlocks));
-            addToast(`UNLOCKED: ${delta.flags.unlock.toUpperCase()}!`, 'success');
-          }
         }
 
+        // Game Over - Early Exit
         if (delta.flags?.gameOver) {
           addToast(`GAME OVER: ${description}`, 'error');
           changeScene('GAMEOVER');
           setActiveEvent(null);
           return { outcomeText, description, result };
-            setActiveEvent(null);
-            return { outcomeText: 'An error occurred.', description: 'Resolution failed.', result: null };
-          }
-      // Show outcome feedback for non-game-over event resolutions
+        }
+      }
+
+      // 4. Feedback (Success Path)
       if (outcomeText || description) {
         const message = outcomeText && description
           ? `${outcomeText} — ${description}`
-          : (outcomeText || description);
+          : outcomeText || description;
         addToast(message, 'info');
       }
+
+      // 5. Cleanup
       setActiveEvent(null);
       return { outcomeText, description, result };
+
     } catch (error) {
+      // 6. Error Handling
       console.error('[Event] Failed to resolve event choice:', error);
       addToast('EVENT ERROR: Resolution failed.', 'error');
       setActiveEvent(null);

@@ -10,6 +10,7 @@ import { GameOver } from './scenes/GameOver';
 import { HUD } from './ui/HUD';
 import { EventModal } from './ui/EventModal';
 import { ToastOverlay } from './ui/ToastOverlay';
+import { DebugLogViewer } from './ui/DebugLogViewer';
 import { TutorialManager } from './components/TutorialManager';
 import { GameStateProvider, useGameState } from './context/GameState';
 
@@ -50,6 +51,7 @@ function GameContent() {
       
       <ToastOverlay />
       <TutorialManager />
+      <DebugLogViewer />
       
       {/* Global Event Modal Overlay */}
       {activeEvent && (

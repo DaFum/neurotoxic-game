@@ -2,6 +2,7 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import { useGameState } from '../context/GameState';
 import { calculateGigPhysics, getGigModifiers } from '../utils/simulationUtils';
 import { audioManager } from '../utils/AudioManager';
+import { startMetalGenerator, stopAudio } from '../utils/audioEngine';
 import { buildGigStatsSnapshot, updateGigPerformanceStats } from '../utils/gigStats';
 
 /**
@@ -11,7 +12,7 @@ import { buildGigStatsSnapshot, updateGigPerformanceStats } from '../utils/gigSt
 export const useRhythmGameLogic = () => {
     const { 
         setlist, band, activeEvent, hasUpgrade, setLastGigStats, 
-        addToast, gameMap, player, changeScene 
+        addToast, gameMap, player, changeScene, gigModifiers
     } = useGameState();
 
     const NOTE_MISS_WINDOW_MS = 300;
@@ -24,6 +25,7 @@ export const useRhythmGameLogic = () => {
     const [overload, setOverload] = useState(0);
     const [isToxicMode, setIsToxicMode] = useState(false);
     const [isGameOver, setIsGameOver] = useState(false);
+    const gameOverTimerRef = useRef(null);
 
     // High-Frequency Game State (Ref)
     const gameStateRef = useRef({
@@ -65,44 +67,110 @@ export const useRhythmGameLogic = () => {
         hasInitializedRef.current = true;
 
         try {
-            const activeModifiers = getGigModifiers(band);
+            const activeModifiers = getGigModifiers(band, gigModifiers);
             const physics = calculateGigPhysics(band, { bpm: 120 });
             const layer = gameMap?.nodes[player.currentNodeId]?.layer || 0;
             const speedMult = 1.0 + (layer * 0.05);
 
-            gameStateRef.current.modifiers = activeModifiers;
+            // Use band-aware modifiers computed by getGigModifiers (already merged with gigModifiers)
+            const mergedModifiers = activeModifiers;
+            gameStateRef.current.modifiers = mergedModifiers;
             gameStateRef.current.speed = 500 * speedMult * physics.speedModifier;
-            if (activeModifiers.drumSpeedMult > 1.0) gameStateRef.current.speed *= activeModifiers.drumSpeedMult;
 
-            gameStateRef.current.lanes[0].hitWindow = physics.hitWindows.guitar;
-            gameStateRef.current.lanes[1].hitWindow = physics.hitWindows.drums;
-            gameStateRef.current.lanes[2].hitWindow = physics.hitWindows.bass;
+            // Apply Modifiers
+            if (mergedModifiers.drumSpeedMult > 1.0) gameStateRef.current.speed *= mergedModifiers.drumSpeedMult;
+
+            // PreGig Modifiers
+            let hitWindowBonus = mergedModifiers.hitWindowBonus || 0;
+            if (mergedModifiers.soundcheck) hitWindowBonus += 30; // Soundcheck bonus
+
+            if (mergedModifiers.catering) {
+                // Energy boost: easier physics? Or just stamina?
+                // Already handled in physics via band stats if we mutated band, but here we can apply direct overrides
+                // For now, let's say it counteracts speed drag
+                gameStateRef.current.speed = 500 * speedMult; // Reset drag
+            }
+
+            gameStateRef.current.lanes[0].hitWindow = physics.hitWindows.guitar + hitWindowBonus;
+            gameStateRef.current.lanes[1].hitWindow = physics.hitWindows.drums + hitWindowBonus;
+            gameStateRef.current.lanes[2].hitWindow = physics.hitWindows.bass + hitWindowBonus;
 
             const notes = [];
             let currentTimeOffset = 2000;
             const activeSetlist = setlist.length > 0 ? setlist : [{ id: 'jam', name: 'Jam', bpm: 120, duration: 60, difficulty: 2 }];
 
-            activeSetlist.forEach(song => {
+            // Only generate notes for the active song (first in list for now, unless we implement full setlist sequencing)
+            // The audio engine plays the first song. Notes should match.
+            // If the intention is to play ONLY one song per gig scene invocation:
+            const songsToPlay = [activeSetlist[0]];
+
+            songsToPlay.forEach(song => {
                 const beatInterval = 60000 / song.bpm;
-                const totalBeats = Math.floor((song.duration * 1000) / beatInterval);
+                // Generate notes only within the song duration
+                const songDurationMs = song.duration * 1000;
+                const totalBeats = Math.floor(songDurationMs / beatInterval);
+
+                // Deterministic Pattern Generator based on difficulty
+                const diff = song.difficulty || 2;
+                // Pattern length 16 beats. 1 = Note, 0 = Rest.
+                // Seed-like behavior using beat index.
+
                 for (let i = 0; i < totalBeats; i += 1) {
-                    if (Math.random() > (0.8 - (song.difficulty * 0.1))) {
-                        notes.push({
-                            time: currentTimeOffset + (i * beatInterval),
-                            laneIndex: Math.floor(Math.random() * 3),
-                            hit: false,
-                            visible: true,
-                            songId: song.id
-                        });
+                    const noteTime = currentTimeOffset + (i * beatInterval);
+                    // Ensure we don't exceed duration buffer
+                    if (noteTime < currentTimeOffset + songDurationMs) {
+
+                        // Difficulty Scaling: Higher diff = more density
+                        // Simple modulo-based patterns for "musicality"
+                        let shouldSpawn = false;
+                        const beatInBar = i % 4;
+
+                        if (diff <= 2) {
+                            // Easy: Downbeats (1) and sometimes 3
+                            shouldSpawn = (beatInBar === 0) || (i % 8 === 4 && Math.random() > 0.2);
+                        } else if (diff <= 4) {
+                            // Medium: Downbeats + Offbeats
+                            shouldSpawn = (beatInBar === 0 || beatInBar === 2) || (Math.random() > 0.6);
+                        } else {
+                            // Hard: Chaos / Stream
+                            shouldSpawn = (Math.random() > 0.3); // 70% density
+                        }
+
+                        if (shouldSpawn) {
+                            // Lane selection based on beat index to feel rhythmic (not pure random)
+                            // e.g. 0 -> Lane 1 (Kick/Bass), 1 -> Lane 0 (Guitar), ...
+                            // Deterministic lane map
+                            const laneMap = [1, 0, 2, 0];
+                            // Add some variation
+                            let laneIndex = laneMap[i % 4];
+                            if (diff > 3 && Math.random() > 0.7) laneIndex = Math.floor(Math.random() * 3);
+
+                            notes.push({
+                                time: noteTime,
+                                laneIndex: laneIndex,
+                                hit: false,
+                                visible: true,
+                                songId: song.id
+                            });
+                        }
                     }
                 }
-                currentTimeOffset += (song.duration * 1000) + 2000;
+                // Add exact song duration to offset, no extra padding between songs if strictness is required
+                // But usually a small gap is nice. The user said "nur die Sekunden dauert wie angegeben".
+                // If setlist has multiple songs, the total duration is sum.
+                // Let's stick to sum of durations.
+                currentTimeOffset += songDurationMs;
             });
             gameStateRef.current.notes = notes;
+            // The total duration of the gig is the end of the last song.
+            // Adjust start time offset (2000ms lead-in) + sum of durations.
             gameStateRef.current.totalDuration = currentTimeOffset;
 
             if (activeSetlist[0].id !== 'jam') {
-                audioRef.current = audioManager.playMusic(activeSetlist[0].id);
+                // audioRef.current = audioManager.playMusic(activeSetlist[0].id);
+                // Switch to Metal Generator
+                const currentSong = activeSetlist[0];
+                startMetalGenerator(currentSong);
             }
 
             gameStateRef.current.startTime = Date.now();
@@ -110,14 +178,16 @@ export const useRhythmGameLogic = () => {
         } catch (error) {
             console.error('[useRhythmGameLogic] Failed to initialize gig state.', error);
         }
-    }, [band, gameMap?.nodes, player.currentNodeId, setlist]);
+    }, [band, gameMap?.nodes, player.currentNodeId, setlist, gigModifiers]);
 
     useEffect(() => {
         initializeGigState();
 
+        const audio = audioRef.current;
         return () => {
-            if (audioRef.current) {
-                audioRef.current.stop();
+            stopAudio();
+            if (audio) {
+                audio.stop();
             }
         };
     }, [initializeGigState]);
@@ -135,16 +205,19 @@ export const useRhythmGameLogic = () => {
 
     /**
      * Applies a miss penalty and updates state/refs.
+     * @param {number} count - Number of misses to process (default 1)
      * @returns {void}
      */
-    const handleMiss = useCallback(() => {
+    const handleMiss = useCallback((count = 1) => {
+        if (count <= 0) return;
+
         setCombo(0);
         gameStateRef.current.combo = 0;
         setOverload(o => {
-            const next = Math.max(0, o - 5);
+            const next = Math.max(0, o - (5 * count));
             gameStateRef.current.overload = next;
             const updatedStats = updateGigPerformanceStats(
-                { ...gameStateRef.current.stats, misses: gameStateRef.current.stats.misses + 1 },
+                { ...gameStateRef.current.stats, misses: gameStateRef.current.stats.misses + count },
                 { combo: gameStateRef.current.combo, overload: next }
             );
             gameStateRef.current.stats = updatedStats;
@@ -152,18 +225,26 @@ export const useRhythmGameLogic = () => {
         });
         audioManager.playSFX('miss');
         
-        const decay = hasUpgrade('bass_sansamp') ? 3 : 5;
+        const decayPerMiss = hasUpgrade('bass_sansamp') ? 3 : 5;
         setHealth(h => {
-            const next = Math.max(0, h - decay);
+            const next = Math.max(0, h - (decayPerMiss * count));
             if (next <= 0 && !gameStateRef.current.isGameOver) {
                 setIsGameOver(true);
                 gameStateRef.current.isGameOver = true;
                 addToast('BAND COLLAPSED', 'error');
+
+                // Schedule exit from Gig if failed (Softlock fix)
+                if (!gameOverTimerRef.current) {
+                    gameOverTimerRef.current = setTimeout(() => {
+                        setLastGigStats(buildGigStatsSnapshot(gameStateRef.current.score, gameStateRef.current.stats, gameStateRef.current.toxicTimeTotal));
+                        changeScene('POSTGIG');
+                    }, 4000);
+                }
             }
             gameStateRef.current.health = next;
             return next;
         });
-    }, [addToast, hasUpgrade]);
+    }, [addToast, changeScene, hasUpgrade, setLastGigStats]);
 
     /**
      * Attempts to register a hit for the active lane.
@@ -195,6 +276,9 @@ export const useRhythmGameLogic = () => {
             if (laneIndex === 1 && hasUpgrade('drum_trigger')) points = 120;
             if (laneIndex === 0) points *= (state.modifiers.guitarScoreMult || 1.0);
             
+            // Guestlist Effect: +20% score
+            if (state.modifiers.guestlist) points *= 1.2;
+
             let finalScore = points + (combo * 10);
             if (toxicModeActive) finalScore *= 4;
 
@@ -283,14 +367,19 @@ export const useRhythmGameLogic = () => {
             return;
         }
 
+        let missCount = 0;
         state.notes.forEach(note => {
             if (note.visible && !note.hit) {
                 if (elapsed > note.time + NOTE_MISS_WINDOW_MS) {
                     note.visible = false;
-                    handleMiss();
+                    missCount++;
                 }
             }
         });
+
+        if (missCount > 0) {
+            handleMiss(missCount);
+        }
     }, [activeEvent, changeScene, handleMiss, isGameOver, isToxicMode, setLastGigStats]);
 
     // Input Handlers

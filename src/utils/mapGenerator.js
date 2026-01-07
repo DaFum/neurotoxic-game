@@ -1,5 +1,5 @@
 // Generates a directed acyclic graph (DAG) for the tour
-import { ALL_VENUES } from '../data/venues';
+import { ALL_VENUES } from '../data/venues.js';
 
 export class MapGenerator {
   constructor(seed) {

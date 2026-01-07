@@ -1,3 +1,5 @@
+import { logger } from './logger.js';
+
 // Constants for the Economic System
 export const INCOME_CONSTANTS = {
     MERCH: {
@@ -40,25 +42,10 @@ export const EXPENSE_CONSTANTS = {
 };
 
 /**
- * Calculates the full financial breakdown of a gig with Fame Scaling and Hype bonuses.
- * @param {object} gigData - { capacity, price, pay (guarantee), dist, diff }
- * @param {number} performanceScore - 0 to 100
- * @param {object} crowdStats - { hype (0-100) }
- * @param {object} modifiers - { merchTable: bool, promo: bool, catering: bool }
- * @param {object} bandInventory - { shirts, hoodies, etc }
- * @param {number} playerFame - Total player fame
- * @param {object} gigStats - Detailed gig stats (misses, peakHype, etc)
+ * Calculates ticket sales revenue and attendance.
  */
-export const calculateGigFinancials = (gigData, performanceScore, crowdStats, modifiers, bandInventory, playerFame, gigStats) => {
-    const report = {
-        income: { total: 0, breakdown: [] },
-        expenses: { total: 0, breakdown: [] },
-        net: 0
-    };
-
-    // 1. TICKET SALES LOGIC (FAME SCALING)
-    // Base draw is percentage of capacity based on difficulty (harder = more niche initially?)
-    // Actually simpler: Base draw is ~30%. Fame fills the rest.
+const calculateTicketIncome = (gigData, playerFame, modifiers) => {
+    // Base draw is ~30%. Fame fills the rest.
     const baseDrawRatio = 0.3;
     const fameRatio = Math.min(1.0, playerFame / (gigData.capacity * 10)); // Fame needs to be ~10x capacity to fill it easily
     let fillRate = baseDrawRatio + (fameRatio * 0.7); 
@@ -69,7 +56,6 @@ export const calculateGigFinancials = (gigData, performanceScore, crowdStats, mo
     // Price Sensitivity: Higher price reduces attendance slightly unless Fame is very high
     if (gigData.price > 15) {
         const pricePenalty = (gigData.price - 15) * 0.02; // -2% per Euro over 15
-        // High fame mitigates penalty
         const mitigation = fameRatio * 0.5;
         fillRate -= Math.max(0, pricePenalty - mitigation);
     }
@@ -77,36 +63,36 @@ export const calculateGigFinancials = (gigData, performanceScore, crowdStats, mo
     fillRate = Math.min(1.0, Math.max(0.1, fillRate)); // Clamp 10% - 100%
 
     const ticketsSold = Math.floor(gigData.capacity * fillRate);
-    const ticketRevenue = ticketsSold * gigData.price;
-    report.income.breakdown.push({ label: 'Ticket Sales', value: ticketRevenue, detail: `${ticketsSold} / ${gigData.capacity} sold` });
-    report.income.total += ticketRevenue;
+    const revenue = ticketsSold * gigData.price;
 
-    // 2. GUARANTEE (If any)
-    if (gigData.pay > 0) {
-        report.income.breakdown.push({ label: 'Guarantee', value: gigData.pay, detail: 'Fixed fee' });
-        report.income.total += gigData.pay;
-    }
+    return {
+        revenue,
+        ticketsSold,
+        breakdownItem: { label: 'Ticket Sales', value: revenue, detail: `${ticketsSold} / ${gigData.capacity} sold` }
+    };
+};
 
-    // 3. MERCH SALES (HYPE SCALING & PENALTIES)
-    // Base buy rate scales with crowd hype (score)
+/**
+ * Calculates merch sales revenue and costs.
+ */
+const calculateMerchIncome = (ticketsSold, performanceScore, gigStats, modifiers, bandInventory) => {
     let buyRate = 0.10 + (performanceScore / 100) * 0.20; // 10% - 30%
+    const breakdownItems = [];
+
     if (performanceScore >= 95) {
         buyRate *= 2.0; // S-Rank Bonus
-        report.income.breakdown.push({ label: 'HYPE BONUS', value: 0, detail: 'Merch frenzy (S-Rank)!' });
+        breakdownItems.push({ label: 'HYPE BONUS', value: 0, detail: 'Merch frenzy (S-Rank)!' });
     }
-    if (modifiers.merchTable) buyRate += 0.10; // Boost from table
+
+    const hasMerch = modifiers.merch || modifiers.merchTable;
+    if (hasMerch) buyRate += 0.10; // Boost from table
     
-    // Penalty: Misses drive people away (1% per miss)
+    // Penalty: Misses drive people away
     if (gigStats && gigStats.misses > 0) {
         const missPenalty = Math.min(buyRate, gigStats.misses * 0.01);
         buyRate -= missPenalty;
-        // report.income.breakdown.push({ label: 'Sloppy Play', value: 0, detail: `-${(missPenalty*100).toFixed(1)}% Merch Interest` });
     }
 
-    // Check Inventory Availability
-    // Calculate max potential buyers based on inventory (simplified: 1 generic item per buyer).
-    // NOTE: This currently treats all merch types (shirts/hoodies/cds) as interchangeable capacity and does NOT mutate bandInventory.
-    // TODO(economyEngine): Implement per-item merch mix & proper inventory depletion once detailed merch management is in place.
     const totalInventory = (bandInventory?.shirts || 0) + (bandInventory?.hoodies || 0) + (bandInventory?.cds || 0);
     const potentialBuyers = Math.floor(ticketsSold * Math.max(0, buyRate));
     const buyers = Math.min(potentialBuyers, totalInventory);
@@ -117,48 +103,117 @@ export const calculateGigFinancials = (gigData, performanceScore, crowdStats, mo
     const merchRevenue = buyers * merchAvgRevenue;
     const merchCost = buyers * merchAvgCost;
 
-    report.income.breakdown.push({ label: 'Merch Sales', value: merchRevenue, detail: `${buyers} buyers` });
-    report.income.total += merchRevenue;
-    
-    report.expenses.breakdown.push({ label: 'Merch Restock', value: merchCost, detail: 'COGS' });
-    report.expenses.total += merchCost;
+    breakdownItems.push({ label: 'Merch Sales', value: merchRevenue, detail: `${buyers} buyers` });
 
-    // 4. BAR CUT (15% of tickets sold * 5€ avg spend * 15% cut)
-    const barRevenue = Math.floor(ticketsSold * 5 * 0.15);
+    return {
+        revenue: merchRevenue,
+        cost: merchCost,
+        breakdownItems,
+        costItem: { label: 'Merch Restock', value: merchCost, detail: 'COGS' }
+    };
+};
+
+/**
+ * Calculates expenses for the gig.
+ */
+const calculateGigExpenses = (gigData, modifiers) => {
+    const expenses = { total: 0, breakdown: [] };
+
+    // Transport
+    const fuelLiters = (gigData.dist || 100) / 100 * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM;
+    const fuelCost = Math.floor(fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE);
+    expenses.breakdown.push({ label: 'Fuel', value: fuelCost, detail: `${gigData.dist || 100}km` });
+    expenses.total += fuelCost;
+
+    // Food & Drink
+    const bandSize = 3; 
+    const foodCost = bandSize * EXPENSE_CONSTANTS.FOOD.FAST_FOOD;
+    expenses.breakdown.push({ label: 'Food & Drinks', value: foodCost, detail: 'Subsistence' });
+    expenses.total += foodCost;
+
+    // Modifiers (Budget items)
+    if (modifiers.catering) {
+        const cateringCost = 20;
+        expenses.breakdown.push({ label: 'Catering / Energy', value: cateringCost, detail: 'Stamina Boost' });
+        expenses.total += cateringCost;
+    }
+
+    if (modifiers.promo) {
+        const promoCost = 30;
+        expenses.breakdown.push({ label: 'Social Ads', value: promoCost, detail: 'Promo Campaign' });
+        expenses.total += promoCost;
+    }
+
+    const hasMerch = modifiers.merch || modifiers.merchTable;
+    if (hasMerch) {
+        const merchTableCost = 40;
+        expenses.breakdown.push({ label: 'Merch Stand', value: merchTableCost, detail: 'Better Display' });
+        expenses.total += merchTableCost;
+    }
+
+    if (modifiers.soundcheck) {
+        const soundcheckCost = 50;
+        expenses.breakdown.push({ label: 'Soundcheck', value: soundcheckCost, detail: 'Prep Time' });
+        expenses.total += soundcheckCost;
+    }
+
+    if (modifiers.guestlist) {
+        const guestlistCost = 60;
+        expenses.breakdown.push({ label: 'Guest List', value: guestlistCost, detail: 'VIP Treatment' });
+        expenses.total += guestlistCost;
+    }
+
+    return expenses;
+};
+
+/**
+ * Calculates the full financial breakdown of a gig with Fame Scaling and Hype bonuses.
+ * @param {object} gigData - { capacity, price, pay (guarantee), dist, diff }
+ * @param {number} performanceScore - 0 to 100
+ * @param {object} crowdStats - { hype (0-100) }
+ * @param {object} modifiers - { merch: bool, promo: bool, catering: bool, soundcheck: bool, guestlist: bool }
+ * @param {object} bandInventory - { shirts, hoodies, etc }
+ * @param {number} playerFame - Total player fame
+ * @param {object} gigStats - Detailed gig stats (misses, peakHype, etc)
+ */
+export const calculateGigFinancials = (gigData, performanceScore, crowdStats, modifiers, bandInventory, playerFame, gigStats) => {
+    logger.debug('Economy', 'Calculating Gig Financials', { gig: gigData.name, score: performanceScore, fame: playerFame });
+
+    const report = {
+        income: { total: 0, breakdown: [] },
+        expenses: { total: 0, breakdown: [] },
+        net: 0
+    };
+
+    // 1. Ticket Sales
+    const tickets = calculateTicketIncome(gigData, playerFame, modifiers);
+    report.income.breakdown.push(tickets.breakdownItem);
+    report.income.total += tickets.revenue;
+
+    // 2. Guarantee
+    if (gigData.pay > 0) {
+        report.income.breakdown.push({ label: 'Guarantee', value: gigData.pay, detail: 'Fixed fee' });
+        report.income.total += gigData.pay;
+    }
+
+    // 3. Merch Sales
+    const merch = calculateMerchIncome(tickets.ticketsSold, performanceScore, gigStats, modifiers, bandInventory);
+    report.income.breakdown.push(...merch.breakdownItems);
+    report.income.total += merch.revenue;
+    report.expenses.breakdown.push(merch.costItem);
+    report.expenses.total += merch.cost;
+
+    // 4. Bar Cut
+    const barRevenue = Math.floor(tickets.ticketsSold * 5 * 0.15);
     report.income.breakdown.push({ label: 'Bar Cut', value: barRevenue, detail: '15% of Bar' });
     report.income.total += barRevenue;
 
-    // 5. EXPENSES: TRAVEL
-    const fuelLiters = (gigData.dist || 100) / 100 * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM;
-    const fuelCost = Math.floor(fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE);
-    report.expenses.breakdown.push({ label: 'Fuel', value: fuelCost, detail: `${gigData.dist || 100}km` });
-    report.expenses.total += fuelCost;
+    // 5. Expenses (Transport, Food, Modifiers)
+    const operationalExpenses = calculateGigExpenses(gigData, modifiers);
+    report.expenses.breakdown.push(...operationalExpenses.breakdown);
+    report.expenses.total += operationalExpenses.total;
 
-    // 6. EXPENSES: FOOD & DRINK
-    const bandSize = 3; 
-    // Catering logic: If modifier is catering, we pay EXTRA for quality catering or we assume venue pays?
-    // Usually catering modifier means "We bought catering" (better food) -> Costs more.
-    // Or "Venue provided catering" (free)?
-    // Context implies user spends budget on modifiers. So catering modifier = cost.
-    let foodCost = bandSize * EXPENSE_CONSTANTS.FOOD.FAST_FOOD; 
-    report.expenses.breakdown.push({ label: 'Food & Drinks', value: foodCost, detail: 'Subsistence' });
-    report.expenses.total += foodCost;
-
-    if (modifiers.catering) {
-        // Upgrade to Restaurant/Catering quality
-        const cateringCost = bandSize * (EXPENSE_CONSTANTS.FOOD.RESTAURANT - EXPENSE_CONSTANTS.FOOD.FAST_FOOD);
-        report.expenses.breakdown.push({ label: 'Catering Upgrade', value: cateringCost, detail: 'Better food' });
-        report.expenses.total += cateringCost;
-    }
-
-    // 7. EXPENSES: PROMO
-    if (modifiers.promo) {
-        const promoCost = 50; 
-        report.expenses.breakdown.push({ label: 'Social Ads', value: promoCost, detail: 'Promo Campaign' });
-        report.expenses.total += promoCost;
-    }
-
-    // 8. SPONSORSHIP BONUSES
+    // 6. Sponsorship Bonuses
     if (gigStats) {
         if (gigStats.misses === 0) {
             const bonus = 200;
@@ -173,5 +228,7 @@ export const calculateGigFinancials = (gigData, performanceScore, crowdStats, mo
     }
 
     report.net = report.income.total - report.expenses.total;
+
+    logger.info('Economy', 'Gig Report Generated', { net: report.net, income: report.income.total, expenses: report.expenses.total });
     return report;
 };

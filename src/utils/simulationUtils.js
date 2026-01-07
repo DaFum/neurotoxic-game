@@ -1,12 +1,13 @@
 // Utility functions for Simulation <-> Action connection
 
-export const getGigModifiers = (bandState) => {
+export const getGigModifiers = (bandState, gigModifiers = {}) => {
     const modifiers = {
         hitWindowBonus: 0,
         noteJitter: false,
         drumSpeedMult: 1.0,
         guitarScoreMult: 1.0,
-        activeEffects: [] // Text descriptions for UI
+        activeEffects: [], // Text descriptions for UI
+        ...gigModifiers // Merge active PreGig toggles (soundcheck, energy, etc)
     };
 
     // 1. Harmony Logic
@@ -91,4 +92,44 @@ export const calculateGigPhysics = (bandState, song) => {
         multipliers,
         avgStamina
     };
+};
+
+/**
+ * Calculates daily state updates including costs, mood drift, and decay.
+ * @param {object} currentState - The full state before update.
+ * @returns {object} The updated parts of state (player, band, social).
+ */
+export const calculateDailyUpdates = (currentState) => {
+    const nextPlayer = { ...currentState.player, day: currentState.player.day + 1 };
+    const nextBand = { ...currentState.band };
+    const nextSocial = { ...currentState.social };
+
+    // 1. Costs
+    // Rent/Food
+    const dailyCost = 25;
+    nextPlayer.money -= dailyCost;
+
+    // 2. Mood Drift
+    // Drift towards 50
+    nextBand.members = nextBand.members.map(m => {
+        let mood = m.mood;
+        if (mood > 50) mood -= 2;
+        else if (mood < 50) mood += 2;
+        return { ...m, mood };
+    });
+
+    // 3. Social Decay
+    // Viral decay
+    if (nextSocial.viral > 0) nextSocial.viral -= 1;
+
+    // 4. Passive Effects
+    if (nextBand.harmonyRegenTravel) {
+        nextBand.harmony = Math.min(100, nextBand.harmony + 5);
+    }
+    if (nextPlayer.passiveFollowers) {
+         // Passive followers currently funnel into Instagram only
+         nextSocial.instagram = (nextSocial.instagram || 0) + nextPlayer.passiveFollowers;
+    }
+
+    return { player: nextPlayer, band: nextBand, social: nextSocial };
 };

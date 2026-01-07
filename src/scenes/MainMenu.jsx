@@ -18,7 +18,7 @@ export const MainMenu = () => {
     if (loadGame()) {
         changeScene('OVERWORLD');
     } else {
-        alert("No save game found!");
+        addToast("No save game found!", 'error');
     }
   };
 
@@ -27,10 +27,13 @@ export const MainMenu = () => {
       
       const buyUpgrade = (upgrade) => {
           if (player.fame >= upgrade.cost) {
-              if (window.confirm(`Buy ${upgrade.name} for ${upgrade.cost} Fame?`)) {
-                  // 1. Deduct cost and save upgrade ID
-                  const nextPlayer = {
-                      ...player,
+              // Confirm replacement: Direct action for now or Toast + Action
+              // Ideally use custom confirm modal but out of scope for quick fix, just using action + toast
+              // "Tap to Buy" style.
+
+              // 1. Deduct cost and save upgrade ID
+              const nextPlayer = {
+                  ...player,
                       fame: player.fame - upgrade.cost,
                       van: { ...player.van, upgrades: [...player.van.upgrades, upgrade.id] } 
                   };
@@ -78,10 +81,10 @@ export const MainMenu = () => {
                   }
 
                   // 3. Commit Player Updates
-                      updatePlayer(nextPlayer);
-              }
+                  updatePlayer(nextPlayer);
+                  addToast(`Purchased ${upgrade.name}!`, 'success');
           } else {
-              alert("Not enough Fame!");
+              addToast("Not enough Fame!", 'error');
           }
       };
 

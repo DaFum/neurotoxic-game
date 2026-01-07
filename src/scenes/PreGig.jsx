@@ -2,22 +2,29 @@ import React from 'react';
 import { useGameState } from '../context/GameState';
 import { SONGS_DB } from '../data/songs';
 import { getGigModifiers } from '../utils/simulationUtils';
+import { ChatterOverlay } from '../components/ChatterOverlay';
+import { ensureAudioContext } from '../utils/audioEngine';
 
 export const PreGig = () => {
-  const { currentGig, changeScene, setSetlist, setlist, gigModifiers, setGigModifiers, player, updatePlayer, triggerEvent, activeEvent, band, updateBand } = useGameState();
-  const currentModifiers = getGigModifiers(band);
+  const { currentGig, changeScene, setSetlist, setlist, gigModifiers, setGigModifiers, player, updatePlayer, triggerEvent, activeEvent, band, updateBand, addToast } = useGameState();
+
+  React.useEffect(() => {
+      if (!currentGig) {
+          addToast("No gig active! Returning to map.", 'error');
+          changeScene('OVERWORLD');
+      }
+  }, [currentGig, changeScene, addToast]);
 
   const handleBandMeeting = () => {
       const cost = 50;
       if (player.money < cost) {
-          alert("Not enough money for snacks!");
+          addToast("Not enough money for snacks!", 'error');
           return;
       }
-      if (window.confirm("Hold Band Meeting? (+15 Harmony, -50€)")) {
-          updatePlayer({ money: player.money - cost });
-          updateBand({ harmony: Math.min(100, band.harmony + 15) });
-          alert("Meeting held. Vibes are better.");
-      }
+
+      updatePlayer({ money: player.money - cost });
+      updateBand({ harmony: Math.min(100, band.harmony + 15) });
+      addToast("Meeting held. Vibes are better.", 'success');
   };
 
   React.useEffect(() => {
@@ -43,20 +50,38 @@ export const PreGig = () => {
 
   const toggleModifier = (key, cost) => {
     const isActive = gigModifiers[key];
-    if (!isActive && player.money < cost) {
-        alert("Not enough money!");
-        return;
+
+    if (!isActive) {
+        if (player.money < cost) {
+            addToast("Not enough money for this upgrade!", 'error');
+            return;
+        }
     }
 
-    setGigModifiers(prev => ({ ...prev, [key]: !prev[key] }));
-    updatePlayer({ money: player.money + (isActive ? cost : -cost) });
+    setGigModifiers({ [key]: !isActive });
+    // Removed immediate money deduction to prevent double billing in PostGig.
+    // Costs are calculated in economyEngine.js
   };
+
+  const calculatedBudget = Object.entries(gigModifiers).reduce((acc, [key, active]) => {
+      if (!active) return acc;
+      const costMap = {
+          soundcheck: 50, promo: 30, merch: 40, catering: 20, guestlist: 60
+      };
+      return acc + (costMap[key] || 0);
+  }, 0);
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-(--void-black) text-white relative">
+      <div className="absolute top-24 right-8 z-30">
+          <ChatterOverlay />
+      </div>
       <h2 className="text-4xl text-(--toxic-green) font-['Metal_Mania'] mb-4">PREPARATION</h2>
-      <div className="text-xl mb-8 font-mono border-b border-(--toxic-green) pb-2 w-full max-w-2xl text-center">
+      <div className="text-xl mb-2 font-mono border-b border-(--toxic-green) pb-2 w-full max-w-2xl text-center">
         VENUE: {currentGig?.name}
+      </div>
+      <div className="mb-6 font-mono text-sm text-gray-400">
+          ESTIMATED COSTS: <span className="text-red-500">-{calculatedBudget}€</span> (Deducted after show)
       </div>
 
       <div className="grid grid-cols-2 gap-8 w-full max-w-4xl h-[60vh]">
@@ -69,7 +94,7 @@ export const PreGig = () => {
                 { key: 'soundcheck', label: 'Soundcheck', cost: 50, desc: 'Notes Easier' },
                 { key: 'promo', label: 'Social Promo', cost: 30, desc: '+Crowd Fill' },
                 { key: 'merch', label: 'Merch Table', cost: 40, desc: '+Sales' },
-                { key: 'energy', label: 'Energy Drinks', cost: 20, desc: '+Stamina' },
+                { key: 'catering', label: 'Catering / Energy', cost: 20, desc: '+Stamina' },
                 { key: 'guestlist', label: 'Guest List', cost: 60, desc: '+VIP Score' }
             ].map(item => (
                 <button 
@@ -166,7 +191,10 @@ export const PreGig = () => {
       <button 
         className="mt-8 px-12 py-4 bg-(--toxic-green) text-black font-bold text-2xl uppercase tracking-widest hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
         disabled={setlist.length === 0}
-        onClick={() => changeScene('GIG')}
+        onClick={async () => {
+            await ensureAudioContext(); // Unlock audio context on user interaction
+            changeScene('GIG');
+        }}
       >
         START SHOW
       </button>

@@ -172,12 +172,13 @@ test('calculateGigFinancials includes transport costs based on distance', () => 
 });
 
 test('calculateGigFinancials includes catering when enabled', () => {
+    // Note: key renamed from 'energy' to 'catering' for standardization
     const gigData = buildGigData();
     
     const noCatering = calculateGigFinancials(
         gigData, 80, { hype: 80 }, buildModifiers({ catering: false }), buildInventory(), 100, buildGigStats()
     );
-    
+
     const withCatering = calculateGigFinancials(
         gigData, 80, { hype: 80 }, buildModifiers({ catering: true }), buildInventory(), 100, buildGigStats()
     );
@@ -185,8 +186,19 @@ test('calculateGigFinancials includes catering when enabled', () => {
     const noCateringItem = noCatering.expenses.breakdown.find(b => b.label && b.label.includes('Catering'));
     const cateringItem = withCatering.expenses.breakdown.find(b => b.label && b.label.includes('Catering'));
     
-    assert.ok(!noCateringItem || noCateringItem.value === 0, 'Should not charge for catering when disabled');
-    assert.ok(cateringItem && cateringItem.value > 0, 'Should charge for catering when enabled');
+    assert.ok(!noCateringItem, 'Should NOT charge for Catering when disabled');
+    assert.ok(cateringItem && cateringItem.value > 0, 'Should charge for Catering/Energy when enabled');
+});
+
+test('calculateGigFinancials supports new merch key', () => {
+    const gigData = buildGigData();
+
+    const withMerchKey = calculateGigFinancials(
+        gigData, 80, { hype: 80 }, buildModifiers({ merch: true, merchTable: false }), buildInventory(), 100, buildGigStats()
+    );
+
+    const merchItem = withMerchKey.expenses.breakdown.find(b => b.label === 'Merch Stand');
+    assert.ok(merchItem && merchItem.value > 0, 'Should charge for Merch Stand using "merch" key');
 });
 
 test('calculateGigFinancials handles zero capacity venue', () => {
