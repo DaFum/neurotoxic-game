@@ -8,7 +8,7 @@ import { ChatterOverlay } from '../components/ChatterOverlay';
 import { audioManager } from '../utils/AudioManager';
 
 export const Overworld = () => {
-  const { startGig, player, updatePlayer, triggerEvent, saveGame, gameMap, hasUpgrade, updateBand, band, activeEvent, resolveEvent, setActiveEvent, currentGig } = useGameState();
+  const { startGig, player, updatePlayer, triggerEvent, saveGame, gameMap, hasUpgrade, updateBand, band, activeEvent, resolveEvent, setActiveEvent, currentGig, addToast } = useGameState();
   
   const [isTraveling, setIsTraveling] = useState(false);
   const [travelTarget, setTravelTarget] = useState(null);
@@ -71,8 +71,8 @@ export const Overworld = () => {
 
       if (player.money < totalCost) {
           // This case should be rare, but it's a safeguard.
-          // Maybe show a toast and cancel the gig start.
           console.error("Travel completed but cannot afford costs. State might be inconsistent.");
+          addToast("Insufficient funds for travel costs!", "error");
           setIsTraveling(false);
           setTravelTarget(null);
           return;
