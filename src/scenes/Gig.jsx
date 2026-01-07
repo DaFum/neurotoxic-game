@@ -7,9 +7,7 @@ import { IMG_PROMPTS, getGenImageUrl } from '../utils/imageGen';
 import PropTypes from 'prop-types';
 
 export const Gig = () => {
-  const { 
-      currentGig, activeEvent, resolveEvent, setActiveEvent 
-  } = useGameState();
+  const { currentGig } = useGameState();
 
   // Use the extracted logic hook
   const logic = useRhythmGameLogic();
@@ -100,9 +98,6 @@ export const Gig = () => {
       {/* Layer 3 & 4: HUD & Inputs */}
       <GigHUD 
           stats={stats} 
-          activeEvent={activeEvent} 
-          resolveEvent={resolveEvent} 
-          setActiveEvent={setActiveEvent} 
           onLaneInput={(index, active) => active ? handleTouchStart(index) : handleTouchEnd(index)}
       />
 

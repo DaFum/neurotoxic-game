@@ -6,7 +6,7 @@ import { calculateGigFinancials } from '../utils/economyEngine';
 import { calculateViralityScore, generatePostOptions, resolvePost } from '../utils/socialEngine';
 
 export const PostGig = () => {
-  const { changeScene, updatePlayer, player, currentGig, gigModifiers, triggerEvent, activeEvent, resolveEvent, setActiveEvent, band, updateSocial, social, lastGigStats } = useGameState();
+  const { changeScene, updatePlayer, player, currentGig, gigModifiers, triggerEvent, activeEvent, band, updateSocial, social, lastGigStats } = useGameState();
   const [phase, setPhase] = useState('REPORT'); // REPORT, SOCIAL, COMPLETE
   const [financials, setFinancials] = useState(null);
   const [virality, setVirality] = useState(0);
@@ -60,42 +60,6 @@ export const PostGig = () => {
       setPhase('COMPLETE');
   };
 
-  const EventModal = () => {
-      if (!activeEvent) return null;
-
-      const handleChoice = (choice) => {
-          const result = resolveEvent(choice);
-          alert(result.outcomeText + (result.description ? `\n\n> ${result.description}` : ''));
-          setActiveEvent(null);
-      };
-
-      return (
-        <div className="absolute inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-            <div className="w-full max-w-lg border-4 border-[var(--toxic-green)] bg-black p-6 shadow-[0_0_50px_rgba(0,255,65,0.4)] relative">
-                <h2 className="text-3xl font-[Metal_Mania] text-[var(--toxic-green)] mb-4 uppercase animate-pulse">
-                    {activeEvent.title}
-                </h2>
-                <p className="font-mono text-gray-300 mb-8 text-lg leading-relaxed">
-                    {activeEvent.text}
-                </p>
-                <div className="space-y-4">
-                    {activeEvent.options.map((opt, i) => (
-                        <button
-                            key={i}
-                            onClick={() => handleChoice(opt)}
-                            className="w-full p-4 border border-[var(--ash-gray)] hover:bg-[var(--toxic-green)] hover:text-black hover:border-transparent transition-all font-bold text-left flex justify-between group"
-                        >
-                            <span>{opt.label}</span>
-                            <span className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                {opt.skillCheck ? `[${opt.skillCheck.stat.toUpperCase()}]` : '>>>'}
-                            </span>
-                        </button>
-                    ))}
-                </div>
-            </div>
-        </div>
-      );
-  };
 
   const handleContinue = () => {
     if (financials && (player.money + financials.net) < 0) {
@@ -122,8 +86,6 @@ export const PostGig = () => {
         style={{ backgroundImage: `url("${getGenImageUrl(IMG_PROMPTS.POST_GIG_BG)}")` }}
       ></div>
       
-      <EventModal />
-
       <motion.div 
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}

@@ -1,9 +1,9 @@
 // Aggregate all event categories
-import { TRANSPORT_EVENTS } from './transport';
-import { BAND_EVENTS } from './band';
-import { GIG_EVENTS } from './gig';
-import { FINANCIAL_EVENTS } from './financial';
-import { SPECIAL_EVENTS } from './special';
+import { TRANSPORT_EVENTS } from './transport.js';
+import { BAND_EVENTS } from './band.js';
+import { GIG_EVENTS } from './gig.js';
+import { FINANCIAL_EVENTS } from './financial.js';
+import { SPECIAL_EVENTS } from './special.js';
 
 // Validation Helper
 const validateEvents = (events) => {
