@@ -82,7 +82,7 @@ export const PostGig = () => {
   if (!financials) return <div>Loading...</div>;
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-[var(--void-black)] text-white relative">
+    <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-(--void-black) text-white relative">
       <div 
         className="absolute inset-0 opacity-20 bg-cover bg-center"
         style={{ backgroundImage: `url("${getGenImageUrl(IMG_PROMPTS.POST_GIG_BG)}")` }}
@@ -91,9 +91,9 @@ export const PostGig = () => {
       <motion.div 
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="max-w-4xl w-full border-4 border-[var(--toxic-green)] p-8 bg-black relative z-10 shadow-[0_0_50px_rgba(0,255,65,0.3)] flex flex-col gap-6"
+        className="max-w-4xl w-full border-4 border-(--toxic-green) p-8 bg-black relative z-10 shadow-[0_0_50px_rgba(0,255,65,0.3)] flex flex-col gap-6"
       >
-        <h2 className="text-5xl text-center font-[Metal_Mania] text-[var(--toxic-green)] mb-2 text-shadow-[0_0_10px_var(--toxic-green)]">
+        <h2 className="text-5xl text-center font-['Metal_Mania'] text-(--toxic-green) mb-2 text-shadow-[0_0_10px_(--toxic-green)]">
           {phase === 'REPORT' ? 'GIG REPORT' : phase === 'SOCIAL' ? 'SOCIAL MEDIA STRATEGY' : 'TOUR UPDATE'}
         </h2>
 
@@ -101,7 +101,7 @@ export const PostGig = () => {
             <>
                 <div className="grid grid-cols-2 gap-8 text-sm md:text-base font-mono">
                     <div>
-                        <h3 className="text-[var(--toxic-green)] border-b border-gray-700 mb-2">INCOME</h3>
+                        <h3 className="text-(--toxic-green) border-b border-gray-700 mb-2">INCOME</h3>
                         {financials.income.breakdown.map((item, i) => (
                             <div key={i} className="flex justify-between">
                                 <span>{item.label}</span>
@@ -130,12 +130,12 @@ export const PostGig = () => {
                 
                 <div className="text-center mt-4">
                     <div className="text-sm text-gray-500">NET PROFIT</div>
-                    <div className={`text-4xl font-bold glitch-text ${financials.net >= 0 ? 'text-[var(--toxic-green)]' : 'text-red-600'}`}>
+                    <div className={`text-4xl font-bold glitch-text ${financials.net >= 0 ? 'text-(--toxic-green)' : 'text-red-600'}`}>
                         {financials.net >= 0 ? '+' : ''}{financials.net}€
                     </div>
                 </div>
 
-                <button onClick={() => setPhase('SOCIAL')} className="mt-4 w-full py-4 bg-[var(--toxic-green)] text-black font-bold uppercase hover:bg-white transition-colors">
+                <button onClick={() => setPhase('SOCIAL')} className="mt-4 w-full py-4 bg-(--toxic-green) text-black font-bold uppercase hover:bg-white transition-colors">
                     NEXT: SOCIAL MEDIA
                 </button>
             </>
@@ -147,7 +147,7 @@ export const PostGig = () => {
                     <button 
                         key={opt.id}
                         onClick={() => handlePostSelection(opt)}
-                        className="p-4 border border-gray-700 hover:border-[var(--toxic-green)] hover:bg-[var(--toxic-green)]/10 text-left transition-all group"
+                        className="p-4 border border-gray-700 hover:border-(--toxic-green) hover:bg-(--toxic-green)/10 text-left transition-all group"
                     >
                         <div className="text-xs text-gray-500 group-hover:text-white uppercase mb-1">{opt.platform}</div>
                         <div className="font-bold text-lg mb-2">{opt.title}</div>
@@ -164,12 +164,12 @@ export const PostGig = () => {
         {phase === 'COMPLETE' && (
             <div className="text-center">
                 <div className="mb-8">
-                    <h3 className="text-2xl text-[var(--toxic-green)] mb-2">{postResult?.success ? 'VIRAL HIT!' : 'POST PUBLISHED'}</h3>
+                    <h3 className="text-2xl text-(--toxic-green) mb-2">{postResult?.success ? 'VIRAL HIT!' : 'POST PUBLISHED'}</h3>
                     <p className="text-gray-300">{postResult?.message}</p>
                     <div className="text-4xl font-bold mt-4">+{postResult?.followers} Followers</div>
                     <div className="text-sm text-gray-500 uppercase mt-1">on {postResult?.platform}</div>
                 </div>
-                <button onClick={handleContinue} className="w-full py-4 bg-[var(--toxic-green)] text-black font-bold uppercase hover:bg-white transition-colors">
+                <button onClick={handleContinue} className="w-full py-4 bg-(--toxic-green) text-black font-bold uppercase hover:bg-white transition-colors">
                     CONTINUE TOUR
                 </button>
             </div>

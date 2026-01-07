@@ -21,14 +21,14 @@ export const GigHUD = ({ stats, onLaneInput }) => {
             </div>
 
             {/* Social Feed Overlay (Meta Layer) */}
-            <div className="absolute top-32 right-4 w-64 bg-black/80 border border-[var(--toxic-green)] p-2 z-10 text-xs font-mono">
-                <div className="text-[var(--toxic-green)] font-bold mb-2 border-b border-gray-700">LIVE FEED 🔴</div>
+            <div className="absolute top-32 right-4 w-64 bg-black/80 border border-(--toxic-green) p-2 z-10 text-xs font-mono">
+                <div className="text-(--toxic-green) font-bold mb-2 border-b border-gray-700">LIVE FEED 🔴</div>
                 <div className="space-y-1">
                     <div className="text-gray-400">@metalhead88: BRUTAL! 🔥</div>
                     <div className="text-gray-400">@grindcore_fan: Faster!!!</div>
-                    <div className="text-[var(--blood-red)]">@hater: Boring riffs...</div>
+                    <div className="text-(--blood-red)">@hater: Boring riffs...</div>
                 </div>
-                <div className="mt-2 flex justify-between text-[var(--toxic-green)]">
+                <div className="mt-2 flex justify-between text-(--toxic-green)">
                     <span>👁️ 2.4k</span>
                     <span>❤️ 890</span>
                 </div>
@@ -36,14 +36,14 @@ export const GigHUD = ({ stats, onLaneInput }) => {
 
             {/* Stats Overlay */}
             <div className="absolute top-32 left-4 z-10 text-white font-mono pointer-events-none">
-                <div className="text-4xl font-bold text-[var(--toxic-green)]">{Math.floor(score).toString().padStart(7, '0')}</div>
-                <div className={`text-2xl ${combo > 10 ? 'text-[var(--blood-red)] animate-pulse' : 'text-gray-400'}`}>
+                <div className="text-4xl font-bold text-(--toxic-green)">{Math.floor(score).toString().padStart(7, '0')}</div>
+                <div className={`text-2xl ${combo > 10 ? 'text-(--blood-red) animate-pulse' : 'text-gray-400'}`}>
                 {combo}x COMBO
                 </div>
                 <div className="mt-2">
                     <div className="text-xs text-gray-400">TOXIC OVERLOAD</div>
                     <div className="w-32 h-2 bg-gray-800">
-                        <div className="h-full bg-[var(--toxic-green)] transition-all duration-200" style={{width: `${overload}%`}}></div>
+                        <div className="h-full bg-(--toxic-green) transition-all duration-200" style={{width: `${overload}%`}}></div>
                     </div>
                 </div>
             </div>
@@ -55,7 +55,7 @@ export const GigHUD = ({ stats, onLaneInput }) => {
                 </div>
                 <div className="w-full h-4 bg-gray-800 border border-gray-600">
                     <div 
-                        className={`h-full transition-all duration-200 ${health < 30 ? 'bg-red-500' : 'bg-[var(--toxic-green)]'}`}
+                        className={`h-full transition-all duration-200 ${health < 30 ? 'bg-red-500' : 'bg-(--toxic-green)'}`}
                         style={{width: `${health}%`}}
                     ></div>
                 </div>

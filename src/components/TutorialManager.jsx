@@ -69,8 +69,8 @@ export const TutorialManager = () => {
                 exit={{ opacity: 0 }}
                 className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-[100] w-full max-w-md"
             >
-                <div className="bg-black/95 border-2 border-[var(--toxic-green)] p-6 shadow-[0_0_20px_var(--toxic-green)] relative">
-                    <div className="absolute -top-3 left-4 bg-black px-2 text-[var(--toxic-green)] font-bold text-xs border border-[var(--toxic-green)]">
+                <div className="bg-black/95 border-2 border-(--toxic-green) p-6 shadow-[0_0_20px_(--toxic-green)] relative">
+                    <div className="absolute -top-3 left-4 bg-black px-2 text-(--toxic-green) font-bold text-xs border border-(--toxic-green)">
                         TUTORIAL {step + 1}
                     </div>
                     
@@ -88,7 +88,7 @@ export const TutorialManager = () => {
                         </button>
                         <button 
                             onClick={completeStep}
-                            className="bg-[var(--toxic-green)] text-black px-4 py-1 font-bold hover:bg-white"
+                            className="bg-(--toxic-green) text-black px-4 py-1 font-bold hover:bg-white"
                         >
                             NEXT
                         </button>

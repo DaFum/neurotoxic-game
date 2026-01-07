@@ -285,9 +285,9 @@ export const Overworld = () => {
 
       </div>
       
-      <div className="absolute bottom-8 left-8 p-4 border border-[var(--ash-gray)] bg-black/90 max-w-sm z-20 pointer-events-none">
-        <h3 className="text-[var(--toxic-green)] font-bold mb-2">EVENT LOG:</h3>
-        <p className="text-xs text-[var(--ash-gray)] font-mono">
+      <div className="absolute bottom-8 left-8 p-4 border border-(--ash-gray) bg-black/90 max-w-sm z-20 pointer-events-none">
+        <h3 className="text-(--toxic-green) font-bold mb-2">EVENT LOG:</h3>
+        <p className="text-xs text-(--ash-gray) font-mono">
           &gt; Locations loaded: {ALL_VENUES.length}<br/>
           &gt; {player.day}.01.2026: Tour active.<br/>
           &gt; {player.location} secured.
