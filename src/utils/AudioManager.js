@@ -86,7 +86,10 @@ class AudioSystem {
         if (!this.initialized) return;
         // Prevent restarting if already playing ambient
         if (this.music && this.music.loop()) return;
-        this.playMusic('ambient');
+        const music = this.playMusic('ambient');
+        if (music) {
+            music.volume(this.musicVolume * 0.3); // Lower volume for background stream
+        }
     }
 
     stopMusic() {
@@ -125,7 +128,7 @@ class AudioSystem {
     }
 
     getAudioSrc(songId) {
-        if (songId === 'ambient') return 'https://assets.mixkit.co/active_storage/sfx/123/123-preview.mp3';
+        if (songId === 'ambient') return 'https://moshhead-blackmetal.stream.laut.fm/moshhead-blackmetal';
         return 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'; 
     }
 

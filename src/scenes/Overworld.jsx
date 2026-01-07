@@ -221,7 +221,7 @@ export const Overworld = () => {
             key={node.id}
             className={`absolute flex flex-col items-center group
                 ${isCurrent ? 'z-50' : 'z-10'} 
-                ${visibility === 'dimmed' ? 'opacity-50 grayscale pointer-events-none' : ''}
+                ${!isReachable && !isCurrent ? 'opacity-30 grayscale pointer-events-none' : 'opacity-100'}
                 ${isReachable ? 'cursor-pointer' : ''}
             `}
             style={{ left: `${node.venue.x}%`, top: `${node.venue.y}%` }}
