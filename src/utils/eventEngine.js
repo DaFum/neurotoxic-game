@@ -156,7 +156,13 @@ export const eventEngine = {
                     if (eff.stat === 'score') delta.flags.score = eff.value;
                     break;
                 case 'item':
-                    // Add item logic
+                    // Add item to band inventory; default to `true` when no explicit value is provided.
+                    if (eff.item) {
+                        const currentVal = delta.band.inventory?.[eff.item] ?? 0;
+                        const val = eff.value !== undefined ? eff.value : true;
+                        if (!delta.band.inventory) delta.band.inventory = {};
+                        delta.band.inventory[eff.item] = val;
+                    }
                     break;
                 case 'unlock':
                     delta.flags.unlock = eff.unlock;

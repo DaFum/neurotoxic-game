@@ -68,7 +68,7 @@ export const Gig = () => {
   const bgUrl = getGenImageUrl(bgPrompt);
 
   return (
-    <div className={`w-full h-full relative bg-black flex flex-col overflow-hidden ${stats.isToxicMode ? 'border-4 border-[var(--toxic-green)] animate-pulse' : ''}`}>
+    <div className={`w-full h-full relative bg-black flex flex-col overflow-hidden ${stats.isToxicMode ? 'border-4 border-(--toxic-green) animate-pulse' : ''}`}>
       
       {/* Layer 0: Background */}
       <div 

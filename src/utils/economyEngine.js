@@ -103,7 +103,13 @@ export const calculateGigFinancials = (gigData, performanceScore, crowdStats, mo
         // report.income.breakdown.push({ label: 'Sloppy Play', value: 0, detail: `-${(missPenalty*100).toFixed(1)}% Merch Interest` });
     }
 
-    const buyers = Math.floor(ticketsSold * Math.max(0, buyRate));
+    // Check Inventory Availability
+    // Calculate max potential buyers based on inventory (simplified: 1 generic item per buyer).
+    // NOTE: This currently treats all merch types (shirts/hoodies/cds) as interchangeable capacity and does NOT mutate bandInventory.
+    // TODO(economyEngine): Implement per-item merch mix & proper inventory depletion once detailed merch management is in place.
+    const totalInventory = (bandInventory?.shirts || 0) + (bandInventory?.hoodies || 0) + (bandInventory?.cds || 0);
+    const potentialBuyers = Math.floor(ticketsSold * Math.max(0, buyRate));
+    const buyers = Math.min(potentialBuyers, totalInventory);
     
     // Average Spend per buyer (simplified mix)
     const merchAvgRevenue = 25; // Shirt + Sticker
@@ -130,9 +136,20 @@ export const calculateGigFinancials = (gigData, performanceScore, crowdStats, mo
 
     // 6. EXPENSES: FOOD & DRINK
     const bandSize = 3; 
+    // Catering logic: If modifier is catering, we pay EXTRA for quality catering or we assume venue pays?
+    // Usually catering modifier means "We bought catering" (better food) -> Costs more.
+    // Or "Venue provided catering" (free)?
+    // Context implies user spends budget on modifiers. So catering modifier = cost.
     let foodCost = bandSize * EXPENSE_CONSTANTS.FOOD.FAST_FOOD; 
     report.expenses.breakdown.push({ label: 'Food & Drinks', value: foodCost, detail: 'Subsistence' });
     report.expenses.total += foodCost;
+
+    if (modifiers.catering) {
+        // Upgrade to Restaurant/Catering quality
+        const cateringCost = bandSize * (EXPENSE_CONSTANTS.FOOD.RESTAURANT - EXPENSE_CONSTANTS.FOOD.FAST_FOOD);
+        report.expenses.breakdown.push({ label: 'Catering Upgrade', value: cateringCost, detail: 'Better food' });
+        report.expenses.total += cateringCost;
+    }
 
     // 7. EXPENSES: PROMO
     if (modifiers.promo) {

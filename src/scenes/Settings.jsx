@@ -41,29 +41,29 @@ export const Settings = () => {
 
     return (
         <div className="flex flex-col items-center justify-center h-full w-full bg-black z-50 p-8">
-            <h1 className="text-6xl text-[var(--toxic-green)] font-[Metal_Mania] mb-12">SYSTEM CONFIG</h1>
+            <h1 className="text-6xl text-(--toxic-green) font-['Metal_Mania'] mb-12">SYSTEM CONFIG</h1>
 
-            <div className="w-full max-w-2xl border-2 border-[var(--toxic-green)] p-8 bg-black/80 space-y-8">
+            <div className="w-full max-w-2xl border-2 border-(--toxic-green) p-8 bg-black/80 space-y-8">
                 
                 {/* Audio */}
                 <div className="space-y-4">
                     <h2 className="text-2xl text-white border-b border-gray-700 pb-2">AUDIO PROTOCOLS</h2>
                     
                     <div className="flex items-center justify-between">
-                        <label className="text-[var(--toxic-green)]">MUSIC VOLUME</label>
+                        <label className="text-(--toxic-green)">MUSIC VOLUME</label>
                         <input 
                             type="range" min="0" max="1" step="0.1" 
                             value={musicVol} onChange={handleMusicChange}
-                            className="w-1/2 accent-[var(--toxic-green)]"
+                            className="w-1/2 accent-(--toxic-green)"
                         />
                     </div>
                     
                     <div className="flex items-center justify-between">
-                        <label className="text-[var(--toxic-green)]">SFX VOLUME</label>
+                        <label className="text-(--toxic-green)">SFX VOLUME</label>
                         <input 
                             type="range" min="0" max="1" step="0.1" 
                             value={sfxVol} onChange={handleSFXChange}
-                            className="w-1/2 accent-[var(--toxic-green)]"
+                            className="w-1/2 accent-(--toxic-green)"
                         />
                     </div>
 
@@ -76,12 +76,12 @@ export const Settings = () => {
                 <div className="space-y-4">
                     <h2 className="text-2xl text-white border-b border-gray-700 pb-2">VISUAL OUTPUT</h2>
                     <div className="flex items-center justify-between">
-                        <span className="text-[var(--toxic-green)]">CRT SIMULATION</span>
+                        <span className="text-(--toxic-green)">CRT SIMULATION</span>
                         <button 
                             onClick={handleCRT}
-                            className={`w-16 h-8 border border-[var(--toxic-green)] flex items-center p-1 ${settings.crtEnabled ? 'justify-end bg-[var(--toxic-green)]/20' : 'justify-start'}`}
+                            className={`w-16 h-8 border border-(--toxic-green) flex items-center p-1 ${settings.crtEnabled ? 'justify-end bg-(--toxic-green)/20' : 'justify-start'}`}
                         >
-                            <div className={`w-6 h-6 bg-[var(--toxic-green)] ${settings.crtEnabled ? 'animate-pulse' : 'opacity-50'}`}></div>
+                            <div className={`w-6 h-6 bg-(--toxic-green) ${settings.crtEnabled ? 'animate-pulse' : 'opacity-50'}`}></div>
                         </button>
                     </div>
                 </div>

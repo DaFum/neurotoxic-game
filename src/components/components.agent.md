@@ -146,7 +146,7 @@ export const GigHUD = ({ stats }) => {
     <div className="absolute top-4 left-4 right-4 z-20 pointer-events-none">
       <div className="flex justify-between items-start">
         {/* Left: Score & Accuracy */}
-        <div className="font-[Courier_New] text-[var(--toxic-green)]">
+        <div className="font-[Courier_New] text-(--toxic-green)">
           <div className="text-2xl font-bold">
             SCORE: {stats.score.toLocaleString()}
           </div>
@@ -158,13 +158,13 @@ export const GigHUD = ({ stats }) => {
         {/* Right: Combo & Energy */}
         <div className="text-right">
           <div className={`text-3xl font-bold ${
-            stats.combo > 30 ? 'text-[var(--blood-red)] animate-pulse' : ''
+            stats.combo > 30 ? 'text-(--blood-red) animate-pulse' : ''
           }`}>
             {stats.combo}x
           </div>
-          <div className="w-32 h-4 bg-[var(--shadow-black)] border border-[var(--toxic-green)]">
+          <div className="w-32 h-4 bg-(--shadow-black) border border-(--toxic-green)">
             <div 
-              className="h-full bg-[var(--toxic-green)] transition-all duration-200"
+              className="h-full bg-(--toxic-green) transition-all duration-200"
               style={{ width: `${stats.energy}%` }}
             />
           </div>
@@ -173,7 +173,7 @@ export const GigHUD = ({ stats }) => {
       
       {/* Toxic Mode Indicator */}
       {stats.isToxicMode && (
-        <div className="mt-4 text-center text-2xl text-[var(--blood-red)] animate-pulse font-[Metal_Mania]">
+        <div className="mt-4 text-center text-2xl text-(--blood-red) animate-pulse font-['Metal_Mania']">
           ⚠ TOXIC MODE ACTIVE ⚠
         </div>
       )}
@@ -246,7 +246,7 @@ export const ChatterOverlay = ({ performance, combo, venue }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
-          className="bg-[var(--shadow-black)] bg-opacity-80 border border-[var(--toxic-green)] p-2 mb-2 font-[Courier_New] text-sm"
+          className="bg-(--shadow-black) bg-opacity-80 border border-(--toxic-green) p-2 mb-2 font-[Courier_New] text-sm"
         >
           {msg}
         </motion.div>
@@ -312,7 +312,7 @@ export const TutorialManager = () => {
   
   return (
     <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90">
-      <div className="bg-[var(--void-black)] border-4 border-[var(--toxic-green)] p-8 max-w-lg">
+      <div className="bg-(--void-black) border-4 border-(--toxic-green) p-8 max-w-lg">
         <p className="font-[Courier_New] text-lg mb-4">
           {currentTutorial.message}
         </p>

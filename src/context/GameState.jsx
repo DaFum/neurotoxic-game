@@ -20,8 +20,10 @@ const initialState = {
     van: {
       fuel: 100,
       condition: 100,
-      upgrades: []
-    }
+      upgrades: [],
+      breakdownChance: 0.05
+    },
+    passiveFollowers: 0
   },
   band: {
     members: [
@@ -30,6 +32,14 @@ const initialState = {
       { ...CHARACTERS.MARIUS, mood: 80, stamina: 100 }
     ],
     harmony: 80,
+    harmonyRegenTravel: false,
+    inventorySlots: 0,
+    luck: 0,
+    performance: {
+        guitarDifficulty: 1.0,
+        drumMultiplier: 1.0,
+        crowdDecay: 1.0
+    },
     inventory: {
         shirts: 50,
         hoodies: 20,
@@ -38,7 +48,8 @@ const initialState = {
         vinyl: 10,
         strings: true,
         cables: true,
-        drum_parts: true
+        drum_parts: true,
+        golden_pick: false
     }
   },
   social: {
@@ -159,6 +170,15 @@ const gameReducer = (state, action) => {
         // 3. Social Decay
         // Viral decay
         if (nextSocial.viral > 0) nextSocial.viral -= 1;
+
+        // 4. Passive Effects
+        if (nextBand.harmonyRegenTravel) {
+            nextBand.harmony = Math.min(100, nextBand.harmony + 5);
+        }
+        if (nextPlayer.passiveFollowers) {
+             // Passive followers currently funnel into Instagram only
+             nextSocial.instagram = (nextSocial.instagram || 0) + nextPlayer.passiveFollowers;
+        }
         
         // Return state with toast handled by side effect or UI? 
         // We can't dispatch side effects here easily.

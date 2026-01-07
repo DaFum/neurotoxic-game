@@ -53,17 +53,17 @@ export const PreGig = () => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-[var(--void-black)] text-white relative">
-      <h2 className="text-4xl text-[var(--toxic-green)] font-[Metal_Mania] mb-4">PREPARATION</h2>
-      <div className="text-xl mb-8 font-mono border-b border-[var(--toxic-green)] pb-2 w-full max-w-2xl text-center">
+    <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-(--void-black) text-white relative">
+      <h2 className="text-4xl text-(--toxic-green) font-['Metal_Mania'] mb-4">PREPARATION</h2>
+      <div className="text-xl mb-8 font-mono border-b border-(--toxic-green) pb-2 w-full max-w-2xl text-center">
         VENUE: {currentGig?.name}
       </div>
 
       <div className="grid grid-cols-2 gap-8 w-full max-w-4xl h-[60vh]">
         
         {/* Actions */}
-        <div className="border border-[var(--ash-gray)] p-4 bg-black/50">
-          <h3 className="text-xl text-[var(--toxic-green)] mb-4">BUDGET ALLOCATION</h3>
+        <div className="border border-(--ash-gray) p-4 bg-black/50">
+          <h3 className="text-xl text-(--toxic-green) mb-4">BUDGET ALLOCATION</h3>
           <div className="flex flex-col gap-4">
             {[
                 { key: 'soundcheck', label: 'Soundcheck', cost: 50, desc: 'Notes Easier' },
@@ -77,8 +77,8 @@ export const PreGig = () => {
                     onClick={() => toggleModifier(item.key, item.cost)}
                     className={`flex justify-between items-center p-3 border transition-colors group
                         ${gigModifiers[item.key] 
-                            ? 'bg-[var(--toxic-green)] text-black border-[var(--toxic-green)]' 
-                            : 'border-[var(--ash-gray)] hover:border-white text-gray-400'
+                            ? 'bg-(--toxic-green) text-black border-(--toxic-green)'
+                            : 'border-(--ash-gray) hover:border-white text-gray-400'
                         }`}
                 >
                     <span className="flex flex-col text-left">
@@ -91,7 +91,7 @@ export const PreGig = () => {
             
             <button 
                 onClick={handleBandMeeting}
-                className="flex justify-between items-center p-3 border border-[var(--ash-gray)] hover:border-[var(--toxic-green)] hover:text-[var(--toxic-green)] transition-colors group"
+                className="flex justify-between items-center p-3 border border-(--ash-gray) hover:border-(--toxic-green) hover:text-(--toxic-green) transition-colors group"
             >
                 <span className="flex flex-col text-left">
                     <span className="font-bold">Band Meeting</span>
@@ -102,8 +102,8 @@ export const PreGig = () => {
           </div>
           
           {/* Active Modifiers Display */}
-          <div className="mt-4 p-3 bg-[var(--toxic-green)]/10 border border-[var(--toxic-green)]">
-              <h4 className="text-sm font-bold text-[var(--toxic-green)] mb-2 uppercase">Current Vibe (Modifiers)</h4>
+          <div className="mt-4 p-3 bg-(--toxic-green)/10 border border-(--toxic-green)">
+              <h4 className="text-sm font-bold text-(--toxic-green) mb-2 uppercase">Current Vibe (Modifiers)</h4>
               {currentModifiers.activeEffects.length > 0 ? (
                   <ul className="text-xs space-y-1">
                       {currentModifiers.activeEffects.map((eff, i) => (
@@ -117,8 +117,8 @@ export const PreGig = () => {
         </div>
 
         {/* Setlist */}
-        <div className="border border-[var(--ash-gray)] p-4 bg-black/50 flex flex-col">
-          <h3 className="text-xl text-[var(--toxic-green)] mb-4">SETLIST ({setlist.length}/3)</h3>
+        <div className="border border-(--ash-gray) p-4 bg-black/50 flex flex-col">
+          <h3 className="text-xl text-(--toxic-green) mb-4">SETLIST ({setlist.length}/3)</h3>
           <div className="flex-1 overflow-y-auto pr-2 space-y-2">
             {SONGS_DB.map(song => {
               const isSelected = setlist.find(s => s.id === song.id);
@@ -128,8 +128,8 @@ export const PreGig = () => {
                   onClick={() => toggleSong(song)}
                   className={`p-3 border cursor-pointer flex justify-between items-center transition-all
                     ${isSelected 
-                      ? 'border-[var(--toxic-green)] bg-[var(--toxic-green)]/10 text-[var(--toxic-green)]' 
-                      : 'border-[var(--ash-gray)] hover:border-white text-gray-400'
+                      ? 'border-(--toxic-green) bg-(--toxic-green)/10 text-(--toxic-green)'
+                      : 'border-(--ash-gray) hover:border-white text-gray-400'
                     }`}
                 >
                   <div>
@@ -153,7 +153,7 @@ export const PreGig = () => {
           {/* Curve Visualization */}
           <div className="mt-4 h-16 border-t border-gray-700 pt-2 flex items-end justify-between gap-1">
               {setlist.map((s, i) => (
-                  <div key={i} className="flex-1 bg-[var(--toxic-green)] opacity-50 hover:opacity-100 transition-opacity relative group" style={{height: `${s.energy.peak}%`}}>
+                  <div key={i} className="flex-1 bg-(--toxic-green) opacity-50 hover:opacity-100 transition-opacity relative group" style={{height: `${s.energy.peak}%`}}>
                       <div className="absolute -top-4 left-0 text-[10px] w-full text-center hidden group-hover:block text-white">{s.energy.peak}</div>
                   </div>
               ))}
@@ -164,7 +164,7 @@ export const PreGig = () => {
       </div>
 
       <button 
-        className="mt-8 px-12 py-4 bg-[var(--toxic-green)] text-black font-bold text-2xl uppercase tracking-widest hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+        className="mt-8 px-12 py-4 bg-(--toxic-green) text-black font-bold text-2xl uppercase tracking-widest hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
         disabled={setlist.length === 0}
         onClick={() => changeScene('GIG')}
       >

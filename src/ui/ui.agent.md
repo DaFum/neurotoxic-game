@@ -96,9 +96,9 @@ export const GlitchButton = ({
   variant = "primary" // 'primary', 'danger', 'secondary'
 }) => {
   const variantStyles = {
-    primary: 'border-[var(--toxic-green)] text-[var(--toxic-green)] hover:bg-[var(--toxic-green)] hover:text-black',
-    danger: 'border-[var(--blood-red)] text-[var(--blood-red)] hover:bg-[var(--blood-red)] hover:text-black',
-    secondary: 'border-[var(--ash-gray)] text-[var(--ash-gray)] hover:bg-[var(--ash-gray)] hover:text-black'
+    primary: 'border-(--toxic-green) text-(--toxic-green) hover:bg-(--toxic-green) hover:text-black',
+    danger: 'border-(--blood-red) text-(--blood-red) hover:bg-(--blood-red) hover:text-black',
+    secondary: 'border-(--ash-gray) text-(--ash-gray) hover:bg-(--ash-gray) hover:text-black'
   };
 
   return (
@@ -111,7 +111,7 @@ export const GlitchButton = ({
         font-[Metal_Mania] text-xl font-bold uppercase tracking-widest
         transition-all duration-100
         hover:translate-x-1 hover:-translate-y-1
-        hover:shadow-[4px_4px_0px_var(--blood-red)]
+        hover:shadow-[4px_4px_0px_(--blood-red)]
         active:translate-x-0 active:translate-y-0
         disabled:opacity-50 disabled:cursor-not-allowed
         group
@@ -152,13 +152,13 @@ export const HUD = () => {
   const { player, band } = useGameState();
 
   return (
-    <div className="absolute top-0 left-0 right-0 z-30 bg-[var(--void-black)] border-b-2 border-[var(--toxic-green)] py-2 px-4">
-      <div className="flex justify-between items-center font-[Courier_New] text-sm text-[var(--toxic-green)]">
+    <div className="absolute top-0 left-0 right-0 z-30 bg-[var(--void-black)] border-b-2 border-(--toxic-green) py-2 px-4">
+      <div className="flex justify-between items-center font-[Courier_New] text-sm text-(--toxic-green)">
         {/* Left: Time & Location */}
         <div className="flex gap-4">
           <span>DAY {player.day}</span>
           <span>•</span>
-          <span className={player.money < 100 ? 'text-[var(--blood-red)] animate-pulse' : ''}>
+          <span className={player.money < 100 ? 'text-(--blood-red) animate-pulse' : ''}>
             €{player.money}
           </span>
         </div>
@@ -170,11 +170,11 @@ export const HUD = () => {
 
         {/* Right: Fuel & Harmony */}
         <div className="flex gap-4">
-          <span className={player.van.fuel < 20 ? 'text-[var(--warning-yellow)]' : ''}>
+          <span className={player.van.fuel < 20 ? 'text-(--warning-yellow)' : ''}>
             FUEL: {player.van.fuel}%
           </span>
           <span>•</span>
-          <span className={band.harmony < 40 ? 'text-[var(--blood-red)]' : ''}>
+          <span className={band.harmony < 40 ? 'text-(--blood-red)' : ''}>
             HARMONY: {band.harmony}
           </span>
         </div>
@@ -227,14 +227,14 @@ export const EventModal = ({ event, onOptionSelect }) => {
       animate={{ opacity: 1 }}
       className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-95 p-8"
     >
-      <div className="max-w-2xl w-full bg-[var(--void-black)] border-4 border-[var(--toxic-green)] p-8">
+      <div className="max-w-2xl w-full bg-[var(--void-black)] border-4 border-(--toxic-green) p-8">
         {/* Title */}
-        <h2 className="font-[Metal_Mania] text-4xl text-[var(--blood-red)] mb-4 text-center uppercase">
+        <h2 className="font-[Metal_Mania] text-4xl text-(--blood-red) mb-4 text-center uppercase">
           {event.title}
         </h2>
 
         {/* Description */}
-        <p className="font-[Courier_New] text-lg text-[var(--toxic-green)] mb-8 leading-relaxed">
+        <p className="font-[Courier_New] text-lg text-(--toxic-green) mb-8 leading-relaxed">
           {event.description}
         </p>
 
@@ -248,7 +248,7 @@ export const EventModal = ({ event, onOptionSelect }) => {
             >
               {choice.text}
               {choice.cost?.money && (
-                <span className="ml-4 text-[var(--blood-red)]">
+                <span className="ml-4 text-(--blood-red)">
                   -€{choice.cost.money}
                 </span>
               )}
@@ -296,9 +296,9 @@ export const ToastOverlay = () => {
   const { toasts } = useGameState();
 
   const typeStyles = {
-    success: 'bg-[var(--success-green)] text-black',
-    error: 'bg-[var(--error-red)] text-white',
-    info: 'bg-[var(--info-blue)] text-white'
+    success: 'bg-(--success-green) text-black',
+    error: 'bg-(--error-red) text-white',
+    info: 'bg-(--info-blue) text-white'
   };
 
   return (
@@ -354,13 +354,13 @@ export class CrashHandler extends React.Component {
     if (this.state.hasError) {
       return (
         <div className="w-full h-screen bg-[var(--void-black)] flex flex-col items-center justify-center p-8">
-          <h1 className="font-[Metal_Mania] text-6xl text-[var(--blood-red)] mb-4">
+          <h1 className="font-[Metal_Mania] text-6xl text-(--blood-red) mb-4">
             CRITICAL ERROR
           </h1>
-          <p className="font-[Courier_New] text-[var(--toxic-green)] text-lg mb-8 max-w-lg text-center">
+          <p className="font-[Courier_New] text-(--toxic-green) text-lg mb-8 max-w-lg text-center">
             The void has consumed your game. This might be a bug.
           </p>
-          <details className="mb-8 font-[Courier_New] text-sm text-[var(--ash-gray)] max-w-lg">
+          <details className="mb-8 font-[Courier_New] text-sm text-(--ash-gray) max-w-lg">
             <summary className="cursor-pointer">Technical Details</summary>
             <pre className="mt-4 p-4 bg-[var(--shadow-black)] overflow-auto">
               {this.state.error?.toString()}
@@ -391,7 +391,7 @@ export class CrashHandler extends React.Component {
 ### Color Variables (Mandatory)
 ```jsx
 // ✅ ALWAYS use CSS variables
-className="bg-[var(--void-black)] text-[var(--toxic-green)]"
+className="bg-[var(--void-black)] text-(--toxic-green)"
 
 // ❌ NEVER hardcode
 className="bg-black text-green-500"
@@ -420,10 +420,10 @@ Use Tailwind's spacing scale consistently:
 ### Border & Shadow
 ```jsx
 // Standard border
-className="border-2 border-[var(--toxic-green)]"
+className="border-2 border-(--toxic-green)"
 
 // Brutalist shadow
-className="shadow-[4px_4px_0px_var(--blood-red)]"
+className="shadow-[4px_4px_0px_(--blood-red)]"
 
 // No rounded corners (brutalist aesthetic)
 className="rounded-none"
@@ -458,7 +458,7 @@ className="rounded-none"
 className="transition-all duration-200 hover:scale-105"
 
 // Color transitions
-className="transition-colors duration-150 hover:bg-[var(--toxic-green)]"
+className="transition-colors duration-150 hover:bg-(--toxic-green)"
 ```
 
 ### CSS Animations

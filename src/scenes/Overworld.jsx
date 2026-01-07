@@ -8,7 +8,7 @@ import { ChatterOverlay } from '../components/ChatterOverlay';
 import { audioManager } from '../utils/AudioManager';
 
 export const Overworld = () => {
-  const { startGig, player, updatePlayer, triggerEvent, saveGame, gameMap, hasUpgrade, updateBand, band, activeEvent, resolveEvent, setActiveEvent, currentGig } = useGameState();
+  const { startGig, player, updatePlayer, triggerEvent, saveGame, gameMap, hasUpgrade, updateBand, band, activeEvent, resolveEvent, setActiveEvent, currentGig, addToast } = useGameState();
   
   const [isTraveling, setIsTraveling] = useState(false);
   const [travelTarget, setTravelTarget] = useState(null);
@@ -62,12 +62,21 @@ export const Overworld = () => {
       // Logic executed after animation
       const node = travelTarget;
       
-      // Deduct Resources
+      // Re-calculate and re-validate costs before deducting
       const dist = Math.floor(Math.sqrt(Math.pow(node.venue.x - 50, 2) + Math.pow(node.venue.y - 50, 2)) * 5) + 50; 
       const fuelLiters = (dist / 100) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM;
       const fuelCost = Math.floor(fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE);
       const foodCost = 3 * EXPENSE_CONSTANTS.FOOD.FAST_FOOD;
       const totalCost = fuelCost + foodCost;
+
+      if (player.money < totalCost) {
+          // This case should be rare, but it's a safeguard.
+          console.error("Travel completed but cannot afford costs. State might be inconsistent.");
+          addToast("Insufficient funds for travel costs!", "error");
+          setIsTraveling(false);
+          setTravelTarget(null);
+          return;
+      }
 
       updatePlayer({
           money: player.money - totalCost,
@@ -276,9 +285,9 @@ export const Overworld = () => {
 
       </div>
       
-      <div className="absolute bottom-8 left-8 p-4 border border-[var(--ash-gray)] bg-black/90 max-w-sm z-20 pointer-events-none">
-        <h3 className="text-[var(--toxic-green)] font-bold mb-2">EVENT LOG:</h3>
-        <p className="text-xs text-[var(--ash-gray)] font-mono">
+      <div className="absolute bottom-8 left-8 p-4 border border-(--ash-gray) bg-black/90 max-w-sm z-20 pointer-events-none">
+        <h3 className="text-(--toxic-green) font-bold mb-2">EVENT LOG:</h3>
+        <p className="text-xs text-(--ash-gray) font-mono">
           &gt; Locations loaded: {ALL_VENUES.length}<br/>
           &gt; {player.day}.01.2026: Tour active.<br/>
           &gt; {player.location} secured.
