@@ -98,6 +98,7 @@ export class PixiStageController {
             } catch (error) {
                 console.error('[PixiStageController] Failed to initialize stage.', error);
                 this.dispose();
+                throw error;
             }
         })();
 
@@ -409,6 +410,9 @@ export class PixiStageController {
                 this.destroyNoteSprite(note);
             });
         }
+
+        this.laneGraphics = [];
+        this.crowdMembers = [];
 
         if (this.app) {
             this.app.destroy(true, { children: true, texture: true, baseTexture: true });
