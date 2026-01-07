@@ -45,9 +45,17 @@ export async function setupAudio() {
   isSetup = true;
 }
 
+// Helper to resume context from UI
+export async function ensureAudioContext() {
+    if (!isSetup) await setupAudio();
+    if (Tone.context.state !== 'running') {
+        await Tone.context.resume();
+    }
+}
+
 // Die eigentliche Generierungs-Logik
 export async function startMetalGenerator(song) {
-  if (!isSetup) await setupAudio(); // Ensure setup if called before explicit setup
+  await ensureAudioContext();
 
   // Reset & Cleanup before starting
   stopAudio();
@@ -74,12 +82,6 @@ export async function startMetalGenerator(song) {
   }, pattern, "16n");
 
   loop.start(0);
-
-  // Ensure context is running (fixes "suspended" state if called after interaction)
-  if (Tone.context.state !== 'running') {
-      await Tone.context.resume();
-  }
-
   Tone.Transport.start();
 }
 
@@ -118,7 +120,8 @@ function playDrums(time, diff, note) {
     // Blast Beat
     drumKit.kick.triggerAttackRelease("C1", "16n", time);
     if (Math.random() > 0.5) drumKit.snare.triggerAttackRelease("16n", time);
-    drumKit.hihat.triggerAttackRelease("32n", time, 0.5);
+    // Corrected: Pass note (frequency/pitch) first
+    drumKit.hihat.triggerAttackRelease("8000", "32n", time, 0.5);
   } else {
     // Standard Groove
     if (note === "E2" || Math.random() < (diff * 0.1)) {
@@ -128,6 +131,6 @@ function playDrums(time, diff, note) {
       drumKit.snare.triggerAttackRelease("16n", time);
     }
     // HiHat Pulse
-    if (time % 0.25 < 0.1) drumKit.hihat.triggerAttackRelease("32n", time);
+    if (time % 0.25 < 0.1) drumKit.hihat.triggerAttackRelease("8000", "32n", time);
   }
 }
