@@ -1,12 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen';
-import { buildRhythmLayout, calculateCrowdY, calculateNoteY } from '../utils/pixiStageUtils';
+import { buildRhythmLayout, calculateCrowdY, calculateNoteY, CROWD_LAYOUT } from '../utils/pixiStageUtils';
 
-const CROWD_CONTAINER_Y_RATIO = 0.5;
-const CROWD_MEMBER_COUNT = 50;
-const CROWD_MIN_RADIUS = 3;
-const CROWD_RADIUS_VARIANCE = 2;
-const CROWD_Y_RANGE_RATIO = 0.1;
 const NOTE_SPAWN_LEAD_MS = 2000;
 const NOTE_JITTER_RANGE = 10;
 const NOTE_SPRITE_SIZE = 80;
@@ -36,13 +31,14 @@ export class PixiStageController {
         this.stageContainer = null;
         this.rhythmContainer = null;
         this.crowdMembers = [];
-        this.laneGraphics = [];
+        this.laneGraphics = []; // Stores { static: Graphics, dynamic: Graphics }
         this.noteContainer = null;
         this.noteTexture = null;
         this.laneLayout = null;
         this.lastLayoutKey = null;
         this.lastLaneActive = [];
         this.isDisposed = false;
+        this.initPromise = null;
         this.handleTicker = this.handleTicker.bind(this);
     }
 
@@ -51,48 +47,48 @@ export class PixiStageController {
      * @returns {Promise<void>} Resolves when initialization completes.
      */
     async init() {
-        try {
-            this.isDisposed = false;
-            this.app = new PIXI.Application();
-            await this.app.init({
-                backgroundAlpha: 0,
-                resizeTo: this.containerRef.current,
-                antialias: true
-            });
-
-            if (this.isDisposed || !this.containerRef.current || !this.app) {
-                this.dispose();
-                return;
-            }
-
-            if (!this.containerRef.current) {
-                this.dispose();
-                return;
-            }
-            const container = this.containerRef.current;
-            if (!container || !this.app) {
-                this.dispose();
-                return;
-            }
-
-            container.appendChild(this.app.canvas);
-            this.colorMatrix = new PIXI.ColorMatrixFilter();
-            this.stageContainer = new PIXI.Container();
-            this.app.stage.addChild(this.stageContainer);
-
-            await this.loadAssets();
-            if (this.isDisposed) {
-                this.dispose();
-                return;
-            }
-            this.createCrowd();
-            this.createLanes();
-            this.createNoteContainer();
-            this.app.ticker.add(this.handleTicker);
-        } catch (error) {
-            console.error('[PixiStageController] Failed to initialize stage.', error);
-            this.dispose();
+        if (this.initPromise) {
+            return this.initPromise;
         }
+
+        this.initPromise = (async () => {
+            try {
+                this.isDisposed = false;
+                this.app = new PIXI.Application();
+                await this.app.init({
+                    backgroundAlpha: 0,
+                    resizeTo: this.containerRef.current,
+                    antialias: true
+                });
+
+                const container = this.containerRef.current;
+                if (this.isDisposed || !container || !this.app) {
+                    this.dispose();
+                    return;
+                }
+
+                container.appendChild(this.app.canvas);
+                this.colorMatrix = new PIXI.ColorMatrixFilter();
+                this.stageContainer = new PIXI.Container();
+                this.app.stage.addChild(this.stageContainer);
+
+                await this.loadAssets();
+                if (this.isDisposed) {
+                    this.dispose();
+                    return;
+                }
+                this.createCrowd();
+                this.createLanes();
+                this.createNoteContainer();
+                this.app.ticker.add(this.handleTicker);
+            } catch (error) {
+                console.error('[PixiStageController] Failed to initialize stage.', error);
+                this.dispose();
+                throw error;
+            }
+        })();
+
+        return this.initPromise;
     }
 
     /**
@@ -115,16 +111,16 @@ export class PixiStageController {
      */
     createCrowd() {
         const crowdContainer = new PIXI.Container();
-        crowdContainer.y = this.app.screen.height * CROWD_CONTAINER_Y_RATIO;
+        crowdContainer.y = this.app.screen.height * CROWD_LAYOUT.containerYRatio;
         this.stageContainer.addChild(crowdContainer);
 
-        for (let i = 0; i < CROWD_MEMBER_COUNT; i += 1) {
+        for (let i = 0; i < CROWD_LAYOUT.memberCount; i += 1) {
             const crowd = new PIXI.Graphics();
-            const radius = CROWD_MIN_RADIUS + Math.random() * CROWD_RADIUS_VARIANCE;
+            const radius = CROWD_LAYOUT.minRadius + Math.random() * CROWD_LAYOUT.radiusVariance;
             crowd.circle(0, 0, radius);
             crowd.fill(0x333333);
             crowd.x = Math.random() * this.app.screen.width;
-            crowd.y = Math.random() * (this.app.screen.height * CROWD_Y_RANGE_RATIO);
+            crowd.y = Math.random() * (this.app.screen.height * CROWD_LAYOUT.yRangeRatio);
             crowd.baseY = crowd.y;
             crowd.radius = radius;
             crowd.currentFillColor = 0x333333;
@@ -153,14 +149,21 @@ export class PixiStageController {
 
         this.gameStateRef.current.lanes.forEach((lane, index) => {
             const laneX = startX + lane.x;
-            const graphics = new PIXI.Graphics();
-            graphics.rect(laneX, 0, laneWidth, laneHeight);
-            graphics.fill({ color: 0x000000, alpha: 0.8 });
-            graphics.stroke({ width: laneStrokeWidth, color: 0x333333 });
 
-            this.rhythmContainer.addChild(graphics);
+            // Create separate graphics for static background and dynamic elements
+            const staticGraphics = new PIXI.Graphics();
+            const dynamicGraphics = new PIXI.Graphics();
+
+            // Draw static background once
+            staticGraphics.rect(laneX, 0, laneWidth, laneHeight);
+            staticGraphics.fill({ color: 0x000000, alpha: 0.8 });
+            staticGraphics.stroke({ width: laneStrokeWidth, color: 0x333333 });
+
+            this.rhythmContainer.addChild(staticGraphics);
+            this.rhythmContainer.addChild(dynamicGraphics);
+
             lane.renderX = laneX;
-            this.laneGraphics[index] = graphics;
+            this.laneGraphics[index] = { static: staticGraphics, dynamic: dynamicGraphics };
         });
     }
 
@@ -187,26 +190,36 @@ export class PixiStageController {
         const layout = this.laneLayout;
 
         state.lanes.forEach((lane, index) => {
-            const graphics = this.laneGraphics[index];
-            if (!graphics) {
+            const graphicsSet = this.laneGraphics[index];
+            if (!graphicsSet) {
                 return;
             }
-            const wasActive = this.lastLaneActive[index];
-            if (!layoutUpdated && wasActive === lane.active) {
-                return;
-            }
-            this.lastLaneActive[index] = lane.active;
-            graphics.clear();
-            graphics.rect(lane.renderX, 0, layout.laneWidth, layout.laneHeight);
-            graphics.fill({ color: 0x000000, alpha: 0.8 });
-            graphics.stroke({ width: layout.laneStrokeWidth, color: 0x333333 });
 
-            graphics.rect(lane.renderX, layout.hitLineY, layout.laneWidth, layout.hitLineHeight);
-            if (lane.active) {
-                graphics.fill({ color: lane.color, alpha: 0.8 });
-                graphics.stroke({ width: layout.hitLineStrokeWidth, color: 0xFFFFFF });
-            } else {
-                graphics.stroke({ width: layout.hitLineStrokeWidth, color: lane.color });
+            // Redraw static graphics only if layout updated
+            if (layoutUpdated) {
+                const { static: staticGraphics } = graphicsSet;
+                staticGraphics.clear();
+                staticGraphics.rect(lane.renderX, 0, layout.laneWidth, layout.laneHeight);
+                staticGraphics.fill({ color: 0x000000, alpha: 0.8 });
+                staticGraphics.stroke({ width: layout.laneStrokeWidth, color: 0x333333 });
+            }
+
+            const wasActive = this.lastLaneActive[index];
+
+            // Update dynamic graphics if layout changed OR activity changed
+            if (layoutUpdated || wasActive !== lane.active) {
+                this.lastLaneActive[index] = lane.active;
+
+                const { dynamic: dynamicGraphics } = graphicsSet;
+                dynamicGraphics.clear();
+
+                dynamicGraphics.rect(lane.renderX, layout.hitLineY, layout.laneWidth, layout.hitLineHeight);
+                if (lane.active) {
+                    dynamicGraphics.fill({ color: lane.color, alpha: 0.8 });
+                    dynamicGraphics.stroke({ width: layout.hitLineStrokeWidth, color: 0xFFFFFF });
+                } else {
+                    dynamicGraphics.stroke({ width: layout.hitLineStrokeWidth, color: lane.color });
+                }
             }
         });
     }
@@ -373,6 +386,7 @@ export class PixiStageController {
      */
     dispose() {
         this.isDisposed = true;
+        this.initPromise = null;
         if (this.app && this.app.ticker) {
             this.app.ticker.remove(this.handleTicker);
         }
@@ -382,6 +396,9 @@ export class PixiStageController {
                 this.destroyNoteSprite(note);
             });
         }
+
+        this.laneGraphics = [];
+        this.crowdMembers = [];
 
         if (this.app) {
             this.app.destroy(true, { children: true, texture: true, baseTexture: true });

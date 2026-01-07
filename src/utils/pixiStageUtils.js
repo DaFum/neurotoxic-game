@@ -36,15 +36,32 @@ export const calculateLaneStartX = ({ screenWidth, laneTotalWidth }) => (
     (screenWidth - laneTotalWidth) / 2
 );
 
+const LANE_TOTAL_WIDTH = 360;
+const LANE_WIDTH = 100;
+const LANE_HEIGHT_RATIO = 0.4;
+const LANE_STROKE_WIDTH = 2;
+const HIT_LINE_HEIGHT = 20;
+const HIT_LINE_OFFSET = 60;
+const HIT_LINE_STROKE_WIDTH = 4;
+const RHYTHM_OFFSET_RATIO = 0.6;
+
 export const RHYTHM_LAYOUT = Object.freeze({
-    laneTotalWidth: 360,
-    laneWidth: 100,
-    laneHeightRatio: 0.4,
-    laneStrokeWidth: 2,
-    hitLineHeight: 20,
-    hitLineOffset: 60,
-    hitLineStrokeWidth: 4,
-    rhythmOffsetRatio: 0.6
+    laneTotalWidth: LANE_TOTAL_WIDTH,
+    laneWidth: LANE_WIDTH,
+    laneHeightRatio: LANE_HEIGHT_RATIO,
+    laneStrokeWidth: LANE_STROKE_WIDTH,
+    hitLineHeight: HIT_LINE_HEIGHT,
+    hitLineOffset: HIT_LINE_OFFSET,
+    hitLineStrokeWidth: HIT_LINE_STROKE_WIDTH,
+    rhythmOffsetRatio: RHYTHM_OFFSET_RATIO
+});
+
+export const CROWD_LAYOUT = Object.freeze({
+    containerYRatio: 0.5,
+    memberCount: 50,
+    minRadius: 3,
+    radiusVariance: 2,
+    yRangeRatio: 0.1
 });
 
 /**
