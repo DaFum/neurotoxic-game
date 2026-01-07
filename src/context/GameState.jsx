@@ -319,38 +319,39 @@ export const GameStateProvider = ({ children }) => {
   };
 
   const resolveEvent = (choice) => {
+    // 1. Validation
     if (!choice) {
       setActiveEvent(null);
       return { outcomeText: '', description: '', result: null };
     }
 
     try {
+      // 2. Logic Execution
       const { result, delta, outcomeText, description } = resolveEventChoice(choice, {
         player: state.player,
         band: state.band,
         social: state.social
       });
 
+      // 3. State Application
       if (delta) {
         dispatch({ type: 'APPLY_EVENT_DELTA', payload: delta });
 
+        // Unlocks
         if (delta.flags?.unlock) {
-          let currentUnlocks = [];
           try {
-            const parsed = JSON.parse(localStorage.getItem('neurotoxic_unlocks') || '[]');
-            if (Array.isArray(parsed)) {
-              currentUnlocks = parsed;
+            const currentUnlocks = JSON.parse(localStorage.getItem('neurotoxic_unlocks') || '[]');
+            if (Array.isArray(currentUnlocks) && !currentUnlocks.includes(delta.flags.unlock)) {
+              currentUnlocks.push(delta.flags.unlock);
+              localStorage.setItem('neurotoxic_unlocks', JSON.stringify(currentUnlocks));
+              addToast(`UNLOCKED: ${delta.flags.unlock.toUpperCase()}!`, 'success');
             }
           } catch (e) {
             console.error('Failed to parse unlocks from localStorage:', e);
           }
-          if (!currentUnlocks.includes(delta.flags.unlock)) {
-            currentUnlocks.push(delta.flags.unlock);
-            localStorage.setItem('neurotoxic_unlocks', JSON.stringify(currentUnlocks));
-            addToast(`UNLOCKED: ${delta.flags.unlock.toUpperCase()}!`, 'success');
-          }
         }
 
+        // Game Over - Early Exit
         if (delta.flags?.gameOver) {
           addToast(`GAME OVER: ${description}`, 'error');
           changeScene('GAMEOVER');
@@ -359,7 +360,7 @@ export const GameStateProvider = ({ children }) => {
         }
       }
 
-      // Show outcome feedback for non-game-over event resolutions
+      // 4. Feedback (Success Path)
       if (outcomeText || description) {
         const message = outcomeText && description
           ? `${outcomeText} — ${description}`
@@ -367,9 +368,12 @@ export const GameStateProvider = ({ children }) => {
         addToast(message, 'info');
       }
 
+      // 5. Cleanup
       setActiveEvent(null);
       return { outcomeText, description, result };
+
     } catch (error) {
+      // 6. Error Handling
       console.error('[Event] Failed to resolve event choice:', error);
       addToast('EVENT ERROR: Resolution failed.', 'error');
       setActiveEvent(null);
