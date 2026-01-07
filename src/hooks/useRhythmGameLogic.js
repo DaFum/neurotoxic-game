@@ -24,6 +24,7 @@ export const useRhythmGameLogic = () => {
     const [overload, setOverload] = useState(0);
     const [isToxicMode, setIsToxicMode] = useState(false);
     const [isGameOver, setIsGameOver] = useState(false);
+    const gameOverTimerRef = useRef(null);
 
     // High-Frequency Game State (Ref)
     const gameStateRef = useRef({
@@ -159,11 +160,19 @@ export const useRhythmGameLogic = () => {
                 setIsGameOver(true);
                 gameStateRef.current.isGameOver = true;
                 addToast('BAND COLLAPSED', 'error');
+
+                // Schedule exit
+                if (!gameOverTimerRef.current) {
+                    gameOverTimerRef.current = setTimeout(() => {
+                        setLastGigStats(buildGigStatsSnapshot(gameStateRef.current.score, gameStateRef.current.stats, gameStateRef.current.toxicTimeTotal));
+                        changeScene('POSTGIG');
+                    }, 4000);
+                }
             }
             gameStateRef.current.health = next;
             return next;
         });
-    }, [addToast, hasUpgrade]);
+    }, [addToast, changeScene, hasUpgrade, setLastGigStats]);
 
     /**
      * Attempts to register a hit for the active lane.

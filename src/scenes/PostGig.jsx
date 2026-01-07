@@ -6,7 +6,7 @@ import { calculateGigFinancials } from '../utils/economyEngine';
 import { calculateViralityScore, generatePostOptions, resolvePost } from '../utils/socialEngine';
 
 export const PostGig = () => {
-  const { changeScene, updatePlayer, player, currentGig, gigModifiers, triggerEvent, activeEvent, band, updateSocial, social, lastGigStats } = useGameState();
+  const { changeScene, updatePlayer, player, currentGig, gigModifiers, triggerEvent, activeEvent, band, updateSocial, social, lastGigStats, addToast } = useGameState();
   const [phase, setPhase] = useState('REPORT'); // REPORT, SOCIAL, COMPLETE
   const [financials, setFinancials] = useState(null);
   const [virality, setVirality] = useState(0);
@@ -65,7 +65,7 @@ export const PostGig = () => {
 
   const handleContinue = () => {
     if (financials && (player.money + financials.net) < 0) {
-        alert("GAME OVER: BANKRUPT! The tour is over.");
+        addToast("GAME OVER: BANKRUPT! The tour is over.", 'error');
         changeScene('MENU');
     } else {
         if (financials) {

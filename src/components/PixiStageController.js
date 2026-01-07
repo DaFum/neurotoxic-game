@@ -361,7 +361,8 @@ export class PixiStageController {
         const state = this.gameStateRef.current;
         const stats = this.statsRef.current;
 
-        if (!state.running && !state.pauseTime) {
+        // Stop updating if game is over or fully stopped
+        if (state.isGameOver || (!state.running && !state.pauseTime)) {
             return;
         }
 

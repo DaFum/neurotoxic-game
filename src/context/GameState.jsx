@@ -275,10 +275,10 @@ export const GameStateProvider = ({ children }) => {
     const saveData = { ...state, timestamp: Date.now() };
     try {
         localStorage.setItem('neurotoxic_v3_save', JSON.stringify(saveData));
-        alert("GAME SAVED!");
+        addToast("GAME SAVED!", 'success');
     } catch (e) {
         console.error("Save failed", e);
-        alert("Save failed!");
+        addToast("Save failed!", 'error');
     }
   };
 
@@ -294,7 +294,7 @@ export const GameStateProvider = ({ children }) => {
             
             if (missingKeys.length > 0) {
                 console.error("Corrupt Save File: Missing keys", missingKeys);
-                alert("Save file is corrupt or outdated. Starting fresh.");
+                addToast("Save file is corrupt or outdated. Starting fresh.", 'error');
                 return false;
             }
 

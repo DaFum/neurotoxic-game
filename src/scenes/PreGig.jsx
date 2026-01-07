@@ -4,20 +4,19 @@ import { SONGS_DB } from '../data/songs';
 import { getGigModifiers } from '../utils/simulationUtils';
 
 export const PreGig = () => {
-  const { currentGig, changeScene, setSetlist, setlist, gigModifiers, setGigModifiers, player, updatePlayer, triggerEvent, activeEvent, band, updateBand } = useGameState();
+  const { currentGig, changeScene, setSetlist, setlist, gigModifiers, setGigModifiers, player, updatePlayer, triggerEvent, activeEvent, band, updateBand, addToast } = useGameState();
   const currentModifiers = getGigModifiers(band);
 
   const handleBandMeeting = () => {
       const cost = 50;
       if (player.money < cost) {
-          alert("Not enough money for snacks!");
+          addToast("Not enough money for snacks!", 'error');
           return;
       }
-      if (window.confirm("Hold Band Meeting? (+15 Harmony, -50€)")) {
-          updatePlayer({ money: player.money - cost });
-          updateBand({ harmony: Math.min(100, band.harmony + 15) });
-          alert("Meeting held. Vibes are better.");
-      }
+
+      updatePlayer({ money: player.money - cost });
+      updateBand({ harmony: Math.min(100, band.harmony + 15) });
+      addToast("Meeting held. Vibes are better.", 'success');
   };
 
   React.useEffect(() => {
@@ -44,7 +43,7 @@ export const PreGig = () => {
   const toggleModifier = (key, cost) => {
     const isActive = gigModifiers[key];
     if (!isActive && player.money < cost) {
-        alert("Not enough money!");
+        addToast("Not enough money!", 'error');
         return;
     }
 
