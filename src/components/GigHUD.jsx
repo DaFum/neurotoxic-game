@@ -55,7 +55,7 @@ export const GigHUD = ({ stats, onLaneInput }) => {
 
             {/* Controls Hint */}
             <div className="absolute bottom-4 w-full text-center text-gray-500 font-mono text-sm z-10">
-                [← GUITAR] [↓ DRUMS] [→ BASS]
+                [← GUITAR] [↓ DRUMS] [→ BASS] (Arrow Keys)
             </div>
             
             {isGameOver && (

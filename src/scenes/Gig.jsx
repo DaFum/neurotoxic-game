@@ -7,7 +7,14 @@ import { IMG_PROMPTS, getGenImageUrl } from '../utils/imageGen';
 import PropTypes from 'prop-types';
 
 export const Gig = () => {
-  const { currentGig } = useGameState();
+  const { currentGig, changeScene, addToast } = useGameState();
+
+  React.useEffect(() => {
+      if (!currentGig) {
+          addToast("No gig active! Returning to map.", 'error');
+          changeScene('OVERWORLD');
+      }
+  }, [currentGig, changeScene, addToast]);
 
   // Use the extracted logic hook
   const logic = useRhythmGameLogic();

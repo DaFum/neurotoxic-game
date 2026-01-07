@@ -9,6 +9,13 @@ export const PreGig = () => {
   const { currentGig, changeScene, setSetlist, setlist, gigModifiers, setGigModifiers, player, updatePlayer, triggerEvent, activeEvent, band, updateBand, addToast } = useGameState();
   const currentModifiers = getGigModifiers(band);
 
+  React.useEffect(() => {
+      if (!currentGig) {
+          addToast("No gig active! Returning to map.", 'error');
+          changeScene('OVERWORLD');
+      }
+  }, [currentGig, changeScene, addToast]);
+
   const handleBandMeeting = () => {
       const cost = 50;
       if (player.money < cost) {
@@ -49,7 +56,7 @@ export const PreGig = () => {
         return;
     }
 
-    setGigModifiers(prev => ({ ...prev, [key]: !prev[key] }));
+    setGigModifiers({ [key]: !isActive });
     // Removed immediate money deduction to prevent double billing in PostGig
   };
 

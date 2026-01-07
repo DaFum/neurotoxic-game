@@ -154,7 +154,7 @@ export const PostGig = () => {
   const handleContinue = () => {
     if (financials && (player.money + financials.net) < 0) {
         addToast("GAME OVER: BANKRUPT! The tour is over.", 'error');
-        changeScene('MENU');
+        changeScene('GAMEOVER');
     } else {
         if (financials) {
             updatePlayer({

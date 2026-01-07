@@ -136,7 +136,7 @@ const gameReducer = (state, action) => {
       return { ...state, toasts: state.toasts.filter(t => t.id !== action.payload) };
     
     case 'SET_GIG_MODIFIERS':
-      return { ...state, gigModifiers: action.payload };
+      return { ...state, gigModifiers: { ...state.gigModifiers, ...action.payload } };
       
     case 'LOAD_GAME':
       logger.info('GameState', 'Game Loaded');
@@ -207,21 +207,15 @@ export const GameStateProvider = ({ children }) => {
   const setSetlist = (list) => dispatch({ type: 'SET_SETLIST', payload: list });
   const setLastGigStats = (stats) => dispatch({ type: 'SET_LAST_GIG_STATS', payload: stats });
   const setActiveEvent = (event) => dispatch({ type: 'SET_ACTIVE_EVENT', payload: event });
-  const setGigModifiers = (mods) => {
-      // If passing function, handle it (useState style) or just value
-      if (typeof mods === 'function') {
-          // This is tricky with useReducer as we don't have sync access to state in the same way 
-          // unless we read it from state.gigModifiers
-          // But consumers might expect (prev => ...)
-          // For now assume direct object or handle simple merge if needed.
-          // Simplification: Consumers pass new object.
-          // But looking at existing usage: setGigModifiers(prev => ...)
-          // We need to support that pattern or refactor consumers.
-          // Let's refactor the wrapper to support it.
-          const newMods = mods(state.gigModifiers);
-          dispatch({ type: 'SET_GIG_MODIFIERS', payload: newMods });
+  const setGigModifiers = (payload) => {
+      // Direct merge dispatch to avoid stale state issues with functional updates
+      if (typeof payload === 'function') {
+          // If legacy code uses function, warn or try to support (but safer to refactor callers)
+          // For now, execute with current state, but this is the anti-pattern we want to avoid if possible.
+          // Better: Consumers should pass { key: value } to update.
+          dispatch({ type: 'SET_GIG_MODIFIERS', payload: payload(state.gigModifiers) });
       } else {
-          dispatch({ type: 'SET_GIG_MODIFIERS', payload: mods });
+          dispatch({ type: 'SET_GIG_MODIFIERS', payload });
       }
   };
 
@@ -292,6 +286,14 @@ export const GameStateProvider = ({ children }) => {
 
   // Event System Integration
   const triggerEvent = (category, triggerPoint = null) => {
+    // Harte Regel: Events nur in Overworld/PreGig/PostGig, oder wenn explizit erlaubt (z.B. Pause)
+    // "GIG" scene should not be interrupted unless critical logic allows it.
+    if (state.currentScene === 'GIG') {
+        // Queue event instead? Or just return false.
+        // For now, return false to prevent interruption.
+        return false;
+    }
+
     // Pass full state context for flags/cooldowns
     const context = { 
         player: state.player, 
