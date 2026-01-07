@@ -51,9 +51,12 @@ export const PreGig = () => {
 
   const toggleModifier = (key, cost) => {
     const isActive = gigModifiers[key];
-    if (!isActive && player.money < cost) {
-        addToast("Not enough money!", 'error');
-        return;
+
+    if (!isActive) {
+        if (player.money < (calculatedBudget + cost)) {
+            addToast("Budget exceeded! Not enough money for total costs.", 'error');
+            return;
+        }
     }
 
     setGigModifiers({ [key]: !isActive });

@@ -136,15 +136,23 @@ const gameReducer = (state, action) => {
       return { ...state, toasts: state.toasts.filter(t => t.id !== action.payload) };
     
     case 'SET_GIG_MODIFIERS': {
-      const updates = typeof action.payload === 'function'
+      const updates = (typeof action.payload === 'function'
         ? action.payload(state.gigModifiers)
-        : action.payload;
+        : action.payload) || {};
       return { ...state, gigModifiers: { ...state.gigModifiers, ...updates } };
     }
       
     case 'LOAD_GAME':
       logger.info('GameState', 'Game Loaded');
-      return { ...state, ...action.payload };
+
+      // Migration: energy -> catering
+      const loadedState = { ...action.payload };
+      if (loadedState.gigModifiers && loadedState.gigModifiers.energy !== undefined) {
+          loadedState.gigModifiers.catering = loadedState.gigModifiers.energy;
+          delete loadedState.gigModifiers.energy;
+      }
+
+      return { ...state, ...loadedState };
 
     case 'APPLY_EVENT_DELTA': {
         logger.info('GameState', 'Applying Event Delta', action.payload);
