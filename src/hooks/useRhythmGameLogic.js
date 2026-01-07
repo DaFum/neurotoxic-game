@@ -72,8 +72,8 @@ export const useRhythmGameLogic = () => {
             const layer = gameMap?.nodes[player.currentNodeId]?.layer || 0;
             const speedMult = 1.0 + (layer * 0.05);
 
-            // Explicitly merge band-derived modifiers with context modifiers as requested
-            const mergedModifiers = { ...activeModifiers, ...gigModifiers };
+            // Use band-aware modifiers computed by getGigModifiers (already merged with gigModifiers)
+            const mergedModifiers = activeModifiers;
             gameStateRef.current.modifiers = mergedModifiers;
             gameStateRef.current.speed = 500 * speedMult * physics.speedModifier;
 
