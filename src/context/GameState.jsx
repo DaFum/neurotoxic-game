@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { eventEngine } from '../utils/eventEngine';
-import { resolveEventChoice } from '../utils/eventResolver';
-import { MapGenerator } from '../utils/mapGenerator';
-import { applyEventDelta } from '../utils/gameStateUtils';
-import { CHARACTERS } from '../data/characters';
+import { eventEngine } from '../utils/eventEngine.js';
+import { resolveEventChoice } from '../utils/eventResolver.js';
+import { MapGenerator } from '../utils/mapGenerator.js';
+import { applyEventDelta } from '../utils/gameStateUtils.js';
+import { CHARACTERS } from '../data/characters.js';
 
 // Initial State Definition
 const initialState = {
@@ -355,7 +355,7 @@ export const GameStateProvider = ({ children }) => {
       console.error('[Event] Failed to resolve event choice:', error);
       addToast('EVENT ERROR: Resolution failed.', 'error');
       setActiveEvent(null);
-      return { outcomeText: choice.outcomeText ?? '', description: 'Resolution failed.', result: null };
+      return { outcomeText: choice?.outcomeText ?? '', description: 'Resolution failed.', result: null };
     }
   };
 
