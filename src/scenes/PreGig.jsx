@@ -7,7 +7,6 @@ import { ensureAudioContext } from '../utils/audioEngine';
 
 export const PreGig = () => {
   const { currentGig, changeScene, setSetlist, setlist, gigModifiers, setGigModifiers, player, updatePlayer, triggerEvent, activeEvent, band, updateBand, addToast } = useGameState();
-  const currentModifiers = getGigModifiers(band);
 
   React.useEffect(() => {
       if (!currentGig) {
@@ -51,19 +50,23 @@ export const PreGig = () => {
 
   const toggleModifier = (key, cost) => {
     const isActive = gigModifiers[key];
-    if (!isActive && player.money < cost) {
-        addToast("Not enough money!", 'error');
-        return;
+
+    if (!isActive) {
+        if (player.money < cost) {
+            addToast("Not enough money for this upgrade!", 'error');
+            return;
+        }
     }
 
     setGigModifiers({ [key]: !isActive });
-    // Removed immediate money deduction to prevent double billing in PostGig
+    // Removed immediate money deduction to prevent double billing in PostGig.
+    // Costs are calculated in economyEngine.js
   };
 
   const calculatedBudget = Object.entries(gigModifiers).reduce((acc, [key, active]) => {
       if (!active) return acc;
       const costMap = {
-          soundcheck: 50, promo: 30, merch: 40, energy: 20, guestlist: 60
+          soundcheck: 50, promo: 30, merch: 40, catering: 20, guestlist: 60
       };
       return acc + (costMap[key] || 0);
   }, 0);
@@ -91,7 +94,7 @@ export const PreGig = () => {
                 { key: 'soundcheck', label: 'Soundcheck', cost: 50, desc: 'Notes Easier' },
                 { key: 'promo', label: 'Social Promo', cost: 30, desc: '+Crowd Fill' },
                 { key: 'merch', label: 'Merch Table', cost: 40, desc: '+Sales' },
-                { key: 'energy', label: 'Energy Drinks', cost: 20, desc: '+Stamina' },
+                { key: 'catering', label: 'Catering / Energy', cost: 20, desc: '+Stamina' },
                 { key: 'guestlist', label: 'Guest List', cost: 60, desc: '+VIP Score' }
             ].map(item => (
                 <button 

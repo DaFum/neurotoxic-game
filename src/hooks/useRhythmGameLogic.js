@@ -72,17 +72,19 @@ export const useRhythmGameLogic = () => {
             const layer = gameMap?.nodes[player.currentNodeId]?.layer || 0;
             const speedMult = 1.0 + (layer * 0.05);
 
-            gameStateRef.current.modifiers = activeModifiers;
+            // Use band-aware modifiers computed by getGigModifiers (already merged with gigModifiers)
+            const mergedModifiers = activeModifiers;
+            gameStateRef.current.modifiers = mergedModifiers;
             gameStateRef.current.speed = 500 * speedMult * physics.speedModifier;
 
             // Apply Modifiers
-            if (activeModifiers.drumSpeedMult > 1.0) gameStateRef.current.speed *= activeModifiers.drumSpeedMult;
+            if (mergedModifiers.drumSpeedMult > 1.0) gameStateRef.current.speed *= mergedModifiers.drumSpeedMult;
 
             // PreGig Modifiers
-            let hitWindowBonus = activeModifiers.hitWindowBonus || 0;
-            if (activeModifiers.soundcheck) hitWindowBonus += 30; // Soundcheck bonus
+            let hitWindowBonus = mergedModifiers.hitWindowBonus || 0;
+            if (mergedModifiers.soundcheck) hitWindowBonus += 30; // Soundcheck bonus
 
-            if (activeModifiers.energy) {
+            if (mergedModifiers.catering) {
                 // Energy boost: easier physics? Or just stamina?
                 // Already handled in physics via band stats if we mutated band, but here we can apply direct overrides
                 // For now, let's say it counteracts speed drag
@@ -176,15 +178,16 @@ export const useRhythmGameLogic = () => {
         } catch (error) {
             console.error('[useRhythmGameLogic] Failed to initialize gig state.', error);
         }
-    }, [band, gameMap?.nodes, player.currentNodeId, setlist]);
+    }, [band, gameMap?.nodes, player.currentNodeId, setlist, gigModifiers]);
 
     useEffect(() => {
         initializeGigState();
 
+        const audio = audioRef.current;
         return () => {
             stopAudio();
-            if (audioRef.current) {
-                audioRef.current.stop();
+            if (audio) {
+                audio.stop();
             }
         };
     }, [initializeGigState]);
@@ -230,7 +233,7 @@ export const useRhythmGameLogic = () => {
                 gameStateRef.current.isGameOver = true;
                 addToast('BAND COLLAPSED', 'error');
 
-                // Schedule exit
+                // Schedule exit from Gig if failed (Softlock fix)
                 if (!gameOverTimerRef.current) {
                     gameOverTimerRef.current = setTimeout(() => {
                         setLastGigStats(buildGigStatsSnapshot(gameStateRef.current.score, gameStateRef.current.stats, gameStateRef.current.toxicTimeTotal));
@@ -273,6 +276,9 @@ export const useRhythmGameLogic = () => {
             if (laneIndex === 1 && hasUpgrade('drum_trigger')) points = 120;
             if (laneIndex === 0) points *= (state.modifiers.guitarScoreMult || 1.0);
             
+            // Guestlist Effect: +20% score
+            if (state.modifiers.guestlist) points *= 1.2;
+
             let finalScore = points + (combo * 10);
             if (toxicModeActive) finalScore *= 4;
 

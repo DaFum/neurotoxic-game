@@ -125,7 +125,11 @@ export const PostGig = () => {
           const rawScore = lastGigStats?.score || 0;
           const performanceScore = Math.min(100, Math.max(50, rawScore / 500)); // Rough normalization
           
-          const crowdStats = { fillRate: 0.6 + (gigModifiers.promo ? 0.2 : 0) + (Math.random() * 0.2) };
+          // NOTE: economyEngine currently derives core gig economics (like fillRate) internally from Fame/Promo.
+          // We still pass a minimal `crowdStats` object as contextual metadata and to keep the API shape stable
+          // for future extensions (e.g., hype-driven bonuses or logging). It does not currently change the core
+          // financial outcome on its own.
+          const crowdStats = { hype: lastGigStats?.peakHype || 0 };
           
           // Pass player.fame and lastGigStats
           const result = calculateGigFinancials(currentGig, performanceScore, crowdStats, gigModifiers, band.inventory, player.fame, lastGigStats);
@@ -152,6 +156,8 @@ export const PostGig = () => {
 
 
   const handleContinue = () => {
+    // Bankruptcy check: If net causes negative balance, GAME OVER
+    // Logic: player.money + financials.net < 0
     if (financials && (player.money + financials.net) < 0) {
         addToast("GAME OVER: BANKRUPT! The tour is over.", 'error');
         changeScene('GAMEOVER');

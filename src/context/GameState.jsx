@@ -79,7 +79,7 @@ const initialState = {
     promo: false,
     soundcheck: false,
     merch: false,
-    energy: false,
+    catering: false,
     guestlist: false
   }
 };
@@ -135,12 +135,32 @@ const gameReducer = (state, action) => {
     case 'REMOVE_TOAST':
       return { ...state, toasts: state.toasts.filter(t => t.id !== action.payload) };
     
-    case 'SET_GIG_MODIFIERS':
-      return { ...state, gigModifiers: { ...state.gigModifiers, ...action.payload } };
+    case 'SET_GIG_MODIFIERS': {
+      const updates = (typeof action.payload === 'function'
+        ? action.payload(state.gigModifiers)
+        : action.payload) || {};
+      return { ...state, gigModifiers: { ...state.gigModifiers, ...updates } };
+    }
       
     case 'LOAD_GAME':
       logger.info('GameState', 'Game Loaded');
-      return { ...state, ...action.payload };
+
+      // Migration: energy -> catering
+      // Migration + deep-merge saved gigModifiers
+      let loadedState = { ...action.payload };
+      if (loadedState.gigModifiers) {
+          // Migrate legacy key
+          if (loadedState.gigModifiers.energy !== undefined) {
+              loadedState.gigModifiers.catering = loadedState.gigModifiers.energy;
+              delete loadedState.gigModifiers.energy;
+          }
+          // Merge with defaults to preserve new toggles
+          loadedState.gigModifiers = {
+              ...initialState.gigModifiers,
+              ...loadedState.gigModifiers
+          };
+      }
+      return { ...state, ...loadedState };
 
     case 'APPLY_EVENT_DELTA': {
         logger.info('GameState', 'Applying Event Delta', action.payload);
@@ -208,15 +228,7 @@ export const GameStateProvider = ({ children }) => {
   const setLastGigStats = (stats) => dispatch({ type: 'SET_LAST_GIG_STATS', payload: stats });
   const setActiveEvent = (event) => dispatch({ type: 'SET_ACTIVE_EVENT', payload: event });
   const setGigModifiers = (payload) => {
-      // Direct merge dispatch to avoid stale state issues with functional updates
-      if (typeof payload === 'function') {
-          // If legacy code uses function, warn or try to support (but safer to refactor callers)
-          // For now, execute with current state, but this is the anti-pattern we want to avoid if possible.
-          // Better: Consumers should pass { key: value } to update.
-          dispatch({ type: 'SET_GIG_MODIFIERS', payload: payload(state.gigModifiers) });
-      } else {
-          dispatch({ type: 'SET_GIG_MODIFIERS', payload });
-      }
+      dispatch({ type: 'SET_GIG_MODIFIERS', payload });
   };
 
   const addToast = (message, type = 'info') => {
