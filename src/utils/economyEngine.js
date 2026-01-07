@@ -83,7 +83,9 @@ const calculateMerchIncome = (ticketsSold, performanceScore, gigStats, modifiers
         buyRate *= 2.0; // S-Rank Bonus
         breakdownItems.push({ label: 'HYPE BONUS', value: 0, detail: 'Merch frenzy (S-Rank)!' });
     }
-    if (modifiers.merch || modifiers.merchTable) buyRate += 0.10; // Boost from table
+
+    const hasMerch = modifiers.merch || modifiers.merchTable;
+    if (hasMerch) buyRate += 0.10; // Boost from table
     
     // Penalty: Misses drive people away
     if (gigStats && gigStats.misses > 0) {
@@ -142,7 +144,8 @@ const calculateGigExpenses = (gigData, modifiers) => {
         expenses.total += promoCost;
     }
 
-    if (modifiers.merch || modifiers.merchTable) {
+    const hasMerch = modifiers.merch || modifiers.merchTable;
+    if (hasMerch) {
         const merchTableCost = 40;
         expenses.breakdown.push({ label: 'Merch Stand', value: merchTableCost, detail: 'Better Display' });
         expenses.total += merchTableCost;
