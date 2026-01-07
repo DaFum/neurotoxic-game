@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { eventEngine } from '../utils/eventEngine';
+import { resolveEventChoice } from '../utils/eventResolver';
 import { MapGenerator } from '../utils/mapGenerator';
 import { applyEventDelta } from '../utils/gameStateUtils';
 import { CHARACTERS } from '../data/characters';
@@ -316,37 +317,46 @@ export const GameStateProvider = ({ children }) => {
   };
 
   const resolveEvent = (choice) => {
-    const result = eventEngine.resolveChoice(choice, { player: state.player, band: state.band, social: state.social });
-    const delta = eventEngine.applyResult(result, () => {}, () => {}, () => {}); // Dummy updaters, we use delta return
-    
-    // applyResult in eventEngine returns a delta object if we modify it to do so 
-    // OR we use the logic inside applyResult. 
-    // The previous implementation of applyResult was "return delta".
-    // So we can just use that.
-    
-    if (delta) {
+    if (!choice) {
+      setActiveEvent(null);
+      return { outcomeText: '', description: '', result: null };
+    }
+
+    try {
+      const { result, delta, outcomeText, description } = resolveEventChoice(choice, {
+        player: state.player,
+        band: state.band,
+        social: state.social
+      });
+
+      if (delta) {
         dispatch({ type: 'APPLY_EVENT_DELTA', payload: delta });
 
-        // Handle Unlocks
-        if (delta.flags.unlock) {
-            const currentUnlocks = JSON.parse(localStorage.getItem('neurotoxic_unlocks') || '[]');
-            if (!currentUnlocks.includes(delta.flags.unlock)) {
-                currentUnlocks.push(delta.flags.unlock);
-                localStorage.setItem('neurotoxic_unlocks', JSON.stringify(currentUnlocks));
-                addToast(`UNLOCKED: ${delta.flags.unlock.toUpperCase()}!`, 'success'); // Use Toast instead of Alert
-            }
+        if (delta.flags?.unlock) {
+          const currentUnlocks = JSON.parse(localStorage.getItem('neurotoxic_unlocks') || '[]');
+          if (!currentUnlocks.includes(delta.flags.unlock)) {
+            currentUnlocks.push(delta.flags.unlock);
+            localStorage.setItem('neurotoxic_unlocks', JSON.stringify(currentUnlocks));
+            addToast(`UNLOCKED: ${delta.flags.unlock.toUpperCase()}!`, 'success');
+          }
         }
 
-        // Handle Game Over
-        if (delta.flags.gameOver) {
-            addToast("GAME OVER: " + result.description, 'error');
-            changeScene('GAMEOVER');
-            setActiveEvent(null);
-            return { outcomeText: choice.outcomeText, description: result.description, result };
+        if (delta.flags?.gameOver) {
+          addToast(`GAME OVER: ${description}`, 'error');
+          changeScene('GAMEOVER');
+          setActiveEvent(null);
+          return { outcomeText, description, result };
         }
+      }
+
+      setActiveEvent(null);
+      return { outcomeText, description, result };
+    } catch (error) {
+      console.error('[Event] Failed to resolve event choice:', error);
+      addToast('EVENT ERROR: Resolution failed.', 'error');
+      setActiveEvent(null);
+      return { outcomeText: choice.outcomeText ?? '', description: 'Resolution failed.', result: null };
     }
-    
-    return { outcomeText: choice.outcomeText, description: result?.description, result };
   };
 
   return (

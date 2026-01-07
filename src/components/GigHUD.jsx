@@ -1,34 +1,7 @@
 import React from 'react';
-import { useGameState } from '../context/GameState';
-import { IMG_PROMPTS, getGenImageUrl } from '../utils/imageGen';
 
-export const GigHUD = ({ stats, activeEvent, resolveEvent, setActiveEvent, onLaneInput }) => {
+export const GigHUD = ({ stats, onLaneInput }) => {
     const { score, combo, health, overload, isToxicMode, isGameOver } = stats;
-
-    const EventModal = () => {
-        if (!activeEvent) return null;
-        const handleChoice = (choice) => {
-            const result = resolveEvent(choice);
-            setActiveEvent(null);
-        };
-        
-        return (
-          <div className="absolute inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 pointer-events-auto">
-              <div className="w-full max-w-lg border-4 border-[var(--toxic-green)] bg-black p-6 shadow-[0_0_50px_rgba(0,255,65,0.4)] relative">
-                  <h2 className="text-3xl font-[Metal_Mania] text-[var(--toxic-green)] mb-4 uppercase animate-pulse">{activeEvent.title}</h2>
-                  <p className="font-mono text-gray-300 mb-8 text-lg leading-relaxed">{activeEvent.text}</p>
-                  <div className="space-y-4">
-                      {activeEvent.options.map((opt, i) => (
-                          <button key={i} onClick={() => handleChoice(opt)} className="w-full p-4 border border-[var(--ash-gray)] hover:bg-[var(--toxic-green)] hover:text-black hover:border-transparent transition-all font-bold text-left flex justify-between group">
-                              <span>{opt.label}</span>
-                              <span className="opacity-0 group-hover:opacity-100 transition-opacity">{opt.skillCheck ? `[${opt.skillCheck.stat.toUpperCase()}]` : '>>>'}</span>
-                          </button>
-                      ))}
-                  </div>
-              </div>
-          </div>
-        );
-    };
 
     return (
         <div className="absolute inset-0 z-30 pointer-events-none">
@@ -47,8 +20,6 @@ export const GigHUD = ({ stats, activeEvent, resolveEvent, setActiveEvent, onLan
                 ))}
             </div>
 
-            <EventModal />
-            
             {/* Social Feed Overlay (Meta Layer) */}
             <div className="absolute top-32 right-4 w-64 bg-black/80 border border-[var(--toxic-green)] p-2 z-10 text-xs font-mono">
                 <div className="text-[var(--toxic-green)] font-bold mb-2 border-b border-gray-700">LIVE FEED 🔴</div>

@@ -4,7 +4,7 @@ import { SONGS_DB } from '../data/songs';
 import { getGigModifiers } from '../utils/simulationUtils';
 
 export const PreGig = () => {
-  const { currentGig, changeScene, setSetlist, setlist, gigModifiers, setGigModifiers, player, updatePlayer, triggerEvent, activeEvent, resolveEvent, setActiveEvent, band, updateBand } = useGameState();
+  const { currentGig, changeScene, setSetlist, setlist, gigModifiers, setGigModifiers, player, updatePlayer, triggerEvent, activeEvent, band, updateBand } = useGameState();
   const currentModifiers = getGigModifiers(band);
 
   const handleBandMeeting = () => {
@@ -30,43 +30,6 @@ export const PreGig = () => {
       }
   }, []);
 
-  const EventModal = () => {
-      if (!activeEvent) return null;
-
-      const handleChoice = (choice) => {
-          const result = resolveEvent(choice);
-          alert(result.outcomeText + (result.description ? `\n\n> ${result.description}` : ''));
-          setActiveEvent(null);
-      };
-
-      return (
-        <div className="absolute inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-            <div className="w-full max-w-lg border-4 border-[var(--toxic-green)] bg-black p-6 shadow-[0_0_50px_rgba(0,255,65,0.4)] relative">
-                <h2 className="text-3xl font-[Metal_Mania] text-[var(--toxic-green)] mb-4 uppercase animate-pulse">
-                    {activeEvent.title}
-                </h2>
-                <p className="font-mono text-gray-300 mb-8 text-lg leading-relaxed">
-                    {activeEvent.text}
-                </p>
-                
-                <div className="space-y-4">
-                    {activeEvent.options.map((opt, i) => (
-                        <button
-                            key={i}
-                            onClick={() => handleChoice(opt)}
-                            className="w-full p-4 border border-[var(--ash-gray)] hover:bg-[var(--toxic-green)] hover:text-black hover:border-transparent transition-all font-bold text-left flex justify-between group"
-                        >
-                            <span>{opt.label}</span>
-                            <span className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                {opt.skillCheck ? `[${opt.skillCheck.stat.toUpperCase()}]` : '>>>'}
-                            </span>
-                        </button>
-                    ))}
-                </div>
-            </div>
-        </div>
-      );
-  };
 
   const toggleSong = (song) => {
     if (setlist.find(s => s.id === song.id)) {
@@ -91,7 +54,6 @@ export const PreGig = () => {
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-[var(--void-black)] text-white relative">
-      <EventModal />
       <h2 className="text-4xl text-[var(--toxic-green)] font-[Metal_Mania] mb-4">PREPARATION</h2>
       <div className="text-xl mb-8 font-mono border-b border-[var(--toxic-green)] pb-2 w-full max-w-2xl text-center">
         VENUE: {currentGig?.name}
