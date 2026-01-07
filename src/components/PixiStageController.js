@@ -299,9 +299,8 @@ export class PixiStageController {
         }
 
         const rect = new PIXI.Graphics();
-        rect.beginFill(lane.color);
-        rect.drawRect(0, 0, NOTE_FALLBACK_WIDTH, NOTE_FALLBACK_HEIGHT);
-        rect.endFill();
+        rect.rect(0, 0, NOTE_FALLBACK_WIDTH, NOTE_FALLBACK_HEIGHT);
+        rect.fill({ color: lane.color });
         rect.x = lane.renderX + 5;
         rect.y = NOTE_INITIAL_Y;
         return rect;

@@ -28,7 +28,10 @@ export const PixiStage = ({ logic }) => {
             updateRef,
             statsRef
         });
-        controllerRef.current.init();
+
+        controllerRef.current.init().catch(err => {
+            console.error("Pixi Stage Init Failed:", err);
+        });
 
         return () => {
             if (controllerRef.current) {
