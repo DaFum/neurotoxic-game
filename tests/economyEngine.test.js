@@ -172,7 +172,7 @@ test('calculateGigFinancials includes transport costs based on distance', () => 
 });
 
 test('calculateGigFinancials includes catering when enabled', () => {
-    // Note: catering replaced energy drinks in refactor
+    // Note: key renamed from 'energy' to 'catering' for standardization
     const gigData = buildGigData();
     
     const noCatering = calculateGigFinancials(
