@@ -69,7 +69,13 @@ export class PixiStageController {
                 this.dispose();
                 return;
             }
-            this.containerRef.current.appendChild(this.app.canvas);
+            const container = this.containerRef.current;
+            if (!container || !this.app) {
+                this.dispose();
+                return;
+            }
+
+            container.appendChild(this.app.canvas);
             this.colorMatrix = new PIXI.ColorMatrixFilter();
             this.stageContainer = new PIXI.Container();
             this.app.stage.addChild(this.stageContainer);
