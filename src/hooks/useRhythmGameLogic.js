@@ -389,6 +389,9 @@ export const useRhythmGameLogic = () => {
      * @returns {void}
      */
   const registerInput = (laneIndex, isDown) => {
+    // Ignore input if game is not running or is paused
+    if (!gameStateRef.current.running || gameStateRef.current.paused || activeEvent) return
+
     if (gameStateRef.current.lanes[laneIndex]) {
       gameStateRef.current.lanes[laneIndex].active = isDown
       if (isDown) handleHit(laneIndex)

@@ -28,6 +28,13 @@ This is a Designer-Led implementation of the "NEUROTOXIC" game concept.
 1. `npm install`
 2. `npm run dev`
 
+## Controls
+
+- **Overworld**: Click nodes to travel. Use the Radio widget (▶/■) to toggle ambient music.
+- **Gig**:
+  - **Inputs**: Left Arrow (Guitar), Down Arrow (Drums), Right Arrow (Bass).
+  - **Pause**: Press `Escape` to pause/resume the game or quit the current gig.
+
 ## Credits
 
 Based on the NEUROTOXIC band universe.
