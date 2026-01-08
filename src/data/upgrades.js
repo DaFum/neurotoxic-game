@@ -61,4 +61,4 @@ export const UPGRADES_DB = {
       effect: { type: 'start_bonus', stat: 'fame', value: 1000 }
     }
   ]
-};
+}

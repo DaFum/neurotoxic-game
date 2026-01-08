@@ -1,6 +1,6 @@
-import React from 'react';
+import React from 'react'
 
-export const GlitchButton = ({ onClick, children, className = "", disabled = false }) => {
+export const GlitchButton = ({ onClick, children, className = '', disabled = false }) => {
   return (
     <button
       onClick={onClick}
@@ -19,11 +19,11 @@ export const GlitchButton = ({ onClick, children, className = "", disabled = fal
         ${className}
       `}
     >
-      <span className="relative z-10 group-hover:animate-pulse">
+      <span className='relative z-10 group-hover:animate-pulse'>
         {children}
       </span>
       {/* Glitch Overlay Effect on Hover */}
-      <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 mix-blend-difference pointer-events-none" />
+      <span className='absolute inset-0 bg-white opacity-0 group-hover:opacity-10 mix-blend-difference pointer-events-none' />
     </button>
-  );
-};
+  )
+}

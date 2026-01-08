@@ -13,10 +13,10 @@
  * @returns {GigPerformanceStats} Updated stats snapshot.
  */
 export const updateGigPerformanceStats = (stats, payload) => ({
-    ...stats,
-    maxCombo: Math.max(stats.maxCombo, payload.combo),
-    peakHype: Math.max(stats.peakHype, payload.overload)
-});
+  ...stats,
+  maxCombo: Math.max(stats.maxCombo, payload.combo),
+  peakHype: Math.max(stats.peakHype, payload.overload)
+})
 
 /**
  * Builds a gig stats snapshot for post-gig economy calculations.
@@ -26,10 +26,10 @@ export const updateGigPerformanceStats = (stats, payload) => ({
  * @returns {{score: number, misses: number, perfectHits: number, maxCombo: number, peakHype: number, toxicTimeTotal: number}}
  */
 export const buildGigStatsSnapshot = (score, stats, toxicTimeTotal) => ({
-    score,
-    misses: stats.misses,
-    perfectHits: stats.perfectHits,
-    maxCombo: stats.maxCombo,
-    peakHype: stats.peakHype,
-    toxicTimeTotal
-});
+  score,
+  misses: stats.misses,
+  perfectHits: stats.perfectHits,
+  maxCombo: stats.maxCombo,
+  peakHype: stats.peakHype,
+  toxicTimeTotal
+})

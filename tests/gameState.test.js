@@ -1,6 +1,6 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import { applyEventDelta } from '../src/utils/gameStateUtils.js';
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import { applyEventDelta } from '../src/utils/gameStateUtils.js'
 
 const buildState = () => ({
   player: {
@@ -33,10 +33,10 @@ const buildState = () => ({
   },
   activeStoryFlags: [],
   pendingEvents: []
-});
+})
 
 test('applyEventDelta clamps player and band values', () => {
-  const state = buildState();
+  const state = buildState()
   const delta = {
     player: {
       money: -100,
@@ -50,31 +50,31 @@ test('applyEventDelta clamps player and band values', () => {
     band: {
       harmony: 20
     }
-  };
+  }
 
-  const result = applyEventDelta(state, delta);
+  const result = applyEventDelta(state, delta)
 
-  assert.equal(result.player.money, 0);
-  assert.equal(result.player.fame, 0);
-  assert.equal(result.player.day, 3);
-  assert.equal(result.player.van.fuel, 0);
-  assert.equal(result.player.van.condition, 100);
-  assert.equal(result.band.harmony, 100);
-});
+  assert.equal(result.player.money, 0)
+  assert.equal(result.player.fame, 0)
+  assert.equal(result.player.day, 3)
+  assert.equal(result.player.van.fuel, 0)
+  assert.equal(result.player.van.condition, 100)
+  assert.equal(result.band.harmony, 100)
+})
 
 test('applyEventDelta updates social channels safely', () => {
-  const state = buildState();
+  const state = buildState()
   const delta = {
     social: {
       instagram: 5,
       youtube: -10,
       newsletter: 2
     }
-  };
+  }
 
-  const result = applyEventDelta(state, delta);
+  const result = applyEventDelta(state, delta)
 
-  assert.equal(result.social.instagram, 15);
-  assert.equal(result.social.youtube, 0);
-  assert.equal(result.social.newsletter, 2);
-});
+  assert.equal(result.social.instagram, 15)
+  assert.equal(result.social.youtube, 0)
+  assert.equal(result.social.newsletter, 2)
+})
