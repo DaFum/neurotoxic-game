@@ -23,7 +23,10 @@ export const EventModal = ({ event, onOptionSelect }) => {
           {event.options.map((option, index) => (
             <button
               key={index}
-              onClick={() => onOptionSelect(option)}
+              onClick={() => {
+                if (option.action) option.action()
+                else onOptionSelect(option)
+              }}
               className='w-full text-left p-4 border border-[var(--ash-gray)] hover:bg-[var(--toxic-green)] hover:text-black hover:border-transparent transition-all group relative overflow-hidden'
             >
               <span className='relative z-10 font-bold uppercase tracking-wider'>

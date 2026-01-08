@@ -31,15 +31,22 @@ export const Gig = () => {
         } else {
           setActiveEvent({
             title: 'PAUSED',
-            description: 'Game Paused',
+            text: 'Game Paused',
             options: [
-              { label: 'RESUME', action: () => addToast('Resuming...', 'info') },
+              {
+                label: 'RESUME',
+                action: () => {
+                  setActiveEvent(null)
+                  addToast('Resuming...', 'info')
+                }
+              },
               {
                 label: 'QUIT GIG',
                 variant: 'danger',
                 action: () => {
                 import('../utils/audioEngine').then(m => {
                   m.stopAudio()
+                    setActiveEvent(null)
                   changeScene('OVERWORLD')
                 })
                 }

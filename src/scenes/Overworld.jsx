@@ -11,6 +11,12 @@ import { logger } from '../utils/logger'
 const ToggleRadio = () => {
   const [isPlaying, setIsPlaying] = useState(false)
 
+  React.useEffect(() => {
+    if (audioManager.music && audioManager.music.playing()) {
+      setIsPlaying(true)
+    }
+  }, [])
+
   const toggle = () => {
     if (isPlaying) {
       audioManager.stopMusic()
