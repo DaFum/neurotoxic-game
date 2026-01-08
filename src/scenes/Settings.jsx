@@ -1,105 +1,105 @@
-import React, { useState } from 'react';
-import { useGameState } from '../context/GameState';
-import { audioManager } from '../utils/AudioManager';
-import { GlitchButton } from '../ui/GlitchButton';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react'
+import { useGameState } from '../context/GameState'
+import { audioManager } from '../utils/AudioManager'
+import { GlitchButton } from '../ui/GlitchButton'
+import { motion } from 'framer-motion'
 
 export const Settings = () => {
-    const { changeScene, settings, updateSettings, deleteSave } = useGameState();
-    
-    // Local state for sliders to avoid thrashing Context/LocalStorage on every drag event
-    const [musicVol, setMusicVol] = useState(audioManager.musicVolume);
-    const [sfxVol, setSfxVol] = useState(audioManager.sfxVolume);
-    const [isMuted, setIsMuted] = useState(audioManager.muted);
+  const { changeScene, settings, updateSettings, deleteSave } = useGameState()
 
-    const handleMusicChange = (e) => {
-        const val = parseFloat(e.target.value);
-        setMusicVol(val);
-        audioManager.setMusicVolume(val);
-    };
+  // Local state for sliders to avoid thrashing Context/LocalStorage on every drag event
+  const [musicVol, setMusicVol] = useState(audioManager.musicVolume)
+  const [sfxVol, setSfxVol] = useState(audioManager.sfxVolume)
+  const [isMuted, setIsMuted] = useState(audioManager.muted)
 
-    const handleSFXChange = (e) => {
-        const val = parseFloat(e.target.value);
-        setSfxVol(val);
-        audioManager.setSFXVolume(val);
-    };
+  const handleMusicChange = (e) => {
+    const val = parseFloat(e.target.value)
+    setMusicVol(val)
+    audioManager.setMusicVolume(val)
+  }
 
-    const handleMute = () => {
-        const muted = audioManager.toggleMute();
-        setIsMuted(muted);
-    };
+  const handleSFXChange = (e) => {
+    const val = parseFloat(e.target.value)
+    setSfxVol(val)
+    audioManager.setSFXVolume(val)
+  }
 
-    const handleCRT = () => {
-        updateSettings({ crtEnabled: !settings.crtEnabled });
-    };
+  const handleMute = () => {
+    const muted = audioManager.toggleMute()
+    setIsMuted(muted)
+  }
 
-    const handleDeleteSave = () => {
-        if (window.confirm("ARE YOU SURE? THIS WILL ERASE ALL PROGRESS.")) {
-            deleteSave();
-        }
-    };
+  const handleCRT = () => {
+    updateSettings({ crtEnabled: !settings.crtEnabled })
+  }
 
-    return (
-        <div className="flex flex-col items-center justify-center h-full w-full bg-black z-50 p-8">
-            <h1 className="text-6xl text-(--toxic-green) font-['Metal_Mania'] mb-12">SYSTEM CONFIG</h1>
+  const handleDeleteSave = () => {
+    if (window.confirm('ARE YOU SURE? THIS WILL ERASE ALL PROGRESS.')) {
+      deleteSave()
+    }
+  }
 
-            <div className="w-full max-w-2xl border-2 border-(--toxic-green) p-8 bg-black/80 space-y-8">
-                
-                {/* Audio */}
-                <div className="space-y-4">
-                    <h2 className="text-2xl text-white border-b border-gray-700 pb-2">AUDIO PROTOCOLS</h2>
-                    
-                    <div className="flex items-center justify-between">
-                        <label className="text-(--toxic-green)">MUSIC VOLUME</label>
-                        <input 
-                            type="range" min="0" max="1" step="0.1" 
-                            value={musicVol} onChange={handleMusicChange}
-                            className="w-1/2 accent-(--toxic-green)"
-                        />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                        <label className="text-(--toxic-green)">SFX VOLUME</label>
-                        <input 
-                            type="range" min="0" max="1" step="0.1" 
-                            value={sfxVol} onChange={handleSFXChange}
-                            className="w-1/2 accent-(--toxic-green)"
-                        />
-                    </div>
+  return (
+    <div className='flex flex-col items-center justify-center h-full w-full bg-black z-50 p-8'>
+      <h1 className="text-6xl text-(--toxic-green) font-['Metal_Mania'] mb-12">SYSTEM CONFIG</h1>
 
-                    <GlitchButton onClick={handleMute} className="w-full">
-                        {isMuted ? "UNMUTE SYSTEM" : "MUTE SYSTEM"}
-                    </GlitchButton>
-                </div>
+      <div className='w-full max-w-2xl border-2 border-(--toxic-green) p-8 bg-black/80 space-y-8'>
 
-                {/* Visuals */}
-                <div className="space-y-4">
-                    <h2 className="text-2xl text-white border-b border-gray-700 pb-2">VISUAL OUTPUT</h2>
-                    <div className="flex items-center justify-between">
-                        <span className="text-(--toxic-green)">CRT SIMULATION</span>
-                        <button 
-                            onClick={handleCRT}
-                            className={`w-16 h-8 border border-(--toxic-green) flex items-center p-1 ${settings.crtEnabled ? 'justify-end bg-(--toxic-green)/20' : 'justify-start'}`}
-                        >
-                            <div className={`w-6 h-6 bg-(--toxic-green) ${settings.crtEnabled ? 'animate-pulse' : 'opacity-50'}`}></div>
-                        </button>
-                    </div>
-                </div>
+        {/* Audio */}
+        <div className='space-y-4'>
+          <h2 className='text-2xl text-white border-b border-gray-700 pb-2'>AUDIO PROTOCOLS</h2>
 
-                {/* Data */}
-                <div className="space-y-4 pt-8 border-t border-red-900">
-                    <GlitchButton onClick={handleDeleteSave} className="w-full border-red-600 text-red-600 hover:bg-red-900">
-                        PURGE DATA
-                    </GlitchButton>
-                </div>
+          <div className='flex items-center justify-between'>
+            <label className='text-(--toxic-green)'>MUSIC VOLUME</label>
+            <input
+              type='range' min='0' max='1' step='0.1'
+              value={musicVol} onChange={handleMusicChange}
+              className='w-1/2 accent-(--toxic-green)'
+            />
+          </div>
 
-            </div>
+          <div className='flex items-center justify-between'>
+            <label className='text-(--toxic-green)'>SFX VOLUME</label>
+            <input
+              type='range' min='0' max='1' step='0.1'
+              value={sfxVol} onChange={handleSFXChange}
+              className='w-1/2 accent-(--toxic-green)'
+            />
+          </div>
 
-            <div className="mt-8">
-                <GlitchButton onClick={() => changeScene('MENU')}>
-                    RETURN
-                </GlitchButton>
-            </div>
+          <GlitchButton onClick={handleMute} className='w-full'>
+            {isMuted ? 'UNMUTE SYSTEM' : 'MUTE SYSTEM'}
+          </GlitchButton>
         </div>
-    );
-};
+
+        {/* Visuals */}
+        <div className='space-y-4'>
+          <h2 className='text-2xl text-white border-b border-gray-700 pb-2'>VISUAL OUTPUT</h2>
+          <div className='flex items-center justify-between'>
+            <span className='text-(--toxic-green)'>CRT SIMULATION</span>
+            <button
+              onClick={handleCRT}
+              className={`w-16 h-8 border border-(--toxic-green) flex items-center p-1 ${settings.crtEnabled ? 'justify-end bg-(--toxic-green)/20' : 'justify-start'}`}
+            >
+              <div className={`w-6 h-6 bg-(--toxic-green) ${settings.crtEnabled ? 'animate-pulse' : 'opacity-50'}`} />
+            </button>
+          </div>
+        </div>
+
+        {/* Data */}
+        <div className='space-y-4 pt-8 border-t border-red-900'>
+          <GlitchButton onClick={handleDeleteSave} className='w-full border-red-600 text-red-600 hover:bg-red-900'>
+            PURGE DATA
+          </GlitchButton>
+        </div>
+
+      </div>
+
+      <div className='mt-8'>
+        <GlitchButton onClick={() => changeScene('MENU')}>
+          RETURN
+        </GlitchButton>
+      </div>
+    </div>
+  )
+}

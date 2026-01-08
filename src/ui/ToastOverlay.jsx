@@ -1,12 +1,12 @@
-import React from 'react';
-import { useGameState } from '../context/GameState';
-import { motion, AnimatePresence } from 'framer-motion';
+import React from 'react'
+import { useGameState } from '../context/GameState'
+import { motion, AnimatePresence } from 'framer-motion'
 
 export const ToastOverlay = () => {
-  const { toasts } = useGameState();
+  const { toasts } = useGameState()
 
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col gap-2 items-center justify-center pointer-events-none">
+    <div className='fixed inset-0 z-[9999] flex flex-col gap-2 items-center justify-center pointer-events-none'>
       <AnimatePresence>
         {toasts.map(toast => (
           <motion.div
@@ -24,5 +24,5 @@ export const ToastOverlay = () => {
         ))}
       </AnimatePresence>
     </div>
-  );
-};
+  )
+}

@@ -10,6 +10,11 @@
     "preview": "vite preview",
     "test": "node --test"
   },
+  "standard": {
+    "env": [
+      "browser"
+    ]
+  },
   "dependencies": {
     "eslint-plugin-react": "^7.37.5",
     "framer-motion": "^12.0.0",

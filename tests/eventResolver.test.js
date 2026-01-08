@@ -1,6 +1,6 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import { resolveEventChoice } from '../src/utils/eventResolver.js';
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import { resolveEventChoice } from '../src/utils/eventResolver.js'
 
 const buildState = () => ({
   player: {
@@ -19,28 +19,28 @@ const buildState = () => ({
     instagram: 0,
     viral: 0
   }
-});
+})
 
 test('resolveEventChoice returns delta for direct effects', () => {
   const choice = {
     label: 'Pay fine',
     outcomeText: 'You pay the fine.',
     effect: { type: 'resource', resource: 'money', value: -40 }
-  };
+  }
 
-  const { delta, outcomeText, description, result } = resolveEventChoice(choice, buildState());
+  const { delta, outcomeText, description, result } = resolveEventChoice(choice, buildState())
 
-  assert.equal(outcomeText, 'You pay the fine.');
-  assert.equal(description, '');
-  assert.equal(result.outcome, 'direct');
-  assert.equal(delta.player.money, -40);
-});
+  assert.equal(outcomeText, 'You pay the fine.')
+  assert.equal(description, '')
+  assert.equal(result.outcome, 'direct')
+  assert.equal(delta.player.money, -40)
+})
 
 test('resolveEventChoice handles missing choices safely', () => {
-  const { delta, outcomeText, description, result } = resolveEventChoice(null, buildState());
+  const { delta, outcomeText, description, result } = resolveEventChoice(null, buildState())
 
-  assert.equal(outcomeText, '');
-  assert.equal(description, '');
-  assert.equal(result, null);
-  assert.equal(delta, null);
-});
+  assert.equal(outcomeText, '')
+  assert.equal(description, '')
+  assert.equal(result, null)
+  assert.equal(delta, null)
+})

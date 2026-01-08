@@ -19,11 +19,11 @@ export const ALL_VENUES = [
   { id: 'leipzig_arena', name: 'QB Arena', x: 54, y: 55, type: 'VENUE', capacity: 6500, pay: 16000, diff: 5, price: 50 },
   { id: 'dresden_beatpol', name: 'Beatpol', x: 65, y: 58, type: 'VENUE', capacity: 350, pay: 800, diff: 3, price: 15 },
   { id: 'dresden_chemie', name: 'Chemiefabrik', x: 65, y: 57, type: 'VENUE', capacity: 800, pay: 1800, diff: 4, price: 20 },
-  
+
   // NIEDERSACHSEN
   { id: 'hannover_chez', name: 'Bei Chez Heinz', x: 35, y: 35, type: 'VENUE', capacity: 220, pay: 600, diff: 3, price: 10 },
   { id: 'hannover_musikzentrum', name: 'Musikzentrum', x: 35, y: 36, type: 'VENUE', capacity: 1500, pay: 4000, diff: 5, price: 28 },
-  
+
   // OTHERS (Inferred to reach ~47)
   { id: 'berlin_so36', name: 'SO36', x: 60, y: 35, type: 'VENUE', capacity: 500, pay: 1200, diff: 4, price: 18 },
   { id: 'berlin_cassiopeia', name: 'Cassiopeia', x: 61, y: 36, type: 'VENUE', capacity: 300, pay: 700, diff: 3, price: 12 },
@@ -51,4 +51,4 @@ export const ALL_VENUES = [
   { id: 'saarbruecken_garage', name: 'Garage', x: 10, y: 70, type: 'VENUE', capacity: 1000, pay: 2500, diff: 4, price: 22 },
   { id: 'freiburg_jazzhaus', name: 'Jazzhaus', x: 20, y: 85, type: 'VENUE', capacity: 300, pay: 800, diff: 3, price: 15 },
   { id: 'kiel_pumpe', name: 'Die Pumpe', x: 38, y: 10, type: 'VENUE', capacity: 400, pay: 900, diff: 3, price: 15 }
-];
+]

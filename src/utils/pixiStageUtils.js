@@ -8,9 +8,9 @@
  * @returns {number} Calculated Y position.
  */
 export const calculateNoteY = ({ elapsed, noteTime, targetY, speed }) => {
-    const timeUntilHit = noteTime - elapsed;
-    return targetY - (timeUntilHit / 1000) * speed;
-};
+  const timeUntilHit = noteTime - elapsed
+  return targetY - (timeUntilHit / 1000) * speed
+}
 
 /**
  * Calculates a crowd member offset based on combo intensity.
@@ -21,9 +21,9 @@ export const calculateNoteY = ({ elapsed, noteTime, targetY, speed }) => {
  * @returns {number} Adjusted Y position.
  */
 export const calculateCrowdY = ({ baseY, combo, timeMs }) => {
-    const intensity = combo > 10 ? 2 : 1;
-    return baseY - Math.abs(Math.sin(timeMs / 100 * intensity) * 5);
-};
+  const intensity = combo > 10 ? 2 : 1
+  return baseY - Math.abs(Math.sin(timeMs / 100 * intensity) * 5)
+}
 
 /**
  * Calculates the lane start X position.
@@ -33,36 +33,36 @@ export const calculateCrowdY = ({ baseY, combo, timeMs }) => {
  * @returns {number} Lane start X position.
  */
 export const calculateLaneStartX = ({ screenWidth, laneTotalWidth }) => (
-    (screenWidth - laneTotalWidth) / 2
-);
+  (screenWidth - laneTotalWidth) / 2
+)
 
-const LANE_TOTAL_WIDTH = 360;
-const LANE_WIDTH = 100;
-const LANE_HEIGHT_RATIO = 0.4;
-const LANE_STROKE_WIDTH = 2;
-const HIT_LINE_HEIGHT = 20;
-const HIT_LINE_OFFSET = 60;
-const HIT_LINE_STROKE_WIDTH = 4;
-const RHYTHM_OFFSET_RATIO = 0.6;
+const LANE_TOTAL_WIDTH = 360
+const LANE_WIDTH = 100
+const LANE_HEIGHT_RATIO = 0.4
+const LANE_STROKE_WIDTH = 2
+const HIT_LINE_HEIGHT = 20
+const HIT_LINE_OFFSET = 60
+const HIT_LINE_STROKE_WIDTH = 4
+const RHYTHM_OFFSET_RATIO = 0.6
 
 export const RHYTHM_LAYOUT = Object.freeze({
-    laneTotalWidth: LANE_TOTAL_WIDTH,
-    laneWidth: LANE_WIDTH,
-    laneHeightRatio: LANE_HEIGHT_RATIO,
-    laneStrokeWidth: LANE_STROKE_WIDTH,
-    hitLineHeight: HIT_LINE_HEIGHT,
-    hitLineOffset: HIT_LINE_OFFSET,
-    hitLineStrokeWidth: HIT_LINE_STROKE_WIDTH,
-    rhythmOffsetRatio: RHYTHM_OFFSET_RATIO
-});
+  laneTotalWidth: LANE_TOTAL_WIDTH,
+  laneWidth: LANE_WIDTH,
+  laneHeightRatio: LANE_HEIGHT_RATIO,
+  laneStrokeWidth: LANE_STROKE_WIDTH,
+  hitLineHeight: HIT_LINE_HEIGHT,
+  hitLineOffset: HIT_LINE_OFFSET,
+  hitLineStrokeWidth: HIT_LINE_STROKE_WIDTH,
+  rhythmOffsetRatio: RHYTHM_OFFSET_RATIO
+})
 
 export const CROWD_LAYOUT = Object.freeze({
-    containerYRatio: 0.5,
-    memberCount: 50,
-    minRadius: 3,
-    radiusVariance: 2,
-    yRangeRatio: 0.1
-});
+  containerYRatio: 0.5,
+  memberCount: 50,
+  minRadius: 3,
+  radiusVariance: 2,
+  yRangeRatio: 0.1
+})
 
 /**
  * Builds layout metrics for the rhythm lanes.
@@ -72,20 +72,20 @@ export const CROWD_LAYOUT = Object.freeze({
  * @returns {{startX: number, laneWidth: number, laneHeight: number, laneStrokeWidth: number, hitLineY: number, hitLineHeight: number, hitLineStrokeWidth: number, rhythmOffsetY: number, laneTotalWidth: number}} Layout metrics.
  */
 export const buildRhythmLayout = ({ screenWidth, screenHeight }) => {
-    const laneTotalWidth = RHYTHM_LAYOUT.laneTotalWidth;
-    const startX = calculateLaneStartX({ screenWidth, laneTotalWidth });
-    const laneHeight = screenHeight * RHYTHM_LAYOUT.laneHeightRatio;
-    const hitLineY = laneHeight - RHYTHM_LAYOUT.hitLineOffset;
+  const laneTotalWidth = RHYTHM_LAYOUT.laneTotalWidth
+  const startX = calculateLaneStartX({ screenWidth, laneTotalWidth })
+  const laneHeight = screenHeight * RHYTHM_LAYOUT.laneHeightRatio
+  const hitLineY = laneHeight - RHYTHM_LAYOUT.hitLineOffset
 
-    return {
-        startX,
-        laneWidth: RHYTHM_LAYOUT.laneWidth,
-        laneHeight,
-        laneStrokeWidth: RHYTHM_LAYOUT.laneStrokeWidth,
-        hitLineY,
-        hitLineHeight: RHYTHM_LAYOUT.hitLineHeight,
-        hitLineStrokeWidth: RHYTHM_LAYOUT.hitLineStrokeWidth,
-        rhythmOffsetY: screenHeight * RHYTHM_LAYOUT.rhythmOffsetRatio,
-        laneTotalWidth
-    };
-};
+  return {
+    startX,
+    laneWidth: RHYTHM_LAYOUT.laneWidth,
+    laneHeight,
+    laneStrokeWidth: RHYTHM_LAYOUT.laneStrokeWidth,
+    hitLineY,
+    hitLineHeight: RHYTHM_LAYOUT.hitLineHeight,
+    hitLineStrokeWidth: RHYTHM_LAYOUT.hitLineStrokeWidth,
+    rhythmOffsetY: screenHeight * RHYTHM_LAYOUT.rhythmOffsetRatio,
+    laneTotalWidth
+  }
+}

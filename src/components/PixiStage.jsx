@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { createPixiStageController } from './PixiStageController';
+import React, { useEffect, useRef } from 'react'
+import { createPixiStageController } from './PixiStageController'
 
 /**
  * Renders the Pixi.js stage for the rhythm game.
@@ -7,39 +7,39 @@ import { createPixiStageController } from './PixiStageController';
  * @returns {JSX.Element} Pixi canvas wrapper.
  */
 export const PixiStage = ({ logic }) => {
-    const containerRef = useRef(null);
-    const { gameStateRef, update } = logic;
-    const updateRef = useRef(update);
-    const statsRef = useRef(logic.stats);
-    const controllerRef = useRef(null);
+  const containerRef = useRef(null)
+  const { gameStateRef, update } = logic
+  const updateRef = useRef(update)
+  const statsRef = useRef(logic.stats)
+  const controllerRef = useRef(null)
 
-    useEffect(() => {
-        updateRef.current = update;
-    }, [update]);
+  useEffect(() => {
+    updateRef.current = update
+  }, [update])
 
-    useEffect(() => {
-        statsRef.current = logic.stats;
-    }, [logic.stats]);
+  useEffect(() => {
+    statsRef.current = logic.stats
+  }, [logic.stats])
 
-    useEffect(() => {
-        controllerRef.current = createPixiStageController({
-            containerRef,
-            gameStateRef,
-            updateRef,
-            statsRef
-        });
+  useEffect(() => {
+    controllerRef.current = createPixiStageController({
+      containerRef,
+      gameStateRef,
+      updateRef,
+      statsRef
+    })
 
-        controllerRef.current.init().catch(err => {
-            console.error("Pixi Stage Init Failed:", err);
-        });
+    controllerRef.current.init().catch(err => {
+      console.error('Pixi Stage Init Failed:', err)
+    })
 
-        return () => {
-            if (controllerRef.current) {
-                controllerRef.current.dispose();
-                controllerRef.current = null;
-            }
-        };
-    }, []);
+    return () => {
+      if (controllerRef.current) {
+        controllerRef.current.dispose()
+        controllerRef.current = null
+      }
+    }
+  }, [])
 
-    return <div className="absolute inset-0 z-20 pointer-events-none" ref={containerRef}></div>;
-};
+  return <div className='absolute inset-0 z-20 pointer-events-none' ref={containerRef} />
+}
