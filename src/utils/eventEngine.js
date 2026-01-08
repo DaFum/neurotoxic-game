@@ -60,7 +60,10 @@ const processEffect = (eff, delta) => {
   switch (eff.type) {
     case 'resource':
       if (eff.resource === 'money') delta.player.money = (delta.player.money || 0) + eff.value
-      if (eff.resource === 'fuel') delta.player.van = { ...(delta.player.van || {}), fuel: eff.value }
+      if (eff.resource === 'fuel') {
+        delta.player.van = { ...(delta.player.van || {}) }
+        delta.player.van.fuel = (delta.player.van.fuel || 0) + eff.value
+      }
       break
     case 'stat':
       if (eff.stat === 'time') delta.player.time = (delta.player.time || 0) + eff.value
@@ -68,7 +71,10 @@ const processEffect = (eff, delta) => {
       if (eff.stat === 'harmony') delta.band.harmony = (delta.band.harmony || 0) + eff.value
       if (eff.stat === 'mood') delta.band.members = { moodChange: eff.value }
       if (eff.stat === 'stamina') delta.band.members = { staminaChange: eff.value }
-      if (eff.stat === 'van_condition') delta.player.van = { ...(delta.player.van || {}), condition: eff.value }
+      if (eff.stat === 'van_condition') {
+        delta.player.van = { ...(delta.player.van || {}) }
+        delta.player.van.condition = (delta.player.van.condition || 0) + eff.value
+      }
       if (eff.stat === 'crowd_energy') delta.flags.crowdEnergy = eff.value
       if (eff.stat === 'viral') delta.social.viral = (delta.social.viral || 0) + eff.value
       if (eff.stat === 'score') delta.flags.score = eff.value
@@ -139,7 +145,7 @@ export const eventEngine = {
 
     const processedEvent = { ...event, options: [...event.options] }
 
-    if (event.id.includes('van_breakdown') && gameState.band.inventory.spare_tire) {
+    if (event.id.includes('van_breakdown') && (gameState.band?.inventory?.spare_tire > 0 || gameState.band?.inventory?.spare_tire === true)) {
       processedEvent.options = [
         {
           label: 'Use Spare Tire (Inventory)',

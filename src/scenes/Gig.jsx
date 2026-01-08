@@ -4,7 +4,6 @@ import { useRhythmGameLogic } from '../hooks/useRhythmGameLogic'
 import { PixiStage } from '../components/PixiStage'
 import { GigHUD } from '../components/GigHUD'
 import { IMG_PROMPTS, getGenImageUrl } from '../utils/imageGen'
-import PropTypes from 'prop-types'
 
 export const Gig = () => {
   const { currentGig, changeScene, addToast, activeEvent, setActiveEvent } = useGameState()
@@ -137,6 +136,3 @@ export const Gig = () => {
   )
 }
 
-Gig.propTypes = {
-  // Current Gig is validated in logic mostly, but good to have
-}

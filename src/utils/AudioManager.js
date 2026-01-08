@@ -20,8 +20,14 @@ class AudioSystem {
       const savedSfxVol = localStorage.getItem('neurotoxic_vol_sfx')
       const savedMuted = localStorage.getItem('neurotoxic_muted')
 
-      this.musicVolume = savedMusicVol ? parseFloat(savedMusicVol) : 0.5
-      this.sfxVolume = savedSfxVol ? parseFloat(savedSfxVol) : 0.5
+      const clamp01 = (n, fallback) => {
+        const v = Number.parseFloat(n)
+        if (!Number.isFinite(v)) return fallback
+        return Math.min(1, Math.max(0, v))
+      }
+
+      this.musicVolume = savedMusicVol != null ? clamp01(savedMusicVol, 0.5) : 0.5
+      this.sfxVolume = savedSfxVol != null ? clamp01(savedSfxVol, 0.5) : 0.5
       this.muted = savedMuted === 'true'
 
       // Apply global mute
@@ -90,6 +96,16 @@ class AudioSystem {
 
   pauseMusic () {
     if (this.music) this.music.pause()
+  }
+
+  resumeMusic () {
+    if (this.music && !this.music.playing()) {
+      if (this.music.state() === 'loaded') {
+        this.music.play()
+      }
+    } else if (!this.music) {
+      this.startAmbient()
+    }
   }
 
   playSFX (key) {

@@ -2,7 +2,7 @@ import React from 'react'
 import { ChatterOverlay } from './ChatterOverlay'
 
 export const GigHUD = ({ stats, onLaneInput }) => {
-  const { score, combo, health, overload, isToxicMode, isGameOver } = stats
+  const { score, combo, health, overload, isGameOver } = stats
 
   return (
     <div className='absolute inset-0 z-30 pointer-events-none'>

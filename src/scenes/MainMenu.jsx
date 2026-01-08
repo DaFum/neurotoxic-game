@@ -7,7 +7,7 @@ import { GlitchButton } from '../ui/GlitchButton'
 import { audioManager } from '../utils/AudioManager'
 
 export const MainMenu = () => {
-  const { changeScene, loadGame, player, updatePlayer, band, updateBand, updateSocial, addToast } = useGameState()
+  const { changeScene, loadGame, player, updatePlayer, band, addToast } = useGameState()
   const [showUpgrades, setShowUpgrades] = React.useState(false)
 
   React.useEffect(() => {

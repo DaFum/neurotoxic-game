@@ -97,7 +97,6 @@ export const PostGig = () => {
   const { changeScene, updatePlayer, player, currentGig, gigModifiers, triggerEvent, activeEvent, band, updateSocial, social, lastGigStats, addToast } = useGameState()
   const [phase, setPhase] = useState('REPORT') // REPORT, SOCIAL, COMPLETE
   const [financials, setFinancials] = useState(null)
-  const [virality, setVirality] = useState(0)
   const [postOptions, setPostOptions] = useState([])
   const [postResult, setPostResult] = useState(null)
 
@@ -136,7 +135,6 @@ export const PostGig = () => {
       setFinancials(result)
 
       const vScore = calculateViralityScore(performanceScore, [], currentGig) // events list empty for now
-      setVirality(vScore)
       setPostOptions(generatePostOptions({ viralityScore: vScore }))
     }
   }, [financials, currentGig, lastGigStats, gigModifiers, player.fame])

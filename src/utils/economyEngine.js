@@ -118,8 +118,15 @@ const calculateMerchIncome = (ticketsSold, performanceScore, gigStats, modifiers
  * @param {object} node - The target node.
  */
 export const calculateTravelExpenses = (node) => {
+  const x = typeof node?.venue?.x === 'number' ? node.venue.x : 50
+  const y = typeof node?.venue?.y === 'number' ? node.venue.y : 50
+
   // Distance from center (50, 50) used as base distance metric
-  const dist = Math.floor(Math.sqrt(Math.pow(node.venue.x - 50, 2) + Math.pow(node.venue.y - 50, 2)) * 5) + 50
+  const dist = Math.max(
+    0,
+    Math.floor(Math.sqrt(Math.pow(x - 50, 2) + Math.pow(y - 50, 2)) * 5) + 50
+  )
+
   const fuelLiters = (dist / 100) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM
   const fuelCost = Math.floor(fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
   const foodCost = 3 * EXPENSE_CONSTANTS.FOOD.FAST_FOOD // Band of 3

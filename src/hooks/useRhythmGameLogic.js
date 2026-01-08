@@ -184,6 +184,10 @@ export const useRhythmGameLogic = () => {
 
     const audio = audioRef.current
     return () => {
+      if (gameOverTimerRef.current) {
+        clearTimeout(gameOverTimerRef.current)
+        gameOverTimerRef.current = null
+      }
       stopAudio()
       if (audio) {
         audio.stop()
@@ -278,7 +282,8 @@ export const useRhythmGameLogic = () => {
       // Guestlist Effect: +20% score
       if (state.modifiers.guestlist) points *= 1.2
 
-      let finalScore = points + (combo * 10)
+      const comboForScore = state.combo
+      let finalScore = points + (comboForScore * 10)
       if (toxicModeActive) finalScore *= 4
 
       setScore(s => {
@@ -348,7 +353,8 @@ export const useRhythmGameLogic = () => {
 
     const now = Date.now()
     const elapsed = now - state.startTime
-    setProgress(Math.min(100, (elapsed / state.totalDuration) * 100))
+    const duration = state.totalDuration
+    setProgress(duration > 0 ? Math.min(100, (elapsed / duration) * 100) : 0)
 
     if (isToxicMode) {
       if (now > state.toxicModeEndTime) {

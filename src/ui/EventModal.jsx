@@ -1,5 +1,5 @@
 import React from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import PropTypes from 'prop-types'
 
 export const EventModal = ({ event, onOptionSelect }) => {

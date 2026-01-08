@@ -1,8 +1,7 @@
 import React, { useState } from 'react'
 import { useGameState } from '../context/GameState'
-import { Music, Map, Users, DollarSign, Volume2, VolumeX } from 'lucide-react'
+import { Users, DollarSign, Volume2, VolumeX } from 'lucide-react'
 import { audioManager } from '../utils/AudioManager'
-import PropTypes from 'prop-types'
 
 export const HUD = () => {
   const { player, band } = useGameState()
