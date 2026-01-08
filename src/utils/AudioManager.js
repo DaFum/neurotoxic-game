@@ -88,6 +88,10 @@ class AudioSystem {
         if (this.music) this.music.stop();
     }
 
+    pauseMusic() {
+        if (this.music) this.music.pause();
+    }
+
     playSFX(key) {
         if (!this.initialized) return;
         this.synth.play(key);

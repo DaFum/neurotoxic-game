@@ -133,11 +133,17 @@ export const Overworld = () => {
       </div>
 
       {/* Radio Widget */}
-      <div className="absolute top-8 right-8 z-50 pointer-events-auto bg-black border border-gray-800 p-2 flex items-center gap-2 rounded">
+      <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 pointer-events-auto bg-black border border-gray-800 p-2 flex items-center gap-2 rounded shadow-lg">
              <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
              <span className="text-xs text-gray-500 font-mono">FM 66.6</span>
-             <button onClick={() => audioManager.startAmbient()} className="text-[var(--toxic-green)] hover:text-white text-xs">
+             <button onClick={() => audioManager.startAmbient()} className="text-[var(--toxic-green)] hover:text-white text-xs" title="Play Radio">
                  ▶
+             </button>
+             <button onClick={() => audioManager.pauseMusic()} className="text-yellow-500 hover:text-white text-xs" title="Pause Radio">
+                 ||
+             </button>
+             <button onClick={() => audioManager.stopMusic()} className="text-[var(--blood-red)] hover:text-white text-xs" title="Stop Radio">
+                 ■
              </button>
       </div>
 
