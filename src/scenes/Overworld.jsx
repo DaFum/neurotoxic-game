@@ -8,6 +8,32 @@ import { ChatterOverlay } from '../components/ChatterOverlay'
 import { audioManager } from '../utils/AudioManager'
 import { logger } from '../utils/logger'
 
+const ToggleRadio = () => {
+  const [isPlaying, setIsPlaying] = useState(false)
+
+  React.useEffect(() => {
+    if (audioManager.music && audioManager.music.playing()) {
+      setIsPlaying(true)
+    }
+  }, [])
+
+  const toggle = () => {
+    if (isPlaying) {
+      audioManager.stopMusic()
+      setIsPlaying(false)
+    } else {
+      audioManager.resumeMusic()
+      setIsPlaying(true)
+    }
+  }
+
+  return (
+    <button onClick={toggle} className='text-[var(--toxic-green)] hover:text-white text-xs' title={isPlaying ? 'Stop Radio' : 'Play/Resume Radio'}>
+      {isPlaying ? '■' : '▶'}
+    </button>
+  )
+}
+
 export const Overworld = () => {
   const { startGig, player, updatePlayer, triggerEvent, saveGame, gameMap, hasUpgrade, updateBand, band, addToast } = useGameState()
 
@@ -129,18 +155,10 @@ export const Overworld = () => {
       </div>
 
       {/* Radio Widget */}
-      <div className='fixed top-8 left-1/2 -translate-x-1/2 z-50 pointer-events-auto bg-black border border-gray-800 p-2 flex items-center gap-2 rounded shadow-lg'>
-        <div className='w-2 h-2 rounded-full bg-red-500 animate-pulse' />
-        <span className='text-xs text-gray-500 font-mono'>FM 66.6</span>
-        <button onClick={() => audioManager.startAmbient()} className='text-[var(--toxic-green)] hover:text-white text-xs' title='Play Radio'>
-          ▶
-        </button>
-        <button onClick={() => audioManager.pauseMusic()} className='text-yellow-500 hover:text-white text-xs' title='Pause Radio'>
-          ||
-        </button>
-        <button onClick={() => audioManager.stopMusic()} className='text-[var(--blood-red)] hover:text-white text-xs' title='Stop Radio'>
-          ■
-        </button>
+      <div className='fixed top-8 left-1/2 -translate-x-1/2 z-50 pointer-events-auto bg-black border border-[var(--shadow-black)] p-2 flex items-center gap-2 rounded shadow-lg'>
+        <div className='w-2 h-2 rounded-full bg-[var(--blood-red)] animate-pulse' />
+        <span className='text-xs text-[var(--ash-gray)] font-mono'>FM 66.6</span>
+        <ToggleRadio />
       </div>
 
       <div className='absolute bottom-8 right-8 z-50 pointer-events-auto'>

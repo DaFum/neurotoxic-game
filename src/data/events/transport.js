@@ -29,7 +29,7 @@ export const TRANSPORT_EVENTS = [
             type: 'composite',
             effects: [
               { type: 'stat', stat: 'time', value: -3 },
-              { type: 'stat', stat: 'health', value: -10, description: 'You hurt your back.' }
+              { type: 'stat', stat: 'stamina', value: -10, description: 'You hurt your back.' }
             ]
           }
         },
@@ -59,7 +59,7 @@ export const TRANSPORT_EVENTS = [
       {
         label: 'Duct Tape & Prayer [Tech Check]',
         skillCheck: {
-          stat: 'technical',
+          stat: 'skill',
           threshold: 7,
           success: { type: 'stat', stat: 'harmony', value: 10, description: 'It worked! Genius.' },
           failure: {
@@ -155,7 +155,7 @@ export const TRANSPORT_EVENTS = [
         skillCheck: {
           stat: 'luck', // Implicit check
           threshold: 5, // 50/50
-          success: { type: 'item', item: 'rare_vinyl', description: 'Found a hidden record store! +Rare Vinyl' },
+          success: { type: 'unlock', unlock: 'rare_vinyl', description: 'Found a hidden record store! +Rare Vinyl' },
           failure: { type: 'stat', stat: 'time', value: -2, description: 'Just a dead end.' }
         },
         outcomeText: 'You decided to look around.'

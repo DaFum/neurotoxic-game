@@ -3,7 +3,7 @@ import { useGameState } from '../context/GameState'
 import { GlitchButton } from '../ui/GlitchButton'
 
 export const GameOver = () => {
-  const { changeScene, player, loadGame, lastGigStats } = useGameState()
+  const { changeScene, player, loadGame } = useGameState()
 
   const handleRetry = () => {
     if (loadGame()) {

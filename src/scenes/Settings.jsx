@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { useGameState } from '../context/GameState'
 import { audioManager } from '../utils/AudioManager'
 import { GlitchButton } from '../ui/GlitchButton'
-import { motion } from 'framer-motion'
 
 export const Settings = () => {
   const { changeScene, settings, updateSettings, deleteSave } = useGameState()

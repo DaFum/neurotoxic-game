@@ -4,10 +4,9 @@ import { useRhythmGameLogic } from '../hooks/useRhythmGameLogic'
 import { PixiStage } from '../components/PixiStage'
 import { GigHUD } from '../components/GigHUD'
 import { IMG_PROMPTS, getGenImageUrl } from '../utils/imageGen'
-import PropTypes from 'prop-types'
 
 export const Gig = () => {
-  const { currentGig, changeScene, addToast } = useGameState()
+  const { currentGig, changeScene, addToast, activeEvent, setActiveEvent } = useGameState()
 
   React.useEffect(() => {
     if (!currentGig) {
@@ -24,6 +23,39 @@ export const Gig = () => {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.repeat) return
+
+      if (e.key === 'Escape') {
+        if (activeEvent) {
+          setActiveEvent(null)
+          addToast('Resumed', 'info')
+        } else {
+          setActiveEvent({
+            title: 'PAUSED',
+            text: 'Game Paused',
+            options: [
+              {
+                label: 'RESUME',
+                action: () => {
+                  setActiveEvent(null)
+                  addToast('Resuming...', 'info')
+                }
+              },
+              {
+                label: 'QUIT GIG',
+                variant: 'danger',
+                action: () => {
+                import('../utils/audioEngine').then(m => {
+                  m.stopAudio()
+                    setActiveEvent(null)
+                  changeScene('OVERWORLD')
+                })
+                }
+              }
+            ]
+          })
+        }
+      }
+
       const laneIndex = gameStateRef.current.lanes.findIndex(l => l.key === e.key)
       if (laneIndex !== -1) {
         actions.registerInput(laneIndex, true)
@@ -45,7 +77,7 @@ export const Gig = () => {
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('keyup', handleKeyUp)
     }
-  }, [actions, gameStateRef])
+  }, [actions, gameStateRef, activeEvent, setActiveEvent, changeScene, addToast])
 
   const triggerBandAnimation = (laneIndex) => {
     const memberEl = document.getElementById(`band-member-${laneIndex}`)
@@ -113,6 +145,3 @@ export const Gig = () => {
   )
 }
 
-Gig.propTypes = {
-  // Current Gig is validated in logic mostly, but good to have
-}
