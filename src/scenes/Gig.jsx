@@ -38,8 +38,10 @@ export const Gig = () => {
                 label: 'QUIT GIG',
                 variant: 'danger',
                 action: () => {
-                  import('../utils/audioEngine').then(m => m.stopAudio())
+                import('../utils/audioEngine').then(m => {
+                  m.stopAudio()
                   changeScene('OVERWORLD')
+                })
                 }
               }
             ]

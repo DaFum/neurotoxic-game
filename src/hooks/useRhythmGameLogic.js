@@ -338,6 +338,8 @@ export const useRhythmGameLogic = () => {
      */
   const update = useCallback((deltaMS) => {
     const state = gameStateRef.current
+    if (state.paused) return
+
     if (!state.running || activeEvent || isGameOver) {
       if (!state.pauseTime) state.pauseTime = Date.now()
       if (audioRef.current && audioRef.current.playing()) audioRef.current.pause()

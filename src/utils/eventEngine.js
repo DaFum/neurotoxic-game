@@ -146,19 +146,18 @@ export const eventEngine = {
     const processedEvent = { ...event, options: [...event.options] }
 
     if (event.id.includes('van_breakdown') && (gameState.band?.inventory?.spare_tire > 0 || gameState.band?.inventory?.spare_tire === true)) {
-      processedEvent.options = [
-        {
-          label: 'Use Spare Tire (Inventory)',
-          effect: {
-            type: 'composite',
-            effects: [
-              { type: 'item', item: 'spare_tire', value: -1 }, // Consume
-              { type: 'stat', stat: 'time', value: -0.5, description: 'Quick fix.' }
-            ]
-          },
-          outcomeText: 'You swapped the tire in record time.'
-        }
-      ]
+      const spareTireOption = {
+        label: 'Use Spare Tire (Inventory)',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'item', item: 'spare_tire', value: -1 }, // Consume
+            { type: 'stat', stat: 'time', value: -0.5, description: 'Quick fix.' }
+          ]
+        },
+        outcomeText: 'You swapped the tire in record time.'
+      }
+      processedEvent.options.unshift(spareTireOption)
     }
 
     return processedEvent
