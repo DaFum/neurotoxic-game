@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { calculateGigFinancials, INCOME_CONSTANTS, EXPENSE_CONSTANTS } from '../src/utils/economyEngine.js';
+import { calculateGigFinancials, calculateTravelExpenses, INCOME_CONSTANTS, EXPENSE_CONSTANTS } from '../src/utils/economyEngine.js';
 
 const buildGigData = (overrides = {}) => ({
     capacity: 300,
@@ -278,4 +278,20 @@ test('calculateGigFinancials handles high fame with high price', () => {
     // High fame should mitigate price penalty
     const ticketItem = result.income.breakdown.find(b => b.label === 'Ticket Sales');
     assert.ok(ticketItem.value > 0, 'High fame should still sell tickets at high price');
+});
+
+test('calculateTravelExpenses returns correct cost structure', () => {
+    // Mock node
+    const node = { venue: { x: 50, y: 50, name: 'Center' } };
+    // Distance from center (50, 50) formula: floor(sqrt(0)*5) + 50 = 50
+    // Fuel: (50 / 100) * 12 = 6 liters
+    // Fuel Cost: floor(6 * 1.75) = 10
+    // Food Cost: 3 * 8 = 24
+    // Total Cost: 10 + 24 = 34
+
+    const result = calculateTravelExpenses(node);
+
+    assert.equal(result.dist, 50, 'Distance should be 50 for center node');
+    assert.equal(result.fuelLiters, 6, 'Fuel liters should be 6');
+    assert.equal(result.totalCost, 34, 'Total cost should be 34');
 });

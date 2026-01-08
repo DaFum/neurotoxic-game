@@ -114,6 +114,20 @@ const calculateMerchIncome = (ticketsSold, performanceScore, gigStats, modifiers
 };
 
 /**
+ * Calculates travel expenses.
+ * @param {object} node - The target node.
+ */
+export const calculateTravelExpenses = (node) => {
+    // Distance from center (50, 50) used as base distance metric
+    const dist = Math.floor(Math.sqrt(Math.pow(node.venue.x - 50, 2) + Math.pow(node.venue.y - 50, 2)) * 5) + 50;
+    const fuelLiters = (dist / 100) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM;
+    const fuelCost = Math.floor(fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE);
+    const foodCost = 3 * EXPENSE_CONSTANTS.FOOD.FAST_FOOD; // Band of 3
+    const totalCost = fuelCost + foodCost;
+    return { dist, fuelLiters, totalCost };
+};
+
+/**
  * Calculates expenses for the gig.
  */
 const calculateGigExpenses = (gigData, modifiers) => {

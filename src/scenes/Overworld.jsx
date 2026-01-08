@@ -3,9 +3,10 @@ import { useGameState } from '../context/GameState';
 import { motion } from 'framer-motion';
 import { ALL_VENUES } from '../data/venues';
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen';
-import { EXPENSE_CONSTANTS } from '../utils/economyEngine';
+import { EXPENSE_CONSTANTS, calculateTravelExpenses } from '../utils/economyEngine';
 import { ChatterOverlay } from '../components/ChatterOverlay';
 import { audioManager } from '../utils/AudioManager';
+import { logger } from '../utils/logger';
 
 export const Overworld = () => {
   const { startGig, player, updatePlayer, triggerEvent, saveGame, gameMap, hasUpgrade, updateBand, band, activeEvent, resolveEvent, setActiveEvent, currentGig, addToast } = useGameState();
@@ -28,6 +29,7 @@ export const Overworld = () => {
   };
 
   const handleTravel = (node) => {
+    logger.info('Overworld', 'handleTravel initiated', { target: node.id, current: player.currentNodeId });
     if (isTraveling || node.id === player.currentNodeId) return;
 
     // Check connectivity and layer
@@ -35,15 +37,13 @@ export const Overworld = () => {
     const visibility = getNodeVisibility(node.layer, currentLayer);
 
     if (visibility !== 'visible' || !isConnected(node.id)) {
+        logger.warn('Overworld', 'Travel blocked: Node not reachable', { visibility, connected: isConnected(node.id) });
         return;
     }
 
     // Calculate Costs
-    const dist = Math.floor(Math.sqrt(Math.pow(node.venue.x - 50, 2) + Math.pow(node.venue.y - 50, 2)) * 5) + 50; 
-    const fuelLiters = (dist / 100) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM;
-    const fuelCost = Math.floor(fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE);
-    const foodCost = 3 * EXPENSE_CONSTANTS.FOOD.FAST_FOOD;
-    const totalCost = fuelCost + foodCost;
+    const { dist, totalCost } = calculateTravelExpenses(node);
+    logger.debug('Overworld', 'Travel cost calculated', { dist, totalCost });
 
     addToast(`Travel to ${node.venue.name} (${dist}km)? Cost: ${totalCost}€`, 'info');
 
@@ -70,11 +70,7 @@ export const Overworld = () => {
       const node = travelTarget;
       
       // Re-calculate and re-validate costs before deducting
-      const dist = Math.floor(Math.sqrt(Math.pow(node.venue.x - 50, 2) + Math.pow(node.venue.y - 50, 2)) * 5) + 50; 
-      const fuelLiters = (dist / 100) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM;
-      const fuelCost = Math.floor(fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE);
-      const foodCost = 3 * EXPENSE_CONSTANTS.FOOD.FAST_FOOD;
-      const totalCost = fuelCost + foodCost;
+      const { fuelLiters, totalCost } = calculateTravelExpenses(node);
 
       if (player.money < totalCost) {
           // This case should be rare, but it's a safeguard.
