@@ -239,7 +239,7 @@ export const GameStateProvider = ({ children }) => {
       const newMap = generator.generateMap()
       dispatch({ type: 'SET_MAP', payload: newMap })
     }
-  }, [])
+  }, [state.gameMap])
 
   // Actions wrappers to maintain API
   const changeScene = scene =>
