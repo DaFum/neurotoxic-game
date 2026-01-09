@@ -1,0 +1,156 @@
+name: Lint Fix Preview
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  lint-fix-preview:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # For PRs from forks, this checks out a merge commit; we only need diff output.
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Detect Prettier & ESLint
+        id: detect
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          has_prettier=0
+          has_eslint=0
+
+          node -e "const fs=require('fs'); const pkg=require('./package.json'); const deps={...(pkg.dependencies||{}),...(pkg.devDependencies||{})}; process.exit(deps.prettier?0:1)" && has_prettier=1 || true
+          node -e "const fs=require('fs'); const pkg=require('./package.json'); const deps={...(pkg.dependencies||{}),...(pkg.devDependencies||{})}; process.exit(deps.eslint?0:1)" && has_eslint=1 || true
+
+          echo "has_prettier=$has_prettier" >> "$GITHUB_OUTPUT"
+          echo "has_eslint=$has_eslint" >> "$GITHUB_OUTPUT"
+
+      - name: Run prettier --write (scoped)
+        if: steps.detect.outputs.has_prettier == '1'
+        run: npx --no-install prettier --write 'app/**/*.{js,jsx,ts,tsx}' || true
+
+      - name: Run eslint --fix (scoped)
+        if: steps.detect.outputs.has_eslint == '1'
+        run: npx --no-install eslint --fix 'app/**/*.{js,jsx,ts,tsx}' || true
+
+      - name: Build comment body (missing tools or diff)
+        id: body
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          marker='<!-- lint-fix-preview:do-not-edit -->'
+
+          has_prettier='${{ steps.detect.outputs.has_prettier }}'
+          has_eslint='${{ steps.detect.outputs.has_eslint }}'
+
+          if [[ "$has_prettier" != "1" || "$has_eslint" != "1" ]]; then
+            missing=()
+            [[ "$has_prettier" == "1" ]] || missing+=("prettier")
+            [[ "$has_eslint" == "1" ]] || missing+=("eslint")
+
+            {
+              echo "$marker"
+              echo "## Lint Fix Preview"
+              echo
+              echo "> Informational: unable to generate an auto-fix preview because the following dependency(ies) are missing from package.json: **${missing[*]}**."
+              echo
+              echo "If you add them, this workflow will run:"
+              printf -- "- \`prettier --write 'app/**/*.{js,jsx,ts,tsx}'\`\n"
+              printf -- "- \`eslint --fix 'app/**/*.{js,jsx,ts,tsx}'\`\n"
+            } > comment.md
+
+            echo "has_diff=0" >> "$GITHUB_OUTPUT"
+          else
+            # Produce a diff (no color), limit to last 4000 lines.
+            git diff --no-color > diff.patch || true
+            tail -n 4000 diff.patch > diff.tail || true
+
+            if [[ ! -s diff.tail ]]; then
+              {
+                echo "$marker"
+                echo "## Lint Fix Preview"
+                echo
+                echo "No changes would be made by running Prettier/ESLint fixes on \`app/**/*.{js,jsx,ts,tsx}\`."
+              } > comment.md
+              echo "has_diff=0" >> "$GITHUB_OUTPUT"
+            else
+              {
+                echo "$marker"
+                echo "## Lint Fix Preview"
+                echo
+                echo "The following patch is a **preview** of what would change after running:"
+                printf -- "- \`prettier --write 'app/**/*.{js,jsx,ts,tsx}'\`\n"
+                printf -- "- \`eslint --fix 'app/**/*.{js,jsx,ts,tsx}'\`\n"
+                echo
+                echo "(Showing last 4000 lines if larger.)"
+                echo
+                echo "\`\`\`diff"
+                cat diff.tail
+                echo "\`\`\`"
+              } > comment.md
+              echo "has_diff=1" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+          # Expose a multiline output for the next step
+          {
+            echo "comment<<EOF"
+            cat comment.md
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Upsert PR comment
+        uses: actions/github-script@v7
+        env:
+          BODY: ${{ steps.body.outputs.comment }}
+        with:
+          script: |
+            const marker = '<!-- lint-fix-preview:do-not-edit -->';
+            const body = process.env.BODY;
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+
+            // Find existing comment with marker
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+
+            const existing = comments.find(c => (c.body || '').includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body,
+              });
+            }
