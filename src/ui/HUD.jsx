@@ -22,7 +22,9 @@ export const HUD = () => {
           </div>
           <div className='flex items-center gap-2'>
             <Map size={16} />
-            <span>Tag {player.day}: {player.location}</span>
+            <span>
+              Tag {player.day}: {player.location}
+            </span>
           </div>
         </div>
 
@@ -37,7 +39,9 @@ export const HUD = () => {
 
       <div className='flex flex-col gap-2 items-end'>
         <div className='bg-black/80 border border-[var(--toxic-green)] p-2 text-[var(--toxic-green)] shadow-[0_0_10px_var(--toxic-green)]'>
-          <div className='text-right border-b border-[var(--toxic-green)] mb-1'>BAND STATUS</div>
+          <div className='text-right border-b border-[var(--toxic-green)] mb-1'>
+            BAND STATUS
+          </div>
           {band.members.map(m => (
             <div key={m.name} className='flex justify-between w-48'>
               <span>{m.name}</span>

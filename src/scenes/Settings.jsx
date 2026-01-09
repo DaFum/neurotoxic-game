@@ -11,13 +11,13 @@ export const Settings = () => {
   const [sfxVol, setSfxVol] = useState(audioManager.sfxVolume)
   const [isMuted, setIsMuted] = useState(audioManager.muted)
 
-  const handleMusicChange = (e) => {
+  const handleMusicChange = e => {
     const val = parseFloat(e.target.value)
     setMusicVol(val)
     audioManager.setMusicVolume(val)
   }
 
-  const handleSFXChange = (e) => {
+  const handleSFXChange = e => {
     const val = parseFloat(e.target.value)
     setSfxVol(val)
     audioManager.setSFXVolume(val)
@@ -40,19 +40,26 @@ export const Settings = () => {
 
   return (
     <div className='flex flex-col items-center justify-center h-full w-full bg-black z-50 p-8'>
-      <h1 className="text-6xl text-(--toxic-green) font-['Metal_Mania'] mb-12">SYSTEM CONFIG</h1>
+      <h1 className="text-6xl text-(--toxic-green) font-['Metal_Mania'] mb-12">
+        SYSTEM CONFIG
+      </h1>
 
       <div className='w-full max-w-2xl border-2 border-(--toxic-green) p-8 bg-black/80 space-y-8'>
-
         {/* Audio */}
         <div className='space-y-4'>
-          <h2 className='text-2xl text-white border-b border-gray-700 pb-2'>AUDIO PROTOCOLS</h2>
+          <h2 className='text-2xl text-white border-b border-gray-700 pb-2'>
+            AUDIO PROTOCOLS
+          </h2>
 
           <div className='flex items-center justify-between'>
             <label className='text-(--toxic-green)'>MUSIC VOLUME</label>
             <input
-              type='range' min='0' max='1' step='0.1'
-              value={musicVol} onChange={handleMusicChange}
+              type='range'
+              min='0'
+              max='1'
+              step='0.1'
+              value={musicVol}
+              onChange={handleMusicChange}
               className='w-1/2 accent-(--toxic-green)'
             />
           </div>
@@ -60,8 +67,12 @@ export const Settings = () => {
           <div className='flex items-center justify-between'>
             <label className='text-(--toxic-green)'>SFX VOLUME</label>
             <input
-              type='range' min='0' max='1' step='0.1'
-              value={sfxVol} onChange={handleSFXChange}
+              type='range'
+              min='0'
+              max='1'
+              step='0.1'
+              value={sfxVol}
+              onChange={handleSFXChange}
               className='w-1/2 accent-(--toxic-green)'
             />
           </div>
@@ -73,31 +84,35 @@ export const Settings = () => {
 
         {/* Visuals */}
         <div className='space-y-4'>
-          <h2 className='text-2xl text-white border-b border-gray-700 pb-2'>VISUAL OUTPUT</h2>
+          <h2 className='text-2xl text-white border-b border-gray-700 pb-2'>
+            VISUAL OUTPUT
+          </h2>
           <div className='flex items-center justify-between'>
             <span className='text-(--toxic-green)'>CRT SIMULATION</span>
             <button
               onClick={handleCRT}
               className={`w-16 h-8 border border-(--toxic-green) flex items-center p-1 ${settings.crtEnabled ? 'justify-end bg-(--toxic-green)/20' : 'justify-start'}`}
             >
-              <div className={`w-6 h-6 bg-(--toxic-green) ${settings.crtEnabled ? 'animate-pulse' : 'opacity-50'}`} />
+              <div
+                className={`w-6 h-6 bg-(--toxic-green) ${settings.crtEnabled ? 'animate-pulse' : 'opacity-50'}`}
+              />
             </button>
           </div>
         </div>
 
         {/* Data */}
         <div className='space-y-4 pt-8 border-t border-red-900'>
-          <GlitchButton onClick={handleDeleteSave} className='w-full border-red-600 text-red-600 hover:bg-red-900'>
+          <GlitchButton
+            onClick={handleDeleteSave}
+            className='w-full border-red-600 text-red-600 hover:bg-red-900'
+          >
             PURGE DATA
           </GlitchButton>
         </div>
-
       </div>
 
       <div className='mt-8'>
-        <GlitchButton onClick={() => changeScene('MENU')}>
-          RETURN
-        </GlitchButton>
+        <GlitchButton onClick={() => changeScene('MENU')}>RETURN</GlitchButton>
       </div>
     </div>
   )

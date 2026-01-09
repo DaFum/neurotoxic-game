@@ -16,9 +16,7 @@ module.exports = {
     ecmaVersion: 12,
     sourceType: 'module'
   },
-  plugins: [
-    'react'
-  ],
+  plugins: ['react'],
   rules: {
     'react/prop-types': 'off',
     'no-unused-vars': ['warn', { varsIgnorePattern: '^_' }]

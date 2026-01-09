@@ -14,7 +14,7 @@ import { DebugLogViewer } from './ui/DebugLogViewer'
 import { TutorialManager } from './components/TutorialManager'
 import { GameStateProvider, useGameState } from './context/GameState'
 
-function GameContent () {
+function GameContent() {
   const { currentScene, activeEvent, resolveEvent, settings } = useGameState()
 
   const renderScene = () => {
@@ -47,7 +47,9 @@ function GameContent () {
       )}
 
       {/* Hide HUD in Menu/Settings/Credits/GameOver */}
-      {!['MENU', 'SETTINGS', 'CREDITS', 'GAMEOVER'].includes(currentScene) && <HUD />}
+      {!['MENU', 'SETTINGS', 'CREDITS', 'GAMEOVER'].includes(currentScene) && (
+        <HUD />
+      )}
 
       <ToastOverlay />
       <TutorialManager />
@@ -55,10 +57,7 @@ function GameContent () {
 
       {/* Global Event Modal Overlay */}
       {activeEvent && (
-        <EventModal
-          event={activeEvent}
-          onOptionSelect={resolveEvent}
-        />
+        <EventModal event={activeEvent} onOptionSelect={resolveEvent} />
       )}
 
       {renderScene()}
@@ -66,7 +65,7 @@ function GameContent () {
   )
 }
 
-export default function App () {
+export default function App() {
   return (
     <GameStateProvider>
       <GameContent />

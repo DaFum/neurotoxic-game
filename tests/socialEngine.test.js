@@ -1,21 +1,47 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { calculateViralityScore, generatePostOptions, resolvePost, SOCIAL_PLATFORMS } from '../src/utils/socialEngine.js'
+import {
+  calculateViralityScore,
+  generatePostOptions,
+  resolvePost,
+  SOCIAL_PLATFORMS
+} from '../src/utils/socialEngine.js'
 
 test('SOCIAL_PLATFORMS contains expected platforms', () => {
   assert.ok(SOCIAL_PLATFORMS.INSTAGRAM, 'Should have Instagram platform')
   assert.ok(SOCIAL_PLATFORMS.TIKTOK, 'Should have TikTok platform')
   assert.ok(SOCIAL_PLATFORMS.YOUTUBE, 'Should have YouTube platform')
 
-  assert.equal(SOCIAL_PLATFORMS.INSTAGRAM.id, 'instagram', 'Instagram ID should be lowercase')
-  assert.equal(SOCIAL_PLATFORMS.TIKTOK.id, 'tiktok', 'TikTok ID should be lowercase')
-  assert.equal(SOCIAL_PLATFORMS.YOUTUBE.id, 'youtube', 'YouTube ID should be lowercase')
+  assert.equal(
+    SOCIAL_PLATFORMS.INSTAGRAM.id,
+    'instagram',
+    'Instagram ID should be lowercase'
+  )
+  assert.equal(
+    SOCIAL_PLATFORMS.TIKTOK.id,
+    'tiktok',
+    'TikTok ID should be lowercase'
+  )
+  assert.equal(
+    SOCIAL_PLATFORMS.YOUTUBE.id,
+    'youtube',
+    'YouTube ID should be lowercase'
+  )
 })
 
 test('SOCIAL_PLATFORMS have multipliers', () => {
-  assert.ok(SOCIAL_PLATFORMS.INSTAGRAM.multiplier > 0, 'Instagram should have positive multiplier')
-  assert.ok(SOCIAL_PLATFORMS.TIKTOK.multiplier > 0, 'TikTok should have positive multiplier')
-  assert.ok(SOCIAL_PLATFORMS.YOUTUBE.multiplier > 0, 'YouTube should have positive multiplier')
+  assert.ok(
+    SOCIAL_PLATFORMS.INSTAGRAM.multiplier > 0,
+    'Instagram should have positive multiplier'
+  )
+  assert.ok(
+    SOCIAL_PLATFORMS.TIKTOK.multiplier > 0,
+    'TikTok should have positive multiplier'
+  )
+  assert.ok(
+    SOCIAL_PLATFORMS.YOUTUBE.multiplier > 0,
+    'YouTube should have positive multiplier'
+  )
 })
 
 test('calculateViralityScore returns base chance for average performance', () => {
@@ -31,7 +57,10 @@ test('calculateViralityScore increases with high performance', () => {
   const lowScore = calculateViralityScore(60, [], venue)
   const highScore = calculateViralityScore(95, [], venue)
 
-  assert.ok(highScore > lowScore, 'High performance should increase virality chance')
+  assert.ok(
+    highScore > lowScore,
+    'High performance should increase virality chance'
+  )
 })
 
 test('calculateViralityScore applies performance multipliers', () => {
@@ -41,8 +70,14 @@ test('calculateViralityScore applies performance multipliers', () => {
   const goodPerf = calculateViralityScore(80, [], venue)
   const greatPerf = calculateViralityScore(92, [], venue)
 
-  assert.ok(goodPerf > mediumPerf, 'Better performance should increase virality')
-  assert.ok(greatPerf > goodPerf, 'Excellent performance should increase further')
+  assert.ok(
+    goodPerf > mediumPerf,
+    'Better performance should increase virality'
+  )
+  assert.ok(
+    greatPerf > goodPerf,
+    'Excellent performance should increase further'
+  )
 })
 
 test('calculateViralityScore boosts for Kaminstube venue', () => {
@@ -66,22 +101,37 @@ test('calculateViralityScore boosts for stage diver event', () => {
 test('calculateViralityScore boosts for influencer event', () => {
   const venue = { name: 'Test Venue' }
   const noEvents = calculateViralityScore(80, [], venue)
-  const withInfluencer = calculateViralityScore(80, ['influencer_spotted'], venue)
+  const withInfluencer = calculateViralityScore(
+    80,
+    ['influencer_spotted'],
+    venue
+  )
 
   assert.ok(withInfluencer > noEvents, 'Influencer should boost virality')
-  assert.ok(withInfluencer > 0.1, 'Influencer should significantly boost virality')
+  assert.ok(
+    withInfluencer > 0.1,
+    'Influencer should significantly boost virality'
+  )
 })
 
 test('calculateViralityScore is capped at 90%', () => {
   const venue = { name: 'Kaminstube' }
-  const score = calculateViralityScore(100, ['stage_diver', 'influencer_spotted'], venue)
+  const score = calculateViralityScore(
+    100,
+    ['stage_diver', 'influencer_spotted'],
+    venue
+  )
 
   assert.ok(score <= 0.9, 'Virality should be capped at 90%')
 })
 
 test('calculateViralityScore combines multiple bonuses', () => {
   const venue = { name: 'Kaminstube Historic' }
-  const score = calculateViralityScore(95, ['stage_diver', 'influencer_spotted'], venue)
+  const score = calculateViralityScore(
+    95,
+    ['stage_diver', 'influencer_spotted'],
+    venue
+  )
 
   assert.ok(score > 0.3, 'Multiple bonuses should stack significantly')
   assert.ok(score <= 0.9, 'Should still be capped')
@@ -111,7 +161,11 @@ test('generatePostOptions includes technical option', () => {
 
   const techOption = options.find(opt => opt.id === 'clip_tech')
   assert.ok(techOption, 'Should include technical option')
-  assert.equal(techOption.platform, 'YOUTUBE', 'Technical should be for YouTube')
+  assert.equal(
+    techOption.platform,
+    'YOUTUBE',
+    'Technical should be for YouTube'
+  )
 })
 
 test('generatePostOptions includes band pic option', () => {
@@ -120,7 +174,11 @@ test('generatePostOptions includes band pic option', () => {
 
   const picOption = options.find(opt => opt.id === 'pic_group')
   assert.ok(picOption, 'Should include band pic option')
-  assert.equal(picOption.platform, 'INSTAGRAM', 'Band pic should be for Instagram')
+  assert.equal(
+    picOption.platform,
+    'INSTAGRAM',
+    'Band pic should be for Instagram'
+  )
 })
 
 test('generatePostOptions scales mosh viral chance', () => {
@@ -133,7 +191,10 @@ test('generatePostOptions scales mosh viral chance', () => {
   const lowMosh = lowOptions.find(opt => opt.id === 'clip_mosh')
   const highMosh = highOptions.find(opt => opt.id === 'clip_mosh')
 
-  assert.ok(highMosh.viralChance > lowMosh.viralChance, 'Higher base virality should increase mosh chance')
+  assert.ok(
+    highMosh.viralChance > lowMosh.viralChance,
+    'Higher base virality should increase mosh chance'
+  )
 })
 
 test('generatePostOptions all have required properties', () => {
@@ -145,7 +206,10 @@ test('generatePostOptions all have required properties', () => {
     assert.ok(opt.title, 'Option should have title')
     assert.ok(opt.platform, 'Option should have platform')
     assert.ok(opt.description, 'Option should have description')
-    assert.ok(typeof opt.viralChance === 'number', 'Option should have viral chance')
+    assert.ok(
+      typeof opt.viralChance === 'number',
+      'Option should have viral chance'
+    )
     assert.ok(opt.effect, 'Option should have effect')
     assert.ok(opt.effect.platform, 'Effect should specify platform')
   })
@@ -176,7 +240,10 @@ test('resolvePost handles non-viral post', () => {
   assert.equal(result.success, false, 'Should not be viral')
   assert.equal(result.followers, 50, 'Should get base followers')
   assert.equal(result.platform, 'instagram', 'Should preserve platform')
-  assert.ok(!result.message.includes('VIRAL'), 'Message should not mention viral')
+  assert.ok(
+    !result.message.includes('VIRAL'),
+    'Message should not mention viral'
+  )
 })
 
 test('resolvePost viral multiplies by 10', () => {
@@ -237,7 +304,10 @@ test('resolvePost returns consistent structure', () => {
   const result = resolvePost(postOption, 0.3)
 
   assert.ok(typeof result.success === 'boolean', 'Should have boolean success')
-  assert.ok(typeof result.followers === 'number', 'Should have number followers')
+  assert.ok(
+    typeof result.followers === 'number',
+    'Should have number followers'
+  )
   assert.ok(typeof result.platform === 'string', 'Should have string platform')
   assert.ok(typeof result.message === 'string', 'Should have string message')
 })

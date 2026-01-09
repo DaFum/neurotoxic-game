@@ -1,7 +1,7 @@
 name: Lint Code Base
 
 on:
-  push: 
+  push:
     branches: ['main']
   pull_request:
     branches: ['main']
@@ -9,7 +9,7 @@ on:
 # Explicit permissions to pass CKV2_GHA_1 security check
 permissions:
   contents: read
-  pull-requests:  write
+  pull-requests: write
   statuses: write
 
 jobs:
@@ -17,11 +17,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses:  actions/checkout@v4
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name:  Lint Code Base (Super-Linter)
+      - name: Lint Code Base (Super-Linter)
         id: superlinter
         uses: github/super-linter@v7
         continue-on-error: true
@@ -31,7 +31,7 @@ jobs:
           DEFAULT_BRANCH: 'main'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name:  Gather Super-Linter logs (best effort)
+      - name: Gather Super-Linter logs (best effort)
         if: always()
         run: |
           set -euo pipefail
@@ -55,11 +55,11 @@ jobs:
           # Trim to avoid GitHub comment size limits
           tail -n 2000 super-linter-clean.log > super-linter.tail.log
 
-      - name:  Upsert PR comment with Super-Linter output
+      - name: Upsert PR comment with Super-Linter output
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
-          script:  |
+          script: |
             const fs = require('fs');
 
             const MARKER = '<!-- super-linter-report -->';

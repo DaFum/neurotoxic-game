@@ -27,9 +27,7 @@ test('checkHit finds matching note within window', () => {
 })
 
 test('checkHit ignores notes outside window', () => {
-  const notes = [
-    { time: 1000, laneIndex: 0, visible: true, hit: false, id: 1 }
-  ]
+  const notes = [{ time: 1000, laneIndex: 0, visible: true, hit: false, id: 1 }]
   const hitWindow = 100
 
   // Too early
@@ -42,9 +40,7 @@ test('checkHit ignores notes outside window', () => {
 })
 
 test('checkHit ignores wrong lane', () => {
-  const notes = [
-    { time: 1000, laneIndex: 0, visible: true, hit: false, id: 1 }
-  ]
+  const notes = [{ time: 1000, laneIndex: 0, visible: true, hit: false, id: 1 }]
   const hitWindow = 100
 
   const wrongLane = checkHit(notes, 1, 1000, hitWindow)

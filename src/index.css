@@ -1,36 +1,36 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @import url('https://fonts.googleapis.com/css2?family=Metal+Mania&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Nosifer&display=swap');
 
 :root {
   /* Neurotoxic-Grün (aus Logo) */
-  --toxic-green: #00FF41;
-  --toxic-green-dark: #00CC33;
-  --toxic-green-light: #33FF66;
+  --toxic-green: #00ff41;
+  --toxic-green-dark: #00cc33;
+  --toxic-green-light: #33ff66;
   --toxic-green-glow: rgba(0, 255, 65, 0.6);
-  
+
   /* Death-Metal-Schwarz */
-  --void-black: #0A0A0A;
-  --shadow-black: #1A1A1A;
-  --concrete-gray: #2A2A2A;
-  --ash-gray: #3A3A3A;
-  
+  --void-black: #0a0a0a;
+  --shadow-black: #1a1a1a;
+  --concrete-gray: #2a2a2a;
+  --ash-gray: #3a3a3a;
+
   /* Akzentfarben */
-  --blood-red: #CC0000;
-  --blood-red-bright: #FF0000;
-  --rust-orange: #CC5500;
-  --warning-yellow: #FFCC00;
-  
+  --blood-red: #cc0000;
+  --blood-red-bright: #ff0000;
+  --rust-orange: #cc5500;
+  --warning-yellow: #ffcc00;
+
   /* Kosmische Farben (für "Lost Scriptures"-Thema) */
-  --cosmic-purple: #6600CC;
-  --void-blue: #0033CC;
-  --star-white: #FFFFFF;
-  
+  --cosmic-purple: #6600cc;
+  --void-blue: #0033cc;
+  --star-white: #ffffff;
+
   /* UI-Funktionen */
-  --success-green: #00FF41;
-  --error-red: #FF0033;
-  --warning-orange: #FF9900;
-  --info-blue: #0099FF;
+  --success-green: #00ff41;
+  --error-red: #ff0033;
+  --warning-orange: #ff9900;
+  --info-blue: #0099ff;
 
   --font-display: 'Metal Mania', cursive;
   --font-ui: 'Courier New', monospace;
@@ -56,9 +56,15 @@ body {
 }
 
 /* Global Utility Classes */
-.text-toxic { color: var(--toxic-green); }
-.text-blood { color: var(--blood-red-bright); }
-.bg-void { background-color: var(--void-black); }
+.text-toxic {
+  color: var(--toxic-green);
+}
+.text-blood {
+  color: var(--blood-red-bright);
+}
+.bg-void {
+  background-color: var(--void-black);
+}
 
 .glitch-text {
   position: relative;
@@ -66,17 +72,44 @@ body {
 }
 
 @keyframes glitch {
-  0% { transform: translate(0); text-shadow: 2px 2px 0px var(--blood-red); }
-  20% { transform: translate(-2px, 2px); text-shadow: -2px -2px 0px var(--cosmic-purple); }
-  40% { transform: translate(-2px, -2px); text-shadow: 2px -2px 0px var(--blood-red); }
-  60% { transform: translate(2px, 2px); text-shadow: -2px 2px 0px var(--cosmic-purple); }
-  80% { transform: translate(2px, -2px); text-shadow: 2px 2px 0px var(--blood-red); }
-  100% { transform: translate(0); text-shadow: -2px -2px 0px var(--cosmic-purple); }
+  0% {
+    transform: translate(0);
+    text-shadow: 2px 2px 0px var(--blood-red);
+  }
+  20% {
+    transform: translate(-2px, 2px);
+    text-shadow: -2px -2px 0px var(--cosmic-purple);
+  }
+  40% {
+    transform: translate(-2px, -2px);
+    text-shadow: 2px -2px 0px var(--blood-red);
+  }
+  60% {
+    transform: translate(2px, 2px);
+    text-shadow: -2px 2px 0px var(--cosmic-purple);
+  }
+  80% {
+    transform: translate(2px, -2px);
+    text-shadow: 2px 2px 0px var(--blood-red);
+  }
+  100% {
+    transform: translate(0);
+    text-shadow: -2px -2px 0px var(--cosmic-purple);
+  }
 }
 
 .crt-overlay {
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-  background-size: 100% 2px, 3px 100%;
+  background:
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+    linear-gradient(
+      90deg,
+      rgba(255, 0, 0, 0.06),
+      rgba(0, 255, 0, 0.02),
+      rgba(0, 0, 255, 0.06)
+    );
+  background-size:
+    100% 2px,
+    3px 100%;
   pointer-events: none;
   position: absolute;
   top: 0;
@@ -88,17 +121,26 @@ body {
 }
 
 .crt-overlay::after {
-  content: " ";
+  content: ' ';
   display: block;
   position: absolute;
   top: 0;
   left: 0;
   bottom: 0;
   right: 0;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-  background-size: 100% 2px, 3px 100%;
+  background:
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+    linear-gradient(
+      90deg,
+      rgba(255, 0, 0, 0.06),
+      rgba(0, 255, 0, 0.02),
+      rgba(0, 0, 255, 0.06)
+    );
+  background-size:
+    100% 2px,
+    3px 100%;
   z-index: 2;
-  background-color: rgba(0,0,0,0);
+  background-color: rgba(0, 0, 0, 0);
   opacity: 0;
   pointer-events: none;
   animation: scanline 10s linear infinite;
@@ -119,25 +161,37 @@ body {
 }
 
 @keyframes crt-flicker {
-  0% { opacity: 0.95; }
-  50% { opacity: 1; }
-  100% { opacity: 0.98; }
+  0% {
+    opacity: 0.95;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.98;
+  }
 }
 
 button {
-    cursor: pointer;
-    font-family: var(--font-display);
-    text-transform: uppercase;
-    letter-spacing: 2px;
+  cursor: pointer;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
 /* Band Animation */
 .animate-headbang {
-    animation: headbang 0.2s;
+  animation: headbang 0.2s;
 }
 
 @keyframes headbang {
-    0% { transform: rotate(0deg) scale(1); }
-    50% { transform: rotate(10deg) scale(1.1); }
-    100% { transform: rotate(0deg) scale(1); }
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(10deg) scale(1.1);
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
 }

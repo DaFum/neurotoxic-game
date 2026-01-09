@@ -35,7 +35,11 @@ export const UPGRADES_DB = {
       name: 'Axis Pedals',
       cost: 1500,
       description: 'Drum blast beats score +20% more.',
-      effect: { type: 'stat_modifier', stat: 'drum_score_multiplier', value: 0.2 }
+      effect: {
+        type: 'stat_modifier',
+        stat: 'drum_score_multiplier',
+        value: 0.2
+      }
     },
     {
       id: 'bass_sansamp',

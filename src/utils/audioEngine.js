@@ -4,7 +4,7 @@ let guitar, drumKit, loop
 let isSetup = false
 
 // Initialisierung der Synths und Effekte
-export async function setupAudio () {
+export async function setupAudio() {
   if (isSetup) return
   await Tone.start()
 
@@ -15,7 +15,13 @@ export async function setupAudio () {
   guitar = new Tone.PolySynth(Tone.MonoSynth, {
     oscillator: { type: 'sawtooth' },
     envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.1 },
-    filterEnvelope: { attack: 0.001, decay: 0.1, sustain: 0, baseFrequency: 150, octaves: 4 }
+    filterEnvelope: {
+      attack: 0.001,
+      decay: 0.1,
+      sustain: 0,
+      baseFrequency: 150,
+      octaves: 4
+    }
   })
 
   const distortion = new Tone.Distortion(0.8)
@@ -49,7 +55,7 @@ export async function setupAudio () {
 }
 
 // Helper to resume context from UI
-export async function ensureAudioContext () {
+export async function ensureAudioContext() {
   if (!isSetup) await setupAudio()
   if (Tone.context.state !== 'running') {
     await Tone.context.resume()
@@ -57,7 +63,7 @@ export async function ensureAudioContext () {
 }
 
 // Die eigentliche Generierungs-Logik
-export async function startMetalGenerator (song) {
+export async function startMetalGenerator(song) {
   await ensureAudioContext()
 
   // Reset & Cleanup before starting
@@ -66,28 +72,32 @@ export async function startMetalGenerator (song) {
   Tone.Transport.position = 0 // Reset transport time
 
   // 1. BPM Setzen (Diff Logik)
-  const bpm = song.bpm || (80 + (song.difficulty * 30))
+  const bpm = song.bpm || 80 + song.difficulty * 30
   Tone.Transport.bpm.value = bpm
 
   // 2. Riff Pattern Generieren
   const pattern = generateRiffPattern(song.difficulty || 2)
 
   // 3. Sequencer Loop
-  loop = new Tone.Sequence((time, note) => {
-    if (!guitar || !drumKit) return // Safety check
+  loop = new Tone.Sequence(
+    (time, note) => {
+      if (!guitar || !drumKit) return // Safety check
 
-    // Guitar
-    if (note) guitar.triggerAttackRelease(note, '16n', time)
+      // Guitar
+      if (note) guitar.triggerAttackRelease(note, '16n', time)
 
-    // Drum Logic
-    playDrums(time, song.difficulty || 2, note)
-  }, pattern, '16n')
+      // Drum Logic
+      playDrums(time, song.difficulty || 2, note)
+    },
+    pattern,
+    '16n'
+  )
 
   loop.start(0)
   Tone.Transport.start()
 }
 
-export function stopAudio () {
+export function stopAudio() {
   Tone.Transport.stop()
   if (loop) {
     loop.dispose()
@@ -96,15 +106,18 @@ export function stopAudio () {
 }
 
 // Hilfsfunktion: Riff Pattern
-function generateRiffPattern (diff) {
+function generateRiffPattern(diff) {
   const steps = 16
   const pattern = []
-  const density = 0.3 + (diff * 0.1)
+  const density = 0.3 + diff * 0.1
 
   for (let i = 0; i < steps; i++) {
     if (Math.random() < density) {
       if (diff <= 2) pattern.push(Math.random() > 0.8 ? 'E3' : 'E2')
-      else if (diff <= 4) pattern.push(Math.random() > 0.7 ? (Math.random() > 0.5 ? 'F2' : 'G2') : 'E2')
+      else if (diff <= 4)
+        pattern.push(
+          Math.random() > 0.7 ? (Math.random() > 0.5 ? 'F2' : 'G2') : 'E2'
+        )
       else {
         const notes = ['E2', 'A#2', 'F2', 'C3', 'D#3']
         pattern.push(notes[Math.floor(Math.random() * notes.length)])
@@ -117,7 +130,7 @@ function generateRiffPattern (diff) {
 }
 
 // Hilfsfunktion: Drums
-function playDrums (time, diff, note) {
+function playDrums(time, diff, note) {
   if (diff === 5) {
     // Blast Beat
     drumKit.kick.triggerAttackRelease('C1', '16n', time)
@@ -126,13 +139,14 @@ function playDrums (time, diff, note) {
     drumKit.hihat.triggerAttackRelease('8000', '32n', time, 0.5)
   } else {
     // Standard Groove
-    if (note === 'E2' || Math.random() < (diff * 0.1)) {
+    if (note === 'E2' || Math.random() < diff * 0.1) {
       drumKit.kick.triggerAttackRelease('C1', '8n', time)
     }
     if (Math.random() > 0.9) {
       drumKit.snare.triggerAttackRelease('16n', time)
     }
     // HiHat Pulse
-    if (time % 0.25 < 0.1) drumKit.hihat.triggerAttackRelease('8000', '32n', time)
+    if (time % 0.25 < 0.1)
+      drumKit.hihat.triggerAttackRelease('8000', '32n', time)
   }
 }

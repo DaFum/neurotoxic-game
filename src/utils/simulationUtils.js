@@ -50,9 +50,9 @@ export const calculateGigPhysics = (bandState, song) => {
   const marius = bandState.members.find(m => m.name === 'Marius')
 
   const hitWindows = {
-    guitar: 150 + ((matze?.skill || 0) * 5),
-    drums: 150 + ((lars?.skill || 0) * 5),
-    bass: 150 + ((marius?.skill || 0) * 5)
+    guitar: 150 + (matze?.skill || 0) * 5,
+    drums: 150 + (lars?.skill || 0) * 5,
+    bass: 150 + (marius?.skill || 0) * 5
   }
 
   // 2. Scroll Speed based on Global Stamina
@@ -100,8 +100,11 @@ export const calculateGigPhysics = (bandState, song) => {
  * @param {object} currentState - The full state before update.
  * @returns {object} The updated parts of state (player, band, social).
  */
-export const calculateDailyUpdates = (currentState) => {
-  const nextPlayer = { ...currentState.player, day: currentState.player.day + 1 }
+export const calculateDailyUpdates = currentState => {
+  const nextPlayer = {
+    ...currentState.player,
+    day: currentState.player.day + 1
+  }
   const nextBand = { ...currentState.band }
   const nextSocial = { ...currentState.social }
 
@@ -129,7 +132,8 @@ export const calculateDailyUpdates = (currentState) => {
   }
   if (nextPlayer.passiveFollowers) {
     // Passive followers currently funnel into Instagram only
-    nextSocial.instagram = (nextSocial.instagram || 0) + nextPlayer.passiveFollowers
+    nextSocial.instagram =
+      (nextSocial.instagram || 0) + nextPlayer.passiveFollowers
   }
 
   return { player: nextPlayer, band: nextBand, social: nextSocial }

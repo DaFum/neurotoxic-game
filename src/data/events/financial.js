@@ -8,7 +8,11 @@ export const FINANCIAL_EVENTS = [
     trigger: 'random',
     chance: 0.05,
     options: [
-      { label: 'Pay it [-50€]', effect: { type: 'resource', resource: 'money', value: -50 }, outcomeText: 'Ouch.' }
+      {
+        label: 'Pay it [-50€]',
+        effect: { type: 'resource', resource: 'money', value: -50 },
+        outcomeText: 'Ouch.'
+      }
     ]
   }
 ]

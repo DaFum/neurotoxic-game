@@ -23,8 +23,18 @@ export const BAND_EVENTS = [
         skillCheck: {
           stat: 'charisma',
           threshold: 6,
-          success: { type: 'stat', stat: 'harmony', value: 5, description: 'Everyone is happy.' },
-          failure: { type: 'stat', stat: 'harmony', value: -10, description: 'Now they both hate you.' }
+          success: {
+            type: 'stat',
+            stat: 'harmony',
+            value: 5,
+            description: 'Everyone is happy.'
+          },
+          failure: {
+            type: 'stat',
+            stat: 'harmony',
+            value: -10,
+            description: 'Now they both hate you.'
+          }
         },
         outcomeText: 'You tried to mediate.'
       }

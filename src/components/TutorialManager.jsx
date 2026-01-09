@@ -26,7 +26,10 @@ export const TutorialManager = () => {
 
   // Tutorial Content Logic
   const getContent = () => {
-    if (step === 0 && (currentScene === 'MENU' || currentScene === 'OVERWORLD')) {
+    if (
+      step === 0 &&
+      (currentScene === 'MENU' || currentScene === 'OVERWORLD')
+    ) {
       return {
         title: 'WELCOME TO THE GRIND',
         text: "You are the manager of NEUROTOXIC. Your goal: survive the tour, earn fame, and don't go broke.",
@@ -74,7 +77,9 @@ export const TutorialManager = () => {
             TUTORIAL {step + 1}
           </div>
 
-          <h3 className='text-xl text-white font-[Metal_Mania] mb-2'>{content.title}</h3>
+          <h3 className='text-xl text-white font-[Metal_Mania] mb-2'>
+            {content.title}
+          </h3>
           <p className='text-gray-300 font-mono text-sm mb-4 leading-relaxed'>
             {content.text}
           </p>
