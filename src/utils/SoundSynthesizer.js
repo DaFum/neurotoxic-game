@@ -3,6 +3,7 @@ export class SoundSynthesizer {
     this.ctx = null
     this.masterGain = null
     this.volume = 0.5
+    this.muted = false
   }
 
   init () {
@@ -19,8 +20,16 @@ export class SoundSynthesizer {
 
   setVolume (vol) {
     this.volume = vol
-    if (this.masterGain) {
+    if (this.masterGain && !this.muted) {
       this.masterGain.gain.setTargetAtTime(vol, this.ctx.currentTime, 0.01)
+    }
+  }
+
+  setMute (muted) {
+    this.muted = muted
+    if (this.masterGain) {
+      const targetVol = muted ? 0 : this.volume
+      this.masterGain.gain.setTargetAtTime(targetVol, this.ctx.currentTime, 0.01)
     }
   }
 

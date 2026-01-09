@@ -37,6 +37,7 @@ class AudioSystem {
       // Initialize Synth
       this.synth.init()
       this.synth.setVolume(this.sfxVolume)
+      this.synth.setMute(this.muted)
 
       this.initialized = true
     } catch (error) {
@@ -67,6 +68,22 @@ class AudioSystem {
         this.music.once('unlock', () => {
           this.music.play()
         })
+      },
+      onloaderror: (id, err) => {
+        if (songId === 'ambient') {
+          console.warn('[AudioSystem] Ambient stream failed to load, switching to fallback.', err)
+          // Fallback to static MP3 if stream fails
+          if (this.music) {
+             this.music.unload()
+             this.music = new Howl({
+               src: ['https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'],
+               html5: true,
+               loop: true,
+               volume: this.musicVolume
+             })
+             this.music.play()
+          }
+        }
       }
     })
 
@@ -136,6 +153,10 @@ class AudioSystem {
       Tone.Destination.mute = this.muted
     } catch (e) {
       console.warn('[AudioSystem] Tone.js mute failed:', e)
+    }
+
+    if (this.synth) {
+      this.synth.setMute(this.muted)
     }
 
     localStorage.setItem('neurotoxic_muted', this.muted)

@@ -210,6 +210,8 @@ export const useRhythmGameLogic = () => {
      */
   const handleHit = useCallback((laneIndex) => {
     const state = gameStateRef.current
+    // Use system time (Date.now) for hit detection to maintain sync with the AudioContext/Tone.js clock,
+    // which runs independently of the visual frame loop (ticker).
     const now = Date.now()
     const elapsed = now - state.startTime
     const toxicModeActive = state.isToxicMode
