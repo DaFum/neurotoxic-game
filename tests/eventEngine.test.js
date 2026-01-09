@@ -39,7 +39,10 @@ test('eventEngine.checkEvent filters by trigger point', () => {
   const state = buildGameState()
   const result = eventEngine.checkEvent('transport', state, 'pre_gig')
   // Result can be null or an event, both are valid
-  assert.ok(result === null || typeof result === 'object', 'Should return null or event object')
+  assert.ok(
+    result === null || typeof result === 'object',
+    'Should return null or event object'
+  )
 })
 
 test('eventEngine.checkEvent respects cooldowns', () => {
@@ -51,7 +54,10 @@ test('eventEngine.checkEvent respects cooldowns', () => {
 test('eventEngine.checkEvent prioritizes pending events', () => {
   const state = buildGameState({ pendingEvents: ['some_event_id'] })
   // Pending events should be checked first
-  assert.ok(Array.isArray(state.pendingEvents), 'Pending events should be array')
+  assert.ok(
+    Array.isArray(state.pendingEvents),
+    'Pending events should be array'
+  )
   assert.ok(state.pendingEvents.length > 0, 'Should have pending events')
 })
 
@@ -80,12 +86,17 @@ test('eventEngine.resolveChoice handles skill check success', () => {
       failure: { type: 'resource', resource: 'money', value: -100 }
     }
   }
-  const state = buildGameState({ band: { ...buildGameState().band, harmony: 80 } })
+  const state = buildGameState({
+    band: { ...buildGameState().band, harmony: 80 }
+  })
 
   const result = eventEngine.resolveChoice(choice, state)
 
   assert.ok(result, 'Should return result object')
-  assert.ok(result.outcome === 'success' || result.outcome === 'failure', 'Should have success or failure outcome')
+  assert.ok(
+    result.outcome === 'success' || result.outcome === 'failure',
+    'Should have success or failure outcome'
+  )
 })
 
 test('eventEngine.resolveChoice handles skill check failure', () => {
@@ -98,12 +109,17 @@ test('eventEngine.resolveChoice handles skill check failure', () => {
       failure: { type: 'resource', resource: 'money', value: -100 }
     }
   }
-  const state = buildGameState({ band: { ...buildGameState().band, harmony: 10 } })
+  const state = buildGameState({
+    band: { ...buildGameState().band, harmony: 10 }
+  })
 
   const result = eventEngine.resolveChoice(choice, state)
 
   assert.ok(result, 'Should return result object')
-  assert.ok(['success', 'failure'].includes(result.outcome), 'Should have valid outcome')
+  assert.ok(
+    ['success', 'failure'].includes(result.outcome),
+    'Should have valid outcome'
+  )
 })
 
 test('eventEngine.resolveChoice uses luck stat for luck checks', () => {
@@ -121,7 +137,10 @@ test('eventEngine.resolveChoice uses luck stat for luck checks', () => {
   const result = eventEngine.resolveChoice(choice, state)
 
   assert.ok(result, 'Should return result object')
-  assert.ok(['success', 'failure'].includes(result.outcome), 'Luck check should have valid outcome')
+  assert.ok(
+    ['success', 'failure'].includes(result.outcome),
+    'Luck check should have valid outcome'
+  )
 })
 
 test('eventEngine.resolveChoice uses max member skill', () => {
@@ -139,7 +158,10 @@ test('eventEngine.resolveChoice uses max member skill', () => {
   const result = eventEngine.resolveChoice(choice, state)
 
   assert.ok(result, 'Should return result object')
-  assert.ok(['success', 'failure'].includes(result.outcome), 'Skill check should have valid outcome')
+  assert.ok(
+    ['success', 'failure'].includes(result.outcome),
+    'Skill check should have valid outcome'
+  )
 })
 
 test('eventEngine.resolveChoice preserves nextEventId', () => {
@@ -152,7 +174,11 @@ test('eventEngine.resolveChoice preserves nextEventId', () => {
 
   const result = eventEngine.resolveChoice(choice, state)
 
-  assert.equal(result.nextEventId, 'chase_outcome', 'Should preserve nextEventId')
+  assert.equal(
+    result.nextEventId,
+    'chase_outcome',
+    'Should preserve nextEventId'
+  )
 })
 
 test('eventEngine.processOptions returns event when no processing needed', () => {
@@ -174,31 +200,51 @@ test('eventEngine.processOptions handles van_breakdown with spare_tire', () => {
   const event = {
     id: 'van_breakdown_flat',
     options: [
-      { label: 'Call tow truck', effect: { type: 'resource', resource: 'money', value: -200 } }
+      {
+        label: 'Call tow truck',
+        effect: { type: 'resource', resource: 'money', value: -200 }
+      }
     ]
   }
-  const state = buildGameState({ band: { ...buildGameState().band, inventory: { spare_tire: true } } })
+  const state = buildGameState({
+    band: { ...buildGameState().band, inventory: { spare_tire: true } }
+  })
 
   const result = eventEngine.processOptions(event, state)
 
   assert.ok(result, 'Should return modified event')
-  const spareTireOption = result.options.find(opt => opt.label.includes('Spare Tire'))
-  assert.ok(spareTireOption, 'Should have spare tire option when inventory has it')
+  const spareTireOption = result.options.find(opt =>
+    opt.label.includes('Spare Tire')
+  )
+  assert.ok(
+    spareTireOption,
+    'Should have spare tire option when inventory has it'
+  )
 })
 
 test('eventEngine.processOptions does not add spare tire option without inventory', () => {
   const event = {
     id: 'van_breakdown_flat',
     options: [
-      { label: 'Call tow truck', effect: { type: 'resource', resource: 'money', value: -200 } }
+      {
+        label: 'Call tow truck',
+        effect: { type: 'resource', resource: 'money', value: -200 }
+      }
     ]
   }
-  const state = buildGameState({ band: { ...buildGameState().band, inventory: { spare_tire: false } } })
+  const state = buildGameState({
+    band: { ...buildGameState().band, inventory: { spare_tire: false } }
+  })
 
   const result = eventEngine.processOptions(event, state)
 
-  const spareTireOption = result.options.find(opt => opt.label.includes('Spare Tire'))
-  assert.ok(!spareTireOption, 'Should not have spare tire option without inventory')
+  const spareTireOption = result.options.find(opt =>
+    opt.label.includes('Spare Tire')
+  )
+  assert.ok(
+    !spareTireOption,
+    'Should not have spare tire option without inventory'
+  )
 })
 
 test('eventEngine.applyResult handles resource effects', () => {
@@ -244,7 +290,11 @@ test('eventEngine.applyResult handles stamina changes', () => {
   const delta = eventEngine.applyResult(result)
 
   assert.ok(delta, 'Should return delta')
-  assert.equal(delta.band.members.staminaChange, -20, 'Should set stamina change')
+  assert.equal(
+    delta.band.members.staminaChange,
+    -20,
+    'Should set stamina change'
+  )
 })
 
 test('eventEngine.applyResult handles van fuel', () => {
@@ -281,7 +331,11 @@ test('eventEngine.applyResult handles story flags', () => {
   const delta = eventEngine.applyResult(result)
 
   assert.ok(delta, 'Should return delta')
-  assert.equal(delta.flags.addStoryFlag, 'met_promoter', 'Should add story flag')
+  assert.equal(
+    delta.flags.addStoryFlag,
+    'met_promoter',
+    'Should add story flag'
+  )
 })
 
 test('eventEngine.applyResult handles chain events', () => {
@@ -290,7 +344,11 @@ test('eventEngine.applyResult handles chain events', () => {
   const delta = eventEngine.applyResult(result)
 
   assert.ok(delta, 'Should return delta')
-  assert.equal(delta.flags.queueEvent, 'follow_up_event', 'Should queue chained event')
+  assert.equal(
+    delta.flags.queueEvent,
+    'follow_up_event',
+    'Should queue chained event'
+  )
 })
 
 test('eventEngine.applyResult handles composite effects', () => {
@@ -336,7 +394,11 @@ test('eventEngine.applyResult preserves nextEventId from result', () => {
   const delta = eventEngine.applyResult(result)
 
   assert.ok(delta, 'Should return delta')
-  assert.equal(delta.flags.queueEvent, 'bonus_event', 'Should queue next event from result')
+  assert.equal(
+    delta.flags.queueEvent,
+    'bonus_event',
+    'Should queue next event from result'
+  )
 })
 
 test('eventEngine.applyResult handles time stat', () => {

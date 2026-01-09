@@ -13,7 +13,7 @@ export const LOG_LEVELS = {
  * A configurable logger system for debugging game flow.
  */
 class Logger {
-  constructor () {
+  constructor() {
     this.logs = []
     this.maxLogs = 1000
     this.minLevel = LOG_LEVELS.DEBUG // Default to DEBUG for now, can be changed via settings
@@ -29,31 +29,31 @@ class Logger {
   }
 
   /**
-     * Set the minimum log level filter.
-     * @param {number} level
-     */
-  setLevel (level) {
+   * Set the minimum log level filter.
+   * @param {number} level
+   */
+  setLevel(level) {
     this.minLevel = level
     localStorage.setItem('neurotoxic_log_level', level)
   }
 
   /**
-     * Subscribe to log updates (for UI).
-     * @param {Function} callback
-     * @returns {Function} Unsubscribe function
-     */
-  subscribe (callback) {
+   * Subscribe to log updates (for UI).
+   * @param {Function} callback
+   * @returns {Function} Unsubscribe function
+   */
+  subscribe(callback) {
     this.listeners.push(callback)
     return () => {
       this.listeners = this.listeners.filter(l => l !== callback)
     }
   }
 
-  _emit () {
+  _emit() {
     this.listeners.forEach(cb => cb(this.logs))
   }
 
-  _push (entry) {
+  _push(entry) {
     this.logs.unshift(entry) // Newest first
     if (this.logs.length > this.maxLogs) {
       this.logs.pop()
@@ -61,7 +61,7 @@ class Logger {
     this._emit()
   }
 
-  _format (level, channel, message, data) {
+  _format(level, channel, message, data) {
     return {
       id: Date.now() + Math.random(),
       timestamp: new Date().toISOString(),
@@ -72,36 +72,36 @@ class Logger {
     }
   }
 
-  debug (channel, message, data) {
+  debug(channel, message, data) {
     if (this.minLevel > LOG_LEVELS.DEBUG) return
     console.debug(`[${channel}] ${message}`, data || '')
     this._push(this._format('DEBUG', channel, message, data))
   }
 
-  info (channel, message, data) {
+  info(channel, message, data) {
     if (this.minLevel > LOG_LEVELS.INFO) return
     console.info(`[${channel}] ${message}`, data || '')
     this._push(this._format('INFO', channel, message, data))
   }
 
-  warn (channel, message, data) {
+  warn(channel, message, data) {
     if (this.minLevel > LOG_LEVELS.WARN) return
     console.warn(`[${channel}] ${message}`, data || '')
     this._push(this._format('WARN', channel, message, data))
   }
 
-  error (channel, message, data) {
+  error(channel, message, data) {
     if (this.minLevel > LOG_LEVELS.ERROR) return
     console.error(`[${channel}] ${message}`, data || '')
     this._push(this._format('ERROR', channel, message, data))
   }
 
-  clear () {
+  clear() {
     this.logs = []
     this._emit()
   }
 
-  dump () {
+  dump() {
     return JSON.stringify(this.logs, null, 2)
   }
 }

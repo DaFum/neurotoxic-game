@@ -46,12 +46,14 @@ EventModal.propTypes = {
   event: PropTypes.shape({
     title: PropTypes.string.isRequired,
     text: PropTypes.string.isRequired,
-    options: PropTypes.arrayOf(PropTypes.shape({
-      label: PropTypes.string.isRequired,
-      effect: PropTypes.object,
-      skillCheck: PropTypes.object,
-      outcomeText: PropTypes.string
-    })).isRequired
+    options: PropTypes.arrayOf(
+      PropTypes.shape({
+        label: PropTypes.string.isRequired,
+        effect: PropTypes.object,
+        skillCheck: PropTypes.object,
+        outcomeText: PropTypes.string
+      })
+    ).isRequired
   }),
   onOptionSelect: PropTypes.func.isRequired
 }

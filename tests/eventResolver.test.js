@@ -28,7 +28,10 @@ test('resolveEventChoice returns delta for direct effects', () => {
     effect: { type: 'resource', resource: 'money', value: -40 }
   }
 
-  const { delta, outcomeText, description, result } = resolveEventChoice(choice, buildState())
+  const { delta, outcomeText, description, result } = resolveEventChoice(
+    choice,
+    buildState()
+  )
 
   assert.equal(outcomeText, 'You pay the fine.')
   assert.equal(description, '')
@@ -37,7 +40,10 @@ test('resolveEventChoice returns delta for direct effects', () => {
 })
 
 test('resolveEventChoice handles missing choices safely', () => {
-  const { delta, outcomeText, description, result } = resolveEventChoice(null, buildState())
+  const { delta, outcomeText, description, result } = resolveEventChoice(
+    null,
+    buildState()
+  )
 
   assert.equal(outcomeText, '')
   assert.equal(description, '')

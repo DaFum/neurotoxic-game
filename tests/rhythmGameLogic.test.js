@@ -13,7 +13,7 @@ test('generateNotesForSong creates correct note structure', () => {
   // Use a predictable random function
   let seed = 0.5
   const mockRandom = () => {
-    seed = (seed * 9301 + 49297) % 233280 / 233280
+    seed = ((seed * 9301 + 49297) % 233280) / 233280
     return seed
   }
 
@@ -32,7 +32,10 @@ test('generateNotesForSong creates correct note structure', () => {
 
   // Check determinism with same seed logic (if we reset seed)
   seed = 0.5
-  const notes2 = generateNotesForSong(song, { leadIn: 1000, random: mockRandom })
+  const notes2 = generateNotesForSong(song, {
+    leadIn: 1000,
+    random: mockRandom
+  })
   assert.deepStrictEqual(notes, notes2)
 })
 
@@ -43,12 +46,14 @@ test('generateNotesForSong respects difficulty', () => {
   const notesEasy = generateNotesForSong(songEasy, { random: () => 0.5 })
   const notesHard = generateNotesForSong(songHard, { random: () => 0.5 })
 
-  // Harder difficulty should generally produce more notes or different patterns
-  // (Note: simple mock random 0.5 might hit specific branches, but let's assume implementation logic holds)
-  // Actually, strictly checking length might be flaky if the generator logic is subtle.
-  // But generally hard = more density.
-
-  // Let's just verify they are generated without crashing.
+  // Harder difficulty should generally produce more notes.
+  // We use a simple assertion here to verify that difficulty impacts note density.
   assert.ok(Array.isArray(notesEasy))
   assert.ok(Array.isArray(notesHard))
+
+  // Verify that higher difficulty generates more notes
+  assert.ok(
+    notesHard.length >= notesEasy.length,
+    'Harder difficulty should produce at least as many notes as easy difficulty'
+  )
 })

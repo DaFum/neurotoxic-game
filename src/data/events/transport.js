@@ -14,7 +14,12 @@ export const TRANSPORT_EVENTS = [
           type: 'composite',
           effects: [
             { type: 'resource', resource: 'money', value: -50 },
-            { type: 'stat', stat: 'time', value: -2, description: 'Wait for tow truck' }
+            {
+              type: 'stat',
+              stat: 'time',
+              value: -2,
+              description: 'Wait for tow truck'
+            }
           ]
         },
         outcomeText: 'The tow truck arrived late. At least the tire is fixed.'
@@ -24,12 +29,22 @@ export const TRANSPORT_EVENTS = [
         skillCheck: {
           stat: 'stamina', // Check against random band member's stamina
           threshold: 5, // Easy check
-          success: { type: 'stat', stat: 'time', value: -1, description: 'Quick fix!' },
+          success: {
+            type: 'stat',
+            stat: 'time',
+            value: -1,
+            description: 'Quick fix!'
+          },
           failure: {
             type: 'composite',
             effects: [
               { type: 'stat', stat: 'time', value: -3 },
-              { type: 'stat', stat: 'stamina', value: -10, description: 'You hurt your back.' }
+              {
+                type: 'stat',
+                stat: 'stamina',
+                value: -10,
+                description: 'You hurt your back.'
+              }
             ]
           }
         },
@@ -61,7 +76,12 @@ export const TRANSPORT_EVENTS = [
         skillCheck: {
           stat: 'skill',
           threshold: 7,
-          success: { type: 'stat', stat: 'harmony', value: 10, description: 'It worked! Genius.' },
+          success: {
+            type: 'stat',
+            stat: 'harmony',
+            value: 10,
+            description: 'It worked! Genius.'
+          },
           failure: {
             type: 'composite',
             effects: [
@@ -106,7 +126,12 @@ export const TRANSPORT_EVENTS = [
     options: [
       {
         label: 'Cooperate [Safe]',
-        effect: { type: 'stat', stat: 'time', value: -0.5, description: '30 mins lost.' },
+        effect: {
+          type: 'stat',
+          stat: 'time',
+          value: -0.5,
+          description: '30 mins lost.'
+        },
         outcomeText: 'They checked the tires and let you go. Boring.'
       },
       {
@@ -114,8 +139,18 @@ export const TRANSPORT_EVENTS = [
         skillCheck: {
           stat: 'charisma',
           threshold: 7,
-          success: { type: 'stat', stat: 'fame', value: 5, description: 'Cop was a fan!' },
-          failure: { type: 'resource', resource: 'money', value: -150, description: 'Fined for attitude.' }
+          success: {
+            type: 'stat',
+            stat: 'fame',
+            value: 5,
+            description: 'Cop was a fan!'
+          },
+          failure: {
+            type: 'resource',
+            resource: 'money',
+            value: -150,
+            description: 'Fined for attitude.'
+          }
         },
         outcomeText: 'You rolled down the window with a smile.'
       },
@@ -124,7 +159,12 @@ export const TRANSPORT_EVENTS = [
         skillCheck: {
           stat: 'stamina', // Placeholder for driving skill
           threshold: 9,
-          success: { type: 'stat', stat: 'mood', value: 20, description: 'Adrenaline rush! Escaped!' },
+          success: {
+            type: 'stat',
+            stat: 'mood',
+            value: 20,
+            description: 'Adrenaline rush! Escaped!'
+          },
           failure: { type: 'game_over', description: 'Arrested. Tour Over.' }
         },
         outcomeText: 'FLOOR IT!'
@@ -155,8 +195,17 @@ export const TRANSPORT_EVENTS = [
         skillCheck: {
           stat: 'luck', // Implicit check
           threshold: 5, // 50/50
-          success: { type: 'unlock', unlock: 'rare_vinyl', description: 'Found a hidden record store! +Rare Vinyl' },
-          failure: { type: 'stat', stat: 'time', value: -2, description: 'Just a dead end.' }
+          success: {
+            type: 'unlock',
+            unlock: 'rare_vinyl',
+            description: 'Found a hidden record store! +Rare Vinyl'
+          },
+          failure: {
+            type: 'stat',
+            stat: 'time',
+            value: -2,
+            description: 'Just a dead end.'
+          }
         },
         outcomeText: 'You decided to look around.'
       }
@@ -180,11 +229,21 @@ export const TRANSPORT_EVENTS = [
         skillCheck: {
           stat: 'luck',
           threshold: 4,
-          success: { type: 'stat', stat: 'time', value: -1, description: 'Shortcut worked!' },
+          success: {
+            type: 'stat',
+            stat: 'time',
+            value: -1,
+            description: 'Shortcut worked!'
+          },
           failure: {
             type: 'composite',
             effects: [
-              { type: 'stat', stat: 'time', value: -3, description: 'Got lost on farm roads.' },
+              {
+                type: 'stat',
+                stat: 'time',
+                value: -3,
+                description: 'Got lost on farm roads.'
+              },
               { type: 'resource', resource: 'fuel', value: -10 }
             ]
           }
@@ -206,14 +265,29 @@ export const TRANSPORT_EVENTS = [
         skillCheck: {
           stat: 'luck',
           threshold: 3, // Mostly good outcomes
-          success: { type: 'stat', stat: 'harmony', value: 10, description: 'Great stories, good vibes.' },
-          failure: { type: 'resource', resource: 'money', value: -50, description: 'Stole cash from the dashboard.' }
+          success: {
+            type: 'stat',
+            stat: 'harmony',
+            value: 10,
+            description: 'Great stories, good vibes.'
+          },
+          failure: {
+            type: 'resource',
+            resource: 'money',
+            value: -50,
+            description: 'Stole cash from the dashboard.'
+          }
         },
         outcomeText: 'You opened the door.'
       },
       {
         label: 'Drive past',
-        effect: { type: 'stat', stat: 'harmony', value: -5, description: 'Felt bad.' },
+        effect: {
+          type: 'stat',
+          stat: 'harmony',
+          value: -5,
+          description: 'Felt bad.'
+        },
         outcomeText: 'Safety first.'
       }
     ]
@@ -231,11 +305,21 @@ export const TRANSPORT_EVENTS = [
         skillCheck: {
           stat: 'stamina',
           threshold: 6,
-          success: { type: 'stat', stat: 'mood', value: -10, description: 'Safe, but shaken.' },
+          success: {
+            type: 'stat',
+            stat: 'mood',
+            value: -10,
+            description: 'Safe, but shaken.'
+          },
           failure: {
             type: 'composite',
             effects: [
-              { type: 'resource', resource: 'money', value: -500, description: 'Hit a tree. Van damaged.' },
+              {
+                type: 'resource',
+                resource: 'money',
+                value: -500,
+                description: 'Hit a tree. Van damaged.'
+              },
               { type: 'stat', stat: 'van_condition', value: -20 }
             ]
           }
@@ -254,7 +338,12 @@ export const TRANSPORT_EVENTS = [
     options: [
       {
         label: 'Chat with them',
-        effect: { type: 'stat', stat: 'fame', value: 5, description: 'It was a fan! Free coffee.' },
+        effect: {
+          type: 'stat',
+          stat: 'fame',
+          value: 5,
+          description: 'It was a fan! Free coffee.'
+        },
         outcomeText: 'Nice interaction.'
       },
       {
@@ -271,7 +360,13 @@ export const TRANSPORT_EVENTS = [
     text: 'FLASH! You were going 130 in a 100 zone.',
     trigger: 'travel',
     chance: 0.04,
-    options: [{ label: 'Pay fine [-30€]', effect: { type: 'resource', resource: 'money', value: -30 }, outcomeText: 'Damn.' }]
+    options: [
+      {
+        label: 'Pay fine [-30€]',
+        effect: { type: 'resource', resource: 'money', value: -30 },
+        outcomeText: 'Damn.'
+      }
+    ]
   },
   {
     id: 'road_rage',
@@ -281,8 +376,21 @@ export const TRANSPORT_EVENTS = [
     trigger: 'travel',
     chance: 0.04,
     options: [
-      { label: 'Brake check', skillCheck: { stat: 'luck', threshold: 5, success: { type: 'stat', stat: 'mood', value: 5 }, failure: { type: 'stat', stat: 'van_condition', value: -5 } }, outcomeText: 'Risky move.' },
-      { label: 'Let them pass', effect: { type: 'stat', stat: 'mood', value: -2 }, outcomeText: 'Safe but annoying.' }
+      {
+        label: 'Brake check',
+        skillCheck: {
+          stat: 'luck',
+          threshold: 5,
+          success: { type: 'stat', stat: 'mood', value: 5 },
+          failure: { type: 'stat', stat: 'van_condition', value: -5 }
+        },
+        outcomeText: 'Risky move.'
+      },
+      {
+        label: 'Let them pass',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'Safe but annoying.'
+      }
     ]
   },
   {
@@ -293,8 +401,22 @@ export const TRANSPORT_EVENTS = [
     trigger: 'travel',
     chance: 0.05,
     options: [
-      { label: 'Take it', effect: { type: 'composite', effects: [{ type: 'stat', stat: 'time', value: -1 }, { type: 'stat', stat: 'harmony', value: 5 }] }, outcomeText: 'Beautiful views.' },
-      { label: 'Stay on highway', effect: { type: 'stat', stat: 'time', value: 0 }, outcomeText: 'Efficiency first.' }
+      {
+        label: 'Take it',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'stat', stat: 'time', value: -1 },
+            { type: 'stat', stat: 'harmony', value: 5 }
+          ]
+        },
+        outcomeText: 'Beautiful views.'
+      },
+      {
+        label: 'Stay on highway',
+        effect: { type: 'stat', stat: 'time', value: 0 },
+        outcomeText: 'Efficiency first.'
+      }
     ]
   }
 ]

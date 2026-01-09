@@ -15,7 +15,9 @@ export const GameOver = () => {
 
   return (
     <div className='flex flex-col items-center justify-center h-full w-full bg-black z-50 text-center p-8'>
-      <h1 className='text-8xl text-red-600 font-[Metal_Mania] mb-4 animate-bounce'>SOLD OUT</h1>
+      <h1 className='text-8xl text-red-600 font-[Metal_Mania] mb-4 animate-bounce'>
+        SOLD OUT
+      </h1>
       <h2 className='text-2xl text-gray-400 font-mono mb-12 uppercase tracking-widest'>
         The tour has ended prematurely.
       </h2>
@@ -37,7 +39,10 @@ export const GameOver = () => {
         <GlitchButton onClick={handleRetry} className='border-white text-white'>
           LOAD LAST SAVE
         </GlitchButton>
-        <GlitchButton onClick={() => changeScene('MENU')} className='border-red-600 text-red-600'>
+        <GlitchButton
+          onClick={() => changeScene('MENU')}
+          className='border-red-600 text-red-600'
+        >
           GIVE UP
         </GlitchButton>
       </div>

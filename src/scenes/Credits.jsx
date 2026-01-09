@@ -16,21 +16,23 @@ export const Credits = () => {
 
   return (
     <div className='flex flex-col items-center justify-center h-full w-full bg-black z-50 text-center overflow-hidden'>
-      <h1 className='text-5xl text-[var(--toxic-green)] font-[Metal_Mania] mb-12 animate-pulse'>CREDITS</h1>
+      <h1 className='text-5xl text-[var(--toxic-green)] font-[Metal_Mania] mb-12 animate-pulse'>
+        CREDITS
+      </h1>
 
       <div className='space-y-8 animate-slide-up'>
         {credits.map((c, i) => (
           <div key={i} className='flex flex-col gap-1'>
-            <span className='text-gray-500 text-sm font-mono tracking-widest'>{c.role}</span>
+            <span className='text-gray-500 text-sm font-mono tracking-widest'>
+              {c.role}
+            </span>
             <span className='text-white text-2xl font-bold'>{c.name}</span>
           </div>
         ))}
       </div>
 
       <div className='mt-16'>
-        <GlitchButton onClick={() => changeScene('MENU')}>
-          RETURN
-        </GlitchButton>
+        <GlitchButton onClick={() => changeScene('MENU')}>RETURN</GlitchButton>
       </div>
     </div>
   )

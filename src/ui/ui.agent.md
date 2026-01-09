@@ -1,9 +1,11 @@
 # UI Module Agent
 
 ## Role
+
 You are the **UI Component Library Specialist** for NEUROTOXIC: GRIND THE VOID. You maintain the reusable, generic UI components that form the visual language of the game.
 
 ## Domain Expertise
+
 This folder (`src/ui/`) contains the "design system" - pure presentation components that are game-agnostic and highly reusable:
 
 - **GlitchButton.jsx** - Primary brutalist button component
@@ -17,44 +19,46 @@ These differ from `src/components/` by being **stateless presentation components
 ## Core Principles
 
 ### Stateless & Pure
+
 UI components should **not** use `useGameState()` directly:
 
 ```jsx
 // ✅ CORRECT - Receive data via props
 export const HUD = ({ money, day, location }) => {
-  return <div>Day {day} • €{money} • {location}</div>;
-};
+  return (
+    <div>
+      Day {day} • €{money} • {location}
+    </div>
+  )
+}
 
 // ❌ WRONG - Direct state coupling
 export const HUD = () => {
-  const { player } = useGameState(); // Don't do this
-};
+  const { player } = useGameState() // Don't do this
+}
 ```
 
 **Exception**: `HUD.jsx` and `ToastOverlay.jsx` may use `useGameState()` as they are global singletons.
 
 ### Composition Over Configuration
+
 Accept `className` prop for extensibility:
 
 ```jsx
-export const GlitchButton = ({ onClick, children, className = "" }) => {
+export const GlitchButton = ({ onClick, children, className = '' }) => {
   return (
-    <button 
-      onClick={onClick}
-      className={`base-styles ${className}`}
-    >
+    <button onClick={onClick} className={`base-styles ${className}`}>
       {children}
     </button>
-  );
-};
+  )
+}
 
 // Usage: Add custom styles without modifying component
-<GlitchButton className="mt-4 w-full">
-  CUSTOM BUTTON
-</GlitchButton>
+;<GlitchButton className='mt-4 w-full'>CUSTOM BUTTON</GlitchButton>
 ```
 
 ### Accessibility First
+
 - All buttons must be keyboard navigable
 - Use semantic HTML (`<button>`, `<dialog>`, `<nav>`)
 - Provide `aria-label` for icon-only buttons
@@ -63,20 +67,23 @@ export const GlitchButton = ({ onClick, children, className = "" }) => {
 ## Component Details
 
 ### GlitchButton.jsx
+
 **Purpose**: The primary interactive element in the game
 
 **API:**
+
 ```jsx
 <GlitchButton
   onClick={handleClick}
   disabled={false}
-  className="optional-extra-styles"
+  className='optional-extra-styles'
 >
   BUTTON TEXT
 </GlitchButton>
 ```
 
 **Visual Requirements:**
+
 1. **Text**: Uppercase, bold, monospace (`Metal Mania` or `Courier New`)
 2. **Box**: Black background, toxic green border (2px)
 3. **Hover State**: Invert colors (green bg, black text)
@@ -85,21 +92,25 @@ export const GlitchButton = ({ onClick, children, className = "" }) => {
 6. **Glitch Overlay**: White flash on hover
 
 **Full Implementation:**
-```jsx
-import React from 'react';
 
-export const GlitchButton = ({ 
-  onClick, 
-  children, 
-  className = "", 
+```jsx
+import React from 'react'
+
+export const GlitchButton = ({
+  onClick,
+  children,
+  className = '',
   disabled = false,
-  variant = "primary" // 'primary', 'danger', 'secondary'
+  variant = 'primary' // 'primary', 'danger', 'secondary'
 }) => {
   const variantStyles = {
-    primary: 'border-(--toxic-green) text-(--toxic-green) hover:bg-(--toxic-green) hover:text-black',
-    danger: 'border-(--blood-red) text-(--blood-red) hover:bg-(--blood-red) hover:text-black',
-    secondary: 'border-(--ash-gray) text-(--ash-gray) hover:bg-(--ash-gray) hover:text-black'
-  };
+    primary:
+      'border-(--toxic-green) text-(--toxic-green) hover:bg-(--toxic-green) hover:text-black',
+    danger:
+      'border-(--blood-red) text-(--blood-red) hover:bg-(--blood-red) hover:text-black',
+    secondary:
+      'border-(--ash-gray) text-(--ash-gray) hover:bg-(--ash-gray) hover:text-black'
+  }
 
   return (
     <button
@@ -118,25 +129,28 @@ export const GlitchButton = ({
         ${className}
       `}
     >
-      <span className="relative z-10 group-hover:animate-pulse">
+      <span className='relative z-10 group-hover:animate-pulse'>
         {children}
       </span>
       {/* Glitch Overlay */}
-      <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 mix-blend-difference pointer-events-none" />
+      <span className='absolute inset-0 bg-white opacity-0 group-hover:opacity-10 mix-blend-difference pointer-events-none' />
     </button>
-  );
-};
+  )
+}
 ```
 
 **Variants:**
+
 - `primary` - Default toxic green
 - `danger` - Blood red (destructive actions)
 - `secondary` - Ash gray (cancel, back)
 
 ### HUD.jsx
+
 **Purpose**: Persistent display of critical player stats
 
 **Layout:**
+
 ```
 ┌────────────────────────────────────────────────────┐
 │ DAY 12 • €450 • FUEL: 65% • LEIPZIG • HARMONY: 72 │
@@ -144,33 +158,38 @@ export const GlitchButton = ({
 ```
 
 **Implementation:**
+
 ```jsx
-import React from 'react';
-import { useGameState } from '../context/GameState';
+import React from 'react'
+import { useGameState } from '../context/GameState'
 
 export const HUD = () => {
-  const { player, band } = useGameState();
+  const { player, band } = useGameState()
 
   return (
-    <div className="absolute top-0 left-0 right-0 z-30 bg-[var(--void-black)] border-b-2 border-(--toxic-green) py-2 px-4">
-      <div className="flex justify-between items-center font-[Courier_New] text-sm text-(--toxic-green)">
+    <div className='absolute top-0 left-0 right-0 z-30 bg-[var(--void-black)] border-b-2 border-(--toxic-green) py-2 px-4'>
+      <div className='flex justify-between items-center font-[Courier_New] text-sm text-(--toxic-green)'>
         {/* Left: Time & Location */}
-        <div className="flex gap-4">
+        <div className='flex gap-4'>
           <span>DAY {player.day}</span>
           <span>•</span>
-          <span className={player.money < 100 ? 'text-(--blood-red) animate-pulse' : ''}>
+          <span
+            className={
+              player.money < 100 ? 'text-(--blood-red) animate-pulse' : ''
+            }
+          >
             €{player.money}
           </span>
         </div>
 
         {/* Center: Location */}
-        <div className="text-center font-bold uppercase">
-          {player.location}
-        </div>
+        <div className='text-center font-bold uppercase'>{player.location}</div>
 
         {/* Right: Fuel & Harmony */}
-        <div className="flex gap-4">
-          <span className={player.van.fuel < 20 ? 'text-(--warning-yellow)' : ''}>
+        <div className='flex gap-4'>
+          <span
+            className={player.van.fuel < 20 ? 'text-(--warning-yellow)' : ''}
+          >
             FUEL: {player.van.fuel}%
           </span>
           <span>•</span>
@@ -180,27 +199,33 @@ export const HUD = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 ```
 
 **Dynamic Warnings:**
+
 - Money < €100 → Red, pulsing
 - Fuel < 20% → Yellow
 - Harmony < 40 → Red
 
 ### EventModal.jsx
+
 **Purpose**: Full-screen modal for narrative event choices
 
 **API:**
+
 ```jsx
 <EventModal
   event={eventObject}
-  onOptionSelect={(choiceIndex) => { /* handle */ }}
+  onOptionSelect={choiceIndex => {
+    /* handle */
+  }}
 />
 ```
 
 **Event Object Structure:**
+
 ```javascript
 {
   title: 'VAN BREAKDOWN',
@@ -213,42 +238,43 @@ export const HUD = () => {
 ```
 
 **Implementation:**
+
 ```jsx
-import React from 'react';
-import { motion } from 'framer-motion';
-import { GlitchButton } from './GlitchButton';
+import React from 'react'
+import { motion } from 'framer-motion'
+import { GlitchButton } from './GlitchButton'
 
 export const EventModal = ({ event, onOptionSelect }) => {
-  if (!event) return null;
+  if (!event) return null
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-95 p-8"
+      className='fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-95 p-8'
     >
-      <div className="max-w-2xl w-full bg-[var(--void-black)] border-4 border-(--toxic-green) p-8">
+      <div className='max-w-2xl w-full bg-[var(--void-black)] border-4 border-(--toxic-green) p-8'>
         {/* Title */}
-        <h2 className="font-[Metal_Mania] text-4xl text-(--blood-red) mb-4 text-center uppercase">
+        <h2 className='font-[Metal_Mania] text-4xl text-(--blood-red) mb-4 text-center uppercase'>
           {event.title}
         </h2>
 
         {/* Description */}
-        <p className="font-[Courier_New] text-lg text-(--toxic-green) mb-8 leading-relaxed">
+        <p className='font-[Courier_New] text-lg text-(--toxic-green) mb-8 leading-relaxed'>
           {event.description}
         </p>
 
         {/* Choices */}
-        <div className="space-y-4">
+        <div className='space-y-4'>
           {event.choices.map((choice, index) => (
             <GlitchButton
               key={index}
               onClick={() => onOptionSelect(index)}
-              className="w-full text-left justify-start"
+              className='w-full text-left justify-start'
             >
               {choice.text}
               {choice.cost?.money && (
-                <span className="ml-4 text-(--blood-red)">
+                <span className='ml-4 text-(--blood-red)'>
                   -€{choice.cost.money}
                 </span>
               )}
@@ -257,52 +283,57 @@ export const EventModal = ({ event, onOptionSelect }) => {
         </div>
       </div>
     </motion.div>
-  );
-};
+  )
+}
 ```
 
 **Animation:**
+
 - Fade in on mount
 - Scale-in the modal box
 - Stagger choice buttons (Framer Motion)
 
 ### ToastOverlay.jsx
+
 **Purpose**: Temporary notifications for non-critical feedback
 
 **API:**
+
 ```jsx
 // Used via GameState context
-dispatch({ 
-  type: 'ADD_TOAST', 
-  payload: { 
-    message: 'Money earned!', 
-    type: 'success' 
-  } 
-});
+dispatch({
+  type: 'ADD_TOAST',
+  payload: {
+    message: 'Money earned!',
+    type: 'success'
+  }
+})
 ```
 
 **Toast Types:**
+
 - `success` - Green, positive feedback
 - `error` - Red, warnings
 - `info` - Blue, neutral information
 
 **Implementation:**
+
 ```jsx
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useGameState } from '../context/GameState';
+import React from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useGameState } from '../context/GameState'
 
 export const ToastOverlay = () => {
-  const { toasts } = useGameState();
+  const { toasts } = useGameState()
 
   const typeStyles = {
     success: 'bg-(--success-green) text-black',
     error: 'bg-(--error-red) text-white',
     info: 'bg-(--info-blue) text-white'
-  };
+  }
 
   return (
-    <div className="fixed top-20 right-4 z-50 space-y-2">
+    <div className='fixed top-20 right-4 z-50 space-y-2'>
       <AnimatePresence>
         {toasts.map((toast, index) => (
           <motion.div
@@ -321,48 +352,50 @@ export const ToastOverlay = () => {
         ))}
       </AnimatePresence>
     </div>
-  );
-};
+  )
+}
 ```
 
 **Auto-Dismiss:**
 Toasts should auto-remove after 3 seconds (handled in GameState reducer).
 
 ### CrashHandler.jsx
+
 **Purpose**: Error boundary to catch React crashes gracefully
 
 **Implementation:**
+
 ```jsx
-import React from 'react';
-import { GlitchButton } from './GlitchButton';
+import React from 'react'
+import { GlitchButton } from './GlitchButton'
 
 export class CrashHandler extends React.Component {
   constructor(props) {
-    super(props);
-    this.state = { hasError: false, error: null };
+    super(props)
+    this.state = { hasError: false, error: null }
   }
 
   static getDerivedStateFromError(error) {
-    return { hasError: true, error };
+    return { hasError: true, error }
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('[CrashHandler] Error caught:', error, errorInfo);
+    console.error('[CrashHandler] Error caught:', error, errorInfo)
   }
 
   render() {
     if (this.state.hasError) {
       return (
-        <div className="w-full h-screen bg-[var(--void-black)] flex flex-col items-center justify-center p-8">
-          <h1 className="font-[Metal_Mania] text-6xl text-(--blood-red) mb-4">
+        <div className='w-full h-screen bg-[var(--void-black)] flex flex-col items-center justify-center p-8'>
+          <h1 className='font-[Metal_Mania] text-6xl text-(--blood-red) mb-4'>
             CRITICAL ERROR
           </h1>
-          <p className="font-[Courier_New] text-(--toxic-green) text-lg mb-8 max-w-lg text-center">
+          <p className='font-[Courier_New] text-(--toxic-green) text-lg mb-8 max-w-lg text-center'>
             The void has consumed your game. This might be a bug.
           </p>
-          <details className="mb-8 font-[Courier_New] text-sm text-(--ash-gray) max-w-lg">
-            <summary className="cursor-pointer">Technical Details</summary>
-            <pre className="mt-4 p-4 bg-[var(--shadow-black)] overflow-auto">
+          <details className='mb-8 font-[Courier_New] text-sm text-(--ash-gray) max-w-lg'>
+            <summary className='cursor-pointer'>Technical Details</summary>
+            <pre className='mt-4 p-4 bg-[var(--shadow-black)] overflow-auto'>
               {this.state.error?.toString()}
             </pre>
           </details>
@@ -370,15 +403,16 @@ export class CrashHandler extends React.Component {
             RESTART GAME
           </GlitchButton>
         </div>
-      );
+      )
     }
 
-    return this.props.children;
+    return this.props.children
   }
 }
 ```
 
 **Usage:**
+
 ```jsx
 // In App.jsx
 <CrashHandler>
@@ -389,28 +423,32 @@ export class CrashHandler extends React.Component {
 ## Styling Consistency
 
 ### Color Variables (Mandatory)
+
 ```jsx
 // ✅ ALWAYS use CSS variables
-className="bg-[var(--void-black)] text-(--toxic-green)"
+className = 'bg-[var(--void-black)] text-(--toxic-green)'
 
 // ❌ NEVER hardcode
-className="bg-black text-green-500"
+className = 'bg-black text-green-500'
 ```
 
 ### Typography Hierarchy
+
 ```jsx
 // Headers
-className="font-[Metal_Mania] text-4xl uppercase"
+className = 'font-[Metal_Mania] text-4xl uppercase'
 
 // Body
-className="font-[Courier_New] text-lg"
+className = 'font-[Courier_New] text-lg'
 
 // Labels
-className="font-[Courier_New] text-sm uppercase tracking-wide"
+className = 'font-[Courier_New] text-sm uppercase tracking-wide'
 ```
 
 ### Spacing Scale
+
 Use Tailwind's spacing scale consistently:
+
 - `p-2` (8px) - Tight padding
 - `p-4` (16px) - Standard padding
 - `p-8` (32px) - Large padding
@@ -418,20 +456,22 @@ Use Tailwind's spacing scale consistently:
 - `space-y-4` (16px) - Vertical spacing
 
 ### Border & Shadow
+
 ```jsx
 // Standard border
-className="border-2 border-(--toxic-green)"
+className = 'border-2 border-(--toxic-green)'
 
 // Brutalist shadow
-className="shadow-[4px_4px_0px_(--blood-red)]"
+className = 'shadow-[4px_4px_0px_(--blood-red)]'
 
 // No rounded corners (brutalist aesthetic)
-className="rounded-none"
+className = 'rounded-none'
 ```
 
 ## Animation Guidelines
 
 ### Framer Motion
+
 ```jsx
 // Fade in
 <motion.div
@@ -453,24 +493,38 @@ className="rounded-none"
 ```
 
 ### Tailwind Transitions
+
 ```jsx
 // Hover effects
-className="transition-all duration-200 hover:scale-105"
+className = 'transition-all duration-200 hover:scale-105'
 
 // Color transitions
-className="transition-colors duration-150 hover:bg-(--toxic-green)"
+className = 'transition-colors duration-150 hover:bg-(--toxic-green)'
 ```
 
 ### CSS Animations
+
 ```css
 /* In index.css */
 @keyframes glitch {
-  0% { transform: translate(0); }
-  20% { transform: translate(-2px, 2px); }
-  40% { transform: translate(-2px, -2px); }
-  60% { transform: translate(2px, 2px); }
-  80% { transform: translate(2px, -2px); }
-  100% { transform: translate(0); }
+  0% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-2px, 2px);
+  }
+  40% {
+    transform: translate(-2px, -2px);
+  }
+  60% {
+    transform: translate(2px, 2px);
+  }
+  80% {
+    transform: translate(2px, -2px);
+  }
+  100% {
+    transform: translate(0);
+  }
 }
 
 .animate-glitch {
@@ -492,12 +546,14 @@ className="transition-colors duration-150 hover:bg-(--toxic-green)"
 ## Common Anti-Patterns
 
 ### ❌ Hardcoded Colors
+
 ```jsx
 // WRONG
 <div className="bg-black text-green-500">
 ```
 
 ### ❌ Inline Styles (unless dynamic)
+
 ```jsx
 // WRONG for static styles
 <div style={{ padding: '16px' }}>
@@ -507,11 +563,14 @@ className="transition-colors duration-150 hover:bg-(--toxic-green)"
 ```
 
 ### ❌ Missing Cleanup
+
 ```jsx
 // WRONG - animation interval not cleared
 useEffect(() => {
-  const interval = setInterval(() => { /* ... */ }, 1000);
-}, []); // No cleanup
+  const interval = setInterval(() => {
+    /* ... */
+  }, 1000)
+}, []) // No cleanup
 ```
 
 ---

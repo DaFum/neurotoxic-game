@@ -20,22 +20,35 @@ export const GigHUD = ({ stats, onLaneInput }) => {
             onMouseDown={() => onLaneInput && onLaneInput(laneIndex, true)}
             onMouseUp={() => onLaneInput && onLaneInput(laneIndex, false)}
             onMouseLeave={() => onLaneInput && onLaneInput(laneIndex, false)}
-            onTouchStart={(e) => { e.preventDefault(); onLaneInput && onLaneInput(laneIndex, true) }}
-            onTouchEnd={(e) => { e.preventDefault(); onLaneInput && onLaneInput(laneIndex, false) }}
+            onTouchStart={e => {
+              e.preventDefault()
+              onLaneInput && onLaneInput(laneIndex, true)
+            }}
+            onTouchEnd={e => {
+              e.preventDefault()
+              onLaneInput && onLaneInput(laneIndex, false)
+            }}
           />
         ))}
       </div>
 
       {/* Stats Overlay */}
       <div className='absolute top-32 left-4 z-10 text-white font-mono pointer-events-none'>
-        <div className='text-4xl font-bold text-(--toxic-green)'>{Math.floor(score).toString().padStart(7, '0')}</div>
-        <div className={`text-2xl ${combo > 10 ? 'text-(--blood-red) animate-pulse' : 'text-gray-400'}`}>
+        <div className='text-4xl font-bold text-(--toxic-green)'>
+          {Math.floor(score).toString().padStart(7, '0')}
+        </div>
+        <div
+          className={`text-2xl ${combo > 10 ? 'text-(--blood-red) animate-pulse' : 'text-gray-400'}`}
+        >
           {combo}x COMBO
         </div>
         <div className='mt-2'>
           <div className='text-xs text-gray-400'>TOXIC OVERLOAD</div>
           <div className='w-32 h-2 bg-gray-800'>
-            <div className='h-full bg-(--toxic-green) transition-all duration-200' style={{ width: `${overload}%` }} />
+            <div
+              className='h-full bg-(--toxic-green) transition-all duration-200'
+              style={{ width: `${overload}%` }}
+            />
           </div>
         </div>
       </div>
@@ -60,7 +73,9 @@ export const GigHUD = ({ stats, onLaneInput }) => {
 
       {isGameOver && (
         <div className='absolute inset-0 z-50 bg-black/90 flex items-center justify-center pointer-events-none'>
-          <h1 className='text-6xl text-red-600 font-[Metal_Mania] animate-pulse'>BOOED OFF STAGE</h1>
+          <h1 className='text-6xl text-red-600 font-[Metal_Mania] animate-pulse'>
+            BOOED OFF STAGE
+          </h1>
         </div>
       )}
     </div>

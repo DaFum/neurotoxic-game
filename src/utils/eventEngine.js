@@ -15,20 +15,28 @@ const selectEvent = (pool, gameState, triggerPoint) => {
   }
 
   // 2. Filter by Trigger & Condition
-  let eligibleEvents = pool.filter(e => !triggerPoint || e.trigger === triggerPoint)
+  let eligibleEvents = pool.filter(
+    e => !triggerPoint || e.trigger === triggerPoint
+  )
   eligibleEvents = eligibleEvents.filter(e => {
     if (!e.condition) return true
     try {
       return e.condition(gameState)
     } catch (err) {
-      logger.error('EventEngine', `Condition check failed for event ${e.id}`, err)
+      logger.error(
+        'EventEngine',
+        `Condition check failed for event ${e.id}`,
+        err
+      )
       return false
     }
   })
 
   // 3. Filter by Cooldown
   if (gameState.eventCooldowns) {
-    eligibleEvents = eligibleEvents.filter(e => !gameState.eventCooldowns.includes(e.id))
+    eligibleEvents = eligibleEvents.filter(
+      e => !gameState.eventCooldowns.includes(e.id)
+    )
   }
 
   if (eligibleEvents.length === 0) return null
@@ -59,24 +67,31 @@ const selectEvent = (pool, gameState, triggerPoint) => {
 const processEffect = (eff, delta) => {
   switch (eff.type) {
     case 'resource':
-      if (eff.resource === 'money') delta.player.money = (delta.player.money || 0) + eff.value
+      if (eff.resource === 'money')
+        delta.player.money = (delta.player.money || 0) + eff.value
       if (eff.resource === 'fuel') {
         delta.player.van = { ...(delta.player.van || {}) }
         delta.player.van.fuel = (delta.player.van.fuel || 0) + eff.value
       }
       break
     case 'stat':
-      if (eff.stat === 'time') delta.player.time = (delta.player.time || 0) + eff.value
-      if (eff.stat === 'fame') delta.player.fame = (delta.player.fame || 0) + eff.value
-      if (eff.stat === 'harmony') delta.band.harmony = (delta.band.harmony || 0) + eff.value
+      if (eff.stat === 'time')
+        delta.player.time = (delta.player.time || 0) + eff.value
+      if (eff.stat === 'fame')
+        delta.player.fame = (delta.player.fame || 0) + eff.value
+      if (eff.stat === 'harmony')
+        delta.band.harmony = (delta.band.harmony || 0) + eff.value
       if (eff.stat === 'mood') delta.band.members = { moodChange: eff.value }
-      if (eff.stat === 'stamina') delta.band.members = { staminaChange: eff.value }
+      if (eff.stat === 'stamina')
+        delta.band.members = { staminaChange: eff.value }
       if (eff.stat === 'van_condition') {
         delta.player.van = { ...(delta.player.van || {}) }
-        delta.player.van.condition = (delta.player.van.condition || 0) + eff.value
+        delta.player.van.condition =
+          (delta.player.van.condition || 0) + eff.value
       }
       if (eff.stat === 'crowd_energy') delta.flags.crowdEnergy = eff.value
-      if (eff.stat === 'viral') delta.social.viral = (delta.social.viral || 0) + eff.value
+      if (eff.stat === 'viral')
+        delta.social.viral = (delta.social.viral || 0) + eff.value
       if (eff.stat === 'score') delta.flags.score = eff.value
       break
     case 'item':
@@ -115,10 +130,13 @@ export const eventEngine = {
       const { stat, threshold, success, failure } = choice.skillCheck
 
       let skillValue = 0
-      const maxMemberSkill = Math.max(...gameState.band.members.map(m => m[stat] || 0))
+      const maxMemberSkill = Math.max(
+        ...gameState.band.members.map(m => m[stat] || 0)
+      )
 
       if (stat === 'luck') skillValue = Math.random() * 10
-      else if (gameState.band[stat] !== undefined) skillValue = gameState.band[stat] / 10
+      else if (gameState.band[stat] !== undefined)
+        skillValue = gameState.band[stat] / 10
       else skillValue = maxMemberSkill
 
       const roll = Math.random() * 10
@@ -145,14 +163,23 @@ export const eventEngine = {
 
     const processedEvent = { ...event, options: [...event.options] }
 
-    if (event.id.includes('van_breakdown') && (gameState.band?.inventory?.spare_tire > 0 || gameState.band?.inventory?.spare_tire === true)) {
+    if (
+      event.id.includes('van_breakdown') &&
+      (gameState.band?.inventory?.spare_tire > 0 ||
+        gameState.band?.inventory?.spare_tire === true)
+    ) {
       const spareTireOption = {
         label: 'Use Spare Tire (Inventory)',
         effect: {
           type: 'composite',
           effects: [
             { type: 'item', item: 'spare_tire', value: -1 }, // Consume
-            { type: 'stat', stat: 'time', value: -0.5, description: 'Quick fix.' }
+            {
+              type: 'stat',
+              stat: 'time',
+              value: -0.5,
+              description: 'Quick fix.'
+            }
           ]
         },
         outcomeText: 'You swapped the tire in record time.'
@@ -163,7 +190,7 @@ export const eventEngine = {
     return processedEvent
   },
 
-  applyResult: (result) => {
+  applyResult: result => {
     if (!result) return null
 
     const delta = { player: {}, band: {}, social: {}, flags: {} }

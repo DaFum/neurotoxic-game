@@ -18,7 +18,7 @@ export const generateNotesForSong = (song, options = {}) => {
   const laneMap = [1, 0, 2, 0]
 
   for (let i = 0; i < totalBeats; i += 1) {
-    const noteTime = leadIn + (i * beatInterval)
+    const noteTime = leadIn + i * beatInterval
     // Ensure we don't exceed duration buffer
     if (noteTime < leadIn + songDurationMs) {
       // Difficulty Scaling: Higher diff = more density
@@ -27,13 +27,13 @@ export const generateNotesForSong = (song, options = {}) => {
 
       if (diff <= 2) {
         // Easy: Downbeats (1) and sometimes 3
-        shouldSpawn = (beatInBar === 0) || (i % 8 === 4 && random() > 0.2)
+        shouldSpawn = beatInBar === 0 || (i % 8 === 4 && random() > 0.2)
       } else if (diff <= 4) {
         // Medium: Downbeats + Offbeats
-        shouldSpawn = (beatInBar === 0 || beatInBar === 2) || (random() > 0.6)
+        shouldSpawn = beatInBar === 0 || beatInBar === 2 || random() > 0.6
       } else {
         // Hard: Chaos / Stream
-        shouldSpawn = (random() > 0.3) // 70% density
+        shouldSpawn = random() > 0.3 // 70% density
       }
 
       if (shouldSpawn) {
@@ -67,10 +67,13 @@ export const generateNotesForSong = (song, options = {}) => {
  * @returns {object|null} The hit note or null.
  */
 export const checkHit = (notes, laneIndex, elapsed, hitWindow) => {
-  return notes.find(n =>
-    n.visible &&
-    !n.hit &&
-    n.laneIndex === laneIndex &&
-    Math.abs(n.time - elapsed) < hitWindow
-  ) || null
+  return (
+    notes.find(
+      n =>
+        n.visible &&
+        !n.hit &&
+        n.laneIndex === laneIndex &&
+        Math.abs(n.time - elapsed) < hitWindow
+    ) || null
+  )
 }

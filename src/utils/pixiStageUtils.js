@@ -22,7 +22,7 @@ export const calculateNoteY = ({ elapsed, noteTime, targetY, speed }) => {
  */
 export const calculateCrowdY = ({ baseY, combo, timeMs }) => {
   const intensity = combo > 10 ? 2 : 1
-  return baseY - Math.abs(Math.sin(timeMs / 100 * intensity) * 5)
+  return baseY - Math.abs(Math.sin((timeMs / 100) * intensity) * 5)
 }
 
 /**
@@ -32,9 +32,8 @@ export const calculateCrowdY = ({ baseY, combo, timeMs }) => {
  * @param {number} params.laneTotalWidth - Total lane width.
  * @returns {number} Lane start X position.
  */
-export const calculateLaneStartX = ({ screenWidth, laneTotalWidth }) => (
+export const calculateLaneStartX = ({ screenWidth, laneTotalWidth }) =>
   (screenWidth - laneTotalWidth) / 2
-)
 
 const LANE_TOTAL_WIDTH = 360
 const LANE_WIDTH = 100

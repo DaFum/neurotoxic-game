@@ -1,6 +1,6 @@
 # NEUROTOXIC: GRIND THE VOID v3.0
 
-This is a Designer-Led implementation of the "NEUROTOXIC" game concept. 
+This is a Designer-Led implementation of the "NEUROTOXIC" game concept.
 
 ## Design Philosophy (Designer-Turned-Developer)
 

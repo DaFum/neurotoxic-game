@@ -1,6 +1,11 @@
 import React from 'react'
 
-export const GlitchButton = ({ onClick, children, className = '', disabled = false }) => {
+export const GlitchButton = ({
+  onClick,
+  children,
+  className = '',
+  disabled = false
+}) => {
   return (
     <button
       onClick={onClick}

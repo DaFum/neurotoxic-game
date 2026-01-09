@@ -2,19 +2,19 @@
 import { ALL_VENUES } from '../data/venues.js'
 
 export class MapGenerator {
-  constructor (seed) {
+  constructor(seed) {
     this.seed = seed || Date.now()
   }
 
   // Linear Congruential Generator for seeded random
-  random () {
+  random() {
     this.seed = (this.seed * 9301 + 49297) % 233280
     return this.seed / 233280
   }
 
   // Generate a run map
   // Structure: Array of Layers. Each Layer has Nodes. Each Node has connections to next layer.
-  generateMap (depth = 10) {
+  generateMap(depth = 10) {
     const map = {
       layers: [],
       nodes: {}, // Map ID to Node Object
@@ -76,7 +76,10 @@ export class MapGenerator {
       // Forward pass: ensure everyone connects forward
       currentLayer.forEach(node => {
         // Pick 1-2 random targets in next layer
-        const targets = this.pickRandomSubset(nextLayer, Math.floor(this.random() * 2) + 1)
+        const targets = this.pickRandomSubset(
+          nextLayer,
+          Math.floor(this.random() * 2) + 1
+        )
         targets.forEach(target => {
           map.connections.push({ from: node.id, to: target.id })
         })
@@ -87,14 +90,16 @@ export class MapGenerator {
       nextLayer.forEach(node => {
         const hasParent = map.connections.some(c => c.to === node.id)
         if (!hasParent) {
-          const randomParent = currentLayer[Math.floor(this.random() * currentLayer.length)]
+          const randomParent =
+            currentLayer[Math.floor(this.random() * currentLayer.length)]
           map.connections.push({ from: randomParent.id, to: node.id })
         }
       })
     }
 
     // Finale Layer
-    const finaleVenue = ALL_VENUES.find(v => v.id === 'leipzig_arena') || hardVenues[0]
+    const finaleVenue =
+      ALL_VENUES.find(v => v.id === 'leipzig_arena') || hardVenues[0]
     const endNode = {
       id: `node_${depth}_0`,
       layer: depth,
@@ -113,7 +118,7 @@ export class MapGenerator {
     return map
   }
 
-  pickRandomSubset (arr, count) {
+  pickRandomSubset(arr, count) {
     const shuffled = [...arr].sort(() => this.random() - 0.5)
     return shuffled.slice(0, count)
   }

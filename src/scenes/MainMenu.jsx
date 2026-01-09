@@ -27,7 +27,9 @@ export const MainMenu = () => {
       {/* Dynamic Background */}
       <div
         className='absolute inset-0 z-0 opacity-40 bg-cover bg-center pointer-events-none'
-        style={{ backgroundImage: `url("${getGenImageUrl(IMG_PROMPTS.MAIN_MENU_BG)}")` }}
+        style={{
+          backgroundImage: `url("${getGenImageUrl(IMG_PROMPTS.MAIN_MENU_BG)}")`
+        }}
       />
       <div className='absolute inset-0 z-0 bg-gradient-to-b from-black/0 to-black/90 pointer-events-none' />
 
@@ -71,10 +73,19 @@ export const MainMenu = () => {
         </div>
 
         <div className='flex gap-4 mt-8'>
-          <button onClick={() => changeScene('SETTINGS')} className='text-gray-500 hover:text-[var(--toxic-green)] text-sm'>SETTINGS</button>
-          <button onClick={() => changeScene('CREDITS')} className='text-gray-500 hover:text-[var(--toxic-green)] text-sm'>CREDITS</button>
+          <button
+            onClick={() => changeScene('SETTINGS')}
+            className='text-gray-500 hover:text-[var(--toxic-green)] text-sm'
+          >
+            SETTINGS
+          </button>
+          <button
+            onClick={() => changeScene('CREDITS')}
+            className='text-gray-500 hover:text-[var(--toxic-green)] text-sm'
+          >
+            CREDITS
+          </button>
         </div>
-
       </div>
 
       <div className='absolute bottom-8 text-(--ash-gray) text-xs font-mono z-10'>
