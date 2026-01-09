@@ -162,7 +162,14 @@ const gameReducer = (state, action) => {
       }
 
       // Safe Merge for Nested Objects: Preserve new keys in initialState
-      const mergedPlayer = { ...initialState.player, ...loadedState.player }
+      const mergedPlayer = {
+        ...initialState.player,
+        ...loadedState.player,
+        van: {
+          ...initialState.player.van,
+          ...(loadedState.player ? loadedState.player.van : {})
+        }
+      }
       const mergedBand = { ...initialState.band, ...loadedState.band }
       const mergedSocial = { ...initialState.social, ...loadedState.social }
       // Note: Arrays like inventory/members are replaced, which is usually correct for saves.
