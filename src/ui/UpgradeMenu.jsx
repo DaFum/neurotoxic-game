@@ -5,58 +5,58 @@ import { useGameState } from '../context/GameState'
 export const UpgradeMenu = ({ onClose }) => {
   const { player, updatePlayer, band, updateBand, addToast } = useGameState()
 
-  const buyUpgrade = (upgrade) => {
-    if (player.fame >= upgrade.cost) {
-      // 1. Deduct cost and save upgrade ID
-      const nextPlayer = {
-        ...player,
-        fame: player.fame - upgrade.cost,
-        van: { ...player.van, upgrades: [...player.van.upgrades, upgrade.id] }
+    const buyUpgrade = (upgrade) => {
+      // The dispatch function would need to be retrieved from useGameState()
+      // For now, we'll assume a new function `applyUpgrade` exists in the context
+      // which internally dispatches a single action.
+    
+      if (player.fame >= upgrade.cost) {
+        // Instead of multiple state calls, dispatch a single action
+        // with the upgrade details. The reducer will handle the logic.
+        // This is a conceptual change; assuming an `applyUpgrade` function is added to the context:
+        // applyUpgrade(upgrade); 
+    
+        // For a minimal change without a new reducer action, we can still improve it:
+        const playerUpdates = {
+          fame: player.fame - upgrade.cost,
+          van: { ...player.van, upgrades: [...player.van.upgrades, upgrade.id] }
+        };
+        const bandUpdates = {};
+    
+        if (upgrade.effect) {
+          const eff = upgrade.effect;
+          if (eff.type === 'stat_modifier') {
+            if (eff.stat === 'breakdown_chance') {
+              playerUpdates.van.breakdownChance = (player.van.breakdownChance || 0.05) + eff.value;
+            } else if (eff.stat === 'inventory_slots') {
+              bandUpdates.inventorySlots = (band.inventorySlots || 0) + eff.value;
+            } else if (eff.stat === 'guitar_difficulty') {
+              bandUpdates.performance = { ...band.performance, guitarDifficulty: (band.performance?.guitarDifficulty || 1.0) + eff.value };
+            } else if (eff.stat === 'drum_score_multiplier') {
+              bandUpdates.performance = { ...band.performance, drumMultiplier: (band.performance?.drumMultiplier || 1.0) + eff.value };
+            } else if (eff.stat === 'crowd_decay') {
+              bandUpdates.performance = { ...band.performance, crowdDecay: (band.performance?.crowdDecay || 1.0) + eff.value };
+            }
+          } else if (eff.type === 'start_bonus' && eff.stat === 'fame') {
+            playerUpdates.fame += eff.value;
+          } else if (eff.type === 'passive') {
+            if (eff.effect === 'harmony_regen_travel') {
+              bandUpdates.harmonyRegenTravel = true;
+            } else if (eff.effect === 'passive_followers') {
+              playerUpdates.passiveFollowers = (player.passiveFollowers || 0) + 5;
+            }
+          }
+        }
+    
+        updatePlayer(playerUpdates);
+        if (Object.keys(bandUpdates).length > 0) {
+          updateBand(bandUpdates);
+        }
+    
+        addToast(`Purchased ${upgrade.name}!`, 'success');
+      } else {
+        addToast('Not enough Fame!', 'error');
       }
-
-      // 2. Apply Effect Logic
-      if (upgrade.effect) {
-        const eff = upgrade.effect
-
-        // STAT MODIFIERS
-        if (eff.type === 'stat_modifier') {
-          if (eff.stat === 'breakdown_chance') {
-            nextPlayer.van.breakdownChance = (nextPlayer.van.breakdownChance || 0.05) + eff.value
-          } else if (eff.stat === 'inventory_slots') {
-            updateBand({ inventorySlots: (band.inventorySlots || 0) + eff.value })
-          } else if (eff.stat === 'guitar_difficulty') {
-            updateBand({ performance: { ...band.performance, guitarDifficulty: (band.performance?.guitarDifficulty || 1.0) + eff.value } })
-          } else if (eff.stat === 'drum_score_multiplier') {
-            updateBand({ performance: { ...band.performance, drumMultiplier: (band.performance?.drumMultiplier || 1.0) + eff.value } })
-          } else if (eff.stat === 'crowd_decay') {
-            updateBand({ performance: { ...band.performance, crowdDecay: (band.performance?.crowdDecay || 1.0) + eff.value } })
-          }
-        }
-
-        // START BONUS
-        else if (eff.type === 'start_bonus') {
-          if (eff.stat === 'fame') {
-            nextPlayer.fame += eff.value
-          }
-        }
-
-        // PASSIVES
-        else if (eff.type === 'passive') {
-          if (eff.effect === 'harmony_regen_travel') {
-            updateBand({ harmonyRegenTravel: true })
-          } else if (eff.effect === 'passive_followers') {
-            // Update local variable so it commits in step 3
-            nextPlayer.passiveFollowers = (nextPlayer.passiveFollowers || 0) + 5
-          }
-        }
-      }
-
-      // 3. Commit Player Updates
-      updatePlayer(nextPlayer)
-      addToast(`Purchased ${upgrade.name}!`, 'success')
-    } else {
-      addToast('Not enough Fame!', 'error')
-    }
   }
 
   return (
