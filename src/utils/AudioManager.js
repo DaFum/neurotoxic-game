@@ -1,4 +1,5 @@
 import { Howl, Howler } from 'howler'
+import * as Tone from 'tone'
 import { SoundSynthesizer } from './SoundSynthesizer.js'
 
 class AudioSystem {
@@ -130,6 +131,13 @@ class AudioSystem {
   toggleMute () {
     this.muted = !this.muted
     Howler.mute(this.muted)
+
+    try {
+      Tone.Destination.mute = this.muted
+    } catch (e) {
+      console.warn('[AudioSystem] Tone.js mute failed:', e)
+    }
+
     localStorage.setItem('neurotoxic_muted', this.muted)
     return this.muted
   }

@@ -160,6 +160,20 @@ test('calculateGigFinancials handles sold out merch gracefully', () => {
   assert.equal(merchItem.value, 0, 'Sold out inventory should result in zero merch sales')
 })
 
+test('calculateGigFinancials uses all inventory types for sales limit', () => {
+  const gigData = buildGigData()
+  // Only patches and vinyls available
+  const inv = buildInventory({ shirts: 0, hoodies: 0, cds: 0, patches: 50, vinyl: 50 })
+
+  const result = calculateGigFinancials(
+    gigData, 100, { hype: 100 }, buildModifiers({ merchTable: true }), inv, 200, buildGigStats()
+  )
+
+  const merchItem = result.income.breakdown.find(b => b.label === 'Merch Sales')
+  // Should sell something (patches/vinyls) even if shirts/hoodies/cds are 0
+  assert.ok(merchItem.value > 0, 'Should sell patches/vinyls if other items out')
+})
+
 test('calculateGigFinancials includes transport costs based on distance', () => {
   const gigData = buildGigData({ dist: 200 })
   const result = calculateGigFinancials(

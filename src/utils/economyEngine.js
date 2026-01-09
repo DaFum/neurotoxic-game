@@ -93,7 +93,7 @@ const calculateMerchIncome = (ticketsSold, performanceScore, gigStats, modifiers
     buyRate -= missPenalty
   }
 
-  const totalInventory = (bandInventory?.shirts || 0) + (bandInventory?.hoodies || 0) + (bandInventory?.cds || 0)
+  const totalInventory = (bandInventory?.shirts || 0) + (bandInventory?.hoodies || 0) + (bandInventory?.cds || 0) + (bandInventory?.patches || 0) + (bandInventory?.vinyl || 0)
   const potentialBuyers = Math.floor(ticketsSold * Math.max(0, buyRate))
   const buyers = Math.min(potentialBuyers, totalInventory)
 

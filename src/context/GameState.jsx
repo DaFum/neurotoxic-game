@@ -160,7 +160,24 @@ const gameReducer = (state, action) => {
           ...loadedState.gigModifiers
         }
       }
-      return { ...state, ...loadedState }
+
+      // Safe Merge for Nested Objects: Preserve new keys in initialState
+      const mergedPlayer = { ...initialState.player, ...loadedState.player }
+      const mergedBand = { ...initialState.band, ...loadedState.band }
+      const mergedSocial = { ...initialState.social, ...loadedState.social }
+      // Note: Arrays like inventory/members are replaced, which is usually correct for saves.
+
+      return {
+        ...state,
+        ...loadedState,
+        player: mergedPlayer,
+        band: mergedBand,
+        social: mergedSocial
+      }
+
+    case 'RESET_STATE':
+      logger.info('GameState', 'State Reset (Debug)')
+      return { ...initialState }
 
     case 'APPLY_EVENT_DELTA': {
       logger.info('GameState', 'Applying Event Delta', action.payload)
@@ -248,6 +265,10 @@ export const GameStateProvider = ({ children }) => {
   const advanceDay = () => {
     dispatch({ type: 'ADVANCE_DAY' })
     addToast(`Day ${state.player.day + 1}: Living Costs Deducted.`, 'info')
+  }
+
+  const resetState = () => {
+    dispatch({ type: 'RESET_STATE' })
   }
 
   // Persistence
@@ -417,6 +438,7 @@ export const GameStateProvider = ({ children }) => {
       saveGame,
       loadGame,
       deleteSave,
+      resetState,
       updateSettings
     }}
     >

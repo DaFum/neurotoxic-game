@@ -92,6 +92,15 @@ export class PixiStageController {
   }
 
   /**
+   * Manually runs a single update frame, useful for testing without a real ticker.
+   * @param {number} deltaMS - Time delta in milliseconds.
+   */
+  manualUpdate (deltaMS) {
+    if (!this.app || this.isDisposed) return
+    this.handleTicker({ deltaMS })
+  }
+
+  /**
      * Loads textures used by the renderer.
      * @returns {Promise<void>} Resolves when assets are loaded.
      */
@@ -110,7 +119,15 @@ export class PixiStageController {
       // this.noteTexture = await PIXI.Assets.load({ src: url, format: 'png' });
 
       const noteTextureUrl = getGenImageUrl(IMG_PROMPTS.NOTE_SKULL)
-      this.noteTexture = await PIXI.Assets.load(noteTextureUrl)
+      // Use loadParser: 'loadTextures' to hint PIXI or use a generic loader configuration if supported.
+      // If the URL lacks extension, we might need to tell PIXI it's an image.
+      // Since we don't know the exact version behavior for loadParser string in v8,
+      // we'll rely on the standard load and just catch the error.
+      // However, we can use a configuration object to specify format or generic loader.
+      this.noteTexture = await PIXI.Assets.load({
+        src: noteTextureUrl,
+        loadParser: 'loadTextures' // Hint to use texture loader even without extension
+      })
     } catch (error) {
       this.noteTexture = null
       // console.warn('[PixiStageController] Note texture unavailable, using fallback.');
