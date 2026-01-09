@@ -63,7 +63,7 @@ export async function ensureAudioContext() {
 }
 
 // Die eigentliche Generierungs-Logik
-export async function startMetalGenerator(song) {
+export async function startMetalGenerator(song, delay = 0) {
   await ensureAudioContext()
 
   // Reset & Cleanup before starting
@@ -94,7 +94,7 @@ export async function startMetalGenerator(song) {
   )
 
   loop.start(0)
-  Tone.Transport.start()
+  Tone.Transport.start('+' + delay)
 }
 
 export function stopAudio() {
