@@ -81,7 +81,8 @@ test('checkHit prioritizes closest note?', () => {
   const hitWindow = 100
 
   // At 1025, both are valid (diff 25 vs 25).
-  // Should pick index 0 (id 1) because it appears first.
+  // Should pick index 0 (id 1) because it appears first in the array.
+  // Gameplay implication: hits are processed FIFO if they overlap.
   const hit = checkHit(notes, 0, 1025, hitWindow)
   assert.strictEqual(hit.id, 1)
 })
