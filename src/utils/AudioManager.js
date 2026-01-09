@@ -78,9 +78,10 @@ class AudioSystem {
              this.music = new Howl({
                src: ['https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'],
                html5: true,
-               loop: true,
-               volume: this.musicVolume
-             })
+                   loop: true,
+                   volume: this.musicVolume,
+                   mute: this.muted
+                 })
              this.music.play()
           }
         }
