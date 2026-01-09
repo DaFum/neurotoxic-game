@@ -124,10 +124,11 @@ export class PixiStageController {
       // Since we don't know the exact version behavior for loadParser string in v8,
       // we'll rely on the standard load and just catch the error.
       // However, we can use a configuration object to specify format or generic loader.
-      this.noteTexture = await PIXI.Assets.load({
-        src: noteTextureUrl,
-        loadParser: 'loadTextures' // Hint to use texture loader even without extension
-      })
+      try {
+        this.noteTexture = await PIXI.Texture.fromURL(noteTextureUrl)
+      } catch {
+        this.noteTexture = null
+      }
     } catch (error) {
       this.noteTexture = null
       // console.warn('[PixiStageController] Note texture unavailable, using fallback.');
