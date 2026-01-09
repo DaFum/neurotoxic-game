@@ -178,7 +178,18 @@ const gameReducer = (state, action) => {
           ...(loadedState.player ? loadedState.player.van : {})
         }
       }
-      const mergedBand = { ...initialState.band, ...loadedState.band }
+      const mergedBand = {
+        ...initialState.band,
+        ...loadedState.band,
+        performance: {
+          ...initialState.band.performance,
+          ...(loadedState.band ? loadedState.band.performance : {})
+        },
+        inventory: {
+          ...initialState.band.inventory,
+          ...(loadedState.band ? loadedState.band.inventory : {})
+        }
+      }
       const mergedSocial = { ...initialState.social, ...loadedState.social }
       // Note: Arrays like inventory/members are replaced, which is usually correct for saves.
 
