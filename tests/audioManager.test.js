@@ -9,7 +9,7 @@ globalThis.localStorage = {
 }
 globalThis.window = {}
 
-test('AudioManager setup', async (t) => {
+test('AudioManager setup', async t => {
   // Setup mocks
   globalThis.localStorage = {
     getItem: () => '0.5',

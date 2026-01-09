@@ -1,6 +1,12 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { buildRhythmLayout, calculateCrowdY, calculateLaneStartX, calculateNoteY, RHYTHM_LAYOUT } from '../src/utils/pixiStageUtils.js'
+import {
+  buildRhythmLayout,
+  calculateCrowdY,
+  calculateLaneStartX,
+  calculateNoteY,
+  RHYTHM_LAYOUT
+} from '../src/utils/pixiStageUtils.js'
 
 test('calculateNoteY returns target position at hit time', () => {
   const result = calculateNoteY({

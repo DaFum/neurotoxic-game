@@ -1,16 +1,17 @@
-# This workflow executes several linters on changed files based on languages used in your code base whenever
-# you push a code or open a pull request.
-#
-# You can adjust the behavior by modifying this file.
-# For more information, see:
-# https://github.com/github/super-linter
 name: Lint Code Base
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ['main']
   pull_request:
-    branches: [ "main" ]
+    branches: ['main']
+
+# Explicit permissions to pass CKV2_GHA_1 security check
+permissions:
+  contents: read
+  pull-requests: write
+  statuses: write
+
 jobs:
   run-lint:
     runs-on: ubuntu-latest
@@ -18,12 +19,90 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          # Full git history is needed to get a proper list of changed files within `super-linter`
           fetch-depth: 0
 
-      - name: Lint Code Base
-        uses: github/super-linter@v4
+      - name: Lint Code Base (Super-Linter)
+        id: superlinter
+        uses: github/super-linter@v7
+        continue-on-error: true
         env:
+          TYPESCRIPT_STANDARD_TSCONFIG_FILE: tsconfig.json
           VALIDATE_ALL_CODEBASE: false
-          DEFAULT_BRANCH: "main"
+          DEFAULT_BRANCH: 'main'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Gather Super-Linter logs (best effort)
+        if: always()
+        run: |
+          set -euo pipefail
+
+          # Try common locations (can vary by super-linter version)
+          # Use sudo to read root-owned files, but redirect as user to own the output
+          # We use a distinct filename (super-linter-clean. log) to avoid conflicts with any root-owned super-linter.log in workspace
+          if [ -f super-linter.log ]; then
+            sudo cat super-linter.log > super-linter-clean.log
+          elif [ -f /tmp/lint/super-linter.log ]; then
+            sudo cat /tmp/lint/super-linter.log > super-linter-clean.log
+          elif [ -f /github/super-linter.log ]; then
+            sudo cat /github/super-linter.log > super-linter-clean.log
+          else
+            echo "No super-linter log file found in common locations." > super-linter-clean.log
+          fi
+
+          echo "Listing files for debugging permissions:"
+          ls -la
+
+          # Trim to avoid GitHub comment size limits
+          tail -n 2000 super-linter-clean.log > super-linter.tail.log
+
+      - name: Upsert PR comment with Super-Linter output
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            const MARKER = '<!-- super-linter-report -->';
+            const log = fs.readFileSync('super-linter. tail.log', 'utf8');
+
+            const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env. GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+
+            const body =
+              `## Super-Linter report\n` +
+              `${MARKER}\n\n` +
+              `**Run:** ${runUrl}\n\n` +
+              `\`\`\`text\n${log}\n\`\`\`\n`;
+
+            // List comments and find our existing one
+            const { data: comments } = await github. rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              per_page: 100,
+            });
+
+            const existing = comments.find(c =>
+              c.user?. type === 'Bot' &&
+              typeof c.body === 'string' &&
+              c.body.includes(MARKER)
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body,
+              });
+            }
+
+      - name: Fail job if Super-Linter failed
+        if: steps.superlinter.outcome == 'failure'
+        run: exit 1

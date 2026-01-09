@@ -18,8 +18,18 @@ export const GIG_EVENTS = [
         skillCheck: {
           stat: 'technical',
           threshold: 5,
-          success: { type: 'stat', stat: 'score', value: 100, description: 'Crowd cheered the fix!' },
-          failure: { type: 'stat', stat: 'score', value: -200, description: 'Took too long.' }
+          success: {
+            type: 'stat',
+            stat: 'score',
+            value: 100,
+            description: 'Crowd cheered the fix!'
+          },
+          failure: {
+            type: 'stat',
+            stat: 'score',
+            value: -200,
+            description: 'Took too long.'
+          }
         },
         outcomeText: 'You scrambled for a string.'
       }
@@ -33,8 +43,21 @@ export const GIG_EVENTS = [
     trigger: 'gig_intro',
     chance: 0.2,
     options: [
-      { label: 'Ignore', effect: { type: 'stat', stat: 'mood', value: -2 }, outcomeText: 'You started the set.' },
-      { label: 'Mock him', skillCheck: { stat: 'charisma', threshold: 5, success: { type: 'stat', stat: 'hype', value: 10 }, failure: { type: 'stat', stat: 'hype', value: -10 } }, outcomeText: 'Crowd reaction.' }
+      {
+        label: 'Ignore',
+        effect: { type: 'stat', stat: 'mood', value: -2 },
+        outcomeText: 'You started the set.'
+      },
+      {
+        label: 'Mock him',
+        skillCheck: {
+          stat: 'charisma',
+          threshold: 5,
+          success: { type: 'stat', stat: 'hype', value: 10 },
+          failure: { type: 'stat', stat: 'hype', value: -10 }
+        },
+        outcomeText: 'Crowd reaction.'
+      }
     ]
   }
 ]

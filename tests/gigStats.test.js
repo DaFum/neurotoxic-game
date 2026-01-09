@@ -1,6 +1,9 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { buildGigStatsSnapshot, updateGigPerformanceStats } from '../src/utils/gigStats.js'
+import {
+  buildGigStatsSnapshot,
+  updateGigPerformanceStats
+} from '../src/utils/gigStats.js'
 
 test('updateGigPerformanceStats tracks peak combo and hype', () => {
   const baseStats = {
@@ -10,7 +13,10 @@ test('updateGigPerformanceStats tracks peak combo and hype', () => {
     peakHype: 20
   }
 
-  const updated = updateGigPerformanceStats(baseStats, { combo: 12, overload: 55 })
+  const updated = updateGigPerformanceStats(baseStats, {
+    combo: 12,
+    overload: 55
+  })
 
   assert.equal(updated.maxCombo, 12)
   assert.equal(updated.peakHype, 55)

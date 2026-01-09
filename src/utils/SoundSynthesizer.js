@@ -1,11 +1,12 @@
 export class SoundSynthesizer {
-  constructor () {
+  constructor() {
     this.ctx = null
     this.masterGain = null
     this.volume = 0.5
+    this.muted = false
   }
 
-  init () {
+  init() {
     if (!this.ctx) {
       const AudioContext = window.AudioContext || window.webkitAudioContext
       if (AudioContext) {
@@ -17,14 +18,26 @@ export class SoundSynthesizer {
     }
   }
 
-  setVolume (vol) {
+  setVolume(vol) {
     this.volume = vol
-    if (this.masterGain) {
+    if (this.masterGain && !this.muted) {
       this.masterGain.gain.setTargetAtTime(vol, this.ctx.currentTime, 0.01)
     }
   }
 
-  playHit () {
+  setMute(muted) {
+    this.muted = muted
+    if (this.masterGain) {
+      const targetVol = muted ? 0 : this.volume
+      this.masterGain.gain.setTargetAtTime(
+        targetVol,
+        this.ctx.currentTime,
+        0.01
+      )
+    }
+  }
+
+  playHit() {
     if (!this.ctx) return
     const osc = this.ctx.createOscillator()
     const gain = this.ctx.createGain()
@@ -43,7 +56,7 @@ export class SoundSynthesizer {
     osc.stop(this.ctx.currentTime + 0.1)
   }
 
-  playMiss () {
+  playMiss() {
     if (!this.ctx) return
     const osc = this.ctx.createOscillator()
     const gain = this.ctx.createGain()
@@ -62,7 +75,7 @@ export class SoundSynthesizer {
     osc.stop(this.ctx.currentTime + 0.3)
   }
 
-  playMenu () {
+  playMenu() {
     if (!this.ctx) return
     const osc = this.ctx.createOscillator()
     const gain = this.ctx.createGain()
@@ -80,7 +93,7 @@ export class SoundSynthesizer {
     osc.stop(this.ctx.currentTime + 0.05)
   }
 
-  playTravel () {
+  playTravel() {
     if (!this.ctx) return
     // Simple low rumble
     const osc = this.ctx.createOscillator()
@@ -100,21 +113,30 @@ export class SoundSynthesizer {
     osc.stop(this.ctx.currentTime + 1.0)
   }
 
-  play (key) {
+  play(key) {
     if (this.ctx && this.ctx.state === 'suspended') {
       this.ctx.resume()
     }
 
     switch (key) {
-      case 'hit': this.playHit(); break
-      case 'miss': this.playMiss(); break
-      case 'menu': this.playMenu(); break
-      case 'travel': this.playTravel(); break
-      default: break
+      case 'hit':
+        this.playHit()
+        break
+      case 'miss':
+        this.playMiss()
+        break
+      case 'menu':
+        this.playMenu()
+        break
+      case 'travel':
+        this.playTravel()
+        break
+      default:
+        break
     }
   }
 
-  dispose () {
+  dispose() {
     if (this.ctx) {
       this.ctx.close()
       this.ctx = null

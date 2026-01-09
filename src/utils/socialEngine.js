@@ -29,7 +29,7 @@ export const calculateViralityScore = (performanceScore, gigEvents, venue) => {
 /**
  * Generates options for the "Post-Gig Social Media Strategy" phase.
  */
-export const generatePostOptions = (gigResult) => {
+export const generatePostOptions = gigResult => {
   const options = []
 
   // Option 1: Moshpit Chaos (High Viral, TikTok)
@@ -49,7 +49,7 @@ export const generatePostOptions = (gigResult) => {
     id: 'clip_tech',
     title: 'Technical Playthrough',
     platform: 'YOUTUBE',
-    description: 'Focus on Matze\'s solo. Musicians love this.',
+    description: "Focus on Matze's solo. Musicians love this.",
     viralChance: gigResult.viralityScore * 0.8, // Niche
     quality: 'High',
     cost: 0,
@@ -73,12 +73,16 @@ export const generatePostOptions = (gigResult) => {
 
 export const resolvePost = (postOption, diceRoll) => {
   const isViral = diceRoll < postOption.viralChance
-  const followerGain = isViral ? postOption.effect.followers * 10 : postOption.effect.followers
+  const followerGain = isViral
+    ? postOption.effect.followers * 10
+    : postOption.effect.followers
 
   return {
     success: isViral,
     followers: followerGain,
     platform: postOption.effect.platform,
-    message: isViral ? 'IT WENT VIRAL! Notifications exploding!' : 'Solid engagement. Fans are happy.'
+    message: isViral
+      ? 'IT WENT VIRAL! Notifications exploding!'
+      : 'Solid engagement. Fans are happy.'
   }
 }

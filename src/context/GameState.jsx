@@ -90,7 +90,10 @@ const gameReducer = (state, action) => {
 
   switch (action.type) {
     case 'CHANGE_SCENE':
-      logger.info('GameState', `Scene Change: ${state.currentScene} -> ${action.payload}`)
+      logger.info(
+        'GameState',
+        `Scene Change: ${state.currentScene} -> ${action.payload}`
+      )
       return { ...state, currentScene: action.payload }
 
     case 'UPDATE_PLAYER':
@@ -126,19 +129,24 @@ const gameReducer = (state, action) => {
       return { ...state, lastGigStats: action.payload }
 
     case 'SET_ACTIVE_EVENT':
-      if (action.payload) logger.info('GameState', 'Event Triggered', action.payload.title)
+      if (action.payload)
+        logger.info('GameState', 'Event Triggered', action.payload.title)
       return { ...state, activeEvent: action.payload }
 
     case 'ADD_TOAST':
       return { ...state, toasts: [...state.toasts, action.payload] }
 
     case 'REMOVE_TOAST':
-      return { ...state, toasts: state.toasts.filter(t => t.id !== action.payload) }
+      return {
+        ...state,
+        toasts: state.toasts.filter(t => t.id !== action.payload)
+      }
 
     case 'SET_GIG_MODIFIERS': {
-      const updates = (typeof action.payload === 'function'
-        ? action.payload(state.gigModifiers)
-        : action.payload) || {}
+      const updates =
+        (typeof action.payload === 'function'
+          ? action.payload(state.gigModifiers)
+          : action.payload) || {}
       return { ...state, gigModifiers: { ...state.gigModifiers, ...updates } }
     }
 
@@ -160,7 +168,42 @@ const gameReducer = (state, action) => {
           ...loadedState.gigModifiers
         }
       }
-      return { ...state, ...loadedState }
+
+      // Safe Merge for Nested Objects: Preserve new keys in initialState
+      const mergedPlayer = {
+        ...initialState.player,
+        ...loadedState.player,
+        van: {
+          ...initialState.player.van,
+          ...(loadedState.player?.van)
+        }
+      }
+      const mergedBand = {
+        ...initialState.band,
+        ...loadedState.band,
+        performance: {
+          ...initialState.band.performance,
+          ...(loadedState.band ? loadedState.band.performance : {})
+        },
+        inventory: {
+          ...initialState.band.inventory,
+          ...(loadedState.band ? loadedState.band.inventory : {})
+        }
+      }
+      const mergedSocial = { ...initialState.social, ...loadedState.social }
+      // Note: Arrays like inventory/members are replaced, which is usually correct for saves.
+
+      return {
+        ...state,
+        ...loadedState,
+        player: mergedPlayer,
+        band: mergedBand,
+        social: mergedSocial
+      }
+
+    case 'RESET_STATE':
+      logger.info('GameState', 'State Reset (Debug)')
+      return { ...initialState }
 
     case 'APPLY_EVENT_DELTA': {
       logger.info('GameState', 'Applying Event Delta', action.payload)
@@ -176,7 +219,10 @@ const gameReducer = (state, action) => {
       if (nextBand.inventory[itemType] === true) {
         nextBand.inventory[itemType] = false // Simple toggle for now?
       } else if (typeof nextBand.inventory[itemType] === 'number') {
-        nextBand.inventory[itemType] = Math.max(0, nextBand.inventory[itemType] - 1)
+        nextBand.inventory[itemType] = Math.max(
+          0,
+          nextBand.inventory[itemType] - 1
+        )
       }
       return { ...state, band: nextBand }
     }
@@ -204,14 +250,18 @@ export const GameStateProvider = ({ children }) => {
       const newMap = generator.generateMap()
       dispatch({ type: 'SET_MAP', payload: newMap })
     }
-  }, [])
+  }, [state.gameMap])
 
   // Actions wrappers to maintain API
-  const changeScene = (scene) => dispatch({ type: 'CHANGE_SCENE', payload: scene })
-  const updatePlayer = (updates) => dispatch({ type: 'UPDATE_PLAYER', payload: updates })
-  const updateBand = (updates) => dispatch({ type: 'UPDATE_BAND', payload: updates })
-  const updateSocial = (updates) => dispatch({ type: 'UPDATE_SOCIAL', payload: updates })
-  const updateSettings = (updates) => {
+  const changeScene = scene =>
+    dispatch({ type: 'CHANGE_SCENE', payload: scene })
+  const updatePlayer = updates =>
+    dispatch({ type: 'UPDATE_PLAYER', payload: updates })
+  const updateBand = updates =>
+    dispatch({ type: 'UPDATE_BAND', payload: updates })
+  const updateSocial = updates =>
+    dispatch({ type: 'UPDATE_SOCIAL', payload: updates })
+  const updateSettings = updates => {
     // Assuming simple merge for now.
     // Ideally we would dispatch UPDATE_SETTINGS, but we can piggyback on LOAD_GAME or create a new action if strictness needed.
     // Since settings are part of state, let's create a quick reducer case or just mutate for this prototype (bad practice)
@@ -221,13 +271,15 @@ export const GameStateProvider = ({ children }) => {
     // I'll add the case in the reducer block above first.
     dispatch({ type: 'UPDATE_SETTINGS', payload: updates })
   }
-  const setGameMap = (map) => dispatch({ type: 'SET_MAP', payload: map })
-  const setCurrentGig = (gig) => dispatch({ type: 'SET_GIG', payload: gig })
-  const startGig = (venue) => dispatch({ type: 'START_GIG', payload: venue })
-  const setSetlist = (list) => dispatch({ type: 'SET_SETLIST', payload: list })
-  const setLastGigStats = (stats) => dispatch({ type: 'SET_LAST_GIG_STATS', payload: stats })
-  const setActiveEvent = (event) => dispatch({ type: 'SET_ACTIVE_EVENT', payload: event })
-  const setGigModifiers = (payload) => {
+  const setGameMap = map => dispatch({ type: 'SET_MAP', payload: map })
+  const setCurrentGig = gig => dispatch({ type: 'SET_GIG', payload: gig })
+  const startGig = venue => dispatch({ type: 'START_GIG', payload: venue })
+  const setSetlist = list => dispatch({ type: 'SET_SETLIST', payload: list })
+  const setLastGigStats = stats =>
+    dispatch({ type: 'SET_LAST_GIG_STATS', payload: stats })
+  const setActiveEvent = event =>
+    dispatch({ type: 'SET_ACTIVE_EVENT', payload: event })
+  const setGigModifiers = payload => {
     dispatch({ type: 'SET_GIG_MODIFIERS', payload })
   }
 
@@ -239,15 +291,19 @@ export const GameStateProvider = ({ children }) => {
     }, 3000)
   }
 
-  const hasUpgrade = (upgradeId) => state.player.van.upgrades.includes(upgradeId)
+  const hasUpgrade = upgradeId => state.player.van.upgrades.includes(upgradeId)
 
-  const consumeItem = (itemType) => {
+  const consumeItem = itemType => {
     dispatch({ type: 'CONSUME_ITEM', payload: itemType })
   }
 
   const advanceDay = () => {
     dispatch({ type: 'ADVANCE_DAY' })
     addToast(`Day ${state.player.day + 1}: Living Costs Deducted.`, 'info')
+  }
+
+  const resetState = () => {
+    dispatch({ type: 'RESET_STATE' })
   }
 
   // Persistence
@@ -332,7 +388,7 @@ export const GameStateProvider = ({ children }) => {
     return false
   }
 
-  const resolveEvent = (choice) => {
+  const resolveEvent = choice => {
     // 1. Validation
     if (!choice) {
       setActiveEvent(null)
@@ -341,11 +397,14 @@ export const GameStateProvider = ({ children }) => {
 
     try {
       // 2. Logic Execution
-      const { result, delta, outcomeText, description } = resolveEventChoice(choice, {
-        player: state.player,
-        band: state.band,
-        social: state.social
-      })
+      const { result, delta, outcomeText, description } = resolveEventChoice(
+        choice,
+        {
+          player: state.player,
+          band: state.band,
+          social: state.social
+        }
+      )
 
       // 3. State Application
       if (delta) {
@@ -354,11 +413,22 @@ export const GameStateProvider = ({ children }) => {
         // Unlocks
         if (delta.flags?.unlock) {
           try {
-            const currentUnlocks = JSON.parse(localStorage.getItem('neurotoxic_unlocks') || '[]')
-            if (Array.isArray(currentUnlocks) && !currentUnlocks.includes(delta.flags.unlock)) {
+            const currentUnlocks = JSON.parse(
+              localStorage.getItem('neurotoxic_unlocks') || '[]'
+            )
+            if (
+              Array.isArray(currentUnlocks) &&
+              !currentUnlocks.includes(delta.flags.unlock)
+            ) {
               currentUnlocks.push(delta.flags.unlock)
-              localStorage.setItem('neurotoxic_unlocks', JSON.stringify(currentUnlocks))
-              addToast(`UNLOCKED: ${delta.flags.unlock.toUpperCase()}!`, 'success')
+              localStorage.setItem(
+                'neurotoxic_unlocks',
+                JSON.stringify(currentUnlocks)
+              )
+              addToast(
+                `UNLOCKED: ${delta.flags.unlock.toUpperCase()}!`,
+                'success'
+              )
             }
           } catch (e) {
             console.error('Failed to parse unlocks from localStorage:', e)
@@ -376,9 +446,10 @@ export const GameStateProvider = ({ children }) => {
 
       // 4. Feedback (Success Path)
       if (outcomeText || description) {
-        const message = outcomeText && description
-          ? `${outcomeText} — ${description}`
-          : outcomeText || description
+        const message =
+          outcomeText && description
+            ? `${outcomeText} — ${description}`
+            : outcomeText || description
         addToast(message, 'info')
       }
 
@@ -390,35 +461,41 @@ export const GameStateProvider = ({ children }) => {
       console.error('[Event] Failed to resolve event choice:', error)
       addToast('EVENT ERROR: Resolution failed.', 'error')
       setActiveEvent(null)
-      return { outcomeText: choice.outcomeText ?? '', description: 'Resolution failed.', result: null }
+      return {
+        outcomeText: choice.outcomeText ?? '',
+        description: 'Resolution failed.',
+        result: null
+      }
     }
   }
 
   return (
-    <GameStateContext.Provider value={{
-      ...state, // Spread state properties
-      changeScene,
-      updatePlayer,
-      updateBand,
-      updateSocial,
-      setGameMap,
-      setCurrentGig,
-      startGig,
-      setSetlist,
-      setLastGigStats,
-      setActiveEvent,
-      triggerEvent,
-      resolveEvent,
-      addToast,
-      setGigModifiers,
-      hasUpgrade,
-      consumeItem,
-      advanceDay,
-      saveGame,
-      loadGame,
-      deleteSave,
-      updateSettings
-    }}
+    <GameStateContext.Provider
+      value={{
+        ...state, // Spread state properties
+        changeScene,
+        updatePlayer,
+        updateBand,
+        updateSocial,
+        setGameMap,
+        setCurrentGig,
+        startGig,
+        setSetlist,
+        setLastGigStats,
+        setActiveEvent,
+        triggerEvent,
+        resolveEvent,
+        addToast,
+        setGigModifiers,
+        hasUpgrade,
+        consumeItem,
+        advanceDay,
+        saveGame,
+        loadGame,
+        deleteSave,
+        resetState,
+        updateSettings
+      }}
     >
       {children}
     </GameStateContext.Provider>

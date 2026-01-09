@@ -1,8 +1,9 @@
 import { Howl, Howler } from 'howler'
+import * as Tone from 'tone'
 import { SoundSynthesizer } from './SoundSynthesizer.js'
 
 class AudioSystem {
-  constructor () {
+  constructor() {
     this.music = null
     this.synth = new SoundSynthesizer()
     this.musicVolume = 0.5
@@ -11,7 +12,7 @@ class AudioSystem {
     this.initialized = false
   }
 
-  async init () {
+  async init() {
     if (this.initialized) return
 
     try {
@@ -26,7 +27,8 @@ class AudioSystem {
         return Math.min(1, Math.max(0, v))
       }
 
-      this.musicVolume = savedMusicVol != null ? clamp01(savedMusicVol, 0.5) : 0.5
+      this.musicVolume =
+        savedMusicVol != null ? clamp01(savedMusicVol, 0.5) : 0.5
       this.sfxVolume = savedSfxVol != null ? clamp01(savedSfxVol, 0.5) : 0.5
       this.muted = savedMuted === 'true'
 
@@ -36,6 +38,7 @@ class AudioSystem {
       // Initialize Synth
       this.synth.init()
       this.synth.setVolume(this.sfxVolume)
+      this.synth.setMute(this.muted)
 
       this.initialized = true
     } catch (error) {
@@ -44,7 +47,7 @@ class AudioSystem {
     }
   }
 
-  playMusic (songId) {
+  playMusic(songId) {
     if (!this.initialized) return
 
     // Clean up previous instance explicitly
@@ -66,6 +69,28 @@ class AudioSystem {
         this.music.once('unlock', () => {
           this.music.play()
         })
+      },
+      onloaderror: (id, err) => {
+        if (songId === 'ambient') {
+          console.warn(
+            '[AudioSystem] Ambient stream failed to load, switching to fallback.',
+            err
+          )
+          // Fallback to static MP3 if stream fails
+          if (this.music) {
+            this.music.unload()
+            this.music = new Howl({
+              src: [
+                'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
+              ],
+              html5: true,
+              loop: true,
+              volume: this.musicVolume,
+              mute: this.muted
+            })
+            this.music.play()
+          }
+        }
       }
     })
 
@@ -73,14 +98,19 @@ class AudioSystem {
     return this.music
   }
 
-  startAmbient () {
+  startAmbient() {
     if (!this.initialized) return
     // Prevent restarting if already playing ambient
     // Check if current music is the ambient track to avoid reloading stream
     // Note: checking loop() is weak if we change logic, better check source or id.
     // Assuming single music track architecture for now.
     const ambientSrc = this.getAudioSrc('ambient')
-    if (this.music && this.music.playing() && this.music._src && this.music._src.includes(ambientSrc)) {
+    if (
+      this.music &&
+      this.music.playing() &&
+      this.music._src &&
+      this.music._src.includes(ambientSrc)
+    ) {
       return
     }
 
@@ -90,15 +120,15 @@ class AudioSystem {
     }
   }
 
-  stopMusic () {
+  stopMusic() {
     if (this.music) this.music.stop()
   }
 
-  pauseMusic () {
+  pauseMusic() {
     if (this.music) this.music.pause()
   }
 
-  resumeMusic () {
+  resumeMusic() {
     if (this.music && !this.music.playing()) {
       if (this.music.state() === 'loaded') {
         this.music.play()
@@ -108,12 +138,12 @@ class AudioSystem {
     }
   }
 
-  playSFX (key) {
+  playSFX(key) {
     if (!this.initialized) return
     this.synth.play(key)
   }
 
-  setMusicVolume (vol) {
+  setMusicVolume(vol) {
     this.musicVolume = vol
     localStorage.setItem('neurotoxic_vol_music', vol)
     if (this.music) {
@@ -121,25 +151,37 @@ class AudioSystem {
     }
   }
 
-  setSFXVolume (vol) {
+  setSFXVolume(vol) {
     this.sfxVolume = vol
     localStorage.setItem('neurotoxic_vol_sfx', vol)
     this.synth.setVolume(vol)
   }
 
-  toggleMute () {
+  toggleMute() {
     this.muted = !this.muted
     Howler.mute(this.muted)
+
+    try {
+      Tone.Destination.mute = this.muted
+    } catch (e) {
+      console.warn('[AudioSystem] Tone.js mute failed:', e)
+    }
+
+    if (this.synth) {
+      this.synth.setMute(this.muted)
+    }
+
     localStorage.setItem('neurotoxic_muted', this.muted)
     return this.muted
   }
 
-  getAudioSrc (songId) {
-    if (songId === 'ambient') return 'https://moshhead-blackmetal.stream.laut.fm/moshhead-blackmetal'
+  getAudioSrc(songId) {
+    if (songId === 'ambient')
+      return 'https://moshhead-blackmetal.stream.laut.fm/moshhead-blackmetal'
     return 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
   }
 
-  dispose () {
+  dispose() {
     this.stopMusic()
     Howler.unload()
     this.synth.dispose()

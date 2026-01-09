@@ -6,13 +6,15 @@ import { FINANCIAL_EVENTS } from './financial.js'
 import { SPECIAL_EVENTS } from './special.js'
 
 // Validation Helper
-const validateEvents = (events) => {
+const validateEvents = events => {
   const ids = new Set()
   events.forEach(e => {
     if (!e.id) console.error('Event missing ID:', e)
     if (ids.has(e.id)) console.error('Duplicate Event ID:', e.id)
     ids.add(e.id)
-    if (!['transport', 'band', 'gig', 'financial', 'special'].includes(e.category)) {
+    if (
+      !['transport', 'band', 'gig', 'financial', 'special'].includes(e.category)
+    ) {
       console.warn('Invalid Event Category:', e.category, e.id)
     }
   })

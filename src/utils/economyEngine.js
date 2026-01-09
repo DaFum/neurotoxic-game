@@ -48,7 +48,7 @@ const calculateTicketIncome = (gigData, playerFame, modifiers) => {
   // Base draw is ~30%. Fame fills the rest.
   const baseDrawRatio = 0.3
   const fameRatio = Math.min(1.0, playerFame / (gigData.capacity * 10)) // Fame needs to be ~10x capacity to fill it easily
-  let fillRate = baseDrawRatio + (fameRatio * 0.7)
+  let fillRate = baseDrawRatio + fameRatio * 0.7
 
   // Promo Boost
   if (modifiers.promo) fillRate += 0.15
@@ -68,24 +68,38 @@ const calculateTicketIncome = (gigData, playerFame, modifiers) => {
   return {
     revenue,
     ticketsSold,
-    breakdownItem: { label: 'Ticket Sales', value: revenue, detail: `${ticketsSold} / ${gigData.capacity} sold` }
+    breakdownItem: {
+      label: 'Ticket Sales',
+      value: revenue,
+      detail: `${ticketsSold} / ${gigData.capacity} sold`
+    }
   }
 }
 
 /**
  * Calculates merch sales revenue and costs.
  */
-const calculateMerchIncome = (ticketsSold, performanceScore, gigStats, modifiers, bandInventory) => {
-  let buyRate = 0.10 + (performanceScore / 100) * 0.20 // 10% - 30%
+const calculateMerchIncome = (
+  ticketsSold,
+  performanceScore,
+  gigStats,
+  modifiers,
+  bandInventory
+) => {
+  let buyRate = 0.1 + (performanceScore / 100) * 0.2 // 10% - 30%
   const breakdownItems = []
 
   if (performanceScore >= 95) {
     buyRate *= 2.0 // S-Rank Bonus
-    breakdownItems.push({ label: 'HYPE BONUS', value: 0, detail: 'Merch frenzy (S-Rank)!' })
+    breakdownItems.push({
+      label: 'HYPE BONUS',
+      value: 0,
+      detail: 'Merch frenzy (S-Rank)!'
+    })
   }
 
   const hasMerch = modifiers.merch || modifiers.merchTable
-  if (hasMerch) buyRate += 0.10 // Boost from table
+  if (hasMerch) buyRate += 0.1 // Boost from table
 
   // Penalty: Misses drive people away
   if (gigStats && gigStats.misses > 0) {
@@ -93,7 +107,12 @@ const calculateMerchIncome = (ticketsSold, performanceScore, gigStats, modifiers
     buyRate -= missPenalty
   }
 
-  const totalInventory = (bandInventory?.shirts || 0) + (bandInventory?.hoodies || 0) + (bandInventory?.cds || 0)
+  const totalInventory =
+    (bandInventory?.shirts || 0) +
+    (bandInventory?.hoodies || 0) +
+    (bandInventory?.cds || 0) +
+    (bandInventory?.patches || 0) +
+    (bandInventory?.vinyl || 0)
   const potentialBuyers = Math.floor(ticketsSold * Math.max(0, buyRate))
   const buyers = Math.min(potentialBuyers, totalInventory)
 
@@ -103,7 +122,11 @@ const calculateMerchIncome = (ticketsSold, performanceScore, gigStats, modifiers
   const merchRevenue = buyers * merchAvgRevenue
   const merchCost = buyers * merchAvgCost
 
-  breakdownItems.push({ label: 'Merch Sales', value: merchRevenue, detail: `${buyers} buyers` })
+  breakdownItems.push({
+    label: 'Merch Sales',
+    value: merchRevenue,
+    detail: `${buyers} buyers`
+  })
 
   return {
     revenue: merchRevenue,
@@ -117,7 +140,7 @@ const calculateMerchIncome = (ticketsSold, performanceScore, gigStats, modifiers
  * Calculates travel expenses.
  * @param {object} node - The target node.
  */
-export const calculateTravelExpenses = (node) => {
+export const calculateTravelExpenses = node => {
   const x = typeof node?.venue?.x === 'number' ? node.venue.x : 50
   const y = typeof node?.venue?.y === 'number' ? node.venue.y : 50
 
@@ -128,7 +151,9 @@ export const calculateTravelExpenses = (node) => {
   )
 
   const fuelLiters = (dist / 100) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM
-  const fuelCost = Math.floor(fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
+  const fuelCost = Math.floor(
+    fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE
+  )
   const foodCost = 3 * EXPENSE_CONSTANTS.FOOD.FAST_FOOD // Band of 3
   const totalCost = fuelCost + foodCost
   return { dist, fuelLiters, totalCost }
@@ -141,46 +166,77 @@ const calculateGigExpenses = (gigData, modifiers) => {
   const expenses = { total: 0, breakdown: [] }
 
   // Transport
-  const fuelLiters = (gigData.dist || 100) / 100 * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM
-  const fuelCost = Math.floor(fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
-  expenses.breakdown.push({ label: 'Fuel', value: fuelCost, detail: `${gigData.dist || 100}km` })
+  const fuelLiters =
+    ((gigData.dist || 100) / 100) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM
+  const fuelCost = Math.floor(
+    fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE
+  )
+  expenses.breakdown.push({
+    label: 'Fuel',
+    value: fuelCost,
+    detail: `${gigData.dist || 100}km`
+  })
   expenses.total += fuelCost
 
   // Food & Drink
   const bandSize = 3
   const foodCost = bandSize * EXPENSE_CONSTANTS.FOOD.FAST_FOOD
-  expenses.breakdown.push({ label: 'Food & Drinks', value: foodCost, detail: 'Subsistence' })
+  expenses.breakdown.push({
+    label: 'Food & Drinks',
+    value: foodCost,
+    detail: 'Subsistence'
+  })
   expenses.total += foodCost
 
   // Modifiers (Budget items)
   if (modifiers.catering) {
     const cateringCost = 20
-    expenses.breakdown.push({ label: 'Catering / Energy', value: cateringCost, detail: 'Stamina Boost' })
+    expenses.breakdown.push({
+      label: 'Catering / Energy',
+      value: cateringCost,
+      detail: 'Stamina Boost'
+    })
     expenses.total += cateringCost
   }
 
   if (modifiers.promo) {
     const promoCost = 30
-    expenses.breakdown.push({ label: 'Social Ads', value: promoCost, detail: 'Promo Campaign' })
+    expenses.breakdown.push({
+      label: 'Social Ads',
+      value: promoCost,
+      detail: 'Promo Campaign'
+    })
     expenses.total += promoCost
   }
 
   const hasMerch = modifiers.merch || modifiers.merchTable
   if (hasMerch) {
     const merchTableCost = 40
-    expenses.breakdown.push({ label: 'Merch Stand', value: merchTableCost, detail: 'Better Display' })
+    expenses.breakdown.push({
+      label: 'Merch Stand',
+      value: merchTableCost,
+      detail: 'Better Display'
+    })
     expenses.total += merchTableCost
   }
 
   if (modifiers.soundcheck) {
     const soundcheckCost = 50
-    expenses.breakdown.push({ label: 'Soundcheck', value: soundcheckCost, detail: 'Prep Time' })
+    expenses.breakdown.push({
+      label: 'Soundcheck',
+      value: soundcheckCost,
+      detail: 'Prep Time'
+    })
     expenses.total += soundcheckCost
   }
 
   if (modifiers.guestlist) {
     const guestlistCost = 60
-    expenses.breakdown.push({ label: 'Guest List', value: guestlistCost, detail: 'VIP Treatment' })
+    expenses.breakdown.push({
+      label: 'Guest List',
+      value: guestlistCost,
+      detail: 'VIP Treatment'
+    })
     expenses.total += guestlistCost
   }
 
@@ -197,8 +253,20 @@ const calculateGigExpenses = (gigData, modifiers) => {
  * @param {number} playerFame - Total player fame
  * @param {object} gigStats - Detailed gig stats (misses, peakHype, etc)
  */
-export const calculateGigFinancials = (gigData, performanceScore, crowdStats, modifiers, bandInventory, playerFame, gigStats) => {
-  logger.debug('Economy', 'Calculating Gig Financials', { gig: gigData.name, score: performanceScore, fame: playerFame })
+export const calculateGigFinancials = (
+  gigData,
+  performanceScore,
+  crowdStats,
+  modifiers,
+  bandInventory,
+  playerFame,
+  gigStats
+) => {
+  logger.debug('Economy', 'Calculating Gig Financials', {
+    gig: gigData.name,
+    score: performanceScore,
+    fame: playerFame
+  })
 
   const report = {
     income: { total: 0, breakdown: [] },
@@ -213,12 +281,22 @@ export const calculateGigFinancials = (gigData, performanceScore, crowdStats, mo
 
   // 2. Guarantee
   if (gigData.pay > 0) {
-    report.income.breakdown.push({ label: 'Guarantee', value: gigData.pay, detail: 'Fixed fee' })
+    report.income.breakdown.push({
+      label: 'Guarantee',
+      value: gigData.pay,
+      detail: 'Fixed fee'
+    })
     report.income.total += gigData.pay
   }
 
   // 3. Merch Sales
-  const merch = calculateMerchIncome(tickets.ticketsSold, performanceScore, gigStats, modifiers, bandInventory)
+  const merch = calculateMerchIncome(
+    tickets.ticketsSold,
+    performanceScore,
+    gigStats,
+    modifiers,
+    bandInventory
+  )
   report.income.breakdown.push(...merch.breakdownItems)
   report.income.total += merch.revenue
   report.expenses.breakdown.push(merch.costItem)
@@ -226,7 +304,11 @@ export const calculateGigFinancials = (gigData, performanceScore, crowdStats, mo
 
   // 4. Bar Cut
   const barRevenue = Math.floor(tickets.ticketsSold * 5 * 0.15)
-  report.income.breakdown.push({ label: 'Bar Cut', value: barRevenue, detail: '15% of Bar' })
+  report.income.breakdown.push({
+    label: 'Bar Cut',
+    value: barRevenue,
+    detail: '15% of Bar'
+  })
   report.income.total += barRevenue
 
   // 5. Expenses (Transport, Food, Modifiers)
@@ -238,18 +320,30 @@ export const calculateGigFinancials = (gigData, performanceScore, crowdStats, mo
   if (gigStats) {
     if (gigStats.misses === 0) {
       const bonus = 200
-      report.income.breakdown.push({ label: 'Tech Sponsor', value: bonus, detail: 'Perfect Set (0 Misses)' })
+      report.income.breakdown.push({
+        label: 'Tech Sponsor',
+        value: bonus,
+        detail: 'Perfect Set (0 Misses)'
+      })
       report.income.total += bonus
     }
     if (gigStats.peakHype >= 100) {
       const bonus = 150
-      report.income.breakdown.push({ label: 'Beer Sponsor', value: bonus, detail: 'Max Hype Reached' })
+      report.income.breakdown.push({
+        label: 'Beer Sponsor',
+        value: bonus,
+        detail: 'Max Hype Reached'
+      })
       report.income.total += bonus
     }
   }
 
   report.net = report.income.total - report.expenses.total
 
-  logger.info('Economy', 'Gig Report Generated', { net: report.net, income: report.income.total, expenses: report.expenses.total })
+  logger.info('Economy', 'Gig Report Generated', {
+    net: report.net,
+    income: report.income.total,
+    expenses: report.expenses.total
+  })
   return report
 }
