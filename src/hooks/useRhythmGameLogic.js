@@ -165,7 +165,8 @@ export const useRhythmGameLogic = () => {
         // audioRef.current = audioManager.playMusic(activeSetlist[0].id);
         // Switch to Metal Generator
         const currentSong = activeSetlist[0]
-        startMetalGenerator(currentSong)
+        // Use 2.0s delay to match the 2000ms visual note lead-in
+        startMetalGenerator(currentSong, 2.0)
       }
 
       gameStateRef.current.startTime = Date.now()
