@@ -175,7 +175,7 @@ const gameReducer = (state, action) => {
         ...loadedState.player,
         van: {
           ...initialState.player.van,
-          ...(loadedState.player ? loadedState.player.van : {})
+          ...(loadedState.player?.van)
         }
       }
       const mergedBand = {
