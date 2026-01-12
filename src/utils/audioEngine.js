@@ -94,7 +94,7 @@ export async function startMetalGenerator(song, delay = 0) {
   )
 
   loop.start(0)
-  Tone.Transport.start('+' + delay)
+  Tone.Transport.start(Tone.now() + delay)
 }
 
 export function stopAudio() {
