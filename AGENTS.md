@@ -152,19 +152,17 @@ For domain-specific expertise and detailed conventions, consult these specialize
 **When to Consult Sub-Agents:**
 
 - Before making changes to a specific module, read the relevant agent file
-- Each sub-agent contains detailed conventions, anti-patterns, and best practices
+- Each sub-agent contains detailed conventions, antipatterns, and best practices
 - Sub-agents provide code examples and integration guidelines
 - Refer to sub-agents for testing and validation checklists
 
 ---
 
-
-## 🗂️ Documentation 
+## 🗂️ Documentation
 
 How you will handle the documentation files:
 
 **`AGENTS.md` files**: Update when they are outdated and add new `AGENTS.md` files for folders getting harder to understand.
- 
 
 ---
 
