@@ -109,7 +109,7 @@ npm run dev
 
 For domain-specific expertise and detailed conventions, consult these specialized agent documentation files:
 
-### 📂 src/scenes/scenes.agent.md
+### 📂 src/scenes/AGENTS.md
 
 **Scene Flow Expert** - Manages game states, navigation, and screen transitions.
 
@@ -117,7 +117,7 @@ For domain-specific expertise and detailed conventions, consult these specialize
 - Expertise: Scene navigation, state validation, game loop orchestration
 - Key Patterns: Navigation flow, state initialization, aesthetic enforcement
 
-### 📂 src/utils/utils.agent.md
+### 📂 src/utils/AGENTS.md
 
 **Core Game Systems Architect** - Pure logic modules and game engines.
 
@@ -125,7 +125,7 @@ For domain-specific expertise and detailed conventions, consult these specialize
 - Expertise: Event triggering, financial calculations, procedural generation, RNG
 - Key Patterns: Pure functions, state-agnostic design, testable logic
 
-### 📂 src/components/components.agent.md
+### 📂 src/components/AGENTS.md
 
 **Game Component Specialist** - Complex, game-specific reusable components.
 
@@ -133,7 +133,7 @@ For domain-specific expertise and detailed conventions, consult these specialize
 - Expertise: Pixi.js integration, real-time rendering, game-specific UI
 - Key Patterns: Canvas cleanup, performance optimization, animation
 
-### 📂 src/data/data.agent.md
+### 📂 src/data/AGENTS.md
 
 **Game Database Architect** - Static content and game balance.
 
@@ -141,7 +141,7 @@ For domain-specific expertise and detailed conventions, consult these specialize
 - Expertise: Content structure, balance tuning, referential integrity
 - Key Patterns: Data immutability, ID conventions, balance formulas
 
-### 📂 src/ui/ui.agent.md
+### 📂 src/ui/AGENTS.md
 
 **UI Component Library Specialist** - Generic, reusable presentation components.
 
@@ -155,3 +155,17 @@ For domain-specific expertise and detailed conventions, consult these specialize
 - Each sub-agent contains detailed conventions, anti-patterns, and best practices
 - Sub-agents provide code examples and integration guidelines
 - Refer to sub-agents for testing and validation checklists
+
+---
+
+
+## 🗂️ Documentation 
+
+How you will handle the documentation files:
+
+**`AGENTS.md` files**: Update when they are outdated and add new `AGENTS.md` files for folders getting harder to understand.
+ 
+
+---
+
+_“Complexity is not an excuse for friction.”_
