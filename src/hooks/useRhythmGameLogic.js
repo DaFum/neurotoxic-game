@@ -165,10 +165,17 @@ export const useRhythmGameLogic = () => {
         // audioRef.current = audioManager.playMusic(activeSetlist[0].id);
         // Switch to Metal Generator
         const currentSong = activeSetlist[0]
-        startMetalGenerator(currentSong)
+        // Keep audio & visuals aligned; default to 0 when no audio is started (e.g., jam)
+        let audioDelay = 0
+
+        if (activeSetlist[0].id !== 'jam') {
+          // Use 2.0s delay (Tone.js/audio in seconds) to match the 2000ms visual note lead-in used above
+          audioDelay = 2.0
+          startMetalGenerator(currentSong, audioDelay)
+        }
       }
 
-      gameStateRef.current.startTime = Date.now()
+      gameStateRef.current.startTime = Date.now() + audioDelay * 1000
       gameStateRef.current.running = true
     } catch (error) {
       console.error(
