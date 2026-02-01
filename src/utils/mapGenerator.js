@@ -9,7 +9,7 @@ export class MapGenerator {
    * Creates a new MapGenerator instance.
    * @param {number} seed - The seed for the random number generator.
    */
-  constructor (seed) {
+  constructor(seed) {
     const s = Number(seed)
     this.seed = Number.isFinite(s) ? s : Date.now()
   }
@@ -18,7 +18,7 @@ export class MapGenerator {
    * Linear Congruential Generator for seeded random numbers.
    * @returns {number} A float between 0 and 1.
    */
-  random () {
+  random() {
     this.seed = (this.seed * 9301 + 49297) % 233280
     return this.seed / 233280
   }
@@ -29,7 +29,7 @@ export class MapGenerator {
    * @param {number} [depth=10] - The number of layers in the map.
    * @returns {object} The generated map object containing layers, nodes, and connections.
    */
-  generateMap (depth = 10) {
+  generateMap(depth = 10) {
     const map = {
       layers: [],
       nodes: {}, // Map ID to Node Object
@@ -146,7 +146,7 @@ export class MapGenerator {
    * @param {number} count - The number of items to pick.
    * @returns {Array} A new array with the selected items.
    */
-  pickRandomSubset (arr, count) {
+  pickRandomSubset(arr, count) {
     const shuffled = [...arr]
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(this.random() * (i + 1))

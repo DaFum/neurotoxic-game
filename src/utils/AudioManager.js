@@ -6,7 +6,7 @@ import { SoundSynthesizer } from '../systems/SoundSynthesizer.js'
  * Manages global audio playback including music (Howler.js) and SFX (SoundSynthesizer/Tone.js).
  */
 class AudioSystem {
-  constructor () {
+  constructor() {
     this.music = null
     this.synth = new SoundSynthesizer()
     this.musicVolume = 0.5
@@ -19,7 +19,7 @@ class AudioSystem {
    * Initializes the audio system, loading preferences and setting up synthesizers.
    * @returns {Promise<void>}
    */
-  async init () {
+  async init() {
     if (this.initialized) return
 
     try {
@@ -59,7 +59,7 @@ class AudioSystem {
    * @param {string} songId - The ID of the song to play (or 'ambient').
    * @returns {object|null} The Howl instance or null if not initialized.
    */
-  playMusic (songId) {
+  playMusic(songId) {
     if (!this.initialized) return null
 
     // Clean up previous instance explicitly
@@ -113,7 +113,7 @@ class AudioSystem {
   /**
    * Starts the ambient background music stream if not already playing.
    */
-  startAmbient () {
+  startAmbient() {
     if (!this.initialized) return
     // Prevent restarting if already playing ambient
     // Check if current music is the ambient track to avoid reloading stream
@@ -138,21 +138,21 @@ class AudioSystem {
   /**
    * Stops the currently playing music.
    */
-  stopMusic () {
+  stopMusic() {
     if (this.music) this.music.stop()
   }
 
   /**
    * Pauses the currently playing music.
    */
-  pauseMusic () {
+  pauseMusic() {
     if (this.music) this.music.pause()
   }
 
   /**
    * Resumes the paused music or starts ambient if none is loaded.
    */
-  resumeMusic () {
+  resumeMusic() {
     if (this.music && !this.music.playing()) {
       if (this.music.state() === 'loaded') {
         this.music.play()
@@ -166,7 +166,7 @@ class AudioSystem {
    * Plays a sound effect by key.
    * @param {string} key - The SFX identifier (e.g., 'CLICK', 'ERROR').
    */
-  playSFX (key) {
+  playSFX(key) {
     if (!this.initialized) return
     this.synth.play(key)
   }
@@ -175,7 +175,7 @@ class AudioSystem {
    * Sets the music volume and persists it.
    * @param {number} vol - Volume level between 0 and 1.
    */
-  setMusicVolume (vol) {
+  setMusicVolume(vol) {
     const next = Math.min(1, Math.max(0, vol))
     this.musicVolume = next
     localStorage.setItem('neurotoxic_vol_music', next)
@@ -188,7 +188,7 @@ class AudioSystem {
    * Sets the SFX volume and persists it.
    * @param {number} vol - Volume level between 0 and 1.
    */
-  setSFXVolume (vol) {
+  setSFXVolume(vol) {
     const next = Math.min(1, Math.max(0, vol))
     this.sfxVolume = next
     localStorage.setItem('neurotoxic_vol_sfx', next)
@@ -199,7 +199,7 @@ class AudioSystem {
    * Toggles global mute state.
    * @returns {boolean} The new mute state.
    */
-  toggleMute () {
+  toggleMute() {
     this.muted = !this.muted
     Howler.mute(this.muted)
 
@@ -222,15 +222,17 @@ class AudioSystem {
    * @param {string} songId - The song ID.
    * @returns {string} The URL string.
    */
-  getAudioSrc (songId) {
-    if (songId === 'ambient') { return 'https://moshhead-blackmetal.stream.laut.fm/moshhead-blackmetal' }
+  getAudioSrc(songId) {
+    if (songId === 'ambient') {
+      return 'https://moshhead-blackmetal.stream.laut.fm/moshhead-blackmetal'
+    }
     return 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
   }
 
   /**
    * Disposes of the audio system, unloading resources.
    */
-  dispose () {
+  dispose() {
     this.stopMusic()
     Howler.unload()
     this.synth.dispose()

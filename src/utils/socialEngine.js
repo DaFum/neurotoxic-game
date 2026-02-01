@@ -83,9 +83,7 @@ export const resolvePost = (postOption, diceRoll) => {
   const platform = postOption?.effect?.platform ?? 'unknown'
 
   const isViral = diceRoll < viralChance
-  const followerGain = isViral
-    ? baseFollowers * 10
-    : baseFollowers
+  const followerGain = isViral ? baseFollowers * 10 : baseFollowers
 
   return {
     success: isViral,
