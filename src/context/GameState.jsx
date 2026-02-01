@@ -380,8 +380,9 @@ export const GameStateProvider = ({ children }) => {
    * Advances the game day, deducting living costs and updating simulations.
    */
   const advanceDay = () => {
+    const nextDay = state.player.day + 1
     dispatch({ type: 'ADVANCE_DAY' })
-    addToast(`Day ${state.player.day + 1}: Living Costs Deducted.`, 'info')
+    addToast(`Day ${nextDay}: Living Costs Deducted.`, 'info')
   }
 
   /**

@@ -81,7 +81,8 @@ export const PreGig = () => {
     const isActive = gigModifiers[key]
 
     if (!isActive) {
-      if (player.money < cost) {
+      const projectedTotal = calculatedBudget + cost
+      if (projectedTotal > player.money) {
         addToast('Not enough money for this upgrade!', 'error')
         return
       }

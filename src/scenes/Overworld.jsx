@@ -114,7 +114,7 @@ export const Overworld = () => {
     }
 
     // Calculate Costs
-    const { dist, totalCost } = calculateTravelExpenses(node)
+    const { dist, totalCost, fuelLiters } = calculateTravelExpenses(node)
     logger.debug('Overworld', 'Travel cost calculated', { dist, totalCost })
 
     addToast(
@@ -124,6 +124,11 @@ export const Overworld = () => {
 
     if (player.money < totalCost) {
       addToast('Not enough money for gas and food!', 'error')
+      return
+    }
+
+    if (player.van.fuel < fuelLiters) {
+      addToast('Not enough fuel in the tank!', 'error')
       return
     }
 
@@ -163,7 +168,7 @@ export const Overworld = () => {
     }
 
     updatePlayer({
-      money: player.money - totalCost,
+      money: Math.max(0, player.money - totalCost),
       van: { ...player.van, fuel: Math.max(0, player.van.fuel - fuelLiters) },
       location: node.venue.name,
       currentNodeId: node.id,

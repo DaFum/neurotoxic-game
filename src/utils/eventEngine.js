@@ -96,9 +96,17 @@ const processEffect = (eff, delta) => {
       break
     case 'item':
       if (eff.item) {
-        const val = eff.value !== undefined ? eff.value : true
         if (!delta.band.inventory) delta.band.inventory = {}
-        delta.band.inventory[eff.item] = val
+        if (typeof eff.value === 'number') {
+          const current =
+            typeof delta.band.inventory[eff.item] === 'number'
+              ? delta.band.inventory[eff.item]
+              : 0
+          delta.band.inventory[eff.item] = current + eff.value
+        } else {
+          const val = eff.value !== undefined ? eff.value : true
+          delta.band.inventory[eff.item] = val
+        }
       }
       break
     case 'unlock':
