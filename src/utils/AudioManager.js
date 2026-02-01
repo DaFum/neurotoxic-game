@@ -8,6 +8,7 @@ import { SoundSynthesizer } from '../systems/SoundSynthesizer.js'
 class AudioSystem {
   constructor() {
     this.music = null
+    this.currentSongId = null
     this.synth = new SoundSynthesizer()
     this.musicVolume = 0.5
     this.sfxVolume = 0.5
@@ -70,6 +71,7 @@ class AudioSystem {
     }
 
     const src = this.getAudioSrc(songId)
+    this.currentSongId = songId
 
     this.music = new Howl({
       src: [src],
@@ -119,12 +121,10 @@ class AudioSystem {
     // Check if current music is the ambient track to avoid reloading stream
     // Note: checking loop() is weak if we change logic, better check source or id.
     // Assuming single music track architecture for now.
-    const ambientSrc = this.getAudioSrc('ambient')
     if (
       this.music &&
       this.music.playing() &&
-      this.music._src &&
-      this.music._src.includes(ambientSrc)
+      this.currentSongId === 'ambient'
     ) {
       return
     }
