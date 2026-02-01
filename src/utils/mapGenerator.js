@@ -138,9 +138,10 @@ export class MapGenerator {
     })
 
     // Assign initial coordinates with jitter and resolve overlaps
+    // Increased jitter to +/- 5 to help initial separation
     Object.values(map.nodes).forEach(node => {
-      node.x = node.venue.x + (this.random() * 2 - 1)
-      node.y = node.venue.y + (this.random() * 2 - 1)
+      node.x = node.venue.x + (this.random() * 10 - 5)
+      node.y = node.venue.y + (this.random() * 10 - 5)
     })
 
     this.resolveOverlaps(map.nodes)
@@ -153,11 +154,14 @@ export class MapGenerator {
    * @param {object} nodes - The nodes map.
    */
   resolveOverlaps(nodes) {
-    const iterations = 50
-    const minDistance = 8 // % of map width/height - increased to ensure no overlap
+    const iterations = 150 // Increased iterations
+    const minDistance = 6 // % of map width/height (approx 2x pin size)
     const nodeList = Object.values(nodes)
+    // Reduce movement strength over time to stabilize
+    let strength = 0.5
 
     for (let i = 0; i < iterations; i++) {
+      let moved = false
       for (let j = 0; j < nodeList.length; j++) {
         for (let k = j + 1; k < nodeList.length; k++) {
           const n1 = nodeList[j]
@@ -168,6 +172,7 @@ export class MapGenerator {
           let dist = Math.sqrt(dx * dx + dy * dy)
 
           if (dist < minDistance) {
+            moved = true
             if (dist < 0.1) {
               // Exact overlap (or very close), push randomly
               dx = this.random() - 0.5 || 0.1
@@ -176,9 +181,10 @@ export class MapGenerator {
             }
 
             const overlap = minDistance - dist
-            // Stronger push
-            const moveX = (dx / dist) * overlap * 0.6
-            const moveY = (dy / dist) * overlap * 0.6
+            const push = overlap * strength
+
+            const moveX = (dx / dist) * push
+            const moveY = (dy / dist) * push
 
             n1.x += moveX
             n1.y += moveY
@@ -187,12 +193,27 @@ export class MapGenerator {
           }
         }
       }
+
+      // Wall repulsion (keep away from edges)
+      nodeList.forEach(n => {
+         const padding = 10
+         if (n.x < padding) n.x += 0.2
+         if (n.x > 100 - padding) n.x -= 0.2
+         if (n.y < padding) n.y += 0.2
+         if (n.y > 100 - padding) n.y -= 0.2
+      })
+
+      // If no overlaps processed, we can exit early (optional optimization)
+      if (!moved) break;
+
+      // Damping
+      strength *= 0.995
     }
 
-    // Clamp to map bounds with padding
+    // Final hard clamp
     nodeList.forEach(n => {
-      n.x = Math.max(8, Math.min(92, n.x))
-      n.y = Math.max(8, Math.min(92, n.y))
+      n.x = Math.max(5, Math.min(95, n.x))
+      n.y = Math.max(5, Math.min(95, n.y))
     })
   }
 

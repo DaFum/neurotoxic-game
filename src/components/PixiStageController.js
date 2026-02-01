@@ -38,6 +38,8 @@ export class PixiStageController {
     this.crowdMembers = []
     this.laneGraphics = [] // Stores { static: Graphics, dynamic: Graphics }
     this.noteContainer = null
+    this.effectsContainer = null
+    this.activeEffects = []
     this.noteTexture = null
     this.laneLayout = null
     this.lastLayoutKey = null
@@ -85,6 +87,7 @@ export class PixiStageController {
         this.createCrowd()
         this.createLanes()
         this.createNoteContainer()
+        this.createEffectsContainer()
         this.app.ticker.add(this.handleTicker)
       } catch (error) {
         console.error(
@@ -221,6 +224,65 @@ export class PixiStageController {
   }
 
   /**
+   * Creates a container for visual effects.
+   * @returns {void}
+   */
+  createEffectsContainer() {
+    this.effectsContainer = new PIXI.Container()
+    // Effects sit above notes but below UI (if any UI was here)
+    if (this.rhythmContainer) {
+      this.rhythmContainer.addChild(this.effectsContainer)
+    } else {
+      this.stageContainer.addChild(this.effectsContainer)
+    }
+  }
+
+  /**
+   * Spawns a hit effect at the given coordinates.
+   * @param {number} x
+   * @param {number} y
+   * @param {number} color
+   */
+  spawnHitEffect(x, y, color) {
+    if (!this.effectsContainer) return
+
+    const effect = new PIXI.Graphics()
+    effect.circle(0, 0, 40)
+    effect.fill({ color: 0xffffff, alpha: 0.8 }) // Core white flash
+    effect.stroke({ width: 4, color: color }) // Colored ring
+    effect.x = x
+    effect.y = y
+    effect.alpha = 1
+    effect.scale.set(0.5)
+
+    // Store animation state
+    effect.life = 1.0 // 1.0 to 0.0
+
+    this.effectsContainer.addChild(effect)
+    this.activeEffects.push(effect)
+  }
+
+  /**
+   * Updates active visual effects.
+   * @param {number} deltaMS
+   */
+  updateEffects(deltaMS) {
+    const deltaSec = deltaMS / 1000
+    for (let i = this.activeEffects.length - 1; i >= 0; i--) {
+      const effect = this.activeEffects[i]
+      effect.life -= deltaSec * 3 // Fade out speed
+
+      if (effect.life <= 0) {
+        effect.destroy()
+        this.activeEffects.splice(i, 1)
+      } else {
+        effect.alpha = effect.life
+        effect.scale.set(0.5 + (1.0 - effect.life) * 1.5) // Expand from 0.5 to 2.0
+      }
+    }
+  }
+
+  /**
    * Updates lane visuals based on input state.
    * @param {object} state - Current game state ref.
    * @returns {void}
@@ -332,7 +394,16 @@ export class PixiStageController {
         return
       }
 
-      if (!note.visible || note.hit) {
+      if (!note.visible) {
+        this.destroyNoteSprite(note)
+        return
+      }
+
+      if (note.hit) {
+        // Trigger effect before destroying if we haven't already
+        // Note: note.hit is true, but sprite exists. This means it was JUST hit.
+        const laneColor = state.lanes[note.laneIndex].color
+        this.spawnHitEffect(note.sprite.x, note.sprite.y, laneColor)
         this.destroyNoteSprite(note)
         return
       }
@@ -449,6 +520,7 @@ export class PixiStageController {
     this.updateLaneGraphics(state)
     this.updateCrowd(stats?.combo ?? 0, stats?.isToxicMode, now)
     this.updateNotes(state, elapsed)
+    this.updateEffects(ticker.deltaMS)
   }
 
   /**
