@@ -167,6 +167,16 @@ export const Overworld = () => {
       return
     }
 
+    if (player.van.fuel < fuelLiters) {
+      console.error(
+        'Travel completed but insufficient fuel. State might be inconsistent.'
+      )
+      addToast('Insufficient fuel for travel costs!', 'error')
+      setIsTraveling(false)
+      setTravelTarget(null)
+      return
+    }
+
     updatePlayer({
       money: Math.max(0, player.money - totalCost),
       van: { ...player.van, fuel: Math.max(0, player.van.fuel - fuelLiters) },
@@ -187,7 +197,21 @@ export const Overworld = () => {
     if (!eventHappened) {
       const bandEvent = triggerEvent('band', 'travel')
       if (!bandEvent) {
-        startGig(node.venue)
+        // Node Type Handling
+        if (node.type === 'REST_STOP') {
+          updateBand({
+            members: { staminaChange: 20, moodChange: 10 }
+          })
+          addToast('Rested at stop. Band feels better.', 'success')
+        } else if (node.type === 'SPECIAL') {
+          const specialEvent = triggerEvent('special')
+          if (!specialEvent) {
+            addToast('A mysterious place, but nothing happened.', 'info')
+          }
+        } else {
+          // Default: GIG
+          startGig(node.venue)
+        }
       }
     }
   }
