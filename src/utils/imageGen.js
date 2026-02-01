@@ -1,7 +1,7 @@
 // Utility to generate dynamic image URLs via Pollinations.ai
 const BASE_URL = 'https://gen.pollinations.ai/image'
-const MODEL = 'turbo'
-const KEY = 'pk_YyZbHBhyI8Elhxl0'
+const MODEL = 'flux'
+const KEY = 'pk_xDL8u2ty4Sxucaa3'
 
 /**
  * Generates a URL for a procedurally generated image.
@@ -11,7 +11,7 @@ const KEY = 'pk_YyZbHBhyI8Elhxl0'
 export const getGenImageUrl = description => {
   // URL Encode the description
   const encodedDesc = encodeURIComponent(description)
-  return `${BASE_URL}/${encodedDesc}?model=${MODEL}&key=${KEY}`
+  return `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}`
 }
 
 export const IMG_PROMPTS = {
