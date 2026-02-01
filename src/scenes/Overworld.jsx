@@ -184,7 +184,6 @@ export const Overworld = () => {
     },
     [
       travelTarget,
-      player.currentNodeId,
       player.money,
       player.van,
       player.day,

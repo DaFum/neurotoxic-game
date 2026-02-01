@@ -48,7 +48,9 @@ export const GigHUD = ({ stats, onLaneInput }) => {
           >
             {combo}x
           </div>
-          <div className='text-sm text-gray-500 uppercase tracking-widest'>Combo</div>
+          <div className='text-sm text-gray-500 uppercase tracking-widest'>
+            Combo
+          </div>
         </div>
 
         {/* Toxic Overload Meter */}
@@ -70,7 +72,11 @@ export const GigHUD = ({ stats, onLaneInput }) => {
       <div className='absolute bottom-24 left-1/2 -translate-x-1/2 w-96 z-10 pointer-events-none'>
         <div className='flex justify-between text-white text-xs mb-1 font-bold tracking-widest drop-shadow-md'>
           <span>CROWD ENERGY</span>
-          <span className={health < 30 ? 'text-red-500 animate-flash' : 'text-white'}>
+          <span
+            className={
+              health < 30 ? 'text-red-500 animate-flash' : 'text-white'
+            }
+          >
             {Math.floor(health)}%
           </span>
         </div>
@@ -78,7 +84,9 @@ export const GigHUD = ({ stats, onLaneInput }) => {
         <div className='w-full h-6 bg-black/50 border-2 border-white/20 backdrop-blur-sm p-[2px] rounded'>
           <div
             className={`h-full rounded-sm transition-all duration-300 ease-out ${
-              health < 30 ? 'bg-red-600 shadow-[0_0_15px_red]' : 'bg-gradient-to-r from-[var(--toxic-green)] to-emerald-400 shadow-[0_0_10px_var(--toxic-green)]'
+              health < 30
+                ? 'bg-red-600 shadow-[0_0_15px_red]'
+                : 'bg-gradient-to-r from-[var(--toxic-green)] to-emerald-400 shadow-[0_0_10px_var(--toxic-green)]'
             }`}
             style={{ width: `${health}%` }}
           />

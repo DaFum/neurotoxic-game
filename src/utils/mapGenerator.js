@@ -196,15 +196,15 @@ export class MapGenerator {
 
       // Wall repulsion (keep away from edges)
       nodeList.forEach(n => {
-         const padding = 10
-         if (n.x < padding) n.x += 0.2
-         if (n.x > 100 - padding) n.x -= 0.2
-         if (n.y < padding) n.y += 0.2
-         if (n.y > 100 - padding) n.y -= 0.2
+        const padding = 10
+        if (n.x < padding) n.x += 0.2
+        if (n.x > 100 - padding) n.x -= 0.2
+        if (n.y < padding) n.y += 0.2
+        if (n.y > 100 - padding) n.y -= 0.2
       })
 
       // If no overlaps processed, we can exit early (optional optimization)
-      if (!moved) break;
+      if (!moved) break
 
       // Damping
       strength *= 0.995
