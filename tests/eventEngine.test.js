@@ -28,6 +28,26 @@ const buildGameState = (overrides = {}) => ({
   ...overrides
 })
 
+const buildSkillCheckChoice = threshold => ({
+  label: 'Negotiate',
+  skillCheck: {
+    stat: 'harmony',
+    threshold,
+    success: { type: 'resource', resource: 'money', value: -20 },
+    failure: { type: 'resource', resource: 'money', value: -100 }
+  }
+})
+
+const TEST_EVENT_VAN_BREAKDOWN = {
+  id: 'van_breakdown_flat',
+  options: [
+    {
+      label: 'Call tow truck',
+      effect: { type: 'resource', resource: 'money', value: -200 }
+    }
+  ]
+}
+
 test('eventEngine.checkEvent returns null when category not found', () => {
   const state = buildGameState()
   const result = eventEngine.checkEvent('nonexistent', state)
@@ -77,15 +97,7 @@ test('eventEngine.resolveChoice handles direct effect', () => {
 })
 
 test('eventEngine.resolveChoice handles skill check success', () => {
-  const choice = {
-    label: 'Negotiate',
-    skillCheck: {
-      stat: 'harmony',
-      threshold: 5,
-      success: { type: 'resource', resource: 'money', value: -20 },
-      failure: { type: 'resource', resource: 'money', value: -100 }
-    }
-  }
+  const choice = buildSkillCheckChoice(5)
   const state = buildGameState({
     band: { ...buildGameState().band, harmony: 80 }
   })
@@ -100,15 +112,7 @@ test('eventEngine.resolveChoice handles skill check success', () => {
 })
 
 test('eventEngine.resolveChoice handles skill check failure', () => {
-  const choice = {
-    label: 'Negotiate',
-    skillCheck: {
-      stat: 'harmony',
-      threshold: 10,
-      success: { type: 'resource', resource: 'money', value: -20 },
-      failure: { type: 'resource', resource: 'money', value: -100 }
-    }
-  }
+  const choice = buildSkillCheckChoice(10)
   const state = buildGameState({
     band: { ...buildGameState().band, harmony: 10 }
   })
@@ -197,15 +201,7 @@ test('eventEngine.processOptions returns event when no processing needed', () =>
 })
 
 test('eventEngine.processOptions handles van_breakdown with spare_tire', () => {
-  const event = {
-    id: 'van_breakdown_flat',
-    options: [
-      {
-        label: 'Call tow truck',
-        effect: { type: 'resource', resource: 'money', value: -200 }
-      }
-    ]
-  }
+  const event = TEST_EVENT_VAN_BREAKDOWN
   const state = buildGameState({
     band: { ...buildGameState().band, inventory: { spare_tire: true } }
   })
@@ -223,15 +219,7 @@ test('eventEngine.processOptions handles van_breakdown with spare_tire', () => {
 })
 
 test('eventEngine.processOptions does not add spare tire option without inventory', () => {
-  const event = {
-    id: 'van_breakdown_flat',
-    options: [
-      {
-        label: 'Call tow truck',
-        effect: { type: 'resource', resource: 'money', value: -200 }
-      }
-    ]
-  }
+  const event = TEST_EVENT_VAN_BREAKDOWN
   const state = buildGameState({
     band: { ...buildGameState().band, inventory: { spare_tire: false } }
   })
