@@ -10,7 +10,7 @@ export class MapGenerator {
    * @param {number} seed - The seed for the random number generator.
    */
   constructor(seed) {
-    this.seed = seed || Date.now()
+    this.seed = seed ?? Date.now()
   }
 
   /**

@@ -60,7 +60,7 @@ class AudioSystem {
    * @returns {object|null} The Howl instance or null if not initialized.
    */
   playMusic(songId) {
-    if (!this.initialized) return
+    if (!this.initialized) return null
 
     // Clean up previous instance explicitly
     if (this.music) {
@@ -176,10 +176,11 @@ class AudioSystem {
    * @param {number} vol - Volume level between 0 and 1.
    */
   setMusicVolume(vol) {
-    this.musicVolume = vol
-    localStorage.setItem('neurotoxic_vol_music', vol)
+    const next = Math.min(1, Math.max(0, vol))
+    this.musicVolume = next
+    localStorage.setItem('neurotoxic_vol_music', next)
     if (this.music) {
-      this.music.volume(vol)
+      this.music.volume(next)
     }
   }
 
@@ -188,9 +189,10 @@ class AudioSystem {
    * @param {number} vol - Volume level between 0 and 1.
    */
   setSFXVolume(vol) {
-    this.sfxVolume = vol
-    localStorage.setItem('neurotoxic_vol_sfx', vol)
-    this.synth.setVolume(vol)
+    const next = Math.min(1, Math.max(0, vol))
+    this.sfxVolume = next
+    localStorage.setItem('neurotoxic_vol_sfx', next)
+    this.synth.setVolume(next)
   }
 
   /**
