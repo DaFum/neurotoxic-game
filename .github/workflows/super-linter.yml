@@ -63,7 +63,7 @@ jobs:
             const fs = require('fs');
 
             const MARKER = '<!-- super-linter-report -->';
-            const log = fs.readFileSync('super-linter. tail.log', 'utf8');
+            const log = fs.readFileSync('super-linter.tail.log', 'utf8');
 
             const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env. GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
 
