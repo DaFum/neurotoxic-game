@@ -472,11 +472,17 @@ export class PixiStageController {
     this.crowdMembers = []
 
     if (this.app) {
-      this.app.destroy(true, {
-        children: true,
-        texture: true,
-        baseTexture: true
-      })
+      try {
+        if (this.app.destroy) {
+          this.app.destroy(true, {
+            children: true,
+            texture: true,
+            baseTexture: true
+          })
+        }
+      } catch (e) {
+        console.warn('Pixi App destroy failed:', e)
+      }
       this.app = null
     }
 

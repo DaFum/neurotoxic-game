@@ -137,7 +137,63 @@ export class MapGenerator {
       map.connections.push({ from: node.id, to: endNode.id })
     })
 
+    // Assign initial coordinates with jitter and resolve overlaps
+    Object.values(map.nodes).forEach(node => {
+      node.x = node.venue.x + (this.random() * 2 - 1)
+      node.y = node.venue.y + (this.random() * 2 - 1)
+    })
+
+    this.resolveOverlaps(map.nodes)
+
     return map
+  }
+
+  /**
+   * Iteratively pushes overlapping nodes apart to ensure visibility.
+   * @param {object} nodes - The nodes map.
+   */
+  resolveOverlaps(nodes) {
+    const iterations = 50
+    const minDistance = 8 // % of map width/height - increased to ensure no overlap
+    const nodeList = Object.values(nodes)
+
+    for (let i = 0; i < iterations; i++) {
+      for (let j = 0; j < nodeList.length; j++) {
+        for (let k = j + 1; k < nodeList.length; k++) {
+          const n1 = nodeList[j]
+          const n2 = nodeList[k]
+
+          let dx = n1.x - n2.x
+          let dy = n1.y - n2.y
+          let dist = Math.sqrt(dx * dx + dy * dy)
+
+          if (dist < minDistance) {
+            if (dist < 0.1) {
+              // Exact overlap (or very close), push randomly
+              dx = (this.random() - 0.5) || 0.1
+              dy = (this.random() - 0.5) || 0.1
+              dist = Math.sqrt(dx * dx + dy * dy)
+            }
+
+            const overlap = minDistance - dist
+            // Stronger push
+            const moveX = (dx / dist) * overlap * 0.6
+            const moveY = (dy / dist) * overlap * 0.6
+
+            n1.x += moveX
+            n1.y += moveY
+            n2.x -= moveX
+            n2.y -= moveY
+          }
+        }
+      }
+    }
+
+    // Clamp to map bounds with padding
+    nodeList.forEach(n => {
+      n.x = Math.max(8, Math.min(92, n.x))
+      n.y = Math.max(8, Math.min(92, n.y))
+    })
   }
 
   /**

@@ -41,7 +41,7 @@ export const useRhythmGameLogic = () => {
 
   // High-Frequency Game State (Ref)
   const gameStateRef = useRef({
-    running: true,
+    running: false,
     notes: [],
     lanes: [
       {
@@ -69,7 +69,7 @@ export const useRhythmGameLogic = () => {
         hitWindow: 150
       }
     ],
-    startTime: 0,
+    startTime: Date.now(),
     pauseTime: null,
     speed: 500,
     modifiers: {},
@@ -161,35 +161,41 @@ export const useRhythmGameLogic = () => {
       // Adjust start time offset (2000ms lead-in) + sum of durations.
       gameStateRef.current.totalDuration = currentTimeOffset
 
-      if (activeSetlist[0].id !== 'jam') {
-        // audioRef.current = audioManager.playMusic(activeSetlist[0].id);
-        // Switch to Metal Generator
-        const currentSong = activeSetlist[0]
-        // Keep audio & visuals aligned; default to 0 when no audio is started (e.g., jam)
-        let audioDelay = 0
+      // audioRef.current = audioManager.playMusic(activeSetlist[0].id);
+      // Switch to Metal Generator
+      const currentSong = activeSetlist[0]
+      // Keep audio & visuals aligned; default to 0 when no audio is started (e.g., jam)
+      let audioDelay = 0
 
-        if (activeSetlist[0].id !== 'jam') {
-          // Use 2.0s delay (Tone.js/audio in seconds) to match the 2000ms visual note lead-in used above
-          audioDelay = 2.0
-          startMetalGenerator(currentSong, audioDelay)
-        }
+      if (currentSong.id !== 'jam') {
+        // Use 2.0s delay (Tone.js/audio in seconds) to match the 2000ms visual note lead-in used above
+        audioDelay = 2.0
+        startMetalGenerator(currentSong, audioDelay)
       }
 
       gameStateRef.current.startTime = Date.now() + audioDelay * 1000
       gameStateRef.current.running = true
+      console.log('[RhythmGame] Initialized.', {
+        startTime: gameStateRef.current.startTime,
+        totalDuration: gameStateRef.current.totalDuration,
+        audioDelay
+      })
     } catch (error) {
       console.error(
         '[useRhythmGameLogic] Failed to initialize gig state.',
         error
       )
+      addToast('Gig initialization failed!', 'error')
+      gameStateRef.current.running = false
     }
-  }, [band, gameMap?.nodes, player.currentNodeId, setlist, gigModifiers])
+  }, [band, gameMap?.nodes, player.currentNodeId, setlist, gigModifiers, addToast])
 
   useEffect(() => {
     initializeGigState()
 
     const audio = audioRef.current
     return () => {
+      hasInitializedRef.current = false; // Reset initialization flag on unmount
       if (gameOverTimerRef.current) {
         clearTimeout(gameOverTimerRef.current)
         gameOverTimerRef.current = null
@@ -392,6 +398,12 @@ export const useRhythmGameLogic = () => {
       }
 
       if (elapsed > state.totalDuration) {
+        console.log('[RhythmGame] Gig Ended naturally.', {
+            elapsed,
+            totalDuration: state.totalDuration,
+            startTime: state.startTime,
+            now
+        })
         state.running = false
         setLastGigStats(
           buildGigStatsSnapshot(state.score, state.stats, state.toxicTimeTotal)

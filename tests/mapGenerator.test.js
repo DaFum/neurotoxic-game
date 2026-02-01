@@ -46,3 +46,35 @@ test('MapGenerator connections are valid', () => {
     assert.equal(toLayer, fromLayer + 1, 'Connections only go forward 1 layer')
   })
 })
+
+test('MapGenerator ensures nodes do not overlap', () => {
+  const generator = new MapGenerator(12345) // Seeded for consistency
+  const map = generator.generateMap(5)
+  const nodes = Object.values(map.nodes)
+
+  nodes.forEach(node => {
+    assert.ok(typeof node.x === 'number', 'Node has x')
+    assert.ok(typeof node.y === 'number', 'Node has y')
+    assert.ok(node.x >= 5 && node.x <= 95, `Node x ${node.x} within bounds`)
+    assert.ok(node.y >= 5 && node.y <= 95, `Node y ${node.y} within bounds`)
+  })
+
+  // Check distances
+  // Note: Since we use simple iterative repulsion, it might not be 100% perfect for very dense maps,
+  // but for the generated map it should satisfy a reasonable threshold.
+  // We used 4% as target, let's assert > 2.5% to allow for some slight imperfection/clamping at edges.
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const n1 = nodes[i]
+      const n2 = nodes[j]
+      const dx = n1.x - n2.x
+      const dy = n1.y - n2.y
+      const dist = Math.sqrt(dx * dx + dy * dy)
+
+      assert.ok(
+        dist >= 2.5,
+        `Nodes ${n1.id} and ${n2.id} should be apart. Dist: ${dist}`
+      )
+    }
+  }
+})
