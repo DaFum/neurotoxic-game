@@ -8,6 +8,9 @@ import { ChatterOverlay } from '../components/ChatterOverlay'
 import { audioManager } from '../utils/AudioManager'
 import { logger } from '../utils/logger'
 
+/**
+ * A widget to toggle the ambient radio / music.
+ */
 const ToggleRadio = () => {
   const [isPlaying, setIsPlaying] = useState(false)
 
@@ -17,6 +20,9 @@ const ToggleRadio = () => {
     }
   }, [])
 
+  /**
+   * Toggles the radio playback state.
+   */
   const toggle = () => {
     if (isPlaying) {
       audioManager.stopMusic()
@@ -38,6 +44,9 @@ const ToggleRadio = () => {
   )
 }
 
+/**
+ * The map navigation scene where players select their next destination.
+ */
 export const Overworld = () => {
   const {
     startGig,
@@ -56,7 +65,11 @@ export const Overworld = () => {
   const [travelTarget, setTravelTarget] = useState(null)
   const [hoveredNode, setHoveredNode] = useState(null)
 
-  // Helper to check connectivity
+  /**
+   * Checks if a target node is connected to the current node.
+   * @param {string} targetNodeId - The destination node ID.
+   * @returns {boolean} True if connected.
+   */
   const isConnected = targetNodeId => {
     if (!gameMap) return false
     const connections = gameMap.connections.filter(
@@ -65,12 +78,22 @@ export const Overworld = () => {
     return connections.some(c => c.to === targetNodeId)
   }
 
+  /**
+   * Determines the visibility state of a node based on its layer.
+   * @param {number} nodeLayer - The layer of the target node.
+   * @param {number} currentLayer - The current layer of the player.
+   * @returns {string} 'visible', 'dimmed', or 'hidden'.
+   */
   const getNodeVisibility = (nodeLayer, currentLayer) => {
     if (nodeLayer <= currentLayer + 1) return 'visible' // 1 (Interactive)
     if (nodeLayer === currentLayer + 2) return 'dimmed' // 0.5 (Grayscale, Non-interactive)
     return 'hidden' // Hidden
   }
 
+  /**
+   * Initiates the travel sequence to a selected node.
+   * @param {object} node - The target node object.
+   */
   const handleTravel = node => {
     logger.info('Overworld', 'handleTravel initiated', {
       target: node.id,
@@ -117,6 +140,10 @@ export const Overworld = () => {
     audioManager.playSFX('travel')
   }
 
+  /**
+   * Callback executed when the travel animation finishes.
+   * Updates state, costs, and triggers arrival logic.
+   */
   const onTravelComplete = () => {
     // Logic executed after animation
     const node = travelTarget

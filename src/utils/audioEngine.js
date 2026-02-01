@@ -4,6 +4,10 @@ let guitar, drumKit, loop
 let isSetup = false
 
 // Initialisierung der Synths und Effekte
+/**
+ * Initializes the audio subsystem, including synths, effects, and master compressor.
+ * @returns {Promise<void>}
+ */
 export async function setupAudio() {
   if (isSetup) return
   await Tone.start()
@@ -55,6 +59,10 @@ export async function setupAudio() {
 }
 
 // Helper to resume context from UI
+/**
+ * Ensures the AudioContext is running and initialized.
+ * @returns {Promise<void>}
+ */
 export async function ensureAudioContext() {
   if (!isSetup) await setupAudio()
   if (Tone.context.state !== 'running') {
@@ -63,6 +71,12 @@ export async function ensureAudioContext() {
 }
 
 // Die eigentliche Generierungs-Logik
+/**
+ * Starts the procedural metal music generator for a specific song configuration.
+ * @param {object} song - The song object containing metadata like BPM and difficulty.
+ * @param {number} [delay=0] - Delay in seconds before the audio starts.
+ * @returns {Promise<void>}
+ */
 export async function startMetalGenerator(song, delay = 0) {
   await ensureAudioContext()
 
@@ -97,6 +111,9 @@ export async function startMetalGenerator(song, delay = 0) {
   Tone.Transport.start(Tone.now() + Math.max(0, delay))
 }
 
+/**
+ * Stops the audio transport and disposes of the current loop.
+ */
 export function stopAudio() {
   Tone.Transport.stop()
   if (loop) {

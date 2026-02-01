@@ -6,6 +6,10 @@ import { GlitchButton } from '../ui/GlitchButton'
 import { audioManager } from '../utils/AudioManager'
 import { UpgradeMenu } from '../ui/UpgradeMenu'
 
+/**
+ * The main menu scene component.
+ * @returns {JSX.Element} The rendered menu.
+ */
 export const MainMenu = () => {
   const { changeScene, loadGame, addToast } = useGameState()
   const [showUpgrades, setShowUpgrades] = React.useState(false)
@@ -14,6 +18,9 @@ export const MainMenu = () => {
     audioManager.startAmbient()
   }, [])
 
+  /**
+   * Handles loading a saved game.
+   */
   const handleLoad = () => {
     if (loadGame()) {
       changeScene('OVERWORLD')

@@ -14,9 +14,16 @@ import { DebugLogViewer } from './ui/DebugLogViewer'
 import { TutorialManager } from './components/TutorialManager'
 import { GameStateProvider, useGameState } from './context/GameState'
 
+/**
+ * Main game content wrapper that handles scene switching and global overlays.
+ */
 function GameContent() {
   const { currentScene, activeEvent, resolveEvent, settings } = useGameState()
 
+  /**
+   * Renders the component corresponding to the current scene state.
+   * @returns {JSX.Element} The active scene component.
+   */
   const renderScene = () => {
     switch (currentScene) {
       case 'MENU':
@@ -65,6 +72,10 @@ function GameContent() {
   )
 }
 
+/**
+ * Root Application Component.
+ * Wraps the game in the GameStateProvider.
+ */
 export default function App() {
   return (
     <GameStateProvider>

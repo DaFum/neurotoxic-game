@@ -2,9 +2,18 @@ import React from 'react'
 import { UPGRADES_DB } from '../data/upgrades'
 import { useGameState } from '../context/GameState'
 
+/**
+ * Menu interface for purchasing upgrades using Fame currency.
+ * @param {object} props
+ * @param {Function} props.onClose - Callback to close the menu.
+ */
 export const UpgradeMenu = ({ onClose }) => {
   const { player, updatePlayer, band, updateBand, addToast } = useGameState()
 
+  /**
+   * Processes the purchase of an upgrade.
+   * @param {object} upgrade - The upgrade object.
+   */
   const buyUpgrade = upgrade => {
     // The dispatch function would need to be retrieved from useGameState()
     // For now, we'll assume a new function `applyUpgrade` exists in the context

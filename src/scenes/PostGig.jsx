@@ -11,7 +11,10 @@ import {
 import { ChatterOverlay } from '../components/ChatterOverlay'
 
 /**
- * Report Phase Component
+ * Report Phase Component showing financial breakdown.
+ * @param {object} props
+ * @param {object} props.financials - Financial report object.
+ * @param {Function} props.onNext - Callback to proceed.
  */
 const ReportPhase = ({ financials, onNext }) => (
   <>
@@ -66,7 +69,10 @@ const ReportPhase = ({ financials, onNext }) => (
 )
 
 /**
- * Social Phase Component
+ * Social Phase Component allowing the player to choose a posting strategy.
+ * @param {object} props
+ * @param {Array} props.options - List of post options.
+ * @param {Function} props.onSelect - Callback when an option is selected.
  */
 const SocialPhase = ({ options, onSelect }) => (
   <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
@@ -91,7 +97,10 @@ const SocialPhase = ({ options, onSelect }) => (
 )
 
 /**
- * Complete Phase Component
+ * Complete Phase Component showing the result of the social media post.
+ * @param {object} props
+ * @param {object} props.result - The result of the post.
+ * @param {Function} props.onContinue - Callback to finish the scene.
  */
 const CompletePhase = ({ result, onContinue }) => (
   <div className='text-center'>
@@ -116,6 +125,9 @@ const CompletePhase = ({ result, onContinue }) => (
   </div>
 )
 
+/**
+ * Scene handling the post-gig summary, economy calculation, and social media management.
+ */
 export const PostGig = () => {
   const {
     changeScene,
@@ -183,6 +195,10 @@ export const PostGig = () => {
     }
   }, [financials, currentGig, lastGigStats, gigModifiers, player.fame])
 
+  /**
+   * Handles the selection of a social media post option.
+   * @param {object} option - The selected option.
+   */
   const handlePostSelection = option => {
     const result = resolvePost(option, Math.random())
     setPostResult(result)
@@ -196,6 +212,10 @@ export const PostGig = () => {
     setPhase('COMPLETE')
   }
 
+  /**
+   * Finalizes the gig results, updates global state, and transitions back to Overworld.
+   * Checks for bankruptcy condition.
+   */
   const handleContinue = () => {
     // Bankruptcy check: If net causes negative balance, GAME OVER
     // Logic: player.money + financials.net < 0

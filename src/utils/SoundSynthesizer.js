@@ -1,3 +1,6 @@
+/**
+ * A lightweight Web Audio API synthesizer for sound effects (hits, misses, UI).
+ */
 export class SoundSynthesizer {
   constructor() {
     this.ctx = null
@@ -6,6 +9,9 @@ export class SoundSynthesizer {
     this.muted = false
   }
 
+  /**
+   * Initializes the AudioContext and master gain node.
+   */
   init() {
     if (!this.ctx) {
       const AudioContext = window.AudioContext || window.webkitAudioContext
@@ -18,6 +24,10 @@ export class SoundSynthesizer {
     }
   }
 
+  /**
+   * Sets the master volume.
+   * @param {number} vol - Volume between 0 and 1.
+   */
   setVolume(vol) {
     this.volume = vol
     if (this.masterGain && !this.muted) {
@@ -25,6 +35,10 @@ export class SoundSynthesizer {
     }
   }
 
+  /**
+   * Mutes or unmutes the synthesizer.
+   * @param {boolean} muted - Mute state.
+   */
   setMute(muted) {
     this.muted = muted
     if (this.masterGain) {
@@ -37,6 +51,9 @@ export class SoundSynthesizer {
     }
   }
 
+  /**
+   * Plays a success "Hit" sound.
+   */
   playHit() {
     if (!this.ctx) return
     const osc = this.ctx.createOscillator()
@@ -56,6 +73,9 @@ export class SoundSynthesizer {
     osc.stop(this.ctx.currentTime + 0.1)
   }
 
+  /**
+   * Plays a failure "Miss" sound.
+   */
   playMiss() {
     if (!this.ctx) return
     const osc = this.ctx.createOscillator()
@@ -75,6 +95,9 @@ export class SoundSynthesizer {
     osc.stop(this.ctx.currentTime + 0.3)
   }
 
+  /**
+   * Plays a generic UI menu click sound.
+   */
   playMenu() {
     if (!this.ctx) return
     const osc = this.ctx.createOscillator()
@@ -93,6 +116,9 @@ export class SoundSynthesizer {
     osc.stop(this.ctx.currentTime + 0.05)
   }
 
+  /**
+   * Plays a travel/engine rumble sound.
+   */
   playTravel() {
     if (!this.ctx) return
     // Simple low rumble
@@ -113,6 +139,10 @@ export class SoundSynthesizer {
     osc.stop(this.ctx.currentTime + 1.0)
   }
 
+  /**
+   * Triggers a sound effect by key.
+   * @param {string} key - The key of the sound to play.
+   */
   play(key) {
     if (this.ctx && this.ctx.state === 'suspended') {
       this.ctx.resume()
@@ -136,6 +166,9 @@ export class SoundSynthesizer {
     }
   }
 
+  /**
+   * Closes the AudioContext.
+   */
   dispose() {
     if (this.ctx) {
       this.ctx.close()

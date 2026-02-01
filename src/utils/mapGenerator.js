@@ -1,19 +1,33 @@
 // Generates a directed acyclic graph (DAG) for the tour
 import { ALL_VENUES } from '../data/venues.js'
 
+/**
+ * Procedural generation for the game map using a Directed Acyclic Graph (DAG).
+ */
 export class MapGenerator {
+  /**
+   * Creates a new MapGenerator instance.
+   * @param {number} seed - The seed for the random number generator.
+   */
   constructor(seed) {
     this.seed = seed || Date.now()
   }
 
-  // Linear Congruential Generator for seeded random
+  /**
+   * Linear Congruential Generator for seeded random numbers.
+   * @returns {number} A float between 0 and 1.
+   */
   random() {
     this.seed = (this.seed * 9301 + 49297) % 233280
     return this.seed / 233280
   }
 
-  // Generate a run map
-  // Structure: Array of Layers. Each Layer has Nodes. Each Node has connections to next layer.
+  /**
+   * Generates a tour map with layers of nodes.
+   * Structure: Array of Layers. Each Layer has Nodes. Each Node has connections to next layer.
+   * @param {number} [depth=10] - The number of layers in the map.
+   * @returns {object} The generated map object containing layers, nodes, and connections.
+   */
   generateMap(depth = 10) {
     const map = {
       layers: [],
@@ -118,6 +132,12 @@ export class MapGenerator {
     return map
   }
 
+  /**
+   * Picks a random subset of items from an array.
+   * @param {Array} arr - The source array.
+   * @param {number} count - The number of items to pick.
+   * @returns {Array} A new array with the selected items.
+   */
   pickRandomSubset(arr, count) {
     const shuffled = [...arr].sort(() => this.random() - 0.5)
     return shuffled.slice(0, count)

@@ -5,6 +5,10 @@ import { PixiStage } from '../components/PixiStage'
 import { GigHUD } from '../components/GigHUD'
 import { IMG_PROMPTS, getGenImageUrl } from '../utils/imageGen'
 
+/**
+ * The core Rhythm Game scene.
+ * Orchestrates audio, visualizers (PixiJS), and game logic.
+ */
 export const Gig = () => {
   const { currentGig, changeScene, addToast, activeEvent, setActiveEvent } =
     useGameState()
@@ -22,6 +26,10 @@ export const Gig = () => {
 
   // Keyboard Event Handling
   useEffect(() => {
+    /**
+     * Handles key press events for rhythm inputs and pause menu.
+     * @param {KeyboardEvent} e
+     */
     const handleKeyDown = e => {
       if (e.repeat) return
 
@@ -66,6 +74,10 @@ export const Gig = () => {
       }
     }
 
+    /**
+     * Handles key release events to stop input.
+     * @param {KeyboardEvent} e
+     */
     const handleKeyUp = e => {
       const laneIndex = gameStateRef.current.lanes.findIndex(
         l => l.key === e.key
@@ -91,6 +103,10 @@ export const Gig = () => {
     addToast
   ])
 
+  /**
+   * Triggers a CSS animation on the corresponding band member DOM element.
+   * @param {number} laneIndex
+   */
   const triggerBandAnimation = laneIndex => {
     const memberEl = document.getElementById(`band-member-${laneIndex}`)
     if (memberEl) {
@@ -101,11 +117,19 @@ export const Gig = () => {
   }
 
   // Touch/Mouse Input Handlers for Columns
+  /**
+   * Handles touch/mouse down on a lane column.
+   * @param {number} laneIndex
+   */
   const handleTouchStart = laneIndex => {
     actions.registerInput(laneIndex, true)
     triggerBandAnimation(laneIndex)
   }
 
+  /**
+   * Handles touch/mouse up on a lane column.
+   * @param {number} laneIndex
+   */
   const handleTouchEnd = laneIndex => {
     actions.registerInput(laneIndex, false)
   }

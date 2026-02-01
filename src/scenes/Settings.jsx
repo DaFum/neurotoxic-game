@@ -3,6 +3,9 @@ import { useGameState } from '../context/GameState'
 import { audioManager } from '../utils/AudioManager'
 import { GlitchButton } from '../ui/GlitchButton'
 
+/**
+ * Settings scene for configuring audio, visuals, and data management.
+ */
 export const Settings = () => {
   const { changeScene, settings, updateSettings, deleteSave } = useGameState()
 
@@ -11,27 +14,44 @@ export const Settings = () => {
   const [sfxVol, setSfxVol] = useState(audioManager.sfxVolume)
   const [isMuted, setIsMuted] = useState(audioManager.muted)
 
+  /**
+   * Updates music volume state and audio engine.
+   * @param {React.ChangeEvent<HTMLInputElement>} e
+   */
   const handleMusicChange = e => {
     const val = parseFloat(e.target.value)
     setMusicVol(val)
     audioManager.setMusicVolume(val)
   }
 
+  /**
+   * Updates SFX volume state and audio engine.
+   * @param {React.ChangeEvent<HTMLInputElement>} e
+   */
   const handleSFXChange = e => {
     const val = parseFloat(e.target.value)
     setSfxVol(val)
     audioManager.setSFXVolume(val)
   }
 
+  /**
+   * Toggles the mute state.
+   */
   const handleMute = () => {
     const muted = audioManager.toggleMute()
     setIsMuted(muted)
   }
 
+  /**
+   * Toggles the CRT filter effect.
+   */
   const handleCRT = () => {
     updateSettings({ crtEnabled: !settings.crtEnabled })
   }
 
+  /**
+   * Prompts for confirmation and deletes the save file.
+   */
   const handleDeleteSave = () => {
     if (window.confirm('ARE YOU SURE? THIS WILL ERASE ALL PROGRESS.')) {
       deleteSave()

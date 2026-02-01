@@ -71,6 +71,12 @@ export const generatePostOptions = gigResult => {
   return options
 }
 
+/**
+ * Resolves the outcome of a social media post based on a random roll.
+ * @param {object} postOption - The selected post option.
+ * @param {number} diceRoll - A random number between 0 and 1.
+ * @returns {object} The result containing success status, follower gain, and message.
+ */
 export const resolvePost = (postOption, diceRoll) => {
   const isViral = diceRoll < postOption.viralChance
   const followerGain = isViral

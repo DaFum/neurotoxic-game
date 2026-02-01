@@ -1,5 +1,11 @@
 // Utility functions for Simulation <-> Action connection
 
+/**
+ * Derives dynamic game modifiers for the Gig scene based on band state and active toggles.
+ * @param {object} bandState - The current band state (members, harmony, etc.).
+ * @param {object} [gigModifiers={}] - Active PreGig modifiers (e.g. catering, soundcheck).
+ * @returns {object} An object containing numeric modifiers and active effect descriptions.
+ */
 export const getGigModifiers = (bandState, gigModifiers = {}) => {
   const modifiers = {
     hitWindowBonus: 0,
