@@ -11,7 +11,15 @@ import { UpgradeMenu } from '../ui/UpgradeMenu'
  * @returns {JSX.Element} The rendered menu.
  */
 export const MainMenu = () => {
-  const { changeScene, loadGame, addToast } = useGameState()
+  const {
+    changeScene,
+    loadGame,
+    addToast,
+    player,
+    updatePlayer,
+    band,
+    updateBand
+  } = useGameState()
   const [showUpgrades, setShowUpgrades] = React.useState(false)
 
   React.useEffect(() => {
@@ -29,6 +37,84 @@ export const MainMenu = () => {
     }
   }
 
+  const handleBuyUpgrade = upgrade => {
+    // Guard: Already owned
+    if ((player.van?.upgrades ?? []).includes(upgrade.id)) {
+      addToast('Upgrade already owned!', 'error')
+      return
+    }
+
+    if (player.fame >= upgrade.cost) {
+      const playerUpdates = {
+        fame: player.fame - upgrade.cost,
+        van: {
+          ...player.van,
+          upgrades: [...(player.van?.upgrades || []), upgrade.id]
+        }
+      }
+      const bandUpdates = {}
+
+      if (upgrade.effect) {
+        const eff = upgrade.effect
+        if (eff.type === 'stat_modifier') {
+          if (eff.stat === 'breakdown_chance') {
+            playerUpdates.van.breakdownChance = Math.max(
+              0,
+              (player.van.breakdownChance || 0.05) + eff.value
+            )
+          } else if (eff.stat === 'inventory_slots') {
+            bandUpdates.inventorySlots = Math.max(
+              0,
+              (band.inventorySlots || 0) + eff.value
+            )
+          } else if (eff.stat === 'guitar_difficulty') {
+            bandUpdates.performance = {
+              ...band.performance,
+              guitarDifficulty: Math.max(
+                0,
+                (band.performance?.guitarDifficulty || 1.0) + eff.value
+              )
+            }
+          } else if (eff.stat === 'drum_score_multiplier') {
+            bandUpdates.performance = {
+              ...band.performance,
+              drumMultiplier: Math.max(
+                0,
+                (band.performance?.drumMultiplier || 1.0) + eff.value
+              )
+            }
+          } else if (eff.stat === 'crowd_decay') {
+            bandUpdates.performance = {
+              ...band.performance,
+              crowdDecay: Math.max(
+                0,
+                (band.performance?.crowdDecay || 1.0) + eff.value
+              )
+            }
+          }
+        } else if (eff.type === 'start_bonus' && eff.stat === 'fame') {
+          playerUpdates.fame += eff.value
+        } else if (eff.type === 'passive') {
+          if (eff.effect === 'harmony_regen_travel') {
+            bandUpdates.harmonyRegenTravel = true
+          } else if (eff.effect === 'passive_followers') {
+            playerUpdates.passiveFollowers =
+              (player.passiveFollowers || 0) + (eff.value || 0)
+          }
+        }
+      }
+
+      updatePlayer(playerUpdates)
+      if (Object.keys(bandUpdates).length > 0) {
+        updateBand(bandUpdates)
+      }
+
+      addToast(`Purchased ${upgrade.name}!`, 'success')
+    } else {
+      addToast('Not enough Fame!', 'error')
+    }
+  }
+
   return (
     <div className='flex flex-col items-center justify-center h-full w-full bg-black z-50 relative overflow-hidden'>
       {/* Dynamic Background */}
@@ -40,7 +126,13 @@ export const MainMenu = () => {
       />
       <div className='absolute inset-0 z-0 bg-gradient-to-b from-black/0 to-black/90 pointer-events-none' />
 
-      {showUpgrades && <UpgradeMenu onClose={() => setShowUpgrades(false)} />}
+      {showUpgrades && (
+        <UpgradeMenu
+          onClose={() => setShowUpgrades(false)}
+          player={player}
+          onBuyUpgrade={handleBuyUpgrade}
+        />
+      )}
 
       <div className='relative z-10 flex flex-col items-center'>
         <motion.h1

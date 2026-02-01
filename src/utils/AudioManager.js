@@ -8,6 +8,7 @@ import { SoundSynthesizer } from '../systems/SoundSynthesizer.js'
 class AudioSystem {
   constructor() {
     this.music = null
+    this.currentSongId = null
     this.synth = new SoundSynthesizer()
     this.musicVolume = 0.5
     this.sfxVolume = 0.5
@@ -60,7 +61,7 @@ class AudioSystem {
    * @returns {object|null} The Howl instance or null if not initialized.
    */
   playMusic(songId) {
-    if (!this.initialized) return
+    if (!this.initialized) return null
 
     // Clean up previous instance explicitly
     if (this.music) {
@@ -70,6 +71,7 @@ class AudioSystem {
     }
 
     const src = this.getAudioSrc(songId)
+    this.currentSongId = songId
 
     this.music = new Howl({
       src: [src],
@@ -119,12 +121,10 @@ class AudioSystem {
     // Check if current music is the ambient track to avoid reloading stream
     // Note: checking loop() is weak if we change logic, better check source or id.
     // Assuming single music track architecture for now.
-    const ambientSrc = this.getAudioSrc('ambient')
     if (
       this.music &&
       this.music.playing() &&
-      this.music._src &&
-      this.music._src.includes(ambientSrc)
+      this.currentSongId === 'ambient'
     ) {
       return
     }
@@ -176,10 +176,11 @@ class AudioSystem {
    * @param {number} vol - Volume level between 0 and 1.
    */
   setMusicVolume(vol) {
-    this.musicVolume = vol
-    localStorage.setItem('neurotoxic_vol_music', vol)
+    const next = Math.min(1, Math.max(0, vol))
+    this.musicVolume = next
+    localStorage.setItem('neurotoxic_vol_music', next)
     if (this.music) {
-      this.music.volume(vol)
+      this.music.volume(next)
     }
   }
 
@@ -188,9 +189,10 @@ class AudioSystem {
    * @param {number} vol - Volume level between 0 and 1.
    */
   setSFXVolume(vol) {
-    this.sfxVolume = vol
-    localStorage.setItem('neurotoxic_vol_sfx', vol)
-    this.synth.setVolume(vol)
+    const next = Math.min(1, Math.max(0, vol))
+    this.sfxVolume = next
+    localStorage.setItem('neurotoxic_vol_sfx', next)
+    this.synth.setVolume(next)
   }
 
   /**
@@ -221,8 +223,9 @@ class AudioSystem {
    * @returns {string} The URL string.
    */
   getAudioSrc(songId) {
-    if (songId === 'ambient')
+    if (songId === 'ambient') {
       return 'https://moshhead-blackmetal.stream.laut.fm/moshhead-blackmetal'
+    }
     return 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
   }
 

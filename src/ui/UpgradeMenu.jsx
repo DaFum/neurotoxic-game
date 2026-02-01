@@ -1,91 +1,14 @@
 import React from 'react'
 import { UPGRADES_DB } from '../data/upgrades'
-import { useGameState } from '../context/GameState'
 
 /**
  * Menu interface for purchasing upgrades using Fame currency.
  * @param {object} props
  * @param {Function} props.onClose - Callback to close the menu.
+ * @param {object} props.player - The player state.
+ * @param {Function} props.onBuyUpgrade - Callback to buy an upgrade.
  */
-export const UpgradeMenu = ({ onClose }) => {
-  const { player, updatePlayer, band, updateBand, addToast } = useGameState()
-
-  /**
-   * Processes the purchase of an upgrade.
-   * @param {object} upgrade - The upgrade object.
-   */
-  const buyUpgrade = upgrade => {
-    // Guard: Already owned
-    if (player.van.upgrades.includes(upgrade.id)) {
-      addToast('Upgrade already owned!', 'error')
-      return
-    }
-
-    // The dispatch function would need to be retrieved from useGameState()
-    // For now, we'll assume a new function `applyUpgrade` exists in the context
-    // which internally dispatches a single action.
-
-    if (player.fame >= upgrade.cost) {
-      // Instead of multiple state calls, dispatch a single action
-      // with the upgrade details. The reducer will handle the logic.
-      // This is a conceptual change; assuming an `applyUpgrade` function is added to the context:
-      // applyUpgrade(upgrade);
-
-      // For a minimal change without a new reducer action, we can still improve it:
-      const playerUpdates = {
-        fame: player.fame - upgrade.cost,
-        van: { ...player.van, upgrades: [...player.van.upgrades, upgrade.id] }
-      }
-      const bandUpdates = {}
-
-      if (upgrade.effect) {
-        const eff = upgrade.effect
-        if (eff.type === 'stat_modifier') {
-          if (eff.stat === 'breakdown_chance') {
-            playerUpdates.van.breakdownChance =
-              (player.van.breakdownChance || 0.05) + eff.value
-          } else if (eff.stat === 'inventory_slots') {
-            bandUpdates.inventorySlots = (band.inventorySlots || 0) + eff.value
-          } else if (eff.stat === 'guitar_difficulty') {
-            bandUpdates.performance = {
-              ...band.performance,
-              guitarDifficulty:
-                (band.performance?.guitarDifficulty || 1.0) + eff.value
-            }
-          } else if (eff.stat === 'drum_score_multiplier') {
-            bandUpdates.performance = {
-              ...band.performance,
-              drumMultiplier:
-                (band.performance?.drumMultiplier || 1.0) + eff.value
-            }
-          } else if (eff.stat === 'crowd_decay') {
-            bandUpdates.performance = {
-              ...band.performance,
-              crowdDecay: (band.performance?.crowdDecay || 1.0) + eff.value
-            }
-          }
-        } else if (eff.type === 'start_bonus' && eff.stat === 'fame') {
-          playerUpdates.fame += eff.value
-        } else if (eff.type === 'passive') {
-          if (eff.effect === 'harmony_regen_travel') {
-            bandUpdates.harmonyRegenTravel = true
-          } else if (eff.effect === 'passive_followers') {
-            playerUpdates.passiveFollowers = (player.passiveFollowers || 0) + 5
-          }
-        }
-      }
-
-      updatePlayer(playerUpdates)
-      if (Object.keys(bandUpdates).length > 0) {
-        updateBand(bandUpdates)
-      }
-
-      addToast(`Purchased ${upgrade.name}!`, 'success')
-    } else {
-      addToast('Not enough Fame!', 'error')
-    }
-  }
-
+export const UpgradeMenu = ({ onClose, player, onBuyUpgrade }) => {
   return (
     <div className='absolute inset-0 bg-[var(--void-black)]/95 z-50 flex items-center justify-center p-8'>
       <div className='w-full max-w-4xl border-4 border-[var(--toxic-green)] p-8 overflow-y-auto max-h-[90vh]'>
@@ -123,7 +46,7 @@ export const UpgradeMenu = ({ onClose }) => {
                       </span>
                       <button
                         disabled={owned || player.fame < u.cost}
-                        onClick={() => buyUpgrade(u)}
+                        onClick={() => onBuyUpgrade(u)}
                         className={`px-3 py-1 text-sm font-bold uppercase
                                                   ${
                                                     owned

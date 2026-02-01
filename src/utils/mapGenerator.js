@@ -10,7 +10,8 @@ export class MapGenerator {
    * @param {number} seed - The seed for the random number generator.
    */
   constructor(seed) {
-    this.seed = seed || Date.now()
+    const s = Number(seed)
+    this.seed = Number.isFinite(s) ? s : Date.now()
   }
 
   /**
