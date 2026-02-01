@@ -40,11 +40,11 @@ jobs:
           # Use sudo to read root-owned files, but redirect as user to own the output
           # We use a distinct filename (super-linter-clean. log) to avoid conflicts with any root-owned super-linter.log in workspace
           if [ -f super-linter.log ]; then
-            sudo cat super-linter.log > super-linter-clean.log
+            sudo cat super-linter.log | sudo tee super-linter-clean.log > /dev/null
           elif [ -f /tmp/lint/super-linter.log ]; then
-            sudo cat /tmp/lint/super-linter.log > super-linter-clean.log
+            sudo cat /tmp/lint/super-linter.log | sudo tee super-linter-clean.log > /dev/null
           elif [ -f /github/super-linter.log ]; then
-            sudo cat /github/super-linter.log > super-linter-clean.log
+            sudo cat /github/super-linter.log | sudo tee super-linter-clean.log > /dev/null
           else
             echo "No super-linter log file found in common locations." > super-linter-clean.log
           fi

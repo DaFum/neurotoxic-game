@@ -150,7 +150,7 @@ const gameReducer = (state, action) => {
       return { ...state, gigModifiers: { ...state.gigModifiers, ...updates } }
     }
 
-    case 'LOAD_GAME':
+    case 'LOAD_GAME': {
       logger.info('GameState', 'Game Loaded')
 
       // Migration: energy -> catering
@@ -200,6 +200,7 @@ const gameReducer = (state, action) => {
         band: mergedBand,
         social: mergedSocial
       }
+    }
 
     case 'RESET_STATE':
       logger.info('GameState', 'State Reset (Debug)')
