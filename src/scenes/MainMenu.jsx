@@ -55,26 +55,38 @@ export const MainMenu = () => {
         const eff = upgrade.effect
         if (eff.type === 'stat_modifier') {
           if (eff.stat === 'breakdown_chance') {
-            playerUpdates.van.breakdownChance =
+            playerUpdates.van.breakdownChance = Math.max(
+              0,
               (player.van.breakdownChance || 0.05) + eff.value
+            )
           } else if (eff.stat === 'inventory_slots') {
-            bandUpdates.inventorySlots = (band.inventorySlots || 0) + eff.value
+            bandUpdates.inventorySlots = Math.max(
+              0,
+              (band.inventorySlots || 0) + eff.value
+            )
           } else if (eff.stat === 'guitar_difficulty') {
             bandUpdates.performance = {
               ...band.performance,
-              guitarDifficulty:
+              guitarDifficulty: Math.max(
+                0,
                 (band.performance?.guitarDifficulty || 1.0) + eff.value
+              )
             }
           } else if (eff.stat === 'drum_score_multiplier') {
             bandUpdates.performance = {
               ...band.performance,
-              drumMultiplier:
+              drumMultiplier: Math.max(
+                0,
                 (band.performance?.drumMultiplier || 1.0) + eff.value
+              )
             }
           } else if (eff.stat === 'crowd_decay') {
             bandUpdates.performance = {
               ...band.performance,
-              crowdDecay: (band.performance?.crowdDecay || 1.0) + eff.value
+              crowdDecay: Math.max(
+                0,
+                (band.performance?.crowdDecay || 1.0) + eff.value
+              )
             }
           }
         } else if (eff.type === 'start_bonus' && eff.stat === 'fame') {
@@ -83,7 +95,8 @@ export const MainMenu = () => {
           if (eff.effect === 'harmony_regen_travel') {
             bandUpdates.harmonyRegenTravel = true
           } else if (eff.effect === 'passive_followers') {
-            playerUpdates.passiveFollowers = (player.passiveFollowers || 0) + 5
+            playerUpdates.passiveFollowers =
+              (player.passiveFollowers || 0) + (eff.value || 0)
           }
         }
       }
