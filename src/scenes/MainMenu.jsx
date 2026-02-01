@@ -39,7 +39,7 @@ export const MainMenu = () => {
 
   const handleBuyUpgrade = upgrade => {
     // Guard: Already owned
-    if (player.van.upgrades.includes(upgrade.id)) {
+    if ((player.van?.upgrades ?? []).includes(upgrade.id)) {
       addToast('Upgrade already owned!', 'error')
       return
     }
@@ -47,7 +47,10 @@ export const MainMenu = () => {
     if (player.fame >= upgrade.cost) {
       const playerUpdates = {
         fame: player.fame - upgrade.cost,
-        van: { ...player.van, upgrades: [...player.van.upgrades, upgrade.id] }
+        van: {
+          ...player.van,
+          upgrades: [...(player.van?.upgrades || []), upgrade.id]
+        }
       }
       const bandUpdates = {}
 
