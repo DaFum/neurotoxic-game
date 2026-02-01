@@ -188,14 +188,21 @@ export const useRhythmGameLogic = () => {
       addToast('Gig initialization failed!', 'error')
       gameStateRef.current.running = false
     }
-  }, [band, gameMap?.nodes, player.currentNodeId, setlist, gigModifiers, addToast])
+  }, [
+    band,
+    gameMap?.nodes,
+    player.currentNodeId,
+    setlist,
+    gigModifiers,
+    addToast
+  ])
 
   useEffect(() => {
     initializeGigState()
 
     const audio = audioRef.current
     return () => {
-      hasInitializedRef.current = false; // Reset initialization flag on unmount
+      hasInitializedRef.current = false // Reset initialization flag on unmount
       if (gameOverTimerRef.current) {
         clearTimeout(gameOverTimerRef.current)
         gameOverTimerRef.current = null
@@ -355,7 +362,7 @@ export const useRhythmGameLogic = () => {
         return false
       }
     },
-    [activateToxicMode, combo, handleMiss, hasUpgrade]
+    [activateToxicMode, handleMiss, hasUpgrade]
   )
 
   /**
@@ -399,10 +406,10 @@ export const useRhythmGameLogic = () => {
 
       if (elapsed > state.totalDuration) {
         console.log('[RhythmGame] Gig Ended naturally.', {
-            elapsed,
-            totalDuration: state.totalDuration,
-            startTime: state.startTime,
-            now
+          elapsed,
+          totalDuration: state.totalDuration,
+          startTime: state.startTime,
+          now
         })
         state.running = false
         setLastGigStats(

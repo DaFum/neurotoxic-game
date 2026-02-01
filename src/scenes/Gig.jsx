@@ -14,9 +14,9 @@ export const Gig = () => {
     useGameState()
 
   React.useEffect(() => {
-    console.log('[Gig] Scene mounted. currentGig:', currentGig);
+    console.log('[Gig] Scene mounted. currentGig:', currentGig)
     if (!currentGig) {
-      console.error('[Gig] No currentGig found! Redirecting to OVERWORLD.');
+      console.error('[Gig] No currentGig found! Redirecting to OVERWORLD.')
       addToast('No gig active! Returning to map.', 'error')
       changeScene('OVERWORLD')
     }

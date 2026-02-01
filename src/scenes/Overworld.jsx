@@ -96,86 +96,107 @@ export const Overworld = () => {
    * Updates state, costs, and triggers arrival logic.
    * Accepts an optional explicitNode to bypass state latency issues.
    */
-  const onTravelComplete = useCallback((explicitNode = null) => {
-    // If explicitNode is event (from motion), ignore it.
-    const target = (explicitNode && explicitNode.id) ? explicitNode : travelTarget;
+  const onTravelComplete = useCallback(
+    (explicitNode = null) => {
+      // If explicitNode is event (from motion), ignore it.
+      const target =
+        explicitNode && explicitNode.id ? explicitNode : travelTarget
 
-    logger.info('Overworld', 'onTravelComplete triggered', {
+      logger.info('Overworld', 'onTravelComplete triggered', {
         travelCompleted: travelCompletedRef.current,
         hasTarget: !!target,
         targetId: target?.id
-    })
+      })
 
-    if (travelCompletedRef.current) return
-    travelCompletedRef.current = true
+      if (travelCompletedRef.current) return
+      travelCompletedRef.current = true
 
-    if (!target) {
-        logger.error('Overworld', 'Travel complete but no target! Resetting state.')
+      if (!target) {
+        logger.error(
+          'Overworld',
+          'Travel complete but no target! Resetting state.'
+        )
         setIsTraveling(false)
         return
-    }
+      }
 
-    const node = target;
+      const node = target
 
-    // Re-calculate and re-validate costs before deducting
-    const { fuelLiters, totalCost } = calculateTravelExpenses(node)
+      // Re-calculate and re-validate costs before deducting
+      const { fuelLiters, totalCost } = calculateTravelExpenses(node)
 
-    // Check affordability again (safeguard)
-    if (player.money < totalCost || (player.van?.fuel ?? 0) < fuelLiters) {
+      // Check affordability again (safeguard)
+      if (player.money < totalCost || (player.van?.fuel ?? 0) < fuelLiters) {
         addToast('Error: Insufficient resources upon arrival.', 'error')
         setIsTraveling(false)
         setTravelTarget(null)
         return
-    }
+      }
 
-    updatePlayer({
-      money: Math.max(0, player.money - totalCost),
-      van: {
-        ...player.van,
-        fuel: Math.max(0, (player.van?.fuel ?? 0) - fuelLiters)
-      },
-      location: node.venue.name,
-      currentNodeId: node.id,
-      day: player.day + 1
-    })
+      updatePlayer({
+        money: Math.max(0, player.money - totalCost),
+        van: {
+          ...player.van,
+          fuel: Math.max(0, (player.van?.fuel ?? 0) - fuelLiters)
+        },
+        location: node.venue.name,
+        currentNodeId: node.id,
+        day: player.day + 1
+      })
 
-    if (hasUpgrade('van_sound_system')) {
-      updateBand({ harmony: Math.min(100, band.harmony + 5) })
-    }
+      if (hasUpgrade('van_sound_system')) {
+        updateBand({ harmony: Math.min(100, band.harmony + 5) })
+      }
 
-    setIsTraveling(false)
-    setTravelTarget(null)
+      setIsTraveling(false)
+      setTravelTarget(null)
 
-    // Trigger Events
-    const eventHappened = triggerEvent('transport', 'travel')
-    if (!eventHappened) {
-      const bandEvent = triggerEvent('band', 'travel')
-      if (!bandEvent) {
-        // Node Type Handling
-        if (node.type === 'REST_STOP') {
-          const newMembers = band.members.map(m => ({
-            ...m,
-            stamina: Math.min(100, m.stamina + 20),
-            mood: Math.min(100, m.mood + 10)
-          }))
-          updateBand({
-            members: newMembers
-          })
-          addToast('Rested at stop. Band feels better.', 'success')
-        } else if (node.type === 'SPECIAL') {
-          const specialEvent = triggerEvent('special')
-          if (!specialEvent) {
-            addToast('A mysterious place, but nothing happened.', 'info')
+      // Trigger Events
+      const eventHappened = triggerEvent('transport', 'travel')
+      if (!eventHappened) {
+        const bandEvent = triggerEvent('band', 'travel')
+        if (!bandEvent) {
+          // Node Type Handling
+          if (node.type === 'REST_STOP') {
+            const newMembers = band.members.map(m => ({
+              ...m,
+              stamina: Math.min(100, m.stamina + 20),
+              mood: Math.min(100, m.mood + 10)
+            }))
+            updateBand({
+              members: newMembers
+            })
+            addToast('Rested at stop. Band feels better.', 'success')
+          } else if (node.type === 'SPECIAL') {
+            const specialEvent = triggerEvent('special')
+            if (!specialEvent) {
+              addToast('A mysterious place, but nothing happened.', 'info')
+            }
+          } else {
+            // Default: GIG
+            logger.info('Overworld', 'Starting Gig at destination', {
+              venue: node.venue.name
+            })
+            startGig(node.venue)
           }
-        } else {
-          // Default: GIG
-          logger.info('Overworld', 'Starting Gig at destination', { venue: node.venue.name })
-          startGig(node.venue)
         }
       }
-    }
-  }, [travelTarget, player.currentNodeId, player.money, player.van, player.day, band, hasUpgrade, updatePlayer, updateBand, triggerEvent, startGig, addToast])
-
+    },
+    [
+      travelTarget,
+      player.currentNodeId,
+      player.money,
+      player.van,
+      player.day,
+      band,
+      hasUpgrade,
+      updatePlayer,
+      updateBand,
+      triggerEvent,
+      startGig,
+      addToast
+    ]
+  )
 
   /**
    * Initiates the travel sequence to a selected node.
@@ -192,7 +213,9 @@ export const Overworld = () => {
     // Allow interaction with current node (Enter Gig)
     if (node.id === player.currentNodeId) {
       if (node.type === 'GIG') {
-        logger.info('Overworld', 'Entering current node Gig', { venue: node.venue.name })
+        logger.info('Overworld', 'Entering current node Gig', {
+          venue: node.venue.name
+        })
         startGig(node.venue)
       } else {
         addToast(`You are at ${node.venue.name}.`, 'info')
@@ -232,19 +255,19 @@ export const Overworld = () => {
     setIsTraveling(true)
 
     try {
-        audioManager.playSFX('travel')
+      audioManager.playSFX('travel')
     } catch (e) {
-        console.error('SFX Error:', e)
+      console.error('SFX Error:', e)
     }
 
     // Direct Timeout Failsafe - bypasses React state lag or useEffect timing issues
     // We pass 'node' explicitly to onTravelComplete to ensure it has the data
     // Executing immediately via minimal timeout to ensure state update but prevent freeze
     window.setTimeout(() => {
-        if (!travelCompletedRef.current) {
-            onTravelComplete(node);
-        }
-    }, 10);
+      if (!travelCompletedRef.current) {
+        onTravelComplete(node)
+      }
+    }, 10)
   }
 
   // Keep a ref to the latest onTravelComplete (still useful for future logic)
@@ -444,7 +467,7 @@ export const Overworld = () => {
             className='absolute z-[60] pointer-events-none transition-all duration-[1500ms] ease-in-out'
             style={{
               left: `${travelTarget.x}%`,
-              top: `${travelTarget.y}%`,
+              top: `${travelTarget.y}%`
             }}
           >
             <img

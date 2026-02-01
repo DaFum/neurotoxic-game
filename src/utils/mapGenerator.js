@@ -170,8 +170,8 @@ export class MapGenerator {
           if (dist < minDistance) {
             if (dist < 0.1) {
               // Exact overlap (or very close), push randomly
-              dx = (this.random() - 0.5) || 0.1
-              dy = (this.random() - 0.5) || 0.1
+              dx = this.random() - 0.5 || 0.1
+              dy = this.random() - 0.5 || 0.1
               dist = Math.sqrt(dx * dx + dy * dy)
             }
 
