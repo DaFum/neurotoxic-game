@@ -1,6 +1,6 @@
 import { Howl, Howler } from 'howler'
 import * as Tone from 'tone'
-import { SoundSynthesizer } from './SoundSynthesizer.js'
+import { SoundSynthesizer } from '../systems/SoundSynthesizer.js'
 
 /**
  * Manages global audio playback including music (Howler.js) and SFX (SoundSynthesizer/Tone.js).

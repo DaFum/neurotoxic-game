@@ -114,7 +114,7 @@ export const Overworld = () => {
     }
 
     // Calculate Costs
-    const { dist, totalCost } = calculateTravelExpenses(node)
+    const { dist, totalCost, fuelLiters } = calculateTravelExpenses(node)
     logger.debug('Overworld', 'Travel cost calculated', { dist, totalCost })
 
     addToast(
@@ -124,6 +124,11 @@ export const Overworld = () => {
 
     if (player.money < totalCost) {
       addToast('Not enough money for gas and food!', 'error')
+      return
+    }
+
+    if ((player.van?.fuel ?? 0) < fuelLiters) {
+      addToast('Not enough fuel in the tank!', 'error')
       return
     }
 
@@ -162,9 +167,22 @@ export const Overworld = () => {
       return
     }
 
+    if ((player.van?.fuel ?? 0) < fuelLiters) {
+      console.error(
+        'Travel completed but insufficient fuel. State might be inconsistent.'
+      )
+      addToast('Insufficient fuel for travel costs!', 'error')
+      setIsTraveling(false)
+      setTravelTarget(null)
+      return
+    }
+
     updatePlayer({
-      money: player.money - totalCost,
-      van: { ...player.van, fuel: Math.max(0, player.van.fuel - fuelLiters) },
+      money: Math.max(0, player.money - totalCost),
+      van: {
+        ...player.van,
+        fuel: Math.max(0, (player.van?.fuel ?? 0) - fuelLiters)
+      },
       location: node.venue.name,
       currentNodeId: node.id,
       day: player.day + 1
@@ -182,7 +200,21 @@ export const Overworld = () => {
     if (!eventHappened) {
       const bandEvent = triggerEvent('band', 'travel')
       if (!bandEvent) {
-        startGig(node.venue)
+        // Node Type Handling
+        if (node.type === 'REST_STOP') {
+          updateBand({
+            members: { staminaChange: 20, moodChange: 10 }
+          })
+          addToast('Rested at stop. Band feels better.', 'success')
+        } else if (node.type === 'SPECIAL') {
+          const specialEvent = triggerEvent('special')
+          if (!specialEvent) {
+            addToast('A mysterious place, but nothing happened.', 'info')
+          }
+        } else {
+          // Default: GIG
+          startGig(node.venue)
+        }
       }
     }
   }

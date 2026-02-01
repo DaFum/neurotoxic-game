@@ -54,7 +54,9 @@ class Logger {
    * @private
    */
   _emit() {
-    this.listeners.forEach(cb => cb(this.logs))
+    this.listeners.forEach(cb => {
+      cb(this.logs)
+    })
   }
 
   /**

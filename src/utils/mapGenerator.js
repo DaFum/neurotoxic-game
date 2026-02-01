@@ -67,12 +67,19 @@ export class MapGenerator {
         // Pick random venue
         const venue = venuePool[Math.floor(this.random() * venuePool.length)]
 
+        // Determine Node Type based on probability
+        // ~70% GIG, ~20% REST_STOP, ~10% SPECIAL
+        const typeRoll = this.random()
+        let nodeType = 'GIG'
+        if (typeRoll > 0.9) nodeType = 'SPECIAL'
+        else if (typeRoll > 0.7) nodeType = 'REST_STOP'
+
         const node = {
           id: `node_${i}_${j}`,
           layer: i,
           venue, // Note: Venue references might be duplicated across layers, which is okay for "touring"
           status: 'locked',
-          type: 'GIG' // Could be 'SHOP', 'EVENT' later
+          type: nodeType
         }
         layerNodes.push(node)
         map.nodes[node.id] = node
@@ -139,7 +146,11 @@ export class MapGenerator {
    * @returns {Array} A new array with the selected items.
    */
   pickRandomSubset(arr, count) {
-    const shuffled = [...arr].sort(() => this.random() - 0.5)
+    const shuffled = [...arr]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(this.random() * (i + 1))
+      ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
     return shuffled.slice(0, count)
   }
 }

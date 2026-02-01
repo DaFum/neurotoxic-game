@@ -78,15 +78,19 @@ export const generatePostOptions = gigResult => {
  * @returns {object} The result containing success status, follower gain, and message.
  */
 export const resolvePost = (postOption, diceRoll) => {
-  const isViral = diceRoll < postOption.viralChance
+  const viralChance = postOption?.viralChance ?? 0
+  const baseFollowers = postOption?.effect?.followers ?? 0
+  const platform = postOption?.effect?.platform ?? 'unknown'
+
+  const isViral = diceRoll < viralChance
   const followerGain = isViral
-    ? postOption.effect.followers * 10
-    : postOption.effect.followers
+    ? baseFollowers * 10
+    : baseFollowers
 
   return {
     success: isViral,
     followers: followerGain,
-    platform: postOption.effect.platform,
+    platform,
     message: isViral
       ? 'IT WENT VIRAL! Notifications exploding!'
       : 'Solid engagement. Fans are happy.'
