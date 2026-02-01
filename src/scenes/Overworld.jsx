@@ -127,7 +127,7 @@ export const Overworld = () => {
       return
     }
 
-    if (player.van.fuel < fuelLiters) {
+    if ((player.van?.fuel ?? 0) < fuelLiters) {
       addToast('Not enough fuel in the tank!', 'error')
       return
     }
@@ -167,7 +167,7 @@ export const Overworld = () => {
       return
     }
 
-    if (player.van.fuel < fuelLiters) {
+    if ((player.van?.fuel ?? 0) < fuelLiters) {
       console.error(
         'Travel completed but insufficient fuel. State might be inconsistent.'
       )
@@ -179,7 +179,10 @@ export const Overworld = () => {
 
     updatePlayer({
       money: Math.max(0, player.money - totalCost),
-      van: { ...player.van, fuel: Math.max(0, player.van.fuel - fuelLiters) },
+      van: {
+        ...player.van,
+        fuel: Math.max(0, (player.van?.fuel ?? 0) - fuelLiters)
+      },
       location: node.venue.name,
       currentNodeId: node.id,
       day: player.day + 1

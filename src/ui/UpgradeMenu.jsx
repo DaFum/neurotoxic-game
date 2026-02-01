@@ -95,7 +95,7 @@ export const UpgradeMenu = ({ onClose }) => {
           </h2>
           <button
             onClick={onClose}
-            className='text-[var(--blood-red)] font-bold border border-[var(--blood-red)] px-4 py-2 hover:bg-[var(--blood-red)] hover:text-black'
+            className='text-[var(--blood-red)] font-bold border border-[var(--blood-red)] px-4 py-2 hover:bg-[var(--blood-red)] hover:text-[var(--void-black)]'
           >
             CLOSE
           </button>
