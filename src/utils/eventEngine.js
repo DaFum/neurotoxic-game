@@ -96,9 +96,17 @@ const processEffect = (eff, delta) => {
       break
     case 'item':
       if (eff.item) {
-        const val = eff.value !== undefined ? eff.value : true
         if (!delta.band.inventory) delta.band.inventory = {}
-        delta.band.inventory[eff.item] = val
+        if (typeof eff.value === 'number') {
+          const current =
+            typeof delta.band.inventory[eff.item] === 'number'
+              ? delta.band.inventory[eff.item]
+              : 0
+          delta.band.inventory[eff.item] = Math.max(0, current + eff.value)
+        } else {
+          const val = eff.value !== undefined ? eff.value : true
+          delta.band.inventory[eff.item] = val
+        }
       }
       break
     case 'unlock':
@@ -117,12 +125,25 @@ const processEffect = (eff, delta) => {
 }
 
 export const eventEngine = {
+  /**
+   * Checks for and selects a random event from a specific category.
+   * @param {string} category - The category of events to check (e.g., 'travel', 'gig').
+   * @param {object} gameState - The current game state.
+   * @param {string|null} [triggerPoint=null] - Optional specific trigger point filter.
+   * @returns {object|null} The selected event object or null if none found.
+   */
   checkEvent: (category, gameState, triggerPoint = null) => {
     const pool = EVENTS_DB[category]
     if (!pool) return null
     return selectEvent(pool, gameState, triggerPoint)
   },
 
+  /**
+   * Resolves a player's choice for an event, handling skill checks and immediate effects.
+   * @param {object} choice - The choice object selected by the player.
+   * @param {object} gameState - The current game state.
+   * @returns {object} The result object containing effects and outcomes.
+   */
   resolveChoice: (choice, gameState) => {
     let result = null
 
@@ -158,6 +179,12 @@ export const eventEngine = {
     return result
   },
 
+  /**
+   * Post-processes event options to add dynamic context-sensitive choices (e.g. inventory usage).
+   * @param {object} event - The event object.
+   * @param {object} gameState - The current game state.
+   * @returns {object} The event object with processed options.
+   */
   processOptions: (event, gameState) => {
     if (!event || !event.options) return event
 
@@ -190,6 +217,11 @@ export const eventEngine = {
     return processedEvent
   },
 
+  /**
+   * Converts a resolution result into a state delta object for the reducer.
+   * @param {object} result - The result object from resolveChoice.
+   * @returns {object|null} A delta object representing state changes, or null.
+   */
   applyResult: result => {
     if (!result) return null
 

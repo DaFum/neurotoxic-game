@@ -3,10 +3,16 @@ import { useGameState } from '../context/GameState'
 import { Map, Users, DollarSign, Volume2, VolumeX } from 'lucide-react'
 import { audioManager } from '../utils/AudioManager'
 
+/**
+ * Heads-Up Display overlay showing player stats, band status, and volume controls.
+ */
 export const HUD = () => {
   const { player, band } = useGameState()
   const [muted, setMuted] = useState(false)
 
+  /**
+   * Toggles global audio mute.
+   */
   const toggleMute = () => {
     const isMuted = audioManager.toggleMute()
     setMuted(isMuted)

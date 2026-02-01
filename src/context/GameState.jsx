@@ -85,6 +85,12 @@ const initialState = {
 }
 
 // Reducer Function
+/**
+ * Main state reducer for the game.
+ * @param {object} state - Current state.
+ * @param {object} action - Action with type and payload.
+ * @returns {object} New state.
+ */
 const gameReducer = (state, action) => {
   // logger.debug('GameState', `Action: ${action.type}`, action.payload); // Too spammy? Maybe INFO for major actions
 
@@ -150,7 +156,7 @@ const gameReducer = (state, action) => {
       return { ...state, gigModifiers: { ...state.gigModifiers, ...updates } }
     }
 
-    case 'LOAD_GAME':
+    case 'LOAD_GAME': {
       logger.info('GameState', 'Game Loaded')
 
       // Migration: energy -> catering
@@ -175,7 +181,7 @@ const gameReducer = (state, action) => {
         ...loadedState.player,
         van: {
           ...initialState.player.van,
-          ...(loadedState.player?.van)
+          ...loadedState.player?.van
         }
       }
       const mergedBand = {
@@ -200,6 +206,7 @@ const gameReducer = (state, action) => {
         band: mergedBand,
         social: mergedSocial
       }
+    }
 
     case 'RESET_STATE':
       logger.info('GameState', 'State Reset (Debug)')
@@ -240,6 +247,11 @@ const gameReducer = (state, action) => {
 
 const GameStateContext = createContext()
 
+/**
+ * Global State Provider covering Player, Band, Inventory, and Scene Management.
+ * @param {object} props
+ * @param {React.ReactNode} props.children
+ */
 export const GameStateProvider = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, initialState)
 
@@ -253,36 +265,94 @@ export const GameStateProvider = ({ children }) => {
   }, [state.gameMap])
 
   // Actions wrappers to maintain API
+
+  /**
+   * Transitions the game to a different scene.
+   * @param {string} scene - The target scene name (e.g., 'OVERWORLD').
+   */
   const changeScene = scene =>
     dispatch({ type: 'CHANGE_SCENE', payload: scene })
+
+  /**
+   * Updates player state properties (money, fame, etc.).
+   * @param {object} updates - Object containing keys to update.
+   */
   const updatePlayer = updates =>
     dispatch({ type: 'UPDATE_PLAYER', payload: updates })
+
+  /**
+   * Updates band state properties (members, harmony, inventory).
+   * @param {object} updates - Object containing keys to update.
+   */
   const updateBand = updates =>
     dispatch({ type: 'UPDATE_BAND', payload: updates })
+
+  /**
+   * Updates social media metrics.
+   * @param {object} updates - Object containing keys to update.
+   */
   const updateSocial = updates =>
     dispatch({ type: 'UPDATE_SOCIAL', payload: updates })
+
+  /**
+   * Updates global settings.
+   * @param {object} updates - Object containing keys to update.
+   */
   const updateSettings = updates => {
-    // Assuming simple merge for now.
-    // Ideally we would dispatch UPDATE_SETTINGS, but we can piggyback on LOAD_GAME or create a new action if strictness needed.
-    // Since settings are part of state, let's create a quick reducer case or just mutate for this prototype (bad practice)
-    // Let's add UPDATE_SETTINGS case locally? No, can't change reducer inside provider body.
-    // Actually, I missed adding UPDATE_SETTINGS to reducer. Let's fix that in next step or just reuse a generic update.
-    // For now, I will use a direct dispatch with a new type and add it to reducer in same file if I could, but I can't edit 2 places easily with merge_diff unless I do big block.
-    // I'll add the case in the reducer block above first.
     dispatch({ type: 'UPDATE_SETTINGS', payload: updates })
   }
+
+  /**
+   * Sets the generated game map.
+   * @param {object} map - The map object.
+   */
   const setGameMap = map => dispatch({ type: 'SET_MAP', payload: map })
+
+  /**
+   * Sets the current gig data context.
+   * @param {object} gig - The gig data object.
+   */
   const setCurrentGig = gig => dispatch({ type: 'SET_GIG', payload: gig })
+
+  /**
+   * Initiates the gig sequence.
+   * @param {object} venue - The venue object.
+   */
   const startGig = venue => dispatch({ type: 'START_GIG', payload: venue })
+
+  /**
+   * Updates the active setlist.
+   * @param {Array} list - Array of song objects.
+   */
   const setSetlist = list => dispatch({ type: 'SET_SETLIST', payload: list })
+
+  /**
+   * Stores the statistics from the last played gig.
+   * @param {object} stats - The stats object.
+   */
   const setLastGigStats = stats =>
     dispatch({ type: 'SET_LAST_GIG_STATS', payload: stats })
+
+  /**
+   * Sets the currently active event (blocking modal).
+   * @param {object} event - The event object or null.
+   */
   const setActiveEvent = event =>
     dispatch({ type: 'SET_ACTIVE_EVENT', payload: event })
+
+  /**
+   * Updates gig modifiers (toggles like catering, promo).
+   * @param {object|Function} payload - The new modifiers or an updater function.
+   */
   const setGigModifiers = payload => {
     dispatch({ type: 'SET_GIG_MODIFIERS', payload })
   }
 
+  /**
+   * Adds a toast notification.
+   * @param {string} message - The message to display.
+   * @param {string} [type='info'] - Type of toast (info, success, error, warning).
+   */
   const addToast = (message, type = 'info') => {
     const id = Date.now()
     dispatch({ type: 'ADD_TOAST', payload: { id, message, type } })
@@ -291,28 +361,50 @@ export const GameStateProvider = ({ children }) => {
     }, 3000)
   }
 
+  /**
+   * Checks if the player owns a specific van upgrade.
+   * @param {string} upgradeId - The ID of the upgrade.
+   * @returns {boolean} True if owned.
+   */
   const hasUpgrade = upgradeId => state.player.van.upgrades.includes(upgradeId)
 
+  /**
+   * Consumes a consumable item from band inventory.
+   * @param {string} itemType - The item key (e.g., 'strings').
+   */
   const consumeItem = itemType => {
     dispatch({ type: 'CONSUME_ITEM', payload: itemType })
   }
 
+  /**
+   * Advances the game day, deducting living costs and updating simulations.
+   */
   const advanceDay = () => {
+    const nextDay = state.player.day + 1
     dispatch({ type: 'ADVANCE_DAY' })
-    addToast(`Day ${state.player.day + 1}: Living Costs Deducted.`, 'info')
+    addToast(`Day ${nextDay}: Living Costs Deducted.`, 'info')
   }
 
+  /**
+   * Resets the game state to initial values.
+   */
   const resetState = () => {
     dispatch({ type: 'RESET_STATE' })
   }
 
   // Persistence
+  /**
+   * Deletes the save file and reloads the application.
+   */
   const deleteSave = () => {
     localStorage.removeItem('neurotoxic_v3_save')
     changeScene('MENU')
     window.location.reload()
   }
 
+  /**
+   * Persists the current state to localStorage.
+   */
   const saveGame = () => {
     const saveData = { ...state, timestamp: Date.now() }
     try {
@@ -326,6 +418,10 @@ export const GameStateProvider = ({ children }) => {
     }
   }
 
+  /**
+   * Loads the game state from localStorage.
+   * @returns {boolean} True if load was successful.
+   */
   const loadGame = () => {
     try {
       const saved = localStorage.getItem('neurotoxic_v3_save')
@@ -353,6 +449,12 @@ export const GameStateProvider = ({ children }) => {
   }
 
   // Event System Integration
+  /**
+   * Triggers a random event from a category if conditions are met.
+   * @param {string} category - The event category (e.g., 'travel').
+   * @param {string|null} [triggerPoint=null] - Specific trigger point.
+   * @returns {boolean} True if an event was triggered.
+   */
   const triggerEvent = (category, triggerPoint = null) => {
     // Harte Regel: Events nur in Overworld/PreGig/PostGig, oder wenn explizit erlaubt (z.B. Pause)
     // "GIG" scene should not be interrupted unless critical logic allows it.
@@ -388,6 +490,11 @@ export const GameStateProvider = ({ children }) => {
     return false
   }
 
+  /**
+   * Resolves an event choice and applies its effects.
+   * @param {object} choice - The selected choice object.
+   * @returns {object} Outcome text and description.
+   */
   const resolveEvent = choice => {
     // 1. Validation
     if (!choice) {
@@ -502,4 +609,8 @@ export const GameStateProvider = ({ children }) => {
   )
 }
 
+/**
+ * Hook to access the global game state context.
+ * @returns {object} The game state and action dispatchers.
+ */
 export const useGameState = () => useContext(GameStateContext)

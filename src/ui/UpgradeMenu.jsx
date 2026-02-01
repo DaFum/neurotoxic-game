@@ -2,10 +2,25 @@ import React from 'react'
 import { UPGRADES_DB } from '../data/upgrades'
 import { useGameState } from '../context/GameState'
 
+/**
+ * Menu interface for purchasing upgrades using Fame currency.
+ * @param {object} props
+ * @param {Function} props.onClose - Callback to close the menu.
+ */
 export const UpgradeMenu = ({ onClose }) => {
   const { player, updatePlayer, band, updateBand, addToast } = useGameState()
 
+  /**
+   * Processes the purchase of an upgrade.
+   * @param {object} upgrade - The upgrade object.
+   */
   const buyUpgrade = upgrade => {
+    // Guard: Already owned
+    if (player.van.upgrades.includes(upgrade.id)) {
+      addToast('Upgrade already owned!', 'error')
+      return
+    }
+
     // The dispatch function would need to be retrieved from useGameState()
     // For now, we'll assume a new function `applyUpgrade` exists in the context
     // which internally dispatches a single action.
@@ -72,7 +87,7 @@ export const UpgradeMenu = ({ onClose }) => {
   }
 
   return (
-    <div className='absolute inset-0 bg-black/95 z-50 flex items-center justify-center p-8'>
+    <div className='absolute inset-0 bg-[var(--void-black)]/95 z-50 flex items-center justify-center p-8'>
       <div className='w-full max-w-4xl border-4 border-[var(--toxic-green)] p-8 overflow-y-auto max-h-[90vh]'>
         <div className='flex justify-between items-center mb-8'>
           <h2 className="text-4xl text-[var(--toxic-green)] font-['Metal_Mania']">
@@ -80,7 +95,7 @@ export const UpgradeMenu = ({ onClose }) => {
           </h2>
           <button
             onClick={onClose}
-            className='text-red-500 font-bold border border-red-500 px-4 py-2 hover:bg-red-500 hover:text-black'
+            className='text-[var(--blood-red)] font-bold border border-[var(--blood-red)] px-4 py-2 hover:bg-[var(--blood-red)] hover:text-[var(--void-black)]'
           >
             CLOSE
           </button>

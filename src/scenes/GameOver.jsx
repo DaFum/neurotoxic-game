@@ -2,9 +2,15 @@ import React from 'react'
 import { useGameState } from '../context/GameState'
 import { GlitchButton } from '../ui/GlitchButton'
 
+/**
+ * Scene displayed when the game ends (bankruptcy or health failure).
+ */
 export const GameOver = () => {
   const { changeScene, player, loadGame } = useGameState()
 
+  /**
+   * Attempts to load the last save or returns to menu.
+   */
   const handleRetry = () => {
     if (loadGame()) {
       // Already handled by loadGame logic which sets scene to OVERWORLD usually

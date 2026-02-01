@@ -2,6 +2,12 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import PropTypes from 'prop-types'
 
+/**
+ * A modal dialog for displaying game events and capturing player choices.
+ * @param {object} props
+ * @param {object} props.event - The active event object.
+ * @param {Function} props.onOptionSelect - Callback when an option is selected.
+ */
 export const EventModal = ({ event, onOptionSelect }) => {
   if (!event) return null
 

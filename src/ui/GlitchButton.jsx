@@ -1,5 +1,13 @@
 import React from 'react'
 
+/**
+ * A stylized button component with glitch and hover effects.
+ * @param {object} props
+ * @param {Function} props.onClick - Click handler.
+ * @param {React.ReactNode} props.children - Button content.
+ * @param {string} [props.className] - Additional classes.
+ * @param {boolean} [props.disabled] - Disabled state.
+ */
 export const GlitchButton = ({
   onClick,
   children,

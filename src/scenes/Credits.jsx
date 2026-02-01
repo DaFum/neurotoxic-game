@@ -2,6 +2,9 @@ import React from 'react'
 import { useGameState } from '../context/GameState'
 import { GlitchButton } from '../ui/GlitchButton'
 
+/**
+ * Scene displaying game credits.
+ */
 export const Credits = () => {
   const { changeScene } = useGameState()
 

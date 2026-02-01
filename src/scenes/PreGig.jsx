@@ -5,6 +5,9 @@ import { getGigModifiers } from '../utils/simulationUtils'
 import { ChatterOverlay } from '../components/ChatterOverlay'
 import { ensureAudioContext } from '../utils/audioEngine'
 
+/**
+ * Scene for preparing for a gig: managing budget, setlist, and modifiers.
+ */
 export const PreGig = () => {
   const {
     currentGig,
@@ -30,6 +33,9 @@ export const PreGig = () => {
     }
   }, [currentGig, changeScene, addToast])
 
+  /**
+   * Triggers a band meeting event to boost harmony.
+   */
   const handleBandMeeting = () => {
     const cost = 50
     if (player.money < cost) {
@@ -52,6 +58,10 @@ export const PreGig = () => {
     }
   }, [])
 
+  /**
+   * Toggles a song in the setlist.
+   * @param {object} song - The song to toggle.
+   */
   const toggleSong = song => {
     if (setlist.find(s => s.id === song.id)) {
       setSetlist(setlist.filter(s => s.id !== song.id))
@@ -62,11 +72,17 @@ export const PreGig = () => {
     }
   }
 
+  /**
+   * Toggles a gig modifier (budget item).
+   * @param {string} key - The modifier key.
+   * @param {number} cost - The estimated cost.
+   */
   const toggleModifier = (key, cost) => {
     const isActive = gigModifiers[key]
 
     if (!isActive) {
-      if (player.money < cost) {
+      const projectedTotal = calculatedBudget + cost
+      if (projectedTotal > player.money) {
         addToast('Not enough money for this upgrade!', 'error')
         return
       }

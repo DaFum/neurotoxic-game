@@ -406,3 +406,68 @@ test('eventEngine.applyResult handles viral stat', () => {
   assert.ok(delta, 'Should return delta')
   assert.equal(delta.social.viral, 15, 'Should apply viral change')
 })
+
+test('eventEngine.applyResult handles inventory numeric increment', () => {
+  const result = { type: 'item', item: 'strings', value: 5 }
+  const delta = eventEngine.applyResult(result)
+
+  assert.ok(delta, 'Should return delta')
+  assert.equal(
+    delta.band.inventory.strings,
+    5,
+    'Should set initial increment value'
+  )
+})
+
+test('eventEngine.applyResult handles inventory non-numeric value', () => {
+  const result = { type: 'item', item: 'golden_pick', value: true }
+  const delta = eventEngine.applyResult(result)
+
+  assert.ok(delta, 'Should return delta')
+  assert.equal(delta.band.inventory.golden_pick, true, 'Should set value')
+})
+
+test('eventEngine logic for inventory increment handles existing values', () => {
+  // applyResult only returns the delta, not the application logic on state.
+  // We need to verify that applyEventDelta (which uses the logic we changed in eventEngine logic? No wait.)
+  // Wait, the logic change was in `processEffect` inside `eventEngine.js`.
+  // `processEffect` populates the delta.
+  // The `processEffect` implementation for 'item' now does:
+  // if (typeof eff.value === 'number') { delta.band.inventory[eff.item] = Math.max(0, current + eff.value) }
+  // BUT `current` comes from `delta.band.inventory`, NOT the game state.
+  // `applyResult` creates a FRESH delta object: `const delta = { player: {}, band: {}, ... }`
+  // So `current` will always be 0 (or undefined) inside `applyResult` unless multiple effects target the same item in one composite event.
+
+  // Let's test a composite event that adds to the same item twice to verify accumulation in delta.
+  const result = {
+    type: 'composite',
+    effects: [
+      { type: 'item', item: 'strings', value: 5 },
+      { type: 'item', item: 'strings', value: 3 }
+    ]
+  }
+
+  const delta = eventEngine.applyResult(result)
+  assert.equal(
+    delta.band.inventory.strings,
+    8,
+    'Should accumulate values in delta'
+  )
+})
+
+test('eventEngine logic prevents negative inventory in delta', () => {
+  const result = {
+    type: 'composite',
+    effects: [
+      { type: 'item', item: 'strings', value: 5 },
+      { type: 'item', item: 'strings', value: -10 }
+    ]
+  }
+
+  const delta = eventEngine.applyResult(result)
+  assert.equal(
+    delta.band.inventory.strings,
+    0,
+    'Should clamp inventory to 0 in delta'
+  )
+})

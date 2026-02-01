@@ -1,13 +1,13 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Metal+Mania&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Nosifer&display=swap');
 
 :root {
   /* Neurotoxic-Grün (aus Logo) */
   --toxic-green: #00ff41;
-  --toxic-green-dark: #00cc33;
-  --toxic-green-light: #33ff66;
-  --toxic-green-glow: rgba(0, 255, 65, 0.6);
+  --toxic-green-dark: #0c3;
+  --toxic-green-light: #3f6;
+  --toxic-green-glow: rgb(0 255 65 / 60%);
 
   /* Death-Metal-Schwarz */
   --void-black: #0a0a0a;
@@ -16,36 +16,34 @@
   --ash-gray: #3a3a3a;
 
   /* Akzentfarben */
-  --blood-red: #cc0000;
-  --blood-red-bright: #ff0000;
-  --rust-orange: #cc5500;
-  --warning-yellow: #ffcc00;
+  --blood-red: #c00;
+  --blood-red-bright: #f00;
+  --rust-orange: #c50;
+  --warning-yellow: #fc0;
 
   /* Kosmische Farben (für "Lost Scriptures"-Thema) */
-  --cosmic-purple: #6600cc;
-  --void-blue: #0033cc;
-  --star-white: #ffffff;
+  --cosmic-purple: #60c;
+  --void-blue: #03c;
+  --star-white: #fff;
 
   /* UI-Funktionen */
   --success-green: #00ff41;
-  --error-red: #ff0033;
-  --warning-orange: #ff9900;
-  --info-blue: #0099ff;
+  --error-red: #f03;
+  --warning-orange: #f90;
+  --info-blue: #09f;
 
   --font-display: 'Metal Mania', cursive;
   --font-ui: 'Courier New', monospace;
   --font-code: 'Courier New', monospace;
 
   /* CRT Overlay */
-  --crt-overlay-bg: linear-gradient(
-      rgba(18, 16, 16, 0) 50%,
-      rgba(0, 0, 0, 0.25) 50%
-    ),
+  --crt-overlay-bg:
+    linear-gradient(rgb(18 16 16 / 0%) 50%, rgb(0 0 0 / 25%) 50%),
     linear-gradient(
       90deg,
-      rgba(255, 0, 0, 0.06),
-      rgba(0, 255, 0, 0.02),
-      rgba(0, 0, 255, 0.06)
+      rgb(255 0 0 / 6%),
+      rgb(0 255 0 / 2%),
+      rgb(0 0 255 / 6%)
     );
   --crt-overlay-size: 100% 2px, 3px 100%;
 }
@@ -72,9 +70,11 @@ body {
 .text-toxic {
   color: var(--toxic-green);
 }
+
 .text-blood {
   color: var(--blood-red-bright);
 }
+
 .bg-void {
   background-color: var(--void-black);
 }
@@ -87,27 +87,32 @@ body {
 @keyframes glitch {
   0% {
     transform: translate(0);
-    text-shadow: 2px 2px 0px var(--blood-red);
+    text-shadow: 2px 2px 0 var(--blood-red);
   }
+
   20% {
     transform: translate(-2px, 2px);
-    text-shadow: -2px -2px 0px var(--cosmic-purple);
+    text-shadow: -2px -2px 0 var(--cosmic-purple);
   }
+
   40% {
     transform: translate(-2px, -2px);
-    text-shadow: 2px -2px 0px var(--blood-red);
+    text-shadow: 2px -2px 0 var(--blood-red);
   }
+
   60% {
     transform: translate(2px, 2px);
-    text-shadow: -2px 2px 0px var(--cosmic-purple);
+    text-shadow: -2px 2px 0 var(--cosmic-purple);
   }
+
   80% {
     transform: translate(2px, -2px);
-    text-shadow: 2px 2px 0px var(--blood-red);
+    text-shadow: 2px 2px 0 var(--blood-red);
   }
+
   100% {
     transform: translate(0);
-    text-shadow: -2px -2px 0px var(--cosmic-purple);
+    text-shadow: -2px -2px 0 var(--cosmic-purple);
   }
 }
 
@@ -116,10 +121,7 @@ body {
   background-size: var(--crt-overlay-size);
   pointer-events: none;
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   z-index: 9999;
   animation: crt-flicker 0.15s infinite;
 }
@@ -128,14 +130,11 @@ body {
   content: ' ';
   display: block;
   position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
+  inset: 0;
   background: var(--crt-overlay-bg);
   background-size: var(--crt-overlay-size);
   z-index: 2;
-  background-color: rgba(0, 0, 0, 0);
+  background-color: rgb(0 0 0 / 0%);
   opacity: 0;
   pointer-events: none;
   animation: scanline 10s linear infinite;
@@ -146,9 +145,11 @@ body {
     transform: translateY(-100%);
     opacity: 0.1;
   }
+
   50% {
     opacity: 0.1;
   }
+
   100% {
     transform: translateY(100%);
     opacity: 0.1;
@@ -159,9 +160,11 @@ body {
   0% {
     opacity: 0.95;
   }
+
   50% {
     opacity: 1;
   }
+
   100% {
     opacity: 0.98;
   }
@@ -183,9 +186,11 @@ button {
   0% {
     transform: rotate(0deg) scale(1);
   }
+
   50% {
     transform: rotate(10deg) scale(1.1);
   }
+
   100% {
     transform: rotate(0deg) scale(1);
   }
