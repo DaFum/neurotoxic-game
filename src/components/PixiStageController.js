@@ -402,8 +402,7 @@ export class PixiStageController {
       if (note.hit) {
         // Trigger effect before destroying if we haven't already
         // Note: note.hit is true, but sprite exists. This means it was JUST hit.
-        const laneColor =
-          state.lanes?.[note.laneIndex]?.color || 0xffffff
+        const laneColor = state.lanes?.[note.laneIndex]?.color || 0xffffff
         this.spawnHitEffect(note.sprite.x, note.sprite.y, laneColor)
         this.destroyNoteSprite(note)
         return
