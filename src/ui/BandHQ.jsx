@@ -124,6 +124,30 @@ export const BandHQ = ({ onClose }) => {
           updateBand({ members: newMembers })
           addToast('Ausgeruht! Stamina +30', 'success')
         }
+        if (item.id === 'hq_old_couch') {
+          const newMembers = band.members.map(m => ({
+            ...m,
+            stamina: Math.min(100, m.stamina + 10)
+          }))
+          updateBand({ members: newMembers })
+          addToast('Abgehangen. Stamina +10', 'success')
+        }
+        if (item.id === 'hq_poster_wall') {
+          updatePlayer({ fame: player.fame + 10 })
+          addToast('Sieht cool aus. Fame +10', 'success')
+        }
+        if (item.id === 'hq_cheap_beer_fridge') {
+          const newMembers = band.members.map(m => ({
+            ...m,
+            mood: Math.min(100, m.mood + 5)
+          }))
+          updateBand({ members: newMembers })
+          addToast('Prost! Mood +5', 'success')
+        }
+        if (item.id === 'hq_diy_soundproofing') {
+          updateBand({ harmony: Math.min(100, band.harmony + 5) })
+          addToast('Weniger Lärm, mehr Frieden. Harmony +5', 'success')
+        }
         break
 
       default:

@@ -66,6 +66,51 @@ export const HQ_ITEMS = {
       description: 'Gibt es noch CD-Player? Egal.',
       effect: { type: 'inventory_add', item: 'cds', value: 50 }
     },
+    // Realistic/Gritty Gear
+    {
+      id: 'broken_pedal',
+      name: 'Defektes Pedal (mit Klebeband)',
+      cost: 10,
+      currency: 'money',
+      description:
+        'Funktioniert irgendwie, aber wer weiß wie lange noch. Aussetzer garantiert.',
+      effect: { type: 'inventory_set', item: 'broken_pedal', value: true }
+    },
+    {
+      id: 'cheap_mics',
+      name: 'Billigmikrofone (5er Pack)',
+      cost: 80,
+      currency: 'money',
+      description:
+        'Für Vocals, wenn die guten kaputt sind. Klingt wie aus der Tonne.',
+      effect: { type: 'inventory_add', item: 'cheap_mics', value: 5 }
+    },
+    {
+      id: 'diy_patch_kit',
+      name: 'DIY Patch-Kit',
+      cost: 15,
+      currency: 'money',
+      description:
+        'Zum Flicken von Klamotten und Taschen. Für den authentischen Look.',
+      effect: { type: 'inventory_set', item: 'diy_patch_kit', value: true }
+    },
+    {
+      id: 'tour_food_canned',
+      name: 'Dosenfutter (10er Pack)',
+      cost: 30,
+      currency: 'money',
+      description: 'Günstig und hält. Nicht lecker, aber es füllt den Magen.',
+      effect: { type: 'inventory_add', item: 'canned_food', value: 10 }
+    },
+    {
+      id: 'tour_beer_bulk',
+      name: 'Kasten Bier (30 Flaschen)',
+      cost: 40,
+      currency: 'money',
+      description:
+        'Für die Moral und die Aftershow-Party. Günstig im Großhandel.',
+      effect: { type: 'inventory_add', item: 'beer_bulk', value: 30 }
+    },
     // Bizarre Gear (Luck/Status Boosts via Inventory Flags or immediate stats)
     {
       id: 'lucky_rabbit_foot',
@@ -162,6 +207,36 @@ export const HQ_ITEMS = {
         value: 0.05
       }
     },
+    // Cheap/Broken Instruments
+    {
+      id: 'second_guitar',
+      name: 'Gebrauchte Zweitgitarre',
+      cost: 500,
+      currency: 'money',
+      description:
+        'Klingt scheiße, aber verhindert Totalausfall. (-5% Guitar Score equiv).',
+      effect: { type: 'stat_modifier', stat: 'guitarDifficulty', value: 0.05 } // Makes it slightly harder
+    },
+    {
+      id: 'broken_drum_kit',
+      name: 'Abgenutztes Drumkit',
+      cost: 1000,
+      currency: 'money',
+      description: 'Klingt dumpf, Felle kurz vorm Reißen. (-10% Drum Score).',
+      effect: {
+        type: 'stat_modifier',
+        stat: 'drumMultiplier',
+        value: -0.1
+      }
+    },
+    {
+      id: 'bass_effect_pedal_cheap',
+      name: 'Billiges Bass-Pedal',
+      cost: 150,
+      currency: 'money',
+      description: 'Verzerrt unvorhersehbar. (+5% Crowd Decay).',
+      effect: { type: 'stat_modifier', stat: 'crowdDecay', value: 0.05 }
+    },
     // Weird Instruments
     {
       id: 'theremin_doom',
@@ -222,6 +297,49 @@ export const HQ_ITEMS = {
       currency: 'fame',
       description: 'Der Van verbraucht 20% weniger Sprit.',
       effect: { type: 'unlock_upgrade', id: 'van_tuning' }
+    },
+    // Cheap/DIY Van Items
+    {
+      id: 'van_tyre_spare',
+      name: 'Ersatzreifen (wenig Profil)',
+      cost: 100,
+      currency: 'fame',
+      description: 'Reduziert Pannenrisiko leicht (-5%).',
+      effect: {
+        type: 'stat_modifier',
+        target: 'van',
+        stat: 'breakdownChance',
+        value: -0.05
+      }
+    },
+    {
+      id: 'van_paint_job',
+      name: 'Grauer Lack (DIY)',
+      cost: 300,
+      currency: 'fame',
+      description: 'Rostschutz > Optik. (+5 Fame).',
+      effect: {
+        type: 'stat_modifier',
+        target: 'player',
+        stat: 'fame',
+        value: 5
+      }
+    },
+    {
+      id: 'van_sleeping_bags',
+      name: 'Schlafsäcke (3 Stk.)',
+      cost: 150,
+      currency: 'fame',
+      description: 'Besser als der kalte Boden.',
+      effect: { type: 'inventory_add', item: 'sleeping_bags', value: 3 }
+    },
+    {
+      id: 'van_tape_glue',
+      name: 'Klebeband & Kleber',
+      cost: 20,
+      currency: 'fame',
+      description: 'Für schnelle Reparaturen. Hält irgendwie.',
+      effect: { type: 'inventory_set', item: 'tape_glue', value: true }
     },
     // Skurrile Van Upgrades
     {
@@ -311,6 +429,39 @@ export const HQ_ITEMS = {
       description: 'Startet jeden Run mit +500€ Budget.',
       effect: { type: 'unlock_hq', id: 'hq_label' }
     },
+    // Gritty HQ Items
+    {
+      id: 'hq_old_couch',
+      name: 'Durchgesessene Couch',
+      cost: 100,
+      currency: 'money',
+      description: 'Ort zum Abhängen. (+10 Stamina).',
+      effect: { type: 'unlock_hq', id: 'hq_old_couch' }
+    },
+    {
+      id: 'hq_poster_wall',
+      name: 'DIY Posterwand',
+      cost: 50,
+      currency: 'money',
+      description: 'Authentizität für Fans. (+10 Fame Sofort).',
+      effect: { type: 'unlock_hq', id: 'hq_poster_wall' }
+    },
+    {
+      id: 'hq_cheap_beer_fridge',
+      name: 'Billig-Bier Kühlschrank',
+      cost: 200,
+      currency: 'money',
+      description: 'Immer kaltes Bier. (+5 Mood Sofort).',
+      effect: { type: 'unlock_hq', id: 'hq_cheap_beer_fridge' }
+    },
+    {
+      id: 'hq_diy_soundproofing',
+      name: 'Eierkarton-Dämmung',
+      cost: 100,
+      currency: 'money',
+      description: 'Weniger Lärmbelästigung. (+5 Harmony Sofort).',
+      effect: { type: 'unlock_hq', id: 'hq_diy_soundproofing' }
+    },
     // Bizarre HQ Items
     {
       id: 'hq_cat',
@@ -323,19 +474,6 @@ export const HQ_ITEMS = {
         target: 'band',
         stat: 'harmony',
         value: 10
-      } // Limitation: One stat per item currently, so mainly Harmony
-    },
-    {
-      id: 'hq_poster',
-      name: 'Wand voll alter Setlists',
-      cost: 100,
-      currency: 'fame',
-      description: 'Erinnert an gute Zeiten. (+20 Fame Sofort).',
-      effect: {
-        type: 'stat_modifier',
-        target: 'player',
-        stat: 'fame',
-        value: 20
       }
     },
     {
