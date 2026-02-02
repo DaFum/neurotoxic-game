@@ -1,7 +1,7 @@
 // Utility to generate dynamic image URLs via Pollinations.ai
 const BASE_URL = 'https://gen.pollinations.ai/image'
 const MODEL = 'flux'
-const KEY = 'pk_xDL8u2ty4Sxucaa3'
+const KEY = 'pk_xDL8u2ty4Sxucaa3' // gitleaks:allow
 
 /**
  * Generates a URL for a procedurally generated image.
@@ -72,7 +72,8 @@ export const IMG_PROMPTS = {
   ICON_PIN_HOME: 'pixel art home icon rehearsal room garage door grunge style',
 
   // HQ
-  BAND_HQ_BG: 'messy punk rehearsal room band posters beer crates amplifiers instruments pixel art cozy grunge',
+  BAND_HQ_BG:
+    'messy punk rehearsal room band posters beer crates amplifiers instruments pixel art cozy grunge',
 
   // Events
   EVENT_POLICE: 'german police car night flashing blue lights pixel art gritty',

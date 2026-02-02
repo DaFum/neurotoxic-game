@@ -75,7 +75,8 @@ export const HQ_ITEMS = {
       name: 'Darkglass Preamp',
       cost: 1800,
       currency: 'money',
-      description: 'Der Bass drückt so sehr, dass die Crowd länger bleibt (-10% Decay).',
+      description:
+        'Der Bass drückt so sehr, dass die Crowd länger bleibt (-10% Decay).',
       effect: { type: 'stat_modifier', stat: 'crowdDecay', value: -0.1 }
     }
   ],
@@ -86,7 +87,12 @@ export const HQ_ITEMS = {
       cost: 500,
       currency: 'fame',
       description: 'Reduziert die Wahrscheinlichkeit von Pannen (-20%).',
-      effect: { type: 'stat_modifier', target: 'van', stat: 'breakdownChance', value: -0.01 } // Assuming 0.05 is base
+      effect: {
+        type: 'stat_modifier',
+        target: 'van',
+        stat: 'breakdownChance',
+        value: -0.01
+      } // Assuming 0.05 is base
     },
     {
       id: 'van_sound_system',
@@ -102,7 +108,12 @@ export const HQ_ITEMS = {
       cost: 800,
       currency: 'fame',
       description: '+10 Inventar Slots für Merch.',
-      effect: { type: 'stat_modifier', target: 'band', stat: 'inventorySlots', value: 10 }
+      effect: {
+        type: 'stat_modifier',
+        target: 'band',
+        stat: 'inventorySlots',
+        value: 10
+      }
     },
     {
       id: 'van_tuning',
@@ -136,7 +147,12 @@ export const HQ_ITEMS = {
       cost: 1000,
       currency: 'fame',
       description: 'Passive Follower Generation (+10/Tag).',
-      effect: { type: 'stat_modifier', target: 'player', stat: 'passiveFollowers', value: 10 }
+      effect: {
+        type: 'stat_modifier',
+        target: 'player',
+        stat: 'passiveFollowers',
+        value: 10
+      }
     },
     {
       id: 'hq_label',
