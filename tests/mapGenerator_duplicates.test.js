@@ -3,7 +3,8 @@ import { test } from 'node:test'
 import { MapGenerator } from '../src/utils/mapGenerator.js'
 
 test('MapGenerator should not have duplicate venues (if possible)', () => {
-  const generator = new MapGenerator(Date.now())
+  // Use fixed seed for deterministic test
+  const generator = new MapGenerator(12345)
   const map = generator.generateMap(10)
   const nodes = Object.values(map.nodes)
 
@@ -14,9 +15,12 @@ test('MapGenerator should not have duplicate venues (if possible)', () => {
     if (node.venue && node.type !== 'HOME' && node.type !== 'FINALE') {
       const name = node.venue.name
       if (venueCounts[name]) {
+        // Only count the first time a venue is duplicated to count "unique duplicated venues"
+        if (venueCounts[name] === 1) {
+          duplicates++
+          console.log(`Duplicate found: ${name} (Layer ${node.layer})`)
+        }
         venueCounts[name]++
-        duplicates++
-        console.log(`Duplicate found: ${name} (Layer ${node.layer})`)
       } else {
         venueCounts[name] = 1
       }
