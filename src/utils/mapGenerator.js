@@ -80,8 +80,7 @@ export class MapGenerator {
           availableVenues.length > 0 ? availableVenues : venuePool
 
         // Pick random venue
-        const venue =
-          candidates[Math.floor(this.random() * candidates.length)]
+        const venue = candidates[Math.floor(this.random() * candidates.length)]
         usedVenueIds.add(venue.id)
 
         // Determine Node Type based on probability
