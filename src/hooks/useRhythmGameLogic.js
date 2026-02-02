@@ -103,7 +103,16 @@ export const useRhythmGameLogic = () => {
       const activeModifiers = getGigModifiers(band, gigModifiers)
       const physics = calculateGigPhysics(band, { bpm: 120 })
       const currentNode = gameMap?.nodes?.[player.currentNodeId]
-      const layer = currentNode?.layer || 0
+
+      if (!currentNode) {
+        console.error(
+          'useRhythmGameLogic: no node found for',
+          player.currentNodeId
+        )
+        return
+      }
+
+      const layer = currentNode.layer || 0
       const speedMult = 1.0 + layer * 0.05
 
       // Use band-aware modifiers computed by getGigModifiers (already merged with gigModifiers)

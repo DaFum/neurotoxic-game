@@ -219,16 +219,17 @@ export const Overworld = () => {
    * @param {object} node - The target node object.
    */
   const handleTravel = node => {
+    if (!node?.venue) {
+      addToast('Error: Invalid location.', 'error')
+      return
+    }
+
     logger.info('Overworld', 'handleTravel initiated', {
       target: node.id,
       current: player.currentNodeId
     })
 
     if (isTraveling) return
-    if (!node.venue) {
-      addToast('Error: Invalid location.', 'error')
-      return
-    }
 
     // Allow interaction with current node (Enter Gig)
     if (node.id === player.currentNodeId) {

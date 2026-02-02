@@ -158,7 +158,7 @@ export const calculateTravelExpenses = (node, fromNode = null) => {
   const dy = y - startY
 
   // Distance logic: Relative distance + base cost
-  const dist = Math.max(10, Math.floor(Math.sqrt(dx * dx + dy * dy) * 5) + 20)
+  const dist = Math.floor(Math.sqrt(dx * dx + dy * dy) * 5) + 20
 
   const fuelLiters = (dist / 100) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM
   const fuelCost = Math.floor(
