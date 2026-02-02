@@ -120,10 +120,21 @@ export const Overworld = () => {
         return
       }
 
+      if (!target.venue) {
+        logger.error('Overworld', 'Target node has no venue data!', target)
+        setIsTraveling(false)
+        addToast('Error: Invalid destination.', 'error')
+        return
+      }
+
       const node = target
+      const currentStartNode = gameMap?.nodes[player.currentNodeId]
 
       // Re-calculate and re-validate costs before deducting
-      const { fuelLiters, totalCost } = calculateTravelExpenses(node)
+      const { fuelLiters, totalCost } = calculateTravelExpenses(
+        node,
+        currentStartNode
+      )
 
       // Check affordability again (safeguard)
       if (player.money < totalCost || (player.van?.fuel ?? 0) < fuelLiters) {
@@ -197,7 +208,9 @@ export const Overworld = () => {
       updateBand,
       triggerEvent,
       startGig,
-      addToast
+      addToast,
+      gameMap,
+      player.currentNodeId
     ]
   )
 
@@ -206,6 +219,11 @@ export const Overworld = () => {
    * @param {object} node - The target node object.
    */
   const handleTravel = node => {
+    if (!node?.venue) {
+      addToast('Error: Invalid location.', 'error')
+      return
+    }
+
     logger.info('Overworld', 'handleTravel initiated', {
       target: node.id,
       current: player.currentNodeId
@@ -226,8 +244,10 @@ export const Overworld = () => {
       return
     }
 
+    const currentStartNode = gameMap?.nodes[player.currentNodeId]
+
     // Check connectivity and layer
-    const currentLayer = gameMap.nodes[player.currentNodeId]?.layer || 0
+    const currentLayer = currentStartNode?.layer || 0
     const visibility = getNodeVisibility(node.layer, currentLayer)
 
     if (visibility !== 'visible' || !isConnected(node.id)) {
@@ -235,7 +255,10 @@ export const Overworld = () => {
     }
 
     // Calculate Costs
-    const { dist, totalCost, fuelLiters } = calculateTravelExpenses(node)
+    const { dist, totalCost, fuelLiters } = calculateTravelExpenses(
+      node,
+      currentStartNode
+    )
 
     addToast(
       `Travel to ${node.venue.name} (${dist}km)? Cost: ${totalCost}€`,

@@ -102,7 +102,7 @@ const processEffect = (eff, delta) => {
             typeof delta.band.inventory[eff.item] === 'number'
               ? delta.band.inventory[eff.item]
               : 0
-          delta.band.inventory[eff.item] = Math.max(0, current + eff.value)
+          delta.band.inventory[eff.item] = current + eff.value
         } else {
           const val = eff.value !== undefined ? eff.value : true
           delta.band.inventory[eff.item] = val

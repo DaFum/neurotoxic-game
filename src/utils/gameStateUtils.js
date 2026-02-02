@@ -78,12 +78,12 @@ export const applyEventDelta = (state, delta) => {
             typeof nextBand.inventory[item] === 'number'
               ? nextBand.inventory[item]
               : 0
-          nextBand.inventory[item] = current + val
+          nextBand.inventory[item] = Math.max(0, current + val)
         }
       })
     }
     if (typeof delta.band.luck === 'number') {
-      nextBand.luck = (nextBand.luck || 0) + delta.band.luck
+      nextBand.luck = Math.max(0, (nextBand.luck || 0) + delta.band.luck)
     }
     nextState.band = nextBand
   }
