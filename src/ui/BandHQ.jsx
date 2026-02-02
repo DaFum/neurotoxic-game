@@ -176,9 +176,16 @@ export const BandHQ = ({ onClose }) => {
         className={`p-4 border ${isOwned && !isConsumable ? 'border-[var(--toxic-green)] bg-[var(--toxic-green)]/10' : 'border-gray-700 bg-black/60'} relative flex flex-col justify-between`}
       >
         <div>
-          <h4 className='font-bold text-[var(--toxic-green)] mb-1'>
-            {item.name}
-          </h4>
+          <div className='flex items-center gap-2 mb-2'>
+            <img
+              src={getGenImageUrl(IMG_PROMPTS[item.img] || item.name)}
+              alt={item.name}
+              className='w-12 h-12 object-contain bg-black/30 rounded border border-gray-800'
+            />
+            <h4 className='font-bold text-[var(--toxic-green)] leading-tight'>
+              {item.name}
+            </h4>
+          </div>
           <p className='text-xs text-gray-400 mb-2'>{item.description}</p>
         </div>
         <div className='flex justify-between items-center mt-2'>

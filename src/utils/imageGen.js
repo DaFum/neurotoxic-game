@@ -82,5 +82,65 @@ export const IMG_PROMPTS = {
   EVENT_BAND: 'band members arguing backstage silhouettes angry pixel art',
   EVENT_MONEY: 'stack of euro bills dirty grunge texture pixel art',
   EVENT_SPECIAL:
-    'cosmic horror void portal swirling purple and green eyes watching pixel art'
+    'cosmic horror void portal swirling purple and green eyes watching pixel art',
+
+  // Items - Gear
+  ITEM_STRINGS: 'pixel art guitar strings pack icon',
+  ITEM_CABLES: 'pixel art coiled audio cable icon golden plug',
+  ITEM_DRUM_PARTS: 'pixel art drum sticks and drum head icon',
+  ITEM_MERCH_SHIRTS: 'pixel art box full of black band t-shirts icon',
+  ITEM_MERCH_HOODIES: 'pixel art stack of black hoodies icon',
+  ITEM_MERCH_PATCHES: 'pixel art pile of embroidered patches icon',
+  ITEM_MERCH_VINYL: 'pixel art vinyl record stack icon',
+  ITEM_MERCH_CDS: 'pixel art stack of cd cases icon',
+  ITEM_BROKEN_PEDAL: 'pixel art broken guitar pedal with duct tape icon',
+  ITEM_CHEAP_MICS: 'pixel art cheap plastic microphone icon',
+  ITEM_DIY_PATCH_KIT: 'pixel art needle and thread sewing kit icon',
+  ITEM_CANNED_FOOD: 'pixel art stack of tin cans food icon',
+  ITEM_BEER_CRATE: 'pixel art crate of beer bottles icon',
+  ITEM_BEER_BULK: 'pixel art many beer bottles icon', // Fallback
+  ITEM_RABBIT_FOOT: 'pixel art lucky rabbit foot keychain icon',
+  ITEM_DUCT_TAPE: 'pixel art roll of silver duct tape icon',
+  ITEM_INCENSE: 'pixel art burning incense sticks smoke icon',
+  ITEM_VOODOO_DOLL: 'pixel art small voodoo doll with pins icon',
+
+  // Items - Instruments
+  ITEM_GUITAR_CUSTOM: 'pixel art 8 string electric guitar icon',
+  ITEM_GUITAR_V: 'pixel art rusty flying v guitar icon',
+  ITEM_BASS_PREAMP: 'pixel art bass preamp pedal icon',
+  ITEM_DRUM_TRIGGER: 'pixel art drum trigger sensor icon',
+  ITEM_COWBELL: 'pixel art cowbell instrument icon',
+  ITEM_GUITAR_CHEAP: 'pixel art cheap beat up electric guitar icon',
+  ITEM_DRUM_BROKEN: 'pixel art broken drum kit icon',
+  ITEM_PEDAL_CHEAP: 'pixel art cheap plastic guitar pedal icon',
+  ITEM_THEREMIN: 'pixel art theremin instrument icon',
+  ITEM_DIDGERIDOO: 'pixel art didgeridoo instrument icon',
+
+  // Items - Van
+  ITEM_VAN_SUSPENSION: 'pixel art car suspension spring icon',
+  ITEM_VAN_STUDIO: 'pixel art mobile recording studio equipment icon',
+  ITEM_VAN_STORAGE: 'pixel art car roof box icon',
+  ITEM_VAN_TUNING: 'pixel art car engine engine parts icon',
+  ITEM_VAN_TIRE: 'pixel art worn out car tire icon',
+  ITEM_VAN_PAINT: 'pixel art spray paint can grey icon',
+  ITEM_SLEEPING_BAGS: 'pixel art rolled up sleeping bag icon',
+  ITEM_GLUE_TAPE: 'pixel art super glue tube and tape icon',
+  ITEM_MATTRESS: 'pixel art dirty old mattress icon',
+  ITEM_SPOILER: 'pixel art car spoiler wing icon',
+  ITEM_DISCO_BALL: 'pixel art disco ball icon',
+  ITEM_FLAMETHROWER: 'pixel art flamethrower weapon icon',
+
+  // Items - HQ
+  ITEM_HQ_COFFEE: 'pixel art espresso machine icon',
+  ITEM_HQ_SOFA: 'pixel art leather sofa icon',
+  ITEM_HQ_BOTNET: 'pixel art computer server rack icon',
+  ITEM_HQ_LABEL: 'pixel art record contract document icon',
+  ITEM_HQ_OLD_COUCH: 'pixel art old ripped couch icon',
+  ITEM_HQ_POSTERS: 'pixel art wall with band posters icon',
+  ITEM_HQ_FRIDGE: 'pixel art fridge full of beer icon',
+  ITEM_HQ_EGGS: 'pixel art egg cartons on wall soundproofing icon',
+  ITEM_HQ_CAT: 'pixel art black cat sitting icon',
+  ITEM_HQ_PIPELINE: 'pixel art beer tap pipeline icon',
+  ITEM_HQ_SHRINE: 'pixel art shrine with candles and whiskey bottle icon',
+  ITEM_HQ_SKULL: 'pixel art animal skull decoration icon'
 }
