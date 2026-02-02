@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
-import { useGameState } from '../context/GameState'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
+import { useGameState } from '../context/GameState'
+import { ChatterOverlay } from '../components/ChatterOverlay'
 import { ALL_VENUES } from '../data/venues'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import { calculateTravelExpenses } from '../utils/economyEngine'
-import { ChatterOverlay } from '../components/ChatterOverlay'
 import { audioManager } from '../utils/AudioManager'
 import { logger } from '../utils/logger'
 
@@ -64,6 +64,7 @@ export const Overworld = () => {
   const [isTraveling, setIsTraveling] = useState(false)
   const [travelTarget, setTravelTarget] = useState(null)
   const [hoveredNode, setHoveredNode] = useState(null)
+  const travelCompletedRef = useRef(false)
 
   /**
    * Checks if a target node is connected to the current node.
@@ -91,6 +92,116 @@ export const Overworld = () => {
   }
 
   /**
+   * Callback executed when the travel animation finishes.
+   * Updates state, costs, and triggers arrival logic.
+   * Accepts an optional explicitNode to bypass state latency issues.
+   */
+  const onTravelComplete = useCallback(
+    (explicitNode = null) => {
+      // If explicitNode is event (from motion), ignore it.
+      const target =
+        explicitNode && explicitNode.id ? explicitNode : travelTarget
+
+      logger.info('Overworld', 'onTravelComplete triggered', {
+        travelCompleted: travelCompletedRef.current,
+        hasTarget: !!target,
+        targetId: target?.id
+      })
+
+      if (travelCompletedRef.current) return
+      travelCompletedRef.current = true
+
+      if (!target) {
+        logger.error(
+          'Overworld',
+          'Travel complete but no target! Resetting state.'
+        )
+        setIsTraveling(false)
+        return
+      }
+
+      const node = target
+
+      // Re-calculate and re-validate costs before deducting
+      const { fuelLiters, totalCost } = calculateTravelExpenses(node)
+
+      // Check affordability again (safeguard)
+      if (player.money < totalCost || (player.van?.fuel ?? 0) < fuelLiters) {
+        addToast('Error: Insufficient resources upon arrival.', 'error')
+        setIsTraveling(false)
+        setTravelTarget(null)
+        return
+      }
+
+      updatePlayer({
+        money: Math.max(0, player.money - totalCost),
+        van: {
+          ...player.van,
+          fuel: Math.max(0, (player.van?.fuel ?? 0) - fuelLiters)
+        },
+        location: node.venue.name,
+        currentNodeId: node.id,
+        day: player.day + 1
+      })
+
+      if (hasUpgrade('van_sound_system')) {
+        updateBand({ harmony: Math.min(100, band.harmony + 5) })
+      }
+
+      setIsTraveling(false)
+      setTravelTarget(null)
+
+      // Trigger Events
+      const eventHappened = triggerEvent('transport', 'travel')
+      if (!eventHappened) {
+        const bandEvent = triggerEvent('band', 'travel')
+        if (!bandEvent) {
+          // Node Type Handling
+          if (node.type === 'REST_STOP') {
+            const newMembers = band.members.map(m => ({
+              ...m,
+              stamina: Math.min(100, Math.max(0, m.stamina + 20)),
+              mood: Math.min(100, Math.max(0, m.mood + 10))
+            }))
+            updateBand({
+              members: newMembers
+            })
+            addToast('Rested at stop. Band feels better.', 'success')
+          } else if (node.type === 'SPECIAL') {
+            const specialEvent = triggerEvent('special')
+            if (!specialEvent) {
+              addToast('A mysterious place, but nothing happened.', 'info')
+            }
+          } else {
+            // Default: GIG
+            if (band.harmony <= 0) {
+              addToast("Band's harmony too low to perform!", 'warning')
+              return
+            }
+            logger.info('Overworld', 'Starting Gig at destination', {
+              venue: node.venue.name
+            })
+            startGig(node.venue)
+          }
+        }
+      }
+    },
+    [
+      travelTarget,
+      player.money,
+      player.van,
+      player.day,
+      band,
+      hasUpgrade,
+      updatePlayer,
+      updateBand,
+      triggerEvent,
+      startGig,
+      addToast
+    ]
+  )
+
+  /**
    * Initiates the travel sequence to a selected node.
    * @param {object} node - The target node object.
    */
@@ -99,23 +210,32 @@ export const Overworld = () => {
       target: node.id,
       current: player.currentNodeId
     })
-    if (isTraveling || node.id === player.currentNodeId) return
+
+    if (isTraveling) return
+
+    // Allow interaction with current node (Enter Gig)
+    if (node.id === player.currentNodeId) {
+      if (node.type === 'GIG') {
+        logger.info('Overworld', 'Entering current node Gig', {
+          venue: node.venue.name
+        })
+        startGig(node.venue)
+      } else {
+        addToast(`You are at ${node.venue.name}.`, 'info')
+      }
+      return
+    }
 
     // Check connectivity and layer
     const currentLayer = gameMap.nodes[player.currentNodeId]?.layer || 0
     const visibility = getNodeVisibility(node.layer, currentLayer)
 
     if (visibility !== 'visible' || !isConnected(node.id)) {
-      logger.warn('Overworld', 'Travel blocked: Node not reachable', {
-        visibility,
-        connected: isConnected(node.id)
-      })
       return
     }
 
     // Calculate Costs
     const { dist, totalCost, fuelLiters } = calculateTravelExpenses(node)
-    logger.debug('Overworld', 'Travel cost calculated', { dist, totalCost })
 
     addToast(
       `Travel to ${node.venue.name} (${dist}km)? Cost: ${totalCost}€`,
@@ -132,92 +252,32 @@ export const Overworld = () => {
       return
     }
 
-    // Direct travel for now (User requested confirm replacement in a later plan step, but I'll make it direct here to remove window.confirm)
-    // Actually, making it direct might be annoying.
-    // I will use addToast for now and proceed.
-    // Ideally I should block until confirmed, but window.confirm is sync.
-    // For now I'll just execute it (Direct Action) as "Tap to Travel" is common in games.
-    // If they click, they travel.
-
     // Start Travel Sequence
+    travelCompletedRef.current = false
     setTravelTarget(node)
     setIsTraveling(true)
-    audioManager.playSFX('travel')
-  }
 
-  /**
-   * Callback executed when the travel animation finishes.
-   * Updates state, costs, and triggers arrival logic.
-   */
-  const onTravelComplete = () => {
-    // Logic executed after animation
-    const node = travelTarget
-
-    // Re-calculate and re-validate costs before deducting
-    const { fuelLiters, totalCost } = calculateTravelExpenses(node)
-
-    if (player.money < totalCost) {
-      // This case should be rare, but it's a safeguard.
-      console.error(
-        'Travel completed but cannot afford costs. State might be inconsistent.'
-      )
-      addToast('Insufficient funds for travel costs!', 'error')
-      setIsTraveling(false)
-      setTravelTarget(null)
-      return
+    try {
+      audioManager.playSFX('travel')
+    } catch (e) {
+      console.error('SFX Error:', e)
     }
 
-    if ((player.van?.fuel ?? 0) < fuelLiters) {
-      console.error(
-        'Travel completed but insufficient fuel. State might be inconsistent.'
-      )
-      addToast('Insufficient fuel for travel costs!', 'error')
-      setIsTraveling(false)
-      setTravelTarget(null)
-      return
-    }
-
-    updatePlayer({
-      money: Math.max(0, player.money - totalCost),
-      van: {
-        ...player.van,
-        fuel: Math.max(0, (player.van?.fuel ?? 0) - fuelLiters)
-      },
-      location: node.venue.name,
-      currentNodeId: node.id,
-      day: player.day + 1
-    })
-
-    if (hasUpgrade('van_sound_system')) {
-      updateBand({ harmony: Math.min(100, band.harmony + 5) })
-    }
-
-    setIsTraveling(false)
-    setTravelTarget(null)
-
-    // Trigger Events
-    const eventHappened = triggerEvent('transport', 'travel')
-    if (!eventHappened) {
-      const bandEvent = triggerEvent('band', 'travel')
-      if (!bandEvent) {
-        // Node Type Handling
-        if (node.type === 'REST_STOP') {
-          updateBand({
-            members: { staminaChange: 20, moodChange: 10 }
-          })
-          addToast('Rested at stop. Band feels better.', 'success')
-        } else if (node.type === 'SPECIAL') {
-          const specialEvent = triggerEvent('special')
-          if (!specialEvent) {
-            addToast('A mysterious place, but nothing happened.', 'info')
-          }
-        } else {
-          // Default: GIG
-          startGig(node.venue)
-        }
+    // Direct Timeout Failsafe - bypasses React state lag or useEffect timing issues
+    // We pass 'node' explicitly to onTravelComplete to ensure it has the data
+    // Executing immediately via minimal timeout to ensure state update but prevent freeze
+    window.setTimeout(() => {
+      if (!travelCompletedRef.current) {
+        onTravelComplete(node)
       }
-    }
+    }, 1510)
   }
+
+  // Keep a ref to the latest onTravelComplete (still useful for future logic)
+  const onTravelCompleteLatest = useRef(onTravelComplete)
+  useEffect(() => {
+    onTravelCompleteLatest.current = onTravelComplete
+  }, [onTravelComplete])
 
   const currentNode = gameMap?.nodes[player.currentNodeId]
   const currentLayer = currentNode?.layer || 0
@@ -226,13 +286,6 @@ export const Overworld = () => {
     <div
       className={`w-full h-full bg-[var(--void-black)] relative overflow-hidden flex flex-col items-center justify-center p-8 ${isTraveling ? 'pointer-events-none' : ''}`}
     >
-      {/* Event Modal is handled in App.jsx via activeEvent, but we might have a local fallback if needed.
-          The previous file had EventModalInternal. Since activeEvent is global, we rely on App.jsx.
-          However, the previous code had a local EventModalInternal.
-          If I remove it, I must ensure App.jsx handles it.
-          App.jsx DOES handle it. I will remove the redundant local EventModalInternal.
-      */}
-
       <h2 className='absolute top-20 text-4xl text-[var(--toxic-green)] font-[Metal_Mania] z-10 text-shadow-[0_0_10px_var(--toxic-green)] pointer-events-none'>
         TOUR PLAN: {player.location}
       </h2>
@@ -291,10 +344,10 @@ export const Overworld = () => {
               return (
                 <line
                   key={i}
-                  x1={`${start.venue.x}%`}
-                  y1={`${start.venue.y}%`}
-                  x2={`${end.venue.x}%`}
-                  y2={`${end.venue.y}%`}
+                  x1={`${start.x}%`}
+                  y1={`${start.y}%`}
+                  x2={`${end.x}%`}
+                  y2={`${end.y}%`}
                   stroke='var(--toxic-green)'
                   strokeWidth='1'
                   opacity={
@@ -307,10 +360,10 @@ export const Overworld = () => {
           {/* Dynamic Hover Connection */}
           {hoveredNode && isConnected(hoveredNode.id) && (
             <line
-              x1={`${currentNode.venue.x}%`}
-              y1={`${currentNode.venue.y}%`}
-              x2={`${hoveredNode.venue.x}%`}
-              y2={`${hoveredNode.venue.y}%`}
+              x1={`${currentNode.x}%`}
+              y1={`${currentNode.y}%`}
+              x2={`${hoveredNode.x}%`}
+              y2={`${hoveredNode.y}%`}
               stroke='var(--toxic-green)'
               strokeWidth='2'
               strokeDasharray='5,5'
@@ -331,7 +384,7 @@ export const Overworld = () => {
                 <div
                   key={node.id}
                   className='absolute w-6 h-6 flex items-center justify-center text-gray-700 pointer-events-none'
-                  style={{ left: `${node.venue.x}%`, top: `${node.venue.y}%` }}
+                  style={{ left: `${node.x}%`, top: `${node.y}%` }}
                 >
                   ?
                 </div>
@@ -352,7 +405,7 @@ export const Overworld = () => {
                 ${!isReachable && !isCurrent ? 'opacity-30 grayscale pointer-events-none' : 'opacity-100'}
                 ${isReachable ? 'cursor-pointer' : ''}
             `}
-                style={{ left: `${node.venue.x}%`, top: `${node.venue.y}%` }}
+                style={{ left: `${node.x}%`, top: `${node.y}%` }}
                 onClick={() => handleTravel(node)}
                 onMouseEnter={() => setHoveredNode(node)}
                 onMouseLeave={() => setHoveredNode(null)}
@@ -416,15 +469,19 @@ export const Overworld = () => {
           <motion.div
             className='absolute z-[60] pointer-events-none'
             initial={{
-              left: `${currentNode.venue.x}%`,
-              top: `${currentNode.venue.y}%`
+              left: `${currentNode.x}%`,
+              top: `${currentNode.y}%`
             }}
             animate={{
-              left: `${travelTarget.venue.x}%`,
-              top: `${travelTarget.venue.y}%`
+              left: `${travelTarget.x}%`,
+              top: `${travelTarget.y}%`
             }}
             transition={{ duration: 1.5, ease: 'easeInOut' }}
-            onAnimationComplete={onTravelComplete}
+            onAnimationComplete={() => {
+              if (!travelCompletedRef.current) {
+                onTravelComplete(travelTarget)
+              }
+            }}
           >
             <img
               src={getGenImageUrl(IMG_PROMPTS.ICON_VAN)}

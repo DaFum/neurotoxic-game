@@ -34,46 +34,75 @@ export const GigHUD = ({ stats, onLaneInput }) => {
 
       {/* Stats Overlay */}
       <div className='absolute top-32 left-4 z-10 text-white font-mono pointer-events-none'>
-        <div className='text-4xl font-bold text-(--toxic-green)'>
+        {/* Score Display with Shadow */}
+        <div className='text-5xl font-bold text-[var(--toxic-green)] drop-shadow-[0_0_10px_var(--toxic-green)] tracking-widest'>
           {Math.floor(score).toString().padStart(7, '0')}
         </div>
-        <div
-          className={`text-2xl ${combo > 10 ? 'text-(--blood-red) animate-pulse' : 'text-gray-400'}`}
-        >
-          {combo}x COMBO
+
+        {/* Combo Counter with Scale Animation */}
+        <div className='mt-2 flex items-center gap-2'>
+          <div
+            className={`text-3xl font-bold transition-transform duration-100 ${
+              combo > 0 ? 'scale-110' : 'scale-100'
+            } ${combo > 30 ? 'text-[var(--blood-red)] animate-pulse' : 'text-[var(--ash-gray)]'}`}
+          >
+            {combo}x
+          </div>
+          <div className='text-sm text-[var(--ash-gray)] uppercase tracking-widest'>
+            Combo
+          </div>
         </div>
-        <div className='mt-2'>
-          <div className='text-xs text-gray-400'>TOXIC OVERLOAD</div>
-          <div className='w-32 h-2 bg-gray-800'>
+
+        {/* Toxic Overload Meter */}
+        <div className='mt-4'>
+          <div className='flex justify-between text-xs text-[var(--ash-gray)] mb-1'>
+            <span>TOXIC OVERLOAD</span>
+            <span>{Math.floor(overload)}%</span>
+          </div>
+          <div className='w-48 h-3 bg-[var(--void-black)] border border-[var(--ash-gray)] rounded overflow-hidden'>
             <div
-              className='h-full bg-(--toxic-green) transition-all duration-200'
+              className='h-full bg-[var(--toxic-green)] transition-all duration-200 ease-out shadow-[0_0_10px_var(--toxic-green)]'
               style={{ width: `${overload}%` }}
             />
           </div>
         </div>
       </div>
 
-      <div className='absolute bottom-16 left-1/2 -translate-x-1/2 w-64 z-10'>
-        <div className='flex justify-between text-white text-xs mb-1'>
+      {/* Health Bar (Bottom Center) */}
+      <div className='absolute bottom-24 left-1/2 -translate-x-1/2 w-96 z-10 pointer-events-none'>
+        <div className='flex justify-between text-white text-xs mb-1 font-bold tracking-widest drop-shadow-md'>
           <span>CROWD ENERGY</span>
-          <span>{Math.floor(health)}%</span>
+          <span
+            className={
+              health < 30
+                ? 'text-[var(--blood-red)] animate-flash'
+                : 'text-white'
+            }
+          >
+            {Math.floor(health)}%
+          </span>
         </div>
-        <div className='w-full h-4 bg-gray-800 border border-gray-600'>
+        {/* Segmented Bar Look */}
+        <div className='w-full h-6 bg-[var(--void-black)]/50 border-2 border-white/20 backdrop-blur-sm p-[2px] rounded'>
           <div
-            className={`h-full transition-all duration-200 ${health < 30 ? 'bg-red-500' : 'bg-(--toxic-green)'}`}
+            className={`h-full rounded-sm transition-all duration-300 ease-out ${
+              health < 30
+                ? 'bg-[var(--blood-red)] shadow-[0_0_15px_var(--blood-red)]'
+                : 'bg-gradient-to-r from-[var(--toxic-green)] to-emerald-400 shadow-[0_0_10px_var(--toxic-green)]'
+            }`}
             style={{ width: `${health}%` }}
           />
         </div>
       </div>
 
       {/* Controls Hint */}
-      <div className='absolute bottom-4 w-full text-center text-gray-500 font-mono text-sm z-10'>
+      <div className='absolute bottom-4 w-full text-center text-[var(--ash-gray)] font-mono text-sm z-10'>
         [← GUITAR] [↓ DRUMS] [→ BASS] (Arrow Keys)
       </div>
 
       {isGameOver && (
-        <div className='absolute inset-0 z-50 bg-black/90 flex items-center justify-center pointer-events-none'>
-          <h1 className='text-6xl text-red-600 font-[Metal_Mania] animate-pulse'>
+        <div className='absolute inset-0 z-50 bg-[var(--void-black)]/90 flex items-center justify-center pointer-events-none'>
+          <h1 className='text-6xl text-[var(--blood-red)] font-[Metal_Mania] animate-pulse'>
             BOOED OFF STAGE
           </h1>
         </div>

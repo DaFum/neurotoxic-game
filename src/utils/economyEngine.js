@@ -141,8 +141,8 @@ const calculateMerchIncome = (
  * @param {object} node - The target node.
  */
 export const calculateTravelExpenses = node => {
-  const x = typeof node?.venue?.x === 'number' ? node.venue.x : 50
-  const y = typeof node?.venue?.y === 'number' ? node.venue.y : 50
+  const x = typeof node?.x === 'number' ? node.x : (node.venue?.x ?? 50)
+  const y = typeof node?.y === 'number' ? node.y : (node.venue?.y ?? 50)
 
   // Distance from center (50, 50) used as base distance metric
   const dist = Math.max(
