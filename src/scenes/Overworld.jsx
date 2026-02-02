@@ -208,7 +208,9 @@ export const Overworld = () => {
       updateBand,
       triggerEvent,
       startGig,
-      addToast
+      addToast,
+      gameMap,
+      player.currentNodeId
     ]
   )
 

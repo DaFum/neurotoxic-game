@@ -560,7 +560,14 @@ test('calculateTravelExpenses returns correct cost structure', () => {
 
   const result = calculateTravelExpenses(node)
 
-  assert.equal(result.dist, 20, 'Distance should be 20 (base cost) for center node')
-  assert.ok(Math.abs(result.fuelLiters - 2.4) < 0.001, 'Fuel liters should be approx 2.4')
+  assert.equal(
+    result.dist,
+    20,
+    'Distance should be 20 (base cost) for center node'
+  )
+  assert.ok(
+    Math.abs(result.fuelLiters - 2.4) < 0.001,
+    'Fuel liters should be approx 2.4'
+  )
   assert.equal(result.totalCost, 28, 'Total cost should be 28')
 })
