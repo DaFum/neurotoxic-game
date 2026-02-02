@@ -78,7 +78,7 @@ export const applyEventDelta = (state, delta) => {
             typeof nextBand.inventory[item] === 'number'
               ? nextBand.inventory[item]
               : 0
-          nextBand.inventory[item] = current + val
+          nextBand.inventory[item] = Math.max(0, current + val)
         }
       })
     }

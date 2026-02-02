@@ -145,8 +145,14 @@ export const calculateTravelExpenses = (node, fromNode = null) => {
   const x = typeof node?.x === 'number' ? node.x : (node.venue?.x ?? 50)
   const y = typeof node?.y === 'number' ? node.y : (node.venue?.y ?? 50)
 
-  const startX = fromNode && typeof fromNode.x === 'number' ? fromNode.x : 50
-  const startY = fromNode && typeof fromNode.y === 'number' ? fromNode.y : 50
+  const startX =
+    fromNode && typeof fromNode.x === 'number'
+      ? fromNode.x
+      : (fromNode?.venue?.x ?? 50)
+  const startY =
+    fromNode && typeof fromNode.y === 'number'
+      ? fromNode.y
+      : (fromNode?.venue?.y ?? 50)
 
   const dx = x - startX
   const dy = y - startY
