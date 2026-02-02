@@ -1,5 +1,6 @@
 export const HQ_ITEMS = {
   gear: [
+    // Standard Consumables
     {
       id: 'strings',
       name: 'Saitensatz (10er Pack)',
@@ -24,6 +25,7 @@ export const HQ_ITEMS = {
       description: 'Frisches Holz und neue Felle für den Drummer.',
       effect: { type: 'inventory_set', item: 'drum_parts', value: true }
     },
+    // Merch Restocks
     {
       id: 'merch_shirts_bundle',
       name: 'Karton T-Shirts (25 Stk.)',
@@ -41,15 +43,75 @@ export const HQ_ITEMS = {
       effect: { type: 'inventory_add', item: 'hoodies', value: 10 }
     },
     {
+      id: 'merch_patches_bundle',
+      name: 'Karton Patches (50 Stk.)',
+      cost: 50,
+      currency: 'money',
+      description: 'Für die Kutte. Schnell verkauft.',
+      effect: { type: 'inventory_add', item: 'patches', value: 50 }
+    },
+    {
       id: 'merch_vinyl_bundle',
       name: 'Vinyl Pressung (20 Stk.)',
       cost: 300,
       currency: 'money',
       description: 'Für die echten Sammler.',
       effect: { type: 'inventory_add', item: 'vinyl', value: 20 }
+    },
+    {
+      id: 'merch_cds_bundle',
+      name: 'CD Spindel (50 Stk.)',
+      cost: 100,
+      currency: 'money',
+      description: 'Gibt es noch CD-Player? Egal.',
+      effect: { type: 'inventory_add', item: 'cds', value: 50 }
+    },
+    // Bizarre Gear (Luck/Status Boosts via Inventory Flags or immediate stats)
+    {
+      id: 'lucky_rabbit_foot',
+      name: 'Abgefahrene Hasenpfote',
+      cost: 150,
+      currency: 'money',
+      description: 'Es riecht komisch, aber bringt Glück (+2 Luck).',
+      effect: { type: 'stat_modifier', target: 'band', stat: 'luck', value: 2 }
+    },
+    {
+      id: 'duct_tape_roll',
+      name: 'Panzertape (Industrie)',
+      cost: 80,
+      currency: 'money',
+      description: 'Repariert den Van sofort ein bisschen (+5 Condition).',
+      effect: {
+        type: 'stat_modifier',
+        target: 'van',
+        stat: 'condition',
+        value: 5
+      }
+    },
+    {
+      id: 'incense_sticks',
+      name: 'Räucherstäbchen "Nag Champa"',
+      cost: 30,
+      currency: 'money',
+      description: 'Beruhigt die Nerven sofort (+5 Harmony).',
+      effect: {
+        type: 'stat_modifier',
+        target: 'band',
+        stat: 'harmony',
+        value: 5
+      }
+    },
+    {
+      id: 'voodoo_doll',
+      name: 'Nadelkissen Puppe',
+      cost: 666,
+      currency: 'money',
+      description: 'Verflucht die Konkurrenz (+5 Luck).',
+      effect: { type: 'stat_modifier', target: 'band', stat: 'luck', value: 5 }
     }
   ],
   instruments: [
+    // Guitars & Strings
     {
       id: 'guitar_custom',
       name: 'Custom 8-String Axt',
@@ -58,6 +120,24 @@ export const HQ_ITEMS = {
       description: 'Erleichtert das Treffen von Noten enorm (-15% Diff).',
       effect: { type: 'stat_modifier', stat: 'guitarDifficulty', value: -0.15 }
     },
+    {
+      id: 'guitar_flying_v',
+      name: 'Rusty Flying V',
+      cost: 1200,
+      currency: 'money',
+      description: 'Sieht brutal aus. Crowd Decay -5%.',
+      effect: { type: 'stat_modifier', stat: 'crowdDecay', value: -0.05 }
+    },
+    {
+      id: 'bass_sansamp',
+      name: 'Darkglass Preamp',
+      cost: 1800,
+      currency: 'money',
+      description:
+        'Der Bass drückt so sehr, dass die Crowd länger bleibt (-10% Decay).',
+      effect: { type: 'stat_modifier', stat: 'crowdDecay', value: -0.1 }
+    },
+    // Drums
     {
       id: 'drum_trigger',
       name: 'Axis Longboards & Trigger',
@@ -71,13 +151,33 @@ export const HQ_ITEMS = {
       }
     },
     {
-      id: 'bass_sansamp',
-      name: 'Darkglass Preamp',
-      cost: 1800,
+      id: 'cowbell_inferno',
+      name: 'Die Heilige Cowbell',
+      cost: 500,
       currency: 'money',
-      description:
-        'Der Bass drückt so sehr, dass die Crowd länger bleibt (-10% Decay).',
-      effect: { type: 'stat_modifier', stat: 'crowdDecay', value: -0.1 }
+      description: 'Mehr Cowbell = Mehr Score (+5%).',
+      effect: {
+        type: 'stat_modifier',
+        stat: 'drumMultiplier',
+        value: 0.05
+      }
+    },
+    // Weird Instruments
+    {
+      id: 'theremin_doom',
+      name: 'Theremin des Todes',
+      cost: 3000,
+      currency: 'money',
+      description: 'Macht gruselige Geräusche. Crowd liebt es (-15% Decay).',
+      effect: { type: 'stat_modifier', stat: 'crowdDecay', value: -0.15 }
+    },
+    {
+      id: 'didgeridoo',
+      name: 'Elektrisches Didgeridoo',
+      cost: 900,
+      currency: 'money',
+      description: 'Warum? Warum nicht. (+2 Luck).',
+      effect: { type: 'stat_modifier', target: 'band', stat: 'luck', value: 2 }
     }
   ],
   van: [
@@ -86,13 +186,13 @@ export const HQ_ITEMS = {
       name: 'Verstärkte Aufhängung',
       cost: 500,
       currency: 'fame',
-      description: 'Reduziert die Wahrscheinlichkeit von Pannen (-20%).',
+      description: 'Reduziert die Wahrscheinlichkeit von Pannen (-1%).',
       effect: {
         type: 'stat_modifier',
         target: 'van',
         stat: 'breakdownChance',
         value: -0.01
-      } // Assuming 0.05 is base
+      }
     },
     {
       id: 'van_sound_system',
@@ -122,6 +222,55 @@ export const HQ_ITEMS = {
       currency: 'fame',
       description: 'Der Van verbraucht 20% weniger Sprit.',
       effect: { type: 'unlock_upgrade', id: 'van_tuning' }
+    },
+    // Skurrile Van Upgrades
+    {
+      id: 'van_mattress',
+      name: 'Stinkende Matratzen',
+      cost: 300,
+      currency: 'fame',
+      description: 'Besser als der Boden. (+5 Max Harmonie/Tag Theorie).',
+      effect: {
+        type: 'stat_modifier',
+        target: 'band',
+        stat: 'harmony',
+        value: 5
+      }
+    },
+    {
+      id: 'van_spoiler',
+      name: 'Riesiger Heckspoiler',
+      cost: 200,
+      currency: 'fame',
+      description:
+        'Bringt nichts, sieht aber schnell aus. (+1 Fame beim Kauf).',
+      effect: {
+        type: 'stat_modifier',
+        target: 'player',
+        stat: 'fame',
+        value: 1
+      }
+    },
+    {
+      id: 'van_disco',
+      name: 'Disco Kugel',
+      cost: 600,
+      currency: 'fame',
+      description: 'Party im Bus! (+2 Luck).',
+      effect: { type: 'stat_modifier', target: 'band', stat: 'luck', value: 2 }
+    },
+    {
+      id: 'van_flamethrower',
+      name: 'Auspuff-Flammenwerfer',
+      cost: 2500,
+      currency: 'fame',
+      description: 'Einschüchternd. (+100 Fame Sofortbonus).',
+      effect: {
+        type: 'stat_modifier',
+        target: 'player',
+        stat: 'fame',
+        value: 100
+      }
     }
   ],
   hq: [
@@ -161,6 +310,67 @@ export const HQ_ITEMS = {
       currency: 'fame',
       description: 'Startet jeden Run mit +500€ Budget.',
       effect: { type: 'unlock_hq', id: 'hq_label' }
+    },
+    // Bizarre HQ Items
+    {
+      id: 'hq_cat',
+      name: 'Band-Katze "Satan"',
+      cost: 50,
+      currency: 'money',
+      description: 'Macht alles besser. (+10 Harmony, +5 Luck).',
+      effect: {
+        type: 'stat_modifier',
+        target: 'band',
+        stat: 'harmony',
+        value: 10
+      } // Limitation: One stat per item currently, so mainly Harmony
+    },
+    {
+      id: 'hq_poster',
+      name: 'Wand voll alter Setlists',
+      cost: 100,
+      currency: 'fame',
+      description: 'Erinnert an gute Zeiten. (+20 Fame Sofort).',
+      effect: {
+        type: 'stat_modifier',
+        target: 'player',
+        stat: 'fame',
+        value: 20
+      }
+    },
+    {
+      id: 'hq_beer_pipeline',
+      name: 'Direkte Bierleitung',
+      cost: 2000,
+      currency: 'money',
+      description: 'Vom Pub nebenan. (+20 Harmony).',
+      effect: {
+        type: 'stat_modifier',
+        target: 'band',
+        stat: 'harmony',
+        value: 20
+      }
+    },
+    {
+      id: 'hq_shrine',
+      name: 'Schrein für Lemmy',
+      cost: 666,
+      currency: 'fame',
+      description: 'Täglicher Segen des Rockgottes. (+10 Luck).',
+      effect: { type: 'stat_modifier', target: 'band', stat: 'luck', value: 10 }
+    },
+    {
+      id: 'hq_skull',
+      name: 'Echter Tierschädel',
+      cost: 300,
+      currency: 'money',
+      description: 'Deko ist alles. (+5 Fame Sofort).',
+      effect: {
+        type: 'stat_modifier',
+        target: 'player',
+        stat: 'fame',
+        value: 5
+      }
     }
   ]
 }
