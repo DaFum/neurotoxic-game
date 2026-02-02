@@ -536,7 +536,17 @@ export const Overworld = () => {
         </p>
       </div>
 
-      {showHQ && <BandHQ onClose={() => setShowHQ(false)} />}
+      {showHQ && (
+        <BandHQ
+          player={player}
+          band={band}
+          social={player.social || { instagram: 0, tiktok: 0 }} // Fallback if social not directly on player but context
+          onClose={() => setShowHQ(false)}
+          updatePlayer={updatePlayer}
+          updateBand={updateBand}
+          addToast={addToast}
+        />
+      )}
     </div>
   )
 }
