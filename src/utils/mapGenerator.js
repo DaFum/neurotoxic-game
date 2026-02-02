@@ -140,10 +140,19 @@ export class MapGenerator {
     // Assign initial coordinates with jitter and resolve overlaps
     // Increased jitter to +/- 5 to help initial separation
     Object.values(map.nodes).forEach(node => {
-      node.x = node.venue.x + (this.random() * 10 - 5)
-      node.y = node.venue.y + (this.random() * 10 - 5)
+      const baseX = node.venue?.x ?? 50
+      const baseY = node.venue?.y ?? 50
+      node.x = baseX + (this.random() * 10 - 5)
+      node.y = baseY + (this.random() * 10 - 5)
     })
 
+    // To ensure purity, we clone the nodes before resolving overlaps if possible,
+    // but here we are mutating the map object we just created, which is local to this function.
+    // However, the resolveOverlaps method signature implies it works on an object.
+    // Given the context of "generating" a map, mutating the *newly created* nodes is acceptable locally,
+    // but technically the method `resolveOverlaps` mutates its input.
+    // For strict purity, we'd return new nodes, but `generateMap` owns `map`.
+    // We will keep it mutating the *internal* map structure being built.
     this.resolveOverlaps(map.nodes)
 
     return map
@@ -151,6 +160,7 @@ export class MapGenerator {
 
   /**
    * Iteratively pushes overlapping nodes apart to ensure visibility.
+   * Note: This method mutates the node objects in the provided map.
    * @param {object} nodes - The nodes map.
    */
   resolveOverlaps(nodes) {

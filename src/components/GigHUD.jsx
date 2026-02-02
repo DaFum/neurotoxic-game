@@ -44,22 +44,22 @@ export const GigHUD = ({ stats, onLaneInput }) => {
           <div
             className={`text-3xl font-bold transition-transform duration-100 ${
               combo > 0 ? 'scale-110' : 'scale-100'
-            } ${combo > 10 ? 'text-[var(--blood-red)] animate-pulse' : 'text-gray-400'}`}
+            } ${combo > 30 ? 'text-[var(--blood-red)] animate-pulse' : 'text-[var(--ash-gray)]'}`}
           >
             {combo}x
           </div>
-          <div className='text-sm text-gray-500 uppercase tracking-widest'>
+          <div className='text-sm text-[var(--ash-gray)] uppercase tracking-widest'>
             Combo
           </div>
         </div>
 
         {/* Toxic Overload Meter */}
         <div className='mt-4'>
-          <div className='flex justify-between text-xs text-gray-400 mb-1'>
+          <div className='flex justify-between text-xs text-[var(--ash-gray)] mb-1'>
             <span>TOXIC OVERLOAD</span>
             <span>{Math.floor(overload)}%</span>
           </div>
-          <div className='w-48 h-3 bg-gray-900 border border-gray-700 rounded overflow-hidden'>
+          <div className='w-48 h-3 bg-[var(--void-black)] border border-[var(--ash-gray)] rounded overflow-hidden'>
             <div
               className='h-full bg-[var(--toxic-green)] transition-all duration-200 ease-out shadow-[0_0_10px_var(--toxic-green)]'
               style={{ width: `${overload}%` }}
@@ -74,18 +74,20 @@ export const GigHUD = ({ stats, onLaneInput }) => {
           <span>CROWD ENERGY</span>
           <span
             className={
-              health < 30 ? 'text-red-500 animate-flash' : 'text-white'
+              health < 30
+                ? 'text-[var(--blood-red)] animate-flash'
+                : 'text-white'
             }
           >
             {Math.floor(health)}%
           </span>
         </div>
         {/* Segmented Bar Look */}
-        <div className='w-full h-6 bg-black/50 border-2 border-white/20 backdrop-blur-sm p-[2px] rounded'>
+        <div className='w-full h-6 bg-[var(--void-black)]/50 border-2 border-white/20 backdrop-blur-sm p-[2px] rounded'>
           <div
             className={`h-full rounded-sm transition-all duration-300 ease-out ${
               health < 30
-                ? 'bg-red-600 shadow-[0_0_15px_red]'
+                ? 'bg-[var(--blood-red)] shadow-[0_0_15px_var(--blood-red)]'
                 : 'bg-gradient-to-r from-[var(--toxic-green)] to-emerald-400 shadow-[0_0_10px_var(--toxic-green)]'
             }`}
             style={{ width: `${health}%` }}
@@ -94,13 +96,13 @@ export const GigHUD = ({ stats, onLaneInput }) => {
       </div>
 
       {/* Controls Hint */}
-      <div className='absolute bottom-4 w-full text-center text-gray-500 font-mono text-sm z-10'>
+      <div className='absolute bottom-4 w-full text-center text-[var(--ash-gray)] font-mono text-sm z-10'>
         [← GUITAR] [↓ DRUMS] [→ BASS] (Arrow Keys)
       </div>
 
       {isGameOver && (
-        <div className='absolute inset-0 z-50 bg-black/90 flex items-center justify-center pointer-events-none'>
-          <h1 className='text-6xl text-red-600 font-[Metal_Mania] animate-pulse'>
+        <div className='absolute inset-0 z-50 bg-[var(--void-black)]/90 flex items-center justify-center pointer-events-none'>
+          <h1 className='text-6xl text-[var(--blood-red)] font-[Metal_Mania] animate-pulse'>
             BOOED OFF STAGE
           </h1>
         </div>

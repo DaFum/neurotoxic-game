@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
-import { useGameState } from '../context/GameState'
 import { motion } from 'framer-motion'
+import { useGameState } from '../context/GameState'
+import { ChatterOverlay } from '../components/ChatterOverlay'
 import { ALL_VENUES } from '../data/venues'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import { calculateTravelExpenses } from '../utils/economyEngine'
-import { ChatterOverlay } from '../components/ChatterOverlay'
 import { audioManager } from '../utils/AudioManager'
 import { logger } from '../utils/logger'
 
@@ -160,8 +160,8 @@ export const Overworld = () => {
           if (node.type === 'REST_STOP') {
             const newMembers = band.members.map(m => ({
               ...m,
-              stamina: Math.min(100, m.stamina + 20),
-              mood: Math.min(100, m.mood + 10)
+              stamina: Math.min(100, Math.max(0, m.stamina + 20)),
+              mood: Math.min(100, Math.max(0, m.mood + 10))
             }))
             updateBand({
               members: newMembers
@@ -174,6 +174,10 @@ export const Overworld = () => {
             }
           } else {
             // Default: GIG
+            if (band.harmony <= 0) {
+              addToast("Band's harmony too low to perform!", 'warning')
+              return
+            }
             logger.info('Overworld', 'Starting Gig at destination', {
               venue: node.venue.name
             })

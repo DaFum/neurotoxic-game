@@ -281,7 +281,6 @@ export const PreGig = () => {
         className='mt-8 px-12 py-4 bg-(--toxic-green) text-black font-bold text-2xl uppercase tracking-widest hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed'
         disabled={setlist.length === 0}
         onClick={async () => {
-          console.log('[PreGig] START SHOW clicked. currentGig:', currentGig)
           await ensureAudioContext() // Unlock audio context on user interaction
           changeScene('GIG')
         }}

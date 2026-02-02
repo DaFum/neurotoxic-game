@@ -173,7 +173,7 @@ export const useRhythmGameLogic = () => {
         startMetalGenerator(currentSong, audioDelay)
       }
 
-      gameStateRef.current.startTime = Date.now() + audioDelay * 1000
+      gameStateRef.current.startTime = Date.now()
       gameStateRef.current.running = true
       console.log('[RhythmGame] Initialized.', {
         startTime: gameStateRef.current.startTime,
