@@ -38,6 +38,9 @@ export class MapGenerator {
 
     // Layer 0: Stendal (Home)
     const homeVenue = ALL_VENUES.find(v => v.id === 'stendal_proberaum')
+    if (!homeVenue) {
+      throw new Error('Home venue "stendal_proberaum" not found in ALL_VENUES')
+    }
     const startNode = {
       id: 'node_0_0',
       layer: 0,
@@ -53,6 +56,14 @@ export class MapGenerator {
     const mediumVenues = ALL_VENUES.filter(v => v.diff === 3)
     const hardVenues = ALL_VENUES.filter(v => v.diff >= 4)
 
+    // Track used venues to avoid duplicates
+    const usedVenueIds = new Set()
+    if (homeVenue) usedVenueIds.add(homeVenue.id)
+
+    // Pre-reserve Finale Venue (Leipzig Arena) so it's not picked randomly
+    const preFinale = ALL_VENUES.find(v => v.id === 'leipzig_arena')
+    if (preFinale) usedVenueIds.add(preFinale.id)
+
     // Generate intermediate layers
     for (let i = 1; i < depth; i++) {
       const layerNodes = []
@@ -65,8 +76,20 @@ export class MapGenerator {
         else if (i < 7) venuePool = mediumVenues
         else venuePool = hardVenues
 
+        // Filter out used venues
+        const availableVenues = venuePool.filter(v => !usedVenueIds.has(v.id))
+        // Fallback to full pool if all used (should be rare with enough venues)
+        // Ensure we don't pick reserved venues (Home/Finale) even in fallback
+        let candidates = availableVenues
+        if (candidates.length === 0) {
+          candidates = venuePool.filter(
+            v => v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum'
+          )
+        }
+
         // Pick random venue
-        const venue = venuePool[Math.floor(this.random() * venuePool.length)]
+        const venue = candidates[Math.floor(this.random() * candidates.length)]
+        usedVenueIds.add(venue.id)
 
         // Determine Node Type based on probability
         // ~70% GIG, ~20% REST_STOP, ~10% SPECIAL
@@ -122,6 +145,8 @@ export class MapGenerator {
     // Finale Layer
     const finaleVenue =
       ALL_VENUES.find(v => v.id === 'leipzig_arena') || hardVenues[0]
+    // If we fell back to hardVenues[0], ensure it's recorded (though map is done)
+
     const endNode = {
       id: `node_${depth}_0`,
       layer: depth,
