@@ -109,6 +109,7 @@ export const useRhythmGameLogic = () => {
           'useRhythmGameLogic: no node found for',
           player.currentNodeId
         )
+        hasInitializedRef.current = false
         return
       }
 

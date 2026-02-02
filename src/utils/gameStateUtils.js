@@ -83,7 +83,7 @@ export const applyEventDelta = (state, delta) => {
       })
     }
     if (typeof delta.band.luck === 'number') {
-      nextBand.luck = (nextBand.luck || 0) + delta.band.luck
+      nextBand.luck = Math.max(0, (nextBand.luck || 0) + delta.band.luck)
     }
     nextState.band = nextBand
   }
