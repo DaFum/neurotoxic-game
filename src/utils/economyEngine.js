@@ -139,15 +139,22 @@ const calculateMerchIncome = (
 /**
  * Calculates travel expenses.
  * @param {object} node - The target node.
+ * @param {object} [fromNode=null] - The source node.
  */
-export const calculateTravelExpenses = node => {
+export const calculateTravelExpenses = (node, fromNode = null) => {
   const x = typeof node?.x === 'number' ? node.x : (node.venue?.x ?? 50)
   const y = typeof node?.y === 'number' ? node.y : (node.venue?.y ?? 50)
 
-  // Distance from center (50, 50) used as base distance metric
+  const startX = fromNode && typeof fromNode.x === 'number' ? fromNode.x : 50
+  const startY = fromNode && typeof fromNode.y === 'number' ? fromNode.y : 50
+
+  const dx = x - startX
+  const dy = y - startY
+
+  // Distance logic: Relative distance + base cost
   const dist = Math.max(
-    0,
-    Math.floor(Math.sqrt(Math.pow(x - 50, 2) + Math.pow(y - 50, 2)) * 5) + 50
+    10,
+    Math.floor(Math.sqrt(dx * dx + dy * dy) * 5) + 20
   )
 
   const fuelLiters = (dist / 100) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM

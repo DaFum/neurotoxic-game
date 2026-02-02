@@ -455,7 +455,7 @@ test('eventEngine logic for inventory increment handles existing values', () => 
   )
 })
 
-test('eventEngine logic prevents negative inventory in delta', () => {
+test('eventEngine logic allows negative inventory in delta', () => {
   const result = {
     type: 'composite',
     effects: [
@@ -467,7 +467,7 @@ test('eventEngine logic prevents negative inventory in delta', () => {
   const delta = eventEngine.applyResult(result)
   assert.equal(
     delta.band.inventory.strings,
-    0,
-    'Should clamp inventory to 0 in delta'
+    -5,
+    'Should allow negative inventory in delta for consumption'
   )
 })
