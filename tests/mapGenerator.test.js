@@ -55,6 +55,7 @@ test('MapGenerator ensures nodes do not overlap', () => {
   nodes.forEach(node => {
     assert.ok(typeof node.x === 'number', 'Node has x')
     assert.ok(typeof node.y === 'number', 'Node has y')
+    // Bounds match mapGenerator's final clamp (5-95)
     assert.ok(node.x >= 5 && node.x <= 95, `Node x ${node.x} within bounds`)
     assert.ok(node.y >= 5 && node.y <= 95, `Node y ${node.y} within bounds`)
   })
@@ -62,7 +63,7 @@ test('MapGenerator ensures nodes do not overlap', () => {
   // Check distances
   // Note: Since we use simple iterative repulsion, it might not be 100% perfect for very dense maps,
   // but for the generated map it should satisfy a reasonable threshold.
-  // We used 4% as target, let's assert > 2.5% to allow for some slight imperfection/clamping at edges.
+  // We used 6% as target in resolveOverlaps, allowing 2.5% for edges/imperfections.
   for (let i = 0; i < nodes.length; i++) {
     for (let j = i + 1; j < nodes.length; j++) {
       const n1 = nodes[i]

@@ -270,7 +270,7 @@ export const Overworld = () => {
       if (!travelCompletedRef.current) {
         onTravelComplete(node)
       }
-    }, 10)
+    }, 1510)
   }
 
   // Keep a ref to the latest onTravelComplete (still useful for future logic)
@@ -466,11 +466,21 @@ export const Overworld = () => {
 
         {/* Animated Van (Global Overlay) - Refactored to motion.div */}
         {isTraveling && currentNode && travelTarget && (
-          <div
-            className='absolute z-[60] pointer-events-none transition-all duration-[1500ms] ease-in-out'
-            style={{
+          <motion.div
+            className='absolute z-[60] pointer-events-none'
+            initial={{
+              left: `${currentNode.x}%`,
+              top: `${currentNode.y}%`
+            }}
+            animate={{
               left: `${travelTarget.x}%`,
               top: `${travelTarget.y}%`
+            }}
+            transition={{ duration: 1.5, ease: 'easeInOut' }}
+            onAnimationComplete={() => {
+              if (!travelCompletedRef.current) {
+                onTravelComplete(travelTarget)
+              }
             }}
           >
             <img
@@ -479,7 +489,7 @@ export const Overworld = () => {
               className='w-12 h-8 object-contain drop-shadow-[0_0_10px_var(--toxic-green)]'
               style={{ transform: 'translate(0, -50%)' }}
             />
-          </div>
+          </motion.div>
         )}
       </div>
 
