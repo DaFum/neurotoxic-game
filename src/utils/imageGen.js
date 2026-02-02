@@ -69,6 +69,10 @@ export const IMG_PROMPTS = {
   ICON_VAN: 'pixel art black tour van side view small icon',
   ICON_PIN_CLUB: 'pixel art map pin skull shape green',
   ICON_PIN_FESTIVAL: 'pixel art map pin flame shape red',
+  ICON_PIN_HOME: 'pixel art home icon rehearsal room garage door grunge style',
+
+  // HQ
+  BAND_HQ_BG: 'messy punk rehearsal room band posters beer crates amplifiers instruments pixel art cozy grunge',
 
   // Events
   EVENT_POLICE: 'german police car night flashing blue lights pixel art gritty',

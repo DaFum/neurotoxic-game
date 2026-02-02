@@ -19,6 +19,7 @@ const initialState = {
     tutorialStep: 0,
     fame: 0,
     fameLevel: 0,
+    hqUpgrades: [],
     van: {
       fuel: 100,
       condition: 100,
