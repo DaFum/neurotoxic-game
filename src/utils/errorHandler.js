@@ -100,22 +100,6 @@ export class StateError extends GameError {
 }
 
 /**
- * Audio-related error
- * @extends GameError
- */
-export class AudioError extends GameError {
-  constructor(message, context = {}) {
-    super(message, {
-      category: ErrorCategory.AUDIO,
-      severity: ErrorSeverity.LOW,
-      context,
-      recoverable: true
-    })
-    this.name = 'AudioError'
-  }
-}
-
-/**
  * Storage-related error
  * @extends GameError
  */
@@ -128,22 +112,6 @@ export class StorageError extends GameError {
       recoverable: true
     })
     this.name = 'StorageError'
-  }
-}
-
-/**
- * Render-related error
- * @extends GameError
- */
-export class RenderError extends GameError {
-  constructor(message, context = {}) {
-    super(message, {
-      category: ErrorCategory.RENDER,
-      severity: ErrorSeverity.HIGH,
-      context,
-      recoverable: false
-    })
-    this.name = 'RenderError'
   }
 }
 
@@ -233,46 +201,6 @@ export const handleError = (error, options = {}) => {
 }
 
 /**
- * Wraps an async function with error handling
- * @param {Function} fn - Async function to wrap
- * @param {Object} [options] - Error handling options
- * @returns {Function} Wrapped function
- */
-export const withErrorHandling = (fn, options = {}) => {
-  return async (...args) => {
-    try {
-      return await fn(...args)
-    } catch (error) {
-      handleError(error, options)
-      if (!options.swallowError) {
-        throw error
-      }
-      return options.fallbackValue
-    }
-  }
-}
-
-/**
- * Wraps a sync function with error handling
- * @param {Function} fn - Sync function to wrap
- * @param {Object} [options] - Error handling options
- * @returns {Function} Wrapped function
- */
-export const withSyncErrorHandling = (fn, options = {}) => {
-  return (...args) => {
-    try {
-      return fn(...args)
-    } catch (error) {
-      handleError(error, options)
-      if (!options.swallowError) {
-        throw error
-      }
-      return options.fallbackValue
-    }
-  }
-}
-
-/**
  * Gets the error log for debugging
  * @returns {Array<Object>} Array of error log entries
  */
@@ -303,35 +231,5 @@ export const safeStorageOperation = (operation, fn, fallbackValue = null) => {
       { silent: true }
     )
     return fallbackValue
-  }
-}
-
-/**
- * Validates required fields in an object
- * @param {Object} obj - Object to validate
- * @param {Array<string>} requiredFields - Required field names
- * @param {string} [context] - Context for error message
- * @throws {StateError} If validation fails
- */
-export const validateRequiredFields = (obj, requiredFields, context = 'Object') => {
-  const missing = requiredFields.filter(field => obj[field] === undefined)
-  if (missing.length > 0) {
-    throw new StateError(
-      `${context} missing required fields: ${missing.join(', ')}`,
-      { object: obj, missingFields: missing }
-    )
-  }
-}
-
-/**
- * Asserts a condition and throws if false
- * @param {boolean} condition - Condition to check
- * @param {string} message - Error message if assertion fails
- * @param {Object} [context] - Additional context
- * @throws {GameLogicError} If assertion fails
- */
-export const assertCondition = (condition, message, context = {}) => {
-  if (!condition) {
-    throw new GameLogicError(message, context)
   }
 }

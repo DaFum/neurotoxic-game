@@ -1,16 +1,13 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react'
+import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { ChatterOverlay } from '../components/ChatterOverlay'
 import { BandHQ } from '../ui/BandHQ'
 import { ALL_VENUES } from '../data/venues'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
-import {
-  calculateTravelExpenses,
-  EXPENSE_CONSTANTS
-} from '../utils/economyEngine'
+import { EXPENSE_CONSTANTS } from '../utils/economyEngine'
 import { audioManager } from '../utils/AudioManager'
-import { logger } from '../utils/logger'
+import { useTravelLogic } from '../hooks/useTravelLogic'
 
 /**
  * A widget to toggle the ambient radio / music.
@@ -67,368 +64,36 @@ export const Overworld = () => {
     changeScene
   } = useGameState()
 
-  const [isTraveling, setIsTraveling] = useState(false)
-  const [travelTarget, setTravelTarget] = useState(null)
   const [hoveredNode, setHoveredNode] = useState(null)
   const [showHQ, setShowHQ] = useState(false)
   const [activeHQTab, setActiveHQTab] = useState('STATS')
-  const travelCompletedRef = useRef(false)
 
-  /**
-   * Checks if a target node is connected to the current node.
-   * @param {string} targetNodeId - The destination node ID.
-   * @returns {boolean} True if connected.
-   */
-  const isConnected = targetNodeId => {
-    if (!gameMap) return false
-    const connections = gameMap.connections.filter(
-      c => c.from === player.currentNodeId
-    )
-    return connections.some(c => c.to === targetNodeId)
-  }
-
-  /**
-   * Determines the visibility state of a node based on its layer.
-   * @param {number} nodeLayer - The layer of the target node.
-   * @param {number} currentLayer - The current layer of the player.
-   * @returns {string} 'visible', 'dimmed', or 'hidden'.
-   */
-  const getNodeVisibility = (nodeLayer, currentLayer) => {
-    if (nodeLayer <= currentLayer + 1) return 'visible' // 1 (Interactive)
-    if (nodeLayer === currentLayer + 2) return 'dimmed' // 0.5 (Grayscale, Non-interactive)
-    return 'hidden' // Hidden
-  }
-
-  /**
-   * Callback executed when the travel animation finishes.
-   * Updates state, costs, and triggers arrival logic.
-   * Accepts an optional explicitNode to bypass state latency issues.
-   */
-  const onTravelComplete = useCallback(
-    (explicitNode = null) => {
-      // If explicitNode is event (from motion), ignore it.
-      const target =
-        explicitNode && explicitNode.id ? explicitNode : travelTarget
-
-      logger.info('Overworld', 'onTravelComplete triggered', {
-        travelCompleted: travelCompletedRef.current,
-        hasTarget: !!target,
-        targetId: target?.id
-      })
-
-      if (travelCompletedRef.current) return
-      travelCompletedRef.current = true
-
-      if (!target) {
-        logger.error(
-          'Overworld',
-          'Travel complete but no target! Resetting state.'
-        )
-        setIsTraveling(false)
-        return
-      }
-
-      if (!target.venue) {
-        logger.error('Overworld', 'Target node has no venue data!', target)
-        setIsTraveling(false)
-        addToast('Error: Invalid destination.', 'error')
-        return
-      }
-
-      const node = target
-      const currentStartNode = gameMap?.nodes[player.currentNodeId]
-
-      // Re-calculate and re-validate costs before deducting
-      const { fuelLiters, totalCost } = calculateTravelExpenses(
-        node,
-        currentStartNode,
-        { van: player.van }
-      )
-
-      // Check affordability again (safeguard)
-      if (player.money < totalCost || (player.van?.fuel ?? 0) < fuelLiters) {
-        addToast('Error: Insufficient resources upon arrival.', 'error')
-        setIsTraveling(false)
-        setTravelTarget(null)
-        return
-      }
-
-      updatePlayer({
-        money: Math.max(0, player.money - totalCost),
-        van: {
-          ...player.van,
-          fuel: Math.max(0, (player.van?.fuel ?? 0) - fuelLiters)
-        },
-        location: node.venue.name,
-        currentNodeId: node.id
-      })
-      advanceDay()
-
-      if (hasUpgrade('van_sound_system')) {
-        updateBand({ harmony: Math.min(100, band.harmony + 5) })
-      }
-
-      setIsTraveling(false)
-      setTravelTarget(null)
-
-      // Trigger Events
-      const eventHappened = triggerEvent('transport', 'travel')
-      if (!eventHappened) {
-        const bandEvent = triggerEvent('band', 'travel')
-        if (!bandEvent) {
-          // Node Type Handling
-          if (node.type === 'REST_STOP') {
-            const newMembers = band.members.map(m => ({
-              ...m,
-              stamina: Math.min(100, Math.max(0, m.stamina + 20)),
-              mood: Math.min(100, Math.max(0, m.mood + 10))
-            }))
-            updateBand({
-              members: newMembers
-            })
-            addToast('Rested at stop. Band feels better.', 'success')
-          } else if (node.type === 'SPECIAL') {
-            const specialEvent = triggerEvent('special')
-            if (!specialEvent) {
-              addToast('A mysterious place, but nothing happened.', 'info')
-            }
-          } else if (node.type === 'START') {
-            setShowHQ(true)
-            addToast('Home Sweet Home.', 'success')
-          } else {
-            // Default: GIG
-            if (band.harmony <= 0) {
-              addToast("Band's harmony too low to perform!", 'warning')
-              return
-            }
-            logger.info('Overworld', 'Starting Gig at destination', {
-              venue: node.venue.name
-            })
-            startGig(node.venue)
-          }
-        }
-      }
-    },
-    [
-      travelTarget,
-      player.money,
-      player.van,
-      player.day,
-      band,
-      hasUpgrade,
-      updatePlayer,
-      updateBand,
-      triggerEvent,
-      startGig,
-      addToast,
-      advanceDay,
-      gameMap,
-      player.currentNodeId
-    ]
-  )
-
-  /**
-   * Initiates the travel sequence to a selected node.
-   * @param {object} node - The target node object.
-   */
-  const handleTravel = node => {
-    if (!node?.venue) {
-      addToast('Error: Invalid location.', 'error')
-      return
-    }
-
-    logger.info('Overworld', 'handleTravel initiated', {
-      target: node.id,
-      current: player.currentNodeId
-    })
-
-    if (isTraveling) return
-
-    // Allow interaction with current node (Enter Gig)
-    if (node.id === player.currentNodeId) {
-      if (node.type === 'GIG') {
-        logger.info('Overworld', 'Entering current node Gig', {
-          venue: node.venue.name
-        })
-        startGig(node.venue)
-      } else if (node.type === 'START') {
-        setShowHQ(true)
-      } else {
-        addToast(`You are at ${node.venue.name}.`, 'info')
-      }
-      return
-    }
-
-    const currentStartNode = gameMap?.nodes[player.currentNodeId]
-
-    // Check connectivity and layer
-    const currentLayer = currentStartNode?.layer || 0
-    const visibility = getNodeVisibility(node.layer, currentLayer)
-
-    if (visibility !== 'visible' || !isConnected(node.id)) {
-      return
-    }
-
-    // Calculate Costs
-    const { dist, totalCost, fuelLiters } = calculateTravelExpenses(
-      node,
-      currentStartNode,
-      player
-    )
-
-    addToast(
-      `Travel to ${node.venue.name} (${dist}km)? Cost: ${totalCost}€`,
-      'info'
-    )
-
-    if (player.money < totalCost) {
-      addToast('Not enough money for gas and food!', 'error')
-      return
-    }
-
-    if ((player.van?.fuel ?? 0) < fuelLiters) {
-      addToast('Not enough fuel in the tank!', 'error')
-      return
-    }
-
-    // Start Travel Sequence
-    travelCompletedRef.current = false
-    setTravelTarget(node)
-    setIsTraveling(true)
-
-    try {
-      audioManager.playSFX('travel')
-    } catch (e) {
-      console.error('SFX Error:', e)
-    }
-
-    // Direct Timeout Failsafe - bypasses React state lag or useEffect timing issues
-    // We pass 'node' explicitly to onTravelComplete to ensure it has the data
-    // Executing immediately via minimal timeout to ensure state update but prevent freeze
-    window.setTimeout(() => {
-      if (!travelCompletedRef.current) {
-        onTravelComplete(node)
-      }
-    }, 1510)
-  }
-
-  // Keep a ref to the latest onTravelComplete (still useful for future logic)
-  const onTravelCompleteLatest = useRef(onTravelComplete)
-  useEffect(() => {
-    onTravelCompleteLatest.current = onTravelComplete
-  }, [onTravelComplete])
+  const {
+    isTraveling,
+    travelTarget,
+    isConnected,
+    getNodeVisibility,
+    handleTravel,
+    handleRefuel,
+    onTravelComplete,
+    travelCompletedRef
+  } = useTravelLogic({
+    player,
+    band,
+    gameMap,
+    updatePlayer,
+    updateBand,
+    advanceDay,
+    triggerEvent,
+    startGig,
+    hasUpgrade,
+    addToast,
+    changeScene,
+    onShowHQ: () => setShowHQ(true)
+  })
 
   const currentNode = gameMap?.nodes[player.currentNodeId]
   const currentLayer = currentNode?.layer || 0
-
-  /**
-   * Refuels the van to 100% capacity if affordable.
-   */
-  const handleRefuel = () => {
-    if (isTraveling) return
-
-    const currentFuel = player.van?.fuel ?? 0
-    const missing = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - currentFuel
-    if (missing <= 0) {
-      addToast('Tank is already full!', 'info')
-      return
-    }
-
-    const cost = Math.ceil(missing * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
-
-    if (player.money < cost) {
-      addToast(`Not enough money! Need ${cost}€ to fill up.`, 'error')
-      return
-    }
-
-    updatePlayer({
-      money: Math.max(0, player.money - cost),
-      van: { ...player.van, fuel: EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL }
-    })
-    addToast(`Refueled: -${cost}€`, 'success')
-    try {
-      audioManager.playSFX('cash')
-    } catch (e) {
-      // ignore
-    }
-  }
-
-  // Softlock Check: Stranded logic
-  const timeoutRef = useRef(null)
-
-  useEffect(() => {
-    if (!gameMap || isTraveling || !player.currentNodeId) {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-        timeoutRef.current = null
-      }
-      return
-    }
-
-    const currentFuel = player.van?.fuel ?? 0
-    const currentNode = gameMap.nodes[player.currentNodeId]
-    const neighbors = gameMap.connections
-      .filter(c => c.from === player.currentNodeId)
-      .map(c => gameMap.nodes[c.to])
-
-    // Can we reach ANY neighbor?
-    const canReachAny = neighbors.some(n => {
-      if (!n) return false
-      const { fuelLiters } = calculateTravelExpenses(
-        n,
-        gameMap.nodes[player.currentNodeId],
-        { van: player.van }
-      )
-      return currentFuel >= fuelLiters
-    })
-
-    // If we cannot reach any neighbor AND we are not at a gig (money source)
-    if (!canReachAny && currentNode?.type !== 'GIG') {
-      // Check if we can afford a FULL refuel (since partial is not implemented)
-      const missingFuel = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - currentFuel
-      const refuelCost = Math.ceil(
-        missingFuel * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE
-      )
-
-      if (player.money < refuelCost) {
-        if (!timeoutRef.current) {
-          logger.error('Overworld', 'GAME OVER: Stranded (No fuel, no money)')
-          addToast(
-            'GAME OVER: Stranded! Cannot travel and cannot afford full tank.',
-            'error'
-          )
-          timeoutRef.current = setTimeout(() => changeScene('GAMEOVER'), 3000)
-        }
-      } else {
-        // Has enough money to refuel
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current)
-          timeoutRef.current = null
-        }
-      }
-    } else {
-      // Can reach neighbor
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-        timeoutRef.current = null
-      }
-    }
-
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-        timeoutRef.current = null
-      }
-    }
-  }, [
-    player.van,
-    player.money,
-    player.currentNodeId,
-    gameMap,
-    isTraveling,
-    changeScene,
-    addToast
-  ])
 
   return (
     <div
