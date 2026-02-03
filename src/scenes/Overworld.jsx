@@ -329,7 +329,7 @@ export const Overworld = () => {
 
     const currentFuel = player.van?.fuel ?? 0
     const missing = 100 - currentFuel
-    if (missing <= 1) {
+    if (missing <= 0) {
       addToast('Tank is already full!', 'info')
       return
     }
