@@ -366,6 +366,7 @@ export const Overworld = () => {
     }
 
     const currentFuel = player.van?.fuel ?? 0
+    const currentNode = gameMap.nodes[player.currentNodeId]
     const neighbors = gameMap.connections
       .filter(c => c.from === player.currentNodeId)
       .map(c => gameMap.nodes[c.to])
@@ -381,8 +382,8 @@ export const Overworld = () => {
       return currentFuel >= fuelLiters
     })
 
-    // If we cannot reach any neighbor
-    if (!canReachAny) {
+    // If we cannot reach any neighbor AND we are not at a gig (money source)
+    if (!canReachAny && currentNode?.type !== 'GIG') {
       // Check if we can afford a FULL refuel (since partial is not implemented)
       const missingFuel = 100 - currentFuel
       const refuelCost = Math.ceil(
