@@ -2,10 +2,13 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { ChatterOverlay } from '../components/ChatterOverlay'
+import { BandHQ } from '../ui/BandHQ'
 import { ALL_VENUES } from '../data/venues'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
-import { calculateTravelExpenses } from '../utils/economyEngine'
-import { BandHQ } from '../ui/BandHQ'
+import {
+  calculateTravelExpenses,
+  EXPENSE_CONSTANTS
+} from '../utils/economyEngine'
 import { audioManager } from '../utils/AudioManager'
 import { logger } from '../utils/logger'
 
@@ -59,7 +62,9 @@ export const Overworld = () => {
     hasUpgrade,
     updateBand,
     band,
-    addToast
+    addToast,
+    advanceDay,
+    changeScene
   } = useGameState()
 
   const [isTraveling, setIsTraveling] = useState(false)
@@ -137,7 +142,7 @@ export const Overworld = () => {
       const { fuelLiters, totalCost } = calculateTravelExpenses(
         node,
         currentStartNode,
-        player
+        { van: player.van }
       )
 
       // Check affordability again (safeguard)
@@ -155,9 +160,9 @@ export const Overworld = () => {
           fuel: Math.max(0, (player.van?.fuel ?? 0) - fuelLiters)
         },
         location: node.venue.name,
-        currentNodeId: node.id,
-        day: player.day + 1
+        currentNodeId: node.id
       })
+      advanceDay()
 
       if (hasUpgrade('van_sound_system')) {
         updateBand({ harmony: Math.min(100, band.harmony + 5) })
@@ -216,6 +221,7 @@ export const Overworld = () => {
       triggerEvent,
       startGig,
       addToast,
+      advanceDay,
       gameMap,
       player.currentNodeId
     ]
@@ -315,6 +321,115 @@ export const Overworld = () => {
   const currentNode = gameMap?.nodes[player.currentNodeId]
   const currentLayer = currentNode?.layer || 0
 
+  /**
+   * Refuels the van to 100% capacity if affordable.
+   */
+  const handleRefuel = () => {
+    if (isTraveling) return
+
+    const currentFuel = player.van?.fuel ?? 0
+    const missing = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - currentFuel
+    if (missing <= 0) {
+      addToast('Tank is already full!', 'info')
+      return
+    }
+
+    const cost = Math.ceil(missing * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
+
+    if (player.money < cost) {
+      addToast(`Not enough money! Need ${cost}€ to fill up.`, 'error')
+      return
+    }
+
+    updatePlayer({
+      money: Math.max(0, player.money - cost),
+      van: { ...player.van, fuel: EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL }
+    })
+    addToast(`Refueled: -${cost}€`, 'success')
+    try {
+      audioManager.playSFX('cash')
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  // Softlock Check: Stranded logic
+  const timeoutRef = useRef(null)
+
+  useEffect(() => {
+    if (!gameMap || isTraveling || !player.currentNodeId) {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
+      return
+    }
+
+    const currentFuel = player.van?.fuel ?? 0
+    const currentNode = gameMap.nodes[player.currentNodeId]
+    const neighbors = gameMap.connections
+      .filter(c => c.from === player.currentNodeId)
+      .map(c => gameMap.nodes[c.to])
+
+    // Can we reach ANY neighbor?
+    const canReachAny = neighbors.some(n => {
+      if (!n) return false
+      const { fuelLiters } = calculateTravelExpenses(
+        n,
+        gameMap.nodes[player.currentNodeId],
+        { van: player.van }
+      )
+      return currentFuel >= fuelLiters
+    })
+
+    // If we cannot reach any neighbor AND we are not at a gig (money source)
+    if (!canReachAny && currentNode?.type !== 'GIG') {
+      // Check if we can afford a FULL refuel (since partial is not implemented)
+      const missingFuel = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - currentFuel
+      const refuelCost = Math.ceil(
+        missingFuel * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE
+      )
+
+      if (player.money < refuelCost) {
+        if (!timeoutRef.current) {
+          logger.error('Overworld', 'GAME OVER: Stranded (No fuel, no money)')
+          addToast(
+            'GAME OVER: Stranded! Cannot travel and cannot afford full tank.',
+            'error'
+          )
+          timeoutRef.current = setTimeout(() => changeScene('GAMEOVER'), 3000)
+        }
+      } else {
+        // Has enough money to refuel
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current)
+          timeoutRef.current = null
+        }
+      }
+    } else {
+      // Can reach neighbor
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
+    }
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
+    }
+  }, [
+    player.van,
+    player.money,
+    player.currentNodeId,
+    gameMap,
+    isTraveling,
+    changeScene,
+    addToast
+  ])
+
   return (
     <div
       className={`w-full h-full bg-[var(--void-black)] relative overflow-hidden flex flex-col items-center justify-center p-8 ${isTraveling ? 'pointer-events-none' : ''}`}
@@ -342,7 +457,17 @@ export const Overworld = () => {
         <ToggleRadio />
       </div>
 
-      <div className='absolute bottom-8 right-8 z-50 pointer-events-auto'>
+      <div className='absolute bottom-8 right-8 z-50 pointer-events-auto flex flex-col gap-2 items-end'>
+        <button
+          onClick={handleRefuel}
+          disabled={
+            isTraveling ||
+            (player.van?.fuel ?? 0) >= EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
+          }
+          className='bg-[var(--void-black)] border border-[var(--warning-yellow)] text-[var(--warning-yellow)] px-4 py-2 hover:bg-[var(--warning-yellow)] hover:text-[var(--void-black)] font-mono text-sm disabled:opacity-50'
+        >
+          [REFUEL]
+        </button>
         <button
           onClick={saveGame}
           disabled={isTraveling}

@@ -1,4 +1,5 @@
 // Utility functions for Simulation <-> Action connection
+import { EXPENSE_CONSTANTS } from './economyEngine.js'
 
 /**
  * Derives dynamic game modifiers for the Gig scene based on band state and active toggles.
@@ -116,7 +117,7 @@ export const calculateDailyUpdates = currentState => {
 
   // 1. Costs
   // Rent/Food
-  const dailyCost = 25
+  const dailyCost = EXPENSE_CONSTANTS.DAILY.BASE_COST
   nextPlayer.money -= dailyCost
 
   // 2. Mood Drift

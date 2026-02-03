@@ -13,9 +13,13 @@ export const INCOME_CONSTANTS = {
 }
 
 export const EXPENSE_CONSTANTS = {
+  DAILY: {
+    BASE_COST: 25
+  },
   TRANSPORT: {
     FUEL_PER_100KM: 12, // Liters
     FUEL_PRICE: 1.75, // Euro per Liter
+    MAX_FUEL: 100, // Liters
     INSURANCE_MONTHLY: 80,
     MAINTENANCE_30DAYS: 200
   },
