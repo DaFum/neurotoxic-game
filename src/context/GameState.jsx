@@ -2,249 +2,39 @@ import React, { createContext, useContext, useReducer, useEffect } from 'react'
 import { eventEngine } from '../utils/eventEngine'
 import { resolveEventChoice } from '../utils/eventResolver'
 import { MapGenerator } from '../utils/mapGenerator'
-import { applyEventDelta } from '../utils/gameStateUtils'
-import { calculateDailyUpdates } from '../utils/simulationUtils'
-import { CHARACTERS } from '../data/characters'
 import { logger } from '../utils/logger'
+import {
+  handleError,
+  StorageError,
+  StateError,
+  safeStorageOperation
+} from '../utils/errorHandler'
 
-// Initial State Definition
-const initialState = {
-  currentScene: 'MENU',
-  player: {
-    money: 500,
-    day: 1,
-    time: 12,
-    location: 'Stendal',
-    currentNodeId: 'node_0_0',
-    tutorialStep: 0,
-    fame: 0,
-    fameLevel: 0,
-    hqUpgrades: [],
-    van: {
-      fuel: 100,
-      condition: 100,
-      upgrades: [],
-      breakdownChance: 0.05
-    },
-    passiveFollowers: 0
-  },
-  band: {
-    members: [
-      { ...CHARACTERS.MATZE, mood: 80, stamina: 100 },
-      { ...CHARACTERS.LARS, mood: 80, stamina: 100 },
-      { ...CHARACTERS.MARIUS, mood: 80, stamina: 100 }
-    ],
-    harmony: 80,
-    harmonyRegenTravel: false,
-    inventorySlots: 0,
-    luck: 0,
-    performance: {
-      guitarDifficulty: 1.0,
-      drumMultiplier: 1.0,
-      crowdDecay: 1.0
-    },
-    inventory: {
-      shirts: 50,
-      hoodies: 20,
-      patches: 100,
-      cds: 30,
-      vinyl: 10,
-      strings: true,
-      cables: true,
-      drum_parts: true,
-      golden_pick: false
-    }
-  },
-  social: {
-    instagram: 228,
-    tiktok: 64,
-    youtube: 14,
-    newsletter: 0,
-    viral: 0
-  },
-  gameMap: null,
-  currentGig: null,
-  setlist: [],
-  lastGigStats: null,
-  activeEvent: null,
-  toasts: [],
-  activeStoryFlags: [],
-  eventCooldowns: [],
-  pendingEvents: [],
-  reputationByRegion: {},
-  settings: {
-    crtEnabled: true
-  },
-  npcs: {},
-  gigModifiers: {
-    promo: false,
-    soundcheck: false,
-    merch: false,
-    catering: false,
-    guestlist: false
-  }
-}
-
-// Reducer Function
-/**
- * Main state reducer for the game.
- * @param {object} state - Current state.
- * @param {object} action - Action with type and payload.
- * @returns {object} New state.
- */
-const gameReducer = (state, action) => {
-  // logger.debug('GameState', `Action: ${action.type}`, action.payload); // Too spammy? Maybe INFO for major actions
-
-  switch (action.type) {
-    case 'CHANGE_SCENE':
-      logger.info(
-        'GameState',
-        `Scene Change: ${state.currentScene} -> ${action.payload}`
-      )
-      return { ...state, currentScene: action.payload }
-
-    case 'UPDATE_PLAYER':
-      logger.debug('GameState', 'Update Player', action.payload)
-      return { ...state, player: { ...state.player, ...action.payload } }
-
-    case 'UPDATE_BAND':
-      logger.debug('GameState', 'Update Band', action.payload)
-      return { ...state, band: { ...state.band, ...action.payload } }
-
-    case 'UPDATE_SOCIAL':
-      return { ...state, social: { ...state.social, ...action.payload } }
-
-    case 'UPDATE_SETTINGS':
-      return { ...state, settings: { ...state.settings, ...action.payload } }
-
-    case 'SET_MAP':
-      logger.info('GameState', 'Map Generated')
-      return { ...state, gameMap: action.payload }
-
-    case 'SET_GIG':
-      logger.info('GameState', 'Set Current Gig', action.payload?.name)
-      return { ...state, currentGig: action.payload }
-
-    case 'START_GIG':
-      logger.info('GameState', 'Starting Gig Sequence', action.payload?.name)
-      return { ...state, currentGig: action.payload, currentScene: 'PREGIG' }
-
-    case 'SET_SETLIST':
-      return { ...state, setlist: action.payload }
-
-    case 'SET_LAST_GIG_STATS':
-      return { ...state, lastGigStats: action.payload }
-
-    case 'SET_ACTIVE_EVENT':
-      if (action.payload)
-        logger.info('GameState', 'Event Triggered', action.payload.title)
-      return { ...state, activeEvent: action.payload }
-
-    case 'ADD_TOAST':
-      return { ...state, toasts: [...state.toasts, action.payload] }
-
-    case 'REMOVE_TOAST':
-      return {
-        ...state,
-        toasts: state.toasts.filter(t => t.id !== action.payload)
-      }
-
-    case 'SET_GIG_MODIFIERS': {
-      const updates =
-        (typeof action.payload === 'function'
-          ? action.payload(state.gigModifiers)
-          : action.payload) || {}
-      return { ...state, gigModifiers: { ...state.gigModifiers, ...updates } }
-    }
-
-    case 'LOAD_GAME': {
-      logger.info('GameState', 'Game Loaded')
-
-      // Migration: energy -> catering
-      // Migration + deep-merge saved gigModifiers
-      const loadedState = { ...action.payload }
-      if (loadedState.gigModifiers) {
-        // Migrate legacy key
-        if (loadedState.gigModifiers.energy !== undefined) {
-          loadedState.gigModifiers.catering = loadedState.gigModifiers.energy
-          delete loadedState.gigModifiers.energy
-        }
-        // Merge with defaults to preserve new toggles
-        loadedState.gigModifiers = {
-          ...initialState.gigModifiers,
-          ...loadedState.gigModifiers
-        }
-      }
-
-      // Safe Merge for Nested Objects: Preserve new keys in initialState
-      const mergedPlayer = {
-        ...initialState.player,
-        ...loadedState.player,
-        van: {
-          ...initialState.player.van,
-          ...loadedState.player?.van
-        }
-      }
-      const mergedBand = {
-        ...initialState.band,
-        ...loadedState.band,
-        performance: {
-          ...initialState.band.performance,
-          ...(loadedState.band ? loadedState.band.performance : {})
-        },
-        inventory: {
-          ...initialState.band.inventory,
-          ...(loadedState.band ? loadedState.band.inventory : {})
-        }
-      }
-      const mergedSocial = { ...initialState.social, ...loadedState.social }
-      // Note: Arrays like inventory/members are replaced, which is usually correct for saves.
-
-      return {
-        ...state,
-        ...loadedState,
-        player: mergedPlayer,
-        band: mergedBand,
-        social: mergedSocial
-      }
-    }
-
-    case 'RESET_STATE':
-      logger.info('GameState', 'State Reset (Debug)')
-      return { ...initialState }
-
-    case 'APPLY_EVENT_DELTA': {
-      logger.info('GameState', 'Applying Event Delta', action.payload)
-      return applyEventDelta(state, action.payload)
-    }
-
-    case 'POP_PENDING_EVENT':
-      return { ...state, pendingEvents: state.pendingEvents.slice(1) }
-
-    case 'CONSUME_ITEM': {
-      const itemType = action.payload // e.g. 'strings'
-      const nextBand = { ...state.band }
-      if (nextBand.inventory[itemType] === true) {
-        nextBand.inventory[itemType] = false // Simple toggle for now?
-      } else if (typeof nextBand.inventory[itemType] === 'number') {
-        nextBand.inventory[itemType] = Math.max(
-          0,
-          nextBand.inventory[itemType] - 1
-        )
-      }
-      return { ...state, band: nextBand }
-    }
-
-    case 'ADVANCE_DAY': {
-      const { player, band, social } = calculateDailyUpdates(state)
-      logger.info('GameState', `Day Advanced to ${player.day}`)
-      return { ...state, player, band, social }
-    }
-
-    default:
-      return state
-  }
-}
+// Import modular state management
+import { initialState, createInitialState } from './initialState'
+import { gameReducer, ActionTypes } from './gameReducer'
+import {
+  createChangeSceneAction,
+  createUpdatePlayerAction,
+  createUpdateBandAction,
+  createUpdateSocialAction,
+  createUpdateSettingsAction,
+  createSetMapAction,
+  createSetGigAction,
+  createStartGigAction,
+  createSetSetlistAction,
+  createSetLastGigStatsAction,
+  createSetActiveEventAction,
+  createAddToastAction,
+  createRemoveToastAction,
+  createSetGigModifiersAction,
+  createLoadGameAction,
+  createResetStateAction,
+  createApplyEventDeltaAction,
+  createPopPendingEventAction,
+  createConsumeItemAction,
+  createAdvanceDayAction
+} from './actionCreators'
 
 const GameStateContext = createContext()
 
@@ -261,93 +51,85 @@ export const GameStateProvider = ({ children }) => {
     if (!state.gameMap) {
       const generator = new MapGenerator()
       const newMap = generator.generateMap()
-      dispatch({ type: 'SET_MAP', payload: newMap })
+      dispatch(createSetMapAction(newMap))
     }
   }, [state.gameMap])
 
-  // Actions wrappers to maintain API
+  // Actions wrappers using ActionTypes for type safety
 
   /**
    * Transitions the game to a different scene.
    * @param {string} scene - The target scene name (e.g., 'OVERWORLD').
    */
-  const changeScene = scene =>
-    dispatch({ type: 'CHANGE_SCENE', payload: scene })
+  const changeScene = scene => dispatch(createChangeSceneAction(scene))
 
   /**
    * Updates player state properties (money, fame, etc.).
    * @param {object} updates - Object containing keys to update.
    */
-  const updatePlayer = updates =>
-    dispatch({ type: 'UPDATE_PLAYER', payload: updates })
+  const updatePlayer = updates => dispatch(createUpdatePlayerAction(updates))
 
   /**
    * Updates band state properties (members, harmony, inventory).
    * @param {object} updates - Object containing keys to update.
    */
-  const updateBand = updates =>
-    dispatch({ type: 'UPDATE_BAND', payload: updates })
+  const updateBand = updates => dispatch(createUpdateBandAction(updates))
 
   /**
    * Updates social media metrics.
    * @param {object} updates - Object containing keys to update.
    */
-  const updateSocial = updates =>
-    dispatch({ type: 'UPDATE_SOCIAL', payload: updates })
+  const updateSocial = updates => dispatch(createUpdateSocialAction(updates))
 
   /**
    * Updates global settings.
    * @param {object} updates - Object containing keys to update.
    */
-  const updateSettings = updates => {
-    dispatch({ type: 'UPDATE_SETTINGS', payload: updates })
-  }
+  const updateSettings = updates =>
+    dispatch(createUpdateSettingsAction(updates))
 
   /**
    * Sets the generated game map.
    * @param {object} map - The map object.
    */
-  const setGameMap = map => dispatch({ type: 'SET_MAP', payload: map })
+  const setGameMap = map => dispatch(createSetMapAction(map))
 
   /**
    * Sets the current gig data context.
    * @param {object} gig - The gig data object.
    */
-  const setCurrentGig = gig => dispatch({ type: 'SET_GIG', payload: gig })
+  const setCurrentGig = gig => dispatch(createSetGigAction(gig))
 
   /**
    * Initiates the gig sequence.
    * @param {object} venue - The venue object.
    */
-  const startGig = venue => dispatch({ type: 'START_GIG', payload: venue })
+  const startGig = venue => dispatch(createStartGigAction(venue))
 
   /**
    * Updates the active setlist.
    * @param {Array} list - Array of song objects.
    */
-  const setSetlist = list => dispatch({ type: 'SET_SETLIST', payload: list })
+  const setSetlist = list => dispatch(createSetSetlistAction(list))
 
   /**
    * Stores the statistics from the last played gig.
    * @param {object} stats - The stats object.
    */
-  const setLastGigStats = stats =>
-    dispatch({ type: 'SET_LAST_GIG_STATS', payload: stats })
+  const setLastGigStats = stats => dispatch(createSetLastGigStatsAction(stats))
 
   /**
    * Sets the currently active event (blocking modal).
    * @param {object} event - The event object or null.
    */
-  const setActiveEvent = event =>
-    dispatch({ type: 'SET_ACTIVE_EVENT', payload: event })
+  const setActiveEvent = event => dispatch(createSetActiveEventAction(event))
 
   /**
    * Updates gig modifiers (toggles like catering, promo).
    * @param {object|Function} payload - The new modifiers or an updater function.
    */
-  const setGigModifiers = payload => {
-    dispatch({ type: 'SET_GIG_MODIFIERS', payload })
-  }
+  const setGigModifiers = payload =>
+    dispatch(createSetGigModifiersAction(payload))
 
   /**
    * Adds a toast notification.
@@ -355,10 +137,10 @@ export const GameStateProvider = ({ children }) => {
    * @param {string} [type='info'] - Type of toast (info, success, error, warning).
    */
   const addToast = (message, type = 'info') => {
-    const id = Date.now()
-    dispatch({ type: 'ADD_TOAST', payload: { id, message, type } })
+    const action = createAddToastAction(message, type)
+    dispatch(action)
     setTimeout(() => {
-      dispatch({ type: 'REMOVE_TOAST', payload: id })
+      dispatch(createRemoveToastAction(action.payload.id))
     }, 3000)
   }
 
@@ -373,32 +155,30 @@ export const GameStateProvider = ({ children }) => {
    * Consumes a consumable item from band inventory.
    * @param {string} itemType - The item key (e.g., 'strings').
    */
-  const consumeItem = itemType => {
-    dispatch({ type: 'CONSUME_ITEM', payload: itemType })
-  }
+  const consumeItem = itemType => dispatch(createConsumeItemAction(itemType))
 
   /**
    * Advances the game day, deducting living costs and updating simulations.
    */
   const advanceDay = () => {
     const nextDay = state.player.day + 1
-    dispatch({ type: 'ADVANCE_DAY' })
+    dispatch(createAdvanceDayAction())
     addToast(`Day ${nextDay}: Living Costs Deducted.`, 'info')
   }
 
   /**
    * Resets the game state to initial values.
    */
-  const resetState = () => {
-    dispatch({ type: 'RESET_STATE' })
-  }
+  const resetState = () => dispatch(createResetStateAction())
 
   // Persistence
   /**
    * Deletes the save file and reloads the application.
    */
   const deleteSave = () => {
-    localStorage.removeItem('neurotoxic_v3_save')
+    safeStorageOperation('deleteSave', () => {
+      localStorage.removeItem('neurotoxic_v3_save')
+    })
     changeScene('MENU')
     window.location.reload()
   }
@@ -408,14 +188,20 @@ export const GameStateProvider = ({ children }) => {
    */
   const saveGame = () => {
     const saveData = { ...state, timestamp: Date.now() }
-    try {
-      localStorage.setItem('neurotoxic_v3_save', JSON.stringify(saveData))
+    const success = safeStorageOperation(
+      'saveGame',
+      () => {
+        localStorage.setItem('neurotoxic_v3_save', JSON.stringify(saveData))
+        return true
+      },
+      false
+    )
+
+    if (success) {
       addToast('GAME SAVED!', 'success')
       logger.info('System', 'Game Saved Successfully')
-    } catch (e) {
-      console.error('Save failed', e)
-      logger.error('System', 'Save Failed', e)
-      addToast('Save failed!', 'error')
+    } else {
+      handleError(new StorageError('Failed to save game'), { addToast })
     }
   }
 
@@ -424,9 +210,12 @@ export const GameStateProvider = ({ children }) => {
    * @returns {boolean} True if load was successful.
    */
   const loadGame = () => {
-    try {
-      const saved = localStorage.getItem('neurotoxic_v3_save')
-      if (saved) {
+    return safeStorageOperation(
+      'loadGame',
+      () => {
+        const saved = localStorage.getItem('neurotoxic_v3_save')
+        if (!saved) return false
+
         const data = JSON.parse(saved)
 
         // Validate Schema
@@ -434,19 +223,18 @@ export const GameStateProvider = ({ children }) => {
         const missingKeys = requiredKeys.filter(k => !data[k])
 
         if (missingKeys.length > 0) {
-          console.error('Corrupt Save File: Missing keys', missingKeys)
-          addToast('Save file is corrupt or outdated. Starting fresh.', 'error')
+          handleError(
+            new StateError('Corrupt Save File', { missingKeys }),
+            { addToast, fallbackMessage: 'Save file is corrupt. Starting fresh.' }
+          )
           return false
         }
 
-        dispatch({ type: 'LOAD_GAME', payload: data })
+        dispatch(createLoadGameAction(data))
         return true
-      }
-    } catch (e) {
-      console.error('Load failed', e)
-      return false
-    }
-    return false
+      },
+      false
+    )
   }
 
   // Event System Integration
@@ -484,7 +272,7 @@ export const GameStateProvider = ({ children }) => {
       setActiveEvent(event)
       // If it was a pending event, remove it from queue
       if (state.pendingEvents.includes(event.id)) {
-        dispatch({ type: 'POP_PENDING_EVENT' })
+        dispatch(createPopPendingEventAction())
       }
       return true
     }
@@ -516,7 +304,7 @@ export const GameStateProvider = ({ children }) => {
 
       // 3. State Application
       if (delta) {
-        dispatch({ type: 'APPLY_EVENT_DELTA', payload: delta })
+        dispatch(createApplyEventDeltaAction(delta))
 
         // Unlocks
         if (delta.flags?.unlock) {
