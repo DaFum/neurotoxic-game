@@ -45,11 +45,16 @@ export const BandHQ = ({
 
     const isConsumable = effect.type === 'inventory_add'
 
-    const inventoryKey = effect.type === 'inventory_set' ? effect.item : null
+    const inventoryKey =
+      effect.type === 'inventory_set' || effect.type === 'inventory_add'
+        ? effect.item
+        : null
     const isOwned =
       (player.van?.upgrades ?? []).includes(item.id) ||
       (player.hqUpgrades ?? []).includes(item.id) ||
-      (inventoryKey ? band.inventory?.[inventoryKey] === true : false)
+      (effect.type === 'inventory_set'
+        ? band.inventory?.[inventoryKey] === true
+        : false)
 
     if (isOwned && !isConsumable) {
       addToast('Bereits im Besitz!', 'warning')
@@ -57,10 +62,7 @@ export const BandHQ = ({
     }
 
     if (currencyValue < item.cost) {
-      addToast(
-        `Nicht genug ${payingWithFame ? 'Fame' : 'Geld'}!`,
-        'error'
-      )
+      addToast(`Nicht genug ${payingWithFame ? 'Fame' : 'Geld'}!`, 'error')
       return
     }
 
@@ -81,7 +83,8 @@ export const BandHQ = ({
         nextBandPatch = {
           inventory: {
             ...(band.inventory ?? {}),
-            [effect.item]: ((band.inventory ?? {})[effect.item] || 0) + effect.value
+            [effect.item]:
+              ((band.inventory ?? {})[effect.item] || 0) + effect.value
           }
         }
         break
@@ -91,17 +94,28 @@ export const BandHQ = ({
         if (effect.target === 'van') {
           nextPlayerPatch.van = {
             ...(player.van ?? {}),
-            [effect.stat]: Math.max(0, ((player.van ?? {})[effect.stat] || 0) + val)
+            [effect.stat]: Math.max(
+              0,
+              ((player.van ?? {})[effect.stat] || 0) + val
+            )
           }
         } else if (effect.target === 'player') {
-          nextPlayerPatch[effect.stat] = Math.max(0, (player[effect.stat] || 0) + val)
+          nextPlayerPatch[effect.stat] = Math.max(
+            0,
+            (player[effect.stat] || 0) + val
+          )
         } else if (effect.target === 'band') {
-          nextBandPatch = { [effect.stat]: Math.max(0, (band[effect.stat] || 0) + val) }
+          nextBandPatch = {
+            [effect.stat]: Math.max(0, (band[effect.stat] || 0) + val)
+          }
         } else {
           nextBandPatch = {
             performance: {
               ...(band.performance ?? {}),
-              [effect.stat]: Math.max(0, ((band.performance ?? {})[effect.stat] || 0) + val)
+              [effect.stat]: Math.max(
+                0,
+                ((band.performance ?? {})[effect.stat] || 0) + val
+              )
             }
           }
         }
@@ -111,7 +125,10 @@ export const BandHQ = ({
       case 'unlock_upgrade':
         nextPlayerPatch.van = {
           ...(player.van ?? {}),
-          upgrades: [...(player.van?.upgrades ?? []), item.id]
+          upgrades: [
+            ...(player.van?.upgrades ?? []),
+            effect.id ? effect.id : item.id
+          ]
         }
         break
 
@@ -138,9 +155,12 @@ export const BandHQ = ({
           item.id === 'hq_room_cheap_beer_fridge'
         ) {
           const members = (band.members ?? []).map(m => {
-            if (item.id === 'hq_room_coffee') return { ...m, mood: Math.min(100, (m.mood ?? 0) + 20) }
-            if (item.id === 'hq_room_sofa') return { ...m, stamina: Math.min(100, (m.stamina ?? 0) + 30) }
-            if (item.id === 'hq_room_old_couch') return { ...m, stamina: Math.min(100, (m.stamina ?? 0) + 10) }
+            if (item.id === 'hq_room_coffee')
+              return { ...m, mood: Math.min(100, (m.mood ?? 0) + 20) }
+            if (item.id === 'hq_room_sofa')
+              return { ...m, stamina: Math.min(100, (m.stamina ?? 0) + 30) }
+            if (item.id === 'hq_room_old_couch')
+              return { ...m, stamina: Math.min(100, (m.stamina ?? 0) + 10) }
             return { ...m, mood: Math.min(100, (m.mood ?? 0) + 5) } // cheap beer fridge
           })
           nextBandPatch = { ...(nextBandPatch ?? {}), members }

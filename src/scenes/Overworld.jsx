@@ -135,7 +135,8 @@ export const Overworld = () => {
       // Re-calculate and re-validate costs before deducting
       const { fuelLiters, totalCost } = calculateTravelExpenses(
         node,
-        currentStartNode
+        currentStartNode,
+        player
       )
 
       // Check affordability again (safeguard)
@@ -264,7 +265,8 @@ export const Overworld = () => {
     // Calculate Costs
     const { dist, totalCost, fuelLiters } = calculateTravelExpenses(
       node,
-      currentStartNode
+      currentStartNode,
+      player
     )
 
     addToast(

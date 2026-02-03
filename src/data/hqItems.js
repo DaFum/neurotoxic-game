@@ -98,7 +98,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_gear_diy_patch_kit',
       name: 'DIY Patch-Kit',
-      cost: 15, // Cheap sewing kit
+      cost: 20, // Cheap sewing kit
       currency: 'money',
       img: 'ITEM_DIY_PATCH_KIT',
       description:

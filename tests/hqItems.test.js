@@ -56,18 +56,26 @@ describe('HQ Items Data Integrity', () => {
   }
 
   it('validates all gear items', () => {
-    HQ_ITEMS.gear.forEach(item => validateItem(item, 'gear'))
+    HQ_ITEMS.gear.forEach(item => {
+      validateItem(item, 'gear')
+    })
   })
 
   it('validates all instrument items', () => {
-    HQ_ITEMS.instruments.forEach(item => validateItem(item, 'instruments'))
+    HQ_ITEMS.instruments.forEach(item => {
+      validateItem(item, 'instruments')
+    })
   })
 
   it('validates all van items', () => {
-    HQ_ITEMS.van.forEach(item => validateItem(item, 'van'))
+    HQ_ITEMS.van.forEach(item => {
+      validateItem(item, 'van')
+    })
   })
 
   it('validates all hq items', () => {
-    HQ_ITEMS.hq.forEach(item => validateItem(item, 'hq'))
+    HQ_ITEMS.hq.forEach(item => {
+      validateItem(item, 'hq')
+    })
   })
 })

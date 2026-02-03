@@ -140,6 +140,7 @@ const calculateMerchIncome = (
  * Calculates travel expenses.
  * @param {object} node - The target node.
  * @param {object} [fromNode=null] - The source node.
+ * @param {object} [playerState=null] - Optional player state for upgrade-aware costs.
  */
 export const calculateTravelExpenses = (
   node,
