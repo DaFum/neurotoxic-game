@@ -32,6 +32,12 @@
   --warning-orange: #f90;
   --info-blue: #09f;
 
+  /* Stat Colors */
+  --fuel-yellow: #eab308;
+  --condition-blue: #3b82f6;
+  --stamina-green: #16a34a;
+  --mood-pink: #db2777;
+
   --font-display: 'Metal Mania', cursive;
   --font-ui: 'Courier New', monospace;
   --font-code: 'Courier New', monospace;
