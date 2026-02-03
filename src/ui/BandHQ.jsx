@@ -327,13 +327,13 @@ export const BandHQ = ({
                       label='Tank'
                       value={player.van?.fuel}
                       max={100}
-                      color='bg-yellow-500' // Keep standard utility classes for internal bars or map to vars if needed
+                      color='bg-[var(--fuel-yellow)]'
                     />
                     <ProgressBar
                       label='Zustand'
                       value={player.van?.condition}
                       max={100}
-                      color='bg-blue-500'
+                      color='bg-[var(--condition-blue)]'
                     />
                     <div className='mt-2 text-xs text-[var(--ash-gray)] font-mono'>
                       Breakdown Chance:{' '}
@@ -349,7 +349,7 @@ export const BandHQ = ({
                   BAND STATUS
                 </h3>
                 <div className='space-y-6'>
-                  {band.members.map(m => (
+                  {(band.members || []).map(m => (
                     <div key={m.name} className='flex items-center gap-4'>
                       <div className='w-20 font-bold text-white font-mono'>
                         {m.name}
@@ -359,14 +359,14 @@ export const BandHQ = ({
                           label='Stamina'
                           value={m.stamina}
                           max={100}
-                          color='bg-green-600'
+                          color='bg-[var(--stamina-green)]'
                           size='sm'
                         />
                         <ProgressBar
                           label='Mood'
                           value={m.mood}
                           max={100}
-                          color='bg-pink-600'
+                          color='bg-[var(--mood-pink)]'
                           size='sm'
                         />
                       </div>
