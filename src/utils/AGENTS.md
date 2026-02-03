@@ -8,13 +8,18 @@ You are the **Core Game Systems Architect** for NEUROTOXIC: GRIND THE VOID. You 
 
 This folder (`src/utils/`) contains the "brains" of the game - pure logic modules that handle:
 
-- **eventEngine.js** - Random encounter system, skill checks, narrative branching
-- **economyEngine.js** - Financial calculations, payout formulas, cost modeling
-- **socialEngine.js** - Social media simulation, viral content mechanics
-- **mapGenerator.js** - Procedural map generation, graph-based travel system
-- **AudioManager.js** - Howler.js wrapper, sound effect management
-- **simulationUtils.js** - Time progression, day/night cycle, RNG utilities
-- **imageGen.js** - Placeholder image URL generation (for missing assets)
+| Module | Purpose |
+|--------|---------|
+| `eventEngine.js` | Random encounter system, skill checks, narrative branching |
+| `economyEngine.js` | Financial calculations, payout formulas, cost modeling |
+| `socialEngine.js` | Social media simulation, viral content mechanics |
+| `mapGenerator.js` | Procedural map generation, graph-based travel system |
+| `AudioManager.js` | Howler.js wrapper, sound effect management |
+| `simulationUtils.js` | Time progression, day/night cycle, RNG utilities |
+| `imageGen.js` | Placeholder image URL generation |
+| `errorHandler.js` | Centralized error handling and logging |
+| `logger.js` | Debug logging with categories and levels |
+| `gameStateUtils.js` | State transformation utilities |
 
 ## Core Principles
 
@@ -344,6 +349,103 @@ export const getGenImageUrl = prompt => {
 ```
 
 **Note**: These are temporary. Replace with real assets when available.
+
+### errorHandler.js
+
+**Purpose**: Centralized error handling with custom error types and recovery utilities.
+
+**Error Classes:**
+
+```javascript
+import {
+  GameError,       // Base error class
+  StateError,      // State-related errors
+  RenderError,     // Rendering errors
+  AudioError,      // Audio system errors
+  GameLogicError,  // Game logic errors
+  StorageError,    // localStorage errors
+  handleError,     // Main error handler
+  safeStorageOperation  // Safe localStorage wrapper
+} from '../utils/errorHandler'
+```
+
+**Error Severity Levels:**
+
+| Severity | Action |
+|----------|--------|
+| `LOW` | Log only |
+| `MEDIUM` | Log + toast notification |
+| `HIGH` | Log + toast + may need recovery |
+| `CRITICAL` | Log + toast + scene change/reset |
+
+**Usage:**
+
+```javascript
+// Handling errors with toast notifications
+try {
+  riskyOperation()
+} catch (error) {
+  handleError(error, {
+    addToast,
+    fallbackMessage: 'Operation failed',
+    silent: false
+  })
+}
+
+// Creating custom errors
+throw new StateError('Invalid state transition', {
+  from: 'MENU',
+  to: 'GIG',
+  reason: 'No gig selected'
+})
+
+// Safe localStorage operations
+const savedGame = safeStorageOperation(
+  'read',
+  () => JSON.parse(localStorage.getItem('save')),
+  null  // fallback value
+)
+```
+
+**Error Categories:**
+
+- `STATE` - State management errors
+- `RENDER` - Component rendering errors
+- `AUDIO` - Audio playback errors
+- `LOGIC` - Game logic errors
+- `STORAGE` - Save/load errors
+- `NETWORK` - Network errors (future)
+
+### logger.js
+
+**Purpose**: Debug logging with categories and configurable levels.
+
+**Usage:**
+
+```javascript
+import { logger } from '../utils/logger'
+
+logger.info('GameState', 'Scene changed', { from: 'MENU', to: 'OVERWORLD' })
+logger.debug('TravelLogic', 'Calculating costs', { fuel: 50, distance: 100 })
+logger.warn('EventEngine', 'Event cooldown active', eventId)
+logger.error('PixiStage', 'Failed to create texture', error)
+```
+
+**Log Levels:**
+
+- `debug` - Verbose debugging info (dev only)
+- `info` - Important state changes
+- `warn` - Potential issues
+- `error` - Errors that occurred
+
+### gameStateUtils.js
+
+**Purpose**: State transformation utilities for the reducer.
+
+**Key Functions:**
+
+- `applyEventDelta(state, delta)` - Apply event outcomes to state
+- State merging and validation utilities
 
 ## Testing Guidelines
 

@@ -8,11 +8,28 @@ You are the **UI Component Library Specialist** for NEUROTOXIC: GRIND THE VOID. 
 
 This folder (`src/ui/`) contains the "design system" - pure presentation components that are game-agnostic and highly reusable:
 
-- **GlitchButton.jsx** - Primary brutalist button component
-- **HUD.jsx** - Persistent top-bar overlay (money, day, location)
-- **EventModal.jsx** - Full-screen modal for narrative events
-- **ToastOverlay.jsx** - Temporary notification system
-- **CrashHandler.jsx** - Error boundary wrapper
+| Component | Purpose |
+|-----------|---------|
+| `GlitchButton.jsx` | Primary brutalist button component |
+| `HUD.jsx` | Persistent top-bar overlay (money, day, location) |
+| `EventModal.jsx` | Full-screen modal for narrative events |
+| `ToastOverlay.jsx` | Temporary notification system |
+| `CrashHandler.jsx` | Error boundary wrapper |
+| `shared/index.js` | Generic reusable components |
+
+### Shared Components (`src/ui/shared/index.js`)
+
+```jsx
+import { StatBox, ProgressBar, Panel, ActionButton, Modal, Grid, TabButton } from '../ui/shared'
+
+<StatBox label="MONEY" value={player.money} icon="$" />
+<ProgressBar label="FUEL" value={fuel} max={100} color="bg-green-500" />
+<Panel title="INVENTORY">{children}</Panel>
+<ActionButton onClick={fn} variant="primary">ACTION</ActionButton>
+<Modal isOpen={open} onClose={close} title="TITLE">{children}</Modal>
+<Grid cols={3} gap={4}>{children}</Grid>
+<TabButton active={true} onClick={fn}>TAB</TabButton>
+```
 
 These differ from `src/components/` by being **stateless presentation components** with no game logic dependency.
 
