@@ -141,7 +141,11 @@ const calculateMerchIncome = (
  * @param {object} node - The target node.
  * @param {object} [fromNode=null] - The source node.
  */
-export const calculateTravelExpenses = (node, fromNode = null) => {
+export const calculateTravelExpenses = (
+  node,
+  fromNode = null,
+  playerState = null
+) => {
   const x = typeof node?.x === 'number' ? node.x : (node.venue?.x ?? 50)
   const y = typeof node?.y === 'number' ? node.y : (node.venue?.y ?? 50)
 
@@ -160,7 +164,18 @@ export const calculateTravelExpenses = (node, fromNode = null) => {
   // Distance logic: Relative distance + base cost
   const dist = Math.floor(Math.sqrt(dx * dx + dy * dy) * 5) + 20
 
-  const fuelLiters = (dist / 100) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM
+  let fuelLiters = (dist / 100) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM
+
+  // Check for 'van_tuning' upgrade
+  if (
+    playerState &&
+    playerState.van &&
+    playerState.van.upgrades &&
+    playerState.van.upgrades.includes('van_tuning')
+  ) {
+    fuelLiters *= 0.8 // 20% reduction
+  }
+
   const fuelCost = Math.floor(
     fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE
   )

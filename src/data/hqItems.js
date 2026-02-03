@@ -437,7 +437,7 @@ export const HQ_ITEMS = {
       cost: 400, // Appliance cost
       currency: 'money',
       img: 'ITEM_HQ_COFFEE',
-      description: 'Besuch im HQ stellt sofort 20 Mood bei allen her.',
+      description: 'Besuch im HQ stellt sofort 20 Mood bei allen her. (Sofort)',
       effect: { type: 'unlock_hq', id: 'hq_coffee' }
     },
     {
@@ -446,7 +446,7 @@ export const HQ_ITEMS = {
       cost: 600, // Furniture cost
       currency: 'money',
       img: 'ITEM_HQ_SOFA',
-      description: 'Besuch im HQ stellt sofort 30 Stamina her.',
+      description: 'Besuch im HQ stellt sofort 30 Stamina her. (Sofort)',
       effect: { type: 'unlock_hq', id: 'hq_sofa' }
     },
     {
@@ -469,7 +469,7 @@ export const HQ_ITEMS = {
       cost: 5000, // Major milestone cost
       currency: 'fame',
       img: 'ITEM_HQ_LABEL',
-      description: 'Startet jeden Run mit +500€ Budget.',
+      description: 'Sofort +500€ Bonus.',
       effect: { type: 'unlock_hq', id: 'hq_label' }
     },
     // Gritty HQ Items
@@ -479,7 +479,7 @@ export const HQ_ITEMS = {
       cost: 100, // Cheap furniture
       currency: 'money',
       img: 'ITEM_HQ_OLD_COUCH',
-      description: 'Ort zum Abhängen. (+10 Stamina).',
+      description: 'Ort zum Abhängen. (+10 Stamina Sofort).',
       effect: { type: 'unlock_hq', id: 'hq_old_couch' }
     },
     {
