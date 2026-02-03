@@ -221,6 +221,7 @@ export const Overworld = () => {
       triggerEvent,
       startGig,
       addToast,
+      advanceDay,
       gameMap,
       player.currentNodeId
     ]
@@ -341,7 +342,7 @@ export const Overworld = () => {
     }
 
     updatePlayer({
-      money: player.money - cost,
+      money: Math.max(0, player.money - cost),
       van: { ...player.van, fuel: 100 }
     })
     addToast(`Refueled: -${cost}€`, 'success')
@@ -353,8 +354,16 @@ export const Overworld = () => {
   }
 
   // Softlock Check: Stranded logic
+  const timeoutRef = useRef(null)
+
   useEffect(() => {
-    if (!gameMap || isTraveling || !player.currentNodeId) return
+    if (!gameMap || isTraveling || !player.currentNodeId) {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
+      return
+    }
 
     const currentFuel = player.van?.fuel ?? 0
     // Check if we are critically low
@@ -378,10 +387,37 @@ export const Overworld = () => {
       if (!canReachAny) {
         const minimalRefuelCost = 5 * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE
         if (player.money < minimalRefuelCost) {
-          logger.error('Overworld', 'GAME OVER: Stranded (No fuel, no money)')
-          addToast('GAME OVER: Stranded without fuel or money!', 'error')
-          setTimeout(() => changeScene('GAMEOVER'), 3000)
+          if (!timeoutRef.current) {
+            logger.error('Overworld', 'GAME OVER: Stranded (No fuel, no money)')
+            addToast('GAME OVER: Stranded without fuel or money!', 'error')
+            timeoutRef.current = setTimeout(() => changeScene('GAMEOVER'), 3000)
+          }
+        } else {
+          // Has enough money to refuel
+          if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current)
+            timeoutRef.current = null
+          }
         }
+      } else {
+        // Can reach neighbor
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current)
+          timeoutRef.current = null
+        }
+      }
+    } else {
+      // Fuel is fine
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
+    }
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
       }
     }
   }, [
@@ -425,7 +461,7 @@ export const Overworld = () => {
         <button
           onClick={handleRefuel}
           disabled={isTraveling || (player.van?.fuel ?? 0) >= 99}
-          className='bg-black border border-[var(--warning-yellow)] text-[var(--warning-yellow)] px-4 py-2 hover:bg-[var(--warning-yellow)] hover:text-black font-mono text-sm disabled:opacity-50'
+          className='bg-[var(--void-black)] border border-[var(--warning-yellow)] text-[var(--warning-yellow)] px-4 py-2 hover:bg-[var(--warning-yellow)] hover:text-[var(--void-black)] font-mono text-sm disabled:opacity-50'
         >
           [REFUEL]
         </button>

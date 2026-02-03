@@ -1,6 +1,9 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { calculateTravelExpenses } from '../src/utils/economyEngine.js'
+import {
+  calculateTravelExpenses,
+  EXPENSE_CONSTANTS
+} from '../src/utils/economyEngine.js'
 import { calculateDailyUpdates } from '../src/utils/simulationUtils.js'
 
 test('Game Loop Logic Simulation', async t => {
