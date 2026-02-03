@@ -317,7 +317,7 @@ export const BandHQ = ({
                     />
                     <div className='mt-2 text-xs text-[var(--ash-gray)] font-mono'>
                       Breakdown Chance:{' '}
-                      {(player.van?.breakdownChance * 100).toFixed(1)}%
+                      {((player.van?.breakdownChance ?? 0) * 100).toFixed(1)}%
                     </div>
                   </div>
                 </div>
