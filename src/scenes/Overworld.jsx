@@ -66,6 +66,7 @@ export const Overworld = () => {
   const [travelTarget, setTravelTarget] = useState(null)
   const [hoveredNode, setHoveredNode] = useState(null)
   const [showHQ, setShowHQ] = useState(false)
+  const [activeHQTab, setActiveHQTab] = useState('STATS')
   const travelCompletedRef = useRef(false)
 
   /**
@@ -547,6 +548,8 @@ export const Overworld = () => {
           updatePlayer={updatePlayer}
           updateBand={updateBand}
           addToast={addToast}
+          activeTab={activeHQTab}
+          onTabChange={setActiveHQTab}
         />
       )}
     </div>
