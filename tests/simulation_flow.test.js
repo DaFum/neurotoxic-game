@@ -1,4 +1,4 @@
-import { test } from 'node:test'
+import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   calculateTravelExpenses,
@@ -104,8 +104,8 @@ test('Game Loop Logic Simulation', async t => {
       state.player
     )
 
-    state.player.money -= totalCost
-    state.player.van.fuel -= fuelLiters
+    state.player.money = Math.max(0, state.player.money - totalCost)
+    state.player.van.fuel = Math.max(0, state.player.van.fuel - fuelLiters)
 
     const updates = calculateDailyUpdates(state)
     state = { ...state, ...updates }
