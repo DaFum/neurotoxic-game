@@ -142,7 +142,7 @@ export const Overworld = () => {
       const { fuelLiters, totalCost } = calculateTravelExpenses(
         node,
         currentStartNode,
-        player
+        { van: player.van }
       )
 
       // Check affordability again (safeguard)
@@ -377,7 +377,7 @@ export const Overworld = () => {
       const { fuelLiters } = calculateTravelExpenses(
         n,
         gameMap.nodes[player.currentNodeId],
-        player
+        { van: player.van }
       )
       return currentFuel >= fuelLiters
     })

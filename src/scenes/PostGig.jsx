@@ -160,7 +160,7 @@ export const PostGig = () => {
         }
       }
     }
-  }, [])
+  }, [currentGig, activeEvent, triggerEvent])
 
   // Initialize Results once (simulated)
   React.useEffect(() => {
@@ -193,7 +193,14 @@ export const PostGig = () => {
       const vScore = calculateViralityScore(performanceScore, [], currentGig) // events list empty for now
       setPostOptions(generatePostOptions({ viralityScore: vScore }))
     }
-  }, [financials, currentGig, lastGigStats, gigModifiers, player.fame])
+  }, [
+    financials,
+    currentGig,
+    lastGigStats,
+    gigModifiers,
+    player.fame,
+    band.inventory
+  ])
 
   /**
    * Handles the selection of a social media post option.

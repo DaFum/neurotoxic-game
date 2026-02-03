@@ -53,8 +53,7 @@ test('Game Loop Logic Simulation', async t => {
     assert.equal(state.player.day, 2, 'Day should advance to 2')
     // Check Daily Cost Deduction (25) + Travel Cost
     // 500 - totalCost - 25
-    const expectedMoney =
-      500 - totalCost - EXPENSE_CONSTANTS.DAILY.BASE_COST
+    const expectedMoney = 500 - totalCost - EXPENSE_CONSTANTS.DAILY.BASE_COST
     assert.equal(
       state.player.money,
       expectedMoney,
