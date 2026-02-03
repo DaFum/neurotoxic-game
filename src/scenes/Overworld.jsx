@@ -5,6 +5,7 @@ import { ChatterOverlay } from '../components/ChatterOverlay'
 import { ALL_VENUES } from '../data/venues'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import { calculateTravelExpenses } from '../utils/economyEngine'
+import { BandHQ } from '../ui/BandHQ'
 import { audioManager } from '../utils/AudioManager'
 import { logger } from '../utils/logger'
 
@@ -64,6 +65,8 @@ export const Overworld = () => {
   const [isTraveling, setIsTraveling] = useState(false)
   const [travelTarget, setTravelTarget] = useState(null)
   const [hoveredNode, setHoveredNode] = useState(null)
+  const [showHQ, setShowHQ] = useState(false)
+  const [activeHQTab, setActiveHQTab] = useState('STATS')
   const travelCompletedRef = useRef(false)
 
   /**
@@ -133,7 +136,8 @@ export const Overworld = () => {
       // Re-calculate and re-validate costs before deducting
       const { fuelLiters, totalCost } = calculateTravelExpenses(
         node,
-        currentStartNode
+        currentStartNode,
+        player
       )
 
       // Check affordability again (safeguard)
@@ -183,6 +187,9 @@ export const Overworld = () => {
             if (!specialEvent) {
               addToast('A mysterious place, but nothing happened.', 'info')
             }
+          } else if (node.type === 'START') {
+            setShowHQ(true)
+            addToast('Home Sweet Home.', 'success')
           } else {
             // Default: GIG
             if (band.harmony <= 0) {
@@ -238,6 +245,8 @@ export const Overworld = () => {
           venue: node.venue.name
         })
         startGig(node.venue)
+      } else if (node.type === 'START') {
+        setShowHQ(true)
       } else {
         addToast(`You are at ${node.venue.name}.`, 'info')
       }
@@ -257,7 +266,8 @@ export const Overworld = () => {
     // Calculate Costs
     const { dist, totalCost, fuelLiters } = calculateTravelExpenses(
       node,
-      currentStartNode
+      currentStartNode,
+      player
     )
 
     addToast(
@@ -417,7 +427,9 @@ export const Overworld = () => {
             const iconUrl =
               node.type === 'FESTIVAL'
                 ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_FESTIVAL)
-                : getGenImageUrl(IMG_PROMPTS.ICON_PIN_CLUB)
+                : node.type === 'START'
+                  ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_HOME)
+                  : getGenImageUrl(IMG_PROMPTS.ICON_PIN_CLUB)
             const vanUrl = getGenImageUrl(IMG_PROMPTS.ICON_VAN)
 
             return (
@@ -526,6 +538,20 @@ export const Overworld = () => {
           &gt; {player.location} secured.
         </p>
       </div>
+
+      {showHQ && (
+        <BandHQ
+          player={player}
+          band={band}
+          social={player.social || { instagram: 0, tiktok: 0 }} // Fallback if social not directly on player but context
+          onClose={() => setShowHQ(false)}
+          updatePlayer={updatePlayer}
+          updateBand={updateBand}
+          addToast={addToast}
+          activeTab={activeHQTab}
+          onTabChange={setActiveHQTab}
+        />
+      )}
     </div>
   )
 }
