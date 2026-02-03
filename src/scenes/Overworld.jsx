@@ -2,13 +2,13 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { ChatterOverlay } from '../components/ChatterOverlay'
+import { BandHQ } from '../ui/BandHQ'
 import { ALL_VENUES } from '../data/venues'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import {
   calculateTravelExpenses,
   EXPENSE_CONSTANTS
 } from '../utils/economyEngine'
-import { BandHQ } from '../ui/BandHQ'
 import { audioManager } from '../utils/AudioManager'
 import { logger } from '../utils/logger'
 
@@ -366,48 +366,47 @@ export const Overworld = () => {
     }
 
     const currentFuel = player.van?.fuel ?? 0
-    // Check if we are critically low
-    if (currentFuel <= 5) {
-      const neighbors = gameMap.connections
-        .filter(c => c.from === player.currentNodeId)
-        .map(c => gameMap.nodes[c.to])
+    const neighbors = gameMap.connections
+      .filter(c => c.from === player.currentNodeId)
+      .map(c => gameMap.nodes[c.to])
 
-      // Can we reach ANY neighbor?
-      const canReachAny = neighbors.some(n => {
-        if (!n) return false
-        const { fuelLiters } = calculateTravelExpenses(
-          n,
-          gameMap.nodes[player.currentNodeId],
-          player
-        )
-        return currentFuel >= fuelLiters
-      })
+    // Can we reach ANY neighbor?
+    const canReachAny = neighbors.some(n => {
+      if (!n) return false
+      const { fuelLiters } = calculateTravelExpenses(
+        n,
+        gameMap.nodes[player.currentNodeId],
+        player
+      )
+      return currentFuel >= fuelLiters
+    })
 
-      // If we cannot reach any neighbor, AND we cannot afford a minimal refuel (e.g. 5 liters)
-      if (!canReachAny) {
-        const minimalRefuelCost = 5 * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE
-        if (player.money < minimalRefuelCost) {
-          if (!timeoutRef.current) {
-            logger.error('Overworld', 'GAME OVER: Stranded (No fuel, no money)')
-            addToast('GAME OVER: Stranded without fuel or money!', 'error')
-            timeoutRef.current = setTimeout(() => changeScene('GAMEOVER'), 3000)
-          }
-        } else {
-          // Has enough money to refuel
-          if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current)
-            timeoutRef.current = null
-          }
+    // If we cannot reach any neighbor
+    if (!canReachAny) {
+      // Check if we can afford a FULL refuel (since partial is not implemented)
+      const missingFuel = 100 - currentFuel
+      const refuelCost = Math.ceil(
+        missingFuel * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE
+      )
+
+      if (player.money < refuelCost) {
+        if (!timeoutRef.current) {
+          logger.error('Overworld', 'GAME OVER: Stranded (No fuel, no money)')
+          addToast(
+            'GAME OVER: Stranded! Cannot travel and cannot afford full tank.',
+            'error'
+          )
+          timeoutRef.current = setTimeout(() => changeScene('GAMEOVER'), 3000)
         }
       } else {
-        // Can reach neighbor
+        // Has enough money to refuel
         if (timeoutRef.current) {
           clearTimeout(timeoutRef.current)
           timeoutRef.current = null
         }
       }
     } else {
-      // Fuel is fine
+      // Can reach neighbor
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current)
         timeoutRef.current = null
