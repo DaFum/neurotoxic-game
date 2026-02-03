@@ -53,7 +53,8 @@ test('Game Loop Logic Simulation', async t => {
     assert.equal(state.player.day, 2, 'Day should advance to 2')
     // Check Daily Cost Deduction (25) + Travel Cost
     // 500 - totalCost - 25
-    const expectedMoney = 500 - totalCost - 25
+    const expectedMoney =
+      500 - totalCost - EXPENSE_CONSTANTS.DAILY.BASE_COST
     assert.equal(
       state.player.money,
       expectedMoney,
@@ -62,16 +63,20 @@ test('Game Loop Logic Simulation', async t => {
   })
 
   await t.test('Phase 2: Refuel (Overworld)', () => {
-    const missing = 100 - state.player.van.fuel
+    const missing = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - state.player.van.fuel
     assert.ok(missing > 0, 'Should have missing fuel')
 
-    const cost = Math.ceil(missing * 1.75) // 1.75 is standard constant
+    const cost = Math.ceil(missing * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
 
     // Apply Refuel
     state.player.money -= cost
-    state.player.van.fuel = 100
+    state.player.van.fuel = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
 
-    assert.equal(state.player.van.fuel, 100, 'Fuel should be restored')
+    assert.equal(
+      state.player.van.fuel,
+      EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL,
+      'Fuel should be restored'
+    )
   })
 
   await t.test('Phase 3: Gig (PostGig)', () => {

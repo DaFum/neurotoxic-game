@@ -328,7 +328,7 @@ export const Overworld = () => {
     if (isTraveling) return
 
     const currentFuel = player.van?.fuel ?? 0
-    const missing = 100 - currentFuel
+    const missing = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - currentFuel
     if (missing <= 0) {
       addToast('Tank is already full!', 'info')
       return
@@ -343,7 +343,7 @@ export const Overworld = () => {
 
     updatePlayer({
       money: Math.max(0, player.money - cost),
-      van: { ...player.van, fuel: 100 }
+      van: { ...player.van, fuel: EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL }
     })
     addToast(`Refueled: -${cost}€`, 'success')
     try {
@@ -385,7 +385,7 @@ export const Overworld = () => {
     // If we cannot reach any neighbor AND we are not at a gig (money source)
     if (!canReachAny && currentNode?.type !== 'GIG') {
       // Check if we can afford a FULL refuel (since partial is not implemented)
-      const missingFuel = 100 - currentFuel
+      const missingFuel = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - currentFuel
       const refuelCost = Math.ceil(
         missingFuel * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE
       )
@@ -460,7 +460,10 @@ export const Overworld = () => {
       <div className='absolute bottom-8 right-8 z-50 pointer-events-auto flex flex-col gap-2 items-end'>
         <button
           onClick={handleRefuel}
-          disabled={isTraveling || (player.van?.fuel ?? 0) >= 99}
+          disabled={
+            isTraveling ||
+            (player.van?.fuel ?? 0) >= EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
+          }
           className='bg-[var(--void-black)] border border-[var(--warning-yellow)] text-[var(--warning-yellow)] px-4 py-2 hover:bg-[var(--warning-yellow)] hover:text-[var(--void-black)] font-mono text-sm disabled:opacity-50'
         >
           [REFUEL]
