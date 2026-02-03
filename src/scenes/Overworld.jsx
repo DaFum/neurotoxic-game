@@ -4,7 +4,10 @@ import { useGameState } from '../context/GameState'
 import { ChatterOverlay } from '../components/ChatterOverlay'
 import { ALL_VENUES } from '../data/venues'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
-import { calculateTravelExpenses } from '../utils/economyEngine'
+import {
+  calculateTravelExpenses,
+  EXPENSE_CONSTANTS
+} from '../utils/economyEngine'
 import { BandHQ } from '../ui/BandHQ'
 import { audioManager } from '../utils/AudioManager'
 import { logger } from '../utils/logger'
@@ -59,7 +62,9 @@ export const Overworld = () => {
     hasUpgrade,
     updateBand,
     band,
-    addToast
+    addToast,
+    advanceDay,
+    changeScene
   } = useGameState()
 
   const [isTraveling, setIsTraveling] = useState(false)
@@ -155,9 +160,9 @@ export const Overworld = () => {
           fuel: Math.max(0, (player.van?.fuel ?? 0) - fuelLiters)
         },
         location: node.venue.name,
-        currentNodeId: node.id,
-        day: player.day + 1
+        currentNodeId: node.id
       })
+      advanceDay()
 
       if (hasUpgrade('van_sound_system')) {
         updateBand({ harmony: Math.min(100, band.harmony + 5) })
@@ -315,6 +320,80 @@ export const Overworld = () => {
   const currentNode = gameMap?.nodes[player.currentNodeId]
   const currentLayer = currentNode?.layer || 0
 
+  /**
+   * Refuels the van to 100% capacity if affordable.
+   */
+  const handleRefuel = () => {
+    if (isTraveling) return
+
+    const currentFuel = player.van?.fuel ?? 0
+    const missing = 100 - currentFuel
+    if (missing <= 1) {
+      addToast('Tank is already full!', 'info')
+      return
+    }
+
+    const cost = Math.ceil(missing * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
+
+    if (player.money < cost) {
+      addToast(`Not enough money! Need ${cost}€ to fill up.`, 'error')
+      return
+    }
+
+    updatePlayer({
+      money: player.money - cost,
+      van: { ...player.van, fuel: 100 }
+    })
+    addToast(`Refueled: -${cost}€`, 'success')
+    try {
+      audioManager.playSFX('cash')
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  // Softlock Check: Stranded logic
+  useEffect(() => {
+    if (!gameMap || isTraveling || !player.currentNodeId) return
+
+    const currentFuel = player.van?.fuel ?? 0
+    // Check if we are critically low
+    if (currentFuel <= 5) {
+      const neighbors = gameMap.connections
+        .filter(c => c.from === player.currentNodeId)
+        .map(c => gameMap.nodes[c.to])
+
+      // Can we reach ANY neighbor?
+      const canReachAny = neighbors.some(n => {
+        if (!n) return false
+        const { fuelLiters } = calculateTravelExpenses(
+          n,
+          gameMap.nodes[player.currentNodeId],
+          player
+        )
+        return currentFuel >= fuelLiters
+      })
+
+      // If we cannot reach any neighbor, AND we cannot afford a minimal refuel (e.g. 5 liters)
+      if (!canReachAny) {
+        const minimalRefuelCost = 5 * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE
+        if (player.money < minimalRefuelCost) {
+          logger.error('Overworld', 'GAME OVER: Stranded (No fuel, no money)')
+          addToast('GAME OVER: Stranded without fuel or money!', 'error')
+          setTimeout(() => changeScene('GAMEOVER'), 3000)
+        }
+      }
+    }
+  }, [
+    player.van,
+    player.money,
+    player.currentNodeId,
+    gameMap,
+    isTraveling,
+    changeScene,
+    addToast
+  ])
+
   return (
     <div
       className={`w-full h-full bg-[var(--void-black)] relative overflow-hidden flex flex-col items-center justify-center p-8 ${isTraveling ? 'pointer-events-none' : ''}`}
@@ -342,7 +421,14 @@ export const Overworld = () => {
         <ToggleRadio />
       </div>
 
-      <div className='absolute bottom-8 right-8 z-50 pointer-events-auto'>
+      <div className='absolute bottom-8 right-8 z-50 pointer-events-auto flex flex-col gap-2 items-end'>
+        <button
+          onClick={handleRefuel}
+          disabled={isTraveling || (player.van?.fuel ?? 0) >= 99}
+          className='bg-black border border-[var(--warning-yellow)] text-[var(--warning-yellow)] px-4 py-2 hover:bg-[var(--warning-yellow)] hover:text-black font-mono text-sm disabled:opacity-50'
+        >
+          [REFUEL]
+        </button>
         <button
           onClick={saveGame}
           disabled={isTraveling}

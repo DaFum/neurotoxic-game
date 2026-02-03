@@ -226,7 +226,6 @@ export const PostGig = () => {
       if (financials) {
         updatePlayer({
           money: player.money + financials.net,
-          day: player.day + 1,
           fame: player.fame + 100 // Simplified fame
         })
       }
