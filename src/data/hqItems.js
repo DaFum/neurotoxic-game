@@ -289,7 +289,7 @@ export const HQ_ITEMS = {
       cost: 500, // Moderate upgrade
       currency: 'fame',
       img: 'ITEM_VAN_SUSPENSION',
-      description: 'Reduziert die Wahrscheinlichkeit von Pannen (-1%).',
+      description: 'Reduziert die Wahrscheinlichkeit von Pannen (-20% rel).',
       effect: {
         type: 'stat_modifier',
         target: 'van',
@@ -312,7 +312,7 @@ export const HQ_ITEMS = {
       cost: 800, // Utility upgrade
       currency: 'fame',
       img: 'ITEM_VAN_STORAGE',
-      description: '+10 Inventar Slots für Merch.',
+      description: '+10 Inventar Slots (WIP - Geplantes Feature).',
       effect: {
         type: 'stat_modifier',
         target: 'band',

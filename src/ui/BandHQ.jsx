@@ -349,8 +349,8 @@ export const BandHQ = ({
                   BAND STATUS
                 </h3>
                 <div className='space-y-6'>
-                  {band.members.map((m, i) => (
-                    <div key={i} className='flex items-center gap-4'>
+                  {band.members.map(m => (
+                    <div key={m.name} className='flex items-center gap-4'>
                       <div className='w-20 font-bold text-white font-mono'>
                         {m.name}
                       </div>
