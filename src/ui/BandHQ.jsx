@@ -36,18 +36,20 @@ export const BandHQ = ({
    * @param {object} item - The item object from HQ_ITEMS.
    */
   const handleBuy = item => {
-    // 1. Cost Check
-    const currencyValue = item.currency === 'fame' ? player.fame : player.money
+    const effect = item.effect
+    const payingWithFame = item.currency === 'fame'
 
-    // Check if already owned (for unique items)
-    // Note: checks against namespaced IDs now
+    const startingMoney = player.money ?? 0
+    const startingFame = player.fame ?? 0
+    const currencyValue = payingWithFame ? startingFame : startingMoney
+
+    const isConsumable = effect.type === 'inventory_add'
+
+    const inventoryKey = effect.type === 'inventory_set' ? effect.item : null
     const isOwned =
       (player.van?.upgrades ?? []).includes(item.id) ||
       (player.hqUpgrades ?? []).includes(item.id) ||
-      band.inventory[item.id] === true
-
-    // Consumables (inventory_add) can be bought multiple times
-    const isConsumable = item.effect.type === 'inventory_add'
+      (inventoryKey ? band.inventory?.[inventoryKey] === true : false)
 
     if (isOwned && !isConsumable) {
       addToast('Bereits im Besitz!', 'warning')
@@ -56,134 +58,102 @@ export const BandHQ = ({
 
     if (currencyValue < item.cost) {
       addToast(
-        `Nicht genug ${item.currency === 'fame' ? 'Fame' : 'Geld'}!`,
+        `Nicht genug ${payingWithFame ? 'Fame' : 'Geld'}!`,
         'error'
       )
       return
     }
 
-    // 2. Deduct Cost
-    if (item.currency === 'fame') {
-      updatePlayer({ fame: Math.max(0, player.fame - item.cost) })
-    } else {
-      updatePlayer({ money: Math.max(0, player.money - item.cost) })
-    }
+    const nextPlayerPatch = payingWithFame
+      ? { fame: Math.max(0, startingFame - item.cost) }
+      : { money: Math.max(0, startingMoney - item.cost) }
 
-    // 3. Apply Effect
-    const effect = item.effect
+    let nextBandPatch = null
 
     switch (effect.type) {
       case 'inventory_set':
-        updateBand({
-          inventory: {
-            ...band.inventory,
-            [effect.item]: effect.value
-          }
-        })
+        nextBandPatch = {
+          inventory: { ...(band.inventory ?? {}), [effect.item]: effect.value }
+        }
         break
 
       case 'inventory_add':
-        updateBand({
+        nextBandPatch = {
           inventory: {
-            ...band.inventory,
-            [effect.item]: (band.inventory[effect.item] || 0) + effect.value
+            ...(band.inventory ?? {}),
+            [effect.item]: ((band.inventory ?? {})[effect.item] || 0) + effect.value
           }
-        })
+        }
         break
 
       case 'stat_modifier': {
         const val = effect.value
-        // Target resolution with clamping
         if (effect.target === 'van') {
-          updatePlayer({
-            van: {
-              ...player.van,
-              [effect.stat]: Math.max(0, (player.van[effect.stat] || 0) + val)
-            }
-          })
+          nextPlayerPatch.van = {
+            ...(player.van ?? {}),
+            [effect.stat]: Math.max(0, ((player.van ?? {})[effect.stat] || 0) + val)
+          }
         } else if (effect.target === 'player') {
-          updatePlayer({
-            [effect.stat]: Math.max(0, (player[effect.stat] || 0) + val)
-          })
+          nextPlayerPatch[effect.stat] = Math.max(0, (player[effect.stat] || 0) + val)
         } else if (effect.target === 'band') {
-          updateBand({
-            [effect.stat]: Math.max(0, (band[effect.stat] || 0) + val)
-          })
+          nextBandPatch = { [effect.stat]: Math.max(0, (band[effect.stat] || 0) + val) }
         } else {
-          // Default: Performance Stats (Band)
-          updateBand({
+          nextBandPatch = {
             performance: {
-              ...band.performance,
-              [effect.stat]: Math.max(
-                0,
-                (band.performance[effect.stat] || 0) + val
-              )
+              ...(band.performance ?? {}),
+              [effect.stat]: Math.max(0, ((band.performance ?? {})[effect.stat] || 0) + val)
             }
-          })
+          }
         }
         break
       }
 
       case 'unlock_upgrade':
-        updatePlayer({
-          van: {
-            ...player.van,
-            upgrades: [...(player.van?.upgrades ?? []), item.id] // Use item.id (namespaced)
-          }
-        })
+        nextPlayerPatch.van = {
+          ...(player.van ?? {}),
+          upgrades: [...(player.van?.upgrades ?? []), item.id]
+        }
         break
 
-      case 'unlock_hq':
-        updatePlayer({
-          hqUpgrades: [...(player.hqUpgrades ?? []), item.id] // Use item.id (namespaced)
-        })
-        // Apply immediate effects using new namespaced IDs
-        if (item.id === 'hq_room_coffee') {
-          const newMembers = band.members.map(m => ({
-            ...m,
-            mood: Math.min(100, m.mood + 20)
-          }))
-          updateBand({ members: newMembers })
-          addToast('Kaffee getrunken! Mood +20', 'success')
-        }
-        if (item.id === 'hq_room_sofa') {
-          const newMembers = band.members.map(m => ({
-            ...m,
-            stamina: Math.min(100, m.stamina + 30)
-          }))
-          updateBand({ members: newMembers })
-          addToast('Ausgeruht! Stamina +30', 'success')
-        }
-        if (item.id === 'hq_room_old_couch') {
-          const newMembers = band.members.map(m => ({
-            ...m,
-            stamina: Math.min(100, m.stamina + 10)
-          }))
-          updateBand({ members: newMembers })
-          addToast('Abgehangen. Stamina +10', 'success')
-        }
+      case 'unlock_hq': {
+        nextPlayerPatch.hqUpgrades = [...(player.hqUpgrades ?? []), item.id]
+
         if (item.id === 'hq_room_poster_wall') {
-          updatePlayer({ fame: player.fame + 10 })
+          nextPlayerPatch.fame = Math.max(
+            0,
+            (nextPlayerPatch.fame ?? startingFame) + 10
+          )
           addToast('Sieht cool aus. Fame +10', 'success')
         }
-        if (item.id === 'hq_room_cheap_beer_fridge') {
-          const newMembers = band.members.map(m => ({
-            ...m,
-            mood: Math.min(100, m.mood + 5)
-          }))
-          updateBand({ members: newMembers })
-          addToast('Prost! Mood +5', 'success')
-        }
+
         if (item.id === 'hq_room_diy_soundproofing') {
-          updateBand({ harmony: Math.min(100, band.harmony + 5) })
+          nextBandPatch = { harmony: Math.min(100, (band.harmony ?? 0) + 5) }
           addToast('Weniger Lärm, mehr Frieden. Harmony +5', 'success')
         }
+
+        if (
+          item.id === 'hq_room_coffee' ||
+          item.id === 'hq_room_sofa' ||
+          item.id === 'hq_room_old_couch' ||
+          item.id === 'hq_room_cheap_beer_fridge'
+        ) {
+          const members = (band.members ?? []).map(m => {
+            if (item.id === 'hq_room_coffee') return { ...m, mood: Math.min(100, (m.mood ?? 0) + 20) }
+            if (item.id === 'hq_room_sofa') return { ...m, stamina: Math.min(100, (m.stamina ?? 0) + 30) }
+            if (item.id === 'hq_room_old_couch') return { ...m, stamina: Math.min(100, (m.stamina ?? 0) + 10) }
+            return { ...m, mood: Math.min(100, (m.mood ?? 0) + 5) } // cheap beer fridge
+          })
+          nextBandPatch = { ...(nextBandPatch ?? {}), members }
+        }
         break
+      }
 
       default:
         console.warn('Unknown effect type:', effect.type)
     }
 
+    updatePlayer(nextPlayerPatch)
+    if (nextBandPatch) updateBand(nextBandPatch)
     addToast(`${item.name} gekauft!`, 'success')
   }
 
@@ -492,24 +462,30 @@ StatBox.propTypes = {
   icon: PropTypes.string.isRequired
 }
 
-const ProgressBar = ({ label, value, max, color, size = 'md' }) => (
-  <div className='w-full'>
-    <div className='flex justify-between text-xs mb-1 font-mono'>
-      <span className='text-[var(--ash-gray)]'>{label}</span>
-      <span className='text-gray-300'>
-        {Math.round(value)}/{max}
-      </span>
-    </div>
-    <div
-      className={`w-full bg-[var(--void-black)] border border-[var(--ash-gray)] ${size === 'sm' ? 'h-3' : 'h-5'}`}
-    >
+const ProgressBar = ({ label, value = 0, max, color, size = 'md' }) => {
+  const safeMax = max > 0 ? max : 1
+  const safeValue = Number.isFinite(value) ? Math.max(0, value) : 0
+  const pct = Math.min(100, (safeValue / safeMax) * 100)
+
+  return (
+    <div className='w-full'>
+      <div className='flex justify-between text-xs mb-1 font-mono'>
+        <span className='text-[var(--ash-gray)]'>{label}</span>
+        <span className='text-gray-300'>
+          {Math.round(safeValue)}/{max}
+        </span>
+      </div>
       <div
-        className={`h-full ${color} transition-all duration-500`}
-        style={{ width: `${Math.min(100, (value / max) * 100)}%` }}
-      />
+        className={`w-full bg-[var(--void-black)] border border-[var(--ash-gray)] ${size === 'sm' ? 'h-3' : 'h-5'}`}
+      >
+        <div
+          className={`h-full ${color} transition-all duration-500`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
     </div>
-  </div>
-)
+  )
+}
 
 ProgressBar.propTypes = {
   label: PropTypes.string.isRequired,
