@@ -30,7 +30,12 @@ export const UpgradeMenu = ({ onClose, player, onBuyUpgrade }) => {
                 {category}
               </h3>
               {upgrades.map(u => {
-                const owned = player.van.upgrades.includes(u.id)
+                // Owned check logic:
+                // We rely on player.van.upgrades or player.hqUpgrades.
+                // The unified hook logic ensures purchased items (with currency='fame') are added to player.van.upgrades.
+                // So checking player.van.upgrades should be sufficient for visual state.
+                const owned = (player.van?.upgrades ?? []).includes(u.id)
+
                 return (
                   <div
                     key={u.id}
