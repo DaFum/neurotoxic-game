@@ -161,9 +161,8 @@ export const GameStateProvider = ({ children }) => {
    * Advances the game day, deducting living costs and updating simulations.
    */
   const advanceDay = () => {
-    const nextDay = state.player.day + 1
     dispatch(createAdvanceDayAction())
-    addToast(`Day ${nextDay}: Living Costs Deducted.`, 'info')
+    addToast(`Day ${state.player.day + 1}: Living Costs Deducted.`, 'info')
   }
 
   /**
@@ -308,26 +307,26 @@ export const GameStateProvider = ({ children }) => {
 
         // Unlocks
         if (delta.flags?.unlock) {
-          try {
-            const currentUnlocks = JSON.parse(
-              localStorage.getItem('neurotoxic_unlocks') || '[]'
-            )
-            if (
-              Array.isArray(currentUnlocks) &&
-              !currentUnlocks.includes(delta.flags.unlock)
-            ) {
-              currentUnlocks.push(delta.flags.unlock)
+          const currentUnlocks = safeStorageOperation(
+            'loadUnlocks',
+            () => JSON.parse(localStorage.getItem('neurotoxic_unlocks') || '[]'),
+            []
+          )
+          if (
+            Array.isArray(currentUnlocks) &&
+            !currentUnlocks.includes(delta.flags.unlock)
+          ) {
+            currentUnlocks.push(delta.flags.unlock)
+            safeStorageOperation('saveUnlocks', () =>
               localStorage.setItem(
                 'neurotoxic_unlocks',
                 JSON.stringify(currentUnlocks)
               )
-              addToast(
-                `UNLOCKED: ${delta.flags.unlock.toUpperCase()}!`,
-                'success'
-              )
-            }
-          } catch (e) {
-            console.error('Failed to parse unlocks from localStorage:', e)
+            )
+            addToast(
+              `UNLOCKED: ${delta.flags.unlock.toUpperCase()}!`,
+              'success'
+            )
           }
         }
 

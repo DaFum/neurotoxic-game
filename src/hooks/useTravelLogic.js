@@ -14,6 +14,13 @@ import { logger } from '../utils/logger'
 import { handleError, GameLogicError } from '../utils/errorHandler'
 
 /**
+ * Failsafe timeout duration in milliseconds
+ * Travel animation duration (1500ms) + buffer (10ms)
+ * @constant {number}
+ */
+const TRAVEL_ANIMATION_TIMEOUT_MS = 1510
+
+/**
  * Custom hook for managing travel state and logic
  * @param {Object} params - Hook parameters
  * @param {Object} params.player - Player state
@@ -323,7 +330,7 @@ export const useTravelLogic = ({
           onTravelComplete(node)
         }
         failsafeTimeoutRef.current = null
-      }, 1510)
+      }, TRAVEL_ANIMATION_TIMEOUT_MS)
     },
     [
       player,

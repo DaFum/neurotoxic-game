@@ -4,7 +4,7 @@
  * @module shared
  */
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 /**
@@ -210,6 +210,16 @@ export const Modal = ({
   children,
   className = ''
 }) => {
+  // ESC key handler for accessibility
+  useEffect(() => {
+    if (!isOpen) return
+    const handleEsc = e => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleEsc)
+    return () => window.removeEventListener('keydown', handleEsc)
+  }, [isOpen, onClose])
+
   if (!isOpen) return null
 
   return (

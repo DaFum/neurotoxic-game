@@ -42,8 +42,8 @@ Web-based Roguelike Tour Manager with rhythm action mechanics. Manage a Death Gr
 | `--toxic-green` | #00FF41 | Primary UI, text, borders |
 | `--void-black` | #0A0A0A | Backgrounds |
 | `--blood-red` | #CC0000 | Errors, critical states |
-| `--ash-gray` | - | Secondary text, borders |
-| `--warning-yellow` | - | Warnings |
+| `--ash-gray` | #888888 | Secondary text, borders |
+| `--warning-yellow` | #FFCC00 | Warnings |
 
 ### Typography
 
@@ -140,8 +140,9 @@ throw new StateError('Invalid state transition', { from: 'MENU', to: 'GIG' })
 Always wrap Pixi app creation with mounted ref to prevent memory leaks:
 
 ```jsx
+const isMountedRef = useRef(true)
+
 useEffect(() => {
-  const isMountedRef = { current: true }
   const app = new Application({ ... })
 
   return () => {
