@@ -60,6 +60,7 @@ export const generateNotesForSong = (song, options = {}) => {
 
 /**
  * Parses raw song notes into game notes.
+ * Applies a 1-in-4 filter to reduce density and ensures single-lane gameplay.
  * @param {object} song - The song object containing notes and metadata.
  * @param {number} [leadIn=2000] - Lead-in time in milliseconds.
  * @returns {Array} Array of note objects formatted for the game loop.
@@ -77,11 +78,20 @@ export const parseSongNotes = (song, leadIn = 2000) => {
     bass: 2
   }
 
-  return song.notes
-    .filter(n => typeof n.t === 'number' && isFinite(n.t)) // Defensive check for valid timestamp
+  // 1. Sort all valid notes by time
+  const sortedNotes = song.notes
+    .filter(n => typeof n.t === 'number' && isFinite(n.t))
+    .sort((a, b) => a.t - b.t)
+
+  // 2. Filter to keep only every 4th note
+  // This satisfies: "Use only every 4th note for the lane to click at"
+  const filteredNotes = sortedNotes.filter((_, index) => index % 4 === 0)
+
+  // 3. Map to game note objects
+  const gameNotes = filteredNotes
     .map(n => {
       const laneIndex = laneMap[n.lane]
-      if (laneIndex === undefined) return null // Skip unknown lanes
+      if (laneIndex === undefined) return null
 
       return {
         time: leadIn + n.t * msPerTick,
@@ -89,11 +99,34 @@ export const parseSongNotes = (song, leadIn = 2000) => {
         hit: false,
         visible: true,
         songId: song.id,
-        originalNote: n // Keep ref just in case
+        originalNote: n
       }
     })
     .filter(n => n !== null)
-    .sort((a, b) => a.time - b.time)
+
+  // 4. Ensure no simultaneous notes (chords) - strictly single lane
+  // Since we sorted by time, we can just check if current note has same time as previous.
+  // The 'every 4th' filter likely spread them out, but if notes were identical in time,
+  // index % 4 might pick the first of a chord, then the 5th note later.
+  // However, if chords are tight (same 't'), picking every 4th index effectively breaks chords up
+  // or skips them unless the chord has >4 notes.
+  // To be safe and strict about "single lane used... not all lanes at same time",
+  // we deduplicate by time.
+  const uniqueTimeNotes = []
+  let lastTime = -1
+
+  for (const note of gameNotes) {
+    // If this note is at the same time as the last valid one, skip it (or use a tiny offset?)
+    // Requirement says "Ensure only one lane is used... not all lanes at same time".
+    // Skipping duplicate timestamps enforces this.
+    if (Math.abs(note.time - lastTime) > 1) {
+      // Tolerance of 1ms
+      uniqueTimeNotes.push(note)
+      lastTime = note.time
+    }
+  }
+
+  return uniqueTimeNotes
 }
 
 /**
