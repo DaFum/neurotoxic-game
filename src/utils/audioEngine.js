@@ -218,7 +218,7 @@ function playDrumNote(midiPitch, time, velocity) {
   }
 }
 
-// Die eigentliche Generierungs-Logik (Legacy / Fallback)
+// The actual generation logic (Legacy / Fallback)
 /**
  * Starts the procedural metal music generator for a specific song configuration.
  * @param {object} song - The song object containing metadata like BPM and difficulty.

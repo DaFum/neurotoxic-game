@@ -136,7 +136,7 @@ export const parseSongNotes = (song, leadIn = 2000) => {
 
       return {
         time: leadIn + timeMs,
-        laneIndex: laneIndex,
+        laneIndex, // Shorthand property notation
         hit: false,
         visible: true,
         songId: song.id,
