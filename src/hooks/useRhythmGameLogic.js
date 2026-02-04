@@ -172,7 +172,8 @@ export const useRhythmGameLogic = () => {
               id: songRef,
               name: songRef,
               bpm: 120,
-              duration: 60
+              duration: 60,
+              difficulty: 2
             }
           )
         }
@@ -206,8 +207,10 @@ export const useRhythmGameLogic = () => {
         }
       }
 
-      // If parsing failed or no notes, use fallback procedural generation
-      if (parsedNotes.length === 0) {
+      // If parsing failed or no notes (empty/invalid), fall back to procedural generation
+      // This handles empty-note songs gracefully without silent failure.
+      if (notes.length === 0) {
+        // Fallback procedural generation
         songsToPlay.forEach(song => {
           const songNotes = generateNotesForSong(song, {
             leadIn: currentTimeOffset,

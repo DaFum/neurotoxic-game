@@ -60,12 +60,19 @@ export const PreGig = () => {
   }, [])
 
   /**
+   * Helper to normalize song entries (handle strings vs objects)
+   * @param {string|object} item - Setlist entry
+   * @returns {string} Song ID
+   */
+  const getSongId = item => (typeof item === 'string' ? item : item.id)
+
+  /**
    * Toggles a song in the setlist.
    * @param {object} song - The song to toggle.
    */
   const toggleSong = song => {
-    if (setlist.find(s => s.id === song.id)) {
-      setSetlist(setlist.filter(s => s.id !== song.id))
+    if (setlist.find(s => getSongId(s) === song.id)) {
+      setSetlist(setlist.filter(s => getSongId(s) !== song.id))
     } else {
       if (setlist.length < 3) {
         // Store only minimal info to save memory/localStorage
@@ -219,7 +226,7 @@ export const PreGig = () => {
           </h3>
           <div className='flex-1 overflow-y-auto pr-2 space-y-2'>
             {SONGS_DB.map(song => {
-              const isSelected = setlist.find(s => s.id === song.id)
+              const isSelected = setlist.find(s => getSongId(s) === song.id)
               return (
                 <div
                   key={song.id}
@@ -259,8 +266,11 @@ export const PreGig = () => {
           {/* Curve Visualization */}
           <div className='mt-4 h-16 border-t border-(--ash-gray) pt-2 flex items-end justify-between gap-1'>
             {setlist.map((s, i) => {
+              const id = getSongId(s)
               // Resolve full song object for display
-              const songData = SONGS_DB.find(dbSong => dbSong.id === s.id) || s
+              const songData = SONGS_DB.find(dbSong => dbSong.id === id) || {
+                energy: { peak: 50 }
+              }
               return (
                 <div
                   key={i}

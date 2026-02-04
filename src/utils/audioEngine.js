@@ -129,6 +129,9 @@ export async function playSongFromData(song, delay = 0) {
     return
   }
 
+  // Fallback if tempoMap is missing/empty
+  const useTempoMap = Array.isArray(song.tempoMap) && song.tempoMap.length > 0
+
   const events = song.notes
     .filter(n => {
       // Validate note data
@@ -142,19 +145,32 @@ export async function playSongFromData(song, delay = 0) {
       )
     })
     .map(n => {
-      // Use shared tempo utility, requesting seconds ('s')
-      const time = calculateTimeFromTicks(n.t, tpb, song.tempoMap, 's')
+      let time = 0
+      if (useTempoMap) {
+        time = calculateTimeFromTicks(n.t, tpb, song.tempoMap, 's')
+      } else {
+        // Fallback: ticks -> seconds using constant BPM
+        time = (n.t / tpb) * (60 / bpm)
+      }
 
       // Clamp velocity 0-127 and normalize
       const rawVelocity = Math.max(0, Math.min(127, n.v))
 
+      // Ensure time and delay are valid numbers
+      const validDelay = Number.isFinite(delay) ? delay : 0
+      const finalTime = Number.isFinite(time) ? time + validDelay : 0
+
+      // Only return valid events (map returns undefined for filtered-out invalid times?)
+      // We map everything, so we assume valid.
       return {
-        time: time + (Number.isFinite(delay) ? delay : 0),
+        time: finalTime,
         note: n.p,
         velocity: rawVelocity / 127,
         lane: n.lane
       }
     })
+    // Filter out potential non-finite times if calculation failed hard
+    .filter(e => Number.isFinite(e.time))
 
   if (events.length === 0) {
     console.warn('playSongFromData: No valid notes found to schedule')
@@ -237,7 +253,10 @@ export async function startMetalGenerator(
   Tone.Transport.cancel()
   Tone.Transport.position = 0
 
-  const bpm = Math.max(1, song.bpm || 80 + (song.difficulty || 2) * 30)
+  // Guard BPM against zero/negative/falsy values
+  const rawBpm = song.bpm || 80 + (song.difficulty || 2) * 30
+  const bpm = Math.max(1, rawBpm)
+
   Tone.Transport.bpm.value = bpm
 
   const pattern = generateRiffPattern(song.difficulty || 2, random)

@@ -98,12 +98,15 @@ export const calculateTimeFromTicks = (ticks, tpb, tempoMap, unit = 'ms') => {
  * Applies a 1-in-4 filter to reduce density and ensures single-lane gameplay.
  * @param {object} song - The song object containing notes and metadata.
  * @param {number} [leadIn=2000] - Lead-in time in milliseconds.
+ * @param {object} [options={}] - Options object.
+ * @param {Function} [options.onWarn] - Callback for warnings (e.g. unknown lanes).
  * @returns {Array} Array of note objects formatted for the game loop.
  */
-export const parseSongNotes = (song, leadIn = 2000) => {
+export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
   if (!song.notes || !Array.isArray(song.notes)) return []
 
   const tpb = Math.max(1, song.tpb || 480) // Prevent div by zero
+  const bpm = Math.max(1, song.bpm || 120) // Prevent div by zero
 
   const laneMap = {
     guitar: 0,
@@ -120,19 +123,38 @@ export const parseSongNotes = (song, leadIn = 2000) => {
   // This satisfies: "Use only every 4th note for the lane to click at"
   const filteredNotes = sortedNotes.filter((_, index) => index % 4 === 0)
 
+  // Determine timing strategy: Tempo Map vs Constant BPM
+  const useTempoMap = Array.isArray(song.tempoMap) && song.tempoMap.length > 0
+
   // 3. Map to game note objects
   const gameNotes = filteredNotes
     .map(n => {
       const laneIndex = laneMap[n.lane]
       if (laneIndex === undefined) {
-        console.warn(
-          `parseSongNotes: Unknown lane "${n.lane}" for note at tick ${n.t}. Skipping.`
-        )
+        if (onWarn) {
+          onWarn(
+            `parseSongNotes: Unknown lane "${n.lane}" for note at tick ${n.t}. Skipping.`
+          )
+        }
         return null
       }
 
-      // Calculate time in milliseconds (default unit)
-      const timeMs = calculateTimeFromTicks(n.t, tpb, song.tempoMap, 'ms')
+      let timeMs = 0
+      if (useTempoMap) {
+        // If calculateTimeFromTicks returns 0/NaN due to bad data, fallback logic?
+        // calculateTimeFromTicks is robust for empty maps (returns 0), but if map is invalid?
+        // We already checked length > 0.
+        timeMs = calculateTimeFromTicks(n.t, tpb, song.tempoMap, 'ms')
+      } else {
+        // Fallback: ticks -> ms using constant BPM
+        timeMs = (n.t / tpb) * (60000 / bpm)
+      }
+
+      // Final sanity check on time
+      if (!Number.isFinite(timeMs)) {
+        // Should realistically assume constant BPM if map failed, but here we just drop it or default to 0
+        timeMs = (n.t / tpb) * (60000 / bpm)
+      }
 
       return {
         time: leadIn + timeMs,
@@ -143,7 +165,7 @@ export const parseSongNotes = (song, leadIn = 2000) => {
         originalNote: n
       }
     })
-    .filter(n => n !== null)
+    .filter(n => n !== null && Number.isFinite(n.time))
 
   // 4. Ensure no simultaneous notes (chords) - strictly single lane
   const uniqueTimeNotes = []
