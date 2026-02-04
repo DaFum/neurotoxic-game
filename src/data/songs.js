@@ -39,7 +39,8 @@ export const SONGS_DB = Object.entries(rhythmSongs).map(([key, song]) => {
     tags: song.tags || ['Metal', 'Instrumental'],
     notePattern: song.notePattern || 'standard',
     crowdAppeal:
-      song.crowdAppeal || Math.min(10, Math.ceil((song.difficultyRank || 2) * 1.5)),
+      song.crowdAppeal ||
+      Math.min(10, Math.ceil((song.difficultyRank || 2) * 1.5)),
     staminaDrain: song.staminaDrain || 10 + (song.difficultyRank || 2) * 2,
 
     // Fake energy curve based on difficulty for now, as it's not in the JSON

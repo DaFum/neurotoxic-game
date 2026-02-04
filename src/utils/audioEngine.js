@@ -237,7 +237,7 @@ export async function startMetalGenerator(
   Tone.Transport.cancel()
   Tone.Transport.position = 0
 
-  const bpm = song.bpm || 80 + song.difficulty * 30
+  const bpm = Math.max(1, song.bpm || 80 + (song.difficulty || 2) * 30)
   Tone.Transport.bpm.value = bpm
 
   const pattern = generateRiffPattern(song.difficulty || 2, random)

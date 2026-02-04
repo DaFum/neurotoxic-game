@@ -160,12 +160,22 @@ export const useRhythmGameLogic = () => {
       let notes = []
       let currentTimeOffset = 2000
 
-      // Resolve full song data from IDs if necessary
+      // Resolve full song data from IDs or Objects if necessary
       const activeSetlist = (
         setlist.length > 0
           ? setlist
           : [{ id: 'jam', name: 'Jam', bpm: 120, duration: 60, difficulty: 2 }]
       ).map(songRef => {
+        if (typeof songRef === 'string') {
+          return (
+            SONGS_DB.find(dbSong => dbSong.id === songRef) || {
+              id: songRef,
+              name: songRef,
+              bpm: 120,
+              duration: 60
+            }
+          )
+        }
         if (!songRef.notes && songRef.id && songRef.id !== 'jam') {
           return SONGS_DB.find(dbSong => dbSong.id === songRef.id) || songRef
         }
@@ -179,20 +189,25 @@ export const useRhythmGameLogic = () => {
       const currentSong = songsToPlay[0]
       let audioDelay = 0
 
-      // Deterministic RNG (placeholder, can be seeded from gameState later)
+      // Explicitly non-deterministic unless seed provided (future proofing)
       const rng = Math.random
 
       // Use predefined notes if available and valid
+      let parsedNotes = []
       if (Array.isArray(currentSong.notes) && currentSong.notes.length > 0) {
-        const parsedNotes = parseSongNotes(currentSong, currentTimeOffset)
-        notes = notes.concat(parsedNotes)
+        parsedNotes = parseSongNotes(currentSong, currentTimeOffset, {
+          onWarn: msg => console.warn(msg)
+        })
 
-        audioDelay = currentTimeOffset / 1000
-        await playSongFromData(currentSong, audioDelay)
+        if (parsedNotes.length > 0) {
+          notes = notes.concat(parsedNotes)
+          audioDelay = currentTimeOffset / 1000
+          await playSongFromData(currentSong, audioDelay)
+        }
+      }
 
-        // Duration is no longer just accumulation; check the last note
-      } else {
-        // Fallback procedural generation
+      // If parsing failed or no notes, use fallback procedural generation
+      if (parsedNotes.length === 0) {
         songsToPlay.forEach(song => {
           const songNotes = generateNotesForSong(song, {
             leadIn: currentTimeOffset,
@@ -215,13 +230,7 @@ export const useRhythmGameLogic = () => {
       // Add buffer for decay/end (e.g. 4 seconds)
       const buffer = 4000
 
-      // If we used fallback, currentTimeOffset is accurate.
-      // If we used JSON, currentSong.duration (from data/songs.js) * 1000 is our baseline,
-      // but strictly following notes is safer.
-      // The old logic for fallback was correct.
-      // For JSON data, let's use the actual note timestamps.
-
-      if (Array.isArray(currentSong.notes) && currentSong.notes.length > 0) {
+      if (parsedNotes.length > 0) {
         gameStateRef.current.totalDuration = maxNoteTime + buffer
       } else {
         gameStateRef.current.totalDuration = Math.max(

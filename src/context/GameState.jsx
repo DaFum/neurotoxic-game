@@ -11,8 +11,8 @@ import {
 } from '../utils/errorHandler'
 
 // Import modular state management
-import { initialState, createInitialState } from './initialState'
-import { gameReducer, ActionTypes } from './gameReducer'
+import { createInitialState } from './initialState'
+import { gameReducer } from './gameReducer'
 import {
   createChangeSceneAction,
   createUpdatePlayerAction,
@@ -190,10 +190,15 @@ export const GameStateProvider = ({ children }) => {
     // Only persist minimal setlist info to avoid bloat
     const saveData = { ...state, timestamp: Date.now() }
 
-    // Ensure we don't accidentally save huge song objects if setlist wasn't cleaned properly
-    // though PreGig handles this, safety here is good.
+    // Normalize setlist to objects with IDs
     if (Array.isArray(saveData.setlist)) {
-      saveData.setlist = saveData.setlist.map(s => ({ id: s.id }))
+      saveData.setlist = saveData.setlist
+        .map(s => {
+          if (typeof s === 'string') return { id: s }
+          if (s && s.id) return { id: s.id }
+          return null
+        })
+        .filter(Boolean)
     }
 
     const success = safeStorageOperation(
