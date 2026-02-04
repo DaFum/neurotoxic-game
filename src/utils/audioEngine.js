@@ -186,16 +186,35 @@ export async function playSongFromData(song, delay = 0) {
  */
 function playDrumNote(midiPitch, time, velocity) {
   // Basic GM Mapping
-  if (midiPitch === 35 || midiPitch === 36) {
-    drumKit.kick.triggerAttackRelease('C1', '16n', time, velocity)
-  } else if (midiPitch === 38 || midiPitch === 40) {
-    drumKit.snare.triggerAttackRelease('16n', time, velocity)
-  } else if (midiPitch === 42 || midiPitch === 44 || midiPitch === 46) {
-    drumKit.hihat.triggerAttackRelease('8000', '32n', time, velocity * 0.8)
-  } else if (midiPitch === 49 || midiPitch === 57) {
-    drumKit.crash.triggerAttackRelease('C2', '8n', time, velocity)
-  } else {
-    drumKit.hihat.triggerAttackRelease('8000', '32n', time, velocity * 0.5)
+  // 35, 36: Bass Drum
+  // 38, 40: Snare
+  // 42, 44, 46: HiHat (Closed, Pedal, Open)
+  // 49, 57: Crash
+  // 51, 59: Ride
+
+  // Fallback/mappings
+  switch (midiPitch) {
+    case 35:
+    case 36:
+      drumKit.kick.triggerAttackRelease('C1', '16n', time, velocity)
+      break
+    case 38:
+    case 40:
+      drumKit.snare.triggerAttackRelease('16n', time, velocity)
+      break
+    case 42:
+    case 44:
+    case 46:
+      // Open/Closed nuance can be decay time, simpler here
+      drumKit.hihat.triggerAttackRelease('8000', '32n', time, velocity * 0.8)
+      break
+    case 49:
+    case 57:
+      drumKit.crash.triggerAttackRelease('C2', '8n', time, velocity)
+      break
+    default:
+      // Default to HiHat for unknown percussion elements to keep rhythm
+      drumKit.hihat.triggerAttackRelease('8000', '32n', time, velocity * 0.5)
   }
 }
 
