@@ -19,7 +19,7 @@ export const Credits = () => {
 
   return (
     <div className='flex flex-col items-center justify-center h-full w-full bg-(--void-black) z-50 text-center overflow-hidden'>
-      {settings.crtEnabled && (
+      {(settings?.crtEnabled ?? false) && (
         <div className='crt-overlay pointer-events-none fixed inset-0 z-50 mix-blend-overlay opacity-50' />
       )}
 
