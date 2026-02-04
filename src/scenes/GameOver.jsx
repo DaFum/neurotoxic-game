@@ -26,9 +26,6 @@ export const GameOver = () => {
 
   return (
     <div className='flex flex-col items-center justify-center h-full w-full bg-(--void-black) z-50 text-center p-8'>
-      {settings?.crtEnabled && (
-        <div className='crt-overlay pointer-events-none fixed inset-0 z-50 mix-blend-overlay opacity-50' />
-      )}
       <h1 className='text-8xl text-(--blood-red) font-[Metal_Mania] mb-4 animate-bounce'>
         SOLD OUT
       </h1>
