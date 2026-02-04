@@ -161,7 +161,13 @@ describe('gameReducer', () => {
 
   describe('CONSUME_ITEM', () => {
     it('should decrement numeric inventory item', () => {
-      testState.band.inventory.shirts = 50
+      testState = {
+        ...testState,
+        band: {
+          ...testState.band,
+          inventory: { ...testState.band.inventory, shirts: 50 }
+        }
+      }
       const action = { type: ActionTypes.CONSUME_ITEM, payload: 'shirts' }
       const newState = gameReducer(testState, action)
 
@@ -169,7 +175,13 @@ describe('gameReducer', () => {
     })
 
     it('should set boolean inventory item to false', () => {
-      testState.band.inventory.strings = true
+      testState = {
+        ...testState,
+        band: {
+          ...testState.band,
+          inventory: { ...testState.band.inventory, strings: true }
+        }
+      }
       const action = { type: ActionTypes.CONSUME_ITEM, payload: 'strings' }
       const newState = gameReducer(testState, action)
 
@@ -177,7 +189,13 @@ describe('gameReducer', () => {
     })
 
     it('should not go below zero', () => {
-      testState.band.inventory.shirts = 0
+      testState = {
+        ...testState,
+        band: {
+          ...testState.band,
+          inventory: { ...testState.band.inventory, shirts: 0 }
+        }
+      }
       const action = { type: ActionTypes.CONSUME_ITEM, payload: 'shirts' }
       const newState = gameReducer(testState, action)
 

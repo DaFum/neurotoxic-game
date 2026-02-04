@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { logger, LOG_LEVELS } from '../utils/logger'
 
-export const DebugLogViewer = () => {
+export const DebugLogViewer = ({ className = '' }) => {
   const [visible, setVisible] = useState(false)
   const [logs, setLogs] = useState([])
   const [filterLevel, setFilterLevel] = useState(LOG_LEVELS.DEBUG)
@@ -47,7 +47,7 @@ export const DebugLogViewer = () => {
   if (!visible) return null
 
   return (
-    <div className='fixed inset-0 z-[9999] pointer-events-none flex flex-col justify-end'>
+    <div className={`fixed inset-0 z-[9999] pointer-events-none flex flex-col justify-end ${className}`}>
       <div className='pointer-events-auto bg-(--void-black)/90 border-t-2 border-(--toxic-green) h-[40vh] flex flex-col font-mono text-xs'>
         {/* Toolbar */}
         <div className='flex justify-between items-center p-2 bg-(--shadow-black) border-b border-(--ash-gray)'>
@@ -58,7 +58,7 @@ export const DebugLogViewer = () => {
             <select
               value={filterLevel}
               onChange={e => setFilterLevel(parseInt(e.target.value))}
-              className='bg-(--void-black) text-(--star-white) border border-(--ash-gray) rounded px-1'
+              className='bg-(--void-black) text-(--star-white) border border-(--ash-gray) px-1'
             >
               <option value={LOG_LEVELS.DEBUG}>DEBUG</option>
               <option value={LOG_LEVELS.INFO}>INFO</option>
@@ -67,19 +67,20 @@ export const DebugLogViewer = () => {
             </select>
             <button
               onClick={() => logger.clear()}
-              className='text-(--ash-gray) hover:text-(--star-white) px-2 border border-(--ash-gray)'
+              className='text-(--ash-gray) hover:text-(--star-white) hover:bg-(--void-black) px-2 border-2 border-(--ash-gray) uppercase shadow-[4px_4px_0px_var(--ash-gray)] transition-all duration-150'
             >
-              Clear
+              CLEAR
             </button>
             <button
               onClick={() => console.log(logger.dump())}
-              className='text-(--ash-gray) hover:text-(--star-white) px-2 border border-(--ash-gray)'
+              className='text-(--ash-gray) hover:text-(--star-white) hover:bg-(--void-black) px-2 border-2 border-(--ash-gray) uppercase shadow-[4px_4px_0px_var(--ash-gray)] transition-all duration-150'
             >
-              Dump to Console
+              DUMP TO CONSOLE
             </button>
           </div>
           <button
             onClick={() => setVisible(false)}
+            aria-label='Close log'
             className='text-(--blood-red) font-bold px-2'
           >
             X

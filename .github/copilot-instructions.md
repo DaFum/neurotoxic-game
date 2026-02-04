@@ -60,7 +60,7 @@ Web-based Roguelike Tour Manager with rhythm action mechanics. Manage a Death Gr
 
 ### Module Structure
 
-```
+```text
 src/context/
 ├── GameState.jsx      # Context provider with useGameState() hook
 ├── initialState.js    # Default state configurations
@@ -79,7 +79,8 @@ function MyComponent() {
   const { player, dispatch } = useGameState()
 
   // Use action creators for type safety
-  dispatch(createUpdatePlayerAction({ money: player.money - 100 }))
+  // Always use Math.max(0, ...) for deductions to prevent negative values
+  dispatch(createUpdatePlayerAction({ money: Math.max(0, player.money - 100) }))
 
   // Or dispatch directly with ActionTypes
   dispatch({ type: ActionTypes.UPDATE_PLAYER, payload: { money: 400 } })
@@ -173,10 +174,10 @@ useEffect(() => {
 
 ## Shared UI Components
 
-Use components from `src/ui/shared/index.js`:
+Use components from `src/ui/shared/index.jsx`:
 
 ```jsx
-import { StatBox, ProgressBar, Panel, ActionButton, Modal, Grid } from '../ui/shared'
+import { StatBox, ProgressBar, Panel, ActionButton, Modal, Grid } from '../ui/shared/index.jsx'
 
 <StatBox label="MONEY" value={player.money} icon="$" />
 <ProgressBar label="FUEL" value={fuel} max={100} color="bg-(--toxic-green)" />

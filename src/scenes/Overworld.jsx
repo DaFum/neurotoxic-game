@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
+import { useTravelLogic } from '../hooks/useTravelLogic'
 import { ChatterOverlay } from '../components/ChatterOverlay'
 import { BandHQ } from '../ui/BandHQ'
 import { ALL_VENUES } from '../data/venues'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import { EXPENSE_CONSTANTS } from '../utils/economyEngine'
 import { audioManager } from '../utils/AudioManager'
-import { useTravelLogic } from '../hooks/useTravelLogic'
 
 /**
  * A widget to toggle the ambient radio / music.
@@ -61,7 +61,8 @@ export const Overworld = () => {
     band,
     addToast,
     advanceDay,
-    changeScene
+    changeScene,
+    settings
   } = useGameState()
 
   const [hoveredNode, setHoveredNode] = useState(null)
@@ -100,6 +101,9 @@ export const Overworld = () => {
     <div
       className={`w-full h-full bg-(--void-black) relative overflow-hidden flex flex-col items-center justify-center p-8 ${isTraveling ? 'pointer-events-none' : ''}`}
     >
+      {settings?.crtEnabled && (
+        <div className='crt-overlay pointer-events-none fixed inset-0 z-50 mix-blend-overlay opacity-50' />
+      )}
       <h2 className='absolute top-20 text-4xl text-(--toxic-green) font-[Metal_Mania] z-10 text-shadow-[0_0_10px_var(--toxic-green)] pointer-events-none'>
         TOUR PLAN: {player.location}
       </h2>
@@ -317,7 +321,7 @@ export const Overworld = () => {
         )}
       </div>
 
-      <div className='absolute bottom-8 left-8 p-4 border border-[var(--ash-gray)] bg-[var(--void-black)]/90 max-w-sm z-20 pointer-events-none'>
+      <div className='absolute bottom-8 left-8 p-4 border border-(--ash-gray) bg-(--void-black)/90 max-w-sm z-20 pointer-events-none'>
         <h3 className='text-(--toxic-green) font-bold mb-2'>EVENT LOG:</h3>
         <p className='text-xs text-(--ash-gray) font-mono'>
           &gt; Locations loaded: {ALL_VENUES.length}

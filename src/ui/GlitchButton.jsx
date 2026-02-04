@@ -23,7 +23,7 @@ export const GlitchButton = ({
         border-2 border-(--toxic-green)
         font-[Metal_Mania] text-xl font-bold uppercase tracking-widest
         transition-all duration-100
-        hover:bg-(--toxic-green) hover:text-black
+        hover:bg-(--toxic-green) hover:text-(--void-black)
         hover:translate-x-1 hover:-translate-y-1
         hover:shadow-[4px_4px_0px_var(--blood-red)]
         active:translate-x-0 active:translate-y-0

@@ -37,6 +37,7 @@ export const HUD = () => {
         {/* Volume Control */}
         <button
           onClick={toggleMute}
+          aria-label={muted ? 'Unmute system' : 'Mute system'}
           className='pointer-events-auto bg-(--void-black)/80 border border-(--toxic-green) p-2 text-(--toxic-green) w-fit hover:bg-(--toxic-green) hover:text-(--void-black) transition-colors'
         >
           {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}

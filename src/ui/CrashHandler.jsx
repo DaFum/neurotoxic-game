@@ -29,7 +29,7 @@ export class ErrorBoundary extends React.Component {
             The simulation has crashed. Reboot required.
           </p>
 
-          <div className='bg-red-900/20 border border-(--blood-red) p-4 rounded mb-8 w-full max-w-2xl overflow-auto max-h-64 text-xs font-mono'>
+          <div className='bg-(--blood-red)/20 border border-(--blood-red) p-4 mb-8 w-full max-w-2xl overflow-auto max-h-64 text-xs font-mono'>
             <p className='font-bold mb-2'>
               {this.state.error && this.state.error.toString()}
             </p>

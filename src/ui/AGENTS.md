@@ -443,7 +443,7 @@ export class CrashHandler extends React.Component {
 
 ```jsx
 // ✅ ALWAYS use CSS variables
-className = 'bg-[var(--void-black)] text-(--toxic-green)'
+className = 'bg-(--void-black) text-(--toxic-green)'
 
 // ❌ NEVER hardcode
 className = 'bg-black text-green-500'

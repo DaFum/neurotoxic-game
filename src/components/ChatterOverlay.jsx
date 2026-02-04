@@ -75,7 +75,7 @@ export const ChatterOverlay = () => {
               <div className='text-[10px] font-bold text-(--ash-gray) uppercase tracking-widest'>
                 {chatter.speaker}
               </div>
-              <div className='w-2 h-2 rounded-full bg-green-500 animate-pulse' />
+              <div className='w-2 h-2 rounded-full bg-(--toxic-green) animate-pulse' />
             </div>
             <div className='font-mono text-sm leading-tight'>
               {chatter.text}

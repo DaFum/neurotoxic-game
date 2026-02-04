@@ -349,33 +349,12 @@ export const usePurchaseLogic = ({
             return false
         }
 
-        // Also ensure simple stat_modifiers from UPGRADES_DB are marked as owned!
-        // MainMenu logic added ALL upgrades to `player.van.upgrades`.
-        // My `applyStatModifier` does NOT add to upgrades list.
-        // I need to fix this. `stat_modifier` items in `UPGRADES_DB` (like van_suspension) MUST be added to `upgrades` list to be marked as owned.
-        // `HQ_ITEMS` (like lucky_rabbit_foot) use `stat_modifier` but are consumables/one-offs? No, `lucky_rabbit_foot` seems like a unique item.
-        // `isItemOwned` checks `van.upgrades` for `item.id`.
-        // So if I buy `van_suspension`, I must add `van_suspension` to `player.van.upgrades`.
-        // The previous `MainMenu` logic did: `upgrades: [...player.van.upgrades, upgrade.id]` unconditionally for all upgrades.
-
-        // So, regardless of effect type, if it's from UPGRADES_DB (or basically any item that isn't a consumable or hq_unlock), it should probably be tracked.
-        // `HQ_ITEMS` used `inventory_set` which checks `band.inventory`.
-
-        // If the item has `currency: 'fame'`, it's likely an Upgrade that needs tracking in `van.upgrades`.
-        // Or I can just check if `isOwned` logic requires it.
-        // `isItemOwned` checks `player.van.upgrades.includes(item.id)`.
-
+        // Ensure fame-based upgrades are tracked in van.upgrades for ownership detection
         if (
           item.currency === 'fame' &&
           !isConsumable &&
           effect.type !== 'unlock_upgrade'
         ) {
-          // Ensure it is added to upgrades list if not already handled by unlock_upgrade
-          // unlock_upgrade adds it.
-          // stat_modifier does NOT add it.
-          // passive does NOT add it (I added it above, but should be generic).
-
-          // Let's unify this.
           const currentUpgrades =
             playerPatch.van?.upgrades ?? player.van?.upgrades ?? []
           if (!currentUpgrades.includes(item.id)) {
