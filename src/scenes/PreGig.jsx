@@ -68,7 +68,8 @@ export const PreGig = () => {
       setSetlist(setlist.filter(s => s.id !== song.id))
     } else {
       if (setlist.length < 3) {
-        setSetlist([...setlist, song])
+        // Store only minimal info to save memory/localStorage
+        setSetlist([...setlist, { id: song.id }])
       }
     }
   }
@@ -90,8 +91,6 @@ export const PreGig = () => {
     }
 
     setGigModifiers({ [key]: !isActive })
-    // Removed immediate money deduction to prevent double billing in PostGig.
-    // Costs are calculated in economyEngine.js
   }
 
   const calculatedBudget = Object.entries(gigModifiers).reduce(
@@ -259,17 +258,21 @@ export const PreGig = () => {
 
           {/* Curve Visualization */}
           <div className='mt-4 h-16 border-t border-(--ash-gray) pt-2 flex items-end justify-between gap-1'>
-            {setlist.map((s, i) => (
-              <div
-                key={i}
-                className='flex-1 bg-(--toxic-green) opacity-50 hover:opacity-100 transition-opacity relative group'
-                style={{ height: `${s.energy.peak}%` }}
-              >
-                <div className='absolute -top-4 left-0 text-[10px] w-full text-center hidden group-hover:block text-(--star-white)'>
-                  {s.energy.peak}
+            {setlist.map((s, i) => {
+              // Resolve full song object for display
+              const songData = SONGS_DB.find(dbSong => dbSong.id === s.id) || s
+              return (
+                <div
+                  key={i}
+                  className='flex-1 bg-(--toxic-green) opacity-50 hover:opacity-100 transition-opacity relative group'
+                  style={{ height: `${songData.energy?.peak || 50}%` }}
+                >
+                  <div className='absolute -top-4 left-0 text-[10px] w-full text-center hidden group-hover:block text-(--star-white)'>
+                    {songData.energy?.peak}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
             {setlist.length === 0 && (
               <div className='text-(--ash-gray) text-xs w-full text-center'>
                 Select songs to see energy curve

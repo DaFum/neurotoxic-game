@@ -19,6 +19,7 @@ import {
   checkHit
 } from '../utils/rhythmUtils'
 import { handleError } from '../utils/errorHandler'
+import { SONGS_DB } from '../data/songs'
 
 /**
  * Provides rhythm game state, actions, and update loop for the gig scene.
@@ -158,10 +159,18 @@ export const useRhythmGameLogic = () => {
 
       let notes = []
       let currentTimeOffset = 2000
-      const activeSetlist =
+
+      // Resolve full song data from IDs if necessary
+      const activeSetlist = (
         setlist.length > 0
           ? setlist
           : [{ id: 'jam', name: 'Jam', bpm: 120, duration: 60, difficulty: 2 }]
+      ).map(songRef => {
+        if (!songRef.notes && songRef.id && songRef.id !== 'jam') {
+          return SONGS_DB.find(dbSong => dbSong.id === songRef.id) || songRef
+        }
+        return songRef
+      })
 
       // Only generate notes for the active song (first in list for now, unless we implement full setlist sequencing)
       // The audio engine plays the first song. Notes should match.

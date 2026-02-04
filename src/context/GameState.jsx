@@ -108,7 +108,7 @@ export const GameStateProvider = ({ children }) => {
 
   /**
    * Updates the active setlist.
-   * @param {Array} list - Array of song objects.
+   * @param {Array} list - Array of song objects or IDs.
    */
   const setSetlist = list => dispatch(createSetSetlistAction(list))
 
@@ -187,7 +187,15 @@ export const GameStateProvider = ({ children }) => {
    * Persists the current state to localStorage.
    */
   const saveGame = () => {
+    // Only persist minimal setlist info to avoid bloat
     const saveData = { ...state, timestamp: Date.now() }
+
+    // Ensure we don't accidentally save huge song objects if setlist wasn't cleaned properly
+    // though PreGig handles this, safety here is good.
+    if (Array.isArray(saveData.setlist)) {
+      saveData.setlist = saveData.setlist.map(s => ({ id: s.id }))
+    }
+
     const success = safeStorageOperation(
       'saveGame',
       () => {

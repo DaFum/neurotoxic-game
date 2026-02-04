@@ -59,6 +59,39 @@ export const generateNotesForSong = (song, options = {}) => {
 }
 
 /**
+ * Calculates the time in milliseconds for a given tick count using the song's tempo map.
+ * @param {number} ticks - The MIDI tick timestamp.
+ * @param {number} tpb - Ticks per beat.
+ * @param {Array} tempoMap - Array of tempo changes [{ tick, usPerBeat }].
+ * @returns {number} Time in milliseconds.
+ */
+export const calculateTimeFromTicks = (ticks, tpb, tempoMap) => {
+  if (!tempoMap || tempoMap.length === 0) return 0
+
+  let timeMs = 0
+  let currentTick = 0
+
+  for (let i = 0; i < tempoMap.length; i++) {
+    const currentTempo = tempoMap[i]
+    const nextTempo = tempoMap[i + 1]
+    const endTick = nextTempo ? nextTempo.tick : ticks
+
+    if (currentTick >= ticks) break
+
+    const segmentTicks = Math.min(endTick, ticks) - currentTick
+    if (segmentTicks > 0) {
+      // usPerBeat / tpb = microseconds per tick
+      // microseconds / 1000 = milliseconds
+      const msPerTick = currentTempo.usPerBeat / tpb / 1000
+      timeMs += segmentTicks * msPerTick
+      currentTick += segmentTicks
+    }
+  }
+
+  return timeMs
+}
+
+/**
  * Parses raw song notes into game notes.
  * Applies a 1-in-4 filter to reduce density and ensures single-lane gameplay.
  * @param {object} song - The song object containing notes and metadata.
@@ -69,8 +102,6 @@ export const parseSongNotes = (song, leadIn = 2000) => {
   if (!song.notes || !Array.isArray(song.notes)) return []
 
   const tpb = Math.max(1, song.tpb || 480) // Prevent div by zero
-  const bpm = Math.max(1, song.bpm || 120) // Prevent div by zero
-  const msPerTick = 60000 / bpm / tpb
 
   const laneMap = {
     guitar: 0,
@@ -91,10 +122,17 @@ export const parseSongNotes = (song, leadIn = 2000) => {
   const gameNotes = filteredNotes
     .map(n => {
       const laneIndex = laneMap[n.lane]
-      if (laneIndex === undefined) return null
+      if (laneIndex === undefined) {
+        console.warn(
+          `parseSongNotes: Unknown lane "${n.lane}" for note at tick ${n.t}. Skipping.`
+        )
+        return null
+      }
+
+      const timeMs = calculateTimeFromTicks(n.t, tpb, song.tempoMap)
 
       return {
-        time: leadIn + n.t * msPerTick,
+        time: leadIn + timeMs,
         laneIndex: laneIndex,
         hit: false,
         visible: true,
