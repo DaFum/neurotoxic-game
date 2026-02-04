@@ -1,5 +1,5 @@
 // Music Library
-import rhythmSongs from '../assets/rhythm_songs.json'
+import rhythmSongs from '../assets/rhythm_songs.json' with { type: 'json' }
 
 // Transform the JSON object into an array and map to the expected structure
 export const SONGS_DB = Object.entries(rhythmSongs).map(([key, song]) => {

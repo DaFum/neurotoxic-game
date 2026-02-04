@@ -148,9 +148,25 @@ export const Gig = () => {
 
   const bgUrl = getGenImageUrl(bgPrompt)
 
+  // Chaos Mode Visuals
+  const chaosStyle = {}
+  if (stats.overload > 50) {
+    chaosStyle.filter = `saturate(${1 + (stats.overload - 50) / 25})`
+  }
+  if (stats.overload > 80) {
+    // Subtle hue shift based on overload
+    chaosStyle.filter = (chaosStyle.filter || '') + ` hue-rotate(${stats.overload - 80}deg)`
+  }
+  if (stats.isToxicMode) {
+    // Full Chaos
+    chaosStyle.filter = 'invert(0.1) contrast(1.5) saturate(2)'
+    chaosStyle.transform = `translate(${Math.random() * 4 - 2}px, ${Math.random() * 4 - 2}px)`
+  }
+
   return (
     <div
-      className={`w-full h-full relative bg-(--void-black) flex flex-col overflow-hidden ${stats.isToxicMode ? 'border-4 border-(--toxic-green) animate-pulse' : ''}`}
+      className={`w-full h-full relative bg-(--void-black) flex flex-col overflow-hidden ${stats.isToxicMode ? 'border-4 border-(--toxic-green)' : ''}`}
+      style={chaosStyle}
     >
       {/* Layer 0: Background */}
       <div
@@ -201,6 +217,7 @@ export const Gig = () => {
       {/* Layer 3 & 4: HUD & Inputs */}
       <GigHUD
         stats={stats}
+        gameStateRef={gameStateRef}
         onLaneInput={(index, active) =>
           active ? handleTouchStart(index) : handleTouchEnd(index)
         }

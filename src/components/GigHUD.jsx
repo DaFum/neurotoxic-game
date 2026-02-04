@@ -1,11 +1,15 @@
 import React from 'react'
 import { ChatterOverlay } from './ChatterOverlay'
+import { HecklerOverlay } from './HecklerOverlay'
 
-export const GigHUD = ({ stats, onLaneInput }) => {
+export const GigHUD = ({ stats, onLaneInput, gameStateRef }) => {
   const { score, combo, health, overload, isGameOver } = stats
 
   return (
     <div className='absolute inset-0 z-30 pointer-events-none'>
+      {/* Heckler Overlay (Projectiles) */}
+      <HecklerOverlay gameStateRef={gameStateRef} />
+
       {/* Chatter Overlay Integration */}
       <div className='absolute top-32 right-4 z-50'>
         <ChatterOverlay />

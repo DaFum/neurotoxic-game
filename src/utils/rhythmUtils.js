@@ -49,7 +49,8 @@ export const generateNotesForSong = (song, options = {}) => {
           laneIndex,
           hit: false,
           visible: true,
-          songId: song.id
+          songId: song.id,
+          type: 'note'
         })
       }
     }
@@ -152,8 +153,8 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
 
       // Final sanity check on time
       if (!Number.isFinite(timeMs)) {
-        // Should realistically assume constant BPM if map failed, but here we just drop it or default to 0
-        timeMs = (n.t / tpb) * (60000 / bpm)
+         // Should realistically assume constant BPM if map failed, but here we just drop it or default to 0
+         timeMs = (n.t / tpb) * (60000 / bpm)
       }
 
       return {
@@ -162,7 +163,8 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
         hit: false,
         visible: true,
         songId: song.id,
-        originalNote: n
+        originalNote: n,
+        type: 'note' // Explicit type for future projectiles
       }
     })
     .filter(n => n !== null && Number.isFinite(n.time))
@@ -198,6 +200,8 @@ export const checkHit = (notes, laneIndex, elapsed, hitWindow) => {
         n.visible &&
         !n.hit &&
         n.laneIndex === laneIndex &&
+        // For standard notes, check lane match. For projectiles (future), might differ.
+        n.type === 'note' &&
         Math.abs(n.time - elapsed) < hitWindow
     ) || null
   )

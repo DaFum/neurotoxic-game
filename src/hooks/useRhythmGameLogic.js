@@ -18,6 +18,7 @@ import {
   parseSongNotes,
   checkHit
 } from '../utils/rhythmUtils'
+import { updateProjectiles, trySpawnProjectile } from '../utils/hecklerLogic'
 import { handleError } from '../utils/errorHandler'
 import { SONGS_DB } from '../data/songs'
 
@@ -86,6 +87,7 @@ export const useRhythmGameLogic = () => {
     speed: 500,
     modifiers: {},
     stats: { perfectHits: 0, misses: 0, maxCombo: 0, peakHype: 0 },
+    projectiles: [],
     // Mirror React State for Renderer
     combo: 0,
     health: 100,
@@ -441,6 +443,27 @@ export const useRhythmGameLogic = () => {
     deltaMS => {
       const state = gameStateRef.current
       if (state.paused) return
+
+      // Heckler Logic: Spawn projectiles randomly
+      if (state.running && !activeEvent && !isGameOver) {
+        const newProjectile = trySpawnProjectile(
+          { health: state.health },
+          Math.random,
+          window.innerWidth
+        )
+        if (newProjectile) {
+          state.projectiles.push(newProjectile)
+        }
+      }
+
+      // Update Projectiles
+      if (state.projectiles.length > 0) {
+        state.projectiles = updateProjectiles(
+          state.projectiles,
+          deltaMS,
+          window.innerHeight
+        )
+      }
 
       if (!state.running || activeEvent || isGameOver) {
         if (!state.pauseTime) {

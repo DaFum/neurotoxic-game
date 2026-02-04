@@ -149,7 +149,7 @@ export const Overworld = () => {
 
       <div className='relative w-full h-full max-w-6xl max-h-[80vh] border-4 border-(--toxic-green) bg-(--void-black)/80 rounded-lg shadow-[0_0_50px_var(--toxic-green-20)] overflow-hidden'>
         <div
-          className='absolute inset-0 opacity-30 bg-cover bg-center grayscale invert'
+          className='absolute inset-0 opacity-30 bg-cover bg-center grayscale invert pointer-events-none'
           style={{
             backgroundImage: `url("${getGenImageUrl(IMG_PROMPTS.OVERWORLD_MAP)}")`
           }}
@@ -268,7 +268,7 @@ export const Overworld = () => {
                 </motion.div>
 
                 {isReachable && (
-                  <div className='absolute -top-6 left-1/2 -translate-x-1/2 text-(--toxic-green) text-[10px] font-bold animate-bounce whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity'>
+                  <div className='absolute -top-6 left-1/2 -translate-x-1/2 text-(--toxic-green) text-[10px] font-bold animate-bounce whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none'>
                     CLICK TO TRAVEL
                   </div>
                 )}
