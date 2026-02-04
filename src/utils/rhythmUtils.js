@@ -59,17 +59,20 @@ export const generateNotesForSong = (song, options = {}) => {
 }
 
 /**
- * Calculates the time in milliseconds for a given tick count using the song's tempo map.
+ * Calculates the time for a given tick count using the song's tempo map.
  * @param {number} ticks - The MIDI tick timestamp.
  * @param {number} tpb - Ticks per beat.
  * @param {Array} tempoMap - Array of tempo changes [{ tick, usPerBeat }].
- * @returns {number} Time in milliseconds.
+ * @param {string} [unit='ms'] - Output unit: 'ms' (milliseconds) or 's' (seconds).
+ * @returns {number} Time in the specified unit.
  */
-export const calculateTimeFromTicks = (ticks, tpb, tempoMap) => {
+export const calculateTimeFromTicks = (ticks, tpb, tempoMap, unit = 'ms') => {
   if (!tempoMap || tempoMap.length === 0) return 0
 
-  let timeMs = 0
+  let totalTime = 0
   let currentTick = 0
+  // divisor: if 'ms', we want (us / 1000). if 's', we want (us / 1000000).
+  const divisor = unit === 's' ? 1000000 : 1000
 
   for (let i = 0; i < tempoMap.length; i++) {
     const currentTempo = tempoMap[i]
@@ -81,14 +84,13 @@ export const calculateTimeFromTicks = (ticks, tpb, tempoMap) => {
     const segmentTicks = Math.min(endTick, ticks) - currentTick
     if (segmentTicks > 0) {
       // usPerBeat / tpb = microseconds per tick
-      // microseconds / 1000 = milliseconds
-      const msPerTick = currentTempo.usPerBeat / tpb / 1000
-      timeMs += segmentTicks * msPerTick
+      const timePerTick = currentTempo.usPerBeat / tpb / divisor
+      totalTime += segmentTicks * timePerTick
       currentTick += segmentTicks
     }
   }
 
-  return timeMs
+  return totalTime
 }
 
 /**
@@ -129,7 +131,8 @@ export const parseSongNotes = (song, leadIn = 2000) => {
         return null
       }
 
-      const timeMs = calculateTimeFromTicks(n.t, tpb, song.tempoMap)
+      // Calculate time in milliseconds (default unit)
+      const timeMs = calculateTimeFromTicks(n.t, tpb, song.tempoMap, 'ms')
 
       return {
         time: leadIn + timeMs,

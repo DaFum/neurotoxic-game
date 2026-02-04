@@ -5,6 +5,7 @@
  */
 
 import * as Tone from 'tone'
+import { calculateTimeFromTicks } from './rhythmUtils'
 
 let guitar, bass, drumKit, loop, part
 let isSetup = false
@@ -102,39 +103,6 @@ export async function ensureAudioContext() {
 }
 
 /**
- * Calculates the time in seconds for a given tick count using the song's tempo map.
- * @param {number} ticks - The MIDI tick timestamp.
- * @param {number} tpb - Ticks per beat.
- * @param {Array} tempoMap - Array of tempo changes [{ tick, usPerBeat }].
- * @returns {number} Time in seconds.
- */
-function calculateTimeFromTicksSeconds(ticks, tpb, tempoMap) {
-  if (!tempoMap || tempoMap.length === 0) return 0
-
-  let timeS = 0
-  let currentTick = 0
-
-  for (let i = 0; i < tempoMap.length; i++) {
-    const currentTempo = tempoMap[i]
-    const nextTempo = tempoMap[i + 1]
-    const endTick = nextTempo ? nextTempo.tick : ticks
-
-    if (currentTick >= ticks) break
-
-    const segmentTicks = Math.min(endTick, ticks) - currentTick
-    if (segmentTicks > 0) {
-      // usPerBeat / tpb = microseconds per tick
-      // microseconds / 1000000 = seconds
-      const sPerTick = currentTempo.usPerBeat / tpb / 1000000
-      timeS += segmentTicks * sPerTick
-      currentTick += segmentTicks
-    }
-  }
-
-  return timeS
-}
-
-/**
  * Plays a song using predefined note data.
  * @param {object} song - The song object containing `notes` and `bpm`.
  * @param {number} [delay=0] - Delay in seconds before starting.
@@ -145,10 +113,8 @@ export async function playSongFromData(song, delay = 0) {
   Tone.Transport.cancel()
   Tone.Transport.position = 0
 
-  // We rely on exact time scheduling now, so Transport BPM doesn't need to match tempo changes perfectly
-  // but it's good to set an initial value
-  const bpm = Math.max(1, song.bpm || 120)
-  const tpb = Math.max(1, song.tpb || 480)
+  const bpm = Math.max(1, song.bpm || 120) // Ensure BPM is positive
+  const tpb = Math.max(1, song.tpb || 480) // Ensure TPB is positive
   Tone.Transport.bpm.value = bpm
 
   // Validate notes
@@ -176,8 +142,8 @@ export async function playSongFromData(song, delay = 0) {
       )
     })
     .map(n => {
-      // Use tempo map for accurate audio timing
-      const time = calculateTimeFromTicksSeconds(n.t, tpb, song.tempoMap)
+      // Use shared tempo utility, requesting seconds ('s')
+      const time = calculateTimeFromTicks(n.t, tpb, song.tempoMap, 's')
 
       // Clamp velocity 0-127 and normalize
       const rawVelocity = Math.max(0, Math.min(127, n.v))
