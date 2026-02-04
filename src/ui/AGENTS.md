@@ -15,9 +15,9 @@ This folder (`src/ui/`) contains the "design system" - pure presentation compone
 | `EventModal.jsx` | Full-screen modal for narrative events |
 | `ToastOverlay.jsx` | Temporary notification system |
 | `CrashHandler.jsx` | Error boundary wrapper |
-| `shared/index.js` | Generic reusable components |
+| `shared/index.jsx` | Generic reusable components |
 
-### Shared Components (`src/ui/shared/index.js`)
+### Shared Components (`src/ui/shared/index.jsx`)
 
 ```jsx
 import { StatBox, ProgressBar, Panel, ActionButton, Modal, Grid, TabButton } from '../ui/shared'

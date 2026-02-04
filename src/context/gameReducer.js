@@ -139,6 +139,11 @@ const handleLoadGame = (state, payload) => {
     }
   }
 
+  // Ensure positive money
+  if (mergedPlayer.money) {
+    mergedPlayer.money = Math.max(0, mergedPlayer.money)
+  }
+
   const mergedBand = {
     ...DEFAULT_BAND_STATE,
     ...loadedState.band,
@@ -153,6 +158,11 @@ const handleLoadGame = (state, payload) => {
   }
 
   const mergedSocial = { ...DEFAULT_SOCIAL_STATE, ...loadedState.social }
+
+  // Ensure harmony is clamped
+  if (mergedBand.harmony) {
+    mergedBand.harmony = Math.max(0, mergedBand.harmony)
+  }
 
   return {
     ...state,
@@ -172,6 +182,8 @@ const handleLoadGame = (state, payload) => {
 const handleConsumeItem = (state, payload) => {
   const itemType = payload
   const nextBand = { ...state.band }
+  // Deep clone inventory
+  nextBand.inventory = { ...state.band.inventory }
 
   if (nextBand.inventory[itemType] === true) {
     nextBand.inventory[itemType] = false

@@ -315,12 +315,7 @@ export const usePurchaseLogic = ({
             const result = applyPassive(effect, playerPatch)
             playerPatch = result.playerPatch
             bandPatch = result.bandPatch
-            // Also mark as owned via van upgrades for passive items from UPGRADES_DB
-            // Wait, UPGRADES_DB items use `id` for ownership check in `isItemOwned`.
-            // But `isItemOwned` checks `player.van.upgrades` or `player.hqUpgrades`.
-            // So we need to add the item ID to one of those.
-            // MainMenu did: upgrades: [...(player.van?.upgrades || []), upgrade.id]
-            // We should do that here too.
+            // Mark passive items as owned via van upgrades to ensure isItemOwned returns true
             playerPatch.van = {
               ...(playerPatch.van ?? player.van ?? {}),
               upgrades: [

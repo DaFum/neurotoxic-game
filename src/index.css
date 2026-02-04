@@ -38,6 +38,12 @@
   --stamina-green: #16a34a;
   --mood-pink: #db2777;
 
+  /* UI Components */
+  --panel-bg: rgb(0 0 0 / 40%);
+  --disabled-bg: var(--concrete-gray);
+  --disabled-text: var(--ash-gray);
+  --disabled-border: var(--ash-gray);
+
   --font-display: 'Metal Mania', cursive;
   --font-ui: 'Courier New', monospace;
   --font-code: 'Courier New', monospace;

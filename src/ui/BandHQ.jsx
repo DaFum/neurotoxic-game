@@ -87,7 +87,7 @@ export const BandHQ = ({
                 owned && !isConsumable
                   ? 'border-[var(--ash-gray)] text-[var(--ash-gray)] cursor-default'
                   : disabled
-                    ? 'border-gray-800 text-gray-700 bg-gray-900 cursor-not-allowed'
+                    ? 'border-[var(--disabled-border)] text-[var(--disabled-text)] bg-[var(--disabled-bg)] cursor-not-allowed'
                     : 'border-[var(--toxic-green)] bg-[var(--toxic-green)] text-black hover:invert shadow-[4px_4px_0px_var(--void-black)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
               }`}
           >

@@ -6,6 +6,7 @@
 
 import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
+import { motion, AnimatePresence } from 'framer-motion'
 
 /**
  * StatBox - Displays a single statistic with an icon
@@ -20,7 +21,7 @@ export const StatBox = ({ label, value, icon, className = '' }) => (
     className={`bg-[var(--void-black)] p-3 flex flex-col items-center justify-center border border-[var(--ash-gray)] ${className}`}
   >
     <div className='text-2xl mb-1 text-[var(--toxic-green)]'>{icon}</div>
-    <div className='text-xl font-bold text-white font-mono'>{value}</div>
+    <div className='text-xl font-bold text-[var(--star-white)] font-mono'>{value}</div>
     <div className='text-xs text-[var(--ash-gray)] uppercase font-mono'>
       {label}
     </div>
@@ -99,7 +100,7 @@ ProgressBar.propTypes = {
  */
 export const Panel = ({ title, children, className = '' }) => (
   <div
-    className={`bg-black/40 border-2 border-[var(--ash-gray)] p-4 ${className}`}
+    className={`bg-[var(--panel-bg)] border-2 border-[var(--ash-gray)] p-4 ${className}`}
   >
     {title && (
       <h3 className='text-[var(--toxic-green)] text-lg font-bold mb-4 border-b border-[var(--ash-gray)] pb-2 font-mono'>
@@ -220,32 +221,42 @@ export const Modal = ({
     return () => window.removeEventListener('keydown', handleEsc)
   }, [isOpen, onClose])
 
-  if (!isOpen) return null
-
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm'>
-      <div
-        className={`relative w-full max-w-2xl border-4 border-[var(--toxic-green)] bg-[var(--void-black)] shadow-[0_0_50px_var(--toxic-green)] ${className}`}
-      >
-        {/* Header */}
-        <div className='flex justify-between items-center p-4 border-b-2 border-[var(--toxic-green)] bg-black/50'>
-          {title && (
-            <h2 className="text-2xl text-[var(--toxic-green)] font-['Metal_Mania'] drop-shadow-[0_0_5px_var(--toxic-green)]">
-              {title}
-            </h2>
-          )}
-          <button
-            onClick={onClose}
-            className='px-4 py-1 border-2 border-[var(--blood-red)] text-[var(--blood-red)] font-bold hover:bg-[var(--blood-red)] hover:text-black transition-colors duration-200 uppercase font-mono text-sm'
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm'
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className={`relative w-full max-w-2xl border-4 border-[var(--toxic-green)] bg-[var(--void-black)] shadow-[0_0_50px_var(--toxic-green)] ${className}`}
           >
-            CLOSE [ESC]
-          </button>
-        </div>
+            {/* Header */}
+            <div className='flex justify-between items-center p-4 border-b-2 border-[var(--toxic-green)] bg-black/50'>
+              {title && (
+                <h2 className="text-2xl text-[var(--toxic-green)] font-['Metal_Mania'] drop-shadow-[0_0_5px_var(--toxic-green)]">
+                  {title}
+                </h2>
+              )}
+              <button
+                onClick={onClose}
+                className='px-4 py-1 border-2 border-[var(--blood-red)] text-[var(--blood-red)] font-bold hover:bg-[var(--blood-red)] hover:text-black transition-colors duration-200 uppercase font-mono text-sm'
+              >
+                CLOSE [ESC]
+              </button>
+            </div>
 
-        {/* Content */}
-        <div className='p-4'>{children}</div>
-      </div>
-    </div>
+            {/* Content */}
+            <div className='p-4'>{children}</div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }
 

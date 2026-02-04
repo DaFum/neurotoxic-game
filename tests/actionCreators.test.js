@@ -152,7 +152,8 @@ describe('Action Creators', () => {
       assert.strictEqual(action.type, ActionTypes.ADD_TOAST)
       assert.strictEqual(action.payload.message, 'Test message')
       assert.strictEqual(action.payload.type, 'info')
-      assert.ok(action.payload.id > 0)
+      assert.strictEqual(typeof action.payload.id, 'string')
+      assert.ok(action.payload.id.length > 0)
     })
 
     it('should create correct action with custom type', () => {

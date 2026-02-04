@@ -268,6 +268,10 @@ export const useTravelLogic = ({
       // Handle current node interaction
       if (node.id === player.currentNodeId) {
         if (node.type === 'GIG') {
+          if ((band?.harmony ?? 0) <= 0) {
+            addToast("Band's harmony too low to perform!", 'warning')
+            return
+          }
           logger.info('TravelLogic', 'Entering current node Gig', {
             venue: node.venue.name
           })
@@ -300,12 +304,12 @@ export const useTravelLogic = ({
         'info'
       )
 
-      if ((player.money ?? 0) < totalCost) {
+      if (Math.max(0, player.money ?? 0) < totalCost) {
         addToast('Not enough money for gas and food!', 'error')
         return
       }
 
-      if ((player.van?.fuel ?? 0) < fuelLiters) {
+      if (Math.max(0, player.van?.fuel ?? 0) < fuelLiters) {
         addToast('Not enough fuel in the tank!', 'error')
         return
       }
@@ -341,7 +345,8 @@ export const useTravelLogic = ({
       startGig,
       addToast,
       onShowHQ,
-      onTravelComplete
+      onTravelComplete,
+      band?.harmony
     ]
   )
 
