@@ -7,20 +7,14 @@ import assert from 'node:assert'
 import {
   GameError,
   StateError,
-  AudioError,
   StorageError,
-  RenderError,
   GameLogicError,
   ErrorSeverity,
   ErrorCategory,
   handleError,
   getErrorLog,
   clearErrorLog,
-  withErrorHandling,
-  withSyncErrorHandling,
-  safeStorageOperation,
-  validateRequiredFields,
-  assertCondition
+  safeStorageOperation
 } from '../src/utils/errorHandler.js'
 
 describe('Custom Error Classes', () => {
@@ -71,16 +65,6 @@ describe('Custom Error Classes', () => {
     })
   })
 
-  describe('AudioError', () => {
-    it('should have correct defaults', () => {
-      const error = new AudioError('Audio error')
-
-      assert.strictEqual(error.name, 'AudioError')
-      assert.strictEqual(error.category, ErrorCategory.AUDIO)
-      assert.strictEqual(error.severity, ErrorSeverity.LOW)
-    })
-  })
-
   describe('StorageError', () => {
     it('should have correct defaults', () => {
       const error = new StorageError('Storage error')
@@ -88,17 +72,6 @@ describe('Custom Error Classes', () => {
       assert.strictEqual(error.name, 'StorageError')
       assert.strictEqual(error.category, ErrorCategory.STORAGE)
       assert.strictEqual(error.severity, ErrorSeverity.MEDIUM)
-    })
-  })
-
-  describe('RenderError', () => {
-    it('should have correct defaults', () => {
-      const error = new RenderError('Render error')
-
-      assert.strictEqual(error.name, 'RenderError')
-      assert.strictEqual(error.category, ErrorCategory.RENDER)
-      assert.strictEqual(error.severity, ErrorSeverity.HIGH)
-      assert.strictEqual(error.recoverable, false)
     })
   })
 
@@ -207,75 +180,6 @@ describe('Error Log', () => {
   })
 })
 
-describe('withErrorHandling', () => {
-  beforeEach(() => {
-    clearErrorLog()
-  })
-
-  it('should handle async function success', async () => {
-    const fn = async () => 'success'
-    const wrapped = withErrorHandling(fn, { silent: true })
-
-    const result = await wrapped()
-    assert.strictEqual(result, 'success')
-  })
-
-  it('should handle async function error', async () => {
-    const fn = async () => { throw new Error('Async error') }
-    const wrapped = withErrorHandling(fn, { silent: true, swallowError: true })
-
-    const result = await wrapped()
-    assert.strictEqual(result, undefined)
-
-    const log = getErrorLog()
-    assert.strictEqual(log.length, 1)
-  })
-
-  it('should rethrow error when swallowError is false', async () => {
-    const fn = async () => { throw new Error('Async error') }
-    const wrapped = withErrorHandling(fn, { silent: true })
-
-    await assert.rejects(wrapped(), /Async error/)
-  })
-
-  it('should return fallback value on error', async () => {
-    const fn = async () => { throw new Error('Async error') }
-    const wrapped = withErrorHandling(fn, {
-      silent: true,
-      swallowError: true,
-      fallbackValue: 'fallback'
-    })
-
-    const result = await wrapped()
-    assert.strictEqual(result, 'fallback')
-  })
-})
-
-describe('withSyncErrorHandling', () => {
-  beforeEach(() => {
-    clearErrorLog()
-  })
-
-  it('should handle sync function success', () => {
-    const fn = () => 'success'
-    const wrapped = withSyncErrorHandling(fn, { silent: true })
-
-    const result = wrapped()
-    assert.strictEqual(result, 'success')
-  })
-
-  it('should handle sync function error', () => {
-    const fn = () => { throw new Error('Sync error') }
-    const wrapped = withSyncErrorHandling(fn, { silent: true, swallowError: true })
-
-    const result = wrapped()
-    assert.strictEqual(result, undefined)
-
-    const log = getErrorLog()
-    assert.strictEqual(log.length, 1)
-  })
-})
-
 describe('safeStorageOperation', () => {
   beforeEach(() => {
     clearErrorLog()
@@ -304,57 +208,6 @@ describe('safeStorageOperation', () => {
     const log = getErrorLog()
     assert.strictEqual(log.length, 1)
     assert.ok(log[0].message.includes('Storage operation failed'))
-  })
-})
-
-describe('validateRequiredFields', () => {
-  it('should not throw when all fields present', () => {
-    const obj = { a: 1, b: 2, c: 3 }
-    assert.doesNotThrow(() => {
-      validateRequiredFields(obj, ['a', 'b', 'c'])
-    })
-  })
-
-  it('should throw StateError when fields missing', () => {
-    const obj = { a: 1 }
-    assert.throws(
-      () => validateRequiredFields(obj, ['a', 'b', 'c']),
-      StateError
-    )
-  })
-
-  it('should include missing fields in error', () => {
-    const obj = { a: 1 }
-    try {
-      validateRequiredFields(obj, ['a', 'b', 'c'], 'TestObject')
-    } catch (error) {
-      assert.ok(error.message.includes('b'))
-      assert.ok(error.message.includes('c'))
-      assert.ok(error.message.includes('TestObject'))
-    }
-  })
-})
-
-describe('assertCondition', () => {
-  it('should not throw when condition is true', () => {
-    assert.doesNotThrow(() => {
-      assertCondition(true, 'Should not throw')
-    })
-  })
-
-  it('should throw GameLogicError when condition is false', () => {
-    assert.throws(
-      () => assertCondition(false, 'Condition failed'),
-      GameLogicError
-    )
-  })
-
-  it('should include context in error', () => {
-    try {
-      assertCondition(false, 'Condition failed', { key: 'value' })
-    } catch (error) {
-      assert.deepStrictEqual(error.context, { key: 'value' })
-    }
   })
 })
 

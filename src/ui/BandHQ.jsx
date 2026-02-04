@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import { HQ_ITEMS } from '../data/hqItems'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
+import { usePurchaseLogic } from '../hooks/usePurchaseLogic'
+import { StatBox, ProgressBar } from '../ui/shared'
 
 /**
  * BandHQ Component
@@ -29,173 +31,25 @@ export const BandHQ = ({
 }) => {
   const [activeTab, setActiveTab] = useState('STATS') // STATS, SHOP, UPGRADES
 
-  /**
-   * Handles the purchase of an item.
-   * Checks costs, ownership, and applies effects (inventory, stats, unlocks).
-   *
-   * @param {object} item - The item object from HQ_ITEMS.
-   */
-  const handleBuy = item => {
-    const effect = item.effect
-    const payingWithFame = item.currency === 'fame'
-
-    const startingMoney = player.money ?? 0
-    const startingFame = player.fame ?? 0
-    const currencyValue = payingWithFame ? startingFame : startingMoney
-
-    const isConsumable = effect.type === 'inventory_add'
-
-    const inventoryKey =
-      effect.type === 'inventory_set' || effect.type === 'inventory_add'
-        ? effect.item
-        : null
-    const isOwned =
-      (player.van?.upgrades ?? []).includes(item.id) ||
-      (player.hqUpgrades ?? []).includes(item.id) ||
-      (effect.type === 'inventory_set'
-        ? band.inventory?.[inventoryKey] === true
-        : false)
-
-    if (isOwned && !isConsumable) {
-      addToast('Bereits im Besitz!', 'warning')
-      return
-    }
-
-    if (currencyValue < item.cost) {
-      addToast(`Nicht genug ${payingWithFame ? 'Fame' : 'Geld'}!`, 'error')
-      return
-    }
-
-    const nextPlayerPatch = payingWithFame
-      ? { fame: Math.max(0, startingFame - item.cost) }
-      : { money: Math.max(0, startingMoney - item.cost) }
-
-    let nextBandPatch = null
-
-    switch (effect.type) {
-      case 'inventory_set':
-        nextBandPatch = {
-          inventory: { ...(band.inventory ?? {}), [effect.item]: effect.value }
-        }
-        break
-
-      case 'inventory_add':
-        nextBandPatch = {
-          inventory: {
-            ...(band.inventory ?? {}),
-            [effect.item]:
-              ((band.inventory ?? {})[effect.item] || 0) + effect.value
-          }
-        }
-        break
-
-      case 'stat_modifier': {
-        const val = effect.value
-        if (effect.target === 'van') {
-          nextPlayerPatch.van = {
-            ...(player.van ?? {}),
-            [effect.stat]: Math.max(
-              0,
-              ((player.van ?? {})[effect.stat] || 0) + val
-            )
-          }
-        } else if (effect.target === 'player') {
-          nextPlayerPatch[effect.stat] = Math.max(
-            0,
-            (player[effect.stat] || 0) + val
-          )
-        } else if (effect.target === 'band') {
-          nextBandPatch = {
-            [effect.stat]: Math.max(0, (band[effect.stat] || 0) + val)
-          }
-        } else {
-          nextBandPatch = {
-            performance: {
-              ...(band.performance ?? {}),
-              [effect.stat]: Math.max(
-                0,
-                ((band.performance ?? {})[effect.stat] || 0) + val
-              )
-            }
-          }
-        }
-        break
-      }
-
-      case 'unlock_upgrade':
-        nextPlayerPatch.van = {
-          ...(player.van ?? {}),
-          upgrades: [
-            ...(player.van?.upgrades ?? []),
-            effect.id ? effect.id : item.id
-          ]
-        }
-        break
-
-      case 'unlock_hq': {
-        nextPlayerPatch.hqUpgrades = [...(player.hqUpgrades ?? []), item.id]
-
-        if (item.id === 'hq_room_poster_wall') {
-          nextPlayerPatch.fame = Math.max(
-            0,
-            (nextPlayerPatch.fame ?? startingFame) + 10
-          )
-          addToast('Sieht cool aus. Fame +10', 'success')
-        }
-
-        if (item.id === 'hq_room_diy_soundproofing') {
-          nextBandPatch = { harmony: Math.min(100, (band.harmony ?? 0) + 5) }
-          addToast('Weniger Lärm, mehr Frieden. Harmony +5', 'success')
-        }
-
-        if (
-          item.id === 'hq_room_coffee' ||
-          item.id === 'hq_room_sofa' ||
-          item.id === 'hq_room_old_couch' ||
-          item.id === 'hq_room_cheap_beer_fridge'
-        ) {
-          const members = (band.members ?? []).map(m => {
-            if (item.id === 'hq_room_coffee')
-              return { ...m, mood: Math.min(100, (m.mood ?? 0) + 20) }
-            if (item.id === 'hq_room_sofa')
-              return { ...m, stamina: Math.min(100, (m.stamina ?? 0) + 30) }
-            if (item.id === 'hq_room_old_couch')
-              return { ...m, stamina: Math.min(100, (m.stamina ?? 0) + 10) }
-            return { ...m, mood: Math.min(100, (m.mood ?? 0) + 5) } // cheap beer fridge
-          })
-          nextBandPatch = { ...(nextBandPatch ?? {}), members }
-        }
-        break
-      }
-
-      default:
-        console.warn('Unknown effect type:', effect.type)
-    }
-
-    updatePlayer(nextPlayerPatch)
-    if (nextBandPatch) updateBand(nextBandPatch)
-    addToast(`${item.name} gekauft!`, 'success')
-  }
+  const { handleBuy, isItemOwned, isItemDisabled } = usePurchaseLogic({
+    player,
+    band,
+    updatePlayer,
+    updateBand,
+    addToast
+  })
 
   const renderItem = item => {
-    const isOwned =
-      (player.van?.upgrades ?? []).includes(item.id) ||
-      (player.hqUpgrades ?? []).includes(item.id) ||
-      band.inventory[item.id] === true
-
+    const owned = isItemOwned(item)
+    const disabled = isItemDisabled(item)
     const isConsumable = item.effect.type === 'inventory_add'
-    const disabled =
-      (isOwned && !isConsumable) ||
-      (item.currency === 'fame'
-        ? player.fame < item.cost
-        : player.money < item.cost)
 
     return (
       <div
         key={item.id}
         className={`p-4 border-2 relative flex flex-col justify-between transition-colors
           ${
-            isOwned && !isConsumable
+            owned && !isConsumable
               ? 'border-[var(--toxic-green)] bg-[var(--toxic-green)]/10'
               : 'border-[var(--ash-gray)] bg-[var(--void-black)]/80'
           }`}
@@ -230,14 +84,14 @@ export const BandHQ = ({
             disabled={disabled}
             className={`px-3 py-1 text-xs font-bold uppercase transition-all duration-200 border-2
               ${
-                isOwned && !isConsumable
+                owned && !isConsumable
                   ? 'border-[var(--ash-gray)] text-[var(--ash-gray)] cursor-default'
                   : disabled
                     ? 'border-gray-800 text-gray-700 bg-gray-900 cursor-not-allowed'
                     : 'border-[var(--toxic-green)] bg-[var(--toxic-green)] text-black hover:invert shadow-[4px_4px_0px_var(--void-black)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
               }`}
           >
-            {isOwned && !isConsumable ? 'BESITZ' : 'KAUFEN'}
+            {owned && !isConsumable ? 'OWNED' : 'BUY'}
           </button>
         </div>
       </div>
@@ -260,17 +114,17 @@ export const BandHQ = ({
         <div className='flex justify-between items-center p-6 border-b-2 border-[var(--toxic-green)] bg-black/50'>
           <div>
             <h2 className="text-4xl text-[var(--toxic-green)] font-['Metal_Mania'] drop-shadow-[0_0_5px_var(--toxic-green)]">
-              BANDHAUPTQUARTIER
+              BAND HQ
             </h2>
             <p className='text-[var(--ash-gray)] text-sm font-mono uppercase tracking-widest'>
-              Stendal Proberaum | Day {player.day}
+              Stendal Rehearsal Room | Day {player.day}
             </p>
           </div>
           <button
             onClick={onClose}
             className='px-6 py-2 border-2 border-[var(--blood-red)] text-[var(--blood-red)] font-bold hover:bg-[var(--blood-red)] hover:text-black transition-colors duration-200 uppercase font-mono'
           >
-            VERLASSEN [ESC]
+            LEAVE [ESC]
           </button>
         </div>
 
@@ -300,18 +154,18 @@ export const BandHQ = ({
               <div className='space-y-6'>
                 <div className='bg-black/40 border-2 border-[var(--ash-gray)] p-4'>
                   <h3 className='text-[var(--toxic-green)] text-lg font-bold mb-4 border-b border-[var(--ash-gray)] pb-2 font-mono'>
-                    KARRIERE STATUS
+                    CAREER STATUS
                   </h3>
                   <div className='grid grid-cols-2 gap-4'>
                     <StatBox
-                      label='Guthaben'
+                      label='Funds'
                       value={`${player.money}€`}
                       icon='€'
                     />
                     <StatBox label='Fame' value={player.fame} icon='★' />
-                    <StatBox label='Tag' value={player.day} icon='📅' />
+                    <StatBox label='Day' value={player.day} icon='📅' />
                     <StatBox
-                      label='Follower'
+                      label='Followers'
                       value={social.instagram + social.tiktok}
                       icon='👥'
                     />
@@ -324,13 +178,13 @@ export const BandHQ = ({
                   </h3>
                   <div className='space-y-2'>
                     <ProgressBar
-                      label='Tank'
+                      label='Fuel'
                       value={player.van?.fuel}
                       max={100}
                       color='bg-[var(--fuel-yellow)]'
                     />
                     <ProgressBar
-                      label='Zustand'
+                      label='Condition'
                       value={player.van?.condition}
                       max={100}
                       color='bg-[var(--condition-blue)]'
@@ -376,7 +230,7 @@ export const BandHQ = ({
                 <div className='mt-6 pt-4 border-t border-[var(--ash-gray)]'>
                   <div className='flex justify-between items-center mb-2'>
                     <span className='text-[var(--ash-gray)] font-mono text-sm'>
-                      Inventar Slots:
+                      Inventory Slots:
                     </span>
                     <span className='text-white font-mono'>
                       {band.inventorySlots}
@@ -398,7 +252,7 @@ export const BandHQ = ({
           {activeTab === 'SHOP' && (
             <div>
               <div className='mb-4 text-right font-mono text-white'>
-                GUTHABEN:{' '}
+                FUNDS:{' '}
                 <span className='text-[var(--toxic-green)]'>
                   {player.money}€
                 </span>
@@ -463,54 +317,4 @@ BandHQ.propTypes = {
   updateBand: PropTypes.func.isRequired,
   addToast: PropTypes.func.isRequired,
   className: PropTypes.string
-}
-
-// Helper Components
-const StatBox = ({ label, value, icon }) => (
-  <div className='bg-[var(--void-black)] p-3 flex flex-col items-center justify-center border border-[var(--ash-gray)]'>
-    <div className='text-2xl mb-1 text-[var(--toxic-green)]'>{icon}</div>
-    <div className='text-xl font-bold text-white font-mono'>{value}</div>
-    <div className='text-xs text-[var(--ash-gray)] uppercase font-mono'>
-      {label}
-    </div>
-  </div>
-)
-
-StatBox.propTypes = {
-  label: PropTypes.string.isRequired,
-  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  icon: PropTypes.string.isRequired
-}
-
-const ProgressBar = ({ label, value = 0, max, color, size = 'md' }) => {
-  const safeMax = max > 0 ? max : 1
-  const safeValue = Number.isFinite(value) ? Math.max(0, value) : 0
-  const pct = Math.min(100, (safeValue / safeMax) * 100)
-
-  return (
-    <div className='w-full'>
-      <div className='flex justify-between text-xs mb-1 font-mono'>
-        <span className='text-[var(--ash-gray)]'>{label}</span>
-        <span className='text-gray-300'>
-          {Math.round(safeValue)}/{max}
-        </span>
-      </div>
-      <div
-        className={`w-full bg-[var(--void-black)] border border-[var(--ash-gray)] ${size === 'sm' ? 'h-3' : 'h-5'}`}
-      >
-        <div
-          className={`h-full ${color} transition-all duration-500`}
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-    </div>
-  )
-}
-
-ProgressBar.propTypes = {
-  label: PropTypes.string.isRequired,
-  value: PropTypes.number,
-  max: PropTypes.number.isRequired,
-  color: PropTypes.string.isRequired,
-  size: PropTypes.string
 }

@@ -21,6 +21,7 @@ import { handleError, GameLogicError } from '../utils/errorHandler'
  * @param {Object} params.gameMap - Game map data
  * @param {Function} params.updatePlayer - Player update function
  * @param {Function} params.updateBand - Band update function
+ * @param {Function} params.saveGame - Function to save game state
  * @param {Function} params.advanceDay - Day advancement function
  * @param {Function} params.triggerEvent - Event trigger function
  * @param {Function} params.startGig - Gig start function
@@ -36,6 +37,7 @@ export const useTravelLogic = ({
   gameMap,
   updatePlayer,
   updateBand,
+  saveGame,
   advanceDay,
   triggerEvent,
   startGig,
@@ -154,6 +156,11 @@ export const useTravelLogic = ({
       })
       advanceDay()
 
+      // Autosave
+      if (saveGame) {
+        saveGame()
+      }
+
       // Sound system upgrade bonus
       if (hasUpgrade('van_sound_system')) {
         updateBand({ harmony: Math.min(100, band.harmony + 5) })
@@ -179,6 +186,7 @@ export const useTravelLogic = ({
       hasUpgrade,
       updatePlayer,
       updateBand,
+      saveGame,
       triggerEvent,
       advanceDay,
       addToast

@@ -128,8 +128,7 @@ export const usePurchaseLogic = ({
           }
           break
 
-        default:
-          // Performance stats
+        default: // performance or undefined (assumed performance)
           nextBandPatch = {
             performance: {
               ...(band.performance ?? {}),
@@ -165,6 +164,30 @@ export const usePurchaseLogic = ({
       }
     }),
     [player.van]
+  )
+
+  /**
+   * Applies passive effect
+   * @param {Object} effect - Effect configuration
+   * @param {Object} playerPatch - Current player patch
+   * @returns {Object} Object with updated playerPatch and bandPatch
+   */
+  const applyPassive = useCallback(
+    (effect, playerPatch) => {
+      let nextPlayerPatch = { ...playerPatch }
+      let nextBandPatch = null
+
+      if (effect.effect === 'harmony_regen_travel') {
+        nextBandPatch = { harmonyRegenTravel: true }
+      } else if (effect.effect === 'passive_followers') {
+        const val = effect.value || 0
+        nextPlayerPatch.passiveFollowers =
+          (player.passiveFollowers || 0) + val
+      }
+
+      return { playerPatch: nextPlayerPatch, bandPatch: nextBandPatch }
+    },
+    [player.passiveFollowers]
   )
 
   /**
@@ -288,6 +311,26 @@ export const usePurchaseLogic = ({
             break
           }
 
+          case 'passive': {
+            const result = applyPassive(effect, playerPatch)
+            playerPatch = result.playerPatch
+            bandPatch = result.bandPatch
+            // Also mark as owned via van upgrades for passive items from UPGRADES_DB
+            // Wait, UPGRADES_DB items use `id` for ownership check in `isItemOwned`.
+            // But `isItemOwned` checks `player.van.upgrades` or `player.hqUpgrades`.
+            // So we need to add the item ID to one of those.
+            // MainMenu did: upgrades: [...(player.van?.upgrades || []), upgrade.id]
+            // We should do that here too.
+            playerPatch.van = {
+              ...(playerPatch.van ?? player.van ?? {}),
+              upgrades: [
+                ...(playerPatch.van?.upgrades ?? player.van?.upgrades ?? []),
+                item.id
+              ]
+            }
+            break
+          }
+
           default:
             handleError(
               new GameLogicError(`Unknown effect type: ${effect.type}`, {
@@ -296,6 +339,38 @@ export const usePurchaseLogic = ({
               }),
               { silent: true }
             )
+        }
+
+        // Also ensure simple stat_modifiers from UPGRADES_DB are marked as owned!
+        // MainMenu logic added ALL upgrades to `player.van.upgrades`.
+        // My `applyStatModifier` does NOT add to upgrades list.
+        // I need to fix this. `stat_modifier` items in `UPGRADES_DB` (like van_suspension) MUST be added to `upgrades` list to be marked as owned.
+        // `HQ_ITEMS` (like lucky_rabbit_foot) use `stat_modifier` but are consumables/one-offs? No, `lucky_rabbit_foot` seems like a unique item.
+        // `isItemOwned` checks `van.upgrades` for `item.id`.
+        // So if I buy `van_suspension`, I must add `van_suspension` to `player.van.upgrades`.
+        // The previous `MainMenu` logic did: `upgrades: [...player.van.upgrades, upgrade.id]` unconditionally for all upgrades.
+
+        // So, regardless of effect type, if it's from UPGRADES_DB (or basically any item that isn't a consumable or hq_unlock), it should probably be tracked.
+        // `HQ_ITEMS` used `inventory_set` which checks `band.inventory`.
+
+        // If the item has `currency: 'fame'`, it's likely an Upgrade that needs tracking in `van.upgrades`.
+        // Or I can just check if `isOwned` logic requires it.
+        // `isItemOwned` checks `player.van.upgrades.includes(item.id)`.
+
+        if (item.currency === 'fame' && !isConsumable && effect.type !== 'unlock_upgrade') {
+           // Ensure it is added to upgrades list if not already handled by unlock_upgrade
+           // unlock_upgrade adds it.
+           // stat_modifier does NOT add it.
+           // passive does NOT add it (I added it above, but should be generic).
+
+           // Let's unify this.
+           const currentUpgrades = playerPatch.van?.upgrades ?? player.van?.upgrades ?? []
+           if (!currentUpgrades.includes(item.id)) {
+              playerPatch.van = {
+                 ...(playerPatch.van ?? player.van ?? {}),
+                 upgrades: [...currentUpgrades, item.id]
+              }
+           }
         }
 
         // Apply updates
@@ -319,7 +394,8 @@ export const usePurchaseLogic = ({
       applyInventoryAdd,
       applyStatModifier,
       applyUnlockUpgrade,
-      applyUnlockHQ
+      applyUnlockHQ,
+      applyPassive
     ]
   )
 
