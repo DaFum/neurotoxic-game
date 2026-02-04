@@ -18,6 +18,7 @@ import {
   parseSongNotes,
   checkHit
 } from '../utils/rhythmUtils'
+import { handleError } from '../utils/errorHandler'
 
 /**
  * Provides rhythm game state, actions, and update loop for the gig scene.
@@ -102,7 +103,7 @@ export const useRhythmGameLogic = () => {
    * Initializes gig physics and note data once per gig.
    * @returns {void}
    */
-  const initializeGigState = useCallback(() => {
+  const initializeGigState = useCallback(async () => {
     if (hasInitializedRef.current) {
       return
     }
@@ -173,38 +174,11 @@ export const useRhythmGameLogic = () => {
       if (currentSong.notes && currentSong.notes.length > 0) {
         const parsedNotes = parseSongNotes(currentSong, currentTimeOffset)
         notes = notes.concat(parsedNotes)
-        // audioDelay aligns the Tone.Transport start.
-        // The notes are scheduled on Transport at `n.t` (seconds).
-        // The visual notes have `currentTimeOffset` added.
-        // The game loop uses `Date.now() - state.startTime`.
-        // `startMetalGenerator` starts Transport at `Tone.now() + delay`.
-        // `playSongFromData` starts Transport at `Tone.now()`.
-        // We need visual notes to arrive at target at the same time as audio.
-
-        // Visual Note Time = LeadIn (2000) + NoteTimeMs
-        // Game Time = Date.now() - StartTime
-        // Audio Time = Transport Time
-
-        // If we delay audio start by LeadIn/1000 seconds, Transport starts at t=0 when GameTime=LeadIn.
-        // Note at t=0 needs to be hit at GameTime=LeadIn.
-        // Visual note `time` property is `LeadIn`. Correct.
-
-        // playSongFromData schedules notes on Transport starting at 0.
-        // So we just need to start Transport after LeadIn delay?
-        // Or start Transport immediately but schedule events with delay?
-
-        // `playSongFromData` takes `delay`. It schedules notes at `time + delay`.
-        // If we pass `delay = 2.0`, the first note (t=0) plays at Transport=2.0.
-        // We start Transport immediately.
-        // Audio starts at 2.0s.
-        // Visuals start at 0s.
-        // At 2.0s, visuals reach t=2000ms. Note with `time=2000` is hit.
-        // Audio note at `time=2.0` plays. Sync!
 
         audioDelay = currentTimeOffset / 1000
-        playSongFromData(currentSong, audioDelay)
+        await playSongFromData(currentSong, audioDelay)
 
-        currentTimeOffset += currentSong.duration * 1000
+        // Duration is no longer just accumulation; check the last note
       } else {
         // Fallback procedural generation
         songsToPlay.forEach(song => {
@@ -218,12 +192,31 @@ export const useRhythmGameLogic = () => {
 
         if (currentSong.id !== 'jam') {
           audioDelay = 2.0
-          startMetalGenerator(currentSong, audioDelay)
+          await startMetalGenerator(currentSong, audioDelay)
         }
       }
 
       gameStateRef.current.notes = notes
-      gameStateRef.current.totalDuration = currentTimeOffset
+
+      // Calculate max note time to ensure duration covers everything
+      const maxNoteTime = notes.reduce((max, n) => Math.max(max, n.time), 0)
+      // Add buffer for decay/end (e.g. 4 seconds)
+      const buffer = 4000
+
+      // If we used fallback, currentTimeOffset is accurate.
+      // If we used JSON, currentSong.duration (from data/songs.js) * 1000 is our baseline,
+      // but strictly following notes is safer.
+      // The old logic for fallback was correct.
+      // For JSON data, let's use the actual note timestamps.
+
+      if (currentSong.notes && currentSong.notes.length > 0) {
+        gameStateRef.current.totalDuration = maxNoteTime + buffer
+      } else {
+        gameStateRef.current.totalDuration = Math.max(
+          currentTimeOffset,
+          maxNoteTime + buffer
+        )
+      }
 
       gameStateRef.current.startTime = Date.now()
       gameStateRef.current.running = true
@@ -234,11 +227,10 @@ export const useRhythmGameLogic = () => {
         song: currentSong.name
       })
     } catch (error) {
-      console.error(
-        '[useRhythmGameLogic] Failed to initialize gig state.',
-        error
-      )
-      addToast('Gig initialization failed!', 'error')
+      handleError(error, {
+        addToast,
+        fallbackMessage: 'Gig initialization failed!'
+      })
       gameStateRef.current.running = false
     }
   }, [
