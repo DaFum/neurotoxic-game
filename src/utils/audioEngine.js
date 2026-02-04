@@ -51,7 +51,6 @@ export async function setupAudio() {
   const bassComp = new Tone.Compressor(-20, 4)
   bass.chain(bassComp, bassEq, masterComp)
 
-
   // --- Drums ---
   drumKit = {
     kick: new Tone.MembraneSynth().connect(masterComp),
@@ -67,11 +66,11 @@ export async function setupAudio() {
       octaves: 1.5
     }).connect(masterComp),
     crash: new Tone.MetalSynth({
-        envelope: { attack: 0.001, decay: 1.0, release: 0.01 },
-        harmonicity: 3.1,
-        modulationIndex: 16,
-        resonance: 2000,
-        octaves: 2.5
+      envelope: { attack: 0.001, decay: 1.0, release: 0.01 },
+      harmonicity: 3.1,
+      modulationIndex: 16,
+      resonance: 2000,
+      octaves: 2.5
     }).connect(masterComp)
   }
 
@@ -102,77 +101,77 @@ export async function ensureAudioContext() {
  * @param {number} [delay=0] - Delay in seconds before starting.
  */
 export async function playSongFromData(song, delay = 0) {
-    await ensureAudioContext()
-    stopAudio()
-    Tone.Transport.cancel()
-    Tone.Transport.position = 0
+  await ensureAudioContext()
+  stopAudio()
+  Tone.Transport.cancel()
+  Tone.Transport.position = 0
 
-    const bpm = song.bpm || 120
-    Tone.Transport.bpm.value = bpm
+  const bpm = song.bpm || 120
+  Tone.Transport.bpm.value = bpm
 
-    // Convert tpb ticks to seconds for exact scheduling, assuming constant BPM for now.
-    // Tone.Transport allows scheduling by time.
-    // time = (tick / tpb) * (60 / bpm)
+  // Convert tpb ticks to seconds for exact scheduling, assuming constant BPM for now.
+  // Tone.Transport allows scheduling by time.
+  // time = (tick / tpb) * (60 / bpm)
 
-    // We can use a Part to schedule events.
-    // Events need { time: ..., note: ..., duration: ..., lane: ... }
+  // We can use a Part to schedule events.
+  // Events need { time: ..., note: ..., duration: ..., lane: ... }
 
-    const events = song.notes.map(n => {
-        // Calculate precise time in seconds
-        // const seconds = (n.t / song.tpb) * (60 / bpm);
-        // Actually, let's use Tone's tick system if possible, but ticks depend on PPQ.
-        // Tone.Transport.PPQ defaults to 192. song.tpb is 480.
-        // Easiest is to convert to seconds.
-        const beatDuration = 60 / bpm;
-        const time = (n.t / (song.tpb || 480)) * beatDuration;
+  const events = song.notes.map(n => {
+    // Calculate precise time in seconds
+    // const seconds = (n.t / song.tpb) * (60 / bpm);
+    // Actually, let's use Tone's tick system if possible, but ticks depend on PPQ.
+    // Tone.Transport.PPQ defaults to 192. song.tpb is 480.
+    // Easiest is to convert to seconds.
+    const beatDuration = 60 / bpm
+    const time = (n.t / (song.tpb || 480)) * beatDuration
 
-        return {
-            time: time + delay, // Schedule with delay relative to Transport start
-            note: n.p,
-            velocity: n.v / 127,
-            lane: n.lane
-        }
-    })
+    return {
+      time: time + delay, // Schedule with delay relative to Transport start
+      note: n.p,
+      velocity: n.v / 127,
+      lane: n.lane
+    }
+  })
 
-    part = new Tone.Part((time, value) => {
-        if (!guitar || !bass || !drumKit) return
+  part = new Tone.Part((time, value) => {
+    if (!guitar || !bass || !drumKit) return
 
-        const noteName = Tone.Frequency(value.note, "midi").toNote()
+    const noteName = Tone.Frequency(value.note, 'midi').toNote()
 
-        if (value.lane === 'guitar') {
-            guitar.triggerAttackRelease(noteName, "16n", time, value.velocity)
-        } else if (value.lane === 'bass') {
-            bass.triggerAttackRelease(noteName, "8n", time, value.velocity)
-        } else if (value.lane === 'drums') {
-            playDrumNote(value.note, time, value.velocity)
-        }
-    }, events).start(0)
+    if (value.lane === 'guitar') {
+      guitar.triggerAttackRelease(noteName, '16n', time, value.velocity)
+    } else if (value.lane === 'bass') {
+      bass.triggerAttackRelease(noteName, '8n', time, value.velocity)
+    } else if (value.lane === 'drums') {
+      playDrumNote(value.note, time, value.velocity)
+    }
+  }, events).start(0)
 
-    Tone.Transport.start()
+  Tone.Transport.start()
 }
 
 function playDrumNote(midiPitch, time, velocity) {
-    // Basic GM Mapping
-    // 35, 36: Bass Drum
-    // 38, 40: Snare
-    // 42, 44, 46: HiHat (Closed, Pedal, Open)
-    // 49, 57: Crash
-    // 51, 59: Ride
+  // Basic GM Mapping
+  // 35, 36: Bass Drum
+  // 38, 40: Snare
+  // 42, 44, 46: HiHat (Closed, Pedal, Open)
+  // 49, 57: Crash
+  // 51, 59: Ride
 
-    // Fallback/mappings
-    if (midiPitch === 35 || midiPitch === 36) {
-        drumKit.kick.triggerAttackRelease("C1", "16n", time, velocity)
-    } else if (midiPitch === 38 || midiPitch === 40) {
-        drumKit.snare.triggerAttackRelease("16n", time, velocity)
-    } else if (midiPitch === 42 || midiPitch === 44 || midiPitch === 46) {
-        // Open/Closed nuance can be decay time, simpler here
-        drumKit.hihat.triggerAttackRelease("8000", "32n", time, velocity * 0.8)
-    } else if (midiPitch === 49 || midiPitch === 57) {
-        drumKit.crash.triggerAttackRelease("C2", "8n", time, velocity)
-    } else {
-         // Default to HiHat for unknown percussion elements to keep rhythm
-         drumKit.hihat.triggerAttackRelease("8000", "32n", time, velocity * 0.5)
-    }
+  // Fallback/mappings
+  if (midiPitch === 35 || midiPitch === 36) {
+    drumKit.kick.triggerAttackRelease('C1', '16n', time, velocity)
+  } else if (midiPitch === 38 || midiPitch === 40) {
+    drumKit.snare.triggerAttackRelease('16n', time, velocity)
+  } else if (midiPitch === 42 || midiPitch === 44 || midiPitch === 46) {
+    // Open/Closed nuance can be decay time, simpler here
+    drumKit.hihat.triggerAttackRelease('8000', '32n', time, velocity * 0.8)
+  } else if (midiPitch === 49 || midiPitch === 57) {
+    drumKit.crash.triggerAttackRelease('C2', '8n', time, velocity)
+  } else {
+    // Default to HiHat for unknown percussion elements to keep rhythm
+    drumKit.hihat.triggerAttackRelease('8000', '32n', time, velocity * 0.5)
+  }
 }
 
 // Die eigentliche Generierungs-Logik (Legacy / Fallback)

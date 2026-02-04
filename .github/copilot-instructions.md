@@ -12,16 +12,16 @@ Web-based Roguelike Tour Manager with rhythm action mechanics. Manage a Death Gr
 
 ## Tech Stack
 
-| Category    | Technology    | Version            |
-| ----------- | ------------- | ------------------ |
-| Framework   | React         | 18.2.0             |
-| Build       | Vite          | 5.0.0              |
+| Category    | Technology    | Version                     |
+| ----------- | ------------- | --------------------------- |
+| Framework   | React         | 18.2.0                      |
+| Build       | Vite          | 5.0.0                       |
 | Language    | JavaScript    | ECMAScript 2021 (ESModules) |
-| Game Engine | Pixi.js       | 8.0.0              |
-| Animation   | Framer Motion | 12.0.0             |
-| Styling     | Tailwind CSS  | v4                 |
-| Audio       | Howler.js     | 2.2.4              |
-| Linting     | ESLint        | 8.57               |
+| Game Engine | Pixi.js       | 8.0.0                       |
+| Animation   | Framer Motion | 12.0.0                      |
+| Styling     | Tailwind CSS  | v4                          |
+| Audio       | Howler.js     | 2.2.4                       |
+| Linting     | ESLint        | 8.57                        |
 
 ## Visual Design System (STRICT)
 

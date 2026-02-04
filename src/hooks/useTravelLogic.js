@@ -452,7 +452,8 @@ export const useTravelLogic = ({
 
     if (!canReachAny && currentNode?.type !== 'GIG') {
       const currentFuelClamped = Math.max(0, currentFuel)
-      const missingFuel = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - currentFuelClamped
+      const missingFuel =
+        EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - currentFuelClamped
       const refuelCost = Math.ceil(
         missingFuel * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE
       )

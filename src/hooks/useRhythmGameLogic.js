@@ -205,7 +205,6 @@ export const useRhythmGameLogic = () => {
         playSongFromData(currentSong, audioDelay)
 
         currentTimeOffset += currentSong.duration * 1000
-
       } else {
         // Fallback procedural generation
         songsToPlay.forEach(song => {

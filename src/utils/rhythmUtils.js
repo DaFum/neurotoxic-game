@@ -65,31 +65,34 @@ export const generateNotesForSong = (song, options = {}) => {
  * @returns {Array} Array of note objects formatted for the game loop.
  */
 export const parseSongNotes = (song, leadIn = 2000) => {
-    if (!song.notes) return [];
+  if (!song.notes) return []
 
-    const tpb = song.tpb || 480;
-    const bpm = song.bpm || 120;
-    const msPerTick = (60000 / bpm) / tpb;
+  const tpb = song.tpb || 480
+  const bpm = song.bpm || 120
+  const msPerTick = 60000 / bpm / tpb
 
-    const laneMap = {
-        'guitar': 0,
-        'drums': 1,
-        'bass': 2
-    };
+  const laneMap = {
+    guitar: 0,
+    drums: 1,
+    bass: 2
+  }
 
-    return song.notes.map(n => {
-        const laneIndex = laneMap[n.lane];
-        if (laneIndex === undefined) return null; // Skip unknown lanes
+  return song.notes
+    .map(n => {
+      const laneIndex = laneMap[n.lane]
+      if (laneIndex === undefined) return null // Skip unknown lanes
 
-        return {
-            time: leadIn + (n.t * msPerTick),
-            laneIndex: laneIndex,
-            hit: false,
-            visible: true,
-            songId: song.id,
-            originalNote: n // Keep ref just in case
-        };
-    }).filter(n => n !== null).sort((a, b) => a.time - b.time);
+      return {
+        time: leadIn + n.t * msPerTick,
+        laneIndex: laneIndex,
+        hit: false,
+        visible: true,
+        songId: song.id,
+        originalNote: n // Keep ref just in case
+      }
+    })
+    .filter(n => n !== null)
+    .sort((a, b) => a.time - b.time)
 }
 
 /**

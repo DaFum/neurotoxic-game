@@ -47,7 +47,9 @@ export const DebugLogViewer = ({ className = '' }) => {
   if (!visible) return null
 
   return (
-    <div className={`fixed inset-0 z-[9999] pointer-events-none flex flex-col justify-end ${className}`}>
+    <div
+      className={`fixed inset-0 z-[9999] pointer-events-none flex flex-col justify-end ${className}`}
+    >
       <div className='pointer-events-auto bg-(--void-black)/90 border-t-2 border-(--toxic-green) h-[40vh] flex flex-col font-mono text-xs'>
         {/* Toolbar */}
         <div className='flex justify-between items-center p-2 bg-(--shadow-black) border-b border-(--ash-gray)'>
