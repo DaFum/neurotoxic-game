@@ -2,7 +2,12 @@ import { useRef, useState, useEffect, useCallback } from 'react'
 import { useGameState } from '../context/GameState'
 import { calculateGigPhysics, getGigModifiers } from '../utils/simulationUtils'
 import { audioManager } from '../utils/AudioManager'
-import { startMetalGenerator, stopAudio } from '../utils/audioEngine'
+import {
+  startMetalGenerator,
+  stopAudio,
+  pauseAudio,
+  resumeAudio
+} from '../utils/audioEngine'
 import {
   buildGigStatsSnapshot,
   updateGigPerformanceStats
@@ -86,7 +91,6 @@ export const useRhythmGameLogic = () => {
     toxicModeEndTime: 0
   })
 
-  const audioRef = useRef(null)
   const hasInitializedRef = useRef(false)
 
   /**
@@ -98,6 +102,9 @@ export const useRhythmGameLogic = () => {
       return
     }
     hasInitializedRef.current = true
+
+    // Mute ambient radio to prevent audio overlap
+    audioManager.stopMusic()
 
     try {
       const activeModifiers = getGigModifiers(band, gigModifiers)
@@ -172,7 +179,6 @@ export const useRhythmGameLogic = () => {
       // Adjust start time offset (2000ms lead-in) + sum of durations.
       gameStateRef.current.totalDuration = currentTimeOffset
 
-      // audioRef.current = audioManager.playMusic(activeSetlist[0].id);
       // Switch to Metal Generator
       const currentSong = activeSetlist[0]
       // Keep audio & visuals aligned; default to 0 when no audio is started (e.g., jam)
@@ -211,7 +217,6 @@ export const useRhythmGameLogic = () => {
   useEffect(() => {
     initializeGigState()
 
-    const audio = audioRef.current
     return () => {
       hasInitializedRef.current = false // Reset initialization flag on unmount
       if (gameOverTimerRef.current) {
@@ -219,9 +224,6 @@ export const useRhythmGameLogic = () => {
         gameOverTimerRef.current = null
       }
       stopAudio()
-      if (audio) {
-        audio.stop()
-      }
     }
   }, [initializeGigState])
 
@@ -268,6 +270,7 @@ export const useRhythmGameLogic = () => {
         if (next <= 0 && !gameStateRef.current.isGameOver) {
           setIsGameOver(true)
           gameStateRef.current.isGameOver = true
+          stopAudio() // Immediate stop to prevent stuttering/desync
           addToast('BAND COLLAPSED', 'error')
 
           // Schedule exit from Gig if failed (Softlock fix)
@@ -387,9 +390,13 @@ export const useRhythmGameLogic = () => {
       if (state.paused) return
 
       if (!state.running || activeEvent || isGameOver) {
-        if (!state.pauseTime) state.pauseTime = Date.now()
-        if (audioRef.current && audioRef.current.playing())
-          audioRef.current.pause()
+        if (!state.pauseTime) {
+          state.pauseTime = Date.now()
+          // Only pause if not game over (Game Over stops audio explicitly)
+          if (!isGameOver) {
+            pauseAudio()
+          }
+        }
         return
       }
 
@@ -397,8 +404,7 @@ export const useRhythmGameLogic = () => {
         const durationPaused = Date.now() - state.pauseTime
         state.startTime += durationPaused
         state.pauseTime = null
-        if (audioRef.current && !audioRef.current.playing())
-          audioRef.current.play()
+        resumeAudio()
       }
 
       const now = Date.now()
