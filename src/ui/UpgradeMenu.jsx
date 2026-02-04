@@ -11,15 +11,15 @@ import { UPGRADES_DB } from '../data/upgrades'
  */
 export const UpgradeMenu = ({ onClose, player, onBuyUpgrade, className = '' }) => {
   return (
-    <div className={`absolute inset-0 bg-[var(--void-black)]/95 z-50 flex items-center justify-center p-8 ${className}`}>
-      <div className='w-full max-w-4xl border-4 border-[var(--toxic-green)] p-8 overflow-y-auto max-h-[90vh]'>
+    <div className={`absolute inset-0 bg-(--void-black)/95 z-50 flex items-center justify-center p-8 ${className}`}>
+      <div className='w-full max-w-4xl border-4 border-(--toxic-green) p-8 overflow-y-auto max-h-[90vh]'>
         <div className='flex justify-between items-center mb-8'>
-          <h2 className="text-4xl text-[var(--toxic-green)] font-['Metal_Mania']">
+          <h2 className="text-4xl text-(--toxic-green) font-['Metal_Mania']">
             BAND HQ (UPGRADES)
           </h2>
           <button
             onClick={onClose}
-            className='text-[var(--blood-red)] font-bold border border-[var(--blood-red)] px-4 py-2 hover:bg-[var(--blood-red)] hover:text-[var(--void-black)]'
+            className='text-(--blood-red) font-bold border border-(--blood-red) px-4 py-2 hover:bg-(--blood-red) hover:text-(--void-black)'
           >
             CLOSE
           </button>
@@ -40,14 +40,14 @@ export const UpgradeMenu = ({ onClose, player, onBuyUpgrade, className = '' }) =
                 return (
                   <div
                     key={u.id}
-                    className={`p-4 border ${owned ? 'border-[var(--toxic-green)] bg-[var(--toxic-green)]/10' : 'border-gray-700'} relative group`}
+                    className={`p-4 border ${owned ? 'border-(--toxic-green) bg-(--toxic-green)/10' : 'border-gray-700'} relative group`}
                   >
                     <div className='font-bold text-lg mb-1'>{u.name}</div>
                     <div className='text-xs text-gray-400 mb-2'>
                       {u.description}
                     </div>
                     <div className='flex justify-between items-center'>
-                      <span className='text-[var(--warning-yellow)] font-mono'>
+                      <span className='text-(--warning-yellow) font-mono'>
                         {u.cost} Fame
                       </span>
                       <button
@@ -59,7 +59,7 @@ export const UpgradeMenu = ({ onClose, player, onBuyUpgrade, className = '' }) =
                                                       ? 'bg-gray-800 text-gray-500'
                                                       : player.fame < u.cost
                                                         ? 'bg-gray-900 text-gray-600'
-                                                        : 'bg-[var(--toxic-green)] text-black hover:bg-white'
+                                                        : 'bg-(--toxic-green) text-black hover:bg-white'
                                                   }
                                               `}
                       >

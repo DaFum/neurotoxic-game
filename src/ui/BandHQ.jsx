@@ -50,8 +50,8 @@ export const BandHQ = ({
         className={`p-4 border-2 relative flex flex-col justify-between transition-colors
           ${
             owned && !isConsumable
-              ? 'border-[var(--toxic-green)] bg-[var(--toxic-green)]/10'
-              : 'border-[var(--ash-gray)] bg-[var(--void-black)]/80'
+              ? 'border-(--toxic-green) bg-(--toxic-green)/10'
+              : 'border-(--ash-gray) bg-(--void-black)/80'
           }`}
       >
         <div>
@@ -59,13 +59,13 @@ export const BandHQ = ({
             <img
               src={getGenImageUrl(IMG_PROMPTS[item.img] || item.name)}
               alt={item.name}
-              className='w-12 h-12 object-contain bg-[var(--void-black)] border-2 border-[var(--ash-gray)]'
+              className='w-12 h-12 object-contain bg-(--void-black) border-2 border-(--ash-gray)'
             />
-            <h4 className='font-bold text-[var(--toxic-green)] leading-tight font-mono uppercase'>
+            <h4 className='font-bold text-(--toxic-green) leading-tight font-mono uppercase'>
               {item.name}
             </h4>
           </div>
-          <p className='text-xs text-[var(--ash-gray)] mb-2 font-mono'>
+          <p className='text-xs text-(--ash-gray) mb-2 font-mono'>
             {item.description}
           </p>
         </div>
@@ -73,7 +73,7 @@ export const BandHQ = ({
           <span
             className={`font-mono text-sm font-bold ${
               item.currency === 'fame'
-                ? 'text-[var(--warning-yellow)]'
+                ? 'text-(--warning-yellow)'
                 : 'text-white'
             }`}
           >
@@ -85,10 +85,10 @@ export const BandHQ = ({
             className={`px-3 py-1 text-xs font-bold uppercase transition-all duration-200 border-2
               ${
                 owned && !isConsumable
-                  ? 'border-[var(--ash-gray)] text-[var(--ash-gray)] cursor-default'
+                  ? 'border-(--ash-gray) text-(--ash-gray) cursor-default'
                   : disabled
-                    ? 'border-[var(--disabled-border)] text-[var(--disabled-text)] bg-[var(--disabled-bg)] cursor-not-allowed'
-                    : 'border-[var(--toxic-green)] bg-[var(--toxic-green)] text-black hover:invert shadow-[4px_4px_0px_var(--void-black)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
+                    ? 'border-(--disabled-border) text-(--disabled-text) bg-(--disabled-bg) cursor-not-allowed'
+                    : 'border-(--toxic-green) bg-(--toxic-green) text-black hover:invert shadow-[4px_4px_0px_var(--void-black)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
               }`}
           >
             {owned && !isConsumable ? 'OWNED' : 'BUY'}
@@ -109,27 +109,27 @@ export const BandHQ = ({
         }}
       />
 
-      <div className='relative w-full max-w-5xl h-[90vh] border-4 border-[var(--toxic-green)] bg-[var(--void-black)] flex flex-col shadow-[0_0_50px_var(--toxic-green)]'>
+      <div className='relative w-full max-w-5xl h-[90vh] border-4 border-(--toxic-green) bg-(--void-black) flex flex-col shadow-[0_0_50px_var(--toxic-green)]'>
         {/* Header */}
-        <div className='flex justify-between items-center p-6 border-b-2 border-[var(--toxic-green)] bg-black/50'>
+        <div className='flex justify-between items-center p-6 border-b-2 border-(--toxic-green) bg-black/50'>
           <div>
-            <h2 className="text-4xl text-[var(--toxic-green)] font-['Metal_Mania'] drop-shadow-[0_0_5px_var(--toxic-green)]">
+            <h2 className="text-4xl text-(--toxic-green) font-['Metal_Mania'] drop-shadow-[0_0_5px_var(--toxic-green)]">
               BAND HQ
             </h2>
-            <p className='text-[var(--ash-gray)] text-sm font-mono uppercase tracking-widest'>
+            <p className='text-(--ash-gray) text-sm font-mono uppercase tracking-widest'>
               Stendal Rehearsal Room | Day {player.day}
             </p>
           </div>
           <button
             onClick={onClose}
-            className='px-6 py-2 border-2 border-[var(--blood-red)] text-[var(--blood-red)] font-bold hover:bg-[var(--blood-red)] hover:text-black transition-colors duration-200 uppercase font-mono'
+            className='px-6 py-2 border-2 border-(--blood-red) text-(--blood-red) font-bold hover:bg-(--blood-red) hover:text-black transition-colors duration-200 uppercase font-mono'
           >
             LEAVE [ESC]
           </button>
         </div>
 
         {/* Navigation */}
-        <div className='flex border-b-2 border-[var(--ash-gray)]'>
+        <div className='flex border-b-2 border-(--ash-gray)'>
           {['STATS', 'SHOP', 'UPGRADES'].map(tab => (
             <button
               key={tab}
@@ -137,8 +137,8 @@ export const BandHQ = ({
               className={`flex-1 py-4 text-center font-bold text-xl uppercase tracking-wider transition-colors duration-150 font-mono
                 ${
                   activeTab === tab
-                    ? 'bg-[var(--toxic-green)] text-black'
-                    : 'text-[var(--ash-gray)] hover:text-white bg-black/50 hover:bg-black/70'
+                    ? 'bg-(--toxic-green) text-black'
+                    : 'text-(--ash-gray) hover:text-white bg-black/50 hover:bg-black/70'
                 }`}
             >
               {tab}
@@ -147,13 +147,13 @@ export const BandHQ = ({
         </div>
 
         {/* Content Area */}
-        <div className='flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-[var(--toxic-green)] scrollbar-track-black'>
+        <div className='flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-black'>
           {activeTab === 'STATS' && (
             <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
               {/* Financials & Fame */}
               <div className='space-y-6'>
-                <div className='bg-black/40 border-2 border-[var(--ash-gray)] p-4'>
-                  <h3 className='text-[var(--toxic-green)] text-lg font-bold mb-4 border-b border-[var(--ash-gray)] pb-2 font-mono'>
+                <div className='bg-black/40 border-2 border-(--ash-gray) p-4'>
+                  <h3 className='text-(--toxic-green) text-lg font-bold mb-4 border-b border-(--ash-gray) pb-2 font-mono'>
                     CAREER STATUS
                   </h3>
                   <div className='grid grid-cols-2 gap-4'>
@@ -172,8 +172,8 @@ export const BandHQ = ({
                   </div>
                 </div>
 
-                <div className='bg-black/40 border-2 border-[var(--ash-gray)] p-4'>
-                  <h3 className='text-[var(--toxic-green)] text-lg font-bold mb-4 border-b border-[var(--ash-gray)] pb-2 font-mono'>
+                <div className='bg-black/40 border-2 border-(--ash-gray) p-4'>
+                  <h3 className='text-(--toxic-green) text-lg font-bold mb-4 border-b border-(--ash-gray) pb-2 font-mono'>
                     VAN STATUS
                   </h3>
                   <div className='space-y-2'>
@@ -181,15 +181,15 @@ export const BandHQ = ({
                       label='Fuel'
                       value={player.van?.fuel}
                       max={100}
-                      color='bg-[var(--fuel-yellow)]'
+                      color='bg-(--fuel-yellow)'
                     />
                     <ProgressBar
                       label='Condition'
                       value={player.van?.condition}
                       max={100}
-                      color='bg-[var(--condition-blue)]'
+                      color='bg-(--condition-blue)'
                     />
-                    <div className='mt-2 text-xs text-[var(--ash-gray)] font-mono'>
+                    <div className='mt-2 text-xs text-(--ash-gray) font-mono'>
                       Breakdown Chance:{' '}
                       {((player.van?.breakdownChance ?? 0) * 100).toFixed(1)}%
                     </div>
@@ -198,8 +198,8 @@ export const BandHQ = ({
               </div>
 
               {/* Band Members */}
-              <div className='bg-black/40 border-2 border-[var(--ash-gray)] p-4'>
-                <h3 className='text-[var(--toxic-green)] text-lg font-bold mb-4 border-b border-[var(--ash-gray)] pb-2 font-mono'>
+              <div className='bg-black/40 border-2 border-(--ash-gray) p-4'>
+                <h3 className='text-(--toxic-green) text-lg font-bold mb-4 border-b border-(--ash-gray) pb-2 font-mono'>
                   BAND STATUS
                 </h3>
                 <div className='space-y-6'>
@@ -213,23 +213,23 @@ export const BandHQ = ({
                           label='Stamina'
                           value={m.stamina}
                           max={100}
-                          color='bg-[var(--stamina-green)]'
+                          color='bg-(--stamina-green)'
                           size='sm'
                         />
                         <ProgressBar
                           label='Mood'
                           value={m.mood}
                           max={100}
-                          color='bg-[var(--mood-pink)]'
+                          color='bg-(--mood-pink)'
                           size='sm'
                         />
                       </div>
                     </div>
                   ))}
                 </div>
-                <div className='mt-6 pt-4 border-t border-[var(--ash-gray)]'>
+                <div className='mt-6 pt-4 border-t border-(--ash-gray)'>
                   <div className='flex justify-between items-center mb-2'>
-                    <span className='text-[var(--ash-gray)] font-mono text-sm'>
+                    <span className='text-(--ash-gray) font-mono text-sm'>
                       Inventory Slots:
                     </span>
                     <span className='text-white font-mono'>
@@ -237,10 +237,10 @@ export const BandHQ = ({
                     </span>
                   </div>
                   <div className='flex justify-between items-center'>
-                    <span className='text-[var(--ash-gray)] font-mono text-sm'>
+                    <span className='text-(--ash-gray) font-mono text-sm'>
                       Harmony:
                     </span>
-                    <span className='text-[var(--toxic-green)] font-mono'>
+                    <span className='text-(--toxic-green) font-mono'>
                       {band.harmony}/100
                     </span>
                   </div>
@@ -253,7 +253,7 @@ export const BandHQ = ({
             <div>
               <div className='mb-4 text-right font-mono text-white'>
                 FUNDS:{' '}
-                <span className='text-[var(--toxic-green)]'>
+                <span className='text-(--toxic-green)'>
                   {player.money}€
                 </span>
               </div>
@@ -267,7 +267,7 @@ export const BandHQ = ({
             <div>
               <div className='mb-4 text-right font-mono text-white'>
                 FAME:{' '}
-                <span className='text-[var(--warning-yellow)]'>
+                <span className='text-(--warning-yellow)'>
                   {player.fame}★
                 </span>
               </div>

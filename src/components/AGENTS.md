@@ -266,7 +266,7 @@ export const ChatterOverlay = ({ performance, combo, venue }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
-          className='bg-(--shadow-black) bg-opacity-80 border border-(--toxic-green) p-2 mb-2 font-[Courier_New] text-sm'
+          className='bg-(--shadow-black)/80 border border-(--toxic-green) p-2 mb-2 font-[Courier_New] text-sm'
         >
           {msg}
         </motion.div>
@@ -336,7 +336,7 @@ export const TutorialManager = () => {
   if (!currentTutorial) return null
 
   return (
-    <motion.div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90'>
+    <motion.div className='fixed inset-0 z-50 flex items-center justify-center bg-black/90'>
       <div className='bg-(--void-black) border-4 border-(--toxic-green) p-8 max-w-lg'>
         <p className='font-[Courier_New] text-lg mb-4'>
           {currentTutorial.message}

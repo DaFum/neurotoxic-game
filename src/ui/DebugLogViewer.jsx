@@ -48,11 +48,11 @@ export const DebugLogViewer = () => {
 
   return (
     <div className='fixed inset-0 z-[9999] pointer-events-none flex flex-col justify-end'>
-      <div className='pointer-events-auto bg-black/90 border-t-2 border-[var(--toxic-green)] h-[40vh] flex flex-col font-mono text-xs'>
+      <div className='pointer-events-auto bg-black/90 border-t-2 border-(--toxic-green) h-[40vh] flex flex-col font-mono text-xs'>
         {/* Toolbar */}
         <div className='flex justify-between items-center p-2 bg-gray-900 border-b border-gray-800'>
           <div className='flex gap-2'>
-            <span className='text-[var(--toxic-green)] font-bold'>
+            <span className='text-(--toxic-green) font-bold'>
               NEUROTOXIC DEBUGGER
             </span>
             <select
@@ -101,7 +101,7 @@ export const DebugLogViewer = () => {
                   {log.level}
                 </span>
                 <span
-                  className='text-[var(--toxic-green)] w-24 shrink-0 truncate'
+                  className='text-(--toxic-green) w-24 shrink-0 truncate'
                   title={log.channel}
                 >
                   [{log.channel}]

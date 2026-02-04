@@ -35,7 +35,7 @@ export const GigHUD = ({ stats, onLaneInput }) => {
       {/* Stats Overlay */}
       <div className='absolute top-32 left-4 z-10 text-white font-mono pointer-events-none'>
         {/* Score Display with Shadow */}
-        <div className='text-5xl font-bold text-[var(--toxic-green)] drop-shadow-[0_0_10px_var(--toxic-green)] tracking-widest'>
+        <div className='text-5xl font-bold text-(--toxic-green) drop-shadow-[0_0_10px_var(--toxic-green)] tracking-widest'>
           {Math.floor(score).toString().padStart(7, '0')}
         </div>
 
@@ -44,24 +44,24 @@ export const GigHUD = ({ stats, onLaneInput }) => {
           <div
             className={`text-3xl font-bold transition-transform duration-100 ${
               combo > 0 ? 'scale-110' : 'scale-100'
-            } ${combo > 30 ? 'text-[var(--blood-red)] animate-pulse' : 'text-[var(--ash-gray)]'}`}
+            } ${combo > 30 ? 'text-(--blood-red) animate-pulse' : 'text-(--ash-gray)'}`}
           >
             {combo}x
           </div>
-          <div className='text-sm text-[var(--ash-gray)] uppercase tracking-widest'>
+          <div className='text-sm text-(--ash-gray) uppercase tracking-widest'>
             Combo
           </div>
         </div>
 
         {/* Toxic Overload Meter */}
         <div className='mt-4'>
-          <div className='flex justify-between text-xs text-[var(--ash-gray)] mb-1'>
+          <div className='flex justify-between text-xs text-(--ash-gray) mb-1'>
             <span>TOXIC OVERLOAD</span>
             <span>{Math.floor(overload)}%</span>
           </div>
-          <div className='w-48 h-3 bg-[var(--void-black)] border border-[var(--ash-gray)] rounded overflow-hidden'>
+          <div className='w-48 h-3 bg-(--void-black) border border-(--ash-gray) rounded overflow-hidden'>
             <div
-              className='h-full bg-[var(--toxic-green)] transition-all duration-200 ease-out shadow-[0_0_10px_var(--toxic-green)]'
+              className='h-full bg-(--toxic-green) transition-all duration-200 ease-out shadow-[0_0_10px_var(--toxic-green)]'
               style={{ width: `${overload}%` }}
             />
           </div>
@@ -75,7 +75,7 @@ export const GigHUD = ({ stats, onLaneInput }) => {
           <span
             className={
               health < 30
-                ? 'text-[var(--blood-red)] animate-flash'
+                ? 'text-(--blood-red) animate-flash'
                 : 'text-white'
             }
           >
@@ -83,12 +83,12 @@ export const GigHUD = ({ stats, onLaneInput }) => {
           </span>
         </div>
         {/* Segmented Bar Look */}
-        <div className='w-full h-6 bg-[var(--void-black)]/50 border-2 border-white/20 backdrop-blur-sm p-[2px] rounded'>
+        <div className='w-full h-6 bg-(--void-black)/50 border-2 border-white/20 backdrop-blur-sm p-[2px] rounded'>
           <div
             className={`h-full rounded-sm transition-all duration-300 ease-out ${
               health < 30
-                ? 'bg-[var(--blood-red)] shadow-[0_0_15px_var(--blood-red)]'
-                : 'bg-gradient-to-r from-[var(--toxic-green)] to-emerald-400 shadow-[0_0_10px_var(--toxic-green)]'
+                ? 'bg-(--blood-red) shadow-[0_0_15px_var(--blood-red)]'
+                : 'bg-gradient-to-r from-(--toxic-green) to-emerald-400 shadow-[0_0_10px_var(--toxic-green)]'
             }`}
             style={{ width: `${health}%` }}
           />
@@ -96,13 +96,13 @@ export const GigHUD = ({ stats, onLaneInput }) => {
       </div>
 
       {/* Controls Hint */}
-      <div className='absolute bottom-4 w-full text-center text-[var(--ash-gray)] font-mono text-sm z-10'>
+      <div className='absolute bottom-4 w-full text-center text-(--ash-gray) font-mono text-sm z-10'>
         [← GUITAR] [↓ DRUMS] [→ BASS] (Arrow Keys)
       </div>
 
       {isGameOver && (
-        <div className='absolute inset-0 z-50 bg-[var(--void-black)]/90 flex items-center justify-center pointer-events-none'>
-          <h1 className='text-6xl text-[var(--blood-red)] font-[Metal_Mania] animate-pulse'>
+        <div className='absolute inset-0 z-50 bg-(--void-black)/90 flex items-center justify-center pointer-events-none'>
+          <h1 className='text-6xl text-(--blood-red) font-[Metal_Mania] animate-pulse'>
             BOOED OFF STAGE
           </h1>
         </div>

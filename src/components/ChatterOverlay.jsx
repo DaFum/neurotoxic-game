@@ -82,7 +82,7 @@ export const ChatterOverlay = () => {
             </div>
 
             {/* Triangle tail */}
-            <div className='absolute -bottom-2 right-4 w-0 h-0 border-l-[10px] border-l-transparent border-t-[10px] border-t-white border-r-[0px] border-r-transparent filter drop-shadow-sm' />
+            <div className='absolute -bottom-2 right-4 w-0 h-0 border-l-[10px] border-l-transparent border-t-[10px] border-t-white border-r-[0px] border-r-transparent filter drop-shadow-xs' />
           </div>
         </motion.div>
       )}

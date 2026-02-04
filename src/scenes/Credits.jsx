@@ -19,7 +19,7 @@ export const Credits = () => {
 
   return (
     <div className='flex flex-col items-center justify-center h-full w-full bg-black z-50 text-center overflow-hidden'>
-      <h1 className='text-5xl text-[var(--toxic-green)] font-[Metal_Mania] mb-12 animate-pulse'>
+      <h1 className='text-5xl text-(--toxic-green) font-[Metal_Mania] mb-12 animate-pulse'>
         CREDITS
       </h1>
 

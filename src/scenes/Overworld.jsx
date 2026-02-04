@@ -37,7 +37,7 @@ const ToggleRadio = () => {
   return (
     <button
       onClick={toggle}
-      className='text-[var(--toxic-green)] hover:text-white text-xs'
+      className='text-(--toxic-green) hover:text-white text-xs'
       title={isPlaying ? 'Stop Radio' : 'Play/Resume Radio'}
     >
       {isPlaying ? '■' : '▶'}
@@ -98,15 +98,15 @@ export const Overworld = () => {
 
   return (
     <div
-      className={`w-full h-full bg-[var(--void-black)] relative overflow-hidden flex flex-col items-center justify-center p-8 ${isTraveling ? 'pointer-events-none' : ''}`}
+      className={`w-full h-full bg-(--void-black) relative overflow-hidden flex flex-col items-center justify-center p-8 ${isTraveling ? 'pointer-events-none' : ''}`}
     >
-      <h2 className='absolute top-20 text-4xl text-[var(--toxic-green)] font-[Metal_Mania] z-10 text-shadow-[0_0_10px_var(--toxic-green)] pointer-events-none'>
+      <h2 className='absolute top-20 text-4xl text-(--toxic-green) font-[Metal_Mania] z-10 text-shadow-[0_0_10px_var(--toxic-green)] pointer-events-none'>
         TOUR PLAN: {player.location}
       </h2>
 
       {/* Instructions / Status */}
-      <div className='absolute top-32 z-20 bg-black/80 border border-[var(--toxic-green)] p-2 text-center pointer-events-none'>
-        <div className='text-[var(--toxic-green)] font-bold text-sm uppercase'>
+      <div className='absolute top-32 z-20 bg-black/80 border border-(--toxic-green) p-2 text-center pointer-events-none'>
+        <div className='text-(--toxic-green) font-bold text-sm uppercase'>
           {isTraveling ? 'TRAVELING...' : 'Next Stop'}
         </div>
         <div className='text-white text-xs'>
@@ -115,9 +115,9 @@ export const Overworld = () => {
       </div>
 
       {/* Radio Widget */}
-      <div className='fixed top-8 left-1/2 -translate-x-1/2 z-50 pointer-events-auto bg-black border border-[var(--shadow-black)] p-2 flex items-center gap-2 rounded shadow-lg'>
-        <div className='w-2 h-2 rounded-full bg-[var(--blood-red)] animate-pulse' />
-        <span className='text-xs text-[var(--ash-gray)] font-mono'>
+      <div className='fixed top-8 left-1/2 -translate-x-1/2 z-50 pointer-events-auto bg-black border border-(--shadow-black) p-2 flex items-center gap-2 rounded shadow-lg'>
+        <div className='w-2 h-2 rounded-full bg-(--blood-red) animate-pulse' />
+        <span className='text-xs text-(--ash-gray) font-mono'>
           FM 66.6
         </span>
         <ToggleRadio />
@@ -130,20 +130,20 @@ export const Overworld = () => {
             isTraveling ||
             (player.van?.fuel ?? 0) >= EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
           }
-          className='bg-[var(--void-black)] border border-[var(--warning-yellow)] text-[var(--warning-yellow)] px-4 py-2 hover:bg-[var(--warning-yellow)] hover:text-[var(--void-black)] font-mono text-sm disabled:opacity-50'
+          className='bg-(--void-black) border border-(--warning-yellow) text-(--warning-yellow) px-4 py-2 hover:bg-(--warning-yellow) hover:text-(--void-black) font-mono text-sm disabled:opacity-50'
         >
           [REFUEL]
         </button>
         <button
           onClick={saveGame}
           disabled={isTraveling}
-          className='bg-black border border-[var(--toxic-green)] text-[var(--toxic-green)] px-4 py-2 hover:bg-[var(--toxic-green)] hover:text-black font-mono text-sm disabled:opacity-50'
+          className='bg-black border border-(--toxic-green) text-(--toxic-green) px-4 py-2 hover:bg-(--toxic-green) hover:text-black font-mono text-sm disabled:opacity-50'
         >
           [SAVE GAME]
         </button>
       </div>
 
-      <div className='relative w-full h-full max-w-6xl max-h-[80vh] border-4 border-[var(--toxic-green)] bg-black/80 rounded-lg shadow-[0_0_50px_rgba(0,255,65,0.2)] overflow-hidden'>
+      <div className='relative w-full h-full max-w-6xl max-h-[80vh] border-4 border-(--toxic-green) bg-black/80 rounded-lg shadow-[0_0_50px_rgba(0,255,65,0.2)] overflow-hidden'>
         <div
           className='absolute inset-0 opacity-30 bg-cover bg-center grayscale invert'
           style={{
@@ -264,13 +264,13 @@ export const Overworld = () => {
                 </motion.div>
 
                 {isReachable && (
-                  <div className='absolute -top-6 left-1/2 -translate-x-1/2 text-[var(--toxic-green)] text-[10px] font-bold animate-bounce whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity'>
+                  <div className='absolute -top-6 left-1/2 -translate-x-1/2 text-(--toxic-green) text-[10px] font-bold animate-bounce whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity'>
                     CLICK TO TRAVEL
                   </div>
                 )}
 
-                <div className='hidden group-hover:block absolute bottom-8 bg-black/90 border border-[var(--toxic-green)] p-2 rounded z-50 whitespace-nowrap pointer-events-none'>
-                  <div className='font-bold text-[var(--toxic-green)]'>
+                <div className='hidden group-hover:block absolute bottom-8 bg-black/90 border border-(--toxic-green) p-2 rounded z-50 whitespace-nowrap pointer-events-none'>
+                  <div className='font-bold text-(--toxic-green)'>
                     {node.venue.name}
                   </div>
                   {node.type === 'GIG' && (
@@ -281,7 +281,7 @@ export const Overworld = () => {
                     </div>
                   )}
                   {isCurrent && (
-                    <div className='text-[var(--blood-red)] text-xs font-bold'>
+                    <div className='text-(--blood-red) text-xs font-bold'>
                       [CURRENT LOCATION]
                     </div>
                   )}

@@ -23,7 +23,7 @@ This folder (`src/ui/`) contains the "design system" - pure presentation compone
 import { StatBox, ProgressBar, Panel, ActionButton, Modal, Grid, TabButton } from '../ui/shared'
 
 <StatBox label="MONEY" value={player.money} icon="$" />
-<ProgressBar label="FUEL" value={fuel} max={100} color="bg-[var(--toxic-green)]" />
+<ProgressBar label="FUEL" value={fuel} max={100} color="bg-(--toxic-green)" />
 <Panel title="INVENTORY">{children}</Panel>
 <ActionButton onClick={fn} variant="primary">ACTION</ActionButton>
 <Modal isOpen={open} onClose={close} title="TITLE">{children}</Modal>
@@ -184,7 +184,7 @@ export const HUD = () => {
   const { player, band } = useGameState()
 
   return (
-    <div className='absolute top-0 left-0 right-0 z-30 bg-[var(--void-black)] border-b-2 border-(--toxic-green) py-2 px-4'>
+    <div className='absolute top-0 left-0 right-0 z-30 bg-(--void-black) border-b-2 border-(--toxic-green) py-2 px-4'>
       <div className='flex justify-between items-center font-[Courier_New] text-sm text-(--toxic-green)'>
         {/* Left: Time & Location */}
         <div className='flex gap-4'>
@@ -268,9 +268,9 @@ export const EventModal = ({ event, onOptionSelect }) => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className='fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-95 p-8'
+      className='fixed inset-0 z-40 flex items-center justify-center bg-black/95 p-8'
     >
-      <div className='max-w-2xl w-full bg-[var(--void-black)] border-4 border-(--toxic-green) p-8'>
+      <div className='max-w-2xl w-full bg-(--void-black) border-4 border-(--toxic-green) p-8'>
         {/* Title */}
         <h2 className='font-[Metal_Mania] text-4xl text-(--blood-red) mb-4 text-center uppercase'>
           {event.title}
@@ -403,7 +403,7 @@ export class CrashHandler extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className='w-full h-screen bg-[var(--void-black)] flex flex-col items-center justify-center p-8'>
+        <div className='w-full h-screen bg-(--void-black) flex flex-col items-center justify-center p-8'>
           <h1 className='font-[Metal_Mania] text-6xl text-(--blood-red) mb-4'>
             CRITICAL ERROR
           </h1>
@@ -412,7 +412,7 @@ export class CrashHandler extends React.Component {
           </p>
           <details className='mb-8 font-[Courier_New] text-sm text-(--ash-gray) max-w-lg'>
             <summary className='cursor-pointer'>Technical Details</summary>
-            <pre className='mt-4 p-4 bg-[var(--shadow-black)] overflow-auto'>
+            <pre className='mt-4 p-4 bg-(--shadow-black) overflow-auto'>
               {this.state.error?.toString()}
             </pre>
           </details>
