@@ -215,7 +215,7 @@ export const usePurchaseLogic = ({
           break
 
         case 'hq_room_diy_soundproofing':
-          nextBandPatch = { harmony: Math.min(100, (band.harmony ?? 0) + 5) }
+          nextBandPatch = { harmony: Math.max(0, Math.min(100, (band.harmony ?? 0) + 5)) }
           addToast('Less noise, more peace. Harmony +5', 'success')
           break
 
@@ -226,13 +226,13 @@ export const usePurchaseLogic = ({
           const members = (band.members ?? []).map(m => {
             switch (item.id) {
               case 'hq_room_coffee':
-                return { ...m, mood: Math.min(100, (m.mood ?? 0) + 20) }
+                return { ...m, mood: Math.max(0, Math.min(100, (m.mood ?? 0) + 20)) }
               case 'hq_room_sofa':
-                return { ...m, stamina: Math.min(100, (m.stamina ?? 0) + 30) }
+                return { ...m, stamina: Math.max(0, Math.min(100, (m.stamina ?? 0) + 30)) }
               case 'hq_room_old_couch':
-                return { ...m, stamina: Math.min(100, (m.stamina ?? 0) + 10) }
+                return { ...m, stamina: Math.max(0, Math.min(100, (m.stamina ?? 0) + 10)) }
               default:
-                return { ...m, mood: Math.min(100, (m.mood ?? 0) + 5) }
+                return { ...m, mood: Math.max(0, Math.min(100, (m.mood ?? 0) + 5)) }
             }
           })
           nextBandPatch = { ...(nextBandPatch ?? {}), members }
@@ -337,8 +337,9 @@ export const usePurchaseLogic = ({
                 item,
                 effect
               }),
-              { silent: true }
+              { addToast, fallbackMessage: 'Purchase failed: Unknown effect type.' }
             )
+            return false
         }
 
         // Also ensure simple stat_modifiers from UPGRADES_DB are marked as owned!

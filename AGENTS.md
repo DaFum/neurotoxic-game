@@ -17,7 +17,7 @@
 
 ## Project Structure
 
-```
+```text
 neurotoxic-game/
 ├── docs/                   # Architecture & state documentation
 │   ├── ARCHITECTURE.md     # Module relationships & diagrams

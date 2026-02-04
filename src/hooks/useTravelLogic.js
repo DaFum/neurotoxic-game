@@ -14,6 +14,13 @@ import { logger } from '../utils/logger'
 import { handleError, GameLogicError } from '../utils/errorHandler'
 
 /**
+ * Failsafe timeout duration in milliseconds
+ * Travel animation duration (1500ms) + buffer (10ms)
+ * @constant {number}
+ */
+const TRAVEL_ANIMATION_TIMEOUT_MS = 1510
+
+/**
  * Custom hook for managing travel state and logic
  * @param {Object} params - Hook parameters
  * @param {Object} params.player - Player state
@@ -50,6 +57,7 @@ export const useTravelLogic = ({
   const [travelTarget, setTravelTarget] = useState(null)
   const travelCompletedRef = useRef(false)
   const timeoutRef = useRef(null)
+  const failsafeTimeoutRef = useRef(null)
 
   /**
    * Gets the current node from the map
@@ -86,6 +94,51 @@ export const useTravelLogic = ({
     if (nodeLayer === currentLayer + 2) return 'dimmed'
     return 'hidden'
   }, [])
+
+  /**
+   * Handles logic when arriving at a node
+   * @param {Object} node - Arrived node
+   */
+  const handleNodeArrival = useCallback(
+    node => {
+      switch (node.type) {
+        case 'REST_STOP': {
+          const newMembers = band.members.map(m => ({
+            ...m,
+            stamina: Math.min(100, Math.max(0, m.stamina + 20)),
+            mood: Math.min(100, Math.max(0, m.mood + 10))
+          }))
+          updateBand({ members: newMembers })
+          addToast('Rested at stop. Band feels better.', 'success')
+          break
+        }
+        case 'SPECIAL': {
+          const specialEvent = triggerEvent('special')
+          if (!specialEvent) {
+            addToast('A mysterious place, but nothing happened.', 'info')
+          }
+          break
+        }
+        case 'START': {
+          onShowHQ?.()
+          addToast('Home Sweet Home.', 'success')
+          break
+        }
+        default: {
+          // GIG node
+          if (band.harmony <= 0) {
+            addToast("Band's harmony too low to perform!", 'warning')
+            return
+          }
+          logger.info('TravelLogic', 'Starting Gig at destination', {
+            venue: node.venue.name
+          })
+          startGig(node.venue)
+        }
+      }
+    },
+    [band, updateBand, triggerEvent, startGig, addToast, onShowHQ]
+  )
 
   /**
    * Callback executed when travel animation completes
@@ -137,7 +190,7 @@ export const useTravelLogic = ({
       )
 
       // Affordability check
-      if (player.money < totalCost || (player.van?.fuel ?? 0) < fuelLiters) {
+      if ((player.money ?? 0) < totalCost || (player.van?.fuel ?? 0) < fuelLiters) {
         addToast('Error: Insufficient resources upon arrival.', 'error')
         setIsTraveling(false)
         setTravelTarget(null)
@@ -146,7 +199,7 @@ export const useTravelLogic = ({
 
       // Apply travel costs
       updatePlayer({
-        money: Math.max(0, player.money - totalCost),
+        money: Math.max(0, (player.money ?? 0) - totalCost),
         van: {
           ...player.van,
           fuel: Math.max(0, (player.van?.fuel ?? 0) - fuelLiters)
@@ -189,53 +242,9 @@ export const useTravelLogic = ({
       saveGame,
       triggerEvent,
       advanceDay,
-      addToast
+      addToast,
+      handleNodeArrival
     ]
-  )
-
-  /**
-   * Handles logic when arriving at a node
-   * @param {Object} node - Arrived node
-   */
-  const handleNodeArrival = useCallback(
-    node => {
-      switch (node.type) {
-        case 'REST_STOP': {
-          const newMembers = band.members.map(m => ({
-            ...m,
-            stamina: Math.min(100, Math.max(0, m.stamina + 20)),
-            mood: Math.min(100, Math.max(0, m.mood + 10))
-          }))
-          updateBand({ members: newMembers })
-          addToast('Rested at stop. Band feels better.', 'success')
-          break
-        }
-        case 'SPECIAL': {
-          const specialEvent = triggerEvent('special')
-          if (!specialEvent) {
-            addToast('A mysterious place, but nothing happened.', 'info')
-          }
-          break
-        }
-        case 'START': {
-          onShowHQ?.()
-          addToast('Home Sweet Home.', 'success')
-          break
-        }
-        default: {
-          // GIG node
-          if (band.harmony <= 0) {
-            addToast("Band's harmony too low to perform!", 'warning')
-            return
-          }
-          logger.info('TravelLogic', 'Starting Gig at destination', {
-            venue: node.venue.name
-          })
-          startGig(node.venue)
-        }
-      }
-    },
-    [band, updateBand, triggerEvent, startGig, addToast, onShowHQ]
   )
 
   /**
@@ -283,7 +292,7 @@ export const useTravelLogic = ({
       const { dist, totalCost, fuelLiters } = calculateTravelExpenses(
         node,
         currentStartNode,
-        player
+        { van: player.van }
       )
 
       addToast(
@@ -291,7 +300,7 @@ export const useTravelLogic = ({
         'info'
       )
 
-      if (player.money < totalCost) {
+      if ((player.money ?? 0) < totalCost) {
         addToast('Not enough money for gas and food!', 'error')
         return
       }
@@ -312,12 +321,16 @@ export const useTravelLogic = ({
         // Ignore audio errors
       }
 
-      // Failsafe timeout
-      window.setTimeout(() => {
+      // Failsafe timeout - store in ref for cleanup
+      if (failsafeTimeoutRef.current) {
+        clearTimeout(failsafeTimeoutRef.current)
+      }
+      failsafeTimeoutRef.current = window.setTimeout(() => {
         if (!travelCompletedRef.current) {
           onTravelComplete(node)
         }
-      }, 1510)
+        failsafeTimeoutRef.current = null
+      }, TRAVEL_ANIMATION_TIMEOUT_MS)
     },
     [
       player,
@@ -348,13 +361,13 @@ export const useTravelLogic = ({
 
     const cost = Math.ceil(missing * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
 
-    if (player.money < cost) {
+    if ((player.money ?? 0) < cost) {
       addToast(`Not enough money! Need ${cost}€ to fill up.`, 'error')
       return
     }
 
     updatePlayer({
-      money: Math.max(0, player.money - cost),
+      money: Math.max(0, (player.money ?? 0) - cost),
       van: { ...player.van, fuel: EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL }
     })
     addToast(`Refueled: -${cost}€`, 'success')
@@ -427,6 +440,20 @@ export const useTravelLogic = ({
       }
     }
   }, [player, gameMap, isTraveling, changeScene, addToast])
+
+  // Cleanup all timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
+      if (failsafeTimeoutRef.current) {
+        clearTimeout(failsafeTimeoutRef.current)
+        failsafeTimeoutRef.current = null
+      }
+    }
+  }, [])
 
   return {
     // State

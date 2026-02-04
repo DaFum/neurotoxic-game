@@ -23,7 +23,7 @@ This folder (`src/ui/`) contains the "design system" - pure presentation compone
 import { StatBox, ProgressBar, Panel, ActionButton, Modal, Grid, TabButton } from '../ui/shared'
 
 <StatBox label="MONEY" value={player.money} icon="$" />
-<ProgressBar label="FUEL" value={fuel} max={100} color="bg-green-500" />
+<ProgressBar label="FUEL" value={fuel} max={100} color="bg-[var(--toxic-green)]" />
 <Panel title="INVENTORY">{children}</Panel>
 <ActionButton onClick={fn} variant="primary">ACTION</ActionButton>
 <Modal isOpen={open} onClose={close} title="TITLE">{children}</Modal>

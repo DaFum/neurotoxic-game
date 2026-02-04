@@ -7,6 +7,13 @@
 import { ActionTypes } from './gameReducer.js'
 
 /**
+ * Monotonic counter for generating unique toast IDs
+ * Combines with timestamp to ensure uniqueness even for back-to-back toasts
+ * @type {number}
+ */
+let toastIdCounter = 0
+
+/**
  * Creates a scene change action
  * @param {string} scene - Target scene name
  * @returns {Object} Action object
@@ -124,12 +131,12 @@ export const createSetActiveEventAction = event => ({
  */
 export const createAddToastAction = (message, type = 'info') => ({
   type: ActionTypes.ADD_TOAST,
-  payload: { id: Date.now(), message, type }
+  payload: { id: `${Date.now()}-${++toastIdCounter}`, message, type }
 })
 
 /**
  * Creates a toast removal action
- * @param {number} id - Toast ID to remove
+ * @param {string} id - Toast ID to remove
  * @returns {Object} Action object
  */
 export const createRemoveToastAction = id => ({

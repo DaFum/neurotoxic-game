@@ -44,7 +44,7 @@ const GameStateContext = createContext()
  * @param {React.ReactNode} props.children
  */
 export const GameStateProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(gameReducer, initialState)
+  const [state, dispatch] = useReducer(gameReducer, null, createInitialState)
 
   // Initialize Map if needed
   useEffect(() => {
@@ -224,8 +224,8 @@ export const GameStateProvider = ({ children }) => {
 
         if (missingKeys.length > 0) {
           handleError(
-            new StateError('Corrupt Save File', { missingKeys }),
-            { addToast, fallbackMessage: 'Save file is corrupt. Starting fresh.' }
+            new StateError('Save file is corrupt. Starting fresh.', { missingKeys }),
+            { addToast }
           )
           return false
         }
@@ -308,26 +308,26 @@ export const GameStateProvider = ({ children }) => {
 
         // Unlocks
         if (delta.flags?.unlock) {
-          try {
-            const currentUnlocks = JSON.parse(
-              localStorage.getItem('neurotoxic_unlocks') || '[]'
-            )
-            if (
-              Array.isArray(currentUnlocks) &&
-              !currentUnlocks.includes(delta.flags.unlock)
-            ) {
-              currentUnlocks.push(delta.flags.unlock)
+          const currentUnlocks = safeStorageOperation(
+            'loadUnlocks',
+            () => JSON.parse(localStorage.getItem('neurotoxic_unlocks') || '[]'),
+            []
+          )
+          if (
+            Array.isArray(currentUnlocks) &&
+            !currentUnlocks.includes(delta.flags.unlock)
+          ) {
+            currentUnlocks.push(delta.flags.unlock)
+            safeStorageOperation('saveUnlocks', () =>
               localStorage.setItem(
                 'neurotoxic_unlocks',
                 JSON.stringify(currentUnlocks)
               )
-              addToast(
-                `UNLOCKED: ${delta.flags.unlock.toUpperCase()}!`,
-                'success'
-              )
-            }
-          } catch (e) {
-            console.error('Failed to parse unlocks from localStorage:', e)
+            )
+            addToast(
+              `UNLOCKED: ${delta.flags.unlock.toUpperCase()}!`,
+              'success'
+            )
           }
         }
 

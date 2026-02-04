@@ -187,7 +187,7 @@ dispatch(createUpdatePlayerAction({ money: 400 }))
 | `createSetSetlistAction` | `(songs: array)` |
 | `createSetLastGigStatsAction` | `(stats: object)` |
 | `createSetActiveEventAction` | `(event: object\|null)` |
-| `createAddToastAction` | `(message, type, id?)` |
+| `createAddToastAction` | `(message, type)` |
 | `createRemoveToastAction` | `(id: string)` |
 | `createSetGigModifiersAction` | `(modifiers: object\|function)` |
 | `createLoadGameAction` | `(savedState: object)` |
