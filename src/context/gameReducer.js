@@ -161,7 +161,7 @@ const handleLoadGame = (state, payload) => {
 
   // Ensure harmony is clamped
   if (mergedBand.harmony) {
-    mergedBand.harmony = Math.max(0, mergedBand.harmony)
+    mergedBand.harmony = Math.max(0, Math.min(100, mergedBand.harmony))
   }
 
   return {

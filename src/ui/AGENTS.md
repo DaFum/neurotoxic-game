@@ -134,7 +134,7 @@ export const GlitchButton = ({
       onClick={onClick}
       disabled={disabled}
       className={`
-        relative px-8 py-4 bg-black
+        relative px-8 py-4 bg-(--void-black)
         border-2 ${variantStyles[variant]}
         font-[Metal_Mania] text-xl font-bold uppercase tracking-widest
         transition-all duration-100
@@ -268,7 +268,7 @@ export const EventModal = ({ event, onOptionSelect }) => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className='fixed inset-0 z-40 flex items-center justify-center bg-black/95 p-8'
+      className='fixed inset-0 z-40 flex items-center justify-center bg-(--void-black)/95 p-8'
     >
       <div className='max-w-2xl w-full bg-(--void-black) border-4 border-(--toxic-green) p-8'>
         {/* Title */}
@@ -344,9 +344,9 @@ export const ToastOverlay = () => {
   const { toasts } = useGameState()
 
   const typeStyles = {
-    success: 'bg-(--success-green) text-black',
-    error: 'bg-(--error-red) text-white',
-    info: 'bg-(--info-blue) text-white'
+    success: 'bg-(--success-green) text-(--void-black)',
+    error: 'bg-(--error-red) text-(--star-white)',
+    info: 'bg-(--info-blue) text-(--star-white)'
   }
 
   return (

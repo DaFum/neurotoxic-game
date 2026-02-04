@@ -37,7 +37,7 @@ const ToggleRadio = () => {
   return (
     <button
       onClick={toggle}
-      className='text-(--toxic-green) hover:text-white text-xs'
+      className='text-(--toxic-green) hover:text-(--star-white) text-xs'
       title={isPlaying ? 'Stop Radio' : 'Play/Resume Radio'}
     >
       {isPlaying ? '■' : '▶'}
@@ -105,17 +105,17 @@ export const Overworld = () => {
       </h2>
 
       {/* Instructions / Status */}
-      <div className='absolute top-32 z-20 bg-black/80 border border-(--toxic-green) p-2 text-center pointer-events-none'>
+      <div className='absolute top-32 z-20 bg-(--void-black)/80 border border-(--toxic-green) p-2 text-center pointer-events-none'>
         <div className='text-(--toxic-green) font-bold text-sm uppercase'>
           {isTraveling ? 'TRAVELING...' : 'Next Stop'}
         </div>
-        <div className='text-white text-xs'>
+        <div className='text-(--star-white) text-xs'>
           {isTraveling ? 'On the road' : 'Select a highlighted location'}
         </div>
       </div>
 
       {/* Radio Widget */}
-      <div className='fixed top-8 left-1/2 -translate-x-1/2 z-50 pointer-events-auto bg-black border border-(--shadow-black) p-2 flex items-center gap-2 rounded shadow-lg'>
+      <div className='fixed top-8 left-1/2 -translate-x-1/2 z-50 pointer-events-auto bg-(--void-black) border border-(--shadow-black) p-2 flex items-center gap-2 rounded shadow-lg'>
         <div className='w-2 h-2 rounded-full bg-(--blood-red) animate-pulse' />
         <span className='text-xs text-(--ash-gray) font-mono'>
           FM 66.6
@@ -137,13 +137,13 @@ export const Overworld = () => {
         <button
           onClick={saveGame}
           disabled={isTraveling}
-          className='bg-black border border-(--toxic-green) text-(--toxic-green) px-4 py-2 hover:bg-(--toxic-green) hover:text-black font-mono text-sm disabled:opacity-50'
+          className='bg-(--void-black) border border-(--toxic-green) text-(--toxic-green) px-4 py-2 hover:bg-(--toxic-green) hover:text-(--void-black) font-mono text-sm disabled:opacity-50'
         >
           [SAVE GAME]
         </button>
       </div>
 
-      <div className='relative w-full h-full max-w-6xl max-h-[80vh] border-4 border-(--toxic-green) bg-black/80 rounded-lg shadow-[0_0_50px_rgba(0,255,65,0.2)] overflow-hidden'>
+      <div className='relative w-full h-full max-w-6xl max-h-[80vh] border-4 border-(--toxic-green) bg-(--void-black)/80 rounded-lg shadow-[0_0_50px_rgba(0,255,65,0.2)] overflow-hidden'>
         <div
           className='absolute inset-0 opacity-30 bg-cover bg-center grayscale invert'
           style={{
@@ -207,7 +207,7 @@ export const Overworld = () => {
               return (
                 <div
                   key={node.id}
-                  className='absolute w-6 h-6 flex items-center justify-center text-gray-700 pointer-events-none'
+                  className='absolute w-6 h-6 flex items-center justify-center text-(--ash-gray) pointer-events-none'
                   style={{ left: `${node.x}%`, top: `${node.y}%` }}
                 >
                   ?
@@ -269,12 +269,12 @@ export const Overworld = () => {
                   </div>
                 )}
 
-                <div className='hidden group-hover:block absolute bottom-8 bg-black/90 border border-(--toxic-green) p-2 rounded z-50 whitespace-nowrap pointer-events-none'>
+                <div className='hidden group-hover:block absolute bottom-8 bg-(--void-black)/90 border border-(--toxic-green) p-2 rounded z-50 whitespace-nowrap pointer-events-none'>
                   <div className='font-bold text-(--toxic-green)'>
                     {node.venue.name}
                   </div>
                   {node.type === 'GIG' && (
-                    <div className='text-[10px] text-gray-400 font-mono'>
+                    <div className='text-[10px] text-(--ash-gray) font-mono'>
                       Cap: {node.venue.capacity} | Pay: ~{node.venue.pay}€<br />
                       Ticket: {node.venue.price}€ | Diff:{' '}
                       {'★'.repeat(node.venue.diff)}
@@ -319,7 +319,7 @@ export const Overworld = () => {
         )}
       </div>
 
-      <div className='absolute bottom-8 left-8 p-4 border border-(--ash-gray) bg-black/90 max-w-sm z-20 pointer-events-none'>
+      <div className='absolute bottom-8 left-8 p-4 border border-[var(--ash-gray)] bg-[var(--void-black)]/90 max-w-sm z-20 pointer-events-none'>
         <h3 className='text-(--toxic-green) font-bold mb-2'>EVENT LOG:</h3>
         <p className='text-xs text-(--ash-gray) font-mono'>
           &gt; Locations loaded: {ALL_VENUES.length}

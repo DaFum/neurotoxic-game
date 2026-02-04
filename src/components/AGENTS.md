@@ -336,7 +336,7 @@ export const TutorialManager = () => {
   if (!currentTutorial) return null
 
   return (
-    <motion.div className='fixed inset-0 z-50 flex items-center justify-center bg-black/90'>
+    <motion.div className='fixed inset-0 z-50 flex items-center justify-center bg-(--void-black)/90'>
       <div className='bg-(--void-black) border-4 border-(--toxic-green) p-8 max-w-lg'>
         <p className='font-[Courier_New] text-lg mb-4'>
           {currentTutorial.message}

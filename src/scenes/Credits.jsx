@@ -18,7 +18,7 @@ export const Credits = () => {
   ]
 
   return (
-    <div className='flex flex-col items-center justify-center h-full w-full bg-black z-50 text-center overflow-hidden'>
+    <div className='flex flex-col items-center justify-center h-full w-full bg-(--void-black) z-50 text-center overflow-hidden'>
       <h1 className='text-5xl text-(--toxic-green) font-[Metal_Mania] mb-12 animate-pulse'>
         CREDITS
       </h1>
@@ -26,10 +26,10 @@ export const Credits = () => {
       <div className='space-y-8 animate-slide-up'>
         {credits.map((c, i) => (
           <div key={i} className='flex flex-col gap-1'>
-            <span className='text-gray-500 text-sm font-mono tracking-widest'>
+            <span className='text-(--ash-gray) text-sm font-mono tracking-widest'>
               {c.role}
             </span>
-            <span className='text-white text-2xl font-bold'>{c.name}</span>
+            <span className='text-(--star-white) text-2xl font-bold'>{c.name}</span>
           </div>
         ))}
       </div>

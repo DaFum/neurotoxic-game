@@ -110,7 +110,7 @@ export const PreGig = () => {
   )
 
   return (
-    <div className='w-full h-full flex flex-col items-center justify-center p-8 bg-(--void-black) text-white relative'>
+    <div className='w-full h-full flex flex-col items-center justify-center p-8 bg-(--void-black) text-(--star-white) relative'>
       <div className='absolute top-24 right-8 z-30'>
         <ChatterOverlay />
       </div>
@@ -120,15 +120,15 @@ export const PreGig = () => {
       <div className='text-xl mb-2 font-mono border-b border-(--toxic-green) pb-2 w-full max-w-2xl text-center'>
         VENUE: {currentGig?.name}
       </div>
-      <div className='mb-6 font-mono text-sm text-gray-400'>
+      <div className='mb-6 font-mono text-sm text-(--ash-gray)'>
         ESTIMATED COSTS:{' '}
-        <span className='text-red-500'>-{calculatedBudget}€</span> (Deducted
+        <span className='text-(--blood-red)'>-{calculatedBudget}€</span> (Deducted
         after show)
       </div>
 
       <div className='grid grid-cols-2 gap-8 w-full max-w-4xl h-[60vh]'>
         {/* Actions */}
-        <div className='border border-(--ash-gray) p-4 bg-black/50'>
+        <div className='border border-(--ash-gray) p-4 bg-(--void-black)/50'>
           <h3 className='text-xl text-(--toxic-green) mb-4'>
             BUDGET ALLOCATION
           </h3>
@@ -167,7 +167,7 @@ export const PreGig = () => {
                         ${
                           gigModifiers[item.key]
                             ? 'bg-(--toxic-green) text-black border-(--toxic-green)'
-                            : 'border-(--ash-gray) hover:border-white text-gray-400'
+                            : 'border-(--ash-gray) hover:border-(--star-white) text-(--ash-gray)'
                         }`}
               >
                 <span className='flex flex-col text-left'>
@@ -200,13 +200,13 @@ export const PreGig = () => {
             {currentModifiers.activeEffects.length > 0 ? (
               <ul className='text-xs space-y-1'>
                 {currentModifiers.activeEffects.map((eff, i) => (
-                  <li key={i} className='text-gray-300'>
+                  <li key={i} className='text-(--star-white)/80'>
                     • {eff}
                   </li>
                 ))}
               </ul>
             ) : (
-              <div className='text-xs text-gray-500'>
+              <div className='text-xs text-(--ash-gray)'>
                 Neutral Vibe. No active buffs/debuffs.
               </div>
             )}
@@ -214,7 +214,7 @@ export const PreGig = () => {
         </div>
 
         {/* Setlist */}
-        <div className='border border-(--ash-gray) p-4 bg-black/50 flex flex-col'>
+        <div className='border border-(--ash-gray) p-4 bg-(--void-black)/50 flex flex-col'>
           <h3 className='text-xl text-(--toxic-green) mb-4'>
             SETLIST ({setlist.length}/3)
           </h3>
@@ -229,7 +229,7 @@ export const PreGig = () => {
                     ${
                       isSelected
                         ? 'border-(--toxic-green) bg-(--toxic-green)/10 text-(--toxic-green)'
-                        : 'border-(--ash-gray) hover:border-white text-gray-400'
+                        : 'border-(--ash-gray) hover:border-(--star-white) text-(--ash-gray)'
                     }`}
                 >
                   <div>
@@ -241,10 +241,10 @@ export const PreGig = () => {
                   <div className='flex flex-col items-end'>
                     <div className='flex gap-1'>
                       {/* Energy Bar */}
-                      <div className='text-[10px] text-gray-500 mr-2'>NRG</div>
-                      <div className='w-16 h-2 bg-gray-800'>
+                      <div className='text-[10px] text-(--ash-gray) mr-2'>NRG</div>
+                      <div className='w-16 h-2 bg-(--shadow-black)'>
                         <div
-                          className='h-full bg-red-500'
+                          className='h-full bg-(--blood-red)'
                           style={{ width: `${song.energy.peak}%` }}
                         />
                       </div>
@@ -256,20 +256,20 @@ export const PreGig = () => {
           </div>
 
           {/* Curve Visualization */}
-          <div className='mt-4 h-16 border-t border-gray-700 pt-2 flex items-end justify-between gap-1'>
+          <div className='mt-4 h-16 border-t border-(--ash-gray) pt-2 flex items-end justify-between gap-1'>
             {setlist.map((s, i) => (
               <div
                 key={i}
                 className='flex-1 bg-(--toxic-green) opacity-50 hover:opacity-100 transition-opacity relative group'
                 style={{ height: `${s.energy.peak}%` }}
               >
-                <div className='absolute -top-4 left-0 text-[10px] w-full text-center hidden group-hover:block text-white'>
+                <div className='absolute -top-4 left-0 text-[10px] w-full text-center hidden group-hover:block text-(--star-white)'>
                   {s.energy.peak}
                 </div>
               </div>
             ))}
             {setlist.length === 0 && (
-              <div className='text-gray-500 text-xs w-full text-center'>
+              <div className='text-(--ash-gray) text-xs w-full text-center'>
                 Select songs to see energy curve
               </div>
             )}

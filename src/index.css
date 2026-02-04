@@ -11,6 +11,7 @@
 
   /* Death-Metal-Schwarz */
   --void-black: #0a0a0a;
+  --void-black-rgb: 10, 10, 10;
   --shadow-black: #1a1a1a;
   --concrete-gray: #2a2a2a;
   --ash-gray: #3a3a3a;
@@ -39,7 +40,7 @@
   --mood-pink: #db2777;
 
   /* UI Components */
-  --panel-bg: rgb(0 0 0 / 40%);
+  --panel-bg: rgba(var(--void-black-rgb), 0.4);
   --disabled-bg: var(--concrete-gray);
   --disabled-text: var(--ash-gray);
   --disabled-border: var(--ash-gray);

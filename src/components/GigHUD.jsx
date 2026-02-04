@@ -33,7 +33,7 @@ export const GigHUD = ({ stats, onLaneInput }) => {
       </div>
 
       {/* Stats Overlay */}
-      <div className='absolute top-32 left-4 z-10 text-white font-mono pointer-events-none'>
+      <div className='absolute top-32 left-4 z-10 text-(--star-white) font-mono pointer-events-none'>
         {/* Score Display with Shadow */}
         <div className='text-5xl font-bold text-(--toxic-green) drop-shadow-[0_0_10px_var(--toxic-green)] tracking-widest'>
           {Math.floor(score).toString().padStart(7, '0')}
@@ -70,25 +70,25 @@ export const GigHUD = ({ stats, onLaneInput }) => {
 
       {/* Health Bar (Bottom Center) */}
       <div className='absolute bottom-24 left-1/2 -translate-x-1/2 w-96 z-10 pointer-events-none'>
-        <div className='flex justify-between text-white text-xs mb-1 font-bold tracking-widest drop-shadow-md'>
+        <div className='flex justify-between text-(--star-white) text-xs mb-1 font-bold tracking-widest drop-shadow-md'>
           <span>CROWD ENERGY</span>
           <span
             className={
               health < 30
                 ? 'text-(--blood-red) animate-flash'
-                : 'text-white'
+                : 'text-(--star-white)'
             }
           >
             {Math.floor(health)}%
           </span>
         </div>
         {/* Segmented Bar Look */}
-        <div className='w-full h-6 bg-(--void-black)/50 border-2 border-white/20 backdrop-blur-sm p-[2px] rounded'>
+        <div className='w-full h-6 bg-(--void-black)/50 border-2 border-(--ash-gray)/30 backdrop-blur-sm p-[2px] rounded'>
           <div
             className={`h-full rounded-sm transition-all duration-300 ease-out ${
               health < 30
                 ? 'bg-(--blood-red) shadow-[0_0_15px_var(--blood-red)]'
-                : 'bg-gradient-to-r from-(--toxic-green) to-emerald-400 shadow-[0_0_10px_var(--toxic-green)]'
+                : 'bg-gradient-to-r from-(--toxic-green) to-(--toxic-green-light) shadow-[0_0_10px_var(--toxic-green)]'
             }`}
             style={{ width: `${health}%` }}
           />

@@ -27,7 +27,7 @@ export const UpgradeMenu = ({ onClose, player, onBuyUpgrade, className = '' }) =
         <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
           {Object.entries(UPGRADES_DB).map(([category, upgrades]) => (
             <div key={category} className='space-y-4'>
-              <h3 className='text-2xl text-white uppercase border-b border-gray-700 pb-2'>
+              <h3 className='text-2xl text-(--star-white) uppercase border-b border-(--ash-gray) pb-2'>
                 {category}
               </h3>
               {upgrades.map(u => {
@@ -40,10 +40,10 @@ export const UpgradeMenu = ({ onClose, player, onBuyUpgrade, className = '' }) =
                 return (
                   <div
                     key={u.id}
-                    className={`p-4 border ${owned ? 'border-(--toxic-green) bg-(--toxic-green)/10' : 'border-gray-700'} relative group`}
+                    className={`p-4 border ${owned ? 'border-(--toxic-green) bg-(--toxic-green)/10' : 'border-(--ash-gray)'} relative group`}
                   >
                     <div className='font-bold text-lg mb-1'>{u.name}</div>
-                    <div className='text-xs text-gray-400 mb-2'>
+                    <div className='text-xs text-(--ash-gray) mb-2'>
                       {u.description}
                     </div>
                     <div className='flex justify-between items-center'>
@@ -56,10 +56,10 @@ export const UpgradeMenu = ({ onClose, player, onBuyUpgrade, className = '' }) =
                         className={`px-3 py-1 text-sm font-bold uppercase
                                                   ${
                                                     owned
-                                                      ? 'bg-gray-800 text-gray-500'
+                                                      ? 'bg-(--void-black) text-(--ash-gray)'
                                                       : player.fame < u.cost
-                                                        ? 'bg-gray-900 text-gray-600'
-                                                        : 'bg-(--toxic-green) text-black hover:bg-white'
+                                                        ? 'bg-(--void-black) text-(--ash-gray) opacity-50'
+                                                        : 'bg-(--toxic-green) text-(--void-black) hover:bg-(--ash-gray)'
                                                   }
                                               `}
                       >

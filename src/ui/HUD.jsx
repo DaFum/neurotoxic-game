@@ -21,7 +21,7 @@ export const HUD = () => {
   return (
     <div className='absolute top-0 left-0 w-full p-4 flex justify-between items-start pointer-events-none z-40 text-sm font-mono'>
       <div className='flex flex-col gap-2'>
-        <div className='bg-black/80 border border-(--toxic-green) p-2 text-(--toxic-green) shadow-[0_0_10px_var(--toxic-green)]'>
+        <div className='bg-(--void-black)/80 border border-(--toxic-green) p-2 text-(--toxic-green) shadow-[0_0_10px_var(--toxic-green)]'>
           <div className='flex items-center gap-2'>
             <DollarSign size={16} />
             <span>{player.money}€</span>
@@ -37,14 +37,14 @@ export const HUD = () => {
         {/* Volume Control */}
         <button
           onClick={toggleMute}
-          className='pointer-events-auto bg-black/80 border border-(--toxic-green) p-2 text-(--toxic-green) w-fit hover:bg-(--toxic-green) hover:text-black transition-colors'
+          className='pointer-events-auto bg-(--void-black)/80 border border-(--toxic-green) p-2 text-(--toxic-green) w-fit hover:bg-(--toxic-green) hover:text-(--void-black) transition-colors'
         >
           {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
         </button>
       </div>
 
       <div className='flex flex-col gap-2 items-end'>
-        <div className='bg-black/80 border border-(--toxic-green) p-2 text-(--toxic-green) shadow-[0_0_10px_var(--toxic-green)]'>
+        <div className='bg-(--void-black)/80 border border-(--toxic-green) p-2 text-(--toxic-green) shadow-[0_0_10px_var(--toxic-green)]'>
           <div className='text-right border-b border-(--toxic-green) mb-1'>
             BAND STATUS
           </div>

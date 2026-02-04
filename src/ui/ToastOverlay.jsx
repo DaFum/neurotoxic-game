@@ -15,7 +15,7 @@ export const ToastOverlay = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className={`
-              min-w-[200px] max-w-[300px] p-3 border-l-4 font-mono text-sm shadow-lg backdrop-blur-md bg-black/80
+              min-w-[200px] max-w-[300px] p-3 border-l-4 font-mono text-sm shadow-lg backdrop-blur-md bg-(--void-black)/80
               ${toast.type === 'error' ? 'border-(--blood-red) text-(--blood-red)' : 'border-(--toxic-green) text-(--toxic-green)'}
             `}
           >

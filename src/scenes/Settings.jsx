@@ -59,15 +59,15 @@ export const Settings = () => {
   }
 
   return (
-    <div className='flex flex-col items-center justify-center h-full w-full bg-black z-50 p-8'>
+    <div className='flex flex-col items-center justify-center h-full w-full bg-(--void-black) z-50 p-8'>
       <h1 className="text-6xl text-(--toxic-green) font-['Metal_Mania'] mb-12">
         SYSTEM CONFIG
       </h1>
 
-      <div className='w-full max-w-2xl border-2 border-(--toxic-green) p-8 bg-black/80 space-y-8'>
+      <div className='w-full max-w-2xl border-2 border-(--toxic-green) p-8 bg-(--void-black)/80 space-y-8'>
         {/* Audio */}
         <div className='space-y-4'>
-          <h2 className='text-2xl text-white border-b border-gray-700 pb-2'>
+          <h2 className='text-2xl text-(--star-white) border-b border-(--ash-gray) pb-2'>
             AUDIO PROTOCOLS
           </h2>
 
@@ -104,7 +104,7 @@ export const Settings = () => {
 
         {/* Visuals */}
         <div className='space-y-4'>
-          <h2 className='text-2xl text-white border-b border-gray-700 pb-2'>
+          <h2 className='text-2xl text-(--star-white) border-b border-(--ash-gray) pb-2'>
             VISUAL OUTPUT
           </h2>
           <div className='flex items-center justify-between'>
@@ -124,7 +124,7 @@ export const Settings = () => {
         <div className='space-y-4 pt-8 border-t border-red-900'>
           <GlitchButton
             onClick={handleDeleteSave}
-            className='w-full border-red-600 text-red-600 hover:bg-red-900'
+            className='w-full border-(--blood-red) text-(--blood-red) hover:bg-red-900'
           >
             PURGE DATA
           </GlitchButton>

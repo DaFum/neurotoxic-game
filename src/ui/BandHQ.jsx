@@ -74,7 +74,7 @@ export const BandHQ = ({
             className={`font-mono text-sm font-bold ${
               item.currency === 'fame'
                 ? 'text-(--warning-yellow)'
-                : 'text-white'
+                : 'text-(--star-white)'
             }`}
           >
             {item.cost} {item.currency === 'fame' ? '★' : '€'}
@@ -100,7 +100,7 @@ export const BandHQ = ({
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm ${className}`}
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-(--void-black)/90 backdrop-blur-sm ${className}`}
     >
       <div
         className='absolute inset-0 bg-cover bg-center opacity-20 pointer-events-none'
@@ -111,7 +111,7 @@ export const BandHQ = ({
 
       <div className='relative w-full max-w-5xl h-[90vh] border-4 border-(--toxic-green) bg-(--void-black) flex flex-col shadow-[0_0_50px_var(--toxic-green)]'>
         {/* Header */}
-        <div className='flex justify-between items-center p-6 border-b-2 border-(--toxic-green) bg-black/50'>
+        <div className='flex justify-between items-center p-6 border-b-2 border-(--toxic-green) bg-(--void-black)/50'>
           <div>
             <h2 className="text-4xl text-(--toxic-green) font-['Metal_Mania'] drop-shadow-[0_0_5px_var(--toxic-green)]">
               BAND HQ
@@ -138,7 +138,7 @@ export const BandHQ = ({
                 ${
                   activeTab === tab
                     ? 'bg-(--toxic-green) text-black'
-                    : 'text-(--ash-gray) hover:text-white bg-black/50 hover:bg-black/70'
+                    ? 'text-(--ash-gray) hover:text-(--star-white) bg-(--void-black)/50 hover:bg-(--void-black)/70'
                 }`}
             >
               {tab}
@@ -147,12 +147,12 @@ export const BandHQ = ({
         </div>
 
         {/* Content Area */}
-        <div className='flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-black'>
+        <div className='flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-(--void-black)'>
           {activeTab === 'STATS' && (
             <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
               {/* Financials & Fame */}
               <div className='space-y-6'>
-                <div className='bg-black/40 border-2 border-(--ash-gray) p-4'>
+                <div className='bg-(--void-black)/40 border-2 border-(--ash-gray) p-4'>
                   <h3 className='text-(--toxic-green) text-lg font-bold mb-4 border-b border-(--ash-gray) pb-2 font-mono'>
                     CAREER STATUS
                   </h3>
@@ -172,7 +172,7 @@ export const BandHQ = ({
                   </div>
                 </div>
 
-                <div className='bg-black/40 border-2 border-(--ash-gray) p-4'>
+                <div className='bg-(--void-black)/40 border-2 border-(--ash-gray) p-4'>
                   <h3 className='text-(--toxic-green) text-lg font-bold mb-4 border-b border-(--ash-gray) pb-2 font-mono'>
                     VAN STATUS
                   </h3>
@@ -198,14 +198,14 @@ export const BandHQ = ({
               </div>
 
               {/* Band Members */}
-              <div className='bg-black/40 border-2 border-(--ash-gray) p-4'>
+              <div className='bg-(--void-black)/40 border-2 border-(--ash-gray) p-4'>
                 <h3 className='text-(--toxic-green) text-lg font-bold mb-4 border-b border-(--ash-gray) pb-2 font-mono'>
                   BAND STATUS
                 </h3>
                 <div className='space-y-6'>
                   {(band.members || []).map(m => (
                     <div key={m.name} className='flex items-center gap-4'>
-                      <div className='w-20 font-bold text-white font-mono'>
+                      <div className='w-20 font-bold text-(--star-white) font-mono'>
                         {m.name}
                       </div>
                       <div className='flex-1 space-y-1'>
@@ -232,7 +232,7 @@ export const BandHQ = ({
                     <span className='text-(--ash-gray) font-mono text-sm'>
                       Inventory Slots:
                     </span>
-                    <span className='text-white font-mono'>
+                    <span className='text-(--star-white) font-mono'>
                       {band.inventorySlots}
                     </span>
                   </div>
@@ -251,7 +251,7 @@ export const BandHQ = ({
 
           {activeTab === 'SHOP' && (
             <div>
-              <div className='mb-4 text-right font-mono text-white'>
+              <div className='mb-4 text-right font-mono text-(--star-white)'>
                 FUNDS:{' '}
                 <span className='text-(--toxic-green)'>
                   {player.money}€
@@ -265,7 +265,7 @@ export const BandHQ = ({
 
           {activeTab === 'UPGRADES' && (
             <div>
-              <div className='mb-4 text-right font-mono text-white'>
+              <div className='mb-4 text-right font-mono text-(--star-white)'>
                 FAME:{' '}
                 <span className='text-(--warning-yellow)'>
                   {player.fame}★

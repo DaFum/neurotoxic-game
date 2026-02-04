@@ -47,7 +47,7 @@ export const MainMenu = () => {
   }
 
   return (
-    <div className='flex flex-col items-center justify-center h-full w-full bg-black z-50 relative overflow-hidden'>
+    <div className='flex flex-col items-center justify-center h-full w-full bg-(--void-black) z-50 relative overflow-hidden'>
       {/* Dynamic Background */}
       <div
         className='absolute inset-0 z-0 opacity-40 bg-cover bg-center pointer-events-none'
@@ -105,13 +105,13 @@ export const MainMenu = () => {
         <div className='flex gap-4 mt-8'>
           <button
             onClick={() => changeScene('SETTINGS')}
-            className='text-gray-500 hover:text-(--toxic-green) text-sm'
+            className='text-[var(--void-black)] hover:text-(--toxic-green) text-sm'
           >
             SETTINGS
           </button>
           <button
             onClick={() => changeScene('CREDITS')}
-            className='text-gray-500 hover:text-(--toxic-green) text-sm'
+            className='text-[var(--void-black)] hover:text-(--toxic-green) text-sm'
           >
             CREDITS
           </button>

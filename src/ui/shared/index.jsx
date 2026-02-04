@@ -100,7 +100,7 @@ ProgressBar.propTypes = {
  */
 export const Panel = ({ title, children, className = '' }) => (
   <div
-    className={`bg-[var(--panel-bg)] border-2 border-(--ash-gray) p-4 ${className}`}
+    className={`bg-(--panel-bg) border-2 border-(--ash-gray) p-4 ${className}`}
   >
     {title && (
       <h3 className='text-(--toxic-green) text-lg font-bold mb-4 border-b border-(--ash-gray) pb-2 font-mono'>
@@ -132,7 +132,7 @@ export const TabButton = ({ active, onClick, children, className = '' }) => (
       ${
         active
           ? 'bg-(--toxic-green) text-black'
-          : 'text-(--ash-gray) hover:text-white bg-black/50 hover:bg-black/70'
+          : 'text-(--ash-gray) hover:text-(--star-white) bg-(--void-black)/50 hover:bg-(--void-black)/70'
       }`}
   >
     {children}
@@ -228,7 +228,7 @@ export const Modal = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm'
+          className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-(--void-black)/90 backdrop-blur-sm'
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
@@ -237,7 +237,7 @@ export const Modal = ({
             className={`relative w-full max-w-2xl border-4 border-(--toxic-green) bg-(--void-black) shadow-[0_0_50px_var(--toxic-green)] ${className}`}
           >
             {/* Header */}
-            <div className='flex justify-between items-center p-4 border-b-2 border-(--toxic-green) bg-black/50'>
+            <div className='flex justify-between items-center p-4 border-b-2 border-(--toxic-green) bg-(--void-black)/50'>
               {title && (
                 <h2 className="text-2xl text-(--toxic-green) font-['Metal_Mania'] drop-shadow-[0_0_5px_var(--toxic-green)]">
                   {title}
