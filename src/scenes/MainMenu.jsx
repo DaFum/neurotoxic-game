@@ -1,10 +1,11 @@
 import React from 'react'
-import { useGameState } from '../context/GameState'
 import { motion } from 'framer-motion'
-import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
+import { useGameState } from '../context/GameState'
+import { usePurchaseLogic } from '../hooks/usePurchaseLogic'
 import { GlitchButton } from '../ui/GlitchButton'
-import { audioManager } from '../utils/AudioManager'
 import { UpgradeMenu } from '../ui/UpgradeMenu'
+import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
+import { audioManager } from '../utils/AudioManager'
 
 /**
  * The main menu scene component.
@@ -18,9 +19,18 @@ export const MainMenu = () => {
     player,
     updatePlayer,
     band,
-    updateBand
+    updateBand,
+    settings
   } = useGameState()
   const [showUpgrades, setShowUpgrades] = React.useState(false)
+
+  const { handleBuy } = usePurchaseLogic({
+    player,
+    band,
+    updatePlayer,
+    updateBand,
+    addToast
+  })
 
   React.useEffect(() => {
     audioManager.startAmbient()
@@ -37,86 +47,12 @@ export const MainMenu = () => {
     }
   }
 
-  const handleBuyUpgrade = upgrade => {
-    // Guard: Already owned
-    if ((player.van?.upgrades ?? []).includes(upgrade.id)) {
-      addToast('Upgrade already owned!', 'error')
-      return
-    }
-
-    if (player.fame >= upgrade.cost) {
-      const playerUpdates = {
-        fame: player.fame - upgrade.cost,
-        van: {
-          ...player.van,
-          upgrades: [...(player.van?.upgrades || []), upgrade.id]
-        }
-      }
-      const bandUpdates = {}
-
-      if (upgrade.effect) {
-        const eff = upgrade.effect
-        if (eff.type === 'stat_modifier') {
-          if (eff.stat === 'breakdown_chance') {
-            playerUpdates.van.breakdownChance = Math.max(
-              0,
-              (player.van.breakdownChance || 0.05) + eff.value
-            )
-          } else if (eff.stat === 'inventory_slots') {
-            bandUpdates.inventorySlots = Math.max(
-              0,
-              (band.inventorySlots || 0) + eff.value
-            )
-          } else if (eff.stat === 'guitar_difficulty') {
-            bandUpdates.performance = {
-              ...band.performance,
-              guitarDifficulty: Math.max(
-                0,
-                (band.performance?.guitarDifficulty || 1.0) + eff.value
-              )
-            }
-          } else if (eff.stat === 'drum_score_multiplier') {
-            bandUpdates.performance = {
-              ...band.performance,
-              drumMultiplier: Math.max(
-                0,
-                (band.performance?.drumMultiplier || 1.0) + eff.value
-              )
-            }
-          } else if (eff.stat === 'crowd_decay') {
-            bandUpdates.performance = {
-              ...band.performance,
-              crowdDecay: Math.max(
-                0,
-                (band.performance?.crowdDecay || 1.0) + eff.value
-              )
-            }
-          }
-        } else if (eff.type === 'start_bonus' && eff.stat === 'fame') {
-          playerUpdates.fame += eff.value
-        } else if (eff.type === 'passive') {
-          if (eff.effect === 'harmony_regen_travel') {
-            bandUpdates.harmonyRegenTravel = true
-          } else if (eff.effect === 'passive_followers') {
-            playerUpdates.passiveFollowers =
-              (player.passiveFollowers || 0) + (eff.value || 0)
-          }
-        }
-      }
-
-      updatePlayer(playerUpdates)
-      if (Object.keys(bandUpdates).length > 0) {
-        updateBand(bandUpdates)
-      }
-
-      addToast(`Purchased ${upgrade.name}!`, 'success')
-    } else {
-      addToast('Not enough Fame!', 'error')
-    }
-  }
-
   return (
-    <div className='flex flex-col items-center justify-center h-full w-full bg-black z-50 relative overflow-hidden'>
+    <div className='flex flex-col items-center justify-center h-full w-full bg-(--void-black) z-50 relative overflow-hidden'>
+      {settings.crtEnabled && (
+        <div className='crt-overlay pointer-events-none fixed inset-0 z-50 mix-blend-overlay opacity-50' />
+      )}
+
       {/* Dynamic Background */}
       <div
         className='absolute inset-0 z-0 opacity-40 bg-cover bg-center pointer-events-none'
@@ -130,7 +66,7 @@ export const MainMenu = () => {
         <UpgradeMenu
           onClose={() => setShowUpgrades(false)}
           player={player}
-          onBuyUpgrade={handleBuyUpgrade}
+          onBuyUpgrade={handleBuy}
         />
       )}
 
@@ -139,12 +75,12 @@ export const MainMenu = () => {
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5, repeat: Infinity, repeatType: 'mirror' }}
-          className="text-6xl md:text-9xl text-center text-transparent bg-clip-text bg-gradient-to-b from-[var(--toxic-green)] to-[var(--void-black)] font-['Metal_Mania'] glitch-text mb-8"
+          className="text-6xl md:text-9xl text-center text-transparent bg-clip-text bg-gradient-to-b from-(--toxic-green) to-(--void-black) font-['Metal_Mania'] glitch-text mb-8"
           style={{ WebkitTextStroke: '2px var(--toxic-green)' }}
         >
           NEUROTOXIC
         </motion.h1>
-        <h2 className='text-2xl text-[var(--toxic-green)] mb-12 font-[Courier_New] tracking-widest uppercase text-center'>
+        <h2 className='text-2xl text-(--toxic-green) mb-12 font-[Courier_New] tracking-widest uppercase text-center'>
           Grind The Void v3.0
         </h2>
 
@@ -158,32 +94,26 @@ export const MainMenu = () => {
 
           <GlitchButton
             onClick={handleLoad}
-            className='relative z-20 border-[var(--blood-red)] text-[var(--blood-red)] hover:bg-[var(--blood-red)] hover:shadow-[4px_4px_0px_var(--toxic-green)]'
+            className='relative z-20 border-(--blood-red) text-(--blood-red) hover:bg-(--blood-red) hover:shadow-[4px_4px_0px_var(--toxic-green)]'
           >
             Load Game
           </GlitchButton>
 
           <GlitchButton
             onClick={() => setShowUpgrades(true)}
-            className='relative z-20 border-[var(--warning-yellow)] text-[var(--warning-yellow)] hover:bg-[var(--warning-yellow)] hover:shadow-[4px_4px_0px_var(--toxic-green)]'
+            className='relative z-20 border-(--warning-yellow) text-(--warning-yellow) hover:bg-(--warning-yellow) hover:shadow-[4px_4px_0px_var(--toxic-green)]'
           >
             Band HQ
           </GlitchButton>
         </div>
 
         <div className='flex gap-4 mt-8'>
-          <button
-            onClick={() => changeScene('SETTINGS')}
-            className='text-gray-500 hover:text-[var(--toxic-green)] text-sm'
-          >
+          <GlitchButton onClick={() => changeScene('SETTINGS')}>
             SETTINGS
-          </button>
-          <button
-            onClick={() => changeScene('CREDITS')}
-            className='text-gray-500 hover:text-[var(--toxic-green)] text-sm'
-          >
+          </GlitchButton>
+          <GlitchButton onClick={() => changeScene('CREDITS')}>
             CREDITS
-          </button>
+          </GlitchButton>
         </div>
       </div>
 

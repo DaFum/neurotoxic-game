@@ -2,168 +2,86 @@
 
 ## Project Overview
 
-**NEUROTOXIC: GRIND THE VOID v3.0** is a web-based "Roguelike Tour Manager" and "Rhythm Action" game. The player manages a Death Grindcore band, navigating a procedural map of Germany, managing resources (Money, Fuel, Harmony), and performing gigs via a 3-lane rhythm game mechanics (Pixi.js).
+**NEUROTOXIC: GRIND THE VOID v3.0** is a web-based "Roguelike Tour Manager" and "Rhythm Action" game. The player manages a Death Grindcore band, navigating a procedural map of Germany, managing resources (Money, Fuel, Harmony), and performing gigs via a 3-lane rhythm game (Pixi.js).
 
-The project is built by a **"Designer-Turned-Developer"** persona:
+**Design Philosophy**: Aesthetic-first, brutalist UI with "Designer-Turned-Developer" sensibility.
 
-- **Aesthetic First**: Brutalist design, "Toxic Green" (#00FF41) on "Void Black" (#0A0A0A), Glitch effects, CRT scanlines.
-- **Functional Core**: React 18 for UI/State, Pixi.js for the Rhythm Game Engine.
+## Quick Reference
 
-## Tech Stack
+| Category        | Technologies                                     |
+| --------------- | ------------------------------------------------ |
+| **Frontend**    | React 18.2.0, Vite 5.0.0, JavaScript (ESModules) |
+| **Game Engine** | Pixi.js 8.0.0                                    |
+| **Styling**     | Tailwind CSS v4, Framer Motion 12.0.0            |
+| **Audio**       | Howler.js 2.2.4                                  |
 
-### Frontend Core
+## Project Structure
 
-- **Framework**: React 18 (`v18.2.0`)
-- **Build Tool**: Vite (`v5.0.0`)
-- **Language**: JavaScript (ESModules)
-
-### Game Engine & Visuals
-
-- **Rhythm Engine**: Pixi.js (`v8.0.0`) - Used for high-performance 2D rendering in `Gig.jsx`.
-- **Animations**: Framer Motion (`v12.0.0`) - Used for UI transitions and modals.
-- **Styling**: Tailwind CSS v4 (`@tailwindcss/postcss`) - Configured with CSS variables for the color palette.
-
-### Audio
-
-- **Library**: Howler.js (`v2.2.4`) - Planned for audio playback.
-
-## Global Context & Navigation
-
-The project root is `neurotoxic-game/`. All commands must be run from this directory.
-
-- 📂 `src/context`: Global State Management (`GameState.jsx`). Handles Player stats, Band stats, Inventory, and Event triggering.
-- 📂 `src/scenes`: Major game states.
-  - `MainMenu.jsx`: Entry point.
-  - `Overworld.jsx`: Map navigation and travel logic.
-  - `PreGig.jsx`: Strategic preparation (Budget allocation).
-  - `Gig.jsx`: The core Rhythm Game (Pixi.js implementation).
-  - `PostGig.jsx`: Economic summary and scoring.
-- 📂 `src/data`: Static game data.
-  - `events.js`: Database of random encounters.
-  - `venues.js`: List of ~45 playable locations.
-- 📂 `src/ui`: Reusable UI components (`HUD`, `EventModal`).
-
-**[INSTRUCTION]**: This is a single-repo structure. Complex logic resides in `src/scenes/Gig.jsx` (Rhythm Engine) and `src/context/GameState.jsx` (Economy/Events).
-
-## Setup & Commands
-
-To start working on the project:
-
-```bash
-# Navigate to project root
-cd neurotoxic-game
-
-# Install dependencies
-npm install
-
-# Start Development Server
-npm run dev
-# Server usually starts at http://localhost:5173
+```text
+neurotoxic-game/
+├── docs/                   # Architecture & state documentation
+│   ├── ARCHITECTURE.md     # Module relationships & diagrams
+│   ├── STATE_TRANSITIONS.md # State machine documentation
+│   └── CODING_STANDARDS.md # Detailed coding conventions
+├── src/
+│   ├── context/           # State management (see src/context/AGENTS.md)
+│   ├── hooks/             # Custom React hooks (see src/hooks/AGENTS.md)
+│   ├── scenes/            # Game screens (see src/scenes/AGENTS.md)
+│   ├── utils/             # Game engines (see src/utils/AGENTS.md)
+│   ├── components/        # Game components (see src/components/AGENTS.md)
+│   ├── data/              # Static data (see src/data/AGENTS.md)
+│   └── ui/                # UI components (see src/ui/AGENTS.md)
+└── tests/                 # Unit tests
 ```
 
-## Code Style & Conventions
+## Setup
 
-### Aesthetic Directives (STRICT)
+```bash
+cd neurotoxic-game
+npm install
+npm run dev          # Start dev server (http://localhost:5173)
+npm run build        # Production build
+npm run test         # Run unit tests
+npm run lint         # Run ESLint
+npm run format       # Run Prettier
+```
 
-1.  **Color Palette**: NEVER use default colors. Use CSS variables defined in `src/index.css`:
-    - `var(--toxic-green)`: Primary accent, text, borders.
-    - `var(--void-black)`: Backgrounds.
-    - `var(--blood-red)`: Errors, critical hits.
-2.  **Typography**:
-    - Headers: `'Metal Mania'` (via Google Fonts).
-    - UI/Code: `'Courier New'` or Monospace.
-3.  **UI Elements**:
-    - Buttons must be uppercase, boxy, and have hover effects (invert colors).
-    - Always include the `.crt-overlay` div in the main layout for the scanline effect.
+## Critical Constraints
 
-### Coding Standards
-
-- **State Management**: Use `useGameState()` hook to access global context. Do not prop-drill deeply.
-- **Pixi.js Integration**: Always wrap Pixi application creation in a `useEffect` with a `isMountedRef` check to prevent memory leaks during React strict-mode double renders. See `src/scenes/Gig.jsx` for the pattern.
-- **Tailwind v4**: Use `@import "tailwindcss";` in CSS. Use utility classes for layout, but rely on CSS variables for theming.
-
-## Testing
-
-- **Type**: Currently manual verification via Playwright scripts.
-- **Location**: Verification scripts are generated on-demand (e.g., `/home/jules/verification/`).
-- **Coverage**: Focus on "Happy Path" verification (Game Loop continuity).
-
-## Development Environment
-
-- **Node Version**: Compatible with standard LTS.
-- **Asset Handling**: Assets (Audio/Images) are currently referenced via placeholders or public URL. `ASSET_REQUEST_LIST.md` details missing assets.
-
-## Security & Guardrails
-
-1.  **State Safety**: Ensure `player.money` and `band.harmony` checks prevent infinite negative values (Game Over logic).
-2.  **Dependency Versions**: Do not upgrade `vite` or `react` to alpha/beta versions (e.g., v7/v19) as they break compatibility with current `lucide-react` and `eslint` configurations. Stick to the versions in `package.json`.
-3.  **Tailwind Config**: Do not revert to Tailwind v3 syntax (`@tailwind base`). Keep the v4 configuration (`@import "tailwindcss";`).
-
-## Git & PR Workflow
-
-1.  **Branching**: Use descriptive feature branches (e.g., `feat/event-system`, `fix/pixi-memory-leak`).
-2.  **Commits**: Use Conventional Commits (`feat:`, `fix:`, `docs:`).
-3.  **Checks**: Ensure the app builds (`npm run build`) before submitting.
+1. **Version Pinning**: Do not upgrade React (18.x), Vite (5.x), or Tailwind (v4)
+2. **Tailwind v4 Syntax**: Use `@import "tailwindcss";` (NOT `@tailwind base`)
+3. **CSS Variables**: Never use hardcoded colors - use `var(--toxic-green)`, `var(--void-black)`, etc.
+4. **State Safety**: Always validate `player.money >= 0` and `band.harmony > 0`
 
 ## Sub-Agent Architecture
 
-For domain-specific expertise and detailed conventions, consult these specialized agent documentation files:
+For domain-specific guidance, consult specialized agent documentation:
 
-### 📂 src/scenes/AGENTS.md
+| Agent          | Location                   | Expertise                                  |
+| -------------- | -------------------------- | ------------------------------------------ |
+| **Context**    | `src/context/AGENTS.md`    | State management, reducers, actions        |
+| **Hooks**      | `src/hooks/AGENTS.md`      | Travel logic, purchase logic, custom hooks |
+| **Scenes**     | `src/scenes/AGENTS.md`     | Screen navigation, game flow               |
+| **Utils**      | `src/utils/AGENTS.md`      | Game engines, calculations, audio          |
+| **Components** | `src/components/AGENTS.md` | Pixi.js, real-time rendering               |
+| **Data**       | `src/data/AGENTS.md`       | Events, venues, songs, balance             |
+| **UI**         | `src/ui/AGENTS.md`         | Design system, reusable components         |
 
-**Scene Flow Expert** - Manages game states, navigation, and screen transitions.
+## Documentation
 
-- Covers: MainMenu, Overworld, PreGig, Gig, PostGig, GameOver, Settings, Credits
-- Expertise: Scene navigation, state validation, game loop orchestration
-- Key Patterns: Navigation flow, state initialization, aesthetic enforcement
+| Document                          | Purpose                                       |
+| --------------------------------- | --------------------------------------------- |
+| `.github/copilot-instructions.md` | Detailed coding conventions for AI assistants |
+| `docs/ARCHITECTURE.md`            | System diagrams and module relationships      |
+| `docs/STATE_TRANSITIONS.md`       | State machine documentation                   |
+| `docs/CODING_STANDARDS.md`        | JavaScript/React coding standards             |
 
-### 📂 src/utils/AGENTS.md
+## Git Workflow
 
-**Core Game Systems Architect** - Pure logic modules and game engines.
-
-- Covers: eventEngine, economyEngine, socialEngine, mapGenerator, AudioManager, simulationUtils, imageGen
-- Expertise: Event triggering, financial calculations, procedural generation, RNG
-- Key Patterns: Pure functions, state-agnostic design, testable logic
-
-### 📂 src/components/AGENTS.md
-
-**Game Component Specialist** - Complex, game-specific reusable components.
-
-- Covers: PixiStage, GigHUD, ChatterOverlay, TutorialManager
-- Expertise: Pixi.js integration, real-time rendering, game-specific UI
-- Key Patterns: Canvas cleanup, performance optimization, animation
-
-### 📂 src/data/AGENTS.md
-
-**Game Database Architect** - Static content and game balance.
-
-- Covers: events (all categories), venues, songs, characters, chatter, upgrades
-- Expertise: Content structure, balance tuning, referential integrity
-- Key Patterns: Data immutability, ID conventions, balance formulas
-
-### 📂 src/ui/AGENTS.md
-
-**UI Component Library Specialist** - Generic, reusable presentation components.
-
-- Covers: GlitchButton, HUD, EventModal, ToastOverlay, CrashHandler
-- Expertise: Design system, brutalist aesthetics, accessibility
-- Key Patterns: Stateless components, composition, CSS variables
-
-**When to Consult Sub-Agents:**
-
-- Before making changes to a specific module, read the relevant agent file
-- Each sub-agent contains detailed conventions, antipatterns, and best practices
-- Sub-agents provide code examples and integration guidelines
-- Refer to sub-agents for testing and validation checklists
+1. **Branches**: Use descriptive names (`feat/event-system`, `fix/pixi-memory-leak`)
+2. **Commits**: Use Conventional Commits (`feat:`, `fix:`, `docs:`)
+3. **Pre-commit**: Ensure `npm run build` succeeds
 
 ---
 
-## 🗂️ Documentation
-
-How you will handle the documentation files:
-
-**`AGENTS.md` files**: Update when they are outdated and add new `AGENTS.md` files for folders getting harder to understand.
-
----
-
-_“Complexity is not an excuse for friction.”_
+_"Complexity is not an excuse for friction."_

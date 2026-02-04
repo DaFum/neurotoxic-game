@@ -23,13 +23,13 @@ export class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className='flex flex-col items-center justify-center h-screen w-screen bg-black text-red-600 p-8 z-[9999] relative'>
+        <div className='flex flex-col items-center justify-center h-screen w-screen bg-(--void-black) text-(--blood-red) p-8 z-[9999] relative'>
           <h1 className='text-6xl font-[Metal_Mania] mb-4'>SYSTEM FAILURE</h1>
           <p className='text-(--toxic-green) font-mono mb-8'>
             The simulation has crashed. Reboot required.
           </p>
 
-          <div className='bg-red-900/20 border border-red-600 p-4 rounded mb-8 w-full max-w-2xl overflow-auto max-h-64 text-xs font-mono'>
+          <div className='bg-(--blood-red)/20 border border-(--blood-red) p-4 mb-8 w-full max-w-2xl overflow-auto max-h-64 text-xs font-mono'>
             <p className='font-bold mb-2'>
               {this.state.error && this.state.error.toString()}
             </p>
@@ -40,7 +40,7 @@ export class ErrorBoundary extends React.Component {
 
           <button
             onClick={this.handleReboot}
-            className='px-6 py-2 border-2 border-red-600 text-white font-[Metal_Mania] hover:bg-red-600 hover:text-black transition-colors'
+            className='px-6 py-2 border-2 border-(--blood-red) text-(--star-white) font-[Metal_Mania] hover:bg-(--blood-red) hover:text-(--void-black) transition-colors'
           >
             REBOOT SYSTEM
           </button>

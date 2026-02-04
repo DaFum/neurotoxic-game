@@ -70,19 +70,19 @@ export const ChatterOverlay = () => {
           exit={{ opacity: 0, scale: 0.5 }}
           className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-[150%] z-40 pointer-events-none'
         >
-          <div className='bg-white text-black p-3 rounded-tr-xl rounded-tl-xl rounded-bl-xl border-2 border-black shadow-lg max-w-[200px] md:max-w-xs relative'>
+          <div className='bg-(--star-white) text-(--void-black) p-3 rounded-tr-xl rounded-tl-xl rounded-bl-xl border-2 border-(--void-black) shadow-lg max-w-[200px] md:max-w-xs relative'>
             <div className='flex justify-between items-center mb-1'>
-              <div className='text-[10px] font-bold text-gray-500 uppercase tracking-widest'>
+              <div className='text-[10px] font-bold text-(--ash-gray) uppercase tracking-widest'>
                 {chatter.speaker}
               </div>
-              <div className='w-2 h-2 rounded-full bg-green-500 animate-pulse' />
+              <div className='w-2 h-2 rounded-full bg-(--toxic-green) animate-pulse' />
             </div>
             <div className='font-mono text-sm leading-tight'>
               {chatter.text}
             </div>
 
             {/* Triangle tail */}
-            <div className='absolute -bottom-2 right-4 w-0 h-0 border-l-[10px] border-l-transparent border-t-[10px] border-t-white border-r-[0px] border-r-transparent filter drop-shadow-sm' />
+            <div className='absolute -bottom-2 right-4 w-0 h-0 border-l-[10px] border-l-transparent border-t-[10px] border-t-(--star-white) border-r-[0px] border-r-transparent filter drop-shadow-xs' />
           </div>
         </motion.div>
       )}

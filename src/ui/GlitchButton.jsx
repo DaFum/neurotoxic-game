@@ -19,11 +19,11 @@ export const GlitchButton = ({
       onClick={onClick}
       disabled={disabled}
       className={`
-        relative px-8 py-4 bg-black text-[var(--toxic-green)]
-        border-2 border-[var(--toxic-green)]
+        relative px-8 py-4 bg-(--void-black) text-(--toxic-green)
+        border-2 border-(--toxic-green)
         font-[Metal_Mania] text-xl font-bold uppercase tracking-widest
         transition-all duration-100
-        hover:bg-[var(--toxic-green)] hover:text-black
+        hover:bg-(--toxic-green) hover:text-(--void-black)
         hover:translate-x-1 hover:-translate-y-1
         hover:shadow-[4px_4px_0px_var(--blood-red)]
         active:translate-x-0 active:translate-y-0

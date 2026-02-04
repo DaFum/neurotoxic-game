@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { logger, LOG_LEVELS } from '../utils/logger'
 
-export const DebugLogViewer = () => {
+export const DebugLogViewer = ({ className = '' }) => {
   const [visible, setVisible] = useState(false)
   const [logs, setLogs] = useState([])
   const [filterLevel, setFilterLevel] = useState(LOG_LEVELS.DEBUG)
@@ -32,33 +32,33 @@ export const DebugLogViewer = () => {
   const getLevelColor = level => {
     switch (level) {
       case 'DEBUG':
-        return 'text-gray-500'
+        return 'text-(--ash-gray)'
       case 'INFO':
-        return 'text-blue-400'
+        return 'text-(--info-blue)'
       case 'WARN':
-        return 'text-yellow-400'
+        return 'text-(--warning-yellow)'
       case 'ERROR':
-        return 'text-red-500'
+        return 'text-(--blood-red)'
       default:
-        return 'text-white'
+        return 'text-(--star-white)'
     }
   }
 
   if (!visible) return null
 
   return (
-    <div className='fixed inset-0 z-[9999] pointer-events-none flex flex-col justify-end'>
-      <div className='pointer-events-auto bg-black/90 border-t-2 border-[var(--toxic-green)] h-[40vh] flex flex-col font-mono text-xs'>
+    <div className={`fixed inset-0 z-[9999] pointer-events-none flex flex-col justify-end ${className}`}>
+      <div className='pointer-events-auto bg-(--void-black)/90 border-t-2 border-(--toxic-green) h-[40vh] flex flex-col font-mono text-xs'>
         {/* Toolbar */}
-        <div className='flex justify-between items-center p-2 bg-gray-900 border-b border-gray-800'>
+        <div className='flex justify-between items-center p-2 bg-(--shadow-black) border-b border-(--ash-gray)'>
           <div className='flex gap-2'>
-            <span className='text-[var(--toxic-green)] font-bold'>
+            <span className='text-(--toxic-green) font-bold'>
               NEUROTOXIC DEBUGGER
             </span>
             <select
               value={filterLevel}
               onChange={e => setFilterLevel(parseInt(e.target.value))}
-              className='bg-black text-white border border-gray-700 rounded px-1'
+              className='bg-(--void-black) text-(--star-white) border-2 border-(--ash-gray) px-1'
             >
               <option value={LOG_LEVELS.DEBUG}>DEBUG</option>
               <option value={LOG_LEVELS.INFO}>INFO</option>
@@ -67,22 +67,23 @@ export const DebugLogViewer = () => {
             </select>
             <button
               onClick={() => logger.clear()}
-              className='text-gray-400 hover:text-white px-2 border border-gray-700'
+              className='text-(--ash-gray) hover:text-(--star-white) hover:bg-(--void-black) px-2 border-2 border-(--ash-gray) uppercase shadow-[4px_4px_0px_var(--ash-gray)] transition-all duration-150'
             >
-              Clear
+              CLEAR
             </button>
             <button
               onClick={() => console.log(logger.dump())}
-              className='text-gray-400 hover:text-white px-2 border border-gray-700'
+              className='text-(--ash-gray) hover:text-(--star-white) hover:bg-(--void-black) px-2 border-2 border-(--ash-gray) uppercase shadow-[4px_4px_0px_var(--ash-gray)] transition-all duration-150'
             >
-              Dump to Console
+              DUMP TO CONSOLE
             </button>
           </div>
           <button
             onClick={() => setVisible(false)}
-            className='text-red-500 font-bold px-2'
+            aria-label='Close log'
+            className='border-2 border-(--blood-red) bg-(--void-black) text-(--blood-red) px-2 py-1 shadow-[4px_4px_0px_var(--blood-red)] hover:bg-(--blood-red) hover:text-(--void-black) uppercase font-bold transition-all duration-150'
           >
-            X
+            CLOSE
           </button>
         </div>
 
@@ -91,8 +92,11 @@ export const DebugLogViewer = () => {
           {logs
             .filter(l => LOG_LEVELS[l.level] >= filterLevel)
             .map(log => (
-              <div key={log.id} className='flex gap-2 hover:bg-white/5'>
-                <span className='text-gray-600 shrink-0'>
+              <div
+                key={log.id}
+                className='flex gap-2 hover:bg-(--star-white)/5'
+              >
+                <span className='text-(--ash-gray) shrink-0'>
                   [{log.timestamp.split('T')[1].slice(0, 8)}]
                 </span>
                 <span
@@ -101,15 +105,15 @@ export const DebugLogViewer = () => {
                   {log.level}
                 </span>
                 <span
-                  className='text-[var(--toxic-green)] w-24 shrink-0 truncate'
+                  className='text-(--toxic-green) w-24 shrink-0 truncate'
                   title={log.channel}
                 >
                   [{log.channel}]
                 </span>
-                <span className='text-gray-300 break-all'>
+                <span className='text-(--star-white)/80 break-all'>
                   {log.message}
                   {log.data && (
-                    <span className='text-gray-500 ml-2'>
+                    <span className='text-(--ash-gray) ml-2'>
                       {JSON.stringify(log.data)}
                     </span>
                   )}

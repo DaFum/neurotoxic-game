@@ -8,11 +8,28 @@ You are the **UI Component Library Specialist** for NEUROTOXIC: GRIND THE VOID. 
 
 This folder (`src/ui/`) contains the "design system" - pure presentation components that are game-agnostic and highly reusable:
 
-- **GlitchButton.jsx** - Primary brutalist button component
-- **HUD.jsx** - Persistent top-bar overlay (money, day, location)
-- **EventModal.jsx** - Full-screen modal for narrative events
-- **ToastOverlay.jsx** - Temporary notification system
-- **CrashHandler.jsx** - Error boundary wrapper
+| Component          | Purpose                                           |
+| ------------------ | ------------------------------------------------- |
+| `GlitchButton.jsx` | Primary brutalist button component                |
+| `HUD.jsx`          | Persistent top-bar overlay (money, day, location) |
+| `EventModal.jsx`   | Full-screen modal for narrative events            |
+| `ToastOverlay.jsx` | Temporary notification system                     |
+| `CrashHandler.jsx` | Error boundary wrapper                            |
+| `shared/index.jsx` | Generic reusable components                       |
+
+### Shared Components (`src/ui/shared/index.jsx`)
+
+```jsx
+import { StatBox, ProgressBar, Panel, ActionButton, Modal, Grid, TabButton } from '../ui/shared'
+
+<StatBox label="MONEY" value={player.money} icon="$" />
+<ProgressBar label="FUEL" value={fuel} max={100} color="bg-(--toxic-green)" />
+<Panel title="INVENTORY">{children}</Panel>
+<ActionButton onClick={fn} variant="primary">ACTION</ActionButton>
+<Modal isOpen={open} onClose={close} title="TITLE">{children}</Modal>
+<Grid cols={3} gap={4}>{children}</Grid>
+<TabButton active={true} onClick={fn}>TAB</TabButton>
+```
 
 These differ from `src/components/` by being **stateless presentation components** with no game logic dependency.
 
@@ -117,7 +134,7 @@ export const GlitchButton = ({
       onClick={onClick}
       disabled={disabled}
       className={`
-        relative px-8 py-4 bg-black
+        relative px-8 py-4 bg-(--void-black)
         border-2 ${variantStyles[variant]}
         font-[Metal_Mania] text-xl font-bold uppercase tracking-widest
         transition-all duration-100
@@ -167,7 +184,7 @@ export const HUD = () => {
   const { player, band } = useGameState()
 
   return (
-    <div className='absolute top-0 left-0 right-0 z-30 bg-[var(--void-black)] border-b-2 border-(--toxic-green) py-2 px-4'>
+    <div className='absolute top-0 left-0 right-0 z-30 bg-(--void-black) border-b-2 border-(--toxic-green) py-2 px-4'>
       <div className='flex justify-between items-center font-[Courier_New] text-sm text-(--toxic-green)'>
         {/* Left: Time & Location */}
         <div className='flex gap-4'>
@@ -251,9 +268,9 @@ export const EventModal = ({ event, onOptionSelect }) => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className='fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-95 p-8'
+      className='fixed inset-0 z-40 flex items-center justify-center bg-(--void-black)/95 p-8'
     >
-      <div className='max-w-2xl w-full bg-[var(--void-black)] border-4 border-(--toxic-green) p-8'>
+      <div className='max-w-2xl w-full bg-(--void-black) border-4 border-(--toxic-green) p-8'>
         {/* Title */}
         <h2 className='font-[Metal_Mania] text-4xl text-(--blood-red) mb-4 text-center uppercase'>
           {event.title}
@@ -327,9 +344,9 @@ export const ToastOverlay = () => {
   const { toasts } = useGameState()
 
   const typeStyles = {
-    success: 'bg-(--success-green) text-black',
-    error: 'bg-(--error-red) text-white',
-    info: 'bg-(--info-blue) text-white'
+    success: 'bg-(--success-green) text-(--void-black)',
+    error: 'bg-(--error-red) text-(--star-white)',
+    info: 'bg-(--info-blue) text-(--star-white)'
   }
 
   return (
@@ -386,7 +403,7 @@ export class CrashHandler extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className='w-full h-screen bg-[var(--void-black)] flex flex-col items-center justify-center p-8'>
+        <div className='w-full h-screen bg-(--void-black) flex flex-col items-center justify-center p-8'>
           <h1 className='font-[Metal_Mania] text-6xl text-(--blood-red) mb-4'>
             CRITICAL ERROR
           </h1>
@@ -395,7 +412,7 @@ export class CrashHandler extends React.Component {
           </p>
           <details className='mb-8 font-[Courier_New] text-sm text-(--ash-gray) max-w-lg'>
             <summary className='cursor-pointer'>Technical Details</summary>
-            <pre className='mt-4 p-4 bg-[var(--shadow-black)] overflow-auto'>
+            <pre className='mt-4 p-4 bg-(--shadow-black) overflow-auto'>
               {this.state.error?.toString()}
             </pre>
           </details>
@@ -426,7 +443,7 @@ export class CrashHandler extends React.Component {
 
 ```jsx
 // ✅ ALWAYS use CSS variables
-className = 'bg-[var(--void-black)] text-(--toxic-green)'
+className = 'bg-(--void-black) text-(--toxic-green)'
 
 // ❌ NEVER hardcode
 className = 'bg-black text-green-500'
@@ -543,7 +560,7 @@ className = 'transition-colors duration-150 hover:bg-(--toxic-green)'
 - [ ] No console warnings
 - [ ] CSS variables used exclusively
 
-## Common Anti-Patterns
+## Common antipatterns
 
 ### ❌ Hardcoded Colors
 

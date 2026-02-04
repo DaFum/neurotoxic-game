@@ -122,6 +122,24 @@ export function stopAudio() {
   }
 }
 
+/**
+ * Pauses the audio transport.
+ */
+export function pauseAudio() {
+  if (Tone.Transport.state === 'started') {
+    Tone.Transport.pause()
+  }
+}
+
+/**
+ * Resumes the audio transport.
+ */
+export function resumeAudio() {
+  if (Tone.Transport.state === 'paused') {
+    Tone.Transport.start()
+  }
+}
+
 // Hilfsfunktion: Riff Pattern
 function generateRiffPattern(diff) {
   const steps = 16
