@@ -140,7 +140,7 @@ const handleLoadGame = (state, payload) => {
   }
 
   // Ensure positive money
-  if (mergedPlayer.money) {
+  if (typeof mergedPlayer.money === 'number') {
     mergedPlayer.money = Math.max(0, mergedPlayer.money)
   }
 
@@ -160,7 +160,7 @@ const handleLoadGame = (state, payload) => {
   const mergedSocial = { ...DEFAULT_SOCIAL_STATE, ...loadedState.social }
 
   // Ensure harmony is clamped
-  if (mergedBand.harmony) {
+  if (typeof mergedBand.harmony === 'number') {
     mergedBand.harmony = Math.max(0, Math.min(100, mergedBand.harmony))
   }
 

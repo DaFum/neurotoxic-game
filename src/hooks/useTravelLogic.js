@@ -103,7 +103,7 @@ export const useTravelLogic = ({
     node => {
       switch (node.type) {
         case 'REST_STOP': {
-          const newMembers = band.members.map(m => ({
+          const newMembers = (band?.members ?? []).map(m => ({
             ...m,
             stamina: Math.min(100, Math.max(0, m.stamina + 20)),
             mood: Math.min(100, Math.max(0, m.mood + 10))

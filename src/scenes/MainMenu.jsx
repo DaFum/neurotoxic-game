@@ -19,7 +19,8 @@ export const MainMenu = () => {
     player,
     updatePlayer,
     band,
-    updateBand
+    updateBand,
+    settings
   } = useGameState()
   const [showUpgrades, setShowUpgrades] = React.useState(false)
 
@@ -48,6 +49,9 @@ export const MainMenu = () => {
 
   return (
     <div className='flex flex-col items-center justify-center h-full w-full bg-(--void-black) z-50 relative overflow-hidden'>
+      {settings?.crtEnabled && (
+        <div className='crt-overlay pointer-events-none fixed inset-0 z-50 mix-blend-overlay opacity-50' />
+      )}
       {/* Dynamic Background */}
       <div
         className='absolute inset-0 z-0 opacity-40 bg-cover bg-center pointer-events-none'
@@ -103,18 +107,12 @@ export const MainMenu = () => {
         </div>
 
         <div className='flex gap-4 mt-8'>
-          <button
-            onClick={() => changeScene('SETTINGS')}
-            className='text-[var(--void-black)] hover:text-(--toxic-green) text-sm'
-          >
+          <GlitchButton onClick={() => changeScene('SETTINGS')}>
             SETTINGS
-          </button>
-          <button
-            onClick={() => changeScene('CREDITS')}
-            className='text-[var(--void-black)] hover:text-(--toxic-green) text-sm'
-          >
+          </GlitchButton>
+          <GlitchButton onClick={() => changeScene('CREDITS')}>
             CREDITS
-          </button>
+          </GlitchButton>
         </div>
       </div>
 

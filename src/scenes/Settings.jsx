@@ -60,6 +60,9 @@ export const Settings = () => {
 
   return (
     <div className='flex flex-col items-center justify-center h-full w-full bg-(--void-black) z-50 p-8'>
+      {settings?.crtEnabled && (
+        <div className='crt-overlay pointer-events-none fixed inset-0 z-50 mix-blend-overlay opacity-50' />
+      )}
       <h1 className="text-6xl text-(--toxic-green) font-['Metal_Mania'] mb-12">
         SYSTEM CONFIG
       </h1>
@@ -124,7 +127,7 @@ export const Settings = () => {
         <div className='space-y-4 pt-8 border-t border-red-900'>
           <GlitchButton
             onClick={handleDeleteSave}
-            className='w-full border-(--blood-red) text-(--blood-red) hover:bg-red-900'
+            className='w-full border-(--blood-red) text-(--blood-red) hover:bg-(--blood-red)'
           >
             PURGE DATA
           </GlitchButton>

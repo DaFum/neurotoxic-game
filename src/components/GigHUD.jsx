@@ -59,7 +59,7 @@ export const GigHUD = ({ stats, onLaneInput }) => {
             <span>TOXIC OVERLOAD</span>
             <span>{Math.floor(overload)}%</span>
           </div>
-          <div className='w-48 h-3 bg-(--void-black) border border-(--ash-gray) rounded overflow-hidden'>
+          <div className='w-48 h-3 bg-(--void-black) border border-(--ash-gray) overflow-hidden'>
             <div
               className='h-full bg-(--toxic-green) transition-all duration-200 ease-out shadow-[0_0_10px_var(--toxic-green)]'
               style={{ width: `${overload}%` }}
@@ -83,9 +83,9 @@ export const GigHUD = ({ stats, onLaneInput }) => {
           </span>
         </div>
         {/* Segmented Bar Look */}
-        <div className='w-full h-6 bg-(--void-black)/50 border-2 border-(--ash-gray)/30 backdrop-blur-sm p-[2px] rounded'>
+        <div className='w-full h-6 bg-(--void-black)/50 border-2 border-(--ash-gray)/30 backdrop-blur-sm p-[2px]'>
           <div
-            className={`h-full rounded-sm transition-all duration-300 ease-out ${
+            className={`h-full transition-all duration-300 ease-out ${
               health < 30
                 ? 'bg-(--blood-red) shadow-[0_0_15px_var(--blood-red)]'
                 : 'bg-gradient-to-r from-(--toxic-green) to-(--toxic-green-light) shadow-[0_0_10px_var(--toxic-green)]'

@@ -88,7 +88,7 @@ export const BandHQ = ({
                   ? 'border-(--ash-gray) text-(--ash-gray) cursor-default'
                   : disabled
                     ? 'border-(--disabled-border) text-(--disabled-text) bg-(--disabled-bg) cursor-not-allowed'
-                    : 'border-(--toxic-green) bg-(--toxic-green) text-black hover:invert shadow-[4px_4px_0px_var(--void-black)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
+                    : 'border-(--toxic-green) bg-(--toxic-green) text-(--void-black) hover:invert shadow-[4px_4px_0px_var(--void-black)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
               }`}
           >
             {owned && !isConsumable ? 'OWNED' : 'BUY'}
@@ -109,7 +109,7 @@ export const BandHQ = ({
         }}
       />
 
-      <div className='relative w-full max-w-5xl h-[90vh] border-4 border-(--toxic-green) bg-(--void-black) flex flex-col shadow-[0_0_50px_var(--toxic-green)]'>
+      <div className='relative w-full max-w-5xl h-[90vh] border-2 border-(--toxic-green) bg-(--void-black) flex flex-col shadow-[0_0_50px_var(--toxic-green)]'>
         {/* Header */}
         <div className='flex justify-between items-center p-6 border-b-2 border-(--toxic-green) bg-(--void-black)/50'>
           <div>
@@ -122,7 +122,7 @@ export const BandHQ = ({
           </div>
           <button
             onClick={onClose}
-            className='px-6 py-2 border-2 border-(--blood-red) text-(--blood-red) font-bold hover:bg-(--blood-red) hover:text-black transition-colors duration-200 uppercase font-mono'
+            className='px-6 py-2 border-2 border-(--blood-red) text-(--blood-red) font-bold hover:bg-(--blood-red) hover:text-(--void-black) transition-colors duration-200 uppercase font-mono'
           >
             LEAVE [ESC]
           </button>
@@ -137,7 +137,7 @@ export const BandHQ = ({
               className={`flex-1 py-4 text-center font-bold text-xl uppercase tracking-wider transition-colors duration-150 font-mono
                 ${
                   activeTab === tab
-                    ? 'bg-(--toxic-green) text-black'
+                    ? 'bg-(--toxic-green) text-(--void-black)'
                     : 'text-(--ash-gray) hover:text-(--star-white) bg-(--void-black)/50 hover:bg-(--void-black)/70'
                 }`}
             >
