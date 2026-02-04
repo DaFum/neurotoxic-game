@@ -276,14 +276,8 @@ export const useRhythmGameLogic = () => {
           // Schedule exit from Gig if failed (Softlock fix)
           if (!gameOverTimerRef.current) {
             gameOverTimerRef.current = setTimeout(() => {
-              setLastGigStats(
-                buildGigStatsSnapshot(
-                  gameStateRef.current.score,
-                  gameStateRef.current.stats,
-                  gameStateRef.current.toxicTimeTotal
-                )
-              )
-              changeScene('POSTGIG')
+              addToast('Returning to Map...', 'info')
+              changeScene('OVERWORLD')
             }, 4000)
           }
         }
