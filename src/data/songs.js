@@ -4,11 +4,17 @@ import rhythmSongs from '../assets/rhythm_songs.json' with { type: 'json' }
 // Transform the JSON object into an array and map to the expected structure
 export const SONGS_DB = Object.entries(rhythmSongs).map(([key, song]) => {
   // Calculate duration based on the last note tick to ensure the song doesn't end prematurely
-  const lastNoteTick = song.notes
-    ? song.notes.reduce((max, n) => Math.max(max, n.t), 0)
-    : 0
-  const tpb = song.tpb || 480
-  const bpm = song.bpm || 120
+  const validNotes = Array.isArray(song.notes)
+    ? song.notes.filter(n => Number.isFinite(n.t))
+    : []
+
+  const lastNoteTick =
+    validNotes.length > 0
+      ? validNotes.reduce((max, n) => Math.max(max, n.t), 0)
+      : 0
+
+  const tpb = Math.max(1, song.tpb || 480)
+  const bpm = Math.max(1, song.bpm || 120)
   // duration in seconds = (ticks / tpb) * (60 / bpm)
   const lastNoteTimeSeconds = (lastNoteTick / tpb) * (60 / bpm)
 

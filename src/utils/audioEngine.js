@@ -1,3 +1,9 @@
+/**
+ * Audio Engine Utility
+ * This module manages the AudioContext and Tone.js logic.
+ * Note: This file contains side-effects (Tone.start, AudioContext creation) and is an exception to the strict Pure Function rule for utilities.
+ */
+
 import * as Tone from 'tone'
 
 let guitar, bass, drumKit, loop, part

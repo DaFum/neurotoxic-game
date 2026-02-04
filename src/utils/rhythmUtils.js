@@ -105,25 +105,16 @@ export const parseSongNotes = (song, leadIn = 2000) => {
     .filter(n => n !== null)
 
   // 4. Ensure no simultaneous notes (chords) - strictly single lane
-  // Since we sorted by time, we can just check if current note has same time as previous.
-  // The 'every 4th' filter likely spread them out, but if notes were identical in time,
-  // index % 4 might pick the first of a chord, then the 5th note later.
-  // However, if chords are tight (same 't'), picking every 4th index effectively breaks chords up
-  // or skips them unless the chord has >4 notes.
-  // To be safe and strict about "single lane used... not all lanes at same time",
-  // we deduplicate by time.
   const uniqueTimeNotes = []
-  let lastTime = -1
+  let lastTime = null
 
   for (const note of gameNotes) {
-    // If this note is at the same time as the last valid one, skip it (or use a tiny offset?)
-    // Requirement says "Ensure only one lane is used... not all lanes at same time".
-    // Skipping duplicate timestamps enforces this.
-    if (Math.abs(note.time - lastTime) > 1) {
-      // Tolerance of 1ms
-      uniqueTimeNotes.push(note)
-      lastTime = note.time
+    // If this note is at the same time as the last valid one, skip it
+    if (lastTime !== null && Math.abs(note.time - lastTime) <= 1) {
+      continue
     }
+    uniqueTimeNotes.push(note)
+    lastTime = note.time
   }
 
   return uniqueTimeNotes

@@ -170,8 +170,11 @@ export const useRhythmGameLogic = () => {
       const currentSong = songsToPlay[0]
       let audioDelay = 0
 
-      // Use predefined notes if available
-      if (currentSong.notes && currentSong.notes.length > 0) {
+      // Deterministic RNG (placeholder, can be seeded from gameState later)
+      const rng = Math.random
+
+      // Use predefined notes if available and valid
+      if (Array.isArray(currentSong.notes) && currentSong.notes.length > 0) {
         const parsedNotes = parseSongNotes(currentSong, currentTimeOffset)
         notes = notes.concat(parsedNotes)
 
@@ -184,7 +187,7 @@ export const useRhythmGameLogic = () => {
         songsToPlay.forEach(song => {
           const songNotes = generateNotesForSong(song, {
             leadIn: currentTimeOffset,
-            random: Math.random
+            random: rng
           })
           notes = notes.concat(songNotes)
           currentTimeOffset += song.duration * 1000
@@ -192,7 +195,7 @@ export const useRhythmGameLogic = () => {
 
         if (currentSong.id !== 'jam') {
           audioDelay = 2.0
-          await startMetalGenerator(currentSong, audioDelay)
+          await startMetalGenerator(currentSong, audioDelay, rng)
         }
       }
 
@@ -209,7 +212,7 @@ export const useRhythmGameLogic = () => {
       // The old logic for fallback was correct.
       // For JSON data, let's use the actual note timestamps.
 
-      if (currentSong.notes && currentSong.notes.length > 0) {
+      if (Array.isArray(currentSong.notes) && currentSong.notes.length > 0) {
         gameStateRef.current.totalDuration = maxNoteTime + buffer
       } else {
         gameStateRef.current.totalDuration = Math.max(
