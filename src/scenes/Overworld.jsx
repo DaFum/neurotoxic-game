@@ -117,9 +117,7 @@ export const Overworld = () => {
       {/* Radio Widget */}
       <div className='fixed top-8 left-1/2 -translate-x-1/2 z-50 pointer-events-auto bg-(--void-black) border border-(--shadow-black) p-2 flex items-center gap-2 rounded shadow-lg'>
         <div className='w-2 h-2 rounded-full bg-(--blood-red) animate-pulse' />
-        <span className='text-xs text-(--ash-gray) font-mono'>
-          FM 66.6
-        </span>
+        <span className='text-xs text-(--ash-gray) font-mono'>FM 66.6</span>
         <ToggleRadio />
       </div>
 

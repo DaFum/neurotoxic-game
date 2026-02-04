@@ -428,7 +428,7 @@ When modifying components:
 - [ ] No console warnings during normal use
 - [ ] Accessibility: Keyboard navigation works (if applicable)
 
-## Common Anti-Patterns
+## Common antipatterns
 
 ### ❌ Coupling to Specific Scenes
 

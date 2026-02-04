@@ -29,7 +29,9 @@ export const Credits = () => {
             <span className='text-(--ash-gray) text-sm font-mono tracking-widest'>
               {c.role}
             </span>
-            <span className='text-(--star-white) text-2xl font-bold'>{c.name}</span>
+            <span className='text-(--star-white) text-2xl font-bold'>
+              {c.name}
+            </span>
           </div>
         ))}
       </div>

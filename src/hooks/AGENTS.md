@@ -6,9 +6,9 @@ This module contains custom React hooks that encapsulate complex game logic, pro
 
 ## Module Overview
 
-| Hook | Purpose | Used By |
-|------|---------|---------|
-| `useTravelLogic` | Travel state, costs, navigation | Overworld.jsx |
+| Hook               | Purpose                              | Used By                  |
+| ------------------ | ------------------------------------ | ------------------------ |
+| `useTravelLogic`   | Travel state, costs, navigation      | Overworld.jsx            |
 | `usePurchaseLogic` | Shop purchases, inventory management | BandHQ.jsx, MainMenu.jsx |
 
 ## useTravelLogic
@@ -25,18 +25,18 @@ import { useTravelLogic } from '../hooks/useTravelLogic'
 
 ```javascript
 const travel = useTravelLogic({
-  player,           // Player state object
-  band,             // Band state object
-  gameMap,          // Generated game map
-  updatePlayer,     // Player update function
-  updateBand,       // Band update function
-  advanceDay,       // Day advancement function
-  triggerEvent,     // Event trigger function
-  startGig,         // Gig start function
-  hasUpgrade,       // Upgrade check function
-  addToast,         // Toast notification function
-  changeScene,      // Scene change function
-  onShowHQ          // Optional HQ display callback
+  player, // Player state object
+  band, // Band state object
+  gameMap, // Generated game map
+  updatePlayer, // Player update function
+  updateBand, // Band update function
+  advanceDay, // Day advancement function
+  triggerEvent, // Event trigger function
+  startGig, // Gig start function
+  hasUpgrade, // Upgrade check function
+  addToast, // Toast notification function
+  changeScene, // Scene change function
+  onShowHQ // Optional HQ display callback
 })
 ```
 
@@ -45,17 +45,17 @@ const travel = useTravelLogic({
 ```javascript
 const {
   // State
-  isTraveling,      // boolean - Travel animation active
-  travelTarget,     // Object|null - Target node
+  isTraveling, // boolean - Travel animation active
+  travelTarget, // Object|null - Target node
 
   // Computed
-  getCurrentNode,   // () => Object|null - Current node
-  isConnected,      // (nodeId) => boolean - Check connection
-  getNodeVisibility,// (nodeLayer, currentLayer) => string
+  getCurrentNode, // () => Object|null - Current node
+  isConnected, // (nodeId) => boolean - Check connection
+  getNodeVisibility, // (nodeLayer, currentLayer) => string
 
   // Actions
-  handleTravel,     // (node) => void - Initiate travel
-  handleRefuel,     // () => void - Refuel van
+  handleTravel, // (node) => void - Initiate travel
+  handleRefuel, // () => void - Refuel van
   onTravelComplete, // (explicitNode?) => void - Complete travel
   travelCompletedRef // Ref for completion tracking
 } = travel
@@ -118,11 +118,11 @@ import { usePurchaseLogic } from '../hooks/usePurchaseLogic'
 
 ```javascript
 const purchase = usePurchaseLogic({
-  player,       // Player state object
-  band,         // Band state object
+  player, // Player state object
+  band, // Band state object
   updatePlayer, // Player update function
-  updateBand,   // Band update function
-  addToast      // Toast notification function
+  updateBand, // Band update function
+  addToast // Toast notification function
 })
 ```
 
@@ -130,22 +130,22 @@ const purchase = usePurchaseLogic({
 
 ```javascript
 const {
-  handleBuy,      // (item) => boolean - Purchase item
-  isItemOwned,    // (item) => boolean - Check ownership
-  canAfford,      // (item) => boolean - Check affordability
-  isItemDisabled  // (item) => boolean - Should disable button
+  handleBuy, // (item) => boolean - Purchase item
+  isItemOwned, // (item) => boolean - Check ownership
+  canAfford, // (item) => boolean - Check affordability
+  isItemDisabled // (item) => boolean - Should disable button
 } = purchase
 ```
 
 ### Supported Effect Types
 
-| Effect Type | Description | Example |
-|-------------|-------------|---------|
-| `inventory_set` | Set inventory boolean | `{ type: 'inventory_set', item: 'golden_pick', value: true }` |
-| `inventory_add` | Add to inventory count | `{ type: 'inventory_add', item: 'shirts', value: 50 }` |
-| `stat_modifier` | Modify stats | `{ type: 'stat_modifier', target: 'van', stat: 'fuel', value: 20 }` |
-| `unlock_upgrade` | Unlock van upgrade | `{ type: 'unlock_upgrade', id: 'van_sound_system' }` |
-| `unlock_hq` | Unlock HQ item | `{ type: 'unlock_hq' }` |
+| Effect Type      | Description            | Example                                                             |
+| ---------------- | ---------------------- | ------------------------------------------------------------------- |
+| `inventory_set`  | Set inventory boolean  | `{ type: 'inventory_set', item: 'golden_pick', value: true }`       |
+| `inventory_add`  | Add to inventory count | `{ type: 'inventory_add', item: 'shirts', value: 50 }`              |
+| `stat_modifier`  | Modify stats           | `{ type: 'stat_modifier', target: 'van', stat: 'fuel', value: 20 }` |
+| `unlock_upgrade` | Unlock van upgrade     | `{ type: 'unlock_upgrade', id: 'van_sound_system' }`                |
+| `unlock_hq`      | Unlock HQ item         | `{ type: 'unlock_hq' }`                                             |
 
 ### Example Usage
 
@@ -154,7 +154,11 @@ function ShopTab({ items }) {
   const { player, band, updatePlayer, updateBand, addToast } = useGameState()
 
   const { handleBuy, isItemDisabled } = usePurchaseLogic({
-    player, band, updatePlayer, updateBand, addToast
+    player,
+    band,
+    updatePlayer,
+    updateBand,
+    addToast
   })
 
   return (

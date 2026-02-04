@@ -11,20 +11,20 @@ Since Tailwind v4 defines variables in the CSS layer (e.g., `@theme`), you can a
 You can use Tailwind variables as target values in `animate` props.
 
 ```jsx
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion'
 
 export const ToxicButton = () => (
   <motion.button
-    className="px-4 py-2 bg-(--void-black) text-(--toxic-green) border border-(--toxic-green)"
+    className='px-4 py-2 bg-(--void-black) text-(--toxic-green) border border-(--toxic-green)'
     whileHover={{
-      backgroundColor: "var(--toxic-green)",
-      color: "var(--void-black)"
+      backgroundColor: 'var(--toxic-green)',
+      color: 'var(--void-black)'
     }}
     transition={{ duration: 0.3 }}
   >
     NEUROTOXIC
   </motion.button>
-);
+)
 ```
 
 ### 2. Animating the Variable Itself
@@ -33,14 +33,14 @@ For complex effects (e.g., a glow shared by multiple children), animate the vari
 
 ```jsx
 <motion.div
-  className="p-10 border-(--toxic-green) border"
-  initial={{ "--glow-opacity": 0 }}
-  animate={{ "--glow-opacity": 1 }}
+  className='p-10 border-(--toxic-green) border'
+  initial={{ '--glow-opacity': 0 }}
+  animate={{ '--glow-opacity': 1 }}
   style={{
-    boxShadow: "0 0 20px rgba(57, 255, 20, var(--glow-opacity))"
+    boxShadow: '0 0 20px rgba(57, 255, 20, var(--glow-opacity))'
   }}
 >
-  <p className="text-(--toxic-green)">Glow Effect</p>
+  <p className='text-(--toxic-green)'>Glow Effect</p>
 </motion.div>
 ```
 
@@ -51,9 +51,9 @@ Use Tailwind variants to set different variable values per breakpoint, which Fra
 ```jsx
 <motion.div
   // Tailwind v4 sets different values for --move-x based on screen size
-  className="[--move-x:50px] md:[--move-x:200px] w-10 h-10 bg-(--toxic-green)"
-  animate={{ x: "var(--move-x)" }}
-  transition={{ repeat: Infinity, repeatType: "mirror", duration: 2 }}
+  className='[--move-x:50px] md:[--move-x:200px] w-10 h-10 bg-(--toxic-green)'
+  animate={{ x: 'var(--move-x)' }}
+  transition={{ repeat: Infinity, repeatType: 'mirror', duration: 2 }}
 />
 ```
 
@@ -69,22 +69,26 @@ Use `getComputedStyle` to read values from the DOM and update Pixi uniforms or p
 
 ```javascript
 // Helper to convert Tailwind Hex/OKLCH to RGB for Shaders
-const getTailwindColorAsRGB = (varName) => {
-  const hex = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+const getTailwindColorAsRGB = varName => {
+  const hex = getComputedStyle(document.documentElement)
+    .getPropertyValue(varName)
+    .trim()
   // Conversion logic here...
-  return [r, g, b];
-};
+  return [r, g, b]
+}
 
 // ... inside Pixi setup
 app.ticker.add(() => {
   const beatScale = parseFloat(
-    getComputedStyle(document.documentElement).getPropertyValue('--beat-scale') || "1"
-  );
+    getComputedStyle(document.documentElement).getPropertyValue(
+      '--beat-scale'
+    ) || '1'
+  )
 
   // Update Pixi Object or Shader Uniform
-  circle.scale.set(beatScale);
-  shader.resources.uIntensity = (beatScale - 1) * 5;
-});
+  circle.scale.set(beatScale)
+  shader.resources.uIntensity = (beatScale - 1) * 5
+})
 ```
 
 ### Shader Example (GLSL)
@@ -107,9 +111,9 @@ Use Tone.js to drive visual effects by updating CSS variables, which then propag
 
 ```javascript
 Tone.Draw.schedule(() => {
-  document.documentElement.style.setProperty('--beat-scale', '1.2');
+  document.documentElement.style.setProperty('--beat-scale', '1.2')
   setTimeout(() => {
-    document.documentElement.style.setProperty('--beat-scale', '1.0');
-  }, 100);
-}, time);
+    document.documentElement.style.setProperty('--beat-scale', '1.0')
+  }, 100)
+}, time)
 ```

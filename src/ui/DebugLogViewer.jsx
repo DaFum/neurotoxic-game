@@ -91,7 +91,10 @@ export const DebugLogViewer = () => {
           {logs
             .filter(l => LOG_LEVELS[l.level] >= filterLevel)
             .map(log => (
-              <div key={log.id} className='flex gap-2 hover:bg-(--star-white)/5'>
+              <div
+                key={log.id}
+                className='flex gap-2 hover:bg-(--star-white)/5'
+              >
                 <span className='text-(--ash-gray) shrink-0'>
                   [{log.timestamp.split('T')[1].slice(0, 8)}]
                 </span>

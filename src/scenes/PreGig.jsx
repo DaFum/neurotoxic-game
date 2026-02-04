@@ -122,8 +122,8 @@ export const PreGig = () => {
       </div>
       <div className='mb-6 font-mono text-sm text-(--ash-gray)'>
         ESTIMATED COSTS:{' '}
-        <span className='text-(--blood-red)'>-{calculatedBudget}€</span> (Deducted
-        after show)
+        <span className='text-(--blood-red)'>-{calculatedBudget}€</span>{' '}
+        (Deducted after show)
       </div>
 
       <div className='grid grid-cols-2 gap-8 w-full max-w-4xl h-[60vh]'>
@@ -241,7 +241,9 @@ export const PreGig = () => {
                   <div className='flex flex-col items-end'>
                     <div className='flex gap-1'>
                       {/* Energy Bar */}
-                      <div className='text-[10px] text-(--ash-gray) mr-2'>NRG</div>
+                      <div className='text-[10px] text-(--ash-gray) mr-2'>
+                        NRG
+                      </div>
                       <div className='w-16 h-2 bg-(--shadow-black)'>
                         <div
                           className='h-full bg-(--blood-red)'

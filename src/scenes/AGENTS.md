@@ -38,7 +38,8 @@ export const MyScene = () => {
   const goToMenu = () => dispatch(createChangeSceneAction('MENU'))
 
   // Alternative: Use ActionTypes enum
-  const goToSettings = () => dispatch({ type: ActionTypes.CHANGE_SCENE, payload: 'SETTINGS' })
+  const goToSettings = () =>
+    dispatch({ type: ActionTypes.CHANGE_SCENE, payload: 'SETTINGS' })
 }
 ```
 
@@ -214,7 +215,7 @@ return (
   - Control scheme display
 - **Note**: Settings persist in `state.settings` object
 
-## Common Anti-Patterns to Avoid
+## Common antipatterns to Avoid
 
 ### ❌ Direct Scene Imports
 

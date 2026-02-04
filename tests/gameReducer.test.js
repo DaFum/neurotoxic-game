@@ -5,7 +5,10 @@
 import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { gameReducer, ActionTypes } from '../src/context/gameReducer.js'
-import { initialState, createInitialState } from '../src/context/initialState.js'
+import {
+  initialState,
+  createInitialState
+} from '../src/context/initialState.js'
 
 describe('gameReducer', () => {
   let testState
@@ -33,7 +36,10 @@ describe('gameReducer', () => {
 
   describe('UPDATE_PLAYER', () => {
     it('should update player money', () => {
-      const action = { type: ActionTypes.UPDATE_PLAYER, payload: { money: 1000 } }
+      const action = {
+        type: ActionTypes.UPDATE_PLAYER,
+        payload: { money: 1000 }
+      }
       const newState = gameReducer(testState, action)
 
       assert.strictEqual(newState.player.money, 1000)
@@ -47,7 +53,10 @@ describe('gameReducer', () => {
     })
 
     it('should merge player updates with existing state', () => {
-      const action = { type: ActionTypes.UPDATE_PLAYER, payload: { money: 1000 } }
+      const action = {
+        type: ActionTypes.UPDATE_PLAYER,
+        payload: { money: 1000 }
+      }
       const newState = gameReducer(testState, action)
 
       assert.strictEqual(newState.player.money, 1000)
@@ -66,7 +75,10 @@ describe('gameReducer', () => {
 
     it('should update band members', () => {
       const newMembers = [{ name: 'Test', mood: 100, stamina: 100 }]
-      const action = { type: ActionTypes.UPDATE_BAND, payload: { members: newMembers } }
+      const action = {
+        type: ActionTypes.UPDATE_BAND,
+        payload: { members: newMembers }
+      }
       const newState = gameReducer(testState, action)
 
       assert.strictEqual(newState.band.members.length, 1)
@@ -76,14 +88,20 @@ describe('gameReducer', () => {
 
   describe('UPDATE_SOCIAL', () => {
     it('should update social media followers', () => {
-      const action = { type: ActionTypes.UPDATE_SOCIAL, payload: { instagram: 1000 } }
+      const action = {
+        type: ActionTypes.UPDATE_SOCIAL,
+        payload: { instagram: 1000 }
+      }
       const newState = gameReducer(testState, action)
 
       assert.strictEqual(newState.social.instagram, 1000)
     })
 
     it('should preserve other social stats', () => {
-      const action = { type: ActionTypes.UPDATE_SOCIAL, payload: { instagram: 1000 } }
+      const action = {
+        type: ActionTypes.UPDATE_SOCIAL,
+        payload: { instagram: 1000 }
+      }
       const newState = gameReducer(testState, action)
 
       assert.strictEqual(newState.social.tiktok, testState.social.tiktok)
@@ -92,7 +110,10 @@ describe('gameReducer', () => {
 
   describe('SET_GIG_MODIFIERS', () => {
     it('should update gig modifiers with object payload', () => {
-      const action = { type: ActionTypes.SET_GIG_MODIFIERS, payload: { soundcheck: true } }
+      const action = {
+        type: ActionTypes.SET_GIG_MODIFIERS,
+        payload: { soundcheck: true }
+      }
       const newState = gameReducer(testState, action)
 
       assert.strictEqual(newState.gigModifiers.soundcheck, true)
@@ -101,7 +122,7 @@ describe('gameReducer', () => {
     it('should update gig modifiers with function payload', () => {
       const action = {
         type: ActionTypes.SET_GIG_MODIFIERS,
-        payload: (prev) => ({ ...prev, catering: true })
+        payload: prev => ({ ...prev, catering: true })
       }
       const newState = gameReducer(testState, action)
 

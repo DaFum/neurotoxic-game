@@ -183,7 +183,7 @@ describe('Action Creators', () => {
     })
 
     it('should create correct action with function', () => {
-      const updater = (prev) => ({ ...prev, catering: true })
+      const updater = prev => ({ ...prev, catering: true })
       const action = createSetGigModifiersAction(updater)
 
       assert.strictEqual(action.type, ActionTypes.SET_GIG_MODIFIERS)

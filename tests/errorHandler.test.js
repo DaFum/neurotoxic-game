@@ -129,7 +129,9 @@ describe('handleError', () => {
 
   it('should not call addToast when silent', () => {
     let toastCalled = false
-    const addToast = () => { toastCalled = true }
+    const addToast = () => {
+      toastCalled = true
+    }
 
     const error = new StateError('Test error')
     handleError(error, { addToast, silent: true })
@@ -193,17 +195,18 @@ describe('safeStorageOperation', () => {
   it('should return fallback on error', () => {
     const result = safeStorageOperation(
       'test',
-      () => { throw new Error('Storage error') },
+      () => {
+        throw new Error('Storage error')
+      },
       'fallback'
     )
     assert.strictEqual(result, 'fallback')
   })
 
   it('should log error to error log', () => {
-    safeStorageOperation(
-      'test',
-      () => { throw new Error('Storage error') }
-    )
+    safeStorageOperation('test', () => {
+      throw new Error('Storage error')
+    })
 
     const log = getErrorLog()
     assert.strictEqual(log.length, 1)

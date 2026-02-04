@@ -224,7 +224,9 @@ export const GameStateProvider = ({ children }) => {
 
         if (missingKeys.length > 0) {
           handleError(
-            new StateError('Save file is corrupt. Starting fresh.', { missingKeys }),
+            new StateError('Save file is corrupt. Starting fresh.', {
+              missingKeys
+            }),
             { addToast }
           )
           return false
@@ -310,7 +312,8 @@ export const GameStateProvider = ({ children }) => {
         if (delta.flags?.unlock) {
           const currentUnlocks = safeStorageOperation(
             'loadUnlocks',
-            () => JSON.parse(localStorage.getItem('neurotoxic_unlocks') || '[]'),
+            () =>
+              JSON.parse(localStorage.getItem('neurotoxic_unlocks') || '[]'),
             []
           )
           if (

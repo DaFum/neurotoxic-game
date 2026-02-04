@@ -513,7 +513,7 @@ export const MyComponent = () => {}
 
 ---
 
-## Linting Rules
+## Linter rules
 
 The project uses ESLint with these key rules:
 

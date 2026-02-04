@@ -8,12 +8,12 @@
 
 ## Quick Reference
 
-| Category | Technologies |
-|----------|-------------|
-| **Frontend** | React 18.2.0, Vite 5.0.0, JavaScript (ESModules) |
-| **Game Engine** | Pixi.js 8.0.0 |
-| **Styling** | Tailwind CSS v4, Framer Motion 12.0.0 |
-| **Audio** | Howler.js 2.2.4 |
+| Category        | Technologies                                     |
+| --------------- | ------------------------------------------------ |
+| **Frontend**    | React 18.2.0, Vite 5.0.0, JavaScript (ESModules) |
+| **Game Engine** | Pixi.js 8.0.0                                    |
+| **Styling**     | Tailwind CSS v4, Framer Motion 12.0.0            |
+| **Audio**       | Howler.js 2.2.4                                  |
 
 ## Project Structure
 
@@ -57,24 +57,24 @@ npm run format       # Run Prettier
 
 For domain-specific guidance, consult specialized agent documentation:
 
-| Agent | Location | Expertise |
-|-------|----------|-----------|
-| **Context** | `src/context/AGENTS.md` | State management, reducers, actions |
-| **Hooks** | `src/hooks/AGENTS.md` | Travel logic, purchase logic, custom hooks |
-| **Scenes** | `src/scenes/AGENTS.md` | Screen navigation, game flow |
-| **Utils** | `src/utils/AGENTS.md` | Game engines, calculations, audio |
-| **Components** | `src/components/AGENTS.md` | Pixi.js, real-time rendering |
-| **Data** | `src/data/AGENTS.md` | Events, venues, songs, balance |
-| **UI** | `src/ui/AGENTS.md` | Design system, reusable components |
+| Agent          | Location                   | Expertise                                  |
+| -------------- | -------------------------- | ------------------------------------------ |
+| **Context**    | `src/context/AGENTS.md`    | State management, reducers, actions        |
+| **Hooks**      | `src/hooks/AGENTS.md`      | Travel logic, purchase logic, custom hooks |
+| **Scenes**     | `src/scenes/AGENTS.md`     | Screen navigation, game flow               |
+| **Utils**      | `src/utils/AGENTS.md`      | Game engines, calculations, audio          |
+| **Components** | `src/components/AGENTS.md` | Pixi.js, real-time rendering               |
+| **Data**       | `src/data/AGENTS.md`       | Events, venues, songs, balance             |
+| **UI**         | `src/ui/AGENTS.md`         | Design system, reusable components         |
 
 ## Documentation
 
-| Document | Purpose |
-|----------|---------|
+| Document                          | Purpose                                       |
+| --------------------------------- | --------------------------------------------- |
 | `.github/copilot-instructions.md` | Detailed coding conventions for AI assistants |
-| `docs/ARCHITECTURE.md` | System diagrams and module relationships |
-| `docs/STATE_TRANSITIONS.md` | State machine documentation |
-| `docs/CODING_STANDARDS.md` | JavaScript/React coding standards |
+| `docs/ARCHITECTURE.md`            | System diagrams and module relationships      |
+| `docs/STATE_TRANSITIONS.md`       | State machine documentation                   |
+| `docs/CODING_STANDARDS.md`        | JavaScript/React coding standards             |
 
 ## Git Workflow
 

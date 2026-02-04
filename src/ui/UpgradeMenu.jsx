@@ -9,9 +9,16 @@ import { UPGRADES_DB } from '../data/upgrades'
  * @param {Function} props.onBuyUpgrade - Callback to buy an upgrade.
  * @param {string} [props.className] - Optional custom class name.
  */
-export const UpgradeMenu = ({ onClose, player, onBuyUpgrade, className = '' }) => {
+export const UpgradeMenu = ({
+  onClose,
+  player,
+  onBuyUpgrade,
+  className = ''
+}) => {
   return (
-    <div className={`absolute inset-0 bg-(--void-black)/95 z-50 flex items-center justify-center p-8 ${className}`}>
+    <div
+      className={`absolute inset-0 bg-(--void-black)/95 z-50 flex items-center justify-center p-8 ${className}`}
+    >
       <div className='w-full max-w-4xl border-4 border-(--toxic-green) p-8 overflow-y-auto max-h-[90vh]'>
         <div className='flex justify-between items-center mb-8'>
           <h2 className="text-4xl text-(--toxic-green) font-['Metal_Mania']">

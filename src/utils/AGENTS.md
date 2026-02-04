@@ -8,18 +8,18 @@ You are the **Core Game Systems Architect** for NEUROTOXIC: GRIND THE VOID. You 
 
 This folder (`src/utils/`) contains the "brains" of the game - pure logic modules that handle:
 
-| Module | Purpose |
-|--------|---------|
-| `eventEngine.js` | Random encounter system, skill checks, narrative branching |
-| `economyEngine.js` | Financial calculations, payout formulas, cost modeling |
-| `socialEngine.js` | Social media simulation, viral content mechanics |
-| `mapGenerator.js` | Procedural map generation, graph-based travel system |
-| `AudioManager.js` | Howler.js wrapper, sound effect management |
-| `simulationUtils.js` | Time progression, day/night cycle, RNG utilities |
-| `imageGen.js` | Placeholder image URL generation |
-| `errorHandler.js` | Centralized error handling and logging |
-| `logger.js` | Debug logging with categories and levels |
-| `gameStateUtils.js` | State transformation utilities |
+| Module               | Purpose                                                    |
+| -------------------- | ---------------------------------------------------------- |
+| `eventEngine.js`     | Random encounter system, skill checks, narrative branching |
+| `economyEngine.js`   | Financial calculations, payout formulas, cost modeling     |
+| `socialEngine.js`    | Social media simulation, viral content mechanics           |
+| `mapGenerator.js`    | Procedural map generation, graph-based travel system       |
+| `AudioManager.js`    | Howler.js wrapper, sound effect management                 |
+| `simulationUtils.js` | Time progression, day/night cycle, RNG utilities           |
+| `imageGen.js`        | Placeholder image URL generation                           |
+| `errorHandler.js`    | Centralized error handling and logging                     |
+| `logger.js`          | Debug logging with categories and levels                   |
+| `gameStateUtils.js`  | State transformation utilities                             |
 
 ## Core Principles
 
@@ -358,24 +358,24 @@ export const getGenImageUrl = prompt => {
 
 ```javascript
 import {
-  GameError,       // Base error class
-  StateError,      // State-related errors
-  RenderError,     // Rendering errors
-  AudioError,      // Audio system errors
-  GameLogicError,  // Game logic errors
-  StorageError,    // localStorage errors
-  handleError,     // Main error handler
-  safeStorageOperation  // Safe localStorage wrapper
+  GameError, // Base error class
+  StateError, // State-related errors
+  RenderError, // Rendering errors
+  AudioError, // Audio system errors
+  GameLogicError, // Game logic errors
+  StorageError, // localStorage errors
+  handleError, // Main error handler
+  safeStorageOperation // Safe localStorage wrapper
 } from '../utils/errorHandler'
 ```
 
 **Error Severity Levels:**
 
-| Severity | Action |
-|----------|--------|
-| `LOW` | Log only |
-| `MEDIUM` | Log + toast notification |
-| `HIGH` | Log + toast + may need recovery |
+| Severity   | Action                           |
+| ---------- | -------------------------------- |
+| `LOW`      | Log only                         |
+| `MEDIUM`   | Log + toast notification         |
+| `HIGH`     | Log + toast + may need recovery  |
 | `CRITICAL` | Log + toast + scene change/reset |
 
 **Usage:**
@@ -403,7 +403,7 @@ throw new StateError('Invalid state transition', {
 const savedGame = safeStorageOperation(
   'read',
   () => JSON.parse(localStorage.getItem('save')),
-  null  // fallback value
+  null // fallback value
 )
 ```
 
@@ -479,7 +479,7 @@ describe('calculateGigPayout', () => {
 - **Data**: Utilities reference static databases (events.js, venues.js)
 - **Hooks**: `useRhythmGameLogic` uses simulationUtils for timing
 
-## Common Anti-Patterns
+## Common antipatterns
 
 ### ❌ Mutating State
 
