@@ -1,11 +1,11 @@
 import React from 'react'
-import { useGameState } from '../context/GameState'
 import { motion } from 'framer-motion'
-import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
-import { GlitchButton } from '../ui/GlitchButton'
-import { audioManager } from '../utils/AudioManager'
-import { UpgradeMenu } from '../ui/UpgradeMenu'
+import { useGameState } from '../context/GameState'
 import { usePurchaseLogic } from '../hooks/usePurchaseLogic'
+import { GlitchButton } from '../ui/GlitchButton'
+import { UpgradeMenu } from '../ui/UpgradeMenu'
+import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
+import { audioManager } from '../utils/AudioManager'
 
 /**
  * The main menu scene component.
@@ -49,6 +49,10 @@ export const MainMenu = () => {
 
   return (
     <div className='flex flex-col items-center justify-center h-full w-full bg-(--void-black) z-50 relative overflow-hidden'>
+      {settings.crtEnabled && (
+        <div className='crt-overlay pointer-events-none fixed inset-0 z-50 mix-blend-overlay opacity-50' />
+      )}
+
       {/* Dynamic Background */}
       <div
         className='absolute inset-0 z-0 opacity-40 bg-cover bg-center pointer-events-none'
