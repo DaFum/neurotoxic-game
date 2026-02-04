@@ -60,9 +60,6 @@ export const Settings = () => {
 
   return (
     <div className='flex flex-col items-center justify-center h-full w-full bg-(--void-black) z-50 p-8'>
-      {settings?.crtEnabled && (
-        <div className='crt-overlay pointer-events-none fixed inset-0 z-50 mix-blend-overlay opacity-50' />
-      )}
       <h1 className="text-6xl text-(--toxic-green) font-['Metal_Mania'] mb-12">
         SYSTEM CONFIG
       </h1>
