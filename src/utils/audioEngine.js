@@ -165,6 +165,12 @@ export async function playSongFromData(song, delay = 0) {
   Tone.Transport.start()
 }
 
+/**
+ * Triggers a specific drum sound based on MIDI pitch.
+ * @param {number} midiPitch - The MIDI note number.
+ * @param {number} time - The time to trigger the note.
+ * @param {number} velocity - The velocity of the note (0-1).
+ */
 function playDrumNote(midiPitch, time, velocity) {
   // Basic GM Mapping
   if (midiPitch === 35 || midiPitch === 36) {
@@ -253,6 +259,12 @@ export function resumeAudio() {
   }
 }
 
+/**
+ * Generates a procedural riff pattern.
+ * @param {number} diff - Difficulty level.
+ * @param {Function} random - Random number generator function.
+ * @returns {Array} Array of note strings or nulls.
+ */
 function generateRiffPattern(diff, random) {
   const steps = 16
   const pattern = []
@@ -274,6 +286,13 @@ function generateRiffPattern(diff, random) {
   return pattern
 }
 
+/**
+ * Plays procedural drums based on legacy logic.
+ * @param {number} time - Audio time.
+ * @param {number} diff - Difficulty.
+ * @param {string|null} note - The guitar note played on this step.
+ * @param {Function} random - Random number generator.
+ */
 function playDrumsLegacy(time, diff, note, random) {
   if (diff === 5) {
     drumKit.kick.triggerAttackRelease('C1', '16n', time)
