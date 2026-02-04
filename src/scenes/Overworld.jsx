@@ -83,6 +83,7 @@ export const Overworld = () => {
     gameMap,
     updatePlayer,
     updateBand,
+    saveGame,
     advanceDay,
     triggerEvent,
     startGig,
