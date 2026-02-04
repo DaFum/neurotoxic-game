@@ -4,6 +4,7 @@ import { calculateGigPhysics, getGigModifiers } from '../utils/simulationUtils'
 import { audioManager } from '../utils/AudioManager'
 import {
   startMetalGenerator,
+  playSongFromData,
   stopAudio,
   pauseAudio,
   resumeAudio
@@ -12,7 +13,11 @@ import {
   buildGigStatsSnapshot,
   updateGigPerformanceStats
 } from '../utils/gigStats'
-import { generateNotesForSong, checkHit } from '../utils/rhythmUtils'
+import {
+  generateNotesForSong,
+  parseSongNotes,
+  checkHit
+} from '../utils/rhythmUtils'
 
 /**
  * Provides rhythm game state, actions, and update loop for the gig scene.
@@ -161,41 +166,73 @@ export const useRhythmGameLogic = () => {
       // The audio engine plays the first song. Notes should match.
       // If the intention is to play ONLY one song per gig scene invocation:
       const songsToPlay = [activeSetlist[0]]
-
-      songsToPlay.forEach(song => {
-        const songNotes = generateNotesForSong(song, {
-          leadIn: currentTimeOffset,
-          random: Math.random
-        })
-        notes = notes.concat(songNotes)
-        // Add exact song duration to offset, no extra padding between songs if strictness is required
-        // But usually a small gap is nice. The user said "nur die Sekunden dauert wie angegeben".
-        // If setlist has multiple songs, the total duration is sum.
-        // Let's stick to sum of durations.
-        currentTimeOffset += song.duration * 1000
-      })
-      gameStateRef.current.notes = notes
-      // The total duration of the gig is the end of the last song.
-      // Adjust start time offset (2000ms lead-in) + sum of durations.
-      gameStateRef.current.totalDuration = currentTimeOffset
-
-      // Switch to Metal Generator
-      const currentSong = activeSetlist[0]
-      // Keep audio & visuals aligned; default to 0 when no audio is started (e.g., jam)
+      const currentSong = songsToPlay[0]
       let audioDelay = 0
 
-      if (currentSong.id !== 'jam') {
-        // Use 2.0s delay (Tone.js/audio in seconds) to match the 2000ms visual note lead-in used above
-        audioDelay = 2.0
-        startMetalGenerator(currentSong, audioDelay)
+      // Use predefined notes if available
+      if (currentSong.notes && currentSong.notes.length > 0) {
+        const parsedNotes = parseSongNotes(currentSong, currentTimeOffset)
+        notes = notes.concat(parsedNotes)
+        // audioDelay aligns the Tone.Transport start.
+        // The notes are scheduled on Transport at `n.t` (seconds).
+        // The visual notes have `currentTimeOffset` added.
+        // The game loop uses `Date.now() - state.startTime`.
+        // `startMetalGenerator` starts Transport at `Tone.now() + delay`.
+        // `playSongFromData` starts Transport at `Tone.now()`.
+        // We need visual notes to arrive at target at the same time as audio.
+
+        // Visual Note Time = LeadIn (2000) + NoteTimeMs
+        // Game Time = Date.now() - StartTime
+        // Audio Time = Transport Time
+
+        // If we delay audio start by LeadIn/1000 seconds, Transport starts at t=0 when GameTime=LeadIn.
+        // Note at t=0 needs to be hit at GameTime=LeadIn.
+        // Visual note `time` property is `LeadIn`. Correct.
+
+        // playSongFromData schedules notes on Transport starting at 0.
+        // So we just need to start Transport after LeadIn delay?
+        // Or start Transport immediately but schedule events with delay?
+
+        // `playSongFromData` takes `delay`. It schedules notes at `time + delay`.
+        // If we pass `delay = 2.0`, the first note (t=0) plays at Transport=2.0.
+        // We start Transport immediately.
+        // Audio starts at 2.0s.
+        // Visuals start at 0s.
+        // At 2.0s, visuals reach t=2000ms. Note with `time=2000` is hit.
+        // Audio note at `time=2.0` plays. Sync!
+
+        audioDelay = currentTimeOffset / 1000
+        playSongFromData(currentSong, audioDelay)
+
+        currentTimeOffset += currentSong.duration * 1000
+
+      } else {
+        // Fallback procedural generation
+        songsToPlay.forEach(song => {
+          const songNotes = generateNotesForSong(song, {
+            leadIn: currentTimeOffset,
+            random: Math.random
+          })
+          notes = notes.concat(songNotes)
+          currentTimeOffset += song.duration * 1000
+        })
+
+        if (currentSong.id !== 'jam') {
+          audioDelay = 2.0
+          startMetalGenerator(currentSong, audioDelay)
+        }
       }
+
+      gameStateRef.current.notes = notes
+      gameStateRef.current.totalDuration = currentTimeOffset
 
       gameStateRef.current.startTime = Date.now()
       gameStateRef.current.running = true
       console.log('[RhythmGame] Initialized.', {
         startTime: gameStateRef.current.startTime,
         totalDuration: gameStateRef.current.totalDuration,
-        audioDelay
+        audioDelay,
+        song: currentSong.name
       })
     } catch (error) {
       console.error(
