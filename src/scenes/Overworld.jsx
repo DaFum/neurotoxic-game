@@ -37,7 +37,7 @@ const ToggleRadio = () => {
   return (
     <button
       onClick={toggle}
-      className='text-(--toxic-green) hover:text-(--star-white) text-xs'
+      className='bg-(--void-black) border border-(--toxic-green) text-(--toxic-green) px-2 py-1 text-xs uppercase hover:bg-(--toxic-green) hover:text-(--void-black) font-mono'
       title={isPlaying ? 'Stop Radio' : 'Play/Resume Radio'}
       aria-label={isPlaying ? 'Radio stoppen' : 'Radio starten'}
     >
@@ -102,7 +102,7 @@ export const Overworld = () => {
     <div
       className={`w-full h-full bg-(--void-black) relative overflow-hidden flex flex-col items-center justify-center p-8 ${isTraveling ? 'pointer-events-none' : ''}`}
     >
-      {settings.crtEnabled && (
+      {(settings?.crtEnabled ?? false) && (
         <div className='crt-overlay pointer-events-none fixed inset-0 z-50 mix-blend-overlay opacity-50' />
       )}
 
@@ -121,7 +121,7 @@ export const Overworld = () => {
       </div>
 
       {/* Radio Widget */}
-      <div className='fixed top-8 left-1/2 -translate-x-1/2 z-50 pointer-events-auto bg-(--void-black) border border-(--shadow-black) p-2 flex items-center gap-2 rounded shadow-lg'>
+      <div className='fixed top-8 left-1/2 -translate-x-1/2 z-50 pointer-events-auto bg-(--void-black) border border-(--shadow-black) p-2 flex items-center gap-2 rounded shadow-[0_0_10px_var(--toxic-green-20)]'>
         <div className='w-2 h-2 rounded-full bg-(--blood-red) animate-pulse' />
         <span className='text-xs text-(--ash-gray) font-mono'>FM 66.6</span>
         <ToggleRadio />

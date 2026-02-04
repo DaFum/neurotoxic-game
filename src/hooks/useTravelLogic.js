@@ -126,7 +126,7 @@ export const useTravelLogic = ({
         }
         default: {
           // GIG node
-          if (band.harmony <= 0) {
+          if ((band?.harmony ?? 0) <= 0) {
             addToast("Band's harmony too low to perform!", 'warning')
             return
           }
@@ -451,12 +451,14 @@ export const useTravelLogic = ({
     })
 
     if (!canReachAny && currentNode?.type !== 'GIG') {
-      const missingFuel = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - currentFuel
+      const currentFuelClamped = Math.max(0, currentFuel)
+      const missingFuel = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - currentFuelClamped
       const refuelCost = Math.ceil(
         missingFuel * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE
       )
+      const playerMoneyClamped = Math.max(0, player.money ?? 0)
 
-      if (player.money < refuelCost) {
+      if (playerMoneyClamped < refuelCost) {
         if (!timeoutRef.current) {
           logger.error('TravelLogic', 'GAME OVER: Stranded')
           addToast(
