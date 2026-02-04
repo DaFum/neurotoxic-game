@@ -47,7 +47,7 @@ export const MainMenu = () => {
   }
 
   return (
-    <div className='flex flex-col items-center justify-center h-full w-full bg-black z-50 relative overflow-hidden'>
+    <div className='flex flex-col items-center justify-center h-full w-full bg-(--void-black) z-50 relative overflow-hidden'>
       {/* Dynamic Background */}
       <div
         className='absolute inset-0 z-0 opacity-40 bg-cover bg-center pointer-events-none'
@@ -70,12 +70,12 @@ export const MainMenu = () => {
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5, repeat: Infinity, repeatType: 'mirror' }}
-          className="text-6xl md:text-9xl text-center text-transparent bg-clip-text bg-gradient-to-b from-[var(--toxic-green)] to-[var(--void-black)] font-['Metal_Mania'] glitch-text mb-8"
+          className="text-6xl md:text-9xl text-center text-transparent bg-clip-text bg-gradient-to-b from-(--toxic-green) to-(--void-black) font-['Metal_Mania'] glitch-text mb-8"
           style={{ WebkitTextStroke: '2px var(--toxic-green)' }}
         >
           NEUROTOXIC
         </motion.h1>
-        <h2 className='text-2xl text-[var(--toxic-green)] mb-12 font-[Courier_New] tracking-widest uppercase text-center'>
+        <h2 className='text-2xl text-(--toxic-green) mb-12 font-[Courier_New] tracking-widest uppercase text-center'>
           Grind The Void v3.0
         </h2>
 
@@ -89,14 +89,14 @@ export const MainMenu = () => {
 
           <GlitchButton
             onClick={handleLoad}
-            className='relative z-20 border-[var(--blood-red)] text-[var(--blood-red)] hover:bg-[var(--blood-red)] hover:shadow-[4px_4px_0px_var(--toxic-green)]'
+            className='relative z-20 border-(--blood-red) text-(--blood-red) hover:bg-(--blood-red) hover:shadow-[4px_4px_0px_var(--toxic-green)]'
           >
             Load Game
           </GlitchButton>
 
           <GlitchButton
             onClick={() => setShowUpgrades(true)}
-            className='relative z-20 border-[var(--warning-yellow)] text-[var(--warning-yellow)] hover:bg-[var(--warning-yellow)] hover:shadow-[4px_4px_0px_var(--toxic-green)]'
+            className='relative z-20 border-(--warning-yellow) text-(--warning-yellow) hover:bg-(--warning-yellow) hover:shadow-[4px_4px_0px_var(--toxic-green)]'
           >
             Band HQ
           </GlitchButton>
@@ -105,13 +105,13 @@ export const MainMenu = () => {
         <div className='flex gap-4 mt-8'>
           <button
             onClick={() => changeScene('SETTINGS')}
-            className='text-gray-500 hover:text-[var(--toxic-green)] text-sm'
+            className='text-[var(--void-black)] hover:text-(--toxic-green) text-sm'
           >
             SETTINGS
           </button>
           <button
             onClick={() => changeScene('CREDITS')}
-            className='text-gray-500 hover:text-[var(--toxic-green)] text-sm'
+            className='text-[var(--void-black)] hover:text-(--toxic-green) text-sm'
           >
             CREDITS
           </button>

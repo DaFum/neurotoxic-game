@@ -11,6 +11,7 @@
 
   /* Death-Metal-Schwarz */
   --void-black: #0a0a0a;
+  --void-black-rgb: 10, 10, 10;
   --shadow-black: #1a1a1a;
   --concrete-gray: #2a2a2a;
   --ash-gray: #3a3a3a;
@@ -37,6 +38,12 @@
   --condition-blue: #3b82f6;
   --stamina-green: #16a34a;
   --mood-pink: #db2777;
+
+  /* UI Components */
+  --panel-bg: rgba(var(--void-black-rgb), 0.4);
+  --disabled-bg: var(--concrete-gray);
+  --disabled-text: var(--ash-gray);
+  --disabled-border: var(--ash-gray);
 
   --font-display: 'Metal Mania', cursive;
   --font-ui: 'Courier New', monospace;

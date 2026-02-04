@@ -6,6 +6,7 @@
 
 import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
+import { motion, AnimatePresence } from 'framer-motion'
 
 /**
  * StatBox - Displays a single statistic with an icon
@@ -17,11 +18,11 @@ import PropTypes from 'prop-types'
  */
 export const StatBox = ({ label, value, icon, className = '' }) => (
   <div
-    className={`bg-[var(--void-black)] p-3 flex flex-col items-center justify-center border border-[var(--ash-gray)] ${className}`}
+    className={`bg-(--void-black) p-3 flex flex-col items-center justify-center border border-(--ash-gray) ${className}`}
   >
-    <div className='text-2xl mb-1 text-[var(--toxic-green)]'>{icon}</div>
-    <div className='text-xl font-bold text-white font-mono'>{value}</div>
-    <div className='text-xs text-[var(--ash-gray)] uppercase font-mono'>
+    <div className='text-2xl mb-1 text-(--toxic-green)'>{icon}</div>
+    <div className='text-xl font-bold text-(--star-white) font-mono'>{value}</div>
+    <div className='text-xs text-(--ash-gray) uppercase font-mono'>
       {label}
     </div>
   </div>
@@ -61,15 +62,15 @@ export const ProgressBar = ({
   return (
     <div className={`w-full ${className}`}>
       <div className='flex justify-between text-xs mb-1 font-mono'>
-        <span className='text-[var(--ash-gray)]'>{label}</span>
+        <span className='text-(--ash-gray)'>{label}</span>
         {showValue && (
-          <span className='text-[var(--ash-gray)]'>
+          <span className='text-(--ash-gray)'>
             {Math.round(safeValue)}/{max}
           </span>
         )}
       </div>
       <div
-        className={`w-full bg-[var(--void-black)] border border-[var(--ash-gray)] ${size === 'sm' ? 'h-3' : 'h-5'}`}
+        className={`w-full bg-(--void-black) border border-(--ash-gray) ${size === 'sm' ? 'h-3' : 'h-5'}`}
       >
         <div
           className={`h-full ${color} transition-all duration-500`}
@@ -99,10 +100,10 @@ ProgressBar.propTypes = {
  */
 export const Panel = ({ title, children, className = '' }) => (
   <div
-    className={`bg-black/40 border-2 border-[var(--ash-gray)] p-4 ${className}`}
+    className={`bg-(--panel-bg) border-2 border-(--ash-gray) p-4 ${className}`}
   >
     {title && (
-      <h3 className='text-[var(--toxic-green)] text-lg font-bold mb-4 border-b border-[var(--ash-gray)] pb-2 font-mono'>
+      <h3 className='text-(--toxic-green) text-lg font-bold mb-4 border-b border-(--ash-gray) pb-2 font-mono'>
         {title}
       </h3>
     )}
@@ -130,8 +131,8 @@ export const TabButton = ({ active, onClick, children, className = '' }) => (
     className={`flex-1 py-4 text-center font-bold text-xl uppercase tracking-wider transition-colors duration-150 font-mono ${className}
       ${
         active
-          ? 'bg-[var(--toxic-green)] text-black'
-          : 'text-[var(--ash-gray)] hover:text-white bg-black/50 hover:bg-black/70'
+          ? 'bg-(--toxic-green) text-black'
+          : 'text-(--ash-gray) hover:text-(--star-white) bg-(--void-black)/50 hover:bg-(--void-black)/70'
       }`}
   >
     {children}
@@ -163,13 +164,13 @@ export const ActionButton = ({
 }) => {
   const variants = {
     primary:
-      'border-[var(--toxic-green)] bg-[var(--toxic-green)] text-black hover:invert',
+      'border-(--toxic-green) bg-(--toxic-green) text-black hover:invert',
     secondary:
-      'border-[var(--ash-gray)] text-[var(--ash-gray)] hover:bg-[var(--ash-gray)] hover:text-black',
+      'border-(--ash-gray) text-(--ash-gray) hover:bg-(--ash-gray) hover:text-black',
     danger:
-      'border-[var(--blood-red)] text-[var(--blood-red)] hover:bg-[var(--blood-red)] hover:text-black',
+      'border-(--blood-red) text-(--blood-red) hover:bg-(--blood-red) hover:text-black',
     warning:
-      'border-[var(--warning-yellow)] text-[var(--warning-yellow)] hover:bg-[var(--warning-yellow)] hover:text-black'
+      'border-(--warning-yellow) text-(--warning-yellow) hover:bg-(--warning-yellow) hover:text-black'
   }
 
   return (
@@ -220,32 +221,42 @@ export const Modal = ({
     return () => window.removeEventListener('keydown', handleEsc)
   }, [isOpen, onClose])
 
-  if (!isOpen) return null
-
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm'>
-      <div
-        className={`relative w-full max-w-2xl border-4 border-[var(--toxic-green)] bg-[var(--void-black)] shadow-[0_0_50px_var(--toxic-green)] ${className}`}
-      >
-        {/* Header */}
-        <div className='flex justify-between items-center p-4 border-b-2 border-[var(--toxic-green)] bg-black/50'>
-          {title && (
-            <h2 className="text-2xl text-[var(--toxic-green)] font-['Metal_Mania'] drop-shadow-[0_0_5px_var(--toxic-green)]">
-              {title}
-            </h2>
-          )}
-          <button
-            onClick={onClose}
-            className='px-4 py-1 border-2 border-[var(--blood-red)] text-[var(--blood-red)] font-bold hover:bg-[var(--blood-red)] hover:text-black transition-colors duration-200 uppercase font-mono text-sm'
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-(--void-black)/90 backdrop-blur-sm'
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className={`relative w-full max-w-2xl border-4 border-(--toxic-green) bg-(--void-black) shadow-[0_0_50px_var(--toxic-green)] ${className}`}
           >
-            CLOSE [ESC]
-          </button>
-        </div>
+            {/* Header */}
+            <div className='flex justify-between items-center p-4 border-b-2 border-(--toxic-green) bg-(--void-black)/50'>
+              {title && (
+                <h2 className="text-2xl text-(--toxic-green) font-['Metal_Mania'] drop-shadow-[0_0_5px_var(--toxic-green)]">
+                  {title}
+                </h2>
+              )}
+              <button
+                onClick={onClose}
+                className='px-4 py-1 border-2 border-(--blood-red) text-(--blood-red) font-bold hover:bg-(--blood-red) hover:text-black transition-colors duration-200 uppercase font-mono text-sm'
+              >
+                CLOSE [ESC]
+              </button>
+            </div>
 
-        {/* Content */}
-        <div className='p-4'>{children}</div>
-      </div>
-    </div>
+            {/* Content */}
+            <div className='p-4'>{children}</div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }
 

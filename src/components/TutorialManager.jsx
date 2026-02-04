@@ -72,28 +72,28 @@ export const TutorialManager = () => {
         exit={{ opacity: 0 }}
         className='fixed bottom-20 left-1/2 transform -translate-x-1/2 z-[100] w-full max-w-md'
       >
-        <div className='bg-black/95 border-2 border-(--toxic-green) p-6 shadow-[0_0_20px_(--toxic-green)] relative'>
-          <div className='absolute -top-3 left-4 bg-black px-2 text-(--toxic-green) font-bold text-xs border border-(--toxic-green)'>
+        <div className='bg-(--void-black)/95 border-2 border-(--toxic-green) p-6 shadow-[0_0_20px_var(--toxic-green)] relative'>
+          <div className='absolute -top-3 left-4 bg-(--void-black) px-2 text-(--toxic-green) font-bold text-xs border border-(--toxic-green)'>
             TUTORIAL {step + 1}
           </div>
 
-          <h3 className='text-xl text-white font-[Metal_Mania] mb-2'>
+          <h3 className='text-xl text-(--star-white) font-[Metal_Mania] mb-2'>
             {content.title}
           </h3>
-          <p className='text-gray-300 font-mono text-sm mb-4 leading-relaxed'>
+          <p className='text-(--ash-gray) font-mono text-sm mb-4 leading-relaxed'>
             {content.text}
           </p>
 
           <div className='flex justify-end gap-4'>
             <button
               onClick={skipTutorial}
-              className='text-xs text-gray-500 hover:text-white underline'
+              className='text-xs text-(--ash-gray) hover:text-(--star-white) underline'
             >
               SKIP ALL
             </button>
             <button
               onClick={completeStep}
-              className='bg-(--toxic-green) text-black px-4 py-1 font-bold hover:bg-white'
+              className='bg-(--toxic-green) text-(--void-black) px-4 py-1 font-bold hover:bg-(--star-white)'
             >
               NEXT
             </button>

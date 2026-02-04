@@ -150,7 +150,7 @@ export const Gig = () => {
 
   return (
     <div
-      className={`w-full h-full relative bg-black flex flex-col overflow-hidden ${stats.isToxicMode ? 'border-4 border-(--toxic-green) animate-pulse' : ''}`}
+      className={`w-full h-full relative bg-(--void-black) flex flex-col overflow-hidden ${stats.isToxicMode ? 'border-4 border-(--toxic-green) animate-pulse' : ''}`}
     >
       {/* Layer 0: Background */}
       <div

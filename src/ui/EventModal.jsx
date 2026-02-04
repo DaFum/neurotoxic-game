@@ -12,16 +12,16 @@ export const EventModal = ({ event, onOptionSelect }) => {
   if (!event) return null
 
   return (
-    <div className='fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4'>
+    <div className='fixed inset-0 z-[100] flex items-center justify-center bg-(--void-black)/80 backdrop-blur-sm p-4'>
       <motion.div
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        className='w-full max-w-lg border-2 border-[var(--toxic-green)] bg-black shadow-[0_0_50px_rgba(0,255,65,0.2)] p-6'
+        className='w-full max-w-lg border-2 border-(--toxic-green) bg-(--void-black) shadow-[0_0_50px_var(--toxic-green-glow)] p-6'
       >
-        <h2 className='text-3xl font-[Metal_Mania] text-[var(--blood-red)] mb-4 animate-pulse'>
+        <h2 className='text-3xl font-[Metal_Mania] text-(--blood-red) mb-4 animate-pulse'>
           ⚠ {event.title} ⚠
         </h2>
-        <p className='font-mono text-white mb-8 text-lg border-l-4 border-[var(--toxic-green)] pl-4'>
+        <p className='font-mono text-(--star-white) mb-8 text-lg border-l-4 border-(--toxic-green) pl-4'>
           {event.text}
         </p>
 
@@ -33,7 +33,7 @@ export const EventModal = ({ event, onOptionSelect }) => {
                 if (option.action) option.action()
                 else onOptionSelect(option)
               }}
-              className='w-full text-left p-4 border border-[var(--ash-gray)] hover:bg-[var(--toxic-green)] hover:text-black hover:border-transparent transition-all group relative overflow-hidden'
+              className='w-full text-left p-4 border border-(--ash-gray) hover:bg-(--toxic-green) hover:text-(--void-black) hover:border-transparent transition-all group relative overflow-hidden'
             >
               <span className='relative z-10 font-bold uppercase tracking-wider'>
                 {option.label}

@@ -30,11 +30,11 @@ Web-based Roguelike Tour Manager with rhythm action mechanics. Manage a Death Gr
 **NEVER use hardcoded colors.** Always use CSS variables:
 
 ```jsx
-// CORRECT
-<div className="bg-[var(--void-black)] text-[var(--toxic-green)]">
+// CORRECT (Tailwind v4)
+<div className="bg-(--void-black) text-(--toxic-green)">
 
 // WRONG
-<div className="bg-black text-green-500">
+<div className="bg-[var(--void-black)] text-[var(--toxic-green)]">
 ```
 
 | Variable | Hex | Usage |
@@ -160,7 +160,7 @@ Use components from `src/ui/shared/index.js`:
 import { StatBox, ProgressBar, Panel, ActionButton, Modal, Grid } from '../ui/shared'
 
 <StatBox label="MONEY" value={player.money} icon="$" />
-<ProgressBar label="FUEL" value={fuel} max={100} color="bg-[var(--toxic-green)]" />
+<ProgressBar label="FUEL" value={fuel} max={100} color="bg-(--toxic-green)" />
 <ActionButton onClick={handleClick} variant="primary">ACTION</ActionButton>
 ```
 
@@ -225,6 +225,23 @@ import { eventEngine } from '../utils/eventEngine'
 
 /* WRONG */
 @tailwind base;
+```
+
+#### CSS Variable Syntax (v4)
+
+**Wichtig:** Tailwind v4 ändert die Syntax für CSS-Variablen.
+
+- **Neu (v4):** `bg-(--void-black)` oder `text-(--toxic-green)`
+- **Alt (v3):** `bg-[var(--void-black)]` oder `text-[var(--toxic-green)]` (jetzt falsch)
+
+Beispiel:
+
+```jsx
+// CORRECT (v4)
+<div className="bg-(--void-black) text-(--toxic-green)">
+
+// WRONG (v3 legacy)
+<div className="bg-[var(--void-black)] text-[var(--toxic-green)]">
 ```
 
 ### State Safety
