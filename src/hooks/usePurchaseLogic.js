@@ -337,8 +337,9 @@ export const usePurchaseLogic = ({
                 item,
                 effect
               }),
-              { silent: true }
+              { addToast, fallbackMessage: 'Purchase failed: Unknown effect type.' }
             )
+            return false
         }
 
         // Also ensure simple stat_modifiers from UPGRADES_DB are marked as owned!

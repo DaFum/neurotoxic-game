@@ -159,7 +159,7 @@ Use components from `src/ui/shared/index.js`:
 import { StatBox, ProgressBar, Panel, ActionButton, Modal, Grid } from '../ui/shared'
 
 <StatBox label="MONEY" value={player.money} icon="$" />
-<ProgressBar label="FUEL" value={fuel} max={100} color="bg-green-500" />
+<ProgressBar label="FUEL" value={fuel} max={100} color="bg-[var(--toxic-green)]" />
 <ActionButton onClick={handleClick} variant="primary">ACTION</ActionButton>
 ```
 

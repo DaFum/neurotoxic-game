@@ -50,6 +50,7 @@ export const useTravelLogic = ({
   const [travelTarget, setTravelTarget] = useState(null)
   const travelCompletedRef = useRef(false)
   const timeoutRef = useRef(null)
+  const failsafeTimeoutRef = useRef(null)
 
   /**
    * Gets the current node from the map
@@ -137,7 +138,7 @@ export const useTravelLogic = ({
       )
 
       // Affordability check
-      if (player.money < totalCost || (player.van?.fuel ?? 0) < fuelLiters) {
+      if ((player.money ?? 0) < totalCost || (player.van?.fuel ?? 0) < fuelLiters) {
         addToast('Error: Insufficient resources upon arrival.', 'error')
         setIsTraveling(false)
         setTravelTarget(null)
@@ -146,7 +147,7 @@ export const useTravelLogic = ({
 
       // Apply travel costs
       updatePlayer({
-        money: Math.max(0, player.money - totalCost),
+        money: Math.max(0, (player.money ?? 0) - totalCost),
         van: {
           ...player.van,
           fuel: Math.max(0, (player.van?.fuel ?? 0) - fuelLiters)
@@ -283,7 +284,7 @@ export const useTravelLogic = ({
       const { dist, totalCost, fuelLiters } = calculateTravelExpenses(
         node,
         currentStartNode,
-        player
+        { van: player.van }
       )
 
       addToast(
@@ -291,7 +292,7 @@ export const useTravelLogic = ({
         'info'
       )
 
-      if (player.money < totalCost) {
+      if ((player.money ?? 0) < totalCost) {
         addToast('Not enough money for gas and food!', 'error')
         return
       }
@@ -312,11 +313,15 @@ export const useTravelLogic = ({
         // Ignore audio errors
       }
 
-      // Failsafe timeout
-      window.setTimeout(() => {
+      // Failsafe timeout - store in ref for cleanup
+      if (failsafeTimeoutRef.current) {
+        clearTimeout(failsafeTimeoutRef.current)
+      }
+      failsafeTimeoutRef.current = window.setTimeout(() => {
         if (!travelCompletedRef.current) {
           onTravelComplete(node)
         }
+        failsafeTimeoutRef.current = null
       }, 1510)
     },
     [
@@ -427,6 +432,16 @@ export const useTravelLogic = ({
       }
     }
   }, [player, gameMap, isTraveling, changeScene, addToast])
+
+  // Cleanup failsafe timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (failsafeTimeoutRef.current) {
+        clearTimeout(failsafeTimeoutRef.current)
+        failsafeTimeoutRef.current = null
+      }
+    }
+  }, [])
 
   return {
     // State

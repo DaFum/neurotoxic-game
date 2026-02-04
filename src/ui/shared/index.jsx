@@ -63,7 +63,7 @@ export const ProgressBar = ({
       <div className='flex justify-between text-xs mb-1 font-mono'>
         <span className='text-[var(--ash-gray)]'>{label}</span>
         {showValue && (
-          <span className='text-gray-300'>
+          <span className='text-[var(--ash-gray)]'>
             {Math.round(safeValue)}/{max}
           </span>
         )}

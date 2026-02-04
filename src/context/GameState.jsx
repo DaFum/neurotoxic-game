@@ -224,8 +224,8 @@ export const GameStateProvider = ({ children }) => {
 
         if (missingKeys.length > 0) {
           handleError(
-            new StateError('Corrupt Save File', { missingKeys }),
-            { addToast, fallbackMessage: 'Save file is corrupt. Starting fresh.' }
+            new StateError('Save file is corrupt. Starting fresh.', { missingKeys }),
+            { addToast }
           )
           return false
         }
