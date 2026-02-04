@@ -42,7 +42,7 @@ Web-based Roguelike Tour Manager with rhythm action mechanics. Manage a Death Gr
 | `--toxic-green` | #00FF41 | Primary UI, text, borders |
 | `--void-black` | #0A0A0A | Backgrounds |
 | `--blood-red` | #CC0000 | Errors, critical states |
-| `--ash-gray` | #888888 | Secondary text, borders |
+| `--ash-gray` | #3A3A3A | Secondary text, borders |
 | `--warning-yellow` | #FFCC00 | Warnings |
 
 ### Typography

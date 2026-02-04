@@ -361,13 +361,13 @@ export const useTravelLogic = ({
 
     const cost = Math.ceil(missing * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
 
-    if (player.money < cost) {
+    if ((player.money ?? 0) < cost) {
       addToast(`Not enough money! Need ${cost}€ to fill up.`, 'error')
       return
     }
 
     updatePlayer({
-      money: Math.max(0, player.money - cost),
+      money: Math.max(0, (player.money ?? 0) - cost),
       van: { ...player.van, fuel: EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL }
     })
     addToast(`Refueled: -${cost}€`, 'success')
@@ -441,9 +441,13 @@ export const useTravelLogic = ({
     }
   }, [player, gameMap, isTraveling, changeScene, addToast])
 
-  // Cleanup failsafe timeout on unmount
+  // Cleanup all timeouts on unmount
   useEffect(() => {
     return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
       if (failsafeTimeoutRef.current) {
         clearTimeout(failsafeTimeoutRef.current)
         failsafeTimeoutRef.current = null

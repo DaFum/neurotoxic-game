@@ -59,7 +59,7 @@ export const BandHQ = ({
             <img
               src={getGenImageUrl(IMG_PROMPTS[item.img] || item.name)}
               alt={item.name}
-              className='w-12 h-12 object-contain bg-black border border-[var(--ash-gray)]'
+              className='w-12 h-12 object-contain bg-[var(--void-black)] border-2 border-[var(--ash-gray)]'
             />
             <h4 className='font-bold text-[var(--toxic-green)] leading-tight font-mono uppercase'>
               {item.name}
