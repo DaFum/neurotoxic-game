@@ -65,10 +65,10 @@ export const generateNotesForSong = (song, options = {}) => {
  * @returns {Array} Array of note objects formatted for the game loop.
  */
 export const parseSongNotes = (song, leadIn = 2000) => {
-  if (!song.notes) return []
+  if (!song.notes || !Array.isArray(song.notes)) return []
 
-  const tpb = song.tpb || 480
-  const bpm = song.bpm || 120
+  const tpb = Math.max(1, song.tpb || 480) // Prevent div by zero
+  const bpm = Math.max(1, song.bpm || 120) // Prevent div by zero
   const msPerTick = 60000 / bpm / tpb
 
   const laneMap = {
@@ -78,6 +78,7 @@ export const parseSongNotes = (song, leadIn = 2000) => {
   }
 
   return song.notes
+    .filter(n => typeof n.t === 'number' && isFinite(n.t)) // Defensive check for valid timestamp
     .map(n => {
       const laneIndex = laneMap[n.lane]
       if (laneIndex === undefined) return null // Skip unknown lanes

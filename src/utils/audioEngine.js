@@ -106,32 +106,47 @@ export async function playSongFromData(song, delay = 0) {
   Tone.Transport.cancel()
   Tone.Transport.position = 0
 
-  const bpm = song.bpm || 120
+  const bpm = Math.max(1, song.bpm || 120) // Ensure BPM is positive
+  const tpb = Math.max(1, song.tpb || 480) // Ensure TPB is positive
   Tone.Transport.bpm.value = bpm
 
-  // Convert tpb ticks to seconds for exact scheduling, assuming constant BPM for now.
-  // Tone.Transport allows scheduling by time.
-  // time = (tick / tpb) * (60 / bpm)
+  // Validate notes
+  if (!Array.isArray(song.notes)) {
+    console.error('playSongFromData: song.notes is not an array')
+    return
+  }
 
-  // We can use a Part to schedule events.
-  // Events need { time: ..., note: ..., duration: ..., lane: ... }
+  const events = song.notes
+    .filter(n => {
+      // Validate note data
+      return (
+        typeof n.t === 'number' &&
+        isFinite(n.t) &&
+        typeof n.p === 'number' &&
+        isFinite(n.p) &&
+        typeof n.v === 'number' &&
+        isFinite(n.v)
+      )
+    })
+    .map(n => {
+      const beatDuration = 60 / bpm
+      const time = (n.t / tpb) * beatDuration
 
-  const events = song.notes.map(n => {
-    // Calculate precise time in seconds
-    // const seconds = (n.t / song.tpb) * (60 / bpm);
-    // Actually, let's use Tone's tick system if possible, but ticks depend on PPQ.
-    // Tone.Transport.PPQ defaults to 192. song.tpb is 480.
-    // Easiest is to convert to seconds.
-    const beatDuration = 60 / bpm
-    const time = (n.t / (song.tpb || 480)) * beatDuration
+      // Clamp velocity 0-127 and normalize
+      const rawVelocity = Math.max(0, Math.min(127, n.v))
 
-    return {
-      time: time + delay, // Schedule with delay relative to Transport start
-      note: n.p,
-      velocity: n.v / 127,
-      lane: n.lane
-    }
-  })
+      return {
+        time: time + (Number.isFinite(delay) ? delay : 0),
+        note: n.p,
+        velocity: rawVelocity / 127,
+        lane: n.lane
+      }
+    })
+
+  if (events.length === 0) {
+    console.warn('playSongFromData: No valid notes found to schedule')
+    return
+  }
 
   part = new Tone.Part((time, value) => {
     if (!guitar || !bass || !drumKit) return
@@ -152,24 +167,15 @@ export async function playSongFromData(song, delay = 0) {
 
 function playDrumNote(midiPitch, time, velocity) {
   // Basic GM Mapping
-  // 35, 36: Bass Drum
-  // 38, 40: Snare
-  // 42, 44, 46: HiHat (Closed, Pedal, Open)
-  // 49, 57: Crash
-  // 51, 59: Ride
-
-  // Fallback/mappings
   if (midiPitch === 35 || midiPitch === 36) {
     drumKit.kick.triggerAttackRelease('C1', '16n', time, velocity)
   } else if (midiPitch === 38 || midiPitch === 40) {
     drumKit.snare.triggerAttackRelease('16n', time, velocity)
   } else if (midiPitch === 42 || midiPitch === 44 || midiPitch === 46) {
-    // Open/Closed nuance can be decay time, simpler here
     drumKit.hihat.triggerAttackRelease('8000', '32n', time, velocity * 0.8)
   } else if (midiPitch === 49 || midiPitch === 57) {
     drumKit.crash.triggerAttackRelease('C2', '8n', time, velocity)
   } else {
-    // Default to HiHat for unknown percussion elements to keep rhythm
     drumKit.hihat.triggerAttackRelease('8000', '32n', time, velocity * 0.5)
   }
 }
@@ -179,33 +185,32 @@ function playDrumNote(midiPitch, time, velocity) {
  * Starts the procedural metal music generator for a specific song configuration.
  * @param {object} song - The song object containing metadata like BPM and difficulty.
  * @param {number} [delay=0] - Delay in seconds before the audio starts.
+ * @param {Function} [random=Math.random] - RNG function for deterministic generation.
  * @returns {Promise<void>}
  */
-export async function startMetalGenerator(song, delay = 0) {
+export async function startMetalGenerator(
+  song,
+  delay = 0,
+  random = Math.random
+) {
   await ensureAudioContext()
 
-  // Reset & Cleanup before starting
   stopAudio()
-  Tone.Transport.cancel() // Clear previous schedules
-  Tone.Transport.position = 0 // Reset transport time
+  Tone.Transport.cancel()
+  Tone.Transport.position = 0
 
-  // 1. BPM Setzen (Diff Logik)
   const bpm = song.bpm || 80 + song.difficulty * 30
   Tone.Transport.bpm.value = bpm
 
-  // 2. Riff Pattern Generieren
-  const pattern = generateRiffPattern(song.difficulty || 2)
+  const pattern = generateRiffPattern(song.difficulty || 2, random)
 
-  // 3. Sequencer Loop
   loop = new Tone.Sequence(
     (time, note) => {
-      if (!guitar || !drumKit) return // Safety check
+      if (!guitar || !drumKit) return
 
-      // Guitar
       if (note) guitar.triggerAttackRelease(note, '16n', time)
 
-      // Drum Logic
-      playDrumsLegacy(time, song.difficulty || 2, note)
+      playDrumsLegacy(time, song.difficulty || 2, note, random)
     },
     pattern,
     '16n'
@@ -248,22 +253,19 @@ export function resumeAudio() {
   }
 }
 
-// Hilfsfunktion: Riff Pattern
-function generateRiffPattern(diff) {
+function generateRiffPattern(diff, random) {
   const steps = 16
   const pattern = []
   const density = 0.3 + diff * 0.1
 
   for (let i = 0; i < steps; i++) {
-    if (Math.random() < density) {
-      if (diff <= 2) pattern.push(Math.random() > 0.8 ? 'E3' : 'E2')
+    if (random() < density) {
+      if (diff <= 2) pattern.push(random() > 0.8 ? 'E3' : 'E2')
       else if (diff <= 4)
-        pattern.push(
-          Math.random() > 0.7 ? (Math.random() > 0.5 ? 'F2' : 'G2') : 'E2'
-        )
+        pattern.push(random() > 0.7 ? (random() > 0.5 ? 'F2' : 'G2') : 'E2')
       else {
         const notes = ['E2', 'A#2', 'F2', 'C3', 'D#3']
-        pattern.push(notes[Math.floor(Math.random() * notes.length)])
+        pattern.push(notes[Math.floor(random() * notes.length)])
       }
     } else {
       pattern.push(null)
@@ -272,23 +274,18 @@ function generateRiffPattern(diff) {
   return pattern
 }
 
-// Hilfsfunktion: Drums (Legacy)
-function playDrumsLegacy(time, diff, note) {
+function playDrumsLegacy(time, diff, note, random) {
   if (diff === 5) {
-    // Blast Beat
     drumKit.kick.triggerAttackRelease('C1', '16n', time)
-    if (Math.random() > 0.5) drumKit.snare.triggerAttackRelease('16n', time)
-    // Corrected: Pass note (frequency/pitch) first
+    if (random() > 0.5) drumKit.snare.triggerAttackRelease('16n', time)
     drumKit.hihat.triggerAttackRelease('8000', '32n', time, 0.5)
   } else {
-    // Standard Groove
-    if (note === 'E2' || Math.random() < diff * 0.1) {
+    if (note === 'E2' || random() < diff * 0.1) {
       drumKit.kick.triggerAttackRelease('C1', '8n', time)
     }
-    if (Math.random() > 0.9) {
+    if (random() > 0.9) {
       drumKit.snare.triggerAttackRelease('16n', time)
     }
-    // HiHat Pulse
     if (time % 0.25 < 0.1)
       drumKit.hihat.triggerAttackRelease('8000', '32n', time)
   }
