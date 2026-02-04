@@ -44,7 +44,7 @@ const GameStateContext = createContext()
  * @param {React.ReactNode} props.children
  */
 export const GameStateProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(gameReducer, initialState)
+  const [state, dispatch] = useReducer(gameReducer, null, createInitialState)
 
   // Initialize Map if needed
   useEffect(() => {

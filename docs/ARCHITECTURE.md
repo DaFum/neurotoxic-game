@@ -453,7 +453,9 @@ src/
 │   └── TutorialManager.jsx
 │
 ├── hooks/                      # Custom hooks
-│   └── useRhythmGameLogic.js
+│   ├── useRhythmGameLogic.js
+│   ├── useTravelLogic.js
+│   └── usePurchaseLogic.js
 │
 ├── utils/                      # Utility modules
 │   ├── eventEngine.js

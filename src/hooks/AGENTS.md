@@ -9,7 +9,7 @@ This module contains custom React hooks that encapsulate complex game logic, pro
 | Hook | Purpose | Used By |
 |------|---------|---------|
 | `useTravelLogic` | Travel state, costs, navigation | Overworld.jsx |
-| `usePurchaseLogic` | Shop purchases, inventory management | BandHQ.jsx |
+| `usePurchaseLogic` | Shop purchases, inventory management | BandHQ.jsx, MainMenu.jsx |
 
 ## useTravelLogic
 

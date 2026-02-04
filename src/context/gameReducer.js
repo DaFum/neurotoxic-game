@@ -57,24 +57,40 @@ const handleChangeScene = (state, payload) => {
 
 /**
  * Handles player update actions
+ * Clamps player.money to ensure it never goes negative
  * @param {Object} state - Current state
  * @param {Object} payload - Player updates
  * @returns {Object} Updated state
  */
 const handleUpdatePlayer = (state, payload) => {
   logger.debug('GameState', 'Update Player', payload)
-  return { ...state, player: { ...state.player, ...payload } }
+  const mergedPlayer = { ...state.player, ...payload }
+
+  // Clamp money to prevent negative values
+  if (typeof mergedPlayer.money === 'number') {
+    mergedPlayer.money = Math.max(0, mergedPlayer.money)
+  }
+
+  return { ...state, player: mergedPlayer }
 }
 
 /**
  * Handles band update actions
+ * Clamps band.harmony to valid range 0-100
  * @param {Object} state - Current state
  * @param {Object} payload - Band updates
  * @returns {Object} Updated state
  */
 const handleUpdateBand = (state, payload) => {
   logger.debug('GameState', 'Update Band', payload)
-  return { ...state, band: { ...state.band, ...payload } }
+  const mergedBand = { ...state.band, ...payload }
+
+  // Clamp harmony to valid range 0-100
+  if (typeof mergedBand.harmony === 'number') {
+    mergedBand.harmony = Math.max(0, Math.min(100, mergedBand.harmony))
+  }
+
+  return { ...state, band: mergedBand }
 }
 
 /**

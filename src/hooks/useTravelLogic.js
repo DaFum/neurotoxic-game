@@ -89,6 +89,51 @@ export const useTravelLogic = ({
   }, [])
 
   /**
+   * Handles logic when arriving at a node
+   * @param {Object} node - Arrived node
+   */
+  const handleNodeArrival = useCallback(
+    node => {
+      switch (node.type) {
+        case 'REST_STOP': {
+          const newMembers = band.members.map(m => ({
+            ...m,
+            stamina: Math.min(100, Math.max(0, m.stamina + 20)),
+            mood: Math.min(100, Math.max(0, m.mood + 10))
+          }))
+          updateBand({ members: newMembers })
+          addToast('Rested at stop. Band feels better.', 'success')
+          break
+        }
+        case 'SPECIAL': {
+          const specialEvent = triggerEvent('special')
+          if (!specialEvent) {
+            addToast('A mysterious place, but nothing happened.', 'info')
+          }
+          break
+        }
+        case 'START': {
+          onShowHQ?.()
+          addToast('Home Sweet Home.', 'success')
+          break
+        }
+        default: {
+          // GIG node
+          if (band.harmony <= 0) {
+            addToast("Band's harmony too low to perform!", 'warning')
+            return
+          }
+          logger.info('TravelLogic', 'Starting Gig at destination', {
+            venue: node.venue.name
+          })
+          startGig(node.venue)
+        }
+      }
+    },
+    [band, updateBand, triggerEvent, startGig, addToast, onShowHQ]
+  )
+
+  /**
    * Callback executed when travel animation completes
    * @param {Object} [explicitNode] - Explicit target node (bypasses state)
    */
@@ -190,53 +235,9 @@ export const useTravelLogic = ({
       saveGame,
       triggerEvent,
       advanceDay,
-      addToast
+      addToast,
+      handleNodeArrival
     ]
-  )
-
-  /**
-   * Handles logic when arriving at a node
-   * @param {Object} node - Arrived node
-   */
-  const handleNodeArrival = useCallback(
-    node => {
-      switch (node.type) {
-        case 'REST_STOP': {
-          const newMembers = band.members.map(m => ({
-            ...m,
-            stamina: Math.min(100, Math.max(0, m.stamina + 20)),
-            mood: Math.min(100, Math.max(0, m.mood + 10))
-          }))
-          updateBand({ members: newMembers })
-          addToast('Rested at stop. Band feels better.', 'success')
-          break
-        }
-        case 'SPECIAL': {
-          const specialEvent = triggerEvent('special')
-          if (!specialEvent) {
-            addToast('A mysterious place, but nothing happened.', 'info')
-          }
-          break
-        }
-        case 'START': {
-          onShowHQ?.()
-          addToast('Home Sweet Home.', 'success')
-          break
-        }
-        default: {
-          // GIG node
-          if (band.harmony <= 0) {
-            addToast("Band's harmony too low to perform!", 'warning')
-            return
-          }
-          logger.info('TravelLogic', 'Starting Gig at destination', {
-            venue: node.venue.name
-          })
-          startGig(node.venue)
-        }
-      }
-    },
-    [band, updateBand, triggerEvent, startGig, addToast, onShowHQ]
   )
 
   /**

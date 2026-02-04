@@ -132,6 +132,38 @@ export class GameLogicError extends GameError {
 }
 
 /**
+ * Render-related error
+ * @extends GameError
+ */
+export class RenderError extends GameError {
+  constructor(message, context = {}) {
+    super(message, {
+      category: ErrorCategory.RENDER,
+      severity: ErrorSeverity.HIGH,
+      context,
+      recoverable: false
+    })
+    this.name = 'RenderError'
+  }
+}
+
+/**
+ * Audio-related error
+ * @extends GameError
+ */
+export class AudioError extends GameError {
+  constructor(message, context = {}) {
+    super(message, {
+      category: ErrorCategory.AUDIO,
+      severity: ErrorSeverity.LOW,
+      context,
+      recoverable: true
+    })
+    this.name = 'AudioError'
+  }
+}
+
+/**
  * Error log storage for debugging
  * @type {Array<Object>}
  */
