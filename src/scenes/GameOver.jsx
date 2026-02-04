@@ -37,12 +37,17 @@ export const GameOver = () => {
           <span className='text-(--star-white) text-right'>{player.fame}</span>
 
           <span className='text-(--ash-gray)'>LOCATION:</span>
-          <span className='text-(--star-white) text-right'>{player.location}</span>
+          <span className='text-(--star-white) text-right'>
+            {player.location}
+          </span>
         </div>
       </div>
 
       <div className='flex gap-4'>
-        <GlitchButton onClick={handleRetry} className='border-(--star-white) text-(--star-white)'>
+        <GlitchButton
+          onClick={handleRetry}
+          className='border-(--star-white) text-(--star-white)'
+        >
           LOAD LAST SAVE
         </GlitchButton>
         <GlitchButton

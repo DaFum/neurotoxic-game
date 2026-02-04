@@ -8,14 +8,14 @@ You are the **UI Component Library Specialist** for NEUROTOXIC: GRIND THE VOID. 
 
 This folder (`src/ui/`) contains the "design system" - pure presentation components that are game-agnostic and highly reusable:
 
-| Component | Purpose |
-|-----------|---------|
-| `GlitchButton.jsx` | Primary brutalist button component |
-| `HUD.jsx` | Persistent top-bar overlay (money, day, location) |
-| `EventModal.jsx` | Full-screen modal for narrative events |
-| `ToastOverlay.jsx` | Temporary notification system |
-| `CrashHandler.jsx` | Error boundary wrapper |
-| `shared/index.jsx` | Generic reusable components |
+| Component          | Purpose                                           |
+| ------------------ | ------------------------------------------------- |
+| `GlitchButton.jsx` | Primary brutalist button component                |
+| `HUD.jsx`          | Persistent top-bar overlay (money, day, location) |
+| `EventModal.jsx`   | Full-screen modal for narrative events            |
+| `ToastOverlay.jsx` | Temporary notification system                     |
+| `CrashHandler.jsx` | Error boundary wrapper                            |
+| `shared/index.jsx` | Generic reusable components                       |
 
 ### Shared Components (`src/ui/shared/index.jsx`)
 
@@ -560,7 +560,7 @@ className = 'transition-colors duration-150 hover:bg-(--toxic-green)'
 - [ ] No console warnings
 - [ ] CSS variables used exclusively
 
-## Common Anti-Patterns
+## Common antipatterns
 
 ### ❌ Hardcoded Colors
 

@@ -85,8 +85,7 @@ export const usePurchaseLogic = ({
     effect => ({
       inventory: {
         ...(band.inventory ?? {}),
-        [effect.item]:
-          ((band.inventory ?? {})[effect.item] || 0) + effect.value
+        [effect.item]: ((band.inventory ?? {})[effect.item] || 0) + effect.value
       }
     }),
     [band.inventory]
@@ -181,8 +180,7 @@ export const usePurchaseLogic = ({
         nextBandPatch = { harmonyRegenTravel: true }
       } else if (effect.effect === 'passive_followers') {
         const val = effect.value || 0
-        nextPlayerPatch.passiveFollowers =
-          (player.passiveFollowers || 0) + val
+        nextPlayerPatch.passiveFollowers = (player.passiveFollowers || 0) + val
       }
 
       return { playerPatch: nextPlayerPatch, bandPatch: nextBandPatch }
@@ -209,13 +207,15 @@ export const usePurchaseLogic = ({
         case 'hq_room_poster_wall':
           nextPlayerPatch.fame = Math.max(
             0,
-            (nextPlayerPatch.fame ?? (player.fame ?? 0)) + 10
+            (nextPlayerPatch.fame ?? player.fame ?? 0) + 10
           )
           addToast('Looks cool. Fame +10', 'success')
           break
 
         case 'hq_room_diy_soundproofing':
-          nextBandPatch = { harmony: Math.max(0, Math.min(100, (band.harmony ?? 0) + 5)) }
+          nextBandPatch = {
+            harmony: Math.max(0, Math.min(100, (band.harmony ?? 0) + 5))
+          }
           addToast('Less noise, more peace. Harmony +5', 'success')
           break
 
@@ -226,13 +226,25 @@ export const usePurchaseLogic = ({
           const members = (band.members ?? []).map(m => {
             switch (item.id) {
               case 'hq_room_coffee':
-                return { ...m, mood: Math.max(0, Math.min(100, (m.mood ?? 0) + 20)) }
+                return {
+                  ...m,
+                  mood: Math.max(0, Math.min(100, (m.mood ?? 0) + 20))
+                }
               case 'hq_room_sofa':
-                return { ...m, stamina: Math.max(0, Math.min(100, (m.stamina ?? 0) + 30)) }
+                return {
+                  ...m,
+                  stamina: Math.max(0, Math.min(100, (m.stamina ?? 0) + 30))
+                }
               case 'hq_room_old_couch':
-                return { ...m, stamina: Math.max(0, Math.min(100, (m.stamina ?? 0) + 10)) }
+                return {
+                  ...m,
+                  stamina: Math.max(0, Math.min(100, (m.stamina ?? 0) + 10))
+                }
               default:
-                return { ...m, mood: Math.max(0, Math.min(100, (m.mood ?? 0) + 5)) }
+                return {
+                  ...m,
+                  mood: Math.max(0, Math.min(100, (m.mood ?? 0) + 5))
+                }
             }
           })
           nextBandPatch = { ...(nextBandPatch ?? {}), members }
@@ -269,10 +281,7 @@ export const usePurchaseLogic = ({
         }
 
         if (currencyValue < item.cost) {
-          addToast(
-            `Not enough ${payingWithFame ? 'Fame' : 'Money'}!`,
-            'error'
-          )
+          addToast(`Not enough ${payingWithFame ? 'Fame' : 'Money'}!`, 'error')
           return false
         }
 
@@ -332,7 +341,10 @@ export const usePurchaseLogic = ({
                 item,
                 effect
               }),
-              { addToast, fallbackMessage: 'Purchase failed: Unknown effect type.' }
+              {
+                addToast,
+                fallbackMessage: 'Purchase failed: Unknown effect type.'
+              }
             )
             return false
         }
@@ -353,20 +365,25 @@ export const usePurchaseLogic = ({
         // Or I can just check if `isOwned` logic requires it.
         // `isItemOwned` checks `player.van.upgrades.includes(item.id)`.
 
-        if (item.currency === 'fame' && !isConsumable && effect.type !== 'unlock_upgrade') {
-           // Ensure it is added to upgrades list if not already handled by unlock_upgrade
-           // unlock_upgrade adds it.
-           // stat_modifier does NOT add it.
-           // passive does NOT add it (I added it above, but should be generic).
+        if (
+          item.currency === 'fame' &&
+          !isConsumable &&
+          effect.type !== 'unlock_upgrade'
+        ) {
+          // Ensure it is added to upgrades list if not already handled by unlock_upgrade
+          // unlock_upgrade adds it.
+          // stat_modifier does NOT add it.
+          // passive does NOT add it (I added it above, but should be generic).
 
-           // Let's unify this.
-           const currentUpgrades = playerPatch.van?.upgrades ?? player.van?.upgrades ?? []
-           if (!currentUpgrades.includes(item.id)) {
-              playerPatch.van = {
-                 ...(playerPatch.van ?? player.van ?? {}),
-                 upgrades: [...currentUpgrades, item.id]
-              }
-           }
+          // Let's unify this.
+          const currentUpgrades =
+            playerPatch.van?.upgrades ?? player.van?.upgrades ?? []
+          if (!currentUpgrades.includes(item.id)) {
+            playerPatch.van = {
+              ...(playerPatch.van ?? player.van ?? {}),
+              upgrades: [...currentUpgrades, item.id]
+            }
+          }
         }
 
         // Apply updates

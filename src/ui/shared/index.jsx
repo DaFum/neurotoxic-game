@@ -21,10 +21,10 @@ export const StatBox = ({ label, value, icon, className = '' }) => (
     className={`bg-(--void-black) p-3 flex flex-col items-center justify-center border border-(--ash-gray) ${className}`}
   >
     <div className='text-2xl mb-1 text-(--toxic-green)'>{icon}</div>
-    <div className='text-xl font-bold text-(--star-white) font-mono'>{value}</div>
-    <div className='text-xs text-(--ash-gray) uppercase font-mono'>
-      {label}
+    <div className='text-xl font-bold text-(--star-white) font-mono'>
+      {value}
     </div>
+    <div className='text-xs text-(--ash-gray) uppercase font-mono'>{label}</div>
   </div>
 )
 
@@ -204,13 +204,7 @@ ActionButton.propTypes = {
  * @param {React.ReactNode} props.children - Modal content
  * @param {string} [props.className] - Additional CSS classes
  */
-export const Modal = ({
-  isOpen,
-  onClose,
-  title,
-  children,
-  className = ''
-}) => {
+export const Modal = ({ isOpen, onClose, title, children, className = '' }) => {
   // ESC key handler for accessibility
   useEffect(() => {
     if (!isOpen) return

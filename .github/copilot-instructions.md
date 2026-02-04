@@ -12,16 +12,16 @@ Web-based Roguelike Tour Manager with rhythm action mechanics. Manage a Death Gr
 
 ## Tech Stack
 
-| Category | Technology | Version |
-|----------|-----------|---------|
-| Framework | React | 18.2.0 |
-| Build | Vite | 5.0.0 |
-| Language | JavaScript | ES2021 (ESModules) |
-| Game Engine | Pixi.js | 8.0.0 |
-| Animation | Framer Motion | 12.0.0 |
-| Styling | Tailwind CSS | v4 |
-| Audio | Howler.js | 2.2.4 |
-| Linting | ESLint | 8.57 |
+| Category    | Technology    | Version            |
+| ----------- | ------------- | ------------------ |
+| Framework   | React         | 18.2.0             |
+| Build       | Vite          | 5.0.0              |
+| Language    | JavaScript    | ECMAScript 2021 (ESModules) |
+| Game Engine | Pixi.js       | 8.0.0              |
+| Animation   | Framer Motion | 12.0.0             |
+| Styling     | Tailwind CSS  | v4                 |
+| Audio       | Howler.js     | 2.2.4              |
+| Linting     | ESLint        | 8.57               |
 
 ## Visual Design System (STRICT)
 
@@ -37,13 +37,13 @@ Web-based Roguelike Tour Manager with rhythm action mechanics. Manage a Death Gr
 <div className="bg-[var(--void-black)] text-[var(--toxic-green)]">
 ```
 
-| Variable | Hex | Usage |
-|----------|-----|-------|
-| `--toxic-green` | #00FF41 | Primary UI, text, borders |
-| `--void-black` | #0A0A0A | Backgrounds |
-| `--blood-red` | #CC0000 | Errors, critical states |
-| `--ash-gray` | #3A3A3A | Secondary text, borders |
-| `--warning-yellow` | #FFCC00 | Warnings |
+| Variable           | Hex     | Usage                     |
+| ------------------ | ------- | ------------------------- |
+| `--toxic-green`    | #00FF41 | Primary UI, text, borders |
+| `--void-black`     | #0A0A0A | Backgrounds               |
+| `--blood-red`      | #CC0000 | Errors, critical states   |
+| `--ash-gray`       | #3A3A3A | Secondary text, borders   |
+| `--warning-yellow` | #FFCC00 | Warnings                  |
 
 ### Typography
 
@@ -90,11 +90,26 @@ function MyComponent() {
 
 ```javascript
 ActionTypes = {
-  CHANGE_SCENE, UPDATE_PLAYER, UPDATE_BAND, UPDATE_SOCIAL,
-  UPDATE_SETTINGS, SET_MAP, SET_GIG, START_GIG, SET_SETLIST,
-  SET_LAST_GIG_STATS, SET_ACTIVE_EVENT, ADD_TOAST, REMOVE_TOAST,
-  SET_GIG_MODIFIERS, LOAD_GAME, RESET_STATE, APPLY_EVENT_DELTA,
-  POP_PENDING_EVENT, CONSUME_ITEM, ADVANCE_DAY
+  CHANGE_SCENE,
+  UPDATE_PLAYER,
+  UPDATE_BAND,
+  UPDATE_SOCIAL,
+  UPDATE_SETTINGS,
+  SET_MAP,
+  SET_GIG,
+  START_GIG,
+  SET_SETLIST,
+  SET_LAST_GIG_STATS,
+  SET_ACTIVE_EVENT,
+  ADD_TOAST,
+  REMOVE_TOAST,
+  SET_GIG_MODIFIERS,
+  LOAD_GAME,
+  RESET_STATE,
+  APPLY_EVENT_DELTA,
+  POP_PENDING_EVENT,
+  CONSUME_ITEM,
+  ADVANCE_DAY
 }
 ```
 
@@ -113,9 +128,13 @@ const {
 ### Purchase Logic (`src/hooks/usePurchaseLogic.js`)
 
 ```jsx
-const {
-  handleBuy, isItemOwned, canAfford, isItemDisabled
-} = usePurchaseLogic({ player, band, updatePlayer, updateBand, addToast })
+const { handleBuy, isItemOwned, canAfford, isItemDisabled } = usePurchaseLogic({
+  player,
+  band,
+  updatePlayer,
+  updateBand,
+  addToast
+})
 ```
 
 ## Error Handling
@@ -187,12 +206,12 @@ export const ComponentName = ({ prop1, prop2 }) => {
 
 ### Naming Conventions
 
-| Type | Convention | Example |
-|------|------------|---------|
-| Components | PascalCase | `GameState`, `PixiStage` |
-| Functions/Variables | camelCase | `handleKeyPress`, `currentGig` |
-| Constants/Enums | SCREAMING_SNAKE_CASE | `EVENTS_DB`, `ActionTypes` |
-| Files | Match export | `GameState.jsx`, `eventEngine.js` |
+| Type                | Convention           | Example                           |
+| ------------------- | -------------------- | --------------------------------- |
+| Components          | PascalCase           | `GameState`, `PixiStage`          |
+| Functions/Variables | camelCase            | `handleKeyPress`, `currentGig`    |
+| Constants/Enums     | SCREAMING_SNAKE_CASE | `EVENTS_DB`, `ActionTypes`        |
+| Files               | Match export         | `GameState.jsx`, `eventEngine.js` |
 
 ### Import Order
 
@@ -221,7 +240,7 @@ import { eventEngine } from '../utils/eventEngine'
 
 ```css
 /* CORRECT */
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* WRONG */
 @tailwind base;
@@ -262,15 +281,15 @@ npm run format   # Prettier
 
 ## Sub-Agent Documentation
 
-| Area | File | Expertise |
-|------|------|-----------|
-| State | `src/context/AGENTS.md` | Reducers, actions, state shape |
-| Hooks | `src/hooks/AGENTS.md` | Custom hooks, logic extraction |
-| Scenes | `src/scenes/AGENTS.md` | Navigation, game flow |
-| Utils | `src/utils/AGENTS.md` | Engines, calculations |
-| Components | `src/components/AGENTS.md` | Pixi.js, rendering |
-| Data | `src/data/AGENTS.md` | Events, venues, balance |
-| UI | `src/ui/AGENTS.md` | Design system |
+| Area       | File                       | Expertise                      |
+| ---------- | -------------------------- | ------------------------------ |
+| State      | `src/context/AGENTS.md`    | Reducers, actions, state shape |
+| Hooks      | `src/hooks/AGENTS.md`      | Custom hooks, logic extraction |
+| Scenes     | `src/scenes/AGENTS.md`     | Navigation, game flow          |
+| Utils      | `src/utils/AGENTS.md`      | Engines, calculations          |
+| Components | `src/components/AGENTS.md` | Pixi.js, rendering             |
+| Data       | `src/data/AGENTS.md`       | Events, venues, balance        |
+| UI         | `src/ui/AGENTS.md`         | Design system                  |
 
 ## Quality Checklist
 

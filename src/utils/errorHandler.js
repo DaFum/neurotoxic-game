@@ -180,7 +180,11 @@ const MAX_ERROR_LOG_SIZE = 100
  * @returns {Object} Processed error info
  */
 export const handleError = (error, options = {}) => {
-  const { addToast, silent = false, fallbackMessage = 'An error occurred' } = options
+  const {
+    addToast,
+    silent = false,
+    fallbackMessage = 'An error occurred'
+  } = options
 
   let errorInfo
 

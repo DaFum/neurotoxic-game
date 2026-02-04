@@ -138,7 +138,7 @@ export const BandHQ = ({
                 ${
                   activeTab === tab
                     ? 'bg-(--toxic-green) text-black'
-                    ? 'text-(--ash-gray) hover:text-(--star-white) bg-(--void-black)/50 hover:bg-(--void-black)/70'
+                    : 'text-(--ash-gray) hover:text-(--star-white) bg-(--void-black)/50 hover:bg-(--void-black)/70'
                 }`}
             >
               {tab}
@@ -253,9 +253,7 @@ export const BandHQ = ({
             <div>
               <div className='mb-4 text-right font-mono text-(--star-white)'>
                 FUNDS:{' '}
-                <span className='text-(--toxic-green)'>
-                  {player.money}€
-                </span>
+                <span className='text-(--toxic-green)'>{player.money}€</span>
               </div>
               <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
                 {[...HQ_ITEMS.gear, ...HQ_ITEMS.instruments].map(renderItem)}
@@ -267,9 +265,7 @@ export const BandHQ = ({
             <div>
               <div className='mb-4 text-right font-mono text-(--star-white)'>
                 FAME:{' '}
-                <span className='text-(--warning-yellow)'>
-                  {player.fame}★
-                </span>
+                <span className='text-(--warning-yellow)'>{player.fame}★</span>
               </div>
               <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
                 {[...HQ_ITEMS.van, ...HQ_ITEMS.hq].map(renderItem)}

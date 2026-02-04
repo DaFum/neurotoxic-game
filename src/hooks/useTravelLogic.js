@@ -190,7 +190,10 @@ export const useTravelLogic = ({
       )
 
       // Affordability check
-      if ((player.money ?? 0) < totalCost || (player.van?.fuel ?? 0) < fuelLiters) {
+      if (
+        (player.money ?? 0) < totalCost ||
+        (player.van?.fuel ?? 0) < fuelLiters
+      ) {
         addToast('Error: Insufficient resources upon arrival.', 'error')
         setIsTraveling(false)
         setTravelTarget(null)

@@ -35,7 +35,9 @@ const ReportPhase = ({ financials, onNext }) => (
         </div>
       </div>
       <div>
-        <h3 className='text-(--blood-red) border-b border-(--ash-gray) mb-2'>EXPENSES</h3>
+        <h3 className='text-(--blood-red) border-b border-(--ash-gray) mb-2'>
+          EXPENSES
+        </h3>
         {financials.expenses.breakdown.map((item, i) => (
           <div key={i} className='flex justify-between'>
             <span>{item.label}</span>

@@ -6,12 +6,12 @@ This module contains the centralized state management system using React Context
 
 ## Module Overview
 
-| File | Purpose |
-|------|---------|
-| `GameState.jsx` | React Context provider and `useGameState()` hook |
-| `initialState.js` | Default state configurations and factory function |
-| `gameReducer.js` | Centralized reducer with ActionTypes enum |
-| `actionCreators.js` | Factory functions for creating dispatch actions |
+| File                | Purpose                                           |
+| ------------------- | ------------------------------------------------- |
+| `GameState.jsx`     | React Context provider and `useGameState()` hook  |
+| `initialState.js`   | Default state configurations and factory function |
+| `gameReducer.js`    | Centralized reducer with ActionTypes enum         |
+| `actionCreators.js` | Factory functions for creating dispatch actions   |
 
 ## Architecture
 
@@ -118,36 +118,36 @@ All action types are defined in `gameReducer.js`:
 import { ActionTypes } from './gameReducer'
 
 // Scene navigation
-ActionTypes.CHANGE_SCENE        // payload: string
+ActionTypes.CHANGE_SCENE // payload: string
 
 // State updates
-ActionTypes.UPDATE_PLAYER       // payload: object (partial player)
-ActionTypes.UPDATE_BAND         // payload: object (partial band)
-ActionTypes.UPDATE_SOCIAL       // payload: object (partial social)
-ActionTypes.UPDATE_SETTINGS     // payload: object (partial settings)
+ActionTypes.UPDATE_PLAYER // payload: object (partial player)
+ActionTypes.UPDATE_BAND // payload: object (partial band)
+ActionTypes.UPDATE_SOCIAL // payload: object (partial social)
+ActionTypes.UPDATE_SETTINGS // payload: object (partial settings)
 
 // Game flow
-ActionTypes.SET_MAP             // payload: map object
-ActionTypes.SET_GIG             // payload: gig object or null
-ActionTypes.START_GIG           // payload: venue object
-ActionTypes.SET_SETLIST         // payload: song array
-ActionTypes.SET_LAST_GIG_STATS  // payload: stats object
+ActionTypes.SET_MAP // payload: map object
+ActionTypes.SET_GIG // payload: gig object or null
+ActionTypes.START_GIG // payload: venue object
+ActionTypes.SET_SETLIST // payload: song array
+ActionTypes.SET_LAST_GIG_STATS // payload: stats object
 
 // Events
-ActionTypes.SET_ACTIVE_EVENT    // payload: event object or null
-ActionTypes.APPLY_EVENT_DELTA   // payload: delta object
-ActionTypes.POP_PENDING_EVENT   // no payload
+ActionTypes.SET_ACTIVE_EVENT // payload: event object or null
+ActionTypes.APPLY_EVENT_DELTA // payload: delta object
+ActionTypes.POP_PENDING_EVENT // no payload
 
 // UI
-ActionTypes.ADD_TOAST           // payload: toast object
-ActionTypes.REMOVE_TOAST        // payload: toast id
-ActionTypes.SET_GIG_MODIFIERS   // payload: modifiers object
+ActionTypes.ADD_TOAST // payload: toast object
+ActionTypes.REMOVE_TOAST // payload: toast id
+ActionTypes.SET_GIG_MODIFIERS // payload: modifiers object
 
 // Game management
-ActionTypes.LOAD_GAME           // payload: saved state
-ActionTypes.RESET_STATE         // no payload
-ActionTypes.CONSUME_ITEM        // payload: item key
-ActionTypes.ADVANCE_DAY         // no payload
+ActionTypes.LOAD_GAME // payload: saved state
+ActionTypes.RESET_STATE // no payload
+ActionTypes.CONSUME_ITEM // payload: item key
+ActionTypes.ADVANCE_DAY // no payload
 ```
 
 ---
@@ -174,28 +174,28 @@ dispatch(createUpdatePlayerAction({ money: 400 }))
 
 ### Available Action Creators
 
-| Creator | Parameters |
-|---------|------------|
-| `createChangeSceneAction` | `(scene: string)` |
-| `createUpdatePlayerAction` | `(updates: object)` |
-| `createUpdateBandAction` | `(updates: object)` |
-| `createUpdateSocialAction` | `(updates: object)` |
-| `createUpdateSettingsAction` | `(updates: object)` |
-| `createSetMapAction` | `(map: object)` |
-| `createSetGigAction` | `(gig: object\|null)` |
-| `createStartGigAction` | `(venue: object)` |
-| `createSetSetlistAction` | `(songs: array)` |
-| `createSetLastGigStatsAction` | `(stats: object)` |
-| `createSetActiveEventAction` | `(event: object\|null)` |
-| `createAddToastAction` | `(message, type)` |
-| `createRemoveToastAction` | `(id: string)` |
+| Creator                       | Parameters                      |
+| ----------------------------- | ------------------------------- |
+| `createChangeSceneAction`     | `(scene: string)`               |
+| `createUpdatePlayerAction`    | `(updates: object)`             |
+| `createUpdateBandAction`      | `(updates: object)`             |
+| `createUpdateSocialAction`    | `(updates: object)`             |
+| `createUpdateSettingsAction`  | `(updates: object)`             |
+| `createSetMapAction`          | `(map: object)`                 |
+| `createSetGigAction`          | `(gig: object\|null)`           |
+| `createStartGigAction`        | `(venue: object)`               |
+| `createSetSetlistAction`      | `(songs: array)`                |
+| `createSetLastGigStatsAction` | `(stats: object)`               |
+| `createSetActiveEventAction`  | `(event: object\|null)`         |
+| `createAddToastAction`        | `(message, type)`               |
+| `createRemoveToastAction`     | `(id: string)`                  |
 | `createSetGigModifiersAction` | `(modifiers: object\|function)` |
-| `createLoadGameAction` | `(savedState: object)` |
-| `createResetStateAction` | `()` |
-| `createApplyEventDeltaAction` | `(delta: object)` |
-| `createPopPendingEventAction` | `()` |
-| `createConsumeItemAction` | `(itemType: string)` |
-| `createAdvanceDayAction` | `()` |
+| `createLoadGameAction`        | `(savedState: object)`          |
+| `createResetStateAction`      | `()`                            |
+| `createApplyEventDeltaAction` | `(delta: object)`               |
+| `createPopPendingEventAction` | `()`                            |
+| `createConsumeItemAction`     | `(itemType: string)`            |
+| `createAdvanceDayAction`      | `()`                            |
 
 ---
 
