@@ -8,6 +8,7 @@
   --toxic-green-dark: #0c3;
   --toxic-green-light: #3f6;
   --toxic-green-glow: rgb(0 255 65 / 60%);
+  --toxic-green-20: rgba(0, 255, 65, 0.2);
 
   /* Death-Metal-Schwarz */
   --void-black: #0a0a0a;

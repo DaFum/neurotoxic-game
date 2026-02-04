@@ -81,9 +81,9 @@ export const DebugLogViewer = ({ className = '' }) => {
           <button
             onClick={() => setVisible(false)}
             aria-label='Close log'
-            className='text-(--blood-red) font-bold px-2'
+            className='border-2 border-(--blood-red) bg-(--void-black) text-(--blood-red) px-2 py-1 shadow-[4px_4px_0px_var(--blood-red)] hover:bg-(--blood-red) hover:text-(--void-black) uppercase font-bold transition-all duration-150'
           >
-            X
+            CLOSE
           </button>
         </div>
 

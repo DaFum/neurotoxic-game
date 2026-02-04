@@ -39,6 +39,7 @@ const ToggleRadio = () => {
       onClick={toggle}
       className='text-(--toxic-green) hover:text-(--star-white) text-xs'
       title={isPlaying ? 'Stop Radio' : 'Play/Resume Radio'}
+      aria-label={isPlaying ? 'Radio stoppen' : 'Radio starten'}
     >
       {isPlaying ? '■' : '▶'}
     </button>
@@ -101,6 +102,10 @@ export const Overworld = () => {
     <div
       className={`w-full h-full bg-(--void-black) relative overflow-hidden flex flex-col items-center justify-center p-8 ${isTraveling ? 'pointer-events-none' : ''}`}
     >
+      {settings.crtEnabled && (
+        <div className='crt-overlay pointer-events-none fixed inset-0 z-50 mix-blend-overlay opacity-50' />
+      )}
+
       <h2 className='absolute top-20 text-4xl text-(--toxic-green) font-[Metal_Mania] z-10 text-shadow-[0_0_10px_var(--toxic-green)] pointer-events-none'>
         TOUR PLAN: {player.location}
       </h2>
@@ -142,7 +147,7 @@ export const Overworld = () => {
         </button>
       </div>
 
-      <div className='relative w-full h-full max-w-6xl max-h-[80vh] border-4 border-(--toxic-green) bg-(--void-black)/80 rounded-lg shadow-[0_0_50px_rgba(0,255,65,0.2)] overflow-hidden'>
+      <div className='relative w-full h-full max-w-6xl max-h-[80vh] border-4 border-(--toxic-green) bg-(--void-black)/80 rounded-lg shadow-[0_0_50px_var(--toxic-green-20)] overflow-hidden'>
         <div
           className='absolute inset-0 opacity-30 bg-cover bg-center grayscale invert'
           style={{
