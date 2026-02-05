@@ -356,7 +356,6 @@ function playDrumsLegacy(time, diff, note, random) {
     if (random() > 0.9) {
       drumKit.snare.triggerAttackRelease('16n', time)
     }
-    if (time % 0.25 < 0.1)
-      drumKit.hihat.triggerAttackRelease(8000, '32n', time)
+    if (time % 0.25 < 0.1) drumKit.hihat.triggerAttackRelease(8000, '32n', time)
   }
 }
