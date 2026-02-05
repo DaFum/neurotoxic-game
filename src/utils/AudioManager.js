@@ -187,6 +187,7 @@ class AudioSystem {
     const validTypes = ['hit', 'miss', 'menu', 'travel', 'cash']
     if (!validTypes.includes(key)) {
       console.warn(`[AudioSystem] Unknown SFX type: ${key}`)
+      return
     }
     audioEngine.playSFX(key)
   }
@@ -252,6 +253,7 @@ class AudioSystem {
   dispose() {
     this.stopMusic()
     Howler.unload()
+    audioEngine.disposeAudio?.()
     this.initialized = false
   }
 }

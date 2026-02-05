@@ -328,7 +328,12 @@ export const useTravelLogic = ({
         }
         // Proceed even if visibility is technically hidden by layer logic (e.g. going back)
       } else if (visibility !== 'visible' || !isConnected(node.id)) {
-        // Standard Logic
+        addToast(
+          visibility !== 'visible'
+            ? 'Cannot travel: location not visible'
+            : 'Cannot travel: location not connected',
+          'warning'
+        )
         return
       }
 

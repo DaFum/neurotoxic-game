@@ -125,13 +125,16 @@ export const calculateSocialGrowth = (
  * Checks if a viral event triggers based on gig stats.
  * @param {object} stats - { accuracy, maxCombo, score }
  * @param {number} [modifiers=0] - Additional probability boost (0-1)
+ * @param {number} [roll=Math.random()] - Deterministic roll (0-1)
  * @returns {boolean} True if viral event occurs
  */
-export const checkViralEvent = (stats, modifiers = 0) => {
+export const checkViralEvent = (stats, modifiers = 0, roll = Math.random()) => {
   if (stats.accuracy > 95) return true
-  if (stats.maxCombo > 50) return true // "2.5x" equivalent in combo count logic approx
+  // Combo threshold logic: Assuming 2.5x multiplier roughly correlates to 30-50 combo depending on scaling.
+  // Using maxCombo directly.
+  if (stats.maxCombo > 50) return true
   const chance = 0.01 + modifiers
-  return Math.random() < chance
+  return roll < chance
 }
 
 /**

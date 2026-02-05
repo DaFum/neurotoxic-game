@@ -83,7 +83,15 @@ export const SettingsPanel = ({
             lost.
           </p>
           <button
-            onClick={onDeleteSave}
+            onClick={() => {
+              if (
+                window.confirm(
+                  'Are you sure you want to delete your save game?'
+                )
+              ) {
+                onDeleteSave()
+              }
+            }}
             className='bg-(--blood-red) text-(--void-black) px-4 py-2 font-bold hover:invert border border-(--blood-red) font-mono'
           >
             DELETE SAVE

@@ -4,7 +4,15 @@ import { ChatterOverlay } from './ChatterOverlay'
 import { HecklerOverlay } from './HecklerOverlay'
 
 export const GigHUD = ({ stats, onLaneInput, gameStateRef }) => {
-  const { score, combo, health, overload, isGameOver } = stats
+  const {
+    score,
+    combo,
+    health,
+    overload,
+    isGameOver,
+    accuracy = 100,
+    isToxicMode = false
+  } = stats
 
   return (
     <div className='absolute inset-0 z-30 pointer-events-none'>
@@ -49,7 +57,13 @@ export const GigHUD = ({ stats, onLaneInput, gameStateRef }) => {
           <div
             className={`text-3xl font-bold transition-transform duration-100 ${
               combo > 0 ? 'scale-110' : 'scale-100'
-            } ${combo > 30 ? 'text-(--blood-red) animate-pulse' : 'text-(--ash-gray)'}`}
+            } ${
+              accuracy < 70
+                ? 'text-(--warning-yellow) animate-pulse'
+                : combo > 30
+                  ? 'text-(--blood-red) animate-pulse'
+                  : 'text-(--ash-gray)'
+            }`}
           >
             {combo}x
           </div>
@@ -79,7 +93,7 @@ export const GigHUD = ({ stats, onLaneInput, gameStateRef }) => {
           <span>CROWD ENERGY</span>
           <span
             className={
-              health < 30
+              health < 20
                 ? 'text-(--blood-red) animate-flash'
                 : 'text-(--star-white)'
             }
@@ -88,16 +102,27 @@ export const GigHUD = ({ stats, onLaneInput, gameStateRef }) => {
           </span>
         </div>
         {/* Segmented Bar Look */}
-        <div className='w-full h-6 bg-(--void-black)/50 border-2 border-(--ash-gray)/30 backdrop-blur-sm p-[2px]'>
+        <div
+          className={`w-full h-6 bg-(--void-black)/50 border-2 backdrop-blur-sm p-[2px] ${
+            health < 20
+              ? 'border-(--blood-red) animate-flash'
+              : 'border-(--ash-gray)/30'
+          }`}
+        >
           <div
             className={`h-full transition-all duration-300 ease-out ${
-              health < 30
+              health < 20
                 ? 'bg-(--blood-red) shadow-[0_0_15px_var(--blood-red)]'
                 : 'bg-gradient-to-r from-(--toxic-green) to-(--toxic-green-light) shadow-[0_0_10px_var(--toxic-green)]'
             }`}
             style={{ width: `${health}%` }}
           />
         </div>
+        {isToxicMode && (
+          <div className='mt-2 text-(--blood-red) animate-pulse font-bold tracking-widest text-center'>
+            TOXIC MODE ACTIVE
+          </div>
+        )}
       </div>
 
       {/* Controls Hint */}
@@ -122,7 +147,9 @@ GigHUD.propTypes = {
     combo: PropTypes.number.isRequired,
     health: PropTypes.number.isRequired,
     overload: PropTypes.number.isRequired,
-    isGameOver: PropTypes.bool.isRequired
+    isGameOver: PropTypes.bool.isRequired,
+    accuracy: PropTypes.number,
+    isToxicMode: PropTypes.bool
   }).isRequired,
   onLaneInput: PropTypes.func,
   gameStateRef: PropTypes.shape({

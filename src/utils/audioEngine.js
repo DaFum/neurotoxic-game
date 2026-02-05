@@ -107,7 +107,7 @@ export async function ensureAudioContext() {
 
 /**
  * Plays a sound effect by type.
- * @param {string} type - The type of SFX ('hit', 'miss', 'menu', 'travel').
+ * @param {string} type - The type of SFX ('hit', 'miss', 'menu', 'travel', 'cash').
  */
 export function playSFX(type) {
   if (!isSetup || !sfxSynth) return
@@ -133,6 +133,11 @@ export function playSFX(type) {
       } else {
         sfxSynth.triggerAttackRelease('G1', '8n', now, 0.5)
       }
+      break
+    case 'cash':
+      // Bright chime/coin sound
+      sfxSynth.triggerAttackRelease('B5', '16n', now, 0.4)
+      sfxSynth.triggerAttackRelease('E6', '16n', now + 0.05, 0.4)
       break
     default:
       break
@@ -349,6 +354,30 @@ export function resumeAudio() {
   if (Tone.Transport.state === 'paused') {
     Tone.Transport.start()
   }
+}
+
+/**
+ * Disposes of audio engine resources.
+ */
+export function disposeAudio() {
+  stopAudio()
+  if (guitar) guitar.dispose()
+  if (bass) bass.dispose()
+  if (drumKit) {
+    drumKit.kick.dispose()
+    drumKit.snare.dispose()
+    drumKit.hihat.dispose()
+    drumKit.crash.dispose()
+  }
+  if (sfxSynth) sfxSynth.dispose()
+  if (sfxGain) sfxGain.dispose()
+
+  guitar = null
+  bass = null
+  drumKit = null
+  sfxSynth = null
+  sfxGain = null
+  isSetup = false
 }
 
 /**

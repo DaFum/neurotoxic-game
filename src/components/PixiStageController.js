@@ -182,7 +182,7 @@ class PixiStageController {
     const laneStrokeWidth = this.laneLayout.laneStrokeWidth
 
     this.gameStateRef.current.lanes.forEach((lane, index) => {
-      const laneX = startX + index * (RHYTHM_LAYOUT.laneWidth + LANE_GAP)
+      const laneX = startX + index * (laneWidth + LANE_GAP)
       lane.renderX = laneX
 
       // Create separate graphics for static background and dynamic elements
@@ -438,10 +438,22 @@ class PixiStageController {
     if (this.spritePool.length > 0) {
       const sprite = this.spritePool.pop()
       sprite.visible = true
-      sprite.tint = lane.color
-      sprite.x = lane.renderX + NOTE_CENTER_OFFSET
-      sprite.y = NOTE_INITIAL_Y
-      // Reset alpha/scale if modified elsewhere? Currently safe.
+
+      if (sprite instanceof PIXI.Sprite) {
+        sprite.tint = lane.color
+        sprite.x = lane.renderX + NOTE_CENTER_OFFSET
+        sprite.y = NOTE_INITIAL_Y
+        sprite.alpha = 1
+        sprite.scale.set(0.5) // Assuming scale is reset to base
+      } else if (sprite instanceof PIXI.Graphics) {
+        sprite.clear()
+        sprite.rect(0, 0, NOTE_FALLBACK_WIDTH, NOTE_FALLBACK_HEIGHT)
+        sprite.fill({ color: lane.color })
+        sprite.x = lane.renderX + 5
+        sprite.y = NOTE_INITIAL_Y
+        sprite.alpha = 1
+        sprite.scale.set(1)
+      }
       return sprite
     }
     return this.createNoteSprite(lane)
@@ -519,7 +531,7 @@ class PixiStageController {
     const startX = this.laneLayout.startX
 
     this.gameStateRef.current.lanes.forEach((lane, index) => {
-      lane.renderX = startX + index * (RHYTHM_LAYOUT.laneWidth + LANE_GAP)
+      lane.renderX = startX + index * (this.laneLayout.laneWidth + LANE_GAP)
     })
     return true
   }
@@ -575,7 +587,9 @@ class PixiStageController {
     this.nextRenderIndex = 0
 
     // Destroy pooled sprites
-    this.spritePool.forEach(sprite => sprite.destroy())
+    for (const sprite of this.spritePool) {
+      sprite.destroy()
+    }
     this.spritePool = []
 
     this.laneGraphics = []

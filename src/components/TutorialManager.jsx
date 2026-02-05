@@ -74,7 +74,7 @@ export const TutorialManager = () => {
 
   const content = getContent()
 
-  if (!content || step === -1 || step >= 999) return null
+  if (!content || step === -1) return null
 
   return (
     <AnimatePresence>
