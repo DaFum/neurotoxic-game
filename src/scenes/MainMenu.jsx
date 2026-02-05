@@ -6,6 +6,7 @@ import { GlitchButton } from '../ui/GlitchButton'
 import { BandHQ } from '../ui/BandHQ'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import { audioManager } from '../utils/AudioManager'
+import { handleError } from '../utils/errorHandler'
 
 /**
  * The main menu scene component.
@@ -30,10 +31,6 @@ export const MainMenu = () => {
   const [showUpgrades, setShowUpgrades] = useState(false)
 
   const { audioState, handleAudioChange } = useAudioControl()
-
-  React.useEffect(() => {
-    audioManager.startAmbient()
-  }, [])
 
   /**
    * Handles loading a saved game.
@@ -97,9 +94,17 @@ export const MainMenu = () => {
         <div className='flex flex-col gap-4'>
           <GlitchButton
             onClick={async () => {
-              await audioManager.ensureAudioContext()
-              audioManager.resumeMusic()
-              changeScene('OVERWORLD')
+              try {
+                await audioManager.ensureAudioContext()
+              } catch (err) {
+                handleError(err, {
+                  addToast,
+                  fallbackMessage: 'Audio initialization failed.'
+                })
+              } finally {
+                audioManager.resumeMusic()
+                changeScene('OVERWORLD')
+              }
             }}
             className='relative z-20'
           >

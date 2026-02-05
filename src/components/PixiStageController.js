@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js'
+import { handleError } from '../utils/errorHandler'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import {
   buildRhythmLayout,
@@ -127,8 +128,11 @@ class PixiStageController {
     const noteTextureUrl = getGenImageUrl(IMG_PROMPTS.NOTE_SKULL)
     try {
       this.noteTexture = await PIXI.Texture.fromURL(noteTextureUrl)
-    } catch {
+    } catch (error) {
       this.noteTexture = null
+      handleError(error, {
+        fallbackMessage: 'Note texture konnte nicht geladen werden.'
+      })
     }
   }
 
@@ -422,8 +426,17 @@ class PixiStageController {
         targetY,
         speed: state.speed
       })
-      sprite.x =
-        state.lanes[note.laneIndex].renderX + NOTE_CENTER_OFFSET + jitterOffset
+
+      if (sprite instanceof PIXI.Sprite) {
+        sprite.x =
+          state.lanes[note.laneIndex].renderX +
+          NOTE_CENTER_OFFSET +
+          jitterOffset
+      } else {
+        // Fallback graphics are positioned differently (renderX + 5)
+        // We only update Y for them to avoid jumping
+        sprite.x = state.lanes[note.laneIndex].renderX + 5
+      }
     }
   }
 
@@ -576,6 +589,7 @@ class PixiStageController {
     this.initPromise = null
     if (this.app && this.app.ticker) {
       this.app.ticker.remove(this.handleTicker)
+      this.app.ticker.stop()
     }
 
     const notesToRemove = Array.from(this.noteSprites.keys())

@@ -275,6 +275,18 @@ function playDrumNote(midiPitch, time, velocity) {
     case 57:
       drumKit.crash.triggerAttackRelease('C2', '8n', time, velocity)
       break
+    case 51: // Ride Cymbal
+    case 59:
+      drumKit.hihat.triggerAttackRelease(6000, '16n', time, velocity * 0.6)
+      break
+    case 41: // Low Tom
+    case 43:
+      drumKit.kick.triggerAttackRelease('G1', '8n', time, velocity * 0.7)
+      break
+    case 45: // Mid Tom
+    case 47:
+      drumKit.kick.triggerAttackRelease('C2', '8n', time, velocity * 0.7)
+      break
     default:
       // Default to HiHat for unknown percussion elements to keep rhythm
       drumKit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.5)

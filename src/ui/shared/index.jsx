@@ -7,9 +7,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-// Prevent linter errors for re-exported components
-/* eslint-disable react/prop-types */
-
 // Export SettingsPanel
 export { SettingsPanel } from './SettingsPanel'
 export { VolumeSlider } from './VolumeSlider'
@@ -23,6 +20,12 @@ export const Panel = ({ children, className = '' }) => (
     {children}
   </div>
 )
+
+Panel.propTypes = {
+  children: PropTypes.node,
+  className: PropTypes.string
+}
+
 export const TabButton = ({ active, onClick, children }) => (
   <button
     onClick={onClick}
@@ -35,6 +38,13 @@ export const TabButton = ({ active, onClick, children }) => (
     {children}
   </button>
 )
+
+TabButton.propTypes = {
+  active: PropTypes.bool,
+  onClick: PropTypes.func.isRequired,
+  children: PropTypes.node.isRequired
+}
+
 export const ActionButton = ({ onClick, disabled, label, className = '' }) => (
   <button
     onClick={onClick}
@@ -48,6 +58,14 @@ export const ActionButton = ({ onClick, disabled, label, className = '' }) => (
     {label}
   </button>
 )
+
+ActionButton.propTypes = {
+  onClick: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
+  label: PropTypes.string.isRequired,
+  className: PropTypes.string
+}
+
 export const Modal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null
   return (
@@ -70,6 +88,14 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
     </div>
   )
 }
+
+Modal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  title: PropTypes.string.isRequired,
+  children: PropTypes.node
+}
+
 export const Grid = ({ children, cols = 1, gap = 4, className = '' }) => {
   const colsClass =
     {
@@ -93,6 +119,13 @@ export const Grid = ({ children, cols = 1, gap = 4, className = '' }) => {
       {children}
     </div>
   )
+}
+
+Grid.propTypes = {
+  children: PropTypes.node,
+  cols: PropTypes.oneOf([1, 2, 3, 4]),
+  gap: PropTypes.oneOf([1, 2, 4, 6, 8]),
+  className: PropTypes.string
 }
 
 /**
