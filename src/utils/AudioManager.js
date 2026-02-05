@@ -42,14 +42,11 @@ class AudioSystem {
       // Apply global mute
       Howler.mute(this.muted)
 
-      // Initialize Audio Engine
-      await audioEngine.setupAudio()
+      // Initialize Audio Engine settings (but don't start Context yet)
       audioEngine.setSFXVolume(this.muted ? 0 : this.sfxVolume)
 
       // Tone mute is handled globally by Volume node in engine if implemented, or we can use Destination
       Tone.Destination.mute = this.muted
-
-      this.initialized = true
     } catch (error) {
       console.error('[AudioSystem] Initialization failed:', error)
       // Graceful fallback: audio might just not play, but app shouldn't crash.
@@ -169,6 +166,10 @@ class AudioSystem {
    */
   async ensureAudioContext() {
     try {
+      if (!this.initialized) {
+        await audioEngine.setupAudio()
+        this.initialized = true
+      }
       await audioEngine.ensureAudioContext()
       if (Howler.ctx && Howler.ctx.state !== 'running') {
         await Howler.ctx.resume()

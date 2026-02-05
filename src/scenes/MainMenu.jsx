@@ -32,14 +32,6 @@ export const MainMenu = () => {
 
   const { audioState, handleAudioChange } = useAudioControl()
 
-  usePurchaseLogic({
-    player,
-    band,
-    updatePlayer,
-    updateBand,
-    addToast
-  })
-
   React.useEffect(() => {
     audioManager.startAmbient()
   }, [])

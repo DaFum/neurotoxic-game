@@ -377,7 +377,8 @@ class PixiStageController {
       if (elapsed < 100) {
         this.nextRenderIndex = 0
         // Clean up sprites that might be stale
-        for (const note of this.noteSprites.keys()) {
+        const notesToRemove = Array.from(this.noteSprites.keys())
+        for (const note of notesToRemove) {
           this.destroyNoteSprite(note)
         }
       }
@@ -578,7 +579,8 @@ class PixiStageController {
       this.app.ticker.remove(this.handleTicker)
     }
 
-    for (const note of this.noteSprites.keys()) {
+    const notesToRemove = Array.from(this.noteSprites.keys())
+    for (const note of notesToRemove) {
       this.destroyNoteSprite(note)
     }
     this.noteSprites.clear()
@@ -593,7 +595,9 @@ class PixiStageController {
     this.laneGraphics = []
     this.crowdMembers = []
 
-    this.activeEffects.forEach(effect => effect.destroy?.())
+    this.activeEffects.forEach(effect => {
+      effect.destroy?.()
+    })
     this.activeEffects = []
     this.effectsContainer = null
 

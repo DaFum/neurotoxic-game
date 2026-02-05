@@ -1,7 +1,7 @@
 /**
  * Audio Engine Utility
  * This module manages the AudioContext and Tone.js logic for both Rhythm Game music and UI SFX.
- * Note: This file contains side-effects (Tone.start, AudioContext creation).
+ * Note: This file contains side-effects (Tone.start, AudioContext creation) as per architectural design exceptions.
  */
 
 import * as Tone from 'tone'
@@ -212,7 +212,7 @@ export async function playSongFromData(song, delay = 0) {
       const rawVelocity = Math.max(0, Math.min(127, n.v))
 
       // Ensure time and delay are valid numbers
-      const validDelay = Number.isFinite(delay) ? delay : 0
+      const validDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
       const finalTime = Number.isFinite(time) ? time + validDelay : -1
 
       // Invalid times are caught by the filter below

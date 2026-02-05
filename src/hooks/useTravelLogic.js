@@ -223,7 +223,7 @@ export const useTravelLogic = ({
 
       // Sound system upgrade bonus
       if (hasUpgrade('van_sound_system')) {
-        updateBand({ harmony: Math.min(100, band.harmony + 5) })
+        updateBand({ harmony: Math.min(100, (band?.harmony ?? 0) + 5) })
       }
 
       setIsTraveling(false)

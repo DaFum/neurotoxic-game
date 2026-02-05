@@ -7,13 +7,73 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
+// Prevent linter errors for re-exported components
+/* eslint-disable react/prop-types */
+
 // Export SettingsPanel
 export { SettingsPanel } from './SettingsPanel'
 export { VolumeSlider } from './VolumeSlider'
 
-// Remove unused exports to reduce bundle size and confusion.
-// Previously exported: Panel, TabButton, ActionButton, Modal, Grid.
-// If needed, restore from history or uncomment below.
+// Re-export deprecated components to maintain API compatibility
+// These might be removed in future versions.
+export const Panel = ({ children, className = '' }) => (
+  <div
+    className={`bg-(--void-black) border border-(--ash-gray) p-4 ${className}`}
+  >
+    {children}
+  </div>
+)
+export const TabButton = ({ active, onClick, children }) => (
+  <button
+    onClick={onClick}
+    className={`px-4 py-2 font-mono uppercase text-sm transition-colors ${
+      active
+        ? 'bg-(--toxic-green) text-(--void-black) font-bold'
+        : 'text-(--ash-gray) hover:text-(--star-white)'
+    }`}
+  >
+    {children}
+  </button>
+)
+export const ActionButton = ({ onClick, disabled, label, className = '' }) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className={`w-full py-2 font-bold font-mono uppercase transition-colors ${
+      disabled
+        ? 'bg-(--ash-gray)/20 text-(--ash-gray) cursor-not-allowed'
+        : 'bg-(--toxic-green) text-(--void-black) hover:bg-(--star-white)'
+    } ${className}`}
+  >
+    {label}
+  </button>
+)
+export const Modal = ({ isOpen, onClose, title, children }) => {
+  if (!isOpen) return null
+  return (
+    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/80'>
+      <div className='bg-(--void-black) border-2 border-(--toxic-green) w-full max-w-lg p-6 relative shadow-[0_0_20px_var(--toxic-green)]'>
+        <div className='flex justify-between items-center mb-6 border-b border-(--ash-gray) pb-2'>
+          <h2 className='text-2xl font-[Metal_Mania] text-(--toxic-green)'>
+            {title}
+          </h2>
+          <button
+            onClick={onClose}
+            className='text-(--ash-gray) hover:text-(--blood-red)'
+          >
+            X
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>
+  )
+}
+export const Grid = ({ children, cols = 1, gap = 4, className = '' }) => (
+  <div className={`grid grid-cols-${cols} gap-${gap} ${className}`}>
+    {children}
+  </div>
+)
 
 /**
  * StatBox - Displays a single statistic with an icon

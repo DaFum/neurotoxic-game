@@ -113,7 +113,7 @@ export const GigHUD = ({ stats, onLaneInput, gameStateRef }) => {
             className={`h-full transition-all duration-300 ease-out ${
               health < 20
                 ? 'bg-(--blood-red) shadow-[0_0_15px_var(--blood-red)]'
-                : 'bg-gradient-to-r from-(--toxic-green) to-(--toxic-green-light) shadow-[0_0_10px_var(--toxic-green)]'
+                : 'bg-gradient-to-r from-(--toxic-green) to-(--toxic-green) shadow-[0_0_10px_var(--toxic-green)]'
             }`}
             style={{ width: `${health}%` }}
           />

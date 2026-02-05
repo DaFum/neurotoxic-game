@@ -33,7 +33,7 @@ export const SettingsPanel = ({
             onChange={e => onSfxChange(parseFloat(e.target.value))}
           />
           <div className='flex items-center justify-between'>
-            <label className='font-[Courier_New] text-sm uppercase tracking-wide text-(--star-white)'>
+            <label className='font-[Courier_New] text-sm uppercase tracking-wide text-(--ash-gray)'>
               MUTE ALL
             </label>
             <button
@@ -55,7 +55,7 @@ export const SettingsPanel = ({
           VISUAL INTERFACE
         </h2>
         <div className='flex items-center justify-between'>
-          <label className='font-[Courier_New] text-sm uppercase tracking-wide text-(--star-white)'>
+          <label className='font-[Courier_New] text-sm uppercase tracking-wide text-(--ash-gray)'>
             CRT EFFECT
           </label>
           <button
@@ -92,7 +92,7 @@ export const SettingsPanel = ({
                 onDeleteSave()
               }
             }}
-            className='bg-(--blood-red) text-(--void-black) px-4 py-2 font-bold hover:invert border border-(--blood-red) font-mono'
+            className='bg-(--blood-red) text-(--void-black) px-4 py-2 font-bold hover:invert border-2 border-(--blood-red) rounded-none shadow-[4px_4px_0px_var(--blood-red)] font-mono'
           >
             DELETE SAVE
           </button>

@@ -16,9 +16,6 @@ export const TutorialManager = () => {
     // Adding step to dependency array is safe here.
   }, [player.tutorialStep, step])
 
-  // Early exit if tutorial has been seen globally
-  if (settings?.tutorialSeen) return null
-
   const completeStep = () => {
     const nextStep = step + 1
     setStep(nextStep)
@@ -74,7 +71,7 @@ export const TutorialManager = () => {
 
   const content = getContent()
 
-  if (!content || step === -1) return null
+  if (settings?.tutorialSeen || !content || step === -1) return null
 
   return (
     <AnimatePresence>
