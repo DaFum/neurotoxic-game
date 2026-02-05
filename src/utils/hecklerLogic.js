@@ -5,7 +5,11 @@
  * @param {number} screenHeight - Height of the screen (to determine despawn).
  * @returns {Array} Updated list of projectiles.
  */
-export const updateProjectiles = (projectiles, deltaMS, screenHeight = 1080) => {
+export const updateProjectiles = (
+  projectiles,
+  deltaMS,
+  screenHeight = 1080
+) => {
   return projectiles
     .map(p => ({
       ...p,
@@ -23,9 +27,14 @@ export const updateProjectiles = (projectiles, deltaMS, screenHeight = 1080) => 
  * @param {number} [screenWidth=1920] - Width of screen for random X position.
  * @returns {object|null} New projectile object or null.
  */
-export const trySpawnProjectile = (stats, random = Math.random, screenWidth = 1920) => {
+export const trySpawnProjectile = (
+  stats,
+  random = Math.random,
+  screenWidth = 1920
+) => {
   // Higher chance if health is low or combo is high (jealousy)
-  const spawnChance = stats.health < 50 ? 0.002 : 0.0005
+  let spawnChance = stats.health < 50 ? 0.002 : 0.0005
+  if (stats.combo > 30) spawnChance += 0.001
 
   if (random() < spawnChance) {
     return {

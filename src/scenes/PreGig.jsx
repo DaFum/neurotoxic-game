@@ -4,6 +4,7 @@ import { SONGS_DB } from '../data/songs'
 import { getGigModifiers } from '../utils/simulationUtils'
 import { ChatterOverlay } from '../components/ChatterOverlay'
 import { ensureAudioContext } from '../utils/audioEngine'
+import { getSongId } from '../utils/songUtils'
 
 /**
  * Scene for preparing for a gig: managing budget, setlist, and modifiers.
@@ -58,13 +59,6 @@ export const PreGig = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  /**
-   * Helper to normalize song entries (handle strings vs objects)
-   * @param {string|object} item - Setlist entry
-   * @returns {string} Song ID
-   */
-  const getSongId = item => (typeof item === 'string' ? item : item.id)
 
   /**
    * Toggles a song in the setlist.

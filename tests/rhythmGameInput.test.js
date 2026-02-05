@@ -4,7 +4,14 @@ import { checkHit } from '../src/utils/rhythmUtils.js'
 
 test('checkHit finds matching note within window', () => {
   const notes = [
-    { time: 1000, laneIndex: 0, visible: true, hit: false, id: 1, type: 'note' },
+    {
+      time: 1000,
+      laneIndex: 0,
+      visible: true,
+      hit: false,
+      id: 1,
+      type: 'note'
+    },
     { time: 2000, laneIndex: 1, visible: true, hit: false, id: 2, type: 'note' }
   ]
 
@@ -27,7 +34,9 @@ test('checkHit finds matching note within window', () => {
 })
 
 test('checkHit ignores notes outside window', () => {
-  const notes = [{ time: 1000, laneIndex: 0, visible: true, hit: false, id: 1, type: 'note' }]
+  const notes = [
+    { time: 1000, laneIndex: 0, visible: true, hit: false, id: 1, type: 'note' }
+  ]
   const hitWindow = 100
 
   // Too early
@@ -40,7 +49,9 @@ test('checkHit ignores notes outside window', () => {
 })
 
 test('checkHit ignores wrong lane', () => {
-  const notes = [{ time: 1000, laneIndex: 0, visible: true, hit: false, id: 1, type: 'note' }]
+  const notes = [
+    { time: 1000, laneIndex: 0, visible: true, hit: false, id: 1, type: 'note' }
+  ]
   const hitWindow = 100
 
   const wrongLane = checkHit(notes, 1, 1000, hitWindow)
@@ -49,7 +60,14 @@ test('checkHit ignores wrong lane', () => {
 
 test('checkHit ignores already hit or invisible notes', () => {
   const notes = [
-    { time: 1000, laneIndex: 0, visible: false, hit: false, id: 1, type: 'note' },
+    {
+      time: 1000,
+      laneIndex: 0,
+      visible: false,
+      hit: false,
+      id: 1,
+      type: 'note'
+    },
     { time: 1000, laneIndex: 0, visible: true, hit: true, id: 2, type: 'note' }
   ]
   const hitWindow = 100
@@ -71,7 +89,14 @@ test('checkHit prioritizes closest note?', () => {
   // This test documents current behavior rather than ideal behavior.
 
   const notes = [
-    { time: 1000, laneIndex: 0, visible: true, hit: false, id: 1, type: 'note' },
+    {
+      time: 1000,
+      laneIndex: 0,
+      visible: true,
+      hit: false,
+      id: 1,
+      type: 'note'
+    },
     { time: 1050, laneIndex: 0, visible: true, hit: false, id: 2, type: 'note' }
   ]
   const hitWindow = 100

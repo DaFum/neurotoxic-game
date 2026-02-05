@@ -1,9 +1,20 @@
 import assert from 'assert'
 import { test } from 'node:test'
-import { parseSongNotes, calculateTimeFromTicks } from '../src/utils/rhythmUtils.js'
-import songsData from '../src/assets/rhythm_songs.json' with { type: 'json' }
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import {
+  parseSongNotes,
+  calculateTimeFromTicks
+} from '../src/utils/rhythmUtils.js'
 
-test('rhythm_songs.json integration', async (t) => {
+// Helper to load JSON in Node environment without import attributes (ESLint conflict)
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const jsonPath = path.join(__dirname, '../src/assets/rhythm_songs.json')
+const songsData = JSON.parse(fs.readFileSync(jsonPath, 'utf8'))
+
+test('rhythm_songs.json integration', async t => {
   await t.test('all songs can be parsed without error', () => {
     // The JSON is an object with song IDs as keys
     const songsArray = Object.values(songsData)
@@ -17,15 +28,27 @@ test('rhythm_songs.json integration', async (t) => {
       // We just want to make sure it doesn't throw.
       try {
         // Mock ID if missing in raw object (logic usually adds it)
-        if (!song.id) song.id = song.name
+        // Use a shallow copy to avoid mutating the imported constant
+        const testSong = { ...song }
+        if (!testSong.id) testSong.id = testSong.name
 
-        const notes = parseSongNotes(song)
-        assert.ok(Array.isArray(notes), `Song ${song.name} produced invalid notes array`)
+        const notes = parseSongNotes(testSong)
+        assert.ok(
+          Array.isArray(notes),
+          `Song ${song.name} produced invalid notes array`
+        )
 
         // Verify notes have correct type
         if (notes.length > 0) {
-            assert.strictEqual(notes[0].type, 'note', `Song ${song.name} notes missing type`)
-            assert.ok(typeof notes[0].time === 'number', `Song ${song.name} notes missing time`)
+          assert.strictEqual(
+            notes[0].type,
+            'note',
+            `Song ${song.name} notes missing type`
+          )
+          assert.ok(
+            typeof notes[0].time === 'number',
+            `Song ${song.name} notes missing time`
+          )
         }
       } catch (e) {
         assert.fail(`Song ${song.name} failed to parse: ${e.message}`)
@@ -34,7 +57,7 @@ test('rhythm_songs.json integration', async (t) => {
   })
 })
 
-test('calculateTimeFromTicks logic', async (t) => {
+test('calculateTimeFromTicks logic', async t => {
   await t.test('calculates correct time with constant tempo', () => {
     const tempoMap = [{ tick: 0, usPerBeat: 500000 }] // 120 BPM
     const tpb = 480
@@ -49,8 +72,8 @@ test('calculateTimeFromTicks logic', async (t) => {
 
   await t.test('calculates correct time with tempo change', () => {
     const tempoMap = [
-      { tick: 0, usPerBeat: 500000 },    // 120 BPM (0 - 480 ticks)
-      { tick: 480, usPerBeat: 1000000 }  // 60 BPM (480+ ticks)
+      { tick: 0, usPerBeat: 500000 }, // 120 BPM (0 - 480 ticks)
+      { tick: 480, usPerBeat: 1000000 } // 60 BPM (480+ ticks)
     ]
     const tpb = 480
 
@@ -63,7 +86,7 @@ test('calculateTimeFromTicks logic', async (t) => {
   })
 
   await t.test('handles empty map gracefully', () => {
-      const ms = calculateTimeFromTicks(100, 480, [], 'ms')
-      assert.strictEqual(ms, 0)
+    const ms = calculateTimeFromTicks(100, 480, [], 'ms')
+    assert.strictEqual(ms, 0)
   })
 })

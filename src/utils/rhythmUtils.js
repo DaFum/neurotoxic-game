@@ -153,8 +153,8 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
 
       // Final sanity check on time
       if (!Number.isFinite(timeMs)) {
-         // Should realistically assume constant BPM if map failed, but here we just drop it or default to 0
-         timeMs = (n.t / tpb) * (60000 / bpm)
+        // Should realistically assume constant BPM if map failed, but here we just drop it or default to 0
+        timeMs = (n.t / tpb) * (60000 / bpm)
       }
 
       return {

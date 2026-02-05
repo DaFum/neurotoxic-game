@@ -1,6 +1,9 @@
 import assert from 'assert'
 import { test } from 'node:test'
-import { updateProjectiles, trySpawnProjectile } from '../src/utils/hecklerLogic.js'
+import {
+  updateProjectiles,
+  trySpawnProjectile
+} from '../src/utils/hecklerLogic.js'
 
 test('trySpawnProjectile respects spawn chance', () => {
   // Force spawn
@@ -18,7 +21,11 @@ test('trySpawnProjectile respects no spawn', () => {
   const neverSpawn = () => 0.99
   const projectile = trySpawnProjectile({ health: 100 }, neverSpawn, 1000)
 
-  assert.strictEqual(projectile, null, 'Should not spawn when random value is high')
+  assert.strictEqual(
+    projectile,
+    null,
+    'Should not spawn when random value is high'
+  )
 })
 
 test('trySpawnProjectile increases chance on low health', () => {
@@ -28,7 +35,11 @@ test('trySpawnProjectile increases chance on low health', () => {
   const marginalRandom = () => 0.001 // Between 0.0005 and 0.002
 
   const normalHealth = trySpawnProjectile({ health: 80 }, marginalRandom)
-  assert.strictEqual(normalHealth, null, 'Should NOT spawn at 80 health with 0.001 roll')
+  assert.strictEqual(
+    normalHealth,
+    null,
+    'Should NOT spawn at 80 health with 0.001 roll'
+  )
 
   const lowHealth = trySpawnProjectile({ health: 40 }, marginalRandom)
   assert.ok(lowHealth, 'Should spawn at 40 health with 0.001 roll')
@@ -56,7 +67,7 @@ test('updateProjectiles removes off-screen items', () => {
   const screenHeight = 500
   const projectiles = [
     { x: 100, y: 400, vx: 0, vy: 0, rotation: 0, vr: 0 }, // On screen
-    { x: 100, y: 700, vx: 0, vy: 0, rotation: 0, vr: 0 }  // Off screen (500 + 100 buffer = 600 max)
+    { x: 100, y: 700, vx: 0, vy: 0, rotation: 0, vr: 0 } // Off screen (500 + 100 buffer = 600 max)
   ]
 
   const updated = updateProjectiles(projectiles, 0, screenHeight)

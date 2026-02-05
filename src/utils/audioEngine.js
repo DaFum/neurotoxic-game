@@ -222,7 +222,7 @@ function playDrumNote(midiPitch, time, velocity) {
     case 44:
     case 46:
       // Open/Closed nuance can be decay time, simpler here
-      drumKit.hihat.triggerAttackRelease('8000', '32n', time, velocity * 0.8)
+      drumKit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.8)
       break
     case 49:
     case 57:
@@ -230,7 +230,7 @@ function playDrumNote(midiPitch, time, velocity) {
       break
     default:
       // Default to HiHat for unknown percussion elements to keep rhythm
-      drumKit.hihat.triggerAttackRelease('8000', '32n', time, velocity * 0.5)
+      drumKit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.5)
   }
 }
 
@@ -348,7 +348,7 @@ function playDrumsLegacy(time, diff, note, random) {
   if (diff === 5) {
     drumKit.kick.triggerAttackRelease('C1', '16n', time)
     if (random() > 0.5) drumKit.snare.triggerAttackRelease('16n', time)
-    drumKit.hihat.triggerAttackRelease('8000', '32n', time, 0.5)
+    drumKit.hihat.triggerAttackRelease(8000, '32n', time, 0.5)
   } else {
     if (note === 'E2' || random() < diff * 0.1) {
       drumKit.kick.triggerAttackRelease('C1', '8n', time)
@@ -357,6 +357,6 @@ function playDrumsLegacy(time, diff, note, random) {
       drumKit.snare.triggerAttackRelease('16n', time)
     }
     if (time % 0.25 < 0.1)
-      drumKit.hihat.triggerAttackRelease('8000', '32n', time)
+      drumKit.hihat.triggerAttackRelease(8000, '32n', time)
   }
 }

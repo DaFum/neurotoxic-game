@@ -1,16 +1,27 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
+import PropTypes from 'prop-types'
 
+/**
+ * Overlay component that renders projectiles (heckler items).
+ * @param {object} props
+ * @param {object} props.gameStateRef - Mutable game state ref containing projectiles array.
+ */
 export const HecklerOverlay = ({ gameStateRef }) => {
   const [items, setItems] = useState([])
+  const itemsRef = useRef(items)
+
+  useEffect(() => {
+    itemsRef.current = items
+  }, [items])
 
   useEffect(() => {
     let rAF
     const loop = () => {
       if (gameStateRef.current) {
-        // Only update if projectiles exist
+        // Only update if projectiles exist or if we need to clear them
         if (gameStateRef.current.projectiles.length > 0) {
           setItems([...gameStateRef.current.projectiles])
-        } else if (items.length > 0) {
+        } else if (itemsRef.current.length > 0) {
           setItems([])
         }
       }
@@ -18,7 +29,7 @@ export const HecklerOverlay = ({ gameStateRef }) => {
     }
     loop()
     return () => cancelAnimationFrame(rAF)
-  }, [gameStateRef]) // Remove 'items' dependency to avoid loop
+  }, [gameStateRef])
 
   return (
     <div className='absolute inset-0 pointer-events-none overflow-hidden z-20'>
@@ -37,4 +48,12 @@ export const HecklerOverlay = ({ gameStateRef }) => {
       ))}
     </div>
   )
+}
+
+HecklerOverlay.propTypes = {
+  gameStateRef: PropTypes.shape({
+    current: PropTypes.shape({
+      projectiles: PropTypes.array
+    })
+  }).isRequired
 }

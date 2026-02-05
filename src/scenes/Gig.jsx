@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useGameState } from '../context/GameState'
 import { useRhythmGameLogic } from '../hooks/useRhythmGameLogic'
 import { PixiStage } from '../components/PixiStage'
@@ -12,6 +12,7 @@ import { IMG_PROMPTS, getGenImageUrl } from '../utils/imageGen'
 export const Gig = () => {
   const { currentGig, changeScene, addToast, activeEvent, setActiveEvent } =
     useGameState()
+  const chaosContainerRef = useRef(null)
 
   React.useEffect(() => {
     if (!currentGig) {
@@ -148,23 +149,49 @@ export const Gig = () => {
 
   const bgUrl = getGenImageUrl(bgPrompt)
 
-  // Chaos Mode Visuals
+  // Chaos Mode Visuals (Jitter via RAF)
+  useEffect(() => {
+    let rAF
+    const animateChaos = () => {
+      if (stats.isToxicMode && chaosContainerRef.current) {
+        const x = Math.random() * 4 - 2
+        const y = Math.random() * 4 - 2
+        chaosContainerRef.current.style.transform = `translate(${x}px, ${y}px)`
+      } else if (chaosContainerRef.current) {
+        chaosContainerRef.current.style.transform = 'none'
+      }
+      if (stats.isToxicMode) {
+        rAF = requestAnimationFrame(animateChaos)
+      }
+    }
+
+    if (stats.isToxicMode) {
+      rAF = requestAnimationFrame(animateChaos)
+    } else if (chaosContainerRef.current) {
+      chaosContainerRef.current.style.transform = 'none'
+    }
+
+    return () => cancelAnimationFrame(rAF)
+  }, [stats.isToxicMode])
+
+  // Chaos Mode Visuals (Filters)
   const chaosStyle = {}
   if (stats.overload > 50) {
     chaosStyle.filter = `saturate(${1 + (stats.overload - 50) / 25})`
   }
   if (stats.overload > 80) {
     // Subtle hue shift based on overload
-    chaosStyle.filter = (chaosStyle.filter || '') + ` hue-rotate(${stats.overload - 80}deg)`
+    chaosStyle.filter =
+      (chaosStyle.filter || '') + ` hue-rotate(${stats.overload - 80}deg)`
   }
   if (stats.isToxicMode) {
-    // Full Chaos
+    // Full Chaos Filter
     chaosStyle.filter = 'invert(0.1) contrast(1.5) saturate(2)'
-    chaosStyle.transform = `translate(${Math.random() * 4 - 2}px, ${Math.random() * 4 - 2}px)`
   }
 
   return (
     <div
+      ref={chaosContainerRef}
       className={`w-full h-full relative bg-(--void-black) flex flex-col overflow-hidden ${stats.isToxicMode ? 'border-4 border-(--toxic-green)' : ''}`}
       style={chaosStyle}
     >

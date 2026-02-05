@@ -97,7 +97,8 @@ export const useRhythmGameLogic = () => {
     overload: 0,
     totalDuration: 0,
     toxicTimeTotal: 0,
-    toxicModeEndTime: 0
+    toxicModeEndTime: 0,
+    rng: Math.random // Store RNG for consistency
   })
 
   const hasInitializedRef = useRef(false)
@@ -193,7 +194,9 @@ export const useRhythmGameLogic = () => {
       let audioDelay = 0
 
       // Explicitly non-deterministic unless seed provided (future proofing)
+      // Store in ref for consistency in update loop
       const rng = Math.random
+      gameStateRef.current.rng = rng
 
       // Use predefined notes if available and valid
       let parsedNotes = []
@@ -448,7 +451,7 @@ export const useRhythmGameLogic = () => {
       if (state.running && !activeEvent && !isGameOver) {
         const newProjectile = trySpawnProjectile(
           { health: state.health },
-          Math.random,
+          state.rng, // Use consistent RNG
           window.innerWidth
         )
         if (newProjectile) {

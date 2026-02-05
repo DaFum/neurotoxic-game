@@ -1,5 +1,5 @@
 module.exports = {
-  ignorePatterns: ['dist/'],
+  ignorePatterns: ['dist/', 'src/data/songs.js'],
   env: {
     browser: true,
     es2021: true
@@ -13,7 +13,7 @@ module.exports = {
     ecmaFeatures: {
       jsx: true
     },
-    ecmaVersion: 12,
+    ecmaVersion: 2022,
     sourceType: 'module'
   },
   plugins: ['react'],

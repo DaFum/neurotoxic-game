@@ -1,4 +1,5 @@
 // Music Library
+// eslint-disable-next-line
 import rhythmSongs from '../assets/rhythm_songs.json' with { type: 'json' }
 
 // Transform the JSON object into an array and map to the expected structure
@@ -34,13 +35,15 @@ export const SONGS_DB = Object.entries(rhythmSongs).map(([key, song]) => {
         ? 'EXTREME'
         : (song.difficultyRank || 2) > 3
           ? 'HIGH'
-          : 'MEDIUM',
+          : (song.difficultyRank || 2) > 2
+            ? 'MEDIUM'
+            : 'LOW',
     bpm: bpm,
     tags: song.tags || ['Metal', 'Instrumental'],
     notePattern: song.notePattern || 'standard',
     crowdAppeal:
       song.crowdAppeal ||
-      Math.min(10, Math.ceil((song.difficultyRank || 2) * 1.5)),
+      Math.min(10, Math.max(1, Math.ceil((song.difficultyRank || 2) * 1.5))),
     staminaDrain: song.staminaDrain || 10 + (song.difficultyRank || 2) * 2,
 
     // Fake energy curve based on difficulty for now, as it's not in the JSON
