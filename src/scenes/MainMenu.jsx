@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
-import { usePurchaseLogic } from '../hooks/usePurchaseLogic'
 import { useAudioControl } from '../hooks/useAudioControl'
 import { GlitchButton } from '../ui/GlitchButton'
 import { BandHQ } from '../ui/BandHQ'
@@ -97,8 +96,8 @@ export const MainMenu = () => {
 
         <div className='flex flex-col gap-4'>
           <GlitchButton
-            onClick={() => {
-              audioManager.ensureAudioContext()
+            onClick={async () => {
+              await audioManager.ensureAudioContext()
               changeScene('OVERWORLD')
             }}
             className='relative z-20'

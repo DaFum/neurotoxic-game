@@ -119,7 +119,7 @@ export const GigHUD = ({ stats, onLaneInput, gameStateRef }) => {
           />
         </div>
         {isToxicMode && (
-          <div className='mt-2 text-(--blood-red) animate-pulse font-bold tracking-widest text-center'>
+          <div className='mt-2 text-(--blood-red) animate-pulse font-bold tracking-widest text-center font-[var(--font-display)]'>
             TOXIC MODE ACTIVE
           </div>
         )}

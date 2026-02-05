@@ -140,6 +140,7 @@ export function playSFX(type) {
       sfxSynth.triggerAttackRelease('E6', '16n', now + 0.05, 0.4)
       break
     default:
+      console.warn(`[audioEngine] Unknown SFX type: ${type}`)
       break
   }
 }

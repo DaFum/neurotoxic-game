@@ -60,6 +60,7 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
           <button
             onClick={onClose}
             className='text-(--ash-gray) hover:text-(--blood-red)'
+            aria-label='Close'
           >
             X
           </button>
@@ -69,11 +70,30 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
     </div>
   )
 }
-export const Grid = ({ children, cols = 1, gap = 4, className = '' }) => (
-  <div className={`grid grid-cols-${cols} gap-${gap} ${className}`}>
-    {children}
-  </div>
-)
+export const Grid = ({ children, cols = 1, gap = 4, className = '' }) => {
+  const colsClass =
+    {
+      1: 'grid-cols-1',
+      2: 'grid-cols-2',
+      3: 'grid-cols-3',
+      4: 'grid-cols-4'
+    }[cols] || 'grid-cols-1'
+
+  const gapClass =
+    {
+      1: 'gap-1',
+      2: 'gap-2',
+      4: 'gap-4',
+      6: 'gap-6',
+      8: 'gap-8'
+    }[gap] || 'gap-4'
+
+  return (
+    <div className={`grid ${colsClass} ${gapClass} ${className}`}>
+      {children}
+    </div>
+  )
+}
 
 /**
  * StatBox - Displays a single statistic with an icon
@@ -157,5 +177,3 @@ ProgressBar.propTypes = {
   showValue: PropTypes.bool,
   className: PropTypes.string
 }
-
-// (Panel, TabButton, ActionButton, Modal, Grid removed)

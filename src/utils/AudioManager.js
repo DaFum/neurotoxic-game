@@ -17,6 +17,7 @@ class AudioSystem {
 
   /**
    * Initializes the audio system, loading preferences and setting up synthesizers.
+   * Note: Audio playback remains blocked until ensureAudioContext() is called after a user gesture.
    * @returns {Promise<void>}
    */
   async init() {

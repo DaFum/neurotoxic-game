@@ -124,14 +124,10 @@ class PixiStageController {
    * @returns {Promise<void>} Resolves when assets are loaded.
    */
   async loadAssets() {
+    const noteTextureUrl = getGenImageUrl(IMG_PROMPTS.NOTE_SKULL)
     try {
-      const noteTextureUrl = getGenImageUrl(IMG_PROMPTS.NOTE_SKULL)
-      try {
-        this.noteTexture = await PIXI.Texture.fromURL(noteTextureUrl)
-      } catch {
-        this.noteTexture = null
-      }
-    } catch (error) {
+      this.noteTexture = await PIXI.Texture.fromURL(noteTextureUrl)
+    } catch {
       this.noteTexture = null
     }
   }
@@ -400,7 +396,10 @@ class PixiStageController {
       }
     }
 
-    for (const [note, sprite] of this.noteSprites.entries()) {
+    // Safe iteration: snapshot entries to avoid issues with map mutation during iteration
+    const activeNotes = Array.from(this.noteSprites.entries())
+
+    for (const [note, sprite] of activeNotes) {
       if (!note.visible) {
         this.destroyNoteSprite(note)
         continue
