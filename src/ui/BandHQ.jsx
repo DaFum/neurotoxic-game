@@ -4,7 +4,6 @@ import { HQ_ITEMS } from '../data/hqItems'
 import { SONGS_DB } from '../data/songs'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import { usePurchaseLogic } from '../hooks/usePurchaseLogic'
-import { useGameState } from '../context/GameState'
 import { StatBox, ProgressBar, SettingsPanel } from '../ui/shared'
 
 /**
@@ -19,6 +18,13 @@ import { StatBox, ProgressBar, SettingsPanel } from '../ui/shared'
  * @param {Function} props.updatePlayer - Callback to update player state.
  * @param {Function} props.updateBand - Callback to update band state.
  * @param {Function} props.addToast - Callback to show notifications.
+ * @param {object} props.settings - Global settings.
+ * @param {Function} props.updateSettings - Update settings callback.
+ * @param {Function} props.deleteSave - Delete save callback.
+ * @param {Array} props.setlist - Current setlist.
+ * @param {Function} props.setSetlist - Update setlist callback.
+ * @param {object} props.audioState - Current audio state (musicVol, sfxVol, isMuted).
+ * @param {Function} props.onAudioChange - Callback for audio changes.
  * @param {string} [props.className] - Optional custom class name.
  */
 export const BandHQ = ({
@@ -29,11 +35,16 @@ export const BandHQ = ({
   updatePlayer,
   updateBand,
   addToast,
+  settings,
+  updateSettings,
+  deleteSave,
+  setlist,
+  setSetlist,
+  audioState,
+  onAudioChange,
   className = ''
 }) => {
   const [activeTab, setActiveTab] = useState('STATS') // STATS, SHOP, UPGRADES, SETLIST, SETTINGS
-  const { settings, updateSettings, deleteSave, setlist, setSetlist } =
-    useGameState()
 
   const { handleBuy, isItemOwned, isItemDisabled } = usePurchaseLogic({
     player,
@@ -44,24 +55,18 @@ export const BandHQ = ({
   })
 
   const toggleSongInSetlist = songId => {
-    // Check if song is already in setlist (handle object or string format)
     const currentIndex = setlist.findIndex(
       s => (typeof s === 'string' ? s : s.id) === songId
     )
 
     let newSetlist
     if (currentIndex >= 0) {
-      // Remove
       newSetlist = [...setlist]
       newSetlist.splice(currentIndex, 1)
       addToast('Song removed from setlist', 'info')
     } else {
-      // Add (Currently limiting to 1 active song for simplicity in MVP flow)
-      // If we want a full setlist, we just push.
-      // But the Gig engine currently plays activeSetlist[0].
-      // So let's make it a "Select Active Song" behavior for clarity,
-      // or just support a list. Let's support a list but maybe highlight the first one.
-      // For now, let's just REPLACE the setlist with this song to ensure it plays.
+      // Currently allow 1 active song for MVP flow, or replace logic if desired.
+      // Replacing entirely ensures single song selection per instructions/simplicity.
       newSetlist = [{ id: songId }]
       addToast('Song selected for next Gig', 'success')
     }
@@ -364,6 +369,16 @@ export const BandHQ = ({
                 settings={settings}
                 updateSettings={updateSettings}
                 deleteSave={deleteSave}
+                musicVol={audioState.musicVol}
+                sfxVol={audioState.sfxVol}
+                isMuted={audioState.isMuted}
+                onMusicChange={onAudioChange.setMusic}
+                onSfxChange={onAudioChange.setSfx}
+                onToggleMute={onAudioChange.toggleMute}
+                onToggleCRT={() =>
+                  updateSettings({ crtEnabled: !settings.crtEnabled })
+                }
+                onDeleteSave={deleteSave}
               />
             </div>
           )}
@@ -407,5 +422,20 @@ BandHQ.propTypes = {
   updatePlayer: PropTypes.func.isRequired,
   updateBand: PropTypes.func.isRequired,
   addToast: PropTypes.func.isRequired,
+  settings: PropTypes.object.isRequired,
+  updateSettings: PropTypes.func.isRequired,
+  deleteSave: PropTypes.func.isRequired,
+  setlist: PropTypes.array.isRequired,
+  setSetlist: PropTypes.func.isRequired,
+  audioState: PropTypes.shape({
+    musicVol: PropTypes.number,
+    sfxVol: PropTypes.number,
+    isMuted: PropTypes.bool
+  }).isRequired,
+  onAudioChange: PropTypes.shape({
+    setMusic: PropTypes.func,
+    setSfx: PropTypes.func,
+    toggleMute: PropTypes.func
+  }).isRequired,
   className: PropTypes.string
 }

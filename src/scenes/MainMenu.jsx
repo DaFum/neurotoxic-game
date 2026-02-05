@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { usePurchaseLogic } from '../hooks/usePurchaseLogic'
@@ -21,9 +21,20 @@ export const MainMenu = () => {
     band,
     updateBand,
     social,
-    settings
+    settings,
+    updateSettings,
+    deleteSave,
+    setlist,
+    setSetlist
   } = useGameState()
   const [showUpgrades, setShowUpgrades] = React.useState(false)
+
+  // Local state for audio to pass to stateless components
+  const [audioState, setAudioState] = useState({
+    musicVol: audioManager.musicVolume,
+    sfxVol: audioManager.sfxVolume,
+    isMuted: audioManager.muted
+  })
 
   usePurchaseLogic({
     player,
@@ -36,6 +47,21 @@ export const MainMenu = () => {
   React.useEffect(() => {
     audioManager.startAmbient()
   }, [])
+
+  const handleAudioChange = {
+    setMusic: val => {
+      audioManager.setMusicVolume(val)
+      setAudioState(prev => ({ ...prev, musicVol: val }))
+    },
+    setSfx: val => {
+      audioManager.setSFXVolume(val)
+      setAudioState(prev => ({ ...prev, sfxVol: val }))
+    },
+    toggleMute: () => {
+      const muted = audioManager.toggleMute()
+      setAudioState(prev => ({ ...prev, isMuted: muted }))
+    }
+  }
 
   /**
    * Handles loading a saved game.
@@ -72,6 +98,13 @@ export const MainMenu = () => {
           updatePlayer={updatePlayer}
           updateBand={updateBand}
           addToast={addToast}
+          settings={settings}
+          updateSettings={updateSettings}
+          deleteSave={deleteSave}
+          setlist={setlist}
+          setSetlist={setSetlist}
+          audioState={audioState}
+          onAudioChange={handleAudioChange}
         />
       )}
 

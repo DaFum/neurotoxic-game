@@ -63,12 +63,38 @@ export const Overworld = () => {
     addToast,
     advanceDay,
     changeScene,
-    settings
+    settings,
+    updateSettings,
+    deleteSave,
+    setlist,
+    setSetlist
   } = useGameState()
 
   const [hoveredNode, setHoveredNode] = useState(null)
   const [showHQ, setShowHQ] = useState(false)
   const [activeHQTab, setActiveHQTab] = useState('STATS')
+
+  // Local state for audio to pass to stateless components
+  const [audioState, setAudioState] = useState({
+    musicVol: audioManager.musicVolume,
+    sfxVol: audioManager.sfxVolume,
+    isMuted: audioManager.muted
+  })
+
+  const handleAudioChange = {
+    setMusic: val => {
+      audioManager.setMusicVolume(val)
+      setAudioState(prev => ({ ...prev, musicVol: val }))
+    },
+    setSfx: val => {
+      audioManager.setSFXVolume(val)
+      setAudioState(prev => ({ ...prev, sfxVol: val }))
+    },
+    toggleMute: () => {
+      const muted = audioManager.toggleMute()
+      setAudioState(prev => ({ ...prev, isMuted: muted }))
+    }
+  }
 
   const {
     isTraveling,
@@ -345,6 +371,13 @@ export const Overworld = () => {
           addToast={addToast}
           activeTab={activeHQTab}
           onTabChange={setActiveHQTab}
+          settings={settings}
+          updateSettings={updateSettings}
+          deleteSave={deleteSave}
+          setlist={setlist}
+          setSetlist={setSetlist}
+          audioState={audioState}
+          onAudioChange={handleAudioChange}
         />
       )}
     </div>

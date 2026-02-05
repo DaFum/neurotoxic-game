@@ -1,147 +1,123 @@
-import React, { useState } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
-import { audioManager } from '../../utils/AudioManager'
-import { GlitchButton } from '../GlitchButton'
 
-/**
- * Reusable Settings Panel Component.
- * Can be used in Scenes or Modals.
- *
- * @param {object} props
- * @param {object} props.settings - Global settings object.
- * @param {Function} props.updateSettings - Function to update global settings.
- * @param {Function} props.deleteSave - Function to delete save game.
- * @param {string} [props.className] - Optional container class.
- */
 export const SettingsPanel = ({
   settings,
-  updateSettings,
-  deleteSave,
+  musicVol,
+  sfxVol,
+  isMuted,
+  onMusicChange,
+  onSfxChange,
+  onToggleMute,
+  onToggleCRT,
+  onDeleteSave,
   className = ''
 }) => {
-  // Local state for sliders to avoid thrashing Context/LocalStorage on every drag event
-  const [musicVol, setMusicVol] = useState(audioManager.musicVolume)
-  const [sfxVol, setSfxVol] = useState(audioManager.sfxVolume)
-  const [isMuted, setIsMuted] = useState(audioManager.muted)
-
-  /**
-   * Updates music volume state and audio engine.
-   * @param {React.ChangeEvent<HTMLInputElement>} e
-   */
-  const handleMusicChange = e => {
-    const val = parseFloat(e.target.value)
-    setMusicVol(val)
-    audioManager.setMusicVolume(val)
-  }
-
-  /**
-   * Updates SFX volume state and audio engine.
-   * @param {React.ChangeEvent<HTMLInputElement>} e
-   */
-  const handleSFXChange = e => {
-    const val = parseFloat(e.target.value)
-    setSfxVol(val)
-    audioManager.setSFXVolume(val)
-  }
-
-  /**
-   * Toggles the mute state.
-   */
-  const handleMute = () => {
-    const muted = audioManager.toggleMute()
-    setIsMuted(muted)
-  }
-
-  /**
-   * Toggles the CRT filter effect.
-   */
-  const handleCRT = () => {
-    updateSettings({ crtEnabled: !settings.crtEnabled })
-  }
-
-  /**
-   * Prompts for confirmation and deletes the save file.
-   */
-  const handleDeleteSave = () => {
-    if (window.confirm('ARE YOU SURE? THIS WILL ERASE ALL PROGRESS.')) {
-      deleteSave()
-    }
-  }
-
   return (
     <div className={`space-y-8 ${className}`}>
-      {/* Audio */}
-      <div className='space-y-4'>
-        <h2 className='text-2xl text-(--star-white) border-b border-(--ash-gray) pb-2 font-mono'>
+      {/* Audio Settings */}
+      <div>
+        <h2 className="font-[Metal_Mania] text-4xl uppercase text-(--toxic-green) mb-6 border-b border-(--ash-gray) pb-2">
           AUDIO PROTOCOLS
         </h2>
-
-        <div className='flex items-center justify-between'>
-          <label className='text-(--toxic-green) font-mono'>MUSIC VOLUME</label>
-          <input
-            type='range'
-            min='0'
-            max='1'
-            step='0.1'
-            value={musicVol}
-            onChange={handleMusicChange}
-            className='w-1/2 accent-(--toxic-green)'
-          />
+        <div className='space-y-6'>
+          <div className='flex items-center justify-between'>
+            <label className="font-[Courier_New] text-sm uppercase tracking-wide text-(--star-white)">
+              MUSIC VOLUME
+            </label>
+            <input
+              type='range'
+              min='0'
+              max='1'
+              step='0.1'
+              value={musicVol}
+              onChange={e => onMusicChange(parseFloat(e.target.value))}
+              className='w-48 accent-(--toxic-green) bg-(--void-black)'
+            />
+          </div>
+          <div className='flex items-center justify-between'>
+            <label className="font-[Courier_New] text-sm uppercase tracking-wide text-(--star-white)">
+              SFX VOLUME
+            </label>
+            <input
+              type='range'
+              min='0'
+              max='1'
+              step='0.1'
+              value={sfxVol}
+              onChange={e => onSfxChange(parseFloat(e.target.value))}
+              className='w-48 accent-(--toxic-green) bg-(--void-black)'
+            />
+          </div>
+          <div className='flex items-center justify-between'>
+            <label className="font-[Courier_New] text-sm uppercase tracking-wide text-(--star-white)">
+              MUTE ALL
+            </label>
+            <button
+              onClick={onToggleMute}
+              className={`w-16 h-8 border-2 border-(--toxic-green) rounded-none shadow-[4px_4px_0px_var(--blood-red)] flex items-center p-1 transition-all ${isMuted ? 'justify-end bg-(--toxic-green)/20' : 'justify-start'}`}
+            >
+              <div
+                className={`w-6 h-6 bg-(--toxic-green) ${isMuted ? 'opacity-50' : 'opacity-100'}`}
+              />
+            </button>
+          </div>
         </div>
-
-        <div className='flex items-center justify-between'>
-          <label className='text-(--toxic-green) font-mono'>SFX VOLUME</label>
-          <input
-            type='range'
-            min='0'
-            max='1'
-            step='0.1'
-            value={sfxVol}
-            onChange={handleSFXChange}
-            className='w-1/2 accent-(--toxic-green)'
-          />
-        </div>
-
-        <GlitchButton onClick={handleMute} className='w-full'>
-          {isMuted ? 'UNMUTE SYSTEM' : 'MUTE SYSTEM'}
-        </GlitchButton>
       </div>
 
-      {/* Visuals */}
-      <div className='space-y-4'>
-        <h2 className='text-2xl text-(--star-white) border-b border-(--ash-gray) pb-2 font-mono'>
-          VISUAL OUTPUT
+      {/* Visual Settings */}
+      <div>
+        <h2 className="font-[Metal_Mania] text-4xl uppercase text-(--toxic-green) mb-6 border-b border-(--ash-gray) pb-2">
+          VISUAL INTERFACE
         </h2>
         <div className='flex items-center justify-between'>
-          <span className='text-(--toxic-green) font-mono'>CRT SIMULATION</span>
+          <label className="font-[Courier_New] text-sm uppercase tracking-wide text-(--star-white)">
+            CRT EFFECT
+          </label>
           <button
-            onClick={handleCRT}
-            className={`w-16 h-8 border border-(--toxic-green) flex items-center p-1 transition-all ${settings.crtEnabled ? 'justify-end bg-(--toxic-green)/20' : 'justify-start'}`}
-            aria-label='Toggle CRT Effect'
+            onClick={onToggleCRT}
+            className={`w-16 h-8 border-2 border-(--toxic-green) rounded-none shadow-[4px_4px_0px_var(--blood-red)] flex items-center p-1 transition-all ${settings.crtEnabled ? 'justify-end bg-(--toxic-green)/20' : 'justify-start'}`}
           >
             <div
-              className={`w-6 h-6 bg-(--toxic-green) ${settings.crtEnabled ? 'animate-pulse' : 'opacity-50'}`}
+              className={`w-6 h-6 bg-(--toxic-green) ${settings.crtEnabled ? 'opacity-100' : 'opacity-50'}`}
             />
           </button>
         </div>
       </div>
 
-      {/* Data */}
-      <div className='space-y-4 pt-8 border-t border-(--blood-red)'>
-        <GlitchButton
-          onClick={handleDeleteSave}
-          className='w-full border-(--blood-red) text-(--blood-red) hover:bg-(--blood-red)'
-        >
-          PURGE DATA
-        </GlitchButton>
+      {/* Data Management */}
+      <div>
+        <h2 className="font-[Metal_Mania] text-4xl uppercase text-(--blood-red) mb-6 border-b border-(--ash-gray) pb-2">
+          DATA PURGE
+        </h2>
+        <div className='flex justify-between items-center'>
+          <p className="font-[Courier_New] text-lg text-(--ash-gray) max-w-xs">
+            WARNING: This action is irreversible. All tour progress will be
+            lost.
+          </p>
+          <button
+            onClick={onDeleteSave}
+            className='bg-(--blood-red) text-(--void-black) px-4 py-2 font-bold hover:invert border border-(--blood-red) font-mono'
+          >
+            DELETE SAVE
+          </button>
+        </div>
       </div>
     </div>
   )
 }
 
 SettingsPanel.propTypes = {
-  settings: PropTypes.object.isRequired,
-  updateSettings: PropTypes.func.isRequired,
-  deleteSave: PropTypes.func.isRequired,
+  settings: PropTypes.shape({
+    crtEnabled: PropTypes.bool
+  }).isRequired,
+  musicVol: PropTypes.number.isRequired,
+  sfxVol: PropTypes.number.isRequired,
+  isMuted: PropTypes.bool.isRequired,
+  onMusicChange: PropTypes.func.isRequired,
+  onSfxChange: PropTypes.func.isRequired,
+  onToggleMute: PropTypes.func.isRequired,
+  onToggleCRT: PropTypes.func.isRequired,
+  onDeleteSave: PropTypes.func.isRequired,
   className: PropTypes.string
 }
