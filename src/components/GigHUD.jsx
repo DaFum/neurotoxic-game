@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import { ChatterOverlay } from './ChatterOverlay'
 import { HecklerOverlay } from './HecklerOverlay'
 
@@ -113,4 +114,18 @@ export const GigHUD = ({ stats, onLaneInput, gameStateRef }) => {
       )}
     </div>
   )
+}
+
+GigHUD.propTypes = {
+  stats: PropTypes.shape({
+    score: PropTypes.number.isRequired,
+    combo: PropTypes.number.isRequired,
+    health: PropTypes.number.isRequired,
+    overload: PropTypes.number.isRequired,
+    isGameOver: PropTypes.bool.isRequired
+  }).isRequired,
+  onLaneInput: PropTypes.func,
+  gameStateRef: PropTypes.shape({
+    current: PropTypes.object
+  }).isRequired
 }

@@ -43,6 +43,8 @@ const GameStateContext = createContext()
  * @param {object} props
  * @param {React.ReactNode} props.children
  */
+import PropTypes from 'prop-types'
+
 export const GameStateProvider = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, null, createInitialState)
 
@@ -421,6 +423,10 @@ export const GameStateProvider = ({ children }) => {
       {children}
     </GameStateContext.Provider>
   )
+}
+
+GameStateProvider.propTypes = {
+  children: PropTypes.node
 }
 
 /**

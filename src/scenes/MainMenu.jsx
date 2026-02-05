@@ -25,7 +25,7 @@ export const MainMenu = () => {
   } = useGameState()
   const [showUpgrades, setShowUpgrades] = React.useState(false)
 
-  const { handleBuy } = usePurchaseLogic({
+  usePurchaseLogic({
     player,
     band,
     updatePlayer,

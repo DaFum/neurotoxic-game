@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import PropTypes from 'prop-types'
 import { logger, LOG_LEVELS } from '../utils/logger'
 
 export const DebugLogViewer = ({ className = '' }) => {
@@ -127,4 +128,8 @@ export const DebugLogViewer = ({ className = '' }) => {
       </div>
     </div>
   )
+}
+
+DebugLogViewer.propTypes = {
+  className: PropTypes.string
 }

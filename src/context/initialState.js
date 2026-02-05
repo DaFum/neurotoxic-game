@@ -91,7 +91,9 @@ export const DEFAULT_GIG_MODIFIERS = {
  */
 const savedSettings = (() => {
   try {
-    return JSON.parse(localStorage.getItem('neurotoxic_global_settings') || '{}')
+    return JSON.parse(
+      localStorage.getItem('neurotoxic_global_settings') || '{}'
+    )
   } catch (e) {
     return {}
   }

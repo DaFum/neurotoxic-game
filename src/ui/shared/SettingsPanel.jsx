@@ -113,9 +113,7 @@ export const SettingsPanel = ({
           VISUAL OUTPUT
         </h2>
         <div className='flex items-center justify-between'>
-          <span className='text-(--toxic-green) font-mono'>
-            CRT SIMULATION
-          </span>
+          <span className='text-(--toxic-green) font-mono'>CRT SIMULATION</span>
           <button
             onClick={handleCRT}
             className={`w-16 h-8 border border-(--toxic-green) flex items-center p-1 transition-all ${settings.crtEnabled ? 'justify-end bg-(--toxic-green)/20' : 'justify-start'}`}

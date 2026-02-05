@@ -262,9 +262,13 @@ export const useTravelLogic = ({
       }
 
       if (node.id === player.currentNodeId) {
-        logger.info('TravelLogic', 'Ignoring redundant travel to current node', {
-          target: node.id
-        })
+        logger.info(
+          'TravelLogic',
+          'Ignoring redundant travel to current node',
+          {
+            target: node.id
+          }
+        )
 
         // If it's the current node, trigger the interaction logic but DO NOT start travel
         if (node.type === 'GIG') {

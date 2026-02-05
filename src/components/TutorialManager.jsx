@@ -12,7 +12,9 @@ export const TutorialManager = () => {
     if (player.tutorialStep !== undefined && player.tutorialStep !== step) {
       setStep(player.tutorialStep)
     }
-  }, [player.tutorialStep])
+    // step is used for comparison, but we only want to update if player.tutorialStep mismatches.
+    // Adding step to dependency array is safe here.
+  }, [player.tutorialStep, step])
 
   // Early exit if tutorial has been seen globally
   if (settings?.tutorialSeen) return null
