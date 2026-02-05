@@ -47,6 +47,10 @@ export class PixiStageController {
     this.isDisposed = false
     this.initPromise = null
     this.handleTicker = this.handleTicker.bind(this)
+
+    // O(N) Rendering Optimizations
+    this.noteSprites = new Map() // Map<note, Sprite>
+    this.nextRenderIndex = 0 // Tracks the next note to spawn
   }
 
   /**
@@ -65,7 +69,9 @@ export class PixiStageController {
         await this.app.init({
           backgroundAlpha: 0,
           resizeTo: this.containerRef.current,
-          antialias: true
+          antialias: true,
+          resolution: window.devicePixelRatio || 1,
+          autoDensity: true
         })
 
         const container = this.containerRef.current
@@ -117,18 +123,6 @@ export class PixiStageController {
    */
   async loadAssets() {
     try {
-      // NOTE: Using a hardcoded reliable image or base64 data URI here is safer than external generators for PIXI textures.
-      // But if we must use the generator, we accept that PIXI might complain about format parsing if extension is missing.
-      // As a fix for "PixiJS Warning: ... could not be loaded as we don't know how to parse it":
-      // We can treat it as a generic image resource or fallback to drawing.
-      // For now, let's just use the fallback drawing if loading fails, which the catch block handles.
-      // To suppress the warning, we might need to specify loadParser, but imageGen URLs are dynamic.
-
-      // Simply relying on fallback for now to avoid the specific parsing warning spam if possible,
-      // or just ignore it as we have a fallback.
-      // Ideally:
-      // this.noteTexture = await PIXI.Assets.load({ src: url, format: 'png' });
-
       const noteTextureUrl = getGenImageUrl(IMG_PROMPTS.NOTE_SKULL)
       // We rely on the standard loader behavior here and fall back to drawing if loading fails.
       try {
@@ -138,8 +132,6 @@ export class PixiStageController {
       }
     } catch (error) {
       this.noteTexture = null
-      // console.warn('[PixiStageController] Note texture unavailable, using fallback.');
-      // Suppressing full stack trace for known asset issues to clean up logs
     }
   }
 
@@ -377,50 +369,73 @@ export class PixiStageController {
    */
   updateNotes(state, elapsed) {
     const targetY = this.laneLayout?.hitLineY ?? 0
+    const notes = state.notes
 
-    state.notes.forEach(note => {
-      if (
-        note.visible &&
-        !note.hit &&
-        !note.sprite &&
-        elapsed >= note.time - NOTE_SPAWN_LEAD_MS
-      ) {
-        const lane = state.lanes[note.laneIndex]
-        note.sprite = this.createNoteSprite(lane)
-        this.noteContainer.addChild(note.sprite)
+    // 1. Spawn new notes based on time (O(1) sequential access)
+    // We assume notes are sorted by time (which they are from parseSongNotes/generation)
+    // Use `nextRenderIndex` to only scan forward.
+    // However, if the game resets or loops, this index needs reset.
+    // If notes are mutated/replaced, handle that (PixiStageController reset logic handles this).
+
+    // Safety check: if notes array changed drastically (e.g. restart), nextRenderIndex might be OOB.
+    if (this.nextRenderIndex >= notes.length && notes.length > 0) {
+      // Just a guard, though logic usually resets it on dispose/init.
+    }
+
+    while (this.nextRenderIndex < notes.length) {
+      const note = notes[this.nextRenderIndex]
+
+      // If note is within spawn window
+      if (elapsed >= note.time - NOTE_SPAWN_LEAD_MS) {
+        // Spawn sprite if visible and not hit
+        if (note.visible && !note.hit) {
+          const lane = state.lanes[note.laneIndex]
+          const sprite = this.createNoteSprite(lane)
+          this.noteContainer.addChild(sprite)
+          this.noteSprites.set(note, sprite)
+        }
+        this.nextRenderIndex++
+      } else {
+        // Since notes are sorted by time, if this one isn't ready, none after it are.
+        break
       }
+    }
 
-      if (!note.sprite) {
-        return
-      }
-
+    // 2. Update existing active sprites (O(Active Notes))
+    // We iterate over the Map of active sprites instead of the full note array.
+    for (const [note, sprite] of this.noteSprites.entries()) {
+      // Check logical state
       if (!note.visible) {
-        this.destroyNoteSprite(note)
-        return
+        this.destroyNoteSprite(note) // Removes from Map
+        continue
       }
 
       if (note.hit) {
         // Trigger effect before destroying if we haven't already
         // Note: note.hit is true, but sprite exists. This means it was JUST hit.
         const laneColor = state.lanes?.[note.laneIndex]?.color || 0xffffff
-        this.spawnHitEffect(note.sprite.x, note.sprite.y, laneColor)
-        this.destroyNoteSprite(note)
-        return
+        this.spawnHitEffect(sprite.x, sprite.y, laneColor)
+        this.destroyNoteSprite(note) // Removes from Map
+        continue
       }
 
-      note.sprite.visible = true
+      // Update position
       const jitterOffset = state.modifiers.noteJitter
         ? (Math.random() - 0.5) * NOTE_JITTER_RANGE
         : 0
-      note.sprite.y = calculateNoteY({
+
+      sprite.y = calculateNoteY({
         elapsed,
         noteTime: note.time,
         targetY,
         speed: state.speed
       })
-      note.sprite.x =
+      sprite.x =
         state.lanes[note.laneIndex].renderX + NOTE_CENTER_OFFSET + jitterOffset
-    })
+
+      // Optional: Cull sprites that are way off screen (missed) to keep map small
+      // Though Logic usually marks them invisible -> destroyed above.
+    }
   }
 
   /**
@@ -454,16 +469,16 @@ export class PixiStageController {
    * @returns {void}
    */
   destroyNoteSprite(note) {
-    if (!note.sprite) {
-      return
-    }
+    const sprite = this.noteSprites.get(note)
+    if (!sprite) return
+
     if (this.noteContainer) {
-      this.noteContainer.removeChild(note.sprite)
+      this.noteContainer.removeChild(sprite)
     }
-    if (note.sprite.destroy) {
-      note.sprite.destroy()
+    if (sprite.destroy) {
+      sprite.destroy()
     }
-    note.sprite = null
+    this.noteSprites.delete(note)
   }
 
   /**
@@ -534,11 +549,12 @@ export class PixiStageController {
       this.app.ticker.remove(this.handleTicker)
     }
 
-    if (this.gameStateRef?.current?.notes) {
-      this.gameStateRef.current.notes.forEach(note => {
-        this.destroyNoteSprite(note)
-      })
+    // Destroy all managed sprites in the map
+    for (const note of this.noteSprites.keys()) {
+      this.destroyNoteSprite(note)
     }
+    this.noteSprites.clear()
+    this.nextRenderIndex = 0
 
     this.laneGraphics = []
     this.crowdMembers = []

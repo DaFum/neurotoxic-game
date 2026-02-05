@@ -56,6 +56,7 @@ export const useRhythmGameLogic = () => {
   const gameStateRef = useRef({
     running: false,
     notes: [],
+    nextMissCheckIndex: 0, // Optimization: only check notes that haven't passed yet
     lanes: [
       {
         id: 'guitar',
@@ -233,6 +234,7 @@ export const useRhythmGameLogic = () => {
       }
 
       gameStateRef.current.notes = notes
+      gameStateRef.current.nextMissCheckIndex = 0 // Reset pointer
 
       // Calculate max note time to ensure duration covers everything
       const maxNoteTime = notes.reduce((max, n) => Math.max(max, n.time), 0)
@@ -294,16 +296,18 @@ export const useRhythmGameLogic = () => {
   /**
    * Applies a miss penalty and updates state/refs.
    * @param {number} count - Number of misses to process (default 1)
+   * @param {boolean} isEmptyHit - Whether this was an empty hit (hitting without a note).
    * @returns {void}
    */
   const handleMiss = useCallback(
-    (count = 1) => {
+    (count = 1, isEmptyHit = false) => {
       if (count <= 0) return
 
       setCombo(0)
       gameStateRef.current.combo = 0
       setOverload(o => {
-        const next = Math.max(0, o - 5 * count)
+        const penalty = isEmptyHit ? 2 : 5
+        const next = Math.max(0, o - penalty * count)
         gameStateRef.current.overload = next
         const updatedStats = updateGigPerformanceStats(
           {
@@ -315,9 +319,16 @@ export const useRhythmGameLogic = () => {
         gameStateRef.current.stats = updatedStats
         return next
       })
+
+      // Only play miss SFX if it's a real miss, empty hits might be spam, so maybe quieter or different?
+      // For now, keep SFX but maybe we can throttle it if needed.
       audioManager.playSFX('miss')
 
-      const decayPerMiss = hasUpgrade('bass_sansamp') ? 3 : 5
+      let decayPerMiss = hasUpgrade('bass_sansamp') ? 1 : 2
+      if (isEmptyHit) {
+        decayPerMiss = 1 // Lower penalty for empty hits
+      }
+
       setHealth(h => {
         const next = Math.max(0, h - decayPerMiss * count)
         if (next <= 0 && !gameStateRef.current.isGameOver) {
@@ -409,7 +420,8 @@ export const useRhythmGameLogic = () => {
 
         if (!toxicModeActive) {
           setOverload(o => {
-            const next = o + 1
+            const gain = 4 // Increased gain to make Toxic Mode reachable
+            const next = o + gain
             const peakCandidate = Math.min(next, 100)
             gameStateRef.current.stats = updateGigPerformanceStats(
               gameStateRef.current.stats,
@@ -426,7 +438,7 @@ export const useRhythmGameLogic = () => {
         }
         return true
       } else {
-        handleMiss()
+        handleMiss(1, true) // Pass true for isEmptyHit
         return false
       }
     },
@@ -507,17 +519,42 @@ export const useRhythmGameLogic = () => {
       }
 
       let missCount = 0
-      state.notes.forEach(note => {
-        if (note.visible && !note.hit) {
-          if (elapsed > note.time + NOTE_MISS_WINDOW_MS) {
-            note.visible = false
-            missCount++
+      const notes = state.notes
+      let i = state.nextMissCheckIndex
+
+      // Optimization: Only check notes starting from the last unchecked index
+      while (i < notes.length) {
+        const note = notes[i]
+
+        // If note has already been handled (hit or invisible), skip it but advance index if it's the current pointer
+        if (!note.visible || note.hit) {
+          if (i === state.nextMissCheckIndex) {
+            state.nextMissCheckIndex++
+          }
+          i++
+          continue
+        }
+
+        // If note is far in the future, we can stop checking
+        if (note.time > elapsed + NOTE_MISS_WINDOW_MS) {
+          break
+        }
+
+        // If note is past the window and wasn't hit
+        if (elapsed > note.time + NOTE_MISS_WINDOW_MS) {
+          note.visible = false
+          missCount++
+          // Since we missed this note, we can advance the pointer
+          if (i === state.nextMissCheckIndex) {
+            state.nextMissCheckIndex++
           }
         }
-      })
+
+        i++
+      }
 
       if (missCount > 0) {
-        handleMiss(missCount)
+        handleMiss(missCount, false) // False for isEmptyHit (these are real missed notes)
       }
     },
     [
