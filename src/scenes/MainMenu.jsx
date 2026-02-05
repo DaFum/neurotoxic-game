@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { usePurchaseLogic } from '../hooks/usePurchaseLogic'
 import { GlitchButton } from '../ui/GlitchButton'
-import { UpgradeMenu } from '../ui/UpgradeMenu'
+import { BandHQ } from '../ui/BandHQ'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import { audioManager } from '../utils/AudioManager'
 
@@ -20,6 +20,7 @@ export const MainMenu = () => {
     updatePlayer,
     band,
     updateBand,
+    social,
     settings
   } = useGameState()
   const [showUpgrades, setShowUpgrades] = React.useState(false)
@@ -63,10 +64,14 @@ export const MainMenu = () => {
       <div className='absolute inset-0 z-0 bg-gradient-to-b from-black/0 to-black/90 pointer-events-none' />
 
       {showUpgrades && (
-        <UpgradeMenu
+        <BandHQ
           onClose={() => setShowUpgrades(false)}
           player={player}
-          onBuyUpgrade={handleBuy}
+          band={band}
+          social={social}
+          updatePlayer={updatePlayer}
+          updateBand={updateBand}
+          addToast={addToast}
         />
       )}
 
@@ -86,7 +91,10 @@ export const MainMenu = () => {
 
         <div className='flex flex-col gap-4'>
           <GlitchButton
-            onClick={() => changeScene('OVERWORLD')}
+            onClick={() => {
+              audioManager.ensureAudioContext()
+              changeScene('OVERWORLD')
+            }}
             className='relative z-20'
           >
             Start Tour

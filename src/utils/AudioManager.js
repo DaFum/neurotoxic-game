@@ -163,6 +163,23 @@ class AudioSystem {
   }
 
   /**
+   * Ensures the AudioContext is running (Tone.js and Howler).
+   * Should be called after a user gesture.
+   */
+  async ensureAudioContext() {
+    try {
+      if (Tone.context.state !== 'running') {
+        await Tone.start()
+      }
+      if (Howler.ctx && Howler.ctx.state !== 'running') {
+        await Howler.ctx.resume()
+      }
+    } catch (e) {
+      console.warn('[AudioSystem] Failed to resume AudioContext:', e)
+    }
+  }
+
+  /**
    * Plays a sound effect by key.
    * @param {string} key - The SFX identifier (e.g., 'CLICK', 'ERROR').
    */

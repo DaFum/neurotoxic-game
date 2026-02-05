@@ -18,7 +18,9 @@ module.exports = {
   },
   plugins: ['react'],
   rules: {
-    'react/prop-types': 'off',
+    'react/prop-types': 'warn',
+    'react/react-in-jsx-scope': 'off',
+    'react/jsx-uses-react': 'off',
     'no-unused-vars': ['warn', { varsIgnorePattern: '^_' }]
   },
   settings: {

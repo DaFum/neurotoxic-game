@@ -85,8 +85,17 @@ export const GameStateProvider = ({ children }) => {
    * Updates global settings.
    * @param {object} updates - Object containing keys to update.
    */
-  const updateSettings = updates =>
+  const updateSettings = updates => {
     dispatch(createUpdateSettingsAction(updates))
+    // Persist to global settings (persist across new games)
+    safeStorageOperation('saveGlobalSettings', () => {
+      const current = JSON.parse(
+        localStorage.getItem('neurotoxic_global_settings') || '{}'
+      )
+      const next = { ...current, ...updates }
+      localStorage.setItem('neurotoxic_global_settings', JSON.stringify(next))
+    })
+  }
 
   /**
    * Sets the generated game map.

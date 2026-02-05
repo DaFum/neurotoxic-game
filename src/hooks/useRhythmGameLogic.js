@@ -108,6 +108,7 @@ export const useRhythmGameLogic = () => {
    * @returns {void}
    */
   const initializeGigState = useCallback(async () => {
+    // Prevent double initialization, even in Strict Mode or re-mounts if ref persists
     if (hasInitializedRef.current) {
       return
     }
@@ -249,12 +250,7 @@ export const useRhythmGameLogic = () => {
 
       gameStateRef.current.startTime = Date.now()
       gameStateRef.current.running = true
-      console.log('[RhythmGame] Initialized.', {
-        startTime: gameStateRef.current.startTime,
-        totalDuration: gameStateRef.current.totalDuration,
-        audioDelay,
-        song: currentSong.name
-      })
+      // console.log('[RhythmGame] Initialized.', { ... })
     } catch (error) {
       handleError(error, {
         addToast,
@@ -501,12 +497,7 @@ export const useRhythmGameLogic = () => {
       }
 
       if (elapsed > state.totalDuration) {
-        console.log('[RhythmGame] Gig Ended naturally.', {
-          elapsed,
-          totalDuration: state.totalDuration,
-          startTime: state.startTime,
-          now
-        })
+        // console.log('[RhythmGame] Gig Ended naturally.')
         state.running = false
         setLastGigStats(
           buildGigStatsSnapshot(state.score, state.stats, state.toxicTimeTotal)

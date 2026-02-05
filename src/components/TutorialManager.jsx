@@ -3,7 +3,8 @@ import { useGameState } from '../context/GameState'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export const TutorialManager = () => {
-  const { player, updatePlayer, currentScene } = useGameState()
+  const { player, updatePlayer, currentScene, settings, updateSettings } =
+    useGameState()
   const [step, setStep] = useState(player.tutorialStep || 0)
 
   useEffect(() => {
@@ -13,15 +14,24 @@ export const TutorialManager = () => {
     }
   }, [player.tutorialStep])
 
+  // Early exit if tutorial has been seen globally
+  if (settings?.tutorialSeen) return null
+
   const completeStep = () => {
     const nextStep = step + 1
     setStep(nextStep)
     updatePlayer({ tutorialStep: nextStep })
+
+    // If we passed the last tutorial step (currently 3), mark as seen globally
+    if (nextStep > 3) {
+      updateSettings({ tutorialSeen: true })
+    }
   }
 
   const skipTutorial = () => {
     setStep(999)
     updatePlayer({ tutorialStep: 999 })
+    updateSettings({ tutorialSeen: true })
   }
 
   // Tutorial Content Logic

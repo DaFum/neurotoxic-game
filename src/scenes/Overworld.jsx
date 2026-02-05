@@ -204,9 +204,9 @@ export const Overworld = () => {
           Object.values(gameMap.nodes).map(node => {
             const isCurrent = node.id === player.currentNodeId
             const visibility = getNodeVisibility(node.layer, currentLayer)
-            const isReachable = isConnected(node.id)
+            const isReachable = isConnected(node.id) || node.type === 'START'
 
-            if (visibility === 'hidden') {
+            if (visibility === 'hidden' && node.type !== 'START') {
               // Render ??? Icon
               return (
                 <div

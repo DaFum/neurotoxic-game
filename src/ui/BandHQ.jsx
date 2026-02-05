@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import { HQ_ITEMS } from '../data/hqItems'
+import { SONGS_DB } from '../data/songs'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import { usePurchaseLogic } from '../hooks/usePurchaseLogic'
-import { StatBox, ProgressBar } from '../ui/shared'
+import { useGameState } from '../context/GameState'
+import { StatBox, ProgressBar, SettingsPanel } from '../ui/shared'
 
 /**
  * BandHQ Component
@@ -29,7 +31,9 @@ export const BandHQ = ({
   addToast,
   className = ''
 }) => {
-  const [activeTab, setActiveTab] = useState('STATS') // STATS, SHOP, UPGRADES
+  const [activeTab, setActiveTab] = useState('STATS') // STATS, SHOP, UPGRADES, SETLIST, SETTINGS
+  const { settings, updateSettings, deleteSave, setlist, setSetlist } =
+    useGameState()
 
   const { handleBuy, isItemOwned, isItemDisabled } = usePurchaseLogic({
     player,
@@ -38,6 +42,35 @@ export const BandHQ = ({
     updateBand,
     addToast
   })
+
+  const toggleSongInSetlist = songId => {
+    // Check if song is already in setlist (handle object or string format)
+    const currentIndex = setlist.findIndex(
+      s => (typeof s === 'string' ? s : s.id) === songId
+    )
+
+    let newSetlist
+    if (currentIndex >= 0) {
+      // Remove
+      newSetlist = [...setlist]
+      newSetlist.splice(currentIndex, 1)
+      addToast('Song removed from setlist', 'info')
+    } else {
+      // Add (Currently limiting to 1 active song for simplicity in MVP flow)
+      // If we want a full setlist, we just push.
+      // But the Gig engine currently plays activeSetlist[0].
+      // So let's make it a "Select Active Song" behavior for clarity,
+      // or just support a list. Let's support a list but maybe highlight the first one.
+      // For now, let's just REPLACE the setlist with this song to ensure it plays.
+      newSetlist = [{ id: songId }]
+      addToast('Song selected for next Gig', 'success')
+    }
+    setSetlist(newSetlist)
+  }
+
+  const isSongSelected = songId => {
+    return setlist.some(s => (typeof s === 'string' ? s : s.id) === songId)
+  }
 
   const renderItem = item => {
     const owned = isItemOwned(item)
@@ -129,12 +162,12 @@ export const BandHQ = ({
         </div>
 
         {/* Navigation */}
-        <div className='flex border-b-2 border-(--ash-gray)'>
-          {['STATS', 'SHOP', 'UPGRADES'].map(tab => (
+        <div className='flex border-b-2 border-(--ash-gray) overflow-x-auto'>
+          {['STATS', 'SHOP', 'UPGRADES', 'SETLIST', 'SETTINGS'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-4 text-center font-bold text-xl uppercase tracking-wider transition-colors duration-150 font-mono
+              className={`flex-1 min-w-[120px] py-4 text-center font-bold text-xl uppercase tracking-wider transition-colors duration-150 font-mono
                 ${
                   activeTab === tab
                     ? 'bg-(--toxic-green) text-(--void-black)'
@@ -270,6 +303,68 @@ export const BandHQ = ({
               <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
                 {[...HQ_ITEMS.van, ...HQ_ITEMS.hq].map(renderItem)}
               </div>
+            </div>
+          )}
+
+          {activeTab === 'SETLIST' && (
+            <div>
+              <div className='mb-4 text-right font-mono text-(--star-white)'>
+                SELECTED:{' '}
+                <span className='text-(--toxic-green)'>{setlist.length}</span>
+              </div>
+              <div className='space-y-2'>
+                {SONGS_DB.map(song => {
+                  const selected = isSongSelected(song.id)
+                  return (
+                    <div
+                      key={song.id}
+                      className={`flex items-center justify-between p-4 border-2 transition-colors
+                        ${
+                          selected
+                            ? 'border-(--toxic-green) bg-(--toxic-green)/20'
+                            : 'border-(--ash-gray) bg-(--void-black)/60'
+                        }`}
+                    >
+                      <div className='flex-1'>
+                        <h4
+                          className={`font-bold font-mono text-lg uppercase ${selected ? 'text-(--toxic-green)' : 'text-(--star-white)'}`}
+                        >
+                          {song.name}
+                        </h4>
+                        <div className='flex gap-4 text-xs font-mono text-(--ash-gray) mt-1'>
+                          <span>DIFF: {song.difficulty}/7</span>
+                          <span>BPM: {song.bpm}</span>
+                          <span>
+                            DUR: {Math.floor(song.duration / 60)}:
+                            {(song.duration % 60).toString().padStart(2, '0')}
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => toggleSongInSetlist(song.id)}
+                        className={`px-4 py-2 font-bold uppercase border-2 text-sm transition-all
+                          ${
+                            selected
+                              ? 'border-(--toxic-green) text-(--toxic-green) hover:bg-(--toxic-green) hover:text-(--void-black)'
+                              : 'border-(--ash-gray) text-(--ash-gray) hover:border-(--star-white) hover:text-(--star-white)'
+                          }`}
+                      >
+                        {selected ? 'ACTIVE' : 'SELECT'}
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'SETTINGS' && (
+            <div className='max-w-3xl mx-auto'>
+              <SettingsPanel
+                settings={settings}
+                updateSettings={updateSettings}
+                deleteSave={deleteSave}
+              />
             </div>
           )}
         </div>

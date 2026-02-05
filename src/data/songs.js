@@ -1,5 +1,4 @@
 // Music Library
-// eslint-disable-next-line
 import rhythmSongs from '../assets/rhythm_songs.json' with { type: 'json' }
 
 // Transform the JSON object into an array and map to the expected structure

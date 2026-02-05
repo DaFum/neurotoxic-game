@@ -261,15 +261,12 @@ export const useTravelLogic = ({
         return
       }
 
-      logger.info('TravelLogic', 'handleTravel initiated', {
-        target: node.id,
-        current: player.currentNodeId
-      })
-
-      if (isTraveling) return
-
-      // Handle current node interaction
       if (node.id === player.currentNodeId) {
+        logger.info('TravelLogic', 'Ignoring redundant travel to current node', {
+          target: node.id
+        })
+
+        // If it's the current node, trigger the interaction logic but DO NOT start travel
         if (node.type === 'GIG') {
           if ((band?.harmony ?? 0) <= 0) {
             addToast("Band's harmony too low to perform!", 'warning')
@@ -286,6 +283,13 @@ export const useTravelLogic = ({
         }
         return
       }
+
+      logger.info('TravelLogic', 'handleTravel initiated', {
+        target: node.id,
+        current: player.currentNodeId
+      })
+
+      if (isTraveling) return
 
       const currentStartNode = gameMap?.nodes[player.currentNodeId]
 
@@ -325,9 +329,9 @@ export const useTravelLogic = ({
       // Let's Ensure that if node.type === 'START' and isConnected, we skip the visibility check or layer check if it prevents return.
       // But typically layer check prevents skipping layers.
 
-      // If the request implies "Always allow travel to HQ if connected", let's enforce that.
-      if (node.type === 'START' && isConnected(node.id)) {
-        // Bypass layer/visibility check for returning home if connected
+      // Allow travel to START node from anywhere (Home Base logic)
+      if (node.type === 'START') {
+        // Bypass layer/visibility/connection check for returning home
       } else if (visibility !== 'visible' || !isConnected(node.id)) {
         return
       }

@@ -8,6 +8,9 @@ import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 
+// Export SettingsPanel
+export { SettingsPanel } from './SettingsPanel'
+
 /**
  * StatBox - Displays a single statistic with an icon
  * @param {Object} props
