@@ -28,7 +28,7 @@ export const MainMenu = () => {
     setlist,
     setSetlist
   } = useGameState()
-  const [showUpgrades, setShowUpgrades] = React.useState(false)
+  const [showUpgrades, setShowUpgrades] = useState(false)
 
   const { audioState, handleAudioChange } = useAudioControl()
 

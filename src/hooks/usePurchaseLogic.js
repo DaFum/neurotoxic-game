@@ -336,13 +336,10 @@ export const usePurchaseLogic = ({
           }
 
           default:
-            handleError(
-              new StateError(`Unknown effect type: ${effect.type}`),
-              {
-                addToast,
-                fallbackMessage: 'Purchase failed: Unknown effect type.'
-              }
-            )
+            handleError(new StateError(`Unknown effect type: ${effect.type}`), {
+              addToast,
+              fallbackMessage: 'Purchase failed: Unknown effect type.'
+            })
             return false
         }
 

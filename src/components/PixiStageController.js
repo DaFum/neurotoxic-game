@@ -4,8 +4,7 @@ import {
   buildRhythmLayout,
   calculateCrowdY,
   calculateNoteY,
-  CROWD_LAYOUT,
-  RHYTHM_LAYOUT
+  CROWD_LAYOUT
 } from '../utils/pixiStageUtils'
 
 const NOTE_SPAWN_LEAD_MS = 2000
@@ -374,7 +373,6 @@ class PixiStageController {
 
     // Reset render index if notes were reset (e.g. restart)
     if (this.nextRenderIndex >= notes.length && notes.length > 0) {
-      const firstNote = notes[0]
       // Crude heuristic: if elapsed is very small but index is high, we reset
       if (elapsed < 100) {
         this.nextRenderIndex = 0
