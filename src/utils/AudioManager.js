@@ -244,7 +244,7 @@ class AudioSystem {
    */
   getAudioSrc(songId) {
     if (songId === 'ambient') {
-      return 'https://moshhead-blackmetal.stream.laut.fm/moshhead-blackmetal'
+      return 'https://stream.laut.fm/grindcore'
     }
     return 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
   }

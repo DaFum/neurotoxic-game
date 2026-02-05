@@ -128,7 +128,7 @@ export const PreGig = () => {
 
       <div className='grid grid-cols-2 gap-8 w-full max-w-4xl h-[60vh]'>
         {/* Actions */}
-        <div className='border border-(--ash-gray) p-4 bg-(--void-black)/50'>
+        <div className='border border-(--ash-gray) p-4 bg-(--void-black)/50 overflow-y-auto'>
           <h3 className='text-xl text-(--toxic-green) mb-4'>
             BUDGET ALLOCATION
           </h3>

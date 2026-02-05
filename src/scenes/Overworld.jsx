@@ -105,6 +105,11 @@ export const Overworld = () => {
   const currentNode = gameMap?.nodes[player.currentNodeId]
   const currentLayer = currentNode?.layer || 0
 
+  // Resume ambient music if enabled and not playing (e.g. returning from Gig)
+  React.useEffect(() => {
+    audioManager.resumeMusic()
+  }, [])
+
   return (
     <div
       className={`w-full h-full bg-(--void-black) relative overflow-hidden flex flex-col items-center justify-center p-8 ${isTraveling ? 'pointer-events-none' : ''}`}

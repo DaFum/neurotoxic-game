@@ -82,13 +82,17 @@ export async function setupAudio() {
   }
 
   // Level Mixing
-  drumKit.kick.volume.value = 0
-  drumKit.snare.volume.value = -5
-  drumKit.hihat.volume.value = -15
-  drumKit.crash.volume.value = -10
+  drumKit.kick.volume.value = 5
+  drumKit.snare.volume.value = 2
+  drumKit.hihat.volume.value = -10
+  drumKit.crash.volume.value = -5
+
+  // Instrument Volumes
+  guitar.volume.value = 4
+  bass.volume.value = 6
 
   // --- SFX Synth (Unified) ---
-  sfxGain = new Tone.Gain(0.5).connect(masterComp)
+  sfxGain = new Tone.Gain(0.2).connect(masterComp)
   sfxSynth = new Tone.PolySynth(Tone.Synth).connect(sfxGain)
 
   isSetup = true

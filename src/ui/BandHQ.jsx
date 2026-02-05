@@ -288,36 +288,36 @@ export const BandHQ = ({
           )}
 
           {activeTab === 'SHOP' && (
-            <div>
+            <div className='max-h-[60vh] overflow-y-auto'>
               <div className='mb-4 text-right font-mono text-(--star-white)'>
                 FUNDS:{' '}
                 <span className='text-(--toxic-green)'>{player.money}€</span>
               </div>
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4'>
                 {[...HQ_ITEMS.gear, ...HQ_ITEMS.instruments].map(renderItem)}
               </div>
             </div>
           )}
 
           {activeTab === 'UPGRADES' && (
-            <div>
+            <div className='max-h-[60vh] overflow-y-auto'>
               <div className='mb-4 text-right font-mono text-(--star-white)'>
                 FAME:{' '}
                 <span className='text-(--warning-yellow)'>{player.fame}★</span>
               </div>
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4'>
                 {[...HQ_ITEMS.van, ...HQ_ITEMS.hq].map(renderItem)}
               </div>
             </div>
           )}
 
           {activeTab === 'SETLIST' && (
-            <div>
+            <div className='max-h-[60vh] overflow-y-auto'>
               <div className='mb-4 text-right font-mono text-(--star-white)'>
                 SELECTED:{' '}
                 <span className='text-(--toxic-green)'>{setlist.length}</span>
               </div>
-              <div className='space-y-2'>
+              <div className='space-y-2 pb-4'>
                 {SONGS_DB.map(song => {
                   const selected = isSongSelected(song.id)
                   return (
