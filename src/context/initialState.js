@@ -99,7 +99,7 @@ const savedSettings = (() => {
   }
 })()
 
-export const DEFAULT_SETTINGS = {
+const DEFAULT_SETTINGS = {
   crtEnabled: true,
   tutorialSeen: false,
   ...savedSettings

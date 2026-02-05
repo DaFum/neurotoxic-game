@@ -1,9 +1,5 @@
 // Logic for Social Media Virality and Posting
-export const SOCIAL_PLATFORMS = {
-  INSTAGRAM: { id: 'instagram', label: 'Instagram', multiplier: 1.0 },
-  TIKTOK: { id: 'tiktok', label: 'TikTok', multiplier: 1.5 }, // Volatile
-  YOUTUBE: { id: 'youtube', label: 'YouTube', multiplier: 0.8 }
-}
+// export const SOCIAL_PLATFORMS = { ... }
 
 /**
  * Calculates viral potential based on performance and events.

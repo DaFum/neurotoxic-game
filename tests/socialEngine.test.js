@@ -3,46 +3,8 @@ import assert from 'node:assert/strict'
 import {
   calculateViralityScore,
   generatePostOptions,
-  resolvePost,
-  SOCIAL_PLATFORMS
+  resolvePost
 } from '../src/utils/socialEngine.js'
-
-test('SOCIAL_PLATFORMS contains expected platforms', () => {
-  assert.ok(SOCIAL_PLATFORMS.INSTAGRAM, 'Should have Instagram platform')
-  assert.ok(SOCIAL_PLATFORMS.TIKTOK, 'Should have TikTok platform')
-  assert.ok(SOCIAL_PLATFORMS.YOUTUBE, 'Should have YouTube platform')
-
-  assert.equal(
-    SOCIAL_PLATFORMS.INSTAGRAM.id,
-    'instagram',
-    'Instagram ID should be lowercase'
-  )
-  assert.equal(
-    SOCIAL_PLATFORMS.TIKTOK.id,
-    'tiktok',
-    'TikTok ID should be lowercase'
-  )
-  assert.equal(
-    SOCIAL_PLATFORMS.YOUTUBE.id,
-    'youtube',
-    'YouTube ID should be lowercase'
-  )
-})
-
-test('SOCIAL_PLATFORMS have multipliers', () => {
-  assert.ok(
-    SOCIAL_PLATFORMS.INSTAGRAM.multiplier > 0,
-    'Instagram should have positive multiplier'
-  )
-  assert.ok(
-    SOCIAL_PLATFORMS.TIKTOK.multiplier > 0,
-    'TikTok should have positive multiplier'
-  )
-  assert.ok(
-    SOCIAL_PLATFORMS.YOUTUBE.multiplier > 0,
-    'YouTube should have positive multiplier'
-  )
-})
 
 test('calculateViralityScore returns base chance for average performance', () => {
   const venue = { name: 'Test Venue' }

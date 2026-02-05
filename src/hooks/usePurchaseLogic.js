@@ -5,7 +5,7 @@
  */
 
 import { useCallback } from 'react'
-import { handleError, GameLogicError } from '../utils/errorHandler'
+import { handleError } from '../utils/errorHandler'
 
 /**
  * Custom hook for managing shop purchase logic
@@ -336,16 +336,10 @@ export const usePurchaseLogic = ({
           }
 
           default:
-            handleError(
-              new GameLogicError(`Unknown effect type: ${effect.type}`, {
-                item,
-                effect
-              }),
-              {
-                addToast,
-                fallbackMessage: 'Purchase failed: Unknown effect type.'
-              }
-            )
+            handleError(new Error(`Unknown effect type: ${effect.type}`), {
+              addToast,
+              fallbackMessage: 'Purchase failed: Unknown effect type.'
+            })
             return false
         }
 

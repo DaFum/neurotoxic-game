@@ -71,22 +71,5 @@ export const CHARACTERS = {
   }
 }
 
-export const HARMONY_LEVELS = {
-  PERFECT: { min: 90, label: 'Perfect Unity', buff: { stat: 'all', val: 1.2 } },
-  GOOD: {
-    min: 70,
-    label: 'Good Vibes',
-    buff: { stat: 'performance', val: 1.1 }
-  },
-  TENSE: { min: 50, label: 'Tensions Rising', buff: null },
-  CONFLICT: {
-    min: 30,
-    label: 'Conflict Zone',
-    debuff: { stat: 'performance', val: 0.85 }
-  },
-  BROKEN: {
-    min: 0,
-    label: 'Breaking Point',
-    debuff: { stat: 'performance', val: 0.7 }
-  }
-}
+// Future Mechanic: Harmony Levels
+// export const HARMONY_LEVELS = { ... }

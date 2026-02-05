@@ -4,7 +4,9 @@ import {
   buildRhythmLayout,
   calculateCrowdY,
   calculateNoteY,
-  CROWD_LAYOUT
+  calculateLaneStartX,
+  CROWD_LAYOUT,
+  RHYTHM_LAYOUT
 } from '../utils/pixiStageUtils'
 
 const NOTE_SPAWN_LEAD_MS = 2000
@@ -18,7 +20,7 @@ const NOTE_CENTER_OFFSET = 50
 /**
  * Manages Pixi.js stage lifecycle and rendering updates.
  */
-export class PixiStageController {
+class PixiStageController {
   /**
    * @param {object} params - Controller dependencies.
    * @param {React.MutableRefObject<HTMLElement|null>} params.containerRef - DOM container ref.
@@ -124,7 +126,6 @@ export class PixiStageController {
   async loadAssets() {
     try {
       const noteTextureUrl = getGenImageUrl(IMG_PROMPTS.NOTE_SKULL)
-      // We rely on the standard loader behavior here and fall back to drawing if loading fails.
       try {
         this.noteTexture = await PIXI.Texture.fromURL(noteTextureUrl)
       } catch {
@@ -179,8 +180,22 @@ export class PixiStageController {
     const laneHeight = this.laneLayout.laneHeight
     const laneStrokeWidth = this.laneLayout.laneStrokeWidth
 
+    // Logic defines 3 lanes (0, 1, 2). Map them to physical X using constants.
+    // lane index 0 -> startX + 0 * (LANE_WIDTH + GAP?)
+    // Actually, RHYTHM_LAYOUT defines laneWidth but not gap logic explicitly in PixiStageController before.
+    // Logic had hardcoded x: 0, 120, 240. (Lane Width 100, Gap 20).
+    // Let's formalize this.
+    // laneIndex * (LANE_WIDTH + 20)
+    const laneGap = 20
+
     this.gameStateRef.current.lanes.forEach((lane, index) => {
-      const laneX = startX + lane.x
+      // Calculate X based on layout, ignoring lane.x from logic state to avoid duplication
+      const laneX = startX + index * (RHYTHM_LAYOUT.laneWidth + laneGap)
+
+      // Store calculated X back into state/ref for sync if needed, or just use for rendering
+      // Ideally, update the ref so logic knows too? Logic doesn't use X for collision, only index.
+      // So we just render at laneX.
+      lane.renderX = laneX
 
       // Create separate graphics for static background and dynamic elements
       const staticGraphics = new PIXI.Graphics()
@@ -194,7 +209,6 @@ export class PixiStageController {
       this.rhythmContainer.addChild(staticGraphics)
       this.rhythmContainer.addChild(dynamicGraphics)
 
-      lane.renderX = laneX
       this.laneGraphics[index] = {
         static: staticGraphics,
         dynamic: dynamicGraphics
@@ -221,7 +235,6 @@ export class PixiStageController {
    */
   createEffectsContainer() {
     this.effectsContainer = new PIXI.Container()
-    // Effects sit above notes but below UI (if any UI was here)
     if (this.rhythmContainer) {
       this.rhythmContainer.addChild(this.effectsContainer)
     } else {
@@ -371,23 +384,14 @@ export class PixiStageController {
     const targetY = this.laneLayout?.hitLineY ?? 0
     const notes = state.notes
 
-    // 1. Spawn new notes based on time (O(1) sequential access)
-    // We assume notes are sorted by time (which they are from parseSongNotes/generation)
-    // Use `nextRenderIndex` to only scan forward.
-    // However, if the game resets or loops, this index needs reset.
-    // If notes are mutated/replaced, handle that (PixiStageController reset logic handles this).
-
-    // Safety check: if notes array changed drastically (e.g. restart), nextRenderIndex might be OOB.
     if (this.nextRenderIndex >= notes.length && notes.length > 0) {
-      // Just a guard, though logic usually resets it on dispose/init.
+      // Guard for reset
     }
 
     while (this.nextRenderIndex < notes.length) {
       const note = notes[this.nextRenderIndex]
 
-      // If note is within spawn window
       if (elapsed >= note.time - NOTE_SPAWN_LEAD_MS) {
-        // Spawn sprite if visible and not hit
         if (note.visible && !note.hit) {
           const lane = state.lanes[note.laneIndex]
           const sprite = this.createNoteSprite(lane)
@@ -396,30 +400,23 @@ export class PixiStageController {
         }
         this.nextRenderIndex++
       } else {
-        // Since notes are sorted by time, if this one isn't ready, none after it are.
         break
       }
     }
 
-    // 2. Update existing active sprites (O(Active Notes))
-    // We iterate over the Map of active sprites instead of the full note array.
     for (const [note, sprite] of this.noteSprites.entries()) {
-      // Check logical state
       if (!note.visible) {
-        this.destroyNoteSprite(note) // Removes from Map
+        this.destroyNoteSprite(note)
         continue
       }
 
       if (note.hit) {
-        // Trigger effect before destroying if we haven't already
-        // Note: note.hit is true, but sprite exists. This means it was JUST hit.
         const laneColor = state.lanes?.[note.laneIndex]?.color || 0xffffff
         this.spawnHitEffect(sprite.x, sprite.y, laneColor)
-        this.destroyNoteSprite(note) // Removes from Map
+        this.destroyNoteSprite(note)
         continue
       }
 
-      // Update position
       const jitterOffset = state.modifiers.noteJitter
         ? (Math.random() - 0.5) * NOTE_JITTER_RANGE
         : 0
@@ -432,9 +429,6 @@ export class PixiStageController {
       })
       sprite.x =
         state.lanes[note.laneIndex].renderX + NOTE_CENTER_OFFSET + jitterOffset
-
-      // Optional: Cull sprites that are way off screen (missed) to keep map small
-      // Though Logic usually marks them invisible -> destroyed above.
     }
   }
 
@@ -498,8 +492,11 @@ export class PixiStageController {
     if (this.rhythmContainer) {
       this.rhythmContainer.y = this.laneLayout.rhythmOffsetY
     }
-    this.gameStateRef.current.lanes.forEach(lane => {
-      lane.renderX = this.laneLayout.startX + lane.x
+    const startX = this.laneLayout.startX
+    const laneGap = 20 // Consistent with createLanes
+
+    this.gameStateRef.current.lanes.forEach((lane, index) => {
+      lane.renderX = startX + index * (RHYTHM_LAYOUT.laneWidth + laneGap)
     })
     return true
   }
@@ -517,7 +514,6 @@ export class PixiStageController {
     const state = this.gameStateRef.current
     const stats = this.statsRef.current
 
-    // Stop updating if game is over or fully stopped
     if (state.isGameOver || (!state.running && !state.pauseTime)) {
       return
     }
@@ -549,7 +545,6 @@ export class PixiStageController {
       this.app.ticker.remove(this.handleTicker)
     }
 
-    // Destroy all managed sprites in the map
     for (const note of this.noteSprites.keys()) {
       this.destroyNoteSprite(note)
     }
@@ -559,7 +554,6 @@ export class PixiStageController {
     this.laneGraphics = []
     this.crowdMembers = []
 
-    // Explicitly destroy active effects
     this.activeEffects.forEach(effect => effect.destroy?.())
     this.activeEffects = []
     this.effectsContainer = null

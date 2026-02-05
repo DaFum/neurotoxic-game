@@ -6,24 +6,16 @@
 
 import { logger } from './logger.js'
 
-/**
- * Error severity levels
- * @readonly
- * @enum {string}
- */
-export const ErrorSeverity = {
+// Error severity and category definitions removed to simplify export surface.
+// Internal constants used for default values.
+const ErrorSeverity = {
   LOW: 'low',
   MEDIUM: 'medium',
   HIGH: 'high',
   CRITICAL: 'critical'
 }
 
-/**
- * Error categories for classification
- * @readonly
- * @enum {string}
- */
-export const ErrorCategory = {
+const ErrorCategory = {
   STATE: 'state',
   RENDER: 'render',
   AUDIO: 'audio',
@@ -34,19 +26,10 @@ export const ErrorCategory = {
   UNKNOWN: 'unknown'
 }
 
-/**
- * Base Game Error class
- * @extends Error
- */
-export class GameError extends Error {
-  /**
-   * @param {string} message - Error message
-   * @param {Object} options - Error options
-   * @param {string} options.category - Error category
-   * @param {string} options.severity - Error severity
-   * @param {Object} [options.context] - Additional context
-   * @param {boolean} [options.recoverable] - Whether the error is recoverable
-   */
+// Base Game Error class and subclasses removed from export unless used.
+// Keeping StateError and StorageError as they are used in safeStorageOperation or loadGame.
+
+class GameError extends Error {
   constructor(
     message,
     {
@@ -65,10 +48,6 @@ export class GameError extends Error {
     this.timestamp = Date.now()
   }
 
-  /**
-   * Converts error to a loggable object
-   * @returns {Object} Error data object
-   */
   toLogObject() {
     return {
       name: this.name,
@@ -83,10 +62,6 @@ export class GameError extends Error {
   }
 }
 
-/**
- * State-related error
- * @extends GameError
- */
 export class StateError extends GameError {
   constructor(message, context = {}) {
     super(message, {
@@ -99,10 +74,6 @@ export class StateError extends GameError {
   }
 }
 
-/**
- * Storage-related error
- * @extends GameError
- */
 export class StorageError extends GameError {
   constructor(message, context = {}) {
     super(message, {
@@ -115,53 +86,7 @@ export class StorageError extends GameError {
   }
 }
 
-/**
- * Game Logic error
- * @extends GameError
- */
-export class GameLogicError extends GameError {
-  constructor(message, context = {}) {
-    super(message, {
-      category: ErrorCategory.GAME_LOGIC,
-      severity: ErrorSeverity.MEDIUM,
-      context,
-      recoverable: true
-    })
-    this.name = 'GameLogicError'
-  }
-}
-
-/**
- * Render-related error
- * @extends GameError
- */
-export class RenderError extends GameError {
-  constructor(message, context = {}) {
-    super(message, {
-      category: ErrorCategory.RENDER,
-      severity: ErrorSeverity.HIGH,
-      context,
-      recoverable: false
-    })
-    this.name = 'RenderError'
-  }
-}
-
-/**
- * Audio-related error
- * @extends GameError
- */
-export class AudioError extends GameError {
-  constructor(message, context = {}) {
-    super(message, {
-      category: ErrorCategory.AUDIO,
-      severity: ErrorSeverity.LOW,
-      context,
-      recoverable: true
-    })
-    this.name = 'AudioError'
-  }
-}
+// Unused errors removed: GameLogicError, RenderError, AudioError.
 
 /**
  * Error log storage for debugging
@@ -236,18 +161,7 @@ export const handleError = (error, options = {}) => {
   return errorInfo
 }
 
-/**
- * Gets the error log for debugging
- * @returns {Array<Object>} Array of error log entries
- */
-export const getErrorLog = () => [...errorLog]
-
-/**
- * Clears the error log
- */
-export const clearErrorLog = () => {
-  errorLog.length = 0
-}
+// getErrorLog and clearErrorLog removed as they were unused exports.
 
 /**
  * Creates a safe wrapper for localStorage operations

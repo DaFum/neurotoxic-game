@@ -1,16 +1,16 @@
 /**
  * Audio Engine Utility
- * This module manages the AudioContext and Tone.js logic.
- * Note: This file contains side-effects (Tone.start, AudioContext creation) and is an exception to the strict Pure Function rule for utilities.
+ * This module manages the AudioContext and Tone.js logic for both Rhythm Game music and UI SFX.
+ * Note: This file contains side-effects (Tone.start, AudioContext creation).
  */
 
 import * as Tone from 'tone'
 import { calculateTimeFromTicks } from './rhythmUtils'
 
 let guitar, bass, drumKit, loop, part
+let sfxSynth, sfxGain
 let isSetup = false
 
-// Initialisierung der Synths und Effekte
 /**
  * Initializes the audio subsystem, including synths, effects, and master compressor.
  * @returns {Promise<void>}
@@ -22,7 +22,7 @@ export async function setupAudio() {
   // Master Chain
   const masterComp = new Tone.Compressor(-30, 3).toDestination()
 
-  // --- Gitarre ---
+  // --- Guitar ---
   guitar = new Tone.PolySynth(Tone.MonoSynth, {
     oscillator: { type: 'sawtooth' },
     envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.1 },
@@ -87,10 +87,13 @@ export async function setupAudio() {
   drumKit.hihat.volume.value = -15
   drumKit.crash.volume.value = -10
 
+  // --- SFX Synth (Unified) ---
+  sfxGain = new Tone.Gain(0.5).connect(masterComp)
+  sfxSynth = new Tone.PolySynth(Tone.Synth).connect(sfxGain)
+
   isSetup = true
 }
 
-// Helper to resume context from UI
 /**
  * Ensures the AudioContext is running and initialized.
  * @returns {Promise<void>}
@@ -99,6 +102,53 @@ export async function ensureAudioContext() {
   if (!isSetup) await setupAudio()
   if (Tone.context.state !== 'running') {
     await Tone.context.resume()
+  }
+}
+
+/**
+ * Plays a sound effect by type.
+ * @param {string} type - The type of SFX ('hit', 'miss', 'menu', 'travel').
+ */
+export function playSFX(type) {
+  if (!isSetup || !sfxSynth) return
+
+  const now = Tone.now()
+  switch (type) {
+    case 'hit':
+      // High pitch success ping
+      sfxSynth.triggerAttackRelease('A5', '16n', now)
+      break
+    case 'miss':
+      // Low discordant buzz
+      sfxSynth.triggerAttackRelease('D2', '8n', now)
+      break
+    case 'menu':
+      // Gentle blip
+      sfxSynth.triggerAttackRelease('C5', '32n', now, 0.3)
+      break
+    case 'travel':
+      // Engine-like rumble using drum kick if available, or low synth
+      if (drumKit && drumKit.kick) {
+        drumKit.kick.triggerAttackRelease('C1', '8n', now, 0.5)
+      } else {
+        sfxSynth.triggerAttackRelease('G1', '8n', now, 0.5)
+      }
+      break
+    default:
+      break
+  }
+}
+
+/**
+ * Sets the SFX volume.
+ * @param {number} vol - Volume between 0 and 1.
+ */
+export function setSFXVolume(vol) {
+  if (sfxGain) {
+    // Convert 0-1 linear to decibels (approximate or use ramp)
+    // Tone.Gain accepts linear values if units are default, but volume is typically db.
+    // However, Tone.Gain.gain is linear amplitude.
+    sfxGain.gain.rampTo(Math.max(0, Math.min(1, vol)), 0.1)
   }
 }
 
@@ -201,13 +251,6 @@ export async function playSongFromData(song, delay = 0) {
  */
 function playDrumNote(midiPitch, time, velocity) {
   // Basic GM Mapping
-  // 35, 36: Bass Drum
-  // 38, 40: Snare
-  // 42, 44, 46: HiHat (Closed, Pedal, Open)
-  // 49, 57: Crash
-  // 51, 59: Ride
-
-  // Fallback/mappings
   switch (midiPitch) {
     case 35:
     case 36:
@@ -220,7 +263,6 @@ function playDrumNote(midiPitch, time, velocity) {
     case 42:
     case 44:
     case 46:
-      // Open/Closed nuance can be decay time, simpler here
       drumKit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.8)
       break
     case 49:
@@ -228,7 +270,7 @@ function playDrumNote(midiPitch, time, velocity) {
       drumKit.crash.triggerAttackRelease('C2', '8n', time, velocity)
       break
     default:
-      // Default to HiHat for unknown percussion elements to keep rhythm
+      // Default to HiHat for unknown percussion elements
       drumKit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.5)
   }
 }

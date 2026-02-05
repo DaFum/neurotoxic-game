@@ -11,7 +11,7 @@ import {
 } from '../utils/economyEngine'
 import { audioManager } from '../utils/AudioManager'
 import { logger } from '../utils/logger'
-import { handleError, GameLogicError } from '../utils/errorHandler'
+import { handleError } from '../utils/errorHandler'
 
 /**
  * Failsafe timeout duration in milliseconds
@@ -159,22 +159,19 @@ export const useTravelLogic = ({
       travelCompletedRef.current = true
 
       if (!target) {
-        handleError(
-          new GameLogicError('Travel complete but no target', {
-            travelTarget,
-            explicitNode
-          }),
-          { addToast, fallbackMessage: 'Error: Invalid destination.' }
-        )
+        handleError(new Error('Travel complete but no target'), {
+          addToast,
+          fallbackMessage: 'Error: Invalid destination.'
+        })
         setIsTraveling(false)
         return
       }
 
       if (!target.venue) {
-        handleError(
-          new GameLogicError('Target node has no venue data', { target }),
-          { addToast, fallbackMessage: 'Error: Invalid destination.' }
-        )
+        handleError(new Error('Target node has no venue data'), {
+          addToast,
+          fallbackMessage: 'Error: Invalid destination.'
+        })
         setIsTraveling(false)
         return
       }
