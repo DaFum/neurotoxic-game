@@ -546,15 +546,18 @@ export const useRhythmGameLogic = () => {
    * @param {boolean} isDown - Whether the input is pressed.
    * @returns {void}
    */
-  const registerInput = (laneIndex, isDown) => {
-    // Ignore input if game is not running or is paused
-    if (!gameStateRef.current.running || activeEvent) return
+  const registerInput = useCallback(
+    (laneIndex, isDown) => {
+      // Ignore input if game is not running or is paused
+      if (!gameStateRef.current.running || activeEvent) return
 
-    if (gameStateRef.current.lanes[laneIndex]) {
-      gameStateRef.current.lanes[laneIndex].active = isDown
-      if (isDown) handleHit(laneIndex)
-    }
-  }
+      if (gameStateRef.current.lanes[laneIndex]) {
+        gameStateRef.current.lanes[laneIndex].active = isDown
+        if (isDown) handleHit(laneIndex)
+      }
+    },
+    [activeEvent, handleHit]
+  )
 
   return {
     gameStateRef,

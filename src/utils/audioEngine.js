@@ -158,10 +158,9 @@ export async function playSongFromData(song, delay = 0) {
 
       // Ensure time and delay are valid numbers
       const validDelay = Number.isFinite(delay) ? delay : 0
-      const finalTime = Number.isFinite(time) ? time + validDelay : 0
+      const finalTime = Number.isFinite(time) ? time + validDelay : -1
 
-      // Only return valid events (map returns undefined for filtered-out invalid times?)
-      // We map everything, so we assume valid.
+      // Invalid times are caught by the filter below
       return {
         time: finalTime,
         note: n.p,
@@ -169,8 +168,8 @@ export async function playSongFromData(song, delay = 0) {
         lane: n.lane
       }
     })
-    // Filter out potential non-finite times if calculation failed hard
-    .filter(e => Number.isFinite(e.time))
+    // Filter out notes with invalid or negative times to prevent clustering/errors
+    .filter(e => Number.isFinite(e.time) && e.time >= 0)
 
   if (events.length === 0) {
     console.warn('playSongFromData: No valid notes found to schedule')
