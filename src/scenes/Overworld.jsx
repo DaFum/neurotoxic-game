@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { useTravelLogic } from '../hooks/useTravelLogic'
+import { useAudioControl } from '../hooks/useAudioControl'
 import { ChatterOverlay } from '../components/ChatterOverlay'
 import { BandHQ } from '../ui/BandHQ'
 import { ALL_VENUES } from '../data/venues'
@@ -74,27 +75,7 @@ export const Overworld = () => {
   const [showHQ, setShowHQ] = useState(false)
   const [activeHQTab, setActiveHQTab] = useState('STATS')
 
-  // Local state for audio to pass to stateless components
-  const [audioState, setAudioState] = useState({
-    musicVol: audioManager.musicVolume,
-    sfxVol: audioManager.sfxVolume,
-    isMuted: audioManager.muted
-  })
-
-  const handleAudioChange = {
-    setMusic: val => {
-      audioManager.setMusicVolume(val)
-      setAudioState(prev => ({ ...prev, musicVol: val }))
-    },
-    setSfx: val => {
-      audioManager.setSFXVolume(val)
-      setAudioState(prev => ({ ...prev, sfxVol: val }))
-    },
-    toggleMute: () => {
-      const muted = audioManager.toggleMute()
-      setAudioState(prev => ({ ...prev, isMuted: muted }))
-    }
-  }
+  const { audioState, handleAudioChange } = useAudioControl()
 
   const {
     isTraveling,

@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { usePurchaseLogic } from '../hooks/usePurchaseLogic'
+import { useAudioControl } from '../hooks/useAudioControl'
 import { GlitchButton } from '../ui/GlitchButton'
 import { BandHQ } from '../ui/BandHQ'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
@@ -29,12 +30,7 @@ export const MainMenu = () => {
   } = useGameState()
   const [showUpgrades, setShowUpgrades] = React.useState(false)
 
-  // Local state for audio to pass to stateless components
-  const [audioState, setAudioState] = useState({
-    musicVol: audioManager.musicVolume,
-    sfxVol: audioManager.sfxVolume,
-    isMuted: audioManager.muted
-  })
+  const { audioState, handleAudioChange } = useAudioControl()
 
   usePurchaseLogic({
     player,
@@ -47,21 +43,6 @@ export const MainMenu = () => {
   React.useEffect(() => {
     audioManager.startAmbient()
   }, [])
-
-  const handleAudioChange = {
-    setMusic: val => {
-      audioManager.setMusicVolume(val)
-      setAudioState(prev => ({ ...prev, musicVol: val }))
-    },
-    setSfx: val => {
-      audioManager.setSFXVolume(val)
-      setAudioState(prev => ({ ...prev, sfxVol: val }))
-    },
-    toggleMute: () => {
-      const muted = audioManager.toggleMute()
-      setAudioState(prev => ({ ...prev, isMuted: muted }))
-    }
-  }
 
   /**
    * Handles loading a saved game.

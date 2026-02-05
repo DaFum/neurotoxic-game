@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { VolumeSlider } from './VolumeSlider'
 
 export const SettingsPanel = ({
   settings,
@@ -17,40 +18,22 @@ export const SettingsPanel = ({
     <div className={`space-y-8 ${className}`}>
       {/* Audio Settings */}
       <div>
-        <h2 className="font-[Metal_Mania] text-4xl uppercase text-(--toxic-green) mb-6 border-b border-(--ash-gray) pb-2">
+        <h2 className='font-[Metal_Mania] text-4xl uppercase text-(--toxic-green) mb-6 border-b border-(--ash-gray) pb-2'>
           AUDIO PROTOCOLS
         </h2>
         <div className='space-y-6'>
+          <VolumeSlider
+            label='MUSIC VOLUME'
+            value={musicVol}
+            onChange={e => onMusicChange(parseFloat(e.target.value))}
+          />
+          <VolumeSlider
+            label='SFX VOLUME'
+            value={sfxVol}
+            onChange={e => onSfxChange(parseFloat(e.target.value))}
+          />
           <div className='flex items-center justify-between'>
-            <label className="font-[Courier_New] text-sm uppercase tracking-wide text-(--star-white)">
-              MUSIC VOLUME
-            </label>
-            <input
-              type='range'
-              min='0'
-              max='1'
-              step='0.1'
-              value={musicVol}
-              onChange={e => onMusicChange(parseFloat(e.target.value))}
-              className='w-48 accent-(--toxic-green) bg-(--void-black)'
-            />
-          </div>
-          <div className='flex items-center justify-between'>
-            <label className="font-[Courier_New] text-sm uppercase tracking-wide text-(--star-white)">
-              SFX VOLUME
-            </label>
-            <input
-              type='range'
-              min='0'
-              max='1'
-              step='0.1'
-              value={sfxVol}
-              onChange={e => onSfxChange(parseFloat(e.target.value))}
-              className='w-48 accent-(--toxic-green) bg-(--void-black)'
-            />
-          </div>
-          <div className='flex items-center justify-between'>
-            <label className="font-[Courier_New] text-sm uppercase tracking-wide text-(--star-white)">
+            <label className='font-[Courier_New] text-sm uppercase tracking-wide text-(--star-white)'>
               MUTE ALL
             </label>
             <button
@@ -67,11 +50,11 @@ export const SettingsPanel = ({
 
       {/* Visual Settings */}
       <div>
-        <h2 className="font-[Metal_Mania] text-4xl uppercase text-(--toxic-green) mb-6 border-b border-(--ash-gray) pb-2">
+        <h2 className='font-[Metal_Mania] text-4xl uppercase text-(--toxic-green) mb-6 border-b border-(--ash-gray) pb-2'>
           VISUAL INTERFACE
         </h2>
         <div className='flex items-center justify-between'>
-          <label className="font-[Courier_New] text-sm uppercase tracking-wide text-(--star-white)">
+          <label className='font-[Courier_New] text-sm uppercase tracking-wide text-(--star-white)'>
             CRT EFFECT
           </label>
           <button
@@ -87,11 +70,11 @@ export const SettingsPanel = ({
 
       {/* Data Management */}
       <div>
-        <h2 className="font-[Metal_Mania] text-4xl uppercase text-(--blood-red) mb-6 border-b border-(--ash-gray) pb-2">
+        <h2 className='font-[Metal_Mania] text-4xl uppercase text-(--blood-red) mb-6 border-b border-(--ash-gray) pb-2'>
           DATA PURGE
         </h2>
         <div className='flex justify-between items-center'>
-          <p className="font-[Courier_New] text-lg text-(--ash-gray) max-w-xs">
+          <p className='font-[Courier_New] text-lg text-(--ash-gray) max-w-xs'>
             WARNING: This action is irreversible. All tour progress will be
             lost.
           </p>

@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 // Export SettingsPanel
 export { SettingsPanel } from './SettingsPanel'
+export { VolumeSlider } from './VolumeSlider'
 
 // Remove unused exports to reduce bundle size and confusion.
 // Previously exported: Panel, TabButton, ActionButton, Modal, Grid.

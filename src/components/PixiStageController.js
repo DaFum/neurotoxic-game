@@ -4,7 +4,6 @@ import {
   buildRhythmLayout,
   calculateCrowdY,
   calculateNoteY,
-  calculateLaneStartX,
   CROWD_LAYOUT,
   RHYTHM_LAYOUT
 } from '../utils/pixiStageUtils'
