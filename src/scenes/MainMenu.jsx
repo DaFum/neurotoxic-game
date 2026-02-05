@@ -98,6 +98,7 @@ export const MainMenu = () => {
           <GlitchButton
             onClick={async () => {
               await audioManager.ensureAudioContext()
+              audioManager.resumeMusic()
               changeScene('OVERWORLD')
             }}
             className='relative z-20'
@@ -121,9 +122,6 @@ export const MainMenu = () => {
         </div>
 
         <div className='flex gap-4 mt-8'>
-          <GlitchButton onClick={() => changeScene('SETTINGS')}>
-            SETTINGS
-          </GlitchButton>
           <GlitchButton onClick={() => changeScene('CREDITS')}>
             CREDITS
           </GlitchButton>

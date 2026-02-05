@@ -320,13 +320,8 @@ export const useTravelLogic = ({
 
       // Allow travel to START node from anywhere if connected, bypassing standard layer/visibility rules if needed.
       // This ensures "Return to HQ" is possible if valid connection exists, even if layer logic implies "forward only".
-      // NOTE: We rely on isConnected() to ensure graph validity.
       if (node.type === 'START') {
-        if (!isConnected(node.id)) {
-          addToast('Cannot reach HQ from here.', 'warning')
-          return
-        }
-        // Proceed even if visibility is technically hidden by layer logic (e.g. going back)
+        // Always allow returning to HQ regardless of connections or visibility
       } else if (visibility !== 'visible' || !isConnected(node.id)) {
         addToast(
           visibility !== 'visible'
