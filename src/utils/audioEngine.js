@@ -270,7 +270,7 @@ function playDrumNote(midiPitch, time, velocity) {
       drumKit.crash.triggerAttackRelease('C2', '8n', time, velocity)
       break
     default:
-      // Default to HiHat for unknown percussion elements
+      // Default to HiHat for unknown percussion elements to keep rhythm
       drumKit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.5)
   }
 }
@@ -397,6 +397,10 @@ function playDrumsLegacy(time, diff, note, random) {
     if (random() > 0.9) {
       drumKit.snare.triggerAttackRelease('16n', time)
     }
-    if (time % 0.25 < 0.1) drumKit.hihat.triggerAttackRelease(8000, '32n', time)
+    // Fix floating point tolerance issues
+    const beatPhase = time % 0.25
+    if (beatPhase < 0.1 || beatPhase > 0.24) {
+      drumKit.hihat.triggerAttackRelease(8000, '32n', time)
+    }
   }
 }

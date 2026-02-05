@@ -15,6 +15,7 @@ const NOTE_FALLBACK_WIDTH = 90
 const NOTE_FALLBACK_HEIGHT = 20
 const NOTE_INITIAL_Y = -50
 const NOTE_CENTER_OFFSET = 50
+const LANE_GAP = 20
 
 /**
  * Manages Pixi.js stage lifecycle and rendering updates.
@@ -52,6 +53,7 @@ class PixiStageController {
     // O(N) Rendering Optimizations
     this.noteSprites = new Map() // Map<note, Sprite>
     this.nextRenderIndex = 0 // Tracks the next note to spawn
+    this.spritePool = [] // Object pool for reusable sprites
   }
 
   /**
@@ -179,21 +181,8 @@ class PixiStageController {
     const laneHeight = this.laneLayout.laneHeight
     const laneStrokeWidth = this.laneLayout.laneStrokeWidth
 
-    // Logic defines 3 lanes (0, 1, 2). Map them to physical X using constants.
-    // lane index 0 -> startX + 0 * (LANE_WIDTH + GAP?)
-    // Actually, RHYTHM_LAYOUT defines laneWidth but not gap logic explicitly in PixiStageController before.
-    // Logic had hardcoded x: 0, 120, 240. (Lane Width 100, Gap 20).
-    // Let's formalize this.
-    // laneIndex * (LANE_WIDTH + 20)
-    const laneGap = 20
-
     this.gameStateRef.current.lanes.forEach((lane, index) => {
-      // Calculate X based on layout, ignoring lane.x from logic state to avoid duplication
-      const laneX = startX + index * (RHYTHM_LAYOUT.laneWidth + laneGap)
-
-      // Store calculated X back into state/ref for sync if needed, or just use for rendering
-      // Ideally, update the ref so logic knows too? Logic doesn't use X for collision, only index.
-      // So we just render at laneX.
+      const laneX = startX + index * (RHYTHM_LAYOUT.laneWidth + LANE_GAP)
       lane.renderX = laneX
 
       // Create separate graphics for static background and dynamic elements
@@ -383,8 +372,17 @@ class PixiStageController {
     const targetY = this.laneLayout?.hitLineY ?? 0
     const notes = state.notes
 
+    // Reset render index if notes were reset (e.g. restart)
     if (this.nextRenderIndex >= notes.length && notes.length > 0) {
-      // Guard for reset
+      const firstNote = notes[0]
+      // Crude heuristic: if elapsed is very small but index is high, we reset
+      if (elapsed < 100) {
+        this.nextRenderIndex = 0
+        // Clean up sprites that might be stale
+        for (const note of this.noteSprites.keys()) {
+          this.destroyNoteSprite(note)
+        }
+      }
     }
 
     while (this.nextRenderIndex < notes.length) {
@@ -393,7 +391,7 @@ class PixiStageController {
       if (elapsed >= note.time - NOTE_SPAWN_LEAD_MS) {
         if (note.visible && !note.hit) {
           const lane = state.lanes[note.laneIndex]
-          const sprite = this.createNoteSprite(lane)
+          const sprite = this.acquireSpriteFromPool(lane)
           this.noteContainer.addChild(sprite)
           this.noteSprites.set(note, sprite)
         }
@@ -429,6 +427,24 @@ class PixiStageController {
       sprite.x =
         state.lanes[note.laneIndex].renderX + NOTE_CENTER_OFFSET + jitterOffset
     }
+  }
+
+  /**
+   * Acquires a sprite from the pool or creates a new one.
+   * @param {object} lane - Lane configuration.
+   * @returns {PIXI.DisplayObject} Note sprite instance.
+   */
+  acquireSpriteFromPool(lane) {
+    if (this.spritePool.length > 0) {
+      const sprite = this.spritePool.pop()
+      sprite.visible = true
+      sprite.tint = lane.color
+      sprite.x = lane.renderX + NOTE_CENTER_OFFSET
+      sprite.y = NOTE_INITIAL_Y
+      // Reset alpha/scale if modified elsewhere? Currently safe.
+      return sprite
+    }
+    return this.createNoteSprite(lane)
   }
 
   /**
@@ -468,10 +484,19 @@ class PixiStageController {
     if (this.noteContainer) {
       this.noteContainer.removeChild(sprite)
     }
-    if (sprite.destroy) {
-      sprite.destroy()
-    }
+
+    // Release to pool instead of destroying
+    this.releaseSpriteToPool(sprite)
     this.noteSprites.delete(note)
+  }
+
+  /**
+   * Releases a sprite back to the pool.
+   * @param {PIXI.DisplayObject} sprite - The sprite to release.
+   */
+  releaseSpriteToPool(sprite) {
+    sprite.visible = false
+    this.spritePool.push(sprite)
   }
 
   /**
@@ -492,10 +517,9 @@ class PixiStageController {
       this.rhythmContainer.y = this.laneLayout.rhythmOffsetY
     }
     const startX = this.laneLayout.startX
-    const laneGap = 20 // Consistent with createLanes
 
     this.gameStateRef.current.lanes.forEach((lane, index) => {
-      lane.renderX = startX + index * (RHYTHM_LAYOUT.laneWidth + laneGap)
+      lane.renderX = startX + index * (RHYTHM_LAYOUT.laneWidth + LANE_GAP)
     })
     return true
   }
@@ -549,6 +573,10 @@ class PixiStageController {
     }
     this.noteSprites.clear()
     this.nextRenderIndex = 0
+
+    // Destroy pooled sprites
+    this.spritePool.forEach(sprite => sprite.destroy())
+    this.spritePool = []
 
     this.laneGraphics = []
     this.crowdMembers = []

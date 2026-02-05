@@ -1,5 +1,10 @@
 // Logic for Social Media Virality and Posting
-// export const SOCIAL_PLATFORMS = { ... }
+export const SOCIAL_PLATFORMS = {
+  INSTAGRAM: { id: 'instagram', label: 'Instagram', multiplier: 1.2 },
+  TIKTOK: { id: 'tiktok', label: 'TikTok', multiplier: 1.5 }, // Volatile
+  YOUTUBE: { id: 'youtube', label: 'YouTube', multiplier: 0.8 },
+  NEWSLETTER: { id: 'newsletter', label: 'Newsletter', multiplier: 0.5 }
+}
 
 /**
  * Calculates viral potential based on performance and events.
@@ -89,4 +94,54 @@ export const resolvePost = (postOption, diceRoll) => {
       ? 'IT WENT VIRAL! Notifications exploding!'
       : 'Solid engagement. Fans are happy.'
   }
+}
+
+/**
+ * Calculates new followers based on platform growth mechanics.
+ * @param {string} platform - 'instagram', 'tiktok', 'youtube', 'newsletter'
+ * @param {number} performance - Gig performance score (0-100)
+ * @param {number} currentFollowers - Existing follower count
+ * @param {boolean} [isViral=false] - Whether a viral event occurred
+ * @returns {number} Net follower growth
+ */
+export const calculateSocialGrowth = (
+  platform,
+  performance,
+  currentFollowers,
+  isViral = false
+) => {
+  const platformData = Object.values(SOCIAL_PLATFORMS).find(
+    p => p.id === platform
+  )
+  const multiplier = platformData ? platformData.multiplier : 1.0
+
+  const baseGrowth = Math.max(0, performance - 50) * 0.5 // e.g. 80 score -> 15 base
+  const viralBonus = isViral ? currentFollowers * 0.1 + 100 : 0
+
+  return Math.floor(baseGrowth * multiplier + viralBonus)
+}
+
+/**
+ * Checks if a viral event triggers based on gig stats.
+ * @param {object} stats - { accuracy, maxCombo, score }
+ * @param {number} [modifiers=0] - Additional probability boost (0-1)
+ * @returns {boolean} True if viral event occurs
+ */
+export const checkViralEvent = (stats, modifiers = 0) => {
+  if (stats.accuracy > 95) return true
+  if (stats.maxCombo > 50) return true // "2.5x" equivalent in combo count logic approx
+  const chance = 0.01 + modifiers
+  return Math.random() < chance
+}
+
+/**
+ * Applies organic decay to follower counts.
+ * @param {number} followers - Current follower count
+ * @param {number} daysSinceLastPost - Days since last engagement
+ * @returns {number} New follower count (decreased)
+ */
+export const applyReputationDecay = (followers, daysSinceLastPost) => {
+  if (daysSinceLastPost < 3) return followers
+  const decayRate = 0.01 * (daysSinceLastPost - 2) // 1% per day after day 2
+  return Math.floor(followers * (1 - Math.min(0.5, decayRate)))
 }

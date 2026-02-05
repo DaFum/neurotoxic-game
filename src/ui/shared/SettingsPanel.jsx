@@ -18,7 +18,7 @@ export const SettingsPanel = ({
     <div className={`space-y-8 ${className}`}>
       {/* Audio Settings */}
       <div>
-        <h2 className='font-[Metal_Mania] text-4xl uppercase text-(--toxic-green) mb-6 border-b border-(--ash-gray) pb-2'>
+        <h2 className="font-[Metal_Mania] text-4xl uppercase text-(--toxic-green) mb-6 border-b border-(--ash-gray) pb-2">
           AUDIO PROTOCOLS
         </h2>
         <div className='space-y-6'>
@@ -33,11 +33,12 @@ export const SettingsPanel = ({
             onChange={e => onSfxChange(parseFloat(e.target.value))}
           />
           <div className='flex items-center justify-between'>
-            <label className='font-[Courier_New] text-sm uppercase tracking-wide text-(--star-white)'>
+            <label className="font-[Courier_New] text-sm uppercase tracking-wide text-(--star-white)">
               MUTE ALL
             </label>
             <button
               onClick={onToggleMute}
+              aria-label={isMuted ? 'Unmute all audio' : 'Mute all audio'}
               className={`w-16 h-8 border-2 border-(--toxic-green) rounded-none shadow-[4px_4px_0px_var(--blood-red)] flex items-center p-1 transition-all ${isMuted ? 'justify-end bg-(--toxic-green)/20' : 'justify-start'}`}
             >
               <div
@@ -50,19 +51,22 @@ export const SettingsPanel = ({
 
       {/* Visual Settings */}
       <div>
-        <h2 className='font-[Metal_Mania] text-4xl uppercase text-(--toxic-green) mb-6 border-b border-(--ash-gray) pb-2'>
+        <h2 className="font-[Metal_Mania] text-4xl uppercase text-(--toxic-green) mb-6 border-b border-(--ash-gray) pb-2">
           VISUAL INTERFACE
         </h2>
         <div className='flex items-center justify-between'>
-          <label className='font-[Courier_New] text-sm uppercase tracking-wide text-(--star-white)'>
+          <label className="font-[Courier_New] text-sm uppercase tracking-wide text-(--star-white)">
             CRT EFFECT
           </label>
           <button
             onClick={onToggleCRT}
-            className={`w-16 h-8 border-2 border-(--toxic-green) rounded-none shadow-[4px_4px_0px_var(--blood-red)] flex items-center p-1 transition-all ${settings.crtEnabled ? 'justify-end bg-(--toxic-green)/20' : 'justify-start'}`}
+            aria-label={
+              settings?.crtEnabled ? 'Disable CRT Effect' : 'Enable CRT Effect'
+            }
+            className={`w-16 h-8 border-2 border-(--toxic-green) rounded-none shadow-[4px_4px_0px_var(--blood-red)] flex items-center p-1 transition-all ${settings?.crtEnabled ? 'justify-end bg-(--toxic-green)/20' : 'justify-start'}`}
           >
             <div
-              className={`w-6 h-6 bg-(--toxic-green) ${settings.crtEnabled ? 'opacity-100' : 'opacity-50'}`}
+              className={`w-6 h-6 bg-(--toxic-green) ${settings?.crtEnabled ? 'opacity-100' : 'opacity-50'}`}
             />
           </button>
         </div>
@@ -70,11 +74,11 @@ export const SettingsPanel = ({
 
       {/* Data Management */}
       <div>
-        <h2 className='font-[Metal_Mania] text-4xl uppercase text-(--blood-red) mb-6 border-b border-(--ash-gray) pb-2'>
+        <h2 className="font-[Metal_Mania] text-4xl uppercase text-(--blood-red) mb-6 border-b border-(--ash-gray) pb-2">
           DATA PURGE
         </h2>
         <div className='flex justify-between items-center'>
-          <p className='font-[Courier_New] text-lg text-(--ash-gray) max-w-xs'>
+          <p className="font-[Courier_New] text-lg text-(--ash-gray) max-w-xs">
             WARNING: This action is irreversible. All tour progress will be
             lost.
           </p>
@@ -93,7 +97,7 @@ export const SettingsPanel = ({
 SettingsPanel.propTypes = {
   settings: PropTypes.shape({
     crtEnabled: PropTypes.bool
-  }).isRequired,
+  }),
   musicVol: PropTypes.number.isRequired,
   sfxVol: PropTypes.number.isRequired,
   isMuted: PropTypes.bool.isRequired,

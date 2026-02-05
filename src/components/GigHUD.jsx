@@ -126,6 +126,8 @@ GigHUD.propTypes = {
   }).isRequired,
   onLaneInput: PropTypes.func,
   gameStateRef: PropTypes.shape({
-    current: PropTypes.object
+    current: PropTypes.shape({
+      projectiles: PropTypes.array
+    })
   }).isRequired
 }

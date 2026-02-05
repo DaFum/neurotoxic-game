@@ -11,7 +11,7 @@ import {
 } from '../utils/economyEngine'
 import { audioManager } from '../utils/AudioManager'
 import { logger } from '../utils/logger'
-import { handleError } from '../utils/errorHandler'
+import { handleError, StateError } from '../utils/errorHandler'
 
 /**
  * Failsafe timeout duration in milliseconds
@@ -166,7 +166,7 @@ export const useTravelLogic = ({
       travelCompletedRef.current = true
 
       if (!target) {
-        handleError(new Error('Travel complete but no target'), {
+        handleError(new StateError('Travel complete but no target'), {
           addToast,
           fallbackMessage: 'Error: Invalid destination.'
         })
@@ -175,7 +175,7 @@ export const useTravelLogic = ({
       }
 
       if (!target.venue) {
-        handleError(new Error('Target node has no venue data'), {
+        handleError(new StateError('Target node has no venue data'), {
           addToast,
           fallbackMessage: 'Error: Invalid destination.'
         })

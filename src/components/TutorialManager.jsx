@@ -31,8 +31,8 @@ export const TutorialManager = () => {
   }
 
   const skipTutorial = () => {
-    setStep(999)
-    updatePlayer({ tutorialStep: 999 })
+    setStep(-1)
+    updatePlayer({ tutorialStep: -1 })
     updateSettings({ tutorialSeen: true })
   }
 
@@ -74,7 +74,7 @@ export const TutorialManager = () => {
 
   const content = getContent()
 
-  if (!content || step >= 999) return null
+  if (!content || step === -1 || step >= 999) return null
 
   return (
     <AnimatePresence>
@@ -82,7 +82,7 @@ export const TutorialManager = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0 }}
-        className='fixed bottom-20 left-1/2 transform -translate-x-1/2 z-[100] w-full max-w-md'
+        className='fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md'
       >
         <div className='bg-(--void-black)/95 border-2 border-(--toxic-green) p-6 shadow-[0_0_20px_var(--toxic-green)] relative'>
           <div className='absolute -top-3 left-4 bg-(--void-black) px-2 text-(--toxic-green) font-bold text-xs border border-(--toxic-green)'>

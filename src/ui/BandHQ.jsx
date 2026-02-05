@@ -367,8 +367,6 @@ export const BandHQ = ({
             <div className='max-w-3xl mx-auto'>
               <SettingsPanel
                 settings={settings}
-                updateSettings={updateSettings}
-                deleteSave={deleteSave}
                 musicVol={audioState.musicVol}
                 sfxVol={audioState.sfxVol}
                 isMuted={audioState.isMuted}

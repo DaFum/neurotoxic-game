@@ -6,16 +6,24 @@
 
 import { logger } from './logger.js'
 
-// Error severity and category definitions removed to simplify export surface.
-// Internal constants used for default values.
-const ErrorSeverity = {
+/**
+ * Error severity levels
+ * @readonly
+ * @enum {string}
+ */
+export const ErrorSeverity = {
   LOW: 'low',
   MEDIUM: 'medium',
   HIGH: 'high',
   CRITICAL: 'critical'
 }
 
-const ErrorCategory = {
+/**
+ * Error categories for classification
+ * @readonly
+ * @enum {string}
+ */
+export const ErrorCategory = {
   STATE: 'state',
   RENDER: 'render',
   AUDIO: 'audio',
@@ -26,10 +34,11 @@ const ErrorCategory = {
   UNKNOWN: 'unknown'
 }
 
-// Base Game Error class and subclasses removed from export unless used.
-// Keeping StateError and StorageError as they are used in safeStorageOperation or loadGame.
-
-class GameError extends Error {
+/**
+ * Base Game Error class
+ * @extends Error
+ */
+export class GameError extends Error {
   constructor(
     message,
     {
@@ -86,7 +95,41 @@ export class StorageError extends GameError {
   }
 }
 
-// Unused errors removed: GameLogicError, RenderError, AudioError.
+export class GameLogicError extends GameError {
+  constructor(message, context = {}) {
+    super(message, {
+      category: ErrorCategory.GAME_LOGIC,
+      severity: ErrorSeverity.HIGH,
+      context,
+      recoverable: true
+    })
+    this.name = 'GameLogicError'
+  }
+}
+
+export class RenderError extends GameError {
+  constructor(message, context = {}) {
+    super(message, {
+      category: ErrorCategory.RENDER,
+      severity: ErrorSeverity.MEDIUM,
+      context,
+      recoverable: true
+    })
+    this.name = 'RenderError'
+  }
+}
+
+export class AudioError extends GameError {
+  constructor(message, context = {}) {
+    super(message, {
+      category: ErrorCategory.AUDIO,
+      severity: ErrorSeverity.MEDIUM,
+      context,
+      recoverable: true
+    })
+    this.name = 'AudioError'
+  }
+}
 
 /**
  * Error log storage for debugging
@@ -160,8 +203,6 @@ export const handleError = (error, options = {}) => {
 
   return errorInfo
 }
-
-// getErrorLog and clearErrorLog removed as they were unused exports.
 
 /**
  * Creates a safe wrapper for localStorage operations
