@@ -36,7 +36,13 @@ let isSetup = false
  */
 export async function setupAudio() {
   if (isSetup) return
-  await Tone.start()
+
+  try {
+    await Tone.start()
+  } catch (e) {
+    // Browser autoplay policy might block this; it will be resumed later via ensureAudioContext
+    console.warn('[audioEngine] Tone.start() was blocked or failed:', e)
+  }
 
   // Master Chain
   const masterComp = new Tone.Compressor(-30, 3).toDestination()
@@ -509,33 +515,54 @@ export async function playMidiFile(
 
     midi.tracks.forEach(track => {
       track.notes.forEach(note => {
+        // Filter out invalid times
+        if (!Number.isFinite(note.time) || note.time < 0) return
+
         // Schedule notes
         Tone.Transport.schedule(time => {
           if (!guitar || !bass || !drumKit) return
 
-          // Basic Mapping
-          // Percussion (Channel 10, index 9)
-          if (track.instrument.percussion || track.channel === 9) {
-            playDrumNote(note.midi, time, note.velocity)
-          } else {
-            // Instrument separation by pitch heuristic
-            if (note.midi < 45) {
-              // Bass range
-              bass.triggerAttackRelease(
-                Tone.Frequency(note.midi, 'midi'),
-                note.duration,
-                time,
-                note.velocity
-              )
+          try {
+            // Clamp duration to prevent "duration must be greater than 0" error
+            // Use a minimum of 0.05s (50ms)
+            const duration = Math.max(
+              0.05,
+              Number.isFinite(note.duration) ? note.duration : 0.05
+            )
+
+            // Clamp velocity
+            const velocity = Math.max(
+              0,
+              Math.min(1, Number.isFinite(note.velocity) ? note.velocity : 1)
+            )
+
+            // Basic Mapping
+            // Percussion (Channel 10, index 9)
+            if (track.instrument.percussion || track.channel === 9) {
+              playDrumNote(note.midi, time, velocity)
             } else {
-              // Guitar/Lead range
-              guitar.triggerAttackRelease(
-                Tone.Frequency(note.midi, 'midi'),
-                note.duration,
-                time,
-                note.velocity
-              )
+              // Instrument separation by pitch heuristic
+              if (note.midi < 45) {
+                // Bass range
+                bass.triggerAttackRelease(
+                  Tone.Frequency(note.midi, 'midi'),
+                  duration,
+                  time,
+                  velocity
+                )
+              } else {
+                // Guitar/Lead range
+                guitar.triggerAttackRelease(
+                  Tone.Frequency(note.midi, 'midi'),
+                  duration,
+                  time,
+                  velocity
+                )
+              }
             }
+          } catch (e) {
+            // Prevent single note errors from crashing the loop
+            console.warn('[audioEngine] Note scheduling error:', e)
           }
         }, note.time)
       })
