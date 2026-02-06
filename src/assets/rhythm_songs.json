@@ -2737,7 +2737,7 @@
       }
     ],
     "durationMs": 30000,
-    "excerptStartMs": 98750,
+    "excerptStartMs": 94000,
     "excerptEndMs": 128750,
     "notes": [
       {
@@ -4238,7 +4238,7 @@
       }
     ],
     "durationMs": 30000,
-    "excerptStartMs": 39000,
+    "excerptStartMs": 0,
     "excerptEndMs": 69000,
     "notes": [
       {
@@ -5929,7 +5929,7 @@
       }
     ],
     "durationMs": 30000,
-    "excerptStartMs": 112000,
+    "excerptStartMs": 61750,
     "excerptEndMs": 142000,
     "notes": [
       {
@@ -7816,7 +7816,7 @@
       }
     ],
     "durationMs": 30000,
-    "excerptStartMs": 104750,
+    "excerptStartMs": 72500,
     "excerptEndMs": 134750,
     "notes": [
       {
