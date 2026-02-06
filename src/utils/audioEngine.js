@@ -642,6 +642,17 @@ export async function playRandomAmbientMidi(
 }
 
 /**
+ * Returns the current audio clock time in milliseconds.
+ * Uses the Tone.js AudioContext clock so visual elapsed time stays
+ * tightly coupled to the audio transport, preventing drift that occurs
+ * when mixing Date.now() with Tone scheduling.
+ * @returns {number} Current audio time in ms.
+ */
+export function getAudioTimeMs() {
+  return Tone.now() * 1000
+}
+
+/**
  * Plays a specific note immediately (Hit Sound).
  * @param {number} midiPitch - The MIDI note number.
  * @param {string} lane - The lane ID ('guitar', 'bass', 'drums').

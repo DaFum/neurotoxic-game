@@ -404,14 +404,14 @@ class PixiStageController {
     const activeNotes = Array.from(this.noteSprites.entries())
 
     for (const [note, sprite] of activeNotes) {
-      if (!note.visible) {
+      if (note.hit) {
+        const laneColor = state.lanes?.[note.laneIndex]?.color || 0xffffff
+        this.spawnHitEffect(sprite.x, sprite.y, laneColor)
         this.destroyNoteSprite(note)
         continue
       }
 
-      if (note.hit) {
-        const laneColor = state.lanes?.[note.laneIndex]?.color || 0xffffff
-        this.spawnHitEffect(sprite.x, sprite.y, laneColor)
+      if (!note.visible) {
         this.destroyNoteSprite(note)
         continue
       }
@@ -564,8 +564,8 @@ class PixiStageController {
       return
     }
 
-    const now = Date.now()
-    const elapsed = now - state.startTime
+    const elapsed = state.elapsed ?? 0
+    const now = state.startTime + elapsed
 
     if (stats?.isToxicMode) {
       this.colorMatrix.hue(Math.sin(now / 100) * 180, false)
