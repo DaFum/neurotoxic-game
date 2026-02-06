@@ -408,7 +408,7 @@ export async function startMetalGenerator(
   Tone.Transport.position = 0
 
   // Guard BPM against zero/negative/falsy values
-  const rawBpm = song.bpm || (80 + (song.difficulty || 2) * 30)
+  const rawBpm = song.bpm || 80 + (song.difficulty || 2) * 30
   const bpm = Math.max(1, rawBpm)
 
   Tone.Transport.bpm.value = bpm
