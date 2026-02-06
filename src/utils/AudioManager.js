@@ -85,7 +85,7 @@ class AudioSystem {
       loop: loop,
       volume: volume,
       onplayerror: (id, err) => {
-        console.warn('[AudioSystem] Play error, attempting unlock:', err)
+        logger.warn('AudioSystem', 'Play error, attempting unlock:', err)
         this.music.once('unlock', () => {
           this.music.play()
         })
@@ -185,7 +185,7 @@ class AudioSystem {
         await Howler.ctx.resume()
       }
     } catch (e) {
-      console.warn('[AudioSystem] Failed to resume AudioContext:', e)
+      logger.warn('AudioSystem', 'Failed to resume AudioContext:', e)
     }
   }
 
@@ -197,7 +197,7 @@ class AudioSystem {
     if (!this.initialized) return
     const validTypes = ['hit', 'miss', 'menu', 'travel', 'cash']
     if (!validTypes.includes(key)) {
-      console.warn(`[AudioSystem] Unknown SFX type: ${key}`)
+      logger.warn('AudioSystem', `Unknown SFX type: ${key}`)
       return
     }
     audioEngine.playSFX(key)
@@ -250,7 +250,7 @@ class AudioSystem {
       Tone.Destination.mute = this.muted
       audioEngine.setSFXVolume(this.muted ? 0 : this.sfxVolume)
     } catch (e) {
-      console.warn('[AudioSystem] Tone.js mute failed:', e)
+      logger.warn('AudioSystem', 'Tone.js mute failed:', e)
     }
 
     localStorage.setItem('neurotoxic_muted', this.muted)
@@ -266,8 +266,9 @@ class AudioSystem {
     // Ambient is now handled via MIDI engine.
     // TODO: Implement actual URL mapping for non-ambient tracks if needed.
     if (songId !== 'ambient') {
-      console.warn(
-        `[AudioSystem] getAudioSrc returning placeholder for songId: ${songId}`
+      logger.warn(
+        'AudioSystem',
+        `getAudioSrc returning placeholder for songId: ${songId}`
       )
     }
     return 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'

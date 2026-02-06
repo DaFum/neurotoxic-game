@@ -19,7 +19,6 @@ const midiGlob = import.meta.glob('../assets/*.mid', {
 
 const MIN_NOTE_DURATION = 0.05
 const OFFSET_RESET_THRESHOLD = 0.1
-const LOOP_SAFETY_MARGIN = 0.01
 
 // Create a map of filename -> URL
 // Key format in glob is "../assets/filename.mid"
@@ -623,7 +622,7 @@ export async function playMidiFile(
     `Request playMidiFile: ${filename}, offset=${offset}, loop=${loop}`
   )
   // Requirement: Stop previous playback immediately
-  stopAudio()
+  stopAudio() // Also increments playRequestId, invalidating prior requests
   const reqId = ++playRequestId
   logger.debug('AudioEngine', `New playRequestId: ${reqId}`)
 
@@ -658,6 +657,14 @@ export async function playMidiFile(
     if (reqId !== playRequestId) return false // Optimization: fail fast before expensive scheduling
 
     logger.debug('AudioEngine', `MIDI loaded. Duration: ${midi.duration}s`)
+
+    if (midi.duration <= 0) {
+      logger.warn(
+        'AudioEngine',
+        `MIDI duration is ${midi.duration}s. Skipping playback.`
+      )
+      return false
+    }
 
     if (midi.header.tempos.length > 0) {
       Tone.Transport.bpm.value = midi.header.tempos[0].bpm
