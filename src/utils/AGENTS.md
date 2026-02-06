@@ -278,7 +278,6 @@ const finalGrowth = baseGrowth * platformMultiplier + viralBonus
 **Key Functions:**
 
 - `playSound(soundId, options)` - Play SFX
-- `playMusic(trackId, loop, volume)` - Background music
 - `stopAll()` - Emergency stop
 - `setMasterVolume(level)` - Global volume control
 

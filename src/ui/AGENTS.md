@@ -20,15 +20,12 @@ This folder (`src/ui/`) contains the "design system" - pure presentation compone
 ### Shared Components (`src/ui/shared/index.jsx`)
 
 ```jsx
-import { StatBox, ProgressBar, Panel, ActionButton, Modal, Grid, TabButton } from '../ui/shared'
+import { StatBox, ProgressBar, SettingsPanel, VolumeSlider } from '../ui/shared'
 
 <StatBox label="MONEY" value={player.money} icon="$" />
 <ProgressBar label="FUEL" value={fuel} max={100} color="bg-(--toxic-green)" />
-<Panel title="INVENTORY">{children}</Panel>
-<ActionButton onClick={fn} variant="primary">ACTION</ActionButton>
-<Modal isOpen={open} onClose={close} title="TITLE">{children}</Modal>
-<Grid cols={3} gap={4}>{children}</Grid>
-<TabButton active={true} onClick={fn}>TAB</TabButton>
+<SettingsPanel />
+<VolumeSlider label="MUSIC" value={music} onChange={setMusic} />
 ```
 
 These differ from `src/components/` by being **stateless presentation components** with no game logic dependency.
@@ -386,7 +383,7 @@ Toasts should auto-remove after 3 seconds (handled in GameState reducer).
 import React from 'react'
 import { GlitchButton } from './GlitchButton'
 
-export class CrashHandler extends React.Component {
+export class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props)
     this.state = { hasError: false, error: null }
@@ -397,7 +394,7 @@ export class CrashHandler extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('[CrashHandler] Error caught:', error, errorInfo)
+    console.error('[ErrorBoundary] Error caught:', error, errorInfo)
   }
 
   render() {
@@ -431,10 +428,10 @@ export class CrashHandler extends React.Component {
 **Usage:**
 
 ```jsx
-// In App.jsx
-<CrashHandler>
-  <GameContent />
-</CrashHandler>
+// In main.jsx
+<ErrorBoundary>
+  <App />
+</ErrorBoundary>
 ```
 
 ## Styling Consistency

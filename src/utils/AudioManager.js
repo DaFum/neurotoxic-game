@@ -1,4 +1,4 @@
-import { Howl, Howler } from 'howler'
+import { Howler } from 'howler'
 import * as Tone from 'tone'
 import * as audioEngine from './audioEngine.js'
 import { handleError } from './errorHandler.js'
@@ -55,45 +55,6 @@ class AudioSystem {
         fallbackMessage: 'AudioSystem initialization failed'
       })
     }
-  }
-
-  /**
-   * Plays a music track by ID.
-   * @param {string} songId - The ID of the song to play (or 'ambient').
-   * @param {boolean} [loop=false] - Whether to loop the track.
-   * @param {number} [volume] - Volume override (defaults to global music volume).
-   * @returns {object|null} The Howl instance or null if not initialized.
-   */
-  playMusic(songId, loop = false, volume = this.musicVolume) {
-    if (!this.initialized) return null
-
-    // If ambient, delegate to MIDI engine
-    if (songId === 'ambient') {
-      this.startAmbient()
-      return null
-    }
-
-    // Clean up previous instance explicitly
-    this.stopMusic()
-
-    const src = this.getAudioSrc(songId)
-    this.currentSongId = songId
-
-    this.music = new Howl({
-      src: [src],
-      html5: true,
-      loop: loop,
-      volume: volume,
-      onplayerror: (id, err) => {
-        logger.warn('AudioSystem', 'Play error, attempting unlock:', err)
-        this.music.once('unlock', () => {
-          this.music.play()
-        })
-      }
-    })
-
-    this.music.play()
-    return this.music
   }
 
   /**
@@ -255,31 +216,6 @@ class AudioSystem {
 
     localStorage.setItem('neurotoxic_muted', this.muted)
     return this.muted
-  }
-
-  /**
-   * Resolves the source URL for a given song ID.
-   * @param {string} songId - The song ID.
-   * @returns {string} The URL string.
-   */
-  getAudioSrc(songId) {
-    // Ambient is now handled via MIDI engine.
-    // TODO: Implement actual URL mapping for non-ambient tracks if needed.
-    if (songId !== 'ambient') {
-      logger.warn(
-        'AudioSystem',
-        `getAudioSrc returning placeholder for songId: ${songId}`
-      )
-    }
-    return 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
-  }
-
-  /**
-   * Wrapper for playSFX to match guidelines.
-   * @param {string} soundId - The SFX identifier.
-   */
-  playSound(soundId) {
-    this.playSFX(soundId)
   }
 
   /**

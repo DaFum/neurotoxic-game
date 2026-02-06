@@ -51,7 +51,7 @@ test('AudioManager setup', async t => {
     })
 
     await t.test('audioManager has expected methods', () => {
-      assert.equal(typeof audioManager.playMusic, 'function')
+      assert.equal(typeof audioManager.startAmbient, 'function')
       assert.equal(typeof audioManager.playSFX, 'function')
       assert.equal(typeof audioManager.stopMusic, 'function')
     })
