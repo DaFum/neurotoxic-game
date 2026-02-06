@@ -1,6 +1,7 @@
 import { Howl, Howler } from 'howler'
 import * as Tone from 'tone'
 import * as audioEngine from './audioEngine.js'
+import { handleError } from './errorHandler.js'
 
 /**
  * Manages global audio playback including music (Howler.js) and SFX (audioEngine.js).
@@ -18,9 +19,8 @@ class AudioSystem {
   /**
    * Initializes the audio system, loading preferences and setting up synthesizers.
    * Note: Audio playback remains blocked until ensureAudioContext() is called after a user gesture.
-   * @returns {Promise<void>}
    */
-  async init() {
+  init() {
     if (this.initialized) return
 
     try {
@@ -49,8 +49,7 @@ class AudioSystem {
       // Tone mute is handled globally by Volume node in engine if implemented, or we can use Destination
       Tone.Destination.mute = this.muted
     } catch (error) {
-      console.error('[AudioSystem] Initialization failed:', error)
-      // Graceful fallback: audio might just not play, but app shouldn't crash.
+      handleError(error, { fallbackMessage: 'AudioSystem initialization failed' })
     }
   }
 
@@ -112,7 +111,7 @@ class AudioSystem {
     try {
       await audioEngine.playRandomAmbientMidi()
     } catch (e) {
-      console.error('[AudioSystem] Failed to start ambient MIDI:', e)
+      handleError(e, { fallbackMessage: 'Failed to start ambient MIDI' })
       this.currentSongId = null
       this.stopMusic()
     }
@@ -204,9 +203,14 @@ class AudioSystem {
     }
     // Scale Tone.js master volume so MIDI ambient respects the music slider
     try {
-      Tone.Destination.volume.value = Tone.gainToDb(next)
+      // Avoid -Infinity by clamping to a minimum dB floor for 0 volume
+      if (next <= 0.001) {
+        Tone.Destination.volume.value = -Infinity // Mute
+      } else {
+        Tone.Destination.volume.value = Tone.gainToDb(next)
+      }
     } catch (e) {
-      console.warn('[AudioSystem] Failed to set Tone volume:', e)
+      handleError(e, { fallbackMessage: 'Failed to set Tone volume' })
     }
   }
 
@@ -254,6 +258,31 @@ class AudioSystem {
       )
     }
     return 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
+  }
+
+  /**
+   * Wrapper for playSFX to match guidelines.
+   * @param {string} soundId - The SFX identifier.
+   */
+  playSound(soundId) {
+    this.playSFX(soundId)
+  }
+
+  /**
+   * Stops all audio playback.
+   */
+  stopAll() {
+    this.stopMusic()
+    // Could also stop SFX if tracked
+  }
+
+  /**
+   * Sets the master volume (affects both music and SFX).
+   * @param {number} level - Volume level (0-1).
+   */
+  setMasterVolume(level) {
+    this.setMusicVolume(level)
+    this.setSFXVolume(level)
   }
 
   /**
