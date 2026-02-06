@@ -119,7 +119,7 @@ const CHATTER_DB = [
     condition: state => state.currentScene === 'PREGIG'
   },
   {
-    text: 'No new songs tonight. Last time was a trainwreck.',
+    text: "No new songs tonight. Last time was a trainwreck.",
     weight: 2,
     condition: state => state.currentScene === 'PREGIG',
     speaker: 'Lars'
@@ -218,7 +218,7 @@ const CHATTER_DB = [
     condition: state => state.band.members.some(m => m.mood < 20)
   },
   {
-    text: 'I’m three bad shows away from selling all my gear.',
+    text: "I’m three bad shows away from selling all my gear.",
     weight: 8,
     condition: state => state.band.members.some(m => m.mood < 25)
   },
@@ -361,6 +361,7 @@ const VENUE_CHATTER_DB = [
   // STENDAL / TANGERMÜNDE / MAGDEBURG
   {
     venueId: 'stendal_adler',
+    id: 'chatter_stendal_adler',
     lines: [
       'Sweaty, low ceiling, perfect for total chaos.',
       'If the crowd climbs on the bar, we did it right.'
@@ -368,6 +369,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'tangermuende_kaminstube',
+    id: 'chatter_tangermuende_kaminstube',
     lines: [
       'Feels like playing in someone’s living room with better beer.',
       'If the fireplace is lit, it’s going to be a hot one.'
@@ -375,6 +377,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'tangermuende_burgfest',
+    id: 'chatter_tangermuende_burgfest',
     lines: [
       'Castle walls mean extra reverb for every blastbeat.',
       'If it rains, this turns into a medieval mudpit.'
@@ -382,6 +385,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'magdeburg_moritzhof',
+    id: 'chatter_magdeburg_moritzhof',
     lines: [
       'Arts center by day, riff temple by night.',
       'Crowd is close enough to read the setlist over your shoulder.'
@@ -389,6 +393,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'magdeburg_factory',
+    id: 'chatter_magdeburg_factory',
     lines: [
       'Old industrial vibes, perfect for metallic noise.',
       'If the room fills, the air turns into fog and feedback.'
@@ -396,6 +401,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'magdeburg_stadtpark',
+    id: 'chatter_magdeburg_stadtpark',
     lines: [
       'Open air means no ceiling to stop the snare cracks.',
       'If the birds take off during the breakdown, we win.'
@@ -405,6 +411,7 @@ const VENUE_CHATTER_DB = [
   // LEIPZIG / DRESDEN
   {
     venueId: 'leipzig_conne',
+    id: 'chatter_leipzig_conne',
     lines: [
       'Legendary room, no excuses here.',
       'If the skate kids show up, the pit gets serious.'
@@ -412,6 +419,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'leipzig_ut',
+    id: 'chatter_leipzig_ut',
     lines: [
       'Old cinema turned riff cathedral.',
       'Projector off, amps on, screen replaced by sweat.'
@@ -419,6 +427,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'leipzig_distille',
+    id: 'chatter_leipzig_distille',
     lines: [
       'Tiny stage, huge noise.',
       'If it sells out, you can’t even drop a pick.'
@@ -426,6 +435,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'leipzig_taeubchen',
+    id: 'chatter_leipzig_taeubchen',
     lines: [
       'Feels almost too fancy for our volume.',
       'If the lights hit right, this room looks massive.'
@@ -433,6 +443,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'leipzig_werk2',
+    id: 'chatter_leipzig_werk2',
     lines: [
       'Big hall, big expectations.',
       'If the subs wake up, the floor starts breathing.'
@@ -440,6 +451,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'leipzig_agra',
+    id: 'chatter_leipzig_agra',
     lines: [
       'Festival‑hall energy, even on a weekday.',
       'Too big to hide a bad show in here.'
@@ -447,6 +459,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'leipzig_arena',
+    id: 'chatter_leipzig_arena',
     lines: [
       'Arena mode: tiny humans, huge PA.',
       'This is the “call your parents” kind of stage.'
@@ -454,6 +467,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'dresden_beatpol',
+    id: 'chatter_dresden_beatpol',
     lines: [
       'Classic tour stop, sticky floor guaranteed.',
       'If they sing along here, you’re officially on the circuit.'
@@ -461,6 +475,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'dresden_chemie',
+    id: 'chatter_dresden_chemie',
     lines: [
       'Punk basement energy turned up to eleven.',
       'Walls remember every scream in this room.'
@@ -470,6 +485,7 @@ const VENUE_CHATTER_DB = [
   // HANNOVER
   {
     venueId: 'hannover_chez',
+    id: 'chatter_hannover_chez',
     lines: [
       'Feels like home for every touring van.',
       'If the crowd moves, this room shakes with them.'
@@ -477,6 +493,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'hannover_musikzentrum',
+    id: 'chatter_hannover_musikzentrum',
     lines: [
       'Serious stage, serious sound.',
       'The lights here can cook you alive.'
@@ -486,6 +503,7 @@ const VENUE_CHATTER_DB = [
   // BERLIN
   {
     venueId: 'berlin_so36',
+    id: 'chatter_berlin_so36',
     lines: [
       'Kreuzberg history staring right back at you.',
       'If you mess up here, the walls will remember.'
@@ -493,6 +511,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'berlin_cassiopeia',
+    id: 'chatter_berlin_cassiopeia',
     lines: [
       'Skate, graffiti, and noise in one courtyard.',
       'Perfect place for losing your voice and your hearing.'
@@ -500,6 +519,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'berlin_lido',
+    id: 'chatter_berlin_lido',
     lines: [
       'Red curtains, loud bands, zero subtlety.',
       'Stage feels small until the lights go on.'
@@ -507,6 +527,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'berlin_astra',
+    id: 'chatter_berlin_astra',
     lines: [
       'Big room, bigger echoes.',
       'If the balcony moves, you know it’s a good night.'
@@ -514,6 +535,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'berlin_k17',
+    id: 'chatter_berlin_k17',
     lines: [
       'Dark club energy, perfect for blastbeats.',
       'Feels like a second home for heavy bands.'
@@ -523,6 +545,7 @@ const VENUE_CHATTER_DB = [
   // HAMBURG
   {
     venueId: 'hamburg_knust',
+    id: 'chatter_hamburg_knust',
     lines: [
       'Brick walls and tight sound.',
       'If the front row is sweating, the mix is right.'
@@ -530,6 +553,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'hamburg_headcrash',
+    id: 'chatter_hamburg_headcrash',
     lines: [
       'Compact, loud, merciless.',
       'Every mistake is visible from the bar.'
@@ -537,6 +561,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'hamburg_markthalle',
+    id: 'chatter_hamburg_markthalle',
     lines: [
       'Classic hall, serious rock history.',
       'You feel tiny until the crowd starts.'
@@ -544,6 +569,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'hamburg_logo',
+    id: 'chatter_hamburg_logo',
     lines: [
       'Club‑show textbook, no frills, just noise.',
       'Perfect size for a sold‑out sweatbox.'
@@ -553,6 +579,7 @@ const VENUE_CHATTER_DB = [
   // KÖLN
   {
     venueId: 'koeln_underground',
+    id: 'chatter_koeln_underground',
     lines: [
       'Basement air, upstairs volume.',
       'Feels like every wall has a sticker story.'
@@ -560,6 +587,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'koeln_mtc',
+    id: 'chatter_koeln_mtc',
     lines: [
       'Low ceiling, loud amps.',
       'You can high‑five the crowd between riffs.'
@@ -567,6 +595,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'koeln_luxor',
+    id: 'chatter_koeln_luxor',
     lines: [
       'Long room, sound hits you from the back.',
       'If the room is packed, it turns into a tunnel of noise.'
@@ -576,6 +605,7 @@ const VENUE_CHATTER_DB = [
   // MÜNCHEN / STUTTGART
   {
     venueId: 'muenchen_backstage',
+    id: 'chatter_muenchen_backstage',
     lines: [
       'Outdoor, indoor, everything loud.',
       'Easy to get lost between stage and backstage.'
@@ -583,6 +613,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'muenchen_feierwerk',
+    id: 'chatter_muenchen_feierwerk',
     lines: [
       'DIY spirit with clean sound.',
       'Feels like a youth center that grew up with you.'
@@ -590,6 +621,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'stuttgart_lka',
+    id: 'chatter_stuttgart_lka',
     lines: [
       'Big stage, big room, big pressure.',
       'You see every face from up here – and they see you.'
@@ -599,6 +631,7 @@ const VENUE_CHATTER_DB = [
   // DORTMUND / BREMEN / FRANKFURT / KASSEL / NÜRNBERG
   {
     venueId: 'dortmund_fzw',
+    id: 'chatter_dortmund_fzw',
     lines: [
       'Modern hall with festival energy.',
       'When the lights kick in, it feels twice as big.'
@@ -606,6 +639,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'dortmund_junkyard',
+    id: 'chatter_dortmund_junkyard',
     lines: [
       'Industrial yard, loud music, cold air.',
       'Perfect spot for outdoor chaos.'
@@ -613,6 +647,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'bremen_tower',
+    id: 'chatter_bremen_tower',
     lines: [
       'Tiny tower, tall volume.',
       'If you hit hard, the whole building vibrates.'
@@ -620,6 +655,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'frankfurt_batschkapp',
+    id: 'chatter_frankfurt_batschkapp',
     lines: [
       'Legendary club, no room for weak sets.',
       'You either rise to the room or get swallowed.'
@@ -627,10 +663,15 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'kassel_goldgrube',
-    lines: ['Small room, golden name.', 'Nights here feel like secret shows.']
+    id: 'chatter_kassel_goldgrube',
+    lines: [
+      'Small room, golden name.',
+      'Nights here feel like secret shows.'
+    ]
   },
   {
     venueId: 'nuernberg_hirsch',
+    id: 'chatter_nuernberg_hirsch',
     lines: [
       'Wide stage, heavy sound.',
       'If the horns go up, you’re doing it right.'
@@ -640,6 +681,7 @@ const VENUE_CHATTER_DB = [
   // ROSTOCK / ERFURT / SAARBRÜCKEN / FREIBURG / KIEL
   {
     venueId: 'rostock_mau',
+    id: 'chatter_rostock_mau',
     lines: [
       'Harbor air and heavy riffs.',
       'Perfect place to make the Baltic Sea shake.'
@@ -647,6 +689,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'erfurt_centrum',
+    id: 'chatter_erfurt_centrum',
     lines: [
       'Feels like the center of everything for one night.',
       'Crowd stands close enough to tune your guitar for you.'
@@ -654,6 +697,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'saarbruecken_garage',
+    id: 'chatter_saarbruecken_garage',
     lines: [
       'Big room, louder locals.',
       'If the balcony starts jumping, hold on tight.'
@@ -661,6 +705,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'freiburg_jazzhaus',
+    id: 'chatter_freiburg_jazzhaus',
     lines: [
       'Jazz in the name, distortion in the air.',
       'Low ceiling, nice lights, nasty volume.'
@@ -668,6 +713,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'kiel_pumpe',
+    id: 'chatter_kiel_pumpe',
     lines: [
       'Old building, fresh noise.',
       'If the pipes rattle, you know the PA is working.'
@@ -685,11 +731,10 @@ export const getRandomChatter = state => {
       v => v.venueId === currentNode.venue.id
     )
     if (venueEntry && venueEntry.lines) {
-      // Add venue lines with high priority (treated as heavy weight or mixed in)
-      // We map them to standard object format
+      // Add venue lines with high priority
       const venueLines = venueEntry.lines.map(text => ({
         text,
-        weight: 10, // Higher chance for location specific
+        weight: 10,
         condition: null
       }))
       pool = [...pool, ...venueLines]
@@ -698,12 +743,15 @@ export const getRandomChatter = state => {
 
   // 2. Gather Standard Chatter
   const standardChatter = CHATTER_DB.filter(c => {
+    // Explicit condition check
     if (c.condition) return c.condition(state)
-    if (
-      !c.condition &&
-      (state.currentScene === 'OVERWORLD' || state.currentScene === 'MENU')
-    )
+
+    // Only fallback for default chatter in allowed scenes
+    const ALLOWED_DEFAULT_SCENES = ['OVERWORLD', 'MENU']
+    if (!c.condition && ALLOWED_DEFAULT_SCENES.includes(state.currentScene)) {
       return true
+    }
+
     return false
   })
 
@@ -711,18 +759,18 @@ export const getRandomChatter = state => {
 
   if (pool.length === 0) return null
 
-  // Weighted Random Selection
-  // Flatten weights: simple array expansion or range check
-  const weightedPool = []
-  pool.forEach(item => {
-    // Arbitrary multiplier for weight (default 1)
-    const count = Math.max(1, Math.round((item.weight || 1) * 2))
-    for (let i = 0; i < count; i++) {
-      weightedPool.push(item)
-    }
-  })
+  // Weighted Random Selection (Cumulative Weight)
+  const totalWeight = pool.reduce((sum, item) => sum + (item.weight || 1), 0)
+  let roll = Math.random() * totalWeight
+  let item = pool[pool.length - 1] // Default fallback
 
-  const item = weightedPool[Math.floor(Math.random() * weightedPool.length)]
+  for (const entry of pool) {
+    roll -= entry.weight || 1
+    if (roll <= 0) {
+      item = entry
+      break
+    }
+  }
 
   return item
     ? {

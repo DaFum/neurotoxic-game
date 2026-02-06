@@ -19,52 +19,37 @@ export const ChatterOverlay = () => {
   const nodeX = currentNode?.x ?? 50
 
   // Dynamic Positioning
-  const isTop = nodeY < 30 // If near top, show below
-  const isLeftEdge = nodeX < 20 // If near left edge, shift right
-  const isRightEdge = nodeX > 80 // If near right edge, shift left
+  const isTop = nodeY < 30
+  const isLeftEdge = nodeX < 20
+  const isRightEdge = nodeX > 80
 
-  // Base transformation: center horizontally, move up
-  // We'll adjust based on position
-  let positionClasses = 'absolute left-1/2 transform -translate-x-1/2 '
-  let originClass = 'origin-bottom'
-  let tailClass =
-    'absolute -bottom-2 right-1/2 translate-x-1/2 w-0 h-0 border-l-[10px] border-l-transparent border-t-[10px] border-t-(--star-white) border-r-[10px] border-r-transparent filter drop-shadow-xs'
+  // Determine CSS classes using conditional logic instead of string manipulation
+  const translateX = isLeftEdge
+    ? 'translate-x-[-10%]'
+    : isRightEdge
+      ? 'translate-x-[-90%]'
+      : '-translate-x-1/2'
 
-  if (isTop) {
-    // Show BELOW the van
-    positionClasses += 'translate-y-[50%] ' // Move down
-    originClass = 'origin-top'
-    // Tail points up
-    tailClass =
-      'absolute -top-2 right-1/2 translate-x-1/2 w-0 h-0 border-l-[10px] border-l-transparent border-b-[10px] border-b-(--star-white) border-r-[10px] border-r-transparent filter drop-shadow-xs'
-  } else {
-    // Show ABOVE the van (Default)
-    positionClasses += '-translate-y-[150%] ' // Move up
-  }
+  const translateY = isTop ? 'translate-y-[50%]' : '-translate-y-[150%]'
+  const originClass = isTop ? 'origin-top' : 'origin-bottom'
 
-  // Horizontal Shifts
-  if (isLeftEdge) {
-    // Van is at left, bubble should shift right to stay in screen
-    // Instead of centered translate-x-1/2, use translate-x-0 or similar
-    // Or just offset via margin
-    positionClasses = positionClasses.replace(
-      '-translate-x-1/2',
-      'translate-x-[-10%]'
-    )
-    // Adjust tail to be on left side of bubble
-    tailClass = tailClass.replace('right-1/2 translate-x-1/2', 'left-4')
-  } else if (isRightEdge) {
-    // Van is at right, bubble should shift left
-    positionClasses = positionClasses.replace(
-      '-translate-x-1/2',
-      'translate-x-[-90%]'
-    )
-    // Adjust tail to be on right side of bubble
-    tailClass = tailClass.replace('right-1/2 translate-x-1/2', 'right-4')
-  }
+  const positionClasses = `absolute left-1/2 transform ${translateX} ${translateY}`
+
+  const tailPosition = isLeftEdge
+    ? 'left-4'
+    : isRightEdge
+      ? 'right-4'
+      : 'right-1/2 translate-x-1/2'
+
+  const tailDirection = isTop
+    ? `-top-2 border-b-[10px] border-b-(--star-white)`
+    : `-bottom-2 border-t-[10px] border-t-(--star-white)`
+
+  const tailClass = `absolute ${tailDirection} ${tailPosition} w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent filter drop-shadow-xs`
 
   useEffect(() => {
     let timeoutId
+    let hideTimeoutId
     let active = true
 
     const loop = () => {
@@ -92,7 +77,7 @@ export const ChatterOverlay = () => {
           setChatter({ text, speaker: speaker || 'Band', id: Date.now() })
 
           // Hide after 5s
-          setTimeout(() => {
+          hideTimeoutId = setTimeout(() => {
             if (active) setChatter(null)
           }, 5000)
         }
@@ -107,6 +92,7 @@ export const ChatterOverlay = () => {
     return () => {
       active = false
       clearTimeout(timeoutId)
+      clearTimeout(hideTimeoutId)
     }
   }, []) // Run once on mount
 
@@ -118,8 +104,7 @@ export const ChatterOverlay = () => {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.5 }}
-          className={`${positionClasses} z-40 pointer-events-none ${originClass} w-max max-w-[200px] md:max-w-xs`}
-          style={{ top: '50%' }} // Anchor to center of parent (van)
+          className={`${positionClasses} z-20 pointer-events-none ${originClass} w-max max-w-[200px] md:max-w-xs top-1/2`}
         >
           <div className='bg-(--star-white) text-(--void-black) p-3 rounded-tr-xl rounded-tl-xl rounded-bl-xl border-2 border-(--void-black) shadow-lg relative'>
             <div className='flex justify-between items-center mb-1'>
