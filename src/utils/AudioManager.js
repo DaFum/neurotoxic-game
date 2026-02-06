@@ -57,9 +57,11 @@ class AudioSystem {
   /**
    * Plays a music track by ID.
    * @param {string} songId - The ID of the song to play (or 'ambient').
+   * @param {boolean} [loop=false] - Whether to loop the track.
+   * @param {number} [volume] - Volume override (defaults to global music volume).
    * @returns {object|null} The Howl instance or null if not initialized.
    */
-  playMusic(songId) {
+  playMusic(songId, loop = false, volume = this.musicVolume) {
     if (!this.initialized) return null
 
     // If ambient, delegate to MIDI engine
@@ -77,8 +79,8 @@ class AudioSystem {
     this.music = new Howl({
       src: [src],
       html5: true,
-      loop: false,
-      volume: this.musicVolume,
+      loop: loop,
+      volume: volume,
       onplayerror: (id, err) => {
         console.warn('[AudioSystem] Play error, attempting unlock:', err)
         this.music.once('unlock', () => {
@@ -94,7 +96,7 @@ class AudioSystem {
   /**
    * Starts the ambient background music stream if not already playing.
    */
-  startAmbient() {
+  async startAmbient() {
     if (!this.initialized) return
 
     // If already playing MIDI ambient (Tone Transport running and current ID is ambient)
@@ -107,7 +109,13 @@ class AudioSystem {
 
     this.stopMusic()
     this.currentSongId = 'ambient'
-    audioEngine.playRandomAmbientMidi()
+    try {
+      await audioEngine.playRandomAmbientMidi()
+    } catch (e) {
+      console.error('[AudioSystem] Failed to start ambient MIDI:', e)
+      this.currentSongId = null
+      this.stopMusic()
+    }
   }
 
   /**
@@ -135,6 +143,8 @@ class AudioSystem {
 
   /**
    * Resumes the paused music or starts ambient if none is loaded.
+   * Note: The logic here is asymmetric compared to pauseMusic(). We assume mutually exclusive
+   * playback states (either Howl or Tone is active, not both).
    */
   resumeMusic() {
     if (this.music && !this.music.playing()) {
@@ -192,11 +202,12 @@ class AudioSystem {
     if (this.music) {
       this.music.volume(next)
     }
-    // Tone volume isn't directly controlled here for MIDI, but we could add a master volume control in audioEngine
-    // For now, assuming Tone output uses default master or individual instrument volumes.
-    // Ideally we should scale Tone master volume.
-    // Tone.Destination.volume.value = Tone.gainToDb(next);
-    // But existing code uses hardcoded volumes.
+    // Scale Tone.js master volume so MIDI ambient respects the music slider
+    try {
+      Tone.Destination.volume.value = Tone.gainToDb(next)
+    } catch (e) {
+      console.warn('[AudioSystem] Failed to set Tone volume:', e)
+    }
   }
 
   /**
@@ -231,10 +242,17 @@ class AudioSystem {
 
   /**
    * Resolves the source URL for a given song ID.
+   * @param {string} songId - The song ID.
    * @returns {string} The URL string.
    */
-  getAudioSrc() {
-    // Ambient is now handled via MIDI engine
+  getAudioSrc(songId) {
+    // Ambient is now handled via MIDI engine.
+    // TODO: Implement actual URL mapping for non-ambient tracks if needed.
+    if (songId !== 'ambient') {
+      console.warn(
+        `[AudioSystem] getAudioSrc returning placeholder for songId: ${songId}`
+      )
+    }
     return 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
   }
 
