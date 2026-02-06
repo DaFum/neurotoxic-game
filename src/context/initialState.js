@@ -110,7 +110,7 @@ const DEFAULT_SETTINGS = {
  * @type {Object}
  */
 export const initialState = {
-  currentScene: 'MENU',
+  currentScene: 'INTRO',
   player: { ...DEFAULT_PLAYER_STATE },
   band: { ...DEFAULT_BAND_STATE },
   social: { ...DEFAULT_SOCIAL_STATE },

@@ -7,12 +7,15 @@ import { PostGig } from './scenes/PostGig'
 import { Settings } from './scenes/Settings'
 import { Credits } from './scenes/Credits'
 import { GameOver } from './scenes/GameOver'
+import { IntroVideo } from './scenes/IntroVideo'
 import { HUD } from './ui/HUD'
 import { EventModal } from './ui/EventModal'
 import { ToastOverlay } from './ui/ToastOverlay'
 import { DebugLogViewer } from './ui/DebugLogViewer'
 import { TutorialManager } from './components/TutorialManager'
 import { GameStateProvider, useGameState } from './context/GameState'
+
+const SCENES_WITHOUT_HUD = ['INTRO', 'MENU', 'SETTINGS', 'CREDITS', 'GAMEOVER']
 
 /**
  * Main game content wrapper that handles scene switching and global overlays.
@@ -26,6 +29,8 @@ function GameContent() {
    */
   const renderScene = () => {
     switch (currentScene) {
+      case 'INTRO':
+        return <IntroVideo />
       case 'MENU':
         return <MainMenu />
       case 'SETTINGS':
@@ -53,10 +58,8 @@ function GameContent() {
         <div className='crt-overlay pointer-events-none fixed inset-0 z-50 mix-blend-overlay opacity-50' />
       )}
 
-      {/* Hide HUD in Menu/Settings/Credits/GameOver */}
-      {!['MENU', 'SETTINGS', 'CREDITS', 'GAMEOVER'].includes(currentScene) && (
-        <HUD />
-      )}
+      {/* Hide HUD in Intro/Menu/Settings/Credits/GameOver */}
+      {!SCENES_WITHOUT_HUD.includes(currentScene) && <HUD />}
 
       <ToastOverlay />
       <TutorialManager />
