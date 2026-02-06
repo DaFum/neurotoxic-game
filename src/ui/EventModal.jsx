@@ -12,7 +12,9 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
   if (!event) return null
 
   return (
-    <div className={`fixed inset-0 z-[100] flex items-center justify-center bg-(--void-black)/80 backdrop-blur-sm p-4 ${className}`}>
+    <div
+      className={`fixed inset-0 z-[100] flex items-center justify-center bg-(--void-black)/80 backdrop-blur-sm p-4 ${className}`}
+    >
       <motion.div
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}

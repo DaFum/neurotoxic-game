@@ -89,8 +89,20 @@ export const DEFAULT_GIG_MODIFIERS = {
  * Default settings configuration
  * @type {Object}
  */
-export const DEFAULT_SETTINGS = {
-  crtEnabled: true
+const savedSettings = (() => {
+  try {
+    return JSON.parse(
+      localStorage.getItem('neurotoxic_global_settings') || '{}'
+    )
+  } catch (e) {
+    return {}
+  }
+})()
+
+const DEFAULT_SETTINGS = {
+  crtEnabled: true,
+  tutorialSeen: false,
+  ...savedSettings
 }
 
 /**

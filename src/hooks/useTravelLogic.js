@@ -11,7 +11,7 @@ import {
 } from '../utils/economyEngine'
 import { audioManager } from '../utils/AudioManager'
 import { logger } from '../utils/logger'
-import { handleError, GameLogicError } from '../utils/errorHandler'
+import { handleError, StateError } from '../utils/errorHandler'
 
 /**
  * Failsafe timeout duration in milliseconds
@@ -133,7 +133,14 @@ export const useTravelLogic = ({
           logger.info('TravelLogic', 'Starting Gig at destination', {
             venue: node.venue.name
           })
-          startGig(node.venue)
+          try {
+            startGig(node.venue)
+          } catch (error) {
+            handleError(error, {
+              addToast,
+              fallbackMessage: 'Failed to start Gig.'
+            })
+          }
         }
       }
     },
@@ -159,22 +166,19 @@ export const useTravelLogic = ({
       travelCompletedRef.current = true
 
       if (!target) {
-        handleError(
-          new GameLogicError('Travel complete but no target', {
-            travelTarget,
-            explicitNode
-          }),
-          { addToast, fallbackMessage: 'Error: Invalid destination.' }
-        )
+        handleError(new StateError('Travel complete but no target'), {
+          addToast,
+          fallbackMessage: 'Error: Invalid destination.'
+        })
         setIsTraveling(false)
         return
       }
 
       if (!target.venue) {
-        handleError(
-          new GameLogicError('Target node has no venue data', { target }),
-          { addToast, fallbackMessage: 'Error: Invalid destination.' }
-        )
+        handleError(new StateError('Target node has no venue data'), {
+          addToast,
+          fallbackMessage: 'Error: Invalid destination.'
+        })
         setIsTraveling(false)
         return
       }
@@ -219,7 +223,7 @@ export const useTravelLogic = ({
 
       // Sound system upgrade bonus
       if (hasUpgrade('van_sound_system')) {
-        updateBand({ harmony: Math.min(100, band.harmony + 5) })
+        updateBand({ harmony: Math.min(100, (band?.harmony ?? 0) + 5) })
       }
 
       setIsTraveling(false)
@@ -256,20 +260,24 @@ export const useTravelLogic = ({
    */
   const handleTravel = useCallback(
     node => {
+      // Early interaction block if already traveling
+      if (isTraveling) return
+
       if (!node?.venue) {
         addToast('Error: Invalid location.', 'error')
         return
       }
 
-      logger.info('TravelLogic', 'handleTravel initiated', {
-        target: node.id,
-        current: player.currentNodeId
-      })
-
-      if (isTraveling) return
-
-      // Handle current node interaction
       if (node.id === player.currentNodeId) {
+        logger.info(
+          'TravelLogic',
+          'Ignoring redundant travel to current node',
+          {
+            target: node.id
+          }
+        )
+
+        // If it's the current node, trigger the interaction logic but DO NOT start travel
         if (node.type === 'GIG') {
           if ((band?.harmony ?? 0) <= 0) {
             addToast("Band's harmony too low to perform!", 'warning')
@@ -278,57 +286,49 @@ export const useTravelLogic = ({
           logger.info('TravelLogic', 'Entering current node Gig', {
             venue: node.venue.name
           })
-          startGig(node.venue)
+          try {
+            startGig(node.venue)
+          } catch (error) {
+            handleError(error, {
+              addToast,
+              fallbackMessage: 'Failed to enter Gig.'
+            })
+          }
         } else if (node.type === 'START') {
-          onShowHQ?.()
+          try {
+            onShowHQ?.()
+          } catch (error) {
+            handleError(error, {
+              addToast,
+              fallbackMessage: 'Failed to open HQ.'
+            })
+          }
         } else {
           addToast(`You are at ${node.venue.name}.`, 'info')
         }
         return
       }
 
+      logger.info('TravelLogic', 'handleTravel initiated', {
+        target: node.id,
+        current: player.currentNodeId
+      })
+
       const currentStartNode = gameMap?.nodes[player.currentNodeId]
-
-      // Allow travel to START node (Proberaum) from anywhere if connected, even if layer logic implies otherwise
-      // OR if we just want "Reise zum Proberaum immer möglich" implies we can jump there?
-      // The request says "Reise zum Proberaum immer möglich sein".
-      // Assuming it means standard travel rules apply but we ensure it's clickable/accessible.
-      // But if it means "Fast Travel", that would break the game loop.
-      // Let's interpret "immer möglich" as "Always interactable/reachable if connected".
-      // Actually, checking "currentLayer" logic: if Start is layer 0 and we are layer 5, we can't go back usually.
-      // If the user wants to go back to HQ, we might need to allow it.
-      // However, usually Start is only reachable from neighbors.
-      // Let's stick to the specific request: ensure interactions work.
-      // If the user meant "Teleport to HQ", that's a different feature.
-      // Based on "Reise ... möglich", let's assume standard connectivity but ensure no softlocks preventing it if adjacent.
-
       const currentLayer = currentStartNode?.layer || 0
       const visibility = getNodeVisibility(node.layer, currentLayer)
 
-      // If targeting START node, we might be more lenient or simply ensure visibility doesn't block it if connected.
-      // But visibility 'hidden' means it's far away.
-      // If the user means "Clicking the Start Node from anywhere should work", that's a teleport.
-      // Given the context of a "Tour", usually you move forward.
-      // However, if "Proberaum" (Start) is the hub, maybe you return?
-      // If the map is a DAG (Directed Acyclic Graph) moving forward, you can't go back.
-      // If the user request implies going back to HQ is key, we should allow it if connected.
-      // Existing code checks `isConnected`. If the graph is undirected, you can go back.
-      // If directed, you can't.
-      // Let's assume the issue is that sometimes you are AT the HQ and can't open it?
-      // We already fixed "node.id === player.currentNodeId" logic above.
-
-      // But wait, the user said "Reise zum Proberaum immer möglich".
-      // If I am at Node B and Node Start is connected, I should be able to go.
-      // `isConnected` handles connectivity.
-      // `visibility` handles fog of war. Start is usually visible.
-
-      // Let's Ensure that if node.type === 'START' and isConnected, we skip the visibility check or layer check if it prevents return.
-      // But typically layer check prevents skipping layers.
-
-      // If the request implies "Always allow travel to HQ if connected", let's enforce that.
-      if (node.type === 'START' && isConnected(node.id)) {
-        // Bypass layer/visibility check for returning home if connected
+      // Allow travel to START node from anywhere if connected, bypassing standard layer/visibility rules if needed.
+      // This ensures "Return to HQ" is possible if valid connection exists, even if layer logic implies "forward only".
+      if (node.type === 'START') {
+        // Always allow returning to HQ regardless of connections or visibility
       } else if (visibility !== 'visible' || !isConnected(node.id)) {
+        addToast(
+          visibility !== 'visible'
+            ? 'Cannot travel: location not visible'
+            : 'Cannot travel: location not connected',
+          'warning'
+        )
         return
       }
 
@@ -452,7 +452,8 @@ export const useTravelLogic = ({
 
     if (!canReachAny && currentNode?.type !== 'GIG') {
       const currentFuelClamped = Math.max(0, currentFuel)
-      const missingFuel = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - currentFuelClamped
+      const missingFuel =
+        EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - currentFuelClamped
       const refuelCost = Math.ceil(
         missingFuel * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE
       )

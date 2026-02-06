@@ -1,11 +1,24 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import { ChatterOverlay } from './ChatterOverlay'
+import { HecklerOverlay } from './HecklerOverlay'
 
-export const GigHUD = ({ stats, onLaneInput }) => {
-  const { score, combo, health, overload, isGameOver } = stats
+export const GigHUD = ({ stats, onLaneInput, gameStateRef }) => {
+  const {
+    score,
+    combo,
+    health,
+    overload,
+    isGameOver,
+    accuracy = 100,
+    isToxicMode = false
+  } = stats
 
   return (
     <div className='absolute inset-0 z-30 pointer-events-none'>
+      {/* Heckler Overlay (Projectiles) */}
+      <HecklerOverlay gameStateRef={gameStateRef} />
+
       {/* Chatter Overlay Integration */}
       <div className='absolute top-32 right-4 z-50'>
         <ChatterOverlay />
@@ -44,7 +57,13 @@ export const GigHUD = ({ stats, onLaneInput }) => {
           <div
             className={`text-3xl font-bold transition-transform duration-100 ${
               combo > 0 ? 'scale-110' : 'scale-100'
-            } ${combo > 30 ? 'text-(--blood-red) animate-pulse' : 'text-(--ash-gray)'}`}
+            } ${
+              accuracy < 70
+                ? 'text-(--warning-yellow) animate-pulse'
+                : combo > 30
+                  ? 'text-(--blood-red) animate-pulse'
+                  : 'text-(--ash-gray)'
+            }`}
           >
             {combo}x
           </div>
@@ -74,7 +93,7 @@ export const GigHUD = ({ stats, onLaneInput }) => {
           <span>CROWD ENERGY</span>
           <span
             className={
-              health < 30
+              health < 20
                 ? 'text-(--blood-red) animate-flash'
                 : 'text-(--star-white)'
             }
@@ -83,16 +102,27 @@ export const GigHUD = ({ stats, onLaneInput }) => {
           </span>
         </div>
         {/* Segmented Bar Look */}
-        <div className='w-full h-6 bg-(--void-black)/50 border-2 border-(--ash-gray)/30 backdrop-blur-sm p-[2px]'>
+        <div
+          className={`w-full h-6 bg-(--void-black)/50 border-2 backdrop-blur-sm p-[2px] ${
+            health < 20
+              ? 'border-(--blood-red) animate-flash'
+              : 'border-(--ash-gray)/30'
+          }`}
+        >
           <div
             className={`h-full transition-all duration-300 ease-out ${
-              health < 30
+              health < 20
                 ? 'bg-(--blood-red) shadow-[0_0_15px_var(--blood-red)]'
-                : 'bg-gradient-to-r from-(--toxic-green) to-(--toxic-green-light) shadow-[0_0_10px_var(--toxic-green)]'
+                : 'bg-gradient-to-r from-(--toxic-green) to-(--toxic-green) shadow-[0_0_10px_var(--toxic-green)]'
             }`}
             style={{ width: `${health}%` }}
           />
         </div>
+        {isToxicMode && (
+          <div className='mt-2 text-(--blood-red) animate-pulse font-bold tracking-widest text-center font-[var(--font-display)]'>
+            TOXIC MODE ACTIVE
+          </div>
+        )}
       </div>
 
       {/* Controls Hint */}
@@ -109,4 +139,22 @@ export const GigHUD = ({ stats, onLaneInput }) => {
       )}
     </div>
   )
+}
+
+GigHUD.propTypes = {
+  stats: PropTypes.shape({
+    score: PropTypes.number.isRequired,
+    combo: PropTypes.number.isRequired,
+    health: PropTypes.number.isRequired,
+    overload: PropTypes.number.isRequired,
+    isGameOver: PropTypes.bool.isRequired,
+    accuracy: PropTypes.number,
+    isToxicMode: PropTypes.bool
+  }).isRequired,
+  onLaneInput: PropTypes.func,
+  gameStateRef: PropTypes.shape({
+    current: PropTypes.shape({
+      projectiles: PropTypes.array
+    })
+  }).isRequired
 }

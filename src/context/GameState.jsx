@@ -11,8 +11,8 @@ import {
 } from '../utils/errorHandler'
 
 // Import modular state management
-import { initialState, createInitialState } from './initialState'
-import { gameReducer, ActionTypes } from './gameReducer'
+import { createInitialState } from './initialState'
+import { gameReducer } from './gameReducer'
 import {
   createChangeSceneAction,
   createUpdatePlayerAction,
@@ -43,6 +43,8 @@ const GameStateContext = createContext()
  * @param {object} props
  * @param {React.ReactNode} props.children
  */
+import PropTypes from 'prop-types'
+
 export const GameStateProvider = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, null, createInitialState)
 
@@ -85,8 +87,17 @@ export const GameStateProvider = ({ children }) => {
    * Updates global settings.
    * @param {object} updates - Object containing keys to update.
    */
-  const updateSettings = updates =>
+  const updateSettings = updates => {
     dispatch(createUpdateSettingsAction(updates))
+    // Persist to global settings (persist across new games)
+    safeStorageOperation('saveGlobalSettings', () => {
+      const current = JSON.parse(
+        localStorage.getItem('neurotoxic_global_settings') || '{}'
+      )
+      const next = { ...current, ...updates }
+      localStorage.setItem('neurotoxic_global_settings', JSON.stringify(next))
+    })
+  }
 
   /**
    * Sets the generated game map.
@@ -108,7 +119,7 @@ export const GameStateProvider = ({ children }) => {
 
   /**
    * Updates the active setlist.
-   * @param {Array} list - Array of song objects.
+   * @param {Array} list - Array of song objects or IDs.
    */
   const setSetlist = list => dispatch(createSetSetlistAction(list))
 
@@ -187,7 +198,20 @@ export const GameStateProvider = ({ children }) => {
    * Persists the current state to localStorage.
    */
   const saveGame = () => {
+    // Only persist minimal setlist info to avoid bloat
     const saveData = { ...state, timestamp: Date.now() }
+
+    // Normalize setlist to objects with IDs
+    if (Array.isArray(saveData.setlist)) {
+      saveData.setlist = saveData.setlist
+        .map(s => {
+          if (typeof s === 'string') return { id: s }
+          if (s && s.id) return { id: s.id }
+          return null
+        })
+        .filter(Boolean)
+    }
+
     const success = safeStorageOperation(
       'saveGame',
       () => {
@@ -399,6 +423,10 @@ export const GameStateProvider = ({ children }) => {
       {children}
     </GameStateContext.Provider>
   )
+}
+
+GameStateProvider.propTypes = {
+  children: PropTypes.node
 }
 
 /**

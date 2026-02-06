@@ -3,7 +3,8 @@ import { useGameState } from '../context/GameState'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export const TutorialManager = () => {
-  const { player, updatePlayer, currentScene } = useGameState()
+  const { player, updatePlayer, currentScene, settings, updateSettings } =
+    useGameState()
   const [step, setStep] = useState(player.tutorialStep || 0)
 
   useEffect(() => {
@@ -11,17 +12,25 @@ export const TutorialManager = () => {
     if (player.tutorialStep !== undefined && player.tutorialStep !== step) {
       setStep(player.tutorialStep)
     }
-  }, [player.tutorialStep])
+    // step is used for comparison, but we only want to update if player.tutorialStep mismatches.
+    // Adding step to dependency array is safe here.
+  }, [player.tutorialStep, step])
 
   const completeStep = () => {
     const nextStep = step + 1
     setStep(nextStep)
     updatePlayer({ tutorialStep: nextStep })
+
+    // If we passed the last tutorial step (currently 3), mark as seen globally
+    if (nextStep > 3) {
+      updateSettings({ tutorialSeen: true })
+    }
   }
 
   const skipTutorial = () => {
-    setStep(999)
-    updatePlayer({ tutorialStep: 999 })
+    setStep(-1)
+    updatePlayer({ tutorialStep: -1 })
+    updateSettings({ tutorialSeen: true })
   }
 
   // Tutorial Content Logic
@@ -62,7 +71,7 @@ export const TutorialManager = () => {
 
   const content = getContent()
 
-  if (!content || step >= 999) return null
+  if (settings?.tutorialSeen || !content || step === -1) return null
 
   return (
     <AnimatePresence>
@@ -70,7 +79,7 @@ export const TutorialManager = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0 }}
-        className='fixed bottom-20 left-1/2 transform -translate-x-1/2 z-[100] w-full max-w-md'
+        className='fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md'
       >
         <div className='bg-(--void-black)/95 border-2 border-(--toxic-green) p-6 shadow-[0_0_20px_var(--toxic-green)] relative'>
           <div className='absolute -top-3 left-4 bg-(--void-black) px-2 text-(--toxic-green) font-bold text-xs border border-(--toxic-green)'>

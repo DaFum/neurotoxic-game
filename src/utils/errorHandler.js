@@ -39,14 +39,6 @@ export const ErrorCategory = {
  * @extends Error
  */
 export class GameError extends Error {
-  /**
-   * @param {string} message - Error message
-   * @param {Object} options - Error options
-   * @param {string} options.category - Error category
-   * @param {string} options.severity - Error severity
-   * @param {Object} [options.context] - Additional context
-   * @param {boolean} [options.recoverable] - Whether the error is recoverable
-   */
   constructor(
     message,
     {
@@ -65,10 +57,6 @@ export class GameError extends Error {
     this.timestamp = Date.now()
   }
 
-  /**
-   * Converts error to a loggable object
-   * @returns {Object} Error data object
-   */
   toLogObject() {
     return {
       name: this.name,
@@ -83,10 +71,6 @@ export class GameError extends Error {
   }
 }
 
-/**
- * State-related error
- * @extends GameError
- */
 export class StateError extends GameError {
   constructor(message, context = {}) {
     super(message, {
@@ -99,10 +83,6 @@ export class StateError extends GameError {
   }
 }
 
-/**
- * Storage-related error
- * @extends GameError
- */
 export class StorageError extends GameError {
   constructor(message, context = {}) {
     super(message, {
@@ -115,15 +95,11 @@ export class StorageError extends GameError {
   }
 }
 
-/**
- * Game Logic error
- * @extends GameError
- */
 export class GameLogicError extends GameError {
   constructor(message, context = {}) {
     super(message, {
       category: ErrorCategory.GAME_LOGIC,
-      severity: ErrorSeverity.MEDIUM,
+      severity: ErrorSeverity.HIGH,
       context,
       recoverable: true
     })
@@ -131,31 +107,23 @@ export class GameLogicError extends GameError {
   }
 }
 
-/**
- * Render-related error
- * @extends GameError
- */
 export class RenderError extends GameError {
   constructor(message, context = {}) {
     super(message, {
       category: ErrorCategory.RENDER,
-      severity: ErrorSeverity.HIGH,
+      severity: ErrorSeverity.MEDIUM,
       context,
-      recoverable: false
+      recoverable: true
     })
     this.name = 'RenderError'
   }
 }
 
-/**
- * Audio-related error
- * @extends GameError
- */
 export class AudioError extends GameError {
   constructor(message, context = {}) {
     super(message, {
       category: ErrorCategory.AUDIO,
-      severity: ErrorSeverity.LOW,
+      severity: ErrorSeverity.MEDIUM,
       context,
       recoverable: true
     })
@@ -234,19 +202,6 @@ export const handleError = (error, options = {}) => {
   }
 
   return errorInfo
-}
-
-/**
- * Gets the error log for debugging
- * @returns {Array<Object>} Array of error log entries
- */
-export const getErrorLog = () => [...errorLog]
-
-/**
- * Clears the error log
- */
-export const clearErrorLog = () => {
-  errorLog.length = 0
 }
 
 /**

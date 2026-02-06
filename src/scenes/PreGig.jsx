@@ -4,6 +4,7 @@ import { SONGS_DB } from '../data/songs'
 import { getGigModifiers } from '../utils/simulationUtils'
 import { ChatterOverlay } from '../components/ChatterOverlay'
 import { ensureAudioContext } from '../utils/audioEngine'
+import { getSongId } from '../utils/songUtils'
 
 /**
  * Scene for preparing for a gig: managing budget, setlist, and modifiers.
@@ -64,11 +65,12 @@ export const PreGig = () => {
    * @param {object} song - The song to toggle.
    */
   const toggleSong = song => {
-    if (setlist.find(s => s.id === song.id)) {
-      setSetlist(setlist.filter(s => s.id !== song.id))
+    if (setlist.find(s => getSongId(s) === song.id)) {
+      setSetlist(setlist.filter(s => getSongId(s) !== song.id))
     } else {
       if (setlist.length < 3) {
-        setSetlist([...setlist, song])
+        // Store only minimal info to save memory/localStorage
+        setSetlist([...setlist, { id: song.id }])
       }
     }
   }
@@ -90,8 +92,6 @@ export const PreGig = () => {
     }
 
     setGigModifiers({ [key]: !isActive })
-    // Removed immediate money deduction to prevent double billing in PostGig.
-    // Costs are calculated in economyEngine.js
   }
 
   const calculatedBudget = Object.entries(gigModifiers).reduce(
@@ -128,7 +128,7 @@ export const PreGig = () => {
 
       <div className='grid grid-cols-2 gap-8 w-full max-w-4xl h-[60vh]'>
         {/* Actions */}
-        <div className='border border-(--ash-gray) p-4 bg-(--void-black)/50'>
+        <div className='border border-(--ash-gray) p-4 bg-(--void-black)/50 overflow-y-auto'>
           <h3 className='text-xl text-(--toxic-green) mb-4'>
             BUDGET ALLOCATION
           </h3>
@@ -220,7 +220,7 @@ export const PreGig = () => {
           </h3>
           <div className='flex-1 overflow-y-auto pr-2 space-y-2'>
             {SONGS_DB.map(song => {
-              const isSelected = setlist.find(s => s.id === song.id)
+              const isSelected = setlist.find(s => getSongId(s) === song.id)
               return (
                 <div
                   key={song.id}
@@ -259,17 +259,24 @@ export const PreGig = () => {
 
           {/* Curve Visualization */}
           <div className='mt-4 h-16 border-t border-(--ash-gray) pt-2 flex items-end justify-between gap-1'>
-            {setlist.map((s, i) => (
-              <div
-                key={i}
-                className='flex-1 bg-(--toxic-green) opacity-50 hover:opacity-100 transition-opacity relative group'
-                style={{ height: `${s.energy.peak}%` }}
-              >
-                <div className='absolute -top-4 left-0 text-[10px] w-full text-center hidden group-hover:block text-(--star-white)'>
-                  {s.energy.peak}
+            {setlist.map((s, i) => {
+              const id = getSongId(s)
+              // Resolve full song object for display
+              const songData = SONGS_DB.find(dbSong => dbSong.id === id) || {
+                energy: { peak: 50 }
+              }
+              return (
+                <div
+                  key={i}
+                  className='flex-1 bg-(--toxic-green) opacity-50 hover:opacity-100 transition-opacity relative group'
+                  style={{ height: `${songData.energy?.peak || 50}%` }}
+                >
+                  <div className='absolute -top-4 left-0 text-[10px] w-full text-center hidden group-hover:block text-(--star-white)'>
+                    {songData.energy?.peak}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
             {setlist.length === 0 && (
               <div className='text-(--ash-gray) text-xs w-full text-center'>
                 Select songs to see energy curve

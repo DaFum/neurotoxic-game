@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js'
+import { handleError } from '../utils/errorHandler'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import {
   buildRhythmLayout,
@@ -14,11 +15,12 @@ const NOTE_FALLBACK_WIDTH = 90
 const NOTE_FALLBACK_HEIGHT = 20
 const NOTE_INITIAL_Y = -50
 const NOTE_CENTER_OFFSET = 50
+const LANE_GAP = 20
 
 /**
  * Manages Pixi.js stage lifecycle and rendering updates.
  */
-export class PixiStageController {
+class PixiStageController {
   /**
    * @param {object} params - Controller dependencies.
    * @param {React.MutableRefObject<HTMLElement|null>} params.containerRef - DOM container ref.
@@ -47,6 +49,11 @@ export class PixiStageController {
     this.isDisposed = false
     this.initPromise = null
     this.handleTicker = this.handleTicker.bind(this)
+
+    // O(N) Rendering Optimizations
+    this.noteSprites = new Map() // Map<note, Sprite>
+    this.nextRenderIndex = 0 // Tracks the next note to spawn
+    this.spritePool = [] // Object pool for reusable sprites
   }
 
   /**
@@ -65,7 +72,9 @@ export class PixiStageController {
         await this.app.init({
           backgroundAlpha: 0,
           resizeTo: this.containerRef.current,
-          antialias: true
+          antialias: true,
+          resolution: window.devicePixelRatio || 1,
+          autoDensity: true
         })
 
         const container = this.containerRef.current
@@ -116,30 +125,14 @@ export class PixiStageController {
    * @returns {Promise<void>} Resolves when assets are loaded.
    */
   async loadAssets() {
+    const noteTextureUrl = getGenImageUrl(IMG_PROMPTS.NOTE_SKULL)
     try {
-      // NOTE: Using a hardcoded reliable image or base64 data URI here is safer than external generators for PIXI textures.
-      // But if we must use the generator, we accept that PIXI might complain about format parsing if extension is missing.
-      // As a fix for "PixiJS Warning: ... could not be loaded as we don't know how to parse it":
-      // We can treat it as a generic image resource or fallback to drawing.
-      // For now, let's just use the fallback drawing if loading fails, which the catch block handles.
-      // To suppress the warning, we might need to specify loadParser, but imageGen URLs are dynamic.
-
-      // Simply relying on fallback for now to avoid the specific parsing warning spam if possible,
-      // or just ignore it as we have a fallback.
-      // Ideally:
-      // this.noteTexture = await PIXI.Assets.load({ src: url, format: 'png' });
-
-      const noteTextureUrl = getGenImageUrl(IMG_PROMPTS.NOTE_SKULL)
-      // We rely on the standard loader behavior here and fall back to drawing if loading fails.
-      try {
-        this.noteTexture = await PIXI.Texture.fromURL(noteTextureUrl)
-      } catch {
-        this.noteTexture = null
-      }
+      this.noteTexture = await PIXI.Texture.fromURL(noteTextureUrl)
     } catch (error) {
       this.noteTexture = null
-      // console.warn('[PixiStageController] Note texture unavailable, using fallback.');
-      // Suppressing full stack trace for known asset issues to clean up logs
+      handleError(error, {
+        fallbackMessage: 'Note texture konnte nicht geladen werden.'
+      })
     }
   }
 
@@ -188,7 +181,8 @@ export class PixiStageController {
     const laneStrokeWidth = this.laneLayout.laneStrokeWidth
 
     this.gameStateRef.current.lanes.forEach((lane, index) => {
-      const laneX = startX + lane.x
+      const laneX = startX + index * (laneWidth + LANE_GAP)
+      lane.renderX = laneX
 
       // Create separate graphics for static background and dynamic elements
       const staticGraphics = new PIXI.Graphics()
@@ -202,7 +196,6 @@ export class PixiStageController {
       this.rhythmContainer.addChild(staticGraphics)
       this.rhythmContainer.addChild(dynamicGraphics)
 
-      lane.renderX = laneX
       this.laneGraphics[index] = {
         static: staticGraphics,
         dynamic: dynamicGraphics
@@ -229,7 +222,6 @@ export class PixiStageController {
    */
   createEffectsContainer() {
     this.effectsContainer = new PIXI.Container()
-    // Effects sit above notes but below UI (if any UI was here)
     if (this.rhythmContainer) {
       this.rhythmContainer.addChild(this.effectsContainer)
     } else {
@@ -377,50 +369,105 @@ export class PixiStageController {
    */
   updateNotes(state, elapsed) {
     const targetY = this.laneLayout?.hitLineY ?? 0
+    const notes = state.notes
 
-    state.notes.forEach(note => {
-      if (
-        note.visible &&
-        !note.hit &&
-        !note.sprite &&
-        elapsed >= note.time - NOTE_SPAWN_LEAD_MS
-      ) {
-        const lane = state.lanes[note.laneIndex]
-        note.sprite = this.createNoteSprite(lane)
-        this.noteContainer.addChild(note.sprite)
+    // Reset render index if notes were reset (e.g. restart)
+    if (this.nextRenderIndex >= notes.length && notes.length > 0) {
+      // Crude heuristic: if elapsed is very small but index is high, we reset
+      if (elapsed < 100) {
+        this.nextRenderIndex = 0
+        // Clean up sprites that might be stale
+        const notesToRemove = Array.from(this.noteSprites.keys())
+        for (const note of notesToRemove) {
+          this.destroyNoteSprite(note)
+        }
       }
+    }
 
-      if (!note.sprite) {
-        return
+    while (this.nextRenderIndex < notes.length) {
+      const note = notes[this.nextRenderIndex]
+
+      if (elapsed >= note.time - NOTE_SPAWN_LEAD_MS) {
+        if (note.visible && !note.hit) {
+          const lane = state.lanes[note.laneIndex]
+          const sprite = this.acquireSpriteFromPool(lane)
+          this.noteContainer.addChild(sprite)
+          this.noteSprites.set(note, sprite)
+        }
+        this.nextRenderIndex++
+      } else {
+        break
       }
+    }
 
+    // Safe iteration: snapshot entries to avoid issues with map mutation during iteration
+    const activeNotes = Array.from(this.noteSprites.entries())
+
+    for (const [note, sprite] of activeNotes) {
       if (!note.visible) {
         this.destroyNoteSprite(note)
-        return
+        continue
       }
 
       if (note.hit) {
-        // Trigger effect before destroying if we haven't already
-        // Note: note.hit is true, but sprite exists. This means it was JUST hit.
         const laneColor = state.lanes?.[note.laneIndex]?.color || 0xffffff
-        this.spawnHitEffect(note.sprite.x, note.sprite.y, laneColor)
+        this.spawnHitEffect(sprite.x, sprite.y, laneColor)
         this.destroyNoteSprite(note)
-        return
+        continue
       }
 
-      note.sprite.visible = true
       const jitterOffset = state.modifiers.noteJitter
         ? (Math.random() - 0.5) * NOTE_JITTER_RANGE
         : 0
-      note.sprite.y = calculateNoteY({
+
+      sprite.y = calculateNoteY({
         elapsed,
         noteTime: note.time,
         targetY,
         speed: state.speed
       })
-      note.sprite.x =
-        state.lanes[note.laneIndex].renderX + NOTE_CENTER_OFFSET + jitterOffset
-    })
+
+      if (sprite instanceof PIXI.Sprite) {
+        sprite.x =
+          state.lanes[note.laneIndex].renderX +
+          NOTE_CENTER_OFFSET +
+          jitterOffset
+      } else {
+        // Fallback graphics are positioned differently (renderX + 5)
+        // We only update Y for them to avoid jumping
+        sprite.x = state.lanes[note.laneIndex].renderX + 5
+      }
+    }
+  }
+
+  /**
+   * Acquires a sprite from the pool or creates a new one.
+   * @param {object} lane - Lane configuration.
+   * @returns {PIXI.DisplayObject} Note sprite instance.
+   */
+  acquireSpriteFromPool(lane) {
+    if (this.spritePool.length > 0) {
+      const sprite = this.spritePool.pop()
+      sprite.visible = true
+
+      if (sprite instanceof PIXI.Sprite) {
+        sprite.tint = lane.color
+        sprite.x = lane.renderX + NOTE_CENTER_OFFSET
+        sprite.y = NOTE_INITIAL_Y
+        sprite.alpha = 1
+        sprite.scale.set(0.5) // Assuming scale is reset to base
+      } else if (sprite instanceof PIXI.Graphics) {
+        sprite.clear()
+        sprite.rect(0, 0, NOTE_FALLBACK_WIDTH, NOTE_FALLBACK_HEIGHT)
+        sprite.fill({ color: lane.color })
+        sprite.x = lane.renderX + 5
+        sprite.y = NOTE_INITIAL_Y
+        sprite.alpha = 1
+        sprite.scale.set(1)
+      }
+      return sprite
+    }
+    return this.createNoteSprite(lane)
   }
 
   /**
@@ -454,16 +501,25 @@ export class PixiStageController {
    * @returns {void}
    */
   destroyNoteSprite(note) {
-    if (!note.sprite) {
-      return
-    }
+    const sprite = this.noteSprites.get(note)
+    if (!sprite) return
+
     if (this.noteContainer) {
-      this.noteContainer.removeChild(note.sprite)
+      this.noteContainer.removeChild(sprite)
     }
-    if (note.sprite.destroy) {
-      note.sprite.destroy()
-    }
-    note.sprite = null
+
+    // Release to pool instead of destroying
+    this.releaseSpriteToPool(sprite)
+    this.noteSprites.delete(note)
+  }
+
+  /**
+   * Releases a sprite back to the pool.
+   * @param {PIXI.DisplayObject} sprite - The sprite to release.
+   */
+  releaseSpriteToPool(sprite) {
+    sprite.visible = false
+    this.spritePool.push(sprite)
   }
 
   /**
@@ -483,8 +539,10 @@ export class PixiStageController {
     if (this.rhythmContainer) {
       this.rhythmContainer.y = this.laneLayout.rhythmOffsetY
     }
-    this.gameStateRef.current.lanes.forEach(lane => {
-      lane.renderX = this.laneLayout.startX + lane.x
+    const startX = this.laneLayout.startX
+
+    this.gameStateRef.current.lanes.forEach((lane, index) => {
+      lane.renderX = startX + index * (this.laneLayout.laneWidth + LANE_GAP)
     })
     return true
   }
@@ -502,7 +560,6 @@ export class PixiStageController {
     const state = this.gameStateRef.current
     const stats = this.statsRef.current
 
-    // Stop updating if game is over or fully stopped
     if (state.isGameOver || (!state.running && !state.pauseTime)) {
       return
     }
@@ -532,19 +589,28 @@ export class PixiStageController {
     this.initPromise = null
     if (this.app && this.app.ticker) {
       this.app.ticker.remove(this.handleTicker)
+      this.app.ticker.stop()
     }
 
-    if (this.gameStateRef?.current?.notes) {
-      this.gameStateRef.current.notes.forEach(note => {
-        this.destroyNoteSprite(note)
-      })
+    const notesToRemove = Array.from(this.noteSprites.keys())
+    for (const note of notesToRemove) {
+      this.destroyNoteSprite(note)
     }
+    this.noteSprites.clear()
+    this.nextRenderIndex = 0
+
+    // Destroy pooled sprites
+    for (const sprite of this.spritePool) {
+      sprite.destroy()
+    }
+    this.spritePool = []
 
     this.laneGraphics = []
     this.crowdMembers = []
 
-    // Explicitly destroy active effects
-    this.activeEffects.forEach(effect => effect.destroy?.())
+    this.activeEffects.forEach(effect => {
+      effect.destroy?.()
+    })
     this.activeEffects = []
     this.effectsContainer = null
 

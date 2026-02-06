@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { useTravelLogic } from '../hooks/useTravelLogic'
+import { useAudioControl } from '../hooks/useAudioControl'
 import { ChatterOverlay } from '../components/ChatterOverlay'
 import { BandHQ } from '../ui/BandHQ'
 import { ALL_VENUES } from '../data/venues'
@@ -63,12 +64,18 @@ export const Overworld = () => {
     addToast,
     advanceDay,
     changeScene,
-    settings
+    settings,
+    updateSettings,
+    deleteSave,
+    setlist,
+    setSetlist
   } = useGameState()
 
   const [hoveredNode, setHoveredNode] = useState(null)
   const [showHQ, setShowHQ] = useState(false)
   const [activeHQTab, setActiveHQTab] = useState('STATS')
+
+  const { audioState, handleAudioChange } = useAudioControl()
 
   const {
     isTraveling,
@@ -97,6 +104,11 @@ export const Overworld = () => {
 
   const currentNode = gameMap?.nodes[player.currentNodeId]
   const currentLayer = currentNode?.layer || 0
+
+  // Resume ambient music if enabled and not playing (e.g. returning from Gig)
+  React.useEffect(() => {
+    audioManager.resumeMusic()
+  }, [])
 
   return (
     <div
@@ -149,7 +161,7 @@ export const Overworld = () => {
 
       <div className='relative w-full h-full max-w-6xl max-h-[80vh] border-4 border-(--toxic-green) bg-(--void-black)/80 rounded-lg shadow-[0_0_50px_var(--toxic-green-20)] overflow-hidden'>
         <div
-          className='absolute inset-0 opacity-30 bg-cover bg-center grayscale invert'
+          className='absolute inset-0 opacity-30 bg-cover bg-center grayscale invert pointer-events-none'
           style={{
             backgroundImage: `url("${getGenImageUrl(IMG_PROMPTS.OVERWORLD_MAP)}")`
           }}
@@ -204,9 +216,9 @@ export const Overworld = () => {
           Object.values(gameMap.nodes).map(node => {
             const isCurrent = node.id === player.currentNodeId
             const visibility = getNodeVisibility(node.layer, currentLayer)
-            const isReachable = isConnected(node.id)
+            const isReachable = isConnected(node.id) || node.type === 'START'
 
-            if (visibility === 'hidden') {
+            if (visibility === 'hidden' && node.type !== 'START') {
               // Render ??? Icon
               return (
                 <div
@@ -268,7 +280,7 @@ export const Overworld = () => {
                 </motion.div>
 
                 {isReachable && (
-                  <div className='absolute -top-6 left-1/2 -translate-x-1/2 text-(--toxic-green) text-[10px] font-bold animate-bounce whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity'>
+                  <div className='absolute -top-6 left-1/2 -translate-x-1/2 text-(--toxic-green) text-[10px] font-bold animate-bounce whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none'>
                     CLICK TO TRAVEL
                   </div>
                 )}
@@ -345,6 +357,13 @@ export const Overworld = () => {
           addToast={addToast}
           activeTab={activeHQTab}
           onTabChange={setActiveHQTab}
+          settings={settings}
+          updateSettings={updateSettings}
+          deleteSave={deleteSave}
+          setlist={setlist}
+          setSetlist={setSetlist}
+          audioState={audioState}
+          onAudioChange={handleAudioChange}
         />
       )}
     </div>

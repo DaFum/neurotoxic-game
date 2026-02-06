@@ -1,9 +1,16 @@
-import * as Tone from 'tone'
+/**
+ * Audio Engine Utility
+ * This module manages the AudioContext and Tone.js logic for both Rhythm Game music and UI SFX.
+ * Note: This file contains side-effects (Tone.start, AudioContext creation) as per architectural design exceptions.
+ */
 
-let guitar, drumKit, loop
+import * as Tone from 'tone'
+import { calculateTimeFromTicks } from './rhythmUtils'
+
+let guitar, bass, drumKit, loop, part
+let sfxSynth, sfxGain
 let isSetup = false
 
-// Initialisierung der Synths und Effekte
 /**
  * Initializes the audio subsystem, including synths, effects, and master compressor.
  * @returns {Promise<void>}
@@ -15,7 +22,7 @@ export async function setupAudio() {
   // Master Chain
   const masterComp = new Tone.Compressor(-30, 3).toDestination()
 
-  // --- Gitarre ---
+  // --- Guitar ---
   guitar = new Tone.PolySynth(Tone.MonoSynth, {
     oscillator: { type: 'sawtooth' },
     envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.1 },
@@ -34,6 +41,23 @@ export async function setupAudio() {
 
   guitar.chain(distortion, eq, widener, masterComp)
 
+  // --- Bass ---
+  bass = new Tone.PolySynth(Tone.MonoSynth, {
+    oscillator: { type: 'square' },
+    envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 },
+    filterEnvelope: {
+      attack: 0.001,
+      decay: 0.2,
+      sustain: 0.1,
+      baseFrequency: 80,
+      octaves: 2
+    }
+  })
+
+  const bassEq = new Tone.EQ3(2, 0, -2)
+  const bassComp = new Tone.Compressor(-20, 4)
+  bass.chain(bassComp, bassEq, masterComp)
+
   // --- Drums ---
   drumKit = {
     kick: new Tone.MembraneSynth().connect(masterComp),
@@ -47,18 +71,33 @@ export async function setupAudio() {
       modulationIndex: 32,
       resonance: 4000,
       octaves: 1.5
+    }).connect(masterComp),
+    crash: new Tone.MetalSynth({
+      envelope: { attack: 0.001, decay: 1.0, release: 0.01 },
+      harmonicity: 3.1,
+      modulationIndex: 16,
+      resonance: 2000,
+      octaves: 2.5
     }).connect(masterComp)
   }
 
   // Level Mixing
-  drumKit.kick.volume.value = 0
-  drumKit.snare.volume.value = -5
-  drumKit.hihat.volume.value = -15
+  drumKit.kick.volume.value = 5
+  drumKit.snare.volume.value = 2
+  drumKit.hihat.volume.value = -10
+  drumKit.crash.volume.value = -5
+
+  // Instrument Volumes
+  guitar.volume.value = 4
+  bass.volume.value = 6
+
+  // --- SFX Synth (Unified) ---
+  sfxGain = new Tone.Gain(0.2).connect(masterComp)
+  sfxSynth = new Tone.PolySynth(Tone.Synth).connect(sfxGain)
 
   isSetup = true
 }
 
-// Helper to resume context from UI
 /**
  * Ensures the AudioContext is running and initialized.
  * @returns {Promise<void>}
@@ -70,38 +109,228 @@ export async function ensureAudioContext() {
   }
 }
 
-// Die eigentliche Generierungs-Logik
+/**
+ * Plays a sound effect by type.
+ * @param {string} type - The type of SFX ('hit', 'miss', 'menu', 'travel', 'cash').
+ */
+export function playSFX(type) {
+  if (!isSetup || !sfxSynth) return
+
+  const now = Tone.now()
+  switch (type) {
+    case 'hit':
+      // High pitch success ping
+      sfxSynth.triggerAttackRelease('A5', '16n', now)
+      break
+    case 'miss':
+      // Low discordant buzz
+      sfxSynth.triggerAttackRelease('D2', '8n', now)
+      break
+    case 'menu':
+      // Gentle blip
+      sfxSynth.triggerAttackRelease('C5', '32n', now, 0.3)
+      break
+    case 'travel':
+      // Engine-like rumble using drum kick if available, or low synth
+      if (drumKit && drumKit.kick) {
+        drumKit.kick.triggerAttackRelease('C1', '8n', now, 0.5)
+      } else {
+        sfxSynth.triggerAttackRelease('G1', '8n', now, 0.5)
+      }
+      break
+    case 'cash':
+      // Bright chime/coin sound
+      sfxSynth.triggerAttackRelease('B5', '16n', now, 0.4)
+      sfxSynth.triggerAttackRelease('E6', '16n', now + 0.05, 0.4)
+      break
+    default:
+      console.warn(`[audioEngine] Unknown SFX type: ${type}`)
+      break
+  }
+}
+
+/**
+ * Sets the SFX volume.
+ * @param {number} vol - Volume between 0 and 1.
+ */
+export function setSFXVolume(vol) {
+  if (sfxGain) {
+    // Convert 0-1 linear to decibels (approximate or use ramp)
+    // Tone.Gain accepts linear values if units are default, but volume is typically db.
+    // However, Tone.Gain.gain is linear amplitude.
+    sfxGain.gain.rampTo(Math.max(0, Math.min(1, vol)), 0.1)
+  }
+}
+
+/**
+ * Plays a song using predefined note data.
+ * @param {object} song - The song object containing `notes` and `bpm`.
+ * @param {number} [delay=0] - Delay in seconds before starting.
+ */
+export async function playSongFromData(song, delay = 0) {
+  await ensureAudioContext()
+  stopAudio()
+  Tone.Transport.cancel()
+  Tone.Transport.position = 0
+
+  const bpm = Math.max(1, song.bpm || 120) // Ensure BPM is positive
+  const tpb = Math.max(1, song.tpb || 480) // Ensure TPB is positive
+  Tone.Transport.bpm.value = bpm
+
+  // Validate notes
+  if (!Array.isArray(song.notes)) {
+    console.error('playSongFromData: song.notes is not an array')
+    return
+  }
+
+  // Validate Audio Components
+  if (!guitar || !bass || !drumKit) {
+    console.error('playSongFromData: Audio components not initialized.')
+    return
+  }
+
+  // Fallback if tempoMap is missing/empty
+  const useTempoMap = Array.isArray(song.tempoMap) && song.tempoMap.length > 0
+
+  const events = song.notes
+    .filter(n => {
+      // Validate note data
+      return (
+        typeof n.t === 'number' &&
+        isFinite(n.t) &&
+        typeof n.p === 'number' &&
+        isFinite(n.p) &&
+        typeof n.v === 'number' &&
+        isFinite(n.v)
+      )
+    })
+    .map(n => {
+      let time = 0
+      if (useTempoMap) {
+        time = calculateTimeFromTicks(n.t, tpb, song.tempoMap, 's')
+      } else {
+        // Fallback: ticks -> seconds using constant BPM
+        time = (n.t / tpb) * (60 / bpm)
+      }
+
+      // Clamp velocity 0-127 and normalize
+      const rawVelocity = Math.max(0, Math.min(127, n.v))
+
+      // Ensure time and delay are valid numbers
+      const validDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
+      const finalTime = Number.isFinite(time) ? time + validDelay : -1
+
+      // Invalid times are caught by the filter below
+      return {
+        time: finalTime,
+        note: n.p,
+        velocity: rawVelocity / 127,
+        lane: n.lane
+      }
+    })
+    // Filter out notes with invalid or negative times to prevent clustering/errors
+    .filter(e => Number.isFinite(e.time) && e.time >= 0)
+
+  if (events.length === 0) {
+    console.warn('playSongFromData: No valid notes found to schedule')
+    return
+  }
+
+  part = new Tone.Part((time, value) => {
+    if (!guitar || !bass || !drumKit) return
+
+    const noteName = Tone.Frequency(value.note, 'midi').toNote()
+
+    if (value.lane === 'guitar') {
+      guitar.triggerAttackRelease(noteName, '16n', time, value.velocity)
+    } else if (value.lane === 'bass') {
+      bass.triggerAttackRelease(noteName, '8n', time, value.velocity)
+    } else if (value.lane === 'drums') {
+      playDrumNote(value.note, time, value.velocity)
+    }
+  }, events).start(0)
+
+  Tone.Transport.start()
+}
+
+/**
+ * Triggers a specific drum sound based on MIDI pitch.
+ * @param {number} midiPitch - The MIDI note number.
+ * @param {number} time - The time to trigger the note.
+ * @param {number} velocity - The velocity of the note (0-1).
+ */
+function playDrumNote(midiPitch, time, velocity) {
+  // Basic GM Mapping
+  switch (midiPitch) {
+    case 35:
+    case 36:
+      drumKit.kick.triggerAttackRelease('C1', '16n', time, velocity)
+      break
+    case 38:
+    case 40:
+      drumKit.snare.triggerAttackRelease('16n', time, velocity)
+      break
+    case 42:
+    case 44:
+    case 46:
+      drumKit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.8)
+      break
+    case 49:
+    case 57:
+      drumKit.crash.triggerAttackRelease('C2', '8n', time, velocity)
+      break
+    case 51: // Ride Cymbal
+    case 59:
+      drumKit.hihat.triggerAttackRelease(6000, '16n', time, velocity * 0.6)
+      break
+    case 41: // Low Tom
+    case 43:
+      drumKit.kick.triggerAttackRelease('G1', '8n', time, velocity * 0.7)
+      break
+    case 45: // Mid Tom
+    case 47:
+      drumKit.kick.triggerAttackRelease('C2', '8n', time, velocity * 0.7)
+      break
+    default:
+      // Default to HiHat for unknown percussion elements to keep rhythm
+      drumKit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.5)
+  }
+}
+
+// The actual generation logic (Legacy / Fallback)
 /**
  * Starts the procedural metal music generator for a specific song configuration.
  * @param {object} song - The song object containing metadata like BPM and difficulty.
  * @param {number} [delay=0] - Delay in seconds before the audio starts.
+ * @param {Function} [random=Math.random] - RNG function for deterministic generation.
  * @returns {Promise<void>}
  */
-export async function startMetalGenerator(song, delay = 0) {
+export async function startMetalGenerator(
+  song,
+  delay = 0,
+  random = Math.random
+) {
   await ensureAudioContext()
 
-  // Reset & Cleanup before starting
   stopAudio()
-  Tone.Transport.cancel() // Clear previous schedules
-  Tone.Transport.position = 0 // Reset transport time
+  Tone.Transport.cancel()
+  Tone.Transport.position = 0
 
-  // 1. BPM Setzen (Diff Logik)
-  const bpm = song.bpm || 80 + song.difficulty * 30
+  // Guard BPM against zero/negative/falsy values
+  const rawBpm = song.bpm || 80 + (song.difficulty || 2) * 30
+  const bpm = Math.max(1, rawBpm)
+
   Tone.Transport.bpm.value = bpm
 
-  // 2. Riff Pattern Generieren
-  const pattern = generateRiffPattern(song.difficulty || 2)
+  const pattern = generateRiffPattern(song.difficulty || 2, random)
 
-  // 3. Sequencer Loop
   loop = new Tone.Sequence(
     (time, note) => {
-      if (!guitar || !drumKit) return // Safety check
+      if (!guitar || !drumKit) return
 
-      // Guitar
       if (note) guitar.triggerAttackRelease(note, '16n', time)
 
-      // Drum Logic
-      playDrums(time, song.difficulty || 2, note)
+      playDrumsLegacy(time, song.difficulty || 2, note, random)
     },
     pattern,
     '16n'
@@ -119,6 +348,10 @@ export function stopAudio() {
   if (loop) {
     loop.dispose()
     loop = null
+  }
+  if (part) {
+    part.dispose()
+    part = null
   }
 }
 
@@ -140,22 +373,49 @@ export function resumeAudio() {
   }
 }
 
-// Hilfsfunktion: Riff Pattern
-function generateRiffPattern(diff) {
+/**
+ * Disposes of audio engine resources.
+ */
+export function disposeAudio() {
+  stopAudio()
+  if (guitar) guitar.dispose()
+  if (bass) bass.dispose()
+  if (drumKit) {
+    drumKit.kick.dispose()
+    drumKit.snare.dispose()
+    drumKit.hihat.dispose()
+    drumKit.crash.dispose()
+  }
+  if (sfxSynth) sfxSynth.dispose()
+  if (sfxGain) sfxGain.dispose()
+
+  guitar = null
+  bass = null
+  drumKit = null
+  sfxSynth = null
+  sfxGain = null
+  isSetup = false
+}
+
+/**
+ * Generates a procedural riff pattern.
+ * @param {number} diff - Difficulty level.
+ * @param {Function} random - Random number generator function.
+ * @returns {Array} Array of note strings or nulls.
+ */
+function generateRiffPattern(diff, random) {
   const steps = 16
   const pattern = []
   const density = 0.3 + diff * 0.1
 
   for (let i = 0; i < steps; i++) {
-    if (Math.random() < density) {
-      if (diff <= 2) pattern.push(Math.random() > 0.8 ? 'E3' : 'E2')
+    if (random() < density) {
+      if (diff <= 2) pattern.push(random() > 0.8 ? 'E3' : 'E2')
       else if (diff <= 4)
-        pattern.push(
-          Math.random() > 0.7 ? (Math.random() > 0.5 ? 'F2' : 'G2') : 'E2'
-        )
+        pattern.push(random() > 0.7 ? (random() > 0.5 ? 'F2' : 'G2') : 'E2')
       else {
         const notes = ['E2', 'A#2', 'F2', 'C3', 'D#3']
-        pattern.push(notes[Math.floor(Math.random() * notes.length)])
+        pattern.push(notes[Math.floor(random() * notes.length)])
       }
     } else {
       pattern.push(null)
@@ -164,24 +424,29 @@ function generateRiffPattern(diff) {
   return pattern
 }
 
-// Hilfsfunktion: Drums
-function playDrums(time, diff, note) {
+/**
+ * Plays procedural drums based on legacy logic.
+ * @param {number} time - Audio time.
+ * @param {number} diff - Difficulty.
+ * @param {string|null} note - The guitar note played on this step.
+ * @param {Function} random - Random number generator.
+ */
+function playDrumsLegacy(time, diff, note, random) {
   if (diff === 5) {
-    // Blast Beat
     drumKit.kick.triggerAttackRelease('C1', '16n', time)
-    if (Math.random() > 0.5) drumKit.snare.triggerAttackRelease('16n', time)
-    // Corrected: Pass note (frequency/pitch) first
-    drumKit.hihat.triggerAttackRelease('8000', '32n', time, 0.5)
+    if (random() > 0.5) drumKit.snare.triggerAttackRelease('16n', time)
+    drumKit.hihat.triggerAttackRelease(8000, '32n', time, 0.5)
   } else {
-    // Standard Groove
-    if (note === 'E2' || Math.random() < diff * 0.1) {
+    if (note === 'E2' || random() < diff * 0.1) {
       drumKit.kick.triggerAttackRelease('C1', '8n', time)
     }
-    if (Math.random() > 0.9) {
+    if (random() > 0.9) {
       drumKit.snare.triggerAttackRelease('16n', time)
     }
-    // HiHat Pulse
-    if (time % 0.25 < 0.1)
-      drumKit.hihat.triggerAttackRelease('8000', '32n', time)
+    // Fix floating point tolerance issues
+    const beatPhase = time % 0.25
+    if (beatPhase < 0.1 || beatPhase > 0.24) {
+      drumKit.hihat.triggerAttackRelease(8000, '32n', time)
+    }
   }
 }

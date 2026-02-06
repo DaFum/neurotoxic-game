@@ -4,6 +4,7 @@ import { calculateGigPhysics, getGigModifiers } from '../utils/simulationUtils'
 import { audioManager } from '../utils/AudioManager'
 import {
   startMetalGenerator,
+  playSongFromData,
   stopAudio,
   pauseAudio,
   resumeAudio
@@ -12,7 +13,14 @@ import {
   buildGigStatsSnapshot,
   updateGigPerformanceStats
 } from '../utils/gigStats'
-import { generateNotesForSong, checkHit } from '../utils/rhythmUtils'
+import {
+  generateNotesForSong,
+  parseSongNotes,
+  checkHit
+} from '../utils/rhythmUtils'
+import { updateProjectiles, trySpawnProjectile } from '../utils/hecklerLogic'
+import { handleError } from '../utils/errorHandler'
+import { SONGS_DB } from '../data/songs'
 
 /**
  * Provides rhythm game state, actions, and update loop for the gig scene.
@@ -48,6 +56,7 @@ export const useRhythmGameLogic = () => {
   const gameStateRef = useRef({
     running: false,
     notes: [],
+    nextMissCheckIndex: 0, // Optimization: only check notes that haven't passed yet
     lanes: [
       {
         id: 'guitar',
@@ -79,6 +88,7 @@ export const useRhythmGameLogic = () => {
     speed: 500,
     modifiers: {},
     stats: { perfectHits: 0, misses: 0, maxCombo: 0, peakHype: 0 },
+    projectiles: [],
     // Mirror React State for Renderer
     combo: 0,
     health: 100,
@@ -88,7 +98,8 @@ export const useRhythmGameLogic = () => {
     overload: 0,
     totalDuration: 0,
     toxicTimeTotal: 0,
-    toxicModeEndTime: 0
+    toxicModeEndTime: 0,
+    rng: Math.random // Store RNG for consistency
   })
 
   const hasInitializedRef = useRef(false)
@@ -97,7 +108,8 @@ export const useRhythmGameLogic = () => {
    * Initializes gig physics and note data once per gig.
    * @returns {void}
    */
-  const initializeGigState = useCallback(() => {
+  const initializeGigState = useCallback(async () => {
+    // Prevent double initialization, even in Strict Mode or re-mounts if ref persists
     if (hasInitializedRef.current) {
       return
     }
@@ -152,57 +164,100 @@ export const useRhythmGameLogic = () => {
 
       let notes = []
       let currentTimeOffset = 2000
-      const activeSetlist =
+
+      // Resolve full song data from IDs or Objects if necessary
+      const activeSetlist = (
         setlist.length > 0
           ? setlist
           : [{ id: 'jam', name: 'Jam', bpm: 120, duration: 60, difficulty: 2 }]
+      ).map(songRef => {
+        if (typeof songRef === 'string') {
+          return (
+            SONGS_DB.find(dbSong => dbSong.id === songRef) || {
+              id: songRef,
+              name: songRef,
+              bpm: 120,
+              duration: 60,
+              difficulty: 2
+            }
+          )
+        }
+        if (!songRef.notes && songRef.id && songRef.id !== 'jam') {
+          return SONGS_DB.find(dbSong => dbSong.id === songRef.id) || songRef
+        }
+        return songRef
+      })
 
       // Only generate notes for the active song (first in list for now, unless we implement full setlist sequencing)
       // The audio engine plays the first song. Notes should match.
       // If the intention is to play ONLY one song per gig scene invocation:
       const songsToPlay = [activeSetlist[0]]
-
-      songsToPlay.forEach(song => {
-        const songNotes = generateNotesForSong(song, {
-          leadIn: currentTimeOffset,
-          random: Math.random
-        })
-        notes = notes.concat(songNotes)
-        // Add exact song duration to offset, no extra padding between songs if strictness is required
-        // But usually a small gap is nice. The user said "nur die Sekunden dauert wie angegeben".
-        // If setlist has multiple songs, the total duration is sum.
-        // Let's stick to sum of durations.
-        currentTimeOffset += song.duration * 1000
-      })
-      gameStateRef.current.notes = notes
-      // The total duration of the gig is the end of the last song.
-      // Adjust start time offset (2000ms lead-in) + sum of durations.
-      gameStateRef.current.totalDuration = currentTimeOffset
-
-      // Switch to Metal Generator
-      const currentSong = activeSetlist[0]
-      // Keep audio & visuals aligned; default to 0 when no audio is started (e.g., jam)
+      const currentSong = songsToPlay[0]
       let audioDelay = 0
 
-      if (currentSong.id !== 'jam') {
-        // Use 2.0s delay (Tone.js/audio in seconds) to match the 2000ms visual note lead-in used above
-        audioDelay = 2.0
-        startMetalGenerator(currentSong, audioDelay)
+      // Explicitly non-deterministic unless seed provided (future proofing)
+      // Store in ref for consistency in update loop
+      const rng = Math.random
+      gameStateRef.current.rng = rng
+
+      // Use predefined notes if available and valid
+      let parsedNotes = []
+      if (Array.isArray(currentSong.notes) && currentSong.notes.length > 0) {
+        parsedNotes = parseSongNotes(currentSong, currentTimeOffset, {
+          onWarn: msg => console.warn(msg)
+        })
+
+        if (parsedNotes.length > 0) {
+          notes = notes.concat(parsedNotes)
+          audioDelay = currentTimeOffset / 1000
+          await playSongFromData(currentSong, audioDelay)
+        }
+      }
+
+      // If parsing failed or no notes (empty/invalid), fall back to procedural generation
+      // This handles empty-note songs gracefully without silent failure.
+      if (notes.length === 0) {
+        // Fallback procedural generation
+        songsToPlay.forEach(song => {
+          const songNotes = generateNotesForSong(song, {
+            leadIn: currentTimeOffset,
+            random: rng
+          })
+          notes = notes.concat(songNotes)
+          currentTimeOffset += song.duration * 1000
+        })
+
+        if (currentSong.id !== 'jam') {
+          audioDelay = 2.0
+          await startMetalGenerator(currentSong, audioDelay, rng)
+        }
+      }
+
+      gameStateRef.current.notes = notes
+      gameStateRef.current.nextMissCheckIndex = 0 // Reset pointer
+
+      // Calculate max note time to ensure duration covers everything
+      const maxNoteTime = notes.reduce((max, n) => Math.max(max, n.time), 0)
+      // Add buffer for decay/end (e.g. 4 seconds)
+      const buffer = 4000
+
+      if (parsedNotes.length > 0) {
+        gameStateRef.current.totalDuration = maxNoteTime + buffer
+      } else {
+        gameStateRef.current.totalDuration = Math.max(
+          currentTimeOffset,
+          maxNoteTime + buffer
+        )
       }
 
       gameStateRef.current.startTime = Date.now()
       gameStateRef.current.running = true
-      console.log('[RhythmGame] Initialized.', {
-        startTime: gameStateRef.current.startTime,
-        totalDuration: gameStateRef.current.totalDuration,
-        audioDelay
-      })
+      // console.log('[RhythmGame] Initialized.', { ... })
     } catch (error) {
-      console.error(
-        '[useRhythmGameLogic] Failed to initialize gig state.',
-        error
-      )
-      addToast('Gig initialization failed!', 'error')
+      handleError(error, {
+        addToast,
+        fallbackMessage: 'Gig initialization failed!'
+      })
       gameStateRef.current.running = false
     }
   }, [
@@ -241,16 +296,18 @@ export const useRhythmGameLogic = () => {
   /**
    * Applies a miss penalty and updates state/refs.
    * @param {number} count - Number of misses to process (default 1)
+   * @param {boolean} isEmptyHit - Whether this was an empty hit (hitting without a note).
    * @returns {void}
    */
   const handleMiss = useCallback(
-    (count = 1) => {
+    (count = 1, isEmptyHit = false) => {
       if (count <= 0) return
 
       setCombo(0)
       gameStateRef.current.combo = 0
       setOverload(o => {
-        const next = Math.max(0, o - 5 * count)
+        const penalty = isEmptyHit ? 2 : 5
+        const next = Math.max(0, o - penalty * count)
         gameStateRef.current.overload = next
         const updatedStats = updateGigPerformanceStats(
           {
@@ -262,9 +319,16 @@ export const useRhythmGameLogic = () => {
         gameStateRef.current.stats = updatedStats
         return next
       })
+
+      // Only play miss SFX if it's a real miss, empty hits might be spam, so maybe quieter or different?
+      // For now, keep SFX but maybe we can throttle it if needed.
       audioManager.playSFX('miss')
 
-      const decayPerMiss = hasUpgrade('bass_sansamp') ? 3 : 5
+      let decayPerMiss = hasUpgrade('bass_sansamp') ? 1 : 2
+      if (isEmptyHit) {
+        decayPerMiss = 1 // Lower penalty for empty hits
+      }
+
       setHealth(h => {
         const next = Math.max(0, h - decayPerMiss * count)
         if (next <= 0 && !gameStateRef.current.isGameOver) {
@@ -356,7 +420,8 @@ export const useRhythmGameLogic = () => {
 
         if (!toxicModeActive) {
           setOverload(o => {
-            const next = o + 1
+            const gain = 4 // Increased gain to make Toxic Mode reachable
+            const next = o + gain
             const peakCandidate = Math.min(next, 100)
             gameStateRef.current.stats = updateGigPerformanceStats(
               gameStateRef.current.stats,
@@ -373,7 +438,7 @@ export const useRhythmGameLogic = () => {
         }
         return true
       } else {
-        handleMiss()
+        handleMiss(1, true) // Pass true for isEmptyHit
         return false
       }
     },
@@ -389,6 +454,27 @@ export const useRhythmGameLogic = () => {
     deltaMS => {
       const state = gameStateRef.current
       if (state.paused) return
+
+      // Heckler Logic: Spawn projectiles randomly
+      if (state.running && !activeEvent && !isGameOver) {
+        const newProjectile = trySpawnProjectile(
+          { health: state.health },
+          state.rng, // Use consistent RNG
+          window.innerWidth
+        )
+        if (newProjectile) {
+          state.projectiles.push(newProjectile)
+        }
+      }
+
+      // Update Projectiles
+      if (state.projectiles.length > 0) {
+        state.projectiles = updateProjectiles(
+          state.projectiles,
+          deltaMS,
+          window.innerHeight
+        )
+      }
 
       if (!state.running || activeEvent || isGameOver) {
         if (!state.pauseTime) {
@@ -423,12 +509,7 @@ export const useRhythmGameLogic = () => {
       }
 
       if (elapsed > state.totalDuration) {
-        console.log('[RhythmGame] Gig Ended naturally.', {
-          elapsed,
-          totalDuration: state.totalDuration,
-          startTime: state.startTime,
-          now
-        })
+        // console.log('[RhythmGame] Gig Ended naturally.')
         state.running = false
         setLastGigStats(
           buildGigStatsSnapshot(state.score, state.stats, state.toxicTimeTotal)
@@ -438,17 +519,42 @@ export const useRhythmGameLogic = () => {
       }
 
       let missCount = 0
-      state.notes.forEach(note => {
-        if (note.visible && !note.hit) {
-          if (elapsed > note.time + NOTE_MISS_WINDOW_MS) {
-            note.visible = false
-            missCount++
+      const notes = state.notes
+      let i = state.nextMissCheckIndex
+
+      // Optimization: Only check notes starting from the last unchecked index
+      while (i < notes.length) {
+        const note = notes[i]
+
+        // If note has already been handled (hit or invisible), skip it but advance index if it's the current pointer
+        if (!note.visible || note.hit) {
+          if (i === state.nextMissCheckIndex) {
+            state.nextMissCheckIndex++
+          }
+          i++
+          continue
+        }
+
+        // If note is far in the future, we can stop checking
+        if (note.time > elapsed + NOTE_MISS_WINDOW_MS) {
+          break
+        }
+
+        // If note is past the window and wasn't hit
+        if (elapsed > note.time + NOTE_MISS_WINDOW_MS) {
+          note.visible = false
+          missCount++
+          // Since we missed this note, we can advance the pointer
+          if (i === state.nextMissCheckIndex) {
+            state.nextMissCheckIndex++
           }
         }
-      })
+
+        i++
+      }
 
       if (missCount > 0) {
-        handleMiss(missCount)
+        handleMiss(missCount, false) // False for isEmptyHit (these are real missed notes)
       }
     },
     [
@@ -468,15 +574,18 @@ export const useRhythmGameLogic = () => {
    * @param {boolean} isDown - Whether the input is pressed.
    * @returns {void}
    */
-  const registerInput = (laneIndex, isDown) => {
-    // Ignore input if game is not running or is paused
-    if (!gameStateRef.current.running || activeEvent) return
+  const registerInput = useCallback(
+    (laneIndex, isDown) => {
+      // Ignore input if game is not running or is paused
+      if (!gameStateRef.current.running || activeEvent) return
 
-    if (gameStateRef.current.lanes[laneIndex]) {
-      gameStateRef.current.lanes[laneIndex].active = isDown
-      if (isDown) handleHit(laneIndex)
-    }
-  }
+      if (gameStateRef.current.lanes[laneIndex]) {
+        gameStateRef.current.lanes[laneIndex].active = isDown
+        if (isDown) handleHit(laneIndex)
+      }
+    },
+    [activeEvent, handleHit]
+  )
 
   return {
     gameStateRef,

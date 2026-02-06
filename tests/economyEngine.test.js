@@ -3,7 +3,6 @@ import assert from 'node:assert/strict'
 import {
   calculateGigFinancials,
   calculateTravelExpenses,
-  INCOME_CONSTANTS,
   EXPENSE_CONSTANTS
 } from '../src/utils/economyEngine.js'
 
@@ -477,19 +476,6 @@ test('calculateGigFinancials merch table modifier increases sales', () => {
   assert.ok(
     tableMerch.value > noTableMerch.value,
     'Merch table should increase sales'
-  )
-})
-
-test('INCOME_CONSTANTS are properly defined', () => {
-  assert.ok(INCOME_CONSTANTS.MERCH, 'Should have MERCH constants')
-  assert.ok(INCOME_CONSTANTS.MERCH.SHIRT, 'Should have SHIRT merch type')
-  assert.ok(
-    INCOME_CONSTANTS.MERCH.SHIRT.profit > 0,
-    'Shirt profit should be positive'
-  )
-  assert.ok(
-    INCOME_CONSTANTS.STREAMING_PER_VIEW > 0,
-    'Streaming rate should be positive'
   )
 })
 

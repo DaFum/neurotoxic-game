@@ -1,16 +1,7 @@
 import { logger } from './logger.js'
 
 // Constants for the Economic System
-export const INCOME_CONSTANTS = {
-  MERCH: {
-    SHIRT: { price: 20, cost: 8, profit: 12 },
-    HOODIE: { price: 40, cost: 18, profit: 22 },
-    PATCH: { price: 3, cost: 0.5, profit: 2.5 },
-    CD: { price: 10, cost: 2, profit: 8 },
-    VINYL: { price: 25, cost: 12, profit: 13 }
-  },
-  STREAMING_PER_VIEW: 0.002 // Euro per view
-}
+// export const INCOME_CONSTANTS = { ... }
 
 export const EXPENSE_CONSTANTS = {
   DAILY: {

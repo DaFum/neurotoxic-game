@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import { HQ_ITEMS } from '../data/hqItems'
+import { SONGS_DB } from '../data/songs'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import { usePurchaseLogic } from '../hooks/usePurchaseLogic'
-import { StatBox, ProgressBar } from '../ui/shared'
+import { StatBox, ProgressBar, SettingsPanel } from '../ui/shared'
 
 /**
  * BandHQ Component
@@ -17,6 +18,13 @@ import { StatBox, ProgressBar } from '../ui/shared'
  * @param {Function} props.updatePlayer - Callback to update player state.
  * @param {Function} props.updateBand - Callback to update band state.
  * @param {Function} props.addToast - Callback to show notifications.
+ * @param {object} props.settings - Global settings.
+ * @param {Function} props.updateSettings - Update settings callback.
+ * @param {Function} props.deleteSave - Delete save callback.
+ * @param {Array} props.setlist - Current setlist.
+ * @param {Function} props.setSetlist - Update setlist callback.
+ * @param {object} props.audioState - Current audio state (musicVol, sfxVol, isMuted).
+ * @param {Function} props.onAudioChange - Callback for audio changes.
  * @param {string} [props.className] - Optional custom class name.
  */
 export const BandHQ = ({
@@ -27,9 +35,16 @@ export const BandHQ = ({
   updatePlayer,
   updateBand,
   addToast,
+  settings,
+  updateSettings,
+  deleteSave,
+  setlist,
+  setSetlist,
+  audioState,
+  onAudioChange,
   className = ''
 }) => {
-  const [activeTab, setActiveTab] = useState('STATS') // STATS, SHOP, UPGRADES
+  const [activeTab, setActiveTab] = useState('STATS') // STATS, SHOP, UPGRADES, SETLIST, SETTINGS
 
   const { handleBuy, isItemOwned, isItemDisabled } = usePurchaseLogic({
     player,
@@ -38,6 +53,29 @@ export const BandHQ = ({
     updateBand,
     addToast
   })
+
+  const toggleSongInSetlist = songId => {
+    const currentIndex = setlist.findIndex(
+      s => (typeof s === 'string' ? s : s.id) === songId
+    )
+
+    let newSetlist
+    if (currentIndex >= 0) {
+      newSetlist = [...setlist]
+      newSetlist.splice(currentIndex, 1)
+      addToast('Song removed from setlist', 'info')
+    } else {
+      // Currently allow 1 active song for MVP flow, or replace logic if desired.
+      // Replacing entirely ensures single song selection per instructions/simplicity.
+      newSetlist = [{ id: songId }]
+      addToast('Song selected for next Gig', 'success')
+    }
+    setSetlist(newSetlist)
+  }
+
+  const isSongSelected = songId => {
+    return setlist.some(s => (typeof s === 'string' ? s : s.id) === songId)
+  }
 
   const renderItem = item => {
     const owned = isItemOwned(item)
@@ -129,12 +167,12 @@ export const BandHQ = ({
         </div>
 
         {/* Navigation */}
-        <div className='flex border-b-2 border-(--ash-gray)'>
-          {['STATS', 'SHOP', 'UPGRADES'].map(tab => (
+        <div className='flex border-b-2 border-(--ash-gray) overflow-x-auto'>
+          {['STATS', 'SHOP', 'UPGRADES', 'SETLIST', 'SETTINGS'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-4 text-center font-bold text-xl uppercase tracking-wider transition-colors duration-150 font-mono
+              className={`flex-1 min-w-[120px] py-4 text-center font-bold text-xl uppercase tracking-wider transition-colors duration-150 font-mono
                 ${
                   activeTab === tab
                     ? 'bg-(--toxic-green) text-(--void-black)'
@@ -250,26 +288,96 @@ export const BandHQ = ({
           )}
 
           {activeTab === 'SHOP' && (
-            <div>
+            <div className='max-h-[60vh] overflow-y-auto'>
               <div className='mb-4 text-right font-mono text-(--star-white)'>
                 FUNDS:{' '}
                 <span className='text-(--toxic-green)'>{player.money}€</span>
               </div>
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4'>
                 {[...HQ_ITEMS.gear, ...HQ_ITEMS.instruments].map(renderItem)}
               </div>
             </div>
           )}
 
           {activeTab === 'UPGRADES' && (
-            <div>
+            <div className='max-h-[60vh] overflow-y-auto'>
               <div className='mb-4 text-right font-mono text-(--star-white)'>
                 FAME:{' '}
                 <span className='text-(--warning-yellow)'>{player.fame}★</span>
               </div>
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4'>
                 {[...HQ_ITEMS.van, ...HQ_ITEMS.hq].map(renderItem)}
               </div>
+            </div>
+          )}
+
+          {activeTab === 'SETLIST' && (
+            <div className='max-h-[60vh] overflow-y-auto'>
+              <div className='mb-4 text-right font-mono text-(--star-white)'>
+                SELECTED:{' '}
+                <span className='text-(--toxic-green)'>{setlist.length}</span>
+              </div>
+              <div className='space-y-2 pb-4'>
+                {SONGS_DB.map(song => {
+                  const selected = isSongSelected(song.id)
+                  return (
+                    <div
+                      key={song.id}
+                      className={`flex items-center justify-between p-4 border-2 transition-colors
+                        ${
+                          selected
+                            ? 'border-(--toxic-green) bg-(--toxic-green)/20'
+                            : 'border-(--ash-gray) bg-(--void-black)/60'
+                        }`}
+                    >
+                      <div className='flex-1'>
+                        <h4
+                          className={`font-bold font-mono text-lg uppercase ${selected ? 'text-(--toxic-green)' : 'text-(--star-white)'}`}
+                        >
+                          {song.name}
+                        </h4>
+                        <div className='flex gap-4 text-xs font-mono text-(--ash-gray) mt-1'>
+                          <span>DIFF: {song.difficulty}/7</span>
+                          <span>BPM: {song.bpm}</span>
+                          <span>
+                            DUR: {Math.floor(song.duration / 60)}:
+                            {(song.duration % 60).toString().padStart(2, '0')}
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => toggleSongInSetlist(song.id)}
+                        className={`px-4 py-2 font-bold uppercase border-2 text-sm transition-all
+                          ${
+                            selected
+                              ? 'border-(--toxic-green) text-(--toxic-green) hover:bg-(--toxic-green) hover:text-(--void-black)'
+                              : 'border-(--ash-gray) text-(--ash-gray) hover:border-(--star-white) hover:text-(--star-white)'
+                          }`}
+                      >
+                        {selected ? 'ACTIVE' : 'SELECT'}
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'SETTINGS' && (
+            <div className='max-w-3xl mx-auto'>
+              <SettingsPanel
+                settings={settings}
+                musicVol={audioState.musicVol}
+                sfxVol={audioState.sfxVol}
+                isMuted={audioState.isMuted}
+                onMusicChange={onAudioChange.setMusic}
+                onSfxChange={onAudioChange.setSfx}
+                onToggleMute={onAudioChange.toggleMute}
+                onToggleCRT={() =>
+                  updateSettings({ crtEnabled: !settings.crtEnabled })
+                }
+                onDeleteSave={deleteSave}
+              />
             </div>
           )}
         </div>
@@ -312,5 +420,20 @@ BandHQ.propTypes = {
   updatePlayer: PropTypes.func.isRequired,
   updateBand: PropTypes.func.isRequired,
   addToast: PropTypes.func.isRequired,
+  settings: PropTypes.object.isRequired,
+  updateSettings: PropTypes.func.isRequired,
+  deleteSave: PropTypes.func.isRequired,
+  setlist: PropTypes.array.isRequired,
+  setSetlist: PropTypes.func.isRequired,
+  audioState: PropTypes.shape({
+    musicVol: PropTypes.number,
+    sfxVol: PropTypes.number,
+    isMuted: PropTypes.bool
+  }).isRequired,
+  onAudioChange: PropTypes.shape({
+    setMusic: PropTypes.func,
+    setSfx: PropTypes.func,
+    toggleMute: PropTypes.func
+  }).isRequired,
   className: PropTypes.string
 }

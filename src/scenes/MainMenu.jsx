@@ -1,11 +1,12 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
-import { usePurchaseLogic } from '../hooks/usePurchaseLogic'
+import { useAudioControl } from '../hooks/useAudioControl'
 import { GlitchButton } from '../ui/GlitchButton'
-import { UpgradeMenu } from '../ui/UpgradeMenu'
+import { BandHQ } from '../ui/BandHQ'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import { audioManager } from '../utils/AudioManager'
+import { handleError } from '../utils/errorHandler'
 
 /**
  * The main menu scene component.
@@ -20,21 +21,16 @@ export const MainMenu = () => {
     updatePlayer,
     band,
     updateBand,
-    settings
+    social,
+    settings,
+    updateSettings,
+    deleteSave,
+    setlist,
+    setSetlist
   } = useGameState()
-  const [showUpgrades, setShowUpgrades] = React.useState(false)
+  const [showUpgrades, setShowUpgrades] = useState(false)
 
-  const { handleBuy } = usePurchaseLogic({
-    player,
-    band,
-    updatePlayer,
-    updateBand,
-    addToast
-  })
-
-  React.useEffect(() => {
-    audioManager.startAmbient()
-  }, [])
+  const { audioState, handleAudioChange } = useAudioControl()
 
   /**
    * Handles loading a saved game.
@@ -63,10 +59,21 @@ export const MainMenu = () => {
       <div className='absolute inset-0 z-0 bg-gradient-to-b from-black/0 to-black/90 pointer-events-none' />
 
       {showUpgrades && (
-        <UpgradeMenu
+        <BandHQ
           onClose={() => setShowUpgrades(false)}
           player={player}
-          onBuyUpgrade={handleBuy}
+          band={band}
+          social={social}
+          updatePlayer={updatePlayer}
+          updateBand={updateBand}
+          addToast={addToast}
+          settings={settings}
+          updateSettings={updateSettings}
+          deleteSave={deleteSave}
+          setlist={setlist}
+          setSetlist={setSetlist}
+          audioState={audioState}
+          onAudioChange={handleAudioChange}
         />
       )}
 
@@ -86,7 +93,19 @@ export const MainMenu = () => {
 
         <div className='flex flex-col gap-4'>
           <GlitchButton
-            onClick={() => changeScene('OVERWORLD')}
+            onClick={async () => {
+              try {
+                await audioManager.ensureAudioContext()
+              } catch (err) {
+                handleError(err, {
+                  addToast,
+                  fallbackMessage: 'Audio initialization failed.'
+                })
+              } finally {
+                audioManager.resumeMusic()
+                changeScene('OVERWORLD')
+              }
+            }}
             className='relative z-20'
           >
             Start Tour
@@ -108,9 +127,6 @@ export const MainMenu = () => {
         </div>
 
         <div className='flex gap-4 mt-8'>
-          <GlitchButton onClick={() => changeScene('SETTINGS')}>
-            SETTINGS
-          </GlitchButton>
           <GlitchButton onClick={() => changeScene('CREDITS')}>
             CREDITS
           </GlitchButton>

@@ -1,4 +1,4 @@
-export const CHATTER_DB = [
+const CHATTER_DB = [
   // --- GENERAL TRAVEL / OVERWORLD ---
   {
     text: 'My back hurts from sleeping in this seat.',

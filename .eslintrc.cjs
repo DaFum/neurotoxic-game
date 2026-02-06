@@ -1,5 +1,5 @@
 module.exports = {
-  ignorePatterns: ['dist/'],
+  ignorePatterns: ['dist/', 'src/data/songs.js'],
   env: {
     browser: true,
     es2021: true
@@ -13,12 +13,14 @@ module.exports = {
     ecmaFeatures: {
       jsx: true
     },
-    ecmaVersion: 12,
+    ecmaVersion: 2022,
     sourceType: 'module'
   },
   plugins: ['react'],
   rules: {
-    'react/prop-types': 'off',
+    'react/prop-types': 'warn',
+    'react/react-in-jsx-scope': 'off',
+    'react/jsx-uses-react': 'off',
     'no-unused-vars': ['warn', { varsIgnorePattern: '^_' }]
   },
   settings: {

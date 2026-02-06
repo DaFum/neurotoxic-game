@@ -1,15 +1,14 @@
 import { Howl, Howler } from 'howler'
 import * as Tone from 'tone'
-import { SoundSynthesizer } from '../systems/SoundSynthesizer.js'
+import * as audioEngine from './audioEngine.js'
 
 /**
- * Manages global audio playback including music (Howler.js) and SFX (SoundSynthesizer/Tone.js).
+ * Manages global audio playback including music (Howler.js) and SFX (audioEngine.js).
  */
 class AudioSystem {
   constructor() {
     this.music = null
     this.currentSongId = null
-    this.synth = new SoundSynthesizer()
     this.musicVolume = 0.5
     this.sfxVolume = 0.5
     this.muted = false
@@ -18,6 +17,7 @@ class AudioSystem {
 
   /**
    * Initializes the audio system, loading preferences and setting up synthesizers.
+   * Note: Audio playback remains blocked until ensureAudioContext() is called after a user gesture.
    * @returns {Promise<void>}
    */
   async init() {
@@ -43,12 +43,11 @@ class AudioSystem {
       // Apply global mute
       Howler.mute(this.muted)
 
-      // Initialize Synth
-      this.synth.init()
-      this.synth.setVolume(this.sfxVolume)
-      this.synth.setMute(this.muted)
+      // Initialize Audio Engine settings (but don't start Context yet)
+      audioEngine.setSFXVolume(this.muted ? 0 : this.sfxVolume)
 
-      this.initialized = true
+      // Tone mute is handled globally by Volume node in engine if implemented, or we can use Destination
+      Tone.Destination.mute = this.muted
     } catch (error) {
       console.error('[AudioSystem] Initialization failed:', error)
       // Graceful fallback: audio might just not play, but app shouldn't crash.
@@ -163,12 +162,36 @@ class AudioSystem {
   }
 
   /**
+   * Ensures the AudioContext is running (Tone.js and Howler).
+   * Should be called after a user gesture.
+   */
+  async ensureAudioContext() {
+    try {
+      if (!this.initialized) {
+        await audioEngine.setupAudio()
+        this.initialized = true
+      }
+      await audioEngine.ensureAudioContext()
+      if (Howler.ctx && Howler.ctx.state !== 'running') {
+        await Howler.ctx.resume()
+      }
+    } catch (e) {
+      console.warn('[AudioSystem] Failed to resume AudioContext:', e)
+    }
+  }
+
+  /**
    * Plays a sound effect by key.
    * @param {string} key - The SFX identifier (e.g., 'CLICK', 'ERROR').
    */
   playSFX(key) {
     if (!this.initialized) return
-    this.synth.play(key)
+    const validTypes = ['hit', 'miss', 'menu', 'travel', 'cash']
+    if (!validTypes.includes(key)) {
+      console.warn(`[AudioSystem] Unknown SFX type: ${key}`)
+      return
+    }
+    audioEngine.playSFX(key)
   }
 
   /**
@@ -192,7 +215,7 @@ class AudioSystem {
     const next = Math.min(1, Math.max(0, vol))
     this.sfxVolume = next
     localStorage.setItem('neurotoxic_vol_sfx', next)
-    this.synth.setVolume(next)
+    audioEngine.setSFXVolume(next)
   }
 
   /**
@@ -205,12 +228,9 @@ class AudioSystem {
 
     try {
       Tone.Destination.mute = this.muted
+      audioEngine.setSFXVolume(this.muted ? 0 : this.sfxVolume)
     } catch (e) {
       console.warn('[AudioSystem] Tone.js mute failed:', e)
-    }
-
-    if (this.synth) {
-      this.synth.setMute(this.muted)
     }
 
     localStorage.setItem('neurotoxic_muted', this.muted)
@@ -224,7 +244,7 @@ class AudioSystem {
    */
   getAudioSrc(songId) {
     if (songId === 'ambient') {
-      return 'https://moshhead-blackmetal.stream.laut.fm/moshhead-blackmetal'
+      return 'https://stream.laut.fm/grindcore'
     }
     return 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
   }
@@ -235,15 +255,10 @@ class AudioSystem {
   dispose() {
     this.stopMusic()
     Howler.unload()
-    this.synth.dispose()
+    audioEngine.disposeAudio?.()
     this.initialized = false
   }
 }
 
 export const audioManager = new AudioSystem()
-// Auto-init for now, or let MainMenu call it?
-// Ideally MainMenu or App calls init.
-// For backward compatibility with existing usage, we can lazy init or call it here.
-// But mostly synchronous calls expect it ready.
-// We will trigger init but not await it here, allowing it to load in background.
 audioManager.init()

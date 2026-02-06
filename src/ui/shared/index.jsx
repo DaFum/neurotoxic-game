@@ -4,9 +4,129 @@
  * @module shared
  */
 
-import React, { useEffect } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
-import { motion, AnimatePresence } from 'framer-motion'
+
+// Export SettingsPanel
+export { SettingsPanel } from './SettingsPanel'
+export { VolumeSlider } from './VolumeSlider'
+
+// Re-export deprecated components to maintain API compatibility
+// These might be removed in future versions.
+export const Panel = ({ children, className = '' }) => (
+  <div
+    className={`bg-(--void-black) border border-(--ash-gray) p-4 ${className}`}
+  >
+    {children}
+  </div>
+)
+
+Panel.propTypes = {
+  children: PropTypes.node,
+  className: PropTypes.string
+}
+
+export const TabButton = ({ active, onClick, children }) => (
+  <button
+    onClick={onClick}
+    className={`px-4 py-2 font-mono uppercase text-sm transition-colors ${
+      active
+        ? 'bg-(--toxic-green) text-(--void-black) font-bold'
+        : 'text-(--ash-gray) hover:text-(--star-white)'
+    }`}
+  >
+    {children}
+  </button>
+)
+
+TabButton.propTypes = {
+  active: PropTypes.bool,
+  onClick: PropTypes.func.isRequired,
+  children: PropTypes.node.isRequired
+}
+
+export const ActionButton = ({ onClick, disabled, label, className = '' }) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className={`w-full py-2 font-bold font-mono uppercase transition-colors ${
+      disabled
+        ? 'bg-(--ash-gray)/20 text-(--ash-gray) cursor-not-allowed'
+        : 'bg-(--toxic-green) text-(--void-black) hover:bg-(--star-white)'
+    } ${className}`}
+  >
+    {label}
+  </button>
+)
+
+ActionButton.propTypes = {
+  onClick: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
+  label: PropTypes.string.isRequired,
+  className: PropTypes.string
+}
+
+export const Modal = ({ isOpen, onClose, title, children }) => {
+  if (!isOpen) return null
+  return (
+    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/80'>
+      <div className='bg-(--void-black) border-2 border-(--toxic-green) w-full max-w-lg p-6 relative shadow-[0_0_20px_var(--toxic-green)]'>
+        <div className='flex justify-between items-center mb-6 border-b border-(--ash-gray) pb-2'>
+          <h2 className='text-2xl font-[Metal_Mania] text-(--toxic-green)'>
+            {title}
+          </h2>
+          <button
+            onClick={onClose}
+            className='text-(--ash-gray) hover:text-(--blood-red)'
+            aria-label='Close'
+          >
+            X
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+Modal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  title: PropTypes.string.isRequired,
+  children: PropTypes.node
+}
+
+export const Grid = ({ children, cols = 1, gap = 4, className = '' }) => {
+  const colsClass =
+    {
+      1: 'grid-cols-1',
+      2: 'grid-cols-2',
+      3: 'grid-cols-3',
+      4: 'grid-cols-4'
+    }[cols] || 'grid-cols-1'
+
+  const gapClass =
+    {
+      1: 'gap-1',
+      2: 'gap-2',
+      4: 'gap-4',
+      6: 'gap-6',
+      8: 'gap-8'
+    }[gap] || 'gap-4'
+
+  return (
+    <div className={`grid ${colsClass} ${gapClass} ${className}`}>
+      {children}
+    </div>
+  )
+}
+
+Grid.propTypes = {
+  children: PropTypes.node,
+  cols: PropTypes.oneOf([1, 2, 3, 4]),
+  gap: PropTypes.oneOf([1, 2, 4, 6, 8]),
+  className: PropTypes.string
+}
 
 /**
  * StatBox - Displays a single statistic with an icon
@@ -88,228 +208,5 @@ ProgressBar.propTypes = {
   color: PropTypes.string.isRequired,
   size: PropTypes.oneOf(['sm', 'md']),
   showValue: PropTypes.bool,
-  className: PropTypes.string
-}
-
-/**
- * Panel - A styled container panel
- * @param {Object} props
- * @param {string} [props.title] - Panel title
- * @param {React.ReactNode} props.children - Panel content
- * @param {string} [props.className] - Additional CSS classes
- */
-export const Panel = ({ title, children, className = '' }) => (
-  <div
-    className={`bg-(--panel-bg) border-2 border-(--ash-gray) p-4 ${className}`}
-  >
-    {title && (
-      <h3 className='text-(--toxic-green) text-lg font-bold mb-4 border-b border-(--ash-gray) pb-2 font-mono'>
-        {title}
-      </h3>
-    )}
-    {children}
-  </div>
-)
-
-Panel.propTypes = {
-  title: PropTypes.string,
-  children: PropTypes.node.isRequired,
-  className: PropTypes.string
-}
-
-/**
- * TabButton - A styled tab button
- * @param {Object} props
- * @param {boolean} props.active - Whether tab is active
- * @param {Function} props.onClick - Click handler
- * @param {React.ReactNode} props.children - Button content
- * @param {string} [props.className] - Additional CSS classes
- */
-export const TabButton = ({ active, onClick, children, className = '' }) => (
-  <button
-    onClick={onClick}
-    className={`flex-1 py-4 text-center font-bold text-xl uppercase tracking-wider transition-colors duration-150 font-mono ${className}
-      ${
-        active
-          ? 'bg-(--toxic-green) text-black'
-          : 'text-(--ash-gray) hover:text-(--star-white) bg-(--void-black)/50 hover:bg-(--void-black)/70'
-      }`}
-  >
-    {children}
-  </button>
-)
-
-TabButton.propTypes = {
-  active: PropTypes.bool.isRequired,
-  onClick: PropTypes.func.isRequired,
-  children: PropTypes.node.isRequired,
-  className: PropTypes.string
-}
-
-/**
- * ActionButton - A styled action button
- * @param {Object} props
- * @param {Function} props.onClick - Click handler
- * @param {boolean} [props.disabled=false] - Disabled state
- * @param {string} [props.variant='primary'] - Button variant
- * @param {React.ReactNode} props.children - Button content
- * @param {string} [props.className] - Additional CSS classes
- */
-export const ActionButton = ({
-  onClick,
-  disabled = false,
-  variant = 'primary',
-  children,
-  className = ''
-}) => {
-  const variants = {
-    primary:
-      'border-(--toxic-green) bg-(--toxic-green) text-black hover:invert',
-    secondary:
-      'border-(--ash-gray) text-(--ash-gray) hover:bg-(--ash-gray) hover:text-black',
-    danger:
-      'border-(--blood-red) text-(--blood-red) hover:bg-(--blood-red) hover:text-black',
-    warning:
-      'border-(--warning-yellow) text-(--warning-yellow) hover:bg-(--warning-yellow) hover:text-black'
-  }
-
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={`px-4 py-2 border-2 font-bold uppercase transition-all duration-200 font-mono
-        ${variants[variant] || variants.primary}
-        ${disabled ? 'opacity-50 cursor-not-allowed' : 'shadow-[4px_4px_0px_var(--void-black)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'}
-        ${className}`}
-    >
-      {children}
-    </button>
-  )
-}
-
-ActionButton.propTypes = {
-  onClick: PropTypes.func.isRequired,
-  disabled: PropTypes.bool,
-  variant: PropTypes.oneOf(['primary', 'secondary', 'danger', 'warning']),
-  children: PropTypes.node.isRequired,
-  className: PropTypes.string
-}
-
-/**
- * Modal - A styled modal container
- * @param {Object} props
- * @param {boolean} props.isOpen - Whether modal is open
- * @param {Function} props.onClose - Close handler
- * @param {string} [props.title] - Modal title
- * @param {React.ReactNode} props.children - Modal content
- * @param {string} [props.className] - Additional CSS classes
- */
-export const Modal = ({ isOpen, onClose, title, children, className = '' }) => {
-  // ESC key handler for accessibility
-  useEffect(() => {
-    if (!isOpen) return
-    const handleEsc = e => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', handleEsc)
-    return () => window.removeEventListener('keydown', handleEsc)
-  }, [isOpen, onClose])
-
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-(--void-black)/90 backdrop-blur-sm'
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            className={`relative w-full max-w-2xl border-4 border-(--toxic-green) bg-(--void-black) shadow-[0_0_50px_var(--toxic-green)] ${className}`}
-          >
-            {/* Header */}
-            <div className='flex justify-between items-center p-4 border-b-2 border-(--toxic-green) bg-(--void-black)/50'>
-              {title && (
-                <h2 className="text-2xl text-(--toxic-green) font-['Metal_Mania'] drop-shadow-[0_0_5px_var(--toxic-green)]">
-                  {title}
-                </h2>
-              )}
-              <button
-                onClick={onClose}
-                className='px-4 py-1 border-2 border-(--blood-red) text-(--blood-red) font-bold hover:bg-(--blood-red) hover:text-black transition-colors duration-200 uppercase font-mono text-sm'
-              >
-                CLOSE [ESC]
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className='p-4'>{children}</div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  )
-}
-
-Modal.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  title: PropTypes.string,
-  children: PropTypes.node.isRequired,
-  className: PropTypes.string
-}
-
-/**
- * Static class maps for Tailwind JIT compatibility
- * @private
- */
-const colClassMap = {
-  1: 'lg:grid-cols-1',
-  2: 'lg:grid-cols-2',
-  3: 'lg:grid-cols-3',
-  4: 'lg:grid-cols-4',
-  5: 'lg:grid-cols-5',
-  6: 'lg:grid-cols-6'
-}
-
-const gapClassMap = {
-  0: 'gap-0',
-  1: 'gap-1',
-  2: 'gap-2',
-  3: 'gap-3',
-  4: 'gap-4',
-  5: 'gap-5',
-  6: 'gap-6',
-  8: 'gap-8'
-}
-
-/**
- * Grid - A responsive grid container
- * @param {Object} props
- * @param {number} [props.cols=3] - Number of columns on large screens
- * @param {number} [props.gap=4] - Gap between items
- * @param {React.ReactNode} props.children - Grid content
- * @param {string} [props.className] - Additional CSS classes
- */
-export const Grid = ({ cols = 3, gap = 4, children, className = '' }) => {
-  const colClass = colClassMap[cols] || colClassMap[3]
-  const gapClass = gapClassMap[gap] || gapClassMap[4]
-
-  return (
-    <div
-      className={`grid grid-cols-1 md:grid-cols-2 ${colClass} ${gapClass} ${className}`}
-    >
-      {children}
-    </div>
-  )
-}
-
-Grid.propTypes = {
-  cols: PropTypes.number,
-  gap: PropTypes.number,
-  children: PropTypes.node.isRequired,
   className: PropTypes.string
 }
