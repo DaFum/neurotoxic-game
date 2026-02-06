@@ -31,6 +31,7 @@ const midiUrlMap = Object.fromEntries(
 let guitar, bass, drumKit, loop, part
 let sfxSynth, sfxGain
 let isSetup = false
+let playRequestId = 0
 
 /**
  * Initializes the audio subsystem, including synths, effects, and master compressor.
@@ -195,8 +196,11 @@ export function setSFXVolume(vol) {
  * @param {number} [delay=0] - Delay in seconds before starting.
  */
 export async function playSongFromData(song, delay = 0) {
+  const reqId = ++playRequestId
   await ensureAudioContext()
-  stopAudio()
+  if (reqId !== playRequestId) return
+
+  stopAudioInternal()
   Tone.Transport.cancel()
   Tone.Transport.position = 0
 
@@ -338,9 +342,11 @@ export async function startMetalGenerator(
   delay = 0,
   random = Math.random
 ) {
+  const reqId = ++playRequestId
   await ensureAudioContext()
+  if (reqId !== playRequestId) return
 
-  stopAudio()
+  stopAudioInternal()
   Tone.Transport.cancel()
   Tone.Transport.position = 0
 
@@ -365,13 +371,33 @@ export async function startMetalGenerator(
   )
 
   loop.start(0)
+
+  // Explicit race condition check with cleanup for robustness
+  if (reqId !== playRequestId) {
+    if (loop) {
+      loop.dispose()
+      loop = null
+    }
+    return
+  }
+
   Tone.Transport.start(Tone.now() + Math.max(0, delay))
 }
 
 /**
  * Stops the audio transport and disposes of the current loop.
+ * Also invalidates any pending playback requests.
  */
 export function stopAudio() {
+  playRequestId++
+  stopAudioInternal()
+}
+
+/**
+ * Internal function to stop audio without invalidating pending requests.
+ * Used by playback functions to clear previous state.
+ */
+function stopAudioInternal() {
   Tone.Transport.stop()
   if (loop) {
     loop.dispose()
@@ -406,7 +432,8 @@ export function resumeAudio() {
  * Disposes of audio engine resources.
  */
 export function disposeAudio() {
-  stopAudio()
+  playRequestId++
+  stopAudioInternal()
   if (guitar) guitar.dispose()
   if (bass) bass.dispose()
   if (drumKit) {
@@ -495,8 +522,11 @@ export async function playMidiFile(
   loop = false,
   delay = 0
 ) {
+  const reqId = ++playRequestId
   await ensureAudioContext()
-  stopAudio()
+  if (reqId !== playRequestId) return
+
+  stopAudioInternal()
   Tone.Transport.cancel()
 
   const url = midiUrlMap[filename]
@@ -507,9 +537,13 @@ export async function playMidiFile(
 
   try {
     const response = await fetch(url)
+    if (reqId !== playRequestId) return
     if (!response.ok) throw new Error(`Failed to load MIDI: ${url}`)
     const arrayBuffer = await response.arrayBuffer()
+    if (reqId !== playRequestId) return
+
     const midi = new Midi(arrayBuffer)
+    if (reqId !== playRequestId) return // Optimization: fail fast before expensive scheduling
 
     if (midi.header.tempos.length > 0) {
       Tone.Transport.bpm.value = midi.header.tempos[0].bpm
@@ -526,10 +560,9 @@ export async function playMidiFile(
 
           try {
             // Clamp duration to prevent "duration must be greater than 0" error
-            // Use a minimum of 0.05s (50ms)
             const duration = Math.max(
-              0.05,
-              Number.isFinite(note.duration) ? note.duration : 0.05
+              MIN_NOTE_DURATION,
+              Number.isFinite(note.duration) ? note.duration : MIN_NOTE_DURATION
             )
 
             // Clamp velocity
