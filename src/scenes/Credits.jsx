@@ -9,12 +9,12 @@ export const Credits = () => {
   const { changeScene, settings } = useGameState()
 
   const credits = [
-    { role: 'LEAD DEVELOPER', name: 'Jules Agent' },
-    { role: 'AUDIO ENGINE', name: 'Howler.js' },
-    { role: 'RENDERING', name: 'Pixi.js' },
-    { role: 'ANIMATION', name: 'Framer Motion' },
-    { role: 'TEXTURES', name: 'Generated AI Assets' },
-    { role: 'SPECIAL THANKS', name: 'The Users' }
+    { role: 'VOCAL CODE VOMIT', name: 'Jules “Agent of Segfaults” Agent' },
+    { role: 'AUDIO ENGINE ERADICATION', name: 'Howler.js // Blastbeat Buffer Overflow' },
+    { role: 'RENDERING RAZORSTORM', name: 'Pixi.js // Retina Shredder Edition' },
+    { role: 'SPASM ANIMATION RITUALS', name: 'Framer Motion // Framegrind Frenzy' },
+    { role: 'TEXTURE FLESHMELT', name: 'Mutierte Generated AI Assets aus dem Void' },
+    { role: 'SPECIAL THANKS IN CAPS OF GORE', name: 'THE USERS // CLICK TILL SYSTEM DECAYS' }
   ]
 
   return (
