@@ -20,7 +20,7 @@ export const GigHUD = ({ stats, onLaneInput, gameStateRef }) => {
       <HecklerOverlay gameStateRef={gameStateRef} />
 
       {/* Chatter Overlay Integration */}
-      <div className='absolute bottom-32 right-4 z-50'>
+      <div className='hidden sm:block absolute bottom-32 right-4 z-20'>
         <ChatterOverlay staticPosition={true} />
       </div>
 

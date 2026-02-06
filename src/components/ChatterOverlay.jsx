@@ -14,41 +14,43 @@ export const ChatterOverlay = ({ staticPosition = false }) => {
     stateRef.current = state
   }, [state])
 
-  // Current Node Position Logic
-  const currentNode = state.gameMap?.nodes[state.player.currentNodeId]
-  const nodeY = currentNode?.y ?? 50
-  const nodeX = currentNode?.x ?? 50
+  // Calculate positioning only if not static
+  let positionClasses = 'relative'
+  let tailClass = ''
+  let originClass = ''
 
-  // Dynamic Positioning
-  const isTop = nodeY < 30
-  const isLeftEdge = nodeX < 20
-  const isRightEdge = nodeX > 80
+  if (!staticPosition) {
+    const currentNode = state.gameMap?.nodes[state.player.currentNodeId]
+    const nodeY = currentNode?.y ?? 50
+    const nodeX = currentNode?.x ?? 50
 
-  // Determine CSS classes using conditional logic instead of string manipulation
-  const translateX = isLeftEdge
-    ? 'translate-x-[-10%]'
-    : isRightEdge
-      ? 'translate-x-[-90%]'
-      : '-translate-x-1/2'
+    const isTop = nodeY < 30
+    const isLeftEdge = nodeX < 20
+    const isRightEdge = nodeX > 80
 
-  const translateY = isTop ? 'translate-y-[50%]' : '-translate-y-[150%]'
-  const originClass = isTop ? 'origin-top' : 'origin-bottom'
+    const translateX = isLeftEdge
+      ? 'translate-x-[-10%]'
+      : isRightEdge
+        ? 'translate-x-[-90%]'
+        : '-translate-x-1/2'
 
-  const positionClasses = staticPosition
-    ? 'relative'
-    : `absolute left-1/2 transform ${translateX} ${translateY}`
+    const translateY = isTop ? 'translate-y-[50%]' : '-translate-y-[150%]'
+    originClass = isTop ? 'origin-top' : 'origin-bottom'
 
-  const tailPosition = isLeftEdge
-    ? 'left-4'
-    : isRightEdge
-      ? 'right-4'
-      : 'right-1/2 translate-x-1/2'
+    positionClasses = `absolute left-1/2 transform ${translateX} ${translateY}`
 
-  const tailDirection = isTop
-    ? `-top-2 border-b-[10px] border-b-(--star-white)`
-    : `-bottom-2 border-t-[10px] border-t-(--star-white)`
+    const tailPosition = isLeftEdge
+      ? 'left-4'
+      : isRightEdge
+        ? 'right-4'
+        : 'right-1/2 translate-x-1/2'
 
-  const tailClass = `absolute ${tailDirection} ${tailPosition} w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent filter drop-shadow-xs`
+    const tailDirection = isTop
+      ? `-top-2 border-b-[10px] border-b-(--star-white)`
+      : `-bottom-2 border-t-[10px] border-t-(--star-white)`
+
+    tailClass = `absolute ${tailDirection} ${tailPosition} w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent filter drop-shadow-xs`
+  }
 
   useEffect(() => {
     let timeoutId
@@ -99,6 +101,15 @@ export const ChatterOverlay = ({ staticPosition = false }) => {
     }
   }, []) // Run once on mount
 
+  const containerClasses = [
+    positionClasses,
+    'z-20 pointer-events-none w-max max-w-[200px] md:max-w-xs',
+    !staticPosition && originClass,
+    !staticPosition && 'top-1/2'
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
     <AnimatePresence>
       {chatter && (
@@ -107,7 +118,7 @@ export const ChatterOverlay = ({ staticPosition = false }) => {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.5 }}
-          className={`${positionClasses} z-20 pointer-events-none ${!staticPosition ? originClass : ''} w-max max-w-[200px] md:max-w-xs ${!staticPosition ? 'top-1/2' : ''}`}
+          className={containerClasses}
         >
           <div className='bg-(--star-white) text-(--void-black) p-3 rounded-tr-xl rounded-tl-xl rounded-bl-xl border-2 border-(--void-black) shadow-lg relative'>
             <div className='flex justify-between items-center mb-1'>
