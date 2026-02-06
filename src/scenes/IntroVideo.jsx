@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { useGameState } from '../context/GameState'
 import introVideo from '../assets/Neurotoxic_start.webm'
 import { GlitchButton } from '../ui/GlitchButton'
@@ -11,9 +11,9 @@ export const IntroVideo = () => {
   const videoRef = useRef(null)
   const [autoplayBlocked, setAutoplayBlocked] = useState(false)
 
-  const handleEnd = () => {
+  const handleEnd = useCallback(() => {
     changeScene('MENU')
-  }
+  }, [changeScene])
 
   const handleManualPlay = () => {
     if (videoRef.current) {

@@ -15,6 +15,8 @@ import { DebugLogViewer } from './ui/DebugLogViewer'
 import { TutorialManager } from './components/TutorialManager'
 import { GameStateProvider, useGameState } from './context/GameState'
 
+const SCENES_WITHOUT_HUD = ['INTRO', 'MENU', 'SETTINGS', 'CREDITS', 'GAMEOVER']
+
 /**
  * Main game content wrapper that handles scene switching and global overlays.
  */
@@ -57,9 +59,7 @@ function GameContent() {
       )}
 
       {/* Hide HUD in Intro/Menu/Settings/Credits/GameOver */}
-      {!['INTRO', 'MENU', 'SETTINGS', 'CREDITS', 'GAMEOVER'].includes(
-        currentScene
-      ) && <HUD />}
+      {!SCENES_WITHOUT_HUD.includes(currentScene) && <HUD />}
 
       <ToastOverlay />
       <TutorialManager />
