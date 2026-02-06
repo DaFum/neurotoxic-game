@@ -440,6 +440,7 @@ export async function startMetalGenerator(
   }
 
   Tone.Transport.start(Tone.now() + Math.max(0, delay))
+  return true
 }
 
 /**
@@ -718,9 +719,9 @@ export async function playMidiFile(
 
 /**
  * Plays a random MIDI file from the available set for ambient music.
- * @param {Array} [songs] - List of song objects to choose from.
+ * @param {Array} [songs] - Song metadata array for excerpt offset lookup.
  * @param {Function} [rng] - Random number generator function.
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>} Whether playback started successfully.
  */
 export async function playRandomAmbientMidi(
   songs = SONGS_DB,

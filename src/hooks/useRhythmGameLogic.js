@@ -245,20 +245,24 @@ export const useRhythmGameLogic = () => {
         if (success) bgAudioStarted = true
       }
 
-      // If parsing failed or no notes (empty/invalid), fall back to procedural generation
-      // This handles empty-note songs gracefully without silent failure.
-      if (notes.length === 0) {
-        // Fallback procedural generation
-        songsToPlay.forEach(song => {
-          const songNotes = generateNotesForSong(song, {
-            leadIn: currentTimeOffset,
-            random: rng
+      // If parsing failed or no notes (empty/invalid), OR audio failed to start, fall back to procedural generation
+      // This handles empty-note songs and failed audio gracefully without silent failure.
+      if (notes.length === 0 || !bgAudioStarted) {
+        // Only generate notes if we don't have any yet
+        if (notes.length === 0) {
+          // Fallback procedural generation
+          songsToPlay.forEach(song => {
+            const songNotes = generateNotesForSong(song, {
+              leadIn: currentTimeOffset,
+              random: rng
+            })
+            notes = notes.concat(songNotes)
+            currentTimeOffset += song.duration * 1000
           })
-          notes = notes.concat(songNotes)
-          currentTimeOffset += song.duration * 1000
-        })
+        }
 
-        // Don't start procedural generator if we already started a MIDI backing track
+        // Always start procedural generator if no background audio is running
+        // This ensures sound even if we have notes but the MIDI/audio failed
         if (!bgAudioStarted) {
           audioDelay = 2.0
           await startMetalGenerator(currentSong, audioDelay, rng)
