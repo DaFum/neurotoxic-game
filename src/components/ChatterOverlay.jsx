@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'
+import PropTypes from 'prop-types'
 import { useGameState } from '../context/GameState'
 import { getRandomChatter } from '../data/chatter'
 import { motion, AnimatePresence } from 'framer-motion'
 
-export const ChatterOverlay = () => {
+export const ChatterOverlay = ({ staticPosition = false }) => {
   const state = useGameState() // Get full state
   const stateRef = useRef(state) // Keep ref to latest state to avoid re-running effect
   const [chatter, setChatter] = useState(null)
@@ -33,7 +34,9 @@ export const ChatterOverlay = () => {
   const translateY = isTop ? 'translate-y-[50%]' : '-translate-y-[150%]'
   const originClass = isTop ? 'origin-top' : 'origin-bottom'
 
-  const positionClasses = `absolute left-1/2 transform ${translateX} ${translateY}`
+  const positionClasses = staticPosition
+    ? 'relative'
+    : `absolute left-1/2 transform ${translateX} ${translateY}`
 
   const tailPosition = isLeftEdge
     ? 'left-4'
@@ -104,7 +107,7 @@ export const ChatterOverlay = () => {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.5 }}
-          className={`${positionClasses} z-20 pointer-events-none ${originClass} w-max max-w-[200px] md:max-w-xs top-1/2`}
+          className={`${positionClasses} z-20 pointer-events-none ${!staticPosition ? originClass : ''} w-max max-w-[200px] md:max-w-xs ${!staticPosition ? 'top-1/2' : ''}`}
         >
           <div className='bg-(--star-white) text-(--void-black) p-3 rounded-tr-xl rounded-tl-xl rounded-bl-xl border-2 border-(--void-black) shadow-lg relative'>
             <div className='flex justify-between items-center mb-1'>
@@ -118,10 +121,14 @@ export const ChatterOverlay = () => {
             </div>
 
             {/* Dynamic Tail */}
-            <div className={tailClass} />
+            {!staticPosition && <div className={tailClass} />}
           </div>
         </motion.div>
       )}
     </AnimatePresence>
   )
+}
+
+ChatterOverlay.propTypes = {
+  staticPosition: PropTypes.bool
 }
