@@ -5,6 +5,7 @@ import { getGigModifiers } from '../utils/simulationUtils'
 import { ChatterOverlay } from '../components/ChatterOverlay'
 import { audioManager } from '../utils/AudioManager'
 import { getSongId } from '../utils/songUtils'
+import { handleError } from '../utils/errorHandler'
 
 /**
  * Scene for preparing for a gig: managing budget, setlist, and modifiers.
@@ -290,8 +291,15 @@ export const PreGig = () => {
         className='mt-8 px-12 py-4 bg-(--toxic-green) text-black font-bold text-2xl uppercase tracking-widest hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed'
         disabled={setlist.length === 0}
         onClick={async () => {
-          await audioManager.ensureAudioContext() // Unlock audio context on user interaction
-          changeScene('GIG')
+          try {
+            await audioManager.ensureAudioContext() // Unlock audio context on user interaction
+            changeScene('GIG')
+          } catch (err) {
+            handleError(err, {
+              addToast,
+              fallbackMessage: 'Audio initialization failed.'
+            })
+          }
         }}
       >
         START SHOW

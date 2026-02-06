@@ -30,6 +30,7 @@ const midiUrlMap = Object.fromEntries(
 
 let guitar, bass, drumKit, loop, part
 let sfxSynth, sfxGain
+let masterLimiter, masterComp, reverb, reverbSend
 let isSetup = false
 let playRequestId = 0
 
@@ -49,12 +50,12 @@ export async function setupAudio() {
 
   // === Master Chain ===
   // Limiter prevents clipping, Compressor glues the mix
-  const masterLimiter = new Tone.Limiter(-3).toDestination()
-  const masterComp = new Tone.Compressor(-18, 4).connect(masterLimiter)
+  masterLimiter = new Tone.Limiter(-3).toDestination()
+  masterComp = new Tone.Compressor(-18, 4).connect(masterLimiter)
 
   // Global reverb send for natural space
-  const reverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(masterComp)
-  const reverbSend = new Tone.Gain(0.3).connect(reverb)
+  reverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(masterComp)
+  reverbSend = new Tone.Gain(0.3).connect(reverb)
 
   // === Guitar ===
   // FM synthesis for richer harmonic content
@@ -76,7 +77,7 @@ export async function setupAudio() {
   guitar.connect(reverbSend)
 
   // === Bass ===
-  // MonoSynth with triangle-based waveform for warmer, fuller tone
+  // MonoSynth with fatsawtooth-based waveform for warmer, fuller tone
   bass = new Tone.PolySynth(Tone.MonoSynth, {
     oscillator: { type: 'fatsawtooth', spread: 10, count: 3 },
     envelope: { attack: 0.01, decay: 0.4, sustain: 0.3, release: 0.3 },
@@ -107,24 +108,29 @@ export async function setupAudio() {
     }).connect(drumBus),
     snare: (() => {
       // Layered snare: noise (crack) + membrane (body)
+      const snareBus = new Tone.Volume(0).connect(drumBus)
       const snareNoise = new Tone.NoiseSynth({
         envelope: { attack: 0.001, decay: 0.15, sustain: 0 },
         noise: { type: 'white' }
-      }).connect(drumBus)
+      }).connect(snareBus)
       const snareBody = new Tone.MembraneSynth({
         pitchDecay: 0.02,
         octaves: 4,
         envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 }
-      }).connect(drumBus)
+      }).connect(snareBus)
       snareBody.volume.value = -4
       // Return a proxy object that triggers both layers
       return {
-        triggerAttackRelease: (dur, time, vel) => {
+        triggerAttackRelease: (dur, time, vel = 1) => {
           snareNoise.triggerAttackRelease(dur, time, vel)
           snareBody.triggerAttackRelease('G3', dur, time, vel * 0.6)
         },
-        volume: snareNoise.volume,
-        dispose: () => { snareNoise.dispose(); snareBody.dispose() },
+        volume: snareBus.volume,
+        dispose: () => {
+          snareNoise.dispose()
+          snareBody.dispose()
+          snareBus.dispose()
+        },
         _noise: snareNoise,
         _body: snareBody
       }
@@ -399,7 +405,7 @@ export async function startMetalGenerator(
   Tone.Transport.position = 0
 
   // Guard BPM against zero/negative/falsy values
-  const rawBpm = song.bpm || 80 + (song.difficulty || 2) * 30
+  const rawBpm = song.bpm || (80 + (song.difficulty || 2) * 30)
   const bpm = Math.max(1, rawBpm)
 
   Tone.Transport.bpm.value = bpm
@@ -494,11 +500,22 @@ export function disposeAudio() {
   if (sfxSynth) sfxSynth.dispose()
   if (sfxGain) sfxGain.dispose()
 
+  if (reverbSend) reverbSend.dispose()
+  if (reverb) reverb.dispose()
+  if (masterComp) masterComp.dispose()
+  if (masterLimiter) masterLimiter.dispose()
+
   guitar = null
   bass = null
   drumKit = null
   sfxSynth = null
   sfxGain = null
+
+  masterLimiter = null
+  masterComp = null
+  reverb = null
+  reverbSend = null
+
   isSetup = false
 }
 
