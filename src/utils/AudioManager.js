@@ -2,6 +2,7 @@ import { Howl, Howler } from 'howler'
 import * as Tone from 'tone'
 import * as audioEngine from './audioEngine.js'
 import { handleError } from './errorHandler.js'
+import { logger } from './logger.js'
 
 /**
  * Manages global audio playback including music (Howler.js) and SFX (audioEngine.js).
@@ -103,7 +104,7 @@ class AudioSystem {
 
     // Prevent re-entrant calls or redundant starts
     if (this.isStartingAmbient) {
-      console.log('[AudioSystem] Ambient start already in progress.')
+      logger.debug('AudioSystem', 'Ambient start already in progress.')
       return
     }
 
