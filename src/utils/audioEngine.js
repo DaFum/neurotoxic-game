@@ -622,7 +622,6 @@ export async function playMidiFile(
     `Request playMidiFile: ${filename}, offset=${offset}, loop=${loop}`
   )
   // Requirement: Stop previous playback immediately
-  stopAudio() // Also increments playRequestId, invalidating prior requests
   const reqId = ++playRequestId
   logger.debug('AudioEngine', `New playRequestId: ${reqId}`)
 
@@ -729,7 +728,11 @@ export async function playMidiFile(
     const duration = Number.isFinite(midi.duration) ? midi.duration : 0
 
     // Fix: If offset is beyond duration, reset to 0 to ensure sound plays
-    if (requestedOffset >= duration - OFFSET_RESET_THRESHOLD) {
+    // Only check if duration is long enough to have an "end" threshold
+    if (
+      duration >= OFFSET_RESET_THRESHOLD &&
+      requestedOffset >= duration - OFFSET_RESET_THRESHOLD
+    ) {
       logger.warn(
         'AudioEngine',
         `Offset ${requestedOffset}s exceeds duration ${duration}s. Resetting to 0.`
@@ -737,24 +740,21 @@ export async function playMidiFile(
       requestedOffset = 0
     }
 
-    // Since we reset above, the requestedOffset is safe to use directly
-    const safeOffset = requestedOffset
-
     logger.debug(
       'AudioEngine',
-      `Starting Transport. Delay=${validDelay}, Offset=${safeOffset}`
+      `Starting Transport. Delay=${validDelay}, Offset=${requestedOffset}`
     )
 
     if (loop) {
       Tone.Transport.loop = true
       Tone.Transport.loopEnd = midi.duration
       // Loop from excerpt start, so intros don't restart on every loop
-      Tone.Transport.loopStart = safeOffset
+      Tone.Transport.loopStart = requestedOffset
     } else {
       Tone.Transport.loop = false
     }
 
-    Tone.Transport.start(Tone.now() + validDelay, safeOffset)
+    Tone.Transport.start(Tone.now() + validDelay, requestedOffset)
     return true
   } catch (err) {
     console.error('[audioEngine] Error playing MIDI:', err)
