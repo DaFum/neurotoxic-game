@@ -690,18 +690,24 @@ export async function playMidiFile(
       })
     })
 
+    const validDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
+    const requestedOffset = Number.isFinite(offset) ? Math.max(0, offset) : 0
+    // Clamp offset to within MIDI duration (starting beyond duration can lead to "no sound")
+    const safeOffset = Math.min(
+      requestedOffset,
+      Math.max(0, (Number.isFinite(midi.duration) ? midi.duration : 0) - 0.01)
+    )
+
     if (loop) {
       Tone.Transport.loop = true
       Tone.Transport.loopEnd = midi.duration
-      Tone.Transport.loopStart = 0
+      // Loop from excerpt start, so intros don't restart on every loop
+      Tone.Transport.loopStart = safeOffset
     } else {
       Tone.Transport.loop = false
     }
 
-    const validDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
-    const validOffset = Number.isFinite(offset) ? Math.max(0, offset) : 0
-
-    Tone.Transport.start(Tone.now() + validDelay, validOffset)
+    Tone.Transport.start(Tone.now() + validDelay, safeOffset)
   } catch (err) {
     console.error('[audioEngine] Error playing MIDI:', err)
   }
@@ -717,15 +723,20 @@ export async function playRandomAmbientMidi(
   songs = SONGS_DB,
   rng = Math.random
 ) {
-  if (songs.length === 0) return
+  const midiFiles = Object.keys(midiUrlMap)
+  if (midiFiles.length === 0) return
 
-  // Filter only songs that have a sourceMid
-  const validSongs = songs.filter(s => s.sourceMid)
-  if (validSongs.length === 0) return
+  // Requirement: pick a random MIDI from the assets folder
+  const filename = midiFiles[Math.floor(rng() * midiFiles.length)]
 
-  const randomSong = validSongs[Math.floor(rng() * validSongs.length)]
-  console.log(`[audioEngine] Playing ambient: ${randomSong.name}`)
-  return playMidiFile(randomSong.sourceMid, 0, true)
+  // If the MIDI is known in SONGS_DB, honor excerptStartMs as start offset
+  const meta = songs.find(s => s.sourceMid === filename)
+  const offsetSeconds = meta?.excerptStartMs ? meta.excerptStartMs / 1000 : 0
+
+  console.log(
+    `[audioEngine] Playing ambient: ${meta?.name ?? filename} (offset ${offsetSeconds}s)`
+  )
+  return playMidiFile(filename, offsetSeconds, true)
 }
 
 /**

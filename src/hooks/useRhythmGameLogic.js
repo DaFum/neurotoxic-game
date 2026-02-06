@@ -211,6 +211,7 @@ export const useRhythmGameLogic = () => {
 
       // Use predefined notes if available and valid
       let parsedNotes = []
+      let bgAudioStarted = false
       if (Array.isArray(currentSong.notes) && currentSong.notes.length > 0) {
         parsedNotes = parseSongNotes(currentSong, currentTimeOffset, {
           onWarn: msg => console.warn(msg)
@@ -218,21 +219,24 @@ export const useRhythmGameLogic = () => {
 
         if (parsedNotes.length > 0) {
           notes = notes.concat(parsedNotes)
-          // Audio delay is handled by transport offset
-          // Play the backing MIDI file for background music
-          if (currentSong.sourceMid) {
-            const excerptStart = currentSong.excerptStartMs || 0
-            await playMidiFile(
-              currentSong.sourceMid,
-              excerptStart / 1000,
-              false,
-              currentTimeOffset / 1000
-            )
-          } else {
-            // No MIDI file available, synthesize from note data
-            await playSongFromData(currentSong, currentTimeOffset / 1000)
-          }
         }
+      }
+
+      // Requirement: for GIG background music, always play the song MIDI when available
+      // (even if parsing yields 0 notes, we still don't want a silent gig)
+      if (currentSong.sourceMid) {
+        const excerptStart = currentSong.excerptStartMs || 0
+        await playMidiFile(
+          currentSong.sourceMid,
+          excerptStart / 1000,
+          false,
+          currentTimeOffset / 1000
+        )
+        bgAudioStarted = true
+      } else if (parsedNotes.length > 0) {
+        // No MIDI file available, synthesize from note data
+        await playSongFromData(currentSong, currentTimeOffset / 1000)
+        bgAudioStarted = true
       }
 
       // If parsing failed or no notes (empty/invalid), fall back to procedural generation
@@ -248,9 +252,11 @@ export const useRhythmGameLogic = () => {
           currentTimeOffset += song.duration * 1000
         })
 
-        // Always start background audio for the fallback path
-        audioDelay = 2.0
-        await startMetalGenerator(currentSong, audioDelay, rng)
+        // Don't start procedural generator if we already started a MIDI backing track
+        if (!bgAudioStarted) {
+          audioDelay = 2.0
+          await startMetalGenerator(currentSong, audioDelay, rng)
+        }
       }
 
       gameStateRef.current.notes = notes
@@ -543,6 +549,8 @@ export const useRhythmGameLogic = () => {
         setLastGigStats(
           buildGigStatsSnapshot(state.score, state.stats, state.toxicTimeTotal)
         )
+        // Requirement: stop background music at end of minigame
+        stopAudio()
         changeScene('POSTGIG')
         return
       }
