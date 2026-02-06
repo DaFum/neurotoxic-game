@@ -14,6 +14,7 @@ class AudioSystem {
     this.sfxVolume = 0.5
     this.muted = false
     this.initialized = false
+    this.isStartingAmbient = false
   }
 
   /**
@@ -100,6 +101,12 @@ class AudioSystem {
   async startAmbient() {
     if (!this.initialized) return
 
+    // Prevent re-entrant calls or redundant starts
+    if (this.isStartingAmbient) {
+      console.log('[AudioSystem] Ambient start already in progress.')
+      return
+    }
+
     // If already playing MIDI ambient (Tone Transport running and current ID is ambient)
     if (
       Tone.Transport.state === 'started' &&
@@ -108,6 +115,7 @@ class AudioSystem {
       return
     }
 
+    this.isStartingAmbient = true
     this.stopMusic()
     this.currentSongId = 'ambient'
     try {
@@ -116,6 +124,8 @@ class AudioSystem {
       handleError(e, { fallbackMessage: 'Failed to start ambient MIDI' })
       this.currentSongId = null
       this.stopMusic()
+    } finally {
+      this.isStartingAmbient = false
     }
   }
 

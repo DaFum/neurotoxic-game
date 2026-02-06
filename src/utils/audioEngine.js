@@ -449,6 +449,9 @@ export async function startMetalGenerator(
  */
 export function stopAudio() {
   playRequestId++
+  console.log(
+    `[audioEngine] stopAudio called. Invalidating reqs. New reqId: ${playRequestId}`
+  )
   stopAudioInternal()
 }
 
@@ -611,17 +614,28 @@ export async function playMidiFile(
   loop = false,
   delay = 0
 ) {
+  console.log(
+    `[audioEngine] Request playMidiFile: ${filename}, offset=${offset}, loop=${loop}`
+  )
   // Requirement: Stop previous playback immediately
   stopAudio()
   const reqId = ++playRequestId
+  console.log(`[audioEngine] New playRequestId: ${reqId}`)
 
   await ensureAudioContext()
-  if (reqId !== playRequestId) return
+  if (reqId !== playRequestId) {
+    console.log(
+      `[audioEngine] Request cancelled during ensureAudioContext (reqId: ${reqId} vs ${playRequestId})`
+    )
+    return
+  }
 
   stopAudioInternal()
   Tone.Transport.cancel()
 
   const url = midiUrlMap[filename]
+  console.log(`[audioEngine] Resolved URL for ${filename}: ${url}`)
+
   if (!url) {
     console.error(`[audioEngine] MIDI file not found in assets: ${filename}`)
     return false
@@ -636,6 +650,8 @@ export async function playMidiFile(
 
     const midi = new Midi(arrayBuffer)
     if (reqId !== playRequestId) return false // Optimization: fail fast before expensive scheduling
+
+    console.log(`[audioEngine] MIDI loaded. Duration: ${midi.duration}s`)
 
     if (midi.header.tempos.length > 0) {
       Tone.Transport.bpm.value = midi.header.tempos[0].bpm
@@ -696,11 +712,22 @@ export async function playMidiFile(
     })
 
     const validDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
-    const requestedOffset = Number.isFinite(offset) ? Math.max(0, offset) : 0
+    let requestedOffset = Number.isFinite(offset) ? Math.max(0, offset) : 0
+    const duration = Number.isFinite(midi.duration) ? midi.duration : 0
+
+    // Fix: If offset is beyond duration, reset to 0 to ensure sound plays
+    if (requestedOffset >= duration - 0.1) {
+      console.warn(
+        `[audioEngine] Offset ${requestedOffset}s exceeds duration ${duration}s. Resetting to 0.`
+      )
+      requestedOffset = 0
+    }
+
     // Clamp offset to within MIDI duration (starting beyond duration can lead to "no sound")
-    const safeOffset = Math.min(
-      requestedOffset,
-      Math.max(0, (Number.isFinite(midi.duration) ? midi.duration : 0) - 0.01)
+    const safeOffset = Math.min(requestedOffset, Math.max(0, duration - 0.01))
+
+    console.log(
+      `[audioEngine] Starting Transport. Delay=${validDelay}, Offset=${safeOffset}`
     )
 
     if (loop) {
@@ -730,11 +757,15 @@ export async function playRandomAmbientMidi(
   songs = SONGS_DB,
   rng = Math.random
 ) {
+  console.log('[audioEngine] playRandomAmbientMidi called')
   // Requirement: Stop transport before starting ambient
   stopAudio()
 
   const midiFiles = Object.keys(midiUrlMap)
-  if (midiFiles.length === 0) return false
+  if (midiFiles.length === 0) {
+    console.warn('[audioEngine] No MIDI files found in midiUrlMap')
+    return false
+  }
 
   // Requirement: pick a random MIDI from the assets folder
   const randIndex = Math.floor(rng() * midiFiles.length)
