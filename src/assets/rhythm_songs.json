@@ -1,7 +1,7 @@
 {
   "01 Kranker Schrank_V matze": {
-    "name": "01 Kranker Schrank_V matze",
-    "sourceMid": "01 Kranker Schrank_V matze.mid",
+    "name": "01 Kranker Schrank",
+    "sourceMid": "01 Kranker Schrank",
     "bpm": 210.0,
     "tpb": 480,
     "tempoMap": [
