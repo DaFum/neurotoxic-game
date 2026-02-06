@@ -217,7 +217,8 @@ export const useRhythmGameLogic = () => {
             await playMidiFile(
               currentSong.sourceMid,
               excerptStart / 1000,
-              false
+              false,
+              currentTimeOffset / 1000
             )
           }
         }
@@ -395,7 +396,14 @@ export const useRhythmGameLogic = () => {
 
         // Play the specific note pitch
         if (note.originalNote && Number.isFinite(note.originalNote.p)) {
-          playNote(note.originalNote.p, state.lanes[laneIndex].id)
+          const velocity = Number.isFinite(note.originalNote.v)
+            ? note.originalNote.v
+            : 127
+          playNote(
+            note.originalNote.p,
+            state.lanes[laneIndex].id,
+            velocity
+          )
         } else {
           audioManager.playSFX('hit') // Fallback
         }

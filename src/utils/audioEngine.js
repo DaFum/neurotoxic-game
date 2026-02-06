@@ -479,8 +479,14 @@ function playDrumsLegacy(time, diff, note, random) {
  * @param {string} filename - The filename of the MIDI (key in url map).
  * @param {number} [offset=0] - Start offset in seconds.
  * @param {boolean} [loop=false] - Whether to loop the playback.
+ * @param {number} [delay=0] - Delay in seconds before starting playback.
  */
-export async function playMidiFile(filename, offset = 0, loop = false) {
+export async function playMidiFile(
+  filename,
+  offset = 0,
+  loop = false,
+  delay = 0
+) {
   await ensureAudioContext()
   stopAudio()
   Tone.Transport.cancel()
@@ -543,7 +549,7 @@ export async function playMidiFile(filename, offset = 0, loop = false) {
       Tone.Transport.loop = false
     }
 
-    Tone.Transport.start(Tone.now(), offset)
+    Tone.Transport.start(Tone.now() + delay, offset)
   } catch (err) {
     console.error('[audioEngine] Error playing MIDI:', err)
   }
@@ -574,21 +580,23 @@ export async function playRandomAmbientMidi(
  * Plays a specific note immediately (Hit Sound).
  * @param {number} midiPitch - The MIDI note number.
  * @param {string} lane - The lane ID ('guitar', 'bass', 'drums').
+ * @param {number} [velocity=127] - The velocity (0-127).
  */
-export function playNote(midiPitch, lane) {
+export function playNote(midiPitch, lane, velocity = 127) {
   if (!isSetup) return
   const now = Tone.now()
+  const vel = Math.max(0, Math.min(1, velocity / 127))
 
   // Use the lane to determine instrument, fallback to pitch heuristics if needed
   if (lane === 'drums') {
-    playDrumNote(midiPitch, now, 1.0)
+    playDrumNote(midiPitch, now, vel)
   } else if (lane === 'bass') {
     if (bass)
       bass.triggerAttackRelease(
         Tone.Frequency(midiPitch, 'midi'),
         '8n',
         now,
-        1.0
+        vel
       )
   } else {
     // Guitar (or default)
@@ -597,7 +605,7 @@ export function playNote(midiPitch, lane) {
         Tone.Frequency(midiPitch, 'midi'),
         '16n',
         now,
-        1.0
+        vel
       )
   }
 }
