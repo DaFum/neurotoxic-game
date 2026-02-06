@@ -98,7 +98,10 @@ class AudioSystem {
     if (!this.initialized) return
 
     // If already playing MIDI ambient (Tone Transport running and current ID is ambient)
-    if (Tone.Transport.state === 'started' && this.currentSongId === 'ambient') {
+    if (
+      Tone.Transport.state === 'started' &&
+      this.currentSongId === 'ambient'
+    ) {
       return
     }
 
