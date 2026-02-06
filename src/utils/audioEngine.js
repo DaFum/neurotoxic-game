@@ -8,6 +8,7 @@ import * as Tone from 'tone'
 import { Midi } from '@tonejs/midi'
 import { calculateTimeFromTicks } from './rhythmUtils'
 import { SONGS_DB } from '../data/songs'
+import { logger } from './logger.js'
 
 // Import all MIDI files as URLs
 const midiGlob = import.meta.glob('../assets/*.mid', {
@@ -17,6 +18,7 @@ const midiGlob = import.meta.glob('../assets/*.mid', {
 })
 
 const MIN_NOTE_DURATION = 0.05
+const OFFSET_RESET_THRESHOLD = 0.1
 
 // Create a map of filename -> URL
 // Key format in glob is "../assets/filename.mid"
@@ -449,6 +451,10 @@ export async function startMetalGenerator(
  */
 export function stopAudio() {
   playRequestId++
+  logger.debug(
+    'AudioEngine',
+    `stopAudio called. Invalidating reqs. New reqId: ${playRequestId}`
+  )
   stopAudioInternal()
 }
 
@@ -611,17 +617,29 @@ export async function playMidiFile(
   loop = false,
   delay = 0
 ) {
+  logger.debug(
+    'AudioEngine',
+    `Request playMidiFile: ${filename}, offset=${offset}, loop=${loop}`
+  )
   // Requirement: Stop previous playback immediately
-  stopAudio()
   const reqId = ++playRequestId
+  logger.debug('AudioEngine', `New playRequestId: ${reqId}`)
 
   await ensureAudioContext()
-  if (reqId !== playRequestId) return
+  if (reqId !== playRequestId) {
+    logger.debug(
+      'AudioEngine',
+      `Request cancelled during ensureAudioContext (reqId: ${reqId} vs ${playRequestId})`
+    )
+    return
+  }
 
   stopAudioInternal()
   Tone.Transport.cancel()
 
   const url = midiUrlMap[filename]
+  logger.debug('AudioEngine', `Resolved URL for ${filename}: ${url}`)
+
   if (!url) {
     console.error(`[audioEngine] MIDI file not found in assets: ${filename}`)
     return false
@@ -636,6 +654,16 @@ export async function playMidiFile(
 
     const midi = new Midi(arrayBuffer)
     if (reqId !== playRequestId) return false // Optimization: fail fast before expensive scheduling
+
+    logger.debug('AudioEngine', `MIDI loaded. Duration: ${midi.duration}s`)
+
+    if (midi.duration <= 0) {
+      logger.warn(
+        'AudioEngine',
+        `MIDI duration is ${midi.duration}s. Skipping playback.`
+      )
+      return false
+    }
 
     if (midi.header.tempos.length > 0) {
       Tone.Transport.bpm.value = midi.header.tempos[0].bpm
@@ -696,23 +724,37 @@ export async function playMidiFile(
     })
 
     const validDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
-    const requestedOffset = Number.isFinite(offset) ? Math.max(0, offset) : 0
-    // Clamp offset to within MIDI duration (starting beyond duration can lead to "no sound")
-    const safeOffset = Math.min(
-      requestedOffset,
-      Math.max(0, (Number.isFinite(midi.duration) ? midi.duration : 0) - 0.01)
+    let requestedOffset = Number.isFinite(offset) ? Math.max(0, offset) : 0
+    const duration = Number.isFinite(midi.duration) ? midi.duration : 0
+
+    // Fix: If offset is beyond duration, reset to 0 to ensure sound plays
+    // Only check if duration is long enough to have an "end" threshold
+    if (
+      duration >= OFFSET_RESET_THRESHOLD &&
+      requestedOffset >= duration - OFFSET_RESET_THRESHOLD
+    ) {
+      logger.warn(
+        'AudioEngine',
+        `Offset ${requestedOffset}s exceeds duration ${duration}s. Resetting to 0.`
+      )
+      requestedOffset = 0
+    }
+
+    logger.debug(
+      'AudioEngine',
+      `Starting Transport. Delay=${validDelay}, Offset=${requestedOffset}`
     )
 
     if (loop) {
       Tone.Transport.loop = true
       Tone.Transport.loopEnd = midi.duration
       // Loop from excerpt start, so intros don't restart on every loop
-      Tone.Transport.loopStart = safeOffset
+      Tone.Transport.loopStart = requestedOffset
     } else {
       Tone.Transport.loop = false
     }
 
-    Tone.Transport.start(Tone.now() + validDelay, safeOffset)
+    Tone.Transport.start(Tone.now() + validDelay, requestedOffset)
     return true
   } catch (err) {
     console.error('[audioEngine] Error playing MIDI:', err)
@@ -730,11 +772,15 @@ export async function playRandomAmbientMidi(
   songs = SONGS_DB,
   rng = Math.random
 ) {
+  logger.debug('AudioEngine', 'playRandomAmbientMidi called')
   // Requirement: Stop transport before starting ambient
   stopAudio()
 
   const midiFiles = Object.keys(midiUrlMap)
-  if (midiFiles.length === 0) return false
+  if (midiFiles.length === 0) {
+    logger.warn('AudioEngine', 'No MIDI files found in midiUrlMap')
+    return false
+  }
 
   // Requirement: pick a random MIDI from the assets folder
   const randIndex = Math.floor(rng() * midiFiles.length)
@@ -746,8 +792,9 @@ export async function playRandomAmbientMidi(
   // Requirement: Ambient always plays from the beginning (0s)
   const offsetSeconds = 0
 
-  console.log(
-    `[audioEngine] Playing ambient: ${meta?.name ?? filename} (offset ${offsetSeconds}s)`
+  logger.debug(
+    'AudioEngine',
+    `Playing ambient: ${meta?.name ?? filename} (offset ${offsetSeconds}s)`
   )
   return playMidiFile(filename, offsetSeconds, true)
 }
