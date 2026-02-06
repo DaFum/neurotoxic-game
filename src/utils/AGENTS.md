@@ -273,42 +273,24 @@ const finalGrowth = baseGrowth * platformMultiplier + viralBonus
 
 ### AudioManager.js
 
-**Purpose**: Wrap Howler.js for game audio
+**Purpose**: Coordinate MIDI ambient playback, gig background audio, and SFX routing.
 
 **Key Functions:**
 
-- `playSound(soundId, options)` - Play SFX
-- `stopAll()` - Emergency stop
-- `setMasterVolume(level)` - Global volume control
+- `startAmbient()` - Start ambient MIDI playback if not already running
+- `playSFX(type)` - Trigger synth-based SFX (`hit`, `miss`, `menu`, `travel`, `cash`)
+- `stopMusic()` - Stop ambient/music playback
+- `setMusicVolume(level)` - Set music volume (Tone destination)
+- `setSFXVolume(level)` - Set SFX volume
+- `toggleMute()` - Toggle global mute
 
 **Sound Categories:**
 
 - **SFX**: Button clicks, note hits, crowd reactions
-- **Music**: Menu theme, gig tracks (when assets exist)
-- **Ambience**: Van engine, venue chatter
+- **Music**: Ambient MIDI and gig background playback
+- **Ambience**: Tour ambience via MIDI assets
 
-**Howler.js Pattern:**
-
-```javascript
-const soundLibrary = {
-  click: new Howl({ src: ['/sounds/click.mp3'], volume: 0.5 }),
-  hit_perfect: new Howl({ src: ['/sounds/hit.mp3'], volume: 0.8 })
-}
-
-export const AudioManager = {
-  playSound: (id, options = {}) => {
-    const sound = soundLibrary[id]
-    if (!sound) {
-      console.warn(`[Audio] Sound "${id}" not found`)
-      return
-    }
-    sound.volume(options.volume ?? sound._volume)
-    sound.play()
-  }
-}
-```
-
-**Current Status**: Placeholder implementation (no assets yet)
+**Current Status**: MIDI-driven ambient and gig playback via Tone.js with synth SFX.
 
 ### simulationUtils.js
 
