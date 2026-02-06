@@ -2,6 +2,7 @@ import { Howl, Howler } from 'howler'
 import * as Tone from 'tone'
 import * as audioEngine from './audioEngine.js'
 import { handleError } from './errorHandler.js'
+import { SONGS_DB } from '../data/songs'
 
 /**
  * Manages global audio playback including music (Howler.js) and SFX (audioEngine.js).
@@ -68,6 +69,16 @@ class AudioSystem {
     // If ambient, delegate to MIDI engine
     if (songId === 'ambient') {
       this.startAmbient()
+      return null
+    }
+
+    // Check if the song has a MIDI source
+    const song = SONGS_DB.find(s => s.id === songId)
+    if (song && song.sourceMid) {
+      this.stopMusic()
+      this.currentSongId = songId
+      const offset = song.excerptStartMs ? song.excerptStartMs / 1000 : 0
+      audioEngine.playMidiFile(song.sourceMid, offset, loop)
       return null
     }
 

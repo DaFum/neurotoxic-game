@@ -399,6 +399,10 @@ export function stopAudio() {
  */
 function stopAudioInternal() {
   Tone.Transport.stop()
+  Tone.Transport.loop = false
+  Tone.Transport.loopStart = 0
+  Tone.Transport.loopEnd = 0
+
   if (loop) {
     loop.dispose()
     loop = null
@@ -407,7 +411,7 @@ function stopAudioInternal() {
     part.dispose()
     part = null
   }
-  Tone.Transport.cancel()
+  Tone.Transport.cancel(0)
 }
 
 /**
