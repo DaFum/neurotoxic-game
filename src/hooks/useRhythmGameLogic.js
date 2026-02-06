@@ -399,11 +399,7 @@ export const useRhythmGameLogic = () => {
           const velocity = Number.isFinite(note.originalNote.v)
             ? note.originalNote.v
             : 127
-          playNote(
-            note.originalNote.p,
-            state.lanes[laneIndex].id,
-            velocity
-          )
+          playNote(note.originalNote.p, state.lanes[laneIndex].id, velocity)
         } else {
           audioManager.playSFX('hit') // Fallback
         }
