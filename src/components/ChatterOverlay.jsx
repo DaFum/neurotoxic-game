@@ -13,8 +13,43 @@ export const ChatterOverlay = () => {
     stateRef.current = state
   }, [state])
 
+  // Current Node Position Logic
+  const currentNode = state.gameMap?.nodes[state.player.currentNodeId]
+  const nodeY = currentNode?.y ?? 50
+  const nodeX = currentNode?.x ?? 50
+
+  // Dynamic Positioning
+  const isTop = nodeY < 30
+  const isLeftEdge = nodeX < 20
+  const isRightEdge = nodeX > 80
+
+  // Determine CSS classes using conditional logic instead of string manipulation
+  const translateX = isLeftEdge
+    ? 'translate-x-[-10%]'
+    : isRightEdge
+      ? 'translate-x-[-90%]'
+      : '-translate-x-1/2'
+
+  const translateY = isTop ? 'translate-y-[50%]' : '-translate-y-[150%]'
+  const originClass = isTop ? 'origin-top' : 'origin-bottom'
+
+  const positionClasses = `absolute left-1/2 transform ${translateX} ${translateY}`
+
+  const tailPosition = isLeftEdge
+    ? 'left-4'
+    : isRightEdge
+      ? 'right-4'
+      : 'right-1/2 translate-x-1/2'
+
+  const tailDirection = isTop
+    ? `-top-2 border-b-[10px] border-b-(--star-white)`
+    : `-bottom-2 border-t-[10px] border-t-(--star-white)`
+
+  const tailClass = `absolute ${tailDirection} ${tailPosition} w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent filter drop-shadow-xs`
+
   useEffect(() => {
     let timeoutId
+    let hideTimeoutId
     let active = true
 
     const loop = () => {
@@ -42,7 +77,7 @@ export const ChatterOverlay = () => {
           setChatter({ text, speaker: speaker || 'Band', id: Date.now() })
 
           // Hide after 5s
-          setTimeout(() => {
+          hideTimeoutId = setTimeout(() => {
             if (active) setChatter(null)
           }, 5000)
         }
@@ -57,6 +92,7 @@ export const ChatterOverlay = () => {
     return () => {
       active = false
       clearTimeout(timeoutId)
+      clearTimeout(hideTimeoutId)
     }
   }, []) // Run once on mount
 
@@ -65,24 +101,24 @@ export const ChatterOverlay = () => {
       {chatter && (
         <motion.div
           key={chatter.id}
-          initial={{ opacity: 0, y: 10, scale: 0.8 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.5 }}
-          className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-[150%] z-40 pointer-events-none'
+          className={`${positionClasses} z-20 pointer-events-none ${originClass} w-max max-w-[200px] md:max-w-xs top-1/2`}
         >
-          <div className='bg-(--star-white) text-(--void-black) p-3 rounded-tr-xl rounded-tl-xl rounded-bl-xl border-2 border-(--void-black) shadow-lg max-w-[200px] md:max-w-xs relative'>
+          <div className='bg-(--star-white) text-(--void-black) p-3 rounded-tr-xl rounded-tl-xl rounded-bl-xl border-2 border-(--void-black) shadow-lg relative'>
             <div className='flex justify-between items-center mb-1'>
               <div className='text-[10px] font-bold text-(--ash-gray) uppercase tracking-widest'>
                 {chatter.speaker}
               </div>
               <div className='w-2 h-2 rounded-full bg-(--toxic-green) animate-pulse' />
             </div>
-            <div className='font-mono text-sm leading-tight'>
+            <div className='font-mono text-sm leading-tight whitespace-normal'>
               {chatter.text}
             </div>
 
-            {/* Triangle tail */}
-            <div className='absolute -bottom-2 right-4 w-0 h-0 border-l-[10px] border-l-transparent border-t-[10px] border-t-(--star-white) border-r-[0px] border-r-transparent filter drop-shadow-xs' />
+            {/* Dynamic Tail */}
+            <div className={tailClass} />
           </div>
         </motion.div>
       )}

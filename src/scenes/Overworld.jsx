@@ -61,6 +61,7 @@ export const Overworld = () => {
     hasUpgrade,
     updateBand,
     band,
+    social,
     addToast,
     advanceDay,
     changeScene,
@@ -350,7 +351,7 @@ export const Overworld = () => {
         <BandHQ
           player={player}
           band={band}
-          social={player.social || { instagram: 0, tiktok: 0 }} // Fallback if social not directly on player but context
+          social={social}
           onClose={() => setShowHQ(false)}
           updatePlayer={updatePlayer}
           updateBand={updateBand}
