@@ -31,6 +31,9 @@ const midiUrlMap = Object.fromEntries(
 let guitar, bass, drumKit, loop, part
 let sfxSynth, sfxGain
 let masterLimiter, masterComp, reverb, reverbSend
+let distortion, guitarChorus, guitarEq, widener
+let bassEq, bassComp
+let drumBus
 let isSetup = false
 let playRequestId = 0
 
@@ -68,10 +71,10 @@ export async function setupAudio() {
     modulationEnvelope: { attack: 0.01, decay: 0.2, sustain: 0.1, release: 0.3 }
   })
 
-  const distortion = new Tone.Distortion(0.4)
-  const guitarChorus = new Tone.Chorus(4, 2.5, 0.3).start()
-  const guitarEq = new Tone.EQ3(-1, -3, 3) // Gentle mid scoop
-  const widener = new Tone.StereoWidener(0.5)
+  distortion = new Tone.Distortion(0.4)
+  guitarChorus = new Tone.Chorus(4, 2.5, 0.3).start()
+  guitarEq = new Tone.EQ3(-1, -3, 3) // Gentle mid scoop
+  widener = new Tone.StereoWidener(0.5)
 
   guitar.chain(distortion, guitarChorus, guitarEq, widener, masterComp)
   guitar.connect(reverbSend)
@@ -90,13 +93,13 @@ export async function setupAudio() {
     }
   })
 
-  const bassEq = new Tone.EQ3(3, -1, -4)
-  const bassComp = new Tone.Compressor(-15, 5)
+  bassEq = new Tone.EQ3(3, -1, -4)
+  bassComp = new Tone.Compressor(-15, 5)
   bass.chain(bassComp, bassEq, masterComp)
 
   // === Drums ===
   // Drum bus with own reverb send
-  const drumBus = new Tone.Gain(1).connect(masterComp)
+  drumBus = new Tone.Gain(1).connect(masterComp)
   drumBus.connect(reverbSend)
 
   drumKit = {
@@ -500,6 +503,16 @@ export function disposeAudio() {
   if (sfxSynth) sfxSynth.dispose()
   if (sfxGain) sfxGain.dispose()
 
+  if (distortion) distortion.dispose()
+  if (guitarChorus) guitarChorus.dispose()
+  if (guitarEq) guitarEq.dispose()
+  if (widener) widener.dispose()
+
+  if (bassEq) bassEq.dispose()
+  if (bassComp) bassComp.dispose()
+
+  if (drumBus) drumBus.dispose()
+
   if (reverbSend) reverbSend.dispose()
   if (reverb) reverb.dispose()
   if (masterComp) masterComp.dispose()
@@ -510,6 +523,14 @@ export function disposeAudio() {
   drumKit = null
   sfxSynth = null
   sfxGain = null
+
+  distortion = null
+  guitarChorus = null
+  guitarEq = null
+  widener = null
+  bassEq = null
+  bassComp = null
+  drumBus = null
 
   masterLimiter = null
   masterComp = null
