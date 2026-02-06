@@ -22,3 +22,20 @@ export const normalizeMidiPlaybackOptions = options => {
     stopAfterSeconds
   }
 }
+
+/**
+ * Calculates remaining playback duration after applying an excerpt offset.
+ * @param {number} totalSeconds - Total song duration in seconds.
+ * @param {number} offsetSeconds - Excerpt offset in seconds.
+ * @returns {number} Remaining playback duration in seconds.
+ */
+export const calculateRemainingDurationSeconds = (
+  totalSeconds,
+  offsetSeconds
+) => {
+  const safeTotal = Number.isFinite(totalSeconds) ? Math.max(0, totalSeconds) : 0
+  const safeOffset = Number.isFinite(offsetSeconds)
+    ? Math.max(0, offsetSeconds)
+    : 0
+  return Math.max(0, safeTotal - safeOffset)
+}

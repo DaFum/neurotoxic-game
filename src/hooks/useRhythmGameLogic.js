@@ -12,6 +12,7 @@ import {
   resumeAudio,
   getAudioTimeMs
 } from '../utils/audioEngine'
+import { calculateRemainingDurationSeconds } from '../utils/audioPlaybackUtils'
 import {
   buildGigStatsSnapshot,
   updateGigPerformanceStats
@@ -227,12 +228,15 @@ export const useRhythmGameLogic = () => {
       // This guarantees the background MIDI runs from the specified offset.
       if (currentSong.sourceMid) {
         const excerptStart = currentSong.excerptStartMs || 0
-        const gigPlaybackSeconds = Number.isFinite(currentSong.duration)
-          ? Math.max(1, currentSong.duration)
-          : 30
+        const offsetSeconds = Math.max(0, excerptStart / 1000)
+        const remainingDurationSeconds = calculateRemainingDurationSeconds(
+          Number.isFinite(currentSong.duration) ? currentSong.duration : 30,
+          offsetSeconds
+        )
+        const gigPlaybackSeconds = Math.max(1, remainingDurationSeconds)
         const success = await playMidiFile(
           currentSong.sourceMid,
-          excerptStart / 1000,
+          offsetSeconds,
           false,
           currentTimeOffset / 1000,
           {

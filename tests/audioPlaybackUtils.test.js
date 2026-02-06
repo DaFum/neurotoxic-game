@@ -1,6 +1,9 @@
 import assert from 'node:assert'
 import { test } from 'node:test'
-import { normalizeMidiPlaybackOptions } from '../src/utils/audioPlaybackUtils.js'
+import {
+  normalizeMidiPlaybackOptions,
+  calculateRemainingDurationSeconds
+} from '../src/utils/audioPlaybackUtils.js'
 
 test('normalizeMidiPlaybackOptions', async t => {
   await t.test('uses defaults when options are undefined', () => {
@@ -61,5 +64,13 @@ test('normalizeMidiPlaybackOptions', async t => {
         stopAfterSeconds: null
       }
     )
+  })
+
+  await t.test('calculates remaining duration with excerpt offset', () => {
+    assert.strictEqual(calculateRemainingDurationSeconds(30, 0), 30)
+    assert.strictEqual(calculateRemainingDurationSeconds(30, 10), 20)
+    assert.strictEqual(calculateRemainingDurationSeconds(30, 50), 0)
+    assert.strictEqual(calculateRemainingDurationSeconds(-5, 2), 0)
+    assert.strictEqual(calculateRemainingDurationSeconds(30, -2), 30)
   })
 })
