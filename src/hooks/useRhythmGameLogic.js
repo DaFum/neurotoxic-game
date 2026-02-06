@@ -224,6 +224,7 @@ export const useRhythmGameLogic = () => {
 
       // Requirement: for GIG background music, always play the song MIDI when available
       // (even if parsing yields 0 notes, we still don't want a silent gig)
+      // This guarantees the background MIDI runs from the specified offset.
       if (currentSong.sourceMid) {
         const excerptStart = currentSong.excerptStartMs || 0
         const success = await playMidiFile(

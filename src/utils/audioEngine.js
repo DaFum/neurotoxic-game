@@ -611,7 +611,10 @@ export async function playMidiFile(
   loop = false,
   delay = 0
 ) {
+  // Requirement: Stop previous playback immediately
+  stopAudio()
   const reqId = ++playRequestId
+
   await ensureAudioContext()
   if (reqId !== playRequestId) return
 
@@ -727,17 +730,21 @@ export async function playRandomAmbientMidi(
   songs = SONGS_DB,
   rng = Math.random
 ) {
+  // Requirement: Stop transport before starting ambient
+  stopAudio()
+
   const midiFiles = Object.keys(midiUrlMap)
-  if (midiFiles.length === 0) return
+  if (midiFiles.length === 0) return false
 
   // Requirement: pick a random MIDI from the assets folder
   const randIndex = Math.floor(rng() * midiFiles.length)
   const safeIndex = Math.min(randIndex, midiFiles.length - 1)
   const filename = midiFiles[safeIndex]
 
-  // If the MIDI is known in SONGS_DB, honor excerptStartMs as start offset
+  // If the MIDI is known in SONGS_DB, we might use metadata, but for Ambient we always start from 0
   const meta = songs.find(s => s.sourceMid === filename)
-  const offsetSeconds = meta?.excerptStartMs ? meta.excerptStartMs / 1000 : 0
+  // Requirement: Ambient always plays from the beginning (0s)
+  const offsetSeconds = 0
 
   console.log(
     `[audioEngine] Playing ambient: ${meta?.name ?? filename} (offset ${offsetSeconds}s)`
