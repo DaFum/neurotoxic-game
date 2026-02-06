@@ -47,14 +47,20 @@ export const ChatterOverlay = () => {
     // Van is at left, bubble should shift right to stay in screen
     // Instead of centered translate-x-1/2, use translate-x-0 or similar
     // Or just offset via margin
-    positionClasses = positionClasses.replace('-translate-x-1/2', 'translate-x-[-10%]')
+    positionClasses = positionClasses.replace(
+      '-translate-x-1/2',
+      'translate-x-[-10%]'
+    )
     // Adjust tail to be on left side of bubble
     tailClass = tailClass.replace('right-1/2 translate-x-1/2', 'left-4')
   } else if (isRightEdge) {
     // Van is at right, bubble should shift left
-    positionClasses = positionClasses.replace('-translate-x-1/2', 'translate-x-[-90%]')
-     // Adjust tail to be on right side of bubble
-     tailClass = tailClass.replace('right-1/2 translate-x-1/2', 'right-4')
+    positionClasses = positionClasses.replace(
+      '-translate-x-1/2',
+      'translate-x-[-90%]'
+    )
+    // Adjust tail to be on right side of bubble
+    tailClass = tailClass.replace('right-1/2 translate-x-1/2', 'right-4')
   }
 
   useEffect(() => {

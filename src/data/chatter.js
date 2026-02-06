@@ -119,7 +119,7 @@ const CHATTER_DB = [
     condition: state => state.currentScene === 'PREGIG'
   },
   {
-    text: "No new songs tonight. Last time was a trainwreck.",
+    text: 'No new songs tonight. Last time was a trainwreck.',
     weight: 2,
     condition: state => state.currentScene === 'PREGIG',
     speaker: 'Lars'
@@ -218,7 +218,7 @@ const CHATTER_DB = [
     condition: state => state.band.members.some(m => m.mood < 20)
   },
   {
-    text: "I’m three bad shows away from selling all my gear.",
+    text: 'I’m three bad shows away from selling all my gear.',
     weight: 8,
     condition: state => state.band.members.some(m => m.mood < 25)
   },
@@ -627,10 +627,7 @@ const VENUE_CHATTER_DB = [
   },
   {
     venueId: 'kassel_goldgrube',
-    lines: [
-      'Small room, golden name.',
-      'Nights here feel like secret shows.'
-    ]
+    lines: ['Small room, golden name.', 'Nights here feel like secret shows.']
   },
   {
     venueId: 'nuernberg_hirsch',

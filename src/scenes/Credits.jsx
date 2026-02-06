@@ -10,11 +10,26 @@ export const Credits = () => {
 
   const credits = [
     { role: 'VOCAL CODE VOMIT', name: 'Jules “Agent of Segfaults” Agent' },
-    { role: 'AUDIO ENGINE ERADICATION', name: 'Howler.js // Blastbeat Buffer Overflow' },
-    { role: 'RENDERING RAZORSTORM', name: 'Pixi.js // Retina Shredder Edition' },
-    { role: 'SPASM ANIMATION RITUALS', name: 'Framer Motion // Framegrind Frenzy' },
-    { role: 'TEXTURE FLESHMELT', name: 'Mutierte Generated AI Assets aus dem Void' },
-    { role: 'SPECIAL THANKS IN CAPS OF GORE', name: 'THE USERS // CLICK TILL SYSTEM DECAYS' }
+    {
+      role: 'AUDIO ENGINE ERADICATION',
+      name: 'Howler.js // Blastbeat Buffer Overflow'
+    },
+    {
+      role: 'RENDERING RAZORSTORM',
+      name: 'Pixi.js // Retina Shredder Edition'
+    },
+    {
+      role: 'SPASM ANIMATION RITUALS',
+      name: 'Framer Motion // Framegrind Frenzy'
+    },
+    {
+      role: 'TEXTURE FLESHMELT',
+      name: 'Mutierte Generated AI Assets aus dem Void'
+    },
+    {
+      role: 'SPECIAL THANKS IN CAPS OF GORE',
+      name: 'THE USERS // CLICK TILL SYSTEM DECAYS'
+    }
   ]
 
   return (
