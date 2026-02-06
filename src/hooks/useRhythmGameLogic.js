@@ -8,7 +8,8 @@ import {
   playNote,
   stopAudio,
   pauseAudio,
-  resumeAudio
+  resumeAudio,
+  getAudioTimeMs
 } from '../utils/audioEngine'
 import {
   buildGigStatsSnapshot,
@@ -84,7 +85,8 @@ export const useRhythmGameLogic = () => {
         hitWindow: 150
       }
     ],
-    startTime: Date.now(),
+    startTime: 0,
+    elapsed: 0,
     pauseTime: null,
     speed: 500,
     modifiers: {},
@@ -260,7 +262,7 @@ export const useRhythmGameLogic = () => {
         )
       }
 
-      gameStateRef.current.startTime = Date.now()
+      gameStateRef.current.startTime = getAudioTimeMs()
       gameStateRef.current.running = true
       // console.log('[RhythmGame] Initialized.', { ... })
     } catch (error) {
@@ -299,7 +301,7 @@ export const useRhythmGameLogic = () => {
   const activateToxicMode = useCallback(() => {
     setIsToxicMode(true)
     gameStateRef.current.isToxicMode = true
-    gameStateRef.current.toxicModeEndTime = Date.now() + 10000
+    gameStateRef.current.toxicModeEndTime = getAudioTimeMs() + 10000
     addToast('TOXIC OVERLOAD!', 'success')
   }, [addToast])
 
@@ -377,9 +379,9 @@ export const useRhythmGameLogic = () => {
   const handleHit = useCallback(
     laneIndex => {
       const state = gameStateRef.current
-      // Use system time (Date.now) for hit detection to maintain sync with the AudioContext/Tone.js clock,
-      // which runs independently of the visual frame loop (ticker).
-      const now = Date.now()
+      // Use Tone.js AudioContext clock for hit detection to stay in sync with
+      // audio playback and the visual frame loop.
+      const now = getAudioTimeMs()
       const elapsed = now - state.startTime
       const toxicModeActive = state.isToxicMode
 
@@ -496,7 +498,7 @@ export const useRhythmGameLogic = () => {
 
       if (!state.running || activeEvent || isGameOver) {
         if (!state.pauseTime) {
-          state.pauseTime = Date.now()
+          state.pauseTime = getAudioTimeMs()
           // Only pause if not game over (Game Over stops audio explicitly)
           if (!isGameOver) {
             pauseAudio()
@@ -506,14 +508,15 @@ export const useRhythmGameLogic = () => {
       }
 
       if (state.pauseTime) {
-        const durationPaused = Date.now() - state.pauseTime
+        const durationPaused = getAudioTimeMs() - state.pauseTime
         state.startTime += durationPaused
         state.pauseTime = null
         resumeAudio()
       }
 
-      const now = Date.now()
+      const now = getAudioTimeMs()
       const elapsed = now - state.startTime
+      state.elapsed = elapsed
       const duration = state.totalDuration
       setProgress(duration > 0 ? Math.min(100, (elapsed / duration) * 100) : 0)
 
