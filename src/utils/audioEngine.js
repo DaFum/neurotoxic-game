@@ -16,6 +16,8 @@ const midiGlob = import.meta.glob('../assets/*.mid', {
   eager: true
 })
 
+const MIN_NOTE_DURATION = 0.05
+
 // Create a map of filename -> URL
 // Key format in glob is "../assets/filename.mid"
 // We want to match "filename.mid"
@@ -576,7 +578,10 @@ export async function playMidiFile(
       Tone.Transport.loop = false
     }
 
-    Tone.Transport.start(Tone.now() + delay, offset)
+    const validDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
+    const validOffset = Number.isFinite(offset) ? Math.max(0, offset) : 0
+
+    Tone.Transport.start(Tone.now() + validDelay, validOffset)
   } catch (err) {
     console.error('[audioEngine] Error playing MIDI:', err)
   }
