@@ -26,7 +26,8 @@ export const MainMenu = () => {
     updateSettings,
     deleteSave,
     setlist,
-    setSetlist
+    setSetlist,
+    resetState
   } = useGameState()
   const [showUpgrades, setShowUpgrades] = useState(false)
 
@@ -35,9 +36,19 @@ export const MainMenu = () => {
   /**
    * Handles loading a saved game.
    */
-  const handleLoad = () => {
+  const handleLoad = async () => {
     if (loadGame()) {
-      changeScene('OVERWORLD')
+      try {
+        await audioManager.ensureAudioContext()
+      } catch (err) {
+        handleError(err, {
+          addToast,
+          fallbackMessage: 'Audio initialization failed.'
+        })
+      } finally {
+        audioManager.resumeMusic()
+        changeScene('OVERWORLD')
+      }
     } else {
       addToast('No save game found!', 'error')
     }
@@ -102,6 +113,7 @@ export const MainMenu = () => {
                   fallbackMessage: 'Audio initialization failed.'
                 })
               } finally {
+                resetState()
                 audioManager.resumeMusic()
                 changeScene('OVERWORLD')
               }
