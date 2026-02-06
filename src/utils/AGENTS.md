@@ -510,3 +510,8 @@ export const getEvent = () => EVENTS_DB.travel[0] // Hardcoded index
 ---
 
 **Remember**: Utils are the "engine room" of the game. Keep them stateless, testable, and focused on single responsibilities. Complex orchestration belongs in scenes or the global context.
+
+## Maintenance
+
+- Audio: MIDI playback uses a clean, dry chain for ambient/gig background to avoid FX coloration.  
+- Last updated: 2026-02-06.

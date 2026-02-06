@@ -46,7 +46,7 @@ export const MainMenu = () => {
           fallbackMessage: 'Audio initialization failed.'
         })
       } finally {
-        audioManager.resumeMusic()
+        await audioManager.startAmbient()
         changeScene('OVERWORLD')
       }
     } else {
@@ -114,7 +114,7 @@ export const MainMenu = () => {
                 })
               } finally {
                 resetState()
-                audioManager.resumeMusic()
+                await audioManager.startAmbient()
                 changeScene('OVERWORLD')
               }
             }}

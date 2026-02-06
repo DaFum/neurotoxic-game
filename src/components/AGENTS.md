@@ -460,3 +460,7 @@ useEffect(() => {
 ---
 
 **Remember**: Components are the "stage hands" of the game. They handle presentation and user interaction, but delegate business logic to utils and hooks. Keep them focused, reusable, and performant.
+
+## Maintenance
+
+- Last updated: 2026-02-06.

@@ -593,3 +593,7 @@ useEffect(() => {
 ---
 
 **Remember**: UI components are the "design tokens" of the game. They enforce visual consistency and provide a unified interaction language. Keep them pure, composable, and brutally beautiful.
+
+## Maintenance
+
+- Last updated: 2026-02-06.

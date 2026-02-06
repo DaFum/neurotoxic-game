@@ -227,11 +227,18 @@ export const useRhythmGameLogic = () => {
       // This guarantees the background MIDI runs from the specified offset.
       if (currentSong.sourceMid) {
         const excerptStart = currentSong.excerptStartMs || 0
+        const gigPlaybackSeconds = Number.isFinite(currentSong.duration)
+          ? Math.max(1, currentSong.duration)
+          : 30
         const success = await playMidiFile(
           currentSong.sourceMid,
           excerptStart / 1000,
           false,
-          currentTimeOffset / 1000
+          currentTimeOffset / 1000,
+          {
+            stopAfterSeconds: gigPlaybackSeconds,
+            useCleanPlayback: true
+          }
         )
         if (success) bgAudioStarted = true
       }

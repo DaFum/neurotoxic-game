@@ -527,3 +527,7 @@ console.log('Average venue payout:', avgPay) // Should be ~€400
 ---
 
 **Remember**: Data files are the "source of truth" for game balance. Changes here ripple through the entire experience. Keep data clean, well-structured, and documented. Every number tells a story.
+
+## Maintenance
+
+- Last updated: 2026-02-06.
