@@ -246,7 +246,7 @@ export function setSFXVolume(vol) {
 export async function playSongFromData(song, delay = 0) {
   const reqId = ++playRequestId
   await ensureAudioContext()
-  if (reqId !== playRequestId) return
+  if (reqId !== playRequestId) return false
 
   stopAudioInternal()
   Tone.Transport.cancel()
@@ -259,13 +259,13 @@ export async function playSongFromData(song, delay = 0) {
   // Validate notes
   if (!Array.isArray(song.notes)) {
     console.error('playSongFromData: song.notes is not an array')
-    return
+    return false
   }
 
   // Validate Audio Components
   if (!guitar || !bass || !drumKit) {
     console.error('playSongFromData: Audio components not initialized.')
-    return
+    return false
   }
 
   // Fallback if tempoMap is missing/empty
@@ -312,7 +312,7 @@ export async function playSongFromData(song, delay = 0) {
 
   if (events.length === 0) {
     console.warn('playSongFromData: No valid notes found to schedule')
-    return
+    return false
   }
 
   part = new Tone.Part((time, value) => {
@@ -330,6 +330,7 @@ export async function playSongFromData(song, delay = 0) {
   }, events).start(0)
 
   Tone.Transport.start()
+  return true
 }
 
 /**
@@ -401,7 +402,7 @@ export async function startMetalGenerator(
 ) {
   const reqId = ++playRequestId
   await ensureAudioContext()
-  if (reqId !== playRequestId) return
+  if (reqId !== playRequestId) return false
 
   stopAudioInternal()
   Tone.Transport.cancel()
@@ -619,18 +620,18 @@ export async function playMidiFile(
   const url = midiUrlMap[filename]
   if (!url) {
     console.error(`[audioEngine] MIDI file not found in assets: ${filename}`)
-    return
+    return false
   }
 
   try {
     const response = await fetch(url)
-    if (reqId !== playRequestId) return
+    if (reqId !== playRequestId) return false
     if (!response.ok) throw new Error(`Failed to load MIDI: ${url}`)
     const arrayBuffer = await response.arrayBuffer()
-    if (reqId !== playRequestId) return
+    if (reqId !== playRequestId) return false
 
     const midi = new Midi(arrayBuffer)
-    if (reqId !== playRequestId) return // Optimization: fail fast before expensive scheduling
+    if (reqId !== playRequestId) return false // Optimization: fail fast before expensive scheduling
 
     if (midi.header.tempos.length > 0) {
       Tone.Transport.bpm.value = midi.header.tempos[0].bpm
@@ -708,8 +709,10 @@ export async function playMidiFile(
     }
 
     Tone.Transport.start(Tone.now() + validDelay, safeOffset)
+    return true
   } catch (err) {
     console.error('[audioEngine] Error playing MIDI:', err)
+    return false
   }
 }
 
@@ -727,7 +730,9 @@ export async function playRandomAmbientMidi(
   if (midiFiles.length === 0) return
 
   // Requirement: pick a random MIDI from the assets folder
-  const filename = midiFiles[Math.floor(rng() * midiFiles.length)]
+  const randIndex = Math.floor(rng() * midiFiles.length)
+  const safeIndex = Math.min(randIndex, midiFiles.length - 1)
+  const filename = midiFiles[safeIndex]
 
   // If the MIDI is known in SONGS_DB, honor excerptStartMs as start offset
   const meta = songs.find(s => s.sourceMid === filename)

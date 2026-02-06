@@ -226,17 +226,23 @@ export const useRhythmGameLogic = () => {
       // (even if parsing yields 0 notes, we still don't want a silent gig)
       if (currentSong.sourceMid) {
         const excerptStart = currentSong.excerptStartMs || 0
-        await playMidiFile(
+        const success = await playMidiFile(
           currentSong.sourceMid,
           excerptStart / 1000,
           false,
           currentTimeOffset / 1000
         )
-        bgAudioStarted = true
-      } else if (parsedNotes.length > 0) {
-        // No MIDI file available, synthesize from note data
-        await playSongFromData(currentSong, currentTimeOffset / 1000)
-        bgAudioStarted = true
+        if (success) bgAudioStarted = true
+      }
+
+      // Fallback: If MIDI failed (or didn't exist), try to synthesize from note data
+      if (!bgAudioStarted && parsedNotes.length > 0) {
+        // No MIDI file available (or it failed), synthesize from note data
+        const success = await playSongFromData(
+          currentSong,
+          currentTimeOffset / 1000
+        )
+        if (success) bgAudioStarted = true
       }
 
       // If parsing failed or no notes (empty/invalid), fall back to procedural generation
