@@ -1,61 +1,59 @@
-# NEUROTOXIC: GRIND THE VOID v3.0
+# [NEUROTOXIC: GRIND THE VOID v3.0](https://www.instagram.com/neurotoxicband/)
 
-This is a Designer-Led implementation of the "NEUROTOXIC" game concept.
+This is the **designer‑driven** incarnation of the NEUROTOXIC game concept, carved out like a blastbeat across the void. 
 
-## Design Philosophy (Designer-Turned-Developer)
+## Design Dogma: Void Worship 
 
-- **Aesthetic First**: The "Toxic Green" on "Void Black" palette is enforced globally.
-- **Typography**: Uses 'Metal Mania' for headers to capture the Death Metal vibe, and 'Courier New' for that raw, industrial terminal feel.
-- **Motion**: Transitions are sharp. Glitch effects are used to convey the unstable nature of the void.
-- **Interaction**: Buttons are big, loud, and responsive.
+- **Aesthetic First**: Toxic Green on Void Black, enforced globally like a permanent blackout show, no mercy, no light mode. 
+- **Typography**: Metal Mania for screaming headers, Courier‑style monospaced body copy for that terminal bunker vibe. 
+- **Motion**: Razor‑cut transitions and glitch bursts to sell the unstable, collapsing void reality. 
+- **Interaction**: Buttons are huge, loud, and hyper‑reactive, built to feel like stomping a distortion pedal on stage. 
 
-## Tech Stack
+## Tech Stack: Gear List of Doom 
 
-- **React 18**: Core UI framework.
-- **Pixi.js**: High-performance 2D rendering for the Rhythm Game component.
-- **Tone.js & Howler**: Advanced audio synthesis and streaming.
-- **Framer Motion**: For UI animations and transitions.
-- **Tailwind CSS**: Utility-first styling (v4).
-- **Vite**: Build tool.
+- **React 18**: Core necromancer animating the UI shell.  
+- **Pixi.js**: High‑performance 2D renderer driving the rhythm hellride at 60fps.  
+- **Tone.js & Howler**: Hybrid rig for procedural metal patterns and streamed ambience.  
+- **Framer Motion**: Glitch injector and transition shredder for UI states.  
+- **Tailwind CSS v4**: Utility riff machine for brutalist layout control.  
+- **Vite**: Ultrafast dev and build pipeline for zero‑patience iteration.
 
-## Key Components
+## Core Systems: Architectures of Suffering 
 
-- **Rhythm Engine**: A custom implementation using Pixi.js to handle falling notes and hit detection with high precision (60fps).
-- **Roguelike Map**: An overworld system that allows non-linear progression.
-- **Economy System**: Manage money for upgrades (simplified for MVP).
-- **Audio System**: Hybrid system using Tone.js for procedural generative metal tracks and Howler.js for ambient streaming.
+- **Rhythm Engine**: Custom Pixi.js timing grid managing falling notes and hit detection with high‑precision frame sync at 60fps.  
+- **Roguelike Map**: Non‑linear overworld, letting you route your own tour instead of marching a corridor.  
+- **Economy System**: Stripped‑down money loop for upgrades, tuned for MVP grind instead of spreadsheet sim.  
+- **Audio System**: Tone.js for generative metal riffs, Howler.js for ambient stream layers over the Web Audio API.
 
-## How to Run
+## Rituals: Run, Test, Deploy 
 
-1. `npm install`
-2. `npm run dev`
+- **Run**  
+  1. `npm install`  
+  2. `npm run dev`  
 
-## Testing
+- **Testing**  
+  Game logic (economy, simulation, rhythm math) is wired into an automated test gauntlet.  
 
-The project includes a comprehensive test suite for game logic (economy, simulation, rhythm calculations).
+  ```bash
+  npm test
+  ```
 
-```bash
-npm test
-```
+- **Production Build**  
 
-## Building for Production
+  ```bash
+  npm run build
+  ```
 
-To create a production-ready build:
+  Output is emitted into the `dist/` directory, ready to be served to the void.  
 
-```bash
-npm run build
-```
+  The audio stack depends on external streams and the Web Audio API, so production deployments must run over **HTTPS** to avoid mixed‑content issues and broken sound. 
 
-The output will be in the `dist/` directory.
+## Controls: Limb‑Loss Protocol 
 
-**Note**: The audio system relies on external streams and Web Audio API. Ensure the application is served over **HTTPS** in production to prevent mixed content errors and ensure full audio functionality.
-
-## Controls
-
-- **Overworld**: Click nodes to travel. Use the Radio widget (▶/■) to toggle ambient music.
-- **Gig**:
-  - **Inputs**: Left Arrow (Guitar), Down Arrow (Drums), Right Arrow (Bass).
-  - **Pause**: Press `Escape` to pause/resume the game or quit the current gig.
+- **Overworld**: Click nodes to travel; use the Radio widget (▶/■) to toggle ambient music on and off.  
+- **Gig**:  
+  - Inputs: Left Arrow = Guitar, Down Arrow = Drums, Right Arrow = Bass.  
+  - Pause: Hit `Escape` to pause/resume or abandon the current gig mid‑set.
 
 ## Credits
 
