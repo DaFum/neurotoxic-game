@@ -246,7 +246,7 @@ export function setSFXVolume(vol) {
 export async function playSongFromData(song, delay = 0) {
   const reqId = ++playRequestId
   await ensureAudioContext()
-  if (reqId !== playRequestId) return
+  if (reqId !== playRequestId) return false
 
   stopAudioInternal()
   Tone.Transport.cancel()
@@ -259,13 +259,13 @@ export async function playSongFromData(song, delay = 0) {
   // Validate notes
   if (!Array.isArray(song.notes)) {
     console.error('playSongFromData: song.notes is not an array')
-    return
+    return false
   }
 
   // Validate Audio Components
   if (!guitar || !bass || !drumKit) {
     console.error('playSongFromData: Audio components not initialized.')
-    return
+    return false
   }
 
   // Fallback if tempoMap is missing/empty
@@ -312,7 +312,7 @@ export async function playSongFromData(song, delay = 0) {
 
   if (events.length === 0) {
     console.warn('playSongFromData: No valid notes found to schedule')
-    return
+    return false
   }
 
   part = new Tone.Part((time, value) => {
@@ -330,6 +330,7 @@ export async function playSongFromData(song, delay = 0) {
   }, events).start(0)
 
   Tone.Transport.start()
+  return true
 }
 
 /**
@@ -401,14 +402,14 @@ export async function startMetalGenerator(
 ) {
   const reqId = ++playRequestId
   await ensureAudioContext()
-  if (reqId !== playRequestId) return
+  if (reqId !== playRequestId) return false
 
   stopAudioInternal()
   Tone.Transport.cancel()
   Tone.Transport.position = 0
 
   // Guard BPM against zero/negative/falsy values
-  const rawBpm = song.bpm || (80 + (song.difficulty || 2) * 30)
+  const rawBpm = song.bpm || 80 + (song.difficulty || 2) * 30
   const bpm = Math.max(1, rawBpm)
 
   Tone.Transport.bpm.value = bpm
@@ -439,6 +440,7 @@ export async function startMetalGenerator(
   }
 
   Tone.Transport.start(Tone.now() + Math.max(0, delay))
+  return true
 }
 
 /**
@@ -619,18 +621,18 @@ export async function playMidiFile(
   const url = midiUrlMap[filename]
   if (!url) {
     console.error(`[audioEngine] MIDI file not found in assets: ${filename}`)
-    return
+    return false
   }
 
   try {
     const response = await fetch(url)
-    if (reqId !== playRequestId) return
+    if (reqId !== playRequestId) return false
     if (!response.ok) throw new Error(`Failed to load MIDI: ${url}`)
     const arrayBuffer = await response.arrayBuffer()
-    if (reqId !== playRequestId) return
+    if (reqId !== playRequestId) return false
 
     const midi = new Midi(arrayBuffer)
-    if (reqId !== playRequestId) return // Optimization: fail fast before expensive scheduling
+    if (reqId !== playRequestId) return false // Optimization: fail fast before expensive scheduling
 
     if (midi.header.tempos.length > 0) {
       Tone.Transport.bpm.value = midi.header.tempos[0].bpm
@@ -690,42 +692,57 @@ export async function playMidiFile(
       })
     })
 
+    const validDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
+    const requestedOffset = Number.isFinite(offset) ? Math.max(0, offset) : 0
+    // Clamp offset to within MIDI duration (starting beyond duration can lead to "no sound")
+    const safeOffset = Math.min(
+      requestedOffset,
+      Math.max(0, (Number.isFinite(midi.duration) ? midi.duration : 0) - 0.01)
+    )
+
     if (loop) {
       Tone.Transport.loop = true
       Tone.Transport.loopEnd = midi.duration
-      Tone.Transport.loopStart = 0
+      // Loop from excerpt start, so intros don't restart on every loop
+      Tone.Transport.loopStart = safeOffset
     } else {
       Tone.Transport.loop = false
     }
 
-    const validDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
-    const validOffset = Number.isFinite(offset) ? Math.max(0, offset) : 0
-
-    Tone.Transport.start(Tone.now() + validDelay, validOffset)
+    Tone.Transport.start(Tone.now() + validDelay, safeOffset)
+    return true
   } catch (err) {
     console.error('[audioEngine] Error playing MIDI:', err)
+    return false
   }
 }
 
 /**
  * Plays a random MIDI file from the available set for ambient music.
- * @param {Array} [songs] - List of song objects to choose from.
+ * @param {Array} [songs] - Song metadata array for excerpt offset lookup.
  * @param {Function} [rng] - Random number generator function.
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>} Whether playback started successfully.
  */
 export async function playRandomAmbientMidi(
   songs = SONGS_DB,
   rng = Math.random
 ) {
-  if (songs.length === 0) return
+  const midiFiles = Object.keys(midiUrlMap)
+  if (midiFiles.length === 0) return
 
-  // Filter only songs that have a sourceMid
-  const validSongs = songs.filter(s => s.sourceMid)
-  if (validSongs.length === 0) return
+  // Requirement: pick a random MIDI from the assets folder
+  const randIndex = Math.floor(rng() * midiFiles.length)
+  const safeIndex = Math.min(randIndex, midiFiles.length - 1)
+  const filename = midiFiles[safeIndex]
 
-  const randomSong = validSongs[Math.floor(rng() * validSongs.length)]
-  console.log(`[audioEngine] Playing ambient: ${randomSong.name}`)
-  return playMidiFile(randomSong.sourceMid, 0, true)
+  // If the MIDI is known in SONGS_DB, honor excerptStartMs as start offset
+  const meta = songs.find(s => s.sourceMid === filename)
+  const offsetSeconds = meta?.excerptStartMs ? meta.excerptStartMs / 1000 : 0
+
+  console.log(
+    `[audioEngine] Playing ambient: ${meta?.name ?? filename} (offset ${offsetSeconds}s)`
+  )
+  return playMidiFile(filename, offsetSeconds, true)
 }
 
 /**
