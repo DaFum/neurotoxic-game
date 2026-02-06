@@ -49,7 +49,9 @@ class AudioSystem {
       // Tone mute is handled globally by Volume node in engine if implemented, or we can use Destination
       Tone.Destination.mute = this.muted
     } catch (error) {
-      handleError(error, { fallbackMessage: 'AudioSystem initialization failed' })
+      handleError(error, {
+        fallbackMessage: 'AudioSystem initialization failed'
+      })
     }
   }
 

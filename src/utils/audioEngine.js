@@ -551,18 +551,23 @@ export async function playMidiFile(filename, offset = 0, loop = false) {
 
 /**
  * Plays a random MIDI file from the available set for ambient music.
+ * @param {Array} [songs] - List of song objects to choose from.
+ * @param {Function} [rng] - Random number generator function.
+ * @returns {Promise<void>}
  */
-export function playRandomAmbientMidi() {
-  const songs = SONGS_DB
+export async function playRandomAmbientMidi(
+  songs = SONGS_DB,
+  rng = Math.random
+) {
   if (songs.length === 0) return
 
   // Filter only songs that have a sourceMid
   const validSongs = songs.filter(s => s.sourceMid)
   if (validSongs.length === 0) return
 
-  const randomSong = validSongs[Math.floor(Math.random() * validSongs.length)]
+  const randomSong = validSongs[Math.floor(rng() * validSongs.length)]
   console.log(`[audioEngine] Playing ambient: ${randomSong.name}`)
-  playMidiFile(randomSong.sourceMid, 0, true)
+  return playMidiFile(randomSong.sourceMid, 0, true)
 }
 
 /**
