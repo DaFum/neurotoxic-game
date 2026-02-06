@@ -4,7 +4,8 @@ import { calculateGigPhysics, getGigModifiers } from '../utils/simulationUtils'
 import { audioManager } from '../utils/AudioManager'
 import {
   startMetalGenerator,
-  playSongFromData,
+  playMidiFile,
+  playNote,
   stopAudio,
   pauseAudio,
   resumeAudio
@@ -209,8 +210,16 @@ export const useRhythmGameLogic = () => {
 
         if (parsedNotes.length > 0) {
           notes = notes.concat(parsedNotes)
-          audioDelay = currentTimeOffset / 1000
-          await playSongFromData(currentSong, audioDelay)
+          // Audio delay is handled by transport offset
+          // Play the backing MIDI
+          if (currentSong.sourceMid) {
+            const excerptStart = currentSong.excerptStartMs || 0
+            await playMidiFile(
+              currentSong.sourceMid,
+              excerptStart / 1000,
+              false
+            )
+          }
         }
       }
 
@@ -384,7 +393,12 @@ export const useRhythmGameLogic = () => {
         note.hit = true
         note.visible = false // consumed
 
-        audioManager.playSFX('hit')
+        // Play the specific note pitch
+        if (note.originalNote && Number.isFinite(note.originalNote.p)) {
+          playNote(note.originalNote.p, state.lanes[laneIndex].id)
+        } else {
+          audioManager.playSFX('hit') // Fallback
+        }
 
         let points = 100
         if (laneIndex === 1 && hasUpgrade('drum_trigger')) points = 120

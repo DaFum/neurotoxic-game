@@ -5,7 +5,26 @@
  */
 
 import * as Tone from 'tone'
+import { Midi } from '@tonejs/midi'
 import { calculateTimeFromTicks } from './rhythmUtils'
+import { SONGS_DB } from '../data/songs'
+
+// Import all MIDI files as URLs
+const midiGlob = import.meta.glob('../assets/*.mid', {
+  query: '?url',
+  import: 'default',
+  eager: true
+})
+
+// Create a map of filename -> URL
+// Key format in glob is "../assets/filename.mid"
+// We want to match "filename.mid"
+const midiUrlMap = Object.fromEntries(
+  Object.entries(midiGlob).map(([path, url]) => {
+    const filename = path.split('/').pop()
+    return [filename, url]
+  })
+)
 
 let guitar, bass, drumKit, loop, part
 let sfxSynth, sfxGain
@@ -260,6 +279,7 @@ export async function playSongFromData(song, delay = 0) {
  * @param {number} velocity - The velocity of the note (0-1).
  */
 function playDrumNote(midiPitch, time, velocity) {
+  if (!drumKit) return
   // Basic GM Mapping
   switch (midiPitch) {
     case 35:
@@ -353,6 +373,7 @@ export function stopAudio() {
     part.dispose()
     part = null
   }
+  Tone.Transport.cancel()
 }
 
 /**
@@ -448,5 +469,130 @@ function playDrumsLegacy(time, diff, note, random) {
     if (beatPhase < 0.1 || beatPhase > 0.24) {
       drumKit.hihat.triggerAttackRelease(8000, '32n', time)
     }
+  }
+}
+
+// --- New MIDI Logic ---
+
+/**
+ * Plays a MIDI file from a URL.
+ * @param {string} filename - The filename of the MIDI (key in url map).
+ * @param {number} [offset=0] - Start offset in seconds.
+ * @param {boolean} [loop=false] - Whether to loop the playback.
+ */
+export async function playMidiFile(filename, offset = 0, loop = false) {
+  await ensureAudioContext()
+  stopAudio()
+  Tone.Transport.cancel()
+
+  const url = midiUrlMap[filename]
+  if (!url) {
+    console.error(`[audioEngine] MIDI file not found in assets: ${filename}`)
+    return
+  }
+
+  try {
+    const response = await fetch(url)
+    if (!response.ok) throw new Error(`Failed to load MIDI: ${url}`)
+    const arrayBuffer = await response.arrayBuffer()
+    const midi = new Midi(arrayBuffer)
+
+    if (midi.header.tempos.length > 0) {
+      Tone.Transport.bpm.value = midi.header.tempos[0].bpm
+    }
+
+    midi.tracks.forEach(track => {
+      track.notes.forEach(note => {
+        // Schedule notes
+        Tone.Transport.schedule(time => {
+          if (!guitar || !bass || !drumKit) return
+
+          // Basic Mapping
+          // Percussion (Channel 10, index 9)
+          if (track.instrument.percussion || track.channel === 9) {
+            playDrumNote(note.midi, time, note.velocity)
+          } else {
+            // Instrument separation by pitch heuristic
+            if (note.midi < 45) {
+              // Bass range
+              bass.triggerAttackRelease(
+                Tone.Frequency(note.midi, 'midi'),
+                note.duration,
+                time,
+                note.velocity
+              )
+            } else {
+              // Guitar/Lead range
+              guitar.triggerAttackRelease(
+                Tone.Frequency(note.midi, 'midi'),
+                note.duration,
+                time,
+                note.velocity
+              )
+            }
+          }
+        }, note.time)
+      })
+    })
+
+    if (loop) {
+      Tone.Transport.loop = true
+      Tone.Transport.loopEnd = midi.duration
+      Tone.Transport.loopStart = 0
+    } else {
+      Tone.Transport.loop = false
+    }
+
+    Tone.Transport.start(Tone.now(), offset)
+  } catch (err) {
+    console.error('[audioEngine] Error playing MIDI:', err)
+  }
+}
+
+/**
+ * Plays a random MIDI file from the available set for ambient music.
+ */
+export function playRandomAmbientMidi() {
+  const songs = SONGS_DB
+  if (songs.length === 0) return
+
+  // Filter only songs that have a sourceMid
+  const validSongs = songs.filter(s => s.sourceMid)
+  if (validSongs.length === 0) return
+
+  const randomSong = validSongs[Math.floor(Math.random() * validSongs.length)]
+  console.log(`[audioEngine] Playing ambient: ${randomSong.name}`)
+  playMidiFile(randomSong.sourceMid, 0, true)
+}
+
+/**
+ * Plays a specific note immediately (Hit Sound).
+ * @param {number} midiPitch - The MIDI note number.
+ * @param {string} lane - The lane ID ('guitar', 'bass', 'drums').
+ */
+export function playNote(midiPitch, lane) {
+  if (!isSetup) return
+  const now = Tone.now()
+
+  // Use the lane to determine instrument, fallback to pitch heuristics if needed
+  if (lane === 'drums') {
+    playDrumNote(midiPitch, now, 1.0)
+  } else if (lane === 'bass') {
+    if (bass)
+      bass.triggerAttackRelease(
+        Tone.Frequency(midiPitch, 'midi'),
+        '8n',
+        now,
+        1.0
+      )
+  } else {
+    // Guitar (or default)
+    if (guitar)
+      guitar.triggerAttackRelease(
+        Tone.Frequency(midiPitch, 'midi'),
+        '16n',
+        now,
+        1.0
+      )
   }
 }

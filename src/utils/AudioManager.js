@@ -62,12 +62,14 @@ class AudioSystem {
   playMusic(songId) {
     if (!this.initialized) return null
 
-    // Clean up previous instance explicitly
-    if (this.music) {
-      this.music.stop()
-      this.music.unload() // Free resources/pool slot
-      this.music = null
+    // If ambient, delegate to MIDI engine
+    if (songId === 'ambient') {
+      this.startAmbient()
+      return null
     }
+
+    // Clean up previous instance explicitly
+    this.stopMusic()
 
     const src = this.getAudioSrc(songId)
     this.currentSongId = songId
@@ -75,35 +77,13 @@ class AudioSystem {
     this.music = new Howl({
       src: [src],
       html5: true,
-      loop: songId === 'ambient',
+      loop: false,
       volume: this.musicVolume,
       onplayerror: (id, err) => {
         console.warn('[AudioSystem] Play error, attempting unlock:', err)
         this.music.once('unlock', () => {
           this.music.play()
         })
-      },
-      onloaderror: (id, err) => {
-        if (songId === 'ambient') {
-          console.warn(
-            '[AudioSystem] Ambient stream failed to load, switching to fallback.',
-            err
-          )
-          // Fallback to static MP3 if stream fails
-          if (this.music) {
-            this.music.unload()
-            this.music = new Howl({
-              src: [
-                'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
-              ],
-              html5: true,
-              loop: true,
-              volume: this.musicVolume,
-              mute: this.muted
-            })
-            this.music.play()
-          }
-        }
       }
     })
 
@@ -116,29 +96,28 @@ class AudioSystem {
    */
   startAmbient() {
     if (!this.initialized) return
-    // Prevent restarting if already playing ambient
-    // Check if current music is the ambient track to avoid reloading stream
-    // Note: checking loop() is weak if we change logic, better check source or id.
-    // Assuming single music track architecture for now.
-    if (
-      this.music &&
-      this.music.playing() &&
-      this.currentSongId === 'ambient'
-    ) {
+
+    // If already playing MIDI ambient (Tone Transport running and current ID is ambient)
+    if (Tone.Transport.state === 'started' && this.currentSongId === 'ambient') {
       return
     }
 
-    const music = this.playMusic('ambient')
-    if (music) {
-      music.volume(this.musicVolume * 0.3) // Lower volume for background stream
-    }
+    this.stopMusic()
+    this.currentSongId = 'ambient'
+    audioEngine.playRandomAmbientMidi()
   }
 
   /**
-   * Stops the currently playing music.
+   * Stops the currently playing music (Howler or Tone).
    */
   stopMusic() {
-    if (this.music) this.music.stop()
+    if (this.music) {
+      this.music.stop()
+      this.music.unload()
+      this.music = null
+    }
+    audioEngine.stopAudio()
+    this.currentSongId = null
   }
 
   /**
@@ -146,6 +125,9 @@ class AudioSystem {
    */
   pauseMusic() {
     if (this.music) this.music.pause()
+    if (Tone.Transport.state === 'started') {
+      audioEngine.pauseAudio()
+    }
   }
 
   /**
@@ -156,7 +138,9 @@ class AudioSystem {
       if (this.music.state() === 'loaded') {
         this.music.play()
       }
-    } else if (!this.music) {
+    } else if (Tone.Transport.state === 'paused') {
+      audioEngine.resumeAudio()
+    } else if (!this.music && Tone.Transport.state !== 'started') {
       this.startAmbient()
     }
   }
@@ -205,6 +189,11 @@ class AudioSystem {
     if (this.music) {
       this.music.volume(next)
     }
+    // Tone volume isn't directly controlled here for MIDI, but we could add a master volume control in audioEngine
+    // For now, assuming Tone output uses default master or individual instrument volumes.
+    // Ideally we should scale Tone master volume.
+    // Tone.Destination.volume.value = Tone.gainToDb(next);
+    // But existing code uses hardcoded volumes.
   }
 
   /**
@@ -239,13 +228,10 @@ class AudioSystem {
 
   /**
    * Resolves the source URL for a given song ID.
-   * @param {string} songId - The song ID.
    * @returns {string} The URL string.
    */
-  getAudioSrc(songId) {
-    if (songId === 'ambient') {
-      return 'https://kkr-radio.stream.laut.fm/kkr-radio'
-    }
+  getAudioSrc() {
+    // Ambient is now handled via MIDI engine
     return 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
   }
 
