@@ -244,7 +244,7 @@ class AudioSystem {
    */
   getAudioSrc(songId) {
     if (songId === 'ambient') {
-      return 'https://stream.laut.fm/grindcore'
+      return 'https://kkr-radio.stream.laut.fm/kkr-radio'
     }
     return 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
   }
