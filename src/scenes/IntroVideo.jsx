@@ -41,6 +41,7 @@ export const IntroVideo = () => {
         src={introVideo}
         className='w-full h-full object-cover'
         playsInline
+        muted
         onEnded={handleEnd}
         onClick={handleEnd} // Click video to skip (if playing)
       />
