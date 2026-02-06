@@ -9,7 +9,8 @@ import {
   stopAudio,
   pauseAudio,
   resumeAudio,
-  getAudioTimeMs
+  getAudioTimeMs,
+  ensureAudioContext
 } from '../utils/audioEngine'
 import {
   buildGigStatsSnapshot,
@@ -122,6 +123,10 @@ export const useRhythmGameLogic = () => {
     audioManager.stopMusic()
 
     try {
+      // Ensure AudioContext is running before any getAudioTimeMs() calls,
+      // even if no playMidiFile/startMetalGenerator path executes later.
+      await ensureAudioContext()
+
       const activeModifiers = getGigModifiers(band, gigModifiers)
       const physics = calculateGigPhysics(band, { bpm: 120 })
       const currentNode = gameMap?.nodes?.[player.currentNodeId]
