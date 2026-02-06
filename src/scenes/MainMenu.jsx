@@ -35,8 +35,17 @@ export const MainMenu = () => {
   /**
    * Handles loading a saved game.
    */
-  const handleLoad = () => {
+  const handleLoad = async () => {
     if (loadGame()) {
+      try {
+        await audioManager.ensureAudioContext()
+      } catch (err) {
+        handleError(err, {
+          addToast,
+          fallbackMessage: 'Audio initialization failed.'
+        })
+      }
+      audioManager.resumeMusic()
       changeScene('OVERWORLD')
     } else {
       addToast('No save game found!', 'error')

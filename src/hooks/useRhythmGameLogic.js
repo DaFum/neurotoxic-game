@@ -5,12 +5,12 @@ import { audioManager } from '../utils/AudioManager'
 import {
   startMetalGenerator,
   playMidiFile,
+  playSongFromData,
   playNote,
   stopAudio,
   pauseAudio,
   resumeAudio,
-  getAudioTimeMs,
-  ensureAudioContext
+  getAudioTimeMs
 } from '../utils/audioEngine'
 import {
   buildGigStatsSnapshot,
@@ -125,7 +125,8 @@ export const useRhythmGameLogic = () => {
     try {
       // Ensure AudioContext is running before any getAudioTimeMs() calls,
       // even if no playMidiFile/startMetalGenerator path executes later.
-      await ensureAudioContext()
+      // Use audioManager to also set initialized flag for SFX playback.
+      await audioManager.ensureAudioContext()
 
       const activeModifiers = getGigModifiers(band, gigModifiers)
       const physics = calculateGigPhysics(band, { bpm: 120 })
@@ -218,7 +219,7 @@ export const useRhythmGameLogic = () => {
         if (parsedNotes.length > 0) {
           notes = notes.concat(parsedNotes)
           // Audio delay is handled by transport offset
-          // Play the backing MIDI
+          // Play the backing MIDI file for background music
           if (currentSong.sourceMid) {
             const excerptStart = currentSong.excerptStartMs || 0
             await playMidiFile(
@@ -227,6 +228,9 @@ export const useRhythmGameLogic = () => {
               false,
               currentTimeOffset / 1000
             )
+          } else {
+            // No MIDI file available, synthesize from note data
+            await playSongFromData(currentSong, currentTimeOffset / 1000)
           }
         }
       }
@@ -244,10 +248,9 @@ export const useRhythmGameLogic = () => {
           currentTimeOffset += song.duration * 1000
         })
 
-        if (currentSong.id !== 'jam') {
-          audioDelay = 2.0
-          await startMetalGenerator(currentSong, audioDelay, rng)
-        }
+        // Always start background audio for the fallback path
+        audioDelay = 2.0
+        await startMetalGenerator(currentSong, audioDelay, rng)
       }
 
       gameStateRef.current.notes = notes

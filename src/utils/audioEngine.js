@@ -47,81 +47,120 @@ export async function setupAudio() {
     console.warn('[audioEngine] Tone.start() was blocked or failed:', e)
   }
 
-  // Master Chain
-  const masterComp = new Tone.Compressor(-30, 3).toDestination()
+  // === Master Chain ===
+  // Limiter prevents clipping, Compressor glues the mix
+  const masterLimiter = new Tone.Limiter(-3).toDestination()
+  const masterComp = new Tone.Compressor(-18, 4).connect(masterLimiter)
 
-  // --- Guitar ---
-  guitar = new Tone.PolySynth(Tone.MonoSynth, {
+  // Global reverb send for natural space
+  const reverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(masterComp)
+  const reverbSend = new Tone.Gain(0.3).connect(reverb)
+
+  // === Guitar ===
+  // FM synthesis for richer harmonic content
+  guitar = new Tone.PolySynth(Tone.FMSynth, {
+    harmonicity: 2,
+    modulationIndex: 3,
     oscillator: { type: 'sawtooth' },
-    envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.1 },
-    filterEnvelope: {
-      attack: 0.001,
-      decay: 0.1,
-      sustain: 0,
-      baseFrequency: 150,
-      octaves: 4
-    }
+    modulation: { type: 'square' },
+    envelope: { attack: 0.005, decay: 0.3, sustain: 0.15, release: 0.3 },
+    modulationEnvelope: { attack: 0.01, decay: 0.2, sustain: 0.1, release: 0.3 }
   })
 
-  const distortion = new Tone.Distortion(0.8)
-  const widener = new Tone.StereoWidener(0.7)
-  const eq = new Tone.EQ3(-2, -5, 2) // Mid Scoop
+  const distortion = new Tone.Distortion(0.4)
+  const guitarChorus = new Tone.Chorus(4, 2.5, 0.3).start()
+  const guitarEq = new Tone.EQ3(-1, -3, 3) // Gentle mid scoop
+  const widener = new Tone.StereoWidener(0.5)
 
-  guitar.chain(distortion, eq, widener, masterComp)
+  guitar.chain(distortion, guitarChorus, guitarEq, widener, masterComp)
+  guitar.connect(reverbSend)
 
-  // --- Bass ---
+  // === Bass ===
+  // MonoSynth with triangle-based waveform for warmer, fuller tone
   bass = new Tone.PolySynth(Tone.MonoSynth, {
-    oscillator: { type: 'square' },
-    envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 },
+    oscillator: { type: 'fatsawtooth', spread: 10, count: 3 },
+    envelope: { attack: 0.01, decay: 0.4, sustain: 0.3, release: 0.3 },
     filterEnvelope: {
-      attack: 0.001,
-      decay: 0.2,
-      sustain: 0.1,
-      baseFrequency: 80,
-      octaves: 2
+      attack: 0.005,
+      decay: 0.3,
+      sustain: 0.2,
+      baseFrequency: 100,
+      octaves: 2.5
     }
   })
 
-  const bassEq = new Tone.EQ3(2, 0, -2)
-  const bassComp = new Tone.Compressor(-20, 4)
+  const bassEq = new Tone.EQ3(3, -1, -4)
+  const bassComp = new Tone.Compressor(-15, 5)
   bass.chain(bassComp, bassEq, masterComp)
 
-  // --- Drums ---
+  // === Drums ===
+  // Drum bus with own reverb send
+  const drumBus = new Tone.Gain(1).connect(masterComp)
+  drumBus.connect(reverbSend)
+
   drumKit = {
-    kick: new Tone.MembraneSynth().connect(masterComp),
-    snare: new Tone.NoiseSynth({
-      envelope: { attack: 0.001, decay: 0.2, sustain: 0 },
-      noise: { type: 'pink' }
-    }).connect(masterComp),
+    kick: new Tone.MembraneSynth({
+      pitchDecay: 0.05,
+      octaves: 6,
+      oscillator: { type: 'sine' },
+      envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 0.4 }
+    }).connect(drumBus),
+    snare: (() => {
+      // Layered snare: noise (crack) + membrane (body)
+      const snareNoise = new Tone.NoiseSynth({
+        envelope: { attack: 0.001, decay: 0.15, sustain: 0 },
+        noise: { type: 'white' }
+      }).connect(drumBus)
+      const snareBody = new Tone.MembraneSynth({
+        pitchDecay: 0.02,
+        octaves: 4,
+        envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 }
+      }).connect(drumBus)
+      snareBody.volume.value = -4
+      // Return a proxy object that triggers both layers
+      return {
+        triggerAttackRelease: (dur, time, vel) => {
+          snareNoise.triggerAttackRelease(dur, time, vel)
+          snareBody.triggerAttackRelease('G3', dur, time, vel * 0.6)
+        },
+        volume: snareNoise.volume,
+        dispose: () => { snareNoise.dispose(); snareBody.dispose() },
+        _noise: snareNoise,
+        _body: snareBody
+      }
+    })(),
     hihat: new Tone.MetalSynth({
-      envelope: { attack: 0.001, decay: 0.05, release: 0.01 },
+      envelope: { attack: 0.001, decay: 0.06, release: 0.01 },
       harmonicity: 5.1,
-      modulationIndex: 32,
-      resonance: 4000,
-      octaves: 1.5
-    }).connect(masterComp),
+      modulationIndex: 24,
+      resonance: 5000,
+      octaves: 1.2
+    }).connect(drumBus),
     crash: new Tone.MetalSynth({
-      envelope: { attack: 0.001, decay: 1.0, release: 0.01 },
-      harmonicity: 3.1,
-      modulationIndex: 16,
-      resonance: 2000,
-      octaves: 2.5
-    }).connect(masterComp)
+      envelope: { attack: 0.002, decay: 1.5, release: 0.1 },
+      harmonicity: 3.5,
+      modulationIndex: 12,
+      resonance: 3000,
+      octaves: 2.0
+    }).connect(drumBus)
   }
 
-  // Level Mixing
-  drumKit.kick.volume.value = 5
-  drumKit.snare.volume.value = 2
-  drumKit.hihat.volume.value = -10
-  drumKit.crash.volume.value = -5
+  // Level Mixing (more balanced)
+  drumKit.kick.volume.value = 2
+  drumKit.snare.volume.value = 0
+  drumKit.hihat.volume.value = -12
+  drumKit.crash.volume.value = -8
 
   // Instrument Volumes
-  guitar.volume.value = 4
-  bass.volume.value = 6
+  guitar.volume.value = -2
+  bass.volume.value = 0
 
-  // --- SFX Synth (Unified) ---
-  sfxGain = new Tone.Gain(0.2).connect(masterComp)
-  sfxSynth = new Tone.PolySynth(Tone.Synth).connect(sfxGain)
+  // === SFX Synth ===
+  sfxGain = new Tone.Gain(0.25).connect(masterLimiter)
+  sfxSynth = new Tone.PolySynth(Tone.Synth, {
+    oscillator: { type: 'triangle' },
+    envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.2 }
+  }).connect(sfxGain)
 
   isSetup = true
 }
@@ -292,40 +331,49 @@ export async function playSongFromData(song, delay = 0) {
  */
 function playDrumNote(midiPitch, time, velocity) {
   if (!drumKit) return
-  // Basic GM Mapping
+  // GM Percussion Mapping
   switch (midiPitch) {
-    case 35:
-    case 36:
-      drumKit.kick.triggerAttackRelease('C1', '16n', time, velocity)
+    case 35: // Acoustic Kick
+    case 36: // Electric Kick
+      drumKit.kick.triggerAttackRelease('C1', '8n', time, velocity)
       break
-    case 38:
-    case 40:
+    case 37: // Side Stick
+      drumKit.snare.triggerAttackRelease('32n', time, velocity * 0.4)
+      break
+    case 38: // Acoustic Snare
+    case 40: // Electric Snare
       drumKit.snare.triggerAttackRelease('16n', time, velocity)
       break
-    case 42:
-    case 44:
-    case 46:
-      drumKit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.8)
+    case 42: // Closed HiHat
+    case 44: // Pedal HiHat
+      drumKit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.7)
       break
-    case 49:
-    case 57:
-      drumKit.crash.triggerAttackRelease('C2', '8n', time, velocity)
+    case 46: // Open HiHat
+      drumKit.hihat.triggerAttackRelease(6000, '16n', time, velocity * 0.8)
+      break
+    case 49: // Crash 1
+    case 57: // Crash 2
+      drumKit.crash.triggerAttackRelease(4000, '4n', time, velocity * 0.7)
       break
     case 51: // Ride Cymbal
-    case 59:
-      drumKit.hihat.triggerAttackRelease(6000, '16n', time, velocity * 0.6)
+    case 59: // Ride Bell
+      drumKit.hihat.triggerAttackRelease(5000, '8n', time, velocity * 0.5)
       break
-    case 41: // Low Tom
-    case 43:
-      drumKit.kick.triggerAttackRelease('G1', '8n', time, velocity * 0.7)
+    case 41: // Low Floor Tom
+    case 43: // High Floor Tom
+      drumKit.kick.triggerAttackRelease('G1', '8n', time, velocity * 0.8)
       break
-    case 45: // Mid Tom
-    case 47:
-      drumKit.kick.triggerAttackRelease('C2', '8n', time, velocity * 0.7)
+    case 45: // Low Tom
+    case 47: // Low-Mid Tom
+      drumKit.kick.triggerAttackRelease('D2', '8n', time, velocity * 0.7)
+      break
+    case 48: // Hi-Mid Tom
+    case 50: // High Tom
+      drumKit.kick.triggerAttackRelease('A2', '8n', time, velocity * 0.6)
       break
     default:
-      // Default to HiHat for unknown percussion elements to keep rhythm
-      drumKit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.5)
+      // Default to closed HiHat for unknown percussion
+      drumKit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.4)
   }
 }
 
@@ -438,7 +486,8 @@ export function disposeAudio() {
   if (bass) bass.dispose()
   if (drumKit) {
     drumKit.kick.dispose()
-    drumKit.snare.dispose()
+    // Layered snare has custom dispose
+    if (drumKit.snare.dispose) drumKit.snare.dispose()
     drumKit.hihat.dispose()
     drumKit.crash.dispose()
   }
