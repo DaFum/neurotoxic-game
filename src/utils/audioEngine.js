@@ -9,11 +9,15 @@ import { Midi } from '@tonejs/midi'
 import { calculateTimeFromTicks } from './rhythmUtils'
 import { SONGS_DB } from '../data/songs'
 import { selectRandomItem } from './audioSelectionUtils.js'
-import { normalizeMidiPlaybackOptions } from './audioPlaybackUtils.js'
+import {
+  buildMidiUrlMap,
+  normalizeMidiPlaybackOptions,
+  resolveMidiAssetUrl
+} from './audioPlaybackUtils.js'
 import { logger } from './logger.js'
 
 // Import all MIDI files as URLs
-const midiGlob = import.meta.glob('../assets/*.mid', {
+const midiGlob = import.meta.glob('../assets/**/*.mid', {
   query: '?url',
   import: 'default',
   eager: true
@@ -38,14 +42,10 @@ const CRASH_CONFIG = {
   octaves: 2.0
 }
 
-// Create a map of filename -> URL
-// Key format in glob is "../assets/filename.mid"
-// We want to match "filename.mid"
-const midiUrlMap = Object.fromEntries(
-  Object.entries(midiGlob).map(([path, url]) => {
-    const filename = path.split('/').pop()
-    return [filename, url]
-  })
+// Create a map of relative asset path + basename -> URL
+// Key format in glob is "../assets/path/to/filename.mid"
+const midiUrlMap = buildMidiUrlMap(midiGlob, message =>
+  logger.warn('AudioEngine', message)
 )
 
 let guitar, bass, drumKit, loop, part
@@ -771,8 +771,17 @@ export async function playMidiFile(
   stopAudioInternal()
   Tone.Transport.cancel()
 
-  const url = midiUrlMap[filename]
-  logger.debug('AudioEngine', `Resolved URL for ${filename}: ${url}`)
+  const baseUrl = import.meta.env.BASE_URL || './'
+  const publicBasePath = `${baseUrl}assets`
+  const { url, source } = resolveMidiAssetUrl(
+    filename,
+    midiUrlMap,
+    publicBasePath
+  )
+  logger.debug(
+    'AudioEngine',
+    `Resolved MIDI URL for ${filename}: ${url} (source=${source ?? 'none'})`
+  )
 
   if (!url) {
     console.error(`[audioEngine] MIDI file not found in assets: ${filename}`)
