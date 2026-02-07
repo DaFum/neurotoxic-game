@@ -1,6 +1,8 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { spawn } from 'node:child_process'
+import toml from '@iarna/toml'
+import { parse as parseYamlDoc } from 'yaml'
 
 /**
  * @typedef {Object} SkillFinding
@@ -129,28 +131,17 @@ export const parseFrontmatter = contents => {
  * @param {string} contents - YAML contents.
  * @returns {Object} Parsed object.
  */
-export const parseYaml = contents => {
-  const result = {}
-  const stack = [{ indent: -1, value: result }]
-  const lines = contents.split('\n')
-  lines.forEach(line => {
-    if (!line.trim() || line.trim().startsWith('#')) return
-    const indent = line.match(/^\s*/)[0].length
-    const [rawKey, ...rest] = line.trim().split(':')
-    const key = rawKey.trim()
-    const value = rest.join(':').trim()
-    while (stack.length > 1 && indent <= stack[stack.length - 1].indent) {
-      stack.pop()
-    }
-    const parent = stack[stack.length - 1].value
-    if (value) {
-      parent[key] = value.replace(/^"|"$/g, '')
-    } else {
-      parent[key] = parent[key] || {}
-      stack.push({ indent, value: parent[key] })
-    }
-  })
-  return result
+export const parseYaml = contents => parseYamlDoc(contents) || {}
+
+/**
+ * Check whether a skill description contains trigger guidance.
+ * @param {string} description - Skill description.
+ * @returns {boolean} Whether the description looks adequate.
+ */
+const isDescriptionAdequate = description => {
+  const normalized = description.toLowerCase()
+  const triggerHints = ['use when', 'use this', 'when', 'trigger', 'apply']
+  return description.length >= 40 && triggerHints.some(hint => normalized.includes(hint))
 }
 
 /**
@@ -222,9 +213,32 @@ export const validateLinks = async (skillDir, contents) => {
 export const validateOpenAIYaml = async skillDir => {
   const findings = []
   const yamlPath = path.join(skillDir, 'agents', 'openai.yaml')
+  let contents = ''
   try {
-    const contents = await fs.readFile(yamlPath, 'utf8')
-    const data = parseYaml(contents)
+    contents = await fs.readFile(yamlPath, 'utf8')
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return findings
+    }
+    findings.push({
+      level: 'warning',
+      message: `Could not read agents/openai.yaml: ${error.message}`
+    })
+    return findings
+  }
+
+  let data = {}
+  try {
+    data = parseYaml(contents)
+  } catch (error) {
+    findings.push({
+      level: 'warning',
+      message: `Could not parse agents/openai.yaml: ${error.message}`
+    })
+    return findings
+  }
+
+  try {
     const interfaceData = data.interface || {}
     const iconSmall = interfaceData.icon_small
     const iconLarge = interfaceData.icon_large
@@ -268,7 +282,10 @@ export const validateOpenAIYaml = async skillDir => {
       }
     })
   } catch (error) {
-    return findings
+    findings.push({
+      level: 'warning',
+      message: `Could not validate agents/openai.yaml: ${error.message}`
+    })
   }
   return findings
 }
@@ -325,7 +342,7 @@ export const loadSkillRecord = async skillDir => {
       message: 'Frontmatter name does not match directory name.'
     })
   }
-  if (description && (!description.includes('Use') || description.length < 60)) {
+  if (description && !isDescriptionAdequate(description)) {
     findings.push({
       level: 'warning',
       message: 'Description may be too short or missing trigger guidance.'
@@ -458,15 +475,23 @@ export const readDisabledSkills = async () => {
   const configPath = path.join(homeDir, '.codex', 'config.toml')
   try {
     const contents = await fs.readFile(configPath, 'utf8')
-    const blocks = contents.split('[[skills.config]]')
-    blocks.forEach(block => {
-      const pathMatch = block.match(/path\s*=\s*"([^"]+)"/)
-      const enabledMatch = block.match(/enabled\s*=\s*(false|true)/)
-      if (pathMatch && enabledMatch && enabledMatch[1] === 'false') {
-        disabled.add(pathMatch[1])
+    const data = toml.parse(contents)
+    const skillConfigs = data?.skills?.config
+    const configList = Array.isArray(skillConfigs)
+      ? skillConfigs
+      : skillConfigs
+        ? [skillConfigs]
+        : []
+    configList.forEach(config => {
+      if (config?.enabled === false && typeof config?.path === 'string') {
+        disabled.add(config.path)
       }
     })
   } catch (error) {
+    if (error.code && error.code === 'ENOENT') {
+      return disabled
+    }
+    console.warn(`Could not parse ~/.codex/config.toml: ${error.message}`)
     return disabled
   }
   return disabled
