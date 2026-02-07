@@ -92,3 +92,39 @@ export const resolveMidiAssetUrl = (
     source: 'public'
   }
 }
+
+/**
+ * Builds a MIDI URL map with conflict detection for duplicate basenames.
+ * @param {Record<string, string>} midiGlob - Vite glob map of asset paths to URLs.
+ * @param {(message: string) => void} [warn] - Warning callback for conflicts.
+ * @returns {Record<string, string>} Map of relative paths and basenames to URLs.
+ */
+export const buildMidiUrlMap = (midiGlob, warn = console.warn) => {
+  const entries = Object.entries(midiGlob ?? {})
+  return entries.reduce((accumulator, [path, url]) => {
+    const relativePath = path.replace('../assets/', '')
+    if (!accumulator[relativePath]) {
+      accumulator[relativePath] = url
+    }
+
+    const baseName = relativePath.split('/').pop()
+    if (!baseName) {
+      return accumulator
+    }
+
+    const existingBasenameUrl = accumulator[baseName]
+    if (!existingBasenameUrl) {
+      accumulator[baseName] = url
+      return accumulator
+    }
+
+    if (existingBasenameUrl !== url) {
+      warn(
+        `[audioEngine] MIDI basename conflict for "${baseName}". ` +
+          `Keeping "${existingBasenameUrl}" and ignoring "${url}".`
+      )
+    }
+
+    return accumulator
+  }, {})
+}

@@ -10,6 +10,7 @@ import { calculateTimeFromTicks } from './rhythmUtils'
 import { SONGS_DB } from '../data/songs'
 import { selectRandomItem } from './audioSelectionUtils.js'
 import {
+  buildMidiUrlMap,
   normalizeMidiPlaybackOptions,
   resolveMidiAssetUrl
 } from './audioPlaybackUtils.js'
@@ -43,16 +44,8 @@ const CRASH_CONFIG = {
 
 // Create a map of relative asset path + basename -> URL
 // Key format in glob is "../assets/path/to/filename.mid"
-const midiUrlMap = Object.fromEntries(
-  Object.entries(midiGlob).flatMap(([path, url]) => {
-    const relativePath = path.replace('../assets/', '')
-    const filename = relativePath.split('/').pop()
-    const entries = [[relativePath, url]]
-    if (filename && filename !== relativePath) {
-      entries.push([filename, url])
-    }
-    return entries
-  })
+const midiUrlMap = buildMidiUrlMap(midiGlob, message =>
+  logger.warn('AudioEngine', message)
 )
 
 let guitar, bass, drumKit, loop, part
