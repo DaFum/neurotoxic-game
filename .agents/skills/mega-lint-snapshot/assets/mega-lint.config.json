@@ -1,0 +1,72 @@
+{
+  "items": [
+    {
+      "name": "BASH",
+      "command": "bash",
+      "args": ["-lc", "rg --files -g '*.sh' | xargs -r shellcheck"]
+    },
+    {
+      "name": "BASH_EXEC",
+      "command": "bash",
+      "args": ["-lc", "rg --files -g '*.sh' | xargs -r test -x"]
+    },
+    {
+      "name": "CHECKOV",
+      "command": "bash",
+      "args": ["-lc", "checkov -d ."]
+    },
+    {
+      "name": "GITLEAKS",
+      "command": "bash",
+      "args": ["-lc", "gitleaks detect --source . --no-git"]
+    },
+    {
+      "name": "JAVASCRIPT_ES",
+      "command": "npm",
+      "args": ["run", "lint"]
+    },
+    {
+      "name": "JAVASCRIPT_PRETTIER",
+      "command": "npm",
+      "args": ["run", "format", "--", "--check"],
+      "fixArgs": ["run", "format"]
+    },
+    {
+      "name": "JSCPD",
+      "command": "bash",
+      "args": ["-lc", "jscpd --silent"]
+    },
+    {
+      "name": "JSON",
+      "command": "bash",
+      "args": ["-lc", "rg --files -g '*.json' | xargs -r node -e \"JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8'))\""]
+    },
+    {
+      "name": "JSON_PRETTIER",
+      "command": "npm",
+      "args": ["run", "format", "--", "--check", "**/*.json"],
+      "fixArgs": ["run", "format", "--", "**/*.json"]
+    },
+    {
+      "name": "MARKDOWN",
+      "command": "bash",
+      "args": ["-lc", "markdownlint \"**/*.md\""]
+    },
+    {
+      "name": "MARKDOWN_PRETTIER",
+      "command": "npm",
+      "args": ["run", "format", "--", "--check", "**/*.md"],
+      "fixArgs": ["run", "format", "--", "**/*.md"]
+    },
+    {
+      "name": "NATURAL_LANGUAGE",
+      "command": "bash",
+      "args": ["-lc", "textlint \"**/*.{md,txt}\""]
+    },
+    {
+      "name": "SHELL_SHFMT",
+      "command": "bash",
+      "args": ["-lc", "shfmt -d $(rg --files -g '*.sh')"]
+    }
+  ]
+}

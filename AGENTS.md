@@ -179,6 +179,7 @@ Codex can load skills from repository, user, admin, and system locations. In thi
 - Use `skill-qa-harness` to validate skill metadata and prompt-case expectations.
 - Use `skilltest` for comprehensive skill standard validation and reporting.
 - Use `skill-aligner` to rewrite skills so they match current repo conventions.
+- Use `mega-lint-snapshot` to generate MegaLinter-style lint logs for CI diagnostics.
 
 ---
 
@@ -187,4 +188,4 @@ _"Complexity is not an excuse for friction."_
 ## Maintenance
 
 - Audio: Ambient playback starts on Start Tour and plays full MIDI tracks; gig playback starts from configured excerpts and stops at the song duration.  
-- Last updated: 2026-02-12.
+- Last updated: 2026-02-13.
