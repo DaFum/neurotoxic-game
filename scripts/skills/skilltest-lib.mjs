@@ -22,6 +22,7 @@ import { parse as parseYamlDoc } from 'yaml'
  */
 
 let repoRootCache = null
+let repoRootCacheCwd = null
 
 /**
  * Determine the repository root by walking up to a .git directory.
@@ -391,7 +392,9 @@ export const discoverSkills = async ({ includeUserSkills }) => {
   for (const root of roots) {
     try {
       const discovered = await findSkillDirs(root)
-      discovered.forEach(dir => skillDirs.add(dir))
+      discovered.forEach(dir => {
+        skillDirs.add(dir)
+      })
     } catch (error) {
       // skip missing roots
     }
@@ -508,10 +511,20 @@ export const readDisabledSkills = async () => {
  * @returns {Promise<string>} Repository root.
  */
 const getRepoRoot = async () => {
-  if (!repoRootCache) {
-    repoRootCache = await findRepoRoot(process.cwd())
+  const cwd = process.cwd()
+  if (!repoRootCache || repoRootCacheCwd !== cwd) {
+    repoRootCache = await findRepoRoot(cwd)
+    repoRootCacheCwd = cwd
   }
   return repoRootCache
+}
+
+/**
+ * Reset the cached repository root. Useful when tests change cwd.
+ */
+export const resetRepoRootCache = () => {
+  repoRootCache = null
+  repoRootCacheCwd = null
 }
 
 /**

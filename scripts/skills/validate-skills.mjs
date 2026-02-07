@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url'
+import nodePath from 'node:path'
 import { discoverSkills } from './skilltest-lib.mjs'
 
 /**
@@ -65,7 +67,12 @@ export const formatReport = results => {
     .join('\n')
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+const __filename = fileURLToPath(import.meta.url)
+const isMainModule =
+  process.argv[1] &&
+  nodePath.resolve(__filename) === nodePath.resolve(process.argv[1])
+
+if (isMainModule) {
   const includeUserSkills = process.argv.includes('--include-user')
   console.warn(
     'Deprecated: use ".agents/skills/skilltest/scripts/skilltest.mjs" instead.'
