@@ -17,7 +17,7 @@ const ToggleRadio = () => {
   const [isPlaying, setIsPlaying] = useState(false)
 
   React.useEffect(() => {
-    if (audioManager.music && audioManager.music.playing()) {
+    if (audioManager.currentSongId === 'ambient') {
       setIsPlaying(true)
     }
   }, [])
