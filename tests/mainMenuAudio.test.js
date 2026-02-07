@@ -104,4 +104,5 @@ test('MainMenu starts ambient audio when loading a save', async () => {
   await waitFor(() => {
     assert.equal(startAmbientCalls.length, 1)
   })
+  assert.equal(ensureAudioContextCalls.length, 1)
 })

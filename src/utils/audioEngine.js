@@ -5,7 +5,7 @@
  */
 
 import * as Tone from 'tone'
-import midi from '@tonejs/midi'
+import { Midi } from '@tonejs/midi'
 import { calculateTimeFromTicks } from './rhythmUtils'
 import { SONGS_DB } from '../data/songs'
 import { selectRandomItem } from './audioSelectionUtils.js'
@@ -43,7 +43,6 @@ let isSetup = false
 let playRequestId = 0
 let transportEndEventId = null
 let transportStopEventId = null
-const { Midi } = midi
 
 /**
  * Clears any scheduled transport end callback.
