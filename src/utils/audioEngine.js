@@ -5,7 +5,7 @@
  */
 
 import * as Tone from 'tone'
-import { Midi } from '@tonejs/midi'
+import midi from '@tonejs/midi'
 import { calculateTimeFromTicks } from './rhythmUtils'
 import { SONGS_DB } from '../data/songs'
 import { selectRandomItem } from './audioSelectionUtils.js'
@@ -43,6 +43,7 @@ let isSetup = false
 let playRequestId = 0
 let transportEndEventId = null
 let transportStopEventId = null
+const { Midi } = midi
 
 /**
  * Clears any scheduled transport end callback.
@@ -211,7 +212,7 @@ export async function setupAudio() {
   // === Clean MIDI Chain ===
   // MIDI playback should be dry: no distortion, chorus, EQ, or reverb.
   // This preserves the raw MIDI dynamics without coloration.
-  midiDryBus = new Tone.Gain(1).toDestination()
+  midiDryBus = new Tone.Gain(1).connect(masterComp)
   midiLead = new Tone.PolySynth(Tone.Synth, {
     oscillator: { type: 'sine' },
     envelope: { attack: 0.001, decay: 0.2, sustain: 0.2, release: 0.3 }
@@ -916,7 +917,13 @@ export async function playRandomAmbientMidi(
   return playMidiFile(filename, offsetSeconds, false, 0, {
     useCleanPlayback: true,
     onEnded: () => {
-      playRandomAmbientMidi(songs, rng)
+      playRandomAmbientMidi(songs, rng).catch(error => {
+        logger.error(
+          'AudioEngine',
+          'Failed to start next ambient MIDI track',
+          error
+        )
+      })
     }
   })
 }
