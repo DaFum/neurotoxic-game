@@ -39,3 +39,56 @@ export const calculateRemainingDurationSeconds = (
     : 0
   return Math.max(0, safeTotal - safeOffset)
 }
+
+/**
+ * Encodes a public asset path segment-by-segment to preserve slashes.
+ * @param {string} assetPath - Asset path relative to the public base.
+ * @returns {string} Encoded path suitable for URL usage.
+ */
+export const encodePublicAssetPath = assetPath => {
+  if (typeof assetPath !== 'string') return ''
+  const trimmedPath = assetPath.replace(/^\/+/, '')
+  return trimmedPath
+    .split('/')
+    .map(segment => encodeURIComponent(segment))
+    .join('/')
+}
+
+/**
+ * Resolves a MIDI asset URL from the bundled map or a public fallback path.
+ * @param {string} filename - Filename or relative path to the MIDI asset.
+ * @param {Record<string, string>} midiUrlMap - Map of asset keys to bundled URLs.
+ * @param {string} [publicBasePath='/assets'] - Base path for public assets.
+ * @returns {{url: string|null, source: 'bundled'|'public'|null}} Resolved URL info.
+ */
+export const resolveMidiAssetUrl = (
+  filename,
+  midiUrlMap,
+  publicBasePath = '/assets'
+) => {
+  if (typeof filename !== 'string' || filename.length === 0) {
+    return { url: null, source: null }
+  }
+
+  const normalizedFilename = filename.replace(/^\.?\//, '')
+  const bundledUrl = midiUrlMap?.[normalizedFilename]
+  if (bundledUrl) {
+    return { url: bundledUrl, source: 'bundled' }
+  }
+
+  const baseName = normalizedFilename.split('/').pop()
+  if (baseName && midiUrlMap?.[baseName]) {
+    return { url: midiUrlMap[baseName], source: 'bundled' }
+  }
+
+  const trimmedBase = publicBasePath.replace(/\/+$/, '')
+  const encodedPath = encodePublicAssetPath(normalizedFilename)
+  if (encodedPath.length === 0) {
+    return { url: null, source: null }
+  }
+
+  return {
+    url: `${trimmedBase}/${encodedPath}`,
+    source: 'public'
+  }
+}
