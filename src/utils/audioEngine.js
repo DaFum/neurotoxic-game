@@ -771,7 +771,13 @@ export async function playMidiFile(
   stopAudioInternal()
   Tone.Transport.cancel()
 
-  const { url, source } = resolveMidiAssetUrl(filename, midiUrlMap)
+  const baseUrl = import.meta.env.BASE_URL || './'
+  const publicBasePath = `${baseUrl}assets`
+  const { url, source } = resolveMidiAssetUrl(
+    filename,
+    midiUrlMap,
+    publicBasePath
+  )
   logger.debug(
     'AudioEngine',
     `Resolved MIDI URL for ${filename}: ${url} (source=${source ?? 'none'})`

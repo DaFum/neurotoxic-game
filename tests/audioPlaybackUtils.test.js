@@ -150,6 +150,17 @@ test('resolveMidiAssetUrl', async t => {
     )
   })
 
+  await t.test('supports relative base path defaults', () => {
+    const midiUrlMap = {}
+    assert.deepStrictEqual(
+      resolveMidiAssetUrl('midi/track.mid', midiUrlMap, './assets'),
+      {
+        url: './assets/midi/track.mid',
+        source: 'public'
+      }
+    )
+  })
+
   await t.test('returns nulls for empty filename', () => {
     const midiUrlMap = {}
     assert.deepStrictEqual(resolveMidiAssetUrl('', midiUrlMap), {
