@@ -1,0 +1,5 @@
+{
+  "required": ["name", "description"],
+  "optional": ["metadata"],
+  "notes": "Frontmatter must include name and description."
+}

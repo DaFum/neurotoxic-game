@@ -47,7 +47,7 @@ export const applyEventDelta = (state, delta) => {
     const nextBand = { ...nextState.band }
     if (typeof delta.band.harmony === 'number') {
       nextBand.harmony = Math.max(
-        0,
+        1,
         Math.min(100, nextBand.harmony + delta.band.harmony)
       )
     }

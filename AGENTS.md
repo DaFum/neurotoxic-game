@@ -84,9 +84,107 @@ For domain-specific guidance, consult specialized agent documentation:
 
 ---
 
+## AGENTS.md Usage (Codex Guidance)
+
+These instructions track the latest AGENTS.md guidance for Codex. Keep project rules here and place targeted overrides in nested folders when needed.
+
+### How Codex Discovers Guidance
+
+1. **Global scope:** In `~/.codex`, Codex reads `AGENTS.override.md` if present; otherwise `AGENTS.md`. Only the first non-empty file applies.
+2. **Project scope:** Starting at the repo root, Codex walks down to the working directory. At each directory, it checks `AGENTS.override.md`, then `AGENTS.md`, then any fallback filenames listed in `project_doc_fallback_filenames`. Codex includes at most one file per directory.
+3. **Merge order:** Files are concatenated from root to leaf. Later files override earlier guidance.
+
+Codex skips empty files and stops once the combined size reaches `project_doc_max_bytes` (default 32 KiB). Split guidance across nested directories or raise the limit if needed.
+
+### Create Global Guidance
+
+1. Ensure the Codex home directory exists:
+
+   ```bash
+   mkdir -p ~/.codex
+   ```
+
+2. Create reusable defaults in `~/.codex/AGENTS.md`.
+3. Run `codex --ask-for-approval never "Summarize the current instructions."` to confirm it loads.
+
+Use `~/.codex/AGENTS.override.md` for temporary global overrides without removing your base file.
+
+### Layer Project Instructions
+
+- Keep repo-level expectations in this file.
+- Use nested `AGENTS.md` files for domain-specific rules.
+- Use `AGENTS.override.md` only when you need to fully replace local guidance.
+
+### Customize Fallback Filenames
+
+If you already use alternate filenames (for example `TEAM_GUIDE.md`), add them to the fallback list:
+
+```toml
+# ~/.codex/config.toml
+project_doc_fallback_filenames = ["TEAM_GUIDE.md", ".agents.md"]
+project_doc_max_bytes = 65536
+```
+
+Restart Codex after changing configuration.
+
+### CODEX_HOME Profiles
+
+Use a custom profile when you need project-specific automation:
+
+```bash
+CODEX_HOME=$(pwd)/.codex codex exec "List active instruction sources"
+```
+
+### Verify Your Setup
+
+- `codex --ask-for-approval never "Summarize the current instructions."`
+- `codex --cd <subdir> --ask-for-approval never "Show which instruction files are active."`
+- Review `~/.codex/log/codex-tui.log` (or the latest `session-*.jsonl`) if you need to audit loaded files.
+
+### Troubleshoot Discovery Issues
+
+- **Nothing loads:** Ensure you are in the intended repo, and that instruction files are non-empty.
+- **Wrong guidance appears:** Check for `AGENTS.override.md` higher in the tree or inside `~/.codex`.
+- **Fallback names ignored:** Confirm `project_doc_fallback_filenames` entries and restart Codex.
+- **Instructions truncated:** Raise `project_doc_max_bytes` or split guidance into nested files.
+- **Profile confusion:** Run `echo $CODEX_HOME` before launching Codex.
+
+### Next Steps
+
+- Visit https://agents.md for more AGENTS.md information.
+- Review https://developers.openai.com/codex/prompting for Codex prompting guidance.
+
+### Agent Skills
+
+Codex can load skills from repository, user, admin, and system locations. In this repo, prefer checked-in skills under `.agents/skills` when they exist.
+
+#### When to Use Skills
+
+- Use a skill if the user explicitly references it (for example `$skill-creator`).
+- Use a skill implicitly when the task matches its description.
+
+#### Skill Locations (Priority)
+
+- Repository: `.agents/skills` in the current directory, parent directories, or repository root.
+- User: `~/.agents/skills`
+- Admin: `/etc/codex/skills`
+- System: bundled with Codex (for example `skill-creator`, `skill-installer`)
+
+#### Skill Maintenance
+
+- Keep skill descriptions precise so implicit matching behaves predictably.
+- Restart Codex if newly added skills are not discovered.
+- Disable skills via `~/.codex/config.toml` when needed.
+- Repo skills are stored in `.agents/skills`; refer to that directory for the current skill list.
+- Use `skill-qa-harness` to validate skill metadata and prompt-case expectations.
+- Use `skilltest` for comprehensive skill standard validation and reporting.
+- Use `skill-aligner` to rewrite skills so they match current repo conventions.
+
+---
+
 _"Complexity is not an excuse for friction."_
 
 ## Maintenance
 
 - Audio: Ambient playback starts on Start Tour and plays full MIDI tracks; gig playback starts from configured excerpts and stops at the song duration.  
-- Last updated: 2026-02-06.
+- Last updated: 2026-02-12.

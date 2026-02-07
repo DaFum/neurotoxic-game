@@ -32,7 +32,7 @@ test('applyEventDelta clamps values', () => {
   assert.equal(nextState.player.money, 0) // min 0
   assert.equal(nextState.player.van.fuel, 100) // max 100
   assert.equal(nextState.player.van.condition, 0) // min 0
-  assert.equal(nextState.band.harmony, 0) // min 0
+  assert.equal(nextState.band.harmony, 1) // min 1
   assert.equal(nextState.band.members[0].mood, 0) // min 0
   assert.equal(nextState.band.members[0].stamina, 0) // min 0
 })
