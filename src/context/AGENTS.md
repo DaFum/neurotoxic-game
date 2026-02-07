@@ -326,3 +326,7 @@ dispatch({ type: 'UPDATE_PLAYER', payload: {
 - `src/utils/simulationUtils.js` - Daily update calculations
 - `src/utils/logger.js` - Debug logging
 - `src/data/characters.js` - Character definitions
+
+## Maintenance
+
+- Last updated: 2026-02-06.

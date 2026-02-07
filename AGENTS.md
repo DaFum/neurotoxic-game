@@ -85,3 +85,8 @@ For domain-specific guidance, consult specialized agent documentation:
 ---
 
 _"Complexity is not an excuse for friction."_
+
+## Maintenance
+
+- Audio: Ambient playback starts on Start Tour and plays full MIDI tracks; gig playback starts from configured excerpts and stops at the song duration.  
+- Last updated: 2026-02-06.

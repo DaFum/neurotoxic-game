@@ -276,3 +276,7 @@ describe('usePurchaseLogic', () => {
 - `src/utils/errorHandler.js` - Centralized error handling
 - `src/utils/AudioManager.js` - Sound effects
 - `src/utils/logger.js` - Debug logging
+
+## Maintenance
+
+- Last updated: 2026-02-06.

@@ -1,4 +1,4 @@
-import { Howl, Howler } from 'howler'
+import { Howler } from 'howler'
 import * as Tone from 'tone'
 import * as audioEngine from './audioEngine.js'
 import { handleError } from './errorHandler.js'
@@ -9,7 +9,6 @@ import { logger } from './logger.js'
  */
 class AudioSystem {
   constructor() {
-    this.music = null
     this.currentSongId = null
     this.musicVolume = 0.5
     this.sfxVolume = 0.5
@@ -58,45 +57,6 @@ class AudioSystem {
   }
 
   /**
-   * Plays a music track by ID.
-   * @param {string} songId - The ID of the song to play (or 'ambient').
-   * @param {boolean} [loop=false] - Whether to loop the track.
-   * @param {number} [volume] - Volume override (defaults to global music volume).
-   * @returns {object|null} The Howl instance or null if not initialized.
-   */
-  playMusic(songId, loop = false, volume = this.musicVolume) {
-    if (!this.initialized) return null
-
-    // If ambient, delegate to MIDI engine
-    if (songId === 'ambient') {
-      this.startAmbient()
-      return null
-    }
-
-    // Clean up previous instance explicitly
-    this.stopMusic()
-
-    const src = this.getAudioSrc(songId)
-    this.currentSongId = songId
-
-    this.music = new Howl({
-      src: [src],
-      html5: true,
-      loop: loop,
-      volume: volume,
-      onplayerror: (id, err) => {
-        logger.warn('AudioSystem', 'Play error, attempting unlock:', err)
-        this.music.once('unlock', () => {
-          this.music.play()
-        })
-      }
-    })
-
-    this.music.play()
-    return this.music
-  }
-
-  /**
    * Starts the ambient background music stream if not already playing.
    */
   async startAmbient() {
@@ -134,23 +94,8 @@ class AudioSystem {
    * Stops the currently playing music (Howler or Tone).
    */
   stopMusic() {
-    if (this.music) {
-      this.music.stop()
-      this.music.unload()
-      this.music = null
-    }
     audioEngine.stopAudio()
     this.currentSongId = null
-  }
-
-  /**
-   * Pauses the currently playing music.
-   */
-  pauseMusic() {
-    if (this.music) this.music.pause()
-    if (Tone.Transport.state === 'started') {
-      audioEngine.pauseAudio()
-    }
   }
 
   /**
@@ -159,13 +104,9 @@ class AudioSystem {
    * playback states (either Howl or Tone is active, not both).
    */
   resumeMusic() {
-    if (this.music && !this.music.playing()) {
-      if (this.music.state() === 'loaded') {
-        this.music.play()
-      }
-    } else if (Tone.Transport.state === 'paused') {
+    if (Tone.Transport.state === 'paused') {
       audioEngine.resumeAudio()
-    } else if (!this.music && Tone.Transport.state !== 'started') {
+    } else if (Tone.Transport.state !== 'started') {
       this.startAmbient()
     }
   }
@@ -211,9 +152,6 @@ class AudioSystem {
     const next = Math.min(1, Math.max(0, vol))
     this.musicVolume = next
     localStorage.setItem('neurotoxic_vol_music', next)
-    if (this.music) {
-      this.music.volume(next)
-    }
     // Scale Tone.js master volume so MIDI ambient respects the music slider
     try {
       // Avoid -Infinity by clamping to a minimum dB floor for 0 volume
@@ -255,48 +193,6 @@ class AudioSystem {
 
     localStorage.setItem('neurotoxic_muted', this.muted)
     return this.muted
-  }
-
-  /**
-   * Resolves the source URL for a given song ID.
-   * @param {string} songId - The song ID.
-   * @returns {string} The URL string.
-   */
-  getAudioSrc(songId) {
-    // Ambient is now handled via MIDI engine.
-    // TODO: Implement actual URL mapping for non-ambient tracks if needed.
-    if (songId !== 'ambient') {
-      logger.warn(
-        'AudioSystem',
-        `getAudioSrc returning placeholder for songId: ${songId}`
-      )
-    }
-    return 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
-  }
-
-  /**
-   * Wrapper for playSFX to match guidelines.
-   * @param {string} soundId - The SFX identifier.
-   */
-  playSound(soundId) {
-    this.playSFX(soundId)
-  }
-
-  /**
-   * Stops all audio playback.
-   */
-  stopAll() {
-    this.stopMusic()
-    // Could also stop SFX if tracked
-  }
-
-  /**
-   * Sets the master volume (affects both music and SFX).
-   * @param {number} level - Volume level (0-1).
-   */
-  setMasterVolume(level) {
-    this.setMusicVolume(level)
-    this.setSFXVolume(level)
   }
 
   /**

@@ -8,6 +8,8 @@ import * as Tone from 'tone'
 import { Midi } from '@tonejs/midi'
 import { calculateTimeFromTicks } from './rhythmUtils'
 import { SONGS_DB } from '../data/songs'
+import { selectRandomItem } from './audioSelectionUtils.js'
+import { normalizeMidiPlaybackOptions } from './audioPlaybackUtils.js'
 import { logger } from './logger.js'
 
 // Import all MIDI files as URLs
@@ -36,8 +38,41 @@ let masterLimiter, masterComp, reverb, reverbSend
 let distortion, guitarChorus, guitarEq, widener
 let bassEq, bassComp
 let drumBus
+let midiDryBus, midiLead, midiBass, midiDrumKit
 let isSetup = false
 let playRequestId = 0
+let transportEndEventId = null
+let transportStopEventId = null
+
+/**
+ * Clears any scheduled transport end callback.
+ * @returns {void}
+ */
+const clearTransportEndEvent = () => {
+  if (transportEndEventId == null) return
+  try {
+    Tone.Transport.clear(transportEndEventId)
+  } catch (error) {
+    logger.warn('AudioEngine', 'Failed to clear transport end event', error)
+  } finally {
+    transportEndEventId = null
+  }
+}
+
+/**
+ * Clears any scheduled transport stop callback.
+ * @returns {void}
+ */
+const clearTransportStopEvent = () => {
+  if (transportStopEventId == null) return
+  try {
+    Tone.Transport.clear(transportStopEventId)
+  } catch (error) {
+    logger.warn('AudioEngine', 'Failed to clear transport stop event', error)
+  } finally {
+    transportStopEventId = null
+  }
+}
 
 /**
  * Initializes the audio subsystem, including synths, effects, and master compressor.
@@ -172,6 +207,39 @@ export async function setupAudio() {
     oscillator: { type: 'triangle' },
     envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.2 }
   }).connect(sfxGain)
+
+  // === Clean MIDI Chain ===
+  // MIDI playback should be dry: no distortion, chorus, EQ, or reverb.
+  // This preserves the raw MIDI dynamics without coloration.
+  midiDryBus = new Tone.Gain(1).connect(masterComp)
+  midiLead = new Tone.PolySynth(Tone.Synth, {
+    oscillator: { type: 'sine' },
+    envelope: { attack: 0.001, decay: 0.2, sustain: 0.2, release: 0.3 }
+  }).connect(midiDryBus)
+
+  midiBass = new Tone.PolySynth(Tone.Synth, {
+    oscillator: { type: 'triangle' },
+    envelope: { attack: 0.005, decay: 0.25, sustain: 0.2, release: 0.3 }
+  }).connect(midiDryBus)
+  midiBass.volume.value = -6
+
+  midiDrumKit = {
+    kick: new Tone.MembraneSynth({
+      pitchDecay: 0.03,
+      octaves: 5,
+      oscillator: { type: 'sine' },
+      envelope: { attack: 0.001, decay: 0.25, sustain: 0, release: 0.1 }
+    }).connect(midiDryBus),
+    snare: new Tone.NoiseSynth({
+      envelope: { attack: 0.001, decay: 0.12, sustain: 0 }
+    }).connect(midiDryBus),
+    hihat: new Tone.NoiseSynth({
+      envelope: { attack: 0.001, decay: 0.05, sustain: 0 }
+    }).connect(midiDryBus),
+    crash: new Tone.NoiseSynth({
+      envelope: { attack: 0.002, decay: 0.6, sustain: 0 }
+    }).connect(midiDryBus)
+  }
 
   isSetup = true
 }
@@ -341,51 +409,51 @@ export async function playSongFromData(song, delay = 0) {
  * @param {number} time - The time to trigger the note.
  * @param {number} velocity - The velocity of the note (0-1).
  */
-function playDrumNote(midiPitch, time, velocity) {
-  if (!drumKit) return
+function playDrumNote(midiPitch, time, velocity, kit = drumKit) {
+  if (!kit) return
   // GM Percussion Mapping
   switch (midiPitch) {
     case 35: // Acoustic Kick
     case 36: // Electric Kick
-      drumKit.kick.triggerAttackRelease('C1', '8n', time, velocity)
+      kit.kick.triggerAttackRelease('C1', '8n', time, velocity)
       break
     case 37: // Side Stick
-      drumKit.snare.triggerAttackRelease('32n', time, velocity * 0.4)
+      kit.snare.triggerAttackRelease('32n', time, velocity * 0.4)
       break
     case 38: // Acoustic Snare
     case 40: // Electric Snare
-      drumKit.snare.triggerAttackRelease('16n', time, velocity)
+      kit.snare.triggerAttackRelease('16n', time, velocity)
       break
     case 42: // Closed HiHat
     case 44: // Pedal HiHat
-      drumKit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.7)
+      kit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.7)
       break
     case 46: // Open HiHat
-      drumKit.hihat.triggerAttackRelease(6000, '16n', time, velocity * 0.8)
+      kit.hihat.triggerAttackRelease(6000, '16n', time, velocity * 0.8)
       break
     case 49: // Crash 1
     case 57: // Crash 2
-      drumKit.crash.triggerAttackRelease(4000, '4n', time, velocity * 0.7)
+      kit.crash.triggerAttackRelease(4000, '4n', time, velocity * 0.7)
       break
     case 51: // Ride Cymbal
     case 59: // Ride Bell
-      drumKit.hihat.triggerAttackRelease(5000, '8n', time, velocity * 0.5)
+      kit.hihat.triggerAttackRelease(5000, '8n', time, velocity * 0.5)
       break
     case 41: // Low Floor Tom
     case 43: // High Floor Tom
-      drumKit.kick.triggerAttackRelease('G1', '8n', time, velocity * 0.8)
+      kit.kick.triggerAttackRelease('G1', '8n', time, velocity * 0.8)
       break
     case 45: // Low Tom
     case 47: // Low-Mid Tom
-      drumKit.kick.triggerAttackRelease('D2', '8n', time, velocity * 0.7)
+      kit.kick.triggerAttackRelease('D2', '8n', time, velocity * 0.7)
       break
     case 48: // Hi-Mid Tom
     case 50: // High Tom
-      drumKit.kick.triggerAttackRelease('A2', '8n', time, velocity * 0.6)
+      kit.kick.triggerAttackRelease('A2', '8n', time, velocity * 0.6)
       break
     default:
       // Default to closed HiHat for unknown percussion
-      drumKit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.4)
+      kit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.4)
   }
 }
 
@@ -464,6 +532,7 @@ export function stopAudio() {
  */
 function stopAudioInternal() {
   Tone.Transport.stop()
+  Tone.Transport.position = 0
   if (loop) {
     loop.dispose()
     loop = null
@@ -473,6 +542,8 @@ function stopAudioInternal() {
     part = null
   }
   Tone.Transport.cancel()
+  clearTransportEndEvent()
+  clearTransportStopEvent()
 }
 
 /**
@@ -510,6 +581,15 @@ export function disposeAudio() {
   }
   if (sfxSynth) sfxSynth.dispose()
   if (sfxGain) sfxGain.dispose()
+  if (midiLead) midiLead.dispose()
+  if (midiBass) midiBass.dispose()
+  if (midiDrumKit) {
+    midiDrumKit.kick.dispose()
+    midiDrumKit.snare.dispose()
+    midiDrumKit.hihat.dispose()
+    midiDrumKit.crash.dispose()
+  }
+  if (midiDryBus) midiDryBus.dispose()
 
   if (distortion) distortion.dispose()
   if (guitarChorus) guitarChorus.dispose()
@@ -531,6 +611,10 @@ export function disposeAudio() {
   drumKit = null
   sfxSynth = null
   sfxGain = null
+  midiLead = null
+  midiBass = null
+  midiDrumKit = null
+  midiDryBus = null
 
   distortion = null
   guitarChorus = null
@@ -610,13 +694,20 @@ function playDrumsLegacy(time, diff, note, random) {
  * @param {number} [offset=0] - Start offset in seconds.
  * @param {boolean} [loop=false] - Whether to loop the playback.
  * @param {number} [delay=0] - Delay in seconds before starting playback.
+ * @param {object} [options] - Playback options.
+ * @param {boolean} [options.useCleanPlayback=true] - If true, bypass FX for MIDI playback.
+ * @param {Function} [options.onEnded] - Callback invoked after playback ends.
+ * @param {number} [options.stopAfterSeconds] - Optional playback duration limit in seconds.
  */
 export async function playMidiFile(
   filename,
   offset = 0,
   loop = false,
-  delay = 0
+  delay = 0,
+  options = {}
 ) {
+  const { onEnded, useCleanPlayback, stopAfterSeconds } =
+    normalizeMidiPlaybackOptions(options)
   logger.debug(
     'AudioEngine',
     `Request playMidiFile: ${filename}, offset=${offset}, loop=${loop}`
@@ -669,6 +760,10 @@ export async function playMidiFile(
       Tone.Transport.bpm.value = midi.header.tempos[0].bpm
     }
 
+    const leadSynth = useCleanPlayback ? midiLead : guitar
+    const bassSynth = useCleanPlayback ? midiBass : bass
+    const drumSet = useCleanPlayback ? midiDrumKit : drumKit
+
     midi.tracks.forEach(track => {
       track.notes.forEach(note => {
         // Filter out invalid times
@@ -676,7 +771,7 @@ export async function playMidiFile(
 
         // Schedule notes
         Tone.Transport.schedule(time => {
-          if (!guitar || !bass || !drumKit) return
+          if (!leadSynth || !bassSynth || !drumSet) return
 
           try {
             // Clamp duration to prevent "duration must be greater than 0" error
@@ -694,12 +789,12 @@ export async function playMidiFile(
             // Basic Mapping
             // Percussion (Channel 10, index 9)
             if (track.instrument.percussion || track.channel === 9) {
-              playDrumNote(note.midi, time, velocity)
+              playDrumNote(note.midi, time, velocity, drumSet)
             } else {
               // Instrument separation by pitch heuristic
               if (note.midi < 45) {
                 // Bass range
-                bass.triggerAttackRelease(
+                bassSynth.triggerAttackRelease(
                   Tone.Frequency(note.midi, 'midi'),
                   duration,
                   time,
@@ -707,7 +802,7 @@ export async function playMidiFile(
                 )
               } else {
                 // Guitar/Lead range
-                guitar.triggerAttackRelease(
+                leadSynth.triggerAttackRelease(
                   Tone.Frequency(note.midi, 'midi'),
                   duration,
                   time,
@@ -754,6 +849,26 @@ export async function playMidiFile(
       Tone.Transport.loop = false
     }
 
+    clearTransportEndEvent()
+    clearTransportStopEvent()
+    if (!loop && onEnded && duration > 0) {
+      transportEndEventId = Tone.Transport.scheduleOnce(() => {
+        if (reqId !== playRequestId) return
+        onEnded({
+          filename,
+          duration,
+          offsetSeconds: requestedOffset
+        })
+      }, duration)
+    }
+    if (!loop && Number.isFinite(stopAfterSeconds) && stopAfterSeconds > 0) {
+      const stopTime = requestedOffset + stopAfterSeconds
+      transportStopEventId = Tone.Transport.scheduleOnce(() => {
+        if (reqId !== playRequestId) return
+        stopAudio()
+      }, stopTime)
+    }
+
     Tone.Transport.start(Tone.now() + validDelay, requestedOffset)
     return true
   } catch (err) {
@@ -783,9 +898,11 @@ export async function playRandomAmbientMidi(
   }
 
   // Requirement: pick a random MIDI from the assets folder
-  const randIndex = Math.floor(rng() * midiFiles.length)
-  const safeIndex = Math.min(randIndex, midiFiles.length - 1)
-  const filename = midiFiles[safeIndex]
+  const filename = selectRandomItem(midiFiles, rng)
+  if (!filename) {
+    logger.warn('AudioEngine', 'Random MIDI selection returned null')
+    return false
+  }
 
   // If the MIDI is known in SONGS_DB, we might use metadata, but for Ambient we always start from 0
   const meta = songs.find(s => s.sourceMid === filename)
@@ -796,7 +913,18 @@ export async function playRandomAmbientMidi(
     'AudioEngine',
     `Playing ambient: ${meta?.name ?? filename} (offset ${offsetSeconds}s)`
   )
-  return playMidiFile(filename, offsetSeconds, true)
+  return playMidiFile(filename, offsetSeconds, false, 0, {
+    useCleanPlayback: true,
+    onEnded: () => {
+      playRandomAmbientMidi(songs, rng).catch(error => {
+        logger.error(
+          'AudioEngine',
+          'Failed to start next ambient MIDI track',
+          error
+        )
+      })
+    }
+  })
 }
 
 /**

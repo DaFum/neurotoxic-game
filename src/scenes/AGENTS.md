@@ -273,3 +273,7 @@ When modifying a scene, verify:
 ---
 
 **Remember**: Scenes are the "directors" of game state. They orchestrate actions but delegate logic to utilities and engines. Keep scenes focused on presentation and user interaction, not complex business logic.
+
+## Maintenance
+
+- Last updated: 2026-02-06.
