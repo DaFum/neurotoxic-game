@@ -26,3 +26,8 @@ description: Generate or update Codex project instructions for this repository u
 - Produce a single Markdown section suitable for inclusion in `AGENTS.md` or a standalone instruction file.
 - Do not invent new constraints.
 - Do not upgrade dependencies.
+
+## Related Skills
+
+- `repo-guardrails-generator` — generates compact checklist-style guardrails
+- `repo-navigator-agents-routing` — provides the domain routing this skill documents

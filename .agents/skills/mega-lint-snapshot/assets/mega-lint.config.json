@@ -8,7 +8,7 @@
     {
       "name": "BASH_EXEC",
       "command": "bash",
-      "args": ["-lc", "rg --files -g '*.sh' | xargs -r test -x"]
+      "args": ["-lc", "rg --files -g '*.sh' | xargs -r -n1 test -x"]
     },
     {
       "name": "CHECKOV",
@@ -39,7 +39,7 @@
     {
       "name": "JSON",
       "command": "bash",
-      "args": ["-lc", "rg --files -g '*.json' | xargs -r node -e \"JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8'))\""]
+      "args": ["-lc", "rg --files -g '*.json' | xargs -r -n1 node -e \"JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8'))\""]
     },
     {
       "name": "JSON_PRETTIER",

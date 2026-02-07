@@ -8,7 +8,7 @@ import {
   runPromptCases,
   runQualityGate,
   writeReport
-} from '../../../../scripts/skills/skilltest-lib.mjs'
+} from './skilltest-lib.mjs'
 
 const run = async () => {
   const includeUserSkills = process.argv.includes('--include-user')

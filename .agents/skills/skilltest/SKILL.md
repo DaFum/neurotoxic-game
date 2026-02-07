@@ -9,9 +9,9 @@ description: Comprehensive validation for repo and user skills against the Open 
 
 1. Discover skills from `.agents/skills` (CWD up to repo root) and optionally `~/.agents/skills`.
 2. Validate directory contract, frontmatter, naming, and symlink targets.
-3. Check optional `.agents/openai.yaml` fields when present.
+3. Check optional `agents/openai.yaml` fields when present (relative to each skill directory).
 4. Verify script permissions and referenced files.
-5. Execute prompt-case checks from `tests/skills/*.cases.json`.
+5. Execute prompt-case checks from `tests/cases/*.cases.json` (within this skill directory).
 6. Emit JSON + human-readable reports.
 
 ## Commands

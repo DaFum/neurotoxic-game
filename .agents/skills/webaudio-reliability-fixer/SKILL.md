@@ -5,13 +5,28 @@ description: Analyze and improve WebAudio/Tone.js reliability (autoplay gating, 
 
 # WebAudio Reliability Fixer
 
+## Key Files
+
+- `src/utils/AudioManager.js` — singleton that wraps Howler.js (v2.2.4) for playback
+- `src/utils/audioEngine.js` — low-level AudioContext/Tone.js (v15) scheduling
+- `src/utils/audioPlaybackUtils.js` — start/stop helpers for ambient and gig modes
+- `src/hooks/useAudioControl.js` — React hook that gates audio on user gesture
+- `src/components/PixiStage.jsx` — may trigger audio transitions on scene changes
+
 ## Workflow
 
-1. Verify user-gesture gating for AudioContext/Tone.js start.
-2. Check start/stop scheduling and ensure timers are cleared.
-3. Inspect transport scheduling density and avoid excessive scheduling.
-4. Add minimal debug logging around context state transitions.
+1. Verify user-gesture gating in `useAudioControl.js` — AudioContext/Tone.js must not start before interaction.
+2. Check start/stop scheduling in `audioEngine.js` and ensure timers and Transport events are cleared on scene transitions.
+3. Inspect `AudioManager.js` for scheduling density — avoid queueing overlapping Howl instances.
+4. Review scene transitions in `src/scenes/` for audio lifecycle gaps (e.g., Gig → PostGig).
+5. Add minimal debug logging via `src/utils/logger.js` around context state transitions.
 
 ## Output
 
 - Provide the highest-impact fixes first.
+- Reference specific files and line ranges for each fix.
+
+## Related Skills
+
+- `audio-debugger-ambient-vs-gig` — for ambient vs gig playback-specific bugs
+- `pixi-lifecycle-memory-leak-sentinel` — audio leaks often accompany Pixi.js lifecycle issues

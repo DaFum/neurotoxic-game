@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import path from 'node:path'
 import { test } from 'node:test'
-import { buildReport, parseFrontmatter } from '../scripts/skills/skilltest-lib.mjs'
+import { buildReport, parseFrontmatter } from '../scripts/skilltest-lib.mjs'
 
 test('parseFrontmatter reads only leading frontmatter', () => {
   const contents = [

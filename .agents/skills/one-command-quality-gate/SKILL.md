@@ -19,3 +19,9 @@ description: Run the repository quality gate in order (lint, test, build) and su
 ## Output
 
 - Provide a short summary of results and any actionable next steps.
+
+## Related Skills
+
+- `one-command-doctor` — for broader healthcheck including Node version and npm install
+- `ci-hardener` — for enforcing the same checks in CI
+- `refactor-with-safety` — always run this gate after refactors

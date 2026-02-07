@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { spawn } from 'node:child_process'
 import toml from '@iarna/toml'
 import { parse as parseYamlDoc } from 'yaml'
@@ -9,6 +10,56 @@ import { parse as parseYamlDoc } from 'yaml'
  * @property {string} level
  * @property {string} message
  */
+
+/**
+ * Validate a skill name against the Open Agent Skills specification.
+ * @param {string} name - Skill name from frontmatter.
+ * @returns {SkillFinding[]} Findings.
+ */
+const validateSkillName = name => {
+  const findings = []
+  if (name.length > 64) {
+    findings.push({
+      level: 'error',
+      message: `Name exceeds 64 characters (${name.length}).`
+    })
+  }
+  if (/[^a-z0-9-]/.test(name)) {
+    findings.push({
+      level: 'error',
+      message: 'Name must contain only lowercase letters, numbers, and hyphens.'
+    })
+  }
+  if (name.startsWith('-') || name.endsWith('-')) {
+    findings.push({
+      level: 'error',
+      message: 'Name must not start or end with a hyphen.'
+    })
+  }
+  if (name.includes('--')) {
+    findings.push({
+      level: 'error',
+      message: 'Name must not contain consecutive hyphens.'
+    })
+  }
+  return findings
+}
+
+/**
+ * Validate description length against the Open Agent Skills specification.
+ * @param {string} description - Skill description.
+ * @returns {SkillFinding[]} Findings.
+ */
+const validateDescription = description => {
+  const findings = []
+  if (description.length > 1024) {
+    findings.push({
+      level: 'error',
+      message: `Description exceeds 1024 characters (${description.length}).`
+    })
+  }
+  return findings
+}
 
 /**
  * @typedef {Object} SkillRecord
@@ -22,6 +73,7 @@ import { parse as parseYamlDoc } from 'yaml'
  */
 
 let repoRootCache = null
+let repoRootCacheCwd = null
 
 /**
  * Determine the repository root by walking up to a .git directory.
@@ -338,17 +390,24 @@ export const loadSkillRecord = async skillDir => {
 
   const name = meta?.name || ''
   const description = meta?.description || ''
-  if (name && path.basename(skillDir) !== name) {
-    findings.push({
-      level: 'error',
-      message: 'Frontmatter name does not match directory name.'
-    })
+  if (name) {
+    // Per Open Agent Skills spec: name must match parent directory name.
+    if (path.basename(skillDir) !== name) {
+      findings.push({
+        level: 'error',
+        message: 'Frontmatter name does not match directory name.'
+      })
+    }
+    findings.push(...validateSkillName(name))
   }
-  if (description && !isDescriptionAdequate(description)) {
-    findings.push({
-      level: 'warning',
-      message: 'Description may be too short or missing trigger guidance.'
-    })
+  if (description) {
+    findings.push(...validateDescription(description))
+    if (!isDescriptionAdequate(description)) {
+      findings.push({
+        level: 'warning',
+        message: 'Description may be too short or missing trigger guidance.'
+      })
+    }
   }
 
   if (contents) {
@@ -391,7 +450,9 @@ export const discoverSkills = async ({ includeUserSkills }) => {
   for (const root of roots) {
     try {
       const discovered = await findSkillDirs(root)
-      discovered.forEach(dir => skillDirs.add(dir))
+      discovered.forEach(dir => {
+        skillDirs.add(dir)
+      })
     } catch (error) {
       // skip missing roots
     }
@@ -430,8 +491,8 @@ export const discoverSkills = async ({ includeUserSkills }) => {
  * @returns {Promise<Object[]>} Test cases.
  */
 export const loadSkillCases = async () => {
-  const repoRoot = await getRepoRoot()
-  const casesDir = path.join(repoRoot, 'tests', 'skills')
+  const __dirname = path.dirname(fileURLToPath(import.meta.url))
+  const casesDir = path.join(__dirname, '..', 'tests', 'cases')
   const entries = await fs.readdir(casesDir)
   const caseFiles = entries.filter(entry => entry.endsWith('.cases.json'))
   const cases = []
@@ -508,10 +569,20 @@ export const readDisabledSkills = async () => {
  * @returns {Promise<string>} Repository root.
  */
 const getRepoRoot = async () => {
-  if (!repoRootCache) {
-    repoRootCache = await findRepoRoot(process.cwd())
+  const cwd = process.cwd()
+  if (!repoRootCache || repoRootCacheCwd !== cwd) {
+    repoRootCache = await findRepoRoot(cwd)
+    repoRootCacheCwd = cwd
   }
   return repoRootCache
+}
+
+/**
+ * Reset the cached repository root. Useful when tests change cwd.
+ */
+export const resetRepoRootCache = () => {
+  repoRootCache = null
+  repoRootCacheCwd = null
 }
 
 /**
