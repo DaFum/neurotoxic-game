@@ -34,6 +34,19 @@ export const MainMenu = () => {
   const { audioState, handleAudioChange } = useAudioControl()
 
   /**
+   * Starts ambient audio without blocking navigation.
+   * @returns {void}
+   */
+  const startAmbientSafely = () => {
+    audioManager.startAmbient().catch(err => {
+      handleError(err, {
+        addToast,
+        fallbackMessage: 'Ambient audio failed to start.'
+      })
+    })
+  }
+
+  /**
    * Handles loading a saved game.
    */
   const handleLoad = async () => {
@@ -46,7 +59,7 @@ export const MainMenu = () => {
           fallbackMessage: 'Audio initialization failed.'
         })
       } finally {
-        await audioManager.startAmbient()
+        startAmbientSafely()
         changeScene('OVERWORLD')
       }
     } else {
@@ -114,7 +127,7 @@ export const MainMenu = () => {
                 })
               } finally {
                 resetState()
-                await audioManager.startAmbient()
+                startAmbientSafely()
                 changeScene('OVERWORLD')
               }
             }}
