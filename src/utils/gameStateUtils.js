@@ -52,20 +52,41 @@ export const applyEventDelta = (state, delta) => {
       )
     }
 
-    if (delta.band.members) {
-      nextBand.members = nextBand.members.map(m => {
-        let newMood = m.mood
-        let newStamina = m.stamina
-        if (typeof delta.band.members.moodChange === 'number')
-          newMood += delta.band.members.moodChange
-        if (typeof delta.band.members.staminaChange === 'number')
-          newStamina += delta.band.members.staminaChange
-        return {
-          ...m,
-          mood: Math.max(0, Math.min(100, newMood)),
-          stamina: Math.max(0, Math.min(100, newStamina))
-        }
-      })
+    const membersDelta =
+      delta.band.membersDelta !== undefined
+        ? delta.band.membersDelta
+        : delta.band.members
+    if (membersDelta) {
+      if (Array.isArray(membersDelta)) {
+        nextBand.members = nextBand.members.map((member, index) => {
+          const memberDelta = membersDelta[index] || {}
+          const moodChange =
+            typeof memberDelta.moodChange === 'number' ? memberDelta.moodChange : 0
+          const staminaChange =
+            typeof memberDelta.staminaChange === 'number'
+              ? memberDelta.staminaChange
+              : 0
+          return {
+            ...member,
+            mood: Math.max(0, Math.min(100, member.mood + moodChange)),
+            stamina: Math.max(0, Math.min(100, member.stamina + staminaChange))
+          }
+        })
+      } else {
+        nextBand.members = nextBand.members.map(member => {
+          let newMood = member.mood
+          let newStamina = member.stamina
+          if (typeof membersDelta.moodChange === 'number')
+            newMood += membersDelta.moodChange
+          if (typeof membersDelta.staminaChange === 'number')
+            newStamina += membersDelta.staminaChange
+          return {
+            ...member,
+            mood: Math.max(0, Math.min(100, newMood)),
+            stamina: Math.max(0, Math.min(100, newStamina))
+          }
+        })
+      }
     }
     if (delta.band.inventory) {
       nextBand.inventory = { ...nextBand.inventory }

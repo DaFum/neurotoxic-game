@@ -268,8 +268,8 @@ test('eventEngine.applyResult handles mood changes', () => {
   const delta = eventEngine.applyResult(result)
 
   assert.ok(delta, 'Should return delta')
-  assert.ok(delta.band.members, 'Should have member changes')
-  assert.equal(delta.band.members.moodChange, 10, 'Should set mood change')
+  assert.ok(delta.band.membersDelta, 'Should have member changes')
+  assert.equal(delta.band.membersDelta.moodChange, 10, 'Should set mood change')
 })
 
 test('eventEngine.applyResult handles stamina changes', () => {
@@ -279,7 +279,7 @@ test('eventEngine.applyResult handles stamina changes', () => {
 
   assert.ok(delta, 'Should return delta')
   assert.equal(
-    delta.band.members.staminaChange,
+    delta.band.membersDelta.staminaChange,
     -20,
     'Should set stamina change'
   )
