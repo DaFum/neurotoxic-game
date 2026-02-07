@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { formatReport, validateSkills } from '../../.agents/skills/skilltest/scripts/validate-skills.mjs'
+import { formatReport, validateSkills } from '../scripts/validate-skills.mjs'
 
 const hasErrorLines = report => report.includes('❌')
 

@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { spawn } from 'node:child_process'
 import toml from '@iarna/toml'
 import { parse as parseYamlDoc } from 'yaml'
@@ -435,8 +436,8 @@ export const discoverSkills = async ({ includeUserSkills }) => {
  * @returns {Promise<Object[]>} Test cases.
  */
 export const loadSkillCases = async () => {
-  const repoRoot = await getRepoRoot()
-  const casesDir = path.join(repoRoot, 'tests', 'skills')
+  const __dirname = path.dirname(fileURLToPath(import.meta.url))
+  const casesDir = path.join(__dirname, '..', 'tests', 'cases')
   const entries = await fs.readdir(casesDir)
   const caseFiles = entries.filter(entry => entry.endsWith('.cases.json'))
   const cases = []

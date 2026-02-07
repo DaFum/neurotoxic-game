@@ -12,7 +12,7 @@ import {
   parseYaml,
   readDisabledSkills,
   runPromptCases
-} from '../../.agents/skills/skilltest/scripts/skilltest-lib.mjs'
+} from '../scripts/skilltest-lib.mjs'
 
 /**
  * Run a callback with a temporary HOME directory.

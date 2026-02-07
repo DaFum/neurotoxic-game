@@ -10,7 +10,7 @@ description: Discover, validate, and test all Codex skills in this repository (a
 1. Inventory skills in `.agents/skills` (and optionally `~/.agents/skills`).
 2. Validate structure, frontmatter, and duplicate names.
 3. Run repository quality gate (lint, test, build) before skill checks.
-4. Execute prompt-based checks using `tests/skills/*.cases.json`.
+4. Execute prompt-based checks using `.agents/skills/skilltest/tests/cases/*.cases.json`.
 5. Report pass/fail per skill with actionable fixes.
 
 ## Commands

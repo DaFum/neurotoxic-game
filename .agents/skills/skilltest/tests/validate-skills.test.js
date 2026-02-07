@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { test } from 'node:test'
-import { validateSkills } from '../.agents/skills/skilltest/scripts/validate-skills.mjs'
+import { validateSkills } from '../scripts/validate-skills.mjs'
 
 const writeSkill = async (rootDir, name) => {
   const skillDir = path.join(rootDir, '.agents', 'skills', name)
