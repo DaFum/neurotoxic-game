@@ -18,3 +18,8 @@ description: Run a quick healthcheck (node version, install, lint, test, build) 
 ## Output
 
 - Provide a concise diagnosis and next steps.
+
+## Related Skills
+
+- `one-command-quality-gate` — if doctor passes, run the full quality gate
+- `debug-ux-upgrader` — for adding deeper diagnostic tooling after initial diagnosis

@@ -5,13 +5,27 @@ description: Create a concise change plan, identify risks, and propose Conventio
 
 # Change Plan + Conventional Commits
 
+## Commit Prefixes
+
+This repo uses Conventional Commits: `feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`.
+
+## Key Files
+
+- `AGENTS.md` — Git Workflow section defines branch naming and commit conventions
+- `package.json` — `scripts` section lists the quality gate commands
+
 ## Workflow
 
-1. Summarize the requested change and affected areas.
-2. List steps with validation checkpoints.
-3. Propose Conventional Commit message(s).
-4. Draft a short PR checklist if needed.
+1. Summarize the requested change and identify affected areas (use `src/*/AGENTS.md` for domain routing).
+2. List implementation steps with validation checkpoints (`npm run lint`, `npm run test`, `npm run build`).
+3. Propose Conventional Commit message(s) — use `feat:` for new features, `fix:` for bugs, `refactor:` for restructuring.
+4. Draft a short PR checklist: tests pass, no lint errors, build succeeds, no version pin violations.
 
 ## Output
 
-- Provide a plan, a commit message, and a short checklist.
+- Provide a plan, commit message(s), and a short checklist.
+
+## Related Skills
+
+- `release-notes-synthesizer` — uses these commit messages to generate changelogs
+- `one-command-quality-gate` — for running the validation checkpoints

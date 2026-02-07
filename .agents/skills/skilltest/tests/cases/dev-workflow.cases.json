@@ -1,0 +1,17 @@
+[
+  {
+    "skill": "ci-hardener",
+    "prompt": "CI is slow and flaky, improve it.",
+    "expectIncludes": [".github/workflows/", "lint"]
+  },
+  {
+    "skill": "refactor-with-safety",
+    "prompt": "Refactor the event engine without breaking tests.",
+    "expectIncludes": ["npm run lint", "npm run test", "npm run build"]
+  },
+  {
+    "skill": "repo-navigator-agents-routing",
+    "prompt": "Where does the travel logic live?",
+    "expectIncludes": ["src/hooks/", "AGENTS.md"]
+  }
+]
