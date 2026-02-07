@@ -21,7 +21,7 @@ import { parse as parseYamlDoc } from 'yaml'
  * @property {SkillFinding[]} findings
  */
 
-const repoRoot = process.cwd()
+let repoRootCache = null
 
 /**
  * Determine the repository root by walking up to a .git directory.
@@ -113,7 +113,7 @@ export const findSkillDirs = async rootDir => {
  * @returns {{name: string, description: string} | null} Parsed frontmatter.
  */
 export const parseFrontmatter = contents => {
-  const match = contents.match(/^---\n([\s\S]*?)\n---\n/m)
+  const match = contents.match(/^---\n([\s\S]*?)\n---\n/)
   if (!match) return null
   const lines = match[1].split('\n')
   const data = {}
@@ -141,7 +141,9 @@ export const parseYaml = contents => parseYamlDoc(contents) || {}
 const isDescriptionAdequate = description => {
   const normalized = description.toLowerCase()
   const triggerHints = ['use when', 'use this', 'when', 'trigger', 'apply']
-  return description.length >= 40 && triggerHints.some(hint => normalized.includes(hint))
+  const hasTriggerHint = triggerHints.some(hint => normalized.includes(hint))
+  const isLongEnough = description.length >= 60
+  return hasTriggerHint || isLongEnough
 }
 
 /**
@@ -404,14 +406,17 @@ export const discoverSkills = async ({ includeUserSkills }) => {
   records.forEach(record => {
     if (!record.name) return
     if (nameMap.has(record.name)) {
-      record.findings.push({
-        level: 'warning',
-        message: 'Duplicate skill name detected.'
-      })
-      nameMap.get(record.name).findings.push({
-        level: 'warning',
-        message: 'Duplicate skill name detected.'
-      })
+      const message = 'Duplicate skill name detected.'
+      if (!record.findings.some(finding => finding.message === message)) {
+        record.findings.push({ level: 'warning', message })
+      }
+      const existingRecord = nameMap.get(record.name)
+      if (
+        existingRecord &&
+        !existingRecord.findings.some(finding => finding.message === message)
+      ) {
+        existingRecord.findings.push({ level: 'warning', message })
+      }
     } else {
       nameMap.set(record.name, record)
     }
@@ -425,6 +430,7 @@ export const discoverSkills = async ({ includeUserSkills }) => {
  * @returns {Promise<Object[]>} Test cases.
  */
 export const loadSkillCases = async () => {
+  const repoRoot = await getRepoRoot()
   const casesDir = path.join(repoRoot, 'tests', 'skills')
   const entries = await fs.readdir(casesDir)
   const caseFiles = entries.filter(entry => entry.endsWith('.cases.json'))
@@ -498,6 +504,17 @@ export const readDisabledSkills = async () => {
 }
 
 /**
+ * Resolve and cache the repository root path.
+ * @returns {Promise<string>} Repository root.
+ */
+const getRepoRoot = async () => {
+  if (!repoRootCache) {
+    repoRootCache = await findRepoRoot(process.cwd())
+  }
+  return repoRootCache
+}
+
+/**
  * Run the repository quality gate (lint, test, build).
  * @returns {Promise<void>} Promise resolving when complete.
  */
@@ -505,6 +522,13 @@ export const runQualityGate = async () => {
   const runCommand = (command, args) =>
     new Promise((resolve, reject) => {
       const child = spawn(command, args, { stdio: 'inherit' })
+      child.on('error', error => {
+        reject(
+          new Error(
+            `${command} ${args.join(' ')} failed to start: ${error.message}`
+          )
+        )
+      })
       child.on('exit', code => {
         if (code === 0) {
           resolve()
@@ -527,10 +551,14 @@ export const runQualityGate = async () => {
  * @returns {Object} Report data.
  */
 export const buildReport = (records, promptFailures, disabled) => {
+  const normalizePath = value => path.normalize(path.resolve(value))
+  const disabledEntries = Array.from(disabled).map(normalizePath)
   const normalized = records.map(record => {
-    const disabledMatch = Array.from(disabled).some(entry =>
-      record.skillFile.includes(entry)
-    )
+    const recordFile = normalizePath(record.skillFile)
+    const disabledMatch = disabledEntries.some(entry => {
+      if (recordFile === entry) return true
+      return recordFile.startsWith(`${entry}${path.sep}`)
+    })
     const status = record.findings.some(f => f.level === 'error')
       ? 'fail'
       : record.findings.some(f => f.level === 'warning')
@@ -563,6 +591,7 @@ export const buildReport = (records, promptFailures, disabled) => {
  * @returns {Promise<void>} Promise resolving when complete.
  */
 export const writeReport = async report => {
+  const repoRoot = await getRepoRoot()
   const reportDir = path.join(repoRoot, 'reports', 'skills')
   await fs.mkdir(reportDir, { recursive: true })
   const reportPath = path.join(reportDir, 'skilltest-report.json')

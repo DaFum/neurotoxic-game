@@ -25,7 +25,10 @@ test('applyEventDelta clamps values', () => {
   }
   const delta = {
     player: { money: -50, van: { fuel: 20, condition: -20 } },
-    band: { harmony: -20, members: { moodChange: -20, staminaChange: -20 } }
+    band: {
+      harmony: -20,
+      membersDelta: { moodChange: -20, staminaChange: -20 }
+    }
   }
 
   const nextState = applyEventDelta(state, delta)
@@ -48,6 +51,31 @@ test('applyEventDelta handles band inventory updates', () => {
   const nextState = applyEventDelta(state, delta)
   assert.equal(nextState.band.inventory.shirts, 15)
   assert.equal(nextState.band.inventory.golden_pick, true)
+})
+
+test('applyEventDelta applies per-member deltas', () => {
+  const state = {
+    band: {
+      members: [
+        { mood: 50, stamina: 50 },
+        { mood: 80, stamina: 20 }
+      ]
+    }
+  }
+  const delta = {
+    band: {
+      members: [
+        { moodChange: 10, staminaChange: -5 },
+        { moodChange: -20, staminaChange: 15 }
+      ]
+    }
+  }
+
+  const nextState = applyEventDelta(state, delta)
+  assert.equal(nextState.band.members[0].mood, 60)
+  assert.equal(nextState.band.members[0].stamina, 45)
+  assert.equal(nextState.band.members[1].mood, 60)
+  assert.equal(nextState.band.members[1].stamina, 35)
 })
 
 test('applyEventDelta handles social updates', () => {

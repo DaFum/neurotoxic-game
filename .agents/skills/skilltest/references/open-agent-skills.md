@@ -1,6 +1,6 @@
 # Open Agent Skills References
 
 - https://agentskills.io/specification
-- https://developers.openai.com/codex/guides/agents-md
+- https://developers.openai.com/codex/guides/agents-sdk/
 
 Use these links for the latest skills and AGENTS.md guidance.

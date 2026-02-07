@@ -17,7 +17,7 @@ import { discoverSkills } from './skilltest-lib.mjs'
  */
 export const validateSkills = async ({ includeUserSkills }) => {
   const records = await discoverSkills({ includeUserSkills })
-  return records.map(record => ({
+  const results = records.map(record => ({
     name: record.name,
     description: record.description,
     skillDir: record.skillDir,
@@ -26,6 +26,23 @@ export const validateSkills = async ({ includeUserSkills }) => {
       .filter(finding => finding.level === 'error')
       .map(finding => finding.message)
   }))
+  const nameMap = new Map()
+  results.forEach(meta => {
+    if (!meta.name) return
+    if (nameMap.has(meta.name)) {
+      const message = 'Duplicate skill name detected.'
+      const firstMeta = nameMap.get(meta.name)
+      if (!meta.errors.includes(message)) {
+        meta.errors.push(message)
+      }
+      if (firstMeta && !firstMeta.errors.includes(message)) {
+        firstMeta.errors.push(message)
+      }
+    } else {
+      nameMap.set(meta.name, meta)
+    }
+  })
+  return results
 }
 
 /**
