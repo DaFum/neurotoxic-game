@@ -22,6 +22,22 @@ const midiGlob = import.meta.glob('../assets/*.mid', {
 const MIN_NOTE_DURATION = 0.05
 const OFFSET_RESET_THRESHOLD = 0.1
 
+const HIHAT_CONFIG = {
+  envelope: { attack: 0.001, decay: 0.06, release: 0.01 },
+  harmonicity: 5.1,
+  modulationIndex: 24,
+  resonance: 5000,
+  octaves: 1.2
+}
+
+const CRASH_CONFIG = {
+  envelope: { attack: 0.002, decay: 1.5, release: 0.1 },
+  harmonicity: 3.5,
+  modulationIndex: 12,
+  resonance: 3000,
+  octaves: 2.0
+}
+
 // Create a map of filename -> URL
 // Key format in glob is "../assets/filename.mid"
 // We want to match "filename.mid"
@@ -175,20 +191,8 @@ export async function setupAudio() {
         _body: snareBody
       }
     })(),
-    hihat: new Tone.MetalSynth({
-      envelope: { attack: 0.001, decay: 0.06, release: 0.01 },
-      harmonicity: 5.1,
-      modulationIndex: 24,
-      resonance: 5000,
-      octaves: 1.2
-    }).connect(drumBus),
-    crash: new Tone.MetalSynth({
-      envelope: { attack: 0.002, decay: 1.5, release: 0.1 },
-      harmonicity: 3.5,
-      modulationIndex: 12,
-      resonance: 3000,
-      octaves: 2.0
-    }).connect(drumBus)
+    hihat: new Tone.MetalSynth(HIHAT_CONFIG).connect(drumBus),
+    crash: new Tone.MetalSynth(CRASH_CONFIG).connect(drumBus)
   }
 
   // Level Mixing (more balanced)
@@ -233,12 +237,8 @@ export async function setupAudio() {
     snare: new Tone.NoiseSynth({
       envelope: { attack: 0.001, decay: 0.12, sustain: 0 }
     }).connect(midiDryBus),
-    hihat: new Tone.NoiseSynth({
-      envelope: { attack: 0.001, decay: 0.05, sustain: 0 }
-    }).connect(midiDryBus),
-    crash: new Tone.NoiseSynth({
-      envelope: { attack: 0.002, decay: 0.6, sustain: 0 }
-    }).connect(midiDryBus)
+    hihat: new Tone.MetalSynth(HIHAT_CONFIG).connect(midiDryBus),
+    crash: new Tone.MetalSynth(CRASH_CONFIG).connect(midiDryBus)
   }
 
   isSetup = true
