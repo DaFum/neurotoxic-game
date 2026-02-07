@@ -339,6 +339,8 @@ export const loadSkillRecord = async skillDir => {
 
   const name = meta?.name || ''
   const description = meta?.description || ''
+  // Repo-level policy: frontmatter name must match directory name.
+  // This is stricter than the Open Agent Skills standard.
   if (name && path.basename(skillDir) !== name) {
     findings.push({
       level: 'error',
