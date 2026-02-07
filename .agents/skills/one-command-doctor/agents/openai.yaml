@@ -1,0 +1,3 @@
+interface:
+  display_name: "One-Command Doctor"
+  short_description: "Run a quick healthcheck and summarize likely fixes."

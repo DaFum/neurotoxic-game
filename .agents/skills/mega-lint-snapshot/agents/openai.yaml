@@ -1,0 +1,3 @@
+interface:
+  display_name: "Mega Lint Snapshot"
+  short_description: "Run MegaLinter-style multi-tool lint snapshot and generate a report."

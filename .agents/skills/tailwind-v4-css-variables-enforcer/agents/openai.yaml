@@ -1,0 +1,3 @@
+interface:
+  display_name: "Tailwind v4 Enforcer"
+  short_description: "Audit for Tailwind v4 syntax and CSS-variable color usage."

@@ -8,5 +8,13 @@
     "default_prompt"
   ],
   "dependenciesFields": ["tools"],
-  "notes": "Validate file paths and hex color formats when present."
+  "toolSchema": {
+    "type": "string (e.g. 'mcp')",
+    "value": "string (tool identifier)",
+    "description": "string",
+    "transport": "string (e.g. 'streamable_http')",
+    "url": "string (tool endpoint URL)"
+  },
+  "notes": "Validate file paths for icon_small/icon_large and hex color format (#RRGGBB or #RGB) for brand_color when present.",
+  "spec": "https://developers.openai.com/codex/skills"
 }

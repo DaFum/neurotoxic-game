@@ -1,0 +1,3 @@
+interface:
+  display_name: "Asset Pipeline Verifier"
+  short_description: "Verify asset paths and references for broken links or missing files."

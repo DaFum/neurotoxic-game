@@ -12,6 +12,56 @@ import { parse as parseYamlDoc } from 'yaml'
  */
 
 /**
+ * Validate a skill name against the Open Agent Skills specification.
+ * @param {string} name - Skill name from frontmatter.
+ * @returns {SkillFinding[]} Findings.
+ */
+const validateSkillName = name => {
+  const findings = []
+  if (name.length > 64) {
+    findings.push({
+      level: 'error',
+      message: `Name exceeds 64 characters (${name.length}).`
+    })
+  }
+  if (/[^a-z0-9-]/.test(name)) {
+    findings.push({
+      level: 'error',
+      message: 'Name must contain only lowercase letters, numbers, and hyphens.'
+    })
+  }
+  if (name.startsWith('-') || name.endsWith('-')) {
+    findings.push({
+      level: 'error',
+      message: 'Name must not start or end with a hyphen.'
+    })
+  }
+  if (name.includes('--')) {
+    findings.push({
+      level: 'error',
+      message: 'Name must not contain consecutive hyphens.'
+    })
+  }
+  return findings
+}
+
+/**
+ * Validate description length against the Open Agent Skills specification.
+ * @param {string} description - Skill description.
+ * @returns {SkillFinding[]} Findings.
+ */
+const validateDescription = description => {
+  const findings = []
+  if (description.length > 1024) {
+    findings.push({
+      level: 'error',
+      message: `Description exceeds 1024 characters (${description.length}).`
+    })
+  }
+  return findings
+}
+
+/**
  * @typedef {Object} SkillRecord
  * @property {string} name
  * @property {string} description
@@ -340,19 +390,24 @@ export const loadSkillRecord = async skillDir => {
 
   const name = meta?.name || ''
   const description = meta?.description || ''
-  // Repo-level policy: frontmatter name must match directory name.
-  // This is stricter than the Open Agent Skills standard.
-  if (name && path.basename(skillDir) !== name) {
-    findings.push({
-      level: 'error',
-      message: 'Frontmatter name does not match directory name.'
-    })
+  if (name) {
+    // Per Open Agent Skills spec: name must match parent directory name.
+    if (path.basename(skillDir) !== name) {
+      findings.push({
+        level: 'error',
+        message: 'Frontmatter name does not match directory name.'
+      })
+    }
+    findings.push(...validateSkillName(name))
   }
-  if (description && !isDescriptionAdequate(description)) {
-    findings.push({
-      level: 'warning',
-      message: 'Description may be too short or missing trigger guidance.'
-    })
+  if (description) {
+    findings.push(...validateDescription(description))
+    if (!isDescriptionAdequate(description)) {
+      findings.push({
+        level: 'warning',
+        message: 'Description may be too short or missing trigger guidance.'
+      })
+    }
   }
 
   if (contents) {
