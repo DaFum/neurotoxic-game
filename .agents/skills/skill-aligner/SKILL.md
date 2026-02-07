@@ -8,7 +8,7 @@ description: Analyze existing repo skills and rewrite them to match this codebas
 ## Key Files
 
 - `AGENTS.md` — authoritative repo conventions and critical constraints
-- `src/*/AGENTS.md` — domain-specific rules (7 files)
+- `src/*/AGENTS.md` — domain-specific rules (one per domain)
 - `.agents/skills/*/SKILL.md` — all skill definitions to scan
 - `package.json` — real commands and script names
 

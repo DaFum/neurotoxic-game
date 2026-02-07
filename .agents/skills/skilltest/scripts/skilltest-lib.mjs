@@ -192,13 +192,7 @@ export const findSkillDirs = async (rootDir, visited) => {
 export const parseFrontmatter = contents => {
   const match = contents.match(/^---\n([\s\S]*?)\n---\n/)
   if (!match) return null
-  const lines = match[1].split('\n')
-  const data = {}
-  lines.forEach(line => {
-    const [key, ...rest] = line.split(':')
-    if (!key || rest.length === 0) return
-    data[key.trim()] = rest.join(':').trim()
-  })
+  const data = parseYamlDoc(match[1]) || {}
   if (!data.name || !data.description) return null
   return { name: data.name, description: data.description }
 }
@@ -269,7 +263,7 @@ export const validateLinks = async (skillDir, contents) => {
   const regex = /\[[^\]]*\]\(([^)]+)\)/g
   let match
   while ((match = regex.exec(contents)) !== null) {
-    const target = match[1]
+    const target = match[1].split(/\s/)[0]
     if (!target || target.startsWith('http') || target.startsWith('#')) continue
     const resolved = path.resolve(skillDir, target)
     try {
@@ -523,7 +517,11 @@ export const loadSkillCases = async () => {
   const cases = []
   for (const file of caseFiles) {
     const contents = await fs.readFile(path.join(casesDir, file), 'utf8')
-    cases.push(...JSON.parse(contents))
+    try {
+      cases.push(...JSON.parse(contents))
+    } catch (error) {
+      throw new Error(`Failed to parse ${file}: ${error.message}`)
+    }
   }
   return cases
 }

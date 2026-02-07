@@ -13,13 +13,13 @@ import {
 const run = async () => {
   const skipGate = process.argv.includes('--skip-gate')
 
-  if (!skipGate) {
-    await runQualityGate()
-  }
-
   console.warn(
     'Deprecated: use ".agents/skills/skilltest/scripts/skilltest.mjs" instead.'
   )
+
+  if (!skipGate) {
+    await runQualityGate()
+  }
 
   const records = await discoverSkills({ includeUserSkills: false })
   const cases = await loadSkillCases()

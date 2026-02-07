@@ -26,11 +26,14 @@ const withTempHome = async (configContents, callback) => {
   await fs.mkdir(configDir, { recursive: true })
   await fs.writeFile(path.join(configDir, 'config.toml'), configContents)
   const previousHome = process.env.HOME
+  const previousUserProfile = process.env.USERPROFILE
   process.env.HOME = tempDir
+  process.env.USERPROFILE = tempDir
   try {
     await callback()
   } finally {
     process.env.HOME = previousHome
+    process.env.USERPROFILE = previousUserProfile
     await fs.rm(tempDir, { recursive: true, force: true })
   }
 }
@@ -45,7 +48,7 @@ test('runPromptCases validates expected snippets', async () => {
   const records = await discoverSkills({ includeUserSkills: false })
   const cases = await loadSkillCases()
   const failures = await runPromptCases(records, cases)
-  assert.equal(failures.length, 0)
+  assert.equal(failures.length, 0, `Unexpected prompt failures:\n${failures.join('\n')}`)
 })
 
 test('buildReport creates a summary for skills', async () => {
