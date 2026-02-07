@@ -1,3 +1,4 @@
 interface:
   display_name: "Mega Lint Snapshot"
   short_description: "Run MegaLinter-style multi-tool lint snapshot and generate a report."
+  default_prompt: "Run a full lint snapshot and show the report."
