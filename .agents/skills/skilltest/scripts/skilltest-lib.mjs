@@ -136,12 +136,37 @@ export const collectSkillRoots = async (cwd, repoDir) => {
  * @param {string} rootDir - Skill root directory.
  * @returns {Promise<string[]>} Skill directory paths.
  */
-export const findSkillDirs = async rootDir => {
+export const findSkillDirs = async (rootDir, visited) => {
+  if (!visited) {
+    visited = new Set()
+    try {
+      const realRoot = await fs.realpath(rootDir)
+      visited.add(realRoot)
+    } catch (error) {
+      // ignore
+    }
+  }
+
   const entries = await fs.readdir(rootDir, { withFileTypes: true })
   const skillDirs = []
   for (const entry of entries) {
     const entryPath = path.join(rootDir, entry.name)
+
+    if (entry.isSymbolicLink()) {
+      continue
+    }
+
     if (entry.isDirectory()) {
+      try {
+        const realPath = await fs.realpath(entryPath)
+        if (visited.has(realPath)) {
+          continue
+        }
+        visited.add(realPath)
+      } catch (error) {
+        continue
+      }
+
       const skillFile = path.join(entryPath, 'SKILL.md')
       try {
         const stat = await fs.stat(skillFile)
@@ -152,7 +177,7 @@ export const findSkillDirs = async rootDir => {
       } catch (error) {
         // continue recursive search
       }
-      const nested = await findSkillDirs(entryPath)
+      const nested = await findSkillDirs(entryPath, visited)
       skillDirs.push(...nested)
     }
   }
