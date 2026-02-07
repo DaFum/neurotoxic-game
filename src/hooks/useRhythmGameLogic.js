@@ -12,7 +12,6 @@ import {
   resumeAudio,
   getAudioTimeMs
 } from '../utils/audioEngine'
-import { calculateRemainingDurationSeconds } from '../utils/audioPlaybackUtils'
 import {
   buildGigStatsSnapshot,
   updateGigPerformanceStats
@@ -229,11 +228,10 @@ export const useRhythmGameLogic = () => {
       if (currentSong.sourceMid) {
         const excerptStart = currentSong.excerptStartMs || 0
         const offsetSeconds = Math.max(0, excerptStart / 1000)
-        const remainingDurationSeconds = calculateRemainingDurationSeconds(
-          Number.isFinite(currentSong.duration) ? currentSong.duration : 30,
-          offsetSeconds
-        )
-        const gigPlaybackSeconds = Math.max(1, remainingDurationSeconds)
+        // Use the excerpt duration (default 30s) directly as playback length.
+        // The offset tells the MIDI player where to START; stopAfterSeconds
+        // controls how long to play FROM that point.
+        const gigPlaybackSeconds = (currentSong.excerptDurationMs || 30000) / 1000
         const success = await playMidiFile(
           currentSong.sourceMid,
           offsetSeconds,
