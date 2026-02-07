@@ -54,7 +54,7 @@ let masterLimiter, masterComp, reverb, reverbSend
 let distortion, guitarChorus, guitarEq, widener
 let bassEq, bassComp
 let drumBus
-let midiDryBus, midiLead, midiBass, midiDrumKit
+let midiDryBus, midiLead, midiBass, midiDrumKit, midiReverb, midiReverbSend
 let isSetup = false
 let playRequestId = 0
 let transportEndEventId = null
@@ -213,33 +213,72 @@ export async function setupAudio() {
   }).connect(sfxGain)
 
   // === Clean MIDI Chain ===
-  // MIDI playback should be dry: no distortion, chorus, EQ, or reverb.
-  // This preserves the raw MIDI dynamics without coloration.
+  // Used for ambient playback. Richer synths with subtle spatial processing
+  // to faithfully represent the MIDI content without heavy coloration.
   midiDryBus = new Tone.Gain(1).connect(masterComp)
-  midiLead = new Tone.PolySynth(Tone.Synth, {
-    oscillator: { type: 'sine' },
-    envelope: { attack: 0.001, decay: 0.2, sustain: 0.2, release: 0.3 }
+
+  // Subtle reverb for spatial depth on ambient MIDI playback
+  midiReverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(masterComp)
+  midiReverbSend = new Tone.Gain(0.25).connect(midiReverb)
+  midiDryBus.connect(midiReverbSend)
+
+  // Lead/Guitar: FM synthesis for richer harmonic content
+  midiLead = new Tone.PolySynth(Tone.FMSynth, {
+    harmonicity: 2,
+    modulationIndex: 2.5,
+    oscillator: { type: 'sawtooth' },
+    modulation: { type: 'square' },
+    envelope: { attack: 0.005, decay: 0.3, sustain: 0.2, release: 0.4 },
+    modulationEnvelope: { attack: 0.01, decay: 0.2, sustain: 0.1, release: 0.3 }
   }).connect(midiDryBus)
 
+  // Bass: Fatter oscillator for warmth and presence
   midiBass = new Tone.PolySynth(Tone.Synth, {
-    oscillator: { type: 'triangle' },
-    envelope: { attack: 0.005, decay: 0.25, sustain: 0.2, release: 0.3 }
+    oscillator: { type: 'fatsawtooth', spread: 10, count: 3 },
+    envelope: { attack: 0.01, decay: 0.3, sustain: 0.25, release: 0.3 }
   }).connect(midiDryBus)
-  midiBass.volume.value = -6
+  midiBass.volume.value = -3
+
+  // Drums: Layered snare (noise + body) matching main drumKit quality
+  const midiSnareBus = new Tone.Volume(0).connect(midiDryBus)
+  const midiSnareNoise = new Tone.NoiseSynth({
+    envelope: { attack: 0.001, decay: 0.15, sustain: 0 },
+    noise: { type: 'white' }
+  }).connect(midiSnareBus)
+  const midiSnareBody = new Tone.MembraneSynth({
+    pitchDecay: 0.02,
+    octaves: 4,
+    envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 }
+  }).connect(midiSnareBus)
+  midiSnareBody.volume.value = -4
 
   midiDrumKit = {
     kick: new Tone.MembraneSynth({
-      pitchDecay: 0.03,
-      octaves: 5,
+      pitchDecay: 0.05,
+      octaves: 6,
       oscillator: { type: 'sine' },
-      envelope: { attack: 0.001, decay: 0.25, sustain: 0, release: 0.1 }
+      envelope: { attack: 0.001, decay: 0.35, sustain: 0, release: 0.2 }
     }).connect(midiDryBus),
-    snare: new Tone.NoiseSynth({
-      envelope: { attack: 0.001, decay: 0.12, sustain: 0 }
-    }).connect(midiDryBus),
+    snare: {
+      triggerAttackRelease: (dur, time, vel = 1) => {
+        midiSnareNoise.triggerAttackRelease(dur, time, vel)
+        midiSnareBody.triggerAttackRelease('G3', dur, time, vel * 0.6)
+      },
+      volume: midiSnareBus.volume,
+      dispose: () => {
+        midiSnareNoise.dispose()
+        midiSnareBody.dispose()
+        midiSnareBus.dispose()
+      }
+    },
     hihat: new Tone.MetalSynth(HIHAT_CONFIG).connect(midiDryBus),
     crash: new Tone.MetalSynth(CRASH_CONFIG).connect(midiDryBus)
   }
+
+  // MIDI drum levels
+  midiDrumKit.kick.volume.value = 2
+  midiDrumKit.hihat.volume.value = -10
+  midiDrumKit.crash.volume.value = -6
 
   isSetup = true
 }
@@ -585,10 +624,12 @@ export function disposeAudio() {
   if (midiBass) midiBass.dispose()
   if (midiDrumKit) {
     midiDrumKit.kick.dispose()
-    midiDrumKit.snare.dispose()
+    if (midiDrumKit.snare.dispose) midiDrumKit.snare.dispose()
     midiDrumKit.hihat.dispose()
     midiDrumKit.crash.dispose()
   }
+  if (midiReverbSend) midiReverbSend.dispose()
+  if (midiReverb) midiReverb.dispose()
   if (midiDryBus) midiDryBus.dispose()
 
   if (distortion) distortion.dispose()
@@ -614,6 +655,8 @@ export function disposeAudio() {
   midiLead = null
   midiBass = null
   midiDrumKit = null
+  midiReverbSend = null
+  midiReverb = null
   midiDryBus = null
 
   distortion = null

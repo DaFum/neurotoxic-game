@@ -225,6 +225,8 @@ export const useRhythmGameLogic = () => {
       // Requirement: for GIG background music, always play the song MIDI when available
       // (even if parsing yields 0 notes, we still don't want a silent gig)
       // This guarantees the background MIDI runs from the specified offset.
+      // useCleanPlayback: false → route through effected synths (guitar, bass, drumKit)
+      // for a full band sound during the gig.
       if (currentSong.sourceMid) {
         const excerptStart = currentSong.excerptStartMs || 0
         const offsetSeconds = Math.max(0, excerptStart / 1000)
@@ -239,7 +241,7 @@ export const useRhythmGameLogic = () => {
           currentTimeOffset / 1000,
           {
             stopAfterSeconds: gigPlaybackSeconds,
-            useCleanPlayback: true
+            useCleanPlayback: false
           }
         )
         if (success) bgAudioStarted = true
