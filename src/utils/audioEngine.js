@@ -233,11 +233,19 @@ export async function setupAudio() {
     snare: new Tone.NoiseSynth({
       envelope: { attack: 0.001, decay: 0.12, sustain: 0 }
     }).connect(midiDryBus),
-    hihat: new Tone.NoiseSynth({
-      envelope: { attack: 0.001, decay: 0.05, sustain: 0 }
+    hihat: new Tone.MetalSynth({
+      envelope: { attack: 0.001, decay: 0.06, release: 0.01 },
+      harmonicity: 5.1,
+      modulationIndex: 24,
+      resonance: 5000,
+      octaves: 1.2
     }).connect(midiDryBus),
-    crash: new Tone.NoiseSynth({
-      envelope: { attack: 0.002, decay: 0.6, sustain: 0 }
+    crash: new Tone.MetalSynth({
+      envelope: { attack: 0.002, decay: 1.5, release: 0.1 },
+      harmonicity: 3.5,
+      modulationIndex: 12,
+      resonance: 3000,
+      octaves: 2.0
     }).connect(midiDryBus)
   }
 
