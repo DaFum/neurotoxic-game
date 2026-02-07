@@ -15,8 +15,8 @@ description: Discover, validate, and test all Codex skills in this repository (a
 
 ## Commands
 
-- Validate skills: `node scripts/skills/validate-skills.mjs`
-- Run tests: `node scripts/skills/run-skill-tests.mjs`
+- Validate skills: `node .agents/skills/skilltest/scripts/validate-skills.mjs`
+- Run tests: `node .agents/skills/skilltest/scripts/run-skill-tests.mjs`
 
 ## Output
 
