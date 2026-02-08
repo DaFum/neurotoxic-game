@@ -2,6 +2,7 @@
   "01 Kranker Schrank": {
     "name": "01 Kranker Schrank",
     "sourceMid": "01 Kranker Schrank.mid",
+    "sourceOgg": "01 Kranker Schrank.ogg",
     "bpm": 210.0,
     "tpb": 480,
     "tempoMap": [
@@ -1101,6 +1102,7 @@
   "02 THE LOST SCRIPTURES OF THE ELDER GODS AKOASMA AND GOLGATHA": {
     "name": "02 THE LOST SCRIPTURES OF THE ELDER GODS AKOASMA AND GOLGATHA",
     "sourceMid": "02 THE LOST SCRIPTURES OF THE ELDER GODS AKOASMA AND GOLGATHA.mid",
+    "sourceOgg": "02 THE LOST SCRIPTURES OF THE ELDER GODS AKOASMA AND GOLGATHA.ogg",
     "bpm": 140.0,
     "tpb": 480,
     "tempoMap": [
@@ -2600,6 +2602,7 @@
   "03 Travestie Massaker": {
     "name": "03 Travestie Massaker",
     "sourceMid": "03 Travestie Massaker.mid",
+    "sourceOgg": "03 Travestie Massaker.ogg",
     "bpm": 140.0,
     "tpb": 480,
     "tempoMap": [
@@ -4217,6 +4220,7 @@
   "04 New Millenium": {
     "name": "04 New Millenium",
     "sourceMid": "04 New Millenium.mid",
+    "sourceOgg": "04 New Millenium.ogg",
     "bpm": 130.0,
     "tpb": 480,
     "tempoMap": [
@@ -5916,6 +5920,7 @@
   "05 Suicidal Jesus": {
     "name": "05 Suicidal Jesus",
     "sourceMid": "05 Suicidal Jesus.mid",
+    "sourceOgg": "05 Suicidal Jesus.ogg",
     "bpm": 150.0,
     "tpb": 480,
     "tempoMap": [
@@ -7799,6 +7804,7 @@
   "08 Systemsprenger": {
     "name": "08 Systemsprenger",
     "sourceMid": "08 Systemsprenger.mid",
+    "sourceOgg": "08 Systemsprenger.ogg",
     "bpm": 100.0,
     "tpb": 480,
     "tempoMap": [
@@ -9884,6 +9890,7 @@
   "09 Galactic Love Bazooka": {
     "name": "09 Galactic Love Bazooka",
     "sourceMid": "09 Galactic Love Bazooka.mid",
+    "sourceOgg": "09 Galactic Love Bazooka.ogg",
     "bpm": 150.0,
     "tpb": 480,
     "tempoMap": [

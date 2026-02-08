@@ -29,7 +29,7 @@ import {
   checkHit
 } from '../utils/rhythmUtils'
 import { updateProjectiles, trySpawnProjectile } from '../utils/hecklerLogic'
-import { handleError } from '../utils/errorHandler'
+import { handleError, AudioError } from '../utils/errorHandler'
 import { SONGS_DB } from '../data/songs'
 
 /**
@@ -232,11 +232,22 @@ export const useRhythmGameLogic = () => {
 
       // Requirement: for GIG background music, prefer WebAudio buffer playback (OGG)
       // for sample-accurate sync against the same AudioContext clock.
-      if (currentSong.sourceMid) {
+      // Prefer explicit sourceOgg over deriving from sourceMid to avoid name mismatches.
+      if (currentSong.sourceOgg || currentSong.sourceMid) {
         const excerptStart = currentSong.excerptStartMs || 0
-        const oggFilename = currentSong.sourceMid.replace(/\.mid$/i, '.ogg')
+        const oggFilename = currentSong.sourceOgg || currentSong.sourceMid.replace(/\.mid$/i, '.ogg')
         const gigDurationMs = currentSong.excerptDurationMs || 30000
-        if (hasAudioAsset(oggFilename)) {
+        const assetFound = hasAudioAsset(oggFilename)
+        if (!assetFound) {
+          handleError(
+            new AudioError(
+              `Audio asset not found for "${currentSong.name}": looked up "${oggFilename}"`,
+              { songName: currentSong.name, oggFilename }
+            ),
+            { silent: true, fallbackMessage: 'Missing OGG audio asset' }
+          )
+        }
+        if (assetFound) {
           const success = await startGigPlayback({
             filename: oggFilename,
             bufferOffsetMs: excerptStart,

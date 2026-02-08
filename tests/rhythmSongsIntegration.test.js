@@ -57,6 +57,31 @@ test('rhythm_songs.json integration', async t => {
   })
 })
 
+test('rhythm_songs.json sourceOgg fields', async t => {
+  await t.test('every song with sourceMid has a matching sourceOgg', () => {
+    const songs = Object.values(songsData)
+    const songsWithMidi = songs.filter(s => s.sourceMid)
+    assert.ok(songsWithMidi.length > 0, 'Should have songs with sourceMid')
+
+    songsWithMidi.forEach(song => {
+      assert.ok(
+        typeof song.sourceOgg === 'string',
+        `Song "${song.name}" with sourceMid should have sourceOgg`
+      )
+      assert.ok(
+        song.sourceOgg.endsWith('.ogg'),
+        `Song "${song.name}" sourceOgg should end with .ogg`
+      )
+      const expectedOgg = song.sourceMid.replace(/\.mid$/i, '.ogg')
+      assert.strictEqual(
+        song.sourceOgg,
+        expectedOgg,
+        `Song "${song.name}" sourceOgg should match derived name from sourceMid`
+      )
+    })
+  })
+})
+
 test('calculateTimeFromTicks logic', async t => {
   await t.test('calculates correct time with constant tempo', () => {
     const tempoMap = [{ tick: 0, usPerBeat: 500000 }] // 120 BPM
