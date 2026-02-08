@@ -14,6 +14,12 @@ import {
   normalizeMidiPlaybackOptions,
   resolveMidiAssetUrl
 } from './audioPlaybackUtils.js'
+import {
+  isPercussionTrack,
+  isValidMidiNote,
+  buildMidiTrackEvents,
+  normalizeMidiPitch
+} from './midiTrackUtils.js'
 import { logger } from './logger.js'
 
 // Import all MIDI files as URLs
@@ -49,6 +55,7 @@ const midiUrlMap = buildMidiUrlMap(midiGlob, message =>
 )
 
 let guitar, bass, drumKit, loop, part
+let midiParts = []
 let sfxSynth, sfxGain
 let masterLimiter, masterComp, reverb, reverbSend
 let distortion, guitarChorus, guitarEq, widener
@@ -580,6 +587,10 @@ function stopAudioInternal() {
     part.dispose()
     part = null
   }
+  if (midiParts.length > 0) {
+    midiParts.forEach(trackPart => trackPart.dispose())
+    midiParts = []
+  }
   Tone.Transport.cancel()
   clearTransportEndEvent()
   clearTransportStopEvent()
@@ -816,59 +827,66 @@ export async function playMidiFile(
     const bassSynth = useCleanPlayback ? midiBass : bass
     const drumSet = useCleanPlayback ? midiDrumKit : drumKit
 
+    const nextMidiParts = []
     midi.tracks.forEach(track => {
-      track.notes.forEach(note => {
-        // Filter out invalid times
-        if (!Number.isFinite(note.time) || note.time < 0) return
+      const notes = Array.isArray(track?.notes) ? track.notes : []
+      const percussionTrack = isPercussionTrack(track)
+      const trackEvents = buildMidiTrackEvents(notes, percussionTrack)
 
-        // Schedule notes
-        Tone.Transport.schedule(time => {
-          if (!leadSynth || !bassSynth || !drumSet) return
+      if (trackEvents.length === 0) return
 
-          try {
-            // Clamp duration to prevent "duration must be greater than 0" error
-            const duration = Math.max(
-              MIN_NOTE_DURATION,
-              Number.isFinite(note.duration) ? note.duration : MIN_NOTE_DURATION
-            )
+      const trackPart = new Tone.Part((time, value) => {
+        if (!leadSynth || !bassSynth || !drumSet) return
+        if (!isValidMidiNote({ midi: value?.midiPitch })) return
+        const midiPitch = normalizeMidiPitch({ midi: value?.midiPitch })
+        if (midiPitch == null) return
 
-            // Clamp velocity
-            const velocity = Math.max(
-              0,
-              Math.min(1, Number.isFinite(note.velocity) ? note.velocity : 1)
-            )
+        try {
+          // Clamp duration to prevent "duration must be greater than 0" error
+          const duration = Math.max(
+            MIN_NOTE_DURATION,
+            Number.isFinite(value?.duration)
+              ? value.duration
+              : MIN_NOTE_DURATION
+          )
 
-            // Basic Mapping
-            // Percussion (Channel 10, index 9)
-            if (track.instrument.percussion || track.channel === 9) {
-              playDrumNote(note.midi, time, velocity, drumSet)
-            } else {
-              // Instrument separation by pitch heuristic
-              if (note.midi < 45) {
-                // Bass range
-                bassSynth.triggerAttackRelease(
-                  Tone.Frequency(note.midi, 'midi'),
-                  duration,
-                  time,
-                  velocity
-                )
-              } else {
-                // Guitar/Lead range
-                leadSynth.triggerAttackRelease(
-                  Tone.Frequency(note.midi, 'midi'),
-                  duration,
-                  time,
-                  velocity
-                )
-              }
-            }
-          } catch (e) {
-            // Prevent single note errors from crashing the loop
-            console.warn('[audioEngine] Note scheduling error:', e)
+          // Clamp velocity
+          const velocity = Math.max(
+            0,
+            Math.min(1, Number.isFinite(value?.velocity) ? value.velocity : 1)
+          )
+
+          if (value?.percussionTrack) {
+            playDrumNote(midiPitch, time, velocity, drumSet)
+            return
           }
-        }, note.time)
-      })
+
+          if (midiPitch < 45) {
+            bassSynth.triggerAttackRelease(
+              Tone.Frequency(midiPitch, 'midi'),
+              duration,
+              time,
+              velocity
+            )
+          } else {
+            leadSynth.triggerAttackRelease(
+              Tone.Frequency(midiPitch, 'midi'),
+              duration,
+              time,
+              velocity
+            )
+          }
+        } catch (e) {
+          // Prevent single note errors from crashing the loop
+          console.warn('[audioEngine] Note scheduling error:', e)
+        }
+      }, trackEvents)
+
+      trackPart.start(0)
+      nextMidiParts.push(trackPart)
     })
+
+    midiParts = nextMidiParts
 
     const validDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
     let requestedOffset = Number.isFinite(offset) ? Math.max(0, offset) : 0

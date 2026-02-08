@@ -4,6 +4,7 @@ import { useRhythmGameLogic } from '../hooks/useRhythmGameLogic'
 import { PixiStage } from '../components/PixiStage'
 import { GigHUD } from '../components/GigHUD'
 import { IMG_PROMPTS, getGenImageUrl } from '../utils/imageGen'
+import { audioManager } from '../utils/AudioManager'
 
 /**
  * The core Rhythm Game scene.
@@ -13,6 +14,7 @@ export const Gig = () => {
   const { currentGig, changeScene, addToast, activeEvent, setActiveEvent } =
     useGameState()
   const chaosContainerRef = useRef(null)
+  const hasUnlockedAudioRef = useRef(false)
 
   React.useEffect(() => {
     if (!currentGig) {
@@ -33,6 +35,8 @@ export const Gig = () => {
      */
     const handleKeyDown = e => {
       if (e.repeat) return
+
+      ensureAudioFromGesture()
 
       if (e.key === 'Escape') {
         if (activeEvent) {
@@ -117,12 +121,19 @@ export const Gig = () => {
     }
   }
 
+  const ensureAudioFromGesture = () => {
+    if (hasUnlockedAudioRef.current) return
+    hasUnlockedAudioRef.current = true
+    audioManager.ensureAudioContext()
+  }
+
   // Touch/Mouse Input Handlers for Columns
   /**
    * Handles touch/mouse down on a lane column.
    * @param {number} laneIndex
    */
   const handleTouchStart = laneIndex => {
+    ensureAudioFromGesture()
     actions.registerInput(laneIndex, true)
     triggerBandAnimation(laneIndex)
   }
