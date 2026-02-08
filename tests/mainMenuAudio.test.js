@@ -8,6 +8,7 @@ import { JSDOM } from 'jsdom'
 let startAmbientCalls = []
 let ensureAudioContextCalls = []
 let dom = null
+let originalGlobalDescriptors = null
 
 const audioManager = {
   ensureAudioContext: async () => {
@@ -64,12 +65,26 @@ beforeEach(() => {
   ensureAudioContextCalls = []
   gameState = createGameState({ canLoad: true })
 
+  // Preserve original global descriptors to avoid leaking overrides.
+  originalGlobalDescriptors = new Map(
+    ['window', 'document', 'navigator'].map((key) => [
+      key,
+      Object.getOwnPropertyDescriptor(globalThis, key)
+    ])
+  )
   dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost'
   })
-  globalThis.window = dom.window
-  globalThis.document = dom.window.document
-  globalThis.navigator = dom.window.navigator
+  for (const [key, value] of [
+    ['window', dom.window],
+    ['document', dom.window.document],
+    ['navigator', dom.window.navigator]
+  ]) {
+    Object.defineProperty(globalThis, key, {
+      value,
+      configurable: true
+    })
+  }
 })
 
 afterEach(() => {
@@ -77,9 +92,15 @@ afterEach(() => {
   if (dom) {
     dom.window.close()
   }
-  delete globalThis.window
-  delete globalThis.document
-  delete globalThis.navigator
+  for (const key of ['window', 'document', 'navigator']) {
+    const descriptor = originalGlobalDescriptors?.get(key)
+    if (descriptor) {
+      Object.defineProperty(globalThis, key, descriptor)
+    } else {
+      delete globalThis[key]
+    }
+  }
+  originalGlobalDescriptors = null
   dom = null
 })
 
