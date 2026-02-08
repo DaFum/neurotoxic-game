@@ -46,7 +46,7 @@ This is the **designer‑driven** incarnation of the NEUROTOXIC game concept, ca
 
   Output is emitted into the `dist/` directory, ready to be served to the void.
 
-  The audio stack depends on external streams and the Web Audio API, so production deployments must run over **HTTPS** to avoid mixed‑content issues and broken sound.
+  The audio stack depends on external audio assets and the Web Audio API, so production deployments must run over **HTTPS** to avoid mixed‑content issues and broken sound.
 
 ## Controls: Limb‑Loss Protocol
 

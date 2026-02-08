@@ -565,17 +565,16 @@ class PixiStageController {
     }
 
     const elapsed = state.elapsed ?? 0
-    const now = elapsed
 
     if (stats?.isToxicMode) {
-      this.colorMatrix.hue(Math.sin(now / 100) * 180, false)
+      this.colorMatrix.hue(Math.sin(elapsed / 100) * 180, false)
       this.stageContainer.filters = [this.colorMatrix]
     } else {
       this.stageContainer.filters = []
     }
 
     this.updateLaneGraphics(state)
-    this.updateCrowd(stats?.combo ?? 0, stats?.isToxicMode, now)
+    this.updateCrowd(stats?.combo ?? 0, stats?.isToxicMode, elapsed)
     this.updateNotes(state, elapsed)
     this.updateEffects(ticker.deltaMS)
   }

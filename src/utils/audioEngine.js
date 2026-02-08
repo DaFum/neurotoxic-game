@@ -150,6 +150,23 @@ const getRawAudioContext = () => {
 }
 
 /**
+ * Returns the raw AudioContext time in seconds.
+ * @returns {number} Current raw AudioContext time in seconds.
+ */
+export const getAudioContextTimeSec = () => {
+  return getRawAudioContext().currentTime
+}
+
+/**
+ * Converts a raw AudioContext start time into a Tone.js time reference.
+ * @param {number} rawStartTimeSec - Raw AudioContext time in seconds.
+ * @returns {number} Tone.js time in seconds.
+ */
+export const getToneStartTimeSec = rawStartTimeSec => {
+  const lookAhead = Tone.getContext()?.lookAhead ?? 0
+  return rawStartTimeSec + lookAhead
+}
+/**
  * Calculates gig time in milliseconds based on context time.
  * @param {object} params - Calculation inputs.
  * @param {number} params.contextTimeSec - Raw audio context time in seconds.
@@ -576,7 +593,7 @@ export function startGigClock({
 } = {}) {
   const startTime = Number.isFinite(startTimeSec)
     ? startTimeSec
-    : Tone.now() + Math.max(0, delayMs) / 1000
+    : getAudioContextTimeSec() + Math.max(0, delayMs) / 1000
   gigStartCtxTime = startTime
   gigSeekOffsetMs = Math.max(0, offsetMs)
   gigIsPaused = false

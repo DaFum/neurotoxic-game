@@ -13,6 +13,8 @@ import {
   stopAudio,
   pauseAudio,
   resumeAudio,
+  getAudioContextTimeSec,
+  getToneStartTimeSec,
   getAudioTimeMs,
   getGigTimeMs
 } from '../utils/audioEngine'
@@ -32,6 +34,7 @@ import { SONGS_DB } from '../data/songs'
 
 /**
  * Provides rhythm game state, actions, and update loop for the gig scene.
+ * @param {void} _unused - Hook has no direct parameters; state comes from GameState.
  * @returns {{gameStateRef: object, stats: object, actions: object, update: Function}} Rhythm game API.
  */
 const GIG_LEAD_IN_MS = 2000
@@ -253,15 +256,17 @@ export const useRhythmGameLogic = () => {
         const excerptStart = currentSong.excerptStartMs || 0
         const offsetSeconds = Math.max(0, excerptStart / 1000)
         const gigPlaybackSeconds = (currentSong.excerptDurationMs || 30000) / 1000
-        const gigStartTimeSec = getAudioTimeMs() / 1000 + GIG_LEAD_IN_MS / 1000
-        startGigClock({ offsetMs: 0, startTimeSec: gigStartTimeSec })
+        const rawGigStartTimeSec =
+          getAudioContextTimeSec() + GIG_LEAD_IN_MS / 1000
+        const toneGigStartTimeSec = getToneStartTimeSec(rawGigStartTimeSec)
+        startGigClock({ offsetMs: 0, startTimeSec: rawGigStartTimeSec })
         const success = await playMidiFile(
           currentSong.sourceMid,
           offsetSeconds,
           false,
           0,
           {
-            startTimeSec: gigStartTimeSec,
+            startTimeSec: toneGigStartTimeSec,
             stopAfterSeconds: gigPlaybackSeconds,
             useCleanPlayback: false
           }
@@ -308,8 +313,11 @@ export const useRhythmGameLogic = () => {
       const maxNoteTime = notes.reduce((max, n) => Math.max(max, n.time), 0)
       // Add buffer for decay/end (e.g. 4 seconds)
       const buffer = 4000
-
-      gameStateRef.current.totalDuration = maxNoteTime + buffer
+      const noteDuration = maxNoteTime + buffer
+      const audioDuration = Number.isFinite(currentSong.excerptDurationMs)
+        ? currentSong.excerptDurationMs
+        : 0
+      gameStateRef.current.totalDuration = Math.max(noteDuration, audioDuration)
       gameStateRef.current.running = true
       // console.log('[RhythmGame] Initialized.', { ... })
     } catch (error) {

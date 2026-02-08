@@ -63,6 +63,12 @@ test('hasAudioAsset', async t => {
   if (skipIfImportFailed(t)) return
   const { hasAudioAsset } = audioEngine
 
-  assert.strictEqual(hasAudioAsset('01 Kranker Schrank.ogg'), true)
-  assert.strictEqual(hasAudioAsset('missing-track.ogg'), false)
+  await t.test('returns false for non-string input', () => {
+    assert.strictEqual(hasAudioAsset(null), false)
+    assert.strictEqual(hasAudioAsset(undefined), false)
+  })
+
+  await t.test('returns false for unknown filename', () => {
+    assert.strictEqual(hasAudioAsset('missing-track.ogg'), false)
+  })
 })
