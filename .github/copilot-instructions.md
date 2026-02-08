@@ -33,8 +33,8 @@ Web-based Roguelike Tour Manager with rhythm action mechanics. Manage a Death Gr
 // CORRECT (Tailwind v4)
 <div className="bg-(--void-black) text-(--toxic-green)">
 
-// WRONG
-<div className="bg-[var(--void-black)] text-[var(--toxic-green)]">
+// WRONG: Tailwind v3 bracket-variable syntax (do not use).
+// Example removed to avoid class extraction from docs.
 ```
 
 | Variable           | Hex     | Usage                     |
@@ -252,7 +252,7 @@ import { eventEngine } from '../utils/eventEngine'
 **Wichtig:** Tailwind v4 ändert die Syntax für CSS-Variablen.
 
 - **Neu (v4):** `bg-(--void-black)` oder `text-(--toxic-green)`
-- **Alt (v3):** `bg-[var(--void-black)]` oder `text-[var(--toxic-green)]` (jetzt falsch)
+- **Alt (v3):** bracket-variable syntax (jetzt falsch)
 
 Beispiel:
 
@@ -261,7 +261,7 @@ Beispiel:
 <div className="bg-(--void-black) text-(--toxic-green)">
 
 // WRONG (v3 legacy)
-<div className="bg-[var(--void-black)] text-[var(--toxic-green)]">
+<div className="bg-(--void-black) text-(--toxic-green)">
 ```
 
 ### State Safety

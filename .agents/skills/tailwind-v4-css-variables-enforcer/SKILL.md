@@ -16,8 +16,8 @@ description: Audit UI changes for Tailwind v4 class syntax and CSS-variable colo
 
 | Wrong (v3 / hardcoded) | Correct (v4) |
 |------------------------|--------------|
-| `bg-[var(--void-black)]` | `bg-(--void-black)` |
-| `text-[var(--toxic-green)]` | `text-(--toxic-green)` |
+| v3 bracket-variable syntax (avoid) | `bg-(--void-black)` |
+| v3 bracket-variable syntax (avoid) | `text-(--toxic-green)` |
 | `bg-gray-900` | `bg-(--void-black)` |
 | `#00ff00` | `var(--toxic-green)` |
 | `@tailwind base` | `@import "tailwindcss"` |
@@ -25,7 +25,7 @@ description: Audit UI changes for Tailwind v4 class syntax and CSS-variable colo
 ## Workflow
 
 1. Scan `src/` for hardcoded colors: hex (`#xxx`), `rgb()`, `hsl()`, Tailwind palette classes (`bg-gray-*`, `text-red-*`).
-2. Scan for Tailwind v3-style CSS variable usage: `bg-[var(--...)]` bracket syntax.
+2. Scan for Tailwind v3-style bracket-variable usage and replace with v4 `bg-(--token)` syntax.
 3. Check `src/index.css` for the authoritative list of CSS variables.
 4. Replace violations with v4 variable syntax using the examples above.
 

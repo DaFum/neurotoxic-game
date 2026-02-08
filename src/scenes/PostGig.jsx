@@ -261,7 +261,7 @@ export const PostGig = () => {
         animate={{ scale: 1, opacity: 1 }}
         className='max-w-4xl w-full border-4 border-(--toxic-green) p-8 bg-(--void-black) relative z-10 shadow-[0_0_50px_var(--toxic-green-glow)] flex flex-col gap-6'
       >
-        <h2 className="text-5xl text-center font-['Metal_Mania'] text-(--toxic-green) mb-2 text-shadow-[0_0_10px_(--toxic-green)]">
+        <h2 className="text-5xl text-center font-['Metal_Mania'] text-(--toxic-green) mb-2 text-shadow-[0_0_10px_var(--toxic-green)]">
           {phase === 'REPORT'
             ? 'GIG REPORT'
             : phase === 'SOCIAL'
