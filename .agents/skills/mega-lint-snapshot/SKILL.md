@@ -1,6 +1,6 @@
 ---
 name: mega-lint-snapshot
-description: 'Run a categorized lint/security/quality suite and emit MegaLinter-style logs with timestamps and INFO/NOTICE/ERROR blocks. Use for CI-like diagnostics that summarize BASH, CHECKOV, GITLEAKS, ESLint, Prettier, JSCPD, JSON, Markdown, Textlint, and shfmt. Do not modify files unless explicitly asked to auto-fix.'
+description: 'Run a categorized lint/security/quality suite and emit MegaLinter-style logs with timestamps and INFO/NOTICE/ERROR blocks. Use for CI-like diagnostics that summarize BASH, CHECKOV, GITLEAKS, ESLint, Prettier, JSCPD, JSON, Markdown, Textlint, and shfmt. Do not modify files unless explicitly asked to autofix.'
 ---
 
 # Mega Lint Snapshot
@@ -13,7 +13,7 @@ Produce deterministic, MegaLinter-style output for the repo's lint/quality check
 
 1. Prefer running the script for consistent formatting:
    - `./.agents/skills/mega-lint-snapshot/scripts/run-mega-lint.sh`
-2. If the user explicitly requests auto-fix, run:
+2. If the user explicitly requests autofix, run:
    - `./.agents/skills/mega-lint-snapshot/scripts/run-mega-lint.sh --fix`
 3. If the output references unavailable tools, report the errors and keep the rest of the report intact.
 
@@ -28,7 +28,7 @@ Each item defines:
 - `name`: MegaLinter category name
 - `command`: executable to run
 - `args`: check-mode arguments
-- `fixArgs` (optional): arguments for auto-fix mode
+- `fixArgs` (optional): arguments for autofix mode
 
 ## References
 

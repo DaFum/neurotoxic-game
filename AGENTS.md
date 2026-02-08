@@ -91,7 +91,7 @@ These instructions track the latest AGENTS.md guidance for Codex. Keep project r
 ### How Codex Discovers Guidance
 
 1. **Global scope:** In `~/.codex`, Codex reads `AGENTS.override.md` if present; otherwise `AGENTS.md`. Only the first non-empty file applies.
-2. **Project scope:** Starting at the repo root, Codex walks down to the working directory. At each directory, it checks `AGENTS.override.md`, then `AGENTS.md`, then any fallback filenames listed in `project_doc_fallback_filenames`. Codex includes at most one file per directory.
+2. **Project scope:** Starting at the repository root, Codex walks down to the working directory. At each directory, it checks `AGENTS.override.md`, then `AGENTS.md`, then any fallback filenames listed in `project_doc_fallback_filenames`. Codex includes at most one file per directory.
 3. **Merge order:** Files are concatenated from root to leaf. Later files override earlier guidance.
 
 Codex skips empty files and stops once the combined size reaches `project_doc_max_bytes` (default 32 KiB). Split guidance across nested directories or raise the limit if needed.
@@ -111,7 +111,7 @@ Use `~/.codex/AGENTS.override.md` for temporary global overrides without removin
 
 ### Layer Project Instructions
 
-- Keep repo-level expectations in this file.
+- Keep repository-level expectations in this file.
 - Use nested `AGENTS.md` files for domain-specific rules.
 - Use `AGENTS.override.md` only when you need to fully replace local guidance.
 
@@ -143,7 +143,7 @@ CODEX_HOME=$(pwd)/.codex codex exec "List active instruction sources"
 
 ### Troubleshoot Discovery Issues
 
-- **Nothing loads:** Ensure you are in the intended repo, and that instruction files are non-empty.
+- **Nothing loads:** Ensure you are in the intended repository, and that instruction files are non-empty.
 - **Wrong guidance appears:** Check for `AGENTS.override.md` higher in the tree or inside `~/.codex`.
 - **Fallback names ignored:** Confirm `project_doc_fallback_filenames` entries and restart Codex.
 - **Instructions truncated:** Raise `project_doc_max_bytes` or split guidance into nested files.
@@ -151,12 +151,12 @@ CODEX_HOME=$(pwd)/.codex codex exec "List active instruction sources"
 
 ### Next Steps
 
-- Visit https://agents.md for more AGENTS.md information.
-- Review https://developers.openai.com/codex/prompting for Codex prompting guidance.
+- Visit <https://agents.md> for more AGENTS.md information.
+- Review <https://developers.openai.com/codex/prompting> for Codex prompting guidance.
 
 ### Agent Skills
 
-Codex can load skills from repository, user, admin, and system locations. In this repo, prefer checked-in skills under `.agents/skills` when they exist.
+Codex can load skills from repositorysitory, user, admin, and system locations. In this repository, prefer checked-in skills under `.agents/skills` when they exist.
 
 #### When to Use Skills
 
@@ -165,7 +165,7 @@ Codex can load skills from repository, user, admin, and system locations. In thi
 
 #### Skill Locations (Priority)
 
-- Repository: `.agents/skills` in the current directory, parent directories, or repository root.
+- Repositorysitory: `.agents/skills` in the current directory, parent directories, or repositorysitory root.
 - User: `~/.agents/skills`
 - Admin: `/etc/codex/skills`
 - System: bundled with Codex (for example `skill-creator`, `skill-installer`)
@@ -175,10 +175,10 @@ Codex can load skills from repository, user, admin, and system locations. In thi
 - Keep skill descriptions precise so implicit matching behaves predictably.
 - Restart Codex if newly added skills are not discovered.
 - Disable skills via `~/.codex/config.toml` when needed.
-- Repo skills are stored in `.agents/skills`; refer to that directory for the current skill list.
+- Repository skills are stored in `.agents/skills`; refer to that directory for the current skill list.
 - Use `skill-qa-harness` to validate skill metadata and prompt-case expectations.
-- Use `skilltest` for comprehensive skill standard validation and reporting.
-- Use `skill-aligner` to rewrite skills so they match current repo conventions.
+- Use `skilltest` for comprehensive skill standard validation and repositoryrting.
+- Use `skill-aligner` to rewrite skills so they match current repository conventions.
 - Use `mega-lint-snapshot` to generate MegaLinter-style lint logs for CI diagnostics.
 
 ---
