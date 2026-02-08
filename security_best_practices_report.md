@@ -1,16 +1,19 @@
 # Security Best Practices Report
 
 ## Executive summary
+
 - No critical or high-risk frontend security findings were detected in the scanned code paths.
 - One low-risk DOM sink was observed using a constant string; it is currently safe but should remain constant-only.
 
 ## Scope
+
 - Reviewed frontend React/Vite code for DOM XSS sinks and unsafe script execution patterns.
 - Focused on `src/` for HTML injection or dangerous DOM APIs.
 
 ## Findings
 
 ### F-1: Constant-string `innerHTML` use (informational)
+
 - **Rule ID:** JS-XSS-001
 - **Severity:** Low (informational)
 - **Location:** `src/components/PixiStageController.js` (container cleanup)

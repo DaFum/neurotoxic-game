@@ -7,6 +7,10 @@
   {
     "skill": "webaudio-reliability-fixer",
     "prompt": "Fix autoplay issues on mobile browsers.",
-    "expectIncludes": ["AudioManager.js", "audioEngine.js", "useAudioControl.js"]
+    "expectIncludes": [
+      "AudioManager.js",
+      "audioEngine.js",
+      "useAudioControl.js"
+    ]
   }
 ]

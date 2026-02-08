@@ -164,8 +164,8 @@ export const findSkillDirs = async (rootDir, visited) => {
         }
         visited.add(realPath)
       } catch (error) {
-        console.warn(`Could not resolve path, skipping: ${entryPath}`);
-        continue;
+        console.warn(`Could not resolve path, skipping: ${entryPath}`)
+        continue
       }
 
       const skillFile = path.join(entryPath, 'SKILL.md')
@@ -712,4 +712,21 @@ export const formatSummary = report => {
       return `${icon} ${skill.name} (${skill.skillDir})`
     })
     .join('\n')
+}
+
+export const runReporting = async (records, cases, disabled) => {
+  const promptFailures = await runPromptCases(records, cases)
+  const report = buildReport(records, promptFailures, disabled)
+  await writeReport(report)
+
+  console.log(formatSummary(report))
+  if (promptFailures.length > 0) {
+    promptFailures.forEach(failure => {
+      console.error(`❌ ${failure}`)
+    })
+  }
+
+  if (report.summary.fail > 0 || promptFailures.length > 0) {
+    process.exitCode = 1
+  }
 }

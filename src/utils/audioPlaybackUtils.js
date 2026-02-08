@@ -12,7 +12,8 @@ export const normalizeMidiPlaybackOptions = options => {
     typeof options?.useCleanPlayback === 'boolean'
       ? options.useCleanPlayback
       : true
-  const onEnded = typeof options?.onEnded === 'function' ? options.onEnded : null
+  const onEnded =
+    typeof options?.onEnded === 'function' ? options.onEnded : null
   const stopAfterSeconds = Number.isFinite(options?.stopAfterSeconds)
     ? Math.max(0, options.stopAfterSeconds)
     : null
@@ -38,7 +39,9 @@ export const calculateRemainingDurationSeconds = (
   totalSeconds,
   offsetSeconds
 ) => {
-  const safeTotal = Number.isFinite(totalSeconds) ? Math.max(0, totalSeconds) : 0
+  const safeTotal = Number.isFinite(totalSeconds)
+    ? Math.max(0, totalSeconds)
+    : 0
   const safeOffset = Number.isFinite(offsetSeconds)
     ? Math.max(0, offsetSeconds)
     : 0

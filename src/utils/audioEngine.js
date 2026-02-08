@@ -76,9 +76,15 @@ if (oggKeysForLogging.length === 0 && oggAssetKeys.length > 0) {
   oggKeysForLogging = oggAssetKeys
 }
 if (oggKeysForLogging.length > 0) {
-  logger.info('AudioEngine', `Bundled ${oggKeysForLogging.length} OGG asset(s): ${oggKeysForLogging.join(', ')}`)
+  logger.info(
+    'AudioEngine',
+    `Bundled ${oggKeysForLogging.length} OGG asset(s): ${oggKeysForLogging.join(', ')}`
+  )
 } else {
-  logger.warn('AudioEngine', 'No OGG assets bundled. Gig audio will fall back to MIDI playback.')
+  logger.warn(
+    'AudioEngine',
+    'No OGG assets bundled. Gig audio will fall back to MIDI playback.'
+  )
 }
 
 /**
@@ -93,7 +99,11 @@ export function canPlayAudioType(mimeType) {
     const result = a.canPlayType(mimeType)
     return result === 'probably' || result === 'maybe'
   } catch (error) {
-    logger.debug('AudioEngine', 'canPlayAudioType check failed, returning false.', error)
+    logger.debug(
+      'AudioEngine',
+      'canPlayAudioType check failed, returning false.',
+      error
+    )
     return false
   }
 }
@@ -579,7 +589,9 @@ export function setMusicVolume(vol) {
 export function hasAudioAsset(filename) {
   if (typeof filename !== 'string') return false
   const normalized = filename.replace(/^\.?\//, '')
-  return Boolean(oggUrlMap?.[normalized] || oggUrlMap?.[normalized.split('/').pop()])
+  return Boolean(
+    oggUrlMap?.[normalized] || oggUrlMap?.[normalized.split('/').pop()]
+  )
 }
 
 /**
@@ -598,9 +610,10 @@ export async function loadAudioBuffer(filename) {
   const publicBasePath = `${baseUrl}assets`
   const { url, source } = resolveAssetUrl(filename, oggUrlMap, publicBasePath)
   if (!url) {
-    const keysPreview = oggKeysForLogging.length <= 5
-      ? oggKeysForLogging.join(', ')
-      : `${oggKeysForLogging.slice(0, 5).join(', ')} … (${oggKeysForLogging.length} total)`
+    const keysPreview =
+      oggKeysForLogging.length <= 5
+        ? oggKeysForLogging.join(', ')
+        : `${oggKeysForLogging.slice(0, 5).join(', ')} … (${oggKeysForLogging.length} total)`
     logger.warn(
       'AudioEngine',
       `Audio asset not found: "${filename}". Available OGG keys: [${keysPreview}]`
@@ -621,24 +634,38 @@ export async function loadAudioBuffer(filename) {
     const response = await fetch(url, { signal: controller.signal })
     clearTimeout(timeoutId)
     if (!response.ok) {
-      logger.warn('AudioEngine', `Failed to load audio "${filename}": HTTP ${response.status} from ${url}`)
+      logger.warn(
+        'AudioEngine',
+        `Failed to load audio "${filename}": HTTP ${response.status} from ${url}`
+      )
       return null
     }
     const arrayBuffer = await response.arrayBuffer()
     const rawContext = getRawAudioContext()
     const buffer = await rawContext.decodeAudioData(arrayBuffer)
     audioBufferCache.set(cacheKey, buffer)
-    logger.debug('AudioEngine', `Decoded audio buffer: "${filename}" (${buffer.duration.toFixed(1)}s, ${buffer.sampleRate}Hz)`)
+    logger.debug(
+      'AudioEngine',
+      `Decoded audio buffer: "${filename}" (${buffer.duration.toFixed(1)}s, ${buffer.sampleRate}Hz)`
+    )
     return buffer
   } catch (error) {
     if (error.name === 'AbortError') {
-      logger.warn('AudioEngine', `Audio fetch timed out for "${filename}" (${url})`)
+      logger.warn(
+        'AudioEngine',
+        `Audio fetch timed out for "${filename}" (${url})`
+      )
     } else {
       const isOgg = filename.toLowerCase().endsWith('.ogg')
-      const codecHint = isOgg && !canPlayAudioType('audio/ogg; codecs=vorbis')
-        ? ' This browser may not support OGG Vorbis (e.g. Safari/iOS). Consider providing .m4a or .mp3 fallbacks.'
-        : ''
-      logger.warn('AudioEngine', `Failed to decode audio buffer for "${filename}".${codecHint}`, error)
+      const codecHint =
+        isOgg && !canPlayAudioType('audio/ogg; codecs=vorbis')
+          ? ' This browser may not support OGG Vorbis (e.g. Safari/iOS). Consider providing .m4a or .mp3 fallbacks.'
+          : ''
+      logger.warn(
+        'AudioEngine',
+        `Failed to decode audio buffer for "${filename}".${codecHint}`,
+        error
+      )
     }
     return null
   }

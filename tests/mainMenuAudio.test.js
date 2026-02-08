@@ -19,7 +19,6 @@ const audioManager = {
   }
 }
 
-
 let gameState = {}
 
 mock.module('../src/utils/AudioManager', {
@@ -67,7 +66,7 @@ beforeEach(() => {
 
   // Preserve original global descriptors to avoid leaking overrides.
   originalGlobalDescriptors = new Map(
-    ['window', 'document', 'navigator'].map((key) => [
+    ['window', 'document', 'navigator'].map(key => [
       key,
       Object.getOwnPropertyDescriptor(globalThis, key)
     ])

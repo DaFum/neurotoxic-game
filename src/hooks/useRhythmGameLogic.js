@@ -138,7 +138,9 @@ export const useRhythmGameLogic = () => {
       // Use audioManager to also set initialized flag for SFX playback.
       const audioUnlocked = await audioManager.ensureAudioContext()
       if (!audioUnlocked) {
-        console.warn('[useRhythmGameLogic] Audio Context blocked. Waiting for user gesture.')
+        console.warn(
+          '[useRhythmGameLogic] Audio Context blocked. Waiting for user gesture.'
+        )
         setIsAudioReady(false)
         hasInitializedRef.current = false // Allow retry
         return
@@ -243,7 +245,9 @@ export const useRhythmGameLogic = () => {
       // Prefer explicit sourceOgg over deriving from sourceMid to avoid name mismatches.
       if (currentSong.sourceOgg || currentSong.sourceMid) {
         const excerptStart = currentSong.excerptStartMs || 0
-        const oggFilename = currentSong.sourceOgg || currentSong.sourceMid.replace(/\.mid$/i, '.ogg')
+        const oggFilename =
+          currentSong.sourceOgg ||
+          currentSong.sourceMid.replace(/\.mid$/i, '.ogg')
         const gigDurationMs = currentSong.excerptDurationMs || 30000
         const assetFound = hasAudioAsset(oggFilename)
         if (!assetFound) {
@@ -274,7 +278,8 @@ export const useRhythmGameLogic = () => {
       if (!bgAudioStarted && currentSong.sourceMid) {
         const excerptStart = currentSong.excerptStartMs || 0
         const offsetSeconds = Math.max(0, excerptStart / 1000)
-        const gigPlaybackSeconds = (currentSong.excerptDurationMs || 30000) / 1000
+        const gigPlaybackSeconds =
+          (currentSong.excerptDurationMs || 30000) / 1000
         const rawGigStartTimeSec =
           getAudioContextTimeSec() + GIG_LEAD_IN_MS / 1000
         const toneGigStartTimeSec = getToneStartTimeSec(rawGigStartTimeSec)
@@ -297,7 +302,10 @@ export const useRhythmGameLogic = () => {
       if (!bgAudioStarted && parsedNotes.length > 0) {
         // No MIDI file available (or it failed), synthesize from note data
         startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
-        const success = await playSongFromData(currentSong, GIG_LEAD_IN_MS / 1000)
+        const success = await playSongFromData(
+          currentSong,
+          GIG_LEAD_IN_MS / 1000
+        )
         if (success) bgAudioStarted = true
       }
 

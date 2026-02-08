@@ -7,15 +7,15 @@ description: Route questions to the correct folder (context, hooks, scenes, util
 
 ## Domain Routing Table
 
-| Domain | Directory | AGENTS.md | Key Files |
-|--------|-----------|-----------|-----------|
-| State | `src/context/` | `src/context/AGENTS.md` | gameReducer.js, actionCreators.js, initialState.js |
-| Hooks | `src/hooks/` | `src/hooks/AGENTS.md` | useTravelLogic.js, usePurchaseLogic.js, useAudioControl.js |
-| Scenes | `src/scenes/` | `src/scenes/AGENTS.md` | Overworld.jsx, Gig.jsx, PostGig.jsx, MainMenu.jsx |
-| Utils | `src/utils/` | `src/utils/AGENTS.md` | eventEngine.js, economyEngine.js, AudioManager.js |
-| Components | `src/components/` | `src/components/AGENTS.md` | PixiStage.jsx, GigHUD.jsx, TutorialManager.jsx |
-| Data | `src/data/` | `src/data/AGENTS.md` | events.js, venues.js, songs.js, characters.js |
-| UI | `src/ui/` | `src/ui/AGENTS.md` | HUD.jsx, EventModal.jsx, GlitchButton.jsx |
+| Domain     | Directory         | AGENTS.md                  | Key Files                                                  |
+| ---------- | ----------------- | -------------------------- | ---------------------------------------------------------- |
+| State      | `src/context/`    | `src/context/AGENTS.md`    | gameReducer.js, actionCreators.js, initialState.js         |
+| Hooks      | `src/hooks/`      | `src/hooks/AGENTS.md`      | useTravelLogic.js, usePurchaseLogic.js, useAudioControl.js |
+| Scenes     | `src/scenes/`     | `src/scenes/AGENTS.md`     | Overworld.jsx, Gig.jsx, PostGig.jsx, MainMenu.jsx          |
+| Utils      | `src/utils/`      | `src/utils/AGENTS.md`      | eventEngine.js, economyEngine.js, AudioManager.js          |
+| Components | `src/components/` | `src/components/AGENTS.md` | PixiStage.jsx, GigHUD.jsx, TutorialManager.jsx             |
+| Data       | `src/data/`       | `src/data/AGENTS.md`       | events.js, venues.js, songs.js, characters.js              |
+| UI         | `src/ui/`         | `src/ui/AGENTS.md`         | HUD.jsx, EventModal.jsx, GlitchButton.jsx                  |
 
 ## Workflow
 

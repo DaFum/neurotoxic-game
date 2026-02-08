@@ -7,14 +7,14 @@ description: Prevent upgrades to pinned dependencies (React 18, Vite 5, Tailwind
 
 ## Pinned Versions
 
-| Package | Pinned Major | Current |
-|---------|-------------|---------|
-| React | 18.x | ^18.2.0 |
-| React DOM | 18.x | ^18.2.0 |
-| Vite | 5.x | ^5.0.0 |
-| Tailwind CSS | 4.x | ^4.0.0 |
-| Pixi.js | 8.x | ^8.0.0 |
-| Node.js | >= 20 | — |
+| Package      | Pinned Major | Current |
+| ------------ | ------------ | ------- |
+| React        | 18.x         | ^18.2.0 |
+| React DOM    | 18.x         | ^18.2.0 |
+| Vite         | 5.x          | ^5.0.0  |
+| Tailwind CSS | 4.x          | ^4.0.0  |
+| Pixi.js      | 8.x          | ^8.0.0  |
+| Node.js      | >= 20        | —       |
 
 ## Key Files
 

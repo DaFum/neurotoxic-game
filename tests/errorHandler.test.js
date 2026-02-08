@@ -39,7 +39,10 @@ describe('Custom Error Classes', () => {
     })
 
     it('should store context for missing OGG asset diagnostics', () => {
-      const ctx = { songName: '01 Kranker Schrank', oggFilename: '01 Kranker Schrank.ogg' }
+      const ctx = {
+        songName: '01 Kranker Schrank',
+        oggFilename: '01 Kranker Schrank.ogg'
+      }
       const error = new AudioError('Audio asset not found', ctx)
       assert.strictEqual(error.context.songName, '01 Kranker Schrank')
       assert.strictEqual(error.context.oggFilename, '01 Kranker Schrank.ogg')
@@ -102,7 +105,9 @@ describe('handleError', () => {
 
   it('should handle AudioError with silent mode and preserve context', () => {
     let toastCalled = false
-    const addToast = () => { toastCalled = true }
+    const addToast = () => {
+      toastCalled = true
+    }
 
     const error = new AudioError(
       'Audio asset not found for "01 Kranker Schrank": looked up "01 Kranker Schrank.ogg"',

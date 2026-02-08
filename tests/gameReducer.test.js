@@ -74,7 +74,10 @@ describe('gameReducer', () => {
     })
 
     it('should clamp band harmony above zero', () => {
-      const action = { type: ActionTypes.UPDATE_BAND, payload: { harmony: -20 } }
+      const action = {
+        type: ActionTypes.UPDATE_BAND,
+        payload: { harmony: -20 }
+      }
       const newState = gameReducer(testState, action)
 
       assert.strictEqual(newState.band.harmony, 1)
