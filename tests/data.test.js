@@ -29,6 +29,17 @@ test('SONGS_DB data integrity', () => {
     assert.equal(typeof song.duration, 'number')
     assert.equal(typeof song.difficulty, 'number')
     assert.ok(song.energy, 'Song should have energy profile')
+    // sourceOgg must be a string or null, never undefined
+    assert.ok(
+      typeof song.sourceOgg === 'string' || song.sourceOgg === null,
+      `Song "${song.name}" sourceOgg should be a string or null, got ${typeof song.sourceOgg}`
+    )
+    if (typeof song.sourceOgg === 'string') {
+      assert.ok(
+        song.sourceOgg.endsWith('.ogg'),
+        `Song "${song.name}" sourceOgg should end with .ogg`
+      )
+    }
   })
 })
 

@@ -591,7 +591,7 @@ export async function loadAudioBuffer(filename) {
 
   const baseUrl = import.meta.env.BASE_URL || './'
   const publicBasePath = `${baseUrl}assets`
-  const { url } = resolveAssetUrl(filename, oggUrlMap, publicBasePath)
+  const { url, source } = resolveAssetUrl(filename, oggUrlMap, publicBasePath)
   if (!url) {
     const keysPreview = oggKeysForLogging.length <= 5
       ? oggKeysForLogging.join(', ')
@@ -602,6 +602,12 @@ export async function loadAudioBuffer(filename) {
     )
     return null
   }
+  if (source === 'public') {
+    logger.warn(
+      'AudioEngine',
+      `Audio asset "${filename}" not found in bundle, falling back to public path: ${url}`
+    )
+  }
 
   try {
     // Avoid hanging gig initialization on stalled network requests.
@@ -610,7 +616,8 @@ export async function loadAudioBuffer(filename) {
     const response = await fetch(url, { signal: controller.signal })
     clearTimeout(timeoutId)
     if (!response.ok) {
-      throw new Error(`Failed to load audio: ${url}`)
+      logger.warn('AudioEngine', `Failed to load audio "${filename}": HTTP ${response.status} from ${url}`)
+      return null
     }
     const arrayBuffer = await response.arrayBuffer()
     const rawContext = getRawAudioContext()
@@ -619,11 +626,15 @@ export async function loadAudioBuffer(filename) {
     logger.debug('AudioEngine', `Decoded audio buffer: "${filename}" (${buffer.duration.toFixed(1)}s, ${buffer.sampleRate}Hz)`)
     return buffer
   } catch (error) {
-    const isOgg = filename.toLowerCase().endsWith('.ogg')
-    const codecHint = isOgg && !canPlayAudioType('audio/ogg; codecs=vorbis')
-      ? ' This browser may not support OGG Vorbis (e.g. Safari/iOS). Consider providing .m4a or .mp3 fallbacks.'
-      : ''
-    logger.warn('AudioEngine', `Failed to decode audio buffer for "${filename}".${codecHint}`, error)
+    if (error.name === 'AbortError') {
+      logger.warn('AudioEngine', `Audio fetch timed out for "${filename}" (${url})`)
+    } else {
+      const isOgg = filename.toLowerCase().endsWith('.ogg')
+      const codecHint = isOgg && !canPlayAudioType('audio/ogg; codecs=vorbis')
+        ? ' This browser may not support OGG Vorbis (e.g. Safari/iOS). Consider providing .m4a or .mp3 fallbacks.'
+        : ''
+      logger.warn('AudioEngine', `Failed to decode audio buffer for "${filename}".${codecHint}`, error)
+    }
     return null
   }
 }
