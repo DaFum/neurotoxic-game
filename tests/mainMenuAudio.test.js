@@ -65,6 +65,7 @@ beforeEach(() => {
   ensureAudioContextCalls = []
   gameState = createGameState({ canLoad: true })
 
+  // Preserve Node's original navigator descriptor to avoid leaking overrides.
   originalNavigatorDescriptor = Object.getOwnPropertyDescriptor(
     globalThis,
     'navigator'
