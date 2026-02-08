@@ -3,7 +3,9 @@ import { test } from 'node:test'
 
 test('calculateGigTimeMs', async t => {
   try {
-    const { calculateGigTimeMs } = await import('../src/utils/audioEngine.js')
+    const { calculateGigTimeMs, hasAudioAsset } = await import(
+      '../src/utils/audioEngine.js'
+    )
 
     await t.test('calculates gig time with valid context times', () => {
       assert.strictEqual(
@@ -36,6 +38,14 @@ test('calculateGigTimeMs', async t => {
         }),
         2000
       )
+    })
+
+    await t.test('hasAudioAsset detects bundled ogg assets', () => {
+      assert.strictEqual(
+        hasAudioAsset('01 Kranker Schrank.ogg'),
+        true
+      )
+      assert.strictEqual(hasAudioAsset('missing-track.ogg'), false)
     })
   } catch (error) {
     t.skip(

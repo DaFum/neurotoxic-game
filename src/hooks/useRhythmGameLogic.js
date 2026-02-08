@@ -6,6 +6,7 @@ import {
   startMetalGenerator,
   playMidiFile,
   playSongFromData,
+  hasAudioAsset,
   playNoteAtTime,
   startGigClock,
   startGigPlayback,
@@ -232,13 +233,15 @@ export const useRhythmGameLogic = () => {
         const excerptStart = currentSong.excerptStartMs || 0
         const oggFilename = currentSong.sourceMid.replace(/\.mid$/i, '.ogg')
         const gigDurationMs = currentSong.excerptDurationMs || 30000
-        const success = await startGigPlayback({
-          filename: oggFilename,
-          bufferOffsetMs: excerptStart,
-          delayMs: gigLeadInMs,
-          durationMs: gigDurationMs
-        })
-        if (success) bgAudioStarted = true
+        if (hasAudioAsset(oggFilename)) {
+          const success = await startGigPlayback({
+            filename: oggFilename,
+            bufferOffsetMs: excerptStart,
+            delayMs: gigLeadInMs,
+            durationMs: gigDurationMs
+          })
+          if (success) bgAudioStarted = true
+        }
       }
 
       // Requirement: for GIG background music, always play the song MIDI when available

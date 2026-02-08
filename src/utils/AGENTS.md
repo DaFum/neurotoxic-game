@@ -280,7 +280,7 @@ const finalGrowth = baseGrowth * platformMultiplier + viralBonus
 - `startAmbient()` - Start ambient MIDI playback if not already running
 - `playSFX(type)` - Trigger synth-based SFX (`hit`, `miss`, `menu`, `travel`, `cash`)
 - `stopMusic()` - Stop ambient/music playback
-- `setMusicVolume(level)` - Set music volume (Tone destination)
+- `setMusicVolume(level)` - Set music volume via the dedicated music bus
 - `setSFXVolume(level)` - Set SFX volume
 - `toggleMute()` - Toggle global mute
 

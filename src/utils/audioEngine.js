@@ -1359,16 +1359,6 @@ export function getGigTimeMs() {
 }
 
 /**
- * Plays a specific note immediately (Hit Sound).
- * @param {number} midiPitch - The MIDI note number.
- * @param {string} lane - The lane ID ('guitar', 'bass', 'drums').
- * @param {number} [velocity=127] - The velocity (0-127).
- */
-export function playNote(midiPitch, lane, velocity = 127) {
-  playNoteAtTime(midiPitch, lane, Tone.now(), velocity)
-}
-
-/**
  * Plays a specific note at a scheduled Tone.js time.
  * @param {number} midiPitch - The MIDI note number.
  * @param {string} lane - The lane ID ('guitar', 'bass', 'drums').

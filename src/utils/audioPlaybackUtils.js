@@ -55,9 +55,9 @@ export const encodePublicAssetPath = assetPath => {
 }
 
 /**
- * Resolves a MIDI asset URL from the bundled map or a public fallback path.
- * @param {string} filename - Filename or relative path to the MIDI asset.
- * @param {Record<string, string>} midiUrlMap - Map of asset keys to bundled URLs.
+ * Resolves an asset URL from the bundled map or a public fallback path.
+ * @param {string} filename - Filename or relative path to the asset.
+ * @param {Record<string, string>} assetUrlMap - Map of asset keys to bundled URLs.
  * @param {string} [publicBasePath='/assets'] - Base path for public assets.
  * @returns {{url: string|null, source: 'bundled'|'public'|null}} Resolved URL info.
  */
