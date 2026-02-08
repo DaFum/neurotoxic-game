@@ -8,6 +8,7 @@ import { JSDOM } from 'jsdom'
 let startAmbientCalls = []
 let ensureAudioContextCalls = []
 let dom = null
+let originalNavigatorDescriptor = null
 
 const audioManager = {
   ensureAudioContext: async () => {
@@ -64,6 +65,10 @@ beforeEach(() => {
   ensureAudioContextCalls = []
   gameState = createGameState({ canLoad: true })
 
+  originalNavigatorDescriptor = Object.getOwnPropertyDescriptor(
+    globalThis,
+    'navigator'
+  )
   dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost'
   })
@@ -82,7 +87,16 @@ afterEach(() => {
   }
   delete globalThis.window
   delete globalThis.document
-  delete globalThis.navigator
+  if (originalNavigatorDescriptor) {
+    Object.defineProperty(
+      globalThis,
+      'navigator',
+      originalNavigatorDescriptor
+    )
+  } else {
+    delete globalThis.navigator
+  }
+  originalNavigatorDescriptor = null
   dom = null
 })
 
