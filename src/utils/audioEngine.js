@@ -449,7 +449,11 @@ export async function loadAudioBuffer(filename) {
   }
 
   try {
-    const response = await fetch(url)
+    // Avoid hanging gig initialization on stalled network requests.
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000)
+    const response = await fetch(url, { signal: controller.signal })
+    clearTimeout(timeoutId)
     if (!response.ok) {
       throw new Error(`Failed to load audio: ${url}`)
     }
@@ -535,7 +539,9 @@ export async function startGigPlayback({
         offsetMs: gigBaseOffsetMs
       })
     }
-    stopGigPlayback()
+    gigSeekOffsetMs = getGigTimeMs()
+    gigStartCtxTime = null
+    gigSource = null
   }
 
   gigSource = source
@@ -555,8 +561,8 @@ export async function startGigPlayback({
  * @returns {void}
  */
 export function startGigClock({ delayMs = 0, offsetMs = 0 } = {}) {
-  const rawContext = getRawAudioContext()
-  gigStartCtxTime = rawContext.currentTime + Math.max(0, delayMs) / 1000
+  const startTime = Tone.now() + Math.max(0, delayMs) / 1000
+  gigStartCtxTime = startTime
   gigSeekOffsetMs = Math.max(0, offsetMs)
   gigIsPaused = false
   gigBuffer = null
@@ -649,7 +655,9 @@ export function resumeGigPlayback() {
         offsetMs: gigBaseOffsetMs
       })
     }
-    stopGigPlayback()
+    gigSeekOffsetMs = getGigTimeMs()
+    gigStartCtxTime = null
+    gigSource = null
   }
 
   gigSource = source

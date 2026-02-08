@@ -17,6 +17,7 @@ This folder (`src/utils/`) contains the "brains" of the game - pure logic module
 | `AudioManager.js`    | Tone.js audio coordinator, sound effect management         |
 | `simulationUtils.js` | Time progression, day/night cycle, RNG utilities           |
 | `imageGen.js`        | Placeholder image URL generation                           |
+| `audioTimingUtils.js`| Gig/audio clock alignment helpers                          |
 | `errorHandler.js`    | Centralized error handling and logging                     |
 | `logger.js`          | Debug logging with categories and levels                   |
 | `gameStateUtils.js`  | State transformation utilities                             |

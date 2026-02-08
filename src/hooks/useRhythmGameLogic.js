@@ -16,6 +16,7 @@ import {
   getAudioTimeMs,
   getGigTimeMs
 } from '../utils/audioEngine'
+import { getScheduledHitTimeMs } from '../utils/audioTimingUtils'
 import {
   buildGigStatsSnapshot,
   updateGigPerformanceStats
@@ -33,6 +34,9 @@ import { SONGS_DB } from '../data/songs'
  * Provides rhythm game state, actions, and update loop for the gig scene.
  * @returns {{gameStateRef: object, stats: object, actions: object, update: Function}} Rhythm game API.
  */
+const GIG_LEAD_IN_MS = 2000
+const NOTE_LEAD_IN_MS = 0
+
 export const useRhythmGameLogic = () => {
   const {
     setlist,
@@ -176,9 +180,6 @@ export const useRhythmGameLogic = () => {
         physics.hitWindows.bass + hitWindowBonus
 
       let notes = []
-      const gigLeadInMs = 2000
-      const noteLeadInMs = 0
-
       // Resolve full song data from IDs or Objects if necessary
       const activeSetlist = (
         setlist.length > 0
@@ -218,7 +219,7 @@ export const useRhythmGameLogic = () => {
       let parsedNotes = []
       let bgAudioStarted = false
       if (Array.isArray(currentSong.notes) && currentSong.notes.length > 0) {
-        parsedNotes = parseSongNotes(currentSong, noteLeadInMs, {
+        parsedNotes = parseSongNotes(currentSong, NOTE_LEAD_IN_MS, {
           onWarn: msg => console.warn(msg)
         })
 
@@ -237,7 +238,7 @@ export const useRhythmGameLogic = () => {
           const success = await startGigPlayback({
             filename: oggFilename,
             bufferOffsetMs: excerptStart,
-            delayMs: gigLeadInMs,
+            delayMs: GIG_LEAD_IN_MS,
             durationMs: gigDurationMs
           })
           if (success) bgAudioStarted = true
@@ -253,12 +254,12 @@ export const useRhythmGameLogic = () => {
         const excerptStart = currentSong.excerptStartMs || 0
         const offsetSeconds = Math.max(0, excerptStart / 1000)
         const gigPlaybackSeconds = (currentSong.excerptDurationMs || 30000) / 1000
-        startGigClock({ delayMs: gigLeadInMs, offsetMs: 0 })
+        startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
         const success = await playMidiFile(
           currentSong.sourceMid,
           offsetSeconds,
           false,
-          gigLeadInMs / 1000,
+          GIG_LEAD_IN_MS / 1000,
           {
             stopAfterSeconds: gigPlaybackSeconds,
             useCleanPlayback: false
@@ -270,8 +271,8 @@ export const useRhythmGameLogic = () => {
       // Fallback: If MIDI failed (or didn't exist), try to synthesize from note data
       if (!bgAudioStarted && parsedNotes.length > 0) {
         // No MIDI file available (or it failed), synthesize from note data
-        startGigClock({ delayMs: gigLeadInMs, offsetMs: 0 })
-        const success = await playSongFromData(currentSong, gigLeadInMs / 1000)
+        startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
+        const success = await playSongFromData(currentSong, GIG_LEAD_IN_MS / 1000)
         if (success) bgAudioStarted = true
       }
 
@@ -283,7 +284,7 @@ export const useRhythmGameLogic = () => {
           // Fallback procedural generation
           songsToPlay.forEach(song => {
             const songNotes = generateNotesForSong(song, {
-              leadIn: noteLeadInMs,
+              leadIn: NOTE_LEAD_IN_MS,
               random: rng
             })
             notes = notes.concat(songNotes)
@@ -293,8 +294,8 @@ export const useRhythmGameLogic = () => {
         // Always start procedural generator if no background audio is running
         // This ensures sound even if we have notes but the MIDI/audio failed
         if (!bgAudioStarted) {
-          audioDelay = gigLeadInMs / 1000
-          startGigClock({ delayMs: gigLeadInMs, offsetMs: 0 })
+          audioDelay = GIG_LEAD_IN_MS / 1000
+          startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
           await startMetalGenerator(currentSong, audioDelay, rng)
         }
       }
@@ -446,10 +447,13 @@ export const useRhythmGameLogic = () => {
           const velocity = Number.isFinite(note.originalNote.v)
             ? note.originalNote.v
             : 127
-          const deltaMs = note.time - elapsed
           const toneNowMs = getAudioTimeMs()
-          const scheduledMs =
-            deltaMs > 0 && deltaMs <= 30 ? toneNowMs + deltaMs : toneNowMs
+          const scheduledMs = getScheduledHitTimeMs({
+            noteTimeMs: note.time,
+            gigTimeMs: elapsed,
+            audioTimeMs: toneNowMs,
+            maxLeadMs: 30
+          })
           playNoteAtTime(
             note.originalNote.p,
             state.lanes[laneIndex].id,
