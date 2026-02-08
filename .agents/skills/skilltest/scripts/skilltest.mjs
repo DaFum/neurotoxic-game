@@ -27,7 +27,7 @@ const run = async () => {
 
   console.log(formatSummary(report))
   if (promptFailures.length > 0) {
-    promptFailures.forEach(failure => console.error(`❌ ${failure}`))
+    promptFailures.forEach(failure => { console.error(`❌ ${failure}`) })
   }
 
   if (report.summary.fail > 0 || promptFailures.length > 0) {

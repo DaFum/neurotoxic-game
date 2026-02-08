@@ -12,7 +12,7 @@ Run in order after every refactor: `npm run lint` → `npm run test` → `npm ru
 ## Key Files
 
 - `src/*/AGENTS.md` — domain-specific rules that must be preserved during refactoring
-- `tests/` — 27 test files covering reducers, engines, audio, and game logic
+- `tests/` — test files covering reducers, engines, audio, and game logic
 - `package.json` — quality gate scripts
 
 ## Workflow

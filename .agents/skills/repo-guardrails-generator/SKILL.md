@@ -8,7 +8,7 @@ description: Generate or update concise repo-specific working agreements (comman
 ## Key Files
 
 - `AGENTS.md` — root project guidance (Quick Reference, Critical Constraints, Sub-Agent Architecture)
-- `src/*/AGENTS.md` — domain-specific rules (7 files: context, hooks, scenes, utils, components, data, ui)
+- `src/*/AGENTS.md` — domain-specific rules (context, hooks, scenes, utils, components, data, ui)
 - `package.json` — `scripts` section defines quality gate commands
 - `.github/copilot-instructions.md` — additional AI assistant conventions
 
