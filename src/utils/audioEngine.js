@@ -68,10 +68,15 @@ const oggUrlMap = buildAssetUrlMap(
   'Audio'
 )
 
-// Log bundled OGG inventory at module load for diagnostics
-const oggAssetKeys = Object.keys(oggUrlMap)
-if (oggAssetKeys.length > 0) {
-  logger.info('AudioEngine', `Bundled ${oggAssetKeys.length} OGG asset(s): ${oggAssetKeys.filter(k => k.endsWith('.ogg')).join(', ')}`)
+// Log bundled OGG inventory at module load for diagnostics.
+// oggUrlMap stores both full relative paths and basenames; prefer full paths for accurate count.
+const oggAssetKeys = Object.keys(oggUrlMap).filter(k => k.endsWith('.ogg'))
+let oggKeysForLogging = oggAssetKeys.filter(k => k.includes('/'))
+if (oggKeysForLogging.length === 0 && oggAssetKeys.length > 0) {
+  oggKeysForLogging = oggAssetKeys
+}
+if (oggKeysForLogging.length > 0) {
+  logger.info('AudioEngine', `Bundled ${oggKeysForLogging.length} OGG asset(s): ${oggKeysForLogging.join(', ')}`)
 } else {
   logger.warn('AudioEngine', 'No OGG assets bundled. Gig audio will fall back to MIDI playback.')
 }
@@ -87,7 +92,8 @@ export function canPlayAudioType(mimeType) {
     const a = new Audio()
     const result = a.canPlayType(mimeType)
     return result === 'probably' || result === 'maybe'
-  } catch {
+  } catch (error) {
+    logger.debug('AudioEngine', 'canPlayAudioType check failed, returning false.', error)
     return false
   }
 }
@@ -589,7 +595,7 @@ export async function loadAudioBuffer(filename) {
   if (!url) {
     logger.warn(
       'AudioEngine',
-      `Audio asset not found: "${filename}". Available OGG keys: [${Object.keys(oggUrlMap).filter(k => k.endsWith('.ogg')).join(', ')}]`
+      `Audio asset not found: "${filename}". Available OGG keys: [${oggKeysForLogging.join(', ')}]`
     )
     return null
   }
