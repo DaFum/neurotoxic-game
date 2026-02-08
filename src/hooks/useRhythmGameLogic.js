@@ -253,13 +253,15 @@ export const useRhythmGameLogic = () => {
         const excerptStart = currentSong.excerptStartMs || 0
         const offsetSeconds = Math.max(0, excerptStart / 1000)
         const gigPlaybackSeconds = (currentSong.excerptDurationMs || 30000) / 1000
-        startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
+        const gigStartTimeSec = getAudioTimeMs() / 1000 + GIG_LEAD_IN_MS / 1000
+        startGigClock({ offsetMs: 0, startTimeSec: gigStartTimeSec })
         const success = await playMidiFile(
           currentSong.sourceMid,
           offsetSeconds,
           false,
-          GIG_LEAD_IN_MS / 1000,
+          0,
           {
+            startTimeSec: gigStartTimeSec,
             stopAfterSeconds: gigPlaybackSeconds,
             useCleanPlayback: false
           }

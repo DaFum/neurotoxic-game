@@ -117,6 +117,8 @@ class AudioSystem {
       if (!this.initialized) {
         await audioEngine.setupAudio()
         this.initialized = true
+        audioEngine.setMusicVolume(this.muted ? 0 : this.musicVolume)
+        audioEngine.setSFXVolume(this.muted ? 0 : this.sfxVolume)
       }
       await audioEngine.ensureAudioContext()
     } catch (e) {

@@ -4,7 +4,8 @@
  * @param {boolean} [options.useCleanPlayback=true] - Whether to bypass FX for MIDI playback.
  * @param {Function} [options.onEnded] - Callback invoked when playback ends.
  * @param {number} [options.stopAfterSeconds] - Optional playback duration limit in seconds.
- * @returns {{useCleanPlayback: boolean, onEnded: Function|null, stopAfterSeconds: number|null}} Normalized options.
+ * @param {number} [options.startTimeSec] - Absolute Tone.js time to start playback.
+ * @returns {{useCleanPlayback: boolean, onEnded: Function|null, stopAfterSeconds: number|null, startTimeSec: number|null}} Normalized options.
  */
 export const normalizeMidiPlaybackOptions = options => {
   const useCleanPlayback =
@@ -15,11 +16,15 @@ export const normalizeMidiPlaybackOptions = options => {
   const stopAfterSeconds = Number.isFinite(options?.stopAfterSeconds)
     ? Math.max(0, options.stopAfterSeconds)
     : null
+  const startTimeSec = Number.isFinite(options?.startTimeSec)
+    ? options.startTimeSec
+    : null
 
   return {
     useCleanPlayback,
     onEnded,
-    stopAfterSeconds
+    stopAfterSeconds,
+    startTimeSec
   }
 }
 

@@ -25,11 +25,11 @@ test('getScheduledHitTimeMs', async t => {
 
   await t.test('handles clock offsets between gig and audio time', () => {
     const scheduledMs = getScheduledHitTimeMs({
-      noteTimeMs: 2000,
+      noteTimeMs: 1700,
       gigTimeMs: 1500,
       audioTimeMs: 1600,
       maxLeadMs: 200
     })
-    assert.strictEqual(scheduledMs, 1700)
+    assert.strictEqual(scheduledMs, 1800)
   })
 })

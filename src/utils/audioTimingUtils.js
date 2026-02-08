@@ -21,11 +21,11 @@ export const getScheduledHitTimeMs = ({
     : 0
 
   const timeOffsetMs = safeAudioTimeMs - safeGigTimeMs
-  const elapsedAudioMs = safeGigTimeMs + timeOffsetMs
-  const deltaMs = safeNoteTimeMs - elapsedAudioMs
+  const noteTimeInAudioMs = safeNoteTimeMs + timeOffsetMs
+  const deltaMs = noteTimeInAudioMs - safeAudioTimeMs
 
   if (deltaMs > 0 && deltaMs <= safeMaxLeadMs) {
-    return safeAudioTimeMs + deltaMs
+    return noteTimeInAudioMs
   }
 
   return safeAudioTimeMs

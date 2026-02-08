@@ -15,7 +15,8 @@ test('normalizeMidiPlaybackOptions', async t => {
     assert.deepStrictEqual(normalizeMidiPlaybackOptions(), {
       useCleanPlayback: true,
       onEnded: null,
-      stopAfterSeconds: null
+      stopAfterSeconds: null,
+      startTimeSec: null
     })
   })
 
@@ -23,14 +24,16 @@ test('normalizeMidiPlaybackOptions', async t => {
     assert.deepStrictEqual(normalizeMidiPlaybackOptions({}), {
       useCleanPlayback: true,
       onEnded: null,
-      stopAfterSeconds: null
+      stopAfterSeconds: null,
+      startTimeSec: null
     })
     assert.deepStrictEqual(
       normalizeMidiPlaybackOptions({ useCleanPlayback: false }),
       {
         useCleanPlayback: false,
         onEnded: null,
-        stopAfterSeconds: null
+        stopAfterSeconds: null,
+        startTimeSec: null
       }
     )
   })
@@ -40,7 +43,8 @@ test('normalizeMidiPlaybackOptions', async t => {
     assert.deepStrictEqual(normalizeMidiPlaybackOptions({ onEnded }), {
       useCleanPlayback: true,
       onEnded,
-      stopAfterSeconds: null
+      stopAfterSeconds: null,
+      startTimeSec: null
     })
   })
 
@@ -50,7 +54,8 @@ test('normalizeMidiPlaybackOptions', async t => {
       {
         useCleanPlayback: true,
         onEnded: null,
-        stopAfterSeconds: 30
+        stopAfterSeconds: 30,
+        startTimeSec: null
       }
     )
     assert.deepStrictEqual(
@@ -58,7 +63,8 @@ test('normalizeMidiPlaybackOptions', async t => {
       {
         useCleanPlayback: true,
         onEnded: null,
-        stopAfterSeconds: 0
+        stopAfterSeconds: 0,
+        startTimeSec: null
       }
     )
     assert.deepStrictEqual(
@@ -66,7 +72,20 @@ test('normalizeMidiPlaybackOptions', async t => {
       {
         useCleanPlayback: true,
         onEnded: null,
-        stopAfterSeconds: null
+        stopAfterSeconds: null,
+        startTimeSec: null
+      }
+    )
+  })
+
+  await t.test('accepts a startTimeSec override', () => {
+    assert.deepStrictEqual(
+      normalizeMidiPlaybackOptions({ startTimeSec: 12.5 }),
+      {
+        useCleanPlayback: true,
+        onEnded: null,
+        stopAfterSeconds: null,
+        startTimeSec: 12.5
       }
     )
   })

@@ -92,6 +92,25 @@ let gigIsPaused = false
 const audioBufferCache = new Map()
 
 /**
+ * Handles cleanup when a gig buffer source ends naturally.
+ * @param {AudioBufferSourceNode} source - The ended source node.
+ * @returns {void}
+ */
+const handleGigSourceEnded = source => {
+  if (gigSource !== source || gigIsPaused) return
+  if (gigOnEnded) {
+    gigOnEnded({
+      filename: gigFilename,
+      durationMs: gigDurationMs,
+      offsetMs: gigBaseOffsetMs
+    })
+  }
+  gigSeekOffsetMs = getGigTimeMs()
+  gigStartCtxTime = null
+  gigSource = null
+}
+
+/**
  * Clears any scheduled transport end callback.
  * @returns {void}
  */
@@ -499,7 +518,8 @@ export async function startGigPlayback({
   } else if (musicGain) {
     source.connect(musicGain)
   } else {
-    source.connect(rawContext.destination)
+    logger.error('AudioEngine', 'Music bus not initialized for gig playback')
+    return false
   }
 
   gigBuffer = buffer
@@ -530,19 +550,7 @@ export async function startGigPlayback({
       ? Math.min(durationSeconds, Math.max(0, buffer.duration - offsetSeconds))
       : durationSeconds
 
-  source.onended = () => {
-    if (gigSource !== source || gigIsPaused) return
-    if (gigOnEnded) {
-      gigOnEnded({
-        filename: gigFilename,
-        durationMs: gigDurationMs,
-        offsetMs: gigBaseOffsetMs
-      })
-    }
-    gigSeekOffsetMs = getGigTimeMs()
-    gigStartCtxTime = null
-    gigSource = null
-  }
+  source.onended = () => handleGigSourceEnded(source)
 
   gigSource = source
   if (safeDurationSeconds != null && safeDurationSeconds > 0) {
@@ -558,10 +566,17 @@ export async function startGigPlayback({
  * @param {object} params - Clock params.
  * @param {number} [params.delayMs=0] - Delay before starting the clock in ms.
  * @param {number} [params.offsetMs=0] - Starting offset for the gig clock.
+ * @param {number|null} [params.startTimeSec=null] - Absolute Tone.js time to start the gig clock.
  * @returns {void}
  */
-export function startGigClock({ delayMs = 0, offsetMs = 0 } = {}) {
-  const startTime = Tone.now() + Math.max(0, delayMs) / 1000
+export function startGigClock({
+  delayMs = 0,
+  offsetMs = 0,
+  startTimeSec = null
+} = {}) {
+  const startTime = Number.isFinite(startTimeSec)
+    ? startTimeSec
+    : Tone.now() + Math.max(0, delayMs) / 1000
   gigStartCtxTime = startTime
   gigSeekOffsetMs = Math.max(0, offsetMs)
   gigIsPaused = false
@@ -620,7 +635,8 @@ export function resumeGigPlayback() {
   } else if (musicGain) {
     source.connect(musicGain)
   } else {
-    source.connect(rawContext.destination)
+    logger.error('AudioEngine', 'Music bus not initialized for gig playback')
+    return
   }
 
   const startAt = rawContext.currentTime
@@ -646,19 +662,7 @@ export function resumeGigPlayback() {
       ? Math.min(durationSeconds, Math.max(0, gigBuffer.duration - offsetSeconds))
       : durationSeconds
 
-  source.onended = () => {
-    if (gigSource !== source || gigIsPaused) return
-    if (gigOnEnded) {
-      gigOnEnded({
-        filename: gigFilename,
-        durationMs: gigDurationMs,
-        offsetMs: gigBaseOffsetMs
-      })
-    }
-    gigSeekOffsetMs = getGigTimeMs()
-    gigStartCtxTime = null
-    gigSource = null
-  }
+  source.onended = () => handleGigSourceEnded(source)
 
   gigSource = source
   if (safeDurationSeconds != null && safeDurationSeconds > 0) {
@@ -1096,6 +1100,7 @@ function playDrumsLegacy(time, diff, note, random) {
  * @param {boolean} [options.useCleanPlayback=true] - If true, bypass FX for MIDI playback.
  * @param {Function} [options.onEnded] - Callback invoked after playback ends.
  * @param {number} [options.stopAfterSeconds] - Optional playback duration limit in seconds.
+ * @param {number} [options.startTimeSec] - Absolute Tone.js time to start playback.
  */
 export async function playMidiFile(
   filename,
@@ -1104,7 +1109,7 @@ export async function playMidiFile(
   delay = 0,
   options = {}
 ) {
-  const { onEnded, useCleanPlayback, stopAfterSeconds } =
+  const { onEnded, useCleanPlayback, stopAfterSeconds, startTimeSec } =
     normalizeMidiPlaybackOptions(options)
   logger.debug(
     'AudioEngine',
@@ -1283,7 +1288,10 @@ export async function playMidiFile(
       }, stopTime)
     }
 
-    Tone.Transport.start(Tone.now() + validDelay, requestedOffset)
+    const transportStartTime = Number.isFinite(startTimeSec)
+      ? startTimeSec
+      : Tone.now() + validDelay
+    Tone.Transport.start(transportStartTime, requestedOffset)
     return true
   } catch (err) {
     console.error('[audioEngine] Error playing MIDI:', err)
