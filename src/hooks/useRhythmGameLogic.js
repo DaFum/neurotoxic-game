@@ -29,7 +29,7 @@ import {
   checkHit
 } from '../utils/rhythmUtils'
 import { updateProjectiles, trySpawnProjectile } from '../utils/hecklerLogic'
-import { handleError } from '../utils/errorHandler'
+import { handleError, AudioError } from '../utils/errorHandler'
 import { SONGS_DB } from '../data/songs'
 
 /**
@@ -239,7 +239,13 @@ export const useRhythmGameLogic = () => {
         const gigDurationMs = currentSong.excerptDurationMs || 30000
         const assetFound = hasAudioAsset(oggFilename)
         if (!assetFound) {
-          console.warn(`[Gig] Audio asset not found for "${currentSong.name}": looked up "${oggFilename}"`)
+          handleError(
+            new AudioError(
+              `Audio asset not found for "${currentSong.name}": looked up "${oggFilename}"`,
+              { songName: currentSong.name, oggFilename }
+            ),
+            { silent: true, fallbackMessage: 'Missing OGG audio asset' }
+          )
         }
         if (assetFound) {
           const success = await startGigPlayback({

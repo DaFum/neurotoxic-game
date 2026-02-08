@@ -593,9 +593,12 @@ export async function loadAudioBuffer(filename) {
   const publicBasePath = `${baseUrl}assets`
   const { url } = resolveAssetUrl(filename, oggUrlMap, publicBasePath)
   if (!url) {
+    const keysPreview = oggKeysForLogging.length <= 5
+      ? oggKeysForLogging.join(', ')
+      : `${oggKeysForLogging.slice(0, 5).join(', ')} … (${oggKeysForLogging.length} total)`
     logger.warn(
       'AudioEngine',
-      `Audio asset not found: "${filename}". Available OGG keys: [${oggKeysForLogging.join(', ')}]`
+      `Audio asset not found: "${filename}". Available OGG keys: [${keysPreview}]`
     )
     return null
   }
