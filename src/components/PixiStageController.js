@@ -565,7 +565,7 @@ class PixiStageController {
     }
 
     const elapsed = state.elapsed ?? 0
-    const now = state.startTime + elapsed
+    const now = elapsed
 
     if (stats?.isToxicMode) {
       this.colorMatrix.hue(Math.sin(now / 100) * 180, false)

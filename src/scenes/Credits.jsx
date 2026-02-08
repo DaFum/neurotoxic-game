@@ -12,7 +12,7 @@ export const Credits = () => {
     { role: 'VOCAL CODE VOMIT', name: 'Jules “Agent of Segfaults” Agent' },
     {
       role: 'AUDIO ENGINE ERADICATION',
-      name: 'Howler.js // Blastbeat Buffer Overflow'
+      name: 'Tone.js // Blastbeat Buffer Overflow'
     },
     {
       role: 'RENDERING RAZORSTORM',

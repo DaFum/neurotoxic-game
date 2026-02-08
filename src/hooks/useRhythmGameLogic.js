@@ -94,7 +94,6 @@ export const useRhythmGameLogic = () => {
         hitWindow: 150
       }
     ],
-    startTime: 0,
     elapsed: 0,
     pauseTime: null,
     speed: 500,
@@ -309,7 +308,6 @@ export const useRhythmGameLogic = () => {
       const buffer = 4000
 
       gameStateRef.current.totalDuration = maxNoteTime + buffer
-      gameStateRef.current.startTime = 0
       gameStateRef.current.running = true
       // console.log('[RhythmGame] Initialized.', { ... })
     } catch (error) {

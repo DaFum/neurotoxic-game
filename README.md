@@ -13,7 +13,7 @@ This is the **designer‑driven** incarnation of the NEUROTOXIC game concept, ca
 
 - **React 18**: Core necromancer animating the UI shell.
 - **Pixi.js**: High‑performance 2D renderer driving the rhythm hellride at 60fps.
-- **Tone.js & Howler**: Hybrid rig for procedural metal patterns and streamed ambience.
+- **Tone.js**: WebAudio rig for procedural metal patterns and gig playback.
 - **Framer Motion**: Glitch injector and transition shredder for UI states.
 - **Tailwind CSS v4**: Utility riff machine for brutalist layout control.
 - **Vite**: Ultrafast dev and build pipeline for zero‑patience iteration.
@@ -23,7 +23,7 @@ This is the **designer‑driven** incarnation of the NEUROTOXIC game concept, ca
 - **Rhythm Engine**: Custom Pixi.js timing grid managing falling notes and hit detection with high‑precision frame sync at 60fps.
 - **Roguelike Map**: Non‑linear overworld, letting you route your own tour instead of marching a corridor.
 - **Economy System**: Stripped‑down money loop for upgrades, tuned for MVP grind instead of spreadsheet sim.
-- **Audio System**: Tone.js for generative metal riffs, Howler.js for ambient stream layers over the Web Audio API.
+- **Audio System**: Tone.js drives generative metal riffs, ambient MIDI, and gig playback via WebAudio buffers.
 
 ## Rituals: Run, Test, Deploy
 
