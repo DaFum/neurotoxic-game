@@ -14,7 +14,7 @@ This folder (`src/utils/`) contains the "brains" of the game - pure logic module
 | `economyEngine.js`   | Financial calculations, payout formulas, cost modeling     |
 | `socialEngine.js`    | Social media simulation, viral content mechanics           |
 | `mapGenerator.js`    | Procedural map generation, graph-based travel system       |
-| `AudioManager.js`    | Howler.js wrapper, sound effect management                 |
+| `AudioManager.js`    | Tone.js audio coordinator, sound effect management         |
 | `simulationUtils.js` | Time progression, day/night cycle, RNG utilities           |
 | `imageGen.js`        | Placeholder image URL generation                           |
 | `errorHandler.js`    | Centralized error handling and logging                     |
@@ -273,7 +273,7 @@ const finalGrowth = baseGrowth * platformMultiplier + viralBonus
 
 ### AudioManager.js
 
-**Purpose**: Coordinate MIDI ambient playback, gig background audio, and SFX routing.
+**Purpose**: Coordinate ambient playback, gig background audio, and SFX routing.
 
 **Key Functions:**
 

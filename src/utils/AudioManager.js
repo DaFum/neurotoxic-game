@@ -1,11 +1,10 @@
-import { Howler } from 'howler'
 import * as Tone from 'tone'
 import * as audioEngine from './audioEngine.js'
 import { handleError } from './errorHandler.js'
 import { logger } from './logger.js'
 
 /**
- * Manages global audio playback including music (Howler.js) and SFX (audioEngine.js).
+ * Manages global audio playback including music (Tone.js) and SFX (audioEngine.js).
  */
 class AudioSystem {
   constructor() {
@@ -41,11 +40,9 @@ class AudioSystem {
       this.sfxVolume = savedSfxVol != null ? clamp01(savedSfxVol, 0.5) : 0.5
       this.muted = savedMuted === 'true'
 
-      // Apply global mute
-      Howler.mute(this.muted)
-
       // Initialize Audio Engine settings (but don't start Context yet)
       audioEngine.setSFXVolume(this.muted ? 0 : this.sfxVolume)
+      audioEngine.setMusicVolume(this.muted ? 0 : this.musicVolume)
 
       // Tone mute is handled globally by Volume node in engine if implemented, or we can use Destination
       Tone.Destination.mute = this.muted
@@ -91,7 +88,7 @@ class AudioSystem {
   }
 
   /**
-   * Stops the currently playing music (Howler or Tone).
+   * Stops the currently playing music.
    */
   stopMusic() {
     audioEngine.stopAudio()
@@ -101,7 +98,7 @@ class AudioSystem {
   /**
    * Resumes the paused music or starts ambient if none is loaded.
    * Note: The logic here is asymmetric compared to pauseMusic(). We assume mutually exclusive
-   * playback states (either Howl or Tone is active, not both).
+   * playback states (either ambient or gig audio is active, not both).
    */
   resumeMusic() {
     if (Tone.Transport.state === 'paused') {
@@ -112,7 +109,7 @@ class AudioSystem {
   }
 
   /**
-   * Ensures the AudioContext is running (Tone.js and Howler).
+   * Ensures the AudioContext is running (Tone.js).
    * Should be called after a user gesture.
    */
   async ensureAudioContext() {
@@ -122,9 +119,6 @@ class AudioSystem {
         this.initialized = true
       }
       await audioEngine.ensureAudioContext()
-      if (Howler.ctx && Howler.ctx.state !== 'running') {
-        await Howler.ctx.resume()
-      }
     } catch (e) {
       logger.warn('AudioSystem', 'Failed to resume AudioContext:', e)
     }
@@ -152,16 +146,10 @@ class AudioSystem {
     const next = Math.min(1, Math.max(0, vol))
     this.musicVolume = next
     localStorage.setItem('neurotoxic_vol_music', next)
-    // Scale Tone.js master volume so MIDI ambient respects the music slider
     try {
-      // Avoid -Infinity by clamping to a minimum dB floor for 0 volume
-      if (next <= 0.001) {
-        Tone.Destination.volume.value = -Infinity // Mute
-      } else {
-        Tone.Destination.volume.value = Tone.gainToDb(next)
-      }
+      audioEngine.setMusicVolume(this.muted ? 0 : next)
     } catch (e) {
-      handleError(e, { fallbackMessage: 'Failed to set Tone volume' })
+      handleError(e, { fallbackMessage: 'Failed to set music volume' })
     }
   }
 
@@ -182,11 +170,11 @@ class AudioSystem {
    */
   toggleMute() {
     this.muted = !this.muted
-    Howler.mute(this.muted)
 
     try {
       Tone.Destination.mute = this.muted
       audioEngine.setSFXVolume(this.muted ? 0 : this.sfxVolume)
+      audioEngine.setMusicVolume(this.muted ? 0 : this.musicVolume)
     } catch (e) {
       logger.warn('AudioSystem', 'Tone.js mute failed:', e)
     }
@@ -200,7 +188,6 @@ class AudioSystem {
    */
   dispose() {
     this.stopMusic()
-    Howler.unload()
     audioEngine.disposeAudio?.()
     this.initialized = false
   }

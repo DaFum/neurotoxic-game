@@ -3,8 +3,10 @@ import { test } from 'node:test'
 import {
   normalizeMidiPlaybackOptions,
   calculateRemainingDurationSeconds,
+  buildAssetUrlMap,
   buildMidiUrlMap,
   encodePublicAssetPath,
+  resolveAssetUrl,
   resolveMidiAssetUrl
 } from '../src/utils/audioPlaybackUtils.js'
 
@@ -167,6 +169,59 @@ test('resolveMidiAssetUrl', async t => {
       url: null,
       source: null
     })
+  })
+})
+
+test('resolveAssetUrl', async t => {
+  await t.test('resolves bundled URLs for non-MIDI assets', () => {
+    const assetMap = { 'track.ogg': '/assets/track.ogg' }
+    assert.deepStrictEqual(resolveAssetUrl('track.ogg', assetMap), {
+      url: '/assets/track.ogg',
+      source: 'bundled'
+    })
+  })
+
+  await t.test('resolves via basename for nested paths', () => {
+    const assetMap = { 'track.ogg': '/assets/track.ogg' }
+    assert.deepStrictEqual(resolveAssetUrl('audio/track.ogg', assetMap), {
+      url: '/assets/track.ogg',
+      source: 'bundled'
+    })
+  })
+
+  await t.test('falls back to public path for missing assets', () => {
+    assert.deepStrictEqual(resolveAssetUrl('audio/track.ogg', {}), {
+      url: '/assets/audio/track.ogg',
+      source: 'public'
+    })
+  })
+})
+
+test('buildAssetUrlMap', async t => {
+  await t.test('stores relative paths and basenames', () => {
+    const assetMap = buildAssetUrlMap({
+      '../assets/set1/track.ogg': '/assets/set1/track.ogg'
+    })
+    assert.strictEqual(assetMap['set1/track.ogg'], '/assets/set1/track.ogg')
+    assert.strictEqual(assetMap['track.ogg'], '/assets/set1/track.ogg')
+  })
+
+  await t.test('warns on basename conflicts and keeps first entry', () => {
+    const warnings = []
+    const assetMap = buildAssetUrlMap(
+      {
+        '../assets/set1/track.ogg': '/assets/set1/track.ogg',
+        '../assets/set2/track.ogg': '/assets/set2/track.ogg'
+      },
+      message => warnings.push(message),
+      'Audio'
+    )
+
+    assert.strictEqual(assetMap['set1/track.ogg'], '/assets/set1/track.ogg')
+    assert.strictEqual(assetMap['set2/track.ogg'], '/assets/set2/track.ogg')
+    assert.strictEqual(assetMap['track.ogg'], '/assets/set1/track.ogg')
+    assert.strictEqual(warnings.length, 1)
+    assert.match(warnings[0], /audio basename conflict/i)
   })
 })
 
