@@ -46,6 +46,8 @@ class AudioSystem {
 
       // Tone mute is handled globally by Volume node in engine if implemented, or we can use Destination
       Tone.Destination.mute = this.muted
+
+      this.initialized = true
     } catch (error) {
       handleError(error, {
         fallbackMessage: 'AudioSystem initialization failed'
@@ -111,6 +113,7 @@ class AudioSystem {
   /**
    * Ensures the AudioContext is running (Tone.js).
    * Should be called after a user gesture.
+   * @returns {Promise<boolean>} True if successful.
    */
   async ensureAudioContext() {
     try {
@@ -120,9 +123,10 @@ class AudioSystem {
         audioEngine.setMusicVolume(this.muted ? 0 : this.musicVolume)
         audioEngine.setSFXVolume(this.muted ? 0 : this.sfxVolume)
       }
-      await audioEngine.ensureAudioContext()
+      return await audioEngine.ensureAudioContext()
     } catch (e) {
       logger.warn('AudioSystem', 'Failed to resume AudioContext:', e)
+      return false
     }
   }
 

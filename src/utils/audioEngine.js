@@ -494,13 +494,18 @@ export async function setupAudio() {
 
 /**
  * Ensures the AudioContext is running and initialized.
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>} True if the AudioContext is running.
  */
 export async function ensureAudioContext() {
   if (!isSetup) await setupAudio()
   if (Tone.context.state !== 'running') {
-    await Tone.context.resume()
+    try {
+      await Tone.context.resume()
+    } catch (e) {
+      console.warn('[audioEngine] Tone.context.resume() failed:', e)
+    }
   }
+  return Tone.context.state === 'running'
 }
 
 /**

@@ -64,6 +64,7 @@ export const useRhythmGameLogic = () => {
   const [overload, setOverload] = useState(0)
   const [isToxicMode, setIsToxicMode] = useState(false)
   const [isGameOver, setIsGameOver] = useState(false)
+  const [isAudioReady, setIsAudioReady] = useState(false)
   const gameOverTimerRef = useRef(null)
 
   // High-Frequency Game State (Ref)
@@ -127,7 +128,6 @@ export const useRhythmGameLogic = () => {
     if (hasInitializedRef.current) {
       return
     }
-    hasInitializedRef.current = true
 
     // Mute ambient radio to prevent audio overlap
     audioManager.stopMusic()
@@ -136,7 +136,15 @@ export const useRhythmGameLogic = () => {
       // Ensure AudioContext is running before any getAudioTimeMs() calls,
       // even if no playMidiFile/startMetalGenerator path executes later.
       // Use audioManager to also set initialized flag for SFX playback.
-      await audioManager.ensureAudioContext()
+      const audioUnlocked = await audioManager.ensureAudioContext()
+      if (!audioUnlocked) {
+        console.warn('[useRhythmGameLogic] Audio Context blocked. Waiting for user gesture.')
+        setIsAudioReady(false)
+        hasInitializedRef.current = false // Allow retry
+        return
+      }
+      setIsAudioReady(true)
+      hasInitializedRef.current = true
 
       const activeModifiers = getGigModifiers(band, gigModifiers)
       const physics = calculateGigPhysics(band, { bpm: 120 })
@@ -674,6 +682,13 @@ export const useRhythmGameLogic = () => {
    * @param {boolean} isDown - Whether the input is pressed.
    * @returns {void}
    */
+  /**
+   * Retries initialization if it failed due to locked audio.
+   */
+  const retryAudioInitialization = useCallback(() => {
+    initializeGigState()
+  }, [initializeGigState])
+
   const registerInput = useCallback(
     (laneIndex, isDown) => {
       // Ignore input if game is not running or is paused
@@ -696,9 +711,10 @@ export const useRhythmGameLogic = () => {
       progress,
       overload,
       isToxicMode,
-      isGameOver
+      isGameOver,
+      isAudioReady
     },
-    actions: { registerInput, activateToxicMode },
+    actions: { registerInput, activateToxicMode, retryAudioInitialization },
     update // Expose update to be driven by Ticker
   }
 }
