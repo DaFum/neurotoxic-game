@@ -28,11 +28,11 @@
     "tone": "^15.1.22"
   },
   "devDependencies": {
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^14.6.1",
-    "@testing-library/dom": "^10.0.0",
     "@iarna/toml": "^2.2.5",
     "@tailwindcss/postcss": "^4.0.0",
+    "@testing-library/dom": "^10.0.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@vitejs/plugin-react": "^5.0.0",
@@ -43,10 +43,11 @@
     "eslint-plugin-react-refresh": "^0.4.26",
     "globals": "^15.15.0",
     "jsdom": "^26.1.0",
+    "playwright": "^1.58.2",
     "postcss": "^8.4.0",
     "prettier": "^3.7.4",
-    "tsx": "^4.20.6",
     "tailwindcss": "^4.0.0",
+    "tsx": "^4.20.6",
     "vite": "^5.0.0",
     "yaml": "^2.8.1"
   },
