@@ -72,3 +72,44 @@ test('hasAudioAsset', async t => {
     assert.strictEqual(hasAudioAsset('missing-track.ogg'), false)
   })
 })
+
+test('calculateGigPlaybackWindow', async t => {
+  if (skipIfImportFailed(t)) return
+  const { calculateGigPlaybackWindow } = audioEngine
+
+  await t.test('returns offset and duration within buffer', () => {
+    const result = calculateGigPlaybackWindow({
+      bufferDurationSec: 10,
+      baseOffsetMs: 1000,
+      seekOffsetMs: 500,
+      durationMs: 2000
+    })
+    assert.strictEqual(result.offsetSeconds, 1.5)
+    assert.strictEqual(result.safeDurationSeconds, 2)
+    assert.strictEqual(result.didResetOffsets, false)
+  })
+
+  await t.test('clamps duration to remaining buffer', () => {
+    const result = calculateGigPlaybackWindow({
+      bufferDurationSec: 2,
+      baseOffsetMs: 1500,
+      seekOffsetMs: 0,
+      durationMs: 2000
+    })
+    assert.strictEqual(result.offsetSeconds, 1.5)
+    assert.strictEqual(result.safeDurationSeconds, 0.5)
+  })
+
+  await t.test('resets offsets when they exceed duration', () => {
+    const result = calculateGigPlaybackWindow({
+      bufferDurationSec: 1,
+      baseOffsetMs: 1500,
+      seekOffsetMs: 0,
+      durationMs: 1000
+    })
+    assert.strictEqual(result.offsetSeconds, 0)
+    assert.strictEqual(result.nextBaseOffsetMs, 0)
+    assert.strictEqual(result.nextSeekOffsetMs, 0)
+    assert.strictEqual(result.didResetOffsets, true)
+  })
+})

@@ -111,6 +111,29 @@ const handleGigSourceEnded = source => {
 }
 
 /**
+ * Creates and wires a gig buffer source to the music bus.
+ * @param {object} params - Source parameters.
+ * @param {AudioBuffer} params.buffer - Audio buffer to play.
+ * @param {(source: AudioBufferSourceNode) => void} params.onEnded - End handler.
+ * @returns {AudioBufferSourceNode|null} Configured buffer source or null on failure.
+ */
+const createGigBufferSource = ({ buffer, onEnded }) => {
+  const rawContext = getRawAudioContext()
+  const source = rawContext.createBufferSource()
+  source.buffer = buffer
+  if (musicGain?.input) {
+    source.connect(musicGain.input)
+  } else if (musicGain) {
+    source.connect(musicGain)
+  } else {
+    logger.error('AudioEngine', 'Music bus not initialized for gig playback')
+    return null
+  }
+  source.onended = () => onEnded(source)
+  return source
+}
+
+/**
  * Clears any scheduled transport end callback.
  * @returns {void}
  */
@@ -184,6 +207,65 @@ export const calculateGigTimeMs = ({
     return safeOffset
   }
   return (contextTimeSec - startCtxTimeSec) * 1000 + safeOffset
+}
+
+/**
+ * Calculates buffer playback offsets and safe duration for gig playback.
+ * @param {object} params - Playback window params.
+ * @param {number} params.bufferDurationSec - Audio buffer duration in seconds.
+ * @param {number} params.baseOffsetMs - Base offset in milliseconds.
+ * @param {number} params.seekOffsetMs - Seek offset in milliseconds.
+ * @param {number|null} params.durationMs - Requested playback duration in milliseconds.
+ * @returns {{offsetSeconds: number, requestedOffsetSeconds: number, safeDurationSeconds: number|null, nextBaseOffsetMs: number, nextSeekOffsetMs: number, didResetOffsets: boolean}} Playback window.
+ */
+export const calculateGigPlaybackWindow = ({
+  bufferDurationSec,
+  baseOffsetMs,
+  seekOffsetMs,
+  durationMs
+}) => {
+  const safeBaseOffsetMs = Number.isFinite(baseOffsetMs)
+    ? Math.max(0, baseOffsetMs)
+    : 0
+  const safeSeekOffsetMs = Number.isFinite(seekOffsetMs)
+    ? Math.max(0, seekOffsetMs)
+    : 0
+  const safeBufferDurationSec = Number.isFinite(bufferDurationSec)
+    ? Math.max(0, bufferDurationSec)
+    : 0
+  const safeDurationMs = Number.isFinite(durationMs)
+    ? Math.max(0, durationMs)
+    : null
+  let nextBaseOffsetMs = safeBaseOffsetMs
+  let nextSeekOffsetMs = safeSeekOffsetMs
+  const requestedOffsetSeconds = (safeBaseOffsetMs + safeSeekOffsetMs) / 1000
+  let offsetSeconds = requestedOffsetSeconds
+  let didResetOffsets = false
+
+  if (safeBufferDurationSec > 0 && offsetSeconds >= safeBufferDurationSec) {
+    offsetSeconds = 0
+    nextBaseOffsetMs = 0
+    nextSeekOffsetMs = 0
+    didResetOffsets = true
+  }
+
+  const durationSeconds = safeDurationMs != null ? safeDurationMs / 1000 : null
+  const safeDurationSeconds =
+    durationSeconds != null && safeBufferDurationSec > 0
+      ? Math.min(
+          durationSeconds,
+          Math.max(0, safeBufferDurationSec - offsetSeconds)
+        )
+      : durationSeconds
+
+  return {
+    offsetSeconds,
+    requestedOffsetSeconds,
+    safeDurationSeconds,
+    nextBaseOffsetMs,
+    nextSeekOffsetMs,
+    didResetOffsets
+  }
 }
 
 /**
@@ -528,16 +610,11 @@ export async function startGigPlayback({
   if (!buffer) return false
 
   const rawContext = getRawAudioContext()
-  const source = rawContext.createBufferSource()
-  source.buffer = buffer
-  if (musicGain?.input) {
-    source.connect(musicGain.input)
-  } else if (musicGain) {
-    source.connect(musicGain)
-  } else {
-    logger.error('AudioEngine', 'Music bus not initialized for gig playback')
-    return false
-  }
+  const source = createGigBufferSource({
+    buffer,
+    onEnded: handleGigSourceEnded
+  })
+  if (!source) return false
 
   gigBuffer = buffer
   gigFilename = filename
@@ -550,24 +627,28 @@ export async function startGigPlayback({
   const startAt = rawContext.currentTime + Math.max(0, delayMs) / 1000
   gigStartCtxTime = startAt
 
-  let offsetSeconds = (gigBaseOffsetMs + gigSeekOffsetMs) / 1000
-  if (buffer.duration > 0 && offsetSeconds >= buffer.duration) {
+  const {
+    offsetSeconds,
+    requestedOffsetSeconds,
+    safeDurationSeconds,
+    nextBaseOffsetMs,
+    nextSeekOffsetMs,
+    didResetOffsets
+  } = calculateGigPlaybackWindow({
+    bufferDurationSec: buffer.duration,
+    baseOffsetMs: gigBaseOffsetMs,
+    seekOffsetMs: gigSeekOffsetMs,
+    durationMs: gigDurationMs
+  })
+
+  if (didResetOffsets) {
     logger.warn(
       'AudioEngine',
-      `Audio offset ${offsetSeconds}s exceeds buffer duration ${buffer.duration}s. Resetting to 0.`
+      `Audio offset ${requestedOffsetSeconds}s exceeds buffer duration ${buffer.duration}s. Resetting to 0.`
     )
-    offsetSeconds = 0
-    gigBaseOffsetMs = 0
-    gigSeekOffsetMs = 0
+    gigBaseOffsetMs = nextBaseOffsetMs
+    gigSeekOffsetMs = nextSeekOffsetMs
   }
-  const durationSeconds =
-    gigDurationMs != null ? Math.max(0, gigDurationMs / 1000) : null
-  const safeDurationSeconds =
-    durationSeconds != null && buffer.duration > 0
-      ? Math.min(durationSeconds, Math.max(0, buffer.duration - offsetSeconds))
-      : durationSeconds
-
-  source.onended = () => handleGigSourceEnded(source)
 
   gigSource = source
   if (safeDurationSeconds != null && safeDurationSeconds > 0) {
@@ -644,42 +725,40 @@ export function resumeGigPlayback() {
     return
   }
   const rawContext = getRawAudioContext()
-  const source = rawContext.createBufferSource()
-  source.buffer = gigBuffer
-
-  if (musicGain?.input) {
-    source.connect(musicGain.input)
-  } else if (musicGain) {
-    source.connect(musicGain)
-  } else {
-    logger.error('AudioEngine', 'Music bus not initialized for gig playback')
-    return
-  }
+  const source = createGigBufferSource({
+    buffer: gigBuffer,
+    onEnded: handleGigSourceEnded
+  })
+  if (!source) return
 
   const startAt = rawContext.currentTime
   gigStartCtxTime = startAt
   gigIsPaused = false
 
-  let offsetSeconds = (gigBaseOffsetMs + gigSeekOffsetMs) / 1000
-  if (gigBuffer.duration > 0 && offsetSeconds >= gigBuffer.duration) {
-    logger.warn(
-      'AudioEngine',
-      `Audio offset ${offsetSeconds}s exceeds buffer duration ${gigBuffer.duration}s. Resetting to 0.`
-    )
-    offsetSeconds = 0
-    gigBaseOffsetMs = 0
-    gigSeekOffsetMs = 0
-  }
   const remainingDurationMs =
     gigDurationMs != null ? Math.max(0, gigDurationMs - gigSeekOffsetMs) : null
-  const durationSeconds =
-    remainingDurationMs != null ? remainingDurationMs / 1000 : null
-  const safeDurationSeconds =
-    durationSeconds != null && gigBuffer.duration > 0
-      ? Math.min(durationSeconds, Math.max(0, gigBuffer.duration - offsetSeconds))
-      : durationSeconds
+  const {
+    offsetSeconds,
+    requestedOffsetSeconds,
+    safeDurationSeconds,
+    nextBaseOffsetMs,
+    nextSeekOffsetMs,
+    didResetOffsets
+  } = calculateGigPlaybackWindow({
+    bufferDurationSec: gigBuffer.duration,
+    baseOffsetMs: gigBaseOffsetMs,
+    seekOffsetMs: gigSeekOffsetMs,
+    durationMs: remainingDurationMs
+  })
 
-  source.onended = () => handleGigSourceEnded(source)
+  if (didResetOffsets) {
+    logger.warn(
+      'AudioEngine',
+      `Audio offset ${requestedOffsetSeconds}s exceeds buffer duration ${gigBuffer.duration}s. Resetting to 0.`
+    )
+    gigBaseOffsetMs = nextBaseOffsetMs
+    gigSeekOffsetMs = nextSeekOffsetMs
+  }
 
   gigSource = source
   if (safeDurationSeconds != null && safeDurationSeconds > 0) {
