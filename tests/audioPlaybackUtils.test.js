@@ -244,6 +244,58 @@ test('buildAssetUrlMap', async t => {
   })
 })
 
+test('buildAssetUrlMap OGG key filtering', async t => {
+  await t.test('full paths and basenames are both stored for OGG assets', () => {
+    const assetMap = buildAssetUrlMap({
+      '../assets/01 Kranker Schrank.ogg': '/assets/01%20Kranker%20Schrank.ogg'
+    })
+    // Both the relative path and the basename should be in the map
+    assert.strictEqual(assetMap['01 Kranker Schrank.ogg'], '/assets/01%20Kranker%20Schrank.ogg')
+  })
+
+  await t.test('full paths with subdirectories are distinguishable from basenames', () => {
+    const assetMap = buildAssetUrlMap({
+      '../assets/audio/song.ogg': '/assets/audio/song.ogg',
+      '../assets/sfx/song.ogg': '/assets/sfx/song.ogg'
+    })
+    // Both full paths stored independently
+    assert.strictEqual(assetMap['audio/song.ogg'], '/assets/audio/song.ogg')
+    assert.strictEqual(assetMap['sfx/song.ogg'], '/assets/sfx/song.ogg')
+    // Basename keeps first entry
+    assert.strictEqual(assetMap['song.ogg'], '/assets/audio/song.ogg')
+  })
+
+  await t.test('path-containing keys can be filtered from basename-only keys', () => {
+    const assetMap = buildAssetUrlMap({
+      '../assets/audio/a.ogg': '/assets/audio/a.ogg',
+      '../assets/audio/b.ogg': '/assets/audio/b.ogg'
+    })
+    const allOggKeys = Object.keys(assetMap).filter(k => k.endsWith('.ogg'))
+    const fullPathKeys = allOggKeys.filter(k => k.includes('/'))
+    const basenameOnlyKeys = allOggKeys.filter(k => !k.includes('/'))
+    // Should have 2 full paths and 2 basenames
+    assert.strictEqual(fullPathKeys.length, 2)
+    assert.strictEqual(basenameOnlyKeys.length, 2)
+    // Full path keys are the canonical set for logging
+    assert.ok(fullPathKeys.includes('audio/a.ogg'))
+    assert.ok(fullPathKeys.includes('audio/b.ogg'))
+  })
+
+  await t.test('root-level assets have no slash in key', () => {
+    // When OGGs are in the assets root, keys have no slash
+    const assetMap = buildAssetUrlMap({
+      '../assets/track.ogg': '/assets/track.ogg'
+    })
+    const allOggKeys = Object.keys(assetMap).filter(k => k.endsWith('.ogg'))
+    const fullPathKeys = allOggKeys.filter(k => k.includes('/'))
+    // No full-path keys since file is at root
+    assert.strictEqual(fullPathKeys.length, 0)
+    // Should still get the basename key
+    assert.strictEqual(allOggKeys.length, 1)
+    assert.strictEqual(allOggKeys[0], 'track.ogg')
+  })
+})
+
 test('buildMidiUrlMap', async t => {
   await t.test('stores relative paths and basenames', () => {
     const midiUrlMap = buildMidiUrlMap({
