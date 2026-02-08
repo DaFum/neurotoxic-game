@@ -4,7 +4,8 @@
  * @param {boolean} [options.useCleanPlayback=true] - Whether to bypass FX for MIDI playback.
  * @param {Function} [options.onEnded] - Callback invoked when playback ends.
  * @param {number} [options.stopAfterSeconds] - Optional playback duration limit in seconds.
- * @returns {{useCleanPlayback: boolean, onEnded: Function|null, stopAfterSeconds: number|null}} Normalized options.
+ * @param {number} [options.startTimeSec] - Absolute Tone.js time to start playback.
+ * @returns {{useCleanPlayback: boolean, onEnded: Function|null, stopAfterSeconds: number|null, startTimeSec: number|null}} Normalized options.
  */
 export const normalizeMidiPlaybackOptions = options => {
   const useCleanPlayback =
@@ -15,11 +16,15 @@ export const normalizeMidiPlaybackOptions = options => {
   const stopAfterSeconds = Number.isFinite(options?.stopAfterSeconds)
     ? Math.max(0, options.stopAfterSeconds)
     : null
+  const startTimeSec = Number.isFinite(options?.startTimeSec)
+    ? options.startTimeSec
+    : null
 
   return {
     useCleanPlayback,
     onEnded,
-    stopAfterSeconds
+    stopAfterSeconds,
+    startTimeSec
   }
 }
 
@@ -55,15 +60,15 @@ export const encodePublicAssetPath = assetPath => {
 }
 
 /**
- * Resolves a MIDI asset URL from the bundled map or a public fallback path.
- * @param {string} filename - Filename or relative path to the MIDI asset.
- * @param {Record<string, string>} midiUrlMap - Map of asset keys to bundled URLs.
+ * Resolves an asset URL from the bundled map or a public fallback path.
+ * @param {string} filename - Filename or relative path to the asset.
+ * @param {Record<string, string>} assetUrlMap - Map of asset keys to bundled URLs.
  * @param {string} [publicBasePath='/assets'] - Base path for public assets.
  * @returns {{url: string|null, source: 'bundled'|'public'|null}} Resolved URL info.
  */
-export const resolveMidiAssetUrl = (
+export const resolveAssetUrl = (
   filename,
-  midiUrlMap,
+  assetUrlMap,
   publicBasePath = '/assets'
 ) => {
   if (typeof filename !== 'string' || filename.length === 0) {
@@ -71,14 +76,14 @@ export const resolveMidiAssetUrl = (
   }
 
   const normalizedFilename = filename.replace(/^\.?\//, '')
-  const bundledUrl = midiUrlMap?.[normalizedFilename]
+  const bundledUrl = assetUrlMap?.[normalizedFilename]
   if (bundledUrl) {
     return { url: bundledUrl, source: 'bundled' }
   }
 
   const baseName = normalizedFilename.split('/').pop()
-  if (baseName && midiUrlMap?.[baseName]) {
-    return { url: midiUrlMap[baseName], source: 'bundled' }
+  if (baseName && assetUrlMap?.[baseName]) {
+    return { url: assetUrlMap[baseName], source: 'bundled' }
   }
 
   const trimmedBase = publicBasePath.replace(/\/+$/, '')
@@ -94,13 +99,33 @@ export const resolveMidiAssetUrl = (
 }
 
 /**
- * Builds a MIDI URL map with conflict detection for duplicate basenames.
- * @param {Record<string, string>} midiGlob - Vite glob map of asset paths to URLs.
+ * Resolves a MIDI asset URL from the bundled map or a public fallback path.
+ * @param {string} filename - Filename or relative path to the MIDI asset.
+ * @param {Record<string, string>} midiUrlMap - Map of asset keys to bundled URLs.
+ * @param {string} [publicBasePath='/assets'] - Base path for public assets.
+ * @returns {{url: string|null, source: 'bundled'|'public'|null}} Resolved URL info.
+ */
+export const resolveMidiAssetUrl = (
+  filename,
+  midiUrlMap,
+  publicBasePath = '/assets'
+) => {
+  return resolveAssetUrl(filename, midiUrlMap, publicBasePath)
+}
+
+/**
+ * Builds an asset URL map with conflict detection for duplicate basenames.
+ * @param {Record<string, string>} assetGlob - Vite glob map of asset paths to URLs.
  * @param {(message: string) => void} [warn] - Warning callback for conflicts.
+ * @param {string} [label='Asset'] - Label for conflict warnings.
  * @returns {Record<string, string>} Map of relative paths and basenames to URLs.
  */
-export const buildMidiUrlMap = (midiGlob, warn = console.warn) => {
-  const entries = Object.entries(midiGlob ?? {})
+export const buildAssetUrlMap = (
+  assetGlob,
+  warn = console.warn,
+  label = 'Asset'
+) => {
+  const entries = Object.entries(assetGlob ?? {})
   return entries.reduce((accumulator, [path, url]) => {
     const relativePath = path.replace('../assets/', '')
     if (!accumulator[relativePath]) {
@@ -120,11 +145,21 @@ export const buildMidiUrlMap = (midiGlob, warn = console.warn) => {
 
     if (existingBasenameUrl !== url) {
       warn(
-        `[audioEngine] MIDI basename conflict for "${baseName}". ` +
+        `[audioEngine] ${label} basename conflict for "${baseName}". ` +
           `Keeping "${existingBasenameUrl}" and ignoring "${url}".`
       )
     }
 
     return accumulator
   }, {})
+}
+
+/**
+ * Builds a MIDI URL map with conflict detection for duplicate basenames.
+ * @param {Record<string, string>} midiGlob - Vite glob map of asset paths to URLs.
+ * @param {(message: string) => void} [warn] - Warning callback for conflicts.
+ * @returns {Record<string, string>} Map of relative paths and basenames to URLs.
+ */
+export const buildMidiUrlMap = (midiGlob, warn = console.warn) => {
+  return buildAssetUrlMap(midiGlob, warn, 'MIDI')
 }

@@ -20,7 +20,7 @@ Web-based Roguelike Tour Manager with rhythm action mechanics. Manage a Death Gr
 | Game Engine | Pixi.js       | 8.0.0                       |
 | Animation   | Framer Motion | 12.0.0                      |
 | Styling     | Tailwind CSS  | v4                          |
-| Audio       | Howler.js     | 2.2.4                       |
+| Audio       | Tone.js       | 15.x                        |
 | Linting     | ESLint        | 8.57                        |
 
 ## Visual Design System (STRICT)
@@ -33,7 +33,7 @@ Web-based Roguelike Tour Manager with rhythm action mechanics. Manage a Death Gr
 // CORRECT (Tailwind v4)
 <div className="bg-(--void-black) text-(--toxic-green)">
 
-// WRONG
+// WRONG: Tailwind v3 bracket-variable syntax (do not use).
 <div className="bg-[var(--void-black)] text-[var(--toxic-green)]">
 ```
 
@@ -252,7 +252,7 @@ import { eventEngine } from '../utils/eventEngine'
 **Wichtig:** Tailwind v4 ändert die Syntax für CSS-Variablen.
 
 - **Neu (v4):** `bg-(--void-black)` oder `text-(--toxic-green)`
-- **Alt (v3):** `bg-[var(--void-black)]` oder `text-[var(--toxic-green)]` (jetzt falsch)
+- **Alt (v3):** bracket-variable syntax (jetzt falsch)
 
 Beispiel:
 

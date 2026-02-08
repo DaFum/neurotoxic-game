@@ -13,7 +13,7 @@
 | **Frontend**    | React 18.2.0, Vite 5.0.0, JavaScript (ESModules) |
 | **Game Engine** | Pixi.js 8.0.0                                    |
 | **Styling**     | Tailwind CSS v4, Framer Motion 12.0.0            |
-| **Audio**       | Howler.js 2.2.4                                  |
+| **Audio**       | Tone.js 15.x (WebAudio buffers)                  |
 
 ## Project Structure
 
@@ -187,5 +187,5 @@ _"Complexity is not an excuse for friction."_
 
 ## Maintenance
 
-- Audio: Ambient playback starts on Start Tour and plays full MIDI tracks; gig playback starts from configured excerpts and stops at the song duration.  
+- Audio: Ambient playback starts on Start Tour and plays full MIDI tracks; gig playback starts from configured excerpts via WebAudio buffers and stops at the song duration.  
 - Last updated: 2026-02-13.

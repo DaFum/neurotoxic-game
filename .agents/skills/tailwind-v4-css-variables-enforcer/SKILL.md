@@ -25,7 +25,7 @@ description: Audit UI changes for Tailwind v4 class syntax and CSS-variable colo
 ## Workflow
 
 1. Scan `src/` for hardcoded colors: hex (`#xxx`), `rgb()`, `hsl()`, Tailwind palette classes (`bg-gray-*`, `text-red-*`).
-2. Scan for Tailwind v3-style CSS variable usage: `bg-[var(--...)]` bracket syntax.
+2. Scan for Tailwind v3-style bracket-variable usage and replace with v4 `bg-(--token)` syntax.
 3. Check `src/index.css` for the authoritative list of CSS variables.
 4. Replace violations with v4 variable syntax using the examples above.
 

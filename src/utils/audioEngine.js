@@ -10,7 +10,9 @@ import { calculateTimeFromTicks } from './rhythmUtils'
 import { SONGS_DB } from '../data/songs'
 import { selectRandomItem } from './audioSelectionUtils.js'
 import {
+  buildAssetUrlMap,
   buildMidiUrlMap,
+  resolveAssetUrl,
   normalizeMidiPlaybackOptions,
   resolveMidiAssetUrl
 } from './audioPlaybackUtils.js'
@@ -24,6 +26,12 @@ import { logger } from './logger.js'
 
 // Import all MIDI files as URLs
 const midiGlob = import.meta.glob('../assets/**/*.mid', {
+  query: '?url',
+  import: 'default',
+  eager: true
+})
+
+const oggGlob = import.meta.glob('../assets/**/*.ogg', {
   query: '?url',
   import: 'default',
   eager: true
@@ -54,9 +62,15 @@ const midiUrlMap = buildMidiUrlMap(midiGlob, message =>
   logger.warn('AudioEngine', message)
 )
 
+const oggUrlMap = buildAssetUrlMap(
+  oggGlob,
+  message => logger.warn('AudioEngine', message),
+  'Audio'
+)
+
 let guitar, bass, drumKit, loop, part
 let midiParts = []
-let sfxSynth, sfxGain
+let sfxSynth, sfxGain, musicGain
 let masterLimiter, masterComp, reverb, reverbSend
 let distortion, guitarChorus, guitarEq, widener
 let bassEq, bassComp
@@ -66,6 +80,58 @@ let isSetup = false
 let playRequestId = 0
 let transportEndEventId = null
 let transportStopEventId = null
+let gigSource = null
+let gigBuffer = null
+let gigFilename = null
+let gigStartCtxTime = null
+let gigSeekOffsetMs = 0
+let gigBaseOffsetMs = 0
+let gigDurationMs = null
+let gigOnEnded = null
+let gigIsPaused = false
+const audioBufferCache = new Map()
+
+/**
+ * Handles cleanup when a gig buffer source ends naturally.
+ * @param {AudioBufferSourceNode} source - The ended source node.
+ * @returns {void}
+ */
+const handleGigSourceEnded = source => {
+  if (gigSource !== source || gigIsPaused) return
+  if (gigOnEnded) {
+    gigOnEnded({
+      filename: gigFilename,
+      durationMs: gigDurationMs,
+      offsetMs: gigBaseOffsetMs
+    })
+  }
+  gigSeekOffsetMs = getGigTimeMs()
+  gigStartCtxTime = null
+  gigSource = null
+}
+
+/**
+ * Creates and wires a gig buffer source to the music bus.
+ * @param {object} params - Source parameters.
+ * @param {AudioBuffer} params.buffer - Audio buffer to play.
+ * @param {(source: AudioBufferSourceNode) => void} params.onEnded - End handler.
+ * @returns {AudioBufferSourceNode|null} Configured buffer source or null on failure.
+ */
+const createGigBufferSource = ({ buffer, onEnded }) => {
+  const rawContext = getRawAudioContext()
+  const source = rawContext.createBufferSource()
+  source.buffer = buffer
+  if (musicGain?.input) {
+    source.connect(musicGain.input)
+  } else if (musicGain) {
+    source.connect(musicGain)
+  } else {
+    logger.error('AudioEngine', 'Music bus not initialized for gig playback')
+    return null
+  }
+  source.onended = () => onEnded(source)
+  return source
+}
 
 /**
  * Clears any scheduled transport end callback.
@@ -98,6 +164,111 @@ const clearTransportStopEvent = () => {
 }
 
 /**
+ * Returns the raw Web Audio context used by Tone.js.
+ * @returns {AudioContext} The raw AudioContext.
+ */
+const getRawAudioContext = () => {
+  const toneContext = Tone.getContext()
+  return toneContext?.rawContext ?? toneContext
+}
+
+/**
+ * Returns the raw AudioContext time in seconds.
+ * @returns {number} Current raw AudioContext time in seconds.
+ */
+export const getAudioContextTimeSec = () => {
+  return getRawAudioContext().currentTime
+}
+
+/**
+ * Converts a raw AudioContext start time into a Tone.js time reference.
+ * @param {number} rawStartTimeSec - Raw AudioContext time in seconds.
+ * @returns {number} Tone.js time in seconds.
+ */
+export const getToneStartTimeSec = rawStartTimeSec => {
+  const lookAhead = Tone.getContext()?.lookAhead ?? 0
+  return rawStartTimeSec + lookAhead
+}
+/**
+ * Calculates gig time in milliseconds based on context time.
+ * @param {object} params - Calculation inputs.
+ * @param {number} params.contextTimeSec - Raw audio context time in seconds.
+ * @param {number|null} params.startCtxTimeSec - Context time when gig playback started.
+ * @param {number} params.offsetMs - Offset in milliseconds to apply.
+ * @returns {number} Calculated gig time in milliseconds.
+ */
+export const calculateGigTimeMs = ({
+  contextTimeSec,
+  startCtxTimeSec,
+  offsetMs
+}) => {
+  const safeOffset = Number.isFinite(offsetMs) ? offsetMs : 0
+  if (!Number.isFinite(contextTimeSec) || !Number.isFinite(startCtxTimeSec)) {
+    return safeOffset
+  }
+  return (contextTimeSec - startCtxTimeSec) * 1000 + safeOffset
+}
+
+/**
+ * Calculates buffer playback offsets and safe duration for gig playback.
+ * @param {object} params - Playback window params.
+ * @param {number} params.bufferDurationSec - Audio buffer duration in seconds.
+ * @param {number} params.baseOffsetMs - Base offset in milliseconds.
+ * @param {number} params.seekOffsetMs - Seek offset in milliseconds.
+ * @param {number|null} params.durationMs - Requested playback duration in milliseconds.
+ * @returns {{offsetSeconds: number, requestedOffsetSeconds: number, safeDurationSeconds: number|null, nextBaseOffsetMs: number, nextSeekOffsetMs: number, didResetOffsets: boolean}} Playback window.
+ */
+export const calculateGigPlaybackWindow = ({
+  bufferDurationSec,
+  baseOffsetMs,
+  seekOffsetMs,
+  durationMs
+}) => {
+  const safeBaseOffsetMs = Number.isFinite(baseOffsetMs)
+    ? Math.max(0, baseOffsetMs)
+    : 0
+  const safeSeekOffsetMs = Number.isFinite(seekOffsetMs)
+    ? Math.max(0, seekOffsetMs)
+    : 0
+  const safeBufferDurationSec = Number.isFinite(bufferDurationSec)
+    ? Math.max(0, bufferDurationSec)
+    : 0
+  const safeDurationMs = Number.isFinite(durationMs)
+    ? Math.max(0, durationMs)
+    : null
+  let nextBaseOffsetMs = safeBaseOffsetMs
+  let nextSeekOffsetMs = safeSeekOffsetMs
+  const requestedOffsetSeconds = (safeBaseOffsetMs + safeSeekOffsetMs) / 1000
+  let offsetSeconds = requestedOffsetSeconds
+  let didResetOffsets = false
+
+  if (safeBufferDurationSec > 0 && offsetSeconds >= safeBufferDurationSec) {
+    offsetSeconds = 0
+    nextBaseOffsetMs = 0
+    nextSeekOffsetMs = 0
+    didResetOffsets = true
+  }
+
+  const durationSeconds = safeDurationMs != null ? safeDurationMs / 1000 : null
+  const safeDurationSeconds =
+    durationSeconds != null && safeBufferDurationSec > 0
+      ? Math.min(
+          durationSeconds,
+          Math.max(0, safeBufferDurationSec - offsetSeconds)
+        )
+      : durationSeconds
+
+  return {
+    offsetSeconds,
+    requestedOffsetSeconds,
+    safeDurationSeconds,
+    nextBaseOffsetMs,
+    nextSeekOffsetMs,
+    didResetOffsets
+  }
+}
+
+/**
  * Initializes the audio subsystem, including synths, effects, and master compressor.
  * @returns {Promise<void>}
  */
@@ -115,9 +286,10 @@ export async function setupAudio() {
   // Limiter prevents clipping, Compressor glues the mix
   masterLimiter = new Tone.Limiter(-3).toDestination()
   masterComp = new Tone.Compressor(-18, 4).connect(masterLimiter)
+  musicGain = new Tone.Gain(1).connect(masterComp)
 
   // Global reverb send for natural space
-  reverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(masterComp)
+  reverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(musicGain)
   reverbSend = new Tone.Gain(0.3).connect(reverb)
 
   // === Guitar ===
@@ -136,7 +308,7 @@ export async function setupAudio() {
   guitarEq = new Tone.EQ3(-1, -3, 3) // Gentle mid scoop
   widener = new Tone.StereoWidener(0.5)
 
-  guitar.chain(distortion, guitarChorus, guitarEq, widener, masterComp)
+  guitar.chain(distortion, guitarChorus, guitarEq, widener, musicGain)
   guitar.connect(reverbSend)
 
   // === Bass ===
@@ -155,11 +327,11 @@ export async function setupAudio() {
 
   bassEq = new Tone.EQ3(3, -1, -4)
   bassComp = new Tone.Compressor(-15, 5)
-  bass.chain(bassComp, bassEq, masterComp)
+  bass.chain(bassComp, bassEq, musicGain)
 
   // === Drums ===
   // Drum bus with own reverb send
-  drumBus = new Tone.Gain(1).connect(masterComp)
+  drumBus = new Tone.Gain(1).connect(musicGain)
   drumBus.connect(reverbSend)
 
   drumKit = {
@@ -222,10 +394,10 @@ export async function setupAudio() {
   // === Clean MIDI Chain ===
   // Used for ambient playback. Richer synths with subtle spatial processing
   // to faithfully represent the MIDI content without heavy coloration.
-  midiDryBus = new Tone.Gain(1).connect(masterComp)
+  midiDryBus = new Tone.Gain(1).connect(musicGain)
 
   // Subtle reverb for spatial depth on ambient MIDI playback
-  midiReverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(masterComp)
+  midiReverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(musicGain)
   midiReverbSend = new Tone.Gain(0.25).connect(midiReverb)
   midiDryBus.connect(midiReverbSend)
 
@@ -352,6 +524,282 @@ export function setSFXVolume(vol) {
     // However, Tone.Gain.gain is linear amplitude.
     sfxGain.gain.rampTo(Math.max(0, Math.min(1, vol)), 0.1)
   }
+}
+
+/**
+ * Sets the music volume using the dedicated music bus.
+ * @param {number} vol - Volume between 0 and 1.
+ */
+export function setMusicVolume(vol) {
+  if (!musicGain) return
+  const next = Math.max(0, Math.min(1, vol))
+  musicGain.gain.rampTo(next, 0.1)
+}
+
+/**
+ * Checks whether an audio asset exists in the bundled map.
+ * @param {string} filename - The audio filename to check.
+ * @returns {boolean} True when the asset exists.
+ */
+export function hasAudioAsset(filename) {
+  if (typeof filename !== 'string') return false
+  const normalized = filename.replace(/^\.?\//, '')
+  return Boolean(oggUrlMap?.[normalized] || oggUrlMap?.[normalized.split('/').pop()])
+}
+
+/**
+ * Loads an audio buffer for Web Audio playback.
+ * @param {string} filename - Audio filename (e.g. .ogg).
+ * @returns {Promise<AudioBuffer|null>} Decoded audio buffer or null on failure.
+ */
+export async function loadAudioBuffer(filename) {
+  if (typeof filename !== 'string' || filename.length === 0) return null
+  const cacheKey = filename.replace(/^\.?\//, '')
+  if (audioBufferCache.has(cacheKey)) {
+    return audioBufferCache.get(cacheKey)
+  }
+
+  const baseUrl = import.meta.env.BASE_URL || './'
+  const publicBasePath = `${baseUrl}assets`
+  const { url } = resolveAssetUrl(filename, oggUrlMap, publicBasePath)
+  if (!url) {
+    logger.warn('AudioEngine', `Audio asset not found: ${filename}`)
+    return null
+  }
+
+  try {
+    // Avoid hanging gig initialization on stalled network requests.
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000)
+    const response = await fetch(url, { signal: controller.signal })
+    clearTimeout(timeoutId)
+    if (!response.ok) {
+      throw new Error(`Failed to load audio: ${url}`)
+    }
+    const arrayBuffer = await response.arrayBuffer()
+    const rawContext = getRawAudioContext()
+    const buffer = await rawContext.decodeAudioData(arrayBuffer)
+    audioBufferCache.set(cacheKey, buffer)
+    return buffer
+  } catch (error) {
+    logger.warn('AudioEngine', 'Failed to decode audio buffer', error)
+    return null
+  }
+}
+
+/**
+ * Starts gig playback using Web Audio buffer playback.
+ * @param {object} params - Playback params.
+ * @param {string} params.filename - Audio filename to play.
+ * @param {number} [params.bufferOffsetMs=0] - Offset into the buffer in ms.
+ * @param {number} [params.delayMs=0] - Delay before starting playback in ms.
+ * @param {number} [params.durationMs=null] - Optional playback duration in ms.
+ * @param {Function} [params.onEnded] - Callback invoked after playback ends.
+ * @returns {Promise<boolean>} True when playback starts.
+ */
+export async function startGigPlayback({
+  filename,
+  bufferOffsetMs = 0,
+  delayMs = 0,
+  durationMs = null,
+  onEnded = null
+}) {
+  await ensureAudioContext()
+  stopGigPlayback()
+
+  const buffer = await loadAudioBuffer(filename)
+  if (!buffer) return false
+
+  const rawContext = getRawAudioContext()
+  const source = createGigBufferSource({
+    buffer,
+    onEnded: handleGigSourceEnded
+  })
+  if (!source) return false
+
+  gigBuffer = buffer
+  gigFilename = filename
+  gigBaseOffsetMs = Math.max(0, bufferOffsetMs)
+  gigSeekOffsetMs = 0
+  gigDurationMs = Number.isFinite(durationMs) ? Math.max(0, durationMs) : null
+  gigOnEnded = typeof onEnded === 'function' ? onEnded : null
+  gigIsPaused = false
+
+  const startAt = rawContext.currentTime + Math.max(0, delayMs) / 1000
+  gigStartCtxTime = startAt
+
+  const {
+    offsetSeconds,
+    requestedOffsetSeconds,
+    safeDurationSeconds,
+    nextBaseOffsetMs,
+    nextSeekOffsetMs,
+    didResetOffsets
+  } = calculateGigPlaybackWindow({
+    bufferDurationSec: buffer.duration,
+    baseOffsetMs: gigBaseOffsetMs,
+    seekOffsetMs: gigSeekOffsetMs,
+    durationMs: gigDurationMs
+  })
+
+  if (didResetOffsets) {
+    logger.warn(
+      'AudioEngine',
+      `Audio offset ${requestedOffsetSeconds}s exceeds buffer duration ${buffer.duration}s. Resetting to 0.`
+    )
+    gigBaseOffsetMs = nextBaseOffsetMs
+    gigSeekOffsetMs = nextSeekOffsetMs
+  }
+
+  gigSource = source
+  if (safeDurationSeconds === 0) {
+    gigStartCtxTime = null
+    handleGigSourceEnded(source)
+    return true
+  }
+  if (safeDurationSeconds != null && safeDurationSeconds > 0) {
+    source.start(startAt, offsetSeconds, safeDurationSeconds)
+  } else {
+    source.start(startAt, offsetSeconds)
+  }
+  return true
+}
+
+/**
+ * Starts the gig clock without buffer playback (e.g. for MIDI fallback).
+ * @param {object} params - Clock params.
+ * @param {number} [params.delayMs=0] - Delay before starting the clock in ms.
+ * @param {number} [params.offsetMs=0] - Starting offset for the gig clock.
+ * @param {number|null} [params.startTimeSec=null] - Absolute Tone.js time to start the gig clock.
+ * @returns {void}
+ */
+export function startGigClock({
+  delayMs = 0,
+  offsetMs = 0,
+  startTimeSec = null
+} = {}) {
+  const startTime = Number.isFinite(startTimeSec)
+    ? startTimeSec
+    : getAudioContextTimeSec() + Math.max(0, delayMs) / 1000
+  gigStartCtxTime = startTime
+  gigSeekOffsetMs = Math.max(0, offsetMs)
+  gigIsPaused = false
+  gigBuffer = null
+  gigFilename = null
+  gigDurationMs = null
+  gigBaseOffsetMs = 0
+  gigOnEnded = null
+  if (gigSource) {
+    try {
+      gigSource.stop()
+    } catch (error) {
+      logger.warn('AudioEngine', 'Failed to reset gig source', error)
+    }
+    gigSource = null
+  }
+}
+
+/**
+ * Pauses gig playback and preserves the current offset.
+ * @returns {void}
+ */
+export function pauseGigPlayback() {
+  if (gigIsPaused) return
+  if (!gigSource && gigStartCtxTime == null) return
+  gigSeekOffsetMs = getGigTimeMs()
+  gigIsPaused = true
+  gigStartCtxTime = null
+  if (gigSource) {
+    try {
+      gigSource.stop()
+    } catch (error) {
+      logger.warn('AudioEngine', 'Failed to pause gig playback', error)
+    }
+    gigSource = null
+  }
+}
+
+/**
+ * Resumes gig playback from the stored offset.
+ * @returns {void}
+ */
+export function resumeGigPlayback() {
+  if (!gigIsPaused) return
+  if (!gigBuffer) {
+    gigStartCtxTime = getRawAudioContext().currentTime
+    gigIsPaused = false
+    return
+  }
+  const rawContext = getRawAudioContext()
+  const source = createGigBufferSource({
+    buffer: gigBuffer,
+    onEnded: handleGigSourceEnded
+  })
+  if (!source) return
+
+  const startAt = rawContext.currentTime
+  gigStartCtxTime = startAt
+  gigIsPaused = false
+
+  const remainingDurationMs =
+    gigDurationMs != null ? Math.max(0, gigDurationMs - gigSeekOffsetMs) : null
+  const {
+    offsetSeconds,
+    requestedOffsetSeconds,
+    safeDurationSeconds,
+    nextBaseOffsetMs,
+    nextSeekOffsetMs,
+    didResetOffsets
+  } = calculateGigPlaybackWindow({
+    bufferDurationSec: gigBuffer.duration,
+    baseOffsetMs: gigBaseOffsetMs,
+    seekOffsetMs: gigSeekOffsetMs,
+    durationMs: remainingDurationMs
+  })
+
+  if (didResetOffsets) {
+    logger.warn(
+      'AudioEngine',
+      `Audio offset ${requestedOffsetSeconds}s exceeds buffer duration ${gigBuffer.duration}s. Resetting to 0.`
+    )
+    gigBaseOffsetMs = nextBaseOffsetMs
+    gigSeekOffsetMs = nextSeekOffsetMs
+  }
+
+  gigSource = source
+  if (safeDurationSeconds === 0) {
+    gigStartCtxTime = null
+    handleGigSourceEnded(source)
+    return
+  }
+  if (safeDurationSeconds != null && safeDurationSeconds > 0) {
+    source.start(startAt, offsetSeconds, safeDurationSeconds)
+  } else {
+    source.start(startAt, offsetSeconds)
+  }
+}
+
+/**
+ * Stops gig playback and clears the gig clock state.
+ * @returns {void}
+ */
+export function stopGigPlayback() {
+  if (gigSource) {
+    try {
+      gigSource.stop()
+    } catch (error) {
+      logger.warn('AudioEngine', 'Failed to stop gig playback', error)
+    }
+  }
+  gigSource = null
+  gigBuffer = null
+  gigFilename = null
+  gigStartCtxTime = null
+  gigSeekOffsetMs = 0
+  gigBaseOffsetMs = 0
+  gigDurationMs = null
+  gigOnEnded = null
+  gigIsPaused = false
 }
 
 /**
@@ -570,6 +1018,7 @@ export function stopAudio() {
     `stopAudio called. Invalidating reqs. New reqId: ${playRequestId}`
   )
   stopAudioInternal()
+  stopGigPlayback()
 }
 
 /**
@@ -603,6 +1052,7 @@ export function pauseAudio() {
   if (Tone.Transport.state === 'started') {
     Tone.Transport.pause()
   }
+  pauseGigPlayback()
 }
 
 /**
@@ -612,6 +1062,7 @@ export function resumeAudio() {
   if (Tone.Transport.state === 'paused') {
     Tone.Transport.start()
   }
+  resumeGigPlayback()
 }
 
 /**
@@ -620,6 +1071,8 @@ export function resumeAudio() {
 export function disposeAudio() {
   playRequestId++
   stopAudioInternal()
+  stopGigPlayback()
+  audioBufferCache.clear()
   if (guitar) guitar.dispose()
   if (bass) bass.dispose()
   if (drumKit) {
@@ -631,6 +1084,7 @@ export function disposeAudio() {
   }
   if (sfxSynth) sfxSynth.dispose()
   if (sfxGain) sfxGain.dispose()
+  if (musicGain) musicGain.dispose()
   if (midiLead) midiLead.dispose()
   if (midiBass) midiBass.dispose()
   if (midiDrumKit) {
@@ -663,6 +1117,7 @@ export function disposeAudio() {
   drumKit = null
   sfxSynth = null
   sfxGain = null
+  musicGain = null
   midiLead = null
   midiBass = null
   midiDrumKit = null
@@ -752,6 +1207,7 @@ function playDrumsLegacy(time, diff, note, random) {
  * @param {boolean} [options.useCleanPlayback=true] - If true, bypass FX for MIDI playback.
  * @param {Function} [options.onEnded] - Callback invoked after playback ends.
  * @param {number} [options.stopAfterSeconds] - Optional playback duration limit in seconds.
+ * @param {number} [options.startTimeSec] - Absolute Tone.js time to start playback.
  */
 export async function playMidiFile(
   filename,
@@ -760,7 +1216,7 @@ export async function playMidiFile(
   delay = 0,
   options = {}
 ) {
-  const { onEnded, useCleanPlayback, stopAfterSeconds } =
+  const { onEnded, useCleanPlayback, stopAfterSeconds, startTimeSec } =
     normalizeMidiPlaybackOptions(options)
   logger.debug(
     'AudioEngine',
@@ -939,7 +1395,10 @@ export async function playMidiFile(
       }, stopTime)
     }
 
-    Tone.Transport.start(Tone.now() + validDelay, requestedOffset)
+    const transportStartTime = Number.isFinite(startTimeSec)
+      ? startTimeSec
+      : Tone.now() + validDelay
+    Tone.Transport.start(transportStartTime, requestedOffset)
     return true
   } catch (err) {
     console.error('[audioEngine] Error playing MIDI:', err)
@@ -1009,35 +1468,50 @@ export function getAudioTimeMs() {
 }
 
 /**
- * Plays a specific note immediately (Hit Sound).
+ * Returns the current gig clock time in milliseconds.
+ * This uses the raw Web Audio context for sample-accurate sync with buffers.
+ * @returns {number} Current gig time in ms.
+ */
+export function getGigTimeMs() {
+  const rawContext = getRawAudioContext()
+  return calculateGigTimeMs({
+    contextTimeSec: rawContext.currentTime,
+    startCtxTimeSec: gigStartCtxTime,
+    offsetMs: gigSeekOffsetMs
+  })
+}
+
+/**
+ * Plays a specific note at a scheduled Tone.js time.
  * @param {number} midiPitch - The MIDI note number.
  * @param {string} lane - The lane ID ('guitar', 'bass', 'drums').
+ * @param {number} whenSeconds - Tone.js time in seconds.
  * @param {number} [velocity=127] - The velocity (0-127).
  */
-export function playNote(midiPitch, lane, velocity = 127) {
+export function playNoteAtTime(midiPitch, lane, whenSeconds, velocity = 127) {
   if (!isSetup) return
-  const now = Tone.now()
+  const now = Number.isFinite(whenSeconds) ? whenSeconds : Tone.now()
   const vel = Math.max(0, Math.min(1, velocity / 127))
 
   // Use the lane to determine instrument, fallback to pitch heuristics if needed
   if (lane === 'drums') {
     playDrumNote(midiPitch, now, vel)
   } else if (lane === 'bass') {
-    if (bass)
+    if (bass) {
       bass.triggerAttackRelease(
         Tone.Frequency(midiPitch, 'midi'),
         '8n',
         now,
         vel
       )
-  } else {
+    }
+  } else if (guitar) {
     // Guitar (or default)
-    if (guitar)
-      guitar.triggerAttackRelease(
-        Tone.Frequency(midiPitch, 'midi'),
-        '16n',
-        now,
-        vel
-      )
+    guitar.triggerAttackRelease(
+      Tone.Frequency(midiPitch, 'midi'),
+      '16n',
+      now,
+      vel
+    )
   }
 }

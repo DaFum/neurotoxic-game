@@ -14,9 +14,10 @@ This folder (`src/utils/`) contains the "brains" of the game - pure logic module
 | `economyEngine.js`   | Financial calculations, payout formulas, cost modeling     |
 | `socialEngine.js`    | Social media simulation, viral content mechanics           |
 | `mapGenerator.js`    | Procedural map generation, graph-based travel system       |
-| `AudioManager.js`    | Howler.js wrapper, sound effect management                 |
+| `AudioManager.js`    | Tone.js audio coordinator, sound effect management         |
 | `simulationUtils.js` | Time progression, day/night cycle, RNG utilities           |
 | `imageGen.js`        | Placeholder image URL generation                           |
+| `audioTimingUtils.js`| Gig/audio clock alignment helpers                          |
 | `errorHandler.js`    | Centralized error handling and logging                     |
 | `logger.js`          | Debug logging with categories and levels                   |
 | `gameStateUtils.js`  | State transformation utilities                             |
@@ -273,14 +274,14 @@ const finalGrowth = baseGrowth * platformMultiplier + viralBonus
 
 ### AudioManager.js
 
-**Purpose**: Coordinate MIDI ambient playback, gig background audio, and SFX routing.
+**Purpose**: Coordinate ambient playback, gig background audio, and SFX routing.
 
 **Key Functions:**
 
 - `startAmbient()` - Start ambient MIDI playback if not already running
 - `playSFX(type)` - Trigger synth-based SFX (`hit`, `miss`, `menu`, `travel`, `cash`)
 - `stopMusic()` - Stop ambient/music playback
-- `setMusicVolume(level)` - Set music volume (Tone destination)
+- `setMusicVolume(level)` - Set music volume via the dedicated music bus
 - `setSFXVolume(level)` - Set SFX volume
 - `toggleMute()` - Toggle global mute
 

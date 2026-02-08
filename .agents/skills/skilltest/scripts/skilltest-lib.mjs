@@ -489,14 +489,14 @@ export const discoverSkills = async ({ includeUserSkills }) => {
     if (nameMap.has(record.name)) {
       const message = 'Duplicate skill name detected.'
       if (!record.findings.some(finding => finding.message === message)) {
-        record.findings.push({ level: 'warning', message })
+        record.findings.push({ level: 'error', message })
       }
       const existingRecord = nameMap.get(record.name)
       if (
         existingRecord &&
         !existingRecord.findings.some(finding => finding.message === message)
       ) {
-        existingRecord.findings.push({ level: 'warning', message })
+        existingRecord.findings.push({ level: 'error', message })
       }
     } else {
       nameMap.set(record.name, record)

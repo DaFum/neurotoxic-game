@@ -16,7 +16,7 @@ description: Enforce brutalist UI conventions, naming, and import order for comp
 ## Workflow
 
 1. Verify UI components use CSS variables (`var(--toxic-green)`, `var(--void-black)`) — never hardcoded hex/rgb/hsl.
-2. Check for Tailwind v4 syntax: use `bg-(--void-black)` not `bg-[var(--void-black)]` (v3 style).
+2. Check for Tailwind v4 syntax: use `bg-(--void-black)` and avoid v3 bracket-variable syntax.
 3. Prefer shared components from `src/ui/shared/` — check `index.jsx` exports before creating new ones.
 4. Consult `src/ui/AGENTS.md` for component-specific naming and styling rules.
 5. Maintain import ordering: React, libraries, local modules, styles. Avoid unused imports.
