@@ -16,8 +16,8 @@ description: Audit UI changes for Tailwind v4 class syntax and CSS-variable colo
 
 | Wrong (v3 / hardcoded) | Correct (v4) |
 |------------------------|--------------|
-| v3 bracket-variable syntax (avoid) | `bg-(--void-black)` |
-| v3 bracket-variable syntax (avoid) | `text-(--toxic-green)` |
+| `bg-[var(--void-black)]` | `bg-(--void-black)` |
+| `text-[var(--toxic-green)]` | `text-(--toxic-green)` |
 | `bg-gray-900` | `bg-(--void-black)` |
 | `#00ff00` | `var(--toxic-green)` |
 | `@tailwind base` | `@import "tailwindcss"` |

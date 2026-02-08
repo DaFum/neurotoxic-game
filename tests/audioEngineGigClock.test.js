@@ -112,4 +112,14 @@ test('calculateGigPlaybackWindow', async t => {
     assert.strictEqual(result.nextSeekOffsetMs, 0)
     assert.strictEqual(result.didResetOffsets, true)
   })
+
+  await t.test('returns zero duration when requested', () => {
+    const result = calculateGigPlaybackWindow({
+      bufferDurationSec: 5,
+      baseOffsetMs: 0,
+      seekOffsetMs: 0,
+      durationMs: 0
+    })
+    assert.strictEqual(result.safeDurationSeconds, 0)
+  })
 })

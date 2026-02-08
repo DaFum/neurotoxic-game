@@ -554,8 +554,9 @@ export function hasAudioAsset(filename) {
  */
 export async function loadAudioBuffer(filename) {
   if (typeof filename !== 'string' || filename.length === 0) return null
-  if (audioBufferCache.has(filename)) {
-    return audioBufferCache.get(filename)
+  const cacheKey = filename.replace(/^\.?\//, '')
+  if (audioBufferCache.has(cacheKey)) {
+    return audioBufferCache.get(cacheKey)
   }
 
   const baseUrl = import.meta.env.BASE_URL || './'
@@ -578,7 +579,7 @@ export async function loadAudioBuffer(filename) {
     const arrayBuffer = await response.arrayBuffer()
     const rawContext = getRawAudioContext()
     const buffer = await rawContext.decodeAudioData(arrayBuffer)
-    audioBufferCache.set(filename, buffer)
+    audioBufferCache.set(cacheKey, buffer)
     return buffer
   } catch (error) {
     logger.warn('AudioEngine', 'Failed to decode audio buffer', error)
@@ -651,6 +652,11 @@ export async function startGigPlayback({
   }
 
   gigSource = source
+  if (safeDurationSeconds === 0) {
+    gigStartCtxTime = null
+    handleGigSourceEnded(source)
+    return true
+  }
   if (safeDurationSeconds != null && safeDurationSeconds > 0) {
     source.start(startAt, offsetSeconds, safeDurationSeconds)
   } else {
@@ -761,6 +767,11 @@ export function resumeGigPlayback() {
   }
 
   gigSource = source
+  if (safeDurationSeconds === 0) {
+    gigStartCtxTime = null
+    handleGigSourceEnded(source)
+    return
+  }
   if (safeDurationSeconds != null && safeDurationSeconds > 0) {
     source.start(startAt, offsetSeconds, safeDurationSeconds)
   } else {

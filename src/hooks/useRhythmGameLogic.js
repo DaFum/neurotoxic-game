@@ -259,7 +259,7 @@ export const useRhythmGameLogic = () => {
         const rawGigStartTimeSec =
           getAudioContextTimeSec() + GIG_LEAD_IN_MS / 1000
         const toneGigStartTimeSec = getToneStartTimeSec(rawGigStartTimeSec)
-        startGigClock({ offsetMs: 0, startTimeSec: rawGigStartTimeSec })
+        startGigClock({ offsetMs: 0, startTimeSec: toneGigStartTimeSec })
         const success = await playMidiFile(
           currentSong.sourceMid,
           offsetSeconds,
