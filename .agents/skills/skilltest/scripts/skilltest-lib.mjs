@@ -164,7 +164,8 @@ export const findSkillDirs = async (rootDir, visited) => {
         }
         visited.add(realPath)
       } catch (error) {
-        continue
+        console.warn(`Could not resolve path, skipping: ${entryPath}`);
+        continue;
       }
 
       const skillFile = path.join(entryPath, 'SKILL.md')
