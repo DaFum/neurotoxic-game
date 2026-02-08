@@ -76,7 +76,7 @@ const handleUpdatePlayer = (state, payload) => {
 
 /**
  * Handles band update actions
- * Clamps band.harmony to valid range 0-100
+ * Clamps band.harmony to valid range 1-100
  * @param {Object} state - Current state
  * @param {Object} payload - Band updates
  * @returns {Object} Updated state
@@ -85,9 +85,9 @@ const handleUpdateBand = (state, payload) => {
   logger.debug('GameState', 'Update Band', payload)
   const mergedBand = { ...state.band, ...payload }
 
-  // Clamp harmony to valid range 0-100
+  // Clamp harmony to valid range 1-100
   if (typeof mergedBand.harmony === 'number') {
-    mergedBand.harmony = Math.max(0, Math.min(100, mergedBand.harmony))
+    mergedBand.harmony = Math.max(1, Math.min(100, mergedBand.harmony))
   }
 
   return { ...state, band: mergedBand }
@@ -161,7 +161,7 @@ const handleLoadGame = (state, payload) => {
 
   // Ensure harmony is clamped
   if (typeof mergedBand.harmony === 'number') {
-    mergedBand.harmony = Math.max(0, Math.min(100, mergedBand.harmony))
+    mergedBand.harmony = Math.max(1, Math.min(100, mergedBand.harmony))
   }
 
   return {
@@ -201,6 +201,9 @@ const handleConsumeItem = (state, payload) => {
  */
 const handleAdvanceDay = state => {
   const { player, band, social } = calculateDailyUpdates(state)
+  if (typeof band.harmony === 'number') {
+    band.harmony = Math.max(1, Math.min(100, band.harmony))
+  }
   logger.info('GameState', `Day Advanced to ${player.day}`)
   return { ...state, player, band, social }
 }

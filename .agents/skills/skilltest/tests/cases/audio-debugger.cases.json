@@ -1,0 +1,12 @@
+[
+  {
+    "skill": "audio-debugger-ambient-vs-gig",
+    "prompt": "Debug why ambient audio cuts out during scene transitions.",
+    "expectIncludes": ["AudioManager.js", "audioPlaybackUtils.js"]
+  },
+  {
+    "skill": "webaudio-reliability-fixer",
+    "prompt": "Fix autoplay issues on mobile browsers.",
+    "expectIncludes": ["AudioManager.js", "audioEngine.js", "useAudioControl.js"]
+  }
+]

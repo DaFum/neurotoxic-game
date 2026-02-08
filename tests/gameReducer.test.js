@@ -73,6 +73,20 @@ describe('gameReducer', () => {
       assert.strictEqual(newState.band.harmony, 50)
     })
 
+    it('should clamp band harmony above zero', () => {
+      const action = { type: ActionTypes.UPDATE_BAND, payload: { harmony: -20 } }
+      const newState = gameReducer(testState, action)
+
+      assert.strictEqual(newState.band.harmony, 1)
+    })
+
+    it('should clamp band harmony of zero to one', () => {
+      const action = { type: ActionTypes.UPDATE_BAND, payload: { harmony: 0 } }
+      const newState = gameReducer(testState, action)
+
+      assert.strictEqual(newState.band.harmony, 1)
+    })
+
     it('should update band members', () => {
       const newMembers = [{ name: 'Test', mood: 100, stamina: 100 }]
       const action = {
@@ -83,6 +97,20 @@ describe('gameReducer', () => {
 
       assert.strictEqual(newState.band.members.length, 1)
       assert.strictEqual(newState.band.members[0].name, 'Test')
+    })
+  })
+
+  describe('ADVANCE_DAY', () => {
+    it('should clamp harmony after daily updates', () => {
+      testState = {
+        ...testState,
+        band: { ...testState.band, harmony: 0 }
+      }
+
+      const action = { type: ActionTypes.ADVANCE_DAY }
+      const newState = gameReducer(testState, action)
+
+      assert.strictEqual(newState.band.harmony, 1)
     })
   })
 

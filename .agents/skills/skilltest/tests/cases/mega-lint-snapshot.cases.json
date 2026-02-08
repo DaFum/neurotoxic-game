@@ -1,0 +1,11 @@
+[
+  {
+    "skill": "mega-lint-snapshot",
+    "prompt": "Run the MegaLinter-style lint snapshot for this repo.",
+    "expectIncludes": [
+      "Mega Lint Snapshot",
+      "run-mega-lint.sh",
+      "assets/mega-lint.config.json"
+    ]
+  }
+]

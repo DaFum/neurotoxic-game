@@ -81,9 +81,18 @@ const processEffect = (eff, delta) => {
         delta.player.fame = (delta.player.fame || 0) + eff.value
       if (eff.stat === 'harmony')
         delta.band.harmony = (delta.band.harmony || 0) + eff.value
-      if (eff.stat === 'mood') delta.band.members = { moodChange: eff.value }
-      if (eff.stat === 'stamina')
-        delta.band.members = { staminaChange: eff.value }
+      if (eff.stat === 'mood') {
+        delta.band.membersDelta = {
+          ...(delta.band.membersDelta || {}),
+          moodChange: eff.value
+        }
+      }
+      if (eff.stat === 'stamina') {
+        delta.band.membersDelta = {
+          ...(delta.band.membersDelta || {}),
+          staminaChange: eff.value
+        }
+      }
       if (eff.stat === 'van_condition') {
         delta.player.van = { ...(delta.player.van || {}) }
         delta.player.van.condition =
