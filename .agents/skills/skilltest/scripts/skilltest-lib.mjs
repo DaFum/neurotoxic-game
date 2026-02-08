@@ -139,14 +139,14 @@ export const collectSkillRoots = async (cwd, repoDir) => {
 export const findSkillDirs = async (rootDir, visited) => {
   if (!visited) {
     visited = new Set()
-    try {
-      const realRoot = await fs.realpath(rootDir)
-      visited.add(realRoot)
-    } catch (error) {
-      // ignore
-    }
   }
 
+  try {
+    const realRoot = await fs.realpath(rootDir)
+    visited.add(realRoot)
+  } catch (error) {
+    // ignore errors resolving rootDir
+  }
   const entries = await fs.readdir(rootDir, { withFileTypes: true })
   const skillDirs = []
   for (const entry of entries) {
