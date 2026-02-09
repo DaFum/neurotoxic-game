@@ -3,7 +3,10 @@
     "allow": [
       "Bash(npm run build:*)",
       "Bash(npm run lint:*)",
-      "Bash(npm run test:*)"
+      "Bash(npm run test:*)",
+      "Bash(claude mcp add:*)",
+      "Bash(cmd /c \"claude mcp add -s user -t http deepwiki https://mcp.deepwiki.com/mcp\")",
+      "Bash(cmd /c \"claude mcp list -s user\")"
     ]
   }
 }
