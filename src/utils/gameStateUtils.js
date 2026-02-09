@@ -10,7 +10,9 @@ export const applyEventDelta = (state, delta) => {
   if (delta.player) {
     const nextPlayer = { ...nextState.player }
     if (typeof delta.player.money === 'number') {
-      nextPlayer.money = Math.max(0, nextPlayer.money + delta.player.money)
+      nextPlayer.money = Math.floor(
+        Math.max(0, nextPlayer.money + delta.player.money)
+      )
     }
     if (typeof delta.player.time === 'number') {
       nextPlayer.time = nextPlayer.time + delta.player.time

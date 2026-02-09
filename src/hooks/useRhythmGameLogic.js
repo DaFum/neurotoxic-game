@@ -358,6 +358,8 @@ export const useRhythmGameLogic = () => {
         fallbackMessage: 'Gig initialization failed!'
       })
       gameStateRef.current.running = false
+      setIsAudioReady(false)
+      isInitializingRef.current = false
     }
   }, [
     band,
@@ -373,6 +375,7 @@ export const useRhythmGameLogic = () => {
 
     return () => {
       hasInitializedRef.current = false // Reset initialization flag on unmount
+      isInitializingRef.current = false
       if (gameOverTimerRef.current) {
         clearTimeout(gameOverTimerRef.current)
         gameOverTimerRef.current = null
