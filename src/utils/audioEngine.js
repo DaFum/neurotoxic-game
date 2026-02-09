@@ -41,7 +41,6 @@ const MIN_NOTE_DURATION = 0.05
 const MAX_NOTE_DURATION = 10
 const AUDIO_BUFFER_LOAD_TIMEOUT_MS = 10000
 const MAX_AUDIO_BUFFER_CACHE_SIZE = 50
-const BEAT_TOLERANCE = 0.01
 
 const HIHAT_CONFIG = {
   envelope: { attack: 0.001, decay: 0.06, release: 0.01 },
@@ -1312,9 +1311,9 @@ function playDrumsLegacy(time, diff, note, random) {
     if (random() > 0.9) {
       drumKit.snare.triggerAttackRelease('16n', time)
     }
-    // Fix floating point tolerance issues
+    // Hihat on the beat — the 0.1 lower bound is intentional for musical density
     const beatPhase = time % 0.25
-    if (beatPhase < BEAT_TOLERANCE || beatPhase > 0.25 - BEAT_TOLERANCE) {
+    if (beatPhase < 0.1 || beatPhase > 0.24) {
       drumKit.hihat.triggerAttackRelease(8000, '32n', time)
     }
   }
@@ -1482,7 +1481,9 @@ export async function playMidiFile(
     let requestedOffset = Number.isFinite(offset) ? Math.max(0, offset) : 0
     const duration = Number.isFinite(midi.duration) ? midi.duration : 0
 
-    // Fix: If offset is at or beyond duration, reset to 0 to ensure sound plays
+    // Reset offset when it is at or beyond duration to ensure sound plays.
+    // Note: the old threshold-based check (within 0.1s of end) was overly
+    // conservative and would discard valid offsets near the end of a track.
     if (duration > 0 && requestedOffset >= duration) {
       logger.warn(
         'AudioEngine',
