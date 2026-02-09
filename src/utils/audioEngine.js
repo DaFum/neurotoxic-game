@@ -40,6 +40,7 @@ const oggGlob = import.meta.glob('../assets/**/*.ogg', {
 const MIN_NOTE_DURATION = 0.05
 const MAX_NOTE_DURATION = 10
 const AUDIO_BUFFER_LOAD_TIMEOUT_MS = 10000
+const AUDIO_BUFFER_DECODE_TIMEOUT_MS = 10000
 const MAX_AUDIO_BUFFER_CACHE_SIZE = 50
 
 const HIHAT_CONFIG = {
@@ -635,21 +636,37 @@ export async function loadAudioBuffer(filename) {
   }
 
   try {
-    // Avoid hanging gig initialization on stalled network requests.
+    // Avoid hanging gig initialization on stalled network/body reads.
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), AUDIO_BUFFER_LOAD_TIMEOUT_MS)
-    const response = await fetch(url, { signal: controller.signal })
-    clearTimeout(timeoutId)
-    if (!response.ok) {
-      logger.warn(
-        'AudioEngine',
-        `Failed to load audio "${filename}": HTTP ${response.status} from ${url}`
-      )
-      return null
+    let arrayBuffer = null
+    try {
+      const response = await fetch(url, { signal: controller.signal })
+      if (!response.ok) {
+        logger.warn(
+          'AudioEngine',
+          `Failed to load audio "${filename}": HTTP ${response.status} from ${url}`
+        )
+        return null
+      }
+      arrayBuffer = await response.arrayBuffer()
+    } finally {
+      clearTimeout(timeoutId)
     }
-    const arrayBuffer = await response.arrayBuffer()
     const rawContext = getRawAudioContext()
-    const buffer = await rawContext.decodeAudioData(arrayBuffer)
+    let decodeTimeoutId = null
+    const decodeTimeoutPromise = new Promise((_, reject) => {
+      decodeTimeoutId = setTimeout(() => reject(new Error('AUDIO_DECODE_TIMEOUT')), AUDIO_BUFFER_DECODE_TIMEOUT_MS)
+    })
+    let buffer = null
+    try {
+      buffer = await Promise.race([
+        rawContext.decodeAudioData(arrayBuffer),
+        decodeTimeoutPromise
+      ])
+    } finally {
+      if (decodeTimeoutId) clearTimeout(decodeTimeoutId)
+    }
     if (audioBufferCache.size >= MAX_AUDIO_BUFFER_CACHE_SIZE) {
       const oldestKey = audioBufferCache.keys().next().value
       audioBufferCache.delete(oldestKey)
@@ -665,6 +682,11 @@ export async function loadAudioBuffer(filename) {
       logger.warn(
         'AudioEngine',
         `Audio fetch timed out for "${filename}" (${url})`
+      )
+    } else if (error?.message === 'AUDIO_DECODE_TIMEOUT') {
+      logger.warn(
+        'AudioEngine',
+        `Audio decode timed out for "${filename}" (${url})`
       )
     } else {
       const isOgg = filename.toLowerCase().endsWith('.ogg')
@@ -1355,7 +1377,7 @@ async function playMidiFileInternal(
   // Requirement: Stop previous playback immediately unless the caller
   // explicitly owns request invalidation (used by ambient chaining).
   const reqId =
-    Number.isInteger(ownedRequestId) && ownedRequestId >= 0
+    Number.isInteger(ownedRequestId) && ownedRequestId > 0
       ? ownedRequestId
       : ++playRequestId
   logger.debug('AudioEngine', `New playRequestId: ${reqId}`)
