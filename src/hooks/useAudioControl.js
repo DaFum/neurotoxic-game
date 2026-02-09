@@ -10,26 +10,20 @@ export const useAudioControl = () => {
 
   const handleAudioChange = {
     setMusic: val => {
-      let didApply = false
       try {
-        didApply = audioManager.setMusicVolume(val) !== false
+        audioManager.setMusicVolume(val)
       } catch (e) {
         console.warn('[useAudioControl] setMusicVolume failed:', e)
       }
-      if (didApply) {
-        setAudioState(prev => ({ ...prev, musicVol: audioManager.musicVolume }))
-      }
+      setAudioState(prev => ({ ...prev, musicVol: audioManager.musicVolume }))
     },
     setSfx: val => {
-      let didApply = false
       try {
-        didApply = audioManager.setSFXVolume(val) !== false
+        audioManager.setSFXVolume(val)
       } catch (e) {
         console.warn('[useAudioControl] setSFXVolume failed:', e)
       }
-      if (didApply) {
-        setAudioState(prev => ({ ...prev, sfxVol: audioManager.sfxVolume }))
-      }
+      setAudioState(prev => ({ ...prev, sfxVol: audioManager.sfxVolume }))
     },
     toggleMute: () => {
       let didApply = false

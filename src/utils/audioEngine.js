@@ -1336,28 +1336,28 @@ function playDrumsLegacy(time, diff, note, random) {
  * @param {Function} [options.onEnded] - Callback invoked after playback ends.
  * @param {number} [options.stopAfterSeconds] - Optional playback duration limit in seconds.
  * @param {number} [options.startTimeSec] - Absolute Tone.js time to start playback.
- * @param {number} [options.requestId] - Internal override for request ownership.
+ * @param {number|null} [ownedRequestId=null] - Internal request ownership override.
  */
-export async function playMidiFile(
+async function playMidiFileInternal(
   filename,
   offset = 0,
   loop = false,
   delay = 0,
-  options = {}
+  options = {},
+  ownedRequestId = null
 ) {
   const { onEnded, useCleanPlayback, stopAfterSeconds, startTimeSec } =
     normalizeMidiPlaybackOptions(options)
-  const providedRequestId =
-    Number.isInteger(options?.requestId) && options.requestId >= 0
-      ? options.requestId
-      : null
   logger.debug(
     'AudioEngine',
     `Request playMidiFile: ${filename}, offset=${offset}, loop=${loop}`
   )
   // Requirement: Stop previous playback immediately unless the caller
   // explicitly owns request invalidation (used by ambient chaining).
-  const reqId = providedRequestId ?? ++playRequestId
+  const reqId =
+    Number.isInteger(ownedRequestId) && ownedRequestId >= 0
+      ? ownedRequestId
+      : ++playRequestId
   logger.debug('AudioEngine', `New playRequestId: ${reqId}`)
 
   const unlocked = await ensureAudioContext()
@@ -1548,6 +1548,28 @@ export async function playMidiFile(
 }
 
 /**
+ * Plays a MIDI file from a URL.
+ * @param {string} filename - The filename of the MIDI (key in url map).
+ * @param {number} [offset=0] - Start offset in seconds.
+ * @param {boolean} [loop=false] - Whether to loop the playback.
+ * @param {number} [delay=0] - Delay in seconds before starting playback.
+ * @param {object} [options] - Playback options.
+ * @param {boolean} [options.useCleanPlayback=true] - If true, bypass FX for MIDI playback.
+ * @param {Function} [options.onEnded] - Callback invoked after playback ends.
+ * @param {number} [options.stopAfterSeconds] - Optional playback duration limit in seconds.
+ * @param {number} [options.startTimeSec] - Absolute Tone.js time to start playback.
+ */
+export async function playMidiFile(
+  filename,
+  offset = 0,
+  loop = false,
+  delay = 0,
+  options = {}
+) {
+  return playMidiFileInternal(filename, offset, loop, delay, options)
+}
+
+/**
  * Plays a random MIDI file from the available set for ambient music.
  * @param {Array} [songs] - Song metadata array for excerpt offset lookup.
  * @param {Function} [rng] - Random number generator function.
@@ -1584,9 +1606,13 @@ export async function playRandomAmbientMidi(
     'AudioEngine',
     `Playing ambient: ${meta?.name ?? filename} (offset ${offsetSeconds}s)`
   )
-  return playMidiFile(filename, offsetSeconds, false, 0, {
+  return playMidiFileInternal(
+    filename,
+    offsetSeconds,
+    false,
+    0,
+    {
     useCleanPlayback: true,
-    requestId: reqId,
     onEnded: () => {
       if (reqId !== playRequestId) return
       playRandomAmbientMidi(songs, rng).catch(error => {
@@ -1597,7 +1623,9 @@ export async function playRandomAmbientMidi(
         )
       })
     }
-  })
+    },
+    reqId
+  )
 }
 
 /**
