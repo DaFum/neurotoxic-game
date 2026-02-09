@@ -12,7 +12,7 @@ class AudioSystem {
     this.musicVolume = 0.5
     this.sfxVolume = 0.5
     this.muted = false
-    this.initialized = false
+    this.prefsLoaded = false
     this.isStartingAmbient = false
   }
 
@@ -21,7 +21,7 @@ class AudioSystem {
    * Note: Audio playback remains blocked until ensureAudioContext() is called after a user gesture.
    */
   init() {
-    if (this.initialized) return
+    if (this.prefsLoaded) return
 
     try {
       // Load preferences
@@ -47,7 +47,7 @@ class AudioSystem {
       // Tone mute is handled globally by Volume node in engine if implemented, or we can use Destination
       Tone.Destination.mute = this.muted
 
-      this.initialized = true
+      this.prefsLoaded = true
     } catch (error) {
       handleError(error, {
         fallbackMessage: 'AudioSystem initialization failed'
@@ -59,7 +59,7 @@ class AudioSystem {
    * Starts the ambient background music stream if not already playing.
    */
   async startAmbient() {
-    if (!this.initialized) return
+    if (!this.prefsLoaded) return
 
     // Prevent re-entrant calls or redundant starts
     if (this.isStartingAmbient) {
@@ -117,12 +117,13 @@ class AudioSystem {
    */
   async ensureAudioContext() {
     try {
-      if (!this.initialized) {
-        await audioEngine.setupAudio()
-        this.initialized = true
-        audioEngine.setMusicVolume(this.muted ? 0 : this.musicVolume)
-        audioEngine.setSFXVolume(this.muted ? 0 : this.sfxVolume)
-      }
+      await audioEngine.setupAudio()
+
+      // Always re-apply volumes when unlocking to ensure engine state matches prefs
+      // (engine nodes might have been created after init() calls)
+      audioEngine.setMusicVolume(this.muted ? 0 : this.musicVolume)
+      audioEngine.setSFXVolume(this.muted ? 0 : this.sfxVolume)
+
       return await audioEngine.ensureAudioContext()
     } catch (e) {
       logger.warn('AudioSystem', 'Failed to resume AudioContext:', e)
@@ -135,7 +136,7 @@ class AudioSystem {
    * @param {string} key - The SFX identifier (e.g., 'CLICK', 'ERROR').
    */
   playSFX(key) {
-    if (!this.initialized) return
+    if (!this.prefsLoaded) return
     const validTypes = ['hit', 'miss', 'menu', 'travel', 'cash']
     if (!validTypes.includes(key)) {
       logger.warn('AudioSystem', `Unknown SFX type: ${key}`)
@@ -195,9 +196,14 @@ class AudioSystem {
   dispose() {
     this.stopMusic()
     audioEngine.disposeAudio?.()
-    this.initialized = false
+    this.prefsLoaded = false
   }
 }
+
+// Deprecated getter for backward compatibility during refactor
+Object.defineProperty(AudioSystem.prototype, 'initialized', {
+  get() { return this.prefsLoaded }
+});
 
 export const audioManager = new AudioSystem()
 audioManager.init()

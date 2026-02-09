@@ -64,7 +64,7 @@ export const useRhythmGameLogic = () => {
   const [overload, setOverload] = useState(0)
   const [isToxicMode, setIsToxicMode] = useState(false)
   const [isGameOver, setIsGameOver] = useState(false)
-  const [isAudioReady, setIsAudioReady] = useState(false)
+  const [isAudioReady, setIsAudioReady] = useState(null)
   const gameOverTimerRef = useRef(null)
 
   // High-Frequency Game State (Ref)
@@ -118,6 +118,7 @@ export const useRhythmGameLogic = () => {
   })
 
   const hasInitializedRef = useRef(false)
+  const isInitializingRef = useRef(false)
 
   /**
    * Initializes gig physics and note data once per gig.
@@ -125,9 +126,10 @@ export const useRhythmGameLogic = () => {
    */
   const initializeGigState = useCallback(async () => {
     // Prevent double initialization, even in Strict Mode or re-mounts if ref persists
-    if (hasInitializedRef.current) {
+    if (hasInitializedRef.current || isInitializingRef.current) {
       return
     }
+    isInitializingRef.current = true
 
     // Mute ambient radio to prevent audio overlap
     audioManager.stopMusic()
@@ -142,11 +144,14 @@ export const useRhythmGameLogic = () => {
           '[useRhythmGameLogic] Audio Context blocked. Waiting for user gesture.'
         )
         setIsAudioReady(false)
-        hasInitializedRef.current = false // Allow retry
+        // Reset initialization flag so it can be retried
+        isInitializingRef.current = false
         return
       }
       setIsAudioReady(true)
       hasInitializedRef.current = true
+      // Initialization is complete for this session
+      isInitializingRef.current = false
 
       const activeModifiers = getGigModifiers(band, gigModifiers)
       const physics = calculateGigPhysics(band, { bpm: 120 })
@@ -685,18 +690,18 @@ export const useRhythmGameLogic = () => {
 
   // Input Handlers
   /**
-   * Registers player input for a lane.
-   * @param {number} laneIndex - Lane index.
-   * @param {boolean} isDown - Whether the input is pressed.
-   * @returns {void}
-   */
-  /**
    * Retries initialization if it failed due to locked audio.
    */
   const retryAudioInitialization = useCallback(() => {
     initializeGigState()
   }, [initializeGigState])
 
+  /**
+   * Registers player input for a lane.
+   * @param {number} laneIndex - Lane index.
+   * @param {boolean} isDown - Whether the input is pressed.
+   * @returns {void}
+   */
   const registerInput = useCallback(
     (laneIndex, isDown) => {
       // Ignore input if game is not running or is paused

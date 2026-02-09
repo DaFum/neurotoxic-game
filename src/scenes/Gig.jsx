@@ -213,9 +213,10 @@ export const Gig = () => {
         </p>
         <GlitchButton
           onClick={() => {
-            // Force an unlock attempt on user click
-            audioManager.ensureAudioContext().then(() => {
-              actions.retryAudioInitialization()
+            audioManager.ensureAudioContext().then(isUnlocked => {
+              if (isUnlocked) {
+                actions.retryAudioInitialization()
+              }
             })
           }}
           className='scale-150'

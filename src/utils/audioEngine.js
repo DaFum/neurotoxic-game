@@ -512,7 +512,7 @@ export async function ensureAudioContext() {
     try {
       await Tone.context.resume()
     } catch (e) {
-      console.warn('[audioEngine] Tone.context.resume() failed:', e)
+      logger.warn('AudioEngine', 'Tone.context.resume() failed:', e)
     }
   }
   return Tone.context.state === 'running'
@@ -688,7 +688,9 @@ export async function startGigPlayback({
   durationMs = null,
   onEnded = null
 }) {
-  await ensureAudioContext()
+  const unlocked = await ensureAudioContext()
+  if (!unlocked) return false
+
   stopGigPlayback()
 
   const buffer = await loadAudioBuffer(filename)
@@ -1310,13 +1312,18 @@ export async function playMidiFile(
   const reqId = ++playRequestId
   logger.debug('AudioEngine', `New playRequestId: ${reqId}`)
 
-  await ensureAudioContext()
+  const unlocked = await ensureAudioContext()
+  if (!unlocked) {
+    logger.warn('AudioEngine', 'Cannot play MIDI: AudioContext is locked')
+    return false
+  }
+
   if (reqId !== playRequestId) {
     logger.debug(
       'AudioEngine',
       `Request cancelled during ensureAudioContext (reqId: ${reqId} vs ${playRequestId})`
     )
-    return
+    return false
   }
 
   stopAudioInternal()
