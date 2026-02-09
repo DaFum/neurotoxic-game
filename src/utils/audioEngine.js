@@ -1336,6 +1336,7 @@ function playDrumsLegacy(time, diff, note, random) {
  * @param {Function} [options.onEnded] - Callback invoked after playback ends.
  * @param {number} [options.stopAfterSeconds] - Optional playback duration limit in seconds.
  * @param {number} [options.startTimeSec] - Absolute Tone.js time to start playback.
+ * @param {number} [options.requestId] - Internal override for request ownership.
  */
 export async function playMidiFile(
   filename,
@@ -1346,12 +1347,17 @@ export async function playMidiFile(
 ) {
   const { onEnded, useCleanPlayback, stopAfterSeconds, startTimeSec } =
     normalizeMidiPlaybackOptions(options)
+  const providedRequestId =
+    Number.isInteger(options?.requestId) && options.requestId >= 0
+      ? options.requestId
+      : null
   logger.debug(
     'AudioEngine',
     `Request playMidiFile: ${filename}, offset=${offset}, loop=${loop}`
   )
-  // Requirement: Stop previous playback immediately
-  const reqId = ++playRequestId
+  // Requirement: Stop previous playback immediately unless the caller
+  // explicitly owns request invalidation (used by ambient chaining).
+  const reqId = providedRequestId ?? ++playRequestId
   logger.debug('AudioEngine', `New playRequestId: ${reqId}`)
 
   const unlocked = await ensureAudioContext()
@@ -1554,6 +1560,7 @@ export async function playRandomAmbientMidi(
   logger.debug('AudioEngine', 'playRandomAmbientMidi called')
   // Requirement: Stop transport before starting ambient
   stopAudio()
+  const reqId = playRequestId
 
   const midiFiles = Object.keys(midiUrlMap)
   if (midiFiles.length === 0) {
@@ -1579,7 +1586,9 @@ export async function playRandomAmbientMidi(
   )
   return playMidiFile(filename, offsetSeconds, false, 0, {
     useCleanPlayback: true,
+    requestId: reqId,
     onEnded: () => {
+      if (reqId !== playRequestId) return
       playRandomAmbientMidi(songs, rng).catch(error => {
         logger.error(
           'AudioEngine',

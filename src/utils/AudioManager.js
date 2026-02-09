@@ -158,12 +158,21 @@ class AudioSystem {
   setMusicVolume(vol) {
     const next = Math.min(1, Math.max(0, vol))
     this.musicVolume = next
-    localStorage.setItem('neurotoxic_vol_music', next)
+    let engineApplied = true
     try {
       audioEngine.setMusicVolume(this.muted ? 0 : next)
     } catch (e) {
+      engineApplied = false
       handleError(e, { fallbackMessage: 'Failed to set music volume' })
     }
+    try {
+      localStorage.setItem('neurotoxic_vol_music', next)
+    } catch (e) {
+      handleError(e, {
+        fallbackMessage: 'Failed to persist music volume preference'
+      })
+    }
+    return engineApplied
   }
 
   /**
@@ -173,12 +182,21 @@ class AudioSystem {
   setSFXVolume(vol) {
     const next = Math.min(1, Math.max(0, vol))
     this.sfxVolume = next
-    localStorage.setItem('neurotoxic_vol_sfx', next)
+    let engineApplied = true
     try {
       audioEngine.setSFXVolume(this.muted ? 0 : next)
     } catch (e) {
+      engineApplied = false
       handleError(e, { fallbackMessage: 'Failed to set SFX volume' })
     }
+    try {
+      localStorage.setItem('neurotoxic_vol_sfx', next)
+    } catch (e) {
+      handleError(e, {
+        fallbackMessage: 'Failed to persist SFX volume preference'
+      })
+    }
+    return engineApplied
   }
 
   /**
@@ -196,7 +214,11 @@ class AudioSystem {
       logger.warn('AudioSystem', 'Tone.js mute failed:', e)
     }
 
-    localStorage.setItem('neurotoxic_muted', this.muted)
+    try {
+      localStorage.setItem('neurotoxic_muted', this.muted)
+    } catch (e) {
+      handleError(e, { fallbackMessage: 'Failed to persist mute preference' })
+    }
     return this.muted
   }
 
