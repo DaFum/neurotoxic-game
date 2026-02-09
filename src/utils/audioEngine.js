@@ -38,7 +38,10 @@ const oggGlob = import.meta.glob('../assets/**/*.ogg', {
 })
 
 const MIN_NOTE_DURATION = 0.05
-const OFFSET_RESET_THRESHOLD = 0.1
+const MAX_NOTE_DURATION = 10
+const AUDIO_BUFFER_LOAD_TIMEOUT_MS = 10000
+const MAX_AUDIO_BUFFER_CACHE_SIZE = 50
+const BEAT_TOLERANCE = 0.01
 
 const HIHAT_CONFIG = {
   envelope: { attack: 0.001, decay: 0.06, release: 0.01 },
@@ -631,7 +634,7 @@ export async function loadAudioBuffer(filename) {
   try {
     // Avoid hanging gig initialization on stalled network requests.
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 10000)
+    const timeoutId = setTimeout(() => controller.abort(), AUDIO_BUFFER_LOAD_TIMEOUT_MS)
     const response = await fetch(url, { signal: controller.signal })
     clearTimeout(timeoutId)
     if (!response.ok) {
@@ -644,6 +647,10 @@ export async function loadAudioBuffer(filename) {
     const arrayBuffer = await response.arrayBuffer()
     const rawContext = getRawAudioContext()
     const buffer = await rawContext.decodeAudioData(arrayBuffer)
+    if (audioBufferCache.size >= MAX_AUDIO_BUFFER_CACHE_SIZE) {
+      const oldestKey = audioBufferCache.keys().next().value
+      audioBufferCache.delete(oldestKey)
+    }
     audioBufferCache.set(cacheKey, buffer)
     logger.debug(
       'AudioEngine',
@@ -1016,49 +1023,53 @@ export async function playSongFromData(song, delay = 0) {
  */
 function playDrumNote(midiPitch, time, velocity, kit = drumKit) {
   if (!kit) return
-  // GM Percussion Mapping
-  switch (midiPitch) {
-    case 35: // Acoustic Kick
-    case 36: // Electric Kick
-      kit.kick.triggerAttackRelease('C1', '8n', time, velocity)
-      break
-    case 37: // Side Stick
-      kit.snare.triggerAttackRelease('32n', time, velocity * 0.4)
-      break
-    case 38: // Acoustic Snare
-    case 40: // Electric Snare
-      kit.snare.triggerAttackRelease('16n', time, velocity)
-      break
-    case 42: // Closed HiHat
-    case 44: // Pedal HiHat
-      kit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.7)
-      break
-    case 46: // Open HiHat
-      kit.hihat.triggerAttackRelease(6000, '16n', time, velocity * 0.8)
-      break
-    case 49: // Crash 1
-    case 57: // Crash 2
-      kit.crash.triggerAttackRelease(4000, '4n', time, velocity * 0.7)
-      break
-    case 51: // Ride Cymbal
-    case 59: // Ride Bell
-      kit.hihat.triggerAttackRelease(5000, '8n', time, velocity * 0.5)
-      break
-    case 41: // Low Floor Tom
-    case 43: // High Floor Tom
-      kit.kick.triggerAttackRelease('G1', '8n', time, velocity * 0.8)
-      break
-    case 45: // Low Tom
-    case 47: // Low-Mid Tom
-      kit.kick.triggerAttackRelease('D2', '8n', time, velocity * 0.7)
-      break
-    case 48: // Hi-Mid Tom
-    case 50: // High Tom
-      kit.kick.triggerAttackRelease('A2', '8n', time, velocity * 0.6)
-      break
-    default:
-      // Default to closed HiHat for unknown percussion
-      kit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.4)
+  try {
+    // GM Percussion Mapping
+    switch (midiPitch) {
+      case 35: // Acoustic Kick
+      case 36: // Electric Kick
+        kit.kick.triggerAttackRelease('C1', '8n', time, velocity)
+        break
+      case 37: // Side Stick
+        kit.snare.triggerAttackRelease('32n', time, velocity * 0.4)
+        break
+      case 38: // Acoustic Snare
+      case 40: // Electric Snare
+        kit.snare.triggerAttackRelease('16n', time, velocity)
+        break
+      case 42: // Closed HiHat
+      case 44: // Pedal HiHat
+        kit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.7)
+        break
+      case 46: // Open HiHat
+        kit.hihat.triggerAttackRelease(6000, '16n', time, velocity * 0.8)
+        break
+      case 49: // Crash 1
+      case 57: // Crash 2
+        kit.crash.triggerAttackRelease(4000, '4n', time, velocity * 0.7)
+        break
+      case 51: // Ride Cymbal
+      case 59: // Ride Bell
+        kit.hihat.triggerAttackRelease(5000, '8n', time, velocity * 0.5)
+        break
+      case 41: // Low Floor Tom
+      case 43: // High Floor Tom
+        kit.kick.triggerAttackRelease('G1', '8n', time, velocity * 0.8)
+        break
+      case 45: // Low Tom
+      case 47: // Low-Mid Tom
+        kit.kick.triggerAttackRelease('D2', '8n', time, velocity * 0.7)
+        break
+      case 48: // Hi-Mid Tom
+      case 50: // High Tom
+        kit.kick.triggerAttackRelease('A2', '8n', time, velocity * 0.6)
+        break
+      default:
+        // Default to closed HiHat for unknown percussion
+        kit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.4)
+    }
+  } catch (e) {
+    logger.warn('AudioEngine', `Drum trigger failed for pitch ${midiPitch}`, e)
   }
 }
 
@@ -1303,7 +1314,7 @@ function playDrumsLegacy(time, diff, note, random) {
     }
     // Fix floating point tolerance issues
     const beatPhase = time % 0.25
-    if (beatPhase < 0.1 || beatPhase > 0.24) {
+    if (beatPhase < BEAT_TOLERANCE || beatPhase > 0.25 - BEAT_TOLERANCE) {
       drumKit.hihat.triggerAttackRelease(8000, '32n', time)
     }
   }
@@ -1418,11 +1429,15 @@ export async function playMidiFile(
 
         try {
           // Clamp duration to prevent "duration must be greater than 0" error
-          const duration = Math.max(
-            MIN_NOTE_DURATION,
-            Number.isFinite(value?.duration)
-              ? value.duration
-              : MIN_NOTE_DURATION
+          // and cap at MAX_NOTE_DURATION to prevent resource exhaustion
+          const duration = Math.min(
+            MAX_NOTE_DURATION,
+            Math.max(
+              MIN_NOTE_DURATION,
+              Number.isFinite(value?.duration)
+                ? value.duration
+                : MIN_NOTE_DURATION
+            )
           )
 
           // Clamp velocity
@@ -1467,12 +1482,8 @@ export async function playMidiFile(
     let requestedOffset = Number.isFinite(offset) ? Math.max(0, offset) : 0
     const duration = Number.isFinite(midi.duration) ? midi.duration : 0
 
-    // Fix: If offset is beyond duration, reset to 0 to ensure sound plays
-    // Only check if duration is long enough to have an "end" threshold
-    if (
-      duration >= OFFSET_RESET_THRESHOLD &&
-      requestedOffset >= duration - OFFSET_RESET_THRESHOLD
-    ) {
+    // Fix: If offset is at or beyond duration, reset to 0 to ensure sound plays
+    if (duration > 0 && requestedOffset >= duration) {
       logger.warn(
         'AudioEngine',
         `Offset ${requestedOffset}s exceeds duration ${duration}s. Resetting to 0.`
@@ -1561,9 +1572,11 @@ export async function playRandomAmbientMidi(
     'AudioEngine',
     `Playing ambient: ${meta?.name ?? filename} (offset ${offsetSeconds}s)`
   )
+  const reqId = playRequestId
   return playMidiFile(filename, offsetSeconds, false, 0, {
     useCleanPlayback: true,
     onEnded: () => {
+      if (reqId !== playRequestId) return
       playRandomAmbientMidi(songs, rng).catch(error => {
         logger.error(
           'AudioEngine',
@@ -1626,9 +1639,11 @@ export async function playRandomAmbientOgg(rng = Math.random) {
   }
 
   ambientSource = source
+  const chainReqId = playRequestId
 
   source.onended = () => {
     if (ambientSource !== source) return
+    if (chainReqId !== playRequestId) return
     ambientSource = null
     playRandomAmbientOgg(rng).catch(error => {
       logger.error(

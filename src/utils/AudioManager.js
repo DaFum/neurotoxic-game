@@ -174,7 +174,11 @@ class AudioSystem {
     const next = Math.min(1, Math.max(0, vol))
     this.sfxVolume = next
     localStorage.setItem('neurotoxic_vol_sfx', next)
-    audioEngine.setSFXVolume(this.muted ? 0 : next)
+    try {
+      audioEngine.setSFXVolume(this.muted ? 0 : next)
+    } catch (e) {
+      handleError(e, { fallbackMessage: 'Failed to set SFX volume' })
+    }
   }
 
   /**
