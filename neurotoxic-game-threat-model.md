@@ -2,7 +2,9 @@
 
 ## Executive summary
 
-NEUROTOXIC: GRIND THE VOID is a client-only React/Vite game intended for static hosting (GitHub Pages) with no backend or sensitive data handling. The primary risk themes are supply-chain or hosting integrity (tampered assets/scripts), client-side XSS if untrusted data ever enters DOM sinks, and localStorage integrity affecting game state (cheat/modification but not sensitive data exposure). Evidence indicates a single-page React entry point and localStorage-based persistence without server-side processing.
+NEUROTOXIC: GRIND THE VOID is a client-only React/Vite game intended for static hosting (GitHub Pages) with no backend or sensitive data handling. The primary risk themes are supply-chain or hosting integrity (tampered assets/scripts), client-side XSS if untrusted data ever enters DOM sinks, and localStorage integrity affecting game state (cheat/modification but not sensitive data exposure).
+
+Evidence indicates a single-page React entry point and localStorage-based persistence without server-side processing.
 【F:src/main.jsx†L1-L11】【F:src/context/GameState.jsx†L70-L260】
 
 ## Scope and assumptions
