@@ -48,7 +48,11 @@ test('runPromptCases validates expected snippets', async () => {
   const records = await discoverSkills({ includeUserSkills: false })
   const cases = await loadSkillCases()
   const failures = await runPromptCases(records, cases)
-  assert.equal(failures.length, 0, `Unexpected prompt failures:\n${failures.join('\n')}`)
+  assert.equal(
+    failures.length,
+    0,
+    `Unexpected prompt failures:\n${failures.join('\n')}`
+  )
 })
 
 test('buildReport creates a summary for skills', async () => {

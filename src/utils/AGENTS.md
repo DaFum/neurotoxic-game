@@ -8,19 +8,19 @@ You are the **Core Game Systems Architect** for NEUROTOXIC: GRIND THE VOID. You 
 
 This folder (`src/utils/`) contains the "brains" of the game - pure logic modules that handle:
 
-| Module               | Purpose                                                    |
-| -------------------- | ---------------------------------------------------------- |
-| `eventEngine.js`     | Random encounter system, skill checks, narrative branching |
-| `economyEngine.js`   | Financial calculations, payout formulas, cost modeling     |
-| `socialEngine.js`    | Social media simulation, viral content mechanics           |
-| `mapGenerator.js`    | Procedural map generation, graph-based travel system       |
-| `AudioManager.js`    | Tone.js audio coordinator, sound effect management         |
-| `simulationUtils.js` | Time progression, day/night cycle, RNG utilities           |
-| `imageGen.js`        | Placeholder image URL generation                           |
-| `audioTimingUtils.js`| Gig/audio clock alignment helpers                          |
-| `errorHandler.js`    | Centralized error handling and logging                     |
-| `logger.js`          | Debug logging with categories and levels                   |
-| `gameStateUtils.js`  | State transformation utilities                             |
+| Module                | Purpose                                                    |
+| --------------------- | ---------------------------------------------------------- |
+| `eventEngine.js`      | Random encounter system, skill checks, narrative branching |
+| `economyEngine.js`    | Financial calculations, payout formulas, cost modeling     |
+| `socialEngine.js`     | Social media simulation, viral content mechanics           |
+| `mapGenerator.js`     | Procedural map generation, graph-based travel system       |
+| `AudioManager.js`     | Tone.js audio coordinator, sound effect management         |
+| `simulationUtils.js`  | Time progression, day/night cycle, RNG utilities           |
+| `imageGen.js`         | Placeholder image URL generation                           |
+| `audioTimingUtils.js` | Gig/audio clock alignment helpers                          |
+| `errorHandler.js`     | Centralized error handling and logging                     |
+| `logger.js`           | Debug logging with categories and levels                   |
+| `gameStateUtils.js`   | State transformation utilities                             |
 
 ## Core Principles
 
@@ -495,5 +495,5 @@ export const getEvent = () => EVENTS_DB.travel[0] // Hardcoded index
 
 ## Maintenance
 
-- Audio: MIDI playback uses a clean, dry chain for ambient/gig background to avoid FX coloration.  
+- Audio: MIDI playback uses a clean, dry chain for ambient/gig background to avoid FX coloration.
 - Last updated: 2026-02-06.

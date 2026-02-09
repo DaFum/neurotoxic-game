@@ -61,7 +61,9 @@ export const applyEventDelta = (state, delta) => {
         nextBand.members = nextBand.members.map((member, index) => {
           const memberDelta = membersDelta[index] || {}
           const moodChange =
-            typeof memberDelta.moodChange === 'number' ? memberDelta.moodChange : 0
+            typeof memberDelta.moodChange === 'number'
+              ? memberDelta.moodChange
+              : 0
           const staminaChange =
             typeof memberDelta.staminaChange === 'number'
               ? memberDelta.staminaChange

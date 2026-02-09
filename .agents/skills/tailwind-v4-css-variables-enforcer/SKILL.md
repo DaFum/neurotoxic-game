@@ -14,13 +14,13 @@ description: Audit UI changes for Tailwind v4 class syntax and CSS-variable colo
 
 ## Correct Syntax Examples
 
-| Wrong (v3 / hardcoded) | Correct (v4) |
-|------------------------|--------------|
-| `bg-[var(--void-black)]` | `bg-(--void-black)` |
-| `text-[var(--toxic-green)]` | `text-(--toxic-green)` |
-| `bg-gray-900` | `bg-(--void-black)` |
-| `#00ff00` | `var(--toxic-green)` |
-| `@tailwind base` | `@import "tailwindcss"` |
+| Wrong (v3 / hardcoded)      | Correct (v4)            |
+| --------------------------- | ----------------------- |
+| `bg-[var(--void-black)]`    | `bg-(--void-black)`     |
+| `text-[var(--toxic-green)]` | `text-(--toxic-green)`  |
+| `bg-gray-900`               | `bg-(--void-black)`     |
+| `#00ff00`                   | `var(--toxic-green)`    |
+| `@tailwind base`            | `@import "tailwindcss"` |
 
 ## Workflow
 

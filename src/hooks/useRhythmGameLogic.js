@@ -64,6 +64,7 @@ export const useRhythmGameLogic = () => {
   const [overload, setOverload] = useState(0)
   const [isToxicMode, setIsToxicMode] = useState(false)
   const [isGameOver, setIsGameOver] = useState(false)
+  const [isAudioReady, setIsAudioReady] = useState(null)
   const gameOverTimerRef = useRef(null)
 
   // High-Frequency Game State (Ref)
@@ -117,6 +118,7 @@ export const useRhythmGameLogic = () => {
   })
 
   const hasInitializedRef = useRef(false)
+  const isInitializingRef = useRef(false)
 
   /**
    * Initializes gig physics and note data once per gig.
@@ -124,10 +126,10 @@ export const useRhythmGameLogic = () => {
    */
   const initializeGigState = useCallback(async () => {
     // Prevent double initialization, even in Strict Mode or re-mounts if ref persists
-    if (hasInitializedRef.current) {
+    if (hasInitializedRef.current || isInitializingRef.current) {
       return
     }
-    hasInitializedRef.current = true
+    isInitializingRef.current = true
 
     // Mute ambient radio to prevent audio overlap
     audioManager.stopMusic()
@@ -136,7 +138,20 @@ export const useRhythmGameLogic = () => {
       // Ensure AudioContext is running before any getAudioTimeMs() calls,
       // even if no playMidiFile/startMetalGenerator path executes later.
       // Use audioManager to also set initialized flag for SFX playback.
-      await audioManager.ensureAudioContext()
+      const audioUnlocked = await audioManager.ensureAudioContext()
+      if (!audioUnlocked) {
+        console.warn(
+          '[useRhythmGameLogic] Audio Context blocked. Waiting for user gesture.'
+        )
+        setIsAudioReady(false)
+        // Reset initialization flag so it can be retried
+        isInitializingRef.current = false
+        return
+      }
+      setIsAudioReady(true)
+      hasInitializedRef.current = true
+      // Initialization is complete for this session
+      isInitializingRef.current = false
 
       const activeModifiers = getGigModifiers(band, gigModifiers)
       const physics = calculateGigPhysics(band, { bpm: 120 })
@@ -235,7 +250,9 @@ export const useRhythmGameLogic = () => {
       // Prefer explicit sourceOgg over deriving from sourceMid to avoid name mismatches.
       if (currentSong.sourceOgg || currentSong.sourceMid) {
         const excerptStart = currentSong.excerptStartMs || 0
-        const oggFilename = currentSong.sourceOgg || currentSong.sourceMid.replace(/\.mid$/i, '.ogg')
+        const oggFilename =
+          currentSong.sourceOgg ||
+          currentSong.sourceMid.replace(/\.mid$/i, '.ogg')
         const gigDurationMs = currentSong.excerptDurationMs || 30000
         const assetFound = hasAudioAsset(oggFilename)
         if (!assetFound) {
@@ -266,7 +283,8 @@ export const useRhythmGameLogic = () => {
       if (!bgAudioStarted && currentSong.sourceMid) {
         const excerptStart = currentSong.excerptStartMs || 0
         const offsetSeconds = Math.max(0, excerptStart / 1000)
-        const gigPlaybackSeconds = (currentSong.excerptDurationMs || 30000) / 1000
+        const gigPlaybackSeconds =
+          (currentSong.excerptDurationMs || 30000) / 1000
         const rawGigStartTimeSec =
           getAudioContextTimeSec() + GIG_LEAD_IN_MS / 1000
         const toneGigStartTimeSec = getToneStartTimeSec(rawGigStartTimeSec)
@@ -289,7 +307,10 @@ export const useRhythmGameLogic = () => {
       if (!bgAudioStarted && parsedNotes.length > 0) {
         // No MIDI file available (or it failed), synthesize from note data
         startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
-        const success = await playSongFromData(currentSong, GIG_LEAD_IN_MS / 1000)
+        const success = await playSongFromData(
+          currentSong,
+          GIG_LEAD_IN_MS / 1000
+        )
         if (success) bgAudioStarted = true
       }
 
@@ -669,6 +690,13 @@ export const useRhythmGameLogic = () => {
 
   // Input Handlers
   /**
+   * Retries initialization if it failed due to locked audio.
+   */
+  const retryAudioInitialization = useCallback(() => {
+    initializeGigState()
+  }, [initializeGigState])
+
+  /**
    * Registers player input for a lane.
    * @param {number} laneIndex - Lane index.
    * @param {boolean} isDown - Whether the input is pressed.
@@ -696,9 +724,10 @@ export const useRhythmGameLogic = () => {
       progress,
       overload,
       isToxicMode,
-      isGameOver
+      isGameOver,
+      isAudioReady
     },
-    actions: { registerInput, activateToxicMode },
+    actions: { registerInput, activateToxicMode, retryAudioInitialization },
     update // Expose update to be driven by Ticker
   }
 }

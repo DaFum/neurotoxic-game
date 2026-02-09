@@ -1,21 +1,21 @@
 ---
-name: repo-navigator-agents-routing
+name: repository-navigator-agents-routing
 description: Route questions to the correct folder (context, hooks, scenes, utils, components, data, ui) and consult the relevant AGENTS.md first. Use when asked where logic lives or which files own behavior.
 ---
 
-# AGENTS-Aware Repo Navigation
+# AGENTS-Aware Repository Navigation
 
 ## Domain Routing Table
 
-| Domain | Directory | AGENTS.md | Key Files |
-|--------|-----------|-----------|-----------|
-| State | `src/context/` | `src/context/AGENTS.md` | gameReducer.js, actionCreators.js, initialState.js |
-| Hooks | `src/hooks/` | `src/hooks/AGENTS.md` | useTravelLogic.js, usePurchaseLogic.js, useAudioControl.js |
-| Scenes | `src/scenes/` | `src/scenes/AGENTS.md` | Overworld.jsx, Gig.jsx, PostGig.jsx, MainMenu.jsx |
-| Utils | `src/utils/` | `src/utils/AGENTS.md` | eventEngine.js, economyEngine.js, AudioManager.js |
-| Components | `src/components/` | `src/components/AGENTS.md` | PixiStage.jsx, GigHUD.jsx, TutorialManager.jsx |
-| Data | `src/data/` | `src/data/AGENTS.md` | events.js, venues.js, songs.js, characters.js |
-| UI | `src/ui/` | `src/ui/AGENTS.md` | HUD.jsx, EventModal.jsx, GlitchButton.jsx |
+| Domain     | Directory         | AGENTS.md                  | Key Files                                                  |
+| ---------- | ----------------- | -------------------------- | ---------------------------------------------------------- |
+| State      | `src/context/`    | `src/context/AGENTS.md`    | gameReducer.js, actionCreators.js, initialState.js         |
+| Hooks      | `src/hooks/`      | `src/hooks/AGENTS.md`      | useTravelLogic.js, usePurchaseLogic.js, useAudioControl.js |
+| Scenes     | `src/scenes/`     | `src/scenes/AGENTS.md`     | Overworld.jsx, Gig.jsx, PostGig.jsx, MainMenu.jsx          |
+| Utils      | `src/utils/`      | `src/utils/AGENTS.md`      | eventEngine.js, economyEngine.js, AudioManager.js          |
+| Components | `src/components/` | `src/components/AGENTS.md` | PixiStage.jsx, GigHUD.jsx, TutorialManager.jsx             |
+| Data       | `src/data/`       | `src/data/AGENTS.md`       | events.js, venues.js, songs.js, characters.js              |
+| UI         | `src/ui/`         | `src/ui/AGENTS.md`         | HUD.jsx, EventModal.jsx, GlitchButton.jsx                  |
 
 ## Workflow
 

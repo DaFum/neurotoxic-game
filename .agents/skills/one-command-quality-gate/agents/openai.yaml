@@ -1,4 +1,4 @@
 interface:
-  display_name: "Quality Gate"
-  short_description: "Run lint, test, and build in order and summarize results."
-  default_prompt: "Run the quality gate and report any failures."
+  display_name: 'Quality Gate'
+  short_description: 'Run lint, test, and build in order and summarize results.'
+  default_prompt: 'Run the quality gate and report any failures.'

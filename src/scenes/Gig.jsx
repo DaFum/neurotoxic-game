@@ -5,6 +5,7 @@ import { PixiStage } from '../components/PixiStage'
 import { GigHUD } from '../components/GigHUD'
 import { IMG_PROMPTS, getGenImageUrl } from '../utils/imageGen'
 import { audioManager } from '../utils/AudioManager'
+import { GlitchButton } from '../ui/GlitchButton'
 
 /**
  * The core Rhythm Game scene.
@@ -198,6 +199,32 @@ export const Gig = () => {
   if (stats.isToxicMode) {
     // Full Chaos Filter
     chaosStyle.filter = 'invert(0.1) contrast(1.5) saturate(2)'
+  }
+
+  // Render blocking overlay if audio is locked (moved here to avoid hook violations)
+  if (stats.isAudioReady === false) {
+    return (
+      <div className='flex flex-col items-center justify-center w-full h-full bg-(--void-black) z-[100] relative'>
+        <h2 className="text-4xl text-(--toxic-green) font-['Metal_Mania'] mb-8 animate-pulse text-center">
+          SYSTEM LOCKED
+        </h2>
+        <p className='text-(--ash-gray) mb-8 font-mono max-w-md text-center'>
+          Audio Interface requires manual override.
+        </p>
+        <GlitchButton
+          onClick={() => {
+            audioManager.ensureAudioContext().then(isUnlocked => {
+              if (isUnlocked) {
+                actions.retryAudioInitialization()
+              }
+            })
+          }}
+          className='scale-150'
+        >
+          INITIALIZE AUDIO
+        </GlitchButton>
+      </div>
+    )
   }
 
   return (

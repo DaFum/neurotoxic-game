@@ -16,9 +16,7 @@ export const getScheduledHitTimeMs = ({
   const safeNoteTimeMs = Number.isFinite(noteTimeMs) ? noteTimeMs : 0
   const safeGigTimeMs = Number.isFinite(gigTimeMs) ? gigTimeMs : 0
   const safeAudioTimeMs = Number.isFinite(audioTimeMs) ? audioTimeMs : 0
-  const safeMaxLeadMs = Number.isFinite(maxLeadMs)
-    ? Math.max(0, maxLeadMs)
-    : 0
+  const safeMaxLeadMs = Number.isFinite(maxLeadMs) ? Math.max(0, maxLeadMs) : 0
 
   const timeOffsetMs = safeAudioTimeMs - safeGigTimeMs
   const noteTimeInAudioMs = safeNoteTimeMs + timeOffsetMs

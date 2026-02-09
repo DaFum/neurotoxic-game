@@ -39,7 +39,10 @@
     {
       "name": "JSON",
       "command": "bash",
-      "args": ["-lc", "rg --files -g '*.json' | xargs -r -n1 node -e \"JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8'))\""]
+      "args": [
+        "-lc",
+        "rg --files -g '*.json' | xargs -r -n1 node -e \"JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8'))\""
+      ]
     },
     {
       "name": "JSON_PRETTIER",

@@ -297,8 +297,16 @@ test('eventEngine.applyResult handles combined mood and stamina in composite', (
   const delta = eventEngine.applyResult(result)
 
   assert.ok(delta.band.membersDelta, 'Should have membersDelta')
-  assert.equal(delta.band.membersDelta.moodChange, 10, 'Should preserve moodChange')
-  assert.equal(delta.band.membersDelta.staminaChange, -5, 'Should preserve staminaChange')
+  assert.equal(
+    delta.band.membersDelta.moodChange,
+    10,
+    'Should preserve moodChange'
+  )
+  assert.equal(
+    delta.band.membersDelta.staminaChange,
+    -5,
+    'Should preserve staminaChange'
+  )
 })
 
 test('eventEngine.applyResult handles van fuel', () => {

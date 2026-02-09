@@ -1,5 +1,11 @@
 #!/usr/bin/env node
-import { discoverSkills, formatSummary, writeReport, buildReport, readDisabledSkills } from './skilltest-lib.mjs'
+import {
+  discoverSkills,
+  formatSummary,
+  writeReport,
+  buildReport,
+  readDisabledSkills
+} from './skilltest-lib.mjs'
 
 const run = async () => {
   const includeUserSkills = process.argv.includes('--include-user')

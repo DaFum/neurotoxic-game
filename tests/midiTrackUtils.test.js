@@ -9,7 +9,10 @@ import {
 
 test('isPercussionTrack', async t => {
   await t.test('detects percussion instrument metadata', () => {
-    assert.strictEqual(isPercussionTrack({ instrument: { percussion: true } }), true)
+    assert.strictEqual(
+      isPercussionTrack({ instrument: { percussion: true } }),
+      true
+    )
   })
 
   await t.test('detects channel 9 percussion tracks', () => {
