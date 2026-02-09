@@ -157,15 +157,22 @@ class AudioSystem {
    */
   setMusicVolume(vol) {
     const next = Math.min(1, Math.max(0, vol))
-    let engineApplied = true
+    let operationSucceeded = true
+    let appliedNow = false
     try {
-      audioEngine.setMusicVolume(this.muted ? 0 : next)
+      appliedNow = audioEngine.setMusicVolume(this.muted ? 0 : next) !== false
       this.musicVolume = next
     } catch (e) {
-      engineApplied = false
+      operationSucceeded = false
       handleError(e, { fallbackMessage: 'Failed to set music volume' })
     }
-    if (engineApplied) {
+    if (operationSucceeded) {
+      if (!appliedNow) {
+        logger.debug(
+          'AudioSystem',
+          'Music volume stored for deferred apply (audio graph not ready).'
+        )
+      }
       try {
         localStorage.setItem('neurotoxic_vol_music', next)
       } catch (e) {
@@ -174,7 +181,7 @@ class AudioSystem {
         })
       }
     }
-    return engineApplied
+    return operationSucceeded
   }
 
   /**
@@ -183,15 +190,22 @@ class AudioSystem {
    */
   setSFXVolume(vol) {
     const next = Math.min(1, Math.max(0, vol))
-    let engineApplied = true
+    let operationSucceeded = true
+    let appliedNow = false
     try {
-      audioEngine.setSFXVolume(this.muted ? 0 : next)
+      appliedNow = audioEngine.setSFXVolume(this.muted ? 0 : next) !== false
       this.sfxVolume = next
     } catch (e) {
-      engineApplied = false
+      operationSucceeded = false
       handleError(e, { fallbackMessage: 'Failed to set SFX volume' })
     }
-    if (engineApplied) {
+    if (operationSucceeded) {
+      if (!appliedNow) {
+        logger.debug(
+          'AudioSystem',
+          'SFX volume stored for deferred apply (audio graph not ready).'
+        )
+      }
       try {
         localStorage.setItem('neurotoxic_vol_sfx', next)
       } catch (e) {
@@ -200,7 +214,7 @@ class AudioSystem {
         })
       }
     }
-    return engineApplied
+    return operationSucceeded
   }
 
   /**

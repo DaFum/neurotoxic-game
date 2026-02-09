@@ -565,24 +565,27 @@ export function playSFX(type) {
 /**
  * Sets the SFX volume.
  * @param {number} vol - Volume between 0 and 1.
+ * @returns {boolean} True when applied to an existing gain node.
  */
 export function setSFXVolume(vol) {
-  if (sfxGain) {
-    // Convert 0-1 linear to decibels (approximate or use ramp)
-    // Tone.Gain accepts linear values if units are default, but volume is typically db.
-    // However, Tone.Gain.gain is linear amplitude.
-    sfxGain.gain.rampTo(Math.max(0, Math.min(1, vol)), 0.1)
-  }
+  if (!sfxGain) return false
+  // Convert 0-1 linear to decibels (approximate or use ramp)
+  // Tone.Gain accepts linear values if units are default, but volume is typically db.
+  // However, Tone.Gain.gain is linear amplitude.
+  sfxGain.gain.rampTo(Math.max(0, Math.min(1, vol)), 0.1)
+  return true
 }
 
 /**
  * Sets the music volume using the dedicated music bus.
  * @param {number} vol - Volume between 0 and 1.
+ * @returns {boolean} True when applied to an existing gain node.
  */
 export function setMusicVolume(vol) {
-  if (!musicGain) return
+  if (!musicGain) return false
   const next = Math.max(0, Math.min(1, vol))
   musicGain.gain.rampTo(next, 0.1)
+  return true
 }
 
 /**
