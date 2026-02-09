@@ -49,8 +49,10 @@ export const useAudioControl = () => {
   const toggleMute = useCallback(
     () => {
       let didApply = false
+      let nextMuted = manager.muted
       try {
-        didApply = manager.toggleMute() !== false
+        nextMuted = manager.toggleMute()
+        didApply = true
       } catch (error) {
         handleError(error, {
           fallbackMessage: 'useAudioControl.toggleMute failed',
@@ -58,7 +60,7 @@ export const useAudioControl = () => {
         })
       }
       if (didApply) {
-        setAudioState(prev => ({ ...prev, isMuted: manager.muted }))
+        setAudioState(prev => ({ ...prev, isMuted: nextMuted }))
       }
     },
     [manager, setAudioState]
