@@ -618,7 +618,7 @@ export const resetRepoRootCache = () => {
 export const runQualityGate = async () => {
   const runCommand = (command, args) =>
     new Promise((resolve, reject) => {
-      const child = spawn(command, args, { stdio: 'inherit' })
+      const child = spawn(command, args, { stdio: 'inherit', shell: true })
       child.on('error', error => {
         reject(
           new Error(
