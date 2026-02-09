@@ -191,7 +191,7 @@ export const findSkillDirs = async (rootDir, visited) => {
  * @returns {{name: string, description: string} | null} Parsed frontmatter.
  */
 export const parseFrontmatter = contents => {
-  const match = contents.match(/^---\n([\s\S]*?)\n---\n/)
+  const match = contents.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/)
   if (!match) return null
   const data = parseYamlDoc(match[1]) || {}
   if (!data.name || !data.description) return null
@@ -614,9 +614,11 @@ export const resetRepoRootCache = () => {
  * @returns {Promise<void>} Promise resolving when complete.
  */
 export const runQualityGate = async () => {
+  const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+  const useShell = process.platform === 'win32'
   const runCommand = (command, args) =>
     new Promise((resolve, reject) => {
-      const child = spawn(command, args, { stdio: 'inherit' })
+      const child = spawn(command, args, { stdio: 'inherit', shell: useShell })
       child.on('error', error => {
         reject(
           new Error(
@@ -633,9 +635,9 @@ export const runQualityGate = async () => {
       })
     })
 
-  await runCommand('npm', ['run', 'lint'])
-  await runCommand('npm', ['run', 'test'])
-  await runCommand('npm', ['run', 'build'])
+  await runCommand(npmCommand, ['run', 'lint'])
+  await runCommand(npmCommand, ['run', 'test'])
+  await runCommand(npmCommand, ['run', 'build'])
 }
 
 /**

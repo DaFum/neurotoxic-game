@@ -9,7 +9,7 @@
 export const generateNotesForSong = (song, options = {}) => {
   const { leadIn = 2000, random = Math.random } = options
   const notes = []
-  const beatInterval = 60000 / song.bpm
+  const beatInterval = 60000 / Math.max(1, song.bpm || 120)
   const songDurationMs = song.duration * 1000
   const totalBeats = Math.floor(songDurationMs / beatInterval)
   const diff = song.difficulty || 2
@@ -194,6 +194,7 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
  * @returns {object|null} The hit note or null.
  */
 export const checkHit = (notes, laneIndex, elapsed, hitWindow) => {
+  if (!Number.isFinite(elapsed)) return null
   return (
     notes.find(
       n =>

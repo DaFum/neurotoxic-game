@@ -38,7 +38,10 @@ const oggGlob = import.meta.glob('../assets/**/*.ogg', {
 })
 
 const MIN_NOTE_DURATION = 0.05
-const OFFSET_RESET_THRESHOLD = 0.1
+const MAX_NOTE_DURATION = 10
+const AUDIO_BUFFER_LOAD_TIMEOUT_MS = 10000
+const AUDIO_BUFFER_DECODE_TIMEOUT_MS = 10000
+const MAX_AUDIO_BUFFER_CACHE_SIZE = 50
 
 const HIHAT_CONFIG = {
   envelope: { attack: 0.001, decay: 0.06, release: 0.01 },
@@ -562,24 +565,27 @@ export function playSFX(type) {
 /**
  * Sets the SFX volume.
  * @param {number} vol - Volume between 0 and 1.
+ * @returns {boolean} True when applied to an existing gain node.
  */
 export function setSFXVolume(vol) {
-  if (sfxGain) {
-    // Convert 0-1 linear to decibels (approximate or use ramp)
-    // Tone.Gain accepts linear values if units are default, but volume is typically db.
-    // However, Tone.Gain.gain is linear amplitude.
-    sfxGain.gain.rampTo(Math.max(0, Math.min(1, vol)), 0.1)
-  }
+  if (!sfxGain) return false
+  // Convert 0-1 linear to decibels (approximate or use ramp)
+  // Tone.Gain accepts linear values if units are default, but volume is typically db.
+  // However, Tone.Gain.gain is linear amplitude.
+  sfxGain.gain.rampTo(Math.max(0, Math.min(1, vol)), 0.1)
+  return true
 }
 
 /**
  * Sets the music volume using the dedicated music bus.
  * @param {number} vol - Volume between 0 and 1.
+ * @returns {boolean} True when applied to an existing gain node.
  */
 export function setMusicVolume(vol) {
-  if (!musicGain) return
+  if (!musicGain) return false
   const next = Math.max(0, Math.min(1, vol))
   musicGain.gain.rampTo(next, 0.1)
+  return true
 }
 
 /**
@@ -604,7 +610,11 @@ export async function loadAudioBuffer(filename) {
   if (typeof filename !== 'string' || filename.length === 0) return null
   const cacheKey = filename.replace(/^\.?\//, '')
   if (audioBufferCache.has(cacheKey)) {
-    return audioBufferCache.get(cacheKey)
+    const cached = audioBufferCache.get(cacheKey)
+    // Promote to most-recently-used for LRU eviction
+    audioBufferCache.delete(cacheKey)
+    audioBufferCache.set(cacheKey, cached)
+    return cached
   }
 
   const baseUrl = import.meta.env.BASE_URL || './'
@@ -629,21 +639,41 @@ export async function loadAudioBuffer(filename) {
   }
 
   try {
-    // Avoid hanging gig initialization on stalled network requests.
+    // Avoid hanging gig initialization on stalled network/body reads.
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 10000)
-    const response = await fetch(url, { signal: controller.signal })
-    clearTimeout(timeoutId)
-    if (!response.ok) {
-      logger.warn(
-        'AudioEngine',
-        `Failed to load audio "${filename}": HTTP ${response.status} from ${url}`
-      )
-      return null
+    const timeoutId = setTimeout(() => controller.abort(), AUDIO_BUFFER_LOAD_TIMEOUT_MS)
+    let arrayBuffer = null
+    try {
+      const response = await fetch(url, { signal: controller.signal })
+      if (!response.ok) {
+        logger.warn(
+          'AudioEngine',
+          `Failed to load audio "${filename}": HTTP ${response.status} from ${url}`
+        )
+        return null
+      }
+      arrayBuffer = await response.arrayBuffer()
+    } finally {
+      clearTimeout(timeoutId)
     }
-    const arrayBuffer = await response.arrayBuffer()
     const rawContext = getRawAudioContext()
-    const buffer = await rawContext.decodeAudioData(arrayBuffer)
+    let decodeTimeoutId = null
+    const decodeTimeoutPromise = new Promise((_, reject) => {
+      decodeTimeoutId = setTimeout(() => reject(new Error('AUDIO_DECODE_TIMEOUT')), AUDIO_BUFFER_DECODE_TIMEOUT_MS)
+    })
+    let buffer = null
+    try {
+      buffer = await Promise.race([
+        rawContext.decodeAudioData(arrayBuffer),
+        decodeTimeoutPromise
+      ])
+    } finally {
+      if (decodeTimeoutId) clearTimeout(decodeTimeoutId)
+    }
+    if (audioBufferCache.size >= MAX_AUDIO_BUFFER_CACHE_SIZE) {
+      const oldestKey = audioBufferCache.keys().next().value
+      audioBufferCache.delete(oldestKey)
+    }
     audioBufferCache.set(cacheKey, buffer)
     logger.debug(
       'AudioEngine',
@@ -655,6 +685,11 @@ export async function loadAudioBuffer(filename) {
       logger.warn(
         'AudioEngine',
         `Audio fetch timed out for "${filename}" (${url})`
+      )
+    } else if (error?.message === 'AUDIO_DECODE_TIMEOUT') {
+      logger.warn(
+        'AudioEngine',
+        `Audio decode timed out for "${filename}" (${url})`
       )
     } else {
       const isOgg = filename.toLowerCase().endsWith('.ogg')
@@ -1016,49 +1051,53 @@ export async function playSongFromData(song, delay = 0) {
  */
 function playDrumNote(midiPitch, time, velocity, kit = drumKit) {
   if (!kit) return
-  // GM Percussion Mapping
-  switch (midiPitch) {
-    case 35: // Acoustic Kick
-    case 36: // Electric Kick
-      kit.kick.triggerAttackRelease('C1', '8n', time, velocity)
-      break
-    case 37: // Side Stick
-      kit.snare.triggerAttackRelease('32n', time, velocity * 0.4)
-      break
-    case 38: // Acoustic Snare
-    case 40: // Electric Snare
-      kit.snare.triggerAttackRelease('16n', time, velocity)
-      break
-    case 42: // Closed HiHat
-    case 44: // Pedal HiHat
-      kit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.7)
-      break
-    case 46: // Open HiHat
-      kit.hihat.triggerAttackRelease(6000, '16n', time, velocity * 0.8)
-      break
-    case 49: // Crash 1
-    case 57: // Crash 2
-      kit.crash.triggerAttackRelease(4000, '4n', time, velocity * 0.7)
-      break
-    case 51: // Ride Cymbal
-    case 59: // Ride Bell
-      kit.hihat.triggerAttackRelease(5000, '8n', time, velocity * 0.5)
-      break
-    case 41: // Low Floor Tom
-    case 43: // High Floor Tom
-      kit.kick.triggerAttackRelease('G1', '8n', time, velocity * 0.8)
-      break
-    case 45: // Low Tom
-    case 47: // Low-Mid Tom
-      kit.kick.triggerAttackRelease('D2', '8n', time, velocity * 0.7)
-      break
-    case 48: // Hi-Mid Tom
-    case 50: // High Tom
-      kit.kick.triggerAttackRelease('A2', '8n', time, velocity * 0.6)
-      break
-    default:
-      // Default to closed HiHat for unknown percussion
-      kit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.4)
+  try {
+    // GM Percussion Mapping
+    switch (midiPitch) {
+      case 35: // Acoustic Kick
+      case 36: // Electric Kick
+        kit.kick.triggerAttackRelease('C1', '8n', time, velocity)
+        break
+      case 37: // Side Stick
+        kit.snare.triggerAttackRelease('32n', time, velocity * 0.4)
+        break
+      case 38: // Acoustic Snare
+      case 40: // Electric Snare
+        kit.snare.triggerAttackRelease('16n', time, velocity)
+        break
+      case 42: // Closed HiHat
+      case 44: // Pedal HiHat
+        kit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.7)
+        break
+      case 46: // Open HiHat
+        kit.hihat.triggerAttackRelease(6000, '16n', time, velocity * 0.8)
+        break
+      case 49: // Crash 1
+      case 57: // Crash 2
+        kit.crash.triggerAttackRelease(4000, '4n', time, velocity * 0.7)
+        break
+      case 51: // Ride Cymbal
+      case 59: // Ride Bell
+        kit.hihat.triggerAttackRelease(5000, '8n', time, velocity * 0.5)
+        break
+      case 41: // Low Floor Tom
+      case 43: // High Floor Tom
+        kit.kick.triggerAttackRelease('G1', '8n', time, velocity * 0.8)
+        break
+      case 45: // Low Tom
+      case 47: // Low-Mid Tom
+        kit.kick.triggerAttackRelease('D2', '8n', time, velocity * 0.7)
+        break
+      case 48: // Hi-Mid Tom
+      case 50: // High Tom
+        kit.kick.triggerAttackRelease('A2', '8n', time, velocity * 0.6)
+        break
+      default:
+        // Default to closed HiHat for unknown percussion
+        kit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.4)
+    }
+  } catch (e) {
+    logger.warn('AudioEngine', `Drum trigger failed for pitch ${midiPitch}`, e)
   }
 }
 
@@ -1301,7 +1340,7 @@ function playDrumsLegacy(time, diff, note, random) {
     if (random() > 0.9) {
       drumKit.snare.triggerAttackRelease('16n', time)
     }
-    // Fix floating point tolerance issues
+    // Hihat on the beat — the 0.1 lower bound is intentional for musical density
     const beatPhase = time % 0.25
     if (beatPhase < 0.1 || beatPhase > 0.24) {
       drumKit.hihat.triggerAttackRelease(8000, '32n', time)
@@ -1322,13 +1361,15 @@ function playDrumsLegacy(time, diff, note, random) {
  * @param {Function} [options.onEnded] - Callback invoked after playback ends.
  * @param {number} [options.stopAfterSeconds] - Optional playback duration limit in seconds.
  * @param {number} [options.startTimeSec] - Absolute Tone.js time to start playback.
+ * @param {number|null} [ownedRequestId=null] - Internal request ownership override.
  */
-export async function playMidiFile(
+async function playMidiFileInternal(
   filename,
   offset = 0,
   loop = false,
   delay = 0,
-  options = {}
+  options = {},
+  ownedRequestId = null
 ) {
   const { onEnded, useCleanPlayback, stopAfterSeconds, startTimeSec } =
     normalizeMidiPlaybackOptions(options)
@@ -1336,8 +1377,12 @@ export async function playMidiFile(
     'AudioEngine',
     `Request playMidiFile: ${filename}, offset=${offset}, loop=${loop}`
   )
-  // Requirement: Stop previous playback immediately
-  const reqId = ++playRequestId
+  // Requirement: Stop previous playback immediately unless the caller
+  // explicitly owns request invalidation (used by ambient chaining).
+  const reqId =
+    Number.isInteger(ownedRequestId) && ownedRequestId > 0
+      ? ownedRequestId
+      : ++playRequestId
   logger.debug('AudioEngine', `New playRequestId: ${reqId}`)
 
   const unlocked = await ensureAudioContext()
@@ -1418,11 +1463,15 @@ export async function playMidiFile(
 
         try {
           // Clamp duration to prevent "duration must be greater than 0" error
-          const duration = Math.max(
-            MIN_NOTE_DURATION,
-            Number.isFinite(value?.duration)
-              ? value.duration
-              : MIN_NOTE_DURATION
+          // and cap at MAX_NOTE_DURATION to prevent resource exhaustion
+          const duration = Math.min(
+            MAX_NOTE_DURATION,
+            Math.max(
+              MIN_NOTE_DURATION,
+              Number.isFinite(value?.duration)
+                ? value.duration
+                : MIN_NOTE_DURATION
+            )
           )
 
           // Clamp velocity
@@ -1467,12 +1516,10 @@ export async function playMidiFile(
     let requestedOffset = Number.isFinite(offset) ? Math.max(0, offset) : 0
     const duration = Number.isFinite(midi.duration) ? midi.duration : 0
 
-    // Fix: If offset is beyond duration, reset to 0 to ensure sound plays
-    // Only check if duration is long enough to have an "end" threshold
-    if (
-      duration >= OFFSET_RESET_THRESHOLD &&
-      requestedOffset >= duration - OFFSET_RESET_THRESHOLD
-    ) {
+    // Reset offset when it is at or beyond duration to ensure sound plays.
+    // Note: the old threshold-based check (within 0.1s of end) was overly
+    // conservative and would discard valid offsets near the end of a track.
+    if (duration > 0 && requestedOffset >= duration) {
       logger.warn(
         'AudioEngine',
         `Offset ${requestedOffset}s exceeds duration ${duration}s. Resetting to 0.`
@@ -1526,6 +1573,28 @@ export async function playMidiFile(
 }
 
 /**
+ * Plays a MIDI file from a URL.
+ * @param {string} filename - The filename of the MIDI (key in url map).
+ * @param {number} [offset=0] - Start offset in seconds.
+ * @param {boolean} [loop=false] - Whether to loop the playback.
+ * @param {number} [delay=0] - Delay in seconds before starting playback.
+ * @param {object} [options] - Playback options.
+ * @param {boolean} [options.useCleanPlayback=true] - If true, bypass FX for MIDI playback.
+ * @param {Function} [options.onEnded] - Callback invoked after playback ends.
+ * @param {number} [options.stopAfterSeconds] - Optional playback duration limit in seconds.
+ * @param {number} [options.startTimeSec] - Absolute Tone.js time to start playback.
+ */
+export async function playMidiFile(
+  filename,
+  offset = 0,
+  loop = false,
+  delay = 0,
+  options = {}
+) {
+  return playMidiFileInternal(filename, offset, loop, delay, options)
+}
+
+/**
  * Plays a random MIDI file from the available set for ambient music.
  * @param {Array} [songs] - Song metadata array for excerpt offset lookup.
  * @param {Function} [rng] - Random number generator function.
@@ -1538,6 +1607,7 @@ export async function playRandomAmbientMidi(
   logger.debug('AudioEngine', 'playRandomAmbientMidi called')
   // Requirement: Stop transport before starting ambient
   stopAudio()
+  const reqId = playRequestId
 
   const midiFiles = Object.keys(midiUrlMap)
   if (midiFiles.length === 0) {
@@ -1561,9 +1631,15 @@ export async function playRandomAmbientMidi(
     'AudioEngine',
     `Playing ambient: ${meta?.name ?? filename} (offset ${offsetSeconds}s)`
   )
-  return playMidiFile(filename, offsetSeconds, false, 0, {
+  return playMidiFileInternal(
+    filename,
+    offsetSeconds,
+    false,
+    0,
+    {
     useCleanPlayback: true,
     onEnded: () => {
+      if (reqId !== playRequestId) return
       playRandomAmbientMidi(songs, rng).catch(error => {
         logger.error(
           'AudioEngine',
@@ -1572,7 +1648,9 @@ export async function playRandomAmbientMidi(
         )
       })
     }
-  })
+    },
+    reqId
+  )
 }
 
 /**
@@ -1626,9 +1704,11 @@ export async function playRandomAmbientOgg(rng = Math.random) {
   }
 
   ambientSource = source
+  const chainReqId = playRequestId
 
   source.onended = () => {
     if (ambientSource !== source) return
+    if (chainReqId !== playRequestId) return
     ambientSource = null
     playRandomAmbientOgg(rng).catch(error => {
       logger.error(

@@ -6,7 +6,8 @@
       "Bash(npm run test:*)",
       "Bash(claude mcp add:*)",
       "Bash(cmd /c \"claude mcp add -s user -t http deepwiki https://mcp.deepwiki.com/mcp\")",
-      "Bash(cmd /c \"claude mcp list -s user\")"
+      "Bash(cmd /c \"claude mcp list -s user\")",
+      "Bash(node -e:*)"
     ]
   }
 }
