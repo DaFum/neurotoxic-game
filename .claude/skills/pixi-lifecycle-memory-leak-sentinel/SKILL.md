@@ -16,7 +16,7 @@ description: Audit Pixi.js components for lifecycle correctness and memory clean
 ## Workflow
 
 1. Read `PixiStage.jsx` and locate `new Application()` creation — verify it runs inside a `useEffect` with proper cleanup.
-2. Confirm the cleanup return function calls `app.destroy({ children: true, texture: true, baseTexture: true })` and stops the ticker.
+2. Confirm the cleanup return function calls `app.destroy(true, { children: true, texture: true })` and stops the ticker.
 3. Check `PixiStageController.js` for refs — confirm they are nulled on unmount.
 4. Verify `Gig.jsx` scene transitions don't leave orphaned Pixi instances (check unmount path).
 5. Check for `addEventListener`, `setInterval`, or `requestAnimationFrame` calls and ensure they are disposed.

@@ -22,7 +22,7 @@ description: Verify asset paths, glob patterns, and references for broken links 
 
 ## Command
 
-- Prefer the bundled script: `./.agents/skills/asset-pipeline-verifier/scripts/asset-scan.sh`
+- Prefer the bundled script: `./.claude/skills/asset-pipeline-verifier/scripts/asset-scan.sh`
 
 ## Output
 

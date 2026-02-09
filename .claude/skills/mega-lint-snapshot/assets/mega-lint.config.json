@@ -69,7 +69,7 @@
     {
       "name": "SHELL_SHFMT",
       "command": "bash",
-      "args": ["-lc", "shfmt -d $(rg --files -g '*.sh')"]
+      "args": ["-lc", "rg -0 --files -g '*.sh' | xargs -0 -r shfmt -d"]
     }
   ]
 }

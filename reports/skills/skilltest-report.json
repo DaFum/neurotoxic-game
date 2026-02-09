@@ -1,0 +1,338 @@
+{
+  "summary": {
+    "total": 26,
+    "fail": 26,
+    "warn": 0,
+    "pass": 0,
+    "disabled": 0
+  },
+  "promptFailures": [],
+  "skills": [
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\asset-pipeline-verifier",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        },
+        {
+          "level": "warning",
+          "message": "Script is not executable: asset-scan.sh"
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\audio-debugger-ambient-vs-gig",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\change-plan-conventional-commits",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\ci-hardener",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\convention-keeper-brutalist-ui",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\debug-ux-upgrader",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\dependency-pin-upgrade-blocker",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\game-balancing-assistant",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\golden-path-test-author",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\mega-lint-snapshot",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        },
+        {
+          "level": "warning",
+          "message": "Script is not executable: format-report.mjs"
+        },
+        {
+          "level": "warning",
+          "message": "Script is not executable: run-mega-lint.sh"
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\min-repro-builder",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\one-command-doctor",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        },
+        {
+          "level": "warning",
+          "message": "Script is not executable: doctor.sh"
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\one-command-quality-gate",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        },
+        {
+          "level": "warning",
+          "message": "Script is not executable: quality-gate.sh"
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\perf-budget-enforcer",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\pixi-lifecycle-memory-leak-sentinel",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\project-brain-codex-instructions",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\refactor-with-safety",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\release-notes-synthesizer",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\repo-guardrails-generator",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\repo-navigator-agents-routing",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\skill-aligner",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\skill-qa-harness",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\skilltest",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        },
+        {
+          "level": "warning",
+          "message": "Script is not executable: skilltest-lib.mjs"
+        },
+        {
+          "level": "warning",
+          "message": "Script is not executable: skilltest.mjs"
+        },
+        {
+          "level": "warning",
+          "message": "Script is not executable: validate-skills-cli.mjs"
+        },
+        {
+          "level": "warning",
+          "message": "Script is not executable: validate-skills.mjs"
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\state-safety-action-creator-guard",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\tailwind-v4-css-variables-enforcer",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        },
+        {
+          "level": "warning",
+          "message": "Script is not executable: audit-tailwind-v4.sh"
+        }
+      ]
+    },
+    {
+      "name": "",
+      "skillDir": "C:\\Users\\andre.oswald\\Code\\Neuro\\neurotoxic-game\\.claude\\skills\\webaudio-reliability-fixer",
+      "status": "fail",
+      "findings": [
+        {
+          "level": "error",
+          "message": "Missing or invalid frontmatter (name/description)."
+        }
+      ]
+    }
+  ]
+}

@@ -11,10 +11,30 @@ import { spawn } from 'node:child_process'
  * @property {string[]} [fixArgs]
  */
 
-const repoRoot = process.cwd()
+const findRepoRoot = async startDir => {
+  let currentDir = startDir
+  while (true) {
+    const candidate = path.join(currentDir, '.git')
+    try {
+      const stat = await fs.stat(candidate)
+      if (stat.isDirectory() || stat.isFile()) {
+        return currentDir
+      }
+    } catch (error) {
+      // continue walking up
+    }
+    const parentDir = path.dirname(currentDir)
+    if (parentDir === currentDir) {
+      return startDir
+    }
+    currentDir = parentDir
+  }
+}
+
+const repoRoot = await findRepoRoot(process.cwd())
 const configPath = path.resolve(
   repoRoot,
-  '.agents',
+  '.claude',
   'skills',
   'mega-lint-snapshot',
   'assets',

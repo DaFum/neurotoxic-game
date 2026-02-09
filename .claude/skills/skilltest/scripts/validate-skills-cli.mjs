@@ -20,6 +20,6 @@ const run = async () => {
 }
 
 run().catch(error => {
-  console.error('OpenAI YAML validation failed.', error)
+  console.error('Skill validation failed.', error)
   process.exitCode = 1
 })

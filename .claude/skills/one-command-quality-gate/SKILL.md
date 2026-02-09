@@ -13,7 +13,7 @@ description: Run the repository quality gate in order (lint, test, build) and su
 
 ## Command
 
-- Prefer the bundled script: `./.agents/skills/one-command-quality-gate/scripts/quality-gate.sh`
+- Prefer the bundled script: `./.claude/skills/one-command-quality-gate/scripts/quality-gate.sh`
 - Direct commands: `npm run lint`, `npm run test`, `npm run build`
 
 ## Output

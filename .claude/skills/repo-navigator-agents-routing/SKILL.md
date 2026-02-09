@@ -1,5 +1,5 @@
 ---
-name: repository-navigator-agents-routing
+name: repo-navigator-agents-routing
 description: Route questions to the correct folder (context, hooks, scenes, utils, components, data, ui) and consult the relevant AGENTS.md first. Use when asked where logic lives or which files own behavior.
 ---
 

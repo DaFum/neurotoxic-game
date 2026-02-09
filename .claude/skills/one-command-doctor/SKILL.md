@@ -13,7 +13,7 @@ description: Run a quick healthcheck (node version, install, lint, test, build) 
 
 ## Command
 
-- Prefer the bundled script: `./.agents/skills/one-command-doctor/scripts/doctor.sh`
+- Prefer the bundled script: `./.claude/skills/one-command-doctor/scripts/doctor.sh`
 
 ## Output
 

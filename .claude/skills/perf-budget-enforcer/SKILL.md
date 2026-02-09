@@ -8,7 +8,7 @@ description: Define and enforce performance budgets (bundle size, load time, FPS
 ## Key Files
 
 - `vite.config.js` — Vite 5 build configuration and chunking strategy
-- `package.json` — dependency list (Pixi.js 8, Tone.js 15, Howler.js are heavy)
+- `package.json` — dependency list (Pixi.js 8, Tone.js 15, Framer Motion 12 are heavy)
 - `src/main.jsx` — app entry point (lazy loading candidates)
 - `src/assets/` — MIDI files, images, and JSON data
 - `src/components/PixiStage.jsx` — Pixi.js is a major bundle contributor
@@ -17,7 +17,7 @@ description: Define and enforce performance budgets (bundle size, load time, FPS
 ## Workflow
 
 1. Run `npx vite build` and inspect the output size report for large chunks.
-2. Identify heavy dependencies: Pixi.js (~500KB), Tone.js (~300KB), Howler.js — consider lazy loading.
+2. Identify heavy dependencies: Pixi.js (~500KB), Tone.js (~300KB), Framer Motion — consider lazy loading.
 3. Check `src/assets/` for large MIDI files that could be loaded on demand.
 4. Propose measurable budgets (e.g., initial JS < 500KB, total assets < 2MB).
 5. Suggest code splitting via dynamic `import()` for scenes and heavy components.

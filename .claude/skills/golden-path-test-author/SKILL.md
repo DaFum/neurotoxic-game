@@ -1,6 +1,6 @@
 ---
 name: golden-path-test-author
-description: Author or update integration tests for the critical game flow (menu -> overworld -> gig -> postgig). Use when asked to add regression coverage for key paths.
+description: Author or update integration tests for the critical game flow (menu -> overworld -> pregig -> gig -> postgig). Use when asked to add regression coverage for key paths.
 ---
 
 # Golden Path Test Author
@@ -15,6 +15,7 @@ MainMenu → Overworld → PreGig → Gig (rhythm game) → PostGig → (loop or
 - `src/scenes/GameOver.jsx` — end state
 - `src/context/gameReducer.js` — state transitions driven by `ADVANCE_DAY`, `APPLY_EVENT_DELTA`, etc.
 - `src/context/actionCreators.js` — action creators for state changes
+- `src/context/GameState.jsx` — context provider exposing the `useGameState` hook
 - `src/context/initialState.js` — starting state for test setup
 - `tests/` — existing tests use `node:test` + `node:assert/strict`
 

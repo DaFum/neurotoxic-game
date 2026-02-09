@@ -9,7 +9,7 @@ const hasErrorLines = report => report.includes('❌')
  * @param {string} report - Validation report.
  * @returns {boolean} Whether the report contains repo skills.
  */
-const includesRepoSkills = report => report.includes('.agents/skills')
+const includesRepoSkills = report => /[\\/]\.claude[\\/]skills/.test(report)
 
 test('validateSkills discovers repo skills without throwing', async () => {
   const results = await validateSkills({ includeUserSkills: false })

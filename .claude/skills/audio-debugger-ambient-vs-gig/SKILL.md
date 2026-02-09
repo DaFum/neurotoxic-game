@@ -7,7 +7,7 @@ description: Debug ambient vs gig playback behavior (full tracks vs excerpts, st
 
 ## Key Files
 
-- `src/utils/AudioManager.js` — singleton managing Howler.js playback and MIDI loading
+- `src/utils/AudioManager.js` — singleton managing Tone.js playback and MIDI loading
 - `src/utils/audioEngine.js` — low-level audio scheduling and context management
 - `src/utils/audioPlaybackUtils.js` — ambient vs gig playback helpers
 - `src/utils/audioSelectionUtils.js` — song/track selection logic
@@ -17,7 +17,7 @@ description: Debug ambient vs gig playback behavior (full tracks vs excerpts, st
 
 ## Workflow
 
-1. Read `src/utils/AudioManager.js` and trace how ambient playback starts on "Start Tour" (full MIDI tracks via Howler.js).
+1. Read `src/utils/AudioManager.js` and trace how ambient playback starts on "Start Tour" (full MIDI tracks via Tone.js/audioEngine).
 2. Read `src/utils/audioPlaybackUtils.js` and trace gig playback — confirm excerpts start at the configured offset and stop at the expected duration.
 3. Cross-check `src/assets/rhythm_songs.json` offsets against `src/data/songs.js` definitions.
 4. Add targeted logging via `src/utils/logger.js` around start/stop calls, timing offsets, and duration scheduling.

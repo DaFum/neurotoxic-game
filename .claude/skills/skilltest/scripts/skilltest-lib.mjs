@@ -86,7 +86,7 @@ export const findRepoRoot = async startDir => {
     const candidate = path.join(currentDir, '.git')
     try {
       const stat = await fs.stat(candidate)
-      if (stat.isDirectory()) {
+      if (stat.isDirectory() || stat.isFile()) {
         return currentDir
       }
     } catch (error) {
@@ -110,7 +110,7 @@ export const collectSkillRoots = async (cwd, repoDir) => {
   const roots = []
   let currentDir = cwd
   while (true) {
-    const skillsDir = path.join(currentDir, '.agents', 'skills')
+    const skillsDir = path.join(currentDir, '.claude', 'skills')
     try {
       const stat = await fs.stat(skillsDir)
       if (stat.isDirectory()) {
@@ -147,40 +147,41 @@ export const findSkillDirs = async (rootDir, visited) => {
   } catch (error) {
     // ignore errors resolving rootDir
   }
-  const entries = await fs.readdir(rootDir, { withFileTypes: true })
+  let entries = []
+  try {
+    entries = await fs.readdir(rootDir, { withFileTypes: true })
+  } catch (error) {
+    return []
+  }
   const skillDirs = []
   for (const entry of entries) {
     const entryPath = path.join(rootDir, entry.name)
+    if (!entry.isDirectory() && !entry.isSymbolicLink()) continue
 
-    if (entry.isSymbolicLink()) {
+    let realPath
+    try {
+      realPath = await fs.realpath(entryPath)
+      if (visited.has(realPath)) {
+        continue
+      }
+      visited.add(realPath)
+    } catch (error) {
+      console.warn(`Could not resolve path, skipping: ${entryPath}`)
       continue
     }
 
-    if (entry.isDirectory()) {
-      try {
-        const realPath = await fs.realpath(entryPath)
-        if (visited.has(realPath)) {
-          continue
-        }
-        visited.add(realPath)
-      } catch (error) {
-        console.warn(`Could not resolve path, skipping: ${entryPath}`)
+    const skillFile = path.join(entryPath, 'SKILL.md')
+    try {
+      const stat = await fs.stat(skillFile)
+      if (stat.isFile()) {
+        skillDirs.push(entryPath)
         continue
       }
-
-      const skillFile = path.join(entryPath, 'SKILL.md')
-      try {
-        const stat = await fs.stat(skillFile)
-        if (stat.isFile()) {
-          skillDirs.push(entryPath)
-          continue
-        }
-      } catch (error) {
-        // continue recursive search
-      }
-      const nested = await findSkillDirs(entryPath, visited)
-      skillDirs.push(...nested)
+    } catch (error) {
+      // continue recursive search
     }
+    const nested = await findSkillDirs(entryPath, visited)
+    skillDirs.push(...nested)
   }
   return skillDirs
 }
@@ -191,7 +192,8 @@ export const findSkillDirs = async (rootDir, visited) => {
  * @returns {{name: string, description: string} | null} Parsed frontmatter.
  */
 export const parseFrontmatter = contents => {
-  const match = contents.match(/^---\n([\s\S]*?)\n---\n/)
+  const normalized = contents.replace(/\r\n/g, '\n')
+  const match = normalized.match(/^---\n([\s\S]*?)\n---(?:\n|$)/)
   if (!match) return null
   const data = parseYamlDoc(match[1]) || {}
   if (!data.name || !data.description) return null
@@ -462,7 +464,7 @@ export const discoverSkills = async ({ includeUserSkills }) => {
   if (includeUserSkills) {
     const homeDir = process.env.HOME || process.env.USERPROFILE || ''
     if (homeDir) {
-      roots.push(path.join(homeDir, '.agents', 'skills'))
+      roots.push(path.join(homeDir, '.claude', 'skills'))
     }
   }
 

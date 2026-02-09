@@ -3,7 +3,7 @@
   "optional": ["license", "compatibility", "metadata", "allowed-tools"],
   "nameConstraints": {
     "maxLength": 64,
-    "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+    "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
     "rules": [
       "Lowercase letters, numbers, and hyphens only",
       "Must not start or end with a hyphen",

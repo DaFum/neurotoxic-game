@@ -60,7 +60,7 @@ const isMainModule =
 if (isMainModule) {
   const includeUserSkills = process.argv.includes('--include-user')
   console.warn(
-    'Deprecated: use ".agents/skills/skilltest/scripts/skilltest.mjs" instead.'
+    'Deprecated: use ".claude/skills/skilltest/scripts/skilltest.mjs" instead.'
   )
   validateSkills({ includeUserSkills })
     .then(results => {

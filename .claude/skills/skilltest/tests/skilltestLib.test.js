@@ -32,8 +32,11 @@ const withTempHome = async (configContents, callback) => {
   try {
     await callback()
   } finally {
-    process.env.HOME = previousHome
-    process.env.USERPROFILE = previousUserProfile
+    if (previousHome !== undefined) process.env.HOME = previousHome
+    else delete process.env.HOME
+    if (previousUserProfile !== undefined)
+      process.env.USERPROFILE = previousUserProfile
+    else delete process.env.USERPROFILE
     await fs.rm(tempDir, { recursive: true, force: true })
   }
 }

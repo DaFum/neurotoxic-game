@@ -7,16 +7,16 @@ description: Discover, validate, and test all Codex skills in this repository (a
 
 ## Workflow
 
-1. Inventory skills in `.agents/skills` (and optionally `~/.agents/skills`).
+1. Inventory skills in `.claude/skills` (and optionally `~/.claude/skills`).
 2. Validate structure, frontmatter, and duplicate names.
 3. Run repository quality gate (lint, test, build) before skill checks.
-4. Execute prompt-based checks using `.agents/skills/skilltest/tests/cases/*.cases.json`.
+4. Execute prompt-based checks using `.claude/skills/skilltest/tests/cases/*.cases.json`.
 5. Report pass/fail per skill with actionable fixes.
 
 ## Commands
 
-- Validate skills: `node .agents/skills/skilltest/scripts/validate-skills.mjs`
-- Run tests: `node .agents/skills/skilltest/scripts/run-skill-tests.mjs`
+- Validate skills: `node .claude/skills/skilltest/scripts/validate-skills.mjs`
+- Run tests: `node .claude/skills/skilltest/scripts/skilltest.mjs`
 
 ## Output
 

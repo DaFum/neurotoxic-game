@@ -7,7 +7,7 @@ description: Comprehensive validation for repo and user skills against the Open 
 
 ## Workflow
 
-1. Discover skills from `.agents/skills` (CWD up to repo root) and optionally `~/.agents/skills`.
+1. Discover skills from `.claude/skills` (CWD up to repo root) and optionally `~/.claude/skills`.
 2. Validate directory contract, frontmatter, naming, and symlink targets.
 3. Check optional `agents/openai.yaml` fields when present (relative to each skill directory).
 4. Verify script permissions and referenced files.
@@ -16,8 +16,8 @@ description: Comprehensive validation for repo and user skills against the Open 
 
 ## Commands
 
-- Run the harness: `node .agents/skills/skilltest/scripts/skilltest.mjs`
-- Validate openai.yaml only: `node .agents/skills/skilltest/scripts/validate-openai-yaml.mjs`
+- Run the harness: `node .claude/skills/skilltest/scripts/skilltest.mjs`
+- Validate openai.yaml only: `node .claude/skills/skilltest/scripts/validate-skills.mjs`
 
 ## Output
 
