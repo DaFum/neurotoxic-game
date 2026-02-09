@@ -57,6 +57,7 @@ class AudioSystem {
 
   /**
    * Starts the ambient background music stream if not already playing.
+   * Prefers OGG buffer playback for quality/CPU; falls back to MIDI synthesis.
    */
   async startAmbient() {
     if (!this.prefsLoaded) return
@@ -67,21 +68,26 @@ class AudioSystem {
       return
     }
 
-    // If already playing MIDI ambient (Tone Transport running and current ID is ambient)
-    if (
-      Tone.Transport.state === 'started' &&
-      this.currentSongId === 'ambient'
-    ) {
-      return
+    // If ambient is already playing (OGG buffer or MIDI transport)
+    if (this.currentSongId === 'ambient') {
+      if (audioEngine.isAmbientOggPlaying()) return
+      if (Tone.Transport.state === 'started') return
     }
 
     this.isStartingAmbient = true
     this.stopMusic()
     this.currentSongId = 'ambient'
     try {
-      await audioEngine.playRandomAmbientMidi()
+      const oggSuccess = await audioEngine.playRandomAmbientOgg()
+      if (!oggSuccess) {
+        logger.debug(
+          'AudioSystem',
+          'OGG ambient unavailable, falling back to MIDI synthesis.'
+        )
+        await audioEngine.playRandomAmbientMidi()
+      }
     } catch (e) {
-      handleError(e, { fallbackMessage: 'Failed to start ambient MIDI' })
+      handleError(e, { fallbackMessage: 'Failed to start ambient music' })
       this.currentSongId = null
       this.stopMusic()
     } finally {
