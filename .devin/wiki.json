@@ -1,0 +1,302 @@
+{
+  "repo_notes": [
+    {
+      "content": ""
+    }
+  ],
+  "pages": [
+    {
+      "title": "Overview",
+      "purpose": "Introduce NEUROTOXIC: GRIND THE VOID, explaining the project's concept as a Roguelike Tour Manager with rhythm action mechanics, tech stack, and high-level architecture",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Architecture Overview",
+      "purpose": "Document the overall system architecture, showing how major subsystems (audio, rendering, state, scenes) interact and the design philosophy",
+      "parent": "Overview",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Getting Started",
+      "purpose": "Guide developers through setup, installation, running the development server, and building the project",
+      "parent": "Overview",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Audio System",
+      "purpose": "Comprehensive documentation of the audio system (importance: 182.43), the most critical subsystem in the codebase, covering Tone.js integration, Web Audio API, and rhythm game mechanics",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Audio Engine Core",
+      "purpose": "Deep dive into audioEngine.js: Tone.js setup, instrument chains (guitar, bass, drums), effects routing, master bus, and audio graph architecture",
+      "parent": "Audio System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Rhythm Game Logic",
+      "purpose": "Explain useRhythmGameLogic hook: game loop, note hit detection, scoring, combo system, health management, and timing synchronization between audio and visuals",
+      "parent": "Audio System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Audio Utilities & Asset Management",
+      "purpose": "Document audio playback utilities: MIDI/OGG asset resolution, URL building, timing calculations (getScheduledHitTimeMs), and playback option normalization",
+      "parent": "Audio System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Audio Manager",
+      "purpose": "Explain the AudioManager singleton: global audio control, volume/mute settings, localStorage persistence, and ambient music management",
+      "parent": "Audio System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Gig Playback Modes",
+      "purpose": "Document the four playback modes (OGG buffer, MIDI, procedural generation, playSongFromData) and the sophisticated fallback chain",
+      "parent": "Audio System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "State Management",
+      "purpose": "Document the centralized state management architecture using React Context, useReducer pattern, and unidirectional data flow",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "GameState Context",
+      "purpose": "Explain the GameStateProvider, useGameState hook, state slices (player, band, social, gameMap, settings), and how components access global state",
+      "parent": "State Management",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Game Reducer & Actions",
+      "purpose": "Document all 20+ ActionTypes, gameReducer logic, action creator factories, and how state mutations flow through dispatch",
+      "parent": "State Management",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Persistence & Save System",
+      "purpose": "Explain localStorage integration, saveGame/loadGame actions, schema validation, and safe storage operations",
+      "parent": "State Management",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Rendering System",
+      "purpose": "Document the dual-layer rendering architecture combining Pixi.js canvas for game graphics and React DOM for UI overlays",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Pixi.js Stage Controller",
+      "purpose": "Deep dive into PixiStageController: initialization, scene graph management, sprite pooling, container hierarchy, and memory optimization patterns",
+      "parent": "Rendering System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Gig HUD & React Overlay",
+      "purpose": "Explain the GigHUD component, lane input zones, stat display (score, combo, health, overload), and how React overlays the Pixi canvas",
+      "parent": "Rendering System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Visual Effects & Animations",
+      "purpose": "Document hit effects, crowd animations, note rendering, CRT overlay, glitch effects, and visual feedback systems",
+      "parent": "Rendering System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Game Loop & Synchronization",
+      "purpose": "Explain the 60fps ticker, gameStateRef vs statsRef pattern, coordinate transformations, and audio-visual synchronization",
+      "parent": "Rendering System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Game Scenes & Flow",
+      "purpose": "Document the scene architecture, state machine for scene transitions, and how players progress through the game loop",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Main Menu",
+      "purpose": "Document the MainMenu scene: game initialization, save loading, ambient audio setup, and entry point flow",
+      "parent": "Game Scenes & Flow",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Overworld & Map Navigation",
+      "purpose": "Explain the Overworld scene: map rendering, node visibility/layers, connection checking, travel initiation, and the central game hub",
+      "parent": "Game Scenes & Flow",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Pre-Gig Preparation",
+      "purpose": "Document the PreGig scene: setlist selection, modifier choices (promo, catering, soundcheck), cost calculation, and gig setup",
+      "parent": "Game Scenes & Flow",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Gig Performance Scene",
+      "purpose": "Explain the Gig scene lifecycle: audio initialization, Pixi stage setup, note spawning, real-time gameplay loop, and toxic mode",
+      "parent": "Game Scenes & Flow",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Post-Gig Results",
+      "purpose": "Document the PostGig scene: three-phase flow (Report → Social → Complete), financial calculations, social media interactions, and bankruptcy check",
+      "parent": "Game Scenes & Flow",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Economy & Resources",
+      "purpose": "Document the economic system: resource types (money, fame, fuel), financial calculations, and resource flow through the game",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Economy Engine",
+      "purpose": "Deep dive into calculateGigFinancials: income sources (tickets, merch, bar cut, bonuses), expense categories, and all financial formulas",
+      "parent": "Economy & Resources",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Simulation & Daily Updates",
+      "purpose": "Explain calculateDailyUpdates: mood drift toward neutral, harmony regeneration, viral decay, and daily cost application",
+      "parent": "Economy & Resources",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Resource Types & Flow",
+      "purpose": "Document dual-currency system (money vs fame), fuel/harmony/mood/stamina mechanics, and how resources are gained/spent",
+      "parent": "Economy & Resources",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Modifiers & Performance Scaling",
+      "purpose": "Explain gig modifiers (economic and RPG-based), performance score calculation, and difficulty-based scaling systems",
+      "parent": "Economy & Resources",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Travel & Movement",
+      "purpose": "Document the travel system: node connectivity, movement validation, cost calculation, and arrival handling",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    }
+  ]
+}
