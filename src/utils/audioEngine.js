@@ -606,7 +606,11 @@ export async function loadAudioBuffer(filename) {
   if (typeof filename !== 'string' || filename.length === 0) return null
   const cacheKey = filename.replace(/^\.?\//, '')
   if (audioBufferCache.has(cacheKey)) {
-    return audioBufferCache.get(cacheKey)
+    const cached = audioBufferCache.get(cacheKey)
+    // Promote to most-recently-used for LRU eviction
+    audioBufferCache.delete(cacheKey)
+    audioBufferCache.set(cacheKey, cached)
+    return cached
   }
 
   const baseUrl = import.meta.env.BASE_URL || './'
@@ -1573,11 +1577,9 @@ export async function playRandomAmbientMidi(
     'AudioEngine',
     `Playing ambient: ${meta?.name ?? filename} (offset ${offsetSeconds}s)`
   )
-  const reqId = playRequestId
   return playMidiFile(filename, offsetSeconds, false, 0, {
     useCleanPlayback: true,
     onEnded: () => {
-      if (reqId !== playRequestId) return
       playRandomAmbientMidi(songs, rng).catch(error => {
         logger.error(
           'AudioEngine',
