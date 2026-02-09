@@ -895,7 +895,8 @@ export function stopGigPlayback() {
  */
 export async function playSongFromData(song, delay = 0) {
   const reqId = ++playRequestId
-  await ensureAudioContext()
+  const unlocked = await ensureAudioContext()
+  if (!unlocked) return false
   if (reqId !== playRequestId) return false
 
   stopAudioInternal()
@@ -1051,7 +1052,8 @@ export async function startMetalGenerator(
   random = Math.random
 ) {
   const reqId = ++playRequestId
-  await ensureAudioContext()
+  const unlocked = await ensureAudioContext()
+  if (!unlocked) return false
   if (reqId !== playRequestId) return false
 
   stopAudioInternal()

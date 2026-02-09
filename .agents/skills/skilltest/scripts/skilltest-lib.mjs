@@ -715,18 +715,23 @@ export const formatSummary = report => {
 }
 
 export const runReporting = async (records, cases, disabled) => {
-  const promptFailures = await runPromptCases(records, cases)
-  const report = buildReport(records, promptFailures, disabled)
-  await writeReport(report)
+  try {
+    const promptFailures = await runPromptCases(records, cases)
+    const report = buildReport(records, promptFailures, disabled)
+    await writeReport(report)
 
-  console.log(formatSummary(report))
-  if (promptFailures.length > 0) {
-    promptFailures.forEach(failure => {
-      console.error(`❌ ${failure}`)
-    })
-  }
+    console.log(formatSummary(report))
+    if (promptFailures.length > 0) {
+      promptFailures.forEach(failure => {
+        console.error(`❌ ${failure}`)
+      })
+    }
 
-  if (report.summary.fail > 0 || promptFailures.length > 0) {
+    if (report.summary.fail > 0 || promptFailures.length > 0) {
+      process.exitCode = 1
+    }
+  } catch (error) {
+    console.error('Reporting failed:', error)
     process.exitCode = 1
   }
 }
