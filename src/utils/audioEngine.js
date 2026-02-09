@@ -1044,7 +1044,7 @@ function playDrumNote(midiPitch, time, velocity, kit = drumKit) {
  * @param {object} song - The song object containing metadata like BPM and difficulty.
  * @param {number} [delay=0] - Delay in seconds before the audio starts.
  * @param {Function} [random=Math.random] - RNG function for deterministic generation.
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>}
  */
 export async function startMetalGenerator(
   song,
@@ -1088,7 +1088,7 @@ export async function startMetalGenerator(
       loop.dispose()
       loop = null
     }
-    return
+    return false
   }
 
   Tone.Transport.start(Tone.now() + Math.max(0, delay))

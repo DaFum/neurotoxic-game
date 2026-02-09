@@ -359,6 +359,7 @@ export const useRhythmGameLogic = () => {
       })
       gameStateRef.current.running = false
       setIsAudioReady(false)
+      isInitializingRef.current = false
     }
   }, [
     band,
