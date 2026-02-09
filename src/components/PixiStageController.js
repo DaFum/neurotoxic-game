@@ -127,7 +127,7 @@ class PixiStageController {
   async loadAssets() {
     const noteTextureUrl = getGenImageUrl(IMG_PROMPTS.NOTE_SKULL)
     try {
-      this.noteTexture = await PIXI.Texture.fromURL(noteTextureUrl)
+      this.noteTexture = await PIXI.Assets.load(noteTextureUrl)
     } catch (error) {
       this.noteTexture = null
       handleError(error, {

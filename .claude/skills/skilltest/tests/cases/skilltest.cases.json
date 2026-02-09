@@ -1,0 +1,10 @@
+[
+  {
+    "skill": "skilltest",
+    "prompt": "Run skilltest on this repo and show me failures first.",
+    "expectIncludes": [
+      "Skilltest Harness",
+      "reports/skills/skilltest-report.json"
+    ]
+  }
+]

@@ -275,9 +275,9 @@ export const useRhythmGameLogic = () => {
         }
       }
 
-      // Requirement: for GIG background music, always play the song MIDI when available
-      // (even if parsing yields 0 notes, we still don't want a silent gig)
-      // This guarantees the background MIDI runs from the specified offset.
+      // Fallback: play the song via MIDI synthesis when OGG buffer playback
+      // is unavailable or failed. Only runs when startGigPlayback() above
+      // did not start successfully (!bgAudioStarted).
       // useCleanPlayback: false → route through effected synths (guitar, bass, drumKit)
       // for a full band sound during the gig.
       if (!bgAudioStarted && currentSong.sourceMid) {

@@ -130,6 +130,7 @@ let gigDurationMs = null
 let gigOnEnded = null
 let gigIsPaused = false
 const audioBufferCache = new Map()
+let ambientSource = null
 
 /**
  * Handles cleanup when a gig buffer source ends naturally.
@@ -889,6 +890,29 @@ export function stopGigPlayback() {
 }
 
 /**
+ * Stops ambient OGG playback and clears ambient state.
+ * @returns {void}
+ */
+export function stopAmbientPlayback() {
+  if (ambientSource) {
+    try {
+      ambientSource.stop()
+    } catch (error) {
+      logger.warn('AudioEngine', 'Failed to stop ambient playback', error)
+    }
+    ambientSource = null
+  }
+}
+
+/**
+ * Returns whether ambient OGG playback is currently active.
+ * @returns {boolean}
+ */
+export function isAmbientOggPlaying() {
+  return ambientSource != null
+}
+
+/**
  * Plays a song using predefined note data.
  * @param {object} song - The song object containing `notes` and `bpm`.
  * @param {number} [delay=0] - Delay in seconds before starting.
@@ -1107,6 +1131,7 @@ export function stopAudio() {
   )
   stopAudioInternal()
   stopGigPlayback()
+  stopAmbientPlayback()
 }
 
 /**
@@ -1160,6 +1185,7 @@ export function disposeAudio() {
   playRequestId++
   stopAudioInternal()
   stopGigPlayback()
+  stopAmbientPlayback()
   audioBufferCache.clear()
   if (guitar) guitar.dispose()
   if (bass) bass.dispose()
@@ -1547,6 +1573,78 @@ export async function playRandomAmbientMidi(
       })
     }
   })
+}
+
+/**
+ * Plays a random OGG file from the bundled assets for ambient music.
+ * Uses raw AudioBufferSourceNode connected to the musicGain bus for
+ * lower CPU usage and better quality than MIDI synthesis.
+ * @param {Function} [rng] - Random number generator function.
+ * @returns {Promise<boolean>} Whether playback started successfully.
+ */
+export async function playRandomAmbientOgg(rng = Math.random) {
+  logger.debug('AudioEngine', 'playRandomAmbientOgg called')
+  stopAudio()
+
+  const oggFiles = Object.keys(oggUrlMap).filter(k => k.endsWith('.ogg'))
+  let candidates = oggFiles.filter(k => k.includes('/'))
+  if (candidates.length === 0) candidates = oggFiles
+  if (candidates.length === 0) {
+    logger.warn('AudioEngine', 'No OGG files available for ambient playback')
+    return false
+  }
+
+  const filename = selectRandomItem(candidates, rng)
+  if (!filename) {
+    logger.warn('AudioEngine', 'Random OGG selection returned null')
+    return false
+  }
+
+  const reqId = ++playRequestId
+  const unlocked = await ensureAudioContext()
+  if (!unlocked) return false
+  if (reqId !== playRequestId) return false
+
+  const buffer = await loadAudioBuffer(filename)
+  if (!buffer) return false
+  if (reqId !== playRequestId) return false
+
+  const rawContext = getRawAudioContext()
+  const source = rawContext.createBufferSource()
+  source.buffer = buffer
+
+  if (musicGain?.input) {
+    source.connect(musicGain.input)
+  } else if (musicGain) {
+    source.connect(musicGain)
+  } else {
+    logger.error(
+      'AudioEngine',
+      'Music bus not initialized for ambient playback'
+    )
+    return false
+  }
+
+  ambientSource = source
+
+  source.onended = () => {
+    if (ambientSource !== source) return
+    ambientSource = null
+    playRandomAmbientOgg(rng).catch(error => {
+      logger.error(
+        'AudioEngine',
+        'Failed to chain next ambient OGG track',
+        error
+      )
+    })
+  }
+
+  source.start()
+  logger.debug(
+    'AudioEngine',
+    `Ambient OGG started: ${filename} (${buffer.duration.toFixed(1)}s)`
+  )
+  return true
 }
 
 /**
