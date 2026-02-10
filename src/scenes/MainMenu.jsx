@@ -63,12 +63,9 @@ export const MainMenu = () => {
     } finally {
       resetState()
       startAmbientSafely()
-      // Delay scene transition to allow state updates to propagate
-      setTimeout(() => {
-        if (isMountedRef.current) {
-          changeScene('OVERWORLD')
-        }
-      }, 0)
+      if (isMountedRef.current) {
+        changeScene('OVERWORLD')
+      }
     }
   }
 

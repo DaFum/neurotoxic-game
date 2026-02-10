@@ -186,7 +186,7 @@ const createGigBufferSource = ({ buffer, onEnded }) => {
 const clearTransportEndEvent = () => {
   if (transportEndEventId == null) return
   try {
-    Tone.Transport.clear(transportEndEventId)
+    Tone.getTransport().clear(transportEndEventId)
   } catch (error) {
     logger.warn('AudioEngine', 'Failed to clear transport end event', error)
   } finally {
@@ -201,7 +201,7 @@ const clearTransportEndEvent = () => {
 const clearTransportStopEvent = () => {
   if (transportStopEventId == null) return
   try {
-    Tone.Transport.clear(transportStopEventId)
+    Tone.getTransport().clear(transportStopEventId)
   } catch (error) {
     logger.warn('AudioEngine', 'Failed to clear transport stop event', error)
   } finally {
@@ -967,12 +967,12 @@ export async function playSongFromData(song, delay = 0) {
   if (reqId !== playRequestId) return false
 
   stopAudioInternal()
-  Tone.Transport.cancel()
-  Tone.Transport.position = 0
+  Tone.getTransport().cancel()
+  Tone.getTransport().position = 0
 
   const bpm = Math.max(1, song.bpm || 120) // Ensure BPM is positive
   const tpb = Math.max(1, song.tpb || 480) // Ensure TPB is positive
-  Tone.Transport.bpm.value = bpm
+  Tone.getTransport().bpm.value = bpm
 
   // Validate notes
   if (!Array.isArray(song.notes)) {
@@ -1047,7 +1047,7 @@ export async function playSongFromData(song, delay = 0) {
     }
   }, events).start(0)
 
-  Tone.Transport.start()
+  Tone.getTransport().start()
   return true
 }
 
@@ -1128,14 +1128,14 @@ export async function startMetalGenerator(
   if (reqId !== playRequestId) return false
 
   stopAudioInternal()
-  Tone.Transport.cancel()
-  Tone.Transport.position = 0
+  Tone.getTransport().cancel()
+  Tone.getTransport().position = 0
 
   // Guard BPM against zero/negative/falsy values
   const rawBpm = song.bpm || 80 + (song.difficulty || 2) * 30
   const bpm = Math.max(1, rawBpm)
 
-  Tone.Transport.bpm.value = bpm
+  Tone.getTransport().bpm.value = bpm
 
   const pattern = generateRiffPattern(song.difficulty || 2, random)
 
@@ -1162,7 +1162,7 @@ export async function startMetalGenerator(
     return false
   }
 
-  Tone.Transport.start(Tone.now() + Math.max(0, delay))
+  Tone.getTransport.start(Tone.now() + Math.max(0, delay))
   return true
 }
 
@@ -1186,8 +1186,8 @@ export function stopAudio() {
  * Used by playback functions to clear previous state.
  */
 function stopAudioInternal() {
-  Tone.Transport.stop()
-  Tone.Transport.position = 0
+  Tone.getTransport().stop()
+  Tone.getTransport().position = 0
   if (loop) {
     loop.dispose()
     loop = null
@@ -1200,7 +1200,7 @@ function stopAudioInternal() {
     midiParts.forEach(trackPart => trackPart.dispose())
     midiParts = []
   }
-  Tone.Transport.cancel()
+  Tone.getTransport().cancel()
   clearTransportEndEvent()
   clearTransportStopEvent()
 }
@@ -1209,8 +1209,8 @@ function stopAudioInternal() {
  * Pauses the audio transport.
  */
 export function pauseAudio() {
-  if (Tone.Transport.state === 'started') {
-    Tone.Transport.pause()
+  if (Tone.getTransport().state === 'started') {
+    Tone.getTransport().pause()
   }
   pauseGigPlayback()
 }
@@ -1219,8 +1219,8 @@ export function pauseAudio() {
  * Resumes the audio transport.
  */
 export function resumeAudio() {
-  if (Tone.Transport.state === 'paused') {
-    Tone.Transport.start()
+  if (Tone.getTransport().state === 'paused') {
+    Tone.getTransport().start()
   }
   resumeGigPlayback()
 }
@@ -1408,7 +1408,7 @@ async function playMidiFileInternal(
   }
 
   stopAudioInternal()
-  Tone.Transport.cancel()
+  Tone.getTransport().cancel()
 
   const baseUrl = import.meta.env.BASE_URL || './'
   const publicBasePath = `${baseUrl}assets`
@@ -1456,7 +1456,7 @@ async function playMidiFileInternal(
     }
 
     if (midi.header.tempos.length > 0) {
-      Tone.Transport.bpm.value = midi.header.tempos[0].bpm
+      Tone.getTransport().bpm.value = midi.header.tempos[0].bpm
     }
 
     const leadSynth = useCleanPlayback ? midiLead : guitar
@@ -1549,18 +1549,18 @@ async function playMidiFileInternal(
     )
 
     if (loop) {
-      Tone.Transport.loop = true
-      Tone.Transport.loopEnd = midi.duration
+      Tone.getTransport().loop = true
+      Tone.getTransport().loopEnd = midi.duration
       // Loop from excerpt start, so intros don't restart on every loop
-      Tone.Transport.loopStart = requestedOffset
+      Tone.getTransport().loopStart = requestedOffset
     } else {
-      Tone.Transport.loop = false
+      Tone.getTransport().loop = false
     }
 
     clearTransportEndEvent()
     clearTransportStopEvent()
     if (!loop && onEnded && duration > 0) {
-      transportEndEventId = Tone.Transport.scheduleOnce(() => {
+      transportEndEventId = Tone.getTransport().scheduleOnce(() => {
         if (reqId !== playRequestId) return
         onEnded({
           filename,
@@ -1571,7 +1571,7 @@ async function playMidiFileInternal(
     }
     if (!loop && Number.isFinite(stopAfterSeconds) && stopAfterSeconds > 0) {
       const stopTime = requestedOffset + stopAfterSeconds
-      transportStopEventId = Tone.Transport.scheduleOnce(() => {
+      transportStopEventId = Tone.getTransport().scheduleOnce(() => {
         if (reqId !== playRequestId) return
         stopAudio()
       }, stopTime)
@@ -1580,7 +1580,7 @@ async function playMidiFileInternal(
     const transportStartTime = Number.isFinite(startTimeSec)
       ? startTimeSec
       : Tone.now() + validDelay
-    Tone.Transport.start(transportStartTime, requestedOffset)
+    Tone.getTransport().start(transportStartTime, requestedOffset)
     return true
   } catch (err) {
     console.error('[audioEngine] Error playing MIDI:', err)

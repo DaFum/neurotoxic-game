@@ -18,6 +18,18 @@ class AudioSystem {
   }
 
   /**
+   * Returns true when audio is actively playing through ambient OGG or Tone transport.
+   * Keeps playback-state logic encapsulated for UI consumers.
+   */
+  get isPlaying() {
+    return (
+      this.currentSongId != null &&
+      (audioEngine.isAmbientOggPlaying() ||
+        Tone.getTransport().state === 'started')
+    )
+  }
+
+  /**
    * Initializes the audio system, loading preferences and setting up synthesizers.
    * Note: Audio playback remains blocked until ensureAudioContext() is called after a user gesture.
    */
@@ -46,7 +58,7 @@ class AudioSystem {
       audioEngine.setMusicVolume(this.muted ? 0 : this.musicVolume)
 
       // Tone mute is handled globally by Volume node in engine if implemented, or we can use Destination
-      Tone.Destination.mute = this.muted
+      Tone.getDestination().mute = this.muted
 
       this.prefsLoaded = true
     } catch (error) {
@@ -72,7 +84,7 @@ class AudioSystem {
     // If ambient is already playing (OGG buffer or MIDI transport)
     if (this.currentSongId === 'ambient') {
       if (audioEngine.isAmbientOggPlaying()) return true
-      if (Tone.Transport.state === 'started') return true
+      if (Tone.getTransport().state === 'started') return true
     }
 
     this.isStartingAmbient = true
@@ -136,12 +148,12 @@ class AudioSystem {
         return true
       }
 
-      if (Tone.Transport.state === 'paused') {
+      if (Tone.getTransport().state === 'paused') {
         audioEngine.resumeAudio()
         return true
       }
 
-      if (Tone.Transport.state !== 'started') {
+      if (Tone.getTransport().state !== 'started') {
         return await this.startAmbient()
       }
 
