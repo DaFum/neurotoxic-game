@@ -136,6 +136,7 @@ let gigOnEnded = null
 let gigIsPaused = false
 const audioBufferCache = new Map()
 let ambientSource = null
+let setupLock = null
 
 /**
  * Handles cleanup when a gig buffer source ends naturally.
@@ -320,6 +321,15 @@ export const calculateGigPlaybackWindow = ({
  */
 export async function setupAudio() {
   if (isSetup) return
+  if (setupLock) {
+    await setupLock
+    return
+  }
+
+  let resolveLock
+  setupLock = new Promise(r => {
+    resolveLock = r
+  })
 
   const previousToneContext = Tone.getContext()
 
@@ -532,6 +542,8 @@ export async function setupAudio() {
   midiDrumKit.crash.volume.value = -6
 
   isSetup = true
+  setupLock = null
+  if (resolveLock) resolveLock()
 }
 
 /**
@@ -540,6 +552,28 @@ export async function setupAudio() {
  */
 export async function ensureAudioContext() {
   if (!isSetup) await setupAudio()
+
+  // Recovery: if the underlying AudioContext has been closed (e.g. browser
+  // cleanup, race during concurrent setup calls, or stale Tone.js reference),
+  // rebuild the audio graph with a fresh context. Limited to one rebuild per
+  // call to prevent infinite loops.
+  let needsRebuild = false
+  try {
+    const rawCtx = getRawAudioContext()
+    needsRebuild = rawCtx?.state === 'closed'
+  } catch {
+    needsRebuild = true
+  }
+
+  if (needsRebuild) {
+    logger.warn(
+      'AudioEngine',
+      'AudioContext is closed. Rebuilding audio graph.'
+    )
+    isSetup = false
+    await setupAudio()
+  }
+
   if (Tone.context.state !== 'running') {
     try {
       await Tone.context.resume()

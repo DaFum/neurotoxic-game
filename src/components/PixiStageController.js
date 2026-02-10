@@ -68,17 +68,22 @@ class PixiStageController {
     this.initPromise = (async () => {
       try {
         this.isDisposed = false
+
+        const container = this.containerRef.current
+        if (!container) {
+          return
+        }
+
         this.app = new PIXI.Application()
         await this.app.init({
           backgroundAlpha: 0,
-          resizeTo: this.containerRef.current,
+          resizeTo: container,
           antialias: true,
           resolution: window.devicePixelRatio || 1,
           autoDensity: true
         })
 
-        const container = this.containerRef.current
-        if (this.isDisposed || !container || !this.app) {
+        if (this.isDisposed || !this.containerRef.current || !this.app) {
           this.dispose()
           return
         }
@@ -615,11 +620,10 @@ class PixiStageController {
 
     if (this.app) {
       try {
-        if (this.app.destroy) {
+        if (this.app.renderer && this.app.stage) {
           this.app.destroy(true, {
             children: true,
-            texture: true,
-            baseTexture: true
+            texture: true
           })
         }
       } catch (e) {
