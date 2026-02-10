@@ -85,7 +85,9 @@ export const MainMenu = () => {
     } finally {
       // Fire-and-forget keeps navigation responsive; Overworld re-syncs audio.
       startAmbientSafely()
-      changeScene('OVERWORLD')
+      if (isMountedRef.current) {
+        changeScene('OVERWORLD')
+      }
     }
   }
 

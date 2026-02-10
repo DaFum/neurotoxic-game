@@ -321,14 +321,31 @@ export const calculateGigPlaybackWindow = ({
 export async function setupAudio() {
   if (isSetup) return
 
+  const previousToneContext = Tone.getContext()
+
   // Configure Tone.js context for sustained playback (gigs are 30-60s)
   // "balanced" prioritizes performance over ultra-low latency, reducing pops/crackles
-  Tone.setContext(
-    new Tone.Context({
-      latencyHint: 'balanced',
-      lookAhead: 0.15 // Increased from default 0.1 for better scheduling during high CPU
-    })
-  )
+  const nextToneContext = new Tone.Context({
+    latencyHint: 'balanced',
+    lookAhead: 0.15 // Increased from default 0.1 for better scheduling during high CPU
+  })
+  Tone.setContext(nextToneContext)
+
+  const previousRawContext =
+    previousToneContext?.rawContext ?? previousToneContext
+  const nextRawContext = nextToneContext?.rawContext ?? nextToneContext
+  if (
+    previousRawContext &&
+    previousRawContext !== nextRawContext &&
+    typeof previousRawContext.close === 'function' &&
+    previousRawContext.state !== 'closed'
+  ) {
+    try {
+      await previousRawContext.close()
+    } catch (error) {
+      logger.warn('AudioEngine', 'Failed to close previous Tone context', error)
+    }
+  }
 
   try {
     await Tone.start()
@@ -997,6 +1014,7 @@ export async function playSongFromData(song, delay = 0) {
 
   // Fallback if tempoMap is missing/empty
   const useTempoMap = Array.isArray(song.tempoMap) && song.tempoMap.length > 0
+  const validDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
 
   const events = song.notes
     .filter(n => {
@@ -1022,9 +1040,8 @@ export async function playSongFromData(song, delay = 0) {
       // Clamp velocity 0-127 and normalize
       const rawVelocity = Math.max(0, Math.min(127, n.v))
 
-      // Ensure time and delay are valid numbers
-      const validDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
-      const finalTime = Number.isFinite(time) ? time + validDelay : -1
+      // Delay is applied once when Transport starts; keep note times relative.
+      const finalTime = Number.isFinite(time) ? time : -1
 
       // Invalid times are caught by the filter below
       return {
@@ -1059,7 +1076,7 @@ export async function playSongFromData(song, delay = 0) {
   // Schedule Transport.start in advance to prevent pops/crackles
   // Add minimum 100ms lookahead for reliable scheduling
   const minLookahead = 0.1
-  const startTime = Tone.now() + Math.max(minLookahead, delay)
+  const startTime = Tone.now() + Math.max(minLookahead, validDelay)
   Tone.getTransport().start(startTime)
   return true
 }

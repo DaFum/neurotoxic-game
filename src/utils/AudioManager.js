@@ -177,6 +177,7 @@ class AudioSystem {
       // (engine nodes might have been created after init() calls)
       audioEngine.setMusicVolume(this.muted ? 0 : this.musicVolume)
       audioEngine.setSFXVolume(this.muted ? 0 : this.sfxVolume)
+      Tone.getDestination().mute = this.muted
 
       return await audioEngine.ensureAudioContext()
     } catch (e) {
