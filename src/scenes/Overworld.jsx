@@ -12,14 +12,21 @@ import { audioManager } from '../utils/AudioManager'
 
 /**
  * A widget to toggle the ambient radio / music.
+ * Polls audioManager state so the button stays in sync even when
+ * external code (e.g. gig init) stops or starts ambient playback.
  */
 const ToggleRadio = () => {
-  const [isPlaying, setIsPlaying] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(
+    () => audioManager.currentSongId === 'ambient' && audioManager.isPlaying
+  )
 
+  // Poll periodically to catch external audio changes without a global event bus.
   React.useEffect(() => {
-    if (audioManager.currentSongId === 'ambient') {
-      setIsPlaying(true)
-    }
+    const derive = () =>
+      audioManager.currentSongId === 'ambient' && audioManager.isPlaying
+    setIsPlaying(derive())
+    const id = setInterval(() => setIsPlaying(derive()), 1000)
+    return () => clearInterval(id)
   }, [])
 
   /**
@@ -30,8 +37,12 @@ const ToggleRadio = () => {
       audioManager.stopMusic()
       setIsPlaying(false)
     } else {
-      audioManager.resumeMusic()
-      setIsPlaying(true)
+      audioManager
+        .resumeMusic()
+        .then(started => {
+          setIsPlaying(Boolean(started))
+        })
+        .catch(() => setIsPlaying(false))
     }
   }
 
@@ -40,7 +51,7 @@ const ToggleRadio = () => {
       onClick={toggle}
       className='bg-(--void-black) border border-(--toxic-green) text-(--toxic-green) px-2 py-1 text-xs uppercase hover:bg-(--toxic-green) hover:text-(--void-black) font-mono'
       title={isPlaying ? 'Stop Radio' : 'Play/Resume Radio'}
-      aria-label={isPlaying ? 'Radio stoppen' : 'Radio starten'}
+      aria-label={isPlaying ? 'Stop Radio' : 'Play/Resume Radio'}
     >
       {isPlaying ? '■' : '▶'}
     </button>
@@ -106,9 +117,33 @@ export const Overworld = () => {
   const currentNode = gameMap?.nodes[player.currentNodeId]
   const currentLayer = currentNode?.layer || 0
 
-  // Resume ambient music if enabled and not playing (e.g. returning from Gig)
+  // Resume ambient on mount and retry once on startup failure.
   React.useEffect(() => {
-    audioManager.resumeMusic()
+    let cancelled = false
+    let retryTimeoutId = null
+
+    const attemptResume = async (attempt = 0) => {
+      let started = false
+      try {
+        started = await audioManager.resumeMusic()
+      } catch {
+        started = false
+      }
+      if (!started && !cancelled && attempt < 1) {
+        retryTimeoutId = setTimeout(() => {
+          void attemptResume(attempt + 1)
+        }, 1200)
+      }
+    }
+
+    void attemptResume()
+
+    return () => {
+      cancelled = true
+      if (retryTimeoutId) {
+        clearTimeout(retryTimeoutId)
+      }
+    }
   }, [])
 
   return (

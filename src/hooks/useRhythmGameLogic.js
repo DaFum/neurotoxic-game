@@ -38,7 +38,7 @@ import { SONGS_DB } from '../data/songs'
  * @returns {{gameStateRef: object, stats: object, actions: object, update: Function}} Rhythm game API.
  */
 const GIG_LEAD_IN_MS = 2000
-const NOTE_LEAD_IN_MS = 0
+const NOTE_LEAD_IN_MS = 100 // Increased from 0 for reliable note scheduling (prevents pops/stutters)
 
 export const useRhythmGameLogic = () => {
   const {
@@ -479,6 +479,10 @@ export const useRhythmGameLogic = () => {
         hitWindow += state.modifiers.hitWindowBonus
       if (laneIndex === 0 && hasUpgrade('guitar_custom')) hitWindow += 50
 
+      // CRITICAL: checkHit uses binary search and requires notes sorted by time.
+      // This precondition is satisfied because notes come from parseSongNotes (line 239)
+      // or generateNotesForSong (line 324), both of which guarantee ascending time order.
+      // Do NOT shuffle, append out-of-order, or reorder notes during gameplay.
       const note = checkHit(state.notes, laneIndex, elapsed, hitWindow)
 
       if (note) {

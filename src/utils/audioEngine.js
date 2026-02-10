@@ -5,7 +5,7 @@
  */
 
 import * as Tone from 'tone'
-import { Midi } from '@tonejs/midi'
+import * as ToneJsMidi from '@tonejs/midi'
 import { calculateTimeFromTicks } from './rhythmUtils'
 import { SONGS_DB } from '../data/songs'
 import { selectRandomItem } from './audioSelectionUtils.js'
@@ -23,6 +23,8 @@ import {
   normalizeMidiPitch
 } from './midiTrackUtils.js'
 import { logger } from './logger.js'
+
+const MidiParser = ToneJsMidi?.Midi ?? ToneJsMidi?.default?.Midi ?? null
 
 // Import all MIDI files as URLs
 const midiGlob = import.meta.glob('../assets/**/*.mid', {
@@ -184,7 +186,7 @@ const createGigBufferSource = ({ buffer, onEnded }) => {
 const clearTransportEndEvent = () => {
   if (transportEndEventId == null) return
   try {
-    Tone.Transport.clear(transportEndEventId)
+    Tone.getTransport().clear(transportEndEventId)
   } catch (error) {
     logger.warn('AudioEngine', 'Failed to clear transport end event', error)
   } finally {
@@ -199,7 +201,7 @@ const clearTransportEndEvent = () => {
 const clearTransportStopEvent = () => {
   if (transportStopEventId == null) return
   try {
-    Tone.Transport.clear(transportStopEventId)
+    Tone.getTransport().clear(transportStopEventId)
   } catch (error) {
     logger.warn('AudioEngine', 'Failed to clear transport stop event', error)
   } finally {
@@ -318,6 +320,32 @@ export const calculateGigPlaybackWindow = ({
  */
 export async function setupAudio() {
   if (isSetup) return
+
+  const previousToneContext = Tone.getContext()
+
+  // Configure Tone.js context for sustained playback (gigs are 30-60s)
+  // "balanced" prioritizes performance over ultra-low latency, reducing pops/crackles
+  const nextToneContext = new Tone.Context({
+    latencyHint: 'balanced',
+    lookAhead: 0.15 // Increased from default 0.1 for better scheduling during high CPU
+  })
+  Tone.setContext(nextToneContext)
+
+  const previousRawContext =
+    previousToneContext?.rawContext ?? previousToneContext
+  const nextRawContext = nextToneContext?.rawContext ?? nextToneContext
+  if (
+    previousRawContext &&
+    previousRawContext !== nextRawContext &&
+    typeof previousRawContext.close === 'function' &&
+    previousRawContext.state !== 'closed'
+  ) {
+    try {
+      await previousRawContext.close()
+    } catch (error) {
+      logger.warn('AudioEngine', 'Failed to close previous Tone context', error)
+    }
+  }
 
   try {
     await Tone.start()
@@ -641,7 +669,10 @@ export async function loadAudioBuffer(filename) {
   try {
     // Avoid hanging gig initialization on stalled network/body reads.
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), AUDIO_BUFFER_LOAD_TIMEOUT_MS)
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      AUDIO_BUFFER_LOAD_TIMEOUT_MS
+    )
     let arrayBuffer = null
     try {
       const response = await fetch(url, { signal: controller.signal })
@@ -659,7 +690,10 @@ export async function loadAudioBuffer(filename) {
     const rawContext = getRawAudioContext()
     let decodeTimeoutId = null
     const decodeTimeoutPromise = new Promise((_, reject) => {
-      decodeTimeoutId = setTimeout(() => reject(new Error('AUDIO_DECODE_TIMEOUT')), AUDIO_BUFFER_DECODE_TIMEOUT_MS)
+      decodeTimeoutId = setTimeout(
+        () => reject(new Error('AUDIO_DECODE_TIMEOUT')),
+        AUDIO_BUFFER_DECODE_TIMEOUT_MS
+      )
     })
     let buffer = null
     try {
@@ -959,12 +993,12 @@ export async function playSongFromData(song, delay = 0) {
   if (reqId !== playRequestId) return false
 
   stopAudioInternal()
-  Tone.Transport.cancel()
-  Tone.Transport.position = 0
+  Tone.getTransport().cancel()
+  Tone.getTransport().position = 0
 
   const bpm = Math.max(1, song.bpm || 120) // Ensure BPM is positive
   const tpb = Math.max(1, song.tpb || 480) // Ensure TPB is positive
-  Tone.Transport.bpm.value = bpm
+  Tone.getTransport().bpm.value = bpm
 
   // Validate notes
   if (!Array.isArray(song.notes)) {
@@ -980,6 +1014,7 @@ export async function playSongFromData(song, delay = 0) {
 
   // Fallback if tempoMap is missing/empty
   const useTempoMap = Array.isArray(song.tempoMap) && song.tempoMap.length > 0
+  const validDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
 
   const events = song.notes
     .filter(n => {
@@ -1005,9 +1040,8 @@ export async function playSongFromData(song, delay = 0) {
       // Clamp velocity 0-127 and normalize
       const rawVelocity = Math.max(0, Math.min(127, n.v))
 
-      // Ensure time and delay are valid numbers
-      const validDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
-      const finalTime = Number.isFinite(time) ? time + validDelay : -1
+      // Delay is applied once when Transport starts; keep note times relative.
+      const finalTime = Number.isFinite(time) ? time : -1
 
       // Invalid times are caught by the filter below
       return {
@@ -1039,7 +1073,11 @@ export async function playSongFromData(song, delay = 0) {
     }
   }, events).start(0)
 
-  Tone.Transport.start()
+  // Schedule Transport.start in advance to prevent pops/crackles
+  // Add minimum 100ms lookahead for reliable scheduling
+  const minLookahead = 0.1
+  const startTime = Tone.now() + Math.max(minLookahead, validDelay)
+  Tone.getTransport().start(startTime)
   return true
 }
 
@@ -1120,14 +1158,14 @@ export async function startMetalGenerator(
   if (reqId !== playRequestId) return false
 
   stopAudioInternal()
-  Tone.Transport.cancel()
-  Tone.Transport.position = 0
+  Tone.getTransport().cancel()
+  Tone.getTransport().position = 0
 
   // Guard BPM against zero/negative/falsy values
   const rawBpm = song.bpm || 80 + (song.difficulty || 2) * 30
   const bpm = Math.max(1, rawBpm)
 
-  Tone.Transport.bpm.value = bpm
+  Tone.getTransport().bpm.value = bpm
 
   const pattern = generateRiffPattern(song.difficulty || 2, random)
 
@@ -1154,7 +1192,10 @@ export async function startMetalGenerator(
     return false
   }
 
-  Tone.Transport.start(Tone.now() + Math.max(0, delay))
+  // Schedule Transport.start in advance to prevent pops/crackles
+  // Using "+0.1" schedules 100ms ahead for reliable scheduling
+  const startDelay = Math.max(0.1, delay)
+  Tone.getTransport().start(`+${startDelay}`)
   return true
 }
 
@@ -1178,8 +1219,8 @@ export function stopAudio() {
  * Used by playback functions to clear previous state.
  */
 function stopAudioInternal() {
-  Tone.Transport.stop()
-  Tone.Transport.position = 0
+  Tone.getTransport().stop()
+  Tone.getTransport().position = 0
   if (loop) {
     loop.dispose()
     loop = null
@@ -1192,7 +1233,7 @@ function stopAudioInternal() {
     midiParts.forEach(trackPart => trackPart.dispose())
     midiParts = []
   }
-  Tone.Transport.cancel()
+  Tone.getTransport().cancel()
   clearTransportEndEvent()
   clearTransportStopEvent()
 }
@@ -1201,8 +1242,8 @@ function stopAudioInternal() {
  * Pauses the audio transport.
  */
 export function pauseAudio() {
-  if (Tone.Transport.state === 'started') {
-    Tone.Transport.pause()
+  if (Tone.getTransport().state === 'started') {
+    Tone.getTransport().pause()
   }
   pauseGigPlayback()
 }
@@ -1211,8 +1252,8 @@ export function pauseAudio() {
  * Resumes the audio transport.
  */
 export function resumeAudio() {
-  if (Tone.Transport.state === 'paused') {
-    Tone.Transport.start()
+  if (Tone.getTransport().state === 'paused') {
+    Tone.getTransport().start()
   }
   resumeGigPlayback()
 }
@@ -1400,7 +1441,7 @@ async function playMidiFileInternal(
   }
 
   stopAudioInternal()
-  Tone.Transport.cancel()
+  Tone.getTransport().cancel()
 
   const baseUrl = import.meta.env.BASE_URL || './'
   const publicBasePath = `${baseUrl}assets`
@@ -1426,7 +1467,15 @@ async function playMidiFileInternal(
     const arrayBuffer = await response.arrayBuffer()
     if (reqId !== playRequestId) return false
 
-    const midi = new Midi(arrayBuffer)
+    if (!MidiParser) {
+      logger.error(
+        'AudioEngine',
+        'MidiParser failed to load from @tonejs/midi. This disables all MIDI playback. Try: npm install @tonejs/midi --force and restart the dev server. If the issue persists, check bundler ESM/CJS interop configuration.'
+      )
+      return false
+    }
+
+    const midi = new MidiParser(arrayBuffer)
     if (reqId !== playRequestId) return false // Optimization: fail fast before expensive scheduling
 
     logger.debug('AudioEngine', `MIDI loaded. Duration: ${midi.duration}s`)
@@ -1440,7 +1489,7 @@ async function playMidiFileInternal(
     }
 
     if (midi.header.tempos.length > 0) {
-      Tone.Transport.bpm.value = midi.header.tempos[0].bpm
+      Tone.getTransport().bpm.value = midi.header.tempos[0].bpm
     }
 
     const leadSynth = useCleanPlayback ? midiLead : guitar
@@ -1533,18 +1582,18 @@ async function playMidiFileInternal(
     )
 
     if (loop) {
-      Tone.Transport.loop = true
-      Tone.Transport.loopEnd = midi.duration
+      Tone.getTransport().loop = true
+      Tone.getTransport().loopEnd = midi.duration
       // Loop from excerpt start, so intros don't restart on every loop
-      Tone.Transport.loopStart = requestedOffset
+      Tone.getTransport().loopStart = requestedOffset
     } else {
-      Tone.Transport.loop = false
+      Tone.getTransport().loop = false
     }
 
     clearTransportEndEvent()
     clearTransportStopEvent()
     if (!loop && onEnded && duration > 0) {
-      transportEndEventId = Tone.Transport.scheduleOnce(() => {
+      transportEndEventId = Tone.getTransport().scheduleOnce(() => {
         if (reqId !== playRequestId) return
         onEnded({
           filename,
@@ -1555,16 +1604,19 @@ async function playMidiFileInternal(
     }
     if (!loop && Number.isFinite(stopAfterSeconds) && stopAfterSeconds > 0) {
       const stopTime = requestedOffset + stopAfterSeconds
-      transportStopEventId = Tone.Transport.scheduleOnce(() => {
+      transportStopEventId = Tone.getTransport().scheduleOnce(() => {
         if (reqId !== playRequestId) return
         stopAudio()
       }, stopTime)
     }
 
+    // Schedule Transport.start in advance to prevent pops/crackles
+    // Add minimum 100ms lookahead for reliable scheduling
+    const minLookahead = 0.1
     const transportStartTime = Number.isFinite(startTimeSec)
       ? startTimeSec
-      : Tone.now() + validDelay
-    Tone.Transport.start(transportStartTime, requestedOffset)
+      : Tone.now() + Math.max(minLookahead, validDelay)
+    Tone.getTransport().start(transportStartTime, requestedOffset)
     return true
   } catch (err) {
     console.error('[audioEngine] Error playing MIDI:', err)
@@ -1637,17 +1689,17 @@ export async function playRandomAmbientMidi(
     false,
     0,
     {
-    useCleanPlayback: true,
-    onEnded: () => {
-      if (reqId !== playRequestId) return
-      playRandomAmbientMidi(songs, rng).catch(error => {
-        logger.error(
-          'AudioEngine',
-          'Failed to start next ambient MIDI track',
-          error
-        )
-      })
-    }
+      useCleanPlayback: true,
+      onEnded: () => {
+        if (reqId !== playRequestId) return
+        playRandomAmbientMidi(songs, rng).catch(error => {
+          logger.error(
+            'AudioEngine',
+            'Failed to start next ambient MIDI track',
+            error
+          )
+        })
+      }
     },
     reqId
   )
@@ -1658,11 +1710,20 @@ export async function playRandomAmbientMidi(
  * Uses raw AudioBufferSourceNode connected to the musicGain bus for
  * lower CPU usage and better quality than MIDI synthesis.
  * @param {Function} [rng] - Random number generator function.
+ * @param {object} [options] - Playback options.
+ * @param {boolean} [options.skipStop=false] - Skip internal stopAudio() when caller already stopped audio.
  * @returns {Promise<boolean>} Whether playback started successfully.
  */
-export async function playRandomAmbientOgg(rng = Math.random) {
+export async function playRandomAmbientOgg(
+  rng = Math.random,
+  { skipStop = false } = {}
+) {
   logger.debug('AudioEngine', 'playRandomAmbientOgg called')
-  stopAudio()
+  // Skip stopAudio() when caller has already stopped audio to avoid double-stop
+  // and unnecessary playRequestId increments (e.g., AudioManager.startAmbient calls stopMusic first)
+  if (!skipStop) {
+    stopAudio()
+  }
 
   const oggFiles = Object.keys(oggUrlMap).filter(k => k.endsWith('.ogg'))
   let candidates = oggFiles.filter(k => k.includes('/'))

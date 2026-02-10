@@ -186,8 +186,28 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
 }
 
 /**
+ * Finds the insertion point (lower bound) for `target` in a sorted notes array.
+ * Uses binary search on `note.time` for O(log n) performance.
+ * @param {Array} notes - Sorted array of note objects.
+ * @param {number} target - Target time in ms.
+ * @returns {number} Index of the first note with `time >= target`.
+ */
+const lowerBound = (notes, target) => {
+  let lo = 0
+  let hi = notes.length
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1
+    if (notes[mid].time < target) lo = mid + 1
+    else hi = mid
+  }
+  return lo
+}
+
+/**
  * Checks if a note is hit within the window.
- * @param {Array} notes - Array of note objects.
+ * Uses binary search to narrow the candidate range (O(log n + k) where
+ * k = notes inside the time window), instead of scanning every note.
+ * @param {Array} notes - Array of note objects sorted by time.
  * @param {number} laneIndex - The lane being triggered.
  * @param {number} elapsed - Current game time in ms.
  * @param {number} hitWindow - Allowed deviation in ms.
@@ -195,15 +215,26 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
  */
 export const checkHit = (notes, laneIndex, elapsed, hitWindow) => {
   if (!Number.isFinite(elapsed)) return null
-  return (
-    notes.find(
-      n =>
-        n.visible &&
-        !n.hit &&
-        n.laneIndex === laneIndex &&
-        // For standard notes, check lane match. For projectiles (future), might differ.
-        n.type === 'note' &&
-        Math.abs(n.time - elapsed) < hitWindow
-    ) || null
-  )
+
+  const windowStart = elapsed - hitWindow
+  const windowEnd = elapsed + hitWindow
+
+  // Binary search to find the first note that could be in range
+  let i = lowerBound(notes, windowStart)
+
+  // Scan forward through candidates within the time window
+  while (i < notes.length && notes[i].time <= windowEnd) {
+    const n = notes[i]
+    if (
+      n.visible &&
+      !n.hit &&
+      n.laneIndex === laneIndex &&
+      n.type === 'note' &&
+      Math.abs(n.time - elapsed) < hitWindow
+    ) {
+      return n
+    }
+    i++
+  }
+  return null
 }

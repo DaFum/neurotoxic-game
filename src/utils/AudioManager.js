@@ -14,6 +14,19 @@ class AudioSystem {
     this.muted = false
     this.prefsLoaded = false
     this.isStartingAmbient = false
+    this.ambientStartPromise = null
+  }
+
+  /**
+   * Returns true when audio is actively playing through ambient OGG or Tone transport.
+   * Keeps playback-state logic encapsulated for UI consumers.
+   */
+  get isPlaying() {
+    return (
+      this.currentSongId != null &&
+      (audioEngine.isAmbientOggPlaying() ||
+        Tone.getTransport().state === 'started')
+    )
   }
 
   /**
@@ -45,7 +58,7 @@ class AudioSystem {
       audioEngine.setMusicVolume(this.muted ? 0 : this.musicVolume)
 
       // Tone mute is handled globally by Volume node in engine if implemented, or we can use Destination
-      Tone.Destination.mute = this.muted
+      Tone.getDestination().mute = this.muted
 
       this.prefsLoaded = true
     } catch (error) {
@@ -60,39 +73,61 @@ class AudioSystem {
    * Prefers OGG buffer playback for quality/CPU; falls back to MIDI synthesis.
    */
   async startAmbient() {
-    if (!this.prefsLoaded) return
+    if (!this.prefsLoaded) return false
 
     // Prevent re-entrant calls or redundant starts
     if (this.isStartingAmbient) {
       logger.debug('AudioSystem', 'Ambient start already in progress.')
-      return
+      return this.ambientStartPromise ?? false
     }
 
     // If ambient is already playing (OGG buffer or MIDI transport)
     if (this.currentSongId === 'ambient') {
-      if (audioEngine.isAmbientOggPlaying()) return
-      if (Tone.Transport.state === 'started') return
+      if (audioEngine.isAmbientOggPlaying()) return true
+      if (Tone.getTransport().state === 'started') return true
     }
 
     this.isStartingAmbient = true
-    this.stopMusic()
-    this.currentSongId = 'ambient'
-    try {
-      const oggSuccess = await audioEngine.playRandomAmbientOgg()
-      if (!oggSuccess) {
+    this.ambientStartPromise = (async () => {
+      this.stopMusic()
+      this.currentSongId = 'ambient'
+      try {
+        const oggSuccess = await audioEngine.playRandomAmbientOgg(
+          Math.random,
+          {
+            skipStop: true
+          }
+        )
+        if (oggSuccess) {
+          return true
+        }
+
         logger.debug(
           'AudioSystem',
           'OGG ambient unavailable, falling back to MIDI synthesis.'
         )
-        await audioEngine.playRandomAmbientMidi()
+
+        const midiSuccess = await audioEngine.playRandomAmbientMidi()
+        if (!midiSuccess) {
+          this.currentSongId = null
+          logger.debug(
+            'AudioSystem',
+            'Ambient playback did not start (OGG and MIDI both failed).'
+          )
+          return false
+        }
+        return true
+      } catch (e) {
+        handleError(e, { fallbackMessage: 'Failed to start ambient music' })
+        this.stopMusic()
+        return false
+      } finally {
+        this.isStartingAmbient = false
+        this.ambientStartPromise = null
       }
-    } catch (e) {
-      handleError(e, { fallbackMessage: 'Failed to start ambient music' })
-      this.currentSongId = null
-      this.stopMusic()
-    } finally {
-      this.isStartingAmbient = false
-    }
+    })()
+
+    return this.ambientStartPromise
   }
 
   /**
@@ -107,12 +142,30 @@ class AudioSystem {
    * Resumes the paused music or starts ambient if none is loaded.
    * Note: The logic here is asymmetric compared to pauseMusic(). We assume mutually exclusive
    * playback states (either ambient or gig audio is active, not both).
+   * @returns {Promise<boolean>} True when music is running or successfully started.
    */
-  resumeMusic() {
-    if (Tone.Transport.state === 'paused') {
-      audioEngine.resumeAudio()
-    } else if (Tone.Transport.state !== 'started') {
-      this.startAmbient()
+  async resumeMusic() {
+    try {
+      if (
+        this.currentSongId === 'ambient' &&
+        audioEngine.isAmbientOggPlaying()
+      ) {
+        return true
+      }
+
+      if (Tone.getTransport().state === 'paused') {
+        audioEngine.resumeAudio()
+        return true
+      }
+
+      if (Tone.getTransport().state !== 'started') {
+        return await this.startAmbient()
+      }
+
+      return true
+    } catch (e) {
+      handleError(e, { fallbackMessage: 'Failed to resume music' })
+      return false
     }
   }
 
@@ -129,6 +182,7 @@ class AudioSystem {
       // (engine nodes might have been created after init() calls)
       audioEngine.setMusicVolume(this.muted ? 0 : this.musicVolume)
       audioEngine.setSFXVolume(this.muted ? 0 : this.sfxVolume)
+      Tone.getDestination().mute = this.muted
 
       return await audioEngine.ensureAudioContext()
     } catch (e) {
@@ -225,7 +279,7 @@ class AudioSystem {
     this.muted = !this.muted
 
     try {
-      Tone.Destination.mute = this.muted
+      Tone.getDestination().mute = this.muted
       audioEngine.setSFXVolume(this.muted ? 0 : this.sfxVolume)
       audioEngine.setMusicVolume(this.muted ? 0 : this.musicVolume)
     } catch (e) {

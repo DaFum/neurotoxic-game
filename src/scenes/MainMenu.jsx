@@ -30,40 +30,64 @@ export const MainMenu = () => {
     resetState
   } = useGameState()
   const [showUpgrades, setShowUpgrades] = useState(false)
+  const isMountedRef = React.useRef(true)
 
   const { audioState, handleAudioChange } = useAudioControl()
 
-  /**
-   * Starts ambient audio without blocking navigation.
-   * @returns {void}
-   */
+  React.useEffect(() => {
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
+
+  const reportAudioIssue = (error, fallbackMessage) => {
+    if (!isMountedRef.current) return
+    try {
+      handleError(error, { addToast, fallbackMessage })
+    } catch {
+      // Never block scene transitions on toast/reporting failures.
+    }
+  }
+
   const startAmbientSafely = () => {
-    audioManager.startAmbient().catch(err => {
-      handleError(err, {
-        addToast,
-        fallbackMessage: 'Ambient audio failed to start.'
-      })
+    void audioManager.startAmbient().catch(err => {
+      reportAudioIssue(err, 'Ambient audio failed to start.')
     })
+  }
+
+  const handleStartTour = async () => {
+    try {
+      await audioManager.ensureAudioContext()
+    } catch (err) {
+      reportAudioIssue(err, 'Audio initialization failed.')
+    } finally {
+      resetState()
+      startAmbientSafely()
+      if (isMountedRef.current) {
+        changeScene('OVERWORLD')
+      }
+    }
   }
 
   /**
    * Handles loading a saved game.
    */
   const handleLoad = async () => {
-    if (loadGame()) {
-      try {
-        await audioManager.ensureAudioContext()
-      } catch (err) {
-        handleError(err, {
-          addToast,
-          fallbackMessage: 'Audio initialization failed.'
-        })
-      } finally {
-        startAmbientSafely()
+    if (!loadGame()) {
+      addToast('No save game found!', 'error')
+      return
+    }
+
+    try {
+      await audioManager.ensureAudioContext()
+    } catch (err) {
+      reportAudioIssue(err, 'Audio initialization failed.')
+    } finally {
+      // Fire-and-forget keeps navigation responsive; Overworld re-syncs audio.
+      startAmbientSafely()
+      if (isMountedRef.current) {
         changeScene('OVERWORLD')
       }
-    } else {
-      addToast('No save game found!', 'error')
     }
   }
 
@@ -116,23 +140,7 @@ export const MainMenu = () => {
         </h2>
 
         <div className='flex flex-col gap-4'>
-          <GlitchButton
-            onClick={async () => {
-              try {
-                await audioManager.ensureAudioContext()
-              } catch (err) {
-                handleError(err, {
-                  addToast,
-                  fallbackMessage: 'Audio initialization failed.'
-                })
-              } finally {
-                resetState()
-                startAmbientSafely()
-                changeScene('OVERWORLD')
-              }
-            }}
-            className='relative z-20'
-          >
+          <GlitchButton onClick={handleStartTour} className='relative z-20'>
             Start Tour
           </GlitchButton>
 
