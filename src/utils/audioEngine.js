@@ -1710,11 +1710,18 @@ export async function playRandomAmbientMidi(
  * Uses raw AudioBufferSourceNode connected to the musicGain bus for
  * lower CPU usage and better quality than MIDI synthesis.
  * @param {Function} [rng] - Random number generator function.
+ * @param {object} [options] - Playback options.
+ * @param {boolean} [options.skipStop=false] - Skip internal stopAudio() when caller already stopped audio.
  * @returns {Promise<boolean>} Whether playback started successfully.
  */
-export async function playRandomAmbientOgg(rng = Math.random) {
+export async function playRandomAmbientOgg(
+  rng = Math.random,
+  { skipStop = false } = {}
+) {
   logger.debug('AudioEngine', 'playRandomAmbientOgg called')
-  stopAudio()
+  if (!skipStop) {
+    stopAudio()
+  }
 
   const oggFiles = Object.keys(oggUrlMap).filter(k => k.endsWith('.ogg'))
   let candidates = oggFiles.filter(k => k.includes('/'))
