@@ -1470,7 +1470,7 @@ async function playMidiFileInternal(
     if (!MidiParser) {
       logger.error(
         'AudioEngine',
-        'Unable to resolve Midi parser from @tonejs/midi exports. Reinstall @tonejs/midi and verify ESM/CJS interop in the current bundler.'
+        'MidiParser failed to load from @tonejs/midi. This disables all MIDI playback. Try: npm install @tonejs/midi --force and restart the dev server. If the issue persists, check bundler ESM/CJS interop configuration.'
       )
       return false
     }
@@ -1719,6 +1719,8 @@ export async function playRandomAmbientOgg(
   { skipStop = false } = {}
 ) {
   logger.debug('AudioEngine', 'playRandomAmbientOgg called')
+  // Skip stopAudio() when caller has already stopped audio to avoid double-stop
+  // and unnecessary playRequestId increments (e.g., AudioManager.startAmbient calls stopMusic first)
   if (!skipStop) {
     stopAudio()
   }
