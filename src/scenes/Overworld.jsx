@@ -12,14 +12,20 @@ import { audioManager } from '../utils/AudioManager'
 
 /**
  * A widget to toggle the ambient radio / music.
+ * Polls audioManager state so the button stays in sync even when
+ * external code (e.g. gig init) stops or starts ambient playback.
  */
 const ToggleRadio = () => {
-  const [isPlaying, setIsPlaying] = useState(false)
+  const deriveIsPlaying = () => audioManager.currentSongId === 'ambient'
+  const [isPlaying, setIsPlaying] = useState(deriveIsPlaying)
 
+  // Re-sync on every render cycle (cheap — single property read).
+  // Also poll periodically to catch external changes (e.g. gig init
+  // stopping ambient) without requiring a global event bus.
   React.useEffect(() => {
-    if (audioManager.currentSongId === 'ambient') {
-      setIsPlaying(true)
-    }
+    setIsPlaying(deriveIsPlaying())
+    const id = setInterval(() => setIsPlaying(deriveIsPlaying()), 1000)
+    return () => clearInterval(id)
   }, [])
 
   /**
@@ -106,9 +112,13 @@ export const Overworld = () => {
   const currentNode = gameMap?.nodes[player.currentNodeId]
   const currentLayer = currentNode?.layer || 0
 
-  // Resume ambient music if enabled and not playing (e.g. returning from Gig)
+  // Resume ambient music if not already playing (e.g. returning from Gig).
+  // Guard prevents double-start in React Strict Mode or fast remounts.
   React.useEffect(() => {
-    audioManager.resumeMusic()
+    // Only restart if nothing is currently playing to avoid double-loading
+    if (!audioManager.currentSongId) {
+      audioManager.resumeMusic()
+    }
   }, [])
 
   return (

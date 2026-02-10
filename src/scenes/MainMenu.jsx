@@ -34,19 +34,6 @@ export const MainMenu = () => {
   const { audioState, handleAudioChange } = useAudioControl()
 
   /**
-   * Starts ambient audio without blocking navigation.
-   * @returns {void}
-   */
-  const startAmbientSafely = () => {
-    audioManager.startAmbient().catch(err => {
-      handleError(err, {
-        addToast,
-        fallbackMessage: 'Ambient audio failed to start.'
-      })
-    })
-  }
-
-  /**
    * Handles loading a saved game.
    */
   const handleLoad = async () => {
@@ -58,10 +45,15 @@ export const MainMenu = () => {
           addToast,
           fallbackMessage: 'Audio initialization failed.'
         })
-      } finally {
-        startAmbientSafely()
-        changeScene('OVERWORLD')
       }
+      // Await ambient start so Overworld sees currentSongId on mount
+      await audioManager.startAmbient().catch(err => {
+        handleError(err, {
+          addToast,
+          fallbackMessage: 'Ambient audio failed to start.'
+        })
+      })
+      changeScene('OVERWORLD')
     } else {
       addToast('No save game found!', 'error')
     }
@@ -125,11 +117,18 @@ export const MainMenu = () => {
                   addToast,
                   fallbackMessage: 'Audio initialization failed.'
                 })
-              } finally {
-                resetState()
-                startAmbientSafely()
-                changeScene('OVERWORLD')
               }
+              resetState()
+              // Start ambient and wait for it before navigating so the
+              // Overworld's resumeMusic() guard sees currentSongId === 'ambient'
+              // and skips a redundant restart.
+              await audioManager.startAmbient().catch(err => {
+                handleError(err, {
+                  addToast,
+                  fallbackMessage: 'Ambient audio failed to start.'
+                })
+              })
+              changeScene('OVERWORLD')
             }}
             className='relative z-20'
           >
