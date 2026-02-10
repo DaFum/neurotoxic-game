@@ -5,7 +5,7 @@
  */
 
 import * as Tone from 'tone'
-import { Midi } from '@tonejs/midi'
+import * as ToneJsMidi from '@tonejs/midi'
 import { calculateTimeFromTicks } from './rhythmUtils'
 import { SONGS_DB } from '../data/songs'
 import { selectRandomItem } from './audioSelectionUtils.js'
@@ -23,6 +23,12 @@ import {
   normalizeMidiPitch
 } from './midiTrackUtils.js'
 import { logger } from './logger.js'
+
+const MidiParser =
+  ToneJsMidi?.Midi ??
+  ToneJsMidi?.default?.Midi ??
+  ToneJsMidi?.['module.exports']?.Midi ??
+  null
 
 // Import all MIDI files as URLs
 const midiGlob = import.meta.glob('../assets/**/*.mid', {
@@ -1426,7 +1432,15 @@ async function playMidiFileInternal(
     const arrayBuffer = await response.arrayBuffer()
     if (reqId !== playRequestId) return false
 
-    const midi = new Midi(arrayBuffer)
+    if (!MidiParser) {
+      logger.error(
+        'AudioEngine',
+        'Unable to resolve Midi parser from @tonejs/midi exports.'
+      )
+      return false
+    }
+
+    const midi = new MidiParser(arrayBuffer)
     if (reqId !== playRequestId) return false // Optimization: fail fast before expensive scheduling
 
     logger.debug('AudioEngine', `MIDI loaded. Duration: ${midi.duration}s`)
