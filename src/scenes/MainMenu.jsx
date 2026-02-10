@@ -33,29 +33,49 @@ export const MainMenu = () => {
 
   const { audioState, handleAudioChange } = useAudioControl()
 
+  const reportAudioIssue = (error, fallbackMessage) => {
+    try {
+      handleError(error, { addToast, fallbackMessage })
+    } catch {
+      // Never block scene transitions on toast/reporting failures.
+    }
+  }
+
+  const startAmbientSafely = () => {
+    void audioManager.startAmbient().catch(err => {
+      reportAudioIssue(err, 'Ambient audio failed to start.')
+    })
+  }
+
+  const handleStartTour = async () => {
+    try {
+      await audioManager.ensureAudioContext()
+    } catch (err) {
+      reportAudioIssue(err, 'Audio initialization failed.')
+    } finally {
+      resetState()
+      startAmbientSafely()
+      changeScene('OVERWORLD')
+    }
+  }
+
   /**
    * Handles loading a saved game.
    */
   const handleLoad = async () => {
-    if (loadGame()) {
-      try {
-        await audioManager.ensureAudioContext()
-      } catch (err) {
-        handleError(err, {
-          addToast,
-          fallbackMessage: 'Audio initialization failed.'
-        })
-      }
-      // Await ambient start so Overworld sees currentSongId on mount
-      await audioManager.startAmbient().catch(err => {
-        handleError(err, {
-          addToast,
-          fallbackMessage: 'Ambient audio failed to start.'
-        })
-      })
-      changeScene('OVERWORLD')
-    } else {
+    if (!loadGame()) {
       addToast('No save game found!', 'error')
+      return
+    }
+
+    try {
+      await audioManager.ensureAudioContext()
+    } catch (err) {
+      reportAudioIssue(err, 'Audio initialization failed.')
+    } finally {
+      // Fire-and-forget keeps navigation responsive; Overworld re-syncs audio.
+      startAmbientSafely()
+      changeScene('OVERWORLD')
     }
   }
 
@@ -108,30 +128,7 @@ export const MainMenu = () => {
         </h2>
 
         <div className='flex flex-col gap-4'>
-          <GlitchButton
-            onClick={async () => {
-              try {
-                await audioManager.ensureAudioContext()
-              } catch (err) {
-                handleError(err, {
-                  addToast,
-                  fallbackMessage: 'Audio initialization failed.'
-                })
-              }
-              resetState()
-              // Start ambient and wait for it before navigating so the
-              // Overworld's resumeMusic() guard sees currentSongId === 'ambient'
-              // and skips a redundant restart.
-              await audioManager.startAmbient().catch(err => {
-                handleError(err, {
-                  addToast,
-                  fallbackMessage: 'Ambient audio failed to start.'
-                })
-              })
-              changeScene('OVERWORLD')
-            }}
-            className='relative z-20'
-          >
+          <GlitchButton onClick={handleStartTour} className='relative z-20'>
             Start Tour
           </GlitchButton>
 

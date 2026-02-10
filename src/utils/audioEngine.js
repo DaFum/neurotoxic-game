@@ -24,11 +24,7 @@ import {
 } from './midiTrackUtils.js'
 import { logger } from './logger.js'
 
-const MidiParser =
-  ToneJsMidi?.Midi ??
-  ToneJsMidi?.default?.Midi ??
-  ToneJsMidi?.['module.exports']?.Midi ??
-  null
+const MidiParser = ToneJsMidi?.Midi ?? ToneJsMidi?.default?.Midi ?? null
 
 // Import all MIDI files as URLs
 const midiGlob = import.meta.glob('../assets/**/*.mid', {
@@ -647,7 +643,10 @@ export async function loadAudioBuffer(filename) {
   try {
     // Avoid hanging gig initialization on stalled network/body reads.
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), AUDIO_BUFFER_LOAD_TIMEOUT_MS)
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      AUDIO_BUFFER_LOAD_TIMEOUT_MS
+    )
     let arrayBuffer = null
     try {
       const response = await fetch(url, { signal: controller.signal })
@@ -665,7 +664,10 @@ export async function loadAudioBuffer(filename) {
     const rawContext = getRawAudioContext()
     let decodeTimeoutId = null
     const decodeTimeoutPromise = new Promise((_, reject) => {
-      decodeTimeoutId = setTimeout(() => reject(new Error('AUDIO_DECODE_TIMEOUT')), AUDIO_BUFFER_DECODE_TIMEOUT_MS)
+      decodeTimeoutId = setTimeout(
+        () => reject(new Error('AUDIO_DECODE_TIMEOUT')),
+        AUDIO_BUFFER_DECODE_TIMEOUT_MS
+      )
     })
     let buffer = null
     try {
@@ -1651,17 +1653,17 @@ export async function playRandomAmbientMidi(
     false,
     0,
     {
-    useCleanPlayback: true,
-    onEnded: () => {
-      if (reqId !== playRequestId) return
-      playRandomAmbientMidi(songs, rng).catch(error => {
-        logger.error(
-          'AudioEngine',
-          'Failed to start next ambient MIDI track',
-          error
-        )
-      })
-    }
+      useCleanPlayback: true,
+      onEnded: () => {
+        if (reqId !== playRequestId) return
+        playRandomAmbientMidi(songs, rng).catch(error => {
+          logger.error(
+            'AudioEngine',
+            'Failed to start next ambient MIDI track',
+            error
+          )
+        })
+      }
     },
     reqId
   )

@@ -60,18 +60,18 @@ class AudioSystem {
    * Prefers OGG buffer playback for quality/CPU; falls back to MIDI synthesis.
    */
   async startAmbient() {
-    if (!this.prefsLoaded) return
+    if (!this.prefsLoaded) return false
 
     // Prevent re-entrant calls or redundant starts
     if (this.isStartingAmbient) {
       logger.debug('AudioSystem', 'Ambient start already in progress.')
-      return
+      return false
     }
 
     // If ambient is already playing (OGG buffer or MIDI transport)
     if (this.currentSongId === 'ambient') {
-      if (audioEngine.isAmbientOggPlaying()) return
-      if (Tone.Transport.state === 'started') return
+      if (audioEngine.isAmbientOggPlaying()) return true
+      if (Tone.Transport.state === 'started') return true
     }
 
     this.isStartingAmbient = true
@@ -79,17 +79,30 @@ class AudioSystem {
     this.currentSongId = 'ambient'
     try {
       const oggSuccess = await audioEngine.playRandomAmbientOgg()
-      if (!oggSuccess) {
+      if (oggSuccess) {
+        return true
+      }
+
+      logger.debug(
+        'AudioSystem',
+        'OGG ambient unavailable, falling back to MIDI synthesis.'
+      )
+
+      const midiSuccess = await audioEngine.playRandomAmbientMidi()
+      if (!midiSuccess) {
+        this.currentSongId = null
         logger.debug(
           'AudioSystem',
-          'OGG ambient unavailable, falling back to MIDI synthesis.'
+          'Ambient playback did not start (OGG and MIDI both failed).'
         )
-        await audioEngine.playRandomAmbientMidi()
+        return false
       }
+      return true
     } catch (e) {
       handleError(e, { fallbackMessage: 'Failed to start ambient music' })
       this.currentSongId = null
       this.stopMusic()
+      return false
     } finally {
       this.isStartingAmbient = false
     }
@@ -112,7 +125,7 @@ class AudioSystem {
     if (Tone.Transport.state === 'paused') {
       audioEngine.resumeAudio()
     } else if (Tone.Transport.state !== 'started') {
-      this.startAmbient()
+      void this.startAmbient()
     }
   }
 

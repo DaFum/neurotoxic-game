@@ -23,9 +23,9 @@
 ## Project Context Awareness
 
 - Read repo guidance in strict order before edits: root instructions, nested instructions, and coding standards.
-- Preserve pinned stack assumptions (React 18, Vite 5, Tailwind 4, Pixi 8, Tone 15).
-- Preserve brutalist UI intent: uppercase, boxy layout language, direct copy, and strong contrast.
-- Preserve German tour authenticity for places, naming, and narrative framing.
+- Maintain pinned stack assumptions (React 18, Vite 5, Tailwind 4, Pixi 8, Tone 15).
+- Keep brutalist UI intent: uppercase, boxy layout language, direct copy, and strong contrast.
+- Ensure German tour authenticity for places, naming, and narrative framing.
 - Integrate threat-model intent when touching persistence, input handling, or loading paths.
 
 ## Analysis Process

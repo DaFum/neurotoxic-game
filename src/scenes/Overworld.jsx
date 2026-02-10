@@ -16,15 +16,15 @@ import { audioManager } from '../utils/AudioManager'
  * external code (e.g. gig init) stops or starts ambient playback.
  */
 const ToggleRadio = () => {
-  const deriveIsPlaying = () => audioManager.currentSongId === 'ambient'
-  const [isPlaying, setIsPlaying] = useState(deriveIsPlaying)
+  const [isPlaying, setIsPlaying] = useState(
+    () => audioManager.currentSongId === 'ambient'
+  )
 
-  // Re-sync on every render cycle (cheap — single property read).
-  // Also poll periodically to catch external changes (e.g. gig init
-  // stopping ambient) without requiring a global event bus.
+  // Poll periodically to catch external audio changes without a global event bus.
   React.useEffect(() => {
-    setIsPlaying(deriveIsPlaying())
-    const id = setInterval(() => setIsPlaying(deriveIsPlaying()), 1000)
+    const derive = () => audioManager.currentSongId === 'ambient'
+    setIsPlaying(derive())
+    const id = setInterval(() => setIsPlaying(derive()), 1000)
     return () => clearInterval(id)
   }, [])
 
@@ -36,8 +36,15 @@ const ToggleRadio = () => {
       audioManager.stopMusic()
       setIsPlaying(false)
     } else {
-      audioManager.resumeMusic()
-      setIsPlaying(true)
+      try {
+        const maybePromise = audioManager.resumeMusic()
+        setIsPlaying(true)
+        if (maybePromise && typeof maybePromise.catch === 'function') {
+          maybePromise.catch(() => setIsPlaying(false))
+        }
+      } catch {
+        setIsPlaying(false)
+      }
     }
   }
 
@@ -112,13 +119,9 @@ export const Overworld = () => {
   const currentNode = gameMap?.nodes[player.currentNodeId]
   const currentLayer = currentNode?.layer || 0
 
-  // Resume ambient music if not already playing (e.g. returning from Gig).
-  // Guard prevents double-start in React Strict Mode or fast remounts.
+  // Resume ambient on mount (idempotent in AudioManager/audioEngine).
   React.useEffect(() => {
-    // Only restart if nothing is currently playing to avoid double-loading
-    if (!audioManager.currentSongId) {
-      audioManager.resumeMusic()
-    }
+    audioManager.resumeMusic()
   }, [])
 
   return (

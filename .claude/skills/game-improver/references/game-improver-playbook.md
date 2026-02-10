@@ -11,7 +11,7 @@
 
 ## Balancing Heuristics
 
-- Keep survival pressure meaningful in early and mid game.
+- Keep survival pressure meaningful in early and mid-game.
 - Ensure late-game rewards do not trivialize travel, harmony, or fuel decisions.
 - Tie high variance systems to clear risk and cooldown mechanics.
 - Tune with small deltas first and validate with representative play paths.
