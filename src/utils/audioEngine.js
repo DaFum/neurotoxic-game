@@ -1437,7 +1437,7 @@ async function playMidiFileInternal(
     if (!MidiParser) {
       logger.error(
         'AudioEngine',
-        'Unable to resolve Midi parser from @tonejs/midi exports.'
+        'Unable to resolve Midi parser from @tonejs/midi exports. Reinstall @tonejs/midi and verify ESM/CJS interop in the current bundler.'
       )
       return false
     }

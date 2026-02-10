@@ -36,15 +36,13 @@ const ToggleRadio = () => {
       audioManager.stopMusic()
       setIsPlaying(false)
     } else {
-      try {
-        const maybePromise = audioManager.resumeMusic()
-        setIsPlaying(true)
-        if (maybePromise && typeof maybePromise.catch === 'function') {
-          maybePromise.catch(() => setIsPlaying(false))
-        }
-      } catch {
-        setIsPlaying(false)
-      }
+      const maybePromise = audioManager.resumeMusic()
+      setIsPlaying(true)
+      Promise.resolve(maybePromise)
+        .then(started => {
+          if (!started) setIsPlaying(false)
+        })
+        .catch(() => setIsPlaying(false))
     }
   }
 
@@ -119,9 +117,28 @@ export const Overworld = () => {
   const currentNode = gameMap?.nodes[player.currentNodeId]
   const currentLayer = currentNode?.layer || 0
 
-  // Resume ambient on mount (idempotent in AudioManager/audioEngine).
+  // Resume ambient on mount and retry once on startup failure.
   React.useEffect(() => {
-    audioManager.resumeMusic()
+    let cancelled = false
+    let retryTimeoutId = null
+
+    const attemptResume = async (attempt = 0) => {
+      const started = await audioManager.resumeMusic()
+      if (!started && !cancelled && attempt < 1) {
+        retryTimeoutId = setTimeout(() => {
+          void attemptResume(attempt + 1)
+        }, 1200)
+      }
+    }
+
+    void attemptResume()
+
+    return () => {
+      cancelled = true
+      if (retryTimeoutId) {
+        clearTimeout(retryTimeoutId)
+      }
+    }
   }, [])
 
   return (
