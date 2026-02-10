@@ -225,7 +225,13 @@ export const checkHit = (notes, laneIndex, elapsed, hitWindow) => {
   // Scan forward through candidates within the time window
   while (i < notes.length && notes[i].time <= windowEnd) {
     const n = notes[i]
-    if (n.visible && !n.hit && n.laneIndex === laneIndex && n.type === 'note') {
+    if (
+      n.visible &&
+      !n.hit &&
+      n.laneIndex === laneIndex &&
+      n.type === 'note' &&
+      Math.abs(n.time - elapsed) < hitWindow
+    ) {
       return n
     }
     i++

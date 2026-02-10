@@ -17,12 +17,13 @@ import { audioManager } from '../utils/AudioManager'
  */
 const ToggleRadio = () => {
   const [isPlaying, setIsPlaying] = useState(
-    () => audioManager.currentSongId === 'ambient'
+    () => audioManager.currentSongId === 'ambient' && audioManager.isPlaying
   )
 
   // Poll periodically to catch external audio changes without a global event bus.
   React.useEffect(() => {
-    const derive = () => audioManager.currentSongId === 'ambient'
+    const derive = () =>
+      audioManager.currentSongId === 'ambient' && audioManager.isPlaying
     setIsPlaying(derive())
     const id = setInterval(() => setIsPlaying(derive()), 1000)
     return () => clearInterval(id)
