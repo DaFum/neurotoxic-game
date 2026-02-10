@@ -102,7 +102,6 @@ class AudioSystem {
         return true
       } catch (e) {
         handleError(e, { fallbackMessage: 'Failed to start ambient music' })
-        this.currentSongId = null
         this.stopMusic()
         return false
       } finally {
@@ -130,6 +129,13 @@ class AudioSystem {
    */
   async resumeMusic() {
     try {
+      if (
+        this.currentSongId === 'ambient' &&
+        audioEngine.isAmbientOggPlaying()
+      ) {
+        return true
+      }
+
       if (Tone.Transport.state === 'paused') {
         audioEngine.resumeAudio()
         return true

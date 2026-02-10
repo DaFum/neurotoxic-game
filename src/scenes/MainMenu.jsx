@@ -30,10 +30,18 @@ export const MainMenu = () => {
     resetState
   } = useGameState()
   const [showUpgrades, setShowUpgrades] = useState(false)
+  const isMountedRef = React.useRef(true)
 
   const { audioState, handleAudioChange } = useAudioControl()
 
+  React.useEffect(() => {
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
+
   const reportAudioIssue = (error, fallbackMessage) => {
+    if (!isMountedRef.current) return
     try {
       handleError(error, { addToast, fallbackMessage })
     } catch {

@@ -36,9 +36,8 @@ const ToggleRadio = () => {
       audioManager.stopMusic()
       setIsPlaying(false)
     } else {
-      const maybePromise = audioManager.resumeMusic()
-      setIsPlaying(true)
-      Promise.resolve(maybePromise)
+      audioManager
+        .resumeMusic()
         .then(started => {
           if (!started) setIsPlaying(false)
         })
@@ -51,7 +50,7 @@ const ToggleRadio = () => {
       onClick={toggle}
       className='bg-(--void-black) border border-(--toxic-green) text-(--toxic-green) px-2 py-1 text-xs uppercase hover:bg-(--toxic-green) hover:text-(--void-black) font-mono'
       title={isPlaying ? 'Stop Radio' : 'Play/Resume Radio'}
-      aria-label={isPlaying ? 'Radio stoppen' : 'Radio starten'}
+      aria-label={isPlaying ? 'Stop Radio' : 'Play/Resume Radio'}
     >
       {isPlaying ? '■' : '▶'}
     </button>
@@ -123,7 +122,12 @@ export const Overworld = () => {
     let retryTimeoutId = null
 
     const attemptResume = async (attempt = 0) => {
-      const started = await audioManager.resumeMusic()
+      let started = false
+      try {
+        started = await audioManager.resumeMusic()
+      } catch {
+        started = false
+      }
       if (!started && !cancelled && attempt < 1) {
         retryTimeoutId = setTimeout(() => {
           void attemptResume(attempt + 1)
