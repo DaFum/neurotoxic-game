@@ -321,6 +321,15 @@ export const calculateGigPlaybackWindow = ({
 export async function setupAudio() {
   if (isSetup) return
 
+  // Configure Tone.js context for sustained playback (gigs are 30-60s)
+  // "balanced" prioritizes performance over ultra-low latency, reducing pops/crackles
+  Tone.setContext(
+    new Tone.Context({
+      latencyHint: 'balanced',
+      lookAhead: 0.15 // Increased from default 0.1 for better scheduling during high CPU
+    })
+  )
+
   try {
     await Tone.start()
   } catch (e) {
@@ -1047,7 +1056,11 @@ export async function playSongFromData(song, delay = 0) {
     }
   }, events).start(0)
 
-  Tone.getTransport().start()
+  // Schedule Transport.start in advance to prevent pops/crackles
+  // Add minimum 100ms lookahead for reliable scheduling
+  const minLookahead = 0.1
+  const startTime = Tone.now() + Math.max(minLookahead, delay)
+  Tone.getTransport().start(startTime)
   return true
 }
 
@@ -1162,7 +1175,10 @@ export async function startMetalGenerator(
     return false
   }
 
-  Tone.getTransport.start(Tone.now() + Math.max(0, delay))
+  // Schedule Transport.start in advance to prevent pops/crackles
+  // Using "+0.1" schedules 100ms ahead for reliable scheduling
+  const startDelay = Math.max(0.1, delay)
+  Tone.getTransport().start(`+${startDelay}`)
   return true
 }
 
@@ -1577,9 +1593,12 @@ async function playMidiFileInternal(
       }, stopTime)
     }
 
+    // Schedule Transport.start in advance to prevent pops/crackles
+    // Add minimum 100ms lookahead for reliable scheduling
+    const minLookahead = 0.1
     const transportStartTime = Number.isFinite(startTimeSec)
       ? startTimeSec
-      : Tone.now() + validDelay
+      : Tone.now() + Math.max(minLookahead, validDelay)
     Tone.getTransport().start(transportStartTime, requestedOffset)
     return true
   } catch (err) {
