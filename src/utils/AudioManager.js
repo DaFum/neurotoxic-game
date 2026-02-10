@@ -273,7 +273,7 @@ class AudioSystem {
     this.muted = !this.muted
 
     try {
-      Tone.Destination.mute = this.muted
+      Tone.getDestination().mute = this.muted
       audioEngine.setSFXVolume(this.muted ? 0 : this.sfxVolume)
       audioEngine.setMusicVolume(this.muted ? 0 : this.musicVolume)
     } catch (e) {
