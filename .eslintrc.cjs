@@ -4,8 +4,7 @@ module.exports = {
 
   env: {
     browser: true,
-    es2021: true,
-    node: true // Added 'node' to prevents errors if you use 'module.exports' or 'require' in other files
+    es2021: true
   },
 
   extends: [
@@ -45,5 +44,14 @@ module.exports = {
     react: {
       version: 'detect' // Automatically picks up the React version from package.json
     }
-  }
+  },
+
+  overrides: [
+    {
+      files: ['.eslintrc.cjs', 'vite.config.js', '*.config.js'],
+      env: {
+        node: true
+      }
+    }
+  ]
 }

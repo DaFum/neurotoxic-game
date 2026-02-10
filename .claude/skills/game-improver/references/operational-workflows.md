@@ -25,8 +25,8 @@
 - Read repo guidance in strict order before edits: root instructions, nested instructions, and coding standards.
 - Maintain pinned stack assumptions (React 18, Vite 5, Tailwind 4, Pixi 8, Tone 15).
 - Keep brutalist UI intent: uppercase, boxy layout language, direct copy, and strong contrast.
-- Ensure German tour authenticity for places, naming, and narrative framing.
-- Integrate threat-model intent when touching persistence, input handling, or loading paths.
+- Ensure German tour authenticity for places, naming, and narrative framing (see [GERMAN_TOUR_AUTHENTICITY.md](./GERMAN_TOUR_AUTHENTICITY.md)).
+- Integrate threat-model intent when touching persistence, input handling, or loading paths (see [neurotoxic-game-threat-model.md](../../neurotoxic-game-threat-model.md)).
 
 ## Analysis Process
 

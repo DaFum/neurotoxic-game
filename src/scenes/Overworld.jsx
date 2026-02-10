@@ -39,7 +39,7 @@ const ToggleRadio = () => {
       audioManager
         .resumeMusic()
         .then(started => {
-          if (!started) setIsPlaying(false)
+          setIsPlaying(Boolean(started))
         })
         .catch(() => setIsPlaying(false))
     }
