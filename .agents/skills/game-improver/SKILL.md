@@ -1,7 +1,17 @@
 ---
 name: game-improver
-description: "Analyze and implement high-impact improvements for NEUROTOXIC: GRIND THE VOID across gameplay balance, bug fixes, performance, audio reliability, security hardening, and code quality. Use when requests ask to improve mechanics, fix regressions, optimize Pixi.js/Tone.js behavior, add balanced content, or strengthen quality gates while preserving the brutalist aesthetic and project constraints."
+description: 'Analyze and implement high-impact improvements for NEUROTOXIC: GRIND THE VOID across gameplay balance, bug fixes, performance, audio reliability, security hardening, and code quality. Use when requests ask to improve mechanics, fix regressions, optimize Pixi.js/Tone.js behavior, add balanced content, or strengthen quality gates while preserving the brutalist aesthetic and project constraints.'
 ---
+
+**When to use this skill:**
+
+- Requests to improve game mechanics, balance, or progression
+- Bug fixes and regression handling
+- Performance optimization (Pixi.js rendering, Tone.js audio)
+- Audio playback reliability and context lifecycle issues
+- Security hardening or code quality improvements
+- Refactoring with measurable impact and low regression risk
+- Quality gate validation and production readiness checks
 
 # Game Improver
 

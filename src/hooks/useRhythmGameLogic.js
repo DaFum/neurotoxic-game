@@ -38,7 +38,7 @@ import { SONGS_DB } from '../data/songs'
  * @returns {{gameStateRef: object, stats: object, actions: object, update: Function}} Rhythm game API.
  */
 const GIG_LEAD_IN_MS = 2000
-const NOTE_LEAD_IN_MS = 100 // Increased from 0 for reliable note scheduling (prevents pops/stutters)
+const NOTE_LEAD_IN_MS = 0
 
 export const useRhythmGameLogic = () => {
   const {
