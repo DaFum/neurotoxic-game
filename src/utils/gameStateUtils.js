@@ -150,12 +150,12 @@ export const applyEventDelta = (state, delta) => {
     }
     if (typeof delta.flags.score === 'number') {
       const nextPlayer = nextState.player ? { ...nextState.player } : {}
-      nextPlayer.fame = Math.max(
-        0,
-        (nextPlayer.fame || 0) + delta.flags.score
-      )
+      const currentScore =
+        typeof nextPlayer.score === 'number' ? nextPlayer.score : 0
+      nextPlayer.score = currentScore + delta.flags.score
       nextState.player = nextPlayer
     }
+  }
   }
 
   return nextState
