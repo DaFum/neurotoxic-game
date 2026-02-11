@@ -13,7 +13,7 @@
       "author": "Architecture"
     },
     {
-      "content": "Always include constraints and risks: React 18 + Vite 5 + Tailwind v4 pinning, Tailwind v4 syntax rules from docs/TAILWIND_V4_PATTERNS.md, CSS variable color policy in src/index.css, state safety rules player.money >= 0 and band.harmony > 0, AudioContext gesture constraints via ensureAudioContext(), and localStorage tampering risk handled through safeStorageOperation wrappers.",
+      "content": "Always include constraints and risks: React 18 + Vite 5 + Tailwind v4 pinning, Tailwind v4 syntax rules from docs/TAILWIND_V4_PATTERNS.md, CSS variable color policy in src/index.css, state safety rules player.money >= 0 and band.harmony > 0, AudioContext gesture constraints via ensureAudioContext(), and localStorage tampering risk partially mitigated via safeStorageOperation (runtime storage exception handling only) plus loadGame() state validation/clamping in src/context/GameState.jsx (tampering still possible).",
       "author": "Quality"
     },
     {
