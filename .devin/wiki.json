@@ -62,7 +62,7 @@
           "content": "Asset loading uses Vite's import.meta.glob to eager-load all .mid and .ogg from src/assets/. buildMidiUrlMap() and buildAssetUrlMap() create lookup maps keyed by both full relative path and basename. resolveAssetUrl() checks bundle map first, falls back to public path. normalizeMidiPlaybackOptions() standardizes options for playMidiFileInternal. audioTimingUtils.js provides getScheduledHitTimeMs for aligning note hit windows to audio clock. canPlayAudioType() checks browser codec support via HTMLAudioElement.canPlayType for OGG Vorbis fallback warnings. audioSelectionUtils.js exports selectRandomItem(items, rng) with injectable RNG (default Math.random), used for ambient track selection with index clamping for safety. Audio buffer loading and caching (loadAudioBuffer) is handled by audioEngine.js, including fetch/decode timeout guards (10s each) and an LRU Map cache (max 50 entries)."
         }
       ]
-      ]
+    },
     },
     {
       "title": "Audio Manager",
