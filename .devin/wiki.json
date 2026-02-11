@@ -133,7 +133,7 @@
     },
     {
       "title": "Core Subsystems Overview",
-      "purpose": "Provide a subsystem dependency map that names primary files and key functions: AudioManager + audioEngine playback lifecycle, GameStateProvider + gameReducer state transitions, useRhythmGameLogic timing loop, PixiStageController render/update cycle, calculateGigFinancials()/calculateTravelExpenses() economy pipeline, mapGenerator travel topology, and checkEvent()/triggerEvent() event resolution.",
+      "purpose": "Provide a subsystem dependency map that names primary files and key functions: AudioManager + audioEngine playback lifecycle, GameStateProvider + gameReducer state transitions, useRhythmGameLogic timing loop, PixiStageController render/update cycle, calculateGigFinancials()/calculateTravelExpenses() economy pipeline, mapGenerator travel topology, and checkEvent()/resolveChoice() event resolution, with triggerEvent() wrapper behavior documented in src/context/GameState.jsx.",
       "parent": "Overview",
       "page_notes": [
         {
@@ -269,7 +269,7 @@
     },
     {
       "title": "Event Engine & Effect Semantics",
-      "purpose": "Deep dive src/utils/eventEngine.js behavior around checkEvent(), triggerEvent(), and processEffect()-style reducers, with schema sourced from src/data/events/index.js and category files. Specify alias mappings, accumulation vs overwrite semantics for composite effects, and deterministic testing patterns from tests/eventEngine.test.js using mocked randomness.",
+      "purpose": "Deep dive src/utils/eventEngine.js behavior around checkEvent(), resolveChoice(), processOptions(), and processEffect()-style reducers, with schema sourced from src/data/events/index.js and category files. Specify alias mappings, accumulation vs overwrite semantics for composite effects, and deterministic testing patterns from tests/eventEngine.test.js using mocked randomness.",
       "parent": "Core Subsystems Overview",
       "page_notes": [
         {
@@ -340,7 +340,7 @@
     },
     {
       "title": "Code Entity Map",
-      "purpose": "Create a symbol index with exact file/function anchors for rapid onboarding: GameStateProvider/useGameState, ActionTypes/gameReducer branches, createChangeSceneAction, useRhythmGameLogic handlers, useTravelLogic transitions, usePurchaseLogic predicates, calculateGigFinancials/calculateTravelExpenses, checkEvent/triggerEvent, and setupAudio/initAudioEngine entry points.",
+      "purpose": "Create a symbol index with exact file/function anchors for rapid onboarding: GameStateProvider/useGameState, ActionTypes/gameReducer branches, createChangeSceneAction, useRhythmGameLogic handlers, useTravelLogic transitions, usePurchaseLogic predicates, calculateGigFinancials/calculateTravelExpenses, checkEvent/resolveChoice plus GameState triggerEvent wrapper, and setupAudio/ensureAudioContext entry points.",
       "parent": "Overview",
       "page_notes": [
         {
