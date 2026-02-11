@@ -622,8 +622,8 @@ export async function ensureAudioContext() {
           return false
         }
       } finally {
-        rebuildLock = null
         if (resolveRebuild) resolveRebuild()
+        rebuildLock = null
       }
     }
   }
