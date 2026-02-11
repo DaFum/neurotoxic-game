@@ -1,8 +1,8 @@
 {
   "repo_notes": [
     {
-      "content": "Use Standard limits (not Enterprise): keep this plan at or under 30 pages and 100 total notes. Prefer complete system navigation with precise technical intent over broad generic page descriptions.",
-      "author": "Docs Maintainer"
+      "content": "NEUROTOXIC: GRIND THE VOID is a client-side single-page web game (React 18 + Vite 5) combining a roguelike tour manager with a 3-lane rhythm action game. No backend; all state persists to localStorage. The player manages a Death Grindcore band touring procedurally-generated German cities. The audio system (audioEngine.js, ~1900 lines) is the most complex subsystem, using Tone.js 15 for Web Audio synthesis/scheduling and Pixi.js 8 for 60fps canvas rendering. Key concurrency primitives: setupLock (serializes audio init), rebuildLock (serializes AudioContext rebuilds), playRequestId (cancels stale playback). The safeDispose helper wraps node.dispose() in try-catch to prevent one failed disposal from aborting cleanup of remaining nodes. Known gap: stopAudioInternal() in disposeAudio is not wrapped in try-catch, so a closed-context throw there skips all safeDispose calls. The event engine (eventEngine.js) maps stat aliases hype/crowd_energy to fame with accumulation, but mood/stamina use direct assignment and overwrite rather than accumulate in composite effects. CSS theming uses CSS variables (--toxic-green, --void-black, etc.) with Tailwind v4 syntax. Tests use Node.js built-in test runner (node:test).",
+      "author": "Developer"
     },
     {
       "content": "Prioritize inspection order: src/utils/audioEngine.js (setupAudio, loadAudioBuffer, startGigPlayback, stopAudioInternal), src/utils/AudioManager.js (singleton lifecycle), src/context/GameState.jsx (GameStateProvider, useGameState), src/context/gameReducer.js (ActionTypes, gameReducer), src/hooks/useRhythmGameLogic.js, src/hooks/useTravelLogic.js, src/hooks/usePurchaseLogic.js, src/components/PixiStageController.js, then src/ui and src/data.",
