@@ -1,7 +1,7 @@
 {
   "repo_notes": [
     {
-      "content": ""
+      "content": "NEUROTOXIC: GRIND THE VOID is a client-side single-page web game (React 18 + Vite 5) combining a roguelike tour manager with a 3-lane rhythm action game. No backend; all state persists to localStorage. The player manages a Death Grindcore band touring procedurally-generated German cities. The audio system (audioEngine.js, ~1900 lines) is the most complex subsystem, using Tone.js 15 for Web Audio synthesis/scheduling and Pixi.js 8 for 60fps canvas rendering. Key concurrency primitives: setupLock (serializes audio init), rebuildLock (serializes AudioContext rebuilds), playRequestId (cancels stale playback). The safeDispose helper wraps node.dispose() in try-catch to prevent one failed disposal from aborting cleanup of remaining nodes. Known gap: stopAudioInternal() in disposeAudio is not wrapped in try-catch, so a closed-context throw there skips all safeDispose calls. The event engine (eventEngine.js) maps stat aliases hype/crowd_energy to fame with accumulation, but mood/stamina use direct assignment and overwrite rather than accumulate in composite effects. CSS theming uses CSS variables (--toxic-green, --void-black, etc.) with Tailwind v4 syntax. Tests use Node.js built-in test runner (node:test)."
     }
   ],
   "pages": [
@@ -10,7 +10,7 @@
       "purpose": "Introduce NEUROTOXIC: GRIND THE VOID, explaining the project's concept as a Roguelike Tour Manager with rhythm action mechanics, tech stack, and high-level architecture",
       "page_notes": [
         {
-          "content": ""
+          "content": "Tech stack: React 18 (UI), Vite 5 (build), Pixi.js 8 (canvas rendering), Tone.js 15 (Web Audio), [@tonejs](https://github.com/tonejs)/midi 2 (MIDI parsing), Tailwind CSS 4 (styling), Framer Motion 12 (animations). Project structure: src/context/ (state management), src/hooks/ (custom React hooks), src/scenes/ (game screens), src/utils/ (game engines), src/components/ (PixiStage, GigHUD), src/data/ (static data), src/ui/ (reusable UI), tests/ (unit tests). The game runs entirely client-side and can be hosted statically (e.g., GitHub Pages). HTTPS required in production for WebAudio API."
         }
       ]
     },
@@ -20,7 +20,7 @@
       "parent": "Overview",
       "page_notes": [
         {
-          "content": ""
+          "content": "Layered architecture with unidirectional data flow: Presentation Layer (React scenes in src/scenes/, shared UI in src/ui/), State Management Layer (GameStateProvider with React Context + useReducer, domain hooks like useRhythmGameLogic/useTravelLogic/usePurchaseLogic), Engine Layer (pure calculation modules in src/utils/ with no React dependencies: audio, economy, simulation, events, map generation), Rendering Layer (Pixi.js canvas via PixiStageController for rhythm graphics, React DOM overlays for HUD), Data Layer (static JS/JSON in src/data/, procedural MapGenerator, localStorage persistence with neurotoxic_v3_save and neurotoxic_global_settings keys). Scene navigation is state-driven via ActionTypes.CHANGE_SCENE dispatched through useGameState(). Design principles: aesthetic-first brutalist UI with CSS variables, separation of imperative (Pixi) and declarative (React) rendering, no hardcoded colors (use Tailwind v4 CSS variable syntax like bg-(--void-black))."
         }
       ]
     },
@@ -30,7 +30,7 @@
       "parent": "Overview",
       "page_notes": [
         {
-          "content": ""
+          "content": "Standard Vite + React setup. Uses import.meta.glob for eager-loading MIDI (.mid) and OGG (.ogg) assets from src/assets/. Tests run via Node.js built-in test runner (node:test) with node:assert/strict. AGENTS.md files exist in each src/ subdirectory documenting module-specific conventions. Key config files: .jscpd.json (duplicate detection ignoring CLAUDE.md, .agents/, .claude/), CLAUDE.md and .github/copilot-instructions.md (AI assistant instructions with jscpd:ignore markers around intentionally-duplicated color palette tables)."
         }
       ]
     },
@@ -39,7 +39,7 @@
       "purpose": "Comprehensive documentation of the audio system (importance: 182.43), the most critical subsystem in the codebase, covering Tone.js integration, Web Audio API, and rhythm game mechanics",
       "page_notes": [
         {
-          "content": ""
+          "content": "The audio system spans audioEngine.js (~1900 lines, core synthesis/scheduling/lifecycle), AudioManager.js (singleton coordinator for global volume/mute/ambient), and supporting utilities (audioPlaybackUtils.js, midiTrackUtils.js, audioTimingUtils.js, audioSelectionUtils.js). Two parallel instrument chains exist: a Gig Chain with heavy effects for live performance and a Clean MIDI Chain for ambient playback. Both merge into a shared master bus (musicGain → masterComp → masterLimiter → Tone.Destination). Dual-clock architecture: AudioContext.currentTime for gig clock/visual sync with buffer playback, Tone.now() for Tone.js transport scheduling. Three concurrency primitives prevent races: setupLock, rebuildLock, playRequestId. The safeDispose(node) helper wraps dispose() in try-catch and returns null for combined disposal+nullification."
         }
       ]
     },
@@ -49,7 +49,7 @@
       "parent": "Audio System",
       "page_notes": [
         {
-          "content": ""
+          "content": "setupAudio() builds the entire audio graph with fresh Tone.Context (latencyHint: 'balanced', lookAhead: 0.15). Graph topology — Master: masterLimiter(Limiter -3dB).toDestination(), masterComp(Compressor -18dB ratio 4) → masterLimiter, musicGain(Gain 1) → masterComp. Global FX: reverbSend(Gain 0.3) → reverb(Reverb decay 1.8 wet 0.15) → musicGain. Guitar chain: guitar(PolySynth/FMSynth harmonicity 2, modulationIndex 3, sawtooth) → distortion(0.4) → guitarChorus(4, 2.5, 0.3) → guitarEq(EQ3 -1,-3,3) → widener(StereoWidener 0.5) → musicGain; also guitar → reverbSend. Bass chain: bass(PolySynth/MonoSynth fatsawtooth) → bassComp(Compressor -15, 5) → bassEq(EQ3 3,-1,-4) → musicGain. Drums: drumKit.kick(MembraneSynth), drumKit.snare(createLayeredSnare: NoiseSynth + MembraneSynth → Volume bus), drumKit.hihat(MetalSynth), drumKit.crash(MetalSynth) all → drumBus(Gain) → musicGain; drumBus → reverbSend. SFX: sfxSynth(PolySynth/Synth triangle) → sfxGain(Gain 0.25) → masterLimiter (bypasses compressor). Clean MIDI chain: midiLead(FMSynth), midiBass(fatsawtooth Synth), midiDrumKit → midiDryBus → midiReverbSend → midiReverb → musicGain. Known issue: createLayeredSnare's custom dispose() calls three sub-node .dispose() sequentially without try-catch; if first throws, snareBody and snareBus are never cleaned up."
         }
       ]
     },
@@ -59,7 +59,7 @@
       "parent": "Audio System",
       "page_notes": [
         {
-          "content": ""
+          "content": "useRhythmGameLogic hook drives the 3-lane rhythm game during Gig scenes. Uses gameStateRef (mutable ref) pattern to decouple React render cycle from 60fps Pixi ticker. Notes fall down lanes synchronized to audio via dual-clock: getGigTimeMs() for buffer playback timing, getAudioTimeMs() for transport-based timing. Hit detection uses timing windows around scheduled hit times. Scoring accumulates combo multipliers; health decrements on misses. The hook coordinates with PixiStageController for visual note rendering and GigHUD for stat overlay."
         }
       ]
     },
@@ -69,7 +69,7 @@
       "parent": "Audio System",
       "page_notes": [
         {
-          "content": ""
+          "content": "Asset loading uses Vite's import.meta.glob to eager-load all .mid and .ogg files from src/assets/. buildMidiUrlMap() and buildAssetUrlMap() create lookup maps keyed by both full relative path and basename. resolveAssetUrl() checks the bundle map first, then falls back to public path. loadAudioBuffer() fetches, decodes via AudioContext.decodeAudioData with timeout guards (10s fetch, 10s decode), and caches in an LRU Map (max 50 entries). normalizeMidiPlaybackOptions() standardizes options for playMidiFileInternal. audioTimingUtils.js provides getScheduledHitTimeMs for aligning note hit windows to audio clock. canPlayAudioType() checks browser codec support via HTMLAudioElement.canPlayType for OGG Vorbis fallback warnings."
         }
       ]
     },
@@ -79,7 +79,7 @@
       "parent": "Audio System",
       "page_notes": [
         {
-          "content": ""
+          "content": "AudioManager.js is a singleton class coordinating global audio state. Stores musicVolume, sfxVolume, muted preferences in localStorage (neurotoxic_global_settings). ensureAudioContext() calls audioEngine.setupAudio() then re-applies volume/mute settings (since engine nodes may have been recreated), then delegates to audioEngine.ensureAudioContext(). startAmbient() manages ambient music (OGG preferred, MIDI fallback). dispose() calls audioEngine.disposeAudio(). Volume changes apply via audioEngine.setMusicVolume()/setSFXVolume() which ramp Tone.Gain nodes. Mute toggles Tone.getDestination().mute."
         }
       ]
     },
@@ -89,7 +89,7 @@
       "parent": "Audio System",
       "page_notes": [
         {
-          "content": ""
+          "content": "Four playback modes: 1) OGG buffer (startGigPlayback): loads AudioBuffer via loadAudioBuffer(), plays through AudioBufferSourceNode → musicGain with calculateGigPlaybackWindow() for offset/duration clamping. Supports pause/resume via gigIsPaused state. 2) MIDI (playMidiFile → playMidiFileInternal): fetches MIDI, parses via [@tonejs](https://github.com/tonejs)/midi, creates Tone.Part per track, routes through gig or clean chain based on useCleanPlayback option. Supports looping, offset, stopAfterSeconds, onEnded callback. 3) Procedural (startMetalGenerator): generates riff patterns via generateRiffPattern() based on difficulty, schedules via Tone.Sequence, plays drums via playDrumsLegacy(). 4) Song data (playSongFromData): schedules pre-parsed note arrays with tempo map support via calculateTimeFromTicks. All modes use playRequestId for cancellation. Ambient playback chains: playRandomAmbientOgg() (preferred) or playRandomAmbientMidi() with auto-chaining via onended/onEnded callbacks using captured reqId for invalidation."
         }
       ]
     },
@@ -98,7 +98,7 @@
       "purpose": "Document the centralized state management architecture using React Context, useReducer pattern, and unidirectional data flow",
       "page_notes": [
         {
-          "content": ""
+          "content": "Centralized in src/context/ with four files: GameState.jsx (React Context provider + useGameState hook), initialState.js (default state factory), gameReducer.js (centralized reducer with ActionTypes enum), actionCreators.js (factory functions for type-safe dispatch). State slices: player (money, fame, time, day, location, currentNodeId, van), band (members with baseStats, harmony, inventory, luck), social (instagram, viral), gameMap, settings. Unidirectional flow: components dispatch actions → reducer validates/clamps → new state. Safety rules: always clamp (Math.max(0, player.money - cost)), validate band.harmony > 0 before gigs, use action creators for dispatch."
         }
       ]
     },
@@ -108,7 +108,7 @@
       "parent": "State Management",
       "page_notes": [
         {
-          "content": ""
+          "content": "GameStateProvider wraps the app, providing state and dispatch via React Context. useGameState() hook returns { state, dispatch, changeScene } where changeScene is a convenience wrapper. State shape: player {money, time, fame, day, location, currentNodeId, van: {fuel, condition}}, band {members: [{id, name, stamina, mood, baseStats: {skill, charisma}}], harmony, inventory, luck}, social {instagram, viral}, activeStoryFlags [], eventCooldowns [], pendingEvents []. Components access state exclusively through useGameState(); direct Context consumption is discouraged."
         }
       ]
     },
@@ -118,7 +118,7 @@
       "parent": "State Management",
       "page_notes": [
         {
-          "content": ""
+          "content": "gameReducer.js exports ActionTypes enum with 20+ action types including CHANGE_SCENE, UPDATE_PLAYER, APPLY_GIG_RESULTS, TRAVEL, SAVE_GAME, LOAD_GAME, etc. Reducer validates and clamps all mutations. actionCreators.js provides factory functions (createChangeSceneAction, etc.) for type safety. Scene transitions via ActionTypes.CHANGE_SCENE with payload string ('MENU', 'OVERWORLD', 'PREGIG', 'GIG', 'POSTGIG', 'SETTINGS', 'CREDITS', 'GAMEOVER'). Event engine results applied via delta objects produced by eventEngine.applyResult()."
         }
       ]
     },
@@ -128,16 +128,16 @@
       "parent": "State Management",
       "page_notes": [
         {
-          "content": ""
+          "content": "Two localStorage keys: neurotoxic_v3_save (game state) and neurotoxic_global_settings (audio/display settings). safeStorageOperation wraps all storage calls in error handling. Schema validation performed on load to handle version migrations and corrupted data. Save triggered via ActionTypes.SAVE_GAME; load via ActionTypes.LOAD_GAME with validation. No server-side persistence; no PII stored."
         }
       ]
     },
-    {
+     {
       "title": "Rendering System",
       "purpose": "Document the dual-layer rendering architecture combining Pixi.js canvas for game graphics and React DOM for UI overlays",
       "page_notes": [
         {
-          "content": ""
+          "content": "Dual-layer architecture: Pixi.js 8 canvas for imperative 60fps rhythm game graphics, React DOM overlay for declarative UI (HUD, menus). The two layers are composited via CSS positioning — Pixi canvas sits behind React overlay. Memory management critical: always destroy Pixi apps on unmount with app.destroy(true, { children: true, texture: true }) and use isMountedRef pattern to prevent post-unmount updates. The rendering system never directly mutates game state; it reads from refs (gameStateRef, statsRef) updated by the state management layer."
         }
       ]
     },
@@ -147,7 +147,7 @@
       "parent": "Rendering System",
       "page_notes": [
         {
-          "content": ""
+          "content": "PixiStageController (src/components/PixiStageController.jsx) creates and manages the Pixi.Application instance. Receives the rhythmGameLogicHook as a prop. Responsibilities: create Pixi.Application, set up 3-lane note highway with container hierarchy, render falling notes synchronized to music, visualize hit/miss feedback, clean up on unmount. Uses sprite pooling to avoid per-frame allocation for note graphics. Container hierarchy organizes lanes, notes, effects, and background layers. The controller runs a 60fps ticker that reads game state from mutable refs rather than React state to avoid render-triggered reflows."
         }
       ]
     },
@@ -157,7 +157,7 @@
       "parent": "Rendering System",
       "page_notes": [
         {
-          "content": ""
+          "content": "GigHUD component renders as a React DOM overlay positioned absolutely over the Pixi canvas. Displays real-time stats: score, combo counter, health bar, overload meter. Lane input zones capture touch/click events for note hit detection. The HUD reads from statsRef (mutable ref) updated by useRhythmGameLogic at 60fps, but React re-renders are throttled to avoid performance impact. Styled with CSS variables (--toxic-green for active elements, --blood-red for health warnings) following the brutalist aesthetic."
         }
       ]
     },
@@ -167,7 +167,7 @@
       "parent": "Rendering System",
       "page_notes": [
         {
-          "content": ""
+          "content": "Visual feedback systems in the Pixi canvas layer: hit effects (flash/particle burst on successful note hits), miss effects (visual punishment feedback), crowd animations responding to performance quality, CRT scanline overlay for retro aesthetic, glitch effects triggered during special game states (toxic mode). Note rendering uses color-coded sprites per lane. Framer Motion 12 handles React-layer animations (scene transitions, menu effects, UI element entrances). All Pixi visual effects use object pooling to minimize garbage collection during gameplay."
         }
       ]
     },
@@ -177,7 +177,7 @@
       "parent": "Rendering System",
       "page_notes": [
         {
-          "content": ""
+          "content": "The game loop runs via Pixi's 60fps ticker, decoupled from React's render cycle. Two mutable ref patterns: gameStateRef holds current game state (read-only from loop), statsRef holds rapidly-changing stats (score, combo, health) written by the loop and read by React HUD. This avoids triggering React re-renders at 60fps. Coordinate transformations map audio time (milliseconds from getGigTimeMs/getAudioTimeMs) to vertical screen position for note placement. Audio-visual sync uses the dual-clock architecture: AudioContext.currentTime for buffer-based playback (sample-accurate), Tone.now() for transport-scheduled events. Notes are positioned based on (currentTime - noteScheduledTime) * scrollSpeed."
         }
       ]
     },
@@ -186,7 +186,7 @@
       "purpose": "Document the scene architecture, state machine for scene transitions, and how players progress through the game loop",
       "page_notes": [
         {
-          "content": ""
+          "content": "Scene architecture: App.jsx acts as scene router, switching components based on state.currentScene. Valid scene identifiers: MENU, SETTINGS, CREDITS, GAMEOVER, OVERWORLD, PREGIG, GIG, POSTGIG. All scenes use useGameState() hook for navigation via changeScene() or dispatch(createChangeSceneAction()). Core game loop: MENU → OVERWORLD → (travel to gig node) → PREGIG → GIG → POSTGIG → OVERWORLD (repeat). GAMEOVER triggered by bankruptcy check in POSTGIG. Scene transitions are state-driven (no client-side routing); the reducer handles CHANGE_SCENE actions."
         }
       ]
     },
@@ -196,7 +196,7 @@
       "parent": "Game Scenes & Flow",
       "page_notes": [
         {
-          "content": ""
+          "content": "MainMenu scene (src/scenes/MainMenu.jsx) is the entry point. Responsibilities: display game title and options (New Game, Continue, Settings, Credits), load saved game from localStorage if available, initialize ambient audio via AudioManager.startAmbient() (OGG preferred, MIDI fallback), trigger AudioManager.ensureAudioContext() on first user interaction to satisfy browser autoplay policy. New Game dispatches initial state creation; Continue dispatches LOAD_GAME action with schema validation."
         }
       ]
     },
@@ -206,7 +206,7 @@
       "parent": "Game Scenes & Flow",
       "page_notes": [
         {
-          "content": ""
+          "content": "Overworld scene (src/scenes/Overworld.jsx) is the central game hub. Renders procedurally-generated map from MapGenerator (src/utils/mapGenerator.js) as a graph of nodes connected by edges. Node types include gig venues, rest stops, shops. Node visibility uses layer system — only adjacent and visited nodes are revealed. Connection checking validates travel between nodes. Travel initiation uses useTravelLogic hook which calculates fuel cost, validates connectivity, and dispatches TRAVEL action. Daily updates (simulationUtils.calculateDailyUpdates) applied on travel: mood drift, harmony regeneration, viral decay, daily costs."
         }
       ]
     },
@@ -216,7 +216,7 @@
       "parent": "Game Scenes & Flow",
       "page_notes": [
         {
-          "content": ""
+          "content": "PreGig scene (src/scenes/PreGig.jsx) handles gig preparation before performance. Player selects setlist from SONGS_DB (src/data/songs.js). Modifier choices affect both costs and performance: promo (increases ticket sales but costs money), catering (boosts band mood/stamina), soundcheck (improves audio quality/score multiplier). Cost calculation aggregates modifier expenses against player.money. Event engine (eventEngine.checkEvent with trigger 'pre_gig') may fire random encounters (van breakdown, promoter negotiations). Scene transitions to GIG on confirmation."
         }
       ]
     },
@@ -226,7 +226,7 @@
       "parent": "Game Scenes & Flow",
       "page_notes": [
         {
-          "content": ""
+          "content": "Gig scene (src/scenes/Gig.jsx) is the core rhythm game. Lifecycle: 1) ensureAudioContext() unlocks WebAudio, 2) load song audio (OGG buffer preferred → MIDI fallback → procedural generation → playSongFromData), 3) initialize PixiStageController with useRhythmGameLogic hook, 4) start playback with delay for scheduling lookahead (100ms minimum). Real-time loop: notes spawn and fall down 3 lanes, player hits notes via input zones, scoring/combo/health updated per frame. Toxic mode: special high-intensity state triggered by performance thresholds, modifying visual effects and scoring. Gig ends on song completion or health depletion; transitions to POSTGIG."
         }
       ]
     },
@@ -236,7 +236,7 @@
       "parent": "Game Scenes & Flow",
       "page_notes": [
         {
-          "content": ""
+          "content": "PostGig scene (src/scenes/PostGig.jsx) processes gig results in three phases: 1) Report — displays performance score, shows economyEngine.calculateGigFinancials() results (income from tickets/merch/bar cut/bonuses minus expenses), applies financial delta to player state. 2) Social — socialEngine processes social media interactions, viral content generation based on performance, Instagram follower changes. 3) Complete — final summary, bankruptcy check (player.money < 0 triggers GAMEOVER), applies band stat changes (mood, stamina, harmony), transitions back to OVERWORLD. Event engine may fire post-gig encounters."
         }
       ]
     },
@@ -245,7 +245,7 @@
       "purpose": "Document the economic system: resource types (money, fame, fuel), financial calculations, and resource flow through the game",
       "page_notes": [
         {
-          "content": ""
+          "content": "Dual-currency system: Money (€, primary resource for expenses/income) and Fame (reputation metric affecting ticket sales/opportunities). Additional resources: Fuel (van travel), Harmony (band cohesion, must be > 0 for gigs), Mood (per-member, affects performance), Stamina (per-member, affects performance). Resource flow: money earned from gigs (tickets, merch, bar cut) and spent on travel (fuel), modifiers (promo, catering, soundcheck), and random events. Fame gained from gig performance, events, and social media. The event engine's processEffect maps stat aliases: hype and crowd_energy both accumulate into fame."
         }
       ]
     },
@@ -255,7 +255,7 @@
       "parent": "Economy & Resources",
       "page_notes": [
         {
-          "content": ""
+          "content": "economyEngine.js (src/utils/economyEngine.js) contains calculateGigFinancials() which computes complete gig financial results. Income sources: ticket sales (base × fame multiplier × venue capacity), merchandise revenue (scaled by crowd size and fame), bar cut percentage, performance bonuses (score thresholds). Expense categories: venue rental, equipment costs, modifier costs (promo, catering, soundcheck from PreGig selections). Net profit = total income - total expenses. Results returned as structured object applied to player state via reducer. All calculations are pure functions with no side effects."
         }
       ]
     },
@@ -265,7 +265,7 @@
       "parent": "Economy & Resources",
       "page_notes": [
         {
-          "content": ""
+          "content": "simulationUtils.js (src/utils/simulationUtils.js) provides calculateDailyUpdates() called during travel/day progression. Mood drift: each band member's mood drifts toward neutral (50) at a configurable rate. Harmony regeneration: band harmony slowly recovers toward baseline if not at maximum. Viral decay: social.viral decreases over time (content loses relevance). Daily costs: base maintenance expenses deducted from player.money. All updates are pure calculations returning delta objects; the reducer applies them with clamping."
         }
       ]
     },
@@ -275,7 +275,7 @@
       "parent": "Economy & Resources",
       "page_notes": [
         {
-          "content": ""
+          "content": "Money (€): earned from gigs, spent on travel fuel, gig modifiers, event costs. Clamped to >= 0 (negative triggers bankruptcy/GAMEOVER). Fame: earned from gig performance, events (fame/hype/crowd_energy stats all accumulate into fame), social media viral content. Affects ticket sales and opportunities. Fuel: consumed during travel between map nodes, refilled at rest stops or via events. Stored in player.van.fuel. Harmony: band cohesion metric, must be > 0 to perform gigs. Damaged by negative events, regenerates daily. Mood: per-band-member stat affecting performance quality. Drifts toward neutral daily. Stamina: per-band-member stat, consumed by gigs and travel, affects performance. Note: in eventEngine composite effects, mood and stamina use direct assignment (moodChange: value) rather than accumulation, so duplicate mood/stamina effects in a single composite will overwrite rather than sum."
         }
       ]
     },
@@ -285,7 +285,7 @@
       "parent": "Economy & Resources",
       "page_notes": [
         {
-          "content": ""
+          "content": "Gig modifiers selected in PreGig scene: Promo (increases ticket sales multiplier, costs money upfront), Catering (boosts band mood/stamina for the gig, costs money), Soundcheck (improves score multiplier / audio quality, costs money and time). Performance score calculated from rhythm game results: hit accuracy, combo chains, note completion percentage. Difficulty scaling: song difficulty (1-5) affects BPM (80 + difficulty * 30 for procedural), note density, and economic multipliers. Higher difficulty = more potential income but harder gameplay. The procedural generator (generateRiffPattern) uses difficulty to control note density (0.3 + diff * 0.1) and chromatic complexity."
         }
       ]
     },
@@ -294,7 +294,7 @@
       "purpose": "Document the travel system: node connectivity, movement validation, cost calculation, and arrival handling",
       "page_notes": [
         {
-          "content": ""
+          "content": "Travel system managed by useTravelLogic hook and MapGenerator (src/utils/mapGenerator.js). Map is a procedurally-generated graph of nodes (cities/venues) connected by edges. Movement validation: checks node connectivity (adjacent nodes only), sufficient fuel (player.van.fuel >= travel cost), and valid destination type. Fuel cost calculated based on edge distance/weight. Travel dispatches TRAVEL action which updates player.currentNodeId, deducts fuel, increments day counter, and triggers calculateDailyUpdates() for mood drift/harmony regeneration/viral decay/daily costs. Arrival at gig nodes enables PREGIG transition; rest stops offer healing/refueling; shops offer inventory purchases via usePurchaseLogic hook."
         }
       ]
     }
