@@ -161,6 +161,9 @@ export const eventEngine = {
 
       let skillValue = 0
 
+      // WARNING: 'luck' check must come first!
+      // The band object has a 'luck' property (default 0). If we checked band[stat] first,
+      // it would match and use the static stat (0) instead of the random roll intended here.
       if (stat === 'luck') {
         // Luck check: ignore band stats, just roll
         skillValue = Math.random() * 10

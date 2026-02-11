@@ -1,6 +1,21 @@
-import test from 'node:test'
+import test, { mock } from 'node:test'
 import assert from 'node:assert/strict'
-import { eventEngine } from '../src/utils/eventEngine.js'
+
+// Mock database
+const MOCK_EVENTS = {
+  transport: [
+    { id: 'event_normal', trigger: 'pre_gig', chance: 1.0 },
+    { id: 'event_cooldown', trigger: 'pre_gig', chance: 1.0 },
+    { id: 'event_pending', trigger: 'pre_gig', chance: 1.0 }
+  ]
+}
+
+mock.module('../src/data/events.js', {
+  namedExports: { EVENTS_DB: MOCK_EVENTS }
+})
+
+// Import module under test after mocking
+const { eventEngine } = await import('../src/utils/eventEngine.js')
 
 const buildGameState = (overrides = {}) => ({
   player: {
@@ -19,7 +34,8 @@ const buildGameState = (overrides = {}) => ({
       { id: 'marius', name: 'Marius', stamina: 60, mood: 70, skill: 3 }
     ],
     harmony: 70,
-    inventory: { spare_tire: true, strings: true }
+    inventory: { spare_tire: true, strings: true },
+    luck: 0
   },
   social: { instagram: 100, viral: 0 },
   activeStoryFlags: [],
@@ -57,24 +73,30 @@ test('eventEngine.checkEvent returns null when category not found', () => {
 test('eventEngine.checkEvent filters by trigger point', () => {
   const state = buildGameState()
   const result = eventEngine.checkEvent('transport', state, 'pre_gig')
-  assert.ok(
-    result === null || typeof result === 'object',
-    'Should return null or event object'
-  )
+  assert.ok(result, 'Should return an event')
+  assert.ok(MOCK_EVENTS.transport.some(e => e.id === result.id))
 })
 
 test('eventEngine.checkEvent respects cooldowns', () => {
-  const state = buildGameState({ eventCooldowns: ['event_id_1'] })
-  assert.ok(Array.isArray(state.eventCooldowns), 'Cooldowns should be array')
+  // Ensure 'event_cooldown' is skipped
+  const state = buildGameState({ eventCooldowns: ['event_cooldown', 'event_pending'] })
+
+  // Mock random to pick event_cooldown if it wasn't filtered
+  // But our simple selectEvent logic filters first.
+  // We need to ensure event_normal is picked.
+
+  // Actually, we can check multiple times or ensure the pool only has these.
+  // MOCK_EVENTS has 3 events.
+  // If we cooldown 'event_cooldown' and 'event_pending', only 'event_normal' remains.
+
+  const result = eventEngine.checkEvent('transport', state, 'pre_gig')
+  assert.equal(result.id, 'event_normal', 'Should select the only non-cooled-down event')
 })
 
 test('eventEngine.checkEvent prioritizes pending events', () => {
-  const state = buildGameState({ pendingEvents: ['some_event_id'] })
-  assert.ok(
-    Array.isArray(state.pendingEvents),
-    'Pending events should be array'
-  )
-  assert.ok(state.pendingEvents.length > 0, 'Should have pending events')
+  const state = buildGameState({ pendingEvents: ['event_pending'] })
+  const result = eventEngine.checkEvent('transport', state, 'pre_gig')
+  assert.equal(result.id, 'event_pending', 'Should return the pending event immediately')
 })
 
 test('eventEngine.resolveChoice handles direct effect', () => {
@@ -119,7 +141,7 @@ test('eventEngine.resolveChoice handles skill check failure', t => {
   assert.equal(result.outcome, 'failure', 'Should trigger failure outcome')
 })
 
-test('eventEngine.resolveChoice uses luck stat for luck checks', t => {
+test('eventEngine.resolveChoice uses random roll (ignoring band stat) for luck checks', t => {
   const choice = {
     label: 'Try your luck',
     skillCheck: {
@@ -130,18 +152,24 @@ test('eventEngine.resolveChoice uses luck stat for luck checks', t => {
     }
   }
   const baseState = buildGameState()
-  const state = { ...baseState, band: { ...baseState.band, luck: 10 } }
+  // Set band.luck to a value that would FAIL the check if used (e.g. 0),
+  // but ensure the random roll SUCCEEDS.
+  const state = { ...baseState, band: { ...baseState.band, luck: 0 } }
 
-  // Mock random for deterministic outcome.
-  // Implementation calls Math.random() * 10 for skill value, then Math.random() * 10 for roll.
-  // We need both calls to behave predictably or mock carefully.
-  // Here we mock simply returning 0.9.
-  // skillValue = 0.9 * 10 = 9.
-  // roll = 0.9 * 10 = 9 (crit? +2). total = 9 + 2 = 11. 11 >= 5 -> success.
+  // We want:
+  // skillValue = Math.random() * 10
+  // roll = Math.random() * 10
+  // total = skillValue + (roll > 8 ? 2 : 0)
+  //
+  // If we return 0.9:
+  // skillValue = 9
+  // roll = 9 (crit +2)
+  // total = 11 >= 5 -> success
+
   const mockRandom = t.mock.method(Math, 'random', () => 0.9)
 
   const result = eventEngine.resolveChoice(choice, state)
-  assert.equal(result.outcome, 'success', 'Should succeed luck check')
+  assert.equal(result.outcome, 'success', 'Should succeed luck check via random roll')
 })
 
 test('eventEngine.resolveChoice uses max member skill', () => {
