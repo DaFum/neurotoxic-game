@@ -5,7 +5,10 @@
     "dist",
     "build",
     ".git",
-    ".github"
+    ".github",
+    "CLAUDE.md",
+    ".agents",
+    ".claude"
   ],
   "threshold": 0
 }

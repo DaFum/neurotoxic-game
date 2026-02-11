@@ -137,6 +137,7 @@ const audioBufferCache = new Map()
 let ambientSource = null
 let setupLock = null
 let setupError = null
+let rebuildLock = null
 
 /**
  * Handles cleanup when a gig buffer source ends naturally.
@@ -576,31 +577,54 @@ export async function ensureAudioContext() {
   }
 
   if (needsRebuild) {
-    logger.warn(
-      'AudioEngine',
-      'AudioContext is closed. Rebuilding audio graph.'
-    )
-    // Best-effort cleanup of stale nodes before rebuilding
-    try {
-      disposeAudio()
-    } catch (e) {
-      logger.debug('AudioEngine', 'Partial dispose before rebuild failed', e)
-    }
-    isSetup = false
-    try {
-      await setupAudio()
-    } catch (e) {
-      logger.error('AudioEngine', 'Rebuild setupAudio failed', e)
-      isSetup = false
-      return false
-    }
-    // Verify rebuild succeeded before proceeding
-    if (!isSetup) {
-      logger.error(
-        'AudioEngine',
-        'Audio graph rebuild failed. Playback unavailable.'
-      )
-      return false
+    if (rebuildLock) {
+      await rebuildLock
+      // Re-check state after waiting for the concurrent rebuild to finish
+      if (isSetup && Tone.context.state === 'running') return true
+      // If still closed/failed, we might need to proceed or fail.
+      // For safety, let's assume if it failed, we return false.
+      if (!isSetup) return false
+    } else {
+      let resolveRebuild
+      rebuildLock = new Promise(r => {
+        resolveRebuild = r
+      })
+
+      try {
+        logger.warn(
+          'AudioEngine',
+          'AudioContext is closed. Rebuilding audio graph.'
+        )
+        // Best-effort cleanup of stale nodes before rebuilding
+        try {
+          disposeAudio()
+        } catch (e) {
+          logger.debug(
+            'AudioEngine',
+            'Partial dispose before rebuild failed',
+            e
+          )
+        }
+        isSetup = false
+        try {
+          await setupAudio()
+        } catch (e) {
+          logger.error('AudioEngine', 'Rebuild setupAudio failed', e)
+          isSetup = false
+          return false
+        }
+        // Verify rebuild succeeded before proceeding
+        if (!isSetup) {
+          logger.error(
+            'AudioEngine',
+            'Audio graph rebuild failed. Playback unavailable.'
+          )
+          return false
+        }
+      } finally {
+        if (resolveRebuild) resolveRebuild()
+        rebuildLock = null
+      }
     }
   }
 
@@ -1331,72 +1355,68 @@ export function disposeAudio() {
   stopGigPlayback()
   stopAmbientPlayback()
   audioBufferCache.clear()
-  if (guitar) guitar.dispose()
-  if (bass) bass.dispose()
+
+  guitar = safeDispose(guitar)
+  bass = safeDispose(bass)
+
   if (drumKit) {
-    drumKit.kick.dispose()
-    // Layered snare has custom dispose
-    if (drumKit.snare.dispose) drumKit.snare.dispose()
-    drumKit.hihat.dispose()
-    drumKit.crash.dispose()
+    drumKit.kick = safeDispose(drumKit.kick)
+    drumKit.snare = safeDispose(drumKit.snare)
+    drumKit.hihat = safeDispose(drumKit.hihat)
+    drumKit.crash = safeDispose(drumKit.crash)
+    drumKit = null
   }
-  if (sfxSynth) sfxSynth.dispose()
-  if (sfxGain) sfxGain.dispose()
-  if (musicGain) musicGain.dispose()
-  if (midiLead) midiLead.dispose()
-  if (midiBass) midiBass.dispose()
+
+  sfxSynth = safeDispose(sfxSynth)
+  sfxGain = safeDispose(sfxGain)
+  musicGain = safeDispose(musicGain)
+  midiLead = safeDispose(midiLead)
+  midiBass = safeDispose(midiBass)
+
   if (midiDrumKit) {
-    midiDrumKit.kick.dispose()
-    if (midiDrumKit.snare.dispose) midiDrumKit.snare.dispose()
-    midiDrumKit.hihat.dispose()
-    midiDrumKit.crash.dispose()
+    midiDrumKit.kick = safeDispose(midiDrumKit.kick)
+    midiDrumKit.snare = safeDispose(midiDrumKit.snare)
+    midiDrumKit.hihat = safeDispose(midiDrumKit.hihat)
+    midiDrumKit.crash = safeDispose(midiDrumKit.crash)
+    midiDrumKit = null
   }
-  if (midiReverbSend) midiReverbSend.dispose()
-  if (midiReverb) midiReverb.dispose()
-  if (midiDryBus) midiDryBus.dispose()
 
-  if (distortion) distortion.dispose()
-  if (guitarChorus) guitarChorus.dispose()
-  if (guitarEq) guitarEq.dispose()
-  if (widener) widener.dispose()
+  midiReverbSend = safeDispose(midiReverbSend)
+  midiReverb = safeDispose(midiReverb)
+  midiDryBus = safeDispose(midiDryBus)
 
-  if (bassEq) bassEq.dispose()
-  if (bassComp) bassComp.dispose()
+  distortion = safeDispose(distortion)
+  guitarChorus = safeDispose(guitarChorus)
+  guitarEq = safeDispose(guitarEq)
+  widener = safeDispose(widener)
 
-  if (drumBus) drumBus.dispose()
+  bassEq = safeDispose(bassEq)
+  bassComp = safeDispose(bassComp)
 
-  if (reverbSend) reverbSend.dispose()
-  if (reverb) reverb.dispose()
-  if (masterComp) masterComp.dispose()
-  if (masterLimiter) masterLimiter.dispose()
+  drumBus = safeDispose(drumBus)
 
-  guitar = null
-  bass = null
-  drumKit = null
-  sfxSynth = null
-  sfxGain = null
-  musicGain = null
-  midiLead = null
-  midiBass = null
-  midiDrumKit = null
-  midiReverbSend = null
-  midiReverb = null
-  midiDryBus = null
-
-  distortion = null
-  guitarChorus = null
-  guitarEq = null
-  widener = null
-  bassEq = null
-  bassComp = null
-  drumBus = null
-
-  masterLimiter = null
-  masterComp = null
-  reverb = null
-  reverbSend = null
+  reverbSend = safeDispose(reverbSend)
+  reverb = safeDispose(reverb)
+  masterComp = safeDispose(masterComp)
+  masterLimiter = safeDispose(masterLimiter)
 
   isSetup = false
+}
+
+/**
+ * Safely disposes a Tone.js node, catching errors if the context is closed.
+ * @param {object} node - The Tone.js node to dispose.
+ * @returns {null} Always returns null.
+ */
+function safeDispose(node) {
+  if (node && typeof node.dispose === 'function') {
+    try {
+      node.dispose()
+    } catch {
+      // Ignore dispose errors (likely due to closed context)
+    }
+  }
+  return null
 }
 
 /**

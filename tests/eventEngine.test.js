@@ -554,3 +554,23 @@ test('eventEngine.applyResult handles score stat increment', () => {
   const delta = eventEngine.applyResult(result)
   assert.equal(delta.flags.score, 100, 'score should increment in flags')
 })
+
+test('eventEngine.applyResult accumulates fame from mixed stats (fame, hype, crowd_energy)', () => {
+  const result = {
+    type: 'composite',
+    effects: [
+      { type: 'stat', stat: 'fame', value: 10 },
+      { type: 'stat', stat: 'hype', value: 5 },
+      { type: 'stat', stat: 'crowd_energy', value: 3 }
+    ]
+  }
+
+  const delta = eventEngine.applyResult(result)
+
+  assert.ok(delta, 'Should return delta')
+  assert.equal(
+    delta.player.fame,
+    18,
+    'Should accumulate all fame-related stats (10 + 5 + 3)'
+  )
+})

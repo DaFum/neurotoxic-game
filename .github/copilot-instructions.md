@@ -29,6 +29,8 @@ Web-based Roguelike Tour Manager with rhythm action mechanics. Manage a Death Gr
 
 **NEVER use hardcoded colors.** Always use CSS variables. Refer to `CLAUDE.md` for the full palette and usage examples.
 
+<!-- jscpd:ignore-start -->
+
 | Variable           | Hex     | Usage                     |
 | ------------------ | ------- | ------------------------- |
 | `--toxic-green`    | #00FF41 | Primary UI, text, borders |
@@ -36,6 +38,8 @@ Web-based Roguelike Tour Manager with rhythm action mechanics. Manage a Death Gr
 | `--blood-red`      | #CC0000 | Errors, critical states   |
 | `--ash-gray`       | #3A3A3A | Secondary text, borders   |
 | `--warning-yellow` | #FFCC00 | Warnings                  |
+
+<!-- jscpd:ignore-end -->
 
 ### Typography
 
