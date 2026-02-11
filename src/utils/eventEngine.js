@@ -99,7 +99,7 @@ const processEffect = (eff, delta) => {
           (delta.player.van.condition || 0) + eff.value
       }
       if (eff.stat === 'hype' || eff.stat === 'crowd_energy')
-        delta.flags.crowdEnergy = (delta.flags.crowdEnergy || 0) + eff.value
+        delta.player.fame = (delta.player.fame || 0) + eff.value
       if (eff.stat === 'viral')
         delta.social.viral = (delta.social.viral || 0) + eff.value
       if (eff.stat === 'score')
@@ -184,7 +184,7 @@ export const eventEngine = {
               // Then check top-level (dynamic stats like mood/health 0-100)
               // This priority prevents dynamic 'stamina' (100) from trivializing checks intended for base 'stamina' (7)
               const val = m.baseStats?.[stat] !== undefined ? m.baseStats[stat] : m[stat]
-              return val || 0
+              return val ?? 0
             })
           )
         } else {
