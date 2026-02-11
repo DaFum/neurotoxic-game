@@ -331,6 +331,7 @@ export async function setupAudio() {
     resolveLock = r
   })
 
+  try {
   const previousToneContext = Tone.getContext()
 
   // Configure Tone.js context for sustained playback (gigs are 30-60s)
@@ -542,8 +543,10 @@ export async function setupAudio() {
   midiDrumKit.crash.volume.value = -6
 
   isSetup = true
-  setupLock = null
-  if (resolveLock) resolveLock()
+  } finally {
+    setupLock = null
+    if (resolveLock) resolveLock()
+  }
 }
 
 /**
@@ -572,6 +575,14 @@ export async function ensureAudioContext() {
     )
     isSetup = false
     await setupAudio()
+    // Verify rebuild succeeded before proceeding
+    if (!isSetup) {
+      logger.error(
+        'AudioEngine',
+        'Audio graph rebuild failed. Playback unavailable.'
+      )
+      return false
+    }
   }
 
   if (Tone.context.state !== 'running') {
