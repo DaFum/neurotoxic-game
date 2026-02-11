@@ -5,7 +5,7 @@
       "author": "Docs Maintainer"
     },
     {
-      "content": "Prioritize inspection order: src/utils/audioEngine.js (initAudioEngine, loadSongAudio, startGigPlayback, stopAudioInternal), src/utils/AudioManager.js (singleton lifecycle), src/context/GameState.jsx (GameStateProvider, useGameState), src/context/gameReducer.js (ActionTypes, gameReducer), src/hooks/useRhythmGameLogic.js, src/hooks/useTravelLogic.js, src/hooks/usePurchaseLogic.js, src/components/PixiStageController.js, then src/ui and src/data.",
+      "content": "Prioritize inspection order: src/utils/audioEngine.js (setupAudio, loadAudioBuffer, startGigPlayback, stopAudioInternal), src/utils/AudioManager.js (singleton lifecycle), src/context/GameState.jsx (GameStateProvider, useGameState), src/context/gameReducer.js (ActionTypes, gameReducer), src/hooks/useRhythmGameLogic.js, src/hooks/useTravelLogic.js, src/hooks/usePurchaseLogic.js, src/components/PixiStageController.js, then src/ui and src/data.",
       "author": "Architecture"
     },
     {
@@ -42,7 +42,7 @@
     },
     {
       "title": "Purpose and Scope",
-      "purpose": "Define documentation boundaries using README.md and docs/CODING_STANDARDS.md: frontend-only SPA architecture (no backend/API layer), gameplay scope, ownership of React scenes/hooks/utils/ui modules, and explicit non-goals such as documenting dist/ or node_modules/. Include persistence scope through src/utils/storage.js and what is intentionally out of threat-model guarantees.",
+      "purpose": "Define documentation boundaries using README.md and docs/CODING_STANDARDS.md: frontend-only SPA architecture (no backend/API layer), gameplay scope, ownership of React scenes/hooks/utils/ui modules, and explicit non-goals such as documenting dist/ or node_modules/. Include persistence scope through saveGame()/loadGame() in src/context/GameState.jsx and safeStorageOperation in src/utils/errorHandler.js, plus what is intentionally out of threat-model guarantees.",
       "parent": "Overview",
       "page_notes": [
         {
@@ -146,7 +146,7 @@
     },
     {
       "title": "Audio Engine Core",
-      "purpose": "Deep dive src/utils/audioEngine.js (~1900 lines): Tone.js boot sequence via setupAudio()/initAudioEngine with Tone.Context timing parameters, instrument chains for guitar/bass/drums/SFX/clean-MIDI buses, routing through compressor/limiter/musicGain nodes, playback entry points loadSongAudio(), playAmbientTrack(), startGigPlayback(), and teardown via stopGigPlayback()/stopAudioInternal() with disposal guarantees and failure modes.",
+      "purpose": "Deep dive src/utils/audioEngine.js (~1900 lines): Tone.js boot sequence via setupAudio()/ensureAudioContext with Tone.Context timing parameters, instrument chains for guitar/bass/drums/SFX/clean-MIDI buses, routing through compressor/limiter/musicGain nodes, playback entry points loadAudioBuffer(), playRandomAmbientOgg()/playRandomAmbientMidi(), startGigPlayback(), and teardown via stopGigPlayback()/stopAudioInternal() with disposal guarantees and failure modes.",
       "parent": "Core Subsystems Overview",
       "page_notes": [
         {
@@ -220,7 +220,7 @@
     },
     {
       "title": "Persistence & Save Data",
-      "purpose": "Document persistence flow in src/utils/storage.js and GameState load/save integration: safeStorageOperation wrappers, schema/version handling, reducer load actions, fallback behavior on parse failures, and guardrails against malformed/tampered localStorage data before applying values to player economy or band condition.",
+      "purpose": "Document persistence flow via saveGame()/loadGame() in src/context/GameState.jsx and safeStorageOperation in src/utils/errorHandler.js: safeStorageOperation wrappers, schema/version handling, reducer load actions, fallback behavior on parse failures, and guardrails against malformed/tampered localStorage data before applying values to player economy or band condition.",
       "parent": "State Management",
       "page_notes": [
         {
