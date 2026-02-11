@@ -1,0 +1,11 @@
+{
+  "ignore": [
+    "package-lock.json",
+    "node_modules",
+    "dist",
+    "build",
+    ".git",
+    ".github"
+  ],
+  "threshold": 0
+}

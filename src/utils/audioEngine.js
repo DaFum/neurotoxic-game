@@ -567,7 +567,11 @@ export async function ensureAudioContext() {
     const rawCtx = getRawAudioContext()
     needsRebuild = rawCtx?.state === 'closed'
   } catch (e) {
-    logger.debug('AudioEngine', 'getRawAudioContext failed during recovery check', e)
+    logger.debug(
+      'AudioEngine',
+      'getRawAudioContext failed during recovery check',
+      e
+    )
     needsRebuild = true
   }
 

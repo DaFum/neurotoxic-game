@@ -176,7 +176,9 @@ export const eventEngine = {
       } else {
         // Member stat check (e.g. skill)
         // Ensure members array exists to prevent crash
-        const members = Array.isArray(gameState.band?.members) ? gameState.band.members : []
+        const members = Array.isArray(gameState.band?.members)
+          ? gameState.band.members
+          : []
         if (members.length > 0) {
           skillValue = Math.max(
             ...members.map(m => {

@@ -87,6 +87,5 @@ test.describe('Game Flow', () => {
         'Unexpected state: neither stayed on menu nor showed save error'
       )
     }
-
   })
 })
