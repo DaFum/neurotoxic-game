@@ -80,7 +80,8 @@ test.describe('Game Flow', () => {
     }
 
     const stayedOnMenu = bodyText.includes('NEUROTOXIC')
-    const showedError = bodyText.toLowerCase().includes('no save')
+    const showedError =
+      bodyText.includes('No save') || bodyText.includes('no save')
 
     if (!stayedOnMenu && !showedError) {
       throw new Error(
