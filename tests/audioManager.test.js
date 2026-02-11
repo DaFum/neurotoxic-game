@@ -55,6 +55,9 @@ test('AudioManager Tests', async t => {
   })
 
   await t.test('toggleMute updates mute state', () => {
+        // Reset state for isolation
+        audioManager.muted = false
+
     const initialMute = audioManager.muted
     const newMute = audioManager.toggleMute()
     assert.equal(newMute, !initialMute)

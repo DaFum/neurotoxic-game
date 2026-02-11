@@ -167,8 +167,9 @@ export const eventEngine = {
       if (stat === 'luck') {
         // Luck check: ignore band stats, just roll
         skillValue = Math.random() * 10
-      } else if (gameState.band[stat] !== undefined) {
+      } else if (typeof gameState.band[stat] === 'number') {
         // Band stat check (e.g. harmony)
+        // Explicitly check for number to avoid using objects like 'inventory' or 'members' as stats
         skillValue = gameState.band[stat] / 10
       } else {
         // Member stat check (e.g. skill)
