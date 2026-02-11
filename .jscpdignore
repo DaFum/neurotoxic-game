@@ -1,1 +1,8 @@
 .github/
+CLAUDE.md
+.agents/
+.claude/
+node_modules/
+dist/
+build/
+package-lock.json
