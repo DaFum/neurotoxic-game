@@ -175,7 +175,14 @@ export const eventEngine = {
         // Ensure members array exists to prevent crash
         const members = gameState.band.members || []
         if (members.length > 0) {
-          skillValue = Math.max(...members.map(m => m[stat] || 0))
+          skillValue = Math.max(
+            ...members.map(m => {
+              // Check top-level (dynamic stats like mood/stamina)
+              // OR nested baseStats (static attributes like skill/charisma)
+              const val = m[stat] !== undefined ? m[stat] : m.baseStats?.[stat]
+              return val || 0
+            })
+          )
         } else {
           skillValue = 0
         }

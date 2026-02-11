@@ -29,9 +29,10 @@ const buildGameState = (overrides = {}) => ({
   },
   band: {
     members: [
-      { id: 'matze', name: 'Matze', stamina: 70, mood: 60, skill: 5 },
-      { id: 'lars', name: 'Lars', stamina: 65, mood: 55, skill: 4 },
-      { id: 'marius', name: 'Marius', stamina: 60, mood: 70, skill: 3 }
+      // Matches src/data/characters.js structure: skills are in baseStats
+      { id: 'matze', name: 'Matze', stamina: 70, mood: 60, baseStats: { skill: 5, charisma: 5 } },
+      { id: 'lars', name: 'Lars', stamina: 65, mood: 55, baseStats: { skill: 4, charisma: 4 } },
+      { id: 'marius', name: 'Marius', stamina: 60, mood: 70, baseStats: { skill: 3, charisma: 3 } }
     ],
     harmony: 70,
     inventory: { spare_tire: true, strings: true },
@@ -77,20 +78,18 @@ test('eventEngine.checkEvent filters by trigger point', () => {
   assert.ok(MOCK_EVENTS.transport.some(e => e.id === result.id))
 })
 
-test('eventEngine.checkEvent respects cooldowns', () => {
-  // Ensure 'event_cooldown' is skipped
+test('eventEngine.checkEvent respects cooldowns', t => {
   const state = buildGameState({ eventCooldowns: ['event_cooldown', 'event_pending'] })
 
-  // Mock random to pick event_cooldown if it wasn't filtered
-  // But our simple selectEvent logic filters first.
-  // We need to ensure event_normal is picked.
-
-  // Actually, we can check multiple times or ensure the pool only has these.
-  // MOCK_EVENTS has 3 events.
-  // If we cooldown 'event_cooldown' and 'event_pending', only 'event_normal' remains.
+  // Mock random to ensure consistent behavior even though logic should force choice.
+  // The sorting in selectEvent uses Math.random() - 0.5.
+  // With only 1 eligible event, sort order doesn't matter, but we mock anyway for hygiene.
+  const mockRandom = t.mock.method(Math, 'random', () => 0.5)
 
   const result = eventEngine.checkEvent('transport', state, 'pre_gig')
   assert.equal(result.id, 'event_normal', 'Should select the only non-cooled-down event')
+
+  mockRandom.mock.restore() // Cleanup if necessary (test context handles this mostly)
 })
 
 test('eventEngine.checkEvent prioritizes pending events', () => {
@@ -156,41 +155,33 @@ test('eventEngine.resolveChoice uses random roll (ignoring band stat) for luck c
   // but ensure the random roll SUCCEEDS.
   const state = { ...baseState, band: { ...baseState.band, luck: 0 } }
 
-  // We want:
-  // skillValue = Math.random() * 10
-  // roll = Math.random() * 10
-  // total = skillValue + (roll > 8 ? 2 : 0)
-  //
-  // If we return 0.9:
-  // skillValue = 9
-  // roll = 9 (crit +2)
-  // total = 11 >= 5 -> success
-
   const mockRandom = t.mock.method(Math, 'random', () => 0.9)
 
   const result = eventEngine.resolveChoice(choice, state)
   assert.equal(result.outcome, 'success', 'Should succeed luck check via random roll')
 })
 
-test('eventEngine.resolveChoice uses max member skill', () => {
+test('eventEngine.resolveChoice uses max member skill (from baseStats)', () => {
   const choice = {
     label: 'Technical repair',
     skillCheck: {
-      stat: 'skill',
+      stat: 'skill', // Checks 'skill' which is in baseStats
       threshold: 4,
       success: { type: 'stat', stat: 'van_condition', value: 20 },
       failure: { type: 'stat', stat: 'van_condition', value: -10 }
     }
   }
+  // buildGameState sets Matze skill to 5, Lars 4, Marius 3. Max is 5.
+  // 5 + (random=0) = 5. 5 >= 4 -> Success.
+  // Unless we mock random? Default random might fail if roll is extremely low?
+  // But logic adds +0 or +2. 5 + 0 >= 4 is always true.
+
   const state = buildGameState()
 
   const result = eventEngine.resolveChoice(choice, state)
 
   assert.ok(result, 'Should return result object')
-  assert.ok(
-    ['success', 'failure'].includes(result.outcome),
-    'Skill check should have valid outcome'
-  )
+  assert.equal(result.outcome, 'success', 'Should pass skill check (5 >= 4)')
 })
 
 test('eventEngine.resolveChoice preserves nextEventId', () => {
@@ -476,7 +467,7 @@ test('eventEngine.applyResult handles inventory non-numeric value', () => {
   assert.equal(delta.band.inventory.golden_pick, true, 'Should set value')
 })
 
-test('eventEngine logic for inventory increment handles existing values', () => {
+test('eventEngine.applyResult handles inventory increment handles existing values', () => {
   const result = {
     type: 'composite',
     effects: [
