@@ -92,12 +92,9 @@ class AudioSystem {
       this.stopMusic()
       this.currentSongId = 'ambient'
       try {
-        const oggSuccess = await audioEngine.playRandomAmbientOgg(
-          Math.random,
-          {
-            skipStop: true
-          }
-        )
+        const oggSuccess = await audioEngine.playRandomAmbientOgg(Math.random, {
+          skipStop: true
+        })
         if (oggSuccess) {
           return true
         }

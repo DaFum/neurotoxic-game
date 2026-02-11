@@ -55,10 +55,8 @@ test('eventEngine.checkEvent returns null when category not found', () => {
 })
 
 test('eventEngine.checkEvent filters by trigger point', () => {
-  // This test requires actual event data, so we test the logic
   const state = buildGameState()
   const result = eventEngine.checkEvent('transport', state, 'pre_gig')
-  // Result can be null or an event, both are valid
   assert.ok(
     result === null || typeof result === 'object',
     'Should return null or event object'
@@ -67,13 +65,11 @@ test('eventEngine.checkEvent filters by trigger point', () => {
 
 test('eventEngine.checkEvent respects cooldowns', () => {
   const state = buildGameState({ eventCooldowns: ['event_id_1'] })
-  // Test that cooled down events are filtered out
   assert.ok(Array.isArray(state.eventCooldowns), 'Cooldowns should be array')
 })
 
 test('eventEngine.checkEvent prioritizes pending events', () => {
   const state = buildGameState({ pendingEvents: ['some_event_id'] })
-  // Pending events should be checked first
   assert.ok(
     Array.isArray(state.pendingEvents),
     'Pending events should be array'
@@ -96,43 +92,34 @@ test('eventEngine.resolveChoice handles direct effect', () => {
   assert.equal(result.type, 'resource', 'Should preserve effect type')
 })
 
-test('eventEngine.resolveChoice handles skill check success', () => {
+test('eventEngine.resolveChoice handles skill check success', t => {
   const choice = buildSkillCheckChoice(5)
   const state = buildGameState({
     band: { ...buildGameState().band, harmony: 80 }
   })
 
   // Mock random to ensure success (0.1 < 0.8)
-  const originalRandom = Math.random
-  Math.random = () => 0.1
+  const mockRandom = t.mock.method(Math, 'random', () => 0.1)
 
-  try {
-    const result = eventEngine.resolveChoice(choice, state)
-    assert.equal(result.outcome, 'success', 'Should trigger success outcome')
-  } finally {
-    Math.random = originalRandom
-  }
+  const result = eventEngine.resolveChoice(choice, state)
+  assert.equal(result.outcome, 'success', 'Should trigger success outcome')
+  assert.strictEqual(mockRandom.mock.calls.length > 0, true)
 })
 
-test('eventEngine.resolveChoice handles skill check failure', () => {
+test('eventEngine.resolveChoice handles skill check failure', t => {
   const choice = buildSkillCheckChoice(10)
   const state = buildGameState({
     band: { ...buildGameState().band, harmony: 10 }
   })
 
   // Mock random to ensure failure (0.9 > 0.1)
-  const originalRandom = Math.random
-  Math.random = () => 0.9
+  const mockRandom = t.mock.method(Math, 'random', () => 0.9)
 
-  try {
-    const result = eventEngine.resolveChoice(choice, state)
-    assert.equal(result.outcome, 'failure', 'Should trigger failure outcome')
-  } finally {
-    Math.random = originalRandom
-  }
+  const result = eventEngine.resolveChoice(choice, state)
+  assert.equal(result.outcome, 'failure', 'Should trigger failure outcome')
 })
 
-test('eventEngine.resolveChoice uses luck stat for luck checks', () => {
+test('eventEngine.resolveChoice uses luck stat for luck checks', t => {
   const choice = {
     label: 'Try your luck',
     skillCheck: {
@@ -145,26 +132,16 @@ test('eventEngine.resolveChoice uses luck stat for luck checks', () => {
   const baseState = buildGameState()
   const state = { ...baseState, band: { ...baseState.band, luck: 10 } }
 
-  // Mock random for deterministic outcome
-  const originalRandom = Math.random
-  Math.random = () => 0.9 // Very lucky (returns 0.9 * 10 = 9)
+  // Mock random for deterministic outcome.
+  // Implementation calls Math.random() * 10 for skill value, then Math.random() * 10 for roll.
+  // We need both calls to behave predictably or mock carefully.
+  // Here we mock simply returning 0.9.
+  // skillValue = 0.9 * 10 = 9.
+  // roll = 0.9 * 10 = 9 (crit? +2). total = 9 + 2 = 11. 11 >= 5 -> success.
+  const mockRandom = t.mock.method(Math, 'random', () => 0.9)
 
-  try {
-    let result;
-    try {
-        result = eventEngine.resolveChoice(choice, state)
-    } catch (e) {
-        console.log('resolveChoice threw error:', e)
-        throw e
-    }
-
-    if (result.outcome !== 'success') {
-        console.log('Luck check failed. Result:', result)
-    }
-    assert.equal(result.outcome, 'success', 'Should succeed luck check')
-  } finally {
-    Math.random = originalRandom
-  }
+  const result = eventEngine.resolveChoice(choice, state)
+  assert.equal(result.outcome, 'success', 'Should succeed luck check')
 })
 
 test('eventEngine.resolveChoice uses max member skill', () => {
@@ -472,17 +449,6 @@ test('eventEngine.applyResult handles inventory non-numeric value', () => {
 })
 
 test('eventEngine logic for inventory increment handles existing values', () => {
-  // applyResult only returns the delta, not the application logic on state.
-  // We need to verify that applyEventDelta (which uses the logic we changed in eventEngine logic? No wait.)
-  // Wait, the logic change was in `processEffect` inside `eventEngine.js`.
-  // `processEffect` populates the delta.
-  // The `processEffect` implementation for 'item' now does:
-  // if (typeof eff.value === 'number') { delta.band.inventory[eff.item] = Math.max(0, current + eff.value) }
-  // BUT `current` comes from `delta.band.inventory`, NOT the game state.
-  // `applyResult` creates a FRESH delta object: `const delta = { player: {}, band: {}, ... }`
-  // So `current` will always be 0 (or undefined) inside `applyResult` unless multiple effects target the same item in one composite event.
-
-  // Let's test a composite event that adds to the same item twice to verify accumulation in delta.
   const result = {
     type: 'composite',
     effects: [

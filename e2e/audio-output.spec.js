@@ -1,36 +1,37 @@
-import { test, expect } from '@playwright/test';
-import { skipToMenu } from './helpers.js';
+import { test, expect } from '@playwright/test'
+import { skipToMenu } from './helpers.js'
 
 test.describe('Audio System', () => {
   test('Volume preference persistence', async ({ page }) => {
     // 1. Set volume in localStorage before load
-    await page.goto('/'); // Initialize context
+    await page.goto('/') // Initialize context
     await page.evaluate(() => {
-        localStorage.setItem('neurotoxic_vol_music', '0.42');
-    });
+      localStorage.setItem('neurotoxic_vol_music', '0.42')
+    })
 
     // 2. Reload app
-    await page.reload();
-    await skipToMenu(page);
+    await page.reload()
+    await skipToMenu(page)
 
     // 3. Open Band HQ (Settings)
-    await page.getByRole('button', { name: /band hq/i }).click();
+    await page.getByRole('button', { name: /band hq/i }).click()
 
-    // 4. Verify the slider or internal state reflects the stored value.
-    // Since locating the slider might be fragile, we can check if the app wrote back to localStorage
-    // or if we can access the state via a global if exposed (it's not).
+    // 4. Navigate to SETTINGS tab
+    await page.getByRole('button', { name: /settings/i }).click()
 
-    // However, if AudioManager loaded correctly, it would have set its internal state to 0.42.
-    // When we change it, it updates localStorage.
+    // 5. Verify the slider or internal state reflects the stored value.
+    // Check if we can select by label text if available.
 
-    // Let's try to change the volume via UI if possible.
-    // We look for an input[type="range"].
-    const sliders = page.locator('input[type="range"]');
-    await expect(sliders).toHaveCount(2); // Music and SFX
+    // Attempt to find the slider associated with "MUSIC VOLUME" text
+    const musicLabel = page.getByText('MUSIC VOLUME')
+    const musicSlider = page.locator('input[type="range"]').first()
 
-    const musicSlider = sliders.first(); // Assuming Music is first
-    const val = await musicSlider.inputValue();
+    // Verify visibility first
+    await expect(musicLabel).toBeVisible()
+    await expect(musicSlider).toBeVisible()
 
-    expect(parseFloat(val)).toBeCloseTo(0.42, 1);
-  });
-});
+    // Check value
+    const firstVal = await musicSlider.inputValue()
+    expect(parseFloat(firstVal)).toBeCloseTo(0.42, 1)
+  })
+})

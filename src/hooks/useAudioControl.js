@@ -46,25 +46,22 @@ export const useAudioControl = () => {
     [manager, setAudioState]
   )
 
-  const toggleMute = useCallback(
-    () => {
-      let didApply = false
-      let nextMuted = manager.muted
-      try {
-        nextMuted = manager.toggleMute()
-        didApply = true
-      } catch (error) {
-        handleError(error, {
-          fallbackMessage: 'useAudioControl.toggleMute failed',
-          silent: true
-        })
-      }
-      if (didApply) {
-        setAudioState(prev => ({ ...prev, isMuted: nextMuted }))
-      }
-    },
-    [manager, setAudioState]
-  )
+  const toggleMute = useCallback(() => {
+    let didApply = false
+    let nextMuted = manager.muted
+    try {
+      nextMuted = manager.toggleMute()
+      didApply = true
+    } catch (error) {
+      handleError(error, {
+        fallbackMessage: 'useAudioControl.toggleMute failed',
+        silent: true
+      })
+    }
+    if (didApply) {
+      setAudioState(prev => ({ ...prev, isMuted: nextMuted }))
+    }
+  }, [manager, setAudioState])
 
   const handleAudioChange = useMemo(
     () => ({ setMusic, setSfx, toggleMute }),

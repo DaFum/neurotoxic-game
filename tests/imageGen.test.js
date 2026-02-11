@@ -7,7 +7,10 @@ test('getGenImageUrl generates correct Pollinations.ai URL', () => {
   const url = getGenImageUrl(prompt)
 
   // Validate URL structure
-  assert.ok(url.startsWith('https://gen.pollinations.ai/image/'), 'URL should start with base URL')
+  assert.ok(
+    url.startsWith('https://gen.pollinations.ai/image/'),
+    'URL should start with base URL'
+  )
 
   // Validate query parameters
   assert.ok(url.includes('?model=flux'), 'Should use flux model')
@@ -22,5 +25,9 @@ test('getGenImageUrl generates correct Pollinations.ai URL', () => {
 test('IMG_PROMPTS contains required keys', () => {
   assert.ok(IMG_PROMPTS.MAIN_MENU_BG, 'Should have MAIN_MENU_BG')
   assert.ok(IMG_PROMPTS.OVERWORLD_MAP, 'Should have OVERWORLD_MAP')
-  assert.equal(typeof IMG_PROMPTS.MAIN_MENU_BG, 'string', 'Prompts should be strings')
+  assert.equal(
+    typeof IMG_PROMPTS.MAIN_MENU_BG,
+    'string',
+    'Prompts should be strings'
+  )
 })

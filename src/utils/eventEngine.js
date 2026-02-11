@@ -160,14 +160,23 @@ export const eventEngine = {
       const { stat, threshold, success, failure } = choice.skillCheck
 
       let skillValue = 0
-      const maxMemberSkill = Math.max(
-        ...gameState.band.members.map(m => m[stat] || 0)
-      )
 
-      if (stat === 'luck') skillValue = Math.random() * 10
-      else if (gameState.band[stat] !== undefined)
+      if (stat === 'luck') {
+        // Luck check: ignore band stats, just roll
+        skillValue = Math.random() * 10
+      } else if (gameState.band[stat] !== undefined) {
+        // Band stat check (e.g. harmony)
         skillValue = gameState.band[stat] / 10
-      else skillValue = maxMemberSkill
+      } else {
+        // Member stat check (e.g. skill)
+        // Ensure members array exists to prevent crash
+        const members = gameState.band.members || []
+        if (members.length > 0) {
+          skillValue = Math.max(...members.map(m => m[stat] || 0))
+        } else {
+          skillValue = 0
+        }
+      }
 
       const roll = Math.random() * 10
       const total = skillValue + (roll > 8 ? 2 : 0) // Crit chance
