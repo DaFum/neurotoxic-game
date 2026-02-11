@@ -402,6 +402,41 @@
           "content": "Include release-readiness checks for documentation freshness in docs/ and AGENTS.md when architecture changes."
         }
       ]
+    },
+    {
+      "title": "Gig Playback Modes & Audio Fallback Chains",
+      "purpose": "Descriptive and concrete runtime documentation for gig audio execution in src/hooks/useRhythmGameLogic.js, src/utils/audioPlaybackUtils.js, src/utils/audioSelectionUtils.js, src/utils/audioEngine.js, and src/utils/AudioManager.js by detailing the four playback fallback chains (song excerpt -> WebAudio buffer fallback -> generated backing -> silent safety mode), trigger conditions for each branch, and handoff points between scene logic and low-level playback control.",
+      "parent": "Audio Engine Core",
+      "page_notes": [
+        {
+          "content": "Capture exact branch order and guard conditions used at gig start, including when parsed chart notes exist but audio bootstrap fails, and when procedural note generation is invoked as a resilience path."
+        },
+        {
+          "content": "Document concrete mixer and synth defaults from audioEngine (for example limiter/compressor thresholds, rhythmic gain staging, and FM synth defaults) with file/line anchors so tuning changes are reviewable."
+        },
+        {
+          "content": "List lifecycle boundaries: ensureAudioContext() unlock constraints, AudioManager singleton ownership, start/stop cleanup responsibilities, and failure telemetry paths (warnings/errors) to prevent stuck playback state."
+        }
+      ]
+    },
+    {
+      "title": "Synchronization, Effects & Scaling Formulas",
+      "purpose": "Introduce implementation-level formulas that tie rhythm timing, render sync, simulation, and balancing together across src/hooks/useRhythmGameLogic.js, src/components/PixiStageController.js, src/utils/rhythmUtils.js, src/utils/simulationUtils.js, src/utils/economyEngine.js, and src/utils/gigStats.js, including the dual mutable ref model, note positioning math, hit/miss windows, visual hit feedback timing, and daily/performance modifier calculations.",
+      "parent": "Core Subsystems Overview",
+      "page_notes": [
+        {
+          "content": "Describe gameStateRef vs statsRef responsibilities and why mutable refs are used for frame-loop synchronization without forcing React rerenders in Pixi update cycles."
+        },
+        {
+          "content": "Write the note positioning and hit-detection equations as explicit formulas (spawn lead-in, travel distance, hit window, miss window) and map each term to runtime variables."
+        },
+        {
+          "content": "Consolidate concrete balancing formulas for daily updates, resource flow, and gig performance modifiers (money/fuel/harmony/followers/fame multipliers) so contributors can reason about economy changes without scanning multiple utilities."
+        },
+        {
+          "content": "Include implementation details for visual feedback systems (lane flashes, hit sparks, crowd/CRT effects) with timing constants and cleanup behavior to prevent animation memory leaks."
+        }
+      ]
     }
   ]
 }
