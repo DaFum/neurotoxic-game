@@ -405,7 +405,7 @@
     },
     {
       "title": "Gig Playback Modes & Audio Fallback Chains",
-      "purpose": "Restore concrete runtime documentation for gig audio execution in src/hooks/useRhythmGameLogic.js, src/utils/audioPlaybackUtils.js, src/utils/audioSelectionUtils.js, src/utils/audioEngine.js, and src/utils/AudioManager.js by detailing the four playback fallback chains (song excerpt -> WebAudio buffer fallback -> generated backing -> silent safety mode), trigger conditions for each branch, and handoff points between scene logic and low-level playback control.",
+      "purpose": "Descriptive and concrete runtime documentation for gig audio execution in src/hooks/useRhythmGameLogic.js, src/utils/audioPlaybackUtils.js, src/utils/audioSelectionUtils.js, src/utils/audioEngine.js, and src/utils/AudioManager.js by detailing the four playback fallback chains (song excerpt -> WebAudio buffer fallback -> generated backing -> silent safety mode), trigger conditions for each branch, and handoff points between scene logic and low-level playback control.",
       "parent": "Audio Engine Core",
       "page_notes": [
         {
@@ -421,7 +421,7 @@
     },
     {
       "title": "Synchronization, Effects & Scaling Formulas",
-      "purpose": "Reintroduce implementation-level formulas that tie rhythm timing, render sync, simulation, and balancing together across src/hooks/useRhythmGameLogic.js, src/components/PixiStageController.js, src/utils/rhythmUtils.js, src/utils/simulationUtils.js, src/utils/economyEngine.js, and src/utils/gigStats.js, including the dual mutable ref model, note positioning math, hit/miss windows, visual hit feedback timing, and daily/performance modifier calculations.",
+      "purpose": "Introduce implementation-level formulas that tie rhythm timing, render sync, simulation, and balancing together across src/hooks/useRhythmGameLogic.js, src/components/PixiStageController.js, src/utils/rhythmUtils.js, src/utils/simulationUtils.js, src/utils/economyEngine.js, and src/utils/gigStats.js, including the dual mutable ref model, note positioning math, hit/miss windows, visual hit feedback timing, and daily/performance modifier calculations.",
       "parent": "Core Subsystems Overview",
       "page_notes": [
         {
