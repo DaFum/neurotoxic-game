@@ -68,7 +68,7 @@
     },
     {
       "title": "Scene Flow & Game Loop",
-      "purpose": "Describe exact scene transition mechanics implemented through createChangeSceneAction() in src/context/actionCreators.js, changeScene() from useGameState() in src/context/GameState.jsx, and ActionTypes.CHANGE_SCENE handling in src/context/gameReducer.js for MENU, SETTINGS, CREDITS, OVERWORLD, PREGIG, GIG, POSTGIG, and GAMEOVER.",
+      "purpose": "Describe exact scene transition mechanics implemented through createChangeSceneAction() in src/context/actionCreators.js, changeScene() from useGameState() in src/context/GameState.jsx, ActionTypes.CHANGE_SCENE handling in src/context/gameReducer.js, and the scene router in src/App.jsx for INTRO (src/scenes/IntroVideo.jsx), MENU, SETTINGS, CREDITS, OVERWORLD, PREGIG, GIG, POSTGIG, and GAMEOVER.",
       "parent": "Overview",
       "page_notes": [
         {
