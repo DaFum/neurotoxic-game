@@ -64,10 +64,11 @@ test('AudioManager Tests', async t => {
 
   await t.test('startAmbient calls playRandomAmbientOgg', async () => {
     const callsBefore = mockAudioEngine.playRandomAmbientOgg.mock.calls.length
-    await audioManager.startAmbient()
+    const result = await audioManager.startAmbient()
     assert.strictEqual(
       mockAudioEngine.playRandomAmbientOgg.mock.calls.length,
       callsBefore + 1
     )
+    assert.strictEqual(result, true)
   })
 })

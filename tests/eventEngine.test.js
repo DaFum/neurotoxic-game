@@ -112,7 +112,11 @@ test('eventEngine.checkEvent respects cooldowns', t => {
     'event_normal',
     'Should select the only non-cooled-down event'
   )
-
+  // Ensure Math.random was used by the selection logic without coupling to logger internals.
+  assert.ok(
+    mockRandom.mock.calls.length >= 1,
+    'Math.random should be called at least once during event selection'
+  )
 })
 
 test('eventEngine.checkEvent prioritizes pending events', () => {
@@ -531,4 +535,22 @@ test('eventEngine logic allows negative inventory in delta', () => {
     -5,
     'Should allow negative inventory in delta for consumption'
   )
+})
+
+test('eventEngine.applyResult handles hype stat as fame', () => {
+  const result = { type: 'stat', stat: 'hype', value: 10 }
+  const delta = eventEngine.applyResult(result)
+  assert.equal(delta.player.fame, 10, 'hype should map to fame')
+})
+
+test('eventEngine.applyResult handles crowd_energy stat as fame', () => {
+  const result = { type: 'stat', stat: 'crowd_energy', value: 5 }
+  const delta = eventEngine.applyResult(result)
+  assert.equal(delta.player.fame, 5, 'crowd_energy should map to fame')
+})
+
+test('eventEngine.applyResult handles score stat increment', () => {
+  const result = { type: 'stat', stat: 'score', value: 100 }
+  const delta = eventEngine.applyResult(result)
+  assert.equal(delta.flags.score, 100, 'score should increment in flags')
 })

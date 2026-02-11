@@ -27,15 +27,7 @@ Web-based Roguelike Tour Manager with rhythm action mechanics. Manage a Death Gr
 
 ### Color Palette
 
-**NEVER use hardcoded colors.** Always use CSS variables:
-
-```jsx
-// CORRECT (Tailwind v4)
-<div className="bg-(--void-black) text-(--toxic-green)">
-
-// WRONG: Tailwind v3 bracket-variable syntax (do not use).
-<div className="bg-[var(--void-black)] text-[var(--toxic-green)]">
-```
+**NEVER use hardcoded colors.** Always use CSS variables. Refer to `CLAUDE.md` for the full palette and usage examples.
 
 | Variable           | Hex     | Usage                     |
 | ------------------ | ------- | ------------------------- |
@@ -254,15 +246,7 @@ import { eventEngine } from '../utils/eventEngine'
 - **Neu (v4):** `bg-(--void-black)` oder `text-(--toxic-green)`
 - **Alt (v3):** bracket-variable syntax (jetzt falsch)
 
-Beispiel:
-
-```jsx
-// CORRECT (v4)
-<div className="bg-(--void-black) text-(--toxic-green)">
-
-// WRONG (v3 legacy)
-<div className="bg-[var(--void-black)] text-[var(--toxic-green)]">
-```
+Siehe `docs/TAILWIND_V4_PATTERNS.md` für weitere Details.
 
 ### State Safety
 
