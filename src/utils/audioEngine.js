@@ -1412,7 +1412,7 @@ function safeDispose(node) {
   if (node && typeof node.dispose === 'function') {
     try {
       node.dispose()
-    } catch (e) {
+    } catch {
       // Ignore dispose errors (likely due to closed context)
     }
   }
