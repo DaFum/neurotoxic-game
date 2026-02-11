@@ -207,3 +207,13 @@ export const createConsumeItemAction = itemType => ({
 export const createAdvanceDayAction = () => ({
   type: ActionTypes.ADVANCE_DAY
 })
+
+/**
+ * Creates an add cooldown action
+ * @param {string} eventId - Event ID to add to cooldowns
+ * @returns {Object} Action object
+ */
+export const createAddCooldownAction = eventId => ({
+  type: ActionTypes.ADD_COOLDOWN,
+  payload: eventId
+})

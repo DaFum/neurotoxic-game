@@ -33,7 +33,8 @@ import {
   createApplyEventDeltaAction,
   createPopPendingEventAction,
   createConsumeItemAction,
-  createAdvanceDayAction
+  createAdvanceDayAction,
+  createAddCooldownAction
 } from './actionCreators'
 
 const GameStateContext = createContext()
@@ -367,7 +368,12 @@ export const GameStateProvider = ({ children }) => {
         }
       }
 
-      // 4. Feedback (Success Path)
+      // 4. Cooldown — prevent the same event from firing again immediately
+      if (state.activeEvent?.id) {
+        dispatch(createAddCooldownAction(state.activeEvent.id))
+      }
+
+      // 5. Feedback (Success Path)
       if (outcomeText || description) {
         const message =
           outcomeText && description
@@ -376,11 +382,11 @@ export const GameStateProvider = ({ children }) => {
         addToast(message, 'info')
       }
 
-      // 5. Cleanup
+      // 6. Cleanup
       setActiveEvent(null)
       return { outcomeText, description, result }
     } catch (error) {
-      // 6. Error Handling
+      // 7. Error Handling
       console.error('[Event] Failed to resolve event choice:', error)
       addToast('EVENT ERROR: Resolution failed.', 'error')
       setActiveEvent(null)
