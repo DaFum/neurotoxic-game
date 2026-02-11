@@ -353,7 +353,7 @@
     },
     {
       "title": "Security & Threat Model",
-      "purpose": "Map risks from neurotoxic-game-threat-model.md to code-level controls: AudioContext autoplay restrictions handled by ensureAudioContext() flows, localStorage tampering exposure and safeStorageOperation mitigations, reducer-safe defaults for malformed data, and scene-level fail-safe behavior to prevent hard crashes during startup/load/resume paths.",
+      "purpose": "Map risks from neurotoxic-game-threat-model.md to code-level controls: AudioContext autoplay restrictions handled by ensureAudioContext() flows, localStorage tampering exposure with exception-safe access via safeStorageOperation and validation/repair checks in loadGame() (src/context/GameState.jsx), reducer-safe defaults for malformed data, and scene-level fail-safe behavior to prevent hard crashes during startup/load/resume paths.",
       "parent": "Overview",
       "page_notes": [
         {
