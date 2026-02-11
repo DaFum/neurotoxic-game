@@ -139,7 +139,7 @@
           "content": "PixiStageController (src/components/PixiStageController.js) creates and manages the Pixi.Application instance. Instantiated from PixiStage.jsx via createPixiStageController({ containerRef, gameStateRef, updateRef, statsRef }). Responsibilities: create Pixi.Application, set up 3-lane note highway with container hierarchy (lanes, notes, effects, background layers), render falling notes synchronized to music, visualize hit/miss feedback, clean up on unmount. Uses sprite pooling to avoid per-frame allocation. Runs 60fps ticker reading game state from mutable refs (gameStateRef, statsRef) rather than React state to avoid render-triggered reflows. Coordinate transforms: audio time (ms from getGigTimeMs/getAudioTimeMs) mapped to vertical position via (currentTime - noteScheduledTime) * scrollSpeed."
         }
       ]
-      ]
+    },
     },
     {
       "title": "Gig HUD & React Overlay",
