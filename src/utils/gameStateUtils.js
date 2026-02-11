@@ -156,7 +156,6 @@ export const applyEventDelta = (state, delta) => {
       nextState.player = nextPlayer
     }
   }
-  }
 
   return nextState
 }
