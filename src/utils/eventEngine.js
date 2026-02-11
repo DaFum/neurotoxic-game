@@ -177,9 +177,10 @@ export const eventEngine = {
         if (members.length > 0) {
           skillValue = Math.max(
             ...members.map(m => {
-              // Check top-level (dynamic stats like mood/stamina)
-              // OR nested baseStats (static attributes like skill/charisma)
-              const val = m[stat] !== undefined ? m[stat] : m.baseStats?.[stat]
+              // Check nested baseStats (static attributes like skill/stamina 1-10) FIRST
+              // Then check top-level (dynamic stats like mood/health 0-100)
+              // This priority prevents dynamic 'stamina' (100) from trivializing checks intended for base 'stamina' (7)
+              const val = m.baseStats?.[stat] !== undefined ? m.baseStats[stat] : m[stat]
               return val || 0
             })
           )

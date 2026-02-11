@@ -161,7 +161,7 @@ test('eventEngine.resolveChoice uses random roll (ignoring band stat) for luck c
   assert.equal(result.outcome, 'success', 'Should succeed luck check via random roll')
 })
 
-test('eventEngine.resolveChoice uses max member skill (from baseStats)', () => {
+test('eventEngine.resolveChoice uses max member skill (from baseStats)', t => {
   const choice = {
     label: 'Technical repair',
     skillCheck: {
@@ -172,16 +172,17 @@ test('eventEngine.resolveChoice uses max member skill (from baseStats)', () => {
     }
   }
   // buildGameState sets Matze skill to 5, Lars 4, Marius 3. Max is 5.
-  // 5 + (random=0) = 5. 5 >= 4 -> Success.
-  // Unless we mock random? Default random might fail if roll is extremely low?
-  // But logic adds +0 or +2. 5 + 0 >= 4 is always true.
-
   const state = buildGameState()
+
+  // Mock random to be neutral (0.5), no crit.
+  // 5 + 0 = 5 >= 4 -> Success.
+  const mockRandom = t.mock.method(Math, 'random', () => 0.5)
 
   const result = eventEngine.resolveChoice(choice, state)
 
   assert.ok(result, 'Should return result object')
   assert.equal(result.outcome, 'success', 'Should pass skill check (5 >= 4)')
+  assert.strictEqual(mockRandom.mock.calls.length > 0, true)
 })
 
 test('eventEngine.resolveChoice preserves nextEventId', () => {
