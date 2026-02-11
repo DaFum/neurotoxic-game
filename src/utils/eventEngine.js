@@ -98,10 +98,12 @@ const processEffect = (eff, delta) => {
         delta.player.van.condition =
           (delta.player.van.condition || 0) + eff.value
       }
-      if (eff.stat === 'crowd_energy') delta.flags.crowdEnergy = eff.value
+      if (eff.stat === 'hype' || eff.stat === 'crowd_energy')
+        delta.player.fame = (delta.player.fame || 0) + eff.value
       if (eff.stat === 'viral')
         delta.social.viral = (delta.social.viral || 0) + eff.value
-      if (eff.stat === 'score') delta.flags.score = eff.value
+      if (eff.stat === 'score')
+        delta.flags.score = (delta.flags.score || 0) + eff.value
       break
     case 'item':
       if (eff.item) {
@@ -160,14 +162,36 @@ export const eventEngine = {
       const { stat, threshold, success, failure } = choice.skillCheck
 
       let skillValue = 0
-      const maxMemberSkill = Math.max(
-        ...gameState.band.members.map(m => m[stat] || 0)
-      )
 
-      if (stat === 'luck') skillValue = Math.random() * 10
-      else if (gameState.band[stat] !== undefined)
+      // WARNING: 'luck' check must come first!
+      // The band object has a 'luck' property (default 0). If we checked band[stat] first,
+      // it would match and use the static stat (0) instead of the random roll intended here.
+      if (stat === 'luck') {
+        // Luck check: ignore band stats, just roll
+        skillValue = Math.random() * 10
+      } else if (typeof gameState.band[stat] === 'number') {
+        // Band stat check (e.g. harmony)
+        // Explicitly check for number to avoid using objects like 'inventory' or 'members' as stats
         skillValue = gameState.band[stat] / 10
-      else skillValue = maxMemberSkill
+      } else {
+        // Member stat check (e.g. skill)
+        // Ensure members array exists to prevent crash
+        const members = Array.isArray(gameState.band?.members) ? gameState.band.members : []
+        if (members.length > 0) {
+          skillValue = Math.max(
+            ...members.map(m => {
+              // Check nested baseStats (static attributes like skill/stamina 1-10) FIRST
+              // Then check top-level (dynamic stats like mood/health 0-100)
+              // This priority prevents dynamic 'stamina' (100) from trivializing checks intended for base 'stamina' (7)
+              const val =
+                m.baseStats?.[stat] !== undefined ? m.baseStats[stat] : m[stat]
+              return val ?? 0
+            })
+          )
+        } else {
+          skillValue = 0
+        }
+      }
 
       const roll = Math.random() * 10
       const total = skillValue + (roll > 8 ? 2 : 0) // Crit chance

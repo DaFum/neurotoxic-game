@@ -11,9 +11,9 @@ module.exports = {
     'eslint:recommended',
     'plugin:react/recommended',
     'plugin:react-hooks/recommended',
-    // 2. CRITICAL: 'prettier' must be LAST. 
+    // 2. CRITICAL: 'prettier' must be LAST.
     // It turns off every rule in the plugins above that conflicts with your formatting.
-    'prettier' 
+    'prettier'
   ],
 
   parserOptions: {
@@ -30,14 +30,17 @@ module.exports = {
     // 3. Your existing custom rules (Perfect, keep them)
     'react/prop-types': 'warn',
     'react/react-in-jsx-scope': 'off', // Essential for React 17+
-    'react/jsx-uses-react': 'off',     // Essential for React 17+
-    
-    // 4. Best Practice Update: 
+    'react/jsx-uses-react': 'off', // Essential for React 17+
+
+    // 4. Best Practice Update:
     // Ensure arguments that start with _ are ignored (e.g. _req, _event)
-    'no-unused-vars': ['warn', { 
-      varsIgnorePattern: '^_',
-      argsIgnorePattern: '^_' 
-    }]
+    'no-unused-vars': [
+      'warn',
+      {
+        varsIgnorePattern: '^_',
+        argsIgnorePattern: '^_'
+      }
+    ]
   },
 
   settings: {

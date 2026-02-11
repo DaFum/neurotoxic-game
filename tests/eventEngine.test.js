@@ -1,6 +1,21 @@
-import test from 'node:test'
+import test, { mock } from 'node:test'
 import assert from 'node:assert/strict'
-import { eventEngine } from '../src/utils/eventEngine.js'
+
+// Mock database
+const MOCK_EVENTS = {
+  transport: [
+    { id: 'event_normal', trigger: 'pre_gig', chance: 1.0 },
+    { id: 'event_cooldown', trigger: 'pre_gig', chance: 1.0 },
+    { id: 'event_pending', trigger: 'pre_gig', chance: 1.0 }
+  ]
+}
+
+mock.module('../src/data/events.js', {
+  namedExports: { EVENTS_DB: MOCK_EVENTS }
+})
+
+// Import module under test after mocking
+const { eventEngine } = await import('../src/utils/eventEngine.js')
 
 const buildGameState = (overrides = {}) => ({
   player: {
@@ -14,12 +29,32 @@ const buildGameState = (overrides = {}) => ({
   },
   band: {
     members: [
-      { id: 'matze', name: 'Matze', stamina: 70, mood: 60, skill: 5 },
-      { id: 'lars', name: 'Lars', stamina: 65, mood: 55, skill: 4 },
-      { id: 'marius', name: 'Marius', stamina: 60, mood: 70, skill: 3 }
+      // Matches src/data/characters.js structure: skills are in baseStats
+      {
+        id: 'matze',
+        name: 'Matze',
+        stamina: 70,
+        mood: 60,
+        baseStats: { skill: 5, charisma: 5 }
+      },
+      {
+        id: 'lars',
+        name: 'Lars',
+        stamina: 65,
+        mood: 55,
+        baseStats: { skill: 4, charisma: 4 }
+      },
+      {
+        id: 'marius',
+        name: 'Marius',
+        stamina: 60,
+        mood: 70,
+        baseStats: { skill: 3, charisma: 3 }
+      }
     ],
     harmony: 70,
-    inventory: { spare_tire: true, strings: true }
+    inventory: { spare_tire: true, strings: true },
+    luck: 0
   },
   social: { instagram: 100, viral: 0 },
   activeStoryFlags: [],
@@ -55,30 +90,39 @@ test('eventEngine.checkEvent returns null when category not found', () => {
 })
 
 test('eventEngine.checkEvent filters by trigger point', () => {
-  // This test requires actual event data, so we test the logic
   const state = buildGameState()
   const result = eventEngine.checkEvent('transport', state, 'pre_gig')
-  // Result can be null or an event, both are valid
-  assert.ok(
-    result === null || typeof result === 'object',
-    'Should return null or event object'
-  )
+  assert.ok(result, 'Should return an event')
+  assert.ok(MOCK_EVENTS.transport.some(e => e.id === result.id))
 })
 
-test('eventEngine.checkEvent respects cooldowns', () => {
-  const state = buildGameState({ eventCooldowns: ['event_id_1'] })
-  // Test that cooled down events are filtered out
-  assert.ok(Array.isArray(state.eventCooldowns), 'Cooldowns should be array')
+test('eventEngine.checkEvent respects cooldowns', t => {
+  const state = buildGameState({
+    eventCooldowns: ['event_cooldown', 'event_pending']
+  })
+
+  // Mock random to ensure consistent behavior even though logic should force choice.
+  // The sorting in selectEvent uses Math.random() - 0.5.
+  // With only 1 eligible event, sort order doesn't matter, but we mock anyway for hygiene.
+  const mockRandom = t.mock.method(Math, 'random', () => 0.5)
+
+  const result = eventEngine.checkEvent('transport', state, 'pre_gig')
+  assert.equal(
+    result.id,
+    'event_normal',
+    'Should select the only non-cooled-down event'
+  )
+
 })
 
 test('eventEngine.checkEvent prioritizes pending events', () => {
-  const state = buildGameState({ pendingEvents: ['some_event_id'] })
-  // Pending events should be checked first
-  assert.ok(
-    Array.isArray(state.pendingEvents),
-    'Pending events should be array'
+  const state = buildGameState({ pendingEvents: ['event_pending'] })
+  const result = eventEngine.checkEvent('transport', state, 'pre_gig')
+  assert.equal(
+    result.id,
+    'event_pending',
+    'Should return the pending event immediately'
   )
-  assert.ok(state.pendingEvents.length > 0, 'Should have pending events')
 })
 
 test('eventEngine.resolveChoice handles direct effect', () => {
@@ -96,37 +140,34 @@ test('eventEngine.resolveChoice handles direct effect', () => {
   assert.equal(result.type, 'resource', 'Should preserve effect type')
 })
 
-test('eventEngine.resolveChoice handles skill check success', () => {
+test('eventEngine.resolveChoice handles skill check success', t => {
   const choice = buildSkillCheckChoice(5)
   const state = buildGameState({
     band: { ...buildGameState().band, harmony: 80 }
   })
 
-  const result = eventEngine.resolveChoice(choice, state)
+  // Mock random to ensure success (0.1 < 0.8)
+  const mockRandom = t.mock.method(Math, 'random', () => 0.1)
 
-  assert.ok(result, 'Should return result object')
-  assert.ok(
-    result.outcome === 'success' || result.outcome === 'failure',
-    'Should have success or failure outcome'
-  )
+  const result = eventEngine.resolveChoice(choice, state)
+  assert.equal(result.outcome, 'success', 'Should trigger success outcome')
+  assert.strictEqual(mockRandom.mock.calls.length > 0, true)
 })
 
-test('eventEngine.resolveChoice handles skill check failure', () => {
+test('eventEngine.resolveChoice handles skill check failure', t => {
   const choice = buildSkillCheckChoice(10)
   const state = buildGameState({
     band: { ...buildGameState().band, harmony: 10 }
   })
 
-  const result = eventEngine.resolveChoice(choice, state)
+  // Mock random to ensure failure (0.9 > 0.1)
+  const mockRandom = t.mock.method(Math, 'random', () => 0.9)
 
-  assert.ok(result, 'Should return result object')
-  assert.ok(
-    ['success', 'failure'].includes(result.outcome),
-    'Should have valid outcome'
-  )
+  const result = eventEngine.resolveChoice(choice, state)
+  assert.equal(result.outcome, 'failure', 'Should trigger failure outcome')
 })
 
-test('eventEngine.resolveChoice uses luck stat for luck checks', () => {
+test('eventEngine.resolveChoice uses random roll (ignoring band stat) for luck checks', t => {
   const choice = {
     label: 'Try your luck',
     skillCheck: {
@@ -136,36 +177,43 @@ test('eventEngine.resolveChoice uses luck stat for luck checks', () => {
       failure: { type: 'resource', resource: 'money', value: 0 }
     }
   }
-  const state = buildGameState()
+  const baseState = buildGameState()
+  // Set band.luck to a value that would FAIL the check if used (e.g. 0),
+  // but ensure the random roll SUCCEEDS.
+  const state = { ...baseState, band: { ...baseState.band, luck: 0 } }
+
+  const mockRandom = t.mock.method(Math, 'random', () => 0.9)
 
   const result = eventEngine.resolveChoice(choice, state)
-
-  assert.ok(result, 'Should return result object')
-  assert.ok(
-    ['success', 'failure'].includes(result.outcome),
-    'Luck check should have valid outcome'
+  assert.equal(
+    result.outcome,
+    'success',
+    'Should succeed luck check via random roll'
   )
 })
 
-test('eventEngine.resolveChoice uses max member skill', () => {
+test('eventEngine.resolveChoice uses max member skill (from baseStats)', t => {
   const choice = {
     label: 'Technical repair',
     skillCheck: {
-      stat: 'skill',
+      stat: 'skill', // Checks 'skill' which is in baseStats
       threshold: 4,
       success: { type: 'stat', stat: 'van_condition', value: 20 },
       failure: { type: 'stat', stat: 'van_condition', value: -10 }
     }
   }
+  // buildGameState sets Matze skill to 5, Lars 4, Marius 3. Max is 5.
   const state = buildGameState()
+
+  // Mock random to be neutral (0.5), no crit.
+  // 5 + 0 = 5 >= 4 -> Success.
+  const mockRandom = t.mock.method(Math, 'random', () => 0.5)
 
   const result = eventEngine.resolveChoice(choice, state)
 
   assert.ok(result, 'Should return result object')
-  assert.ok(
-    ['success', 'failure'].includes(result.outcome),
-    'Skill check should have valid outcome'
-  )
+  assert.equal(result.outcome, 'success', 'Should pass skill check (5 >= 4)')
+  assert.strictEqual(mockRandom.mock.calls.length > 0, true)
 })
 
 test('eventEngine.resolveChoice preserves nextEventId', () => {
@@ -451,18 +499,7 @@ test('eventEngine.applyResult handles inventory non-numeric value', () => {
   assert.equal(delta.band.inventory.golden_pick, true, 'Should set value')
 })
 
-test('eventEngine logic for inventory increment handles existing values', () => {
-  // applyResult only returns the delta, not the application logic on state.
-  // We need to verify that applyEventDelta (which uses the logic we changed in eventEngine logic? No wait.)
-  // Wait, the logic change was in `processEffect` inside `eventEngine.js`.
-  // `processEffect` populates the delta.
-  // The `processEffect` implementation for 'item' now does:
-  // if (typeof eff.value === 'number') { delta.band.inventory[eff.item] = Math.max(0, current + eff.value) }
-  // BUT `current` comes from `delta.band.inventory`, NOT the game state.
-  // `applyResult` creates a FRESH delta object: `const delta = { player: {}, band: {}, ... }`
-  // So `current` will always be 0 (or undefined) inside `applyResult` unless multiple effects target the same item in one composite event.
-
-  // Let's test a composite event that adds to the same item twice to verify accumulation in delta.
+test('eventEngine.applyResult accumulates inventory values across composite effects', () => {
   const result = {
     type: 'composite',
     effects: [

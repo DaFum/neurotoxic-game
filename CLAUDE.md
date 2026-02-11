@@ -21,15 +21,15 @@ Tests use Node's built-in `node:test` module with `tsx` for ESM transpilation. T
 
 ## Tech Stack & Version Constraints
 
-| Category    | Technology    | Version  |
-| ----------- | ------------- | -------- |
-| Framework   | React         | 18.x (`^18.2.0`) |
-| Build       | Vite          | 5.x (`^5.0.0`) |
-| Language    | JavaScript    | ES2021 (ESModules, `"type": "module"`) |
-| Rendering   | Pixi.js       | 8.x (`^8.0.0`) |
-| Animation   | Framer Motion | 12.x (`^12.0.0`) |
-| Styling     | Tailwind CSS  | 4.x (`^4.0.0`) |
-| Audio       | Tone.js       | 15.x (`^15.1.22`) |
+| Category  | Technology    | Version                                |
+| --------- | ------------- | -------------------------------------- |
+| Framework | React         | 18.x (`^18.2.0`)                       |
+| Build     | Vite          | 5.x (`^5.0.0`)                         |
+| Language  | JavaScript    | ES2021 (ESModules, `"type": "module"`) |
+| Rendering | Pixi.js       | 8.x (`^8.0.0`)                         |
+| Animation | Framer Motion | 12.x (`^12.0.0`)                       |
+| Styling   | Tailwind CSS  | 4.x (`^4.0.0`)                         |
+| Audio     | Tone.js       | 15.x (`^15.1.22`)                      |
 
 **DO NOT upgrade**: React (stay 18.x, not v19), Vite (stay 5.x), Tailwind (stay v4). Node.js 20+ required.
 
@@ -122,12 +122,15 @@ Typography: Headers use `var(--font-display)` (Metal Mania), body uses `var(--fo
 ## Critical Patterns
 
 ### State Safety
+
 - Always clamp: `Math.max(0, player.money - cost)` — never let money go negative
 - Validate `band.harmony > 0` before allowing gigs
 - Use action creators from `actionCreators.js` for type-safe dispatch
 
 ### Pixi.js Memory Management
+
 Always clean up Pixi apps on unmount to prevent leaks:
+
 ```jsx
 const isMountedRef = useRef(true)
 useEffect(() => {
@@ -140,6 +143,7 @@ useEffect(() => {
 ```
 
 ### Audio
+
 Production requires HTTPS (WebAudio API mixed-content policy). Ambient tracks play full MIDI duration. Gig tracks play first 30-60 second excerpts.
 
 ## Sub-Agent Documentation

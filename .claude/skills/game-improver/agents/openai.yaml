@@ -1,4 +1,4 @@
 interface:
-  display_name: "Game Improver"
-  short_description: "Improve gameplay, audio, performance, and quality."
-  default_prompt: "Implement the requested game improvement with balanced mechanics, stable audio/rendering, and full quality checks."
+  display_name: 'Game Improver'
+  short_description: 'Improve gameplay, audio, performance, and quality.'
+  default_prompt: 'Implement the requested game improvement with balanced mechanics, stable audio/rendering, and full quality checks.'
