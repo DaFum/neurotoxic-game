@@ -216,14 +216,7 @@
           "content": "Two localStorage keys: neurotoxic_v3_save (game state) and neurotoxic_global_settings (audio/display settings). safeStorageOperation wraps all storage calls in error handling. Schema validation on load handles version migrations and corrupted data. Save triggered via ActionTypes.SAVE_GAME; load via ActionTypes.LOAD_GAME with validation. No server-side persistence; no PII stored. Security: save data tamperable via browser devtools with no integrity validation (MEDIUM severity). No encryption implemented."
         }
       ]
-    },
-    {
-      "title": "Rendering System",
-"purpose": "Document the dual-layer rendering architecture: Pixi.js 8 canvas for imperative 60fps rhythm game graphics composited behind React DOM overlays for declarative UI via CSS absolute positioning. Cover memory management (app.destroy(true, { children: true, texture: true, textureSource: true }) on unmount, isMountedRef guard pattern), the read-only ref contract (rendering never mutates state, reads from gameStateRef/statsRef), visual effects systems (hit/miss flash/burst feedback, crowd animations responding to performance, CRT scanline overlay for retro aesthetic, glitch effects during toxic mode, color-coded note sprites per lane), object pooling for Pixi effects minimizing GC during gameplay, and Framer Motion 12 for React-layer animations (scene transitions, menu effects, UI entrances)",
-      "page_notes": [
-        {
-          "content": "Dual-layer: Pixi.js 8 canvas for imperative 60fps rhythm graphics, React DOM overlay for declarative UI (HUD, menus), composited via CSS positioning. Memory management critical: app.destroy(true, { children: true, texture: true }) on unmount, isMountedRef to prevent post-unmount updates. Rendering never mutates state; reads from refs (gameStateRef, statsRef). Visual feedback: hit effects (flash/burst on note hits), miss effects, crowd animations, CRT scanline overlay when settings.crtEnabled, glitch effects during toxic mode, color-coded note sprites per lane. All Pixi effects use object pooling to minimize GC. Framer Motion 12 handles React-layer animations (scene transitions, menu effects, UI entrances)."
-        }
+          "content": "Dual-layer: Pixi.js 8 canvas for imperative 60fps rhythm graphics, React DOM overlay for declarative UI (HUD, menus), composited via CSS positioning. Memory management critical: app.destroy(true, { children: true, texture: true, textureSource: true }) on unmount, isMountedRef to prevent post-unmount updates. Rendering never mutates state; reads from refs (gameStateRef, statsRef). Visual feedback: hit effects (flash/burst on note hits), miss effects, crowd animations, CRT scanline overlay when settings.crtEnabled, glitch effects during toxic mode, color-coded note sprites per lane. All Pixi effects use object pooling to minimize GC. Framer Motion 12 handles React-layer animations (scene transitions, menu effects, UI entrances)."
       ]
     },
     {
