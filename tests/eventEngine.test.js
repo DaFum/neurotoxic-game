@@ -112,12 +112,11 @@ test('eventEngine.checkEvent respects cooldowns', t => {
     'event_normal',
     'Should select the only non-cooled-down event'
   )
-  // 1 call for chance check. (Logger also calls random, but we mocked logger below or accept 2 if not mocked)
-  // Actually, without mocking logger, it is 2. But let's keep it simple and assert >= 1 or mock logger.
-  // Since we don't mock logger in this file yet, and adding a module mock affects all tests (global),
-  // we should be careful.
-  // Let's just accept 2 calls for now, knowing one is for logger ID.
-  assert.strictEqual(mockRandom.mock.calls.length, 2)
+  // Ensure Math.random was used by the selection logic without coupling to logger internals.
+  assert.ok(
+    mockRandom.mock.calls.length >= 1,
+    'Math.random should be called at least once during event selection'
+  )
 })
 
 test('eventEngine.checkEvent prioritizes pending events', () => {
