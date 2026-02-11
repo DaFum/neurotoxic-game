@@ -99,6 +99,8 @@ Static game data: `venues.js`, `characters.js`, `songs.js`, `upgrades.js`, `hqIt
 
 ## Design System
 
+<!-- jscpd:ignore-start -->
+
 **Never hardcode colors.** Use CSS variables with Tailwind v4 syntax:
 
 ```jsx
@@ -116,6 +118,8 @@ Static game data: `venues.js`, `characters.js`, `songs.js`, `upgrades.js`, `hqIt
 | `--blood-red`      | #CC0000 | Errors, critical states   |
 | `--ash-gray`       | #3A3A3A | Secondary text, borders   |
 | `--warning-yellow` | #FFCC00 | Warnings                  |
+
+<!-- jscpd:ignore-end -->
 
 Typography: Headers use `var(--font-display)` (Metal Mania), body uses `var(--font-ui)` (Courier New monospace). Aesthetic is brutalist — uppercase buttons, boxy layouts, CRT overlay when `settings.crtEnabled`, glitch effects on hover/critical states.
 
