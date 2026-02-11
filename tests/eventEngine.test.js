@@ -568,5 +568,9 @@ test('eventEngine.applyResult accumulates fame from mixed stats (fame, hype, cro
   const delta = eventEngine.applyResult(result)
 
   assert.ok(delta, 'Should return delta')
-  assert.equal(delta.player.fame, 18, 'Should accumulate all fame-related stats (10 + 5 + 3)')
+  assert.equal(
+    delta.player.fame,
+    18,
+    'Should accumulate all fame-related stats (10 + 5 + 3)'
+  )
 })

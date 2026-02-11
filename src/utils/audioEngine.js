@@ -599,7 +599,11 @@ export async function ensureAudioContext() {
         try {
           disposeAudio()
         } catch (e) {
-          logger.debug('AudioEngine', 'Partial dispose before rebuild failed', e)
+          logger.debug(
+            'AudioEngine',
+            'Partial dispose before rebuild failed',
+            e
+          )
         }
         isSetup = false
         try {
