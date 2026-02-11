@@ -365,7 +365,7 @@
           "content": "UI library in src/ui/ with brutalist aesthetic. Components: GlitchButton.jsx (primary button, glitch hover, uppercase), HUD.jsx (persistent top-bar: money, fuel, harmony, day, location), BandHQ.jsx, UpgradeMenu.jsx, EventModal.jsx, ToastOverlay.jsx, CrashHandler.jsx, DebugLogViewer.jsx. Shared (src/ui/shared/index.jsx): SettingsPanel, VolumeSlider, StatBox, ProgressBar, Panel, ActionButton, Modal, Grid. Stateless principle: UI receives data via props, never direct state access. Colors: --toxic-green (#00FF41) primary, --void-black (#0A0A0A) backgrounds, --blood-red (#CC0000) errors, --ash-gray (#3A3A3A) secondary, --warning-yellow (#FFCC00) warnings. Tailwind v4: bg-(--void-black) not bg-[var(--void-black)]. Typography: var(--font-display) Metal Mania headers, var(--font-ui) Courier New body. CRT overlay when settings.crtEnabled. AGENTS.md in src/ui/ for domain conventions."
         }
       ]
-      ]
+    },
     },
     {
       "title": "Data & Content",
