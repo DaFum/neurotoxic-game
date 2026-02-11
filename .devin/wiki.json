@@ -261,12 +261,12 @@
       "title": "Game Scenes & Flow",
       "purpose": "Document the scene state machine: App.jsx as router switching on state.currentScene, valid identifiers (MENU, SETTINGS, CREDITS, GAMEOVER, OVERWORLD, PREGIG, GIG, POSTGIG), core loop (MENU -> OVERWORLD -> travel to gig -> PREGIG -> GIG -> POSTGIG -> OVERWORLD, with GAMEOVER on bankruptcy when player.money <= 0), navigation via changeScene()/dispatch(createChangeSceneAction()), state-driven transitions (no client-side routing), required state validation on scene mount, and brutalist design system compliance enforced across all scenes",
       "page_notes": [
+      "purpose": "Document the scene state machine: App.jsx as router switching on state.currentScene, valid identifiers (INTRO, MENU, SETTINGS, CREDITS, GAMEOVER, OVERWORLD, PREGIG, GIG, POSTGIG), core loop (INTRO -> MENU -> OVERWORLD -> travel to gig -> PREGIG -> GIG -> POSTGIG -> OVERWORLD, with GAMEOVER on bankruptcy when player.money < 0), navigation via changeScene()/dispatch(createChangeSceneAction()), state-driven transitions (no client-side routing), required state validation on scene mount, and brutalist design system compliance enforced across all scenes",
+      "page_notes": [
         {
-          "content": "App.jsx acts as scene router switching on state.currentScene. Valid identifiers: MENU, SETTINGS, CREDITS, GAMEOVER, OVERWORLD, PREGIG, GIG, POSTGIG. All scenes use useGameState() for navigation via changeScene() or dispatch(createChangeSceneAction()). Core loop: MENU -> OVERWORLD -> travel to gig node -> PREGIG -> GIG -> POSTGIG -> OVERWORLD (repeat). GAMEOVER triggered by bankruptcy (player.money <= 0) in POSTGIG. Scene transitions are state-driven (no client-side routing); reducer handles CHANGE_SCENE. All scenes validate required state on mount and enforce brutalist design system compliance."
+          "content": "App.jsx acts as scene router switching on state.currentScene. Valid identifiers: INTRO, MENU, SETTINGS, CREDITS, GAMEOVER, OVERWORLD, PREGIG, GIG, POSTGIG. All scenes use useGameState() for navigation via changeScene() or dispatch(createChangeSceneAction()). Core loop: INTRO -> MENU -> OVERWORLD -> travel to gig node -> PREGIG -> GIG -> POSTGIG -> OVERWORLD (repeat). GAMEOVER triggered by bankruptcy (player.money < 0) in POSTGIG. Scene transitions are state-driven (no client-side routing); reducer handles CHANGE_SCENE. All scenes validate required state on mount and enforce brutalist design system compliance."
         }
-      ]
-    }
-        }
+
       ]
     },
     {
