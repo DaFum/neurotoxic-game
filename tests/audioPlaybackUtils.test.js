@@ -87,7 +87,6 @@ test('normalizeMidiPlaybackOptions', async t => {
       }
     )
   })
-
 })
 
 test('encodePublicAssetPath', async t => {
@@ -137,13 +136,10 @@ test('resolveAssetUrl for MIDI files', async t => {
 
   await t.test('falls back to public path when missing', () => {
     const midiUrlMap = {}
-    assert.deepStrictEqual(
-      resolveAssetUrl('midi/track 01.mid', midiUrlMap),
-      {
-        url: '/assets/midi/track%2001.mid',
-        source: 'public'
-      }
-    )
+    assert.deepStrictEqual(resolveAssetUrl('midi/track 01.mid', midiUrlMap), {
+      url: '/assets/midi/track%2001.mid',
+      source: 'public'
+    })
   })
 
   await t.test('normalizes relative filenames and encodes spaces', () => {

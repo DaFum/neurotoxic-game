@@ -22,12 +22,20 @@ test('getGenImageUrl generates correct Pollinations.ai URL', () => {
   assert.ok(url.includes(expectedEncoded), 'Should contain encoded prompt')
 })
 
-test('IMG_PROMPTS contains required keys', () => {
-  assert.ok(IMG_PROMPTS.MAIN_MENU_BG, 'Should have MAIN_MENU_BG')
-  assert.ok(IMG_PROMPTS.OVERWORLD_MAP, 'Should have OVERWORLD_MAP')
-  assert.equal(
-    typeof IMG_PROMPTS.MAIN_MENU_BG,
-    'string',
-    'Prompts should be strings'
-  )
+test('IMG_PROMPTS contains expected keys and string values', () => {
+  const expectedKeys = [
+    'MAIN_MENU_BG',
+    'OVERWORLD_MAP',
+    'POST_GIG_BG',
+    'MATZE_IDLE',
+    'LARS_IDLE',
+    'MARIUS_IDLE',
+    'EVENT_GIG',
+    'ITEM_HQ_SKULL'
+  ]
+
+  for (const key of expectedKeys) {
+    assert.ok(IMG_PROMPTS[key], `Should have ${key}`)
+    assert.equal(typeof IMG_PROMPTS[key], 'string', `${key} should be a string`)
+  }
 })

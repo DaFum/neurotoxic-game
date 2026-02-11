@@ -289,17 +289,13 @@ export const gameReducer = (state, action) => {
       return handleAdvanceDay(state)
 
     case ActionTypes.ADD_COOLDOWN:
-      if (
-        action.payload &&
-        !state.eventCooldowns.includes(action.payload)
-      ) {
+      if (action.payload && !state.eventCooldowns.includes(action.payload)) {
         return {
           ...state,
           eventCooldowns: [...state.eventCooldowns, action.payload]
         }
       }
       return state
-
 
     default:
       return state
