@@ -24,7 +24,7 @@ test.describe('Audio System', () => {
 
     // Attempt to find the slider associated with "MUSIC VOLUME" text
     const musicLabel = page.getByText('MUSIC VOLUME')
-    const musicSlider = page.locator('input[type="range"]').first()
+    const musicSlider = musicLabel.locator('..').locator('input[type="range"]')
 
     // Verify visibility first
     await expect(musicLabel).toBeVisible()

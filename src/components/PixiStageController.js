@@ -624,7 +624,8 @@ class PixiStageController {
         if (this.app.renderer || this.app.stage) {
           this.app.destroy(true, {
             children: true,
-            texture: true
+            texture: true,
+            textureSource: true
           })
         }
       } catch (e) {

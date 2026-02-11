@@ -176,14 +176,15 @@ export const eventEngine = {
       } else {
         // Member stat check (e.g. skill)
         // Ensure members array exists to prevent crash
-        const members = gameState.band.members || []
+        const members = Array.isArray(gameState.band?.members) ? gameState.band.members : []
         if (members.length > 0) {
           skillValue = Math.max(
             ...members.map(m => {
               // Check nested baseStats (static attributes like skill/stamina 1-10) FIRST
               // Then check top-level (dynamic stats like mood/health 0-100)
               // This priority prevents dynamic 'stamina' (100) from trivializing checks intended for base 'stamina' (7)
-              const val = m.baseStats?.[stat] !== undefined ? m.baseStats[stat] : m[stat]
+              const val =
+                m.baseStats?.[stat] !== undefined ? m.baseStats[stat] : m[stat]
               return val ?? 0
             })
           )

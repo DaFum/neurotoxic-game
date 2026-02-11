@@ -136,6 +136,7 @@ let gigIsPaused = false
 const audioBufferCache = new Map()
 let ambientSource = null
 let setupLock = null
+let setupError = null
 
 /**
  * Handles cleanup when a gig buffer source ends naturally.
@@ -355,6 +356,9 @@ export async function setupAudio() {
   if (isSetup) return
   if (setupLock) {
     await setupLock
+    if (!isSetup) {
+      throw setupError || new Error('setupAudio failed')
+    }
     return
   }
 
@@ -362,6 +366,7 @@ export async function setupAudio() {
   setupLock = new Promise(r => {
     resolveLock = r
   })
+  setupError = null
 
   try {
     const previousToneContext = Tone.getContext()
@@ -537,6 +542,9 @@ export async function setupAudio() {
     midiDrumKit.crash.volume.value = -6
 
     isSetup = true
+  } catch (error) {
+    setupError = error
+    throw error
   } finally {
     setupLock = null
     if (resolveLock) resolveLock()
@@ -558,7 +566,8 @@ export async function ensureAudioContext() {
   try {
     const rawCtx = getRawAudioContext()
     needsRebuild = rawCtx?.state === 'closed'
-  } catch {
+  } catch (e) {
+    logger.debug('AudioEngine', 'getRawAudioContext failed during recovery check', e)
     needsRebuild = true
   }
 
@@ -1484,11 +1493,7 @@ async function playMidiFileInternal(
 
   const baseUrl = import.meta.env.BASE_URL || './'
   const publicBasePath = `${baseUrl}assets`
-  const { url, source } = resolveAssetUrl(
-    filename,
-    midiUrlMap,
-    publicBasePath
-  )
+  const { url, source } = resolveAssetUrl(filename, midiUrlMap, publicBasePath)
   logger.debug(
     'AudioEngine',
     `Resolved MIDI URL for ${filename}: ${url} (source=${source ?? 'none'})`
