@@ -31,6 +31,12 @@
         },
         {
           "content": "Include a short map from high-level sections to files so first-time contributors know where to start reading code."
+        },
+        {
+          "content": "Add a subsection that maps each wiki page to one owning folder to reduce overlap and duplicated explanations."
+        },
+        {
+          "content": "Call out AGENTS.md precedence rules so contributors check nested guidance before editing scoped modules."
         }
       ]
     },
@@ -41,6 +47,9 @@
       "page_notes": [
         {
           "content": "Call out that persistence does not include encryption and should be treated as user-modifiable state."
+        },
+        {
+          "content": "State that documentation should emphasize why systems exist and how they interact, not only API signatures."
         }
       ]
     },
@@ -51,6 +60,9 @@
       "page_notes": [
         {
           "content": "Describe strategic pressure around money, fuel, and harmony and where these values are consumed by utility functions in src/utils/economyEngine.js and src/utils/simulationUtils.js."
+        },
+        {
+          "content": "Include one worked example tour day showing travel cost, event trigger, gig result, and post-gig stat changes."
         }
       ]
     },
@@ -64,6 +76,9 @@
         },
         {
           "content": "List transition triggers: travel completion, gig start, gig end, event modal resolution, and game-over conditions."
+        },
+        {
+          "content": "Document failure transitions into GAMEOVER and recovery/return paths back to MENU after credits or restart."
         }
       ]
     },
@@ -84,13 +99,21 @@
       "page_notes": [
         {
           "content": "State non-negotiable pinning: do not upgrade React, Vite, or Tailwind without dedicated migration documentation updates."
+        },
+        {
+          "content": "Mention Node.js runtime requirement used by tests/build and where it is declared or implied in tooling."
         }
       ]
     },
     {
       "title": "Project Structure",
       "purpose": "Map repository structure to runtime behavior with concrete examples: src/main.jsx app mount, src/context reducers/actions, src/hooks orchestration hooks, src/scenes route-level containers, src/utils pure engines and audio services, src/components Pixi controllers/overlays, src/ui reusable design-system widgets, tests/ node:test suites, and docs/ architecture references.",
-      "parent": "Overview"
+      "parent": "Overview",
+      "page_notes": [
+        {
+          "content": "Point to tests/ as the verification layer and map each major utility module to its corresponding test file when available."
+        }
+      ]
     },
     {
       "title": "System Architecture",
@@ -102,6 +125,9 @@
         },
         {
           "content": "Document how action creators in src/context/actionCreators.js are preferred over ad-hoc dispatch object literals."
+        },
+        {
+          "content": "Include a small dependency-direction rule: scenes -> hooks/context -> utils/data; avoid reverse imports from utility modules into scenes."
         }
       ]
     },
@@ -112,6 +138,9 @@
       "page_notes": [
         {
           "content": "Keep this page architecture-focused; push low-priority details into child page_notes to conserve page budget."
+        },
+        {
+          "content": "Tag each subsystem with maintenance risk level (low/medium/high) and quick rationale to guide onboarding priorities."
         }
       ]
     },
@@ -125,6 +154,9 @@
         },
         {
           "content": "Call out disposal guarantees and known cleanup caveats around layered instrument nodes and exception safety during teardown."
+        },
+        {
+          "content": "Include expected parameter defaults for critical synth/effect nodes and where deviations are introduced by song metadata."
         }
       ]
     },
@@ -138,6 +170,9 @@
         },
         {
           "content": "Include where gameplay output is written back to state for post-gig calculations."
+        },
+        {
+          "content": "Specify how hit-judgment windows scale (or do not scale) with difficulty and where those constants are defined."
         }
       ]
     },
@@ -148,6 +183,9 @@
       "page_notes": [
         {
           "content": "Document cleanup expectations on scene unmount to prevent ticker leaks, retained textures, and stale refs."
+        },
+        {
+          "content": "Describe z-order/layer strategy for lanes, notes, hit line, and transient feedback effects to avoid rendering regressions."
         }
       ]
     },
@@ -158,6 +196,9 @@
       "page_notes": [
         {
           "content": "Include invariants for money and harmony and where guards are enforced before/after updates."
+        },
+        {
+          "content": "List reducer actions that can affect economy stats to simplify auditing for money/harmony invariant safety."
         }
       ]
     },
@@ -171,6 +212,9 @@
         },
         {
           "content": "Document expected consumer pattern in scenes/hooks to avoid direct mutation and stale closures."
+        },
+        {
+          "content": "Document recommended selector/memo usage patterns to minimize unnecessary rerenders in scene components."
         }
       ]
     },
@@ -181,13 +225,21 @@
       "page_notes": [
         {
           "content": "Highlight tampering risk, schema drift concerns, and recommended validation checks before applying persisted values."
+        },
+        {
+          "content": "Add migration guidance for future save schema versions, including defaulting rules for newly introduced fields."
         }
       ]
     },
     {
       "title": "Economy & Resources",
       "purpose": "Explain lifecycle of money/fuel/harmony/fame/followers across travel and gigs, linking src/utils/economyEngine.js, src/utils/simulationUtils.js, src/scenes/Overworld.jsx, and src/scenes/PostGig.jsx. Include where daily costs, refuel spend, gig payouts, and modifiers are calculated and how results dispatch through reducer updates.",
-      "parent": "Core Subsystems Overview"
+      "parent": "Core Subsystems Overview",
+      "page_notes": [
+        {
+          "content": "Provide a summary table of all resource producers/consumers (travel, refuel, events, gig payouts, purchases)."
+        }
+      ]
     },
     {
       "title": "Economy Engine",
@@ -196,6 +248,9 @@
       "page_notes": [
         {
           "content": "Include edge-case behavior for low-resource states and how negative balances are prevented or corrected."
+        },
+        {
+          "content": "Include examples of expected output for typical gig, low attendance gig, and high bonus gig scenarios."
         }
       ]
     },
@@ -206,6 +261,9 @@
       "page_notes": [
         {
           "content": "Point to functions that compute daily updates and explain when travel tick side effects are dispatched."
+        },
+        {
+          "content": "Document how map node metadata influences event probability or travel outcomes if modifiers are present."
         }
       ]
     },
@@ -219,6 +277,9 @@
         },
         {
           "content": "Include deterministic testing strategy using mocked random values from tests/eventEngine.test.js."
+        },
+        {
+          "content": "Include guardrails for adding new effect keys so unknown keys fail safely or are ignored deterministically."
         }
       ]
     },
@@ -229,6 +290,9 @@
       "page_notes": [
         {
           "content": "Consolidate low-priority item-by-item catalog details into this page instead of creating separate pages for each category."
+        },
+        {
+          "content": "Add note on balancing philosophy: upgrades should create trade-offs, not always-dominant purchase paths."
         }
       ]
     },
@@ -239,6 +303,9 @@
       "page_notes": [
         {
           "content": "Include expected integration contract for shop UI components in src/ui/UpgradeMenu.jsx and related panels."
+        },
+        {
+          "content": "Document how the hook reports errors/toasts when affordability changes between render and click time."
         }
       ]
     },
@@ -252,6 +319,9 @@
         },
         {
           "content": "Include CRT overlay behavior controlled by settings.crtEnabled and where that setting is read."
+        },
+        {
+          "content": "Add explicit spacing/layout conventions used in panels and HUD to keep brutalist composition consistent."
         }
       ]
     },
@@ -262,6 +332,9 @@
       "page_notes": [
         {
           "content": "Cover event category files under src/data/events/ and how duplicate ID validation in the index aggregator protects runtime behavior."
+        },
+        {
+          "content": "Add contributor checklist for new songs/events: ID uniqueness, required fields, and playtest/test expectations."
         }
       ]
     },
@@ -272,6 +345,9 @@
       "page_notes": [
         {
           "content": "Keep the map concise and link each symbol to one primary source file to reduce navigation friction."
+        },
+        {
+          "content": "Include quick links for top 10 most edited files to accelerate triage during bugfix work."
         }
       ]
     },
@@ -282,6 +358,9 @@
       "page_notes": [
         {
           "content": "Classify risks by severity and map each mitigation to specific functions/files where controls are implemented."
+        },
+        {
+          "content": "Note expected behavior when tampered saves produce out-of-range values (clamp, reject, or reset strategy)."
         }
       ]
     },
@@ -292,6 +371,9 @@
       "page_notes": [
         {
           "content": "Include node:test + tsx execution details and how to run targeted test files for utility modules."
+        },
+        {
+          "content": "Add guidance for when to run e2e tests vs unit tests and which changes mandate build verification."
         }
       ]
     },
@@ -302,6 +384,9 @@
       "page_notes": [
         {
           "content": "Mention production audio constraints (HTTPS/mixed-content considerations) and CI expectations from workflow files under .github/."
+        },
+        {
+          "content": "Document which config files are authoritative when settings overlap (eslint vs biome vs prettier)."
         }
       ]
     },
@@ -312,6 +397,9 @@
       "page_notes": [
         {
           "content": "Add a concise pre-PR checklist that mirrors AGENTS.md requirements and references docs/CODING_STANDARDS.md."
+        },
+        {
+          "content": "Include release-readiness checks for documentation freshness in docs/ and AGENTS.md when architecture changes."
         }
       ]
     }
