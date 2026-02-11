@@ -2,19 +2,25 @@ import assert from 'node:assert'
 import { test } from 'node:test'
 import { getGenImageUrl, IMG_PROMPTS } from '../src/utils/imageGen.js'
 
-test('getGenImageUrl returns correct URL structure', () => {
-  const prompt = 'test prompt'
+test('getGenImageUrl generates correct Pollinations.ai URL', () => {
+  const prompt = 'dark void aesthetic'
   const url = getGenImageUrl(prompt)
 
-  // Check if it's a valid URL or path
-  // Assuming the function returns something like '/assets/...' or 'https://...'
-  // Based on previous reads, it might be using a service or local assets.
-  // Let's verify via read, but for now just check it returns a string.
-  assert.equal(typeof url, 'string')
-  assert.ok(url.length > 0)
+  // Validate URL structure
+  assert.ok(url.startsWith('https://gen.pollinations.ai/image/'), 'URL should start with base URL')
+
+  // Validate query parameters
+  assert.ok(url.includes('?model=flux'), 'Should use flux model')
+  assert.ok(url.includes('&seed=666'), 'Should use deterministic seed')
+  assert.ok(url.includes('&key='), 'Should include API key')
+
+  // Validate encoding
+  const expectedEncoded = encodeURIComponent(prompt)
+  assert.ok(url.includes(expectedEncoded), 'Should contain encoded prompt')
 })
 
-test('IMG_PROMPTS object exists', () => {
-  assert.ok(IMG_PROMPTS)
-  assert.ok(Object.keys(IMG_PROMPTS).length > 0)
+test('IMG_PROMPTS contains required keys', () => {
+  assert.ok(IMG_PROMPTS.MAIN_MENU_BG, 'Should have MAIN_MENU_BG')
+  assert.ok(IMG_PROMPTS.OVERWORLD_MAP, 'Should have OVERWORLD_MAP')
+  assert.equal(typeof IMG_PROMPTS.MAIN_MENU_BG, 'string', 'Prompts should be strings')
 })

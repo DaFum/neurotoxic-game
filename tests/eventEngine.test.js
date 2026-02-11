@@ -102,13 +102,16 @@ test('eventEngine.resolveChoice handles skill check success', () => {
     band: { ...buildGameState().band, harmony: 80 }
   })
 
-  const result = eventEngine.resolveChoice(choice, state)
+  // Mock random to ensure success (0.1 < 0.8)
+  const originalRandom = Math.random
+  Math.random = () => 0.1
 
-  assert.ok(result, 'Should return result object')
-  assert.ok(
-    result.outcome === 'success' || result.outcome === 'failure',
-    'Should have success or failure outcome'
-  )
+  try {
+    const result = eventEngine.resolveChoice(choice, state)
+    assert.equal(result.outcome, 'success', 'Should trigger success outcome')
+  } finally {
+    Math.random = originalRandom
+  }
 })
 
 test('eventEngine.resolveChoice handles skill check failure', () => {
@@ -117,13 +120,16 @@ test('eventEngine.resolveChoice handles skill check failure', () => {
     band: { ...buildGameState().band, harmony: 10 }
   })
 
-  const result = eventEngine.resolveChoice(choice, state)
+  // Mock random to ensure failure (0.9 > 0.1)
+  const originalRandom = Math.random
+  Math.random = () => 0.9
 
-  assert.ok(result, 'Should return result object')
-  assert.ok(
-    ['success', 'failure'].includes(result.outcome),
-    'Should have valid outcome'
-  )
+  try {
+    const result = eventEngine.resolveChoice(choice, state)
+    assert.equal(result.outcome, 'failure', 'Should trigger failure outcome')
+  } finally {
+    Math.random = originalRandom
+  }
 })
 
 test('eventEngine.resolveChoice uses luck stat for luck checks', () => {
@@ -136,15 +142,29 @@ test('eventEngine.resolveChoice uses luck stat for luck checks', () => {
       failure: { type: 'resource', resource: 'money', value: 0 }
     }
   }
-  const state = buildGameState()
+  const baseState = buildGameState()
+  const state = { ...baseState, band: { ...baseState.band, luck: 10 } }
 
-  const result = eventEngine.resolveChoice(choice, state)
+  // Mock random for deterministic outcome
+  const originalRandom = Math.random
+  Math.random = () => 0.9 // Very lucky (returns 0.9 * 10 = 9)
 
-  assert.ok(result, 'Should return result object')
-  assert.ok(
-    ['success', 'failure'].includes(result.outcome),
-    'Luck check should have valid outcome'
-  )
+  try {
+    let result;
+    try {
+        result = eventEngine.resolveChoice(choice, state)
+    } catch (e) {
+        console.log('resolveChoice threw error:', e)
+        throw e
+    }
+
+    if (result.outcome !== 'success') {
+        console.log('Luck check failed. Result:', result)
+    }
+    assert.equal(result.outcome, 'success', 'Should succeed luck check')
+  } finally {
+    Math.random = originalRandom
+  }
 })
 
 test('eventEngine.resolveChoice uses max member skill', () => {

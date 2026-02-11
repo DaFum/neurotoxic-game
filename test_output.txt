@@ -1,0 +1,2205 @@
+
+> neurotoxic-game@0.0.0 test
+> node --test --import tsx --experimental-test-module-mocks
+
+TAP version 13
+# Subtest: Action Creators
+    # Subtest: createChangeSceneAction
+        # Subtest: should create correct action
+        ok 1 - should create correct action
+          ---
+          duration_ms: 0.864612
+          type: 'test'
+          ...
+        1..1
+    ok 1 - createChangeSceneAction
+      ---
+      duration_ms: 1.784989
+      type: 'suite'
+      ...
+    # Subtest: createUpdatePlayerAction
+        # Subtest: should create correct action
+        ok 1 - should create correct action
+          ---
+          duration_ms: 0.614723
+          type: 'test'
+          ...
+        1..1
+    ok 2 - createUpdatePlayerAction
+      ---
+      duration_ms: 0.762802
+      type: 'suite'
+      ...
+    # Subtest: createUpdateBandAction
+        # Subtest: should create correct action
+        ok 1 - should create correct action
+          ---
+          duration_ms: 0.212378
+          type: 'test'
+          ...
+        1..1
+    ok 3 - createUpdateBandAction
+      ---
+      duration_ms: 0.464087
+      type: 'suite'
+      ...
+    # Subtest: createUpdateSocialAction
+        # Subtest: should create correct action
+        ok 1 - should create correct action
+          ---
+          duration_ms: 0.344997
+          type: 'test'
+          ...
+        1..1
+    ok 4 - createUpdateSocialAction
+      ---
+      duration_ms: 0.478447
+      type: 'suite'
+      ...
+    # Subtest: createUpdateSettingsAction
+        # Subtest: should create correct action
+        ok 1 - should create correct action
+          ---
+          duration_ms: 0.371642
+          type: 'test'
+          ...
+        1..1
+    ok 5 - createUpdateSettingsAction
+      ---
+      duration_ms: 0.615486
+      type: 'suite'
+      ...
+    # Subtest: createSetMapAction
+        # Subtest: should create correct action
+        ok 1 - should create correct action
+          ---
+          duration_ms: 0.211822
+          type: 'test'
+          ...
+        1..1
+    ok 6 - createSetMapAction
+      ---
+      duration_ms: 0.338135
+      type: 'suite'
+      ...
+    # Subtest: createSetGigAction
+        # Subtest: should create correct action
+        ok 1 - should create correct action
+          ---
+          duration_ms: 0.204171
+          type: 'test'
+          ...
+        1..1
+    ok 7 - createSetGigAction
+      ---
+      duration_ms: 0.322921
+      type: 'suite'
+      ...
+    # Subtest: createStartGigAction
+        # Subtest: should create correct action
+        ok 1 - should create correct action
+          ---
+          duration_ms: 0.223538
+          type: 'test'
+          ...
+        1..1
+    ok 8 - createStartGigAction
+      ---
+      duration_ms: 0.358329
+      type: 'suite'
+      ...
+    # Subtest: createSetSetlistAction
+        # Subtest: should create correct action
+        ok 1 - should create correct action
+          ---
+          duration_ms: 0.343897
+          type: 'test'
+          ...
+        1..1
+    ok 9 - createSetSetlistAction
+      ---
+      duration_ms: 0.561588
+      type: 'suite'
+      ...
+    # Subtest: createSetLastGigStatsAction
+        # Subtest: should create correct action
+        ok 1 - should create correct action
+          ---
+          duration_ms: 0.357152
+          type: 'test'
+          ...
+        1..1
+    ok 10 - createSetLastGigStatsAction
+      ---
+      duration_ms: 0.49414
+      type: 'suite'
+      ...
+    # Subtest: createSetActiveEventAction
+        # Subtest: should create correct action with event
+        ok 1 - should create correct action with event
+          ---
+          duration_ms: 0.236294
+          type: 'test'
+          ...
+        # Subtest: should create correct action with null
+        ok 2 - should create correct action with null
+          ---
+          duration_ms: 0.12483
+          type: 'test'
+          ...
+        1..2
+    ok 11 - createSetActiveEventAction
+      ---
+      duration_ms: 0.524734
+      type: 'suite'
+      ...
+    # Subtest: createAddToastAction
+        # Subtest: should create correct action with default type
+        ok 1 - should create correct action with default type
+          ---
+          duration_ms: 0.299004
+          type: 'test'
+          ...
+        # Subtest: should create correct action with custom type
+        ok 2 - should create correct action with custom type
+          ---
+          duration_ms: 0.187305
+          type: 'test'
+          ...
+        1..2
+    ok 12 - createAddToastAction
+      ---
+      duration_ms: 0.624394
+      type: 'suite'
+      ...
+    # Subtest: createRemoveToastAction
+        # Subtest: should create correct action
+        ok 1 - should create correct action
+          ---
+          duration_ms: 0.166783
+          type: 'test'
+          ...
+        1..1
+    ok 13 - createRemoveToastAction
+      ---
+      duration_ms: 0.250188
+      type: 'suite'
+      ...
+    # Subtest: createSetGigModifiersAction
+        # Subtest: should create correct action with object
+        ok 1 - should create correct action with object
+          ---
+          duration_ms: 0.18654
+          type: 'test'
+          ...
+        # Subtest: should create correct action with function
+        ok 2 - should create correct action with function
+          ---
+          duration_ms: 0.127354
+          type: 'test'
+          ...
+        1..2
+    ok 14 - createSetGigModifiersAction
+      ---
+      duration_ms: 0.433915
+      type: 'suite'
+      ...
+    # Subtest: createLoadGameAction
+        # Subtest: should create correct action
+        ok 1 - should create correct action
+          ---
+          duration_ms: 0.229204
+          type: 'test'
+          ...
+        1..1
+    ok 15 - createLoadGameAction
+      ---
+      duration_ms: 0.315508
+      type: 'suite'
+      ...
+    # Subtest: createResetStateAction
+        # Subtest: should create correct action
+        ok 1 - should create correct action
+          ---
+          duration_ms: 0.147611
+          type: 'test'
+          ...
+        1..1
+    ok 16 - createResetStateAction
+      ---
+      duration_ms: 0.227475
+      type: 'suite'
+      ...
+    # Subtest: createApplyEventDeltaAction
+        # Subtest: should create correct action
+        ok 1 - should create correct action
+          ---
+          duration_ms: 0.188074
+          type: 'test'
+          ...
+        1..1
+    ok 17 - createApplyEventDeltaAction
+      ---
+      duration_ms: 0.276472
+      type: 'suite'
+      ...
+    # Subtest: createPopPendingEventAction
+        # Subtest: should create correct action
+        ok 1 - should create correct action
+          ---
+          duration_ms: 0.131251
+          type: 'test'
+          ...
+        1..1
+    ok 18 - createPopPendingEventAction
+      ---
+      duration_ms: 0.201353
+      type: 'suite'
+      ...
+    # Subtest: createConsumeItemAction
+        # Subtest: should create correct action
+        ok 1 - should create correct action
+          ---
+          duration_ms: 0.175804
+          type: 'test'
+          ...
+        1..1
+    ok 19 - createConsumeItemAction
+      ---
+      duration_ms: 0.243391
+      type: 'suite'
+      ...
+    # Subtest: createAdvanceDayAction
+        # Subtest: should create correct action
+        ok 1 - should create correct action
+          ---
+          duration_ms: 0.248791
+          type: 'test'
+          ...
+        1..1
+    ok 20 - createAdvanceDayAction
+      ---
+      duration_ms: 0.323646
+      type: 'suite'
+      ...
+    1..20
+ok 1 - Action Creators
+  ---
+  duration_ms: 14.718031
+  type: 'suite'
+  ...
+# Subtest: calculateGigTimeMs
+ok 2 - calculateGigTimeMs # SKIP Skipping audio engine tests due to environment limitations: (intermediate value).glob is not a function
+  ---
+  duration_ms: 1.327741
+  type: 'test'
+  ...
+# Subtest: hasAudioAsset
+ok 3 - hasAudioAsset # SKIP Skipping audio engine tests due to environment limitations: (intermediate value).glob is not a function
+  ---
+  duration_ms: 0.215325
+  type: 'test'
+  ...
+# Subtest: calculateGigPlaybackWindow
+ok 4 - calculateGigPlaybackWindow # SKIP Skipping audio engine tests due to environment limitations: (intermediate value).glob is not a function
+  ---
+  duration_ms: 0.219952
+  type: 'test'
+  ...
+# (node:8844) ExperimentalWarning: Module mocking is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: AudioManager Tests
+    # Subtest: initializes with default values
+    ok 1 - initializes with default values
+      ---
+      duration_ms: 0.974538
+      type: 'test'
+      ...
+    # Subtest: setMusicVolume updates volume and calls engine
+    ok 2 - setMusicVolume updates volume and calls engine
+      ---
+      duration_ms: 0.322099
+      type: 'test'
+      ...
+    # Subtest: toggleMute updates mute state
+    ok 3 - toggleMute updates mute state
+      ---
+      duration_ms: 0.317105
+      type: 'test'
+      ...
+    # Subtest: startAmbient calls playRandomAmbientOgg
+    ok 4 - startAmbient calls playRandomAmbientOgg
+      ---
+      duration_ms: 0.37009
+      type: 'test'
+      ...
+    1..4
+ok 5 - AudioManager Tests
+  ---
+  duration_ms: 30.609185
+  type: 'test'
+  ...
+# [audioEngine] Asset basename conflict for "song.ogg". Keeping "/assets/audio/song.ogg" and ignoring "/assets/sfx/song.ogg".
+# Subtest: normalizeMidiPlaybackOptions
+    # Subtest: uses defaults when options are undefined
+    ok 1 - uses defaults when options are undefined
+      ---
+      duration_ms: 1.866736
+      type: 'test'
+      ...
+    # Subtest: respects explicit clean playback flag
+    ok 2 - respects explicit clean playback flag
+      ---
+      duration_ms: 0.374207
+      type: 'test'
+      ...
+    # Subtest: accepts a valid onEnded callback
+    ok 3 - accepts a valid onEnded callback
+      ---
+      duration_ms: 0.196848
+      type: 'test'
+      ...
+    # Subtest: normalizes stopAfterSeconds
+    ok 4 - normalizes stopAfterSeconds
+      ---
+      duration_ms: 0.377756
+      type: 'test'
+      ...
+    # Subtest: accepts a startTimeSec override
+    ok 5 - accepts a startTimeSec override
+      ---
+      duration_ms: 0.189897
+      type: 'test'
+      ...
+    # Subtest: calculates remaining duration with excerpt offset
+    ok 6 - calculates remaining duration with excerpt offset
+      ---
+      duration_ms: 0.328144
+      type: 'test'
+      ...
+    1..6
+ok 6 - normalizeMidiPlaybackOptions
+  ---
+  duration_ms: 5.194084
+  type: 'test'
+  ...
+# Subtest: encodePublicAssetPath
+    # Subtest: encodes spaces and preserves slashes
+    ok 1 - encodes spaces and preserves slashes
+      ---
+      duration_ms: 0.384836
+      type: 'test'
+      ...
+    # Subtest: handles leading slashes
+    ok 2 - handles leading slashes
+      ---
+      duration_ms: 0.302124
+      type: 'test'
+      ...
+    # Subtest: returns empty string for invalid input
+    ok 3 - returns empty string for invalid input
+      ---
+      duration_ms: 0.348447
+      type: 'test'
+      ...
+    # Subtest: encodes special characters safely
+    ok 4 - encodes special characters safely
+      ---
+      duration_ms: 0.220471
+      type: 'test'
+      ...
+    1..4
+ok 7 - encodePublicAssetPath
+  ---
+  duration_ms: 3.736094
+  type: 'test'
+  ...
+# Subtest: resolveMidiAssetUrl
+    # Subtest: prefers bundled URLs
+    ok 1 - prefers bundled URLs
+      ---
+      duration_ms: 0.357609
+      type: 'test'
+      ...
+    # Subtest: resolves bundled URLs via basename
+    ok 2 - resolves bundled URLs via basename
+      ---
+      duration_ms: 0.181138
+      type: 'test'
+      ...
+    # Subtest: falls back to public path when missing
+    ok 3 - falls back to public path when missing
+      ---
+      duration_ms: 0.225766
+      type: 'test'
+      ...
+    # Subtest: normalizes relative filenames and encodes spaces
+    ok 4 - normalizes relative filenames and encodes spaces
+      ---
+      duration_ms: 0.183969
+      type: 'test'
+      ...
+    # Subtest: supports custom public base path
+    ok 5 - supports custom public base path
+      ---
+      duration_ms: 0.128073
+      type: 'test'
+      ...
+    # Subtest: supports relative base path defaults
+    ok 6 - supports relative base path defaults
+      ---
+      duration_ms: 0.11702
+      type: 'test'
+      ...
+    # Subtest: returns nulls for empty filename
+    ok 7 - returns nulls for empty filename
+      ---
+      duration_ms: 0.116557
+      type: 'test'
+      ...
+    1..7
+ok 8 - resolveMidiAssetUrl
+  ---
+  duration_ms: 1.94218
+  type: 'test'
+  ...
+# Subtest: resolveAssetUrl
+    # Subtest: resolves bundled URLs for non-MIDI assets
+    ok 1 - resolves bundled URLs for non-MIDI assets
+      ---
+      duration_ms: 0.141831
+      type: 'test'
+      ...
+    # Subtest: resolves via basename for nested paths
+    ok 2 - resolves via basename for nested paths
+      ---
+      duration_ms: 0.121779
+      type: 'test'
+      ...
+    # Subtest: falls back to public path for missing assets
+    ok 3 - falls back to public path for missing assets
+      ---
+      duration_ms: 0.116947
+      type: 'test'
+      ...
+    1..3
+ok 9 - resolveAssetUrl
+  ---
+  duration_ms: 0.692481
+  type: 'test'
+  ...
+# Subtest: buildAssetUrlMap
+    # Subtest: stores relative paths and basenames
+    ok 1 - stores relative paths and basenames
+      ---
+      duration_ms: 0.512693
+      type: 'test'
+      ...
+    # Subtest: warns on basename conflicts and keeps first entry
+    ok 2 - warns on basename conflicts and keeps first entry
+      ---
+      duration_ms: 0.550527
+      type: 'test'
+      ...
+    1..2
+ok 10 - buildAssetUrlMap
+  ---
+  duration_ms: 1.372245
+  type: 'test'
+  ...
+# Subtest: buildAssetUrlMap OGG key filtering
+    # Subtest: full paths and basenames are both stored for OGG assets
+    ok 1 - full paths and basenames are both stored for OGG assets
+      ---
+      duration_ms: 0.173276
+      type: 'test'
+      ...
+    # Subtest: full paths with subdirectories are distinguishable from basenames
+    ok 2 - full paths with subdirectories are distinguishable from basenames
+      ---
+      duration_ms: 1.004789
+      type: 'test'
+      ...
+    # Subtest: path-containing keys can be filtered from basename-only keys
+    ok 3 - path-containing keys can be filtered from basename-only keys
+      ---
+      duration_ms: 0.363655
+      type: 'test'
+      ...
+    # Subtest: root-level assets have no slash in key
+    ok 4 - root-level assets have no slash in key
+      ---
+      duration_ms: 0.199701
+      type: 'test'
+      ...
+    1..4
+ok 11 - buildAssetUrlMap OGG key filtering
+  ---
+  duration_ms: 2.241811
+  type: 'test'
+  ...
+# Subtest: buildMidiUrlMap
+    # Subtest: stores relative paths and basenames
+    ok 1 - stores relative paths and basenames
+      ---
+      duration_ms: 0.194917
+      type: 'test'
+      ...
+    # Subtest: warns on basename conflicts and keeps first entry
+    ok 2 - warns on basename conflicts and keeps first entry
+      ---
+      duration_ms: 0.330401
+      type: 'test'
+      ...
+    1..2
+ok 12 - buildMidiUrlMap
+  ---
+  duration_ms: 0.858296
+  type: 'test'
+  ...
+# Subtest: selectRandomItem
+    # Subtest: returns null for invalid or empty inputs
+    ok 1 - returns null for invalid or empty inputs
+      ---
+      duration_ms: 0.869365
+      type: 'test'
+      ...
+    # Subtest: returns a stable item with deterministic rng
+    ok 2 - returns a stable item with deterministic rng
+      ---
+      duration_ms: 0.211266
+      type: 'test'
+      ...
+    # Subtest: clamps rng values to valid indices
+    ok 3 - clamps rng values to valid indices
+      ---
+      duration_ms: 0.19212
+      type: 'test'
+      ...
+    1..3
+ok 13 - selectRandomItem
+  ---
+  duration_ms: 2.785637
+  type: 'test'
+  ...
+# Subtest: getScheduledHitTimeMs
+    # Subtest: schedules within lead window
+    ok 1 - schedules within lead window
+      ---
+      duration_ms: 0.863649
+      type: 'test'
+      ...
+    # Subtest: fires immediately when outside lead window
+    ok 2 - fires immediately when outside lead window
+      ---
+      duration_ms: 0.226509
+      type: 'test'
+      ...
+    # Subtest: handles clock offsets between gig and audio time
+    ok 3 - handles clock offsets between gig and audio time
+      ---
+      duration_ms: 0.170836
+      type: 'test'
+      ...
+    1..3
+ok 14 - getScheduledHitTimeMs
+  ---
+  duration_ms: 2.606474
+  type: 'test'
+  ...
+# Subtest: CHARACTERS data integrity
+ok 15 - CHARACTERS data integrity
+  ---
+  duration_ms: 1.159329
+  type: 'test'
+  ...
+# Subtest: SONGS_DB data integrity
+ok 16 - SONGS_DB data integrity
+  ---
+  duration_ms: 0.312646
+  type: 'test'
+  ...
+# Subtest: SONGS_DB sourceOgg field
+ok 17 - SONGS_DB sourceOgg field
+  ---
+  duration_ms: 0.424938
+  type: 'test'
+  ...
+# Subtest: UPGRADES_DB data integrity
+ok 18 - UPGRADES_DB data integrity
+  ---
+  duration_ms: 0.277812
+  type: 'test'
+  ...
+# Subtest: ALL_VENUES data integrity
+ok 19 - ALL_VENUES data integrity
+  ---
+  duration_ms: 0.214939
+  type: 'test'
+  ...
+# Subtest: EVENTS_DB integrity
+ok 20 - EVENTS_DB integrity
+  ---
+  duration_ms: 1.107918
+  type: 'test'
+  ...
+# [Economy] Calculating Gig Financials { gig: undefined, score: 80, fame: 100 }
+# [Economy] Gig Report Generated { net: 2527, income: 2812, expenses: 285 }
+# [Economy] Calculating Gig Financials { gig: undefined, score: 80, fame: 10 }
+# [Economy] Gig Report Generated { net: 1082, income: 1197, expenses: 115 }
+# [Economy] Calculating Gig Financials { gig: undefined, score: 80, fame: 1000 }
+# [Economy] Gig Report Generated { net: 2120, income: 2425, expenses: 305 }
+# [Economy] Calculating Gig Financials { gig: undefined, score: 80, fame: 50 }
+# [Economy] Gig Report Generated { net: 1887, income: 2092, expenses: 205 }
+# [Economy] Calculating Gig Financials { gig: undefined, score: 80, fame: 50 }
+# [Economy] Gig Report Generated { net: 2449, income: 2764, expenses: 315 }
+# [Economy] Calculating Gig Financials { gig: undefined, score: 80, fame: 50 }
+# [Economy] Gig Report Generated { net: 1414, income: 1519, expenses: 105 }
+# [Economy] Calculating Gig Financials { gig: undefined, score: 40, fame: 100 }
+# [Economy] Gig Report Generated { net: 2517, income: 2862, expenses: 345 }
+# [Economy] Calculating Gig Financials { gig: undefined, score: 95, fame: 100 }
+# [Economy] Gig Report Generated { net: 3102, income: 3837, expenses: 735 }
+# [Economy] Calculating Gig Financials { gig: undefined, score: 95, fame: 100 }
+# [Economy] Gig Report Generated { net: 3102, income: 3837, expenses: 735 }
+# [Economy] Calculating Gig Financials { gig: undefined, score: 80, fame: 100 }
+# [Economy] Gig Report Generated { net: 2637, income: 3062, expenses: 425 }
+# [Economy] Calculating Gig Financials { gig: undefined, score: 80, fame: 100 }
+# [Economy] Gig Report Generated { net: 2152, income: 2387, expenses: 235 }
+# [Economy] Calculating Gig Financials { gig: undefined, score: 90, fame: 200 }
+# [Economy] Gig Report Generated { net: 3182, income: 3267, expenses: 85 }
+# [Economy] Calculating Gig Financials { gig: undefined, score: 100, fame: 200 }
+# [Economy] Gig Report Generated { net: 3333, income: 4138, expenses: 805 }
+# [Economy] Calculating Gig Financials { gig: undefined, score: 80, fame: 100 }
+# [Economy] Gig Report Generated { net: 2506, income: 2812, expenses: 306 }
+# [Economy] Calculating Gig Financials { gig: undefined, score: 80, fame: 100 }
+# [Economy] Gig Report Generated { net: 2527, income: 2812, expenses: 285 }
+# [Economy] Calculating Gig Financials { gig: undefined, score: 80, fame: 100 }
+# [Economy] Gig Report Generated { net: 2507, income: 2812, expenses: 305 }
+# [Economy] Calculating Gig Financials { gig: undefined, score: 80, fame: 100 }
+# [Economy] Gig Report Generated { net: 2637, income: 3062, expenses: 425 }
+# [Economy] Calculating Gig Financials { gig: undefined, score: 80, fame: 100 }
+# [Economy] Gig Report Generated { net: 655, income: 700, expenses: 45 }
+# [Economy] Calculating Gig Financials { gig: undefined, score: 0, fame: 100 }
+# [Economy] Gig Report Generated { net: 2302, income: 2437, expenses: 135 }
+# [Economy] Calculating Gig Financials { gig: undefined, score: 100, fame: 100 }
+# [Economy] Gig Report Generated { net: 3022, income: 3637, expenses: 615 }
+# [Economy] Calculating Gig Financials { gig: undefined, score: 80, fame: 100 }
+# [Economy] Gig Report Generated { net: 2527, income: 2812, expenses: 285 }
+# [Economy] Calculating Gig Financials { gig: undefined, score: 80, fame: 100 }
+# [Economy] Gig Report Generated { net: 2637, income: 3062, expenses: 425 }
+# [Economy] Calculating Gig Financials { gig: undefined, score: 75, fame: 150 }
+# [Economy] Gig Report Generated { net: 2605, income: 2900, expenses: 295 }
+# [Economy] Calculating Gig Financials { gig: undefined, score: 85, fame: 5000 }
+# [Economy] Gig Report Generated { net: 23055, income: 24450, expenses: 1395 }
+# Subtest: calculateGigFinancials handles base case with ticket sales and guarantee
+ok 21 - calculateGigFinancials handles base case with ticket sales and guarantee
+  ---
+  duration_ms: 4.222082
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials applies fame scaling to fill rate
+ok 22 - calculateGigFinancials applies fame scaling to fill rate
+  ---
+  duration_ms: 1.136023
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials applies promo boost to fill rate
+ok 23 - calculateGigFinancials applies promo boost to fill rate
+  ---
+  duration_ms: 1.603387
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials applies price sensitivity penalty
+ok 24 - calculateGigFinancials applies price sensitivity penalty
+  ---
+  duration_ms: 0.605876
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials scales merch sales with performance
+ok 25 - calculateGigFinancials scales merch sales with performance
+  ---
+  duration_ms: 0.722734
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials applies S-rank merch bonus
+ok 26 - calculateGigFinancials applies S-rank merch bonus
+  ---
+  duration_ms: 0.802883
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials penalizes merch sales for misses
+ok 27 - calculateGigFinancials penalizes merch sales for misses
+  ---
+  duration_ms: 0.851944
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials handles sold out merch gracefully
+ok 28 - calculateGigFinancials handles sold out merch gracefully
+  ---
+  duration_ms: 0.413388
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials uses all inventory types for sales limit
+ok 29 - calculateGigFinancials uses all inventory types for sales limit
+  ---
+  duration_ms: 0.623692
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials includes transport costs based on distance
+ok 30 - calculateGigFinancials includes transport costs based on distance
+  ---
+  duration_ms: 0.768876
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials includes catering when enabled
+ok 31 - calculateGigFinancials includes catering when enabled
+  ---
+  duration_ms: 0.545092
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials supports new merch key
+ok 32 - calculateGigFinancials supports new merch key
+  ---
+  duration_ms: 0.405664
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials handles zero capacity venue
+ok 33 - calculateGigFinancials handles zero capacity venue
+  ---
+  duration_ms: 0.329038
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials handles extreme performance scores
+ok 34 - calculateGigFinancials handles extreme performance scores
+  ---
+  duration_ms: 0.468472
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials merch table modifier increases sales
+ok 35 - calculateGigFinancials merch table modifier increases sales
+  ---
+  duration_ms: 0.405613
+  type: 'test'
+  ...
+# Subtest: EXPENSE_CONSTANTS are properly defined
+ok 36 - EXPENSE_CONSTANTS are properly defined
+  ---
+  duration_ms: 0.155714
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials net profit matches income minus expenses
+ok 37 - calculateGigFinancials net profit matches income minus expenses
+  ---
+  duration_ms: 0.412433
+  type: 'test'
+  ...
+# Subtest: calculateGigFinancials handles high fame with high price
+ok 38 - calculateGigFinancials handles high fame with high price
+  ---
+  duration_ms: 0.317113
+  type: 'test'
+  ...
+# Subtest: calculateTravelExpenses returns correct cost structure
+ok 39 - calculateTravelExpenses returns correct cost structure
+  ---
+  duration_ms: 0.352826
+  type: 'test'
+  ...
+# [ErrorHandler] Test error {
+#   name: 'StateError',
+#   message: 'Test error',
+#   category: 'state',
+#   severity: 'high',
+#   context: {},
+#   recoverable: true,
+#   timestamp: 1770774976811,
+#   stack: 'StateError: Test error\\n' +
+#     '    at TestContext.<anonymous> (file:///app/tests/errorHandler.test.js:76:19)\\n' +
+#     '    at Test.runInAsyncScope (node:async_hooks:214:14)\\n' +
+#     '    at Test.run (node:internal/test_runner/test:1047:25)\\n' +
+#     '    at Test.start (node:internal/test_runner/test:944:17)\\n' +
+#     '    at node:internal/test_runner/test:1440:71\\n' +
+#     '    at node:internal/per_context/primordials:464:82\\n' +
+#     '    at new Promise (<anonymous>)\\n' +
+#     '    at new SafePromise (node:internal/per_context/primordials:433:3)\\n' +
+#     '    at node:internal/per_context/primordials:464:9\\n' +
+#     '    at Array.map (<anonymous>)'
+# }
+# [ErrorHandler] Test error {
+#   name: 'StateError',
+#   message: 'Test error',
+#   category: 'state',
+#   severity: 'high',
+#   context: {},
+#   recoverable: true,
+#   timestamp: 1770774976814,
+#   stack: 'StateError: Test error\\n' +
+#     '    at TestContext.<anonymous> (file:///app/tests/errorHandler.test.js:90:19)\\n' +
+#     '    at Test.runInAsyncScope (node:async_hooks:214:14)\\n' +
+#     '    at Test.run (node:internal/test_runner/test:1047:25)\\n' +
+#     '    at Suite.processPendingSubtests (node:internal/test_runner/test:744:18)\\n' +
+#     '    at Test.postRun (node:internal/test_runner/test:1173:19)\\n' +
+#     '    at Test.run (node:internal/test_runner/test:1101:12)\\n' +
+#     '    at async Promise.all (index 0)\\n' +
+#     '    at async Suite.run (node:internal/test_runner/test:1442:7)\\n' +
+#     '    at async Test.processPendingSubtests (node:internal/test_runner/test:744:7)'
+# }
+# [ErrorHandler] Fallback {
+#   name: 'Error',
+#   message: 'Fallback',
+#   category: 'unknown',
+#   severity: 'medium',
+#   context: {},
+#   recoverable: true,
+#   timestamp: 1770774976814,
+#   stack: 'Error\\n' +
+#     '    at TestContext.<anonymous> (file:///app/tests/errorHandler.test.js:97:19)\\n' +
+#     '    at Test.runInAsyncScope (node:async_hooks:214:14)\\n' +
+#     '    at Test.run (node:internal/test_runner/test:1047:25)\\n' +
+#     '    at Suite.processPendingSubtests (node:internal/test_runner/test:744:18)\\n' +
+#     '    at Test.postRun (node:internal/test_runner/test:1173:19)\\n' +
+#     '    at Test.run (node:internal/test_runner/test:1101:12)\\n' +
+#     '    at async Suite.processPendingSubtests (node:internal/test_runner/test:744:7)'
+# }
+# [ErrorHandler] Audio asset not found for "01 Kranker Schrank": looked up "01 Kranker Schrank.ogg" {
+#   name: 'AudioError',
+#   message: 'Audio asset not found for "01 Kranker Schrank": looked up "01 Kranker Schrank.ogg"',
+#   category: 'audio',
+#   severity: 'medium',
+#   context: {
+#     songName: '01 Kranker Schrank',
+#     oggFilename: '01 Kranker Schrank.ogg'
+#   },
+#   recoverable: true,
+#   timestamp: 1770774976815,
+#   stack: 'AudioError: Audio asset not found for "01 Kranker Schrank": looked up "01 Kranker Schrank.ogg"\\n' +
+#     '    at TestContext.<anonymous> (file:///app/tests/errorHandler.test.js:112:19)\\n' +
+#     '    at Test.runInAsyncScope (node:async_hooks:214:14)\\n' +
+#     '    at Test.run (node:internal/test_runner/test:1047:25)\\n' +
+#     '    at Suite.processPendingSubtests (node:internal/test_runner/test:744:18)\\n' +
+#     '    at Test.postRun (node:internal/test_runner/test:1173:19)\\n' +
+#     '    at Test.run (node:internal/test_runner/test:1101:12)\\n' +
+#     '    at async Suite.processPendingSubtests (node:internal/test_runner/test:744:7)'
+# }
+# [ErrorHandler] Storage operation failed: test {
+#   name: 'StorageError',
+#   message: 'Storage operation failed: test',
+#   category: 'storage',
+#   severity: 'medium',
+#   context: { originalError: 'Storage error' },
+#   recoverable: true,
+#   timestamp: 1770774976816,
+#   stack: 'StorageError: Storage operation failed: test\\n' +
+#     '    at safeStorageOperation (file:///app/src/utils/errorHandler.js:219:7)\\n' +
+#     '    at TestContext.<anonymous> (file:///app/tests/errorHandler.test.js:135:20)\\n' +
+#     '    at Test.runInAsyncScope (node:async_hooks:214:14)\\n' +
+#     '    at Test.run (node:internal/test_runner/test:1047:25)\\n' +
+#     '    at Suite.processPendingSubtests (node:internal/test_runner/test:744:18)\\n' +
+#     '    at Test.postRun (node:internal/test_runner/test:1173:19)\\n' +
+#     '    at Test.run (node:internal/test_runner/test:1101:12)\\n' +
+#     '    at async Promise.all (index 0)\\n' +
+#     '    at async Suite.run (node:internal/test_runner/test:1442:7)\\n' +
+#     '    at async Test.processPendingSubtests (node:internal/test_runner/test:744:7)'
+# }
+# Subtest: Custom Error Classes
+    # Subtest: StateError
+        # Subtest: should have correct name
+        ok 1 - should have correct name
+          ---
+          duration_ms: 1.088145
+          type: 'test'
+          ...
+        1..1
+    ok 1 - StateError
+      ---
+      duration_ms: 1.998031
+      type: 'suite'
+      ...
+    # Subtest: StorageError
+        # Subtest: should have correct name
+        ok 1 - should have correct name
+          ---
+          duration_ms: 0.239043
+          type: 'test'
+          ...
+        1..1
+    ok 2 - StorageError
+      ---
+      duration_ms: 0.363974
+      type: 'suite'
+      ...
+    # Subtest: AudioError
+        # Subtest: should have correct name and category
+        ok 1 - should have correct name and category
+          ---
+          duration_ms: 0.357209
+          type: 'test'
+          ...
+        # Subtest: should store context for missing OGG asset diagnostics
+        ok 2 - should store context for missing OGG asset diagnostics
+          ---
+          duration_ms: 0.257873
+          type: 'test'
+          ...
+        # Subtest: should produce a complete log object via toLogObject
+        ok 3 - should produce a complete log object via toLogObject
+          ---
+          duration_ms: 0.764776
+          type: 'test'
+          ...
+        1..3
+    ok 3 - AudioError
+      ---
+      duration_ms: 1.814467
+      type: 'suite'
+      ...
+    1..3
+ok 40 - Custom Error Classes
+  ---
+  duration_ms: 5.003516
+  type: 'suite'
+  ...
+# Subtest: handleError
+    # Subtest: should call addToast when not silent
+    ok 1 - should call addToast when not silent
+      ---
+      duration_ms: 2.27252
+      type: 'test'
+      ...
+    # Subtest: should not call addToast when silent
+    ok 2 - should not call addToast when silent
+      ---
+      duration_ms: 0.607025
+      type: 'test'
+      ...
+    # Subtest: should use fallback message for errors without message
+    ok 3 - should use fallback message for errors without message
+      ---
+      duration_ms: 0.501917
+      type: 'test'
+      ...
+    # Subtest: should handle AudioError with silent mode and preserve context
+    ok 4 - should handle AudioError with silent mode and preserve context
+      ---
+      duration_ms: 0.714997
+      type: 'test'
+      ...
+    1..4
+ok 41 - handleError
+  ---
+  duration_ms: 4.757233
+  type: 'suite'
+  ...
+# Subtest: safeStorageOperation
+    # Subtest: should return result on success
+    ok 1 - should return result on success
+      ---
+      duration_ms: 0.303806
+      type: 'test'
+      ...
+    # Subtest: should return fallback on error
+    ok 2 - should return fallback on error
+      ---
+      duration_ms: 0.87112
+      type: 'test'
+      ...
+    1..2
+ok 42 - safeStorageOperation
+  ---
+  duration_ms: 1.335641
+  type: 'suite'
+  ...
+# resolveChoice threw error: TypeError: Cannot read properties of undefined (reading 'map')
+#     at Object.resolveChoice (file:///app/src/utils/eventEngine.js:164:35)
+#     at TestContext.<anonymous> (file:///app/tests/eventEngine.test.js:154:30)
+#     at Test.runInAsyncScope (node:async_hooks:214:14)
+#     at Test.run (node:internal/test_runner/test:1047:25)
+#     at Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+#     at Test.postRun (node:internal/test_runner/test:1173:19)
+#     at Test.run (node:internal/test_runner/test:1101:12)
+#     at async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+# Subtest: eventEngine.checkEvent returns null when category not found
+ok 43 - eventEngine.checkEvent returns null when category not found
+  ---
+  duration_ms: 1.69305
+  type: 'test'
+  ...
+# Subtest: eventEngine.checkEvent filters by trigger point
+ok 44 - eventEngine.checkEvent filters by trigger point
+  ---
+  duration_ms: 0.435721
+  type: 'test'
+  ...
+# Subtest: eventEngine.checkEvent respects cooldowns
+ok 45 - eventEngine.checkEvent respects cooldowns
+  ---
+  duration_ms: 0.198275
+  type: 'test'
+  ...
+# Subtest: eventEngine.checkEvent prioritizes pending events
+ok 46 - eventEngine.checkEvent prioritizes pending events
+  ---
+  duration_ms: 0.225901
+  type: 'test'
+  ...
+# Subtest: eventEngine.resolveChoice handles direct effect
+ok 47 - eventEngine.resolveChoice handles direct effect
+  ---
+  duration_ms: 0.279714
+  type: 'test'
+  ...
+# Subtest: eventEngine.resolveChoice handles skill check success
+ok 48 - eventEngine.resolveChoice handles skill check success
+  ---
+  duration_ms: 0.262641
+  type: 'test'
+  ...
+# Subtest: eventEngine.resolveChoice handles skill check failure
+ok 49 - eventEngine.resolveChoice handles skill check failure
+  ---
+  duration_ms: 0.353275
+  type: 'test'
+  ...
+# Subtest: eventEngine.resolveChoice uses luck stat for luck checks
+not ok 50 - eventEngine.resolveChoice uses luck stat for luck checks
+  ---
+  duration_ms: 1.885003
+  type: 'test'
+  location: '/app/tests/eventEngine.test.js:135:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of undefined (reading 'map')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    Object.resolveChoice (file:///app/src/utils/eventEngine.js:164:35)
+    TestContext.<anonymous> (file:///app/tests/eventEngine.test.js:154:30)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: eventEngine.resolveChoice uses max member skill
+ok 51 - eventEngine.resolveChoice uses max member skill
+  ---
+  duration_ms: 0.369067
+  type: 'test'
+  ...
+# Subtest: eventEngine.resolveChoice preserves nextEventId
+ok 52 - eventEngine.resolveChoice preserves nextEventId
+  ---
+  duration_ms: 0.552897
+  type: 'test'
+  ...
+# Subtest: eventEngine.processOptions returns event when no processing needed
+ok 53 - eventEngine.processOptions returns event when no processing needed
+  ---
+  duration_ms: 0.245716
+  type: 'test'
+  ...
+# Subtest: eventEngine.processOptions handles van_breakdown with spare_tire
+ok 54 - eventEngine.processOptions handles van_breakdown with spare_tire
+  ---
+  duration_ms: 0.202625
+  type: 'test'
+  ...
+# Subtest: eventEngine.processOptions does not add spare tire option without inventory
+ok 55 - eventEngine.processOptions does not add spare tire option without inventory
+  ---
+  duration_ms: 0.215282
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles resource effects
+ok 56 - eventEngine.applyResult handles resource effects
+  ---
+  duration_ms: 0.302222
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles stat effects
+ok 57 - eventEngine.applyResult handles stat effects
+  ---
+  duration_ms: 0.131493
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles harmony stat
+ok 58 - eventEngine.applyResult handles harmony stat
+  ---
+  duration_ms: 0.137059
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles mood changes
+ok 59 - eventEngine.applyResult handles mood changes
+  ---
+  duration_ms: 0.18124
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles stamina changes
+ok 60 - eventEngine.applyResult handles stamina changes
+  ---
+  duration_ms: 0.153027
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles combined mood and stamina in composite
+ok 61 - eventEngine.applyResult handles combined mood and stamina in composite
+  ---
+  duration_ms: 0.155063
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles van fuel
+ok 62 - eventEngine.applyResult handles van fuel
+  ---
+  duration_ms: 0.125349
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles van condition stat
+ok 63 - eventEngine.applyResult handles van condition stat
+  ---
+  duration_ms: 0.270705
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles game over flag
+ok 64 - eventEngine.applyResult handles game over flag
+  ---
+  duration_ms: 0.192266
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles story flags
+ok 65 - eventEngine.applyResult handles story flags
+  ---
+  duration_ms: 0.129291
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles chain events
+ok 66 - eventEngine.applyResult handles chain events
+  ---
+  duration_ms: 0.126392
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles composite effects
+ok 67 - eventEngine.applyResult handles composite effects
+  ---
+  duration_ms: 0.154331
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult returns null for null result
+ok 68 - eventEngine.applyResult returns null for null result
+  ---
+  duration_ms: 0.104805
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles unlock effects
+ok 69 - eventEngine.applyResult handles unlock effects
+  ---
+  duration_ms: 0.139599
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult preserves nextEventId from result
+ok 70 - eventEngine.applyResult preserves nextEventId from result
+  ---
+  duration_ms: 0.151592
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles time stat
+ok 71 - eventEngine.applyResult handles time stat
+  ---
+  duration_ms: 0.123945
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles viral stat
+ok 72 - eventEngine.applyResult handles viral stat
+  ---
+  duration_ms: 0.120417
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles inventory numeric increment
+ok 73 - eventEngine.applyResult handles inventory numeric increment
+  ---
+  duration_ms: 0.125868
+  type: 'test'
+  ...
+# Subtest: eventEngine.applyResult handles inventory non-numeric value
+ok 74 - eventEngine.applyResult handles inventory non-numeric value
+  ---
+  duration_ms: 0.123775
+  type: 'test'
+  ...
+# Subtest: eventEngine logic for inventory increment handles existing values
+ok 75 - eventEngine logic for inventory increment handles existing values
+  ---
+  duration_ms: 0.14504
+  type: 'test'
+  ...
+# Subtest: eventEngine logic allows negative inventory in delta
+ok 76 - eventEngine logic allows negative inventory in delta
+  ---
+  duration_ms: 0.18317
+  type: 'test'
+  ...
+# Subtest: resolveEventChoice returns delta for direct effects
+ok 77 - resolveEventChoice returns delta for direct effects
+  ---
+  duration_ms: 1.445111
+  type: 'test'
+  ...
+# Subtest: resolveEventChoice handles missing choices safely
+ok 78 - resolveEventChoice handles missing choices safely
+  ---
+  duration_ms: 0.187606
+  type: 'test'
+  ...
+# [GameState] Scene Change: INTRO -> OVERWORLD
+# [GameState] Scene Change: INTRO -> OVERWORLD
+# [GameState] Update Player { money: 1000 }
+# [GameState] Update Player { fame: 50 }
+# [GameState] Update Player { money: 1000 }
+# [GameState] Update Band { harmony: 50 }
+# [GameState] Update Band { harmony: -20 }
+# [GameState] Update Band { harmony: 0 }
+# [GameState] Update Band { members: [ { name: 'Test', mood: 100, stamina: 100 } ] }
+# [GameState] Day Advanced to 2
+# [GameState] State Reset (Debug)
+# [GameState] Game Loaded
+# [GameState] Game Loaded
+# [GameState] Game Loaded
+# Subtest: gameReducer
+    # Subtest: CHANGE_SCENE
+        # Subtest: should change the current scene
+        ok 1 - should change the current scene
+          ---
+          duration_ms: 2.705076
+          type: 'test'
+          ...
+        # Subtest: should preserve other state properties
+        ok 2 - should preserve other state properties
+          ---
+          duration_ms: 0.485435
+          type: 'test'
+          ...
+        1..2
+    ok 1 - CHANGE_SCENE
+      ---
+      duration_ms: 4.068289
+      type: 'suite'
+      ...
+    # Subtest: UPDATE_PLAYER
+        # Subtest: should update player money
+        ok 1 - should update player money
+          ---
+          duration_ms: 1.072922
+          type: 'test'
+          ...
+        # Subtest: should update player fame
+        ok 2 - should update player fame
+          ---
+          duration_ms: 0.848406
+          type: 'test'
+          ...
+        # Subtest: should merge player updates with existing state
+        ok 3 - should merge player updates with existing state
+          ---
+          duration_ms: 0.765787
+          type: 'test'
+          ...
+        1..3
+    ok 2 - UPDATE_PLAYER
+      ---
+      duration_ms: 2.992298
+      type: 'suite'
+      ...
+    # Subtest: UPDATE_BAND
+        # Subtest: should update band harmony
+        ok 1 - should update band harmony
+          ---
+          duration_ms: 0.700041
+          type: 'test'
+          ...
+        # Subtest: should clamp band harmony above zero
+        ok 2 - should clamp band harmony above zero
+          ---
+          duration_ms: 0.695597
+          type: 'test'
+          ...
+        # Subtest: should clamp band harmony of zero to one
+        ok 3 - should clamp band harmony of zero to one
+          ---
+          duration_ms: 0.616782
+          type: 'test'
+          ...
+        # Subtest: should update band members
+        ok 4 - should update band members
+          ---
+          duration_ms: 1.36266
+          type: 'test'
+          ...
+        1..4
+    ok 3 - UPDATE_BAND
+      ---
+      duration_ms: 3.785657
+      type: 'suite'
+      ...
+    # Subtest: ADVANCE_DAY
+        # Subtest: should clamp harmony after daily updates
+        ok 1 - should clamp harmony after daily updates
+          ---
+          duration_ms: 0.78961
+          type: 'test'
+          ...
+        1..1
+    ok 4 - ADVANCE_DAY
+      ---
+      duration_ms: 0.918893
+      type: 'suite'
+      ...
+    # Subtest: UPDATE_SOCIAL
+        # Subtest: should update social media followers
+        ok 1 - should update social media followers
+          ---
+          duration_ms: 0.27761
+          type: 'test'
+          ...
+        # Subtest: should preserve other social stats
+        ok 2 - should preserve other social stats
+          ---
+          duration_ms: 0.198091
+          type: 'test'
+          ...
+        1..2
+    ok 5 - UPDATE_SOCIAL
+      ---
+      duration_ms: 0.682957
+      type: 'suite'
+      ...
+    # Subtest: SET_GIG_MODIFIERS
+        # Subtest: should update gig modifiers with object payload
+        ok 1 - should update gig modifiers with object payload
+          ---
+          duration_ms: 0.312044
+          type: 'test'
+          ...
+        # Subtest: should update gig modifiers with function payload
+        ok 2 - should update gig modifiers with function payload
+          ---
+          duration_ms: 0.225725
+          type: 'test'
+          ...
+        1..2
+    ok 6 - SET_GIG_MODIFIERS
+      ---
+      duration_ms: 0.713903
+      type: 'suite'
+      ...
+    # Subtest: ADD_TOAST
+        # Subtest: should add toast to array
+        ok 1 - should add toast to array
+          ---
+          duration_ms: 0.310761
+          type: 'test'
+          ...
+        1..1
+    ok 7 - ADD_TOAST
+      ---
+      duration_ms: 0.411279
+      type: 'suite'
+      ...
+    # Subtest: REMOVE_TOAST
+        # Subtest: should remove toast by id
+        ok 1 - should remove toast by id
+          ---
+          duration_ms: 0.352019
+          type: 'test'
+          ...
+        1..1
+    ok 8 - REMOVE_TOAST
+      ---
+      duration_ms: 0.452831
+      type: 'suite'
+      ...
+    # Subtest: CONSUME_ITEM
+        # Subtest: should decrement numeric inventory item
+        ok 1 - should decrement numeric inventory item
+          ---
+          duration_ms: 2.476659
+          type: 'test'
+          ...
+        # Subtest: should set boolean inventory item to false
+        ok 2 - should set boolean inventory item to false
+          ---
+          duration_ms: 0.199206
+          type: 'test'
+          ...
+        # Subtest: should not go below zero
+        ok 3 - should not go below zero
+          ---
+          duration_ms: 0.176301
+          type: 'test'
+          ...
+        1..3
+    ok 9 - CONSUME_ITEM
+      ---
+      duration_ms: 3.021737
+      type: 'suite'
+      ...
+    # Subtest: RESET_STATE
+        # Subtest: should reset to initial state
+        ok 1 - should reset to initial state
+          ---
+          duration_ms: 0.919266
+          type: 'test'
+          ...
+        1..1
+    ok 10 - RESET_STATE
+      ---
+      duration_ms: 1.037827
+      type: 'suite'
+      ...
+    # Subtest: LOAD_GAME
+        # Subtest: should load saved state
+        ok 1 - should load saved state
+          ---
+          duration_ms: 0.460103
+          type: 'test'
+          ...
+        # Subtest: should migrate energy to catering in gigModifiers
+        ok 2 - should migrate energy to catering in gigModifiers
+          ---
+          duration_ms: 0.314124
+          type: 'test'
+          ...
+        # Subtest: should merge with default values for missing properties
+        ok 3 - should merge with default values for missing properties
+          ---
+          duration_ms: 0.417067
+          type: 'test'
+          ...
+        1..3
+    ok 11 - LOAD_GAME
+      ---
+      duration_ms: 1.343418
+      type: 'suite'
+      ...
+    # Subtest: unknown action
+        # Subtest: should return current state for unknown action
+        ok 1 - should return current state for unknown action
+          ---
+          duration_ms: 0.491238
+          type: 'test'
+          ...
+        1..1
+    ok 12 - unknown action
+      ---
+      duration_ms: 0.645282
+      type: 'suite'
+      ...
+    1..12
+ok 79 - gameReducer
+  ---
+  duration_ms: 21.6467
+  type: 'suite'
+  ...
+# Subtest: ActionTypes
+    # Subtest: should have all expected action types
+    ok 1 - should have all expected action types
+      ---
+      duration_ms: 0.193119
+      type: 'test'
+      ...
+    1..1
+ok 80 - ActionTypes
+  ---
+  duration_ms: 0.279857
+  type: 'suite'
+  ...
+# Subtest: applyEventDelta clamps player and band values
+ok 81 - applyEventDelta clamps player and band values
+  ---
+  duration_ms: 1.392347
+  type: 'test'
+  ...
+# Subtest: applyEventDelta updates social channels safely
+ok 82 - applyEventDelta updates social channels safely
+  ---
+  duration_ms: 0.284078
+  type: 'test'
+  ...
+# Subtest: applyEventDelta applies player updates
+ok 83 - applyEventDelta applies player updates
+  ---
+  duration_ms: 1.332717
+  type: 'test'
+  ...
+# Subtest: applyEventDelta clamps values
+ok 84 - applyEventDelta clamps values
+  ---
+  duration_ms: 0.291862
+  type: 'test'
+  ...
+# Subtest: applyEventDelta handles band inventory updates
+ok 85 - applyEventDelta handles band inventory updates
+  ---
+  duration_ms: 0.301784
+  type: 'test'
+  ...
+# Subtest: applyEventDelta applies per-member deltas
+ok 86 - applyEventDelta applies per-member deltas
+  ---
+  duration_ms: 0.25394
+  type: 'test'
+  ...
+# Subtest: applyEventDelta handles social updates
+ok 87 - applyEventDelta handles social updates
+  ---
+  duration_ms: 0.31881
+  type: 'test'
+  ...
+# Subtest: applyEventDelta handles flags
+ok 88 - applyEventDelta handles flags
+  ---
+  duration_ms: 0.321867
+  type: 'test'
+  ...
+# Subtest: updateGigPerformanceStats tracks peak combo and hype
+ok 89 - updateGigPerformanceStats tracks peak combo and hype
+  ---
+  duration_ms: 1.112986
+  type: 'test'
+  ...
+# Subtest: buildGigStatsSnapshot includes required economy fields
+ok 90 - buildGigStatsSnapshot includes required economy fields
+  ---
+  duration_ms: 0.95576
+  type: 'test'
+  ...
+# Subtest: HQ Items Data Integrity
+    # Subtest: validates all gear items
+    ok 1 - validates all gear items
+      ---
+      duration_ms: 1.271568
+      type: 'test'
+      ...
+    # Subtest: validates all instrument items
+    ok 2 - validates all instrument items
+      ---
+      duration_ms: 0.231943
+      type: 'test'
+      ...
+    # Subtest: validates all van items
+    ok 3 - validates all van items
+      ---
+      duration_ms: 0.216145
+      type: 'test'
+      ...
+    # Subtest: validates all hq items
+    ok 4 - validates all hq items
+      ---
+      duration_ms: 0.333385
+      type: 'test'
+      ...
+    1..4
+ok 91 - HQ Items Data Integrity
+  ---
+  duration_ms: 5.608335
+  type: 'suite'
+  ...
+# Subtest: getGenImageUrl generates correct Pollinations.ai URL
+ok 92 - getGenImageUrl generates correct Pollinations.ai URL
+  ---
+  duration_ms: 1.209037
+  type: 'test'
+  ...
+# Subtest: IMG_PROMPTS contains required keys
+ok 93 - IMG_PROMPTS contains required keys
+  ---
+  duration_ms: 0.229654
+  type: 'test'
+  ...
+# (node:9071) ExperimentalWarning: Module mocking is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: MainMenu starts ambient audio when starting a tour
+ok 94 - MainMenu starts ambient audio when starting a tour
+  ---
+  duration_ms: 237.886352
+  type: 'test'
+  ...
+# Subtest: MainMenu starts ambient audio when loading a save
+ok 95 - MainMenu starts ambient audio when loading a save
+  ---
+  duration_ms: 61.760866
+  type: 'test'
+  ...
+# Subtest: MapGenerator generates a map with correct structure
+ok 96 - MapGenerator generates a map with correct structure
+  ---
+  duration_ms: 11.386555
+  type: 'test'
+  ...
+# Subtest: MapGenerator guarantees start node
+ok 97 - MapGenerator guarantees start node
+  ---
+  duration_ms: 5.134313
+  type: 'test'
+  ...
+# Subtest: MapGenerator guarantees finale node
+ok 98 - MapGenerator guarantees finale node
+  ---
+  duration_ms: 6.652755
+  type: 'test'
+  ...
+# Subtest: MapGenerator connections are valid
+ok 99 - MapGenerator connections are valid
+  ---
+  duration_ms: 0.82969
+  type: 'test'
+  ...
+# Subtest: MapGenerator ensures nodes do not overlap
+ok 100 - MapGenerator ensures nodes do not overlap
+  ---
+  duration_ms: 0.592119
+  type: 'test'
+  ...
+# Duplicate found: MTC (Layer 2)
+# Subtest: MapGenerator should not have duplicate venues (if possible)
+ok 101 - MapGenerator should not have duplicate venues (if possible)
+  ---
+  duration_ms: 18.398849
+  type: 'test'
+  ...
+# Subtest: isPercussionTrack
+    # Subtest: detects percussion instrument metadata
+    ok 1 - detects percussion instrument metadata
+      ---
+      duration_ms: 0.939649
+      type: 'test'
+      ...
+    # Subtest: detects channel 9 percussion tracks
+    ok 2 - detects channel 9 percussion tracks
+      ---
+      duration_ms: 0.179218
+      type: 'test'
+      ...
+    # Subtest: returns false for non-percussion tracks
+    ok 3 - returns false for non-percussion tracks
+      ---
+      duration_ms: 0.163047
+      type: 'test'
+      ...
+    1..3
+ok 102 - isPercussionTrack
+  ---
+  duration_ms: 2.704833
+  type: 'test'
+  ...
+# Subtest: isValidMidiNote
+    # Subtest: accepts finite MIDI pitches
+    ok 1 - accepts finite MIDI pitches
+      ---
+      duration_ms: 0.236325
+      type: 'test'
+      ...
+    # Subtest: rejects invalid MIDI pitches
+    ok 2 - rejects invalid MIDI pitches
+      ---
+      duration_ms: 0.20737
+      type: 'test'
+      ...
+    1..2
+ok 103 - isValidMidiNote
+  ---
+  duration_ms: 1.320855
+  type: 'test'
+  ...
+# Subtest: normalizeMidiPitch
+    # Subtest: normalizes valid MIDI pitches
+    ok 1 - normalizes valid MIDI pitches
+      ---
+      duration_ms: 0.260885
+      type: 'test'
+      ...
+    # Subtest: returns null for invalid MIDI pitches
+    ok 2 - returns null for invalid MIDI pitches
+      ---
+      duration_ms: 0.330903
+      type: 'test'
+      ...
+    1..2
+ok 104 - normalizeMidiPitch
+  ---
+  duration_ms: 1.448293
+  type: 'test'
+  ...
+# Subtest: buildMidiTrackEvents
+    # Subtest: filters invalid notes and normalizes pitches
+    ok 1 - filters invalid notes and normalizes pitches
+      ---
+      duration_ms: 2.206219
+      type: 'test'
+      ...
+    # Subtest: returns empty array for invalid input
+    ok 2 - returns empty array for invalid input
+      ---
+      duration_ms: 0.128683
+      type: 'test'
+      ...
+    1..2
+ok 105 - buildMidiTrackEvents
+  ---
+  duration_ms: 2.655717
+  type: 'test'
+  ...
+# Subtest: calculateNoteY returns target position at hit time
+ok 106 - calculateNoteY returns target position at hit time
+  ---
+  duration_ms: 1.088955
+  type: 'test'
+  ...
+# Subtest: calculateCrowdY offsets by combo intensity
+ok 107 - calculateCrowdY offsets by combo intensity
+  ---
+  duration_ms: 0.318769
+  type: 'test'
+  ...
+# Subtest: calculateLaneStartX centers lanes
+ok 108 - calculateLaneStartX centers lanes
+  ---
+  duration_ms: 0.181643
+  type: 'test'
+  ...
+# Subtest: buildRhythmLayout derives lane and hit line positions
+ok 109 - buildRhythmLayout derives lane and hit line positions
+  ---
+  duration_ms: 0.246305
+  type: 'test'
+  ...
+# Subtest: trySpawnProjectile respects spawn chance
+ok 110 - trySpawnProjectile respects spawn chance
+  ---
+  duration_ms: 1.411338
+  type: 'test'
+  ...
+# Subtest: trySpawnProjectile respects no spawn
+ok 111 - trySpawnProjectile respects no spawn
+  ---
+  duration_ms: 0.279932
+  type: 'test'
+  ...
+# Subtest: trySpawnProjectile increases chance on low health
+ok 112 - trySpawnProjectile increases chance on low health
+  ---
+  duration_ms: 0.218756
+  type: 'test'
+  ...
+# Subtest: updateProjectiles moves items correctly
+ok 113 - updateProjectiles moves items correctly
+  ---
+  duration_ms: 0.332055
+  type: 'test'
+  ...
+# Subtest: updateProjectiles removes off-screen items
+ok 114 - updateProjectiles removes off-screen items
+  ---
+  duration_ms: 0.264483
+  type: 'test'
+  ...
+# Subtest: updateProjectiles handles empty input
+ok 115 - updateProjectiles handles empty input
+  ---
+  duration_ms: 2.080165
+  type: 'test'
+  ...
+# Subtest: updateProjectiles handles large delta (lag spike)
+ok 116 - updateProjectiles handles large delta (lag spike)
+  ---
+  duration_ms: 0.401937
+  type: 'test'
+  ...
+# Subtest: checkHit finds matching note within window
+ok 117 - checkHit finds matching note within window
+  ---
+  duration_ms: 1.266044
+  type: 'test'
+  ...
+# Subtest: checkHit ignores notes outside window
+ok 118 - checkHit ignores notes outside window
+  ---
+  duration_ms: 0.225808
+  type: 'test'
+  ...
+# Subtest: checkHit ignores wrong lane
+ok 119 - checkHit ignores wrong lane
+  ---
+  duration_ms: 0.175233
+  type: 'test'
+  ...
+# Subtest: checkHit ignores already hit or invisible notes
+ok 120 - checkHit ignores already hit or invisible notes
+  ---
+  duration_ms: 0.253526
+  type: 'test'
+  ...
+# Subtest: checkHit prioritizes closest note?
+ok 121 - checkHit prioritizes closest note?
+  ---
+  duration_ms: 0.240101
+  type: 'test'
+  ...
+# Subtest: generateNotesForSong creates correct note structure
+ok 122 - generateNotesForSong creates correct note structure
+  ---
+  duration_ms: 2.192405
+  type: 'test'
+  ...
+# Subtest: generateNotesForSong respects difficulty
+ok 123 - generateNotesForSong respects difficulty
+  ---
+  duration_ms: 0.250776
+  type: 'test'
+  ...
+# Subtest: rhythm_songs.json integration
+    # Subtest: all songs can be parsed without error
+    ok 1 - all songs can be parsed without error
+      ---
+      duration_ms: 4.125878
+      type: 'test'
+      ...
+    1..1
+ok 124 - rhythm_songs.json integration
+  ---
+  duration_ms: 5.521238
+  type: 'test'
+  ...
+# Subtest: rhythm_songs.json sourceOgg fields
+    # Subtest: every song with sourceMid has a matching sourceOgg
+    ok 1 - every song with sourceMid has a matching sourceOgg
+      ---
+      duration_ms: 0.619813
+      type: 'test'
+      ...
+    1..1
+ok 125 - rhythm_songs.json sourceOgg fields
+  ---
+  duration_ms: 1.052489
+  type: 'test'
+  ...
+# Subtest: calculateTimeFromTicks logic
+    # Subtest: calculates correct time with constant tempo
+    ok 1 - calculates correct time with constant tempo
+      ---
+      duration_ms: 0.250484
+      type: 'test'
+      ...
+    # Subtest: calculates correct time with tempo change
+    ok 2 - calculates correct time with tempo change
+      ---
+      duration_ms: 0.172599
+      type: 'test'
+      ...
+    # Subtest: handles empty map gracefully
+    ok 3 - handles empty map gracefully
+      ---
+      duration_ms: 0.267401
+      type: 'test'
+      ...
+    1..3
+ok 126 - calculateTimeFromTicks logic
+  ---
+  duration_ms: 1.527498
+  type: 'test'
+  ...
+# Subtest: getGigModifiers returns default modifiers for average band
+ok 127 - getGigModifiers returns default modifiers for average band
+  ---
+  duration_ms: 1.663872
+  type: 'test'
+  ...
+# Subtest: getGigModifiers grants telepathy bonus for high harmony
+ok 128 - getGigModifiers grants telepathy bonus for high harmony
+  ---
+  duration_ms: 0.329404
+  type: 'test'
+  ...
+# Subtest: getGigModifiers applies disconnect penalty for low harmony
+ok 129 - getGigModifiers applies disconnect penalty for low harmony
+  ---
+  duration_ms: 0.199364
+  type: 'test'
+  ...
+# Subtest: getGigModifiers has no special effects for mid harmony
+ok 130 - getGigModifiers has no special effects for mid harmony
+  ---
+  duration_ms: 0.257721
+  type: 'test'
+  ...
+# Subtest: getGigModifiers applies grumpy Matze penalty
+ok 131 - getGigModifiers applies grumpy Matze penalty
+  ---
+  duration_ms: 0.316114
+  type: 'test'
+  ...
+# Subtest: getGigModifiers does not apply Matze penalty when mood is okay
+ok 132 - getGigModifiers does not apply Matze penalty when mood is okay
+  ---
+  duration_ms: 2.938312
+  type: 'test'
+  ...
+# Subtest: getGigModifiers applies tired Lars speed increase
+ok 133 - getGigModifiers applies tired Lars speed increase
+  ---
+  duration_ms: 0.247328
+  type: 'test'
+  ...
+# Subtest: getGigModifiers does not apply Lars penalty when stamina is okay
+ok 134 - getGigModifiers does not apply Lars penalty when stamina is okay
+  ---
+  duration_ms: 0.265476
+  type: 'test'
+  ...
+# Subtest: getGigModifiers can apply multiple effects
+ok 135 - getGigModifiers can apply multiple effects
+  ---
+  duration_ms: 0.39033
+  type: 'test'
+  ...
+# Subtest: calculateGigPhysics returns physics object
+ok 136 - calculateGigPhysics returns physics object
+  ---
+  duration_ms: 0.759638
+  type: 'test'
+  ...
+# Subtest: calculateGigPhysics calculates hit windows based on skill
+ok 137 - calculateGigPhysics calculates hit windows based on skill
+  ---
+  duration_ms: 0.193689
+  type: 'test'
+  ...
+# Subtest: calculateGigPhysics skill increases hit windows
+ok 138 - calculateGigPhysics skill increases hit windows
+  ---
+  duration_ms: 0.291455
+  type: 'test'
+  ...
+# Subtest: calculateGigPhysics reduces speed for low stamina
+ok 139 - calculateGigPhysics reduces speed for low stamina
+  ---
+  duration_ms: 0.165509
+  type: 'test'
+  ...
+# Subtest: calculateGigPhysics normal speed for adequate stamina
+ok 140 - calculateGigPhysics normal speed for adequate stamina
+  ---
+  duration_ms: 0.131186
+  type: 'test'
+  ...
+# Subtest: calculateGigPhysics returns default multipliers
+ok 141 - calculateGigPhysics returns default multipliers
+  ---
+  duration_ms: 0.118866
+  type: 'test'
+  ...
+# Subtest: calculateGigPhysics applies blast machine trait for fast songs
+ok 142 - calculateGigPhysics applies blast machine trait for fast songs
+  ---
+  duration_ms: 0.163362
+  type: 'test'
+  ...
+# Subtest: calculateGigPhysics does not apply blast machine for slow songs
+ok 143 - calculateGigPhysics does not apply blast machine for slow songs
+  ---
+  duration_ms: 0.183303
+  type: 'test'
+  ...
+# Subtest: calculateGigPhysics includes avgStamina in result
+ok 144 - calculateGigPhysics includes avgStamina in result
+  ---
+  duration_ms: 0.142937
+  type: 'test'
+  ...
+# Subtest: calculateGigPhysics handles missing member gracefully
+ok 145 - calculateGigPhysics handles missing member gracefully
+  ---
+  duration_ms: 0.140396
+  type: 'test'
+  ...
+# Subtest: calculateGigPhysics handles missing skill property
+ok 146 - calculateGigPhysics handles missing skill property
+  ---
+  duration_ms: 0.135594
+  type: 'test'
+  ...
+# Subtest: Game Loop Logic Simulation
+    # Subtest: Phase 1: Travel (Overworld)
+    ok 1 - Phase 1: Travel (Overworld)
+      ---
+      duration_ms: 1.14904
+      type: 'test'
+      ...
+    # Subtest: Phase 2: Refuel (Overworld)
+    ok 2 - Phase 2: Refuel (Overworld)
+      ---
+      duration_ms: 0.203292
+      type: 'test'
+      ...
+    # Subtest: Phase 3: Gig (PostGig)
+    ok 3 - Phase 3: Gig (PostGig)
+      ---
+      duration_ms: 0.201845
+      type: 'test'
+      ...
+    # Subtest: Phase 4: Next Travel Cycle
+    ok 4 - Phase 4: Next Travel Cycle
+      ---
+      duration_ms: 0.257468
+      type: 'test'
+      ...
+    1..4
+ok 147 - Game Loop Logic Simulation
+  ---
+  duration_ms: 3.572534
+  type: 'test'
+  ...
+# Subtest: calculateViralityScore returns base chance for average performance
+ok 148 - calculateViralityScore returns base chance for average performance
+  ---
+  duration_ms: 1.565674
+  type: 'test'
+  ...
+# Subtest: calculateViralityScore increases with high performance
+ok 149 - calculateViralityScore increases with high performance
+  ---
+  duration_ms: 0.347106
+  type: 'test'
+  ...
+# Subtest: calculateViralityScore applies performance multipliers
+ok 150 - calculateViralityScore applies performance multipliers
+  ---
+  duration_ms: 0.184038
+  type: 'test'
+  ...
+# Subtest: calculateViralityScore boosts for Kaminstube venue
+ok 151 - calculateViralityScore boosts for Kaminstube venue
+  ---
+  duration_ms: 0.157358
+  type: 'test'
+  ...
+# Subtest: calculateViralityScore boosts for stage diver event
+ok 152 - calculateViralityScore boosts for stage diver event
+  ---
+  duration_ms: 0.166529
+  type: 'test'
+  ...
+# Subtest: calculateViralityScore boosts for influencer event
+ok 153 - calculateViralityScore boosts for influencer event
+  ---
+  duration_ms: 0.237392
+  type: 'test'
+  ...
+# Subtest: calculateViralityScore is capped at 90%
+ok 154 - calculateViralityScore is capped at 90%
+  ---
+  duration_ms: 0.15127
+  type: 'test'
+  ...
+# Subtest: calculateViralityScore combines multiple bonuses
+ok 155 - calculateViralityScore combines multiple bonuses
+  ---
+  duration_ms: 0.209316
+  type: 'test'
+  ...
+# Subtest: generatePostOptions returns array of options
+ok 156 - generatePostOptions returns array of options
+  ---
+  duration_ms: 0.491913
+  type: 'test'
+  ...
+# Subtest: generatePostOptions includes moshpit option
+ok 157 - generatePostOptions includes moshpit option
+  ---
+  duration_ms: 0.5631
+  type: 'test'
+  ...
+# Subtest: generatePostOptions includes technical option
+ok 158 - generatePostOptions includes technical option
+  ---
+  duration_ms: 0.224506
+  type: 'test'
+  ...
+# Subtest: generatePostOptions includes band pic option
+ok 159 - generatePostOptions includes band pic option
+  ---
+  duration_ms: 0.182585
+  type: 'test'
+  ...
+# Subtest: generatePostOptions scales mosh viral chance
+ok 160 - generatePostOptions scales mosh viral chance
+  ---
+  duration_ms: 0.213461
+  type: 'test'
+  ...
+# Subtest: generatePostOptions all have required properties
+ok 161 - generatePostOptions all have required properties
+  ---
+  duration_ms: 0.149981
+  type: 'test'
+  ...
+# Subtest: resolvePost handles viral success
+ok 162 - resolvePost handles viral success
+  ---
+  duration_ms: 0.166687
+  type: 'test'
+  ...
+# Subtest: resolvePost handles non-viral post
+ok 163 - resolvePost handles non-viral post
+  ---
+  duration_ms: 0.273856
+  type: 'test'
+  ...
+# Subtest: resolvePost viral multiplies by 10
+ok 164 - resolvePost viral multiplies by 10
+  ---
+  duration_ms: 0.129148
+  type: 'test'
+  ...
+# Subtest: resolvePost handles edge case of 0 base followers
+ok 165 - resolvePost handles edge case of 0 base followers
+  ---
+  duration_ms: 0.124738
+  type: 'test'
+  ...
+# Subtest: resolvePost threshold at exact viral chance
+ok 166 - resolvePost threshold at exact viral chance
+  ---
+  duration_ms: 0.121841
+  type: 'test'
+  ...
+# Subtest: resolvePost preserves all platforms
+ok 167 - resolvePost preserves all platforms
+  ---
+  duration_ms: 0.156131
+  type: 'test'
+  ...
+# Subtest: resolvePost returns consistent structure
+ok 168 - resolvePost returns consistent structure
+  ---
+  duration_ms: 0.120982
+  type: 'test'
+  ...
+# Subtest: calculateViralityScore handles low performance
+ok 169 - calculateViralityScore handles low performance
+  ---
+  duration_ms: 0.179626
+  type: 'test'
+  ...
+# Subtest: generatePostOptions viral chances are reasonable
+ok 170 - generatePostOptions viral chances are reasonable
+  ---
+  duration_ms: 0.164774
+  type: 'test'
+  ...
+1..170
+# tests 282
+# suites 42
+# pass 278
+# fail 1
+# cancelled 0
+# skipped 3
+# todo 0
+# duration_ms 4109.199308
