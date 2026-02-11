@@ -98,10 +98,12 @@ const processEffect = (eff, delta) => {
         delta.player.van.condition =
           (delta.player.van.condition || 0) + eff.value
       }
-      if (eff.stat === 'crowd_energy') delta.flags.crowdEnergy = eff.value
+      if (eff.stat === 'hype' || eff.stat === 'crowd_energy')
+        delta.flags.crowdEnergy = (delta.flags.crowdEnergy || 0) + eff.value
       if (eff.stat === 'viral')
         delta.social.viral = (delta.social.viral || 0) + eff.value
-      if (eff.stat === 'score') delta.flags.score = eff.value
+      if (eff.stat === 'score')
+        delta.flags.score = (delta.flags.score || 0) + eff.value
       break
     case 'item':
       if (eff.item) {

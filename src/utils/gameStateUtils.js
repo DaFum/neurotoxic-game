@@ -140,6 +140,22 @@ export const applyEventDelta = (state, delta) => {
         delta.flags.queueEvent
       ]
     }
+    if (typeof delta.flags.crowdEnergy === 'number') {
+      const nextBand = nextState.band ? { ...nextState.band } : {}
+      nextBand.harmony = Math.max(
+        1,
+        Math.min(100, (nextBand.harmony || 0) + delta.flags.crowdEnergy)
+      )
+      nextState.band = nextBand
+    }
+    if (typeof delta.flags.score === 'number') {
+      const nextPlayer = nextState.player ? { ...nextState.player } : {}
+      nextPlayer.fame = Math.max(
+        0,
+        (nextPlayer.fame || 0) + delta.flags.score
+      )
+      nextState.player = nextPlayer
+    }
   }
 
   return nextState

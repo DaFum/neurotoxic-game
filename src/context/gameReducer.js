@@ -41,7 +41,8 @@ export const ActionTypes = {
   APPLY_EVENT_DELTA: 'APPLY_EVENT_DELTA',
   POP_PENDING_EVENT: 'POP_PENDING_EVENT',
   CONSUME_ITEM: 'CONSUME_ITEM',
-  ADVANCE_DAY: 'ADVANCE_DAY'
+  ADVANCE_DAY: 'ADVANCE_DAY',
+  ADD_COOLDOWN: 'ADD_COOLDOWN'
 }
 
 /**
@@ -286,6 +287,18 @@ export const gameReducer = (state, action) => {
 
     case ActionTypes.ADVANCE_DAY:
       return handleAdvanceDay(state)
+
+    case ActionTypes.ADD_COOLDOWN:
+      if (
+        action.payload &&
+        !state.eventCooldowns.includes(action.payload)
+      ) {
+        return {
+          ...state,
+          eventCooldowns: [...state.eventCooldowns, action.payload]
+        }
+      }
+      return state
 
     default:
       return state

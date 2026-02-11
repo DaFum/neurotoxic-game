@@ -8,9 +8,9 @@ import {
 const buildBandState = (overrides = {}) => ({
   harmony: 60,
   members: [
-    { name: 'Matze', mood: 70, stamina: 80, skill: 5, traits: [] },
-    { name: 'Lars', mood: 65, stamina: 75, skill: 4, traits: [] },
-    { name: 'Marius', mood: 75, stamina: 70, skill: 3, traits: [] }
+    { name: 'Matze', mood: 70, stamina: 80, baseStats: { skill: 5 }, traits: [] },
+    { name: 'Lars', mood: 65, stamina: 75, baseStats: { skill: 4 }, traits: [] },
+    { name: 'Marius', mood: 75, stamina: 70, baseStats: { skill: 3 }, traits: [] }
   ],
   ...overrides
 })
@@ -194,14 +194,14 @@ test('calculateGigPhysics calculates hit windows based on skill', () => {
 
 test('calculateGigPhysics skill increases hit windows', () => {
   const lowSkillBand = buildBandWithMembers([
-    { name: 'Matze', skill: 1 },
-    { name: 'Lars', skill: 1 },
-    { name: 'Marius', skill: 1 }
+    { name: 'Matze', baseStats: { skill: 1 } },
+    { name: 'Lars', baseStats: { skill: 1 } },
+    { name: 'Marius', baseStats: { skill: 1 } }
   ])
   const highSkillBand = buildBandWithMembers([
-    { name: 'Matze', skill: 10 },
-    { name: 'Lars', skill: 10 },
-    { name: 'Marius', skill: 10 }
+    { name: 'Matze', baseStats: { skill: 10 } },
+    { name: 'Lars', baseStats: { skill: 10 } },
+    { name: 'Marius', baseStats: { skill: 10 } }
   ])
   const song = { bpm: 120 }
 
@@ -336,22 +336,13 @@ test('calculateGigPhysics handles missing member gracefully', () => {
 })
 
 test('calculateGigPhysics handles missing skill property', () => {
-  const band = buildBandWithMembers([
-    { name: 'Matze', skill: undefined, traits: [] }, // Explicitly remove skill
-    { name: 'Lars', skill: undefined, traits: [] },
-    { name: 'Marius', skill: undefined, traits: [] }
-  ])
-  // Note: buildBandWithMembers merges updates, so skill: undefined works if we want to override default.
-  // However, buildBandState defaults have skill.
-  // Let's use buildBandState with override for this one if we want to remove props cleanly,
-  // OR we can just pass { skill: undefined } if the implementation allows.
-  // The original test defined members without skill property.
-  // My helper merges. If I merge { skill: undefined }, it sets it to undefined, effectively missing.
-  // But wait, the original test had:
-  // { name: 'Matze', mood: 70, stamina: 80, traits: [] }
-  // This just didn't include skill.
-  // If I use my helper, I'm updating the default member which HAS skill.
-  // So I need to set skill to undefined.
+  const band = buildBandState({
+    members: [
+      { name: 'Matze', mood: 70, stamina: 80, traits: [] },
+      { name: 'Lars', mood: 65, stamina: 75, traits: [] },
+      { name: 'Marius', mood: 75, stamina: 70, traits: [] }
+    ]
+  })
 
   const song = { bpm: 120 }
   const physics = calculateGigPhysics(band, song)

@@ -13,8 +13,7 @@ import {
   buildAssetUrlMap,
   buildMidiUrlMap,
   resolveAssetUrl,
-  normalizeMidiPlaybackOptions,
-  resolveMidiAssetUrl
+  normalizeMidiPlaybackOptions
 } from './audioPlaybackUtils.js'
 import {
   isPercussionTrack,
@@ -98,7 +97,7 @@ if (oggKeysForLogging.length > 0) {
  * @param {string} mimeType - e.g. 'audio/ogg; codecs=vorbis'
  * @returns {boolean} True when the browser reports 'probably' or 'maybe'.
  */
-export function canPlayAudioType(mimeType) {
+function canPlayAudioType(mimeType) {
   try {
     const a = new Audio()
     const result = a.canPlayType(mimeType)
@@ -316,6 +315,39 @@ export const calculateGigPlaybackWindow = ({
 }
 
 /**
+ * Creates a layered snare instrument (noise crack + membrane body) connected to the given bus.
+ * @param {object} bus - Tone.js audio node to connect the snare to.
+ * @returns {object} Proxy object with triggerAttackRelease, volume, and dispose methods.
+ */
+function createLayeredSnare(bus) {
+  const snareBus = new Tone.Volume(0).connect(bus)
+  const snareNoise = new Tone.NoiseSynth({
+    envelope: { attack: 0.001, decay: 0.15, sustain: 0 },
+    noise: { type: 'white' }
+  }).connect(snareBus)
+  const snareBody = new Tone.MembraneSynth({
+    pitchDecay: 0.02,
+    octaves: 4,
+    envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 }
+  }).connect(snareBus)
+  snareBody.volume.value = -4
+  return {
+    triggerAttackRelease: (dur, time, vel = 1) => {
+      snareNoise.triggerAttackRelease(dur, time, vel)
+      snareBody.triggerAttackRelease('G3', dur, time, vel * 0.6)
+    },
+    volume: snareBus.volume,
+    dispose: () => {
+      snareNoise.dispose()
+      snareBody.dispose()
+      snareBus.dispose()
+    },
+    _noise: snareNoise,
+    _body: snareBody
+  }
+}
+
+/**
  * Initializes the audio subsystem, including synths, effects, and master compressor.
  * @returns {Promise<void>}
  */
@@ -433,35 +465,7 @@ export async function setupAudio() {
         oscillator: { type: 'sine' },
         envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 0.4 }
       }).connect(drumBus),
-      snare: (() => {
-        // Layered snare: noise (crack) + membrane (body)
-        const snareBus = new Tone.Volume(0).connect(drumBus)
-        const snareNoise = new Tone.NoiseSynth({
-          envelope: { attack: 0.001, decay: 0.15, sustain: 0 },
-          noise: { type: 'white' }
-        }).connect(snareBus)
-        const snareBody = new Tone.MembraneSynth({
-          pitchDecay: 0.02,
-          octaves: 4,
-          envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 }
-        }).connect(snareBus)
-        snareBody.volume.value = -4
-        // Return a proxy object that triggers both layers
-        return {
-          triggerAttackRelease: (dur, time, vel = 1) => {
-            snareNoise.triggerAttackRelease(dur, time, vel)
-            snareBody.triggerAttackRelease('G3', dur, time, vel * 0.6)
-          },
-          volume: snareBus.volume,
-          dispose: () => {
-            snareNoise.dispose()
-            snareBody.dispose()
-            snareBus.dispose()
-          },
-          _noise: snareNoise,
-          _body: snareBody
-        }
-      })(),
+      snare: createLayeredSnare(drumBus),
       hihat: new Tone.MetalSynth(HIHAT_CONFIG).connect(drumBus),
       crash: new Tone.MetalSynth(CRASH_CONFIG).connect(drumBus)
     }
@@ -515,19 +519,6 @@ export async function setupAudio() {
     }).connect(midiDryBus)
     midiBass.volume.value = -3
 
-    // Drums: Layered snare (noise + body) matching main drumKit quality
-    const midiSnareBus = new Tone.Volume(0).connect(midiDryBus)
-    const midiSnareNoise = new Tone.NoiseSynth({
-      envelope: { attack: 0.001, decay: 0.15, sustain: 0 },
-      noise: { type: 'white' }
-    }).connect(midiSnareBus)
-    const midiSnareBody = new Tone.MembraneSynth({
-      pitchDecay: 0.02,
-      octaves: 4,
-      envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 }
-    }).connect(midiSnareBus)
-    midiSnareBody.volume.value = -4
-
     midiDrumKit = {
       kick: new Tone.MembraneSynth({
         pitchDecay: 0.05,
@@ -535,18 +526,7 @@ export async function setupAudio() {
         oscillator: { type: 'sine' },
         envelope: { attack: 0.001, decay: 0.35, sustain: 0, release: 0.2 }
       }).connect(midiDryBus),
-      snare: {
-        triggerAttackRelease: (dur, time, vel = 1) => {
-          midiSnareNoise.triggerAttackRelease(dur, time, vel)
-          midiSnareBody.triggerAttackRelease('G3', dur, time, vel * 0.6)
-        },
-        volume: midiSnareBus.volume,
-        dispose: () => {
-          midiSnareNoise.dispose()
-          midiSnareBody.dispose()
-          midiSnareBus.dispose()
-        }
-      },
+      snare: createLayeredSnare(midiDryBus),
       hihat: new Tone.MetalSynth(HIHAT_CONFIG).connect(midiDryBus),
       crash: new Tone.MetalSynth(CRASH_CONFIG).connect(midiDryBus)
     }
@@ -1504,7 +1484,7 @@ async function playMidiFileInternal(
 
   const baseUrl = import.meta.env.BASE_URL || './'
   const publicBasePath = `${baseUrl}assets`
-  const { url, source } = resolveMidiAssetUrl(
+  const { url, source } = resolveAssetUrl(
     filename,
     midiUrlMap,
     publicBasePath

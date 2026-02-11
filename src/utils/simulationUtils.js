@@ -57,9 +57,9 @@ export const calculateGigPhysics = (bandState, song) => {
   const marius = bandState.members.find(m => m.name === 'Marius')
 
   const hitWindows = {
-    guitar: 150 + (matze?.skill || 0) * 5,
-    drums: 150 + (lars?.skill || 0) * 5,
-    bass: 150 + (marius?.skill || 0) * 5
+    guitar: 150 + (matze?.baseStats?.skill ?? matze?.skill ?? 0) * 5,
+    drums: 150 + (lars?.baseStats?.skill ?? lars?.skill ?? 0) * 5,
+    bass: 150 + (marius?.baseStats?.skill ?? marius?.skill ?? 0) * 5
   }
 
   // 2. Scroll Speed based on Global Stamina
