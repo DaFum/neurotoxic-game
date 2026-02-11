@@ -8,9 +8,27 @@ import {
 const buildBandState = (overrides = {}) => ({
   harmony: 60,
   members: [
-    { name: 'Matze', mood: 70, stamina: 80, baseStats: { skill: 5 }, traits: [] },
-    { name: 'Lars', mood: 65, stamina: 75, baseStats: { skill: 4 }, traits: [] },
-    { name: 'Marius', mood: 75, stamina: 70, baseStats: { skill: 3 }, traits: [] }
+    {
+      name: 'Matze',
+      mood: 70,
+      stamina: 80,
+      baseStats: { skill: 5 },
+      traits: []
+    },
+    {
+      name: 'Lars',
+      mood: 65,
+      stamina: 75,
+      baseStats: { skill: 4 },
+      traits: []
+    },
+    {
+      name: 'Marius',
+      mood: 75,
+      stamina: 70,
+      baseStats: { skill: 3 },
+      traits: []
+    }
   ],
   ...overrides
 })
@@ -324,8 +342,20 @@ test('calculateGigPhysics includes avgStamina in result', () => {
 test('calculateGigPhysics handles missing member gracefully', () => {
   const band = buildBandState({
     members: [
-      { name: 'Matze', mood: 70, stamina: 80, baseStats: { skill: 5 }, traits: [] },
-      { name: 'Unknown', mood: 70, stamina: 75, baseStats: { skill: 4 }, traits: [] }
+      {
+        name: 'Matze',
+        mood: 70,
+        stamina: 80,
+        baseStats: { skill: 5 },
+        traits: []
+      },
+      {
+        name: 'Unknown',
+        mood: 70,
+        stamina: 75,
+        baseStats: { skill: 4 },
+        traits: []
+      }
     ]
   })
   const song = { bpm: 120 }

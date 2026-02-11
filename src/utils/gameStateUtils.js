@@ -144,7 +144,8 @@ export const applyEventDelta = (state, delta) => {
       const nextPlayer = nextState.player ? { ...nextState.player } : {}
       const currentScore =
         typeof nextPlayer.score === 'number' ? nextPlayer.score : 0
-      nextPlayer.score = currentScore + delta.flags.score
+      const newScore = Math.max(0, currentScore + delta.flags.score)
+      nextPlayer.score = newScore
       nextState.player = nextPlayer
     }
   }

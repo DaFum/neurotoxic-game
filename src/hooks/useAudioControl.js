@@ -25,7 +25,7 @@ export const useAudioControl = () => {
         setAudioState(prev => ({ ...prev, musicVol: manager.musicVolume }))
       }
     },
-    [manager, setAudioState]
+    [manager]
   )
 
   const setSfx = useCallback(
@@ -43,7 +43,7 @@ export const useAudioControl = () => {
         setAudioState(prev => ({ ...prev, sfxVol: manager.sfxVolume }))
       }
     },
-    [manager, setAudioState]
+    [manager]
   )
 
   const toggleMute = useCallback(() => {
@@ -61,7 +61,7 @@ export const useAudioControl = () => {
     if (didApply) {
       setAudioState(prev => ({ ...prev, isMuted: nextMuted }))
     }
-  }, [manager, setAudioState])
+  }, [manager])
 
   const handleAudioChange = useMemo(
     () => ({ setMusic, setSfx, toggleMute }),

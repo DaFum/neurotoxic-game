@@ -42,21 +42,19 @@ test('AudioManager Tests', async t => {
   })
 
   await t.test('setMusicVolume updates volume and calls engine', () => {
+    const callsBefore = mockAudioEngine.setMusicVolume.mock.calls.length
     audioManager.setMusicVolume(0.8)
     assert.equal(audioManager.musicVolume, 0.8)
-    assert.strictEqual(
-      mockAudioEngine.setMusicVolume.mock.calls.length > 0,
-      true
-    )
-    // Get last call args
+
     const calls = mockAudioEngine.setMusicVolume.mock.calls
+    assert.strictEqual(calls.length, callsBefore + 1)
     const args = calls[calls.length - 1].arguments
     assert.equal(args[0], 0.8)
   })
 
   await t.test('toggleMute updates mute state', () => {
-        // Reset state for isolation
-        audioManager.muted = false
+    // Reset state for isolation
+    audioManager.muted = false
 
     const initialMute = audioManager.muted
     const newMute = audioManager.toggleMute()
@@ -65,10 +63,11 @@ test('AudioManager Tests', async t => {
   })
 
   await t.test('startAmbient calls playRandomAmbientOgg', async () => {
+    const callsBefore = mockAudioEngine.playRandomAmbientOgg.mock.calls.length
     await audioManager.startAmbient()
     assert.strictEqual(
-      mockAudioEngine.playRandomAmbientOgg.mock.calls.length > 0,
-      true
+      mockAudioEngine.playRandomAmbientOgg.mock.calls.length,
+      callsBefore + 1
     )
   })
 })

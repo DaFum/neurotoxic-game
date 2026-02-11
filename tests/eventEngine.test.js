@@ -30,9 +30,27 @@ const buildGameState = (overrides = {}) => ({
   band: {
     members: [
       // Matches src/data/characters.js structure: skills are in baseStats
-      { id: 'matze', name: 'Matze', stamina: 70, mood: 60, baseStats: { skill: 5, charisma: 5 } },
-      { id: 'lars', name: 'Lars', stamina: 65, mood: 55, baseStats: { skill: 4, charisma: 4 } },
-      { id: 'marius', name: 'Marius', stamina: 60, mood: 70, baseStats: { skill: 3, charisma: 3 } }
+      {
+        id: 'matze',
+        name: 'Matze',
+        stamina: 70,
+        mood: 60,
+        baseStats: { skill: 5, charisma: 5 }
+      },
+      {
+        id: 'lars',
+        name: 'Lars',
+        stamina: 65,
+        mood: 55,
+        baseStats: { skill: 4, charisma: 4 }
+      },
+      {
+        id: 'marius',
+        name: 'Marius',
+        stamina: 60,
+        mood: 70,
+        baseStats: { skill: 3, charisma: 3 }
+      }
     ],
     harmony: 70,
     inventory: { spare_tire: true, strings: true },
@@ -79,7 +97,9 @@ test('eventEngine.checkEvent filters by trigger point', () => {
 })
 
 test('eventEngine.checkEvent respects cooldowns', t => {
-  const state = buildGameState({ eventCooldowns: ['event_cooldown', 'event_pending'] })
+  const state = buildGameState({
+    eventCooldowns: ['event_cooldown', 'event_pending']
+  })
 
   // Mock random to ensure consistent behavior even though logic should force choice.
   // The sorting in selectEvent uses Math.random() - 0.5.
@@ -87,15 +107,22 @@ test('eventEngine.checkEvent respects cooldowns', t => {
   const mockRandom = t.mock.method(Math, 'random', () => 0.5)
 
   const result = eventEngine.checkEvent('transport', state, 'pre_gig')
-  assert.equal(result.id, 'event_normal', 'Should select the only non-cooled-down event')
+  assert.equal(
+    result.id,
+    'event_normal',
+    'Should select the only non-cooled-down event'
+  )
 
-  mockRandom.mock.restore() // Cleanup if necessary (test context handles this mostly)
 })
 
 test('eventEngine.checkEvent prioritizes pending events', () => {
   const state = buildGameState({ pendingEvents: ['event_pending'] })
   const result = eventEngine.checkEvent('transport', state, 'pre_gig')
-  assert.equal(result.id, 'event_pending', 'Should return the pending event immediately')
+  assert.equal(
+    result.id,
+    'event_pending',
+    'Should return the pending event immediately'
+  )
 })
 
 test('eventEngine.resolveChoice handles direct effect', () => {
@@ -158,7 +185,11 @@ test('eventEngine.resolveChoice uses random roll (ignoring band stat) for luck c
   const mockRandom = t.mock.method(Math, 'random', () => 0.9)
 
   const result = eventEngine.resolveChoice(choice, state)
-  assert.equal(result.outcome, 'success', 'Should succeed luck check via random roll')
+  assert.equal(
+    result.outcome,
+    'success',
+    'Should succeed luck check via random roll'
+  )
 })
 
 test('eventEngine.resolveChoice uses max member skill (from baseStats)', t => {
@@ -468,7 +499,7 @@ test('eventEngine.applyResult handles inventory non-numeric value', () => {
   assert.equal(delta.band.inventory.golden_pick, true, 'Should set value')
 })
 
-test('eventEngine.applyResult handles inventory increment handles existing values', () => {
+test('eventEngine.applyResult accumulates inventory values across composite effects', () => {
   const result = {
     type: 'composite',
     effects: [
