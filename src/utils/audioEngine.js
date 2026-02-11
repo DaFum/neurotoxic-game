@@ -13,8 +13,7 @@ import {
   buildAssetUrlMap,
   buildMidiUrlMap,
   resolveAssetUrl,
-  normalizeMidiPlaybackOptions,
-  resolveMidiAssetUrl
+  normalizeMidiPlaybackOptions
 } from './audioPlaybackUtils.js'
 import {
   isPercussionTrack,
@@ -98,7 +97,7 @@ if (oggKeysForLogging.length > 0) {
  * @param {string} mimeType - e.g. 'audio/ogg; codecs=vorbis'
  * @returns {boolean} True when the browser reports 'probably' or 'maybe'.
  */
-export function canPlayAudioType(mimeType) {
+function canPlayAudioType(mimeType) {
   try {
     const a = new Audio()
     const result = a.canPlayType(mimeType)
@@ -316,6 +315,39 @@ export const calculateGigPlaybackWindow = ({
 }
 
 /**
+ * Creates a layered snare instrument (noise crack + membrane body) connected to the given bus.
+ * @param {object} bus - Tone.js audio node to connect the snare to.
+ * @returns {object} Proxy object with triggerAttackRelease, volume, and dispose methods.
+ */
+function createLayeredSnare(bus) {
+  const snareBus = new Tone.Volume(0).connect(bus)
+  const snareNoise = new Tone.NoiseSynth({
+    envelope: { attack: 0.001, decay: 0.15, sustain: 0 },
+    noise: { type: 'white' }
+  }).connect(snareBus)
+  const snareBody = new Tone.MembraneSynth({
+    pitchDecay: 0.02,
+    octaves: 4,
+    envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 }
+  }).connect(snareBus)
+  snareBody.volume.value = -4
+  return {
+    triggerAttackRelease: (dur, time, vel = 1) => {
+      snareNoise.triggerAttackRelease(dur, time, vel)
+      snareBody.triggerAttackRelease('G3', dur, time, vel * 0.6)
+    },
+    volume: snareBus.volume,
+    dispose: () => {
+      snareNoise.dispose()
+      snareBody.dispose()
+      snareBus.dispose()
+    },
+    _noise: snareNoise,
+    _body: snareBody
+  }
+}
+
+/**
  * Initializes the audio subsystem, including synths, effects, and master compressor.
  * @returns {Promise<void>}
  */
@@ -331,219 +363,184 @@ export async function setupAudio() {
     resolveLock = r
   })
 
-  const previousToneContext = Tone.getContext()
-
-  // Configure Tone.js context for sustained playback (gigs are 30-60s)
-  // "balanced" prioritizes performance over ultra-low latency, reducing pops/crackles
-  const nextToneContext = new Tone.Context({
-    latencyHint: 'balanced',
-    lookAhead: 0.15 // Increased from default 0.1 for better scheduling during high CPU
-  })
-  Tone.setContext(nextToneContext)
-
-  const previousRawContext =
-    previousToneContext?.rawContext ?? previousToneContext
-  const nextRawContext = nextToneContext?.rawContext ?? nextToneContext
-  if (
-    previousRawContext &&
-    previousRawContext !== nextRawContext &&
-    typeof previousRawContext.close === 'function' &&
-    previousRawContext.state !== 'closed'
-  ) {
-    try {
-      await previousRawContext.close()
-    } catch (error) {
-      logger.warn('AudioEngine', 'Failed to close previous Tone context', error)
-    }
-  }
-
   try {
-    await Tone.start()
-  } catch (e) {
-    // Browser autoplay policy might block this; it will be resumed later via ensureAudioContext
-    console.warn('[audioEngine] Tone.start() was blocked or failed:', e)
-  }
+    const previousToneContext = Tone.getContext()
 
-  // === Master Chain ===
-  // Limiter prevents clipping, Compressor glues the mix
-  masterLimiter = new Tone.Limiter(-3).toDestination()
-  masterComp = new Tone.Compressor(-18, 4).connect(masterLimiter)
-  musicGain = new Tone.Gain(1).connect(masterComp)
+    // Configure Tone.js context for sustained playback (gigs are 30-60s)
+    // "balanced" prioritizes performance over ultra-low latency, reducing pops/crackles
+    const nextToneContext = new Tone.Context({
+      latencyHint: 'balanced',
+      lookAhead: 0.15 // Increased from default 0.1 for better scheduling during high CPU
+    })
+    Tone.setContext(nextToneContext)
 
-  // Global reverb send for natural space
-  reverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(musicGain)
-  reverbSend = new Tone.Gain(0.3).connect(reverb)
-
-  // === Guitar ===
-  // FM synthesis for richer harmonic content
-  guitar = new Tone.PolySynth(Tone.FMSynth, {
-    harmonicity: 2,
-    modulationIndex: 3,
-    oscillator: { type: 'sawtooth' },
-    modulation: { type: 'square' },
-    envelope: { attack: 0.005, decay: 0.3, sustain: 0.15, release: 0.3 },
-    modulationEnvelope: { attack: 0.01, decay: 0.2, sustain: 0.1, release: 0.3 }
-  })
-
-  distortion = new Tone.Distortion(0.4)
-  guitarChorus = new Tone.Chorus(4, 2.5, 0.3).start()
-  guitarEq = new Tone.EQ3(-1, -3, 3) // Gentle mid scoop
-  widener = new Tone.StereoWidener(0.5)
-
-  guitar.chain(distortion, guitarChorus, guitarEq, widener, musicGain)
-  guitar.connect(reverbSend)
-
-  // === Bass ===
-  // MonoSynth with fatsawtooth-based waveform for warmer, fuller tone
-  bass = new Tone.PolySynth(Tone.MonoSynth, {
-    oscillator: { type: 'fatsawtooth', spread: 10, count: 3 },
-    envelope: { attack: 0.01, decay: 0.4, sustain: 0.3, release: 0.3 },
-    filterEnvelope: {
-      attack: 0.005,
-      decay: 0.3,
-      sustain: 0.2,
-      baseFrequency: 100,
-      octaves: 2.5
+    const previousRawContext =
+      previousToneContext?.rawContext ?? previousToneContext
+    const nextRawContext = nextToneContext?.rawContext ?? nextToneContext
+    if (
+      previousRawContext &&
+      previousRawContext !== nextRawContext &&
+      typeof previousRawContext.close === 'function' &&
+      previousRawContext.state !== 'closed'
+    ) {
+      try {
+        await previousRawContext.close()
+      } catch (error) {
+        logger.warn(
+          'AudioEngine',
+          'Failed to close previous Tone context',
+          error
+        )
+      }
     }
-  })
 
-  bassEq = new Tone.EQ3(3, -1, -4)
-  bassComp = new Tone.Compressor(-15, 5)
-  bass.chain(bassComp, bassEq, musicGain)
+    try {
+      await Tone.start()
+    } catch (e) {
+      // Browser autoplay policy might block this; it will be resumed later via ensureAudioContext
+      console.warn('[audioEngine] Tone.start() was blocked or failed:', e)
+    }
 
-  // === Drums ===
-  // Drum bus with own reverb send
-  drumBus = new Tone.Gain(1).connect(musicGain)
-  drumBus.connect(reverbSend)
+    // === Master Chain ===
+    // Limiter prevents clipping, Compressor glues the mix
+    masterLimiter = new Tone.Limiter(-3).toDestination()
+    masterComp = new Tone.Compressor(-18, 4).connect(masterLimiter)
+    musicGain = new Tone.Gain(1).connect(masterComp)
 
-  drumKit = {
-    kick: new Tone.MembraneSynth({
-      pitchDecay: 0.05,
-      octaves: 6,
-      oscillator: { type: 'sine' },
-      envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 0.4 }
-    }).connect(drumBus),
-    snare: (() => {
-      // Layered snare: noise (crack) + membrane (body)
-      const snareBus = new Tone.Volume(0).connect(drumBus)
-      const snareNoise = new Tone.NoiseSynth({
-        envelope: { attack: 0.001, decay: 0.15, sustain: 0 },
-        noise: { type: 'white' }
-      }).connect(snareBus)
-      const snareBody = new Tone.MembraneSynth({
-        pitchDecay: 0.02,
-        octaves: 4,
-        envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 }
-      }).connect(snareBus)
-      snareBody.volume.value = -4
-      // Return a proxy object that triggers both layers
-      return {
-        triggerAttackRelease: (dur, time, vel = 1) => {
-          snareNoise.triggerAttackRelease(dur, time, vel)
-          snareBody.triggerAttackRelease('G3', dur, time, vel * 0.6)
-        },
-        volume: snareBus.volume,
-        dispose: () => {
-          snareNoise.dispose()
-          snareBody.dispose()
-          snareBus.dispose()
-        },
-        _noise: snareNoise,
-        _body: snareBody
+    // Global reverb send for natural space
+    reverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(musicGain)
+    reverbSend = new Tone.Gain(0.3).connect(reverb)
+
+    // === Guitar ===
+    // FM synthesis for richer harmonic content
+    guitar = new Tone.PolySynth(Tone.FMSynth, {
+      harmonicity: 2,
+      modulationIndex: 3,
+      oscillator: { type: 'sawtooth' },
+      modulation: { type: 'square' },
+      envelope: { attack: 0.005, decay: 0.3, sustain: 0.15, release: 0.3 },
+      modulationEnvelope: {
+        attack: 0.01,
+        decay: 0.2,
+        sustain: 0.1,
+        release: 0.3
       }
-    })(),
-    hihat: new Tone.MetalSynth(HIHAT_CONFIG).connect(drumBus),
-    crash: new Tone.MetalSynth(CRASH_CONFIG).connect(drumBus)
-  }
+    })
 
-  // Level Mixing (more balanced)
-  drumKit.kick.volume.value = 2
-  drumKit.snare.volume.value = 0
-  drumKit.hihat.volume.value = -12
-  drumKit.crash.volume.value = -8
+    distortion = new Tone.Distortion(0.4)
+    guitarChorus = new Tone.Chorus(4, 2.5, 0.3).start()
+    guitarEq = new Tone.EQ3(-1, -3, 3) // Gentle mid scoop
+    widener = new Tone.StereoWidener(0.5)
 
-  // Instrument Volumes
-  guitar.volume.value = -2
-  bass.volume.value = 0
+    guitar.chain(distortion, guitarChorus, guitarEq, widener, musicGain)
+    guitar.connect(reverbSend)
 
-  // === SFX Synth ===
-  sfxGain = new Tone.Gain(0.25).connect(masterLimiter)
-  sfxSynth = new Tone.PolySynth(Tone.Synth, {
-    oscillator: { type: 'triangle' },
-    envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.2 }
-  }).connect(sfxGain)
-
-  // === Clean MIDI Chain ===
-  // Used for ambient playback. Richer synths with subtle spatial processing
-  // to faithfully represent the MIDI content without heavy coloration.
-  midiDryBus = new Tone.Gain(1).connect(musicGain)
-
-  // Subtle reverb for spatial depth on ambient MIDI playback
-  midiReverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(musicGain)
-  midiReverbSend = new Tone.Gain(0.25).connect(midiReverb)
-  midiDryBus.connect(midiReverbSend)
-
-  // Lead/Guitar: FM synthesis for richer harmonic content
-  midiLead = new Tone.PolySynth(Tone.FMSynth, {
-    harmonicity: 2,
-    modulationIndex: 2.5,
-    oscillator: { type: 'sawtooth' },
-    modulation: { type: 'square' },
-    envelope: { attack: 0.005, decay: 0.3, sustain: 0.2, release: 0.4 },
-    modulationEnvelope: { attack: 0.01, decay: 0.2, sustain: 0.1, release: 0.3 }
-  }).connect(midiDryBus)
-
-  // Bass: Fatter oscillator for warmth and presence
-  midiBass = new Tone.PolySynth(Tone.Synth, {
-    oscillator: { type: 'fatsawtooth', spread: 10, count: 3 },
-    envelope: { attack: 0.01, decay: 0.3, sustain: 0.25, release: 0.3 }
-  }).connect(midiDryBus)
-  midiBass.volume.value = -3
-
-  // Drums: Layered snare (noise + body) matching main drumKit quality
-  const midiSnareBus = new Tone.Volume(0).connect(midiDryBus)
-  const midiSnareNoise = new Tone.NoiseSynth({
-    envelope: { attack: 0.001, decay: 0.15, sustain: 0 },
-    noise: { type: 'white' }
-  }).connect(midiSnareBus)
-  const midiSnareBody = new Tone.MembraneSynth({
-    pitchDecay: 0.02,
-    octaves: 4,
-    envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 }
-  }).connect(midiSnareBus)
-  midiSnareBody.volume.value = -4
-
-  midiDrumKit = {
-    kick: new Tone.MembraneSynth({
-      pitchDecay: 0.05,
-      octaves: 6,
-      oscillator: { type: 'sine' },
-      envelope: { attack: 0.001, decay: 0.35, sustain: 0, release: 0.2 }
-    }).connect(midiDryBus),
-    snare: {
-      triggerAttackRelease: (dur, time, vel = 1) => {
-        midiSnareNoise.triggerAttackRelease(dur, time, vel)
-        midiSnareBody.triggerAttackRelease('G3', dur, time, vel * 0.6)
-      },
-      volume: midiSnareBus.volume,
-      dispose: () => {
-        midiSnareNoise.dispose()
-        midiSnareBody.dispose()
-        midiSnareBus.dispose()
+    // === Bass ===
+    // MonoSynth with fatsawtooth-based waveform for warmer, fuller tone
+    bass = new Tone.PolySynth(Tone.MonoSynth, {
+      oscillator: { type: 'fatsawtooth', spread: 10, count: 3 },
+      envelope: { attack: 0.01, decay: 0.4, sustain: 0.3, release: 0.3 },
+      filterEnvelope: {
+        attack: 0.005,
+        decay: 0.3,
+        sustain: 0.2,
+        baseFrequency: 100,
+        octaves: 2.5
       }
-    },
-    hihat: new Tone.MetalSynth(HIHAT_CONFIG).connect(midiDryBus),
-    crash: new Tone.MetalSynth(CRASH_CONFIG).connect(midiDryBus)
+    })
+
+    bassEq = new Tone.EQ3(3, -1, -4)
+    bassComp = new Tone.Compressor(-15, 5)
+    bass.chain(bassComp, bassEq, musicGain)
+
+    // === Drums ===
+    // Drum bus with own reverb send
+    drumBus = new Tone.Gain(1).connect(musicGain)
+    drumBus.connect(reverbSend)
+
+    drumKit = {
+      kick: new Tone.MembraneSynth({
+        pitchDecay: 0.05,
+        octaves: 6,
+        oscillator: { type: 'sine' },
+        envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 0.4 }
+      }).connect(drumBus),
+      snare: createLayeredSnare(drumBus),
+      hihat: new Tone.MetalSynth(HIHAT_CONFIG).connect(drumBus),
+      crash: new Tone.MetalSynth(CRASH_CONFIG).connect(drumBus)
+    }
+
+    // Level Mixing (more balanced)
+    drumKit.kick.volume.value = 2
+    drumKit.snare.volume.value = 0
+    drumKit.hihat.volume.value = -12
+    drumKit.crash.volume.value = -8
+
+    // Instrument Volumes
+    guitar.volume.value = -2
+    bass.volume.value = 0
+
+    // === SFX Synth ===
+    sfxGain = new Tone.Gain(0.25).connect(masterLimiter)
+    sfxSynth = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: 'triangle' },
+      envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.2 }
+    }).connect(sfxGain)
+
+    // === Clean MIDI Chain ===
+    // Used for ambient playback. Richer synths with subtle spatial processing
+    // to faithfully represent the MIDI content without heavy coloration.
+    midiDryBus = new Tone.Gain(1).connect(musicGain)
+
+    // Subtle reverb for spatial depth on ambient MIDI playback
+    midiReverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(musicGain)
+    midiReverbSend = new Tone.Gain(0.25).connect(midiReverb)
+    midiDryBus.connect(midiReverbSend)
+
+    // Lead/Guitar: FM synthesis for richer harmonic content
+    midiLead = new Tone.PolySynth(Tone.FMSynth, {
+      harmonicity: 2,
+      modulationIndex: 2.5,
+      oscillator: { type: 'sawtooth' },
+      modulation: { type: 'square' },
+      envelope: { attack: 0.005, decay: 0.3, sustain: 0.2, release: 0.4 },
+      modulationEnvelope: {
+        attack: 0.01,
+        decay: 0.2,
+        sustain: 0.1,
+        release: 0.3
+      }
+    }).connect(midiDryBus)
+
+    // Bass: Fatter oscillator for warmth and presence
+    midiBass = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: 'fatsawtooth', spread: 10, count: 3 },
+      envelope: { attack: 0.01, decay: 0.3, sustain: 0.25, release: 0.3 }
+    }).connect(midiDryBus)
+    midiBass.volume.value = -3
+
+    midiDrumKit = {
+      kick: new Tone.MembraneSynth({
+        pitchDecay: 0.05,
+        octaves: 6,
+        oscillator: { type: 'sine' },
+        envelope: { attack: 0.001, decay: 0.35, sustain: 0, release: 0.2 }
+      }).connect(midiDryBus),
+      snare: createLayeredSnare(midiDryBus),
+      hihat: new Tone.MetalSynth(HIHAT_CONFIG).connect(midiDryBus),
+      crash: new Tone.MetalSynth(CRASH_CONFIG).connect(midiDryBus)
+    }
+
+    // MIDI drum levels
+    midiDrumKit.kick.volume.value = 2
+    midiDrumKit.hihat.volume.value = -10
+    midiDrumKit.crash.volume.value = -6
+
+    isSetup = true
+  } finally {
+    setupLock = null
+    if (resolveLock) resolveLock()
   }
-
-  // MIDI drum levels
-  midiDrumKit.kick.volume.value = 2
-  midiDrumKit.hihat.volume.value = -10
-  midiDrumKit.crash.volume.value = -6
-
-  isSetup = true
-  setupLock = null
-  if (resolveLock) resolveLock()
 }
 
 /**
@@ -572,6 +569,14 @@ export async function ensureAudioContext() {
     )
     isSetup = false
     await setupAudio()
+    // Verify rebuild succeeded before proceeding
+    if (!isSetup) {
+      logger.error(
+        'AudioEngine',
+        'Audio graph rebuild failed. Playback unavailable.'
+      )
+      return false
+    }
   }
 
   if (Tone.context.state !== 'running') {
@@ -1479,7 +1484,7 @@ async function playMidiFileInternal(
 
   const baseUrl = import.meta.env.BASE_URL || './'
   const publicBasePath = `${baseUrl}assets`
-  const { url, source } = resolveMidiAssetUrl(
+  const { url, source } = resolveAssetUrl(
     filename,
     midiUrlMap,
     publicBasePath

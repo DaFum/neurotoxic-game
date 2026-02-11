@@ -140,6 +140,13 @@ export const applyEventDelta = (state, delta) => {
         delta.flags.queueEvent
       ]
     }
+    if (typeof delta.flags.score === 'number') {
+      const nextPlayer = nextState.player ? { ...nextState.player } : {}
+      const currentScore =
+        typeof nextPlayer.score === 'number' ? nextPlayer.score : 0
+      nextPlayer.score = currentScore + delta.flags.score
+      nextState.player = nextPlayer
+    }
   }
 
   return nextState

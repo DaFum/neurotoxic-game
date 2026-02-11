@@ -71,6 +71,7 @@ class PixiStageController {
 
         const container = this.containerRef.current
         if (!container) {
+          this.initPromise = null
           return
         }
 
@@ -620,7 +621,7 @@ class PixiStageController {
 
     if (this.app) {
       try {
-        if (this.app.renderer && this.app.stage) {
+        if (this.app.renderer || this.app.stage) {
           this.app.destroy(true, {
             children: true,
             texture: true

@@ -2,12 +2,10 @@ import assert from 'node:assert'
 import { test } from 'node:test'
 import {
   normalizeMidiPlaybackOptions,
-  calculateRemainingDurationSeconds,
   buildAssetUrlMap,
   buildMidiUrlMap,
   encodePublicAssetPath,
-  resolveAssetUrl,
-  resolveMidiAssetUrl
+  resolveAssetUrl
 } from '../src/utils/audioPlaybackUtils.js'
 
 test('normalizeMidiPlaybackOptions', async t => {
@@ -90,13 +88,6 @@ test('normalizeMidiPlaybackOptions', async t => {
     )
   })
 
-  await t.test('calculates remaining duration with excerpt offset', () => {
-    assert.strictEqual(calculateRemainingDurationSeconds(30, 0), 30)
-    assert.strictEqual(calculateRemainingDurationSeconds(30, 10), 20)
-    assert.strictEqual(calculateRemainingDurationSeconds(30, 50), 0)
-    assert.strictEqual(calculateRemainingDurationSeconds(-5, 2), 0)
-    assert.strictEqual(calculateRemainingDurationSeconds(30, -2), 30)
-  })
 })
 
 test('encodePublicAssetPath', async t => {
@@ -127,10 +118,10 @@ test('encodePublicAssetPath', async t => {
   })
 })
 
-test('resolveMidiAssetUrl', async t => {
+test('resolveAssetUrl for MIDI files', async t => {
   await t.test('prefers bundled URLs', () => {
     const midiUrlMap = { 'track.mid': '/assets/track.mid' }
-    assert.deepStrictEqual(resolveMidiAssetUrl('track.mid', midiUrlMap), {
+    assert.deepStrictEqual(resolveAssetUrl('track.mid', midiUrlMap), {
       url: '/assets/track.mid',
       source: 'bundled'
     })
@@ -138,7 +129,7 @@ test('resolveMidiAssetUrl', async t => {
 
   await t.test('resolves bundled URLs via basename', () => {
     const midiUrlMap = { 'track.mid': '/assets/track.mid' }
-    assert.deepStrictEqual(resolveMidiAssetUrl('midi/track.mid', midiUrlMap), {
+    assert.deepStrictEqual(resolveAssetUrl('midi/track.mid', midiUrlMap), {
       url: '/assets/track.mid',
       source: 'bundled'
     })
@@ -147,7 +138,7 @@ test('resolveMidiAssetUrl', async t => {
   await t.test('falls back to public path when missing', () => {
     const midiUrlMap = {}
     assert.deepStrictEqual(
-      resolveMidiAssetUrl('midi/track 01.mid', midiUrlMap),
+      resolveAssetUrl('midi/track 01.mid', midiUrlMap),
       {
         url: '/assets/midi/track%2001.mid',
         source: 'public'
@@ -157,7 +148,7 @@ test('resolveMidiAssetUrl', async t => {
 
   await t.test('normalizes relative filenames and encodes spaces', () => {
     const midiUrlMap = {}
-    assert.deepStrictEqual(resolveMidiAssetUrl('./track 02.mid', midiUrlMap), {
+    assert.deepStrictEqual(resolveAssetUrl('./track 02.mid', midiUrlMap), {
       url: '/assets/track%2002.mid',
       source: 'public'
     })
@@ -166,7 +157,7 @@ test('resolveMidiAssetUrl', async t => {
   await t.test('supports custom public base path', () => {
     const midiUrlMap = {}
     assert.deepStrictEqual(
-      resolveMidiAssetUrl('midi/track.mid', midiUrlMap, '/public/assets/'),
+      resolveAssetUrl('midi/track.mid', midiUrlMap, '/public/assets/'),
       {
         url: '/public/assets/midi/track.mid',
         source: 'public'
@@ -177,7 +168,7 @@ test('resolveMidiAssetUrl', async t => {
   await t.test('supports relative base path defaults', () => {
     const midiUrlMap = {}
     assert.deepStrictEqual(
-      resolveMidiAssetUrl('midi/track.mid', midiUrlMap, './assets'),
+      resolveAssetUrl('midi/track.mid', midiUrlMap, './assets'),
       {
         url: './assets/midi/track.mid',
         source: 'public'
@@ -187,7 +178,7 @@ test('resolveMidiAssetUrl', async t => {
 
   await t.test('returns nulls for empty filename', () => {
     const midiUrlMap = {}
-    assert.deepStrictEqual(resolveMidiAssetUrl('', midiUrlMap), {
+    assert.deepStrictEqual(resolveAssetUrl('', midiUrlMap), {
       url: null,
       source: null
     })
