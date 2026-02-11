@@ -299,7 +299,7 @@ export const gameReducer = (state, action) => {
         }
       }
       return state
-      break
+
 
     default:
       return state
