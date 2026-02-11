@@ -324,8 +324,8 @@ test('calculateGigPhysics includes avgStamina in result', () => {
 test('calculateGigPhysics handles missing member gracefully', () => {
   const band = buildBandState({
     members: [
-      { name: 'Matze', mood: 70, stamina: 80, skill: 5, traits: [] },
-      { name: 'Unknown', mood: 70, stamina: 75, skill: 4, traits: [] }
+      { name: 'Matze', mood: 70, stamina: 80, baseStats: { skill: 5 }, traits: [] },
+      { name: 'Unknown', mood: 70, stamina: 75, baseStats: { skill: 4 }, traits: [] }
     ]
   })
   const song = { bpm: 120 }

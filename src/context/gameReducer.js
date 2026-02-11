@@ -206,7 +206,7 @@ const handleAdvanceDay = state => {
     band.harmony = Math.max(1, Math.min(100, band.harmony))
   }
   logger.info('GameState', `Day Advanced to ${player.day}`)
-  return { ...state, player, band, social }
+  return { ...state, player, band, social, eventCooldowns: [] }
 }
 
 /**
@@ -299,6 +299,7 @@ export const gameReducer = (state, action) => {
         }
       }
       return state
+
 
     default:
       return state
