@@ -30,25 +30,6 @@ export const normalizeMidiPlaybackOptions = options => {
 }
 
 /**
- * Calculates remaining playback duration after applying an excerpt offset.
- * @param {number} totalSeconds - Total song duration in seconds.
- * @param {number} offsetSeconds - Excerpt offset in seconds.
- * @returns {number} Remaining playback duration in seconds.
- */
-export const calculateRemainingDurationSeconds = (
-  totalSeconds,
-  offsetSeconds
-) => {
-  const safeTotal = Number.isFinite(totalSeconds)
-    ? Math.max(0, totalSeconds)
-    : 0
-  const safeOffset = Number.isFinite(offsetSeconds)
-    ? Math.max(0, offsetSeconds)
-    : 0
-  return Math.max(0, safeTotal - safeOffset)
-}
-
-/**
  * Encodes a public asset path segment-by-segment to preserve slashes.
  * @param {string} assetPath - Asset path relative to the public base.
  * @returns {string} Encoded path suitable for URL usage.
@@ -99,21 +80,6 @@ export const resolveAssetUrl = (
     url: `${trimmedBase}/${encodedPath}`,
     source: 'public'
   }
-}
-
-/**
- * Resolves a MIDI asset URL from the bundled map or a public fallback path.
- * @param {string} filename - Filename or relative path to the MIDI asset.
- * @param {Record<string, string>} midiUrlMap - Map of asset keys to bundled URLs.
- * @param {string} [publicBasePath='/assets'] - Base path for public assets.
- * @returns {{url: string|null, source: 'bundled'|'public'|null}} Resolved URL info.
- */
-export const resolveMidiAssetUrl = (
-  filename,
-  midiUrlMap,
-  publicBasePath = '/assets'
-) => {
-  return resolveAssetUrl(filename, midiUrlMap, publicBasePath)
 }
 
 /**

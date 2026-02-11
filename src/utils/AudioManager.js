@@ -92,12 +92,9 @@ class AudioSystem {
       this.stopMusic()
       this.currentSongId = 'ambient'
       try {
-        const oggSuccess = await audioEngine.playRandomAmbientOgg(
-          Math.random,
-          {
-            skipStop: true
-          }
-        )
+        const oggSuccess = await audioEngine.playRandomAmbientOgg(Math.random, {
+          skipStop: true
+        })
         if (oggSuccess) {
           return true
         }
@@ -140,8 +137,8 @@ class AudioSystem {
 
   /**
    * Resumes the paused music or starts ambient if none is loaded.
-   * Note: The logic here is asymmetric compared to pauseMusic(). We assume mutually exclusive
-   * playback states (either ambient or gig audio is active, not both).
+   * Note: There is no pauseMusic() method — callers use stopMusic() instead.
+   * We assume mutually exclusive playback states (either ambient or gig audio is active, not both).
    * @returns {Promise<boolean>} True when music is running or successfully started.
    */
   async resumeMusic() {

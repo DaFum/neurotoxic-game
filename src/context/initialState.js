@@ -17,6 +17,7 @@ export const DEFAULT_PLAYER_STATE = {
   location: 'Stendal',
   currentNodeId: 'node_0_0',
   tutorialStep: 0,
+  score: 0,
   fame: 0,
   fameLevel: 0,
   hqUpgrades: [],

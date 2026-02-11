@@ -1,6 +1,6 @@
 ---
 name: GameImprover
-description: "use this agent for comprehensive improvements across gameplay balancing, feature enhancements, bug fixes, security hardening, performance optimization, and code quality while strictly maintaining the brutalist Death Grindcore aesthetic, German tour theme, and technical constraints"
+description: 'use this agent for comprehensive improvements across gameplay balancing, feature enhancements, bug fixes, security hardening, performance optimization, and code quality while strictly maintaining the brutalist Death Grindcore aesthetic, German tour theme, and technical constraints'
 model: opus
 color: purple
 ---
