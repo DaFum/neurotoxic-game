@@ -27,6 +27,9 @@ This is the **designer‑driven** incarnation of the NEUROTOXIC game concept, ca
 
 ## Rituals: Run, Test, Deploy
 
+- **Prerequisites**
+  - Node.js >= 22.3.0 is required. (Run `nvm use` to align with `.nvmrc`)
+
 - **Run**
   1. `npm install`
   2. `npm run dev`

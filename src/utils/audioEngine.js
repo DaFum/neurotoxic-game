@@ -576,8 +576,20 @@ export async function ensureAudioContext() {
       'AudioEngine',
       'AudioContext is closed. Rebuilding audio graph.'
     )
+    // Best-effort cleanup of stale nodes before rebuilding
+    try {
+      disposeAudio()
+    } catch (e) {
+      logger.debug('AudioEngine', 'Partial dispose before rebuild failed', e)
+    }
     isSetup = false
-    await setupAudio()
+    try {
+      await setupAudio()
+    } catch (e) {
+      logger.error('AudioEngine', 'Rebuild setupAudio failed', e)
+      isSetup = false
+      return false
+    }
     // Verify rebuild succeeded before proceeding
     if (!isSetup) {
       logger.error(

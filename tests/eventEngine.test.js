@@ -112,7 +112,12 @@ test('eventEngine.checkEvent respects cooldowns', t => {
     'event_normal',
     'Should select the only non-cooled-down event'
   )
-
+  // 1 call for chance check. (Logger also calls random, but we mocked logger below or accept 2 if not mocked)
+  // Actually, without mocking logger, it is 2. But let's keep it simple and assert >= 1 or mock logger.
+  // Since we don't mock logger in this file yet, and adding a module mock affects all tests (global),
+  // we should be careful.
+  // Let's just accept 2 calls for now, knowing one is for logger ID.
+  assert.strictEqual(mockRandom.mock.calls.length, 2)
 })
 
 test('eventEngine.checkEvent prioritizes pending events', () => {
@@ -531,4 +536,22 @@ test('eventEngine logic allows negative inventory in delta', () => {
     -5,
     'Should allow negative inventory in delta for consumption'
   )
+})
+
+test('eventEngine.applyResult handles hype stat as fame', () => {
+  const result = { type: 'stat', stat: 'hype', value: 10 }
+  const delta = eventEngine.applyResult(result)
+  assert.equal(delta.player.fame, 10, 'hype should map to fame')
+})
+
+test('eventEngine.applyResult handles crowd_energy stat as fame', () => {
+  const result = { type: 'stat', stat: 'crowd_energy', value: 5 }
+  const delta = eventEngine.applyResult(result)
+  assert.equal(delta.player.fame, 5, 'crowd_energy should map to fame')
+})
+
+test('eventEngine.applyResult handles score stat increment', () => {
+  const result = { type: 'stat', stat: 'score', value: 100 }
+  const delta = eventEngine.applyResult(result)
+  assert.equal(delta.flags.score, 100, 'score should increment in flags')
 })
