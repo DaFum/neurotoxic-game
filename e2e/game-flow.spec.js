@@ -25,7 +25,8 @@ test.describe('Game Flow', () => {
 
     const startBtn = page.getByRole('button', { name: /start tour/i })
 
-    const result = await raceWithCrash(page, startBtn.click(), 5000)
+    // Pass factory function to ensure listeners are attached before click
+    const result = await raceWithCrash(page, () => startBtn.click(), 5000)
 
     if (result === 'crash' || result === 'timeout') {
         test.skip(true, 'Chromium crashed on Start Tour (audio init).')
@@ -59,7 +60,8 @@ test.describe('Game Flow', () => {
 
     const loadBtn = page.getByRole('button', { name: /load game/i })
 
-    const result = await raceWithCrash(page, loadBtn.click(), 5000)
+    // Pass factory function
+    const result = await raceWithCrash(page, () => loadBtn.click(), 5000)
 
     if (result === 'crash' || result === 'timeout') {
         test.skip(true, 'Chromium crashed on Load Game (audio init).')

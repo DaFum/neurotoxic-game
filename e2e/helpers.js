@@ -38,19 +38,20 @@ export async function skipToMenu(page) {
 }
 
 /**
- * Races a promise against a page crash event and a timeout.
- * Cleans up listeners and timeouts to avoid leaks.
+ * Races an action against a page crash event and a timeout.
+ * Attaches listeners BEFORE starting the action to ensure no events are missed.
  * @param {import('@playwright/test').Page} page
- * @param {Promise<any>} actionPromise - The promise to wait for (e.g. click()).
+ * @param {() => Promise<any>} actionFn - Function that returns the promise to wait for (e.g. () => click()).
  * @param {number} timeoutMs - Timeout in milliseconds.
  * @returns {Promise<'success'|'crash'|'timeout'>} Result of the race.
  */
-export async function raceWithCrash(page, actionPromise, timeoutMs = 5000) {
+export async function raceWithCrash(page, actionFn, timeoutMs = 5000) {
   let crashListener
   let closeListener
   let timeoutId
 
   // Create promises for crash and timeout
+  // We explicitly create these BEFORE executing actionFn to catch immediate crashes
   const crashPromise = new Promise(resolve => {
     crashListener = () => resolve('crash')
     closeListener = () => resolve('crash') // target closed behaves like crash for us
@@ -62,18 +63,25 @@ export async function raceWithCrash(page, actionPromise, timeoutMs = 5000) {
     timeoutId = setTimeout(() => resolve('timeout'), timeoutMs)
   })
 
-  // Wrap action to return specific success signal
-  const successPromise = actionPromise.then(() => 'success').catch(err => {
-      // If the action failed because of a crash/close, let the crashPromise handle it if possible.
-      // But usually, if the page crashes, click() throws "Target closed".
-      if (err.message.includes('Target closed') || err.message.includes('crash')) {
-          return 'crash'
-      }
-      throw err
-  })
-
   try {
-    const result = await Promise.race([successPromise, crashPromise, timeoutPromise])
+    // Execute action wrapped to return success signal
+    const successPromise = actionFn()
+      .then(() => 'success')
+      .catch(err => {
+        if (
+          err.message.includes('Target closed') ||
+          err.message.includes('crash')
+        ) {
+          return 'crash'
+        }
+        throw err
+      })
+
+    const result = await Promise.race([
+      successPromise,
+      crashPromise,
+      timeoutPromise
+    ])
     return result
   } finally {
     // Cleanup
