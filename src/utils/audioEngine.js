@@ -16,6 +16,12 @@ import {
   normalizeMidiPlaybackOptions
 } from './audioPlaybackUtils.js'
 import {
+  canResumeAudioContextState,
+  getAudioResumeTarget,
+  getPreferredAudioContextState,
+  shouldRebuildAudioContextState
+} from './audioContextState.js'
+import {
   isPercussionTrack,
   isValidMidiNote,
   buildMidiTrackEvents,
@@ -559,83 +565,111 @@ export async function setupAudio() {
 export async function ensureAudioContext() {
   if (!isSetup) await setupAudio()
 
-  // Recovery: if the underlying AudioContext has been closed (e.g. browser
-  // cleanup, race during concurrent setup calls, or stale Tone.js reference),
-  // rebuild the audio graph with a fresh context. Limited to one rebuild per
-  // call to prevent infinite loops.
-  let needsRebuild = false
-  try {
-    const rawCtx = getRawAudioContext()
-    needsRebuild = rawCtx?.state === 'closed'
-  } catch (e) {
-    logger.debug(
-      'AudioEngine',
-      'getRawAudioContext failed during recovery check',
-      e
-    )
-    needsRebuild = true
-  }
+  const getAudioState = () => {
+    let toneContext = null
+    let rawContext = null
+    let rawContextState = null
+    let toneContextState = null
 
-  if (needsRebuild) {
-    if (rebuildLock) {
-      await rebuildLock
-      // Re-check state after waiting for the concurrent rebuild to finish
-      if (isSetup && Tone.context.state === 'running') return true
-      // If still closed/failed, we might need to proceed or fail.
-      // For safety, let's assume if it failed, we return false.
-      if (!isSetup) return false
-    } else {
-      let resolveRebuild
-      rebuildLock = new Promise(r => {
-        resolveRebuild = r
-      })
-
-      try {
-        logger.warn(
-          'AudioEngine',
-          'AudioContext is closed. Rebuilding audio graph.'
-        )
-        // Best-effort cleanup of stale nodes before rebuilding
-        try {
-          disposeAudio()
-        } catch (e) {
-          logger.debug(
-            'AudioEngine',
-            'Partial dispose before rebuild failed',
-            e
-          )
-        }
-        isSetup = false
-        try {
-          await setupAudio()
-        } catch (e) {
-          logger.error('AudioEngine', 'Rebuild setupAudio failed', e)
-          isSetup = false
-          return false
-        }
-        // Verify rebuild succeeded before proceeding
-        if (!isSetup) {
-          logger.error(
-            'AudioEngine',
-            'Audio graph rebuild failed. Playback unavailable.'
-          )
-          return false
-        }
-      } finally {
-        if (resolveRebuild) resolveRebuild()
-        rebuildLock = null
+    try {
+      toneContext = Tone.getContext()
+      rawContext = toneContext?.rawContext ?? toneContext
+      rawContextState = rawContext?.state
+      toneContextState = toneContext?.state
+    } catch (error) {
+      logger.debug('AudioEngine', 'Audio state read failed', error)
+      return {
+        state: 'unknown',
+        rawContextState,
+        toneContextState,
+        resumeTarget: null
       }
     }
-  }
 
-  if (Tone.context.state !== 'running') {
-    try {
-      await Tone.context.resume()
-    } catch (e) {
-      logger.warn('AudioEngine', 'Tone.context.resume() failed:', e)
+    return {
+      state: getPreferredAudioContextState({ rawContextState, toneContextState }),
+      rawContextState,
+      toneContextState,
+      resumeTarget: getAudioResumeTarget({ toneContext, rawContext })
     }
   }
-  return Tone.context.state === 'running'
+
+  const ensureRebuild = async reasonState => {
+    if (rebuildLock) {
+      await rebuildLock
+      return isSetup
+    }
+
+    let resolveRebuild
+    rebuildLock = new Promise(r => {
+      resolveRebuild = r
+    })
+
+    try {
+      logger.warn(
+        'AudioEngine',
+        `AudioContext state is ${reasonState}. Rebuilding audio graph.`
+      )
+      try {
+        disposeAudio()
+      } catch (error) {
+        logger.debug('AudioEngine', 'Partial dispose before rebuild failed', error)
+      }
+      isSetup = false
+      try {
+        await setupAudio()
+      } catch (error) {
+        logger.error('AudioEngine', 'Rebuild setupAudio failed', error)
+        isSetup = false
+        return false
+      }
+
+      if (!isSetup) {
+        logger.error(
+          'AudioEngine',
+          'Audio graph rebuild failed. Playback unavailable.'
+        )
+        return false
+      }
+
+      return true
+    } finally {
+      if (resolveRebuild) resolveRebuild()
+      rebuildLock = null
+    }
+  }
+
+  let audioState = getAudioState()
+  if (shouldRebuildAudioContextState(audioState.state)) {
+    const rebuilt = await ensureRebuild(audioState.state)
+    if (!rebuilt) return false
+    audioState = getAudioState()
+  }
+
+  if (audioState.state === 'running') return true
+
+  if (canResumeAudioContextState(audioState.state)) {
+    audioState = getAudioState()
+    try {
+      if (!audioState.resumeTarget) {
+        logger.warn('AudioEngine', 'No resumable AudioContext instance available')
+      } else {
+        await audioState.resumeTarget.resume()
+      }
+    } catch (error) {
+      logger.warn('AudioEngine', 'AudioContext resume() failed:', error)
+    }
+    audioState = getAudioState()
+    if (audioState.state === 'running') return true
+  }
+
+  if (shouldRebuildAudioContextState(audioState.state)) {
+    const rebuiltAfterResume = await ensureRebuild(audioState.state)
+    if (!rebuiltAfterResume) return false
+    audioState = getAudioState()
+  }
+
+  return audioState.state === 'running'
 }
 
 /**
