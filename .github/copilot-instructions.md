@@ -27,9 +27,9 @@ Web-based Roguelike Tour Manager with rhythm action mechanics. Manage a Death Gr
 
 ### Color Palette
 
-**NEVER use hardcoded colors.** Always use CSS variables. Refer to `CLAUDE.md` for the full palette and usage examples.
-
 <!-- jscpd:ignore-start -->
+
+**NEVER use hardcoded colors.** Always use CSS variables. Refer to `CLAUDE.md` for the full palette and usage examples.
 
 | Variable           | Hex     | Usage                     |
 | ------------------ | ------- | ------------------------- |

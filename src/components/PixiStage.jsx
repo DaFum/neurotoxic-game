@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
+import PropTypes from 'prop-types'
 import { createPixiStageController } from './PixiStageController'
 
 /**
@@ -39,7 +40,7 @@ export const PixiStage = ({ logic }) => {
         controllerRef.current = null
       }
     }
-  }, [])
+  }, [gameStateRef])
 
   return (
     <div
@@ -47,4 +48,21 @@ export const PixiStage = ({ logic }) => {
       ref={containerRef}
     />
   )
+}
+
+PixiStage.propTypes = {
+  logic: PropTypes.shape({
+    gameStateRef: PropTypes.object.isRequired,
+    update: PropTypes.func.isRequired,
+    stats: PropTypes.shape({
+      score: PropTypes.number,
+      combo: PropTypes.number,
+      health: PropTypes.number,
+      progress: PropTypes.number,
+      overload: PropTypes.number,
+      isToxicMode: PropTypes.bool,
+      isGameOver: PropTypes.bool,
+      isAudioReady: PropTypes.bool
+    }).isRequired
+  }).isRequired
 }

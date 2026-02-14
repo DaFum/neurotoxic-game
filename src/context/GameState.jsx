@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react'
+import { createContext, useContext, useReducer, useEffect } from 'react'
 import { eventEngine } from '../utils/eventEngine'
 import { resolveEventChoice } from '../utils/eventResolver'
 import { MapGenerator } from '../utils/mapGenerator'
