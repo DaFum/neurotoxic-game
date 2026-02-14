@@ -574,14 +574,20 @@ export async function ensureAudioContext() {
     } catch (error) {
       logger.debug('AudioEngine', 'Audio state read failed', error)
       return {
-        state: getPreferredAudioContextState({ rawContextState, toneContextState }),
+        state: getPreferredAudioContextState({
+          rawContextState,
+          toneContextState
+        }),
         rawContextState,
         toneContextState
       }
     }
 
     return {
-      state: getPreferredAudioContextState({ rawContextState, toneContextState }),
+      state: getPreferredAudioContextState({
+        rawContextState,
+        toneContextState
+      }),
       rawContextState,
       toneContextState
     }
@@ -606,7 +612,11 @@ export async function ensureAudioContext() {
       try {
         disposeAudio()
       } catch (error) {
-        logger.debug('AudioEngine', 'Partial dispose before rebuild failed', error)
+        logger.debug(
+          'AudioEngine',
+          'Partial dispose before rebuild failed',
+          error
+        )
       }
       isSetup = false
       try {
