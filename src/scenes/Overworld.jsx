@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo, useCallback, memo } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { useTravelLogic } from '../hooks/useTravelLogic'
@@ -10,12 +10,9 @@ import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import { EXPENSE_CONSTANTS } from '../utils/economyEngine'
 import { audioManager } from '../utils/AudioManager'
 
-/**
- * A widget to toggle the ambient radio / music.
- * Polls audioManager state so the button stays in sync even when
- * external code (e.g. gig init) stops or starts ambient playback.
- */
-const ToggleRadio = () => {
+// --- Memoized Components ---
+
+const ToggleRadio = memo(() => {
   const [isPlaying, setIsPlaying] = useState(
     () => audioManager.currentSongId === 'ambient' && audioManager.isPlaying
   )
@@ -29,10 +26,7 @@ const ToggleRadio = () => {
     return () => clearInterval(id)
   }, [])
 
-  /**
-   * Toggles the radio playback state.
-   */
-  const toggle = () => {
+  const toggle = useCallback(() => {
     if (isPlaying) {
       audioManager.stopMusic()
       setIsPlaying(false)
@@ -44,7 +38,7 @@ const ToggleRadio = () => {
         })
         .catch(() => setIsPlaying(false))
     }
-  }
+  }, [isPlaying])
 
   return (
     <button
@@ -56,7 +50,135 @@ const ToggleRadio = () => {
       {isPlaying ? '■' : '▶'}
     </button>
   )
-}
+})
+
+const MapConnection = memo(
+  ({ start, end, startVis, endVis }) => {
+    if (startVis === 'hidden' || endVis === 'hidden') return null
+
+    return (
+      <line
+        x1={`${start.x}%`}
+        y1={`${start.y}%`}
+        x2={`${end.x}%`}
+        y2={`${end.y}%`}
+        stroke='var(--toxic-green)'
+        strokeWidth='1'
+        opacity={startVis === 'dimmed' || endVis === 'dimmed' ? 0.2 : 0.5}
+      />
+    )
+  },
+  (prev, next) => {
+    return (
+      prev.start.x === next.start.x &&
+      prev.start.y === next.start.y &&
+      prev.end.x === next.end.x &&
+      prev.end.y === next.end.y &&
+      prev.startVis === next.startVis &&
+      prev.endVis === next.endVis
+    )
+  }
+)
+
+const MapNode = memo(
+  ({
+    node,
+    isCurrent,
+    isTraveling,
+    visibility,
+    isReachable,
+    handleTravel,
+    setHoveredNode,
+    iconUrl,
+    vanUrl
+  }) => {
+    // Determine visuals based on props
+    if (visibility === 'hidden' && node.type !== 'START') {
+      return (
+        <div
+          className='absolute w-6 h-6 flex items-center justify-center text-(--ash-gray) pointer-events-none'
+          style={{ left: `${node.x}%`, top: `${node.y}%` }}
+        >
+          ?
+        </div>
+      )
+    }
+
+    return (
+      <div
+        className={`absolute flex flex-col items-center group
+          ${isCurrent ? 'z-50' : 'z-10'}
+          ${!isReachable && !isCurrent ? 'opacity-30 grayscale pointer-events-none' : 'opacity-100'}
+          ${isReachable ? 'cursor-pointer' : ''}
+      `}
+        style={{ left: `${node.x}%`, top: `${node.y}%` }}
+        onClick={() => handleTravel(node)}
+        onMouseEnter={() => setHoveredNode(node)}
+        onMouseLeave={() => setHoveredNode(null)}
+      >
+        {isCurrent && !isTraveling && (
+          <div
+            className='absolute pointer-events-none z-50'
+            style={{ transform: 'translate(0, -50%)' }}
+          >
+            <img
+              src={vanUrl}
+              alt='Van'
+              className='w-12 h-8 object-contain drop-shadow-[0_0_10px_var(--toxic-green)]'
+            />
+            <ChatterOverlay />
+          </div>
+        )}
+
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: isCurrent ? 1 : 1 }}
+          whileHover={isReachable ? { scale: 1.2, zIndex: 60 } : {}}
+        >
+          <img
+            src={iconUrl}
+            alt='Pin'
+            className={`w-6 h-6 md:w-8 md:h-8 object-contain drop-shadow-md
+                  ${isReachable ? 'drop-shadow-[0_0_10px_var(--toxic-green)] animate-pulse' : ''}`}
+          />
+        </motion.div>
+
+        {isReachable && (
+          <div className='absolute -top-6 left-1/2 -translate-x-1/2 text-(--toxic-green) text-[10px] font-bold animate-bounce whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none'>
+            CLICK TO TRAVEL
+          </div>
+        )}
+
+        <div className='hidden group-hover:block absolute bottom-8 bg-(--void-black)/90 border border-(--toxic-green) p-2 rounded z-50 whitespace-nowrap pointer-events-none'>
+          <div className='font-bold text-(--toxic-green)'>
+            {node.venue.name}
+          </div>
+          {node.type === 'GIG' && (
+            <div className='text-[10px] text-(--ash-gray) font-mono'>
+              Cap: {node.venue.capacity} | Pay: ~{node.venue.pay}€<br />
+              Ticket: {node.venue.price}€ | Diff: {'★'.repeat(node.venue.diff)}
+            </div>
+          )}
+          {isCurrent && (
+            <div className='text-(--blood-red) text-xs font-bold'>
+              [CURRENT LOCATION]
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  },
+  (prev, next) => {
+    return (
+      prev.node.id === next.node.id &&
+      prev.isCurrent === next.isCurrent &&
+      prev.isTraveling === next.isTraveling &&
+      prev.visibility === next.visibility &&
+      prev.isReachable === next.isReachable &&
+      prev.iconUrl === next.iconUrl
+    )
+  }
+)
 
 /**
  * The map navigation scene where players select their next destination.
@@ -146,6 +268,108 @@ export const Overworld = () => {
     }
   }, [])
 
+  // Memoized URL generators
+  const getMapBgUrl = useMemo(
+    () => getGenImageUrl(IMG_PROMPTS.OVERWORLD_MAP),
+    []
+  )
+  const getVanUrl = useMemo(() => getGenImageUrl(IMG_PROMPTS.ICON_VAN), [])
+  const getPinFestivalUrl = useMemo(
+    () => getGenImageUrl(IMG_PROMPTS.ICON_PIN_FESTIVAL),
+    []
+  )
+  const getPinHomeUrl = useMemo(
+    () => getGenImageUrl(IMG_PROMPTS.ICON_PIN_HOME),
+    []
+  )
+  const getPinClubUrl = useMemo(
+    () => getGenImageUrl(IMG_PROMPTS.ICON_PIN_CLUB),
+    []
+  )
+
+  // Memoized connection rendering
+  const renderedConnections = useMemo(() => {
+    if (!gameMap) return null
+    return gameMap.connections.map((conn, i) => {
+      const start = gameMap.nodes[conn.from]
+      const end = gameMap.nodes[conn.to]
+      if (!start || !end) return null
+
+      // Visibility Check - Passed down as simple props
+      const startVis = getNodeVisibility(start.layer, currentLayer)
+      const endVis = getNodeVisibility(end.layer, currentLayer)
+
+      return (
+        <MapConnection
+          key={i}
+          start={start}
+          end={end}
+          startVis={startVis}
+          endVis={endVis}
+        />
+      )
+    })
+  }, [gameMap, currentLayer, getNodeVisibility])
+
+  // Memoized node rendering
+  const renderedNodes = useMemo(() => {
+    if (!gameMap) return null
+    return Object.values(gameMap.nodes).map(node => {
+      const isCurrent = node.id === player.currentNodeId
+      const visibility = getNodeVisibility(node.layer, currentLayer)
+      const isReachable = isConnected(node.id) || node.type === 'START'
+
+      let iconUrl = getPinClubUrl
+      if (node.type === 'FESTIVAL') iconUrl = getPinFestivalUrl
+      else if (node.type === 'START') iconUrl = getPinHomeUrl
+
+      return (
+        <MapNode
+          key={node.id}
+          node={node}
+          isCurrent={isCurrent}
+          isTraveling={isTraveling}
+          visibility={visibility}
+          isReachable={isReachable}
+          handleTravel={handleTravel}
+          setHoveredNode={setHoveredNode}
+          iconUrl={iconUrl}
+          vanUrl={getVanUrl}
+        />
+      )
+    })
+  }, [
+    gameMap,
+    player.currentNodeId,
+    currentLayer,
+    isTraveling,
+    getNodeVisibility,
+    isConnected,
+    handleTravel,
+    getPinClubUrl,
+    getPinFestivalUrl,
+    getPinHomeUrl,
+    getVanUrl
+  ])
+
+  // Hover connection memo
+  const hoverLine = useMemo(() => {
+    if (!hoveredNode || !isConnected(hoveredNode.id) || !currentNode)
+      return null
+    return (
+      <line
+        x1={`${currentNode.x}%`}
+        y1={`${currentNode.y}%`}
+        x2={`${hoveredNode.x}%`}
+        y2={`${hoveredNode.y}%`}
+        stroke='var(--toxic-green)'
+        strokeWidth='2'
+        strokeDasharray='5,5'
+        opacity='0.8'
+      />
+    )
+  }, [hoveredNode, isConnected, currentNode])
+
   return (
     <div
       className={`w-full h-full bg-(--void-black) relative overflow-hidden flex flex-col items-center justify-center p-8 ${isTraveling ? 'pointer-events-none' : ''}`}
@@ -199,148 +423,17 @@ export const Overworld = () => {
         <div
           className='absolute inset-0 opacity-30 bg-cover bg-center grayscale invert pointer-events-none'
           style={{
-            backgroundImage: `url("${getGenImageUrl(IMG_PROMPTS.OVERWORLD_MAP)}")`
+            backgroundImage: `url("${getMapBgUrl}")`
           }}
         />
 
         {/* Draw Connections */}
         <svg className='absolute inset-0 w-full h-full pointer-events-none'>
-          {/* Existing Connections */}
-          {gameMap &&
-            gameMap.connections.map((conn, i) => {
-              const start = gameMap.nodes[conn.from]
-              const end = gameMap.nodes[conn.to]
-              if (!start || !end) return null
-
-              // Visibility Check
-              const startVis = getNodeVisibility(start.layer, currentLayer)
-              const endVis = getNodeVisibility(end.layer, currentLayer)
-              if (startVis === 'hidden' || endVis === 'hidden') return null
-
-              return (
-                <line
-                  key={i}
-                  x1={`${start.x}%`}
-                  y1={`${start.y}%`}
-                  x2={`${end.x}%`}
-                  y2={`${end.y}%`}
-                  stroke='var(--toxic-green)'
-                  strokeWidth='1'
-                  opacity={
-                    startVis === 'dimmed' || endVis === 'dimmed' ? 0.2 : 0.5
-                  }
-                />
-              )
-            })}
-
-          {/* Dynamic Hover Connection */}
-          {hoveredNode && isConnected(hoveredNode.id) && (
-            <line
-              x1={`${currentNode.x}%`}
-              y1={`${currentNode.y}%`}
-              x2={`${hoveredNode.x}%`}
-              y2={`${hoveredNode.y}%`}
-              stroke='var(--toxic-green)'
-              strokeWidth='2'
-              strokeDasharray='5,5'
-              opacity='0.8'
-            />
-          )}
+          {renderedConnections}
+          {hoverLine}
         </svg>
 
-        {gameMap &&
-          Object.values(gameMap.nodes).map(node => {
-            const isCurrent = node.id === player.currentNodeId
-            const visibility = getNodeVisibility(node.layer, currentLayer)
-            const isReachable = isConnected(node.id) || node.type === 'START'
-
-            if (visibility === 'hidden' && node.type !== 'START') {
-              // Render ??? Icon
-              return (
-                <div
-                  key={node.id}
-                  className='absolute w-6 h-6 flex items-center justify-center text-(--ash-gray) pointer-events-none'
-                  style={{ left: `${node.x}%`, top: `${node.y}%` }}
-                >
-                  ?
-                </div>
-              )
-            }
-
-            const iconUrl =
-              node.type === 'FESTIVAL'
-                ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_FESTIVAL)
-                : node.type === 'START'
-                  ? getGenImageUrl(IMG_PROMPTS.ICON_PIN_HOME)
-                  : getGenImageUrl(IMG_PROMPTS.ICON_PIN_CLUB)
-            const vanUrl = getGenImageUrl(IMG_PROMPTS.ICON_VAN)
-
-            return (
-              <div
-                key={node.id}
-                className={`absolute flex flex-col items-center group
-                ${isCurrent ? 'z-50' : 'z-10'} 
-                ${!isReachable && !isCurrent ? 'opacity-30 grayscale pointer-events-none' : 'opacity-100'}
-                ${isReachable ? 'cursor-pointer' : ''}
-            `}
-                style={{ left: `${node.x}%`, top: `${node.y}%` }}
-                onClick={() => handleTravel(node)}
-                onMouseEnter={() => setHoveredNode(node)}
-                onMouseLeave={() => setHoveredNode(null)}
-              >
-                {isCurrent && !isTraveling && (
-                  <div
-                    className='absolute pointer-events-none z-50'
-                    style={{ transform: 'translate(0, -50%)' }}
-                  >
-                    <img
-                      src={vanUrl}
-                      alt='Van'
-                      className='w-12 h-8 object-contain drop-shadow-[0_0_10px_var(--toxic-green)]'
-                    />
-                    <ChatterOverlay />
-                  </div>
-                )}
-
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: isCurrent ? 1 : 1 }}
-                  whileHover={isReachable ? { scale: 1.2, zIndex: 60 } : {}}
-                >
-                  <img
-                    src={iconUrl}
-                    alt='Pin'
-                    className={`w-6 h-6 md:w-8 md:h-8 object-contain drop-shadow-md
-                        ${isReachable ? 'drop-shadow-[0_0_10px_var(--toxic-green)] animate-pulse' : ''}`}
-                  />
-                </motion.div>
-
-                {isReachable && (
-                  <div className='absolute -top-6 left-1/2 -translate-x-1/2 text-(--toxic-green) text-[10px] font-bold animate-bounce whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none'>
-                    CLICK TO TRAVEL
-                  </div>
-                )}
-
-                <div className='hidden group-hover:block absolute bottom-8 bg-(--void-black)/90 border border-(--toxic-green) p-2 rounded z-50 whitespace-nowrap pointer-events-none'>
-                  <div className='font-bold text-(--toxic-green)'>
-                    {node.venue.name}
-                  </div>
-                  {node.type === 'GIG' && (
-                    <div className='text-[10px] text-(--ash-gray) font-mono'>
-                      Cap: {node.venue.capacity} | Pay: ~{node.venue.pay}€<br />
-                      Ticket: {node.venue.price}€ | Diff:{' '}
-                      {'★'.repeat(node.venue.diff)}
-                    </div>
-                  )}
-                  {isCurrent && (
-                    <div className='text-(--blood-red) text-xs font-bold'>
-                      [CURRENT LOCATION]
-                    </div>
-                  )}
-                </div>
-              </div>
-            )
-          })}
+        {renderedNodes}
 
         {/* Animated Van (Global Overlay) - Refactored to motion.div */}
         {isTraveling && currentNode && travelTarget && (
@@ -362,7 +455,7 @@ export const Overworld = () => {
             }}
           >
             <img
-              src={getGenImageUrl(IMG_PROMPTS.ICON_VAN)}
+              src={getVanUrl}
               alt='Traveling Van'
               className='w-12 h-8 object-contain drop-shadow-[0_0_10px_var(--toxic-green)]'
               style={{ transform: 'translate(0, -50%)' }}
