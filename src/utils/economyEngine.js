@@ -302,8 +302,10 @@ export const calculateGigFinancials = (
 
   // Venue Split / Promoter Cut
   let splitRate = 0
-  if (gigData.diff >= 5) splitRate = 0.7 // Arena: Venue takes 70%
-  else if (gigData.diff === 4) splitRate = 0.4 // Club: Venue takes 40%
+  if (gigData.diff >= 5)
+    splitRate = 0.7 // Arena: Venue takes 70%
+  else if (gigData.diff === 4)
+    splitRate = 0.4 // Club: Venue takes 40%
   else if (gigData.diff === 3) splitRate = 0.2 // Bar: Venue takes 20%
 
   if (splitRate > 0) {

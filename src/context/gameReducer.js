@@ -179,7 +179,10 @@ const handleLoadGame = (state, payload) => {
   }
   mergedBand.harmony = Math.max(
     1,
-    Math.min(100, typeof mergedBand.harmony === 'number' ? mergedBand.harmony : 50)
+    Math.min(
+      100,
+      typeof mergedBand.harmony === 'number' ? mergedBand.harmony : 50
+    )
   )
 
   // 3. Sanitize Social

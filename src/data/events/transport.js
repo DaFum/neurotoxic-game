@@ -117,7 +117,8 @@ export const TRANSPORT_EVENTS = [
             }
           ]
         },
-        outcomeText: 'You spent the night in a ditch, but the mechanic fixed it cheap.'
+        outcomeText:
+          'You spent the night in a ditch, but the mechanic fixed it cheap.'
       },
       {
         label: 'Scrap it & Rent [-500€]',

@@ -311,10 +311,7 @@ export const Overworld = () => {
   }, [])
 
   // Memoized URL generators
-  const mapBgUrl = useMemo(
-    () => getGenImageUrl(IMG_PROMPTS.OVERWORLD_MAP),
-    []
-  )
+  const mapBgUrl = useMemo(() => getGenImageUrl(IMG_PROMPTS.OVERWORLD_MAP), [])
   const vanUrl = useMemo(() => getGenImageUrl(IMG_PROMPTS.ICON_VAN), [])
   const pinFestivalUrl = useMemo(
     () => getGenImageUrl(IMG_PROMPTS.ICON_PIN_FESTIVAL),
