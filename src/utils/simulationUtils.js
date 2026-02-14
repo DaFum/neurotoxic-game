@@ -122,14 +122,26 @@ export const calculateDailyUpdates = currentState => {
   const dailyCost = EXPENSE_CONSTANTS.DAILY.BASE_COST
   nextPlayer.money = Math.max(0, nextPlayer.money - dailyCost)
 
-  // 2. Mood Drift
+  // 2. Mood & Stamina Drift
   // Drift towards 50
   nextBand.members = nextBand.members.map(m => {
     let mood = m.mood
     if (mood > 50) mood -= 2
     else if (mood < 50) mood += 2
-    return { ...m, mood }
+
+    // Stamina Decay (Life on the road is tiring)
+    let stamina = typeof m.stamina === 'number' ? m.stamina : 100
+    stamina = Math.max(0, stamina - 5)
+
+    return { ...m, mood, stamina }
   })
+
+  // Harmony Decay (Drifts towards 50 like mood)
+  if (nextBand.harmony > 50) {
+    nextBand.harmony -= 2
+  } else if (nextBand.harmony < 50) {
+    nextBand.harmony += 1
+  }
 
   // 3. Social Decay
   // Viral decay
@@ -137,7 +149,7 @@ export const calculateDailyUpdates = currentState => {
 
   // 4. Passive Effects
   if (nextBand.harmonyRegenTravel) {
-    nextBand.harmony = Math.min(100, nextBand.harmony + 5)
+    nextBand.harmony = Math.min(100, nextBand.harmony + 2) // Reduced from 5
   }
   if (nextPlayer.passiveFollowers) {
     // Passive followers currently funnel into Instagram only

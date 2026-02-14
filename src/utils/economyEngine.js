@@ -81,11 +81,11 @@ const calculateMerchIncome = (
   modifiers,
   bandInventory
 ) => {
-  let buyRate = 0.1 + (performanceScore / 100) * 0.2 // 10% - 30%
+  let buyRate = 0.05 + (performanceScore / 100) * 0.15 // 5% - 20%
   const breakdownItems = []
 
   if (performanceScore >= 95) {
-    buyRate *= 2.0 // S-Rank Bonus
+    buyRate *= 1.5 // S-Rank Bonus
     breakdownItems.push({
       label: 'HYPE BONUS',
       value: 0,
@@ -94,7 +94,7 @@ const calculateMerchIncome = (
   }
 
   const hasMerch = modifiers.merch || modifiers.merchTable
-  if (hasMerch) buyRate += 0.1 // Boost from table
+  if (hasMerch) buyRate += 0.05 // Boost from table
 
   // Penalty: Misses drive people away
   if (gigStats && gigStats.misses > 0) {
@@ -299,6 +299,22 @@ export const calculateGigFinancials = (
   const tickets = calculateTicketIncome(gigData, playerFame, modifiers)
   report.income.breakdown.push(tickets.breakdownItem)
   report.income.total += tickets.revenue
+
+  // Venue Split / Promoter Cut
+  let splitRate = 0
+  if (gigData.diff >= 5) splitRate = 0.7 // Arena: Venue takes 70%
+  else if (gigData.diff === 4) splitRate = 0.4 // Club: Venue takes 40%
+  else if (gigData.diff === 3) splitRate = 0.2 // Bar: Venue takes 20%
+
+  if (splitRate > 0) {
+    const splitAmount = Math.floor(tickets.revenue * splitRate)
+    report.expenses.breakdown.push({
+      label: 'Venue Split',
+      value: splitAmount,
+      detail: `${splitRate * 100}% of Door`
+    })
+    report.expenses.total += splitAmount
+  }
 
   // 2. Guarantee
   if (gigData.pay > 0) {

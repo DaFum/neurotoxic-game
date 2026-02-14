@@ -104,6 +104,22 @@ export const TRANSPORT_EVENTS = [
     chance: 0, // Triggered by chain only
     options: [
       {
+        label: 'Wait for cheap tow [-100€, -1d]',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'resource', resource: 'money', value: -100 },
+            {
+              type: 'stat',
+              stat: 'time',
+              value: -24,
+              description: 'Lost a day waiting.'
+            }
+          ]
+        },
+        outcomeText: 'You spent the night in a ditch, but the mechanic fixed it cheap.'
+      },
+      {
         label: 'Scrap it & Rent [-500€]',
         effect: {
           type: 'composite',

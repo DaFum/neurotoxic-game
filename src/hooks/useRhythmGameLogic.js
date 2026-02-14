@@ -405,6 +405,13 @@ export const useRhythmGameLogic = () => {
     (count = 1, isEmptyHit = false) => {
       if (count <= 0) return
 
+      // Immediate deactivation of Toxic Mode on miss
+      if (gameStateRef.current.isToxicMode) {
+        setIsToxicMode(false)
+        gameStateRef.current.isToxicMode = false
+        addToast('TOXIC MODE LOST!', 'error')
+      }
+
       setCombo(0)
       gameStateRef.current.combo = 0
       setOverload(o => {
@@ -537,7 +544,7 @@ export const useRhythmGameLogic = () => {
           return next
         })
         setHealth(h => {
-          const next = Math.min(100, h + (toxicModeActive ? 4 : 2))
+          const next = Math.min(100, h + (toxicModeActive ? 1 : 2)) // Reduced regen in Toxic Mode
           gameStateRef.current.health = next
           return next
         })
