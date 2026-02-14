@@ -51,6 +51,7 @@ const ToggleRadio = memo(() => {
     </button>
   )
 })
+ToggleRadio.displayName = 'ToggleRadio'
 
 const MapConnection = memo(
   ({ start, end, startVis, endVis }) => {
@@ -79,6 +80,7 @@ const MapConnection = memo(
     )
   }
 )
+MapConnection.displayName = 'MapConnection'
 
 const MapNode = memo(
   ({
@@ -179,6 +181,7 @@ const MapNode = memo(
     )
   }
 )
+MapNode.displayName = 'MapNode'
 
 /**
  * The map navigation scene where players select their next destination.
@@ -269,20 +272,20 @@ export const Overworld = () => {
   }, [])
 
   // Memoized URL generators
-  const getMapBgUrl = useMemo(
+  const mapBgUrl = useMemo(
     () => getGenImageUrl(IMG_PROMPTS.OVERWORLD_MAP),
     []
   )
-  const getVanUrl = useMemo(() => getGenImageUrl(IMG_PROMPTS.ICON_VAN), [])
-  const getPinFestivalUrl = useMemo(
+  const vanUrl = useMemo(() => getGenImageUrl(IMG_PROMPTS.ICON_VAN), [])
+  const pinFestivalUrl = useMemo(
     () => getGenImageUrl(IMG_PROMPTS.ICON_PIN_FESTIVAL),
     []
   )
-  const getPinHomeUrl = useMemo(
+  const pinHomeUrl = useMemo(
     () => getGenImageUrl(IMG_PROMPTS.ICON_PIN_HOME),
     []
   )
-  const getPinClubUrl = useMemo(
+  const pinClubUrl = useMemo(
     () => getGenImageUrl(IMG_PROMPTS.ICON_PIN_CLUB),
     []
   )
@@ -319,9 +322,9 @@ export const Overworld = () => {
       const visibility = getNodeVisibility(node.layer, currentLayer)
       const isReachable = isConnected(node.id) || node.type === 'START'
 
-      let iconUrl = getPinClubUrl
-      if (node.type === 'FESTIVAL') iconUrl = getPinFestivalUrl
-      else if (node.type === 'START') iconUrl = getPinHomeUrl
+      let iconUrl = pinClubUrl
+      if (node.type === 'FESTIVAL') iconUrl = pinFestivalUrl
+      else if (node.type === 'START') iconUrl = pinHomeUrl
 
       return (
         <MapNode
@@ -334,7 +337,7 @@ export const Overworld = () => {
           handleTravel={handleTravel}
           setHoveredNode={setHoveredNode}
           iconUrl={iconUrl}
-          vanUrl={getVanUrl}
+          vanUrl={vanUrl}
         />
       )
     })
@@ -346,10 +349,10 @@ export const Overworld = () => {
     getNodeVisibility,
     isConnected,
     handleTravel,
-    getPinClubUrl,
-    getPinFestivalUrl,
-    getPinHomeUrl,
-    getVanUrl
+    pinClubUrl,
+    pinFestivalUrl,
+    pinHomeUrl,
+    vanUrl
   ])
 
   // Hover connection memo
@@ -423,7 +426,7 @@ export const Overworld = () => {
         <div
           className='absolute inset-0 opacity-30 bg-cover bg-center grayscale invert pointer-events-none'
           style={{
-            backgroundImage: `url("${getMapBgUrl}")`
+            backgroundImage: `url("${mapBgUrl}")`
           }}
         />
 
@@ -455,7 +458,7 @@ export const Overworld = () => {
             }}
           >
             <img
-              src={getVanUrl}
+              src={vanUrl}
               alt='Traveling Van'
               className='w-12 h-8 object-contain drop-shadow-[0_0_10px_var(--toxic-green)]'
               style={{ transform: 'translate(0, -50%)' }}
