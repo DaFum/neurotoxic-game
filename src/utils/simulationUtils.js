@@ -120,7 +120,7 @@ export const calculateDailyUpdates = currentState => {
   // 1. Costs
   // Rent/Food
   const dailyCost = EXPENSE_CONSTANTS.DAILY.BASE_COST
-  nextPlayer.money -= dailyCost
+  nextPlayer.money = Math.max(0, nextPlayer.money - dailyCost)
 
   // 2. Mood Drift
   // Drift towards 50

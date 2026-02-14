@@ -226,11 +226,15 @@ export const gameReducer = (state, action) => {
     case ActionTypes.UPDATE_BAND:
       return handleUpdateBand(state, action.payload)
 
-    case ActionTypes.UPDATE_SOCIAL:
+    case ActionTypes.UPDATE_SOCIAL: {
+      if (!action.payload || typeof action.payload !== 'object') return state
       return { ...state, social: { ...state.social, ...action.payload } }
+    }
 
-    case ActionTypes.UPDATE_SETTINGS:
+    case ActionTypes.UPDATE_SETTINGS: {
+      if (!action.payload || typeof action.payload !== 'object') return state
       return { ...state, settings: { ...state.settings, ...action.payload } }
+    }
 
     case ActionTypes.SET_MAP:
       logger.info('GameState', 'Map Generated')
