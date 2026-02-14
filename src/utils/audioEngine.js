@@ -574,7 +574,7 @@ export async function ensureAudioContext() {
     } catch (error) {
       logger.debug('AudioEngine', 'Audio state read failed', error)
       return {
-        state: 'unknown',
+        state: getPreferredAudioContextState({ rawContextState, toneContextState }),
         rawContextState,
         toneContextState
       }
