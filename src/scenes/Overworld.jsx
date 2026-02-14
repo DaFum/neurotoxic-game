@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback, memo } from 'react'
+import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { useTravelLogic } from '../hooks/useTravelLogic'
@@ -81,6 +82,18 @@ const MapConnection = memo(
   }
 )
 MapConnection.displayName = 'MapConnection'
+MapConnection.propTypes = {
+  start: PropTypes.shape({
+    x: PropTypes.number.isRequired,
+    y: PropTypes.number.isRequired
+  }).isRequired,
+  end: PropTypes.shape({
+    x: PropTypes.number.isRequired,
+    y: PropTypes.number.isRequired
+  }).isRequired,
+  startVis: PropTypes.string.isRequired,
+  endVis: PropTypes.string.isRequired
+}
 
 const MapNode = memo(
   ({
@@ -157,8 +170,9 @@ const MapNode = memo(
           </div>
           {node.type === 'GIG' && (
             <div className='text-[10px] text-(--ash-gray) font-mono'>
-              Cap: {node.venue.capacity} | Pay: ~{node.venue.pay}€<br />
-              Ticket: {node.venue.price}€ | Diff: {'★'.repeat(node.venue.diff)}
+              Cap: {node.venue?.capacity} | Pay: ~{node.venue?.pay}€<br />
+              Ticket: {node.venue?.price}€ | Diff:{' '}
+              {'★'.repeat(node.venue?.diff || 0)}
             </div>
           )}
           {isCurrent && (
@@ -177,11 +191,36 @@ const MapNode = memo(
       prev.isTraveling === next.isTraveling &&
       prev.visibility === next.visibility &&
       prev.isReachable === next.isReachable &&
-      prev.iconUrl === next.iconUrl
+      prev.iconUrl === next.iconUrl &&
+      prev.handleTravel === next.handleTravel &&
+      prev.setHoveredNode === next.setHoveredNode
     )
   }
 )
 MapNode.displayName = 'MapNode'
+MapNode.propTypes = {
+  node: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    type: PropTypes.string.isRequired,
+    x: PropTypes.number.isRequired,
+    y: PropTypes.number.isRequired,
+    venue: PropTypes.shape({
+      name: PropTypes.string,
+      capacity: PropTypes.number,
+      pay: PropTypes.number,
+      price: PropTypes.number,
+      diff: PropTypes.number
+    })
+  }).isRequired,
+  isCurrent: PropTypes.bool.isRequired,
+  isTraveling: PropTypes.bool.isRequired,
+  visibility: PropTypes.string.isRequired,
+  isReachable: PropTypes.bool.isRequired,
+  handleTravel: PropTypes.func.isRequired,
+  setHoveredNode: PropTypes.func.isRequired,
+  iconUrl: PropTypes.string.isRequired,
+  vanUrl: PropTypes.string.isRequired
+}
 
 /**
  * The map navigation scene where players select their next destination.

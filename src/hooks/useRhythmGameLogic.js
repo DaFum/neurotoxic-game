@@ -405,8 +405,8 @@ export const useRhythmGameLogic = () => {
     (count = 1, isEmptyHit = false) => {
       if (count <= 0) return
 
-      // Immediate deactivation of Toxic Mode on REAL miss (not empty hit)
-      if (gameStateRef.current.isToxicMode && !isEmptyHit) {
+      // Immediate deactivation of Toxic Mode on miss
+      if (gameStateRef.current.isToxicMode) {
         setIsToxicMode(false)
         gameStateRef.current.isToxicMode = false
         addToast('TOXIC MODE LOST!', 'error')
