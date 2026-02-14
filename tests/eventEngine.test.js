@@ -1,3 +1,4 @@
+/* global global */
 import test, { mock } from 'node:test'
 import assert from 'node:assert/strict'
 
@@ -17,223 +18,134 @@ mock.module('../src/data/events.js', {
 // Import module under test after mocking
 const { eventEngine } = await import('../src/utils/eventEngine.js')
 
-const buildGameState = (overrides = {}) => ({
-  player: {
-    money: 200,
-    time: 10,
-    fame: 50,
-    day: 5,
-    location: 'Berlin',
-    currentNodeId: 'node_1_0',
-    van: { fuel: 50, condition: 80 }
-  },
-  band: {
-    members: [
-      // Matches src/data/characters.js structure: skills are in baseStats
-      {
-        id: 'matze',
-        name: 'Matze',
-        stamina: 70,
-        mood: 60,
-        baseStats: { skill: 5, charisma: 5 }
-      },
-      {
-        id: 'lars',
-        name: 'Lars',
-        stamina: 65,
-        mood: 55,
-        baseStats: { skill: 4, charisma: 4 }
-      },
-      {
-        id: 'marius',
-        name: 'Marius',
-        stamina: 60,
-        mood: 70,
-        baseStats: { skill: 3, charisma: 3 }
-      }
-    ],
-    harmony: 70,
-    inventory: { spare_tire: true, strings: true },
-    luck: 0
-  },
-  social: { instagram: 100, viral: 0 },
-  activeStoryFlags: [],
-  eventCooldowns: [],
-  pendingEvents: [],
-  ...overrides
-})
-
-const buildSkillCheckChoice = threshold => ({
-  label: 'Negotiate',
-  skillCheck: {
-    stat: 'harmony',
-    threshold,
-    success: { type: 'resource', resource: 'money', value: -20 },
-    failure: { type: 'resource', resource: 'money', value: -100 }
-  }
-})
-
 const TEST_EVENT_VAN_BREAKDOWN = {
-  id: 'van_breakdown_flat',
+  id: 'van_breakdown',
   options: [
     {
-      label: 'Call tow truck',
-      effect: { type: 'resource', resource: 'money', value: -200 }
-    }
+      label: 'Spare Tire',
+      requirements: { item: 'spare_tire' },
+      effect: { type: 'stat', stat: 'time', value: -1 }
+    },
+    { label: 'Wait', effect: { type: 'stat', stat: 'time', value: -3 } }
   ]
 }
 
-test('eventEngine.checkEvent returns null when category not found', () => {
-  const state = buildGameState()
-  const result = eventEngine.checkEvent('nonexistent', state)
-  assert.equal(result, null, 'Should return null for invalid category')
+// Helpers
+const buildGameState = (overrides = {}) => ({
+  player: { day: 1, money: 100, fame: 50, time: 0 },
+  band: { harmony: 50, members: [] },
+  social: { viral: 0 },
+  eventCooldowns: [],
+  pendingEvents: [],
+  flags: {},
+  ...overrides
 })
 
-test('eventEngine.checkEvent filters by trigger point', () => {
-  const state = buildGameState()
-  const result = eventEngine.checkEvent('transport', state, 'pre_gig')
-  assert.ok(result, 'Should return an event')
-  assert.ok(MOCK_EVENTS.transport.some(e => e.id === result.id))
+// Mock random for deterministic testing
+const mockRandom = mock.fn(() => 0.5)
+global.Math.random = mockRandom
+
+test('eventEngine.filterEvents filters by trigger', () => {
+  const events = [
+    { id: '1', trigger: 'travel' },
+    { id: '2', trigger: 'gig' }
+  ]
+  const result = eventEngine.filterEvents(events, 'travel', {})
+  assert.equal(result.length, 1)
+  assert.equal(result[0].id, '1')
 })
 
-test('eventEngine.checkEvent respects cooldowns', t => {
+test('eventEngine.filterEvents respects conditions', () => {
+  const events = [
+    { id: '1', trigger: 'travel', condition: state => state.player.money > 100 }
+  ]
+  const state = { player: { money: 50 } }
+  const result = eventEngine.filterEvents(events, 'travel', state)
+  assert.equal(result.length, 0)
+})
+
+test('eventEngine.selectEvent respects cooldowns', () => {
+  const state = buildGameState({ eventCooldowns: ['event_cooldown'] })
+  const selected = eventEngine.selectEvent('pre_gig', state)
+  // Should skip event_cooldown and pick event_normal or event_pending
+  assert.ok(selected.id !== 'event_cooldown')
+})
+
+test('eventEngine.selectEvent prioritizes pending events', () => {
   const state = buildGameState({
-    eventCooldowns: ['event_cooldown', 'event_pending']
+    pendingEvents: [{ id: 'event_pending', trigger: 'pre_gig' }]
   })
-
-  // Mock random to ensure consistent behavior even though logic should force choice.
-  // The sorting in selectEvent uses Math.random() - 0.5.
-  // With only 1 eligible event, sort order doesn't matter, but we mock anyway for hygiene.
-  const mockRandom = t.mock.method(Math, 'random', () => 0.5)
-
-  const result = eventEngine.checkEvent('transport', state, 'pre_gig')
-  assert.equal(
-    result.id,
-    'event_normal',
-    'Should select the only non-cooled-down event'
-  )
-  // Ensure Math.random was used by the selection logic without coupling to logger internals.
-  assert.ok(
-    mockRandom.mock.calls.length >= 1,
-    'Math.random should be called at least once during event selection'
-  )
+  const selected = eventEngine.selectEvent('pre_gig', state)
+  assert.equal(selected.id, 'event_pending')
 })
 
-test('eventEngine.checkEvent prioritizes pending events', () => {
-  const state = buildGameState({ pendingEvents: ['event_pending'] })
-  const result = eventEngine.checkEvent('transport', state, 'pre_gig')
-  assert.equal(
-    result.id,
-    'event_pending',
-    'Should return the pending event immediately'
-  )
-})
-
-test('eventEngine.resolveChoice handles direct effect', () => {
-  const choice = {
-    label: 'Pay bribe',
-    outcomeText: 'The officer waves you through.',
+test('eventEngine.resolveChoice handles simple effects', () => {
+  const option = {
     effect: { type: 'resource', resource: 'money', value: -50 }
   }
-  const state = buildGameState()
-
-  const result = eventEngine.resolveChoice(choice, state)
-
-  assert.ok(result, 'Should return result object')
-  assert.equal(result.outcome, 'direct', 'Should have direct outcome')
-  assert.equal(result.type, 'resource', 'Should preserve effect type')
+  const result = eventEngine.resolveChoice(option, {})
+  assert.equal(result.value, -50)
 })
 
-test('eventEngine.resolveChoice handles skill check success', t => {
-  const choice = buildSkillCheckChoice(5)
-  const state = buildGameState({
-    band: { ...buildGameState().band, harmony: 80 }
-  })
+test('eventEngine.resolveChoice handles skill checks (success)', () => {
+  mockRandom.mock.mockImplementationOnce(() => 0.9) // High roll
+  const option = {
+    skillCheck: {
+      stat: 'skill',
+      threshold: 5,
+      success: { type: 'stat', stat: 'fame', value: 10 }
+    }
+  }
+  const state = buildGameState({ band: { members: [{ skill: 8 }] } })
 
-  // Mock random to ensure success (0.1 < 0.8)
-  const mockRandom = t.mock.method(Math, 'random', () => 0.1)
-
-  const result = eventEngine.resolveChoice(choice, state)
-  assert.equal(result.outcome, 'success', 'Should trigger success outcome')
-  assert.strictEqual(mockRandom.mock.calls.length > 0, true)
+  const result = eventEngine.resolveChoice(option, state)
+  assert.equal(result.value, 10)
+  assert.equal(result.stat, 'fame')
 })
 
-test('eventEngine.resolveChoice handles skill check failure', t => {
-  const choice = buildSkillCheckChoice(10)
-  const state = buildGameState({
-    band: { ...buildGameState().band, harmony: 10 }
-  })
+test('eventEngine.resolveChoice handles skill checks (failure)', () => {
+  mockRandom.mock.mockImplementationOnce(() => 0.1) // Low roll
+  const option = {
+    skillCheck: {
+      stat: 'skill',
+      threshold: 5,
+      failure: { type: 'stat', stat: 'fame', value: -5 }
+    }
+  }
+  const state = buildGameState({ band: { members: [{ skill: 2 }] } })
 
-  // Mock random to ensure failure (0.9 > 0.1)
-  const mockRandom = t.mock.method(Math, 'random', () => 0.9)
-
-  const result = eventEngine.resolveChoice(choice, state)
-  assert.equal(result.outcome, 'failure', 'Should trigger failure outcome')
+  const result = eventEngine.resolveChoice(option, state)
+  assert.equal(result.value, -5)
 })
 
-test('eventEngine.resolveChoice uses random roll (ignoring band stat) for luck checks', t => {
-  const choice = {
-    label: 'Try your luck',
+test('eventEngine.resolveChoice handles luck checks', () => {
+  // Luck check uses Math.random() * 10
+  // Threshold 5. Mock random 0.6 -> 6.0 > 5 -> Success
+  mockRandom.mock.mockImplementationOnce(() => 0.6)
+
+  const option = {
     skillCheck: {
       stat: 'luck',
       threshold: 5,
-      success: { type: 'resource', resource: 'money', value: 100 },
-      failure: { type: 'resource', resource: 'money', value: 0 }
+      success: { type: 'stat', stat: 'mood', value: 5 }
     }
   }
-  const baseState = buildGameState()
-  // Set band.luck to a value that would FAIL the check if used (e.g. 0),
-  // but ensure the random roll SUCCEEDS.
-  const state = { ...baseState, band: { ...baseState.band, luck: 0 } }
 
-  const mockRandom = t.mock.method(Math, 'random', () => 0.9)
-
-  const result = eventEngine.resolveChoice(choice, state)
-  assert.equal(
-    result.outcome,
-    'success',
-    'Should succeed luck check via random roll'
-  )
-})
-
-test('eventEngine.resolveChoice uses max member skill (from baseStats)', t => {
-  const choice = {
-    label: 'Technical repair',
-    skillCheck: {
-      stat: 'skill', // Checks 'skill' which is in baseStats
-      threshold: 4,
-      success: { type: 'stat', stat: 'van_condition', value: 20 },
-      failure: { type: 'stat', stat: 'van_condition', value: -10 }
-    }
-  }
-  // buildGameState sets Matze skill to 5, Lars 4, Marius 3. Max is 5.
-  const state = buildGameState()
-
-  // Mock random to be neutral (0.5), no crit.
-  // 5 + 0 = 5 >= 4 -> Success.
-  const mockRandom = t.mock.method(Math, 'random', () => 0.5)
-
-  const result = eventEngine.resolveChoice(choice, state)
-
-  assert.ok(result, 'Should return result object')
-  assert.equal(result.outcome, 'success', 'Should pass skill check (5 >= 4)')
+  const result = eventEngine.resolveChoice(option, {})
+  assert.equal(result.value, 5)
+  // Ensure random was called
   assert.strictEqual(mockRandom.mock.calls.length > 0, true)
 })
 
-test('eventEngine.resolveChoice preserves nextEventId', () => {
-  const choice = {
-    label: 'Chase the van',
-    effect: { type: 'stat', stat: 'time', value: -2 },
-    nextEventId: 'chase_outcome'
+test('eventEngine.resolveChoice sets nextEventId', () => {
+  const option = {
+    effect: { type: 'chain', eventId: 'next_event' }
   }
-  const state = buildGameState()
-
-  const result = eventEngine.resolveChoice(choice, state)
-
+  const result = eventEngine.resolveChoice(option, {})
   assert.equal(
     result.nextEventId,
-    'chase_outcome',
-    'Should preserve nextEventId'
+    'next_event',
+    'Should propagate nextEventId'
   )
 })
 

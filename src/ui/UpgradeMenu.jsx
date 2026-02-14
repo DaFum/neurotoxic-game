@@ -1,4 +1,5 @@
-import React from 'react'
+import PropTypes from 'prop-types'
+
 import { UPGRADES_DB } from '../data/upgrades'
 
 /**
@@ -82,4 +83,16 @@ export const UpgradeMenu = ({
       </div>
     </div>
   )
+}
+
+UpgradeMenu.propTypes = {
+  onClose: PropTypes.func.isRequired,
+  player: PropTypes.shape({
+    fame: PropTypes.number.isRequired,
+    van: PropTypes.shape({
+      upgrades: PropTypes.arrayOf(PropTypes.string).isRequired
+    }).isRequired
+  }).isRequired,
+  onBuyUpgrade: PropTypes.func.isRequired,
+  className: PropTypes.string
 }

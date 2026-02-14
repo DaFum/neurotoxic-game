@@ -1,4 +1,4 @@
-import React from 'react'
+
 import { MainMenu } from './scenes/MainMenu'
 import { Overworld } from './scenes/Overworld'
 import { Gig } from './scenes/Gig'

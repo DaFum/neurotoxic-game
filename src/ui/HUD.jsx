@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useGameState } from '../context/GameState'
-import { Map, Users, DollarSign, Volume2, VolumeX } from 'lucide-react'
+import { Map, DollarSign, Volume2, VolumeX } from 'lucide-react'
 import { audioManager } from '../utils/AudioManager'
 
 /**
@@ -65,10 +65,4 @@ export const HUD = () => {
       </div>
     </div>
   )
-}
-
-HUD.propTypes = {
-  // Validated via context mostly, but if props were passed:
-  // player: PropTypes.shape({ money: PropTypes.number, day: PropTypes.number, location: PropTypes.string }),
-  // band: PropTypes.shape({ members: PropTypes.array, harmony: PropTypes.number })
 }
