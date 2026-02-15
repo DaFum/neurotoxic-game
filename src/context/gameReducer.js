@@ -212,12 +212,13 @@ const handleLoadGame = (state, payload) => {
 
     reputationByRegion: loadedState.reputationByRegion || {},
     npcs: loadedState.npcs || {},
-
+    settings: { ...state.settings, ...loadedState.settings },
     gigModifiers: {
       ...DEFAULT_GIG_MODIFIERS,
       ...(loadedState.gigModifiers || {})
     },
-
+    currentScene: 'OVERWORLD', // Always load to map for safety
+    unlocks: Array.isArray(loadedState.unlocks) ? loadedState.unlocks : [],
     currentGig: loadedState.currentGig || null,
     lastGigStats: loadedState.lastGigStats || null
   }
