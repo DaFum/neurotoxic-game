@@ -175,7 +175,7 @@ test('Golden Path: Full Tour Cycle', async t => {
   await t.test('Phase 11: Calculate financials in POSTGIG', () => {
     const performanceScore = Math.min(
       100,
-      Math.max(50, state.lastGigStats.score / 500)
+      Math.max(30, state.lastGigStats.score / 500)
     )
     const crowdStats = { hype: state.lastGigStats.peakHype }
     const financials = calculateGigFinancials(
