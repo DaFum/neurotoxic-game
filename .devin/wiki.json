@@ -9,7 +9,7 @@
       "author": "Architecture"
     },
     {
-      "content": "Cross-module relationships must be explicit: scenes dispatch via useGameState() helpers such as changeScene(); hooks call pure utilities like calculateGigFinancials(), calculateTravelExpenses(), checkEvent(), and calculateDailyUpdates(); data from src/data/events/, venues.js, songs.js, upgrades.js, and hqItems.js defines runtime content for UI and gameplay.",
+      "content": "Cross-module relationships must be explicit: scenes dispatch via useGameState() helpers such as changeScene(); hooks call pure utilities like calculateGigFinancials(), calculateTravelExpenses(), checkEvent(), and calculateDailyUpdates(); data from src/data/events/, venues.js, songs.js, upgrades.js, and hqItems.js defines runtime content for UI and gameplay. The dependency direction is strictly scenes -> hooks/context -> utils/data; reverse imports from utility modules into scenes are prohibited.",
       "author": "Architecture"
     },
     {
@@ -21,8 +21,12 @@
       "author": "Quality"
     },
     {
-      "content": "Procedural asset generation (images) integrated via Pollinations.ai (imageGen.js) and social media simulation (socialEngine.js).",
+      "content": "Procedural asset generation (images) integrated via Pollinations.ai (imageGen.js) and social media simulation (socialEngine.js). Procedural map generation (mapGenerator.js) builds a graph of ~45 German venue nodes with travel connections, distance costs, and venue metadata that feeds the travel and event systems.",
       "author": "Developer"
+    },
+    {
+      "content": "Every src/ subdirectory has an AGENTS.md file (src/context/AGENTS.md, src/hooks/AGENTS.md, src/scenes/AGENTS.md, src/utils/AGENTS.md, src/components/AGENTS.md, src/data/AGENTS.md, src/ui/AGENTS.md) containing domain-specific coding guidance and constraints. The root AGENTS.md routes contributors to the correct nested file. Always consult the relevant AGENTS.md before modifying code in that directory. Additionally, docs/ARCHITECTURE.md and docs/STATE_TRANSITIONS.md provide system-level diagrams and state machine documentation respectively.",
+      "author": "Architecture"
     }
   ],
   "pages": [
@@ -33,16 +37,8 @@
         "Explain the full gameplay loop as implemented by src/scenes/Overworld.jsx -> src/scenes/PreGig.jsx -> src/scenes/Gig.jsx -> src/scenes/PostGig.jsx with scene changes initiated through GameState actions.",
         "Include a short map from high-level sections to files so first-time contributors know where to start reading code.",
         "Add a subsection that maps each wiki page to one owning folder to reduce overlap and duplicated explanations.",
-        "Call out AGENTS.md precedence rules so contributors check nested guidance before editing scoped modules."
-      ]
-    },
-    {
-      "title": "Purpose and Scope",
-      "purpose": "Define documentation boundaries using README.md and docs/CODING_STANDARDS.md: frontend-only SPA architecture (no backend/API layer), gameplay scope, ownership of React scenes/hooks/utils/ui modules, and explicit non-goals such as documenting dist/ or node_modules/. Include persistence scope through saveGame()/loadGame() in src/context/GameState.jsx and safeStorageOperation in src/utils/errorHandler.js, plus what is intentionally out of threat-model guarantees.",
-      "parent": "Overview",
-      "page_notes": [
-        "Call out that persistence does not include encryption and should be treated as user-modifiable state.",
-        "State that documentation should emphasize why systems exist and how they interact, not only API signatures."
+        "Call out AGENTS.md precedence rules so contributors check nested guidance before editing scoped modules.",
+        "Define documentation boundaries: frontend-only SPA (no backend/API), ownership of scenes/hooks/utils/ui modules, non-goals (dist/, node_modules/). Persistence via saveGame()/loadGame() does not include encryption; documentation should emphasize why systems exist and how they interact, not only API signatures."
       ]
     },
     {
@@ -61,20 +57,13 @@
       "page_notes": [
         "Reference docs/STATE_TRANSITIONS.md for the canonical state-machine narrative and note differences if implementation diverges.",
         "List transition triggers: travel completion, gig start, gig end, event modal resolution, and game-over conditions.",
-        "Document failure transitions into GAMEOVER and recovery/return paths back to MENU after credits or restart."
-      ]
-    },
-    {
-      "title": "Main Menu",
-      "purpose": "Deep dive src/scenes/MainMenu.jsx as boot entry: user-gesture audio bootstrap via ensureAudioContext()/AudioManager startup methods, continue-game hydration via storage load helpers, dispatch of initial map/tour actions, and navigation routing to SETTINGS/CREDITS/OVERWORLD through GameState scene actions.",
-      "parent": "Scene Flow & Game Loop",
-      "page_notes": [
-        "Mention browser autoplay policy and how ensureAudioContext() or equivalent guard paths avoid silent startup failures."
+        "Document failure transitions into GAMEOVER and recovery/return paths back to MENU after credits or restart.",
+        "Document src/scenes/MainMenu.jsx as boot entry: user-gesture audio bootstrap via ensureAudioContext()/AudioManager startup methods, continue-game hydration via storage load helpers, dispatch of initial map/tour actions, and browser autoplay policy handling to avoid silent startup failures."
       ]
     },
     {
       "title": "Tech Stack",
-      "purpose": "Record dependency roles with explicit package.json anchors: react/react-dom 18.2.0 for UI, vite 5.x for dev/build, pixi.js 8 for canvas rendering, tone 15.x for audio graph/scheduling, tailwindcss 4.x for utility styling, and framer-motion 12.x for animated UI transitions. Explain why React/Vite/Tailwind pinning is mandatory for compatibility.",
+      "purpose": "Record dependency roles with explicit package.json anchors: react/react-dom 18.2.0 for UI, vite 5.x for dev/build, pixi.js 8 for canvas rendering, tone 15.x for audio graph/scheduling, tailwindcss 4.x for utility styling, framer-motion 12.x for animated UI transitions, and @tonejs/midi 2.x for MIDI file parsing. Explain why React/Vite/Tailwind pinning is mandatory for compatibility and reference .nvmrc for Node.js 22.3.0+ runtime requirement.",
       "parent": "Overview",
       "page_notes": [
         "State non-negotiable pinning: do not upgrade React, Vite, or Tailwind without dedicated migration documentation updates.",
@@ -83,10 +72,11 @@
     },
     {
       "title": "Project Structure",
-      "purpose": "Map repository structure to runtime behavior with concrete examples: src/main.jsx app mount, src/context reducers/actions, src/hooks orchestration hooks, src/scenes route-level containers, src/utils pure engines and audio services, src/components Pixi controllers/overlays, src/ui reusable design-system widgets, tests/ node:test suites, and docs/ architecture references.",
+      "purpose": "Map repository structure to runtime behavior with concrete examples: src/main.jsx app mount, src/context reducers/actions, src/hooks orchestration hooks, src/scenes route-level containers, src/utils pure engines and audio services, src/components Pixi controllers/overlays, src/ui reusable design-system widgets, tests/ node:test suites, e2e/ Playwright integration tests, and docs/ architecture references. Highlight the AGENTS.md file in each src/ subdirectory as the authoritative guide for that module.",
       "parent": "Overview",
       "page_notes": [
-        "Point to tests/ as the verification layer and map each major utility module to its corresponding test file when available."
+        "Point to tests/ as the verification layer and map each major utility module to its corresponding test file when available.",
+        "Include .claude/skills/ (29 custom Claude Code skills) and .github/workflows/ (deploy, lint, super-linter) as developer tooling surfaces."
       ]
     },
     {
@@ -116,26 +106,26 @@
         "Document four playback fallback modes (OGG -> MIDI -> note data -> procedural) and when each path is chosen.",
         "Call out disposal guarantees and known cleanup caveats around layered instrument nodes and exception safety during teardown.",
         "Include expected parameter defaults for critical synth/effect nodes and where deviations are introduced by song metadata.",
-        "Helper utilities audioContextState.js, audioSelectionUtils.js, and audioTimingUtils.js encapsulate low-level logic."
+        "Helper utilities audioContextState.js, audioSelectionUtils.js, audioTimingUtils.js, and audioPlaybackUtils.js encapsulate low-level logic; midiTrackUtils.js handles MIDI file parsing and track extraction."
       ]
     },
     {
       "title": "Rhythm Game Logic",
-      "purpose": "Document src/hooks/useRhythmGameLogic.js at function level: note scheduling from song data, lane-state mutation via refs, hit-window judgment and scoring/combo math, miss/penalty handling, pause/resume/finish transitions, and synchronization boundaries with src/components/PixiStageController.js and src/components/GigHUD.jsx under mixed Tone/WebAudio clocks.",
+      "purpose": "Document src/hooks/useRhythmGameLogic.js (754 lines) at function level: note scheduling from song data in src/assets/rhythm_songs.json, lane-state mutation via refs, hit-window judgment and scoring/combo math, miss/penalty handling, pause/resume/finish transitions, and synchronization boundaries with src/components/PixiStageController.js and src/components/GigHUD.jsx under mixed Tone/WebAudio clocks.",
       "parent": "Core Subsystems Overview",
       "page_notes": [
         "Explain timing sources (AudioContext.currentTime, Tone.now(), or game clock refs) and how drift is mitigated between audio and visual lanes.",
-        "Include where gameplay output is written back to state for post-gig calculations.",
-        "Specify how hit-judgment windows scale (or do not scale) with difficulty and where those constants are defined.",
+        "Include where gameplay output is written back to state for post-gig calculations via gigStats.js.",
+        "Specify how hit-judgment windows scale (or do not scale) with difficulty and where those constants are defined in rhythmUtils.js.",
         "Heckler mechanics (projectile spawning) are handled by src/utils/hecklerLogic.js; timing sync uses audioTimingUtils.js."
       ]
     },
     {
       "title": "Pixi Rendering Pipeline",
-      "purpose": "Describe rendering internals across src/components/PixiStageController.js and src/components/PixiStage.jsx: ticker/frame callbacks, lane/note sprite lifecycle, world-to-screen coordinate transforms, HUD overlay interoperability, and unmount cleanup (destroy textures, remove listeners, stop ticker) required to avoid memory leaks and stale refs between gigs.",
+      "purpose": "Describe rendering internals across src/components/PixiStageController.js (650 lines) and src/components/PixiStage.jsx: Pixi.js 8 Application lifecycle, ticker/frame callbacks, lane/note sprite lifecycle, world-to-screen coordinate transforms, HUD overlay interoperability via src/components/GigHUD.jsx, and unmount cleanup (destroy textures, remove listeners, stop ticker) required to avoid memory leaks and stale refs between gigs. Reference pixiStageUtils.js for shared rendering helpers.",
       "parent": "Core Subsystems Overview",
       "page_notes": [
-        "Document cleanup expectations on scene unmount to prevent ticker leaks, retained textures, and stale refs.",
+        "Document cleanup expectations on scene unmount to prevent ticker leaks, retained textures, and stale refs. Follow the isMountedRef + app.destroy(true, { children: true, texture: true }) pattern.",
         "Describe z-order/layer strategy for lanes, notes, hit line, and transient feedback effects to avoid rendering regressions."
       ]
     },
@@ -150,7 +140,7 @@
     },
     {
       "title": "GameState Context",
-      "purpose": "Detail GameStateProvider and useGameState() API surface: exposed state slices, dispatch helpers (changeScene, triggerEvent, addToast, setGigModifiers), memoization boundaries, and consumer usage patterns in scenes/hooks. Reference where provider wires persistence load/save hooks and how transient runtime fields are excluded from serialized payloads.",
+      "purpose": "Detail GameStateProvider and useGameState() API surface: exposed state slices (player, band, social, settings, gameMap, currentGig, setlist), dispatch helpers (changeScene, triggerEvent, addToast, setGigModifiers, updatePlayer, updateBand), memoization boundaries, and consumer usage patterns in scenes/hooks. Reference where provider wires persistence load/save hooks and how transient runtime fields are excluded from serialized payloads.",
       "parent": "State Management",
       "page_notes": [
         "Clarify which parts of state are persisted versus runtime-only transient fields.",
@@ -160,7 +150,7 @@
     },
     {
       "title": "Persistence & Save Data",
-      "purpose": "Document persistence flow via saveGame()/loadGame() in src/context/GameState.jsx and safeStorageOperation in src/utils/errorHandler.js: safeStorageOperation wrappers, schema/version handling, reducer load actions, fallback behavior on parse failures, and guardrails against malformed/tampered localStorage data before applying values to player economy or band condition.",
+      "purpose": "Document persistence flow via saveGame()/loadGame() in src/context/GameState.jsx, safeStorageOperation in src/utils/errorHandler.js, and save schema validation in src/utils/saveValidator.js: safeStorageOperation wrappers, schema/version handling, reducer load actions, fallback behavior on parse failures, and guardrails against malformed/tampered localStorage data before applying values to player economy or band condition.",
       "parent": "State Management",
       "page_notes": [
         "Highlight tampering risk, schema drift concerns, and recommended validation checks before applying persisted values.",
@@ -172,30 +162,32 @@
       "purpose": "Explain lifecycle of money/fuel/harmony/fame/followers across travel and gigs, linking src/utils/economyEngine.js, src/utils/simulationUtils.js, src/scenes/Overworld.jsx, and src/scenes/PostGig.jsx. Include where daily costs, refuel spend, gig payouts, and modifiers are calculated and how results dispatch through reducer updates.",
       "parent": "Core Subsystems Overview",
       "page_notes": [
-        "Provide a summary table of all resource producers/consumers (travel, refuel, events, gig payouts, purchases)."
-      ]
-    },
-    {
-      "title": "Economy Engine",
-      "purpose": "Provide contract-level documentation for src/utils/economyEngine.js functions including calculateGigFinancials(), calculateTravelExpenses(), and supporting helpers: required input shape, output breakdown fields, rounding/normalization rules, and call sites in travel/post-gig flows that enforce no-negative-money constraints and progression balance.",
-      "parent": "Economy & Resources",
-      "page_notes": [
-        "Include edge-case behavior for low-resource states and how negative balances are prevented or corrected.",
-        "Include examples of expected output for typical gig, low attendance gig, and high bonus gig scenarios."
+        "Provide a summary table of all resource producers/consumers (travel, refuel, events, gig payouts, purchases).",
+        "Document src/utils/economyEngine.js (313 lines) contract-level functions: calculateGigFinancials(), calculateTravelExpenses(), and helpers with required input shapes, output breakdown fields, rounding/normalization rules, and call sites enforcing no-negative-money constraints.",
+        "Include edge-case behavior for low-resource states and examples of expected output for typical gig, low attendance gig, and high bonus gig scenarios."
       ]
     },
     {
       "title": "Travel & Movement",
-      "purpose": "Document route traversal implementation in src/hooks/useTravelLogic.js + src/utils/mapGenerator.js: graph/node creation, path progression ticks, day advancement, fuel burn, travel completion events, and integration with calculateDailyUpdates() plus random encounter checks from eventEngine during movement.",
+      "purpose": "Document route traversal implementation in src/hooks/useTravelLogic.js (560 lines) + src/utils/mapGenerator.js (274 lines): graph/node creation, path progression ticks, day advancement, fuel burn, travel completion events, and integration with calculateDailyUpdates() plus random encounter checks from eventEngine during movement.",
       "parent": "Core Subsystems Overview",
       "page_notes": [
         "Point to functions that compute daily updates and explain when travel tick side effects are dispatched.",
-        "Document how map node metadata influences event probability or travel outcomes if modifiers are present."
+        "Document how map node metadata (venue capacity, city size, distance) influences event probability or travel outcomes if modifiers are present."
+      ]
+    },
+    {
+      "title": "Map Generation & Topology",
+      "purpose": "Deep dive src/utils/mapGenerator.js (274 lines) as the procedural world-builder: graph construction algorithm that places ~45 German venue nodes from src/data/venues.js with geographic coordinates, travel connections with distance-based fuel costs, region clustering, and venue metadata (capacity, city tier, scene affinity). Document how the generated graph is stored in gameMap state slice and consumed by src/scenes/Overworld.jsx, src/components/MapNode.jsx, and src/components/MapConnection.jsx for rendering, and by useTravelLogic for pathfinding.",
+      "parent": "Travel & Movement",
+      "page_notes": [
+        "Explain how venue data from src/data/venues.js feeds into node creation and what fields are required versus optional.",
+        "Document the connection generation strategy: which nodes connect, distance calculation, and how the graph ensures full connectivity so no venue is unreachable."
       ]
     },
     {
       "title": "Event Engine & Effect Semantics",
-      "purpose": "Deep dive src/utils/eventEngine.js behavior around checkEvent(), resolveChoice(), processOptions(), and processEffect()-style reducers, with schema sourced from src/data/events/index.js and category files. Specify alias mappings, accumulation vs overwrite semantics for composite effects, and deterministic testing patterns from tests/eventEngine.test.js using mocked randomness.",
+      "purpose": "Deep dive src/utils/eventEngine.js behavior around checkEvent(), resolveChoice(), processOptions(), and processEffect()-style reducers, with schema sourced from src/data/events/index.js and category files (band.js, financial.js, gig.js, special.js, transport.js). Specify alias mappings, accumulation vs overwrite semantics for composite effects, and deterministic testing patterns from tests/eventEngine.test.js using mocked randomness.",
       "parent": "Core Subsystems Overview",
       "page_notes": [
         "Call out alias mapping behavior and whether repeated effect keys accumulate or overwrite during composite event resolution.",
@@ -206,35 +198,28 @@
     },
     {
       "title": "Purchases & Upgrades",
-      "purpose": "Document upgrade progression architecture across src/hooks/usePurchaseLogic.js, src/data/upgrades.js, src/data/hqItems.js, and UI consumers like src/ui/UpgradeMenu.jsx: category models, unlock requirements, ownership state, affordability gates, side effects on stats/resources, and reducer actions used to persist purchases.",
+      "purpose": "Document upgrade progression architecture across src/hooks/usePurchaseLogic.js, src/data/upgrades.js, src/data/hqItems.js, and UI consumers like src/ui/UpgradeMenu.jsx and src/ui/BandHQ.jsx: category models, unlock requirements, ownership state, affordability gates, side effects on stats/resources, and reducer actions used to persist purchases.",
       "parent": "Overview",
       "page_notes": [
         "Consolidate low-priority item-by-item catalog details into this page instead of creating separate pages for each category.",
-        "Add note on balancing philosophy: upgrades should create trade-offs, not always-dominant purchase paths."
-      ]
-    },
-    {
-      "title": "Purchase Logic Hook",
-      "purpose": "Provide function-by-function documentation for src/hooks/usePurchaseLogic.js including canAfford(), isItemOwned(), isItemDisabled(), purchase handlers, and emitted toast/error states. Include expected input contracts from shop UI components and safe handling of race conditions or stale state snapshots during rapid purchases.",
-      "parent": "Purchases & Upgrades",
-      "page_notes": [
-        "Include expected integration contract for shop UI components in src/ui/UpgradeMenu.jsx and related panels.",
-        "Document how the hook reports errors/toasts when affordability changes between render and click time."
+        "Add note on balancing philosophy: upgrades should create trade-offs, not always-dominant purchase paths.",
+        "Document usePurchaseLogic.js (354 lines) function-level contracts: canAfford(), isItemOwned(), isItemDisabled(), purchase handlers, emitted toast/error states, and safe handling of race conditions or stale state snapshots during rapid purchases.",
+        "Document src/ui/BandHQ.jsx (520 lines) as the primary band management interface: crew roster from characters.js, member stat inspection, HQ item purchases from hqItems.js via usePurchaseLogic, harmony/morale visualization, and how hqItems.js data shapes flow through the purchase pipeline via UpgradeMenu."
       ]
     },
     {
       "title": "UI System & Visual Language",
-      "purpose": "Document design-system primitives in src/ui/ and src/ui/shared/: GlitchButton, HUD, EventModal, ToastOverlay, SettingsPanel, VolumeSlider, and layout panels. Tie implementation to src/index.css tokens (--toxic-green, --void-black, --blood-red), typography variables, CRT toggle behavior, and Tailwind v4 utility patterns required by docs/TAILWIND_V4_PATTERNS.md.",
+      "purpose": "Document design-system primitives in src/ui/ and src/ui/shared/: GlitchButton, HUD, EventModal, ToastOverlay, SettingsPanel, VolumeSlider, and layout panels. Tie implementation to src/index.css tokens (--toxic-green, --void-black, --blood-red, --ash-gray, --warning-yellow), typography variables (--font-display for Metal Mania, --font-ui for Courier New), CRT toggle behavior, and Tailwind v4 utility patterns required by docs/TAILWIND_V4_PATTERNS.md.",
       "parent": "Overview",
       "page_notes": [
-        "Explicitly enforce no hardcoded colors in components; reference --toxic-green, --void-black, --blood-red, and related tokens from the theme.",
+        "Explicitly enforce no hardcoded colors in components; reference --toxic-green, --void-black, --blood-red, --ash-gray, and --warning-yellow tokens from the theme. Use Tailwind v4 syntax bg-(--void-black) not v3 bracket syntax bg-[var(--void-black)].",
         "Include CRT overlay behavior controlled by settings.crtEnabled and where that setting is read.",
         "Add explicit spacing/layout conventions used in panels and HUD to keep brutalist composition consistent."
       ]
     },
     {
       "title": "Data & Content",
-      "purpose": "Explain content data contracts across src/data/events/*, src/data/venues.js, src/data/songs.js, src/data/characters.js, src/data/chatter.js, src/data/upgrades.js, and src/data/hqItems.js: unique ID requirements, shape expectations, duplicate validation in events index, and the runtime consumers (hooks/scenes/utils) that depend on each structure.",
+      "purpose": "Explain content data contracts across src/data/events/* (band.js, financial.js, gig.js, special.js, transport.js), src/data/venues.js (~45 German venues), src/data/songs.js, src/data/characters.js (3 default band members), src/data/chatter.js, src/data/upgrades.js, and src/data/hqItems.js: unique ID requirements, shape expectations, duplicate validation in events index, and the runtime consumers (hooks/scenes/utils) that depend on each structure.",
       "parent": "Overview",
       "page_notes": [
         "Cover event category files under src/data/events/ and how duplicate ID validation in the index aggregator protects runtime behavior.",
@@ -243,7 +228,7 @@
     },
     {
       "title": "Code Entity Map",
-      "purpose": "Create a symbol index with exact file/function anchors for rapid onboarding: GameStateProvider/useGameState, ActionTypes/gameReducer branches, createChangeSceneAction, useRhythmGameLogic handlers, useTravelLogic transitions, usePurchaseLogic predicates, calculateGigFinancials/calculateTravelExpenses, checkEvent/resolveChoice plus GameState triggerEvent wrapper, and setupAudio/ensureAudioContext entry points.",
+      "purpose": "Create a symbol index with exact file/function anchors for rapid onboarding: GameStateProvider/useGameState (GameState.jsx), ActionTypes/gameReducer branches (gameReducer.js), createChangeSceneAction (actionCreators.js), useRhythmGameLogic handlers, useTravelLogic transitions, usePurchaseLogic predicates, calculateGigFinancials/calculateTravelExpenses (economyEngine.js), checkEvent/resolveChoice (eventEngine.js) plus GameState triggerEvent wrapper, setupAudio/ensureAudioContext (audioEngine.js), generateMap (mapGenerator.js), and applyEventDelta (gameStateUtils.js).",
       "parent": "Overview",
       "page_notes": [
         "Keep the map concise and link each symbol to one primary source file to reduce navigation friction.",
@@ -251,8 +236,17 @@
       ]
     },
     {
+      "title": "Error Handling & Resilience",
+      "purpose": "Document the error handling subsystem spanning src/utils/errorHandler.js (GameError, StateError, AudioError typed errors plus safeStorageOperation wrapper and toast dispatch), src/ui/CrashHandler.jsx (React error boundary for graceful crash recovery), and src/utils/logger.js (debug logging with level filtering). Explain how errors propagate from utility functions through hooks to UI toast notifications, how the error boundary prevents white-screen crashes, and how safeStorageOperation wraps localStorage access to handle quota/permission failures.",
+      "parent": "System Architecture",
+      "page_notes": [
+        "Map each error type (GameError, StateError, AudioError) to the subsystems that throw them and the expected catch/handling sites.",
+        "Document how CrashHandler.jsx renders fallback UI and whether it supports recovery actions or requires full reload."
+      ]
+    },
+    {
       "title": "Security & Threat Model",
-      "purpose": "Map risks from neurotoxic-game-threat-model.md to code-level controls: AudioContext autoplay restrictions handled by ensureAudioContext() flows, localStorage tampering exposure with exception-safe access via safeStorageOperation and validation/repair checks in loadGame() (src/context/GameState.jsx), reducer-safe defaults for malformed data, and scene-level fail-safe behavior to prevent hard crashes during startup/load/resume paths.",
+      "purpose": "Map risks from neurotoxic-game-threat-model.md and security_best_practices_report.md to code-level controls: AudioContext autoplay restrictions handled by ensureAudioContext() flows, localStorage tampering exposure with exception-safe access via safeStorageOperation and validation/repair checks in loadGame() (src/context/GameState.jsx) plus saveValidator.js schema checks, reducer-safe defaults for malformed data, and scene-level fail-safe behavior to prevent hard crashes during startup/load/resume paths.",
       "parent": "Overview",
       "page_notes": [
         "Classify risks by severity and map each mitigation to specific functions/files where controls are implemented.",
@@ -261,25 +255,26 @@
     },
     {
       "title": "Development & Testing",
-      "purpose": "Document the QA pipeline from package.json scripts and CI expectations: eslint checks (npm run lint), node:test + tsx suites (npm run test), production build verification (npm run build), optional Playwright flows (npm run test:e2e), and module-level test authoring patterns for hooks/utils in tests/.",
+      "purpose": "Document the QA pipeline from package.json scripts and CI expectations: eslint checks (npm run lint), node:test + tsx suites (npm run test with 41 test files in tests/), production build verification (npm run build), Playwright e2e flows in e2e/ (game-flow.spec.js, audio-output.spec.js), and module-level test authoring patterns for hooks/utils. Reference tests/goldenPath.test.js as the critical path integration test covering menu -> overworld -> pregig -> gig -> postgig flow.",
       "parent": "Overview",
       "page_notes": [
         "Include node:test + tsx execution details and how to run targeted test files for utility modules.",
-        "Add guidance for when to run e2e tests vs unit tests and which changes mandate build verification."
+        "Add guidance for when to run e2e tests vs unit tests and which changes mandate build verification.",
+        "Mention specialized test categories: tests/security/ for save validation, tests/performance/ for context stability."
       ]
     },
     {
       "title": "Project Configuration",
-      "purpose": "Detail configuration surfaces and their responsibilities: package.json scripts/deps, vite.config.js base/react plugin behavior, biome.json style settings, postcss/tailwind integration, playwright.config.js e2e harness, and lint/format policy. Include explicit compatibility constraints and migration cautions for React 18/Vite 5/Tailwind v4.",
+      "purpose": "Detail configuration surfaces and their responsibilities: package.json scripts/deps, vite.config.js base/react plugin behavior, .eslintrc.cjs rules (eslint:recommended + react + react-hooks), .prettierrc (single quotes, no semicolons, 2-space indent), biome.json style settings, postcss.config.js + tailwind.config.js integration, playwright.config.js e2e harness, .jscpd.json duplication detection, and .nvmrc Node.js version pinning. Include explicit compatibility constraints and migration cautions for React 18/Vite 5/Tailwind v4.",
       "parent": "Development & Testing",
       "page_notes": [
-        "Mention production audio constraints (HTTPS/mixed-content considerations) and CI expectations from workflow files under .github/.",
+        "Mention production audio constraints (HTTPS/mixed-content considerations) and CI expectations from workflow files under .github/ (deploy.yml, super-linter.yml, lint-fix-preview.yml).",
         "Document which config files are authoritative when settings overlap (eslint vs biome vs prettier)."
       ]
     },
     {
       "title": "Development Workflow",
-      "purpose": "Describe contributor workflow with concrete checkpoints: npm install, npm run dev at localhost:5173, implement change in scoped module, run npm run lint + npm run test + npm run build, verify docs updates (including AGENTS.md when rules change), and craft Conventional Commit messages that mention impacted subsystems/functions.",
+      "purpose": "Describe contributor workflow with concrete checkpoints: npm install, npm run dev at localhost:5173, implement change in scoped module, run npm run lint + npm run test + npm run build, verify docs updates (including AGENTS.md when rules change), and craft Conventional Commit messages (feat:/fix:/docs:/test:/refactor:) that mention impacted subsystems/functions.",
       "parent": "Overview",
       "page_notes": [
         "Add a concise pre-PR checklist that mirrors AGENTS.md requirements and references docs/CODING_STANDARDS.md.",
@@ -309,7 +304,7 @@
     },
     {
       "title": "Social Engine",
-      "purpose": "Document src/utils/socialEngine.js mechanics: exported functions (e.g. createPost, calculateVirality), platform multiplier tables, virality scoring formula, integration with GameStateProvider via dispatched ActionTypes for followers/fame updates, and risk/reward trade-offs for each post type.",
+      "purpose": "Document src/utils/socialEngine.js (152 lines) mechanics: exported functions (e.g. createPost, calculateVirality), platform multiplier tables, virality scoring formula, integration with GameStateProvider via dispatched ActionTypes for followers/fame updates, and risk/reward trade-offs for each post type. Include how social posts are rendered via src/components/ChatterOverlay.jsx using templates from src/data/chatter.js.",
       "parent": "Core Subsystems Overview",
       "page_notes": [
         "Explain risk/reward of post types.",
@@ -318,7 +313,7 @@
     },
     {
       "title": "Asset Generation",
-      "purpose": "Document src/utils/imageGen.js integration with Pollinations.ai for procedural assets: prompt construction from IMG_PROMPTS categories, network request lifecycle, in-memory caching strategy, fallback behavior on fetch failure or offline state, and where generated assets are consumed by scene/UI components.",
+      "purpose": "Document src/utils/imageGen.js (206 lines) integration with Pollinations.ai for procedural assets: prompt construction from IMG_PROMPTS categories, network request lifecycle, in-memory caching strategy, fallback behavior on fetch failure or offline state, and where generated assets are consumed by scene/UI components.",
       "parent": "Core Subsystems Overview",
       "page_notes": [
         "List prompt categories in IMG_PROMPTS.",
