@@ -7,6 +7,39 @@ import { audioManager } from '../utils/AudioManager'
 import { getSongId } from '../utils/songUtils'
 import { handleError } from '../utils/errorHandler'
 
+const GIG_MODIFIER_OPTIONS = [
+  {
+    key: 'soundcheck',
+    label: 'Soundcheck',
+    cost: 50,
+    desc: 'Notes Easier'
+  },
+  {
+    key: 'promo',
+    label: 'Social Promo',
+    cost: 30,
+    desc: '+Crowd Fill'
+  },
+  { key: 'merch', label: 'Merch Table', cost: 30, desc: '+Sales' },
+  {
+    key: 'catering',
+    label: 'Catering / Energy',
+    cost: 20,
+    desc: '+Stamina'
+  },
+  {
+    key: 'guestlist',
+    label: 'Guest List',
+    cost: 60,
+    desc: '+VIP Score'
+  }
+]
+
+const MODIFIER_COSTS = GIG_MODIFIER_OPTIONS.reduce((acc, item) => {
+  acc[item.key] = item.cost
+  return acc
+}, {})
+
 /**
  * Scene for preparing for a gig: managing budget, setlist, and modifiers.
  */
@@ -79,10 +112,10 @@ export const PreGig = () => {
   /**
    * Toggles a gig modifier (budget item).
    * @param {string} key - The modifier key.
-   * @param {number} cost - The estimated cost.
    */
-  const toggleModifier = (key, cost) => {
+  const toggleModifier = key => {
     const isActive = gigModifiers[key]
+    const cost = MODIFIER_COSTS[key] || 0
 
     if (!isActive) {
       const projectedTotal = calculatedBudget + cost
@@ -95,20 +128,12 @@ export const PreGig = () => {
     setGigModifiers({ [key]: !isActive })
   }
 
-  const calculatedBudget = Object.entries(gigModifiers).reduce(
-    (acc, [key, active]) => {
+  const calculatedBudget = React.useMemo(() => {
+    return Object.entries(gigModifiers).reduce((acc, [key, active]) => {
       if (!active) return acc
-      const costMap = {
-        soundcheck: 50,
-        promo: 30,
-        merch: 30,
-        catering: 20,
-        guestlist: 60
-      }
-      return acc + (costMap[key] || 0)
-    },
-    0
-  )
+      return acc + (MODIFIER_COSTS[key] || 0)
+    }, 0)
+  }, [gigModifiers])
 
   return (
     <div className='w-full h-full flex flex-col items-center justify-center p-8 bg-(--void-black) text-(--star-white) relative'>
@@ -134,36 +159,10 @@ export const PreGig = () => {
             BUDGET ALLOCATION
           </h3>
           <div className='flex flex-col gap-4'>
-            {[
-              {
-                key: 'soundcheck',
-                label: 'Soundcheck',
-                cost: 50,
-                desc: 'Notes Easier'
-              },
-              {
-                key: 'promo',
-                label: 'Social Promo',
-                cost: 30,
-                desc: '+Crowd Fill'
-              },
-              { key: 'merch', label: 'Merch Table', cost: 30, desc: '+Sales' },
-              {
-                key: 'catering',
-                label: 'Catering / Energy',
-                cost: 20,
-                desc: '+Stamina'
-              },
-              {
-                key: 'guestlist',
-                label: 'Guest List',
-                cost: 60,
-                desc: '+VIP Score'
-              }
-            ].map(item => (
+            {GIG_MODIFIER_OPTIONS.map(item => (
               <button
                 key={item.key}
-                onClick={() => toggleModifier(item.key, item.cost)}
+                onClick={() => toggleModifier(item.key)}
                 className={`flex justify-between items-center p-3 border transition-colors group
                         ${
                           gigModifiers[item.key]
