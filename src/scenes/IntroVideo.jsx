@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react'
+import { useRef, useEffect, useState, useCallback } from 'react'
 import { useGameState } from '../context/GameState'
 import introVideo from '../assets/Neurotoxic_start.webm'
 import { GlitchButton } from '../ui/GlitchButton'

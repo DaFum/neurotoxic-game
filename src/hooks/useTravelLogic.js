@@ -424,6 +424,43 @@ export const useTravelLogic = ({
     }
   }, [player, isTraveling, updatePlayer, addToast])
 
+  /**
+   * Handles repairing the van
+   */
+  const handleRepair = useCallback(() => {
+    if (isTraveling) return
+
+    const currentCondition = player.van?.condition ?? 100
+    const missing = 100 - currentCondition
+
+    if (missing <= 0) {
+      addToast('Van is already in perfect condition!', 'info')
+      return
+    }
+
+    const cost = Math.ceil(
+      missing * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT
+    )
+
+    if ((player.money ?? 0) < cost) {
+      addToast(`Not enough money! Need ${cost}€ to repair.`, 'error')
+      return
+    }
+
+    updatePlayer({
+      money: Math.max(0, (player.money ?? 0) - cost),
+      van: { ...player.van, condition: 100, breakdownChance: 0.05 }
+    })
+
+    addToast(`Repaired: -${cost}€`, 'success')
+
+    try {
+      audioManager.playSFX('cash')
+    } catch (e) {
+      // Ignore audio errors
+    }
+  }, [player, isTraveling, updatePlayer, addToast])
+
   // Softlock detection effect
   useEffect(() => {
     if (!gameMap || isTraveling || !player.currentNodeId) {
@@ -516,6 +553,7 @@ export const useTravelLogic = ({
     // Actions
     handleTravel,
     handleRefuel,
+    handleRepair,
     onTravelComplete,
     travelCompletedRef
   }

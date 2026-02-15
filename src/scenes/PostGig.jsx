@@ -1,6 +1,7 @@
+import PropTypes from 'prop-types'
 import React, { useState } from 'react'
-import { useGameState } from '../context/GameState'
 import { motion } from 'framer-motion'
+import { useGameState } from '../context/GameState'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import { calculateGigFinancials } from '../utils/economyEngine'
 import {
@@ -10,132 +11,11 @@ import {
 } from '../utils/socialEngine'
 import { ChatterOverlay } from '../components/ChatterOverlay'
 
-/**
- * Report Phase Component showing financial breakdown.
- * @param {object} props
- * @param {object} props.financials - Financial report object.
- * @param {Function} props.onNext - Callback to proceed.
- */
-const ReportPhase = ({ financials, onNext }) => (
-  <>
-    <div className='grid grid-cols-2 gap-8 text-sm md:text-base font-mono'>
-      <div>
-        <h3 className='text-(--toxic-green) border-b border-(--ash-gray) mb-2'>
-          INCOME
-        </h3>
-        {financials.income.breakdown.map((item, i) => (
-          <div key={i} className='flex justify-between'>
-            <span>{item.label}</span>
-            <span className='text-(--toxic-green)'>+{item.value}€</span>
-          </div>
-        ))}
-        <div className='mt-2 pt-2 border-t border-(--ash-gray) flex justify-between font-bold'>
-          <span>TOTAL</span>
-          <span>{financials.income.total}€</span>
-        </div>
-      </div>
-      <div>
-        <h3 className='text-(--blood-red) border-b border-(--ash-gray) mb-2'>
-          EXPENSES
-        </h3>
-        {financials.expenses.breakdown.map((item, i) => (
-          <div key={i} className='flex justify-between'>
-            <span>{item.label}</span>
-            <span className='text-(--blood-red)'>-{item.value}€</span>
-          </div>
-        ))}
-        <div className='mt-2 pt-2 border-t border-(--ash-gray) flex justify-between font-bold'>
-          <span>TOTAL</span>
-          <span>{financials.expenses.total}€</span>
-        </div>
-      </div>
-    </div>
-
-    <div className='text-center mt-4'>
-      <div className='text-sm text-(--ash-gray)'>NET PROFIT</div>
-      <div
-        className={`text-4xl font-bold glitch-text ${financials.net >= 0 ? 'text-(--toxic-green)' : 'text-(--blood-red)'}`}
-      >
-        {financials.net >= 0 ? '+' : ''}
-        {financials.net}€
-      </div>
-    </div>
-
-    <button
-      onClick={onNext}
-      className='mt-4 w-full py-4 bg-(--toxic-green) text-black font-bold uppercase hover:bg-white transition-colors'
-    >
-      NEXT: SOCIAL MEDIA
-    </button>
-  </>
-)
-
-/**
- * Social Phase Component allowing the player to choose a posting strategy.
- * @param {object} props
- * @param {Array} props.options - List of post options.
- * @param {Function} props.onSelect - Callback when an option is selected.
- */
-const SocialPhase = ({ options, onSelect }) => (
-  <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-    {options.map(opt => (
-      <button
-        key={opt.id}
-        onClick={() => onSelect(opt)}
-        className='p-4 border border-(--ash-gray) hover:border-(--toxic-green) hover:bg-(--toxic-green)/10 text-left transition-all group'
-      >
-        <div className='text-xs text-(--ash-gray) group-hover:text-(--star-white) uppercase mb-1'>
-          {opt.platform}
-        </div>
-        <div className='font-bold text-lg mb-2'>{opt.title}</div>
-        <div className='text-sm text-(--ash-gray) mb-4'>{opt.description}</div>
-        <div className='flex justify-between text-xs font-mono'>
-          <span>Viral Chance: {Math.round(opt.viralChance * 100)}%</span>
-          <span>Est. Gain: +{opt.effect.followers}</span>
-        </div>
-      </button>
-    ))}
-  </div>
-)
-
-/**
- * Complete Phase Component showing the result of the social media post.
- * @param {object} props
- * @param {object} props.result - The result of the post.
- * @param {Function} props.onContinue - Callback to finish the scene.
- */
-const CompletePhase = ({ result, onContinue }) => (
-  <div className='text-center'>
-    <div className='mb-8'>
-      <h3 className='text-2xl text-(--toxic-green) mb-2'>
-        {result?.success ? 'VIRAL HIT!' : 'POST PUBLISHED'}
-      </h3>
-      <p className='text-(--star-white)/80'>{result?.message}</p>
-      <div className='text-4xl font-bold mt-4'>
-        +{result?.followers} Followers
-      </div>
-      <div className='text-sm text-(--ash-gray) uppercase mt-1'>
-        on {result?.platform}
-      </div>
-    </div>
-    <button
-      onClick={onContinue}
-      className='w-full py-4 bg-(--toxic-green) text-black font-bold uppercase hover:bg-white transition-colors'
-    >
-      CONTINUE TOUR
-    </button>
-  </div>
-)
-
-/**
- * Scene handling the post-gig summary, economy calculation, and social media management.
- */
 export const PostGig = () => {
   const {
-    changeScene,
-    updatePlayer,
-    player,
     currentGig,
+    player,
+    updatePlayer,
     gigModifiers,
     triggerEvent,
     activeEvent,
@@ -143,12 +23,18 @@ export const PostGig = () => {
     updateSocial,
     social,
     lastGigStats,
-    addToast
+    addToast,
+    changeScene
   } = useGameState()
   const [phase, setPhase] = useState('REPORT') // REPORT, SOCIAL, COMPLETE
   const [financials, setFinancials] = useState(null)
   const [postOptions, setPostOptions] = useState([])
   const [postResult, setPostResult] = useState(null)
+
+  const perfScore = React.useMemo(() => {
+    const rawScore = lastGigStats?.score || 0
+    return Math.min(100, Math.max(30, rawScore / 500))
+  }, [lastGigStats])
 
   React.useEffect(() => {
     if (!currentGig) return
@@ -167,23 +53,11 @@ export const PostGig = () => {
   // Initialize Results once (simulated)
   React.useEffect(() => {
     if (!financials && currentGig && lastGigStats) {
-      // Use real score normalized to 0-100 (approx)
-      // Assume max score ~ 1000 per second of song. Setlist ~ 200s. Max ~ 200k.
-      // Let's simplified normalize: score / (duration * 100).
-      // For now, random fallback if no stats
-      const rawScore = lastGigStats?.score || 0
-      const performanceScore = Math.min(100, Math.max(50, rawScore / 500)) // Rough normalization
-
-      // NOTE: economyEngine currently derives core gig economics (like fillRate) internally from Fame/Promo.
-      // We still pass a minimal `crowdStats` object as contextual metadata and to keep the API shape stable
-      // for future extensions (e.g., hype-driven bonuses or logging). It does not currently change the core
-      // financial outcome on its own.
       const crowdStats = { hype: lastGigStats?.peakHype || 0 }
 
-      // Pass player.fame and lastGigStats
       const result = calculateGigFinancials(
         currentGig,
-        performanceScore,
+        perfScore,
         crowdStats,
         gigModifiers,
         band.inventory,
@@ -192,7 +66,7 @@ export const PostGig = () => {
       )
       setFinancials(result)
 
-      const vScore = calculateViralityScore(performanceScore, [], currentGig) // events list empty for now
+      const vScore = calculateViralityScore(perfScore, [], currentGig)
       setPostOptions(generatePostOptions({ viralityScore: vScore }))
     }
   }, [
@@ -201,18 +75,14 @@ export const PostGig = () => {
     lastGigStats,
     gigModifiers,
     player.fame,
-    band.inventory
+    band.inventory,
+    perfScore
   ])
 
-  /**
-   * Handles the selection of a social media post option.
-   * @param {object} option - The selected option.
-   */
   const handlePostSelection = option => {
     const result = resolvePost(option, Math.random())
     setPostResult(result)
 
-    // Apply Social Growth
     updateSocial({
       [result.platform]: (social[result.platform] || 0) + result.followers,
       viral: social.viral + (result.success ? 1 : 0)
@@ -221,21 +91,17 @@ export const PostGig = () => {
     setPhase('COMPLETE')
   }
 
-  /**
-   * Finalizes the gig results, updates global state, and transitions back to Overworld.
-   * Checks for bankruptcy condition.
-   */
   const handleContinue = () => {
-    // Bankruptcy check: If net causes negative balance, GAME OVER
-    // Logic: player.money + financials.net < 0
     if (financials && player.money + financials.net < 0) {
       addToast('GAME OVER: BANKRUPT! The tour is over.', 'error')
+      updatePlayer({ money: 0 })
       changeScene('GAMEOVER')
     } else {
       if (financials) {
+        const fameGain = 50 + Math.floor(perfScore * 1.5)
         updatePlayer({
-          money: player.money + financials.net,
-          fame: player.fame + 100 // Simplified fame
+          money: Math.max(0, player.money + financials.net),
+          fame: player.fame + fameGain
         })
       }
       changeScene('OVERWORLD')
@@ -286,4 +152,155 @@ export const PostGig = () => {
       </motion.div>
     </div>
   )
+}
+
+const ReportPhase = ({ financials, onNext }) => (
+  <div className='space-y-6'>
+    <div className='grid grid-cols-2 gap-8'>
+      {/* Income Column */}
+      <div>
+        <h3 className='text-xl border-b border-(--toxic-green) mb-4'>INCOME</h3>
+        <ul className='space-y-2 text-sm'>
+          {financials.income.breakdown.map((item, i) => (
+            <li key={i} className='flex justify-between'>
+              <span>{item.label}</span>
+              <span>+{item.value}€</span>
+            </li>
+          ))}
+        </ul>
+        <div className='mt-4 pt-2 border-t border-(--toxic-green) flex justify-between font-bold'>
+          <span>TOTAL INCOME</span>
+          <span>{financials.income.total}€</span>
+        </div>
+      </div>
+
+      {/* Expenses Column */}
+      <div>
+        <h3 className='text-xl border-b border-(--blood-red) text-(--blood-red) mb-4'>
+          EXPENSES
+        </h3>
+        <ul className='space-y-2 text-sm text-(--blood-red)'>
+          {financials.expenses.breakdown.map((item, i) => (
+            <li key={i} className='flex justify-between'>
+              <span>{item.label}</span>
+              <span>-{item.value}€</span>
+            </li>
+          ))}
+        </ul>
+        <div className='mt-4 pt-2 border-t border-(--blood-red) flex justify-between font-bold text-(--blood-red)'>
+          <span>TOTAL EXPENSES</span>
+          <span>{financials.expenses.total}€</span>
+        </div>
+      </div>
+    </div>
+
+    {/* Net Result */}
+    <div className='text-center py-6 border-y-2 border-(--ash-gray)'>
+      <div className='text-sm text-(--ash-gray)'>NET PROFIT</div>
+      <div
+        className={`text-4xl font-bold ${financials.net >= 0 ? 'text-(--toxic-green)' : 'text-(--blood-red)'}`}
+      >
+        {financials.net > 0 ? '+' : ''}
+        {financials.net}€
+      </div>
+    </div>
+
+    <div className='text-center'>
+      <button
+        onClick={onNext}
+        className='bg-(--toxic-green) text-(--void-black) px-8 py-3 font-bold hover:bg-(--star-white) transition-colors uppercase'
+      >
+        Continue to Socials &gt;
+      </button>
+    </div>
+  </div>
+)
+
+ReportPhase.propTypes = {
+  financials: PropTypes.shape({
+    income: PropTypes.shape({
+      total: PropTypes.number.isRequired,
+      breakdown: PropTypes.arrayOf(
+        PropTypes.shape({
+          label: PropTypes.string.isRequired,
+          value: PropTypes.number.isRequired,
+          detail: PropTypes.string
+        })
+      ).isRequired
+    }).isRequired,
+    expenses: PropTypes.shape({
+      total: PropTypes.number.isRequired,
+      breakdown: PropTypes.arrayOf(
+        PropTypes.shape({
+          label: PropTypes.string.isRequired,
+          value: PropTypes.number.isRequired,
+          detail: PropTypes.string
+        })
+      ).isRequired
+    }).isRequired,
+    net: PropTypes.number.isRequired
+  }).isRequired,
+  onNext: PropTypes.func.isRequired
+}
+
+const SocialPhase = ({ options, onSelect }) => (
+  <div className='space-y-6'>
+    <h3 className='text-xl text-center mb-4'>POST TO SOCIAL MEDIA</h3>
+    <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+      {options.map((opt, i) => (
+        <button
+          key={i}
+          onClick={() => onSelect(opt)}
+          className='border border-(--toxic-green) p-4 hover:bg-(--toxic-green)/10 text-left group transition-all'
+        >
+          <div className='font-bold mb-2 group-hover:text-(--star-white)'>
+            {opt.title}
+          </div>
+          <div className='text-xs text-(--ash-gray)'>
+            Platform: {opt.platform} | Viral Chance: {Math.round((opt.viralChance ?? 0) * 100)}%
+          </div>
+        </button>
+      ))}
+    </div>
+  </div>
+)
+
+SocialPhase.propTypes = {
+  options: PropTypes.arrayOf(
+    PropTypes.shape({
+      label: PropTypes.string.isRequired,
+      type: PropTypes.string.isRequired,
+      chance: PropTypes.number.isRequired
+    })
+  ).isRequired,
+  onSelect: PropTypes.func.isRequired
+}
+
+const CompletePhase = ({ result, onContinue }) => (
+  <div className='text-center animate-pulse'>
+    <h3 className='text-2xl mb-4'>
+      {result.success ? 'VIRAL HIT!' : 'FLOPOCOLYPSE'}
+    </h3>
+    <p className='mb-6 text-(--ash-gray)'>{result.message}</p>
+    <div className='text-xl mb-8'>
+      {result.followers > 0 ? '+' : ''}
+      {result.followers} Followers on {result.platform}
+    </div>
+    <button
+      onClick={onContinue}
+      className='bg-(--toxic-green) text-(--void-black) px-8 py-3 font-bold hover:bg-(--star-white) uppercase'
+    >
+      Back to Tour &gt;
+    </button>
+  </div>
+)
+
+CompletePhase.propTypes = {
+  result: PropTypes.shape({
+    success: PropTypes.bool.isRequired,
+    message: PropTypes.string.isRequired,
+    followers: PropTypes.number.isRequired,
+    platform: PropTypes.string.isRequired
+  }).isRequired,
+  onContinue: PropTypes.func.isRequired
 }
