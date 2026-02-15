@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useGameState } from '../context/GameState'
 import { Map as MapIcon, DollarSign, Volume2, VolumeX } from 'lucide-react'
 import { audioManager } from '../utils/AudioManager'

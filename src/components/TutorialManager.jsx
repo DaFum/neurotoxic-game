@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useGameState } from '../context/GameState'
 import { motion, AnimatePresence } from 'framer-motion'
 
