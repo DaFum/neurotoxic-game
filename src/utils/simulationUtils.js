@@ -131,13 +131,30 @@ export const calculateDailyUpdates = currentState => {
       (nextPlayer.van.condition ?? 100) - 2
     )
     // Increased breakdown chance when condition is low
+    // Respect any existing (upgrade-adjusted) breakdownChance as the base value.
+    const baseBreakdownChance =
+      typeof nextPlayer.van.breakdownChance === 'number'
+        ? nextPlayer.van.breakdownChance
+        : 0.05
+
+    let conditionMultiplier
     if (nextPlayer.van.condition < 30) {
-      nextPlayer.van.breakdownChance = 0.15
+      // Very low condition: significantly higher chance to break down
+      conditionMultiplier = 3.0
     } else if (nextPlayer.van.condition < 60) {
-      nextPlayer.van.breakdownChance = 0.08
+      // Worn condition: moderately higher chance
+      conditionMultiplier = 1.6
     } else {
-      nextPlayer.van.breakdownChance = 0.05
+      // Good condition: baseline chance
+      conditionMultiplier = 1.0
     }
+
+    const adjustedBreakdownChance = baseBreakdownChance * conditionMultiplier
+    // Clamp to a reasonable range so chance stays between 0% and 50%
+    nextPlayer.van.breakdownChance = Math.max(
+      0,
+      Math.min(0.5, adjustedBreakdownChance)
+    )
   }
 
   // 2. Mood & Stamina Drift
