@@ -31,7 +31,7 @@ description: Audit UI changes for Tailwind v4 class syntax and CSS-variable colo
 
 ## Command
 
-- Prefer the bundled script: `./.agents/skills/tailwind-v4-css-variables-enforcer/scripts/audit-tailwind-v4.sh`
+- Prefer the bundled script: `./.claude/skills/tailwind-v4-css-variables-enforcer/scripts/audit-tailwind-v4.sh`
 
 ## Output
 
