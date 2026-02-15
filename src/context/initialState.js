@@ -104,7 +104,7 @@ const savedSettings = (() => {
 const DEFAULT_SETTINGS = {
   crtEnabled: true,
   tutorialSeen: false,
-  logLevel: LOG_LEVELS.DEBUG,
+  logLevel: (import.meta.env?.DEV ?? true) ? LOG_LEVELS.DEBUG : LOG_LEVELS.WARN,
   ...savedSettings
 }
 

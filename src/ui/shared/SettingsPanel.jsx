@@ -74,27 +74,29 @@ export const SettingsPanel = ({
       </div>
 
       {/* Log Settings */}
-      <div>
-        <h2 className='font-[Metal_Mania] text-4xl uppercase text-(--toxic-green) mb-6 border-b border-(--ash-gray) pb-2'>
-          LOG PROTOCOLS
-        </h2>
-        <div className='flex items-center justify-between'>
-          <label className='font-[Courier_New] text-sm uppercase tracking-wide text-(--ash-gray)'>
-            MINIMUM LOG LEVEL
-          </label>
-          <select
-            value={settings?.logLevel ?? LOG_LEVELS.DEBUG}
-            onChange={e => onLogLevelChange(parseInt(e.target.value, 10))}
-            className='bg-(--void-black) text-(--toxic-green) border-2 border-(--toxic-green) p-1 font-mono focus:outline-none'
-          >
-            {Object.entries(LOG_LEVELS).map(([key, value]) => (
-              <option key={key} value={value}>
-                {key}
-              </option>
-            ))}
-          </select>
+      {import.meta.env.DEV && (
+        <div>
+          <h2 className='font-[Metal_Mania] text-4xl uppercase text-(--toxic-green) mb-6 border-b border-(--ash-gray) pb-2'>
+            LOG PROTOCOLS
+          </h2>
+          <div className='flex items-center justify-between'>
+            <label className='font-[Courier_New] text-sm uppercase tracking-wide text-(--ash-gray)'>
+              MINIMUM LOG LEVEL
+            </label>
+            <select
+              value={settings?.logLevel ?? LOG_LEVELS.DEBUG}
+              onChange={e => onLogLevelChange(parseInt(e.target.value, 10))}
+              className='bg-(--void-black) text-(--toxic-green) border-2 border-(--toxic-green) p-1 font-mono focus:outline-none'
+            >
+              {Object.entries(LOG_LEVELS).map(([key, value]) => (
+                <option key={key} value={value}>
+                  {key}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Data Management */}
       <div>

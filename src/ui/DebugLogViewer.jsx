@@ -10,6 +10,8 @@ export const DebugLogViewer = ({ className = '' }) => {
 
   // Keyboard Toggle
   useEffect(() => {
+    if (!import.meta.env.DEV) return
+
     const handleKey = e => {
       if (e.ctrlKey && e.key === '`') {
         setVisible(prev => !prev)
