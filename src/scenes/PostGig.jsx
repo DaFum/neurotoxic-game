@@ -49,7 +49,7 @@ export const PostGig = () => {
   React.useEffect(() => {
     if (!financials && currentGig && lastGigStats) {
       const rawScore = lastGigStats?.score || 0
-      const performanceScore = Math.min(100, Math.max(50, rawScore / 500))
+      const performanceScore = Math.min(100, Math.max(30, rawScore / 500))
       const crowdStats = { hype: lastGigStats?.peakHype || 0 }
 
       const result = calculateGigFinancials(
@@ -94,9 +94,12 @@ export const PostGig = () => {
       changeScene('GAMEOVER')
     } else {
       if (financials) {
+        const rawScore = lastGigStats?.score || 0
+        const perfScore = Math.min(100, Math.max(30, rawScore / 500))
+        const fameGain = 50 + Math.floor(perfScore * 1.5)
         updatePlayer({
           money: Math.max(0, player.money + financials.net),
-          fame: player.fame + 100 // Simplified fame
+          fame: player.fame + fameGain
         })
       }
       changeScene('OVERWORLD')

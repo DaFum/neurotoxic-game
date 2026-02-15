@@ -151,6 +151,11 @@ export const calculateDailyUpdates = currentState => {
     let stamina = typeof m.stamina === 'number' ? m.stamina : 100
     stamina = Math.max(0, stamina - 5)
 
+    // Partial stamina recovery when band harmony is high
+    if (nextBand.harmony > 60) {
+      stamina = Math.min(100, stamina + 3)
+    }
+
     return { ...m, mood, stamina }
   })
 

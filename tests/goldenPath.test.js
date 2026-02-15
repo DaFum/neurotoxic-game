@@ -17,7 +17,6 @@ import {
   EXPENSE_CONSTANTS
 } from '../src/utils/economyEngine.js'
 import { buildGigStatsSnapshot } from '../src/utils/gigStats.js'
-import { calculateDailyUpdates } from '../src/utils/simulationUtils.js'
 
 // --- Test Helpers ---
 

@@ -48,6 +48,9 @@ const calculateTicketIncome = (gigData, playerFame, modifiers) => {
   // Promo Boost
   if (modifiers.promo) fillRate += 0.15
 
+  // Soundcheck Boost (word-of-mouth from quality prep)
+  if (modifiers.soundcheck) fillRate += 0.1
+
   // Price Sensitivity: Higher price reduces attendance slightly unless Fame is very high
   if (gigData.price > 15) {
     const pricePenalty = (gigData.price - 15) * 0.02 // -2% per Euro over 15
@@ -239,7 +242,7 @@ const calculateGigExpenses = (gigData, modifiers) => {
 
   const hasMerch = modifiers.merch || modifiers.merchTable
   if (hasMerch) {
-    const merchTableCost = 40
+    const merchTableCost = 30
     expenses.breakdown.push({
       label: 'Merch Stand',
       value: merchTableCost,
@@ -310,9 +313,9 @@ export const calculateGigFinancials = (
   // Venue Split / Promoter Cut
   let splitRate = 0
   if (gigData.diff >= 5)
-    splitRate = 0.7 // Arena: Venue takes 70%
+    splitRate = 0.5 // Arena: Venue takes 50%
   else if (gigData.diff === 4)
-    splitRate = 0.4 // Club: Venue takes 40%
+    splitRate = 0.3 // Club: Venue takes 30%
   else if (gigData.diff === 3) splitRate = 0.2 // Bar: Venue takes 20%
 
   if (splitRate > 0) {
