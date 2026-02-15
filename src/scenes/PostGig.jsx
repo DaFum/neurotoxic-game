@@ -216,7 +216,7 @@ const ReportPhase = ({ financials, onNext }) => (
   </div>
 )
 
-const FinancialSectionPropType = PropTypes.shape({
+const financialCategoryShape = PropTypes.shape({
   total: PropTypes.number.isRequired,
   breakdown: PropTypes.arrayOf(
     PropTypes.shape({
@@ -229,8 +229,8 @@ const FinancialSectionPropType = PropTypes.shape({
 
 ReportPhase.propTypes = {
   financials: PropTypes.shape({
-    income: FinancialSectionPropType.isRequired,
-    expenses: FinancialSectionPropType.isRequired,
+    income: financialCategoryShape.isRequired,
+    expenses: financialCategoryShape.isRequired,
     net: PropTypes.number.isRequired
   }).isRequired,
   onNext: PropTypes.func.isRequired

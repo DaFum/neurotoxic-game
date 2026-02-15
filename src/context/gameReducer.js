@@ -200,6 +200,7 @@ const handleLoadGame = (state, payload) => {
     unlocks: Array.isArray(loadedState.unlocks) ? loadedState.unlocks : [],
     settings: { ...state.settings, ...loadedState.settings },
 
+    // Arrays
     activeStoryFlags: Array.isArray(loadedState.activeStoryFlags)
       ? loadedState.activeStoryFlags
       : [],
@@ -210,17 +211,30 @@ const handleLoadGame = (state, payload) => {
       ? loadedState.pendingEvents
       : [],
 
+    // Objects
     reputationByRegion: loadedState.reputationByRegion || {},
     npcs: loadedState.npcs || {},
-    settings: { ...state.settings, ...loadedState.settings },
     gigModifiers: {
       ...DEFAULT_GIG_MODIFIERS,
       ...(loadedState.gigModifiers || {})
     },
-    currentScene: 'OVERWORLD', // Always load to map for safety
-    unlocks: Array.isArray(loadedState.unlocks) ? loadedState.unlocks : [],
+
+    // Nullables
     currentGig: loadedState.currentGig || null,
     lastGigStats: loadedState.lastGigStats || null
+  }
+
+  // Security: Only allow valid gameplay scenes from save
+  const ALLOWED_SCENES = [
+    'OVERWORLD',
+    'PREGIG',
+    'GIG',
+    'POSTGIG',
+    'HQ',
+    'BAND_HQ'
+  ]
+  if (!ALLOWED_SCENES.includes(safeState.currentScene)) {
+    safeState.currentScene = state.currentScene
   }
 
   // Migration: energy -> catering
