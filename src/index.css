@@ -1,7 +1,10 @@
+/* stylelint-disable-next-line import-notation */
 @import 'tailwindcss';
 @import url('https://fonts.googleapis.com/css2?family=Metal+Mania&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Nosifer&display=swap');
+/* stylelint-disable-next-line at-rule-no-unknown, at-rule-empty-line-before */
 @source '../index.html';
+/* stylelint-disable-next-line at-rule-no-unknown */
 @source './**/*.{js,ts,jsx,tsx}';
 
 :root {
@@ -10,7 +13,7 @@
   --toxic-green-dark: #0c3;
   --toxic-green-light: #3f6;
   --toxic-green-glow: rgb(0 255 65 / 60%);
-  --toxic-green-20: rgba(0, 255, 65, 0.2);
+  --toxic-green-20: rgb(0 255 65 / 20%);
 
   /* Death-Metal-Schwarz */
   --void-black: #0a0a0a;
@@ -43,7 +46,7 @@
   --mood-pink: #db2777;
 
   /* UI Components */
-  --panel-bg: rgba(var(--void-black-rgb), 0.4);
+  --panel-bg: rgb(var(--void-black-rgb) / 40%);
   --disabled-bg: var(--concrete-gray);
   --disabled-text: var(--ash-gray);
   --disabled-border: var(--ash-gray);
