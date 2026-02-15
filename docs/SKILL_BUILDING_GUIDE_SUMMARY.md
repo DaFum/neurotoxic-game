@@ -66,7 +66,7 @@ description: What it does and when to use it. Include specific trigger phrases.
 
 Choose tools based on context (e.g., file size, type).
 
-- Example: Use local storage for small files, cloud for large ones.
+- Example: Use localStorage for small files, cloud for large ones.
 
 ### Domain-Specific Intelligence
 

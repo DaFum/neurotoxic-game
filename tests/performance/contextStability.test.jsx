@@ -58,8 +58,9 @@ global.window.AudioContext = class {
 
 test('GameState context functions stability', async _t => {
   // Dynamic import to ensure globals are set
-  const { GameStateProvider, useGameState } =
-    await import('../../src/context/GameState.jsx')
+  const { GameStateProvider, useGameState } = await import(
+    '../../src/context/GameState.jsx'
+  )
 
   let renderCount = 0
   let changeSceneRef = null
