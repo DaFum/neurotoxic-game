@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useGameState } from '../context/GameState'
 import { SONGS_DB } from '../data/songs'
 import { getGigModifiers } from '../utils/simulationUtils'
@@ -59,6 +59,7 @@ export const PreGig = () => {
     updateBand,
     addToast
   } = useGameState()
+  const [isStarting, setIsStarting] = useState(false)
   const currentModifiers = getGigModifiers(band, gigModifiers)
 
   React.useEffect(() => {
@@ -288,16 +289,18 @@ export const PreGig = () => {
 
       <button
         className='mt-8 px-12 py-4 bg-(--toxic-green) text-black font-bold text-2xl uppercase tracking-widest hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed'
-        disabled={setlist.length === 0}
+        disabled={setlist.length === 0 || isStarting}
         onClick={async () => {
           if (band.harmony < 10) {
             addToast('Band harmony too low to perform!', 'error')
             return
           }
+          setIsStarting(true)
           try {
-            await audioManager.ensureAudioContext() // Unlock audio context on user interaction
+            await audioManager.ensureAudioContext()
             changeScene('GIG')
           } catch (err) {
+            setIsStarting(false)
             handleError(err, {
               addToast,
               fallbackMessage: 'Audio initialization failed.'
@@ -305,7 +308,7 @@ export const PreGig = () => {
           }
         }}
       >
-        START SHOW
+        {isStarting ? 'INITIALIZING...' : 'START SHOW'}
       </button>
     </div>
   )

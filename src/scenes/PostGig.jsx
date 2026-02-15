@@ -92,23 +92,32 @@ export const PostGig = () => {
   }
 
   const handleContinue = () => {
-    if (financials && player.money + financials.net < 0) {
+    if (!financials) return
+
+    const fameGain = 50 + Math.floor(perfScore * 1.5)
+    const newMoney = Math.max(0, player.money + financials.net)
+
+    updatePlayer({
+      money: newMoney,
+      fame: player.fame + fameGain
+    })
+
+    if (newMoney <= 0 && financials.net < 0) {
       addToast('GAME OVER: BANKRUPT! The tour is over.', 'error')
-      updatePlayer({ money: 0 })
       changeScene('GAMEOVER')
     } else {
-      if (financials) {
-        const fameGain = 50 + Math.floor(perfScore * 1.5)
-        updatePlayer({
-          money: Math.max(0, player.money + financials.net),
-          fame: player.fame + fameGain
-        })
-      }
       changeScene('OVERWORLD')
     }
   }
 
-  if (!financials) return <div>Loading...</div>
+  if (!financials)
+    return (
+      <div className='w-full h-full flex flex-col items-center justify-center bg-(--void-black)'>
+        <div className="text-3xl text-(--toxic-green) font-['Metal_Mania'] animate-pulse tracking-widest">
+          TALLYING RECEIPTS...
+        </div>
+      </div>
+    )
 
   return (
     <div className='w-full h-full flex flex-col items-center justify-center p-8 bg-(--void-black) text-(--star-white) relative'>
