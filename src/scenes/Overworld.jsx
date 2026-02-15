@@ -1,10 +1,8 @@
-import React, { useState, useMemo, useCallback, memo } from 'react'
-import PropTypes from 'prop-types'
+import { useState, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { useTravelLogic } from '../hooks/useTravelLogic'
 import { useAudioControl } from '../hooks/useAudioControl'
-import { ChatterOverlay } from '../components/ChatterOverlay'
 import { ToggleRadio } from '../components/ToggleRadio'
 import { MapConnection } from '../components/MapConnection'
 import { MapNode } from '../components/MapNode'
@@ -75,7 +73,7 @@ export const Overworld = () => {
   const currentLayer = currentNode?.layer || 0
 
   // Resume ambient on mount and retry once on startup failure.
-  React.useEffect(() => {
+  useEffect(() => {
     let cancelled = false
     let retryTimeoutId = null
 

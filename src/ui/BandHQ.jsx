@@ -80,7 +80,7 @@ export const BandHQ = ({
   const renderItem = item => {
     const owned = isItemOwned(item)
     const disabled = isItemDisabled(item)
-    const isConsumable = item.effect.type === 'inventory_add'
+    const isConsumable = item.effect?.type === 'inventory_add'
 
     return (
       <div

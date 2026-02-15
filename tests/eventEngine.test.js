@@ -316,7 +316,21 @@ test('eventEngine.applyResult handles van condition stat', () => {
   const delta = eventEngine.applyResult(result)
 
   assert.ok(delta, 'Should return delta')
-  assert.equal(delta.player.van.condition, -10, 'Should set condition value')
+  assert.equal(
+    delta.player.van.condition,
+    0,
+    'Should clamp condition to minimum 0'
+  )
+})
+
+test('eventEngine.applyResult clamps van condition to 0-100 range', () => {
+  const overResult = { type: 'stat', stat: 'van_condition', value: 150 }
+  const overDelta = eventEngine.applyResult(overResult)
+  assert.equal(
+    overDelta.player.van.condition,
+    100,
+    'Should clamp condition to maximum 100'
+  )
 })
 
 test('eventEngine.applyResult handles game over flag', () => {

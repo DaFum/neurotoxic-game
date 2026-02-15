@@ -196,8 +196,6 @@ const handleLoadGame = (state, payload) => {
     social: mergedSocial,
     gameMap: loadedState.gameMap || state.gameMap,
     setlist: Array.isArray(loadedState.setlist) ? loadedState.setlist : [],
-    unlocks: Array.isArray(loadedState.unlocks) ? loadedState.unlocks : [],
-    settings: { ...state.settings, ...loadedState.settings },
 
     // Arrays
     activeStoryFlags: Array.isArray(loadedState.activeStoryFlags)
@@ -206,7 +204,6 @@ const handleLoadGame = (state, payload) => {
     pendingEvents: Array.isArray(loadedState.pendingEvents)
       ? loadedState.pendingEvents
       : [],
-    eat-song-utils-tests-and-syntax-fixes-13782797927496789717
     eventCooldowns: Array.isArray(loadedState.eventCooldowns)
       ? loadedState.eventCooldowns
       : [],

@@ -25,23 +25,28 @@ export const GigHUD = ({ stats, onLaneInput, gameStateRef }) => {
 
       {/* Input Zones */}
       <div className='absolute inset-0 z-40 flex pb-16 pt-32'>
-        {[0, 1, 2].map(laneIndex => (
-          <div
-            key={laneIndex}
-            className='flex-1 h-full cursor-pointer hover:bg-white/5 active:bg-white/10 transition-colors duration-75 pointer-events-auto'
-            onMouseDown={() => onLaneInput && onLaneInput(laneIndex, true)}
-            onMouseUp={() => onLaneInput && onLaneInput(laneIndex, false)}
-            onMouseLeave={() => onLaneInput && onLaneInput(laneIndex, false)}
-            onTouchStart={e => {
-              e.preventDefault()
-              onLaneInput && onLaneInput(laneIndex, true)
-            }}
-            onTouchEnd={e => {
-              e.preventDefault()
-              onLaneInput && onLaneInput(laneIndex, false)
-            }}
-          />
-        ))}
+        {[0, 1, 2].map(laneIndex => {
+          const laneNames = ['Guitar', 'Drums', 'Bass']
+          return (
+            <div
+              key={laneIndex}
+              role='button'
+              aria-label={`${laneNames[laneIndex]} lane`}
+              className='flex-1 h-full cursor-pointer hover:bg-white/5 active:bg-white/10 transition-colors duration-75 pointer-events-auto'
+              onMouseDown={() => onLaneInput && onLaneInput(laneIndex, true)}
+              onMouseUp={() => onLaneInput && onLaneInput(laneIndex, false)}
+              onMouseLeave={() => onLaneInput && onLaneInput(laneIndex, false)}
+              onTouchStart={e => {
+                e.preventDefault()
+                onLaneInput && onLaneInput(laneIndex, true)
+              }}
+              onTouchEnd={e => {
+                e.preventDefault()
+                onLaneInput && onLaneInput(laneIndex, false)
+              }}
+            />
+          )
+        })}
       </div>
 
       {/* Stats Overlay */}

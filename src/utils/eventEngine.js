@@ -71,7 +71,10 @@ const processEffect = (eff, delta) => {
         delta.player.money = (delta.player.money || 0) + eff.value
       if (eff.resource === 'fuel') {
         delta.player.van = { ...(delta.player.van || {}) }
-        delta.player.van.fuel = (delta.player.van.fuel || 0) + eff.value
+        delta.player.van.fuel = Math.max(
+          0,
+          (delta.player.van.fuel || 0) + eff.value
+        )
       }
       break
     case 'stat':
@@ -95,8 +98,10 @@ const processEffect = (eff, delta) => {
       }
       if (eff.stat === 'van_condition') {
         delta.player.van = { ...(delta.player.van || {}) }
-        delta.player.van.condition =
-          (delta.player.van.condition || 0) + eff.value
+        delta.player.van.condition = Math.max(
+          0,
+          Math.min(100, (delta.player.van.condition || 0) + eff.value)
+        )
       }
       if (eff.stat === 'hype' || eff.stat === 'crowd_energy')
         delta.player.fame = (delta.player.fame || 0) + eff.value

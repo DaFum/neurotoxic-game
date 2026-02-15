@@ -447,9 +447,18 @@ export const useTravelLogic = ({
       return
     }
 
+    const baseBreakdownChance = 0.05
+    const repairedBreakdownChance = hasUpgrade('van_suspension')
+      ? baseBreakdownChance * 0.8
+      : baseBreakdownChance
+
     updatePlayer({
       money: Math.max(0, (player.money ?? 0) - cost),
-      van: { ...player.van, condition: 100, breakdownChance: 0.05 }
+      van: {
+        ...player.van,
+        condition: 100,
+        breakdownChance: repairedBreakdownChance
+      }
     })
 
     addToast(`Repaired: -${cost}€`, 'success')
@@ -459,7 +468,7 @@ export const useTravelLogic = ({
     } catch (e) {
       // Ignore audio errors
     }
-  }, [player, isTraveling, updatePlayer, addToast])
+  }, [player, isTraveling, updatePlayer, addToast, hasUpgrade])
 
   // Softlock detection effect
   useEffect(() => {

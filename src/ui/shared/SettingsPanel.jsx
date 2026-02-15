@@ -130,7 +130,8 @@ export const SettingsPanel = ({
 
 SettingsPanel.propTypes = {
   settings: PropTypes.shape({
-    crtEnabled: PropTypes.bool
+    crtEnabled: PropTypes.bool,
+    logLevel: PropTypes.number
   }),
   musicVol: PropTypes.number,
   sfxVol: PropTypes.number,
