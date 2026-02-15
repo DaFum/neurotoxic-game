@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useGameState } from '../context/GameState'
-import { Map, Users, DollarSign, Volume2, VolumeX } from 'lucide-react'
+import { Map, DollarSign, Volume2, VolumeX } from 'lucide-react'
 import { audioManager } from '../utils/AudioManager'
 
 /**
