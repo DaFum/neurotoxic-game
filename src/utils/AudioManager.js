@@ -310,12 +310,5 @@ class AudioSystem {
   }
 }
 
-// Deprecated getter for backward compatibility during refactor
-Object.defineProperty(AudioSystem.prototype, 'initialized', {
-  get() {
-    return this.prefsLoaded
-  }
-})
-
 export const audioManager = new AudioSystem()
 audioManager.init()

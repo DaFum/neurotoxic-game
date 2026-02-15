@@ -1,9 +1,6 @@
 {
   "threshold": 0,
-  "reporters": [
-    "console",
-    "html"
-  ],
+  "reporters": ["console", "html"],
   "ignore": [
     "**/node_modules/**",
     "**/dist/**",
@@ -12,7 +9,8 @@
     "**/*.map",
     "**/package-lock.json",
     "**/yarn.lock",
-    "**/.claude/skills/mega-lint-snapshot/scripts/format-report.mjs"
+    "**/.claude/**",
+    "**/skilltest-lib.mjs"
   ],
   "absolute": true,
   "gitignore": true
