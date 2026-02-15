@@ -116,62 +116,122 @@ const handleSetGigModifiers = (state, payload) => {
 const handleLoadGame = (state, payload) => {
   logger.info('GameState', 'Game Loaded')
 
-  const loadedState = { ...payload }
+  const loadedState = payload || {}
 
-  // Migration: energy -> catering
-  if (loadedState.gigModifiers) {
-    if (loadedState.gigModifiers.energy !== undefined) {
-      loadedState.gigModifiers.catering = loadedState.gigModifiers.energy
-      delete loadedState.gigModifiers.energy
-    }
-    loadedState.gigModifiers = {
-      ...DEFAULT_GIG_MODIFIERS,
-      ...loadedState.gigModifiers
-    }
-  }
-
-  // Safe Merge for Nested Objects
+  // 1. Sanitize Player
   const mergedPlayer = {
     ...DEFAULT_PLAYER_STATE,
     ...loadedState.player,
     van: {
       ...DEFAULT_PLAYER_STATE.van,
-      ...loadedState.player?.van
+      ...(loadedState.player?.van || {})
     }
   }
-
-  // Ensure positive money
-  if (typeof mergedPlayer.money === 'number') {
-    mergedPlayer.money = Math.max(0, mergedPlayer.money)
+  // Validate Player
+  mergedPlayer.money = Math.max(
+    0,
+    typeof mergedPlayer.money === 'number' ? mergedPlayer.money : 0
+  )
+  mergedPlayer.fame = Math.max(
+    0,
+    typeof mergedPlayer.fame === 'number' ? mergedPlayer.fame : 0
+  )
+  mergedPlayer.day = Math.max(
+    1,
+    typeof mergedPlayer.day === 'number' ? mergedPlayer.day : 1
+  )
+  if (mergedPlayer.van) {
+    mergedPlayer.van.fuel = Math.max(
+      0,
+      Math.min(
+        100,
+        typeof mergedPlayer.van.fuel === 'number' ? mergedPlayer.van.fuel : 100
+      )
+    )
   }
 
+  // 2. Sanitize Band
   const mergedBand = {
     ...DEFAULT_BAND_STATE,
     ...loadedState.band,
     performance: {
       ...DEFAULT_BAND_STATE.performance,
-      ...(loadedState.band ? loadedState.band.performance : {})
+      ...(loadedState.band?.performance || {})
     },
     inventory: {
       ...DEFAULT_BAND_STATE.inventory,
-      ...(loadedState.band ? loadedState.band.inventory : {})
+      ...(loadedState.band?.inventory || {})
+    }
+  }
+  // Validate Band Members
+  if (Array.isArray(mergedBand.members)) {
+    mergedBand.members = mergedBand.members.map(m => ({
+      ...m,
+      mood: Math.max(
+        0,
+        Math.min(100, typeof m.mood === 'number' ? m.mood : 50)
+      ),
+      stamina: Math.max(
+        0,
+        Math.min(100, typeof m.stamina === 'number' ? m.stamina : 100)
+      )
+    }))
+  }
+  mergedBand.harmony = Math.max(
+    1,
+    Math.min(
+      100,
+      typeof mergedBand.harmony === 'number' ? mergedBand.harmony : 50
+    )
+  )
+
+  // 3. Sanitize Social
+  const mergedSocial = { ...DEFAULT_SOCIAL_STATE, ...loadedState.social }
+
+  // 4. Construct Safe State (Whitelist)
+  const safeState = {
+    ...state,
+    currentScene: loadedState.currentScene || 'OVERWORLD',
+    setlist: Array.isArray(loadedState.setlist) ? loadedState.setlist : [],
+    unlocks: Array.isArray(loadedState.unlocks) ? loadedState.unlocks : [],
+    gameMap: loadedState.gameMap || state.gameMap,
+    settings: { ...state.settings, ...loadedState.settings },
+    player: mergedPlayer,
+    band: mergedBand,
+  // 4. Construct Safe State (Whitelist)
+  const safeState = {
+    ...state,
+    currentScene: loadedState.currentScene || 'OVERWORLD',
+    setlist: Array.isArray(loadedState.setlist) ? loadedState.setlist : [],
+    unlocks: Array.isArray(loadedState.unlocks) ? loadedState.unlocks : [],
+    gameMap: loadedState.gameMap || state.gameMap,
+    settings: { ...state.settings, ...loadedState.settings },
+    player: mergedPlayer,
+    band: mergedBand,
+    social: mergedSocial,
+    gigModifiers: {
+      ...DEFAULT_GIG_MODIFIERS,
+      ...(loadedState.gigModifiers || {})
+    },
+    activeStoryFlags: Array.isArray(loadedState.activeStoryFlags) ? loadedState.activeStoryFlags : [],
+    pendingEvents: Array.isArray(loadedState.pendingEvents) ? loadedState.pendingEvents : [],
+    eventCooldowns: Array.isArray(loadedState.eventCooldowns) ? loadedState.eventCooldowns : [],
+    reputationByRegion: loadedState.reputationByRegion || {},
+    npcs: loadedState.npcs || {},
+    currentGig: loadedState.currentGig || null,
+    lastGigStats: loadedState.lastGigStats || null
+  }
+
+  // Migration: energy -> catering
+  if (safeState.gigModifiers.energy !== undefined) {
+    const { energy, ...restModifiers } = safeState.gigModifiers
+    return {
+      ...safeState,
+      gigModifiers: { ...restModifiers, catering: energy }
     }
   }
 
-  const mergedSocial = { ...DEFAULT_SOCIAL_STATE, ...loadedState.social }
-
-  // Ensure harmony is clamped
-  if (typeof mergedBand.harmony === 'number') {
-    mergedBand.harmony = Math.max(1, Math.min(100, mergedBand.harmony))
-  }
-
-  return {
-    ...state,
-    ...loadedState,
-    player: mergedPlayer,
-    band: mergedBand,
-    social: mergedSocial
-  }
+  return safeState
 }
 
 /**

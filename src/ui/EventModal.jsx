@@ -1,4 +1,3 @@
-import React from 'react'
 import { motion } from 'framer-motion'
 import PropTypes from 'prop-types'
 
@@ -27,9 +26,18 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
           {event.text}
         </p>
 
-        <div className='flex flex-col gap-3'>
+        <motion.div
+          className='flex flex-col gap-3'
+          initial='hidden'
+          animate='visible'
+          variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
+        >
           {event.options.map((option, index) => (
-            <button
+            <motion.button
+              variants={{
+                hidden: { opacity: 0, x: -20 },
+                visible: { opacity: 1, x: 0 }
+              }}
               key={index}
               onClick={() => {
                 if (option.action) option.action()
@@ -42,9 +50,9 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
               </span>
               {/* Scanline effect on hover */}
               <div className='absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:animate-[shimmer_1s_infinite] skew-x-12' />
-            </button>
+            </motion.button>
           ))}
-        </div>
+        </motion.div>
       </motion.div>
     </div>
   )
@@ -57,6 +65,7 @@ EventModal.propTypes = {
     options: PropTypes.arrayOf(
       PropTypes.shape({
         label: PropTypes.string.isRequired,
+        action: PropTypes.func,
         effect: PropTypes.object,
         skillCheck: PropTypes.object,
         outcomeText: PropTypes.string

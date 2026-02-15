@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react'
+import { createContext, useContext, useReducer, useEffect } from 'react'
 import { eventEngine } from '../utils/eventEngine'
 import { resolveEventChoice } from '../utils/eventResolver'
 import { MapGenerator } from '../utils/mapGenerator'
@@ -36,6 +36,7 @@ import {
   createAdvanceDayAction,
   createAddCooldownAction
 } from './actionCreators'
+import PropTypes from 'prop-types'
 
 const GameStateContext = createContext()
 
@@ -44,8 +45,6 @@ const GameStateContext = createContext()
  * @param {object} props
  * @param {React.ReactNode} props.children
  */
-import PropTypes from 'prop-types'
-
 export const GameStateProvider = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, null, createInitialState)
 

@@ -118,18 +118,73 @@ export const calculateDailyUpdates = currentState => {
   const nextSocial = { ...currentState.social }
 
   // 1. Costs
-  // Rent/Food
-  const dailyCost = EXPENSE_CONSTANTS.DAILY.BASE_COST
+  // Rent/Food scaled by band size
+  const bandSize = Array.isArray(nextBand.members) ? nextBand.members.length : 3
+  const dailyCost = EXPENSE_CONSTANTS.DAILY.BASE_COST + bandSize * 5
   nextPlayer.money = Math.max(0, nextPlayer.money - dailyCost)
 
-  // 2. Mood Drift
+  // Van condition decay (wear from daily travel)
+  if (nextPlayer.van) {
+    nextPlayer.van = { ...nextPlayer.van }
+    nextPlayer.van.condition = Math.max(
+      0,
+      (nextPlayer.van.condition ?? 100) - 2
+    )
+    // Increased breakdown chance when condition is low
+    // Respect any existing (upgrade-adjusted) breakdownChance as the base value.
+    const baseBreakdownChance =
+      typeof nextPlayer.van.breakdownChance === 'number'
+        ? nextPlayer.van.breakdownChance
+        : 0.05
+
+    let conditionMultiplier
+    if (nextPlayer.van.condition < 30) {
+      // Very low condition: significantly higher chance to break down
+      conditionMultiplier = 3.0
+    } else if (nextPlayer.van.condition < 60) {
+      // Worn condition: moderately higher chance
+      conditionMultiplier = 1.6
+    } else {
+      // Good condition: baseline chance
+      conditionMultiplier = 1.0
+    }
+
+    const adjustedBreakdownChance = baseBreakdownChance * conditionMultiplier
+    // Clamp to a reasonable range so chance stays between 0% and 50%
+    nextPlayer.van.breakdownChance = Math.max(
+      0,
+      Math.min(0.5, Math.round(adjustedBreakdownChance * 100) / 100)
+    )
+  }
+
+  // 2. Mood & Stamina Drift
   // Drift towards 50
   nextBand.members = nextBand.members.map(m => {
     let mood = m.mood
     if (mood > 50) mood -= 2
     else if (mood < 50) mood += 2
-    return { ...m, mood }
+
+    // Stamina Decay (Life on the road is tiring)
+    let stamina = typeof m.stamina === 'number' ? m.stamina : 100
+    stamina = Math.max(0, stamina - 5)
+
+    // Partial stamina recovery when band harmony is high
+    if (nextBand.harmony > 60) {
+      stamina = Math.min(100, stamina + 3)
+    }
+
+    return { ...m, mood, stamina }
   })
+
+  // Harmony Decay (Drifts towards 50 like mood)
+  if (nextBand.harmony > 50) {
+    nextBand.harmony -= 2
+  } else if (nextBand.harmony < 50) {
+    nextBand.harmony += 2
+  }
+
+  // Clamp harmony to valid range after all modifications
+  nextBand.harmony = Math.max(1, Math.min(100, nextBand.harmony))
 
   // 3. Social Decay
   // Viral decay
@@ -137,7 +192,7 @@ export const calculateDailyUpdates = currentState => {
 
   // 4. Passive Effects
   if (nextBand.harmonyRegenTravel) {
-    nextBand.harmony = Math.min(100, nextBand.harmony + 5)
+    nextBand.harmony = Math.min(100, nextBand.harmony + 2) // Reduced from 5
   }
   if (nextPlayer.passiveFollowers) {
     // Passive followers currently funnel into Instagram only
