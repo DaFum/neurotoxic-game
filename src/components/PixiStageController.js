@@ -408,10 +408,9 @@ class PixiStageController {
       }
     }
 
-    // Safe iteration: snapshot entries to avoid issues with map mutation during iteration
-    const activeNotes = Array.from(this.noteSprites.entries())
-
-    for (const [note, sprite] of activeNotes) {
+    // Direct iteration over the Map is safe even when deleting entries during iteration.
+    // This avoids allocating a new array every frame, reducing GC pressure.
+    for (const [note, sprite] of this.noteSprites) {
       if (note.hit) {
         const laneColor = state.lanes?.[note.laneIndex]?.color || 0xffffff
         this.spawnHitEffect(sprite.x, sprite.y, laneColor)
