@@ -11,21 +11,21 @@ import { spawn } from 'node:child_process'
  * @property {string[]} [fixArgs]
  */
 
-const findRepoRoot = async initialDirectory => {
-  let currentDir = initialDirectory
+const findRepoRoot = async startDir => {
+  let currentDir = startDir
   while (true) {
-    const gitDir = path.join(currentDir, '.git')
+    const candidate = path.join(currentDir, '.git')
     try {
-      const stat = await fs.stat(gitDir)
+      const stat = await fs.stat(candidate)
       if (stat.isDirectory() || stat.isFile()) {
         return currentDir
       }
     } catch (error) {
-      // continue walking up the tree
+      // continue walking up
     }
     const parentDir = path.dirname(currentDir)
     if (parentDir === currentDir) {
-      return initialDirectory
+      return startDir
     }
     currentDir = parentDir
   }

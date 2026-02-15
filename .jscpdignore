@@ -10,11 +10,7 @@ CLAUDE.md
 test_output.txt
 **/.agents/**
 **/.claude/**
-jscpd_output.txt
-jscpd_output_2.txt
-jscpd_output_3.txt
-jscpd_output_4.txt
-jscpd_output_5.txt
+jscpd_output*.txt
 **/*.mjs
 .claude/skills/mega-lint-snapshot/scripts/format-report.mjs
 .claude/skills/skilltest/scripts/skilltest-lib.mjs

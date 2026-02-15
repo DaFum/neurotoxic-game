@@ -309,20 +309,20 @@
     },
     {
       "title": "Social Engine",
-      "purpose": "Document src/utils/socialEngine.js mechanics including platform multipliers and virality scoring.",
+      "purpose": "Document src/utils/socialEngine.js mechanics: exported functions (e.g. createPost, calculateVirality), platform multiplier tables, virality scoring formula, integration with GameStateProvider via dispatched ActionTypes for followers/fame updates, and risk/reward trade-offs for each post type.",
       "parent": "Core Subsystems Overview",
       "page_notes": [
         "Explain risk/reward of post types.",
-        "Detail virality score calculation."
+        "Detail virality score calculation and how results feed into simulationUtils/economyEngine resource flow."
       ]
     },
     {
       "title": "Asset Generation",
-      "purpose": "Document src/utils/imageGen.js integration with Pollinations.ai for procedural assets.",
+      "purpose": "Document src/utils/imageGen.js integration with Pollinations.ai for procedural assets: prompt construction from IMG_PROMPTS categories, network request lifecycle, in-memory caching strategy, fallback behavior on fetch failure or offline state, and where generated assets are consumed by scene/UI components.",
       "parent": "Core Subsystems Overview",
       "page_notes": [
         "List prompt categories in IMG_PROMPTS.",
-        "Explain caching/fallback strategy."
+        "Explain caching/fallback strategy and document offline resilience given the no-backend architecture constraint."
       ]
     }
   ]
