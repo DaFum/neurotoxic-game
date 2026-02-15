@@ -5,6 +5,7 @@
  */
 
 import { CHARACTERS } from '../data/characters.js'
+import { LOG_LEVELS } from '../utils/logger.js'
 
 /**
  * Default player state configuration
@@ -103,6 +104,7 @@ const savedSettings = (() => {
 const DEFAULT_SETTINGS = {
   crtEnabled: true,
   tutorialSeen: false,
+  logLevel: LOG_LEVELS.DEBUG,
   ...savedSettings
 }
 
