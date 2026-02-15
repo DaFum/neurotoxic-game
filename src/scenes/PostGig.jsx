@@ -254,10 +254,10 @@ const SocialPhase = ({ options, onSelect }) => (
           className='border border-(--toxic-green) p-4 hover:bg-(--toxic-green)/10 text-left group transition-all'
         >
           <div className='font-bold mb-2 group-hover:text-(--star-white)'>
-            {opt.label}
+            {opt.title}
           </div>
           <div className='text-xs text-(--ash-gray)'>
-            Type: {opt.type} | Risk: {Math.round((1 - opt.chance) * 100)}%
+            Platform: {opt.platform} | Viral Chance: {Math.round((opt.viralChance ?? 0) * 100)}%
           </div>
         </button>
       ))}
