@@ -11,6 +11,7 @@ export const EXPENSE_CONSTANTS = {
     FUEL_PER_100KM: 12, // Liters
     FUEL_PRICE: 1.75, // Euro per Liter
     MAX_FUEL: 100, // Liters
+    REPAIR_COST_PER_UNIT: 3, // Per 1% condition
     INSURANCE_MONTHLY: 80,
     MAINTENANCE_30DAYS: 200
   },
@@ -48,6 +49,9 @@ const calculateTicketIncome = (gigData, playerFame, modifiers) => {
   // Promo Boost
   if (modifiers.promo) fillRate += 0.15
 
+  // Soundcheck Boost (word-of-mouth from quality prep)
+  if (modifiers.soundcheck) fillRate += 0.1
+
   // Price Sensitivity: Higher price reduces attendance slightly unless Fame is very high
   if (gigData.price > 15) {
     const pricePenalty = (gigData.price - 15) * 0.02 // -2% per Euro over 15
@@ -81,24 +85,31 @@ const calculateMerchIncome = (
   modifiers,
   bandInventory
 ) => {
-  let buyRate = 0.1 + (performanceScore / 100) * 0.2 // 10% - 30%
+  let buyRate = 0.15 + (performanceScore / 100) * 0.2 // 15% - 35%
   const breakdownItems = []
 
   if (performanceScore >= 95) {
-    buyRate *= 2.0 // S-Rank Bonus
+    buyRate *= 1.5 // S-Rank Bonus
     breakdownItems.push({
       label: 'HYPE BONUS',
       value: 0,
       detail: 'Merch frenzy (S-Rank)!'
     })
+  } else if (performanceScore < 40) {
+    buyRate *= 0.5 // Poor performance penalty
+    breakdownItems.push({
+      label: 'BAD SHOW',
+      value: 0,
+      detail: 'Crowd left early...'
+    })
   }
 
   const hasMerch = modifiers.merch || modifiers.merchTable
-  if (hasMerch) buyRate += 0.1 // Boost from table
+  if (hasMerch) buyRate += 0.1 // Boosted merch table effect to reward investment
 
-  // Penalty: Misses drive people away
+  // Penalty: Misses drive people away (scaled penalty)
   if (gigStats && gigStats.misses > 0) {
-    const missPenalty = Math.min(buyRate, gigStats.misses * 0.01)
+    const missPenalty = Math.min(buyRate * 0.5, gigStats.misses * 0.015)
     buyRate -= missPenalty
   }
 
@@ -232,7 +243,7 @@ const calculateGigExpenses = (gigData, modifiers) => {
 
   const hasMerch = modifiers.merch || modifiers.merchTable
   if (hasMerch) {
-    const merchTableCost = 40
+    const merchTableCost = 30
     expenses.breakdown.push({
       label: 'Merch Stand',
       value: merchTableCost,
@@ -299,6 +310,21 @@ export const calculateGigFinancials = (
   const tickets = calculateTicketIncome(gigData, playerFame, modifiers)
   report.income.breakdown.push(tickets.breakdownItem)
   report.income.total += tickets.revenue
+
+  // Venue Split / Promoter Cut
+  let splitRate = 0
+  if (gigData.diff >= 5)
+  const splitRate = gigData.diff >= 5 ? 0.7 : ({ 3: 0.2, 4: 0.4 }[gigData.diff] || 0);
+
+  if (splitRate > 0) {
+    const splitAmount = Math.floor(tickets.revenue * splitRate)
+    report.expenses.breakdown.push({
+      label: 'Venue Split',
+      value: splitAmount,
+      detail: `${splitRate * 100}% of Door`
+    })
+    report.expenses.total += splitAmount
+  }
 
   // 2. Guarantee
   if (gigData.pay > 0) {

@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useGameState } from '../context/GameState'
-import { Map, Users, DollarSign, Volume2, VolumeX } from 'lucide-react'
+import { Map as MapIcon, DollarSign, Volume2, VolumeX } from 'lucide-react'
 import { audioManager } from '../utils/AudioManager'
 
 /**
@@ -27,7 +27,7 @@ export const HUD = () => {
             <span>{player.money}€</span>
           </div>
           <div className='flex items-center gap-2'>
-            <Map size={16} />
+            <MapIcon size={16} />
             <span>
               Tag {player.day}: {player.location}
             </span>
@@ -65,10 +65,4 @@ export const HUD = () => {
       </div>
     </div>
   )
-}
-
-HUD.propTypes = {
-  // Validated via context mostly, but if props were passed:
-  // player: PropTypes.shape({ money: PropTypes.number, day: PropTypes.number, location: PropTypes.string }),
-  // band: PropTypes.shape({ members: PropTypes.array, harmony: PropTypes.number })
 }

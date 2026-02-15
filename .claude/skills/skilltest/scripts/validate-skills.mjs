@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { fileURLToPath } from 'node:url'
 import nodePath from 'node:path'
 import { discoverSkills } from './skilltest-lib.mjs'
