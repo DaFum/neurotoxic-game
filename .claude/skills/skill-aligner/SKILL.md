@@ -9,14 +9,14 @@ description: Analyze existing repo skills and rewrite them to match this codebas
 
 - `AGENTS.md` — authoritative repo conventions and critical constraints
 - `src/*/AGENTS.md` — domain-specific rules (one per domain)
-- `.agents/skills/*/SKILL.md` — all skill definitions to scan
+- `.claude/skills/*/SKILL.md` — all skill definitions to scan
 - `package.json` — real commands and script names
 
 ## Workflow
 
 1. Read `AGENTS.md` and relevant `src/*/AGENTS.md` files to capture authoritative conventions.
 2. Review `package.json` scripts for real commands and required ordering (lint → test → build).
-3. Scan all `.agents/skills/*/SKILL.md` files for mismatched commands, paths, or terminology.
+3. Scan all `.claude/skills/*/SKILL.md` files for mismatched commands, paths, or terminology.
 4. Verify each skill has a "Key Files" section with actual project paths.
 5. Verify each skill has a "Related Skills" section for cross-references.
 6. Rewrite `SKILL.md` files to match repo language, paths, and constraints.

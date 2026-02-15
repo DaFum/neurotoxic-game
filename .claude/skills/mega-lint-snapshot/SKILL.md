@@ -12,9 +12,9 @@ Produce deterministic, MegaLinter-style output for the repo's lint/quality check
 ## How to Use
 
 1. Prefer running the script for consistent formatting:
-   - `./.agents/skills/mega-lint-snapshot/scripts/run-mega-lint.sh`
+   - `./.claude/skills/mega-lint-snapshot/scripts/run-mega-lint.sh`
 2. If the user explicitly requests autofix, run:
-   - `./.agents/skills/mega-lint-snapshot/scripts/run-mega-lint.sh --fix`
+   - `./.claude/skills/mega-lint-snapshot/scripts/run-mega-lint.sh --fix`
 3. If the output references unavailable tools, report the errors and keep the rest of the report intact.
 
 ## Configuration

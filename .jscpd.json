@@ -7,9 +7,9 @@
     ".git",
     ".github",
     "CLAUDE.md",
-    ".agents",
     ".claude",
-    "test_output.txt"
+    "test_output.txt",
+    "**/.claude/**"
   ],
   "threshold": 0
 }

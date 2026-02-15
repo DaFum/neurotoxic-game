@@ -19,6 +19,10 @@
     {
       "content": "Deprioritize dist/, node_modules/, and generated files. If space is needed, consolidate low-priority implementation details into page_notes under parent architecture pages rather than creating more top-level pages.",
       "author": "Quality"
+    },
+    {
+      "content": "Procedural asset generation (images) integrated via Pollinations.ai (imageGen.js) and social media simulation (socialEngine.js).",
+      "author": "Developer"
     }
   ],
   "pages": [
@@ -97,7 +101,7 @@
     },
     {
       "title": "Core Subsystems Overview",
-      "purpose": "Provide a subsystem dependency map that names primary files and key functions: AudioManager + audioEngine playback lifecycle, GameStateProvider + gameReducer state transitions, useRhythmGameLogic timing loop, PixiStageController render/update cycle, calculateGigFinancials()/calculateTravelExpenses() economy pipeline, mapGenerator travel topology, and checkEvent()/resolveChoice() event resolution, with triggerEvent() wrapper behavior documented in src/context/GameState.jsx.",
+      "purpose": "Provide a subsystem dependency map that names primary files and key functions: AudioManager + audioEngine playback lifecycle, GameStateProvider + gameReducer state transitions, useRhythmGameLogic timing loop, PixiStageController render/update cycle, calculateGigFinancials()/calculateTravelExpenses() economy pipeline, mapGenerator travel topology, and checkEvent()/resolveChoice() event resolution, with triggerEvent() wrapper behavior documented in src/context/GameState.jsx, src/utils/socialEngine.js, src/utils/imageGen.js, and src/utils/hecklerLogic.js.",
       "parent": "Overview",
       "page_notes": [
         "Keep this page architecture-focused; push low-priority details into child page_notes to conserve page budget.",
@@ -111,7 +115,8 @@
       "page_notes": [
         "Document four playback fallback modes (OGG -> MIDI -> note data -> procedural) and when each path is chosen.",
         "Call out disposal guarantees and known cleanup caveats around layered instrument nodes and exception safety during teardown.",
-        "Include expected parameter defaults for critical synth/effect nodes and where deviations are introduced by song metadata."
+        "Include expected parameter defaults for critical synth/effect nodes and where deviations are introduced by song metadata.",
+        "Helper utilities audioContextState.js, audioSelectionUtils.js, and audioTimingUtils.js encapsulate low-level logic."
       ]
     },
     {
@@ -121,7 +126,8 @@
       "page_notes": [
         "Explain timing sources (AudioContext.currentTime, Tone.now(), or game clock refs) and how drift is mitigated between audio and visual lanes.",
         "Include where gameplay output is written back to state for post-gig calculations.",
-        "Specify how hit-judgment windows scale (or do not scale) with difficulty and where those constants are defined."
+        "Specify how hit-judgment windows scale (or do not scale) with difficulty and where those constants are defined.",
+        "Heckler mechanics (projectile spawning) are handled by src/utils/hecklerLogic.js; timing sync uses audioTimingUtils.js."
       ]
     },
     {
@@ -194,7 +200,8 @@
       "page_notes": [
         "Call out alias mapping behavior and whether repeated effect keys accumulate or overwrite during composite event resolution.",
         "Include deterministic testing strategy using mocked random values from tests/eventEngine.test.js.",
-        "Include guardrails for adding new effect keys so unknown keys fail safely or are ignored deterministically."
+        "Include guardrails for adding new effect keys so unknown keys fail safely or are ignored deterministically.",
+        "State mutations are centralized in gameStateUtils.js (applyEventDelta); event flow is wrapped by eventResolver.js."
       ]
     },
     {
@@ -298,6 +305,24 @@
         "Write the note positioning and hit-detection equations as explicit formulas (spawn lead-in, travel distance, hit window, miss window) and map each term to runtime variables.",
         "Consolidate concrete balancing formulas for daily updates, resource flow, and gig performance modifiers (money/fuel/harmony/followers/fame multipliers) so contributors can reason about economy changes without scanning multiple utilities.",
         "Include implementation details for visual feedback systems (lane flashes, hit sparks, crowd/CRT effects) with timing constants and cleanup behavior to prevent animation memory leaks."
+      ]
+    },
+    {
+      "title": "Social Engine",
+      "purpose": "Document src/utils/socialEngine.js mechanics: exported functions (e.g. createPost, calculateVirality), platform multiplier tables, virality scoring formula, integration with GameStateProvider via dispatched ActionTypes for followers/fame updates, and risk/reward trade-offs for each post type.",
+      "parent": "Core Subsystems Overview",
+      "page_notes": [
+        "Explain risk/reward of post types.",
+        "Detail virality score calculation and how results feed into simulationUtils/economyEngine resource flow."
+      ]
+    },
+    {
+      "title": "Asset Generation",
+      "purpose": "Document src/utils/imageGen.js integration with Pollinations.ai for procedural assets: prompt construction from IMG_PROMPTS categories, network request lifecycle, in-memory caching strategy, fallback behavior on fetch failure or offline state, and where generated assets are consumed by scene/UI components.",
+      "parent": "Core Subsystems Overview",
+      "page_notes": [
+        "List prompt categories in IMG_PROMPTS.",
+        "Explain caching/fallback strategy and document offline resilience given the no-backend architecture constraint."
       ]
     }
   ]

@@ -1,4 +1,0 @@
-interface:
-  display_name: 'One-Command Doctor'
-  short_description: 'Run a quick healthcheck and summarize likely fixes.'
-  default_prompt: 'Run the doctor healthcheck and diagnose any issues.'
