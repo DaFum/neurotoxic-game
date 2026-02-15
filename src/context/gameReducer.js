@@ -201,6 +201,24 @@ const handleLoadGame = (state, payload) => {
   // 4. Construct Safe State (Whitelist)
   const safeState = {
     ...state,
+    player: mergedPlayer,
+    band: mergedBand,
+    social: mergedSocial,
+    gameMap: loadedState.gameMap || state.gameMap,
+    setlist: Array.isArray(loadedState.setlist) ? loadedState.setlist : [],
+    activeStoryFlags: Array.isArray(loadedState.activeStoryFlags)
+      ? loadedState.activeStoryFlags
+      : [],
+    eventCooldowns: Array.isArray(loadedState.eventCooldowns)
+      ? loadedState.eventCooldowns
+      : [],
+    pendingEvents: Array.isArray(loadedState.pendingEvents)
+      ? loadedState.pendingEvents
+      : [],
+    reputationByRegion: loadedState.reputationByRegion || {},
+    npcs: loadedState.npcs || {},
+    settings: { ...state.settings, ...loadedState.settings },
+    gigModifiers: { ...DEFAULT_GIG_MODIFIERS, ...loadedState.gigModifiers },
     currentScene: loadedState.currentScene || 'OVERWORLD',
     setlist: Array.isArray(loadedState.setlist) ? loadedState.setlist : [],
     unlocks: Array.isArray(loadedState.unlocks) ? loadedState.unlocks : [],
