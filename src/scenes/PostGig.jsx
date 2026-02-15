@@ -148,7 +148,6 @@ export const PostGig = () => {
   )
 }
 
-
 const ReportPhase = ({ financials, onNext }) => (
   <div className='space-y-6'>
     <div className='grid grid-cols-2 gap-8'>

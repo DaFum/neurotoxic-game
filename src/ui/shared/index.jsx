@@ -5,7 +5,6 @@ import React from 'react'
  * @module shared
  */
 
-
 import PropTypes from 'prop-types'
 
 // Export SettingsPanel

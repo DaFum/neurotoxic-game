@@ -1,7 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-
 /**
  * A stylized button component with glitch and hover effects.
  * @param {object} props

@@ -81,7 +81,7 @@ const calculateMerchIncome = (
   modifiers,
   bandInventory
 ) => {
-  let buyRate = 0.20 + (performanceScore / 100) * 0.15 // 20% - 35%
+  let buyRate = 0.2 + (performanceScore / 100) * 0.15 // 20% - 35%
   const breakdownItems = []
 
   if (performanceScore >= 95) {
