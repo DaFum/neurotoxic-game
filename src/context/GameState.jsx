@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useEffect } from 'react'
+import { createContext, useContext, useReducer, useEffect, useCallback, useMemo } from 'react'
 import { eventEngine } from '../utils/eventEngine'
 import { resolveEventChoice } from '../utils/eventResolver'
 import { MapGenerator } from '../utils/mapGenerator'
@@ -71,31 +71,31 @@ export const GameStateProvider = ({ children }) => {
    * Transitions the game to a different scene.
    * @param {string} scene - The target scene name (e.g., 'OVERWORLD').
    */
-  const changeScene = scene => dispatch(createChangeSceneAction(scene))
+  const changeScene = useCallback(scene => dispatch(createChangeSceneAction(scene)), [])
 
   /**
    * Updates player state properties (money, fame, etc.).
    * @param {object} updates - Object containing keys to update.
    */
-  const updatePlayer = updates => dispatch(createUpdatePlayerAction(updates))
+  const updatePlayer = useCallback(updates => dispatch(createUpdatePlayerAction(updates)), [])
 
   /**
    * Updates band state properties (members, harmony, inventory).
    * @param {object} updates - Object containing keys to update.
    */
-  const updateBand = updates => dispatch(createUpdateBandAction(updates))
+  const updateBand = useCallback(updates => dispatch(createUpdateBandAction(updates)), [])
 
   /**
    * Updates social media metrics.
    * @param {object} updates - Object containing keys to update.
    */
-  const updateSocial = updates => dispatch(createUpdateSocialAction(updates))
+  const updateSocial = useCallback(updates => dispatch(createUpdateSocialAction(updates)), [])
 
   /**
    * Updates global settings.
    * @param {object} updates - Object containing keys to update.
    */
-  const updateSettings = updates => {
+  const updateSettings = useCallback(updates => {
     dispatch(createUpdateSettingsAction(updates))
 
     // Synchronize logger if logLevel is updated
@@ -111,107 +111,107 @@ export const GameStateProvider = ({ children }) => {
       const next = { ...current, ...updates }
       localStorage.setItem('neurotoxic_global_settings', JSON.stringify(next))
     })
-  }
+  }, [])
 
   /**
    * Sets the generated game map.
    * @param {object} map - The map object.
    */
-  const setGameMap = map => dispatch(createSetMapAction(map))
+  const setGameMap = useCallback(map => dispatch(createSetMapAction(map)), [])
 
   /**
    * Sets the current gig data context.
    * @param {object} gig - The gig data object.
    */
-  const setCurrentGig = gig => dispatch(createSetGigAction(gig))
+  const setCurrentGig = useCallback(gig => dispatch(createSetGigAction(gig)), [])
 
   /**
    * Initiates the gig sequence.
    * @param {object} venue - The venue object.
    */
-  const startGig = venue => dispatch(createStartGigAction(venue))
+  const startGig = useCallback(venue => dispatch(createStartGigAction(venue)), [])
 
   /**
    * Updates the active setlist.
    * @param {Array} list - Array of song objects or IDs.
    */
-  const setSetlist = list => dispatch(createSetSetlistAction(list))
+  const setSetlist = useCallback(list => dispatch(createSetSetlistAction(list)), [])
 
   /**
    * Stores the statistics from the last played gig.
    * @param {object} stats - The stats object.
    */
-  const setLastGigStats = stats => dispatch(createSetLastGigStatsAction(stats))
+  const setLastGigStats = useCallback(stats => dispatch(createSetLastGigStatsAction(stats)), [])
 
   /**
    * Sets the currently active event (blocking modal).
    * @param {object} event - The event object or null.
    */
-  const setActiveEvent = event => dispatch(createSetActiveEventAction(event))
+  const setActiveEvent = useCallback(event => dispatch(createSetActiveEventAction(event)), [])
 
   /**
    * Updates gig modifiers (toggles like catering, promo).
    * @param {object|Function} payload - The new modifiers or an updater function.
    */
-  const setGigModifiers = payload =>
-    dispatch(createSetGigModifiersAction(payload))
+  const setGigModifiers = useCallback(payload =>
+    dispatch(createSetGigModifiersAction(payload)), [])
 
   /**
    * Adds a toast notification.
    * @param {string} message - The message to display.
    * @param {string} [type='info'] - Type of toast (info, success, error, warning).
    */
-  const addToast = (message, type = 'info') => {
+  const addToast = useCallback((message, type = 'info') => {
     const action = createAddToastAction(message, type)
     dispatch(action)
     setTimeout(() => {
       dispatch(createRemoveToastAction(action.payload.id))
     }, 3000)
-  }
+  }, [])
 
   /**
    * Checks if the player owns a specific van upgrade.
    * @param {string} upgradeId - The ID of the upgrade.
    * @returns {boolean} True if owned.
    */
-  const hasUpgrade = upgradeId => state.player.van.upgrades.includes(upgradeId)
+  const hasUpgrade = useCallback(upgradeId => state.player.van.upgrades.includes(upgradeId), [state.player.van.upgrades])
 
   /**
    * Consumes a consumable item from band inventory.
    * @param {string} itemType - The item key (e.g., 'strings').
    */
-  const consumeItem = itemType => dispatch(createConsumeItemAction(itemType))
+  const consumeItem = useCallback(itemType => dispatch(createConsumeItemAction(itemType)), [])
 
   /**
    * Advances the game day, deducting living costs and updating simulations.
    */
-  const advanceDay = () => {
+  const advanceDay = useCallback(() => {
     const nextDay = state.player.day + 1
     dispatch(createAdvanceDayAction())
     addToast(`Day ${nextDay}: Living Costs Deducted.`, 'info')
-  }
+  }, [state.player.day, addToast])
 
   /**
    * Resets the game state to initial values.
    */
-  const resetState = () => dispatch(createResetStateAction())
+  const resetState = useCallback(() => dispatch(createResetStateAction()), [])
 
   // Persistence
   /**
    * Deletes the save file and reloads the application.
    */
-  const deleteSave = () => {
+  const deleteSave = useCallback(() => {
     safeStorageOperation('deleteSave', () => {
       localStorage.removeItem('neurotoxic_v3_save')
     })
     changeScene('MENU')
     window.location.reload()
-  }
+  }, [changeScene])
 
   /**
    * Persists the current state to localStorage.
    */
-  const saveGame = () => {
+  const saveGame = useCallback(() => {
     // Only persist minimal setlist info to avoid bloat
     const saveData = { ...state, timestamp: Date.now() }
 
@@ -241,13 +241,13 @@ export const GameStateProvider = ({ children }) => {
     } else {
       handleError(new StorageError('Failed to save game'), { addToast })
     }
-  }
+  }, [state, addToast])
 
   /**
    * Loads the game state from localStorage.
    * @returns {boolean} True if load was successful.
    */
-  const loadGame = () => {
+  const loadGame = useCallback(() => {
     return safeStorageOperation(
       'loadGame',
       () => {
@@ -274,7 +274,7 @@ export const GameStateProvider = ({ children }) => {
       },
       false
     )
-  }
+  }, [addToast])
 
   // Event System Integration
   /**
@@ -283,7 +283,7 @@ export const GameStateProvider = ({ children }) => {
    * @param {string|null} [triggerPoint=null] - Specific trigger point.
    * @returns {boolean} True if an event was triggered.
    */
-  const triggerEvent = (category, triggerPoint = null) => {
+  const triggerEvent = useCallback((category, triggerPoint = null) => {
     // Harte Regel: Events nur in Overworld/PreGig/PostGig, oder wenn explizit erlaubt (z.B. Pause)
     // "GIG" scene should not be interrupted unless critical logic allows it.
     if (state.currentScene === 'GIG') {
@@ -316,14 +316,14 @@ export const GameStateProvider = ({ children }) => {
       return true
     }
     return false
-  }
+  }, [state, setActiveEvent])
 
   /**
    * Resolves an event choice and applies its effects.
    * @param {object} choice - The selected choice object.
    * @returns {object} Outcome text and description.
    */
-  const resolveEvent = choice => {
+  const resolveEvent = useCallback(choice => {
     // 1. Validation
     if (!choice) {
       setActiveEvent(null)
@@ -408,36 +408,60 @@ export const GameStateProvider = ({ children }) => {
         result: null
       }
     }
-  }
+  }, [state, setActiveEvent, addToast, changeScene])
+
+  const contextValue = useMemo(() => ({
+    ...state, // Spread state properties
+    changeScene,
+    updatePlayer,
+    updateBand,
+    updateSocial,
+    setGameMap,
+    setCurrentGig,
+    startGig,
+    setSetlist,
+    setLastGigStats,
+    setActiveEvent,
+    triggerEvent,
+    resolveEvent,
+    addToast,
+    setGigModifiers,
+    hasUpgrade,
+    consumeItem,
+    advanceDay,
+    saveGame,
+    loadGame,
+    deleteSave,
+    resetState,
+    updateSettings
+  }), [
+    state,
+    changeScene,
+    updatePlayer,
+    updateBand,
+    updateSocial,
+    setGameMap,
+    setCurrentGig,
+    startGig,
+    setSetlist,
+    setLastGigStats,
+    setActiveEvent,
+    triggerEvent,
+    resolveEvent,
+    addToast,
+    setGigModifiers,
+    hasUpgrade,
+    consumeItem,
+    advanceDay,
+    saveGame,
+    loadGame,
+    deleteSave,
+    resetState,
+    updateSettings
+  ])
 
   return (
-    <GameStateContext.Provider
-      value={{
-        ...state, // Spread state properties
-        changeScene,
-        updatePlayer,
-        updateBand,
-        updateSocial,
-        setGameMap,
-        setCurrentGig,
-        startGig,
-        setSetlist,
-        setLastGigStats,
-        setActiveEvent,
-        triggerEvent,
-        resolveEvent,
-        addToast,
-        setGigModifiers,
-        hasUpgrade,
-        consumeItem,
-        advanceDay,
-        saveGame,
-        loadGame,
-        deleteSave,
-        resetState,
-        updateSettings
-      }}
-    >
+    <GameStateContext.Provider value={contextValue}>
       {children}
     </GameStateContext.Provider>
   )
