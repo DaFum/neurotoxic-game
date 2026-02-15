@@ -225,7 +225,14 @@ const handleLoadGame = (state, payload) => {
   }
 
   // Security: Only allow valid gameplay scenes from save
-  const ALLOWED_SCENES = ['OVERWORLD', 'PREGIG', 'GIG', 'POSTGIG', 'HQ', 'BAND_HQ']
+  const ALLOWED_SCENES = [
+    'OVERWORLD',
+    'PREGIG',
+    'GIG',
+    'POSTGIG',
+    'HQ',
+    'BAND_HQ'
+  ]
   if (!ALLOWED_SCENES.includes(safeState.currentScene)) {
     safeState.currentScene = state.currentScene
   }

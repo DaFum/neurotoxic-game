@@ -216,28 +216,21 @@ const ReportPhase = ({ financials, onNext }) => (
   </div>
 )
 
+const financialCategoryShape = PropTypes.shape({
+  total: PropTypes.number.isRequired,
+  breakdown: PropTypes.arrayOf(
+    PropTypes.shape({
+      label: PropTypes.string.isRequired,
+      value: PropTypes.number.isRequired,
+      detail: PropTypes.string
+    })
+  ).isRequired
+})
+
 ReportPhase.propTypes = {
   financials: PropTypes.shape({
-    income: PropTypes.shape({
-      total: PropTypes.number.isRequired,
-      breakdown: PropTypes.arrayOf(
-        PropTypes.shape({
-          label: PropTypes.string.isRequired,
-          value: PropTypes.number.isRequired,
-          detail: PropTypes.string
-        })
-      ).isRequired
-    }).isRequired,
-    expenses: PropTypes.shape({
-      total: PropTypes.number.isRequired,
-      breakdown: PropTypes.arrayOf(
-        PropTypes.shape({
-          label: PropTypes.string.isRequired,
-          value: PropTypes.number.isRequired,
-          detail: PropTypes.string
-        })
-      ).isRequired
-    }).isRequired,
+    income: financialCategoryShape.isRequired,
+    expenses: financialCategoryShape.isRequired,
     net: PropTypes.number.isRequired
   }).isRequired,
   onNext: PropTypes.func.isRequired
