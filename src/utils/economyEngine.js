@@ -312,9 +312,8 @@ export const calculateGigFinancials = (
   report.income.total += tickets.revenue
 
   // Venue Split / Promoter Cut
-  let splitRate = 0
-  if (gigData.diff >= 5)
-  const splitRate = gigData.diff >= 5 ? 0.7 : ({ 3: 0.2, 4: 0.4 }[gigData.diff] || 0);
+  const splitRate =
+    gigData.diff >= 5 ? 0.7 : ({ 3: 0.2, 4: 0.4 }[gigData.diff] || 0)
 
   if (splitRate > 0) {
     const splitAmount = Math.floor(tickets.revenue * splitRate)
