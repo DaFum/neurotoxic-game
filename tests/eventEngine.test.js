@@ -11,6 +11,18 @@ const MOCK_EVENTS = {
   ]
 }
 
+// Mock logger
+const mockLogger = {
+  error: mock.fn(),
+  debug: mock.fn(),
+  info: mock.fn(),
+  warn: mock.fn()
+}
+
+mock.module('../src/utils/logger.js', {
+  namedExports: { logger: mockLogger }
+})
+
 mock.module('../src/data/events.js', {
   namedExports: { EVENTS_DB: MOCK_EVENTS }
 })
@@ -500,4 +512,26 @@ test('eventEngine.applyResult accumulates fame from mixed stats (fame, hype, cro
     18,
     'Should accumulate all fame-related stats (10 + 5 + 3)'
   )
+})
+
+test('eventEngine.selectEvent handles condition errors gracefully', () => {
+  const throwingEvent = {
+    id: 'throwing_event',
+    trigger: 'travel',
+    condition: () => {
+      throw new Error('Condition failed')
+    }
+  }
+  const pool = [throwingEvent]
+  const state = buildGameState()
+
+  // Should catch error and filter out event, returning null (or another valid event if present)
+  const result = eventEngine.selectEvent(pool, state, 'travel')
+
+  assert.equal(result, null)
+  assert.strictEqual(mockLogger.error.mock.calls.length, 1)
+  const [channel, message, error] = mockLogger.error.mock.calls[0].arguments
+  assert.equal(channel, 'EventEngine')
+  assert.match(message, /Condition check failed for event throwing_event/)
+  assert.match(error.message, /Condition failed/)
 })
