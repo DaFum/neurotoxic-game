@@ -81,14 +81,15 @@ const oggUrlMap = buildAssetUrlMap(
 // Log bundled OGG inventory at module load for diagnostics.
 // oggUrlMap stores both full relative paths and basenames; prefer full paths for accurate count.
 const oggAssetKeys = Object.keys(oggUrlMap).filter(k => k.endsWith('.ogg'))
-let oggKeysForLogging = oggAssetKeys.filter(k => k.includes('/'))
-if (oggKeysForLogging.length === 0 && oggAssetKeys.length > 0) {
-  oggKeysForLogging = oggAssetKeys
+// Cache candidate list for ambient playback to avoid repeated filtering
+let oggCandidates = oggAssetKeys.filter(k => k.includes('/'))
+if (oggCandidates.length === 0 && oggAssetKeys.length > 0) {
+  oggCandidates = oggAssetKeys
 }
-if (oggKeysForLogging.length > 0) {
+if (oggCandidates.length > 0) {
   logger.info(
     'AudioEngine',
-    `Bundled ${oggKeysForLogging.length} OGG asset(s): ${oggKeysForLogging.join(', ')}`
+    `Bundled ${oggCandidates.length} OGG asset(s): ${oggCandidates.join(', ')}`
   )
 } else {
   logger.warn(
@@ -771,9 +772,9 @@ export async function loadAudioBuffer(filename) {
   const { url, source } = resolveAssetUrl(filename, oggUrlMap, publicBasePath)
   if (!url) {
     const keysPreview =
-      oggKeysForLogging.length <= 5
-        ? oggKeysForLogging.join(', ')
-        : `${oggKeysForLogging.slice(0, 5).join(', ')} … (${oggKeysForLogging.length} total)`
+      oggCandidates.length <= 5
+        ? oggCandidates.join(', ')
+        : `${oggCandidates.slice(0, 5).join(', ')} … (${oggCandidates.length} total)`
     logger.warn(
       'AudioEngine',
       `Audio asset not found: "${filename}". Available OGG keys: [${keysPreview}]`
@@ -1869,15 +1870,12 @@ export async function playRandomAmbientOgg(
     stopAudio()
   }
 
-  const oggFiles = Object.keys(oggUrlMap).filter(k => k.endsWith('.ogg'))
-  let candidates = oggFiles.filter(k => k.includes('/'))
-  if (candidates.length === 0) candidates = oggFiles
-  if (candidates.length === 0) {
+  if (oggCandidates.length === 0) {
     logger.warn('AudioEngine', 'No OGG files available for ambient playback')
     return false
   }
 
-  const filename = selectRandomItem(candidates, rng)
+  const filename = selectRandomItem(oggCandidates, rng)
   if (!filename) {
     logger.warn('AudioEngine', 'Random OGG selection returned null')
     return false
