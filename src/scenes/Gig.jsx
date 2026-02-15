@@ -58,12 +58,16 @@ export const Gig = () => {
               {
                 label: 'QUIT GIG',
                 variant: 'danger',
-                action: () => {
-                  import('../utils/audioEngine').then(m => {
-                    m.stopAudio()
+                action: async () => {
+                  try {
+                    const { stopAudio } = await import('../utils/audioEngine')
+                    stopAudio()
+                  } catch (_err) {
+                    // Audio cleanup failed, continue with scene transition
+                  } finally {
                     setActiveEvent(null)
                     changeScene('OVERWORLD')
-                  })
+                  }
                 }
               }
             ]

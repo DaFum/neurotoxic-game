@@ -66,7 +66,11 @@ test('eventEngine.filterEvents respects conditions', () => {
 
 test('eventEngine.selectEvent respects cooldowns', () => {
   const state = buildGameState({ eventCooldowns: ['event_cooldown'] })
-  const selected = eventEngine.selectEvent(MOCK_EVENTS.transport, state, 'pre_gig')
+  const selected = eventEngine.selectEvent(
+    MOCK_EVENTS.transport,
+    state,
+    'pre_gig'
+  )
   // Should skip event_cooldown and pick event_normal or event_pending
   assert.ok(selected.id !== 'event_cooldown')
 })
@@ -75,12 +79,17 @@ test('eventEngine.selectEvent prioritizes pending events', () => {
   const state = buildGameState({
     pendingEvents: ['event_pending']
   })
-  const selected = eventEngine.selectEvent(MOCK_EVENTS.transport, state, 'pre_gig')
+  const selected = eventEngine.selectEvent(
+    MOCK_EVENTS.transport,
+    state,
+    'pre_gig'
+  )
   assert.equal(selected.id, 'event_pending')
 })
 
 test('eventEngine.resolveChoice handles simple effects', () => {
-  const option = { nextEventId: 'next_event',
+  const option = {
+    nextEventId: 'next_event',
     effect: { type: 'resource', resource: 'money', value: -50 }
   }
   const result = eventEngine.resolveChoice(option, {})
@@ -89,7 +98,8 @@ test('eventEngine.resolveChoice handles simple effects', () => {
 
 test('eventEngine.resolveChoice handles skill checks (success)', () => {
   mockRandom.mock.mockImplementationOnce(() => 0.9) // High roll
-  const option = { nextEventId: 'next_event',
+  const option = {
+    nextEventId: 'next_event',
     skillCheck: {
       stat: 'skill',
       threshold: 5,
@@ -105,7 +115,8 @@ test('eventEngine.resolveChoice handles skill checks (success)', () => {
 
 test('eventEngine.resolveChoice handles skill checks (failure)', () => {
   mockRandom.mock.mockImplementationOnce(() => 0.1) // Low roll
-  const option = { nextEventId: 'next_event',
+  const option = {
+    nextEventId: 'next_event',
     skillCheck: {
       stat: 'skill',
       threshold: 5,
@@ -123,7 +134,8 @@ test('eventEngine.resolveChoice handles luck checks', () => {
   // Threshold 5. Mock random 0.6 -> 6.0 > 5 -> Success
   mockRandom.mock.mockImplementationOnce(() => 0.6)
 
-  const option = { nextEventId: 'next_event',
+  const option = {
+    nextEventId: 'next_event',
     skillCheck: {
       stat: 'luck',
       threshold: 5,
@@ -138,15 +150,12 @@ test('eventEngine.resolveChoice handles luck checks', () => {
 })
 
 test('eventEngine.resolveChoice sets nextEventId', () => {
-  const option = { nextEventId: 'next_event',
+  const option = {
+    nextEventId: 'next_event',
     effect: { type: 'chain', eventId: 'next_event' }
   }
   const result = eventEngine.resolveChoice(option, {})
-  assert.equal(
-    result.nextEventId,
-    'next_event',
-    'Should propagate nextEventId'
-  )
+  assert.equal(result.nextEventId, 'next_event', 'Should propagate nextEventId')
 })
 
 test('eventEngine.processOptions returns event when no processing needed', () => {
@@ -165,7 +174,10 @@ test('eventEngine.processOptions returns event when no processing needed', () =>
 })
 
 test('eventEngine.processOptions handles van_breakdown with spare_tire', () => {
-  const event = { ...TEST_EVENT_VAN_BREAKDOWN, options: [...TEST_EVENT_VAN_BREAKDOWN.options] }
+  const event = {
+    ...TEST_EVENT_VAN_BREAKDOWN,
+    options: [...TEST_EVENT_VAN_BREAKDOWN.options]
+  }
   const state = buildGameState({
     band: { ...buildGameState().band, inventory: { spare_tire: true } }
   })
@@ -173,8 +185,8 @@ test('eventEngine.processOptions handles van_breakdown with spare_tire', () => {
   const result = eventEngine.processOptions(event, state)
 
   assert.ok(result, 'Should return modified event')
-  const spareTireOption = result.options.find(opt =>
-    opt.label === 'Use Spare Tire (Inventory)'
+  const spareTireOption = result.options.find(
+    opt => opt.label === 'Use Spare Tire (Inventory)'
   )
   assert.ok(
     spareTireOption,
@@ -183,15 +195,18 @@ test('eventEngine.processOptions handles van_breakdown with spare_tire', () => {
 })
 
 test('eventEngine.processOptions does not add spare tire option without inventory', () => {
-  const event = { ...TEST_EVENT_VAN_BREAKDOWN, options: [...TEST_EVENT_VAN_BREAKDOWN.options] }
+  const event = {
+    ...TEST_EVENT_VAN_BREAKDOWN,
+    options: [...TEST_EVENT_VAN_BREAKDOWN.options]
+  }
   const state = buildGameState({
     band: { ...buildGameState().band, inventory: { spare_tire: false } }
   })
 
   const result = eventEngine.processOptions(event, state)
 
-  const spareTireOption = result.options.find(opt =>
-    opt.label === 'Use Spare Tire (Inventory)'
+  const spareTireOption = result.options.find(
+    opt => opt.label === 'Use Spare Tire (Inventory)'
   )
   assert.ok(
     !spareTireOption,

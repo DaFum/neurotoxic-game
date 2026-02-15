@@ -30,6 +30,7 @@ import {
 } from '../utils/rhythmUtils'
 import { updateProjectiles, trySpawnProjectile } from '../utils/hecklerLogic'
 import { handleError, AudioError } from '../utils/errorHandler'
+import { logger } from '../utils/logger'
 import { SONGS_DB } from '../data/songs'
 
 /**
@@ -271,7 +272,13 @@ export const useRhythmGameLogic = () => {
             delayMs: GIG_LEAD_IN_MS,
             durationMs: gigDurationMs
           })
-          if (success) bgAudioStarted = true
+          if (success) {
+            bgAudioStarted = true
+            logger.info(
+              'RhythmGame',
+              `Gig audio: OGG buffer playback for "${currentSong.name}" (offset=${excerptStart}ms, duration=${gigDurationMs}ms)`
+            )
+          }
         }
       }
 
@@ -300,7 +307,13 @@ export const useRhythmGameLogic = () => {
             useCleanPlayback: false
           }
         )
-        if (success) bgAudioStarted = true
+        if (success) {
+          bgAudioStarted = true
+          logger.info(
+            'RhythmGame',
+            `Gig audio: MIDI synthesis fallback for "${currentSong.name}" (offset=${offsetSeconds.toFixed(1)}s, stop=${gigPlaybackSeconds.toFixed(1)}s)`
+          )
+        }
       }
 
       // Fallback: If MIDI failed (or didn't exist), try to synthesize from note data
@@ -311,7 +324,13 @@ export const useRhythmGameLogic = () => {
           currentSong,
           GIG_LEAD_IN_MS / 1000
         )
-        if (success) bgAudioStarted = true
+        if (success) {
+          bgAudioStarted = true
+          logger.info(
+            'RhythmGame',
+            `Gig audio: note data synthesis for "${currentSong.name}"`
+          )
+        }
       }
 
       // If parsing failed or no notes (empty/invalid), OR audio failed to start, fall back to procedural generation
@@ -335,6 +354,10 @@ export const useRhythmGameLogic = () => {
           audioDelay = GIG_LEAD_IN_MS / 1000
           startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
           await startMetalGenerator(currentSong, audioDelay, rng)
+          logger.info(
+            'RhythmGame',
+            `Gig audio: procedural metal generator for "${currentSong.name}" (all other paths failed)`
+          )
         }
       }
 

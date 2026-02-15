@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import { useGameState } from '../context/GameState'
 import { getRandomChatter } from '../data/chatter'

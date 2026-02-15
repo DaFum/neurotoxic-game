@@ -260,6 +260,7 @@ export const Overworld = () => {
     getNodeVisibility,
     handleTravel,
     handleRefuel,
+    handleRepair,
     onTravelComplete,
     travelCompletedRef
   } = useTravelLogic({
@@ -448,6 +449,13 @@ export const Overworld = () => {
           className='bg-(--void-black) border border-(--warning-yellow) text-(--warning-yellow) px-4 py-2 hover:bg-(--warning-yellow) hover:text-(--void-black) font-mono text-sm disabled:opacity-50'
         >
           [REFUEL]
+        </button>
+        <button
+          onClick={handleRepair}
+          disabled={isTraveling || (player.van?.condition ?? 100) >= 100}
+          className='bg-(--void-black) border border-(--toxic-green) text-(--toxic-green) px-4 py-2 hover:bg-(--toxic-green) hover:text-(--void-black) font-mono text-sm disabled:opacity-50'
+        >
+          [REPAIR]
         </button>
         <button
           onClick={saveGame}

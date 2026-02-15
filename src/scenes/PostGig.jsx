@@ -31,6 +31,11 @@ export const PostGig = () => {
   const [postOptions, setPostOptions] = useState([])
   const [postResult, setPostResult] = useState(null)
 
+  const perfScore = React.useMemo(() => {
+    const rawScore = lastGigStats?.score || 0
+    return Math.min(100, Math.max(30, rawScore / 500))
+  }, [lastGigStats])
+
   React.useEffect(() => {
     if (!currentGig) return
 
@@ -48,13 +53,11 @@ export const PostGig = () => {
   // Initialize Results once (simulated)
   React.useEffect(() => {
     if (!financials && currentGig && lastGigStats) {
-      const rawScore = lastGigStats?.score || 0
-      const performanceScore = Math.min(100, Math.max(50, rawScore / 500))
       const crowdStats = { hype: lastGigStats?.peakHype || 0 }
 
       const result = calculateGigFinancials(
         currentGig,
-        performanceScore,
+        perfScore,
         crowdStats,
         gigModifiers,
         band.inventory,
@@ -63,7 +66,7 @@ export const PostGig = () => {
       )
       setFinancials(result)
 
-      const vScore = calculateViralityScore(performanceScore, [], currentGig)
+      const vScore = calculateViralityScore(perfScore, [], currentGig)
       setPostOptions(generatePostOptions({ viralityScore: vScore }))
     }
   }, [
@@ -72,7 +75,8 @@ export const PostGig = () => {
     lastGigStats,
     gigModifiers,
     player.fame,
-    band.inventory
+    band.inventory,
+    perfScore
   ])
 
   const handlePostSelection = option => {
@@ -90,12 +94,14 @@ export const PostGig = () => {
   const handleContinue = () => {
     if (financials && player.money + financials.net < 0) {
       addToast('GAME OVER: BANKRUPT! The tour is over.', 'error')
+      updatePlayer({ money: 0 })
       changeScene('GAMEOVER')
     } else {
       if (financials) {
+        const fameGain = 50 + Math.floor(perfScore * 1.5)
         updatePlayer({
-          money: player.money + financials.net,
-          fame: player.fame + 100 // Simplified fame
+          money: Math.max(0, player.money + financials.net),
+          fame: player.fame + fameGain
         })
       }
       changeScene('OVERWORLD')
@@ -147,7 +153,6 @@ export const PostGig = () => {
     </div>
   )
 }
-
 
 const ReportPhase = ({ financials, onNext }) => (
   <div className='space-y-6'>
