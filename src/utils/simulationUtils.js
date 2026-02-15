@@ -180,7 +180,7 @@ export const calculateDailyUpdates = currentState => {
   if (nextBand.harmony > 50) {
     nextBand.harmony -= 2
   } else if (nextBand.harmony < 50) {
-    nextBand.harmony += 1
+    nextBand.harmony += 2
   }
 
   // Clamp harmony to valid range after all modifications
