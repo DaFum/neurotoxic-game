@@ -13,7 +13,8 @@ import {
   buildAssetUrlMap,
   buildMidiUrlMap,
   resolveAssetUrl,
-  normalizeMidiPlaybackOptions
+  normalizeMidiPlaybackOptions,
+  PATH_PREFIX_REGEX
 } from './audioPlaybackUtils.js'
 import {
   canResumeAudioContextState,
@@ -743,7 +744,7 @@ export function setMusicVolume(vol) {
  */
 export function hasAudioAsset(filename) {
   if (typeof filename !== 'string') return false
-  const normalized = filename.replace(/^\.?\//, '')
+  const normalized = filename.replace(PATH_PREFIX_REGEX, '')
   return Boolean(
     oggUrlMap?.[normalized] || oggUrlMap?.[normalized.split('/').pop()]
   )
@@ -756,7 +757,7 @@ export function hasAudioAsset(filename) {
  */
 export async function loadAudioBuffer(filename) {
   if (typeof filename !== 'string' || filename.length === 0) return null
-  const cacheKey = filename.replace(/^\.?\//, '')
+  const cacheKey = filename.replace(PATH_PREFIX_REGEX, '')
   if (audioBufferCache.has(cacheKey)) {
     const cached = audioBufferCache.get(cacheKey)
     // Promote to most-recently-used for LRU eviction
