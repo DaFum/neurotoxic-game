@@ -9,10 +9,8 @@
     "**/*.map",
     "**/package-lock.json",
     "**/yarn.lock",
-    "**/.claude/skills/mega-lint-snapshot/scripts/format-report.mjs",
-    "**/.claude/skills/skilltest/scripts/skilltest-lib.mjs",
-    "**/skilltest-lib.mjs",
-    "**/.claude/**/*.mjs"
+    "**/.claude/**",
+    "**/skilltest-lib.mjs"
   ],
   "absolute": true,
   "gitignore": true
