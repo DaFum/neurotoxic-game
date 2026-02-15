@@ -17,7 +17,12 @@ const DEFAULT_MEMBERS = [
   { name: 'Marius', mood: 80, stamina: 100, baseStats: { skill: 3 } }
 ]
 
-const DEFAULT_VAN = { fuel: 100, condition: 100, upgrades: [], breakdownChance: 0.05 }
+const DEFAULT_VAN = {
+  fuel: 100,
+  condition: 100,
+  upgrades: [],
+  breakdownChance: 0.05
+}
 
 const buildFullState = (overrides = {}) => {
   const bandOverrides = overrides.band || {}
@@ -40,7 +45,11 @@ const buildFullState = (overrides = {}) => {
       harmony: 80,
       harmonyRegenTravel: false,
       inventory: { shirts: 50, hoodies: 20, patches: 100, cds: 30, vinyl: 10 },
-      performance: { guitarDifficulty: 1.0, drumMultiplier: 1.0, crowdDecay: 1.0 },
+      performance: {
+        guitarDifficulty: 1.0,
+        drumMultiplier: 1.0,
+        crowdDecay: 1.0
+      },
       luck: 0,
       ...bandOverrides
     },
@@ -96,7 +105,9 @@ test('calculateDailyUpdates: van condition decays daily', () => {
 
 test('calculateDailyUpdates: van breakdown chance increases when condition is low', () => {
   const state = buildFullState({
-    player: { van: { fuel: 100, condition: 25, upgrades: [], breakdownChance: 0.05 } }
+    player: {
+      van: { fuel: 100, condition: 25, upgrades: [], breakdownChance: 0.05 }
+    }
   })
   const result = calculateDailyUpdates(state)
 
@@ -109,25 +120,24 @@ test('calculateDailyUpdates: van breakdown chance increases when condition is lo
 
 test('calculateDailyUpdates: van condition does not go below 0', () => {
   const state = buildFullState({
-    player: { van: { fuel: 100, condition: 1, upgrades: [], breakdownChance: 0.05 } }
+    player: {
+      van: { fuel: 100, condition: 1, upgrades: [], breakdownChance: 0.05 }
+    }
   })
   const result = calculateDailyUpdates(state)
 
-  assert.ok(result.player.van.condition >= 0, 'Van condition should not go negative')
+  assert.ok(
+    result.player.van.condition >= 0,
+    'Van condition should not go negative'
+  )
 })
 
 test('calculateDailyUpdates: harmony is clamped to [1, 100]', () => {
   const state = buildFullState({ band: { harmony: 2 } })
   const result = calculateDailyUpdates(state)
 
-  assert.ok(
-    result.band.harmony >= 1,
-    'Harmony should never fall below 1'
-  )
-  assert.ok(
-    result.band.harmony <= 100,
-    'Harmony should never exceed 100'
-  )
+  assert.ok(result.band.harmony >= 1, 'Harmony should never fall below 1')
+  assert.ok(result.band.harmony <= 100, 'Harmony should never exceed 100')
 })
 
 test('calculateDailyUpdates: harmony clamped even with regen active', () => {
@@ -147,14 +157,31 @@ test('calculateDailyUpdates: harmony clamped even with regen active', () => {
 test('calculateGigFinancials: low performance penalizes merch', () => {
   const gigData = { capacity: 300, price: 15, pay: 500, dist: 100, diff: 3 }
   const modifiers = { merch: true }
-  const inventory = { shirts: 50, hoodies: 20, patches: 100, cds: 30, vinyl: 10 }
+  const inventory = {
+    shirts: 50,
+    hoodies: 20,
+    patches: 100,
+    cds: 30,
+    vinyl: 10
+  }
   const gigStats = { misses: 20, peakHype: 30 }
 
   const lowResult = calculateGigFinancials(
-    gigData, 30, { hype: 30 }, modifiers, inventory, 100, gigStats
+    gigData,
+    30,
+    { hype: 30 },
+    modifiers,
+    inventory,
+    100,
+    gigStats
   )
   const highResult = calculateGigFinancials(
-    gigData, 95, { hype: 80 }, modifiers, inventory, 100,
+    gigData,
+    95,
+    { hype: 80 },
+    modifiers,
+    inventory,
+    100,
     { misses: 0, peakHype: 100 }
   )
 
@@ -166,14 +193,32 @@ test('calculateGigFinancials: low performance penalizes merch', () => {
 
 test('calculateGigFinancials: merch table modifier increases merch revenue', () => {
   const gigData = { capacity: 300, price: 15, pay: 500, dist: 100, diff: 3 }
-  const inventory = { shirts: 50, hoodies: 20, patches: 100, cds: 30, vinyl: 10 }
+  const inventory = {
+    shirts: 50,
+    hoodies: 20,
+    patches: 100,
+    cds: 30,
+    vinyl: 10
+  }
   const gigStats = { misses: 0, peakHype: 80 }
 
   const withoutMerch = calculateGigFinancials(
-    gigData, 70, { hype: 50 }, {}, inventory, 100, gigStats
+    gigData,
+    70,
+    { hype: 50 },
+    {},
+    inventory,
+    100,
+    gigStats
   )
   const withMerch = calculateGigFinancials(
-    gigData, 70, { hype: 50 }, { merch: true }, inventory, 100, gigStats
+    gigData,
+    70,
+    { hype: 50 },
+    { merch: true },
+    inventory,
+    100,
+    gigStats
   )
 
   assert.ok(
@@ -214,7 +259,10 @@ test('gameReducer: ADVANCE_DAY clamps harmony', () => {
   const state = buildFullState({ band: { harmony: 2 } })
   const result = gameReducer(state, { type: ActionTypes.ADVANCE_DAY })
 
-  assert.ok(result.band.harmony >= 1, 'Harmony should stay >= 1 after day advance')
+  assert.ok(
+    result.band.harmony >= 1,
+    'Harmony should stay >= 1 after day advance'
+  )
 })
 
 // --- EVENT DELTA STATE SAFETY TESTS ---
