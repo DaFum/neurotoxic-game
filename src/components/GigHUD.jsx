@@ -1,4 +1,3 @@
-import React from 'react'
 import PropTypes from 'prop-types'
 import { ChatterOverlay } from './ChatterOverlay'
 import { HecklerOverlay } from './HecklerOverlay'

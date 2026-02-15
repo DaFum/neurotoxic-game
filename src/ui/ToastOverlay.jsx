@@ -1,4 +1,3 @@
-import React from 'react'
 import { useGameState } from '../context/GameState'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -16,7 +15,7 @@ export const ToastOverlay = () => {
             exit={{ opacity: 0, y: -20 }}
             className={`
               min-w-[200px] max-w-[300px] p-3 border-l-4 font-mono text-sm shadow-lg backdrop-blur-md bg-(--void-black)/80
-              ${toast.type === 'error' ? 'border-(--blood-red) text-(--blood-red)' : 'border-(--toxic-green) text-(--toxic-green)'}
+              ${toast.type === 'error' ? 'border-(--blood-red) text-(--blood-red)' : toast.type === 'success' ? 'border-(--toxic-green) text-(--toxic-green)' : 'border-blue-400 text-blue-400'}
             `}
           >
             {toast.message}

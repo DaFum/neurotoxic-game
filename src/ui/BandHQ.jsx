@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import PropTypes from 'prop-types'
 import { HQ_ITEMS } from '../data/hqItems'
 import { SONGS_DB } from '../data/songs'
@@ -376,6 +376,7 @@ export const BandHQ = ({
                 onToggleCRT={() =>
                   updateSettings({ crtEnabled: !settings.crtEnabled })
                 }
+                onLogLevelChange={level => updateSettings({ logLevel: level })}
                 onDeleteSave={deleteSave}
               />
             </div>

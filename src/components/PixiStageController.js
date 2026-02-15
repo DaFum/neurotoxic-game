@@ -54,6 +54,8 @@ class PixiStageController {
     this.noteSprites = new Map() // Map<note, Sprite>
     this.nextRenderIndex = 0 // Tracks the next note to spawn
     this.spritePool = [] // Object pool for reusable sprites
+    this.toxicFilters = null // Cached filter array for toxic mode
+    this.emptyFilters = [] // Cached empty filter array
   }
 
   /**
@@ -91,6 +93,7 @@ class PixiStageController {
 
         container.appendChild(this.app.canvas)
         this.colorMatrix = new PIXI.ColorMatrixFilter()
+        this.toxicFilters = [this.colorMatrix]
         this.stageContainer = new PIXI.Container()
         this.app.stage.addChild(this.stageContainer)
 
@@ -156,7 +159,8 @@ class PixiStageController {
       const radius =
         CROWD_LAYOUT.minRadius + Math.random() * CROWD_LAYOUT.radiusVariance
       crowd.circle(0, 0, radius)
-      crowd.fill(0x333333)
+      crowd.fill(0xffffff)
+      crowd.tint = 0x333333
       crowd.x = Math.random() * this.app.screen.width
       crowd.y =
         Math.random() * (this.app.screen.height * CROWD_LAYOUT.yRangeRatio)
@@ -360,9 +364,7 @@ class PixiStageController {
           : 0x555555
       if (member.currentFillColor !== nextColor) {
         member.currentFillColor = nextColor
-        member.clear()
-        member.circle(0, 0, member.radius)
-        member.fill(nextColor)
+        member.tint = nextColor
       }
     })
   }
@@ -574,9 +576,9 @@ class PixiStageController {
 
     if (stats?.isToxicMode) {
       this.colorMatrix.hue(Math.sin(elapsed / 100) * 180, false)
-      this.stageContainer.filters = [this.colorMatrix]
+      this.stageContainer.filters = this.toxicFilters
     } else {
-      this.stageContainer.filters = []
+      this.stageContainer.filters = this.emptyFilters
     }
 
     this.updateLaneGraphics(state)

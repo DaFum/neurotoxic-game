@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react'
+import { createContext, useContext, useReducer, useEffect } from 'react'
 import { eventEngine } from '../utils/eventEngine'
 import { resolveEventChoice } from '../utils/eventResolver'
 import { MapGenerator } from '../utils/mapGenerator'
@@ -9,6 +9,7 @@ import {
   StateError,
   safeStorageOperation
 } from '../utils/errorHandler'
+import { validateSaveData } from '../utils/saveValidator'
 
 // Import modular state management
 import { createInitialState } from './initialState'
@@ -36,6 +37,7 @@ import {
   createAdvanceDayAction,
   createAddCooldownAction
 } from './actionCreators'
+import PropTypes from 'prop-types'
 
 const GameStateContext = createContext()
 
@@ -44,8 +46,6 @@ const GameStateContext = createContext()
  * @param {object} props
  * @param {React.ReactNode} props.children
  */
-import PropTypes from 'prop-types'
-
 export const GameStateProvider = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, null, createInitialState)
 
@@ -57,6 +57,13 @@ export const GameStateProvider = ({ children }) => {
       dispatch(createSetMapAction(newMap))
     }
   }, [state.gameMap])
+
+  // Sync Logger with settings on load/change
+  useEffect(() => {
+    if (state.settings?.logLevel !== undefined) {
+      logger.setLevel(state.settings.logLevel)
+    }
+  }, [state.settings?.logLevel])
 
   // Actions wrappers using ActionTypes for type safety
 
@@ -90,6 +97,12 @@ export const GameStateProvider = ({ children }) => {
    */
   const updateSettings = updates => {
     dispatch(createUpdateSettingsAction(updates))
+
+    // Synchronize logger if logLevel is updated
+    if (updates.logLevel !== undefined) {
+      logger.setLevel(updates.logLevel)
+    }
+
     // Persist to global settings (persist across new games)
     safeStorageOperation('saveGlobalSettings', () => {
       const current = JSON.parse(
@@ -244,13 +257,12 @@ export const GameStateProvider = ({ children }) => {
         const data = JSON.parse(saved)
 
         // Validate Schema
-        const requiredKeys = ['player', 'band', 'social', 'gameMap']
-        const missingKeys = requiredKeys.filter(k => !data[k])
-
-        if (missingKeys.length > 0) {
+        try {
+          validateSaveData(data)
+        } catch (error) {
           handleError(
-            new StateError('Save file is corrupt. Starting fresh.', {
-              missingKeys
+            new StateError('Save file is corrupt or invalid.', {
+              reason: error.message
             }),
             { addToast }
           )

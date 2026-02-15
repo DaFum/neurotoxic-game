@@ -1,4 +1,3 @@
-import React from 'react'
 import { useGameState } from '../context/GameState'
 import { GlitchButton } from '../ui/GlitchButton'
 
@@ -6,7 +5,7 @@ import { GlitchButton } from '../ui/GlitchButton'
  * Scene displayed when the game ends (bankruptcy or health failure).
  */
 export const GameOver = () => {
-  const { changeScene, player, loadGame, resetState, settings } = useGameState()
+  const { changeScene, player, loadGame, resetState } = useGameState()
 
   /**
    * Attempts to load the last save or returns to menu.

@@ -1,4 +1,3 @@
-import React from 'react'
 import { MainMenu } from './scenes/MainMenu'
 import { Overworld } from './scenes/Overworld'
 import { Gig } from './scenes/Gig'
@@ -14,6 +13,7 @@ import { ToastOverlay } from './ui/ToastOverlay'
 import { DebugLogViewer } from './ui/DebugLogViewer'
 import { TutorialManager } from './components/TutorialManager'
 import { GameStateProvider, useGameState } from './context/GameState'
+import { ErrorBoundary } from './ui/CrashHandler'
 
 const SCENES_WITHOUT_HUD = ['INTRO', 'MENU', 'SETTINGS', 'CREDITS', 'GAMEOVER']
 
@@ -81,8 +81,10 @@ function GameContent() {
  */
 export default function App() {
   return (
-    <GameStateProvider>
-      <GameContent />
-    </GameStateProvider>
+    <ErrorBoundary>
+      <GameStateProvider>
+        <GameContent />
+      </GameStateProvider>
+    </ErrorBoundary>
   )
 }

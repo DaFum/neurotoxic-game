@@ -1,16 +1,17 @@
-import React from 'react'
 import PropTypes from 'prop-types'
 import { VolumeSlider } from './VolumeSlider'
+import { LOG_LEVELS } from '../../utils/logger.js'
 
 export const SettingsPanel = ({
   settings,
-  musicVol,
-  sfxVol,
-  isMuted,
-  onMusicChange,
-  onSfxChange,
-  onToggleMute,
-  onToggleCRT,
+  musicVol = 0,
+  sfxVol = 0,
+  isMuted = false,
+  onMusicChange = () => {},
+  onSfxChange = () => {},
+  onToggleMute = () => {},
+  onToggleCRT = () => {},
+  onLogLevelChange = () => {},
   onDeleteSave,
   className = ''
 }) => {
@@ -72,6 +73,29 @@ export const SettingsPanel = ({
         </div>
       </div>
 
+      {/* Log Settings */}
+      <div>
+        <h2 className='font-[Metal_Mania] text-4xl uppercase text-(--toxic-green) mb-6 border-b border-(--ash-gray) pb-2'>
+          LOG PROTOCOLS
+        </h2>
+        <div className='flex items-center justify-between'>
+          <label className='font-[Courier_New] text-sm uppercase tracking-wide text-(--ash-gray)'>
+            MINIMUM LOG LEVEL
+          </label>
+          <select
+            value={settings?.logLevel ?? LOG_LEVELS.DEBUG}
+            onChange={e => onLogLevelChange(parseInt(e.target.value, 10))}
+            className='bg-(--void-black) text-(--toxic-green) border-2 border-(--toxic-green) p-1 font-mono focus:outline-none'
+          >
+            {Object.entries(LOG_LEVELS).map(([key, value]) => (
+              <option key={key} value={value}>
+                {key}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       {/* Data Management */}
       <div>
         <h2 className='font-[Metal_Mania] text-4xl uppercase text-(--blood-red) mb-6 border-b border-(--ash-gray) pb-2'>
@@ -106,13 +130,14 @@ SettingsPanel.propTypes = {
   settings: PropTypes.shape({
     crtEnabled: PropTypes.bool
   }),
-  musicVol: PropTypes.number.isRequired,
-  sfxVol: PropTypes.number.isRequired,
-  isMuted: PropTypes.bool.isRequired,
-  onMusicChange: PropTypes.func.isRequired,
-  onSfxChange: PropTypes.func.isRequired,
-  onToggleMute: PropTypes.func.isRequired,
-  onToggleCRT: PropTypes.func.isRequired,
+  musicVol: PropTypes.number,
+  sfxVol: PropTypes.number,
+  isMuted: PropTypes.bool,
+  onMusicChange: PropTypes.func,
+  onSfxChange: PropTypes.func,
+  onToggleMute: PropTypes.func,
+  onToggleCRT: PropTypes.func,
+  onLogLevelChange: PropTypes.func,
   onDeleteSave: PropTypes.func.isRequired,
   className: PropTypes.string
 }
