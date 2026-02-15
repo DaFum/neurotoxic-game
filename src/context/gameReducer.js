@@ -206,7 +206,6 @@ const handleLoadGame = (state, payload) => {
     pendingEvents: Array.isArray(loadedState.pendingEvents)
       ? loadedState.pendingEvents
       : [],
-    eat-song-utils-tests-and-syntax-fixes-13782797927496789717
     eventCooldowns: Array.isArray(loadedState.eventCooldowns)
       ? loadedState.eventCooldowns
       : [],
