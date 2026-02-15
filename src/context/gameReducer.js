@@ -192,20 +192,15 @@ const handleLoadGame = (state, payload) => {
   const safeState = {
     ...state,
     currentScene: loadedState.currentScene || 'OVERWORLD',
-    setlist: Array.isArray(loadedState.setlist) ? loadedState.setlist : [],
-    unlocks: Array.isArray(loadedState.unlocks) ? loadedState.unlocks : [],
-    gameMap: loadedState.gameMap || state.gameMap,
-    settings: { ...state.settings, ...loadedState.settings },
-    player: mergedPlayer,
-    band: mergedBand,
-  // 4. Construct Safe State (Whitelist)
-  const safeState = {
-    ...state,
     player: mergedPlayer,
     band: mergedBand,
     social: mergedSocial,
     gameMap: loadedState.gameMap || state.gameMap,
     setlist: Array.isArray(loadedState.setlist) ? loadedState.setlist : [],
+    unlocks: Array.isArray(loadedState.unlocks) ? loadedState.unlocks : [],
+    settings: { ...state.settings, ...loadedState.settings },
+
+    // Arrays
     activeStoryFlags: Array.isArray(loadedState.activeStoryFlags)
       ? loadedState.activeStoryFlags
       : [],
@@ -215,29 +210,24 @@ const handleLoadGame = (state, payload) => {
     pendingEvents: Array.isArray(loadedState.pendingEvents)
       ? loadedState.pendingEvents
       : [],
+
+    // Objects
     reputationByRegion: loadedState.reputationByRegion || {},
     npcs: loadedState.npcs || {},
-    settings: { ...state.settings, ...loadedState.settings },
-    gigModifiers: { ...DEFAULT_GIG_MODIFIERS, ...loadedState.gigModifiers },
-    currentScene: loadedState.currentScene || 'OVERWORLD',
-    setlist: Array.isArray(loadedState.setlist) ? loadedState.setlist : [],
-    unlocks: Array.isArray(loadedState.unlocks) ? loadedState.unlocks : [],
-    gameMap: loadedState.gameMap || state.gameMap,
-    settings: { ...state.settings, ...loadedState.settings },
-    player: mergedPlayer,
-    band: mergedBand,
-    social: mergedSocial,
     gigModifiers: {
       ...DEFAULT_GIG_MODIFIERS,
       ...(loadedState.gigModifiers || {})
     },
-    activeStoryFlags: Array.isArray(loadedState.activeStoryFlags) ? loadedState.activeStoryFlags : [],
-    pendingEvents: Array.isArray(loadedState.pendingEvents) ? loadedState.pendingEvents : [],
-    eventCooldowns: Array.isArray(loadedState.eventCooldowns) ? loadedState.eventCooldowns : [],
-    reputationByRegion: loadedState.reputationByRegion || {},
-    npcs: loadedState.npcs || {},
+
+    // Nullables
     currentGig: loadedState.currentGig || null,
     lastGigStats: loadedState.lastGigStats || null
+  }
+
+  // Security: Only allow valid gameplay scenes from save
+  const ALLOWED_SCENES = ['OVERWORLD', 'PREGIG', 'GIG', 'POSTGIG', 'HQ', 'BAND_HQ']
+  if (!ALLOWED_SCENES.includes(safeState.currentScene)) {
+    safeState.currentScene = state.currentScene
   }
 
   // Migration: energy -> catering
