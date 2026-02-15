@@ -66,7 +66,7 @@ test('gameReducer LOAD_GAME prevents prototype pollution and state pollution', (
   const newState = gameReducer(initialState, action)
 
   assert.equal(newState.player.money, 999999)
-  assert.equal(newState.currentScene, 'INTRO', 'currentScene should not be overwritten by save data')
+  assert.equal(newState.currentScene, 'OVERWORLD', 'currentScene should be reset to safe default')
   assert.deepEqual(newState.toasts, [], 'toasts should be empty after load')
   assert.equal(Object.prototype.pollutions, undefined, 'Prototype should not be polluted')
   assert.equal(newState.pollutions, undefined, 'State should not have polluted property')
