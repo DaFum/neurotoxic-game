@@ -449,8 +449,9 @@ export const useTravelLogic = ({
 
     updatePlayer({
       money: Math.max(0, (player.money ?? 0) - cost),
-      van: { ...player.van, condition: 100 }
+      van: { ...player.van, condition: 100, breakdownChance: 0.05 }
     })
+
     addToast(`Repaired: -${cost}€`, 'success')
 
     try {
