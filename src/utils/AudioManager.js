@@ -96,6 +96,7 @@ class AudioSystem {
           skipStop: true
         })
         if (oggSuccess) {
+          logger.info('AudioSystem', 'Ambient started via OGG buffer playback.')
           return true
         }
 
@@ -107,12 +108,13 @@ class AudioSystem {
         const midiSuccess = await audioEngine.playRandomAmbientMidi()
         if (!midiSuccess) {
           this.currentSongId = null
-          logger.debug(
+          logger.warn(
             'AudioSystem',
             'Ambient playback did not start (OGG and MIDI both failed).'
           )
           return false
         }
+        logger.info('AudioSystem', 'Ambient started via MIDI synthesis fallback.')
         return true
       } catch (e) {
         handleError(e, { fallbackMessage: 'Failed to start ambient music' })
@@ -131,6 +133,7 @@ class AudioSystem {
    * Stops the currently playing music.
    */
   stopMusic() {
+    logger.debug('AudioSystem', `stopMusic called (was playing: ${this.currentSongId ?? 'nothing'}).`)
     audioEngine.stopAudio()
     this.currentSongId = null
   }

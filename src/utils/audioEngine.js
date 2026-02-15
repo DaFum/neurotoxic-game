@@ -929,6 +929,10 @@ export async function startGigPlayback({
 
   gigSource = source
   if (safeDurationSeconds === 0) {
+    logger.debug(
+      'AudioEngine',
+      `Gig playback: zero duration after clamping, firing onEnded immediately.`
+    )
     gigStartCtxTime = null
     handleGigSourceEnded(source)
     return true
@@ -938,6 +942,10 @@ export async function startGigPlayback({
   } else {
     source.start(startAt, offsetSeconds)
   }
+  logger.info(
+    'AudioEngine',
+    `Gig playback started: "${filename}" offset=${offsetSeconds.toFixed(2)}s duration=${safeDurationSeconds != null ? safeDurationSeconds.toFixed(2) + 's' : 'full'}`
+  )
   return true
 }
 
@@ -982,6 +990,10 @@ export function startGigClock({
 export function pauseGigPlayback() {
   if (gigIsPaused) return
   if (!gigSource && gigStartCtxTime == null) return
+  logger.debug(
+    'AudioEngine',
+    `Pausing gig playback at ${getGigTimeMs().toFixed(0)}ms`
+  )
   gigSeekOffsetMs = getGigTimeMs()
   gigIsPaused = true
   gigStartCtxTime = null
@@ -1001,6 +1013,10 @@ export function pauseGigPlayback() {
  */
 export function resumeGigPlayback() {
   if (!gigIsPaused) return
+  logger.debug(
+    'AudioEngine',
+    `Resuming gig playback from ${gigSeekOffsetMs.toFixed(0)}ms`
+  )
   if (!gigBuffer) {
     gigStartCtxTime = getRawAudioContext().currentTime
     gigIsPaused = false
@@ -1061,6 +1077,10 @@ export function resumeGigPlayback() {
  */
 export function stopGigPlayback() {
   if (gigSource) {
+    logger.debug(
+      'AudioEngine',
+      `Stopping gig playback: "${gigFilename}" at ${getGigTimeMs().toFixed(0)}ms`
+    )
     try {
       gigSource.stop()
     } catch (error) {
@@ -1084,6 +1104,7 @@ export function stopGigPlayback() {
  */
 export function stopAmbientPlayback() {
   if (ambientSource) {
+    logger.debug('AudioEngine', 'Stopping ambient OGG playback.')
     try {
       ambientSource.stop()
     } catch (error) {
@@ -1803,7 +1824,17 @@ export async function playRandomAmbientMidi(
     {
       useCleanPlayback: true,
       onEnded: () => {
-        if (reqId !== playRequestId) return
+        if (reqId !== playRequestId) {
+          logger.debug(
+            'AudioEngine',
+            `Ambient MIDI chain cancelled (reqId ${reqId} vs current ${playRequestId}).`
+          )
+          return
+        }
+        logger.debug(
+          'AudioEngine',
+          'Ambient MIDI track ended, chaining next track.'
+        )
         playRandomAmbientMidi(songs, rng).catch(error => {
           logger.error(
             'AudioEngine',
@@ -1880,9 +1911,22 @@ export async function playRandomAmbientOgg(
   const chainReqId = playRequestId
 
   source.onended = () => {
-    if (ambientSource !== source) return
-    if (chainReqId !== playRequestId) return
+    if (ambientSource !== source) {
+      logger.debug(
+        'AudioEngine',
+        'Ambient OGG onended: source mismatch, skipping chain.'
+      )
+      return
+    }
+    if (chainReqId !== playRequestId) {
+      logger.debug(
+        'AudioEngine',
+        `Ambient OGG chain cancelled (reqId ${chainReqId} vs current ${playRequestId}).`
+      )
+      return
+    }
     ambientSource = null
+    logger.debug('AudioEngine', 'Ambient OGG track ended, chaining next track.')
     playRandomAmbientOgg(rng).catch(error => {
       logger.error(
         'AudioEngine',
