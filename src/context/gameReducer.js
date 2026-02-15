@@ -202,7 +202,19 @@ const handleLoadGame = (state, payload) => {
     gigModifiers: {
       ...DEFAULT_GIG_MODIFIERS,
       ...(loadedState.gigModifiers || {})
-    }
+    },
+    // Progression & event-related state restored from save
+    currentGig: loadedState.currentGig || initialState.currentGig,
+    lastGigStats: loadedState.lastGigStats || initialState.lastGigStats,
+    activeEvent: loadedState.activeEvent || initialState.activeEvent,
+    activeStoryFlags:
+      loadedState.activeStoryFlags || initialState.activeStoryFlags,
+    eventCooldowns:
+      loadedState.eventCooldowns || initialState.eventCooldowns,
+    pendingEvents: loadedState.pendingEvents || initialState.pendingEvents,
+    reputationByRegion:
+      loadedState.reputationByRegion || initialState.reputationByRegion,
+    npcs: loadedState.npcs || initialState.npcs
   }
 
   // Migration: energy -> catering
