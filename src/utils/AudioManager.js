@@ -114,7 +114,10 @@ class AudioSystem {
           )
           return false
         }
-        logger.info('AudioSystem', 'Ambient started via MIDI synthesis fallback.')
+        logger.info(
+          'AudioSystem',
+          'Ambient started via MIDI synthesis fallback.'
+        )
         return true
       } catch (e) {
         handleError(e, { fallbackMessage: 'Failed to start ambient music' })
@@ -133,7 +136,10 @@ class AudioSystem {
    * Stops the currently playing music.
    */
   stopMusic() {
-    logger.debug('AudioSystem', `stopMusic called (was playing: ${this.currentSongId ?? 'nothing'}).`)
+    logger.debug(
+      'AudioSystem',
+      `stopMusic called (was playing: ${this.currentSongId ?? 'nothing'}).`
+    )
     audioEngine.stopAudio()
     this.currentSongId = null
   }
