@@ -203,14 +203,13 @@ const handleLoadGame = (state, payload) => {
     activeStoryFlags: Array.isArray(loadedState.activeStoryFlags)
       ? loadedState.activeStoryFlags
       : [],
-    eventCooldowns: Array.isArray(loadedState.eventCooldowns)
-      ? loadedState.eventCooldowns
-      : [],
     pendingEvents: Array.isArray(loadedState.pendingEvents)
       ? loadedState.pendingEvents
       : [],
-
-    // Objects
+    eat-song-utils-tests-and-syntax-fixes-13782797927496789717
+    eventCooldowns: Array.isArray(loadedState.eventCooldowns)
+      ? loadedState.eventCooldowns
+      : [],
     reputationByRegion: loadedState.reputationByRegion || {},
     npcs: loadedState.npcs || {},
     settings: { ...state.settings, ...loadedState.settings },
@@ -218,6 +217,7 @@ const handleLoadGame = (state, payload) => {
       ...DEFAULT_GIG_MODIFIERS,
       ...(loadedState.gigModifiers || {})
     },
+    currentScene: loadedState.currentScene || 'OVERWORLD',
     unlocks: Array.isArray(loadedState.unlocks) ? loadedState.unlocks : [],
     currentGig: loadedState.currentGig || null,
     lastGigStats: loadedState.lastGigStats || null
