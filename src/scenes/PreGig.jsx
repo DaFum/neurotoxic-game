@@ -101,7 +101,7 @@ export const PreGig = () => {
       const costMap = {
         soundcheck: 50,
         promo: 30,
-        merch: 40,
+        merch: 30,
         catering: 20,
         guestlist: 60
       }
@@ -147,7 +147,7 @@ export const PreGig = () => {
                 cost: 30,
                 desc: '+Crowd Fill'
               },
-              { key: 'merch', label: 'Merch Table', cost: 40, desc: '+Sales' },
+              { key: 'merch', label: 'Merch Table', cost: 30, desc: '+Sales' },
               {
                 key: 'catering',
                 label: 'Catering / Energy',
@@ -289,7 +289,7 @@ export const PreGig = () => {
 
       <button
         className='mt-8 px-12 py-4 bg-(--toxic-green) text-black font-bold text-2xl uppercase tracking-widest hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed'
-        disabled={setlist.length === 0 || band.harmony < 10}
+        disabled={setlist.length === 0}
         onClick={async () => {
           if (band.harmony < 10) {
             addToast('Band harmony too low to perform!', 'error')
