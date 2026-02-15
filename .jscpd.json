@@ -1,15 +1,19 @@
 {
-  "ignore": [
-    "package-lock.json",
-    "node_modules",
-    "dist",
-    "build",
-    ".git",
-    ".github",
-    "CLAUDE.md",
-    ".claude",
-    "test_output.txt",
-    "**/.claude/**"
+  "threshold": 0,
+  "reporters": [
+    "console",
+    "html"
   ],
-  "threshold": 0
+  "ignore": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/coverage/**",
+    "**/*.min.js",
+    "**/*.map",
+    "**/package-lock.json",
+    "**/yarn.lock",
+    "**/.claude/skills/mega-lint-snapshot/scripts/format-report.mjs"
+  ],
+  "absolute": true,
+  "gitignore": true
 }

@@ -156,7 +156,7 @@ CODEX_HOME=$(pwd)/.codex codex exec "List active instruction sources"
 
 ### Agent Skills
 
-Codex can load skills from repository, user, admin, and system locations. In this repository, prefer checked-in skills under `.agents/skills` when they exist.
+Codex can load skills from repository, user, admin, and system locations. In this repository, prefer checked-in skills under `.claude/skills` when they exist.
 
 #### When to Use Skills
 
@@ -165,8 +165,8 @@ Codex can load skills from repository, user, admin, and system locations. In thi
 
 #### Skill Locations (Priority)
 
-- Repository: `.agents/skills` in the current directory, parent directories, or repository root.
-- User: `~/.agents/skills`
+- Repository: `.claude/skills` in the current directory, parent directories, or repository root.
+- User: `~/.claude/skills`
 - Admin: `/etc/codex/skills`
 - System: bundled with Codex (for example `skill-creator`, `skill-installer`)
 
@@ -175,7 +175,7 @@ Codex can load skills from repository, user, admin, and system locations. In thi
 - Keep skill descriptions precise so implicit matching behaves predictably.
 - Restart Codex if newly added skills are not discovered.
 - Disable skills via `~/.codex/config.toml` when needed.
-- Repository skills are stored in `.agents/skills`; refer to that directory for the current skill list.
+- Repository skills are stored in `.claude/skills`; refer to that directory for the current skill list.
 - Use `skill-qa-harness` to validate skill metadata and prompt-case expectations.
 - Use `skilltest` for comprehensive skill standard validation and reporting.
 - Use `skill-aligner` to rewrite skills so they match current repository conventions.
