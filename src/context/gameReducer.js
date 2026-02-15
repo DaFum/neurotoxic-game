@@ -197,14 +197,18 @@ const handleLoadGame = (state, payload) => {
     gameMap: loadedState.gameMap || state.gameMap,
     setlist: Array.isArray(loadedState.setlist) ? loadedState.setlist : [],
     unlocks: Array.isArray(loadedState.unlocks) ? loadedState.unlocks : [],
+    settings: { ...state.settings, ...loadedState.settings },
+
+    // Arrays
     activeStoryFlags: Array.isArray(loadedState.activeStoryFlags)
       ? loadedState.activeStoryFlags
       : [],
-    eventCooldowns: Array.isArray(loadedState.eventCooldowns)
-      ? loadedState.eventCooldowns
-      : [],
     pendingEvents: Array.isArray(loadedState.pendingEvents)
       ? loadedState.pendingEvents
+      : [],
+    eat-song-utils-tests-and-syntax-fixes-13782797927496789717
+    eventCooldowns: Array.isArray(loadedState.eventCooldowns)
+      ? loadedState.eventCooldowns
       : [],
     reputationByRegion: loadedState.reputationByRegion || {},
     npcs: loadedState.npcs || {},
@@ -214,8 +218,22 @@ const handleLoadGame = (state, payload) => {
       ...(loadedState.gigModifiers || {})
     },
     currentScene: loadedState.currentScene || 'OVERWORLD',
+    unlocks: Array.isArray(loadedState.unlocks) ? loadedState.unlocks : [],
     currentGig: loadedState.currentGig || null,
     lastGigStats: loadedState.lastGigStats || null
+  }
+
+  // Security: Only allow valid gameplay scenes from save
+  const ALLOWED_SCENES = [
+    'OVERWORLD',
+    'PREGIG',
+    'GIG',
+    'POSTGIG',
+    'HQ',
+    'BAND_HQ'
+  ]
+  if (!ALLOWED_SCENES.includes(safeState.currentScene)) {
+    safeState.currentScene = state.currentScene
   }
 
   // Migration: energy -> catering

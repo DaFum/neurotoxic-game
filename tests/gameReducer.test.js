@@ -107,7 +107,7 @@ describe('gameReducer', () => {
     it('should clamp harmony after daily updates', () => {
       testState = {
         ...testState,
-        band: { ...testState.band, harmony: 0 }
+        band: { ...testState.band, harmony: -10, harmonyRegenTravel: false }
       }
 
       const action = { type: ActionTypes.ADVANCE_DAY }

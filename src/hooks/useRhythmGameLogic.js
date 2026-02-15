@@ -61,7 +61,6 @@ export const useRhythmGameLogic = () => {
   const [score, setScore] = useState(0)
   const [combo, setCombo] = useState(0)
   const [health, setHealth] = useState(100)
-  const [progress, setProgress] = useState(0)
   const [overload, setOverload] = useState(0)
   const [isToxicMode, setIsToxicMode] = useState(false)
   const [isGameOver, setIsGameOver] = useState(false)
@@ -109,6 +108,7 @@ export const useRhythmGameLogic = () => {
     combo: 0,
     health: 100,
     score: 0,
+    progress: 0,
     isToxicMode: false,
     isGameOver: false,
     overload: 0,
@@ -653,7 +653,7 @@ export const useRhythmGameLogic = () => {
       const duration = state.totalDuration
       const rawProgress =
         duration > 0 ? Math.min(100, (elapsed / duration) * 100) : 0
-      setProgress(Math.max(0, rawProgress))
+      state.progress = Math.max(0, rawProgress)
 
       if (isToxicMode) {
         if (now > state.toxicModeEndTime) {
@@ -758,7 +758,7 @@ export const useRhythmGameLogic = () => {
       score,
       combo,
       health,
-      progress,
+      progress: gameStateRef.current.progress,
       overload,
       isToxicMode,
       isGameOver,
