@@ -30,6 +30,11 @@ export const normalizeMidiPlaybackOptions = options => {
 }
 
 /**
+ * Path prefix regex to strip leading "./" or "/" from asset paths.
+ */
+export const PATH_PREFIX_REGEX = /^\.?\//
+
+/**
  * Encodes a public asset path segment-by-segment to preserve slashes.
  * @param {string} assetPath - Asset path relative to the public base.
  * @returns {string} Encoded path suitable for URL usage.
@@ -59,7 +64,7 @@ export const resolveAssetUrl = (
     return { url: null, source: null }
   }
 
-  const normalizedFilename = filename.replace(/^\.?\//, '')
+  const normalizedFilename = filename.replace(PATH_PREFIX_REGEX, '')
   const bundledUrl = assetUrlMap?.[normalizedFilename]
   if (bundledUrl) {
     return { url: bundledUrl, source: 'bundled' }
