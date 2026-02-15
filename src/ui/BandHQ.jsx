@@ -376,6 +376,7 @@ export const BandHQ = ({
                 onToggleCRT={() =>
                   updateSettings({ crtEnabled: !settings.crtEnabled })
                 }
+                onLogLevelChange={level => updateSettings({ logLevel: level })}
                 onDeleteSave={deleteSave}
               />
             </div>

@@ -58,6 +58,13 @@ export const GameStateProvider = ({ children }) => {
     }
   }, [state.gameMap])
 
+  // Sync Logger with settings on load/change
+  useEffect(() => {
+    if (state.settings?.logLevel !== undefined) {
+      logger.setLevel(state.settings.logLevel)
+    }
+  }, [state.settings?.logLevel])
+
   // Actions wrappers using ActionTypes for type safety
 
   /**
@@ -90,6 +97,12 @@ export const GameStateProvider = ({ children }) => {
    */
   const updateSettings = updates => {
     dispatch(createUpdateSettingsAction(updates))
+
+    // Synchronize logger if logLevel is updated
+    if (updates.logLevel !== undefined) {
+      logger.setLevel(updates.logLevel)
+    }
+
     // Persist to global settings (persist across new games)
     safeStorageOperation('saveGlobalSettings', () => {
       const current = JSON.parse(
