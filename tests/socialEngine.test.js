@@ -3,7 +3,10 @@ import assert from 'node:assert/strict'
 import {
   calculateViralityScore,
   generatePostOptions,
-  resolvePost
+  resolvePost,
+  applyReputationDecay,
+  calculateSocialGrowth,
+  checkViralEvent
 } from '../src/utils/socialEngine.js'
 
 test('calculateViralityScore returns base chance for average performance', () => {
@@ -290,4 +293,93 @@ test('generatePostOptions viral chances are reasonable', () => {
     assert.ok(opt.viralChance >= 0, 'Viral chance should be non-negative')
     assert.ok(opt.viralChance <= 1.0, 'Viral chance should not exceed 100%')
   })
+})
+
+test('applyReputationDecay returns original followers if days since last post < 3', () => {
+  assert.equal(applyReputationDecay(1000, 0), 1000)
+  assert.equal(applyReputationDecay(1000, 1), 1000)
+  assert.equal(applyReputationDecay(1000, 2), 1000)
+})
+
+test('applyReputationDecay applies 1% decay for 3 days', () => {
+  // 1000 * (1 - 0.01 * (3-2)) = 1000 * 0.99 = 990
+  assert.equal(applyReputationDecay(1000, 3), 990)
+})
+
+test('applyReputationDecay applies 8% decay for 10 days', () => {
+  // 1000 * (1 - 0.01 * (10-2)) = 1000 * 0.92 = 920
+  assert.equal(applyReputationDecay(1000, 10), 920)
+})
+
+test('applyReputationDecay caps decay at 50%', () => {
+  // 100 days -> 0.01 * (100-2) = 0.98. Capped at 0.5.
+  // 1000 * (1 - 0.5) = 500
+  assert.equal(applyReputationDecay(1000, 100), 500)
+})
+
+test('applyReputationDecay handles 0 followers', () => {
+  assert.equal(applyReputationDecay(0, 10), 0)
+})
+
+test('applyReputationDecay floors the result', () => {
+  // 100 followers, 3 days (1% decay) -> 99 followers
+  assert.equal(applyReputationDecay(100, 3), 99)
+
+  // 105 followers, 3 days (1% decay) -> 105 * 0.99 = 103.95 -> 103
+  assert.equal(applyReputationDecay(105, 3), 103)
+})
+
+test('calculateSocialGrowth calculates base growth based on performance', () => {
+  // performance 80, no viral, no platform multiplier (1.0)
+  // baseGrowth = (80 - 50) * 0.5 = 15
+  assert.equal(calculateSocialGrowth('unknown', 80, 0, false), 15)
+
+  // performance 50 or less -> 0 base growth
+  assert.equal(calculateSocialGrowth('unknown', 50, 0, false), 0)
+  assert.equal(calculateSocialGrowth('unknown', 30, 0, false), 0)
+})
+
+test('calculateSocialGrowth applies platform multipliers', () => {
+  // performance 80 -> baseGrowth 15
+  // TikTok multiplier 1.5 -> 15 * 1.5 = 22.5 -> floor is 22
+  assert.equal(calculateSocialGrowth('tiktok', 80, 0, false), 22)
+
+  // Newsletter multiplier 0.5 -> 15 * 0.5 = 7.5 -> floor is 7
+  assert.equal(calculateSocialGrowth('newsletter', 80, 0, false), 7)
+
+  // Instagram multiplier 1.2 -> 15 * 1.2 = 18
+  assert.equal(calculateSocialGrowth('instagram', 80, 0, false), 18)
+
+  // YouTube multiplier 0.8 -> 15 * 0.8 = 12
+  assert.equal(calculateSocialGrowth('youtube', 80, 0, false), 12)
+})
+
+test('calculateSocialGrowth applies viral bonus', () => {
+  // performance 80 -> base 15
+  // followers 1000, viral true
+  // viralBonus = 1000 * 0.1 + 100 = 200
+  // total = 15 + 200 = 215
+  assert.equal(calculateSocialGrowth('unknown', 80, 1000, true), 215)
+})
+
+test('checkViralEvent returns true for high accuracy', () => {
+  assert.equal(checkViralEvent({ accuracy: 96, maxCombo: 10 }), true)
+  assert.equal(checkViralEvent({ accuracy: 95, maxCombo: 10 }, 0, 0.9), false)
+})
+
+test('checkViralEvent returns true for high combo', () => {
+  assert.equal(checkViralEvent({ accuracy: 80, maxCombo: 51 }), true)
+  assert.equal(checkViralEvent({ accuracy: 80, maxCombo: 50 }, 0, 0.9), false)
+})
+
+test('checkViralEvent handles random roll with modifiers', () => {
+  const stats = { accuracy: 80, maxCombo: 10 }
+
+  // base chance 0.01
+  assert.equal(checkViralEvent(stats, 0, 0.005), true) // roll < 0.01
+  assert.equal(checkViralEvent(stats, 0, 0.015), false) // roll > 0.01
+
+  // with modifier
+  assert.equal(checkViralEvent(stats, 0.1, 0.05), true) // roll < 0.11
+  assert.equal(checkViralEvent(stats, 0.1, 0.15), false) // roll > 0.11
 })
