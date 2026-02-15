@@ -191,7 +191,6 @@ const handleLoadGame = (state, payload) => {
   // 4. Construct Safe State (Whitelist)
   const safeState = {
     ...state,
-    currentScene: loadedState.currentScene || 'OVERWORLD',
     player: mergedPlayer,
     band: mergedBand,
     social: mergedSocial,
@@ -214,12 +213,12 @@ const handleLoadGame = (state, payload) => {
     // Objects
     reputationByRegion: loadedState.reputationByRegion || {},
     npcs: loadedState.npcs || {},
+    settings: { ...state.settings, ...loadedState.settings },
     gigModifiers: {
       ...DEFAULT_GIG_MODIFIERS,
       ...(loadedState.gigModifiers || {})
     },
-
-    // Nullables
+    unlocks: Array.isArray(loadedState.unlocks) ? loadedState.unlocks : [],
     currentGig: loadedState.currentGig || null,
     lastGigStats: loadedState.lastGigStats || null
   }
