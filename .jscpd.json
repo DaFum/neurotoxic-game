@@ -9,7 +9,9 @@
     "CLAUDE.md",
     ".agents",
     ".claude",
-    "test_output.txt"
+    "test_output.txt",
+    "**/.agents/**",
+    "**/.claude/**"
   ],
   "threshold": 0
 }

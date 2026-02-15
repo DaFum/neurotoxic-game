@@ -7,3 +7,5 @@ dist/
 build/
 package-lock.json
 test_output.txt
+**/.agents/**
+**/.claude/**
