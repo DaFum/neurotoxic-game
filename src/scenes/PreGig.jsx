@@ -289,8 +289,12 @@ export const PreGig = () => {
 
       <button
         className='mt-8 px-12 py-4 bg-(--toxic-green) text-black font-bold text-2xl uppercase tracking-widest hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed'
-        disabled={setlist.length === 0}
+        disabled={setlist.length === 0 || band.harmony < 10}
         onClick={async () => {
+          if (band.harmony < 10) {
+            addToast('Band harmony too low to perform!', 'error')
+            return
+          }
           try {
             await audioManager.ensureAudioContext() // Unlock audio context on user interaction
             changeScene('GIG')

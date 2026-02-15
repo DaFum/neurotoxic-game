@@ -90,11 +90,12 @@ export const PostGig = () => {
   const handleContinue = () => {
     if (financials && player.money + financials.net < 0) {
       addToast('GAME OVER: BANKRUPT! The tour is over.', 'error')
+      updatePlayer({ money: 0 })
       changeScene('GAMEOVER')
     } else {
       if (financials) {
         updatePlayer({
-          money: player.money + financials.net,
+          money: Math.max(0, player.money + financials.net),
           fame: player.fame + 100 // Simplified fame
         })
       }

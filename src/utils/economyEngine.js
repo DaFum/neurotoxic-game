@@ -81,7 +81,7 @@ const calculateMerchIncome = (
   modifiers,
   bandInventory
 ) => {
-  let buyRate = 0.2 + (performanceScore / 100) * 0.15 // 20% - 35%
+  let buyRate = 0.15 + (performanceScore / 100) * 0.2 // 15% - 35%
   const breakdownItems = []
 
   if (performanceScore >= 95) {
@@ -91,14 +91,21 @@ const calculateMerchIncome = (
       value: 0,
       detail: 'Merch frenzy (S-Rank)!'
     })
+  } else if (performanceScore < 40) {
+    buyRate *= 0.5 // Poor performance penalty
+    breakdownItems.push({
+      label: 'BAD SHOW',
+      value: 0,
+      detail: 'Crowd left early...'
+    })
   }
 
   const hasMerch = modifiers.merch || modifiers.merchTable
-  if (hasMerch) buyRate += 0.05 // Boost from table
+  if (hasMerch) buyRate += 0.1 // Boosted merch table effect to reward investment
 
-  // Penalty: Misses drive people away
+  // Penalty: Misses drive people away (scaled penalty)
   if (gigStats && gigStats.misses > 0) {
-    const missPenalty = Math.min(buyRate, gigStats.misses * 0.01)
+    const missPenalty = Math.min(buyRate * 0.5, gigStats.misses * 0.015)
     buyRate -= missPenalty
   }
 
