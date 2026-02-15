@@ -198,23 +198,28 @@ const handleLoadGame = (state, payload) => {
     settings: { ...state.settings, ...loadedState.settings },
     player: mergedPlayer,
     band: mergedBand,
+  // 4. Construct Safe State (Whitelist)
+  const safeState = {
+    ...state,
+    currentScene: loadedState.currentScene || 'OVERWORLD',
+    setlist: Array.isArray(loadedState.setlist) ? loadedState.setlist : [],
+    unlocks: Array.isArray(loadedState.unlocks) ? loadedState.unlocks : [],
+    gameMap: loadedState.gameMap || state.gameMap,
+    settings: { ...state.settings, ...loadedState.settings },
+    player: mergedPlayer,
+    band: mergedBand,
     social: mergedSocial,
     gigModifiers: {
       ...DEFAULT_GIG_MODIFIERS,
       ...(loadedState.gigModifiers || {})
     },
-    // Progression & event-related state restored from save
-    currentGig: loadedState.currentGig || initialState.currentGig,
-    lastGigStats: loadedState.lastGigStats || initialState.lastGigStats,
-    activeEvent: loadedState.activeEvent || initialState.activeEvent,
-    activeStoryFlags:
-      loadedState.activeStoryFlags || initialState.activeStoryFlags,
-    eventCooldowns:
-      loadedState.eventCooldowns || initialState.eventCooldowns,
-    pendingEvents: loadedState.pendingEvents || initialState.pendingEvents,
-    reputationByRegion:
-      loadedState.reputationByRegion || initialState.reputationByRegion,
-    npcs: loadedState.npcs || initialState.npcs
+    activeStoryFlags: Array.isArray(loadedState.activeStoryFlags) ? loadedState.activeStoryFlags : [],
+    pendingEvents: Array.isArray(loadedState.pendingEvents) ? loadedState.pendingEvents : [],
+    eventCooldowns: Array.isArray(loadedState.eventCooldowns) ? loadedState.eventCooldowns : [],
+    reputationByRegion: loadedState.reputationByRegion || {},
+    npcs: loadedState.npcs || {},
+    currentGig: loadedState.currentGig || null,
+    lastGigStats: loadedState.lastGigStats || null
   }
 
   // Migration: energy -> catering
