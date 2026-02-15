@@ -11,6 +11,7 @@ export const EXPENSE_CONSTANTS = {
     FUEL_PER_100KM: 12, // Liters
     FUEL_PRICE: 1.75, // Euro per Liter
     MAX_FUEL: 100, // Liters
+    REPAIR_COST_PER_UNIT: 3, // Per 1% condition
     INSURANCE_MONTHLY: 80,
     MAINTENANCE_30DAYS: 200
   },
