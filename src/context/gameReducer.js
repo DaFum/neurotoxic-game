@@ -167,10 +167,25 @@ const handleLoadGame = (state, payload) => {
 
   return {
     ...state,
-    ...loadedState,
     player: mergedPlayer,
     band: mergedBand,
-    social: mergedSocial
+    social: mergedSocial,
+    gameMap: loadedState.gameMap || state.gameMap,
+    setlist: Array.isArray(loadedState.setlist) ? loadedState.setlist : [],
+    activeStoryFlags: Array.isArray(loadedState.activeStoryFlags)
+      ? loadedState.activeStoryFlags
+      : [],
+    eventCooldowns: Array.isArray(loadedState.eventCooldowns)
+      ? loadedState.eventCooldowns
+      : [],
+    pendingEvents: Array.isArray(loadedState.pendingEvents)
+      ? loadedState.pendingEvents
+      : [],
+    reputationByRegion: loadedState.reputationByRegion || {},
+    npcs: loadedState.npcs || {},
+    settings: { ...state.settings, ...loadedState.settings },
+    gigModifiers: { ...DEFAULT_GIG_MODIFIERS, ...loadedState.gigModifiers },
+    lastGigStats: loadedState.lastGigStats || null
   }
 }
 

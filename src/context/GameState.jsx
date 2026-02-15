@@ -9,6 +9,7 @@ import {
   StateError,
   safeStorageOperation
 } from '../utils/errorHandler'
+import { validateSaveData } from '../utils/saveValidator'
 
 // Import modular state management
 import { createInitialState } from './initialState'
@@ -244,13 +245,12 @@ export const GameStateProvider = ({ children }) => {
         const data = JSON.parse(saved)
 
         // Validate Schema
-        const requiredKeys = ['player', 'band', 'social', 'gameMap']
-        const missingKeys = requiredKeys.filter(k => !data[k])
-
-        if (missingKeys.length > 0) {
+        try {
+          validateSaveData(data)
+        } catch (error) {
           handleError(
-            new StateError('Save file is corrupt. Starting fresh.', {
-              missingKeys
+            new StateError('Save file is corrupt or invalid.', {
+              reason: error.message
             }),
             { addToast }
           )
