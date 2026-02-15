@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useGameState } from '../context/GameState'
-import { Map, DollarSign, Volume2, VolumeX } from 'lucide-react'
+import { Map as MapIcon, DollarSign, Volume2, VolumeX } from 'lucide-react'
 import { audioManager } from '../utils/AudioManager'
 
 /**
@@ -27,7 +27,7 @@ export const HUD = () => {
             <span>{player.money}€</span>
           </div>
           <div className='flex items-center gap-2'>
-            <Map size={16} />
+            <MapIcon size={16} />
             <span>
               Tag {player.day}: {player.location}
             </span>

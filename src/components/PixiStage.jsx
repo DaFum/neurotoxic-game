@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import { createPixiStageController } from './PixiStageController'
 
@@ -40,6 +40,7 @@ export const PixiStage = ({ logic }) => {
         controllerRef.current = null
       }
     }
+    // gameStateRef is a stable useRef – dependency is constant
   }, [gameStateRef])
 
   return (

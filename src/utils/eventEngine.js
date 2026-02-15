@@ -273,5 +273,12 @@ export const eventEngine = {
     }
 
     return delta
-  }
+  },
+
+  // Exposed for testing
+  selectEvent: selectEvent,
+  filterEvents: (pool, trigger, state) =>
+    pool
+      .filter(e => !trigger || e.trigger === trigger)
+      .filter(e => (e.condition ? e.condition(state) : true))
 }

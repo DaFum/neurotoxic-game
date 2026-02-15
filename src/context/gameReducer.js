@@ -207,8 +207,11 @@ const handleLoadGame = (state, payload) => {
 
   // Migration: energy -> catering
   if (safeState.gigModifiers.energy !== undefined) {
-    safeState.gigModifiers.catering = safeState.gigModifiers.energy
-    delete safeState.gigModifiers.energy
+    const { energy, ...restModifiers } = safeState.gigModifiers
+    return {
+      ...safeState,
+      gigModifiers: { ...restModifiers, catering: energy }
+    }
   }
 
   return safeState

@@ -11,7 +11,7 @@ import {
 } from '../utils/socialEngine'
 import { ChatterOverlay } from '../components/ChatterOverlay'
 
-export const PostGig = ({ financials: propFinancials, onNext }) => {
+export const PostGig = () => {
   const {
     currentGig,
     player,
@@ -148,10 +148,6 @@ export const PostGig = ({ financials: propFinancials, onNext }) => {
   )
 }
 
-PostGig.propTypes = {
-  financials: PropTypes.object, // Optional, usually managed internally
-  onNext: PropTypes.func
-}
 
 const ReportPhase = ({ financials, onNext }) => (
   <div className='space-y-6'>
