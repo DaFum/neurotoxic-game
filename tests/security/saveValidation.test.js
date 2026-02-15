@@ -11,7 +11,10 @@ test('validateSaveData rejects non-objects', () => {
 
 test('validateSaveData rejects missing required keys', () => {
   const data = { player: {}, band: {}, social: {} } // missing gameMap
-  assert.throws(() => validateSaveData(data), /Missing required top-level key: gameMap/)
+  assert.throws(
+    () => validateSaveData(data),
+    /Missing required top-level key: gameMap/
+  )
 })
 
 test('validateSaveData validates player field types', () => {
@@ -66,10 +69,22 @@ test('gameReducer LOAD_GAME prevents prototype pollution and state pollution', (
   const newState = gameReducer(initialState, action)
 
   assert.equal(newState.player.money, 999999)
-  assert.equal(newState.currentScene, 'INTRO', 'currentScene should not be overwritten by save data')
+  assert.equal(
+    newState.currentScene,
+    'INTRO',
+    'currentScene should not be overwritten by save data'
+  )
   assert.deepEqual(newState.toasts, [], 'toasts should be empty after load')
-  assert.equal(Object.prototype.pollutions, undefined, 'Prototype should not be polluted')
-  assert.equal(newState.pollutions, undefined, 'State should not have polluted property')
+  assert.equal(
+    Object.prototype.pollutions,
+    undefined,
+    'Prototype should not be polluted'
+  )
+  assert.equal(
+    newState.pollutions,
+    undefined,
+    'State should not have polluted property'
+  )
 })
 
 test('gameReducer LOAD_GAME handles missing optional fields gracefully', () => {
@@ -86,5 +101,9 @@ test('gameReducer LOAD_GAME handles missing optional fields gracefully', () => {
   const action = { type: ActionTypes.LOAD_GAME, payload }
   const newState = gameReducer(initialState, action)
 
-  assert.equal(newState.settings.crtEnabled, true, 'Should keep existing settings if missing in payload')
+  assert.equal(
+    newState.settings.crtEnabled,
+    true,
+    'Should keep existing settings if missing in payload'
+  )
 })
