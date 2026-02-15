@@ -11,7 +11,6 @@ import { spawn } from 'node:child_process'
  * @property {string[]} [fixArgs]
  */
 
-// <!-- jscpd:ignore-start -->
 const findRepoRoot = async startDir => {
   let currentDir = startDir
   while (true) {
@@ -31,7 +30,6 @@ const findRepoRoot = async startDir => {
     currentDir = parentDir
   }
 }
-// <!-- jscpd:ignore-end -->
 
 const repoRoot = await findRepoRoot(process.cwd())
 const configPath = path.resolve(

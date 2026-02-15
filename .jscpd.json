@@ -10,7 +10,9 @@
     "**/package-lock.json",
     "**/yarn.lock",
     "**/.claude/**",
-    "**/skilltest-lib.mjs"
+    "**/.claude/skills/**",
+    "**/skilltest-lib.mjs",
+    "**/format-report.mjs"
   ],
   "absolute": true,
   "gitignore": true
