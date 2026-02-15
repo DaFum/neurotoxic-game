@@ -191,21 +191,12 @@ const handleLoadGame = (state, payload) => {
   // 4. Construct Safe State (Whitelist)
   const safeState = {
     ...state,
-    currentScene: loadedState.currentScene || 'OVERWORLD',
-    setlist: Array.isArray(loadedState.setlist) ? loadedState.setlist : [],
-    unlocks: Array.isArray(loadedState.unlocks) ? loadedState.unlocks : [],
-    gameMap: loadedState.gameMap || state.gameMap,
-    settings: { ...state.settings, ...loadedState.settings },
-    player: mergedPlayer,
-    band: mergedBand,
-  // 4. Construct Safe State (Whitelist)
-  const safeState = {
-    ...state,
     player: mergedPlayer,
     band: mergedBand,
     social: mergedSocial,
     gameMap: loadedState.gameMap || state.gameMap,
     setlist: Array.isArray(loadedState.setlist) ? loadedState.setlist : [],
+    unlocks: Array.isArray(loadedState.unlocks) ? loadedState.unlocks : [],
     activeStoryFlags: Array.isArray(loadedState.activeStoryFlags)
       ? loadedState.activeStoryFlags
       : [],
@@ -218,24 +209,11 @@ const handleLoadGame = (state, payload) => {
     reputationByRegion: loadedState.reputationByRegion || {},
     npcs: loadedState.npcs || {},
     settings: { ...state.settings, ...loadedState.settings },
-    gigModifiers: { ...DEFAULT_GIG_MODIFIERS, ...loadedState.gigModifiers },
-    currentScene: loadedState.currentScene || 'OVERWORLD',
-    setlist: Array.isArray(loadedState.setlist) ? loadedState.setlist : [],
-    unlocks: Array.isArray(loadedState.unlocks) ? loadedState.unlocks : [],
-    gameMap: loadedState.gameMap || state.gameMap,
-    settings: { ...state.settings, ...loadedState.settings },
-    player: mergedPlayer,
-    band: mergedBand,
-    social: mergedSocial,
     gigModifiers: {
       ...DEFAULT_GIG_MODIFIERS,
       ...(loadedState.gigModifiers || {})
     },
-    activeStoryFlags: Array.isArray(loadedState.activeStoryFlags) ? loadedState.activeStoryFlags : [],
-    pendingEvents: Array.isArray(loadedState.pendingEvents) ? loadedState.pendingEvents : [],
-    eventCooldowns: Array.isArray(loadedState.eventCooldowns) ? loadedState.eventCooldowns : [],
-    reputationByRegion: loadedState.reputationByRegion || {},
-    npcs: loadedState.npcs || {},
+    currentScene: loadedState.currentScene || 'OVERWORLD',
     currentGig: loadedState.currentGig || null,
     lastGigStats: loadedState.lastGigStats || null
   }

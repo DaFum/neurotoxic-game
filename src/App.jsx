@@ -63,7 +63,7 @@ function GameContent() {
 
       <ToastOverlay />
       <TutorialManager />
-      <DebugLogViewer />
+      {import.meta.env.DEV && <DebugLogViewer />}
 
       {/* Global Event Modal Overlay */}
       {activeEvent && (
