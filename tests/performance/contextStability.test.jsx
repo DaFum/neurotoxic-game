@@ -1,8 +1,9 @@
+/* eslint-env node */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { JSDOM } from 'jsdom'
 import { act, render } from '@testing-library/react'
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 
 // Setup JSDOM global environment
 const dom = new JSDOM('<!doctype html><html><body></body></html>', {
@@ -16,44 +17,50 @@ Object.defineProperty(global, 'navigator', {
   value: dom.window.navigator,
   writable: true,
   configurable: true
-});
+})
 
 global.HTMLElement = dom.window.HTMLElement
 
 // Mock localStorage
-const localStorageMock = (function() {
+const localStorageMock = (function () {
   let store = {}
   return {
-    getItem: function(key) {
+    getItem: function (key) {
       return store[key] || null
     },
-    setItem: function(key, value) {
+    setItem: function (key, value) {
       store[key] = value.toString()
     },
-    clear: function() {
+    clear: function () {
       store = {}
     },
-    removeItem: function(key) {
+    removeItem: function (key) {
       delete store[key]
     }
   }
 })()
 Object.defineProperty(window, 'localStorage', { value: localStorageMock })
-global.localStorage = localStorageMock; // Add to global
+global.localStorage = localStorageMock // Add to global
 
 // Mock AudioContext to prevent Tone.js initialization errors during import/render
 global.window.AudioContext = class {
-    constructor() {
-        this.state = 'suspended';
-    }
-    createGain() { return { connect: () => {}, gain: { value: 1 } }; }
-    createOscillator() { return { connect: () => {}, start: () => {}, stop: () => {} }; }
-    destination = {}
-};
+  constructor() {
+    this.state = 'suspended'
+  }
+  createGain() {
+    return { connect: () => {}, gain: { value: 1 } }
+  }
+  createOscillator() {
+    return { connect: () => {}, start: () => {}, stop: () => {} }
+  }
+  destination = {}
+}
 
-test('GameState context functions stability', async (t) => {
+test('GameState context functions stability', async _t => {
   // Dynamic import to ensure globals are set
-  const { GameStateProvider, useGameState } = await import('../../src/context/GameState.jsx')
+  const { GameStateProvider, useGameState } = await import(
+    '../../src/context/GameState.jsx'
+  )
 
   let renderCount = 0
   let changeSceneRef = null
@@ -64,18 +71,22 @@ test('GameState context functions stability', async (t) => {
 
     // Store references to check stability
     useEffect(() => {
-        changeSceneRef = changeScene
+      changeSceneRef = changeScene
     })
 
     return (
       <div>
-        <button onClick={() => updatePlayer({ money: (player.money || 0) + 10 })}>Update</button>
-        <span data-testid="money">{player.money}</span>
+        <button
+          onClick={() => updatePlayer({ money: (player.money || 0) + 10 })}
+        >
+          Update
+        </button>
+        <span data-testid='money'>{player.money}</span>
       </div>
     )
   }
 
-  const { getByText, getByTestId } = render(
+  const { getByText } = render(
     <GameStateProvider>
       <Consumer />
     </GameStateProvider>
@@ -83,10 +94,10 @@ test('GameState context functions stability', async (t) => {
 
   // Wait for initial effects to settle (map generation)
   await act(async () => {
-      await new Promise(r => setTimeout(r, 0));
-  });
+    await new Promise(r => setTimeout(r, 0))
+  })
 
-  const initialRenderCount = renderCount;
+  const initialRenderCount = renderCount
   const initialChangeScene = changeSceneRef
 
   // Trigger update
@@ -95,14 +106,21 @@ test('GameState context functions stability', async (t) => {
   })
 
   // Should have re-rendered
-  assert.ok(renderCount > initialRenderCount, 'Should verify re-render occurred')
+  assert.ok(
+    renderCount > initialRenderCount,
+    'Should verify re-render occurred'
+  )
 
   if (changeSceneRef === initialChangeScene) {
-      console.log('Success: changeScene is STABLE!')
+    console.log('Success: changeScene is STABLE!')
   } else {
-      console.log('Failure: changeScene changed reference')
+    console.log('Failure: changeScene changed reference')
   }
 
   // Verification: Stable
-  assert.strictEqual(changeSceneRef, initialChangeScene, 'changeScene function reference should be stable after optimization')
+  assert.strictEqual(
+    changeSceneRef,
+    initialChangeScene,
+    'changeScene function reference should be stable after optimization'
+  )
 })

@@ -66,14 +66,17 @@ test('Golden Path: Full Tour Cycle', async t => {
     assert.equal(state.currentScene, 'MENU')
   })
 
-  await t.test('Phase 2: MENU → OVERWORLD via RESET_STATE + CHANGE_SCENE', () => {
-    state = gameReducer(state, { type: ActionTypes.RESET_STATE })
-    assert.equal(state.currentScene, 'INTRO', 'Reset returns to INTRO')
-    assert.equal(state.player.money, 500, 'Reset restores starting money')
+  await t.test(
+    'Phase 2: MENU → OVERWORLD via RESET_STATE + CHANGE_SCENE',
+    () => {
+      state = gameReducer(state, { type: ActionTypes.RESET_STATE })
+      assert.equal(state.currentScene, 'INTRO', 'Reset returns to INTRO')
+      assert.equal(state.player.money, 500, 'Reset restores starting money')
 
-    state = applyAction(state, ActionTypes.CHANGE_SCENE, 'OVERWORLD')
-    assert.equal(state.currentScene, 'OVERWORLD')
-  })
+      state = applyAction(state, ActionTypes.CHANGE_SCENE, 'OVERWORLD')
+      assert.equal(state.currentScene, 'OVERWORLD')
+    }
+  )
 
   await t.test('Phase 3: Set up map in OVERWORLD', () => {
     const mockMap = {
@@ -132,7 +135,11 @@ test('Golden Path: Full Tour Cycle', async t => {
   await t.test('Phase 6: OVERWORLD → PREGIG via START_GIG', () => {
     const venue = buildVenue()
     state = applyAction(state, ActionTypes.START_GIG, venue)
-    assert.equal(state.currentScene, 'PREGIG', 'START_GIG transitions to PREGIG')
+    assert.equal(
+      state.currentScene,
+      'PREGIG',
+      'START_GIG transitions to PREGIG'
+    )
     assert.deepEqual(state.currentGig, venue, 'currentGig set to venue')
   })
 
@@ -196,14 +203,8 @@ test('Golden Path: Full Tour Cycle', async t => {
       typeof financials.expenses.total === 'number',
       'Expenses total is a number'
     )
-    assert.ok(
-      financials.income.total >= 0,
-      'Income is non-negative'
-    )
-    assert.ok(
-      financials.expenses.total >= 0,
-      'Expenses are non-negative'
-    )
+    assert.ok(financials.income.total >= 0, 'Income is non-negative')
+    assert.ok(financials.expenses.total >= 0, 'Expenses are non-negative')
   })
 
   await t.test('Phase 12: Apply earnings and return to OVERWORLD', () => {
@@ -333,7 +334,10 @@ test('Golden Path: State safety invariants across transitions', async t => {
       type: ActionTypes.APPLY_EVENT_DELTA,
       payload: { player: { van: { fuel: 500 } } }
     })
-    assert.ok(state.player.van.fuel <= 100, `Fuel ${state.player.van.fuel} <= 100`)
+    assert.ok(
+      state.player.van.fuel <= 100,
+      `Fuel ${state.player.van.fuel} <= 100`
+    )
 
     state = gameReducer(state, {
       type: ActionTypes.APPLY_EVENT_DELTA,
@@ -368,16 +372,19 @@ test('Golden Path: State safety invariants across transitions', async t => {
     })
   })
 
-  await t.test('Van condition decays daily and breakdown chance adjusts', () => {
-    let state = createInitialState()
-    const conditionBefore = state.player.van.condition
-    state = gameReducer(state, { type: ActionTypes.ADVANCE_DAY })
-    assert.ok(
-      state.player.van.condition < conditionBefore,
-      'Van condition decays each day'
-    )
-    assert.equal(state.player.van.condition, conditionBefore - 2)
-  })
+  await t.test(
+    'Van condition decays daily and breakdown chance adjusts',
+    () => {
+      let state = createInitialState()
+      const conditionBefore = state.player.van.condition
+      state = gameReducer(state, { type: ActionTypes.ADVANCE_DAY })
+      assert.ok(
+        state.player.van.condition < conditionBefore,
+        'Van condition decays each day'
+      )
+      assert.equal(state.player.van.condition, conditionBefore - 2)
+    }
+  )
 
   await t.test('CONSUME_ITEM decrements numeric inventory', () => {
     let state = createInitialState()
@@ -424,7 +431,11 @@ test('Golden Path: SET_GIG_MODIFIERS functional updater', async t => {
     state = applyAction(state, ActionTypes.SET_GIG_MODIFIERS, {
       merch: true
     })
-    assert.equal(state.gigModifiers.soundcheck, true, 'Previous modifier persists')
+    assert.equal(
+      state.gigModifiers.soundcheck,
+      true,
+      'Previous modifier persists'
+    )
     assert.equal(state.gigModifiers.merch, true)
   })
 
@@ -433,11 +444,9 @@ test('Golden Path: SET_GIG_MODIFIERS functional updater', async t => {
     state = applyAction(state, ActionTypes.SET_GIG_MODIFIERS, {
       promo: true
     })
-    state = applyAction(
-      state,
-      ActionTypes.SET_GIG_MODIFIERS,
-      current => ({ promo: !current.promo })
-    )
+    state = applyAction(state, ActionTypes.SET_GIG_MODIFIERS, current => ({
+      promo: !current.promo
+    }))
     assert.equal(state.gigModifiers.promo, false, 'Toggle worked')
   })
 })
@@ -476,9 +485,16 @@ test('Golden Path: LOAD_GAME sanitizes corrupted save data', async t => {
       type: ActionTypes.LOAD_GAME,
       payload: {}
     })
-    assert.equal(state.player.money, 500, 'Missing money gets DEFAULT_PLAYER_STATE value')
+    assert.equal(
+      state.player.money,
+      500,
+      'Missing money gets DEFAULT_PLAYER_STATE value'
+    )
     assert.equal(state.player.day, 1, 'Missing day defaults to 1')
-    assert.ok(state.band.members.length > 0, 'Band members restored from defaults')
+    assert.ok(
+      state.band.members.length > 0,
+      'Band members restored from defaults'
+    )
     assert.ok(state.social.instagram >= 0, 'Social restored from defaults')
   })
 
@@ -488,7 +504,11 @@ test('Golden Path: LOAD_GAME sanitizes corrupted save data', async t => {
       type: ActionTypes.LOAD_GAME,
       payload: { gigModifiers: { energy: true } }
     })
-    assert.equal(state.gigModifiers.catering, true, 'energy → catering migration')
+    assert.equal(
+      state.gigModifiers.catering,
+      true,
+      'energy → catering migration'
+    )
     assert.equal(state.gigModifiers.energy, undefined, 'energy key removed')
   })
 
@@ -530,12 +550,15 @@ test('Golden Path: Scene sequence matches state machine', async t => {
     }
   })
 
-  await t.test('START_GIG transitions to PREGIG regardless of current scene', () => {
-    let state = createInitialState()
-    state = applyAction(state, ActionTypes.CHANGE_SCENE, 'OVERWORLD')
-    state = applyAction(state, ActionTypes.START_GIG, buildVenue())
-    assert.equal(state.currentScene, 'PREGIG')
-  })
+  await t.test(
+    'START_GIG transitions to PREGIG regardless of current scene',
+    () => {
+      let state = createInitialState()
+      state = applyAction(state, ActionTypes.CHANGE_SCENE, 'OVERWORLD')
+      state = applyAction(state, ActionTypes.START_GIG, buildVenue())
+      assert.equal(state.currentScene, 'PREGIG')
+    }
+  )
 })
 
 test('Golden Path: Daily cost scaling with band size', async t => {
@@ -563,7 +586,11 @@ test('Golden Path: Event cooldowns reset on ADVANCE_DAY', async t => {
     assert.ok(state.eventCooldowns.includes('event_123'))
 
     state = gameReducer(state, { type: ActionTypes.ADVANCE_DAY })
-    assert.deepEqual(state.eventCooldowns, [], 'Cooldowns cleared on day advance')
+    assert.deepEqual(
+      state.eventCooldowns,
+      [],
+      'Cooldowns cleared on day advance'
+    )
   })
 })
 

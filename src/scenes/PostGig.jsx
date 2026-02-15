@@ -257,7 +257,8 @@ const SocialPhase = ({ options, onSelect }) => (
             {opt.title}
           </div>
           <div className='text-xs text-(--ash-gray)'>
-            Platform: {opt.platform} | Viral Chance: {Math.round((opt.viralChance ?? 0) * 100)}%
+            Platform: {opt.platform} | Viral Chance:{' '}
+            {Math.round((opt.viralChance ?? 0) * 100)}%
           </div>
         </button>
       ))}

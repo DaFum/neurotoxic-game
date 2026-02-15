@@ -9,7 +9,7 @@
  * @param {any} data - The parsed JSON data from localStorage.
  * @returns {boolean} True if valid, throws error if invalid.
  */
-export const validateSaveData = (data) => {
+export const validateSaveData = data => {
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
     throw new Error('Save data must be an object')
   }
@@ -38,7 +38,7 @@ export const validateSaveData = (data) => {
   return true
 }
 
-const validatePlayer = (player) => {
+const validatePlayer = player => {
   if (typeof player !== 'object') throw new Error('player must be an object')
 
   const numericFields = ['money', 'day', 'time', 'score', 'fame', 'fameLevel']
@@ -53,7 +53,7 @@ const validatePlayer = (player) => {
   }
 }
 
-const validateBand = (band) => {
+const validateBand = band => {
   if (typeof band !== 'object') throw new Error('band must be an object')
 
   if (band.members && !Array.isArray(band.members)) {
@@ -76,10 +76,10 @@ const validateBand = (band) => {
   }
 }
 
-const validateSocial = (social) => {
+const validateSocial = social => {
   if (typeof social !== 'object') throw new Error('social must be an object')
 
-  Object.values(social).forEach((val) => {
+  Object.values(social).forEach(val => {
     if (typeof val !== 'number') {
       throw new Error('Social values must be numbers')
     }
