@@ -187,7 +187,8 @@ export async function loadAudioBuffer(filename) {
     while (
       (audioState.audioBufferCache.size >= MAX_AUDIO_BUFFER_CACHE_SIZE &&
         MAX_AUDIO_BUFFER_CACHE_SIZE > 0) ||
-      (audioState.currentCacheByteSize + newBufferSize > MAX_AUDIO_BUFFER_BYTE_SIZE &&
+      (audioState.currentCacheByteSize + newBufferSize >
+        MAX_AUDIO_BUFFER_BYTE_SIZE &&
         audioState.audioBufferCache.size > 0)
     ) {
       const oldestKey = audioState.audioBufferCache.keys().next().value

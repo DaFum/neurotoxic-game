@@ -2,14 +2,36 @@ import * as Tone from 'tone'
 import * as ToneJsMidi from '@tonejs/midi'
 import { logger } from '../logger.js'
 import { audioState } from './state.js'
-import { MIN_NOTE_DURATION, MAX_NOTE_DURATION, HIHAT_CONFIG, CRASH_CONFIG } from './constants.js'
-import { ensureAudioContext, getRawAudioContext, getAudioContextTimeSec } from './setup.js'
+import {
+  MIN_NOTE_DURATION,
+  MAX_NOTE_DURATION,
+  HIHAT_CONFIG,
+  CRASH_CONFIG
+} from './constants.js'
+import {
+  ensureAudioContext,
+  getRawAudioContext,
+  getAudioContextTimeSec
+} from './setup.js'
 import { stopAudio, stopAudioInternal } from './playback.js'
-import { midiUrlMap, oggCandidates, loadAudioBuffer, oggUrlMap } from './assets.js'
+import {
+  midiUrlMap,
+  oggCandidates,
+  loadAudioBuffer,
+  oggUrlMap
+} from './assets.js'
 import { calculateTimeFromTicks, preprocessTempoMap } from '../rhythmUtils.js'
 import { selectRandomItem } from '../audioSelectionUtils.js'
-import { resolveAssetUrl, normalizeMidiPlaybackOptions } from '../audioPlaybackUtils.js'
-import { isPercussionTrack, isValidMidiNote, buildMidiTrackEvents, normalizeMidiPitch } from '../midiTrackUtils.js'
+import {
+  resolveAssetUrl,
+  normalizeMidiPlaybackOptions
+} from '../audioPlaybackUtils.js'
+import {
+  isPercussionTrack,
+  isValidMidiNote,
+  buildMidiTrackEvents,
+  normalizeMidiPitch
+} from '../midiTrackUtils.js'
 import { SONGS_DB } from '../../data/songs.js'
 
 const MidiParser = ToneJsMidi?.Midi ?? ToneJsMidi?.default?.Midi ?? null
@@ -134,7 +156,10 @@ export async function playSongFromData(song, delay = 0) {
 
   // Validate Audio Components
   if (!audioState.guitar || !audioState.bass || !audioState.drumKit) {
-    logger.error('AudioEngine', 'playSongFromData: Audio components not initialized.')
+    logger.error(
+      'AudioEngine',
+      'playSongFromData: Audio components not initialized.'
+    )
     return false
   }
 
@@ -184,7 +209,10 @@ export async function playSongFromData(song, delay = 0) {
     .filter(e => Number.isFinite(e.time) && e.time >= 0)
 
   if (events.length === 0) {
-    logger.warn('AudioEngine', 'playSongFromData: No valid notes found to schedule')
+    logger.warn(
+      'AudioEngine',
+      'playSongFromData: No valid notes found to schedule'
+    )
     return false
   }
 
@@ -194,7 +222,12 @@ export async function playSongFromData(song, delay = 0) {
     const noteName = Tone.Frequency(value.note, 'midi').toNote()
 
     if (value.lane === 'guitar') {
-      audioState.guitar.triggerAttackRelease(noteName, '16n', time, value.velocity)
+      audioState.guitar.triggerAttackRelease(
+        noteName,
+        '16n',
+        time,
+        value.velocity
+      )
     } else if (value.lane === 'bass') {
       audioState.bass.triggerAttackRelease(noteName, '8n', time, value.velocity)
     } else if (value.lane === 'drums') {
@@ -247,7 +280,8 @@ function generateRiffPattern(diff, random) {
 function playDrumsLegacy(time, diff, note, random) {
   if (diff === 5) {
     audioState.drumKit.kick.triggerAttackRelease('C1', '16n', time)
-    if (random() > 0.5) audioState.drumKit.snare.triggerAttackRelease('16n', time)
+    if (random() > 0.5)
+      audioState.drumKit.snare.triggerAttackRelease('16n', time)
     audioState.drumKit.hihat.triggerAttackRelease(8000, '32n', time, 0.5)
   } else {
     if (note === 'E2' || random() < diff * 0.1) {
@@ -434,7 +468,9 @@ async function playMidiFileInternal(
 
     const leadSynth = useCleanPlayback ? audioState.midiLead : audioState.guitar
     const bassSynth = useCleanPlayback ? audioState.midiBass : audioState.bass
-    const drumSet = useCleanPlayback ? audioState.midiDrumKit : audioState.drumKit
+    const drumSet = useCleanPlayback
+      ? audioState.midiDrumKit
+      : audioState.drumKit
 
     const nextMidiParts = []
     midi.tracks.forEach(track => {
