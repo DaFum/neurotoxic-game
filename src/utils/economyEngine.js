@@ -1,8 +1,5 @@
 import { logger } from './logger.js'
 
-// Constants for the Economic System
-// export const INCOME_CONSTANTS = { ... }
-
 export const EXPENSE_CONSTANTS = {
   DAILY: {
     BASE_COST: 25
