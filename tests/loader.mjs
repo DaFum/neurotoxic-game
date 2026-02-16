@@ -7,9 +7,15 @@ export async function load(url, context, nextLoad) {
   if (result.source && (typeof result.source === 'string' || result.source instanceof Buffer)) {
     const source = result.source.toString();
 
-    // Check for import.meta.glob usage
-    if (source.includes('import.meta.glob')) {
-      const transformed = replaceImportMetaGlob(source);
+    // Check for import.meta.glob or import.meta.env usage
+    if (source.includes('import.meta.glob') || source.includes('import.meta.env')) {
+      let transformed = source;
+      if (source.includes('import.meta.glob')) {
+        transformed = replaceImportMetaGlob(transformed);
+      }
+      if (transformed.includes('import.meta.env')) {
+        transformed = transformed.replace(/import\.meta\.env/g, '({ BASE_URL: "/", DEV: true })');
+      }
 
       return {
         ...result,

@@ -48,7 +48,8 @@ const MIN_NOTE_DURATION = 0.05
 const MAX_NOTE_DURATION = 10
 const AUDIO_BUFFER_LOAD_TIMEOUT_MS = 10000
 const AUDIO_BUFFER_DECODE_TIMEOUT_MS = 10000
-const MAX_AUDIO_BUFFER_CACHE_SIZE = 50
+const MAX_AUDIO_BUFFER_CACHE_SIZE = 10
+const MAX_AUDIO_BUFFER_BYTE_SIZE = 50 * 1024 * 1024 // 50MB total cache size limit
 
 const HIHAT_CONFIG = {
   envelope: { attack: 0.001, decay: 0.06, release: 0.01 },
@@ -141,6 +142,7 @@ let gigDurationMs = null
 let gigOnEnded = null
 let gigIsPaused = false
 const audioBufferCache = new Map()
+let currentCacheByteSize = 0
 let ambientSource = null
 let setupLock = null
 let setupError = null
@@ -752,6 +754,17 @@ export function hasAudioAsset(filename) {
 }
 
 /**
+ * Calculates the approximate byte size of an AudioBuffer in memory.
+ * Assumes 32-bit float samples (4 bytes per sample).
+ * @param {AudioBuffer} buffer - The buffer to measure.
+ * @returns {number} Estimated size in bytes.
+ */
+function getAudioBufferSize(buffer) {
+  if (!buffer) return 0
+  return (buffer.length || 0) * (buffer.numberOfChannels || 0) * 4
+}
+
+/**
  * Loads an audio buffer for Web Audio playback.
  * @param {string} filename - Audio filename (e.g. .ogg).
  * @returns {Promise<AudioBuffer|null>} Decoded audio buffer or null on failure.
@@ -826,14 +839,29 @@ export async function loadAudioBuffer(filename) {
     } finally {
       if (decodeTimeoutId) clearTimeout(decodeTimeoutId)
     }
-    if (audioBufferCache.size >= MAX_AUDIO_BUFFER_CACHE_SIZE) {
+
+    const newBufferSize = getAudioBufferSize(buffer)
+
+    // Evict items until we are within both size and count limits.
+    // We always allow at least one item (the new one) to remain, even if it exceeds the byte limit.
+    while (
+      (audioBufferCache.size >= MAX_AUDIO_BUFFER_CACHE_SIZE &&
+        MAX_AUDIO_BUFFER_CACHE_SIZE > 0) ||
+      (currentCacheByteSize + newBufferSize > MAX_AUDIO_BUFFER_BYTE_SIZE &&
+        audioBufferCache.size > 0)
+    ) {
       const oldestKey = audioBufferCache.keys().next().value
+      const oldestBuffer = audioBufferCache.get(oldestKey)
+      currentCacheByteSize -= getAudioBufferSize(oldestBuffer)
       audioBufferCache.delete(oldestKey)
     }
+
     audioBufferCache.set(cacheKey, buffer)
+    currentCacheByteSize += newBufferSize
+
     logger.debug(
       'AudioEngine',
-      `Decoded audio buffer: "${filename}" (${buffer.duration.toFixed(1)}s, ${buffer.sampleRate}Hz)`
+      `Decoded audio buffer: "${filename}" (${buffer.duration.toFixed(1)}s, ${buffer.sampleRate}Hz, ${(newBufferSize / 1024 / 1024).toFixed(2)}MB). Cache: ${audioBufferCache.size} items, ${(currentCacheByteSize / 1024 / 1024).toFixed(2)}MB`
     )
     return buffer
   } catch (error) {
@@ -1425,6 +1453,7 @@ export function disposeAudio() {
   stopGigPlayback()
   stopAmbientPlayback()
   audioBufferCache.clear()
+  currentCacheByteSize = 0
 
   guitar = safeDispose(guitar)
   bass = safeDispose(bass)
