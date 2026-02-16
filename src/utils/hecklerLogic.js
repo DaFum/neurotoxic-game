@@ -79,6 +79,7 @@ export const checkCollisions = (projectiles, screenHeight, onHit) => {
   const hitY = screenHeight - 150
   let writeIdx = 0
 
+  // Optimization: Mutate in-place to avoid GC pressure in tight loop
   for (let i = 0; i < projectiles.length; i++) {
     const p = projectiles[i]
     if (p.y > hitY) {
@@ -95,4 +96,6 @@ export const checkCollisions = (projectiles, screenHeight, onHit) => {
   if (writeIdx < projectiles.length) {
     projectiles.length = writeIdx
   }
+
+  return projectiles
 }

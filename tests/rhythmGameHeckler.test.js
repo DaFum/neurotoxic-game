@@ -98,7 +98,8 @@ test('checkCollisions detects hits and removes items', () => {
   const projectiles = [
     { id: 1, y: 800 }, // No hit (800 < 850)
     { id: 2, y: 900 }, // Hit (900 > 850)
-    { id: 3, y: 849 } // No hit
+    { id: 3, y: 849 }, // No hit
+    { id: 4, y: 850 } // Boundary (850 == 850) -> No hit
   ]
 
   let hits = 0
@@ -112,9 +113,10 @@ test('checkCollisions detects hits and removes items', () => {
   assert.strictEqual(hits, 1, 'Should trigger callback once')
   assert.strictEqual(
     projectiles.length,
-    2,
-    'Should remove the hitting projectile'
+    3,
+    'Should remove ONLY the hitting projectile'
   )
   assert.strictEqual(projectiles[0].id, 1)
   assert.strictEqual(projectiles[1].id, 3)
+  assert.strictEqual(projectiles[2].id, 4)
 })
