@@ -499,6 +499,7 @@ export const useRhythmGameLogic = () => {
   const handleHit = useCallback(
     laneIndex => {
       const state = gameStateRef.current
+      if (laneIndex < 0 || laneIndex >= state.lanes.length) return false
       // Use Tone.js AudioContext clock for hit detection to stay in sync with
       // audio playback and the visual frame loop.
       const elapsed = getGigTimeMs()

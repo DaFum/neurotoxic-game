@@ -1005,6 +1005,11 @@ export function pauseGigPlayback() {
     } catch (error) {
       logger.warn('AudioEngine', 'Failed to pause gig playback', error)
     }
+    try {
+      gigSource.disconnect()
+    } catch {
+      // Source may already be disconnected after stop
+    }
     gigSource = null
   }
 }
@@ -1088,6 +1093,11 @@ export function stopGigPlayback() {
     } catch (error) {
       logger.warn('AudioEngine', 'Failed to stop gig playback', error)
     }
+    try {
+      gigSource.disconnect()
+    } catch {
+      // Source may already be disconnected after stop
+    }
   }
   gigSource = null
   gigBuffer = null
@@ -1111,6 +1121,11 @@ export function stopAmbientPlayback() {
       ambientSource.stop()
     } catch (error) {
       logger.warn('AudioEngine', 'Failed to stop ambient playback', error)
+    }
+    try {
+      ambientSource.disconnect()
+    } catch {
+      // Source may already be disconnected after stop
     }
     ambientSource = null
   }

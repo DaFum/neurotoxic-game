@@ -73,7 +73,7 @@ const processEffect = (eff, delta) => {
         delta.player.van = { ...(delta.player.van || {}) }
         delta.player.van.fuel = Math.max(
           0,
-          (delta.player.van.fuel || 0) + eff.value
+          Math.min(100, (delta.player.van.fuel || 0) + eff.value)
         )
       }
       break

@@ -262,6 +262,12 @@ class PixiStageController {
 
     this.effectsContainer.addChild(effect)
     this.activeEffects.push(effect)
+
+    // Cap active effects to prevent memory growth during long gigs
+    if (this.activeEffects.length > 50) {
+      const oldest = this.activeEffects.shift()
+      oldest.destroy()
+    }
   }
 
   /**
@@ -612,8 +618,26 @@ class PixiStageController {
     }
     this.spritePool = []
 
+    // Destroy lane graphics to release GPU resources
+    for (const graphicsSet of this.laneGraphics) {
+      if (graphicsSet) {
+        graphicsSet.static?.destroy()
+        graphicsSet.dynamic?.destroy()
+      }
+    }
     this.laneGraphics = []
+
+    // Destroy crowd Graphics to release GPU texture handles
+    for (const member of this.crowdMembers) {
+      member.destroy()
+    }
     this.crowdMembers = []
+
+    // Destroy color matrix filter to free GPU memory
+    if (this.colorMatrix) {
+      this.colorMatrix.destroy()
+      this.colorMatrix = null
+    }
 
     this.activeEffects.forEach(effect => {
       effect.destroy?.()
