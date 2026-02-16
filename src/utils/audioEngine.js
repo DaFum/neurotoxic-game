@@ -6,7 +6,7 @@
 
 import * as Tone from 'tone'
 import * as ToneJsMidi from '@tonejs/midi'
-import { calculateTimeFromTicks } from './rhythmUtils'
+import { calculateTimeFromTicks, preprocessTempoMap } from './rhythmUtils'
 import { SONGS_DB } from '../data/songs'
 import { selectRandomItem } from './audioSelectionUtils.js'
 import {
@@ -1200,6 +1200,7 @@ export async function playSongFromData(song, delay = 0) {
 
   // Fallback if tempoMap is missing/empty
   const useTempoMap = Array.isArray(song.tempoMap) && song.tempoMap.length > 0
+  const activeTempoMap = useTempoMap ? preprocessTempoMap(song.tempoMap, tpb) : []
   const validDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
 
   const events = song.notes
@@ -1217,7 +1218,7 @@ export async function playSongFromData(song, delay = 0) {
     .map(n => {
       let time = 0
       if (useTempoMap) {
-        time = calculateTimeFromTicks(n.t, tpb, song.tempoMap, 's')
+        time = calculateTimeFromTicks(n.t, tpb, activeTempoMap, 's')
       } else {
         // Fallback: ticks -> seconds using constant BPM
         time = (n.t / tpb) * (60 / bpm)
