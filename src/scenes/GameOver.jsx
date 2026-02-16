@@ -45,9 +45,9 @@ export const GameOver = () => {
             {player.location}
           </span>
 
-          <span className='text-(--ash-gray)'>CITIES VISITED:</span>
+          <span className='text-(--ash-gray)'>TOTAL SCORE:</span>
           <span className='text-(--star-white) text-right'>
-            {player.visitedCities?.length || 0}
+            {player.score || 0}
           </span>
         </div>
       </div>

@@ -46,7 +46,7 @@ export const Gig = () => {
         } else {
           setActiveEvent({
             title: 'PAUSED',
-            text: 'Game Paused',
+            description: 'Game Paused',
             options: [
               {
                 label: 'RESUME',
@@ -253,7 +253,7 @@ export const Gig = () => {
           <img
             src={getGenImageUrl(IMG_PROMPTS.MATZE_PLAYING)}
             alt='Matze'
-            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_rgba(255,0,0,0.5)]'
+            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--blood-red)]'
           />
         </div>
         {/* Lars (Drums) - Center Back */}
@@ -264,7 +264,7 @@ export const Gig = () => {
           <img
             src={getGenImageUrl(IMG_PROMPTS.LARS_PLAYING)}
             alt='Lars'
-            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_rgba(0,255,65,0.5)]'
+            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--toxic-green-glow)]'
           />
         </div>
         {/* Marius (Bass) - Right */}
@@ -275,7 +275,7 @@ export const Gig = () => {
           <img
             src={getGenImageUrl(IMG_PROMPTS.MARIUS_PLAYING)}
             alt='Marius'
-            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_rgba(0,65,255,0.5)]'
+            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--void-blue)]'
           />
         </div>
       </div>
