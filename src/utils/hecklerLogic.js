@@ -10,14 +10,23 @@ export const updateProjectiles = (
   deltaMS,
   screenHeight = 1080
 ) => {
-  return projectiles
-    .map(p => ({
-      ...p,
-      x: p.x + p.vx * deltaMS,
-      y: p.y + p.vy * deltaMS,
-      rotation: p.rotation + p.vr * deltaMS
-    }))
-    .filter(p => p.y < screenHeight + 100)
+  const nextProjectiles = []
+  const limit = screenHeight + 100
+
+  for (let i = 0; i < projectiles.length; i++) {
+    const p = projectiles[i]
+    const newY = p.y + p.vy * deltaMS
+
+    if (newY < limit) {
+      nextProjectiles.push({
+        ...p,
+        x: p.x + p.vx * deltaMS,
+        y: newY,
+        rotation: p.rotation + p.vr * deltaMS
+      })
+    }
+  }
+  return nextProjectiles
 }
 
 /**
