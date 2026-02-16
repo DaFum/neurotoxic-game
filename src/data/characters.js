@@ -71,5 +71,3 @@ export const CHARACTERS = {
   }
 }
 
-// Future Mechanic: Harmony Levels
-// export const HARMONY_LEVELS = { ... }
