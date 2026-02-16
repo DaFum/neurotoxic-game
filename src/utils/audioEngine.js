@@ -14,10 +14,7 @@ export {
   disposeAudio
 } from './audio/setup.js'
 
-export {
-  hasAudioAsset,
-  loadAudioBuffer
-} from './audio/assets.js'
+export { hasAudioAsset, loadAudioBuffer } from './audio/assets.js'
 
 export {
   playSFX,

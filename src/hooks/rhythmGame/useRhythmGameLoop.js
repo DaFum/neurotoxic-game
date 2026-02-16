@@ -1,0 +1,162 @@
+import { useCallback } from 'react'
+import { trySpawnProjectile, updateProjectiles } from '../../utils/hecklerLogic'
+import {
+  getGigTimeMs,
+  pauseAudio,
+  resumeAudio,
+  stopAudio
+} from '../../utils/audioEngine'
+import { buildGigStatsSnapshot } from '../../utils/gigStats'
+
+/**
+ * Manages the high-frequency game loop update.
+ *
+ * @param {Object} params - Hook parameters.
+ * @param {Object} params.gameStateRef - Game state reference.
+ * @param {Object} params.scoringActions - Scoring actions (handleMiss).
+ * @param {Object} params.setters - Setters (setIsToxicMode).
+ * @param {Object} params.state - React state (isGameOver, isToxicMode).
+ * @param {Object} params.contextState - Context state (activeEvent).
+ * @param {Object} params.contextActions - Context actions (setLastGigStats, changeScene).
+ * @returns {Object} Loop actions (update).
+ */
+export const useRhythmGameLoop = ({
+  gameStateRef,
+  scoringActions,
+  setters,
+  state,
+  contextState,
+  contextActions
+}) => {
+  const { handleMiss } = scoringActions
+  const { setIsToxicMode } = setters
+  const { isGameOver, isToxicMode } = state
+  const { activeEvent } = contextState
+  const { setLastGigStats, changeScene } = contextActions
+
+  const NOTE_MISS_WINDOW_MS = 300
+
+  /**
+   * Advances the gig logic by one frame.
+   * @param {number} deltaMS - Milliseconds elapsed since last frame.
+   */
+  const update = useCallback(
+    deltaMS => {
+      const stateRef = gameStateRef.current
+      if (stateRef.paused) return
+
+      // Heckler Logic
+      if (stateRef.running && !activeEvent && !isGameOver) {
+        const newProjectile = trySpawnProjectile(
+          { health: stateRef.health },
+          stateRef.rng,
+          window.innerWidth
+        )
+        if (newProjectile) {
+          stateRef.projectiles.push(newProjectile)
+        }
+      }
+
+      // Update Projectiles
+      if (stateRef.projectiles.length > 0) {
+        stateRef.projectiles = updateProjectiles(
+          stateRef.projectiles,
+          deltaMS,
+          window.innerHeight
+        )
+      }
+
+      if (!stateRef.running || activeEvent || isGameOver) {
+        if (!stateRef.pauseTime) {
+          stateRef.pauseTime = getGigTimeMs()
+          if (!isGameOver) {
+            pauseAudio()
+          }
+        }
+        return
+      }
+
+      if (stateRef.pauseTime) {
+        stateRef.pauseTime = null
+        resumeAudio()
+      }
+
+      const now = getGigTimeMs()
+      const elapsed = now
+      stateRef.elapsed = elapsed
+      const duration = stateRef.totalDuration
+      const rawProgress =
+        duration > 0 ? Math.min(100, (elapsed / duration) * 100) : 0
+      stateRef.progress = Math.max(0, rawProgress)
+
+      if (isToxicMode) {
+        if (now > stateRef.toxicModeEndTime) {
+          setIsToxicMode(false)
+          stateRef.isToxicMode = false
+        } else {
+          stateRef.toxicTimeTotal += deltaMS
+        }
+      }
+
+      if (elapsed > stateRef.totalDuration) {
+        stateRef.running = false
+        setLastGigStats(
+          buildGigStatsSnapshot(
+            stateRef.score,
+            stateRef.stats,
+            stateRef.toxicTimeTotal
+          )
+        )
+        stopAudio()
+        changeScene('POSTGIG')
+        return
+      }
+
+      let missCount = 0
+      const notes = stateRef.notes
+      let i = stateRef.nextMissCheckIndex
+
+      while (i < notes.length) {
+        const note = notes[i]
+
+        if (!note.visible || note.hit) {
+          if (i === stateRef.nextMissCheckIndex) {
+            stateRef.nextMissCheckIndex++
+          }
+          i++
+          continue
+        }
+
+        if (note.time > elapsed + NOTE_MISS_WINDOW_MS) {
+          break
+        }
+
+        if (elapsed > note.time + NOTE_MISS_WINDOW_MS) {
+          note.visible = false
+          missCount++
+          if (i === stateRef.nextMissCheckIndex) {
+            stateRef.nextMissCheckIndex++
+          }
+        }
+
+        i++
+      }
+
+      if (missCount > 0) {
+        handleMiss(missCount, false)
+      }
+    },
+    [
+      activeEvent,
+      changeScene,
+      gameStateRef,
+      handleMiss,
+      isGameOver,
+      isToxicMode,
+      setIsToxicMode,
+      setLastGigStats
+    ]
+  )
+
+  return { update }
+}

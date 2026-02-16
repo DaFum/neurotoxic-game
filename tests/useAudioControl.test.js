@@ -43,17 +43,17 @@ describe('useAudioControl', () => {
     mockAudioManager.muted = false
 
     // Create fresh mocks for audioManager methods to reset call history
-    mockAudioManager.setMusicVolume = mock.fn((val) => {
-        mockAudioManager.musicVolume = val
-        return true
+    mockAudioManager.setMusicVolume = mock.fn(val => {
+      mockAudioManager.musicVolume = val
+      return true
     })
-    mockAudioManager.setSFXVolume = mock.fn((val) => {
-        mockAudioManager.sfxVolume = val
-        return true
+    mockAudioManager.setSFXVolume = mock.fn(val => {
+      mockAudioManager.sfxVolume = val
+      return true
     })
     mockAudioManager.toggleMute = mock.fn(() => {
-        mockAudioManager.muted = !mockAudioManager.muted
-        return mockAudioManager.muted
+      mockAudioManager.muted = !mockAudioManager.muted
+      return mockAudioManager.muted
     })
 
     // For handleError, we can't replace the exported function easily, so we rely on tracking calls or restoring if possible.
@@ -92,15 +92,15 @@ describe('useAudioControl', () => {
     }
     // Restore globals
     for (const key of ['window', 'document', 'navigator']) {
-        const descriptor = originalGlobalDescriptors?.get(key)
-        if (descriptor) {
-          Object.defineProperty(globalThis, key, descriptor)
-        } else {
-          delete globalThis[key]
-        }
+      const descriptor = originalGlobalDescriptors?.get(key)
+      if (descriptor) {
+        Object.defineProperty(globalThis, key, descriptor)
+      } else {
+        delete globalThis[key]
       }
-      originalGlobalDescriptors = null
-      dom = null
+    }
+    originalGlobalDescriptors = null
+    dom = null
   })
 
   test('initializes with values from audioManager', () => {
@@ -119,7 +119,10 @@ describe('useAudioControl', () => {
     })
 
     assert.equal(mockAudioManager.setMusicVolume.mock.calls.length, 1)
-    assert.equal(mockAudioManager.setMusicVolume.mock.calls[0].arguments[0], 0.8)
+    assert.equal(
+      mockAudioManager.setMusicVolume.mock.calls[0].arguments[0],
+      0.8
+    )
     assert.equal(mockAudioManager.musicVolume, 0.8)
     assert.equal(result.current.audioState.musicVol, 0.8)
   })
@@ -138,7 +141,9 @@ describe('useAudioControl', () => {
 
   test('setMusic handles exceptions', () => {
     const error = new Error('Music error')
-    mockAudioManager.setMusicVolume.mock.mockImplementation(() => { throw error })
+    mockAudioManager.setMusicVolume.mock.mockImplementation(() => {
+      throw error
+    })
     const callsBefore = mockHandleError.mock.calls.length
     const { result } = renderHook(() => useAudioControl())
 
@@ -165,19 +170,21 @@ describe('useAudioControl', () => {
   })
 
   test('setSfx handles exceptions', () => {
-     const error = new Error('SFX error')
-     mockAudioManager.setSFXVolume.mock.mockImplementation(() => { throw error })
-     const callsBefore = mockHandleError.mock.calls.length
-     const { result } = renderHook(() => useAudioControl())
+    const error = new Error('SFX error')
+    mockAudioManager.setSFXVolume.mock.mockImplementation(() => {
+      throw error
+    })
+    const callsBefore = mockHandleError.mock.calls.length
+    const { result } = renderHook(() => useAudioControl())
 
-     act(() => {
-       result.current.handleAudioChange.setSfx(0.2)
-     })
+    act(() => {
+      result.current.handleAudioChange.setSfx(0.2)
+    })
 
-     assert.equal(mockHandleError.mock.calls.length, callsBefore + 1)
-     assert.equal(mockHandleError.mock.calls[callsBefore].arguments[0], error)
-     assert.equal(result.current.audioState.sfxVol, 0.5)
-   })
+    assert.equal(mockHandleError.mock.calls.length, callsBefore + 1)
+    assert.equal(mockHandleError.mock.calls[callsBefore].arguments[0], error)
+    assert.equal(result.current.audioState.sfxVol, 0.5)
+  })
 
   test('toggleMute toggles mute state', () => {
     const { result } = renderHook(() => useAudioControl())
@@ -201,7 +208,9 @@ describe('useAudioControl', () => {
 
   test('toggleMute handles exceptions', () => {
     const error = new Error('Mute error')
-    mockAudioManager.toggleMute.mock.mockImplementation(() => { throw error })
+    mockAudioManager.toggleMute.mock.mockImplementation(() => {
+      throw error
+    })
     const callsBefore = mockHandleError.mock.calls.length
     const { result } = renderHook(() => useAudioControl())
 
