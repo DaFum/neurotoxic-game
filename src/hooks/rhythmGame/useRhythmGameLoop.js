@@ -44,6 +44,28 @@ export const useRhythmGameLoop = ({
   )
 
   /**
+   * Finalizes gig results and transitions exactly once.
+   * @param {object} stateRef - Mutable rhythm game state.
+   */
+  const finalizeGig = useCallback(
+    stateRef => {
+      if (stateRef.hasSubmittedResults) return
+      stateRef.hasSubmittedResults = true
+      stateRef.running = false
+      setLastGigStats(
+        buildGigStatsSnapshot(
+          stateRef.score,
+          stateRef.stats,
+          stateRef.toxicTimeTotal
+        )
+      )
+      stopAudio()
+      changeScene('POSTGIG')
+    },
+    [changeScene, setLastGigStats]
+  )
+
+  /**
    * Advances the gig logic by one frame.
    * @param {number} deltaMS - Milliseconds elapsed since last frame.
    */
@@ -116,17 +138,19 @@ export const useRhythmGameLoop = ({
         }
       }
 
-      if (now > stateRef.totalDuration) {
-        stateRef.running = false
-        setLastGigStats(
-          buildGigStatsSnapshot(
-            stateRef.score,
-            stateRef.stats,
-            stateRef.toxicTimeTotal
-          )
-        )
-        stopAudio()
-        changeScene('POSTGIG')
+      const didReachSongEnd = now >= duration
+      const hasParsedNotes = stateRef.notes.length > 0
+      const hasPassedAllNotes =
+        hasParsedNotes && stateRef.nextMissCheckIndex >= stateRef.notes.length
+      const didAudioPlaybackEnd =
+        stateRef.audioPlaybackEnded &&
+        (duration <= 0 || now >= duration - NOTE_MISS_WINDOW_MS)
+      const shouldFinalizeForNotes =
+        hasPassedAllNotes &&
+        (didAudioPlaybackEnd || duration <= 0 || now >= duration - NOTE_MISS_WINDOW_MS)
+
+      if (didReachSongEnd || didAudioPlaybackEnd || shouldFinalizeForNotes) {
+        finalizeGig(stateRef)
         return
       }
 
@@ -166,12 +190,11 @@ export const useRhythmGameLoop = ({
     },
     [
       activeEvent,
-      changeScene,
+      finalizeGig,
       gameStateRef,
       handleCollision,
       handleMiss,
-      setIsToxicMode,
-      setLastGigStats
+      setIsToxicMode
     ]
   )
 

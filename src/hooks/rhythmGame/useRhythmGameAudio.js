@@ -184,7 +184,10 @@ export const useRhythmGameAudio = ({
             filename: oggFilename,
             bufferOffsetMs: excerptStart,
             delayMs: GIG_LEAD_IN_MS,
-            durationMs: gigDurationMs
+            durationMs: gigDurationMs,
+            onEnded: () => {
+              gameStateRef.current.audioPlaybackEnded = true
+            }
           })
           if (success) {
             bgAudioStarted = true
@@ -213,7 +216,10 @@ export const useRhythmGameAudio = ({
           {
             startTimeSec: toneGigStartTimeSec,
             stopAfterSeconds: gigPlaybackSeconds,
-            useCleanPlayback: false
+            useCleanPlayback: false,
+            onEnded: () => {
+              gameStateRef.current.audioPlaybackEnded = true
+            }
           }
         )
         if (success) {
@@ -264,6 +270,8 @@ export const useRhythmGameAudio = ({
 
       gameStateRef.current.notes = notes
       gameStateRef.current.nextMissCheckIndex = 0
+      gameStateRef.current.hasSubmittedResults = false
+      gameStateRef.current.audioPlaybackEnded = false
 
       const maxNoteTime = notes.reduce((max, n) => Math.max(max, n.time), 0)
       const buffer = 4000
