@@ -39,10 +39,6 @@ export const UpgradeMenu = ({
                 {category}
               </h3>
               {upgrades.map(u => {
-                // Owned check logic:
-                // We rely on player.van.upgrades or player.hqUpgrades.
-                // The unified hook logic ensures purchased items (with currency='fame') are added to player.van.upgrades.
-                // So checking player.van.upgrades should be sufficient for visual state.
                 const owned = (player.van?.upgrades ?? []).includes(u.id)
 
                 return (
