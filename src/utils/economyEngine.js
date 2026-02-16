@@ -34,14 +34,24 @@ export const EXPENSE_CONSTANTS = {
   }
 }
 
+export const TICKET_SALES_CONSTANTS = {
+  BASE_DRAW_RATIO: 0.3,
+  FAME_CAPACITY_SCALER: 10,
+  FAME_FILL_WEIGHT: 0.7
+}
+
 /**
  * Calculates ticket sales revenue and attendance.
  */
 const calculateTicketIncome = (gigData, playerFame, modifiers) => {
   // Base draw is ~30%. Fame fills the rest.
-  const baseDrawRatio = 0.3
-  const fameRatio = Math.min(1.0, playerFame / (gigData.capacity * 10)) // Fame needs to be ~10x capacity to fill it easily
-  let fillRate = baseDrawRatio + fameRatio * 0.7
+  const baseDrawRatio = TICKET_SALES_CONSTANTS.BASE_DRAW_RATIO
+  // Fame needs to be ~10x capacity to fill it easily
+  const fameRatio = Math.min(
+    1.0,
+    playerFame / (gigData.capacity * TICKET_SALES_CONSTANTS.FAME_CAPACITY_SCALER)
+  )
+  let fillRate = baseDrawRatio + fameRatio * TICKET_SALES_CONSTANTS.FAME_FILL_WEIGHT
 
   // Promo Boost
   if (modifiers.promo) fillRate += 0.15
