@@ -80,6 +80,7 @@ export const useRhythmGameScoring = ({
       setOverload(o => {
         const penalty = isEmptyHit ? 2 : 5
         const next = Math.max(0, o - penalty * count)
+        // Side-effect: Updating ref in state setter to prevent stale closure in loop
         gameStateRef.current.overload = next
         const updatedStats = updateGigPerformanceStats(
           {

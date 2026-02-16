@@ -44,9 +44,9 @@ export const useRhythmGameLogic = () => {
       gameMap,
       player,
       setlist,
-      gigModifiers,
-      addToast
-    }
+      gigModifiers
+    },
+    contextActions: { addToast }
   })
 
   // 4. Game Loop (Update)

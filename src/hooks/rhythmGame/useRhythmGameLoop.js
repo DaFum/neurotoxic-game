@@ -8,6 +8,8 @@ import {
 } from '../../utils/audioEngine'
 import { buildGigStatsSnapshot } from '../../utils/gigStats'
 
+const NOTE_MISS_WINDOW_MS = 300
+
 /**
  * Manages the high-frequency game loop update.
  *
@@ -33,8 +35,6 @@ export const useRhythmGameLoop = ({
   // const { isGameOver, isToxicMode } = state // Removed to prevent stale closures
   const { activeEvent } = contextState
   const { setLastGigStats, changeScene } = contextActions
-
-  const NOTE_MISS_WINDOW_MS = 300
 
   /**
    * Advances the gig logic by one frame.
@@ -86,11 +86,10 @@ export const useRhythmGameLoop = ({
       }
 
       const now = getGigTimeMs()
-      const elapsed = now
-      stateRef.elapsed = elapsed
+      stateRef.elapsed = now
       const duration = stateRef.totalDuration
       const rawProgress =
-        duration > 0 ? Math.min(100, (elapsed / duration) * 100) : 0
+        duration > 0 ? Math.min(100, (now / duration) * 100) : 0
       stateRef.progress = Math.max(0, rawProgress)
 
       if (isToxicMode) {
@@ -102,7 +101,7 @@ export const useRhythmGameLoop = ({
         }
       }
 
-      if (elapsed > stateRef.totalDuration) {
+      if (now > stateRef.totalDuration) {
         stateRef.running = false
         setLastGigStats(
           buildGigStatsSnapshot(
@@ -131,11 +130,11 @@ export const useRhythmGameLoop = ({
           continue
         }
 
-        if (note.time > elapsed + NOTE_MISS_WINDOW_MS) {
+        if (note.time > now + NOTE_MISS_WINDOW_MS) {
           break
         }
 
-        if (elapsed > note.time + NOTE_MISS_WINDOW_MS) {
+        if (now > note.time + NOTE_MISS_WINDOW_MS) {
           note.visible = false
           missCount++
           if (i === stateRef.nextMissCheckIndex) {

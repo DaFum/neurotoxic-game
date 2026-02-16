@@ -32,7 +32,7 @@ export const useRhythmGameInput = ({
         if (isDown) handleHit(laneIndex)
       }
     },
-    [activeEvent, handleHit, gameStateRef]
+    [activeEvent, handleHit]
   )
 
   return { registerInput }

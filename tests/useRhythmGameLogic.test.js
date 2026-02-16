@@ -109,6 +109,15 @@ describe('useRhythmGameLogic', () => {
   beforeEach(() => {
     // Reset mocks
     mockUseGameState.mock.resetCalls()
+    mockRhythmUtils.checkHit.mock.resetCalls()
+    mockRhythmUtils.generateNotesForSong.mock.resetCalls()
+    mockRhythmUtils.parseSongNotes.mock.resetCalls()
+    mockAudioManager.stopMusic.mock.resetCalls()
+    mockAudioManager.playSFX.mock.resetCalls()
+    mockGigStats.buildGigStatsSnapshot.mock.resetCalls()
+    mockGigStats.updateGigPerformanceStats.mock.resetCalls()
+    mockErrorHandler.handleError.mock.resetCalls()
+
     mockUseGameState.mock.mockImplementation(() => ({
       setlist: ['jam'],
       band: { members: [] },
@@ -189,7 +198,9 @@ describe('useRhythmGameLogic', () => {
 
     // Wait for async initialization
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 100))
+      // In a real test environment with proper timers, we would use waitFor
+      // Here we use a slightly longer timeout to ensure the promise resolves
+      await new Promise(resolve => setTimeout(resolve, 200))
     })
 
     // Check if initialization ran (>= 1 because unstable dependencies from mockUseGameState might trigger re-runs)
@@ -209,7 +220,7 @@ describe('useRhythmGameLogic', () => {
 
     // Wait for initialization
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise(resolve => setTimeout(resolve, 200))
     })
 
     // Simulate input

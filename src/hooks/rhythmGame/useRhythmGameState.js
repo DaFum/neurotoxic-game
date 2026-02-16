@@ -4,7 +4,7 @@ import { useState, useRef } from 'react'
  * Manages the state for the rhythm game, including React state for UI
  * and a Ref for the high-frequency game loop.
  *
- * @returns {Object} State and setters.
+ * @returns {{gameStateRef: React.MutableRefObject, state: Object, setters: Object}} State and setters.
  */
 export const useRhythmGameState = () => {
   // React State for UI

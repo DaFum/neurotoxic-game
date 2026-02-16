@@ -527,7 +527,7 @@ async function playMidiFileInternal(
           }
         } catch (e) {
           // Prevent single note errors from crashing the loop
-          console.warn('[audioEngine] Note scheduling error:', e)
+      logger.warn('AudioEngine', 'Note scheduling error:', e)
         }
       }, trackEvents)
 

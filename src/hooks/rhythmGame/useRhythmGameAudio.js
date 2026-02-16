@@ -32,10 +32,15 @@ const NOTE_LEAD_IN_MS = 100
  * @param {Object} params.contextState - Context state (band, gameMap, player, setlist, gigModifiers, addToast).
  * @returns {Object} Audio actions (initializeGigState, retryAudioInitialization).
  */
-export const useRhythmGameAudio = ({ gameStateRef, setters, contextState }) => {
+export const useRhythmGameAudio = ({
+  gameStateRef,
+  setters,
+  contextState,
+  contextActions
+}) => {
   const { setIsAudioReady } = setters
-  const { band, gameMap, player, setlist, gigModifiers, addToast } =
-    contextState
+  const { band, gameMap, player, setlist, gigModifiers } = contextState
+  const { addToast } = contextActions
 
   const hasInitializedRef = useRef(false)
   const isInitializingRef = useRef(false)
@@ -55,7 +60,7 @@ export const useRhythmGameAudio = ({ gameStateRef, setters, contextState }) => {
 
     // Harmony Guard
     if (band.harmony <= 0) {
-      console.warn('[useRhythmGameAudio] Band harmony too low to start gig.')
+      logger.warn('RhythmGame', 'Band harmony too low to start gig.')
       setIsAudioReady(false)
       isInitializingRef.current = false
       return
@@ -64,8 +69,9 @@ export const useRhythmGameAudio = ({ gameStateRef, setters, contextState }) => {
     try {
       const audioUnlocked = await audioManager.ensureAudioContext()
       if (!audioUnlocked) {
-        console.warn(
-          '[useRhythmGameAudio] Audio Context blocked. Waiting for user gesture.'
+        logger.warn(
+          'RhythmGame',
+          'Audio Context blocked. Waiting for user gesture.'
         )
         setIsAudioReady(false)
         isInitializingRef.current = false
@@ -80,9 +86,9 @@ export const useRhythmGameAudio = ({ gameStateRef, setters, contextState }) => {
       const currentNode = gameMap?.nodes?.[player.currentNodeId]
 
       if (!currentNode) {
-        console.error(
-          'useRhythmGameAudio: no node found for',
-          player.currentNodeId
+        logger.error(
+          'RhythmGame',
+          `No map node found for ${player.currentNodeId}`
         )
         hasInitializedRef.current = false
         isInitializingRef.current = false
