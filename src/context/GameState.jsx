@@ -4,7 +4,8 @@ import {
   useReducer,
   useEffect,
   useCallback,
-  useMemo
+  useMemo,
+  useRef
 } from 'react'
 import { eventEngine } from '../utils/eventEngine'
 import { resolveEventChoice } from '../utils/eventResolver'
@@ -47,6 +48,7 @@ import {
 import PropTypes from 'prop-types'
 
 const GameStateContext = createContext()
+const GameDispatchContext = createContext()
 
 /**
  * Global State Provider covering Player, Band, Inventory, and Scene Management.
@@ -55,6 +57,11 @@ const GameStateContext = createContext()
  */
 export const GameStateProvider = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, null, createInitialState)
+
+  // Use a ref to access the latest state in actions without creating a dependency loop
+  // This allows actions to be stable (memoized once) while still accessing current state.
+  const stateRef = useRef(state)
+  stateRef.current = state
 
   // Initialize Map if needed
   useEffect(() => {
@@ -206,16 +213,6 @@ export const GameStateProvider = ({ children }) => {
   }, [])
 
   /**
-   * Checks if the player owns a specific van upgrade.
-   * @param {string} upgradeId - The ID of the upgrade.
-   * @returns {boolean} True if owned.
-   */
-  const hasUpgrade = useCallback(
-    upgradeId => state.player.van.upgrades.includes(upgradeId),
-    [state.player.van.upgrades]
-  )
-
-  /**
    * Consumes a consumable item from band inventory.
    * @param {string} itemType - The item key (e.g., 'strings').
    */
@@ -228,10 +225,12 @@ export const GameStateProvider = ({ children }) => {
    * Advances the game day, deducting living costs and updating simulations.
    */
   const advanceDay = useCallback(() => {
-    const nextDay = state.player.day + 1
+    // Access state via ref to keep callback stable
+    const currentState = stateRef.current
+    const nextDay = currentState.player.day + 1
     dispatch(createAdvanceDayAction())
     addToast(`Day ${nextDay}: Living Costs Deducted.`, 'info')
-  }, [state.player.day, addToast])
+  }, [addToast])
 
   /**
    * Resets the game state to initial values.
@@ -254,8 +253,10 @@ export const GameStateProvider = ({ children }) => {
    * Persists the current state to localStorage.
    */
   const saveGame = useCallback(() => {
+    // Access state via ref
+    const currentState = stateRef.current
     // Only persist minimal setlist info to avoid bloat
-    const saveData = { ...state, timestamp: Date.now() }
+    const saveData = { ...currentState, timestamp: Date.now() }
 
     // Normalize setlist to objects with IDs
     if (Array.isArray(saveData.setlist)) {
@@ -283,7 +284,7 @@ export const GameStateProvider = ({ children }) => {
     } else {
       handleError(new StorageError('Failed to save game'), { addToast })
     }
-  }, [state, addToast])
+  }, [addToast])
 
   /**
    * Loads the game state from localStorage.
@@ -327,9 +328,10 @@ export const GameStateProvider = ({ children }) => {
    */
   const triggerEvent = useCallback(
     (category, triggerPoint = null) => {
+      const currentState = stateRef.current
       // Harte Regel: Events nur in Overworld/PreGig/PostGig, oder wenn explizit erlaubt (z.B. Pause)
       // "GIG" scene should not be interrupted unless critical logic allows it.
-      if (state.currentScene === 'GIG') {
+      if (currentState.currentScene === 'GIG') {
         // Queue event instead? Or just return false.
         // For now, return false to prevent interruption.
         return false
@@ -337,12 +339,12 @@ export const GameStateProvider = ({ children }) => {
 
       // Pass full state context for flags/cooldowns
       const context = {
-        player: state.player,
-        band: state.band,
-        social: state.social,
-        activeStoryFlags: state.activeStoryFlags,
-        eventCooldowns: state.eventCooldowns,
-        pendingEvents: state.pendingEvents
+        player: currentState.player,
+        band: currentState.band,
+        social: currentState.social,
+        activeStoryFlags: currentState.activeStoryFlags,
+        eventCooldowns: currentState.eventCooldowns,
+        pendingEvents: currentState.pendingEvents
       }
 
       let event = eventEngine.checkEvent(category, context, triggerPoint)
@@ -353,14 +355,14 @@ export const GameStateProvider = ({ children }) => {
 
         setActiveEvent(event)
         // If it was a pending event, remove it from queue
-        if (state.pendingEvents.includes(event.id)) {
+        if (currentState.pendingEvents.includes(event.id)) {
           dispatch(createPopPendingEventAction())
         }
         return true
       }
       return false
     },
-    [state, setActiveEvent]
+    [setActiveEvent]
   )
 
   /**
@@ -376,14 +378,16 @@ export const GameStateProvider = ({ children }) => {
         return { outcomeText: '', description: '', result: null }
       }
 
+      const currentState = stateRef.current
+
       try {
         // 2. Logic Execution
         const { result, delta, outcomeText, description } = resolveEventChoice(
           choice,
           {
-            player: state.player,
-            band: state.band,
-            social: state.social
+            player: currentState.player,
+            band: currentState.band,
+            social: currentState.social
           }
         )
 
@@ -427,8 +431,8 @@ export const GameStateProvider = ({ children }) => {
         }
 
         // 4. Cooldown — prevent the same event from firing again immediately
-        if (state.activeEvent?.id) {
-          dispatch(createAddCooldownAction(state.activeEvent.id))
+        if (currentState.activeEvent?.id) {
+          dispatch(createAddCooldownAction(currentState.activeEvent.id))
         }
 
         // 5. Feedback (Success Path)
@@ -455,12 +459,11 @@ export const GameStateProvider = ({ children }) => {
         }
       }
     },
-    [state, setActiveEvent, addToast, changeScene]
+    [setActiveEvent, addToast, changeScene]
   )
 
-  const contextValue = useMemo(
+  const dispatchValue = useMemo(
     () => ({
-      ...state, // Spread state properties
       changeScene,
       updatePlayer,
       updateBand,
@@ -475,7 +478,7 @@ export const GameStateProvider = ({ children }) => {
       resolveEvent,
       addToast,
       setGigModifiers,
-      hasUpgrade,
+      // hasUpgrade is intentionally removed from dispatchValue to avoid stale reads
       consumeItem,
       advanceDay,
       saveGame,
@@ -485,7 +488,6 @@ export const GameStateProvider = ({ children }) => {
       updateSettings
     }),
     [
-      state,
       changeScene,
       updatePlayer,
       updateBand,
@@ -500,7 +502,6 @@ export const GameStateProvider = ({ children }) => {
       resolveEvent,
       addToast,
       setGigModifiers,
-      hasUpgrade,
       consumeItem,
       advanceDay,
       saveGame,
@@ -512,9 +513,11 @@ export const GameStateProvider = ({ children }) => {
   )
 
   return (
-    <GameStateContext.Provider value={contextValue}>
-      {children}
-    </GameStateContext.Provider>
+    <GameDispatchContext.Provider value={dispatchValue}>
+      <GameStateContext.Provider value={state}>
+        {children}
+      </GameStateContext.Provider>
+    </GameDispatchContext.Provider>
   )
 }
 
@@ -526,4 +529,26 @@ GameStateProvider.propTypes = {
  * Hook to access the global game state context.
  * @returns {object} The game state and action dispatchers.
  */
-export const useGameState = () => useContext(GameStateContext)
+export const useGameState = () => {
+  const state = useContext(GameStateContext)
+  const dispatch = useContext(GameDispatchContext)
+
+  /**
+   * Checks if the player owns a specific van upgrade.
+   * @param {string} upgradeId - The ID of the upgrade.
+   * @returns {boolean} True if owned.
+   */
+  const hasUpgrade = useCallback(
+    upgradeId => state.player.van.upgrades.includes(upgradeId),
+    [state.player.van.upgrades]
+  )
+
+  return { ...state, ...dispatch, hasUpgrade }
+}
+
+/**
+ * Hook to access only the game dispatch actions.
+ * Optimized to avoid re-renders when state changes.
+ * @returns {object} The action dispatchers.
+ */
+export const useGameDispatch = () => useContext(GameDispatchContext)
