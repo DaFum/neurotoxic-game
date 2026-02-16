@@ -118,6 +118,9 @@ describe('useRhythmGameLogic', () => {
     mockRhythmUtils.parseSongNotes.mock.resetCalls()
     mockAudioManager.stopMusic.mock.resetCalls()
     mockAudioManager.playSFX.mock.resetCalls()
+    mockAudioEngine.startGigPlayback.mock.resetCalls()
+    mockAudioEngine.stopAudio.mock.resetCalls()
+    mockAudioEngine.getGigTimeMs.mock.resetCalls()
     mockGigStats.buildGigStatsSnapshot.mock.resetCalls()
     mockGigStats.updateGigPerformanceStats.mock.resetCalls()
     mockErrorHandler.handleError.mock.resetCalls()
@@ -141,6 +144,8 @@ describe('useRhythmGameLogic', () => {
     mockAudioManager.ensureAudioContext.mock.mockImplementation(
       async () => true
     )
+    mockAudioEngine.startGigPlayback.mock.mockImplementation(async () => true)
+    mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 0)
 
     // JSDOM setup
     originalGlobalDescriptors = new Map(
@@ -201,7 +206,7 @@ describe('useRhythmGameLogic', () => {
   })
 
   test('initialization runs on mount', async () => {
-    const { result } = renderHook(() => useRhythmGameLogic())
+    renderHook(() => useRhythmGameLogic())
 
     // Wait for async initialization
     await act(async () => {
@@ -242,8 +247,8 @@ describe('useRhythmGameLogic', () => {
     assert.equal(result.current.stats.combo, 1)
   })
 
-  test('transitions to POSTGIG when all notes are processed even before duration cap', async () => {
-    mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 1000)
+  test('transitions to POSTGIG when all notes are processed near song end', async () => {
+    mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 9800)
 
     const { result } = renderHook(() => useRhythmGameLogic())
 
@@ -263,6 +268,34 @@ describe('useRhythmGameLogic', () => {
 
     assert.ok(mockAudioEngine.stopAudio.mock.calls.length >= 1)
     assert.ok(mockSetLastGigStats.mock.calls.length >= 1)
+    assert.ok(
+      mockChangeScene.mock.calls.some(call => call.arguments[0] === 'POSTGIG')
+    )
+  })
+
+  test('transitions to POSTGIG when audio playback reports ended', async () => {
+    mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 1000)
+    mockAudioEngine.startGigPlayback.mock.mockImplementation(
+      async ({ onEnded }) => {
+        if (typeof onEnded === 'function') {
+          onEnded()
+        }
+        return true
+      }
+    )
+
+    const { result } = renderHook(() => useRhythmGameLogic())
+
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 200))
+    })
+
+    act(() => {
+      result.current.gameStateRef.current.running = true
+      result.current.gameStateRef.current.totalDuration = 0
+      result.current.update(16)
+    })
+
     assert.ok(
       mockChangeScene.mock.calls.some(call => call.arguments[0] === 'POSTGIG')
     )

@@ -13,7 +13,6 @@ import {
 import { buildGigStatsSnapshot } from '../../utils/gigStats'
 
 const NOTE_MISS_WINDOW_MS = 300
-const MAX_STAGNANT_CLOCK_FRAMES = 8
 
 /**
  * Manages the high-frequency game loop update.
@@ -124,15 +123,6 @@ export const useRhythmGameLoop = ({
       }
 
       const now = getGigTimeMs()
-      if (
-        Number.isFinite(stateRef.lastGigTimeMs) &&
-        now <= stateRef.lastGigTimeMs
-      ) {
-        stateRef.stagnantClockFrames += 1
-      } else {
-        stateRef.stagnantClockFrames = 0
-      }
-      stateRef.lastGigTimeMs = now
       stateRef.elapsed = now
       const duration = stateRef.totalDuration
       const rawProgress =
@@ -149,15 +139,17 @@ export const useRhythmGameLoop = ({
       }
 
       const didReachSongEnd = now >= duration
+      const hasParsedNotes = stateRef.notes.length > 0
       const hasPassedAllNotes =
-        stateRef.nextMissCheckIndex >= stateRef.notes.length &&
-        stateRef.notes.length > 0
-      const isClockStuckNearEnd =
-        duration > 0 &&
-        now >= duration - NOTE_MISS_WINDOW_MS &&
-        stateRef.stagnantClockFrames >= MAX_STAGNANT_CLOCK_FRAMES
+        hasParsedNotes && stateRef.nextMissCheckIndex >= stateRef.notes.length
+      const didAudioPlaybackEnd =
+        stateRef.audioPlaybackEnded &&
+        (duration <= 0 || now >= duration - NOTE_MISS_WINDOW_MS)
+      const shouldFinalizeForNotes =
+        hasPassedAllNotes &&
+        (didAudioPlaybackEnd || duration <= 0 || now >= duration - NOTE_MISS_WINDOW_MS)
 
-      if (didReachSongEnd || hasPassedAllNotes || isClockStuckNearEnd) {
+      if (didReachSongEnd || didAudioPlaybackEnd || shouldFinalizeForNotes) {
         finalizeGig(stateRef)
         return
       }

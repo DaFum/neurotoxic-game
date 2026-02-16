@@ -63,9 +63,8 @@ export const useRhythmGameState = () => {
     isGameOver: false,
     overload: 0,
     totalDuration: 0,
-    lastGigTimeMs: null,
-    stagnantClockFrames: 0,
     hasSubmittedResults: false,
+    audioPlaybackEnded: false,
     toxicTimeTotal: 0,
     toxicModeEndTime: 0,
     rng: Math.random // Store RNG for consistency
