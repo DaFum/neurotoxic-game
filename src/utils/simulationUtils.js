@@ -163,6 +163,7 @@ export const calculateDailyUpdates = currentState => {
     let mood = m.mood
     if (mood > 50) mood -= 2
     else if (mood < 50) mood += 2
+    mood = Math.max(0, Math.min(100, mood))
 
     // Stamina Decay (Life on the road is tiring)
     let stamina = typeof m.stamina === 'number' ? m.stamina : 100
