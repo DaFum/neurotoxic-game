@@ -555,7 +555,6 @@ export const useTravelLogic = ({
     travelTarget,
 
     // Computed
-    getCurrentNode,
     isConnected,
     getNodeVisibility,
 

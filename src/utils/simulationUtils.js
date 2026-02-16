@@ -1,5 +1,6 @@
 // Utility functions for Simulation <-> Action connection
 import { EXPENSE_CONSTANTS } from './economyEngine.js'
+import { applyReputationDecay } from './socialEngine.js'
 
 /**
  * Derives dynamic game modifiers for the Gig scene based on band state and active toggles.
@@ -190,6 +191,24 @@ export const calculateDailyUpdates = currentState => {
   // 3. Social Decay
   // Viral decay
   if (nextSocial.viral > 0) nextSocial.viral -= 1
+
+  // Follower decay for inactive platforms (days since last gig approximated by day count)
+  // Apply mild organic decay every 3+ days to prevent stale follower counts
+  const daysSinceActivity = nextPlayer.day % 3 === 0 ? 3 : 0
+  if (daysSinceActivity >= 3) {
+    nextSocial.instagram = applyReputationDecay(
+      nextSocial.instagram || 0,
+      daysSinceActivity
+    )
+    nextSocial.tiktok = applyReputationDecay(
+      nextSocial.tiktok || 0,
+      daysSinceActivity
+    )
+    nextSocial.youtube = applyReputationDecay(
+      nextSocial.youtube || 0,
+      daysSinceActivity
+    )
+  }
 
   // 4. Passive Effects
   if (nextBand.harmonyRegenTravel) {

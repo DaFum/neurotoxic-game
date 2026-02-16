@@ -47,7 +47,8 @@ const mockRhythmUtils = {
 }
 const mockHecklerLogic = {
   updateProjectiles: mock.fn(p => p),
-  trySpawnProjectile: mock.fn(() => null)
+  trySpawnProjectile: mock.fn(() => null),
+  checkCollisions: mock.fn(p => p)
 }
 const mockErrorHandler = {
   handleError: mock.fn(),

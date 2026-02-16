@@ -95,30 +95,6 @@ export class StorageError extends GameError {
   }
 }
 
-export class GameLogicError extends GameError {
-  constructor(message, context = {}) {
-    super(message, {
-      category: ErrorCategory.GAME_LOGIC,
-      severity: ErrorSeverity.HIGH,
-      context,
-      recoverable: true
-    })
-    this.name = 'GameLogicError'
-  }
-}
-
-export class RenderError extends GameError {
-  constructor(message, context = {}) {
-    super(message, {
-      category: ErrorCategory.RENDER,
-      severity: ErrorSeverity.MEDIUM,
-      context,
-      recoverable: true
-    })
-    this.name = 'RenderError'
-  }
-}
-
 export class AudioError extends GameError {
   constructor(message, context = {}) {
     super(message, {

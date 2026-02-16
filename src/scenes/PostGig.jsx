@@ -7,7 +7,9 @@ import { calculateGigFinancials } from '../utils/economyEngine'
 import {
   calculateViralityScore,
   generatePostOptions,
-  resolvePost
+  resolvePost,
+  calculateSocialGrowth,
+  checkViralEvent
 } from '../utils/socialEngine'
 import { ChatterOverlay } from '../components/ChatterOverlay'
 
@@ -83,9 +85,23 @@ export const PostGig = () => {
     const result = resolvePost(option, Math.random())
     setPostResult(result)
 
+    // Use calculateSocialGrowth for platform-aware organic growth on top of post
+    const organicGrowth = calculateSocialGrowth(
+      result.platform,
+      perfScore,
+      social[result.platform] || 0,
+      result.success
+    )
+    const totalFollowers = result.followers + organicGrowth
+
+    // Use checkViralEvent for bonus viral flag based on actual gig stats
+    const gigViralBonus =
+      lastGigStats && checkViralEvent(lastGigStats) ? 1 : 0
+
     updateSocial({
-      [result.platform]: (social[result.platform] || 0) + result.followers,
-      viral: social.viral + (result.success ? 1 : 0)
+      [result.platform]:
+        (social[result.platform] || 0) + totalFollowers,
+      viral: social.viral + (result.success ? 1 : 0) + gigViralBonus
     })
 
     setPhase('COMPLETE')
@@ -271,9 +287,9 @@ const SocialPhase = ({ options, onSelect }) => (
 SocialPhase.propTypes = {
   options: PropTypes.arrayOf(
     PropTypes.shape({
-      label: PropTypes.string.isRequired,
-      type: PropTypes.string.isRequired,
-      chance: PropTypes.number.isRequired
+      title: PropTypes.string.isRequired,
+      platform: PropTypes.string.isRequired,
+      viralChance: PropTypes.number
     })
   ).isRequired,
   onSelect: PropTypes.func.isRequired
