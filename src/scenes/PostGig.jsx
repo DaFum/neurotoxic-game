@@ -61,7 +61,7 @@ export const PostGig = () => {
         crowdStats,
         gigModifiers,
         band.inventory,
-        player.fame,
+        player,
         lastGigStats
       )
       setFinancials(result)
@@ -74,7 +74,7 @@ export const PostGig = () => {
     currentGig,
     lastGigStats,
     gigModifiers,
-    player.fame,
+    player,
     band.inventory,
     perfScore
   ])
