@@ -14,6 +14,7 @@ import { DebugLogViewer } from './ui/DebugLogViewer'
 import { TutorialManager } from './components/TutorialManager'
 import { GameStateProvider, useGameState } from './context/GameState'
 import { ErrorBoundary } from './ui/CrashHandler'
+import { Analytics } from '@vercel/analytics/react'
 
 const SCENES_WITHOUT_HUD = ['INTRO', 'MENU', 'SETTINGS', 'CREDITS', 'GAMEOVER']
 
@@ -71,6 +72,7 @@ function GameContent() {
       )}
 
       {renderScene()}
+      <Analytics />
     </div>
   )
 }
