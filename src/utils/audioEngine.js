@@ -1514,8 +1514,8 @@ function safeDispose(node) {
   if (node && typeof node.dispose === 'function') {
     try {
       node.dispose()
-    } catch {
-      // Ignore dispose errors (likely due to closed context)
+    } catch (error) {
+      logger.debug('AudioEngine', 'Node disposal failed (likely benign)', error)
     }
   }
   return null
