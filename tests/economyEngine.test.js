@@ -3,6 +3,8 @@ import assert from 'node:assert/strict'
 import {
   calculateGigFinancials,
   calculateTravelExpenses,
+  calculateDistance,
+  calculateFuelCost,
   EXPENSE_CONSTANTS
 } from '../src/utils/economyEngine.js'
 
@@ -556,4 +558,72 @@ test('calculateTravelExpenses returns correct cost structure', () => {
     'Fuel liters should be approx 2.4'
   )
   assert.equal(result.totalCost, 28, 'Total cost should be 28')
+})
+
+test('calculateDistance returns correct distance', () => {
+  const nodeA = { x: 50, y: 50 }
+  const nodeB = { x: 50, y: 50 }
+  const dist = calculateDistance(nodeA, nodeB)
+  assert.equal(dist, 20, 'Distance should be 20 for same point')
+
+  const nodeC = { x: 53, y: 54 } // dx=3, dy=4. sqrt(25)=5. dist = 5*5 + 20 = 45.
+  const dist2 = calculateDistance(nodeA, nodeC)
+  assert.equal(dist2, 45, 'Distance should be 45 for 3-4-5 triangle')
+})
+
+test('calculateFuelCost applies van tuning upgrade', () => {
+  const dist = 100
+  // Without upgrade
+  const res1 = calculateFuelCost(dist, null)
+  assert.equal(res1.fuelLiters, 12)
+
+  // With upgrade
+  const playerState = {
+    van: {
+      upgrades: ['van_tuning']
+    }
+  }
+  const res2 = calculateFuelCost(dist, playerState)
+  assert.equal(res2.fuelLiters, 12 * 0.8)
+})
+
+test('calculateGigFinancials applies van tuning upgrade to fuel cost', () => {
+  const gigData = buildGigData({ dist: 100 })
+  const baseCost = calculateFuelCost(100).fuelCost
+
+  // Without upgrade (passing fame number)
+  const res1 = calculateGigFinancials(
+    gigData,
+    80,
+    { hype: 80 },
+    buildModifiers(),
+    buildInventory(),
+    100,
+    buildGigStats()
+  )
+  const fuelItem1 = res1.expenses.breakdown.find(b => b.label === 'Fuel')
+  assert.equal(fuelItem1.value, baseCost)
+
+  // With upgrade (passing player object)
+  const playerState = {
+    fame: 100,
+    van: {
+      upgrades: ['van_tuning']
+    }
+  }
+  const res2 = calculateGigFinancials(
+    gigData,
+    80,
+    { hype: 80 },
+    buildModifiers(),
+    buildInventory(),
+    playerState,
+    buildGigStats()
+  )
+  const fuelItem2 = res2.expenses.breakdown.find(b => b.label === 'Fuel')
+
+  assert.ok(
+    fuelItem2.value < fuelItem1.value,
+    'Fuel cost should be lower with upgrade'
+  )
 })

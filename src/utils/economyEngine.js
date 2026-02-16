@@ -143,34 +143,38 @@ const calculateMerchIncome = (
 }
 
 /**
- * Calculates travel expenses.
- * @param {object} node - The target node.
- * @param {object} [fromNode=null] - The source node.
- * @param {object} [playerState=null] - Optional player state for upgrade-aware costs.
+ * Calculates distance between two nodes or a node and a fallback point.
+ * @param {object} nodeA - The target node.
+ * @param {object} [nodeB=null] - The source node.
+ * @returns {number} The calculated distance.
  */
-export const calculateTravelExpenses = (
-  node,
-  fromNode = null,
-  playerState = null
-) => {
-  const x = typeof node?.x === 'number' ? node.x : (node.venue?.x ?? 50)
-  const y = typeof node?.y === 'number' ? node.y : (node.venue?.y ?? 50)
+export const calculateDistance = (nodeA, nodeB = null) => {
+  const x1 = typeof nodeA?.x === 'number' ? nodeA.x : (nodeA?.venue?.x ?? 50)
+  const y1 = typeof nodeA?.y === 'number' ? nodeA.y : (nodeA?.venue?.y ?? 50)
 
-  const startX =
-    fromNode && typeof fromNode.x === 'number'
-      ? fromNode.x
-      : (fromNode?.venue?.x ?? 50)
-  const startY =
-    fromNode && typeof fromNode.y === 'number'
-      ? fromNode.y
-      : (fromNode?.venue?.y ?? 50)
+  const x2 =
+    nodeB && typeof nodeB.x === 'number'
+      ? nodeB.x
+      : (nodeB?.venue?.x ?? 50)
+  const y2 =
+    nodeB && typeof nodeB.y === 'number'
+      ? nodeB.y
+      : (nodeB?.venue?.y ?? 50)
 
-  const dx = x - startX
-  const dy = y - startY
+  const dx = x1 - x2
+  const dy = y1 - y2
 
   // Distance logic: Relative distance + base cost
-  const dist = Math.floor(Math.sqrt(dx * dx + dy * dy) * 5) + 20
+  return Math.floor(Math.sqrt(dx * dx + dy * dy) * 5) + 20
+}
 
+/**
+ * Calculates fuel consumption and cost based on distance and player upgrades.
+ * @param {number} dist - The distance in km.
+ * @param {object} [playerState=null] - Optional player state for upgrade checks.
+ * @returns {object} { fuelLiters, fuelCost }
+ */
+export const calculateFuelCost = (dist, playerState = null) => {
   let fuelLiters = (dist / 100) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM
 
   // Check for 'van_tuning' upgrade
@@ -186,23 +190,41 @@ export const calculateTravelExpenses = (
   const fuelCost = Math.floor(
     fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE
   )
+
+  return { fuelLiters, fuelCost }
+}
+
+/**
+ * Calculates travel expenses.
+ * @param {object} node - The target node.
+ * @param {object} [fromNode=null] - The source node.
+ * @param {object} [playerState=null] - Optional player state for upgrade-aware costs.
+ */
+export const calculateTravelExpenses = (
+  node,
+  fromNode = null,
+  playerState = null
+) => {
+  const dist = calculateDistance(node, fromNode)
+  const { fuelLiters, fuelCost } = calculateFuelCost(dist, playerState)
   const foodCost = 3 * EXPENSE_CONSTANTS.FOOD.FAST_FOOD // Band of 3
   const totalCost = fuelCost + foodCost
+
   return { dist, fuelLiters, totalCost }
 }
 
 /**
  * Calculates expenses for the gig.
  */
-const calculateGigExpenses = (gigData, modifiers) => {
+const calculateGigExpenses = (gigData, modifiers, playerState = null) => {
   const expenses = { total: 0, breakdown: [] }
 
   // Transport
-  const fuelLiters =
-    ((gigData.dist || 100) / 100) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM
-  const fuelCost = Math.floor(
-    fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE
+  const { fuelCost } = calculateFuelCost(
+    gigData.dist || 100,
+    playerState
   )
+
   expenses.breakdown.push({
     label: 'Fuel',
     value: fuelCost,
@@ -282,7 +304,7 @@ const calculateGigExpenses = (gigData, modifiers) => {
  * @param {object} crowdStats - { hype (0-100) }
  * @param {object} modifiers - { merch: bool, promo: bool, catering: bool, soundcheck: bool, guestlist: bool }
  * @param {object} bandInventory - { shirts, hoodies, etc }
- * @param {number} playerFame - Total player fame
+ * @param {object|number} playerStateOrFame - Player state object or just fame (number) for legacy support
  * @param {object} gigStats - Detailed gig stats (misses, peakHype, etc)
  */
 export const calculateGigFinancials = (
@@ -291,9 +313,14 @@ export const calculateGigFinancials = (
   crowdStats,
   modifiers,
   bandInventory,
-  playerFame,
+  playerStateOrFame,
   gigStats
 ) => {
+  // Determine if we have a full player object or just fame (legacy/test support)
+  const playerState =
+    typeof playerStateOrFame === 'object' ? playerStateOrFame : null
+  const playerFame = playerState ? playerState.fame : playerStateOrFame
+
   logger.debug('Economy', 'Calculating Gig Financials', {
     gig: gigData.name,
     score: performanceScore,
@@ -358,7 +385,11 @@ export const calculateGigFinancials = (
   report.income.total += barRevenue
 
   // 5. Expenses (Transport, Food, Modifiers)
-  const operationalExpenses = calculateGigExpenses(gigData, modifiers)
+  const operationalExpenses = calculateGigExpenses(
+    gigData,
+    modifiers,
+    playerState
+  )
   report.expenses.breakdown.push(...operationalExpenses.breakdown)
   report.expenses.total += operationalExpenses.total
 
