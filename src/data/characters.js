@@ -70,4 +70,3 @@ export const CHARACTERS = {
     equipment: { bass: 'Ibanez SR505', amp: 'Ampeg SVT-3 Pro' }
   }
 }
-

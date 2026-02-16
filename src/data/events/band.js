@@ -4,7 +4,8 @@ export const BAND_EVENTS = [
     id: 'internal_dispute',
     category: 'band',
     title: 'CREATIVE DIFFERENCES',
-    description: 'Matze thinks the new song should be slower. Marius wants it faster.',
+    description:
+      'Matze thinks the new song should be slower. Marius wants it faster.',
     trigger: 'random',
     chance: 0.05,
     options: [
@@ -44,7 +45,8 @@ export const BAND_EVENTS = [
     id: 'late_night_party',
     category: 'band',
     title: 'LATE NIGHT PARTY',
-    description: 'The local scene invites you to an afterparty. It will be legendary, but exhausting.',
+    description:
+      'The local scene invites you to an afterparty. It will be legendary, but exhausting.',
     trigger: 'random',
     chance: 0.05,
     options: [

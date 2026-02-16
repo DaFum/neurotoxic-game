@@ -138,7 +138,10 @@ export const calculateTimeFromTicks = (ticks, tpb, tempoMap, unit = 'ms') => {
 
   // Optimization: Check for preprocessed map
   // We use a specific property to identify optimized maps
-  if (tempoMap.length > 0 && typeof tempoMap[0]._accumulatedMicros === 'number') {
+  if (
+    tempoMap.length > 0 &&
+    typeof tempoMap[0]._accumulatedMicros === 'number'
+  ) {
     const segment = findTempoSegment(tempoMap, ticks)
     const offsetTicks = Math.max(0, ticks - segment._startTick)
     // usPerBeat / tpb = microseconds per tick
@@ -203,7 +206,9 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
   const useTempoMap = Array.isArray(song.tempoMap) && song.tempoMap.length > 0
 
   // Optimization: Preprocess tempo map once if available
-  const activeTempoMap = useTempoMap ? preprocessTempoMap(song.tempoMap, tpb) : []
+  const activeTempoMap = useTempoMap
+    ? preprocessTempoMap(song.tempoMap, tpb)
+    : []
 
   // 3. Map to game note objects
   const gameNotes = filteredNotes

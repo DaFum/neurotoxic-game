@@ -1200,7 +1200,9 @@ export async function playSongFromData(song, delay = 0) {
 
   // Fallback if tempoMap is missing/empty
   const useTempoMap = Array.isArray(song.tempoMap) && song.tempoMap.length > 0
-  const activeTempoMap = useTempoMap ? preprocessTempoMap(song.tempoMap, tpb) : []
+  const activeTempoMap = useTempoMap
+    ? preprocessTempoMap(song.tempoMap, tpb)
+    : []
   const validDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
 
   const events = song.notes

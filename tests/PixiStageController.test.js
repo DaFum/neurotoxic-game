@@ -34,16 +34,16 @@ const MockPIXI = {
   Sprite: MockSprite,
   Graphics: MockGraphics,
   Container: class {
-      addChild() {}
+    addChild() {}
   },
   Application: class {
-      init() {}
+    init() {}
   },
   Assets: {
     load: mock.fn()
   },
   ColorMatrixFilter: class {
-      constructor() {}
+    constructor() {}
   }
 }
 
@@ -105,11 +105,15 @@ describe('PixiStageController', () => {
     const pixiModule = await import('pixi.js')
     PIXI = pixiModule
 
-    const controllerModule = await import('../src/components/PixiStageController.js')
+    const controllerModule = await import(
+      '../src/components/PixiStageController.js'
+    )
     createPixiStageController = controllerModule.createPixiStageController
 
     containerRef = { current: { appendChild: mock.fn() } }
-    gameStateRef = { current: { lanes: [{ color: 0xff0000, renderX: 100, active: false }] } }
+    gameStateRef = {
+      current: { lanes: [{ color: 0xff0000, renderX: 100, active: false }] }
+    }
     updateRef = { current: mock.fn() }
     statsRef = { current: {} }
 
@@ -172,38 +176,38 @@ describe('PixiStageController', () => {
   })
 
   test('initializeNoteSprite sets properties correctly', () => {
-     const lane = { color: 0x0000ff, renderX: 300 }
-     const sprite = new PIXI.Graphics()
+    const lane = { color: 0x0000ff, renderX: 300 }
+    const sprite = new PIXI.Graphics()
 
-     controller.initializeNoteSprite(sprite, lane)
+    controller.initializeNoteSprite(sprite, lane)
 
-     assert.equal(sprite.x, 305)
-     assert.equal(sprite.y, -50)
-     assert.equal(sprite.visible, true)
-     assert.equal(sprite.alpha, 1)
+    assert.equal(sprite.x, 305)
+    assert.equal(sprite.y, -50)
+    assert.equal(sprite.visible, true)
+    assert.equal(sprite.alpha, 1)
   })
 
   test('acquireSpriteFromPool reuses a Graphics from the pool', () => {
-     const lane = { color: 0x0000ff, renderX: 300 }
+    const lane = { color: 0x0000ff, renderX: 300 }
 
-     const pooledGraphics = new PIXI.Graphics()
-     pooledGraphics.visible = false
-     controller.spritePool.push(pooledGraphics)
+    const pooledGraphics = new PIXI.Graphics()
+    pooledGraphics.visible = false
+    controller.spritePool.push(pooledGraphics)
 
-     const sprite = controller.acquireSpriteFromPool(lane)
+    const sprite = controller.acquireSpriteFromPool(lane)
 
-     assert.equal(sprite, pooledGraphics)
-     assert.equal(sprite.visible, true)
-     assert.equal(sprite.x, 305)
-     assert.equal(sprite.y, -50)
-     assert.equal(sprite.alpha, 1) // set in acquireSpriteFromPool
+    assert.equal(sprite, pooledGraphics)
+    assert.equal(sprite.visible, true)
+    assert.equal(sprite.x, 305)
+    assert.equal(sprite.y, -50)
+    assert.equal(sprite.alpha, 1) // set in acquireSpriteFromPool
 
-     // Check scale set call
-     assert.equal(sprite.scale.set.mock.calls.length, 1)
-     assert.deepEqual(sprite.scale.set.mock.calls[0].arguments, [1])
+    // Check scale set call
+    assert.equal(sprite.scale.set.mock.calls.length, 1)
+    assert.deepEqual(sprite.scale.set.mock.calls[0].arguments, [1])
 
-     // Check clear call
-     assert.equal(sprite.clear.mock.calls.length, 1)
+    // Check clear call
+    assert.equal(sprite.clear.mock.calls.length, 1)
   })
 
   test('initializeNoteSprite sets jitterOffset property', () => {
@@ -216,5 +220,4 @@ describe('PixiStageController', () => {
     // NOTE_JITTER_RANGE is 10, so range is -5 to 5
     assert.ok(sprite.jitterOffset >= -5 && sprite.jitterOffset <= 5)
   })
-
 })

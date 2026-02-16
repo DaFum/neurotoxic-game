@@ -10,23 +10,32 @@ export const updateProjectiles = (
   deltaMS,
   screenHeight = 1080
 ) => {
-  const nextProjectiles = []
   const limit = screenHeight + 100
+  let writeIdx = 0
 
+  // Optimization: Mutate in-place to avoid GC pressure in tight loop
   for (let i = 0; i < projectiles.length; i++) {
     const p = projectiles[i]
-    const newY = p.y + p.vy * deltaMS
+    p.y += p.vy * deltaMS
 
-    if (newY < limit) {
-      nextProjectiles.push({
-        ...p,
-        x: p.x + p.vx * deltaMS,
-        y: newY,
-        rotation: p.rotation + p.vr * deltaMS
-      })
+    if (p.y < limit) {
+      p.x += p.vx * deltaMS
+      p.rotation += p.vr * deltaMS
+
+      // Compact array if needed
+      if (i !== writeIdx) {
+        projectiles[writeIdx] = p
+      }
+      writeIdx++
     }
   }
-  return nextProjectiles
+
+  // Truncate array to remove dead projectiles
+  if (writeIdx < projectiles.length) {
+    projectiles.length = writeIdx
+  }
+
+  return projectiles
 }
 
 /**

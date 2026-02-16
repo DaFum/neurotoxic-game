@@ -12,10 +12,7 @@ test('EVENTS_DB integrity', () => {
         assert.ok(event.id, `Event in ${cat} missing id`)
         assert.ok(event.title, `Event ${event.id} missing title`)
 
-        assert.ok(
-          event.description,
-          `Event ${event.id} missing description`
-        )
+        assert.ok(event.description, `Event ${event.id} missing description`)
 
         assert.ok(
           Array.isArray(event.options) || Array.isArray(event.choices),

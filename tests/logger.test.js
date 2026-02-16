@@ -42,7 +42,9 @@ describe('Logger', () => {
   })
 
   test('constructor loads level from localStorage', () => {
-    globalThis.localStorage.getItem.mock.mockImplementation(() => LOG_LEVELS.WARN.toString())
+    globalThis.localStorage.getItem.mock.mockImplementation(() =>
+      LOG_LEVELS.WARN.toString()
+    )
     const logger = new Logger()
     assert.strictEqual(logger.minLevel, LOG_LEVELS.WARN)
   })
@@ -52,7 +54,10 @@ describe('Logger', () => {
     logger.setLevel(LOG_LEVELS.ERROR)
     assert.strictEqual(logger.minLevel, LOG_LEVELS.ERROR)
     assert.strictEqual(globalThis.localStorage.setItem.mock.calls.length, 1)
-    assert.deepStrictEqual(globalThis.localStorage.setItem.mock.calls[0].arguments, ['neurotoxic_log_level', LOG_LEVELS.ERROR])
+    assert.deepStrictEqual(
+      globalThis.localStorage.setItem.mock.calls[0].arguments,
+      ['neurotoxic_log_level', LOG_LEVELS.ERROR]
+    )
   })
 
   test('subscribe registers callback and unsubscribe removes it', () => {
@@ -132,7 +137,7 @@ describe('Logger', () => {
     const logger = new Logger()
     logger.maxLogs = 5
     for (let i = 0; i < 10; i++) {
-        logger.info('Test', `Message ${i}`)
+      logger.info('Test', `Message ${i}`)
     }
     assert.strictEqual(logger.logs.length, 5)
     assert.strictEqual(logger.logs[0].message, 'Message 9') // Newest first

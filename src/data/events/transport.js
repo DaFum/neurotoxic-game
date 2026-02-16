@@ -4,7 +4,8 @@ export const TRANSPORT_EVENTS = [
     id: 'van_breakdown_tire',
     category: 'transport',
     title: 'VAN BREAKDOWN: TIRE',
-    description: 'A loud BANG echoes on the autobahn. The van swerves violently.',
+    description:
+      'A loud BANG echoes on the autobahn. The van swerves violently.',
     trigger: 'travel',
     chance: 0.08,
     options: [
@@ -56,7 +57,8 @@ export const TRANSPORT_EVENTS = [
     id: 'van_breakdown_engine',
     category: 'transport',
     title: 'VAN BREAKDOWN: ENGINE',
-    description: 'Steam hisses from the hood. The temperature gauge is in the red.',
+    description:
+      'Steam hisses from the hood. The temperature gauge is in the red.',
     trigger: 'travel',
     chance: 0.05,
     options: [
@@ -99,7 +101,8 @@ export const TRANSPORT_EVENTS = [
     id: 'van_critical_failure',
     category: 'transport',
     title: 'CRITICAL FAILURE',
-    description: "The duct tape didn't hold. The engine block cracked. You need a tow.",
+    description:
+      "The duct tape didn't hold. The engine block cracked. You need a tow.",
     trigger: 'travel',
     chance: 0, // Triggered by chain only
     options: [
@@ -137,7 +140,8 @@ export const TRANSPORT_EVENTS = [
     id: 'police_control',
     category: 'transport',
     title: 'POLICE CONTROL',
-    description: "Blue lights flash behind you. 'Allgemeine Verkehrskontrolle'.",
+    description:
+      "Blue lights flash behind you. 'Allgemeine Verkehrskontrolle'.",
     trigger: 'travel',
     chance: 0.05,
     options: [
