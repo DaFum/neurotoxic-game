@@ -1,7 +1,11 @@
 import * as Tone from 'tone'
 import { logger } from '../logger.js'
 import { audioState, resetGigState } from './state.js'
-import { ensureAudioContext, getRawAudioContext, getAudioContextTimeSec } from './setup.js'
+import {
+  ensureAudioContext,
+  getRawAudioContext,
+  getAudioContextTimeSec
+} from './setup.js'
 import { loadAudioBuffer } from './assets.js'
 
 /**
@@ -265,7 +269,9 @@ export async function startGigPlayback({
   audioState.gigFilename = filename
   audioState.gigBaseOffsetMs = Math.max(0, bufferOffsetMs)
   audioState.gigSeekOffsetMs = 0
-  audioState.gigDurationMs = Number.isFinite(durationMs) ? Math.max(0, durationMs) : null
+  audioState.gigDurationMs = Number.isFinite(durationMs)
+    ? Math.max(0, durationMs)
+    : null
   audioState.gigOnEnded = typeof onEnded === 'function' ? onEnded : null
   audioState.gigIsPaused = false
 
@@ -407,7 +413,9 @@ export function resumeGigPlayback() {
   audioState.gigIsPaused = false
 
   const remainingDurationMs =
-    audioState.gigDurationMs != null ? Math.max(0, audioState.gigDurationMs - audioState.gigSeekOffsetMs) : null
+    audioState.gigDurationMs != null
+      ? Math.max(0, audioState.gigDurationMs - audioState.gigSeekOffsetMs)
+      : null
   const {
     offsetSeconds,
     requestedOffsetSeconds,

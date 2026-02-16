@@ -8,8 +8,12 @@ class MockPolySynth {
   constructor() {
     this.volume = { value: 0 }
   }
-  connect() { return this }
-  chain() { return this }
+  connect() {
+    return this
+  }
+  chain() {
+    return this
+  }
   triggerAttackRelease() {}
   dispose() {
     if (MockPolySynth.shouldThrowOnDispose) {
@@ -19,22 +23,34 @@ class MockPolySynth {
 }
 
 class MockMembraneSynth {
-  constructor() { this.volume = { value: 0 } }
-  connect() { return this }
+  constructor() {
+    this.volume = { value: 0 }
+  }
+  connect() {
+    return this
+  }
   triggerAttackRelease() {}
   dispose() {}
 }
 
 class MockMetalSynth {
-  constructor() { this.volume = { value: 0 } }
-  connect() { return this }
+  constructor() {
+    this.volume = { value: 0 }
+  }
+  connect() {
+    return this
+  }
   triggerAttackRelease() {}
   dispose() {}
 }
 
 class MockNoiseSynth {
-  constructor() { this.volume = { value: 0 } }
-  connect() { return this }
+  constructor() {
+    this.volume = { value: 0 }
+  }
+  connect() {
+    return this
+  }
   triggerAttackRelease() {}
   dispose() {}
 }
@@ -44,27 +60,45 @@ class MockGain {
     this.gain = { rampTo: mock.fn() }
     this.input = this
   }
-  connect() { return this }
+  connect() {
+    return this
+  }
   dispose() {}
 }
 
 class MockVolume {
-  constructor() { this.volume = { value: 0 } }
-  connect() { return this }
+  constructor() {
+    this.volume = { value: 0 }
+  }
+  connect() {
+    return this
+  }
   dispose() {}
 }
 
 class MockSignal {
-  connect() { return this }
+  connect() {
+    return this
+  }
   dispose() {}
-  toDestination() { return this }
-  start() { return this }
-  chain() { return this }
+  toDestination() {
+    return this
+  }
+  start() {
+    return this
+  }
+  chain() {
+    return this
+  }
 }
 
 class MockReverb {
-  constructor() { this.wet = { value: 0 } }
-  connect() { return this }
+  constructor() {
+    this.wet = { value: 0 }
+  }
+  connect() {
+    return this
+  }
   dispose() {}
 }
 
@@ -111,7 +145,7 @@ const mockTone = {
   EQ3: MockSignal,
   StereoWidener: MockSignal,
   Volume: MockVolume,
-  Frequency: (n) => ({ toNote: () => 'C4' })
+  Frequency: n => ({ toNote: () => 'C4' })
 }
 
 mock.module('tone', { namedExports: mockTone })
@@ -135,12 +169,16 @@ test('disposeAudio logs error when dispose fails', async t => {
   // Assert
   // We expect logger.debug to be called at least once with the error message
   const calls = debugSpy.mock.calls
-  const found = calls.find(call =>
-    call.arguments[1] && call.arguments[1].includes('Node disposal failed')
+  const found = calls.find(
+    call =>
+      call.arguments[1] && call.arguments[1].includes('Node disposal failed')
   )
 
   if (!found) {
-      console.log('Logger calls:', calls.map(c => c.arguments))
+    console.log(
+      'Logger calls:',
+      calls.map(c => c.arguments)
+    )
   }
 
   assert.ok(found, 'Should have logged disposal failure')

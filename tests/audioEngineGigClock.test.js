@@ -72,4 +72,3 @@ test('hasAudioAsset', async t => {
     assert.strictEqual(hasAudioAsset('missing-track.ogg'), false)
   })
 })
-

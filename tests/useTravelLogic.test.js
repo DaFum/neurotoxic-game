@@ -96,8 +96,8 @@ describe('useTravelLogic', () => {
     }
 
     // Polyfill requestAnimationFrame for React
-    globalThis.requestAnimationFrame = (callback) => setTimeout(callback, 0)
-    globalThis.cancelAnimationFrame = (id) => clearTimeout(id)
+    globalThis.requestAnimationFrame = callback => setTimeout(callback, 0)
+    globalThis.cancelAnimationFrame = id => clearTimeout(id)
   })
 
   afterEach(() => {
@@ -126,12 +126,20 @@ describe('useTravelLogic', () => {
     band: { members: [], harmony: 50 },
     gameMap: {
       nodes: {
-        node_start: { id: 'node_start', layer: 0, type: 'START', venue: { name: 'HQ' } },
-        node_target: { id: 'node_target', layer: 1, type: 'GIG', venue: { name: 'Club' } }
+        node_start: {
+          id: 'node_start',
+          layer: 0,
+          type: 'START',
+          venue: { name: 'HQ' }
+        },
+        node_target: {
+          id: 'node_target',
+          layer: 1,
+          type: 'GIG',
+          venue: { name: 'Club' }
+        }
       },
-      connections: [
-        { from: 'node_start', to: 'node_target' }
-      ]
+      connections: [{ from: 'node_start', to: 'node_target' }]
     },
     updatePlayer: mock.fn(),
     updateBand: mock.fn(),
@@ -201,7 +209,10 @@ describe('useTravelLogic', () => {
 
   test('handleTravel prevents travel if insufficient fuel', () => {
     const props = createProps({
-      player: { ...createProps().player, van: { ...createProps().player.van, fuel: 5 } }
+      player: {
+        ...createProps().player,
+        van: { ...createProps().player.van, fuel: 5 }
+      }
     })
     const targetNode = props.gameMap.nodes.node_target
 
@@ -274,22 +285,22 @@ describe('useTravelLogic', () => {
   })
 
   test('handleRefuel fills tank and deducts money', () => {
-     const props = createProps({
-       player: { ...createProps().player, money: 1000, van: { fuel: 50 } }
-     })
-     // Missing 50 fuel. Price is 2 per unit. Cost = 100.
+    const props = createProps({
+      player: { ...createProps().player, money: 1000, van: { fuel: 50 } }
+    })
+    // Missing 50 fuel. Price is 2 per unit. Cost = 100.
 
-     const { result } = renderHook(() => useTravelLogic(props))
+    const { result } = renderHook(() => useTravelLogic(props))
 
-     act(() => {
-       result.current.handleRefuel()
-     })
+    act(() => {
+      result.current.handleRefuel()
+    })
 
-     assert.equal(props.updatePlayer.mock.calls.length, 1)
-     const updateArg = props.updatePlayer.mock.calls[0].arguments[0]
-     assert.equal(updateArg.money, 900)
-     assert.equal(updateArg.van.fuel, 100)
-     assert.equal(mockAudioManager.playSFX.mock.calls.length, 1)
+    assert.equal(props.updatePlayer.mock.calls.length, 1)
+    const updateArg = props.updatePlayer.mock.calls[0].arguments[0]
+    assert.equal(updateArg.money, 900)
+    assert.equal(updateArg.van.fuel, 100)
+    assert.equal(mockAudioManager.playSFX.mock.calls.length, 1)
   })
 
   test('handleRepair fixes van and deducts money', () => {

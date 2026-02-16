@@ -117,26 +117,38 @@ export function disposeAudio() {
   // Note: we can't clear transport events here if they depend on playback logic clearing them
   // But we can clear by ID if we have them in state.
   if (audioState.transportEndEventId != null) {
-      try { Tone.getTransport().clear(audioState.transportEndEventId) } catch {}
-      audioState.transportEndEventId = null
+    try {
+      Tone.getTransport().clear(audioState.transportEndEventId)
+    } catch {}
+    audioState.transportEndEventId = null
   }
   if (audioState.transportStopEventId != null) {
-      try { Tone.getTransport().clear(audioState.transportStopEventId) } catch {}
-      audioState.transportStopEventId = null
+    try {
+      Tone.getTransport().clear(audioState.transportStopEventId)
+    } catch {}
+    audioState.transportStopEventId = null
   }
 
   // stopGigPlayback logic (partial)
   if (audioState.gigSource) {
-      try { audioState.gigSource.stop() } catch {}
-      try { audioState.gigSource.disconnect() } catch {}
+    try {
+      audioState.gigSource.stop()
+    } catch {}
+    try {
+      audioState.gigSource.disconnect()
+    } catch {}
   }
   resetGigState() // Use helper
 
   // stopAmbientPlayback logic (partial)
   if (audioState.ambientSource) {
-      try { audioState.ambientSource.stop() } catch {}
-      try { audioState.ambientSource.disconnect() } catch {}
-      audioState.ambientSource = null
+    try {
+      audioState.ambientSource.stop()
+    } catch {}
+    try {
+      audioState.ambientSource.disconnect()
+    } catch {}
+    audioState.ambientSource = null
   }
 
   audioState.audioBufferCache.clear()
@@ -250,11 +262,15 @@ export async function setupAudio() {
     // === Master Chain ===
     // Limiter prevents clipping, Compressor glues the mix
     audioState.masterLimiter = new Tone.Limiter(-3).toDestination()
-    audioState.masterComp = new Tone.Compressor(-18, 4).connect(audioState.masterLimiter)
+    audioState.masterComp = new Tone.Compressor(-18, 4).connect(
+      audioState.masterLimiter
+    )
     audioState.musicGain = new Tone.Gain(1).connect(audioState.masterComp)
 
     // Global reverb send for natural space
-    audioState.reverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(audioState.musicGain)
+    audioState.reverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(
+      audioState.musicGain
+    )
     audioState.reverbSend = new Tone.Gain(0.3).connect(audioState.reverb)
 
     // === Guitar ===
@@ -278,7 +294,13 @@ export async function setupAudio() {
     audioState.guitarEq = new Tone.EQ3(-1, -3, 3) // Gentle mid scoop
     audioState.widener = new Tone.StereoWidener(0.5)
 
-    audioState.guitar.chain(audioState.distortion, audioState.guitarChorus, audioState.guitarEq, audioState.widener, audioState.musicGain)
+    audioState.guitar.chain(
+      audioState.distortion,
+      audioState.guitarChorus,
+      audioState.guitarEq,
+      audioState.widener,
+      audioState.musicGain
+    )
     audioState.guitar.connect(audioState.reverbSend)
 
     // === Bass ===
@@ -297,7 +319,11 @@ export async function setupAudio() {
 
     audioState.bassEq = new Tone.EQ3(3, -1, -4)
     audioState.bassComp = new Tone.Compressor(-15, 5)
-    audioState.bass.chain(audioState.bassComp, audioState.bassEq, audioState.musicGain)
+    audioState.bass.chain(
+      audioState.bassComp,
+      audioState.bassEq,
+      audioState.musicGain
+    )
 
     // === Drums ===
     // Drum bus with own reverb send
@@ -339,8 +365,12 @@ export async function setupAudio() {
     audioState.midiDryBus = new Tone.Gain(1).connect(audioState.musicGain)
 
     // Subtle reverb for spatial depth on ambient MIDI playback
-    audioState.midiReverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(audioState.musicGain)
-    audioState.midiReverbSend = new Tone.Gain(0.25).connect(audioState.midiReverb)
+    audioState.midiReverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(
+      audioState.musicGain
+    )
+    audioState.midiReverbSend = new Tone.Gain(0.25).connect(
+      audioState.midiReverb
+    )
     audioState.midiDryBus.connect(audioState.midiReverbSend)
 
     // Lead/Guitar: FM synthesis for richer harmonic content
