@@ -39,7 +39,7 @@ export class Logger {
 
   /**
    * Subscribe to log updates (for UI).
-   * @param {Function} callback
+   * @param {Function} callback - Callback receiving {type, entry}.
    * @returns {Function} Unsubscribe function
    */
   subscribe(callback) {
@@ -51,11 +51,12 @@ export class Logger {
 
   /**
    * Emits log updates to subscribers.
+   * @param {object} event - Event object { type, entry }.
    * @private
    */
-  _emit() {
+  _emit(event) {
     this.listeners.forEach(cb => {
-      cb(this.logs)
+      cb(event)
     })
   }
 
@@ -69,7 +70,7 @@ export class Logger {
     if (this.logs.length > this.maxLogs) {
       this.logs.pop()
     }
-    this._emit()
+    this._emit({ type: 'add', entry })
   }
 
   /**
@@ -145,7 +146,7 @@ export class Logger {
    */
   clear() {
     this.logs = []
-    this._emit()
+    this._emit({ type: 'clear' })
   }
 
   /**

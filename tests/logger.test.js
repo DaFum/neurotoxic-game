@@ -68,6 +68,11 @@ describe('Logger', () => {
     logger.info('test', 'message')
     assert.strictEqual(callback.mock.calls.length, 1)
 
+    // Verify event structure
+    const event = callback.mock.calls[0].arguments[0]
+    assert.strictEqual(event.type, 'add')
+    assert.strictEqual(event.entry.message, 'message')
+
     unsubscribe()
     logger.info('test', 'message 2')
     assert.strictEqual(callback.mock.calls.length, 1)
@@ -144,13 +149,20 @@ describe('Logger', () => {
     assert.strictEqual(logger.logs[4].message, 'Message 5')
   })
 
-  test('clear removes all logs', () => {
+  test('clear removes all logs and emits clear event', () => {
     const logger = new Logger()
+    const callback = mock.fn()
+    logger.subscribe(callback)
+
     logger.info('Test', 'Message')
     assert.strictEqual(logger.logs.length, 1)
 
     logger.clear()
     assert.strictEqual(logger.logs.length, 0)
+
+    // Check for clear event
+    const lastCall = callback.mock.calls[callback.mock.calls.length - 1]
+    assert.strictEqual(lastCall.arguments[0].type, 'clear')
   })
 
   test('dump returns JSON string of logs', () => {
