@@ -118,7 +118,6 @@ test('setupAudio', async t => {
   t.beforeEach(() => {
     disposeAudio()
     // Reset mocks
-    mockTone.start.mock.restore()
     mockTone.start.mock.resetCalls()
     mockTone.setContext.mock.resetCalls()
     // Default implementation

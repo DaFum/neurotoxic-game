@@ -3,17 +3,13 @@ export async function load(url, context, nextLoad) {
   const result = await nextLoad(url, context);
 
   // Only process if we have source code
-  if (result.source && typeof result.source === 'string' || result.source instanceof Buffer) {
+  // Fix operator precedence: check existence first, then check type
+  if (result.source && (typeof result.source === 'string' || result.source instanceof Buffer)) {
     const source = result.source.toString();
 
     // Check for import.meta.glob usage
     if (source.includes('import.meta.glob')) {
-      // Replace import.meta.glob(...) with empty object literal ({})
-      // Using 's' flag (dotAll) for multi-line support
-      const transformed = source.replace(
-        /import\.meta\.glob\s*\((?:[^)(]+|\((?:[^)(]+|\([^)(]*\))*\))*\)/gs,
-        '({})'
-      );
+      const transformed = replaceImportMetaGlob(source);
 
       return {
         ...result,
@@ -22,5 +18,75 @@ export async function load(url, context, nextLoad) {
     }
   }
 
+  return result;
+}
+
+/**
+ * Replaces import.meta.glob(...) calls with ({}) using a balanced parenthesis parser.
+ * This avoids ReDoS risks associated with complex regular expressions.
+ */
+function replaceImportMetaGlob(source) {
+  const token = 'import.meta.glob';
+  let result = '';
+  let currentIndex = 0;
+
+  while (currentIndex < source.length) {
+    const tokenIndex = source.indexOf(token, currentIndex);
+    if (tokenIndex === -1) {
+      result += source.slice(currentIndex);
+      break;
+    }
+
+    // Append text before the token
+    result += source.slice(currentIndex, tokenIndex);
+
+    // Look for opening parenthesis
+    const openParenIndex = source.indexOf('(', tokenIndex + token.length);
+
+    // If no opening parenthesis found, just copy the token and continue
+    if (openParenIndex === -1) {
+       result += source.slice(tokenIndex, tokenIndex + token.length);
+       currentIndex = tokenIndex + token.length;
+       continue;
+    }
+
+    // Check if there are only whitespace between token and (
+    const between = source.slice(tokenIndex + token.length, openParenIndex);
+    if (between.trim() !== '') {
+        // Not a direct call (e.g. might be part of a larger property access), skip
+        result += source.slice(tokenIndex, tokenIndex + token.length);
+        currentIndex = tokenIndex + token.length;
+        continue;
+    }
+
+    // Find balancing closing parenthesis
+    let depth = 1;
+    let i = openParenIndex + 1;
+    let found = false;
+
+    while (i < source.length) {
+      const char = source[i];
+      if (char === '(') {
+        depth++;
+      } else if (char === ')') {
+        depth--;
+        if (depth === 0) {
+          found = true;
+          break;
+        }
+      }
+      i++;
+    }
+
+    if (found) {
+      // Replace the whole call `import.meta.glob(...)` with `({})`
+      result += '({})';
+      currentIndex = i + 1; // i is index of closing ')', so next start is i + 1
+    } else {
+      // Malformed or unclosed, just skip the token and continue
+      result += source.slice(tokenIndex, tokenIndex + token.length);
+      currentIndex = tokenIndex + token.length;
+    }
+  }
   return result;
 }
