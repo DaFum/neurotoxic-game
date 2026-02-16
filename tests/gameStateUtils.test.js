@@ -102,3 +102,29 @@ test('applyEventDelta handles flags', () => {
   assert.ok(nextState.activeStoryFlags.includes('MET_RIVAL'))
   assert.ok(nextState.pendingEvents.includes('RIVAL_BATTLE'))
 })
+
+test('applyEventDelta handles score updates', () => {
+  // Case 1: Existing score + delta
+  const state1 = { player: { score: 100 } }
+  const delta1 = { flags: { score: 50 } }
+  const nextState1 = applyEventDelta(state1, delta1)
+  assert.equal(nextState1.player.score, 150)
+
+  // Case 2: No existing score (starts at 0)
+  const state2 = { player: {} }
+  const delta2 = { flags: { score: 50 } }
+  const nextState2 = applyEventDelta(state2, delta2)
+  assert.equal(nextState2.player.score, 50)
+
+  // Case 3: Negative delta (clamping to 0)
+  const state3 = { player: { score: 10 } }
+  const delta3 = { flags: { score: -20 } }
+  const nextState3 = applyEventDelta(state3, delta3)
+  assert.equal(nextState3.player.score, 0)
+
+  // Case 4: No player object at all
+  const state4 = {}
+  const delta4 = { flags: { score: 100 } }
+  const nextState4 = applyEventDelta(state4, delta4)
+  assert.equal(nextState4.player.score, 100)
+})
