@@ -19,6 +19,7 @@ export const useRhythmGameState = () => {
   // High-Frequency Game State (Ref)
   const gameStateRef = useRef({
     running: false,
+    paused: false,
     notes: [],
     nextMissCheckIndex: 0, // Optimization: only check notes that haven't passed yet
     lanes: [

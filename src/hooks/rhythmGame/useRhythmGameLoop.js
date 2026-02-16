@@ -24,13 +24,13 @@ export const useRhythmGameLoop = ({
   gameStateRef,
   scoringActions,
   setters,
-  state,
+  // state, // React state is not reliable in high-frequency loop, use Refs
   contextState,
   contextActions
 }) => {
   const { handleMiss } = scoringActions
   const { setIsToxicMode } = setters
-  const { isGameOver, isToxicMode } = state
+  // const { isGameOver, isToxicMode } = state // Removed to prevent stale closures
   const { activeEvent } = contextState
   const { setLastGigStats, changeScene } = contextActions
 
@@ -44,6 +44,10 @@ export const useRhythmGameLoop = ({
     deltaMS => {
       const stateRef = gameStateRef.current
       if (stateRef.paused) return
+
+      // Use Ref values instead of React state
+      const isGameOver = stateRef.isGameOver
+      const isToxicMode = stateRef.isToxicMode
 
       // Heckler Logic
       if (stateRef.running && !activeEvent && !isGameOver) {
@@ -151,8 +155,8 @@ export const useRhythmGameLoop = ({
       changeScene,
       gameStateRef,
       handleMiss,
-      isGameOver,
-      isToxicMode,
+      // isGameOver, // Removed
+      // isToxicMode, // Removed
       setIsToxicMode,
       setLastGigStats
     ]

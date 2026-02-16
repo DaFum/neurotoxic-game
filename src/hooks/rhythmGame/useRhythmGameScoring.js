@@ -93,7 +93,9 @@ export const useRhythmGameScoring = ({
       })
 
       // Only play miss SFX if it's a real miss
-      audioManager.playSFX('miss')
+      if (!isEmptyHit) {
+        audioManager.playSFX('miss')
+      }
 
       let decayPerMiss = hasUpgrade('bass_sansamp') ? 1 : 2
       if (isEmptyHit) {

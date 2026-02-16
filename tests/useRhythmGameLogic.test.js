@@ -213,20 +213,14 @@ describe('useRhythmGameLogic', () => {
     })
 
     // Simulate input
-    let hitResult
     act(() => {
-      // Need to set running to true manually if initialization failed or verify it succeeded
       result.current.gameStateRef.current.running = true
       result.current.actions.registerInput(0, true)
     })
 
-    // Since checkHit returns a note, it should update score
-    // However, handleHit checks checkHit result.
-    // Wait, handleHit is called by registerInput only if game is running.
-
     // Check if score updated
     // 100 points base + combo bonus
-    // assert.equal(result.current.stats.score, 100)
-    // assert.equal(result.current.stats.combo, 1)
+    assert.equal(result.current.stats.score, 100)
+    assert.equal(result.current.stats.combo, 1)
   })
 })

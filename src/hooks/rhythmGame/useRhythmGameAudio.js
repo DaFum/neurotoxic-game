@@ -53,6 +53,14 @@ export const useRhythmGameAudio = ({ gameStateRef, setters, contextState }) => {
     // Mute ambient radio to prevent audio overlap
     audioManager.stopMusic()
 
+    // Harmony Guard
+    if (band.harmony <= 0) {
+      console.warn('[useRhythmGameAudio] Band harmony too low to start gig.')
+      setIsAudioReady(false)
+      isInitializingRef.current = false
+      return
+    }
+
     try {
       const audioUnlocked = await audioManager.ensureAudioContext()
       if (!audioUnlocked) {
@@ -77,6 +85,7 @@ export const useRhythmGameAudio = ({ gameStateRef, setters, contextState }) => {
           player.currentNodeId
         )
         hasInitializedRef.current = false
+        isInitializingRef.current = false
         return
       }
 
