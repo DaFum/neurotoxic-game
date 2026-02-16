@@ -4,7 +4,7 @@ export const TRANSPORT_EVENTS = [
     id: 'van_breakdown_tire',
     category: 'transport',
     title: 'VAN BREAKDOWN: TIRE',
-    text: 'A loud BANG echoes on the autobahn. The van swerves violently.',
+    description: 'A loud BANG echoes on the autobahn. The van swerves violently.',
     trigger: 'travel',
     chance: 0.08,
     options: [
@@ -56,7 +56,7 @@ export const TRANSPORT_EVENTS = [
     id: 'van_breakdown_engine',
     category: 'transport',
     title: 'VAN BREAKDOWN: ENGINE',
-    text: 'Steam hisses from the hood. The temperature gauge is in the red.',
+    description: 'Steam hisses from the hood. The temperature gauge is in the red.',
     trigger: 'travel',
     chance: 0.05,
     options: [
@@ -99,7 +99,7 @@ export const TRANSPORT_EVENTS = [
     id: 'van_critical_failure',
     category: 'transport',
     title: 'CRITICAL FAILURE',
-    text: "The duct tape didn't hold. The engine block cracked. You need a tow.",
+    description: "The duct tape didn't hold. The engine block cracked. You need a tow.",
     trigger: 'travel',
     chance: 0, // Triggered by chain only
     options: [
@@ -137,7 +137,7 @@ export const TRANSPORT_EVENTS = [
     id: 'police_control',
     category: 'transport',
     title: 'POLICE CONTROL',
-    text: "Blue lights flash behind you. 'Allgemeine Verkehrskontrolle'.",
+    description: "Blue lights flash behind you. 'Allgemeine Verkehrskontrolle'.",
     trigger: 'travel',
     chance: 0.05,
     options: [
@@ -192,7 +192,7 @@ export const TRANSPORT_EVENTS = [
     id: 'wrong_turn',
     category: 'transport',
     title: 'WRONG TURN',
-    text: 'The GPS lied. You are in the middle of nowhere.',
+    description: 'The GPS lied. You are in the middle of nowhere.',
     trigger: 'travel',
     chance: 0.03,
     options: [
@@ -232,7 +232,7 @@ export const TRANSPORT_EVENTS = [
     id: 'traffic_jam',
     category: 'transport',
     title: 'AUTOBAHN STAU',
-    text: 'Complete standstill. Nothing moves.',
+    description: 'Complete standstill. Nothing moves.',
     trigger: 'travel',
     chance: 0.07,
     options: [
@@ -273,7 +273,7 @@ export const TRANSPORT_EVENTS = [
     id: 'hitchhiker',
     category: 'transport',
     title: 'MYSTERIOUS HITCHHIKER',
-    text: 'A figure stands in the rain with a guitar case.',
+    description: 'A figure stands in the rain with a guitar case.',
     trigger: 'travel',
     chance: 0.05,
     options: [
@@ -313,7 +313,7 @@ export const TRANSPORT_EVENTS = [
     id: 'wild_accident',
     category: 'transport',
     title: 'WILD UNFALL',
-    text: 'A deer jumps onto the road!',
+    description: 'A deer jumps onto the road!',
     trigger: 'travel',
     chance: 0.02,
     options: [
@@ -349,7 +349,7 @@ export const TRANSPORT_EVENTS = [
     id: 'gas_station_encounter',
     category: 'transport',
     title: 'GAS STATION ENCOUNTER',
-    text: 'At the petrol station, someone recognizes the band shirt.',
+    description: 'At the petrol station, someone recognizes the band shirt.',
     trigger: 'travel',
     chance: 0.06,
     options: [
@@ -374,7 +374,7 @@ export const TRANSPORT_EVENTS = [
     id: 'speed_trap',
     category: 'transport',
     title: 'BLITZER',
-    text: 'FLASH! You were going 130 in a 100 zone.',
+    description: 'FLASH! You were going 130 in a 100 zone.',
     trigger: 'travel',
     chance: 0.04,
     options: [
@@ -389,7 +389,7 @@ export const TRANSPORT_EVENTS = [
     id: 'road_rage',
     category: 'transport',
     title: 'ROAD RAGE',
-    text: 'A BMW tailgates you aggressively.',
+    description: 'A BMW tailgates you aggressively.',
     trigger: 'travel',
     chance: 0.04,
     options: [
@@ -414,7 +414,7 @@ export const TRANSPORT_EVENTS = [
     id: 'scenic_route',
     category: 'transport',
     title: 'SCENIC ROUTE',
-    text: 'The satnav suggests a longer but nicer route.',
+    description: 'The satnav suggests a longer but nicer route.',
     trigger: 'travel',
     chance: 0.05,
     options: [

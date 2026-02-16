@@ -4,7 +4,7 @@ export const FINANCIAL_EVENTS = [
     id: 'unexpected_bill',
     category: 'financial',
     title: 'UNEXPECTED BILL',
-    text: 'The rehearsal room rent was increased retroactively.',
+    description: 'The rehearsal room rent was increased retroactively.',
     trigger: 'random',
     chance: 0.05,
     options: [
@@ -19,7 +19,7 @@ export const FINANCIAL_EVENTS = [
     id: 'gear_theft',
     category: 'financial',
     title: 'GEAR THEFT',
-    text: 'Someone broke into the van and stole a pedalboard!',
+    description: 'Someone broke into the van and stole a pedalboard!',
     trigger: 'random',
     chance: 0.03,
     options: [
@@ -55,7 +55,7 @@ export const FINANCIAL_EVENTS = [
     id: 'parking_fine',
     category: 'financial',
     title: 'PARKING TICKET',
-    text: 'You parked in a no-stopping zone to unload.',
+    description: 'You parked in a no-stopping zone to unload.',
     trigger: 'random',
     chance: 0.06,
     options: [
@@ -75,7 +75,7 @@ export const FINANCIAL_EVENTS = [
     id: 'tax_audit',
     category: 'financial',
     title: 'FINANZAMT LETTER',
-    text: 'A grey envelope arrives. Something about "Umsatzsteuer".',
+    description: 'A grey envelope arrives. Something about "Umsatzsteuer".',
     trigger: 'random',
     chance: 0.02,
     options: [

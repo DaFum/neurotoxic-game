@@ -23,7 +23,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
           ⚠ {event.title} ⚠
         </h2>
         <p className='font-mono text-(--star-white) mb-8 text-lg border-l-4 border-(--toxic-green) pl-4'>
-          {event.text}
+          {event.description}
         </p>
 
         <motion.div
@@ -61,7 +61,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
 EventModal.propTypes = {
   event: PropTypes.shape({
     title: PropTypes.string.isRequired,
-    text: PropTypes.string.isRequired,
+    description: PropTypes.string.isRequired,
     options: PropTypes.arrayOf(
       PropTypes.shape({
         label: PropTypes.string.isRequired,

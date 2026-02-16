@@ -4,7 +4,7 @@ export const GIG_EVENTS = [
     id: 'gig_mid_strings_snapped',
     category: 'gig',
     title: 'STRING SNAPPED!',
-    text: 'A sharp TWANG sounds from the guitar amp.',
+    description: 'A sharp TWANG sounds from the guitar amp.',
     trigger: 'gig_mid',
     chance: 0.1,
     options: [
@@ -39,7 +39,7 @@ export const GIG_EVENTS = [
     id: 'gig_intro_drunk_fan',
     category: 'gig',
     title: 'DRUNK HECKLER',
-    text: "Someone is yelling 'PLAY FREEBIRD' repeatedly.",
+    description: "Someone is yelling 'PLAY FREEBIRD' repeatedly.",
     trigger: 'gig_intro',
     chance: 0.2,
     options: [
