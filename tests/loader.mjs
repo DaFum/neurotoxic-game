@@ -24,6 +24,7 @@ export async function load(url, context, nextLoad) {
 /**
  * Replaces import.meta.glob(...) calls with ({}) using a balanced parenthesis parser.
  * This avoids ReDoS risks associated with complex regular expressions.
+ * Enhanced to skip string literals so parentheses inside strings (e.g. glob patterns) are not counted.
  */
 function replaceImportMetaGlob(source) {
   const token = 'import.meta.glob';
@@ -63,16 +64,33 @@ function replaceImportMetaGlob(source) {
     let depth = 1;
     let i = openParenIndex + 1;
     let found = false;
+    let inSingleQuote = false;
+    let inDoubleQuote = false;
+    let inBacktick = false;
 
     while (i < source.length) {
       const char = source[i];
-      if (char === '(') {
-        depth++;
-      } else if (char === ')') {
-        depth--;
-        if (depth === 0) {
-          found = true;
-          break;
+      const prevChar = i > 0 ? source[i - 1] : '';
+
+      // Handle string literals and template literals
+      if (char === "'" && !inDoubleQuote && !inBacktick && prevChar !== '\\') {
+        inSingleQuote = !inSingleQuote;
+      } else if (char === '"' && !inSingleQuote && !inBacktick && prevChar !== '\\') {
+        inDoubleQuote = !inDoubleQuote;
+      } else if (char === '`' && !inSingleQuote && !inDoubleQuote && prevChar !== '\\') {
+        inBacktick = !inBacktick;
+      }
+
+      // Only count parentheses if not inside a string
+      if (!inSingleQuote && !inDoubleQuote && !inBacktick) {
+        if (char === '(') {
+          depth++;
+        } else if (char === ')') {
+          depth--;
+          if (depth === 0) {
+            found = true;
+            break;
+          }
         }
       }
       i++;
