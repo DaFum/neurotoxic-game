@@ -1,25 +1,51 @@
 ---
 name: skilltest
-description: Comprehensive validation for repo and user skills against the Open Agent Skills standard, including discovery, metadata quality, optional openai.yaml checks, and prompt-case tests. Use when asked to run skilltest, validate skills, or diagnose why a skill does not appear or trigger.
+description: Validate skill structure and metadata. Trigger when developing skills, checking CI, or debugging skill loading issues.
 ---
 
 # Skilltest Harness
 
+Discover, validate, and test skills against the Open Agent Skills standard.
+
 ## Workflow
 
-1. Discover skills from `.claude/skills` (CWD up to repo root) and optionally `~/.claude/skills`.
-2. Validate directory contract, frontmatter, naming, and symlink targets.
-3. Check optional `agents/openai.yaml` fields when present (relative to each skill directory).
-4. Verify script permissions and referenced files.
-5. Execute prompt-case checks from `tests/cases/*.cases.json` (within this skill directory).
-6. Emit JSON + human-readable reports.
+1.  **Discovery**
+    *   Search `.claude/skills/` recursively.
+    *   Find `SKILL.md` files.
+
+2.  **Validation**
+    *   **Structure**: Skill folder must contain `SKILL.md`.
+    *   **Metadata**: `SKILL.md` frontmatter must be valid YAML.
+    *   **Paths**: Scripts and references must exist.
+    *   **Symlinks**: Validate targets.
+
+3.  **Execution**
+    *   Run test cases from `tests/cases/*.cases.json`.
+    *   Report successes and failures.
 
 ## Commands
 
-- Run the harness: `node .claude/skills/skilltest/scripts/skilltest.mjs`
-- Validate openai.yaml only: `node .claude/skills/skilltest/scripts/validate-skills.mjs`
+Use the bundled validator:
 
-## Output
+```bash
+node .claude/skills/skilltest/scripts/validate-skills.mjs
+```
 
-- JSON report written to `reports/skills/skilltest-report.json`.
-- Console summary with ✅/⚠️/❌ per skill and suggested fixes.
+Use the test runner:
+
+```bash
+node .claude/skills/skilltest/scripts/skilltest.mjs
+```
+
+## Example
+
+**Input**: "Why isn't my skill showing up?"
+
+**Action**:
+Run validator.
+
+**Output**:
+```text
+[FAIL] myskill/SKILL.md: Invalid YAML frontmatter.
+```
+"The frontmatter in `myskill/SKILL.md` is invalid. Fix the YAML syntax."

@@ -1,27 +1,44 @@
 ---
 name: one-command-quality-gate
-description: Run the repository quality gate in order (lint, test, build) and summarize results with next steps. Use when asked to run the quality gate, verify changes, or diagnose failing checks.
+description: Run the full test and lint suite. Trigger when preparing to commit, submitting a PR, or verifying a change. Runs lint, test, and build in order.
 ---
 
-# Run the Quality Gate
+# One-Command Quality Gate
+
+Enforce code quality standards by running the canonical check suite.
+
+## Usage
+
+Run the bundled script:
+
+```bash
+.claude/skills/one-command-quality-gate/scripts/quality-gate.sh
+```
 
 ## Workflow
 
-1. Ensure dependencies are installed (`npm install`) if needed.
-2. Run lint, test, then build in that order.
-3. Summarize pass/fail and surface next-step suggestions based on failures.
+The script executes these checks in order:
 
-## Command
+1.  **Lint**: `npm run lint`. Checks code style and errors.
+2.  **Test**: `npm run test`. Runs the test suite.
+3.  **Build**: `npm run build`. Verifies production build.
 
-- Prefer the bundled script: `./.claude/skills/one-command-quality-gate/scripts/quality-gate.sh`
-- Direct commands: `npm run lint`, `npm run test`, `npm run build`
+## Rules
 
-## Output
+*   **Stop on Failure**: If any step fails, the gate fails immediately. Do not proceed.
+*   **Clean Output**: Report the specific step that failed and the error message.
 
-- Provide a short summary of results and any actionable next steps.
+## Example
 
-## Related Skills
+**Input**: "I finished the feature. Is it ready?"
 
-- `one-command-doctor` — for broader healthcheck including Node version and npm install
-- `ci-hardener` — for enforcing the same checks in CI
-- `refactor-with-safety` — always run this gate after refactors
+**Action**:
+Run `.claude/skills/one-command-quality-gate/scripts/quality-gate.sh`.
+
+**Output**:
+```text
+[LINT] ... OK
+[TEST] ... FAIL
+  Test failed: 'Game should start with 100 money'
+```
+"Quality gate failed at the Test step. Please fix the money initialization regression."

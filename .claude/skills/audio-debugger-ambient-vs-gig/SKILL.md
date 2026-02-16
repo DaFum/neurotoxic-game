@@ -1,34 +1,59 @@
 ---
 name: audio-debugger-ambient-vs-gig
-description: Debug ambient vs gig playback behavior (full tracks vs excerpts, start/stop timing). Use when audio stutters, plays incorrectly, or needs additional logging.
+description: Debug audio playback issues. Trigger when music fails to start, plays the wrong track, stutters, or when ambient/gig transitions fail. Covers Tone.js, AudioContext, and asset loading.
 ---
 
 # Audio Debugger (Ambient vs Gig)
 
-## Key Files
-
-- `src/utils/AudioManager.js` — singleton managing Tone.js playback and MIDI loading
-- `src/utils/audioEngine.js` — low-level audio scheduling and context management
-- `src/utils/audioPlaybackUtils.js` — ambient vs gig playback helpers
-- `src/utils/audioSelectionUtils.js` — song/track selection logic
-- `src/hooks/useAudioControl.js` — React hook bridging audio into components
-- `src/assets/rhythm_songs.json` — MIDI track metadata and excerpt offsets
-- `src/data/songs.js` — song definitions with duration and offset data
+Troubleshoot and resolve audio playback issues in the game, focusing on the distinction between ambient (background) music and gig (rhythm game) tracks.
 
 ## Workflow
 
-1. Read `src/utils/AudioManager.js` and trace how ambient playback starts on "Start Tour" (full MIDI tracks via Tone.js/audioEngine).
-2. Read `src/utils/audioPlaybackUtils.js` and trace gig playback — confirm excerpts start at the configured offset and stop at the expected duration.
-3. Cross-check `src/assets/rhythm_songs.json` offsets against `src/data/songs.js` definitions.
-4. Add targeted logging via `src/utils/logger.js` around start/stop calls, timing offsets, and duration scheduling.
-5. Ensure AudioContext/Tone.js is initialized on a user gesture (check `useAudioControl.js`).
+1.  **Identify the Context**
+    Determine if the issue is with **Ambient** (Tour/Overworld) or **Gig** (Rhythm Game) audio.
+    *   **Ambient**: Controlled by `AudioSystem.startAmbient()`. Uses OGG buffers (preferred) or MIDI synthesis (fallback).
+    *   **Gig**: Controlled by `useRhythmGameAudio`. Plays specific MIDI slices/excerpts synchronized with gameplay.
 
-## Output
+2.  **Verify Audio Context State**
+    Audio requires a user gesture to unlock.
+    *   Check if `Tone.context.state` is `'running'`.
+    *   Ensure `audioManager.ensureAudioContext()` is called after a click/interaction.
 
-- Summarize likely causes and the exact files to change.
-- Propose minimal logging to validate behavior without leaking sensitive data.
+3.  **Trace the Execution**
+    *   **Ambient**: Check `src/utils/AudioManager.js`. Look for `startAmbient()` call. Check if it falls back to MIDI.
+    *   **Gig**: Check `src/utils/audioPlaybackUtils.js`. Verify `startPlayback` receives correct `songId` and `offset`.
 
-## Related Skills
+4.  **Inspect Data Integrity**
+    *   Open `src/assets/rhythm_songs.json`.
+    *   Verify `file` paths exist.
+    *   Verify `offset` and `bpm` are correct numbers.
 
-- `webaudio-reliability-fixer` — for autoplay gating and AudioContext lifecycle issues
-- `debug-ux-upgrader` — for adding debug overlays and audio state visualization
+5.  **Check Logs**
+    Look for `[AudioSystem]` or `[AudioEngine]` logs in the console.
+
+## Common Issues & Fixes
+
+### Music Doesn't Start on Load
+*   **Cause**: Browser autoplay policy blocked the AudioContext.
+*   **Fix**: Ensure the user clicks a "Start" or "Enter" button that calls `audioManager.ensureAudioContext()`.
+
+### Ambient Music Overlaps with Gig
+*   **Cause**: `stopMusic()` wasn't called or failed before gig start.
+*   **Fix**: Ensure `useRhythmGameAudio` calls `audioManager.stopMusic()` in its cleanup or initialization phase.
+
+### Gig Audio is Out of Sync
+*   **Cause**: `AudioContext.currentTime` drift or incorrect `offset` in song data.
+*   **Fix**: Check `src/utils/rhythmUtils.js` timing logic. Verify `offset` in `rhythm_songs.json`.
+
+## Example
+
+**Input**: "The gig music for 'Neon Highway' is silent, but notes are moving."
+
+**Process**:
+1.  Check console for "Loading song: Neon Highway".
+2.  Verify `rhythm_songs.json` has a valid `file` entry for "Neon Highway".
+3.  Check if `Tone.Transport.start()` was called.
+4.  Inspect `useRhythmGameAudio.js` to see if `initAudio` completed successfully.
+
+**Output**:
+"The MIDI file for 'Neon Highway' is missing from `src/assets/`, causing the synth to have no notes to play. Please add the file."

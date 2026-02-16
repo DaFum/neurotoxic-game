@@ -1,29 +1,41 @@
 ---
 name: repo-guardrails-generator
-description: Generate or update concise repo-specific working agreements (commands, conventions, do/don't rules) for Codex. Use when asked to write or refresh repository guardrails.
+description: Generate strict project guardrails and checklists. Trigger when defining rules, setting up a new agent, or codifying best practices.
 ---
 
 # Repo Guardrails Generator
 
-## Key Files
-
-- `AGENTS.md` — root project guidance (Quick Reference, Critical Constraints, Sub-Agent Architecture)
-- `src/*/AGENTS.md` — domain-specific rules (context, hooks, scenes, utils, components, data, ui)
-- `package.json` — `scripts` section defines quality gate commands
-- `.github/copilot-instructions.md` — additional AI assistant conventions
+Create concise, actionable rules for the repository.
 
 ## Workflow
 
-1. Read `AGENTS.md` and `package.json` scripts for required commands.
-2. Read `src/*/AGENTS.md` files to capture domain-specific rules.
-3. Summarize conventions, folder routing, and critical constraints (version pins, Tailwind v4, CSS variables, state safety).
-4. Keep guidance short and immediately actionable — prefer checklists over prose.
+1.  **Analyze Context**
+    *   What are the common failures? (e.g., "Tests fail often", "Styles are inconsistent").
+    *   What are the hard constraints? (e.g., "No `any` type").
 
-## Output
+2.  **Draft the Rules**
+    *   **MUST**: Non-negotiable. (e.g., "MUST use `npm run test`").
+    *   **SHOULD**: Best practice. (e.g., "SHOULD use descriptive names").
+    *   **NEVER**: Forbidden. (e.g., "NEVER commit secrets").
 
-- Produce a compact Markdown checklist suitable for inclusion in AGENTS.md.
+3.  **Format as Checklist**
+    *   Use checkboxes `[ ]` for verifyability.
+    *   Keep it short (max 10 items).
 
-## Related Skills
+4.  **Review against `AGENTS.md`**
+    Ensure alignment with existing project documentation.
 
-- `project-brain-codex-instructions` — generates full Codex instructions from these same sources
-- `skill-aligner` — ensures skills match the guardrails this skill generates
+## Example
+
+**Input**: "Create guardrails for the UI components."
+
+**Output**:
+```markdown
+# UI Component Guardrails
+
+- [ ] **Styles**: Use `bg-(--void-black)` variables (Tailwind v4).
+- [ ] **Structure**: One component per file.
+- [ ] **Props**: Define `propTypes` or use TypeScript interfaces.
+- [ ] **Testing**: Storybook story exists.
+- [ ] **Accessibility**: `aria-label` on icon-only buttons.
+```

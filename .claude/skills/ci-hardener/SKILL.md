@@ -1,32 +1,62 @@
 ---
 name: ci-hardener
-description: Improve CI reliability and speed (caching, parallelism, clearer failures). Use when CI is slow, flaky, or missing checks.
+description: improve CI reliability, speed, and clarity. Trigger when CI is slow, flaky, fails silently, or needs optimization. focus on GitHub Actions workflows.
 ---
 
 # CI Hardener
 
-## Key Files
-
-- `.github/workflows/super-linter.yml` — MegaLinter-style linting CI
-- `.github/workflows/lint-fix-preview.yml` — lint fix preview workflow
-- `.github/workflows/deploy.yml` — production deployment workflow
-- `package.json` — `scripts.lint`, `scripts.test`, `scripts.build` define the quality gate
+Optimize and harden Continuous Integration (CI) workflows.
 
 ## Workflow
 
-1. Read all files in `.github/workflows/` to understand current CI setup.
-2. Check for `npm ci` caching (node_modules or npm cache) — add if missing.
-3. Look for parallelization opportunities (lint and test can run concurrently).
-4. Ensure the quality gate order is enforced: lint → test → build.
-5. Add timeout limits to prevent hung jobs.
-6. Summarize changes and expected speed/reliability impact.
+1.  **Audit Current Workflows**
+    List all workflows in `.github/workflows/`. Identify:
+    *   **Triggers**: Are they correct (push, pull_request)?
+    *   **Jobs**: Are they parallelized?
+    *   **Steps**: Are they caching dependencies?
 
-## Output
+2.  **Apply Hardening Patterns**
+    *   **Caching**: Use `actions/setup-node` with `cache: 'npm'`.
+    *   **Timeouts**: Set `timeout-minutes` on every job to prevent hangs.
+    *   **Concurrency**: Use `concurrency` groups to cancel outdated runs on PRs.
+    *   **Permissions**: Use least-privilege `permissions` blocks.
 
-- Provide updated workflow changes and reasoning.
+3.  **Optimize Speed**
+    *   Run independent jobs (Lint, Test) in parallel.
+    *   Make `Build` depend on `Test` and `Lint`.
+    *   Use `npm ci` instead of `npm install` for deterministic installs.
 
-## Related Skills
+4.  **Verify**
+    Ensure the changes are valid YAML and follow GitHub Actions syntax.
 
-- `one-command-quality-gate` — the local equivalent of CI checks
-- `perf-budget-enforcer` — for adding bundle size checks to CI
-- `mega-lint-snapshot` — for comprehensive linting diagnostics
+## Checklist
+
+- [ ] `timeout-minutes` is set.
+- [ ] `concurrency` is set for PRs.
+- [ ] `actions/checkout` uses `fetch-depth: 0` if needed (otherwise default is 1).
+- [ ] `npm ci` is used.
+- [ ] Node version is pinned (e.g., `node-version: 20`).
+
+## Example
+
+**Input**: "The build takes too long because it installs dependencies in every job."
+
+**Action**:
+Update `.github/workflows/main.yml`:
+
+```yaml
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      # Cache node_modules for other jobs if needed, or rely on setup-node cache
+```
+
+**Output**:
+"Added `actions/setup-node` with caching to the install step. This will speed up subsequent runs by reusing the npm cache."

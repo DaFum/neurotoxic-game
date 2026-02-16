@@ -1,38 +1,54 @@
 ---
 name: game-balancing-assistant
-description: Analyze game balance data and propose tuning changes with rationale. Use when adjusting difficulty, progression, or economy balance.
+description: Analyze and tune game balance. Trigger when adjusting difficulty, economy, progression, or event effects.
 ---
 
 # Game Balancing Assistant
 
-## Key Files
-
-- `src/utils/economyEngine.js` — money, fuel, and payout calculations
-- `src/utils/eventEngine.js` — event effects on mood, stamina, harmony
-- `src/utils/simulationUtils.js` — simulation helpers for balance testing
-- `src/utils/gigStats.js` — gig scoring and reward calculations
-- `src/data/events.js` + `src/data/events/` — event definitions with effect values
-- `src/data/venues.js` — venue capacity, payout multipliers, unlock thresholds
-- `src/data/songs.js` — song difficulty and scoring parameters
-- `src/data/characters.js` — band member base stats (stamina, mood, skill)
-- `src/data/upgrades.js` — upgrade costs and effects
-- `src/context/gameReducer.js` — where balance clamps are enforced (money >= 0, harmony > 0)
+Tune the game's economy, difficulty, and progression curves.
 
 ## Workflow
 
-1. Identify the parameters that affect balance by reading `economyEngine.js`, `gigStats.js`, and event data.
-2. Check venue payouts in `venues.js` against upgrade costs in `upgrades.js` — ensure progression feels fair.
-3. Review event effect values in `src/data/events/` — compare mood/stamina/harmony deltas.
-4. Compare current values against design goals and propose adjustments with explicit rationale.
-5. Use `simulationUtils.js` to validate proposed changes or suggest new simulation tests.
-6. Verify clamps in `gameReducer.js` still hold (money >= 0, harmony > 0).
+1.  **Identify the Lever**
+    Determine which system needs adjustment:
+    *   **Economy**: `src/utils/economyEngine.js` (Payouts, Costs).
+    *   **Events**: `src/data/events/` (Mood/Stamina impact).
+    *   **Progression**: `src/data/venues.js` (Unlocks, Capacity).
+    *   **Difficulty**: `src/data/songs.js` (BPM, Note Density).
 
-## Output
+2.  **Analyze Current State**
+    *   Read the relevant data file.
+    *   Trace the calculation logic in utility files.
+    *   Check for hard constraints (e.g., "Money cannot be negative" in `gameReducer.js`).
 
-- Provide a tuning table with current vs proposed values and rationale.
-- Note any tests or simulations needed to validate changes.
+3.  **Propose Changes**
+    Create a "Before vs. After" comparison.
+    *   *Goal*: "Make the early game more forgiving."
+    *   *Change*: Increase starting cash from 100 to 200. Reduce first venue fuel cost.
 
-## Related Skills
+4.  **Simulate Impact**
+    Use `src/utils/simulationUtils.js` (if available) or mental models to predict side effects.
+    *   *Risk*: "If we increase payouts, players unlock the van too fast."
 
-- `state-safety-action-creator-guard` — ensures balance changes respect state invariants
-- `golden-path-test-author` — for regression testing critical game flow after balance changes
+## Tuning Guidelines
+
+*   **Economy**: Inflation is bad. Ensure sinks (Fuel, Repairs) scale with Sources (Gigs).
+*   **Difficulty**: Smooth curves. Avoid difficulty spikes unless intentional (Bosses).
+*   **Events**: Risk/Reward must be balanced. High reward events should have high failure risks.
+
+## Example
+
+**Input**: "Players are running out of money before the second gig."
+
+**Analysis**:
+1.  Check `src/data/venues.js`: First gig payout is $50.
+2.  Check `src/utils/economyEngine.js`: Travel cost is $10/node. Distance is 6 nodes.
+3.  **Result**: Travel ($60) > Payout ($50).
+
+**Proposal**:
+*   **Option A**: Increase payout to $80.
+*   **Option B**: Reduce travel cost to $5/node.
+*   **Decision**: Option A (Rewarding performance feels better than cheap travel).
+
+**Output**:
+"Adjusted `src/data/venues.js`: 'The Dive Bar' payout increased from 50 to 80 to cover travel costs."

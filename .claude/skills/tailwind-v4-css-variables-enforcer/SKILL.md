@@ -1,44 +1,50 @@
 ---
 name: tailwind-v4-css-variables-enforcer
-description: Audit UI changes for Tailwind v4 class syntax and CSS-variable color usage. Use when checking design-system violations, hardcoded colors, or Tailwind syntax regressions.
+description: Enforce Tailwind CSS v4 syntax and project-specific CSS variables. Trigger when writing styles, reviewing UI code, or fixing design inconsistencies.
 ---
 
-# Enforce Tailwind v4 + CSS Variables
+# Tailwind v4 Enforcer
 
-## Key Files
+Ensure all styles use the correct Tailwind v4 syntax and design tokens.
 
-- `src/index.css` — CSS variable definitions (`--toxic-green`, `--void-black`, etc.)
-- `src/ui/` — primary location for UI components using Tailwind classes
-- `src/components/` — game components that may use Tailwind
-- `src/scenes/` — scene components with styled markup
+## Rules
 
-## Correct Syntax Examples
-
-| Wrong (v3 / hardcoded)      | Correct (v4)            |
-| --------------------------- | ----------------------- |
-| `bg-[var(--void-black)]`    | `bg-(--void-black)`     |
-| `text-[var(--toxic-green)]` | `text-(--toxic-green)`  |
-| `bg-gray-900`               | `bg-(--void-black)`     |
-| `#00ff00`                   | `var(--toxic-green)`    |
-| `@tailwind base`            | `@import "tailwindcss"` |
+1.  **Syntax**: Use `bg-(--variable)` instead of `bg-[var(--variable)]`.
+2.  **Colors**:
+    *   **NEVER** use hex codes (`#000`, `#ff00ff`).
+    *   **NEVER** use default palette (`bg-red-500`, `text-blue-200`).
+    *   **ALWAYS** use project variables defined in `index.css` (e.g., `--toxic-green`, `--void-black`).
+3.  **Imports**: Use `@import "tailwindcss"`. No `@tailwind` directives.
 
 ## Workflow
 
-1. Scan `src/` for hardcoded colors: hex (`#xxx`), `rgb()`, `hsl()`, Tailwind palette classes (`bg-gray-*`, `text-red-*`).
-2. Scan for Tailwind v3-style bracket-variable usage and replace with v4 `bg-(--token)` syntax.
-3. Check `src/index.css` for the authoritative list of CSS variables.
-4. Replace violations with v4 variable syntax using the examples above.
+1.  **Scan for Violations**
+    *   Grep for `#` (hex codes).
+    *   Grep for `rgb(`, `hsl(`.
+    *   Grep for `bg-[var(`.
 
-## Command
+2.  **Map to Tokens**
+    *   `#000000` -> `var(--void-black)`
+    *   `#00ff00` -> `var(--toxic-green)`
+    *   `#ff00ff` -> `var(--neon-pink)`
 
-- Prefer the bundled script: `./.claude/skills/tailwind-v4-css-variables-enforcer/scripts/audit-tailwind-v4.sh`
+3.  **Fix Syntax**
+    *   `w-[var(--width)]` -> `w-(--width)`
+    *   `bg-[var(--color)]` -> `bg-(--color)`
 
-## Output
+## Example
 
-- Report any matches with file paths and line numbers.
-- Suggest compliant replacements using project CSS variables.
+**Input**: "Style this button."
 
-## Related Skills
+**Bad**:
+```jsx
+<button className="bg-red-500 text-white rounded p-2">
+```
 
-- `convention-keeper-brutalist-ui` — broader UI convention enforcement
-- `dependency-pin-upgrade-blocker` — ensures Tailwind stays at v4
+**Good**:
+```jsx
+<button className="bg-(--neon-pink) text-(--void-black) rounded-none p-2 border-2 border-(--void-black)">
+```
+
+**Output**:
+"Converted styles to v4 syntax. Replaced `red-500` with `--neon-pink`."

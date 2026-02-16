@@ -1,32 +1,58 @@
 ---
 name: pixi-lifecycle-memory-leak-sentinel
-description: Audit Pixi.js components for lifecycle correctness and memory cleanup. Use when reviewing PixiStage changes, scene transitions, or suspected memory leaks.
+description: Detect and fix memory leaks in Pixi.js components. Trigger when reviewing Pixi code, scene transitions, or when performance degrades over time.
 ---
 
-# Pixi.js Lifecycle Audit
+# Pixi Lifecycle Sentinel
 
-## Key Files
-
-- `src/components/PixiStage.jsx` — main Pixi.js Application mount point (React component)
-- `src/components/PixiStageController.js` — orchestrates Pixi stage lifecycle
-- `src/utils/pixiStageUtils.js` — Pixi utility helpers for setup/teardown
-- `src/scenes/Gig.jsx` — scene that hosts the rhythm game Pixi stage
-- `tests/pixiStageUtils.test.js` — existing tests for Pixi utilities
+Ensure strict lifecycle management for Pixi.js instances to prevent memory leaks.
 
 ## Workflow
 
-1. Read `PixiStage.jsx` and locate `new Application()` creation — verify it runs inside a `useEffect` with proper cleanup.
-2. Confirm the cleanup return function calls `app.destroy(true, { children: true, texture: true })` and stops the ticker.
-3. Check `PixiStageController.js` for refs — confirm they are nulled on unmount.
-4. Verify `Gig.jsx` scene transitions don't leave orphaned Pixi instances (check unmount path).
-5. Check for `addEventListener`, `setInterval`, or `requestAnimationFrame` calls and ensure they are disposed.
+1.  **Inspect Component Mounting**
+    *   Find where `new Application()` is called.
+    *   Ensure it's inside `useEffect`.
+    *   Check dependency array `[]`.
 
-## Output
+2.  **Verify Cleanup**
+    The `useEffect` return function **MUST**:
+    *   Call `app.destroy(true, { children: true, texture: true, baseTexture: true })`.
+    *   Stop the ticker: `app.ticker.stop()`.
+    *   Remove event listeners: `window.removeEventListener(...)`.
 
-- Report missing cleanup paths with file and line references.
-- Provide the correct cleanup snippet if needed.
+3.  **Check Refs**
+    *   `useRef` holding the app or textures must be nulled out after destroy.
+    *   Prevent "zombie" updates by checking `if (!ref.current) return`.
 
-## Related Skills
+4.  **Audit Textures**
+    *   Are textures created dynamically?
+    *   Are they destroyed when the sprite is destroyed?
 
-- `webaudio-reliability-fixer` — audio leaks often accompany Pixi lifecycle issues
-- `perf-budget-enforcer` — memory leaks directly impact performance budgets
+## Example
+
+**Input**: "Review this Pixi component."
+
+**Code**:
+```jsx
+useEffect(() => {
+  const app = new Application();
+  document.body.appendChild(app.view);
+}, []);
+```
+
+**Issue**: Missing cleanup. App will duplicate on every remount.
+
+**Fix**:
+```jsx
+useEffect(() => {
+  const app = new Application();
+  ref.current.appendChild(app.view);
+
+  return () => {
+    app.destroy(true, { children: true, texture: true });
+  };
+}, []);
+```
+
+**Output**:
+"Added cleanup function to destroy the Pixi application on unmount. This prevents canvas duplication and memory leaks."

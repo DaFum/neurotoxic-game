@@ -1,32 +1,57 @@
 ---
 name: convention-keeper-brutalist-ui
-description: Enforce brutalist UI conventions, naming, and import order for components. Use when refactoring UI or aligning components with design system guidance.
+description: enforce brutalist UI design system. Trigger when creating or modifying UI components. Checks for correct colors, borders, shadows, and Tailwind v4 usage.
 ---
 
 # Brutalist UI Convention Keeper
 
-## Key Files
+Enforce the strict "Brutalist" design system across the application.
 
-- `src/ui/` — all UI components (`HUD.jsx`, `EventModal.jsx`, `GlitchButton.jsx`, `ToastOverlay.jsx`, etc.)
-- `src/ui/shared/` — reusable shared components (`SettingsPanel.jsx`, `VolumeSlider.jsx`, `index.jsx`)
-- `src/ui/AGENTS.md` — authoritative UI conventions and styling rules
-- `src/index.css` — CSS variable definitions (`--toxic-green`, `--void-black`, etc.)
-- `src/components/` — game components that must follow the same conventions
+## Core Rules
+
+1.  **No Rounded Corners**: `rounded-none` always.
+2.  **Thick Borders**: `border-2` or `border-4`.
+3.  **Hard Shadows**: `shadow-[4px_4px_0px_var(--toxic-green)]`. No soft blurs.
+4.  **Uppercasing**: Headers and buttons are typically `uppercase`.
+5.  **Colors**: Use CSS variables via Tailwind v4 syntax.
+    *   `bg-(--void-black)`
+    *   `text-(--toxic-green)`
+    *   `border-(--neon-pink)`
 
 ## Workflow
 
-1. Verify UI components use CSS variables (`var(--toxic-green)`, `var(--void-black)`) — never hardcoded hex/rgb/hsl.
-2. Check for Tailwind v4 syntax: use `bg-(--void-black)` and avoid v3 bracket-variable syntax.
-3. Prefer shared components from `src/ui/shared/` — check `index.jsx` exports before creating new ones.
-4. Consult `src/ui/AGENTS.md` for component-specific naming and styling rules.
-5. Maintain import ordering: React, libraries, local modules, styles. Avoid unused imports.
-6. Verify Framer Motion animations follow existing patterns in the codebase.
+1.  **Check Styling**
+    Inspect the component's class names.
+    *   *Bad*: `rounded-lg`, `shadow-md`, `bg-black`, `text-[#00ff00]`
+    *   *Good*: `rounded-none`, `shadow-none`, `bg-(--void-black)`, `text-(--toxic-green)`
 
-## Output
+2.  **Verify Components**
+    Use shared components from `src/ui/shared/` instead of rebuilding primitives.
+    *   `GlitchButton`
+    *   `Panel` (if exists)
 
-- Provide a checklist of violations with file paths and suggested fixes.
+3.  **Review Imports**
+    Order: React -> Third-party -> Internal -> Assets.
 
-## Related Skills
+## Tailwind v4 Syntax
 
-- `tailwind-v4-css-variables-enforcer` — automated scanning for Tailwind/CSS variable violations
-- `skill-aligner` — for aligning skill descriptions with these conventions
+*   **Variables**: Use parentheses `bg-(--var-name)` instead of `bg-[var(--var-name)]`.
+*   **Arbitrary Values**: `w-[500px]` is allowed but prefer spacing scale.
+
+## Example
+
+**Input**: "Create a modal for the settings."
+
+**Incorrect Output**:
+```jsx
+<div className="rounded-xl shadow-lg bg-gray-900 p-4">
+  <h2 className="text-xl font-bold">Settings</h2>
+</div>
+```
+
+**Correct Output**:
+```jsx
+<div className="border-2 border-(--hologram-blue) bg-(--void-black) p-4 shadow-[4px_4px_0px_var(--hologram-blue)]">
+  <h2 className="text-2xl uppercase tracking-widest text-(--hologram-blue)">Settings</h2>
+</div>
+```

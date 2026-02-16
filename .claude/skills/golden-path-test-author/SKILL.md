@@ -1,38 +1,62 @@
 ---
 name: golden-path-test-author
-description: Author or update integration tests for the critical game flow (menu -> overworld -> pregig -> gig -> postgig). Use when asked to add regression coverage for key paths.
+description: Write integration tests for the main game loop (Golden Path). Trigger when asked to add regression tests, verify game flow, or check critical paths.
 ---
 
 # Golden Path Test Author
 
-## Critical Game Flow
+Ensure the critical game flow (Start -> Overworld -> Gig -> Result) works without regression.
 
-MainMenu → Overworld → PreGig → Gig (rhythm game) → PostGig → (loop or GameOver)
+## Critical Path
 
-## Key Files
-
-- `src/scenes/MainMenu.jsx` → `src/scenes/Overworld.jsx` → `src/scenes/PreGig.jsx` → `src/scenes/Gig.jsx` → `src/scenes/PostGig.jsx`
-- `src/scenes/GameOver.jsx` — end state
-- `src/context/gameReducer.js` — state transitions driven by `ADVANCE_DAY`, `APPLY_EVENT_DELTA`, etc.
-- `src/context/actionCreators.js` — action creators for state changes
-- `src/context/GameState.jsx` — context provider exposing the `useGameState` hook
-- `src/context/initialState.js` — starting state for test setup
-- `tests/` — existing tests use `node:test` + `node:assert/strict`
+1.  **MainMenu**: `START_GAME` -> Initializes state.
+2.  **Overworld**: `TRAVEL` -> Updates fuel/money/day.
+3.  **PreGig**: `START_GIG` -> Transitions to Rhythm Game.
+4.  **Gig**: `COMPLETE_GIG` -> Calculates score.
+5.  **PostGig**: `CONTINUE` -> Returns to Overworld.
 
 ## Workflow
 
-1. Identify the critical flow: MainMenu → Overworld → PreGig → Gig → PostGig.
-2. Set up test state using `initialState.js` and action creators.
-3. Write tests using `node:test` and `node:assert/strict` (the project's test framework).
-4. Keep tests deterministic — mock randomness in `eventEngine.js` and `mapGenerator.js`.
-5. Focus on state transitions: verify reducer handles each scene transition correctly.
-6. Run `npm run test` and report results.
+1.  **Select the Transition**
+    Identify which part of the loop to test.
+    *   *Example*: "Verify travel deducts fuel and advances time."
 
-## Output
+2.  **Scaffold the Test**
+    Use `node:test` and `node:assert`.
+    *   Import `initialState` and `gameReducer`.
+    *   Mock dependencies if testing components (but prefer pure reducer tests for logic).
 
-- Provide test files in `tests/` and brief rationale for each test case.
+3.  **Define Inputs & Expected Outputs**
+    *   *Input*: State with 10 fuel. Action `TRAVEL`.
+    *   *Expected*: State with 9 fuel. Location updated.
 
-## Related Skills
+4.  **Implement Mocking**
+    If testing components or effects:
+    *   Mock `Math.random` for deterministic events.
+    *   Mock `AudioContext` (it doesn't exist in Node).
 
-- `state-safety-action-creator-guard` — ensures state invariants hold across the golden path
-- `game-balancing-assistant` — balance changes need golden path regression tests
+## Example
+
+**Input**: "Test that traveling costs fuel."
+
+**Action**:
+Create `tests/integration/travel.test.js`:
+```javascript
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { gameReducer } from '../../src/context/gameReducer.js';
+import { initialState } from '../../src/context/initialState.js';
+
+test('Travel deducts fuel', () => {
+  const startState = { ...initialState, player: { ...initialState.player, fuel: 10 } };
+  const action = { type: 'TRAVEL', payload: { cost: 1, destination: 'node_2' } };
+
+  const newState = gameReducer(startState, action);
+
+  assert.equal(newState.player.fuel, 9);
+  assert.equal(newState.player.currentLocation, 'node_2');
+});
+```
+
+**Output**:
+"Created `tests/integration/travel.test.js` verifying fuel deduction logic."

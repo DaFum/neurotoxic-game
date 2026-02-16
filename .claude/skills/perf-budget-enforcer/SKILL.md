@@ -1,33 +1,47 @@
 ---
 name: perf-budget-enforcer
-description: Define and enforce performance budgets (bundle size, load time, FPS considerations). Use when addressing performance regressions or optimizing builds.
+description: Optimize bundle size and runtime performance. Trigger when the app is slow, bundle is too large, or build warnings appear. Checks lazy loading, asset sizes, and render loops.
 ---
 
 # Performance Budget Enforcer
 
-## Key Files
-
-- `vite.config.js` — Vite 5 build configuration and chunking strategy
-- `package.json` — dependency list (Pixi.js 8, Tone.js 15, Framer Motion 12 are heavy)
-- `src/main.jsx` — app entry point (lazy loading candidates)
-- `src/assets/` — MIDI files, images, and JSON data
-- `src/components/PixiStage.jsx` — Pixi.js is a major bundle contributor
-- `.github/workflows/deploy.yml` — CI build step where size checks could run
+Analyze and optimize application performance, focusing on bundle size and runtime efficiency.
 
 ## Workflow
 
-1. Run `npx vite build` and inspect the output size report for large chunks.
-2. Identify heavy dependencies: Pixi.js (~500KB), Tone.js (~300KB), Framer Motion — consider lazy loading.
-3. Check `src/assets/` for large MIDI files that could be loaded on demand.
-4. Propose measurable budgets (e.g., initial JS < 500KB, total assets < 2MB).
-5. Suggest code splitting via dynamic `import()` for scenes and heavy components.
-6. Add size checks to `.github/workflows/deploy.yml` if not present.
+1.  **Measure the Baseline**
+    Run the production build to see chunk sizes.
+    ```bash
+    npm run build
+    ```
+    *   *Goal*: Main entry point < 300kB gzipped.
+    *   *Warning*: Any chunk > 500kB.
 
-## Output
+2.  **Identify Bottlenecks**
+    *   **Large Dependencies**: Pixi.js, Tone.js. Are they lazy-loaded?
+    *   **Assets**: Large images or audio embedded in the bundle? Move to `public/`.
+    *   **Code Splitting**: Are routes lazy-loaded in `App.jsx`?
 
-- Provide recommended budgets, current measurements, and optimization next steps.
+3.  **Optimize**
+    *   **Lazy Loading**: Use `React.lazy()` for heavy components (`PixiStage`, `ToneSynth`).
+    *   **Dynamic Imports**: `import('pixi.js')` only when needed.
+    *   **Vite Config**: Adjust `manualChunks` in `vite.config.js`.
 
-## Related Skills
+4.  **Runtime Check**
+    *   **FPS**: Check `PixiTicker` for heavy logic.
+    *   **Memory**: Ensure `destroy()` is called on unused Pixi objects.
 
-- `pixi-lifecycle-memory-leak-sentinel` — memory leaks directly affect runtime performance
-- `ci-hardener` — for adding budget enforcement to CI
+## Example
+
+**Input**: "The initial load takes too long."
+
+**Action**:
+1.  Run build. See `index.js` is 1.2MB.
+2.  Analyze: `Pixi.js` and `Tone.js` are in the main bundle.
+3.  **Fix**:
+    *   Change `import * as Tone` to dynamic import in `AudioManager`.
+    *   Lazy load `GameScene`.
+4.  Run build again. `index.js` drops to 200kB.
+
+**Output**:
+"Lazy-loaded Pixi and Tone. Main bundle size reduced by 80%. Initial load is now under 1s."

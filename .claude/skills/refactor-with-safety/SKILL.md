@@ -1,35 +1,44 @@
 ---
 name: refactor-with-safety
-description: Perform refactors with safety checks (types, extracted modules, lint/test/build verification). Use when asked to refactor without behavior changes.
+description: Refactor code without breaking functionality. Trigger when asked to clean up, restructure, or optimize code. Enforces test coverage and quality gates.
 ---
 
 # Refactor with Safety
 
-## Quality Gate
-
-Run in order after every refactor: `npm run lint` → `npm run test` → `npm run build`
-
-## Key Files
-
-- `src/*/AGENTS.md` — domain-specific rules that must be preserved during refactoring
-- `tests/` — test files covering reducers, engines, audio, and game logic
-- `package.json` — quality gate scripts
+Perform structural changes while preserving behavior and stability.
 
 ## Workflow
 
-1. Identify refactor boundaries by reading the relevant `src/*/AGENTS.md` for domain rules.
-2. List all affected modules and their public exports.
-3. Preserve public interfaces and behavior — do not change function signatures without updating callers.
-4. Run the full quality gate: `npm run lint` → `npm run test` → `npm run build`.
-5. If tests fail, fix the refactor — do not modify tests to match broken behavior.
-6. Summarize risks, verification results, and any behavior changes (should be none).
+1.  **Preparation**
+    *   **Audit**: Read `AGENTS.md` for domain constraints.
+    *   **Baseline**: Run tests (`npm test`) to ensure everything passes *before* you start.
+    *   **Coverage**: If tests are missing for the target, add them first (use `golden-path-test-author`).
 
-## Output
+2.  **Execution**
+    *   **Small Steps**: Refactor one function/component at a time.
+    *   **Interface Preservation**: Keep function signatures stable if possible.
+    *   **Linting**: Run `npm run lint` frequently to catch syntax errors.
 
-- Provide a short risk report and validation status.
+3.  **Verification**
+    *   **Test**: Run `npm test` after each change.
+    *   **Build**: Run `npm run build` to ensure no circular dependencies or export errors.
+    *   **Review**: Check if the logic is actually simpler/better.
 
-## Related Skills
+## Rules
 
-- `one-command-quality-gate` — automates the validation step
-- `golden-path-test-author` — for adding regression coverage before risky refactors
-- `change-plan-conventional-commits` — for structuring the refactor into clean commits
+*   **No Behavior Change**: Unless explicitly requested, refactoring should not alter logic.
+*   **Fix the Code, Not the Test**: If a test fails, the refactor is wrong (unless the test was testing implementation details).
+*   **Commit Often**: Use `change-plan-conventional-commits`.
+
+## Example
+
+**Input**: "Refactor `calculateScore` to be more readable."
+
+**Action**:
+1.  Run `tests/score.test.js`. (Passes).
+2.  Break `calculateScore` into `getBaseScore` and `getMultipliers`.
+3.  Run `tests/score.test.js`. (Passes).
+4.  Run `npm run lint`. (Passes).
+
+**Output**:
+"Extracted helper functions `getBaseScore` and `getMultipliers`. Tests pass. Logic is unchanged but clearer."

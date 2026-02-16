@@ -1,23 +1,48 @@
 ---
 name: skill-qa-harness
-description: Discover, validate, and test all Codex skills in this repository (and optional user scope). Use when asked to run a skills test suite, check for broken references, or update golden outputs.
+description: Validate and test the skill library. Trigger when adding a new skill, modifying an existing one, or running the skill CI. Checks structure, YAML, and logic.
 ---
 
 # Skill QA Harness
 
+Ensure all skills in the library are valid and functional.
+
 ## Workflow
 
-1. Inventory skills in `.claude/skills` (and optionally `~/.claude/skills`).
-2. Validate structure, frontmatter, and duplicate names.
-3. Run repository quality gate (lint, test, build) before skill checks.
-4. Execute prompt-based checks using `.claude/skills/skilltest/tests/cases/*.cases.json`.
-5. Report pass/fail per skill with actionable fixes.
+1.  **Discovery**
+    Scan `.claude/skills/` for all `SKILL.md` files.
+
+2.  **Structural Validation**
+    For each skill:
+    *   **Frontmatter**: Does it have `name` and `description`?
+    *   **Format**: Is it valid YAML?
+    *   **Paths**: Do referenced scripts exist?
+
+3.  **Logical Validation**
+    *   **Duplicates**: Are there multiple skills with the same name?
+    *   **Conflicts**: Do descriptions overlap significantly?
+
+4.  **Reporting**
+    Generate a PASS/FAIL report.
 
 ## Commands
 
-- Validate skills: `node .claude/skills/skilltest/scripts/validate-skills.mjs`
-- Run tests: `node .claude/skills/skilltest/scripts/skilltest.mjs`
+Use the bundled validator (if available in `skilltest`):
 
-## Output
+```bash
+node .claude/skills/skilltest/scripts/validate-skills.mjs
+```
 
-- Produce a concise report with ✅/❌ per skill and fix suggestions.
+## Example
+
+**Input**: "I added a new skill. Check if it's valid."
+
+**Action**:
+Run validation script.
+
+**Output**:
+```text
+[FAIL] new-skill/SKILL.md: Missing 'description' in frontmatter.
+[PASS] old-skill/SKILL.md
+```
+"The new skill is missing a description. Please add it to the YAML header."
