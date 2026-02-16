@@ -2,7 +2,8 @@ import assert from 'assert'
 import { test } from 'node:test'
 import {
   updateProjectiles,
-  trySpawnProjectile
+  trySpawnProjectile,
+  checkCollisions
 } from '../src/utils/hecklerLogic.js'
 
 test('trySpawnProjectile respects spawn chance', () => {
@@ -89,4 +90,31 @@ test('updateProjectiles handles large delta (lag spike)', () => {
   const updated = updateProjectiles(projectiles, 5000, 1000)
   // y = 100 + 1.0 * 5000 = 5100 -> Off screen
   assert.strictEqual(updated.length, 0)
+})
+
+test('checkCollisions detects hits and removes items', () => {
+  const screenHeight = 1000
+  const hitY = screenHeight - 150 // 850
+  const projectiles = [
+    { id: 1, y: 800 }, // No hit (800 < 850)
+    { id: 2, y: 900 }, // Hit (900 > 850)
+    { id: 3, y: 849 } // No hit
+  ]
+
+  let hits = 0
+  const onHit = p => {
+    hits++
+    assert.strictEqual(p.id, 2)
+  }
+
+  checkCollisions(projectiles, screenHeight, onHit)
+
+  assert.strictEqual(hits, 1, 'Should trigger callback once')
+  assert.strictEqual(
+    projectiles.length,
+    2,
+    'Should remove the hitting projectile'
+  )
+  assert.strictEqual(projectiles[0].id, 1)
+  assert.strictEqual(projectiles[1].id, 3)
 })
