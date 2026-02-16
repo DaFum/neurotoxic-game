@@ -1,34 +1,39 @@
 ---
 name: skill-aligner
-description: Analyze existing repo skills and rewrite them to match this codebase's architecture, commands, and terminology. Use when asked to align skills with current conventions, update skill triggers, or fix mismatches with repo constraints.
+description: align skills with repository conventions. Trigger when a skill feels outdated, references missing files, or uses incorrect commands.
 ---
 
 # Skill Aligner
 
-## Key Files
-
-- `AGENTS.md` — authoritative repo conventions and critical constraints
-- `src/*/AGENTS.md` — domain-specific rules (one per domain)
-- `.claude/skills/*/SKILL.md` — all skill definitions to scan
-- `package.json` — real commands and script names
+Synchronize skills with the current state of the repository.
 
 ## Workflow
 
-1. Read `AGENTS.md` and relevant `src/*/AGENTS.md` files to capture authoritative conventions.
-2. Review `package.json` scripts for real commands and required ordering (lint → test → build).
-3. Scan all `.claude/skills/*/SKILL.md` files for mismatched commands, paths, or terminology.
-4. Verify each skill has a "Key Files" section with actual project paths.
-5. Verify each skill has a "Related Skills" section for cross-references.
-6. Rewrite `SKILL.md` files to match repo language, paths, and constraints.
-7. Ensure descriptions clearly define when the skill should and should not trigger.
+1.  **Audit the Skill**
+    Read the `SKILL.md` file.
+    *   Does it reference files that exist?
+    *   Are the commands (`npm run ...`) correct?
+    *   Is the terminology ("Brutalist", "Tone.js") accurate?
 
-## Output
+2.  **Cross-Reference**
+    Check `AGENTS.md` and `package.json`.
+    *   *Skill says*: `npm run test:unit`.
+    *   *Repo says*: `npm run test`.
+    *   *Action*: Update skill to use `npm run test`.
 
-- Updated `SKILL.md` files with repo-aligned descriptions and steps.
-- A short alignment report highlighting corrected mismatches.
+3.  **Update Content**
+    *   **Paths**: Ensure file paths are relative to repo root.
+    *   **Tone**: Use imperative instructions.
+    *   **Constraints**: Add missing constraints (e.g., "Must use Tailwind v4").
 
-## Related Skills
+## Example
 
-- `skilltest` — validates skill structure and metadata after alignment
-- `skill-qa-harness` — runs prompt-case tests to verify skill content
-- `repo-guardrails-generator` — the guardrails that skills must align with
+**Input**: "Update `ci-hardener` to use the new lint script."
+
+**Action**:
+1.  Read `package.json`. See `"lint": "eslint ."`.
+2.  Read `ci-hardener/SKILL.md`. See `"npm run lint:fix"`.
+3.  **Update**: Change command to `npm run lint:fix` (or modify `lint` script to support `--fix`).
+
+**Output**:
+"Updated `ci-hardener` to reflect the consolidation of lint scripts in `package.json`."

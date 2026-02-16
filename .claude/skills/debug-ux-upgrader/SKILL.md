@@ -1,33 +1,49 @@
 ---
 name: debug-ux-upgrader
-description: Add or improve debug UX (overlays, logs, toggles, feature flags). Use when asked to add diagnostics or developer-friendly tooling.
+description: add debug tools, overlays, and logging. Trigger when asking for diagnostics, visualizations, or dev-tools. Use existing logger and debug viewer.
 ---
 
 # Debug UX Upgrader
 
-## Key Files
-
-- `src/utils/logger.js` — existing logger utility (use this for all debug output)
-- `src/ui/DebugLogViewer.jsx` — existing debug log viewer component
-- `src/ui/CrashHandler.jsx` — error boundary with diagnostic display
-- `src/utils/errorHandler.js` — centralized error handling
-- `src/components/GigHUD.jsx` — in-game HUD (candidate for debug overlays)
-- `src/ui/HUD.jsx` — main HUD component
+Enhance the application with developer-facing diagnostic tools.
 
 ## Workflow
 
-1. Identify the debug signals needed (audio state, FPS, scene transitions, game state).
-2. Extend `DebugLogViewer.jsx` or add toggleable overlays with minimal visual disruption.
-3. Use `logger.js` for all structured logging — it already supports namespaced levels (debug, error).
-4. Wire debug toggles through a URL param or keyboard shortcut, not a visible UI element.
-5. Ensure no sensitive data (player state internals, error stack traces) leaks into production logs.
+1.  **Determine the Tooling Type**
+    *   **Visual Overlay**: Real-time stats (FPS, state). Add to `DebugLogViewer` or a new overlay.
+    *   **Logging**: Structured events. Use `src/utils/logger.js`.
+    *   **Control**: Toggles/Actions. Add keyboard shortcuts or URL params.
 
-## Output
+2.  **Integrate with Existing Systems**
+    *   **Logger**: `logger.debug('Category', 'Message', data)`
+    *   **Viewer**: `DebugLogViewer.jsx` (toggle via keyboard shortcut (configurable; default: Ctrl+`)).
+    *   **State**: Expose internal state via `window.__DEBUG__` if necessary (dev only). Ensure consumers can override the default shortcut.
 
-- Provide implementation notes and how to enable/disable debugging.
-- Reference existing utilities to avoid duplication.
+3.  **Implement Access Control**
+    *   Debug features must be hidden by default.
+    *   Use `import.meta.env.DEV` or a specific feature flag.
 
-## Related Skills
+## Conventions
 
-- `audio-debugger-ambient-vs-gig` — for audio-specific debug logging
-- `one-command-doctor` — for automated diagnostic checks
+*   **Logging**: Never use `console.log`. Use `logger.info/warn/error/debug`.
+*   **UI**: Debug UI should be raw, high-contrast, and sit on top of everything (`z-index: 9999`).
+*   **Performance**: Debug tools must not degrade performance when hidden.
+
+## Example
+
+**Input**: "I need to see the current player coordinates and velocity."
+
+**Action**:
+1.  Locate the component managing player state.
+2.  Import `logger`.
+3.  Add a `useEffect` or loop hook:
+    ```js
+    // In game loop
+    if (debugMode) {
+      logger.debug('Player', `Pos: ${x},${y} Vel: ${vx},${vy}`);
+    }
+    ```
+4.  Or better, update a debug state object that `DebugLogViewer` consumes.
+
+**Output**:
+"Added coordinate logging to the player loop. Enable 'Player' category in DebugLogViewer to see it."

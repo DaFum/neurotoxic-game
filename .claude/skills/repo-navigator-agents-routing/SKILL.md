@@ -1,29 +1,47 @@
 ---
 name: repo-navigator-agents-routing
-description: Route questions to the correct folder (context, hooks, scenes, utils, components, data, ui) and consult the relevant AGENTS.md first. Use when asked where logic lives or which files own behavior.
+description: route requests to the correct domain and `AGENTS.md`. Trigger when asked where code lives, who owns a feature, or how the repo is organized.
 ---
 
-# AGENTS-Aware Repository Navigation
+# Repo Navigator
 
-## Domain Routing Table
+Direct questions to the correct domain and authoritative documentation.
 
-| Domain     | Directory         | AGENTS.md                  | Key Files                                                  |
-| ---------- | ----------------- | -------------------------- | ---------------------------------------------------------- |
-| State      | `src/context/`    | `src/context/AGENTS.md`    | gameReducer.js, actionCreators.js, initialState.js         |
-| Hooks      | `src/hooks/`      | `src/hooks/AGENTS.md`      | useTravelLogic.js, usePurchaseLogic.js, useAudioControl.js |
-| Scenes     | `src/scenes/`     | `src/scenes/AGENTS.md`     | Overworld.jsx, Gig.jsx, PostGig.jsx, MainMenu.jsx          |
-| Utils      | `src/utils/`      | `src/utils/AGENTS.md`      | eventEngine.js, economyEngine.js, AudioManager.js          |
-| Components | `src/components/` | `src/components/AGENTS.md` | PixiStage.jsx, GigHUD.jsx, TutorialManager.jsx             |
-| Data       | `src/data/`       | `src/data/AGENTS.md`       | events.js, venues.js, songs.js, characters.js              |
-| UI         | `src/ui/`         | `src/ui/AGENTS.md`         | HUD.jsx, EventModal.jsx, GlitchButton.jsx                  |
+## Domain Map
+
+| Domain | Path | Owner Of |
+| :--- | :--- | :--- |
+| **State** | `src/context/` | Reducers, Actions, Global State. |
+| **Logic** | `src/hooks/` | Game Loop, Business Logic. |
+| **Flow** | `src/scenes/` | Screens, Page Routing. |
+| **Engine** | `src/utils/` | Audio, Math, Pure Functions. |
+| **View** | `src/components/` | PixiJS, Canvas Rendering. |
+| **UI** | `src/ui/` | React DOM, HUD, Menus. |
+| **Content** | `src/data/` | Static JSON, config, text. |
 
 ## Workflow
 
-1. Identify the domain implied by the question (state, hooks, scenes, utils, components, data, ui).
-2. Open the corresponding `src/<domain>/AGENTS.md` for authoritative local rules.
-3. Use the routing table above to provide file pointers and explain why those locations are canonical.
-4. If the question spans domains, list all relevant AGENTS.md files to consult.
+1.  **Analyze the Intent**
+    *   "Where is the player health stored?" -> **State**.
+    *   "How does the damage calculation work?" -> **Engine** or **Logic**.
+    *   "Change the button color." -> **UI**.
 
-## Output
+2.  **Consult Authority**
+    Always read the root `AGENTS.md` first for project overview, then the domain-specific `AGENTS.md`.
+    *   `src/context/AGENTS.md` defines state rules.
+    *   `src/ui/AGENTS.md` defines styling rules.
 
-- Provide a short path list, the relevant AGENTS.md, and next files to inspect.
+3.  **Direct the User**
+    Point to the file and the documentation.
+
+## Example
+
+**Input**: "I want to change the starting money."
+
+**Routing**:
+1.  **Money** is global state -> `src/context/`.
+2.  **Starting values** -> `src/context/initialState.js`.
+3.  **Rules** -> `src/context/AGENTS.md`.
+
+**Output**:
+"Modify `src/context/initialState.js`. Consult `src/context/AGENTS.md` for state constraints."

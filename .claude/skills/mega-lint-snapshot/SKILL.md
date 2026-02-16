@@ -1,35 +1,57 @@
 ---
 name: mega-lint-snapshot
-description: 'Run a categorized lint/security/quality suite and emit MegaLinter-style logs with timestamps and INFO/NOTICE/ERROR blocks. Use for CI-like diagnostics that summarize BASH, CHECKOV, GITLEAKS, ESLint, Prettier, JSCPD, JSON, Markdown, Textlint, and shfmt. Do not modify files unless explicitly asked to autofix.'
+description: run a comprehensive linting suite (MegaLinter style). Trigger when asked to check code quality, security, or style across multiple languages.
 ---
 
 # Mega Lint Snapshot
 
-## Purpose
+Generate a detailed quality report for the repository, covering linting, security, and formatting.
 
-Produce deterministic, MegaLinter-style output for the repo's lint/quality checks, with consistent headers, timestamps, and error blocks.
+## Usage
 
-## How to Use
+Run the bundled script to generate the report.
 
-1. Prefer running the script for consistent formatting:
-   - `./.claude/skills/mega-lint-snapshot/scripts/run-mega-lint.sh`
-2. If the user explicitly requests autofix, run:
-   - `./.claude/skills/mega-lint-snapshot/scripts/run-mega-lint.sh --fix`
-3. If the output references unavailable tools, report the errors and keep the rest of the report intact.
+```bash
+.claude/skills/mega-lint-snapshot/scripts/run-mega-lint.sh
+```
 
-## Configuration
+To apply fixes (where available):
 
-The runner reads the item list from:
+```bash
+.claude/skills/mega-lint-snapshot/scripts/run-mega-lint.sh --fix
+```
 
-- `assets/mega-lint.config.json`
+## Workflow
 
-Each item defines:
+1.  **Execute the Script**
+    The script runs configured linters defined in `.claude/skills/mega-lint-snapshot/assets/mega-lint.config.json`.
+    *   **ESLint**: JavaScript/React.
+    *   **Prettier**: Formatting.
+    *   **Gitleaks**: Secret detection.
+    *   **ShellCheck**: Bash scripts.
 
-- `name`: MegaLinter category name
-- `command`: executable to run
-- `args`: check-mode arguments
-- `fixArgs` (optional): arguments for autofix mode
+2.  **Analyze the Report**
+    *   **ERROR**: Blocking issues. Must fix.
+    *   **WARN**: Potential issues. Review.
+    *   **INFO**: Formatting or style notes.
 
-## References
+3.  **Fix Issues**
+    *   If `--fix` works, commit the changes.
+    *   If not, manually address the errors reported in the log.
 
-- See `references/tools.md` for the intended tool mapping and notes.
+## Example
+
+**Input**: "Check the codebase for any linting errors."
+
+**Action**:
+Run `.claude/skills/mega-lint-snapshot/scripts/run-mega-lint.sh`.
+
+**Output**:
+```text
+[INFO] Starting MegaLinter Snapshot...
+[INFO] Running ESLint... [PASS]
+[ERROR] Running Gitleaks... [FAIL]
+  - hardcoded_secret in src/utils/api.js:20
+[INFO] Running Prettier... [PASS]
+```
+"Found a hardcoded secret in `api.js`. Please remove it."

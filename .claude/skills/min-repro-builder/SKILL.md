@@ -1,31 +1,47 @@
 ---
 name: min-repro-builder
-description: Build a minimal reproducible case inside the repo to isolate bugs (audio, assets, rendering). Use when asked to create a small repro or debugging playground.
+description: create minimal reproduction cases for bugs. Trigger when asked to isolate an issue, create a test case, or debug a complex interaction.
 ---
 
 # Minimal Repro Builder
 
-## Key Files
-
-- `src/scenes/` — scene components (use an existing scene as a starting point)
-- `src/main.jsx` — app entry point (can temporarily route to repro scene)
-- `src/utils/logger.js` — use for structured repro logging
-- `src/assets/` — reuse existing MIDI and image assets
-- `src/context/initialState.js` — default state for repro setup
+Isolate bugs by creating a minimal, self-contained reproduction environment.
 
 ## Workflow
 
-1. Identify the smallest scene or route to reproduce the issue (check `src/scenes/AGENTS.md` for flow).
-2. Reuse existing assets from `src/assets/` and `public/` — do not add new files.
-3. Set up minimal state using `initialState.js` values.
-4. Add concise logging via `logger.js` and cleanup code.
-5. Document how to run the repro (`npm run dev` and navigate to the relevant route).
+1.  **Select the Canvas**
+    Identify where to build the repro.
+    *   **Unit Test**: `tests/repro.test.js` (for logic/state).
+    *   **Component**: `src/ui/Repro.jsx` (for UI/rendering).
+    *   **Scene**: `src/scenes/ReproScene.jsx` (for game loop/audio).
 
-## Output
+2.  **Minimize State**
+    Start with `initialState` and strip everything not needed.
+    *   *Need*: `player.money`, `audioManager`.
+    *   *Don't Need*: `inventory`, `unlocks` (unless relevant).
 
-- Provide the new file locations and reproduction steps.
+3.  **Reuse Assets**
+    Do not add new media/data files. Use existing assets where possible:
+    *   `src/assets/rhythm_songs.json`
+    *   `public/placeholder.png` (if exists)
 
-## Related Skills
+4.  **Inject the Bug**
+    Force the condition.
+    *   *Example*: "Set `player.health = -1` on init to test death screen."
 
-- `debug-ux-upgrader` — for adding debug overlays to the repro
-- `audio-debugger-ambient-vs-gig` — for audio-specific repro cases
+5.  **Document Usage**
+    "To run the repro, import `ReproScene` in `App.jsx` and set it as the initial route."
+
+## Example
+
+**Input**: "The game crashes when the player has 0 fuel and tries to travel."
+
+**Action**:
+1.  Create `tests/repro_travel_crash.test.js`.
+2.  Import `gameReducer`.
+3.  Set up state: `fuel: 0`.
+4.  Dispatch `TRAVEL` action.
+5.  Assert: Should throw an error.
+
+**Output**:
+"Created `tests/repro_travel_crash.test.js`. Run with `node --test tests/repro_travel_crash.test.js`. Confirmed it throws an error."

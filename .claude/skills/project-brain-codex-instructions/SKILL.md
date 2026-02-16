@@ -1,33 +1,61 @@
 ---
 name: project-brain-codex-instructions
-description: Generate or update Codex project instructions for this repository using AGENTS.md and .github/copilot-instructions.md. Use when asked to summarize critical constraints, setup commands, quality checklist, architecture navigation, or instruction updates.
+description: generate comprehensive project context and instructions. Trigger when onboarding a new agent, creating a README, or summarizing the project architecture.
 ---
 
-# Generate Codex Project Instructions
+# Project Brain Codex
 
-## Inputs
-
-- `AGENTS.md`
-- `.github/copilot-instructions.md`
-- `docs/ARCHITECTURE.md`, `docs/STATE_TRANSITIONS.md`, `docs/CODING_STANDARDS.md` (if needed)
+Synthesize the project's architecture, constraints, and workflows into a single instruction set.
 
 ## Workflow
 
-1. Read `AGENTS.md` to capture critical constraints, setup commands, and sub-agent routing.
-2. Read `.github/copilot-instructions.md` for additional coding standards or workflow rules.
-3. Summarize the repository setup in a short, actionable list.
-4. List critical constraints (pinned versions, Tailwind v4 syntax, CSS variables, state safety).
-5. Provide an architecture navigation section that points to `src/*/AGENTS.md` and the docs folder.
-6. Provide a quality checklist (lint, test, build) and any required ordering.
-7. Keep the output concise and in correct English.
+1.  **Ingest Sources**
+    Read key documentation files:
+    *   `AGENTS.md` (Primary rules).
+    *   `package.json` (Dependencies).
+    *   `.github/copilot-instructions.md` (Coding style).
 
-## Output
+2.  **Synthesize Constraints**
+    Extract non-negotiables:
+    *   **Stack**: React 18, Vite 5, Tailwind 4.
+    *   **State**: Immutable, Reducer-driven.
+    *   **Style**: Brutalist, CSS Variables.
 
-- Produce a single Markdown section suitable for inclusion in `AGENTS.md` or a standalone instruction file.
-- Do not invent new constraints.
-- Do not upgrade dependencies.
+3.  **Map Architecture**
+    Describe the folder structure and domain ownership.
+    *   `src/scenes/` -> Game Loops.
+    *   `src/data/` -> Static Content.
+    *   `src/utils/` -> Logic Engines.
 
-## Related Skills
+4.  **Format Output**
+    Create a Markdown document with clear sections:
+    *   **Project Overview**
+    *   **Tech Stack**
+    *   **Core Rules**
+    *   **Architecture Map**
 
-- `repo-guardrails-generator` — generates compact checklist-style guardrails
-- `repo-navigator-agents-routing` — provides the domain routing this skill documents
+## Example
+
+**Input**: "Create a summary for a new developer."
+
+**Output**:
+```markdown
+# NEUROTOXIC Project Codex
+
+## Project Overview
+Neurotoxic is a brutalist rhythm game...
+
+## Tech Stack
+- React 18 + Vite 5
+- Tailwind 4 (Brutalist Design)
+- Pixi.js 8 + Tone.js 15
+
+## Core Rules
+1. **State**: Never mutate `gameState` directly. Use reducers.
+2. **Audio**: Init AudioContext only after user gesture.
+3. **Assets**: Use `import.meta.glob` for dynamic assets.
+
+## Architecture Map
+- `src/scenes/`: Main game states (Overworld, Gig).
+- `src/utils/audioEngine.js`: Central audio controller.
+```
