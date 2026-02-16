@@ -36,6 +36,7 @@ export class LaneManager {
 
     this.gameStateRef.current.lanes.forEach((lane, index) => {
       const laneX = startX + index * (laneWidth + LANE_GAP)
+      // Side-effect: Mutating gameState lanes with render position for NoteManager
       lane.renderX = laneX
 
       // Create separate graphics for static background and dynamic elements
@@ -137,13 +138,6 @@ export class LaneManager {
   }
 
   dispose() {
-    // Destroy lane graphics to release GPU resources
-    for (const graphicsSet of this.laneGraphics) {
-      if (graphicsSet) {
-        graphicsSet.static?.destroy()
-        graphicsSet.dynamic?.destroy()
-      }
-    }
     this.laneGraphics = []
 
     if (this.rhythmContainer) {

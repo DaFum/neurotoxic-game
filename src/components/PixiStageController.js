@@ -139,6 +139,8 @@ class PixiStageController {
    * @returns {void}
    */
   handleTicker(ticker) {
+    if (this.isDisposed) return
+
     if (this.updateRef.current) {
       this.updateRef.current(ticker.deltaMS)
     }

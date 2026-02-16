@@ -60,7 +60,7 @@ mock.module('../src/components/stage/CrowdManager.js', {
   namedExports: {
     CrowdManager: class {
       constructor() {
-        return mockCrowdManager
+        Object.assign(this, mockCrowdManager)
       }
     }
   }
@@ -69,7 +69,7 @@ mock.module('../src/components/stage/LaneManager.js', {
   namedExports: {
     LaneManager: class {
       constructor() {
-        return mockLaneManager
+        Object.assign(this, mockLaneManager)
       }
     }
   }
@@ -78,7 +78,7 @@ mock.module('../src/components/stage/EffectManager.js', {
   namedExports: {
     EffectManager: class {
       constructor() {
-        return mockEffectManager
+        Object.assign(this, mockEffectManager)
       }
     }
   }
@@ -87,7 +87,7 @@ mock.module('../src/components/stage/NoteManager.js', {
   namedExports: {
     NoteManager: class {
       constructor() {
-        return mockNoteManager
+        Object.assign(this, mockNoteManager)
       }
     }
   }
@@ -164,9 +164,23 @@ describe('PixiStageController', () => {
     controller.handleTicker(ticker)
 
     assert.equal(mockLaneManager.update.mock.calls.length, 1)
+    assert.deepEqual(mockLaneManager.update.mock.calls[0].arguments, [
+      gameStateRef.current
+    ])
     assert.equal(mockCrowdManager.update.mock.calls.length, 1)
+    assert.deepEqual(mockCrowdManager.update.mock.calls[0].arguments, [
+      10,
+      false,
+      1000
+    ])
     assert.equal(mockNoteManager.update.mock.calls.length, 1)
+    assert.deepEqual(mockNoteManager.update.mock.calls[0].arguments, [
+      gameStateRef.current,
+      1000,
+      'layout'
+    ])
     assert.equal(mockEffectManager.update.mock.calls.length, 1)
+    assert.deepEqual(mockEffectManager.update.mock.calls[0].arguments, [16])
     assert.equal(updateRef.current.mock.calls.length, 1)
   })
 

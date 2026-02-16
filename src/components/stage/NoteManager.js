@@ -12,6 +12,8 @@ const NOTE_INITIAL_Y = -50
 const NOTE_CENTER_OFFSET = 50
 
 export class NoteManager {
+  static MAX_POOL_SIZE = 64
+
   /**
    * @param {PIXI.Application} app
    * @param {PIXI.Container} parentContainer
@@ -42,7 +44,7 @@ export class NoteManager {
     } catch (error) {
       this.noteTexture = null
       handleError(error, {
-        fallbackMessage: 'Note texture konnte nicht geladen werden.'
+        fallbackMessage: 'Note texture could not be loaded.'
       })
     }
   }
@@ -177,7 +179,11 @@ export class NoteManager {
 
   releaseSpriteToPool(sprite) {
     sprite.visible = false
-    this.spritePool.push(sprite)
+    if (this.spritePool.length < NoteManager.MAX_POOL_SIZE) {
+      this.spritePool.push(sprite)
+    } else {
+      sprite.destroy()
+    }
   }
 
   dispose() {

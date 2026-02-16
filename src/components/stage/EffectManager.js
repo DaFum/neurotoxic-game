@@ -59,9 +59,6 @@ export class EffectManager {
   }
 
   dispose() {
-    this.activeEffects.forEach(effect => {
-      effect.destroy?.()
-    })
     this.activeEffects = []
     if (this.container) {
       this.container.destroy({ children: true })

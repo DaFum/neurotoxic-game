@@ -1,4 +1,4 @@
-import { test, mock, describe, beforeEach } from 'node:test'
+import { test, mock, describe, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
 
 // Define Mock Classes
@@ -14,6 +14,7 @@ const MockSprite = class {
     this.tint = 0
     this.width = 0
     this.height = 0
+    this.destroy = mock.fn()
   }
 }
 
@@ -27,6 +28,7 @@ const MockGraphics = class {
     this.alpha = 0
     this.x = 0
     this.y = 0
+    this.destroy = mock.fn()
   }
 }
 
@@ -66,8 +68,9 @@ mock.module('../src/utils/imageGen.js', {
   }
 })
 
+let mockCalculateNoteYResult = 0
 const mockPixiStageUtils = {
-  calculateNoteY: mock.fn()
+  calculateNoteY: mock.fn(() => mockCalculateNoteYResult)
 }
 
 mock.module('../src/utils/pixiStageUtils.js', {
@@ -80,14 +83,20 @@ describe('NoteManager', () => {
   let parentContainer
   let PIXI
   let NoteManager
+  let randomMock
 
   beforeEach(async () => {
+    randomMock = mock.method(Math, 'random', () => 0.5)
+
     // Dynamic import to ensure mocks are applied
     const pixiModule = await import('pixi.js')
     PIXI = pixiModule
 
     const managerModule = await import('../src/components/stage/NoteManager.js')
     NoteManager = managerModule.NoteManager
+
+    // Reset mocks
+    mockPixiStageUtils.calculateNoteY.mock.resetCalls()
 
     parentContainer = new PIXI.Container()
     gameStateRef = {
@@ -98,6 +107,10 @@ describe('NoteManager', () => {
 
     noteManager = new NoteManager(app, parentContainer, gameStateRef, mock.fn())
     noteManager.init()
+  })
+
+  afterEach(() => {
+    randomMock.mock.restore()
   })
 
   test('acquireSpriteFromPool returns a new sprite if pool is empty', () => {
@@ -194,5 +207,129 @@ describe('NoteManager', () => {
     assert.equal(typeof sprite.jitterOffset, 'number')
     // NOTE_JITTER_RANGE is 10, so range is -5 to 5
     assert.ok(sprite.jitterOffset >= -5 && sprite.jitterOffset <= 5)
+  })
+
+  test('update spawns notes when time is reached', () => {
+    noteManager.noteTexture = {}
+    const note = { time: 3000, laneIndex: 0, visible: true, hit: false }
+    const state = {
+      notes: [note],
+      lanes: gameStateRef.current.lanes,
+      modifiers: {},
+      speed: 1
+    }
+    // 3000 - 2000 (NOTE_SPAWN_LEAD_MS) = 1000
+
+    // Before spawn time
+    noteManager.update(state, 900, {})
+    assert.equal(noteManager.noteSprites.size, 0)
+
+    // At spawn time
+    noteManager.update(state, 1000, {})
+    assert.equal(noteManager.noteSprites.size, 1)
+    assert.ok(noteManager.noteSprites.has(note))
+  })
+
+  test('update positions visible notes', () => {
+    mockCalculateNoteYResult = 500
+    noteManager.noteTexture = {}
+    const note = { time: 3000, laneIndex: 0, visible: true, hit: false }
+    const state = {
+      notes: [note],
+      lanes: gameStateRef.current.lanes,
+      modifiers: {},
+      speed: 1
+    }
+
+    // Spawn first
+    noteManager.update(state, 1000, {})
+    const sprite = noteManager.noteSprites.get(note)
+
+    // Update again
+    noteManager.update(state, 1100, { hitLineY: 800 })
+
+    assert.equal(mockPixiStageUtils.calculateNoteY.mock.calls.length, 2)
+    assert.equal(sprite.y, 500)
+    assert.equal(sprite.x, 150) // 100 (lane) + 50 (offset) + 0 (jitter)
+  })
+
+  test('update handles hit notes and calls onHit', () => {
+    const onHitMock = mock.fn()
+    noteManager.onHit = onHitMock
+    noteManager.noteTexture = {}
+    const note = { time: 3000, laneIndex: 0, visible: true, hit: false }
+    const state = {
+      notes: [note],
+      lanes: gameStateRef.current.lanes,
+      modifiers: {},
+      speed: 1
+    }
+
+    // Spawn
+    noteManager.update(state, 1000, {})
+    const sprite = noteManager.noteSprites.get(note)
+
+    // Mark as hit
+    note.hit = true
+    noteManager.update(state, 1100, {})
+
+    assert.equal(onHitMock.mock.calls.length, 1)
+    assert.deepEqual(onHitMock.mock.calls[0].arguments, [
+      sprite.x,
+      sprite.y,
+      0xff0000
+    ])
+    assert.equal(noteManager.noteSprites.has(note), false)
+    assert.equal(noteManager.spritePool.length, 1) // Returned to pool
+  })
+
+  test('dispose clears resources', () => {
+    noteManager.noteTexture = {}
+    const note = { time: 3000, laneIndex: 0, visible: true, hit: false }
+    const state = {
+      notes: [note],
+      lanes: gameStateRef.current.lanes,
+      modifiers: {},
+      speed: 1
+    }
+
+    // Spawn
+    noteManager.update(state, 1000, {})
+
+    // Create a pool item
+    const mockSprite = new PIXI.Sprite()
+    noteManager.spritePool.push(mockSprite)
+
+    noteManager.dispose()
+
+    assert.equal(noteManager.noteSprites.size, 0)
+    assert.equal(noteManager.spritePool.length, 0)
+    assert.equal(noteManager.container, null)
+    assert.equal(mockSprite.destroy.mock.calls.length, 1)
+  })
+
+  test('releaseSpriteToPool respects MAX_POOL_SIZE', () => {
+    // Override MAX_POOL_SIZE for this test
+    const originalMax = NoteManager.MAX_POOL_SIZE
+    NoteManager.MAX_POOL_SIZE = 2
+
+    noteManager.spritePool = []
+
+    const sprite1 = { destroy: mock.fn(), visible: true }
+    const sprite2 = { destroy: mock.fn(), visible: true }
+    const sprite3 = { destroy: mock.fn(), visible: true }
+
+    noteManager.releaseSpriteToPool(sprite1)
+    noteManager.releaseSpriteToPool(sprite2)
+    noteManager.releaseSpriteToPool(sprite3)
+
+    assert.equal(noteManager.spritePool.length, 2)
+    assert.equal(sprite1.visible, false)
+    assert.equal(sprite2.visible, false)
+    assert.equal(sprite3.visible, false)
+    assert.equal(sprite3.destroy.mock.calls.length, 1)
+    assert.equal(sprite1.destroy.mock.calls.length, 0)
+
+    NoteManager.MAX_POOL_SIZE = originalMax
   })
 })

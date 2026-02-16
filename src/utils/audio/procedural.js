@@ -280,8 +280,9 @@ function generateRiffPattern(diff, random) {
 function playDrumsLegacy(time, diff, note, random) {
   if (diff === 5) {
     audioState.drumKit.kick.triggerAttackRelease('C1', '16n', time)
-    if (random() > 0.5)
+    if (random() > 0.5) {
       audioState.drumKit.snare.triggerAttackRelease('16n', time)
+    }
     audioState.drumKit.hihat.triggerAttackRelease(8000, '32n', time, 0.5)
   } else {
     if (note === 'E2' || random() < diff * 0.1) {
