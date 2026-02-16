@@ -4,27 +4,40 @@ import { BAND_EVENTS } from './band.js'
 import { GIG_EVENTS } from './gig.js'
 import { FINANCIAL_EVENTS } from './financial.js'
 import { SPECIAL_EVENTS } from './special.js'
+import { logger } from '../../utils/logger.js'
 
 // Validation Helper
-const validateEvents = events => {
+const validateEvents = (events, categoryName = 'unknown') => {
   const ids = new Set()
-  events.forEach(e => {
-    if (!e.id) console.error('Event missing ID:', e)
-    if (ids.has(e.id)) console.error('Duplicate Event ID:', e.id)
+  return events.filter(e => {
+    if (!e.id) {
+      logger.error('EventValidation', `Event missing ID in ${categoryName}`, e)
+      return false
+    }
+    if (ids.has(e.id)) {
+      logger.error(
+        'EventValidation',
+        `Duplicate Event ID in ${categoryName}: ${e.id}`
+      )
+      return false
+    }
     ids.add(e.id)
     if (
       !['transport', 'band', 'gig', 'financial', 'special'].includes(e.category)
     ) {
-      console.warn('Invalid Event Category:', e.category, e.id)
+      logger.warn(
+        'EventValidation',
+        `Invalid Event Category in ${categoryName}: ${e.category} for event ${e.id}`
+      )
     }
+    return true
   })
-  return events
 }
 
 export const EVENTS_DB = {
-  transport: validateEvents(TRANSPORT_EVENTS),
-  band: validateEvents(BAND_EVENTS),
-  gig: validateEvents(GIG_EVENTS),
-  financial: validateEvents(FINANCIAL_EVENTS),
-  special: validateEvents(SPECIAL_EVENTS)
+  transport: validateEvents(TRANSPORT_EVENTS, 'transport'),
+  band: validateEvents(BAND_EVENTS, 'band'),
+  gig: validateEvents(GIG_EVENTS, 'gig'),
+  financial: validateEvents(FINANCIAL_EVENTS, 'financial'),
+  special: validateEvents(SPECIAL_EVENTS, 'special')
 }
