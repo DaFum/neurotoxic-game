@@ -12,7 +12,7 @@ export const LOG_LEVELS = {
 /**
  * A configurable logger system for debugging game flow.
  */
-class Logger {
+export class Logger {
   constructor() {
     this.logs = []
     this.maxLogs = 1000
