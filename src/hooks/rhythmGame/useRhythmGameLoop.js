@@ -38,6 +38,11 @@ export const useRhythmGameLoop = ({
   const { activeEvent } = contextState
   const { setLastGigStats, changeScene } = contextActions
 
+  const handleCollision = useCallback(
+    () => handleMiss(1, false),
+    [handleMiss]
+  )
+
   /**
    * Advances the gig logic by one frame.
    * @param {number} deltaMS - Milliseconds elapsed since last frame.
@@ -71,9 +76,13 @@ export const useRhythmGameLoop = ({
           window.innerHeight
         )
 
-        checkCollisions(stateRef.projectiles, window.innerHeight, () =>
-          handleMiss(1, false)
-        )
+        if (!activeEvent && !isGameOver) {
+          stateRef.projectiles = checkCollisions(
+            stateRef.projectiles,
+            window.innerHeight,
+            handleCollision
+          )
+        }
       }
 
       if (!stateRef.running || activeEvent || isGameOver) {
@@ -159,6 +168,7 @@ export const useRhythmGameLoop = ({
       activeEvent,
       changeScene,
       gameStateRef,
+      handleCollision,
       handleMiss,
       setIsToxicMode,
       setLastGigStats
