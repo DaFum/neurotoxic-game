@@ -24,11 +24,15 @@ export const DebugLogViewer = ({ className = '' }) => {
   // Log Subscription
   useEffect(() => {
     if (!visible) return
-    const unsubscribe = logger.subscribe(newLogs => {
-      setLogs([...newLogs]) // Clone to trigger re-render
+    const unsubscribe = logger.subscribe(event => {
+      if (event.type === 'add') {
+        setLogs(prev => [event.entry, ...prev].slice(0, logger.maxLogs))
+      } else if (event.type === 'clear') {
+        setLogs([])
+      }
     })
     // Initial load
-    setLogs(logger.logs)
+    setLogs([...logger.logs])
     return unsubscribe
   }, [visible])
 
