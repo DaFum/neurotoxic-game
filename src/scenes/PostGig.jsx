@@ -83,25 +83,27 @@ export const PostGig = () => {
 
   const handlePostSelection = option => {
     const result = resolvePost(option, Math.random())
-    setPostResult(result)
+
+    // Use checkViralEvent for bonus viral flag based on actual gig stats
+    const isGigViral = lastGigStats && checkViralEvent(lastGigStats)
+    const gigViralBonus = isGigViral ? 1 : 0
 
     // Use calculateSocialGrowth for platform-aware organic growth on top of post
     const organicGrowth = calculateSocialGrowth(
       result.platform,
       perfScore,
       social[result.platform] || 0,
-      result.success
+      isGigViral // Use actual gig viral status, not post result.success
     )
     const totalFollowers = result.followers + organicGrowth
 
-    // Use checkViralEvent for bonus viral flag based on actual gig stats
-    const gigViralBonus =
-      lastGigStats && checkViralEvent(lastGigStats) ? 1 : 0
+    const finalResult = { ...result, totalFollowers }
+    setPostResult(finalResult)
 
     updateSocial({
-      [result.platform]:
-        (social[result.platform] || 0) + totalFollowers,
-      viral: social.viral + (result.success ? 1 : 0) + gigViralBonus
+      [result.platform]: (social[result.platform] || 0) + totalFollowers,
+      viral: social.viral + (result.success ? 1 : 0) + gigViralBonus,
+      lastGigDay: player.day
     })
 
     setPhase('COMPLETE')
@@ -302,8 +304,8 @@ const CompletePhase = ({ result, onContinue }) => (
     </h3>
     <p className='mb-6 text-(--ash-gray)'>{result.message}</p>
     <div className='text-xl mb-8'>
-      {result.followers > 0 ? '+' : ''}
-      {result.followers} Followers on {result.platform}
+      {result.totalFollowers > 0 ? '+' : ''}
+      {result.totalFollowers} Followers on {result.platform}
     </div>
     <button
       onClick={onContinue}
@@ -319,6 +321,7 @@ CompletePhase.propTypes = {
     success: PropTypes.bool.isRequired,
     message: PropTypes.string.isRequired,
     followers: PropTypes.number.isRequired,
+    totalFollowers: PropTypes.number,
     platform: PropTypes.string.isRequired
   }).isRequired,
   onContinue: PropTypes.func.isRequired
