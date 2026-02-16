@@ -19,7 +19,7 @@ Create concise, actionable rules for the repository.
     *   **NEVER**: Forbidden. (e.g., "NEVER commit secrets").
 
 3.  **Format as Checklist**
-    *   Use checkboxes `[ ]` for verifyability.
+    *   Use checkboxes `[ ]` for verifiability.
     *   Keep it short (max 10 items).
 
 4.  **Review against `AGENTS.md`**

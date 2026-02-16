@@ -17,6 +17,7 @@ Generate professional release notes based on the project's commit history.
     *   **Features (`feat`)**: New user-facing capabilities.
     *   **Fixes (`fix`)**: Bug resolutions.
     *   **Refactors (`refactor`)**: Internal improvements.
+    *   **Chores (`chore`)**: Maintenance/Chores.
     *   **Breaking Changes (`!` or `BREAKING CHANGE`)**: Critical warnings.
 
 3.  **Draft the Notes**

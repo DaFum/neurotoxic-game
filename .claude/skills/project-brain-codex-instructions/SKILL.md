@@ -42,7 +42,10 @@ Synthesize the project's architecture, constraints, and workflows into a single 
 ```markdown
 # NEUROTOXIC Project Codex
 
-## Stack
+## Project Overview
+Neurotoxic is a brutalist rhythm game...
+
+## Tech Stack
 - React 18 + Vite 5
 - Tailwind 4 (Brutalist Design)
 - Pixi.js 8 + Tone.js 15
@@ -52,7 +55,7 @@ Synthesize the project's architecture, constraints, and workflows into a single 
 2. **Audio**: Init AudioContext only after user gesture.
 3. **Assets**: Use `import.meta.glob` for dynamic assets.
 
-## Architecture
+## Architecture Map
 - `src/scenes/`: Main game states (Overworld, Gig).
 - `src/utils/audioEngine.js`: Central audio controller.
 ```

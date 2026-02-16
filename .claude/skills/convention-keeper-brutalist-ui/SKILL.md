@@ -51,7 +51,7 @@ Enforce the strict "Brutalist" design system across the application.
 
 **Correct Output**:
 ```jsx
-<div className="border-2 border-(--hologram-blue) bg-(--void-black) p-4 shadow-[4px_4px_0px_var(--hologram-blue)]">
-  <h2 className="text-2xl uppercase tracking-widest text-(--hologram-blue)">Settings</h2>
+<div className="border-2 border-(--neon-pink) bg-(--void-black) p-4 shadow-[4px_4px_0px_var(--neon-pink)]">
+  <h2 className="text-2xl uppercase tracking-widest text-(--neon-pink)">Settings</h2>
 </div>
 ```

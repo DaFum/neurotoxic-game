@@ -5,7 +5,7 @@ description: Write integration tests for the main game loop (Golden Path). Trigg
 
 # Golden Path Test Author
 
-Ensure the critical game flow (Start -> Overworld -> Gig -> Result) works without regression.
+Ensure the critical game flow (OVERWORLD → PREGIG → GIG → POSTGIG → OVERWORLD) works without regression.
 
 ## Critical Path
 
@@ -56,7 +56,17 @@ test('Travel deducts fuel', () => {
   assert.equal(newState.player.fuel, 9);
   assert.equal(newState.player.currentLocation, 'node_2');
 });
+
+test('Travel fails with insufficient fuel', () => {
+  const startState = { ...initialState, player: { ...initialState.player, fuel: 0 } };
+  const action = { type: 'TRAVEL', payload: { cost: 1, destination: 'node_2' } };
+
+  const newState = gameReducer(startState, action);
+
+  assert.equal(newState.player.fuel, 0);
+  assert.equal(newState.player.currentLocation, startState.player.currentLocation);
+});
 ```
 
 **Output**:
-"Created `tests/integration/travel.test.js` verifying fuel deduction logic."
+"Created `tests/unit/travel.test.js` verifying fuel deduction logic (Note: This is a unit test for `gameReducer`)."

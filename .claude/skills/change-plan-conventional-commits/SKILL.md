@@ -19,7 +19,7 @@ Create a structured plan for code changes and draft compliant commit messages.
     *   **chore**: Build process, auxiliary tools.
 
 2.  **Draft the Plan**
-    Break down the task into logical steps. Each step should be verifyable.
+    Break down the task into logical steps. Each step should be verifiable.
     *   *Step 1: Create X component.*
     *   *Step 2: Add tests for X.*
     *   *Step 3: Integrate X into Y.*
@@ -35,7 +35,7 @@ Create a structured plan for code changes and draft compliant commit messages.
     *   `feat(audio): add new synth engine`
     *   `fix(ui): resolve button overlapping issue`
 
-## detailed Guidelines
+## Detailed Guidelines
 
 *   **Scope**: Optional but recommended (e.g., `ui`, `audio`, `api`).
 *   **Description**: Imperative, lowercase, no period at end (e.g., "add feature" not "Added feature.").

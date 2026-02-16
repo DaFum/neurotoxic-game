@@ -9,10 +9,10 @@ Quickly diagnose the health of the repository and development environment.
 
 ## Usage
 
-Run the bundled diagnostic script:
+Run the bundled diagnostic script (using `bash` or `sh` to ensure execution):
 
 ```bash
-.claude/skills/one-command-doctor/scripts/doctor.sh
+bash .claude/skills/one-command-doctor/scripts/doctor.sh
 ```
 
 ## Workflow

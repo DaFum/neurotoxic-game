@@ -26,7 +26,7 @@ Ensure all styles use the correct Tailwind v4 syntax and design tokens.
 2.  **Map to Tokens**
     *   `#000000` -> `var(--void-black)`
     *   `#00ff00` -> `var(--toxic-green)`
-    *   `#ff00ff` -> `var(--neon-pink)`
+    *   `#ff00ff` -> `var(--mood-pink)`
 
 3.  **Fix Syntax**
     *   `w-[var(--width)]` -> `w-(--width)`
@@ -43,8 +43,8 @@ Ensure all styles use the correct Tailwind v4 syntax and design tokens.
 
 **Good**:
 ```jsx
-<button className="bg-(--neon-pink) text-(--void-black) rounded-none p-2 border-2 border-(--void-black)">
+<button className="bg-(--mood-pink) text-(--void-black) rounded-none p-2 border-2 border-(--void-black)">
 ```
 
 **Output**:
-"Converted styles to v4 syntax. Replaced `red-500` with `--neon-pink`."
+"Converted styles to v4 syntax. Replaced `red-500` with `--mood-pink`."

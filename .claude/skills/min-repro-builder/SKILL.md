@@ -21,7 +21,7 @@ Isolate bugs by creating a minimal, self-contained reproduction environment.
     *   *Don't Need*: `inventory`, `unlocks` (unless relevant).
 
 3.  **Reuse Assets**
-    Do not add new files. Use existing:
+    Do not add new media/data files. Use existing assets where possible:
     *   `src/assets/rhythm_songs.json`
     *   `public/placeholder.png` (if exists)
 
@@ -41,7 +41,7 @@ Isolate bugs by creating a minimal, self-contained reproduction environment.
 2.  Import `gameReducer`.
 3.  Set up state: `fuel: 0`.
 4.  Dispatch `TRAVEL` action.
-5.  Assert: Should handle gracefully (no crash, maybe return error or stay put).
+5.  Assert: Should throw an error.
 
 **Output**:
 "Created `tests/repro_travel_crash.test.js`. Run with `node --test tests/repro_travel_crash.test.js`. Confirmed it throws an error."

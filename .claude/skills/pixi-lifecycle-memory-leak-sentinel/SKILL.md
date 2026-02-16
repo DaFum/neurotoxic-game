@@ -49,7 +49,10 @@ useEffect(() => {
   ref.current.appendChild(app.view);
 
   return () => {
-    app.destroy(true, { children: true, texture: true });
+    // Explicitly stop ticker and remove listeners before destroy
+    app.ticker.stop();
+    // Remove any event listeners attached to window/document here if added
+    app.destroy(true, { children: true, texture: true, baseTexture: true });
   };
 }, []);
 ```

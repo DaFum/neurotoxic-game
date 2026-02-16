@@ -16,8 +16,8 @@ Enhance the application with developer-facing diagnostic tools.
 
 2.  **Integrate with Existing Systems**
     *   **Logger**: `logger.debug('Category', 'Message', data)`
-    *   **Viewer**: `DebugLogViewer.jsx` (toggled via `Ctrl + Backtick`).
-    *   **State**: Expose internal state via `window.__DEBUG__` if necessary (dev only).
+    *   **Viewer**: `DebugLogViewer.jsx` (toggle via keyboard shortcut (configurable; default: Ctrl+`)).
+    *   **State**: Expose internal state via `window.__DEBUG__` if necessary (dev only). Ensure consumers can override the default shortcut.
 
 3.  **Implement Access Control**
     *   Debug features must be hidden by default.

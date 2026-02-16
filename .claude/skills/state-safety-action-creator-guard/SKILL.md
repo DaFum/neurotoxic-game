@@ -34,21 +34,27 @@ dispatch({ type: 'DEDUCT_MONEY', amount: 50 });
 
 **Good**:
 ```javascript
-import { updatePlayerMoney } from '../context/actionCreators';
-dispatch(updatePlayerMoney(-50));
+import { createUpdatePlayerAction } from 'src/context/actionCreators';
+
+if (player.money >= 50) {
+  // Use createUpdatePlayerAction with object payload
+  dispatch(createUpdatePlayerAction({ money: Math.max(0, player.money - 50) }));
+} else {
+  console.error('Insufficient funds');
+}
 ```
 
 **Reducer Check**:
 ```javascript
-case 'UPDATE_MONEY':
+case 'UPDATE_PLAYER':
   return {
     ...state,
     player: {
       ...state.player,
-      money: Math.max(0, state.player.money + action.payload)
+      ...action.payload
     }
   };
 ```
 
 **Output**:
-"Updated dispatch to use `updatePlayerMoney`. Verified reducer clamps money at 0."
+"Updated dispatch to use `createUpdatePlayerAction` with validation check `player.money >= 50`."

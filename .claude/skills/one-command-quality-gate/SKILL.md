@@ -36,9 +36,10 @@ The script executes these checks in order:
 Run `.claude/skills/one-command-quality-gate/scripts/quality-gate.sh`.
 
 **Output**:
+(Note: "Running..." text denotes additional successful check output.)
 ```text
-[LINT] ... OK
-[TEST] ... FAIL
+[LINT] Running linters... OK
+[TEST] Running tests... FAIL
   Test failed: 'Game should start with 100 money'
 ```
 "Quality gate failed at the Test step. Please fix the money initialization regression."

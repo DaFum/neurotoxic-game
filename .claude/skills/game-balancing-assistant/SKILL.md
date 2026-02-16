@@ -34,7 +34,7 @@ Tune the game's economy, difficulty, and progression curves.
 
 *   **Economy**: Inflation is bad. Ensure sinks (Fuel, Repairs) scale with Sources (Gigs).
 *   **Difficulty**: Smooth curves. Avoid difficulty spikes unless intentional (Bosses).
-*   **Events**: Risk/Reward must be balanced. High reward events should have high failure risks.
+*   **Events**: Risk-Reward must be balanced. High reward events should have high failure risks.
 
 ## Example
 

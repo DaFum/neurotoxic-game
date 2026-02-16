@@ -27,7 +27,7 @@ Direct questions to the correct domain and authoritative documentation.
     *   "Change the button color." -> **UI**.
 
 2.  **Consult Authority**
-    Always read the local `AGENTS.md` first.
+    Always read the root `AGENTS.md` first for project overview, then the domain-specific `AGENTS.md`.
     *   `src/context/AGENTS.md` defines state rules.
     *   `src/ui/AGENTS.md` defines styling rules.
 

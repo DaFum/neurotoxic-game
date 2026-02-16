@@ -33,7 +33,7 @@ Synchronize skills with the current state of the repository.
 **Action**:
 1.  Read `package.json`. See `"lint": "eslint ."`.
 2.  Read `ci-hardener/SKILL.md`. See `"npm run lint:fix"`.
-3.  **Update**: Change command to `npm run lint -- --fix` (if supported) or just `npm run lint`.
+3.  **Update**: Change command to `npm run lint:fix` (or modify `lint` script to support `--fix`).
 
 **Output**:
 "Updated `ci-hardener` to reflect the consolidation of lint scripts in `package.json`."

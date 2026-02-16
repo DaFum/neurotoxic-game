@@ -24,7 +24,7 @@ To apply fixes (where available):
 ## Workflow
 
 1.  **Execute the Script**
-    The script runs configured linters defined in `assets/mega-lint.config.json`.
+    The script runs configured linters defined in `.claude/skills/mega-lint-snapshot/assets/mega-lint.config.json`.
     *   **ESLint**: JavaScript/React.
     *   **Prettier**: Formatting.
     *   **Gitleaks**: Secret detection.
