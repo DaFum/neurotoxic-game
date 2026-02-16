@@ -128,13 +128,13 @@ export async function playSongFromData(song, delay = 0) {
 
   // Validate notes
   if (!Array.isArray(song.notes)) {
-    console.error('playSongFromData: song.notes is not an array')
+    logger.error('AudioEngine', 'playSongFromData: song.notes is not an array')
     return false
   }
 
   // Validate Audio Components
   if (!audioState.guitar || !audioState.bass || !audioState.drumKit) {
-    console.error('playSongFromData: Audio components not initialized.')
+    logger.error('AudioEngine', 'playSongFromData: Audio components not initialized.')
     return false
   }
 
@@ -184,7 +184,7 @@ export async function playSongFromData(song, delay = 0) {
     .filter(e => Number.isFinite(e.time) && e.time >= 0)
 
   if (events.length === 0) {
-    console.warn('playSongFromData: No valid notes found to schedule')
+    logger.warn('AudioEngine', 'playSongFromData: No valid notes found to schedule')
     return false
   }
 
@@ -287,7 +287,8 @@ export async function startMetalGenerator(
   Tone.getTransport().position = 0
 
   // Guard BPM against zero/negative/falsy values
-  const rawBpm = song.bpm || 80 + (song.difficulty || 2) * 30
+  // Use ?? for difficulty to correctly handle 0 as a valid difficulty
+  const rawBpm = song.bpm || 80 + (song.difficulty ?? 2) * 30
   const bpm = Math.max(1, rawBpm)
 
   Tone.getTransport().bpm.value = bpm
@@ -385,15 +386,25 @@ async function playMidiFileInternal(
   )
 
   if (!url) {
-    console.error(`[audioEngine] MIDI file not found in assets: ${filename}`)
+    logger.error('AudioEngine', `MIDI file not found in assets: ${filename}`)
     return false
   }
 
   try {
-    const response = await fetch(url)
-    if (reqId !== audioState.playRequestId) return false
-    if (!response.ok) throw new Error(`Failed to load MIDI: ${url}`)
-    const arrayBuffer = await response.arrayBuffer()
+    const controller = new AbortController()
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      10000 // 10s timeout for MIDI fetch
+    )
+    let arrayBuffer = null
+    try {
+      const response = await fetch(url, { signal: controller.signal })
+      if (reqId !== audioState.playRequestId) return false
+      if (!response.ok) throw new Error(`Failed to load MIDI: ${url}`)
+      arrayBuffer = await response.arrayBuffer()
+    } finally {
+      clearTimeout(timeoutId)
+    }
     if (reqId !== audioState.playRequestId) return false
 
     if (!MidiParser) {
@@ -549,7 +560,11 @@ async function playMidiFileInternal(
     Tone.getTransport().start(transportStartTime, requestedOffset)
     return true
   } catch (err) {
-    console.error('[audioEngine] Error playing MIDI:', err)
+    if (err.name === 'AbortError') {
+      logger.warn('AudioEngine', `MIDI fetch timed out for "${filename}"`)
+    } else {
+      logger.error('AudioEngine', 'Error playing MIDI:', err)
+    }
     return false
   }
 }

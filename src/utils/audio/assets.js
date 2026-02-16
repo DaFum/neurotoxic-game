@@ -43,10 +43,10 @@ export const oggUrlMap = buildAssetUrlMap(
 // oggUrlMap stores both full relative paths and basenames; prefer full paths for accurate count.
 const oggAssetKeys = Object.keys(oggUrlMap).filter(k => k.endsWith('.ogg'))
 // Cache candidate list for ambient playback to avoid repeated filtering
-export let oggCandidates = oggAssetKeys.filter(k => k.includes('/'))
-if (oggCandidates.length === 0 && oggAssetKeys.length > 0) {
-  oggCandidates = oggAssetKeys
-}
+const fullPathCandidates = oggAssetKeys.filter(k => k.includes('/'))
+export const oggCandidates =
+  fullPathCandidates.length > 0 ? fullPathCandidates : oggAssetKeys
+
 if (oggCandidates.length > 0) {
   logger.info(
     'AudioEngine',

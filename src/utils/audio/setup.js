@@ -86,6 +86,12 @@ export const getToneStartTimeSec = rawStartTimeSec => {
 
 /**
  * Disposes of audio engine resources.
+ *
+ * NOTE: This function duplicates stop logic from playback.js
+ * (stopAudioInternal, stopGigPlayback, stopAmbientPlayback) because
+ * setup.js must not import from playback.js to preserve the acyclic
+ * dependency graph: state -> setup -> playback -> procedural.
+ * If you change stop/cleanup logic in playback.js, update this function too.
  */
 export function disposeAudio() {
   audioState.playRequestId++
