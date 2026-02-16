@@ -1,12 +1,12 @@
 import * as PIXI from 'pixi.js'
-import { handleError } from '../utils/errorHandler'
-import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
+import { handleError } from '../utils/errorHandler.js'
+import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 import {
   buildRhythmLayout,
   calculateCrowdY,
   calculateNoteY,
   CROWD_LAYOUT
-} from '../utils/pixiStageUtils'
+} from '../utils/pixiStageUtils.js'
 
 const NOTE_SPAWN_LEAD_MS = 2000
 const NOTE_JITTER_RANGE = 10
@@ -430,7 +430,7 @@ class PixiStageController {
       }
 
       const jitterOffset = state.modifiers.noteJitter
-        ? (Math.random() - 0.5) * NOTE_JITTER_RANGE
+        ? sprite.jitterOffset
         : 0
 
       sprite.y = calculateNoteY({
@@ -492,6 +492,7 @@ class PixiStageController {
   initializeNoteSprite(sprite, lane) {
     sprite.visible = true
     sprite.alpha = 1
+    sprite.jitterOffset = (Math.random() - 0.5) * NOTE_JITTER_RANGE
 
     if (sprite instanceof PIXI.Sprite) {
       sprite.tint = lane.color
