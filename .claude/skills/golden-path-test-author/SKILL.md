@@ -40,7 +40,7 @@ Ensure the critical game flow (OVERWORLD → PREGIG → GIG → POSTGIG → OVER
 **Input**: "Test that traveling costs fuel."
 
 **Action**:
-Create `tests/integration/travel.test.js`:
+Create `tests/unit/travel.test.js`:
 ```javascript
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

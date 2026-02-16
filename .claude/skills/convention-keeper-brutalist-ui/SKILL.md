@@ -16,7 +16,7 @@ Enforce the strict "Brutalist" design system across the application.
 5.  **Colors**: Use CSS variables via Tailwind v4 syntax.
     *   `bg-(--void-black)`
     *   `text-(--toxic-green)`
-    *   `border-(--neon-pink)`
+    *   `border-(--neon-pink)` (for borders) or `--toxic-green` (for shadows)
 
 ## Workflow
 
