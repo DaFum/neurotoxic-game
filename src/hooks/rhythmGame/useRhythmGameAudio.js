@@ -264,6 +264,9 @@ export const useRhythmGameAudio = ({
 
       gameStateRef.current.notes = notes
       gameStateRef.current.nextMissCheckIndex = 0
+      gameStateRef.current.lastGigTimeMs = null
+      gameStateRef.current.stagnantClockFrames = 0
+      gameStateRef.current.hasSubmittedResults = false
 
       const maxNoteTime = notes.reduce((max, n) => Math.max(max, n.time), 0)
       const buffer = 4000

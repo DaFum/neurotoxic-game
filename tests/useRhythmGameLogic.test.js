@@ -63,6 +63,9 @@ const mockSongs = [
   { id: 'jam', name: 'Jam', bpm: 120, duration: 60, difficulty: 2 }
 ]
 
+let mockChangeScene
+let mockSetLastGigStats
+
 // Mock modules
 mock.module('../src/context/GameState.jsx', {
   namedExports: { useGameState: mockUseGameState }
@@ -119,16 +122,19 @@ describe('useRhythmGameLogic', () => {
     mockGigStats.updateGigPerformanceStats.mock.resetCalls()
     mockErrorHandler.handleError.mock.resetCalls()
 
+    mockChangeScene = mock.fn()
+    mockSetLastGigStats = mock.fn()
+
     mockUseGameState.mock.mockImplementation(() => ({
       setlist: ['jam'],
       band: { members: [] },
       activeEvent: null,
       hasUpgrade: mock.fn(() => false),
-      setLastGigStats: mock.fn(),
+      setLastGigStats: mockSetLastGigStats,
       addToast: mock.fn(),
       gameMap: { nodes: { node1: { layer: 0 } } },
       player: { currentNodeId: 'node1' },
-      changeScene: mock.fn(),
+      changeScene: mockChangeScene,
       gigModifiers: {}
     }))
 
@@ -235,4 +241,31 @@ describe('useRhythmGameLogic', () => {
     assert.equal(result.current.stats.score, 100)
     assert.equal(result.current.stats.combo, 1)
   })
+
+  test('transitions to POSTGIG when all notes are processed even before duration cap', async () => {
+    mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 1000)
+
+    const { result } = renderHook(() => useRhythmGameLogic())
+
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 200))
+    })
+
+    act(() => {
+      result.current.gameStateRef.current.running = true
+      result.current.gameStateRef.current.totalDuration = 10000
+      result.current.gameStateRef.current.notes = [
+        { time: 200, laneIndex: 0, hit: true, visible: false, type: 'note' }
+      ]
+      result.current.gameStateRef.current.nextMissCheckIndex = 1
+      result.current.update(16)
+    })
+
+    assert.ok(mockAudioEngine.stopAudio.mock.calls.length >= 1)
+    assert.ok(mockSetLastGigStats.mock.calls.length >= 1)
+    assert.ok(
+      mockChangeScene.mock.calls.some(call => call.arguments[0] === 'POSTGIG')
+    )
+  })
+
 })

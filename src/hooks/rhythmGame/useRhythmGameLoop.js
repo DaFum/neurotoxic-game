@@ -13,6 +13,7 @@ import {
 import { buildGigStatsSnapshot } from '../../utils/gigStats'
 
 const NOTE_MISS_WINDOW_MS = 300
+const MAX_STAGNANT_CLOCK_FRAMES = 8
 
 /**
  * Manages the high-frequency game loop update.
@@ -41,6 +42,28 @@ export const useRhythmGameLoop = ({
   const handleCollision = useCallback(
     () => handleMiss(1, false),
     [handleMiss]
+  )
+
+  /**
+   * Finalizes gig results and transitions exactly once.
+   * @param {object} stateRef - Mutable rhythm game state.
+   */
+  const finalizeGig = useCallback(
+    stateRef => {
+      if (stateRef.hasSubmittedResults) return
+      stateRef.hasSubmittedResults = true
+      stateRef.running = false
+      setLastGigStats(
+        buildGigStatsSnapshot(
+          stateRef.score,
+          stateRef.stats,
+          stateRef.toxicTimeTotal
+        )
+      )
+      stopAudio()
+      changeScene('POSTGIG')
+    },
+    [changeScene, setLastGigStats]
   )
 
   /**
@@ -101,6 +124,15 @@ export const useRhythmGameLoop = ({
       }
 
       const now = getGigTimeMs()
+      if (
+        Number.isFinite(stateRef.lastGigTimeMs) &&
+        now <= stateRef.lastGigTimeMs
+      ) {
+        stateRef.stagnantClockFrames += 1
+      } else {
+        stateRef.stagnantClockFrames = 0
+      }
+      stateRef.lastGigTimeMs = now
       stateRef.elapsed = now
       const duration = stateRef.totalDuration
       const rawProgress =
@@ -116,17 +148,17 @@ export const useRhythmGameLoop = ({
         }
       }
 
-      if (now > stateRef.totalDuration) {
-        stateRef.running = false
-        setLastGigStats(
-          buildGigStatsSnapshot(
-            stateRef.score,
-            stateRef.stats,
-            stateRef.toxicTimeTotal
-          )
-        )
-        stopAudio()
-        changeScene('POSTGIG')
+      const didReachSongEnd = now >= duration
+      const hasPassedAllNotes =
+        stateRef.nextMissCheckIndex >= stateRef.notes.length &&
+        stateRef.notes.length > 0
+      const isClockStuckNearEnd =
+        duration > 0 &&
+        now >= duration - NOTE_MISS_WINDOW_MS &&
+        stateRef.stagnantClockFrames >= MAX_STAGNANT_CLOCK_FRAMES
+
+      if (didReachSongEnd || hasPassedAllNotes || isClockStuckNearEnd) {
+        finalizeGig(stateRef)
         return
       }
 
@@ -166,12 +198,11 @@ export const useRhythmGameLoop = ({
     },
     [
       activeEvent,
-      changeScene,
+      finalizeGig,
       gameStateRef,
       handleCollision,
       handleMiss,
-      setIsToxicMode,
-      setLastGigStats
+      setIsToxicMode
     ]
   )
 
