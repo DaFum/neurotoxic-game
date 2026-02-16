@@ -1,6 +1,6 @@
 ---
 name: repo-guardrails-generator
-description: Generate strict project guardrails and checklists. Trigger when defining rules, setting up a new agent, or codifying best practices.
+description: generate strict project guardrails and checklists. Trigger when defining rules, setting up a new agent, or codifying best practices.
 ---
 
 # Repo Guardrails Generator

@@ -1,6 +1,6 @@
 ---
 name: tailwind-v4-css-variables-enforcer
-description: Enforce Tailwind CSS v4 syntax and project-specific CSS variables. Trigger when writing styles, reviewing UI code, or fixing design inconsistencies.
+description: enforce Tailwind CSS v4 syntax and project-specific CSS variables. Trigger when writing styles, reviewing UI code, or fixing design inconsistencies.
 ---
 
 # Tailwind v4 Enforcer

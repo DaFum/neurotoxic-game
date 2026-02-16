@@ -1,6 +1,6 @@
 ---
 name: perf-budget-enforcer
-description: Optimize bundle size and runtime performance. Trigger when the app is slow, bundle is too large, or build warnings appear. Checks lazy loading, asset sizes, and render loops.
+description: optimize bundle size and runtime performance. Trigger when the app is slow, bundle is too large, or build warnings appear. Checks lazy loading, asset sizes, and render loops.
 ---
 
 # Performance Budget Enforcer

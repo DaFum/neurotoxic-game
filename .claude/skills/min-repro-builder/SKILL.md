@@ -1,6 +1,6 @@
 ---
 name: min-repro-builder
-description: Create minimal reproduction cases for bugs. Trigger when asked to isolate an issue, create a test case, or debug a complex interaction.
+description: create minimal reproduction cases for bugs. Trigger when asked to isolate an issue, create a test case, or debug a complex interaction.
 ---
 
 # Minimal Repro Builder

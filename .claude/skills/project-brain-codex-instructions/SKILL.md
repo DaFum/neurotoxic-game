@@ -1,6 +1,6 @@
 ---
 name: project-brain-codex-instructions
-description: Generate comprehensive project context and instructions. Trigger when onboarding a new agent, creating a README, or summarizing the project architecture.
+description: generate comprehensive project context and instructions. Trigger when onboarding a new agent, creating a README, or summarizing the project architecture.
 ---
 
 # Project Brain Codex

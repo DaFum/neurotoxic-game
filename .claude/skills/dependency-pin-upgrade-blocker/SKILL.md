@@ -1,6 +1,6 @@
 ---
 name: dependency-pin-upgrade-blocker
-description: Enforce pinned dependency versions. Trigger when asked to upgrade packages, install new dependencies, or when reviewing package.json changes.
+description: enforce pinned dependency versions. Trigger when asked to upgrade packages, install new dependencies, or when reviewing package.json changes.
 ---
 
 # Dependency Pin Guard

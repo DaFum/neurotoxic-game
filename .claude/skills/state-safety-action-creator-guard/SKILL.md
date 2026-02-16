@@ -1,6 +1,6 @@
 ---
 name: state-safety-action-creator-guard
-description: Enforce state immutability and valid transitions. Trigger when modifying the reducer, creating actions, or debugging state bugs.
+description: enforce state immutability and valid transitions. Trigger when modifying the reducer, creating actions, or debugging state bugs.
 ---
 
 # State Safety & Action Creator Guard

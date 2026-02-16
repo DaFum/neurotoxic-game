@@ -1,6 +1,6 @@
 ---
 name: skill-creator
-description: Create new skills, improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, update or optimize an existing skill, run evals to test a skill, or benchmark skill performance with variance analysis. Also trigger when users say things like "turn this into a skill", "make a skill for X", "help me improve my skill", "test my skill", "evaluate skill performance", or reference any .skill file or SKILL.md. Even if the user just describes a repeatable workflow they want to capture, consider suggesting a skill.
+description: create new skills, improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, update or optimize an existing skill, run evals to test a skill, or benchmark skill performance with variance analysis. Also trigger when users say things like "turn this into a skill", "make a skill for X", "help me improve my skill", "test my skill", "evaluate skill performance", or reference any .skill file or SKILL.md. Even if the user just describes a repeatable workflow they want to capture, consider suggesting a skill.
 ---
 
 # Skill Creator

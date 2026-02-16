@@ -1,6 +1,6 @@
 ---
 name: game-balancing-assistant
-description: Analyze and tune game balance. Trigger when adjusting difficulty, economy, progression, or event effects.
+description: analyze and tune game balance. Trigger when adjusting difficulty, economy, progression, or event effects.
 ---
 
 # Game Balancing Assistant

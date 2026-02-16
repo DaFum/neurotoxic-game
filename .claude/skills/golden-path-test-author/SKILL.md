@@ -1,6 +1,6 @@
 ---
 name: golden-path-test-author
-description: Write integration tests for the main game loop (Golden Path). Trigger when asked to add regression tests, verify game flow, or check critical paths.
+description: write integration tests for the main game loop (Golden Path). Trigger when asked to add regression tests, verify game flow, or check critical paths.
 ---
 
 # Golden Path Test Author

@@ -1,6 +1,6 @@
 ---
 name: mega-lint-snapshot
-description: Run a comprehensive linting suite (MegaLinter style). Trigger when asked to check code quality, security, or style across multiple languages.
+description: run a comprehensive linting suite (MegaLinter style). Trigger when asked to check code quality, security, or style across multiple languages.
 ---
 
 # Mega Lint Snapshot

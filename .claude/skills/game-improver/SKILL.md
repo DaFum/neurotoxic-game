@@ -1,6 +1,6 @@
 ---
 name: game-improver
-description: Improve gameplay, balance, and code quality. Trigger when asked to fix bugs, add features, optimize performance, or refactor code. Acts as a general-purpose game engineer.
+description: improve gameplay, balance, and code quality. Trigger when asked to fix bugs, add features, optimize performance, or refactor code. Acts as a general-purpose game engineer.
 ---
 
 # Game Improver

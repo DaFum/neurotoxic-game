@@ -1,6 +1,6 @@
 ---
 name: one-command-quality-gate
-description: Run the full test and lint suite. Trigger when preparing to commit, submitting a PR, or verifying a change. Runs lint, test, and build in order.
+description: run the full test and lint suite. Trigger when preparing to commit, submitting a PR, or verifying a change. Runs lint, test, and build in order.
 ---
 
 # One-Command Quality Gate
