@@ -215,7 +215,7 @@ class PixiStageController {
     }
 
     if (this.containerRef?.current) {
-      this.containerRef.current.innerHTML = ''
+      this.containerRef.current.textContent = ''
     }
   }
 }
