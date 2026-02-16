@@ -68,3 +68,31 @@ export const trySpawnProjectile = (
   }
   return null
 }
+
+/**
+ * Checks for projectile collisions with the hit zone.
+ * @param {Array} projectiles - List of projectiles.
+ * @param {number} screenHeight - Screen height to determine hit zone.
+ * @param {Function} onHit - Callback when a hit occurs.
+ */
+export const checkCollisions = (projectiles, screenHeight, onHit) => {
+  const hitY = screenHeight - 150
+  let writeIdx = 0
+
+  for (let i = 0; i < projectiles.length; i++) {
+    const p = projectiles[i]
+    if (p.y > hitY) {
+      if (onHit) onHit(p)
+      // Do not increment writeIdx -> remove from array
+    } else {
+      if (i !== writeIdx) {
+        projectiles[writeIdx] = p
+      }
+      writeIdx++
+    }
+  }
+
+  if (writeIdx < projectiles.length) {
+    projectiles.length = writeIdx
+  }
+}

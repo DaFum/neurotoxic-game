@@ -1,5 +1,9 @@
 import { useCallback } from 'react'
-import { trySpawnProjectile, updateProjectiles } from '../../utils/hecklerLogic'
+import {
+  trySpawnProjectile,
+  updateProjectiles,
+  checkCollisions
+} from '../../utils/hecklerLogic'
 import {
   getGigTimeMs,
   pauseAudio,
@@ -65,6 +69,10 @@ export const useRhythmGameLoop = ({
           stateRef.projectiles,
           deltaMS,
           window.innerHeight
+        )
+
+        checkCollisions(stateRef.projectiles, window.innerHeight, () =>
+          handleMiss(1, false)
         )
       }
 
