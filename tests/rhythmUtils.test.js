@@ -1,6 +1,10 @@
 import { test, describe } from 'node:test'
 import assert from 'node:assert'
-import { checkHit, calculateTimeFromTicks, preprocessTempoMap } from '../src/utils/rhythmUtils.js'
+import {
+  checkHit,
+  calculateTimeFromTicks,
+  preprocessTempoMap
+} from '../src/utils/rhythmUtils.js'
 
 describe('rhythmUtils', () => {
   describe('checkHit', () => {
@@ -31,39 +35,61 @@ describe('rhythmUtils', () => {
 
       const elapsed = noteTime - hitWindow + 0.001
       const result = checkHit(notes, 0, elapsed, hitWindow)
-      assert.ok(result, `Should find note inside start boundary (diff: ${Math.abs(elapsed - noteTime)})`)
+      assert.ok(
+        result,
+        `Should find note inside start boundary (diff: ${Math.abs(elapsed - noteTime)})`
+      )
     })
 
     test('should return note for hit just inside end boundary', () => {
       const elapsed = noteTime + hitWindow - 0.001
       const result = checkHit(notes, 0, elapsed, hitWindow)
-      assert.ok(result, `Should find note inside end boundary (diff: ${Math.abs(elapsed - noteTime)})`)
+      assert.ok(
+        result,
+        `Should find note inside end boundary (diff: ${Math.abs(elapsed - noteTime)})`
+      )
     })
 
     test('should return null for hit exactly at start boundary (exclusive)', () => {
       // diff = hitWindow. hitWindow < hitWindow is false.
       const elapsed = noteTime - hitWindow
       const result = checkHit(notes, 0, elapsed, hitWindow)
-      assert.strictEqual(result, null, 'Should not find note exactly at start boundary')
+      assert.strictEqual(
+        result,
+        null,
+        'Should not find note exactly at start boundary'
+      )
     })
 
     test('should return null for hit exactly at end boundary (exclusive)', () => {
       // diff = hitWindow. hitWindow < hitWindow is false.
       const elapsed = noteTime + hitWindow
       const result = checkHit(notes, 0, elapsed, hitWindow)
-      assert.strictEqual(result, null, 'Should not find note exactly at end boundary')
+      assert.strictEqual(
+        result,
+        null,
+        'Should not find note exactly at end boundary'
+      )
     })
 
     test('should return null for hit outside start boundary', () => {
       const elapsed = noteTime - hitWindow - 0.001
       const result = checkHit(notes, 0, elapsed, hitWindow)
-      assert.strictEqual(result, null, 'Should not find note outside start boundary')
+      assert.strictEqual(
+        result,
+        null,
+        'Should not find note outside start boundary'
+      )
     })
 
     test('should return null for hit outside end boundary', () => {
       const elapsed = noteTime + hitWindow + 0.001
       const result = checkHit(notes, 0, elapsed, hitWindow)
-      assert.strictEqual(result, null, 'Should not find note outside end boundary')
+      assert.strictEqual(
+        result,
+        null,
+        'Should not find note outside end boundary'
+      )
     })
 
     test('should respect lane index', () => {
@@ -84,19 +110,19 @@ describe('rhythmUtils', () => {
     })
 
     test('should handle floating point precision robustly', () => {
-       // e.g. 1/3
-       const oddTime = 1000.3333333333333
-       const oddElapsed = 1000.3333333333334
-       const notesOdd = [createNote(oddTime)]
-       const result = checkHit(notesOdd, 0, oddElapsed, hitWindow)
-       assert.ok(result)
+      // e.g. 1/3
+      const oddTime = 1000.3333333333333
+      const oddElapsed = 1000.3333333333334
+      const notesOdd = [createNote(oddTime)]
+      const result = checkHit(notesOdd, 0, oddElapsed, hitWindow)
+      assert.ok(result)
     })
 
     test('should return null if elapsed is not finite', () => {
-        const result = checkHit(notes, 0, Infinity, hitWindow)
-        assert.strictEqual(result, null)
-        const result2 = checkHit(notes, 0, NaN, hitWindow)
-        assert.strictEqual(result2, null)
+      const result = checkHit(notes, 0, Infinity, hitWindow)
+      assert.strictEqual(result, null)
+      const result2 = checkHit(notes, 0, NaN, hitWindow)
+      assert.strictEqual(result2, null)
     })
   })
 
@@ -138,11 +164,11 @@ describe('rhythmUtils', () => {
     })
 
     test('should handle ticks beyond last segment', () => {
-        // 960 ticks = 480 (1st) + 480 (2nd)
-        // 1st: 500ms. 2nd: 250ms/beat * 1 beat = 250ms.
-        // Total 750ms.
-        const time = calculateTimeFromTicks(960, tpb, tempoMap, 'ms')
-        assert.ok(Math.abs(time - 750) < 0.0001, `Expected 750, got ${time}`)
+      // 960 ticks = 480 (1st) + 480 (2nd)
+      // 1st: 500ms. 2nd: 250ms/beat * 1 beat = 250ms.
+      // Total 750ms.
+      const time = calculateTimeFromTicks(960, tpb, tempoMap, 'ms')
+      assert.ok(Math.abs(time - 750) < 0.0001, `Expected 750, got ${time}`)
     })
   })
 

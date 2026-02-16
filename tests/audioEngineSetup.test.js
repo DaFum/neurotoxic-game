@@ -6,8 +6,12 @@ class MockPolySynth {
   constructor() {
     this.volume = { value: 0 }
   }
-  connect() { return this }
-  chain() { return this }
+  connect() {
+    return this
+  }
+  chain() {
+    return this
+  }
   triggerAttackRelease() {}
   dispose() {}
 }
@@ -16,7 +20,9 @@ class MockMembraneSynth {
   constructor() {
     this.volume = { value: 0 }
   }
-  connect() { return this }
+  connect() {
+    return this
+  }
   triggerAttackRelease() {}
   dispose() {}
 }
@@ -25,7 +31,9 @@ class MockMetalSynth {
   constructor() {
     this.volume = { value: 0 }
   }
-  connect() { return this }
+  connect() {
+    return this
+  }
   triggerAttackRelease() {}
   dispose() {}
 }
@@ -39,7 +47,9 @@ class MockGain {
     this.gain = { rampTo: mock.fn() }
     this.input = this
   }
-  connect() { return this }
+  connect() {
+    return this
+  }
   dispose() {}
 }
 
@@ -47,7 +57,9 @@ class MockVolume {
   constructor() {
     this.volume = { value: 0 }
   }
-  connect() { return this }
+  connect() {
+    return this
+  }
   dispose() {}
 }
 
@@ -90,22 +102,57 @@ const mockTone = {
   },
 
   // Audio Nodes (Mock them to return chainable objects)
-  Limiter: class { toDestination() { return this } connect() { return this } dispose() {} },
-  Compressor: class { connect() { return this } dispose() {} },
+  Limiter: class {
+    toDestination() {
+      return this
+    }
+    connect() {
+      return this
+    }
+    dispose() {}
+  },
+  Compressor: class {
+    connect() {
+      return this
+    }
+    dispose() {}
+  },
   Gain: MockGain,
-  Reverb: class { connect() { return this } dispose() {} },
+  Reverb: class {
+    connect() {
+      return this
+    }
+    dispose() {}
+  },
   PolySynth: MockPolySynth,
   FMSynth: 'FMSynth',
   MonoSynth: 'MonoSynth',
   Synth: 'Synth',
   MembraneSynth: MockMembraneSynth,
   MetalSynth: MockMetalSynth,
-  NoiseSynth: class { connect() { return this } triggerAttackRelease() {} dispose() {} },
-  Distortion: class { dispose() {} },
-  Chorus: class { start() { return this } dispose() {} },
-  EQ3: class { dispose() {} },
-  StereoWidener: class { dispose() {} },
-  Volume: MockVolume,
+  NoiseSynth: class {
+    connect() {
+      return this
+    }
+    triggerAttackRelease() {}
+    dispose() {}
+  },
+  Distortion: class {
+    dispose() {}
+  },
+  Chorus: class {
+    start() {
+      return this
+    }
+    dispose() {}
+  },
+  EQ3: class {
+    dispose() {}
+  },
+  StereoWidener: class {
+    dispose() {}
+  },
+  Volume: MockVolume
 }
 
 mock.module('tone', { namedExports: mockTone })
@@ -132,7 +179,9 @@ test('setupAudio', async t => {
 
   await t.test('handles concurrent calls', async () => {
     let resolveStart
-    const startPromise = new Promise(r => { resolveStart = r })
+    const startPromise = new Promise(r => {
+      resolveStart = r
+    })
     mockTone.start.mock.mockImplementation(() => startPromise)
 
     // First call initiates setup and waits on startPromise
@@ -145,13 +194,19 @@ test('setupAudio', async t => {
     await Promise.all([p1, p2])
 
     // Both should succeed
-    assert.strictEqual(mockTone.setContext.mock.calls.length, 1, 'Should only set context once')
+    assert.strictEqual(
+      mockTone.setContext.mock.calls.length,
+      1,
+      'Should only set context once'
+    )
   })
 
   await t.test('propagates errors to concurrent calls', async () => {
     let resolveStart
     // We delay Tone.start resolution so concurrent calls can queue up
-    const startPromise = new Promise(r => { resolveStart = r })
+    const startPromise = new Promise(r => {
+      resolveStart = r
+    })
     mockTone.start.mock.mockImplementation(() => startPromise)
 
     // First call initiates setup

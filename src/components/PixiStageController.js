@@ -429,9 +429,7 @@ class PixiStageController {
         continue
       }
 
-      const jitterOffset = state.modifiers.noteJitter
-        ? sprite.jitterOffset
-        : 0
+      const jitterOffset = state.modifiers.noteJitter ? sprite.jitterOffset : 0
 
       sprite.y = calculateNoteY({
         elapsed,

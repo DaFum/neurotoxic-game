@@ -21,7 +21,7 @@ const mockTone = {
   getContext: mock.fn(() => ({
     rawContext: {
       state: 'running',
-      decodeAudioData: mock.fn(async (arrayBuffer) => {
+      decodeAudioData: mock.fn(async arrayBuffer => {
         return {
           length: arrayBuffer.byteLength / 4,
           numberOfChannels: 2,
@@ -38,18 +38,47 @@ const mockTone = {
   now: mock.fn(() => 0),
   context: { state: 'running' },
   getTransport: mock.fn(() => mockTransport),
-  Limiter: class { toDestination() { return this } connect() { return this } dispose() {} },
-  Compressor: class { connect() { return this } dispose() {} },
-  Gain: class {
-    constructor() { this.gain = { rampTo: mock.fn() }; this.input = this; }
-    connect() { return this }
+  Limiter: class {
+    toDestination() {
+      return this
+    }
+    connect() {
+      return this
+    }
     dispose() {}
   },
-  Reverb: class { connect() { return this } dispose() {} },
+  Compressor: class {
+    connect() {
+      return this
+    }
+    dispose() {}
+  },
+  Gain: class {
+    constructor() {
+      this.gain = { rampTo: mock.fn() }
+      this.input = this
+    }
+    connect() {
+      return this
+    }
+    dispose() {}
+  },
+  Reverb: class {
+    connect() {
+      return this
+    }
+    dispose() {}
+  },
   PolySynth: class {
-    constructor() { this.volume = { value: 0 } }
-    connect() { return this }
-    chain() { return this }
+    constructor() {
+      this.volume = { value: 0 }
+    }
+    connect() {
+      return this
+    }
+    chain() {
+      return this
+    }
     triggerAttackRelease() {}
     dispose() {}
   },
@@ -57,25 +86,54 @@ const mockTone = {
   MonoSynth: 'MonoSynth',
   Synth: 'Synth',
   MembraneSynth: class {
-    constructor() { this.volume = { value: 0 } }
-    connect() { return this }
+    constructor() {
+      this.volume = { value: 0 }
+    }
+    connect() {
+      return this
+    }
     triggerAttackRelease() {}
     dispose() {}
   },
   MetalSynth: class {
-    constructor() { this.volume = { value: 0 } }
-    connect() { return this }
+    constructor() {
+      this.volume = { value: 0 }
+    }
+    connect() {
+      return this
+    }
     triggerAttackRelease() {}
     dispose() {}
   },
-  NoiseSynth: class { connect() { return this } triggerAttackRelease() {} dispose() {} },
-  Distortion: class { dispose() {} },
-  Chorus: class { start() { return this } dispose() {} },
-  EQ3: class { dispose() {} },
-  StereoWidener: class { dispose() {} },
+  NoiseSynth: class {
+    connect() {
+      return this
+    }
+    triggerAttackRelease() {}
+    dispose() {}
+  },
+  Distortion: class {
+    dispose() {}
+  },
+  Chorus: class {
+    start() {
+      return this
+    }
+    dispose() {}
+  },
+  EQ3: class {
+    dispose() {}
+  },
+  StereoWidener: class {
+    dispose() {}
+  },
   Volume: class {
-    constructor() { this.volume = { value: 0 } }
-    connect() { return this }
+    constructor() {
+      this.volume = { value: 0 }
+    }
+    connect() {
+      return this
+    }
     dispose() {}
   },
   Context: class {
@@ -85,21 +143,23 @@ const mockTone = {
         close: mock.fn(async () => {})
       }
     }
-  },
+  }
 }
 
 mock.module('tone', { namedExports: mockTone })
 
 let fetchResponseSize = 1024 // Default 1KB
 
-global.fetch = mock.fn(async (url) => {
+global.fetch = mock.fn(async url => {
   return {
     ok: true,
     arrayBuffer: async () => new ArrayBuffer(fetchResponseSize)
   }
 })
 
-const { loadAudioBuffer, disposeAudio } = await import('../src/utils/audioEngine.js')
+const { loadAudioBuffer, disposeAudio } = await import(
+  '../src/utils/audioEngine.js'
+)
 
 test('audioBufferCache optimization', async t => {
   t.beforeEach(() => {
@@ -120,13 +180,21 @@ test('audioBufferCache optimization', async t => {
     for (let i = 5; i < 15; i++) {
       await loadAudioBuffer(`small${i}.ogg`)
     }
-    assert.strictEqual(global.fetch.mock.calls.length, 0, 'Last 10 items should be in cache')
+    assert.strictEqual(
+      global.fetch.mock.calls.length,
+      0,
+      'Last 10 items should be in cache'
+    )
 
     // First 5 should have been evicted
     for (let i = 0; i < 5; i++) {
       await loadAudioBuffer(`small${i}.ogg`)
     }
-    assert.strictEqual(global.fetch.mock.calls.length, 5, 'First 5 items should have been evicted')
+    assert.strictEqual(
+      global.fetch.mock.calls.length,
+      5,
+      'First 5 items should have been evicted'
+    )
   })
 
   await t.test('respects MAX_AUDIO_BUFFER_BYTE_SIZE (50MB)', async () => {
@@ -144,36 +212,55 @@ test('audioBufferCache optimization', async t => {
     // large2 and large3 should be in cache
     await loadAudioBuffer('large2.ogg')
     await loadAudioBuffer('large3.ogg')
-    assert.strictEqual(global.fetch.mock.calls.length, 0, 'large2 and large3 should be in cache')
+    assert.strictEqual(
+      global.fetch.mock.calls.length,
+      0,
+      'large2 and large3 should be in cache'
+    )
 
     // large1 should have been evicted
     await loadAudioBuffer('large1.ogg')
-    assert.strictEqual(global.fetch.mock.calls.length, 1, 'large1 should have been evicted due to byte size limit')
+    assert.strictEqual(
+      global.fetch.mock.calls.length,
+      1,
+      'large1 should have been evicted due to byte size limit'
+    )
   })
 
-  await t.test('always keeps at least one item even if it exceeds byte limit', async () => {
-    // 60MB decoded size
-    fetchResponseSize = 30 * 1024 * 1024
+  await t.test(
+    'always keeps at least one item even if it exceeds byte limit',
+    async () => {
+      // 60MB decoded size
+      fetchResponseSize = 30 * 1024 * 1024
 
-    await loadAudioBuffer('huge.ogg') // Cache: 60MB (exceeds 50MB)
+      await loadAudioBuffer('huge.ogg') // Cache: 60MB (exceeds 50MB)
 
-    global.fetch.mock.resetCalls()
-    await loadAudioBuffer('huge.ogg')
-    assert.strictEqual(global.fetch.mock.calls.length, 0, 'huge.ogg should still be in cache as the only item')
+      global.fetch.mock.resetCalls()
+      await loadAudioBuffer('huge.ogg')
+      assert.strictEqual(
+        global.fetch.mock.calls.length,
+        0,
+        'huge.ogg should still be in cache as the only item'
+      )
 
-    // Loading another one will evict the huge one
-    fetchResponseSize = 1024
-    await loadAudioBuffer('small.ogg')
+      // Loading another one will evict the huge one
+      fetchResponseSize = 1024
+      await loadAudioBuffer('small.ogg')
 
-    global.fetch.mock.resetCalls()
-    await loadAudioBuffer('huge.ogg')
-    assert.strictEqual(global.fetch.mock.calls.length, 1, 'huge.ogg should have been evicted by small.ogg because it was already over limit')
-  })
+      global.fetch.mock.resetCalls()
+      await loadAudioBuffer('huge.ogg')
+      assert.strictEqual(
+        global.fetch.mock.calls.length,
+        1,
+        'huge.ogg should have been evicted by small.ogg because it was already over limit'
+      )
+    }
+  )
 
   await t.test('LRU behavior preserved with item limit', async () => {
     fetchResponseSize = 1024
     for (let i = 0; i < 10; i++) {
-        await loadAudioBuffer(`file${i}.ogg`)
+      await loadAudioBuffer(`file${i}.ogg`)
     }
 
     // Access file0 to make it MRU
@@ -186,9 +273,17 @@ test('audioBufferCache optimization', async t => {
 
     global.fetch.mock.resetCalls()
     await loadAudioBuffer('file0.ogg')
-    assert.strictEqual(global.fetch.mock.calls.length, 0, 'file0 should still be in cache')
+    assert.strictEqual(
+      global.fetch.mock.calls.length,
+      0,
+      'file0 should still be in cache'
+    )
 
     await loadAudioBuffer('file1.ogg')
-    assert.strictEqual(global.fetch.mock.calls.length, 1, 'file1 should have been evicted')
+    assert.strictEqual(
+      global.fetch.mock.calls.length,
+      1,
+      'file1 should have been evicted'
+    )
   })
 })
