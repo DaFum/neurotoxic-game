@@ -43,7 +43,13 @@ const selectEvent = (pool, gameState, triggerPoint) => {
 
   // 4. Story Flag Weighting & Selection
   const storyFlags = gameState.activeStoryFlags || []
-  const shuffled = [...eligibleEvents].sort(() => Math.random() - 0.5)
+  const shuffled = [...eligibleEvents]
+
+  // Fisher-Yates shuffle for unbiased randomness and better performance
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
 
   for (const event of shuffled) {
     let chance = event.chance
