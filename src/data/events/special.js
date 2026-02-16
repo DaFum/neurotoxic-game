@@ -4,7 +4,7 @@ export const SPECIAL_EVENTS = [
     id: 'deal_devil',
     category: 'special',
     title: 'THE CROSSROADS',
-    text: 'A man in a suit offers you a golden pick.',
+    description: 'A man in a suit offers you a golden pick.',
     trigger: 'special_location',
     chance: 1.0,
     options: [
