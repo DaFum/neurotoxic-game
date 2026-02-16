@@ -453,53 +453,54 @@ class PixiStageController {
    * @returns {PIXI.DisplayObject} Note sprite instance.
    */
   acquireSpriteFromPool(lane) {
+    let sprite
     if (this.spritePool.length > 0) {
-      const sprite = this.spritePool.pop()
-      sprite.visible = true
-
-      if (sprite instanceof PIXI.Sprite) {
-        sprite.tint = lane.color
-        sprite.x = lane.renderX + NOTE_CENTER_OFFSET
-        sprite.y = NOTE_INITIAL_Y
-        sprite.alpha = 1
-        sprite.scale.set(0.5) // Assuming scale is reset to base
-      } else if (sprite instanceof PIXI.Graphics) {
-        sprite.clear()
-        sprite.rect(0, 0, NOTE_FALLBACK_WIDTH, NOTE_FALLBACK_HEIGHT)
-        sprite.fill({ color: lane.color })
-        sprite.x = lane.renderX + 5
-        sprite.y = NOTE_INITIAL_Y
-        sprite.alpha = 1
-        sprite.scale.set(1)
-      }
-      return sprite
+      sprite = this.spritePool.pop()
+    } else {
+      sprite = this.createNoteSprite()
     }
-    return this.createNoteSprite(lane)
+
+    this.initializeNoteSprite(sprite, lane)
+    return sprite
   }
 
   /**
    * Creates a note sprite with a texture fallback.
-   * @param {object} lane - Lane configuration.
    * @returns {PIXI.DisplayObject} Note sprite instance.
    */
-  createNoteSprite(lane) {
+  createNoteSprite() {
     if (this.noteTexture) {
       const sprite = new PIXI.Sprite(this.noteTexture)
-      sprite.width = NOTE_SPRITE_SIZE
-      sprite.height = NOTE_SPRITE_SIZE
       sprite.anchor.set(0.5)
-      sprite.x = lane.renderX + NOTE_CENTER_OFFSET
-      sprite.y = NOTE_INITIAL_Y
-      sprite.tint = lane.color
       return sprite
     }
 
-    const rect = new PIXI.Graphics()
-    rect.rect(0, 0, NOTE_FALLBACK_WIDTH, NOTE_FALLBACK_HEIGHT)
-    rect.fill({ color: lane.color })
-    rect.x = lane.renderX + 5
-    rect.y = NOTE_INITIAL_Y
-    return rect
+    return new PIXI.Graphics()
+  }
+
+  /**
+   * Initializes or resets a note sprite with standard properties.
+   * @param {PIXI.DisplayObject} sprite - The sprite to initialize.
+   * @param {object} lane - Lane configuration.
+   */
+  initializeNoteSprite(sprite, lane) {
+    sprite.visible = true
+    sprite.alpha = 1
+
+    if (sprite instanceof PIXI.Sprite) {
+      sprite.tint = lane.color
+      sprite.x = lane.renderX + NOTE_CENTER_OFFSET
+      sprite.y = NOTE_INITIAL_Y
+      sprite.width = NOTE_SPRITE_SIZE
+      sprite.height = NOTE_SPRITE_SIZE
+    } else if (sprite instanceof PIXI.Graphics) {
+      sprite.clear()
+      sprite.rect(0, 0, NOTE_FALLBACK_WIDTH, NOTE_FALLBACK_HEIGHT)
+      sprite.fill({ color: lane.color })
+      sprite.x = lane.renderX + 5
+      sprite.y = NOTE_INITIAL_Y
+      sprite.scale.set(1)
+    }
   }
 
   /**
