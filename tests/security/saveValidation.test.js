@@ -107,3 +107,13 @@ test('gameReducer LOAD_GAME handles missing optional fields gracefully', () => {
     'Should keep existing settings if missing in payload'
   )
 })
+
+test('validateSaveData validates gameMap field type', () => {
+  const data = {
+    player: { money: 100 },
+    band: { harmony: 80 },
+    social: {},
+    gameMap: 'not-an-object'
+  }
+  assert.throws(() => validateSaveData(data), /gameMap must be an object/)
+})
