@@ -206,4 +206,15 @@ describe('PixiStageController', () => {
      assert.equal(sprite.clear.mock.calls.length, 1)
   })
 
+  test('initializeNoteSprite sets jitterOffset property', () => {
+    const lane = { color: 0x00ff00, renderX: 100 }
+    const sprite = new PIXI.Sprite()
+
+    controller.initializeNoteSprite(sprite, lane)
+
+    assert.equal(typeof sprite.jitterOffset, 'number')
+    // NOTE_JITTER_RANGE is 10, so range is -5 to 5
+    assert.ok(sprite.jitterOffset >= -5 && sprite.jitterOffset <= 5)
+  })
+
 })
