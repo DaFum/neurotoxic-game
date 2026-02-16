@@ -20,6 +20,7 @@ Implement production-ready improvements, bug fixes, and features for NEUROTOXIC.
     *   **General Rules**: `references/game-improver-playbook.md`
     *   **Coding Standards**: `references/implementation-standards.md`
     *   **Workflow**: `references/operational-workflows.md`
+    *   **QA & Release**: `references/quality-and-release.md`
 
 3.  **Implement Changes**
     *   **State**: Use `ActionTypes` and reducers. No direct mutation.
