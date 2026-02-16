@@ -60,6 +60,69 @@ export const generateNotesForSong = (song, options = {}) => {
 }
 
 /**
+ * Preprocesses the tempo map to add cumulative time to each entry.
+ * This enables O(log N) lookups in calculateTimeFromTicks.
+ * @param {Array} tempoMap - Array of tempo changes [{ tick, usPerBeat }].
+ * @param {number} tpb - Ticks per beat.
+ * @returns {Array} New tempo map with accumulatedMicros.
+ */
+export const preprocessTempoMap = (tempoMap, tpb) => {
+  if (!tempoMap || tempoMap.length === 0) return []
+
+  const processed = []
+  let currentTick = 0
+  let totalTimeMicros = 0
+
+  for (let i = 0; i < tempoMap.length; i++) {
+    const currentTempo = tempoMap[i]
+    const nextTempo = tempoMap[i + 1]
+
+    // Store the state at the START of this segment
+    // _startTick aligns with the 'currentTick' iterator from the legacy calculation loop
+    processed.push({
+      ...currentTempo,
+      _startTick: currentTick,
+      _accumulatedMicros: totalTimeMicros
+    })
+
+    if (nextTempo) {
+      const durationTicks = Math.max(0, nextTempo.tick - currentTick)
+      if (durationTicks > 0) {
+        totalTimeMicros += durationTicks * (currentTempo.usPerBeat / tpb)
+      }
+      currentTick = nextTempo.tick
+    }
+  }
+  return processed
+}
+
+/**
+ * Finds the active tempo segment for a given tick using binary search.
+ * @param {Array} processedMap - Preprocessed tempo map.
+ * @param {number} ticks - Target ticks.
+ * @returns {object} The tempo map entry active for this tick.
+ */
+const findTempoSegment = (processedMap, ticks) => {
+  let lo = 0
+  let hi = processedMap.length - 1
+  let candidate = processedMap[0]
+
+  while (lo <= hi) {
+    const mid = (lo + hi) >>> 1
+    const entry = processedMap[mid]
+
+    if (entry._startTick <= ticks) {
+      // Valid candidate, try to find a later one
+      candidate = entry
+      lo = mid + 1
+    } else {
+      hi = mid - 1
+    }
+  }
+  return candidate
+}
+
+/**
  * Calculates the time for a given tick count using the song's tempo map.
  * @param {number} ticks - The MIDI tick timestamp.
  * @param {number} tpb - Ticks per beat.
@@ -70,10 +133,22 @@ export const generateNotesForSong = (song, options = {}) => {
 export const calculateTimeFromTicks = (ticks, tpb, tempoMap, unit = 'ms') => {
   if (!tempoMap || tempoMap.length === 0) return 0
 
-  let totalTime = 0
-  let currentTick = 0
   // divisor: if 'ms', we want (us / 1000). if 's', we want (us / 1000000).
   const divisor = unit === 's' ? 1000000 : 1000
+
+  // Optimization: Check for preprocessed map
+  // We use a specific property to identify optimized maps
+  if (tempoMap.length > 0 && typeof tempoMap[0]._accumulatedMicros === 'number') {
+    const segment = findTempoSegment(tempoMap, ticks)
+    const offsetTicks = Math.max(0, ticks - segment._startTick)
+    // usPerBeat / tpb = microseconds per tick
+    const offsetMicros = offsetTicks * (segment.usPerBeat / tpb)
+    return (segment._accumulatedMicros + offsetMicros) / divisor
+  }
+
+  // Legacy Slow Path
+  let totalTime = 0
+  let currentTick = 0
 
   for (let i = 0; i < tempoMap.length; i++) {
     const currentTempo = tempoMap[i]
@@ -127,6 +202,9 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
   // Determine timing strategy: Tempo Map vs Constant BPM
   const useTempoMap = Array.isArray(song.tempoMap) && song.tempoMap.length > 0
 
+  // Optimization: Preprocess tempo map once if available
+  const activeTempoMap = useTempoMap ? preprocessTempoMap(song.tempoMap, tpb) : []
+
   // 3. Map to game note objects
   const gameNotes = filteredNotes
     .map(n => {
@@ -142,10 +220,7 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
 
       let timeMs = 0
       if (useTempoMap) {
-        // If calculateTimeFromTicks returns 0/NaN due to bad data, fallback logic?
-        // calculateTimeFromTicks is robust for empty maps (returns 0), but if map is invalid?
-        // We already checked length > 0.
-        timeMs = calculateTimeFromTicks(n.t, tpb, song.tempoMap, 'ms')
+        timeMs = calculateTimeFromTicks(n.t, tpb, activeTempoMap, 'ms')
       } else {
         // Fallback: ticks -> ms using constant BPM
         timeMs = (n.t / tpb) * (60000 / bpm)
