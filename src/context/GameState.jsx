@@ -18,6 +18,7 @@ import {
   safeStorageOperation
 } from '../utils/errorHandler'
 import { validateSaveData } from '../utils/saveValidator'
+import { addUnlock } from '../utils/unlockManager'
 
 // Import modular state management
 import { createInitialState } from './initialState'
@@ -397,23 +398,8 @@ export const GameStateProvider = ({ children }) => {
 
           // Unlocks
           if (delta.flags?.unlock) {
-            const currentUnlocks = safeStorageOperation(
-              'loadUnlocks',
-              () =>
-                JSON.parse(localStorage.getItem('neurotoxic_unlocks') || '[]'),
-              []
-            )
-            if (
-              Array.isArray(currentUnlocks) &&
-              !currentUnlocks.includes(delta.flags.unlock)
-            ) {
-              currentUnlocks.push(delta.flags.unlock)
-              safeStorageOperation('saveUnlocks', () =>
-                localStorage.setItem(
-                  'neurotoxic_unlocks',
-                  JSON.stringify(currentUnlocks)
-                )
-              )
+            const added = addUnlock(delta.flags.unlock)
+            if (added) {
               addToast(
                 `UNLOCKED: ${delta.flags.unlock.toUpperCase()}!`,
                 'success'

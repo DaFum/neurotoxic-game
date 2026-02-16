@@ -49,9 +49,11 @@ const calculateTicketIncome = (gigData, playerFame, modifiers) => {
   // Fame needs to be ~10x capacity to fill it easily
   const fameRatio = Math.min(
     1.0,
-    playerFame / (gigData.capacity * TICKET_SALES_CONSTANTS.FAME_CAPACITY_SCALER)
+    playerFame /
+      (gigData.capacity * TICKET_SALES_CONSTANTS.FAME_CAPACITY_SCALER)
   )
-  let fillRate = baseDrawRatio + fameRatio * TICKET_SALES_CONSTANTS.FAME_FILL_WEIGHT
+  let fillRate =
+    baseDrawRatio + fameRatio * TICKET_SALES_CONSTANTS.FAME_FILL_WEIGHT
 
   // Promo Boost
   if (modifiers.promo) fillRate += 0.15
@@ -160,13 +162,9 @@ export const calculateDistance = (nodeA, nodeB = null) => {
   const y1 = typeof nodeA?.y === 'number' ? nodeA.y : (nodeA?.venue?.y ?? 50)
 
   const x2 =
-    nodeB && typeof nodeB.x === 'number'
-      ? nodeB.x
-      : (nodeB?.venue?.x ?? 50)
+    nodeB && typeof nodeB.x === 'number' ? nodeB.x : (nodeB?.venue?.x ?? 50)
   const y2 =
-    nodeB && typeof nodeB.y === 'number'
-      ? nodeB.y
-      : (nodeB?.venue?.y ?? 50)
+    nodeB && typeof nodeB.y === 'number' ? nodeB.y : (nodeB?.venue?.y ?? 50)
 
   const dx = x1 - x2
   const dy = y1 - y2
@@ -227,10 +225,7 @@ const calculateGigExpenses = (gigData, modifiers, playerState = null) => {
   const expenses = { total: 0, breakdown: [] }
 
   // Transport
-  const { fuelCost } = calculateFuelCost(
-    gigData.dist || 100,
-    playerState
-  )
+  const { fuelCost } = calculateFuelCost(gigData.dist || 100, playerState)
 
   expenses.breakdown.push({
     label: 'Fuel',
