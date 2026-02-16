@@ -26,13 +26,11 @@ export const useRhythmGameLoop = ({
   gameStateRef,
   scoringActions,
   setters,
-  // state, // React state is not reliable in high-frequency loop, use Refs
   contextState,
   contextActions
 }) => {
   const { handleMiss } = scoringActions
   const { setIsToxicMode } = setters
-  // const { isGameOver, isToxicMode } = state // Removed to prevent stale closures
   const { activeEvent } = contextState
   const { setLastGigStats, changeScene } = contextActions
 
@@ -154,8 +152,6 @@ export const useRhythmGameLoop = ({
       changeScene,
       gameStateRef,
       handleMiss,
-      // isGameOver, // Removed
-      // isToxicMode, // Removed
       setIsToxicMode,
       setLastGigStats
     ]
