@@ -24,7 +24,7 @@ global.matchMedia = () => ({
   removeListener: () => {}
 })
 
-test('GameStateProvider Re-render Benchmark', async t => {
+test('GameStateProvider Re-render Benchmark', async _t => {
   // Dynamic imports to ensure environment is ready
   const React = await import('react')
   const { render, act } = await import('@testing-library/react')
@@ -40,6 +40,7 @@ test('GameStateProvider Re-render Benchmark', async t => {
     consumerRenders++
     return <div data-testid='consumer'>{player?.name || 'Player'}</div>
   })
+  Consumer.displayName = 'ConsumerBenchmark'
 
   let triggerRenders = 0
   const Trigger = React.memo(() => {
@@ -54,6 +55,7 @@ test('GameStateProvider Re-render Benchmark', async t => {
       </button>
     )
   })
+  Trigger.displayName = 'TriggerBenchmark'
 
   let optimizedRenders = 0
   const OptimizedTrigger = React.memo(() => {
@@ -68,6 +70,7 @@ test('GameStateProvider Re-render Benchmark', async t => {
       </button>
     )
   })
+  OptimizedTrigger.displayName = 'OptimizedTriggerBenchmark'
 
   const App = () => (
     <GameStateProvider>

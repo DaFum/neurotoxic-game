@@ -94,7 +94,6 @@ test('updateProjectiles handles large delta (lag spike)', () => {
 
 test('checkCollisions detects hits and removes items', () => {
   const screenHeight = 1000
-  const hitY = screenHeight - 150 // 850
   const projectiles = [
     { id: 1, y: 800 }, // No hit (800 < 850)
     { id: 2, y: 900 }, // Hit (900 > 850)

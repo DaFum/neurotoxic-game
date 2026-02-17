@@ -22,7 +22,7 @@ export async function skipToMenu(page) {
       if (await skipBtn.isVisible()) {
         await skipBtn.click()
       }
-    } catch (e) {
+    } catch (_e) {
       // Ignore visibility check errors (might have loaded straight to menu)
     }
 

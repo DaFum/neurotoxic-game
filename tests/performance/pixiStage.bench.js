@@ -69,7 +69,7 @@ function runBaseline() {
 
 // Optimized: Pre-calculated jitter stored on sprite (or note)
 // We'll simulate that we've already attached a jitter property to the sprite or note
-for (const [note, sprite] of noteSprites) {
+for (const [_note, sprite] of noteSprites) {
   sprite.jitter = (Math.random() - 0.5) * NOTE_JITTER_RANGE
 }
 

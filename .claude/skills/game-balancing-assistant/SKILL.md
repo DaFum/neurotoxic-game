@@ -52,3 +52,5 @@ Tune the game's economy, difficulty, and progression curves.
 
 **Output**:
 "Adjusted `src/data/venues.js`: 'The Dive Bar' payout increased from 50 to 80 to cover travel costs."
+
+_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._

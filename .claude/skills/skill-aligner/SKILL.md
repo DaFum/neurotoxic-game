@@ -37,3 +37,5 @@ Synchronize skills with the current state of the repository.
 
 **Output**:
 "Updated `ci-hardener` to reflect the consolidation of lint scripts in `package.json`."
+
+_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._

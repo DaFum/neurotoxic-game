@@ -59,3 +59,5 @@ useEffect(() => {
 
 **Output**:
 "Added cleanup function to destroy the Pixi application on unmount. This prevents canvas duplication and memory leaks."
+
+_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._

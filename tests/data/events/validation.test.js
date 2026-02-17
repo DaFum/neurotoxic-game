@@ -15,7 +15,7 @@ mock.module('../../../src/data/events/transport.js', {
 // Dynamic import to ensure mock is applied
 const { EVENTS_DB } = await import('../../../src/data/events/index.js')
 
-test('Event validation filters out invalid events', async t => {
+test('Event validation filters out invalid events', async _t => {
   const transportEvents = EVENTS_DB.transport
 
   // Verify behavior: invalid events should be filtered out

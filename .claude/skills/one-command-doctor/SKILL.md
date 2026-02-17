@@ -49,3 +49,5 @@ Run `.claude/skills/one-command-doctor/scripts/doctor.sh`.
 [PASS] Lockfile is in sync.
 ```
 "Your Node version is too old. Run `nvm install 20 && nvm use 20`."
+
+_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._

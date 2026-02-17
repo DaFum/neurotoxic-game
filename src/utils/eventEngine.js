@@ -167,12 +167,12 @@ export const eventEngine = {
    * @returns {object} The result object containing effects and outcomes.
    */
   resolveChoice: (choice, gameState) => {
-    let result = null
+    let result
 
     if (choice.skillCheck) {
       const { stat, threshold, success, failure } = choice.skillCheck
 
-      let skillValue = 0
+      let skillValue
 
       // WARNING: 'luck' check must come first!
       // The band object has a 'luck' property (default 0). If we checked band[stat] first,

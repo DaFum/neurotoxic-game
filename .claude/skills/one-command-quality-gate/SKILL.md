@@ -43,3 +43,5 @@ Run `.claude/skills/one-command-quality-gate/scripts/quality-gate.sh`.
   Test failed: 'Game should start with 100 money'
 ```
 "Quality gate failed at the Test step. Please fix the money initialization regression."
+
+_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._

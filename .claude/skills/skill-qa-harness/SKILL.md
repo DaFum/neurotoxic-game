@@ -46,3 +46,5 @@ Run validation script.
 [PASS] old-skill/SKILL.md
 ```
 "The new skill is missing a description. Please add it to the YAML header."
+
+_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._

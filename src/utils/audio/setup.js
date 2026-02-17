@@ -119,13 +119,17 @@ export function disposeAudio() {
   if (audioState.transportEndEventId != null) {
     try {
       Tone.getTransport().clear(audioState.transportEndEventId)
-    } catch {}
+    } catch (error) {
+      logger.debug('AudioEngine', 'Transport end event clear failed', error)
+    }
     audioState.transportEndEventId = null
   }
   if (audioState.transportStopEventId != null) {
     try {
       Tone.getTransport().clear(audioState.transportStopEventId)
-    } catch {}
+    } catch (error) {
+      logger.debug('AudioEngine', 'Transport stop event clear failed', error)
+    }
     audioState.transportStopEventId = null
   }
 
@@ -133,10 +137,14 @@ export function disposeAudio() {
   if (audioState.gigSource) {
     try {
       audioState.gigSource.stop()
-    } catch {}
+    } catch (error) {
+      logger.debug('AudioEngine', 'Gig source stop failed', error)
+    }
     try {
       audioState.gigSource.disconnect()
-    } catch {}
+    } catch (error) {
+      logger.debug('AudioEngine', 'Gig source disconnect failed', error)
+    }
   }
   resetGigState() // Use helper
 
@@ -144,10 +152,14 @@ export function disposeAudio() {
   if (audioState.ambientSource) {
     try {
       audioState.ambientSource.stop()
-    } catch {}
+    } catch (error) {
+      logger.debug('AudioEngine', 'Ambient source stop failed', error)
+    }
     try {
       audioState.ambientSource.disconnect()
-    } catch {}
+    } catch (error) {
+      logger.debug('AudioEngine', 'Ambient source disconnect failed', error)
+    }
     audioState.ambientSource = null
   }
 
