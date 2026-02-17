@@ -44,7 +44,10 @@ test('validateSaveData validates social values', () => {
     social: { fans: 'a lot' },
     gameMap: {}
   }
-  assert.throws(() => validateSaveData(data), /Social values must be numbers/)
+  assert.throws(
+    () => validateSaveData(data),
+    /Social value "fans" must be a number/
+  )
 })
 
 test('gameReducer LOAD_GAME prevents prototype pollution and state pollution', () => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useGameState } from '../context/GameState'
 import { useRhythmGameLogic } from '../hooks/useRhythmGameLogic'
 import { PixiStage } from '../components/PixiStage'
@@ -17,7 +17,7 @@ export const Gig = () => {
   const chaosContainerRef = useRef(null)
   const hasUnlockedAudioRef = useRef(false)
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!currentGig) {
       addToast('No gig active! Returning to map.', 'error')
       changeScene('OVERWORLD')

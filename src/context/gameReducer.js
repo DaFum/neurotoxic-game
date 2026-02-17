@@ -271,11 +271,12 @@ const handleConsumeItem = (state, payload) => {
  */
 const handleAdvanceDay = state => {
   const { player, band, social } = calculateDailyUpdates(state)
-  if (typeof band.harmony === 'number') {
-    band.harmony = Math.max(1, Math.min(100, band.harmony))
+  const nextBand = { ...band }
+  if (typeof nextBand.harmony === 'number') {
+    nextBand.harmony = Math.max(1, Math.min(100, nextBand.harmony))
   }
   logger.info('GameState', `Day Advanced to ${player.day}`)
-  return { ...state, player, band, social, eventCooldowns: [] }
+  return { ...state, player, band: nextBand, social, eventCooldowns: [] }
 }
 
 /**

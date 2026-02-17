@@ -180,6 +180,8 @@ export const calculateDistance = (nodeA, nodeB = null) => {
  * @returns {object} { fuelLiters, fuelCost }
  */
 export const calculateFuelCost = (dist, playerState = null) => {
+  if (dist < 0) return { fuelLiters: 0, fuelCost: 0 }
+
   let fuelLiters = (dist / 100) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM
 
   // Check for 'van_tuning' upgrade
