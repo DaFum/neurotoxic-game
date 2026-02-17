@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { useAudioControl } from '../hooks/useAudioControl'
@@ -30,11 +30,11 @@ export const MainMenu = () => {
     resetState
   } = useGameState()
   const [showUpgrades, setShowUpgrades] = useState(false)
-  const isMountedRef = React.useRef(true)
+  const isMountedRef = useRef(true)
 
   const { audioState, handleAudioChange } = useAudioControl()
 
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       isMountedRef.current = false
     }

@@ -71,7 +71,7 @@ export const GameStateProvider = ({ children }) => {
       const newMap = generator.generateMap()
       dispatch(createSetMapAction(newMap))
     }
-  }, [state.gameMap])
+  }, [state.gameMap, dispatch])
 
   // Sync Logger with settings on load/change
   useEffect(() => {
@@ -435,7 +435,7 @@ export const GameStateProvider = ({ children }) => {
         return { outcomeText, description, result }
       } catch (error) {
         // 7. Error Handling
-        console.error('[Event] Failed to resolve event choice:', error)
+        logger.error('Event', 'Failed to resolve event choice:', error)
         addToast('EVENT ERROR: Resolution failed.', 'error')
         setActiveEvent(null)
         return {

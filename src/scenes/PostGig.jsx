@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import React, { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
@@ -33,12 +33,12 @@ export const PostGig = () => {
   const [postOptions, setPostOptions] = useState([])
   const [postResult, setPostResult] = useState(null)
 
-  const perfScore = React.useMemo(() => {
+  const perfScore = useMemo(() => {
     const rawScore = lastGigStats?.score || 0
     return Math.min(100, Math.max(30, rawScore / 500))
   }, [lastGigStats])
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!currentGig) return
 
     if (!activeEvent) {
@@ -53,7 +53,7 @@ export const PostGig = () => {
   }, [currentGig, activeEvent, triggerEvent])
 
   // Initialize Results once (simulated)
-  React.useEffect(() => {
+  useEffect(() => {
     if (!financials && currentGig && lastGigStats) {
       const crowdStats = { hype: lastGigStats?.peakHype || 0 }
 

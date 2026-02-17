@@ -79,9 +79,10 @@ const validateBand = band => {
 const validateSocial = social => {
   if (typeof social !== 'object') throw new Error('social must be an object')
 
-  Object.values(social).forEach(val => {
+  Object.entries(social).forEach(([key, val]) => {
+    if (key === 'lastGigDay' && val === null) return
     if (typeof val !== 'number') {
-      throw new Error('Social values must be numbers')
+      throw new Error(`Social value "${key}" must be a number`)
     }
   })
 }

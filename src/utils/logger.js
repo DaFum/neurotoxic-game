@@ -34,7 +34,11 @@ export class Logger {
    */
   setLevel(level) {
     this.minLevel = level
-    localStorage.setItem('neurotoxic_log_level', level)
+    try {
+      localStorage.setItem('neurotoxic_log_level', level)
+    } catch (e) {
+      // Ignore storage errors
+    }
   }
 
   /**

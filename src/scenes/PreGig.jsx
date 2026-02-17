@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useGameState } from '../context/GameState'
 import { SONGS_DB } from '../data/songs'
 import { getGigModifiers } from '../utils/simulationUtils'
@@ -62,7 +62,7 @@ export const PreGig = () => {
   const [isStarting, setIsStarting] = useState(false)
   const currentModifiers = getGigModifiers(band, gigModifiers)
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!currentGig) {
       addToast('No gig active! Returning to map.', 'error')
       changeScene('OVERWORLD')
@@ -84,7 +84,7 @@ export const PreGig = () => {
     addToast('Meeting held. Vibes are better.', 'success')
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Chance for a Pre-Gig event (Band or Gig category)
     if (!activeEvent) {
       const bandEvent = triggerEvent('band', 'pre_gig')
@@ -129,7 +129,7 @@ export const PreGig = () => {
     setGigModifiers({ [key]: !isActive })
   }
 
-  const calculatedBudget = React.useMemo(() => {
+  const calculatedBudget = useMemo(() => {
     return Object.entries(gigModifiers).reduce((acc, [key, active]) => {
       if (!active) return acc
       return acc + (MODIFIER_COSTS[key] || 0)
