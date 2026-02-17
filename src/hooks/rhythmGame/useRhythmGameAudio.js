@@ -184,7 +184,10 @@ export const useRhythmGameAudio = ({
             filename: oggFilename,
             bufferOffsetMs: excerptStart,
             delayMs: GIG_LEAD_IN_MS,
-            durationMs: gigDurationMs
+            durationMs: gigDurationMs,
+            onEnded: () => {
+              gameStateRef.current.audioPlaybackEnded = true
+            }
           })
           if (success) {
             bgAudioStarted = true
@@ -213,7 +216,10 @@ export const useRhythmGameAudio = ({
           {
             startTimeSec: toneGigStartTimeSec,
             stopAfterSeconds: gigPlaybackSeconds,
-            useCleanPlayback: false
+            useCleanPlayback: false,
+            onEnded: () => {
+              gameStateRef.current.audioPlaybackEnded = true
+            }
           }
         )
         if (success) {
@@ -229,7 +235,12 @@ export const useRhythmGameAudio = ({
         startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
         const success = await playSongFromData(
           currentSong,
-          GIG_LEAD_IN_MS / 1000
+          GIG_LEAD_IN_MS / 1000,
+          {
+            onEnded: () => {
+              gameStateRef.current.audioPlaybackEnded = true
+            }
+          }
         )
         if (success) {
           bgAudioStarted = true
@@ -254,7 +265,16 @@ export const useRhythmGameAudio = ({
         if (!bgAudioStarted) {
           audioDelay = GIG_LEAD_IN_MS / 1000
           startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
-          await startMetalGenerator(currentSong, audioDelay, rng)
+          await startMetalGenerator(
+            currentSong,
+            audioDelay,
+            {
+              onEnded: () => {
+                gameStateRef.current.audioPlaybackEnded = true
+              }
+            },
+            rng
+          )
           logger.info(
             'RhythmGame',
             `Gig audio: procedural metal generator for "${currentSong.name}"`
@@ -264,6 +284,8 @@ export const useRhythmGameAudio = ({
 
       gameStateRef.current.notes = notes
       gameStateRef.current.nextMissCheckIndex = 0
+      gameStateRef.current.hasSubmittedResults = false
+      gameStateRef.current.audioPlaybackEnded = false
 
       const maxNoteTime = notes.reduce((max, n) => Math.max(max, n.time), 0)
       const buffer = 4000

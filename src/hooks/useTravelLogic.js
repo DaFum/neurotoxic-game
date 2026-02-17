@@ -212,7 +212,8 @@ export const useTravelLogic = ({
           fuel: Math.max(0, (player.van?.fuel ?? 0) - fuelLiters)
         },
         location: node.venue.name,
-        currentNodeId: node.id
+        currentNodeId: node.id,
+        totalTravels: (player.totalTravels ?? 0) + 1
       })
       advanceDay()
 
@@ -555,7 +556,6 @@ export const useTravelLogic = ({
     travelTarget,
 
     // Computed
-    getCurrentNode,
     isConnected,
     getNodeVisibility,
 

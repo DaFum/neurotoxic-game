@@ -21,6 +21,7 @@ export const DEFAULT_PLAYER_STATE = {
   score: 0,
   fame: 0,
   fameLevel: 0,
+  totalTravels: 0,
   hqUpgrades: [],
   van: {
     fuel: 100,
@@ -72,7 +73,8 @@ export const DEFAULT_SOCIAL_STATE = {
   tiktok: 64,
   youtube: 14,
   newsletter: 0,
-  viral: 0
+  viral: 0,
+  lastGigDay: null
 }
 
 /**

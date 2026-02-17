@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useGameState } from '../context/GameState'
 import { GlitchButton } from '../ui/GlitchButton'
 
@@ -6,6 +7,12 @@ import { GlitchButton } from '../ui/GlitchButton'
  */
 export const GameOver = () => {
   const { changeScene, player, loadGame, resetState } = useGameState()
+
+  useEffect(() => {
+    if (!player || player.score === undefined) {
+      changeScene('MENU')
+    }
+  }, [player, changeScene])
 
   /**
    * Attempts to load the last save or returns to menu.
@@ -35,19 +42,19 @@ export const GameOver = () => {
       <div className='border border-(--blood-red) p-8 w-full max-w-lg mb-8 bg-(--blood-red)/10'>
         <div className='grid grid-cols-2 gap-4 text-left font-mono text-lg'>
           <span className='text-(--ash-gray)'>DAYS SURVIVED:</span>
-          <span className='text-(--star-white) text-right'>{player.day}</span>
+          <span className='text-(--star-white) text-right'>{player?.day}</span>
 
           <span className='text-(--ash-gray)'>FAME REACHED:</span>
-          <span className='text-(--star-white) text-right'>{player.fame}</span>
+          <span className='text-(--star-white) text-right'>{player?.fame}</span>
 
-          <span className='text-(--ash-gray)'>LOCATION:</span>
+          <span className='text-(--ash-gray)'>TOTAL TRAVELS:</span>
           <span className='text-(--star-white) text-right'>
-            {player.location}
+            {player?.totalTravels ?? 0}
           </span>
 
-          <span className='text-(--ash-gray)'>CITIES VISITED:</span>
+          <span className='text-(--ash-gray)'>TOTAL SCORE:</span>
           <span className='text-(--star-white) text-right'>
-            {player.visitedCities?.length || 0}
+            {player?.score ?? 0}
           </span>
         </div>
       </div>

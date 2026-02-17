@@ -532,9 +532,3 @@ export const useGameState = () => {
   return { ...state, ...dispatch, hasUpgrade }
 }
 
-/**
- * Hook to access only the game dispatch actions.
- * Optimized to avoid re-renders when state changes.
- * @returns {object} The action dispatchers.
- */
-export const useGameDispatch = () => useContext(GameDispatchContext)

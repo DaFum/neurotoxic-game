@@ -7,7 +7,9 @@ import { calculateGigFinancials } from '../utils/economyEngine'
 import {
   calculateViralityScore,
   generatePostOptions,
-  resolvePost
+  resolvePost,
+  calculateSocialGrowth,
+  checkViralEvent
 } from '../utils/socialEngine'
 import { ChatterOverlay } from '../components/ChatterOverlay'
 
@@ -81,11 +83,27 @@ export const PostGig = () => {
 
   const handlePostSelection = option => {
     const result = resolvePost(option, Math.random())
-    setPostResult(result)
+
+    // Use checkViralEvent for bonus viral flag based on actual gig stats
+    const isGigViral = lastGigStats && checkViralEvent(lastGigStats)
+    const gigViralBonus = isGigViral ? 1 : 0
+
+    // Use calculateSocialGrowth for platform-aware organic growth on top of post
+    const organicGrowth = calculateSocialGrowth(
+      result.platform,
+      perfScore,
+      social[result.platform] || 0,
+      isGigViral // Use actual gig viral status, not post result.success
+    )
+    const totalFollowers = result.followers + organicGrowth
+
+    const finalResult = { ...result, totalFollowers }
+    setPostResult(finalResult)
 
     updateSocial({
-      [result.platform]: (social[result.platform] || 0) + result.followers,
-      viral: social.viral + (result.success ? 1 : 0)
+      [result.platform]: (social[result.platform] || 0) + totalFollowers,
+      viral: social.viral + (result.success ? 1 : 0) + gigViralBonus,
+      lastGigDay: player.day
     })
 
     setPhase('COMPLETE')
@@ -271,9 +289,9 @@ const SocialPhase = ({ options, onSelect }) => (
 SocialPhase.propTypes = {
   options: PropTypes.arrayOf(
     PropTypes.shape({
-      label: PropTypes.string.isRequired,
-      type: PropTypes.string.isRequired,
-      chance: PropTypes.number.isRequired
+      title: PropTypes.string.isRequired,
+      platform: PropTypes.string.isRequired,
+      viralChance: PropTypes.number
     })
   ).isRequired,
   onSelect: PropTypes.func.isRequired
@@ -286,8 +304,8 @@ const CompletePhase = ({ result, onContinue }) => (
     </h3>
     <p className='mb-6 text-(--ash-gray)'>{result.message}</p>
     <div className='text-xl mb-8'>
-      {result.followers > 0 ? '+' : ''}
-      {result.followers} Followers on {result.platform}
+      {result.totalFollowers > 0 ? '+' : ''}
+      {result.totalFollowers} Followers on {result.platform}
     </div>
     <button
       onClick={onContinue}
@@ -303,6 +321,7 @@ CompletePhase.propTypes = {
     success: PropTypes.bool.isRequired,
     message: PropTypes.string.isRequired,
     followers: PropTypes.number.isRequired,
+    totalFollowers: PropTypes.number.isRequired,
     platform: PropTypes.string.isRequired
   }).isRequired,
   onContinue: PropTypes.func.isRequired

@@ -121,7 +121,8 @@ describe('useTravelLogic', () => {
     player: {
       money: 1000,
       currentNodeId: 'node_start',
-      van: { fuel: 50, condition: 80 }
+      van: { fuel: 50, condition: 80 },
+      totalTravels: 0
     },
     band: { members: [], harmony: 50 },
     gameMap: {
@@ -279,6 +280,7 @@ describe('useTravelLogic', () => {
     assert.equal(updateArg.currentNodeId, targetNode.id)
     assert.equal(updateArg.money, 950) // 1000 - 50
     assert.equal(updateArg.van.fuel, 40) // 50 - 10
+    assert.equal(updateArg.totalTravels, 1)
 
     assert.equal(props.advanceDay.mock.calls.length, 1)
     assert.equal(props.saveGame.mock.calls.length, 1)
