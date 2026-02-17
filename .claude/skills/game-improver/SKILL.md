@@ -32,7 +32,7 @@ Implement production-ready improvements, bug fixes, and features for NEUROTOXIC.
 
 ## Core Constraints
 
-- **Stack**: React 18, Vite 5, Tailwind 4, Pixi 8.
+- **Stack**: React 19.2.4, Vite 7.3.1, Tailwind 4, Pixi 8.
 - **State**: `player.money` must be >= 0. `band.harmony` must be > 0.
 - **Audio**: Must handle AudioContext state (suspended/running).
 

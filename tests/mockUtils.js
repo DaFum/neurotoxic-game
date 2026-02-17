@@ -47,6 +47,7 @@ export class MockPolySynth {
   triggerAttackRelease() {}
   dispose() {
     if (MockPolySynth.shouldThrowOnDispose) {
+      MockPolySynth.shouldThrowOnDispose = false
       throw new Error('Node disposal failed')
     }
   }

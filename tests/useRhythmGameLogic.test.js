@@ -12,6 +12,8 @@ import {
   resetAllMocks
 } from './useRhythmGameLogicTestUtils.js'
 
+const ASYNC_INIT_TIMEOUT_MS = 200
+
 const {
   mockUseGameState,
   mockAudioManager,
@@ -52,7 +54,7 @@ describe('useRhythmGameLogic', () => {
   const initHook = async () => {
     const { result } = renderHook(() => useRhythmGameLogic())
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 200))
+      await new Promise(resolve => setTimeout(resolve, ASYNC_INIT_TIMEOUT_MS))
     })
     return result
   }
@@ -79,7 +81,7 @@ describe('useRhythmGameLogic', () => {
     await act(async () => {
       // In a real test environment with proper timers, we would use waitFor
       // Here we use a slightly longer timeout to ensure the promise resolves
-      await new Promise(resolve => setTimeout(resolve, 200))
+      await new Promise(resolve => setTimeout(resolve, ASYNC_INIT_TIMEOUT_MS))
     })
 
     // Check if initialization ran (>= 1 because unstable dependencies from mockUseGameState might trigger re-runs)

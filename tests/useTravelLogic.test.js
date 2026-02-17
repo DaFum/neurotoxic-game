@@ -137,14 +137,8 @@ describe('useTravelLogic', () => {
   })
 
   test('handleRefuel fills tank and deducts money', () => {
-    const defaults = createTravelLogicProps()
-    const { result, props } = setupTravelScenario(useTravelLogic, {
-      player: {
-        ...defaults.player,
-        money: 1000,
-        van: { ...defaults.player.van, fuel: 50 }
-      }
-    })
+    // Defaults: money 1000, van.fuel 50. Price is 2 per unit.
+    const { result, props } = setupTravelScenario(useTravelLogic)
     // Missing 50 fuel. Price is 2 per unit. Cost = 100.
 
     act(() => {
@@ -158,14 +152,8 @@ describe('useTravelLogic', () => {
   })
 
   test('handleRepair fixes van and deducts money', () => {
-    const defaults = createTravelLogicProps()
-    const { result, props } = setupTravelScenario(useTravelLogic, {
-      player: {
-        ...defaults.player,
-        money: 1000,
-        van: { ...defaults.player.van, condition: 80 }
-      }
-    })
+    // Defaults: money 1000, van.condition 80. Price is 5 per unit.
+    const { result, props } = setupTravelScenario(useTravelLogic)
     // Missing 20 condition. Price is 5 per unit. Cost = 100.
 
     act(() => {

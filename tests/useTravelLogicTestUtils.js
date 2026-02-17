@@ -65,6 +65,10 @@ export const setupTravelLogicTest = async () => {
   return { useTravelLogic }
 }
 
+/**
+ * Creates props for useTravelLogic.
+ * Note: overrides are shallow merged. You must merge nested objects (like player) yourself.
+ */
 export const createTravelLogicProps = (overrides = {}) => ({
   player: {
     money: 1000,
@@ -139,12 +143,6 @@ export const setupTravelScenario = (useTravelLogic, propsOverrides = {}) => {
   }
   const props = createTravelLogicProps(propsOverrides)
   const targetNode = props.gameMap.nodes.node_target
-
-  mockCalculateTravelExpenses.mock.mockImplementation(() => ({
-    dist: 100,
-    totalCost: 50,
-    fuelLiters: 10
-  }))
 
   const { result } = renderHook(() => useTravelLogic(props))
 
