@@ -222,14 +222,15 @@ export const useTravelLogic = ({
       setIsTraveling(false)
       setTravelTarget(null)
 
-      // Trigger events and handle node types
+      // Trigger travel events (shown as global modal overlay)
       const eventHappened = triggerEvent('transport', 'travel')
       if (!eventHappened) {
-        const bandEvent = triggerEvent('band', 'travel')
-        if (!bandEvent) {
-          handleNodeArrival(node)
-        }
+        triggerEvent('band', 'travel')
       }
+
+      // Always handle node arrival regardless of events —
+      // gigs must start even when a travel event pops up
+      handleNodeArrival(node)
     },
     [
       travelTarget,
