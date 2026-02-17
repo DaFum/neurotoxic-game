@@ -21,7 +21,7 @@ Web-based Roguelike Tour Manager with rhythm action mechanics. Manage a Death Gr
 | Animation   | Framer Motion | 12.34.0                     |
 | Styling     | Tailwind CSS  | 4.1.18                      |
 | Audio       | Tone.js       | 15.x                        |
-| Linting     | ESLint        | 10.0.0                      |
+| Linting     | ESLint        | 9.39.2                      |
 
 ## Visual Design System (STRICT)
 

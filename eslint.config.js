@@ -40,6 +40,7 @@ export default [
       'react/jsx-key': 'error',
       'react/react-in-jsx-scope': 'off',
       'react/jsx-uses-react': 'off',
+      'react/jsx-uses-vars': 'error',
       'react-hooks/exhaustive-deps': 'warn',
       'no-unused-vars': [
         'warn',
