@@ -171,12 +171,12 @@ export const resetAllMocks = (
     // We explicitly reset implementations as well so tests don't leak mockImplementation changes
     if (dep && dep.mock && typeof dep.mock.resetCalls === 'function') {
       dep.mock.resetCalls()
-      if (typeof dep.mock.reset === 'function') dep.mock.reset()
+      if (typeof dep.mock.restore === 'function') dep.mock.restore()
     } else if (dep && typeof dep === 'object') {
       Object.values(dep).forEach(prop => {
         if (prop && prop.mock && typeof prop.mock.resetCalls === 'function') {
           prop.mock.resetCalls()
-          if (typeof prop.mock.reset === 'function') prop.mock.reset()
+          if (typeof prop.mock.restore === 'function') prop.mock.restore()
         }
       })
     }
