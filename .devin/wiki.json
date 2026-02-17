@@ -85,7 +85,7 @@
           "author": "Architecture"
         },
         {
-          "content": "Document src/scenes/MainMenu.jsx as boot entry: user-gesture audio bootstrap via ensureAudioContext()/AudioManager startup methods (required for browser autoplay policy compliance), continue-game hydration via storage load helpers (loadGame() from GameState.jsx reads localStorage, validates schema via saveValidator.js, applies state via reducer LOAD_GAME action), dispatch of initial map/tour actions (if new game: INITIALIZE_MAP, START_TOUR; if continue: RESUME_TOUR), and browser autoplay policy handling to avoid silent startup failures (displays 'Click to Start' overlay until user gesture unlocks AudioContext).",
+          "content": "Document src/scenes/MainMenu.jsx as boot entry: user-gesture audio bootstrap via ensureAudioContext() and AudioManager.startAmbient() (required for browser autoplay policy compliance), continue-game hydration via loadGame() from GameState.jsx (reads localStorage through safeStorageOperation, validates and repairs shape via saveValidator.js before dispatching LOAD_GAME), and startup routing that reflects implementation behavior (new game calls resetState(), then changeScene('OVERWORLD'); continue path calls loadGame() then changeScene('OVERWORLD') on success). Note that MainMenu does not dispatch INITIALIZE_MAP/START_TOUR/RESUME_TOUR actions and does not render a 'Click to Start' overlay; instead it surfaces error text when audio unlock or loading fails to avoid silent startup failures.",
           "author": "Architecture"
         }
       ]
@@ -100,7 +100,7 @@
           "author": "Quality"
         },
         {
-          "content": "Mention Node.js 22.3+ runtime requirement used by tests/build and where it is declared in .nvmrc. The project uses ES modules ('type': 'module' in package.json) with ES2021+ syntax including top-level await, optional chaining, nullish coalescing, and private class fields. Node 22+ is required for native test runner support (node:test module used in tests/) and ES module resolution compatibility. Developers should run 'nvm use' to align with .nvmrc before npm install.",
+          "content": "Mention Node.js 22.3+ runtime requirement used by test and build workflows and where it is declared in .nvmrc. The project uses ES modules ('type': 'module' in package.json) with ES2021+ syntax including top-level await, optional chaining, nullish coalescing, and private class fields. Node 22+ is required for native test runner support (node:test module used in tests/) and ES module resolution compatibility. Developers should run 'nvm use' to align with .nvmrc before npm install.",
           "author": "Quality"
         },
         {
@@ -241,7 +241,7 @@
     {
       "title": "GameState Context",
       "purpose": "Detail GameStateProvider and useGameState() API surface: exposed state slices (player, band, social, settings, gameMap, currentGig, setlist, lastGigStats, activeEvent, toasts, activeStoryFlags, eventCooldowns, gigModifiers), dispatch helpers (changeScene, triggerEvent, addToast, setGigModifiers, updatePlayer, updateBand), memoization boundaries, and consumer usage patterns in scenes/hooks. Reference where provider wires persistence load/save hooks and how transient runtime fields are excluded from serialized payloads.",
-      "parent": "State Management",
+      "parent": "State Management & Context System",
       "page_notes": [
         {
           "content": "Clarify which parts of state are persisted versus runtime-only transient fields. Document expected consumer pattern in scenes/hooks to avoid direct mutation and stale closures.",
@@ -256,7 +256,7 @@
     {
       "title": "Persistence & Save Data",
       "purpose": "Document persistence flow via saveGame()/loadGame() in src/context/GameState.jsx, safeStorageOperation in src/utils/errorHandler.js, and save schema validation in src/utils/saveValidator.js: safeStorageOperation wrappers, schema/version handling, reducer load actions, fallback behavior on parse failures, and guardrails against malformed/tampered localStorage data before applying values to player economy or band condition.",
-      "parent": "State Management",
+      "parent": "State Management & Context System",
       "page_notes": [
         {
           "content": "Highlight tampering risk, schema drift concerns, and recommended validation checks before applying persisted values. Add migration guidance for future save schema versions, including defaulting rules for newly introduced fields.",
