@@ -50,19 +50,13 @@ const mockHecklerLogic = {
 const mockErrorHandler = {
   handleError: mock.fn(),
   AudioError: class AudioError extends Error {
-    constructor(
-      message,
-      category = 'audio',
-      severity = 'medium',
-      context = {},
-      recoverable = true
-    ) {
+    constructor(message, context = {}) {
       super(message)
       this.name = 'AudioError'
-      this.category = category
-      this.severity = severity
+      this.category = 'audio'
+      this.severity = 'medium'
       this.context = context
-      this.recoverable = recoverable
+      this.recoverable = true
     }
   }
 }
