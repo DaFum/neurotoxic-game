@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import PropTypes from 'prop-types'
 import { HQ_ITEMS } from '../data/hqItems'
+import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog'
 import { SONGS_DB } from '../data/songs'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import { usePurchaseLogic } from '../hooks/usePurchaseLogic'
@@ -45,6 +46,8 @@ export const BandHQ = ({
   className = ''
 }) => {
   const [activeTab, setActiveTab] = useState('STATS') // STATS, SHOP, UPGRADES, SETLIST, SETTINGS
+
+  const unifiedUpgradeCatalog = getUnifiedUpgradeCatalog()
 
   const { handleBuy, isItemOwned, isItemDisabled } = usePurchaseLogic({
     player,
@@ -306,7 +309,7 @@ export const BandHQ = ({
                 <span className='text-(--warning-yellow)'>{player.fame}★</span>
               </div>
               <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4'>
-                {[...HQ_ITEMS.van, ...HQ_ITEMS.hq].map(renderItem)}
+                {unifiedUpgradeCatalog.map(renderItem)}
               </div>
             </div>
           )}

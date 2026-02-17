@@ -309,6 +309,8 @@ export const EventModal = ({ event, onOptionSelect }) => {
 
 ### ToastOverlay.jsx
 
+Toast taxonomy is fixed to `success`, `error`, `warning`, and `info` with explicit theme-token styling.
+
 **Purpose**: Temporary notifications for non-critical feedback
 
 **API:**

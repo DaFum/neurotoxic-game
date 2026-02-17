@@ -53,7 +53,6 @@ export class ErrorBoundary extends React.Component {
   }
 }
 
-export const CrashHandler = ErrorBoundary
 ErrorBoundary.propTypes = {
   children: PropTypes.node.isRequired
 }

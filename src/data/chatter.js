@@ -744,7 +744,17 @@ export const getRandomChatter = state => {
     if (c.condition) return c.condition(state)
 
     // Only fallback for default chatter in allowed scenes
-    const ALLOWED_DEFAULT_SCENES = ['OVERWORLD', 'MENU']
+    const ALLOWED_DEFAULT_SCENES = [
+      'INTRO',
+      'MENU',
+      'OVERWORLD',
+      'PREGIG',
+      'GIG',
+      'POSTGIG',
+      'SETTINGS',
+      'CREDITS',
+      'GAMEOVER'
+    ]
     if (!c.condition && ALLOWED_DEFAULT_SCENES.includes(state.currentScene)) {
       return true
     }

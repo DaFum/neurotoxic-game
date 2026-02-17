@@ -205,7 +205,7 @@ export const GigHUD = ({ stats }) => {
 
 ### ChatterOverlay.jsx
 
-**Purpose**: Simulate real-time social media comments during gigs
+**Purpose**: Simulate real-time social media comments across all scenes via a global overlay (with scene-aware labels).
 
 **Props:**
 

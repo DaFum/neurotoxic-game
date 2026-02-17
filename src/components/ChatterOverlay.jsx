@@ -1,138 +1,145 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { useGameState } from '../context/GameState'
 import { getRandomChatter } from '../data/chatter'
 import { motion, AnimatePresence } from 'framer-motion'
 
+const CHATTER_DELAY_MIN_MS = 8000
+const CHATTER_DELAY_RANGE_MS = 17000
+const CHATTER_VISIBLE_MS = 5200
+
+const SCENE_LABELS = {
+  INTRO: 'Intro Feed',
+  MENU: 'Main Feed',
+  OVERWORLD: 'Tour Feed',
+  PREGIG: 'Pre-Gig Feed',
+  GIG: 'Live Feed',
+  POSTGIG: 'Aftershow Feed',
+  SETTINGS: 'System Feed',
+  CREDITS: 'Crew Feed',
+  GAMEOVER: 'Last Broadcast'
+}
+
+/**
+ * Displays an animated social chatter capsule for the active scene.
+ *
+ * @param {object} props - Component props.
+ * @param {boolean} [props.staticPosition=false] - Enables local anchoring mode.
+ * @returns {JSX.Element} Overlay with transient chatter content.
+ */
 export const ChatterOverlay = ({ staticPosition = false }) => {
-  const state = useGameState() // Get full state
-  const stateRef = useRef(state) // Keep ref to latest state to avoid re-running effect
+  const state = useGameState()
+  const stateRef = useRef(state)
   const [chatter, setChatter] = useState(null)
 
-  // Update ref whenever state changes
   useEffect(() => {
     stateRef.current = state
   }, [state])
 
-  // Calculate positioning only if not static
-  let positionClasses = 'relative'
-  let tailClass = ''
-  let originClass = ''
-
-  if (!staticPosition) {
-    const currentNode = state.gameMap?.nodes[state.player.currentNodeId]
-    const nodeY = currentNode?.y ?? 50
-    const nodeX = currentNode?.x ?? 50
-
-    const isTop = nodeY < 30
-    const isLeftEdge = nodeX < 20
-    const isRightEdge = nodeX > 80
-
-    const translateX = isLeftEdge
-      ? 'translate-x-[-10%]'
-      : isRightEdge
-        ? 'translate-x-[-90%]'
-        : '-translate-x-1/2'
-
-    const translateY = isTop ? 'translate-y-[50%]' : '-translate-y-[150%]'
-    originClass = isTop ? 'origin-top' : 'origin-bottom'
-
-    positionClasses = `absolute left-1/2 transform ${translateX} ${translateY}`
-
-    const tailPosition = isLeftEdge
-      ? 'left-4'
-      : isRightEdge
-        ? 'right-4'
-        : 'right-1/2 translate-x-1/2'
-
-    const tailDirection = isTop
-      ? `-top-2 border-b-[10px] border-b-(--star-white)`
-      : `-bottom-2 border-t-[10px] border-t-(--star-white)`
-
-    tailClass = `absolute ${tailDirection} ${tailPosition} w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent filter drop-shadow-xs`
-  }
+  const sceneLabel = useMemo(
+    () => SCENE_LABELS[state.currentScene] || 'Band Feed',
+    [state.currentScene]
+  )
 
   useEffect(() => {
-    let timeoutId
+    let delayTimeoutId
     let hideTimeoutId
     let active = true
 
-    const loop = () => {
-      if (!active) return
+    const schedule = () => {
+      if (!active || document.hidden) return
+      const delay =
+        Math.random() * CHATTER_DELAY_RANGE_MS + CHATTER_DELAY_MIN_MS
 
-      // Random delay: 8s to 25s
-      const delay = Math.random() * 17000 + 8000
-
-      timeoutId = setTimeout(() => {
-        if (!active) return
+      delayTimeoutId = setTimeout(() => {
+        if (!active || document.hidden) return
 
         const currentState = stateRef.current
         const result = getRandomChatter(currentState)
 
         if (result) {
           const { text, speaker: fixedSpeaker } = result
+          const members = currentState.band?.members ?? []
+          const memberNames = members
+            .map(member => member.name)
+            .filter(memberName => typeof memberName === 'string')
 
-          // Use fixed speaker if defined, else pick random member
-          let speaker = fixedSpeaker
-          if (!speaker && currentState.band && currentState.band.members) {
-            const members = currentState.band.members.map(m => m.name)
-            speaker = members[Math.floor(Math.random() * members.length)]
-          }
+          const speaker =
+            fixedSpeaker ||
+            memberNames[
+              Math.floor(Math.random() * (memberNames.length || 1))
+            ] ||
+            'Band'
 
-          setChatter({ text, speaker: speaker || 'Band', id: Date.now() })
+          setChatter({ text, speaker, id: Date.now() })
 
-          // Hide after 5s
           hideTimeoutId = setTimeout(() => {
             if (active) setChatter(null)
-          }, 5000)
+          }, CHATTER_VISIBLE_MS)
         }
 
-        // Schedule next
-        loop()
+        schedule()
       }, delay)
     }
 
-    loop()
+    const handleVisibilityChange = () => {
+      if (!active) return
+      if (!document.hidden) {
+        clearTimeout(delayTimeoutId)
+        schedule()
+      }
+    }
+
+    schedule()
+    document.addEventListener('visibilitychange', handleVisibilityChange)
 
     return () => {
       active = false
-      clearTimeout(timeoutId)
+      clearTimeout(delayTimeoutId)
       clearTimeout(hideTimeoutId)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, []) // Run once on mount
+  }, [])
 
-  const containerClasses = [
-    positionClasses,
-    'z-20 pointer-events-none w-max max-w-[200px] md:max-w-xs',
-    !staticPosition && originClass,
-    !staticPosition && 'top-1/2'
-  ]
-    .filter(Boolean)
-    .join(' ')
+  const wrapperClassName = staticPosition
+    ? 'relative z-40 pointer-events-none w-[min(22rem,88vw)]'
+    : 'fixed top-24 right-4 md:right-8 z-[9500] pointer-events-none w-[min(24rem,90vw)]'
 
   return (
     <AnimatePresence>
       {chatter && (
         <motion.div
           key={chatter.id}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.5 }}
-          className={containerClasses}
+          initial={{ opacity: 0, y: -18, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -12, scale: 0.96 }}
+          transition={{ duration: 0.22, ease: 'easeOut' }}
+          className={wrapperClassName}
+          aria-live='polite'
+          role='status'
         >
-          <div className='bg-(--star-white) text-(--void-black) p-3 rounded-tr-xl rounded-tl-xl rounded-bl-xl border-2 border-(--void-black) shadow-lg relative'>
-            <div className='flex justify-between items-center mb-1'>
-              <div className='text-[10px] font-bold text-(--ash-gray) uppercase tracking-widest'>
-                {chatter.speaker}
-              </div>
-              <div className='w-2 h-2 rounded-full bg-(--toxic-green) animate-pulse' />
-            </div>
-            <div className='font-mono text-sm leading-tight whitespace-normal'>
-              {chatter.text}
+          <div className='relative overflow-hidden border-2 border-(--toxic-green) bg-(--void-black)/90 backdrop-blur-md shadow-[0_0_0_1px_var(--void-black),0_12px_30px_rgba(0,0,0,0.45)]'>
+            <div className='absolute inset-y-0 left-0 w-1.5 bg-(--toxic-green)' />
+            <div className='absolute top-0 right-0 h-10 w-10 bg-(--toxic-green)/20 blur-lg' />
+
+            <div className='pl-4 pr-3 py-2 border-b border-(--ash-gray) flex items-center justify-between gap-2'>
+              <p className='text-[10px] uppercase tracking-[0.18em] font-bold text-(--toxic-green) font-mono'>
+                {sceneLabel}
+              </p>
+              <span className='inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-mono text-(--ash-gray)'>
+                <span className='w-1.5 h-1.5 rounded-full bg-(--toxic-green) animate-pulse' />
+                Live
+              </span>
             </div>
 
-            {/* Dynamic Tail */}
-            {!staticPosition && <div className={tailClass} />}
+            <div className='pl-4 pr-3 py-3'>
+              <p className='text-[11px] font-bold uppercase tracking-[0.14em] text-(--warning-yellow) font-mono mb-1'>
+                {chatter.speaker}
+              </p>
+              <p className='text-sm leading-snug text-(--star-white) font-mono'>
+                {chatter.text}
+              </p>
+            </div>
           </div>
         </motion.div>
       )}

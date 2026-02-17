@@ -188,4 +188,5 @@ _"Complexity is not an excuse for friction."_
 ## Maintenance
 
 - Audio: Ambient playback starts on Start Tour and plays full MIDI tracks; gig playback starts from configured excerpts via WebAudio buffers and stops at the song duration.
+- Performance: Heavy scenes are lazy-loaded in `App.jsx` to reduce initial bundle execution and speed up first render.
 - Last updated: 2026-02-17.

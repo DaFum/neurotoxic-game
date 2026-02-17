@@ -1,3 +1,7 @@
+/**
+ * Legacy + progression upgrade database.
+ * These upgrades are active content and surfaced through the unified upgrade selector.
+ */
 export const UPGRADES_DB = {
   van: [
     {

@@ -11,7 +11,6 @@ import {
   calculateSocialGrowth,
   checkViralEvent
 } from '../utils/socialEngine'
-import { ChatterOverlay } from '../components/ChatterOverlay'
 
 export const PostGig = () => {
   const {
@@ -139,9 +138,7 @@ export const PostGig = () => {
 
   return (
     <div className='w-full h-full flex flex-col items-center justify-center p-8 bg-(--void-black) text-(--star-white) relative'>
-      <div className='absolute top-24 right-8 z-30'>
-        <ChatterOverlay />
-      </div>
+      <div className='absolute top-24 right-8 z-30'></div>
       <div
         className='absolute inset-0 opacity-20 bg-cover bg-center'
         style={{
