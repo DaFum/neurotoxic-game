@@ -3,12 +3,10 @@ import { afterEach, beforeEach, test, mock } from 'node:test'
 import React from 'react'
 import { cleanup, render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { JSDOM } from 'jsdom'
+import { setupJSDOM, teardownJSDOM } from './testUtils.js'
 
 let startAmbientCalls = []
 let ensureAudioContextCalls = []
-let dom = null
-let originalGlobalDescriptors = null
 
 const audioManager = {
   ensureAudioContext: async () => {
@@ -64,43 +62,12 @@ beforeEach(() => {
   ensureAudioContextCalls = []
   gameState = createGameState({ canLoad: true })
 
-  // Preserve original global descriptors to avoid leaking overrides.
-  originalGlobalDescriptors = new Map(
-    ['window', 'document', 'navigator'].map(key => [
-      key,
-      Object.getOwnPropertyDescriptor(globalThis, key)
-    ])
-  )
-  dom = new JSDOM('<!doctype html><html><body></body></html>', {
-    url: 'http://localhost'
-  })
-  for (const [key, value] of [
-    ['window', dom.window],
-    ['document', dom.window.document],
-    ['navigator', dom.window.navigator]
-  ]) {
-    Object.defineProperty(globalThis, key, {
-      value,
-      configurable: true
-    })
-  }
+  setupJSDOM()
 })
 
 afterEach(() => {
   cleanup()
-  if (dom) {
-    dom.window.close()
-  }
-  for (const key of ['window', 'document', 'navigator']) {
-    const descriptor = originalGlobalDescriptors?.get(key)
-    if (descriptor) {
-      Object.defineProperty(globalThis, key, descriptor)
-    } else {
-      delete globalThis[key]
-    }
-  }
-  originalGlobalDescriptors = null
-  dom = null
+  teardownJSDOM()
 })
 
 test('MainMenu starts ambient audio when starting a tour', async () => {

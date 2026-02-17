@@ -6,44 +6,7 @@ import {
   calculateDailyUpdates
 } from '../src/utils/simulationUtils.js'
 
-const buildBandState = (overrides = {}) => ({
-  harmony: 60,
-  members: [
-    {
-      name: 'Matze',
-      mood: 70,
-      stamina: 80,
-      baseStats: { skill: 5 },
-      traits: []
-    },
-    {
-      name: 'Lars',
-      mood: 65,
-      stamina: 75,
-      baseStats: { skill: 4 },
-      traits: []
-    },
-    {
-      name: 'Marius',
-      mood: 75,
-      stamina: 70,
-      baseStats: { skill: 3 },
-      traits: []
-    }
-  ],
-  ...overrides
-})
-
-const buildBandWithMembers = (updates, otherOverrides = {}) => {
-  const band = buildBandState(otherOverrides)
-  updates.forEach(update => {
-    const idx = band.members.findIndex(m => m.name === update.name)
-    if (idx !== -1) {
-      band.members[idx] = { ...band.members[idx], ...update }
-    }
-  })
-  return band
-}
+import { buildBandState, buildBandWithMembers } from './simulationTestUtils.js'
 
 test('getGigModifiers returns default modifiers for average band', () => {
   const band = buildBandState()
