@@ -113,6 +113,18 @@ describe('NoteManager', () => {
     randomMock.mock.restore()
   })
 
+  const createMockNoteAndState = () => {
+    noteManager.noteTexture = {}
+    const note = { time: 3000, laneIndex: 0, visible: true, hit: false }
+    const state = {
+      notes: [note],
+      lanes: gameStateRef.current.lanes,
+      modifiers: {},
+      speed: 1
+    }
+    return { note, state }
+  }
+
   test('acquireSpriteFromPool returns a new sprite if pool is empty', () => {
     noteManager.noteTexture = {}
     const lane = { color: 0x00ff00, renderX: 200 }
@@ -210,14 +222,7 @@ describe('NoteManager', () => {
   })
 
   test('update spawns notes when time is reached', () => {
-    noteManager.noteTexture = {}
-    const note = { time: 3000, laneIndex: 0, visible: true, hit: false }
-    const state = {
-      notes: [note],
-      lanes: gameStateRef.current.lanes,
-      modifiers: {},
-      speed: 1
-    }
+    const { note, state } = createMockNoteAndState()
     // 3000 - 2000 (NOTE_SPAWN_LEAD_MS) = 1000
 
     // Before spawn time
@@ -232,14 +237,7 @@ describe('NoteManager', () => {
 
   test('update positions visible notes', () => {
     mockCalculateNoteYResult = 500
-    noteManager.noteTexture = {}
-    const note = { time: 3000, laneIndex: 0, visible: true, hit: false }
-    const state = {
-      notes: [note],
-      lanes: gameStateRef.current.lanes,
-      modifiers: {},
-      speed: 1
-    }
+    const { note, state } = createMockNoteAndState()
 
     // Spawn first
     noteManager.update(state, 1000, {})
@@ -256,14 +254,7 @@ describe('NoteManager', () => {
   test('update handles hit notes and calls onHit', () => {
     const onHitMock = mock.fn()
     noteManager.onHit = onHitMock
-    noteManager.noteTexture = {}
-    const note = { time: 3000, laneIndex: 0, visible: true, hit: false }
-    const state = {
-      notes: [note],
-      lanes: gameStateRef.current.lanes,
-      modifiers: {},
-      speed: 1
-    }
+    const { note, state } = createMockNoteAndState()
 
     // Spawn
     noteManager.update(state, 1000, {})
@@ -284,14 +275,7 @@ describe('NoteManager', () => {
   })
 
   test('dispose clears resources', () => {
-    noteManager.noteTexture = {}
-    const note = { time: 3000, laneIndex: 0, visible: true, hit: false }
-    const state = {
-      notes: [note],
-      lanes: gameStateRef.current.lanes,
-      modifiers: {},
-      speed: 1
-    }
+    const { state } = createMockNoteAndState()
 
     // Spawn
     noteManager.update(state, 1000, {})

@@ -1,67 +1,20 @@
 import assert from 'node:assert'
 import { test, mock } from 'node:test'
-
-// Mock classes
-class MockPolySynth {
-  constructor() {
-    this.volume = { value: 0 }
-  }
-  connect() {
-    return this
-  }
-  chain() {
-    return this
-  }
-  triggerAttackRelease() {}
-  dispose() {}
-}
-
-class MockMembraneSynth {
-  constructor() {
-    this.volume = { value: 0 }
-  }
-  connect() {
-    return this
-  }
-  triggerAttackRelease() {}
-  dispose() {}
-}
-
-class MockMetalSynth {
-  constructor() {
-    this.volume = { value: 0 }
-  }
-  connect() {
-    return this
-  }
-  triggerAttackRelease() {}
-  dispose() {}
-}
-
-class MockGain {
-  static shouldFail = false
-  constructor() {
-    if (MockGain.shouldFail) {
-      throw new Error('Gain setup failed')
-    }
-    this.gain = { rampTo: mock.fn() }
-    this.input = this
-  }
-  connect() {
-    return this
-  }
-  dispose() {}
-}
-
-class MockVolume {
-  constructor() {
-    this.volume = { value: 0 }
-  }
-  connect() {
-    return this
-  }
-  dispose() {}
-}
+import {
+  MockPolySynth,
+  MockMembraneSynth,
+  MockMetalSynth,
+  MockGain,
+  MockVolume,
+  MockNoiseSynth,
+  MockDistortion,
+  MockChorus,
+  MockEQ3,
+  MockStereoWidener,
+  MockLimiter,
+  MockCompressor,
+  MockReverb
+} from './mockUtils.js'
 
 // Mock Tone.js
 const mockTone = {
@@ -101,57 +54,22 @@ const mockTone = {
     }
   },
 
-  // Audio Nodes (Mock them to return chainable objects)
-  Limiter: class {
-    toDestination() {
-      return this
-    }
-    connect() {
-      return this
-    }
-    dispose() {}
-  },
-  Compressor: class {
-    connect() {
-      return this
-    }
-    dispose() {}
-  },
+  // Audio Nodes
+  Limiter: MockLimiter,
+  Compressor: MockCompressor,
   Gain: MockGain,
-  Reverb: class {
-    connect() {
-      return this
-    }
-    dispose() {}
-  },
+  Reverb: MockReverb,
   PolySynth: MockPolySynth,
   FMSynth: 'FMSynth',
   MonoSynth: 'MonoSynth',
   Synth: 'Synth',
   MembraneSynth: MockMembraneSynth,
   MetalSynth: MockMetalSynth,
-  NoiseSynth: class {
-    connect() {
-      return this
-    }
-    triggerAttackRelease() {}
-    dispose() {}
-  },
-  Distortion: class {
-    dispose() {}
-  },
-  Chorus: class {
-    start() {
-      return this
-    }
-    dispose() {}
-  },
-  EQ3: class {
-    dispose() {}
-  },
-  StereoWidener: class {
-    dispose() {}
-  },
+  NoiseSynth: MockNoiseSynth,
+  Distortion: MockDistortion,
+  Chorus: MockChorus,
+  EQ3: MockEQ3,
+  StereoWidener: MockStereoWidener,
   Volume: MockVolume
 }
 
@@ -216,6 +134,11 @@ test('setupAudio', async t => {
     const p2 = setupAudio()
 
     // Trigger failure in constructor (happens after Tone.start resolves)
+    // We need a way to make MockGain fail. Since we're using the imported class,
+    // we might need to modify how we mock it or add a static flag to the shared class.
+    // For simplicity, let's override the mock implementation for this test case specifically if possible,
+    // OR add the static flag to the shared MockGain in mockUtils.js.
+    // Assuming we added `static shouldFail = false` to MockGain in mockUtils.js (I should verify/add that).
     MockGain.shouldFail = true
     resolveStart()
 

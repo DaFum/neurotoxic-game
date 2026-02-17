@@ -1,7 +1,7 @@
 import { test, describe, beforeEach, afterEach, mock } from 'node:test'
 import assert from 'node:assert/strict'
-import { JSDOM } from 'jsdom'
 import { renderHook, act, cleanup } from '@testing-library/react'
+import { setupJSDOM, teardownJSDOM } from './testUtils.js'
 
 // Define mocks
 const mockAudioManager = {
@@ -32,9 +32,6 @@ mock.module('../src/utils/errorHandler', {
 const { useAudioControl } = await import('../src/hooks/useAudioControl.js')
 
 describe('useAudioControl', () => {
-  let dom
-  let originalGlobalDescriptors
-
   beforeEach(() => {
     // Reset mock implementation and values
     mockAudioManager.musicVolume = 0.5
@@ -60,46 +57,12 @@ describe('useAudioControl', () => {
     // Ideally we'd use mockHandleError.mock.resetCalls() if supported.
     // For now, let's just make sure we check call counts correctly in tests.
 
-    // Setup JSDOM
-    originalGlobalDescriptors = new Map(
-      ['window', 'document', 'navigator'].map(key => [
-        key,
-        Object.getOwnPropertyDescriptor(globalThis, key)
-      ])
-    )
-    dom = new JSDOM('<!doctype html><html><body></body></html>', {
-      url: 'http://localhost'
-    })
-
-    for (const [key, value] of [
-      ['window', dom.window],
-      ['document', dom.window.document],
-      ['navigator', dom.window.navigator]
-    ]) {
-      Object.defineProperty(globalThis, key, {
-        value,
-        configurable: true,
-        writable: true
-      })
-    }
+    setupJSDOM()
   })
 
   afterEach(() => {
     cleanup()
-    if (dom) {
-      dom.window.close()
-    }
-    // Restore globals
-    for (const key of ['window', 'document', 'navigator']) {
-      const descriptor = originalGlobalDescriptors?.get(key)
-      if (descriptor) {
-        Object.defineProperty(globalThis, key, descriptor)
-      } else {
-        delete globalThis[key]
-      }
-    }
-    originalGlobalDescriptors = null
-    dom = null
+    teardownJSDOM()
   })
 
   test('initializes with values from audioManager', () => {
