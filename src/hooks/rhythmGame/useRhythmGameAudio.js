@@ -235,7 +235,12 @@ export const useRhythmGameAudio = ({
         startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
         const success = await playSongFromData(
           currentSong,
-          GIG_LEAD_IN_MS / 1000
+          GIG_LEAD_IN_MS / 1000,
+          {
+            onEnded: () => {
+              gameStateRef.current.audioPlaybackEnded = true
+            }
+          }
         )
         if (success) {
           bgAudioStarted = true
@@ -260,7 +265,16 @@ export const useRhythmGameAudio = ({
         if (!bgAudioStarted) {
           audioDelay = GIG_LEAD_IN_MS / 1000
           startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
-          await startMetalGenerator(currentSong, audioDelay, rng)
+          await startMetalGenerator(
+            currentSong,
+            audioDelay,
+            {
+              onEnded: () => {
+                gameStateRef.current.audioPlaybackEnded = true
+              }
+            },
+            rng
+          )
           logger.info(
             'RhythmGame',
             `Gig audio: procedural metal generator for "${currentSong.name}"`

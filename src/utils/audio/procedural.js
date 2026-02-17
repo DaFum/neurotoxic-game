@@ -134,7 +134,8 @@ export function playNoteAtTime(midiPitch, lane, whenSeconds, velocity = 127) {
  * @param {object} song - The song object containing `notes` and `bpm`.
  * @param {number} [delay=0] - Delay in seconds before starting.
  */
-export async function playSongFromData(song, delay = 0) {
+export async function playSongFromData(song, delay = 0, options = {}) {
+  const { onEnded } = normalizeMidiPlaybackOptions(options)
   const reqId = ++audioState.playRequestId
   const unlocked = await ensureAudioContext()
   if (!unlocked) return false
@@ -239,6 +240,22 @@ export async function playSongFromData(song, delay = 0) {
   // Add minimum 100ms lookahead for reliable scheduling
   const minLookahead = 0.1
   const startTime = Tone.now() + Math.max(minLookahead, validDelay)
+
+  if (onEnded) {
+    const lastEvent = events.reduce(
+      (max, e) => (e.time > max.time ? e : max),
+      events[0]
+    )
+    const lastTime = lastEvent ? lastEvent.time : 0
+    // Approximate end buffer
+    const duration = lastTime + Tone.Time('4n').toSeconds()
+
+    Tone.getTransport().scheduleOnce(() => {
+      if (reqId !== audioState.playRequestId) return
+      onEnded()
+    }, duration)
+  }
+
   Tone.getTransport().start(startTime)
   return true
 }
@@ -310,8 +327,10 @@ function playDrumsLegacy(time, diff, note, random) {
 export async function startMetalGenerator(
   song,
   delay = 0,
+  options = {},
   random = Math.random
 ) {
+  const { onEnded } = normalizeMidiPlaybackOptions(options)
   const reqId = ++audioState.playRequestId
   const unlocked = await ensureAudioContext()
   if (!unlocked) return false
@@ -356,6 +375,17 @@ export async function startMetalGenerator(
   // Schedule Transport.start in advance to prevent pops/crackles
   // Using "+0.1" schedules 100ms ahead for reliable scheduling
   const startDelay = Math.max(0.1, delay)
+
+  const duration =
+    song.duration || (song.excerptDurationMs ? song.excerptDurationMs / 1000 : 0)
+
+  if (duration > 0 && onEnded) {
+    Tone.getTransport().scheduleOnce(() => {
+      if (reqId !== audioState.playRequestId) return
+      onEnded()
+    }, duration)
+  }
+
   Tone.getTransport().start(`+${startDelay}`)
   return true
 }

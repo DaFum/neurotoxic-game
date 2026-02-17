@@ -213,7 +213,7 @@ export const useTravelLogic = ({
         },
         location: node.venue.name,
         currentNodeId: node.id,
-        citiesVisited: (player.citiesVisited ?? 0) + 1
+        totalTravels: (player.totalTravels ?? 0) + 1
       })
       advanceDay()
 

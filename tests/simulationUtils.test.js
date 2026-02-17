@@ -415,6 +415,9 @@ test('calculateDailyUpdates does not decay if active recently', () => {
     social: {
       instagram: 100,
       newsletter: 100,
+      tiktok: 100,
+      youtube: 100,
+      viral: 0,
       lastGigDay: 9
     }
   }

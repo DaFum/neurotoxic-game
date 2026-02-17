@@ -278,7 +278,8 @@ describe('useRhythmGameLogic', () => {
     mockAudioEngine.startGigPlayback.mock.mockImplementation(
       async ({ onEnded }) => {
         if (typeof onEnded === 'function') {
-          onEnded()
+          // Asynchronous callback to ensure it runs after initialization completes
+          setTimeout(onEnded, 0)
         }
         return true
       }

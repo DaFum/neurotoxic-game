@@ -147,7 +147,7 @@ export const useRhythmGameLoop = ({
         (duration <= 0 || now >= duration - NOTE_MISS_WINDOW_MS)
       const shouldFinalizeForNotes =
         hasPassedAllNotes &&
-        (didAudioPlaybackEnd || duration <= 0 || now >= duration - NOTE_MISS_WINDOW_MS)
+        (duration <= 0 || now >= duration - NOTE_MISS_WINDOW_MS)
 
       if (didReachSongEnd || didAudioPlaybackEnd || shouldFinalizeForNotes) {
         finalizeGig(stateRef)
