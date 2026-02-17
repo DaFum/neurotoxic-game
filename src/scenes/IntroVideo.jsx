@@ -2,6 +2,7 @@ import { useRef, useEffect, useState, useCallback } from 'react'
 import { useGameState } from '../context/GameState'
 import introVideo from '../assets/Neurotoxic_start.webm'
 import { GlitchButton } from '../ui/GlitchButton'
+import { logger } from '../utils/logger'
 
 /**
  * Scene for playing the intro video before the main menu.
@@ -20,7 +21,7 @@ export const IntroVideo = () => {
       videoRef.current
         .play()
         .then(() => setAutoplayBlocked(false))
-        .catch(err => console.error('Manual play failed:', err))
+        .catch(err => logger.error('IntroVideo', 'Manual play failed', err))
     }
   }
 
@@ -28,7 +29,7 @@ export const IntroVideo = () => {
     // Attempt to play video on mount
     if (videoRef.current) {
       videoRef.current.play().catch(error => {
-        console.warn('Intro video autoplay blocked:', error)
+        logger.warn('IntroVideo', 'Intro video autoplay blocked', error)
         setAutoplayBlocked(true)
       })
     }

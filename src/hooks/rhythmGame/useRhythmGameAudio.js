@@ -155,7 +155,7 @@ export const useRhythmGameAudio = ({
       let bgAudioStarted = false
       if (Array.isArray(currentSong.notes) && currentSong.notes.length > 0) {
         parsedNotes = parseSongNotes(currentSong, NOTE_LEAD_IN_MS, {
-          onWarn: msg => console.warn(msg)
+          onWarn: msg => logger.warn('RhythmGame', msg)
         })
 
         if (parsedNotes.length > 0) {

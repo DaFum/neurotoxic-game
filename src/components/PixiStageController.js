@@ -3,6 +3,7 @@ import { CrowdManager } from './stage/CrowdManager.js'
 import { LaneManager } from './stage/LaneManager.js'
 import { EffectManager } from './stage/EffectManager.js'
 import { NoteManager } from './stage/NoteManager.js'
+import { logger } from '../utils/logger.js'
 
 /**
  * Manages Pixi.js stage lifecycle and rendering updates.
@@ -112,8 +113,9 @@ class PixiStageController {
 
         this.app.ticker.add(this.handleTicker)
       } catch (error) {
-        console.error(
-          '[PixiStageController] Failed to initialize stage.',
+        logger.error(
+          'PixiStageController',
+          'Failed to initialize stage.',
           error
         )
         this.dispose()
@@ -209,7 +211,7 @@ class PixiStageController {
           })
         }
       } catch (e) {
-        console.warn('Pixi App destroy failed:', e)
+        logger.warn('PixiStageController', 'Pixi App destroy failed', e)
       }
       this.app = null
     }

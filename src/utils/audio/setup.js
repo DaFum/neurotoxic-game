@@ -268,7 +268,7 @@ export async function setupAudio() {
       await Tone.start()
     } catch (e) {
       // Browser autoplay policy might block this; it will be resumed later via ensureAudioContext
-      console.warn('[audioEngine] Tone.start() was blocked or failed:', e)
+      logger.warn('AudioEngine', 'Tone.start() was blocked or failed', e)
     }
 
     // === Master Chain ===

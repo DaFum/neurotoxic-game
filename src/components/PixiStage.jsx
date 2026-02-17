@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import { createPixiStageController } from './PixiStageController'
+import { logger } from '../utils/logger'
 
 /**
  * Renders the Pixi.js stage for the rhythm game.
@@ -31,7 +32,7 @@ export const PixiStage = ({ logic }) => {
     })
 
     controllerRef.current.init().catch(err => {
-      console.error('Pixi Stage Init Failed:', err)
+      logger.error('PixiStage', 'Pixi Stage Init Failed', err)
     })
 
     return () => {
