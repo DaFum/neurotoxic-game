@@ -10,9 +10,9 @@
 
 | Category        | Technologies                                     |
 | --------------- | ------------------------------------------------ |
-| **Frontend**    | react@^18.2.0, vite@^5.0.0, JavaScript (ESModules) |
+| **Frontend**    | React 19.2.4, Vite 7.3.1, JavaScript (ESModules) |
 | **Game Engine** | Pixi.js 8.16.0                                    |
-| **Styling**     | tailwindcss@^4.0.0, Framer Motion 12.34.0            |
+| **Styling**     | Tailwind CSS v4, Framer Motion 12.34.0            |
 | **Audio**       | Tone.js 15.1.22 (WebAudio buffers)                  |
 
 ## Project Structure
@@ -48,7 +48,7 @@ npm run format       # Run Prettier
 
 ## Critical Constraints
 
-1. **Version Pinning**: Keep React at ^18.2.0, Vite at ^5.0.0, and Tailwind at ^4.0.0 unless a task explicitly requests an upgrade
+1. **Version Pinning**: Keep React at 19.2.4, Vite at 7.3.1, and Tailwind at 4.1.18 unless a task explicitly requests an upgrade
 2. **Tailwind v4 Syntax**: Use `@import "tailwindcss";` (NOT `@tailwind base`)
 3. **CSS Variables**: Never use hardcoded colors - use `var(--toxic-green)`, `var(--void-black)`, etc.
 4. **State Safety**: Always validate `player.money >= 0` and `band.harmony > 0`

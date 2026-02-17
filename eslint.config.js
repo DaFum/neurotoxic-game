@@ -35,7 +35,6 @@ export default [
     },
     rules: {
       ...js.configs.recommended.rules,
-      ...react.configs.recommended.rules,
       ...prettier.rules,
       'react-hooks/rules-of-hooks': 'error',
       'react/jsx-key': 'error',
