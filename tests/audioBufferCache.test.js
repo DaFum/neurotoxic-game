@@ -1,150 +1,30 @@
 import assert from 'node:assert'
 import { test, mock } from 'node:test'
+import {
+  createMockTone
+} from './mockUtils.js'
 
-const mockTransport = {
-  stop: mock.fn(),
-  start: mock.fn(),
-  pause: mock.fn(),
-  cancel: mock.fn(),
-  clear: mock.fn(),
-  scheduleOnce: mock.fn(),
-  position: 0,
-  state: 'stopped',
-  bpm: { value: 120 },
-  loop: false,
-  loopEnd: 0,
-  loopStart: 0
-}
+const mockTone = createMockTone()
 
-const mockTone = {
-  start: mock.fn(async () => {}),
-  getContext: mock.fn(() => ({
-    rawContext: {
-      state: 'running',
-      decodeAudioData: mock.fn(async arrayBuffer => {
-        return {
-          length: arrayBuffer.byteLength / 4,
-          numberOfChannels: 2,
-          sampleRate: 44100,
-          duration: arrayBuffer.byteLength / (4 * 2 * 44100)
-        }
-      }),
-      currentTime: 0,
-      close: mock.fn(async () => {})
-    },
-    lookAhead: 0
-  })),
-  setContext: mock.fn(),
-  now: mock.fn(() => 0),
-  context: { state: 'running' },
-  getTransport: mock.fn(() => mockTransport),
-  Limiter: class {
-    toDestination() {
-      return this
-    }
-    connect() {
-      return this
-    }
-    dispose() {}
-  },
-  Compressor: class {
-    connect() {
-      return this
-    }
-    dispose() {}
-  },
-  Gain: class {
-    constructor() {
-      this.gain = { rampTo: mock.fn() }
-      this.input = this
-    }
-    connect() {
-      return this
-    }
-    dispose() {}
-  },
-  Reverb: class {
-    connect() {
-      return this
-    }
-    dispose() {}
-  },
-  PolySynth: class {
-    constructor() {
-      this.volume = { value: 0 }
-    }
-    connect() {
-      return this
-    }
-    chain() {
-      return this
-    }
-    triggerAttackRelease() {}
-    dispose() {}
-  },
-  FMSynth: 'FMSynth',
-  MonoSynth: 'MonoSynth',
-  Synth: 'Synth',
-  MembraneSynth: class {
-    constructor() {
-      this.volume = { value: 0 }
-    }
-    connect() {
-      return this
-    }
-    triggerAttackRelease() {}
-    dispose() {}
-  },
-  MetalSynth: class {
-    constructor() {
-      this.volume = { value: 0 }
-    }
-    connect() {
-      return this
-    }
-    triggerAttackRelease() {}
-    dispose() {}
-  },
-  NoiseSynth: class {
-    connect() {
-      return this
-    }
-    triggerAttackRelease() {}
-    dispose() {}
-  },
-  Distortion: class {
-    dispose() {}
-  },
-  Chorus: class {
-    start() {
-      return this
-    }
-    dispose() {}
-  },
-  EQ3: class {
-    dispose() {}
-  },
-  StereoWidener: class {
-    dispose() {}
-  },
-  Volume: class {
-    constructor() {
-      this.volume = { value: 0 }
-    }
-    connect() {
-      return this
-    }
-    dispose() {}
-  },
-  Context: class {
-    constructor() {
-      this.rawContext = {
-        state: 'running',
-        close: mock.fn(async () => {})
+// Custom getContext for audioBufferCache tests to support decodeAudioData
+mockTone.getContext = mock.fn(() => ({
+  rawContext: {
+    state: 'running',
+    decodeAudioData: mock.fn(async arrayBuffer => {
+      return {
+        length: arrayBuffer.byteLength / 4,
+        numberOfChannels: 2,
+        sampleRate: 44100,
+        duration: arrayBuffer.byteLength / (4 * 2 * 44100)
       }
-    }
-  }
-}
+    }),
+    currentTime: 0,
+    close: mock.fn(async () => {})
+  },
+  lookAhead: 0
+}))
+
+mockTone.context = { state: 'running' }
 
 mock.module('tone', { namedExports: mockTone })
 

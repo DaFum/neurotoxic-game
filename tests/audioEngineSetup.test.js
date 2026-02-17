@@ -1,159 +1,12 @@
 import assert from 'node:assert'
 import { test, mock } from 'node:test'
-
-// Mock classes
-class MockPolySynth {
-  constructor() {
-    this.volume = { value: 0 }
-  }
-  connect() {
-    return this
-  }
-  chain() {
-    return this
-  }
-  triggerAttackRelease() {}
-  dispose() {}
-}
-
-class MockMembraneSynth {
-  constructor() {
-    this.volume = { value: 0 }
-  }
-  connect() {
-    return this
-  }
-  triggerAttackRelease() {}
-  dispose() {}
-}
-
-class MockMetalSynth {
-  constructor() {
-    this.volume = { value: 0 }
-  }
-  connect() {
-    return this
-  }
-  triggerAttackRelease() {}
-  dispose() {}
-}
-
-class MockGain {
-  static shouldFail = false
-  constructor() {
-    if (MockGain.shouldFail) {
-      throw new Error('Gain setup failed')
-    }
-    this.gain = { rampTo: mock.fn() }
-    this.input = this
-  }
-  connect() {
-    return this
-  }
-  dispose() {}
-}
-
-class MockVolume {
-  constructor() {
-    this.volume = { value: 0 }
-  }
-  connect() {
-    return this
-  }
-  dispose() {}
-}
+import {
+  MockGain,
+  createMockTone
+} from './mockUtils.js'
 
 // Mock Tone.js
-const mockTone = {
-  // Functions
-  start: mock.fn(async () => {}),
-  getContext: mock.fn(() => ({
-    rawContext: {
-      state: 'running',
-      close: mock.fn(async () => {})
-    },
-    lookAhead: 0
-  })),
-  setContext: mock.fn(),
-  now: mock.fn(() => 0),
-  getTransport: mock.fn(() => ({
-    stop: mock.fn(),
-    start: mock.fn(),
-    pause: mock.fn(),
-    cancel: mock.fn(),
-    clear: mock.fn(),
-    scheduleOnce: mock.fn(),
-    position: 0,
-    state: 'stopped',
-    bpm: { value: 120 },
-    loop: false,
-    loopEnd: 0,
-    loopStart: 0
-  })),
-
-  // Classes (Constructors)
-  Context: class {
-    constructor() {
-      this.rawContext = {
-        state: 'running',
-        close: mock.fn(async () => {})
-      }
-    }
-  },
-
-  // Audio Nodes (Mock them to return chainable objects)
-  Limiter: class {
-    toDestination() {
-      return this
-    }
-    connect() {
-      return this
-    }
-    dispose() {}
-  },
-  Compressor: class {
-    connect() {
-      return this
-    }
-    dispose() {}
-  },
-  Gain: MockGain,
-  Reverb: class {
-    connect() {
-      return this
-    }
-    dispose() {}
-  },
-  PolySynth: MockPolySynth,
-  FMSynth: 'FMSynth',
-  MonoSynth: 'MonoSynth',
-  Synth: 'Synth',
-  MembraneSynth: MockMembraneSynth,
-  MetalSynth: MockMetalSynth,
-  NoiseSynth: class {
-    connect() {
-      return this
-    }
-    triggerAttackRelease() {}
-    dispose() {}
-  },
-  Distortion: class {
-    dispose() {}
-  },
-  Chorus: class {
-    start() {
-      return this
-    }
-    dispose() {}
-  },
-  EQ3: class {
-    dispose() {}
-  },
-  StereoWidener: class {
-    dispose() {}
-  },
-  Volume: MockVolume
-}
+const mockTone = createMockTone()
 
 mock.module('tone', { namedExports: mockTone })
 
@@ -169,6 +22,10 @@ test('setupAudio', async t => {
     mockTone.setContext.mock.resetCalls()
     // Default implementation
     mockTone.start.mock.mockImplementation(async () => {})
+    MockGain.shouldFail = false
+  })
+
+  t.afterEach(() => {
     MockGain.shouldFail = false
   })
 

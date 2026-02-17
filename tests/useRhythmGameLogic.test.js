@@ -1,114 +1,34 @@
 import { test, describe, beforeEach, afterEach, mock } from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook, act, cleanup } from '@testing-library/react'
-import { JSDOM } from 'jsdom'
+import { setupJSDOM, teardownJSDOM } from './testUtils.js'
+import {
+  mockRhythmGameLogicDependencies,
+  setupRhythmGameLogicTest,
+  createMockChangeScene,
+  createMockSetLastGigStats,
+  setupDefaultMockImplementation,
+  simulateGameLoopUpdate
+} from './useRhythmGameLogicTestUtils.js'
 
-// Mocks
-const mockUseGameState = mock.fn()
-const mockSimulationUtils = {
-  calculateGigPhysics: mock.fn(() => ({
-    speedModifier: 1,
-    hitWindows: { guitar: 100, drums: 100, bass: 100 }
-  })),
-  getGigModifiers: mock.fn(() => ({}))
-}
-const mockAudioManager = {
-  stopMusic: mock.fn(),
-  ensureAudioContext: mock.fn(async () => true),
-  playSFX: mock.fn()
-}
-const mockAudioEngine = {
-  startMetalGenerator: mock.fn(),
-  playMidiFile: mock.fn(),
-  playSongFromData: mock.fn(),
-  hasAudioAsset: mock.fn(() => false),
-  playNoteAtTime: mock.fn(),
-  startGigClock: mock.fn(),
-  startGigPlayback: mock.fn(),
-  stopAudio: mock.fn(),
-  pauseAudio: mock.fn(),
-  resumeAudio: mock.fn(),
-  getAudioContextTimeSec: mock.fn(() => 0),
-  getToneStartTimeSec: mock.fn(() => 0),
-  getAudioTimeMs: mock.fn(() => 0),
-  getGigTimeMs: mock.fn(() => 0)
-}
-const mockAudioTimingUtils = {
-  getScheduledHitTimeMs: mock.fn(() => 0)
-}
-const mockGigStats = {
-  buildGigStatsSnapshot: mock.fn(() => ({})),
-  updateGigPerformanceStats: mock.fn(stats => stats)
-}
-const mockRhythmUtils = {
-  generateNotesForSong: mock.fn(() => []),
-  parseSongNotes: mock.fn(() => []),
-  checkHit: mock.fn(() => null)
-}
-const mockHecklerLogic = {
-  updateProjectiles: mock.fn(p => p),
-  trySpawnProjectile: mock.fn(() => null),
-  checkCollisions: mock.fn(p => p)
-}
-const mockErrorHandler = {
-  handleError: mock.fn(),
-  AudioError: class AudioError extends Error {}
-}
-const mockLogger = {
-  info: mock.fn(),
-  warn: mock.fn(),
-  error: mock.fn()
-}
-const mockSongs = [
-  { id: 'jam', name: 'Jam', bpm: 120, duration: 60, difficulty: 2 }
-]
+const {
+  mockUseGameState,
+  mockAudioManager,
+  mockAudioEngine,
+  mockGigStats,
+  mockRhythmUtils,
+  mockErrorHandler,
+  mockSimulationUtils,
+  mockAudioTimingUtils,
+  mockLogger,
+  mockHecklerLogic
+} = mockRhythmGameLogicDependencies
 
-let mockChangeScene
-let mockSetLastGigStats
-
-// Mock modules
-mock.module('../src/context/GameState.jsx', {
-  namedExports: { useGameState: mockUseGameState }
-})
-mock.module('../src/utils/simulationUtils.js', {
-  namedExports: mockSimulationUtils
-})
-mock.module('../src/utils/AudioManager.js', {
-  namedExports: { audioManager: mockAudioManager }
-})
-mock.module('../src/utils/audioEngine.js', {
-  namedExports: mockAudioEngine
-})
-mock.module('../src/utils/audioTimingUtils.js', {
-  namedExports: mockAudioTimingUtils
-})
-mock.module('../src/utils/gigStats.js', {
-  namedExports: mockGigStats
-})
-mock.module('../src/utils/rhythmUtils.js', {
-  namedExports: mockRhythmUtils
-})
-mock.module('../src/utils/hecklerLogic.js', {
-  namedExports: mockHecklerLogic
-})
-mock.module('../src/utils/errorHandler.js', {
-  namedExports: mockErrorHandler
-})
-mock.module('../src/utils/logger.js', {
-  namedExports: { logger: mockLogger }
-})
-mock.module('../src/data/songs.js', {
-  namedExports: { SONGS_DB: mockSongs }
-})
-
-// Dynamically import the hook after mocking
-const { useRhythmGameLogic } = await import(
-  '../src/hooks/useRhythmGameLogic.js'
-)
+const { useRhythmGameLogic } = await setupRhythmGameLogicTest()
 
 describe('useRhythmGameLogic', () => {
-  let dom
-  let originalGlobalDescriptors
+  let mockChangeScene
+  let mockSetLastGigStats
 
   beforeEach(() => {
     // Reset mocks
@@ -125,69 +45,28 @@ describe('useRhythmGameLogic', () => {
     mockGigStats.updateGigPerformanceStats.mock.resetCalls()
     mockErrorHandler.handleError.mock.resetCalls()
 
-    mockChangeScene = mock.fn()
-    mockSetLastGigStats = mock.fn()
+    // Add missing resets
+    mockSimulationUtils.calculateGigPhysics.mock.resetCalls()
+    mockSimulationUtils.getGigModifiers.mock.resetCalls()
+    mockAudioTimingUtils.getScheduledHitTimeMs.mock.resetCalls()
+    mockLogger.info.mock.resetCalls()
+    mockLogger.warn.mock.resetCalls()
+    mockLogger.error.mock.resetCalls()
+    mockHecklerLogic.updateProjectiles.mock.resetCalls()
+    mockHecklerLogic.trySpawnProjectile.mock.resetCalls()
+    mockHecklerLogic.checkCollisions.mock.resetCalls()
 
-    mockUseGameState.mock.mockImplementation(() => ({
-      setlist: ['jam'],
-      band: { members: [] },
-      activeEvent: null,
-      hasUpgrade: mock.fn(() => false),
-      setLastGigStats: mockSetLastGigStats,
-      addToast: mock.fn(),
-      gameMap: { nodes: { node1: { layer: 0 } } },
-      player: { currentNodeId: 'node1' },
-      changeScene: mockChangeScene,
-      gigModifiers: {}
-    }))
+    mockChangeScene = createMockChangeScene()
+    mockSetLastGigStats = createMockSetLastGigStats()
 
-    mockAudioManager.ensureAudioContext.mock.mockImplementation(
-      async () => true
-    )
-    mockAudioEngine.startGigPlayback.mock.mockImplementation(async () => true)
-    mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 0)
+    setupDefaultMockImplementation(mockChangeScene, mockSetLastGigStats)
 
-    // JSDOM setup
-    originalGlobalDescriptors = new Map(
-      ['window', 'document', 'navigator'].map(key => [
-        key,
-        Object.getOwnPropertyDescriptor(globalThis, key)
-      ])
-    )
-    dom = new JSDOM('<!doctype html><html><body></body></html>', {
-      url: 'http://localhost'
-    })
-    for (const [key, value] of [
-      ['window', dom.window],
-      ['document', dom.window.document],
-      ['navigator', dom.window.navigator]
-    ]) {
-      Object.defineProperty(globalThis, key, {
-        value,
-        configurable: true
-      })
-    }
-
-    // Polyfill requestAnimationFrame for React
-    globalThis.requestAnimationFrame = callback => setTimeout(callback, 0)
-    globalThis.cancelAnimationFrame = id => clearTimeout(id)
+    setupJSDOM()
   })
 
   afterEach(() => {
     cleanup()
-    if (dom) {
-      dom.window.close()
-    }
-    for (const key of ['window', 'document', 'navigator']) {
-      const descriptor = originalGlobalDescriptors?.get(key)
-      if (descriptor) {
-        Object.defineProperty(globalThis, key, descriptor)
-      } else {
-        delete globalThis[key]
-      }
-    }
-    originalGlobalDescriptors = null
-    dom = null
+    teardownJSDOM()
   })
 
   test('initial state', async () => {
@@ -257,13 +136,13 @@ describe('useRhythmGameLogic', () => {
     })
 
     act(() => {
-      result.current.gameStateRef.current.running = true
-      result.current.gameStateRef.current.totalDuration = 10000
-      result.current.gameStateRef.current.notes = [
-        { time: 200, laneIndex: 0, hit: true, visible: false, type: 'note' }
-      ]
-      result.current.gameStateRef.current.nextMissCheckIndex = 1
-      result.current.update(16)
+      simulateGameLoopUpdate(result, {
+        totalDuration: 10000,
+        notes: [
+          { time: 200, laneIndex: 0, hit: true, visible: false, type: 'note' }
+        ],
+        nextMissCheckIndex: 1
+      })
     })
 
     assert.ok(mockAudioEngine.stopAudio.mock.calls.length >= 1)
@@ -292,9 +171,9 @@ describe('useRhythmGameLogic', () => {
     })
 
     act(() => {
-      result.current.gameStateRef.current.running = true
-      result.current.gameStateRef.current.totalDuration = 0
-      result.current.update(16)
+      simulateGameLoopUpdate(result, {
+        totalDuration: 0
+      })
     })
 
     assert.ok(

@@ -10,12 +10,14 @@ import {
   ensureAudioContext,
   getRawAudioContext,
 } from './setup.js'
+import { stopAndDisconnectSource } from './cleanupUtils.js'
 import { stopAudio, stopAudioInternal } from './playback.js'
 import {
   midiUrlMap,
   oggCandidates,
   loadAudioBuffer,
 } from './assets.js'
+import { createAndConnectBufferSource } from './sharedBufferUtils.js'
 import { calculateTimeFromTicks, preprocessTempoMap } from '../rhythmUtils.js'
 import { selectRandomItem } from '../audioSelectionUtils.js'
 import {
@@ -759,21 +761,8 @@ export async function playRandomAmbientOgg(
   if (!buffer) return false
   if (reqId !== audioState.playRequestId) return false
 
-  const rawContext = getRawAudioContext()
-  const source = rawContext.createBufferSource()
-  source.buffer = buffer
-
-  if (audioState.musicGain?.input) {
-    source.connect(audioState.musicGain.input)
-  } else if (audioState.musicGain) {
-    source.connect(audioState.musicGain)
-  } else {
-    logger.error(
-      'AudioEngine',
-      'Music bus not initialized for ambient playback'
-    )
-    return false
-  }
+  const source = createAndConnectBufferSource(buffer)
+  if (!source) return false
 
   audioState.ambientSource = source
   const chainReqId = audioState.playRequestId

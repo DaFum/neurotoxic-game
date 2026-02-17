@@ -7,6 +7,11 @@ import {
   getAudioContextTimeSec
 } from './setup.js'
 import { loadAudioBuffer } from './assets.js'
+import { createAndConnectBufferSource } from './sharedBufferUtils.js'
+import {
+  stopTransportAndClear,
+  stopAndDisconnectSource
+} from './cleanupUtils.js'
 
 /**
  * Plays a sound effect by type.
@@ -43,7 +48,7 @@ export function playSFX(type) {
       audioState.sfxSynth.triggerAttackRelease('E6', '16n', now + 0.05, 0.4)
       break
     default:
-      console.warn(`[audioEngine] Unknown SFX type: ${type}`)
+      logger.warn('AudioEngine', `Unknown SFX type: ${type}`)
       break
   }
 }
@@ -127,27 +132,8 @@ const handleGigSourceEnded = source => {
   audioState.gigSource = null
 }
 
-/**
- * Creates and wires a gig buffer source to the music bus.
- * @param {object} params - Source parameters.
- * @param {AudioBuffer} params.buffer - Audio buffer to play.
- * @param {(source: AudioBufferSourceNode) => void} params.onEnded - End handler.
- * @returns {AudioBufferSourceNode|null} Configured buffer source or null on failure.
- */
 const createGigBufferSource = ({ buffer, onEnded }) => {
-  const rawContext = getRawAudioContext()
-  const source = rawContext.createBufferSource()
-  source.buffer = buffer
-  if (audioState.musicGain?.input) {
-    source.connect(audioState.musicGain.input)
-  } else if (audioState.musicGain) {
-    source.connect(audioState.musicGain)
-  } else {
-    logger.error('AudioEngine', 'Music bus not initialized for gig playback')
-    return null
-  }
-  source.onended = () => onEnded(source)
-  return source
+  return createAndConnectBufferSource(buffer, onEnded)
 }
 
 /**
@@ -219,16 +205,7 @@ export function stopGigPlayback() {
       'AudioEngine',
       `Stopping gig playback: "${audioState.gigFilename}" at ${getGigTimeMs().toFixed(0)}ms`
     )
-    try {
-      audioState.gigSource.stop()
-    } catch (error) {
-      logger.warn('AudioEngine', 'Failed to stop gig playback', error)
-    }
-    try {
-      audioState.gigSource.disconnect()
-    } catch {
-      // Source may already be disconnected after stop
-    }
+    stopAndDisconnectSource(audioState.gigSource, 'Gig')
   }
   resetGigState()
 }
@@ -401,14 +378,13 @@ export function resumeGigPlayback() {
     audioState.gigIsPaused = false
     return
   }
-  const rawContext = getRawAudioContext()
   const source = createGigBufferSource({
     buffer: audioState.gigBuffer,
     onEnded: handleGigSourceEnded
   })
   if (!source) return
 
-  const startAt = rawContext.currentTime
+  const startAt = getRawAudioContext().currentTime
   audioState.gigStartCtxTime = startAt
   audioState.gigIsPaused = false
 
@@ -487,21 +463,7 @@ const clearTransportStopEvent = () => {
  * Used by playback functions to clear previous state.
  */
 export function stopAudioInternal() {
-  Tone.getTransport().stop()
-  Tone.getTransport().position = 0
-  if (audioState.loop) {
-    audioState.loop.dispose()
-    audioState.loop = null
-  }
-  if (audioState.part) {
-    audioState.part.dispose()
-    audioState.part = null
-  }
-  if (audioState.midiParts.length > 0) {
-    audioState.midiParts.forEach(trackPart => trackPart.dispose())
-    audioState.midiParts = []
-  }
-  Tone.getTransport().cancel()
+  stopTransportAndClear()
   clearTransportEndEvent()
   clearTransportStopEvent()
 }

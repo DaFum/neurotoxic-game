@@ -1,105 +1,47 @@
-import { test, describe, beforeEach, afterEach, mock } from 'node:test'
+import { test, describe, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
-import { JSDOM } from 'jsdom'
 import { renderHook, act, cleanup } from '@testing-library/react'
+import { setupJSDOM, teardownJSDOM } from './testUtils.js'
+import {
+  mockAudioControlDependencies,
+  setupAudioControlTest
+} from './useAudioControlTestUtils.js'
 
-// Define mocks
-const mockAudioManager = {
-  musicVolume: 0.5,
-  sfxVolume: 0.5,
-  muted: false,
-  setMusicVolume: mock.fn(),
-  setSFXVolume: mock.fn(),
-  toggleMute: mock.fn()
-}
-
-const mockHandleError = mock.fn()
-
-// Apply mocks before importing the hook
-mock.module('../src/utils/AudioManager', {
-  namedExports: {
-    audioManager: mockAudioManager
-  }
-})
-
-mock.module('../src/utils/errorHandler', {
-  namedExports: {
-    handleError: mockHandleError
-  }
-})
-
-// Dynamic import of the hook
-const { useAudioControl } = await import('../src/hooks/useAudioControl.js')
+const { mockAudioManager, mockHandleError } = mockAudioControlDependencies
+const { useAudioControl } = await setupAudioControlTest()
 
 describe('useAudioControl', () => {
-  let dom
-  let originalGlobalDescriptors
-
   beforeEach(() => {
-    // Reset mock implementation and values
     mockAudioManager.musicVolume = 0.5
     mockAudioManager.sfxVolume = 0.5
     mockAudioManager.muted = false
 
-    // Create fresh mocks for audioManager methods to reset call history
-    mockAudioManager.setMusicVolume = mock.fn(val => {
+    mockAudioManager.setMusicVolume.mock.resetCalls()
+    mockAudioManager.setMusicVolume.mock.mockImplementation(val => {
       mockAudioManager.musicVolume = val
       return true
     })
-    mockAudioManager.setSFXVolume = mock.fn(val => {
+
+    mockAudioManager.setSFXVolume.mock.resetCalls()
+    mockAudioManager.setSFXVolume.mock.mockImplementation(val => {
       mockAudioManager.sfxVolume = val
       return true
     })
-    mockAudioManager.toggleMute = mock.fn(() => {
+
+    mockAudioManager.toggleMute.mock.resetCalls()
+    mockAudioManager.toggleMute.mock.mockImplementation(() => {
       mockAudioManager.muted = !mockAudioManager.muted
       return mockAudioManager.muted
     })
 
-    // For handleError, we can't replace the exported function easily, so we rely on tracking calls or restoring if possible.
-    // Assuming mock.restore() might not clear calls for standalone mock.fn(), we will use relative assertions or try to reset.
-    // Ideally we'd use mockHandleError.mock.resetCalls() if supported.
-    // For now, let's just make sure we check call counts correctly in tests.
+    mockHandleError.mock.resetCalls()
 
-    // Setup JSDOM
-    originalGlobalDescriptors = new Map(
-      ['window', 'document', 'navigator'].map(key => [
-        key,
-        Object.getOwnPropertyDescriptor(globalThis, key)
-      ])
-    )
-    dom = new JSDOM('<!doctype html><html><body></body></html>', {
-      url: 'http://localhost'
-    })
-
-    for (const [key, value] of [
-      ['window', dom.window],
-      ['document', dom.window.document],
-      ['navigator', dom.window.navigator]
-    ]) {
-      Object.defineProperty(globalThis, key, {
-        value,
-        configurable: true,
-        writable: true
-      })
-    }
+    setupJSDOM()
   })
 
   afterEach(() => {
     cleanup()
-    if (dom) {
-      dom.window.close()
-    }
-    // Restore globals
-    for (const key of ['window', 'document', 'navigator']) {
-      const descriptor = originalGlobalDescriptors?.get(key)
-      if (descriptor) {
-        Object.defineProperty(globalThis, key, descriptor)
-      } else {
-        delete globalThis[key]
-      }
-    }
-    originalGlobalDescriptors = null
-    dom = null
+    teardownJSDOM()
   })
 
   test('initializes with values from audioManager', () => {

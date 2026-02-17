@@ -1,25 +1,8 @@
 import assert from 'node:assert'
 import { test } from 'node:test'
+import { importAudioEngine } from './audioTestUtils.js'
 
-let audioEngine = null
-let audioEngineImportError = null
-
-try {
-  audioEngine = await import('../src/utils/audioEngine.js')
-} catch (error) {
-  audioEngineImportError = error
-}
-
-const skipIfImportFailed = testContext => {
-  if (audioEngineImportError) {
-    testContext.skip(
-      'Skipping audio engine tests due to environment limitations: ' +
-        audioEngineImportError.message
-    )
-    return true
-  }
-  return false
-}
+const { audioEngine, skipIfImportFailed } = await importAudioEngine()
 
 test('calculateGigPlaybackWindow', async t => {
   if (skipIfImportFailed(t)) return
