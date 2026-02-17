@@ -7,6 +7,11 @@ import {
 } from '../audioContextState.js'
 import { audioState, resetGigState } from './state.js'
 import { HIHAT_CONFIG, CRASH_CONFIG } from './constants.js'
+import {
+  clearTransportEvent,
+  stopAndDisconnectSource,
+  stopTransportAndClear
+} from './cleanupUtils.js'
 
 /**
  * Safely disposes a Tone.js node, catching errors if the context is closed.
@@ -98,70 +103,22 @@ export function disposeAudio() {
   // stopAudioInternal() logic - we can't call it here directly if it's in playback
   // So we handle the disposal of shared resources manually
 
-  Tone.getTransport().stop()
-  Tone.getTransport().position = 0
-  if (audioState.loop) {
-    audioState.loop.dispose()
-    audioState.loop = null
-  }
-  if (audioState.part) {
-    audioState.part.dispose()
-    audioState.part = null
-  }
-  if (audioState.midiParts.length > 0) {
-    audioState.midiParts.forEach(trackPart => trackPart.dispose())
-    audioState.midiParts = []
-  }
-  Tone.getTransport().cancel()
+  stopTransportAndClear()
 
   // Note: we can't clear transport events here if they depend on playback logic clearing them
   // But we can clear by ID if we have them in state.
-  if (audioState.transportEndEventId != null) {
-    try {
-      Tone.getTransport().clear(audioState.transportEndEventId)
-    } catch (error) {
-      logger.debug('AudioEngine', 'Transport end event clear failed', error)
-    }
-    audioState.transportEndEventId = null
-  }
-  if (audioState.transportStopEventId != null) {
-    try {
-      Tone.getTransport().clear(audioState.transportStopEventId)
-    } catch (error) {
-      logger.debug('AudioEngine', 'Transport stop event clear failed', error)
-    }
-    audioState.transportStopEventId = null
-  }
+  clearTransportEvent(audioState.transportEndEventId, 'end')
+  audioState.transportEndEventId = null
+  clearTransportEvent(audioState.transportStopEventId, 'stop')
+  audioState.transportStopEventId = null
 
   // stopGigPlayback logic (partial)
-  if (audioState.gigSource) {
-    try {
-      audioState.gigSource.stop()
-    } catch (error) {
-      logger.debug('AudioEngine', 'Gig source stop failed', error)
-    }
-    try {
-      audioState.gigSource.disconnect()
-    } catch (error) {
-      logger.debug('AudioEngine', 'Gig source disconnect failed', error)
-    }
-  }
+  stopAndDisconnectSource(audioState.gigSource, 'Gig')
   resetGigState() // Use helper
 
   // stopAmbientPlayback logic (partial)
-  if (audioState.ambientSource) {
-    try {
-      audioState.ambientSource.stop()
-    } catch (error) {
-      logger.debug('AudioEngine', 'Ambient source stop failed', error)
-    }
-    try {
-      audioState.ambientSource.disconnect()
-    } catch (error) {
-      logger.debug('AudioEngine', 'Ambient source disconnect failed', error)
-    }
-    audioState.ambientSource = null
-  }
+  stopAndDisconnectSource(audioState.ambientSource, 'Ambient')
+  audioState.ambientSource = null
 
   audioState.audioBufferCache.clear()
   audioState.currentCacheByteSize = 0

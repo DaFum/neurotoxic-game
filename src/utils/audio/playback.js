@@ -7,6 +7,7 @@ import {
   getAudioContextTimeSec
 } from './setup.js'
 import { loadAudioBuffer } from './assets.js'
+import { createAndConnectBufferSource } from './sharedBufferUtils.js'
 
 /**
  * Plays a sound effect by type.
@@ -127,27 +128,8 @@ const handleGigSourceEnded = source => {
   audioState.gigSource = null
 }
 
-/**
- * Creates and wires a gig buffer source to the music bus.
- * @param {object} params - Source parameters.
- * @param {AudioBuffer} params.buffer - Audio buffer to play.
- * @param {(source: AudioBufferSourceNode) => void} params.onEnded - End handler.
- * @returns {AudioBufferSourceNode|null} Configured buffer source or null on failure.
- */
 const createGigBufferSource = ({ buffer, onEnded }) => {
-  const rawContext = getRawAudioContext()
-  const source = rawContext.createBufferSource()
-  source.buffer = buffer
-  if (audioState.musicGain?.input) {
-    source.connect(audioState.musicGain.input)
-  } else if (audioState.musicGain) {
-    source.connect(audioState.musicGain)
-  } else {
-    logger.error('AudioEngine', 'Music bus not initialized for gig playback')
-    return null
-  }
-  source.onended = () => onEnded(source)
-  return source
+  return createAndConnectBufferSource(buffer, onEnded)
 }
 
 /**
@@ -401,14 +383,13 @@ export function resumeGigPlayback() {
     audioState.gigIsPaused = false
     return
   }
-  const rawContext = getRawAudioContext()
   const source = createGigBufferSource({
     buffer: audioState.gigBuffer,
     onEnded: handleGigSourceEnded
   })
   if (!source) return
 
-  const startAt = rawContext.currentTime
+  const startAt = getRawAudioContext().currentTime
   audioState.gigStartCtxTime = startAt
   audioState.gigIsPaused = false
 

@@ -1,136 +1,44 @@
 import assert from 'node:assert'
 import { test, mock } from 'node:test'
 import { logger } from '../src/utils/logger.js'
+import {
+  MockPolySynth,
+  MockMembraneSynth,
+  MockMetalSynth,
+  MockNoiseSynth,
+  MockGain,
+  MockVolume,
+  MockDistortion,
+  MockChorus,
+  MockEQ3,
+  MockStereoWidener,
+  MockLimiter,
+  MockCompressor,
+  MockReverb,
+  mockToneContext,
+  mockToneTransport
+} from './mockUtils.js'
 
-// Mock classes
-class MockPolySynth {
-  static shouldThrowOnDispose = false
-  constructor() {
-    this.volume = { value: 0 }
+// Override MockPolySynth dispose for this test
+MockPolySynth.prototype.dispose = function () {
+  if (MockPolySynth.shouldThrowOnDispose) {
+    throw new Error('Dispose failed')
   }
-  connect() {
-    return this
-  }
-  chain() {
-    return this
-  }
-  triggerAttackRelease() {}
-  dispose() {
-    if (MockPolySynth.shouldThrowOnDispose) {
-      throw new Error('Dispose failed')
-    }
-  }
-}
-
-class MockMembraneSynth {
-  constructor() {
-    this.volume = { value: 0 }
-  }
-  connect() {
-    return this
-  }
-  triggerAttackRelease() {}
-  dispose() {}
-}
-
-class MockMetalSynth {
-  constructor() {
-    this.volume = { value: 0 }
-  }
-  connect() {
-    return this
-  }
-  triggerAttackRelease() {}
-  dispose() {}
-}
-
-class MockNoiseSynth {
-  constructor() {
-    this.volume = { value: 0 }
-  }
-  connect() {
-    return this
-  }
-  triggerAttackRelease() {}
-  dispose() {}
-}
-
-class MockGain {
-  constructor() {
-    this.gain = { rampTo: mock.fn() }
-    this.input = this
-  }
-  connect() {
-    return this
-  }
-  dispose() {}
-}
-
-class MockVolume {
-  constructor() {
-    this.volume = { value: 0 }
-  }
-  connect() {
-    return this
-  }
-  dispose() {}
-}
-
-class MockSignal {
-  connect() {
-    return this
-  }
-  dispose() {}
-  toDestination() {
-    return this
-  }
-  start() {
-    return this
-  }
-  chain() {
-    return this
-  }
-}
-
-class MockReverb {
-  constructor() {
-    this.wet = { value: 0 }
-  }
-  connect() {
-    return this
-  }
-  dispose() {}
 }
 
 const mockTone = {
   start: mock.fn(async () => {}),
-  getContext: mock.fn(() => ({
-    rawContext: { state: 'running', close: mock.fn(async () => {}) },
-    lookAhead: 0
-  })),
+  getContext: mock.fn(() => mockToneContext),
   setContext: mock.fn(),
   now: mock.fn(() => 0),
-  getTransport: mock.fn(() => ({
-    stop: mock.fn(),
-    start: mock.fn(),
-    pause: mock.fn(),
-    cancel: mock.fn(),
-    clear: mock.fn(),
-    scheduleOnce: mock.fn(),
-    position: 0,
-    state: 'stopped',
-    bpm: { value: 120 },
-    loop: false,
-    loopEnd: 0,
-    loopStart: 0
-  })),
+  getTransport: mock.fn(() => mockToneTransport),
   Context: class {
     constructor() {
       this.rawContext = { state: 'running', close: mock.fn(async () => {}) }
     }
   },
-  Limiter: MockSignal,
-  Compressor: MockSignal,
+  Limiter: MockLimiter,
+  Compressor: MockCompressor,
   Gain: MockGain,
   Reverb: MockReverb,
   PolySynth: MockPolySynth,
@@ -140,10 +48,10 @@ const mockTone = {
   MembraneSynth: MockMembraneSynth,
   MetalSynth: MockMetalSynth,
   NoiseSynth: MockNoiseSynth,
-  Distortion: MockSignal,
-  Chorus: MockSignal,
-  EQ3: MockSignal,
-  StereoWidener: MockSignal,
+  Distortion: MockDistortion,
+  Chorus: MockChorus,
+  EQ3: MockEQ3,
+  StereoWidener: MockStereoWidener,
   Volume: MockVolume,
   Frequency: _n => ({ toNote: () => 'C4' })
 }

@@ -1,66 +1,23 @@
 import assert from 'node:assert/strict'
-import { afterEach, beforeEach, test, mock } from 'node:test'
+import { afterEach, beforeEach, test } from 'node:test'
 import React from 'react'
 import { cleanup, render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
+import {
+  mockAudioContextCalls,
+  createMockGameState,
+  setupMainMenuAudioTest
+} from './mainMenuAudioTestUtils.js'
 
-let startAmbientCalls = []
-let ensureAudioContextCalls = []
-
-const audioManager = {
-  ensureAudioContext: async () => {
-    ensureAudioContextCalls.push(true)
-  },
-  startAmbient: async () => {
-    startAmbientCalls.push(true)
-  }
-}
-
-let gameState = {}
-
-mock.module('../src/utils/AudioManager', {
-  namedExports: { audioManager }
-})
-
-mock.module('../src/hooks/useAudioControl', {
-  namedExports: {
-    useAudioControl: () => ({
-      audioState: { isMuted: false },
-      handleAudioChange: () => {}
-    })
-  }
-})
-
-mock.module('../src/context/GameState', {
-  namedExports: {
-    useGameState: () => gameState
-  }
-})
-
-const { MainMenu } = await import('../src/scenes/MainMenu.jsx')
-
-const createGameState = ({ canLoad } = {}) => ({
-  changeScene: () => {},
-  loadGame: () => Boolean(canLoad),
-  addToast: () => {},
-  player: { money: 100, currentNodeId: 'node_0_0' },
-  updatePlayer: () => {},
-  band: { harmony: 3 },
-  updateBand: () => {},
-  social: {},
-  settings: { crtEnabled: false },
-  updateSettings: () => {},
-  deleteSave: () => {},
-  setlist: [],
-  setSetlist: () => {},
-  resetState: () => {}
-})
+const { MainMenu, mockUseGameState } = await setupMainMenuAudioTest()
 
 beforeEach(() => {
-  startAmbientCalls = []
-  ensureAudioContextCalls = []
-  gameState = createGameState({ canLoad: true })
+  mockAudioContextCalls.startAmbientCalls.length = 0
+  mockAudioContextCalls.ensureAudioContextCalls.length = 0
+  mockUseGameState.mock.mockImplementation(() =>
+    createMockGameState({ canLoad: true })
+  )
 
   setupJSDOM()
 })
@@ -77,9 +34,9 @@ test('MainMenu starts ambient audio when starting a tour', async () => {
   await user.click(getByRole('button', { name: /start tour/i }))
 
   await waitFor(() => {
-    assert.equal(startAmbientCalls.length, 1)
+    assert.equal(mockAudioContextCalls.startAmbientCalls.length, 1)
   })
-  assert.equal(ensureAudioContextCalls.length, 1)
+  assert.equal(mockAudioContextCalls.ensureAudioContextCalls.length, 1)
 })
 
 test('MainMenu starts ambient audio when loading a save', async () => {
@@ -89,7 +46,7 @@ test('MainMenu starts ambient audio when loading a save', async () => {
   await user.click(getByRole('button', { name: /load game/i }))
 
   await waitFor(() => {
-    assert.equal(startAmbientCalls.length, 1)
+    assert.equal(mockAudioContextCalls.startAmbientCalls.length, 1)
   })
-  assert.equal(ensureAudioContextCalls.length, 1)
+  assert.equal(mockAudioContextCalls.ensureAudioContextCalls.length, 1)
 })

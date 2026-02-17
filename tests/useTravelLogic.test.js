@@ -1,65 +1,24 @@
-import { test, describe, beforeEach, afterEach, mock } from 'node:test'
+import { test, describe, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook, act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
+import {
+  mockTravelLogicDependencies,
+  createTravelLogicProps,
+  setupTravelLogicTest
+} from './useTravelLogicTestUtils.js'
 
-// Mocks
-const mockCalculateTravelExpenses = mock.fn()
-const mockExpenseConstants = {
-  TRANSPORT: {
-    FUEL_PRICE: 2,
-    MAX_FUEL: 100,
-    REPAIR_COST_PER_UNIT: 5
-  }
-}
+const {
+  mockCalculateTravelExpenses,
+  mockAudioManager,
+  mockLogger,
+  mockHandleError
+} = mockTravelLogicDependencies
 
-const mockAudioManager = {
-  playSFX: mock.fn()
-}
-
-const mockLogger = {
-  info: mock.fn(),
-  error: mock.fn(),
-  debug: mock.fn(),
-  warn: mock.fn()
-}
-
-const mockHandleError = mock.fn()
-class MockStateError extends Error {}
-
-// Mock modules
-mock.module('../src/utils/economyEngine', {
-  namedExports: {
-    calculateTravelExpenses: mockCalculateTravelExpenses,
-    EXPENSE_CONSTANTS: mockExpenseConstants
-  }
-})
-
-mock.module('../src/utils/AudioManager', {
-  namedExports: {
-    audioManager: mockAudioManager
-  }
-})
-
-mock.module('../src/utils/logger', {
-  namedExports: {
-    logger: mockLogger
-  }
-})
-
-mock.module('../src/utils/errorHandler', {
-  namedExports: {
-    handleError: mockHandleError,
-    StateError: MockStateError
-  }
-})
-
-// Dynamically import the hook after mocking
-const { useTravelLogic } = await import('../src/hooks/useTravelLogic.js')
+const { useTravelLogic } = await setupTravelLogicTest()
 
 describe('useTravelLogic', () => {
   beforeEach(() => {
-    // Reset mocks
     mockCalculateTravelExpenses.mock.resetCalls()
     mockCalculateTravelExpenses.mock.mockImplementation(() => ({
       dist: 100,
@@ -79,46 +38,8 @@ describe('useTravelLogic', () => {
     teardownJSDOM()
   })
 
-  const createProps = (overrides = {}) => ({
-    player: {
-      money: 1000,
-      currentNodeId: 'node_start',
-      van: { fuel: 50, condition: 80 },
-      totalTravels: 0
-    },
-    band: { members: [], harmony: 50 },
-    gameMap: {
-      nodes: {
-        node_start: {
-          id: 'node_start',
-          layer: 0,
-          type: 'START',
-          venue: { name: 'HQ' }
-        },
-        node_target: {
-          id: 'node_target',
-          layer: 1,
-          type: 'GIG',
-          venue: { name: 'Club' }
-        }
-      },
-      connections: [{ from: 'node_start', to: 'node_target' }]
-    },
-    updatePlayer: mock.fn(),
-    updateBand: mock.fn(),
-    saveGame: mock.fn(),
-    advanceDay: mock.fn(),
-    triggerEvent: mock.fn(),
-    startGig: mock.fn(),
-    hasUpgrade: mock.fn(() => false),
-    addToast: mock.fn(),
-    changeScene: mock.fn(),
-    onShowHQ: mock.fn(),
-    ...overrides
-  })
-
   test('initial state', () => {
-    const props = createProps()
+    const props = createTravelLogicProps()
     const { result } = renderHook(() => useTravelLogic(props))
 
     assert.equal(result.current.isTraveling, false)
@@ -126,7 +47,7 @@ describe('useTravelLogic', () => {
   })
 
   test('handleTravel initiates travel when valid', () => {
-    const props = createProps()
+    const props = createTravelLogicProps()
     const targetNode = props.gameMap.nodes.node_target
 
     mockCalculateTravelExpenses.mock.mockImplementation(() => ({
@@ -148,8 +69,8 @@ describe('useTravelLogic', () => {
   })
 
   test('handleTravel prevents travel if insufficient funds', () => {
-    const props = createProps({
-      player: { ...createProps().player, money: 10 }
+    const props = createTravelLogicProps({
+      player: { ...createTravelLogicProps().player, money: 10 }
     })
     const targetNode = props.gameMap.nodes.node_target
 
@@ -171,10 +92,10 @@ describe('useTravelLogic', () => {
   })
 
   test('handleTravel prevents travel if insufficient fuel', () => {
-    const props = createProps({
+    const props = createTravelLogicProps({
       player: {
-        ...createProps().player,
-        van: { ...createProps().player.van, fuel: 5 }
+        ...createTravelLogicProps().player,
+        van: { ...createTravelLogicProps().player.van, fuel: 5 }
       }
     })
     const targetNode = props.gameMap.nodes.node_target
@@ -197,7 +118,7 @@ describe('useTravelLogic', () => {
   })
 
   test('handleTravel to current node triggers interaction', () => {
-    const props = createProps()
+    const props = createTravelLogicProps()
     const currentNode = props.gameMap.nodes.node_start
     // node_start is type START, so it should trigger onShowHQ
 
@@ -212,7 +133,7 @@ describe('useTravelLogic', () => {
   })
 
   test('onTravelComplete updates state and finalizes travel', () => {
-    const props = createProps()
+    const props = createTravelLogicProps()
     const targetNode = props.gameMap.nodes.node_target
 
     mockCalculateTravelExpenses.mock.mockImplementation(() => ({
@@ -249,8 +170,12 @@ describe('useTravelLogic', () => {
   })
 
   test('handleRefuel fills tank and deducts money', () => {
-    const props = createProps({
-      player: { ...createProps().player, money: 1000, van: { fuel: 50 } }
+    const props = createTravelLogicProps({
+      player: {
+        ...createTravelLogicProps().player,
+        money: 1000,
+        van: { fuel: 50 }
+      }
     })
     // Missing 50 fuel. Price is 2 per unit. Cost = 100.
 
@@ -268,8 +193,12 @@ describe('useTravelLogic', () => {
   })
 
   test('handleRepair fixes van and deducts money', () => {
-    const props = createProps({
-      player: { ...createProps().player, money: 1000, van: { condition: 80 } }
+    const props = createTravelLogicProps({
+      player: {
+        ...createTravelLogicProps().player,
+        money: 1000,
+        van: { condition: 80 }
+      }
     })
     // Missing 20 condition. Price is 5 per unit. Cost = 100.
 
