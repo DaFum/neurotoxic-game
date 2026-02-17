@@ -11,20 +11,20 @@ Optimize and harden Continuous Integration (CI) workflows.
 
 1.  **Audit Current Workflows**
     List all workflows in `.github/workflows/`. Identify:
-    *   **Triggers**: Are they correct (push, pull_request)?
-    *   **Jobs**: Are they parallelized?
-    *   **Steps**: Are they caching dependencies?
+    - **Triggers**: Are they correct (push, pull_request)?
+    - **Jobs**: Are they parallelized?
+    - **Steps**: Are they caching dependencies?
 
 2.  **Apply Hardening Patterns**
-    *   **Caching**: Use `actions/setup-node` with `cache: 'npm'`.
-    *   **Timeouts**: Set `timeout-minutes` on every job to prevent hangs.
-    *   **Concurrency**: Use `concurrency` groups to cancel outdated runs on PRs.
-    *   **Permissions**: Use least-privilege `permissions` blocks.
+    - **Caching**: Use `actions/setup-node` with `cache: 'npm'`.
+    - **Timeouts**: Set `timeout-minutes` on every job to prevent hangs.
+    - **Concurrency**: Use `concurrency` groups to cancel outdated runs on PRs.
+    - **Permissions**: Use least-privilege `permissions` blocks.
 
 3.  **Optimize Speed**
-    *   Run independent jobs (Lint, Test) in parallel.
-    *   Make `Build` depend on `Test` and `Lint`.
-    *   Use `npm ci` instead of `npm install` for deterministic installs.
+    - Run independent jobs (Lint, Test) in parallel.
+    - Make `Build` depend on `Test` and `Lint`.
+    - Use `npm ci` instead of `npm install` for deterministic installs.
 
 4.  **Verify**
     Ensure the changes are valid YAML and follow GitHub Actions syntax.

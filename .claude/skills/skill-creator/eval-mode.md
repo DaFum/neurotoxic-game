@@ -5,6 +5,7 @@ Eval mode runs skill evals and grades expectations. Enables measuring skill perf
 ## Purpose
 
 Evals serve to:
+
 1. **Set a floor** - Prove the skill helps Claude do something it couldn't by default
 2. **Raise the ceiling** - Enable iterating on skills to improve performance
 3. **Measure holistically** - Capture metrics beyond pass/fail (time, tokens)
@@ -44,6 +45,7 @@ Read references/schemas.md
 ```
 
 This ensures you know the expected structure for:
+
 - `grading.json` - What the grader produces
 - `metrics.json` - What the executor produces
 - `timing.json` - Wall clock timing format
@@ -125,6 +127,7 @@ After grading completes, finalize timing.json.
 ## Step 5: Display Results
 
 Update task to `completed`. Display:
+
 - Pass/fail status for each expectation with evidence
 - Overall pass rate
 - Execution metrics from grading.json

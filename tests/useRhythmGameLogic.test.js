@@ -48,6 +48,15 @@ describe('useRhythmGameLogic', () => {
     teardownJSDOM()
   })
 
+  // Helper to init hook and wait
+  const initHook = async () => {
+    const { result } = renderHook(() => useRhythmGameLogic())
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 200))
+    })
+    return result
+  }
+
   test('initial state', async () => {
     const { result } = renderHook(() => useRhythmGameLogic())
 
@@ -86,12 +95,7 @@ describe('useRhythmGameLogic', () => {
       originalNote: { p: 60 }
     }))
 
-    const { result } = renderHook(() => useRhythmGameLogic())
-
-    // Wait for initialization
-    await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 200))
-    })
+    const result = await initHook()
 
     // Simulate input
     act(() => {
@@ -108,11 +112,7 @@ describe('useRhythmGameLogic', () => {
   test('transitions to POSTGIG when all notes are processed near song end', async () => {
     mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 9800)
 
-    const { result } = renderHook(() => useRhythmGameLogic())
-
-    await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 200))
-    })
+    const result = await initHook()
 
     act(() => {
       simulateGameLoopUpdate(result, {
@@ -143,11 +143,7 @@ describe('useRhythmGameLogic', () => {
       }
     )
 
-    const { result } = renderHook(() => useRhythmGameLogic())
-
-    await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 200))
-    })
+    const result = await initHook()
 
     act(() => {
       simulateGameLoopUpdate(result, {
@@ -159,5 +155,4 @@ describe('useRhythmGameLogic', () => {
       mockChangeScene.mock.calls.some(call => call.arguments[0] === 'POSTGIG')
     )
   })
-
 })

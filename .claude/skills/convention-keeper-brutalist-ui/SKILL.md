@@ -14,45 +14,49 @@ Enforce the strict "Brutalist" design system across the application.
 3.  **Hard Shadows**: `shadow-[4px_4px_0px_var(--toxic-green)]`. No soft blurs.
 4.  **Uppercasing**: Headers and buttons are typically `uppercase`.
 5.  **Colors**: Use CSS variables via Tailwind v4 syntax.
-    *   `bg-(--void-black)`
-    *   `text-(--toxic-green)`
-    *   `border-(--neon-pink)` (for borders) or `--toxic-green` (for shadows)
+    - `bg-(--void-black)`
+    - `text-(--toxic-green)`
+    - `border-(--neon-pink)` (for borders) or `--toxic-green` (for shadows)
 
 ## Workflow
 
 1.  **Check Styling**
     Inspect the component's class names.
-    *   *Bad*: `rounded-lg`, `shadow-md`, `bg-black`, `text-[#00ff00]`
-    *   *Good*: `rounded-none`, `shadow-none`, `bg-(--void-black)`, `text-(--toxic-green)`
+    - _Bad_: `rounded-lg`, `shadow-md`, `bg-black`, `text-[#00ff00]`
+    - _Good_: `rounded-none`, `shadow-none`, `bg-(--void-black)`, `text-(--toxic-green)`
 
 2.  **Verify Components**
     Use shared components from `src/ui/shared/` instead of rebuilding primitives.
-    *   `GlitchButton`
-    *   `Panel` (if exists)
+    - `GlitchButton`
+    - `Panel` (if exists)
 
 3.  **Review Imports**
     Order: React -> Third-party -> Internal -> Assets.
 
 ## Tailwind v4 Syntax
 
-*   **Variables**: Use parentheses `bg-(--var-name)` instead of `bg-[var(--var-name)]`.
-*   **Arbitrary Values**: `w-[500px]` is allowed but prefer spacing scale.
+- **Variables**: Use parentheses `bg-(--var-name)` instead of `bg-[var(--var-name)]`.
+- **Arbitrary Values**: `w-[500px]` is allowed but prefer spacing scale.
 
 ## Example
 
 **Input**: "Create a modal for the settings."
 
 **Incorrect Output**:
+
 ```jsx
-<div className="rounded-xl shadow-lg bg-gray-900 p-4">
-  <h2 className="text-xl font-bold">Settings</h2>
+<div className='rounded-xl shadow-lg bg-gray-900 p-4'>
+  <h2 className='text-xl font-bold'>Settings</h2>
 </div>
 ```
 
 **Correct Output**:
+
 ```jsx
-<div className="border-2 border-(--neon-pink) bg-(--void-black) p-4 shadow-[4px_4px_0px_var(--neon-pink)]">
-  <h2 className="text-2xl uppercase tracking-widest text-(--neon-pink)">Settings</h2>
+<div className='border-2 border-(--neon-pink) bg-(--void-black) p-4 shadow-[4px_4px_0px_var(--neon-pink)]'>
+  <h2 className='text-2xl uppercase tracking-widest text-(--neon-pink)'>
+    Settings
+  </h2>
 </div>
 ```
 

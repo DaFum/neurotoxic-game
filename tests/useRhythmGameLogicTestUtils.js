@@ -122,9 +122,8 @@ export const mockRhythmGameLogicModules = () => {
 
 export const setupRhythmGameLogicTest = async () => {
   mockRhythmGameLogicModules()
-  const { useRhythmGameLogic } = await import(
-    '../src/hooks/useRhythmGameLogic.js'
-  )
+  const { useRhythmGameLogic } =
+    await import('../src/hooks/useRhythmGameLogic.js')
   return { useRhythmGameLogic }
 }
 
@@ -159,7 +158,9 @@ export const simulateGameLoopUpdate = (result, overrides = {}) => {
   result.current.update(16)
 }
 
-export const resetAllMocks = (dependencies = mockRhythmGameLogicDependencies) => {
+export const resetAllMocks = (
+  dependencies = mockRhythmGameLogicDependencies
+) => {
   Object.values(dependencies).forEach(dep => {
     if (dep && dep.mock && typeof dep.mock.resetCalls === 'function') {
       dep.mock.resetCalls()

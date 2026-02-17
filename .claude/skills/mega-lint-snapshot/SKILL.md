@@ -25,19 +25,19 @@ To apply fixes (where available):
 
 1.  **Execute the Script**
     The script runs configured linters defined in `.claude/skills/mega-lint-snapshot/assets/mega-lint.config.json`.
-    *   **ESLint**: JavaScript/React.
-    *   **Prettier**: Formatting.
-    *   **Gitleaks**: Secret detection.
-    *   **ShellCheck**: Bash scripts.
+    - **ESLint**: JavaScript/React.
+    - **Prettier**: Formatting.
+    - **Gitleaks**: Secret detection.
+    - **ShellCheck**: Bash scripts.
 
 2.  **Analyze the Report**
-    *   **ERROR**: Blocking issues. Must fix.
-    *   **WARN**: Potential issues. Review.
-    *   **INFO**: Formatting or style notes.
+    - **ERROR**: Blocking issues. Must fix.
+    - **WARN**: Potential issues. Review.
+    - **INFO**: Formatting or style notes.
 
 3.  **Fix Issues**
-    *   If `--fix` works, commit the changes.
-    *   If not, manually address the errors reported in the log.
+    - If `--fix` works, commit the changes.
+    - If not, manually address the errors reported in the log.
 
 ## Example
 
@@ -47,6 +47,7 @@ To apply fixes (where available):
 Run `.claude/skills/mega-lint-snapshot/scripts/run-mega-lint.sh`.
 
 **Output**:
+
 ```text
 [INFO] Starting MegaLinter Snapshot...
 [INFO] Running ESLint... [PASS]
@@ -54,6 +55,7 @@ Run `.claude/skills/mega-lint-snapshot/scripts/run-mega-lint.sh`.
   - hardcoded_secret in src/utils/api.js:20
 [INFO] Running Prettier... [PASS]
 ```
+
 "Found a hardcoded secret in `api.js`. Please remove it."
 
 _Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._

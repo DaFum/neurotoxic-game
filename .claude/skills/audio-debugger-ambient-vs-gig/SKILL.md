@@ -11,22 +11,22 @@ Troubleshoot and resolve audio playback issues in the game, focusing on the dist
 
 1.  **Identify the Context**
     Determine if the issue is with **Ambient** (Tour/Overworld) or **Gig** (Rhythm Game) audio.
-    *   **Ambient**: Controlled by `AudioSystem.startAmbient()`. Uses OGG buffers (preferred) or MIDI synthesis (fallback).
-    *   **Gig**: Controlled by `useRhythmGameAudio`. Plays specific MIDI slices/excerpts synchronized with gameplay.
+    - **Ambient**: Controlled by `AudioSystem.startAmbient()`. Uses OGG buffers (preferred) or MIDI synthesis (fallback).
+    - **Gig**: Controlled by `useRhythmGameAudio`. Plays specific MIDI slices/excerpts synchronized with gameplay.
 
 2.  **Verify Audio Context State**
     Audio requires a user gesture to unlock.
-    *   Check if `Tone.context.state` is `'running'`.
-    *   Ensure `audioManager.ensureAudioContext()` is called after a click/interaction.
+    - Check if `Tone.context.state` is `'running'`.
+    - Ensure `audioManager.ensureAudioContext()` is called after a click/interaction.
 
 3.  **Trace the Execution**
-    *   **Ambient**: Check `src/utils/AudioManager.js`. Look for `startAmbient()` call. Check if it falls back to MIDI.
-    *   **Gig**: Check `src/utils/audioPlaybackUtils.js`. Verify `startPlayback` receives correct `songId` and `offset`.
+    - **Ambient**: Check `src/utils/AudioManager.js`. Look for `startAmbient()` call. Check if it falls back to MIDI.
+    - **Gig**: Check `src/utils/audioPlaybackUtils.js`. Verify `startPlayback` receives correct `songId` and `offset`.
 
 4.  **Inspect Data Integrity**
-    *   Open `src/assets/rhythm_songs.json`.
-    *   Verify `file` paths exist.
-    *   Verify `offset` and `bpm` are correct numbers.
+    - Open `src/assets/rhythm_songs.json`.
+    - Verify `file` paths exist.
+    - Verify `offset` and `bpm` are correct numbers.
 
 5.  **Check Logs**
     Look for `[AudioSystem]` or `[AudioEngine]` logs in the console.
@@ -34,22 +34,26 @@ Troubleshoot and resolve audio playback issues in the game, focusing on the dist
 ## Common Issues & Fixes
 
 ### Music Doesn't Start on Load
-*   **Cause**: Browser autoplay policy blocked the AudioContext.
-*   **Fix**: Ensure the user clicks a "Start" or "Enter" button that calls `audioManager.ensureAudioContext()`.
+
+- **Cause**: Browser autoplay policy blocked the AudioContext.
+- **Fix**: Ensure the user clicks a "Start" or "Enter" button that calls `audioManager.ensureAudioContext()`.
 
 ### Ambient Music Overlaps with Gig
-*   **Cause**: `stopMusic()` wasn't called or failed before gig start.
-*   **Fix**: Ensure `useRhythmGameAudio` calls `audioManager.stopMusic()` in its cleanup or initialization phase.
+
+- **Cause**: `stopMusic()` wasn't called or failed before gig start.
+- **Fix**: Ensure `useRhythmGameAudio` calls `audioManager.stopMusic()` in its cleanup or initialization phase.
 
 ### Gig Audio is Out of Sync
-*   **Cause**: `AudioContext.currentTime` drift or incorrect `offset` in song data.
-*   **Fix**: Check `src/utils/rhythmUtils.js` timing logic. Verify `offset` in `rhythm_songs.json`.
+
+- **Cause**: `AudioContext.currentTime` drift or incorrect `offset` in song data.
+- **Fix**: Check `src/utils/rhythmUtils.js` timing logic. Verify `offset` in `rhythm_songs.json`.
 
 ## Example
 
 **Input**: "The gig music for 'Neon Highway' is silent, but notes are moving."
 
 **Process**:
+
 1.  Check console for "Loading song: Neon Highway".
 2.  Verify `rhythm_songs.json` has a valid `file` entry for "Neon Highway".
 3.  Check if `Tone.Transport.start()` was called.

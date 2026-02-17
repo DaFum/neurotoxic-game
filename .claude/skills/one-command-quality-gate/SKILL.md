@@ -25,8 +25,8 @@ The script executes these checks in order:
 
 ## Rules
 
-*   **Stop on Failure**: If any step fails, the gate fails immediately. Do not proceed.
-*   **Clean Output**: Report the specific step that failed and the error message.
+- **Stop on Failure**: If any step fails, the gate fails immediately. Do not proceed.
+- **Clean Output**: Report the specific step that failed and the error message.
 
 ## Example
 
@@ -37,11 +37,13 @@ Run `.claude/skills/one-command-quality-gate/scripts/quality-gate.sh`.
 
 **Output**:
 (Note: "Running..." text denotes additional successful check output.)
+
 ```text
 [LINT] Running linters... OK
 [TEST] Running tests... FAIL
   Test failed: 'Game should start with 100 money'
 ```
+
 "Quality gate failed at the Test step. Please fix the money initialization regression."
 
 _Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._

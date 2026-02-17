@@ -32,12 +32,12 @@ People using this skill range from veteran developers to parents who just discov
 
 ## Modes
 
-| Mode | When to Use | Workflow |
-|------|-------------|----------|
-| **Create** | "I want to make a skill for X" | Interview → Research → Draft → Run → Refine |
-| **Improve** | "Make my skill better" | Execute → Grade → Compare → Analyze → Apply |
-| **Eval** | "Test my skill on this case" | Execute → Grade → Results |
-| **Benchmark** | "How well does my skill perform?" | 3× runs per config → Aggregate → Analyze *(requires subagents)* |
+| Mode          | When to Use                       | Workflow                                                        |
+| ------------- | --------------------------------- | --------------------------------------------------------------- |
+| **Create**    | "I want to make a skill for X"    | Interview → Research → Draft → Run → Refine                     |
+| **Improve**   | "Make my skill better"            | Execute → Grade → Compare → Analyze → Apply                     |
+| **Eval**      | "Test my skill on this case"      | Execute → Grade → Results                                       |
+| **Benchmark** | "How well does my skill perform?" | 3× runs per config → Aggregate → Analyze _(requires subagents)_ |
 
 See `references/mode-diagrams.md` for visual workflow diagrams.
 
@@ -52,6 +52,7 @@ The most common entry point. Users either describe something from scratch or say
 If the conversation already contains a workflow, extract what you can first: tools used, steps taken, corrections made, input/output formats. Then confirm and fill gaps.
 
 Key questions:
+
 1. What should this skill enable Claude to do?
 2. When should it trigger? (what user phrases or contexts?)
 3. What's the expected output format?
@@ -70,7 +71,7 @@ scripts/init_skill.py <skill-name> --path <output-directory>
 Fill the YAML frontmatter based on the interview:
 
 - **name**: Skill identifier
-- **description**: When to trigger and what it does. This is the primary triggering mechanism. Claude tends to *undertrigger* skills, so make descriptions pushy — enumerate specific contexts, keywords, and edge cases.
+- **description**: When to trigger and what it does. This is the primary triggering mechanism. Claude tends to _undertrigger_ skills, so make descriptions pushy — enumerate specific contexts, keywords, and edge cases.
 - **compatibility**: Required tools/dependencies (optional, rarely needed)
 
 Then write the skill body following the **Skill Writing Guide** below.
@@ -156,35 +157,39 @@ Claude reads only the relevant reference file.
 
 When writing or reviewing a skill, check for these failure modes:
 
-| Anti-Pattern | Symptom | Fix |
-|---|---|---|
-| **Overfitter** | Works on test cases, fails on everything else | Generalize from feedback — the skill serves millions of prompts, not just your 3 examples |
-| **Undertrigger** | Claude doesn't use the skill when it should | Make the description pushy — enumerate contexts, keywords, edge cases |
-| **Wall of Text** | 800+ line SKILL.md, model ignores parts | Use progressive disclosure — core workflow in SKILL.md, details in `references/` |
-| **Micromanager** | MUST/ALWAYS/NEVER everywhere, no room for judgment | Explain why things matter; trust the model's intelligence |
-| **Missing Example** | Describes what to do but never shows good output | Include 1–2 concrete input→output examples |
-| **Silent Failure** | No guidance when things go wrong | Add error handling and fallback instructions |
-| **Phantom Dependency** | References tools/libs that may not exist | Check availability at runtime; use `compatibility` frontmatter |
+| Anti-Pattern           | Symptom                                            | Fix                                                                                       |
+| ---------------------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| **Overfitter**         | Works on test cases, fails on everything else      | Generalize from feedback — the skill serves millions of prompts, not just your 3 examples |
+| **Undertrigger**       | Claude doesn't use the skill when it should        | Make the description pushy — enumerate contexts, keywords, edge cases                     |
+| **Wall of Text**       | 800+ line SKILL.md, model ignores parts            | Use progressive disclosure — core workflow in SKILL.md, details in `references/`          |
+| **Micromanager**       | MUST/ALWAYS/NEVER everywhere, no room for judgment | Explain why things matter; trust the model's intelligence                                 |
+| **Missing Example**    | Describes what to do but never shows good output   | Include 1–2 concrete input→output examples                                                |
+| **Silent Failure**     | No guidance when things go wrong                   | Add error handling and fallback instructions                                              |
+| **Phantom Dependency** | References tools/libs that may not exist           | Check availability at runtime; use `compatibility` frontmatter                            |
 
 ---
 
 ## Debugging Skills
 
 ### Skill Isn't Triggering
+
 - Check the description — does it cover the user's phrasing? Add more trigger scenarios and keywords.
 - Test with the exact phrases a real user would say.
 
 ### Model Ignores Instructions
-- Read the *transcript*, not just the output. Find where the model diverged.
+
+- Read the _transcript_, not just the output. Find where the model diverged.
 - Important things should be early and prominent, not buried.
-- Try explaining *why* instead of just commanding.
+- Try explaining _why_ instead of just commanding.
 - Check for contradictions between parts of the skill.
 
 ### Inconsistent Results
+
 - Run the same prompt 3 times. High variance = underspecified skill.
 - Add more concrete examples. Make ambiguous instructions explicit.
 
 ### Skill Is Too Slow
+
 - Read the transcript for wasted steps — trim instructions causing unproductive work.
 - Move heavy reference material to bundled files.
 - Consider scripts for repetitive work.
@@ -196,6 +201,7 @@ When writing or reviewing a skill, check for these failure modes:
 When the user asks to improve an existing skill, establish: which skill, how much time, and what's the goal.
 
 **Read these before starting:**
+
 ```
 references/improve-workflow.md    # Complete iteration loop
 references/schemas.md             # JSON output structures
@@ -237,12 +243,12 @@ Runs all evals, 3 times per configuration, always includes no-skill baseline, us
 
 ## Building Blocks
 
-| Block | Input | Output | Agent |
-|-------|-------|--------|-------|
-| **Eval Run** | skill + prompt + files | transcript, outputs, metrics | `agents/executor.md` |
-| **Grade** | outputs + expectations | pass/fail per expectation | `agents/grader.md` |
-| **Blind Compare** | output A, output B, prompt | winner + reasoning | `agents/comparator.md` |
-| **Post-hoc Analysis** | winner + skills + transcripts | improvement suggestions | `agents/analyzer.md` |
+| Block                 | Input                         | Output                       | Agent                  |
+| --------------------- | ----------------------------- | ---------------------------- | ---------------------- |
+| **Eval Run**          | skill + prompt + files        | transcript, outputs, metrics | `agents/executor.md`   |
+| **Grade**             | outputs + expectations        | pass/fail per expectation    | `agents/grader.md`     |
+| **Blind Compare**     | output A, output B, prompt    | winner + reasoning           | `agents/comparator.md` |
+| **Post-hoc Analysis** | winner + skills + transcripts | improvement suggestions      | `agents/analyzer.md`   |
 
 ---
 

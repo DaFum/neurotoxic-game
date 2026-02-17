@@ -9,8 +9,8 @@ Strictly enforce pinned versions for critical dependencies to ensure stability a
 
 ## Pinned Versions
 
-| Package      | Pinned Major | Policy |
-| ------------ | ------------ | ------ |
+| Package      | Pinned Major | Policy         |
+| ------------ | ------------ | -------------- |
 | React        | 18.x         | **BLOCK** v19+ |
 | React DOM    | 18.x         | **BLOCK** v19+ |
 | Vite         | 5.x          | **BLOCK** v6+  |
@@ -22,13 +22,13 @@ Strictly enforce pinned versions for critical dependencies to ensure stability a
 
 1.  **Check `package.json`**
     Compare proposed changes against the pinned table.
-    *   *Minor/Patch upgrades*: Allowed (e.g., `18.2.0` -> `18.3.0`).
-    *   *Major upgrades*: **Blocked** unless explicitly authorized by a separate migration plan.
+    - _Minor/Patch upgrades_: Allowed (e.g., `18.2.0` -> `18.3.0`).
+    - _Major upgrades_: **Blocked** unless explicitly authorized by a separate migration plan.
 
 2.  **Verify Compatibility**
-    *   **Tailwind v4**: Must use `@import "tailwindcss"`. No `@tailwind` directives.
-    *   **Vite v5**: Ensure config uses v5 plugins.
-    *   **Pixi v8**: Ensure code uses v8 API (no `PIXI.InteractionManager`, use `eventMode`).
+    - **Tailwind v4**: Must use `@import "tailwindcss"`. No `@tailwind` directives.
+    - **Vite v5**: Ensure config uses v5 plugins.
+    - **Pixi v8**: Ensure code uses v8 API (no `PIXI.InteractionManager`, use `eventMode`).
 
 3.  **Validate Node Version**
     Ensure `.nvmrc` or `engines` field specifies Node >= 20.
@@ -38,6 +38,7 @@ Strictly enforce pinned versions for critical dependencies to ensure stability a
 **Input**: "Upgrade all packages to latest."
 
 **Action**:
+
 1.  Check `npm outdated`.
 2.  See `react` wants to go to `19.0.0` (hypothetically).
 3.  **Block**: "React 19 is not supported yet. Keeping at 18.x."

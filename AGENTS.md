@@ -11,9 +11,9 @@
 | Category        | Technologies                                     |
 | --------------- | ------------------------------------------------ |
 | **Frontend**    | React 19.2.4, Vite 7.3.1, JavaScript (ESModules) |
-| **Game Engine** | Pixi.js 8.16.0                                    |
-| **Styling**     | Tailwind CSS v4, Framer Motion 12.34.0            |
-| **Audio**       | Tone.js 15.1.22 (WebAudio buffers)                  |
+| **Game Engine** | Pixi.js 8.16.0                                   |
+| **Styling**     | Tailwind CSS v4, Framer Motion 12.34.0           |
+| **Audio**       | Tone.js 15.1.22 (WebAudio buffers)               |
 
 ## Project Structure
 
