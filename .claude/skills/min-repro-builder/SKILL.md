@@ -11,23 +11,23 @@ Isolate bugs by creating a minimal, self-contained reproduction environment.
 
 1.  **Select the Canvas**
     Identify where to build the repro.
-    *   **Unit Test**: `tests/repro.test.js` (for logic/state).
-    *   **Component**: `src/ui/Repro.jsx` (for UI/rendering).
-    *   **Scene**: `src/scenes/ReproScene.jsx` (for game loop/audio).
+    - **Unit Test**: `tests/repro.test.js` (for logic/state).
+    - **Component**: `src/ui/Repro.jsx` (for UI/rendering).
+    - **Scene**: `src/scenes/ReproScene.jsx` (for game loop/audio).
 
 2.  **Minimize State**
     Start with `initialState` and strip everything not needed.
-    *   *Need*: `player.money`, `audioManager`.
-    *   *Don't Need*: `inventory`, `unlocks` (unless relevant).
+    - _Need_: `player.money`, `audioManager`.
+    - _Don't Need_: `inventory`, `unlocks` (unless relevant).
 
 3.  **Reuse Assets**
     Do not add new media/data files. Use existing assets where possible:
-    *   `src/assets/rhythm_songs.json`
-    *   `public/placeholder.png` (if exists)
+    - `src/assets/rhythm_songs.json`
+    - `public/placeholder.png` (if exists)
 
 4.  **Inject the Bug**
     Force the condition.
-    *   *Example*: "Set `player.health = -1` on init to test death screen."
+    - _Example_: "Set `player.health = -1` on init to test death screen."
 
 5.  **Document Usage**
     "To run the repro, import `ReproScene` in `App.jsx` and set it as the initial route."
@@ -37,6 +37,7 @@ Isolate bugs by creating a minimal, self-contained reproduction environment.
 **Input**: "The game crashes when the player has 0 fuel and tries to travel."
 
 **Action**:
+
 1.  Create `tests/repro_travel_crash.test.js`.
 2.  Import `gameReducer`.
 3.  Set up state: `fuel: 0`.

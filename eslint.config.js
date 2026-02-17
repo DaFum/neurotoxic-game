@@ -49,7 +49,7 @@ export default [
           argsIgnorePattern: '^_',
           caughtErrorsIgnorePattern: '^_'
         }
-      ],
+      ]
     }
   }
 ]

@@ -1,9 +1,6 @@
 import assert from 'node:assert'
 import { test, mock } from 'node:test'
-import {
-  MockGain,
-  createMockTone
-} from './mockUtils.js'
+import { MockGain, createMockTone } from './mockUtils.js'
 
 // Mock Tone.js
 const mockTone = createMockTone()

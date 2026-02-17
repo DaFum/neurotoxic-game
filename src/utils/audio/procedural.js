@@ -2,21 +2,11 @@ import * as Tone from 'tone'
 import * as ToneJsMidi from '@tonejs/midi'
 import { logger } from '../logger.js'
 import { audioState } from './state.js'
-import {
-  MIN_NOTE_DURATION,
-  MAX_NOTE_DURATION,
-} from './constants.js'
-import {
-  ensureAudioContext,
-  getRawAudioContext,
-} from './setup.js'
+import { MIN_NOTE_DURATION, MAX_NOTE_DURATION } from './constants.js'
+import { ensureAudioContext, getRawAudioContext } from './setup.js'
 import { stopAndDisconnectSource } from './cleanupUtils.js'
 import { stopAudio, stopAudioInternal } from './playback.js'
-import {
-  midiUrlMap,
-  oggCandidates,
-  loadAudioBuffer,
-} from './assets.js'
+import { midiUrlMap, oggCandidates, loadAudioBuffer } from './assets.js'
 import { createAndConnectBufferSource } from './sharedBufferUtils.js'
 import { calculateTimeFromTicks, preprocessTempoMap } from '../rhythmUtils.js'
 import { selectRandomItem } from '../audioSelectionUtils.js'
@@ -371,7 +361,8 @@ export async function startMetalGenerator(
   const startDelay = Math.max(0.1, delay)
 
   const duration =
-    song.duration || (song.excerptDurationMs ? song.excerptDurationMs / 1000 : 0)
+    song.duration ||
+    (song.excerptDurationMs ? song.excerptDurationMs / 1000 : 0)
 
   if (duration > 0 && onEnded) {
     Tone.getTransport().scheduleOnce(() => {

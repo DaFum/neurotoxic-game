@@ -29,9 +29,8 @@ test('GameStateProvider Re-render Benchmark', async _t => {
   const React = await import('react')
   const { render, act } = await import('@testing-library/react')
   // We need to import the provider. Note that it might have side effects.
-  const { GameStateProvider, useGameState, useGameDispatch } = await import(
-    '../../src/context/GameState.jsx'
-  )
+  const { GameStateProvider, useGameState, useGameDispatch } =
+    await import('../../src/context/GameState.jsx')
 
   let consumerRenders = 0
 

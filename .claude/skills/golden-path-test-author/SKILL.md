@@ -19,21 +19,21 @@ Ensure the critical game flow (OVERWORLD → PREGIG → GIG → POSTGIG → OVER
 
 1.  **Select the Transition**
     Identify which part of the loop to test.
-    *   *Example*: "Verify travel deducts fuel and advances time."
+    - _Example_: "Verify travel deducts fuel and advances time."
 
 2.  **Scaffold the Test**
     Use `node:test` and `node:assert`.
-    *   Import `initialState` and `gameReducer`.
-    *   Mock dependencies if testing components (but prefer pure reducer tests for logic).
+    - Import `initialState` and `gameReducer`.
+    - Mock dependencies if testing components (but prefer pure reducer tests for logic).
 
 3.  **Define Inputs & Expected Outputs**
-    *   *Input*: State with 10 fuel. Action `TRAVEL`.
-    *   *Expected*: State with 9 fuel. Location updated.
+    - _Input_: State with 10 fuel. Action `TRAVEL`.
+    - _Expected_: State with 9 fuel. Location updated.
 
 4.  **Implement Mocking**
     If testing components or effects:
-    *   Mock `Math.random` for deterministic events.
-    *   Mock `AudioContext` (it doesn't exist in Node).
+    - Mock `Math.random` for deterministic events.
+    - Mock `AudioContext` (it doesn't exist in Node).
 
 ## Example
 
@@ -41,31 +41,41 @@ Ensure the critical game flow (OVERWORLD → PREGIG → GIG → POSTGIG → OVER
 
 **Action**:
 Create `tests/unit/travel.test.js`:
+
 ```javascript
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
-import { gameReducer } from '../../src/context/gameReducer.js';
-import { initialState } from '../../src/context/initialState.js';
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
+import { gameReducer } from '../../src/context/gameReducer.js'
+import { initialState } from '../../src/context/initialState.js'
 
 test('Travel deducts fuel', () => {
-  const startState = { ...initialState, player: { ...initialState.player, fuel: 10 } };
-  const action = { type: 'TRAVEL', payload: { cost: 1, destination: 'node_2' } };
+  const startState = {
+    ...initialState,
+    player: { ...initialState.player, fuel: 10 }
+  }
+  const action = { type: 'TRAVEL', payload: { cost: 1, destination: 'node_2' } }
 
-  const newState = gameReducer(startState, action);
+  const newState = gameReducer(startState, action)
 
-  assert.equal(newState.player.fuel, 9);
-  assert.equal(newState.player.currentLocation, 'node_2');
-});
+  assert.equal(newState.player.fuel, 9)
+  assert.equal(newState.player.currentLocation, 'node_2')
+})
 
 test('Travel fails with insufficient fuel', () => {
-  const startState = { ...initialState, player: { ...initialState.player, fuel: 0 } };
-  const action = { type: 'TRAVEL', payload: { cost: 1, destination: 'node_2' } };
+  const startState = {
+    ...initialState,
+    player: { ...initialState.player, fuel: 0 }
+  }
+  const action = { type: 'TRAVEL', payload: { cost: 1, destination: 'node_2' } }
 
-  const newState = gameReducer(startState, action);
+  const newState = gameReducer(startState, action)
 
-  assert.equal(newState.player.fuel, 0);
-  assert.equal(newState.player.currentLocation, startState.player.currentLocation);
-});
+  assert.equal(newState.player.fuel, 0)
+  assert.equal(
+    newState.player.currentLocation,
+    startState.player.currentLocation
+  )
+})
 ```
 
 **Output**:

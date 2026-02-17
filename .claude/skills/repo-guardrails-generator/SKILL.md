@@ -10,17 +10,17 @@ Create concise, actionable rules for the repository.
 ## Workflow
 
 1.  **Analyze Context**
-    *   What are the common failures? (e.g., "Tests fail often", "Styles are inconsistent").
-    *   What are the hard constraints? (e.g., "No `any` type").
+    - What are the common failures? (e.g., "Tests fail often", "Styles are inconsistent").
+    - What are the hard constraints? (e.g., "No `any` type").
 
 2.  **Draft the Rules**
-    *   **MUST**: Non-negotiable. (e.g., "MUST use `npm run test`").
-    *   **SHOULD**: Best practice. (e.g., "SHOULD use descriptive names").
-    *   **NEVER**: Forbidden. (e.g., "NEVER commit secrets").
+    - **MUST**: Non-negotiable. (e.g., "MUST use `npm run test`").
+    - **SHOULD**: Best practice. (e.g., "SHOULD use descriptive names").
+    - **NEVER**: Forbidden. (e.g., "NEVER commit secrets").
 
 3.  **Format as Checklist**
-    *   Use checkboxes `[ ]` for verifiability.
-    *   Keep it short (max 10 items).
+    - Use checkboxes `[ ]` for verifiability.
+    - Keep it short (max 10 items).
 
 4.  **Review against `AGENTS.md`**
     Ensure alignment with existing project documentation.
@@ -30,6 +30,7 @@ Create concise, actionable rules for the repository.
 **Input**: "Create guardrails for the UI components."
 
 **Output**:
+
 ```markdown
 # UI Component Guardrails
 

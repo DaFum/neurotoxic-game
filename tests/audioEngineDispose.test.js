@@ -1,10 +1,7 @@
 import assert from 'node:assert'
 import { test, mock } from 'node:test'
 import { logger } from '../src/utils/logger.js'
-import {
-  MockPolySynth,
-  createMockTone
-} from './mockUtils.js'
+import { MockPolySynth, createMockTone } from './mockUtils.js'
 
 // Save original dispose to restore later
 const originalDispose = MockPolySynth.prototype.dispose

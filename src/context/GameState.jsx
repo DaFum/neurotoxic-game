@@ -531,4 +531,3 @@ export const useGameState = () => {
 
   return { ...state, ...dispatch, hasUpgrade }
 }
-

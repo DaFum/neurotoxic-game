@@ -101,6 +101,7 @@ When picking which eval for the quality loop, prefer one where the skill partial
 For iterations after baseline, use blind comparison. While grading tracks expectation pass rates, the comparator judges **holistic output quality** using a rubric. Two outputs might both pass all expectations, but one could still be clearly better.
 
 **Blind A/B Protocol:**
+
 1. Randomly assign: 50% chance v<N> is A, 50% chance v<N> is B
 2. Record assignment in `workspace/grading/v<N>-vs-best/assignment.json`
 3. Comparator sees only "Output A" and "Output B" — never version names
@@ -118,6 +119,7 @@ You do NOT know which is old vs new. Judge purely on quality.
 ```
 
 **Winner by majority vote:**
+
 - 2+ comparators prefer A → A wins
 - 2+ comparators prefer B → B wins
 - Otherwise → TIE
@@ -158,6 +160,7 @@ history.iterations.append({
 ### Step 6: Create New Version (If Continuing)
 
 1. Copy current best to new version:
+
    ```bash
    scripts/copy_skill.py workspace/<current_best>/skill workspace/v<N+1> \
        --parent <current_best> --iteration <N+1>
@@ -185,11 +188,13 @@ When iterations complete:
 4. **Recommendation**: Whether to adopt the improved skill
 
 Copy best skill back:
+
 ```bash
 cp -r workspace/<best_version>/skill/* ./
 ```
 
 If `present_files` is available, package and present the improved skill:
+
 ```bash
 scripts/package_skill.py <path/to/skill-folder>
 ```

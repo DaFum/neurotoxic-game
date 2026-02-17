@@ -37,6 +37,9 @@ export const createMockGameState = ({ canLoad } = {}) => ({
 })
 
 export const setupMainMenuAudioTest = async () => {
+  resetMockAudioContextCalls()
+
+  // NOTE: mock.module requires the --experimental-test-module-mocks flag
   mock.module('../src/utils/AudioManager', {
     namedExports: { audioManager: mockAudioManager }
   })

@@ -119,9 +119,8 @@ describe('PixiStageController', () => {
     mockNoteManager.dispose.mock.resetCalls()
 
     // Re-import to apply mocks
-    const controllerModule = await import(
-      '../src/components/PixiStageController.js'
-    )
+    const controllerModule =
+      await import('../src/components/PixiStageController.js')
     createPixiStageController = controllerModule.createPixiStageController
 
     containerRef = { current: { appendChild: mock.fn() } }

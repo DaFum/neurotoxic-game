@@ -45,6 +45,7 @@ You receive these parameters in your prompt:
 ### Step 5: Write Transcript, Metrics, and User Notes
 
 Save outputs to `{output_dir}/`:
+
 - `transcript.md` - Detailed execution log
 - `metrics.json` - Tool usage and performance data
 - `user_notes.md` - Uncertainties and issues needing human attention
@@ -55,14 +56,17 @@ Save outputs to `{output_dir}/`:
 # Eval Execution Transcript
 
 ## Eval Prompt
+
 [The exact prompt you were given]
 
 ## Skill
+
 - Path: [skill_path]
 - Name: [skill name from frontmatter]
 - Description: [brief description]
 
 ## Input Files
+
 - [filename1]: [description/type]
 - [filename2]: [description/type]
 - (or "None provided")
@@ -70,21 +74,26 @@ Save outputs to `{output_dir}/`:
 ## Execution
 
 ### Step 1: [Action Description]
+
 **Action**: [What you did]
 **Tool**: [Tool name and key parameters]
 **Result**: [What happened - success, failure, output]
 
 ### Step 2: [Action Description]
+
 [Continue for each significant action...]
 
 ## Output Files
+
 - [filename]: [description, location in output_dir]
 - (or "None created")
 
 ## Final Result
+
 [The final answer/output for the eval prompt]
 
 ## Issues
+
 - [Any errors, warnings, or unexpected behaviors]
 - (or "None")
 ```
@@ -97,21 +106,25 @@ Save `{output_dir}/user_notes.md` to capture things that look reasonable but may
 # User Notes
 
 ## Uncertainty
+
 - [Things you're not 100% sure about]
 - [Assumptions you made that might be wrong]
 - [Data that might be stale or incomplete]
 
 ## Needs Human Review
+
 - [Sections that require domain expertise to verify]
 - [Outputs that could be misleading]
 - [Edge cases you weren't sure how to handle]
 
 ## Workarounds
+
 - [Places where the skill didn't work as expected]
 - [Alternative approaches you took]
 - [Things that should work but didn't]
 
 ## Suggestions
+
 - [Improvements to the skill that would help]
 - [Missing instructions that caused confusion]
 - [Tools or capabilities that would be useful]

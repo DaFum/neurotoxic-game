@@ -5,6 +5,7 @@
 Benchmark mode runs a standardized, opinionated evaluation of a skill. It answers: **"How well does this skill perform?"**
 
 Unlike Eval mode (which runs individual evals), Benchmark mode:
+
 - Runs **all evals** (or a user-specified subset)
 - Runs each eval **3 times per configuration** (with_skill and without_skill) for variance
 - Captures **metrics with variance**: pass_rate, time_seconds, tokens
@@ -28,13 +29,13 @@ Unlike Eval mode (which runs individual evals), Benchmark mode:
 
 ## Terminology
 
-| Term | Definition |
-|------|------------|
-| **Run** | A single execution of a skill on an eval prompt |
+| Term              | Definition                                                  |
+| ----------------- | ----------------------------------------------------------- |
+| **Run**           | A single execution of a skill on an eval prompt             |
 | **Configuration** | The experimental condition: `with_skill` or `without_skill` |
-| **RunResult** | Graded output of a run: expectations, metrics, notes |
-| **Run Summary** | Statistical aggregates across runs: mean, stddev, min, max |
-| **Notes** | Freeform observations from the analyzer |
+| **RunResult**     | Graded output of a run: expectations, metrics, notes        |
+| **Run Summary**   | Statistical aggregates across runs: mean, stddev, min, max  |
+| **Notes**         | Freeform observations from the analyzer                     |
 
 ## Workflow
 
@@ -94,6 +95,7 @@ duration_ms: 32400</usage>
 ```
 
 Extract from each completed executor's metrics:
+
 - **total_tokens** = total tokens consumed (input + output combined)
 - **tool_uses** = number of tool calls made
 - **duration_ms** / 1000 = execution time in seconds
@@ -114,6 +116,7 @@ scripts/aggregate_benchmark.py <benchmark-dir> --skill-name <name> --skill-path 
 ```
 
 This reads `grading.json` from each run directory and produces:
+
 - `benchmark.json` - Structured results with run_summary statistics
 - `benchmark.md` - Human-readable summary table
 
@@ -144,6 +147,7 @@ The analyzer (always most capable) reviews all results and generates freeform no
 4. **Provide context**: Why might these patterns exist?
 
 The analyzer should NOT:
+
 - Suggest improvements to the skill (that's Improve mode)
 - Make subjective quality judgments beyond the data
 - Speculate without evidence

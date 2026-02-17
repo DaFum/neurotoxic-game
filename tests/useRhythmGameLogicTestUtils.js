@@ -1,5 +1,4 @@
 import { mock } from 'node:test'
-import { setupJSDOM, teardownJSDOM } from './testUtils.js'
 
 // Mocks
 const mockUseGameState = mock.fn()
@@ -51,13 +50,13 @@ const mockHecklerLogic = {
 const mockErrorHandler = {
   handleError: mock.fn(),
   AudioError: class AudioError extends Error {
-    constructor(message, category, severity, context, recoverable) {
+    constructor(message, context = {}) {
       super(message)
       this.name = 'AudioError'
-      this.category = category
-      this.severity = severity
+      this.category = 'audio'
+      this.severity = 'medium'
       this.context = context
-      this.recoverable = recoverable
+      this.recoverable = true
     }
   }
 }
@@ -123,9 +122,8 @@ export const mockRhythmGameLogicModules = () => {
 
 export const setupRhythmGameLogicTest = async () => {
   mockRhythmGameLogicModules()
-  const { useRhythmGameLogic } = await import(
-    '../src/hooks/useRhythmGameLogic.js'
-  )
+  const { useRhythmGameLogic } =
+    await import('../src/hooks/useRhythmGameLogic.js')
   return { useRhythmGameLogic }
 }
 
@@ -158,4 +156,20 @@ export const simulateGameLoopUpdate = (result, overrides = {}) => {
   result.current.gameStateRef.current.running = true
   Object.assign(result.current.gameStateRef.current, overrides)
   result.current.update(16)
+}
+
+export const resetAllMocks = (
+  dependencies = mockRhythmGameLogicDependencies
+) => {
+  Object.values(dependencies).forEach(dep => {
+    if (dep && dep.mock && typeof dep.mock.resetCalls === 'function') {
+      dep.mock.resetCalls()
+    } else if (dep && typeof dep === 'object') {
+      Object.values(dep).forEach(prop => {
+        if (prop && prop.mock && typeof prop.mock.resetCalls === 'function') {
+          prop.mock.resetCalls()
+        }
+      })
+    }
+  })
 }

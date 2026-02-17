@@ -8,7 +8,8 @@ import {
   createMockChangeScene,
   createMockSetLastGigStats,
   setupDefaultMockImplementation,
-  simulateGameLoopUpdate
+  simulateGameLoopUpdate,
+  resetAllMocks
 } from './useRhythmGameLogicTestUtils.js'
 
 const {
@@ -32,29 +33,7 @@ describe('useRhythmGameLogic', () => {
 
   beforeEach(() => {
     // Reset mocks
-    mockUseGameState.mock.resetCalls()
-    mockRhythmUtils.checkHit.mock.resetCalls()
-    mockRhythmUtils.generateNotesForSong.mock.resetCalls()
-    mockRhythmUtils.parseSongNotes.mock.resetCalls()
-    mockAudioManager.stopMusic.mock.resetCalls()
-    mockAudioManager.playSFX.mock.resetCalls()
-    mockAudioEngine.startGigPlayback.mock.resetCalls()
-    mockAudioEngine.stopAudio.mock.resetCalls()
-    mockAudioEngine.getGigTimeMs.mock.resetCalls()
-    mockGigStats.buildGigStatsSnapshot.mock.resetCalls()
-    mockGigStats.updateGigPerformanceStats.mock.resetCalls()
-    mockErrorHandler.handleError.mock.resetCalls()
-
-    // Add missing resets
-    mockSimulationUtils.calculateGigPhysics.mock.resetCalls()
-    mockSimulationUtils.getGigModifiers.mock.resetCalls()
-    mockAudioTimingUtils.getScheduledHitTimeMs.mock.resetCalls()
-    mockLogger.info.mock.resetCalls()
-    mockLogger.warn.mock.resetCalls()
-    mockLogger.error.mock.resetCalls()
-    mockHecklerLogic.updateProjectiles.mock.resetCalls()
-    mockHecklerLogic.trySpawnProjectile.mock.resetCalls()
-    mockHecklerLogic.checkCollisions.mock.resetCalls()
+    resetAllMocks()
 
     mockChangeScene = createMockChangeScene()
     mockSetLastGigStats = createMockSetLastGigStats()
@@ -68,6 +47,15 @@ describe('useRhythmGameLogic', () => {
     cleanup()
     teardownJSDOM()
   })
+
+  // Helper to init hook and wait
+  const initHook = async () => {
+    const { result } = renderHook(() => useRhythmGameLogic())
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 200))
+    })
+    return result
+  }
 
   test('initial state', async () => {
     const { result } = renderHook(() => useRhythmGameLogic())
@@ -107,12 +95,7 @@ describe('useRhythmGameLogic', () => {
       originalNote: { p: 60 }
     }))
 
-    const { result } = renderHook(() => useRhythmGameLogic())
-
-    // Wait for initialization
-    await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 200))
-    })
+    const result = await initHook()
 
     // Simulate input
     act(() => {
@@ -129,11 +112,7 @@ describe('useRhythmGameLogic', () => {
   test('transitions to POSTGIG when all notes are processed near song end', async () => {
     mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 9800)
 
-    const { result } = renderHook(() => useRhythmGameLogic())
-
-    await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 200))
-    })
+    const result = await initHook()
 
     act(() => {
       simulateGameLoopUpdate(result, {
@@ -164,11 +143,7 @@ describe('useRhythmGameLogic', () => {
       }
     )
 
-    const { result } = renderHook(() => useRhythmGameLogic())
-
-    await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 200))
-    })
+    const result = await initHook()
 
     act(() => {
       simulateGameLoopUpdate(result, {
@@ -180,5 +155,4 @@ describe('useRhythmGameLogic', () => {
       mockChangeScene.mock.calls.some(call => call.arguments[0] === 'POSTGIG')
     )
   })
-
 })

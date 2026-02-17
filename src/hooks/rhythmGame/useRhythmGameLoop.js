@@ -38,10 +38,7 @@ export const useRhythmGameLoop = ({
   const { activeEvent } = contextState
   const { setLastGigStats, changeScene } = contextActions
 
-  const handleCollision = useCallback(
-    () => handleMiss(1, false),
-    [handleMiss]
-  )
+  const handleCollision = useCallback(() => handleMiss(1, false), [handleMiss])
 
   /**
    * Finalizes gig results and transitions exactly once.
