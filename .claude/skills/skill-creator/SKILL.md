@@ -299,3 +299,5 @@ parent-directory/
 8. Review `user_notes` for issues that passed expectations might miss
 9. Capture execution metrics in Benchmark mode
 10. Use most capable model for analysis in Benchmark mode
+
+_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._

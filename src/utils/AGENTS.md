@@ -496,4 +496,4 @@ export const getEvent = () => EVENTS_DB.travel[0] // Hardcoded index
 ## Maintenance
 
 - Audio: MIDI playback uses a clean, dry chain for ambient/gig background to avoid FX coloration.
-- Last updated: 2026-02-06.
+- Last updated: 2026-02-17.

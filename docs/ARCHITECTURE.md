@@ -523,3 +523,5 @@ This pattern ensures:
 3. **Logging**: Use the `logger` utility for consistent logging
 4. **Type Safety**: Action types are centralized in `ActionTypes` enum
 5. **Modularity**: Keep files focused on single responsibilities
+
+_Documentation sync: dependency/tooling baseline reviewed on 2026-02-17._

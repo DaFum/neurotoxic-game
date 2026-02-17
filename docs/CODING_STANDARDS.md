@@ -535,3 +535,5 @@ Run formatting with:
 ```bash
 npm run format
 ```
+
+_Documentation sync: dependency/tooling baseline reviewed on 2026-02-17._

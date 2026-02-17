@@ -120,3 +120,5 @@ flowchart TD
 
 - This threat model assumes static hosting on GitHub Pages with no backend services or sensitive data flows, per user-provided context.
 - Evidence anchors are included per major claim to keep the model grounded in repository paths.
+
+_Documentation sync: dependency/tooling baseline reviewed on 2026-02-17._

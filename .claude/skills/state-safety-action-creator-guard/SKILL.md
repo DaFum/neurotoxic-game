@@ -58,3 +58,5 @@ case 'UPDATE_PLAYER':
 
 **Output**:
 "Updated dispatch to use `createUpdatePlayerAction` with validation check `player.money >= 50`."
+
+_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._

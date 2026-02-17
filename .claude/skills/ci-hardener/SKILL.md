@@ -60,3 +60,5 @@ jobs:
 
 **Output**:
 "Added `actions/setup-node` with caching to the install step. This will speed up subsequent runs by reusing the npm cache."
+
+_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._
