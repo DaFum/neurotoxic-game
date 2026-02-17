@@ -30,6 +30,8 @@ mock.module('tone', { namedExports: mockTone })
 
 let fetchResponseSize = 1024 // Default 1KB
 
+const originalFetch = global.fetch
+
 global.fetch = mock.fn(async _url => {
   return {
     ok: true,
@@ -42,6 +44,10 @@ const { loadAudioBuffer, disposeAudio } = await import(
 )
 
 test('audioBufferCache optimization', async t => {
+  t.after(() => {
+    global.fetch = originalFetch
+  })
+
   t.beforeEach(() => {
     disposeAudio()
     global.fetch.mock.resetCalls()

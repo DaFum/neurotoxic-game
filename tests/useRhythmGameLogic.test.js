@@ -8,7 +8,8 @@ import {
   createMockChangeScene,
   createMockSetLastGigStats,
   setupDefaultMockImplementation,
-  simulateGameLoopUpdate
+  simulateGameLoopUpdate,
+  resetAllMocks
 } from './useRhythmGameLogicTestUtils.js'
 
 const {
@@ -32,29 +33,7 @@ describe('useRhythmGameLogic', () => {
 
   beforeEach(() => {
     // Reset mocks
-    mockUseGameState.mock.resetCalls()
-    mockRhythmUtils.checkHit.mock.resetCalls()
-    mockRhythmUtils.generateNotesForSong.mock.resetCalls()
-    mockRhythmUtils.parseSongNotes.mock.resetCalls()
-    mockAudioManager.stopMusic.mock.resetCalls()
-    mockAudioManager.playSFX.mock.resetCalls()
-    mockAudioEngine.startGigPlayback.mock.resetCalls()
-    mockAudioEngine.stopAudio.mock.resetCalls()
-    mockAudioEngine.getGigTimeMs.mock.resetCalls()
-    mockGigStats.buildGigStatsSnapshot.mock.resetCalls()
-    mockGigStats.updateGigPerformanceStats.mock.resetCalls()
-    mockErrorHandler.handleError.mock.resetCalls()
-
-    // Add missing resets
-    mockSimulationUtils.calculateGigPhysics.mock.resetCalls()
-    mockSimulationUtils.getGigModifiers.mock.resetCalls()
-    mockAudioTimingUtils.getScheduledHitTimeMs.mock.resetCalls()
-    mockLogger.info.mock.resetCalls()
-    mockLogger.warn.mock.resetCalls()
-    mockLogger.error.mock.resetCalls()
-    mockHecklerLogic.updateProjectiles.mock.resetCalls()
-    mockHecklerLogic.trySpawnProjectile.mock.resetCalls()
-    mockHecklerLogic.checkCollisions.mock.resetCalls()
+    resetAllMocks()
 
     mockChangeScene = createMockChangeScene()
     mockSetLastGigStats = createMockSetLastGigStats()

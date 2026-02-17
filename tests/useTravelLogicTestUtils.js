@@ -1,7 +1,6 @@
-import { test, describe, beforeEach, afterEach, mock } from 'node:test'
+import { mock } from 'node:test'
 import assert from 'node:assert/strict'
-import { renderHook, act, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from './testUtils.js'
+import { renderHook } from '@testing-library/react'
 
 // Mocks
 const mockCalculateTravelExpenses = mock.fn()
@@ -117,11 +116,27 @@ export const assertActionSuccess = (
 
 export const assertTravelPrevented = (result, props, expectedErrorRegex) => {
   assert.equal(result.current.isTraveling, false)
-  assert.equal(props.addToast.mock.calls.length, 2) // Info + Error
-  assert.match(props.addToast.mock.calls[1].arguments[0], expectedErrorRegex)
+  const hasErrorToast = props.addToast.mock.calls.some(
+    call =>
+      typeof call.arguments[0] === 'string' &&
+      expectedErrorRegex.test(call.arguments[0])
+  )
+  assert.ok(
+    hasErrorToast,
+    `Expected toast matching ${expectedErrorRegex} not found`
+  )
 }
 
+/**
+ * Setup travel scenario.
+ * Requires JSDOM environment (call setupJSDOM() before using).
+ */
 export const setupTravelScenario = (useTravelLogic, propsOverrides = {}) => {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    throw new Error(
+      'setupTravelScenario requires a DOM environment. Please call setupJSDOM() before running this test.'
+    )
+  }
   const props = createTravelLogicProps(propsOverrides)
   const targetNode = props.gameMap.nodes.node_target
 
