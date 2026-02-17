@@ -92,7 +92,7 @@ export const useTravelLogic = ({
    * @param {Object} node - Arrived node
    */
   const handleNodeArrival = useCallback(
-    node => {
+    (node, eventAlreadyActive = false) => {
       switch (node.type) {
         case 'REST_STOP': {
           const newMembers = (band?.members ?? []).map(m => ({
@@ -105,9 +105,11 @@ export const useTravelLogic = ({
           break
         }
         case 'SPECIAL': {
-          const specialEvent = triggerEvent('special')
-          if (!specialEvent) {
-            addToast('A mysterious place, but nothing happened.', 'info')
+          if (!eventAlreadyActive) {
+            const specialEvent = triggerEvent('special')
+            if (!specialEvent) {
+              addToast('A mysterious place, but nothing happened.', 'info')
+            }
           }
           break
         }
@@ -223,14 +225,15 @@ export const useTravelLogic = ({
       setTravelTarget(null)
 
       // Trigger travel events (shown as global modal overlay)
-      const eventHappened = triggerEvent('transport', 'travel')
-      if (!eventHappened) {
-        triggerEvent('band', 'travel')
+      let travelEventActive = triggerEvent('transport', 'travel')
+      if (!travelEventActive) {
+        travelEventActive = triggerEvent('band', 'travel')
       }
 
       // Always handle node arrival regardless of events —
-      // gigs must start even when a travel event pops up
-      handleNodeArrival(node)
+      // gigs must start even when a travel event pops up.
+      // Pass flag so SPECIAL nodes don't overwrite an active travel event.
+      handleNodeArrival(node, travelEventActive)
     },
     [
       travelTarget,
