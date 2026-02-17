@@ -275,7 +275,7 @@ export const Gig = () => {
           <img
             src={getGenImageUrl(IMG_PROMPTS.MARIUS_PLAYING)}
             alt='Marius'
-            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--void-blue)]'
+            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--toxic-green)]'
           />
         </div>
       </div>

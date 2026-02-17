@@ -194,7 +194,8 @@ export const calculateDailyUpdates = currentState => {
 
   // Follower decay for inactive platforms (days since last gig approximated by day count)
   // Apply mild organic decay every 3+ days to prevent stale follower counts
-  const daysSinceActivity = nextPlayer.day % 3 === 0 ? 3 : 0
+  const daysSinceActivity =
+    nextPlayer.day - (nextSocial.lastGigDay ?? nextPlayer.day)
   if (daysSinceActivity >= 3) {
     nextSocial.instagram = applyReputationDecay(
       nextSocial.instagram || 0,
@@ -206,6 +207,11 @@ export const calculateDailyUpdates = currentState => {
     )
     nextSocial.youtube = applyReputationDecay(
       nextSocial.youtube || 0,
+      daysSinceActivity
+    )
+    // Newsletter decay (often overlooked, now explicit)
+    nextSocial.newsletter = applyReputationDecay(
+      nextSocial.newsletter || 0,
       daysSinceActivity
     )
   }

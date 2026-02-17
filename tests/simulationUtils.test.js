@@ -2,7 +2,8 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   getGigModifiers,
-  calculateGigPhysics
+  calculateGigPhysics,
+  calculateDailyUpdates
 } from '../src/utils/simulationUtils.js'
 
 const buildBandState = (overrides = {}) => ({
@@ -382,4 +383,59 @@ test('calculateGigPhysics handles missing skill property', () => {
     150,
     'Should default to base hit window when skill missing'
   )
+})
+
+test('calculateDailyUpdates applies newsletter decay', () => {
+  const currentState = {
+    player: { day: 10, money: 100, van: { condition: 100 } },
+    band: { members: [], harmony: 50 },
+    social: {
+      instagram: 100,
+      tiktok: 100,
+      youtube: 100,
+      newsletter: 100,
+      viral: 0,
+      lastGigDay: 5
+    }
+  }
+
+  const { social } = calculateDailyUpdates(currentState)
+
+  // nextDay = 11. daysSinceActivity = 11 - 5 = 6.
+  // Decay logic: 0.01 * (6 - 2) = 0.04
+  // 100 * 0.96 = 96
+  assert.ok(social.newsletter < 100, 'Newsletter should decay')
+  assert.equal(social.newsletter, 96, 'Newsletter decay calculation incorrect')
+})
+
+test('calculateDailyUpdates does not decay if active recently', () => {
+  const currentState = {
+    player: { day: 10, money: 100, van: { condition: 100 } },
+    band: { members: [], harmony: 50 },
+    social: {
+      instagram: 100,
+      newsletter: 100,
+      lastGigDay: 9
+    }
+  }
+
+  const { social } = calculateDailyUpdates(currentState)
+
+  assert.equal(social.instagram, 100, 'Instagram should not decay')
+  assert.equal(social.newsletter, 100, 'Newsletter should not decay')
+})
+
+test('calculateDailyUpdates handles missing lastGigDay safely', () => {
+  const currentState = {
+    player: { day: 10, money: 100, van: { condition: 100 } },
+    band: { members: [], harmony: 50 },
+    social: {
+      instagram: 100,
+      newsletter: 100
+    }
+  }
+
+  const { social } = calculateDailyUpdates(currentState)
+
+  assert.equal(social.instagram, 100, 'Should not decay if lastGigDay missing')
 })
