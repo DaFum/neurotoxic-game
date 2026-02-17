@@ -42,3 +42,5 @@ Perform structural changes while preserving behavior and stability.
 
 **Output**:
 "Extracted helper functions `getBaseScore` and `getMultipliers`. Tests pass. Logic is unchanged but clearer."
+
+_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._

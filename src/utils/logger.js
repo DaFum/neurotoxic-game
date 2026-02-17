@@ -23,7 +23,7 @@ export class Logger {
     try {
       const savedLevel = localStorage.getItem('neurotoxic_log_level')
       if (savedLevel) this.minLevel = parseInt(savedLevel, 10)
-    } catch (e) {
+    } catch (_e) {
       // Ignore storage errors
     }
   }
@@ -36,7 +36,7 @@ export class Logger {
     this.minLevel = level
     try {
       localStorage.setItem('neurotoxic_log_level', level)
-    } catch (e) {
+    } catch (_e) {
       // Ignore storage errors
     }
   }

@@ -22,3 +22,5 @@
 - **Fix:** Keep the sink limited to constant strings only. If content ever becomes dynamic, switch to safe DOM APIs (e.g., `replaceChildren()`).
 - **Mitigation:** Code review guardrail: flag any future changes that pass variable content into `innerHTML`.
 - **False positive notes:** Current usage is safe because it assigns an empty string.
+
+_Documentation sync: dependency/tooling baseline reviewed on 2026-02-17._

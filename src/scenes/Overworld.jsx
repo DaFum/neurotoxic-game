@@ -78,12 +78,7 @@ export const Overworld = () => {
     let retryTimeoutId = null
 
     const attemptResume = async (attempt = 0) => {
-      let started = false
-      try {
-        started = await audioManager.resumeMusic()
-      } catch {
-        started = false
-      }
+      const started = await audioManager.resumeMusic().catch(() => false)
       if (!started && !cancelled && attempt < 1) {
         retryTimeoutId = setTimeout(() => {
           void attemptResume(attempt + 1)

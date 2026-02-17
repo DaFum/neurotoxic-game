@@ -55,3 +55,5 @@ Run `.claude/skills/mega-lint-snapshot/scripts/run-mega-lint.sh`.
 [INFO] Running Prettier... [PASS]
 ```
 "Found a hardcoded secret in `api.js`. Please remove it."
+
+_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._

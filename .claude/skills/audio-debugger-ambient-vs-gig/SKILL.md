@@ -57,3 +57,5 @@ Troubleshoot and resolve audio playback issues in the game, focusing on the dist
 
 **Output**:
 "The MIDI file for 'Neon Highway' is missing from `src/assets/`, causing the synth to have no notes to play. Please add the file."
+
+_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._

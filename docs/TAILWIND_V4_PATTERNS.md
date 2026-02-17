@@ -117,3 +117,5 @@ Tone.Draw.schedule(() => {
   }, 100)
 }, time)
 ```
+
+_Documentation sync: dependency/tooling baseline reviewed on 2026-02-17._

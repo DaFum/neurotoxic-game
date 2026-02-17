@@ -55,3 +55,5 @@ Enforce the strict "Brutalist" design system across the application.
   <h2 className="text-2xl uppercase tracking-widest text-(--neon-pink)">Settings</h2>
 </div>
 ```
+
+_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._

@@ -62,7 +62,7 @@ export const Gig = () => {
                   try {
                     const { stopAudio } = await import('../utils/audioEngine')
                     stopAudio()
-                  } catch (_err) {
+                  } catch (_audioCleanupError) {
                     // Audio cleanup failed, continue with scene transition
                   } finally {
                     setActiveEvent(null)

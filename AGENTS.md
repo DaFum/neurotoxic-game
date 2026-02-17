@@ -10,10 +10,10 @@
 
 | Category        | Technologies                                     |
 | --------------- | ------------------------------------------------ |
-| **Frontend**    | React 18.2.0, Vite 5.0.0, JavaScript (ESModules) |
-| **Game Engine** | Pixi.js 8.0.0                                    |
-| **Styling**     | Tailwind CSS v4, Framer Motion 12.0.0            |
-| **Audio**       | Tone.js 15.x (WebAudio buffers)                  |
+| **Frontend**    | React 19.2.4, Vite 7.3.1, JavaScript (ESModules) |
+| **Game Engine** | Pixi.js 8.16.0                                    |
+| **Styling**     | Tailwind CSS v4, Framer Motion 12.34.0            |
+| **Audio**       | Tone.js 15.1.22 (WebAudio buffers)                  |
 
 ## Project Structure
 
@@ -48,7 +48,7 @@ npm run format       # Run Prettier
 
 ## Critical Constraints
 
-1. **Version Pinning**: Do not upgrade React (18.x), Vite (5.x), or Tailwind (v4)
+1. **Version Pinning**: Keep React at 19.2.4, Vite at 7.3.1, and Tailwind at 4.1.18 unless a task explicitly requests an upgrade
 2. **Tailwind v4 Syntax**: Use `@import "tailwindcss";` (NOT `@tailwind base`)
 3. **CSS Variables**: Never use hardcoded colors - use `var(--toxic-green)`, `var(--void-black)`, etc.
 4. **State Safety**: Always validate `player.money >= 0` and `band.harmony > 0`
@@ -188,4 +188,4 @@ _"Complexity is not an excuse for friction."_
 ## Maintenance
 
 - Audio: Ambient playback starts on Start Tour and plays full MIDI tracks; gig playback starts from configured excerpts via WebAudio buffers and stops at the song duration.
-- Last updated: 2026-02-13.
+- Last updated: 2026-02-17.

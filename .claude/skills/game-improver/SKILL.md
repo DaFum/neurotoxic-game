@@ -48,3 +48,5 @@ Implement production-ready improvements, bug fixes, and features for NEUROTOXIC.
 
 **Output**:
 "Implemented `meditation_pod` upgrade. Added logic to `useGameLoop` to regenerate +1 harmony per day."
+
+_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._

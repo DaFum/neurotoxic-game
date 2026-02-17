@@ -48,3 +48,5 @@ Ensure all styles use the correct Tailwind v4 syntax and design tokens.
 
 **Output**:
 "Converted styles to v4 syntax. Replaced `red-500` with `--mood-pink`."
+
+_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._

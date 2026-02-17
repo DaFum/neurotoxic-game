@@ -59,3 +59,5 @@ Neurotoxic is a brutalist rhythm game...
 - `src/scenes/`: Main game states (Overworld, Gig).
 - `src/utils/audioEngine.js`: Central audio controller.
 ```
+
+_Skill sync: compatible with React 19.2.4 / Vite 7.3.1 baseline as of 2026-02-17._

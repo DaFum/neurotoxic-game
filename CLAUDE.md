@@ -23,15 +23,15 @@ Tests use Node's built-in `node:test` module with `tsx` for ESM transpilation. T
 
 | Category  | Technology    | Version                                |
 | --------- | ------------- | -------------------------------------- |
-| Framework | React         | 18.x (`^18.2.0`)                       |
-| Build     | Vite          | 5.x (`^5.0.0`)                         |
+| Framework | React         | 19.2.4                                 |
+| Build     | Vite          | 7.3.1                                  |
 | Language  | JavaScript    | ES2021 (ESModules, `"type": "module"`) |
-| Rendering | Pixi.js       | 8.x (`^8.0.0`)                         |
-| Animation | Framer Motion | 12.x (`^12.0.0`)                       |
-| Styling   | Tailwind CSS  | 4.x (`^4.0.0`)                         |
+| Rendering | Pixi.js       | 8.16.0                                 |
+| Animation | Framer Motion | 12.34.0                                |
+| Styling   | Tailwind CSS  | 4.1.18                                 |
 | Audio     | Tone.js       | 15.x (`^15.1.22`)                      |
 
-**DO NOT upgrade**: React (stay 18.x, not v19), Vite (stay 5.x), Tailwind (stay v4). Node.js 20+ required.
+**DO NOT upgrade**: React (stay 19.2.4), Vite (stay 7.3.1), Tailwind (stay 4.1.18). Node.js 22.3+ required.
 
 ## Architecture
 
@@ -173,3 +173,5 @@ Additional docs: `docs/ARCHITECTURE.md` (system diagrams), `docs/STATE_TRANSITIO
 - **lint-fix-preview.yml** — Prettier/ESLint auto-fix preview on PRs
 
 Commits use Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`).
+
+_Documentation sync: dependency/tooling baseline reviewed on 2026-02-17._

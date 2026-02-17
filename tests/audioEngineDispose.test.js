@@ -145,7 +145,7 @@ const mockTone = {
   EQ3: MockSignal,
   StereoWidener: MockSignal,
   Volume: MockVolume,
-  Frequency: n => ({ toNote: () => 'C4' })
+  Frequency: _n => ({ toNote: () => 'C4' })
 }
 
 mock.module('tone', { namedExports: mockTone })
@@ -153,7 +153,7 @@ mock.module('tone', { namedExports: mockTone })
 // Import SUT
 const { setupAudio, disposeAudio } = await import('../src/utils/audioEngine.js')
 
-test('disposeAudio logs error when dispose fails', async t => {
+test('disposeAudio logs error when dispose fails', async _t => {
   // Spy on logger.debug
   const debugSpy = mock.method(logger, 'debug')
 
