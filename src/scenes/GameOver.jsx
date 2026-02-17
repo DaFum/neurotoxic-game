@@ -47,9 +47,9 @@ export const GameOver = () => {
           <span className='text-(--ash-gray)'>FAME REACHED:</span>
           <span className='text-(--star-white) text-right'>{player?.fame}</span>
 
-          <span className='text-(--ash-gray)'>CITIES VISITED:</span>
+          <span className='text-(--ash-gray)'>TOTAL TRAVELS:</span>
           <span className='text-(--star-white) text-right'>
-            {player?.citiesVisited ?? 0}
+            {player?.totalTravels ?? 0}
           </span>
 
           <span className='text-(--ash-gray)'>TOTAL SCORE:</span>

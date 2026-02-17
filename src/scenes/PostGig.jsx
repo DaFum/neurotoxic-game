@@ -321,7 +321,7 @@ CompletePhase.propTypes = {
     success: PropTypes.bool.isRequired,
     message: PropTypes.string.isRequired,
     followers: PropTypes.number.isRequired,
-    totalFollowers: PropTypes.number,
+    totalFollowers: PropTypes.number.isRequired,
     platform: PropTypes.string.isRequired
   }).isRequired,
   onContinue: PropTypes.func.isRequired
