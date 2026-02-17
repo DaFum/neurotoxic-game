@@ -1,22 +1,8 @@
 import { mock } from 'node:test'
 
-export const mockAudioContextCalls = {
-  startAmbientCalls: [],
-  ensureAudioContextCalls: []
-}
-
-export const resetMockAudioContextCalls = () => {
-  mockAudioContextCalls.startAmbientCalls.length = 0
-  mockAudioContextCalls.ensureAudioContextCalls.length = 0
-}
-
 export const mockAudioManager = {
-  ensureAudioContext: async () => {
-    mockAudioContextCalls.ensureAudioContextCalls.push(true)
-  },
-  startAmbient: async () => {
-    mockAudioContextCalls.startAmbientCalls.push(true)
-  }
+  ensureAudioContext: mock.fn(async () => {}),
+  startAmbient: mock.fn(async () => {})
 }
 
 export const createMockGameState = ({ canLoad } = {}) => ({
@@ -37,8 +23,6 @@ export const createMockGameState = ({ canLoad } = {}) => ({
 })
 
 export const setupMainMenuAudioTest = async () => {
-  resetMockAudioContextCalls()
-
   // NOTE: mock.module requires the --experimental-test-module-mocks flag
   mock.module('../src/utils/AudioManager', {
     namedExports: { audioManager: mockAudioManager }
