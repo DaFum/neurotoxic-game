@@ -14,14 +14,14 @@ Web-based Roguelike Tour Manager with rhythm action mechanics. Manage a Death Gr
 
 | Category    | Technology    | Version                     |
 | ----------- | ------------- | --------------------------- |
-| Framework   | React         | 19.2.4                      |
-| Build       | Vite          | 7.3.1                       |
+| Framework   | React         | ^18.2.0                     |
+| Build       | Vite          | ^5.0.0                      |
 | Language    | JavaScript    | ECMAScript 2021 (ESModules) |
 | Game Engine | Pixi.js       | 8.16.0                      |
 | Animation   | Framer Motion | 12.34.0                     |
-| Styling     | Tailwind CSS  | v4                          |
+| Styling     | Tailwind CSS  | ^4.0.0                      |
 | Audio       | Tone.js       | 15.x                        |
-| Linting     | ESLint        | 10.0.0                      |
+| Linting     | ESLint        | ^9.39.1                     |
 
 ## Visual Design System (STRICT)
 

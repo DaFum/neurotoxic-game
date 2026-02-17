@@ -40,6 +40,7 @@ test('GameStateProvider Re-render Benchmark', async _t => {
     consumerRenders++
     return <div data-testid='consumer'>{player?.name || 'Player'}</div>
   })
+  Consumer.displayName = 'ConsumerBenchmark'
 
   let triggerRenders = 0
   const Trigger = React.memo(() => {
@@ -54,6 +55,7 @@ test('GameStateProvider Re-render Benchmark', async _t => {
       </button>
     )
   })
+  Trigger.displayName = 'TriggerBenchmark'
 
   let optimizedRenders = 0
   const OptimizedTrigger = React.memo(() => {
@@ -68,6 +70,7 @@ test('GameStateProvider Re-render Benchmark', async _t => {
       </button>
     )
   })
+  OptimizedTrigger.displayName = 'OptimizedTriggerBenchmark'
 
   const App = () => (
     <GameStateProvider>
