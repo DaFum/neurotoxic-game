@@ -39,10 +39,6 @@ export default [
           caughtErrorsIgnorePattern: '^_'
         }
       ],
-      'no-useless-assignment': 'off',
-      'preserve-caught-error': 'off',
-      'no-empty': 'off',
-      'no-redeclare': 'off'
     }
   }
 ]

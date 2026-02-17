@@ -180,13 +180,9 @@ export async function playSongFromData(song, delay = 0, options = {}) {
       )
     })
     .map(n => {
-      let time = 0
-      if (useTempoMap) {
-        time = calculateTimeFromTicks(n.t, tpb, activeTempoMap, 's')
-      } else {
-        // Fallback: ticks -> seconds using constant BPM
-        time = (n.t / tpb) * (60 / bpm)
-      }
+      const time = useTempoMap
+        ? calculateTimeFromTicks(n.t, tpb, activeTempoMap, 's')
+        : (n.t / tpb) * (60 / bpm)
 
       // Clamp velocity 0-127 and normalize
       const rawVelocity = Math.max(0, Math.min(127, n.v))

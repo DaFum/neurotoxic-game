@@ -22,19 +22,14 @@ export const generateNotesForSong = (song, options = {}) => {
     // Ensure we don't exceed duration buffer
     if (noteTime < leadIn + songDurationMs) {
       // Difficulty Scaling: Higher diff = more density
-      let shouldSpawn = false
       const beatInBar = i % 4
 
-      if (diff <= 2) {
-        // Easy: Downbeats (1) and sometimes 3
-        shouldSpawn = beatInBar === 0 || (i % 8 === 4 && random() > 0.2)
-      } else if (diff <= 4) {
-        // Medium: Downbeats + Offbeats
-        shouldSpawn = beatInBar === 0 || beatInBar === 2 || random() > 0.6
-      } else {
-        // Hard: Chaos / Stream
-        shouldSpawn = random() > 0.3 // 70% density
-      }
+      const shouldSpawn =
+        diff <= 2
+          ? beatInBar === 0 || (i % 8 === 4 && random() > 0.2)
+          : diff <= 4
+            ? beatInBar === 0 || beatInBar === 2 || random() > 0.6
+            : random() > 0.3 // 70% density
 
       if (shouldSpawn) {
         // Lane selection based on beat index
@@ -223,19 +218,15 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
         return null
       }
 
-      let timeMs = 0
-      if (useTempoMap) {
-        timeMs = calculateTimeFromTicks(n.t, tpb, activeTempoMap, 'ms')
-      } else {
-        // Fallback: ticks -> ms using constant BPM
-        timeMs = (n.t / tpb) * (60000 / bpm)
-      }
+      const fallbackTimeMs = (n.t / tpb) * (60000 / bpm)
+      const calculatedTimeMs = useTempoMap
+        ? calculateTimeFromTicks(n.t, tpb, activeTempoMap, 'ms')
+        : fallbackTimeMs
 
       // Final sanity check on time
-      if (!Number.isFinite(timeMs)) {
-        // Should realistically assume constant BPM if map failed, but here we just drop it or default to 0
-        timeMs = (n.t / tpb) * (60000 / bpm)
-      }
+      const timeMs = Number.isFinite(calculatedTimeMs)
+        ? calculatedTimeMs
+        : fallbackTimeMs
 
       return {
         time: leadIn + timeMs,
