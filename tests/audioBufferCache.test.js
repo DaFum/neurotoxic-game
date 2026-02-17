@@ -150,7 +150,7 @@ mock.module('tone', { namedExports: mockTone })
 
 let fetchResponseSize = 1024 // Default 1KB
 
-global.fetch = mock.fn(async url => {
+global.fetch = mock.fn(async _url => {
   return {
     ok: true,
     arrayBuffer: async () => new ArrayBuffer(fetchResponseSize)

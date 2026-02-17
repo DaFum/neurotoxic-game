@@ -98,7 +98,7 @@ const savedSettings = (() => {
     return JSON.parse(
       localStorage.getItem('neurotoxic_global_settings') || '{}'
     )
-  } catch (e) {
+  } catch (_e) {
     return {}
   }
 })()

@@ -5,20 +5,16 @@ import { audioState } from './state.js'
 import {
   MIN_NOTE_DURATION,
   MAX_NOTE_DURATION,
-  HIHAT_CONFIG,
-  CRASH_CONFIG
 } from './constants.js'
 import {
   ensureAudioContext,
   getRawAudioContext,
-  getAudioContextTimeSec
 } from './setup.js'
 import { stopAudio, stopAudioInternal } from './playback.js'
 import {
   midiUrlMap,
   oggCandidates,
   loadAudioBuffer,
-  oggUrlMap
 } from './assets.js'
 import { calculateTimeFromTicks, preprocessTempoMap } from '../rhythmUtils.js'
 import { selectRandomItem } from '../audioSelectionUtils.js'

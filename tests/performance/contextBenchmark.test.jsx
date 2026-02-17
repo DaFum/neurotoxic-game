@@ -24,7 +24,7 @@ global.matchMedia = () => ({
   removeListener: () => {}
 })
 
-test('GameStateProvider Re-render Benchmark', async t => {
+test('GameStateProvider Re-render Benchmark', async _t => {
   // Dynamic imports to ensure environment is ready
   const React = await import('react')
   const { render, act } = await import('@testing-library/react')

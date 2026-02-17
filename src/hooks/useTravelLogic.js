@@ -60,14 +60,6 @@ export const useTravelLogic = ({
   const failsafeTimeoutRef = useRef(null)
 
   /**
-   * Gets the current node from the map
-   * @returns {Object|null} Current node or null
-   */
-  const getCurrentNode = useCallback(() => {
-    return gameMap?.nodes[player.currentNodeId] ?? null
-  }, [gameMap, player.currentNodeId])
-
-  /**
    * Checks if a target node is connected to the current node
    * @param {string} targetNodeId - Target node ID
    * @returns {boolean} True if connected
@@ -362,7 +354,7 @@ export const useTravelLogic = ({
 
       try {
         audioManager.playSFX('travel')
-      } catch (e) {
+      } catch (_e) {
         // Ignore audio errors
       }
 
@@ -420,7 +412,7 @@ export const useTravelLogic = ({
 
     try {
       audioManager.playSFX('cash')
-    } catch (e) {
+    } catch (_e) {
       // Ignore audio errors
     }
   }, [player, isTraveling, updatePlayer, addToast])
@@ -466,7 +458,7 @@ export const useTravelLogic = ({
 
     try {
       audioManager.playSFX('cash')
-    } catch (e) {
+    } catch (_e) {
       // Ignore audio errors
     }
   }, [player, isTraveling, updatePlayer, addToast, hasUpgrade])

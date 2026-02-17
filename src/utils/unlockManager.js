@@ -16,7 +16,7 @@ export const getUnlocks = () => {
       let parsed
       try {
         parsed = JSON.parse(raw)
-      } catch (e) {
+      } catch (_e) {
         return []
       }
 
