@@ -8,6 +8,10 @@ import {
 } from './setup.js'
 import { loadAudioBuffer } from './assets.js'
 import { createAndConnectBufferSource } from './sharedBufferUtils.js'
+import {
+  stopTransportAndClear,
+  stopAndDisconnectSource
+} from './cleanupUtils.js'
 
 /**
  * Plays a sound effect by type.
@@ -201,16 +205,7 @@ export function stopGigPlayback() {
       'AudioEngine',
       `Stopping gig playback: "${audioState.gigFilename}" at ${getGigTimeMs().toFixed(0)}ms`
     )
-    try {
-      audioState.gigSource.stop()
-    } catch (error) {
-      logger.warn('AudioEngine', 'Failed to stop gig playback', error)
-    }
-    try {
-      audioState.gigSource.disconnect()
-    } catch {
-      // Source may already be disconnected after stop
-    }
+    stopAndDisconnectSource(audioState.gigSource, 'Gig')
   }
   resetGigState()
 }
@@ -468,21 +463,7 @@ const clearTransportStopEvent = () => {
  * Used by playback functions to clear previous state.
  */
 export function stopAudioInternal() {
-  Tone.getTransport().stop()
-  Tone.getTransport().position = 0
-  if (audioState.loop) {
-    audioState.loop.dispose()
-    audioState.loop = null
-  }
-  if (audioState.part) {
-    audioState.part.dispose()
-    audioState.part = null
-  }
-  if (audioState.midiParts.length > 0) {
-    audioState.midiParts.forEach(trackPart => trackPart.dispose())
-    audioState.midiParts = []
-  }
-  Tone.getTransport().cancel()
+  stopTransportAndClear()
   clearTransportEndEvent()
   clearTransportStopEvent()
 }

@@ -1,6 +1,4 @@
-import { test, describe, beforeEach, afterEach, mock } from 'node:test'
-import assert from 'node:assert/strict'
-import { renderHook, act, cleanup } from '@testing-library/react'
+import { mock } from 'node:test'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
 
 // Mocks
@@ -52,7 +50,16 @@ const mockHecklerLogic = {
 }
 const mockErrorHandler = {
   handleError: mock.fn(),
-  AudioError: class AudioError extends Error {}
+  AudioError: class AudioError extends Error {
+    constructor(message, category, severity, context, recoverable) {
+      super(message)
+      this.name = 'AudioError'
+      this.category = category
+      this.severity = severity
+      this.context = context
+      this.recoverable = recoverable
+    }
+  }
 }
 const mockLogger = {
   info: mock.fn(),
@@ -137,7 +144,7 @@ export const setupDefaultMockImplementation = (
     setLastGigStats: mockSetLastGigStats,
     addToast: mock.fn(),
     gameMap: { nodes: { node1: { layer: 0 } } },
-    player: { currentNodeId: 'node1' },
+    player: { currentNodeId: 'node1', money: 0 },
     changeScene: mockChangeScene,
     gigModifiers: {}
   }))
@@ -145,4 +152,10 @@ export const setupDefaultMockImplementation = (
   mockAudioManager.ensureAudioContext.mock.mockImplementation(async () => true)
   mockAudioEngine.startGigPlayback.mock.mockImplementation(async () => true)
   mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 0)
+}
+
+export const simulateGameLoopUpdate = (result, overrides = {}) => {
+  result.current.gameStateRef.current.running = true
+  Object.assign(result.current.gameStateRef.current, overrides)
+  result.current.update(16)
 }

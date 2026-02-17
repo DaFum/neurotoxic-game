@@ -5,7 +5,10 @@ import { setupJSDOM, teardownJSDOM } from './testUtils.js'
 import {
   mockTravelLogicDependencies,
   createTravelLogicProps,
-  setupTravelLogicTest
+  setupTravelLogicTest,
+  assertActionSuccess,
+  assertTravelPrevented,
+  setupTravelScenario
 } from './useTravelLogicTestUtils.js'
 
 const {
@@ -47,16 +50,7 @@ describe('useTravelLogic', () => {
   })
 
   test('handleTravel initiates travel when valid', () => {
-    const props = createTravelLogicProps()
-    const targetNode = props.gameMap.nodes.node_target
-
-    mockCalculateTravelExpenses.mock.mockImplementation(() => ({
-      dist: 100,
-      totalCost: 50,
-      fuelLiters: 10
-    }))
-
-    const { result } = renderHook(() => useTravelLogic(props))
+    const { result, targetNode } = setupTravelScenario(useTravelLogic)
 
     act(() => {
       result.current.handleTravel(targetNode)
@@ -69,52 +63,30 @@ describe('useTravelLogic', () => {
   })
 
   test('handleTravel prevents travel if insufficient funds', () => {
-    const props = createTravelLogicProps({
+    const { result, props, targetNode } = setupTravelScenario(useTravelLogic, {
       player: { ...createTravelLogicProps().player, money: 10 }
     })
-    const targetNode = props.gameMap.nodes.node_target
-
-    mockCalculateTravelExpenses.mock.mockImplementation(() => ({
-      dist: 100,
-      totalCost: 50,
-      fuelLiters: 10
-    }))
-
-    const { result } = renderHook(() => useTravelLogic(props))
 
     act(() => {
       result.current.handleTravel(targetNode)
     })
 
-    assert.equal(result.current.isTraveling, false)
-    assert.equal(props.addToast.mock.calls.length, 2) // Info + Error
-    assert.match(props.addToast.mock.calls[1].arguments[0], /Not enough money/)
+    assertTravelPrevented(result, props, /Not enough money/)
   })
 
   test('handleTravel prevents travel if insufficient fuel', () => {
-    const props = createTravelLogicProps({
+    const { result, props, targetNode } = setupTravelScenario(useTravelLogic, {
       player: {
         ...createTravelLogicProps().player,
         van: { ...createTravelLogicProps().player.van, fuel: 5 }
       }
     })
-    const targetNode = props.gameMap.nodes.node_target
-
-    mockCalculateTravelExpenses.mock.mockImplementation(() => ({
-      dist: 100,
-      totalCost: 50,
-      fuelLiters: 10
-    }))
-
-    const { result } = renderHook(() => useTravelLogic(props))
 
     act(() => {
       result.current.handleTravel(targetNode)
     })
 
-    assert.equal(result.current.isTraveling, false)
-    assert.equal(props.addToast.mock.calls.length, 2) // Info + Error
-    assert.match(props.addToast.mock.calls[1].arguments[0], /Not enough fuel/)
+    assertTravelPrevented(result, props, /Not enough fuel/)
   })
 
   test('handleTravel to current node triggers interaction', () => {
@@ -133,16 +105,7 @@ describe('useTravelLogic', () => {
   })
 
   test('onTravelComplete updates state and finalizes travel', () => {
-    const props = createTravelLogicProps()
-    const targetNode = props.gameMap.nodes.node_target
-
-    mockCalculateTravelExpenses.mock.mockImplementation(() => ({
-      dist: 100,
-      totalCost: 50,
-      fuelLiters: 10
-    }))
-
-    const { result } = renderHook(() => useTravelLogic(props))
+    const { result, props, targetNode } = setupTravelScenario(useTravelLogic)
 
     // Start travel
     act(() => {
@@ -170,7 +133,7 @@ describe('useTravelLogic', () => {
   })
 
   test('handleRefuel fills tank and deducts money', () => {
-    const props = createTravelLogicProps({
+    const { result, props } = setupTravelScenario(useTravelLogic, {
       player: {
         ...createTravelLogicProps().player,
         money: 1000,
@@ -179,21 +142,18 @@ describe('useTravelLogic', () => {
     })
     // Missing 50 fuel. Price is 2 per unit. Cost = 100.
 
-    const { result } = renderHook(() => useTravelLogic(props))
-
     act(() => {
       result.current.handleRefuel()
     })
 
-    assert.equal(props.updatePlayer.mock.calls.length, 1)
-    const updateArg = props.updatePlayer.mock.calls[0].arguments[0]
-    assert.equal(updateArg.money, 900)
-    assert.equal(updateArg.van.fuel, 100)
-    assert.equal(mockAudioManager.playSFX.mock.calls.length, 1)
+    assertActionSuccess(props, mockAudioManager, updateArg => {
+      assert.equal(updateArg.money, 900)
+      assert.equal(updateArg.van.fuel, 100)
+    })
   })
 
   test('handleRepair fixes van and deducts money', () => {
-    const props = createTravelLogicProps({
+    const { result, props } = setupTravelScenario(useTravelLogic, {
       player: {
         ...createTravelLogicProps().player,
         money: 1000,
@@ -202,16 +162,13 @@ describe('useTravelLogic', () => {
     })
     // Missing 20 condition. Price is 5 per unit. Cost = 100.
 
-    const { result } = renderHook(() => useTravelLogic(props))
-
     act(() => {
       result.current.handleRepair()
     })
 
-    assert.equal(props.updatePlayer.mock.calls.length, 1)
-    const updateArg = props.updatePlayer.mock.calls[0].arguments[0]
-    assert.equal(updateArg.money, 900)
-    assert.equal(updateArg.van.condition, 100)
-    assert.equal(mockAudioManager.playSFX.mock.calls.length, 1)
+    assertActionSuccess(props, mockAudioManager, updateArg => {
+      assert.equal(updateArg.money, 900)
+      assert.equal(updateArg.van.condition, 100)
+    })
   })
 })

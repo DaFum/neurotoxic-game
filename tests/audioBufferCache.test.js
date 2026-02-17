@@ -1,69 +1,30 @@
 import assert from 'node:assert'
 import { test, mock } from 'node:test'
 import {
-  MockPolySynth,
-  MockMembraneSynth,
-  MockMetalSynth,
-  MockGain,
-  MockVolume,
-  MockNoiseSynth,
-  MockDistortion,
-  MockChorus,
-  MockEQ3,
-  MockStereoWidener,
-  MockLimiter,
-  MockCompressor,
-  MockReverb,
-  mockToneTransport
+  createMockTone
 } from './mockUtils.js'
 
-const mockTone = {
-  start: mock.fn(async () => {}),
-  getContext: mock.fn(() => ({
-    rawContext: {
-      state: 'running',
-      decodeAudioData: mock.fn(async arrayBuffer => {
-        return {
-          length: arrayBuffer.byteLength / 4,
-          numberOfChannels: 2,
-          sampleRate: 44100,
-          duration: arrayBuffer.byteLength / (4 * 2 * 44100)
-        }
-      }),
-      currentTime: 0,
-      close: mock.fn(async () => {})
-    },
-    lookAhead: 0
-  })),
-  setContext: mock.fn(),
-  now: mock.fn(() => 0),
-  context: { state: 'running' },
-  getTransport: mock.fn(() => mockToneTransport),
-  Limiter: MockLimiter,
-  Compressor: MockCompressor,
-  Gain: MockGain,
-  Reverb: MockReverb,
-  PolySynth: MockPolySynth,
-  FMSynth: 'FMSynth',
-  MonoSynth: 'MonoSynth',
-  Synth: 'Synth',
-  MembraneSynth: MockMembraneSynth,
-  MetalSynth: MockMetalSynth,
-  NoiseSynth: MockNoiseSynth,
-  Distortion: MockDistortion,
-  Chorus: MockChorus,
-  EQ3: MockEQ3,
-  StereoWidener: MockStereoWidener,
-  Volume: MockVolume,
-  Context: class {
-    constructor() {
-      this.rawContext = {
-        state: 'running',
-        close: mock.fn(async () => {})
+const mockTone = createMockTone()
+
+// Custom getContext for audioBufferCache tests to support decodeAudioData
+mockTone.getContext = mock.fn(() => ({
+  rawContext: {
+    state: 'running',
+    decodeAudioData: mock.fn(async arrayBuffer => {
+      return {
+        length: arrayBuffer.byteLength / 4,
+        numberOfChannels: 2,
+        sampleRate: 44100,
+        duration: arrayBuffer.byteLength / (4 * 2 * 44100)
       }
-    }
-  }
-}
+    }),
+    currentTime: 0,
+    close: mock.fn(async () => {})
+  },
+  lookAhead: 0
+}))
+
+mockTone.context = { state: 'running' }
 
 mock.module('tone', { namedExports: mockTone })
 

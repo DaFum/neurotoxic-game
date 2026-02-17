@@ -7,7 +7,8 @@ import {
   setupRhythmGameLogicTest,
   createMockChangeScene,
   createMockSetLastGigStats,
-  setupDefaultMockImplementation
+  setupDefaultMockImplementation,
+  simulateGameLoopUpdate
 } from './useRhythmGameLogicTestUtils.js'
 
 const {
@@ -16,7 +17,11 @@ const {
   mockAudioEngine,
   mockGigStats,
   mockRhythmUtils,
-  mockErrorHandler
+  mockErrorHandler,
+  mockSimulationUtils,
+  mockAudioTimingUtils,
+  mockLogger,
+  mockHecklerLogic
 } = mockRhythmGameLogicDependencies
 
 const { useRhythmGameLogic } = await setupRhythmGameLogicTest()
@@ -39,6 +44,17 @@ describe('useRhythmGameLogic', () => {
     mockGigStats.buildGigStatsSnapshot.mock.resetCalls()
     mockGigStats.updateGigPerformanceStats.mock.resetCalls()
     mockErrorHandler.handleError.mock.resetCalls()
+
+    // Add missing resets
+    mockSimulationUtils.calculateGigPhysics.mock.resetCalls()
+    mockSimulationUtils.getGigModifiers.mock.resetCalls()
+    mockAudioTimingUtils.getScheduledHitTimeMs.mock.resetCalls()
+    mockLogger.info.mock.resetCalls()
+    mockLogger.warn.mock.resetCalls()
+    mockLogger.error.mock.resetCalls()
+    mockHecklerLogic.updateProjectiles.mock.resetCalls()
+    mockHecklerLogic.trySpawnProjectile.mock.resetCalls()
+    mockHecklerLogic.checkCollisions.mock.resetCalls()
 
     mockChangeScene = createMockChangeScene()
     mockSetLastGigStats = createMockSetLastGigStats()
@@ -120,13 +136,13 @@ describe('useRhythmGameLogic', () => {
     })
 
     act(() => {
-      result.current.gameStateRef.current.running = true
-      result.current.gameStateRef.current.totalDuration = 10000
-      result.current.gameStateRef.current.notes = [
-        { time: 200, laneIndex: 0, hit: true, visible: false, type: 'note' }
-      ]
-      result.current.gameStateRef.current.nextMissCheckIndex = 1
-      result.current.update(16)
+      simulateGameLoopUpdate(result, {
+        totalDuration: 10000,
+        notes: [
+          { time: 200, laneIndex: 0, hit: true, visible: false, type: 'note' }
+        ],
+        nextMissCheckIndex: 1
+      })
     })
 
     assert.ok(mockAudioEngine.stopAudio.mock.calls.length >= 1)
@@ -155,9 +171,9 @@ describe('useRhythmGameLogic', () => {
     })
 
     act(() => {
-      result.current.gameStateRef.current.running = true
-      result.current.gameStateRef.current.totalDuration = 0
-      result.current.update(16)
+      simulateGameLoopUpdate(result, {
+        totalDuration: 0
+      })
     })
 
     assert.ok(

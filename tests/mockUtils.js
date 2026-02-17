@@ -131,3 +131,36 @@ export const mockToneTransport = {
   loopEnd: 0,
   loopStart: 0
 }
+
+export const createMockTone = () => ({
+  start: mock.fn(async () => {}),
+  getContext: mock.fn(() => mockToneContext),
+  setContext: mock.fn(),
+  now: mock.fn(() => 0),
+  getTransport: mock.fn(() => mockToneTransport),
+  Context: class {
+    constructor() {
+      this.rawContext = {
+        state: 'running',
+        close: mock.fn(async () => {})
+      }
+    }
+  },
+  Limiter: MockLimiter,
+  Compressor: MockCompressor,
+  Gain: MockGain,
+  Reverb: MockReverb,
+  PolySynth: MockPolySynth,
+  FMSynth: 'FMSynth',
+  MonoSynth: 'MonoSynth',
+  Synth: 'Synth',
+  MembraneSynth: MockMembraneSynth,
+  MetalSynth: MockMetalSynth,
+  NoiseSynth: MockNoiseSynth,
+  Distortion: MockDistortion,
+  Chorus: MockChorus,
+  EQ3: MockEQ3,
+  StereoWidener: MockStereoWidener,
+  Volume: MockVolume,
+  Frequency: _n => ({ toNote: () => 'C4' })
+})

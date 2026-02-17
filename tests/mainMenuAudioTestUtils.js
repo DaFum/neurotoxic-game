@@ -5,6 +5,11 @@ export const mockAudioContextCalls = {
   ensureAudioContextCalls: []
 }
 
+export const resetMockAudioContextCalls = () => {
+  mockAudioContextCalls.startAmbientCalls.length = 0
+  mockAudioContextCalls.ensureAudioContextCalls.length = 0
+}
+
 export const mockAudioManager = {
   ensureAudioContext: async () => {
     mockAudioContextCalls.ensureAudioContextCalls.push(true)

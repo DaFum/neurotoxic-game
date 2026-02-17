@@ -10,6 +10,7 @@ import {
   ensureAudioContext,
   getRawAudioContext,
 } from './setup.js'
+import { stopAndDisconnectSource } from './cleanupUtils.js'
 import { stopAudio, stopAudioInternal } from './playback.js'
 import {
   midiUrlMap,

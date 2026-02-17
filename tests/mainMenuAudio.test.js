@@ -7,14 +7,14 @@ import { setupJSDOM, teardownJSDOM } from './testUtils.js'
 import {
   mockAudioContextCalls,
   createMockGameState,
-  setupMainMenuAudioTest
+  setupMainMenuAudioTest,
+  resetMockAudioContextCalls
 } from './mainMenuAudioTestUtils.js'
 
 const { MainMenu, mockUseGameState } = await setupMainMenuAudioTest()
 
 beforeEach(() => {
-  mockAudioContextCalls.startAmbientCalls.length = 0
-  mockAudioContextCalls.ensureAudioContextCalls.length = 0
+  resetMockAudioContextCalls()
   mockUseGameState.mock.mockImplementation(() =>
     createMockGameState({ canLoad: true })
   )
@@ -35,8 +35,8 @@ test('MainMenu starts ambient audio when starting a tour', async () => {
 
   await waitFor(() => {
     assert.equal(mockAudioContextCalls.startAmbientCalls.length, 1)
+    assert.equal(mockAudioContextCalls.ensureAudioContextCalls.length, 1)
   })
-  assert.equal(mockAudioContextCalls.ensureAudioContextCalls.length, 1)
 })
 
 test('MainMenu starts ambient audio when loading a save', async () => {
@@ -47,6 +47,6 @@ test('MainMenu starts ambient audio when loading a save', async () => {
 
   await waitFor(() => {
     assert.equal(mockAudioContextCalls.startAmbientCalls.length, 1)
+    assert.equal(mockAudioContextCalls.ensureAudioContextCalls.length, 1)
   })
-  assert.equal(mockAudioContextCalls.ensureAudioContextCalls.length, 1)
 })

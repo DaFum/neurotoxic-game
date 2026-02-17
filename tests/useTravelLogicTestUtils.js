@@ -1,4 +1,5 @@
 import { test, describe, beforeEach, afterEach, mock } from 'node:test'
+import assert from 'node:assert/strict'
 import { renderHook, act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
 
@@ -102,3 +103,35 @@ export const createTravelLogicProps = (overrides = {}) => ({
   onShowHQ: mock.fn(),
   ...overrides
 })
+
+export const assertActionSuccess = (
+  props,
+  mockAudioManager,
+  updateAssertions
+) => {
+  assert.equal(props.updatePlayer.mock.calls.length, 1)
+  const updateArg = props.updatePlayer.mock.calls[0].arguments[0]
+  updateAssertions(updateArg)
+  assert.equal(mockAudioManager.playSFX.mock.calls.length, 1)
+}
+
+export const assertTravelPrevented = (result, props, expectedErrorRegex) => {
+  assert.equal(result.current.isTraveling, false)
+  assert.equal(props.addToast.mock.calls.length, 2) // Info + Error
+  assert.match(props.addToast.mock.calls[1].arguments[0], expectedErrorRegex)
+}
+
+export const setupTravelScenario = (useTravelLogic, propsOverrides = {}) => {
+  const props = createTravelLogicProps(propsOverrides)
+  const targetNode = props.gameMap.nodes.node_target
+
+  mockCalculateTravelExpenses.mock.mockImplementation(() => ({
+    dist: 100,
+    totalCost: 50,
+    fuelLiters: 10
+  }))
+
+  const { result } = renderHook(() => useTravelLogic(props))
+
+  return { result, props, targetNode }
+}

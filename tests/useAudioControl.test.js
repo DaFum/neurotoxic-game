@@ -1,4 +1,4 @@
-import { test, describe, beforeEach, afterEach, mock } from 'node:test'
+import { test, describe, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook, act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
@@ -16,18 +16,24 @@ describe('useAudioControl', () => {
     mockAudioManager.sfxVolume = 0.5
     mockAudioManager.muted = false
 
-    mockAudioManager.setMusicVolume = mock.fn(val => {
+    mockAudioManager.setMusicVolume.mock.resetCalls()
+    mockAudioManager.setMusicVolume.mock.mockImplementation(val => {
       mockAudioManager.musicVolume = val
       return true
     })
-    mockAudioManager.setSFXVolume = mock.fn(val => {
+
+    mockAudioManager.setSFXVolume.mock.resetCalls()
+    mockAudioManager.setSFXVolume.mock.mockImplementation(val => {
       mockAudioManager.sfxVolume = val
       return true
     })
-    mockAudioManager.toggleMute = mock.fn(() => {
+
+    mockAudioManager.toggleMute.mock.resetCalls()
+    mockAudioManager.toggleMute.mock.mockImplementation(() => {
       mockAudioManager.muted = !mockAudioManager.muted
       return mockAudioManager.muted
     })
+
     mockHandleError.mock.resetCalls()
 
     setupJSDOM()

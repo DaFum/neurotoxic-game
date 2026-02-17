@@ -1,77 +1,12 @@
 import assert from 'node:assert'
 import { test, mock } from 'node:test'
 import {
-  MockPolySynth,
-  MockMembraneSynth,
-  MockMetalSynth,
   MockGain,
-  MockVolume,
-  MockNoiseSynth,
-  MockDistortion,
-  MockChorus,
-  MockEQ3,
-  MockStereoWidener,
-  MockLimiter,
-  MockCompressor,
-  MockReverb
+  createMockTone
 } from './mockUtils.js'
 
 // Mock Tone.js
-const mockTone = {
-  // Functions
-  start: mock.fn(async () => {}),
-  getContext: mock.fn(() => ({
-    rawContext: {
-      state: 'running',
-      close: mock.fn(async () => {})
-    },
-    lookAhead: 0
-  })),
-  setContext: mock.fn(),
-  now: mock.fn(() => 0),
-  getTransport: mock.fn(() => ({
-    stop: mock.fn(),
-    start: mock.fn(),
-    pause: mock.fn(),
-    cancel: mock.fn(),
-    clear: mock.fn(),
-    scheduleOnce: mock.fn(),
-    position: 0,
-    state: 'stopped',
-    bpm: { value: 120 },
-    loop: false,
-    loopEnd: 0,
-    loopStart: 0
-  })),
-
-  // Classes (Constructors)
-  Context: class {
-    constructor() {
-      this.rawContext = {
-        state: 'running',
-        close: mock.fn(async () => {})
-      }
-    }
-  },
-
-  // Audio Nodes
-  Limiter: MockLimiter,
-  Compressor: MockCompressor,
-  Gain: MockGain,
-  Reverb: MockReverb,
-  PolySynth: MockPolySynth,
-  FMSynth: 'FMSynth',
-  MonoSynth: 'MonoSynth',
-  Synth: 'Synth',
-  MembraneSynth: MockMembraneSynth,
-  MetalSynth: MockMetalSynth,
-  NoiseSynth: MockNoiseSynth,
-  Distortion: MockDistortion,
-  Chorus: MockChorus,
-  EQ3: MockEQ3,
-  StereoWidener: MockStereoWidener,
-  Volume: MockVolume
-}
+const mockTone = createMockTone()
 
 mock.module('tone', { namedExports: mockTone })
 
@@ -87,6 +22,10 @@ test('setupAudio', async t => {
     mockTone.setContext.mock.resetCalls()
     // Default implementation
     mockTone.start.mock.mockImplementation(async () => {})
+    MockGain.shouldFail = false
+  })
+
+  t.afterEach(() => {
     MockGain.shouldFail = false
   })
 
@@ -134,11 +73,6 @@ test('setupAudio', async t => {
     const p2 = setupAudio()
 
     // Trigger failure in constructor (happens after Tone.start resolves)
-    // We need a way to make MockGain fail. Since we're using the imported class,
-    // we might need to modify how we mock it or add a static flag to the shared class.
-    // For simplicity, let's override the mock implementation for this test case specifically if possible,
-    // OR add the static flag to the shared MockGain in mockUtils.js.
-    // Assuming we added `static shouldFail = false` to MockGain in mockUtils.js (I should verify/add that).
     MockGain.shouldFail = true
     resolveStart()
 

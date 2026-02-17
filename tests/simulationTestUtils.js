@@ -32,6 +32,10 @@ export const buildBandWithMembers = (updates, otherOverrides = {}) => {
     const idx = band.members.findIndex(m => m.name === update.name)
     if (idx !== -1) {
       band.members[idx] = { ...band.members[idx], ...update }
+    } else {
+      throw new Error(
+        `Member "${update.name}" not found in band. Available: ${band.members.map(m => m.name).join(', ')}`
+      )
     }
   })
   return band

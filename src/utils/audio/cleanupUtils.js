@@ -1,6 +1,6 @@
 import * as Tone from 'tone'
 import { logger } from '../logger.js'
-import { audioState, resetGigState } from './state.js'
+import { audioState } from './state.js'
 
 /**
  * Clears transport event by ID.
@@ -12,7 +12,7 @@ export function clearTransportEvent(id, name) {
   try {
     Tone.getTransport().clear(id)
   } catch (error) {
-    logger.debug('AudioEngine', `Failed to clear transport ${name} event`, error)
+    logger.warn('AudioEngine', `Failed to clear transport ${name} event`, error)
   }
 }
 
