@@ -61,7 +61,7 @@ export const GigHUD = ({ stats, onLaneInput, gameStateRef }) => {
             key={laneIndex}
             role='button'
             aria-label={`${LANE_NAMES[laneIndex]} lane`}
-            className='flex-1 h-full cursor-pointer hover:bg-white/5 active:bg-white/10 transition-colors duration-75 pointer-events-auto relative'
+            className='flex-1 h-full cursor-pointer hover:bg-(--star-white)/5 active:bg-(--star-white)/10 transition-colors duration-75 pointer-events-auto relative'
             onMouseDown={() => onLaneInput && onLaneInput(laneIndex, true)}
             onMouseUp={() => onLaneInput && onLaneInput(laneIndex, false)}
             onMouseLeave={() => onLaneInput && onLaneInput(laneIndex, false)}
