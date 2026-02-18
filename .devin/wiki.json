@@ -27,6 +27,10 @@
     {
       "content": "Procedural asset generation (images) integrated via Pollinations.ai (imageGen.js, 146 lines) and social media simulation (socialEngine.js, 150 lines). Procedural map generation (mapGenerator.js, 279 lines) builds a graph of ~45 German venue nodes with travel connections, distance costs, and venue metadata that feeds the travel and event systems. The unlock/achievement system (unlockManager.js, 56 lines) tracks progression milestones. The tutorial system (TutorialManager.jsx) provides step-by-step onboarding tooltips for new players.",
       "author": "Developer"
+    },
+    {
+      "content": "End-to-end tests in e2e/ use Playwright (configured via playwright.config.js) with 3 spec files: audio-output.spec.js (audio playback verification), game-flow.spec.js (full gameplay loop from menu through gig cycle), and helpers.js (shared test utilities). The .claude/skills/ directory contains 28 custom Claude Code skills providing specialized AI-assisted workflows for common development tasks (audio debugging, CI hardening, game balancing, performance budgeting, Pixi memory leak detection, refactoring safety, Tailwind v4 enforcement, etc.). These skills are tuned to the codebase's architecture patterns and should be referenced when performing domain-specific work.",
+      "author": "Quality"
     }
   ],
   "pages": [
@@ -244,11 +248,11 @@
       "parent": "State Management & Context System",
       "page_notes": [
         {
-          "content": "Clarify which parts of state are persisted versus runtime-only transient fields. Document expected consumer pattern in scenes/hooks to avoid direct mutation and stale closures.",
+          "content": "Document the full useGameState() return shape with each exposed property and dispatch helper, including type signatures from JSDoc annotations. Group the API into read-only state slices (player, band, social, settings, gameMap, currentGig, setlist, lastGigStats, activeEvent, toasts, activeStoryFlags, eventCooldowns, gigModifiers) and mutation helpers (changeScene, triggerEvent, addToast, setGigModifiers, updatePlayer, updateBand, advanceDay, applyEventDelta). For each dispatch helper, specify which ActionType it dispatches, required parameters, and what reducer branch handles it.",
           "author": "Architecture"
         },
         {
-          "content": "Document recommended selector/memo usage patterns to minimize unnecessary rerenders in scene components.",
+          "content": "Document GameStateProvider initialization sequence: on mount, provider creates reducer with initialState, then checks localStorage for saved game via safeStorageOperation. If save exists, loadGame() runs saveValidator.js schema checks, repairs missing fields with defaults from initialState.js, clamps out-of-range values (money >= 0, harmony 0-100, day >= 1), and dispatches LOAD_GAME action. If save is corrupt or missing, initial state is used directly. The provider also registers beforeunload listener to auto-save on tab close. Detail the memoization boundary: state object reference changes on every dispatch, but dispatch function is stable (React guarantee), so components depending only on dispatch do not re-render.",
           "author": "Architecture"
         }
       ]
@@ -261,6 +265,10 @@
         {
           "content": "Highlight tampering risk, schema drift concerns, and recommended validation checks before applying persisted values. Add migration guidance for future save schema versions, including defaulting rules for newly introduced fields.",
           "author": "Quality"
+        },
+        {
+          "content": "Document the saveValidator.js validation pipeline stages: (1) JSON parse safety via try/catch, (2) top-level shape check ensuring required keys exist (player, band, social, settings, gameMap), (3) per-field type validation and range clamping (money >= 0, harmony 0-100, day >= 1, fuel 0-100), (4) array integrity for band.members and inventory lists, (5) default backfill for fields added in newer versions (merge with initialState.js defaults). Explain that validation is non-destructive — it repairs and returns a valid state rather than rejecting the save entirely. Document how safeStorageOperation in errorHandler.js wraps all localStorage calls with try/catch to handle quota exceeded, permission denied, and private browsing restrictions.",
+          "author": "Architecture"
         }
       ]
     },
@@ -347,6 +355,10 @@
         {
           "content": "Cover event category files under src/data/events/ and how duplicate ID validation in the index aggregator protects runtime behavior. Add contributor checklist for new songs/events: ID uniqueness, required fields, and playtest/test expectations.",
           "author": "Quality"
+        },
+        {
+          "content": "Note that src/data/songs.js is excluded from ESLint (configured in eslint.config.js ignores) due to its large size and generated-data nature. Song rhythm data lives separately in src/assets/rhythm_songs.json which contains MIDI note track definitions, BPM, and lane assignments consumed by rhythmUtils.js for note spawning. The chatter.js file provides social media post templates organized by category (praise, complaint, viral, meme) used by socialEngine.js and rendered through ChatterOverlay.jsx. Document the data contract between venues.js venue definitions and mapGenerator.js: venues must have unique IDs, valid region assignments from the REGIONS enum, and numeric capacity/basePay/difficulty/prestige fields within defined ranges.",
+          "author": "Architecture"
         }
       ]
     },
@@ -469,6 +481,21 @@
         {
           "content": "Document how tutorialStep advances through the reducer and which scenes consume it to display contextual guidance. Explain how unlockManager interacts with venue requirements to gate content progression.",
           "author": "Architecture"
+        }
+      ]
+    },
+    {
+      "title": "CI/CD & Automation",
+      "purpose": "Document the three GitHub Actions workflows in .github/workflows/: deploy.yml (builds production bundle via npm run build and deploys dist/ to GitHub Pages on push to main, using actions/upload-pages-artifact and actions/deploy-pages), super-linter.yml (runs ESLint via npm run lint on pull requests and pushes to main, posts inline annotations on PR diffs for violations), and lint-fix-preview.yml (runs Prettier + ESLint auto-fix on PRs and creates a preview comment showing proposed formatting changes). Also cover the agent instruction files in .github/agents/ (game_improver.agent.md, repo-setup.agent.md) that guide AI code assistants working in the repository.",
+      "parent": "Development & Testing",
+      "page_notes": [
+        {
+          "content": "Document deploy.yml pipeline stages: checkout, Node.js 22 setup (matching .nvmrc), npm ci (clean install from lockfile), npm run build (Vite production build), upload dist/ artifact, deploy to GitHub Pages. The workflow triggers on push to main only and uses the pages environment with GITHUB_TOKEN permissions. Explain how the base URL in vite.config.js must match the GitHub Pages deployment path for correct asset loading. Note that there is no staging environment — main branch deploys directly to production.",
+          "author": "Quality"
+        },
+        {
+          "content": "Document the Conventional Commits standard enforced by contributor workflow: feat: (new features, triggers minor version), fix: (bug fixes, triggers patch), docs: (documentation only), test: (test additions/changes), refactor: (code restructuring, no behavior change), chore: (maintenance, dependencies, CI). Commit messages should reference impacted subsystems (e.g., 'fix(audio): prevent context leak on gig end'). The lint-fix-preview workflow supports this by ensuring code style is consistent before merge, reducing noise in diffs and commit history.",
+          "author": "Quality"
         }
       ]
     }
