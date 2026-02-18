@@ -1,6 +1,10 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { getRandomChatter } from '../src/data/chatter.js'
+import {
+  ALLOWED_DEFAULT_SCENES,
+  CHATTER_DB,
+  getRandomChatter
+} from '../src/data/chatter.js'
 
 const buildState = scene => ({
   currentScene: scene,
@@ -20,10 +24,17 @@ test('getRandomChatter supports default chatter in all top-level scenes', () => 
 })
 
 test('getRandomChatter returns null for scenes without default chatter', () => {
-  const disallowedScenes = ['GIG', 'SETTINGS']
+  const disallowedScenes = ['GIG', 'SETTINGS', 'CREDITS', 'GAMEOVER']
 
   disallowedScenes.forEach(scene => {
-    const chatter = getRandomChatter(buildState(scene))
-    assert.strictEqual(chatter, null)
+    assert.strictEqual(ALLOWED_DEFAULT_SCENES.includes(scene), false)
+
+    const state = buildState(scene)
+    const activeConditionalEntries = CHATTER_DB.filter(entry =>
+      typeof entry.condition === 'function' ? entry.condition(state) : false
+    )
+
+    assert.strictEqual(activeConditionalEntries.length, 0)
+    assert.strictEqual(getRandomChatter(state), null)
   })
 })

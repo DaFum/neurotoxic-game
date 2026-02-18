@@ -32,14 +32,14 @@ export const ChatterOverlay = ({ staticPosition = false }) => {
   const stateRef = useRef(state)
   const [chatter, setChatter] = useState(null)
 
-  useEffect(() => {
-    stateRef.current = state
-  }, [state])
-
   const sceneLabel = useMemo(
     () => SCENE_LABELS[state.currentScene] || 'Band Feed',
     [state.currentScene]
   )
+
+  useEffect(() => {
+    stateRef.current = state
+  }, [state])
 
   useEffect(() => {
     let delayTimeoutId
@@ -126,20 +126,20 @@ export const ChatterOverlay = ({ staticPosition = false }) => {
             <div className='absolute top-0 right-0 h-10 w-10 bg-(--toxic-green)/20 blur-lg' />
 
             <div className='pl-4 pr-3 py-2 border-b border-(--ash-gray) flex items-center justify-between gap-2'>
-              <p className='text-[10px] uppercase tracking-[0.18em] font-bold text-(--toxic-green) font-mono'>
+              <p className='text-[10px] uppercase tracking-[0.18em] font-bold text-(--toxic-green) font-(--font-ui)'>
                 {sceneLabel}
               </p>
-              <span className='inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-mono text-(--ash-gray)'>
+              <span className='inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-(--font-ui) text-(--ash-gray)'>
                 <span className='w-1.5 h-1.5 rounded-full bg-(--toxic-green) animate-pulse' />
                 Live
               </span>
             </div>
 
             <div className='pl-4 pr-3 py-3'>
-              <p className='text-[11px] font-bold uppercase tracking-[0.14em] text-(--warning-yellow) font-mono mb-1'>
+              <p className='text-[11px] font-bold uppercase tracking-[0.14em] text-(--warning-yellow) font-(--font-ui) mb-1'>
                 {chatter.speaker}
               </p>
-              <p className='text-sm leading-snug text-(--star-white) font-mono'>
+              <p className='text-sm leading-snug text-(--star-white) font-(--font-ui)'>
                 {chatter.text}
               </p>
             </div>

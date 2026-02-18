@@ -4,7 +4,7 @@ import { HQ_ITEMS } from '../data/hqItems'
 import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog'
 import { SONGS_DB } from '../data/songs'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
-import { usePurchaseLogic } from '../hooks/usePurchaseLogic'
+import { getPrimaryEffect, usePurchaseLogic } from '../hooks/usePurchaseLogic'
 import { StatBox, ProgressBar, SettingsPanel } from '../ui/shared'
 
 /**
@@ -49,8 +49,7 @@ export const BandHQ = ({
 
   const unifiedUpgradeCatalog = useMemo(() => getUnifiedUpgradeCatalog(), [])
 
-  const { handleBuy, isItemOwned, isItemDisabled, getPrimaryEffect } =
-    usePurchaseLogic({
+  const { handleBuy, isItemOwned, isItemDisabled } = usePurchaseLogic({
       player,
       band,
       updatePlayer,

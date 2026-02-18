@@ -13,7 +13,10 @@ import { handleError, StateError } from '../utils/errorHandler'
  * @param {object} item - Purchase catalog item.
  * @returns {object|undefined} Primary effect object, if available.
  */
-export const getPrimaryEffect = item => item.effects?.[0] ?? item.effect
+export const getPrimaryEffect = item => {
+  if (!item) return undefined
+  return item.effects?.[0] ?? item.effect
+}
 
 /**
  * Custom hook for managing shop purchase logic
@@ -196,8 +199,9 @@ export const usePurchaseLogic = ({
         effect.key === 'passive_followers' ||
         effect.effect === 'passive_followers'
       ) {
-        const val = effect.value || 0
-        nextPlayerPatch.passiveFollowers = (player.passiveFollowers || 0) + val
+        const val = Number(effect.value) || 0
+        nextPlayerPatch.passiveFollowers =
+          (player.passiveFollowers || 0) + Math.max(0, val)
       }
 
       return { playerPatch: nextPlayerPatch, bandPatch: nextBandPatch }
@@ -443,7 +447,6 @@ export const usePurchaseLogic = ({
     handleBuy,
     isItemOwned,
     canAfford,
-    isItemDisabled,
-    getPrimaryEffect
+    isItemDisabled
   }
 }

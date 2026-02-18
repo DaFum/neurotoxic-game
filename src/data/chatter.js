@@ -1,4 +1,4 @@
-const CHATTER_DB = [
+export const CHATTER_DB = [
   // --- GENERAL TRAVEL / OVERWORLD (Original + New) ---
   {
     text: 'My back hurts from sleeping in this seat.',
@@ -357,7 +357,7 @@ const CHATTER_DB = [
   }
 ]
 
-const ALLOWED_DEFAULT_SCENES = ['MENU', 'OVERWORLD', 'PREGIG', 'POSTGIG']
+export const ALLOWED_DEFAULT_SCENES = ['MENU', 'OVERWORLD', 'PREGIG', 'POSTGIG']
 
 const VENUE_CHATTER_DB = [
   // STENDAL / TANGERMÜNDE / MAGDEBURG
