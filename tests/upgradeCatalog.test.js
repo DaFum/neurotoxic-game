@@ -1,4 +1,4 @@
-import assert from 'node:assert'
+import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { getUnifiedUpgradeCatalog } from '../src/data/upgradeCatalog.js'
 
@@ -15,10 +15,10 @@ test('getUnifiedUpgradeCatalog entries contain required purchase fields', () => 
   const catalog = getUnifiedUpgradeCatalog()
 
   catalog.forEach(item => {
-    assert.equal(typeof item.id, 'string')
-    assert.equal(typeof item.name, 'string')
-    assert.equal(typeof item.cost, 'number')
-    assert.equal(typeof item.currency, 'string')
-    assert.ok(item.effect)
+    assert.strictEqual(typeof item.id, 'string')
+    assert.strictEqual(typeof item.name, 'string')
+    assert.strictEqual(typeof item.cost, 'number')
+    assert.strictEqual(typeof item.currency, 'string')
+    assert.ok(Array.isArray(item.effects))
   })
 })

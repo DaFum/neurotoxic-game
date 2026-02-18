@@ -12,12 +12,14 @@ export const UPGRADES_DB = {
       currency: 'fame',
       description: 'Reduces chance of breakdowns by 20%.',
       requirements: {},
-      effect: {
-        type: 'stat_modifier',
-        target: 'van',
-        stat: 'breakdownChance',
-        value: -0.2
-      },
+      effects: [
+        {
+          type: 'stat_modifier',
+          target: 'van',
+          stat: 'breakdownChance',
+          value: -0.2
+        }
+      ],
       oneTime: true
     },
     {
@@ -28,7 +30,7 @@ export const UPGRADES_DB = {
       currency: 'fame',
       description: 'Band recovers Harmony while traveling.',
       requirements: {},
-      effect: { type: 'passive', effect: 'harmony_regen_travel' },
+      effects: [{ type: 'passive', key: 'harmony_regen_travel' }],
       oneTime: true
     },
     {
@@ -39,12 +41,14 @@ export const UPGRADES_DB = {
       currency: 'fame',
       description: 'Inventory slots +2.',
       requirements: {},
-      effect: {
-        type: 'stat_modifier',
-        target: 'band',
-        stat: 'inventorySlots',
-        value: 2
-      },
+      effects: [
+        {
+          type: 'stat_modifier',
+          target: 'band',
+          stat: 'inventorySlots',
+          value: 2
+        }
+      ],
       oneTime: true
     }
   ],
@@ -57,12 +61,14 @@ export const UPGRADES_DB = {
       currency: 'fame',
       description: 'Guitar notes are 15% easier to hit.',
       requirements: {},
-      effect: {
-        type: 'stat_modifier',
-        target: 'performance',
-        stat: 'guitarDifficulty',
-        value: -0.15
-      },
+      effects: [
+        {
+          type: 'stat_modifier',
+          target: 'performance',
+          stat: 'guitarDifficulty',
+          value: -0.15
+        }
+      ],
       oneTime: true
     },
     {
@@ -73,12 +79,14 @@ export const UPGRADES_DB = {
       currency: 'fame',
       description: 'Drum blast beats score +20% more.',
       requirements: {},
-      effect: {
-        type: 'stat_modifier',
-        target: 'performance',
-        stat: 'drumMultiplier',
-        value: 0.2
-      },
+      effects: [
+        {
+          type: 'stat_modifier',
+          target: 'performance',
+          stat: 'drumMultiplier',
+          value: 0.2
+        }
+      ],
       oneTime: true
     },
     {
@@ -89,12 +97,14 @@ export const UPGRADES_DB = {
       currency: 'fame',
       description: 'Crowd energy decays 10% slower.',
       requirements: {},
-      effect: {
-        type: 'stat_modifier',
-        target: 'performance',
-        stat: 'crowdDecay',
-        value: -0.1
-      },
+      effects: [
+        {
+          type: 'stat_modifier',
+          target: 'performance',
+          stat: 'crowdDecay',
+          value: -0.1
+        }
+      ],
       oneTime: true
     }
   ],
@@ -107,7 +117,7 @@ export const UPGRADES_DB = {
       currency: 'fame',
       description: 'Passive +5 followers/day.',
       requirements: {},
-      effect: { type: 'passive', effect: 'passive_followers', value: 5 },
+      effects: [{ type: 'passive', key: 'passive_followers', value: 5 }],
       oneTime: true
     },
     {
@@ -118,12 +128,14 @@ export const UPGRADES_DB = {
       currency: 'fame',
       description: 'Start run with +1000 Fame.',
       requirements: {},
-      effect: {
-        type: 'stat_modifier',
-        target: 'player',
-        stat: 'fame',
-        value: 1000
-      },
+      effects: [
+        {
+          type: 'stat_modifier',
+          target: 'player',
+          stat: 'fame',
+          value: 1000
+        }
+      ],
       oneTime: true
     }
   ]

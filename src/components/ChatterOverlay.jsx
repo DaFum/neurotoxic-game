@@ -64,15 +64,15 @@ export const ChatterOverlay = ({ staticPosition = false }) => {
             .map(member => member.name)
             .filter(memberName => typeof memberName === 'string')
 
-          const speaker =
-            fixedSpeaker ||
-            memberNames[
-              Math.floor(Math.random() * (memberNames.length || 1))
-            ] ||
-            'Band'
+          const speaker = fixedSpeaker
+            ? fixedSpeaker
+            : Array.isArray(memberNames) && memberNames.length > 0
+              ? memberNames[Math.floor(Math.random() * memberNames.length)]
+              : 'Band'
 
           setChatter({ text, speaker, id: Date.now() })
 
+          clearTimeout(hideTimeoutId)
           hideTimeoutId = setTimeout(() => {
             if (active) setChatter(null)
           }, CHATTER_VISIBLE_MS)
@@ -103,7 +103,7 @@ export const ChatterOverlay = ({ staticPosition = false }) => {
 
   const wrapperClassName = staticPosition
     ? 'relative z-40 pointer-events-none w-[min(22rem,88vw)]'
-    : 'fixed top-24 right-4 md:right-8 z-[9500] pointer-events-none w-[min(24rem,90vw)]'
+    : 'fixed top-24 right-4 md:right-8 z-40 pointer-events-none w-[min(24rem,90vw)]'
 
   return (
     <AnimatePresence>
@@ -118,7 +118,7 @@ export const ChatterOverlay = ({ staticPosition = false }) => {
           aria-live='polite'
           role='status'
         >
-          <div className='relative overflow-hidden border-2 border-(--toxic-green) bg-(--void-black)/90 backdrop-blur-md shadow-[0_0_0_1px_var(--void-black),0_12px_30px_rgba(0,0,0,0.45)]'>
+          <div className='relative overflow-hidden border-2 border-(--toxic-green) bg-(--void-black)/90 backdrop-blur-md shadow-[0_0_0_1px_var(--void-black),0_12px_30px_var(--shadow-overlay-strong)]'>
             <div className='absolute inset-y-0 left-0 w-1.5 bg-(--toxic-green)' />
             <div className='absolute top-0 right-0 h-10 w-10 bg-(--toxic-green)/20 blur-lg' />
 

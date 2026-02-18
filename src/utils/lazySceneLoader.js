@@ -7,5 +7,16 @@
  */
 export const createNamedLazyLoader = (importer, exportName) => {
   return () =>
-    importer().then(moduleExports => ({ default: moduleExports[exportName] }))
+    importer().then(moduleExports => {
+      const exported = moduleExports[exportName]
+
+      if (exported === undefined) {
+        const availableExports = Object.keys(moduleExports).join(', ') || 'none'
+        throw new Error(
+          `Missing export "${exportName}" in module. Available exports: ${availableExports}`
+        )
+      }
+
+      return { default: exported }
+    })
 }

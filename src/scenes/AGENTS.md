@@ -45,6 +45,7 @@ export const MyScene = () => {
 
 **Valid Scene Identifiers:**
 
+- `'INTRO'` → IntroVideo.jsx
 - `'MENU'` → MainMenu.jsx
 - `'SETTINGS'` → Settings.jsx
 - `'CREDITS'` → Credits.jsx
@@ -53,6 +54,8 @@ export const MyScene = () => {
 - `'PREGIG'` → PreGig.jsx
 - `'GIG'` → Gig.jsx
 - `'POSTGIG'` → PostGig.jsx
+
+Ordering note: Keep `'INTRO'` first in this list because initial state/transitions and test fixtures reference intro-first scene ordering.
 
 ### Game Flow Sequence
 

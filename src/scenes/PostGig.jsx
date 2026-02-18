@@ -119,7 +119,7 @@ export const PostGig = () => {
       fame: player.fame + fameGain
     })
 
-    if (newMoney <= 0 && financials.net < 0) {
+    if (newMoney <= 0) {
       addToast('GAME OVER: BANKRUPT! The tour is over.', 'error')
       changeScene('GAMEOVER')
     } else {
@@ -138,7 +138,6 @@ export const PostGig = () => {
 
   return (
     <div className='w-full h-full flex flex-col items-center justify-center p-8 bg-(--void-black) text-(--star-white) relative'>
-      <div className='absolute top-24 right-8 z-30'></div>
       <div
         className='absolute inset-0 opacity-20 bg-cover bg-center'
         style={{

@@ -219,7 +219,7 @@ export const GigHUD = ({ stats }) => {
 
 **Behavior:**
 
-- Show 3-5 comments at a time
+- Show 1 message at a time
 - Comments scroll in from bottom
 - Content changes based on performance
 - Uses `src/data/chatter.js` for message templates
@@ -250,10 +250,13 @@ export const ChatterOverlay = ({ performance, combo, venue }) => {
   const [messages, setMessages] = useState([])
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const newMessage = getRandomChatter(performance, combo)
-      setMessages(prev => [...prev.slice(-4), newMessage])
-    }, 3000) // New message every 3 seconds
+    const interval = setInterval(
+      () => {
+        const newMessage = getRandomChatter(performance, combo)
+        setMessages(prev => [...prev.slice(-4), newMessage])
+      },
+      Math.random() * 17000 + 8000
+    ) // New message every 8-25 seconds
 
     return () => clearInterval(interval)
   }, [performance, combo])

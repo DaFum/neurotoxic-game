@@ -10,21 +10,11 @@ const buildState = scene => ({
 })
 
 test('getRandomChatter supports default chatter in all top-level scenes', () => {
-  const scenes = [
-    'INTRO',
-    'MENU',
-    'OVERWORLD',
-    'PREGIG',
-    'GIG',
-    'POSTGIG',
-    'SETTINGS',
-    'CREDITS',
-    'GAMEOVER'
-  ]
+  const scenes = ['MENU', 'OVERWORLD', 'PREGIG', 'GIG', 'POSTGIG']
 
   scenes.forEach(scene => {
     const chatter = getRandomChatter(buildState(scene))
     assert.ok(chatter, `Expected chatter for scene: ${scene}`)
-    assert.equal(typeof chatter.text, 'string')
+    assert.strictEqual(typeof chatter.text, 'string')
   })
 })

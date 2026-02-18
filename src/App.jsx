@@ -38,7 +38,7 @@ const IntroVideo = lazy(
 )
 
 const SceneLoadingFallback = () => (
-  <div className='absolute inset-0 z-40 flex items-center justify-center pointer-events-none'>
+  <div className='absolute inset-0 z-30 flex items-center justify-center pointer-events-none'>
     <div className='border-2 border-(--toxic-green) bg-(--void-black)/90 px-6 py-3 font-mono text-(--toxic-green) tracking-widest uppercase'>
       Loading Scene...
     </div>

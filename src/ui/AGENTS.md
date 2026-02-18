@@ -330,7 +330,8 @@ dispatch({
 
 - `success` - Green, positive feedback
 - `error` - Red, warnings
-- `info` - Blue, neutral information
+- `warning` - Yellow, cautionary feedback
+- `info` - Gray, neutral information
 
 **Implementation:**
 
@@ -345,7 +346,8 @@ export const ToastOverlay = () => {
   const typeStyles = {
     success: 'bg-(--success-green) text-(--void-black)',
     error: 'bg-(--error-red) text-(--star-white)',
-    info: 'bg-(--info-blue) text-(--star-white)'
+    warning: 'bg-(--warning-yellow) text-(--void-black)',
+    info: 'bg-(--ash-gray) text-(--star-white)'
   }
 
   return (

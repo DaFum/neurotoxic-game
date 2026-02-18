@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
 import { HQ_ITEMS } from '../data/hqItems'
 import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog'
@@ -47,7 +47,7 @@ export const BandHQ = ({
 }) => {
   const [activeTab, setActiveTab] = useState('STATS') // STATS, SHOP, UPGRADES, SETLIST, SETTINGS
 
-  const unifiedUpgradeCatalog = getUnifiedUpgradeCatalog()
+  const unifiedUpgradeCatalog = useMemo(() => getUnifiedUpgradeCatalog(), [])
 
   const { handleBuy, isItemOwned, isItemDisabled } = usePurchaseLogic({
     player,
@@ -83,7 +83,8 @@ export const BandHQ = ({
   const renderItem = item => {
     const owned = isItemOwned(item)
     const disabled = isItemDisabled(item)
-    const isConsumable = item.effect?.type === 'inventory_add'
+    const primaryEffect = item.effects?.[0] ?? item.effect
+    const isConsumable = primaryEffect?.type === 'inventory_add'
 
     return (
       <div

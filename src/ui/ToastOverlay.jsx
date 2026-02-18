@@ -18,8 +18,8 @@ const TOAST_STYLE_MAP = {
     icon: '⚠'
   },
   info: {
-    border: 'border-(--info-blue)',
-    text: 'text-(--info-blue)',
+    border: 'border-(--ash-gray)',
+    text: 'text-(--ash-gray)',
     icon: 'ℹ'
   }
 }
@@ -33,7 +33,12 @@ export const ToastOverlay = () => {
   const { toasts } = useGameState()
 
   return (
-    <div className='fixed inset-0 z-[9999] flex flex-col gap-3 items-center justify-start pt-20 px-3 md:pt-24 pointer-events-none'>
+    <div
+      className='fixed inset-0 z-[9999] flex flex-col gap-3 items-center justify-start pt-20 px-3 md:pt-24 pointer-events-none'
+      role='status'
+      aria-live='polite'
+      aria-atomic='true'
+    >
       <AnimatePresence>
         {toasts.map(toast => {
           const style = TOAST_STYLE_MAP[toast.type] || TOAST_STYLE_MAP.info
@@ -47,10 +52,8 @@ export const ToastOverlay = () => {
               transition={{ duration: 0.2, ease: 'easeOut' }}
               className={`
                 w-[min(34rem,94vw)] border-2 ${style.border} bg-(--void-black)/90 backdrop-blur-md
-                shadow-[0_0_0_1px_var(--void-black),0_10px_24px_rgba(0,0,0,0.4)]
+                shadow-[0_0_0_1px_var(--void-black),0_10px_24px_var(--shadow-overlay)]
               `}
-              role='status'
-              aria-live='polite'
             >
               <div className='flex items-start gap-3 px-3 py-2.5'>
                 <span

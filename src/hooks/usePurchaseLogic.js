@@ -24,6 +24,11 @@ export const usePurchaseLogic = ({
   updateBand,
   addToast
 }) => {
+  const getPrimaryEffect = useCallback(
+    item => item.effects?.[0] ?? item.effect,
+    []
+  )
+
   /**
    * Checks if an item is already owned
    * @param {Object} item - Item to check
@@ -31,7 +36,7 @@ export const usePurchaseLogic = ({
    */
   const isItemOwned = useCallback(
     item => {
-      const effect = item.effect
+      const effect = getPrimaryEffect(item)
       const inventoryKey =
         effect.type === 'inventory_set' || effect.type === 'inventory_add'
           ? effect.item
@@ -45,7 +50,7 @@ export const usePurchaseLogic = ({
           : false)
       )
     },
-    [player.van?.upgrades, player.hqUpgrades, band.inventory]
+    [player.van?.upgrades, player.hqUpgrades, band.inventory, getPrimaryEffect]
   )
 
   /**
@@ -176,9 +181,15 @@ export const usePurchaseLogic = ({
       let nextPlayerPatch = { ...playerPatch }
       let nextBandPatch = null
 
-      if (effect.effect === 'harmony_regen_travel') {
+      if (
+        effect.key === 'harmony_regen_travel' ||
+        effect.effect === 'harmony_regen_travel'
+      ) {
         nextBandPatch = { harmonyRegenTravel: true }
-      } else if (effect.effect === 'passive_followers') {
+      } else if (
+        effect.key === 'passive_followers' ||
+        effect.effect === 'passive_followers'
+      ) {
         const val = effect.value || 0
         nextPlayerPatch.passiveFollowers = (player.passiveFollowers || 0) + val
       }
@@ -265,7 +276,7 @@ export const usePurchaseLogic = ({
   const handleBuy = useCallback(
     item => {
       try {
-        const effect = item.effect
+        const effect = getPrimaryEffect(item)
         const payingWithFame = item.currency === 'fame'
 
         const startingMoney = player.money ?? 0
@@ -388,7 +399,8 @@ export const usePurchaseLogic = ({
       applyStatModifier,
       applyUnlockUpgrade,
       applyUnlockHQ,
-      applyPassive
+      applyPassive,
+      getPrimaryEffect
     ]
   )
 
@@ -399,11 +411,13 @@ export const usePurchaseLogic = ({
    */
   const isItemDisabled = useCallback(
     item => {
-      const isConsumable = item.effect.type === 'inventory_add'
+      const effect = getPrimaryEffect(item)
+      if (!effect) return true
+      const isConsumable = effect.type === 'inventory_add'
       const isOwned = isItemOwned(item)
       return (isOwned && !isConsumable) || !canAfford(item)
     },
-    [isItemOwned, canAfford]
+    [isItemOwned, canAfford, getPrimaryEffect]
   )
 
   return {

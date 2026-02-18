@@ -12,3 +12,12 @@ test('createNamedLazyLoader maps a named export to default', async () => {
   const loaded = await loader()
   assert.strictEqual(loaded.default, mockComponent)
 })
+
+test('createNamedLazyLoader throws a helpful error when export is missing', async () => {
+  const loader = createNamedLazyLoader(
+    async () => ({ Menu: () => 'scene' }),
+    'Overworld'
+  )
+
+  await assert.rejects(loader, /Missing export "Overworld" in module/)
+})

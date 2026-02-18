@@ -137,7 +137,6 @@ export const PreGig = () => {
 
   return (
     <div className='w-full h-full flex flex-col items-center justify-center p-8 bg-(--void-black) text-(--star-white) relative'>
-      <div className='absolute bottom-8 left-8 z-20'></div>
       <h2 className="text-4xl text-(--toxic-green) font-['Metal_Mania'] mb-4">
         PREPARATION
       </h2>

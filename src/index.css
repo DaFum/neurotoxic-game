@@ -65,6 +65,8 @@
       rgb(0 0 255 / 6%)
     );
   --crt-overlay-size: 100% 2px, 3px 100%;
+  --shadow-overlay: rgb(var(--void-black-rgb) / 40%);
+  --shadow-overlay-strong: rgb(var(--void-black-rgb) / 45%);
 }
 
 body {
