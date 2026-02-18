@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useGameState } from '../context/GameState'
 import {
   Map as MapIcon,
@@ -6,7 +6,8 @@ import {
   Volume2,
   VolumeX,
   Fuel,
-  Wrench
+  Wrench,
+  HelpCircle
 } from 'lucide-react'
 import { audioManager } from '../utils/AudioManager'
 
@@ -22,17 +23,57 @@ const MiniBar = ({ value, max = 100, color, warn = false }) => {
   )
 }
 
+const SHORTCUTS = [
+  { key: '?', desc: 'Toggle this help' },
+  { key: 'M', desc: 'Mute / Unmute' },
+  { key: '1-4', desc: 'Select event option' },
+  { key: '\u2190\u2191\u2192', desc: 'Hit notes (Gig)' },
+  { key: 'ESC', desc: 'Close overlays' }
+]
+
 /**
  * Heads-Up Display overlay showing player stats, band status, and volume controls.
  */
 export const HUD = () => {
   const { player, band } = useGameState()
   const [muted, setMuted] = useState(false)
+  const [showHelp, setShowHelp] = useState(false)
 
-  const toggleMute = () => {
+  const toggleMute = useCallback(() => {
     const isMuted = audioManager.toggleMute()
     setMuted(isMuted)
-  }
+  }, [])
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleKey = e => {
+      if (e.key === '?' || (e.key === 'h' && !e.ctrlKey && !e.metaKey)) {
+        // Don't trigger if user is typing in an input
+        if (
+          e.target.tagName === 'INPUT' ||
+          e.target.tagName === 'TEXTAREA' ||
+          e.target.tagName === 'SELECT'
+        )
+          return
+        setShowHelp(prev => !prev)
+      }
+      if (e.key === 'm' && !e.ctrlKey && !e.metaKey) {
+        if (
+          e.target.tagName === 'INPUT' ||
+          e.target.tagName === 'TEXTAREA' ||
+          e.target.tagName === 'SELECT'
+        )
+          return
+        toggleMute()
+      }
+      if (e.key === 'Escape') {
+        setShowHelp(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [toggleMute])
 
   const fuel = player.van?.fuel ?? 0
   const condition = player.van?.condition ?? 100
@@ -45,7 +86,8 @@ export const HUD = () => {
           <div className='flex items-center gap-2 mb-1.5'>
             <DollarSign size={14} className='text-(--warning-yellow)' />
             <span className='text-sm font-bold tabular-nums'>
-              {player.money}€
+              {player.money}
+              {'\u20AC'}
             </span>
           </div>
           <div className='flex items-center gap-2 mb-2'>
@@ -82,13 +124,46 @@ export const HUD = () => {
           </div>
         </div>
 
-        <button
-          onClick={toggleMute}
-          aria-label={muted ? 'Unmute system' : 'Mute system'}
-          className='pointer-events-auto bg-(--void-black)/90 border border-(--toxic-green)/60 p-2 text-(--toxic-green) w-fit hover:bg-(--toxic-green) hover:text-(--void-black) transition-colors'
-        >
-          {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-        </button>
+        <div className='flex gap-1.5'>
+          <button
+            onClick={toggleMute}
+            aria-label={muted ? 'Unmute system' : 'Mute system'}
+            className='pointer-events-auto bg-(--void-black)/90 border border-(--toxic-green)/60 p-2 text-(--toxic-green) w-fit hover:bg-(--toxic-green) hover:text-(--void-black) transition-colors'
+          >
+            {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+          </button>
+          <button
+            onClick={() => setShowHelp(prev => !prev)}
+            aria-label='Toggle keyboard shortcuts help'
+            className={`pointer-events-auto bg-(--void-black)/90 border p-2 w-fit transition-colors ${
+              showHelp
+                ? 'border-(--warning-yellow) text-(--warning-yellow)'
+                : 'border-(--toxic-green)/60 text-(--toxic-green) hover:bg-(--toxic-green) hover:text-(--void-black)'
+            }`}
+          >
+            <HelpCircle size={14} />
+          </button>
+        </div>
+
+        {/* Keyboard Shortcuts Overlay */}
+        {showHelp && (
+          <div className='pointer-events-auto bg-(--void-black)/95 border border-(--toxic-green) p-3 shadow-[0_0_12px_var(--toxic-green-20)] w-52'>
+            <div className='text-[10px] text-(--toxic-green) tracking-widest uppercase mb-2 border-b border-(--toxic-green)/30 pb-1'>
+              Keyboard Shortcuts
+            </div>
+            {SHORTCUTS.map(s => (
+              <div
+                key={s.key}
+                className='flex items-center justify-between mb-1 last:mb-0'
+              >
+                <kbd className='text-[10px] bg-(--ash-gray)/20 border border-(--ash-gray)/40 px-1.5 py-0.5 text-(--star-white) font-mono'>
+                  {s.key}
+                </kbd>
+                <span className='text-[10px] text-(--ash-gray)'>{s.desc}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Right Panel - Band Status */}

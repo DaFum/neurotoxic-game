@@ -46,6 +46,7 @@ export const Overworld = () => {
   const {
     isTraveling,
     travelTarget,
+    pendingTravelNode,
     isConnected,
     getNodeVisibility,
     handleTravel,
@@ -156,6 +157,7 @@ export const Overworld = () => {
           isTraveling={isTraveling}
           visibility={visibility}
           isReachable={isReachable}
+          isPendingConfirm={pendingTravelNode?.id === node.id}
           handleTravel={handleTravel}
           setHoveredNode={setHoveredNode}
           iconUrl={iconUrl}
@@ -168,6 +170,7 @@ export const Overworld = () => {
     player.currentNodeId,
     currentLayer,
     isTraveling,
+    pendingTravelNode,
     getNodeVisibility,
     isConnected,
     handleTravel,

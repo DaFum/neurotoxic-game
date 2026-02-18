@@ -9,6 +9,7 @@ export const MapNode = memo(
     isTraveling,
     visibility,
     isReachable,
+    isPendingConfirm,
     handleTravel,
     setHoveredNode,
     iconUrl,
@@ -37,6 +38,23 @@ export const MapNode = memo(
         onClick={() => handleTravel(node)}
         onMouseEnter={() => setHoveredNode(node)}
         onMouseLeave={() => setHoveredNode(null)}
+        role={isReachable ? 'button' : undefined}
+        aria-label={
+          isReachable
+            ? `Travel to ${node.venue?.name}${isPendingConfirm ? ' - click to confirm' : ''}`
+            : undefined
+        }
+        tabIndex={isReachable ? 0 : undefined}
+        onKeyDown={
+          isReachable
+            ? e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  handleTravel(node)
+                }
+              }
+            : undefined
+        }
       >
         {isCurrent && !isTraveling && (
           <div
@@ -53,18 +71,27 @@ export const MapNode = memo(
 
         <motion.div
           initial={{ scale: 0 }}
-          animate={{ scale: isCurrent ? 1 : 1 }}
+          animate={{ scale: 1 }}
           whileHover={isReachable ? { scale: 1.2, zIndex: 60 } : {}}
         >
           <img
             src={iconUrl}
             alt='Pin'
             className={`w-6 h-6 md:w-8 md:h-8 object-contain drop-shadow-md
-                  ${isReachable ? 'drop-shadow-[0_0_10px_var(--toxic-green)] animate-pulse' : ''}`}
+                  ${isPendingConfirm ? 'drop-shadow-[0_0_14px_var(--warning-yellow)] animate-confirm-pulse' : ''}
+                  ${isReachable && !isPendingConfirm ? 'drop-shadow-[0_0_10px_var(--toxic-green)] animate-pulse' : ''}`}
           />
         </motion.div>
 
-        {isReachable && (
+        {/* Pending confirmation label */}
+        {isPendingConfirm && (
+          <div className='absolute -top-7 left-1/2 -translate-x-1/2 text-(--warning-yellow) text-[10px] font-bold whitespace-nowrap pointer-events-none animate-pulse bg-(--void-black)/80 px-1.5 py-0.5 border border-(--warning-yellow)'>
+            CONFIRM?
+          </div>
+        )}
+
+        {/* Default hover label */}
+        {isReachable && !isPendingConfirm && (
           <div className='absolute -top-6 left-1/2 -translate-x-1/2 text-(--toxic-green) text-[10px] font-bold animate-bounce whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none'>
             CLICK TO TRAVEL
           </div>
@@ -76,9 +103,11 @@ export const MapNode = memo(
           </div>
           {node.type === 'GIG' && (
             <div className='text-[10px] text-(--ash-gray) font-mono'>
-              Cap: {node.venue?.capacity} | Pay: ~{node.venue?.pay}€<br />
-              Ticket: {node.venue?.price}€ | Diff:{' '}
-              {'★'.repeat(node.venue?.diff || 0)}
+              Cap: {node.venue?.capacity} | Pay: ~{node.venue?.pay}
+              {'\u20AC'}
+              <br />
+              Ticket: {node.venue?.price}
+              {'\u20AC'} | Diff: {'\u2605'.repeat(node.venue?.diff || 0)}
             </div>
           )}
           {isCurrent && (
@@ -97,6 +126,7 @@ export const MapNode = memo(
       prev.isTraveling === next.isTraveling &&
       prev.visibility === next.visibility &&
       prev.isReachable === next.isReachable &&
+      prev.isPendingConfirm === next.isPendingConfirm &&
       prev.iconUrl === next.iconUrl &&
       prev.handleTravel === next.handleTravel &&
       prev.setHoveredNode === next.setHoveredNode
@@ -123,6 +153,7 @@ MapNode.propTypes = {
   isTraveling: PropTypes.bool.isRequired,
   visibility: PropTypes.string.isRequired,
   isReachable: PropTypes.bool.isRequired,
+  isPendingConfirm: PropTypes.bool,
   handleTravel: PropTypes.func.isRequired,
   setHoveredNode: PropTypes.func.isRequired,
   iconUrl: PropTypes.string.isRequired,

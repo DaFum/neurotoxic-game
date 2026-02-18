@@ -55,9 +55,11 @@ export const useTravelLogic = ({
 }) => {
   const [isTraveling, setIsTraveling] = useState(false)
   const [travelTarget, setTravelTarget] = useState(null)
+  const [pendingTravelNode, setPendingTravelNode] = useState(null)
   const travelCompletedRef = useRef(false)
   const timeoutRef = useRef(null)
   const failsafeTimeoutRef = useRef(null)
+  const pendingTimeoutRef = useRef(null)
 
   /**
    * Checks if a target node is connected to the current node
@@ -252,7 +254,56 @@ export const useTravelLogic = ({
   )
 
   /**
-   * Initiates travel to a selected node
+   * Clears the pending travel confirmation state
+   */
+  const clearPendingTravel = useCallback(() => {
+    setPendingTravelNode(null)
+    if (pendingTimeoutRef.current) {
+      clearTimeout(pendingTimeoutRef.current)
+      pendingTimeoutRef.current = null
+    }
+  }, [])
+
+  /**
+   * Starts the actual travel sequence (called after confirmation)
+   * @param {Object} node - Target node
+   */
+  const startTravelSequence = useCallback(
+    node => {
+      travelCompletedRef.current = false
+      setTravelTarget(node)
+      setIsTraveling(true)
+      setPendingTravelNode(null)
+
+      if (pendingTimeoutRef.current) {
+        clearTimeout(pendingTimeoutRef.current)
+        pendingTimeoutRef.current = null
+      }
+
+      try {
+        audioManager.playSFX('travel')
+      } catch (_e) {
+        // Ignore audio errors
+      }
+
+      // Failsafe timeout - store in ref for cleanup
+      if (failsafeTimeoutRef.current) {
+        clearTimeout(failsafeTimeoutRef.current)
+      }
+      failsafeTimeoutRef.current = window.setTimeout(() => {
+        if (!travelCompletedRef.current) {
+          onTravelComplete(node)
+        }
+        failsafeTimeoutRef.current = null
+      }, TRAVEL_ANIMATION_TIMEOUT_MS)
+    },
+    [onTravelComplete]
+  )
+
+  /**
+   * Initiates travel to a selected node.
+   * First click shows cost and sets pending confirmation.
+   * Second click on the same node confirms and starts travel.
    * @param {Object} node - Target node
    */
   const handleTravel = useCallback(
@@ -316,7 +367,6 @@ export const useTravelLogic = ({
       const visibility = getNodeVisibility(node.layer, currentLayer)
 
       // Allow travel to START node from anywhere if connected, bypassing standard layer/visibility rules if needed.
-      // This ensures "Return to HQ" is possible if valid connection exists, even if layer logic implies "forward only".
       if (node.type === 'START') {
         // Always allow returning to HQ regardless of connections or visibility
       } else if (visibility !== 'visible' || !isConnected(node.id)) {
@@ -336,42 +386,37 @@ export const useTravelLogic = ({
         { van: player.van }
       )
 
-      addToast(
-        `Travel to ${node.venue.name} (${dist}km)? Cost: ${totalCost}€`,
-        'info'
-      )
-
       if (Math.max(0, player.money ?? 0) < totalCost) {
         addToast('Not enough money for gas and food!', 'error')
+        clearPendingTravel()
         return
       }
 
       if (Math.max(0, player.van?.fuel ?? 0) < fuelLiters) {
         addToast('Not enough fuel in the tank!', 'error')
+        clearPendingTravel()
         return
       }
 
-      // Start travel sequence
-      travelCompletedRef.current = false
-      setTravelTarget(node)
-      setIsTraveling(true)
-
-      try {
-        audioManager.playSFX('travel')
-      } catch (_e) {
-        // Ignore audio errors
+      // Two-click confirmation: if this node is already pending, confirm and travel
+      if (pendingTravelNode?.id === node.id) {
+        startTravelSequence(node)
+        return
       }
 
-      // Failsafe timeout - store in ref for cleanup
-      if (failsafeTimeoutRef.current) {
-        clearTimeout(failsafeTimeoutRef.current)
-      }
-      failsafeTimeoutRef.current = window.setTimeout(() => {
-        if (!travelCompletedRef.current) {
-          onTravelComplete(node)
-        }
-        failsafeTimeoutRef.current = null
-      }, TRAVEL_ANIMATION_TIMEOUT_MS)
+      // First click: show cost and set pending state
+      clearPendingTravel()
+      setPendingTravelNode(node)
+      addToast(
+        `${node.venue.name} (${dist}km) | Cost: ${totalCost}\u20AC | Fuel: ${fuelLiters}L \u2014 Click again to confirm`,
+        'warning'
+      )
+
+      // Auto-cancel pending after 5 seconds
+      pendingTimeoutRef.current = setTimeout(() => {
+        setPendingTravelNode(null)
+        pendingTimeoutRef.current = null
+      }, 5000)
     },
     [
       player,
@@ -382,8 +427,10 @@ export const useTravelLogic = ({
       startGig,
       addToast,
       onShowHQ,
-      onTravelComplete,
-      band?.harmony
+      band?.harmony,
+      pendingTravelNode,
+      startTravelSequence,
+      clearPendingTravel
     ]
   )
 
@@ -543,6 +590,10 @@ export const useTravelLogic = ({
         clearTimeout(failsafeTimeoutRef.current)
         failsafeTimeoutRef.current = null
       }
+      if (pendingTimeoutRef.current) {
+        clearTimeout(pendingTimeoutRef.current)
+        pendingTimeoutRef.current = null
+      }
     }
   }, [])
 
@@ -550,6 +601,7 @@ export const useTravelLogic = ({
     // State
     isTraveling,
     travelTarget,
+    pendingTravelNode,
 
     // Computed
     isConnected,
@@ -560,6 +612,7 @@ export const useTravelLogic = ({
     handleRefuel,
     handleRepair,
     onTravelComplete,
+    clearPendingTravel,
     travelCompletedRef
   }
 }

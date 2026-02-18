@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { useGameState } from '../context/GameState'
 import { motion, AnimatePresence } from 'framer-motion'
 
+const TOTAL_STEPS = 4
+
 export const TutorialManager = () => {
   const { player, updatePlayer, currentScene, settings, updateSettings } =
     useGameState()
@@ -79,11 +81,13 @@ export const TutorialManager = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0 }}
-        className='fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md'
+        role='dialog'
+        aria-label='Tutorial'
+        className='fixed bottom-20 left-1/2 transform -translate-x-1/2 z-[150] w-full max-w-md'
       >
         <div className='bg-(--void-black)/95 border-2 border-(--toxic-green) p-6 shadow-[0_0_20px_var(--toxic-green)] relative'>
           <div className='absolute -top-3 left-4 bg-(--void-black) px-2 text-(--toxic-green) font-bold text-xs border border-(--toxic-green)'>
-            TUTORIAL {step + 1}
+            TUTORIAL {step + 1}/{TOTAL_STEPS}
           </div>
 
           <h3 className='text-xl text-(--star-white) font-[Metal_Mania] mb-2'>
@@ -93,7 +97,23 @@ export const TutorialManager = () => {
             {content.text}
           </p>
 
-          <div className='flex justify-end gap-4'>
+          {/* Progress dots */}
+          <div className='flex items-center gap-1.5 mb-4'>
+            {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+              <div
+                key={i}
+                className={`w-2 h-2 transition-colors ${
+                  i === step
+                    ? 'bg-(--toxic-green)'
+                    : i < step
+                      ? 'bg-(--toxic-green)/40'
+                      : 'bg-(--ash-gray)/30'
+                }`}
+              />
+            ))}
+          </div>
+
+          <div className='flex justify-between items-center'>
             <button
               onClick={skipTutorial}
               className='text-xs text-(--ash-gray) hover:text-(--star-white) underline'
@@ -102,9 +122,9 @@ export const TutorialManager = () => {
             </button>
             <button
               onClick={completeStep}
-              className='bg-(--toxic-green) text-(--void-black) px-4 py-1 font-bold hover:bg-(--star-white)'
+              className='bg-(--toxic-green) text-(--void-black) px-6 py-1.5 font-bold hover:bg-(--star-white) transition-colors'
             >
-              NEXT
+              {step < TOTAL_STEPS - 1 ? 'NEXT' : 'DONE'}
             </button>
           </div>
         </div>

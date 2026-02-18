@@ -2,6 +2,44 @@ import PropTypes from 'prop-types'
 import { VolumeSlider } from './VolumeSlider'
 import { LOG_LEVELS } from '../../utils/logger.js'
 
+/**
+ * Reusable toggle switch with ON/OFF label.
+ */
+const ToggleSwitch = ({ isOn, onToggle, ariaLabel }) => (
+  <div className='flex items-center gap-2'>
+    <span
+      className={`font-mono text-[10px] uppercase tracking-widest w-8 text-right transition-colors ${
+        isOn ? 'text-(--toxic-green)' : 'text-(--ash-gray)/40'
+      }`}
+    >
+      {isOn ? 'ON' : 'OFF'}
+    </span>
+    <button
+      onClick={onToggle}
+      role='switch'
+      aria-checked={isOn}
+      aria-label={ariaLabel}
+      className={`w-16 h-8 border-2 rounded-none shadow-[4px_4px_0px_var(--blood-red)] flex items-center p-1 transition-all ${
+        isOn
+          ? 'justify-end bg-(--toxic-green)/20 border-(--toxic-green)'
+          : 'justify-start border-(--ash-gray)'
+      }`}
+    >
+      <div
+        className={`w-6 h-6 transition-colors ${
+          isOn ? 'bg-(--toxic-green)' : 'bg-(--ash-gray)'
+        }`}
+      />
+    </button>
+  </div>
+)
+
+ToggleSwitch.propTypes = {
+  isOn: PropTypes.bool.isRequired,
+  onToggle: PropTypes.func.isRequired,
+  ariaLabel: PropTypes.string.isRequired
+}
+
 export const SettingsPanel = ({
   settings,
   musicVol = 0,
@@ -37,15 +75,11 @@ export const SettingsPanel = ({
             <label className='font-[Courier_New] text-sm uppercase tracking-wide text-(--ash-gray)'>
               MUTE ALL
             </label>
-            <button
-              onClick={onToggleMute}
-              aria-label={isMuted ? 'Unmute all audio' : 'Mute all audio'}
-              className={`w-16 h-8 border-2 border-(--toxic-green) rounded-none shadow-[4px_4px_0px_var(--blood-red)] flex items-center p-1 transition-all ${isMuted ? 'justify-end bg-(--toxic-green)/20' : 'justify-start'}`}
-            >
-              <div
-                className={`w-6 h-6 bg-(--toxic-green) ${isMuted ? 'opacity-50' : 'opacity-100'}`}
-              />
-            </button>
+            <ToggleSwitch
+              isOn={isMuted}
+              onToggle={onToggleMute}
+              ariaLabel={isMuted ? 'Unmute all audio' : 'Mute all audio'}
+            />
           </div>
         </div>
       </div>
@@ -59,17 +93,13 @@ export const SettingsPanel = ({
           <label className='font-[Courier_New] text-sm uppercase tracking-wide text-(--ash-gray)'>
             CRT EFFECT
           </label>
-          <button
-            onClick={onToggleCRT}
-            aria-label={
+          <ToggleSwitch
+            isOn={settings?.crtEnabled ?? false}
+            onToggle={onToggleCRT}
+            ariaLabel={
               settings?.crtEnabled ? 'Disable CRT Effect' : 'Enable CRT Effect'
             }
-            className={`w-16 h-8 border-2 border-(--toxic-green) rounded-none shadow-[4px_4px_0px_var(--blood-red)] flex items-center p-1 transition-all ${settings?.crtEnabled ? 'justify-end bg-(--toxic-green)/20' : 'justify-start'}`}
-          >
-            <div
-              className={`w-6 h-6 bg-(--toxic-green) ${settings?.crtEnabled ? 'opacity-100' : 'opacity-50'}`}
-            />
-          </button>
+          />
         </div>
       </div>
 
