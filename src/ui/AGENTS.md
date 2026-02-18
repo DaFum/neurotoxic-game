@@ -119,11 +119,11 @@ export const GlitchButton = ({
 }) => {
   const variantStyles = {
     primary:
-      'border-(--toxic-green) text-(--toxic-green) hover:bg-(--toxic-green) hover:text-black',
+      'border-(--toxic-green) text-(--toxic-green) hover:bg-(--toxic-green) hover:text-(--void-black)',
     danger:
-      'border-(--blood-red) text-(--blood-red) hover:bg-(--blood-red) hover:text-black',
+      'border-(--blood-red) text-(--blood-red) hover:bg-(--blood-red) hover:text-(--void-black)',
     secondary:
-      'border-(--info-blue) text-(--info-blue) hover:bg-(--ash-gray) hover:text-black'
+      'border-(--info-blue) text-(--info-blue) hover:bg-(--ash-gray) hover:text-(--void-black)'
   }
 
   return (
@@ -157,7 +157,7 @@ export const GlitchButton = ({
 
 - `primary` - Default toxic green
 - `danger` - Blood red (destructive actions)
-- `secondary` - Ash gray (cancel, back)
+- `secondary` - border-(--info-blue) text-(--info-blue) hover:bg-(--ash-gray) hover:text-(--void-black)
 
 ### HUD.jsx
 
@@ -378,8 +378,8 @@ export const ToastOverlay = () => {
               className={`w-[min(34rem,94vw)] border-2 ${style.border} bg-(--void-black)/90 shadow-[0_0_0_1px_var(--void-black),0_10px_24px_var(--shadow-overlay)]`}
             >
               <div className='flex items-start gap-3 px-3 py-2.5'>
-                <span className={`font-mono ${style.text}`}>{style.icon}</span>
-                <p className={`font-mono text-sm ${style.text}`}>
+                <span className={`font-[Courier_New] ${style.text}`}>{style.icon}</span>
+                <p className={`font-[Courier_New] text-sm ${style.text}`}>
                   {toast.message}
                 </p>
               </div>
@@ -450,9 +450,11 @@ export class ErrorBoundary extends React.Component {
 **Usage:**
 
 ```jsx
-// In main.jsx
+// In App.jsx
 <ErrorBoundary>
-  <App />
+  <GameStateProvider>
+    <GameContent />
+  </GameStateProvider>
 </ErrorBoundary>
 ```
 
@@ -503,6 +505,16 @@ className = 'shadow-[4px_4px_0px_(--blood-red)]'
 // No rounded corners (brutalist aesthetic)
 className = 'rounded-none'
 ```
+
+### Z-Index Layers
+
+- `z-10` - Background elements
+- `z-20` - HUD and overlays
+- `z-30` - Interactive game elements
+- `z-40` - Menus and tooltips
+- `z-50` - Modals (if not full screen)
+- `z-[100]` - Full-screen Modals (EventModal)
+- `z-[9999]` - Critical alerts (ToastOverlay)
 
 ## Animation Guidelines
 

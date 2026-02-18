@@ -54,5 +54,46 @@ describe('usePurchaseLogic', () => {
 
     assert.ok(playerPatch)
     assert.deepStrictEqual(playerPatch.van?.upgrades, ['test_stat_mod'])
+    assert.equal(playerPatch.money, 400)
+  })
+
+  test('handleBuy prevents duplicate purchase of one-time passive upgrades', () => {
+    let playerPatch = null
+    const player = {
+      money: 500,
+      fame: 0,
+      van: { upgrades: ['test_passive'] },
+      hqUpgrades: []
+    }
+
+    const { result } = renderHook(() =>
+      usePurchaseLogic({
+        player,
+        band: { inventory: {}, performance: {} },
+        updatePlayer: patch => {
+          playerPatch = patch
+        },
+        updateBand: () => {},
+        addToast: () => {}
+      })
+    )
+
+    const item = {
+      id: 'test_passive',
+      name: 'Passive Item',
+      cost: 100,
+      currency: 'money',
+      oneTime: true,
+      effects: [{ type: 'passive', key: 'test_key', value: 5 }]
+    }
+
+    // Attempt to buy already owned item
+    act(() => {
+      const success = result.current.handleBuy(item)
+      assert.equal(success, false)
+    })
+
+    // Assert no update occurred
+    assert.equal(playerPatch, null)
   })
 })

@@ -209,17 +209,14 @@ export const GigHUD = ({ stats }) => {
 
 **Props:**
 
-```javascript
-<ChatterOverlay
-  performance={75} // 0-100
-  combo={32}
-  venue='UT Connewitz'
-/>
-```
+- `gameState`: Snapshot of the current global game state (typically derived from `useGameState()` in a parent).
+- `performance`: Current gig/performance metrics used to drive commentary intensity/content.
+- `combo`: Current combo count used for hype/critique messaging.
 
 **Behavior:**
 
-- Show 1 message at a time
+- Global overlay driven by the provided `gameState`, `performance`, and `combo` props.
+- Show up to 5 messages in a rolling stack (oldest are pushed out by new ones or auto-removed).
 - Comments scroll in from bottom
 - Content changes based on performance
 - Uses `src/data/chatter.js` for message templates
@@ -227,63 +224,66 @@ export const GigHUD = ({ stats }) => {
 **Message Templates:**
 
 ```javascript
-// Good performance (>80%)
-'🔥 THIS IS SICK!!!'
-'BEST SHOW EVER @NEUROTOXIC'
-'vocals on point 🤘'
-
-// Medium performance (50-80%)
-'not bad tbh'
-'drummer is carrying'
-'sound mix is kinda off'
-
-// Poor performance (<50%)
-'yikes... rough night'
-"they're falling apart 😬"
-"should've stayed home"
+// Scene-specific (PREGIG)
+'Where is the sound guy?'
+'Let's stick to the setlist this time, okay?'
+// Condition-based (low mood)
+'I swear if I have to drive another hour...'
+// General travel
+'My back hurts from sleeping in this seat.'
 ```
 
 **Implementation:**
 
 ```jsx
-export const ChatterOverlay = ({ performance, combo, venue }) => {
+export const ChatterOverlay = ({ gameState, performance, combo }) => {
   const [messages, setMessages] = useState([])
+  const stateRef = useRef(gameState)
+  const propsRef = useRef({ performance, combo })
 
   useEffect(() => {
-    const interval = setInterval(
-      () => {
-        const newMessage = getRandomChatter(performance, combo)
-        setMessages(prev => [...prev.slice(-4), newMessage])
-      },
-      Math.random() * 17000 + 8000
-    ) // New message every 8-25 seconds
+    stateRef.current = gameState
+    propsRef.current = { performance, combo }
+  }, [gameState, performance, combo])
 
-    return () => clearInterval(interval)
-  }, [performance, combo])
+  useEffect(() => {
+    let timeoutId
+    const scheduleNext = () => {
+      const delay = Math.random() * 17000 + 8000
+      timeoutId = setTimeout(() => {
+        // Use refs to access fresh state/props without restarting the timer loop
+        const newMessage = getRandomChatter(stateRef.current)
 
-  return (
-    <div className='absolute bottom-4 left-4 max-w-md z-20 pointer-events-none'>
-      {messages.map((msg, i) => (
-        <motion.div
-          key={i}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0 }}
-          className='bg-(--shadow-black)/80 border border-(--toxic-green) p-2 mb-2 font-[Courier_New] text-sm'
-        >
-          {msg}
-        </motion.div>
-      ))}
-    </div>
-  )
+        if (newMessage) {
+           const msg = { ...newMessage, id: Date.now() }
+           setMessages(prev => [...prev.slice(-4), msg])
+           // Auto-remove logic...
+        }
+        scheduleNext()
+      }, delay) // New message every 8-25 seconds (random per message)
+    }
+
+    scheduleNext()
+    return () => clearTimeout(timeoutId)
+  }, []) // Empty dependency array ensures single persistent loop
+
+  // ... render logic
 }
+```
+
+**Integration with Data:**
+
+```javascript
+import { getRandomChatter } from '../data/chatter'
+const message = getRandomChatter(gameState)
 ```
 
 **Tuning:**
 
-- Positive messages when combo > 20
-- Critical messages when accuracy < 60%
-- Venue-specific comments (e.g., "Leipzig crowd goes hard!")
+- Venue-specific comments when at a known venue location
+- Mood-driven messages (low mood < 30, high mood > 80)
+- Money-based reactions (broke < €100, rich > €2000)
+- Scene-aware messages (PREGIG, POSTGIG, GIG-specific lines)
 
 ### TutorialManager.jsx
 

@@ -428,3 +428,31 @@ export const calculateGigFinancials = (
   })
   return report
 }
+
+/**
+ * Determines whether the run should end due to insolvency.
+ * @param {number} newMoney - Player money after applying earnings/losses.
+ * @param {number} netIncome - Net income from the gig (optional context).
+ * @returns {boolean} True when player is bankrupt.
+ * @throws {TypeError} If newMoney is not a finite number.
+ */
+export const shouldTriggerBankruptcy = (newMoney, netIncome) => {
+  const val = Number(newMoney)
+  if (!Number.isFinite(val)) {
+    throw new TypeError('newMoney must be a finite number')
+  }
+
+  // If player has money left, they are not bankrupt.
+  if (val > 0) return false
+
+  // If negative balance, instant bankruptcy (debt is fatal)
+  // Note: Current callers clamp to >= 0, but this branch protects against
+  // future callers that may not clamp.
+  if (val < 0) return true
+
+  // If exactly 0, check if we are bleeding money (netIncome < 0)
+  // If netIncome is undefined (legacy), default to 0 (assume break-even/safe)
+  // This restores the "survive at 0 if not losing money" behavior
+  const income = netIncome ?? 0
+  return income < 0
+}

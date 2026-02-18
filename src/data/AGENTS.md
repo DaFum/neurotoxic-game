@@ -312,32 +312,17 @@ export const BAND_EVENTS = [
 **Structure:**
 
 ```javascript
-export const CHATTER_DB = {
-  positive: [
-    '🔥🔥🔥 INSANE SHOW',
-    'vocals are BRUTAL',
-    'drummer is a machine omg'
-    // ... 20+ more
-  ],
-  neutral: [
-    'not bad',
-    'crowd is kinda dead tho'
-    // ...
-  ],
-  negative: [
-    "yikes... they're off tonight",
-    'sound guy is sleeping or what'
-    // ...
-  ],
-  venue_specific: {
-    leipzig: ['Leipzig crowd best crowd', 'UT Connewitz never disappoints']
-    // ...
-  }
-}
+export const CHATTER_DB = [
+  { text: 'My back hurts from sleeping in this seat.', weight: 1, category: 'travel' },
+  { text: 'Where is the sound guy?', weight: 2, condition: state => state.currentScene === 'PREGIG' },
+  { text: 'I think I broke a stick.', weight: 2, condition: state => state.currentScene === 'POSTGIG', speaker: 'Lars' },
+  // ...
+]
 ```
 
 **Usage:**
 ChatterOverlay component randomly selects based on performance.
+Also see `VENUE_CHATTER_DB` for location-specific lines and `getRandomChatter(state)` helper.
 
 ### upgrades.js
 
@@ -354,10 +339,10 @@ export const UPGRADES = [
     description: 'Reduces fuel consumption by 20%',
     cost: 400,
     requirements: { minFame: 10 },
-    effects: {
-      fuelEfficiency: 1.2,
-      vanCondition: +10
-    },
+    effects: [
+      { type: 'stat_modifier', stat: 'fuelEfficiency', value: 1.2 },
+      { type: 'stat_modifier', stat: 'vanCondition', value: 10 }
+    ],
     oneTime: true // Can only buy once
   },
   {
@@ -365,9 +350,9 @@ export const UPGRADES = [
     name: 'Premium Strings',
     category: 'GEAR',
     cost: 50,
-    effects: {
-      accuracyBonus: +2
-    },
+    effects: [
+      { type: 'stat_modifier', stat: 'accuracyBonus', value: 2 }
+    ],
     oneTime: false // Consumable, repeatable
   }
 ]

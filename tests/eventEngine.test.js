@@ -144,6 +144,7 @@ test('eventEngine.resolveChoice handles luck checks', () => {
   // Luck check uses Math.random() * 10
   // Threshold 5. Mock random 0.6 -> 6.0 > 5 -> Success
   mockRandom.mock.mockImplementationOnce(() => 0.6)
+  const initialCalls = mockRandom.mock.calls.length
 
   const option = {
     nextEventId: 'next_event',
@@ -156,8 +157,7 @@ test('eventEngine.resolveChoice handles luck checks', () => {
 
   const result = eventEngine.resolveChoice(option, {})
   assert.equal(result.value, 5)
-  // Ensure random was called
-  assert.strictEqual(mockRandom.mock.calls.length > 0, true)
+  assert.strictEqual(mockRandom.mock.calls.length, initialCalls + 2)
 })
 
 test('eventEngine.resolveChoice sets nextEventId', () => {
@@ -528,6 +528,9 @@ test('eventEngine.applyResult accumulates fame from mixed stats (fame, hype, cro
 })
 
 test('eventEngine.selectEvent handles condition errors gracefully', () => {
+  // Reset previous calls to ensure clean state
+  mockLogger.error.mock.resetCalls()
+
   const throwingEvent = {
     id: 'throwing_event',
     trigger: 'travel',

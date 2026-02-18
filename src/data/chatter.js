@@ -382,7 +382,7 @@ const VENUE_CHATTER_DB = [
     id: 'chatter_tangermuende_burgfest',
     lines: [
       'Castle walls mean extra reverb for every blastbeat.',
-      'If it rains, this turns into a medieval mudpit.'
+      'If the rain starts, this turns into a medieval mudpit.'
     ]
   },
   {
@@ -742,6 +742,7 @@ export const getRandomChatter = state => {
 
   // 2. Gather Standard Chatter
   const standardChatter = CHATTER_DB.filter(c => {
+    // Condition functions currently receive only the full game state.
     if (c.condition) return c.condition(state)
     return ALLOWED_DEFAULT_SCENES.includes(state.currentScene)
   })

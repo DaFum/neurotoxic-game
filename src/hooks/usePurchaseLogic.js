@@ -5,7 +5,7 @@
  */
 
 import { useCallback } from 'react'
-import { handleError, StateError } from '../utils/errorHandler'
+import { handleError, StateError } from '../utils/errorHandler.js'
 
 /**
  * Selects the primary effect payload from catalog entries during migration.
@@ -372,12 +372,14 @@ export const usePurchaseLogic = ({
             playerPatch = result.playerPatch
             bandPatch = result.bandPatch
             // Mark passive items as owned via van upgrades to ensure isItemOwned returns true
-            playerPatch.van = {
-              ...(playerPatch.van ?? player.van ?? {}),
-              upgrades: [
-                ...(playerPatch.van?.upgrades ?? player.van?.upgrades ?? []),
-                item.id
-              ]
+            const currentUpgrades =
+              playerPatch.van?.upgrades ?? player.van?.upgrades ?? []
+
+            if (!currentUpgrades.includes(item.id)) {
+              playerPatch.van = {
+                ...(playerPatch.van ?? player.van ?? {}),
+                upgrades: [...currentUpgrades, item.id]
+              }
             }
             break
           }

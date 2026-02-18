@@ -62,9 +62,9 @@ Ordering note: Keep `'INTRO'` first in this list because initial state/transitio
 The typical "happy path" progression:
 
 ```
-MENU → OVERWORLD → PREGIG → GIG → POSTGIG → OVERWORLD
-                      ↓                ↓
-                  GAMEOVER         GAMEOVER
+INTRO → MENU → OVERWORLD → PREGIG → GIG → POSTGIG → OVERWORLD
+                              ↓                ↓
+                          GAMEOVER         GAMEOVER
 ```
 
 **Key Transitions:**
