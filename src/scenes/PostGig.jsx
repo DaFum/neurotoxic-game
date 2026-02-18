@@ -122,7 +122,7 @@ export const PostGig = () => {
       fame: player.fame + fameGain
     })
 
-    if (shouldTriggerBankruptcy(newMoney)) {
+    if (shouldTriggerBankruptcy(newMoney, financials.net)) {
       addToast('GAME OVER: BANKRUPT! The tour is over.', 'error')
       changeScene('GAMEOVER')
     } else {

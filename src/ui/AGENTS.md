@@ -504,6 +504,16 @@ className = 'shadow-[4px_4px_0px_(--blood-red)]'
 className = 'rounded-none'
 ```
 
+### Z-Index Layers
+
+- `z-10` - Background elements
+- `z-20` - HUD and overlays
+- `z-30` - Interactive game elements
+- `z-40` - Menus and tooltips
+- `z-50` - Modals (if not full screen)
+- `z-[100]` - Full-screen Modals (EventModal)
+- `z-[9999]` - Critical alerts (ToastOverlay)
+
 ## Animation Guidelines
 
 ### Framer Motion

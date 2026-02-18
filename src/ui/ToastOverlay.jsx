@@ -34,7 +34,7 @@ export const ToastOverlay = () => {
 
   return (
     <div
-      className='fixed inset-0 z-50 flex flex-col gap-3 items-center justify-start pt-20 px-3 md:pt-24 pointer-events-none'
+      className='fixed inset-0 z-[9999] flex flex-col gap-3 items-center justify-start pt-20 px-3 md:pt-24 pointer-events-none'
       role='status'
       aria-live='polite'
       aria-atomic='false'
