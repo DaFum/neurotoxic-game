@@ -1,7 +1,6 @@
 import { memo } from 'react'
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
-import { ChatterOverlay } from './ChatterOverlay'
 
 export const MapNode = memo(
   ({
@@ -49,7 +48,6 @@ export const MapNode = memo(
               alt='Van'
               className='w-12 h-8 object-contain drop-shadow-[0_0_10px_var(--toxic-green)]'
             />
-            <ChatterOverlay />
           </div>
         )}
 

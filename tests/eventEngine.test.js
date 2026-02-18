@@ -22,7 +22,7 @@ mock.module('../src/utils/logger.js', {
   namedExports: { logger: mockLogger }
 })
 
-mock.module('../src/data/events.js', {
+mock.module('../src/data/events/index.js', {
   namedExports: { EVENTS_DB: MOCK_EVENTS }
 })
 

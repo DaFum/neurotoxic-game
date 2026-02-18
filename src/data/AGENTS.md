@@ -341,7 +341,7 @@ ChatterOverlay component randomly selects based on performance.
 
 ### upgrades.js
 
-**Purpose**: Van and equipment improvements
+**Purpose**: Van and equipment improvements used by the unified BandHQ upgrade selector (`upgradeCatalog.js`)
 
 **Structure:**
 

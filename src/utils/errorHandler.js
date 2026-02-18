@@ -166,7 +166,8 @@ export const handleError = (error, options = {}) => {
       logger.debug('ErrorHandler', errorInfo.message, errorInfo)
   }
 
-  // Show user notification if not silent and addToast is provided
+  // Toast taxonomy mapping: high-severity failures => `error`, recoverable/medium issues => `warning`.
+  // UI supports: success | error | info | warning.
   if (!silent && addToast) {
     const toastType =
       errorInfo.severity === ErrorSeverity.CRITICAL ||

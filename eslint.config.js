@@ -42,6 +42,18 @@ export default [
       'react/jsx-uses-react': 'off',
       'react/jsx-uses-vars': 'error',
       'react-hooks/exhaustive-deps': 'warn',
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/data/events.js'],
+              message:
+                'Use the canonical event DB entrypoint: src/data/events/index.js.'
+            }
+          ]
+        }
+      ],
       'no-unused-vars': [
         'warn',
         {

@@ -11,7 +11,16 @@ import {
   calculateSocialGrowth,
   checkViralEvent
 } from '../utils/socialEngine'
-import { ChatterOverlay } from '../components/ChatterOverlay'
+
+/**
+ * Determines whether the run should end due to insolvency after a gig.
+ *
+ * @param {number} newMoney - Player money after applying gig net result.
+ * @param {number} netIncome - Net gain/loss from the gig.
+ * @returns {boolean} True when player is bankrupt because the gig lost money.
+ */
+export const shouldTriggerBankruptcy = (newMoney, netIncome) =>
+  newMoney <= 0 && netIncome < 0
 
 export const PostGig = () => {
   const {
@@ -120,7 +129,7 @@ export const PostGig = () => {
       fame: player.fame + fameGain
     })
 
-    if (newMoney <= 0 && financials.net < 0) {
+    if (shouldTriggerBankruptcy(newMoney, financials.net)) {
       addToast('GAME OVER: BANKRUPT! The tour is over.', 'error')
       changeScene('GAMEOVER')
     } else {
@@ -139,9 +148,6 @@ export const PostGig = () => {
 
   return (
     <div className='w-full h-full flex flex-col items-center justify-center p-8 bg-(--void-black) text-(--star-white) relative'>
-      <div className='absolute top-24 right-8 z-30'>
-        <ChatterOverlay />
-      </div>
       <div
         className='absolute inset-0 opacity-20 bg-cover bg-center'
         style={{

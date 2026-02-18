@@ -33,7 +33,7 @@ export const midiUrlMap = buildMidiUrlMap(midiGlob, message =>
   logger.warn('AudioEngine', message)
 )
 
-export const oggUrlMap = buildAssetUrlMap(
+const oggUrlMap = buildAssetUrlMap(
   oggGlob,
   message => logger.warn('AudioEngine', message),
   'Audio'
@@ -65,7 +65,7 @@ if (oggCandidates.length > 0) {
  * @param {string} mimeType - e.g. 'audio/ogg; codecs=vorbis'
  * @returns {boolean} True when the browser reports 'probably' or 'maybe'.
  */
-export function canPlayAudioType(mimeType) {
+function canPlayAudioType(mimeType) {
   try {
     const a = new Audio()
     const result = a.canPlayType(mimeType)
@@ -99,7 +99,7 @@ export function hasAudioAsset(filename) {
  * @param {AudioBuffer} buffer - The buffer to measure.
  * @returns {number} Estimated size in bytes.
  */
-export function getAudioBufferSize(buffer) {
+function getAudioBufferSize(buffer) {
   if (!buffer) return 0
   return (buffer.length || 0) * (buffer.numberOfChannels || 0) * 4
 }

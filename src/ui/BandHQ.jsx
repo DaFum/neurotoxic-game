@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
 import { HQ_ITEMS } from '../data/hqItems'
+import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog'
 import { SONGS_DB } from '../data/songs'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
-import { usePurchaseLogic } from '../hooks/usePurchaseLogic'
+import { getPrimaryEffect, usePurchaseLogic } from '../hooks/usePurchaseLogic'
 import { StatBox, ProgressBar, SettingsPanel } from '../ui/shared'
 
 /**
@@ -46,13 +47,18 @@ export const BandHQ = ({
 }) => {
   const [activeTab, setActiveTab] = useState('STATS') // STATS, SHOP, UPGRADES, SETLIST, SETTINGS
 
-  const { handleBuy, isItemOwned, isItemDisabled } = usePurchaseLogic({
+  const unifiedUpgradeCatalog = useMemo(() => getUnifiedUpgradeCatalog(), [])
+
+  const purchaseLogicParams = {
     player,
     band,
     updatePlayer,
     updateBand,
     addToast
-  })
+  }
+
+  const { handleBuy, isItemOwned, isItemDisabled } =
+    usePurchaseLogic(purchaseLogicParams)
 
   const toggleSongInSetlist = songId => {
     const currentIndex = setlist.findIndex(
@@ -80,7 +86,8 @@ export const BandHQ = ({
   const renderItem = item => {
     const owned = isItemOwned(item)
     const disabled = isItemDisabled(item)
-    const isConsumable = item.effect?.type === 'inventory_add'
+    const primaryEffect = getPrimaryEffect(item)
+    const isConsumable = primaryEffect?.type === 'inventory_add'
 
     return (
       <div
@@ -301,12 +308,20 @@ export const BandHQ = ({
 
           {activeTab === 'UPGRADES' && (
             <div className='max-h-[60vh] overflow-y-auto'>
-              <div className='mb-4 text-right font-mono text-(--star-white)'>
-                FAME:{' '}
-                <span className='text-(--warning-yellow)'>{player.fame}★</span>
+              <div className='mb-4 flex justify-end gap-4 font-mono text-(--star-white)'>
+                <span>
+                  FAME:{' '}
+                  <span className='text-(--warning-yellow)'>
+                    {player.fame}★
+                  </span>
+                </span>
+                <span>
+                  MONEY:{' '}
+                  <span className='text-(--toxic-green)'>{player.money}€</span>
+                </span>
               </div>
               <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4'>
-                {[...HQ_ITEMS.van, ...HQ_ITEMS.hq].map(renderItem)}
+                {unifiedUpgradeCatalog.map(renderItem)}
               </div>
             </div>
           )}
