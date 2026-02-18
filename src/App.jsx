@@ -49,8 +49,8 @@ const SceneLoadingFallback = () => (
  * Main game content wrapper that handles scene switching and global overlays.
  */
 function GameContent() {
-  const { currentScene, activeEvent, resolveEvent, settings } = useGameState()
-  const gameState = useGameState() // Get full state to pass to ChatterOverlay
+  const gameState = useGameState()
+  const { currentScene, activeEvent, resolveEvent, settings } = gameState
 
   /**
    * Renders the component corresponding to the current scene state.
@@ -81,6 +81,17 @@ function GameContent() {
     }
   }
 
+  // Construct a safe, read-only slice of state for ChatterOverlay
+  // This avoids passing dispatch functions which violates the component's contract
+  const chatterState = {
+    currentScene,
+    band: gameState.band,
+    player: gameState.player,
+    gameMap: gameState.gameMap,
+    social: gameState.social,
+    lastGigStats: gameState.lastGigStats
+  }
+
   return (
     <div className='game-container relative w-full h-full overflow-hidden bg-(--void-black) text-(--toxic-green)'>
       {settings.crtEnabled && (
@@ -92,9 +103,9 @@ function GameContent() {
 
       <ToastOverlay />
 
-      {/* ChatterOverlay receives state as prop, removing internal context dependency */}
+      {/* ChatterOverlay receives read-only state slice */}
       <ChatterOverlay
-        gameState={gameState}
+        gameState={chatterState}
         performance={0} // Default value since global state doesn't track high-freq gig stats
         combo={0}
       />

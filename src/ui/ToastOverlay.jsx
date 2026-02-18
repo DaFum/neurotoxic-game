@@ -58,12 +58,12 @@ export const ToastOverlay = () => {
             >
               <div className='flex items-start gap-3 px-3 py-2.5'>
                 <span
-                  className={`shrink-0 mt-0.5 text-sm font-bold font-(family-name:--font-ui) ${style.text}`}
+                  className={`shrink-0 mt-0.5 text-sm font-bold font-[Courier_New] ${style.text}`}
                   aria-hidden='true'
                 >
                   {style.icon}
                 </span>
-                <p className={`font-(family-name:--font-ui) text-sm leading-snug ${style.text}`}>
+                <p className={`font-[Courier_New] text-sm leading-snug ${style.text}`}>
                   {toast.message}
                 </p>
               </div>

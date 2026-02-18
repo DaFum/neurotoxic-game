@@ -446,6 +446,8 @@ export const shouldTriggerBankruptcy = (newMoney, netIncome) => {
   if (val > 0) return false
 
   // If negative balance, instant bankruptcy (debt is fatal)
+  // Note: Current callers clamp to >= 0, but this branch protects against
+  // future callers that may not clamp.
   if (val < 0) return true
 
   // If exactly 0, check if we are bleeding money (netIncome < 0)

@@ -720,11 +720,7 @@ const VENUE_CHATTER_DB = [
   }
 ]
 
-export const getRandomChatter = (state, performance = 0, combo = 0) => {
-  // Mark currently unused parameters as intentionally unused to keep API stable
-  void performance
-  void combo
-
+export const getRandomChatter = state => {
   let pool = []
 
   // 1. Gather Venue Specific Chatter

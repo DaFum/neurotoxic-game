@@ -312,32 +312,17 @@ export const BAND_EVENTS = [
 **Structure:**
 
 ```javascript
-export const CHATTER_DB = {
-  positive: [
-    '🔥🔥🔥 INSANE SHOW',
-    'vocals are BRUTAL',
-    'drummer is a machine omg'
-    // ... 20+ more
-  ],
-  neutral: [
-    'not bad',
-    'crowd is kinda dead tho'
-    // ...
-  ],
-  negative: [
-    "yikes... they're off tonight",
-    'sound guy is sleeping or what'
-    // ...
-  ],
-  venue_specific: {
-    leipzig: ['Leipzig crowd best crowd', 'UT Connewitz never disappoints']
-    // ...
-  }
-}
+export const CHATTER_DB = [
+  { text: 'My back hurts from sleeping in this seat.', weight: 1, category: 'travel' },
+  { text: 'Where is the sound guy?', weight: 2, condition: state => state.currentScene === 'PREGIG' },
+  { text: 'I think I broke a stick.', weight: 2, condition: state => state.currentScene === 'POSTGIG', speaker: 'Lars' },
+  // ...
+]
 ```
 
 **Usage:**
 ChatterOverlay component randomly selects based on performance.
+Also see `VENUE_CHATTER_DB` for location-specific lines and `getRandomChatter(state)` helper.
 
 ### upgrades.js
 

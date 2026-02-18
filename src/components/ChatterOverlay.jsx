@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 const CHATTER_DELAY_MIN_MS = 8000
 const CHATTER_DELAY_RANGE_MS = 17000
+const MESSAGE_LIFETIME_MS = 10000
 
 const SCENE_LABELS = {
   INTRO: 'Intro Feed',
@@ -66,12 +67,7 @@ export const ChatterOverlay = ({
         if (!active) return
 
         const currentState = stateRef.current
-        const currentProps = propsRef.current
-        const result = getRandomChatter(
-          currentState,
-          currentProps.performance,
-          currentProps.combo
-        )
+        const result = getRandomChatter(currentState)
 
         if (result) {
           const { text, speaker: fixedSpeaker } = result
@@ -86,10 +82,19 @@ export const ChatterOverlay = ({
               ? memberNames[Math.floor(Math.random() * memberNames.length)]
               : 'Band'
 
+          const newMessage = { id: Date.now(), text, speaker }
+
           setMessages(prev => [
-            ...prev.slice(-4),
-            { id: Date.now(), text, speaker }
+            ...prev.slice(-4), // Keep max 5 (4 old + 1 new)
+            newMessage
           ])
+
+          // Auto-remove individual message after lifetime
+          setTimeout(() => {
+            if (active) {
+              setMessages(prev => prev.filter(m => m.id !== newMessage.id))
+            }
+          }, MESSAGE_LIFETIME_MS)
         }
 
         scheduleNext()

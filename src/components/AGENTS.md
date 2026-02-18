@@ -216,7 +216,7 @@ export const GigHUD = ({ stats }) => {
 **Behavior:**
 
 - Global overlay driven by the provided `gameState`, `performance`, and `combo` props.
-- Show 1 message at a time
+- Show up to 5 messages in a rolling stack (oldest are pushed out by new ones or auto-removed).
 - Comments scroll in from bottom
 - Content changes based on performance
 - Uses `src/data/chatter.js` for message templates
@@ -246,25 +246,33 @@ export const GigHUD = ({ stats }) => {
 export const ChatterOverlay = ({ gameState, performance, combo }) => {
   const [messages, setMessages] = useState([])
   const stateRef = useRef(gameState)
+  const propsRef = useRef({ performance, combo })
 
   useEffect(() => {
     stateRef.current = gameState
-  }, [gameState])
+    propsRef.current = { performance, combo }
+  }, [gameState, performance, combo])
 
   useEffect(() => {
     let timeoutId
     const scheduleNext = () => {
       const delay = Math.random() * 17000 + 8000
       timeoutId = setTimeout(() => {
-        const newMessage = getRandomChatter(stateRef.current, performance, combo)
-        setMessages(prev => [...prev.slice(-4), newMessage])
+        // Use refs to access fresh state/props without restarting the timer loop
+        const newMessage = getRandomChatter(stateRef.current)
+
+        if (newMessage) {
+           const msg = { ...newMessage, id: Date.now() }
+           setMessages(prev => [...prev.slice(-4), msg])
+           // Auto-remove logic...
+        }
         scheduleNext()
       }, delay) // New message every 8-25 seconds (random per message)
     }
 
     scheduleNext()
     return () => clearTimeout(timeoutId)
-  }, []) // Refs ensure fresh state access
+  }, []) // Empty dependency array ensures single persistent loop
 
   // ... render logic
 }
