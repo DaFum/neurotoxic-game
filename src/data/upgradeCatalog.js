@@ -1,14 +1,14 @@
-import { HQ_ITEMS } from './hqItems'
-import { UPGRADES_DB } from './upgrades'
+import { HQ_ITEMS } from './hqItems.js'
+import { UPGRADES_DB } from './upgrades.js'
 
 const normalizeUpgradeShape = item => {
-  if (Array.isArray(item.effects)) {
-    return item
-  }
-
   return {
     ...item,
-    effects: item.effect ? [item.effect] : []
+    effects: Array.isArray(item.effects)
+      ? [...item.effects]
+      : item.effect
+        ? [item.effect]
+        : []
   }
 }
 

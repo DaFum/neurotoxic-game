@@ -144,6 +144,7 @@ test('eventEngine.resolveChoice handles luck checks', () => {
   // Luck check uses Math.random() * 10
   // Threshold 5. Mock random 0.6 -> 6.0 > 5 -> Success
   mockRandom.mock.mockImplementationOnce(() => 0.6)
+  const initialCalls = mockRandom.mock.calls.length
 
   const option = {
     nextEventId: 'next_event',
@@ -157,7 +158,26 @@ test('eventEngine.resolveChoice handles luck checks', () => {
   const result = eventEngine.resolveChoice(option, {})
   assert.equal(result.value, 5)
   // Ensure random was called
-  assert.strictEqual(mockRandom.mock.calls.length > 0, true)
+  // The logic in eventEngine calls Math.random() * 10 once for the skill check value in 'luck' case
+  // AND then Math.random() * 10 for the roll.
+  // Wait, looking at the code:
+  /*
+      if (stat === 'luck') {
+        // Luck check: ignore band stats, just roll
+        skillValue = Math.random() * 10
+      }
+      ...
+      const roll = Math.random() * 10
+  */
+  // So for luck stats, random is called twice!
+  // My mock implementation only queues one return value.
+  // The first call gets 0.6 (queued). 0.6 * 10 = 6. skillValue = 6.
+  // The second call gets the default mock (0.5). 0.5 * 10 = 5. roll = 5.
+  // total = 6 + 0 = 6.
+  // threshold is 5. 6 >= 5 -> success.
+  // calls.length should increase by 2.
+
+  assert.strictEqual(mockRandom.mock.calls.length, initialCalls + 2)
 })
 
 test('eventEngine.resolveChoice sets nextEventId', () => {
@@ -528,6 +548,9 @@ test('eventEngine.applyResult accumulates fame from mixed stats (fame, hype, cro
 })
 
 test('eventEngine.selectEvent handles condition errors gracefully', () => {
+  // Reset previous calls to ensure clean state
+  mockLogger.error.mock.resetCalls()
+
   const throwingEvent = {
     id: 'throwing_event',
     trigger: 'travel',

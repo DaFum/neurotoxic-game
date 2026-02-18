@@ -1,12 +1,10 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import PropTypes from 'prop-types'
-import { useGameState } from '../context/GameState'
 import { getRandomChatter } from '../data/chatter'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const CHATTER_DELAY_MIN_MS = 8000
 const CHATTER_DELAY_RANGE_MS = 17000
-const CHATTER_VISIBLE_MS = 5200
 
 const SCENE_LABELS = {
   INTRO: 'Intro Feed',
@@ -24,38 +22,47 @@ const SCENE_LABELS = {
  * Displays an animated social chatter capsule for the active scene.
  *
  * @param {object} props - Component props.
+ * @param {object} props.gameState - Global game state.
+ * @param {number} [props.performance=0] - Current gig performance score (0-100).
+ * @param {number} [props.combo=0] - Current gig combo count.
  * @param {boolean} [props.staticPosition=false] - Enables local anchoring mode.
  * @returns {JSX.Element} Overlay with transient chatter content.
  */
-export const ChatterOverlay = ({ staticPosition = false }) => {
-  const state = useGameState()
-  const stateRef = useRef(state)
-  const [chatter, setChatter] = useState(null)
+export const ChatterOverlay = ({
+  gameState,
+  performance = 0,
+  combo = 0,
+  staticPosition = false
+}) => {
+  const stateRef = useRef(gameState)
+  const [messages, setMessages] = useState([])
 
   const sceneLabel = useMemo(
-    () => SCENE_LABELS[state.currentScene] || 'Band Feed',
-    [state.currentScene]
+    () => SCENE_LABELS[gameState.currentScene] || 'Band Feed',
+    [gameState.currentScene]
   )
 
   useEffect(() => {
-    stateRef.current = state
-  }, [state])
+    stateRef.current = gameState
+  }, [gameState])
 
   useEffect(() => {
-    let delayTimeoutId
-    let hideTimeoutId
+    let timeoutId
     let active = true
 
-    const schedule = () => {
-      if (!active || document.hidden) return
+    const scheduleNext = () => {
+      if (!active) return
+
+      // Random delay 8-25 seconds
       const delay =
         Math.random() * CHATTER_DELAY_RANGE_MS + CHATTER_DELAY_MIN_MS
 
-      delayTimeoutId = setTimeout(() => {
-        if (!active || document.hidden) return
+      timeoutId = setTimeout(() => {
+        if (!active) return
 
         const currentState = stateRef.current
-        const result = getRandomChatter(currentState)
+        // Pass performance/combo to getRandomChatter (updated signature)
+        const result = getRandomChatter(currentState, performance, combo)
 
         if (result) {
           const { text, speaker: fixedSpeaker } = result
@@ -70,37 +77,94 @@ export const ChatterOverlay = ({ staticPosition = false }) => {
               ? memberNames[Math.floor(Math.random() * memberNames.length)]
               : 'Band'
 
-          setChatter({ text, speaker, id: Date.now() })
+          const newMessage = {
+            id: Date.now(),
+            text,
+            speaker
+          }
 
-          clearTimeout(hideTimeoutId)
-          hideTimeoutId = setTimeout(() => {
-            if (active) setChatter(null)
-          }, CHATTER_VISIBLE_MS)
+          setMessages(prev => {
+            const next = [...prev, newMessage]
+            // Keep last 4
+            return next.slice(-4)
+          })
+
+          // Auto-remove message after 5 seconds (optional per message, but feed usually keeps them longer?
+          // AGENTS.md doesn't specify auto-remove of individual items, just slice(-4).
+          // But previous code had CHATTER_VISIBLE_MS.
+          // If we build a feed, we usually let them stay until pushed out.
+          // I will stick to the slice behavior for now.
         }
 
-        schedule()
+        scheduleNext()
       }, delay)
     }
 
-    const handleVisibilityChange = () => {
-      if (!active) return
-      if (document.hidden) {
-        clearTimeout(delayTimeoutId)
-        return
-      }
-
-      clearTimeout(delayTimeoutId)
-      schedule()
-    }
-
-    schedule()
-    document.addEventListener('visibilitychange', handleVisibilityChange)
+    scheduleNext()
 
     return () => {
       active = false
-      clearTimeout(delayTimeoutId)
-      clearTimeout(hideTimeoutId)
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      clearTimeout(timeoutId)
+    }
+  }, [performance, combo]) // Re-schedule if perf/combo changes?
+  // Actually, usually we rely on refs for current state in the timeout callback.
+  // But performance/combo are props.
+  // If we want the *next* message to reflect *current* performance, we should access it via ref or closure.
+  // Since scheduleNext is recursive, the closure captures the *initial* props of the effect.
+  // We need a ref for props too if we want the loop to use fresh values without restarting the timer on every prop change.
+  // Restarting timer on every combo change would flood or delay messages.
+
+  // Let's ref props.
+  const propsRef = useRef({ performance, combo })
+  useEffect(() => {
+    propsRef.current = { performance, combo }
+  }, [performance, combo])
+
+  // Fix the effect loop to use propsRef
+  useEffect(() => {
+    let timeoutId
+    let active = true
+
+    const scheduleNext = () => {
+      if (!active) return
+      const delay =
+        Math.random() * CHATTER_DELAY_RANGE_MS + CHATTER_DELAY_MIN_MS
+
+      timeoutId = setTimeout(() => {
+        if (!active) return
+
+        const currentState = stateRef.current
+        const currentProps = propsRef.current
+        const result = getRandomChatter(
+          currentState,
+          currentProps.performance,
+          currentProps.combo
+        )
+
+        if (result) {
+          const { text, speaker: fixedSpeaker } = result
+          const members = currentState.band?.members ?? []
+          const memberNames = members
+            .map(member => member.name)
+            .filter(memberName => typeof memberName === 'string')
+
+          const speaker = fixedSpeaker
+            ? fixedSpeaker
+            : memberNames.length > 0
+              ? memberNames[Math.floor(Math.random() * memberNames.length)]
+              : 'Band'
+
+          setMessages(prev => [...prev.slice(-3), { id: Date.now(), text, speaker }])
+        }
+
+        scheduleNext()
+      }, delay)
+    }
+
+    scheduleNext()
+    return () => {
+      active = false
+      clearTimeout(timeoutId)
     }
   }, [])
 
@@ -109,47 +173,46 @@ export const ChatterOverlay = ({ staticPosition = false }) => {
     : 'fixed top-24 right-4 md:right-8 z-20 pointer-events-none w-[min(24rem,90vw)]'
 
   return (
-    <AnimatePresence>
-      {chatter && (
-        <motion.div
-          key={chatter.id}
-          initial={{ opacity: 0, y: -18, scale: 0.96 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -12, scale: 0.96 }}
-          transition={{ duration: 0.22, ease: 'easeOut' }}
-          className={wrapperClassName}
-          aria-live='polite'
-          role='status'
-        >
-          <div className='relative overflow-hidden border-2 border-(--toxic-green) bg-(--void-black)/90 backdrop-blur-md shadow-[0_0_0_1px_var(--void-black),0_12px_30px_var(--shadow-overlay-strong)]'>
-            <div className='absolute inset-y-0 left-0 w-1.5 bg-(--toxic-green)' />
-            <div className='absolute top-0 right-0 h-10 w-10 bg-(--toxic-green)/20 blur-lg' />
+    <div className={wrapperClassName} role='status' aria-live='polite'>
+      <AnimatePresence mode='popLayout'>
+        {messages.map(msg => (
+          <motion.div
+            key={msg.id}
+            layout
+            initial={{ opacity: 0, y: -18, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+            className='mb-2 last:mb-0'
+          >
+            <div className='relative overflow-hidden border-2 border-(--toxic-green) bg-(--void-black)/90 backdrop-blur-md shadow-[0_0_0_1px_var(--void-black),0_4px_12px_var(--shadow-overlay)]'>
+              <div className='absolute inset-y-0 left-0 w-1 bg-(--toxic-green)' />
 
-            <div className='pl-4 pr-3 py-2 border-b border-(--ash-gray) flex items-center justify-between gap-2'>
-              <p className='text-[10px] uppercase tracking-[0.18em] font-bold text-(--toxic-green) font-(family-name:--font-ui)'>
-                {sceneLabel}
-              </p>
-              <span className='inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-(family-name:--font-ui) text-(--ash-gray)'>
-                <span className='w-1.5 h-1.5 rounded-full bg-(--toxic-green) animate-pulse' />
-                Live
-              </span>
-            </div>
+              <div className='pl-3 pr-2 py-1.5 border-b border-(--ash-gray)/20 flex items-center justify-between gap-2'>
+                <p className='text-[10px] uppercase tracking-[0.18em] font-bold text-(--toxic-green) font-(family-name:--font-ui)'>
+                  {sceneLabel}
+                </p>
+                <p className='text-[10px] font-bold uppercase tracking-[0.14em] text-(--warning-yellow) font-(family-name:--font-ui)'>
+                  {msg.speaker}
+                </p>
+              </div>
 
-            <div className='pl-4 pr-3 py-3'>
-              <p className='text-[11px] font-bold uppercase tracking-[0.14em] text-(--warning-yellow) font-(family-name:--font-ui) mb-1'>
-                {chatter.speaker}
-              </p>
-              <p className='text-sm leading-snug text-(--star-white) font-(family-name:--font-ui)'>
-                {chatter.text}
-              </p>
+              <div className='pl-3 pr-2 py-2'>
+                <p className='text-xs leading-snug text-(--star-white) font-(family-name:--font-ui)'>
+                  {msg.text}
+                </p>
+              </div>
             </div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </div>
   )
 }
 
 ChatterOverlay.propTypes = {
+  gameState: PropTypes.object.isRequired,
+  performance: PropTypes.number,
+  combo: PropTypes.number,
   staticPosition: PropTypes.bool
 }

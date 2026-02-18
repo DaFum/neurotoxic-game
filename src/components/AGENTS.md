@@ -209,16 +209,11 @@ export const GigHUD = ({ stats }) => {
 
 **Props:**
 
-```javascript
-<ChatterOverlay
-  performance={75} // 0-100
-  combo={32}
-  venue='UT Connewitz'
-/>
-```
+None (Consumes global state).
 
 **Behavior:**
 
+- **EXCEPTION**: Consumes `useGameState()` directly (Global Overlay).
 - Show 1 message at a time
 - Comments scroll in from bottom
 - Content changes based on performance
@@ -246,20 +241,23 @@ export const GigHUD = ({ stats }) => {
 **Implementation:**
 
 ```jsx
-export const ChatterOverlay = ({ performance, combo, venue }) => {
+export const ChatterOverlay = () => {
+  const state = useGameState() // Direct state access
   const [messages, setMessages] = useState([])
 
   useEffect(() => {
-    const interval = setInterval(
-      () => {
-        const newMessage = getRandomChatter(performance, combo)
+    let timeoutId
+    const scheduleNext = () => {
+      timeoutId = setTimeout(() => {
+        const newMessage = getRandomChatter(state)
         setMessages(prev => [...prev.slice(-4), newMessage])
-      },
-      Math.random() * 17000 + 8000
-    ) // New message every 8-25 seconds
+        scheduleNext()
+      }, Math.random() * 17000 + 8000) // New message every 8-25 seconds (random per message)
+    }
 
-    return () => clearInterval(interval)
-  }, [performance, combo])
+    scheduleNext()
+    return () => clearTimeout(timeoutId)
+  }, [state])
 
   return (
     <div className='absolute bottom-4 left-4 max-w-md z-20 pointer-events-none'>

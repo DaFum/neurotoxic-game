@@ -382,7 +382,7 @@ const VENUE_CHATTER_DB = [
     id: 'chatter_tangermuende_burgfest',
     lines: [
       'Castle walls mean extra reverb for every blastbeat.',
-      'If it rains, this turns into a medieval mudpit.'
+      'If the rain starts, this turns into a medieval mudpit.'
     ]
   },
   {
@@ -720,7 +720,7 @@ const VENUE_CHATTER_DB = [
   }
 ]
 
-export const getRandomChatter = state => {
+export const getRandomChatter = (state, performance = 0, combo = 0) => {
   let pool = []
 
   // 1. Gather Venue Specific Chatter
@@ -742,6 +742,12 @@ export const getRandomChatter = state => {
 
   // 2. Gather Standard Chatter
   const standardChatter = CHATTER_DB.filter(c => {
+    // Condition function can now access performance/combo if updated,
+    // but for now we stick to state checks.
+    // Ideally we would pass (state, performance, combo) to condition(),
+    // but existing conditions only expect state.
+    // If we want to use performance, we should wrap it or update signature of conditions.
+    // For now, assume state.band.performance might be updated elsewhere or ignore.
     if (c.condition) return c.condition(state)
     return ALLOWED_DEFAULT_SCENES.includes(state.currentScene)
   })

@@ -3,7 +3,10 @@ import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
-import { calculateGigFinancials } from '../utils/economyEngine'
+import {
+  calculateGigFinancials,
+  shouldTriggerBankruptcy
+} from '../utils/economyEngine'
 import {
   calculateViralityScore,
   generatePostOptions,
@@ -11,16 +14,6 @@ import {
   calculateSocialGrowth,
   checkViralEvent
 } from '../utils/socialEngine'
-
-/**
- * Determines whether the run should end due to insolvency after a gig.
- *
- * @param {number} newMoney - Player money after applying gig net result.
- * @param {number} netIncome - Net gain/loss from the gig.
- * @returns {boolean} True when player is bankrupt because the gig lost money.
- */
-export const shouldTriggerBankruptcy = (newMoney, netIncome) =>
-  newMoney <= 0 && netIncome < 0
 
 export const PostGig = () => {
   const {
@@ -129,7 +122,7 @@ export const PostGig = () => {
       fame: player.fame + fameGain
     })
 
-    if (shouldTriggerBankruptcy(newMoney, financials.net)) {
+    if (shouldTriggerBankruptcy(newMoney)) {
       addToast('GAME OVER: BANKRUPT! The tour is over.', 'error')
       changeScene('GAMEOVER')
     } else {

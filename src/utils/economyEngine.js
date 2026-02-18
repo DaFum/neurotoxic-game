@@ -428,3 +428,17 @@ export const calculateGigFinancials = (
   })
   return report
 }
+
+/**
+ * Determines whether the run should end due to insolvency.
+ * @param {number} newMoney - Player money after applying earnings/losses.
+ * @returns {boolean} True when player is bankrupt.
+ * @throws {TypeError} If newMoney is not a finite number.
+ */
+export const shouldTriggerBankruptcy = newMoney => {
+  const val = Number(newMoney)
+  if (!Number.isFinite(val)) {
+    throw new TypeError('newMoney must be a finite number')
+  }
+  return val <= 0
+}

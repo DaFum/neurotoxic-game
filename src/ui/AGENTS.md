@@ -157,7 +157,7 @@ export const GlitchButton = ({
 
 - `primary` - Default toxic green
 - `danger` - Blood red (destructive actions)
-- `secondary` - Ash gray (cancel, back)
+- `secondary` - border-(--info-blue) text-(--info-blue) hover:bg-(--ash-gray) hover:text-black
 
 ### HUD.jsx
 

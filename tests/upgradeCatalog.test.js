@@ -14,6 +14,9 @@ test('getUnifiedUpgradeCatalog includes upgrades from all active sources', () =>
 test('getUnifiedUpgradeCatalog entries contain required purchase fields', () => {
   const catalog = getUnifiedUpgradeCatalog()
 
+  assert.ok(Array.isArray(catalog))
+  assert.ok(catalog.length > 0)
+
   catalog.forEach(item => {
     assert.strictEqual(typeof item.id, 'string')
     assert.strictEqual(typeof item.name, 'string')

@@ -50,6 +50,7 @@ const SceneLoadingFallback = () => (
  */
 function GameContent() {
   const { currentScene, activeEvent, resolveEvent, settings } = useGameState()
+  const gameState = useGameState() // Get full state to pass to ChatterOverlay
 
   /**
    * Renders the component corresponding to the current scene state.
@@ -90,7 +91,14 @@ function GameContent() {
       {!SCENES_WITHOUT_HUD.includes(currentScene) && <HUD />}
 
       <ToastOverlay />
-      <ChatterOverlay />
+
+      {/* ChatterOverlay receives state as prop, removing internal context dependency */}
+      <ChatterOverlay
+        gameState={gameState}
+        performance={0} // Default value since global state doesn't track high-freq gig stats
+        combo={0}
+      />
+
       <TutorialManager />
       {import.meta.env.DEV && <DebugLogViewer />}
 

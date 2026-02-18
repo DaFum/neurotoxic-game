@@ -354,10 +354,10 @@ export const UPGRADES = [
     description: 'Reduces fuel consumption by 20%',
     cost: 400,
     requirements: { minFame: 10 },
-    effects: {
-      fuelEfficiency: 1.2,
-      vanCondition: +10
-    },
+    effects: [
+      { type: 'stat_modifier', stat: 'fuelEfficiency', value: 1.2 },
+      { type: 'stat_modifier', stat: 'vanCondition', value: 10 }
+    ],
     oneTime: true // Can only buy once
   },
   {
@@ -365,9 +365,9 @@ export const UPGRADES = [
     name: 'Premium Strings',
     category: 'GEAR',
     cost: 50,
-    effects: {
-      accuracyBonus: +2
-    },
+    effects: [
+      { type: 'stat_modifier', stat: 'accuracyBonus', value: 2 }
+    ],
     oneTime: false // Consumable, repeatable
   }
 ]
