@@ -209,11 +209,13 @@ export const GigHUD = ({ stats }) => {
 
 **Props:**
 
-None (Consumes global state).
+- `gameState`: Snapshot of the current global game state (typically derived from `useGameState()` in a parent).
+- `performance`: Current gig/performance metrics used to drive commentary intensity/content.
+- `combo`: Current combo count used for hype/critique messaging.
 
 **Behavior:**
 
-- **EXCEPTION**: Consumes `useGameState()` directly (Global Overlay).
+- Global overlay driven by the provided `gameState`, `performance`, and `combo` props.
 - Show 1 message at a time
 - Comments scroll in from bottom
 - Content changes based on performance
@@ -241,39 +243,30 @@ None (Consumes global state).
 **Implementation:**
 
 ```jsx
-export const ChatterOverlay = () => {
-  const state = useGameState() // Direct state access
+export const ChatterOverlay = ({ gameState, performance, combo }) => {
   const [messages, setMessages] = useState([])
+  const stateRef = useRef(gameState)
+
+  useEffect(() => {
+    stateRef.current = gameState
+  }, [gameState])
 
   useEffect(() => {
     let timeoutId
     const scheduleNext = () => {
+      const delay = Math.random() * 17000 + 8000
       timeoutId = setTimeout(() => {
-        const newMessage = getRandomChatter(state)
+        const newMessage = getRandomChatter(stateRef.current, performance, combo)
         setMessages(prev => [...prev.slice(-4), newMessage])
         scheduleNext()
-      }, Math.random() * 17000 + 8000) // New message every 8-25 seconds (random per message)
+      }, delay) // New message every 8-25 seconds (random per message)
     }
 
     scheduleNext()
     return () => clearTimeout(timeoutId)
-  }, [state])
+  }, []) // Refs ensure fresh state access
 
-  return (
-    <div className='absolute bottom-4 left-4 max-w-md z-20 pointer-events-none'>
-      {messages.map((msg, i) => (
-        <motion.div
-          key={i}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0 }}
-          className='bg-(--shadow-black)/80 border border-(--toxic-green) p-2 mb-2 font-[Courier_New] text-sm'
-        >
-          {msg}
-        </motion.div>
-      ))}
-    </div>
-  )
+  // ... render logic
 }
 ```
 

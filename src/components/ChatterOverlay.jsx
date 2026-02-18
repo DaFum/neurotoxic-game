@@ -46,81 +46,13 @@ export const ChatterOverlay = ({
     stateRef.current = gameState
   }, [gameState])
 
-  useEffect(() => {
-    let timeoutId
-    let active = true
-
-    const scheduleNext = () => {
-      if (!active) return
-
-      // Random delay 8-25 seconds
-      const delay =
-        Math.random() * CHATTER_DELAY_RANGE_MS + CHATTER_DELAY_MIN_MS
-
-      timeoutId = setTimeout(() => {
-        if (!active) return
-
-        const currentState = stateRef.current
-        // Pass performance/combo to getRandomChatter (updated signature)
-        const result = getRandomChatter(currentState, performance, combo)
-
-        if (result) {
-          const { text, speaker: fixedSpeaker } = result
-          const members = currentState.band?.members ?? []
-          const memberNames = members
-            .map(member => member.name)
-            .filter(memberName => typeof memberName === 'string')
-
-          const speaker = fixedSpeaker
-            ? fixedSpeaker
-            : memberNames.length > 0
-              ? memberNames[Math.floor(Math.random() * memberNames.length)]
-              : 'Band'
-
-          const newMessage = {
-            id: Date.now(),
-            text,
-            speaker
-          }
-
-          setMessages(prev => {
-            const next = [...prev, newMessage]
-            // Keep last 4
-            return next.slice(-4)
-          })
-
-          // Auto-remove message after 5 seconds (optional per message, but feed usually keeps them longer?
-          // AGENTS.md doesn't specify auto-remove of individual items, just slice(-4).
-          // But previous code had CHATTER_VISIBLE_MS.
-          // If we build a feed, we usually let them stay until pushed out.
-          // I will stick to the slice behavior for now.
-        }
-
-        scheduleNext()
-      }, delay)
-    }
-
-    scheduleNext()
-
-    return () => {
-      active = false
-      clearTimeout(timeoutId)
-    }
-  }, [performance, combo]) // Re-schedule if perf/combo changes?
-  // Actually, usually we rely on refs for current state in the timeout callback.
-  // But performance/combo are props.
-  // If we want the *next* message to reflect *current* performance, we should access it via ref or closure.
-  // Since scheduleNext is recursive, the closure captures the *initial* props of the effect.
-  // We need a ref for props too if we want the loop to use fresh values without restarting the timer on every prop change.
-  // Restarting timer on every combo change would flood or delay messages.
-
-  // Let's ref props.
+  // Track props in ref to access fresh values inside recursive timeout without restarting loop
   const propsRef = useRef({ performance, combo })
   useEffect(() => {
     propsRef.current = { performance, combo }
   }, [performance, combo])
 
-  // Fix the effect loop to use propsRef
+  // Single recursive effect loop using refs
   useEffect(() => {
     let timeoutId
     let active = true
@@ -154,17 +86,34 @@ export const ChatterOverlay = ({
               ? memberNames[Math.floor(Math.random() * memberNames.length)]
               : 'Band'
 
-          setMessages(prev => [...prev.slice(-3), { id: Date.now(), text, speaker }])
+          setMessages(prev => [
+            ...prev.slice(-4),
+            { id: Date.now(), text, speaker }
+          ])
         }
 
         scheduleNext()
       }, delay)
     }
 
+    // Pause scheduling when tab is hidden
+    const handleVisibilityChange = () => {
+      if (!active) return
+      if (document.hidden) {
+        clearTimeout(timeoutId)
+        return
+      }
+      clearTimeout(timeoutId)
+      scheduleNext()
+    }
+
     scheduleNext()
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
     return () => {
       active = false
       clearTimeout(timeoutId)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }, [])
 

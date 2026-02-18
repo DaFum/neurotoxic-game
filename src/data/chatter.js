@@ -721,6 +721,10 @@ const VENUE_CHATTER_DB = [
 ]
 
 export const getRandomChatter = (state, performance = 0, combo = 0) => {
+  // Mark currently unused parameters as intentionally unused to keep API stable
+  void performance
+  void combo
+
   let pool = []
 
   // 1. Gather Venue Specific Chatter
@@ -742,12 +746,7 @@ export const getRandomChatter = (state, performance = 0, combo = 0) => {
 
   // 2. Gather Standard Chatter
   const standardChatter = CHATTER_DB.filter(c => {
-    // Condition function can now access performance/combo if updated,
-    // but for now we stick to state checks.
-    // Ideally we would pass (state, performance, combo) to condition(),
-    // but existing conditions only expect state.
-    // If we want to use performance, we should wrap it or update signature of conditions.
-    // For now, assume state.band.performance might be updated elsewhere or ignore.
+    // Condition functions currently receive only the full game state.
     if (c.condition) return c.condition(state)
     return ALLOWED_DEFAULT_SCENES.includes(state.currentScene)
   })
