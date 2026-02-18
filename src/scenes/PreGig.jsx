@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from 'react'
 import { useGameState } from '../context/GameState'
 import { SONGS_DB } from '../data/songs'
 import { getGigModifiers } from '../utils/simulationUtils'
-import { ChatterOverlay } from '../components/ChatterOverlay'
 import { audioManager } from '../utils/AudioManager'
 import { getSongId } from '../utils/songUtils'
 import { handleError } from '../utils/errorHandler'
@@ -138,9 +137,6 @@ export const PreGig = () => {
 
   return (
     <div className='w-full h-full flex flex-col items-center justify-center p-8 bg-(--void-black) text-(--star-white) relative'>
-      <div className='absolute bottom-8 left-8 z-20'>
-        <ChatterOverlay staticPosition={true} />
-      </div>
       <h2 className="text-4xl text-(--toxic-green) font-['Metal_Mania'] mb-4">
         PREPARATION
       </h2>

@@ -8,6 +8,17 @@ import { useCallback } from 'react'
 import { handleError, StateError } from '../utils/errorHandler'
 
 /**
+ * Selects the primary effect payload from catalog entries during migration.
+ *
+ * @param {object} item - Purchase catalog item.
+ * @returns {object|undefined} Primary effect object, if available.
+ */
+export const getPrimaryEffect = item => {
+  if (!item) return undefined
+  return item.effects?.[0] ?? item.effect
+}
+
+/**
  * Custom hook for managing shop purchase logic
  * @param {Object} params - Hook parameters
  * @param {Object} params.player - Player state
@@ -31,7 +42,9 @@ export const usePurchaseLogic = ({
    */
   const isItemOwned = useCallback(
     item => {
-      const effect = item.effect
+      const effect = getPrimaryEffect(item)
+      if (!effect) return false
+
       const inventoryKey =
         effect.type === 'inventory_set' || effect.type === 'inventory_add'
           ? effect.item
@@ -114,12 +127,12 @@ export const usePurchaseLogic = ({
           }
           break
 
-        case 'player':
-          nextPlayerPatch[effect.stat] = Math.max(
-            0,
-            (player[effect.stat] || 0) + val
-          )
+        case 'player': {
+          const basePlayerStat =
+            nextPlayerPatch[effect.stat] ?? player[effect.stat] ?? 0
+          nextPlayerPatch[effect.stat] = Math.max(0, basePlayerStat + val)
           break
+        }
 
         case 'band':
           nextBandPatch = {
@@ -176,11 +189,19 @@ export const usePurchaseLogic = ({
       let nextPlayerPatch = { ...playerPatch }
       let nextBandPatch = null
 
-      if (effect.effect === 'harmony_regen_travel') {
+      // TODO: remove legacy `effect.effect` fallback once all HQ/upgrade sources use `effects[].key`.
+      if (
+        effect.key === 'harmony_regen_travel' ||
+        effect.effect === 'harmony_regen_travel'
+      ) {
         nextBandPatch = { harmonyRegenTravel: true }
-      } else if (effect.effect === 'passive_followers') {
-        const val = effect.value || 0
-        nextPlayerPatch.passiveFollowers = (player.passiveFollowers || 0) + val
+      } else if (
+        effect.key === 'passive_followers' ||
+        effect.effect === 'passive_followers'
+      ) {
+        const val = Number(effect.value) || 0
+        nextPlayerPatch.passiveFollowers =
+          (player.passiveFollowers || 0) + Math.max(0, val)
       }
 
       return { playerPatch: nextPlayerPatch, bandPatch: nextBandPatch }
@@ -265,7 +286,21 @@ export const usePurchaseLogic = ({
   const handleBuy = useCallback(
     item => {
       try {
-        const effect = item.effect
+        const effect = getPrimaryEffect(item)
+        if (!effect) {
+          handleError(
+            new StateError('Purchase item is missing a primary effect', {
+              itemId: item?.id,
+              itemName: item?.name
+            }),
+            {
+              addToast,
+              fallbackMessage: 'Purchase failed: Invalid upgrade data.'
+            }
+          )
+          return false
+        }
+
         const payingWithFame = item.currency === 'fame'
 
         const startingMoney = player.money ?? 0
@@ -306,6 +341,18 @@ export const usePurchaseLogic = ({
             const result = applyStatModifier(effect, playerPatch)
             playerPatch = result.playerPatch
             bandPatch = result.bandPatch
+
+            if (item.oneTime !== false) {
+              const currentUpgrades =
+                playerPatch.van?.upgrades ?? player.van?.upgrades ?? []
+
+              if (!currentUpgrades.includes(item.id)) {
+                playerPatch.van = {
+                  ...(playerPatch.van ?? player.van ?? {}),
+                  upgrades: [...currentUpgrades, item.id]
+                }
+              }
+            }
             break
           }
 
@@ -399,7 +446,9 @@ export const usePurchaseLogic = ({
    */
   const isItemDisabled = useCallback(
     item => {
-      const isConsumable = item.effect.type === 'inventory_add'
+      const effect = getPrimaryEffect(item)
+      if (!effect) return true
+      const isConsumable = effect.type === 'inventory_add'
       const isOwned = isItemOwned(item)
       return (isOwned && !isConsumable) || !canAfford(item)
     },

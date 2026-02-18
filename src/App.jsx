@@ -1,23 +1,49 @@
+import { lazy, Suspense } from 'react'
 import { MainMenu } from './scenes/MainMenu'
-import { Overworld } from './scenes/Overworld'
-import { Gig } from './scenes/Gig'
-import { PreGig } from './scenes/PreGig'
-import { PostGig } from './scenes/PostGig'
-import { Settings } from './scenes/Settings'
-import { Credits } from './scenes/Credits'
-import { GameOver } from './scenes/GameOver'
-import { IntroVideo } from './scenes/IntroVideo'
 import { HUD } from './ui/HUD'
 import { EventModal } from './ui/EventModal'
 import { ToastOverlay } from './ui/ToastOverlay'
 import { DebugLogViewer } from './ui/DebugLogViewer'
 import { TutorialManager } from './components/TutorialManager'
+import { ChatterOverlay } from './components/ChatterOverlay'
 import { GameStateProvider, useGameState } from './context/GameState'
 import { ErrorBoundary } from './ui/CrashHandler'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
+import { createNamedLazyLoader } from './utils/lazySceneLoader'
 
 const SCENES_WITHOUT_HUD = ['INTRO', 'MENU', 'SETTINGS', 'CREDITS', 'GAMEOVER']
+
+const Overworld = lazy(
+  createNamedLazyLoader(() => import('./scenes/Overworld'), 'Overworld')
+)
+const Gig = lazy(createNamedLazyLoader(() => import('./scenes/Gig'), 'Gig'))
+const PreGig = lazy(
+  createNamedLazyLoader(() => import('./scenes/PreGig'), 'PreGig')
+)
+const PostGig = lazy(
+  createNamedLazyLoader(() => import('./scenes/PostGig'), 'PostGig')
+)
+const Settings = lazy(
+  createNamedLazyLoader(() => import('./scenes/Settings'), 'Settings')
+)
+const Credits = lazy(
+  createNamedLazyLoader(() => import('./scenes/Credits'), 'Credits')
+)
+const GameOver = lazy(
+  createNamedLazyLoader(() => import('./scenes/GameOver'), 'GameOver')
+)
+const IntroVideo = lazy(
+  createNamedLazyLoader(() => import('./scenes/IntroVideo'), 'IntroVideo')
+)
+
+const SceneLoadingFallback = () => (
+  <div className='absolute inset-0 z-30 flex items-center justify-center pointer-events-none'>
+    <div className='border-2 border-(--toxic-green) bg-(--void-black)/90 px-6 py-3 font-mono text-(--toxic-green) tracking-widest uppercase'>
+      Loading Scene...
+    </div>
+  </div>
+)
 
 /**
  * Main game content wrapper that handles scene switching and global overlays.
@@ -64,6 +90,7 @@ function GameContent() {
       {!SCENES_WITHOUT_HUD.includes(currentScene) && <HUD />}
 
       <ToastOverlay />
+      <ChatterOverlay />
       <TutorialManager />
       {import.meta.env.DEV && <DebugLogViewer />}
 
@@ -72,7 +99,7 @@ function GameContent() {
         <EventModal event={activeEvent} onOptionSelect={resolveEvent} />
       )}
 
-      {renderScene()}
+      <Suspense fallback={<SceneLoadingFallback />}>{renderScene()}</Suspense>
       <Analytics />
       <SpeedInsights />
     </div>

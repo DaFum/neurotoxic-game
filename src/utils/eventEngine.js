@@ -1,4 +1,4 @@
-import { EVENTS_DB } from '../data/events.js'
+import { EVENTS_DB } from '../data/events/index.js'
 import { logger } from './logger.js'
 
 /**

@@ -188,4 +188,7 @@ _"Complexity is not an excuse for friction."_
 ## Maintenance
 
 - Audio: Ambient playback starts on Start Tour and plays full MIDI tracks; gig playback starts from configured excerpts via WebAudio buffers and stops at the song duration.
-- Last updated: 2026-02-17.
+- Performance: Heavy scenes are lazy-loaded in `App.jsx` to reduce initial bundle execution and speed up first render.
+- UI: Toast taxonomy remains `success`/`error`/`warning`/`info`, with `info` rendered using the blue token (`--info-blue`).
+- Chatter: Default fallback chatter is limited to `MENU`, `OVERWORLD`, `PREGIG`, and `POSTGIG`; `GIG` requires explicit conditional chatter entries.
+- Last updated: 2026-02-18.

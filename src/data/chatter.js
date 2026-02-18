@@ -1,4 +1,4 @@
-const CHATTER_DB = [
+export const CHATTER_DB = [
   // --- GENERAL TRAVEL / OVERWORLD (Original + New) ---
   {
     text: 'My back hurts from sleeping in this seat.',
@@ -356,6 +356,8 @@ const CHATTER_DB = [
     speaker: 'Lars'
   }
 ]
+
+export const ALLOWED_DEFAULT_SCENES = ['MENU', 'OVERWORLD', 'PREGIG', 'POSTGIG']
 
 const VENUE_CHATTER_DB = [
   // STENDAL / TANGERMÜNDE / MAGDEBURG
@@ -740,16 +742,8 @@ export const getRandomChatter = state => {
 
   // 2. Gather Standard Chatter
   const standardChatter = CHATTER_DB.filter(c => {
-    // Explicit condition check
     if (c.condition) return c.condition(state)
-
-    // Only fallback for default chatter in allowed scenes
-    const ALLOWED_DEFAULT_SCENES = ['OVERWORLD', 'MENU']
-    if (!c.condition && ALLOWED_DEFAULT_SCENES.includes(state.currentScene)) {
-      return true
-    }
-
-    return false
+    return ALLOWED_DEFAULT_SCENES.includes(state.currentScene)
   })
 
   pool = [...pool, ...standardChatter]
@@ -769,10 +763,8 @@ export const getRandomChatter = state => {
     }
   }
 
-  return item
-    ? {
-        text: item.text,
-        speaker: item.speaker || null
-      }
-    : null
+  return {
+    text: item.text,
+    speaker: item.speaker || null
+  }
 }

@@ -1,5 +1,4 @@
 import PropTypes from 'prop-types'
-import { ChatterOverlay } from './ChatterOverlay'
 import { HecklerOverlay } from './HecklerOverlay'
 
 export const GigHUD = ({ stats, onLaneInput, gameStateRef }) => {
@@ -17,11 +16,6 @@ export const GigHUD = ({ stats, onLaneInput, gameStateRef }) => {
     <div className='absolute inset-0 z-30 pointer-events-none'>
       {/* Heckler Overlay (Projectiles) */}
       <HecklerOverlay gameStateRef={gameStateRef} />
-
-      {/* Chatter Overlay Integration */}
-      <div className='hidden sm:block absolute bottom-32 right-4 z-20'>
-        <ChatterOverlay staticPosition={true} />
-      </div>
 
       {/* Input Zones */}
       <div className='absolute inset-0 z-40 flex pb-16 pt-32'>
