@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useMemo } from 'react'
 import { MainMenu } from './scenes/MainMenu'
 import { HUD } from './ui/HUD'
 import { EventModal } from './ui/EventModal'
@@ -83,14 +83,24 @@ function GameContent() {
 
   // Construct a safe, read-only slice of state for ChatterOverlay
   // This avoids passing dispatch functions which violates the component's contract
-  const chatterState = {
-    currentScene,
-    band: gameState.band,
-    player: gameState.player,
-    gameMap: gameState.gameMap,
-    social: gameState.social,
-    lastGigStats: gameState.lastGigStats
-  }
+  const chatterState = useMemo(
+    () => ({
+      currentScene,
+      band: gameState.band,
+      player: gameState.player,
+      gameMap: gameState.gameMap,
+      social: gameState.social,
+      lastGigStats: gameState.lastGigStats
+    }),
+    [
+      currentScene,
+      gameState.band,
+      gameState.player,
+      gameState.gameMap,
+      gameState.social,
+      gameState.lastGigStats
+    ]
+  )
 
   return (
     <div className='game-container relative w-full h-full overflow-hidden bg-(--void-black) text-(--toxic-green)'>

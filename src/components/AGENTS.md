@@ -224,20 +224,13 @@ export const GigHUD = ({ stats }) => {
 **Message Templates:**
 
 ```javascript
-// Good performance (>80%)
-'🔥 THIS IS SICK!!!'
-'BEST SHOW EVER @NEUROTOXIC'
-'vocals on point 🤘'
-
-// Medium performance (50-80%)
-'not bad tbh'
-'drummer is carrying'
-'sound mix is kinda off'
-
-// Poor performance (<50%)
-'yikes... rough night'
-"they're falling apart 😬"
-"should've stayed home"
+// Scene-specific (PREGIG)
+'Where is the sound guy?'
+'Let's stick to the setlist this time, okay?'
+// Condition-based (low mood)
+'I swear if I have to drive another hour...'
+// General travel
+'My back hurts from sleeping in this seat.'
 ```
 
 **Implementation:**
@@ -278,11 +271,19 @@ export const ChatterOverlay = ({ gameState, performance, combo }) => {
 }
 ```
 
+**Integration with Data:**
+
+```javascript
+import { getRandomChatter } from '../data/chatter'
+const message = getRandomChatter(gameState)
+```
+
 **Tuning:**
 
-- Positive messages when combo > 20
-- Critical messages when accuracy < 60%
-- Venue-specific comments (e.g., "Leipzig crowd goes hard!")
+- Venue-specific comments when at a known venue location
+- Mood-driven messages (low mood < 30, high mood > 80)
+- Money-based reactions (broke < €100, rich > €2000)
+- Scene-aware messages (PREGIG, POSTGIG, GIG-specific lines)
 
 ### TutorialManager.jsx
 

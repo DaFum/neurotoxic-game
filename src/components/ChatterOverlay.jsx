@@ -57,6 +57,7 @@ export const ChatterOverlay = ({
   useEffect(() => {
     let timeoutId
     let active = true
+    const removalTimeouts = new Set()
 
     const scheduleNext = () => {
       if (!active) return
@@ -67,6 +68,7 @@ export const ChatterOverlay = ({
         if (!active) return
 
         const currentState = stateRef.current
+        // Note: getRandomChatter now relies solely on state, unused performance/combo params removed
         const result = getRandomChatter(currentState)
 
         if (result) {
@@ -90,11 +92,13 @@ export const ChatterOverlay = ({
           ])
 
           // Auto-remove individual message after lifetime
-          setTimeout(() => {
+          const removalId = setTimeout(() => {
+            removalTimeouts.delete(removalId)
             if (active) {
               setMessages(prev => prev.filter(m => m.id !== newMessage.id))
             }
           }, MESSAGE_LIFETIME_MS)
+          removalTimeouts.add(removalId)
         }
 
         scheduleNext()
@@ -118,6 +122,8 @@ export const ChatterOverlay = ({
     return () => {
       active = false
       clearTimeout(timeoutId)
+      removalTimeouts.forEach(id => clearTimeout(id))
+      removalTimeouts.clear()
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }, [])

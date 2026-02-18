@@ -119,11 +119,11 @@ export const GlitchButton = ({
 }) => {
   const variantStyles = {
     primary:
-      'border-(--toxic-green) text-(--toxic-green) hover:bg-(--toxic-green) hover:text-black',
+      'border-(--toxic-green) text-(--toxic-green) hover:bg-(--toxic-green) hover:text-(--void-black)',
     danger:
-      'border-(--blood-red) text-(--blood-red) hover:bg-(--blood-red) hover:text-black',
+      'border-(--blood-red) text-(--blood-red) hover:bg-(--blood-red) hover:text-(--void-black)',
     secondary:
-      'border-(--info-blue) text-(--info-blue) hover:bg-(--ash-gray) hover:text-black'
+      'border-(--info-blue) text-(--info-blue) hover:bg-(--ash-gray) hover:text-(--void-black)'
   }
 
   return (
@@ -378,8 +378,8 @@ export const ToastOverlay = () => {
               className={`w-[min(34rem,94vw)] border-2 ${style.border} bg-(--void-black)/90 shadow-[0_0_0_1px_var(--void-black),0_10px_24px_var(--shadow-overlay)]`}
             >
               <div className='flex items-start gap-3 px-3 py-2.5'>
-                <span className={`font-mono ${style.text}`}>{style.icon}</span>
-                <p className={`font-mono text-sm ${style.text}`}>
+                <span className={`font-[Courier_New] ${style.text}`}>{style.icon}</span>
+                <p className={`font-[Courier_New] text-sm ${style.text}`}>
                   {toast.message}
                 </p>
               </div>
@@ -450,9 +450,11 @@ export class ErrorBoundary extends React.Component {
 **Usage:**
 
 ```jsx
-// In main.jsx
+// In App.jsx
 <ErrorBoundary>
-  <App />
+  <GameStateProvider>
+    <GameContent />
+  </GameStateProvider>
 </ErrorBoundary>
 ```
 
