@@ -96,4 +96,73 @@ describe('usePurchaseLogic', () => {
     // Assert no update occurred
     assert.equal(playerPatch, null)
   })
+
+  test('handleBuy allows negative values for performance stats', () => {
+    let bandPatch = null
+    const player = {
+      money: 500,
+      fame: 0,
+      van: { upgrades: [] },
+      hqUpgrades: []
+    }
+    const band = {
+      inventory: {},
+      performance: { guitarDifficulty: 1.0 }
+    }
+
+    const { result } = renderHook(() =>
+      usePurchaseLogic({
+        player,
+        band,
+        updatePlayer: () => {},
+        updateBand: patch => {
+          bandPatch = patch
+        },
+        addToast: () => {}
+      })
+    )
+
+    const item = {
+      id: 'test_guitar_custom',
+      name: 'Custom Guitar',
+      cost: 100,
+      currency: 'money',
+      effects: [
+        {
+          type: 'stat_modifier',
+          target: 'performance',
+          stat: 'guitarDifficulty',
+          value: -0.15
+        }
+      ]
+    }
+
+    act(() => {
+      const success = result.current.handleBuy(item)
+      assert.equal(success, true)
+    })
+
+    assert.ok(bandPatch)
+    assert.ok(bandPatch.performance)
+    // 1.0 - 0.15 = 0.85. Should not be clamped to 0.
+    assert.ok(Math.abs(bandPatch.performance.guitarDifficulty - 0.85) < 0.0001)
+
+    // Test with base 0 (should go negative)
+    const { result: result2 } = renderHook(() =>
+      usePurchaseLogic({
+        player,
+        band: { ...band, performance: { guitarDifficulty: 0 } },
+        updatePlayer: () => {},
+        updateBand: patch => {
+          bandPatch = patch
+        },
+        addToast: () => {}
+      })
+    )
+
+    act(() => {
+      result2.current.handleBuy(item)
+    })
+    assert.ok(Math.abs(bandPatch.performance.guitarDifficulty - (-0.15)) < 0.0001)
+  })
 })

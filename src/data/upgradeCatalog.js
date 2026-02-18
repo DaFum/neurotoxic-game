@@ -22,6 +22,8 @@ export const getUnifiedUpgradeCatalog = () =>
   [
     ...HQ_ITEMS.van,
     ...HQ_ITEMS.hq,
+    ...HQ_ITEMS.gear,
+    ...HQ_ITEMS.instruments,
     ...UPGRADES_DB.van,
     ...UPGRADES_DB.instruments,
     ...UPGRADES_DB.marketing

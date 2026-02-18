@@ -69,7 +69,7 @@ export const ChatterOverlay = ({
 
         const currentState = stateRef.current
         // Note: getRandomChatter now relies solely on state, unused performance/combo params removed
-        const result = getRandomChatter(currentState)
+        const result = getRandomChatter({ ...currentState, ...propsRef.current })
 
         if (result) {
           const { text, speaker: fixedSpeaker } = result
@@ -139,7 +139,7 @@ export const ChatterOverlay = ({
           <motion.div
             key={msg.id}
             layout
-            initial={{ opacity: 0, y: -18, scale: 0.96 }}
+            initial={{ opacity: 0, y: 18, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.22, ease: 'easeOut' }}

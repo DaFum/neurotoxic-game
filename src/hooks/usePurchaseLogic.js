@@ -144,10 +144,7 @@ export const usePurchaseLogic = ({
           nextBandPatch = {
             performance: {
               ...(band.performance ?? {}),
-              [effect.stat]: Math.max(
-                0,
-                ((band.performance ?? {})[effect.stat] || 0) + val
-              )
+              [effect.stat]: ((band.performance ?? {})[effect.stat] || 0) + val
             }
           }
       }

@@ -9,6 +9,9 @@ test('getUnifiedUpgradeCatalog includes upgrades from all active sources', () =>
   assert.ok(catalog.some(item => item.id === 'hq_van_sound_system'))
   assert.ok(catalog.some(item => item.id === 'van_sound_system'))
   assert.ok(catalog.some(item => item.id === 'social_bot'))
+  // Verify new inclusions
+  assert.ok(catalog.some(item => item.id === 'hq_gear_strings'))
+  assert.ok(catalog.some(item => item.id === 'hq_inst_guitar_custom'))
 })
 
 test('getUnifiedUpgradeCatalog entries contain required purchase fields', () => {
