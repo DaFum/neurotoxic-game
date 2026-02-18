@@ -357,7 +357,7 @@ const CHATTER_DB = [
   }
 ]
 
-const ALLOWED_DEFAULT_SCENES = ['MENU', 'OVERWORLD', 'PREGIG', 'GIG', 'POSTGIG']
+const ALLOWED_DEFAULT_SCENES = ['MENU', 'OVERWORLD', 'PREGIG', 'POSTGIG']
 
 const VENUE_CHATTER_DB = [
   // STENDAL / TANGERMÜNDE / MAGDEBURG
@@ -763,10 +763,8 @@ export const getRandomChatter = state => {
     }
   }
 
-  return item
-    ? {
-        text: item.text,
-        speaker: item.speaker || null
-      }
-    : null
+  return {
+    text: item.text,
+    speaker: item.speaker || null
+  }
 }

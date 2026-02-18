@@ -37,7 +37,7 @@ export const ToastOverlay = () => {
       className='fixed inset-0 z-[9999] flex flex-col gap-3 items-center justify-start pt-20 px-3 md:pt-24 pointer-events-none'
       role='status'
       aria-live='polite'
-      aria-atomic='true'
+      aria-atomic='false'
     >
       <AnimatePresence>
         {toasts.map(toast => {
@@ -54,6 +54,7 @@ export const ToastOverlay = () => {
                 w-[min(34rem,94vw)] border-2 ${style.border} bg-(--void-black)/90 backdrop-blur-md
                 shadow-[0_0_0_1px_var(--void-black),0_10px_24px_var(--shadow-overlay)]
               `}
+              aria-atomic='true'
             >
               <div className='flex items-start gap-3 px-3 py-2.5'>
                 <span

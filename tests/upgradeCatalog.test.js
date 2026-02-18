@@ -20,5 +20,7 @@ test('getUnifiedUpgradeCatalog entries contain required purchase fields', () => 
     assert.strictEqual(typeof item.cost, 'number')
     assert.strictEqual(typeof item.currency, 'string')
     assert.ok(Array.isArray(item.effects))
+    assert.ok(item.effects.length > 0)
+    assert.strictEqual(typeof item.effects[0].type, 'string')
   })
 })

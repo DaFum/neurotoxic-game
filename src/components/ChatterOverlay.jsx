@@ -66,7 +66,7 @@ export const ChatterOverlay = ({ staticPosition = false }) => {
 
           const speaker = fixedSpeaker
             ? fixedSpeaker
-            : Array.isArray(memberNames) && memberNames.length > 0
+            : memberNames.length > 0
               ? memberNames[Math.floor(Math.random() * memberNames.length)]
               : 'Band'
 
@@ -102,8 +102,8 @@ export const ChatterOverlay = ({ staticPosition = false }) => {
   }, [])
 
   const wrapperClassName = staticPosition
-    ? 'relative z-40 pointer-events-none w-[min(22rem,88vw)]'
-    : 'fixed top-24 right-4 md:right-8 z-40 pointer-events-none w-[min(24rem,90vw)]'
+    ? 'relative z-20 pointer-events-none w-[min(22rem,88vw)]'
+    : 'fixed top-24 right-4 md:right-8 z-20 pointer-events-none w-[min(24rem,90vw)]'
 
   return (
     <AnimatePresence>

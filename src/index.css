@@ -17,7 +17,7 @@
 
   /* Death-Metal-Schwarz */
   --void-black: #0a0a0a;
-  --void-black-rgb: 10, 10, 10;
+  --void-black-rgb: 10 10 10;
   --shadow-black: #1a1a1a;
   --concrete-gray: #2a2a2a;
   --ash-gray: #3a3a3a;
@@ -55,6 +55,10 @@
   --font-ui: 'Courier New', monospace;
   --font-code: 'Courier New', monospace;
 
+  /* Shadow Overlay */
+  --shadow-overlay: rgb(var(--void-black-rgb) / 40%);
+  --shadow-overlay-strong: rgb(var(--void-black-rgb) / 70%);
+
   /* CRT Overlay */
   --crt-overlay-bg:
     linear-gradient(rgb(18 16 16 / 0%) 50%, rgb(0 0 0 / 25%) 50%),
@@ -65,8 +69,6 @@
       rgb(0 0 255 / 6%)
     );
   --crt-overlay-size: 100% 2px, 3px 100%;
-  --shadow-overlay: rgb(var(--void-black-rgb) / 40%);
-  --shadow-overlay-strong: rgb(var(--void-black-rgb) / 45%);
 }
 
 body {

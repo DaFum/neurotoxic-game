@@ -8,6 +8,14 @@ import { useCallback } from 'react'
 import { handleError, StateError } from '../utils/errorHandler'
 
 /**
+ * Selects the primary effect payload from catalog entries during migration.
+ *
+ * @param {object} item - Purchase catalog item.
+ * @returns {object|undefined} Primary effect object, if available.
+ */
+export const getPrimaryEffect = item => item.effects?.[0] ?? item.effect
+
+/**
  * Custom hook for managing shop purchase logic
  * @param {Object} params - Hook parameters
  * @param {Object} params.player - Player state
@@ -24,11 +32,6 @@ export const usePurchaseLogic = ({
   updateBand,
   addToast
 }) => {
-  const getPrimaryEffect = useCallback(
-    item => item.effects?.[0] ?? item.effect,
-    []
-  )
-
   /**
    * Checks if an item is already owned
    * @param {Object} item - Item to check
@@ -37,6 +40,8 @@ export const usePurchaseLogic = ({
   const isItemOwned = useCallback(
     item => {
       const effect = getPrimaryEffect(item)
+      if (!effect) return false
+
       const inventoryKey =
         effect.type === 'inventory_set' || effect.type === 'inventory_add'
           ? effect.item
@@ -50,7 +55,7 @@ export const usePurchaseLogic = ({
           : false)
       )
     },
-    [player.van?.upgrades, player.hqUpgrades, band.inventory, getPrimaryEffect]
+    [player.van?.upgrades, player.hqUpgrades, band.inventory]
   )
 
   /**
@@ -181,6 +186,7 @@ export const usePurchaseLogic = ({
       let nextPlayerPatch = { ...playerPatch }
       let nextBandPatch = null
 
+      // TODO: remove legacy `effect.effect` fallback once all HQ/upgrade sources use `effects[].key`.
       if (
         effect.key === 'harmony_regen_travel' ||
         effect.effect === 'harmony_regen_travel'
@@ -277,6 +283,20 @@ export const usePurchaseLogic = ({
     item => {
       try {
         const effect = getPrimaryEffect(item)
+        if (!effect) {
+          handleError(
+            new StateError('Purchase item is missing a primary effect', {
+              itemId: item?.id,
+              itemName: item?.name
+            }),
+            {
+              addToast,
+              fallbackMessage: 'Purchase failed: Invalid upgrade data.'
+            }
+          )
+          return false
+        }
+
         const payingWithFame = item.currency === 'fame'
 
         const startingMoney = player.money ?? 0
@@ -399,8 +419,7 @@ export const usePurchaseLogic = ({
       applyStatModifier,
       applyUnlockUpgrade,
       applyUnlockHQ,
-      applyPassive,
-      getPrimaryEffect
+      applyPassive
     ]
   )
 
@@ -417,13 +436,14 @@ export const usePurchaseLogic = ({
       const isOwned = isItemOwned(item)
       return (isOwned && !isConsumable) || !canAfford(item)
     },
-    [isItemOwned, canAfford, getPrimaryEffect]
+    [isItemOwned, canAfford]
   )
 
   return {
     handleBuy,
     isItemOwned,
     canAfford,
-    isItemDisabled
+    isItemDisabled,
+    getPrimaryEffect
   }
 }

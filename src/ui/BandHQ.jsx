@@ -49,13 +49,14 @@ export const BandHQ = ({
 
   const unifiedUpgradeCatalog = useMemo(() => getUnifiedUpgradeCatalog(), [])
 
-  const { handleBuy, isItemOwned, isItemDisabled } = usePurchaseLogic({
-    player,
-    band,
-    updatePlayer,
-    updateBand,
-    addToast
-  })
+  const { handleBuy, isItemOwned, isItemDisabled, getPrimaryEffect } =
+    usePurchaseLogic({
+      player,
+      band,
+      updatePlayer,
+      updateBand,
+      addToast
+    })
 
   const toggleSongInSetlist = songId => {
     const currentIndex = setlist.findIndex(
@@ -83,7 +84,7 @@ export const BandHQ = ({
   const renderItem = item => {
     const owned = isItemOwned(item)
     const disabled = isItemDisabled(item)
-    const primaryEffect = item.effects?.[0] ?? item.effect
+    const primaryEffect = getPrimaryEffect(item)
     const isConsumable = primaryEffect?.type === 'inventory_add'
 
     return (
@@ -305,9 +306,17 @@ export const BandHQ = ({
 
           {activeTab === 'UPGRADES' && (
             <div className='max-h-[60vh] overflow-y-auto'>
-              <div className='mb-4 text-right font-mono text-(--star-white)'>
-                FAME:{' '}
-                <span className='text-(--warning-yellow)'>{player.fame}★</span>
+              <div className='mb-4 flex justify-end gap-4 font-mono text-(--star-white)'>
+                <span>
+                  FAME:{' '}
+                  <span className='text-(--warning-yellow)'>
+                    {player.fame}★
+                  </span>
+                </span>
+                <span>
+                  MONEY:{' '}
+                  <span className='text-(--toxic-green)'>{player.money}€</span>
+                </span>
               </div>
               <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4'>
                 {unifiedUpgradeCatalog.map(renderItem)}

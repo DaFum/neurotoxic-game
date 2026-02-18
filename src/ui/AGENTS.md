@@ -340,34 +340,48 @@ import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 
+const TOAST_STYLE_MAP = {
+  success: {
+    border: 'border-(--toxic-green)',
+    text: 'text-(--toxic-green)',
+    icon: '✔'
+  },
+  error: {
+    border: 'border-(--blood-red)',
+    text: 'text-(--blood-red)',
+    icon: '✖'
+  },
+  warning: {
+    border: 'border-(--warning-yellow)',
+    text: 'text-(--warning-yellow)',
+    icon: '⚠'
+  },
+  info: { border: 'border-(--ash-gray)', text: 'text-(--ash-gray)', icon: 'ℹ' }
+}
+
 export const ToastOverlay = () => {
   const { toasts } = useGameState()
 
-  const typeStyles = {
-    success: 'bg-(--success-green) text-(--void-black)',
-    error: 'bg-(--error-red) text-(--star-white)',
-    warning: 'bg-(--warning-yellow) text-(--void-black)',
-    info: 'bg-(--ash-gray) text-(--star-white)'
-  }
-
   return (
-    <div className='fixed top-20 right-4 z-50 space-y-2'>
+    <div className='fixed inset-0 z-[9999] flex flex-col gap-3 items-center justify-start pt-20 px-3 md:pt-24 pointer-events-none'>
       <AnimatePresence>
-        {toasts.map((toast, index) => (
-          <motion.div
-            key={toast.id || index}
-            initial={{ opacity: 0, x: 100 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 100 }}
-            className={`
-              px-6 py-3 rounded-none border-2 border-black
-              font-[Courier_New] font-bold uppercase
-              ${typeStyles[toast.type] || typeStyles.info}
-            `}
-          >
-            {toast.message}
-          </motion.div>
-        ))}
+        {toasts.map(toast => {
+          const style = TOAST_STYLE_MAP[toast.type] || TOAST_STYLE_MAP.info
+
+          return (
+            <motion.div
+              key={toast.id}
+              className={`w-[min(34rem,94vw)] border-2 ${style.border} bg-(--void-black)/90 shadow-[0_0_0_1px_var(--void-black),0_10px_24px_var(--shadow-overlay)]`}
+            >
+              <div className='flex items-start gap-3 px-3 py-2.5'>
+                <span className={`font-mono ${style.text}`}>{style.icon}</span>
+                <p className={`font-mono text-sm ${style.text}`}>
+                  {toast.message}
+                </p>
+              </div>
+            </motion.div>
+          )
+        })}
       </AnimatePresence>
     </div>
   )

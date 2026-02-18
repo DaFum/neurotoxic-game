@@ -126,7 +126,7 @@ export const UPGRADES_DB = {
       category: 'PROMO',
       cost: 2000,
       currency: 'fame',
-      description: 'Start run with +1000 Fame.',
+      description: 'Gain +1000 Fame immediately.',
       requirements: {},
       effects: [
         {
