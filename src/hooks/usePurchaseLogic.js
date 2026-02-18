@@ -124,12 +124,12 @@ export const usePurchaseLogic = ({
           }
           break
 
-        case 'player':
-          nextPlayerPatch[effect.stat] = Math.max(
-            0,
-            (player[effect.stat] || 0) + val
-          )
+        case 'player': {
+          const basePlayerStat =
+            nextPlayerPatch[effect.stat] ?? player[effect.stat] ?? 0
+          nextPlayerPatch[effect.stat] = Math.max(0, basePlayerStat + val)
           break
+        }
 
         case 'band':
           nextBandPatch = {

@@ -84,10 +84,13 @@ export const ChatterOverlay = ({ staticPosition = false }) => {
 
     const handleVisibilityChange = () => {
       if (!active) return
-      if (!document.hidden) {
+      if (document.hidden) {
         clearTimeout(delayTimeoutId)
-        schedule()
+        return
       }
+
+      clearTimeout(delayTimeoutId)
+      schedule()
     }
 
     schedule()

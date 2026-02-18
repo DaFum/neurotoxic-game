@@ -18,3 +18,12 @@ test('getRandomChatter supports default chatter in all top-level scenes', () => 
     assert.strictEqual(typeof chatter.text, 'string')
   })
 })
+
+test('getRandomChatter returns null for scenes without default chatter', () => {
+  const disallowedScenes = ['GIG', 'SETTINGS']
+
+  disallowedScenes.forEach(scene => {
+    const chatter = getRandomChatter(buildState(scene))
+    assert.strictEqual(chatter, null)
+  })
+})
