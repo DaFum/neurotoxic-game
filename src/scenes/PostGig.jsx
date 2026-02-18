@@ -184,61 +184,103 @@ const ReportPhase = ({ financials, onNext }) => (
   <div className='space-y-6'>
     <div className='grid grid-cols-2 gap-8'>
       {/* Income Column */}
-      <div>
-        <h3 className='text-xl border-b border-(--toxic-green) mb-4'>INCOME</h3>
-        <ul className='space-y-2 text-sm'>
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <h3 className='text-lg border-b-2 border-(--toxic-green) mb-4 pb-2 tracking-widest font-mono text-(--toxic-green)'>
+          INCOME
+        </h3>
+        <ul className='space-y-2.5 text-sm font-mono'>
           {financials.income.breakdown.map((item, i) => (
-            <li key={i} className='flex justify-between'>
-              <span>{item.label}</span>
-              <span>+{item.value}€</span>
-            </li>
+            <motion.li
+              key={i}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 + i * 0.1 }}
+              className='flex justify-between items-center'
+            >
+              <span className='text-(--star-white)/70'>{item.label}</span>
+              <span className='text-(--toxic-green) font-bold tabular-nums'>
+                +{item.value}€
+              </span>
+            </motion.li>
           ))}
         </ul>
-        <div className='mt-4 pt-2 border-t border-(--toxic-green) flex justify-between font-bold'>
-          <span>TOTAL INCOME</span>
-          <span>{financials.income.total}€</span>
+        <div className='mt-4 pt-2 border-t border-(--toxic-green)/40 flex justify-between font-bold text-(--toxic-green)'>
+          <span className='text-sm tracking-wider'>TOTAL</span>
+          <span className='tabular-nums'>{financials.income.total}€</span>
         </div>
-      </div>
+      </motion.div>
 
       {/* Expenses Column */}
-      <div>
-        <h3 className='text-xl border-b border-(--blood-red) text-(--blood-red) mb-4'>
+      <motion.div
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <h3 className='text-lg border-b-2 border-(--blood-red) text-(--blood-red) mb-4 pb-2 tracking-widest font-mono'>
           EXPENSES
         </h3>
-        <ul className='space-y-2 text-sm text-(--blood-red)'>
+        <ul className='space-y-2.5 text-sm font-mono'>
           {financials.expenses.breakdown.map((item, i) => (
-            <li key={i} className='flex justify-between'>
-              <span>{item.label}</span>
-              <span>-{item.value}€</span>
-            </li>
+            <motion.li
+              key={i}
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 + i * 0.1 }}
+              className='flex justify-between items-center'
+            >
+              <span className='text-(--star-white)/70'>{item.label}</span>
+              <span className='text-(--blood-red) font-bold tabular-nums'>
+                -{item.value}€
+              </span>
+            </motion.li>
           ))}
         </ul>
-        <div className='mt-4 pt-2 border-t border-(--blood-red) flex justify-between font-bold text-(--blood-red)'>
-          <span>TOTAL EXPENSES</span>
-          <span>{financials.expenses.total}€</span>
+        <div className='mt-4 pt-2 border-t border-(--blood-red)/40 flex justify-between font-bold text-(--blood-red)'>
+          <span className='text-sm tracking-wider'>TOTAL</span>
+          <span className='tabular-nums'>{financials.expenses.total}€</span>
         </div>
-      </div>
+      </motion.div>
     </div>
 
     {/* Net Result */}
-    <div className='text-center py-6 border-y-2 border-(--ash-gray)'>
-      <div className='text-sm text-(--ash-gray)'>NET PROFIT</div>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: 0.8, type: 'spring' }}
+      className='text-center py-6 border-y-2 border-(--ash-gray)/30'
+    >
+      <div className='text-[10px] text-(--ash-gray) tracking-widest mb-2'>
+        NET PROFIT
+      </div>
       <div
-        className={`text-4xl font-bold ${financials.net >= 0 ? 'text-(--toxic-green)' : 'text-(--blood-red)'}`}
+        className={`text-5xl font-bold font-[Metal_Mania] tabular-nums ${
+          financials.net >= 0
+            ? 'text-(--toxic-green) drop-shadow-[0_0_20px_var(--toxic-green)]'
+            : 'text-(--blood-red) drop-shadow-[0_0_20px_var(--blood-red)]'
+        }`}
       >
         {financials.net > 0 ? '+' : ''}
         {financials.net}€
       </div>
-    </div>
+    </motion.div>
 
-    <div className='text-center'>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 1.2 }}
+      className='text-center'
+    >
       <button
         onClick={onNext}
-        className='bg-(--toxic-green) text-(--void-black) px-8 py-3 font-bold hover:bg-(--star-white) transition-colors uppercase'
+        className='bg-(--toxic-green) text-(--void-black) px-8 py-3 font-bold hover:bg-(--star-white) transition-colors uppercase tracking-wider shadow-[4px_4px_0px_var(--void-black)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
       >
         Continue to Socials &gt;
       </button>
-    </div>
+    </motion.div>
   </div>
 )
 
@@ -264,22 +306,41 @@ ReportPhase.propTypes = {
 
 const SocialPhase = ({ options, onSelect }) => (
   <div className='space-y-6'>
-    <h3 className='text-xl text-center mb-4'>POST TO SOCIAL MEDIA</h3>
+    <div className='text-center mb-2'>
+      <h3 className='text-xl font-mono tracking-widest'>
+        POST TO SOCIAL MEDIA
+      </h3>
+      <div className='text-[10px] text-(--ash-gray) tracking-wider mt-1'>
+        CHOOSE YOUR STRATEGY
+      </div>
+    </div>
     <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
       {options.map((opt, i) => (
-        <button
+        <motion.button
           key={i}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 + i * 0.15 }}
           onClick={() => onSelect(opt)}
-          className='border border-(--toxic-green) p-4 hover:bg-(--toxic-green)/10 text-left group transition-all'
+          className='border-2 border-(--toxic-green)/40 p-4 hover:bg-(--toxic-green)/10 hover:border-(--toxic-green) text-left group transition-all relative overflow-hidden'
         >
-          <div className='font-bold mb-2 group-hover:text-(--star-white)'>
+          <div className='font-bold mb-2 group-hover:text-(--toxic-green) transition-colors'>
             {opt.title}
           </div>
-          <div className='text-xs text-(--ash-gray)'>
-            Platform: {opt.platform} | Viral Chance:{' '}
-            {Math.round((opt.viralChance ?? 0) * 100)}%
+          <div className='text-xs text-(--ash-gray) font-mono space-y-1'>
+            <div className='flex justify-between'>
+              <span>Platform</span>
+              <span className='text-(--star-white)/60'>{opt.platform}</span>
+            </div>
+            <div className='flex justify-between'>
+              <span>Viral Chance</span>
+              <span className='text-(--warning-yellow)'>
+                {Math.round((opt.viralChance ?? 0) * 100)}%
+              </span>
+            </div>
           </div>
-        </button>
+          <div className='absolute inset-0 bg-white/5 translate-x-[-100%] group-hover:animate-[shimmer_0.8s_ease-out] skew-x-12 pointer-events-none' />
+        </motion.button>
       ))}
     </div>
   </div>
@@ -297,22 +358,60 @@ SocialPhase.propTypes = {
 }
 
 const CompletePhase = ({ result, onContinue }) => (
-  <div className='text-center animate-pulse'>
-    <h3 className='text-2xl mb-4'>
-      {result.success ? 'VIRAL HIT!' : 'FLOPOCOLYPSE'}
-    </h3>
-    <p className='mb-6 text-(--ash-gray)'>{result.message}</p>
-    <div className='text-xl mb-8'>
-      {result.totalFollowers > 0 ? '+' : ''}
-      {result.totalFollowers} Followers on {result.platform}
-    </div>
-    <button
-      onClick={onContinue}
-      className='bg-(--toxic-green) text-(--void-black) px-8 py-3 font-bold hover:bg-(--star-white) uppercase'
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    className='text-center py-4'
+  >
+    <motion.h3
+      initial={{ scale: 0.5, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
+      className={`text-4xl font-[Metal_Mania] mb-4 ${
+        result.success
+          ? 'text-(--toxic-green) drop-shadow-[0_0_20px_var(--toxic-green)] animate-neon-flicker'
+          : 'text-(--blood-red)'
+      }`}
     >
-      Back to Tour &gt;
-    </button>
-  </div>
+      {result.success ? 'VIRAL HIT!' : 'FLOPOCOLYPSE'}
+    </motion.h3>
+    <motion.p
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.4 }}
+      className='mb-6 text-(--ash-gray) font-mono max-w-md mx-auto'
+    >
+      {result.message}
+    </motion.p>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.6 }}
+      className={`text-3xl font-bold mb-8 tabular-nums font-mono ${
+        result.totalFollowers > 0
+          ? 'text-(--toxic-green)'
+          : 'text-(--blood-red)'
+      }`}
+    >
+      {result.totalFollowers > 0 ? '+' : ''}
+      {result.totalFollowers} Followers
+      <div className='text-sm text-(--ash-gray)/60 mt-1 font-normal tracking-wider'>
+        {result.platform}
+      </div>
+    </motion.div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.9 }}
+    >
+      <button
+        onClick={onContinue}
+        className='bg-(--toxic-green) text-(--void-black) px-8 py-3 font-bold hover:bg-(--star-white) uppercase tracking-wider shadow-[4px_4px_0px_var(--void-black)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all'
+      >
+        Back to Tour &gt;
+      </button>
+    </motion.div>
+  </motion.div>
 )
 
 CompletePhase.propTypes = {

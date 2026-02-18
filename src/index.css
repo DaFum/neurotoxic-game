@@ -218,3 +218,207 @@ button {
     transform: rotate(0deg) scale(1);
   }
 }
+
+/* Scene Transitions */
+.scene-enter {
+  animation: scene-fade-in 0.4s ease-out;
+}
+
+@keyframes scene-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Credits scroll */
+.animate-credits-scroll {
+  animation: credits-scroll 20s linear forwards;
+}
+
+@keyframes credits-scroll {
+  from {
+    transform: translateY(60vh);
+    opacity: 0;
+  }
+
+  5% {
+    opacity: 1;
+  }
+
+  95% {
+    opacity: 1;
+  }
+
+  to {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+
+/* Shimmer scan effect for buttons */
+@keyframes shimmer {
+  from {
+    transform: translateX(-100%) skewX(-12deg);
+  }
+
+  to {
+    transform: translateX(200%) skewX(-12deg);
+  }
+}
+
+/* Pulse glow for borders */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 5px var(--toxic-green-20);
+  }
+
+  50% {
+    box-shadow:
+      0 0 20px var(--toxic-green-20),
+      0 0 40px rgb(0 255 65 / 10%);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Typewriter flicker for subtitles */
+@keyframes type-cursor {
+  0%,
+  100% {
+    border-color: var(--toxic-green);
+  }
+
+  50% {
+    border-color: transparent;
+  }
+}
+
+/* Score count-up flash */
+@keyframes score-flash {
+  0% {
+    color: var(--star-white);
+    text-shadow: 0 0 20px var(--star-white);
+  }
+
+  100% {
+    color: var(--toxic-green);
+    text-shadow: 0 0 10px var(--toxic-green);
+  }
+}
+
+/* Stat bar fill */
+@keyframes bar-fill {
+  from {
+    width: 0%;
+  }
+}
+
+.animate-bar-fill {
+  animation: bar-fill 0.8s ease-out;
+}
+
+/* Dramatic zoom for Game Over */
+@keyframes doom-zoom {
+  0% {
+    transform: scale(3);
+    opacity: 0;
+    filter: blur(20px);
+  }
+
+  60% {
+    opacity: 1;
+    filter: blur(0);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+.animate-doom-zoom {
+  animation: doom-zoom 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Stagger children fade in */
+@keyframes stagger-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Neon text flicker */
+@keyframes neon-flicker {
+  0%,
+  19.999%,
+  22%,
+  62.999%,
+  64%,
+  64.999%,
+  70%,
+  100% {
+    opacity: 1;
+    text-shadow:
+      0 0 4px var(--toxic-green),
+      0 0 20px var(--toxic-green),
+      0 0 40px var(--toxic-green);
+  }
+
+  20%,
+  21.999%,
+  63%,
+  63.999%,
+  65%,
+  69.999% {
+    opacity: 0.5;
+    text-shadow: none;
+  }
+}
+
+.animate-neon-flicker {
+  animation: neon-flicker 3s infinite;
+}
+
+/* Van bounce for HUD */
+@keyframes hud-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+/* Fuel gauge low warning */
+@keyframes fuel-warning {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-fuel-warning {
+  animation: fuel-warning 1s ease-in-out infinite;
+}
