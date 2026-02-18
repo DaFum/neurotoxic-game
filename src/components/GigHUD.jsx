@@ -38,7 +38,7 @@ export const GigHUD = ({ stats, onLaneInput, gameStateRef }) => {
     overload,
     isGameOver,
     accuracy = 100,
-    isToxicMode = false
+    isToxicMode
   } = stats
 
   const comboTier =
@@ -51,7 +51,7 @@ export const GigHUD = ({ stats, onLaneInput, gameStateRef }) => {
           : 'text-(--ash-gray)/50'
 
   return (
-    <div className='absolute inset-0 z-30 pointer-events-none'>
+    <div className={`absolute inset-0 z-30 pointer-events-none ${isToxicMode ? 'toxic-border-flash' : ''}`}>
       <HecklerOverlay gameStateRef={gameStateRef} />
 
       {/* Input Zones with lane labels */}
