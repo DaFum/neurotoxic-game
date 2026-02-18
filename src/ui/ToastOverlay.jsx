@@ -18,8 +18,8 @@ const TOAST_STYLE_MAP = {
     icon: '⚠'
   },
   info: {
-    border: 'border-(--ash-gray)',
-    text: 'text-(--ash-gray)',
+    border: 'border-(--info-blue)',
+    text: 'text-(--info-blue)',
     icon: 'ℹ'
   }
 }

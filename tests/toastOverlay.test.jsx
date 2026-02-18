@@ -28,5 +28,5 @@ test('ToastOverlay renders all taxonomy variants with themed classes', () => {
   assert.ok(html.includes('text-(--toxic-green)'))
   assert.ok(html.includes('text-(--warning-yellow)'))
   assert.ok(html.includes('text-(--blood-red)'))
-  assert.ok(html.includes('text-(--ash-gray)'))
+  assert.ok(html.includes('text-(--info-blue)'))
 })

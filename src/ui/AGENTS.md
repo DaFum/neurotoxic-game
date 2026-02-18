@@ -123,7 +123,7 @@ export const GlitchButton = ({
     danger:
       'border-(--blood-red) text-(--blood-red) hover:bg-(--blood-red) hover:text-black',
     secondary:
-      'border-(--ash-gray) text-(--ash-gray) hover:bg-(--ash-gray) hover:text-black'
+      'border-(--info-blue) text-(--info-blue) hover:bg-(--ash-gray) hover:text-black'
   }
 
   return (
@@ -356,7 +356,11 @@ const TOAST_STYLE_MAP = {
     text: 'text-(--warning-yellow)',
     icon: '⚠'
   },
-  info: { border: 'border-(--ash-gray)', text: 'text-(--ash-gray)', icon: 'ℹ' }
+  info: {
+    border: 'border-(--info-blue)',
+    text: 'text-(--info-blue)',
+    icon: 'ℹ'
+  }
 }
 
 export const ToastOverlay = () => {
@@ -425,7 +429,7 @@ export class ErrorBoundary extends React.Component {
           <p className='font-[Courier_New] text-(--toxic-green) text-lg mb-8 max-w-lg text-center'>
             The void has consumed your game. This might be a bug.
           </p>
-          <details className='mb-8 font-[Courier_New] text-sm text-(--ash-gray) max-w-lg'>
+          <details className='mb-8 font-[Courier_New] text-sm text-(--info-blue) max-w-lg'>
             <summary className='cursor-pointer'>Technical Details</summary>
             <pre className='mt-4 p-4 bg-(--shadow-black) overflow-auto'>
               {this.state.error?.toString()}
