@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js'
-import { buildRhythmLayout } from '../../utils/pixiStageUtils.js'
+import { buildRhythmLayout } from './utils.js'
 
 const LANE_GAP = 20
 

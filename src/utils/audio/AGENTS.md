@@ -4,13 +4,14 @@ Scope: Applies to low-level audio helpers in this directory.
 
 ## Purpose
 
-This folder contains the audio subsystem internals used by `audioEngine.js`:
+This folder contains the audio subsystem internals used by `audioEngine.js` (the facade):
 
-- setup/state management (`setup.js`, `state.js`)
-- constants/asset references (`constants.js`, `assets.js`)
-- playback orchestration (`playback.js`)
-- procedural generation (`procedural.js`)
-- cleanup/shared buffers (`cleanupUtils.js`, `sharedBufferUtils.js`)
+- **Core:** setup/state management (`setup.js`, `state.js`)
+- **Assets:** constants/asset references (`constants.js`, `assets.js`)
+- **Playback:** playback orchestration (`playback.js`, `playbackUtils.js`)
+- **Procedural:** generation logic (`procedural.js`)
+- **Utils:** timing/MIDI/selection helpers (`timingUtils.js`, `midiUtils.js`, `selectionUtils.js`, `songUtils.js`)
+- **Cleanup:** resource management (`cleanupUtils.js`, `sharedBufferUtils.js`)
 
 ## Best Practices
 

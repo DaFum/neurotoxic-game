@@ -26,6 +26,8 @@ src/
 │   ├── ToggleRadio.jsx
 │   ├── TutorialManager.jsx
 │   └── stage/
+│       ├── utils.js              # Stage-specific utilities
+│       └── ...                   # Pixi manager classes
 ├── context/
 │   ├── GameState.jsx
 │   ├── initialState.js
@@ -76,11 +78,15 @@ src/
     │   ├── constants.js
     │   ├── playback.js
     │   ├── procedural.js
-    │   └── setup.js
+    │   ├── setup.js
+    │   ├── midiUtils.js
+    │   ├── playbackUtils.js
+    │   ├── selectionUtils.js
+    │   ├── songUtils.js
+    │   └── timingUtils.js
     ├── audioEngine.js
     ├── AudioManager.js
     ├── eventEngine.js
-    ├── eventResolver.js
     ├── mapGenerator.js
     ├── economyEngine.js
     ├── simulationUtils.js

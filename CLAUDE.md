@@ -60,20 +60,20 @@ INTRO → MENU ↔ SETTINGS | CREDITS
 
 Core logic lives in stateless utility modules:
 
-- **eventEngine.js** — Event pool filtering/triggering based on conditions (day, location, harmony, money)
-- **economyEngine.js** — Ticket sales, merch, expenses, gig financials
-- **simulationUtils.js** — Daily updates (harmony decay, mood, stamina, social growth, van degradation)
-- **mapGenerator.js** — Procedural Germany map with venue nodes and travel connections
-- **audioEngine.js** — WebAudio/Tone.js synth, MIDI gig playback, timing clock
-- **rhythmUtils.js** — 3-lane note spawning, hit windows (Perfect/Good/Miss)
-- **socialEngine.js** — Follower growth and viral mechanics
-- **errorHandler.js** — Typed errors (`GameError`, `StateError`, `AudioError`), toast dispatch
+- **eventEngine.js** — Event pool filtering/triggering based on conditions (day, location, harmony, money) and choice resolution.
+- **economyEngine.js** — Ticket sales, merch, expenses, gig financials.
+- **simulationUtils.js** — Daily updates (harmony decay, mood, stamina, social growth, van degradation).
+- **mapGenerator.js** — Procedural Germany map with venue nodes and travel connections.
+- **audioEngine.js** — Facade for audio/MIDI playback, timing clock, and WebAudio synth (see `src/utils/audio/`).
+- **rhythmUtils.js** — 3-lane note spawning, hit windows (Perfect/Good/Miss).
+- **socialEngine.js** — Follower growth and viral mechanics.
+- **errorHandler.js** — Typed errors (`GameError`, `StateError`, `AudioError`), toast dispatch.
 
 ### Rhythm Game — `src/components/` + `src/hooks/`
 
 - **PixiStageController.js** — Pixi.js app lifecycle, note sprites, animation loop
 - **PixiStage.jsx** — React wrapper for the Pixi canvas
-- **stage managers under `src/components/stage/*`** — crowd/effects/lanes/notes managers
+- **stage managers under `src/components/stage/*`** — crowd/effects/lanes/notes managers + utils
 - **useRhythmGameLogic.js** — Keyboard input (arrow keys), combo tracking, hype calculation
 - **rhythm sub-hooks under `src/hooks/rhythmGame/*`** — split audio/input/loop/scoring/state orchestration
 
@@ -150,7 +150,7 @@ useEffect(() => {
 
 ### Audio
 
-Production requires HTTPS (WebAudio API mixed-content policy). Ambient tracks play full MIDI duration. Gig tracks play first 30-60 second excerpts.
+Production requires HTTPS (WebAudio API mixed-content policy). Ambient playback is started by main-menu tour actions via `AudioManager.startAmbient()`, preferring OGG playback with MIDI fallback; gig playback uses configured excerpts and bounded playback windows. Audio logic is implemented in `src/utils/audio/`.
 
 ## Sub-Agent Documentation
 

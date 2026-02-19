@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { getSongId } from '../src/utils/songUtils.js'
+import { getSongId } from '../src/utils/audio/songUtils.js'
 
 test('getSongId returns the string when input is a string', () => {
   const input = 'test-song-id'

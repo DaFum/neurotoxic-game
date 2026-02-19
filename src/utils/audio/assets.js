@@ -4,7 +4,7 @@ import {
   buildMidiUrlMap,
   resolveAssetUrl,
   PATH_PREFIX_REGEX
-} from '../audioPlaybackUtils.js'
+} from './playbackUtils.js'
 import { getRawAudioContext } from './setup.js'
 import { audioState } from './state.js'
 import {

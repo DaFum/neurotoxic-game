@@ -10,6 +10,7 @@ These files run performance-critical Pixi stage systems:
 - `EffectManager.js`
 - `LaneManager.js`
 - `NoteManager.js`
+- `utils.js` (Calculations and layout constants)
 
 They are called from `PixiStageController` and execute inside the gig render loop.
 

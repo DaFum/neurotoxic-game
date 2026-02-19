@@ -26,9 +26,10 @@ neurotoxic-game/
 │   │   └── rhythmGame/           # Gig loop split hooks
 │   ├── scenes/                   # Route-level game screens
 │   ├── utils/
-│   │   └── audio/                # Low-level audio internals
+│   │   ├── audio/                # Low-level audio internals (playback, MIDI, timing)
+│   │   └── ...                   # Game engines (economy, social, events)
 │   ├── components/
-│   │   └── stage/                # Pixi manager classes
+│   │   └── stage/                # Pixi manager classes & stage utils
 │   ├── data/
 │   │   └── events/               # Category event catalogs
 │   └── ui/
@@ -213,7 +214,7 @@ _"Complexity is not an excuse for friction."_
 ## Maintenance
 
 - Audio: Ambient playback is started by main-menu tour actions via `AudioManager.startAmbient()`, preferring OGG playback with MIDI fallback; gig playback uses configured excerpts and bounded playback windows.
-- Performance: Heavy scenes are lazy-loaded in `App.jsx` to reduce initial bundle execution and speed up first render.
+- Performance: Heavy scenes are lazy-loaded in `App.jsx` via `createNamedLazyLoader` to reduce initial bundle execution and speed up first render.
 - UI: Toast taxonomy remains `success`/`error`/`warning`/`info`, with `info` rendered using the blue token (`--info-blue`).
 - Chatter: Default fallback chatter is limited to `MENU`, `OVERWORLD`, `PREGIG`, and `POSTGIG`; `GIG` requires explicit conditional chatter entries.
 - Last updated: 2026-02-23.

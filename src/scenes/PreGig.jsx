@@ -4,7 +4,7 @@ import { useGameState } from '../context/GameState'
 import { SONGS_DB } from '../data/songs'
 import { getGigModifiers } from '../utils/simulationUtils'
 import { audioManager } from '../utils/AudioManager'
-import { getSongId } from '../utils/songUtils'
+import { getSongId } from '../utils/audio/songUtils'
 import { handleError } from '../utils/errorHandler'
 
 const GIG_MODIFIER_OPTIONS = [

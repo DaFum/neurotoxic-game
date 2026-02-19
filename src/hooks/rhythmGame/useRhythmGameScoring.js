@@ -10,7 +10,7 @@ import {
   playNoteAtTime,
   stopAudio
 } from '../../utils/audioEngine'
-import { getScheduledHitTimeMs } from '../../utils/audioTimingUtils'
+import { getScheduledHitTimeMs } from '../../utils/audio/timingUtils'
 import { checkHit } from '../../utils/rhythmUtils'
 
 /**

@@ -34,7 +34,7 @@ Core files:
 When data/balance changes, verify relevant suites, e.g.:
 
 - `tests/eventEngine.test.js`
-- `tests/eventResolver.test.js`
+- `tests/eventEngine_resolver.test.js`
 - `tests/goldenPath.test.js`
 
 Then run:
