@@ -122,7 +122,8 @@ describe('useRhythmGameLogic', () => {
         notes: [
           { time: 200, laneIndex: 0, hit: true, visible: false, type: 'note' }
         ],
-        nextMissCheckIndex: 1
+        nextMissCheckIndex: 1,
+        audioPlaybackEnded: true
       })
     })
 
@@ -149,7 +150,8 @@ describe('useRhythmGameLogic', () => {
 
     act(() => {
       simulateGameLoopUpdate(result, {
-        totalDuration: 0
+        totalDuration: 0,
+        audioPlaybackEnded: true
       })
     })
 
