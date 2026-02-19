@@ -26,9 +26,10 @@ neurotoxic-game/
 │   │   └── rhythmGame/           # Gig loop split hooks
 │   ├── scenes/                   # Route-level game screens
 │   ├── utils/
-│   │   └── audio/                # Low-level audio internals
+│   │   ├── audio/                # Low-level audio internals (playback, MIDI, timing)
+│   │   └── ...                   # Game engines (economy, social, events)
 │   ├── components/
-│   │   └── stage/                # Pixi manager classes
+│   │   └── stage/                # Pixi manager classes & stage utils
 │   ├── data/
 │   │   └── events/               # Category event catalogs
 │   └── ui/

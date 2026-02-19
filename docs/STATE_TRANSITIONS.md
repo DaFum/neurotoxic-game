@@ -49,7 +49,7 @@ stateDiagram-v2
     CandidateCheck --> Idle: no matching event
     CandidateCheck --> Active: event found
     Active --> Resolving: player choice
-    Resolving --> ApplyingDelta: resolveEventChoice
+    Resolving --> ApplyingDelta: resolveEventChoice (in eventEngine)
     ApplyingDelta --> Idle: APPLY_EVENT_DELTA + clear activeEvent
 ```
 
