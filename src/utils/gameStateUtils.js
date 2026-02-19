@@ -1,4 +1,43 @@
 /**
+ * Clamps player money to a safe, non-negative integer.
+ * @param {number} money - Candidate money value.
+ * @returns {number} Clamped money value.
+ */
+export const clampPlayerMoney = money => {
+  if (!Number.isFinite(money)) return 0
+  return Math.floor(Math.max(0, money))
+}
+
+/**
+ * Clamps band harmony to the canonical gameplay range.
+ * @param {number} harmony - Candidate harmony value.
+ * @returns {number} Clamped harmony value in range [1, 100].
+ */
+export const clampBandHarmony = harmony => {
+  if (!Number.isFinite(harmony)) return 1
+  return Math.max(1, Math.min(100, harmony))
+}
+
+/**
+ * Applies an inventory delta to a single inventory slot.
+ * @param {boolean|number|undefined} currentValue - Existing inventory value.
+ * @param {boolean|number} deltaValue - Delta to apply.
+ * @returns {boolean|number|undefined} Updated inventory value.
+ */
+export const applyInventoryItemDelta = (currentValue, deltaValue) => {
+  if (deltaValue === true || deltaValue === false) {
+    return deltaValue
+  }
+
+  if (typeof deltaValue === 'number') {
+    const currentCount = typeof currentValue === 'number' ? currentValue : 0
+    return Math.max(0, currentCount + deltaValue)
+  }
+
+  return currentValue
+}
+
+/**
  * Applies event delta changes to the current game state.
  * @param {object} state - Current game state.
  * @param {object} delta - Event delta payload.
@@ -10,9 +49,7 @@ export const applyEventDelta = (state, delta) => {
   if (delta.player) {
     const nextPlayer = { ...nextState.player }
     if (typeof delta.player.money === 'number') {
-      nextPlayer.money = Math.floor(
-        Math.max(0, nextPlayer.money + delta.player.money)
-      )
+      nextPlayer.money = clampPlayerMoney(nextPlayer.money + delta.player.money)
     }
     if (typeof delta.player.time === 'number') {
       nextPlayer.time = nextPlayer.time + delta.player.time
@@ -48,10 +85,7 @@ export const applyEventDelta = (state, delta) => {
   if (delta.band) {
     const nextBand = { ...nextState.band }
     if (typeof delta.band.harmony === 'number') {
-      nextBand.harmony = Math.max(
-        1,
-        Math.min(100, nextBand.harmony + delta.band.harmony)
-      )
+      nextBand.harmony = clampBandHarmony(nextBand.harmony + delta.band.harmony)
     }
 
     const membersDelta =
@@ -80,10 +114,12 @@ export const applyEventDelta = (state, delta) => {
         nextBand.members = nextBand.members.map(member => {
           let newMood = member.mood
           let newStamina = member.stamina
-          if (typeof membersDelta.moodChange === 'number')
+          if (typeof membersDelta.moodChange === 'number') {
             newMood += membersDelta.moodChange
-          if (typeof membersDelta.staminaChange === 'number')
+          }
+          if (typeof membersDelta.staminaChange === 'number') {
             newStamina += membersDelta.staminaChange
+          }
           return {
             ...member,
             mood: Math.max(0, Math.min(100, newMood)),
@@ -95,16 +131,10 @@ export const applyEventDelta = (state, delta) => {
     if (delta.band.inventory) {
       nextBand.inventory = { ...nextBand.inventory }
       Object.entries(delta.band.inventory).forEach(([item, val]) => {
-        if (val === true || val === false) {
-          nextBand.inventory[item] = val
-        } else if (typeof val === 'number') {
-          // Add to existing count or set if not exists (assuming count starts at 0 if undefined)
-          const current =
-            typeof nextBand.inventory[item] === 'number'
-              ? nextBand.inventory[item]
-              : 0
-          nextBand.inventory[item] = Math.max(0, current + val)
-        }
+        nextBand.inventory[item] = applyInventoryItemDelta(
+          nextBand.inventory[item],
+          val
+        )
       })
     }
     if (typeof delta.band.luck === 'number') {
@@ -139,14 +169,6 @@ export const applyEventDelta = (state, delta) => {
         ...nextState.pendingEvents,
         delta.flags.queueEvent
       ]
-    }
-    if (typeof delta.flags.score === 'number') {
-      const nextPlayer = nextState.player ? { ...nextState.player } : {}
-      const currentScore =
-        typeof nextPlayer.score === 'number' ? nextPlayer.score : 0
-      const newScore = Math.max(0, currentScore + delta.flags.score)
-      nextPlayer.score = newScore
-      nextState.player = nextPlayer
     }
   }
 

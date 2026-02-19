@@ -117,6 +117,19 @@ const findTempoSegment = (processedMap, ticks) => {
   return candidate
 }
 
+
+/**
+ * Ensures tempo map entries contain preprocessed timing metadata.
+ * @param {Array} tempoMap - Raw or preprocessed tempo map.
+ * @param {number} tpb - Ticks per beat.
+ * @returns {Array} Preprocessed tempo map.
+ */
+const ensureProcessedTempoMap = (tempoMap, tpb) => {
+  if (!Array.isArray(tempoMap) || tempoMap.length === 0) return []
+  if (typeof tempoMap[0]?._accumulatedMicros === 'number') return tempoMap
+  return preprocessTempoMap(tempoMap, tpb)
+}
+
 /**
  * Calculates the time for a given tick count using the song's tempo map.
  * @param {number} ticks - The MIDI tick timestamp.
@@ -126,45 +139,16 @@ const findTempoSegment = (processedMap, ticks) => {
  * @returns {number} Time in the specified unit.
  */
 export const calculateTimeFromTicks = (ticks, tpb, tempoMap, unit = 'ms') => {
-  if (!tempoMap || tempoMap.length === 0) return 0
+  const processedTempoMap = ensureProcessedTempoMap(tempoMap, tpb)
+  if (processedTempoMap.length === 0) return 0
 
   // divisor: if 'ms', we want (us / 1000). if 's', we want (us / 1000000).
   const divisor = unit === 's' ? 1000000 : 1000
-
-  // Optimization: Check for preprocessed map
-  // We use a specific property to identify optimized maps
-  if (
-    tempoMap.length > 0 &&
-    typeof tempoMap[0]._accumulatedMicros === 'number'
-  ) {
-    const segment = findTempoSegment(tempoMap, ticks)
-    const offsetTicks = Math.max(0, ticks - segment._startTick)
-    // usPerBeat / tpb = microseconds per tick
-    const offsetMicros = offsetTicks * (segment.usPerBeat / tpb)
-    return (segment._accumulatedMicros + offsetMicros) / divisor
-  }
-
-  // Legacy Slow Path
-  let totalTime = 0
-  let currentTick = 0
-
-  for (let i = 0; i < tempoMap.length; i++) {
-    const currentTempo = tempoMap[i]
-    const nextTempo = tempoMap[i + 1]
-    const endTick = nextTempo ? nextTempo.tick : ticks
-
-    if (currentTick >= ticks) break
-
-    const segmentTicks = Math.min(endTick, ticks) - currentTick
-    if (segmentTicks > 0) {
-      // usPerBeat / tpb = microseconds per tick
-      const timePerTick = currentTempo.usPerBeat / tpb / divisor
-      totalTime += segmentTicks * timePerTick
-      currentTick += segmentTicks
-    }
-  }
-
-  return totalTime
+  const segment = findTempoSegment(processedTempoMap, ticks)
+  const offsetTicks = Math.max(0, ticks - segment._startTick)
+  // usPerBeat / tpb = microseconds per tick
+  const offsetMicros = offsetTicks * (segment.usPerBeat / tpb)
+  return (segment._accumulatedMicros + offsetMicros) / divisor
 }
 
 /**
