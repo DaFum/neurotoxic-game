@@ -28,7 +28,7 @@
     "prop-types": "15.8.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "tone": "15.1.22"
+    "tone": "^15.5.0"
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",
