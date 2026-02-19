@@ -18,8 +18,6 @@ export const useRhythmGameState = () => {
 
   // High-Frequency Game State (Ref)
   const gameStateRef = useRef({
-    running: false,
-    paused: false,
     notes: [],
     nextMissCheckIndex: 0, // Optimization: only check notes that haven't passed yet
     lanes: [
@@ -48,8 +46,6 @@ export const useRhythmGameState = () => {
         hitWindow: 150
       }
     ],
-    elapsed: 0,
-    pauseTime: null,
     speed: 500,
     modifiers: {},
     stats: { perfectHits: 0, misses: 0, maxCombo: 0, peakHype: 0 },
@@ -64,8 +60,9 @@ export const useRhythmGameState = () => {
     overload: 0,
     totalDuration: 0,
     hasSubmittedResults: false,
-    audioPlaybackEnded: false,
     songTransitioning: false,
+    setlistCompleted: false,
+    transportPausedByOverlay: false,
     toxicTimeTotal: 0,
     toxicModeEndTime: 0,
     rng: Math.random // Store RNG for consistency

@@ -28,7 +28,8 @@ const mockAudioEngine = {
   getAudioContextTimeSec: mock.fn(() => 0),
   getToneStartTimeSec: mock.fn(() => 0),
   getAudioTimeMs: mock.fn(() => 0),
-  getGigTimeMs: mock.fn(() => 0)
+  getGigTimeMs: mock.fn(() => 0),
+  getTransportState: mock.fn(() => 'started')
 }
 const mockAudioTimingUtils = {
   getScheduledHitTimeMs: mock.fn(() => 0)
@@ -153,7 +154,7 @@ export const setupDefaultMockImplementation = (
 }
 
 export const simulateGameLoopUpdate = (result, overrides = {}) => {
-  result.current.gameStateRef.current.running = true
+  mockAudioEngine.getTransportState.mock.mockImplementation(() => 'started')
   Object.assign(result.current.gameStateRef.current, overrides)
   result.current.update(16)
 }

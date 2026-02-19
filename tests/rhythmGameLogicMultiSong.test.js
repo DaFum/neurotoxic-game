@@ -138,9 +138,9 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
 
        // Now simulate a game loop update concurrently (as if rAF fired)
        // This update should NOT finalize gig because transitioning is true
-       result.current.gameStateRef.current.running = true
+       mockAudioEngine.getTransportState.mock.mockImplementation(() => 'started')
        // Force condition where it WOULD finalize if not protected
-       result.current.gameStateRef.current.audioPlaybackEnded = true
+       result.current.gameStateRef.current.setlistCompleted = true
        result.current.update(16)
 
        assert.strictEqual(mockChangeScene.mock.calls.length, 0, 'Should NOT finalize gig during transition')
@@ -180,7 +180,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
 
     // Check if transitioning flag is reset to false after set ends
     assert.strictEqual(result.current.gameStateRef.current.songTransitioning, false, 'Transitioning flag should be FALSE after last song ends')
-    assert.strictEqual(result.current.gameStateRef.current.audioPlaybackEnded, true, 'Audio playback should be marked ended')
+    assert.strictEqual(result.current.gameStateRef.current.setlistCompleted, true, 'Audio playback should be marked ended')
 
     // Now simulate game loop again -> should finalize
     act(() => {
@@ -242,9 +242,9 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     // Assert song 1 started
     assert.strictEqual(mockAudioEngine.startGigPlayback.mock.calls.length, 1)
 
-    // Simulate Quit: running = false, hasSubmittedResults = true
+    // Simulate Quit: transport stopped, hasSubmittedResults = true
     act(() => {
-      result.current.gameStateRef.current.running = false
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'stopped')
       result.current.gameStateRef.current.hasSubmittedResults = true
     })
 
@@ -259,8 +259,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     assert.strictEqual(mockAudioEngine.startGigPlayback.mock.calls.length, 1, 'Song 2 should NOT start after quit')
   })
 
-  test('Game loop waits for audioPlaybackEnded signal before finalizing (Multi-song gap protection)', async () => {
-    // Setup a single song but simulate multi-song behavior where audioPlaybackEnded is false
+  test('Game loop waits for setlistCompleted signal before finalizing (Multi-song gap protection)', async () => {
+    // Setup a single song but simulate multi-song behavior where setlistCompleted is false
     const song1 = {
       id: 'song1',
       name: 'Song 1',
@@ -295,8 +295,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     })
 
     // Simulate Running state
-    result.current.gameStateRef.current.running = true
-    result.current.gameStateRef.current.audioPlaybackEnded = false // Crucial: Simulate audio not done yet
+    mockAudioEngine.getTransportState.mock.mockImplementation(() => 'started')
+    result.current.gameStateRef.current.setlistCompleted = false // Crucial: Simulate audio not done yet
     result.current.gameStateRef.current.totalDuration = 30000 // Set duration
 
     // Simulate Time > Duration (Race condition: Loop runs before audio ends)
@@ -308,10 +308,10 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     })
 
     // Assert that finalizeGig was NOT called
-    assert.strictEqual(mockChangeScene.mock.calls.length, 0, 'Should NOT finalize gig if audioPlaybackEnded is false')
+    assert.strictEqual(mockChangeScene.mock.calls.length, 0, 'Should NOT finalize gig if setlistCompleted is false')
 
     // Now simulate audio ending
-    result.current.gameStateRef.current.audioPlaybackEnded = true
+    result.current.gameStateRef.current.setlistCompleted = true
 
     // Run update loop again
     act(() => {
@@ -319,7 +319,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     })
 
     // Assert that finalizeGig IS called now
-    assert.ok(mockChangeScene.mock.calls.length > 0, 'Should finalize gig once audioPlaybackEnded is true')
+    assert.ok(mockChangeScene.mock.calls.length > 0, 'Should finalize gig once setlistCompleted is true')
     assert.strictEqual(mockChangeScene.mock.calls[0].arguments[0], 'POSTGIG')
   })
 })

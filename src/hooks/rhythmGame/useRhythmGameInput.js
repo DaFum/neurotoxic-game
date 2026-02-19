@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { getTransportState } from '../../utils/audioEngine'
 
 /**
  * Handles user input for the rhythm game.
@@ -24,11 +25,13 @@ export const useRhythmGameInput = ({
    */
   const registerInput = useCallback(
     (laneIndex, isDown) => {
-      // Ignore input if game is not running or is paused
-      if (!gameStateRef.current.running || activeEvent) return
+      const state = gameStateRef.current
+      const isTransportRunning = getTransportState() === 'started'
+      if (activeEvent || state.songTransitioning || state.isGameOver) return
+      if (!isTransportRunning || state.hasSubmittedResults) return
 
-      if (gameStateRef.current.lanes[laneIndex]) {
-        gameStateRef.current.lanes[laneIndex].active = isDown
+      if (state.lanes[laneIndex]) {
+        state.lanes[laneIndex].active = isDown
         if (isDown) handleHit(laneIndex)
       }
     },

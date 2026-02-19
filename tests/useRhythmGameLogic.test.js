@@ -70,7 +70,7 @@ describe('useRhythmGameLogic', () => {
     assert.equal(result.current.stats.isAudioReady, null)
 
     // Check ref initial state
-    assert.equal(result.current.gameStateRef.current.running, false)
+    assert.equal(result.current.gameStateRef.current.hasSubmittedResults, false)
     assert.equal(result.current.gameStateRef.current.score, 0)
   })
 
@@ -101,7 +101,7 @@ describe('useRhythmGameLogic', () => {
 
     // Simulate input
     act(() => {
-      result.current.gameStateRef.current.running = true
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'started')
       result.current.actions.registerInput(0, true)
     })
 
@@ -123,7 +123,7 @@ describe('useRhythmGameLogic', () => {
           { time: 200, laneIndex: 0, hit: true, visible: false, type: 'note' }
         ],
         nextMissCheckIndex: 1,
-        audioPlaybackEnded: true
+        setlistCompleted: true
       })
     })
 
@@ -151,7 +151,7 @@ describe('useRhythmGameLogic', () => {
     act(() => {
       simulateGameLoopUpdate(result, {
         totalDuration: 0,
-        audioPlaybackEnded: true
+        setlistCompleted: true
       })
     })
 

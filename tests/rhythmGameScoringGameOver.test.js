@@ -45,7 +45,7 @@ describe('useRhythmGameScoring Game Over', () => {
     teardownJSDOM()
   })
 
-  test('sets running to false on game over', () => {
+  test('marks game over and stops audio on collapse', () => {
     const gameStateRef = {
       current: {
         stats: { misses: 0 },
@@ -54,7 +54,6 @@ describe('useRhythmGameScoring Game Over', () => {
         overload: 0,
         isToxicMode: false,
         isGameOver: false,
-        running: true, // Should be set to false
         lanes: [{}, {}, {}],
         notes: [],
         modifiers: {}
@@ -100,7 +99,6 @@ describe('useRhythmGameScoring Game Over', () => {
     // Check if stopAudio was called
     assert.equal(mockAudioEngine.stopAudio.mock.calls.length, 1, 'stopAudio should be called')
 
-    // Check if running is false
-    assert.equal(gameStateRef.current.running, false, 'running should be false on game over')
+    assert.equal(gameStateRef.current.isGameOver, true, 'isGameOver should be true on game over')
   })
 })

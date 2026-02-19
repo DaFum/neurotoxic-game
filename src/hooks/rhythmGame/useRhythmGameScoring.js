@@ -108,9 +108,8 @@ export const useRhythmGameScoring = ({
         if (next <= 0 && !gameStateRef.current.isGameOver) {
           setIsGameOver(true)
           gameStateRef.current.isGameOver = true
-          // Halt the game loop and prevent audio chaining
-          gameStateRef.current.running = false
-          stopAudio() // Immediate stop to prevent stuttering/desync
+          // Stop audio immediately to prevent further hit processing after collapse
+          stopAudio()
           addToast('BAND COLLAPSED', 'error')
 
           // Schedule exit from Gig if failed (Softlock fix)
