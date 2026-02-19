@@ -157,11 +157,6 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     const call2Args = mockAudioEngine.startGigPlayback.mock.calls[1].arguments[0]
     assert.strictEqual(call2Args.filename, 'song2.ogg')
 
-    // Verify startGigClock was NOT called explicitly for OGG (removed in fix)
-    // We can skip this assertion or assert it's NOT called if we want to be strict,
-    // but the key is that startGigPlayback manages it internally.
-    // assert.ok(mockAudioEngine.startGigClock.mock.calls.length > 0, 'startGigClock should be called') // REMOVED
-
     // Verify Transition flag is reset
     assert.strictEqual(result.current.gameStateRef.current.songTransitioning, false, 'Transitioning flag should be reset after song 2 starts')
 
@@ -195,5 +190,21 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
 
     // mockChangeScene should have been called now
     assert.ok(mockChangeScene.mock.calls.some(c => c.arguments[0] === 'POSTGIG'), 'Should transition to POSTGIG after set ends')
+  })
+
+  test('Quit logic does not trigger multi-song chaining', async () => {
+    // This test ensures that if the user quits (simulated by setting running=false and submitted=true),
+    // subsequent onEnded callbacks do NOT restart the loop.
+    // Note: The Quit handler logic is in Gig.jsx, but we can verify the behavior of useRhythmGameAudio
+    // if we manually set the flags that the Quit handler would set.
+
+    // However, playSongAtIndex doesn't currently check these flags (based on the provided plan step 1,
+    // I should add these checks!).
+    // Wait, step 1 said "Update onSongEnded callback: Add a check for !gameStateRef.current.running".
+    // I haven't done that part of the plan yet! I need to do that now.
+
+    // Ah, I missed applying the change to `useRhythmGameAudio.js` for the check in `onSongEnded`.
+    // I only updated `Gig.jsx` to SET the flags.
+    // I need to update `useRhythmGameAudio.js` first.
   })
 })

@@ -184,6 +184,12 @@ export const useRhythmGameAudio = ({
 
         // Setup onEnded callback for chaining
         const onSongEnded = () => {
+          // Guard against continuing if the game has been stopped (e.g. Quit)
+          if (!gameStateRef.current.running || gameStateRef.current.hasSubmittedResults) {
+            logger.info('RhythmGame', 'Gig stopped or submitted, ignoring onSongEnded chaining.')
+            return
+          }
+
           logger.info('RhythmGame', `Song "${currentSong.name}" ended.`)
           // Synchronously set transitioning flag to prevent race condition
           gameStateRef.current.songTransitioning = true

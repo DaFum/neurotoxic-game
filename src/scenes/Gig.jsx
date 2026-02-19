@@ -66,6 +66,11 @@ export const Gig = () => {
                 label: 'QUIT GIG',
                 variant: 'danger',
                 action: async () => {
+                  // Manually flag gig as submitted/stopped to prevent multi-song chaining
+                  // when stopAudio() triggers onEnded callbacks.
+                  gameStateRef.current.hasSubmittedResults = true
+                  gameStateRef.current.running = false
+
                   try {
                     const { stopAudio } = await import('../utils/audioEngine')
                     stopAudio()
