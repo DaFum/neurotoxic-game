@@ -32,7 +32,7 @@ Tests use Node's built-in `node:test` module with `tsx` for ESM transpilation. T
 | Styling   | Tailwind CSS  | 4.2.0                                  |
 | Audio     | Tone.js       | 15.5.0                                 |
 
-**DO NOT upgrade**: React (stay 19.2.4), Vite (stay 7.3.1), Tailwind (stay 4.1.18). Node.js 22.3+ required.
+**DO NOT upgrade**: React (stay 19.2.4), Vite (stay 7.3.1), Tailwind (stay 4.2.0), Framer Motion (stay 12.34.2), Tone.js (stay 15.5.0). Node.js 22.3+ required.
 
 ## Architecture
 
@@ -152,6 +152,9 @@ useEffect(() => {
 ### Audio
 
 Production requires HTTPS (WebAudio API mixed-content policy). Ambient playback is started by main-menu tour actions via `AudioManager.startAmbient()`, preferring OGG playback with MIDI fallback; gig playback uses configured excerpts and bounded playback windows. Audio logic is implemented in `src/utils/audio/`.
+
+*   **Tone.js Only**: The project uses Tone.js wrappers for audio playback and synthesis. Do NOT introduce Howler.js.
+*   **Multi-Song Gigs**: Sequential playback relies on `audioPlaybackEnded` state. The game loop must wait for this flag (not just `totalDuration`) before finalizing a gig to prevent race conditions during song transitions.
 
 ## Sub-Agent Documentation
 
