@@ -28,8 +28,8 @@ Tests use Node's built-in `node:test` module with `tsx` for ESM transpilation. T
 | Build     | Vite          | 7.3.1                                  |
 | Language  | JavaScript    | ES2021 (ESModules, `"type": "module"`) |
 | Rendering | Pixi.js       | 8.16.0                                 |
-| Animation | Framer Motion | 12.34.0                                |
-| Styling   | Tailwind CSS  | 4.1.18                                 |
+| Animation | Framer Motion | 12.34.2                                |
+| Styling   | Tailwind CSS  | 4.2.0                                  |
 | Audio     | Tone.js       | 15.5.0                                 |
 
 **DO NOT upgrade**: React (stay 19.2.4), Vite (stay 7.3.1), Tailwind (stay 4.1.18). Node.js 22.3+ required.
