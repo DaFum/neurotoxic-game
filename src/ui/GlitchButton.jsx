@@ -53,7 +53,7 @@ export const GlitchButton = ({
       )}
       {/* Glitch Overlay Effect on Hover */}
       {!disabled && (
-        <span className='absolute inset-0 bg-white opacity-0 group-hover:opacity-10 mix-blend-difference pointer-events-none' />
+        <span className='absolute inset-0 bg-(--star-white) opacity-0 group-hover:opacity-10 mix-blend-difference pointer-events-none' />
       )}
     </button>
   )

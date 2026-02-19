@@ -109,7 +109,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
                 </div>
               </div>
               {/* Scanline effect on hover */}
-              <div className='absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:animate-[shimmer_1s_infinite] skew-x-12' />
+              <div className='absolute inset-0 bg-(--star-white)/10 translate-x-[-100%] group-hover:animate-[shimmer_1s_infinite] skew-x-12' />
             </motion.button>
           ))}
         </motion.div>

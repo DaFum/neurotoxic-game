@@ -1,7 +1,8 @@
 import PropTypes from 'prop-types'
 
 export const VolumeSlider = ({ label, value, onChange }) => {
-  const pct = Math.round(value * 100)
+  const clampedValue = Math.min(1, Math.max(0, value))
+  const pct = Math.round(clampedValue * 100)
 
   return (
     <div className='flex items-center justify-between gap-4'>

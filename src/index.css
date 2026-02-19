@@ -14,6 +14,7 @@
   --toxic-green-light: #3f6;
   --toxic-green-glow: rgb(0 255 65 / 60%);
   --toxic-green-20: rgb(0 255 65 / 20%);
+  --toxic-green-10: rgb(0 255 65 / 10%);
 
   /* Death-Metal-Schwarz */
   --void-black: #0a0a0a;
@@ -27,6 +28,8 @@
   --blood-red-bright: #f00;
   --rust-orange: #c50;
   --warning-yellow: #fc0;
+  --warning-yellow-30: rgb(255 204 0 / 30%);
+  --warning-yellow-50: rgb(255 204 0 / 50%);
 
   /* Kosmische Farben (für "Lost Scriptures"-Thema) */
   --cosmic-purple: #60c;
@@ -274,15 +277,15 @@ button {
 
 /* Pulse glow for borders */
 @keyframes pulse-glow {
-  0%,
-  100% {
+  from,
+  to {
     box-shadow: 0 0 5px var(--toxic-green-20);
   }
 
   50% {
     box-shadow:
       0 0 20px var(--toxic-green-20),
-      0 0 40px rgb(0 255 65 / 10%);
+      0 0 40px var(--toxic-green-10);
   }
 }
 
@@ -482,17 +485,17 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
 
 /* ── UX: Confirm pulse for travel nodes ── */
 @keyframes confirm-pulse {
-  0%,
-  100% {
+  from,
+  to {
     box-shadow:
       0 0 8px var(--warning-yellow),
-      0 0 16px rgb(255 204 0 / 30%);
+      0 0 16px var(--warning-yellow-30);
   }
 
   50% {
     box-shadow:
       0 0 16px var(--warning-yellow),
-      0 0 32px rgb(255 204 0 / 50%);
+      0 0 32px var(--warning-yellow-50);
   }
 }
 
