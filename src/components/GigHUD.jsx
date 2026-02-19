@@ -38,7 +38,7 @@ export const GigHUD = ({ stats, onLaneInput, gameStateRef }) => {
     overload,
     isGameOver,
     accuracy = 100,
-    isToxicMode
+    isToxicMode = false
   } = stats
 
   const comboTier =
