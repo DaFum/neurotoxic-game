@@ -73,7 +73,7 @@ const mockPixiStageUtils = {
   calculateNoteY: mock.fn(() => mockCalculateNoteYResult)
 }
 
-  mock.module('../src/components/stage/utils.js', {
+mock.module('../src/components/stage/utils.js', {
   namedExports: mockPixiStageUtils
 })
 

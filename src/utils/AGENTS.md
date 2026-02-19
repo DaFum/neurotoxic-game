@@ -11,10 +11,10 @@ Utility modules provide shared engines/helpers for gameplay math, state applicat
 Representative domains:
 
 - Economy/simulation/social: `economyEngine.js`, `simulationUtils.js`, `socialEngine.js`
-- Events/state application: `eventEngine.js`, `eventResolver.js`, `gameStateUtils.js`, `saveValidator.js`
+- Events/state application: `eventEngine.js`, `gameStateUtils.js`, `saveValidator.js`
 - Map/rhythm/gig helpers: `mapGenerator.js`, `rhythmUtils.js`, `gigStats.js`, `hecklerLogic.js`
-- Audio orchestration wrappers: `audioEngine.js`, `AudioManager.js`, timing/playback helpers
-- Infra: `logger.js`, `errorHandler.js`, `lazySceneLoader.js`, `pixiStageUtils.js`, etc.
+- Audio orchestration wrappers: `audioEngine.js`, `AudioManager.js` (facades for `src/utils/audio/`)
+- Infra: `logger.js`, `errorHandler.js`, `lazySceneLoader.js`, etc.
 
 ## Code-Aligned Rules
 
@@ -35,7 +35,7 @@ Representative domains:
 When utility behavior changes, verify relevant suites, e.g.:
 
 - `tests/eventEngine.test.js`
-- `tests/eventResolver.test.js`
+- `tests/eventEngine_resolver.test.js`
 - `tests/mapGenerator.test.js`
 - `tests/simulationUtils.test.js`
 - `tests/goldenPath.test.js`

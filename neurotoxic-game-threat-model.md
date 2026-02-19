@@ -20,7 +20,7 @@ Evidence indicates a single-page React entry point and localStorage-based persis
 
 - **React/Vite SPA runtime:** App bootstrap and component tree are mounted client-side in `src/main.jsx`.【F:src/main.jsx†L1-L11】
 - **Game state + persistence:** Game state is stored in memory and persisted to localStorage (`neurotoxic_v3_save`, `neurotoxic_global_settings`).【F:src/context/GameState.jsx†L70-L260】
-- **Audio subsystem:** MIDI assets are fetched via `fetch` and played with Tone.js/Howler.js wrappers for gameplay audio.【F:src/utils/audioEngine.js†L792-L875】【F:package.json†L19-L28】
+- **Audio subsystem:** MIDI assets are fetched via `fetch` and played with Tone.js/Howler.js wrappers for gameplay audio.【F:src/utils/audio/playback.js】【F:package.json†L19-L28】
 
 ### Data flows and trust boundaries
 
@@ -38,7 +38,7 @@ Evidence indicates a single-page React entry point and localStorage-based persis
   - **Data:** Asset URLs (MIDI files).
   - **Channel:** HTTP(S) `fetch` from same-origin static assets.
   - **Security guarantees:** Same-origin policy; HTTPS dependent on hosting.
-  - **Validation:** MIDI duration and note scheduling guards in audio engine before playback. (Runtime skips invalid notes and validates durations.)【F:src/utils/audioEngine.js†L792-L900】
+  - **Validation:** MIDI duration and note scheduling guards in audio engine before playback. (Runtime skips invalid notes and validates durations.)【F:src/utils/audio/procedural.js】
 
 #### Diagram
 
@@ -76,7 +76,7 @@ flowchart TD
 | ------------------------ | ------------------------------------------- | --------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------- |
 | SPA bootstrap            | Browser loads `index.html` + `src/main.jsx` | Internet → Browser    | Primary entrypoint for code execution           | `src/main.jsx` render mount【F:src/main.jsx†L1-L11】                              |
 | localStorage persistence | Game save/load actions                      | Browser → Storage     | Attacker can alter localStorage to affect state | `loadGame`/`saveGame` in `GameState.jsx`【F:src/context/GameState.jsx†L180-L260】 |
-| MIDI asset fetch         | Gameplay audio start                        | Browser → Asset fetch | Same-origin assets loaded via `fetch`           | `playMidiFile` fetch in `audioEngine.js`【F:src/utils/audioEngine.js†L792-L799】  |
+| MIDI asset fetch         | Gameplay audio start                        | Browser → Asset fetch | Same-origin assets loaded via `fetch`           | `playMidiFile` fetch in `src/utils/audio/procedural.js`                           |
 
 ## Top abuse paths
 
@@ -96,7 +96,7 @@ flowchart TD
 | TM-002    | Supply-chain attacker  | Compromised dependency or build pipeline                 | Inject malicious code into bundle             | Full client compromise within origin         | Client JS bundle       | None in repository (build tooling only)【F:package.json†L1-L56】                        | No integrity checks for hosted assets | Pin dependencies, enable Dependabot, audit lockfile; consider SRI if external scripts added | CI alerts on dependency changes          | Medium     | High            | medium   |
 | TM-003    | Hosting/infra attacker | Ability to replace static assets                         | Serve modified JS/MIDI assets                 | Integrity loss, possible malicious behavior  | JS bundle, MIDI assets | None in repository (hosting out of scope)                                               | No signed assets                      | Enable HTTPS-only hosting; consider GitHub Pages integrity controls; monitor deploy logs    | Hosting access logs, deploy audit        | Low        | Medium          | low      |
 | TM-004    | Future developer error | Introduction of unsafe HTML sinks                        | DOM XSS if untrusted data rendered            | Script execution in browser                  | Client JS bundle       | React rendering defaults reduce XSS risk                                                | No explicit linter rule for sinks     | Add ESLint rules or review checklist for `innerHTML`/`dangerouslySetInnerHTML`              | Code review checklist                    | Low        | Medium          | low      |
-| TM-005    | Remote attacker        | Ability to trigger heavy audio/path loops                | Resource exhaustion by repeated actions       | App slowdown, audio glitches                 | Audio subsystem        | Audio engine guards for invalid notes/durations【F:src/utils/audioEngine.js†L792-L875】 | No explicit rate limiting             | Add UI throttling on repeated actions; guard against extreme replay triggers                | Client performance telemetry             | Low        | Low             | low      |
+| TM-005    | Remote attacker        | Ability to trigger heavy audio/path loops                | Resource exhaustion by repeated actions       | App slowdown, audio glitches                 | Audio subsystem        | Audio engine guards for invalid notes/durations【F:src/utils/audio/midiUtils.js】       | No explicit rate limiting             | Add UI throttling on repeated actions; guard against extreme replay triggers                | Client performance telemetry             | Low        | Low             | low      |
 
 <!-- markdownlint-enable MD013 -->
 
@@ -112,7 +112,7 @@ flowchart TD
 | Path                        | Why it matters                                       | Related Threat IDs |
 | --------------------------- | ---------------------------------------------------- | ------------------ |
 | `src/context/GameState.jsx` | LocalStorage persistence and schema checks           | TM-001             |
-| `src/utils/audioEngine.js`  | Asset fetch + audio scheduling guards                | TM-005             |
+| `src/utils/audio/`          | Asset fetch + audio scheduling guards (new location) | TM-005             |
 | `src/main.jsx`              | SPA entrypoint, trust boundary for browser execution | TM-002             |
 | `package.json`              | Dependency surface for supply-chain risk             | TM-002             |
 
