@@ -21,4 +21,4 @@ This file is the quick-entry wiki hub for the NEUROTOXIC codebase.
 - [Threat Model](neurotoxic-game-threat-model.md)
 - [Security Best Practices Report](security_best_practices_report.md)
 
-_Last updated: 2026-02-17._
+_Last updated: 2026-02-23._

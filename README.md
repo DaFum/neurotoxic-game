@@ -39,7 +39,7 @@ This is the **designer‑driven** incarnation of the NEUROTOXIC game concept, ca
   Game logic (economy, simulation, rhythm math) is wired into an automated test gauntlet.
 
   ```bash
-  npm test
+  npm run test
   ```
 
 - **Production Build**
@@ -54,6 +54,7 @@ This is the **designer‑driven** incarnation of the NEUROTOXIC game concept, ca
 
 ## Controls: Limb‑Loss Protocol
 
+- **Intro Video**: Starts on boot and transitions into the Main Menu.
 - **Overworld**: Click nodes to travel; use the Radio widget (▶/■) to toggle ambient music on and off.
 - **Gig**:
   - Inputs: Left Arrow = Guitar, Down Arrow = Drums, Right Arrow = Bass.
@@ -64,4 +65,4 @@ This is the **designer‑driven** incarnation of the NEUROTOXIC game concept, ca
 Based on the NEUROTOXIC band universe.
 Built by Jules (Designer-Turned-Developer).
 
-_Documentation sync: dependency/tooling baseline reviewed on 2026-02-17._
+_Documentation sync: dependency/tooling baseline reviewed on 2026-02-23._

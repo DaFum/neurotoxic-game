@@ -12,26 +12,28 @@
 | --------------- | ------------------------------------------------ |
 | **Frontend**    | React 19.2.4, Vite 7.3.1, JavaScript (ESModules) |
 | **Game Engine** | Pixi.js 8.16.0                                   |
-| **Styling**     | Tailwind CSS v4, Framer Motion 12.34.0           |
+| **Styling**     | Tailwind CSS 4.1.18, Framer Motion 12.34.0       |
 | **Audio**       | Tone.js 15.1.22 (WebAudio buffers)               |
 
 ## Project Structure
 
 ```text
 neurotoxic-game/
-├── docs/                   # Architecture & state documentation
-│   ├── ARCHITECTURE.md     # Module relationships & diagrams
-│   ├── STATE_TRANSITIONS.md # State machine documentation
-│   └── CODING_STANDARDS.md # Detailed coding conventions
+├── docs/                         # Architecture, state, coding standards
 ├── src/
-│   ├── context/           # State management (see src/context/AGENTS.md)
-│   ├── hooks/             # Custom React hooks (see src/hooks/AGENTS.md)
-│   ├── scenes/            # Game screens (see src/scenes/AGENTS.md)
-│   ├── utils/             # Game engines (see src/utils/AGENTS.md)
-│   ├── components/        # Game components (see src/components/AGENTS.md)
-│   ├── data/              # Static data (see src/data/AGENTS.md)
-│   └── ui/                # UI components (see src/ui/AGENTS.md)
-└── tests/                 # Unit tests
+│   ├── context/                  # Global reducer + provider
+│   ├── hooks/
+│   │   └── rhythmGame/           # Gig loop split hooks
+│   ├── scenes/                   # Route-level game screens
+│   ├── utils/
+│   │   └── audio/                # Low-level audio internals
+│   ├── components/
+│   │   └── stage/                # Pixi manager classes
+│   ├── data/
+│   │   └── events/               # Category event catalogs
+│   └── ui/
+│       └── shared/               # Reusable settings/slider controls
+└── tests/                        # Node test suite
 ```
 
 ## Setup
@@ -46,12 +48,25 @@ npm run lint         # Run ESLint
 npm run format       # Run Prettier
 ```
 
+Notes: `npm run test` uses Node's built-in test runner with `tsx`; `npm run test:e2e` runs Playwright when configured.
+
 ## Critical Constraints
 
 1. **Version Pinning**: Keep React at 19.2.4, Vite at 7.3.1, and Tailwind at 4.1.18 unless a task explicitly requests an upgrade
 2. **Tailwind v4 Syntax**: Use `@import "tailwindcss";` (NOT `@tailwind base`)
 3. **CSS Variables**: Never use hardcoded colors - use `var(--toxic-green)`, `var(--void-black)`, etc.
 4. **State Safety**: Always validate `player.money >= 0` and `band.harmony > 0`
+
+## Current Runtime Truths (Code-Aligned)
+
+- Root runtime composition: `ErrorBoundary` → `GameStateProvider` → scene renderer + global overlays (`HUD`, `ToastOverlay`, `ChatterOverlay`, `TutorialManager`, `EventModal`).
+- Scene set in active use: `INTRO`, `MENU`, `SETTINGS`, `CREDITS`, `GAMEOVER`, `OVERWORLD`, `PREGIG`, `GIG`, `POSTGIG`.
+- Reducer guardrails currently enforce:
+  - `player.money >= 0`
+  - `band.harmony` clamped to `1..100`
+  - loaded scenes validated against an allowlist before state restore
+- Audio runtime path: Main Menu start/load actions call `audioManager.startAmbient()`; ambient prefers OGG buffer playback and falls back to MIDI synthesis. Gig playback uses excerpted buffers with bounded playback windows.
+- Test surface: Node test runner (`tests/`) + optional Playwright e2e (`npm run test:e2e`).
 
 ## Sub-Agent Architecture
 
@@ -66,15 +81,25 @@ For domain-specific guidance, consult specialized agent documentation:
 | **Components** | `src/components/AGENTS.md` | Pixi.js, real-time rendering               |
 | **Data**       | `src/data/AGENTS.md`       | Events, venues, songs, balance             |
 | **UI**         | `src/ui/AGENTS.md`         | Design system, reusable components         |
+| **Stage**      | `src/components/stage/AGENTS.md` | Pixi stage managers, render-loop lifecycle |
+| **Rhythm Hooks** | `src/hooks/rhythmGame/AGENTS.md` | Gig loop timing/input/scoring orchestration |
+| **Audio Utils** | `src/utils/audio/AGENTS.md` | Low-level WebAudio/Tone resource handling   |
+| **Event Data** | `src/data/events/AGENTS.md` | Event catalog schema and balancing rules    |
+| **UI Shared**  | `src/ui/shared/AGENTS.md`  | Reusable settings/slider controls          |
 
 ## Documentation
 
 | Document                          | Purpose                                       |
 | --------------------------------- | --------------------------------------------- |
-| `.github/copilot-instructions.md` | Detailed coding conventions for AI assistants |
-| `docs/ARCHITECTURE.md`            | System diagrams and module relationships      |
-| `docs/STATE_TRANSITIONS.md`       | State machine documentation                   |
-| `docs/CODING_STANDARDS.md`        | JavaScript/React coding standards             |
+| `.github/copilot-instructions.md`   | Detailed coding conventions for AI assistants |
+| `CLAUDE.md`                        | Assistant-facing architecture and style notes |
+| `WIKI.md`                          | Documentation entry index                     |
+| `docs/ARCHITECTURE.md`             | System/module architecture snapshot           |
+| `docs/STATE_TRANSITIONS.md`        | Scene/event state machine behavior            |
+| `docs/CODING_STANDARDS.md`         | JavaScript/React coding standards             |
+| `docs/TAILWIND_V4_PATTERNS.md`     | Tailwind + animation/rendering patterns       |
+| `neurotoxic-game-threat-model.md`  | Frontend threat model assumptions and risks   |
+| `security_best_practices_report.md`| Current security findings summary             |
 
 ## Git Workflow
 
@@ -187,8 +212,8 @@ _"Complexity is not an excuse for friction."_
 
 ## Maintenance
 
-- Audio: Ambient playback starts on Start Tour and plays full MIDI tracks; gig playback starts from configured excerpts via WebAudio buffers and stops at the song duration.
+- Audio: Ambient playback is started by main-menu tour actions via `AudioManager.startAmbient()`, preferring OGG playback with MIDI fallback; gig playback uses configured excerpts and bounded playback windows.
 - Performance: Heavy scenes are lazy-loaded in `App.jsx` to reduce initial bundle execution and speed up first render.
 - UI: Toast taxonomy remains `success`/`error`/`warning`/`info`, with `info` rendered using the blue token (`--info-blue`).
 - Chatter: Default fallback chatter is limited to `MENU`, `OVERWORLD`, `PREGIG`, and `POSTGIG`; `GIG` requires explicit conditional chatter entries.
-- Last updated: 2026-02-18.
+- Last updated: 2026-02-23.

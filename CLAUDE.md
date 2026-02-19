@@ -29,7 +29,7 @@ Tests use Node's built-in `node:test` module with `tsx` for ESM transpilation. T
 | Rendering | Pixi.js       | 8.16.0                                 |
 | Animation | Framer Motion | 12.34.0                                |
 | Styling   | Tailwind CSS  | 4.1.18                                 |
-| Audio     | Tone.js       | 15.x (`^15.1.22`)                      |
+| Audio     | Tone.js       | 15.1.22                                 |
 
 **DO NOT upgrade**: React (stay 19.2.4), Vite (stay 7.3.1), Tailwind (stay 4.1.18). Node.js 22.3+ required.
 
@@ -73,7 +73,9 @@ Core logic lives in stateless utility modules:
 
 - **PixiStageController.js** — Pixi.js app lifecycle, note sprites, animation loop
 - **PixiStage.jsx** — React wrapper for the Pixi canvas
+- **stage managers under `src/components/stage/*`** — crowd/effects/lanes/notes managers
 - **useRhythmGameLogic.js** — Keyboard input (arrow keys), combo tracking, hype calculation
+- **rhythm sub-hooks under `src/hooks/rhythmGame/*`** — split audio/input/loop/scoring/state orchestration
 
 ### Custom Hooks — `src/hooks/`
 
@@ -83,7 +85,7 @@ Core logic lives in stateless utility modules:
 
 ### Data — `src/data/`
 
-Static game data: `venues.js`, `characters.js`, `songs.js`, `upgrades.js`, `hqItems.js`, `chatter.js`. Events are split by category under `data/events/` (band, gig, financial, special, transport).
+Static game data: `venues.js`, `characters.js`, `songs.js`, `upgrades.js`, `hqItems.js`, `chatter.js`. Event definitions live in `src/data/events/*` and are aggregated through `src/data/events.js`.
 
 ## Code Style
 
@@ -174,4 +176,4 @@ Additional docs: `docs/ARCHITECTURE.md` (system diagrams), `docs/STATE_TRANSITIO
 
 Commits use Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`).
 
-_Documentation sync: dependency/tooling baseline reviewed on 2026-02-17._
+_Documentation sync: dependency/tooling baseline reviewed on 2026-02-23._
