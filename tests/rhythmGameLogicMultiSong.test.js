@@ -193,18 +193,70 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
   })
 
   test('Quit logic does not trigger multi-song chaining', async () => {
-    // This test ensures that if the user quits (simulated by setting running=false and submitted=true),
-    // subsequent onEnded callbacks do NOT restart the loop.
-    // Note: The Quit handler logic is in Gig.jsx, but we can verify the behavior of useRhythmGameAudio
-    // if we manually set the flags that the Quit handler would set.
+    // Setup 2 songs in setlist
+    const song1 = {
+      id: 'song1',
+      name: 'Song 1',
+      bpm: 120,
+      duration: 60,
+      excerptDurationMs: 30000,
+      sourceOgg: 'song1.ogg'
+    }
+    const song2 = {
+      id: 'song2',
+      name: 'Song 2',
+      bpm: 120,
+      duration: 60,
+      excerptDurationMs: 30000,
+      sourceOgg: 'song2.ogg'
+    }
 
-    // However, playSongAtIndex doesn't currently check these flags (based on the provided plan step 1,
-    // I should add these checks!).
-    // Wait, step 1 said "Update onSongEnded callback: Add a check for !gameStateRef.current.running".
-    // I haven't done that part of the plan yet! I need to do that now.
+    const mockState = {
+      setlist: [song1, song2],
+      band: { members: [], harmony: 100 },
+      activeEvent: null,
+      hasUpgrade: () => false,
+      setLastGigStats: mockSetLastGigStats,
+      addToast: () => {},
+      gameMap: { nodes: { node1: { layer: 0 } } },
+      player: { currentNodeId: 'node1', money: 0 },
+      changeScene: mockChangeScene,
+      gigModifiers: {}
+    }
+    mockUseGameState.mock.mockImplementation(() => mockState)
+    mockAudioEngine.hasAudioAsset.mock.mockImplementation(() => true)
 
-    // Ah, I missed applying the change to `useRhythmGameAudio.js` for the check in `onSongEnded`.
-    // I only updated `Gig.jsx` to SET the flags.
-    // I need to update `useRhythmGameAudio.js` first.
+    // Capture onEnded
+    let onSong1Ended = null
+    mockAudioEngine.startGigPlayback.mock.mockImplementation(async ({ onEnded }) => {
+      onSong1Ended = onEnded
+      return true
+    })
+    mockAudioManager.ensureAudioContext.mock.mockImplementation(async () => true)
+
+    const { result } = renderHook(() => useRhythmGameLogic())
+
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 100))
+    })
+
+    // Assert song 1 started
+    assert.strictEqual(mockAudioEngine.startGigPlayback.mock.calls.length, 1)
+
+    // Simulate Quit: running = false, hasSubmittedResults = true
+    act(() => {
+      result.current.gameStateRef.current.running = false
+      result.current.gameStateRef.current.hasSubmittedResults = true
+    })
+
+    // Simulate onEnded (triggered by stopAudio in Quit handler)
+    await act(async () => {
+        // onSongEnded checks the flags and should return early
+        await onSong1Ended()
+        await new Promise(resolve => setTimeout(resolve, 50))
+    })
+
+    // Assert song 2 did NOT start
+    assert.strictEqual(mockAudioEngine.startGigPlayback.mock.calls.length, 1, 'Song 2 should NOT start after quit')
   })
 })
