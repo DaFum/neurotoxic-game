@@ -52,16 +52,21 @@ export const GigHUD = ({ stats, onLaneInput, gameStateRef }) => {
 
   return (
     <div className='absolute inset-0 z-30 pointer-events-none'>
+      {/* Toxic Mode Border Flash */}
+      {isToxicMode && (
+        <div className='absolute inset-0 z-0 toxic-border-flash pointer-events-none' />
+      )}
+
       <HecklerOverlay gameStateRef={gameStateRef} />
 
       {/* Input Zones with lane labels */}
-      <div className='absolute inset-0 z-40 flex pb-16 pt-32'>
+      <div className='absolute inset-0 z-40 flex pb-16 pt-32 pointer-events-none'>
         {[0, 1, 2].map(laneIndex => (
           <div
             key={laneIndex}
             role='button'
             aria-label={`${LANE_NAMES[laneIndex]} lane`}
-            className='flex-1 h-full cursor-pointer hover:bg-white/5 active:bg-white/10 transition-colors duration-75 pointer-events-auto relative'
+            className='flex-1 h-full cursor-pointer hover:bg-(--star-white)/5 active:bg-(--star-white)/10 transition-colors duration-75 pointer-events-auto relative'
             onMouseDown={() => onLaneInput && onLaneInput(laneIndex, true)}
             onMouseUp={() => onLaneInput && onLaneInput(laneIndex, false)}
             onMouseLeave={() => onLaneInput && onLaneInput(laneIndex, false)}

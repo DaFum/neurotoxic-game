@@ -499,3 +499,28 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
 .animate-confirm-pulse {
   animation: confirm-pulse 0.8s ease-in-out infinite;
 }
+
+/* ── Toxic Mode Flash ── */
+@keyframes toxic-border-flash-anim {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 0 20px var(--toxic-green-20),
+      inset 0 0 10px var(--toxic-green-20);
+    border-color: var(--toxic-green-20);
+    opacity: 0.8;
+  }
+
+  50% {
+    box-shadow:
+      inset 0 0 50px var(--toxic-green),
+      inset 0 0 20px var(--toxic-green-light);
+    border-color: var(--toxic-green);
+    opacity: 1;
+  }
+}
+
+.toxic-border-flash {
+  border: 4px solid var(--toxic-green);
+  animation: toxic-border-flash-anim 1s infinite alternate;
+}
