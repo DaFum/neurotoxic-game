@@ -85,7 +85,10 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
 
     // Mock parseSongNotes
     mockRhythmUtils.parseSongNotes.mock.mockImplementation((song, leadIn) => {
-        return (song.notes || []).map(n => ({ ...n, time: n.time + (leadIn || 0) }))
+      return (song.notes || []).map(n => ({
+        ...n,
+        time: n.time + (leadIn || 0)
+      }))
     })
 
     // Capture onEnded

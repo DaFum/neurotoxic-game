@@ -30,7 +30,7 @@ Tests use Node's built-in `node:test` module with `tsx` for ESM transpilation. T
 | Rendering | Pixi.js       | 8.16.0                                 |
 | Animation | Framer Motion | 12.34.0                                |
 | Styling   | Tailwind CSS  | 4.1.18                                 |
-| Audio     | Tone.js       | 15.1.22                                 |
+| Audio     | Tone.js       | 15.2.7                                 |
 
 **DO NOT upgrade**: React (stay 19.2.4), Vite (stay 7.3.1), Tailwind (stay 4.1.18). Node.js 22.3+ required.
 
@@ -177,4 +177,4 @@ Additional docs: `docs/ARCHITECTURE.md` (system diagrams), `docs/STATE_TRANSITIO
 
 Commits use Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`).
 
-_Documentation sync: dependency/tooling baseline reviewed on 2026-02-23._
+_Documentation sync: dependency/tooling baseline reviewed on 2026-02-19._
