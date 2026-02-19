@@ -213,7 +213,10 @@ _"Complexity is not an excuse for friction."_
 
 ## Maintenance
 
-- Audio: Ambient playback is started by main-menu tour actions via `AudioManager.startAmbient()`, preferring OGG playback with MIDI fallback; gig playback uses configured excerpts and bounded playback windows.
+- Audio: The audio architecture has been updated with the following principles:
+  - `AudioManager` consumes playback, mute, and transport state strictly through `audioEngine` facade wrappers (no direct Tone.js access).
+  - The rhythm loop and input timing now use `audioEngine.getGigTimeMs()` and `audioEngine.getTransportState()` as the single runtime clock source.
+  - Ambient playback continues to be initiated by main-menu tour actions via `AudioManager.startAmbient()`, with OGG-first and MIDI fallback behavior.
 - Performance: Heavy scenes are lazy-loaded in `App.jsx` via `createNamedLazyLoader` to reduce initial bundle execution and speed up first render.
 - UI: Toast taxonomy remains `success`/`error`/`warning`/`info`, with `info` rendered using the blue token (`--info-blue`).
 - Chatter: Default fallback chatter is limited to `MENU`, `OVERWORLD`, `PREGIG`, and `POSTGIG`; `GIG` requires explicit conditional chatter entries.

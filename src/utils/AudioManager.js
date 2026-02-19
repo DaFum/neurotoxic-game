@@ -1,4 +1,3 @@
-import * as Tone from 'tone'
 import * as audioEngine from './audioEngine.js'
 import { handleError } from './errorHandler.js'
 import { logger } from './logger.js'
@@ -25,7 +24,7 @@ class AudioSystem {
     return (
       this.currentSongId != null &&
       (audioEngine.isAmbientOggPlaying() ||
-        Tone.getTransport().state === 'started')
+        audioEngine.getTransportState() === 'started')
     )
   }
 
@@ -54,11 +53,11 @@ class AudioSystem {
       this.muted = savedMuted === 'true'
 
       // Initialize Audio Engine settings (but don't start Context yet)
-      audioEngine.setSFXVolume(this.muted ? 0 : this.sfxVolume)
-      audioEngine.setMusicVolume(this.muted ? 0 : this.musicVolume)
+      audioEngine.setSFXVolume(this.sfxVolume)
+      audioEngine.setMusicVolume(this.musicVolume)
 
       // Tone mute is handled globally by Volume node in engine if implemented, or we can use Destination
-      Tone.getDestination().mute = this.muted
+      audioEngine.setDestinationMute(this.muted)
 
       this.prefsLoaded = true
     } catch (error) {
@@ -84,7 +83,7 @@ class AudioSystem {
     // If ambient is already playing (OGG buffer or MIDI transport)
     if (this.currentSongId === 'ambient') {
       if (audioEngine.isAmbientOggPlaying()) return true
-      if (Tone.getTransport().state === 'started') return true
+      if (audioEngine.getTransportState() === 'started') return true
     }
 
     this.isStartingAmbient = true
@@ -146,7 +145,6 @@ class AudioSystem {
 
   /**
    * Resumes the paused music or starts ambient if none is loaded.
-   * Note: There is no pauseMusic() method — callers use stopMusic() instead.
    * We assume mutually exclusive playback states (either ambient or gig audio is active, not both).
    * @returns {Promise<boolean>} True when music is running or successfully started.
    */
@@ -159,12 +157,12 @@ class AudioSystem {
         return true
       }
 
-      if (Tone.getTransport().state === 'paused') {
+      if (audioEngine.getTransportState() === 'paused') {
         audioEngine.resumeAudio()
         return true
       }
 
-      if (Tone.getTransport().state !== 'started') {
+      if (audioEngine.getTransportState() !== 'started') {
         return await this.startAmbient()
       }
 
@@ -186,9 +184,9 @@ class AudioSystem {
 
       // Always re-apply volumes when unlocking to ensure engine state matches prefs
       // (engine nodes might have been created after init() calls)
-      audioEngine.setMusicVolume(this.muted ? 0 : this.musicVolume)
-      audioEngine.setSFXVolume(this.muted ? 0 : this.sfxVolume)
-      Tone.getDestination().mute = this.muted
+      audioEngine.setMusicVolume(this.musicVolume)
+      audioEngine.setSFXVolume(this.sfxVolume)
+      audioEngine.setDestinationMute(this.muted)
 
       return await audioEngine.ensureAudioContext()
     } catch (e) {
@@ -220,7 +218,7 @@ class AudioSystem {
     let operationSucceeded = true
     let appliedNow = false
     try {
-      appliedNow = audioEngine.setMusicVolume(this.muted ? 0 : next) !== false
+      appliedNow = audioEngine.setMusicVolume(next) !== false
       this.musicVolume = next
     } catch (e) {
       operationSucceeded = false
@@ -253,7 +251,7 @@ class AudioSystem {
     let operationSucceeded = true
     let appliedNow = false
     try {
-      appliedNow = audioEngine.setSFXVolume(this.muted ? 0 : next) !== false
+      appliedNow = audioEngine.setSFXVolume(next) !== false
       this.sfxVolume = next
     } catch (e) {
       operationSucceeded = false
@@ -285,9 +283,7 @@ class AudioSystem {
     this.muted = !this.muted
 
     try {
-      Tone.getDestination().mute = this.muted
-      audioEngine.setSFXVolume(this.muted ? 0 : this.sfxVolume)
-      audioEngine.setMusicVolume(this.muted ? 0 : this.musicVolume)
+      audioEngine.setDestinationMute(this.muted)
     } catch (e) {
       logger.warn('AudioSystem', 'Tone.js mute failed:', e)
     }

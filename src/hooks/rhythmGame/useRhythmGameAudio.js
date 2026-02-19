@@ -147,10 +147,9 @@ export const useRhythmGameAudio = ({
       // Function to play a specific song by index
       const playSongAtIndex = async index => {
         // Guard against continuing if the gig has been stopped or submitted
-        // For the first song (index 0), running is initially false, so we only check hasSubmittedResults
         if (
           gameStateRef.current.hasSubmittedResults ||
-          (index > 0 && !gameStateRef.current.running)
+          gameStateRef.current.isGameOver
         ) {
           logger.info(
             'RhythmGame',
@@ -160,7 +159,7 @@ export const useRhythmGameAudio = ({
         }
 
         if (index >= activeSetlist.length) {
-          gameStateRef.current.audioPlaybackEnded = true
+          gameStateRef.current.setlistCompleted = true
           gameStateRef.current.songTransitioning = false
           return
         }
@@ -173,7 +172,7 @@ export const useRhythmGameAudio = ({
         gameStateRef.current.rng = rng
 
         // Reset flags for new song
-        gameStateRef.current.audioPlaybackEnded = false
+        gameStateRef.current.setlistCompleted = false
         // Mark as transitioning to prevent premature finalization
         gameStateRef.current.songTransitioning = true
 
@@ -196,7 +195,7 @@ export const useRhythmGameAudio = ({
         const onSongEnded = () => {
           // Guard against continuing if the game has been stopped (e.g. Quit)
           if (
-            !gameStateRef.current.running ||
+            gameStateRef.current.isGameOver ||
             gameStateRef.current.hasSubmittedResults
           ) {
             logger.info(
@@ -215,7 +214,7 @@ export const useRhythmGameAudio = ({
               fallbackMessage: 'Failed to start next song!'
             })
             // If next song fails, ensure we end the gig
-            gameStateRef.current.audioPlaybackEnded = true
+            gameStateRef.current.setlistCompleted = true
             gameStateRef.current.songTransitioning = false
           })
         }
@@ -347,7 +346,6 @@ export const useRhythmGameAudio = ({
           ? currentSong.excerptDurationMs
           : 0
         gameStateRef.current.totalDuration = Math.max(noteDuration, audioDuration)
-        gameStateRef.current.running = true
 
         // Clear transitioning flag now that state is consistent
         gameStateRef.current.songTransitioning = false
@@ -366,7 +364,6 @@ export const useRhythmGameAudio = ({
         addToast,
         fallbackMessage: 'Gig initialization failed!'
       })
-      gameStateRef.current.running = false
       setIsAudioReady(false)
       isInitializingRef.current = false
     }

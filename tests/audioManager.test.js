@@ -15,6 +15,8 @@ test('AudioManager Tests', async t => {
     playSFX: mock.fn(),
     stopAudio: mock.fn(),
     resumeAudio: mock.fn(),
+    getTransportState: mock.fn(() => 'stopped'),
+    setDestinationMute: mock.fn(() => false),
     setupAudio: mock.fn(),
     ensureAudioContext: mock.fn(async () => true),
     isAmbientOggPlaying: mock.fn(() => false),
@@ -23,13 +25,6 @@ test('AudioManager Tests', async t => {
     disposeAudio: mock.fn()
   }
 
-  const mockTone = {
-    getDestination: mock.fn(() => ({ mute: false })),
-    getTransport: mock.fn(() => ({ state: 'stopped' }))
-  }
-
-  // Mock modules
-  mock.module('tone', { namedExports: mockTone })
   mock.module('../src/utils/audioEngine.js', { namedExports: mockAudioEngine })
 
   // Import the module under test
@@ -60,6 +55,15 @@ test('AudioManager Tests', async t => {
     const newMute = audioManager.toggleMute()
     assert.equal(newMute, !initialMute)
     assert.equal(audioManager.muted, !initialMute)
+    assert.equal(mockAudioEngine.setDestinationMute.mock.calls.length > 0, true)
+  })
+
+
+  await t.test('resumeMusic resumes paused transport via engine facade', async () => {
+    mockAudioEngine.getTransportState.mock.mockImplementation(() => 'paused')
+    const result = await audioManager.resumeMusic()
+    assert.equal(result, true)
+    assert.equal(mockAudioEngine.resumeAudio.mock.calls.length > 0, true)
   })
 
   await t.test('startAmbient calls playRandomAmbientOgg', async () => {

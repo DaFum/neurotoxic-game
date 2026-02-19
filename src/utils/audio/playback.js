@@ -525,6 +525,25 @@ export function resumeAudio() {
 }
 
 /**
+ * Returns the current Tone transport state.
+ * @returns {'started'|'stopped'|'paused'}
+ */
+export function getTransportState() {
+  return Tone.getTransport().state
+}
+
+/**
+ * Applies global destination mute.
+ * @param {boolean} muted - Whether the output destination should be muted.
+ * @returns {boolean} The applied mute state.
+ */
+export function setDestinationMute(muted) {
+  const nextMute = Boolean(muted)
+  Tone.getDestination().mute = nextMute
+  return nextMute
+}
+
+/**
  * Returns whether ambient OGG playback is currently active.
  * @returns {boolean}
  */

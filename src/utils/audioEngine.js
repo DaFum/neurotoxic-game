@@ -33,6 +33,8 @@ export {
   stopAudio,
   pauseAudio,
   resumeAudio,
+  getTransportState,
+  setDestinationMute,
   getAudioTimeMs
 } from './audio/playback.js'
 
