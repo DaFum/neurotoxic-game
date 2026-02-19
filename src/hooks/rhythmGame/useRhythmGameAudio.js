@@ -147,7 +147,7 @@ export const useRhythmGameAudio = ({
       // Function to play a specific song by index
       const playSongAtIndex = async index => {
         // Guard against continuing if the gig has been stopped or submitted
-                if (
+        if (
           gameStateRef.current.hasSubmittedResults ||
           gameStateRef.current.isGameOver
         ) {
