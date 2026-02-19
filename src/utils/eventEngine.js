@@ -313,6 +313,6 @@ export const resolveEventChoice = (choice, gameState) => {
     result,
     delta,
     outcomeText: choice.outcomeText ?? '',
-    description: result?.description ?? ''
+    description: result.description ?? ''
   }
 }

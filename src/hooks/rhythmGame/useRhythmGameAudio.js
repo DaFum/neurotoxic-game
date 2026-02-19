@@ -121,7 +121,7 @@ export const useRhythmGameAudio = ({
       gameStateRef.current.lanes[2].hitWindow =
         physics.hitWindows.bass + hitWindowBonus
 
-      let notes = []
+      // Prepare resolved setlist
       const activeSetlist = (
         setlist.length > 0
           ? setlist
@@ -144,157 +144,204 @@ export const useRhythmGameAudio = ({
         return songRef
       })
 
-      const songsToPlay = [activeSetlist[0]]
-      const currentSong = songsToPlay[0]
-      let audioDelay = 0
-
-      const rng = Math.random
-      gameStateRef.current.rng = rng
-
-      let parsedNotes = []
-      let bgAudioStarted = false
-      if (Array.isArray(currentSong.notes) && currentSong.notes.length > 0) {
-        parsedNotes = parseSongNotes(currentSong, NOTE_LEAD_IN_MS, {
-          onWarn: msg => logger.warn('RhythmGame', msg)
-        })
-
-        if (parsedNotes.length > 0) {
-          notes = notes.concat(parsedNotes)
+      // Function to play a specific song by index
+      const playSongAtIndex = async index => {
+        if (index >= activeSetlist.length) {
+          gameStateRef.current.audioPlaybackEnded = true
+          gameStateRef.current.songTransitioning = false
+          return
         }
-      }
 
-      if (currentSong.sourceOgg || currentSong.sourceMid) {
-        const excerptStart = currentSong.excerptStartMs || 0
-        const oggFilename =
-          currentSong.sourceOgg ||
-          currentSong.sourceMid.replace(/\.mid$/i, '.ogg')
-        const gigDurationMs = currentSong.excerptDurationMs || 30000
-        const assetFound = hasAudioAsset(oggFilename)
-        if (!assetFound) {
-          handleError(
-            new AudioError(
-              `Audio asset not found for "${currentSong.name}": looked up "${oggFilename}"`,
-              { songName: currentSong.name, oggFilename }
-            ),
-            { silent: true, fallbackMessage: 'Missing OGG audio asset' }
-          )
-        }
-        if (assetFound) {
-          const success = await startGigPlayback({
-            filename: oggFilename,
-            bufferOffsetMs: excerptStart,
-            delayMs: GIG_LEAD_IN_MS,
-            durationMs: gigDurationMs,
-            onEnded: () => {
-              gameStateRef.current.audioPlaybackEnded = true
-            }
+        const currentSong = activeSetlist[index]
+        let notes = []
+        let audioDelay = 0
+        let bgAudioStarted = false
+        const rng = Math.random
+        gameStateRef.current.rng = rng
+
+        // Reset flags for new song
+        gameStateRef.current.audioPlaybackEnded = false
+        // Reset hasSubmittedResults to ensure finalizeGig can run again if it was somehow triggered prematurely (though transitioning flag protects this)
+        gameStateRef.current.hasSubmittedResults = false
+
+        // Mark as transitioning to prevent premature finalization
+        gameStateRef.current.songTransitioning = true
+
+        // Clear old notes immediately to prevent spurious miss processing
+        // during async transition when the gig clock may be invalid
+        gameStateRef.current.notes = []
+        gameStateRef.current.nextMissCheckIndex = 0
+
+        // Parse Notes
+        if (Array.isArray(currentSong.notes) && currentSong.notes.length > 0) {
+          const parsedNotes = parseSongNotes(currentSong, NOTE_LEAD_IN_MS, {
+            onWarn: msg => logger.warn('RhythmGame', msg)
           })
+          if (parsedNotes.length > 0) {
+            notes = notes.concat(parsedNotes)
+          }
+        }
+
+        // Setup onEnded callback for chaining
+        const onSongEnded = () => {
+          // Guard against continuing if the game has been stopped (e.g. Quit)
+          if (!gameStateRef.current.running || gameStateRef.current.hasSubmittedResults) {
+            logger.info('RhythmGame', 'Gig stopped or submitted, ignoring onSongEnded chaining.')
+            return
+          }
+
+          logger.info('RhythmGame', `Song "${currentSong.name}" ended.`)
+          // Synchronously set transitioning flag to prevent race condition
+          gameStateRef.current.songTransitioning = true
+          playSongAtIndex(index + 1).catch(err => {
+             handleError(err, {
+              addToast,
+              fallbackMessage: 'Failed to start next song!'
+            })
+            // If next song fails, ensure we end the gig
+            gameStateRef.current.audioPlaybackEnded = true
+            gameStateRef.current.songTransitioning = false
+          })
+        }
+
+        // Start Audio
+        if (currentSong.sourceOgg || currentSong.sourceMid) {
+          const excerptStart = currentSong.excerptStartMs || 0
+          const oggFilename =
+            currentSong.sourceOgg ||
+            currentSong.sourceMid.replace(/\.mid$/i, '.ogg')
+          const gigDurationMs = currentSong.excerptDurationMs || 30000
+          const assetFound = hasAudioAsset(oggFilename)
+
+          if (!assetFound) {
+            handleError(
+              new AudioError(
+                `Audio asset not found for "${currentSong.name}": looked up "${oggFilename}"`,
+                { songName: currentSong.name, oggFilename }
+              ),
+              { silent: true, fallbackMessage: 'Missing OGG audio asset' }
+            )
+          }
+
+          if (assetFound) {
+            const success = await startGigPlayback({
+              filename: oggFilename,
+              bufferOffsetMs: excerptStart,
+              delayMs: GIG_LEAD_IN_MS,
+              durationMs: gigDurationMs,
+              onEnded: onSongEnded
+            })
+            if (success) {
+              bgAudioStarted = true
+              logger.info(
+                'RhythmGame',
+                `Gig audio: OGG buffer playback for "${currentSong.name}"`
+              )
+            }
+          }
+        }
+
+        if (!bgAudioStarted && currentSong.sourceMid) {
+          const excerptStart = currentSong.excerptStartMs || 0
+          const offsetSeconds = Math.max(0, excerptStart / 1000)
+          const gigPlaybackSeconds =
+            (currentSong.excerptDurationMs || 30000) / 1000
+          const rawGigStartTimeSec =
+            getAudioContextTimeSec() + GIG_LEAD_IN_MS / 1000
+          const toneGigStartTimeSec = getToneStartTimeSec(rawGigStartTimeSec)
+          startGigClock({ offsetMs: 0, startTimeSec: toneGigStartTimeSec })
+          const success = await playMidiFile(
+            currentSong.sourceMid,
+            offsetSeconds,
+            false,
+            0,
+            {
+              startTimeSec: toneGigStartTimeSec,
+              stopAfterSeconds: gigPlaybackSeconds,
+              useCleanPlayback: false,
+              onEnded: onSongEnded
+            }
+          )
           if (success) {
             bgAudioStarted = true
             logger.info(
               'RhythmGame',
-              `Gig audio: OGG buffer playback for "${currentSong.name}"`
+              `Gig audio: MIDI synthesis fallback for "${currentSong.name}"`
             )
           }
         }
-      }
 
-      if (!bgAudioStarted && currentSong.sourceMid) {
-        const excerptStart = currentSong.excerptStartMs || 0
-        const offsetSeconds = Math.max(0, excerptStart / 1000)
-        const gigPlaybackSeconds =
-          (currentSong.excerptDurationMs || 30000) / 1000
-        const rawGigStartTimeSec =
-          getAudioContextTimeSec() + GIG_LEAD_IN_MS / 1000
-        const toneGigStartTimeSec = getToneStartTimeSec(rawGigStartTimeSec)
-        startGigClock({ offsetMs: 0, startTimeSec: toneGigStartTimeSec })
-        const success = await playMidiFile(
-          currentSong.sourceMid,
-          offsetSeconds,
-          false,
-          0,
-          {
-            startTimeSec: toneGigStartTimeSec,
-            stopAfterSeconds: gigPlaybackSeconds,
-            useCleanPlayback: false,
-            onEnded: () => {
-              gameStateRef.current.audioPlaybackEnded = true
+        if (!bgAudioStarted && notes.length > 0) {
+          startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
+          const success = await playSongFromData(
+            currentSong,
+            GIG_LEAD_IN_MS / 1000,
+            {
+              onEnded: onSongEnded
             }
-          }
-        )
-        if (success) {
-          bgAudioStarted = true
-          logger.info(
-            'RhythmGame',
-            `Gig audio: MIDI synthesis fallback for "${currentSong.name}"`
           )
-        }
-      }
-
-      if (!bgAudioStarted && parsedNotes.length > 0) {
-        startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
-        const success = await playSongFromData(
-          currentSong,
-          GIG_LEAD_IN_MS / 1000,
-          {
-            onEnded: () => {
-              gameStateRef.current.audioPlaybackEnded = true
-            }
+          if (success) {
+            bgAudioStarted = true
+            logger.info(
+              'RhythmGame',
+              `Gig audio: note data synthesis for "${currentSong.name}"`
+            )
           }
-        )
-        if (success) {
-          bgAudioStarted = true
-          logger.info(
-            'RhythmGame',
-            `Gig audio: note data synthesis for "${currentSong.name}"`
-          )
         }
-      }
 
-      if (notes.length === 0 || !bgAudioStarted) {
-        if (notes.length === 0) {
-          songsToPlay.forEach(song => {
-            const songNotes = generateNotesForSong(song, {
+        // Fallback: Procedural Generation
+        if (notes.length === 0 || !bgAudioStarted) {
+          if (notes.length === 0) {
+            const songNotes = generateNotesForSong(currentSong, {
               leadIn: NOTE_LEAD_IN_MS,
               random: rng
             })
             notes = notes.concat(songNotes)
-          })
+          }
+
+          if (!bgAudioStarted) {
+            audioDelay = GIG_LEAD_IN_MS / 1000
+            startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
+            await startMetalGenerator(
+              currentSong,
+              audioDelay,
+              {
+                onEnded: onSongEnded
+              },
+              rng
+            )
+            logger.info(
+              'RhythmGame',
+              `Gig audio: procedural metal generator for "${currentSong.name}"`
+            )
+          }
         }
 
-        if (!bgAudioStarted) {
-          audioDelay = GIG_LEAD_IN_MS / 1000
-          startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
-          await startMetalGenerator(
-            currentSong,
-            audioDelay,
-            {
-              onEnded: () => {
-                gameStateRef.current.audioPlaybackEnded = true
-              }
-            },
-            rng
-          )
-          logger.info(
-            'RhythmGame',
-            `Gig audio: procedural metal generator for "${currentSong.name}"`
-          )
+        // Update Game State
+        gameStateRef.current.notes = notes
+        gameStateRef.current.nextMissCheckIndex = 0
+
+        const maxNoteTime = notes.reduce((max, n) => Math.max(max, n.time), 0)
+        const buffer = 4000
+        const noteDuration = maxNoteTime + buffer
+        const audioDuration = Number.isFinite(currentSong.excerptDurationMs)
+          ? currentSong.excerptDurationMs
+          : 0
+        gameStateRef.current.totalDuration = Math.max(noteDuration, audioDuration)
+        gameStateRef.current.running = true
+
+        // Clear transitioning flag now that state is consistent
+        gameStateRef.current.songTransitioning = false
+
+        // Show Toast for song start
+        if (activeSetlist.length > 1) {
+          addToast(`Now Playing: ${currentSong.name}`, 'info')
         }
       }
 
-      gameStateRef.current.notes = notes
-      gameStateRef.current.nextMissCheckIndex = 0
-      gameStateRef.current.hasSubmittedResults = false
-      gameStateRef.current.audioPlaybackEnded = false
+      // Start the first song
+      await playSongAtIndex(0)
 
-      const maxNoteTime = notes.reduce((max, n) => Math.max(max, n.time), 0)
-      const buffer = 4000
-      const noteDuration = maxNoteTime + buffer
-      const audioDuration = Number.isFinite(currentSong.excerptDurationMs)
-        ? currentSong.excerptDurationMs
-        : 0
-      gameStateRef.current.totalDuration = Math.max(noteDuration, audioDuration)
-      gameStateRef.current.running = true
     } catch (error) {
       handleError(error, {
         addToast,

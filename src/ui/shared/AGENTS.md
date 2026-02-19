@@ -8,6 +8,8 @@ Reusable controls consumed by scene/ui components:
 
 - `SettingsPanel.jsx`
 - `VolumeSlider.jsx`
+- `StatBox` — Displays a single statistic with an icon (exported from `index.jsx`).
+- `ProgressBar` — Displays a progress bar with label (exported from `index.jsx`).
 - `index.jsx` (exports)
 
 ## Best Practices
