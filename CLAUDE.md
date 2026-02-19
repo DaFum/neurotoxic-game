@@ -64,7 +64,7 @@ Core logic lives in stateless utility modules:
 - **economyEngine.js** — Ticket sales, merch, expenses, gig financials.
 - **simulationUtils.js** — Daily updates (harmony decay, mood, stamina, social growth, van degradation).
 - **mapGenerator.js** — Procedural Germany map with venue nodes and travel connections.
-- **audioEngine.js** — Facade for audio/ MIDI playback, timing clock, and WebAudio synth (see `src/utils/audio/`).
+- **audioEngine.js** — Facade for audio/MIDI playback, timing clock, and WebAudio synth (see `src/utils/audio/`).
 - **rhythmUtils.js** — 3-lane note spawning, hit windows (Perfect/Good/Miss).
 - **socialEngine.js** — Follower growth and viral mechanics.
 - **errorHandler.js** — Typed errors (`GameError`, `StateError`, `AudioError`), toast dispatch.
@@ -150,7 +150,7 @@ useEffect(() => {
 
 ### Audio
 
-Production requires HTTPS (WebAudio API mixed-content policy). Ambient tracks play full MIDI duration. Gig tracks play first 30-60 second excerpts. Logic split in `src/utils/audio/`.
+Production requires HTTPS (WebAudio API mixed-content policy). Ambient tracks play full MIDI duration. Gig tracks play first 30-60 second excerpts. Audio logic is implemented in `src/utils/audio/`.
 
 ## Sub-Agent Documentation
 
