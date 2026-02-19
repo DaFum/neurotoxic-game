@@ -12,7 +12,7 @@
 | --------------- | ------------------------------------------------ |
 | **Frontend**    | React 19.2.4, Vite 7.3.1, JavaScript (ESModules) |
 | **Game Engine** | Pixi.js 8.16.0                                   |
-| **Styling**     | Tailwind CSS 4.1.18, Framer Motion 12.34.0       |
+| **Styling**     | Tailwind CSS 4.2.0, Framer Motion 12.34.0        |
 | **Audio**       | Tone.js 15.1.22 (WebAudio buffers)               |
 
 ## Project Structure
@@ -53,7 +53,7 @@ Notes: `npm run test` uses Node's built-in test runner with `tsx`; `npm run test
 
 ## Critical Constraints
 
-1. **Version Pinning**: Keep React at 19.2.4, Vite at 7.3.1, and Tailwind at 4.1.18 unless a task explicitly requests an upgrade
+1. **Version Pinning**: Keep React at 19.2.4, Vite at 7.3.1, and Tailwind at 4.2.0 unless a task explicitly requests an upgrade
 2. **Tailwind v4 Syntax**: Use `@import "tailwindcss";` (NOT `@tailwind base`)
 3. **CSS Variables**: Never use hardcoded colors - use `var(--toxic-green)`, `var(--void-black)`, etc.
 4. **State Safety**: Always validate `player.money >= 0` and `band.harmony > 0`
