@@ -23,4 +23,4 @@
 - **Mitigation:** Code review guardrail: flag any future changes that pass variable content into `innerHTML`.
 - **False positive notes:** Current usage is safe because it assigns an empty string.
 
-_Documentation sync: dependency/tooling baseline reviewed on 2026-02-17._
+_Documentation sync: dependency/tooling baseline reviewed on 2026-02-23._

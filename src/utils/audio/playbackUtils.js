@@ -18,7 +18,7 @@ export const normalizeMidiPlaybackOptions = options => {
     ? Math.max(0, options.stopAfterSeconds)
     : null
   const startTimeSec = Number.isFinite(options?.startTimeSec)
-    ? options.startTimeSec
+    ? Math.max(0, options.startTimeSec)
     : null
 
   return {

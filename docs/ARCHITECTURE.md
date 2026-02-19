@@ -1,436 +1,60 @@
 # Neurotoxic Game Architecture
 
-This document provides a comprehensive overview of the game's architecture, including module relationships, state management, and component interactions.
+This document is a code-aligned architecture snapshot for the current `main` app runtime.
 
-## Table of Contents
+## Runtime Overview
 
-1. [High-Level Architecture](#high-level-architecture)
-2. [Module Dependency Graph](#module-dependency-graph)
-3. [State Management](#state-management)
-4. [Scene Flow](#scene-flow)
-5. [Component Hierarchy](#component-hierarchy)
-6. [Error Handling](#error-handling)
+- **App shell**: `src/main.jsx` mounts `App` and imports global styles from `src/index.css`.
+- **Root composition**: `src/App.jsx` wraps the game in `ErrorBoundary` + `GameStateProvider`, then renders scene content, overlays, analytics, and dev-only debug tools.
+- **Scene routing**: scene selection is controlled by `currentScene` in global state (`INTRO`, `MENU`, `SETTINGS`, `CREDITS`, `GAMEOVER`, `OVERWORLD`, `PREGIG`, `GIG`, `POSTGIG`).
+- **Lazy loading**: heavy scenes are lazy-loaded through `createNamedLazyLoader` (`src/utils/lazySceneLoader.js`) to reduce first-render bundle work.
 
----
+## Source Layout (Current)
 
-## High-Level Architecture
-
-```mermaid
-graph TB
-    subgraph "Entry Points"
-        HTML[index.html]
-        Main[main.jsx]
-    end
-
-    subgraph "Application Layer"
-        App[App.jsx]
-        EB[ErrorBoundary]
-    end
-
-    subgraph "State Management"
-        GSP[GameStateProvider]
-        GR[gameReducer]
-        IS[initialState]
-        AC[actionCreators]
-    end
-
-    subgraph "Scenes"
-        Menu[MainMenu]
-        OW[Overworld]
-        PG[PreGig]
-        Gig[Gig]
-        POG[PostGig]
-        Set[Settings]
-        GO[GameOver]
-        Cred[Credits]
-    end
-
-    subgraph "UI Components"
-        HUD[HUD]
-        EM[EventModal]
-        BHQ[BandHQ]
-        Toast[ToastOverlay]
-        DL[DebugLogViewer]
-    end
-
-    subgraph "Game Components"
-        PSC[PixiStageController]
-        PS[PixiStage]
-        GH[GigHUD]
-        CO[ChatterOverlay]
-        TM[TutorialManager]
-    end
-
-    subgraph "Core Systems"
-        EE[eventEngine]
-        ECO[economyEngine]
-        SIM[simulationUtils]
-        MG[mapGenerator]
-        AM[AudioManager]
-        AE[audioEngine]
-    end
-
-    subgraph "Data Layer"
-        CHAR[characters]
-        VEN[venues]
-        EVT[events]
-        UPG[upgrades]
-        HQI[hqItems]
-    end
-
-    HTML --> Main
-    Main --> EB
-    EB --> App
-    App --> GSP
-    GSP --> GR
-    GR --> IS
-    GR --> AC
-
-    GSP --> Menu
-    GSP --> OW
-    GSP --> PG
-    GSP --> Gig
-    GSP --> POG
-    GSP --> Set
-    GSP --> GO
-    GSP --> Cred
-
-    App --> HUD
-    App --> EM
-    App --> Toast
-    App --> DL
-    App --> TM
-
-    OW --> BHQ
-    OW --> CO
-    OW --> MG
-    OW --> ECO
-    OW --> AM
-
-    Gig --> PSC
-    Gig --> PS
-    Gig --> GH
-    Gig --> AE
-    Gig --> SIM
-
-    GSP --> EE
-    POG --> ECO
-    PG --> SIM
-
-    EE --> EVT
-    MG --> VEN
-    IS --> CHAR
-    BHQ --> HQI
-    BHQ --> UPG
-```
-
----
-
-## Module Dependency Graph
-
-```mermaid
-graph LR
-    subgraph "Context Layer"
-        GameState[GameState.jsx]
-        initialState[initialState.js]
-        gameReducer[gameReducer.js]
-        actionCreators[actionCreators.js]
-    end
-
-    subgraph "Utils Layer"
-        eventEngine[eventEngine.js]
-        economyEngine[economyEngine.js]
-        simulationUtils[simulationUtils.js]
-        mapGenerator[mapGenerator.js]
-        AudioManager[AudioManager.js]
-        audioEngine[audioEngine.js]
-        errorHandler[errorHandler.js]
-        logger[logger.js]
-        gameStateUtils[gameStateUtils.js]
-        rhythmUtils[rhythmUtils.js]
-        gigStats[gigStats.js]
-    end
-
-    subgraph "Data Layer"
-        characters[characters.js]
-        venues[venues.js]
-        events[events/]
-        upgrades[upgrades.js]
-        hqItems[hqItems.js]
-        songs[songs.js]
-    end
-
-    GameState --> initialState
-    GameState --> gameReducer
-    GameState --> actionCreators
-    GameState --> eventEngine
-    GameState --> mapGenerator
-    GameState --> errorHandler
-    GameState --> logger
-
-    gameReducer --> initialState
-    gameReducer --> gameStateUtils
-    gameReducer --> simulationUtils
-    gameReducer --> logger
-
-    initialState --> characters
-
-    eventEngine --> events
-    economyEngine --> venues
-    mapGenerator --> venues
-
-    errorHandler --> logger
-```
-
----
-
-## State Management
-
-### State Structure
-
-```mermaid
-graph TB
-    subgraph "Global State"
-        CS[currentScene]
-
-        subgraph "Player State"
-            PM[money]
-            PD[day]
-            PL[location]
-            PF[fame]
-            PV[van]
-        end
-
-        subgraph "Band State"
-            BM[members]
-            BH[harmony]
-            BI[inventory]
-            BP[performance]
-        end
-
-        subgraph "Social State"
-            SI[instagram]
-            ST[tiktok]
-            SY[youtube]
-        end
-
-        GM[gameMap]
-        CG[currentGig]
-        SL[setlist]
-        AE[activeEvent]
-        TS[toasts]
-        GM2[gigModifiers]
-    end
-```
-
-### Action Flow
-
-```mermaid
-sequenceDiagram
-    participant C as Component
-    participant D as Dispatch
-    participant AC as ActionCreator
-    participant R as Reducer
-    participant S as State
-
-    C->>AC: Call action creator
-    AC->>D: Return action object
-    D->>R: Dispatch action
-    R->>R: Process action type
-    R->>S: Return new state
-    S->>C: Re-render with new state
-```
-
-### Action Types
-
-| Action Type         | Description          | Payload                    |
-| ------------------- | -------------------- | -------------------------- |
-| `CHANGE_SCENE`      | Navigate to a scene  | `string` (scene name)      |
-| `UPDATE_PLAYER`     | Update player stats  | `object` (partial player)  |
-| `UPDATE_BAND`       | Update band stats    | `object` (partial band)    |
-| `UPDATE_SOCIAL`     | Update social media  | `object` (partial social)  |
-| `SET_MAP`           | Set generated map    | `object` (map data)        |
-| `START_GIG`         | Begin gig sequence   | `object` (venue)           |
-| `SET_ACTIVE_EVENT`  | Show event modal     | `object` (event) or `null` |
-| `APPLY_EVENT_DELTA` | Apply event effects  | `object` (delta)           |
-| `ADVANCE_DAY`       | Progress to next day | none                       |
-| `LOAD_GAME`         | Load saved state     | `object` (save data)       |
-| `RESET_STATE`       | Reset to initial     | none                       |
-
----
-
-## Scene Flow
-
-```mermaid
-stateDiagram-v2
-    [*] --> MENU
-
-    MENU --> OVERWORLD: Start Game
-    MENU --> SETTINGS: Open Settings
-    MENU --> CREDITS: View Credits
-
-    OVERWORLD --> PREGIG: Select Venue
-    OVERWORLD --> MENU: Return to Menu
-    OVERWORLD --> GAMEOVER: Stranded
-
-    PREGIG --> GIG: Start Performance
-    PREGIG --> OVERWORLD: Cancel
-
-    GIG --> POSTGIG: Gig Complete
-    GIG --> POSTGIG: Band Collapsed
-
-    POSTGIG --> OVERWORLD: Continue Tour
-    POSTGIG --> GAMEOVER: Bankrupt
-
-    GAMEOVER --> MENU: Try Again
-
-    SETTINGS --> MENU: Back
-    CREDITS --> MENU: Back
-```
-
----
-
-## Component Hierarchy
-
-```mermaid
-graph TB
-    subgraph "App.jsx"
-        GSP[GameStateProvider]
-
-        subgraph "Global Overlays"
-            HUD[HUD]
-            EM[EventModal]
-            Toast[ToastOverlay]
-            Debug[DebugLogViewer]
-            TM[TutorialManager]
-        end
-
-        subgraph "Scene Router"
-            GC[GameContent]
-        end
-    end
-
-    GSP --> GC
-    GSP --> HUD
-    GSP --> EM
-    GSP --> Toast
-    GSP --> Debug
-    GSP --> TM
-
-    subgraph "Overworld Scene"
-        OW[Overworld]
-        TR[ToggleRadio]
-        BHQ[BandHQ]
-        CO[ChatterOverlay]
-        MapSVG[Map SVG]
-        Nodes[Node Components]
-    end
-
-    GC --> OW
-    OW --> TR
-    OW --> BHQ
-    OW --> CO
-    OW --> MapSVG
-    OW --> Nodes
-
-    subgraph "BandHQ Modal"
-        Stats[Stats Tab]
-        Shop[Shop Tab]
-        Upgrades[Upgrades Tab]
-        SB[StatBox]
-        PB[ProgressBar]
-    end
-
-    BHQ --> Stats
-    BHQ --> Shop
-    BHQ --> Upgrades
-    Stats --> SB
-    Stats --> PB
-
-    subgraph "Gig Scene"
-        Gig[Gig]
-        RGL[useRhythmGameLogic]
-        GH[GigHUD]
-        PS[PixiStage]
-        PSC[PixiStageController]
-    end
-
-    GC --> Gig
-    Gig --> RGL
-    Gig --> GH
-    Gig --> PS
-    PS --> PSC
-```
-
----
-
-## Error Handling
-
-### Error Hierarchy
-
-```mermaid
-graph TB
-    GE[GameError]
-    GE --> SE[StateError]
-    GE --> AE[AudioError]
-    GE --> STE[StorageError]
-    GE --> RE[RenderError]
-    GE --> GLE[GameLogicError]
-```
-
-### Error Flow
-
-```mermaid
-sequenceDiagram
-    participant C as Component
-    participant EH as ErrorHandler
-    participant L as Logger
-    participant T as Toast
-    participant EL as ErrorLog
-
-    C->>EH: handleError(error, options)
-    EH->>EH: Classify error
-    EH->>EL: Store in error log
-
-    alt High Severity
-        EH->>L: logger.error()
-        EH->>T: Show error toast
-    else Medium Severity
-        EH->>L: logger.warn()
-        EH->>T: Show warning toast
-    else Low Severity
-        EH->>L: logger.debug()
-    end
-```
-
-### Error Categories
-
-| Category     | Description              | Severity | Recoverable |
-| ------------ | ------------------------ | -------- | ----------- |
-| `STATE`      | State management errors  | High     | Yes         |
-| `RENDER`     | Rendering/display errors | High     | No          |
-| `AUDIO`      | Audio playback issues    | Low      | Yes         |
-| `STORAGE`    | LocalStorage operations  | Medium   | Yes         |
-| `GAME_LOGIC` | Game rule violations     | Medium   | Yes         |
-| `UNKNOWN`    | Unclassified errors      | Medium   | Yes         |
-
----
-
-## File Structure
-
-```
+```text
 src/
-├── main.jsx                    # Entry point
-├── App.jsx                     # Root component
-├── index.css                   # Global styles
-│
-├── context/                    # State management
-│   ├── GameState.jsx          # Provider & hooks
-│   ├── initialState.js        # Default state
-│   ├── gameReducer.js         # Reducer logic
-│   └── actionCreators.js      # Action factories
-│
-├── scenes/                     # Major game scenes
+├── App.jsx
+├── main.jsx
+├── index.css
+├── assets/
+├── components/
+│   ├── PixiStage.jsx
+│   ├── PixiStageController.js
+│   ├── GigHUD.jsx
+│   ├── HecklerOverlay.jsx
+│   ├── ChatterOverlay.jsx
+│   ├── ToggleRadio.jsx
+│   ├── TutorialManager.jsx
+│   └── stage/
+│       ├── utils.js              # Stage-specific utilities
+│       └── ...                   # Pixi manager classes
+├── context/
+│   ├── GameState.jsx
+│   ├── initialState.js
+│   ├── gameReducer.js
+│   └── actionCreators.js
+├── data/
+│   ├── events.js
+│   ├── venues.js
+│   ├── songs.js
+│   ├── chatter.js
+│   ├── upgrades.js
+│   ├── upgradeCatalog.js
+│   ├── hqItems.js
+│   └── events/
+├── hooks/
+│   ├── useTravelLogic.js
+│   ├── usePurchaseLogic.js
+│   ├── useAudioControl.js
+│   ├── useRhythmGameLogic.js
+│   └── rhythmGame/
+│       ├── useRhythmGameAudio.js
+│       ├── useRhythmGameInput.js
+│       ├── useRhythmGameLoop.js
+│       ├── useRhythmGameScoring.js
+│       └── useRhythmGameState.js
+├── scenes/
+│   ├── IntroVideo.jsx
 │   ├── MainMenu.jsx
 │   ├── Overworld.jsx
 │   ├── PreGig.jsx
@@ -439,94 +63,79 @@ src/
 │   ├── Settings.jsx
 │   ├── Credits.jsx
 │   └── GameOver.jsx
-│
-├── ui/                         # UI components
+├── ui/
 │   ├── HUD.jsx
 │   ├── EventModal.jsx
-│   ├── BandHQ.jsx
-│   ├── UpgradeMenu.jsx
 │   ├── ToastOverlay.jsx
 │   ├── DebugLogViewer.jsx
+│   ├── BandHQ.jsx
+│   ├── GlitchButton.jsx
 │   ├── CrashHandler.jsx
-│   └── GlitchButton.jsx
-│
-├── components/                 # Game components
-│   ├── PixiStageController.js
-│   ├── PixiStage.jsx
-│   ├── GigHUD.jsx
-│   ├── ChatterOverlay.jsx
-│   └── TutorialManager.jsx
-│
-├── hooks/                      # Custom hooks
-│   ├── useRhythmGameLogic.js
-│   ├── useTravelLogic.js
-│   └── usePurchaseLogic.js
-│
-├── utils/                      # Utility modules
-│   ├── eventEngine.js
-│   ├── economyEngine.js
-│   ├── simulationUtils.js
-│   ├── mapGenerator.js
-│   ├── AudioManager.js
-│   ├── audioEngine.js
-│   ├── errorHandler.js
-│   ├── logger.js
-│   ├── gameStateUtils.js
-│   ├── rhythmUtils.js
-│   ├── gigStats.js
-│   ├── imageGen.js
-│   ├── pixiStageUtils.js
-│   ├── socialEngine.js
-│   └── eventResolver.js
-│
-├── systems/                    # Game systems
-│   └── SoundSynthesizer.js
-│
-└── data/                       # Static data
-    ├── characters.js
-    ├── venues.js
-    ├── songs.js
-    ├── upgrades.js
-    ├── hqItems.js
-    ├── chatter.js
-    └── events/
-        ├── band.js
-        ├── gig.js
-        ├── special.js
-        ├── financial.js
-        └── transport.js
+│   └── shared/
+└── utils/
+    ├── audio/
+    │   ├── assets.js
+    │   ├── constants.js
+    │   ├── playback.js
+    │   ├── procedural.js
+    │   ├── setup.js
+    │   ├── midiUtils.js
+    │   ├── playbackUtils.js
+    │   ├── selectionUtils.js
+    │   ├── songUtils.js
+    │   └── timingUtils.js
+    ├── audioEngine.js
+    ├── AudioManager.js
+    ├── eventEngine.js
+    ├── mapGenerator.js
+    ├── economyEngine.js
+    ├── simulationUtils.js
+    ├── gameStateUtils.js
+    ├── saveValidator.js
+    └── ...
 ```
+
+## State Model
+
+Global state lives in `GameStateProvider` and is mutated only through reducer actions.
+
+### High-level slices
+
+- `currentScene`
+- `player` (money/day/time/location/van/fame/tutorial state)
+- `band` (members/harmony/inventory/performance)
+- `social`
+- `gameMap`
+- `currentGig`, `setlist`, `lastGigStats`
+- `activeEvent`, `pendingEvents`, `eventCooldowns`, `activeStoryFlags`
+- `toasts`
+- `settings`
+- `gigModifiers`
+
+### Guardrails implemented in reducer
+
+- `player.money` is clamped to `>= 0`
+- `band.harmony` is clamped to `1..100`
+- Loaded scene values are validated against an allowlist
+- State restoration is validated through `saveValidator` before reducer ingestion
+
+## Core Flow
+
+1. **Intro/Menu**
+   - `INTRO` auto/transitions into `MENU`.
+2. **Overworld loop**
+   - Map travel, event checks, HQ/shop actions, resource updates.
+3. **Gig loop**
+   - `START_GIG` sets the venue and transitions to `PREGIG`, then `GIG`, then `POSTGIG`.
+4. **Post-gig resolution**
+   - Payout/stats/effects applied, then return to `OVERWORLD` or go to `GAMEOVER` if fail conditions are met.
+
+## Diagnostics and Reliability
+
+- `ErrorBoundary` (`src/ui/CrashHandler.jsx`) protects the app shell.
+- `logger` + `DebugLogViewer` provide structured runtime diagnostics in development.
+- `saveValidator` validates load payloads before state restoration.
 
 ---
 
-## Dependency Injection Pattern
-
-The codebase uses a lightweight dependency injection approach through React Context:
-
-```javascript
-// Provider wraps the app
-;<GameStateProvider>
-  <App />
-</GameStateProvider>
-
-// Components consume via hook
-const { player, updatePlayer, addToast } = useGameState()
-```
-
-This pattern ensures:
-
-- **Testability**: Components can receive mock state/actions
-- **Decoupling**: Components don't import state directly
-- **Consistency**: Single source of truth for game state
-
----
-
-## Best Practices
-
-1. **State Updates**: Always use action creators instead of raw dispatch
-2. **Error Handling**: Use the centralized `handleError` function
-3. **Logging**: Use the `logger` utility for consistent logging
-4. **Type Safety**: Action types are centralized in `ActionTypes` enum
-5. **Modularity**: Keep files focused on single responsibilities
-
-_Documentation sync: dependency/tooling baseline reviewed on 2026-02-17._
+_Last updated: 2026-02-23._

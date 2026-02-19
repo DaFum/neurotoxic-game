@@ -5,7 +5,7 @@ import {
   isValidMidiNote,
   buildMidiTrackEvents,
   normalizeMidiPitch
-} from '../src/utils/midiTrackUtils.js'
+} from '../src/utils/audio/midiUtils.js'
 
 test('isPercussionTrack', async t => {
   await t.test('detects percussion instrument metadata', () => {

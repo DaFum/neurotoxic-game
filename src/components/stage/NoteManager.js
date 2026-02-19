@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js'
 import { handleError } from '../../utils/errorHandler.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
-import { calculateNoteY } from '../../utils/pixiStageUtils.js'
+import { calculateNoteY } from './utils.js'
 
 const NOTE_SPAWN_LEAD_MS = 2000
 const NOTE_JITTER_RANGE = 10

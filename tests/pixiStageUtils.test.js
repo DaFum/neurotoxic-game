@@ -6,7 +6,7 @@ import {
   calculateLaneStartX,
   calculateNoteY,
   RHYTHM_LAYOUT
-} from '../src/utils/pixiStageUtils.js'
+} from '../src/components/stage/utils.js'
 
 test('calculateNoteY returns target position at hit time', () => {
   const result = calculateNoteY({

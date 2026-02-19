@@ -536,4 +536,4 @@ Run formatting with:
 npm run format
 ```
 
-_Documentation sync: dependency/tooling baseline reviewed on 2026-02-17._
+_Documentation sync: dependency/tooling baseline reviewed on 2026-02-23._

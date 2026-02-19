@@ -9,17 +9,17 @@ import { stopAudio, stopAudioInternal } from './playback.js'
 import { midiUrlMap, oggCandidates, loadAudioBuffer } from './assets.js'
 import { createAndConnectBufferSource } from './sharedBufferUtils.js'
 import { calculateTimeFromTicks, preprocessTempoMap } from '../rhythmUtils.js'
-import { selectRandomItem } from '../audioSelectionUtils.js'
+import { selectRandomItem } from './selectionUtils.js'
 import {
   resolveAssetUrl,
   normalizeMidiPlaybackOptions
-} from '../audioPlaybackUtils.js'
+} from './playbackUtils.js'
 import {
   isPercussionTrack,
   isValidMidiNote,
   buildMidiTrackEvents,
   normalizeMidiPitch
-} from '../midiTrackUtils.js'
+} from './midiUtils.js'
 import { SONGS_DB } from '../../data/songs.js'
 
 const MidiParser = ToneJsMidi?.Midi ?? ToneJsMidi?.default?.Midi ?? null

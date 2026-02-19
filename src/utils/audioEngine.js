@@ -44,3 +44,9 @@ export {
   playRandomAmbientOgg,
   playNoteAtTime
 } from './audio/procedural.js'
+
+export * from './audio/midiUtils.js'
+export * from './audio/playbackUtils.js'
+export * from './audio/selectionUtils.js'
+export * from './audio/songUtils.js'
+export * from './audio/timingUtils.js'

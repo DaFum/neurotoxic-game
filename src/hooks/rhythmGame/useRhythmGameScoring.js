@@ -10,7 +10,7 @@ import {
   playNoteAtTime,
   stopAudio
 } from '../../utils/audioEngine'
-import { getScheduledHitTimeMs } from '../../utils/audioTimingUtils'
+import { getScheduledHitTimeMs } from '../../utils/audio/timingUtils'
 import { checkHit } from '../../utils/rhythmUtils'
 
 /**
@@ -108,6 +108,8 @@ export const useRhythmGameScoring = ({
         if (next <= 0 && !gameStateRef.current.isGameOver) {
           setIsGameOver(true)
           gameStateRef.current.isGameOver = true
+          // Halt the game loop and prevent audio chaining
+          gameStateRef.current.running = false
           stopAudio() // Immediate stop to prevent stuttering/desync
           addToast('BAND COLLAPSED', 'error')
 

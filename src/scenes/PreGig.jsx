@@ -4,7 +4,7 @@ import { useGameState } from '../context/GameState'
 import { SONGS_DB } from '../data/songs'
 import { getGigModifiers } from '../utils/simulationUtils'
 import { audioManager } from '../utils/AudioManager'
-import { getSongId } from '../utils/songUtils'
+import { getSongId } from '../utils/audio/songUtils'
 import { handleError } from '../utils/errorHandler'
 
 const GIG_MODIFIER_OPTIONS = [
@@ -79,7 +79,7 @@ export const PreGig = () => {
       return
     }
 
-    updatePlayer({ money: player.money - cost })
+    updatePlayer({ money: Math.max(0, player.money - cost) })
     updateBand({ harmony: Math.min(100, band.harmony + 15) })
     addToast('Meeting held. Vibes are better.', 'success')
   }

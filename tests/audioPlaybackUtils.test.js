@@ -6,7 +6,7 @@ import {
   buildMidiUrlMap,
   encodePublicAssetPath,
   resolveAssetUrl
-} from '../src/utils/audioPlaybackUtils.js'
+} from '../src/utils/audio/playbackUtils.js'
 
 test('normalizeMidiPlaybackOptions', async t => {
   await t.test('uses defaults when options are undefined', () => {
@@ -86,6 +86,24 @@ test('normalizeMidiPlaybackOptions', async t => {
         startTimeSec: 12.5
       }
     )
+    assert.deepStrictEqual(
+      normalizeMidiPlaybackOptions({ startTimeSec: -5 }),
+      {
+        useCleanPlayback: true,
+        onEnded: null,
+        stopAfterSeconds: null,
+        startTimeSec: 0
+      }
+    )
+    assert.deepStrictEqual(
+      normalizeMidiPlaybackOptions({ startTimeSec: Number.NaN }),
+      {
+        useCleanPlayback: true,
+        onEnded: null,
+        stopAfterSeconds: null,
+        startTimeSec: null
+      }
+    )
   })
 })
 
@@ -117,91 +135,93 @@ test('encodePublicAssetPath', async t => {
   })
 })
 
-test('resolveAssetUrl for MIDI files', async t => {
-  await t.test('prefers bundled URLs', () => {
-    const midiUrlMap = { 'track.mid': '/assets/track.mid' }
-    assert.deepStrictEqual(resolveAssetUrl('track.mid', midiUrlMap), {
-      url: '/assets/track.mid',
-      source: 'bundled'
-    })
-  })
-
-  await t.test('resolves bundled URLs via basename', () => {
-    const midiUrlMap = { 'track.mid': '/assets/track.mid' }
-    assert.deepStrictEqual(resolveAssetUrl('midi/track.mid', midiUrlMap), {
-      url: '/assets/track.mid',
-      source: 'bundled'
-    })
-  })
-
-  await t.test('falls back to public path when missing', () => {
-    const midiUrlMap = {}
-    assert.deepStrictEqual(resolveAssetUrl('midi/track 01.mid', midiUrlMap), {
-      url: '/assets/midi/track%2001.mid',
-      source: 'public'
-    })
-  })
-
-  await t.test('normalizes relative filenames and encodes spaces', () => {
-    const midiUrlMap = {}
-    assert.deepStrictEqual(resolveAssetUrl('./track 02.mid', midiUrlMap), {
-      url: '/assets/track%2002.mid',
-      source: 'public'
-    })
-  })
-
-  await t.test('supports custom public base path', () => {
-    const midiUrlMap = {}
-    assert.deepStrictEqual(
-      resolveAssetUrl('midi/track.mid', midiUrlMap, '/public/assets/'),
-      {
-        url: '/public/assets/midi/track.mid',
-        source: 'public'
-      }
-    )
-  })
-
-  await t.test('supports relative base path defaults', () => {
-    const midiUrlMap = {}
-    assert.deepStrictEqual(
-      resolveAssetUrl('midi/track.mid', midiUrlMap, './assets'),
-      {
-        url: './assets/midi/track.mid',
-        source: 'public'
-      }
-    )
-  })
-
-  await t.test('returns nulls for empty filename', () => {
-    const midiUrlMap = {}
-    assert.deepStrictEqual(resolveAssetUrl('', midiUrlMap), {
-      url: null,
-      source: null
-    })
-  })
-})
-
 test('resolveAssetUrl', async t => {
-  await t.test('resolves bundled URLs for non-MIDI assets', () => {
-    const assetMap = { 'track.ogg': '/assets/track.ogg' }
-    assert.deepStrictEqual(resolveAssetUrl('track.ogg', assetMap), {
-      url: '/assets/track.ogg',
-      source: 'bundled'
+  await t.test('MIDI assets', async t => {
+    await t.test('prefers bundled URLs', () => {
+      const midiUrlMap = { 'track.mid': '/assets/track.mid' }
+      assert.deepStrictEqual(resolveAssetUrl('track.mid', midiUrlMap), {
+        url: '/assets/track.mid',
+        source: 'bundled'
+      })
+    })
+
+    await t.test('resolves bundled URLs via basename', () => {
+      const midiUrlMap = { 'track.mid': '/assets/track.mid' }
+      assert.deepStrictEqual(resolveAssetUrl('midi/track.mid', midiUrlMap), {
+        url: '/assets/track.mid',
+        source: 'bundled'
+      })
+    })
+
+    await t.test('falls back to public path when missing', () => {
+      const midiUrlMap = {}
+      assert.deepStrictEqual(resolveAssetUrl('midi/track 01.mid', midiUrlMap), {
+        url: '/assets/midi/track%2001.mid',
+        source: 'public'
+      })
+    })
+
+    await t.test('normalizes relative filenames and encodes spaces', () => {
+      const midiUrlMap = {}
+      assert.deepStrictEqual(resolveAssetUrl('./track 02.mid', midiUrlMap), {
+        url: '/assets/track%2002.mid',
+        source: 'public'
+      })
+    })
+
+    await t.test('supports custom public base path', () => {
+      const midiUrlMap = {}
+      assert.deepStrictEqual(
+        resolveAssetUrl('midi/track.mid', midiUrlMap, '/public/assets/'),
+        {
+          url: '/public/assets/midi/track.mid',
+          source: 'public'
+        }
+      )
+    })
+
+    await t.test('supports relative base path defaults', () => {
+      const midiUrlMap = {}
+      assert.deepStrictEqual(
+        resolveAssetUrl('midi/track.mid', midiUrlMap, './assets'),
+        {
+          url: './assets/midi/track.mid',
+          source: 'public'
+        }
+      )
+    })
+
+    await t.test('returns nulls for empty filename', () => {
+      const midiUrlMap = {}
+      assert.deepStrictEqual(resolveAssetUrl('', midiUrlMap), {
+        url: null,
+        source: null
+      })
     })
   })
 
-  await t.test('resolves via basename for nested paths', () => {
-    const assetMap = { 'track.ogg': '/assets/track.ogg' }
-    assert.deepStrictEqual(resolveAssetUrl('audio/track.ogg', assetMap), {
-      url: '/assets/track.ogg',
-      source: 'bundled'
+  await t.test('non-MIDI assets', async t => {
+    await t.test('resolves bundled URLs for non-MIDI assets', () => {
+      const assetMap = { 'track.ogg': '/assets/track.ogg' }
+      assert.deepStrictEqual(resolveAssetUrl('track.ogg', assetMap), {
+        url: '/assets/track.ogg',
+        source: 'bundled'
+      })
     })
-  })
 
-  await t.test('falls back to public path for missing assets', () => {
-    assert.deepStrictEqual(resolveAssetUrl('audio/track.ogg', {}), {
-      url: '/assets/audio/track.ogg',
-      source: 'public'
+    await t.test('resolves via basename for nested paths', () => {
+      const assetMap = { 'track.ogg': '/assets/track.ogg' }
+      assert.deepStrictEqual(resolveAssetUrl('audio/track.ogg', assetMap), {
+        url: '/assets/track.ogg',
+        source: 'bundled'
+      })
+    })
+
+    await t.test('falls back to public path for missing assets', () => {
+      assert.deepStrictEqual(resolveAssetUrl('audio/track.ogg', {}), {
+        url: '/assets/audio/track.ogg',
+        source: 'public'
+      })
     })
   })
 })
