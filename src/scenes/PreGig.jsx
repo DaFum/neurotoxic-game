@@ -79,7 +79,7 @@ export const PreGig = () => {
       return
     }
 
-    updatePlayer({ money: player.money - cost })
+    updatePlayer({ money: Math.max(0, player.money - cost) })
     updateBand({ harmony: Math.min(100, band.harmony + 15) })
     addToast('Meeting held. Vibes are better.', 'success')
   }

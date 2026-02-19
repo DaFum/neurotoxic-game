@@ -20,7 +20,7 @@ Evidence indicates a single-page React entry point and localStorage-based persis
 
 - **React/Vite SPA runtime:** App bootstrap and component tree are mounted client-side in `src/main.jsx`.【F:src/main.jsx†L1-L11】
 - **Game state + persistence:** Game state is stored in memory and persisted to localStorage (`neurotoxic_v3_save`, `neurotoxic_global_settings`).【F:src/context/GameState.jsx†L70-L260】
-- **Audio subsystem:** MIDI assets are fetched via `fetch` and played with Tone.js/Howler.js wrappers for gameplay audio.【F:src/utils/audio/playback.js】【F:package.json†L19-L28】
+- **Audio subsystem:** MIDI assets are fetched via `fetch` and played with Tone.js wrappers for gameplay audio.【F:src/utils/audio/playback.js】【F:package.json†L19-L28】
 
 ### Data flows and trust boundaries
 

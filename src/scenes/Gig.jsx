@@ -6,14 +6,21 @@ import { GigHUD } from '../components/GigHUD'
 import { IMG_PROMPTS, getGenImageUrl } from '../utils/imageGen'
 import { audioManager } from '../utils/AudioManager'
 import { GlitchButton } from '../ui/GlitchButton'
+import { buildGigStatsSnapshot } from '../utils/gigStats'
 
 /**
  * The core Rhythm Game scene.
  * Orchestrates audio, visualizers (PixiJS), and game logic.
  */
 export const Gig = () => {
-  const { currentGig, changeScene, addToast, activeEvent, setActiveEvent } =
-    useGameState()
+  const {
+    currentGig,
+    changeScene,
+    addToast,
+    activeEvent,
+    setActiveEvent,
+    setLastGigStats
+  } = useGameState()
   const chaosContainerRef = useRef(null)
   const hasUnlockedAudioRef = useRef(false)
 
@@ -66,7 +73,13 @@ export const Gig = () => {
                     // Audio cleanup failed, continue with scene transition
                   } finally {
                     setActiveEvent(null)
-                    changeScene('OVERWORLD')
+                    const snapshot = buildGigStatsSnapshot(
+                      gameStateRef.current.score,
+                      gameStateRef.current.stats,
+                      gameStateRef.current.toxicTimeTotal
+                    )
+                    setLastGigStats(snapshot)
+                    changeScene('POSTGIG')
                   }
                 }
               }
@@ -110,7 +123,8 @@ export const Gig = () => {
     activeEvent,
     setActiveEvent,
     changeScene,
-    addToast
+    addToast,
+    setLastGigStats
   ])
 
   /**

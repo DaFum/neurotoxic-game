@@ -13,6 +13,7 @@ npm run dev        # Vite dev server at http://localhost:5173
 npm run build      # Production build to ./dist
 npm run preview    # Preview production build locally
 npm run test       # Node test runner (--import tsx --experimental-test-module-mocks)
+npm run test:e2e   # Playwright end-to-end tests
 npm run lint       # ESLint
 npm run format     # Prettier --write .
 ```
