@@ -51,11 +51,16 @@ export const GigHUD = ({ stats, onLaneInput, gameStateRef }) => {
           : 'text-(--ash-gray)/50'
 
   return (
-    <div className={`absolute inset-0 z-30 pointer-events-none ${isToxicMode ? 'toxic-border-flash' : ''}`}>
+    <div className='absolute inset-0 z-30 pointer-events-none'>
+      {/* Toxic Mode Border Flash */}
+      {isToxicMode && (
+        <div className='absolute inset-0 z-0 toxic-border-flash pointer-events-none' />
+      )}
+
       <HecklerOverlay gameStateRef={gameStateRef} />
 
       {/* Input Zones with lane labels */}
-      <div className='absolute inset-0 z-40 flex pb-16 pt-32'>
+      <div className='absolute inset-0 z-40 flex pb-16 pt-32 pointer-events-none'>
         {[0, 1, 2].map(laneIndex => (
           <div
             key={laneIndex}

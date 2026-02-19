@@ -11,7 +11,7 @@ mock.module('../src/components/HecklerOverlay.jsx', {
   }
 })
 
-test('GigHUD: renders toxic border flash when isToxicMode is true', async (t) => {
+test('GigHUD: renders toxic border flash element when isToxicMode is true', async (t) => {
   setupJSDOM()
   t.after(cleanup)
   t.after(teardownJSDOM)
@@ -31,12 +31,16 @@ test('GigHUD: renders toxic border flash when isToxicMode is true', async (t) =>
   const gameStateRef = { current: { projectiles: [] } }
 
   const { container } = render(<GigHUD stats={stats} gameStateRef={gameStateRef} />)
-  const rootDiv = container.firstChild
 
-  assert.ok(rootDiv.classList.contains('toxic-border-flash'), 'Should have toxic-border-flash class')
+  // Look for the specific element with the class inside the container
+  const flashElement = container.querySelector('.toxic-border-flash')
+
+  assert.ok(flashElement, 'Should find an element with toxic-border-flash class')
+  // Ensure it's not the root element itself (it should be a child now)
+  assert.notEqual(flashElement, container.firstChild, 'The flash element should be a child, not the root container')
 })
 
-test('GigHUD: does not render toxic border flash when isToxicMode is false', async (t) => {
+test('GigHUD: does not render toxic border flash element when isToxicMode is false', async (t) => {
   setupJSDOM()
   t.after(cleanup)
   t.after(teardownJSDOM)
@@ -55,7 +59,8 @@ test('GigHUD: does not render toxic border flash when isToxicMode is false', asy
   const gameStateRef = { current: { projectiles: [] } }
 
   const { container } = render(<GigHUD stats={stats} gameStateRef={gameStateRef} />)
-  const rootDiv = container.firstChild
 
-  assert.ok(!rootDiv.classList.contains('toxic-border-flash'), 'Should NOT have toxic-border-flash class')
+  const flashElement = container.querySelector('.toxic-border-flash')
+
+  assert.strictEqual(flashElement, null, 'Should NOT find an element with toxic-border-flash class')
 })
