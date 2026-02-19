@@ -18,25 +18,43 @@ export const GlitchButton = ({
     <button
       onClick={onClick}
       disabled={disabled}
+      aria-disabled={disabled}
       className={`
-        relative px-8 py-4 bg-(--void-black) text-(--toxic-green)
-        border-2 border-(--toxic-green)
+        relative px-8 py-4 bg-(--void-black)
         font-[Metal_Mania] text-xl font-bold uppercase tracking-widest
         transition-all duration-100
-        hover:bg-(--toxic-green) hover:text-(--void-black)
-        hover:translate-x-1 hover:-translate-y-1
-        hover:shadow-[4px_4px_0px_var(--blood-red)]
-        active:translate-x-0 active:translate-y-0
-        disabled:opacity-50 disabled:cursor-not-allowed
         group
+        ${
+          disabled
+            ? 'border-2 border-(--ash-gray) text-(--ash-gray) cursor-not-allowed opacity-60'
+            : `border-2 border-(--toxic-green) text-(--toxic-green)
+               hover:bg-(--toxic-green) hover:text-(--void-black)
+               hover:translate-x-1 hover:-translate-y-1
+               hover:shadow-[4px_4px_0px_var(--blood-red)]
+               active:translate-x-0 active:translate-y-0 active:shadow-none`
+        }
         ${className}
       `}
     >
-      <span className='relative z-10 group-hover:animate-pulse'>
+      <span
+        className={`relative z-10 ${disabled ? '' : 'group-hover:animate-pulse'}`}
+      >
         {children}
       </span>
+      {/* Diagonal stripe overlay when disabled */}
+      {disabled && (
+        <span
+          className='absolute inset-0 pointer-events-none opacity-10'
+          style={{
+            backgroundImage:
+              'repeating-linear-gradient(45deg, transparent, transparent 4px, var(--ash-gray) 4px, var(--ash-gray) 6px)'
+          }}
+        />
+      )}
       {/* Glitch Overlay Effect on Hover */}
-      <span className='absolute inset-0 bg-white opacity-0 group-hover:opacity-10 mix-blend-difference pointer-events-none' />
+      {!disabled && (
+        <span className='absolute inset-0 bg-(--star-white) opacity-0 group-hover:opacity-10 mix-blend-difference pointer-events-none' />
+      )}
     </button>
   )
 }

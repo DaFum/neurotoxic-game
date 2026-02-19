@@ -14,6 +14,7 @@
   --toxic-green-light: #3f6;
   --toxic-green-glow: rgb(0 255 65 / 60%);
   --toxic-green-20: rgb(0 255 65 / 20%);
+  --toxic-green-10: rgb(0 255 65 / 10%);
 
   /* Death-Metal-Schwarz */
   --void-black: #0a0a0a;
@@ -27,6 +28,8 @@
   --blood-red-bright: #f00;
   --rust-orange: #c50;
   --warning-yellow: #fc0;
+  --warning-yellow-30: rgb(255 204 0 / 30%);
+  --warning-yellow-50: rgb(255 204 0 / 50%);
 
   /* Kosmische Farben (für "Lost Scriptures"-Thema) */
   --cosmic-purple: #60c;
@@ -217,4 +220,310 @@ button {
   100% {
     transform: rotate(0deg) scale(1);
   }
+}
+
+/* Scene Transitions */
+.scene-enter {
+  animation: scene-fade-in 0.4s ease-out;
+}
+
+@keyframes scene-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Credits scroll */
+.animate-credits-scroll {
+  animation: credits-scroll 20s linear forwards;
+}
+
+@keyframes credits-scroll {
+  from {
+    transform: translateY(60vh);
+    opacity: 0;
+  }
+
+  5% {
+    opacity: 1;
+  }
+
+  95% {
+    opacity: 1;
+  }
+
+  to {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+
+/* Shimmer scan effect for buttons */
+@keyframes shimmer {
+  from {
+    transform: translateX(-100%) skewX(-12deg);
+  }
+
+  to {
+    transform: translateX(200%) skewX(-12deg);
+  }
+}
+
+/* Pulse glow for borders */
+@keyframes pulse-glow {
+  from,
+  to {
+    box-shadow: 0 0 5px var(--toxic-green-20);
+  }
+
+  50% {
+    box-shadow:
+      0 0 20px var(--toxic-green-20),
+      0 0 40px var(--toxic-green-10);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Typewriter flicker for subtitles */
+@keyframes type-cursor {
+  0%,
+  100% {
+    border-color: var(--toxic-green);
+  }
+
+  50% {
+    border-color: transparent;
+  }
+}
+
+/* Score count-up flash */
+@keyframes score-flash {
+  0% {
+    color: var(--star-white);
+    text-shadow: 0 0 20px var(--star-white);
+  }
+
+  100% {
+    color: var(--toxic-green);
+    text-shadow: 0 0 10px var(--toxic-green);
+  }
+}
+
+/* Stat bar fill */
+@keyframes bar-fill {
+  from {
+    width: 0%;
+  }
+}
+
+.animate-bar-fill {
+  animation: bar-fill 0.8s ease-out;
+}
+
+/* Dramatic zoom for Game Over */
+@keyframes doom-zoom {
+  0% {
+    transform: scale(3);
+    opacity: 0;
+    filter: blur(20px);
+  }
+
+  60% {
+    opacity: 1;
+    filter: blur(0);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+.animate-doom-zoom {
+  animation: doom-zoom 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Stagger children fade in */
+@keyframes stagger-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Neon text flicker */
+@keyframes neon-flicker {
+  0%,
+  19.999%,
+  22%,
+  62.999%,
+  64%,
+  64.999%,
+  70%,
+  100% {
+    opacity: 1;
+    text-shadow:
+      0 0 4px var(--toxic-green),
+      0 0 20px var(--toxic-green),
+      0 0 40px var(--toxic-green);
+  }
+
+  20%,
+  21.999%,
+  63%,
+  63.999%,
+  65%,
+  69.999% {
+    opacity: 0.5;
+    text-shadow: none;
+  }
+}
+
+.animate-neon-flicker {
+  animation: neon-flicker 3s infinite;
+}
+
+/* Van bounce for HUD */
+@keyframes hud-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+/* Fuel gauge low warning */
+@keyframes fuel-warning {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-fuel-warning {
+  animation: fuel-warning 1s ease-in-out infinite;
+}
+
+/* ── UX: Focus ring for keyboard navigation ── */
+:focus-visible {
+  outline: 2px solid var(--toxic-green);
+  outline-offset: 2px;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--toxic-green);
+  outline-offset: 2px;
+  box-shadow: 0 0 12px var(--toxic-green-20);
+}
+
+/* ── UX: Custom range slider (VolumeSlider) ── */
+input[type='range'].vol-slider {
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: var(--ash-gray);
+  border-radius: 0;
+  outline: none;
+}
+
+input[type='range'].vol-slider:focus-visible {
+  outline: 2px solid var(--toxic-green);
+  outline-offset: 4px;
+}
+
+input[type='range'].vol-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: var(--toxic-green);
+  border: 2px solid var(--void-black);
+  cursor: pointer;
+  box-shadow: 0 0 8px var(--toxic-green-20);
+}
+
+input[type='range'].vol-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: var(--toxic-green);
+  border: 2px solid var(--void-black);
+  border-radius: 0;
+  cursor: pointer;
+  box-shadow: 0 0 8px var(--toxic-green-20);
+}
+
+input[type='range'].vol-slider::-webkit-slider-thumb:hover {
+  background: var(--star-white);
+  box-shadow: 0 0 12px var(--toxic-green);
+}
+
+input[type='range'].vol-slider::-moz-range-thumb:hover {
+  background: var(--star-white);
+  box-shadow: 0 0 12px var(--toxic-green);
+}
+
+/* ── UX: Confirm pulse for travel nodes ── */
+@keyframes confirm-pulse {
+  from,
+  to {
+    box-shadow:
+      0 0 8px var(--warning-yellow),
+      0 0 16px var(--warning-yellow-30);
+  }
+
+  50% {
+    box-shadow:
+      0 0 16px var(--warning-yellow),
+      0 0 32px var(--warning-yellow-50);
+  }
+}
+
+.animate-confirm-pulse {
+  animation: confirm-pulse 0.8s ease-in-out infinite;
+}
+
+/* ── Toxic Mode Flash ── */
+@keyframes toxic-border-flash-anim {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 0 20px var(--toxic-green-20),
+      inset 0 0 10px var(--toxic-green-20);
+    border-color: var(--toxic-green-20);
+    opacity: 0.8;
+  }
+
+  50% {
+    box-shadow:
+      inset 0 0 50px var(--toxic-green),
+      inset 0 0 20px var(--toxic-green-light);
+    border-color: var(--toxic-green);
+    opacity: 1;
+  }
+}
+
+.toxic-border-flash {
+  border: 4px solid var(--toxic-green);
+  animation: toxic-border-flash-anim 1s infinite alternate;
 }

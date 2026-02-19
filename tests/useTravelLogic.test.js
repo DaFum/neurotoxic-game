@@ -54,6 +54,12 @@ describe('useTravelLogic', () => {
   test('handleTravel initiates travel when valid', () => {
     const { result, targetNode } = setupTravelScenario(useTravelLogic)
 
+    // First click: sets pending state
+    act(() => {
+      result.current.handleTravel(targetNode)
+    })
+
+    // Second click: confirms travel
     act(() => {
       result.current.handleTravel(targetNode)
     })
@@ -111,7 +117,10 @@ describe('useTravelLogic', () => {
   test('onTravelComplete updates state and finalizes travel', () => {
     const { result, props, targetNode } = setupTravelScenario(useTravelLogic)
 
-    // Start travel
+    // Start travel (requires 2 clicks)
+    act(() => {
+      result.current.handleTravel(targetNode)
+    })
     act(() => {
       result.current.handleTravel(targetNode)
     })

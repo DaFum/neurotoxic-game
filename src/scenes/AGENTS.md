@@ -163,6 +163,7 @@ return (
 - **Architecture**:
   - Uses `useRhythmGameLogic()` hook for game loop
   - Uses `<PixiStage />` component for canvas rendering
+  - Uses `<GigHUD />` component for UI overlay
   - Keyboard inputs: A, S, D (lanes 0, 1, 2)
   - Touch inputs: Tap on lane columns
 - **Pixi.js Memory Management**: MUST follow cleanup pattern:
@@ -271,7 +272,7 @@ When modifying a scene, verify:
 - **Data**: Reference `src/data/venues.js`, `src/data/songs.js`
 - **Utils**: Use `eventEngine`, `economyEngine`, `mapGenerator`
 - **UI**: Import shared components from `src/ui/`
-- **Components**: Use `PixiStage`, `TutorialManager`, `ChatterOverlay`
+- **Components**: Use `PixiStage`, `GigHUD`, `TutorialManager`, `ChatterOverlay`
 
 ---
 

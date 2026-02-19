@@ -56,6 +56,7 @@ graph TB
     subgraph "Game Components"
         PSC[PixiStageController]
         PS[PixiStage]
+        GH[GigHUD]
         CO[ChatterOverlay]
         TM[TutorialManager]
     end
@@ -108,6 +109,7 @@ graph TB
 
     Gig --> PSC
     Gig --> PS
+    Gig --> GH
     Gig --> AE
     Gig --> SIM
 
@@ -348,12 +350,14 @@ graph TB
     subgraph "Gig Scene"
         Gig[Gig]
         RGL[useRhythmGameLogic]
+        GH[GigHUD]
         PS[PixiStage]
         PSC[PixiStageController]
     end
 
     GC --> Gig
     Gig --> RGL
+    Gig --> GH
     Gig --> PS
     PS --> PSC
 ```
@@ -449,6 +453,7 @@ src/
 ├── components/                 # Game components
 │   ├── PixiStageController.js
 │   ├── PixiStage.jsx
+│   ├── GigHUD.jsx
 │   ├── ChatterOverlay.jsx
 │   └── TutorialManager.jsx
 │

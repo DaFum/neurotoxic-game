@@ -157,40 +157,22 @@ export const PixiStage = ({ logic }) => {
 ```jsx
 export const GigHUD = ({ stats }) => {
   return (
-    <div className='absolute top-4 left-4 right-4 z-20 pointer-events-none'>
-      <div className='flex justify-between items-start'>
-        {/* Left: Score & Accuracy */}
-        <div className='font-[Courier_New] text-(--toxic-green)'>
-          <div className='text-2xl font-bold'>
-            SCORE: {stats.score.toLocaleString()}
-          </div>
-          <div className='text-lg'>ACC: {stats.accuracy.toFixed(1)}%</div>
-        </div>
+    <div className={`absolute inset-0 z-30 pointer-events-none ${isToxicMode ? 'toxic-border-flash' : ''}`}>
+      <HecklerOverlay gameStateRef={gameStateRef} />
 
-        {/* Right: Combo & Energy */}
-        <div className='text-right'>
-          <div
-            className={`text-3xl font-bold ${
-              stats.combo > 30 ? 'text-(--blood-red) animate-pulse' : ''
-            }`}
-          >
-            {stats.combo}x
+      {/* Input Zones & Stats Overlay (Score, Combo, Overload) omitted for brevity */}
+
+      {/* Health Bar (Bottom Center) - Segmented */}
+      <div className='absolute bottom-20 left-1/2 -translate-x-1/2 w-[28rem] z-10 pointer-events-none'>
+        {/* ... */}
+        {isToxicMode && (
+          <div className='mt-2 text-(--blood-red) animate-neon-flicker font-bold tracking-widest text-center font-[var(--font-display)] text-sm'>
+            TOXIC MODE ACTIVE
           </div>
-          <div className='w-32 h-4 bg-(--shadow-black) border border-(--toxic-green)'>
-            <div
-              className='h-full bg-(--toxic-green) transition-all duration-200'
-              style={{ width: `${stats.energy}%` }}
-            />
-          </div>
-        </div>
+        )}
       </div>
 
-      {/* Toxic Mode Indicator */}
-      {stats.isToxicMode && (
-        <div className="mt-4 text-center text-2xl text-(--blood-red) animate-pulse font-['Metal_Mania']">
-          ⚠ TOXIC MODE ACTIVE ⚠
-        </div>
-      )}
+      {/* Controls Hint & Game Over Overlay omitted for brevity */}
     </div>
   )
 }

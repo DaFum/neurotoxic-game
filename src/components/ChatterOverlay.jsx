@@ -20,34 +20,99 @@ const SCENE_LABELS = {
 }
 
 /**
- * Displays an animated social chatter capsule for the active scene.
+ * Per-scene visual theme for the chatter box.
+ * Each entry defines border color, accent color, icon, etc.
+ */
+const SCENE_STYLES = {
+  OVERWORLD: {
+    accent: 'var(--toxic-green)',
+    borderColor: 'border-(--toxic-green)',
+    labelColor: 'text-(--toxic-green)',
+    speakerColor: 'text-(--warning-yellow)',
+    barColor: 'bg-(--toxic-green)',
+    icon: '\uD83D\uDE90'
+  },
+  PREGIG: {
+    accent: 'var(--warning-yellow)',
+    borderColor: 'border-(--warning-yellow)',
+    labelColor: 'text-(--warning-yellow)',
+    speakerColor: 'text-(--toxic-green)',
+    barColor: 'bg-(--warning-yellow)',
+    icon: '\uD83C\uDFB8'
+  },
+  GIG: {
+    accent: 'var(--blood-red)',
+    borderColor: 'border-(--blood-red)',
+    labelColor: 'text-(--blood-red)',
+    speakerColor: 'text-(--star-white)',
+    barColor: 'bg-(--blood-red)',
+    icon: '\uD83D\uDD25'
+  },
+  POSTGIG: {
+    accent: 'var(--toxic-green)',
+    borderColor: 'border-(--toxic-green)',
+    labelColor: 'text-(--toxic-green)',
+    speakerColor: 'text-(--star-white)',
+    barColor: 'bg-(--toxic-green)',
+    icon: '\uD83C\uDF7B'
+  },
+  MENU: {
+    accent: 'var(--toxic-green)',
+    borderColor: 'border-(--toxic-green)',
+    labelColor: 'text-(--toxic-green)',
+    speakerColor: 'text-(--warning-yellow)',
+    barColor: 'bg-(--toxic-green)',
+    icon: '\uD83D\uDCE1'
+  },
+  GAMEOVER: {
+    accent: 'var(--blood-red)',
+    borderColor: 'border-(--blood-red)',
+    labelColor: 'text-(--blood-red)',
+    speakerColor: 'text-(--ash-gray)',
+    barColor: 'bg-(--blood-red)',
+    icon: '\uD83D\uDC80'
+  }
+}
+
+const DEFAULT_STYLE = SCENE_STYLES.MENU
+
+/**
+ * Displays an animated social chatter box that is always visible on top of all content.
  *
- * @param {object} props - Component props.
- * @param {object} props.gameState - Global game state.
+ * Positioning:
+ * - OVERWORLD: bottom-left near the bus / event log area
+ * - All other scenes: bottom-center of the window
+ *
+ * z-index: 200 — higher than every other UI layer (CRT=50, EventModal=100, etc.)
+ * so chatter text is ALWAYS readable and never overlapped.
+ *
+ * Visual style adapts per scene — different border colors, accent bars, and icons.
+ *
+ * @param {object} props
+ * @param {object} props.gameState - Read-only game state slice.
  * @param {number} [props.performance=0] - Current gig performance score (0-100).
  * @param {number} [props.combo=0] - Current gig combo count.
- * @param {boolean} [props.staticPosition=false] - Enables local anchoring mode.
- * @returns {JSX.Element} Overlay with transient chatter content.
  */
-export const ChatterOverlay = ({
-  gameState,
-  performance = 0,
-  combo = 0,
-  staticPosition = false
-}) => {
+export const ChatterOverlay = ({ gameState, performance = 0, combo = 0 }) => {
   const stateRef = useRef(gameState)
   const [messages, setMessages] = useState([])
 
+  const currentScene = gameState.currentScene
+
   const sceneLabel = useMemo(
-    () => SCENE_LABELS[gameState.currentScene] || 'Band Feed',
-    [gameState.currentScene]
+    () => SCENE_LABELS[currentScene] || 'Band Feed',
+    [currentScene]
+  )
+
+  const sceneStyle = useMemo(
+    () => SCENE_STYLES[currentScene] || DEFAULT_STYLE,
+    [currentScene]
   )
 
   useEffect(() => {
     stateRef.current = gameState
   }, [gameState])
 
-  // Track props in ref to access fresh values inside recursive timeout without restarting loop
   const propsRef = useRef({ performance, combo })
   useEffect(() => {
     propsRef.current = { performance, combo }
@@ -68,8 +133,10 @@ export const ChatterOverlay = ({
         if (!active) return
 
         const currentState = stateRef.current
-        // Note: getRandomChatter now relies solely on state, unused performance/combo params removed
-        const result = getRandomChatter({ ...currentState, ...propsRef.current })
+        const result = getRandomChatter({
+          ...currentState,
+          ...propsRef.current
+        })
 
         if (result) {
           const { text, speaker: fixedSpeaker } = result
@@ -128,12 +195,15 @@ export const ChatterOverlay = ({
     }
   }, [])
 
-  const wrapperClassName = staticPosition
-    ? 'relative z-20 pointer-events-none w-[min(22rem,88vw)]'
-    : 'fixed top-24 right-4 md:right-8 z-20 pointer-events-none w-[min(24rem,90vw)]'
+  // Scene-aware positioning:
+  // OVERWORLD = bottom-left (near the bus), everything else = bottom-center
+  const isOverworld = currentScene === 'OVERWORLD'
+  const positionClassName = isOverworld
+    ? 'fixed bottom-28 left-8 z-[200] pointer-events-none w-[min(22rem,85vw)]'
+    : 'fixed bottom-16 left-1/2 -translate-x-1/2 z-[200] pointer-events-none w-[min(24rem,90vw)]'
 
   return (
-    <div className={wrapperClassName} role='status' aria-live='polite'>
+    <div className={positionClassName} role='status' aria-live='polite'>
       <AnimatePresence mode='popLayout'>
         {messages.map(msg => (
           <motion.div
@@ -141,26 +211,56 @@ export const ChatterOverlay = ({
             layout
             initial={{ opacity: 0, y: 18, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.22, ease: 'easeOut' }}
+            exit={{ opacity: 0, scale: 0.9, y: -10 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
             className='mb-2 last:mb-0'
           >
-            <div className='relative overflow-hidden border-2 border-(--toxic-green) bg-(--void-black)/90 backdrop-blur-md shadow-[0_0_0_1px_var(--void-black),0_4px_12px_var(--shadow-overlay)]'>
-              <div className='absolute inset-y-0 left-0 w-1 bg-(--toxic-green)' />
+            <div
+              className={`relative overflow-hidden border-2 ${sceneStyle.borderColor} bg-(--void-black) backdrop-blur-md`}
+              style={{
+                boxShadow: `0 0 24px rgba(0,0,0,0.9), 0 0 10px ${sceneStyle.accent}33`
+              }}
+            >
+              {/* Left accent bar */}
+              <div
+                className={`absolute inset-y-0 left-0 w-1 ${sceneStyle.barColor}`}
+              />
 
+              {/* Header: scene label + speaker */}
               <div className='pl-3 pr-2 py-1.5 border-b border-(--ash-gray)/20 flex items-center justify-between gap-2'>
-                <p className='text-[10px] uppercase tracking-[0.18em] font-bold text-(--toxic-green) font-(family-name:--font-ui)'>
-                  {sceneLabel}
-                </p>
-                <p className='text-[10px] font-bold uppercase tracking-[0.14em] text-(--warning-yellow) font-(family-name:--font-ui)'>
+                <div className='flex items-center gap-1.5'>
+                  <span className='text-[10px]'>{sceneStyle.icon}</span>
+                  <p
+                    className={`text-[10px] uppercase tracking-[0.18em] font-bold ${sceneStyle.labelColor} font-(family-name:--font-ui)`}
+                  >
+                    {sceneLabel}
+                  </p>
+                </div>
+                <p
+                  className={`text-[10px] font-bold uppercase tracking-[0.14em] ${sceneStyle.speakerColor} font-(family-name:--font-ui)`}
+                >
                   {msg.speaker}
                 </p>
               </div>
 
-              <div className='pl-3 pr-2 py-2'>
+              {/* Message body */}
+              <div className='pl-3 pr-2 py-2.5'>
                 <p className='text-xs leading-snug text-(--star-white) font-(family-name:--font-ui)'>
                   {msg.text}
                 </p>
+              </div>
+
+              {/* Lifetime countdown bar */}
+              <div className='h-[2px] w-full bg-(--ash-gray)/10'>
+                <motion.div
+                  className={`h-full ${sceneStyle.barColor} opacity-40`}
+                  initial={{ width: '100%' }}
+                  animate={{ width: '0%' }}
+                  transition={{
+                    duration: MESSAGE_LIFETIME_MS / 1000,
+                    ease: 'linear'
+                  }}
+                />
               </div>
             </div>
           </motion.div>
@@ -173,6 +273,5 @@ export const ChatterOverlay = ({
 ChatterOverlay.propTypes = {
   gameState: PropTypes.object.isRequired,
   performance: PropTypes.number,
-  combo: PropTypes.number,
-  staticPosition: PropTypes.bool
+  combo: PropTypes.number
 }

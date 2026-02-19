@@ -1,4 +1,5 @@
 import { lazy, Suspense, useMemo } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { MainMenu } from './scenes/MainMenu'
 import { HUD } from './ui/HUD'
 import { EventModal } from './ui/EventModal'
@@ -128,7 +129,20 @@ function GameContent() {
         <EventModal event={activeEvent} onOptionSelect={resolveEvent} />
       )}
 
-      <Suspense fallback={<SceneLoadingFallback />}>{renderScene()}</Suspense>
+      <Suspense fallback={<SceneLoadingFallback />}>
+        <AnimatePresence mode='wait'>
+          <motion.div
+            key={currentScene}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className='w-full h-full'
+          >
+            {renderScene()}
+          </motion.div>
+        </AnimatePresence>
+      </Suspense>
       <Analytics />
       <SpeedInsights />
     </div>
