@@ -44,6 +44,7 @@ export const useRhythmGameAudio = ({
 
   const hasInitializedRef = useRef(false)
   const isInitializingRef = useRef(false)
+  const currentSongIndexRef = useRef(0)
 
   /**
    * Initializes gig physics and note data once per gig.
@@ -157,7 +158,14 @@ export const useRhythmGameAudio = ({
         let bgAudioStarted = false
         const rng = Math.random
         gameStateRef.current.rng = rng
+
+        // Reset flags for new song
         gameStateRef.current.audioPlaybackEnded = false
+        // Reset hasSubmittedResults to ensure finalizeGig can run again if it was somehow triggered prematurely (though transitioning flag protects this)
+        gameStateRef.current.hasSubmittedResults = false
+
+        // Mark as transitioning to prevent premature finalization
+        gameStateRef.current.songTransitioning = true
 
         // Parse Notes
         if (Array.isArray(currentSong.notes) && currentSong.notes.length > 0) {
@@ -172,7 +180,17 @@ export const useRhythmGameAudio = ({
         // Setup onEnded callback for chaining
         const onSongEnded = () => {
           logger.info('RhythmGame', `Song "${currentSong.name}" ended.`)
-          playSongAtIndex(index + 1)
+          // Synchronously set transitioning flag to prevent race condition
+          gameStateRef.current.songTransitioning = true
+          playSongAtIndex(index + 1).catch(err => {
+             handleError(err, {
+              addToast,
+              fallbackMessage: 'Failed to start next song!'
+            })
+            // If next song fails, ensure we end the gig
+            gameStateRef.current.audioPlaybackEnded = true
+            gameStateRef.current.songTransitioning = false
+          })
         }
 
         // Start Audio
@@ -300,6 +318,9 @@ export const useRhythmGameAudio = ({
           : 0
         gameStateRef.current.totalDuration = Math.max(noteDuration, audioDuration)
         gameStateRef.current.running = true
+
+        // Clear transitioning flag now that state is consistent
+        gameStateRef.current.songTransitioning = false
 
         // Show Toast for song start
         if (activeSetlist.length > 1) {

@@ -29,6 +29,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     mockUseGameState.mock.resetCalls()
     mockAudioEngine.startGigPlayback.mock.resetCalls()
     mockAudioEngine.hasAudioAsset.mock.resetCalls()
+    mockAudioEngine.stopAudio.mock.resetCalls()
     mockRhythmUtils.parseSongNotes.mock.resetCalls()
 
     mockChangeScene = createMockChangeScene()
@@ -93,6 +94,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       return true
     })
     mockAudioManager.ensureAudioContext.mock.mockImplementation(async () => true)
+    mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 0)
 
     const { result } = renderHook(() => useRhythmGameLogic())
 
@@ -114,11 +116,38 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     assert.strictEqual(finalNotes.length, 1, 'Should have notes for Song 1')
     assert.strictEqual(finalNotes[0].time, 1000 + 100, 'Song 1 note time should include lead-in (100ms)')
 
-    // 2. Trigger Song 1 End
+    // Verify transitioning flag is FALSE during playback
+    assert.strictEqual(result.current.gameStateRef.current.songTransitioning, false, 'Transitioning flag should be false during playback')
+
+    // 2. Simulate Game Loop for Song 1 End
+    // Simulate that song 1 duration has been reached
+    mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 30001) // > 30000ms
+
+    // The game loop update SHOULD trigger finalization IF transitioning is false
+    // But wait, the audio engine usually triggers onEnded when playback finishes.
+    // Let's simulate that onEnded is called.
+
     assert.ok(onSong1Ended, 'onEnded callback should be captured')
 
+    // Trigger Song 1 End - this starts transition
     await act(async () => {
-       onSong1Ended()
+       // We invoke this synchronously as the AudioEngine would
+       const promise = onSong1Ended()
+
+       // Immediately check if transitioning flag is TRUE
+       assert.strictEqual(result.current.gameStateRef.current.songTransitioning, true, 'Transitioning flag should be TRUE immediately inside onEnded')
+
+       // Now simulate a game loop update concurrently (as if rAF fired)
+       // This update should NOT finalize gig because transitioning is true
+       result.current.gameStateRef.current.running = true
+       // Force condition where it WOULD finalize if not protected
+       result.current.gameStateRef.current.audioPlaybackEnded = true
+       result.current.update(16)
+
+       assert.strictEqual(mockChangeScene.mock.calls.length, 0, 'Should NOT finalize gig during transition')
+
+       // Wait for the async transition to complete
+       await promise
        await new Promise(resolve => setTimeout(resolve, 50))
     })
 
@@ -127,6 +156,9 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
 
     const call2Args = mockAudioEngine.startGigPlayback.mock.calls[1].arguments[0]
     assert.strictEqual(call2Args.filename, 'song2.ogg')
+
+    // Verify Transition flag is reset
+    assert.strictEqual(result.current.gameStateRef.current.songTransitioning, false, 'Transitioning flag should be reset after song 2 starts')
 
     // Verify Song 2 notes are loaded (and replaced Song 1 notes)
     finalNotes = result.current.gameStateRef.current.notes
