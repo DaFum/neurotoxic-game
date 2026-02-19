@@ -150,7 +150,7 @@ useEffect(() => {
 
 ### Audio
 
-Production requires HTTPS (WebAudio API mixed-content policy). Ambient tracks play full MIDI duration. Gig tracks play first 30-60 second excerpts. Audio logic is implemented in `src/utils/audio/`.
+Production requires HTTPS (WebAudio API mixed-content policy). Ambient playback is started by main-menu tour actions via `AudioManager.startAmbient()`, preferring OGG playback with MIDI fallback; gig playback uses configured excerpts and bounded playback windows. Audio logic is implemented in `src/utils/audio/`.
 
 ## Sub-Agent Documentation
 
