@@ -44,7 +44,6 @@ export const useRhythmGameAudio = ({
 
   const hasInitializedRef = useRef(false)
   const isInitializingRef = useRef(false)
-  const currentSongIndexRef = useRef(0)
 
   /**
    * Initializes gig physics and note data once per gig.
@@ -146,9 +145,10 @@ export const useRhythmGameAudio = ({
       })
 
       // Function to play a specific song by index
-      const playSongAtIndex = async (index) => {
+      const playSongAtIndex = async index => {
         if (index >= activeSetlist.length) {
           gameStateRef.current.audioPlaybackEnded = true
+          gameStateRef.current.songTransitioning = false
           return
         }
 
@@ -213,6 +213,8 @@ export const useRhythmGameAudio = ({
           }
 
           if (assetFound) {
+            // Reset clock for OGG playback path to ensure note sync for 2nd+ song
+            startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
             const success = await startGigPlayback({
               filename: oggFilename,
               bufferOffsetMs: excerptStart,

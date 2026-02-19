@@ -30,6 +30,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     mockAudioEngine.startGigPlayback.mock.resetCalls()
     mockAudioEngine.hasAudioAsset.mock.resetCalls()
     mockAudioEngine.stopAudio.mock.resetCalls()
+    mockAudioEngine.startGigClock.mock.resetCalls() // Reset clock calls
     mockRhythmUtils.parseSongNotes.mock.resetCalls()
 
     mockChangeScene = createMockChangeScene()
@@ -90,7 +91,11 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     // Capture onEnded
     let onSong1Ended = null
     mockAudioEngine.startGigPlayback.mock.mockImplementation(async ({ onEnded }) => {
-      onSong1Ended = onEnded
+      // If we're starting song 1, we capture the callback
+      // If we're starting song 2 (which we will later), we also want to invoke its callback eventually
+      if (!onSong1Ended) {
+          onSong1Ended = onEnded
+      }
       return true
     })
     mockAudioManager.ensureAudioContext.mock.mockImplementation(async () => true)
@@ -157,6 +162,9 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     const call2Args = mockAudioEngine.startGigPlayback.mock.calls[1].arguments[0]
     assert.strictEqual(call2Args.filename, 'song2.ogg')
 
+    // Verify startGigClock was called for Song 2 (OGG path now calls it)
+    assert.ok(mockAudioEngine.startGigClock.mock.calls.length > 0, 'startGigClock should be called')
+
     // Verify Transition flag is reset
     assert.strictEqual(result.current.gameStateRef.current.songTransitioning, false, 'Transitioning flag should be reset after song 2 starts')
 
@@ -165,5 +173,31 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     assert.strictEqual(finalNotes.length, 1, 'Should have notes for Song 2')
     assert.strictEqual(finalNotes[0].time, 500 + 100, 'Song 2 note time should be relative to Song 2 start + lead-in')
     assert.strictEqual(finalNotes[0].lane, 1)
+
+    // 4. Verify End of Set
+    // Now assume Song 2 ends.
+    // We need to capture the NEW onEnded callback for Song 2
+    const onSong2Ended = mockAudioEngine.startGigPlayback.mock.calls[1].arguments[0].onEnded
+    assert.ok(onSong2Ended, 'onEnded callback for Song 2 should be captured')
+
+    // Ensure we mock the time to be beyond song 2 duration so game loop sees it as ended
+    mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 40001) // > 40000ms
+
+    await act(async () => {
+        await onSong2Ended() // This calls playSongAtIndex(2) which should finish the set
+        await new Promise(resolve => setTimeout(resolve, 50))
+    })
+
+    // Check if transitioning flag is reset to false after set ends
+    assert.strictEqual(result.current.gameStateRef.current.songTransitioning, false, 'Transitioning flag should be FALSE after last song ends')
+    assert.strictEqual(result.current.gameStateRef.current.audioPlaybackEnded, true, 'Audio playback should be marked ended')
+
+    // Now simulate game loop again -> should finalize
+    act(() => {
+        result.current.update(16)
+    })
+
+    // mockChangeScene should have been called now
+    assert.ok(mockChangeScene.mock.calls.some(c => c.arguments[0] === 'POSTGIG'), 'Should transition to POSTGIG after set ends')
   })
 })
