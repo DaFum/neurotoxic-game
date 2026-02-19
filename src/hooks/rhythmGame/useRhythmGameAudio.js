@@ -167,6 +167,11 @@ export const useRhythmGameAudio = ({
         // Mark as transitioning to prevent premature finalization
         gameStateRef.current.songTransitioning = true
 
+        // Clear old notes immediately to prevent spurious miss processing
+        // during async transition when the gig clock may be invalid
+        gameStateRef.current.notes = []
+        gameStateRef.current.nextMissCheckIndex = 0
+
         // Parse Notes
         if (Array.isArray(currentSong.notes) && currentSong.notes.length > 0) {
           const parsedNotes = parseSongNotes(currentSong, NOTE_LEAD_IN_MS, {
@@ -213,8 +218,6 @@ export const useRhythmGameAudio = ({
           }
 
           if (assetFound) {
-            // Reset clock for OGG playback path to ensure note sync for 2nd+ song
-            startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
             const success = await startGigPlayback({
               filename: oggFilename,
               bufferOffsetMs: excerptStart,

@@ -91,11 +91,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     // Capture onEnded
     let onSong1Ended = null
     mockAudioEngine.startGigPlayback.mock.mockImplementation(async ({ onEnded }) => {
-      // If we're starting song 1, we capture the callback
-      // If we're starting song 2 (which we will later), we also want to invoke its callback eventually
-      if (!onSong1Ended) {
-          onSong1Ended = onEnded
-      }
+      onSong1Ended = onEnded
       return true
     })
     mockAudioManager.ensureAudioContext.mock.mockImplementation(async () => true)
@@ -128,10 +124,6 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     // Simulate that song 1 duration has been reached
     mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 30001) // > 30000ms
 
-    // The game loop update SHOULD trigger finalization IF transitioning is false
-    // But wait, the audio engine usually triggers onEnded when playback finishes.
-    // Let's simulate that onEnded is called.
-
     assert.ok(onSong1Ended, 'onEnded callback should be captured')
 
     // Trigger Song 1 End - this starts transition
@@ -141,6 +133,9 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
 
        // Immediately check if transitioning flag is TRUE
        assert.strictEqual(result.current.gameStateRef.current.songTransitioning, true, 'Transitioning flag should be TRUE immediately inside onEnded')
+
+       // Verify notes are cleared during transition
+       assert.strictEqual(result.current.gameStateRef.current.notes.length, 0, 'Notes should be cleared at start of transition')
 
        // Now simulate a game loop update concurrently (as if rAF fired)
        // This update should NOT finalize gig because transitioning is true
@@ -162,8 +157,10 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     const call2Args = mockAudioEngine.startGigPlayback.mock.calls[1].arguments[0]
     assert.strictEqual(call2Args.filename, 'song2.ogg')
 
-    // Verify startGigClock was called for Song 2 (OGG path now calls it)
-    assert.ok(mockAudioEngine.startGigClock.mock.calls.length > 0, 'startGigClock should be called')
+    // Verify startGigClock was NOT called explicitly for OGG (removed in fix)
+    // We can skip this assertion or assert it's NOT called if we want to be strict,
+    // but the key is that startGigPlayback manages it internally.
+    // assert.ok(mockAudioEngine.startGigClock.mock.calls.length > 0, 'startGigClock should be called') // REMOVED
 
     // Verify Transition flag is reset
     assert.strictEqual(result.current.gameStateRef.current.songTransitioning, false, 'Transitioning flag should be reset after song 2 starts')
@@ -176,7 +173,6 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
 
     // 4. Verify End of Set
     // Now assume Song 2 ends.
-    // We need to capture the NEW onEnded callback for Song 2
     const onSong2Ended = mockAudioEngine.startGigPlayback.mock.calls[1].arguments[0].onEnded
     assert.ok(onSong2Ended, 'onEnded callback for Song 2 should be captured')
 
