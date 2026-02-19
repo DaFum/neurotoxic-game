@@ -51,13 +51,16 @@ test('AudioManager Tests', async t => {
     // Reset state for isolation
     audioManager.muted = false
 
+    const callsBefore = mockAudioEngine.setDestinationMute.mock.calls.length
     const initialMute = audioManager.muted
     const newMute = audioManager.toggleMute()
     assert.equal(newMute, !initialMute)
     assert.equal(audioManager.muted, !initialMute)
-    assert.equal(mockAudioEngine.setDestinationMute.mock.calls.length > 0, true)
-  })
 
+    const callsAfter = mockAudioEngine.setDestinationMute.mock.calls
+    assert.strictEqual(callsAfter.length, callsBefore + 1)
+    assert.strictEqual(callsAfter[callsAfter.length - 1].arguments[0], newMute)
+  })
 
   await t.test('resumeMusic resumes paused transport via engine facade', async () => {
     mockAudioEngine.getTransportState.mock.mockImplementation(() => 'paused')

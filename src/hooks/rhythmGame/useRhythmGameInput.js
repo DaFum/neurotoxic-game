@@ -26,9 +26,16 @@ export const useRhythmGameInput = ({
   const registerInput = useCallback(
     (laneIndex, isDown) => {
       const state = gameStateRef.current
+      if (
+        activeEvent ||
+        state.songTransitioning ||
+        state.isGameOver ||
+        state.hasSubmittedResults
+      ) {
+        return
+      }
       const isTransportRunning = getTransportState() === 'started'
-      if (activeEvent || state.songTransitioning || state.isGameOver) return
-      if (!isTransportRunning || state.hasSubmittedResults) return
+      if (!isTransportRunning) return
 
       if (state.lanes[laneIndex]) {
         state.lanes[laneIndex].active = isDown

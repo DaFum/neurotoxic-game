@@ -3,7 +3,7 @@ import { handleError } from './errorHandler.js'
 import { logger } from './logger.js'
 
 /**
- * Manages global audio playback including music (Tone.js) and SFX (audioEngine.js).
+ * Manages global audio playback including music and SFX (audioEngine.js).
  */
 class AudioSystem {
   constructor() {
@@ -285,7 +285,7 @@ class AudioSystem {
     try {
       audioEngine.setDestinationMute(this.muted)
     } catch (e) {
-      logger.warn('AudioSystem', 'Tone.js mute failed:', e)
+      logger.warn('AudioSystem', 'audioEngine mute failed:', e)
     }
 
     try {

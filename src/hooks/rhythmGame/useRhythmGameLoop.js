@@ -60,8 +60,10 @@ export const useRhythmGameLoop = ({
         return
       }
 
-      if (stateRef.transportPausedByOverlay && transportState === 'paused') {
-        resumeAudio()
+      if (stateRef.transportPausedByOverlay) {
+        if (transportState === 'paused') {
+          resumeAudio()
+        }
         stateRef.transportPausedByOverlay = false
       }
 

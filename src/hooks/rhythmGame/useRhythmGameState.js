@@ -61,6 +61,7 @@ export const useRhythmGameState = () => {
     totalDuration: 0,
     hasSubmittedResults: false,
     songTransitioning: false,
+    // Replaces audioPlaybackEnded; signals multi-song setlist completion
     setlistCompleted: false,
     transportPausedByOverlay: false,
     toxicTimeTotal: 0,
