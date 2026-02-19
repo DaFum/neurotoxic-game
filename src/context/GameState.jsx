@@ -7,8 +7,7 @@ import {
   useMemo,
   useRef
 } from 'react'
-import { eventEngine } from '../utils/eventEngine'
-import { resolveEventChoice } from '../utils/eventResolver'
+import { eventEngine, resolveEventChoice } from '../utils/eventEngine'
 import { MapGenerator } from '../utils/mapGenerator'
 import { logger } from '../utils/logger'
 import {

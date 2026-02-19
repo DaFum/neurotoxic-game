@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js'
-import { calculateCrowdY, CROWD_LAYOUT } from '../../utils/pixiStageUtils.js'
+import { calculateCrowdY, CROWD_LAYOUT } from './utils.js'
 
 export class CrowdManager {
   /**

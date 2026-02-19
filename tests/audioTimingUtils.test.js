@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import { test } from 'node:test'
-import { getScheduledHitTimeMs } from '../src/utils/audioTimingUtils.js'
+import { getScheduledHitTimeMs } from '../src/utils/audio/timingUtils.js'
 
 test('getScheduledHitTimeMs', async t => {
   await t.test('schedules within lead window', () => {

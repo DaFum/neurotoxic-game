@@ -6,7 +6,7 @@ import {
   buildMidiUrlMap,
   encodePublicAssetPath,
   resolveAssetUrl
-} from '../src/utils/audioPlaybackUtils.js'
+} from '../src/utils/audio/playbackUtils.js'
 
 test('normalizeMidiPlaybackOptions', async t => {
   await t.test('uses defaults when options are undefined', () => {
