@@ -28,11 +28,11 @@ Tests use Node's built-in `node:test` module with `tsx` for ESM transpilation. T
 | Build     | Vite          | 7.3.1                                  |
 | Language  | JavaScript    | ES2021 (ESModules, `"type": "module"`) |
 | Rendering | Pixi.js       | 8.16.0                                 |
-| Animation | Framer Motion | 12.34.0                                |
-| Styling   | Tailwind CSS  | 4.1.18                                 |
-| Audio     | Tone.js       | 15.1.22                                 |
+| Animation | Framer Motion | 12.34.2                                |
+| Styling   | Tailwind CSS  | 4.2.0                                  |
+| Audio     | Tone.js       | 15.5.0                                 |
 
-**DO NOT upgrade**: React (stay 19.2.4), Vite (stay 7.3.1), Tailwind (stay 4.1.18). Node.js 22.3+ required.
+**DO NOT upgrade**: React (stay 19.2.4), Vite (stay 7.3.1), Tailwind (stay 4.2.0), Framer Motion (stay 12.34.2), Tone.js (stay 15.5.0). Node.js 22.3+ required.
 
 ## Architecture
 
@@ -153,6 +153,9 @@ useEffect(() => {
 
 Production requires HTTPS (WebAudio API mixed-content policy). Ambient playback is started by main-menu tour actions via `AudioManager.startAmbient()`, preferring OGG playback with MIDI fallback; gig playback uses configured excerpts and bounded playback windows. Audio logic is implemented in `src/utils/audio/`.
 
+*   **Tone.js Only**: The project uses Tone.js wrappers for audio playback and synthesis. Do NOT introduce Howler.js.
+*   **Multi-Song Gigs**: Sequential playback relies on `audioPlaybackEnded` state. The game loop must wait for this flag (not just `totalDuration`) before finalizing a gig to prevent race conditions during song transitions.
+
 ## Sub-Agent Documentation
 
 Each `src/` subdirectory contains an `AGENTS.md` with domain-specific guidance. Consult the relevant one when working in that area:
@@ -177,4 +180,4 @@ Additional docs: `docs/ARCHITECTURE.md` (system diagrams), `docs/STATE_TRANSITIO
 
 Commits use Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`).
 
-_Documentation sync: dependency/tooling baseline reviewed on 2026-02-23._
+_Documentation sync: dependency/tooling baseline reviewed on 2026-02-19._

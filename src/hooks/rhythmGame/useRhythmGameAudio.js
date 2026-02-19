@@ -146,6 +146,19 @@ export const useRhythmGameAudio = ({
 
       // Function to play a specific song by index
       const playSongAtIndex = async index => {
+        // Guard against continuing if the gig has been stopped or submitted
+        // For the first song (index 0), running is initially false, so we only check hasSubmittedResults
+        if (
+          gameStateRef.current.hasSubmittedResults ||
+          (index > 0 && !gameStateRef.current.running)
+        ) {
+          logger.info(
+            'RhythmGame',
+            'Gig stopped or submitted, aborting playSongAtIndex.'
+          )
+          return
+        }
+
         if (index >= activeSetlist.length) {
           gameStateRef.current.audioPlaybackEnded = true
           gameStateRef.current.songTransitioning = false
@@ -185,16 +198,22 @@ export const useRhythmGameAudio = ({
         // Setup onEnded callback for chaining
         const onSongEnded = () => {
           // Guard against continuing if the game has been stopped (e.g. Quit)
-          if (!gameStateRef.current.running || gameStateRef.current.hasSubmittedResults) {
-            logger.info('RhythmGame', 'Gig stopped or submitted, ignoring onSongEnded chaining.')
-            return
+          if (
+            !gameStateRef.current.running ||
+            gameStateRef.current.hasSubmittedResults
+          ) {
+            logger.info(
+              'RhythmGame',
+              'Gig stopped or submitted, ignoring onSongEnded chaining.'
+            )
+            return Promise.resolve()
           }
 
           logger.info('RhythmGame', `Song "${currentSong.name}" ended.`)
           // Synchronously set transitioning flag to prevent race condition
           gameStateRef.current.songTransitioning = true
-          playSongAtIndex(index + 1).catch(err => {
-             handleError(err, {
+          return playSongAtIndex(index + 1).catch(err => {
+            handleError(err, {
               addToast,
               fallbackMessage: 'Failed to start next song!'
             })

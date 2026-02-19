@@ -164,9 +164,10 @@ export const eventEngine = {
    * Resolves a player's choice for an event, handling skill checks and immediate effects.
    * @param {object} choice - The choice object selected by the player.
    * @param {object} gameState - The current game state.
+   * @param {function} [rng=Math.random] - Random number generator.
    * @returns {object} The result object containing effects and outcomes.
    */
-  resolveChoice: (choice, gameState) => {
+  resolveChoice: (choice, gameState, rng = Math.random) => {
     let result
 
     if (choice.skillCheck) {
@@ -179,7 +180,7 @@ export const eventEngine = {
       // it would match and use the static stat (0) instead of the random roll intended here.
       if (stat === 'luck') {
         // Luck check: ignore band stats, just roll
-        skillValue = Math.random() * 10
+        skillValue = rng() * 10
       } else if (gameState.band && typeof gameState.band[stat] === 'number') {
         // Band stat check (e.g. harmony)
         // Explicitly check for number to avoid using objects like 'inventory' or 'members' as stats
@@ -206,7 +207,7 @@ export const eventEngine = {
         }
       }
 
-      const roll = Math.random() * 10
+      const roll = rng() * 10
       const total = skillValue + (roll > 8 ? 2 : 0) // Crit chance
 
       if (total >= threshold) {
@@ -299,14 +300,15 @@ export const eventEngine = {
  *
  * @param {object} choice - Event choice selected by the player.
  * @param {object} gameState - Snapshot of the current game state.
+ * @param {function} [rng=Math.random] - Random number generator.
  * @returns {{ result: object | null, delta: object | null, outcomeText: string, description: string }} Resolution payload.
  */
-export const resolveEventChoice = (choice, gameState) => {
-  if (!choice) {
+export const resolveEventChoice = (choice, gameState, rng = Math.random) => {
+  if (!choice || !gameState) {
     return { result: null, delta: null, outcomeText: '', description: '' }
   }
 
-  const result = eventEngine.resolveChoice(choice, gameState)
+  const result = eventEngine.resolveChoice(choice, gameState, rng)
   const delta = eventEngine.applyResult(result)
 
   return {

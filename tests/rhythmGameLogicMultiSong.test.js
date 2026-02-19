@@ -85,7 +85,10 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
 
     // Mock parseSongNotes
     mockRhythmUtils.parseSongNotes.mock.mockImplementation((song, leadIn) => {
-        return (song.notes || []).map(n => ({ ...n, time: n.time + (leadIn || 0) }))
+      return (song.notes || []).map(n => ({
+        ...n,
+        time: n.time + (leadIn || 0)
+      }))
     })
 
     // Capture onEnded
@@ -258,5 +261,69 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
 
     // Assert song 2 did NOT start
     assert.strictEqual(mockAudioEngine.startGigPlayback.mock.calls.length, 1, 'Song 2 should NOT start after quit')
+  })
+
+  test('Game loop waits for audioPlaybackEnded signal before finalizing (Multi-song gap protection)', async () => {
+    // Setup a single song but simulate multi-song behavior where audioPlaybackEnded is false
+    const song1 = {
+      id: 'song1',
+      name: 'Song 1',
+      bpm: 120,
+      duration: 60,
+      excerptDurationMs: 30000,
+      sourceOgg: 'song1.ogg'
+    }
+
+    const mockState = {
+      setlist: [song1],
+      band: { members: [], harmony: 100 },
+      activeEvent: null,
+      hasUpgrade: () => false,
+      setLastGigStats: mockSetLastGigStats,
+      addToast: () => {},
+      gameMap: { nodes: { node1: { layer: 0 } } },
+      player: { currentNodeId: 'node1', money: 0 },
+      changeScene: mockChangeScene,
+      gigModifiers: {}
+    }
+    mockUseGameState.mock.mockImplementation(() => mockState)
+    mockAudioEngine.hasAudioAsset.mock.mockImplementation(() => true)
+    mockAudioEngine.startGigPlayback.mock.mockImplementation(async () => true)
+    mockAudioManager.ensureAudioContext.mock.mockImplementation(async () => true)
+
+    const { result } = renderHook(() => useRhythmGameLogic())
+
+    // Wait for init
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 100))
+    })
+
+    // Simulate Running state
+    result.current.gameStateRef.current.running = true
+    result.current.gameStateRef.current.audioPlaybackEnded = false // Crucial: Simulate audio not done yet
+    result.current.gameStateRef.current.totalDuration = 30000 // Set duration
+
+    // Simulate Time > Duration (Race condition: Loop runs before audio ends)
+    mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 30001)
+
+    // Run update loop
+    act(() => {
+      result.current.update(16)
+    })
+
+    // Assert that finalizeGig was NOT called
+    assert.strictEqual(mockChangeScene.mock.calls.length, 0, 'Should NOT finalize gig if audioPlaybackEnded is false')
+
+    // Now simulate audio ending
+    result.current.gameStateRef.current.audioPlaybackEnded = true
+
+    // Run update loop again
+    act(() => {
+      result.current.update(16)
+    })
+
+    // Assert that finalizeGig IS called now
+    assert.ok(mockChangeScene.mock.calls.length > 0, 'Should finalize gig once audioPlaybackEnded is true')
+    assert.strictEqual(mockChangeScene.mock.calls[0].arguments[0], 'POSTGIG')
   })
 })
