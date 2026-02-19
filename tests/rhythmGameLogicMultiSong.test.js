@@ -6,7 +6,8 @@ import {
   mockRhythmGameLogicDependencies,
   setupRhythmGameLogicTest,
   createMockChangeScene,
-  createMockSetLastGigStats
+  createMockSetLastGigStats,
+  resetAllMocks
 } from './useRhythmGameLogicTestUtils.js'
 
 const {
@@ -25,13 +26,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
   let mockSetLastGigStats
 
   beforeEach(() => {
-    // Reset mocks manually since we aren't using the utility's resetAllMocks fully
-    mockUseGameState.mock.resetCalls()
-    mockAudioEngine.startGigPlayback.mock.resetCalls()
-    mockAudioEngine.hasAudioAsset.mock.resetCalls()
-    mockAudioEngine.stopAudio.mock.resetCalls()
-    mockAudioEngine.startGigClock.mock.resetCalls() // Reset clock calls
-    mockRhythmUtils.parseSongNotes.mock.resetCalls()
+    // Reset all mocks using the shared utility to avoid leakage
+    resetAllMocks()
 
     mockChangeScene = createMockChangeScene()
     mockSetLastGigStats = createMockSetLastGigStats()

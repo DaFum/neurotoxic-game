@@ -174,9 +174,6 @@ export const useRhythmGameAudio = ({
 
         // Reset flags for new song
         gameStateRef.current.audioPlaybackEnded = false
-        // Reset hasSubmittedResults to ensure finalizeGig can run again if it was somehow triggered prematurely (though transitioning flag protects this)
-        gameStateRef.current.hasSubmittedResults = false
-
         // Mark as transitioning to prevent premature finalization
         gameStateRef.current.songTransitioning = true
 
@@ -321,7 +318,7 @@ export const useRhythmGameAudio = ({
           if (!bgAudioStarted) {
             audioDelay = GIG_LEAD_IN_MS / 1000
             startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
-            await startMetalGenerator(
+            const success = await startMetalGenerator(
               currentSong,
               audioDelay,
               {
@@ -329,10 +326,13 @@ export const useRhythmGameAudio = ({
               },
               rng
             )
-            logger.info(
-              'RhythmGame',
-              `Gig audio: procedural metal generator for "${currentSong.name}"`
-            )
+            if (success) {
+              bgAudioStarted = true
+              logger.info(
+                'RhythmGame',
+                `Gig audio: procedural metal generator for "${currentSong.name}"`
+              )
+            }
           }
         }
 
