@@ -24,7 +24,7 @@ export const TutorialManager = () => {
     updatePlayer({ tutorialStep: nextStep })
 
     // If we passed the last tutorial step (currently 3), mark as seen globally
-    if (nextStep > 3) {
+    if (nextStep >= TOTAL_STEPS) {
       updateSettings({ tutorialSeen: true })
     }
   }
@@ -72,63 +72,65 @@ export const TutorialManager = () => {
   }
 
   const content = getContent()
-
-  if (settings?.tutorialSeen || !content || step === -1) return null
+  const isVisible = !(settings?.tutorialSeen || !content || step === -1)
 
   return (
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0 }}
-        role='dialog'
-        aria-label='Tutorial'
-        className='fixed bottom-20 left-1/2 transform -translate-x-1/2 z-[150] w-full max-w-md'
-      >
-        <div className='bg-(--void-black)/95 border-2 border-(--toxic-green) p-6 shadow-[0_0_20px_var(--toxic-green)] relative'>
-          <div className='absolute -top-3 left-4 bg-(--void-black) px-2 text-(--toxic-green) font-bold text-xs border border-(--toxic-green)'>
-            TUTORIAL {step + 1}/{TOTAL_STEPS}
-          </div>
+      {isVisible && (
+        <motion.div
+          key={step}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          role='dialog'
+          aria-label='Tutorial'
+          className='fixed bottom-20 left-1/2 transform -translate-x-1/2 z-[150] w-full max-w-md'
+        >
+          <div className='bg-(--void-black)/95 border-2 border-(--toxic-green) p-6 shadow-[0_0_20px_var(--toxic-green)] relative'>
+            <div className='absolute -top-3 left-4 bg-(--void-black) px-2 text-(--toxic-green) font-bold text-xs border border-(--toxic-green)'>
+              TUTORIAL {step + 1}/{TOTAL_STEPS}
+            </div>
 
-          <h3 className='text-xl text-(--star-white) font-[Metal_Mania] mb-2'>
-            {content.title}
-          </h3>
-          <p className='text-(--ash-gray) font-mono text-sm mb-4 leading-relaxed'>
-            {content.text}
-          </p>
+            <h3 className='text-xl text-(--star-white) font-[Metal_Mania] mb-2'>
+              {content.title}
+            </h3>
+            <p className='text-(--ash-gray) font-mono text-sm mb-4 leading-relaxed'>
+              {content.text}
+            </p>
 
-          {/* Progress dots */}
-          <div className='flex items-center gap-1.5 mb-4'>
-            {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
-              <div
-                key={i}
-                className={`w-2 h-2 transition-colors ${
-                  i === step
-                    ? 'bg-(--toxic-green)'
-                    : i < step
-                      ? 'bg-(--toxic-green)/40'
-                      : 'bg-(--ash-gray)/30'
-                }`}
-              />
-            ))}
-          </div>
+            {/* Progress dots */}
+            <div className='flex items-center gap-1.5 mb-4'>
+              {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+                <div
+                  key={i}
+                  className={`w-2 h-2 transition-colors ${
+                    i === step
+                      ? 'bg-(--toxic-green)'
+                      : i < step
+                        ? 'bg-(--toxic-green)/40'
+                        : 'bg-(--ash-gray)/30'
+                  }`}
+                />
+              ))}
+            </div>
 
-          <div className='flex justify-between items-center'>
-            <button
-              onClick={skipTutorial}
-              className='text-xs text-(--ash-gray) hover:text-(--star-white) underline'
-            >
-              SKIP ALL
-            </button>
-            <button
-              onClick={completeStep}
-              className='bg-(--toxic-green) text-(--void-black) px-6 py-1.5 font-bold hover:bg-(--star-white) transition-colors'
-            >
-              {step < TOTAL_STEPS - 1 ? 'NEXT' : 'DONE'}
-            </button>
+            <div className='flex justify-between items-center'>
+              <button
+                onClick={skipTutorial}
+                className='text-xs text-(--ash-gray) hover:text-(--star-white) underline'
+              >
+                SKIP ALL
+              </button>
+              <button
+                onClick={completeStep}
+                className='bg-(--toxic-green) text-(--void-black) px-6 py-1.5 font-bold hover:bg-(--star-white) transition-colors'
+              >
+                {step < TOTAL_STEPS - 1 ? 'NEXT' : 'DONE'}
+              </button>
+            </div>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      )}
     </AnimatePresence>
   )
 }

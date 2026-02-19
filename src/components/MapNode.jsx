@@ -99,7 +99,7 @@ export const MapNode = memo(
 
         <div className='hidden group-hover:block absolute bottom-8 bg-(--void-black)/90 border border-(--toxic-green) p-2 rounded z-50 whitespace-nowrap pointer-events-none'>
           <div className='font-bold text-(--toxic-green)'>
-            {node.venue.name}
+            {node.venue?.name || 'Unknown'}
           </div>
           {node.type === 'GIG' && (
             <div className='text-[10px] text-(--ash-gray) font-mono'>

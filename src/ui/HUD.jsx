@@ -12,7 +12,7 @@ import {
 import { audioManager } from '../utils/AudioManager'
 
 const MiniBar = ({ value, max = 100, color, warn = false }) => {
-  const pct = Math.min(100, Math.max(0, (value / max) * 100))
+  const pct = max > 0 ? Math.min(100, Math.max(0, (value / max) * 100)) : 0
   return (
     <div className='w-full h-1.5 bg-(--void-black) border border-(--ash-gray)/50 overflow-hidden'>
       <div
@@ -84,8 +84,17 @@ export const HUD = () => {
       <div className='flex flex-col gap-2'>
         <div className='bg-(--void-black)/90 border border-(--toxic-green)/60 backdrop-blur-sm p-2.5 text-(--toxic-green) shadow-[0_0_8px_var(--toxic-green-20)] animate-pulse-glow'>
           <div className='flex items-center gap-2 mb-1.5'>
-            <DollarSign size={14} className='text-(--warning-yellow)' />
-            <span className='text-sm font-bold tabular-nums'>
+            <DollarSign
+              size={14}
+              className={
+                player.money < 40
+                  ? 'text-(--blood-red)'
+                  : 'text-(--warning-yellow)'
+              }
+            />
+            <span
+              className={`text-sm font-bold tabular-nums ${player.money < 40 ? 'text-(--blood-red)' : ''}`}
+            >
               {player.money}
               {'\u20AC'}
             </span>
@@ -182,21 +191,19 @@ export const HUD = () => {
               </span>
               <div className='flex items-center gap-1.5'>
                 <div className='flex items-center gap-1' title='Mood'>
-                  <div className='w-12 h-1.5 bg-(--void-black) border border-(--ash-gray)/30 overflow-hidden'>
-                    <div
-                      className='h-full bg-(--mood-pink) transition-all duration-500'
-                      style={{ width: `${m.mood}%` }}
-                    />
+                  <div className='w-12'>
+                    <MiniBar value={m.mood} max={100} color='bg-(--mood-pink)' />
                   </div>
                   <span className='text-[9px] text-(--mood-pink) w-7 text-right tabular-nums'>
                     {m.mood}%
                   </span>
                 </div>
                 <div className='flex items-center gap-1' title='Stamina'>
-                  <div className='w-12 h-1.5 bg-(--void-black) border border-(--ash-gray)/30 overflow-hidden'>
-                    <div
-                      className='h-full bg-(--stamina-green) transition-all duration-500'
-                      style={{ width: `${m.stamina}%` }}
+                  <div className='w-12'>
+                    <MiniBar
+                      value={m.stamina}
+                      max={100}
+                      color='bg-(--stamina-green)'
                     />
                   </div>
                   <span className='text-[9px] text-(--stamina-green) w-7 text-right tabular-nums'>
@@ -211,12 +218,12 @@ export const HUD = () => {
             <div className='flex items-center gap-2'>
               <div className='w-20 h-1.5 bg-(--void-black) border border-(--ash-gray)/30 overflow-hidden'>
                 <div
-                  className={`h-full transition-all duration-500 ${band.harmony < 30 ? 'bg-(--blood-red)' : 'bg-(--toxic-green)'}`}
+                  className={`h-full transition-all duration-500 ${band.harmony < 40 ? 'bg-(--blood-red)' : 'bg-(--toxic-green)'}`}
                   style={{ width: `${band.harmony}%` }}
                 />
               </div>
               <span
-                className={`text-[10px] tabular-nums ${band.harmony < 30 ? 'text-(--blood-red)' : 'text-(--toxic-green)'}`}
+                className={`text-[10px] tabular-nums ${band.harmony < 40 ? 'text-(--blood-red)' : 'text-(--toxic-green)'}`}
               >
                 {band.harmony}%
               </span>

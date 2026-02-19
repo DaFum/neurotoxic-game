@@ -388,13 +388,17 @@ export const useTravelLogic = ({
 
       if (Math.max(0, player.money ?? 0) < totalCost) {
         addToast('Not enough money for gas and food!', 'error')
-        clearPendingTravel()
+        if (pendingTravelNode?.id === node.id) {
+          clearPendingTravel()
+        }
         return
       }
 
       if (Math.max(0, player.van?.fuel ?? 0) < fuelLiters) {
         addToast('Not enough fuel in the tank!', 'error')
-        clearPendingTravel()
+        if (pendingTravelNode?.id === node.id) {
+          clearPendingTravel()
+        }
         return
       }
 
