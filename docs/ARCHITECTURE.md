@@ -114,8 +114,9 @@ Global state lives in `GameStateProvider` and is mutated only through reducer ac
 
 ### Guardrails implemented in reducer
 
-- `player.money` is clamped to `>= 0`
-- `band.harmony` is clamped to `1..100`
+- `player.money` is clamped to `>= 0` via shared state guards (`clampPlayerMoney`)
+- `band.harmony` is clamped to `1..100` via shared state guards (`clampBandHarmony`)
+- event flags are orchestration-only and do not mutate non-canonical player stat fields
 - Loaded scene values are validated against an allowlist
 - State restoration is validated through `saveValidator` before reducer ingestion
 
