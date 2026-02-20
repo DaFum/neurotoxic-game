@@ -1,7 +1,6 @@
 import { logger } from '../logger.js'
 import {
   buildAssetUrlMap,
-  buildMidiUrlMap,
   resolveAssetUrl,
   PATH_PREFIX_REGEX
 } from './playbackUtils.js'
@@ -29,8 +28,10 @@ const oggGlob = import.meta.glob('../../assets/**/*.ogg', {
 
 // Create a map of relative asset path + basename -> URL
 // Key format in glob is "../../assets/path/to/filename.mid"
-export const midiUrlMap = buildMidiUrlMap(midiGlob, message =>
-  logger.warn('AudioEngine', message)
+export const midiUrlMap = buildAssetUrlMap(
+  midiGlob,
+  message => logger.warn('AudioEngine', message),
+  'MIDI'
 )
 
 const oggUrlMap = buildAssetUrlMap(

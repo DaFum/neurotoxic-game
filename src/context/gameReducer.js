@@ -4,7 +4,12 @@
  * @module gameReducer
  */
 
-import { applyEventDelta } from '../utils/gameStateUtils.js'
+import {
+  applyEventDelta,
+  applyInventoryItemDelta,
+  clampBandHarmony,
+  clampPlayerMoney
+} from '../utils/gameStateUtils.js'
 import { calculateDailyUpdates } from '../utils/simulationUtils.js'
 import { logger } from '../utils/logger.js'
 import {
@@ -69,7 +74,7 @@ const handleUpdatePlayer = (state, payload) => {
 
   // Clamp money to prevent negative values
   if (typeof mergedPlayer.money === 'number') {
-    mergedPlayer.money = Math.max(0, mergedPlayer.money)
+    mergedPlayer.money = clampPlayerMoney(mergedPlayer.money)
   }
 
   return { ...state, player: mergedPlayer }
@@ -88,7 +93,7 @@ const handleUpdateBand = (state, payload) => {
 
   // Clamp harmony to valid range 1-100
   if (typeof mergedBand.harmony === 'number') {
-    mergedBand.harmony = Math.max(1, Math.min(100, mergedBand.harmony))
+    mergedBand.harmony = clampBandHarmony(mergedBand.harmony)
   }
 
   return { ...state, band: mergedBand }
@@ -128,10 +133,7 @@ const handleLoadGame = (state, payload) => {
     }
   }
   // Validate Player
-  mergedPlayer.money = Math.max(
-    0,
-    typeof mergedPlayer.money === 'number' ? mergedPlayer.money : 0
-  )
+  mergedPlayer.money = clampPlayerMoney(mergedPlayer.money)
   mergedPlayer.fame = Math.max(
     0,
     typeof mergedPlayer.fame === 'number' ? mergedPlayer.fame : 0
@@ -177,13 +179,7 @@ const handleLoadGame = (state, payload) => {
       )
     }))
   }
-  mergedBand.harmony = Math.max(
-    1,
-    Math.min(
-      100,
-      typeof mergedBand.harmony === 'number' ? mergedBand.harmony : 50
-    )
-  )
+  mergedBand.harmony = clampBandHarmony(mergedBand.harmony)
 
   // 3. Sanitize Social
   const mergedSocial = { ...DEFAULT_SOCIAL_STATE, ...loadedState.social }
@@ -258,7 +254,10 @@ const handleConsumeItem = (state, payload) => {
   if (nextBand.inventory[itemType] === true) {
     nextBand.inventory[itemType] = false
   } else if (typeof nextBand.inventory[itemType] === 'number') {
-    nextBand.inventory[itemType] = Math.max(0, nextBand.inventory[itemType] - 1)
+    nextBand.inventory[itemType] = applyInventoryItemDelta(
+      nextBand.inventory[itemType],
+      -1
+    )
   }
 
   return { ...state, band: nextBand }
@@ -273,7 +272,7 @@ const handleAdvanceDay = state => {
   const { player, band, social } = calculateDailyUpdates(state)
   const nextBand = { ...band }
   if (typeof nextBand.harmony === 'number') {
-    nextBand.harmony = Math.max(1, Math.min(100, nextBand.harmony))
+    nextBand.harmony = clampBandHarmony(nextBand.harmony)
   }
   logger.info('GameState', `Day Advanced to ${player.day}`)
   return { ...state, player, band: nextBand, social, eventCooldowns: [] }

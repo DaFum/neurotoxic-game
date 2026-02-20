@@ -288,6 +288,13 @@ export async function startGigPlayback({
     handleGigSourceEnded(source)
     return true
   }
+
+  try {
+    Tone.getTransport().start(startAt, offsetSeconds)
+  } catch (error) {
+    logger.warn('AudioEngine', 'Failed to start Tone.Transport', error)
+  }
+
   if (safeDurationSeconds != null && safeDurationSeconds > 0) {
     source.start(startAt, offsetSeconds, safeDurationSeconds)
   } else {
@@ -539,8 +546,17 @@ export function getTransportState() {
  */
 export function setDestinationMute(muted) {
   const nextMute = Boolean(muted)
-  Tone.getDestination().mute = nextMute
-  return nextMute
+  try {
+    Tone.getDestination().mute = nextMute
+    return nextMute
+  } catch (err) {
+    logger.warn('AudioEngine', 'Failed to set destination mute', err)
+    try {
+      return Tone.getDestination().mute
+    } catch {
+      return false
+    }
+  }
 }
 
 /**

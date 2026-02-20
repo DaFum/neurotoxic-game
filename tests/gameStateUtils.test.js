@@ -1,6 +1,11 @@
 import assert from 'node:assert'
 import { test } from 'node:test'
-import { applyEventDelta } from '../src/utils/gameStateUtils.js'
+import {
+  applyEventDelta,
+  applyInventoryItemDelta,
+  clampBandHarmony,
+  clampPlayerMoney
+} from '../src/utils/gameStateUtils.js'
 
 test('applyEventDelta applies player updates', () => {
   const state = {
@@ -103,28 +108,25 @@ test('applyEventDelta handles flags', () => {
   assert.ok(nextState.pendingEvents.includes('RIVAL_BATTLE'))
 })
 
-test('applyEventDelta handles score updates', () => {
-  // Case 1: Existing score + delta
-  const state1 = { player: { score: 100 } }
-  const delta1 = { flags: { score: 50 } }
-  const nextState1 = applyEventDelta(state1, delta1)
-  assert.equal(nextState1.player.score, 150)
+test('applyEventDelta ignores unsupported score mutations in flags', () => {
+  const state = { player: { score: 100 } }
+  const delta = { flags: { score: 50 } }
+  const nextState = applyEventDelta(state, delta)
 
-  // Case 2: No existing score (starts at 0)
-  const state2 = { player: {} }
-  const delta2 = { flags: { score: 50 } }
-  const nextState2 = applyEventDelta(state2, delta2)
-  assert.equal(nextState2.player.score, 50)
+  assert.deepStrictEqual(nextState.player, state.player)
+})
 
-  // Case 3: Negative delta (clamping to 0)
-  const state3 = { player: { score: 10 } }
-  const delta3 = { flags: { score: -20 } }
-  const nextState3 = applyEventDelta(state3, delta3)
-  assert.equal(nextState3.player.score, 0)
+test('state safety helpers clamp canonical values', () => {
+  assert.equal(clampPlayerMoney(19.7), 19)
+  assert.equal(clampPlayerMoney(-10), 0)
+  assert.equal(clampBandHarmony(55.9), 55)
+  assert.equal(clampBandHarmony(-4), 1)
+  assert.equal(clampBandHarmony(220), 100)
+})
 
-  // Case 4: No player object at all
-  const state4 = {}
-  const delta4 = { flags: { score: 100 } }
-  const nextState4 = applyEventDelta(state4, delta4)
-  assert.equal(nextState4.player.score, 100)
+test('applyInventoryItemDelta handles numeric and boolean deltas', () => {
+  assert.equal(applyInventoryItemDelta(2, -1), 1)
+  assert.equal(applyInventoryItemDelta(0, -5), 0)
+  assert.equal(applyInventoryItemDelta(undefined, 3), 3)
+  assert.equal(applyInventoryItemDelta(true, false), false)
 })

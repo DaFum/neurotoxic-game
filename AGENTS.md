@@ -62,10 +62,11 @@ Notes: `npm run test` uses Node's built-in test runner with `tsx`; `npm run test
 
 - Root runtime composition: `ErrorBoundary` → `GameStateProvider` → scene renderer + global overlays (`HUD`, `ToastOverlay`, `ChatterOverlay`, `TutorialManager`, `EventModal`).
 - Scene set in active use: `INTRO`, `MENU`, `SETTINGS`, `CREDITS`, `GAMEOVER`, `OVERWORLD`, `PREGIG`, `GIG`, `POSTGIG`.
-- Reducer guardrails currently enforce:
-  - `player.money >= 0`
-  - `band.harmony` clamped to `1..100`
+- Reducer/Event guardrails currently enforce:
+  - `player.money >= 0` via shared state clamps
+  - `band.harmony` clamped to `1..100` via shared state clamps
   - loaded scenes validated against an allowlist before state restore
+  - event flags do not mutate non-canonical player fields
 - Audio runtime path: Main Menu start/load actions call `audioManager.startAmbient()`; ambient prefers OGG buffer playback and falls back to MIDI synthesis. Gig playback uses excerpted buffers with bounded playback windows.
 - Test surface: Node test runner (`tests/`) + optional Playwright e2e (`npm run test:e2e`).
 
@@ -87,6 +88,21 @@ For domain-specific guidance, consult specialized agent documentation:
 | **Audio Utils** | `src/utils/audio/AGENTS.md` | Low-level WebAudio/Tone resource handling   |
 | **Event Data** | `src/data/events/AGENTS.md` | Event catalog schema and balancing rules    |
 | **UI Shared**  | `src/ui/shared/AGENTS.md`  | Reusable settings/slider controls          |
+
+
+## Architecture Guard Updates
+
+### [project-brain-codex-instructions]
+
+- State guardrails are centralized via `src/utils/gameStateUtils.js` helpers (`clampPlayerMoney`, `clampBandHarmony`, `applyInventoryItemDelta`) and reused by both reducer flows and event-delta application paths.
+- Tempo timing in `src/utils/rhythmUtils.js` now uses a single processed-map path (`ensureProcessedTempoMap` + `findTempoSegment`) instead of maintaining a legacy fallback branch.
+- Audio asset URL maps are unified through `buildAssetUrlMap`; avoid reintroducing wrapper-only APIs such as `buildMidiUrlMap`.
+
+### [state-safety-action-creator-guard]
+
+- Do not add reducer-critical state mutations to `delta.flags`; use explicit action payload slices (`player`, `band`, `social`) and action creators instead.
+- `delta.flags.score` is intentionally unsupported to prevent player-state schema drift from event payloads.
+- Any new state field must be wired atomically across `ActionTypes`, reducer handling, action creators, and tests.
 
 ## Documentation
 
@@ -220,4 +236,5 @@ _"Complexity is not an excuse for friction."_
 - Performance: Heavy scenes are lazy-loaded in `App.jsx` via `createNamedLazyLoader` to reduce initial bundle execution and speed up first render.
 - UI: Toast taxonomy remains `success`/`error`/`warning`/`info`, with `info` rendered using the blue token (`--info-blue`).
 - Chatter: Default fallback chatter is limited to `MENU`, `OVERWORLD`, `PREGIG`, and `POSTGIG`; `GIG` requires explicit conditional chatter entries.
-- Last updated: 2026-02-23.
+- State safety: Event delta handling intentionally rejects `flags.score` and keeps score ownership outside the global overworld player schema.
+- Last updated: 2026-02-19.

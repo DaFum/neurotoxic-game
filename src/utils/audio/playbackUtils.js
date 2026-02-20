@@ -127,13 +127,3 @@ export const buildAssetUrlMap = (
     return accumulator
   }, {})
 }
-
-/**
- * Builds a MIDI URL map with conflict detection for duplicate basenames.
- * @param {Record<string, string>} midiGlob - Vite glob map of asset paths to URLs.
- * @param {(message: string) => void} [warn] - Warning callback for conflicts.
- * @returns {Record<string, string>} Map of relative paths and basenames to URLs.
- */
-export const buildMidiUrlMap = (midiGlob, warn = console.warn) => {
-  return buildAssetUrlMap(midiGlob, warn, 'MIDI')
-}
