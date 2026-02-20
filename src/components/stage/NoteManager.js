@@ -10,6 +10,7 @@ const NOTE_FALLBACK_WIDTH = 90
 const NOTE_FALLBACK_HEIGHT = 20
 const NOTE_INITIAL_Y = -50
 const NOTE_CENTER_OFFSET = 50
+const NOTE_LIGHTNING_LANE_INDEX = 1
 
 export class NoteManager {
   static MAX_POOL_SIZE = 64
@@ -142,8 +143,6 @@ export class NoteManager {
     let sprite
     if (this.spritePool.length > 0) {
       sprite = this.spritePool.pop()
-      // If pooling reuses sprites, we must update texture if needed
-      // but simpler: just update texture in initialize
     } else {
       sprite = this.createNoteSprite(laneIndex)
     }
@@ -153,7 +152,7 @@ export class NoteManager {
   }
 
   createNoteSprite(laneIndex) {
-    const useLightning = laneIndex === 1
+    const useLightning = laneIndex === NOTE_LIGHTNING_LANE_INDEX
     const desiredTexture = useLightning
       ? this.noteTextures.lightning
       : this.noteTextures.skull
@@ -179,7 +178,7 @@ export class NoteManager {
     sprite.jitterOffset = (Math.random() - 0.5) * NOTE_JITTER_RANGE
 
     if (sprite instanceof PIXI.Sprite) {
-      const useLightning = laneIndex === 1
+      const useLightning = laneIndex === NOTE_LIGHTNING_LANE_INDEX
       const desiredTexture = useLightning
         ? this.noteTextures.lightning
         : this.noteTextures.skull

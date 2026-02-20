@@ -179,12 +179,40 @@ describe('NoteManager', () => {
     const lane = { color: 0x0000ff, renderX: 300 }
     const sprite = new PIXI.Graphics()
 
-    noteManager.initializeNoteSprite(sprite, lane)
+    noteManager.initializeNoteSprite(sprite, lane, 0)
 
     assert.equal(sprite.x, 305)
     assert.equal(sprite.y, -50)
     assert.equal(sprite.visible, true)
     assert.equal(sprite.alpha, 1)
+  })
+
+  test('initializeNoteSprite sets correct texture for lightning lane', () => {
+    const lane = { color: 0x0000ff, renderX: 300 }
+    // Ensure textures are set up
+    noteManager.noteTextures.skull = { id: 'skull' }
+    noteManager.noteTextures.lightning = { id: 'lightning' }
+
+    const sprite = new PIXI.Sprite()
+
+    // Lane index 1 is lightning lane
+    noteManager.initializeNoteSprite(sprite, lane, 1)
+
+    assert.equal(sprite.texture.id, 'lightning')
+  })
+
+  test('initializeNoteSprite sets correct texture for skull lane', () => {
+    const lane = { color: 0x0000ff, renderX: 300 }
+    // Ensure textures are set up
+    noteManager.noteTextures.skull = { id: 'skull' }
+    noteManager.noteTextures.lightning = { id: 'lightning' }
+
+    const sprite = new PIXI.Sprite()
+
+    // Lane index 0 is skull lane
+    noteManager.initializeNoteSprite(sprite, lane, 0)
+
+    assert.equal(sprite.texture.id, 'skull')
   })
 
   test('acquireSpriteFromPool reuses a Graphics from the pool', () => {

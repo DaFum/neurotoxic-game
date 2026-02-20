@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js'
-import { calculateCrowdY, CROWD_LAYOUT } from './utils.js'
+import { calculateCrowdY, CROWD_LAYOUT, getPixiColorFromToken } from './utils.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
-import { logger } from '../../utils/logger.js'
+import { handleError } from '../../utils/errorHandler.js'
 
 export class CrowdManager {
   /**
@@ -23,12 +23,27 @@ export class CrowdManager {
         PIXI.Assets.load(getGenImageUrl(IMG_PROMPTS.CROWD_MOSH))
       ])
 
-      if (results[0].status === 'fulfilled')
+      // Handle IDLE texture
+      if (results[0].status === 'fulfilled') {
         this.textures.idle = results[0].value
-      if (results[1].status === 'fulfilled')
+      } else {
+        handleError(results[0].reason, {
+          fallbackMessage: 'Crowd IDLE texture failed to load.'
+        })
+      }
+
+      // Handle MOSH texture
+      if (results[1].status === 'fulfilled') {
         this.textures.mosh = results[1].value
+      } else {
+        handleError(results[1].reason, {
+          fallbackMessage: 'Crowd MOSH texture failed to load.'
+        })
+      }
     } catch (error) {
-      logger.warn('CrowdManager', 'Crowd textures failed to load', error)
+      handleError(error, {
+        fallbackMessage: 'Critical error loading crowd textures.'
+      })
     }
   }
 
@@ -36,6 +51,8 @@ export class CrowdManager {
     this.container = new PIXI.Container()
     this.container.y = this.app.screen.height * CROWD_LAYOUT.containerYRatio
     this.stageContainer.addChild(this.container)
+
+    const fallbackColor = getPixiColorFromToken('--star-white')
 
     for (let i = 0; i < CROWD_LAYOUT.memberCount; i += 1) {
       const radius =
@@ -50,7 +67,7 @@ export class CrowdManager {
       } else {
         crowd = new PIXI.Graphics()
         crowd.circle(0, 0, radius)
-        crowd.fill(0xffffff)
+        crowd.fill(fallbackColor)
       }
 
       crowd.tint = 0x333333

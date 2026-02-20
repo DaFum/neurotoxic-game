@@ -84,6 +84,13 @@ describe('EffectManager', () => {
     effectManager.init()
   })
 
+  afterEach(() => {
+    if (PIXI && PIXI.Assets && PIXI.Assets.load.mock) {
+      PIXI.Assets.load.mock.resetCalls()
+      PIXI.Assets.load.mock.mockImplementation(async () => null)
+    }
+  })
+
   test('loadAssets loads textures correctly', async () => {
     const mockTextureBlood = { id: 'blood' }
     const mockTextureToxic = { id: 'toxic' }

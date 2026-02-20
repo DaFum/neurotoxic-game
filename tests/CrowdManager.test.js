@@ -70,6 +70,7 @@ mock.module('../src/utils/logger.js', {
 mock.module('../src/components/stage/utils.js', {
   namedExports: {
     calculateCrowdY: mock.fn(() => 100),
+    getPixiColorFromToken: mock.fn(() => 0xffffff),
     CROWD_LAYOUT: {
       containerYRatio: 0.5,
       memberCount: 2, // Small count for testing
@@ -96,6 +97,18 @@ describe('CrowdManager', () => {
     parentContainer = new PIXI.Container()
     const app = { screen: { width: 800, height: 600 } }
     crowdManager = new CrowdManager(app, parentContainer)
+  })
+
+  afterEach(() => {
+    if (PIXI && PIXI.Assets && PIXI.Assets.load.mock) {
+      PIXI.Assets.load.mock.resetCalls()
+      // Restore default implementation if necessary, or just reset calls
+      // Assuming mock.fn() without implementation was default, or we want to clear mock implementations:
+      // node:test mocks don't have a direct 'mockRestore' to original if not spied.
+      // But we can reset the implementation to a default no-op or throw if needed.
+      // Here just resetting calls is good, but preventing leak is better:
+      PIXI.Assets.load.mock.mockImplementation(async () => null)
+    }
   })
 
   test('loadAssets loads textures correctly', async () => {
