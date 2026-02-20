@@ -201,6 +201,15 @@ export async function setupAudio() {
     })
     Tone.setContext(nextToneContext)
 
+    // Trigger Tone.start() (which calls resume()) immediately to capture the user gesture synchronously.
+    // We store the promise and await it later after cleanup.
+    let startPromise
+    try {
+      startPromise = Tone.start()
+    } catch (e) {
+      startPromise = Promise.reject(e)
+    }
+
     const previousRawContext =
       previousToneContext?.rawContext ?? previousToneContext
     const nextRawContext = nextToneContext?.rawContext ?? nextToneContext
@@ -222,7 +231,7 @@ export async function setupAudio() {
     }
 
     try {
-      await Tone.start()
+      await startPromise
     } catch (e) {
       // Browser autoplay policy might block this; it will be resumed later via ensureAudioContext
       logger.warn('AudioEngine', 'Tone.start() was blocked or failed', e)

@@ -1,58 +1,73 @@
-import assert from 'node:assert/strict'
-import { describe, test } from 'node:test'
-import {
-  hasUpgrade,
-  calcBaseBreakdownChance
-} from '../src/utils/upgradeUtils.js'
+import { test } from 'node:test'
+import { strict as assert } from 'node:assert'
+import { calcBaseBreakdownChance, hasUpgrade } from '../src/utils/upgradeUtils.js'
 
-describe('hasUpgrade', () => {
-  test('returns true when upgrade is present', () => {
-    assert.strictEqual(hasUpgrade(['van_suspension', 'van_storage'], 'van_suspension'), true)
-  })
-
-  test('returns false when upgrade is absent', () => {
-    assert.strictEqual(hasUpgrade(['van_storage'], 'van_suspension'), false)
-  })
-
-  test('returns false for empty array', () => {
-    assert.strictEqual(hasUpgrade([], 'van_suspension'), false)
-  })
-
-  test('returns false for non-array input', () => {
-    assert.strictEqual(hasUpgrade(null, 'van_suspension'), false)
-    assert.strictEqual(hasUpgrade(undefined, 'van_suspension'), false)
-  })
+test('hasUpgrade - checks ownership correctly', () => {
+  assert.equal(hasUpgrade(['van_suspension'], 'van_suspension'), true)
+  assert.equal(hasUpgrade(['van_suspension'], 'other_upgrade'), false)
+  assert.equal(hasUpgrade([], 'van_suspension'), false)
+  assert.equal(hasUpgrade(undefined, 'van_suspension'), false)
 })
 
-describe('calcBaseBreakdownChance', () => {
-  test('returns default 0.05 with no upgrades', () => {
-    assert.strictEqual(calcBaseBreakdownChance([]), 0.05)
-  })
+test('calcBaseBreakdownChance - no upgrades', () => {
+  const result = calcBaseBreakdownChance([])
+  assert.equal(result, 0.05)
+})
 
-  test('van_suspension reduces by 0.01', () => {
-    assert.strictEqual(calcBaseBreakdownChance(['van_suspension']), 0.04)
-  })
+test('calcBaseBreakdownChance - undefined upgrades', () => {
+  const result = calcBaseBreakdownChance(undefined)
+  assert.equal(result, 0.05)
+})
 
-  test('hq_van_suspension reduces by 0.01', () => {
-    assert.strictEqual(calcBaseBreakdownChance(['hq_van_suspension']), 0.04)
-  })
+test('calcBaseBreakdownChance - single upgrade (van_suspension)', () => {
+  const result = calcBaseBreakdownChance(['van_suspension'])
+  // 0.05 - 0.01 = 0.04
+  assert.ok(Math.abs(result - 0.04) < Number.EPSILON)
+})
 
-  test('hq_van_tyre_spare reduces by 0.05', () => {
-    assert.strictEqual(calcBaseBreakdownChance(['hq_van_tyre_spare']), 0)
-  })
+test('calcBaseBreakdownChance - multiple upgrades', () => {
+  const result = calcBaseBreakdownChance(['van_suspension', 'hq_van_suspension'])
+  // 0.05 - 0.01 - 0.01 = 0.03
+  assert.ok(Math.abs(result - 0.03) < Number.EPSILON)
+})
 
-  test('all three upgrades clamp to 0', () => {
-    const upgrades = ['van_suspension', 'hq_van_suspension', 'hq_van_tyre_spare']
-    assert.strictEqual(calcBaseBreakdownChance(upgrades), 0)
-  })
+test('calcBaseBreakdownChance - duplicate upgrades (should not double count)', () => {
+  const result = calcBaseBreakdownChance(['van_suspension', 'van_suspension'])
+  // 0.05 - 0.01 = 0.04 (not 0.03)
+  assert.ok(Math.abs(result - 0.04) < Number.EPSILON)
+})
 
-  test('both suspension upgrades stack', () => {
-    const upgrades = ['van_suspension', 'hq_van_suspension']
-    const result = calcBaseBreakdownChance(upgrades)
-    assert.ok(Math.abs(result - 0.03) < 1e-10)
-  })
+test('calcBaseBreakdownChance - large reduction (hq_van_tyre_spare)', () => {
+  const result = calcBaseBreakdownChance(['hq_van_tyre_spare'])
+  // 0.05 - 0.05 = 0
+  assert.equal(result, 0)
+})
 
-  test('handles non-breakdown upgrades gracefully', () => {
-    assert.strictEqual(calcBaseBreakdownChance(['van_storage', 'van_sound_system']), 0.05)
-  })
+test('calcBaseBreakdownChance - clamping to zero', () => {
+  const result = calcBaseBreakdownChance([
+    'hq_van_tyre_spare',
+    'van_suspension'
+  ])
+  // 0.05 - 0.05 - 0.01 = -0.01 -> clamped to 0
+  assert.equal(result, 0)
+})
+
+test('calcBaseBreakdownChance - prototype pollution attempt', () => {
+  // Should ignore 'toString' even if it exists on Object.prototype
+  const result = calcBaseBreakdownChance(['toString', 'constructor'])
+  assert.equal(result, 0.05)
+})
+
+test('calcBaseBreakdownChance - unknown upgrade', () => {
+  const result = calcBaseBreakdownChance(['unknown_upgrade'])
+  assert.equal(result, 0.05)
+})
+
+test('calcBaseBreakdownChance - mixed known and unknown upgrades', () => {
+  const result = calcBaseBreakdownChance([
+    'van_suspension',
+    'unknown_upgrade'
+  ])
+  // 0.05 - 0.01 = 0.04
+  assert.ok(Math.abs(result - 0.04) < Number.EPSILON)
 })

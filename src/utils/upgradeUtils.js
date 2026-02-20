@@ -10,6 +10,12 @@
 export const hasUpgrade = (upgrades, upgradeId) =>
   Array.isArray(upgrades) && upgrades.includes(upgradeId)
 
+const BREAKDOWN_REDUCTIONS = {
+  van_suspension: 0.01,
+  hq_van_suspension: 0.01,
+  hq_van_tyre_spare: 0.05
+}
+
 /**
  * Calculates the base breakdown chance after applying all upgrade reductions.
  * Centralises the subtraction logic shared by daily simulation and van repair.
@@ -19,8 +25,15 @@ export const hasUpgrade = (upgrades, upgradeId) =>
  */
 export const calcBaseBreakdownChance = upgrades => {
   let base = 0.05
-  if (hasUpgrade(upgrades, 'van_suspension')) base -= 0.01
-  if (hasUpgrade(upgrades, 'hq_van_suspension')) base -= 0.01
-  if (hasUpgrade(upgrades, 'hq_van_tyre_spare')) base -= 0.05
+  if (!Array.isArray(upgrades)) return base
+
+  const uniqueUpgrades = new Set(upgrades)
+
+  for (const upgradeId of uniqueUpgrades) {
+    if (Object.hasOwn(BREAKDOWN_REDUCTIONS, upgradeId)) {
+      base -= BREAKDOWN_REDUCTIONS[upgradeId]
+    }
+  }
+
   return Math.max(0, base)
 }
