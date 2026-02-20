@@ -14,8 +14,7 @@ function onRenderCallback(
   actualDuration,  // Time spent rendering
   baseDuration,    // Estimated time without memoization
   startTime,       // When render started
-  commitTime,      // When committed to DOM
-  interactions     // Set of interactions
+  commitTime       // When committed to DOM
 ) {
   console.log(`${id} (${phase}) took ${actualDuration}ms`);
 
@@ -83,7 +82,7 @@ console.log(`Render took: ${measure.duration}ms`);
 // Measure async operations
 async function fetchData() {
   performance.mark('fetch-start');
-  const data = await fetch('/api/data');
+  await fetch('/api/data');
   performance.mark('fetch-end');
   performance.measure('data-fetch', 'fetch-start', 'fetch-end');
 }
@@ -169,12 +168,12 @@ import { useEffect } from 'react';
 function App() {
   useEffect(() => {
     // Report Web Vitals
-    import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
-      getCLS(sendToAnalytics);
-      getFID(sendToAnalytics);
-      getFCP(sendToAnalytics);
-      getLCP(sendToAnalytics);
-      getTTFB(sendToAnalytics);
+    import('web-vitals').then(({ onCLS, onINP, onFCP, onLCP, onTTFB }) => {
+      onCLS(sendToAnalytics);
+      onINP(sendToAnalytics);
+      onFCP(sendToAnalytics);
+      onLCP(sendToAnalytics);
+      onTTFB(sendToAnalytics);
     });
   }, []);
 

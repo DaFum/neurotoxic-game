@@ -37,13 +37,13 @@ Load detailed patterns and examples as needed:
 
 | Topic | Reference File |
 | --- | --- |
-| React.memo, useMemo, useCallback patterns | `skills/react-performance-optimization/references/memoization.md` |
-| Code splitting with lazy/Suspense, bundle optimization | `skills/react-performance-optimization/references/code-splitting.md` |
-| Virtualization for large lists (react-window) | `skills/react-performance-optimization/references/virtualization.md` |
-| State management strategies, context splitting | `skills/react-performance-optimization/references/state-management.md` |
-| useTransition, useDeferredValue (React 18+) | `skills/react-performance-optimization/references/concurrent-features.md` |
-| React DevTools Profiler, performance monitoring | `skills/react-performance-optimization/references/profiling-debugging.md` |
-| Common pitfalls and anti-patterns | `skills/react-performance-optimization/references/common-pitfalls.md` |
+| React.memo, useMemo, useCallback patterns | `.claude/skills/react-performance-optimization/references/memoization.md` |
+| Code splitting with lazy/Suspense, bundle optimization | `.claude/skills/react-performance-optimization/references/code-splitting.md` |
+| Virtualization for large lists (react-window) | `.claude/skills/react-performance-optimization/references/virtualization.md` |
+| State management strategies, context splitting | `.claude/skills/react-performance-optimization/references/state-management.md` |
+| useTransition, useDeferredValue (React 18+) | `.claude/skills/react-performance-optimization/references/concurrent-features.md` |
+| React DevTools Profiler, performance monitoring | `.claude/skills/react-performance-optimization/references/profiling-debugging.md` |
+| Common pitfalls and anti-patterns | `.claude/skills/react-performance-optimization/references/common-pitfalls.md` |
 
 ## Optimization Workflow
 

@@ -59,10 +59,13 @@ function List({ items }) {
     handleClick(id);
   }, []);
 
+  // Pass the ID and the handler separately
+  // Item component must handle the call with its own ID
   return items.map(item => (
     <Item
       key={item.id}
-      onClick={() => handleItemClick(item.id)}
+      id={item.id}
+      onClick={handleItemClick}
     />
   ));
 }
@@ -102,7 +105,8 @@ const ExpensiveComponent = memo(({ data }) => {
 
 // GOOD: useMemo for actual expensive computations
 const sortedData = useMemo(() => {
-  return largeArray.sort((a, b) => b.score - a.score);
+  // Create copy to avoid mutation
+  return [...largeArray].sort((a, b) => b.score - a.score);
 }, [largeArray]);
 
 // GOOD: useCallback when passing to memoized children
@@ -149,10 +153,11 @@ function GoodComponent({ items }) {
 // GOOD: useMemo for expensive derivations only
 function ComponentWithExpensiveCalc({ items }) {
   const statistics = useMemo(() => {
+    const total = items.reduce((sum, item) => sum + item.value, 0);
     return {
       count: items.length,
-      total: items.reduce((sum, item) => sum + item.value, 0),
-      average: items.reduce((sum, item) => sum + item.value, 0) / items.length
+      total,
+      average: items.length > 0 ? total / items.length : 0
     };
   }, [items]);
 }

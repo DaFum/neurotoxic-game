@@ -6,20 +6,21 @@
 ```jsx
 import { FixedSizeList } from 'react-window';
 
-function VirtualizedList({ items }) {
-  const Row = ({ index, style }) => (
-    <div style={style} className="list-item">
-      <h4>{items[index].title}</h4>
-      <p>{items[index].description}</p>
-    </div>
-  );
+const Row = ({ index, style, data }) => (
+  <div style={style} className="list-item">
+    <h4>{data[index].title}</h4>
+    <p>{data[index].description}</p>
+  </div>
+);
 
+function VirtualizedList({ items }) {
   return (
     <FixedSizeList
       height={600}
       itemCount={items.length}
       itemSize={80}
       width="100%"
+      itemData={items}
     >
       {Row}
     </FixedSizeList>
