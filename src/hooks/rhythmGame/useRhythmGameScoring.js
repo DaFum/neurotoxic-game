@@ -100,9 +100,9 @@ export const useRhythmGameScoring = ({
         audioManager.playSFX('miss')
       }
 
-      // Dynamic decay based on stats (e.g. crowdDecay -0.1 means 10% slower decay)
-      // Base decay is 2. With -0.1 modifier: 2 * (1 - 0.1) = 1.8
-      const decayModifier = 1 + (performance?.crowdDecay || 0)
+      // Dynamic decay based on stats (e.g. crowdDecay 1.0 -> 0.9 means 10% slower decay)
+      // Base decay is 2. Multiplier comes from state (default 1.0)
+      const decayModifier = performance?.crowdDecay ?? 1.0
       let decayPerMiss = 2 * Math.max(0.1, decayModifier)
 
       if (isEmptyHit) {
@@ -147,7 +147,8 @@ export const useRhythmGameScoring = ({
       setHealth,
       setIsGameOver,
       setIsToxicMode,
-      setOverload
+      setOverload,
+      performance
     ]
   )
 
@@ -169,10 +170,10 @@ export const useRhythmGameScoring = ({
         hitWindow += state.modifiers.hitWindowBonus
 
       // Dynamic Hit Window (Guitar Custom: easier to hit = larger window)
-      // e.g. guitarDifficulty -0.15 (15% easier) -> Window * 1.15
+      // e.g. guitarDifficulty 0.85 (15% reduction) -> Window / 0.85 (~1.17x larger)
       if (laneIndex === 0) {
-        const difficultyMod = Math.abs(performance?.guitarDifficulty || 0)
-        hitWindow *= 1 + difficultyMod
+        const difficultyFactor = Math.max(0.1, performance?.guitarDifficulty ?? 1.0)
+        hitWindow /= difficultyFactor
       }
 
       const note = checkHit(state.notes, laneIndex, elapsed, hitWindow)
@@ -205,9 +206,9 @@ export const useRhythmGameScoring = ({
 
         let points = 100
         // Dynamic Score Multiplier (Drum Trigger: +20% score)
-        // e.g. drumMultiplier 0.2 -> 100 * 1.2 = 120
+        // e.g. drumMultiplier 1.2 (from 1.0 + 0.2) -> 100 * 1.2 = 120
         if (laneIndex === 1) {
-          const drumMod = 1 + (performance?.drumMultiplier || 0)
+          const drumMod = performance?.drumMultiplier ?? 1.0
           points *= drumMod
         }
         if (laneIndex === 0) points *= state.modifiers.guitarScoreMult || 1.0
@@ -272,7 +273,8 @@ export const useRhythmGameScoring = ({
       setCombo,
       setHealth,
       setOverload,
-      setScore
+      setScore,
+      performance
     ]
   )
 
