@@ -83,7 +83,7 @@ const DEFAULT_STYLE = SCENE_STYLES.MENU
  * - OVERWORLD: bottom-left near the bus / event log area
  * - All other scenes: bottom-center of the window
  *
- * z-index: 200 — higher than every other UI layer (CRT=50, EventModal=100, etc.)
+ * z-index: 200 (--z-chatter) — above CRT (80), modal (100), and tutorial (150)
  * so chatter text is ALWAYS readable and never overlapped.
  *
  * Visual style adapts per scene — different border colors, accent bars, and icons.
@@ -199,11 +199,16 @@ export const ChatterOverlay = ({ gameState, performance = 0, combo = 0 }) => {
   // OVERWORLD = bottom-left (near the bus), everything else = bottom-center
   const isOverworld = currentScene === 'OVERWORLD'
   const positionClassName = isOverworld
-    ? 'fixed bottom-28 left-8 z-[200] pointer-events-none w-[min(22rem,85vw)]'
-    : 'fixed bottom-16 left-1/2 -translate-x-1/2 z-[200] pointer-events-none w-[min(24rem,90vw)]'
+    ? 'fixed bottom-28 left-8 pointer-events-none w-[min(22rem,85vw)]'
+    : 'fixed bottom-16 left-1/2 -translate-x-1/2 pointer-events-none w-[min(24rem,90vw)]'
 
   return (
-    <div className={positionClassName} role='status' aria-live='polite'>
+    <div
+      className={positionClassName}
+      style={{ zIndex: 'var(--z-chatter)' }}
+      role='status'
+      aria-live='polite'
+    >
       <AnimatePresence mode='popLayout'>
         {messages.map(msg => (
           <motion.div

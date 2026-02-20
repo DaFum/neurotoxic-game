@@ -6,7 +6,7 @@ import { GlitchButton } from '../ui/GlitchButton'
  * Scene displaying game credits.
  */
 export const Credits = () => {
-  const { changeScene, settings } = useGameState()
+  const { changeScene } = useGameState()
 
   const credits = [
     { role: 'VOCAL CODE VOMIT', name: 'Jules "Agent of Segfaults" Agent' },
@@ -34,10 +34,6 @@ export const Credits = () => {
 
   return (
     <div className='flex flex-col items-center h-full w-full bg-(--void-black) z-50 text-center overflow-hidden relative'>
-      {(settings?.crtEnabled ?? false) && (
-        <div className='crt-overlay pointer-events-none fixed inset-0 z-50 mix-blend-overlay opacity-50' />
-      )}
-
       {/* Gradient fade at top and bottom */}
       <div className='absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-(--void-black) to-transparent z-10 pointer-events-none' />
       <div className='absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-(--void-black) to-transparent z-10 pointer-events-none' />

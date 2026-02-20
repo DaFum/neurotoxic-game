@@ -106,7 +106,7 @@ function GameContent() {
   return (
     <div className='game-container relative w-full h-full overflow-hidden bg-(--void-black) text-(--toxic-green)'>
       {settings.crtEnabled && (
-        <div className='crt-overlay pointer-events-none fixed inset-0 z-50 mix-blend-overlay opacity-50' />
+        <div className='crt-overlay pointer-events-none fixed inset-0 z-(--z-crt) mix-blend-overlay opacity-50' />
       )}
 
       {/* Hide HUD in Intro/Menu/Settings/Credits/GameOver */}

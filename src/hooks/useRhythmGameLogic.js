@@ -15,7 +15,6 @@ export const useRhythmGameLogic = () => {
     setlist,
     band,
     activeEvent,
-    hasUpgrade,
     setLastGigStats,
     addToast,
     gameMap,
@@ -31,7 +30,8 @@ export const useRhythmGameLogic = () => {
   const scoringActions = useRhythmGameScoring({
     gameStateRef,
     setters,
-    contextActions: { addToast, changeScene, hasUpgrade, setLastGigStats }
+    performance: band.performance, // Injected for dynamic stats
+    contextActions: { addToast, changeScene, setLastGigStats }
   })
   const { activateToxicMode } = scoringActions
 

@@ -19,12 +19,14 @@ import { checkHit } from '../../utils/rhythmUtils'
  * @param {Object} params - Hook parameters.
  * @param {Object} params.gameStateRef - Reference to the mutable game state.
  * @param {Object} params.setters - React state setters from useRhythmGameState.
- * @param {Object} params.contextActions - Actions from useGameState (addToast, changeScene, hasUpgrade, setLastGigStats).
+ * @param {Object} params.performance - Band performance stats (modifiers).
+ * @param {Object} params.contextActions - Actions from useGameState (addToast, changeScene, setLastGigStats).
  * @returns {Object} Scoring actions: handleHit, handleMiss, activateToxicMode.
  */
 export const useRhythmGameScoring = ({
   gameStateRef,
   setters,
+  performance,
   contextActions
 }) => {
   const {
@@ -35,7 +37,12 @@ export const useRhythmGameScoring = ({
     setIsToxicMode,
     setIsGameOver
   } = setters
-  const { addToast, changeScene, hasUpgrade, setLastGigStats } = contextActions
+  const { addToast, changeScene, setLastGigStats } = contextActions
+
+  // Extract primitives from performance to stabilise callback dependency arrays
+  const crowdDecay = performance?.crowdDecay ?? 1.0
+  const guitarDifficulty = performance?.guitarDifficulty ?? 1.0
+  const drumMultiplier = performance?.drumMultiplier ?? 1.0
 
   const gameOverTimerRef = useRef(null)
 
@@ -98,10 +105,10 @@ export const useRhythmGameScoring = ({
         audioManager.playSFX('miss')
       }
 
-      let decayPerMiss = hasUpgrade('bass_sansamp') ? 1 : 2
-      if (isEmptyHit) {
-        decayPerMiss = 1 // Lower penalty for empty hits
-      }
+      // Dynamic decay based on stats (e.g. crowdDecay 1.0 -> 0.9 means 10% slower decay)
+      // Base decay is 2 for real misses, 1 for empty hits. Multiplier comes from state (default 1.0)
+      const basePenalty = isEmptyHit ? 1 : 2
+      const decayPerMiss = basePenalty * Math.max(0.1, crowdDecay)
 
       setHealth(h => {
         const next = Math.max(0, h - decayPerMiss * count)
@@ -134,14 +141,14 @@ export const useRhythmGameScoring = ({
     [
       addToast,
       changeScene,
-      hasUpgrade,
       setLastGigStats,
       gameStateRef,
       setCombo,
       setHealth,
       setIsGameOver,
       setIsToxicMode,
-      setOverload
+      setOverload,
+      crowdDecay
     ]
   )
 
@@ -161,7 +168,13 @@ export const useRhythmGameScoring = ({
       let hitWindow = state.lanes[laneIndex].hitWindow
       if (state.modifiers.hitWindowBonus)
         hitWindow += state.modifiers.hitWindowBonus
-      if (laneIndex === 0 && hasUpgrade('guitar_custom')) hitWindow += 50
+
+      // Dynamic Hit Window (Guitar Custom: easier to hit = larger window)
+      // e.g. guitarDifficulty 0.85 (15% reduction) -> Window / 0.85 (~1.17x larger)
+      if (laneIndex === 0) {
+        const difficultyFactor = Math.max(0.1, guitarDifficulty)
+        hitWindow /= difficultyFactor
+      }
 
       const note = checkHit(state.notes, laneIndex, elapsed, hitWindow)
 
@@ -192,7 +205,11 @@ export const useRhythmGameScoring = ({
         }
 
         let points = 100
-        if (laneIndex === 1 && hasUpgrade('drum_trigger')) points = 120
+        // Dynamic Score Multiplier (Drum Trigger: +20% score)
+        // e.g. drumMultiplier 1.2 (from 1.0 + 0.2) -> 100 * 1.2 = 120
+        if (laneIndex === 1) {
+          points *= drumMultiplier
+        }
         if (laneIndex === 0) points *= state.modifiers.guitarScoreMult || 1.0
 
         // Guestlist Effect: +20% score
@@ -201,6 +218,7 @@ export const useRhythmGameScoring = ({
         const comboForScore = state.combo
         let finalScore = points + comboForScore * 10
         if (toxicModeActive) finalScore *= 4
+        finalScore = Math.floor(finalScore)
 
         setScore(s => {
           const next = s + finalScore
@@ -250,12 +268,13 @@ export const useRhythmGameScoring = ({
     [
       activateToxicMode,
       handleMiss,
-      hasUpgrade,
       gameStateRef,
       setCombo,
       setHealth,
       setOverload,
-      setScore
+      setScore,
+      guitarDifficulty,
+      drumMultiplier
     ]
   )
 

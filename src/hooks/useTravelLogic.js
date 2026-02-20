@@ -12,6 +12,7 @@ import {
 import { audioManager } from '../utils/AudioManager'
 import { logger } from '../utils/logger'
 import { handleError, StateError } from '../utils/errorHandler'
+import { calcBaseBreakdownChance } from '../utils/upgradeUtils'
 
 /**
  * Failsafe timeout duration in milliseconds
@@ -32,7 +33,6 @@ const TRAVEL_ANIMATION_TIMEOUT_MS = 1510
  * @param {Function} params.advanceDay - Day advancement function
  * @param {Function} params.triggerEvent - Event trigger function
  * @param {Function} params.startGig - Gig start function
- * @param {Function} params.hasUpgrade - Upgrade check function
  * @param {Function} params.addToast - Toast notification function
  * @param {Function} params.changeScene - Scene change function
  * @param {Function} [params.onShowHQ] - Callback when HQ should be shown
@@ -48,7 +48,6 @@ export const useTravelLogic = ({
   advanceDay,
   triggerEvent,
   startGig,
-  hasUpgrade,
   addToast,
   changeScene,
   onShowHQ
@@ -218,9 +217,9 @@ export const useTravelLogic = ({
         saveGame()
       }
 
-      // Sound system upgrade bonus
-      if (hasUpgrade('van_sound_system')) {
-        updateBand({ harmony: Math.min(100, (band?.harmony ?? 0) + 5) })
+      // Harmony regen while traveling (enabled by Mobile Studio / van_sound_system)
+      if (band?.harmonyRegenTravel) {
+        updateBand({ harmony: Math.min(100, (band.harmony ?? 0) + 5) })
       }
 
       setIsTraveling(false)
@@ -242,7 +241,6 @@ export const useTravelLogic = ({
       player,
       band,
       gameMap,
-      hasUpgrade,
       updatePlayer,
       updateBand,
       saveGame,
@@ -495,17 +493,15 @@ export const useTravelLogic = ({
       return
     }
 
-    const baseBreakdownChance = 0.05
-    const repairedBreakdownChance = hasUpgrade('van_suspension')
-      ? baseBreakdownChance * 0.8
-      : baseBreakdownChance
+    // Recalculate breakdown chance at full condition (multiplier 1.0)
+    const repairedBreakdown = calcBaseBreakdownChance(player.van?.upgrades ?? [])
 
     updatePlayer({
       money: Math.max(0, (player.money ?? 0) - cost),
       van: {
         ...player.van,
         condition: 100,
-        breakdownChance: repairedBreakdownChance
+        breakdownChance: Math.round(repairedBreakdown * 100) / 100
       }
     })
 
@@ -516,7 +512,7 @@ export const useTravelLogic = ({
     } catch (_e) {
       // Ignore audio errors
     }
-  }, [player, isTraveling, updatePlayer, addToast, hasUpgrade])
+  }, [player, isTraveling, updatePlayer, addToast])
 
   // Softlock detection effect
   useEffect(() => {
