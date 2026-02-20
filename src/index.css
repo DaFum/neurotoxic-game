@@ -75,7 +75,7 @@
 
   /* Z-Index Hierarchy (Strict Stacking) */
   --z-hud: 50;
-  --z-crt: 80;
+  --z-crt: 500;
   --z-modal: 100;
   --z-tutorial: 150;
   --z-chatter: 200;

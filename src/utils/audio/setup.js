@@ -397,9 +397,9 @@ export async function setupAudio() {
  */
 export async function ensureAudioContext() {
   // Synchronous resume attempt to capture user gesture for Web Audio unlock (iOS/Safari).
-  // Only attempt when audio is already set up to avoid resuming a stale context that
-  // setupAudio() is about to replace.
-  if (audioState.isSetup && Tone.context) {
+  // We attempt this even if not fully set up, as long as a context exists, to ensure
+  // the gesture is captured by the browser's audio subsystem.
+  if (Tone.context) {
     const earlyState = getPreferredAudioContextState({
       rawContextState: getRawAudioContext()?.state,
       toneContextState: Tone.context?.state
