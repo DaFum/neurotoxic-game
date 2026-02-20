@@ -29,7 +29,7 @@ export class NoteManager {
     this.noteSprites = new Map() // Map<note, Sprite>
     this.nextRenderIndex = 0
     this.spritePool = []
-    this.noteTexture = null
+    this.noteTextures = { skull: null, lightning: null }
   }
 
   init() {
@@ -38,13 +38,30 @@ export class NoteManager {
   }
 
   async loadAssets() {
-    const noteTextureUrl = getGenImageUrl(IMG_PROMPTS.NOTE_SKULL)
     try {
-      this.noteTexture = await PIXI.Assets.load(noteTextureUrl)
+      const results = await Promise.allSettled([
+        PIXI.Assets.load(getGenImageUrl(IMG_PROMPTS.NOTE_SKULL)),
+        PIXI.Assets.load(getGenImageUrl(IMG_PROMPTS.NOTE_LIGHTNING))
+      ])
+
+      if (results[0].status === 'fulfilled') {
+        this.noteTextures.skull = results[0].value
+      } else {
+        handleError(results[0].reason, {
+          fallbackMessage: 'Note Skull texture failed to load.'
+        })
+      }
+
+      if (results[1].status === 'fulfilled') {
+        this.noteTextures.lightning = results[1].value
+      } else {
+        handleError(results[1].reason, {
+          fallbackMessage: 'Note Lightning texture failed to load.'
+        })
+      }
     } catch (error) {
-      this.noteTexture = null
       handleError(error, {
-        fallbackMessage: 'Note texture could not be loaded.'
+        fallbackMessage: 'Critical error loading note textures.'
       })
     }
   }
@@ -72,7 +89,7 @@ export class NoteManager {
       if (elapsed >= note.time - NOTE_SPAWN_LEAD_MS) {
         if (note.visible && !note.hit) {
           const lane = state.lanes[note.laneIndex]
-          const sprite = this.acquireSpriteFromPool(lane)
+          const sprite = this.acquireSpriteFromPool(lane, note.laneIndex)
           this.container.addChild(sprite)
           this.noteSprites.set(note, sprite)
         }
@@ -121,21 +138,36 @@ export class NoteManager {
     }
   }
 
-  acquireSpriteFromPool(lane) {
+  acquireSpriteFromPool(lane, laneIndex) {
     let sprite
     if (this.spritePool.length > 0) {
       sprite = this.spritePool.pop()
+      // If pooling reuses sprites, we must update texture if needed
+      // but simpler: just update texture in initialize
     } else {
-      sprite = this.createNoteSprite()
+      sprite = this.createNoteSprite(laneIndex)
     }
 
-    this.initializeNoteSprite(sprite, lane)
+    this.initializeNoteSprite(sprite, lane, laneIndex)
     return sprite
   }
 
-  createNoteSprite() {
-    if (this.noteTexture) {
-      const sprite = new PIXI.Sprite(this.noteTexture)
+  createNoteSprite(laneIndex) {
+    const useLightning = laneIndex === 1
+    const texture = useLightning
+      ? this.noteTextures.lightning
+      : this.noteTextures.skull
+
+    // Fallback to skull if lightning missing, or vice versa?
+    // Actually if lightning is missing but requested, try skull.
+    // If skull is missing, try lightning? Or just null -> Graphics.
+    const effectiveTexture =
+      texture ||
+      (useLightning ? this.noteTextures.skull : this.noteTextures.lightning) ||
+      this.noteTextures.skull
+
+    if (effectiveTexture) {
+      const sprite = new PIXI.Sprite(effectiveTexture)
       sprite.anchor.set(0.5)
       return sprite
     }
@@ -143,12 +175,29 @@ export class NoteManager {
     return new PIXI.Graphics()
   }
 
-  initializeNoteSprite(sprite, lane) {
+  initializeNoteSprite(sprite, lane, laneIndex) {
     sprite.visible = true
     sprite.alpha = 1
     sprite.jitterOffset = (Math.random() - 0.5) * NOTE_JITTER_RANGE
 
     if (sprite instanceof PIXI.Sprite) {
+      // Ensure correct texture if reused from pool
+      const useLightning = laneIndex === 1
+      const desiredTexture = useLightning
+        ? this.noteTextures.lightning
+        : this.noteTextures.skull
+      const fallbackTexture = this.noteTextures.skull
+
+      if (desiredTexture && sprite.texture !== desiredTexture) {
+        sprite.texture = desiredTexture
+      } else if (
+        !desiredTexture &&
+        fallbackTexture &&
+        sprite.texture !== fallbackTexture
+      ) {
+        sprite.texture = fallbackTexture
+      }
+
       sprite.tint = lane.color
       sprite.x = lane.renderX + NOTE_CENTER_OFFSET
       sprite.y = NOTE_INITIAL_Y

@@ -114,7 +114,7 @@ describe('NoteManager', () => {
   })
 
   const createMockNoteAndState = () => {
-    noteManager.noteTexture = {}
+    noteManager.noteTextures.skull = {}
     const note = { time: 3000, laneIndex: 0, visible: true, hit: false }
     const state = {
       notes: [note],
@@ -126,10 +126,10 @@ describe('NoteManager', () => {
   }
 
   test('acquireSpriteFromPool returns a new sprite if pool is empty', () => {
-    noteManager.noteTexture = {}
+    noteManager.noteTextures.skull = {}
     const lane = { color: 0x00ff00, renderX: 200 }
 
-    const sprite = noteManager.acquireSpriteFromPool(lane)
+    const sprite = noteManager.acquireSpriteFromPool(lane, 0)
 
     assert.ok(sprite instanceof PIXI.Sprite)
     assert.equal(sprite.tint, 0x00ff00)
@@ -140,7 +140,7 @@ describe('NoteManager', () => {
   })
 
   test('acquireSpriteFromPool reuses a sprite from the pool', () => {
-    noteManager.noteTexture = {}
+    noteManager.noteTextures.skull = {}
     const lane = { color: 0x00ff00, renderX: 200 }
 
     // Create a sprite and put it in the pool
@@ -148,7 +148,7 @@ describe('NoteManager', () => {
     pooledSprite.visible = false
     noteManager.spritePool.push(pooledSprite)
 
-    const sprite = noteManager.acquireSpriteFromPool(lane)
+    const sprite = noteManager.acquireSpriteFromPool(lane, 0)
 
     assert.equal(sprite, pooledSprite)
     assert.equal(sprite.visible, true)
@@ -166,9 +166,9 @@ describe('NoteManager', () => {
   })
 
   test('createNoteSprite creates a fallback Graphics if texture is missing', () => {
-    noteManager.noteTexture = null
+    noteManager.noteTextures = { skull: null, lightning: null }
 
-    const sprite = noteManager.createNoteSprite()
+    const sprite = noteManager.createNoteSprite(0)
 
     assert.ok(sprite instanceof PIXI.Graphics)
     // It returns uninitialized sprite now
@@ -194,7 +194,7 @@ describe('NoteManager', () => {
     pooledGraphics.visible = false
     noteManager.spritePool.push(pooledGraphics)
 
-    const sprite = noteManager.acquireSpriteFromPool(lane)
+    const sprite = noteManager.acquireSpriteFromPool(lane, 0)
 
     assert.equal(sprite, pooledGraphics)
     assert.equal(sprite.visible, true)

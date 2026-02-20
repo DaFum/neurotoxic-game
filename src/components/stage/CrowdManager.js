@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js'
 import { calculateCrowdY, CROWD_LAYOUT } from './utils.js'
+import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 
 export class CrowdManager {
   /**
@@ -11,6 +12,23 @@ export class CrowdManager {
     this.stageContainer = stageContainer
     this.crowdMembers = []
     this.container = null
+    this.textures = { idle: null, mosh: null }
+  }
+
+  async loadAssets() {
+    try {
+      const results = await Promise.allSettled([
+        PIXI.Assets.load(getGenImageUrl(IMG_PROMPTS.CROWD_IDLE)),
+        PIXI.Assets.load(getGenImageUrl(IMG_PROMPTS.CROWD_MOSH))
+      ])
+
+      if (results[0].status === 'fulfilled')
+        this.textures.idle = results[0].value
+      if (results[1].status === 'fulfilled')
+        this.textures.mosh = results[1].value
+    } catch (error) {
+      console.warn('Crowd textures failed to load', error)
+    }
   }
 
   init() {
@@ -19,11 +37,21 @@ export class CrowdManager {
     this.stageContainer.addChild(this.container)
 
     for (let i = 0; i < CROWD_LAYOUT.memberCount; i += 1) {
-      const crowd = new PIXI.Graphics()
       const radius =
         CROWD_LAYOUT.minRadius + Math.random() * CROWD_LAYOUT.radiusVariance
-      crowd.circle(0, 0, radius)
-      crowd.fill(0xffffff)
+
+      let crowd
+      if (this.textures.idle) {
+        crowd = new PIXI.Sprite(this.textures.idle)
+        crowd.anchor.set(0.5)
+        crowd.width = radius * 2.5 // Adjust scale to match circle size approx
+        crowd.height = radius * 2.5
+      } else {
+        crowd = new PIXI.Graphics()
+        crowd.circle(0, 0, radius)
+        crowd.fill(0xffffff)
+      }
+
       crowd.tint = 0x333333
       crowd.x = Math.random() * this.app.screen.width
       crowd.y =
@@ -44,6 +72,20 @@ export class CrowdManager {
         : combo > 20
           ? 0xffffff
           : 0x555555
+
+      // Texture swapping logic
+      if (member instanceof PIXI.Sprite) {
+        const shouldMosh = isToxicMode || combo > 20
+        const targetTexture =
+          shouldMosh && this.textures.mosh
+            ? this.textures.mosh
+            : this.textures.idle
+
+        if (targetTexture && member.texture !== targetTexture) {
+          member.texture = targetTexture
+        }
+      }
+
       if (member.currentFillColor !== nextColor) {
         member.currentFillColor = nextColor
         member.tint = nextColor

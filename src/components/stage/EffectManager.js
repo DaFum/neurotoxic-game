@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js'
+import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 
 export class EffectManager {
   /**
@@ -10,6 +11,7 @@ export class EffectManager {
     this.parentContainer = parentContainer
     this.container = null
     this.activeEffects = []
+    this.textures = { blood: null, toxic: null }
   }
 
   init() {
@@ -17,13 +19,50 @@ export class EffectManager {
     this.parentContainer.addChild(this.container)
   }
 
+  async loadAssets() {
+    try {
+      const results = await Promise.allSettled([
+        PIXI.Assets.load(getGenImageUrl(IMG_PROMPTS.HIT_BLOOD)),
+        PIXI.Assets.load(getGenImageUrl(IMG_PROMPTS.HIT_TOXIC))
+      ])
+
+      if (results[0].status === 'fulfilled')
+        this.textures.blood = results[0].value
+      if (results[1].status === 'fulfilled')
+        this.textures.toxic = results[1].value
+    } catch (error) {
+      console.warn('Effect textures failed to load', error)
+    }
+  }
+
   spawnHitEffect(x, y, color) {
     if (!this.container) return
 
-    const effect = new PIXI.Graphics()
-    effect.circle(0, 0, 40)
-    effect.fill({ color: 0xffffff, alpha: 0.8 }) // Core white flash
-    effect.stroke({ width: 4, color: color }) // Colored ring
+    // Determine texture based on color (Red component dominance)
+    // color is number (e.g. 0xCC0000). R is (color >> 16) & 0xFF
+    const r = (color >> 16) & 0xff
+    const g = (color >> 8) & 0xff
+    const b = color & 0xff
+
+    let texture = null
+    if (r > g && r > b && this.textures.blood) {
+      texture = this.textures.blood
+    } else if (this.textures.toxic) {
+      texture = this.textures.toxic
+    }
+
+    let effect
+    if (texture) {
+      effect = new PIXI.Sprite(texture)
+      effect.anchor.set(0.5)
+      effect.tint = color
+    } else {
+      effect = new PIXI.Graphics()
+      effect.circle(0, 0, 40)
+      effect.fill({ color: 0xffffff, alpha: 0.8 })
+      effect.stroke({ width: 4, color: color })
+    }
+
     effect.x = x
     effect.y = y
     effect.alpha = 1

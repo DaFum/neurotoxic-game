@@ -81,6 +81,7 @@ class PixiStageController {
 
         // Initialize Managers
         this.crowdManager = new CrowdManager(this.app, this.stageContainer)
+        await this.crowdManager.loadAssets()
         this.crowdManager.init()
 
         this.laneManager = new LaneManager(
@@ -95,6 +96,7 @@ class PixiStageController {
         const rhythmContainer = this.laneManager.container
 
         this.effectManager = new EffectManager(this.app, rhythmContainer)
+        await this.effectManager.loadAssets()
         this.effectManager.init()
 
         this.noteManager = new NoteManager(

@@ -98,7 +98,6 @@ export const IMG_PROMPTS = {
   ITEM_DIY_PATCH_KIT: 'pixel art needle and thread sewing kit icon',
   ITEM_CANNED_FOOD: 'pixel art stack of tin cans food icon',
   ITEM_BEER_CRATE: 'pixel art crate of beer bottles icon',
-  ITEM_BEER_BULK: 'pixel art many beer bottles icon', // Fallback
   ITEM_RABBIT_FOOT: 'pixel art lucky rabbit foot keychain icon',
   ITEM_DUCT_TAPE: 'pixel art roll of silver duct tape icon',
   ITEM_INCENSE: 'pixel art burning incense sticks smoke icon',
