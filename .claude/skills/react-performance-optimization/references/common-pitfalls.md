@@ -251,10 +251,14 @@ function App() {
   const [theme, setTheme] = useState('light');
   const [data, setData] = useState([]);
 
+  const userValue = useMemo(() => ({ user, setUser }), [user]);
+  const themeValue = useMemo(() => ({ theme, setTheme }), [theme]);
+  const dataValue = useMemo(() => ({ data, setData }), [data]);
+
   return (
-    <UserContext.Provider value={{ user, setUser }}>
-      <ThemeContext.Provider value={{ theme, setTheme }}>
-        <DataContext.Provider value={{ data, setData }}>
+    <UserContext.Provider value={userValue}>
+      <ThemeContext.Provider value={themeValue}>
+        <DataContext.Provider value={dataValue}>
           <Dashboard />
         </DataContext.Provider>
       </ThemeContext.Provider>
