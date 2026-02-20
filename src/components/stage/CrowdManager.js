@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js'
 import { calculateCrowdY, CROWD_LAYOUT } from './utils.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
+import { logger } from '../../utils/logger.js'
 
 export class CrowdManager {
   /**
@@ -27,7 +28,7 @@ export class CrowdManager {
       if (results[1].status === 'fulfilled')
         this.textures.mosh = results[1].value
     } catch (error) {
-      console.warn('Crowd textures failed to load', error)
+      logger.warn('CrowdManager', 'Crowd textures failed to load', error)
     }
   }
 

@@ -154,17 +154,15 @@ export class NoteManager {
 
   createNoteSprite(laneIndex) {
     const useLightning = laneIndex === 1
-    const texture = useLightning
+    const desiredTexture = useLightning
       ? this.noteTextures.lightning
       : this.noteTextures.skull
+    const fallbackTexture = useLightning
+      ? this.noteTextures.skull
+      : this.noteTextures.lightning
 
-    // Fallback to skull if lightning missing, or vice versa?
-    // Actually if lightning is missing but requested, try skull.
-    // If skull is missing, try lightning? Or just null -> Graphics.
-    const effectiveTexture =
-      texture ||
-      (useLightning ? this.noteTextures.skull : this.noteTextures.lightning) ||
-      this.noteTextures.skull
+    // Try desired first, then fallback
+    const effectiveTexture = desiredTexture || fallbackTexture
 
     if (effectiveTexture) {
       const sprite = new PIXI.Sprite(effectiveTexture)
@@ -181,21 +179,18 @@ export class NoteManager {
     sprite.jitterOffset = (Math.random() - 0.5) * NOTE_JITTER_RANGE
 
     if (sprite instanceof PIXI.Sprite) {
-      // Ensure correct texture if reused from pool
       const useLightning = laneIndex === 1
       const desiredTexture = useLightning
         ? this.noteTextures.lightning
         : this.noteTextures.skull
-      const fallbackTexture = this.noteTextures.skull
+      const fallbackTexture = useLightning
+        ? this.noteTextures.skull
+        : this.noteTextures.lightning
 
-      if (desiredTexture && sprite.texture !== desiredTexture) {
-        sprite.texture = desiredTexture
-      } else if (
-        !desiredTexture &&
-        fallbackTexture &&
-        sprite.texture !== fallbackTexture
-      ) {
-        sprite.texture = fallbackTexture
+      const effectiveTexture = desiredTexture || fallbackTexture
+
+      if (effectiveTexture && sprite.texture !== effectiveTexture) {
+        sprite.texture = effectiveTexture
       }
 
       sprite.tint = lane.color

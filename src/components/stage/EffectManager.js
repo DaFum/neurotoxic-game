@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
+import { logger } from '../../utils/logger.js'
 
 export class EffectManager {
   /**
@@ -31,7 +32,7 @@ export class EffectManager {
       if (results[1].status === 'fulfilled')
         this.textures.toxic = results[1].value
     } catch (error) {
-      console.warn('Effect textures failed to load', error)
+      logger.warn('EffectManager', 'Effect textures failed to load', error)
     }
   }
 

@@ -64,7 +64,7 @@ mock.module('../src/utils/errorHandler.js', {
 mock.module('../src/utils/imageGen.js', {
   namedExports: {
     getGenImageUrl: mock.fn(),
-    IMG_PROMPTS: { NOTE_SKULL: 'skull' }
+    IMG_PROMPTS: { NOTE_SKULL: 'skull', NOTE_LIGHTNING: 'lightning' }
   }
 })
 
