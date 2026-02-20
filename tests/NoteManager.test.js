@@ -114,7 +114,6 @@ describe('NoteManager', () => {
   })
 
   const createMockNoteAndState = () => {
-    noteManager.noteTextures.skull = {}
     const note = { time: 3000, laneIndex: 0, visible: true, hit: false }
     const state = {
       notes: [note],
@@ -126,7 +125,7 @@ describe('NoteManager', () => {
   }
 
   test('acquireSpriteFromPool returns a new sprite if pool is empty', () => {
-    noteManager.noteTextures.skull = {}
+    noteManager.noteTextures.skull = { id: 'skull' }
     const lane = { color: 0x00ff00, renderX: 200 }
 
     const sprite = noteManager.acquireSpriteFromPool(lane, 0)
@@ -140,7 +139,7 @@ describe('NoteManager', () => {
   })
 
   test('acquireSpriteFromPool reuses a sprite from the pool', () => {
-    noteManager.noteTextures.skull = {}
+    noteManager.noteTextures.skull = { id: 'skull' }
     const lane = { color: 0x00ff00, renderX: 200 }
 
     // Create a sprite and put it in the pool
@@ -239,6 +238,7 @@ describe('NoteManager', () => {
   })
 
   test('initializeNoteSprite sets jitterOffset property', () => {
+    noteManager.noteTextures.skull = { id: 'skull' }
     const lane = { color: 0x00ff00, renderX: 100 }
     const sprite = new PIXI.Sprite()
 
@@ -250,6 +250,7 @@ describe('NoteManager', () => {
   })
 
   test('update spawns notes when time is reached', () => {
+    noteManager.noteTextures.skull = { id: 'skull' }
     const { note, state } = createMockNoteAndState()
     // 3000 - 2000 (NOTE_SPAWN_LEAD_MS) = 1000
 
@@ -264,6 +265,7 @@ describe('NoteManager', () => {
   })
 
   test('update positions visible notes', () => {
+    noteManager.noteTextures.skull = { id: 'skull' }
     mockCalculateNoteYResult = 500
     const { note, state } = createMockNoteAndState()
 
@@ -280,6 +282,7 @@ describe('NoteManager', () => {
   })
 
   test('update handles hit notes and calls onHit', () => {
+    noteManager.noteTextures.skull = { id: 'skull' }
     const onHitMock = mock.fn()
     noteManager.onHit = onHitMock
     const { note, state } = createMockNoteAndState()
@@ -303,6 +306,7 @@ describe('NoteManager', () => {
   })
 
   test('dispose clears resources', () => {
+    noteManager.noteTextures.skull = { id: 'skull' }
     const { state } = createMockNoteAndState()
 
     // Spawn
@@ -325,23 +329,25 @@ describe('NoteManager', () => {
     const originalMax = NoteManager.MAX_POOL_SIZE
     NoteManager.MAX_POOL_SIZE = 2
 
-    noteManager.spritePool = []
+    try {
+      noteManager.spritePool = []
 
-    const sprite1 = { destroy: mock.fn(), visible: true }
-    const sprite2 = { destroy: mock.fn(), visible: true }
-    const sprite3 = { destroy: mock.fn(), visible: true }
+      const sprite1 = { destroy: mock.fn(), visible: true }
+      const sprite2 = { destroy: mock.fn(), visible: true }
+      const sprite3 = { destroy: mock.fn(), visible: true }
 
-    noteManager.releaseSpriteToPool(sprite1)
-    noteManager.releaseSpriteToPool(sprite2)
-    noteManager.releaseSpriteToPool(sprite3)
+      noteManager.releaseSpriteToPool(sprite1)
+      noteManager.releaseSpriteToPool(sprite2)
+      noteManager.releaseSpriteToPool(sprite3)
 
-    assert.equal(noteManager.spritePool.length, 2)
-    assert.equal(sprite1.visible, false)
-    assert.equal(sprite2.visible, false)
-    assert.equal(sprite3.visible, false)
-    assert.equal(sprite3.destroy.mock.calls.length, 1)
-    assert.equal(sprite1.destroy.mock.calls.length, 0)
-
-    NoteManager.MAX_POOL_SIZE = originalMax
+      assert.equal(noteManager.spritePool.length, 2)
+      assert.equal(sprite1.visible, false)
+      assert.equal(sprite2.visible, false)
+      assert.equal(sprite3.visible, false)
+      assert.equal(sprite3.destroy.mock.calls.length, 1)
+      assert.equal(sprite1.destroy.mock.calls.length, 0)
+    } finally {
+      NoteManager.MAX_POOL_SIZE = originalMax
+    }
   })
 })

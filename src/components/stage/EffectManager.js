@@ -1,9 +1,11 @@
 import * as PIXI from 'pixi.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { logger } from '../../utils/logger.js'
+import { getPixiColorFromToken } from './utils.js'
 
 export class EffectManager {
   static MAX_POOL_SIZE = 50
+  static MAX_ACTIVE_EFFECTS = 50
 
   /**
    * @param {PIXI.Application} app
@@ -46,11 +48,8 @@ export class EffectManager {
   spawnHitEffect(x, y, color) {
     if (!this.container) return
 
-    // Cap active effects
-    // Note: this.activeEffects contains currently animating effects.
-    // If we exceed MAX_POOL_SIZE active animations, we drop the oldest one.
-    // This is a safety cap to prevent performance degradation.
-    while (this.activeEffects.length >= EffectManager.MAX_POOL_SIZE) {
+    // Cap active effects using MAX_ACTIVE_EFFECTS
+    while (this.activeEffects.length >= EffectManager.MAX_ACTIVE_EFFECTS) {
       const oldest = this.activeEffects.shift()
       this.releaseEffectToPool(oldest)
     }
@@ -90,9 +89,10 @@ export class EffectManager {
         effect = new PIXI.Graphics()
       }
 
+      const whiteColor = getPixiColorFromToken('--star-white')
       effect.clear()
       effect.circle(0, 0, 40)
-      effect.fill({ color: 0xffffff, alpha: 0.8 })
+      effect.fill({ color: whiteColor, alpha: 0.8 })
       effect.stroke({ width: 4, color: color })
     }
 

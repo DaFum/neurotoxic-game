@@ -81,7 +81,7 @@ class PixiStageController {
 
         // Initialize Managers and start loading assets in parallel
         this.crowdManager = new CrowdManager(this.app, this.stageContainer)
-        const crowdLoad = this.crowdManager.loadAssets()
+        const crowdLoad = this.withTimeout(this.crowdManager.loadAssets(), 'Crowd Assets')
 
         this.laneManager = new LaneManager(
           this.app,
@@ -95,7 +95,7 @@ class PixiStageController {
         const rhythmContainer = this.laneManager.container
 
         this.effectManager = new EffectManager(this.app, rhythmContainer)
-        const effectLoad = this.effectManager.loadAssets()
+        const effectLoad = this.withTimeout(this.effectManager.loadAssets(), 'Effect Assets')
 
         this.noteManager = new NoteManager(
           this.app,
@@ -103,7 +103,7 @@ class PixiStageController {
           this.gameStateRef,
           (x, y, color) => this.effectManager.spawnHitEffect(x, y, color)
         )
-        const noteLoad = this.noteManager.loadAssets()
+        const noteLoad = this.withTimeout(this.noteManager.loadAssets(), 'Note Assets')
 
         // Await all loads in parallel
         await Promise.all([crowdLoad, effectLoad, noteLoad])
@@ -131,6 +131,22 @@ class PixiStageController {
     })()
 
     return this.initPromise
+  }
+
+  /**
+   * Wraps a promise with a timeout to prevent indefinite hanging.
+   * @param {Promise} promise - The promise to wrap.
+   * @param {string} label - Label for logging.
+   * @returns {Promise} The wrapped promise.
+   */
+  async withTimeout(promise, label) {
+    const timeout = new Promise((resolve) => {
+      setTimeout(() => {
+        logger.warn('PixiStageController', `${label} load timed out, proceeding with fallbacks.`)
+        resolve(null)
+      }, 10000)
+    })
+    return Promise.race([promise, timeout])
   }
 
   /**

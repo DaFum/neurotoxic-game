@@ -68,6 +68,12 @@ mock.module('../src/utils/logger.js', {
   }
 })
 
+mock.module('../src/components/stage/utils.js', {
+  namedExports: {
+    getPixiColorFromToken: mock.fn(() => 0xffffff)
+  }
+})
+
 describe('EffectManager', () => {
   let effectManager
   let parentContainer
@@ -88,6 +94,10 @@ describe('EffectManager', () => {
   })
 
   afterEach(() => {
+    if (effectManager && typeof effectManager.dispose === 'function') {
+      effectManager.dispose()
+    }
+
     if (PIXI && PIXI.Assets && PIXI.Assets.load.mock) {
       PIXI.Assets.load.mock.resetCalls()
       PIXI.Assets.load.mock.mockImplementation(async () => null)
@@ -171,8 +181,6 @@ describe('EffectManager', () => {
     // Update to kill it (large delta)
     effectManager.update(1000)
     assert.equal(effectManager.activeEffects.length, 0)
-    // Should be returned to pool, not destroyed immediately unless pool full
-    // But since pool is empty, it should be in pool
     assert.equal(effectManager.spritePool.length, 1)
     assert.equal(effect.visible, false)
   })
@@ -187,10 +195,25 @@ describe('EffectManager', () => {
     const effect2 = effectManager.activeEffects[1]
     const container = effectManager.container
 
+    // Spy on destroy methods
+    const destroySpy1 = mock.fn()
+    const destroySpy2 = mock.fn()
+    effect1.destroy = destroySpy1
+    effect2.destroy = destroySpy2
+
+    // Force effects into pool to test pool destruction too
+    effectManager.releaseEffectToPool(effect1)
+    effectManager.releaseEffectToPool(effect2)
+    effectManager.activeEffects = [] // Clear active since we moved them
+
     effectManager.dispose()
 
-    assert.equal(effectManager.activeEffects.length, 0)
+    assert.equal(effectManager.spritePool.length, 0)
     assert.equal(effectManager.container, null)
+
+    // Check effects destruction
+    assert.equal(destroySpy1.mock.calls.length, 1)
+    assert.equal(destroySpy2.mock.calls.length, 1)
 
     // Check container destruction
     assert.equal(container.destroy.mock.calls.length, 1)
@@ -206,10 +229,13 @@ describe('EffectManager', () => {
     }
 
     assert.equal(effectManager.activeEffects.length, 50)
-    assert.equal(effectManager.spritePool.length, 1) // One recycled
 
-    // The first spawned effect (index 0) should have been removed from active
-    // The activeEffects list should now contain effects 1 to 50
+    // The first spawned effect (index 0) was released to pool and then reused
+    // immediately because spawnHitEffect reuses from pool if available.
+    // So pool should be empty.
+    assert.equal(effectManager.spritePool.length, 0)
+
+    // The activeEffects list should now contain effects 1 to 50, but reused sprite might be at end
     const lastEffect = effectManager.activeEffects[49]
     assert.equal(lastEffect.x, 50)
   })
