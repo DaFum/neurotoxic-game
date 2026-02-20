@@ -27,8 +27,10 @@ export const calcBaseBreakdownChance = upgrades => {
   let base = 0.05
   if (!Array.isArray(upgrades)) return base
 
-  for (const upgradeId of upgrades) {
-    if (BREAKDOWN_REDUCTIONS[upgradeId]) {
+  const uniqueUpgrades = new Set(upgrades)
+
+  for (const upgradeId of uniqueUpgrades) {
+    if (Object.hasOwn(BREAKDOWN_REDUCTIONS, upgradeId)) {
       base -= BREAKDOWN_REDUCTIONS[upgradeId]
     }
   }

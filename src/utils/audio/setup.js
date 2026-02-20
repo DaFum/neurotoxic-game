@@ -201,6 +201,15 @@ export async function setupAudio() {
     })
     Tone.setContext(nextToneContext)
 
+    // Trigger Tone.start() (which calls resume()) immediately to capture the user gesture synchronously.
+    // We store the promise and await it later after cleanup.
+    let startPromise
+    try {
+      startPromise = Tone.start()
+    } catch (e) {
+      startPromise = Promise.reject(e)
+    }
+
     const previousRawContext =
       previousToneContext?.rawContext ?? previousToneContext
     const nextRawContext = nextToneContext?.rawContext ?? nextToneContext
@@ -222,7 +231,7 @@ export async function setupAudio() {
     }
 
     try {
-      await Tone.start()
+      await startPromise
     } catch (e) {
       // Browser autoplay policy might block this; it will be resumed later via ensureAudioContext
       logger.warn('AudioEngine', 'Tone.start() was blocked or failed', e)
@@ -397,9 +406,9 @@ export async function setupAudio() {
  */
 export async function ensureAudioContext() {
   // Synchronous resume attempt to capture user gesture for Web Audio unlock (iOS/Safari).
-  // We attempt this even if not fully set up, as long as a context exists, to ensure
-  // the gesture is captured by the browser's audio subsystem.
-  if (Tone.context) {
+  // Only attempt when audio is already set up to avoid resuming a stale context that
+  // setupAudio() is about to replace.
+  if (audioState.isSetup && Tone.context) {
     const earlyState = getPreferredAudioContextState({
       rawContextState: getRawAudioContext()?.state,
       toneContextState: Tone.context?.state

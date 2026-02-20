@@ -75,10 +75,10 @@
 
   /* Z-Index Hierarchy (Strict Stacking) */
   --z-hud: 50;
-  --z-crt: 500;
   --z-modal: 100;
   --z-tutorial: 150;
   --z-chatter: 200;
+  --z-crt: 500;
   --z-debug: 800;
   --z-toast: 900;
   --z-crash: 1000;
