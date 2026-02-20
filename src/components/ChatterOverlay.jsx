@@ -83,7 +83,7 @@ const DEFAULT_STYLE = SCENE_STYLES.MENU
  * - OVERWORLD: bottom-left near the bus / event log area
  * - All other scenes: bottom-center of the window
  *
- * z-index: 200 — higher than every other UI layer (CRT=50, EventModal=100, etc.)
+ * z-index: 200 (--z-chatter) — above CRT (80), modal (100), and tutorial (150)
  * so chatter text is ALWAYS readable and never overlapped.
  *
  * Visual style adapts per scene — different border colors, accent bars, and icons.

@@ -12,6 +12,7 @@ import {
 import { audioManager } from '../utils/AudioManager'
 import { logger } from '../utils/logger'
 import { handleError, StateError } from '../utils/errorHandler'
+import { calcBaseBreakdownChance } from '../utils/upgradeUtils'
 
 /**
  * Failsafe timeout duration in milliseconds
@@ -218,7 +219,7 @@ export const useTravelLogic = ({
 
       // Harmony regen while traveling (enabled by Mobile Studio / van_sound_system)
       if (band?.harmonyRegenTravel) {
-        updateBand({ harmony: Math.min(100, (band?.harmony ?? 0) + 5) })
+        updateBand({ harmony: Math.min(100, (band.harmony ?? 0) + 5) })
       }
 
       setIsTraveling(false)
@@ -493,18 +494,14 @@ export const useTravelLogic = ({
     }
 
     // Recalculate breakdown chance at full condition (multiplier 1.0)
-    const vanUpgrades = player.van?.upgrades ?? []
-    let repairedBreakdown = 0.05
-    if (vanUpgrades.includes('van_suspension')) repairedBreakdown -= 0.01
-    if (vanUpgrades.includes('hq_van_suspension')) repairedBreakdown -= 0.01
-    if (vanUpgrades.includes('hq_van_tyre_spare')) repairedBreakdown -= 0.05
+    const repairedBreakdown = calcBaseBreakdownChance(player.van?.upgrades ?? [])
 
     updatePlayer({
       money: Math.max(0, (player.money ?? 0) - cost),
       van: {
         ...player.van,
         condition: 100,
-        breakdownChance: Math.max(0, Math.round(repairedBreakdown * 100) / 100)
+        breakdownChance: Math.round(repairedBreakdown * 100) / 100
       }
     })
 

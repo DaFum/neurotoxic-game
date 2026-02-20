@@ -1,6 +1,7 @@
 // Utility functions for Simulation <-> Action connection
 import { EXPENSE_CONSTANTS } from './economyEngine.js'
 import { applyReputationDecay } from './socialEngine.js'
+import { calcBaseBreakdownChance } from './upgradeUtils.js'
 
 /**
  * Derives dynamic game modifiers for the Gig scene based on band state and active toggles.
@@ -135,20 +136,9 @@ export const calculateDailyUpdates = currentState => {
     // CRITICAL FIX: Reconstruct base breakdown chance from upgrades every day.
     // Do NOT read nextPlayer.van.breakdownChance as base, or it compounds condition multipliers infinitely.
 
-    let baseBreakdownChance = 0.05 // Default 5%
-
-    // Apply all breakdown-modifying upgrades from upgrades array.
-    // We check upgrades array directly because 'breakdownChance' in state is now a derived/volatile value.
-    const vanUpgrades = nextPlayer.van.upgrades ?? []
-    if (vanUpgrades.includes('van_suspension')) {
-      baseBreakdownChance -= 0.01 // -1% absolute (fame-track)
-    }
-    if (vanUpgrades.includes('hq_van_suspension')) {
-      baseBreakdownChance -= 0.01 // -1% absolute (money-track)
-    }
-    if (vanUpgrades.includes('hq_van_tyre_spare')) {
-      baseBreakdownChance -= 0.05 // -5% absolute (spare tyre)
-    }
+    const baseBreakdownChance = calcBaseBreakdownChance(
+      nextPlayer.van.upgrades ?? []
+    )
 
     let conditionMultiplier
     if (nextPlayer.van.condition < 30) {
