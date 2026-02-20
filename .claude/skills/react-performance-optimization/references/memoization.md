@@ -62,6 +62,10 @@ function DataAnalyzer({ items, filters }) {
   }, [items, filters]);
 
   const statistics = useMemo(() => {
+    if (filteredAndSorted.length === 0) {
+      return { total: 0, average: 0, maxPrice: 0 };
+    }
+
     return {
       total: filteredAndSorted.length,
       average: filteredAndSorted.reduce((sum, item) => sum + item.price, 0) /
