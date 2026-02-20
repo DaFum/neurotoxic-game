@@ -1,4 +1,3 @@
-import { memo } from 'react'
 import { useGameState } from '../context/GameState'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -30,7 +29,7 @@ const TOAST_STYLE_MAP = {
  *
  * @returns {JSX.Element} Toast stack overlay.
  */
-export const ToastOverlay = memo(() => {
+export const ToastOverlay = () => {
   const { toasts } = useGameState()
 
   return (
@@ -76,4 +75,4 @@ export const ToastOverlay = memo(() => {
       </AnimatePresence>
     </div>
   )
-})
+}

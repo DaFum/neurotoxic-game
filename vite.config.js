@@ -8,11 +8,19 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom'],
-          'vendor-pixi': ['pixi.js'],
-          'vendor-motion': ['framer-motion'],
-          'vendor-tone': ['tone']
+        manualChunks(id) {
+          if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/')) {
+            return 'vendor-react'
+          }
+          if (id.includes('node_modules/pixi.js') || id.includes('node_modules/@pixi/')) {
+            return 'vendor-pixi'
+          }
+          if (id.includes('node_modules/framer-motion')) {
+            return 'vendor-motion'
+          }
+          if (id.includes('node_modules/tone')) {
+            return 'vendor-tone'
+          }
         }
       }
     }

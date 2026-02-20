@@ -5,12 +5,12 @@ import { HecklerOverlay } from './HecklerOverlay'
 const LANE_NAMES = ['Guitar', 'Drums', 'Bass']
 const LANE_KEYS = ['←', '↓', '→']
 
-const SegmentedBar = memo(({
+const SegmentedBar = memo(function SegmentedBar({
   value,
   segments = 20,
   lowThreshold = 20,
   className = ''
-}) => {
+}) {
   const filledCount = Math.round((value / 100) * segments)
   const isLow = value < lowThreshold
   return (
@@ -33,7 +33,7 @@ const SegmentedBar = memo(({
 
 const LANE_INDICES = [0, 1, 2]
 
-export const GigHUD = memo(({ stats, onLaneInput, gameStateRef }) => {
+export const GigHUD = memo(function GigHUD({ stats, onLaneInput, gameStateRef }) {
   const {
     score,
     combo,

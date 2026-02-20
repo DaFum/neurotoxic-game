@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useGameState } from '../context/GameState'
 import { useRhythmGameState } from './rhythmGame/useRhythmGameState'
 import { useRhythmGameScoring } from './rhythmGame/useRhythmGameScoring'
@@ -66,9 +67,8 @@ export const useRhythmGameLogic = () => {
     contextState: { activeEvent }
   })
 
-  return {
-    gameStateRef,
-    stats: {
+  const stats = useMemo(
+    () => ({
       score: state.score,
       combo: state.combo,
       health: state.health,
@@ -77,7 +77,21 @@ export const useRhythmGameLogic = () => {
       isToxicMode: state.isToxicMode,
       isGameOver: state.isGameOver,
       isAudioReady: state.isAudioReady
-    },
+    }),
+    [
+      state.score,
+      state.combo,
+      state.health,
+      state.overload,
+      state.isToxicMode,
+      state.isGameOver,
+      state.isAudioReady
+    ]
+  )
+
+  return {
+    gameStateRef,
+    stats,
     actions: { registerInput, activateToxicMode, retryAudioInitialization },
     update
   }
