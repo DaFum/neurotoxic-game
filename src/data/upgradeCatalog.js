@@ -1,6 +1,12 @@
 import { HQ_ITEMS } from './hqItems.js'
 import { UPGRADES_DB } from './upgrades.js'
 
+// Design note: UPGRADES_DB (fame-based) and HQ_ITEMS (money-based) intentionally
+// contain overlapping upgrade concepts (e.g. van_suspension / hq_van_suspension).
+// This is a deliberate dual-currency design — the same capability can be unlocked
+// through fame OR money at different price points.  Both sources are unified below
+// into a single catalog for UI consumption; the IDs remain distinct.
+
 const normalizeUpgradeShape = item => {
   return {
     ...item,

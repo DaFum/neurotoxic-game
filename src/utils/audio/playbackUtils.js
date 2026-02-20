@@ -36,6 +36,7 @@ export const PATH_PREFIX_REGEX = /^\.?\//
 
 /**
  * Encodes a public asset path segment-by-segment to preserve slashes.
+ * Primarily used by resolveAssetUrl; exported for direct testing.
  * @param {string} assetPath - Asset path relative to the public base.
  * @returns {string} Encoded path suitable for URL usage.
  */

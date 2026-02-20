@@ -1,5 +1,8 @@
 // Logic for Social Media Virality and Posting
-export const SOCIAL_PLATFORMS = {
+
+// Platform metadata used internally by calculateSocialGrowth.
+// Not exported — UI consumers should use the social engine functions directly.
+const SOCIAL_PLATFORMS = {
   INSTAGRAM: { id: 'instagram', label: 'Instagram', multiplier: 1.2 },
   TIKTOK: { id: 'tiktok', label: 'TikTok', multiplier: 1.5 }, // Volatile
   YOUTUBE: { id: 'youtube', label: 'YouTube', multiplier: 0.8 },

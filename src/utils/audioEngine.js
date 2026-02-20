@@ -48,7 +48,8 @@ export {
 } from './audio/procedural.js'
 
 export * from './audio/midiUtils.js'
-export * from './audio/playbackUtils.js'
+// playbackUtils functions are internal to src/utils/audio/ and not re-exported.
+// Import directly from './audio/playbackUtils.js' if needed for testing.
 export * from './audio/selectionUtils.js'
 export * from './audio/songUtils.js'
 export * from './audio/timingUtils.js'
