@@ -39,7 +39,6 @@ export const Overworld = () => {
 
   const [hoveredNode, setHoveredNode] = useState(null)
   const [showHQ, setShowHQ] = useState(false)
-  const [activeHQTab, setActiveHQTab] = useState('STATS')
 
   const { audioState, handleAudioChange } = useAudioControl()
 
@@ -315,8 +314,6 @@ export const Overworld = () => {
           updatePlayer={updatePlayer}
           updateBand={updateBand}
           addToast={addToast}
-          activeTab={activeHQTab}
-          onTabChange={setActiveHQTab}
           settings={settings}
           updateSettings={updateSettings}
           deleteSave={deleteSave}

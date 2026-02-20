@@ -7,6 +7,7 @@ import { IMG_PROMPTS, getGenImageUrl } from '../utils/imageGen'
 import { audioManager } from '../utils/AudioManager'
 import { GlitchButton } from '../ui/GlitchButton'
 import { buildGigStatsSnapshot } from '../utils/gigStats'
+import { handleError } from '../utils/errorHandler'
 
 /**
  * The core Rhythm Game scene.
@@ -75,8 +76,11 @@ export const Gig = () => {
                   try {
                     const { stopAudio } = await import('../utils/audioEngine')
                     stopAudio()
-                  } catch (_audioCleanupError) {
-                    // Audio cleanup failed, continue with scene transition
+                  } catch (audioCleanupError) {
+                    handleError(audioCleanupError, {
+                      addToast,
+                      fallbackMessage: 'Audio cleanup failed during quit.'
+                    })
                   } finally {
                     setActiveEvent(null)
                     const snapshot = buildGigStatsSnapshot(

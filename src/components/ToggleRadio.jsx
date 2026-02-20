@@ -6,13 +6,10 @@ export const ToggleRadio = memo(() => {
     () => audioManager.currentSongId === 'ambient' && audioManager.isPlaying
   )
 
-  // Poll periodically to catch external audio changes without a global event bus.
   useEffect(() => {
-    const derive = () =>
+    setIsPlaying(
       audioManager.currentSongId === 'ambient' && audioManager.isPlaying
-    setIsPlaying(derive())
-    const id = setInterval(() => setIsPlaying(derive()), 1000)
-    return () => clearInterval(id)
+    )
   }, [])
 
   const toggle = useCallback(() => {

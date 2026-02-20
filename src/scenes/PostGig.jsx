@@ -418,7 +418,6 @@ CompletePhase.propTypes = {
   result: PropTypes.shape({
     success: PropTypes.bool.isRequired,
     message: PropTypes.string.isRequired,
-    followers: PropTypes.number.isRequired,
     totalFollowers: PropTypes.number.isRequired,
     platform: PropTypes.string.isRequired
   }).isRequired,
