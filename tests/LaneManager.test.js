@@ -91,7 +91,18 @@ describe('LaneManager', () => {
     assert.equal(fillCalls.length, 1)
     assert.deepEqual(fillCalls[0].arguments[0], {
       color: 0xff0000,
-      alpha: 0.2
+      alpha: 0.45
+    })
+  })
+
+
+  test('draws static lane guide strip for readability', () => {
+    const firstLaneStaticGraphics = graphicsInstances[0]
+    const fillCalls = firstLaneStaticGraphics.fill.mock.calls
+
+    assert.deepEqual(fillCalls[1].arguments[0], {
+      color: 0xff0000,
+      alpha: 0.16
     })
   })
 
@@ -106,7 +117,7 @@ describe('LaneManager', () => {
 
     assert.deepEqual(fillCalls[0].arguments[0], {
       color: 0xff0000,
-      alpha: 0.85
+      alpha: 0.95
     })
     assert.deepEqual(strokeCalls[0].arguments[0], {
       width: 4,

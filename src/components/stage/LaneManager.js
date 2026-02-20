@@ -6,9 +6,10 @@ const LANE_BASE_FILL = 0x050505
 const LANE_BASE_ALPHA = 0.7
 const LANE_BORDER_COLOR = 0x1aff7a
 const LANE_BORDER_ALPHA = 0.35
-const HIT_BAR_INACTIVE_ALPHA = 0.2
-const HIT_BAR_ACTIVE_ALPHA = 0.85
+const HIT_BAR_INACTIVE_ALPHA = 0.45
+const HIT_BAR_ACTIVE_ALPHA = 0.95
 const HIT_BAR_BORDER_COLOR = 0xffffff
+const LANE_GUIDE_ALPHA = 0.16
 
 export class LaneManager {
   /**
@@ -53,6 +54,10 @@ export class LaneManager {
       // Draw static background once
       staticGraphics.rect(laneX, 0, laneWidth, laneHeight)
       staticGraphics.fill({ color: LANE_BASE_FILL, alpha: LANE_BASE_ALPHA })
+
+      staticGraphics.rect(laneX + laneWidth * 0.35, 0, laneWidth * 0.3, laneHeight)
+      staticGraphics.fill({ color: lane.color, alpha: LANE_GUIDE_ALPHA })
+
       staticGraphics.stroke({
         width: laneStrokeWidth,
         color: LANE_BORDER_COLOR,
@@ -90,6 +95,15 @@ export class LaneManager {
           layout.laneHeight
         )
         staticGraphics.fill({ color: LANE_BASE_FILL, alpha: LANE_BASE_ALPHA })
+
+        staticGraphics.rect(
+          lane.renderX + layout.laneWidth * 0.35,
+          0,
+          layout.laneWidth * 0.3,
+          layout.laneHeight
+        )
+        staticGraphics.fill({ color: lane.color, alpha: LANE_GUIDE_ALPHA })
+
         staticGraphics.stroke({
           width: layout.laneStrokeWidth,
           color: LANE_BORDER_COLOR,
