@@ -55,7 +55,8 @@ export const DebugLogViewer = ({ className = '' }) => {
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] pointer-events-none flex flex-col justify-end ${className}`}
+      className={`fixed inset-0 pointer-events-none flex flex-col justify-end ${className}`}
+      style={{ zIndex: 'var(--z-debug)' }}
     >
       <div className='pointer-events-auto bg-(--void-black)/90 border-t-2 border-(--toxic-green) h-[40vh] flex flex-col font-mono text-xs'>
         {/* Toolbar */}

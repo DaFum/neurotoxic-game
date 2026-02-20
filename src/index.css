@@ -72,6 +72,15 @@
       rgb(0 0 255 / 6%)
     );
   --crt-overlay-size: 100% 2px, 3px 100%;
+
+  /* Z-Index Hierarchy (Strict Stacking) */
+  --z-hud: 50;
+  --z-modal: 100;
+  --z-chatter: 200;
+  --z-crt: 500;
+  --z-debug: 800;
+  --z-toast: 900;
+  --z-crash: 1000;
 }
 
 body {
@@ -148,7 +157,7 @@ body {
   pointer-events: none;
   position: absolute;
   inset: 0;
-  z-index: 9999;
+  z-index: var(--z-crt);
   animation: crt-flicker 0.15s infinite;
 }
 

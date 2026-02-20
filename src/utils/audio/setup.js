@@ -396,6 +396,11 @@ export async function setupAudio() {
  * @returns {Promise<boolean>} True if the AudioContext is running.
  */
 export async function ensureAudioContext() {
+  // CRITICAL: Must be called synchronously to capture user gesture for Web Audio unlock (iOS/Safari)
+  if (Tone.context && Tone.context.state !== 'running') {
+    Tone.context.resume().catch(() => {})
+  }
+
   if (!audioState.isSetup) await setupAudio()
 
   const getAudioState = () => {
