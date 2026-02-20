@@ -173,6 +173,31 @@ describe('useAudioControl', () => {
     second.unmount()
   })
 
+
+  test('polling fallback updates state when subscribe is unavailable', t => {
+    if (!t.mock.timers) {
+      t.skip('t.mock.timers not available for polling fallback test')
+      return
+    }
+
+    t.mock.timers.enable({ apis: ['setInterval'] })
+    const originalSubscribe = mockAudioManager.subscribe
+    mockAudioManager.subscribe = undefined
+
+    const { result, unmount } = renderHook(() => useAudioControl())
+    assert.equal(result.current.audioState.isMuted, false)
+
+    mockAudioManager.muted = true
+    act(() => {
+      t.mock.timers.tick(1000)
+    })
+
+    assert.equal(result.current.audioState.isMuted, true)
+
+    unmount()
+    mockAudioManager.subscribe = originalSubscribe
+  })
+
   test('toggleMute handles exceptions', () => {
     const error = new Error('Mute error')
     mockAudioManager.toggleMute.mock.mockImplementation(() => {

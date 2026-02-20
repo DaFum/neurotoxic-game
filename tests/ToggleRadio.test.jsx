@@ -6,8 +6,11 @@ import { setupJSDOM, teardownJSDOM } from './testUtils.js'
 const listeners = new Set()
 
 const audioManagerMock = {
+  _isPlaying: false,
   currentSongId: null,
-  isPlaying: false,
+  get isPlaying() {
+    return this._isPlaying
+  },
   subscribe: listener => {
     listeners.add(listener)
     return () => listeners.delete(listener)
@@ -15,12 +18,12 @@ const audioManagerMock = {
   emitChange: () => listeners.forEach(listener => listener()),
   stopMusic: mock.fn(() => {
     audioManagerMock.currentSongId = null
-    audioManagerMock.isPlaying = false
+    audioManagerMock._isPlaying = false
     audioManagerMock.emitChange()
   }),
   resumeMusic: mock.fn(async () => {
     audioManagerMock.currentSongId = 'ambient'
-    audioManagerMock.isPlaying = true
+    audioManagerMock._isPlaying = true
     audioManagerMock.emitChange()
     return true
   })
@@ -40,6 +43,9 @@ test('ToggleRadio reacts to external playback changes and user toggles', async t
     teardownJSDOM()
   })
 
+  audioManagerMock.currentSongId = null
+  audioManagerMock._isPlaying = false
+
   const { ToggleRadio } = await import('../src/components/ToggleRadio.jsx')
 
   const { getByRole } = render(<ToggleRadio />)
@@ -47,7 +53,7 @@ test('ToggleRadio reacts to external playback changes and user toggles', async t
 
   act(() => {
     audioManagerMock.currentSongId = 'ambient'
-    audioManagerMock.isPlaying = true
+    audioManagerMock._isPlaying = true
     audioManagerMock.emitChange()
   })
 
@@ -56,4 +62,28 @@ test('ToggleRadio reacts to external playback changes and user toggles', async t
   fireEvent.click(getByRole('button'))
   assert.equal(audioManagerMock.stopMusic.mock.calls.length, 1)
   assert.equal(getByRole('button').textContent, '▶')
+})
+
+test('ToggleRadio triggers resume path and updates after async change', async t => {
+  setupJSDOM()
+  t.after(() => {
+    cleanup()
+    listeners.clear()
+    teardownJSDOM()
+  })
+
+  audioManagerMock.currentSongId = 'ambient'
+  audioManagerMock._isPlaying = false
+
+  const { ToggleRadio } = await import('../src/components/ToggleRadio.jsx')
+  const { getByRole } = render(<ToggleRadio />)
+
+  assert.equal(getByRole('button').textContent, '▶')
+
+  await act(async () => {
+    fireEvent.click(getByRole('button'))
+  })
+
+  assert.equal(audioManagerMock.resumeMusic.mock.calls.length, 1)
+  assert.equal(getByRole('button').textContent, '■')
 })

@@ -151,7 +151,7 @@ class AudioSystem {
 
     this.isStartingAmbient = true
     this.ambientStartPromise = (async () => {
-      this.stopMusic()
+      this.stopMusic({ emit: false })
       this.currentSongId = 'ambient'
       this.emitChange()
       try {
@@ -159,6 +159,7 @@ class AudioSystem {
           skipStop: true
         })
         if (oggSuccess) {
+          this.emitChange()
           logger.info('AudioSystem', 'Ambient started via OGG buffer playback.')
           return true
         }
@@ -178,6 +179,7 @@ class AudioSystem {
           )
           return false
         }
+        this.emitChange()
         logger.info(
           'AudioSystem',
           'Ambient started via MIDI synthesis fallback.'
@@ -198,15 +200,19 @@ class AudioSystem {
 
   /**
    * Stops the currently playing music.
+   * @param {{ emit?: boolean }} [options] - Controls whether subscriber notifications are emitted.
    */
-  stopMusic() {
+  stopMusic(options = {}) {
     logger.debug(
       'AudioSystem',
       `stopMusic called (was playing: ${this.currentSongId ?? 'nothing'}).`
     )
     audioEngine.stopAudio()
     this.currentSongId = null
-    this.emitChange()
+
+    if (options.emit !== false) {
+      this.emitChange()
+    }
   }
 
   /**
