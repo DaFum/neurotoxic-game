@@ -132,11 +132,16 @@ export const calculateDailyUpdates = currentState => {
       (nextPlayer.van.condition ?? 100) - 2
     )
     // Increased breakdown chance when condition is low
-    // Respect any existing (upgrade-adjusted) breakdownChance as the base value.
-    const baseBreakdownChance =
-      typeof nextPlayer.van.breakdownChance === 'number'
-        ? nextPlayer.van.breakdownChance
-        : 0.05
+    // CRITICAL FIX: Reconstruct base breakdown chance from upgrades every day.
+    // Do NOT read nextPlayer.van.breakdownChance as base, or it compounds condition multipliers infinitely.
+
+    let baseBreakdownChance = 0.05 // Default 5%
+
+    // Check for 'van_suspension' upgrade (reduces base by 1% / 0.01)
+    // We check upgrades array directly because 'breakdownChance' in state is now a derived/volatile value.
+    if (nextPlayer.van.upgrades && nextPlayer.van.upgrades.includes('van_suspension')) {
+      baseBreakdownChance -= 0.01
+    }
 
     let conditionMultiplier
     if (nextPlayer.van.condition < 30) {
