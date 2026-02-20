@@ -105,26 +105,17 @@ class PixiStageController {
         )
         const noteLoad = this.noteManager.loadAssets()
 
-        // Await loads and init sequentially, checking disposal state
-        await crowdLoad
+        // Await all loads in parallel
+        await Promise.all([crowdLoad, effectLoad, noteLoad])
+
         if (this.isDisposed) {
           this.dispose()
           return
         }
+
+        // Initialize managers now that assets are loaded
         this.crowdManager.init()
-
-        await effectLoad
-        if (this.isDisposed) {
-          this.dispose()
-          return
-        }
         this.effectManager.init()
-
-        await noteLoad
-        if (this.isDisposed) {
-          this.dispose()
-          return
-        }
         this.noteManager.init()
 
         this.app.ticker.add(this.handleTicker)

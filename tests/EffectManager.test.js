@@ -26,6 +26,7 @@ const MockGraphics = class {
     this.alpha = 0
     this.x = 0
     this.y = 0
+    this.clear = mock.fn()
     this.destroy = mock.fn()
   }
 }
@@ -170,7 +171,10 @@ describe('EffectManager', () => {
     // Update to kill it (large delta)
     effectManager.update(1000)
     assert.equal(effectManager.activeEffects.length, 0)
-    assert.equal(effect.destroy.mock.calls.length, 1)
+    // Should be returned to pool, not destroyed immediately unless pool full
+    // But since pool is empty, it should be in pool
+    assert.equal(effectManager.spritePool.length, 1)
+    assert.equal(effect.visible, false)
   })
 
   test('dispose clears resources and destroys container', () => {
@@ -193,7 +197,7 @@ describe('EffectManager', () => {
     assert.deepEqual(container.destroy.mock.calls[0].arguments, [{ children: true }])
   })
 
-  test('spawnHitEffect enforces max active effects limit (50)', () => {
+  test('spawnHitEffect enforces max active effects limit (50) and recycles', () => {
     effectManager.textures.toxic = { id: 'toxic' }
 
     // Spawn 51 effects
@@ -202,10 +206,30 @@ describe('EffectManager', () => {
     }
 
     assert.equal(effectManager.activeEffects.length, 50)
+    assert.equal(effectManager.spritePool.length, 1) // One recycled
 
-    // The first spawned effect (index 0) should have been destroyed and removed
+    // The first spawned effect (index 0) should have been removed from active
     // The activeEffects list should now contain effects 1 to 50
     const lastEffect = effectManager.activeEffects[49]
     assert.equal(lastEffect.x, 50)
+  })
+
+  test('spawnHitEffect reuses sprites from pool', () => {
+    effectManager.textures.toxic = { id: 'toxic' }
+
+    // Create one and kill it to populate pool
+    effectManager.spawnHitEffect(0, 0, 0xFFFFFF)
+    effectManager.update(1000) // Kill it
+
+    assert.equal(effectManager.spritePool.length, 1)
+    const pooledEffect = effectManager.spritePool[0]
+
+    // Spawn new one
+    effectManager.spawnHitEffect(100, 100, 0xFFFFFF)
+
+    assert.equal(effectManager.spritePool.length, 0)
+    assert.equal(effectManager.activeEffects[0], pooledEffect)
+    assert.equal(pooledEffect.visible, true)
+    assert.equal(pooledEffect.x, 100)
   })
 })
