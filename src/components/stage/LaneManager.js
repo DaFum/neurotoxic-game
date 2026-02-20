@@ -1,14 +1,14 @@
 import * as PIXI from 'pixi.js'
-import { buildRhythmLayout } from './utils.js'
+import { buildRhythmLayout, getPixiColorFromToken } from './utils.js'
 
 const LANE_GAP = 20
-const LANE_BASE_FILL = 0x050505
+export const LANE_BASE_FILL = getPixiColorFromToken('--void-black')
 const LANE_BASE_ALPHA = 0.7
-const LANE_BORDER_COLOR = 0x1aff7a
+export const LANE_BORDER_COLOR = getPixiColorFromToken('--toxic-green')
 const LANE_BORDER_ALPHA = 0.35
-const HIT_BAR_INACTIVE_ALPHA = 0.45
-const HIT_BAR_ACTIVE_ALPHA = 0.95
-const HIT_BAR_BORDER_COLOR = 0xffffff
+export const HIT_BAR_INACTIVE_ALPHA = 0.45
+export const HIT_BAR_ACTIVE_ALPHA = 0.95
+export const HIT_BAR_BORDER_COLOR = getPixiColorFromToken('--star-white')
 const LANE_GUIDE_ALPHA = 0.16
 
 export class LaneManager {
@@ -34,6 +34,7 @@ export class LaneManager {
       screenWidth: this.app.screen.width,
       screenHeight: this.app.screen.height
     })
+    this.lastLayoutKey = `${this.app.screen.width}x${this.app.screen.height}`
     this.rhythmContainer.y = this.laneLayout.rhythmOffsetY
     this.stageContainer.addChild(this.rhythmContainer)
 
@@ -49,7 +50,12 @@ export class LaneManager {
 
       // Create separate graphics for static background and dynamic elements
       const staticGraphics = new PIXI.Graphics()
+      staticGraphics.__laneIndex = index
+      staticGraphics.__layer = 'static'
+
       const dynamicGraphics = new PIXI.Graphics()
+      dynamicGraphics.__laneIndex = index
+      dynamicGraphics.__layer = 'dynamic'
 
       // Draw static background once
       staticGraphics.rect(laneX, 0, laneWidth, laneHeight)

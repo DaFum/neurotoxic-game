@@ -20,6 +20,7 @@ They are called from `PixiStageController` and execute inside the gig render loo
 2. Reuse sprites/graphics via pooling; avoid frequent allocations.
 3. Isolate side effects to manager lifecycle methods (`init`, `update`, `dispose`).
 4. Keep gameplay timing authority in hooks/utils, not duplicated in managers.
+5. Resolve Pixi colors through token helpers (for example `getPixiColorFromToken`) rather than hardcoded numeric literals.
 
 ## Safety & Stability
 
@@ -39,4 +40,4 @@ npm run test
 npm run build
 ```
 
-_Last updated: 2026-02-20._
+_Last updated: 2026-02-21._

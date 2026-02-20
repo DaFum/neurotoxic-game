@@ -14,7 +14,13 @@ const mockBuildRhythmLayout = mock.fn(() => ({
 
 mock.module('../src/components/stage/utils.js', {
   namedExports: {
-    buildRhythmLayout: mockBuildRhythmLayout
+    buildRhythmLayout: mockBuildRhythmLayout,
+    getPixiColorFromToken: mock.fn(tokenName => {
+      if (tokenName === '--void-black') return 0x0a0a0a
+      if (tokenName === '--toxic-green') return 0x00ff41
+      if (tokenName === '--star-white') return 0xffffff
+      return 0xffffff
+    })
   }
 })
 
@@ -26,6 +32,8 @@ class MockGraphics {
     this.fill = mock.fn()
     this.stroke = mock.fn()
     this.clear = mock.fn()
+    this.__laneIndex = -1
+    this.__layer = 'unknown'
     graphicsInstances.push(this)
   }
 }
@@ -48,8 +56,16 @@ mock.module('pixi.js', {
   }
 })
 
+const getLaneGraphics = ({ laneIndex, layer }) =>
+  graphicsInstances.find(
+    graphics => graphics.__laneIndex === laneIndex && graphics.__layer === layer
+  )
+
 describe('LaneManager', () => {
   let LaneManager
+  let HIT_BAR_INACTIVE_ALPHA
+  let HIT_BAR_ACTIVE_ALPHA
+  let HIT_BAR_BORDER_COLOR
   let app
   let stageContainer
   let gameStateRef
@@ -59,7 +75,12 @@ describe('LaneManager', () => {
     graphicsInstances.length = 0
     mockBuildRhythmLayout.mock.resetCalls()
 
-    ;({ LaneManager } = await import('../src/components/stage/LaneManager.js'))
+    ;({
+      LaneManager,
+      HIT_BAR_INACTIVE_ALPHA,
+      HIT_BAR_ACTIVE_ALPHA,
+      HIT_BAR_BORDER_COLOR
+    } = await import('../src/components/stage/LaneManager.js'))
 
     app = {
       screen: {
@@ -85,19 +106,24 @@ describe('LaneManager', () => {
   test('draws inactive hit bars with translucent lane color fill', () => {
     laneManager.update(gameStateRef.current)
 
-    const firstLaneDynamicGraphics = graphicsInstances[1]
+    const firstLaneDynamicGraphics = getLaneGraphics({
+      laneIndex: 0,
+      layer: 'dynamic'
+    })
     const fillCalls = firstLaneDynamicGraphics.fill.mock.calls
 
     assert.equal(fillCalls.length, 1)
     assert.deepEqual(fillCalls[0].arguments[0], {
       color: 0xff0000,
-      alpha: 0.45
+      alpha: HIT_BAR_INACTIVE_ALPHA
     })
   })
 
-
   test('draws static lane guide strip for readability', () => {
-    const firstLaneStaticGraphics = graphicsInstances[0]
+    const firstLaneStaticGraphics = getLaneGraphics({
+      laneIndex: 0,
+      layer: 'static'
+    })
     const fillCalls = firstLaneStaticGraphics.fill.mock.calls
 
     assert.deepEqual(fillCalls[1].arguments[0], {
@@ -111,17 +137,31 @@ describe('LaneManager', () => {
 
     laneManager.update(gameStateRef.current)
 
-    const firstLaneDynamicGraphics = graphicsInstances[1]
+    const firstLaneDynamicGraphics = getLaneGraphics({
+      laneIndex: 0,
+      layer: 'dynamic'
+    })
     const fillCalls = firstLaneDynamicGraphics.fill.mock.calls
     const strokeCalls = firstLaneDynamicGraphics.stroke.mock.calls
 
     assert.deepEqual(fillCalls[0].arguments[0], {
       color: 0xff0000,
-      alpha: 0.95
+      alpha: HIT_BAR_ACTIVE_ALPHA
     })
     assert.deepEqual(strokeCalls[0].arguments[0], {
       width: 4,
-      color: 0xffffff
+      color: HIT_BAR_BORDER_COLOR
     })
+  })
+
+  test('does not redraw static lanes on first update frame', () => {
+    laneManager.update(gameStateRef.current)
+
+    const firstLaneStaticGraphics = getLaneGraphics({
+      laneIndex: 0,
+      layer: 'static'
+    })
+
+    assert.equal(firstLaneStaticGraphics.clear.mock.calls.length, 0)
   })
 })
