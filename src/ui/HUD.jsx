@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { memo, useState, useEffect, useCallback } from 'react'
 import { useGameState } from '../context/GameState'
 import {
   Map as MapIcon,
@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 import { audioManager } from '../utils/AudioManager'
 
-const MiniBar = ({ value, max = 100, color, warn = false }) => {
+const MiniBar = memo(({ value, max = 100, color, warn = false }) => {
   const pct = max > 0 ? Math.min(100, Math.max(0, (value / max) * 100)) : 0
   return (
     <div className='w-full h-1.5 bg-(--void-black) border border-(--ash-gray)/50 overflow-hidden'>
@@ -21,7 +21,7 @@ const MiniBar = ({ value, max = 100, color, warn = false }) => {
       />
     </div>
   )
-}
+})
 
 const SHORTCUTS = [
   { key: '?', desc: 'Toggle this help' },
@@ -34,7 +34,7 @@ const SHORTCUTS = [
 /**
  * Heads-Up Display overlay showing player stats, band status, and volume controls.
  */
-export const HUD = () => {
+export const HUD = memo(() => {
   const { player, band } = useGameState()
   const [muted, setMuted] = useState(false)
   const [showHelp, setShowHelp] = useState(false)
@@ -233,4 +233,4 @@ export const HUD = () => {
       </div>
     </div>
   )
-}
+})
