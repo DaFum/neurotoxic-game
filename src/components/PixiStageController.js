@@ -150,8 +150,6 @@ class PixiStageController {
     return Promise.race([promise, timeout]).finally(() => clearTimeout(timerId))
   }
 
-  }
-
   /**
    * Manually runs a single update frame, useful for testing without a real ticker.
    * @param {number} deltaMS - Time delta in milliseconds.
