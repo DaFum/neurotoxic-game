@@ -396,9 +396,26 @@ export async function setupAudio() {
  * @returns {Promise<boolean>} True if the AudioContext is running.
  */
 export async function ensureAudioContext() {
-  // CRITICAL: Must be called synchronously to capture user gesture for Web Audio unlock (iOS/Safari)
-  if (Tone.context && Tone.context.state !== 'running') {
-    Tone.context.resume().catch(() => {})
+  // Synchronous resume attempt to capture user gesture for Web Audio unlock (iOS/Safari).
+  // Only attempt when audio is already set up to avoid resuming a stale context that
+  // setupAudio() is about to replace.
+  if (audioState.isSetup && Tone.context) {
+    const earlyState = getPreferredAudioContextState({
+      rawContextState: getRawAudioContext()?.state,
+      toneContextState: Tone.context?.state
+    })
+    if (canResumeAudioContextState(earlyState)) {
+      // On iOS Safari the 'interrupted' state requires the native AudioContext resume
+      if (earlyState === 'interrupted') {
+        try {
+          getRawAudioContext().resume()
+        } catch (_e) {
+          // Best-effort; full recovery follows below
+        }
+      } else {
+        Tone.context.resume().catch(() => {})
+      }
+    }
   }
 
   if (!audioState.isSetup) await setupAudio()
