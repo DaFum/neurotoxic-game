@@ -5,7 +5,8 @@ import {
   calculateCrowdY,
   calculateLaneStartX,
   calculateNoteY,
-  RHYTHM_LAYOUT
+  RHYTHM_LAYOUT,
+  getPixiColorFromToken
 } from '../src/components/stage/utils.js'
 
 test('calculateNoteY returns target position at hit time', () => {
@@ -40,4 +41,36 @@ test('buildRhythmLayout derives lane and hit line positions', () => {
   assert.equal(layout.laneHeight, 600 * RHYTHM_LAYOUT.laneHeightRatio)
   assert.equal(layout.hitLineY, layout.laneHeight - RHYTHM_LAYOUT.hitLineOffset)
   assert.equal(layout.rhythmOffsetY, 600 * RHYTHM_LAYOUT.rhythmOffsetRatio)
+})
+
+
+test('getPixiColorFromToken falls back when CSS variables are unavailable', () => {
+  const originalWindow = globalThis.window
+  const originalDocument = globalThis.document
+
+  globalThis.window = undefined
+  globalThis.document = undefined
+
+  assert.equal(getPixiColorFromToken('--toxic-green'), 0x00ff41)
+
+  globalThis.window = originalWindow
+  globalThis.document = originalDocument
+})
+
+test('getPixiColorFromToken resolves css variable color values', () => {
+  const originalWindow = globalThis.window
+  const originalDocument = globalThis.document
+
+  globalThis.document = { documentElement: {} }
+  globalThis.window = {
+    getComputedStyle: () => ({
+      getPropertyValue: tokenName =>
+        tokenName === '--toxic-green' ? ' #00ff41 ' : ''
+    })
+  }
+
+  assert.equal(getPixiColorFromToken('--toxic-green'), 0x00ff41)
+
+  globalThis.window = originalWindow
+  globalThis.document = originalDocument
 })

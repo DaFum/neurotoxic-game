@@ -93,6 +93,16 @@ mock.module('../src/components/stage/NoteManager.js', {
   }
 })
 
+
+const mockAudioEngine = {
+  getGigTimeMs: mock.fn(() => 1234)
+}
+
+mock.module('../src/utils/audioEngine.js', {
+  namedExports: mockAudioEngine
+})
+
+
 describe('PixiStageController', () => {
   let controller
   let gameStateRef
@@ -117,6 +127,7 @@ describe('PixiStageController', () => {
     mockLaneManager.dispose.mock.resetCalls()
     mockEffectManager.dispose.mock.resetCalls()
     mockNoteManager.dispose.mock.resetCalls()
+    mockAudioEngine.getGigTimeMs.mock.resetCalls()
 
     // Re-import to apply mocks
     const controllerModule =
@@ -128,7 +139,6 @@ describe('PixiStageController', () => {
       current: {
         lanes: [],
         running: true,
-        elapsed: 1000,
         modifiers: {}
       }
     }
@@ -170,15 +180,16 @@ describe('PixiStageController', () => {
     assert.deepEqual(mockCrowdManager.update.mock.calls[0].arguments, [
       10,
       false,
-      1000
+      1234
     ])
     assert.equal(mockNoteManager.update.mock.calls.length, 1)
     assert.deepEqual(mockNoteManager.update.mock.calls[0].arguments, [
       gameStateRef.current,
-      1000,
+      1234,
       'layout'
     ])
     assert.equal(mockEffectManager.update.mock.calls.length, 1)
+    assert.equal(mockAudioEngine.getGigTimeMs.mock.calls.length, 1)
     assert.deepEqual(mockEffectManager.update.mock.calls[0].arguments, [16])
     assert.equal(updateRef.current.mock.calls.length, 1)
   })

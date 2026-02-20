@@ -1,7 +1,15 @@
 import * as PIXI from 'pixi.js'
-import { buildRhythmLayout } from './utils.js'
+import { buildRhythmLayout, getPixiColorFromToken } from './utils.js'
 
 const LANE_GAP = 20
+export const LANE_BASE_FILL = getPixiColorFromToken('--void-black')
+const LANE_BASE_ALPHA = 0.7
+export const LANE_BORDER_COLOR = getPixiColorFromToken('--toxic-green')
+const LANE_BORDER_ALPHA = 0.35
+export const HIT_BAR_INACTIVE_ALPHA = 0.45
+export const HIT_BAR_ACTIVE_ALPHA = 0.95
+export const HIT_BAR_BORDER_COLOR = getPixiColorFromToken('--star-white')
+const LANE_GUIDE_ALPHA = 0.16
 
 export class LaneManager {
   /**
@@ -26,6 +34,7 @@ export class LaneManager {
       screenWidth: this.app.screen.width,
       screenHeight: this.app.screen.height
     })
+    this.lastLayoutKey = `${this.app.screen.width}x${this.app.screen.height}`
     this.rhythmContainer.y = this.laneLayout.rhythmOffsetY
     this.stageContainer.addChild(this.rhythmContainer)
 
@@ -41,12 +50,25 @@ export class LaneManager {
 
       // Create separate graphics for static background and dynamic elements
       const staticGraphics = new PIXI.Graphics()
+      staticGraphics.__laneIndex = index
+      staticGraphics.__layer = 'static'
+
       const dynamicGraphics = new PIXI.Graphics()
+      dynamicGraphics.__laneIndex = index
+      dynamicGraphics.__layer = 'dynamic'
 
       // Draw static background once
       staticGraphics.rect(laneX, 0, laneWidth, laneHeight)
-      staticGraphics.fill({ color: 0x000000, alpha: 0.8 })
-      staticGraphics.stroke({ width: laneStrokeWidth, color: 0x333333 })
+      staticGraphics.fill({ color: LANE_BASE_FILL, alpha: LANE_BASE_ALPHA })
+
+      staticGraphics.rect(laneX + laneWidth * 0.35, 0, laneWidth * 0.3, laneHeight)
+      staticGraphics.fill({ color: lane.color, alpha: LANE_GUIDE_ALPHA })
+
+      staticGraphics.stroke({
+        width: laneStrokeWidth,
+        color: LANE_BORDER_COLOR,
+        alpha: LANE_BORDER_ALPHA
+      })
 
       this.rhythmContainer.addChild(staticGraphics)
       this.rhythmContainer.addChild(dynamicGraphics)
@@ -78,10 +100,20 @@ export class LaneManager {
           layout.laneWidth,
           layout.laneHeight
         )
-        staticGraphics.fill({ color: 0x000000, alpha: 0.8 })
+        staticGraphics.fill({ color: LANE_BASE_FILL, alpha: LANE_BASE_ALPHA })
+
+        staticGraphics.rect(
+          lane.renderX + layout.laneWidth * 0.35,
+          0,
+          layout.laneWidth * 0.3,
+          layout.laneHeight
+        )
+        staticGraphics.fill({ color: lane.color, alpha: LANE_GUIDE_ALPHA })
+
         staticGraphics.stroke({
           width: layout.laneStrokeWidth,
-          color: 0x333333
+          color: LANE_BORDER_COLOR,
+          alpha: LANE_BORDER_ALPHA
         })
       }
 
@@ -101,12 +133,16 @@ export class LaneManager {
           layout.hitLineHeight
         )
         if (lane.active) {
-          dynamicGraphics.fill({ color: lane.color, alpha: 0.8 })
+          dynamicGraphics.fill({ color: lane.color, alpha: HIT_BAR_ACTIVE_ALPHA })
           dynamicGraphics.stroke({
             width: layout.hitLineStrokeWidth,
-            color: 0xffffff
+            color: HIT_BAR_BORDER_COLOR
           })
         } else {
+          dynamicGraphics.fill({
+            color: lane.color,
+            alpha: HIT_BAR_INACTIVE_ALPHA
+          })
           dynamicGraphics.stroke({
             width: layout.hitLineStrokeWidth,
             color: lane.color

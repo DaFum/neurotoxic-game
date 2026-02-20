@@ -20,12 +20,17 @@ They are called from `PixiStageController` and execute inside the gig render loo
 2. Reuse sprites/graphics via pooling; avoid frequent allocations.
 3. Isolate side effects to manager lifecycle methods (`init`, `update`, `dispose`).
 4. Keep gameplay timing authority in hooks/utils, not duplicated in managers.
+5. Resolve Pixi colors through token helpers (for example `getPixiColorFromToken`) rather than hardcoded numeric literals.
 
 ## Safety & Stability
 
 - Always guard against missing textures/containers during initialization.
 - Ensure `dispose()` fully detaches listeners and destroys display objects to prevent leaks.
 - Never inject HTML or use DOM sinks from these modules.
+
+## Visual Reliability
+
+- Keep lane geometry and hit-line bars visibly readable against dark venue backgrounds (including inactive state) so Gig input lanes remain perceivable at all times.
 
 ## Validation
 
@@ -35,4 +40,4 @@ npm run test
 npm run build
 ```
 
-_Last updated: 2026-02-19._
+_Last updated: 2026-02-21._

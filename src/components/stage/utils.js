@@ -1,3 +1,54 @@
+
+const PIXI_TOKEN_FALLBACKS = Object.freeze({
+  '--void-black': '#0a0a0a',
+  '--toxic-green': '#00ff41',
+  '--star-white': '#ffffff'
+})
+
+const HEX_COLOR_PATTERN = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i
+
+const normalizeHexColor = colorValue => {
+  if (typeof colorValue !== 'string') {
+    return null
+  }
+
+  const normalizedColorValue = colorValue.trim()
+  if (!HEX_COLOR_PATTERN.test(normalizedColorValue)) {
+    return null
+  }
+
+  if (normalizedColorValue.length === 4) {
+    return `#${normalizedColorValue[1]}${normalizedColorValue[1]}${normalizedColorValue[2]}${normalizedColorValue[2]}${normalizedColorValue[3]}${normalizedColorValue[3]}`
+  }
+
+  return normalizedColorValue
+}
+
+/**
+ * Resolves a CSS variable token to a Pixi-compatible numeric color value.
+ * @param {string} tokenName - CSS custom property name (for example, "--toxic-green").
+ * @returns {number} Pixi numeric hex color.
+ */
+export const getPixiColorFromToken = tokenName => {
+  const fallbackColor = PIXI_TOKEN_FALLBACKS[tokenName] ?? '#ffffff'
+  const canReadCssVariables =
+    typeof window !== 'undefined' &&
+    typeof document !== 'undefined' &&
+    typeof window.getComputedStyle === 'function'
+
+  if (!canReadCssVariables) {
+    return Number.parseInt(fallbackColor.slice(1), 16)
+  }
+
+  const resolvedCssValue = window
+    .getComputedStyle(document.documentElement)
+    .getPropertyValue(tokenName)
+  const normalizedHexColor =
+    normalizeHexColor(resolvedCssValue) ?? normalizeHexColor(fallbackColor)
+
+  return Number.parseInt(normalizedHexColor.slice(1), 16)
+}
+
 /**
  * Calculates the Y position for a note sprite.
  * @param {object} params - Position inputs.
