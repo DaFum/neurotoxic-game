@@ -242,7 +242,7 @@ describe('NoteManager', () => {
     const lane = { color: 0x00ff00, renderX: 100 }
     const sprite = new PIXI.Sprite()
 
-    noteManager.initializeNoteSprite(sprite, lane)
+    noteManager.initializeNoteSprite(sprite, lane, 0)
 
     assert.equal(typeof sprite.jitterOffset, 'number')
     // NOTE_JITTER_RANGE is 10, so range is -5 to 5

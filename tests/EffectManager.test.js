@@ -34,9 +34,11 @@ const MockPIXI = {
   Sprite: MockSprite,
   Graphics: MockGraphics,
   Container: class {
-    addChild() {}
-    removeChild() {}
-    destroy() {}
+    constructor() {
+      this.addChild = mock.fn()
+      this.removeChild = mock.fn()
+      this.destroy = mock.fn()
+    }
   },
   Assets: {
     load: mock.fn()
@@ -52,7 +54,7 @@ mock.module('pixi.js', {
 // Mock dependencies
 mock.module('../src/utils/imageGen.js', {
   namedExports: {
-    getGenImageUrl: mock.fn((prompt) => `url://${prompt}`),
+    getGenImageUrl: mock.fn(prompt => `url://${prompt}`),
     IMG_PROMPTS: { HIT_BLOOD: 'blood', HIT_TOXIC: 'toxic' }
   }
 })
@@ -95,7 +97,7 @@ describe('EffectManager', () => {
     const mockTextureBlood = { id: 'blood' }
     const mockTextureToxic = { id: 'toxic' }
 
-    PIXI.Assets.load.mock.mockImplementation(async (url) => {
+    PIXI.Assets.load.mock.mockImplementation(async url => {
       if (url.includes('blood')) return mockTextureBlood
       if (url.includes('toxic')) return mockTextureToxic
       return null
@@ -169,5 +171,41 @@ describe('EffectManager', () => {
     effectManager.update(1000)
     assert.equal(effectManager.activeEffects.length, 0)
     assert.equal(effect.destroy.mock.calls.length, 1)
+  })
+
+  test('dispose clears resources and destroys container', () => {
+    // Spawn some effects
+    effectManager.textures.toxic = { id: 'toxic' }
+    effectManager.spawnHitEffect(0, 0, 0xFFFFFF)
+    effectManager.spawnHitEffect(1, 1, 0xFFFFFF)
+
+    const effect1 = effectManager.activeEffects[0]
+    const effect2 = effectManager.activeEffects[1]
+    const container = effectManager.container
+
+    effectManager.dispose()
+
+    assert.equal(effectManager.activeEffects.length, 0)
+    assert.equal(effectManager.container, null)
+
+    // Check container destruction
+    assert.equal(container.destroy.mock.calls.length, 1)
+    assert.deepEqual(container.destroy.mock.calls[0].arguments, [{ children: true }])
+  })
+
+  test('spawnHitEffect enforces max active effects limit (50)', () => {
+    effectManager.textures.toxic = { id: 'toxic' }
+
+    // Spawn 51 effects
+    for (let i = 0; i < 51; i++) {
+      effectManager.spawnHitEffect(i, i, 0xFFFFFF)
+    }
+
+    assert.equal(effectManager.activeEffects.length, 50)
+
+    // The first spawned effect (index 0) should have been destroyed and removed
+    // The activeEffects list should now contain effects 1 to 50
+    const lastEffect = effectManager.activeEffects[49]
+    assert.equal(lastEffect.x, 50)
   })
 })

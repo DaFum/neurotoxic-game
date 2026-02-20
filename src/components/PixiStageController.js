@@ -79,16 +79,9 @@ class PixiStageController {
         this.stageContainer = new PIXI.Container()
         this.app.stage.addChild(this.stageContainer)
 
-        // Initialize Managers
+        // Initialize Managers and start loading assets in parallel
         this.crowdManager = new CrowdManager(this.app, this.stageContainer)
-        await this.crowdManager.loadAssets()
-
-        if (this.isDisposed) {
-          this.dispose()
-          return
-        }
-
-        this.crowdManager.init()
+        const crowdLoad = this.crowdManager.loadAssets()
 
         this.laneManager = new LaneManager(
           this.app,
@@ -102,14 +95,7 @@ class PixiStageController {
         const rhythmContainer = this.laneManager.container
 
         this.effectManager = new EffectManager(this.app, rhythmContainer)
-        await this.effectManager.loadAssets()
-
-        if (this.isDisposed) {
-          this.dispose()
-          return
-        }
-
-        this.effectManager.init()
+        const effectLoad = this.effectManager.loadAssets()
 
         this.noteManager = new NoteManager(
           this.app,
@@ -117,14 +103,29 @@ class PixiStageController {
           this.gameStateRef,
           (x, y, color) => this.effectManager.spawnHitEffect(x, y, color)
         )
-        this.noteManager.init()
+        const noteLoad = this.noteManager.loadAssets()
 
-        await this.noteManager.loadAssets()
-
+        // Await loads and init sequentially, checking disposal state
+        await crowdLoad
         if (this.isDisposed) {
           this.dispose()
           return
         }
+        this.crowdManager.init()
+
+        await effectLoad
+        if (this.isDisposed) {
+          this.dispose()
+          return
+        }
+        this.effectManager.init()
+
+        await noteLoad
+        if (this.isDisposed) {
+          this.dispose()
+          return
+        }
+        this.noteManager.init()
 
         this.app.ticker.add(this.handleTicker)
       } catch (error) {
