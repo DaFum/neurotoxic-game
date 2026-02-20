@@ -15,7 +15,8 @@ export const clampPlayerMoney = money => {
  */
 export const clampBandHarmony = harmony => {
   if (!Number.isFinite(harmony)) return 1
-  return Math.max(1, Math.min(100, harmony))
+  const safeHarmony = Math.floor(harmony)
+  return Math.max(1, Math.min(100, safeHarmony))
 }
 
 /**

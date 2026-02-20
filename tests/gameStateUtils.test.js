@@ -119,12 +119,14 @@ test('applyEventDelta ignores unsupported score mutations in flags', () => {
 test('state safety helpers clamp canonical values', () => {
   assert.equal(clampPlayerMoney(19.7), 19)
   assert.equal(clampPlayerMoney(-10), 0)
+  assert.equal(clampBandHarmony(55.9), 55)
   assert.equal(clampBandHarmony(-4), 1)
   assert.equal(clampBandHarmony(220), 100)
 })
 
 test('applyInventoryItemDelta handles numeric and boolean deltas', () => {
   assert.equal(applyInventoryItemDelta(2, -1), 1)
+  assert.equal(applyInventoryItemDelta(0, -5), 0)
   assert.equal(applyInventoryItemDelta(undefined, 3), 3)
   assert.equal(applyInventoryItemDelta(true, false), false)
 })
