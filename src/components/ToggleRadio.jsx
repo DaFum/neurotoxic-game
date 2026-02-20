@@ -1,28 +1,39 @@
-import { useState, useEffect, useCallback, memo } from 'react'
+import { useSyncExternalStore, useCallback, memo } from 'react'
 import { audioManager } from '../utils/AudioManager'
 
 export const ToggleRadio = memo(() => {
-  const [isPlaying, setIsPlaying] = useState(
-    () => audioManager.currentSongId === 'ambient' && audioManager.isPlaying
+  const subscribe = useCallback(listener => {
+    if (typeof audioManager.subscribe === 'function') {
+      return audioManager.subscribe(listener)
+    }
+
+    const pollId = setInterval(listener, 1000)
+    return () => clearInterval(pollId)
+  }, [])
+
+  const getSnapshot = useCallback(
+    () => audioManager.currentSongId === 'ambient' && audioManager.isPlaying,
+    []
   )
 
-  useEffect(() => {
-    setIsPlaying(
-      audioManager.currentSongId === 'ambient' && audioManager.isPlaying
-    )
-  }, [])
+  const isPlaying = useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
 
   const toggle = useCallback(() => {
     if (isPlaying) {
       audioManager.stopMusic()
-      setIsPlaying(false)
     } else {
       audioManager
         .resumeMusic()
         .then(started => {
-          setIsPlaying(Boolean(started))
+          if (!started && typeof audioManager.emitChange === 'function') {
+            audioManager.emitChange()
+          }
         })
-        .catch(() => setIsPlaying(false))
+        .catch(() => {
+          if (typeof audioManager.emitChange === 'function') {
+            audioManager.emitChange()
+          }
+        })
     }
   }, [isPlaying])
 

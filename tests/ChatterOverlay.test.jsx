@@ -23,7 +23,7 @@ test('ChatterOverlay passes scene state to getRandomChatter', async (t) => {
   if (t.mock.timers) {
       t.mock.timers.enable({ apis: ['setTimeout', 'Date'] })
   } else {
-      console.warn('t.mock.timers not available, skipping timer-dependent test steps')
+      t.skip('t.mock.timers not available, skipping timer-dependent test steps')
       return
   }
 

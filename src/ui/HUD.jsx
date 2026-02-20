@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useCallback } from 'react'
+import { memo, useState, useEffect } from 'react'
 import { useGameState } from '../context/GameState'
 import {
   Map as MapIcon,
@@ -39,10 +39,6 @@ export const HUD = () => {
   const [showHelp, setShowHelp] = useState(false)
   const { audioState, handleAudioChange } = useAudioControl()
 
-  const toggleMute = useCallback(() => {
-    handleAudioChange.toggleMute()
-  }, [handleAudioChange])
-
   // Global keyboard shortcuts
   useEffect(() => {
     const handleKey = e => {
@@ -63,7 +59,7 @@ export const HUD = () => {
           e.target.tagName === 'SELECT'
         )
           return
-        toggleMute()
+        handleAudioChange.toggleMute()
       }
       if (e.key === 'Escape') {
         setShowHelp(false)
@@ -72,7 +68,7 @@ export const HUD = () => {
 
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [toggleMute])
+  }, [handleAudioChange])
 
   const fuel = player.van?.fuel ?? 0
   const condition = player.van?.condition ?? 100
@@ -134,7 +130,7 @@ export const HUD = () => {
 
         <div className='flex gap-1.5'>
           <button
-            onClick={toggleMute}
+            onClick={handleAudioChange.toggleMute}
             aria-label={audioState.isMuted ? 'Unmute system' : 'Mute system'}
             className='pointer-events-auto bg-(--void-black)/90 border border-(--toxic-green)/60 p-2 text-(--toxic-green) w-fit hover:bg-(--toxic-green) hover:text-(--void-black) transition-colors'
           >

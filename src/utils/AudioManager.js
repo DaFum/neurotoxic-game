@@ -23,6 +23,14 @@ class AudioSystem {
     this.prefsLoaded = false
     this.isStartingAmbient = false
     this.ambientStartPromise = null
+    this.listeners = new Set()
+    this.stateSnapshot = {
+      musicVol: this.musicVolume,
+      sfxVol: this.sfxVolume,
+      isMuted: this.muted,
+      isPlaying: false,
+      currentSongId: this.currentSongId
+    }
   }
 
   /**
@@ -35,6 +43,51 @@ class AudioSystem {
       (audioEngine.isAmbientOggPlaying() ||
         audioEngine.getTransportState() === 'started')
     )
+  }
+
+  /**
+   * Subscribes to audio state changes for reactive UI consumers.
+   * @param {() => void} listener - Callback invoked after audio state transitions.
+   * @returns {() => void} Unsubscribe function.
+   */
+  subscribe(listener) {
+    if (typeof listener !== 'function') {
+      return () => {}
+    }
+
+    this.listeners.add(listener)
+    return () => {
+      this.listeners.delete(listener)
+    }
+  }
+
+  /**
+   * Returns the current audio state snapshot for external-store consumers.
+   * @returns {{musicVol: number, sfxVol: number, isMuted: boolean, isPlaying: boolean, currentSongId: string | null}}
+   */
+  getStateSnapshot() {
+    return this.stateSnapshot
+  }
+
+  /**
+   * Emits audio state updates to subscribers.
+   */
+  emitChange() {
+    this.stateSnapshot = {
+      musicVol: this.musicVolume,
+      sfxVol: this.sfxVolume,
+      isMuted: this.muted,
+      isPlaying: this.isPlaying,
+      currentSongId: this.currentSongId
+    }
+
+    this.listeners.forEach(listener => {
+      try {
+        listener()
+      } catch (error) {
+        logger.warn('AudioSystem', 'Audio subscriber callback failed', error)
+      }
+    })
   }
 
   /**
@@ -69,6 +122,7 @@ class AudioSystem {
       audioEngine.setDestinationMute(this.muted)
 
       this.prefsLoaded = true
+      this.emitChange()
     } catch (error) {
       handleError(error, {
         fallbackMessage: 'AudioSystem initialization failed'
@@ -99,6 +153,7 @@ class AudioSystem {
     this.ambientStartPromise = (async () => {
       this.stopMusic()
       this.currentSongId = 'ambient'
+      this.emitChange()
       try {
         const oggSuccess = await audioEngine.playRandomAmbientOgg(Math.random, {
           skipStop: true
@@ -116,6 +171,7 @@ class AudioSystem {
         const midiSuccess = await audioEngine.playRandomAmbientMidi()
         if (!midiSuccess) {
           this.currentSongId = null
+          this.emitChange()
           logger.warn(
             'AudioSystem',
             'Ambient playback did not start (OGG and MIDI both failed).'
@@ -150,6 +206,7 @@ class AudioSystem {
     )
     audioEngine.stopAudio()
     this.currentSongId = null
+    this.emitChange()
   }
 
   /**
@@ -168,6 +225,7 @@ class AudioSystem {
 
       if (audioEngine.getTransportState() === 'paused') {
         audioEngine.resumeAudio()
+        this.emitChange()
         return true
       }
 
@@ -248,6 +306,10 @@ class AudioSystem {
         })
       }
     }
+    if (operationSucceeded) {
+      this.emitChange()
+    }
+
     return operationSucceeded
   }
 
@@ -281,6 +343,10 @@ class AudioSystem {
         })
       }
     }
+    if (operationSucceeded) {
+      this.emitChange()
+    }
+
     return operationSucceeded
   }
 
@@ -297,6 +363,8 @@ class AudioSystem {
       logger.warn('AudioSystem', 'audioEngine mute failed:', e)
     }
 
+    this.emitChange()
+
     try {
       localStorage.setItem('neurotoxic_muted', this.muted)
     } catch (e) {
@@ -312,6 +380,7 @@ class AudioSystem {
     this.stopMusic()
     audioEngine.disposeAudio?.()
     this.prefsLoaded = false
+    this.emitChange()
   }
 }
 
