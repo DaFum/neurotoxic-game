@@ -17,7 +17,7 @@ export const UPGRADES_DB = {
           type: 'stat_modifier',
           target: 'van',
           stat: 'breakdownChance',
-          value: -0.2
+          value: -0.01 // Reduces 5% base to 4% (20% reduction)
         }
       ],
       oneTime: true

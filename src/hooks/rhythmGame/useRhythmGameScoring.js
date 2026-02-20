@@ -19,12 +19,14 @@ import { checkHit } from '../../utils/rhythmUtils'
  * @param {Object} params - Hook parameters.
  * @param {Object} params.gameStateRef - Reference to the mutable game state.
  * @param {Object} params.setters - React state setters from useRhythmGameState.
+ * @param {Object} params.performance - Band performance stats (modifiers).
  * @param {Object} params.contextActions - Actions from useGameState (addToast, changeScene, hasUpgrade, setLastGigStats).
  * @returns {Object} Scoring actions: handleHit, handleMiss, activateToxicMode.
  */
 export const useRhythmGameScoring = ({
   gameStateRef,
   setters,
+  performance,
   contextActions
 }) => {
   const {
@@ -98,7 +100,11 @@ export const useRhythmGameScoring = ({
         audioManager.playSFX('miss')
       }
 
-      let decayPerMiss = hasUpgrade('bass_sansamp') ? 1 : 2
+      // Dynamic decay based on stats (e.g. crowdDecay 1.0 -> 0.9 means 10% slower decay)
+      // Base decay is 2. Multiplier comes from state (default 1.0)
+      const decayModifier = performance?.crowdDecay ?? 1.0
+      let decayPerMiss = 2 * Math.max(0.1, decayModifier)
+
       if (isEmptyHit) {
         decayPerMiss = 1 // Lower penalty for empty hits
       }
@@ -141,7 +147,8 @@ export const useRhythmGameScoring = ({
       setHealth,
       setIsGameOver,
       setIsToxicMode,
-      setOverload
+      setOverload,
+      performance
     ]
   )
 
@@ -161,7 +168,13 @@ export const useRhythmGameScoring = ({
       let hitWindow = state.lanes[laneIndex].hitWindow
       if (state.modifiers.hitWindowBonus)
         hitWindow += state.modifiers.hitWindowBonus
-      if (laneIndex === 0 && hasUpgrade('guitar_custom')) hitWindow += 50
+
+      // Dynamic Hit Window (Guitar Custom: easier to hit = larger window)
+      // e.g. guitarDifficulty 0.85 (15% reduction) -> Window / 0.85 (~1.17x larger)
+      if (laneIndex === 0) {
+        const difficultyFactor = Math.max(0.1, performance?.guitarDifficulty ?? 1.0)
+        hitWindow /= difficultyFactor
+      }
 
       const note = checkHit(state.notes, laneIndex, elapsed, hitWindow)
 
@@ -192,7 +205,12 @@ export const useRhythmGameScoring = ({
         }
 
         let points = 100
-        if (laneIndex === 1 && hasUpgrade('drum_trigger')) points = 120
+        // Dynamic Score Multiplier (Drum Trigger: +20% score)
+        // e.g. drumMultiplier 1.2 (from 1.0 + 0.2) -> 100 * 1.2 = 120
+        if (laneIndex === 1) {
+          const drumMod = performance?.drumMultiplier ?? 1.0
+          points *= drumMod
+        }
         if (laneIndex === 0) points *= state.modifiers.guitarScoreMult || 1.0
 
         // Guestlist Effect: +20% score
@@ -255,7 +273,8 @@ export const useRhythmGameScoring = ({
       setCombo,
       setHealth,
       setOverload,
-      setScore
+      setScore,
+      performance
     ]
   )
 

@@ -218,8 +218,8 @@ export const useTravelLogic = ({
         saveGame()
       }
 
-      // Sound system upgrade bonus
-      if (hasUpgrade('van_sound_system')) {
+      // Sound system upgrade bonus (Passive)
+      if (band?.harmonyRegenTravel) {
         updateBand({ harmony: Math.min(100, (band?.harmony ?? 0) + 5) })
       }
 
@@ -495,17 +495,12 @@ export const useTravelLogic = ({
       return
     }
 
-    const baseBreakdownChance = 0.05
-    const repairedBreakdownChance = hasUpgrade('van_suspension')
-      ? baseBreakdownChance * 0.8
-      : baseBreakdownChance
-
     updatePlayer({
       money: Math.max(0, (player.money ?? 0) - cost),
       van: {
         ...player.van,
-        condition: 100,
-        breakdownChance: repairedBreakdownChance
+        condition: 100
+        // breakdownChance persists from upgrades and is not reset
       }
     })
 
