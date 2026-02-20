@@ -139,4 +139,4 @@ Global state lives in `GameStateProvider` and is mutated only through reducer ac
 
 ---
 
-_Last updated: 2026-02-23._
+_Last updated: 2026-02-19._

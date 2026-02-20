@@ -237,4 +237,4 @@ _"Complexity is not an excuse for friction."_
 - UI: Toast taxonomy remains `success`/`error`/`warning`/`info`, with `info` rendered using the blue token (`--info-blue`).
 - Chatter: Default fallback chatter is limited to `MENU`, `OVERWORLD`, `PREGIG`, and `POSTGIG`; `GIG` requires explicit conditional chatter entries.
 - State safety: Event delta handling intentionally rejects `flags.score` and keeps score ownership outside the global overworld player schema.
-- Last updated: 2026-02-24.
+- Last updated: 2026-02-19.
