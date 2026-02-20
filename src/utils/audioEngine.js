@@ -1,7 +1,7 @@
 /**
  * Audio Engine Utility
  * This module manages the AudioContext and Tone.js logic for both Rhythm Game music and UI SFX.
- * Note: This file contains side-effects (Tone.start, AudioContext creation) as per architectural design exceptions.
+ * Note: This file is an export hub. Side-effects (Tone.start, AudioContext creation) are handled in src/utils/audio/setup.js.
  *
  * REFACTORED: Implementation logic has been moved to src/utils/audio/*.
  */

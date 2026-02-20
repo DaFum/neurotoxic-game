@@ -369,7 +369,7 @@ export const GameStateProvider = ({ children }) => {
   /**
    * Resolves an event choice and applies its effects.
    * @param {object} choice - The selected choice object.
-   * @returns {object} Outcome text and description.
+   * @returns {object} Object containing { outcomeText, description, result }.
    */
   const resolveEvent = useCallback(
     choice => {
