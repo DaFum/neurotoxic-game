@@ -137,10 +137,17 @@ export const calculateDailyUpdates = currentState => {
 
     let baseBreakdownChance = 0.05 // Default 5%
 
-    // Check for 'van_suspension' upgrade (reduces base by 1% / 0.01)
+    // Apply all breakdown-modifying upgrades from upgrades array.
     // We check upgrades array directly because 'breakdownChance' in state is now a derived/volatile value.
-    if (nextPlayer.van.upgrades && nextPlayer.van.upgrades.includes('van_suspension')) {
-      baseBreakdownChance -= 0.01
+    const vanUpgrades = nextPlayer.van.upgrades ?? []
+    if (vanUpgrades.includes('van_suspension')) {
+      baseBreakdownChance -= 0.01 // -1% absolute (fame-track)
+    }
+    if (vanUpgrades.includes('hq_van_suspension')) {
+      baseBreakdownChance -= 0.01 // -1% absolute (money-track)
+    }
+    if (vanUpgrades.includes('hq_van_tyre_spare')) {
+      baseBreakdownChance -= 0.05 // -5% absolute (spare tyre)
     }
 
     let conditionMultiplier

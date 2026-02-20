@@ -20,7 +20,7 @@ import { checkHit } from '../../utils/rhythmUtils'
  * @param {Object} params.gameStateRef - Reference to the mutable game state.
  * @param {Object} params.setters - React state setters from useRhythmGameState.
  * @param {Object} params.performance - Band performance stats (modifiers).
- * @param {Object} params.contextActions - Actions from useGameState (addToast, changeScene, hasUpgrade, setLastGigStats).
+ * @param {Object} params.contextActions - Actions from useGameState (addToast, changeScene, setLastGigStats).
  * @returns {Object} Scoring actions: handleHit, handleMiss, activateToxicMode.
  */
 export const useRhythmGameScoring = ({
@@ -37,7 +37,7 @@ export const useRhythmGameScoring = ({
     setIsToxicMode,
     setIsGameOver
   } = setters
-  const { addToast, changeScene, hasUpgrade, setLastGigStats } = contextActions
+  const { addToast, changeScene, setLastGigStats } = contextActions
 
   const gameOverTimerRef = useRef(null)
 
@@ -140,7 +140,6 @@ export const useRhythmGameScoring = ({
     [
       addToast,
       changeScene,
-      hasUpgrade,
       setLastGigStats,
       gameStateRef,
       setCombo,
@@ -268,7 +267,6 @@ export const useRhythmGameScoring = ({
     [
       activateToxicMode,
       handleMiss,
-      hasUpgrade,
       gameStateRef,
       setCombo,
       setHealth,

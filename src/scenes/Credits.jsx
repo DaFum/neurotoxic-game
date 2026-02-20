@@ -35,7 +35,7 @@ export const Credits = () => {
   return (
     <div className='flex flex-col items-center h-full w-full bg-(--void-black) z-50 text-center overflow-hidden relative'>
       {(settings?.crtEnabled ?? false) && (
-        <div className='crt-overlay pointer-events-none fixed inset-0 z-50 mix-blend-overlay opacity-50' />
+        <div className='crt-overlay pointer-events-none fixed inset-0 z-(--z-crt) mix-blend-overlay opacity-50' />
       )}
 
       {/* Gradient fade at top and bottom */}
