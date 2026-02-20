@@ -44,9 +44,10 @@ function DynamicList({ items }) {
       itemCount={items.length}
       itemSize={getItemSize}
       width="100%"
+      itemData={items}
     >
-      {({ index, style }) => (
-        <div style={style}>{items[index].content}</div>
+      {({ index, style, data }) => (
+        <div style={style}>{data[index].content}</div>
       )}
     </VariableSizeList>
   );

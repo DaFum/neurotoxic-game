@@ -147,6 +147,10 @@ function App() {
 ```jsx
 import { FixedSizeList } from 'react-window';
 
+const Row = ({ index, style, data }) => (
+  <div style={style}>{data[index].name}</div>
+);
+
 function VirtualList({ items }) {
   return (
     <FixedSizeList
@@ -154,10 +158,9 @@ function VirtualList({ items }) {
       itemCount={items.length}
       itemSize={80}
       width="100%"
+      itemData={items}
     >
-      {({ index, style }) => (
-        <div style={style}>{items[index].name}</div>
-      )}
+      {Row}
     </FixedSizeList>
   );
 }

@@ -10,7 +10,7 @@ import { Profiler } from 'react';
 
 function onRenderCallback(
   id,        // Component being profiled
-  phase,     // "mount" or "update"
+  phase,     // "mount", "update" or "nested-update"
   actualDuration,  // Time spent rendering
   baseDuration,    // Estimated time without memoization
   startTime,       // When render started
@@ -82,6 +82,8 @@ console.log(`Render took: ${measure.duration}ms`);
 // Measure async operations
 async function fetchData() {
   performance.mark('fetch-start');
+  // Response intentionally ignored for profiling demo.
+  // Real code should await response.json() and handle errors.
   await fetch('/api/data');
   performance.mark('fetch-end');
   performance.measure('data-fetch', 'fetch-start', 'fetch-end');
