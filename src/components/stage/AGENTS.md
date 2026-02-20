@@ -27,6 +27,10 @@ They are called from `PixiStageController` and execute inside the gig render loo
 - Ensure `dispose()` fully detaches listeners and destroys display objects to prevent leaks.
 - Never inject HTML or use DOM sinks from these modules.
 
+## Visual Reliability
+
+- Keep lane geometry and hit-line bars visibly readable against dark venue backgrounds (including inactive state) so Gig input lanes remain perceivable at all times.
+
 ## Validation
 
 ```bash
@@ -35,4 +39,4 @@ npm run test
 npm run build
 ```
 
-_Last updated: 2026-02-19._
+_Last updated: 2026-02-20._

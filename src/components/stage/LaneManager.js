@@ -2,6 +2,13 @@ import * as PIXI from 'pixi.js'
 import { buildRhythmLayout } from './utils.js'
 
 const LANE_GAP = 20
+const LANE_BASE_FILL = 0x050505
+const LANE_BASE_ALPHA = 0.7
+const LANE_BORDER_COLOR = 0x1aff7a
+const LANE_BORDER_ALPHA = 0.35
+const HIT_BAR_INACTIVE_ALPHA = 0.2
+const HIT_BAR_ACTIVE_ALPHA = 0.85
+const HIT_BAR_BORDER_COLOR = 0xffffff
 
 export class LaneManager {
   /**
@@ -45,8 +52,12 @@ export class LaneManager {
 
       // Draw static background once
       staticGraphics.rect(laneX, 0, laneWidth, laneHeight)
-      staticGraphics.fill({ color: 0x000000, alpha: 0.8 })
-      staticGraphics.stroke({ width: laneStrokeWidth, color: 0x333333 })
+      staticGraphics.fill({ color: LANE_BASE_FILL, alpha: LANE_BASE_ALPHA })
+      staticGraphics.stroke({
+        width: laneStrokeWidth,
+        color: LANE_BORDER_COLOR,
+        alpha: LANE_BORDER_ALPHA
+      })
 
       this.rhythmContainer.addChild(staticGraphics)
       this.rhythmContainer.addChild(dynamicGraphics)
@@ -78,10 +89,11 @@ export class LaneManager {
           layout.laneWidth,
           layout.laneHeight
         )
-        staticGraphics.fill({ color: 0x000000, alpha: 0.8 })
+        staticGraphics.fill({ color: LANE_BASE_FILL, alpha: LANE_BASE_ALPHA })
         staticGraphics.stroke({
           width: layout.laneStrokeWidth,
-          color: 0x333333
+          color: LANE_BORDER_COLOR,
+          alpha: LANE_BORDER_ALPHA
         })
       }
 
@@ -101,12 +113,16 @@ export class LaneManager {
           layout.hitLineHeight
         )
         if (lane.active) {
-          dynamicGraphics.fill({ color: lane.color, alpha: 0.8 })
+          dynamicGraphics.fill({ color: lane.color, alpha: HIT_BAR_ACTIVE_ALPHA })
           dynamicGraphics.stroke({
             width: layout.hitLineStrokeWidth,
-            color: 0xffffff
+            color: HIT_BAR_BORDER_COLOR
           })
         } else {
+          dynamicGraphics.fill({
+            color: lane.color,
+            alpha: HIT_BAR_INACTIVE_ALPHA
+          })
           dynamicGraphics.stroke({
             width: layout.hitLineStrokeWidth,
             color: lane.color
