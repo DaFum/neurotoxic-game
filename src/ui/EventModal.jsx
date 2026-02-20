@@ -1,6 +1,15 @@
 import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import PropTypes from 'prop-types'
+import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
+
+const CATEGORY_IMAGE_MAP = {
+  transport: IMG_PROMPTS.EVENT_VAN,
+  band: IMG_PROMPTS.EVENT_BAND,
+  gig: IMG_PROMPTS.EVENT_GIG,
+  financial: IMG_PROMPTS.EVENT_MONEY,
+  special: IMG_PROMPTS.EVENT_SPECIAL
+}
 
 /**
  * A modal dialog for displaying game events and capturing player choices.
@@ -37,6 +46,13 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
 
   if (!event) return null
 
+  const categoryImagePrompt = event.category
+    ? CATEGORY_IMAGE_MAP[event.category]
+    : null
+  const categoryImageUrl = categoryImagePrompt
+    ? getGenImageUrl(categoryImagePrompt)
+    : null
+
   return (
     <div
       ref={containerRef}
@@ -51,9 +67,18 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
         animate={{ scale: 1, opacity: 1, y: 0 }}
         className='w-full max-w-lg border-2 border-(--toxic-green) bg-(--void-black) shadow-[0_0_50px_var(--toxic-green-glow)] p-6'
       >
+        {categoryImageUrl && (
+          <div className='flex justify-center mb-4'>
+            <img
+              src={categoryImageUrl}
+              alt={event.category}
+              className='w-20 h-20 border-2 border-(--toxic-green) object-cover shadow-[0_0_10px_var(--toxic-green)]'
+            />
+          </div>
+        )}
         <h2
           id='event-title'
-          className='text-3xl font-[Metal_Mania] text-(--blood-red) mb-4 animate-pulse'
+          className='text-3xl font-[Metal_Mania] text-(--blood-red) mb-4 animate-pulse text-center'
         >
           {'\u26A0'} {event.title} {'\u26A0'}
         </h2>

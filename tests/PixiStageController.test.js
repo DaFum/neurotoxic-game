@@ -33,6 +33,7 @@ mock.module('pixi.js', {
 // Mock Managers
 const mockCrowdManager = {
   init: mock.fn(),
+  loadAssets: mock.fn(),
   update: mock.fn(),
   dispose: mock.fn()
 }
@@ -45,6 +46,7 @@ const mockLaneManager = {
 }
 const mockEffectManager = {
   init: mock.fn(),
+  loadAssets: mock.fn(),
   spawnHitEffect: mock.fn(),
   update: mock.fn(),
   dispose: mock.fn()
@@ -116,8 +118,10 @@ describe('PixiStageController', () => {
 
     // Reset mocks
     mockCrowdManager.init.mock.resetCalls()
+    mockCrowdManager.loadAssets.mock.resetCalls()
     mockLaneManager.init.mock.resetCalls()
     mockEffectManager.init.mock.resetCalls()
+    mockEffectManager.loadAssets.mock.resetCalls()
     mockNoteManager.init.mock.resetCalls()
     mockLaneManager.update.mock.resetCalls()
     mockCrowdManager.update.mock.resetCalls()
@@ -161,8 +165,10 @@ describe('PixiStageController', () => {
     await controller.init()
 
     assert.equal(mockCrowdManager.init.mock.calls.length, 1)
+    assert.equal(mockCrowdManager.loadAssets.mock.calls.length, 1)
     assert.equal(mockLaneManager.init.mock.calls.length, 1)
     assert.equal(mockEffectManager.init.mock.calls.length, 1)
+    assert.equal(mockEffectManager.loadAssets.mock.calls.length, 1)
     assert.equal(mockNoteManager.init.mock.calls.length, 1)
     assert.equal(mockNoteManager.loadAssets.mock.calls.length, 1)
   })

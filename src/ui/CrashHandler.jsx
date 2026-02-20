@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { GlitchButton } from './GlitchButton'
 
 export class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -42,12 +43,9 @@ export class ErrorBoundary extends React.Component {
             </pre>
           </div>
 
-          <button
-            onClick={this.handleReboot}
-            className='px-6 py-2 border-2 border-(--blood-red) text-(--star-white) font-[Metal_Mania] hover:bg-(--blood-red) hover:text-(--void-black) transition-colors'
-          >
+          <GlitchButton onClick={this.handleReboot} variant='danger'>
             REBOOT SYSTEM
-          </button>
+          </GlitchButton>
         </div>
       )
     }

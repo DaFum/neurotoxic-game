@@ -79,9 +79,9 @@ class PixiStageController {
         this.stageContainer = new PIXI.Container()
         this.app.stage.addChild(this.stageContainer)
 
-        // Initialize Managers
+        // Initialize Managers and start loading assets in parallel
         this.crowdManager = new CrowdManager(this.app, this.stageContainer)
-        this.crowdManager.init()
+        const crowdLoad = this.withTimeout(this.crowdManager.loadAssets(), 'Crowd Assets')
 
         this.laneManager = new LaneManager(
           this.app,
@@ -95,7 +95,7 @@ class PixiStageController {
         const rhythmContainer = this.laneManager.container
 
         this.effectManager = new EffectManager(this.app, rhythmContainer)
-        this.effectManager.init()
+        const effectLoad = this.withTimeout(this.effectManager.loadAssets(), 'Effect Assets')
 
         this.noteManager = new NoteManager(
           this.app,
@@ -103,14 +103,20 @@ class PixiStageController {
           this.gameStateRef,
           (x, y, color) => this.effectManager.spawnHitEffect(x, y, color)
         )
-        this.noteManager.init()
+        const noteLoad = this.withTimeout(this.noteManager.loadAssets(), 'Note Assets')
 
-        await this.noteManager.loadAssets()
+        // Await all loads in parallel
+        await Promise.all([crowdLoad, effectLoad, noteLoad])
 
         if (this.isDisposed) {
           this.dispose()
           return
         }
+
+        // Initialize managers now that assets are loaded
+        this.crowdManager.init()
+        this.effectManager.init()
+        this.noteManager.init()
 
         this.app.ticker.add(this.handleTicker)
       } catch (error) {
@@ -125,6 +131,23 @@ class PixiStageController {
     })()
 
     return this.initPromise
+  }
+
+  /**
+   * Wraps a promise with a timeout to prevent indefinite hanging.
+   * @param {Promise} promise - The promise to wrap.
+   * @param {string} label - Label for logging.
+   * @returns {Promise} The wrapped promise.
+   */
+  async withTimeout(promise, label) {
+    let timerId
+    const timeout = new Promise((resolve) => {
+      timerId = setTimeout(() => {
+        logger.warn('PixiStageController', `${label} load timed out, proceeding with fallbacks.`)
+        resolve(null)
+      }, 10000)
+    })
+    return Promise.race([promise, timeout]).finally(() => clearTimeout(timerId))
   }
 
   /**
