@@ -32,7 +32,6 @@ const TRAVEL_ANIMATION_TIMEOUT_MS = 1510
  * @param {Function} params.advanceDay - Day advancement function
  * @param {Function} params.triggerEvent - Event trigger function
  * @param {Function} params.startGig - Gig start function
- * @param {Function} params.hasUpgrade - Upgrade check function
  * @param {Function} params.addToast - Toast notification function
  * @param {Function} params.changeScene - Scene change function
  * @param {Function} [params.onShowHQ] - Callback when HQ should be shown
@@ -48,7 +47,6 @@ export const useTravelLogic = ({
   advanceDay,
   triggerEvent,
   startGig,
-  hasUpgrade,
   addToast,
   changeScene,
   onShowHQ
@@ -218,7 +216,7 @@ export const useTravelLogic = ({
         saveGame()
       }
 
-      // Sound system upgrade bonus (Passive)
+      // Harmony regen while traveling (enabled by Mobile Studio / van_sound_system)
       if (band?.harmonyRegenTravel) {
         updateBand({ harmony: Math.min(100, (band?.harmony ?? 0) + 5) })
       }
@@ -242,7 +240,6 @@ export const useTravelLogic = ({
       player,
       band,
       gameMap,
-      hasUpgrade,
       updatePlayer,
       updateBand,
       saveGame,
@@ -495,12 +492,19 @@ export const useTravelLogic = ({
       return
     }
 
+    // Recalculate breakdown chance at full condition (multiplier 1.0)
+    const vanUpgrades = player.van?.upgrades ?? []
+    let repairedBreakdown = 0.05
+    if (vanUpgrades.includes('van_suspension')) repairedBreakdown -= 0.01
+    if (vanUpgrades.includes('hq_van_suspension')) repairedBreakdown -= 0.01
+    if (vanUpgrades.includes('hq_van_tyre_spare')) repairedBreakdown -= 0.05
+
     updatePlayer({
       money: Math.max(0, (player.money ?? 0) - cost),
       van: {
         ...player.van,
-        condition: 100
-        // breakdownChance persists from upgrades and is not reset
+        condition: 100,
+        breakdownChance: Math.max(0, Math.round(repairedBreakdown * 100) / 100)
       }
     })
 
@@ -511,7 +515,7 @@ export const useTravelLogic = ({
     } catch (_e) {
       // Ignore audio errors
     }
-  }, [player, isTraveling, updatePlayer, addToast, hasUpgrade])
+  }, [player, isTraveling, updatePlayer, addToast])
 
   // Softlock detection effect
   useEffect(() => {

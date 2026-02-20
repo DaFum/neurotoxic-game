@@ -203,7 +203,7 @@ export const Overworld = () => {
       className={`w-full h-full bg-(--void-black) relative overflow-hidden flex flex-col items-center justify-center p-8 ${isTraveling ? 'pointer-events-none' : ''}`}
     >
       {(settings?.crtEnabled ?? false) && (
-        <div className='crt-overlay pointer-events-none fixed inset-0 z-50 mix-blend-overlay opacity-50' />
+        <div className='crt-overlay pointer-events-none fixed inset-0 z-(--z-crt) mix-blend-overlay opacity-50' />
       )}
 
       <h2 className='absolute top-20 text-4xl text-(--toxic-green) font-[Metal_Mania] z-10 text-shadow-[0_0_10px_var(--toxic-green)] pointer-events-none'>
