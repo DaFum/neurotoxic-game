@@ -140,13 +140,16 @@ class PixiStageController {
    * @returns {Promise} The wrapped promise.
    */
   async withTimeout(promise, label) {
+    let timerId
     const timeout = new Promise((resolve) => {
-      setTimeout(() => {
+      timerId = setTimeout(() => {
         logger.warn('PixiStageController', `${label} load timed out, proceeding with fallbacks.`)
         resolve(null)
       }, 10000)
     })
-    return Promise.race([promise, timeout])
+    return Promise.race([promise, timeout]).finally(() => clearTimeout(timerId))
+  }
+
   }
 
   /**
