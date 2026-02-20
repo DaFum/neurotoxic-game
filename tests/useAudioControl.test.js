@@ -33,6 +33,8 @@ describe('useAudioControl', () => {
     })
 
     mockAudioManager.toggleMute.mock.resetCalls()
+    mockAudioManager.stopMusic.mock.resetCalls()
+    mockAudioManager.resumeMusic.mock.resetCalls()
     mockAudioManager.toggleMute.mock.mockImplementation(() => {
       mockAudioManager.muted = !mockAudioManager.muted
       mockAudioManager.emitChange()
@@ -154,6 +156,37 @@ describe('useAudioControl', () => {
   })
 
 
+
+
+  test('resumeMusic delegates through hook action', async () => {
+    const { result } = renderHook(() => useAudioControl())
+
+    await act(async () => {
+      await result.current.handleAudioChange.resumeMusic()
+    })
+
+    assert.equal(mockAudioManager.resumeMusic.mock.calls.length, 1)
+  })
+
+  test('stopMusic delegates through hook action', () => {
+    const { result } = renderHook(() => useAudioControl())
+
+    act(() => {
+      result.current.handleAudioChange.stopMusic()
+    })
+
+    assert.equal(mockAudioManager.stopMusic.mock.calls.length, 1)
+  })
+
+  test('inline selector remains stable across rerenders', () => {
+    const { result, rerender } = renderHook(() =>
+      useAudioControl(state => state.currentSongId === 'ambient' && state.isPlaying)
+    )
+
+    assert.equal(result.current.audioState, false)
+    rerender()
+    assert.equal(result.current.audioState, false)
+  })
 
   test('selector receives focused state updates', () => {
     const { result } = renderHook(() =>

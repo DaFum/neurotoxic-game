@@ -6,12 +6,18 @@ import { handleError } from '../utils/errorHandler'
  * Provides reactive audio controls backed by AudioManager.
  *
  * @param {(state: object) => any} [selector] - Optional selector to read a focused slice of audio state.
- * @returns {{ audioState: any, handleAudioChange: { setMusic: Function, setSfx: Function, toggleMute: Function } }}
+ * @param {{ pollEvenWithSubscribe?: boolean, pollMs?: number }} [options] - Optional polling configuration.
+ * @returns {{ audioState: any, handleAudioChange: { setMusic: Function, setSfx: Function, toggleMute: Function, stopMusic: Function, resumeMusic: Function } }}
  */
-export const useAudioControl = selector => {
+export const useAudioControl = (selector, options = {}) => {
   const manager = useMemo(() => audioManager, [])
   const fallbackSnapshotRef = useRef(null)
+  const selectorRef = useRef(selector)
+  selectorRef.current = selector
+
   const hasNativeSubscribe = typeof manager.subscribe === 'function'
+  const pollMs = Number.isFinite(options.pollMs) && options.pollMs > 0 ? options.pollMs : 1000
+  const pollEvenWithSubscribe = options.pollEvenWithSubscribe === true
 
   const getSnapshot = useCallback(() => {
     if (hasNativeSubscribe && typeof manager.getStateSnapshot === 'function') {
@@ -44,24 +50,29 @@ export const useAudioControl = selector => {
 
   const subscribe = useCallback(
     listener => {
-      if (hasNativeSubscribe) {
-        return manager.subscribe(listener)
+      const unsubscribe = hasNativeSubscribe ? manager.subscribe(listener) : () => {}
+
+      if (hasNativeSubscribe && !pollEvenWithSubscribe) {
+        return unsubscribe
       }
 
-      const pollId = setInterval(listener, 1000)
-      return () => clearInterval(pollId)
+      const pollId = setInterval(listener, pollMs)
+      return () => {
+        clearInterval(pollId)
+        unsubscribe()
+      }
     },
-    [hasNativeSubscribe, manager]
+    [hasNativeSubscribe, manager, pollEvenWithSubscribe, pollMs]
   )
 
   const getSelectedSnapshot = useCallback(() => {
     const snapshot = getSnapshot()
-    if (typeof selector === 'function') {
-      return selector(snapshot)
+    if (typeof selectorRef.current === 'function') {
+      return selectorRef.current(snapshot)
     }
 
     return snapshot
-  }, [getSnapshot, selector])
+  }, [getSnapshot])
 
   const audioState = useSyncExternalStore(
     subscribe,
@@ -108,9 +119,32 @@ export const useAudioControl = selector => {
     }
   }, [manager])
 
+  const stopMusic = useCallback(() => {
+    try {
+      manager.stopMusic()
+    } catch (error) {
+      handleError(error, {
+        fallbackMessage: 'useAudioControl.stopMusic failed',
+        silent: true
+      })
+    }
+  }, [manager])
+
+  const resumeMusic = useCallback(() => {
+    try {
+      return manager.resumeMusic()
+    } catch (error) {
+      handleError(error, {
+        fallbackMessage: 'useAudioControl.resumeMusic failed',
+        silent: true
+      })
+      return Promise.resolve(false)
+    }
+  }, [manager])
+
   const handleAudioChange = useMemo(
-    () => ({ setMusic, setSfx, toggleMute }),
-    [setMusic, setSfx, toggleMute]
+    () => ({ setMusic, setSfx, toggleMute, stopMusic, resumeMusic }),
+    [setMusic, setSfx, toggleMute, stopMusic, resumeMusic]
   )
 
   return { audioState, handleAudioChange }

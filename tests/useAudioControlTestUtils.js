@@ -35,7 +35,9 @@ const mockAudioManager = {
   getStateSnapshot: () => stateSnapshot,
   setMusicVolume: mock.fn(),
   setSFXVolume: mock.fn(),
-  toggleMute: mock.fn()
+  toggleMute: mock.fn(),
+  stopMusic: mock.fn(),
+  resumeMusic: mock.fn(async () => true)
 }
 
 const mockHandleError = mock.fn()

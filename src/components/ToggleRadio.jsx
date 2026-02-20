@@ -1,23 +1,23 @@
 import { useCallback, memo } from 'react'
 import { useAudioControl } from '../hooks/useAudioControl'
-import { audioManager } from '../utils/AudioManager'
 
 export const ToggleRadio = memo(() => {
-  const { audioState: isPlaying } = useAudioControl(
+  const { audioState: isPlaying, handleAudioChange } = useAudioControl(
     useCallback(
       state => state.currentSongId === 'ambient' && state.isPlaying,
       []
-    )
+    ),
+    { pollEvenWithSubscribe: true, pollMs: 1000 }
   )
 
   const toggle = useCallback(() => {
     if (isPlaying) {
-      audioManager.stopMusic()
+      handleAudioChange.stopMusic()
       return
     }
 
-    void audioManager.resumeMusic()
-  }, [isPlaying])
+    void handleAudioChange.resumeMusic()
+  }, [handleAudioChange, isPlaying])
 
   return (
     <button
