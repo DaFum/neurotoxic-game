@@ -4,6 +4,7 @@ import { LaneManager } from './stage/LaneManager.js'
 import { EffectManager } from './stage/EffectManager.js'
 import { NoteManager } from './stage/NoteManager.js'
 import { logger } from '../utils/logger.js'
+import { getGigTimeMs } from '../utils/audioEngine.js'
 
 /**
  * Manages Pixi.js stage lifecycle and rendering updates.
@@ -150,11 +151,11 @@ class PixiStageController {
     const state = this.gameStateRef.current
     const stats = this.statsRef.current
 
-    if (state.isGameOver || (!state.running && !state.pauseTime)) {
+    if (state.isGameOver) {
       return
     }
 
-    const elapsed = state.elapsed ?? 0
+    const elapsed = getGigTimeMs()
 
     if (stats?.isToxicMode) {
       this.colorMatrix.hue(Math.sin(elapsed / 100) * 180, false)
