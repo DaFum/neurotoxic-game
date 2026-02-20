@@ -1,15 +1,16 @@
+import { memo } from 'react'
 import PropTypes from 'prop-types'
 import { HecklerOverlay } from './HecklerOverlay'
 
 const LANE_NAMES = ['Guitar', 'Drums', 'Bass']
 const LANE_KEYS = ['←', '↓', '→']
 
-const SegmentedBar = ({
+const SegmentedBar = memo(function SegmentedBar({
   value,
   segments = 20,
   lowThreshold = 20,
   className = ''
-}) => {
+}) {
   const filledCount = Math.round((value / 100) * segments)
   const isLow = value < lowThreshold
   return (
@@ -28,9 +29,11 @@ const SegmentedBar = ({
       ))}
     </div>
   )
-}
+})
 
-export const GigHUD = ({ stats, onLaneInput, gameStateRef }) => {
+const LANE_INDICES = [0, 1, 2]
+
+export const GigHUD = memo(function GigHUD({ stats, onLaneInput, gameStateRef }) {
   const {
     score,
     combo,
@@ -61,7 +64,7 @@ export const GigHUD = ({ stats, onLaneInput, gameStateRef }) => {
 
       {/* Input Zones with lane labels */}
       <div className='absolute inset-0 z-40 flex pb-16 pt-32 pointer-events-none'>
-        {[0, 1, 2].map(laneIndex => (
+        {LANE_INDICES.map(laneIndex => (
           <div
             key={laneIndex}
             role='button'
@@ -203,7 +206,7 @@ export const GigHUD = ({ stats, onLaneInput, gameStateRef }) => {
       )}
     </div>
   )
-}
+})
 
 GigHUD.propTypes = {
   stats: PropTypes.shape({

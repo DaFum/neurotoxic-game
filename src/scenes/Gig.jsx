@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import { useGameState } from '../context/GameState'
 import { useRhythmGameLogic } from '../hooks/useRhythmGameLogic'
 import { PixiStage } from '../components/PixiStage'
@@ -170,6 +170,11 @@ export const Gig = () => {
     actions.registerInput(laneIndex, false)
   }
 
+  const handleLaneInput = useCallback(
+    (index, active) => (active ? handleTouchStart(index) : handleTouchEnd(index)),
+    [actions]
+  )
+
   // Determine Background URL
   let bgPrompt = IMG_PROMPTS.VENUE_CLUB
   if (currentGig?.name?.includes('Kaminstube'))
@@ -306,9 +311,7 @@ export const Gig = () => {
       <GigHUD
         stats={stats}
         gameStateRef={gameStateRef}
-        onLaneInput={(index, active) =>
-          active ? handleTouchStart(index) : handleTouchEnd(index)
-        }
+        onLaneInput={handleLaneInput}
       />
     </div>
   )
