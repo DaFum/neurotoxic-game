@@ -154,6 +154,22 @@ describe('useAudioControl', () => {
   })
 
 
+
+  test('selector receives focused state updates', () => {
+    const { result } = renderHook(() =>
+      useAudioControl(state => state.currentSongId === 'ambient' && state.isPlaying)
+    )
+
+    assert.equal(result.current.audioState, false)
+
+    act(() => {
+      mockAudioManager.currentSongId = 'ambient'
+      mockAudioManager.emitChange()
+    })
+
+    assert.equal(result.current.audioState, true)
+  })
+
   test('syncs external mute updates across multiple hook instances', () => {
     const first = renderHook(() => useAudioControl())
     const second = renderHook(() => useAudioControl())

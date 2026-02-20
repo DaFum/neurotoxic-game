@@ -54,14 +54,20 @@ export const useAudioControl = selector => {
     [hasNativeSubscribe, manager]
   )
 
-  const baseAudioState = useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
-  const audioState = useMemo(() => {
+  const getSelectedSnapshot = useCallback(() => {
+    const snapshot = getSnapshot()
     if (typeof selector === 'function') {
-      return selector(baseAudioState)
+      return selector(snapshot)
     }
 
-    return baseAudioState
-  }, [baseAudioState, selector])
+    return snapshot
+  }, [getSnapshot, selector])
+
+  const audioState = useSyncExternalStore(
+    subscribe,
+    getSelectedSnapshot,
+    getSelectedSnapshot
+  )
 
   const setMusic = useCallback(
     val => {
@@ -74,7 +80,7 @@ export const useAudioControl = selector => {
         })
       }
     },
-    [hasNativeSubscribe, manager]
+    [manager]
   )
 
   const setSfx = useCallback(
@@ -88,7 +94,7 @@ export const useAudioControl = selector => {
         })
       }
     },
-    [hasNativeSubscribe, manager]
+    [manager]
   )
 
   const toggleMute = useCallback(() => {
@@ -100,7 +106,7 @@ export const useAudioControl = selector => {
         silent: true
       })
     }
-  }, [hasNativeSubscribe, manager])
+  }, [manager])
 
   const handleAudioChange = useMemo(
     () => ({ setMusic, setSfx, toggleMute }),

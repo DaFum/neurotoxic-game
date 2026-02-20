@@ -242,6 +242,7 @@ class AudioSystem {
       return true
     } catch (e) {
       handleError(e, { fallbackMessage: 'Failed to resume music' })
+      this.emitChange()
       return false
     }
   }
@@ -386,7 +387,7 @@ class AudioSystem {
     this.stopMusic()
     audioEngine.disposeAudio?.()
     this.prefsLoaded = false
-    this.emitChange()
+    this.listeners.clear()
   }
 }
 

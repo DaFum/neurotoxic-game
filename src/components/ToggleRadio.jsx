@@ -16,18 +16,7 @@ export const ToggleRadio = memo(() => {
       return
     }
 
-    audioManager
-      .resumeMusic()
-      .then(started => {
-        if (!started && typeof audioManager.emitChange === 'function') {
-          audioManager.emitChange()
-        }
-      })
-      .catch(() => {
-        if (typeof audioManager.emitChange === 'function') {
-          audioManager.emitChange()
-        }
-      })
+    void audioManager.resumeMusic()
   }, [isPlaying])
 
   return (
