@@ -208,4 +208,16 @@ describe('Logger', () => {
 
     delete globalThis.__IMPORT_META_ENV__
   })
+
+  test('log entries use valid UUIDs for ids', () => {
+    const logger = new Logger()
+    logger.info('Test', 'Message')
+    const log = logger.logs[0]
+
+    assert.strictEqual(typeof log.id, 'string')
+    // Regex for UUID v4
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    assert.match(log.id, uuidRegex)
+  })
 })
