@@ -142,3 +142,82 @@ test('checkCollisions detects hits and removes items', () => {
   assert.strictEqual(projectiles[1].id, 3)
   assert.strictEqual(projectiles[2].id, 4)
 })
+
+test('checkCollisions handles multiple simultaneous hits', () => {
+  const screenHeight = 1000
+  const projectiles = [
+    { id: 1, y: 900 }, // Hit
+    { id: 2, y: 800 }, // No hit
+    { id: 3, y: 950 } // Hit
+  ]
+
+  const hitIds = []
+  const onHit = p => hitIds.push(p.id)
+
+  checkCollisions(projectiles, screenHeight, onHit)
+
+  assert.strictEqual(hitIds.length, 2)
+  assert.ok(hitIds.includes(1))
+  assert.ok(hitIds.includes(3))
+  assert.strictEqual(projectiles.length, 1)
+  assert.strictEqual(projectiles[0].id, 2)
+})
+
+test('checkCollisions handles all items hitting', () => {
+  const screenHeight = 1000
+  const projectiles = [
+    { id: 1, y: 900 },
+    { id: 2, y: 950 }
+  ]
+
+  let hits = 0
+  const onHit = () => hits++
+
+  checkCollisions(projectiles, screenHeight, onHit)
+
+  assert.strictEqual(hits, 2)
+  assert.strictEqual(projectiles.length, 0)
+})
+
+test('checkCollisions handles no hits', () => {
+  const screenHeight = 1000
+  const projectiles = [
+    { id: 1, y: 800 },
+    { id: 2, y: 840 }
+  ]
+
+  let hits = 0
+  const onHit = () => hits++
+
+  checkCollisions(projectiles, screenHeight, onHit)
+
+  assert.strictEqual(hits, 0)
+  assert.strictEqual(projectiles.length, 2)
+  assert.strictEqual(projectiles[0].id, 1)
+  assert.strictEqual(projectiles[1].id, 2)
+})
+
+test('checkCollisions handles empty input', () => {
+  const projectiles = []
+  let hits = 0
+  const onHit = () => hits++
+
+  checkCollisions(projectiles, 1000, onHit)
+
+  assert.strictEqual(hits, 0)
+  assert.strictEqual(projectiles.length, 0)
+})
+
+test('checkCollisions handles missing onHit callback', () => {
+  const screenHeight = 1000
+  const projectiles = [
+    { id: 1, y: 900 }, // Hit
+    { id: 2, y: 800 } // No hit
+  ]
+
+  // Should not throw
+  checkCollisions(projectiles, screenHeight)
+
+  assert.strictEqual(projectiles.length, 1)
+  assert.strictEqual(projectiles[0].id, 2)
+})
