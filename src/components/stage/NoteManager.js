@@ -127,16 +127,13 @@ export class NoteManager {
         speed: state.speed
       })
 
-      if (sprite instanceof PIXI.Sprite) {
-        sprite.x =
-          state.lanes[note.laneIndex].renderX +
-          NOTE_CENTER_OFFSET +
-          jitterOffset
-      } else {
-        // Fallback graphics are positioned differently (renderX + 5)
-        // We only update Y for them to avoid jumping
-        sprite.x = state.lanes[note.laneIndex].renderX + 5
-      }
+      // Unified positioning logic for both texture and fallback sprites
+      // Fallback sprites (isFallback=true) do not jitter and are centered at renderX + 50
+      // Normal sprites jitter and are also centered at renderX + 50
+      sprite.x =
+        state.lanes[note.laneIndex].renderX +
+        NOTE_CENTER_OFFSET +
+        (sprite.isFallback ? 0 : jitterOffset)
     }
   }
 
@@ -167,10 +164,15 @@ export class NoteManager {
     if (effectiveTexture) {
       const sprite = new PIXI.Sprite(effectiveTexture)
       sprite.anchor.set(0.5)
+      sprite.isFallback = false
       return sprite
     }
 
-    return new PIXI.Graphics()
+    // Use PIXI.Texture.WHITE for fallback instead of PIXI.Graphics
+    const sprite = new PIXI.Sprite(PIXI.Texture.WHITE)
+    sprite.anchor.set(0.5)
+    sprite.isFallback = true
+    return sprite
   }
 
   initializeNoteSprite(sprite, lane, laneIndex) {
@@ -178,33 +180,39 @@ export class NoteManager {
     sprite.alpha = 1
     sprite.jitterOffset = (Math.random() - 0.5) * NOTE_JITTER_RANGE
 
-    if (sprite instanceof PIXI.Sprite) {
-      const useLightning = laneIndex === NOTE_LIGHTNING_LANE_INDEX
-      const desiredTexture = useLightning
-        ? this.noteTextures.lightning
-        : this.noteTextures.skull
-      const fallbackTexture = useLightning
-        ? this.noteTextures.skull
-        : this.noteTextures.lightning
+    const useLightning = laneIndex === NOTE_LIGHTNING_LANE_INDEX
+    const desiredTexture = useLightning
+      ? this.noteTextures.lightning
+      : this.noteTextures.skull
+    const fallbackTexture = useLightning
+      ? this.noteTextures.skull
+      : this.noteTextures.lightning
 
-      const effectiveTexture = desiredTexture || fallbackTexture
+    const effectiveTexture = desiredTexture || fallbackTexture
 
-      if (effectiveTexture && sprite.texture !== effectiveTexture) {
+    if (effectiveTexture) {
+      if (sprite.texture !== effectiveTexture) {
         sprite.texture = effectiveTexture
       }
+      sprite.isFallback = false
+    } else {
+      // Ensure we are using white texture for fallback
+      if (sprite.texture !== PIXI.Texture.WHITE) {
+        sprite.texture = PIXI.Texture.WHITE
+      }
+      sprite.isFallback = true
+    }
 
-      sprite.tint = lane.color
-      sprite.x = lane.renderX + NOTE_CENTER_OFFSET
-      sprite.y = NOTE_INITIAL_Y
+    sprite.tint = lane.color
+    sprite.x = lane.renderX + NOTE_CENTER_OFFSET
+    sprite.y = NOTE_INITIAL_Y
+
+    if (sprite.isFallback) {
+      sprite.width = NOTE_FALLBACK_WIDTH
+      sprite.height = NOTE_FALLBACK_HEIGHT
+    } else {
       sprite.width = NOTE_SPRITE_SIZE
       sprite.height = NOTE_SPRITE_SIZE
-    } else if (sprite instanceof PIXI.Graphics) {
-      sprite.clear()
-      sprite.rect(0, 0, NOTE_FALLBACK_WIDTH, NOTE_FALLBACK_HEIGHT)
-      sprite.fill({ color: lane.color })
-      sprite.x = lane.renderX + 5
-      sprite.y = NOTE_INITIAL_Y
-      sprite.scale.set(1)
     }
   }
 
