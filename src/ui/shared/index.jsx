@@ -4,6 +4,7 @@
  * @module shared
  */
 
+import { memo } from 'react'
 import PropTypes from 'prop-types'
 
 // Export SettingsPanel
@@ -40,55 +41,63 @@ StatBox.propTypes = {
 /**
  * ProgressBar - Displays a progress bar with label
  * @param {Object} props
- * @param {string} props.label - Progress bar label
+ * @param {string} [props.label] - Progress bar label (optional)
  * @param {number} props.value - Current value
  * @param {number} props.max - Maximum value
  * @param {string} props.color - CSS color class
- * @param {string} [props.size='md'] - Size variant (sm, md)
+ * @param {string} [props.size='md'] - Size variant (sm, md, mini)
  * @param {boolean} [props.showValue=true] - Whether to show value
+ * @param {boolean} [props.warn=false] - Whether to show warning animation
  * @param {string} [props.className] - Additional CSS classes
  */
-export const ProgressBar = ({
+export const ProgressBar = memo(function ProgressBar({
   label,
   value = 0,
   max,
   color,
   size = 'md',
   showValue = true,
+  warn = false,
   className = ''
-}) => {
+}) {
   const safeMax = max > 0 ? max : 1
   const safeValue = Number.isFinite(value) ? Math.max(0, value) : 0
   const pct = Math.min(100, (safeValue / safeMax) * 100)
+  const isMini = size === 'mini'
 
   return (
     <div className={`w-full ${className}`}>
-      <div className='flex justify-between text-xs mb-1 font-mono'>
-        <span className='text-(--ash-gray)'>{label}</span>
-        {showValue && (
-          <span className='text-(--ash-gray)'>
-            {Math.round(safeValue)}/{max}
-          </span>
-        )}
-      </div>
+      {!isMini && (label || showValue) && (
+        <div className='flex justify-between text-xs mb-1 font-mono'>
+          {label && <span className='text-(--ash-gray)'>{label}</span>}
+          {showValue && (
+            <span className='text-(--ash-gray)'>
+              {Math.round(safeValue)}/{max}
+            </span>
+          )}
+        </div>
+      )}
       <div
-        className={`w-full bg-(--void-black) border border-(--ash-gray) ${size === 'sm' ? 'h-3' : 'h-5'}`}
+        className={`w-full bg-(--void-black) border ${isMini ? 'border-(--ash-gray)/50 overflow-hidden' : 'border-(--ash-gray)'} ${
+          size === 'sm' ? 'h-3' : size === 'md' ? 'h-5' : 'h-1.5'
+        }`}
       >
         <div
-          className={`h-full ${color} transition-all duration-500`}
+          className={`h-full ${color} transition-all duration-500 ${warn ? 'animate-fuel-warning' : ''}`}
           style={{ width: `${pct}%` }}
         />
       </div>
     </div>
   )
-}
+})
 
 ProgressBar.propTypes = {
-  label: PropTypes.string.isRequired,
+  label: PropTypes.string,
   value: PropTypes.number,
   max: PropTypes.number.isRequired,
   color: PropTypes.string.isRequired,
-  size: PropTypes.oneOf(['sm', 'md']),
+  size: PropTypes.oneOf(['sm', 'md', 'mini']),
   showValue: PropTypes.bool,
+  warn: PropTypes.bool,
   className: PropTypes.string
 }
