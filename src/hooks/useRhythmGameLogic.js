@@ -75,7 +75,8 @@ export const useRhythmGameLogic = () => {
       overload: state.overload,
       isToxicMode: state.isToxicMode,
       isGameOver: state.isGameOver,
-      isAudioReady: state.isAudioReady
+      isAudioReady: state.isAudioReady,
+      accuracy: state.accuracy
     }),
     [
       state.score,
@@ -84,7 +85,8 @@ export const useRhythmGameLogic = () => {
       state.overload,
       state.isToxicMode,
       state.isGameOver,
-      state.isAudioReady
+      state.isAudioReady,
+      state.accuracy
     ]
   )
 

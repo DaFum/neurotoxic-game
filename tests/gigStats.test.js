@@ -35,6 +35,7 @@ test('buildGigStatsSnapshot includes required economy fields', () => {
     perfectHits: 3,
     maxCombo: 7,
     peakHype: 90,
-    toxicTimeTotal: 1500
+    toxicTimeTotal: 1500,
+    accuracy: 75 // 3 perfect / (3 + 1) * 100
   })
 })

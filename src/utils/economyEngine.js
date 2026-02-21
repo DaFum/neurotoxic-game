@@ -1,5 +1,17 @@
 import { logger } from './logger.js'
 
+/**
+ * Per-modifier costs used both in the PreGig UI preview and the PostGig expense calculation.
+ * Keep this as the single source of truth so both screens always agree.
+ */
+export const MODIFIER_COSTS = {
+  catering: 20,
+  promo: 30,
+  merch: 30,
+  soundcheck: 50,
+  guestlist: 60
+}
+
 export const EXPENSE_CONSTANTS = {
   DAILY: {
     BASE_COST: 25
@@ -113,8 +125,7 @@ const calculateMerchIncome = (
     })
   }
 
-  const hasMerch = modifiers.merch || modifiers.merchTable
-  if (hasMerch) buyRate += 0.1 // Boosted merch table effect to reward investment
+  if (modifiers.merch) buyRate += 0.1 // Boosted merch table effect to reward investment
 
   // Penalty: Misses drive people away (scaled penalty)
   if (gigStats && gigStats.misses > 0) {
@@ -248,54 +259,48 @@ const calculateGigExpenses = (gigData, modifiers, playerState = null) => {
 
   // Modifiers (Budget items)
   if (modifiers.catering) {
-    const cateringCost = 20
     expenses.breakdown.push({
       label: 'Catering / Energy',
-      value: cateringCost,
-      detail: 'Stamina Boost'
+      value: MODIFIER_COSTS.catering,
+      detail: 'Counters Tired Band Penalty'
     })
-    expenses.total += cateringCost
+    expenses.total += MODIFIER_COSTS.catering
   }
 
   if (modifiers.promo) {
-    const promoCost = 30
     expenses.breakdown.push({
       label: 'Social Ads',
-      value: promoCost,
+      value: MODIFIER_COSTS.promo,
       detail: 'Promo Campaign'
     })
-    expenses.total += promoCost
+    expenses.total += MODIFIER_COSTS.promo
   }
 
-  const hasMerch = modifiers.merch || modifiers.merchTable
-  if (hasMerch) {
-    const merchTableCost = 30
+  if (modifiers.merch) {
     expenses.breakdown.push({
       label: 'Merch Stand',
-      value: merchTableCost,
+      value: MODIFIER_COSTS.merch,
       detail: 'Better Display'
     })
-    expenses.total += merchTableCost
+    expenses.total += MODIFIER_COSTS.merch
   }
 
   if (modifiers.soundcheck) {
-    const soundcheckCost = 50
     expenses.breakdown.push({
       label: 'Soundcheck',
-      value: soundcheckCost,
+      value: MODIFIER_COSTS.soundcheck,
       detail: 'Prep Time'
     })
-    expenses.total += soundcheckCost
+    expenses.total += MODIFIER_COSTS.soundcheck
   }
 
   if (modifiers.guestlist) {
-    const guestlistCost = 60
     expenses.breakdown.push({
       label: 'Guest List',
-      value: guestlistCost,
+      value: MODIFIER_COSTS.guestlist,
       detail: 'VIP Treatment'
     })
-    expenses.total += guestlistCost
+    expenses.total += MODIFIER_COSTS.guestlist
   }
 
   return expenses

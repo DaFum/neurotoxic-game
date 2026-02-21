@@ -100,7 +100,14 @@ export const useRhythmGameAudio = ({
       const layer = currentNode.layer || 0
       const speedMult = 1.0 + layer * 0.05
 
-      const mergedModifiers = activeModifiers
+      // Merge band-state modifiers (harmony/member effects) with physics multipliers
+      // so the scoring hook can pick up trait-based bonuses (e.g. Lars blast_machine).
+      const mergedModifiers = {
+        ...activeModifiers,
+        drumMultiplier: physics.multipliers.drums,
+        guitarScoreMult:
+          physics.multipliers.guitar * (activeModifiers.guitarScoreMult ?? 1.0)
+      }
       gameStateRef.current.modifiers = mergedModifiers
       gameStateRef.current.speed = 500 * speedMult * physics.speedModifier
 
@@ -404,7 +411,6 @@ export const useRhythmGameAudio = ({
   }, [initializeGigState])
 
   return {
-    initializeGigState,
     retryAudioInitialization: initializeGigState
   }
 }

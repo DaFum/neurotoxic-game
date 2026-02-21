@@ -15,6 +15,7 @@ export const useRhythmGameState = () => {
   const [isToxicMode, setIsToxicMode] = useState(false)
   const [isGameOver, setIsGameOver] = useState(false)
   const [isAudioReady, setIsAudioReady] = useState(null)
+  const [accuracy, setAccuracy] = useState(100)
 
   // High-Frequency Game State (Ref)
   const gameStateRef = useRef({
@@ -81,7 +82,8 @@ export const useRhythmGameState = () => {
       overload,
       isToxicMode,
       isGameOver,
-      isAudioReady
+      isAudioReady,
+      accuracy
     },
     setters: {
       setScore,
@@ -90,7 +92,8 @@ export const useRhythmGameState = () => {
       setOverload,
       setIsToxicMode,
       setIsGameOver,
-      setIsAudioReady
+      setIsAudioReady,
+      setAccuracy
     }
   }
 }

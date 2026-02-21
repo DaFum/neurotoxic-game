@@ -315,7 +315,12 @@ export const gameReducer = (state, action) => {
 
     case ActionTypes.START_GIG:
       logger.info('GameState', 'Starting Gig Sequence', action.payload?.name)
-      return { ...state, currentGig: action.payload, currentScene: 'PREGIG' }
+      return {
+        ...state,
+        currentGig: action.payload,
+        currentScene: 'PREGIG',
+        gigModifiers: { ...DEFAULT_GIG_MODIFIERS }
+      }
 
     case ActionTypes.SET_SETLIST:
       return { ...state, setlist: action.payload }

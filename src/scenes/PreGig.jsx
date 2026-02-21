@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { SONGS_DB } from '../data/songs'
 import { getGigModifiers } from '../utils/simulationUtils'
+import { MODIFIER_COSTS } from '../utils/economyEngine'
 import { audioManager } from '../utils/AudioManager'
 import { getSongId } from '../utils/audio/songUtils'
 import { handleError } from '../utils/errorHandler'
@@ -11,34 +12,29 @@ const GIG_MODIFIER_OPTIONS = [
   {
     key: 'soundcheck',
     label: 'Soundcheck',
-    cost: 50,
+    cost: MODIFIER_COSTS.soundcheck,
     desc: 'Notes Easier'
   },
   {
     key: 'promo',
     label: 'Social Promo',
-    cost: 30,
+    cost: MODIFIER_COSTS.promo,
     desc: '+Crowd Fill'
   },
-  { key: 'merch', label: 'Merch Table', cost: 30, desc: '+Sales' },
+  { key: 'merch', label: 'Merch Table', cost: MODIFIER_COSTS.merch, desc: '+Sales' },
   {
     key: 'catering',
     label: 'Catering / Energy',
-    cost: 20,
-    desc: '+Stamina'
+    cost: MODIFIER_COSTS.catering,
+    desc: 'Counters Tired Band Penalty'
   },
   {
     key: 'guestlist',
     label: 'Guest List',
-    cost: 60,
+    cost: MODIFIER_COSTS.guestlist,
     desc: '+VIP Score'
   }
 ]
-
-const MODIFIER_COSTS = GIG_MODIFIER_OPTIONS.reduce((acc, item) => {
-  acc[item.key] = item.cost
-  return acc
-}, {})
 
 /**
  * Scene for preparing for a gig: managing budget, setlist, and modifiers.
