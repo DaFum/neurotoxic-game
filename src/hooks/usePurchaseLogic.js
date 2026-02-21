@@ -186,16 +186,9 @@ export const usePurchaseLogic = ({
       let nextPlayerPatch = { ...playerPatch }
       let nextBandPatch = null
 
-      // TODO: remove legacy `effect.effect` fallback once all HQ/upgrade sources use `effects[].key`.
-      if (
-        effect.key === 'harmony_regen_travel' ||
-        effect.effect === 'harmony_regen_travel'
-      ) {
+      if (effect.key === 'harmony_regen_travel') {
         nextBandPatch = { harmonyRegenTravel: true }
-      } else if (
-        effect.key === 'passive_followers' ||
-        effect.effect === 'passive_followers'
-      ) {
+      } else if (effect.key === 'passive_followers') {
         const val = Number(effect.value) || 0
         nextPlayerPatch.passiveFollowers =
           (player.passiveFollowers || 0) + Math.max(0, val)
