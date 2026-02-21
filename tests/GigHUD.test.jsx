@@ -1,6 +1,5 @@
 import { test, mock } from 'node:test'
 import assert from 'node:assert/strict'
-import React from 'react'
 import { render, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
 
