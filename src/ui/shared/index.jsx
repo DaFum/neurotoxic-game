@@ -58,7 +58,8 @@ export const ProgressBar = memo(function ProgressBar({
   size = 'md',
   showValue = true,
   warn = false,
-  className = ''
+  className = '',
+  ...props
 }) {
   const safeMax = max > 0 ? max : 1
   const safeValue = Number.isFinite(value) ? Math.max(0, value) : 0
@@ -66,7 +67,15 @@ export const ProgressBar = memo(function ProgressBar({
   const isMini = size === 'mini'
 
   return (
-    <div className={`w-full ${className}`}>
+    <div
+      className={`w-full ${className}`}
+      role='progressbar'
+      aria-valuenow={Math.round(safeValue)}
+      aria-valuemin={0}
+      aria-valuemax={safeMax}
+      aria-label={label}
+      {...props}
+    >
       {!isMini && (label || showValue) && (
         <div className='flex justify-between text-xs mb-1 font-mono'>
           {label && <span className='text-(--ash-gray)'>{label}</span>}

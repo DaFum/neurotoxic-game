@@ -100,6 +100,7 @@ export const HUD = () => {
                 color='bg-(--fuel-yellow)'
                 warn={fuel < 20}
                 size='mini'
+                aria-label='Fuel Level'
               />
               <span className='text-[10px] text-(--ash-gray) w-8 text-right tabular-nums'>
                 {Math.round(fuel)}
@@ -113,6 +114,7 @@ export const HUD = () => {
                 color='bg-(--condition-blue)'
                 warn={condition < 25}
                 size='mini'
+                aria-label='Van Condition'
               />
               <span className='text-[10px] text-(--ash-gray) w-8 text-right tabular-nums'>
                 {Math.round(condition)}
@@ -185,6 +187,7 @@ export const HUD = () => {
                       max={100}
                       color='bg-(--mood-pink)'
                       size='mini'
+                      aria-label={`${m.name} Mood`}
                     />
                   </div>
                   <span className='text-[9px] text-(--mood-pink) w-7 text-right tabular-nums'>
@@ -198,6 +201,7 @@ export const HUD = () => {
                       max={100}
                       color='bg-(--stamina-green)'
                       size='mini'
+                      aria-label={`${m.name} Stamina`}
                     />
                   </div>
                   <span className='text-[9px] text-(--stamina-green) w-7 text-right tabular-nums'>
@@ -220,6 +224,7 @@ export const HUD = () => {
                       : 'bg-(--toxic-green)'
                   }
                   size='mini'
+                  aria-label='Band Harmony'
                 />
               </div>
               <span
