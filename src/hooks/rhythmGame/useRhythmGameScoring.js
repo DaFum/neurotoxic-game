@@ -1,7 +1,8 @@
 import { useCallback, useRef, useEffect } from 'react'
 import {
   updateGigPerformanceStats,
-  buildGigStatsSnapshot
+  buildGigStatsSnapshot,
+  calculateAccuracy
 } from '../../utils/gigStats'
 import { audioManager } from '../../utils/AudioManager'
 import {
@@ -35,7 +36,8 @@ export const useRhythmGameScoring = ({
     setHealth,
     setOverload,
     setIsToxicMode,
-    setIsGameOver
+    setIsGameOver,
+    setAccuracy
   } = setters
   const { addToast, changeScene, setLastGigStats } = contextActions
 
@@ -97,6 +99,7 @@ export const useRhythmGameScoring = ({
           { combo: gameStateRef.current.combo, overload: next }
         )
         gameStateRef.current.stats = updatedStats
+        setAccuracy(calculateAccuracy(updatedStats.perfectHits, updatedStats.misses))
         return next
       })
 
@@ -148,6 +151,7 @@ export const useRhythmGameScoring = ({
       setIsGameOver,
       setIsToxicMode,
       setOverload,
+      setAccuracy,
       crowdDecay
     ]
   )
@@ -205,10 +209,11 @@ export const useRhythmGameScoring = ({
         }
 
         let points = 100
-        // Dynamic Score Multiplier (Drum Trigger: +20% score)
-        // e.g. drumMultiplier 1.2 (from 1.0 + 0.2) -> 100 * 1.2 = 120
+        // Dynamic Score Multiplier (Drum Trigger: physics.multipliers.drums, e.g. 1.5x for blast_machine trait)
+        // Prefer the value written into modifiers by audio init (physics-aware), fall back to
+        // the static performance value if audio hasn't initialized yet.
         if (laneIndex === 1) {
-          points *= drumMultiplier
+          points *= state.modifiers.drumMultiplier || drumMultiplier
         }
         if (laneIndex === 0) points *= state.modifiers.guitarScoreMult || 1.0
 
@@ -240,6 +245,10 @@ export const useRhythmGameScoring = ({
           return next
         })
         gameStateRef.current.stats.perfectHits++
+        setAccuracy(calculateAccuracy(
+          gameStateRef.current.stats.perfectHits,
+          gameStateRef.current.stats.misses
+        ))
 
         if (!toxicModeActive) {
           setOverload(o => {
@@ -273,6 +282,7 @@ export const useRhythmGameScoring = ({
       setHealth,
       setOverload,
       setScore,
+      setAccuracy,
       guitarDifficulty,
       drumMultiplier
     ]

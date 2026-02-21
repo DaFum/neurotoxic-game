@@ -18,7 +18,7 @@ Scope: Applies to all files in `src/context/`.
 3. Scene safety: load path sanitizes scene against allowed scene values.
 4. Save safety: persisted payloads must pass `validateSaveData` before state restore.
 5. Inventory safety: `applyInventoryItemDelta` is the canonical inventory mutator; numeric inventory deltas clamp at minimum `0` and boolean ownership flags are applied explicitly.
-6. Gig flow contract: `START_GIG` transitions to `PREGIG`; gig completion paths persist stats then route to `POSTGIG`.
+6. Gig flow contract: `START_GIG` transitions to `PREGIG` **and resets `gigModifiers` to `DEFAULT_GIG_MODIFIERS`** so previous-gig selections never carry forward silently; gig completion paths persist stats then route to `POSTGIG`.
 
 ## Editing Rules
 
@@ -56,4 +56,4 @@ npm run test
 npm run build
 ```
 
-_Last updated: 2026-02-19._
+_Last updated: 2026-02-21._

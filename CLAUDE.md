@@ -62,7 +62,7 @@ INTRO → MENU ↔ SETTINGS | CREDITS
 Core logic lives in stateless utility modules:
 
 - **eventEngine.js** — Event pool filtering/triggering based on conditions (day, location, harmony, money) and choice resolution.
-- **economyEngine.js** — Ticket sales, merch, expenses, gig financials.
+- **economyEngine.js** — Ticket sales, merch, expenses, gig financials. Exports `MODIFIER_COSTS` as the single source of truth for PreGig modifier costs (catering/promo/merch/soundcheck/guestlist); both the `PreGig.jsx` UI preview and `calculateGigExpenses` must import from this constant.
 - **simulationUtils.js** — Daily updates (harmony decay, mood, stamina, social growth, van degradation).
 - **mapGenerator.js** — Procedural Germany map with venue nodes and travel connections.
 - **audioEngine.js** — Facade for audio/MIDI playback, timing clock, and WebAudio synth (see `src/utils/audio/`).
@@ -75,8 +75,8 @@ Core logic lives in stateless utility modules:
 - **PixiStageController.js** — Pixi.js app lifecycle, note sprites, animation loop
 - **PixiStage.jsx** — React wrapper for the Pixi canvas
 - **stage managers under `src/components/stage/*`** — crowd/effects/lanes/notes managers + utils
-- **useRhythmGameLogic.js** — Keyboard input (arrow keys), combo tracking, hype calculation
-- **rhythm sub-hooks under `src/hooks/rhythmGame/*`** — split audio/input/loop/scoring/state orchestration
+- **useRhythmGameLogic.js** — Keyboard input (arrow keys), combo tracking, hype calculation; its `stats` object includes `accuracy` (0–100, live-computed from `perfectHits / (perfectHits + misses)`)
+- **rhythm sub-hooks under `src/hooks/rhythmGame/*`** — split audio/input/loop/scoring/state orchestration; `useRhythmGameAudio` merges `calculateGigPhysics` multipliers into `gameStateRef.current.modifiers` so `useRhythmGameScoring` can apply band-trait bonuses without re-deriving them
 
 ### Custom Hooks — `src/hooks/`
 
@@ -154,7 +154,8 @@ useEffect(() => {
 Production requires HTTPS (WebAudio API mixed-content policy). Ambient playback is started by main-menu tour actions via `AudioManager.startAmbient()`, preferring OGG playback with MIDI fallback; gig playback uses configured excerpts and bounded playback windows. Audio logic is implemented in `src/utils/audio/`.
 
 *   **Tone.js Only**: The project uses Tone.js wrappers for audio playback and synthesis. Do NOT introduce Howler.js.
-*   **Multi-Song Gigs**: Sequential playback relies on `audioPlaybackEnded` state. The game loop must wait for this flag (not just `totalDuration`) before finalizing a gig to prevent race conditions during song transitions.
+*   **Multi-Song Gigs**: Sequential playback is driven by `setlistCompleted` (set when `playSongAtIndex` exhausts the setlist) together with `isNearTrackEnd` (gig clock ≥ `totalDuration − 300 ms`). Do **not** re-introduce `audioPlaybackEnded` — that flag is legacy and was replaced by this dual-gate mechanism. When the last song's `onEnded` fires, `totalDuration` is snapped to the current frozen gig-clock value so the loop finalises on the next frame.
+*   **Note-driven audio end**: For songs with JSON notes, OGG/MIDI playback is capped to `maxNoteTime + NOTE_TAIL_MS` so music stops when bars finish falling, not at the end of the audio excerpt. For procedurally-generated songs (no JSON notes) the full excerpt duration is used.
 
 ## Sub-Agent Documentation
 
@@ -180,4 +181,4 @@ Additional docs: `docs/ARCHITECTURE.md` (system diagrams), `docs/STATE_TRANSITIO
 
 Commits use Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`).
 
-_Documentation sync: dependency/tooling baseline reviewed on 2026-02-19._
+_Documentation sync: dependency/tooling baseline reviewed on 2026-02-19. Gig-function audit applied 2026-02-21._

@@ -2,13 +2,13 @@ import * as PIXI from 'pixi.js'
 import { buildRhythmLayout, getPixiColorFromToken } from './utils.js'
 
 const LANE_GAP = 20
-export const LANE_BASE_FILL = getPixiColorFromToken('--void-black')
+const LANE_BASE_FILL = getPixiColorFromToken('--void-black')
 const LANE_BASE_ALPHA = 0.7
-export const LANE_BORDER_COLOR = getPixiColorFromToken('--toxic-green')
+const LANE_BORDER_COLOR = getPixiColorFromToken('--toxic-green')
 const LANE_BORDER_ALPHA = 0.35
-export const HIT_BAR_INACTIVE_ALPHA = 0.45
-export const HIT_BAR_ACTIVE_ALPHA = 0.95
-export const HIT_BAR_BORDER_COLOR = getPixiColorFromToken('--star-white')
+const HIT_BAR_INACTIVE_ALPHA = 0.45
+const HIT_BAR_ACTIVE_ALPHA = 0.95
+const HIT_BAR_BORDER_COLOR = getPixiColorFromToken('--star-white')
 const LANE_GUIDE_ALPHA = 0.16
 
 export class LaneManager {

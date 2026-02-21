@@ -23,6 +23,10 @@ Current top-level hooks:
 4. Route persistent/global state updates through context actions.
 5. Prevent duplicate scene transitions from concurrent completion paths.
 
+## Key Return Contracts
+
+- **`useRhythmGameLogic.js`** `stats` memo includes `accuracy` (0–100) alongside `score`, `combo`, `health`, `overload`, `isToxicMode`, `isGameOver`, and `isAudioReady`. `GigHUD` and any consumer that renders the "LOW ACC" warning depend on this field being present and numeric.
+
 ## Guardrails
 
 - Respect global state safety (`money >= 0`, `harmony >= 1` after reducer clamping).
@@ -46,4 +50,4 @@ npm run test
 npm run build
 ```
 
-_Last updated: 2026-02-23._
+_Last updated: 2026-02-21._

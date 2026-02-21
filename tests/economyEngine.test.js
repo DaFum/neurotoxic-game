@@ -17,7 +17,7 @@ const buildGigData = (overrides = {}) => ({
 })
 
 const buildModifiers = (overrides = {}) => ({
-  merchTable: false,
+  merch: false,
   promo: false,
   catering: false,
   ...overrides
@@ -171,7 +171,7 @@ test('calculateGigFinancials scales merch sales with performance', () => {
     gigData: gigData,
     performanceScore: 40,
     crowdStats: { hype: 40 },
-    modifiers: buildModifiers({ merchTable: true }),
+    modifiers: buildModifiers({ merch: true }),
     bandInventory: buildInventory(),
     playerStateOrFame: 100,
     gigStats: buildGigStats()
@@ -181,7 +181,7 @@ test('calculateGigFinancials scales merch sales with performance', () => {
     gigData: gigData,
     performanceScore: 95,
     crowdStats: { hype: 95 },
-    modifiers: buildModifiers({ merchTable: true }),
+    modifiers: buildModifiers({ merch: true }),
     bandInventory: buildInventory(),
     playerStateOrFame: 100,
     gigStats: buildGigStats()
@@ -207,7 +207,7 @@ test('calculateGigFinancials applies S-rank merch bonus', () => {
     gigData: gigData,
     performanceScore: 95,
     crowdStats: { hype: 95 },
-    modifiers: buildModifiers({ merchTable: true }),
+    modifiers: buildModifiers({ merch: true }),
     bandInventory: buildInventory(),
     playerStateOrFame: 100,
     gigStats: buildGigStats()
@@ -224,7 +224,7 @@ test('calculateGigFinancials penalizes merch sales for misses', () => {
     gigData: gigData,
     performanceScore: 80,
     crowdStats: { hype: 80 },
-    modifiers: buildModifiers({ merchTable: true }),
+    modifiers: buildModifiers({ merch: true }),
     bandInventory: buildInventory(),
     playerStateOrFame: 100,
     gigStats: buildGigStats({ misses: 0 })
@@ -234,7 +234,7 @@ test('calculateGigFinancials penalizes merch sales for misses', () => {
     gigData: gigData,
     performanceScore: 80,
     crowdStats: { hype: 80 },
-    modifiers: buildModifiers({ merchTable: true }),
+    modifiers: buildModifiers({ merch: true }),
     bandInventory: buildInventory(),
     playerStateOrFame: 100,
     gigStats: buildGigStats({ misses: 20 })
@@ -267,7 +267,7 @@ test('calculateGigFinancials handles sold out merch gracefully', () => {
     gigData: gigData,
     performanceScore: 90,
     crowdStats: { hype: 90 },
-    modifiers: buildModifiers({ merchTable: true }),
+    modifiers: buildModifiers({ merch: true }),
     bandInventory: emptyInventory,
     playerStateOrFame: 200,
     gigStats: buildGigStats()
@@ -296,7 +296,7 @@ test('calculateGigFinancials uses all inventory types for sales limit', () => {
     gigData: gigData,
     performanceScore: 100,
     crowdStats: { hype: 100 },
-    modifiers: buildModifiers({ merchTable: true }),
+    modifiers: buildModifiers({ merch: true }),
     bandInventory: inv,
     playerStateOrFame: 200,
     gigStats: buildGigStats()
@@ -461,7 +461,7 @@ test('calculateGigFinancials merch table modifier increases sales', () => {
     gigData: gigData,
     performanceScore: 80,
     crowdStats: { hype: 80 },
-    modifiers: buildModifiers({ merchTable: true }),
+    modifiers: buildModifiers({ merch: true }),
     bandInventory: buildInventory(),
     playerStateOrFame: 100,
     gigStats: buildGigStats()

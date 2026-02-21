@@ -215,7 +215,7 @@ GigHUD.propTypes = {
     health: PropTypes.number.isRequired,
     overload: PropTypes.number.isRequired,
     isGameOver: PropTypes.bool.isRequired,
-    accuracy: PropTypes.number,
+    accuracy: PropTypes.number.isRequired,
     isToxicMode: PropTypes.bool
   }).isRequired,
   onLaneInput: PropTypes.func,
