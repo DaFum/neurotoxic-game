@@ -173,4 +173,39 @@ describe('Logger', () => {
     assert.strictEqual(parsed.length, 1)
     assert.strictEqual(parsed[0].message, 'Message')
   })
+
+  test('debug does not call console.debug in production', () => {
+    globalThis.__IMPORT_META_ENV__ = { PROD: true }
+    const logger = new Logger()
+    logger.debug('Test', 'Debug Message')
+
+    assert.strictEqual(globalThis.console.debug.mock.calls.length, 0)
+    assert.strictEqual(logger.logs.length, 1)
+    assert.strictEqual(logger.logs[0].level, 'DEBUG')
+
+    delete globalThis.__IMPORT_META_ENV__
+  })
+
+  test('info does not call console.info in production', () => {
+    globalThis.__IMPORT_META_ENV__ = { PROD: true }
+    const logger = new Logger()
+    logger.info('Test', 'Info Message')
+
+    assert.strictEqual(globalThis.console.info.mock.calls.length, 0)
+    assert.strictEqual(logger.logs.length, 1)
+    assert.strictEqual(logger.logs[0].level, 'INFO')
+
+    delete globalThis.__IMPORT_META_ENV__
+  })
+
+  test('warn still calls console.warn in production', () => {
+    globalThis.__IMPORT_META_ENV__ = { PROD: true }
+    const logger = new Logger()
+    logger.warn('Test', 'Warn Message')
+
+    assert.strictEqual(globalThis.console.warn.mock.calls.length, 1)
+    assert.strictEqual(logger.logs.length, 1)
+
+    delete globalThis.__IMPORT_META_ENV__
+  })
 })

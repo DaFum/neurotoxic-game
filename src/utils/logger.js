@@ -105,7 +105,9 @@ export class Logger {
    */
   debug(channel, message, data) {
     if (this.minLevel > LOG_LEVELS.DEBUG) return
-    console.debug(`[${channel}] ${message}`, data || '')
+    if (!import.meta.env?.PROD) {
+      console.debug(`[${channel}] ${message}`, data || '')
+    }
     this._push(this._format('DEBUG', channel, message, data))
   }
 
@@ -117,7 +119,9 @@ export class Logger {
    */
   info(channel, message, data) {
     if (this.minLevel > LOG_LEVELS.INFO) return
-    console.info(`[${channel}] ${message}`, data || '')
+    if (!import.meta.env?.PROD) {
+      console.info(`[${channel}] ${message}`, data || '')
+    }
     this._push(this._format('INFO', channel, message, data))
   }
 
