@@ -23,6 +23,34 @@ import { SONGS_DB } from '../../data/songs.js'
 
 const MidiParser = ToneJsMidi?.Midi ?? ToneJsMidi?.default?.Midi ?? null
 
+// ⚡ BOLT OPTIMIZATION: Static mapping for O(1) drum lookup
+const DRUM_MAPPING = {
+  // Kick
+  35: { part: 'kick', note: 'C1', duration: '8n' },
+  36: { part: 'kick', note: 'C1', duration: '8n' },
+  // Snare (LayeredSnare takes duration, time, velocity)
+  37: { part: 'snare', duration: '32n', velScale: 0.4 },
+  38: { part: 'snare', duration: '16n' },
+  40: { part: 'snare', duration: '16n' },
+  // HiHat (MetalSynth takes frequency, duration, time, velocity)
+  42: { part: 'hihat', freq: 8000, duration: '32n', velScale: 0.7 },
+  44: { part: 'hihat', freq: 8000, duration: '32n', velScale: 0.7 },
+  46: { part: 'hihat', freq: 6000, duration: '16n', velScale: 0.8 },
+  // Crash
+  49: { part: 'crash', freq: 4000, duration: '4n', velScale: 0.7 },
+  57: { part: 'crash', freq: 4000, duration: '4n', velScale: 0.7 },
+  // Ride (mapped to HiHat)
+  51: { part: 'hihat', freq: 5000, duration: '8n', velScale: 0.5 },
+  59: { part: 'hihat', freq: 5000, duration: '8n', velScale: 0.5 },
+  // Toms (mapped to Kick)
+  41: { part: 'kick', note: 'G1', duration: '8n', velScale: 0.8 },
+  43: { part: 'kick', note: 'G1', duration: '8n', velScale: 0.8 },
+  45: { part: 'kick', note: 'D2', duration: '8n', velScale: 0.7 },
+  47: { part: 'kick', note: 'D2', duration: '8n', velScale: 0.7 },
+  48: { part: 'kick', note: 'A2', duration: '8n', velScale: 0.6 },
+  50: { part: 'kick', note: 'A2', duration: '8n', velScale: 0.6 }
+}
+
 /**
  * Triggers a specific drum sound based on MIDI pitch.
  * @param {number} midiPitch - The MIDI note number.
@@ -32,49 +60,21 @@ const MidiParser = ToneJsMidi?.Midi ?? ToneJsMidi?.default?.Midi ?? null
 function playDrumNote(midiPitch, time, velocity, kit = audioState.drumKit) {
   if (!kit) return
   try {
-    // GM Percussion Mapping
-    switch (midiPitch) {
-      case 35: // Acoustic Kick
-      case 36: // Electric Kick
-        kit.kick.triggerAttackRelease('C1', '8n', time, velocity)
-        break
-      case 37: // Side Stick
-        kit.snare.triggerAttackRelease('32n', time, velocity * 0.4)
-        break
-      case 38: // Acoustic Snare
-      case 40: // Electric Snare
-        kit.snare.triggerAttackRelease('16n', time, velocity)
-        break
-      case 42: // Closed HiHat
-      case 44: // Pedal HiHat
-        kit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.7)
-        break
-      case 46: // Open HiHat
-        kit.hihat.triggerAttackRelease(6000, '16n', time, velocity * 0.8)
-        break
-      case 49: // Crash 1
-      case 57: // Crash 2
-        kit.crash.triggerAttackRelease(4000, '4n', time, velocity * 0.7)
-        break
-      case 51: // Ride Cymbal
-      case 59: // Ride Bell
-        kit.hihat.triggerAttackRelease(5000, '8n', time, velocity * 0.5)
-        break
-      case 41: // Low Floor Tom
-      case 43: // High Floor Tom
-        kit.kick.triggerAttackRelease('G1', '8n', time, velocity * 0.8)
-        break
-      case 45: // Low Tom
-      case 47: // Low-Mid Tom
-        kit.kick.triggerAttackRelease('D2', '8n', time, velocity * 0.7)
-        break
-      case 48: // Hi-Mid Tom
-      case 50: // High Tom
-        kit.kick.triggerAttackRelease('A2', '8n', time, velocity * 0.6)
-        break
-      default:
-        // Default to closed HiHat for unknown percussion
-        kit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.4)
+    const map = DRUM_MAPPING[midiPitch]
+    if (map) {
+      const vel = velocity * (map.velScale ?? 1)
+      if (map.part === 'kick') {
+        kit.kick.triggerAttackRelease(map.note, map.duration, time, vel)
+      } else if (map.part === 'snare') {
+        kit.snare.triggerAttackRelease(map.duration, time, vel)
+      } else if (map.part === 'hihat') {
+        kit.hihat.triggerAttackRelease(map.freq, map.duration, time, vel)
+      } else if (map.part === 'crash') {
+        kit.crash.triggerAttackRelease(map.freq, map.duration, time, vel)
+      }
+    } else {
+      // Default to closed HiHat for unknown percussion
+      kit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.4)
     }
   } catch (e) {
     logger.warn('AudioEngine', `Drum trigger failed for pitch ${midiPitch}`, e)
@@ -98,8 +98,9 @@ export function playNoteAtTime(midiPitch, lane, whenSeconds, velocity = 127) {
     playDrumNote(midiPitch, now, vel)
   } else if (lane === 'bass') {
     if (audioState.bass) {
+      // ⚡ BOLT OPTIMIZATION: Use pre-computed note string
       audioState.bass.triggerAttackRelease(
-        Tone.Frequency(midiPitch, 'midi'),
+        getNoteName(midiPitch),
         '8n',
         now,
         vel
@@ -107,8 +108,9 @@ export function playNoteAtTime(midiPitch, lane, whenSeconds, velocity = 127) {
     }
   } else if (audioState.guitar) {
     // Guitar (or default)
+    // ⚡ BOLT OPTIMIZATION: Use pre-computed note string
     audioState.guitar.triggerAttackRelease(
-      Tone.Frequency(midiPitch, 'midi'),
+      getNoteName(midiPitch),
       '16n',
       now,
       vel
