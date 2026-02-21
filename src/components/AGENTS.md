@@ -19,7 +19,7 @@ Current component groups:
 
 1. `PixiStage` owns controller lifecycle and must always destroy/dispose resources on unmount.
 2. `PixiStageController` orchestrates stage managers (`CrowdManager`, `LaneManager`, `EffectManager`, `NoteManager`) and is expected to be resilient to init/dispose failures.
-3. `GigHUD` is a presentation/overlay component driven by `stats` and `gameStateRef`; toxic-mode visual state depends on runtime stat flags.
+3. `GigHUD` is a presentation/overlay component driven by `stats` and `gameStateRef`; toxic-mode visual state depends on runtime stat flags. **`stats.accuracy` is a required prop** (`PropTypes.number.isRequired`); the "LOW ACC" warning fires when `accuracy < 70`.
 4. `ChatterOverlay` consumes a read-only game-state slice and must avoid mutating global game state.
 5. `ToggleRadio` controls ambient playback through shared audio control state and must remain lightweight (memoized).
 
@@ -56,4 +56,4 @@ npm run test
 npm run build
 ```
 
-_Last updated: 2026-02-23._
+_Last updated: 2026-02-21._

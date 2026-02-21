@@ -16,6 +16,13 @@ Representative domains:
 - Audio orchestration wrappers: `audioEngine.js`, `AudioManager.js` (facades for `src/utils/audio/`)
 - Infra: `logger.js`, `errorHandler.js`, `lazySceneLoader.js`, etc.
 
+## Key Gig-Domain Contracts
+
+- **`economyEngine.js`** exports `MODIFIER_COSTS` as the single source of truth for PreGig modifier costs (catering/promo/merch/soundcheck/guestlist). Both the PreGig UI preview and the PostGig expense calculation must import from this constant — never duplicate the cost values inline.
+- **`gigStats.js`** exports `calculateAccuracy(perfectHits, misses)` and `buildGigStatsSnapshot`; the snapshot now includes `accuracy` (0–100). Tests in `tests/gigStats.test.js` verify this contract.
+- **`simulationUtils.js`** `calculateGigPhysics` returns `multipliers` (guitar/drums/bass) based on band traits. These values are merged into `gameStateRef.current.modifiers` by the audio hook so the scoring hook can apply them — do not read them directly from `calculateGigPhysics` output in scoring logic.
+- **`socialEngine.js`** `checkViralEvent` checks `stats.accuracy`; this field is now populated via `buildGigStatsSnapshot`.
+
 ## Code-Aligned Rules
 
 1. Prefer pure, deterministic helpers for balance-critical logic.

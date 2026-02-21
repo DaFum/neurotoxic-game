@@ -14,6 +14,13 @@ These files run performance-critical Pixi stage systems:
 
 They are called from `PixiStageController` and execute inside the gig render loop.
 
+## Internal-Only Symbols (do not re-export)
+
+The following symbols are used only within their own file and must not be exported:
+
+- **`utils.js`**: `calculateCrowdY`, `calculateLaneStartX` — internal helpers called by `buildRhythmLayout` and `CrowdManager`. External callers should use `buildRhythmLayout` / `calculateCrowdOffset`.
+- **`LaneManager.js`**: `LANE_BASE_FILL`, `LANE_BORDER_COLOR`, `HIT_BAR_INACTIVE_ALPHA`, `HIT_BAR_ACTIVE_ALPHA`, `HIT_BAR_BORDER_COLOR` — rendering constants used only inside `LaneManager`.
+
 ## Best Practices
 
 1. Keep per-frame work minimal and deterministic.

@@ -23,6 +23,8 @@ Scenes are route-level game screens selected by `currentScene` in `App.jsx`:
 3. Gig pipeline must remain coherent: `PREGIG` → `GIG` → `POSTGIG` with stats persistence.
 4. Post-gig resolution must support both continuation (`OVERWORLD`) and fail outcomes (`GAMEOVER`).
 5. Global overlays are controlled by `App.jsx`; scenes should not duplicate global overlay responsibility.
+6. **Modifier cost source of truth**: `PreGig.jsx` imports modifier costs from `MODIFIER_COSTS` in `economyEngine.js`. Never re-declare cost values inline in scene files; both the UI preview and the PostGig expense calculation must use the same constant.
+7. **`gigModifiers` reset**: the `START_GIG` reducer case resets `gigModifiers` to `DEFAULT_GIG_MODIFIERS` — modifier selections from the previous gig must not carry forward into `PreGig`.
 
 ## Editing Rules
 
@@ -46,4 +48,4 @@ npm run test
 npm run build
 ```
 
-_Last updated: 2026-02-23._
+_Last updated: 2026-02-21._

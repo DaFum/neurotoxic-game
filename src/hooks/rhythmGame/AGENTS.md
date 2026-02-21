@@ -12,6 +12,12 @@ These hooks split the gig loop into focused responsibilities:
 - `useRhythmGameScoring.js` (scoring/combo/hype transitions)
 - `useRhythmGameState.js` (mutable runtime refs + lifecycle guards)
 
+## Code-Aligned Hook Contracts
+
+- **`useRhythmGameState.js`** initialises `accuracy` React state at `100` and exposes both `accuracy` and `setAccuracy` in its return value. All other hooks that need to update accuracy must destructure `setAccuracy` from this hook.
+- **`useRhythmGameAudio.js`** returns `{ retryAudioInitialization }` only — not an additional `initializeGigState` alias. It also merges `calculateGigPhysics` result multipliers into `gameStateRef.current.modifiers` (as `drumMultiplier` and `guitarScoreMult`) so the scoring hook can read band-trait bonuses without re-computing them.
+- **`useRhythmGameScoring.js`** reads `state.modifiers.drumMultiplier` (physics-aware, set by audio hook) with fallback to the static closure value when computing drum lane points. It calls `setAccuracy(calculateAccuracy(...))` after every hit and miss to keep the live accuracy reading current.
+
 ## Best Practices
 
 1. Keep hook boundaries clear; avoid cross-domain logic leaks.
@@ -33,4 +39,4 @@ npm run test
 npm run build
 ```
 
-_Last updated: 2026-02-23._
+_Last updated: 2026-02-21._
