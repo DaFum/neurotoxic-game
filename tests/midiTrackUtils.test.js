@@ -4,7 +4,8 @@ import {
   isPercussionTrack,
   isValidMidiNote,
   buildMidiTrackEvents,
-  normalizeMidiPitch
+  normalizeMidiPitch,
+  getNoteName
 } from '../src/utils/audio/midiUtils.js'
 
 test('isPercussionTrack', async t => {
@@ -77,5 +78,28 @@ test('buildMidiTrackEvents', async t => {
 
   await t.test('returns empty array for invalid input', () => {
     assert.deepStrictEqual(buildMidiTrackEvents(null, true), [])
+  })
+})
+
+test('getNoteName', async t => {
+  await t.test('returns correct note names for valid MIDI pitches', () => {
+    assert.strictEqual(getNoteName(0), 'C-1')
+    assert.strictEqual(getNoteName(12), 'C0')
+    assert.strictEqual(getNoteName(60), 'C4')
+    assert.strictEqual(getNoteName(69), 'A4')
+    assert.strictEqual(getNoteName(127), 'G9')
+  })
+
+  await t.test('returns null for invalid MIDI pitches', () => {
+    assert.strictEqual(getNoteName(-1), null)
+    assert.strictEqual(getNoteName(128), null)
+    assert.strictEqual(getNoteName(Number.NaN), null)
+    assert.strictEqual(getNoteName(null), null)
+    assert.strictEqual(getNoteName(undefined), null)
+  })
+
+  await t.test('handles float inputs by flooring', () => {
+    assert.strictEqual(getNoteName(60.5), 'C4')
+    assert.strictEqual(getNoteName(69.9), 'A4')
   })
 })
