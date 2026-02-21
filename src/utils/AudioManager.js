@@ -242,7 +242,6 @@ class AudioSystem {
       return true
     } catch (e) {
       handleError(e, { fallbackMessage: 'Failed to resume music' })
-      this.emitChange()
       return false
     }
   }

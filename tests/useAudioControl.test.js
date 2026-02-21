@@ -34,7 +34,17 @@ describe('useAudioControl', () => {
 
     mockAudioManager.toggleMute.mock.resetCalls()
     mockAudioManager.stopMusic.mock.resetCalls()
+    mockAudioManager.stopMusic.mock.mockImplementation(() => {
+      mockAudioManager.currentSongId = null
+      mockAudioManager.emitChange()
+    })
+
     mockAudioManager.resumeMusic.mock.resetCalls()
+    mockAudioManager.resumeMusic.mock.mockImplementation(async () => {
+      mockAudioManager.currentSongId = 'ambient'
+      mockAudioManager.emitChange()
+      return true
+    })
     mockAudioManager.toggleMute.mock.mockImplementation(() => {
       mockAudioManager.muted = !mockAudioManager.muted
       mockAudioManager.emitChange()
@@ -231,20 +241,23 @@ describe('useAudioControl', () => {
 
     t.mock.timers.enable({ apis: ['setInterval'] })
     const originalSubscribe = mockAudioManager.subscribe
-    mockAudioManager.subscribe = undefined
 
-    const { result, unmount } = renderHook(() => useAudioControl())
-    assert.equal(result.current.audioState.isMuted, false)
+    try {
+      mockAudioManager.subscribe = undefined
 
-    mockAudioManager.muted = true
-    act(() => {
-      t.mock.timers.tick(1000)
-    })
+      const { result, unmount } = renderHook(() => useAudioControl())
+      assert.equal(result.current.audioState.isMuted, false)
 
-    assert.equal(result.current.audioState.isMuted, true)
+      mockAudioManager.muted = true
+      act(() => {
+        t.mock.timers.tick(1000)
+      })
 
-    unmount()
-    mockAudioManager.subscribe = originalSubscribe
+      assert.equal(result.current.audioState.isMuted, true)
+      unmount()
+    } finally {
+      mockAudioManager.subscribe = originalSubscribe
+    }
   })
 
   test('toggleMute handles exceptions', () => {
