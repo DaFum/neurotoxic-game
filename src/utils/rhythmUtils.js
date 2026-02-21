@@ -165,6 +165,12 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
 
   const tpb = Math.max(1, song.tpb || 480) // Prevent div by zero
   const bpm = Math.max(1, song.bpm || 120) // Prevent div by zero
+  const excerptStartMs = Number.isFinite(song.excerptStartMs)
+    ? Math.max(0, song.excerptStartMs)
+    : 0
+  const excerptDurationMs = Number.isFinite(song.excerptDurationMs)
+    ? Math.max(0, song.excerptDurationMs)
+    : null
 
   const laneMap = {
     guitar: 0,
@@ -212,8 +218,19 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
         ? calculatedTimeMs
         : fallbackTimeMs
 
+      const excerptRelativeTimeMs = timeMs - excerptStartMs
+      if (excerptRelativeTimeMs < 0) {
+        return null
+      }
+      if (
+        Number.isFinite(excerptDurationMs) &&
+        excerptRelativeTimeMs > excerptDurationMs
+      ) {
+        return null
+      }
+
       return {
-        time: leadIn + timeMs,
+        time: leadIn + excerptRelativeTimeMs,
         laneIndex, // Shorthand property notation
         hit: false,
         visible: true,
