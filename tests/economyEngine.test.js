@@ -3,7 +3,6 @@ import assert from 'node:assert/strict'
 import {
   calculateGigFinancials,
   calculateTravelExpenses,
-  calculateDistance,
   calculateFuelCost,
   EXPENSE_CONSTANTS
 } from '../src/utils/economyEngine.js'
@@ -560,14 +559,14 @@ test('calculateTravelExpenses returns correct cost structure', () => {
   assert.equal(result.totalCost, 28, 'Total cost should be 28')
 })
 
-test('calculateDistance returns correct distance', () => {
+test('calculateTravelExpenses computes distance consistently across node coordinates', () => {
   const nodeA = { x: 50, y: 50 }
   const nodeB = { x: 50, y: 50 }
-  const dist = calculateDistance(nodeA, nodeB)
+  const dist = calculateTravelExpenses(nodeA, nodeB).dist
   assert.equal(dist, 20, 'Distance should be 20 for same point')
 
   const nodeC = { x: 53, y: 54 } // dx=3, dy=4. sqrt(25)=5. dist = 5*5 + 20 = 45.
-  const dist2 = calculateDistance(nodeA, nodeC)
+  const dist2 = calculateTravelExpenses(nodeA, nodeC).dist
   assert.equal(dist2, 45, 'Distance should be 45 for 3-4-5 triangle')
 })
 

@@ -6,6 +6,7 @@
 
 import { logger } from './logger.js'
 
+// Public API: shared error taxonomy and base classes for scene/util integration and future extension.
 /**
  * Error severity levels
  * @readonly

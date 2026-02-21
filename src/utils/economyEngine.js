@@ -157,7 +157,7 @@ const calculateMerchIncome = (
  * @param {object} [nodeB=null] - The source node.
  * @returns {number} The calculated distance.
  */
-export const calculateDistance = (nodeA, nodeB = null) => {
+const calculateDistance = (nodeA, nodeB = null) => {
   const x1 = typeof nodeA?.x === 'number' ? nodeA.x : (nodeA?.venue?.x ?? 50)
   const y1 = typeof nodeA?.y === 'number' ? nodeA.y : (nodeA?.venue?.y ?? 50)
 

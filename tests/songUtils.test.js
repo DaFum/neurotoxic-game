@@ -1,36 +1,57 @@
-import test from 'node:test'
 import assert from 'node:assert/strict'
-import { getSongId } from '../src/utils/audio/songUtils.js'
+import { test } from 'node:test'
+import { resolveSongPlaybackWindow } from '../src/utils/audio/songUtils.js'
 
-test('getSongId returns the string when input is a string', () => {
-  const input = 'test-song-id'
-  const result = getSongId(input)
-  assert.equal(result, 'test-song-id')
+test('resolveSongPlaybackWindow prefers excerpt end-start duration when available', () => {
+  const window = resolveSongPlaybackWindow({
+    excerptStartMs: 94000,
+    excerptEndMs: 128750,
+    excerptDurationMs: 30000,
+    durationMs: 30000
+  })
+
+  assert.deepStrictEqual(window, {
+    excerptStartMs: 94000,
+    excerptEndMs: 128750,
+    excerptDurationMs: 34750
+  })
 })
 
-test('getSongId returns the id property when input is an object with id', () => {
-  const input = { id: 'object-song-id', name: 'Test Song' }
-  const result = getSongId(input)
-  assert.equal(result, 'object-song-id')
+test('resolveSongPlaybackWindow falls back to explicit duration when excerpt end is missing', () => {
+  const window = resolveSongPlaybackWindow({
+    excerptStartMs: 1200,
+    excerptDurationMs: 42000
+  })
+
+  assert.deepStrictEqual(window, {
+    excerptStartMs: 1200,
+    excerptEndMs: null,
+    excerptDurationMs: 42000
+  })
 })
 
-test('getSongId returns undefined when input is an object without id', () => {
-  const input = { name: 'Test Song' }
-  const result = getSongId(input)
-  assert.equal(result, undefined)
+test('resolveSongPlaybackWindow falls back to durationMs then default', () => {
+  assert.deepStrictEqual(
+    resolveSongPlaybackWindow({ excerptStartMs: 500, durationMs: 12345 }),
+    {
+      excerptStartMs: 500,
+      excerptEndMs: null,
+      excerptDurationMs: 12345
+    }
+  )
+
+  assert.deepStrictEqual(resolveSongPlaybackWindow({}, { defaultDurationMs: 7777 }), {
+    excerptStartMs: 0,
+    excerptEndMs: null,
+    excerptDurationMs: 7777
+  })
 })
 
-test('getSongId returns undefined when input is null', () => {
-  const result = getSongId(null)
-  assert.equal(result, undefined)
-})
 
-test('getSongId returns undefined when input is undefined', () => {
-  const result = getSongId(undefined)
-  assert.equal(result, undefined)
-})
-
-test('getSongId returns undefined for non-string non-object inputs', () => {
-  assert.equal(getSongId(123), undefined)
-  assert.equal(getSongId(true), undefined)
+test('resolveSongPlaybackWindow defaults to an unbounded duration when no metadata is provided', () => {
+  assert.deepStrictEqual(resolveSongPlaybackWindow({}), {
+    excerptStartMs: 0,
+    excerptEndMs: null,
+    excerptDurationMs: 0
+  })
 })

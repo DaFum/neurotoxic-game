@@ -19,6 +19,7 @@ import {
   getGigModifiers
 } from '../../utils/simulationUtils'
 import { generateNotesForSong, parseSongNotes } from '../../utils/rhythmUtils'
+import { resolveSongPlaybackWindow } from '../../utils/audio/songUtils'
 
 const GIG_LEAD_IN_MS = 2000
 const NOTE_LEAD_IN_MS = 100
@@ -221,11 +222,11 @@ export const useRhythmGameAudio = ({
 
         // Start Audio
         if (currentSong.sourceOgg || currentSong.sourceMid) {
-          const excerptStart = currentSong.excerptStartMs || 0
+          const { excerptStartMs, excerptDurationMs } =
+            resolveSongPlaybackWindow(currentSong, { defaultDurationMs: 0 })
           const oggFilename =
             currentSong.sourceOgg ||
             currentSong.sourceMid.replace(/\.mid$/i, '.ogg')
-          const gigDurationMs = currentSong.excerptDurationMs || 30000
           const assetFound = hasAudioAsset(oggFilename)
 
           if (!assetFound) {
@@ -241,9 +242,9 @@ export const useRhythmGameAudio = ({
           if (assetFound) {
             const success = await startGigPlayback({
               filename: oggFilename,
-              bufferOffsetMs: excerptStart,
+              bufferOffsetMs: excerptStartMs,
               delayMs: GIG_LEAD_IN_MS,
-              durationMs: gigDurationMs,
+              durationMs: excerptDurationMs > 0 ? excerptDurationMs : null,
               onEnded: onSongEnded
             })
             if (success) {
@@ -257,10 +258,11 @@ export const useRhythmGameAudio = ({
         }
 
         if (!bgAudioStarted && currentSong.sourceMid) {
-          const excerptStart = currentSong.excerptStartMs || 0
-          const offsetSeconds = Math.max(0, excerptStart / 1000)
+          const { excerptStartMs, excerptDurationMs } =
+            resolveSongPlaybackWindow(currentSong, { defaultDurationMs: 0 })
+          const offsetSeconds = Math.max(0, excerptStartMs / 1000)
           const gigPlaybackSeconds =
-            (currentSong.excerptDurationMs || 30000) / 1000
+            excerptDurationMs > 0 ? excerptDurationMs / 1000 : null
           const rawGigStartTimeSec =
             getAudioContextTimeSec() + GIG_LEAD_IN_MS / 1000
           const toneGigStartTimeSec = getToneStartTimeSec(rawGigStartTimeSec)
@@ -342,9 +344,9 @@ export const useRhythmGameAudio = ({
         const maxNoteTime = notes.reduce((max, n) => Math.max(max, n.time), 0)
         const buffer = 4000
         const noteDuration = maxNoteTime + buffer
-        const audioDuration = Number.isFinite(currentSong.excerptDurationMs)
-          ? currentSong.excerptDurationMs
-          : 0
+        const audioDuration = resolveSongPlaybackWindow(currentSong, {
+          defaultDurationMs: 0
+        }).excerptDurationMs
         gameStateRef.current.totalDuration = Math.max(noteDuration, audioDuration)
 
         // Clear transitioning flag now that state is consistent

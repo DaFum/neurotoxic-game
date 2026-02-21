@@ -1,33 +1,23 @@
-import { useState, useEffect, useCallback, memo } from 'react'
-import { audioManager } from '../utils/AudioManager'
+import { useCallback, memo } from 'react'
+import { useAudioControl } from '../hooks/useAudioControl'
 
 export const ToggleRadio = memo(() => {
-  const [isPlaying, setIsPlaying] = useState(
-    () => audioManager.currentSongId === 'ambient' && audioManager.isPlaying
+  const { audioState: isPlaying, handleAudioChange } = useAudioControl(
+    useCallback(
+      state => state.currentSongId === 'ambient' && state.isPlaying,
+      []
+    ),
+    { pollEvenWithSubscribe: true, pollMs: 1000 }
   )
-
-  // Poll periodically to catch external audio changes without a global event bus.
-  useEffect(() => {
-    const derive = () =>
-      audioManager.currentSongId === 'ambient' && audioManager.isPlaying
-    setIsPlaying(derive())
-    const id = setInterval(() => setIsPlaying(derive()), 1000)
-    return () => clearInterval(id)
-  }, [])
 
   const toggle = useCallback(() => {
     if (isPlaying) {
-      audioManager.stopMusic()
-      setIsPlaying(false)
-    } else {
-      audioManager
-        .resumeMusic()
-        .then(started => {
-          setIsPlaying(Boolean(started))
-        })
-        .catch(() => setIsPlaying(false))
+      handleAudioChange.stopMusic()
+      return
     }
-  }, [isPlaying])
+
+    void handleAudioChange.resumeMusic()
+  }, [handleAudioChange, isPlaying])
 
   return (
     <button

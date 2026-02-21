@@ -115,11 +115,7 @@ function GameContent() {
       <ToastOverlay />
 
       {/* ChatterOverlay receives read-only state slice */}
-      <ChatterOverlay
-        gameState={chatterState}
-        performance={0} // Default value since global state doesn't track high-freq gig stats
-        combo={0}
-      />
+      <ChatterOverlay gameState={chatterState} />
 
       <TutorialManager />
       {import.meta.env.DEV && <DebugLogViewer />}

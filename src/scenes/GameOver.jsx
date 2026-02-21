@@ -38,7 +38,13 @@ export const GameOver = () => {
   return (
     <div className='flex flex-col items-center justify-center h-full w-full bg-(--void-black) z-50 text-center p-8 relative overflow-hidden'>
       {/* Vignette overlay */}
-      <div className='absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_40%,var(--void-black)_100%)]' />
+      <div
+        className='absolute inset-0 pointer-events-none'
+        style={{
+          background:
+            'radial-gradient(ellipse at center, transparent 40%, var(--void-black) 100%)'
+        }}
+      />
 
       {/* Red scanlines */}
       <div className='absolute inset-0 pointer-events-none opacity-10 bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,var(--blood-red)_2px,var(--blood-red)_4px)]' />

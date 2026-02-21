@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useCallback } from 'react'
+import { memo, useState, useEffect } from 'react'
 import { useGameState } from '../context/GameState'
 import {
   Map as MapIcon,
@@ -9,7 +9,7 @@ import {
   Wrench,
   HelpCircle
 } from 'lucide-react'
-import { audioManager } from '../utils/AudioManager'
+import { useAudioControl } from '../hooks/useAudioControl'
 
 const MiniBar = memo(function MiniBar({ value, max = 100, color, warn = false }) {
   const pct = max > 0 ? Math.min(100, Math.max(0, (value / max) * 100)) : 0
@@ -36,13 +36,8 @@ const SHORTCUTS = [
  */
 export const HUD = () => {
   const { player, band } = useGameState()
-  const [muted, setMuted] = useState(false)
   const [showHelp, setShowHelp] = useState(false)
-
-  const toggleMute = useCallback(() => {
-    const isMuted = audioManager.toggleMute()
-    setMuted(isMuted)
-  }, [])
+  const { audioState, handleAudioChange } = useAudioControl()
 
   // Global keyboard shortcuts
   useEffect(() => {
@@ -64,7 +59,7 @@ export const HUD = () => {
           e.target.tagName === 'SELECT'
         )
           return
-        toggleMute()
+        handleAudioChange.toggleMute()
       }
       if (e.key === 'Escape') {
         setShowHelp(false)
@@ -73,7 +68,7 @@ export const HUD = () => {
 
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [toggleMute])
+  }, [handleAudioChange])
 
   const fuel = player.van?.fuel ?? 0
   const condition = player.van?.condition ?? 100
@@ -135,11 +130,11 @@ export const HUD = () => {
 
         <div className='flex gap-1.5'>
           <button
-            onClick={toggleMute}
-            aria-label={muted ? 'Unmute system' : 'Mute system'}
+            onClick={handleAudioChange.toggleMute}
+            aria-label={audioState.isMuted ? 'Unmute system' : 'Mute system'}
             className='pointer-events-auto bg-(--void-black)/90 border border-(--toxic-green)/60 p-2 text-(--toxic-green) w-fit hover:bg-(--toxic-green) hover:text-(--void-black) transition-colors'
           >
-            {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+            {audioState.isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
           </button>
           <button
             onClick={() => setShowHelp(prev => !prev)}

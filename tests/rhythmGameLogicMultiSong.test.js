@@ -259,6 +259,46 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     assert.strictEqual(mockAudioEngine.startGigPlayback.mock.calls.length, 1, 'Song 2 should NOT start after quit')
   })
 
+
+  test('does not force a default excerpt duration when metadata is missing', async () => {
+    const song = {
+      id: 'song-no-window',
+      name: 'Song No Window',
+      bpm: 120,
+      duration: 90,
+      sourceOgg: 'song-nowindow.ogg'
+    }
+
+    const mockState = {
+      setlist: [song],
+      band: { members: [], harmony: 100 },
+      activeEvent: null,
+      hasUpgrade: () => false,
+      setLastGigStats: mockSetLastGigStats,
+      addToast: () => {},
+      gameMap: { nodes: { node1: { layer: 0 } } },
+      player: { currentNodeId: 'node1', money: 0 },
+      changeScene: mockChangeScene,
+      gigModifiers: {}
+    }
+
+    mockUseGameState.mock.mockImplementation(() => mockState)
+    mockAudioEngine.hasAudioAsset.mock.mockImplementation(() => true)
+    mockAudioEngine.startGigPlayback.mock.mockImplementation(async () => true)
+    mockAudioManager.ensureAudioContext.mock.mockImplementation(async () => true)
+
+    renderHook(() => useRhythmGameLogic())
+
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 100))
+    })
+
+    assert.strictEqual(mockAudioEngine.startGigPlayback.mock.calls.length, 1)
+    const callArgs = mockAudioEngine.startGigPlayback.mock.calls[0].arguments[0]
+    assert.strictEqual(callArgs.bufferOffsetMs, 0)
+    assert.strictEqual(callArgs.durationMs, null)
+  })
+
   test('Game loop waits for setlistCompleted signal before finalizing (Multi-song gap protection)', async () => {
     // Setup a single song but simulate multi-song behavior where setlistCompleted is false
     const song1 = {

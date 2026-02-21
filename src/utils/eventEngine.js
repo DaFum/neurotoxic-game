@@ -287,7 +287,6 @@ export const eventEngine = {
     return delta
   },
 
-  // Exposed for testing
   selectEvent: selectEvent,
   filterEvents: (pool, trigger, state) =>
     pool

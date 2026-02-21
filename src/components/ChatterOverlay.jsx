@@ -90,10 +90,8 @@ const DEFAULT_STYLE = SCENE_STYLES.MENU
  *
  * @param {object} props
  * @param {object} props.gameState - Read-only game state slice.
- * @param {number} [props.performance=0] - Current gig performance score (0-100).
- * @param {number} [props.combo=0] - Current gig combo count.
  */
-export const ChatterOverlay = ({ gameState, performance = 0, combo = 0 }) => {
+export const ChatterOverlay = ({ gameState }) => {
   const stateRef = useRef(gameState)
   const [messages, setMessages] = useState([])
 
@@ -113,10 +111,6 @@ export const ChatterOverlay = ({ gameState, performance = 0, combo = 0 }) => {
     stateRef.current = gameState
   }, [gameState])
 
-  const propsRef = useRef({ performance, combo })
-  useEffect(() => {
-    propsRef.current = { performance, combo }
-  }, [performance, combo])
 
   // Single recursive effect loop using refs
   useEffect(() => {
@@ -133,10 +127,7 @@ export const ChatterOverlay = ({ gameState, performance = 0, combo = 0 }) => {
         if (!active) return
 
         const currentState = stateRef.current
-        const result = getRandomChatter({
-          ...currentState,
-          ...propsRef.current
-        })
+        const result = getRandomChatter(currentState)
 
         if (result) {
           const { text, speaker: fixedSpeaker } = result
@@ -276,7 +267,5 @@ export const ChatterOverlay = ({ gameState, performance = 0, combo = 0 }) => {
 }
 
 ChatterOverlay.propTypes = {
-  gameState: PropTypes.object.isRequired,
-  performance: PropTypes.number,
-  combo: PropTypes.number
+  gameState: PropTypes.object.isRequired
 }

@@ -1,6 +1,5 @@
 import { test, mock } from 'node:test'
 import assert from 'node:assert/strict'
-import React from 'react'
 import { render, act } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
 
@@ -15,7 +14,7 @@ mock.module('../src/data/chatter.js', {
   }
 })
 
-test('ChatterOverlay passes performance and combo to getRandomChatter', async (t) => {
+test('ChatterOverlay passes scene state to getRandomChatter', async (t) => {
   setupJSDOM()
   t.after(teardownJSDOM)
 
@@ -24,7 +23,7 @@ test('ChatterOverlay passes performance and combo to getRandomChatter', async (t
   if (t.mock.timers) {
       t.mock.timers.enable({ apis: ['setTimeout', 'Date'] })
   } else {
-      console.warn('t.mock.timers not available, skipping timer-dependent test steps')
+      t.skip('t.mock.timers not available, skipping timer-dependent test steps')
       return
   }
 
@@ -37,16 +36,9 @@ test('ChatterOverlay passes performance and combo to getRandomChatter', async (t
     player: { currentNodeId: 'none' },
     gameMap: { nodes: {} }
   }
-  const performance = 75
-  const combo = 42
-
   await act(async () => {
     render(
-      <ChatterOverlay
-        gameState={gameState}
-        performance={performance}
-        combo={combo}
-      />
+      <ChatterOverlay gameState={gameState} />
     )
   })
 
@@ -64,7 +56,4 @@ test('ChatterOverlay passes performance and combo to getRandomChatter', async (t
 
   assert.equal(callArgs.currentScene, 'GIG')
 
-  // These expectations are expected to fail before the fix
-  assert.equal(callArgs.performance, 75, 'State passed to getRandomChatter should include performance')
-  assert.equal(callArgs.combo, 42, 'State passed to getRandomChatter should include combo')
 })
