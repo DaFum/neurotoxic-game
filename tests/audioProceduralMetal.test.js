@@ -148,7 +148,8 @@ mock.module('../src/utils/audio/midiUtils.js', {
     isPercussionTrack: mock.fn(),
     isValidMidiNote: mock.fn(),
     buildMidiTrackEvents: mock.fn(),
-    normalizeMidiPitch: mock.fn()
+    normalizeMidiPitch: mock.fn(),
+    getNoteName: mock.fn(n => n)
   }
 })
 
