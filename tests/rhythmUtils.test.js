@@ -229,6 +229,27 @@ describe('rhythmUtils', () => {
       assert.strictEqual(notes.length, 1)
       assert.strictEqual(notes[0].time, 1100)
     })
+
+
+    test('does not impose a synthetic 30s excerpt cap when excerpt metadata is missing', () => {
+      const song = {
+        id: 'no-excerpt-metadata',
+        bpm: 120,
+        tpb: 480,
+        notes: [
+          { t: 0, lane: 'guitar' },
+          { t: 240, lane: 'guitar' },
+          { t: 480, lane: 'guitar' },
+          { t: 960, lane: 'guitar' },
+          { t: 34560, lane: 'drums' }
+        ]
+      }
+
+      const notes = parseSongNotes(song, 100)
+      assert.strictEqual(notes.length, 2)
+      assert.strictEqual(notes[0].time, 100)
+      assert.strictEqual(notes[1].time, 36100)
+    })
   })
 
   describe('calculateTimeFromTicks (Optimized)', () => {
