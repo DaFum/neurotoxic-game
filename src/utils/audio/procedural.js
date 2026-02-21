@@ -16,8 +16,8 @@ import {
 import {
   isPercussionTrack,
   isValidMidiNote,
-  buildMidiTrackEvents,
-  normalizeMidiPitch
+  normalizeMidiPitch,
+  getNoteName
 } from './midiUtils.js'
 import { SONGS_DB } from '../../data/songs.js'
 
@@ -196,7 +196,7 @@ export async function playSongFromData(song, delay = 0, options = {}) {
 
       // ⚡ BOLT OPTIMIZATION: Pre-compute note names to avoid audio-thread allocation
       const noteName =
-        n.lane !== 'drums' ? Tone.Frequency(n.p, 'midi').toNote() : null
+        n.lane !== 'drums' ? getNoteName(n.p) : null
 
       events.push({
         time: finalTime,
@@ -221,7 +221,7 @@ export async function playSongFromData(song, delay = 0, options = {}) {
 
     // Use pre-computed noteName or fallback if missing (though it should be present)
     const noteName =
-      value.noteName ?? Tone.Frequency(value.note, 'midi').toNote()
+      value.noteName ?? getNoteName(value.note)
 
     if (value.lane === 'guitar') {
       audioState.guitar.triggerAttackRelease(
@@ -506,25 +506,40 @@ function createMidiParts(midi, useCleanPlayback) {
   midi.tracks.forEach(track => {
     const notes = Array.isArray(track?.notes) ? track.notes : []
     const percussionTrack = isPercussionTrack(track)
-    const trackEvents = buildMidiTrackEvents(notes, percussionTrack)
 
-    if (trackEvents.length === 0) return
+    // ⚡ BOLT OPTIMIZATION: Single-pass iteration to filter, normalize, and pre-compute note names
+    // Replaces previous buildMidiTrackEvents + map approach to reduce allocation and GC pressure.
+    const eventsWithFrequencies = []
 
-    // ⚡ BOLT OPTIMIZATION: Pre-compute note names to avoid audio-thread allocation
-    // Calculating Tone.Frequency().toNote() inside the callback causes GC stutter.
-    const eventsWithFrequencies = trackEvents.map(evt => {
-      if (evt.percussionTrack) return evt
-      return {
-        ...evt,
-        frequencyNote: Tone.Frequency(evt.midiPitch, 'midi').toNote()
+    for (const note of notes) {
+      if (!Number.isFinite(note?.time) || note.time < 0) continue
+      const midiPitch = normalizeMidiPitch(note)
+      if (midiPitch == null) continue
+
+      const evt = {
+        time: note.time,
+        midiPitch,
+        duration: note.duration,
+        velocity: note.velocity,
+        percussionTrack
       }
-    })
+
+      // Pre-compute note name using cached lookup table
+      if (!percussionTrack) {
+        evt.frequencyNote = getNoteName(midiPitch)
+      }
+
+      eventsWithFrequencies.push(evt)
+    }
+
+    if (eventsWithFrequencies.length === 0) return
 
     const trackPart = new Tone.Part((time, value) => {
       if (!leadSynth || !bassSynth || !drumSet) return
-      if (!isValidMidiNote({ midi: value?.midiPitch })) return
-      const midiPitch = normalizeMidiPitch({ midi: value?.midiPitch })
-      if (midiPitch == null) return
+
+      // Since we filtered in the loop, we know midiPitch is valid (0-127).
+      // We skip redundant isValidMidiNote/normalizeMidiPitch checks here for performance.
+      const midiPitch = value.midiPitch
 
       try {
         // Clamp duration to prevent "duration must be greater than 0" error
@@ -550,10 +565,8 @@ function createMidiParts(midi, useCleanPlayback) {
           return
         }
 
-        // Use pre-computed frequency note string; falls back to live Tone.Frequency
-        // only when frequencyNote is absent (e.g. legacy event shapes without the field).
-        const freq =
-          value.frequencyNote ?? Tone.Frequency(midiPitch, 'midi').toNote()
+        // Use pre-computed frequency note string from cache
+        const freq = value.frequencyNote ?? getNoteName(midiPitch)
 
         if (midiPitch < 45) {
           bassSynth.triggerAttackRelease(freq, duration, time, velocity)

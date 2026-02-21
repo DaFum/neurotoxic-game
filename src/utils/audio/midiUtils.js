@@ -50,3 +50,27 @@ export const buildMidiTrackEvents = (notes, percussionTrack) => {
     return events
   }, [])
 }
+
+const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+const NOTE_CACHE = new Array(128)
+
+// Pre-compute note names for MIDI 0-127
+// Format matches Tone.Frequency(midi, "midi").toNote()
+// 0 -> "C-1", 60 -> "C4", 69 -> "A4"
+for (let i = 0; i < 128; i++) {
+  const octave = Math.floor(i / 12) - 1
+  const note = NOTE_NAMES[i % 12]
+  NOTE_CACHE[i] = `${note}${octave}`
+}
+
+/**
+ * Returns the cached note name for a given MIDI pitch.
+ * @param {number} midiPitch - The MIDI pitch (0-127).
+ * @returns {string|null} The note name (e.g., "C4") or null if invalid.
+ */
+export const getNoteName = midiPitch => {
+  if (!Number.isFinite(midiPitch) || midiPitch < 0 || midiPitch > 127) {
+    return null
+  }
+  return NOTE_CACHE[midiPitch | 0] || null
+}
