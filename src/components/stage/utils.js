@@ -24,29 +24,38 @@ const normalizeHexColor = colorValue => {
   return normalizedColorValue
 }
 
+const colorCache = new Map()
+
 /**
  * Resolves a CSS variable token to a Pixi-compatible numeric color value.
  * @param {string} tokenName - CSS custom property name (for example, "--toxic-green").
  * @returns {number} Pixi numeric hex color.
  */
 export const getPixiColorFromToken = tokenName => {
-  const fallbackColor = PIXI_TOKEN_FALLBACKS[tokenName] ?? '#ffffff'
   const canReadCssVariables =
     typeof window !== 'undefined' &&
     typeof document !== 'undefined' &&
     typeof window.getComputedStyle === 'function'
 
   if (!canReadCssVariables) {
+    const fallbackColor = PIXI_TOKEN_FALLBACKS[tokenName] ?? '#ffffff'
     return Number.parseInt(fallbackColor.slice(1), 16)
   }
 
+  if (colorCache.has(tokenName)) {
+    return colorCache.get(tokenName)
+  }
+
+  const fallbackColor = PIXI_TOKEN_FALLBACKS[tokenName] ?? '#ffffff'
   const resolvedCssValue = window
     .getComputedStyle(document.documentElement)
     .getPropertyValue(tokenName)
   const normalizedHexColor =
     normalizeHexColor(resolvedCssValue) ?? normalizeHexColor(fallbackColor)
 
-  return Number.parseInt(normalizedHexColor.slice(1), 16)
+  const result = Number.parseInt(normalizedHexColor.slice(1), 16)
+  colorCache.set(tokenName, result)
+  return result
 }
 
 /**
