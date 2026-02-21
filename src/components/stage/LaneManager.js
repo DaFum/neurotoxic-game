@@ -25,16 +25,22 @@ export class LaneManager {
     this.laneLayout = null
     this.laneGraphics = [] // { static: Graphics, dynamic: Graphics }
     this.lastLaneActive = []
-    this.lastLayoutKey = null
+    this.lastScreenWidth = -1
+    this.lastScreenHeight = -1
   }
 
   init() {
     this.rhythmContainer = new PIXI.Container()
+    const width = this.app.screen.width
+    const height = this.app.screen.height
+
     this.laneLayout = buildRhythmLayout({
-      screenWidth: this.app.screen.width,
-      screenHeight: this.app.screen.height
+      screenWidth: width,
+      screenHeight: height
     })
-    this.lastLayoutKey = `${this.app.screen.width}x${this.app.screen.height}`
+    this.lastScreenWidth = width
+    this.lastScreenHeight = height
+
     this.rhythmContainer.y = this.laneLayout.rhythmOffsetY
     this.stageContainer.addChild(this.rhythmContainer)
 
@@ -153,14 +159,18 @@ export class LaneManager {
   }
 
   updateLaneLayout() {
-    const layoutKey = `${this.app.screen.width}x${this.app.screen.height}`
-    if (layoutKey === this.lastLayoutKey) {
+    const width = this.app.screen.width
+    const height = this.app.screen.height
+
+    if (width === this.lastScreenWidth && height === this.lastScreenHeight) {
       return false
     }
-    this.lastLayoutKey = layoutKey
+    this.lastScreenWidth = width
+    this.lastScreenHeight = height
+
     this.laneLayout = buildRhythmLayout({
-      screenWidth: this.app.screen.width,
-      screenHeight: this.app.screen.height
+      screenWidth: width,
+      screenHeight: height
     })
     if (this.rhythmContainer) {
       this.rhythmContainer.y = this.laneLayout.rhythmOffsetY
