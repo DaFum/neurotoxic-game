@@ -165,6 +165,30 @@ export class MockSynth {
   dispose() {}
 }
 
+export class MockSequence {
+  constructor(callback, events, subdivision) {
+    this.callback = callback
+    this.events = events
+    this.subdivision = subdivision
+    this.start = mock.fn(() => this)
+    this.stop = mock.fn(() => this)
+    this.dispose = mock.fn()
+  }
+}
+
+export class MockPart {
+  constructor(callback, events) {
+    this.callback = callback
+    this.events = events
+    this.loop = false
+    this.loopEnd = 0
+    this.loopStart = 0
+    this.start = mock.fn(() => this)
+    this.stop = mock.fn(() => this)
+    this.dispose = mock.fn()
+  }
+}
+
 export const createMockTone = () => {
   const mockToneContext = {
     rawContext: { state: 'running', close: mock.fn(async () => {}) },
@@ -177,7 +201,10 @@ export const createMockTone = () => {
     pause: mock.fn(),
     cancel: mock.fn(),
     clear: mock.fn(),
-    scheduleOnce: mock.fn(),
+    scheduleOnce: mock.fn((cb, time) => {
+      // Return a dummy ID
+      return 123
+    }),
     position: 0,
     state: 'stopped',
     bpm: { value: 120 },
@@ -216,6 +243,9 @@ export const createMockTone = () => {
     EQ3: MockEQ3,
     StereoWidener: MockStereoWidener,
     Volume: MockVolume,
-    Frequency: _n => ({ toNote: () => 'C4' })
+    Sequence: MockSequence,
+    Part: MockPart,
+    Frequency: _n => ({ toNote: () => 'C4' }),
+    Time: (_t) => ({ toSeconds: () => 0.5 })
   }
 }
