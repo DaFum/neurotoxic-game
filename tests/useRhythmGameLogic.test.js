@@ -15,16 +15,9 @@ import {
 const ASYNC_INIT_TIMEOUT_MS = 200
 
 const {
-  mockUseGameState,
   mockAudioManager,
   mockAudioEngine,
-  mockGigStats,
-  mockRhythmUtils,
-  mockErrorHandler,
-  mockSimulationUtils,
-  mockAudioTimingUtils,
-  mockLogger,
-  mockHecklerLogic
+  mockRhythmUtils
 } = mockRhythmGameLogicDependencies
 
 const { useRhythmGameLogic } = await setupRhythmGameLogicTest()
