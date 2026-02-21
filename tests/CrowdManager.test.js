@@ -69,6 +69,7 @@ mock.module('../src/utils/logger.js', {
 
 mock.module('../src/components/stage/utils.js', {
   namedExports: {
+    calculateCrowdOffset: mock.fn(() => 10),
     calculateCrowdY: mock.fn(() => 100),
     getPixiColorFromToken: mock.fn(() => 0xffffff),
     CROWD_LAYOUT: {
