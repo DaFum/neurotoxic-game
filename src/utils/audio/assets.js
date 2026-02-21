@@ -48,6 +48,9 @@ const fullPathCandidates = oggAssetKeys.filter(k => k.includes('/'))
 export const oggCandidates =
   fullPathCandidates.length > 0 ? fullPathCandidates : oggAssetKeys
 
+// ⚡ BOLT OPTIMIZATION: Track in-flight requests to deduplicate concurrent loads
+const pendingAudioRequests = new Map()
+
 if (oggCandidates.length > 0) {
   logger.info(
     'AudioEngine',
@@ -121,6 +124,28 @@ export async function loadAudioBuffer(filename) {
     return cached
   }
 
+  // Return existing promise if already loading
+  if (pendingAudioRequests.has(cacheKey)) {
+    return pendingAudioRequests.get(cacheKey)
+  }
+
+  const promise = loadAudioBufferInternal(filename, cacheKey)
+  pendingAudioRequests.set(cacheKey, promise)
+
+  try {
+    return await promise
+  } finally {
+    pendingAudioRequests.delete(cacheKey)
+  }
+}
+
+/**
+ * Internal implementation of loading an audio buffer.
+ * @param {string} filename - Audio filename.
+ * @param {string} cacheKey - The cache key for storage.
+ * @returns {Promise<AudioBuffer|null>} Decoded audio buffer or null.
+ */
+async function loadAudioBufferInternal(filename, cacheKey) {
   const baseUrl = import.meta.env.BASE_URL || './'
   const publicBasePath = `${baseUrl}assets`
   const { url, source } = resolveAssetUrl(filename, oggUrlMap, publicBasePath)
