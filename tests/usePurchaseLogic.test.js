@@ -165,4 +165,67 @@ describe('usePurchaseLogic', () => {
     })
     assert.ok(Math.abs(bandPatch.performance.guitarDifficulty - (-0.15)) < 0.0001)
   })
+
+  test('handleBuy applies harmony_regen_travel passive effect using key', () => {
+    let bandPatch = null
+    const player = { money: 1000, fame: 0, van: { upgrades: [] } }
+    const band = { harmonyRegenTravel: false }
+
+    const { result } = renderHook(() =>
+      usePurchaseLogic({
+        player,
+        band,
+        updatePlayer: () => {},
+        updateBand: patch => {
+          bandPatch = patch
+        },
+        addToast: () => {}
+      })
+    )
+
+    const item = {
+      id: 'van_sound_system',
+      cost: 500,
+      currency: 'money',
+      effects: [{ type: 'passive', key: 'harmony_regen_travel' }]
+    }
+
+    act(() => {
+      result.current.handleBuy(item)
+    })
+
+    assert.ok(bandPatch, 'Band patch should be created')
+    assert.equal(bandPatch.harmonyRegenTravel, true)
+  })
+
+  test('handleBuy applies passive_followers passive effect using key', () => {
+    let playerPatch = null
+    const player = { money: 1000, fame: 0, passiveFollowers: 10 }
+
+    const { result } = renderHook(() =>
+      usePurchaseLogic({
+        player,
+        band: {},
+        updatePlayer: patch => {
+          playerPatch = patch
+        },
+        updateBand: () => {},
+        addToast: () => {}
+      })
+    )
+
+    const item = {
+      id: 'social_bot',
+      cost: 500,
+      currency: 'money',
+      effects: [{ type: 'passive', key: 'passive_followers', value: 5 }]
+    }
+
+    act(() => {
+      result.current.handleBuy(item)
+    })
+
+    assert.ok(playerPatch, 'Player patch should be created')
+    assert.equal(playerPatch.passiveFollowers, 15)
+  })
 })
