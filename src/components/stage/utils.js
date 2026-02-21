@@ -75,14 +75,25 @@ export const calculateNoteY = ({ elapsed, noteTime, targetY, speed }) => {
 /**
  * Calculates a crowd member offset based on combo intensity.
  * @param {object} params - Crowd animation inputs.
+ * @param {number} params.combo - Current combo count.
+ * @param {number} params.timeMs - Current time in ms.
+ * @returns {number} The vertical offset.
+ */
+export const calculateCrowdOffset = ({ combo, timeMs }) => {
+  const intensity = combo > 10 ? 2 : 1
+  return Math.abs(Math.sin((timeMs / 100) * intensity) * 5)
+}
+
+/**
+ * Calculates a crowd member offset based on combo intensity.
+ * @param {object} params - Crowd animation inputs.
  * @param {number} params.baseY - Base Y position.
  * @param {number} params.combo - Current combo count.
  * @param {number} params.timeMs - Current time in ms.
  * @returns {number} Adjusted Y position.
  */
 export const calculateCrowdY = ({ baseY, combo, timeMs }) => {
-  const intensity = combo > 10 ? 2 : 1
-  return baseY - Math.abs(Math.sin((timeMs / 100) * intensity) * 5)
+  return baseY - calculateCrowdOffset({ combo, timeMs })
 }
 
 /**
