@@ -43,11 +43,13 @@ test('clearTransportEvent', async t => {
   await t.test('returns early if id is null', () => {
     clearTransportEvent(null, 'testEvent')
     assert.strictEqual(mockTone.getTransport().clear.mock.calls.length, 0)
+    assert.strictEqual(mockLogger.warn.mock.calls.length, 0)
   })
 
   await t.test('returns early if id is undefined', () => {
     clearTransportEvent(undefined, 'testEvent')
     assert.strictEqual(mockTone.getTransport().clear.mock.calls.length, 0)
+    assert.strictEqual(mockLogger.warn.mock.calls.length, 0)
   })
 
   await t.test('calls transport clear if id is provided', () => {
@@ -55,6 +57,7 @@ test('clearTransportEvent', async t => {
     clearTransportEvent(id, 'testEvent')
     assert.strictEqual(mockTone.getTransport().clear.mock.calls.length, 1)
     assert.strictEqual(mockTone.getTransport().clear.mock.calls[0].arguments[0], id)
+    assert.strictEqual(mockLogger.warn.mock.calls.length, 0)
   })
 
   await t.test('handles errors and logs warning', () => {
@@ -80,7 +83,12 @@ test('stopAndDisconnectSource', async t => {
 
   await t.test('returns early if source is null', () => {
     stopAndDisconnectSource(null, 'testSource')
-    // No error should occur
+    assert.strictEqual(mockLogger.debug.mock.calls.length, 0)
+  })
+
+  await t.test('returns early if source is undefined', () => {
+    stopAndDisconnectSource(undefined, 'testSource')
+    assert.strictEqual(mockLogger.debug.mock.calls.length, 0)
   })
 
   await t.test('calls stop and disconnect on source', () => {
@@ -91,6 +99,7 @@ test('stopAndDisconnectSource', async t => {
     stopAndDisconnectSource(mockSource, 'testSource')
     assert.strictEqual(mockSource.stop.mock.calls.length, 1)
     assert.strictEqual(mockSource.disconnect.mock.calls.length, 1)
+    assert.strictEqual(mockLogger.debug.mock.calls.length, 0)
   })
 
   await t.test('handles stop error and logs debug', () => {
@@ -122,6 +131,44 @@ test('stopAndDisconnectSource', async t => {
     assert.strictEqual(mockLogger.debug.mock.calls[0].arguments[1], 'testSource source disconnect failed')
     assert.strictEqual(mockLogger.debug.mock.calls[0].arguments[2], error)
   })
+
+  await t.test('handles both stop and disconnect errors', () => {
+    const stopError = new Error('Stop failed')
+    const disconnectError = new Error('Disconnect failed')
+    const mockSource = {
+      stop: mock.fn(() => {
+        throw stopError
+      }),
+      disconnect: mock.fn(() => {
+        throw disconnectError
+      })
+    }
+    stopAndDisconnectSource(mockSource, 'testSource')
+
+    assert.strictEqual(mockLogger.debug.mock.calls.length, 2)
+
+    // Check first error (stop)
+    assert.strictEqual(mockLogger.debug.mock.calls[0].arguments[1], 'testSource source stop failed')
+    assert.strictEqual(mockLogger.debug.mock.calls[0].arguments[2], stopError)
+
+    // Check second error (disconnect)
+    assert.strictEqual(mockLogger.debug.mock.calls[1].arguments[1], 'testSource source disconnect failed')
+    assert.strictEqual(mockLogger.debug.mock.calls[1].arguments[2], disconnectError)
+  })
+
+  await t.test('handles invalid source object (no methods)', () => {
+    const mockSource = {} // No stop or disconnect methods
+    stopAndDisconnectSource(mockSource, 'testSource')
+
+    // Should fail twice because calling undefined as function throws TypeError
+    assert.strictEqual(mockLogger.debug.mock.calls.length, 2)
+
+    assert.strictEqual(mockLogger.debug.mock.calls[0].arguments[1], 'testSource source stop failed')
+    assert.ok(mockLogger.debug.mock.calls[0].arguments[2] instanceof TypeError)
+
+    assert.strictEqual(mockLogger.debug.mock.calls[1].arguments[1], 'testSource source disconnect failed')
+    assert.ok(mockLogger.debug.mock.calls[1].arguments[2] instanceof TypeError)
+  })
 })
 
 test('stopTransportAndClear', async t => {
@@ -132,6 +179,8 @@ test('stopTransportAndClear', async t => {
     mockAudioState.loop = null
     mockAudioState.part = null
     mockAudioState.midiParts = []
+    mockLogger.warn.mock.resetCalls()
+    mockLogger.debug.mock.resetCalls()
   })
 
   await t.test('stops transport and resets position', () => {
@@ -139,6 +188,9 @@ test('stopTransportAndClear', async t => {
     assert.strictEqual(mockTone.getTransport().stop.mock.calls.length, 1)
     assert.strictEqual(mockTone.getTransport().position, 0)
     assert.strictEqual(mockTone.getTransport().cancel.mock.calls.length, 1)
+    // Should not log
+    assert.strictEqual(mockLogger.warn.mock.calls.length, 0)
+    assert.strictEqual(mockLogger.debug.mock.calls.length, 0)
   })
 
   await t.test('cleans up loop and part', () => {
@@ -165,5 +217,17 @@ test('stopTransportAndClear', async t => {
     assert.strictEqual(mockPart1.dispose.mock.calls.length, 1)
     assert.strictEqual(mockPart2.dispose.mock.calls.length, 1)
     assert.strictEqual(mockAudioState.midiParts.length, 0)
+  })
+
+  await t.test('handles already null loop and part', () => {
+    mockAudioState.loop = null
+    mockAudioState.part = null
+
+    stopTransportAndClear()
+
+    assert.strictEqual(mockAudioState.loop, null)
+    assert.strictEqual(mockAudioState.part, null)
+    // Should verify it didn't crash
+    assert.strictEqual(mockTone.getTransport().stop.mock.calls.length, 1)
   })
 })
