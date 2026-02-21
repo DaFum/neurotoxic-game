@@ -24,6 +24,9 @@ import { resolveSongPlaybackWindow } from '../../utils/audio/songUtils'
 
 const GIG_LEAD_IN_MS = 2000
 const NOTE_LEAD_IN_MS = 100
+// Extra time after the last note's target time before cutting audio playback.
+// Gives the final bar time to be hit or fall past the miss window.
+const NOTE_TAIL_MS = 1000
 
 /**
  * Manages audio initialization, playback, and setup for the gig.
@@ -258,11 +261,24 @@ export const useRhythmGameAudio = ({
           }
 
           if (assetFound) {
+            // Stop the OGG when bars finish falling: cap to last note time.
+            // If no JSON notes are parsed yet (procedural fallback path),
+            // fall back to the configured excerpt duration.
+            const maxNoteTimeSoFar = notes.reduce(
+              (max, n) => Math.max(max, n.time),
+              0
+            )
+            const oggDurationMs =
+              maxNoteTimeSoFar > 0
+                ? maxNoteTimeSoFar + NOTE_TAIL_MS
+                : excerptDurationMs > 0
+                  ? excerptDurationMs
+                  : null
             const success = await startGigPlayback({
               filename: oggFilename,
               bufferOffsetMs: excerptStartMs,
               delayMs: GIG_LEAD_IN_MS,
-              durationMs: excerptDurationMs > 0 ? excerptDurationMs : null,
+              durationMs: oggDurationMs,
               onEnded: onSongEnded
             })
             if (success) {
@@ -279,8 +295,19 @@ export const useRhythmGameAudio = ({
           const { excerptStartMs, excerptDurationMs } =
             resolveSongPlaybackWindow(currentSong, { defaultDurationMs: 0 })
           const offsetSeconds = Math.max(0, excerptStartMs / 1000)
+          // Same note-cap logic as OGG: stop MIDI when bars finish.
+          const maxNoteTimeSoFar = notes.reduce(
+            (max, n) => Math.max(max, n.time),
+            0
+          )
+          const midiDurationMs =
+            maxNoteTimeSoFar > 0
+              ? maxNoteTimeSoFar + NOTE_TAIL_MS
+              : excerptDurationMs > 0
+                ? excerptDurationMs
+                : null
           const gigPlaybackSeconds =
-            excerptDurationMs > 0 ? excerptDurationMs / 1000 : null
+            midiDurationMs !== null ? midiDurationMs / 1000 : null
           const rawGigStartTimeSec =
             getAudioContextTimeSec() + GIG_LEAD_IN_MS / 1000
           const toneGigStartTimeSec = getToneStartTimeSec(rawGigStartTimeSec)
@@ -364,10 +391,16 @@ export const useRhythmGameAudio = ({
         const maxNoteTime = notes.reduce((max, n) => Math.max(max, n.time), 0)
         const buffer = 4000
         const noteDuration = maxNoteTime + buffer
+        // When JSON notes are present the audio has already been capped to
+        // NOTE_TAIL_MS past the last bar, so drive totalDuration from notes
+        // only. For procedurally-generated notes (no JSON data) fall back to
+        // the larger of note-duration and audio-duration so the gig loop
+        // waits for the metal generator / synthesis to finish naturally.
         const audioDuration = resolveSongPlaybackWindow(currentSong, {
           defaultDurationMs: 0
         }).excerptDurationMs
-        gameStateRef.current.totalDuration = Math.max(noteDuration, audioDuration)
+        gameStateRef.current.totalDuration =
+          maxNoteTime > 0 ? noteDuration : Math.max(noteDuration, audioDuration)
 
         // Clear transitioning flag now that state is consistent
         gameStateRef.current.songTransitioning = false
