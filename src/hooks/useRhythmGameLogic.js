@@ -88,10 +88,15 @@ export const useRhythmGameLogic = () => {
     ]
   )
 
+  const actions = useMemo(
+    () => ({ registerInput, activateToxicMode, retryAudioInitialization }),
+    [registerInput, activateToxicMode, retryAudioInitialization]
+  )
+
   return {
     gameStateRef,
     stats,
-    actions: { registerInput, activateToxicMode, retryAudioInitialization },
+    actions,
     update
   }
 }
