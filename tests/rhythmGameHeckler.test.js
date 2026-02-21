@@ -46,6 +46,29 @@ test('trySpawnProjectile increases chance on low health', () => {
   assert.ok(lowHealth, 'Should spawn at 40 health with 0.001 roll')
 })
 
+test('trySpawnProjectile increases chance on high combo', () => {
+  // Threshold for normal health/combo is 0.0005
+  // Threshold for high combo (>30) is 0.0015 (0.0005 + 0.001)
+
+  const marginalRandom = () => 0.001 // Between 0.0005 and 0.0015
+
+  const normalCombo = trySpawnProjectile(
+    { health: 100, combo: 10 },
+    marginalRandom
+  )
+  assert.strictEqual(
+    normalCombo,
+    null,
+    'Should NOT spawn at 10 combo with 0.001 roll'
+  )
+
+  const highCombo = trySpawnProjectile(
+    { health: 100, combo: 50 },
+    marginalRandom
+  )
+  assert.ok(highCombo, 'Should spawn at 50 combo with 0.001 roll')
+})
+
 test('updateProjectiles moves items correctly', () => {
   const projectiles = [
     { x: 100, y: 100, vx: 0.1, vy: 0.2, rotation: 0, vr: 0.01 }
