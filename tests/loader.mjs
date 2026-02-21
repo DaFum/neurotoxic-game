@@ -22,7 +22,7 @@ export async function load(url, context, nextLoad) {
       if (transformed.includes('import.meta.env')) {
         transformed = transformed.replace(
           /import\.meta\.env/g,
-          '({ BASE_URL: "/", DEV: true })'
+          '(globalThis.__IMPORT_META_ENV__ || { BASE_URL: "/", DEV: true, PROD: false })'
         )
       }
 
