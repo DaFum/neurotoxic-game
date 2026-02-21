@@ -223,7 +223,7 @@ export const useRhythmGameAudio = ({
         // Start Audio
         if (currentSong.sourceOgg || currentSong.sourceMid) {
           const { excerptStartMs, excerptDurationMs } =
-            resolveSongPlaybackWindow(currentSong)
+            resolveSongPlaybackWindow(currentSong, { defaultDurationMs: 0 })
           const oggFilename =
             currentSong.sourceOgg ||
             currentSong.sourceMid.replace(/\.mid$/i, '.ogg')
@@ -244,7 +244,7 @@ export const useRhythmGameAudio = ({
               filename: oggFilename,
               bufferOffsetMs: excerptStartMs,
               delayMs: GIG_LEAD_IN_MS,
-              durationMs: excerptDurationMs,
+              durationMs: excerptDurationMs > 0 ? excerptDurationMs : null,
               onEnded: onSongEnded
             })
             if (success) {
@@ -259,9 +259,10 @@ export const useRhythmGameAudio = ({
 
         if (!bgAudioStarted && currentSong.sourceMid) {
           const { excerptStartMs, excerptDurationMs } =
-            resolveSongPlaybackWindow(currentSong)
+            resolveSongPlaybackWindow(currentSong, { defaultDurationMs: 0 })
           const offsetSeconds = Math.max(0, excerptStartMs / 1000)
-          const gigPlaybackSeconds = excerptDurationMs / 1000
+          const gigPlaybackSeconds =
+            excerptDurationMs > 0 ? excerptDurationMs / 1000 : null
           const rawGigStartTimeSec =
             getAudioContextTimeSec() + GIG_LEAD_IN_MS / 1000
           const toneGigStartTimeSec = getToneStartTimeSec(rawGigStartTimeSec)
