@@ -17,11 +17,11 @@ export class EffectManager {
     this.container = null
     this.activeEffects = []
 
-    // Separate pools for Sprites and Graphics
+    // Pool for Sprites (no longer need separate graphics pool)
     this.spritePool = []
-    this.graphicsPool = []
 
     this.textures = { blood: null, toxic: null }
+    this.genericHitTexture = null
   }
 
   init() {
@@ -45,6 +45,39 @@ export class EffectManager {
     }
   }
 
+  createGenericHitTexture() {
+    if (this.genericHitTexture) return
+
+    const graphics = new PIXI.Graphics()
+    const whiteColor = 0xffffff
+
+    // Draw a white circle with white stroke to create a base texture
+    // that can be tinted to any color while preserving opacity variation.
+    // Fill alpha is 0.8, stroke alpha is 1.0.
+    graphics.circle(0, 0, 40)
+    graphics.fill({ color: whiteColor, alpha: 0.8 })
+    graphics.stroke({ width: 4, color: whiteColor, alpha: 1.0 })
+
+    try {
+      // Handle PixiJS v8 API changes for texture generation
+      if (this.app?.renderer?.textureGenerator) {
+        this.genericHitTexture = this.app.renderer.textureGenerator.generateTexture({
+          target: graphics,
+          resolution: 1,
+          antialias: true
+        })
+      } else if (this.app?.renderer?.generateTexture) {
+        this.genericHitTexture = this.app.renderer.generateTexture(graphics)
+      } else {
+        logger.warn('EffectManager', 'Renderer not available for texture generation')
+      }
+    } catch (error) {
+      logger.warn('EffectManager', 'Failed to generate generic hit texture', error)
+    } finally {
+      graphics.destroy()
+    }
+  }
+
   spawnHitEffect(x, y, color) {
     if (!this.container) return
 
@@ -64,38 +97,30 @@ export class EffectManager {
       texture = this.textures.blood
     } else if (this.textures.toxic) {
       texture = this.textures.toxic
+    } else {
+      // Use generic texture for fallback
+      if (!this.genericHitTexture) {
+        this.createGenericHitTexture()
+      }
+      texture = this.genericHitTexture
     }
 
     let effect
-    if (texture) {
-      // Try sprite pool
-      if (this.spritePool.length > 0) {
-        effect = this.spritePool.pop()
-      } else {
-        effect = new PIXI.Sprite(texture)
-        effect.anchor.set(0.5)
-      }
-
-      // Ensure texture is correct
-      if (effect.texture !== texture) {
-        effect.texture = texture
-      }
-      effect.tint = color
+    if (this.spritePool.length > 0) {
+      effect = this.spritePool.pop()
     } else {
-      // Try graphics pool
-      if (this.graphicsPool.length > 0) {
-        effect = this.graphicsPool.pop()
-      } else {
-        effect = new PIXI.Graphics()
-      }
-
-      const whiteColor = getPixiColorFromToken('--star-white')
-      effect.clear()
-      effect.circle(0, 0, 40)
-      effect.fill({ color: whiteColor, alpha: 0.8 })
-      effect.stroke({ width: 4, color: color })
+      // Create sprite, using generic texture if specific one is missing/not loaded
+      // If texture is still null (generation failed), use Texture.WHITE as absolute fallback
+      effect = new PIXI.Sprite(texture || PIXI.Texture.WHITE)
+      effect.anchor.set(0.5)
     }
 
+    // Ensure texture is correct
+    if (effect.texture !== texture && texture) {
+      effect.texture = texture
+    }
+
+    effect.tint = color
     effect.x = x
     effect.y = y
     effect.alpha = 1
@@ -135,6 +160,7 @@ export class EffectManager {
 
     effect.visible = false
 
+    // Only pool Sprites (legacy graphics would be destroyed if they existed)
     if (effect instanceof PIXI.Sprite) {
       if (this.spritePool.length < EffectManager.MAX_POOL_SIZE) {
         this.spritePool.push(effect)
@@ -142,27 +168,23 @@ export class EffectManager {
         effect.destroy()
       }
     } else {
-      if (this.graphicsPool.length < EffectManager.MAX_POOL_SIZE) {
-        this.graphicsPool.push(effect)
-      } else {
-        effect.destroy()
-      }
+      effect.destroy()
     }
   }
 
   dispose() {
     this.activeEffects = []
 
-    // Destroy pools
+    // Destroy pool
     for (const sprite of this.spritePool) {
       sprite.destroy()
     }
     this.spritePool = []
 
-    for (const graphics of this.graphicsPool) {
-      graphics.destroy()
+    if (this.genericHitTexture) {
+      this.genericHitTexture.destroy(true)
+      this.genericHitTexture = null
     }
-    this.graphicsPool = []
 
     if (this.container) {
       this.container.destroy({ children: true })
