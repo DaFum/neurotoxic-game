@@ -194,9 +194,14 @@ export async function playSongFromData(song, delay = 0, options = {}) {
         lastTime = finalTime
       }
 
+      // ⚡ BOLT OPTIMIZATION: Pre-compute note names to avoid audio-thread allocation
+      const noteName =
+        n.lane !== 'drums' ? Tone.Frequency(n.p, 'midi').toNote() : null
+
       events.push({
         time: finalTime,
         note: n.p,
+        noteName, // Store pre-computed string
         velocity: rawVelocity / 127,
         lane: n.lane
       })
@@ -214,7 +219,9 @@ export async function playSongFromData(song, delay = 0, options = {}) {
   audioState.part = new Tone.Part((time, value) => {
     if (!audioState.guitar || !audioState.bass || !audioState.drumKit) return
 
-    const noteName = Tone.Frequency(value.note, 'midi').toNote()
+    // Use pre-computed noteName or fallback if missing (though it should be present)
+    const noteName =
+      value.noteName ?? Tone.Frequency(value.note, 'midi').toNote()
 
     if (value.lane === 'guitar') {
       audioState.guitar.triggerAttackRelease(
