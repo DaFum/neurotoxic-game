@@ -1,5 +1,3 @@
-import { test } from 'node:test'
-
 export async function importAudioEngine(path = '../src/utils/audioEngine.js') {
   let audioEngine = null
   let audioEngineImportError = null
