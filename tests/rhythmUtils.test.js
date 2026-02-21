@@ -197,6 +197,38 @@ describe('rhythmUtils', () => {
       assert.strictEqual(notes[0].time, 100 + 1000)
       assert.strictEqual(notes[0].laneIndex, 1)
     })
+
+
+    test('uses resolved playback window precedence for excerpt filtering', () => {
+      const song = {
+        id: 'excerpt-priority-test',
+        bpm: 120,
+        tpb: 480,
+        excerptStartMs: 1000,
+        excerptEndMs: 3500,
+        excerptDurationMs: 400,
+        durationMs: 900,
+        notes: [
+          { t: 0, lane: 'guitar' },
+          { t: 240, lane: 'guitar' },
+          { t: 480, lane: 'guitar' },
+          { t: 960, lane: 'guitar' },
+          { t: 1920, lane: 'drums' },
+          { t: 2400, lane: 'bass' },
+          { t: 2880, lane: 'guitar' },
+          { t: 3360, lane: 'drums' },
+          { t: 3840, lane: 'bass' },
+          { t: 4320, lane: 'guitar' },
+          { t: 4800, lane: 'drums' },
+          { t: 5280, lane: 'bass' },
+          { t: 5760, lane: 'guitar' }
+        ]
+      }
+
+      const notes = parseSongNotes(song, 100)
+      assert.strictEqual(notes.length, 1)
+      assert.strictEqual(notes[0].time, 1100)
+    })
   })
 
   describe('calculateTimeFromTicks (Optimized)', () => {

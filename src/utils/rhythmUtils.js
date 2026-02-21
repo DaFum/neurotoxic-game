@@ -1,3 +1,5 @@
+import { resolveSongPlaybackWindow } from './audio/songUtils'
+
 /**
  * Generates rhythm game notes for a given song and configuration.
  * @param {object} song - Song metadata (bpm, duration, difficulty).
@@ -165,12 +167,9 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
 
   const tpb = Math.max(1, song.tpb || 480) // Prevent div by zero
   const bpm = Math.max(1, song.bpm || 120) // Prevent div by zero
-  const excerptStartMs = Number.isFinite(song.excerptStartMs)
-    ? Math.max(0, song.excerptStartMs)
-    : 0
-  const excerptDurationMs = Number.isFinite(song.excerptDurationMs)
-    ? Math.max(0, song.excerptDurationMs)
-    : null
+  const { excerptStartMs, excerptDurationMs: rawExcerptDuration } =
+    resolveSongPlaybackWindow(song)
+  const excerptDurationMs = rawExcerptDuration > 0 ? rawExcerptDuration : null
 
   const laneMap = {
     guitar: 0,
