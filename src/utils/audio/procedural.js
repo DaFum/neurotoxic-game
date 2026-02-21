@@ -503,6 +503,16 @@ function createMidiParts(midi, useCleanPlayback) {
 
     if (trackEvents.length === 0) return
 
+    // ⚡ BOLT OPTIMIZATION: Pre-compute note names to avoid audio-thread allocation
+    // Calculating Tone.Frequency().toNote() inside the callback causes GC stutter.
+    const eventsWithFrequencies = trackEvents.map(evt => {
+      if (evt.percussionTrack) return evt
+      return {
+        ...evt,
+        frequencyNote: Tone.Frequency(evt.midiPitch, 'midi').toNote()
+      }
+    })
+
     const trackPart = new Tone.Part((time, value) => {
       if (!leadSynth || !bassSynth || !drumSet) return
       if (!isValidMidiNote({ midi: value?.midiPitch })) return
@@ -533,26 +543,21 @@ function createMidiParts(midi, useCleanPlayback) {
           return
         }
 
+        // Use pre-computed frequency note string; falls back to live Tone.Frequency
+        // only when frequencyNote is absent (e.g. legacy event shapes without the field).
+        const freq =
+          value.frequencyNote ?? Tone.Frequency(midiPitch, 'midi').toNote()
+
         if (midiPitch < 45) {
-          bassSynth.triggerAttackRelease(
-            Tone.Frequency(midiPitch, 'midi'),
-            duration,
-            time,
-            velocity
-          )
+          bassSynth.triggerAttackRelease(freq, duration, time, velocity)
         } else {
-          leadSynth.triggerAttackRelease(
-            Tone.Frequency(midiPitch, 'midi'),
-            duration,
-            time,
-            velocity
-          )
+          leadSynth.triggerAttackRelease(freq, duration, time, velocity)
         }
       } catch (e) {
         // Prevent single note errors from crashing the loop
         logger.warn('AudioEngine', 'Note scheduling error:', e)
       }
-    }, trackEvents)
+    }, eventsWithFrequencies)
 
     trackPart.start(0)
     nextMidiParts.push(trackPart)
