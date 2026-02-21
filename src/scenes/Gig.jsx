@@ -25,6 +25,7 @@ export const Gig = () => {
   } = useGameState()
   const chaosContainerRef = useRef(null)
   const hasUnlockedAudioRef = useRef(false)
+  const bandAnimationsRef = useRef({})
 
   useEffect(() => {
     if (!currentGig) {
@@ -144,9 +145,28 @@ export const Gig = () => {
   const triggerBandAnimation = laneIndex => {
     const memberEl = document.getElementById(`band-member-${laneIndex}`)
     if (memberEl) {
-      memberEl.classList.remove('animate-headbang')
-      void memberEl.offsetWidth // Trigger reflow
-      memberEl.classList.add('animate-headbang')
+      let anim = bandAnimationsRef.current[laneIndex]
+
+      // Reuse existing animation if valid and attached to same element
+      if (anim && anim.effect && anim.effect.target === memberEl) {
+        anim.cancel()
+        anim.play()
+      } else {
+        // Create new animation using WAAPI to avoid forced reflows
+        anim = memberEl.animate(
+          [
+            { transform: 'rotate(0deg) scale(1)', offset: 0 },
+            { transform: 'rotate(10deg) scale(1.1)', offset: 0.5 },
+            { transform: 'rotate(0deg) scale(1)', offset: 1 }
+          ],
+          {
+            duration: 200,
+            easing: 'ease',
+            iterations: 1
+          }
+        )
+        bandAnimationsRef.current[laneIndex] = anim
+      }
     }
   }
 
