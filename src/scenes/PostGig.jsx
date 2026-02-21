@@ -59,15 +59,15 @@ export const PostGig = () => {
     if (!financials && currentGig && lastGigStats) {
       const crowdStats = { hype: lastGigStats?.peakHype || 0 }
 
-      const result = calculateGigFinancials(
-        currentGig,
-        perfScore,
+      const result = calculateGigFinancials({
+        gigData: currentGig,
+        performanceScore: perfScore,
         crowdStats,
-        gigModifiers,
-        band.inventory,
-        player,
-        lastGigStats
-      )
+        modifiers: gigModifiers,
+        bandInventory: band.inventory,
+        playerStateOrFame: player,
+        gigStats: lastGigStats
+      })
       setFinancials(result)
 
       const vScore = calculateViralityScore(perfScore, [], currentGig)

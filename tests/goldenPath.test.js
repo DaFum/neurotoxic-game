@@ -185,15 +185,15 @@ test('Golden Path: Full Tour Cycle', async t => {
       Math.max(30, state.lastGigStats.score / 500)
     )
     const crowdStats = { hype: state.lastGigStats.peakHype }
-    const financials = calculateGigFinancials(
-      state.currentGig,
+    const financials = calculateGigFinancials({
+      gigData: state.currentGig,
       performanceScore,
       crowdStats,
-      state.gigModifiers,
-      state.band.inventory,
-      state.player.fame,
-      state.lastGigStats
-    )
+      modifiers: state.gigModifiers,
+      bandInventory: state.band.inventory,
+      playerStateOrFame: state.player.fame,
+      gigStats: state.lastGigStats
+    })
     assert.ok(typeof financials.net === 'number', 'Net is a number')
     assert.ok(
       typeof financials.income.total === 'number',

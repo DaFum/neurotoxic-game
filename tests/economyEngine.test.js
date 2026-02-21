@@ -43,15 +43,15 @@ const buildGigStats = (overrides = {}) => ({
 
 test('calculateGigFinancials handles base case with ticket sales and guarantee', () => {
   const gigData = buildGigData()
-  const result = calculateGigFinancials(
-    gigData,
-    80, // performanceScore
-    { hype: 80 },
-    buildModifiers(),
-    buildInventory(),
-    100, // playerFame
-    buildGigStats()
-  )
+  const result = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 80,
+    crowdStats: { hype: 80 },
+    modifiers: buildModifiers(),
+    bandInventory: buildInventory(),
+    playerStateOrFame: 100,
+    gigStats: buildGigStats()
+  })
 
   assert.ok(result.income.total > 0, 'Should have positive income')
   assert.ok(result.expenses.total > 0, 'Should have expenses')
@@ -71,26 +71,26 @@ test('calculateGigFinancials applies fame scaling to fill rate', () => {
   const gigData = buildGigData({ capacity: 100, price: 10 })
 
   // Low fame scenario
-  const lowFameResult = calculateGigFinancials(
-    gigData,
-    80,
-    { hype: 80 },
-    buildModifiers(),
-    buildInventory(),
-    10,
-    buildGigStats()
-  )
+  const lowFameResult = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 80,
+    crowdStats: { hype: 80 },
+    modifiers: buildModifiers(),
+    bandInventory: buildInventory(),
+    playerStateOrFame: 10,
+    gigStats: buildGigStats()
+  })
 
   // High fame scenario
-  const highFameResult = calculateGigFinancials(
-    gigData,
-    80,
-    { hype: 80 },
-    buildModifiers(),
-    buildInventory(),
-    1000,
-    buildGigStats()
-  )
+  const highFameResult = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 80,
+    crowdStats: { hype: 80 },
+    modifiers: buildModifiers(),
+    bandInventory: buildInventory(),
+    playerStateOrFame: 1000,
+    gigStats: buildGigStats()
+  })
 
   const lowFameTickets = lowFameResult.income.breakdown.find(
     b => b.label === 'Ticket Sales'
@@ -108,25 +108,25 @@ test('calculateGigFinancials applies fame scaling to fill rate', () => {
 test('calculateGigFinancials applies promo boost to fill rate', () => {
   const gigData = buildGigData({ capacity: 200 })
 
-  const noPromo = calculateGigFinancials(
-    gigData,
-    80,
-    { hype: 80 },
-    buildModifiers({ promo: false }),
-    buildInventory(),
-    50,
-    buildGigStats()
-  )
+  const noPromo = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 80,
+    crowdStats: { hype: 80 },
+    modifiers: buildModifiers({ promo: false }),
+    bandInventory: buildInventory(),
+    playerStateOrFame: 50,
+    gigStats: buildGigStats()
+  })
 
-  const withPromo = calculateGigFinancials(
-    gigData,
-    80,
-    { hype: 80 },
-    buildModifiers({ promo: true }),
-    buildInventory(),
-    50,
-    buildGigStats()
-  )
+  const withPromo = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 80,
+    crowdStats: { hype: 80 },
+    modifiers: buildModifiers({ promo: true }),
+    bandInventory: buildInventory(),
+    playerStateOrFame: 50,
+    gigStats: buildGigStats()
+  })
 
   const noPromoTickets = noPromo.income.breakdown.find(
     b => b.label === 'Ticket Sales'
@@ -143,15 +143,15 @@ test('calculateGigFinancials applies promo boost to fill rate', () => {
 
 test('calculateGigFinancials applies price sensitivity penalty', () => {
   const gigData = buildGigData({ capacity: 200, price: 25 }) // High price
-  const result = calculateGigFinancials(
-    gigData,
-    80,
-    { hype: 80 },
-    buildModifiers(),
-    buildInventory(),
-    50,
-    buildGigStats()
-  )
+  const result = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 80,
+    crowdStats: { hype: 80 },
+    modifiers: buildModifiers(),
+    bandInventory: buildInventory(),
+    playerStateOrFame: 50,
+    gigStats: buildGigStats()
+  })
 
   // Should have reduced attendance due to high price
   const ticketItem = result.income.breakdown.find(
@@ -167,25 +167,25 @@ test('calculateGigFinancials applies price sensitivity penalty', () => {
 test('calculateGigFinancials scales merch sales with performance', () => {
   const gigData = buildGigData()
 
-  const poorPerformance = calculateGigFinancials(
-    gigData,
-    40,
-    { hype: 40 },
-    buildModifiers({ merchTable: true }),
-    buildInventory(),
-    100,
-    buildGigStats()
-  )
+  const poorPerformance = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 40,
+    crowdStats: { hype: 40 },
+    modifiers: buildModifiers({ merchTable: true }),
+    bandInventory: buildInventory(),
+    playerStateOrFame: 100,
+    gigStats: buildGigStats()
+  })
 
-  const greatPerformance = calculateGigFinancials(
-    gigData,
-    95,
-    { hype: 95 },
-    buildModifiers({ merchTable: true }),
-    buildInventory(),
-    100,
-    buildGigStats()
-  )
+  const greatPerformance = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 95,
+    crowdStats: { hype: 95 },
+    modifiers: buildModifiers({ merchTable: true }),
+    bandInventory: buildInventory(),
+    playerStateOrFame: 100,
+    gigStats: buildGigStats()
+  })
 
   const poorMerch = poorPerformance.income.breakdown.find(
     b => b.label === 'Merch Sales'
@@ -203,15 +203,15 @@ test('calculateGigFinancials scales merch sales with performance', () => {
 test('calculateGigFinancials applies S-rank merch bonus', () => {
   const gigData = buildGigData()
 
-  const sRank = calculateGigFinancials(
-    gigData,
-    95,
-    { hype: 95 },
-    buildModifiers({ merchTable: true }),
-    buildInventory(),
-    100,
-    buildGigStats()
-  )
+  const sRank = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 95,
+    crowdStats: { hype: 95 },
+    modifiers: buildModifiers({ merchTable: true }),
+    bandInventory: buildInventory(),
+    playerStateOrFame: 100,
+    gigStats: buildGigStats()
+  })
 
   const bonusItem = sRank.income.breakdown.find(b => b.label === 'HYPE BONUS')
   assert.ok(bonusItem, 'S-rank should trigger hype bonus entry')
@@ -220,25 +220,25 @@ test('calculateGigFinancials applies S-rank merch bonus', () => {
 test('calculateGigFinancials penalizes merch sales for misses', () => {
   const gigData = buildGigData()
 
-  const noMisses = calculateGigFinancials(
-    gigData,
-    80,
-    { hype: 80 },
-    buildModifiers({ merchTable: true }),
-    buildInventory(),
-    100,
-    buildGigStats({ misses: 0 })
-  )
+  const noMisses = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 80,
+    crowdStats: { hype: 80 },
+    modifiers: buildModifiers({ merchTable: true }),
+    bandInventory: buildInventory(),
+    playerStateOrFame: 100,
+    gigStats: buildGigStats({ misses: 0 })
+  })
 
-  const manyMisses = calculateGigFinancials(
-    gigData,
-    80,
-    { hype: 80 },
-    buildModifiers({ merchTable: true }),
-    buildInventory(),
-    100,
-    buildGigStats({ misses: 20 })
-  )
+  const manyMisses = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 80,
+    crowdStats: { hype: 80 },
+    modifiers: buildModifiers({ merchTable: true }),
+    bandInventory: buildInventory(),
+    playerStateOrFame: 100,
+    gigStats: buildGigStats({ misses: 20 })
+  })
 
   const noMissMerch = noMisses.income.breakdown.find(
     b => b.label === 'Merch Sales'
@@ -263,15 +263,15 @@ test('calculateGigFinancials handles sold out merch gracefully', () => {
     vinyl: 0
   })
 
-  const result = calculateGigFinancials(
-    gigData,
-    90,
-    { hype: 90 },
-    buildModifiers({ merchTable: true }),
-    emptyInventory,
-    200,
-    buildGigStats()
-  )
+  const result = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 90,
+    crowdStats: { hype: 90 },
+    modifiers: buildModifiers({ merchTable: true }),
+    bandInventory: emptyInventory,
+    playerStateOrFame: 200,
+    gigStats: buildGigStats()
+  })
 
   const merchItem = result.income.breakdown.find(b => b.label === 'Merch Sales')
   assert.equal(
@@ -292,15 +292,15 @@ test('calculateGigFinancials uses all inventory types for sales limit', () => {
     vinyl: 50
   })
 
-  const result = calculateGigFinancials(
-    gigData,
-    100,
-    { hype: 100 },
-    buildModifiers({ merchTable: true }),
-    inv,
-    200,
-    buildGigStats()
-  )
+  const result = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 100,
+    crowdStats: { hype: 100 },
+    modifiers: buildModifiers({ merchTable: true }),
+    bandInventory: inv,
+    playerStateOrFame: 200,
+    gigStats: buildGigStats()
+  })
 
   const merchItem = result.income.breakdown.find(b => b.label === 'Merch Sales')
   // Should sell something (patches/vinyls) even if shirts/hoodies/cds are 0
@@ -312,15 +312,15 @@ test('calculateGigFinancials uses all inventory types for sales limit', () => {
 
 test('calculateGigFinancials includes transport costs based on distance', () => {
   const gigData = buildGigData({ dist: 200 })
-  const result = calculateGigFinancials(
-    gigData,
-    80,
-    { hype: 80 },
-    buildModifiers(),
-    buildInventory(),
-    100,
-    buildGigStats()
-  )
+  const result = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 80,
+    crowdStats: { hype: 80 },
+    modifiers: buildModifiers(),
+    bandInventory: buildInventory(),
+    playerStateOrFame: 100,
+    gigStats: buildGigStats()
+  })
 
   const fuelItem = result.expenses.breakdown.find(b => b.label === 'Fuel')
   assert.ok(fuelItem, 'Should include fuel costs')
@@ -331,25 +331,25 @@ test('calculateGigFinancials includes catering when enabled', () => {
   // Note: key renamed from 'energy' to 'catering' for standardization
   const gigData = buildGigData()
 
-  const noCatering = calculateGigFinancials(
-    gigData,
-    80,
-    { hype: 80 },
-    buildModifiers({ catering: false }),
-    buildInventory(),
-    100,
-    buildGigStats()
-  )
+  const noCatering = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 80,
+    crowdStats: { hype: 80 },
+    modifiers: buildModifiers({ catering: false }),
+    bandInventory: buildInventory(),
+    playerStateOrFame: 100,
+    gigStats: buildGigStats()
+  })
 
-  const withCatering = calculateGigFinancials(
-    gigData,
-    80,
-    { hype: 80 },
-    buildModifiers({ catering: true }),
-    buildInventory(),
-    100,
-    buildGigStats()
-  )
+  const withCatering = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 80,
+    crowdStats: { hype: 80 },
+    modifiers: buildModifiers({ catering: true }),
+    bandInventory: buildInventory(),
+    playerStateOrFame: 100,
+    gigStats: buildGigStats()
+  })
 
   const noCateringItem = noCatering.expenses.breakdown.find(
     b => b.label && b.label.includes('Catering')
@@ -368,15 +368,15 @@ test('calculateGigFinancials includes catering when enabled', () => {
 test('calculateGigFinancials supports new merch key', () => {
   const gigData = buildGigData()
 
-  const withMerchKey = calculateGigFinancials(
-    gigData,
-    80,
-    { hype: 80 },
-    buildModifiers({ merch: true, merchTable: false }),
-    buildInventory(),
-    100,
-    buildGigStats()
-  )
+  const withMerchKey = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 80,
+    crowdStats: { hype: 80 },
+    modifiers: buildModifiers({ merch: true, merchTable: false }),
+    bandInventory: buildInventory(),
+    playerStateOrFame: 100,
+    gigStats: buildGigStats()
+  })
 
   const merchItem = withMerchKey.expenses.breakdown.find(
     b => b.label === 'Merch Stand'
@@ -389,15 +389,15 @@ test('calculateGigFinancials supports new merch key', () => {
 
 test('calculateGigFinancials handles zero capacity venue', () => {
   const gigData = buildGigData({ capacity: 0, price: 0 })
-  const result = calculateGigFinancials(
-    gigData,
-    80,
-    { hype: 80 },
-    buildModifiers(),
-    buildInventory(),
-    100,
-    buildGigStats()
-  )
+  const result = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 80,
+    crowdStats: { hype: 80 },
+    modifiers: buildModifiers(),
+    bandInventory: buildInventory(),
+    playerStateOrFame: 100,
+    gigStats: buildGigStats()
+  })
 
   const ticketItem = result.income.breakdown.find(
     b => b.label === 'Ticket Sales'
@@ -413,27 +413,27 @@ test('calculateGigFinancials handles extreme performance scores', () => {
   const gigData = buildGigData()
 
   // Test with 0 score
-  const zeroScore = calculateGigFinancials(
-    gigData,
-    0,
-    { hype: 0 },
-    buildModifiers(),
-    buildInventory(),
-    100,
-    buildGigStats()
-  )
+  const zeroScore = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 0,
+    crowdStats: { hype: 0 },
+    modifiers: buildModifiers(),
+    bandInventory: buildInventory(),
+    playerStateOrFame: 100,
+    gigStats: buildGigStats()
+  })
   assert.ok(zeroScore.net !== undefined, 'Should handle zero performance score')
 
   // Test with 100 score
-  const perfectScore = calculateGigFinancials(
-    gigData,
-    100,
-    { hype: 100 },
-    buildModifiers(),
-    buildInventory(),
-    100,
-    buildGigStats()
-  )
+  const perfectScore = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 100,
+    crowdStats: { hype: 100 },
+    modifiers: buildModifiers(),
+    bandInventory: buildInventory(),
+    playerStateOrFame: 100,
+    gigStats: buildGigStats()
+  })
   assert.ok(
     perfectScore.net !== undefined,
     'Should handle perfect performance score'
@@ -447,25 +447,25 @@ test('calculateGigFinancials handles extreme performance scores', () => {
 test('calculateGigFinancials merch table modifier increases sales', () => {
   const gigData = buildGigData()
 
-  const noTable = calculateGigFinancials(
-    gigData,
-    80,
-    { hype: 80 },
-    buildModifiers({ merchTable: false }),
-    buildInventory(),
-    100,
-    buildGigStats()
-  )
+  const noTable = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 80,
+    crowdStats: { hype: 80 },
+    modifiers: buildModifiers({ merchTable: false }),
+    bandInventory: buildInventory(),
+    playerStateOrFame: 100,
+    gigStats: buildGigStats()
+  })
 
-  const withTable = calculateGigFinancials(
-    gigData,
-    80,
-    { hype: 80 },
-    buildModifiers({ merchTable: true }),
-    buildInventory(),
-    100,
-    buildGigStats()
-  )
+  const withTable = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 80,
+    crowdStats: { hype: 80 },
+    modifiers: buildModifiers({ merchTable: true }),
+    bandInventory: buildInventory(),
+    playerStateOrFame: 100,
+    gigStats: buildGigStats()
+  })
 
   const noTableMerch = noTable.income.breakdown.find(
     b => b.label === 'Merch Sales'
@@ -495,15 +495,15 @@ test('EXPENSE_CONSTANTS are properly defined', () => {
 
 test('calculateGigFinancials net profit matches income minus expenses', () => {
   const gigData = buildGigData()
-  const result = calculateGigFinancials(
-    gigData,
-    75,
-    { hype: 75 },
-    buildModifiers(),
-    buildInventory(),
-    150,
-    buildGigStats()
-  )
+  const result = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 75,
+    crowdStats: { hype: 75 },
+    modifiers: buildModifiers(),
+    bandInventory: buildInventory(),
+    playerStateOrFame: 150,
+    gigStats: buildGigStats()
+  })
 
   const calculatedNet = result.income.total - result.expenses.total
   assert.equal(
@@ -515,15 +515,15 @@ test('calculateGigFinancials net profit matches income minus expenses', () => {
 
 test('calculateGigFinancials handles high fame with high price', () => {
   const gigData = buildGigData({ capacity: 500, price: 40 })
-  const result = calculateGigFinancials(
-    gigData,
-    85,
-    { hype: 85 },
-    buildModifiers(),
-    buildInventory(),
-    5000,
-    buildGigStats()
-  )
+  const result = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 85,
+    crowdStats: { hype: 85 },
+    modifiers: buildModifiers(),
+    bandInventory: buildInventory(),
+    playerStateOrFame: 5000,
+    gigStats: buildGigStats()
+  })
 
   // High fame should mitigate price penalty
   const ticketItem = result.income.breakdown.find(
@@ -591,15 +591,15 @@ test('calculateGigFinancials applies van tuning upgrade to fuel cost', () => {
   const baseCost = calculateFuelCost(100).fuelCost
 
   // Without upgrade (passing fame number)
-  const res1 = calculateGigFinancials(
-    gigData,
-    80,
-    { hype: 80 },
-    buildModifiers(),
-    buildInventory(),
-    100,
-    buildGigStats()
-  )
+  const res1 = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 80,
+    crowdStats: { hype: 80 },
+    modifiers: buildModifiers(),
+    bandInventory: buildInventory(),
+    playerStateOrFame: 100,
+    gigStats: buildGigStats()
+  })
   const fuelItem1 = res1.expenses.breakdown.find(b => b.label === 'Fuel')
   assert.equal(fuelItem1.value, baseCost)
 
@@ -610,15 +610,15 @@ test('calculateGigFinancials applies van tuning upgrade to fuel cost', () => {
       upgrades: ['van_tuning']
     }
   }
-  const res2 = calculateGigFinancials(
-    gigData,
-    80,
-    { hype: 80 },
-    buildModifiers(),
-    buildInventory(),
-    playerState,
-    buildGigStats()
-  )
+  const res2 = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 80,
+    crowdStats: { hype: 80 },
+    modifiers: buildModifiers(),
+    bandInventory: buildInventory(),
+    playerStateOrFame: playerState,
+    gigStats: buildGigStats()
+  })
   const fuelItem2 = res2.expenses.breakdown.find(b => b.label === 'Fuel')
 
   assert.ok(
