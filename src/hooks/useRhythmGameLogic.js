@@ -72,7 +72,6 @@ export const useRhythmGameLogic = () => {
       score: state.score,
       combo: state.combo,
       health: state.health,
-      progress: gameStateRef.current.progress,
       overload: state.overload,
       isToxicMode: state.isToxicMode,
       isGameOver: state.isGameOver,

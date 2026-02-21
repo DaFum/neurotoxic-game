@@ -60,7 +60,6 @@ PixiStage.propTypes = {
       score: PropTypes.number,
       combo: PropTypes.number,
       health: PropTypes.number,
-      progress: PropTypes.number,
       overload: PropTypes.number,
       isToxicMode: PropTypes.bool,
       isGameOver: PropTypes.bool,
