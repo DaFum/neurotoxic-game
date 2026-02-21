@@ -158,39 +158,50 @@ export async function playSongFromData(song, delay = 0, options = {}) {
     : []
   const validDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
 
-  const events = song.notes
-    .filter(n => {
-      // Validate note data
-      return (
-        typeof n.t === 'number' &&
-        isFinite(n.t) &&
-        typeof n.p === 'number' &&
-        isFinite(n.p) &&
-        typeof n.v === 'number' &&
-        isFinite(n.v)
-      )
-    })
-    .map(n => {
-      const time = useTempoMap
-        ? calculateTimeFromTicks(n.t, tpb, activeTempoMap, 's')
-        : (n.t / tpb) * (60 / bpm)
+  // ⚡ BOLT OPTIMIZATION: Single-pass O(N) loop replaces 4 array passes (filter->map->filter->reduce)
+  // Minimizes garbage collection spikes and main-thread blocking during song initialization.
+  const events = []
+  let lastTime = 0
 
-      // Clamp velocity 0-127 and normalize
+  for (let i = 0; i < song.notes.length; i++) {
+    const n = song.notes[i]
+
+    // Validate note data
+    if (
+      typeof n.t !== 'number' ||
+      !isFinite(n.t) ||
+      typeof n.p !== 'number' ||
+      !isFinite(n.p) ||
+      typeof n.v !== 'number' ||
+      !isFinite(n.v)
+    ) {
+      continue
+    }
+
+    const time = useTempoMap
+      ? calculateTimeFromTicks(n.t, tpb, activeTempoMap, 's')
+      : (n.t / tpb) * (60 / bpm)
+
+    // Delay is applied once when Transport starts; keep note times relative.
+    const finalTime = Number.isFinite(time) ? time : -1
+
+    // Filter out notes with invalid or negative times to prevent clustering/errors
+    if (finalTime >= 0) {
       const rawVelocity = Math.max(0, Math.min(127, n.v))
 
-      // Delay is applied once when Transport starts; keep note times relative.
-      const finalTime = Number.isFinite(time) ? time : -1
+      // Track the maximum time in this pass to avoid a subsequent .reduce()
+      if (finalTime > lastTime) {
+        lastTime = finalTime
+      }
 
-      // Invalid times are caught by the filter below
-      return {
+      events.push({
         time: finalTime,
         note: n.p,
         velocity: rawVelocity / 127,
         lane: n.lane
-      }
-    })
-    // Filter out notes with invalid or negative times to prevent clustering/errors
-    .filter(e => Number.isFinite(e.time) && e.time >= 0)
+      })
+    }
+  }
 
   if (events.length === 0) {
     logger.warn(
@@ -225,12 +236,7 @@ export async function playSongFromData(song, delay = 0, options = {}) {
   const startTime = Tone.now() + Math.max(minLookahead, validDelay)
 
   if (onEnded) {
-    const lastEvent = events.reduce(
-      (max, e) => (e.time > max.time ? e : max),
-      events[0]
-    )
-    const lastTime = lastEvent ? lastEvent.time : 0
-    // Approximate end buffer
+    // ⚡ BOLT OPTIMIZATION: Use pre-calculated lastTime instead of a fourth reduce pass
     const duration = lastTime + Tone.Time('4n').toSeconds()
 
     Tone.getTransport().scheduleOnce(() => {
