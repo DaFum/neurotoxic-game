@@ -1,4 +1,4 @@
-import { memo, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useGameState } from '../context/GameState'
 import {
   Map as MapIcon,
@@ -10,18 +10,7 @@ import {
   HelpCircle
 } from 'lucide-react'
 import { useAudioControl } from '../hooks/useAudioControl'
-
-const MiniBar = memo(function MiniBar({ value, max = 100, color, warn = false }) {
-  const pct = max > 0 ? Math.min(100, Math.max(0, (value / max) * 100)) : 0
-  return (
-    <div className='w-full h-1.5 bg-(--void-black) border border-(--ash-gray)/50 overflow-hidden'>
-      <div
-        className={`h-full transition-all duration-500 ${color} ${warn ? 'animate-fuel-warning' : ''}`}
-        style={{ width: `${pct}%` }}
-      />
-    </div>
-  )
-})
+import { ProgressBar } from './shared'
 
 const SHORTCUTS = [
   { key: '?', desc: 'Toggle this help' },
@@ -105,10 +94,12 @@ export const HUD = () => {
           <div className='border-t border-(--toxic-green)/20 pt-2 space-y-1.5'>
             <div className='flex items-center gap-2'>
               <Fuel size={12} className='text-(--fuel-yellow) shrink-0' />
-              <MiniBar
+              <ProgressBar
                 value={fuel}
+                max={100}
                 color='bg-(--fuel-yellow)'
                 warn={fuel < 20}
+                size='mini'
               />
               <span className='text-[10px] text-(--ash-gray) w-8 text-right tabular-nums'>
                 {Math.round(fuel)}
@@ -116,10 +107,12 @@ export const HUD = () => {
             </div>
             <div className='flex items-center gap-2'>
               <Wrench size={12} className='text-(--condition-blue) shrink-0' />
-              <MiniBar
+              <ProgressBar
                 value={condition}
+                max={100}
                 color='bg-(--condition-blue)'
                 warn={condition < 25}
+                size='mini'
               />
               <span className='text-[10px] text-(--ash-gray) w-8 text-right tabular-nums'>
                 {Math.round(condition)}
@@ -187,7 +180,12 @@ export const HUD = () => {
               <div className='flex items-center gap-1.5'>
                 <div className='flex items-center gap-1' title='Mood'>
                   <div className='w-12'>
-                    <MiniBar value={m.mood} max={100} color='bg-(--mood-pink)' />
+                    <ProgressBar
+                      value={m.mood}
+                      max={100}
+                      color='bg-(--mood-pink)'
+                      size='mini'
+                    />
                   </div>
                   <span className='text-[9px] text-(--mood-pink) w-7 text-right tabular-nums'>
                     {m.mood}%
@@ -195,10 +193,11 @@ export const HUD = () => {
                 </div>
                 <div className='flex items-center gap-1' title='Stamina'>
                   <div className='w-12'>
-                    <MiniBar
+                    <ProgressBar
                       value={m.stamina}
                       max={100}
                       color='bg-(--stamina-green)'
+                      size='mini'
                     />
                   </div>
                   <span className='text-[9px] text-(--stamina-green) w-7 text-right tabular-nums'>
@@ -211,10 +210,16 @@ export const HUD = () => {
           <div className='mt-2 pt-1.5 border-t border-(--toxic-green)/20 flex items-center justify-between'>
             <span className='text-[10px] text-(--ash-gray)'>HARMONY</span>
             <div className='flex items-center gap-2'>
-              <div className='w-20 h-1.5 bg-(--void-black) border border-(--ash-gray)/30 overflow-hidden'>
-                <div
-                  className={`h-full transition-all duration-500 ${band.harmony < 40 ? 'bg-(--blood-red)' : 'bg-(--toxic-green)'}`}
-                  style={{ width: `${band.harmony}%` }}
+              <div className='w-20'>
+                <ProgressBar
+                  value={band.harmony}
+                  max={100}
+                  color={
+                    band.harmony < 40
+                      ? 'bg-(--blood-red)'
+                      : 'bg-(--toxic-green)'
+                  }
+                  size='mini'
                 />
               </div>
               <span
