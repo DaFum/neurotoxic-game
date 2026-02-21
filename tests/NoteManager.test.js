@@ -35,6 +35,7 @@ const MockGraphics = class {
 const MockPIXI = {
   Sprite: MockSprite,
   Graphics: MockGraphics,
+  Texture: { WHITE: { id: 'white' } },
   Container: class {
     addChild() {}
     removeChild() {}
@@ -164,26 +165,38 @@ describe('NoteManager', () => {
     assert.equal(sprite.scale.set.mock.calls.length, 0)
   })
 
-  test('createNoteSprite creates a fallback Graphics if texture is missing', () => {
+  test('createNoteSprite creates a fallback Sprite with WHITE texture if texture is missing', () => {
     noteManager.noteTextures = { skull: null, lightning: null }
 
     const sprite = noteManager.createNoteSprite(0)
 
-    assert.ok(sprite instanceof PIXI.Graphics)
-    // It returns uninitialized sprite now
-    assert.equal(sprite.x, 0)
+    assert.ok(sprite instanceof PIXI.Sprite)
+    assert.equal(sprite.texture.id, 'white')
+    assert.equal(sprite.isFallback, true)
+
+    // Position is set in initialize, not create. But anchor should be set.
+    assert.equal(sprite.anchor.set.mock.calls.length, 1)
   })
 
-  test('initializeNoteSprite sets properties correctly', () => {
+  test('initializeNoteSprite sets properties correctly for fallback sprite', () => {
     const lane = { color: 0x0000ff, renderX: 300 }
-    const sprite = new PIXI.Graphics()
+
+    // Create a sprite that mimics what createNoteSprite returns for fallback
+    const sprite = new PIXI.Sprite(PIXI.Texture.WHITE)
+    sprite.isFallback = true
 
     noteManager.initializeNoteSprite(sprite, lane, 0)
 
-    assert.equal(sprite.x, 305)
+    assert.equal(sprite.x, 350) // 300 + 50
     assert.equal(sprite.y, -50)
     assert.equal(sprite.visible, true)
     assert.equal(sprite.alpha, 1)
+
+    // Check dimensions for fallback (90x20)
+    assert.equal(sprite.width, 90)
+    assert.equal(sprite.height, 20)
+    assert.equal(sprite.isFallback, true)
+    assert.equal(sprite.texture.id, 'white')
   })
 
   test('initializeNoteSprite sets correct texture for lightning lane', () => {
@@ -198,6 +211,7 @@ describe('NoteManager', () => {
     noteManager.initializeNoteSprite(sprite, lane, 1)
 
     assert.equal(sprite.texture.id, 'lightning')
+    assert.equal(sprite.isFallback, false)
   })
 
   test('initializeNoteSprite sets correct texture for skull lane', () => {
@@ -212,29 +226,32 @@ describe('NoteManager', () => {
     noteManager.initializeNoteSprite(sprite, lane, 0)
 
     assert.equal(sprite.texture.id, 'skull')
+    assert.equal(sprite.isFallback, false)
   })
 
-  test('acquireSpriteFromPool reuses a Graphics from the pool', () => {
+  test('acquireSpriteFromPool reuses a Sprite for fallback', () => {
     const lane = { color: 0x0000ff, renderX: 300 }
 
-    const pooledGraphics = new PIXI.Graphics()
-    pooledGraphics.visible = false
-    noteManager.spritePool.push(pooledGraphics)
+    // Ensure textures are missing to force fallback logic
+    noteManager.noteTextures = { skull: null, lightning: null }
+
+    const pooledSprite = new PIXI.Sprite(PIXI.Texture.WHITE)
+    pooledSprite.visible = false
+    pooledSprite.isFallback = true
+    noteManager.spritePool.push(pooledSprite)
 
     const sprite = noteManager.acquireSpriteFromPool(lane, 0)
 
-    assert.equal(sprite, pooledGraphics)
+    assert.equal(sprite, pooledSprite)
     assert.equal(sprite.visible, true)
-    assert.equal(sprite.x, 305)
+    assert.equal(sprite.x, 350) // 300 + 50
     assert.equal(sprite.y, -50)
-    assert.equal(sprite.alpha, 1) // set in acquireSpriteFromPool
+    assert.equal(sprite.alpha, 1)
 
-    // Check scale set call
-    assert.equal(sprite.scale.set.mock.calls.length, 1)
-    assert.deepEqual(sprite.scale.set.mock.calls[0].arguments, [1])
-
-    // Check clear call
-    assert.equal(sprite.clear.mock.calls.length, 1)
+    // Check dimensions
+    assert.equal(sprite.width, 90)
+    assert.equal(sprite.height, 20)
+    assert.equal(sprite.isFallback, true)
   })
 
   test('initializeNoteSprite sets jitterOffset property', () => {
