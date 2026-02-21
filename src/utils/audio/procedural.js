@@ -375,6 +375,263 @@ export async function startMetalGenerator(
 }
 
 /**
+ * Handles the initial setup for MIDI playback, including request ID generation.
+ * @param {string} filename - The filename of the MIDI.
+ * @param {number} offset - Start offset in seconds.
+ * @param {boolean} loop - Whether to loop the playback.
+ * @param {number|null} ownedRequestId - Internal request ownership override.
+ * @returns {number} The new request ID.
+ */
+function initializePlaybackRequest(filename, offset, loop, ownedRequestId) {
+  logger.debug(
+    'AudioEngine',
+    `Request playMidiFile: ${filename}, offset=${offset}, loop=${loop}`
+  )
+  const reqId =
+    Number.isInteger(ownedRequestId) && ownedRequestId > 0
+      ? ownedRequestId
+      : ++audioState.playRequestId
+  logger.debug('AudioEngine', `New playRequestId: ${reqId}`)
+  return reqId
+}
+
+/**
+ * Resolves the URL for a MIDI file.
+ * @param {string} filename - The filename of the MIDI.
+ * @returns {string|null} The resolved URL or null if not found.
+ */
+function resolveMidiUrl(filename) {
+  const baseUrl = import.meta.env.BASE_URL || './'
+  const publicBasePath = `${baseUrl}assets`
+  const { url, source } = resolveAssetUrl(filename, midiUrlMap, publicBasePath)
+  logger.debug(
+    'AudioEngine',
+    `Resolved MIDI URL for ${filename}: ${url} (source=${source ?? 'none'})`
+  )
+
+  if (!url) {
+    logger.error('AudioEngine', `MIDI file not found in assets: ${filename}`)
+    return null
+  }
+  return url
+}
+
+/**
+ * Fetches the MIDI file as an ArrayBuffer.
+ * @param {string} url - The URL of the MIDI file.
+ * @param {number} reqId - The request ID to validate against.
+ * @param {string} filename - The filename for logging.
+ * @returns {Promise<ArrayBuffer|null>} The MIDI data or null on failure.
+ */
+async function fetchMidiArrayBuffer(url, reqId, filename) {
+  try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      10000 // 10s timeout for MIDI fetch
+    )
+    let arrayBuffer = null
+    try {
+      const response = await fetch(url, { signal: controller.signal })
+      if (reqId !== audioState.playRequestId) return null
+      if (!response.ok) throw new Error(`Failed to load MIDI: ${url}`)
+      arrayBuffer = await response.arrayBuffer()
+    } finally {
+      clearTimeout(timeoutId)
+    }
+    return arrayBuffer
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      logger.warn('AudioEngine', `MIDI fetch timed out for "${filename}"`)
+    } else {
+      logger.error('AudioEngine', 'Error playing MIDI:', err)
+    }
+    return null
+  }
+}
+
+/**
+ * Parses the MIDI ArrayBuffer.
+ * @param {ArrayBuffer} arrayBuffer - The MIDI data.
+ * @returns {object|null} The parsed MIDI object or null on failure.
+ */
+function parseMidiData(arrayBuffer) {
+  if (!MidiParser) {
+    logger.error(
+      'AudioEngine',
+      'MidiParser failed to load from @tonejs/midi. This disables all MIDI playback. Try: npm install @tonejs/midi --force and restart the dev server. If the issue persists, check bundler ESM/CJS interop configuration.'
+    )
+    return null
+  }
+  const midi = new MidiParser(arrayBuffer)
+  logger.debug('AudioEngine', `MIDI loaded. Duration: ${midi.duration}s`)
+
+  if (midi.duration <= 0) {
+    logger.warn(
+      'AudioEngine',
+      `MIDI duration is ${midi.duration}s. Skipping playback.`
+    )
+    return null
+  }
+  return midi
+}
+
+/**
+ * Creates Tone.Parts for each track in the MIDI file.
+ * @param {object} midi - The parsed MIDI object.
+ * @param {boolean} useCleanPlayback - If true, bypass FX for MIDI playback.
+ * @returns {Array} An array of created Tone.Part objects.
+ */
+function createMidiParts(midi, useCleanPlayback) {
+  const leadSynth = useCleanPlayback ? audioState.midiLead : audioState.guitar
+  const bassSynth = useCleanPlayback ? audioState.midiBass : audioState.bass
+  const drumSet = useCleanPlayback
+    ? audioState.midiDrumKit
+    : audioState.drumKit
+
+  const nextMidiParts = []
+  midi.tracks.forEach(track => {
+    const notes = Array.isArray(track?.notes) ? track.notes : []
+    const percussionTrack = isPercussionTrack(track)
+    const trackEvents = buildMidiTrackEvents(notes, percussionTrack)
+
+    if (trackEvents.length === 0) return
+
+    const trackPart = new Tone.Part((time, value) => {
+      if (!leadSynth || !bassSynth || !drumSet) return
+      if (!isValidMidiNote({ midi: value?.midiPitch })) return
+      const midiPitch = normalizeMidiPitch({ midi: value?.midiPitch })
+      if (midiPitch == null) return
+
+      try {
+        // Clamp duration to prevent "duration must be greater than 0" error
+        // and cap at MAX_NOTE_DURATION to prevent resource exhaustion
+        const duration = Math.min(
+          MAX_NOTE_DURATION,
+          Math.max(
+            MIN_NOTE_DURATION,
+            Number.isFinite(value?.duration)
+              ? value.duration
+              : MIN_NOTE_DURATION
+          )
+        )
+
+        // Clamp velocity
+        const velocity = Math.max(
+          0,
+          Math.min(1, Number.isFinite(value?.velocity) ? value.velocity : 1)
+        )
+
+        if (value?.percussionTrack) {
+          playDrumNote(midiPitch, time, velocity, drumSet)
+          return
+        }
+
+        if (midiPitch < 45) {
+          bassSynth.triggerAttackRelease(
+            Tone.Frequency(midiPitch, 'midi'),
+            duration,
+            time,
+            velocity
+          )
+        } else {
+          leadSynth.triggerAttackRelease(
+            Tone.Frequency(midiPitch, 'midi'),
+            duration,
+            time,
+            velocity
+          )
+        }
+      } catch (e) {
+        // Prevent single note errors from crashing the loop
+        logger.warn('AudioEngine', 'Note scheduling error:', e)
+      }
+    }, trackEvents)
+
+    trackPart.start(0)
+    nextMidiParts.push(trackPart)
+  })
+  return nextMidiParts
+}
+
+/**
+ * Configures the Transport and schedules playback.
+ * @param {object} midi - The parsed MIDI object.
+ * @param {object} params - Parameters for scheduling.
+ */
+function scheduleMidiTransport(midi, params) {
+  const {
+    reqId,
+    filename,
+    offset,
+    loop,
+    delay,
+    onEnded,
+    stopAfterSeconds,
+    startTimeSec
+  } = params
+
+  if (midi.header.tempos.length > 0) {
+    Tone.getTransport().bpm.value = midi.header.tempos[0].bpm
+  }
+
+  const validDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
+  let requestedOffset = Number.isFinite(offset) ? Math.max(0, offset) : 0
+  const duration = Number.isFinite(midi.duration) ? midi.duration : 0
+
+  // Reset offset when it is at or beyond duration to ensure sound plays.
+  if (duration > 0 && requestedOffset >= duration) {
+    logger.warn(
+      'AudioEngine',
+      `Offset ${requestedOffset}s exceeds duration ${duration}s. Resetting to 0.`
+    )
+    requestedOffset = 0
+  }
+
+  logger.debug(
+    'AudioEngine',
+    `Starting Transport. Delay=${validDelay}, Offset=${requestedOffset}`
+  )
+
+  if (loop) {
+    Tone.getTransport().loop = true
+    Tone.getTransport().loopEnd = midi.duration
+    // Loop from excerpt start, so intros don't restart on every loop
+    Tone.getTransport().loopStart = requestedOffset
+  } else {
+    Tone.getTransport().loop = false
+  }
+
+  if (!loop && onEnded && duration > 0) {
+    audioState.transportEndEventId = Tone.getTransport().scheduleOnce(() => {
+      if (reqId !== audioState.playRequestId) return
+      onEnded({
+        filename,
+        duration,
+        offsetSeconds: requestedOffset
+      })
+    }, duration)
+  }
+
+  if (!loop && Number.isFinite(stopAfterSeconds) && stopAfterSeconds > 0) {
+    const stopTime = requestedOffset + stopAfterSeconds
+    audioState.transportStopEventId = Tone.getTransport().scheduleOnce(() => {
+      if (reqId !== audioState.playRequestId) return
+      stopAudio()
+    }, stopTime)
+  }
+
+  // Schedule Transport.start in advance to prevent pops/crackles
+  // Add minimum 100ms lookahead for reliable scheduling
+  const minLookahead = 0.1
+  const transportStartTime = Number.isFinite(startTimeSec)
+    ? startTimeSec
+    : Tone.now() + Math.max(minLookahead, validDelay)
+
+  Tone.getTransport().start(transportStartTime, requestedOffset)
+}
+
+/**
  * Plays a MIDI file from a URL.
  * @param {string} filename - The filename of the MIDI (key in url map).
  * @param {number} [offset=0] - Start offset in seconds.
@@ -397,17 +654,8 @@ async function playMidiFileInternal(
 ) {
   const { onEnded, useCleanPlayback, stopAfterSeconds, startTimeSec } =
     normalizeMidiPlaybackOptions(options)
-  logger.debug(
-    'AudioEngine',
-    `Request playMidiFile: ${filename}, offset=${offset}, loop=${loop}`
-  )
-  // Requirement: Stop previous playback immediately unless the caller
-  // explicitly owns request invalidation (used by ambient chaining).
-  const reqId =
-    Number.isInteger(ownedRequestId) && ownedRequestId > 0
-      ? ownedRequestId
-      : ++audioState.playRequestId
-  logger.debug('AudioEngine', `New playRequestId: ${reqId}`)
+
+  const reqId = initializePlaybackRequest(filename, offset, loop, ownedRequestId)
 
   const unlocked = await ensureAudioContext()
   if (!unlocked) {
@@ -426,198 +674,32 @@ async function playMidiFileInternal(
   stopAudioInternal()
   Tone.getTransport().cancel()
 
-  const baseUrl = import.meta.env.BASE_URL || './'
-  const publicBasePath = `${baseUrl}assets`
-  const { url, source } = resolveAssetUrl(filename, midiUrlMap, publicBasePath)
-  logger.debug(
-    'AudioEngine',
-    `Resolved MIDI URL for ${filename}: ${url} (source=${source ?? 'none'})`
-  )
+  const url = resolveMidiUrl(filename)
+  if (!url) return false
 
-  if (!url) {
-    logger.error('AudioEngine', `MIDI file not found in assets: ${filename}`)
-    return false
-  }
+  const arrayBuffer = await fetchMidiArrayBuffer(url, reqId, filename)
+  if (!arrayBuffer) return false
+  if (reqId !== audioState.playRequestId) return false
 
-  try {
-    const controller = new AbortController()
-    const timeoutId = setTimeout(
-      () => controller.abort(),
-      10000 // 10s timeout for MIDI fetch
-    )
-    let arrayBuffer = null
-    try {
-      const response = await fetch(url, { signal: controller.signal })
-      if (reqId !== audioState.playRequestId) return false
-      if (!response.ok) throw new Error(`Failed to load MIDI: ${url}`)
-      arrayBuffer = await response.arrayBuffer()
-    } finally {
-      clearTimeout(timeoutId)
-    }
-    if (reqId !== audioState.playRequestId) return false
+  const midi = parseMidiData(arrayBuffer)
+  if (!midi) return false
+  if (reqId !== audioState.playRequestId) return false
 
-    if (!MidiParser) {
-      logger.error(
-        'AudioEngine',
-        'MidiParser failed to load from @tonejs/midi. This disables all MIDI playback. Try: npm install @tonejs/midi --force and restart the dev server. If the issue persists, check bundler ESM/CJS interop configuration.'
-      )
-      return false
-    }
+  const parts = createMidiParts(midi, useCleanPlayback)
+  audioState.midiParts = parts
 
-    const midi = new MidiParser(arrayBuffer)
-    if (reqId !== audioState.playRequestId) return false // Optimization: fail fast before expensive scheduling
+  scheduleMidiTransport(midi, {
+    reqId,
+    filename,
+    offset,
+    loop,
+    delay,
+    onEnded,
+    stopAfterSeconds,
+    startTimeSec
+  })
 
-    logger.debug('AudioEngine', `MIDI loaded. Duration: ${midi.duration}s`)
-
-    if (midi.duration <= 0) {
-      logger.warn(
-        'AudioEngine',
-        `MIDI duration is ${midi.duration}s. Skipping playback.`
-      )
-      return false
-    }
-
-    if (midi.header.tempos.length > 0) {
-      Tone.getTransport().bpm.value = midi.header.tempos[0].bpm
-    }
-
-    const leadSynth = useCleanPlayback ? audioState.midiLead : audioState.guitar
-    const bassSynth = useCleanPlayback ? audioState.midiBass : audioState.bass
-    const drumSet = useCleanPlayback
-      ? audioState.midiDrumKit
-      : audioState.drumKit
-
-    const nextMidiParts = []
-    midi.tracks.forEach(track => {
-      const notes = Array.isArray(track?.notes) ? track.notes : []
-      const percussionTrack = isPercussionTrack(track)
-      const trackEvents = buildMidiTrackEvents(notes, percussionTrack)
-
-      if (trackEvents.length === 0) return
-
-      const trackPart = new Tone.Part((time, value) => {
-        if (!leadSynth || !bassSynth || !drumSet) return
-        if (!isValidMidiNote({ midi: value?.midiPitch })) return
-        const midiPitch = normalizeMidiPitch({ midi: value?.midiPitch })
-        if (midiPitch == null) return
-
-        try {
-          // Clamp duration to prevent "duration must be greater than 0" error
-          // and cap at MAX_NOTE_DURATION to prevent resource exhaustion
-          const duration = Math.min(
-            MAX_NOTE_DURATION,
-            Math.max(
-              MIN_NOTE_DURATION,
-              Number.isFinite(value?.duration)
-                ? value.duration
-                : MIN_NOTE_DURATION
-            )
-          )
-
-          // Clamp velocity
-          const velocity = Math.max(
-            0,
-            Math.min(1, Number.isFinite(value?.velocity) ? value.velocity : 1)
-          )
-
-          if (value?.percussionTrack) {
-            playDrumNote(midiPitch, time, velocity, drumSet)
-            return
-          }
-
-          if (midiPitch < 45) {
-            bassSynth.triggerAttackRelease(
-              Tone.Frequency(midiPitch, 'midi'),
-              duration,
-              time,
-              velocity
-            )
-          } else {
-            leadSynth.triggerAttackRelease(
-              Tone.Frequency(midiPitch, 'midi'),
-              duration,
-              time,
-              velocity
-            )
-          }
-        } catch (e) {
-          // Prevent single note errors from crashing the loop
-          logger.warn('AudioEngine', 'Note scheduling error:', e)
-        }
-      }, trackEvents)
-
-      trackPart.start(0)
-      nextMidiParts.push(trackPart)
-    })
-
-    audioState.midiParts = nextMidiParts
-
-    const validDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
-    let requestedOffset = Number.isFinite(offset) ? Math.max(0, offset) : 0
-    const duration = Number.isFinite(midi.duration) ? midi.duration : 0
-
-    // Reset offset when it is at or beyond duration to ensure sound plays.
-    // Note: the old threshold-based check (within 0.1s of end) was overly
-    // conservative and would discard valid offsets near the end of a track.
-    if (duration > 0 && requestedOffset >= duration) {
-      logger.warn(
-        'AudioEngine',
-        `Offset ${requestedOffset}s exceeds duration ${duration}s. Resetting to 0.`
-      )
-      requestedOffset = 0
-    }
-
-    logger.debug(
-      'AudioEngine',
-      `Starting Transport. Delay=${validDelay}, Offset=${requestedOffset}`
-    )
-
-    if (loop) {
-      Tone.getTransport().loop = true
-      Tone.getTransport().loopEnd = midi.duration
-      // Loop from excerpt start, so intros don't restart on every loop
-      Tone.getTransport().loopStart = requestedOffset
-    } else {
-      Tone.getTransport().loop = false
-    }
-
-    // We already cleared events in stopAudioInternal.
-    // clearTransportEndEvent(); clearTransportStopEvent();
-
-    if (!loop && onEnded && duration > 0) {
-      audioState.transportEndEventId = Tone.getTransport().scheduleOnce(() => {
-        if (reqId !== audioState.playRequestId) return
-        onEnded({
-          filename,
-          duration,
-          offsetSeconds: requestedOffset
-        })
-      }, duration)
-    }
-    if (!loop && Number.isFinite(stopAfterSeconds) && stopAfterSeconds > 0) {
-      const stopTime = requestedOffset + stopAfterSeconds
-      audioState.transportStopEventId = Tone.getTransport().scheduleOnce(() => {
-        if (reqId !== audioState.playRequestId) return
-        stopAudio()
-      }, stopTime)
-    }
-
-    // Schedule Transport.start in advance to prevent pops/crackles
-    // Add minimum 100ms lookahead for reliable scheduling
-    const minLookahead = 0.1
-    const transportStartTime = Number.isFinite(startTimeSec)
-      ? startTimeSec
-      : Tone.now() + Math.max(minLookahead, validDelay)
-    Tone.getTransport().start(transportStartTime, requestedOffset)
-    return true
-  } catch (err) {
-    if (err.name === 'AbortError') {
-      logger.warn('AudioEngine', `MIDI fetch timed out for "${filename}"`)
-    } else {
-      logger.error('AudioEngine', 'Error playing MIDI:', err)
-    }
-    return false
-  }
+  return true
 }
 
 /**
