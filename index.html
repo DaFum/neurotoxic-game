@@ -2,6 +2,22 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval';
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        img-src 'self' data: https://gen.pollinations.ai;
+        font-src 'self' data: https://fonts.gstatic.com;
+        connect-src 'self' https://gen.pollinations.ai https://vitals.vercel-insights.com https://*.vercel-insights.com https://*.vercel-analytics.com;
+        media-src 'self' data:;
+        worker-src 'self' blob:;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+      "
+    />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>neurotoxic-game</title>
