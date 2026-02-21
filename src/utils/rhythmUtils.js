@@ -217,7 +217,11 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
         ? calculatedTimeMs
         : fallbackTimeMs
 
-      const excerptRelativeTimeMs = timeMs - excerptStartMs
+      // Notes in the JSON are pre-extracted from the excerpt window, so their
+      // tick values are already relative to the excerpt start (tick 0 = excerpt
+      // start). We must NOT subtract excerptStartMs here — doing so would push
+      // every note into negative time and filter out the entire song.
+      const excerptRelativeTimeMs = timeMs
       if (excerptRelativeTimeMs < 0) {
         return null
       }

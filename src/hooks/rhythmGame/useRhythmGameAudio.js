@@ -9,7 +9,8 @@ import {
   startGigPlayback,
   stopAudio,
   getAudioContextTimeSec,
-  getToneStartTimeSec
+  getToneStartTimeSec,
+  getGigTimeMs
 } from '../../utils/audioEngine'
 import { handleError, AudioError } from '../../utils/errorHandler'
 import { logger } from '../../utils/logger'
@@ -162,6 +163,16 @@ export const useRhythmGameAudio = ({
         if (index >= activeSetlist.length) {
           gameStateRef.current.setlistCompleted = true
           gameStateRef.current.songTransitioning = false
+          // After an OGG buffer ends naturally, the audio engine freezes the gig
+          // clock at the playback position and nulls gigStartCtxTime. If
+          // totalDuration includes a lookahead buffer (maxNoteTime + 4s), the
+          // frozen clock can never reach it and isNearTrackEnd stays false
+          // forever. Snapping totalDuration to the current (still-live) gig
+          // time here ensures the game loop detects completion on the next frame.
+          const nowMs = getGigTimeMs()
+          if (Number.isFinite(nowMs) && nowMs > 0) {
+            gameStateRef.current.totalDuration = nowMs
+          }
           return
         }
 
@@ -340,6 +351,9 @@ export const useRhythmGameAudio = ({
         // Update Game State
         gameStateRef.current.notes = notes
         gameStateRef.current.nextMissCheckIndex = 0
+        // Signal NoteManager to reset its render pointer for the new song
+        gameStateRef.current.notesVersion =
+          (gameStateRef.current.notesVersion ?? 0) + 1
 
         const maxNoteTime = notes.reduce((max, n) => Math.max(max, n.time), 0)
         const buffer = 4000
