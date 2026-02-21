@@ -34,6 +34,9 @@ const MockGraphics = class {
 const MockPIXI = {
   Sprite: MockSprite,
   Graphics: MockGraphics,
+  Texture: {
+    WHITE: { id: 'white-texture' }
+  },
   Container: class {
     constructor() {
       this.addChild = mock.fn()
@@ -79,6 +82,7 @@ describe('EffectManager', () => {
   let parentContainer
   let PIXI
   let EffectManager
+  let mockRenderer
 
   beforeEach(async () => {
     const pixiModule = await import('pixi.js')
@@ -88,7 +92,18 @@ describe('EffectManager', () => {
     EffectManager = managerModule.EffectManager
 
     parentContainer = new PIXI.Container()
-    const app = {} // minimal mock
+
+    mockRenderer = {
+      generateTexture: mock.fn(() => ({ id: 'generated-texture', destroy: mock.fn() })),
+      textureGenerator: {
+        generateTexture: mock.fn(() => ({ id: 'generated-texture', destroy: mock.fn() }))
+      }
+    }
+
+    const app = {
+      renderer: mockRenderer
+    }
+
     effectManager = new EffectManager(app, parentContainer)
     effectManager.init()
   })
@@ -152,17 +167,23 @@ describe('EffectManager', () => {
     assert.equal(effect.tint, 0x00FF41)
   })
 
-  test('spawnHitEffect falls back to Graphics if textures missing', () => {
+  test('spawnHitEffect falls back to generic Sprite if textures missing', () => {
     effectManager.textures.blood = null
     effectManager.textures.toxic = null
 
     effectManager.spawnHitEffect(100, 100, 0xCC0000)
 
+    // Should create generic texture
+    assert.equal(mockRenderer.textureGenerator.generateTexture.mock.calls.length + mockRenderer.generateTexture.mock.calls.length, 1)
+
     assert.equal(effectManager.activeEffects.length, 1)
     const effect = effectManager.activeEffects[0]
 
-    assert.ok(effect instanceof PIXI.Graphics)
-    assert.equal(effect.circle.mock.calls.length, 1)
+    // Verify it is a Sprite, not Graphics
+    assert.ok(effect instanceof PIXI.Sprite)
+    // Verify it uses the generated texture
+    assert.equal(effect.texture.id, 'generated-texture')
+    assert.equal(effect.tint, 0xCC0000)
   })
 
   test('update handles lifecycle and cleanup', () => {
@@ -186,9 +207,13 @@ describe('EffectManager', () => {
   })
 
   test('dispose clears resources and destroys container', () => {
-    // Spawn some effects
-    effectManager.textures.toxic = { id: 'toxic' }
+    // Generate a generic texture first
+    effectManager.textures.blood = null
+    effectManager.textures.toxic = null
     effectManager.spawnHitEffect(0, 0, 0xFFFFFF)
+    const genericTexture = effectManager.genericHitTexture
+
+    // Spawn some effects
     effectManager.spawnHitEffect(1, 1, 0xFFFFFF)
 
     const effect1 = effectManager.activeEffects[0]
@@ -200,6 +225,8 @@ describe('EffectManager', () => {
     const destroySpy2 = mock.fn()
     effect1.destroy = destroySpy1
     effect2.destroy = destroySpy2
+
+    const textureDestroySpy = genericTexture.destroy
 
     // Force effects into pool to test pool destruction too
     effectManager.releaseEffectToPool(effect1)
@@ -214,6 +241,9 @@ describe('EffectManager', () => {
     // Check effects destruction
     assert.equal(destroySpy1.mock.calls.length, 1)
     assert.equal(destroySpy2.mock.calls.length, 1)
+
+    // Check texture destruction
+    assert.equal(textureDestroySpy.mock.calls.length, 1)
 
     // Check container destruction
     assert.equal(container.destroy.mock.calls.length, 1)
