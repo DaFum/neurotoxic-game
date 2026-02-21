@@ -88,7 +88,7 @@ export class Logger {
    */
   _format(level, channel, message, data) {
     return {
-      id: Date.now() + Math.random(),
+      id: crypto.randomUUID(),
       timestamp: new Date().toISOString(),
       level,
       channel,
