@@ -38,6 +38,44 @@ export const Gig = () => {
   const logic = useRhythmGameLogic()
   const { stats, actions, gameStateRef } = logic
 
+  /**
+   * Triggers a CSS animation on the corresponding band member DOM element.
+   * @param {number} laneIndex
+   */
+  const triggerBandAnimation = useCallback(laneIndex => {
+    const memberEl = document.getElementById(`band-member-${laneIndex}`)
+    if (memberEl) {
+      let anim = bandAnimationsRef.current[laneIndex]
+
+      // Reuse existing animation if valid and attached to same element
+      if (anim && anim.effect && anim.effect.target === memberEl) {
+        anim.cancel()
+        anim.play()
+      } else {
+        // Create new animation using WAAPI to avoid forced reflows
+        anim = memberEl.animate(
+          [
+            { transform: 'rotate(0deg) scale(1)', offset: 0 },
+            { transform: 'rotate(10deg) scale(1.1)', offset: 0.5 },
+            { transform: 'rotate(0deg) scale(1)', offset: 1 }
+          ],
+          {
+            duration: 200,
+            easing: 'ease',
+            iterations: 1
+          }
+        )
+        bandAnimationsRef.current[laneIndex] = anim
+      }
+    }
+  }, [])
+
+  const ensureAudioFromGesture = useCallback(() => {
+    if (hasUnlockedAudioRef.current) return
+    hasUnlockedAudioRef.current = true
+    audioManager.ensureAudioContext()
+  }, [])
+
   // Keyboard Event Handling
   useEffect(() => {
     /**
@@ -135,69 +173,39 @@ export const Gig = () => {
     setActiveEvent,
     changeScene,
     addToast,
-    setLastGigStats
+    setLastGigStats,
+    ensureAudioFromGesture,
+    triggerBandAnimation
   ])
-
-  /**
-   * Triggers a CSS animation on the corresponding band member DOM element.
-   * @param {number} laneIndex
-   */
-  const triggerBandAnimation = laneIndex => {
-    const memberEl = document.getElementById(`band-member-${laneIndex}`)
-    if (memberEl) {
-      let anim = bandAnimationsRef.current[laneIndex]
-
-      // Reuse existing animation if valid and attached to same element
-      if (anim && anim.effect && anim.effect.target === memberEl) {
-        anim.cancel()
-        anim.play()
-      } else {
-        // Create new animation using WAAPI to avoid forced reflows
-        anim = memberEl.animate(
-          [
-            { transform: 'rotate(0deg) scale(1)', offset: 0 },
-            { transform: 'rotate(10deg) scale(1.1)', offset: 0.5 },
-            { transform: 'rotate(0deg) scale(1)', offset: 1 }
-          ],
-          {
-            duration: 200,
-            easing: 'ease',
-            iterations: 1
-          }
-        )
-        bandAnimationsRef.current[laneIndex] = anim
-      }
-    }
-  }
-
-  const ensureAudioFromGesture = () => {
-    if (hasUnlockedAudioRef.current) return
-    hasUnlockedAudioRef.current = true
-    audioManager.ensureAudioContext()
-  }
 
   // Touch/Mouse Input Handlers for Columns
   /**
    * Handles touch/mouse down on a lane column.
    * @param {number} laneIndex
    */
-  const handleTouchStart = laneIndex => {
-    ensureAudioFromGesture()
-    actions.registerInput(laneIndex, true)
-    triggerBandAnimation(laneIndex)
-  }
+  const handleTouchStart = useCallback(
+    laneIndex => {
+      ensureAudioFromGesture()
+      actions.registerInput(laneIndex, true)
+      triggerBandAnimation(laneIndex)
+    },
+    [ensureAudioFromGesture, actions, triggerBandAnimation]
+  )
 
   /**
    * Handles touch/mouse up on a lane column.
    * @param {number} laneIndex
    */
-  const handleTouchEnd = laneIndex => {
-    actions.registerInput(laneIndex, false)
-  }
+  const handleTouchEnd = useCallback(
+    laneIndex => {
+      actions.registerInput(laneIndex, false)
+    },
+    [actions]
+  )
 
   const handleLaneInput = useCallback(
     (index, active) => (active ? handleTouchStart(index) : handleTouchEnd(index)),
-    [actions]
+    [handleTouchStart, handleTouchEnd]
   )
 
   // Determine Background URL
