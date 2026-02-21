@@ -1,4 +1,4 @@
-import { resolveSongPlaybackWindow } from './audio/songUtils'
+import { resolveSongPlaybackWindow } from './audio/songUtils.js'
 
 /**
  * Generates rhythm game notes for a given song and configuration.
