@@ -116,6 +116,9 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     assert.strictEqual(finalNotes.length, 1, 'Should have notes for Song 1')
     assert.strictEqual(finalNotes[0].time, 1000 + 100, 'Song 1 note time should include lead-in (100ms)')
 
+    // notesVersion should have been incremented once (for song 1)
+    assert.strictEqual(result.current.gameStateRef.current.notesVersion, 1, 'notesVersion should be 1 after first song loads')
+
     // Verify transitioning flag is FALSE during playback
     assert.strictEqual(result.current.gameStateRef.current.songTransitioning, false, 'Transitioning flag should be false during playback')
 
@@ -165,6 +168,9 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     assert.strictEqual(finalNotes[0].time, 500 + 100, 'Song 2 note time should be relative to Song 2 start + lead-in')
     assert.strictEqual(finalNotes[0].lane, 1)
 
+    // notesVersion should have been incremented a second time (for song 2)
+    assert.strictEqual(result.current.gameStateRef.current.notesVersion, 2, 'notesVersion should be 2 after second song loads')
+
     // 4. Verify End of Set
     // Now assume Song 2 ends.
     const onSong2Ended = mockAudioEngine.startGigPlayback.mock.calls[1].arguments[0].onEnded
@@ -181,6 +187,9 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     // Check if transitioning flag is reset to false after set ends
     assert.strictEqual(result.current.gameStateRef.current.songTransitioning, false, 'Transitioning flag should be FALSE after last song ends')
     assert.strictEqual(result.current.gameStateRef.current.setlistCompleted, true, 'Audio playback should be marked ended')
+    // totalDuration should be snapped to the mocked gig time so the frozen clock
+    // immediately satisfies isNearTrackEnd on the next game-loop frame.
+    assert.strictEqual(result.current.gameStateRef.current.totalDuration, 40001, 'totalDuration should snap to mocked gig time (40001) on setlist completion')
 
     // Now simulate game loop again -> should finalize
     act(() => {
@@ -362,4 +371,88 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     assert.ok(mockChangeScene.mock.calls.length > 0, 'Should finalize gig once setlistCompleted is true')
     assert.strictEqual(mockChangeScene.mock.calls[0].arguments[0], 'POSTGIG')
   })
+
+  // ── totalDuration snap guard cases ───────────────────────────────────────
+  // When getGigTimeMs() returns a non-positive or non-finite value at the
+  // moment the setlist completes, totalDuration must NOT be changed.
+  // setlistCompleted and songTransitioning must still update as expected.
+
+  const guardCases = [
+    { label: 'NaN',      value: NaN  },
+    { label: '0',        value: 0    },
+    { label: 'negative', value: -100 }
+  ]
+
+  for (const { label, value } of guardCases) {
+    test(`totalDuration snap: no change when getGigTimeMs returns ${label}`, async () => {
+      const song = {
+        id: 'song-guard',
+        name: 'Guard Song',
+        bpm: 120,
+        duration: 60,
+        excerptDurationMs: 30000,
+        sourceOgg: 'guard.ogg'
+      }
+
+      const mockState = {
+        setlist: [song],
+        band: { members: [], harmony: 100 },
+        activeEvent: null,
+        hasUpgrade: () => false,
+        setLastGigStats: createMockSetLastGigStats(),
+        addToast: () => {},
+        gameMap: { nodes: { node1: { layer: 0 } } },
+        player: { currentNodeId: 'node1', money: 0 },
+        changeScene: createMockChangeScene(),
+        gigModifiers: {}
+      }
+      mockUseGameState.mock.mockImplementation(() => mockState)
+      mockAudioEngine.hasAudioAsset.mock.mockImplementation(() => true)
+      mockAudioManager.ensureAudioContext.mock.mockImplementation(async () => true)
+
+      // Capture onEnded
+      let capturedOnEnded = null
+      mockAudioEngine.startGigPlayback.mock.mockImplementation(async ({ onEnded }) => {
+        capturedOnEnded = onEnded
+        return true
+      })
+      // Initial gig time during song 1 setup (getGigTimeMs not called at this point)
+      mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 0)
+
+      const { result } = renderHook(() => useRhythmGameLogic())
+
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 100))
+      })
+
+      // After song 1 setup: totalDuration = max(noteDuration, audioDuration)
+      // parseSongNotes mock returns [] → notes = [] → noteDuration = 0 + 4000 = 4000
+      // audioDuration = excerptDurationMs = 30000 → totalDuration = 30000
+      const durationBeforeSnap = result.current.gameStateRef.current.totalDuration
+      assert.ok(durationBeforeSnap > 0, 'totalDuration should be set after song 1')
+
+      // Now switch to guard value before onEnded fires
+      mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => value)
+
+      assert.ok(capturedOnEnded, 'onEnded should have been captured')
+
+      await act(async () => {
+        await capturedOnEnded()
+        await new Promise(resolve => setTimeout(resolve, 50))
+      })
+
+      // setlistCompleted and songTransitioning must still be set correctly
+      assert.strictEqual(result.current.gameStateRef.current.setlistCompleted, true,
+        'setlistCompleted should be true regardless of guard value')
+      assert.strictEqual(result.current.gameStateRef.current.songTransitioning, false,
+        'songTransitioning should be false regardless of guard value')
+
+      // totalDuration must NOT have been snapped to the guard value
+      assert.strictEqual(
+        result.current.gameStateRef.current.totalDuration,
+        durationBeforeSnap,
+        `totalDuration must not change when getGigTimeMs returns ${label} (was ${durationBeforeSnap})`
+      )
+    })
+  }
 })

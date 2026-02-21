@@ -63,6 +63,9 @@ export const useRhythmGameState = () => {
     songTransitioning: false,
     // Replaces audioPlaybackEnded; signals multi-song setlist completion
     setlistCompleted: false,
+    // Incremented each time the notes array is replaced so NoteManager can
+    // detect a song transition and reset its render pointer.
+    notesVersion: 0,
     transportPausedByOverlay: false,
     toxicTimeTotal: 0,
     toxicModeEndTime: 0,

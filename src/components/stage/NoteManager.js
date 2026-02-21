@@ -29,6 +29,7 @@ export class NoteManager {
     this.container = null
     this.noteSprites = new Map() // Map<note, Sprite>
     this.nextRenderIndex = 0
+    this.lastNotesVersion = null // Tracks game-state notesVersion for song-transition resets
     this.spritePool = []
     this.noteTextures = { skull: null, lightning: null }
   }
@@ -71,16 +72,16 @@ export class NoteManager {
     const targetY = laneLayout?.hitLineY ?? 0
     const notes = state.notes
 
-    // Reset render index if notes were reset (e.g. restart)
-    if (this.nextRenderIndex >= notes.length && notes.length > 0) {
-      // Crude heuristic: if elapsed is very small but index is high, we reset
-      if (elapsed < 100) {
-        this.nextRenderIndex = 0
-        // Clean up sprites that might be stale
-        const notesToRemove = Array.from(this.noteSprites.keys())
-        for (const note of notesToRemove) {
-          this.destroyNoteSprite(note)
-        }
+    // Detect song transitions via the notesVersion counter that the audio hook
+    // increments every time it replaces the notes array. This is more reliable
+    // than the old elapsed < 100 heuristic which only worked for full restarts.
+    const notesVersion = state.notesVersion ?? 0
+    if (notesVersion !== this.lastNotesVersion) {
+      this.lastNotesVersion = notesVersion
+      this.nextRenderIndex = 0
+      const notesToRemove = Array.from(this.noteSprites.keys())
+      for (const note of notesToRemove) {
+        this.destroyNoteSprite(note)
       }
     }
 
@@ -236,6 +237,7 @@ export class NoteManager {
     }
     this.noteSprites.clear()
     this.nextRenderIndex = 0
+    this.lastNotesVersion = null
 
     // Destroy pooled sprites
     for (const sprite of this.spritePool) {
