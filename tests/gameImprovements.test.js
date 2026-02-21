@@ -166,24 +166,24 @@ test('calculateGigFinancials: low performance penalizes merch', () => {
   }
   const gigStats = { misses: 20, peakHype: 30 }
 
-  const lowResult = calculateGigFinancials(
-    gigData,
-    30,
-    { hype: 30 },
-    modifiers,
-    inventory,
-    100,
-    gigStats
-  )
-  const highResult = calculateGigFinancials(
-    gigData,
-    95,
-    { hype: 80 },
-    modifiers,
-    inventory,
-    100,
-    { misses: 0, peakHype: 100 }
-  )
+  const lowResult = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 30,
+    crowdStats: { hype: 30 },
+    modifiers: modifiers,
+    bandInventory: inventory,
+    playerStateOrFame: 100,
+    gigStats: gigStats
+  })
+  const highResult = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 95,
+    crowdStats: { hype: 80 },
+    modifiers: modifiers,
+    bandInventory: inventory,
+    playerStateOrFame: 100,
+    gigStats: { misses: 0, peakHype: 100 }
+  })
 
   assert.ok(
     highResult.income.total > lowResult.income.total,
@@ -202,24 +202,24 @@ test('calculateGigFinancials: merch table modifier increases merch revenue', () 
   }
   const gigStats = { misses: 0, peakHype: 80 }
 
-  const withoutMerch = calculateGigFinancials(
-    gigData,
-    70,
-    { hype: 50 },
-    {},
-    inventory,
-    100,
-    gigStats
-  )
-  const withMerch = calculateGigFinancials(
-    gigData,
-    70,
-    { hype: 50 },
-    { merch: true },
-    inventory,
-    100,
-    gigStats
-  )
+  const withoutMerch = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 70,
+    crowdStats: { hype: 50 },
+    modifiers: {},
+    bandInventory: inventory,
+    playerStateOrFame: 100,
+    gigStats: gigStats
+  })
+  const withMerch = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: 70,
+    crowdStats: { hype: 50 },
+    modifiers: { merch: true },
+    bandInventory: inventory,
+    playerStateOrFame: 100,
+    gigStats: gigStats
+  })
 
   assert.ok(
     withMerch.income.total >= withoutMerch.income.total,

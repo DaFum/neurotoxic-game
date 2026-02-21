@@ -303,15 +303,16 @@ const calculateGigExpenses = (gigData, modifiers, playerState = null) => {
 
 /**
  * Calculates the full financial breakdown of a gig with Fame Scaling and Hype bonuses.
- * @param {object} gigData - { capacity, price, pay (guarantee), dist, diff }
- * @param {number} performanceScore - 0 to 100
- * @param {object} crowdStats - { hype (0-100) }
- * @param {object} modifiers - { merch: bool, promo: bool, catering: bool, soundcheck: bool, guestlist: bool }
- * @param {object} bandInventory - { shirts, hoodies, etc }
- * @param {object|number} playerStateOrFame - Player state object or just fame (number) for legacy support
- * @param {object} gigStats - Detailed gig stats (misses, peakHype, etc)
+ * @param {object} params - Parameters object
+ * @param {object} params.gigData - { capacity, price, pay (guarantee), dist, diff }
+ * @param {number} params.performanceScore - 0 to 100
+ * @param {object} params.crowdStats - { hype (0-100) }
+ * @param {object} params.modifiers - { merch: bool, promo: bool, catering: bool, soundcheck: bool, guestlist: bool }
+ * @param {object} params.bandInventory - { shirts, hoodies, etc }
+ * @param {object|number} params.playerStateOrFame - Player state object or just fame (number) for legacy support
+ * @param {object} params.gigStats - Detailed gig stats (misses, peakHype, etc)
  */
-export const calculateGigFinancials = (
+export const calculateGigFinancials = ({
   gigData,
   performanceScore,
   crowdStats,
@@ -319,7 +320,7 @@ export const calculateGigFinancials = (
   bandInventory,
   playerStateOrFame,
   gigStats
-) => {
+}) => {
   // Determine if we have a full player object or just fame (legacy/test support)
   const playerState =
     typeof playerStateOrFame === 'object' ? playerStateOrFame : null
