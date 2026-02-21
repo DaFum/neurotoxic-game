@@ -324,6 +324,100 @@ describe('NoteManager', () => {
     assert.equal(mockSprite.destroy.mock.calls.length, 1)
   })
 
+  // ── notesVersion-based song-transition reset ──────────────────────────────
+
+  test('notesVersion: initial call resets lastNotesVersion from null to 0', () => {
+    const note = { time: 3000, laneIndex: 0, visible: true, hit: false }
+    const state = {
+      notes: [note],
+      lanes: gameStateRef.current.lanes,
+      modifiers: {},
+      speed: 1,
+      notesVersion: 0
+    }
+
+    assert.equal(noteManager.lastNotesVersion, null, 'starts at null')
+
+    // elapsed 900 < note.time(3000) - SPAWN_LEAD(2000) = 1000 → no spawn yet
+    noteManager.update(state, 900, {})
+
+    assert.equal(noteManager.lastNotesVersion, 0, 'lastNotesVersion should update to 0')
+    assert.equal(noteManager.nextRenderIndex, 0, 'nextRenderIndex stays 0 (note not yet due)')
+    assert.equal(noteManager.noteSprites.size, 0, 'no sprites created yet')
+  })
+
+  test('notesVersion: same version on subsequent calls does not reset render index', () => {
+    noteManager.noteTextures.skull = { id: 'skull' }
+    const note = { time: 3000, laneIndex: 0, visible: true, hit: false }
+    const state = {
+      notes: [note],
+      lanes: gameStateRef.current.lanes,
+      modifiers: {},
+      speed: 1,
+      notesVersion: 0
+    }
+
+    noteManager.update(state, 900, {})   // first: reset null→0, no spawn
+    noteManager.update(state, 1000, {})  // second: same version, spawns note
+    assert.equal(noteManager.nextRenderIndex, 1, 'index advances after spawn')
+
+    noteManager.update(state, 1100, {})  // third: same version — no reset
+    assert.equal(noteManager.lastNotesVersion, 0, 'lastNotesVersion unchanged')
+    assert.ok(noteManager.nextRenderIndex >= 1, 'nextRenderIndex not rolled back')
+  })
+
+  test('notesVersion: version change resets render index and destroys existing sprites', () => {
+    noteManager.noteTextures.skull = { id: 'skull' }
+    const note = { time: 3000, laneIndex: 0, visible: true, hit: false }
+    const state = {
+      notes: [note],
+      lanes: gameStateRef.current.lanes,
+      modifiers: {},
+      speed: 1,
+      notesVersion: 0
+    }
+
+    noteManager.update(state, 900, {})   // reset null→0
+    noteManager.update(state, 1000, {})  // spawn sprite
+    assert.equal(noteManager.noteSprites.size, 1, 'sprite exists before transition')
+    assert.equal(noteManager.nextRenderIndex, 1)
+
+    // Song transition: new notes array, incremented notesVersion.
+    // Use a high note.time so the reset update doesn't trigger a spawn
+    // (elapsed=0 < 5000 - SPAWN_LEAD(2000) = 3000).
+    const note2 = { time: 5000, laneIndex: 0, visible: true, hit: false }
+    const state2 = {
+      notes: [note2],
+      lanes: gameStateRef.current.lanes,
+      modifiers: {},
+      speed: 1,
+      notesVersion: 1
+    }
+
+    noteManager.update(state2, 0, {})
+
+    assert.equal(noteManager.lastNotesVersion, 1, 'lastNotesVersion updated to 1')
+    assert.equal(noteManager.nextRenderIndex, 0, 'nextRenderIndex reset to 0')
+    assert.equal(noteManager.noteSprites.size, 0, 'old sprites cleared on version change')
+  })
+
+  test('notesVersion: dispose resets lastNotesVersion to null', () => {
+    const note = { time: 3000, laneIndex: 0, visible: true, hit: false }
+    const state = {
+      notes: [note],
+      lanes: gameStateRef.current.lanes,
+      modifiers: {},
+      speed: 1,
+      notesVersion: 7
+    }
+
+    noteManager.update(state, 900, {})
+    assert.equal(noteManager.lastNotesVersion, 7, 'lastNotesVersion set before dispose')
+
+    noteManager.dispose()
+    assert.equal(noteManager.lastNotesVersion, null, 'dispose resets lastNotesVersion to null')
+  })
+
   test('releaseSpriteToPool respects MAX_POOL_SIZE', () => {
     // Override MAX_POOL_SIZE for this test
     const originalMax = NoteManager.MAX_POOL_SIZE
