@@ -59,6 +59,10 @@ export const SONGS_DB = Object.entries(rhythmSongs).map(([key, song]) => {
     excerptStartMs: song.excerptStartMs || 0,
     excerptEndMs: Number.isFinite(song.excerptEndMs) ? song.excerptEndMs : null,
     durationMs: Number.isFinite(song.durationMs) ? song.durationMs : null,
-    excerptDurationMs: song.durationMs || 30000
+    excerptDurationMs: Number.isFinite(song.excerptDurationMs)
+      ? Math.max(0, song.excerptDurationMs)
+      : Number.isFinite(song.durationMs)
+        ? Math.max(0, song.durationMs)
+        : null
   }
 })

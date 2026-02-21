@@ -16,13 +16,13 @@ export const getSongId = item => (typeof item === 'string' ? item : item?.id)
  *
  * @param {object} song - Song metadata entry.
  * @param {object} [options] - Optional behavior flags.
- * @param {number} [options.defaultDurationMs=30000] - Fallback duration.
+ * @param {number} [options.defaultDurationMs=0] - Fallback duration.
  * @returns {{ excerptStartMs: number, excerptEndMs: number|null, excerptDurationMs: number }}
  */
 export const resolveSongPlaybackWindow = (song, options = {}) => {
   const defaultDurationMs = Number.isFinite(options.defaultDurationMs)
     ? Math.max(0, options.defaultDurationMs)
-    : 30000
+    : 0
 
   const excerptStartMs = Number.isFinite(song?.excerptStartMs)
     ? Math.max(0, song.excerptStartMs)

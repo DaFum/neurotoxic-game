@@ -46,3 +46,12 @@ test('resolveSongPlaybackWindow falls back to durationMs then default', () => {
     excerptDurationMs: 7777
   })
 })
+
+
+test('resolveSongPlaybackWindow defaults to an unbounded duration when no metadata is provided', () => {
+  assert.deepStrictEqual(resolveSongPlaybackWindow({}), {
+    excerptStartMs: 0,
+    excerptEndMs: null,
+    excerptDurationMs: 0
+  })
+})

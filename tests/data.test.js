@@ -40,6 +40,13 @@ test('SONGS_DB data integrity', () => {
         `Song "${song.name}" sourceOgg should end with .ogg`
       )
     }
+    if (song.excerptDurationMs !== null) {
+      assert.strictEqual(
+        typeof song.excerptDurationMs,
+        'number',
+        `Song "${song.name}" excerptDurationMs should be number or null`
+      )
+    }
   })
 })
 
