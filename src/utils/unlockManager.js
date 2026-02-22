@@ -6,7 +6,7 @@ const UNLOCKS_KEY = 'neurotoxic_unlocks'
  * Loads and validates unlocks from local storage.
  * @returns {string[]} Array of unlocked strings.
  */
-const getUnlocks = () => {
+export const getUnlocks = () => {
   return safeStorageOperation(
     'loadUnlocks',
     () => {
