@@ -6,9 +6,11 @@ import { createTourbusStageController } from '../components/stage/TourbusStageCo
 import { PixiStage } from '../components/PixiStage'
 import { useGameState } from '../context/GameState'
 
+import { useCallback } from 'react'
+
 export const TourbusScene = () => {
   const { uiState, gameStateRef, stats, update, actions } = useTourbusLogic()
-  const { changeScene, gameMap, player, startGig } = useGameState()
+  const { changeScene, gameMap, player, startGig, advanceDay, saveGame, triggerEvent, addToast, updateBand, band } = useGameState()
 
   // Controller factory for Tourbus
   const controllerFactory = useMemo(() => createTourbusStageController, [])
@@ -57,9 +59,60 @@ export const TourbusScene = () => {
           <p className="text-white mb-8">Van Condition: {Math.max(0, 100 - uiState.damage)}%</p>
           <button
             onClick={() => {
+               // Legacy Arrival Sequence
+
+               // 1. Advance Day
+               advanceDay()
+
+               // 2. Save Game
+               saveGame()
+
+               // 3. Harmony Regen (if applicable)
+               if (band?.harmonyRegenTravel) {
+                   updateBand({ harmony: Math.min(100, (band.harmony ?? 0) + 5) })
+               }
+
+               // 4. Trigger Events
+               let travelEventActive = triggerEvent('transport', 'travel')
+               if (!travelEventActive) {
+                   travelEventActive = triggerEvent('band', 'travel')
+               }
+
+               // 5. Handle Node Arrival & Routing
                const currentNode = gameMap?.nodes[player.currentNodeId]
+
+               if (currentNode) {
+                   if (currentNode.type === 'REST_STOP') {
+                       // Apply rest stop effect locally or via logic?
+                       // Logic is in useTravelLogic which is unmounted.
+                       // Replicate logic here:
+                        const newMembers = (band?.members ?? []).map(m => ({
+                            ...m,
+                            stamina: Math.min(100, Math.max(0, m.stamina + 20)),
+                            mood: Math.min(100, Math.max(0, m.mood + 10))
+                        }))
+                        updateBand({ members: newMembers })
+                        addToast('Rested at stop. Band feels better.', 'success')
+                   } else if (currentNode.type === 'SPECIAL' && !travelEventActive) {
+                        const specialEvent = triggerEvent('special')
+                        if (!specialEvent) {
+                            addToast('A mysterious place, but nothing happened.', 'info')
+                        }
+                   } else if (currentNode.type === 'START') {
+                       addToast('Home Sweet Home.', 'success')
+                       // Show HQ handled by Overworld on mount or explicit call?
+                       // Overworld checks current node?
+                   }
+               }
+
                if (currentNode && currentNode.type === 'GIG') {
-                   startGig(currentNode.venue)
+                   // Ensure harmony check
+                   if ((band?.harmony ?? 0) <= 0) {
+                        addToast("Band's harmony too low to perform!", 'warning')
+                        changeScene('OVERWORLD')
+                   } else {
+                        startGig(currentNode.venue)
+                   }
                } else {
                    changeScene('OVERWORLD')
                }

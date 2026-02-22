@@ -314,7 +314,11 @@ const handleCompleteTravelMinigame = (state, payload) => {
 
   if (!targetNode) {
     logger.error('GameState', 'Complete Travel: Invalid Target', targetId)
-    return { ...state, minigame: { ...DEFAULT_MINIGAME_STATE } }
+    return {
+      ...state,
+      minigame: { ...DEFAULT_MINIGAME_STATE },
+      currentScene: 'OVERWORLD' // Force scene reset to prevent stuck state
+    }
   }
 
   // Calculate Costs
@@ -368,26 +372,29 @@ const handleCompleteRoadieMinigame = (state, payload) => {
 
   const nextBand = {
     ...state.band,
-    harmony: Math.max(0, state.band.harmony - stress)
+    harmony: clampBandHarmony(state.band.harmony - stress)
   }
 
   const nextPlayer = {
     ...state.player,
-    money: Math.max(0, state.player.money - repairCost)
+    money: clampPlayerMoney(state.player.money - repairCost)
   }
 
   // Pass damage to gig modifiers or stats?
   // We can add a temporary 'damaged_gear' modifier if damage is high
   const nextModifiers = { ...state.gigModifiers }
   if (equipmentDamage > 50) {
-      // Add a hidden penalty or just log it
-      logger.warn('GameState', 'Heavy equipment damage applied')
+    // Add a hidden penalty or just log it
+    logger.warn('GameState', 'Heavy equipment damage applied')
+    // We could potentially set a flag here if we had a modifier for it
+    // nextModifiers.damaged_gear = true;
   }
 
   return {
     ...state,
     band: nextBand,
     player: nextPlayer,
+    gigModifiers: nextModifiers, // Ensure modifiers are returned
     minigame: { ...DEFAULT_MINIGAME_STATE }
   }
 }

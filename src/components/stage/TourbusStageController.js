@@ -273,8 +273,12 @@ export class TourbusStageController {
     this.initPromise = null
     window.removeEventListener('resize', this.handleResize)
     if (this.app) {
-      this.app.ticker.remove(this.handleTicker)
-      this.app.destroy(true, { children: true })
+      try {
+        this.app.ticker.remove(this.handleTicker)
+        this.app.destroy({ removeView: true, children: true })
+      } catch (e) {
+        logger.warn('TourbusStageController', 'Destroy failed', e)
+      }
       this.app = null
     }
     if (this.effectManager) {

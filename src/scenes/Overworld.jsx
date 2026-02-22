@@ -29,7 +29,7 @@ export const Overworld = () => {
     addToast,
     advanceDay,
     changeScene,
-    dispatch
+    startTravelMinigame
   } = useGameState()
 
   const [hoveredNode, setHoveredNode] = useState(null)
@@ -60,7 +60,12 @@ export const Overworld = () => {
     addToast,
     changeScene,
     onShowHQ: openHQ,
-    dispatch
+    dispatch: (action) => {
+        // Intercept START_TRAVEL_MINIGAME if dispatched via legacy logic
+        if (action.type === 'START_TRAVEL_MINIGAME') {
+            startTravelMinigame(action.payload.targetNodeId)
+        }
+    }
   })
 
   const currentNode = gameMap?.nodes[player.currentNodeId]

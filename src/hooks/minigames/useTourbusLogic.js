@@ -1,7 +1,6 @@
 
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameState } from '../../context/GameState'
-import { createCompleteTravelMinigameAction } from '../../context/actionCreators'
 import { audioManager } from '../../utils/AudioManager'
 
 export const LANE_COUNT = 3
@@ -15,8 +14,7 @@ export const BUS_Y_PERCENT = 85 // Bus position in % of screen height
 export const BUS_HEIGHT_PERCENT = 10
 
 export const useTourbusLogic = () => {
-  const { state, dispatch } = useGameState()
-  const { minigame, player } = state
+  const { minigame, player, completeTravelMinigame } = useGameState()
 
   // Game Loop State (Mutable, no re-renders)
   const gameStateRef = useRef({
@@ -93,7 +91,7 @@ export const useTourbusLogic = () => {
     // Spawn Obstacles
     game.lastSpawnTime += deltaMS
     if (game.lastSpawnTime > currentSpawnRate) {
-      spawnObstacle(Date.now())
+      spawnObstacle(performance.now())
       game.lastSpawnTime = 0
     }
 
@@ -119,9 +117,16 @@ export const useTourbusLogic = () => {
         collided = true
         obs.collided = true
         if (obs.type === 'OBSTACLE') {
-          game.damage += 10
+          // Damage Mitigation
+          let hitDamage = 10
+          if (hasUpgrade(player.van?.upgrades, 'van_bullbar')) hitDamage = 5
+          if (hasUpgrade(player.van?.upgrades, 'van_armor')) hitDamage = 2
+
+          game.damage += hitDamage
+          audioManager.playSFX('crash') // Play SFX immediately on collision
         } else if (obs.type === 'FUEL') {
            game.itemsCollected.push('FUEL')
+           audioManager.playSFX('cash')
         }
       }
 
@@ -134,7 +139,7 @@ export const useTourbusLogic = () => {
     // Check Win/Loss
     if (game.distance >= TARGET_DISTANCE && !game.isGameOver) {
       game.isGameOver = true
-      dispatch(createCompleteTravelMinigameAction(game.damage, game.itemsCollected))
+      completeTravelMinigame(game.damage, game.itemsCollected)
     }
 
     // Sync UI occasionally
@@ -142,10 +147,7 @@ export const useTourbusLogic = () => {
       // Optimize updates to avoid React thrashing
       const distDiff = Math.abs(prev.distance - game.distance)
 
-      // SFX Triggers via UI state diff detection
-      if (prev.damage !== game.damage && game.damage > prev.damage) {
-          audioManager.playSFX('crash')
-      }
+      // SFX Triggers moved to main update loop to avoid double-fire in Strict Mode
 
       // Check items collected logic requires separate tracking or relying on game loop event
       // Since itemsCollected is an array, we can track length in UI state or just fire here?
@@ -162,7 +164,7 @@ export const useTourbusLogic = () => {
       return prev
     })
 
-  }, [dispatch])
+  }, [completeTravelMinigame, player])
 
   // Setup keyboard controls
   useEffect(() => {

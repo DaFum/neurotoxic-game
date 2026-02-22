@@ -1,7 +1,6 @@
 
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameState } from '../../context/GameState'
-import { createCompleteRoadieMinigameAction } from '../../context/actionCreators'
 import { audioManager } from '../../utils/AudioManager'
 
 export const GRID_WIDTH = 12
@@ -17,7 +16,7 @@ const TRAFFIC_SPEEDS = [0.005, -0.009, 0.012, -0.007, 0.015, -0.010]
 const CAR_SPAWN_RATES = [2500, 2200, 1600, 2800, 1400, 2000] // Slightly denser
 
 export const useRoadieLogic = () => {
-  const { state, dispatch } = useGameState()
+  const { minigame, player, completeRoadieMinigame } = useGameState()
 
   // Mutable Game State
   const gameStateRef = useRef({
@@ -87,7 +86,7 @@ export const useRoadieLogic = () => {
         // Win Condition check
         if (game.itemsToDeliver.length === 0 && !game.carrying) {
             game.isGameOver = true
-            dispatch(createCompleteRoadieMinigameAction(game.equipmentDamage))
+            completeRoadieMinigame(game.equipmentDamage)
         }
     }
 
@@ -102,7 +101,7 @@ export const useRoadieLogic = () => {
         carrying: game.carrying
     }))
 
-  }, [dispatch])
+  }, [completeRoadieMinigame])
 
   const update = useCallback((deltaMS) => {
     const game = gameStateRef.current
@@ -114,7 +113,7 @@ export const useRoadieLogic = () => {
         if (spawner.timer > spawner.rate) {
             spawner.timer = 0
             game.traffic.push({
-                id: `${Date.now()}-${spawner.row}`,
+                id: `${performance.now()}-${spawner.row}`,
                 row: spawner.row,
                 x: spawner.speed > 0 ? -1 : GRID_WIDTH, // Start outside
                 speed: spawner.speed,

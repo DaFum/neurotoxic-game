@@ -343,7 +343,9 @@ export const PreGig = () => {
           try {
             await audioManager.ensureAudioContext()
             // changeScene('GIG') // Replaced by minigame start
-            dispatch(createStartRoadieMinigameAction(currentGig.id))
+            // Safe access for ID
+            const gigId = currentGig?.id || `gig_${Date.now()}`
+            dispatch(createStartRoadieMinigameAction(gigId))
           } catch (err) {
             setIsStarting(false)
             handleError(err, {
