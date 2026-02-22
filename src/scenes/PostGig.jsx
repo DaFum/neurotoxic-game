@@ -65,7 +65,7 @@ export const PostGig = () => {
         crowdStats,
         modifiers: gigModifiers,
         bandInventory: band.inventory,
-        playerStateOrFame: player,
+        playerState: player,
         gigStats: lastGigStats
       })
       setFinancials(result)

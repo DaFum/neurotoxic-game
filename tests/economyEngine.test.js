@@ -49,7 +49,7 @@ test('calculateGigFinancials handles base case with ticket sales and guarantee',
     crowdStats: { hype: 80 },
     modifiers: buildModifiers(),
     bandInventory: buildInventory(),
-    playerStateOrFame: 100,
+    playerState: { fame: 100 },
     gigStats: buildGigStats()
   })
 
@@ -77,7 +77,7 @@ test('calculateGigFinancials applies fame scaling to fill rate', () => {
     crowdStats: { hype: 80 },
     modifiers: buildModifiers(),
     bandInventory: buildInventory(),
-    playerStateOrFame: 10,
+    playerState: { fame: 10 },
     gigStats: buildGigStats()
   })
 
@@ -88,7 +88,7 @@ test('calculateGigFinancials applies fame scaling to fill rate', () => {
     crowdStats: { hype: 80 },
     modifiers: buildModifiers(),
     bandInventory: buildInventory(),
-    playerStateOrFame: 1000,
+    playerState: { fame: 1000 },
     gigStats: buildGigStats()
   })
 
@@ -114,7 +114,7 @@ test('calculateGigFinancials applies promo boost to fill rate', () => {
     crowdStats: { hype: 80 },
     modifiers: buildModifiers({ promo: false }),
     bandInventory: buildInventory(),
-    playerStateOrFame: 50,
+    playerState: { fame: 50 },
     gigStats: buildGigStats()
   })
 
@@ -124,7 +124,7 @@ test('calculateGigFinancials applies promo boost to fill rate', () => {
     crowdStats: { hype: 80 },
     modifiers: buildModifiers({ promo: true }),
     bandInventory: buildInventory(),
-    playerStateOrFame: 50,
+    playerState: { fame: 50 },
     gigStats: buildGigStats()
   })
 
@@ -149,7 +149,7 @@ test('calculateGigFinancials applies price sensitivity penalty', () => {
     crowdStats: { hype: 80 },
     modifiers: buildModifiers(),
     bandInventory: buildInventory(),
-    playerStateOrFame: 50,
+    playerState: { fame: 50 },
     gigStats: buildGigStats()
   })
 
@@ -173,7 +173,7 @@ test('calculateGigFinancials scales merch sales with performance', () => {
     crowdStats: { hype: 40 },
     modifiers: buildModifiers({ merch: true }),
     bandInventory: buildInventory(),
-    playerStateOrFame: 100,
+    playerState: { fame: 100 },
     gigStats: buildGigStats()
   })
 
@@ -183,7 +183,7 @@ test('calculateGigFinancials scales merch sales with performance', () => {
     crowdStats: { hype: 95 },
     modifiers: buildModifiers({ merch: true }),
     bandInventory: buildInventory(),
-    playerStateOrFame: 100,
+    playerState: { fame: 100 },
     gigStats: buildGigStats()
   })
 
@@ -209,7 +209,7 @@ test('calculateGigFinancials applies S-rank merch bonus', () => {
     crowdStats: { hype: 95 },
     modifiers: buildModifiers({ merch: true }),
     bandInventory: buildInventory(),
-    playerStateOrFame: 100,
+    playerState: { fame: 100 },
     gigStats: buildGigStats()
   })
 
@@ -226,7 +226,7 @@ test('calculateGigFinancials penalizes merch sales for misses', () => {
     crowdStats: { hype: 80 },
     modifiers: buildModifiers({ merch: true }),
     bandInventory: buildInventory(),
-    playerStateOrFame: 100,
+    playerState: { fame: 100 },
     gigStats: buildGigStats({ misses: 0 })
   })
 
@@ -236,7 +236,7 @@ test('calculateGigFinancials penalizes merch sales for misses', () => {
     crowdStats: { hype: 80 },
     modifiers: buildModifiers({ merch: true }),
     bandInventory: buildInventory(),
-    playerStateOrFame: 100,
+    playerState: { fame: 100 },
     gigStats: buildGigStats({ misses: 20 })
   })
 
@@ -269,7 +269,7 @@ test('calculateGigFinancials handles sold out merch gracefully', () => {
     crowdStats: { hype: 90 },
     modifiers: buildModifiers({ merch: true }),
     bandInventory: emptyInventory,
-    playerStateOrFame: 200,
+    playerState: { fame: 200 },
     gigStats: buildGigStats()
   })
 
@@ -298,7 +298,7 @@ test('calculateGigFinancials uses all inventory types for sales limit', () => {
     crowdStats: { hype: 100 },
     modifiers: buildModifiers({ merch: true }),
     bandInventory: inv,
-    playerStateOrFame: 200,
+    playerState: { fame: 200 },
     gigStats: buildGigStats()
   })
 
@@ -318,7 +318,7 @@ test('calculateGigFinancials includes transport costs based on distance', () => 
     crowdStats: { hype: 80 },
     modifiers: buildModifiers(),
     bandInventory: buildInventory(),
-    playerStateOrFame: 100,
+    playerState: { fame: 100 },
     gigStats: buildGigStats()
   })
 
@@ -337,7 +337,7 @@ test('calculateGigFinancials includes catering when enabled', () => {
     crowdStats: { hype: 80 },
     modifiers: buildModifiers({ catering: false }),
     bandInventory: buildInventory(),
-    playerStateOrFame: 100,
+    playerState: { fame: 100 },
     gigStats: buildGigStats()
   })
 
@@ -347,7 +347,7 @@ test('calculateGigFinancials includes catering when enabled', () => {
     crowdStats: { hype: 80 },
     modifiers: buildModifiers({ catering: true }),
     bandInventory: buildInventory(),
-    playerStateOrFame: 100,
+    playerState: { fame: 100 },
     gigStats: buildGigStats()
   })
 
@@ -374,7 +374,7 @@ test('calculateGigFinancials supports new merch key', () => {
     crowdStats: { hype: 80 },
     modifiers: buildModifiers({ merch: true, merchTable: false }),
     bandInventory: buildInventory(),
-    playerStateOrFame: 100,
+    playerState: { fame: 100 },
     gigStats: buildGigStats()
   })
 
@@ -395,7 +395,7 @@ test('calculateGigFinancials handles zero capacity venue', () => {
     crowdStats: { hype: 80 },
     modifiers: buildModifiers(),
     bandInventory: buildInventory(),
-    playerStateOrFame: 100,
+    playerState: { fame: 100 },
     gigStats: buildGigStats()
   })
 
@@ -419,7 +419,7 @@ test('calculateGigFinancials handles extreme performance scores', () => {
     crowdStats: { hype: 0 },
     modifiers: buildModifiers(),
     bandInventory: buildInventory(),
-    playerStateOrFame: 100,
+    playerState: { fame: 100 },
     gigStats: buildGigStats()
   })
   assert.ok(zeroScore.net !== undefined, 'Should handle zero performance score')
@@ -431,7 +431,7 @@ test('calculateGigFinancials handles extreme performance scores', () => {
     crowdStats: { hype: 100 },
     modifiers: buildModifiers(),
     bandInventory: buildInventory(),
-    playerStateOrFame: 100,
+    playerState: { fame: 100 },
     gigStats: buildGigStats()
   })
   assert.ok(
@@ -453,7 +453,7 @@ test('calculateGigFinancials merch table modifier increases sales', () => {
     crowdStats: { hype: 80 },
     modifiers: buildModifiers({ merchTable: false }),
     bandInventory: buildInventory(),
-    playerStateOrFame: 100,
+    playerState: { fame: 100 },
     gigStats: buildGigStats()
   })
 
@@ -463,7 +463,7 @@ test('calculateGigFinancials merch table modifier increases sales', () => {
     crowdStats: { hype: 80 },
     modifiers: buildModifiers({ merch: true }),
     bandInventory: buildInventory(),
-    playerStateOrFame: 100,
+    playerState: { fame: 100 },
     gigStats: buildGigStats()
   })
 
@@ -501,7 +501,7 @@ test('calculateGigFinancials net profit matches income minus expenses', () => {
     crowdStats: { hype: 75 },
     modifiers: buildModifiers(),
     bandInventory: buildInventory(),
-    playerStateOrFame: 150,
+    playerState: { fame: 150 },
     gigStats: buildGigStats()
   })
 
@@ -521,7 +521,7 @@ test('calculateGigFinancials handles high fame with high price', () => {
     crowdStats: { hype: 85 },
     modifiers: buildModifiers(),
     bandInventory: buildInventory(),
-    playerStateOrFame: 5000,
+    playerState: { fame: 5000 },
     gigStats: buildGigStats()
   })
 
@@ -597,7 +597,7 @@ test('calculateGigFinancials applies van tuning upgrade to fuel cost', () => {
     crowdStats: { hype: 80 },
     modifiers: buildModifiers(),
     bandInventory: buildInventory(),
-    playerStateOrFame: 100,
+    playerState: { fame: 100 },
     gigStats: buildGigStats()
   })
   const fuelItem1 = res1.expenses.breakdown.find(b => b.label === 'Fuel')
@@ -616,7 +616,7 @@ test('calculateGigFinancials applies van tuning upgrade to fuel cost', () => {
     crowdStats: { hype: 80 },
     modifiers: buildModifiers(),
     bandInventory: buildInventory(),
-    playerStateOrFame: playerState,
+    playerState: playerState,
     gigStats: buildGigStats()
   })
   const fuelItem2 = res2.expenses.breakdown.find(b => b.label === 'Fuel')
