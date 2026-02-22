@@ -15,7 +15,7 @@ const mockAudioManager = {
 }
 const mockGigStats = {
   updateGigPerformanceStats: mock.fn((stats) => stats),
-  buildGigStatsSnapshot: mock.fn(() => ({})),
+  buildGigStatsSnapshot: mock.fn(() => ({ accuracy: 100 })),
   calculateAccuracy: mock.fn(() => 100)
 }
 const mockTimingUtils = {

@@ -34,14 +34,18 @@ export const getGigModifiers = (bandState, gigModifiers = {}) => {
   const matze = bandState.members.find(m => m.name === CHARACTERS.MATZE.name)
   if (matze && matze.mood < 20) {
     modifiers.guitarScoreMult = 0.5
-    modifiers.activeEffects.push('GRUMPY MATZE: Guitar Score -50%')
+    modifiers.activeEffects.push(
+      `GRUMPY ${CHARACTERS.MATZE.name.toUpperCase()}: Guitar Score -50%`
+    )
   }
 
   // Lars (Drums)
   const lars = bandState.members.find(m => m.name === CHARACTERS.LARS.name)
   if (lars && lars.stamina < 20) {
     modifiers.drumSpeedMult = 1.2 // 20% faster
-    modifiers.activeEffects.push('TIRED LARS: Rushing Tempo')
+    modifiers.activeEffects.push(
+      `TIRED ${CHARACTERS.LARS.name.toUpperCase()}: Rushing Tempo`
+    )
   }
 
   return modifiers

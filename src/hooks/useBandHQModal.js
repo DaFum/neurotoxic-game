@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useGameState } from '../context/GameState.jsx'
 import { useAudioControl } from './useAudioControl.js'
 
@@ -11,25 +11,43 @@ export const useBandHQModal = () => {
   const gameState = useGameState()
   const { audioState, handleAudioChange } = useAudioControl()
 
-  const openHQ = () => setShowHQ(true)
-  const closeHQ = () => setShowHQ(false)
+  const openHQ = useCallback(() => setShowHQ(true), [])
+  const closeHQ = useCallback(() => setShowHQ(false), [])
 
-  const bandHQProps = {
-    onClose: closeHQ,
-    player: gameState.player,
-    band: gameState.band,
-    social: gameState.social,
-    updatePlayer: gameState.updatePlayer,
-    updateBand: gameState.updateBand,
-    addToast: gameState.addToast,
-    settings: gameState.settings,
-    updateSettings: gameState.updateSettings,
-    deleteSave: gameState.deleteSave,
-    setlist: gameState.setlist,
-    setSetlist: gameState.setSetlist,
-    audioState,
-    onAudioChange: handleAudioChange
-  }
+  const bandHQProps = useMemo(
+    () => ({
+      onClose: closeHQ,
+      player: gameState.player,
+      band: gameState.band,
+      social: gameState.social,
+      updatePlayer: gameState.updatePlayer,
+      updateBand: gameState.updateBand,
+      addToast: gameState.addToast,
+      settings: gameState.settings,
+      updateSettings: gameState.updateSettings,
+      deleteSave: gameState.deleteSave,
+      setlist: gameState.setlist,
+      setSetlist: gameState.setSetlist,
+      audioState,
+      onAudioChange: handleAudioChange
+    }),
+    [
+      closeHQ,
+      gameState.player,
+      gameState.band,
+      gameState.social,
+      gameState.updatePlayer,
+      gameState.updateBand,
+      gameState.addToast,
+      gameState.settings,
+      gameState.updateSettings,
+      gameState.deleteSave,
+      gameState.setlist,
+      gameState.setSetlist,
+      audioState,
+      handleAudioChange
+    ]
+  )
 
   return {
     showHQ,
