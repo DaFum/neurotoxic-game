@@ -323,13 +323,10 @@ export const calculateGigFinancials = ({
   crowdStats,
   modifiers,
   bandInventory,
-  playerStateOrFame,
+  playerState,
   gigStats
 }) => {
-  // Determine if we have a full player object or just fame (legacy/test support)
-  const playerState =
-    typeof playerStateOrFame === 'object' ? playerStateOrFame : null
-  const playerFame = playerState ? playerState.fame : playerStateOrFame
+  const playerFame = playerState?.fame || 0
 
   logger.debug('Economy', 'Calculating Gig Financials', {
     gig: gigData.name,

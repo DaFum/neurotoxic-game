@@ -191,7 +191,7 @@ test('Golden Path: Full Tour Cycle', async t => {
       crowdStats,
       modifiers: state.gigModifiers,
       bandInventory: state.band.inventory,
-      playerStateOrFame: state.player.fame,
+      playerState: state.player,
       gigStats: state.lastGigStats
     })
     assert.ok(typeof financials.net === 'number', 'Net is a number')
