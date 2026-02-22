@@ -230,6 +230,12 @@ export const usePurchaseLogic = ({
           addToast('Less noise, more peace. Harmony +5', 'success')
           break
 
+        case 'hq_room_label':
+          nextPlayerPatch.money =
+            (nextPlayerPatch.money ?? player.money ?? 0) + 500
+          addToast('Signed! +500€ Advance.', 'success')
+          break
+
         case 'hq_room_coffee':
         case 'hq_room_sofa':
         case 'hq_room_old_couch':
