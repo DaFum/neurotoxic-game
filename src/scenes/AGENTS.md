@@ -41,6 +41,7 @@ When scene behavior changes, verify related flow tests (not exhaustive):
 
 - `tests/goldenPath.test.js`
 - hook tests that drive scene transitions (`tests/useRhythmGameLogic.test.js`, `tests/useTravelLogic.test.js`)
+- Minigame transitions: `tests/useArrivalLogic.test.js` (covers `TRAVEL_MINIGAME`), `tests/minigameState.test.js` (logic), and `tests/gameReducer.test.js`.
 
 Then run:
 

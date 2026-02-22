@@ -20,16 +20,14 @@ src/
 ├── components/
 │   ├── PixiStage.jsx
 │   ├── PixiStageController.js
-│   ├── stage/
-│   │   ├── TourbusStageController.js
-│   │   ├── RoadieStageController.js
-│   │   └── ...                   # Pixi manager classes
 │   ├── GigHUD.jsx
 │   ├── HecklerOverlay.jsx
 │   ├── ChatterOverlay.jsx
 │   ├── ToggleRadio.jsx
 │   ├── TutorialManager.jsx
 │   └── stage/
+│       ├── TourbusStageController.js
+│       ├── RoadieStageController.js
 │       ├── utils.js              # Stage-specific utilities
 │       └── ...                   # Pixi manager classes
 ├── context/

@@ -184,6 +184,8 @@ export class TourbusStageController {
     if (this.effectManager) this.effectManager.update(ticker.deltaMS)
 
     const state = this.gameStateRef.current
+    if (!state) return
+
     const width = this.app.screen.width
     const height = this.app.screen.height
 

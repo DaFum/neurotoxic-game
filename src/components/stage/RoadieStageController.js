@@ -4,8 +4,7 @@ import { logger } from '../../utils/logger'
 import { getPixiColorFromToken } from '../stage/utils'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
 import { EffectManager } from './EffectManager'
-
-const CELL_SIZE = 60
+import { CELL_SIZE } from '../../hooks/minigames/useRoadieLogic'
 
 export class RoadieStageController {
   constructor({ containerRef, gameStateRef, updateRef, statsRef }) {
@@ -81,7 +80,6 @@ export class RoadieStageController {
             } else {
                 this.playerSprite = new PIXI.Graphics()
                 this.playerSprite.circle(0, 0, 20)
-                // getPixiColorFromToken('--toxic-green') or token value
                 const toxicGreen = getPixiColorFromToken('--toxic-green')
                 this.playerSprite.fill(toxicGreen)
             }
@@ -155,9 +153,8 @@ export class RoadieStageController {
       const g = new PIXI.Graphics()
       this.bgGraphics = g
       const roadColor = getPixiColorFromToken('--void-black')
-      // Use standard colors since specific tokens don't exist yet
-      const grassColor = getPixiColorFromToken('--toxic-green')
-      const venueColor = getPixiColorFromToken('--blood-red')
+      const grassColor = getPixiColorFromToken('--roadie-grass') || getPixiColorFromToken('--toxic-green')
+      const venueColor = getPixiColorFromToken('--roadie-venue-blue') || getPixiColorFromToken('--blood-red')
       const stripeColor = getPixiColorFromToken('--star-white') || 0xFFFFFF
 
       // Use screen width for better drawing
@@ -250,14 +247,10 @@ export class RoadieStageController {
                   const texIndex = Math.floor(Math.random() * this.textures.cars.length)
                   sprite = new PIXI.Sprite(this.textures.cars[texIndex])
                   sprite.anchor.set(0.5)
-
-                  // Scale to fit car.width (1.5 cells)
-                  // Texture width might vary. Target width = 1.5 * cellW
-                  // But let's just create it and scale later
               } else {
                   sprite = new PIXI.Graphics()
                   sprite.rect(-30, -20, 60, 40)
-                  sprite.fill(0xFF0000)
+                  sprite.fill(getPixiColorFromToken('--blood-red'))
               }
               this.container.addChild(sprite)
               this.carSprites.set(car.id, sprite)
@@ -274,12 +267,13 @@ export class RoadieStageController {
           }
 
           // Adjust Scale if texture
-          if (sprite instanceof PIXI.Sprite) {
+          if (sprite instanceof PIXI.Sprite && sprite.texture?.width > 0) {
               // Target width = car.width * cellW
               const targetW = car.width * cellW
               const scale = targetW / sprite.texture.width
               sprite.scale.set(Math.abs(scale) * Math.sign(sprite.scale.x), Math.abs(scale))
           } else {
+              // Fallback or Graphics
               sprite.width = car.width * cellW
               sprite.height = cellH * 0.8
           }
@@ -303,6 +297,15 @@ export class RoadieStageController {
           this._flashTimeout = null
       }
 
+      // Clean up car sprites explicitly
+      if (this.carSprites) {
+          for (const sprite of this.carSprites.values()) {
+              sprite.destroy()
+          }
+          this.carSprites.clear()
+          this.carSprites = null
+      }
+
       if (this.effectManager) {
           this.effectManager.dispose()
           this.effectManager = null
@@ -312,7 +315,7 @@ export class RoadieStageController {
           try {
             this.app.ticker.remove(this.handleTicker)
             // v8 signature: destroy(rendererOptions, destroyOptions)
-            this.app.destroy({ removeView: true }, { children: true, texture: true })
+            this.app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })
           } catch (e) {
             logger.warn('RoadieStageController', 'Destroy failed', e)
           }

@@ -141,7 +141,7 @@ export const useRoadieLogic = () => {
                 // Hit!
                 audioManager.playSFX('crash')
                 if (game.carrying) {
-                    game.equipmentDamage += 10
+                    game.equipmentDamage = Math.max(0, Math.min(100, game.equipmentDamage + 10))
                     // Drop item? Or just damage?
                     // Let's respawn player at start with item still? Or item damaged.
                     // Let's say item is damaged, player respawns at start (y=0)
@@ -166,10 +166,22 @@ export const useRoadieLogic = () => {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.code === 'ArrowLeft' || e.code === 'KeyA') move(-1, 0)
-      if (e.code === 'ArrowRight' || e.code === 'KeyD') move(1, 0)
-      if (e.code === 'ArrowUp' || e.code === 'KeyW') move(0, -1)
-      if (e.code === 'ArrowDown' || e.code === 'KeyS') move(0, 1)
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+        e.preventDefault()
+        move(-1, 0)
+      }
+      if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+        e.preventDefault()
+        move(1, 0)
+      }
+      if (e.code === 'ArrowUp' || e.code === 'KeyW') {
+        e.preventDefault()
+        move(0, -1)
+      }
+      if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+        e.preventDefault()
+        move(0, 1)
+      }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)

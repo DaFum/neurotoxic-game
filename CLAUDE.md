@@ -156,7 +156,7 @@ useEffect(() => {
   return () => {
     isMountedRef.current = false
     // v8 signature: destroy(rendererOptions, destroyOptions)
-    app.destroy({ removeView: true }, { children: true, texture: true })
+    app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })
   }
 }, [])
 ```

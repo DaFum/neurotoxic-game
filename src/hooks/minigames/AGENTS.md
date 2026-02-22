@@ -37,7 +37,7 @@ These hooks encapsulate the "Game Loop" logic for arcade minigames, separate fro
 Verify logic stability via unit tests:
 
 ```bash
-npm run test tests/minigameState.test.js
+node --test --import tsx --experimental-test-module-mocks tests/minigameState.test.js
 ```
 
 _Last updated: 2026-02-21._

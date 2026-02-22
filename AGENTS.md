@@ -88,6 +88,7 @@ For domain-specific guidance, consult specialized agent documentation:
 | **Audio Utils** | `src/utils/audio/AGENTS.md` | Low-level WebAudio/Tone resource handling   |
 | **Event Data** | `src/data/events/AGENTS.md` | Event catalog schema and balancing rules    |
 | **UI Shared**  | `src/ui/shared/AGENTS.md`  | Reusable settings/slider controls          |
+| **Minigames**  | `src/hooks/minigames/AGENTS.md` | Minigame loop timing, input handling, scoring orchestration |
 
 
 ## Architecture Guard Updates
