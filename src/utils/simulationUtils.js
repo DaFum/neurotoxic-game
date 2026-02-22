@@ -229,7 +229,38 @@ export const calculateDailyUpdates = currentState => {
   }
 
   // 4. Passive Effects
-  // TODO: Implement gameplay effects for HQ room items (hq_coffee, hq_sofa, etc.) beyond just ownership tracking.
+  const hqUpgrades = nextPlayer.hqUpgrades || []
+
+  // Coffee & Beer Fridge: Mood recovery
+  const hasCoffee = hqUpgrades.includes('hq_room_coffee')
+  const hasBeerFridge = hqUpgrades.includes('hq_room_cheap_beer_fridge')
+  // Sofa & Old Couch: Stamina recovery
+  const hasSofa = hqUpgrades.includes('hq_room_sofa')
+  const hasOldCouch = hqUpgrades.includes('hq_room_old_couch')
+
+  if (hasCoffee || hasBeerFridge || hasSofa || hasOldCouch) {
+    nextBand.members = nextBand.members.map(m => {
+      let mood = m.mood
+      let stamina = typeof m.stamina === 'number' ? m.stamina : 100
+
+      if (hasCoffee) mood += 2
+      if (hasBeerFridge) mood += 1
+      if (hasSofa) stamina += 3
+      if (hasOldCouch) stamina += 1
+
+      return {
+        ...m,
+        mood: Math.min(100, mood),
+        stamina: Math.min(100, stamina)
+      }
+    })
+  }
+
+  // Soundproofing: Harmony boost
+  if (hqUpgrades.includes('hq_room_diy_soundproofing')) {
+    nextBand.harmony = Math.min(100, nextBand.harmony + 1)
+  }
+
   if (nextBand.harmonyRegenTravel) {
     nextBand.harmony = Math.min(100, nextBand.harmony + 2) // Reduced from 5
   }
