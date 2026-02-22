@@ -27,26 +27,26 @@ const mockHandleError = mock.fn()
 class MockStateError extends Error {}
 
 // Mock modules
-mock.module('../src/utils/economyEngine', {
+mock.module('../src/utils/economyEngine.js', {
   namedExports: {
     calculateTravelExpenses: mockCalculateTravelExpenses,
     EXPENSE_CONSTANTS: mockExpenseConstants
   }
 })
 
-mock.module('../src/utils/AudioManager', {
+mock.module('../src/utils/AudioManager.js', {
   namedExports: {
     audioManager: mockAudioManager
   }
 })
 
-mock.module('../src/utils/logger', {
+mock.module('../src/utils/logger.js', {
   namedExports: {
     logger: mockLogger
   }
 })
 
-mock.module('../src/utils/errorHandler', {
+mock.module('../src/utils/errorHandler.js', {
   namedExports: {
     handleError: mockHandleError,
     StateError: MockStateError
