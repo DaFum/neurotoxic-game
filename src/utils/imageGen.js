@@ -1,3 +1,5 @@
+import { CHARACTERS } from '../data/characters.js'
+
 // Utility to generate dynamic image URLs via Pollinations.ai
 const BASE_URL = 'https://gen.pollinations.ai/image'
 const MODEL = 'flux'
@@ -37,21 +39,21 @@ export const IMG_PROMPTS = {
 
   // Band Members (States)
   // Matze (Guitar)
-  MATZE_IDLE:
+  [CHARACTERS.MATZE.name.toUpperCase() + '_IDLE']:
     'pixel art metal guitarist standing idle holding flying v guitar dark moody',
-  MATZE_PLAYING:
+  [CHARACTERS.MATZE.name.toUpperCase() + '_PLAYING']:
     'pixel art metal guitarist shredding solo fast fingers lightning effect',
-  MATZE_ANGRY: 'pixel art metal guitarist angry shouting smashing guitar',
+  [CHARACTERS.MATZE.name.toUpperCase() + '_ANGRY']: 'pixel art metal guitarist angry shouting smashing guitar',
 
   // Lars (Drums)
-  LARS_IDLE: 'pixel art metal drummer sitting behind kit waiting dark',
-  LARS_PLAYING: 'pixel art metal drummer blast beating fast blur sticks motion',
-  LARS_DRINKING: 'pixel art metal drummer drinking beer cheers happy',
+  [CHARACTERS.LARS.name.toUpperCase() + '_IDLE']: 'pixel art metal drummer sitting behind kit waiting dark',
+  [CHARACTERS.LARS.name.toUpperCase() + '_PLAYING']: 'pixel art metal drummer blast beating fast blur sticks motion',
+  [CHARACTERS.LARS.name.toUpperCase() + '_DRINKING']: 'pixel art metal drummer drinking beer cheers happy',
 
   // Marius (Bass)
-  MARIUS_IDLE: 'pixel art bassist standing cool sunglasses dark clothes',
-  MARIUS_PLAYING: 'pixel art bassist playing rhythm headbanging',
-  MARIUS_SCREAMING:
+  [CHARACTERS.MARIUS.name.toUpperCase() + '_IDLE']: 'pixel art bassist standing cool sunglasses dark clothes',
+  [CHARACTERS.MARIUS.name.toUpperCase() + '_PLAYING']: 'pixel art bassist playing rhythm headbanging',
+  [CHARACTERS.MARIUS.name.toUpperCase() + '_SCREAMING']:
     'pixel art bassist screaming into microphone aggressive growl',
 
   // Crowd

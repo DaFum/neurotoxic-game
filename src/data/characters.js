@@ -1,4 +1,12 @@
 // Detailed Character Definitions and Traits
+//
+// Trait Implementation Status:
+// - blast_machine (Lars): Partially implemented (Score multiplier on fast songs)
+// - perfektionist (Matze): Pending
+// - gear_nerd (Matze): Pending
+// - party_animal (Lars): Pending
+// - bandleader (Marius): Pending
+// - social_manager (Marius): Pending
 export const CHARACTERS = {
   MATZE: {
     name: 'Matze',

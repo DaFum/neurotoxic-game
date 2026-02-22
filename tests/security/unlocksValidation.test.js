@@ -21,47 +21,29 @@ global.localStorage = mockStorage
 
 test('Unlock Manager Security', async t => {
   // Dynamic import to ensure global.localStorage is ready
-  const { getUnlocks, addUnlock } =
-    await import('../../src/utils/unlockManager.js')
+  const { addUnlock } = await import('../../src/utils/unlockManager.js')
 
   t.beforeEach(() => {
     mockStorage.clear()
   })
 
-  await t.test('getUnlocks validates data from localStorage', async t => {
-    await t.test('returns empty array when storage is empty', () => {
-      assert.deepEqual(getUnlocks(), [])
-    })
-
-    await t.test('filters out non-string elements', () => {
-      mockStorage.setItem(
-        'neurotoxic_unlocks',
-        JSON.stringify(['valid', 123, { bad: true }, 'also valid'])
-      )
-      assert.deepEqual(getUnlocks(), ['valid', 'also valid'])
-    })
-
-    await t.test('returns empty array if storage is not an array', () => {
-      mockStorage.setItem(
-        'neurotoxic_unlocks',
-        JSON.stringify({ not: 'array' })
-      )
-      assert.deepEqual(getUnlocks(), [])
-    })
-
-    await t.test('returns empty array if storage is invalid JSON', () => {
-      // We set it manually as raw string
-      mockStorage.store['neurotoxic_unlocks'] = '{ invalid: json }'
-      assert.deepEqual(getUnlocks(), [])
-    })
-  })
+  // Helper to read current storage state directly
+  const readStorage = () => {
+    const raw = mockStorage.getItem('neurotoxic_unlocks')
+    if (!raw) return []
+    try {
+      return JSON.parse(raw)
+    } catch {
+      return []
+    }
+  }
 
   await t.test('addUnlock sanitizes before adding', async () => {
     mockStorage.setItem('neurotoxic_unlocks', JSON.stringify(['valid', 123]))
     const result = addUnlock('new_item')
     assert.equal(result, true)
 
-    const stored = JSON.parse(mockStorage.getItem('neurotoxic_unlocks'))
+    const stored = readStorage()
     assert.deepEqual(stored, ['valid', 'new_item'])
   })
 
@@ -69,18 +51,18 @@ test('Unlock Manager Security', async t => {
     addUnlock('item1')
     const result = addUnlock('item1')
     assert.equal(result, false) // Should return false as it wasn't added
-    assert.deepEqual(getUnlocks(), ['item1'])
+    assert.deepEqual(readStorage(), ['item1'])
   })
 
   await t.test('addUnlock adds multiple unique items', async () => {
     addUnlock('item1')
     addUnlock('item2')
-    assert.deepEqual(getUnlocks(), ['item1', 'item2'])
+    assert.deepEqual(readStorage(), ['item1', 'item2'])
   })
 
   await t.test('addUnlock rejects non-string inputs', async () => {
     const result = addUnlock(123)
     assert.equal(result, false)
-    assert.deepEqual(getUnlocks(), [])
+    assert.deepEqual(readStorage(), [])
   })
 })

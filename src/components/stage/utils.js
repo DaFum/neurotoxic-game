@@ -92,7 +92,7 @@ export const calculateCrowdOffset = ({ combo, timeMs }) => {
  * @param {number} params.timeMs - Current time in ms.
  * @returns {number} Adjusted Y position.
  */
-const calculateCrowdY = ({ baseY, combo, timeMs }) => {
+export const calculateCrowdY = ({ baseY, combo, timeMs }) => {
   return baseY - calculateCrowdOffset({ combo, timeMs })
 }
 
@@ -103,7 +103,7 @@ const calculateCrowdY = ({ baseY, combo, timeMs }) => {
  * @param {number} params.laneTotalWidth - Total lane width.
  * @returns {number} Lane start X position.
  */
-const calculateLaneStartX = ({ screenWidth, laneTotalWidth }) =>
+export const calculateLaneStartX = ({ screenWidth, laneTotalWidth }) =>
   (screenWidth - laneTotalWidth) / 2
 
 const LANE_TOTAL_WIDTH = 360

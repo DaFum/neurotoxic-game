@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { useTravelLogic } from '../hooks/useTravelLogic'
-import { useAudioControl } from '../hooks/useAudioControl'
+import { useBandHQModal } from '../hooks/useBandHQModal.js'
 import { ToggleRadio } from '../components/ToggleRadio'
 import { MapConnection } from '../components/MapConnection'
 import { MapNode } from '../components/MapNode'
@@ -26,21 +26,13 @@ export const Overworld = () => {
     hasUpgrade,
     updateBand,
     band,
-    social,
     addToast,
     advanceDay,
-    changeScene,
-    settings,
-    updateSettings,
-    deleteSave,
-    setlist,
-    setSetlist
+    changeScene
   } = useGameState()
 
   const [hoveredNode, setHoveredNode] = useState(null)
-  const [showHQ, setShowHQ] = useState(false)
-
-  const { audioState, handleAudioChange } = useAudioControl()
+  const { showHQ, openHQ, bandHQProps } = useBandHQModal()
 
   const {
     isTraveling,
@@ -66,7 +58,7 @@ export const Overworld = () => {
     hasUpgrade,
     addToast,
     changeScene,
-    onShowHQ: () => setShowHQ(true)
+    onShowHQ: openHQ
   })
 
   const currentNode = gameMap?.nodes[player.currentNodeId]
@@ -305,24 +297,7 @@ export const Overworld = () => {
         </p>
       </div>
 
-      {showHQ && (
-        <BandHQ
-          player={player}
-          band={band}
-          social={social}
-          onClose={() => setShowHQ(false)}
-          updatePlayer={updatePlayer}
-          updateBand={updateBand}
-          addToast={addToast}
-          settings={settings}
-          updateSettings={updateSettings}
-          deleteSave={deleteSave}
-          setlist={setlist}
-          setSetlist={setSetlist}
-          audioState={audioState}
-          onAudioChange={handleAudioChange}
-        />
-      )}
+      {showHQ && <BandHQ {...bandHQProps} />}
     </div>
   )
 }
