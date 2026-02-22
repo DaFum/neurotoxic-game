@@ -79,8 +79,7 @@ export class NoteManager {
     if (notesVersion !== this.lastNotesVersion) {
       this.lastNotesVersion = notesVersion
       this.nextRenderIndex = 0
-      const notesToRemove = Array.from(this.noteSprites.keys())
-      for (const note of notesToRemove) {
+      for (const note of this.noteSprites.keys()) {
         this.destroyNoteSprite(note)
       }
     }
@@ -239,8 +238,7 @@ export class NoteManager {
   }
 
   dispose() {
-    const notesToRemove = Array.from(this.noteSprites.keys())
-    for (const note of notesToRemove) {
+    for (const note of this.noteSprites.keys()) {
       this.destroyNoteSprite(note)
     }
     this.noteSprites.clear()
