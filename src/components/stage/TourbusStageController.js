@@ -3,6 +3,7 @@ import * as PIXI from 'pixi.js'
 import { logger } from '../../utils/logger'
 import { getPixiColorFromToken } from '../stage/utils'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
+import { EffectManager } from './EffectManager'
 
 export class TourbusStageController {
   constructor({ containerRef, gameStateRef, updateRef, statsRef }) {
@@ -14,13 +15,24 @@ export class TourbusStageController {
     this.isDisposed = false
     this.initPromise = null
     this.handleTicker = this.handleTicker.bind(this)
+    this.handleResize = this.handleResize.bind(this)
 
     this.container = null
     this.busSprite = null
     this.laneWidth = 0
     this.roadContainer = null
     this.obstacleContainer = null
-    this.roadStripes = []
+    this.effectManager = null
+    this.roadStripes = null // TilingSprite for road
+
+    // Textures
+    this.textures = {
+      bus: null,
+      road: null,
+      rock: null,
+      barrier: null,
+      fuel: null
+    }
   }
 
   async init() {
@@ -55,10 +67,19 @@ export class TourbusStageController {
         this.container.addChild(this.roadContainer)
         this.container.addChild(this.obstacleContainer)
 
+        // Initialize Effect Manager (on top of obstacles)
+        this.effectManager = new EffectManager(this.app, this.container)
+        this.effectManager.init()
+
+        // Load Assets
+        await this.loadAssets()
+        await this.effectManager.loadAssets()
+
         // Initial Draw
         this.drawRoad()
-        await this.loadAssets()
+        this.createBus()
 
+        window.addEventListener('resize', this.handleResize)
         this.app.ticker.add(this.handleTicker)
 
       } catch (err) {
@@ -70,26 +91,25 @@ export class TourbusStageController {
   }
 
   async loadAssets() {
-    // Load Bus Sprite, etc.
-    // For now, use placeholder graphics or basic shapes if assets missing
-    // We can use getGenImageUrl for textures
     try {
-        const vanUrl = getGenImageUrl(IMG_PROMPTS.ICON_VAN)
-        const texture = await PIXI.Assets.load(vanUrl)
+        // Generate URLs
+        const urls = {
+            bus: getGenImageUrl(IMG_PROMPTS.ICON_VAN),
+            road: getGenImageUrl(IMG_PROMPTS.MINIGAME_ROAD),
+            rock: getGenImageUrl(IMG_PROMPTS.MINIGAME_OBSTACLE_ROCK),
+            barrier: getGenImageUrl(IMG_PROMPTS.MINIGAME_OBSTACLE_BARRIER),
+            fuel: getGenImageUrl(IMG_PROMPTS.MINIGAME_FUEL)
+        }
 
-        this.busSprite = new PIXI.Sprite(texture)
-        this.busSprite.anchor.set(0.5, 1) // Anchor bottom center
-        this.busSprite.width = 60
-        this.busSprite.height = 100
-        this.container.addChild(this.busSprite)
+        // Load all concurrently
+        const bundles = Object.keys(urls).map(key =>
+            PIXI.Assets.load(urls[key]).then(tex => { this.textures[key] = tex })
+        )
+
+        await Promise.allSettled(bundles)
+
     } catch (e) {
-        logger.warn('TourbusStageController', 'Failed to load van asset', e)
-        // Fallback: Graphics
-        const g = new PIXI.Graphics()
-        g.rect(-20, -50, 40, 50)
-        g.fill(0xFF0000)
-        this.busSprite = g
-        this.container.addChild(this.busSprite)
+        logger.warn('TourbusStageController', 'Failed to load assets', e)
     }
   }
 
@@ -98,19 +118,52 @@ export class TourbusStageController {
     const height = this.app.screen.height
     this.laneWidth = width / 3
 
-    // Draw static road background
-    const bg = new PIXI.Graphics()
-    bg.rect(0, 0, width, height)
-    bg.fill(getPixiColorFromToken('--void-black'))
-    this.roadContainer.addChild(bg)
+    // Clear previous
+    this.roadContainer.removeChildren()
 
-    // Draw lane dividers
-    for (let i = 1; i < 3; i++) {
-      const line = new PIXI.Graphics()
-      line.rect(i * this.laneWidth - 2, 0, 4, height)
-      line.fill({ color: getPixiColorFromToken('--ash-gray'), alpha: 0.3 })
-      this.roadContainer.addChild(line)
+    // Use TilingSprite if texture loaded, else Graphics
+    if (this.textures.road) {
+        this.roadStripes = new PIXI.TilingSprite(this.textures.road, width, height)
+        this.roadContainer.addChild(this.roadStripes)
+    } else {
+        const bg = new PIXI.Graphics()
+        bg.rect(0, 0, width, height)
+        bg.fill(getPixiColorFromToken('--void-black'))
+        this.roadContainer.addChild(bg)
+
+        // Draw lane dividers
+        for (let i = 1; i < 3; i++) {
+            const line = new PIXI.Graphics()
+            line.rect(i * this.laneWidth - 2, 0, 4, height)
+            line.fill({ color: getPixiColorFromToken('--ash-gray'), alpha: 0.3 })
+            this.roadContainer.addChild(line)
+        }
     }
+  }
+
+  handleResize() {
+      if (!this.app) return
+      // App resizes automatically via resizeTo
+      // We just need to redraw road to fit new dimensions
+      this.drawRoad()
+  }
+
+  createBus() {
+      if (this.textures.bus) {
+          this.busSprite = new PIXI.Sprite(this.textures.bus)
+          this.busSprite.anchor.set(0.5, 1)
+      } else {
+          // Fallback
+          const g = new PIXI.Graphics()
+          g.rect(-25, -80, 50, 80)
+          g.fill(0x00FF00)
+          this.busSprite = g
+      }
+      // Scale bus
+      const busScale = (this.laneWidth * 0.6) / (this.busSprite.width || 60)
+      this.busSprite.scale.set(busScale)
+
+      this.container.addChild(this.busSprite)
   }
 
   handleTicker(ticker) {
@@ -119,25 +172,35 @@ export class TourbusStageController {
       this.updateRef.current(ticker.deltaMS)
     }
 
+    // Update Effects
+    if (this.effectManager) this.effectManager.update(ticker.deltaMS)
+
     const state = this.gameStateRef.current
     const width = this.app.screen.width
     const height = this.app.screen.height
 
+    // Scroll Road
+    if (this.roadStripes) {
+        // Speed is relative units per ms.
+        // Let's say speed 0.05 => 50 units per sec.
+        // We need pixel speed.
+        // Height is 100 units. So 1 unit = height/100 pixels.
+        const pixelSpeed = state.speed * (height / 100) * ticker.deltaMS
+        this.roadStripes.tilePosition.y += pixelSpeed
+    }
+
     // Update Bus Position (Lerp for smoothness)
     if (this.busSprite) {
       const targetX = (state.busLane * this.laneWidth) + (this.laneWidth / 2)
-      // Simple lerp: current + (target - current) * 0.2
       this.busSprite.x += (targetX - this.busSprite.x) * 0.2
-      this.busSprite.y = height * 0.9 // Fixed Y at 90%
+      this.busSprite.y = height * 0.9
+
+      // Wobble effect based on speed
+      this.busSprite.rotation = Math.sin(Date.now() / 100) * 0.05
     }
 
     // Render Obstacles
-    // Clear and redraw is expensive, ideally we pool sprites.
-    // For MVP, we can iterate and update/create.
-    // Optimization: Map id to sprite.
     if (!this.obstacleMap) this.obstacleMap = new Map()
-
-    // Mark all as unseen
     const currentIds = new Set()
 
     state.obstacles.forEach(obs => {
@@ -145,16 +208,31 @@ export class TourbusStageController {
       let sprite = this.obstacleMap.get(obs.id)
 
       if (!sprite) {
-        sprite = new PIXI.Graphics()
-        if (obs.type === 'FUEL') {
-           sprite.circle(0, 0, 20)
-           sprite.fill(0xFFFF00) // Yellow
-           sprite.stroke({ width: 2, color: 0xFFFFFF })
+        // Choose texture
+        let tex = null
+        if (obs.type === 'FUEL') tex = this.textures.fuel
+        else if (obs.type === 'OBSTACLE') tex = this.textures.rock // Randomize?
+
+        if (tex) {
+            sprite = new PIXI.Sprite(tex)
+            sprite.anchor.set(0.5)
+            // Scale
+            const scale = (this.laneWidth * 0.5) / tex.width
+            sprite.scale.set(scale)
         } else {
-           sprite.rect(-25, -25, 50, 50)
-           sprite.fill(0xFF0000) // Red
-           sprite.stroke({ width: 2, color: 0xFFFFFF })
+            sprite = new PIXI.Graphics()
+            if (obs.type === 'FUEL') {
+               sprite.circle(0, 0, 20)
+               sprite.fill(0xFFFF00)
+            } else {
+               sprite.rect(-25, -25, 50, 50)
+               sprite.fill(0xFF0000)
+            }
         }
+
+        // Custom property to track explosion state
+        sprite.hasExploded = false
+
         this.obstacleContainer.addChild(sprite)
         this.obstacleMap.set(obs.id, sprite)
       }
@@ -168,7 +246,15 @@ export class TourbusStageController {
       // Visual feedback for collision
       if (obs.collided) {
           sprite.alpha = 0.5
-          sprite.scale.set(0.8)
+
+          if (!sprite.hasExploded) {
+              sprite.hasExploded = true
+              if (obs.type === 'OBSTACLE') {
+                  this.effectManager.spawnHitEffect(x, y, 0xFF0000) // Red explosion
+              } else if (obs.type === 'FUEL') {
+                  this.effectManager.spawnHitEffect(x, y, 0x00FF00) // Green sparkle
+              }
+          }
       }
     })
 
@@ -185,10 +271,15 @@ export class TourbusStageController {
   dispose() {
     this.isDisposed = true
     this.initPromise = null
+    window.removeEventListener('resize', this.handleResize)
     if (this.app) {
       this.app.ticker.remove(this.handleTicker)
       this.app.destroy(true, { children: true })
       this.app = null
+    }
+    if (this.effectManager) {
+        this.effectManager.dispose()
+        this.effectManager = null
     }
     this.obstacleMap = null
   }

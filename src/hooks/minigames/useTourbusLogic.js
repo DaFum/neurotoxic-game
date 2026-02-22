@@ -2,17 +2,21 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameState } from '../../context/GameState'
 import { createCompleteTravelMinigameAction } from '../../context/actionCreators'
+import { audioManager } from '../../utils/AudioManager'
 
 export const LANE_COUNT = 3
+import { hasUpgrade } from '../../utils/upgradeUtils'
+
 export const BASE_SPEED = 0.05 // relative units per ms
+export const MAX_SPEED = 0.12
 export const SPAWN_RATE_MS = 1500
-export const TARGET_DISTANCE = 2000
+export const TARGET_DISTANCE = 2500
 export const BUS_Y_PERCENT = 85 // Bus position in % of screen height
 export const BUS_HEIGHT_PERCENT = 10
 
 export const useTourbusLogic = () => {
   const { state, dispatch } = useGameState()
-  const { minigame } = state
+  const { minigame, player } = state
 
   // Game Loop State (Mutable, no re-renders)
   const gameStateRef = useRef({
@@ -72,12 +76,23 @@ export const useTourbusLogic = () => {
     statsRef.current.health = Math.max(0, 100 - game.damage)
     statsRef.current.isGameOver = game.isGameOver
 
+    // Progression: Speed increases with distance
+    // Reach Max Speed at 80% of target distance
+    const progress = Math.min(1, game.distance / (TARGET_DISTANCE * 0.8))
+    game.speed = BASE_SPEED + (MAX_SPEED - BASE_SPEED) * progress
+
+    // Spawn Rate scales with speed (spawn faster if moving faster to keep density constant-ish)
+    // Rate = Base / SpeedMultiplier?
+    // Or just fixed time? If fixed time, density decreases as speed increases.
+    // We want density to be challenging.
+    const currentSpawnRate = Math.max(600, SPAWN_RATE_MS - (progress * 800))
+
     // Move Distance
     game.distance += game.speed * deltaMS
 
     // Spawn Obstacles
     game.lastSpawnTime += deltaMS
-    if (game.lastSpawnTime > SPAWN_RATE_MS) {
+    if (game.lastSpawnTime > currentSpawnRate) {
       spawnObstacle(Date.now())
       game.lastSpawnTime = 0
     }
@@ -126,6 +141,17 @@ export const useTourbusLogic = () => {
     setUiState(prev => {
       // Optimize updates to avoid React thrashing
       const distDiff = Math.abs(prev.distance - game.distance)
+
+      // SFX Triggers via UI state diff detection
+      if (prev.damage !== game.damage && game.damage > prev.damage) {
+          audioManager.playSFX('crash')
+      }
+
+      // Check items collected logic requires separate tracking or relying on game loop event
+      // Since itemsCollected is an array, we can track length in UI state or just fire here?
+      // Mutable game state doesn't allow "diff" easily unless we store prev in ref.
+      // But here we are inside update loop. We know if we just collided.
+
       if (distDiff > 50 || prev.damage !== game.damage || prev.isGameOver !== game.isGameOver) {
         return {
           distance: Math.floor(game.distance),

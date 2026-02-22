@@ -34,8 +34,18 @@ export const RoadieRunScene = () => {
       </div>
 
       {/* Controls Hint */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/50 text-sm font-mono pointer-events-none">
+      <div className="absolute bottom-4 left-8 text-white/50 text-sm font-mono pointer-events-none hidden md:block">
         WASD / ARROWS to Move
+      </div>
+
+      {/* Mobile D-Pad */}
+      <div className="absolute bottom-8 right-8 z-40 grid grid-cols-3 gap-2 pointer-events-auto md:hidden">
+        <div />
+        <button className="w-14 h-14 bg-white/10 active:bg-[var(--toxic-green)]/50 border border-white/30 rounded flex items-center justify-center text-white" onClick={() => actions.move(0, -1)}>▲</button>
+        <div />
+        <button className="w-14 h-14 bg-white/10 active:bg-[var(--toxic-green)]/50 border border-white/30 rounded flex items-center justify-center text-white" onClick={() => actions.move(-1, 0)}>◄</button>
+        <button className="w-14 h-14 bg-white/10 active:bg-[var(--toxic-green)]/50 border border-white/30 rounded flex items-center justify-center text-white" onClick={() => actions.move(0, 1)}>▼</button>
+        <button className="w-14 h-14 bg-white/10 active:bg-[var(--toxic-green)]/50 border border-white/30 rounded flex items-center justify-center text-white" onClick={() => actions.move(1, 0)}>►</button>
       </div>
 
       {/* Game Over / Success Overlay */}

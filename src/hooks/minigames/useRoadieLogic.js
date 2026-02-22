@@ -2,15 +2,19 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameState } from '../../context/GameState'
 import { createCompleteRoadieMinigameAction } from '../../context/actionCreators'
+import { audioManager } from '../../utils/AudioManager'
 
 export const GRID_WIDTH = 12
 export const GRID_HEIGHT = 8 // Rows: 0 (Start), 1-6 (Road), 7 (Venue)
 export const CELL_SIZE = 60
-export const MOVE_COOLDOWN_BASE = 150 // ms
+export const MOVE_COOLDOWN_BASE = 120 // ms (Faster base movement)
 
 const TRAFFIC_ROWS = [1, 2, 3, 4, 5, 6]
-const TRAFFIC_SPEEDS = [0.005, -0.008, 0.01, -0.006, 0.012, -0.009] // Cells per ms
-const CAR_SPAWN_RATES = [2000, 2500, 1800, 3000, 1500, 2200]
+// Speed: 0.01 cells/ms = 10 cells/sec. Grid is 12 wide. 1.2 sec to cross.
+// Fast cars: 0.015
+// Slow trucks: 0.005
+const TRAFFIC_SPEEDS = [0.005, -0.009, 0.012, -0.007, 0.015, -0.010]
+const CAR_SPAWN_RATES = [2500, 2200, 1600, 2800, 1400, 2000] // Slightly denser
 
 export const useRoadieLogic = () => {
   const { state, dispatch } = useGameState()
@@ -72,12 +76,14 @@ export const useRoadieLogic = () => {
     if (newY === 0 && !game.carrying && game.itemsToDeliver.length > 0) {
         // Auto pickup next item? Or manual? Let's say auto for now.
         game.carrying = game.itemsToDeliver.pop()
+        audioManager.playSFX('pickup')
     }
 
     // Check delivery
     if (newY === GRID_HEIGHT - 1 && game.carrying) {
         game.itemsDelivered.push(game.carrying)
         game.carrying = null
+        audioManager.playSFX('deliver')
         // Win Condition check
         if (game.itemsToDeliver.length === 0 && !game.carrying) {
             game.isGameOver = true
@@ -134,6 +140,7 @@ export const useRoadieLogic = () => {
 
             if (pLeft < cRight && pRight > cLeft) {
                 // Hit!
+                audioManager.playSFX('crash')
                 if (game.carrying) {
                     game.equipmentDamage += 10
                     // Drop item? Or just damage?

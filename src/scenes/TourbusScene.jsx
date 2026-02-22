@@ -8,7 +8,7 @@ import { useGameState } from '../context/GameState'
 
 export const TourbusScene = () => {
   const { uiState, gameStateRef, stats, update, actions } = useTourbusLogic()
-  const { changeScene } = useGameState()
+  const { changeScene, gameMap, player, startGig } = useGameState()
 
   // Controller factory for Tourbus
   const controllerFactory = useMemo(() => createTourbusStageController, [])
@@ -56,9 +56,14 @@ export const TourbusScene = () => {
           <h1 className="text-4xl text-[var(--toxic-green)] font-bold mb-4">DESTINATION REACHED</h1>
           <p className="text-white mb-8">Van Condition: {Math.max(0, 100 - uiState.damage)}%</p>
           <button
-            onClick={() => changeScene('OVERWORLD')} // Or continue to next step? Usually Overworld -> PreGig -> Gig
-            // Wait, if this was triggered from Overworld travel, we should arrive at destination.
-            // The logic hook should handle completion action, but navigation might be manual here.
+            onClick={() => {
+               const currentNode = gameMap?.nodes[player.currentNodeId]
+               if (currentNode && currentNode.type === 'GIG') {
+                   startGig(currentNode.venue)
+               } else {
+                   changeScene('OVERWORLD')
+               }
+            }}
             className="px-8 py-4 bg-[var(--toxic-green)] text-black font-bold uppercase hover:scale-105 transition-transform"
           >
             CONTINUE
