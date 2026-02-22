@@ -57,12 +57,9 @@ export const PostGig = () => {
   // Initialize Results once (simulated)
   useEffect(() => {
     if (!financials && currentGig && lastGigStats) {
-      const crowdStats = { hype: lastGigStats?.peakHype || 0 }
-
       const result = calculateGigFinancials({
         gigData: currentGig,
         performanceScore: perfScore,
-        crowdStats,
         modifiers: gigModifiers,
         bandInventory: band.inventory,
         playerState: player,

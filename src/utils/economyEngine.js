@@ -331,7 +331,6 @@ const calculateGigExpenses = (gigData, modifiers, playerState = null) => {
  * @param {object} params - Parameters object
  * @param {object} params.gigData - { capacity, price, pay (guarantee), dist, diff }
  * @param {number} params.performanceScore - 0 to 100
- * @param {object} params.crowdStats - { hype (0-100) }
  * @param {object} params.modifiers - { merch: bool, promo: bool, catering: bool, soundcheck: bool, guestlist: bool }
  * @param {object} params.bandInventory - { shirts, hoodies, etc }
  * @param {object|number} params.playerStateOrFame - Player state object or just fame (number) for legacy support
@@ -340,7 +339,6 @@ const calculateGigExpenses = (gigData, modifiers, playerState = null) => {
 export const calculateGigFinancials = ({
   gigData,
   performanceScore,
-  crowdStats,
   modifiers,
   bandInventory,
   playerState,

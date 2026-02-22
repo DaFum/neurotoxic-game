@@ -169,7 +169,6 @@ test('calculateGigFinancials: low performance penalizes merch', () => {
   const lowResult = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 30,
-    crowdStats: { hype: 30 },
     modifiers: modifiers,
     bandInventory: inventory,
     playerState: { fame: 100 },
@@ -178,7 +177,6 @@ test('calculateGigFinancials: low performance penalizes merch', () => {
   const highResult = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 95,
-    crowdStats: { hype: 80 },
     modifiers: modifiers,
     bandInventory: inventory,
     playerState: { fame: 100 },
@@ -205,7 +203,6 @@ test('calculateGigFinancials: merch table modifier increases merch revenue', () 
   const withoutMerch = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 70,
-    crowdStats: { hype: 50 },
     modifiers: {},
     bandInventory: inventory,
     playerState: { fame: 100 },
@@ -214,7 +211,6 @@ test('calculateGigFinancials: merch table modifier increases merch revenue', () 
   const withMerch = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 70,
-    crowdStats: { hype: 50 },
     modifiers: { merch: true },
     bandInventory: inventory,
     playerState: { fame: 100 },
