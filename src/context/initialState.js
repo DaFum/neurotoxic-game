@@ -6,6 +6,7 @@
 
 import { CHARACTERS } from '../data/characters.js'
 import { LOG_LEVELS } from '../utils/logger.js'
+import { DEFAULT_MINIGAME_STATE } from './gameConstants.js'
 
 /**
  * Default player state configuration
@@ -131,7 +132,8 @@ export const initialState = {
   reputationByRegion: {},
   settings: { ...DEFAULT_SETTINGS },
   npcs: {},
-  gigModifiers: { ...DEFAULT_GIG_MODIFIERS }
+  gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
+  minigame: { ...DEFAULT_MINIGAME_STATE }
 }
 
 /**
@@ -149,5 +151,6 @@ export const createInitialState = () => ({
   },
   social: { ...DEFAULT_SOCIAL_STATE },
   settings: { ...DEFAULT_SETTINGS },
-  gigModifiers: { ...DEFAULT_GIG_MODIFIERS }
+  gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
+  minigame: { ...DEFAULT_MINIGAME_STATE }
 })

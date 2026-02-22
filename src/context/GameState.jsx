@@ -471,9 +471,11 @@ export const GameStateProvider = ({ children }) => {
       loadGame,
       deleteSave,
       resetState,
-      updateSettings
+      updateSettings,
+      dispatch // Expose raw dispatch for advanced actions
     }),
     [
+      dispatch,
       changeScene,
       updatePlayer,
       updateBand,

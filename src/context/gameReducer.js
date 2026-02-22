@@ -11,6 +11,11 @@ import {
   clampPlayerMoney
 } from '../utils/gameStateUtils.js'
 import { calculateDailyUpdates } from '../utils/simulationUtils.js'
+import {
+  calculateTravelExpenses,
+  calculateTravelMinigameResult,
+  calculateRoadieMinigameResult
+} from '../utils/economyEngine.js'
 import { logger } from '../utils/logger.js'
 import {
   initialState,
@@ -19,6 +24,7 @@ import {
   DEFAULT_BAND_STATE,
   DEFAULT_SOCIAL_STATE
 } from './initialState.js'
+import { GAME_PHASES, MINIGAME_TYPES, DEFAULT_MINIGAME_STATE } from './gameConstants.js'
 
 /**
  * Action Types Enum
@@ -47,7 +53,11 @@ export const ActionTypes = {
   POP_PENDING_EVENT: 'POP_PENDING_EVENT',
   CONSUME_ITEM: 'CONSUME_ITEM',
   ADVANCE_DAY: 'ADVANCE_DAY',
-  ADD_COOLDOWN: 'ADD_COOLDOWN'
+  ADD_COOLDOWN: 'ADD_COOLDOWN',
+  START_TRAVEL_MINIGAME: 'START_TRAVEL_MINIGAME',
+  COMPLETE_TRAVEL_MINIGAME: 'COMPLETE_TRAVEL_MINIGAME',
+  START_ROADIE_MINIGAME: 'START_ROADIE_MINIGAME',
+  COMPLETE_ROADIE_MINIGAME: 'COMPLETE_ROADIE_MINIGAME'
 }
 
 /**
@@ -278,6 +288,110 @@ const handleAdvanceDay = state => {
   return { ...state, player, band: nextBand, social, eventCooldowns: [] }
 }
 
+const handleStartTravelMinigame = (state, payload) => {
+  const { targetNodeId } = payload
+  logger.info('GameState', `Starting Travel Minigame to ${targetNodeId}`)
+  return {
+    ...state,
+    currentScene: GAME_PHASES.TRAVEL_MINIGAME,
+    minigame: {
+      ...DEFAULT_MINIGAME_STATE,
+      active: true,
+      type: MINIGAME_TYPES.TOURBUS,
+      targetDestination: targetNodeId
+    }
+  }
+}
+
+const handleCompleteTravelMinigame = (state, payload) => {
+  const { damageTaken, itemsCollected } = payload
+  logger.info('GameState', 'Travel Minigame Complete', payload)
+
+  // Apply Travel Results
+  const targetId = state.minigame.targetDestination
+  const targetNode = state.gameMap?.nodes?.[targetId]
+  const currentNode = state.gameMap?.nodes?.[state.player.currentNodeId]
+
+  if (!targetNode) {
+    logger.error('GameState', 'Complete Travel: Invalid Target', targetId)
+    return { ...state, minigame: { ...DEFAULT_MINIGAME_STATE } }
+  }
+
+  // Calculate Costs
+  const { fuelLiters, totalCost } = calculateTravelExpenses(targetNode, currentNode, { van: state.player.van })
+
+  // Apply Minigame Results
+  const { conditionLoss, fuelBonus } = calculateTravelMinigameResult(damageTaken, itemsCollected)
+
+  const nextPlayer = {
+    ...state.player,
+    money: Math.max(0, state.player.money - totalCost),
+    location: targetNode.venue?.name || 'Unknown',
+    currentNodeId: targetNode.id,
+    totalTravels: state.player.totalTravels + 1,
+    van: {
+      ...state.player.van,
+      fuel: Math.max(0, Math.min(100, state.player.van.fuel - fuelLiters + fuelBonus)),
+      condition: Math.max(0, state.player.van.condition - conditionLoss)
+    }
+  }
+
+  return {
+    ...state,
+    player: nextPlayer,
+    minigame: { ...DEFAULT_MINIGAME_STATE }
+  }
+}
+
+const handleStartRoadieMinigame = (state, payload) => {
+  const { gigId } = payload
+  logger.info('GameState', `Starting Roadie Minigame for Gig ${gigId}`)
+  return {
+    ...state,
+    currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
+    minigame: {
+      ...DEFAULT_MINIGAME_STATE,
+      active: true,
+      type: MINIGAME_TYPES.ROADIE,
+      gigId: gigId,
+      equipmentRemaining: 10 // Example default, can be dynamic
+    }
+  }
+}
+
+const handleCompleteRoadieMinigame = (state, payload) => {
+  const { equipmentDamage } = payload
+  logger.info('GameState', 'Roadie Minigame Complete', payload)
+
+  // Apply Results
+  const { stress, repairCost } = calculateRoadieMinigameResult(equipmentDamage)
+
+  const nextBand = {
+    ...state.band,
+    harmony: Math.max(0, state.band.harmony - stress)
+  }
+
+  const nextPlayer = {
+    ...state.player,
+    money: Math.max(0, state.player.money - repairCost)
+  }
+
+  // Pass damage to gig modifiers or stats?
+  // We can add a temporary 'damaged_gear' modifier if damage is high
+  const nextModifiers = { ...state.gigModifiers }
+  if (equipmentDamage > 50) {
+      // Add a hidden penalty or just log it
+      logger.warn('GameState', 'Heavy equipment damage applied')
+  }
+
+  return {
+    ...state,
+    band: nextBand,
+    player: nextPlayer,
+    minigame: { ...DEFAULT_MINIGAME_STATE }
+  }
+}
+
 /**
  * Main state reducer for the game.
  * @param {Object} state - Current state
@@ -374,6 +488,18 @@ export const gameReducer = (state, action) => {
         }
       }
       return state
+
+    case ActionTypes.START_TRAVEL_MINIGAME:
+      return handleStartTravelMinigame(state, action.payload)
+
+    case ActionTypes.COMPLETE_TRAVEL_MINIGAME:
+      return handleCompleteTravelMinigame(state, action.payload)
+
+    case ActionTypes.START_ROADIE_MINIGAME:
+      return handleStartRoadieMinigame(state, action.payload)
+
+    case ActionTypes.COMPLETE_ROADIE_MINIGAME:
+      return handleCompleteRoadieMinigame(state, action.payload)
 
     default:
       return state

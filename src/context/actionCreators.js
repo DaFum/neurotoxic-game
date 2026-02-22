@@ -217,3 +217,43 @@ export const createAddCooldownAction = eventId => ({
   type: ActionTypes.ADD_COOLDOWN,
   payload: eventId
 })
+
+/**
+ * Creates start travel minigame action
+ * @param {string} targetNodeId - The destination node ID
+ * @returns {Object} Action object
+ */
+export const createStartTravelMinigameAction = targetNodeId => ({
+  type: ActionTypes.START_TRAVEL_MINIGAME,
+  payload: { targetNodeId }
+})
+
+/**
+ * Creates complete travel minigame action
+ * @param {Object} results - Results { damageTaken, itemsCollected }
+ * @returns {Object} Action object
+ */
+export const createCompleteTravelMinigameAction = (damageTaken, itemsCollected) => ({
+  type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
+  payload: { damageTaken, itemsCollected }
+})
+
+/**
+ * Creates start roadie minigame action
+ * @param {string} gigId - The gig ID
+ * @returns {Object} Action object
+ */
+export const createStartRoadieMinigameAction = gigId => ({
+  type: ActionTypes.START_ROADIE_MINIGAME,
+  payload: { gigId }
+})
+
+/**
+ * Creates complete roadie minigame action
+ * @param {Object} results - Results { equipmentDamage }
+ * @returns {Object} Action object
+ */
+export const createCompleteRoadieMinigameAction = equipmentDamage => ({
+  type: ActionTypes.COMPLETE_ROADIE_MINIGAME,
+  payload: { equipmentDamage }
+})

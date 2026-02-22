@@ -7,6 +7,7 @@ import { MODIFIER_COSTS } from '../utils/economyEngine'
 import { audioManager } from '../utils/AudioManager'
 import { getSongId } from '../utils/audio/songUtils'
 import { handleError } from '../utils/errorHandler'
+import { createStartRoadieMinigameAction } from '../context/actionCreators'
 
 const GIG_MODIFIER_OPTIONS = [
   {
@@ -53,7 +54,8 @@ export const PreGig = () => {
     activeEvent,
     band,
     updateBand,
-    addToast
+    addToast,
+    dispatch
   } = useGameState()
   const [isStarting, setIsStarting] = useState(false)
   const currentModifiers = getGigModifiers(band, gigModifiers)
@@ -340,7 +342,8 @@ export const PreGig = () => {
           setIsStarting(true)
           try {
             await audioManager.ensureAudioContext()
-            changeScene('GIG')
+            // changeScene('GIG') // Replaced by minigame start
+            dispatch(createStartRoadieMinigameAction(currentGig.id))
           } catch (err) {
             setIsStarting(false)
             handleError(err, {

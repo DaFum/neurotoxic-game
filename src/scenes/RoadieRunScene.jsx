@@ -1,0 +1,60 @@
+
+import React, { useMemo } from 'react'
+import { motion } from 'framer-motion'
+import { useRoadieLogic } from '../hooks/minigames/useRoadieLogic'
+import { createRoadieStageController } from '../components/stage/RoadieStageController'
+import { PixiStage } from '../components/PixiStage'
+import { useGameState } from '../context/GameState'
+
+export const RoadieRunScene = () => {
+  const { uiState, gameStateRef, stats, update, actions } = useRoadieLogic()
+  const { changeScene } = useGameState()
+
+  const controllerFactory = useMemo(() => createRoadieStageController, [])
+
+  const logic = useMemo(() => ({
+    gameStateRef,
+    stats,
+    update
+  }), [gameStateRef, stats, update])
+
+  return (
+    <div className="w-full h-full bg-black relative overflow-hidden flex flex-col items-center justify-center">
+      <div className="absolute inset-0 pointer-events-none">
+         <PixiStage logic={logic} controllerFactory={controllerFactory} />
+      </div>
+
+      {/* HUD */}
+      <div className="absolute top-4 left-4 z-30 text-white font-mono pointer-events-none bg-black/50 p-2 border border-white/20">
+        <h2 className="text-xl text-[var(--toxic-green)]">ROADIE RUN</h2>
+        <div>ITEMS REMAINING: {uiState.itemsRemaining}</div>
+        <div>DELIVERED: {uiState.itemsDelivered}</div>
+        <div>DAMAGE: {uiState.currentDamage}%</div>
+        {uiState.carrying && <div className="text-yellow-400">CARRYING: {uiState.carrying.type}</div>}
+      </div>
+
+      {/* Controls Hint */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/50 text-sm font-mono pointer-events-none">
+        WASD / ARROWS to Move
+      </div>
+
+      {/* Game Over / Success Overlay */}
+      {uiState.isGameOver && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm"
+        >
+          <h1 className="text-4xl text-[var(--toxic-green)] font-bold mb-4">SETUP COMPLETE</h1>
+          <p className="text-white mb-8">Equipment Damage: {uiState.currentDamage}%</p>
+          <button
+            onClick={() => changeScene('GIG')} // Proceed to Gig
+            className="px-8 py-4 bg-[var(--toxic-green)] text-black font-bold uppercase hover:scale-105 transition-transform"
+          >
+            START SHOW
+          </button>
+        </motion.div>
+      )}
+    </div>
+  )
+}

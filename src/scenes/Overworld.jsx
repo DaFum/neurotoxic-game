@@ -28,7 +28,8 @@ export const Overworld = () => {
     band,
     addToast,
     advanceDay,
-    changeScene
+    changeScene,
+    dispatch
   } = useGameState()
 
   const [hoveredNode, setHoveredNode] = useState(null)
@@ -58,7 +59,8 @@ export const Overworld = () => {
     hasUpgrade,
     addToast,
     changeScene,
-    onShowHQ: openHQ
+    onShowHQ: openHQ,
+    dispatch
   })
 
   const currentNode = gameMap?.nodes[player.currentNodeId]

@@ -477,3 +477,26 @@ export const shouldTriggerBankruptcy = (newMoney, netIncome) => {
   const income = netIncome ?? 0
   return income < 0
 }
+
+/**
+ * Calculates effects of Travel Minigame results.
+ * @param {number} damageTaken - Total damage taken.
+ * @param {string[]} itemsCollected - Array of collected item types.
+ * @returns {object} { conditionLoss, fuelBonus }
+ */
+export const calculateTravelMinigameResult = (damageTaken, itemsCollected) => {
+  const conditionLoss = Math.floor(damageTaken / 10)
+  const fuelBonus = itemsCollected.filter(i => i === 'FUEL').length * 10
+  return { conditionLoss, fuelBonus }
+}
+
+/**
+ * Calculates effects of Roadie Minigame results.
+ * @param {number} equipmentDamage - Total equipment damage.
+ * @returns {object} { stress, repairCost }
+ */
+export const calculateRoadieMinigameResult = (equipmentDamage) => {
+  const stress = Math.floor(equipmentDamage / 5)
+  const repairCost = Math.floor(equipmentDamage * 2)
+  return { stress, repairCost }
+}
