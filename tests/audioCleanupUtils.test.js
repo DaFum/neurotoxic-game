@@ -68,7 +68,10 @@ test('clearTransportEvent', async t => {
     const id = 123
     clearTransportEvent(id, 'testEvent')
     assert.strictEqual(mockTone.getTransport().clear.mock.calls.length, 1)
-    assert.strictEqual(mockTone.getTransport().clear.mock.calls[0].arguments[0], id)
+    assert.strictEqual(
+      mockTone.getTransport().clear.mock.calls[0].arguments[0],
+      id
+    )
     assert.strictEqual(mockLogger.warn.mock.calls.length, 0)
   })
 
@@ -124,7 +127,10 @@ test('stopAndDisconnectSource', async t => {
     }
     stopAndDisconnectSource(mockSource, 'testSource')
     assert.strictEqual(mockLogger.debug.mock.calls.length, 1)
-    assert.strictEqual(mockLogger.debug.mock.calls[0].arguments[1], 'testSource source stop failed')
+    assert.strictEqual(
+      mockLogger.debug.mock.calls[0].arguments[1],
+      'testSource source stop failed'
+    )
     assert.strictEqual(mockLogger.debug.mock.calls[0].arguments[2], error)
     // Should still try to disconnect
     assert.strictEqual(mockSource.disconnect.mock.calls.length, 1)
@@ -140,7 +146,10 @@ test('stopAndDisconnectSource', async t => {
     }
     stopAndDisconnectSource(mockSource, 'testSource')
     assert.strictEqual(mockLogger.debug.mock.calls.length, 1)
-    assert.strictEqual(mockLogger.debug.mock.calls[0].arguments[1], 'testSource source disconnect failed')
+    assert.strictEqual(
+      mockLogger.debug.mock.calls[0].arguments[1],
+      'testSource source disconnect failed'
+    )
     assert.strictEqual(mockLogger.debug.mock.calls[0].arguments[2], error)
   })
 
@@ -160,12 +169,21 @@ test('stopAndDisconnectSource', async t => {
     assert.strictEqual(mockLogger.debug.mock.calls.length, 2)
 
     // Check first error (stop)
-    assert.strictEqual(mockLogger.debug.mock.calls[0].arguments[1], 'testSource source stop failed')
+    assert.strictEqual(
+      mockLogger.debug.mock.calls[0].arguments[1],
+      'testSource source stop failed'
+    )
     assert.strictEqual(mockLogger.debug.mock.calls[0].arguments[2], stopError)
 
     // Check second error (disconnect)
-    assert.strictEqual(mockLogger.debug.mock.calls[1].arguments[1], 'testSource source disconnect failed')
-    assert.strictEqual(mockLogger.debug.mock.calls[1].arguments[2], disconnectError)
+    assert.strictEqual(
+      mockLogger.debug.mock.calls[1].arguments[1],
+      'testSource source disconnect failed'
+    )
+    assert.strictEqual(
+      mockLogger.debug.mock.calls[1].arguments[2],
+      disconnectError
+    )
   })
 
   await t.test('handles invalid source object (no methods)', () => {
@@ -175,10 +193,16 @@ test('stopAndDisconnectSource', async t => {
     // Should fail twice because calling undefined as function throws TypeError
     assert.strictEqual(mockLogger.debug.mock.calls.length, 2)
 
-    assert.strictEqual(mockLogger.debug.mock.calls[0].arguments[1], 'testSource source stop failed')
+    assert.strictEqual(
+      mockLogger.debug.mock.calls[0].arguments[1],
+      'testSource source stop failed'
+    )
     assert.ok(mockLogger.debug.mock.calls[0].arguments[2] instanceof TypeError)
 
-    assert.strictEqual(mockLogger.debug.mock.calls[1].arguments[1], 'testSource source disconnect failed')
+    assert.strictEqual(
+      mockLogger.debug.mock.calls[1].arguments[1],
+      'testSource source disconnect failed'
+    )
     assert.ok(mockLogger.debug.mock.calls[1].arguments[2] instanceof TypeError)
   })
 })
@@ -317,8 +341,16 @@ test('cleanupTransportEvents', async t => {
     cleanupTransportEvents()
 
     assert.strictEqual(mockTone.getTransport().clear.mock.calls.length, 2)
-    assert.ok(mockTone.getTransport().clear.mock.calls.some(c => c.arguments[0] === endId))
-    assert.ok(mockTone.getTransport().clear.mock.calls.some(c => c.arguments[0] === stopId))
+    assert.ok(
+      mockTone
+        .getTransport()
+        .clear.mock.calls.some(c => c.arguments[0] === endId)
+    )
+    assert.ok(
+      mockTone
+        .getTransport()
+        .clear.mock.calls.some(c => c.arguments[0] === stopId)
+    )
     assert.strictEqual(mockAudioState.transportEndEventId, null)
     assert.strictEqual(mockAudioState.transportStopEventId, null)
   })

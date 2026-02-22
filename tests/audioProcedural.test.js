@@ -39,7 +39,9 @@ const mockAudioState = {
   transportEndEventId: null,
   transportStopEventId: null
 }
-mock.module('../src/utils/audio/state.js', { namedExports: { audioState: mockAudioState } })
+mock.module('../src/utils/audio/state.js', {
+  namedExports: { audioState: mockAudioState }
+})
 
 // Mock Tone.js
 const mockTransport = {
@@ -75,11 +77,11 @@ const mockTone = {
   getTransport: mock.fn(() => mockTransport),
   Part: MockPart,
   now: mock.fn(() => 1000), // Fixed time: 1000s
-  Frequency: mock.fn((midi) => ({
+  Frequency: mock.fn(midi => ({
     toNote: () => 'C4',
     toFrequency: () => 440
   })),
-  Time: mock.fn((val) => ({
+  Time: mock.fn(val => ({
     toSeconds: () => 0.5
   }))
 }
@@ -90,10 +92,10 @@ class MockMidi {
   constructor(arrayBuffer) {
     // If buffer is empty, simulate 0 duration
     if (arrayBuffer.byteLength === 0) {
-        this.duration = 0
-        this.header = { tempos: [] }
-        this.tracks = []
-        return
+      this.duration = 0
+      this.header = { tempos: [] }
+      this.tracks = []
+      return
     }
 
     this.duration = 10 // 10 seconds
@@ -112,11 +114,16 @@ class MockMidi {
     ]
   }
 }
-mock.module('@tonejs/midi', { namedExports: { Midi: MockMidi }, defaultExport: { Midi: MockMidi } })
+mock.module('@tonejs/midi', {
+  namedExports: { Midi: MockMidi },
+  defaultExport: { Midi: MockMidi }
+})
 
 // Mock Setup
 const mockEnsureAudioContext = mock.fn(async () => true)
-mock.module('../src/utils/audio/setup.js', { namedExports: { ensureAudioContext: mockEnsureAudioContext } })
+mock.module('../src/utils/audio/setup.js', {
+  namedExports: { ensureAudioContext: mockEnsureAudioContext }
+})
 
 // Mock Playback
 const mockStopAudioInternal = mock.fn()
@@ -156,20 +163,24 @@ const { playMidiFile } = await import('../src/utils/audio/procedural.js')
 
 // --- Tests ---
 
-test('playMidiFile Tests', async (t) => {
+test('playMidiFile Tests', async t => {
   // Setup global fetch mock
   const originalFetch = global.fetch
   let fetchResponse = { ok: true, arrayBuffer: async () => new ArrayBuffer(10) }
 
-  global.fetch = mock.fn(async (url) => {
+  global.fetch = mock.fn(async url => {
     if (url.includes('fail')) {
-      return { ok: false, status: 404, arrayBuffer: async () => new ArrayBuffer(0) }
+      return {
+        ok: false,
+        status: 404,
+        arrayBuffer: async () => new ArrayBuffer(0)
+      }
     }
     if (url.includes('timeout')) {
-        await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise(resolve => setTimeout(resolve, 100))
     }
     if (url.includes('empty')) {
-        return { ok: true, arrayBuffer: async () => new ArrayBuffer(0) }
+      return { ok: true, arrayBuffer: async () => new ArrayBuffer(0) }
     }
     return fetchResponse
   })
@@ -204,58 +215,114 @@ test('playMidiFile Tests', async (t) => {
     const result = await playMidiFile(filename)
 
     assert.strictEqual(result, true, 'Should return true on success')
-    assert.strictEqual(mockEnsureAudioContext.mock.calls.length, 1, 'Should check audio context')
-    assert.strictEqual(mockStopAudioInternal.mock.calls.length, 1, 'Should stop previous audio')
-    assert.strictEqual(global.fetch.mock.calls.length, 1, 'Should fetch MIDI file')
+    assert.strictEqual(
+      mockEnsureAudioContext.mock.calls.length,
+      1,
+      'Should check audio context'
+    )
+    assert.strictEqual(
+      mockStopAudioInternal.mock.calls.length,
+      1,
+      'Should stop previous audio'
+    )
+    assert.strictEqual(
+      global.fetch.mock.calls.length,
+      1,
+      'Should fetch MIDI file'
+    )
 
     // Check if MockPart was instantiated?
     // We can't easily check constructor calls unless we spy on the class or use a proxy.
     // But we can check if start() was called on the prototype.
     // However, start() is called on instances.
     // Since all instances share the prototype where we put the mock, we can check that.
-    assert.ok(MockPart.prototype.start.mock.calls.length >= 1, 'Should create and start Tone.Part')
+    assert.ok(
+      MockPart.prototype.start.mock.calls.length >= 1,
+      'Should create and start Tone.Part'
+    )
 
-    assert.strictEqual(mockTransport.start.mock.calls.length, 1, 'Should start Transport')
+    assert.strictEqual(
+      mockTransport.start.mock.calls.length,
+      1,
+      'Should start Transport'
+    )
 
     const startArgs = mockTransport.start.mock.calls[0].arguments
     assert.ok(startArgs[0] >= 1000.1, 'Start time should include lookahead')
   })
 
-  await t.test('Fetch Failure: Returns false if MIDI file not found', async () => {
-    const filename = 'fail.mid'
-    const result = await playMidiFile(filename)
+  await t.test(
+    'Fetch Failure: Returns false if MIDI file not found',
+    async () => {
+      const filename = 'fail.mid'
+      const result = await playMidiFile(filename)
 
-    assert.strictEqual(result, false, 'Should return false on fetch failure')
-    assert.strictEqual(global.fetch.mock.calls.length, 1)
-    assert.strictEqual(mockLogger.error.mock.calls.length, 1, 'Should log error')
-  })
+      assert.strictEqual(result, false, 'Should return false on fetch failure')
+      assert.strictEqual(global.fetch.mock.calls.length, 1)
+      assert.strictEqual(
+        mockLogger.error.mock.calls.length,
+        1,
+        'Should log error'
+      )
+    }
+  )
 
-  await t.test('AudioContext Locked: Returns false if context not ensured', async () => {
-    mockEnsureAudioContext.mock.mockImplementationOnce(async () => false)
-    const result = await playMidiFile('test.mid')
+  await t.test(
+    'AudioContext Locked: Returns false if context not ensured',
+    async () => {
+      mockEnsureAudioContext.mock.mockImplementationOnce(async () => false)
+      const result = await playMidiFile('test.mid')
 
-    assert.strictEqual(result, false, 'Should return false if audio context is locked')
-    assert.strictEqual(global.fetch.mock.calls.length, 0, 'Should not fetch if locked')
-  })
+      assert.strictEqual(
+        result,
+        false,
+        'Should return false if audio context is locked'
+      )
+      assert.strictEqual(
+        global.fetch.mock.calls.length,
+        0,
+        'Should not fetch if locked'
+      )
+    }
+  )
 
-  await t.test('Race Condition: Aborts if playRequestId changes during fetch', async () => {
-    global.fetch.mock.mockImplementationOnce(async () => {
-      mockAudioState.playRequestId++
-      return { ok: true, arrayBuffer: async () => new ArrayBuffer(10) }
-    })
+  await t.test(
+    'Race Condition: Aborts if playRequestId changes during fetch',
+    async () => {
+      global.fetch.mock.mockImplementationOnce(async () => {
+        mockAudioState.playRequestId++
+        return { ok: true, arrayBuffer: async () => new ArrayBuffer(10) }
+      })
 
-    const result = await playMidiFile('test.mid')
+      const result = await playMidiFile('test.mid')
 
-    assert.strictEqual(result, false, 'Should return false if request ID changed')
-    assert.strictEqual(mockTransport.start.mock.calls.length, 0, 'Should not start transport')
-  })
+      assert.strictEqual(
+        result,
+        false,
+        'Should return false if request ID changed'
+      )
+      assert.strictEqual(
+        mockTransport.start.mock.calls.length,
+        0,
+        'Should not start transport'
+      )
+    }
+  )
 
   await t.test('Looping: Sets Transport loop parameters', async () => {
     const result = await playMidiFile('test.mid', 0, true)
 
     assert.strictEqual(result, true)
-    assert.strictEqual(mockTransport.loop, true, 'Transport loop should be true')
-    assert.strictEqual(mockTransport.loopEnd, 10, 'Loop end should match MIDI duration')
+    assert.strictEqual(
+      mockTransport.loop,
+      true,
+      'Transport loop should be true'
+    )
+    assert.strictEqual(
+      mockTransport.loopEnd,
+      10,
+      'Loop end should match MIDI duration'
+    )
     assert.strictEqual(mockTransport.loopStart, 0, 'Loop start should be 0')
   })
 
@@ -265,20 +332,45 @@ test('playMidiFile Tests', async (t) => {
 
     assert.strictEqual(result, true)
     const startArgs = mockTransport.start.mock.calls[0].arguments
-    assert.strictEqual(startArgs[1], offset, 'Should pass offset to Transport.start')
+    assert.strictEqual(
+      startArgs[1],
+      offset,
+      'Should pass offset to Transport.start'
+    )
   })
 
-  await t.test('Invalid MIDI Duration: Returns false if duration is 0', async () => {
+  await t.test(
+    'Invalid MIDI Duration: Returns false if duration is 0',
+    async () => {
       const result = await playMidiFile('empty.mid')
 
-      assert.strictEqual(result, false, 'Should return false for 0 duration MIDI')
-      assert.strictEqual(mockLogger.warn.mock.calls.length, 1, 'Should warn about 0 duration')
-      assert.strictEqual(mockTransport.start.mock.calls.length, 0, 'Should not start transport')
-  })
+      assert.strictEqual(
+        result,
+        false,
+        'Should return false for 0 duration MIDI'
+      )
+      assert.strictEqual(
+        mockLogger.warn.mock.calls.length,
+        1,
+        'Should warn about 0 duration'
+      )
+      assert.strictEqual(
+        mockTransport.start.mock.calls.length,
+        0,
+        'Should not start transport'
+      )
+    }
+  )
 
   await t.test('Options: stopAfterSeconds schedules stop', async () => {
-      const result = await playMidiFile('test.mid', 0, false, 0, { stopAfterSeconds: 5 })
-      assert.strictEqual(result, true)
-      assert.strictEqual(mockTransport.scheduleOnce.mock.calls.length > 0, true, 'Should schedule stop event')
+    const result = await playMidiFile('test.mid', 0, false, 0, {
+      stopAfterSeconds: 5
+    })
+    assert.strictEqual(result, true)
+    assert.strictEqual(
+      mockTransport.scheduleOnce.mock.calls.length > 0,
+      true,
+      'Should schedule stop event'
+    )
   })
 })

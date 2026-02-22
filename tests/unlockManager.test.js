@@ -20,7 +20,8 @@ const mockStorage = {
 global.localStorage = mockStorage
 
 test('UnlockManager Unit Tests', async t => {
-  const { getUnlocks, addUnlock } = await import('../src/utils/unlockManager.js')
+  const { getUnlocks, addUnlock } =
+    await import('../src/utils/unlockManager.js')
 
   t.beforeEach(() => {
     mockStorage.clear()
@@ -38,13 +39,19 @@ test('UnlockManager Unit Tests', async t => {
   })
 
   await t.test('getUnlocks returns empty array if data is not an array', () => {
-    mockStorage.setItem('neurotoxic_unlocks', JSON.stringify({ not: 'an array' }))
+    mockStorage.setItem(
+      'neurotoxic_unlocks',
+      JSON.stringify({ not: 'an array' })
+    )
     const unlocks = getUnlocks()
     assert.deepEqual(unlocks, [])
   })
 
   await t.test('getUnlocks sanitizes mixed-type arrays', () => {
-    mockStorage.setItem('neurotoxic_unlocks', JSON.stringify(['valid', 123, null, 'also_valid', {}]))
+    mockStorage.setItem(
+      'neurotoxic_unlocks',
+      JSON.stringify(['valid', 123, null, 'also_valid', {}])
+    )
     const unlocks = getUnlocks()
     assert.deepEqual(unlocks, ['valid', 'also_valid'])
   })

@@ -98,11 +98,11 @@ test('checkCollisions - detects collision and calls onHit', () => {
   // hitY = 1000 - 150 = 850
   const projectiles = [
     { id: 1, y: 800 }, // No hit
-    { id: 2, y: 900 }  // Hit
+    { id: 2, y: 900 } // Hit
   ]
 
   let hitCount = 0
-  const onHit = (p) => {
+  const onHit = p => {
     hitCount++
     assert.equal(p.id, 2)
   }
@@ -123,7 +123,10 @@ test('checkCollisions - handles no collisions', () => {
 
 test('checkCollisions - handles all collisions', () => {
   const screenHeight = 1000
-  const projectiles = [{ id: 1, y: 900 }, { id: 2, y: 950 }]
+  const projectiles = [
+    { id: 1, y: 900 },
+    { id: 2, y: 950 }
+  ]
   checkCollisions(projectiles, screenHeight, () => {})
   assert.equal(projectiles.length, 0)
 })
@@ -134,10 +137,10 @@ test('checkCollisions - handles mixed collisions order', () => {
   const projectiles = [
     { id: 1, y: 900 }, // Hit
     { id: 2, y: 800 }, // No hit
-    { id: 3, y: 950 }  // Hit
+    { id: 3, y: 950 } // Hit
   ]
   const hits = []
-  checkCollisions(projectiles, screenHeight, (p) => hits.push(p.id))
+  checkCollisions(projectiles, screenHeight, p => hits.push(p.id))
 
   assert.equal(projectiles.length, 1)
   assert.equal(projectiles[0].id, 2)

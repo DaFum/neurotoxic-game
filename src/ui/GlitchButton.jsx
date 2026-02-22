@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types'
+import { Loader2 } from 'lucide-react'
 
 /**
  * A stylized button component with glitch and hover effects.
@@ -7,16 +8,20 @@ import PropTypes from 'prop-types'
  * @param {React.ReactNode} props.children - Button content.
  * @param {string} [props.className] - Additional classes.
  * @param {boolean} [props.disabled] - Disabled state.
+ * @param {boolean} [props.isLoading] - Loading state.
  */
 export const GlitchButton = ({
   onClick,
   children,
   className = '',
   disabled = false,
+  isLoading = false,
   variant = 'primary'
 }) => {
+  const isDisabled = disabled || isLoading
+
   const getVariantClasses = () => {
-    if (disabled)
+    if (isDisabled)
       return 'border-2 border-(--ash-gray) text-(--ash-gray) cursor-not-allowed opacity-60'
 
     switch (variant) {
@@ -38,9 +43,10 @@ export const GlitchButton = ({
 
   return (
     <button
-      onClick={onClick}
-      disabled={disabled}
-      aria-disabled={disabled}
+      onClick={isDisabled ? undefined : onClick}
+      disabled={isDisabled}
+      aria-disabled={isDisabled}
+      aria-busy={isLoading}
       className={`
         relative px-8 py-4 bg-(--void-black)
         font-[Metal_Mania] text-xl font-bold uppercase tracking-widest
@@ -51,12 +57,13 @@ export const GlitchButton = ({
       `}
     >
       <span
-        className={`relative z-10 ${disabled ? '' : 'group-hover:animate-pulse'}`}
+        className={`relative z-10 flex items-center justify-center gap-2 ${isDisabled ? '' : 'group-hover:animate-pulse'}`}
       >
+        {isLoading && <Loader2 className='animate-spin' size={20} />}
         {children}
       </span>
       {/* Diagonal stripe overlay when disabled */}
-      {disabled && (
+      {isDisabled && (
         <span
           className='absolute inset-0 pointer-events-none opacity-10'
           style={{
@@ -66,7 +73,7 @@ export const GlitchButton = ({
         />
       )}
       {/* Glitch Overlay Effect on Hover */}
-      {!disabled && (
+      {!isDisabled && (
         <span className='absolute inset-0 bg-(--star-white) opacity-0 group-hover:opacity-10 mix-blend-difference pointer-events-none' />
       )}
     </button>
@@ -78,5 +85,6 @@ GlitchButton.propTypes = {
   children: PropTypes.node.isRequired,
   className: PropTypes.string,
   disabled: PropTypes.bool,
+  isLoading: PropTypes.bool,
   variant: PropTypes.oneOf(['primary', 'danger'])
 }

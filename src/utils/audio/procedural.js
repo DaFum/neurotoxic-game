@@ -140,8 +140,7 @@ export async function playSongFromData(song, delay = 0, options = {}) {
       }
 
       // ⚡ BOLT OPTIMIZATION: Pre-compute note names to avoid audio-thread allocation
-      const noteName =
-        n.lane !== 'drums' ? getNoteName(n.p) : null
+      const noteName = n.lane !== 'drums' ? getNoteName(n.p) : null
 
       events.push({
         time: finalTime,
@@ -171,7 +170,7 @@ export async function playSongFromData(song, delay = 0, options = {}) {
       const noteName =
         value.noteName === null
           ? null
-          : value.noteName ?? getNoteName(value.note)
+          : (value.noteName ?? getNoteName(value.note))
 
       if (value.lane === 'guitar') {
         audioState.guitar.triggerAttackRelease(
@@ -457,9 +456,7 @@ function parseMidiData(arrayBuffer) {
 function createMidiParts(midi, useCleanPlayback) {
   const leadSynth = useCleanPlayback ? audioState.midiLead : audioState.guitar
   const bassSynth = useCleanPlayback ? audioState.midiBass : audioState.bass
-  const drumSet = useCleanPlayback
-    ? audioState.midiDrumKit
-    : audioState.drumKit
+  const drumSet = useCleanPlayback ? audioState.midiDrumKit : audioState.drumKit
 
   const nextMidiParts = []
   midi.tracks.forEach(track => {
@@ -646,7 +643,12 @@ async function playMidiFileInternal(
   const { onEnded, useCleanPlayback, stopAfterSeconds, startTimeSec } =
     normalizeMidiPlaybackOptions(options)
 
-  const reqId = initializePlaybackRequest(filename, offset, loop, ownedRequestId)
+  const reqId = initializePlaybackRequest(
+    filename,
+    offset,
+    loop,
+    ownedRequestId
+  )
 
   const unlocked = await ensureAudioContext()
   if (!unlocked) {

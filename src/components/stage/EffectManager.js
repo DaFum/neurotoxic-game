@@ -61,18 +61,26 @@ export class EffectManager {
     try {
       // Handle PixiJS v8 API changes for texture generation
       if (this.app?.renderer?.textureGenerator) {
-        this.genericHitTexture = this.app.renderer.textureGenerator.generateTexture({
-          target: graphics,
-          resolution: 1,
-          antialias: true
-        })
+        this.genericHitTexture =
+          this.app.renderer.textureGenerator.generateTexture({
+            target: graphics,
+            resolution: 1,
+            antialias: true
+          })
       } else if (this.app?.renderer?.generateTexture) {
         this.genericHitTexture = this.app.renderer.generateTexture(graphics)
       } else {
-        logger.warn('EffectManager', 'Renderer not available for texture generation')
+        logger.warn(
+          'EffectManager',
+          'Renderer not available for texture generation'
+        )
       }
     } catch (error) {
-      logger.warn('EffectManager', 'Failed to generate generic hit texture', error)
+      logger.warn(
+        'EffectManager',
+        'Failed to generate generic hit texture',
+        error
+      )
     } finally {
       graphics.destroy()
     }

@@ -95,7 +95,6 @@ mock.module('../src/components/stage/NoteManager.js', {
   }
 })
 
-
 const mockAudioEngine = {
   getGigTimeMs: mock.fn(() => 1234)
 }
@@ -103,7 +102,6 @@ const mockAudioEngine = {
 mock.module('../src/utils/audioEngine.js', {
   namedExports: mockAudioEngine
 })
-
 
 describe('PixiStageController', () => {
   let controller

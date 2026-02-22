@@ -20,13 +20,16 @@ Expert guidance for optimizing React application performance through memoization
 ## Core Concepts
 
 ### React Rendering Optimization
+
 React re-renders components when props or state change. Unnecessary re-renders waste CPU cycles and degrade user experience. Key optimization techniques:
+
 - **Memoization**: Cache component renders and computed values
 - **Code splitting**: Load code on demand for faster initial loads
 - **Virtualization**: Render only visible list items
 - **State optimization**: Structure state to minimize render cascades
 
 ### When to Optimize
+
 1. **Profile first**: Use React DevTools Profiler to identify actual bottlenecks
 2. **Measure impact**: Verify optimization improves performance
 3. **Avoid premature optimization**: Don't optimize fast components
@@ -35,25 +38,27 @@ React re-renders components when props or state change. Unnecessary re-renders w
 
 Load detailed patterns and examples as needed:
 
-| Topic | Reference File |
-| --- | --- |
-| React.memo, useMemo, useCallback patterns | `.claude/skills/react-performance-optimization/references/memoization.md` |
-| Code splitting with lazy/Suspense, bundle optimization | `.claude/skills/react-performance-optimization/references/code-splitting.md` |
-| Virtualization for large lists (react-window) | `.claude/skills/react-performance-optimization/references/virtualization.md` |
-| State management strategies, context splitting | `.claude/skills/react-performance-optimization/references/state-management.md` |
-| useTransition, useDeferredValue (React 18+) | `.claude/skills/react-performance-optimization/references/concurrent-features.md` |
-| React DevTools Profiler, performance monitoring | `.claude/skills/react-performance-optimization/references/profiling-debugging.md` |
-| Common pitfalls and anti-patterns | `.claude/skills/react-performance-optimization/references/common-pitfalls.md` |
+| Topic                                                  | Reference File                                                                    |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| React.memo, useMemo, useCallback patterns              | `.claude/skills/react-performance-optimization/references/memoization.md`         |
+| Code splitting with lazy/Suspense, bundle optimization | `.claude/skills/react-performance-optimization/references/code-splitting.md`      |
+| Virtualization for large lists (react-window)          | `.claude/skills/react-performance-optimization/references/virtualization.md`      |
+| State management strategies, context splitting         | `.claude/skills/react-performance-optimization/references/state-management.md`    |
+| useTransition, useDeferredValue (React 18+)            | `.claude/skills/react-performance-optimization/references/concurrent-features.md` |
+| React DevTools Profiler, performance monitoring        | `.claude/skills/react-performance-optimization/references/profiling-debugging.md` |
+| Common pitfalls and anti-patterns                      | `.claude/skills/react-performance-optimization/references/common-pitfalls.md`     |
 
 ## Optimization Workflow
 
 ### 1. Identify Bottlenecks
+
 ```bash
 # Open React DevTools Profiler
 # Record interaction → Analyze flame graph → Find slow components
 ```
 
 **Look for:**
+
 - Components with yellow/red bars (slow renders)
 - Unnecessary renders (same props/state)
 - Expensive computations on every render
@@ -61,24 +66,29 @@ Load detailed patterns and examples as needed:
 ### 2. Apply Targeted Optimizations
 
 **For unnecessary re-renders:**
+
 - Wrap component with `React.memo`
 - Use `useCallback` for stable function references
 - Check for inline objects/arrays in props
 
 **For expensive computations:**
+
 - Use `useMemo` to cache results
 - Move calculations outside render when possible
 
 **For large lists:**
+
 - Implement virtualization with react-window
 - Ensure proper unique keys (not index)
 
 **For slow initial load:**
+
 - Add code splitting with `React.lazy`
 - Analyze bundle size with webpack-bundle-analyzer
 - Use dynamic imports for heavy dependencies
 
 ### 3. Verify Improvements
+
 ```bash
 # Record new Profiler session
 # Compare before/after metrics
@@ -88,68 +98,73 @@ Load detailed patterns and examples as needed:
 ## Common Patterns
 
 ### Memoize Expensive Components
+
 ```jsx
-import { memo } from 'react';
+import { memo } from 'react'
 
 const ExpensiveList = memo(({ items, onItemClick }) => {
   return items.map(item => (
     <Item key={item.id} data={item} onClick={onItemClick} />
-  ));
-});
+  ))
+})
 ```
 
 ### Cache Computed Values
+
 ```jsx
-import { useMemo } from 'react';
+import { useMemo } from 'react'
 
 function DataTable({ items, filters }) {
   const filteredItems = useMemo(() => {
-    return items.filter(item => filters.includes(item.category));
-  }, [items, filters]);
+    return items.filter(item => filters.includes(item.category))
+  }, [items, filters])
 
-  return <Table data={filteredItems} />;
+  return <Table data={filteredItems} />
 }
 ```
 
 ### Stable Function References
+
 ```jsx
-import { useCallback } from 'react';
+import { useCallback } from 'react'
 
 function Parent() {
-  const handleClick = useCallback((id) => {
-    console.log('Clicked:', id);
-  }, []);
+  const handleClick = useCallback(id => {
+    console.log('Clicked:', id)
+  }, [])
 
-  return <MemoizedChild onClick={handleClick} />;
+  return <MemoizedChild onClick={handleClick} />
 }
 ```
 
 ### Code Split Routes
-```jsx
-import { lazy, Suspense } from 'react';
 
-const Dashboard = lazy(() => import('./Dashboard'));
-const Reports = lazy(() => import('./Reports'));
+```jsx
+import { lazy, Suspense } from 'react'
+
+const Dashboard = lazy(() => import('./Dashboard'))
+const Reports = lazy(() => import('./Reports'))
 
 function App() {
   return (
     <Suspense fallback={<Loading />}>
       <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/reports" element={<Reports />} />
+        <Route path='/' element={<Dashboard />} />
+        <Route path='/reports' element={<Reports />} />
       </Routes>
     </Suspense>
-  );
+  )
 }
 ```
 
 ### Virtualize Large Lists
+
 ```jsx
-import { FixedSizeList } from 'react-window';
+import { FixedSizeList } from 'react-window'
 
 const Row = ({ index, style, data }) => (
   <div style={style}>{data[index].name}</div>
-);
+)
 
 function VirtualList({ items }) {
   return (
@@ -157,12 +172,12 @@ function VirtualList({ items }) {
       height={600}
       itemCount={items.length}
       itemSize={80}
-      width="100%"
+      width='100%'
       itemData={items}
     >
       {Row}
     </FixedSizeList>
-  );
+  )
 }
 ```
 
@@ -178,10 +193,12 @@ function VirtualList({ items }) {
 ## Performance Checklist
 
 Before optimizing:
+
 - [ ] Profile with React DevTools to identify bottlenecks
 - [ ] Measure baseline performance metrics
 
 Optimization targets:
+
 - [ ] Memoize expensive components with stable props
 - [ ] Cache computed values with useMemo (if actually expensive)
 - [ ] Use useCallback for functions passed to memoized children
@@ -192,6 +209,7 @@ Optimization targets:
 - [ ] Use concurrent features (useTransition, useDeferredValue) for responsiveness
 
 After optimizing:
+
 - [ ] Profile again to verify improvements
 - [ ] Check bundle size reduction (if applicable)
 - [ ] Ensure no regressions in functionality

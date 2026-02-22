@@ -163,7 +163,7 @@ describe('usePurchaseLogic', () => {
     act(() => {
       result2.current.handleBuy(item)
     })
-    assert.ok(Math.abs(bandPatch.performance.guitarDifficulty - (-0.15)) < 0.0001)
+    assert.ok(Math.abs(bandPatch.performance.guitarDifficulty - -0.15) < 0.0001)
   })
 
   test('handleBuy applies harmony_regen_travel passive effect using key', () => {

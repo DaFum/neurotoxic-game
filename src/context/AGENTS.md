@@ -31,7 +31,6 @@ Scope: Applies to all files in `src/context/`.
 4. Preserve backwards compatibility for existing saves unless an explicit migration path is introduced.
 5. Keep error handling safe: no sensitive data in logs/storage error surfaces.
 
-
 ## State Safety Guard (Code-Aligned)
 
 - Shared guardrail helpers live in `src/utils/gameStateUtils.js` and are the single source of truth for money/harmony/inventory clamping.

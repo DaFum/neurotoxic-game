@@ -29,7 +29,7 @@ class MockSprite {
     this.width = 0
     this.height = 0
     this.anchor = { set: () => {} }
-    this.tint = 0xFFFFFF
+    this.tint = 0xffffff
     this.visible = true
     this.alpha = 1
     this.scale = { set: () => {} }
@@ -88,19 +88,18 @@ function initializeNoteSpriteOptimized(sprite, lane, _laneIndex) {
 
   // To be fair, let's assume the fallback texture sprite needs specific sizing/pos
   if (sprite.isFallback) {
-      sprite.width = NOTE_FALLBACK_WIDTH
-      sprite.height = NOTE_FALLBACK_HEIGHT
-      sprite.x = lane.renderX + 5
+    sprite.width = NOTE_FALLBACK_WIDTH
+    sprite.height = NOTE_FALLBACK_HEIGHT
+    sprite.x = lane.renderX + 5
   } else {
-      sprite.width = NOTE_SPRITE_SIZE
-      sprite.height = NOTE_SPRITE_SIZE
-      sprite.x = lane.renderX + NOTE_CENTER_OFFSET
+    sprite.width = NOTE_SPRITE_SIZE
+    sprite.height = NOTE_SPRITE_SIZE
+    sprite.x = lane.renderX + NOTE_CENTER_OFFSET
   }
 }
 
-
 const iterations = 1000000
-const lane = { renderX: 100, color: 0xFF0000 }
+const lane = { renderX: 100, color: 0xff0000 }
 
 console.log('Benchmarking Note Fallback Initialization...')
 
@@ -114,7 +113,6 @@ const endBase = performance.now()
 const timeBase = endBase - startBase
 console.log(`Baseline (Graphics creation + redraw): ${timeBase.toFixed(2)}ms`)
 
-
 // Optimized Test: Using Sprite with Texture
 const startOpt = performance.now()
 const mockTexture = { id: 'fallback' }
@@ -125,7 +123,9 @@ for (let i = 0; i < iterations; i++) {
 }
 const endOpt = performance.now()
 const timeOpt = endOpt - startOpt
-console.log(`Optimized (Sprite creation + property set): ${timeOpt.toFixed(2)}ms`)
+console.log(
+  `Optimized (Sprite creation + property set): ${timeOpt.toFixed(2)}ms`
+)
 
 console.log(
   `Improvement: ${(timeBase - timeOpt).toFixed(2)}ms (${(((timeBase - timeOpt) / timeBase) * 100).toFixed(1)}%)`
@@ -138,51 +138,51 @@ const notes = []
 const spritesBase = []
 const spritesOpt = []
 
-for(let i=0; i<1000; i++) {
-    notes.push({ laneIndex: 0 })
-    spritesBase.push(new MockGraphics()) // Assume fallback scenario
+for (let i = 0; i < 1000; i++) {
+  notes.push({ laneIndex: 0 })
+  spritesBase.push(new MockGraphics()) // Assume fallback scenario
 
-    const s = new MockSprite(mockTexture)
-    s.isFallback = true
-    spritesOpt.push(s)
+  const s = new MockSprite(mockTexture)
+  s.isFallback = true
+  spritesOpt.push(s)
 }
 
 const loopIterations = 10000
 
 const startLoopBase = performance.now()
-for(let frame=0; frame<loopIterations; frame++) {
-    for(let i=0; i<1000; i++) {
-        const sprite = spritesBase[i]
-        const _note = notes[i]
+for (let frame = 0; frame < loopIterations; frame++) {
+  for (let i = 0; i < 1000; i++) {
+    const sprite = spritesBase[i]
+    const _note = notes[i]
 
-        // Original logic inside update loop
-        if (sprite instanceof MockSprite) {
-            sprite.x = lane.renderX + NOTE_CENTER_OFFSET
-        } else {
-            sprite.x = lane.renderX + 5
-        }
+    // Original logic inside update loop
+    if (sprite instanceof MockSprite) {
+      sprite.x = lane.renderX + NOTE_CENTER_OFFSET
+    } else {
+      sprite.x = lane.renderX + 5
     }
+  }
 }
 const endLoopBase = performance.now()
 const timeLoopBase = endLoopBase - startLoopBase
 console.log(`Baseline Loop (instanceof checks): ${timeLoopBase.toFixed(2)}ms`)
 
 const startLoopOpt = performance.now()
-for(let frame=0; frame<loopIterations; frame++) {
-    for(let i=0; i<1000; i++) {
-        const sprite = spritesOpt[i]
-        // Optimized logic: All are sprites
-        // But we might still need to check if it's a fallback to position correctly?
-        // If we unify the texture, maybe we can unify positioning too?
-        // Original: Sprite x = renderX + 50, Graphics x = renderX + 5
-        // If we make fallback sprite mimic graphics, we check isFallback
+for (let frame = 0; frame < loopIterations; frame++) {
+  for (let i = 0; i < 1000; i++) {
+    const sprite = spritesOpt[i]
+    // Optimized logic: All are sprites
+    // But we might still need to check if it's a fallback to position correctly?
+    // If we unify the texture, maybe we can unify positioning too?
+    // Original: Sprite x = renderX + 50, Graphics x = renderX + 5
+    // If we make fallback sprite mimic graphics, we check isFallback
 
-        if (sprite.isFallback) {
-             sprite.x = lane.renderX + 5
-        } else {
-             sprite.x = lane.renderX + NOTE_CENTER_OFFSET
-        }
+    if (sprite.isFallback) {
+      sprite.x = lane.renderX + 5
+    } else {
+      sprite.x = lane.renderX + NOTE_CENTER_OFFSET
     }
+  }
 }
 const endLoopOpt = performance.now()
 const timeLoopOpt = endLoopOpt - startLoopOpt

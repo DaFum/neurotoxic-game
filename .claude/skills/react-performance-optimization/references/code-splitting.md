@@ -3,30 +3,31 @@
 ## React.lazy and Suspense
 
 **Load components on demand for smaller initial bundles:**
+
 ```jsx
-import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { lazy, Suspense } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 // Lazy-loaded route components
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const Reports = lazy(() => import('./pages/Reports'));
-const Settings = lazy(() => import('./pages/Settings'));
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const Reports = lazy(() => import('./pages/Reports'))
+const Settings = lazy(() => import('./pages/Settings'))
 
 // Component-level code splitting
-const HeavyChart = lazy(() => import('./components/HeavyChart'));
+const HeavyChart = lazy(() => import('./components/HeavyChart'))
 
 function App() {
   return (
     <BrowserRouter>
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/reports" element={<Reports />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route path='/' element={<Dashboard />} />
+          <Route path='/reports' element={<Reports />} />
+          <Route path='/settings' element={<Settings />} />
         </Routes>
       </Suspense>
     </BrowserRouter>
-  );
+  )
 }
 
 function DataVisualization({ data, showChart }) {
@@ -39,16 +40,18 @@ function DataVisualization({ data, showChart }) {
         </Suspense>
       )}
     </div>
-  );
+  )
 }
 ```
 
 **Benefits:**
+
 - Reduces initial bundle size (faster First Contentful Paint)
 - Loads code only when needed (better caching)
 - Route-based splitting: Users only download visited pages
 
 **Best practices:**
+
 - Split by routes first (biggest impact)
 - Split heavy components (charts, editors, modals)
 - Provide meaningful loading fallbacks
@@ -57,27 +60,28 @@ function DataVisualization({ data, showChart }) {
 ## Bundle Optimization
 
 **Reduce bundle size with smart imports and tree shaking:**
+
 ```jsx
 // BAD: Imports entire library
-import _ from 'lodash';
-import { Button, Modal, Table, Form } from 'antd';
+import _ from 'lodash'
+import { Button, Modal, Table, Form } from 'antd'
 
 // GOOD: Import only needed functions
-import debounce from 'lodash/debounce';
-import groupBy from 'lodash/groupBy';
+import debounce from 'lodash/debounce'
+import groupBy from 'lodash/groupBy'
 
 // GOOD: Tree-shakeable imports (if library supports it)
-import { Button } from 'antd/es/button';
-import { Modal } from 'antd/es/modal';
+import { Button } from 'antd/es/button'
+import { Modal } from 'antd/es/modal'
 
 // Dynamic imports for heavy libraries
-const PDFViewer = lazy(() => import('react-pdf-viewer'));
-const CodeEditor = lazy(() => import('@monaco-editor/react'));
+const PDFViewer = lazy(() => import('react-pdf-viewer'))
+const CodeEditor = lazy(() => import('@monaco-editor/react'))
 
 // Conditional polyfill loading
 async function loadPolyfills() {
   if (!window.IntersectionObserver) {
-    await import('intersection-observer');
+    await import('intersection-observer')
   }
 }
 ```
@@ -97,6 +101,7 @@ npx webpack-bundle-analyzer dist/stats.json
 ```
 
 **Analysis workflow:**
+
 1. Generate production build with stats
 2. Open bundle visualizer
 3. Identify large dependencies

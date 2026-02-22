@@ -618,7 +618,9 @@ test('calculateRepairCost calculates correctly', () => {
   // Max condition = 100, Cost = 3
   // Current condition = 80. Missing = 20. Cost = 20 * 3 = 60
   const cost = calculateRepairCost(80)
-  const expected = Math.ceil(20 * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT)
+  const expected = Math.ceil(
+    20 * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT
+  )
   assert.equal(cost, expected)
 
   // Current condition = 100. Cost = 0.

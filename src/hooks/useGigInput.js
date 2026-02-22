@@ -166,7 +166,8 @@ export const useGigInput = ({
   )
 
   const handleLaneInput = useCallback(
-    (index, active) => (active ? handleTouchStart(index) : handleTouchEnd(index)),
+    (index, active) =>
+      active ? handleTouchStart(index) : handleTouchEnd(index),
     [handleTouchStart, handleTouchEnd]
   )
 

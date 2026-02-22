@@ -85,15 +85,12 @@ test('normalizeMidiPlaybackOptions', async t => {
         startTimeSec: 12.5
       }
     )
-    assert.deepStrictEqual(
-      normalizeMidiPlaybackOptions({ startTimeSec: -5 }),
-      {
-        useCleanPlayback: true,
-        onEnded: null,
-        stopAfterSeconds: null,
-        startTimeSec: 0
-      }
-    )
+    assert.deepStrictEqual(normalizeMidiPlaybackOptions({ startTimeSec: -5 }), {
+      useCleanPlayback: true,
+      onEnded: null,
+      stopAfterSeconds: null,
+      startTimeSec: 0
+    })
     assert.deepStrictEqual(
       normalizeMidiPlaybackOptions({ startTimeSec: Number.NaN }),
       {

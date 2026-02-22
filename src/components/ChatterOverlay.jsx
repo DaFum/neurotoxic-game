@@ -111,7 +111,6 @@ export const ChatterOverlay = ({ gameState }) => {
     stateRef.current = gameState
   }, [gameState])
 
-
   // Single recursive effect loop using refs
   useEffect(() => {
     let timeoutId

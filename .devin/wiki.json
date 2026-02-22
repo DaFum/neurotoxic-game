@@ -1,7 +1,7 @@
 {
   "repo_notes": [
     {
-      "content": "NEUROTOXIC: GRIND THE VOID v3.0 is a client-side single-page web game (React 19.2.4 + Vite 7.3.1) combining a roguelike tour manager with a 3-lane rhythm action game rendered with Pixi.js 8 at 60fps. No backend; all state persists to localStorage. The player manages a Death Grindcore band touring procedurally-generated German cities. The audio system has been modularized into src/utils/audio/ (6 modules: setup.js, playback.js, procedural.js, assets.js, state.js, constants.js) plus src/utils/AudioManager.js (314-line singleton coordinator) and a thin facade in src/utils/audioEngine.js (46 lines). Total audio subsystem is ~2,600 lines using Tone.js 15 for Web Audio synthesis/scheduling. The rhythm game hook has been decomposed into 5 sub-hooks under src/hooks/rhythmGame/ orchestrated by useRhythmGameLogic.js.",  
+      "content": "NEUROTOXIC: GRIND THE VOID v3.0 is a client-side single-page web game (React 19.2.4 + Vite 7.3.1) combining a roguelike tour manager with a 3-lane rhythm action game rendered with Pixi.js 8 at 60fps. No backend; all state persists to localStorage. The player manages a Death Grindcore band touring procedurally-generated German cities. The audio system has been modularized into src/utils/audio/ (6 modules: setup.js, playback.js, procedural.js, assets.js, state.js, constants.js) plus src/utils/AudioManager.js (314-line singleton coordinator) and a thin facade in src/utils/audioEngine.js (46 lines). Total audio subsystem is ~2,600 lines using Tone.js 15 for Web Audio synthesis/scheduling. The rhythm game hook has been decomposed into 5 sub-hooks under src/hooks/rhythmGame/ orchestrated by useRhythmGameLogic.js.",
       "author": "Developer"
     },
     {
@@ -133,112 +133,112 @@
       ]
     },
     {
-      "title": "System Architecture",  
-      "purpose": "Explain layered flow end-to-end: GameStateProvider/useReducer as state core (src/context/*), hooks as orchestration layer (useTravelLogic, usePurchaseLogic, useRhythmGameLogic with 5 decomposed sub-hooks), utility engines as deterministic calculators (economyEngine, eventEngine, simulationUtils), audio services as side-effect boundary (AudioManager singleton + src/utils/audio/ modules), and rendering split between React scene composition and PixiStageController + stage managers (NoteManager, LaneManager, CrowdManager, EffectManager) for frame updates.",  
-      "parent": "Overview",  
-      "page_notes": [  
-        {  
-          "content": "Explicitly separate side-effect boundaries (audio via AudioManager/audio/, storage via safeStorageOperation, timers) from pure calculation modules to guide maintainable changes. Pure functions in src/utils/ are deterministic, testable without mocks, and have no external dependencies beyond input parameters. Side-effect modules are isolated to: audio/ (Web Audio API via Tone.js), errorHandler.js (localStorage + toast dispatch), logger.js (console + in-memory log buffer), and imageGen.js (fetch to Pollinations.ai). This separation enables parallel development, focused testing, and safe refactoring.",  
-          "author": "Architecture"  
-        },  
-        {  
-          "content": "Document how action creators in src/context/actionCreators.js are preferred over ad-hoc dispatch object literals. Include the dependency-direction rule: scenes -> hooks/context -> utils/data; avoid reverse imports. Action creators provide type safety (ActionTypes constants), encapsulate action payload shape requirements, and enable IDE autocomplete for dispatch calls. The dependency hierarchy prevents circular imports and ensures utilities remain reusable: scenes can import hooks, hooks can import context, context can import utils, but reverse imports are prohibited (enforced via ESLint import rules).",  
-          "author": "Architecture"  
-        },  
-        {  
-          "content": "The architecture follows a unidirectional data flow pattern inspired by Redux/Flux: user interactions in scenes trigger action dispatches, actions flow through the reducer to update centralized state, state changes propagate via React context to re-render dependent components. Hooks orchestrate multi-step interactions (e.g., useTravelLogic coordinates tick progression, event checks, fuel consumption, scene transitions) while keeping individual utility functions focused and testable. The PixiStageController bridges the React world (declarative state updates) with the Pixi world (imperative frame-by-frame rendering) via refs and ticker callbacks.",  
-          "author": "Architecture"  
-        }  
-      ]  
-    },  
-    {  
-      "title": "Core Subsystems Overview",  
-      "purpose": "Provide a subsystem dependency map that names primary files and key functions: AudioManager (src/utils/AudioManager.js, 314 lines) + modularized audio modules (src/utils/audio/: setup.js 548 lines, playback.js 582 lines, procedural.js 813 lines, assets.js 233 lines) for playback lifecycle; GameStateProvider + gameReducer for state transitions; useRhythmGameLogic orchestrating 5 sub-hooks for rhythm timing; PixiStageController + 4 stage managers for render/update cycle; calculateGigFinancials()/calculateTravelExpenses() economy pipeline (economyEngine.js, 430 lines); mapGenerator (279 lines) for travel topology; checkEvent()/resolveChoice() event resolution (eventEngine.js, 295 lines); and socialEngine.js (150 lines), imageGen.js (146 lines), hecklerLogic.js (101 lines) for procedural content generation.",  
-      "parent": "Overview",  
-      "page_notes": [  
-        {  
-          "content": "Keep this page architecture-focused; push implementation details into child pages. Tag each subsystem with maintenance risk level and quick rationale: Audio System (Medium — Tone.js lifecycle complexity, browser AudioContext constraints), State Management (Low — standard React patterns, well-tested), Rhythm Game (High — frame-perfect timing, audio-visual sync, performance-critical), Pixi Rendering (Medium — cleanup discipline required, ticker leak risk), Economy Engine (Low — pure functions, deterministic math), Event Engine (Low — data-driven, schema-validated), Map Generation (Low — one-time setup, cached results). Onboarding contributors should prioritize Low/Medium risk areas before tackling High risk subsystems.",  
-          "author": "Architecture"  
-        },  
-        {  
-          "content": "Document cross-subsystem integration points: rhythm game consumes audio playback state and triggers sound effects via AudioManager; economy calculations feed into post-gig state updates via reducer actions; event outcomes apply delta effects through gameStateUtils.js; map topology constrains travel logic in useTravelLogic; social engine reactions are displayed via ChatterOverlay component. These integration contracts are the most fragile points during refactoring — changes to one subsystem's output shape require coordinated updates to consumers.",  
-          "author": "Architecture"  
-        }  
-      ]  
-    },  
-    {  
-      "title": "Audio System Architecture",  
-      "purpose": "Document the modularized audio subsystem (~2,600 lines total) spanning src/utils/AudioManager.js (314-line singleton coordinator), src/utils/audioEngine.js (46-line facade re-exporting key functions), and 6 specialized modules in src/utils/audio/: setup.js (548 lines — Tone.js boot via setupAudio()/ensureAudioContext, Tone.Context timing params, instrument chains for guitar/bass/drums/SFX/clean-MIDI buses, compressor/limiter/musicGain routing), playback.js (582 lines — loadAudioBuffer, playRandomAmbientOgg/playRandomAmbientMidi, startGigPlayback, stopGigPlayback/stopAudioInternal, disposal guarantees), procedural.js (813 lines — procedural synth generation for backing tracks and SFX), assets.js (233 lines — MIDI/audio asset loading), state.js (audio state tracking), constants.js (shared audio config constants).",  
-      "parent": "Core Subsystems Overview",  
-      "page_notes": [  
-        {  
-          "content": "Document four playback fallback modes (OGG -> MIDI -> note data -> procedural) and when each path is chosen. Call out disposal guarantees and known cleanup caveats around layered instrument nodes and exception safety during teardown. Primary path: load pre-recorded OGG from src/assets/ (fastest, best quality). Fallback 1: parse MIDI file and play via Tone.js synths (good quality, larger files). Fallback 2: use chart note data to generate backing track procedurally (acceptable quality, no files). Fallback 3: silent mode with visual-only rhythm game (degraded experience, used when audio initialization fails). Cleanup requires manual disposal of Tone.Transport events, synth nodes, and buffer references to prevent memory leaks.",  
-          "author": "Architecture"  
-        },  
-        {  
-          "content": "Helper utilities audioContextState.js, audioSelectionUtils.js, audioTimingUtils.js, and audioPlaybackUtils.js encapsulate low-level logic; midiTrackUtils.js handles MIDI file parsing and track extraction. Document the AudioManager singleton lifecycle: creation (on app mount), context resume on user gesture (via ensureAudioContext() in MainMenu.jsx), playback start/stop (via startGigPlayback()/stopGigPlayback() called from useRhythmGameAudio hook), and dispose (on app unmount via cleanup effect). The singleton pattern prevents multiple AudioContext instances (browser limit) and centralizes audio routing.",  
-          "author": "Architecture"  
-        },  
-        {  
-          "content": "Audio mixer architecture uses separate buses for instrument groups (guitar, bass, drums, SFX, vocals/MIDI) feeding into master compressor and limiter chains. Gain staging: individual instruments at -6dB, bus compressors with 4:1 ratio, master limiter at -0.1dB ceiling. Volume controls in settings affect musicGain node (pre-master). The mixer topology is initialized once in setup.js and reused across gigs; only source nodes (Players, Synths) are created/destroyed per-song. This architecture enables dynamic mixing (boost drums during fills, duck rhythm during vocals) without rebuilding the entire audio graph.",  
-          "author": "Architecture"  
-        }  
-      ]  
-    },  
-    {  
-      "title": "Rhythm Game Logic",  
-      "purpose": "Document the decomposed rhythm game hook system: src/hooks/useRhythmGameLogic.js (84-line orchestrator) composing 5 specialized sub-hooks in src/hooks/rhythmGame/: useRhythmGameState.js (94 lines — game state tracking, refs for frame-loop data), useRhythmGameInput.js (39 lines — keyboard arrow key / A-S-D and touch input handling), useRhythmGameAudio.js (332 lines — audio playback integration, gig clock sync), useRhythmGameLoop.js (202 lines — ticker-driven game loop, note advancement, timing), useRhythmGameScoring.js (267 lines — hit-window judgment, combo math, hype calculation, miss/penalty handling). Song data sourced from src/assets/rhythm_songs.json, note spawning from src/utils/rhythmUtils.js (311 lines).",  
-      "parent": "Core Subsystems Overview",  
-      "page_notes": [  
-        {  
-          "content": "Explain timing sources (AudioContext.currentTime, Tone.now(), or game clock refs) and how drift is mitigated between audio and visual lanes. Specify how hit-judgment windows scale (or do not scale) with difficulty and where those constants are defined in rhythmUtils.js. The game uses AudioContext.currentTime as the authoritative clock for synchronization. Visual note positions are calculated from currentTime + spawn lead-in time. Hit windows are fixed (Perfect: ±50ms, Good: ±100ms, OK: ±150ms) regardless of difficulty; difficulty affects note density and pattern complexity instead. Drift mitigation: pre-calculate all note timestamps on song start, use RAF timestamps only for interpolation, re-sync every beat via audio playback callbacks.",  
-          "author": "Architecture"  
-        },  
-        {  
-          "content": "Include where gameplay output is written back to state for post-gig calculations via gigStats.js (35 lines). Heckler mechanics (projectile spawning) are handled by src/utils/hecklerLogic.js (101 lines); timing sync uses audioTimingUtils.js. The scoring hook accumulates hits/misses/perfects, calculates combo multipliers (1x at combo 0, up to 4x at combo 100+), and tracks crowd hype (increases on hits, decreases on misses, affects visual crowd reaction via CrowdManager.js). Final stats (accuracy %, max combo, total score, crowd hype %) are packaged into lastGigStats state slice via SET_GIG_RESULTS action dispatched on gig completion.",  
-          "author": "Architecture"  
-        },  
-        {  
-          "content": "Input handling supports both keyboard (arrow keys for lanes 1-3, A/S/D alternative layout) and touch (lane detection via x-coordinate of touch event, hit detection on touchstart). The input hook normalizes both input sources into a unified lane index (0, 1, 2) and timestamp. This abstraction allows the scoring hook to be input-agnostic. Touch calibration accounts for lane center positions in PixiStageController coordinate space. Future enhancement: gamepad support would add a third input source to the same normalization pipeline.",  
-          "author": "Architecture"  
-        }  
-      ]  
-    },  
-    {  
-      "title": "Pixi Rendering Pipeline",  
-      "purpose": "Describe rendering internals across src/components/PixiStageController.js (229 lines), src/components/PixiStage.jsx (React canvas wrapper), and 4 stage managers in src/components/stage/: NoteManager.js (208 lines — falling note sprite lifecycle, spawn/recycle/destroy), LaneManager.js (156 lines — lane rendering, hit zones, visual feedback), CrowdManager.js (61 lines — crowd visualization reacting to performance), EffectManager.js (68 lines — hit/miss visual effects, particles). Document Pixi.js 8 Application lifecycle, ticker/frame callbacks, world-to-screen coordinate transforms, HUD overlay interoperability via src/components/GigHUD.jsx, and unmount cleanup (destroy textures, remove listeners, stop ticker).",  
-      "parent": "Core Subsystems Overview",  
-      "page_notes": [  
-        {  
-          "content": "Document cleanup expectations on scene unmount to prevent ticker leaks, retained textures, and stale refs. Follow the isMountedRef + app.destroy(true, { children: true, texture: true }) pattern. Reference pixiStageUtils.js for shared rendering helpers. Critical cleanup checklist: stop ticker, remove ticker callbacks, destroy all sprites (note sprites, lane graphics, effect sprites), clear sprite pools, nullify refs (appRef.current = null), dispose textures from cache. Common leak sources: forgotten ticker.add() without corresponding ticker.remove(), sprite pools not cleared, event listeners on stage/renderer not removed. The isMountedRef guard prevents post-unmount state updates from queued ticker callbacks.",  
-          "author": "Architecture"  
-        },  
-        {  
-          "content": "Describe z-order/layer strategy for lanes, notes, hit line, and transient feedback effects across the 4 stage managers. Document how NoteManager coordinates with useRhythmGameLoop for note positioning and with useRhythmGameScoring for hit feedback. Z-order from back to front: background gradient (z=0), lane backgrounds (z=10), crowd sprites (z=20), falling notes (z=30), hit line (z=40), hit feedback effects (z=50), HUD overlay (z=100, React layer). NoteManager receives note spawn commands from useRhythmGameLoop via props, updates note y-positions each frame based on elapsed time, and emits hit/miss events to useRhythmGameScoring when notes cross the hit line threshold. Visual feedback (particle bursts, color flashes) is rendered by EffectManager in response to scoring events.",  
-          "author": "Architecture"  
-        },  
-        {  
-          "content": "Performance optimizations in Pixi rendering: sprite pooling (pre-allocate 100 note sprites, recycle instead of create/destroy), texture atlas (combine note graphics into single texture to reduce draw calls), culling (skip rendering notes outside viewport), requestAnimationFrame throttling (lock to 60 FPS), batch rendering (group sprites by texture/blend mode). Benchmark target: maintain 60 FPS with 50+ active notes, 20+ particle effects, and crowd animations. Performance regression tests in tests/performance/pixiStage.bench.js verify rendering performance stays within budget. Profile using Chrome DevTools Performance tab to identify bottlenecks.",  
-          "author": "Architecture"  
-        }  
-      ]  
-    },  
-    {  
-      "title": "State Management & Context System",  
-      "purpose": "Document full state architecture combining src/context/GameState.jsx and src/context/gameReducer.js: ActionTypes taxonomy (30+ action types organized by domain: SCENE, PLAYER, BAND, SOCIAL, GIG, MAP, TOAST, EVENT), reducer branches for player/band/social/gig/map/toast/event slices, action creator contracts from src/context/actionCreators.js, enforcement points for invariants player.money >= 0 and band.harmony > 0 during state updates, and initialState.js defaults (money: 500, day: 1, location: Stendal, 3 band members, harmony: 80). Also cover GameStateProvider and useGameState() API: exposed state slices, dispatch helpers (changeScene, triggerEvent, addToast, updatePlayer, updateBand), memoization boundaries, and consumer usage patterns.",  
-      "parent": "Core Subsystems Overview",  
-      "page_notes": [  
-        {  
-          "content": "Include invariants for money and harmony and where guards are enforced before/after updates. List reducer actions that can affect economy stats to simplify auditing for money/harmony invariant safety. Money invariant (>= 0): enforced in UPDATE_PLAYER, TRAVEL_TICK, PURCHASE_ITEM, RESOLVE_EVENT actions via Math.max(0, newMoney) clamping. Harmony invariant (> 0 for playable): enforced in UPDATE_BAND, DAILY_UPDATE, GIG_END actions; harmony <= 0 triggers GAME_OVER transition. Actions affecting money: TRAVEL_TICK (-fuel cost), PURCHASE_ITEM (-item cost), GIG_END (+payout), RESOLVE_EVENT (±effect delta), DAILY_UPDATE (-living expenses). Actions affecting harmony: GIG_END (±performance modifier), BAND_CONFLICT (-event penalty), REST (+recovery), RESOLVE_EVENT (±effect delta).",  
-          "author": "Architecture"  
-        },  
-        {  
-          "content": "Clarify which parts of state are persisted versus runtime-only transient fields. Document expected consumer pattern in scenes/hooks to avoid direct mutation and stale closures. Persisted fields (saved to localStorage via saveGame()): player (money, day, location, inventory, tutorialStep), band (members, harmony, fame, followers), social (recentPosts, platformStats), map (venueGraph, unlockedVenues), activeStoryFlags. Transient fields (not persisted): currentGig (cleared on load), lastGigStats (recalculated), toasts (UI only), activeEvent (reset on scene change), gigModifiers (temporary buffs). Consumer pattern: destructure needed slices from useGameState() at component top level, call dispatch helpers for updates, never mutate state directly, use useCallback for event handlers to prevent stale closures.",  
-          "author": "Architecture"  
-        },  
-        {  
-          "content": "Document recommended selector/memo usage patterns to minimize unnecessary rerenders in scene components. Use React.memo() for leaf components that only depend on specific state slices (e.g., StatBox displaying player.money). Use useMemo() to derive computed values (e.g., affordability checks, filtered lists) from state slices. Split context into state and dispatch contexts (already implemented: GameStateContext provides state, dispatch is stable ref). Avoid selecting entire state object when only subset is needed — use const { player, band } = useGameState() not const state = useGameState(). Profile with React DevTools Profiler to identify render hotspots.",  
-          "author": "Architecture"  
+      "title": "System Architecture",
+      "purpose": "Explain layered flow end-to-end: GameStateProvider/useReducer as state core (src/context/*), hooks as orchestration layer (useTravelLogic, usePurchaseLogic, useRhythmGameLogic with 5 decomposed sub-hooks), utility engines as deterministic calculators (economyEngine, eventEngine, simulationUtils), audio services as side-effect boundary (AudioManager singleton + src/utils/audio/ modules), and rendering split between React scene composition and PixiStageController + stage managers (NoteManager, LaneManager, CrowdManager, EffectManager) for frame updates.",
+      "parent": "Overview",
+      "page_notes": [
+        {
+          "content": "Explicitly separate side-effect boundaries (audio via AudioManager/audio/, storage via safeStorageOperation, timers) from pure calculation modules to guide maintainable changes. Pure functions in src/utils/ are deterministic, testable without mocks, and have no external dependencies beyond input parameters. Side-effect modules are isolated to: audio/ (Web Audio API via Tone.js), errorHandler.js (localStorage + toast dispatch), logger.js (console + in-memory log buffer), and imageGen.js (fetch to Pollinations.ai). This separation enables parallel development, focused testing, and safe refactoring.",
+          "author": "Architecture"
+        },
+        {
+          "content": "Document how action creators in src/context/actionCreators.js are preferred over ad-hoc dispatch object literals. Include the dependency-direction rule: scenes -> hooks/context -> utils/data; avoid reverse imports. Action creators provide type safety (ActionTypes constants), encapsulate action payload shape requirements, and enable IDE autocomplete for dispatch calls. The dependency hierarchy prevents circular imports and ensures utilities remain reusable: scenes can import hooks, hooks can import context, context can import utils, but reverse imports are prohibited (enforced via ESLint import rules).",
+          "author": "Architecture"
+        },
+        {
+          "content": "The architecture follows a unidirectional data flow pattern inspired by Redux/Flux: user interactions in scenes trigger action dispatches, actions flow through the reducer to update centralized state, state changes propagate via React context to re-render dependent components. Hooks orchestrate multi-step interactions (e.g., useTravelLogic coordinates tick progression, event checks, fuel consumption, scene transitions) while keeping individual utility functions focused and testable. The PixiStageController bridges the React world (declarative state updates) with the Pixi world (imperative frame-by-frame rendering) via refs and ticker callbacks.",
+          "author": "Architecture"
+        }
+      ]
+    },
+    {
+      "title": "Core Subsystems Overview",
+      "purpose": "Provide a subsystem dependency map that names primary files and key functions: AudioManager (src/utils/AudioManager.js, 314 lines) + modularized audio modules (src/utils/audio/: setup.js 548 lines, playback.js 582 lines, procedural.js 813 lines, assets.js 233 lines) for playback lifecycle; GameStateProvider + gameReducer for state transitions; useRhythmGameLogic orchestrating 5 sub-hooks for rhythm timing; PixiStageController + 4 stage managers for render/update cycle; calculateGigFinancials()/calculateTravelExpenses() economy pipeline (economyEngine.js, 430 lines); mapGenerator (279 lines) for travel topology; checkEvent()/resolveChoice() event resolution (eventEngine.js, 295 lines); and socialEngine.js (150 lines), imageGen.js (146 lines), hecklerLogic.js (101 lines) for procedural content generation.",
+      "parent": "Overview",
+      "page_notes": [
+        {
+          "content": "Keep this page architecture-focused; push implementation details into child pages. Tag each subsystem with maintenance risk level and quick rationale: Audio System (Medium — Tone.js lifecycle complexity, browser AudioContext constraints), State Management (Low — standard React patterns, well-tested), Rhythm Game (High — frame-perfect timing, audio-visual sync, performance-critical), Pixi Rendering (Medium — cleanup discipline required, ticker leak risk), Economy Engine (Low — pure functions, deterministic math), Event Engine (Low — data-driven, schema-validated), Map Generation (Low — one-time setup, cached results). Onboarding contributors should prioritize Low/Medium risk areas before tackling High risk subsystems.",
+          "author": "Architecture"
+        },
+        {
+          "content": "Document cross-subsystem integration points: rhythm game consumes audio playback state and triggers sound effects via AudioManager; economy calculations feed into post-gig state updates via reducer actions; event outcomes apply delta effects through gameStateUtils.js; map topology constrains travel logic in useTravelLogic; social engine reactions are displayed via ChatterOverlay component. These integration contracts are the most fragile points during refactoring — changes to one subsystem's output shape require coordinated updates to consumers.",
+          "author": "Architecture"
+        }
+      ]
+    },
+    {
+      "title": "Audio System Architecture",
+      "purpose": "Document the modularized audio subsystem (~2,600 lines total) spanning src/utils/AudioManager.js (314-line singleton coordinator), src/utils/audioEngine.js (46-line facade re-exporting key functions), and 6 specialized modules in src/utils/audio/: setup.js (548 lines — Tone.js boot via setupAudio()/ensureAudioContext, Tone.Context timing params, instrument chains for guitar/bass/drums/SFX/clean-MIDI buses, compressor/limiter/musicGain routing), playback.js (582 lines — loadAudioBuffer, playRandomAmbientOgg/playRandomAmbientMidi, startGigPlayback, stopGigPlayback/stopAudioInternal, disposal guarantees), procedural.js (813 lines — procedural synth generation for backing tracks and SFX), assets.js (233 lines — MIDI/audio asset loading), state.js (audio state tracking), constants.js (shared audio config constants).",
+      "parent": "Core Subsystems Overview",
+      "page_notes": [
+        {
+          "content": "Document four playback fallback modes (OGG -> MIDI -> note data -> procedural) and when each path is chosen. Call out disposal guarantees and known cleanup caveats around layered instrument nodes and exception safety during teardown. Primary path: load pre-recorded OGG from src/assets/ (fastest, best quality). Fallback 1: parse MIDI file and play via Tone.js synths (good quality, larger files). Fallback 2: use chart note data to generate backing track procedurally (acceptable quality, no files). Fallback 3: silent mode with visual-only rhythm game (degraded experience, used when audio initialization fails). Cleanup requires manual disposal of Tone.Transport events, synth nodes, and buffer references to prevent memory leaks.",
+          "author": "Architecture"
+        },
+        {
+          "content": "Helper utilities audioContextState.js, audioSelectionUtils.js, audioTimingUtils.js, and audioPlaybackUtils.js encapsulate low-level logic; midiTrackUtils.js handles MIDI file parsing and track extraction. Document the AudioManager singleton lifecycle: creation (on app mount), context resume on user gesture (via ensureAudioContext() in MainMenu.jsx), playback start/stop (via startGigPlayback()/stopGigPlayback() called from useRhythmGameAudio hook), and dispose (on app unmount via cleanup effect). The singleton pattern prevents multiple AudioContext instances (browser limit) and centralizes audio routing.",
+          "author": "Architecture"
+        },
+        {
+          "content": "Audio mixer architecture uses separate buses for instrument groups (guitar, bass, drums, SFX, vocals/MIDI) feeding into master compressor and limiter chains. Gain staging: individual instruments at -6dB, bus compressors with 4:1 ratio, master limiter at -0.1dB ceiling. Volume controls in settings affect musicGain node (pre-master). The mixer topology is initialized once in setup.js and reused across gigs; only source nodes (Players, Synths) are created/destroyed per-song. This architecture enables dynamic mixing (boost drums during fills, duck rhythm during vocals) without rebuilding the entire audio graph.",
+          "author": "Architecture"
+        }
+      ]
+    },
+    {
+      "title": "Rhythm Game Logic",
+      "purpose": "Document the decomposed rhythm game hook system: src/hooks/useRhythmGameLogic.js (84-line orchestrator) composing 5 specialized sub-hooks in src/hooks/rhythmGame/: useRhythmGameState.js (94 lines — game state tracking, refs for frame-loop data), useRhythmGameInput.js (39 lines — keyboard arrow key / A-S-D and touch input handling), useRhythmGameAudio.js (332 lines — audio playback integration, gig clock sync), useRhythmGameLoop.js (202 lines — ticker-driven game loop, note advancement, timing), useRhythmGameScoring.js (267 lines — hit-window judgment, combo math, hype calculation, miss/penalty handling). Song data sourced from src/assets/rhythm_songs.json, note spawning from src/utils/rhythmUtils.js (311 lines).",
+      "parent": "Core Subsystems Overview",
+      "page_notes": [
+        {
+          "content": "Explain timing sources (AudioContext.currentTime, Tone.now(), or game clock refs) and how drift is mitigated between audio and visual lanes. Specify how hit-judgment windows scale (or do not scale) with difficulty and where those constants are defined in rhythmUtils.js. The game uses AudioContext.currentTime as the authoritative clock for synchronization. Visual note positions are calculated from currentTime + spawn lead-in time. Hit windows are fixed (Perfect: ±50ms, Good: ±100ms, OK: ±150ms) regardless of difficulty; difficulty affects note density and pattern complexity instead. Drift mitigation: pre-calculate all note timestamps on song start, use RAF timestamps only for interpolation, re-sync every beat via audio playback callbacks.",
+          "author": "Architecture"
+        },
+        {
+          "content": "Include where gameplay output is written back to state for post-gig calculations via gigStats.js (35 lines). Heckler mechanics (projectile spawning) are handled by src/utils/hecklerLogic.js (101 lines); timing sync uses audioTimingUtils.js. The scoring hook accumulates hits/misses/perfects, calculates combo multipliers (1x at combo 0, up to 4x at combo 100+), and tracks crowd hype (increases on hits, decreases on misses, affects visual crowd reaction via CrowdManager.js). Final stats (accuracy %, max combo, total score, crowd hype %) are packaged into lastGigStats state slice via SET_GIG_RESULTS action dispatched on gig completion.",
+          "author": "Architecture"
+        },
+        {
+          "content": "Input handling supports both keyboard (arrow keys for lanes 1-3, A/S/D alternative layout) and touch (lane detection via x-coordinate of touch event, hit detection on touchstart). The input hook normalizes both input sources into a unified lane index (0, 1, 2) and timestamp. This abstraction allows the scoring hook to be input-agnostic. Touch calibration accounts for lane center positions in PixiStageController coordinate space. Future enhancement: gamepad support would add a third input source to the same normalization pipeline.",
+          "author": "Architecture"
+        }
+      ]
+    },
+    {
+      "title": "Pixi Rendering Pipeline",
+      "purpose": "Describe rendering internals across src/components/PixiStageController.js (229 lines), src/components/PixiStage.jsx (React canvas wrapper), and 4 stage managers in src/components/stage/: NoteManager.js (208 lines — falling note sprite lifecycle, spawn/recycle/destroy), LaneManager.js (156 lines — lane rendering, hit zones, visual feedback), CrowdManager.js (61 lines — crowd visualization reacting to performance), EffectManager.js (68 lines — hit/miss visual effects, particles). Document Pixi.js 8 Application lifecycle, ticker/frame callbacks, world-to-screen coordinate transforms, HUD overlay interoperability via src/components/GigHUD.jsx, and unmount cleanup (destroy textures, remove listeners, stop ticker).",
+      "parent": "Core Subsystems Overview",
+      "page_notes": [
+        {
+          "content": "Document cleanup expectations on scene unmount to prevent ticker leaks, retained textures, and stale refs. Follow the isMountedRef + app.destroy(true, { children: true, texture: true }) pattern. Reference pixiStageUtils.js for shared rendering helpers. Critical cleanup checklist: stop ticker, remove ticker callbacks, destroy all sprites (note sprites, lane graphics, effect sprites), clear sprite pools, nullify refs (appRef.current = null), dispose textures from cache. Common leak sources: forgotten ticker.add() without corresponding ticker.remove(), sprite pools not cleared, event listeners on stage/renderer not removed. The isMountedRef guard prevents post-unmount state updates from queued ticker callbacks.",
+          "author": "Architecture"
+        },
+        {
+          "content": "Describe z-order/layer strategy for lanes, notes, hit line, and transient feedback effects across the 4 stage managers. Document how NoteManager coordinates with useRhythmGameLoop for note positioning and with useRhythmGameScoring for hit feedback. Z-order from back to front: background gradient (z=0), lane backgrounds (z=10), crowd sprites (z=20), falling notes (z=30), hit line (z=40), hit feedback effects (z=50), HUD overlay (z=100, React layer). NoteManager receives note spawn commands from useRhythmGameLoop via props, updates note y-positions each frame based on elapsed time, and emits hit/miss events to useRhythmGameScoring when notes cross the hit line threshold. Visual feedback (particle bursts, color flashes) is rendered by EffectManager in response to scoring events.",
+          "author": "Architecture"
+        },
+        {
+          "content": "Performance optimizations in Pixi rendering: sprite pooling (pre-allocate 100 note sprites, recycle instead of create/destroy), texture atlas (combine note graphics into single texture to reduce draw calls), culling (skip rendering notes outside viewport), requestAnimationFrame throttling (lock to 60 FPS), batch rendering (group sprites by texture/blend mode). Benchmark target: maintain 60 FPS with 50+ active notes, 20+ particle effects, and crowd animations. Performance regression tests in tests/performance/pixiStage.bench.js verify rendering performance stays within budget. Profile using Chrome DevTools Performance tab to identify bottlenecks.",
+          "author": "Architecture"
+        }
+      ]
+    },
+    {
+      "title": "State Management & Context System",
+      "purpose": "Document full state architecture combining src/context/GameState.jsx and src/context/gameReducer.js: ActionTypes taxonomy (30+ action types organized by domain: SCENE, PLAYER, BAND, SOCIAL, GIG, MAP, TOAST, EVENT), reducer branches for player/band/social/gig/map/toast/event slices, action creator contracts from src/context/actionCreators.js, enforcement points for invariants player.money >= 0 and band.harmony > 0 during state updates, and initialState.js defaults (money: 500, day: 1, location: Stendal, 3 band members, harmony: 80). Also cover GameStateProvider and useGameState() API: exposed state slices, dispatch helpers (changeScene, triggerEvent, addToast, updatePlayer, updateBand), memoization boundaries, and consumer usage patterns.",
+      "parent": "Core Subsystems Overview",
+      "page_notes": [
+        {
+          "content": "Include invariants for money and harmony and where guards are enforced before/after updates. List reducer actions that can affect economy stats to simplify auditing for money/harmony invariant safety. Money invariant (>= 0): enforced in UPDATE_PLAYER, TRAVEL_TICK, PURCHASE_ITEM, RESOLVE_EVENT actions via Math.max(0, newMoney) clamping. Harmony invariant (> 0 for playable): enforced in UPDATE_BAND, DAILY_UPDATE, GIG_END actions; harmony <= 0 triggers GAME_OVER transition. Actions affecting money: TRAVEL_TICK (-fuel cost), PURCHASE_ITEM (-item cost), GIG_END (+payout), RESOLVE_EVENT (±effect delta), DAILY_UPDATE (-living expenses). Actions affecting harmony: GIG_END (±performance modifier), BAND_CONFLICT (-event penalty), REST (+recovery), RESOLVE_EVENT (±effect delta).",
+          "author": "Architecture"
+        },
+        {
+          "content": "Clarify which parts of state are persisted versus runtime-only transient fields. Document expected consumer pattern in scenes/hooks to avoid direct mutation and stale closures. Persisted fields (saved to localStorage via saveGame()): player (money, day, location, inventory, tutorialStep), band (members, harmony, fame, followers), social (recentPosts, platformStats), map (venueGraph, unlockedVenues), activeStoryFlags. Transient fields (not persisted): currentGig (cleared on load), lastGigStats (recalculated), toasts (UI only), activeEvent (reset on scene change), gigModifiers (temporary buffs). Consumer pattern: destructure needed slices from useGameState() at component top level, call dispatch helpers for updates, never mutate state directly, use useCallback for event handlers to prevent stale closures.",
+          "author": "Architecture"
+        },
+        {
+          "content": "Document recommended selector/memo usage patterns to minimize unnecessary rerenders in scene components. Use React.memo() for leaf components that only depend on specific state slices (e.g., StatBox displaying player.money). Use useMemo() to derive computed values (e.g., affordability checks, filtered lists) from state slices. Split context into state and dispatch contexts (already implemented: GameStateContext provides state, dispatch is stable ref). Avoid selecting entire state object when only subset is needed — use const { player, band } = useGameState() not const state = useGameState(). Profile with React DevTools Profiler to identify render hotspots.",
+          "author": "Architecture"
         }
       ]
     },

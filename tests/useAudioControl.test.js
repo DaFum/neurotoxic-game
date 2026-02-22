@@ -7,7 +7,8 @@ import {
   setupAudioControlTest
 } from './useAudioControlTestUtils.js'
 
-const { mockAudioManager, mockHandleError, listeners } = mockAudioControlDependencies
+const { mockAudioManager, mockHandleError, listeners } =
+  mockAudioControlDependencies
 const { useAudioControl } = await setupAudioControlTest()
 
 describe('useAudioControl', () => {
@@ -165,9 +166,6 @@ describe('useAudioControl', () => {
     assert.equal(result.current.audioState.isMuted, false)
   })
 
-
-
-
   test('resumeMusic delegates through hook action', async () => {
     const { result } = renderHook(() => useAudioControl())
 
@@ -190,7 +188,9 @@ describe('useAudioControl', () => {
 
   test('inline selector remains stable across rerenders', () => {
     const { result, rerender } = renderHook(() =>
-      useAudioControl(state => state.currentSongId === 'ambient' && state.isPlaying)
+      useAudioControl(
+        state => state.currentSongId === 'ambient' && state.isPlaying
+      )
     )
 
     assert.equal(result.current.audioState, false)
@@ -200,7 +200,9 @@ describe('useAudioControl', () => {
 
   test('selector receives focused state updates', () => {
     const { result } = renderHook(() =>
-      useAudioControl(state => state.currentSongId === 'ambient' && state.isPlaying)
+      useAudioControl(
+        state => state.currentSongId === 'ambient' && state.isPlaying
+      )
     )
 
     assert.equal(result.current.audioState, false)
@@ -231,7 +233,6 @@ describe('useAudioControl', () => {
     first.unmount()
     second.unmount()
   })
-
 
   test('polling fallback updates state when subscribe is unavailable', t => {
     if (!t.mock.timers) {

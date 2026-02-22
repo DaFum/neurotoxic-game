@@ -6,11 +6,11 @@ import { setupJSDOM, teardownJSDOM } from './testUtils.js'
 // Mock HecklerOverlay to avoid animation loops and isolate the test
 mock.module('../src/components/HecklerOverlay.jsx', {
   namedExports: {
-    HecklerOverlay: () => <div data-testid="heckler-overlay-mock" />
+    HecklerOverlay: () => <div data-testid='heckler-overlay-mock' />
   }
 })
 
-test('GigHUD: renders toxic border flash element when isToxicMode is true', async (t) => {
+test('GigHUD: renders toxic border flash element when isToxicMode is true', async t => {
   setupJSDOM()
   t.after(cleanup)
   t.after(teardownJSDOM)
@@ -29,17 +29,26 @@ test('GigHUD: renders toxic border flash element when isToxicMode is true', asyn
   }
   const gameStateRef = { current: { projectiles: [] } }
 
-  const { container } = render(<GigHUD stats={stats} gameStateRef={gameStateRef} />)
+  const { container } = render(
+    <GigHUD stats={stats} gameStateRef={gameStateRef} />
+  )
 
   // Look for the specific element with the class inside the container
   const flashElement = container.querySelector('.toxic-border-flash')
 
-  assert.ok(flashElement, 'Should find an element with toxic-border-flash class')
+  assert.ok(
+    flashElement,
+    'Should find an element with toxic-border-flash class'
+  )
   // Ensure it's not the root element itself (it should be a child now)
-  assert.notEqual(flashElement, container.firstChild, 'The flash element should be a child, not the root container')
+  assert.notEqual(
+    flashElement,
+    container.firstChild,
+    'The flash element should be a child, not the root container'
+  )
 })
 
-test('GigHUD: does not render toxic border flash element when isToxicMode is false', async (t) => {
+test('GigHUD: does not render toxic border flash element when isToxicMode is false', async t => {
   setupJSDOM()
   t.after(cleanup)
   t.after(teardownJSDOM)
@@ -57,9 +66,15 @@ test('GigHUD: does not render toxic border flash element when isToxicMode is fal
   }
   const gameStateRef = { current: { projectiles: [] } }
 
-  const { container } = render(<GigHUD stats={stats} gameStateRef={gameStateRef} />)
+  const { container } = render(
+    <GigHUD stats={stats} gameStateRef={gameStateRef} />
+  )
 
   const flashElement = container.querySelector('.toxic-border-flash')
 
-  assert.strictEqual(flashElement, null, 'Should NOT find an element with toxic-border-flash class')
+  assert.strictEqual(
+    flashElement,
+    null,
+    'Should NOT find an element with toxic-border-flash class'
+  )
 })

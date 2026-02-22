@@ -1,4 +1,3 @@
-
 const PIXI_TOKEN_FALLBACKS = Object.freeze({
   '--void-black': '#0a0a0a',
   '--toxic-green': '#00ff41',

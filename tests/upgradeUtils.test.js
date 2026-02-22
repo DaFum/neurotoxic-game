@@ -1,6 +1,9 @@
 import { test } from 'node:test'
 import { strict as assert } from 'node:assert'
-import { calcBaseBreakdownChance, hasUpgrade } from '../src/utils/upgradeUtils.js'
+import {
+  calcBaseBreakdownChance,
+  hasUpgrade
+} from '../src/utils/upgradeUtils.js'
 
 test('hasUpgrade - checks ownership correctly', () => {
   assert.equal(hasUpgrade(['van_suspension'], 'van_suspension'), true)
@@ -26,7 +29,10 @@ test('calcBaseBreakdownChance - single upgrade (van_suspension)', () => {
 })
 
 test('calcBaseBreakdownChance - multiple upgrades', () => {
-  const result = calcBaseBreakdownChance(['van_suspension', 'hq_van_suspension'])
+  const result = calcBaseBreakdownChance([
+    'van_suspension',
+    'hq_van_suspension'
+  ])
   // 0.05 - 0.01 - 0.01 = 0.03
   assert.ok(Math.abs(result - 0.03) < Number.EPSILON)
 })
@@ -64,10 +70,7 @@ test('calcBaseBreakdownChance - unknown upgrade', () => {
 })
 
 test('calcBaseBreakdownChance - mixed known and unknown upgrades', () => {
-  const result = calcBaseBreakdownChance([
-    'van_suspension',
-    'unknown_upgrade'
-  ])
+  const result = calcBaseBreakdownChance(['van_suspension', 'unknown_upgrade'])
   // 0.05 - 0.01 = 0.04
   assert.ok(Math.abs(result - 0.04) < Number.EPSILON)
 })

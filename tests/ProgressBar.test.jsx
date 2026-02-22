@@ -4,13 +4,13 @@ import { render, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
 import { ProgressBar } from '../src/ui/shared/index.jsx'
 
-test('ProgressBar: renders default correctly', (t) => {
+test('ProgressBar: renders default correctly', t => {
   setupJSDOM()
   t.after(cleanup)
   t.after(teardownJSDOM)
 
   const { container } = render(
-    <ProgressBar label="Test" value={50} max={100} color="bg-red-500" />
+    <ProgressBar label='Test' value={50} max={100} color='bg-red-500' />
   )
 
   // Should have label
@@ -22,17 +22,27 @@ test('ProgressBar: renders default correctly', (t) => {
   assert.ok(bar, 'Should have h-5 class for default size')
 })
 
-test('ProgressBar: renders mini variant correctly', (t) => {
+test('ProgressBar: renders mini variant correctly', t => {
   setupJSDOM()
   t.after(cleanup)
   t.after(teardownJSDOM)
 
   const { container } = render(
-    <ProgressBar label="Mini" value={20} max={100} color="bg-blue-500" size="mini" />
+    <ProgressBar
+      label='Mini'
+      value={20}
+      max={100}
+      color='bg-blue-500'
+      size='mini'
+    />
   )
 
   // Should NOT have label or value
-  assert.equal(container.textContent, '', 'Mini variant should not display text')
+  assert.equal(
+    container.textContent,
+    '',
+    'Mini variant should not display text'
+  )
 
   // Should have mini height (h-1.5)
   // Note: we look for the element that has the height class.
@@ -41,29 +51,44 @@ test('ProgressBar: renders mini variant correctly', (t) => {
   assert.ok(barWrapper, 'Should have h-1.5 class for mini size')
 
   // Should have overflow-hidden (if we add it to the wrapper as per plan)
-  assert.ok(barWrapper.classList.contains('overflow-hidden'), 'Should have overflow-hidden')
+  assert.ok(
+    barWrapper.classList.contains('overflow-hidden'),
+    'Should have overflow-hidden'
+  )
 })
 
-test('ProgressBar: applies warn animation', (t) => {
+test('ProgressBar: applies warn animation', t => {
   setupJSDOM()
   t.after(cleanup)
   t.after(teardownJSDOM)
 
   const { container } = render(
-    <ProgressBar label="Warn" value={10} max={100} color="bg-yellow-500" warn={true} />
+    <ProgressBar
+      label='Warn'
+      value={10}
+      max={100}
+      color='bg-yellow-500'
+      warn={true}
+    />
   )
 
   const innerBar = container.querySelector('.animate-fuel-warning')
   assert.ok(innerBar, 'Should have animate-fuel-warning class')
 })
 
-test('ProgressBar: has accessibility attributes', (t) => {
+test('ProgressBar: has accessibility attributes', t => {
   setupJSDOM()
   t.after(cleanup)
   t.after(teardownJSDOM)
 
   const { container, getByRole } = render(
-    <ProgressBar label="A11y Test" value={75} max={100} color="bg-green-500" aria-label="Custom Label" />
+    <ProgressBar
+      label='A11y Test'
+      value={75}
+      max={100}
+      color='bg-green-500'
+      aria-label='Custom Label'
+    />
   )
 
   const progressBar = getByRole('progressbar')

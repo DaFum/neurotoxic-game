@@ -81,7 +81,11 @@ const SegmentedBar = memo(function SegmentedBar({
 
 const LANE_INDICES = [0, 1, 2]
 
-export const GigHUD = memo(function GigHUD({ stats, onLaneInput, gameStateRef }) {
+export const GigHUD = memo(function GigHUD({
+  stats,
+  onLaneInput,
+  gameStateRef
+}) {
   const {
     score,
     combo,

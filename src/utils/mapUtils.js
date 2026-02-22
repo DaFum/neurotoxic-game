@@ -1,4 +1,7 @@
-import { calculateRefuelCost, calculateTravelExpenses } from './economyEngine.js'
+import {
+  calculateRefuelCost,
+  calculateTravelExpenses
+} from './economyEngine.js'
 
 /**
  * Checks if a target node is connected to the source node.

@@ -1,8 +1,11 @@
 ## NEUROTOXIC Game Codebase Exploration Report
-I've completed a thorough exploration of the NEUROTOXIC game codebase, focusing on the stage system, rhythm game hooks, and economy engine. Here's the full analysis:
----
+
+## I've completed a thorough exploration of the NEUROTOXIC game codebase, focusing on the stage system, rhythm game hooks, and economy engine. Here's the full analysis:
+
 ### 1. **LaneManager.js** — Complete Code Excerpt
+
 **Location:** `/home/user/neurotoxic-game/src/components/stage/LaneManager.js`
+
 ```javascript
 import * as PIXI from 'pixi.js'
 import { buildRhythmLayout, getPixiColorFromToken } from './utils.js'
@@ -71,7 +74,12 @@ export class LaneManager {
       // Draw static background once
       staticGraphics.rect(laneX, 0, laneWidth, laneHeight)
       staticGraphics.fill({ color: LANE_BASE_FILL, alpha: LANE_BASE_ALPHA })
-      staticGraphics.rect(laneX + laneWidth * 0.35, 0, laneWidth * 0.3, laneHeight)
+      staticGraphics.rect(
+        laneX + laneWidth * 0.35,
+        0,
+        laneWidth * 0.3,
+        laneHeight
+      )
       staticGraphics.fill({ color: lane.color, alpha: LANE_GUIDE_ALPHA })
       staticGraphics.stroke({
         width: laneStrokeWidth,
@@ -86,7 +94,10 @@ export class LaneManager {
         color: HIT_BAR_BORDER_COLOR
       })
       inactiveGraphics.rect(laneX, hitLineY, laneWidth, hitLineHeight)
-      inactiveGraphics.fill({ color: lane.color, alpha: HIT_BAR_INACTIVE_ALPHA })
+      inactiveGraphics.fill({
+        color: lane.color,
+        alpha: HIT_BAR_INACTIVE_ALPHA
+      })
       inactiveGraphics.stroke({
         width: hitLineStrokeWidth,
         color: lane.color
@@ -109,7 +120,11 @@ export class LaneManager {
       if (!graphicsSet) {
         return
       }
-      const { static: staticGraphics, active: activeGraphics, inactive: inactiveGraphics } = graphicsSet
+      const {
+        static: staticGraphics,
+        active: activeGraphics,
+        inactive: inactiveGraphics
+      } = graphicsSet
       // Redraw graphics only if layout updated
       if (layoutUpdated) {
         staticGraphics.clear()
@@ -151,7 +166,10 @@ export class LaneManager {
           layout.laneWidth,
           layout.hitLineHeight
         )
-        inactiveGraphics.fill({ color: lane.color, alpha: HIT_BAR_INACTIVE_ALPHA })
+        inactiveGraphics.fill({
+          color: lane.color,
+          alpha: HIT_BAR_INACTIVE_ALPHA
+        })
         inactiveGraphics.stroke({
           width: layout.hitLineStrokeWidth,
           color: lane.color
@@ -202,7 +220,9 @@ export class LaneManager {
   }
 }
 ```
+
 **LaneManager API Summary:**
+
 - **Constructor:** `(app, stageContainer, gameStateRef)` — Receives Pixi app, stage container, and mutable game state ref
 - **Methods:**
   - `init()` — Initializes rhythm container and draws 3 lanes with static/active/inactive graphics for each
@@ -212,9 +232,13 @@ export class LaneManager {
 - **Getters:**
   - `container` — Returns the rhythm container
   - `layout` — Returns current lane layout metrics
+
 ---
+
 ### 2. **PixiStage.jsx Props Interface** — Complete Code
+
 **Location:** `/home/user/neurotoxic-game/src/components/PixiStage.jsx`
+
 ```javascript
 import { useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
@@ -278,7 +302,9 @@ PixiStage.propTypes = {
   }).isRequired
 }
 ```
+
 **PixiStage Props Interface:**
+
 ```typescript
 props: {
   logic: {
@@ -314,10 +340,14 @@ props: {
   }
 }
 ```
+
 ---
+
 ### 3. **PixiStageController.js** — Lifecycle and API Overview
+
 **Location:** `/home/user/neurotoxic-game/src/components/PixiStageController.js`
 **Key Architecture:**
+
 - **Constructor:** Takes containerRef, gameStateRef, updateRef, statsRef
 - **Initialization Flow:**
   1. Create Pixi Application with `backgroundAlpha: 0`, responsive sizing, device pixel ratio
@@ -329,22 +359,27 @@ props: {
      - NoteManager (loads skull/lightning note sprites)
   4. All asset loads wrapped in `withTimeout(promise, 10000ms)` for graceful fallback
   5. Start Pixi ticker with `handleTicker` callback
-**Key Methods:**
+     **Key Methods:**
 - `async init()` — Initializes app and all managers; returns promise
 - `handleTicker(ticker)` — Frame update: calls updateRef, applies toxic hue filter, updates all managers
 - `manualUpdate(deltaMS)` — Testing helper to run frame without ticker
 - `dispose()` — Full cleanup: stops ticker, disposes all managers, destroys color matrix, clears DOM
-**Color Matrix Filter for Toxic Mode:**
+  **Color Matrix Filter for Toxic Mode:**
+
 ```javascript
 if (stats?.isToxicMode) {
   this.colorMatrix.hue(Math.sin(elapsed / 100) * 180, false)
   this.stageContainer.filters = this.toxicFilters
 }
 ```
+
 ---
+
 ### 4. **src/hooks/rhythmGame/** — Sub-Hook Structure
+
 **Location:** `/home/user/neurotoxic-game/src/hooks/rhythmGame/`
 **Hook Dependency Graph:**
+
 ```
 useRhythmGameLogic (main orchestrator)
 ├── useRhythmGameState (React state + Ref)
@@ -353,8 +388,10 @@ useRhythmGameLogic (main orchestrator)
 ├── useRhythmGameLoop (frame update)
 └── useRhythmGameInput (keyboard mapping)
 ```
+
 **Hook Contracts:**
 **useRhythmGameState** returns:
+
 ```javascript
 {
   gameStateRef: MutableRefObject<{
@@ -380,29 +417,36 @@ useRhythmGameLogic (main orchestrator)
   setters: { setScore, setCombo, setHealth, setOverload, setIsToxicMode, setIsGameOver, setIsAudioReady, setAccuracy }
 }
 ```
+
 **useRhythmGameScoring** contract:
+
 - Reads `state.modifiers.drumMultiplier` (set by audio hook) for band-trait bonuses
 - Calls `setAccuracy(calculateAccuracy(...))` after every hit/miss
 - Exports `activateToxicMode()` action
 - Handles miss penalties and combo tracking
-**useRhythmGameAudio** contract:
+  **useRhythmGameAudio** contract:
 - **Critical:** Merges `calculateGigPhysics()` result into `gameStateRef.current.modifiers`:
   ```javascript
   const mergedModifiers = {
     ...activeModifiers,
     drumMultiplier: physics.multipliers.drums,
-    guitarScoreMult: physics.multipliers.guitar * (activeModifiers.guitarScoreMult ?? 1.0)
+    guitarScoreMult:
+      physics.multipliers.guitar * (activeModifiers.guitarScoreMult ?? 1.0)
   }
   gameStateRef.current.modifiers = mergedModifiers
   ```
 - Caps audio duration to `maxNoteTime + NOTE_TAIL_MS` (1000ms) for JSON-based songs
 - Returns `{ retryAudioInitialization }` only
-**useRhythmGameLoop** — Frame update orchestrator
-**useRhythmGameInput** — Keyboard event handling
+  **useRhythmGameLoop** — Frame update orchestrator
+  **useRhythmGameInput** — Keyboard event handling
+
 ---
+
 ### 5. **economyEngine.js** — Complete Exports
+
 **Location:** `/home/user/neurotoxic-game/src/utils/economyEngine.js`
 **Exported Constants:**
+
 ```javascript
 export const MODIFIER_COSTS = {
   catering: 20,
@@ -414,22 +458,22 @@ export const MODIFIER_COSTS = {
 export const EXPENSE_CONSTANTS = {
   DAILY: { BASE_COST: 25 },
   TRANSPORT: {
-    FUEL_PER_100KM: 12,           // Liters
-    FUEL_PRICE: 1.75,             // Euro per Liter
-    MAX_FUEL: 100,                // Liters
-    REPAIR_COST_PER_UNIT: 3,      // Per 1% condition
+    FUEL_PER_100KM: 12, // Liters
+    FUEL_PRICE: 1.75, // Euro per Liter
+    MAX_FUEL: 100, // Liters
+    REPAIR_COST_PER_UNIT: 3, // Per 1% condition
     INSURANCE_MONTHLY: 80,
     MAINTENANCE_30DAYS: 200
   },
   FOOD: {
-    FAST_FOOD: 8,    // Per person per day
-    RESTAURANT: 15,  // Per person per day
+    FAST_FOOD: 8, // Per person per day
+    RESTAURANT: 15, // Per person per day
     ENERGY_DRINK: 3,
     ALCOHOL: 15
   },
   ACCOMMODATION: {
-    HOSTEL: 25,   // Per person
-    HOTEL: 60     // Per person
+    HOSTEL: 25, // Per person
+    HOTEL: 60 // Per person
   },
   EQUIPMENT: {
     STRINGS: 15,
@@ -438,12 +482,14 @@ export const EXPENSE_CONSTANTS = {
     TUBES: 80
   },
   ADMIN: {
-    PROBERAUM: 180,       // Monthly
-    INSURANCE_EQUIP: 150  // Monthly
+    PROBERAUM: 180, // Monthly
+    INSURANCE_EQUIP: 150 // Monthly
   }
 }
 ```
+
 **Exported Functions:**
+
 ```javascript
 /**
  * Calculates fuel cost for a given distance with van_tuning upgrade support.
@@ -455,20 +501,24 @@ export const calculateFuelCost = (dist, playerState = null) => {
 /**
  * Calculates travel expenses including fuel + food.
  */
-export const calculateTravelExpenses = (node, fromNode = null, playerState = null) => {
+export const calculateTravelExpenses = (
+  node,
+  fromNode = null,
+  playerState = null
+) => {
   // Returns { dist, fuelLiters, totalCost }
 }
 /**
  * Calculates cost to refuel van from current to MAX_FUEL.
  */
-export const calculateRefuelCost = (currentFuel) => {
+export const calculateRefuelCost = currentFuel => {
   // Returns cost in euros
   // Cost = Math.ceil((MAX_FUEL - currentFuel) * FUEL_PRICE)
 }
 /**
  * Calculates cost to repair van from current condition to 100%.
  */
-export const calculateRepairCost = (currentCondition) => {
+export const calculateRepairCost = currentCondition => {
   // Returns cost in euros
   // Cost = Math.ceil((100 - currentCondition) * REPAIR_COST_PER_UNIT)
   // Example: 50% condition → 50 * 3 = 150 euros
@@ -477,13 +527,13 @@ export const calculateRepairCost = (currentCondition) => {
  * Main gig financials calculator with income/expense breakdown.
  */
 export const calculateGigFinancials = ({
-  gigData,        // { capacity, price, pay, dist, diff, name }
-  performanceScore,  // 0-100
-  crowdStats,     // { hype: 0-100 }
-  modifiers,      // { merch, promo, catering, soundcheck, guestlist }
-  bandInventory,  // { shirts, hoodies, cds, patches, vinyl }
-  playerState,    // { fame, van, ... }
-  gigStats        // { misses, peakHype }
+  gigData, // { capacity, price, pay, dist, diff, name }
+  performanceScore, // 0-100
+  crowdStats, // { hype: 0-100 }
+  modifiers, // { merch, promo, catering, soundcheck, guestlist }
+  bandInventory, // { shirts, hoodies, cds, patches, vinyl }
+  playerState, // { fame, van, ... }
+  gigStats // { misses, peakHype }
 }) => {
   // Returns {
   //   income: { total, breakdown: [{ label, value, detail }] },
@@ -512,25 +562,31 @@ export const shouldTriggerBankruptcy = (newMoney, netIncome) => {
   // False if: money > 0 (survive even at break-even)
 }
 ```
+
 **Van Damage/Repair Mechanics:**
+
 - **Repair cost formula:** `Math.ceil(missingCondition * REPAIR_COST_PER_UNIT)`
-- **Example:** Van at 50% condition → 50% missing → 50 * 3 = 150 euros to full repair
+- **Example:** Van at 50% condition → 50% missing → 50 \* 3 = 150 euros to full repair
 - **Fuel cost:** Clamped between 0–MAX_FUEL (100L), reduced 20% with van_tuning upgrade
+
 ---
+
 ### 6. **gameStateUtils.js** — Utility Functions
+
 **Location:** `/home/user/neurotoxic-game/src/utils/gameStateUtils.js`
+
 ```javascript
 /**
  * Clamps player money to safe [0, ∞) integer.
  */
-export const clampPlayerMoney = (money) => {
+export const clampPlayerMoney = money => {
   if (!Number.isFinite(money)) return 0
   return Math.floor(Math.max(0, money))
 }
 /**
  * Clamps band harmony to [1, 100] range.
  */
-export const clampBandHarmony = (harmony) => {
+export const clampBandHarmony = harmony => {
   if (!Number.isFinite(harmony)) return 1
   const safeHarmony = Math.floor(harmony)
   return Math.max(1, Math.min(100, safeHarmony))
@@ -557,9 +613,11 @@ export const applyEventDelta = (state, delta) => {
   // Returns updated state with all clamping applied
 }
 ```
+
 ---
 
 ### 7. **Stage Managers Overview**
+
 **src/components/stage/** contains 4 parallel managers:
 | Manager | Purpose | Key Methods |
 |---------|---------|-------------|
@@ -568,6 +626,7 @@ export const applyEventDelta = (state, delta) => {
 | **CrowdManager** | Renders 50 crowd members, animates on combo/hype | `update(combo, isToxicMode, elapsed)`, `dispose()` |
 | **EffectManager** | Spawns hit/blood effect particles, pools sprites | `spawnHitEffect(x, y, color)`, `update(deltaMS)`, `dispose()` |
 **utils.js exports:**
+
 ```javascript
 export const getPixiColorFromToken(tokenName) // Resolves CSS var to Pixi hex
 export const calculateNoteY({ elapsed, noteTime, targetY, speed }) // Note Y position
@@ -576,9 +635,13 @@ export const buildRhythmLayout({ screenWidth, screenHeight }) // Lane metrics
 export const RHYTHM_LAYOUT // Constants for layout
 export const CROWD_LAYOUT // Constants for crowd rendering
 ```
+
 ---
+
 ### 8. **Key Integration Points**
+
 **PixiStageController initialization flow:**
+
 1. PixiStage (React) → creates controller via `createPixiStageController({ containerRef, gameStateRef, updateRef, statsRef })`
 2. Controller calls `init()` → initializes all 4 managers in parallel
 3. LaneManager calls `buildRhythmLayout()` to calculate screen positions
@@ -589,21 +652,27 @@ export const CROWD_LAYOUT // Constants for crowd rendering
    - `noteManager.update(state, elapsed, laneManager.layout)` — note animation
    - `crowdManager.update(combo, isToxicMode, elapsed)` — crowd animation
    - `effectManager.update(deltaMS)` — particle fade-out
-**Audio hook merges modifiers:**
+     **Audio hook merges modifiers:**
+
 ```javascript
 gameStateRef.current.modifiers = {
-  drumMultiplier: physics.multipliers.drums,  // Set by audio hook
+  drumMultiplier: physics.multipliers.drums, // Set by audio hook
   guitarScoreMult: physics.multipliers.guitar // Set by audio hook
 }
 // Scoring hook reads these for band-trait bonuses
 ```
+
 ---
+
 ### 9. **Critical Design Patterns**
+
 1. **Mutable Ref for High-Frequency Loop** — gameStateRef is NOT React state; it's a ref for unfiltered per-frame updates
 2. **Triple Graphics Layer in LaneManager** — static (background), inactive (default bar), active (when key is down)
 3. **Sprite Pooling** — NoteManager and EffectManager reuse sprites instead of destroying/creating
 4. **Timeout-Guarded Loads** — All asset loads in PixiStageController wrapped in 10s timeout for fallback
 5. **Deterministic Scene Transition** — setlistCompleted flag (not audioPlaybackEnded) signals gig completion
 6. **notesVersion Counter** — Detects song transitions in NoteManager to reset render index without relying on elapsed time
+
 ---
+
 This architecture separates concerns cleanly: **PixiStageController** manages Pixi lifecycle, **LaneManager** owns rhythm geometry, **NoteManager** handles note sprites, **useRhythmGameLoop** orchestrates frame timing, and **economyEngine** is completely decoupled for financial calculations.

@@ -14,9 +14,8 @@ mock.module('../src/utils/economyEngine.js', {
 })
 
 // Import module under test
-const { isConnected, getNodeVisibility, checkSoftlock } = await import(
-  '../src/utils/mapUtils.js'
-)
+const { isConnected, getNodeVisibility, checkSoftlock } =
+  await import('../src/utils/mapUtils.js')
 
 describe('mapUtils', () => {
   describe('isConnected', () => {
@@ -113,8 +112,8 @@ describe('mapUtils', () => {
       mockCalculateRefuelCost.mock.mockImplementation(() => 50)
       const gigMap = {
         nodes: {
-            A: { id: 'A', type: 'GIG' }, // Current is GIG
-            B: { id: 'B' }
+          A: { id: 'A', type: 'GIG' }, // Current is GIG
+          B: { id: 'B' }
         },
         connections: [{ from: 'A', to: 'B' }]
       }

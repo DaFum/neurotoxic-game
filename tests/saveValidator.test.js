@@ -35,7 +35,10 @@ describe('saveValidator', () => {
     })
 
     it('throws if data is not an object', () => {
-      assert.throws(() => validateSaveData('invalid'), /Save data must be an object/)
+      assert.throws(
+        () => validateSaveData('invalid'),
+        /Save data must be an object/
+      )
     })
 
     it('throws if data is an array', () => {
@@ -47,7 +50,10 @@ describe('saveValidator', () => {
       keys.forEach(key => {
         const data = getValidData()
         delete data[key]
-        assert.throws(() => validateSaveData(data), new RegExp(`Missing required top-level key: ${key}`))
+        assert.throws(
+          () => validateSaveData(data),
+          new RegExp(`Missing required top-level key: ${key}`)
+        )
       })
     })
   })
@@ -60,18 +66,31 @@ describe('saveValidator', () => {
     })
 
     it('throws if numeric fields are not numbers', () => {
-      const numericFields = ['money', 'day', 'time', 'score', 'fame', 'fameLevel']
+      const numericFields = [
+        'money',
+        'day',
+        'time',
+        'score',
+        'fame',
+        'fameLevel'
+      ]
       numericFields.forEach(field => {
         const data = getValidData()
         data.player[field] = 'not a number'
-        assert.throws(() => validateSaveData(data), new RegExp(`player.${field} must be a number`))
+        assert.throws(
+          () => validateSaveData(data),
+          new RegExp(`player.${field} must be a number`)
+        )
       })
     })
 
     it('throws if player.van is not an object', () => {
       const data = getValidData()
       data.player.van = 'not an object'
-      assert.throws(() => validateSaveData(data), /player.van must be an object/)
+      assert.throws(
+        () => validateSaveData(data),
+        /player.van must be an object/
+      )
     })
   })
 
@@ -85,25 +104,37 @@ describe('saveValidator', () => {
     it('throws if band.members is not an array', () => {
       const data = getValidData()
       data.band.members = {}
-      assert.throws(() => validateSaveData(data), /band.members must be an array/)
+      assert.throws(
+        () => validateSaveData(data),
+        /band.members must be an array/
+      )
     })
 
     it('throws if band member is not an object', () => {
       const data = getValidData()
       data.band.members = ['not an object']
-      assert.throws(() => validateSaveData(data), /band.members\[0\] must be an object/)
+      assert.throws(
+        () => validateSaveData(data),
+        /band.members\[0\] must be an object/
+      )
     })
 
     it('throws if band member name is not a string', () => {
       const data = getValidData()
       data.band.members = [{ name: 123 }]
-      assert.throws(() => validateSaveData(data), /band.members\[0\].name must be a string/)
+      assert.throws(
+        () => validateSaveData(data),
+        /band.members\[0\].name must be a string/
+      )
     })
 
     it('throws if band.harmony is not a number', () => {
       const data = getValidData()
       data.band.harmony = 'not a number'
-      assert.throws(() => validateSaveData(data), /band.harmony must be a number/)
+      assert.throws(
+        () => validateSaveData(data),
+        /band.harmony must be a number/
+      )
     })
   })
 
@@ -117,7 +148,10 @@ describe('saveValidator', () => {
     it('throws if social values are not numbers (except lastGigDay)', () => {
       const data = getValidData()
       data.social.fans = 'not a number'
-      assert.throws(() => validateSaveData(data), /Social value "fans" must be a number/)
+      assert.throws(
+        () => validateSaveData(data),
+        /Social value "fans" must be a number/
+      )
     })
 
     it('allows lastGigDay to be null', () => {
@@ -129,7 +163,10 @@ describe('saveValidator', () => {
     it('throws if lastGigDay is not a number or null', () => {
       const data = getValidData()
       data.social.lastGigDay = 'not a number'
-      assert.throws(() => validateSaveData(data), /Social value "lastGigDay" must be a number/)
+      assert.throws(
+        () => validateSaveData(data),
+        /Social value "lastGigDay" must be a number/
+      )
     })
   })
 

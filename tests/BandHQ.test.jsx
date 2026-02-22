@@ -44,8 +44,10 @@ mock.module('../src/hooks/usePurchaseLogic.js', {
 mock.module('../src/ui/shared/index.jsx', {
   namedExports: {
     StatBox: () => React.createElement('div', { 'data-testid': 'stat-box' }),
-    ProgressBar: () => React.createElement('div', { 'data-testid': 'progress-bar' }),
-    SettingsPanel: () => React.createElement('div', { 'data-testid': 'settings-panel' })
+    ProgressBar: () =>
+      React.createElement('div', { 'data-testid': 'progress-bar' }),
+    SettingsPanel: () =>
+      React.createElement('div', { 'data-testid': 'settings-panel' })
   }
 })
 
@@ -53,10 +55,10 @@ describe('BandHQ', () => {
   let BandHQ
 
   test.before(async () => {
-      setupJSDOM()
-      // Dynamic import
-      const module = await import('../src/ui/BandHQ.jsx')
-      BandHQ = module.BandHQ
+    setupJSDOM()
+    // Dynamic import
+    const module = await import('../src/ui/BandHQ.jsx')
+    BandHQ = module.BandHQ
   })
 
   afterEach(() => {
@@ -79,7 +81,11 @@ describe('BandHQ', () => {
       setlist: [],
       setSetlist: () => {},
       audioState: { musicVol: 1, sfxVol: 1, isMuted: false },
-      onAudioChange: { setMusic: () => {}, setSfx: () => {}, toggleMute: () => {} }
+      onAudioChange: {
+        setMusic: () => {},
+        setSfx: () => {},
+        toggleMute: () => {}
+      }
     }
 
     const { container } = render(React.createElement(BandHQ, props))

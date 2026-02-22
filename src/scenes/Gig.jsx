@@ -36,7 +36,8 @@ export const Gig = () => {
   const { stats, actions, gameStateRef } = logic
 
   // Use extracted effects hook
-  const { chaosContainerRef, chaosStyle, triggerBandAnimation } = useGigEffects(stats)
+  const { chaosContainerRef, chaosStyle, triggerBandAnimation } =
+    useGigEffects(stats)
 
   // Use extracted input hook
   const { handleLaneInput } = useGigInput({

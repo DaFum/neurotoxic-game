@@ -385,7 +385,10 @@ export const useTravelLogic = ({
       // Allow travel to START node from anywhere if connected, bypassing standard layer/visibility rules if needed.
       if (node.type === 'START') {
         // Always allow returning to HQ regardless of connections or visibility
-      } else if (visibility !== 'visible' || !isConnectedUtil(gameMap, player.currentNodeId, node.id)) {
+      } else if (
+        visibility !== 'visible' ||
+        !isConnectedUtil(gameMap, player.currentNodeId, node.id)
+      ) {
         addToast(
           visibility !== 'visible'
             ? 'Cannot travel: location not visible'
@@ -503,7 +506,9 @@ export const useTravelLogic = ({
     }
 
     // Recalculate breakdown chance at full condition (multiplier 1.0)
-    const repairedBreakdown = calcBaseBreakdownChance(player.van?.upgrades ?? [])
+    const repairedBreakdown = calcBaseBreakdownChance(
+      player.van?.upgrades ?? []
+    )
 
     updatePlayer({
       money: Math.max(0, (player.money ?? 0) - cost),

@@ -7,7 +7,7 @@ globalThis.document = {
 }
 globalThis.window = {
   getComputedStyle: () => ({
-    getPropertyValue: (token) => {
+    getPropertyValue: token => {
       // In a real browser, this would trigger reflow/re-layout.
       // In Node, we just return the value.
       if (token === '--toxic-green') return '#00ff41'

@@ -237,7 +237,10 @@ export const calculateTravelExpenses = (
  * @returns {number} Cost in euros.
  */
 export const calculateRefuelCost = currentFuel => {
-  const missing = Math.max(0, EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - currentFuel)
+  const missing = Math.max(
+    0,
+    EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - currentFuel
+  )
   return Math.ceil(missing * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
 }
 

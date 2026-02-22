@@ -6,7 +6,7 @@ import { useEffect, useRef, useCallback } from 'react'
  * @param {Object} stats - The current game stats (e.g., isToxicMode, overload).
  * @returns {Object} - Refs and styles for the Gig component.
  */
-export const useGigEffects = (stats) => {
+export const useGigEffects = stats => {
   const chaosContainerRef = useRef(null)
   const bandAnimationsRef = useRef({})
 

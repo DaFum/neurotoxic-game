@@ -83,7 +83,9 @@ mock.module('../src/utils/errorHandler.js', {
   }
 })
 mock.module('../src/utils/logger.js', {
-  namedExports: { logger: { info: mock.fn(), warn: mock.fn(), error: mock.fn() } }
+  namedExports: {
+    logger: { info: mock.fn(), warn: mock.fn(), error: mock.fn() }
+  }
 })
 mock.module('../src/data/songs.js', {
   namedExports: { SONGS_DB: [] }
@@ -179,11 +181,15 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     })
 
     let onSong1Ended = null
-    mockAudioEngine.startGigPlayback.mock.mockImplementation(async ({ onEnded }) => {
-      onSong1Ended = onEnded
-      return true
-    })
-    mockAudioManager.ensureAudioContext.mock.mockImplementation(async () => true)
+    mockAudioEngine.startGigPlayback.mock.mockImplementation(
+      async ({ onEnded }) => {
+        onSong1Ended = onEnded
+        return true
+      }
+    )
+    mockAudioManager.ensureAudioContext.mock.mockImplementation(
+      async () => true
+    )
     mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 0)
 
     const { result } = renderHook(() => useRhythmGameLogic())
@@ -193,7 +199,11 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     })
 
     const playbackCalls = mockAudioEngine.startGigPlayback.mock.calls
-    assert.strictEqual(playbackCalls.length, 1, 'Should call startGigPlayback once initially')
+    assert.strictEqual(
+      playbackCalls.length,
+      1,
+      'Should call startGigPlayback once initially'
+    )
     const call1Args = playbackCalls[0].arguments[0]
     assert.strictEqual(call1Args.filename, 'song1.ogg')
 
@@ -206,43 +216,60 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     assert.ok(onSong1Ended)
 
     await act(async () => {
-       const promise = onSong1Ended()
+      const promise = onSong1Ended()
 
-       mockAudioEngine.getTransportState.mock.mockImplementation(() => 'started')
-       result.current.gameStateRef.current.setlistCompleted = true
-       result.current.update(16)
-       assert.strictEqual(mockChangeScene.mock.calls.length, 0)
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'started')
+      result.current.gameStateRef.current.setlistCompleted = true
+      result.current.update(16)
+      assert.strictEqual(mockChangeScene.mock.calls.length, 0)
 
-       await promise
-       await new Promise(resolve => setTimeout(resolve, 50))
+      await promise
+      await new Promise(resolve => setTimeout(resolve, 50))
     })
 
     assert.strictEqual(mockAudioEngine.startGigPlayback.mock.calls.length, 2)
-    const call2Args = mockAudioEngine.startGigPlayback.mock.calls[1].arguments[0]
+    const call2Args =
+      mockAudioEngine.startGigPlayback.mock.calls[1].arguments[0]
     assert.strictEqual(call2Args.filename, 'song2.ogg')
 
     finalNotes = result.current.gameStateRef.current.notes
     assert.strictEqual(finalNotes.length, 1)
     assert.strictEqual(finalNotes[0].time, 600) // 500 + 100
 
-    const onSong2Ended = mockAudioEngine.startGigPlayback.mock.calls[1].arguments[0].onEnded
+    const onSong2Ended =
+      mockAudioEngine.startGigPlayback.mock.calls[1].arguments[0].onEnded
     mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 40001)
 
     await act(async () => {
-        await onSong2Ended()
-        await new Promise(resolve => setTimeout(resolve, 50))
+      await onSong2Ended()
+      await new Promise(resolve => setTimeout(resolve, 50))
     })
 
-    assert.strictEqual(result.current.gameStateRef.current.setlistCompleted, true)
+    assert.strictEqual(
+      result.current.gameStateRef.current.setlistCompleted,
+      true
+    )
     act(() => {
-        result.current.update(16)
+      result.current.update(16)
     })
     assert.ok(mockChangeScene.mock.calls.length > 0)
   })
 
   test('Quit logic does not trigger multi-song chaining', async () => {
-    const song1 = { id: 'song1', name: 'S1', bpm: 120, duration: 60, sourceOgg: 's1.ogg' }
-    const song2 = { id: 'song2', name: 'S2', bpm: 120, duration: 60, sourceOgg: 's2.ogg' }
+    const song1 = {
+      id: 'song1',
+      name: 'S1',
+      bpm: 120,
+      duration: 60,
+      sourceOgg: 's1.ogg'
+    }
+    const song2 = {
+      id: 'song2',
+      name: 'S2',
+      bpm: 120,
+      duration: 60,
+      sourceOgg: 's2.ogg'
+    }
 
     const mockState = {
       setlist: [song1, song2],
@@ -258,16 +285,22 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     }
     mockUseGameState.mock.mockImplementation(() => mockState)
     mockAudioEngine.hasAudioAsset.mock.mockImplementation(() => true)
-    mockAudioManager.ensureAudioContext.mock.mockImplementation(async () => true)
+    mockAudioManager.ensureAudioContext.mock.mockImplementation(
+      async () => true
+    )
 
     let onSong1Ended = null
-    mockAudioEngine.startGigPlayback.mock.mockImplementation(async ({ onEnded }) => {
-      onSong1Ended = onEnded
-      return true
-    })
+    mockAudioEngine.startGigPlayback.mock.mockImplementation(
+      async ({ onEnded }) => {
+        onSong1Ended = onEnded
+        return true
+      }
+    )
 
     const { result } = renderHook(() => useRhythmGameLogic())
-    await act(async () => { await new Promise(r => setTimeout(r, 100)) })
+    await act(async () => {
+      await new Promise(r => setTimeout(r, 100))
+    })
 
     assert.strictEqual(mockAudioEngine.startGigPlayback.mock.calls.length, 1)
 
@@ -277,15 +310,21 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     })
 
     await act(async () => {
-        await onSong1Ended()
-        await new Promise(r => setTimeout(r, 50))
+      await onSong1Ended()
+      await new Promise(r => setTimeout(r, 50))
     })
 
     assert.strictEqual(mockAudioEngine.startGigPlayback.mock.calls.length, 1)
   })
 
   test('does not force a default excerpt duration when metadata is missing', async () => {
-    const song = { id: 's1', name: 'S1', bpm: 120, duration: 60, sourceOgg: 's1.ogg' }
+    const song = {
+      id: 's1',
+      name: 'S1',
+      bpm: 120,
+      duration: 60,
+      sourceOgg: 's1.ogg'
+    }
     const mockState = {
       setlist: [song],
       band: { members: [], harmony: 100, performance: {} },
@@ -300,11 +339,15 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     }
     mockUseGameState.mock.mockImplementation(() => mockState)
     mockAudioEngine.hasAudioAsset.mock.mockImplementation(() => true)
-    mockAudioManager.ensureAudioContext.mock.mockImplementation(async () => true)
+    mockAudioManager.ensureAudioContext.mock.mockImplementation(
+      async () => true
+    )
     mockAudioEngine.startGigPlayback.mock.mockImplementation(async () => true)
 
     renderHook(() => useRhythmGameLogic())
-    await act(async () => { await new Promise(r => setTimeout(r, 100)) })
+    await act(async () => {
+      await new Promise(r => setTimeout(r, 100))
+    })
 
     assert.strictEqual(mockAudioEngine.startGigPlayback.mock.calls.length, 1)
     const args = mockAudioEngine.startGigPlayback.mock.calls[0].arguments[0]
@@ -312,7 +355,13 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
   })
 
   test('Game loop waits for setlistCompleted signal', async () => {
-    const song = { id: 's1', name: 'S1', bpm: 120, duration: 60, sourceOgg: 's1.ogg' }
+    const song = {
+      id: 's1',
+      name: 'S1',
+      bpm: 120,
+      duration: 60,
+      sourceOgg: 's1.ogg'
+    }
     const mockState = {
       setlist: [song],
       band: { members: [], harmony: 100, performance: {} },
@@ -327,30 +376,52 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     }
     mockUseGameState.mock.mockImplementation(() => mockState)
     mockAudioEngine.hasAudioAsset.mock.mockImplementation(() => true)
-    mockAudioManager.ensureAudioContext.mock.mockImplementation(async () => true)
+    mockAudioManager.ensureAudioContext.mock.mockImplementation(
+      async () => true
+    )
     mockAudioEngine.startGigPlayback.mock.mockImplementation(async () => true)
 
     const { result } = renderHook(() => useRhythmGameLogic())
-    await act(async () => { await new Promise(r => setTimeout(r, 100)) })
+    await act(async () => {
+      await new Promise(r => setTimeout(r, 100))
+    })
 
     mockAudioEngine.getTransportState.mock.mockImplementation(() => 'started')
     result.current.gameStateRef.current.setlistCompleted = false
     result.current.gameStateRef.current.totalDuration = 100
     mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 200)
 
-    act(() => { result.current.update(16) })
+    act(() => {
+      result.current.update(16)
+    })
     assert.strictEqual(mockChangeScene.mock.calls.length, 0)
 
     // Directly mutating internal ref to simulate the callback effect of audio ending
     // This couples the test to implementation but is necessary as we mock the audio engine internals
     result.current.gameStateRef.current.setlistCompleted = true
-    act(() => { result.current.update(16) })
-    assert.strictEqual(mockChangeScene.mock.calls.length, 1, 'Should call changeScene once')
-    assert.strictEqual(mockChangeScene.mock.calls[0].arguments[0], 'POSTGIG', 'Should transition to POSTGIG')
+    act(() => {
+      result.current.update(16)
+    })
+    assert.strictEqual(
+      mockChangeScene.mock.calls.length,
+      1,
+      'Should call changeScene once'
+    )
+    assert.strictEqual(
+      mockChangeScene.mock.calls[0].arguments[0],
+      'POSTGIG',
+      'Should transition to POSTGIG'
+    )
   })
 
   test('totalDuration snap: no change when getGigTimeMs returns NaN', async () => {
-    const song = { id: 's1', name: 'S1', bpm: 120, duration: 60, sourceOgg: 's1.ogg' }
+    const song = {
+      id: 's1',
+      name: 'S1',
+      bpm: 120,
+      duration: 60,
+      sourceOgg: 's1.ogg'
+    }
     const mockState = {
       setlist: [song],
       band: { members: [], harmony: 100, performance: {} },
@@ -365,27 +436,36 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     }
     mockUseGameState.mock.mockImplementation(() => mockState)
     mockAudioEngine.hasAudioAsset.mock.mockImplementation(() => true)
-    mockAudioManager.ensureAudioContext.mock.mockImplementation(async () => true)
+    mockAudioManager.ensureAudioContext.mock.mockImplementation(
+      async () => true
+    )
 
     let capturedOnEnded = null
-    mockAudioEngine.startGigPlayback.mock.mockImplementation(async ({ onEnded }) => {
-      capturedOnEnded = onEnded
-      return true
-    })
+    mockAudioEngine.startGigPlayback.mock.mockImplementation(
+      async ({ onEnded }) => {
+        capturedOnEnded = onEnded
+        return true
+      }
+    )
     mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 0)
 
     const { result } = renderHook(() => useRhythmGameLogic())
-    await act(async () => { await new Promise(r => setTimeout(r, 100)) })
+    await act(async () => {
+      await new Promise(r => setTimeout(r, 100))
+    })
 
     const durationBefore = result.current.gameStateRef.current.totalDuration
     mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => NaN)
 
     assert.ok(capturedOnEnded, 'capturedOnEnded should be defined')
     await act(async () => {
-        await capturedOnEnded()
-        await new Promise(r => setTimeout(r, 50))
+      await capturedOnEnded()
+      await new Promise(r => setTimeout(r, 50))
     })
 
-    assert.strictEqual(result.current.gameStateRef.current.totalDuration, durationBefore)
+    assert.strictEqual(
+      result.current.gameStateRef.current.totalDuration,
+      durationBefore
+    )
   })
 })

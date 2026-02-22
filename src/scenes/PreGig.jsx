@@ -21,7 +21,12 @@ const GIG_MODIFIER_OPTIONS = [
     cost: MODIFIER_COSTS.promo,
     desc: '+Crowd Fill'
   },
-  { key: 'merch', label: 'Merch Table', cost: MODIFIER_COSTS.merch, desc: '+Sales' },
+  {
+    key: 'merch',
+    label: 'Merch Table',
+    cost: MODIFIER_COSTS.merch,
+    desc: '+Sales'
+  },
   {
     key: 'catering',
     label: 'Catering / Energy',

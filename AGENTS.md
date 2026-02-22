@@ -74,21 +74,20 @@ Notes: `npm run test` uses Node's built-in test runner with `tsx`; `npm run test
 
 For domain-specific guidance, consult specialized agent documentation:
 
-| Agent          | Location                   | Expertise                                  |
-| -------------- | -------------------------- | ------------------------------------------ |
-| **Context**    | `src/context/AGENTS.md`    | State management, reducers, actions        |
-| **Hooks**      | `src/hooks/AGENTS.md`      | Travel logic, purchase logic, custom hooks |
-| **Scenes**     | `src/scenes/AGENTS.md`     | Screen navigation, game flow               |
-| **Utils**      | `src/utils/AGENTS.md`      | Game engines, calculations, audio          |
-| **Components** | `src/components/AGENTS.md` | Pixi.js, real-time rendering               |
-| **Data**       | `src/data/AGENTS.md`       | Events, venues, songs, balance             |
-| **UI**         | `src/ui/AGENTS.md`         | Design system, reusable components         |
-| **Stage**      | `src/components/stage/AGENTS.md` | Pixi stage managers, render-loop lifecycle |
+| Agent            | Location                         | Expertise                                   |
+| ---------------- | -------------------------------- | ------------------------------------------- |
+| **Context**      | `src/context/AGENTS.md`          | State management, reducers, actions         |
+| **Hooks**        | `src/hooks/AGENTS.md`            | Travel logic, purchase logic, custom hooks  |
+| **Scenes**       | `src/scenes/AGENTS.md`           | Screen navigation, game flow                |
+| **Utils**        | `src/utils/AGENTS.md`            | Game engines, calculations, audio           |
+| **Components**   | `src/components/AGENTS.md`       | Pixi.js, real-time rendering                |
+| **Data**         | `src/data/AGENTS.md`             | Events, venues, songs, balance              |
+| **UI**           | `src/ui/AGENTS.md`               | Design system, reusable components          |
+| **Stage**        | `src/components/stage/AGENTS.md` | Pixi stage managers, render-loop lifecycle  |
 | **Rhythm Hooks** | `src/hooks/rhythmGame/AGENTS.md` | Gig loop timing/input/scoring orchestration |
-| **Audio Utils** | `src/utils/audio/AGENTS.md` | Low-level WebAudio/Tone resource handling   |
-| **Event Data** | `src/data/events/AGENTS.md` | Event catalog schema and balancing rules    |
-| **UI Shared**  | `src/ui/shared/AGENTS.md`  | Reusable settings/slider controls          |
-
+| **Audio Utils**  | `src/utils/audio/AGENTS.md`      | Low-level WebAudio/Tone resource handling   |
+| **Event Data**   | `src/data/events/AGENTS.md`      | Event catalog schema and balancing rules    |
+| **UI Shared**    | `src/ui/shared/AGENTS.md`        | Reusable settings/slider controls           |
 
 ## Architecture Guard Updates
 
@@ -106,17 +105,17 @@ For domain-specific guidance, consult specialized agent documentation:
 
 ## Documentation
 
-| Document                          | Purpose                                       |
-| --------------------------------- | --------------------------------------------- |
+| Document                            | Purpose                                       |
+| ----------------------------------- | --------------------------------------------- |
 | `.github/copilot-instructions.md`   | Detailed coding conventions for AI assistants |
-| `CLAUDE.md`                        | Assistant-facing architecture and style notes |
-| `WIKI.md`                          | Documentation entry index                     |
-| `docs/ARCHITECTURE.md`             | System/module architecture snapshot           |
-| `docs/STATE_TRANSITIONS.md`        | Scene/event state machine behavior            |
-| `docs/CODING_STANDARDS.md`         | JavaScript/React coding standards             |
-| `docs/TAILWIND_V4_PATTERNS.md`     | Tailwind + animation/rendering patterns       |
-| `neurotoxic-game-threat-model.md`  | Frontend threat model assumptions and risks   |
-| `security_best_practices_report.md`| Current security findings summary             |
+| `CLAUDE.md`                         | Assistant-facing architecture and style notes |
+| `WIKI.md`                           | Documentation entry index                     |
+| `docs/ARCHITECTURE.md`              | System/module architecture snapshot           |
+| `docs/STATE_TRANSITIONS.md`         | Scene/event state machine behavior            |
+| `docs/CODING_STANDARDS.md`          | JavaScript/React coding standards             |
+| `docs/TAILWIND_V4_PATTERNS.md`      | Tailwind + animation/rendering patterns       |
+| `neurotoxic-game-threat-model.md`   | Frontend threat model assumptions and risks   |
+| `security_best_practices_report.md` | Current security findings summary             |
 
 ## Git Workflow
 

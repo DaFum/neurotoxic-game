@@ -6,11 +6,11 @@ import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
 // Mock HecklerOverlay to avoid animation loops and isolate the test
 mock.module('../../src/components/HecklerOverlay.jsx', {
   namedExports: {
-    HecklerOverlay: () => <div data-testid="heckler-overlay-mock" />
+    HecklerOverlay: () => <div data-testid='heckler-overlay-mock' />
   }
 })
 
-test('GigHUD: renders lane inputs and handles interactions', async (t) => {
+test('GigHUD: renders lane inputs and handles interactions', async t => {
   setupJSDOM()
   t.after(cleanup)
   t.after(teardownJSDOM)
@@ -31,7 +31,11 @@ test('GigHUD: renders lane inputs and handles interactions', async (t) => {
   const onLaneInput = t.mock.fn()
 
   const { getByRole, getAllByRole, rerender } = render(
-    <GigHUD stats={stats} gameStateRef={gameStateRef} onLaneInput={onLaneInput} />
+    <GigHUD
+      stats={stats}
+      gameStateRef={gameStateRef}
+      onLaneInput={onLaneInput}
+    />
   )
 
   // Verify 3 lane inputs are rendered
@@ -65,7 +69,13 @@ test('GigHUD: renders lane inputs and handles interactions', async (t) => {
 
   // Re-render with new stats (simulate game loop update)
   const newStats = { ...stats, score: 100 }
-  rerender(<GigHUD stats={newStats} gameStateRef={gameStateRef} onLaneInput={onLaneInput} />)
+  rerender(
+    <GigHUD
+      stats={newStats}
+      gameStateRef={gameStateRef}
+      onLaneInput={onLaneInput}
+    />
+  )
 
   // Verify interactions still work after re-render
   fireEvent.mouseDown(laneInputs[2]) // Bass lane

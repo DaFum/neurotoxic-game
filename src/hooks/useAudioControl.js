@@ -16,7 +16,10 @@ export const useAudioControl = (selector, options = {}) => {
   selectorRef.current = selector
 
   const hasNativeSubscribe = typeof manager.subscribe === 'function'
-  const pollMs = Number.isFinite(options.pollMs) && options.pollMs > 0 ? options.pollMs : 1000
+  const pollMs =
+    Number.isFinite(options.pollMs) && options.pollMs > 0
+      ? options.pollMs
+      : 1000
   const pollEvenWithSubscribe = options.pollEvenWithSubscribe === true
 
   const getSnapshot = useCallback(() => {
@@ -50,7 +53,9 @@ export const useAudioControl = (selector, options = {}) => {
 
   const subscribe = useCallback(
     listener => {
-      const unsubscribe = hasNativeSubscribe ? manager.subscribe(listener) : () => {}
+      const unsubscribe = hasNativeSubscribe
+        ? manager.subscribe(listener)
+        : () => {}
 
       if (hasNativeSubscribe && !pollEvenWithSubscribe) {
         return unsubscribe

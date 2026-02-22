@@ -99,7 +99,9 @@ export const useRhythmGameScoring = ({
           { combo: gameStateRef.current.combo, overload: next }
         )
         gameStateRef.current.stats = updatedStats
-        setAccuracy(calculateAccuracy(updatedStats.perfectHits, updatedStats.misses))
+        setAccuracy(
+          calculateAccuracy(updatedStats.perfectHits, updatedStats.misses)
+        )
         return next
       })
 
@@ -245,10 +247,12 @@ export const useRhythmGameScoring = ({
           return next
         })
         gameStateRef.current.stats.perfectHits++
-        setAccuracy(calculateAccuracy(
-          gameStateRef.current.stats.perfectHits,
-          gameStateRef.current.stats.misses
-        ))
+        setAccuracy(
+          calculateAccuracy(
+            gameStateRef.current.stats.perfectHits,
+            gameStateRef.current.stats.misses
+          )
+        )
 
         if (!toxicModeActive) {
           setOverload(o => {

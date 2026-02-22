@@ -124,7 +124,11 @@ describe('HQ Passive Effects', () => {
       player: {
         day: 1,
         money: 1000,
-        hqUpgrades: ['hq_room_coffee', 'hq_room_sofa', 'hq_room_diy_soundproofing'],
+        hqUpgrades: [
+          'hq_room_coffee',
+          'hq_room_sofa',
+          'hq_room_diy_soundproofing'
+        ],
         van: { condition: 100 }
       },
       band: {

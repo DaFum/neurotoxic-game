@@ -153,9 +153,9 @@ useEffect(() => {
 
 Production requires HTTPS (WebAudio API mixed-content policy). Ambient playback is started by main-menu tour actions via `AudioManager.startAmbient()`, preferring OGG playback with MIDI fallback; gig playback uses configured excerpts and bounded playback windows. Audio logic is implemented in `src/utils/audio/`.
 
-*   **Tone.js Only**: The project uses Tone.js wrappers for audio playback and synthesis. Do NOT introduce Howler.js.
-*   **Multi-Song Gigs**: Sequential playback is driven by `setlistCompleted` (set when `playSongAtIndex` exhausts the setlist) together with `isNearTrackEnd` (gig clock ≥ `totalDuration − 300 ms`). Do **not** re-introduce `audioPlaybackEnded` — that flag is legacy and was replaced by this dual-gate mechanism. When the last song's `onEnded` fires, `totalDuration` is snapped to the current frozen gig-clock value so the loop finalises on the next frame.
-*   **Note-driven audio end**: For songs with JSON notes, OGG/MIDI playback is capped to `maxNoteTime + NOTE_TAIL_MS` so music stops when bars finish falling, not at the end of the audio excerpt. For procedurally-generated songs (no JSON notes) the full excerpt duration is used.
+- **Tone.js Only**: The project uses Tone.js wrappers for audio playback and synthesis. Do NOT introduce Howler.js.
+- **Multi-Song Gigs**: Sequential playback is driven by `setlistCompleted` (set when `playSongAtIndex` exhausts the setlist) together with `isNearTrackEnd` (gig clock ≥ `totalDuration − 300 ms`). Do **not** re-introduce `audioPlaybackEnded` — that flag is legacy and was replaced by this dual-gate mechanism. When the last song's `onEnded` fires, `totalDuration` is snapped to the current frozen gig-clock value so the loop finalises on the next frame.
+- **Note-driven audio end**: For songs with JSON notes, OGG/MIDI playback is capped to `maxNoteTime + NOTE_TAIL_MS` so music stops when bars finish falling, not at the end of the audio excerpt. For procedurally-generated songs (no JSON notes) the full excerpt duration is used.
 
 ## Sub-Agent Documentation
 
