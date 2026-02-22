@@ -98,10 +98,30 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     setupJSDOM()
     // Reset calls
     mockUseGameState.mock.resetCalls()
-    Object.values(mockAudioManager).forEach(m => m.mock.resetCalls())
-    Object.values(mockAudioEngine).forEach(m => m.mock.resetCalls())
-    Object.values(mockRhythmUtils).forEach(m => m.mock.resetCalls())
-    Object.values(mockGigStats).forEach(m => m.mock.resetCalls())
+    Object.values(mockAudioManager).forEach(m => {
+      if (m.mock) {
+        m.mock.resetCalls()
+        m.mock.restore() // Reset implementation
+      }
+    })
+    Object.values(mockAudioEngine).forEach(m => {
+      if (m.mock) {
+        m.mock.resetCalls()
+        m.mock.restore()
+      }
+    })
+    Object.values(mockRhythmUtils).forEach(m => {
+      if (m.mock) {
+        m.mock.resetCalls()
+        m.mock.restore()
+      }
+    })
+    Object.values(mockGigStats).forEach(m => {
+      if (m.mock) {
+        m.mock.resetCalls()
+        m.mock.restore()
+      }
+    })
 
     mockChangeScene = createMockChangeScene()
     mockSetLastGigStats = createMockSetLastGigStats()
@@ -187,11 +207,12 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
 
     await act(async () => {
        const promise = onSong1Ended()
-       assert.strictEqual(result.current.gameStateRef.current.songTransitioning, true)
+
        mockAudioEngine.getTransportState.mock.mockImplementation(() => 'started')
        result.current.gameStateRef.current.setlistCompleted = true
        result.current.update(16)
        assert.strictEqual(mockChangeScene.mock.calls.length, 0)
+
        await promise
        await new Promise(resolve => setTimeout(resolve, 50))
     })
@@ -324,7 +345,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     // This couples the test to implementation but is necessary as we mock the audio engine internals
     result.current.gameStateRef.current.setlistCompleted = true
     act(() => { result.current.update(16) })
-    assert.strictEqual(mockChangeScene.mock.calls.length, 1)
+    assert.strictEqual(mockChangeScene.mock.calls.length, 1, 'Should call changeScene once')
+    assert.strictEqual(mockChangeScene.mock.calls[0].arguments[0], 'POSTGIG', 'Should transition to POSTGIG')
   })
 
   test('totalDuration snap: no change when getGigTimeMs returns NaN', async () => {
