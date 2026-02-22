@@ -317,7 +317,7 @@ const handleCompleteTravelMinigame = (state, payload) => {
     return {
       ...state,
       minigame: { ...DEFAULT_MINIGAME_STATE },
-      currentScene: 'OVERWORLD' // Force scene reset to prevent stuck state
+      currentScene: GAME_PHASES.OVERWORLD // Force scene reset to prevent stuck state
     }
   }
 

@@ -54,6 +54,8 @@ INTRO → MENU ↔ SETTINGS | CREDITS
          ↓
      OVERWORLD ↔ TRAVEL_MINIGAME
          ↓
+     OVERWORLD
+         ↓
      PREGIG → PRE_GIG_MINIGAME → GIG → POSTGIG → OVERWORLD
          ↓
      GAMEOVER → MENU
