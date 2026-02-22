@@ -61,7 +61,7 @@ Notes: `npm run test` uses Node's built-in test runner with `tsx`; `npm run test
 ## Current Runtime Truths (Code-Aligned)
 
 - Root runtime composition: `ErrorBoundary` → `GameStateProvider` → scene renderer + global overlays (`HUD`, `ToastOverlay`, `ChatterOverlay`, `TutorialManager`, `EventModal`).
-- Scene set in active use: `INTRO`, `MENU`, `SETTINGS`, `CREDITS`, `GAMEOVER`, `OVERWORLD`, `PREGIG`, `GIG`, `POSTGIG`.
+- Scene set in active use: `INTRO`, `MENU`, `SETTINGS`, `CREDITS`, `GAMEOVER`, `OVERWORLD`, `TRAVEL_MINIGAME`, `PREGIG`, `PRE_GIG_MINIGAME`, `GIG`, `POSTGIG`.
 - Reducer/Event guardrails currently enforce:
   - `player.money >= 0` via shared state clamps
   - `band.harmony` clamped to `1..100` via shared state clamps
@@ -97,6 +97,8 @@ For domain-specific guidance, consult specialized agent documentation:
 - State guardrails are centralized via `src/utils/gameStateUtils.js` helpers (`clampPlayerMoney`, `clampBandHarmony`, `applyInventoryItemDelta`) and reused by both reducer flows and event-delta application paths.
 - Tempo timing in `src/utils/rhythmUtils.js` now uses a single processed-map path (`ensureProcessedTempoMap` + `findTempoSegment`) instead of maintaining a legacy fallback branch.
 - Audio asset URL maps are unified through `buildAssetUrlMap`; avoid reintroducing wrapper-only APIs such as `buildMidiUrlMap`.
+- Minigame architecture uses the `StageController` pattern: logic lives in custom hooks (`useTourbusLogic`, `useRoadieLogic`), rendering in PixiJS classes (`TourbusStageController`, `RoadieStageController`), and state flows through `gameReducer`.
+- `useArrivalLogic` encapsulates the complex side-effects of arriving at a map node (autosave, event trigger, day advance) to avoid logic duplication between `useTravelLogic` and `TourbusScene`.
 
 ### [state-safety-action-creator-guard]
 
