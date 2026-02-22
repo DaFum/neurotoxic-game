@@ -7,8 +7,6 @@ import { PixiStage } from '../components/PixiStage'
 import { useGameState } from '../context/GameState'
 import { useArrivalLogic } from '../hooks/useArrivalLogic'
 
-import { useCallback } from 'react'
-
 export const TourbusScene = () => {
   const { uiState, gameStateRef, stats, update, actions } = useTourbusLogic()
   // const { changeScene, gameMap, player, startGig, advanceDay, saveGame, triggerEvent, addToast, updateBand, band } = useGameState() // Removed direct usage

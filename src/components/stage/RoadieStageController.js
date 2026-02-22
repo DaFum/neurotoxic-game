@@ -120,10 +120,18 @@ export class RoadieStageController {
 
           const loaded = {}
           const keys = Object.keys(urls)
-          await Promise.all(keys.map(k => PIXI.Assets.load(urls[k]).then(t => loaded[k] = t)))
+          const results = await Promise.allSettled(keys.map(k => PIXI.Assets.load(urls[k]).then(t => ({ key: k, texture: t }))))
+
+          results.forEach(res => {
+              if (res.status === 'fulfilled') {
+                  loaded[res.value.key] = res.value.texture
+              } else {
+                  logger.warn('RoadieStageController', `Failed to load asset`, res.reason)
+              }
+          })
 
           this.textures.roadie = loaded.roadie
-          this.textures.cars = [loaded.carA, loaded.carB, loaded.carC]
+          this.textures.cars = [loaded.carA, loaded.carB, loaded.carC].filter(Boolean)
           this.textures.items = {
               'AMP': loaded.amp,
               'DRUMS': loaded.drums,
@@ -225,7 +233,7 @@ export class RoadieStageController {
           this.playerSprite.tint = redColor
           if (this._flashTimeout) clearTimeout(this._flashTimeout)
           this._flashTimeout = setTimeout(() => {
-              if (this.playerSprite && !this.isDisposed) this.playerSprite.tint = 0xFFFFFF
+              if (this.playerSprite && !this.isDisposed) this.playerSprite.tint = getPixiColorFromToken('--star-white')
               this._flashTimeout = null
           }, 200)
       }

@@ -131,7 +131,7 @@ export const useTourbusLogic = () => {
             hitDamage = 5
           }
 
-          game.damage += hitDamage
+          game.damage = Math.max(0, Math.min(100, game.damage + hitDamage))
           audioManager.playSFX('crash') // Play SFX immediately on collision
         } else if (obs.type === 'FUEL') {
            game.itemsCollected.push('FUEL')

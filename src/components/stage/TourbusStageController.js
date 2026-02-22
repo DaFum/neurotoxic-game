@@ -192,11 +192,18 @@ export class TourbusStageController {
     // Update Bus Position (Lerp for smoothness)
     if (this.busSprite) {
       const targetX = (state.busLane * this.laneWidth) + (this.laneWidth / 2)
-      this.busSprite.x += (targetX - this.busSprite.x) * 0.2
-      this.busSprite.y = height * 0.9
 
-      // Wobble effect based on speed
-      this.busSprite.rotation = Math.sin(Date.now() / 100) * 0.05
+      // Frame-independent Lerp
+      // Using exponential decay: lerp(a, b, 1 - exp(-decay * dt))
+      // Decay factor ~10 for snappy movement
+      const dtSeconds = ticker.deltaMS / 1000
+      const lerpFactor = 1 - Math.exp(-10 * dtSeconds)
+
+      this.busSprite.x += (targetX - this.busSprite.x) * lerpFactor
+      this.busSprite.y = height * 0.9 // Fixed Y at 90%
+
+      // Wobble effect based on speed (use ticker.lastTime instead of Date.now() for consistency)
+      this.busSprite.rotation = Math.sin(ticker.lastTime / 100) * 0.05
     }
 
     // Render Obstacles

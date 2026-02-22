@@ -61,12 +61,7 @@ export const Overworld = () => {
     addToast,
     changeScene,
     onShowHQ: openHQ,
-    dispatch: (action) => {
-        // Intercept START_TRAVEL_MINIGAME if dispatched via legacy logic
-        if (action.type === ActionTypes.START_TRAVEL_MINIGAME) {
-            startTravelMinigame(action.payload.targetNodeId)
-        }
-    }
+    onStartTravelMinigame: startTravelMinigame
   })
 
   const currentNode = gameMap?.nodes[player.currentNodeId]
