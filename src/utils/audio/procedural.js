@@ -171,10 +171,12 @@ function playDrumNote(midiPitch, time, velocity, kit = audioState.drumKit) {
 
   // ⚡ BOLT OPTIMIZATION: O(1) array lookup and direct handler execution
   const map = DRUM_MAPPING[midiPitch]
-  if (map) {
-    DRUM_HANDLERS[map.handler](kit, map, time, velocity * map.velScale)
+  const handler = map ? DRUM_HANDLERS[map.handler] : null
+
+  if (handler) {
+    handler(kit, map, time, velocity * map.velScale)
   } else {
-    // Default to closed HiHat for unknown percussion
+    // Default to closed HiHat for unknown percussion or missing handler
     kit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.4)
   }
 }
@@ -317,24 +319,37 @@ export async function playSongFromData(song, delay = 0, options = {}) {
   }
 
   audioState.part = new Tone.Part((time, value) => {
-    if (!audioState.guitar || !audioState.bass || !audioState.drumKit) return
+    // ⚡ BOLT SAFETY: Wrap in try-catch to prevent scheduler interruptions
+    try {
+      if (!audioState.guitar || !audioState.bass || !audioState.drumKit) return
 
-    // Use pre-computed noteName or fallback if missing (though it should be present)
-    // ⚡ BOLT OPTIMIZATION: Avoid calling getNoteName if noteName is explicitly null (drums)
-    const noteName =
-      value.noteName === null ? null : value.noteName ?? getNoteName(value.note)
+      // Use pre-computed noteName or fallback if missing (though it should be present)
+      // ⚡ BOLT OPTIMIZATION: Avoid calling getNoteName if noteName is explicitly null (drums)
+      const noteName =
+        value.noteName === null
+          ? null
+          : value.noteName ?? getNoteName(value.note)
 
-    if (value.lane === 'guitar') {
-      audioState.guitar.triggerAttackRelease(
-        noteName,
-        '16n',
-        time,
-        value.velocity
-      )
-    } else if (value.lane === 'bass') {
-      audioState.bass.triggerAttackRelease(noteName, '8n', time, value.velocity)
-    } else if (value.lane === 'drums') {
-      playDrumNote(value.note, time, value.velocity)
+      if (value.lane === 'guitar') {
+        audioState.guitar.triggerAttackRelease(
+          noteName,
+          '16n',
+          time,
+          value.velocity
+        )
+      } else if (value.lane === 'bass') {
+        audioState.bass.triggerAttackRelease(
+          noteName,
+          '8n',
+          time,
+          value.velocity
+        )
+      } else if (value.lane === 'drums') {
+        playDrumNote(value.note, time, value.velocity)
+      }
+    } catch (err) {
+      // Log concisely and return early to keep the scheduler alive
+      logger.error('AudioEngine', 'Error in Song callback', err)
     }
   }, events).start(0)
 
