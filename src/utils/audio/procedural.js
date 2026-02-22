@@ -23,32 +23,142 @@ import { SONGS_DB } from '../../data/songs.js'
 
 const MidiParser = ToneJsMidi?.Midi ?? ToneJsMidi?.default?.Midi ?? null
 
-// ⚡ BOLT OPTIMIZATION: Sparse array for O(1) drum lookup (size 128 for MIDI range)
+// ⚡ BOLT OPTIMIZATION: Direct handler dispatch avoids string comparisons and property lookups
+// on the critical audio scheduling path.
+const DRUM_HANDLER_IDX = {
+  KICK: 0,
+  SNARE: 1,
+  HIHAT: 2,
+  CRASH: 3
+}
+
+const DRUM_HANDLERS = [
+  // 0: Kick (note, duration)
+  (kit, map, time, vel) =>
+    kit.kick.triggerAttackRelease(map.note, map.duration, time, vel),
+  // 1: Snare (duration)
+  (kit, map, time, vel) =>
+    kit.snare.triggerAttackRelease(map.duration, time, vel),
+  // 2: HiHat (freq, duration)
+  (kit, map, time, vel) =>
+    kit.hihat.triggerAttackRelease(map.freq, map.duration, time, vel),
+  // 3: Crash (freq, duration)
+  (kit, map, time, vel) =>
+    kit.crash.triggerAttackRelease(map.freq, map.duration, time, vel)
+]
+
 const DRUM_MAPPING = new Array(128)
 // Kick
-DRUM_MAPPING[35] = { part: 'kick', note: 'C1', duration: '8n', velScale: 1 }
-DRUM_MAPPING[36] = { part: 'kick', note: 'C1', duration: '8n', velScale: 1 }
+DRUM_MAPPING[35] = {
+  handler: DRUM_HANDLER_IDX.KICK,
+  note: 'C1',
+  duration: '8n',
+  velScale: 1
+}
+DRUM_MAPPING[36] = {
+  handler: DRUM_HANDLER_IDX.KICK,
+  note: 'C1',
+  duration: '8n',
+  velScale: 1
+}
 // Snare (LayeredSnare takes duration, time, velocity)
-DRUM_MAPPING[37] = { part: 'snare', duration: '32n', velScale: 0.4 }
-DRUM_MAPPING[38] = { part: 'snare', duration: '16n', velScale: 1 }
-DRUM_MAPPING[40] = { part: 'snare', duration: '16n', velScale: 1 }
+DRUM_MAPPING[37] = {
+  handler: DRUM_HANDLER_IDX.SNARE,
+  duration: '32n',
+  velScale: 0.4
+}
+DRUM_MAPPING[38] = {
+  handler: DRUM_HANDLER_IDX.SNARE,
+  duration: '16n',
+  velScale: 1
+}
+DRUM_MAPPING[40] = {
+  handler: DRUM_HANDLER_IDX.SNARE,
+  duration: '16n',
+  velScale: 1
+}
 // HiHat (MetalSynth takes frequency, duration, time, velocity)
-DRUM_MAPPING[42] = { part: 'hihat', freq: 8000, duration: '32n', velScale: 0.7 }
-DRUM_MAPPING[44] = { part: 'hihat', freq: 8000, duration: '32n', velScale: 0.7 }
-DRUM_MAPPING[46] = { part: 'hihat', freq: 6000, duration: '16n', velScale: 0.8 }
+DRUM_MAPPING[42] = {
+  handler: DRUM_HANDLER_IDX.HIHAT,
+  freq: 8000,
+  duration: '32n',
+  velScale: 0.7
+}
+DRUM_MAPPING[44] = {
+  handler: DRUM_HANDLER_IDX.HIHAT,
+  freq: 8000,
+  duration: '32n',
+  velScale: 0.7
+}
+DRUM_MAPPING[46] = {
+  handler: DRUM_HANDLER_IDX.HIHAT,
+  freq: 6000,
+  duration: '16n',
+  velScale: 0.8
+}
 // Crash
-DRUM_MAPPING[49] = { part: 'crash', freq: 4000, duration: '4n', velScale: 0.7 }
-DRUM_MAPPING[57] = { part: 'crash', freq: 4000, duration: '4n', velScale: 0.7 }
+DRUM_MAPPING[49] = {
+  handler: DRUM_HANDLER_IDX.CRASH,
+  freq: 4000,
+  duration: '4n',
+  velScale: 0.7
+}
+DRUM_MAPPING[57] = {
+  handler: DRUM_HANDLER_IDX.CRASH,
+  freq: 4000,
+  duration: '4n',
+  velScale: 0.7
+}
 // Ride (mapped to HiHat)
-DRUM_MAPPING[51] = { part: 'hihat', freq: 5000, duration: '8n', velScale: 0.5 }
-DRUM_MAPPING[59] = { part: 'hihat', freq: 5000, duration: '8n', velScale: 0.5 }
+DRUM_MAPPING[51] = {
+  handler: DRUM_HANDLER_IDX.HIHAT,
+  freq: 5000,
+  duration: '8n',
+  velScale: 0.5
+}
+DRUM_MAPPING[59] = {
+  handler: DRUM_HANDLER_IDX.HIHAT,
+  freq: 5000,
+  duration: '8n',
+  velScale: 0.5
+}
 // Toms (mapped to Kick)
-DRUM_MAPPING[41] = { part: 'kick', note: 'G1', duration: '8n', velScale: 0.8 }
-DRUM_MAPPING[43] = { part: 'kick', note: 'G1', duration: '8n', velScale: 0.8 }
-DRUM_MAPPING[45] = { part: 'kick', note: 'D2', duration: '8n', velScale: 0.7 }
-DRUM_MAPPING[47] = { part: 'kick', note: 'D2', duration: '8n', velScale: 0.7 }
-DRUM_MAPPING[48] = { part: 'kick', note: 'A2', duration: '8n', velScale: 0.6 }
-DRUM_MAPPING[50] = { part: 'kick', note: 'A2', duration: '8n', velScale: 0.6 }
+DRUM_MAPPING[41] = {
+  handler: DRUM_HANDLER_IDX.KICK,
+  note: 'G1',
+  duration: '8n',
+  velScale: 0.8
+}
+DRUM_MAPPING[43] = {
+  handler: DRUM_HANDLER_IDX.KICK,
+  note: 'G1',
+  duration: '8n',
+  velScale: 0.8
+}
+DRUM_MAPPING[45] = {
+  handler: DRUM_HANDLER_IDX.KICK,
+  note: 'D2',
+  duration: '8n',
+  velScale: 0.7
+}
+DRUM_MAPPING[47] = {
+  handler: DRUM_HANDLER_IDX.KICK,
+  note: 'D2',
+  duration: '8n',
+  velScale: 0.7
+}
+DRUM_MAPPING[48] = {
+  handler: DRUM_HANDLER_IDX.KICK,
+  note: 'A2',
+  duration: '8n',
+  velScale: 0.6
+}
+DRUM_MAPPING[50] = {
+  handler: DRUM_HANDLER_IDX.KICK,
+  note: 'A2',
+  duration: '8n',
+  velScale: 0.6
+}
 
 /**
  * Triggers a specific drum sound based on MIDI pitch.
@@ -59,21 +169,14 @@ DRUM_MAPPING[50] = { part: 'kick', note: 'A2', duration: '8n', velScale: 0.6 }
 function playDrumNote(midiPitch, time, velocity, kit = audioState.drumKit) {
   if (!kit) return
 
-  // ⚡ BOLT OPTIMIZATION: O(1) array lookup and removed try-catch for performance
+  // ⚡ BOLT OPTIMIZATION: O(1) array lookup and direct handler execution
   const map = DRUM_MAPPING[midiPitch]
-  if (map) {
-    const vel = velocity * map.velScale
-    if (map.part === 'kick') {
-      kit.kick.triggerAttackRelease(map.note, map.duration, time, vel)
-    } else if (map.part === 'snare') {
-      kit.snare.triggerAttackRelease(map.duration, time, vel)
-    } else if (map.part === 'hihat') {
-      kit.hihat.triggerAttackRelease(map.freq, map.duration, time, vel)
-    } else if (map.part === 'crash') {
-      kit.crash.triggerAttackRelease(map.freq, map.duration, time, vel)
-    }
+  const handler = map ? DRUM_HANDLERS[map.handler] : null
+
+  if (handler) {
+    handler(kit, map, time, velocity * map.velScale)
   } else {
-    // Default to closed HiHat for unknown percussion
+    // Default to closed HiHat for unknown percussion or missing handler
     kit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.4)
   }
 }
@@ -216,23 +319,37 @@ export async function playSongFromData(song, delay = 0, options = {}) {
   }
 
   audioState.part = new Tone.Part((time, value) => {
-    if (!audioState.guitar || !audioState.bass || !audioState.drumKit) return
+    // ⚡ BOLT SAFETY: Wrap in try-catch to prevent scheduler interruptions
+    try {
+      if (!audioState.guitar || !audioState.bass || !audioState.drumKit) return
 
-    // Use pre-computed noteName or fallback if missing (though it should be present)
-    const noteName =
-      value.noteName ?? getNoteName(value.note)
+      // Use pre-computed noteName or fallback if missing (though it should be present)
+      // ⚡ BOLT OPTIMIZATION: Avoid calling getNoteName if noteName is explicitly null (drums)
+      const noteName =
+        value.noteName === null
+          ? null
+          : value.noteName ?? getNoteName(value.note)
 
-    if (value.lane === 'guitar') {
-      audioState.guitar.triggerAttackRelease(
-        noteName,
-        '16n',
-        time,
-        value.velocity
-      )
-    } else if (value.lane === 'bass') {
-      audioState.bass.triggerAttackRelease(noteName, '8n', time, value.velocity)
-    } else if (value.lane === 'drums') {
-      playDrumNote(value.note, time, value.velocity)
+      if (value.lane === 'guitar') {
+        audioState.guitar.triggerAttackRelease(
+          noteName,
+          '16n',
+          time,
+          value.velocity
+        )
+      } else if (value.lane === 'bass') {
+        audioState.bass.triggerAttackRelease(
+          noteName,
+          '8n',
+          time,
+          value.velocity
+        )
+      } else if (value.lane === 'drums') {
+        playDrumNote(value.note, time, value.velocity)
+      }
+    } catch (err) {
+      // Log concisely and return early to keep the scheduler alive
+      logger.error('AudioEngine', 'Error in Song callback', err)
     }
   }, events).start(0)
 
@@ -534,43 +651,48 @@ function createMidiParts(midi, useCleanPlayback) {
     if (eventsWithFrequencies.length === 0) return
 
     const trackPart = new Tone.Part((time, value) => {
-      if (!leadSynth || !bassSynth || !drumSet) return
+      // ⚡ BOLT SAFETY: Wrap in try-catch to prevent scheduler interruptions
+      try {
+        if (!leadSynth || !bassSynth || !drumSet) return
 
-      // Since we filtered in the loop, we know midiPitch is valid (0-127).
-      // We skip redundant isValidMidiNote/normalizeMidiPitch checks here for performance.
-      const midiPitch = value.midiPitch
+        // Since we filtered in the loop, we know midiPitch is valid (0-127).
+        // We skip redundant isValidMidiNote/normalizeMidiPitch checks here for performance.
+        const midiPitch = value.midiPitch
 
-      // ⚡ BOLT OPTIMIZATION: Removed try-catch for performance
-      // Clamp duration to prevent "duration must be greater than 0" error
-      // and cap at MAX_NOTE_DURATION to prevent resource exhaustion
-      const duration = Math.min(
-        MAX_NOTE_DURATION,
-        Math.max(
-          MIN_NOTE_DURATION,
-          Number.isFinite(value?.duration)
-            ? value.duration
-            : MIN_NOTE_DURATION
+        // Clamp duration to prevent "duration must be greater than 0" error
+        // and cap at MAX_NOTE_DURATION to prevent resource exhaustion
+        const duration = Math.min(
+          MAX_NOTE_DURATION,
+          Math.max(
+            MIN_NOTE_DURATION,
+            Number.isFinite(value?.duration)
+              ? value.duration
+              : MIN_NOTE_DURATION
+          )
         )
-      )
 
-      // Clamp velocity
-      const velocity = Math.max(
-        0,
-        Math.min(1, Number.isFinite(value?.velocity) ? value.velocity : 1)
-      )
+        // Clamp velocity
+        const velocity = Math.max(
+          0,
+          Math.min(1, Number.isFinite(value?.velocity) ? value.velocity : 1)
+        )
 
-      if (value?.percussionTrack) {
-        playDrumNote(midiPitch, time, velocity, drumSet)
-        return
-      }
+        if (value?.percussionTrack) {
+          playDrumNote(midiPitch, time, velocity, drumSet)
+          return
+        }
 
-      // Use pre-computed frequency note string from cache
-      const freq = value.frequencyNote ?? getNoteName(midiPitch)
+        // Use pre-computed frequency note string from cache
+        const freq = value.frequencyNote ?? getNoteName(midiPitch)
 
-      if (midiPitch < 45) {
-        bassSynth.triggerAttackRelease(freq, duration, time, velocity)
-      } else {
-        leadSynth.triggerAttackRelease(freq, duration, time, velocity)
+        if (midiPitch < 45) {
+          bassSynth.triggerAttackRelease(freq, duration, time, velocity)
+        } else {
+          leadSynth.triggerAttackRelease(freq, duration, time, velocity)
+        }
+      } catch (err) {
+        // Log concisely and return early to keep the scheduler alive
+        logger.error('AudioEngine', 'Error in MIDI callback', err)
       }
     }, eventsWithFrequencies)
 
