@@ -8,11 +8,11 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import {
   calculateTravelExpenses,
   EXPENSE_CONSTANTS
-} from '../utils/economyEngine'
-import { audioManager } from '../utils/AudioManager'
-import { logger } from '../utils/logger'
-import { handleError, StateError } from '../utils/errorHandler'
-import { calcBaseBreakdownChance } from '../utils/upgradeUtils'
+} from '../utils/economyEngine.js'
+import { audioManager } from '../utils/AudioManager.js'
+import { logger } from '../utils/logger.js'
+import { handleError, StateError } from '../utils/errorHandler.js'
+import { calcBaseBreakdownChance } from '../utils/upgradeUtils.js'
 
 /**
  * Failsafe timeout duration in milliseconds
@@ -60,6 +60,17 @@ export const useTravelLogic = ({
   const failsafeTimeoutRef = useRef(null)
   const pendingTimeoutRef = useRef(null)
 
+  // Optimization: Use refs for frequently changing state to prevent handler recreation
+  const playerRef = useRef(player)
+  const bandRef = useRef(band)
+  const gameMapRef = useRef(gameMap)
+
+  useEffect(() => {
+    playerRef.current = player
+    bandRef.current = band
+    gameMapRef.current = gameMap
+  }, [player, band, gameMap])
+
   /**
    * Checks if a target node is connected to the current node
    * @param {string} targetNodeId - Target node ID
@@ -94,6 +105,7 @@ export const useTravelLogic = ({
    */
   const handleNodeArrival = useCallback(
     (node, eventAlreadyActive = false) => {
+      const band = bandRef.current
       switch (node.type) {
         case 'REST_STOP': {
           const newMembers = (band?.members ?? []).map(m => ({
@@ -139,7 +151,7 @@ export const useTravelLogic = ({
         }
       }
     },
-    [band, updateBand, triggerEvent, startGig, addToast, onShowHQ]
+    [updateBand, triggerEvent, startGig, addToast, onShowHQ]
   )
 
   /**
@@ -148,6 +160,10 @@ export const useTravelLogic = ({
    */
   const onTravelComplete = useCallback(
     (explicitNode = null) => {
+      const player = playerRef.current
+      const band = bandRef.current
+      const gameMap = gameMapRef.current
+
       const target =
         explicitNode && explicitNode.id ? explicitNode : travelTarget
 
@@ -238,9 +254,6 @@ export const useTravelLogic = ({
     },
     [
       travelTarget,
-      player,
-      band,
-      gameMap,
       updatePlayer,
       updateBand,
       saveGame,
@@ -308,6 +321,10 @@ export const useTravelLogic = ({
     node => {
       // Early interaction block if already traveling
       if (isTraveling) return
+
+      const player = playerRef.current
+      const band = bandRef.current
+      const gameMap = gameMapRef.current
 
       if (!node?.venue) {
         addToast('Error: Invalid location.', 'error')
@@ -421,15 +438,12 @@ export const useTravelLogic = ({
       }, 5000)
     },
     [
-      player,
-      gameMap,
       isTraveling,
       isConnected,
       getNodeVisibility,
       startGig,
       addToast,
       onShowHQ,
-      band?.harmony,
       pendingTravelNode,
       startTravelSequence,
       clearPendingTravel
@@ -441,6 +455,8 @@ export const useTravelLogic = ({
    */
   const handleRefuel = useCallback(() => {
     if (isTraveling) return
+
+    const player = playerRef.current
 
     const currentFuel = player.van?.fuel ?? 0
     const missing = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - currentFuel
@@ -468,13 +484,15 @@ export const useTravelLogic = ({
     } catch (_e) {
       // Ignore audio errors
     }
-  }, [player, isTraveling, updatePlayer, addToast])
+  }, [isTraveling, updatePlayer, addToast])
 
   /**
    * Handles repairing the van
    */
   const handleRepair = useCallback(() => {
     if (isTraveling) return
+
+    const player = playerRef.current
 
     const currentCondition = player.van?.condition ?? 100
     const missing = 100 - currentCondition
@@ -512,7 +530,7 @@ export const useTravelLogic = ({
     } catch (_e) {
       // Ignore audio errors
     }
-  }, [player, isTraveling, updatePlayer, addToast])
+  }, [isTraveling, updatePlayer, addToast])
 
   // Softlock detection effect
   useEffect(() => {
