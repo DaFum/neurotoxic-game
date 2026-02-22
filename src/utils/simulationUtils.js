@@ -1,4 +1,5 @@
 // Utility functions for Simulation <-> Action connection
+import { CHARACTERS } from '../data/characters.js'
 import { EXPENSE_CONSTANTS } from './economyEngine.js'
 import { applyReputationDecay } from './socialEngine.js'
 import { calcBaseBreakdownChance } from './upgradeUtils.js'
@@ -19,6 +20,8 @@ export const getGigModifiers = (bandState, gigModifiers = {}) => {
     ...gigModifiers // Merge active PreGig toggles (soundcheck, energy, etc)
   }
 
+  const members = Array.isArray(bandState.members) ? bandState.members : []
+
   // 1. Harmony Logic
   if (bandState.harmony > 80) {
     modifiers.hitWindowBonus = 20 // ms
@@ -30,17 +33,21 @@ export const getGigModifiers = (bandState, gigModifiers = {}) => {
 
   // 2. Member Status
   // Matze (Guitar)
-  const matze = bandState.members.find(m => m.name === 'Matze')
+  const matze = members.find(m => m.name === CHARACTERS.MATZE.name)
   if (matze && matze.mood < 20) {
     modifiers.guitarScoreMult = 0.5
-    modifiers.activeEffects.push('GRUMPY MATZE: Guitar Score -50%')
+    modifiers.activeEffects.push(
+      `GRUMPY ${CHARACTERS.MATZE.name.toUpperCase()}: Guitar Score -50%`
+    )
   }
 
   // Lars (Drums)
-  const lars = bandState.members.find(m => m.name === 'Lars')
+  const lars = members.find(m => m.name === CHARACTERS.LARS.name)
   if (lars && lars.stamina < 20) {
     modifiers.drumSpeedMult = 1.2 // 20% faster
-    modifiers.activeEffects.push('TIRED LARS: Rushing Tempo')
+    modifiers.activeEffects.push(
+      `TIRED ${CHARACTERS.LARS.name.toUpperCase()}: Rushing Tempo`
+    )
   }
 
   return modifiers
@@ -52,11 +59,13 @@ export const getGigModifiers = (bandState, gigModifiers = {}) => {
  * @param {object} song
  */
 export const calculateGigPhysics = (bandState, song) => {
+  const members = Array.isArray(bandState.members) ? bandState.members : []
+
   // 1. Hit Windows based on Skill
   // Formula: Base 150ms + (Skill * 5ms)
-  const matze = bandState.members.find(m => m.name === 'Matze')
-  const lars = bandState.members.find(m => m.name === 'Lars')
-  const marius = bandState.members.find(m => m.name === 'Marius')
+  const matze = members.find(m => m.name === CHARACTERS.MATZE.name)
+  const lars = members.find(m => m.name === CHARACTERS.LARS.name)
+  const marius = members.find(m => m.name === CHARACTERS.MARIUS.name)
 
   const getMemberSkill = member =>
     member?.baseStats?.skill ?? member?.skill ?? 0
@@ -68,7 +77,7 @@ export const calculateGigPhysics = (bandState, song) => {
 
   // 2. Scroll Speed based on Global Stamina
   // Avg Stamina:
-  const members = Array.isArray(bandState.members) ? bandState.members : []
+  // members array is already guarded above
   const totalStamina = members.reduce((sum, m) => sum + (m.stamina || 0), 0)
   const avgStamina = members.length ? totalStamina / members.length : 0
 
@@ -92,6 +101,7 @@ export const calculateGigPhysics = (bandState, song) => {
   // Lars: Blast Beat Machine
   // Assuming we check 'traits' array on member objects
   // Since state structure might vary, let's check safely
+  // TODO: implement remaining trait effects: perfektionist, gear_nerd, party_animal, bandleader, social_manager
   if (lars && lars.traits && isFastSong) {
     // Simple check if trait ID exists (assuming data structure from characters.js)
     const hasBlastTrait = lars.traits.some(t => t.id === 'blast_machine')
@@ -219,6 +229,7 @@ export const calculateDailyUpdates = currentState => {
   }
 
   // 4. Passive Effects
+  // TODO: Implement gameplay effects for HQ room items (hq_coffee, hq_sofa, etc.) beyond just ownership tracking.
   if (nextBand.harmonyRegenTravel) {
     nextBand.harmony = Math.min(100, nextBand.harmony + 2) // Reduced from 5
   }

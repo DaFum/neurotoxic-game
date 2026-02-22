@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
-import { useAudioControl } from '../hooks/useAudioControl'
+import { useBandHQModal } from '../hooks/useBandHQModal.js'
 import { GlitchButton } from '../ui/GlitchButton'
 import { BandHQ } from '../ui/BandHQ'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
@@ -13,26 +13,9 @@ import { handleError } from '../utils/errorHandler'
  * @returns {JSX.Element} The rendered menu.
  */
 export const MainMenu = () => {
-  const {
-    changeScene,
-    loadGame,
-    addToast,
-    player,
-    updatePlayer,
-    band,
-    updateBand,
-    social,
-    settings,
-    updateSettings,
-    deleteSave,
-    setlist,
-    setSetlist,
-    resetState
-  } = useGameState()
-  const [showUpgrades, setShowUpgrades] = useState(false)
+  const { changeScene, loadGame, addToast, resetState } = useGameState()
+  const { showHQ, openHQ, bandHQProps } = useBandHQModal()
   const isMountedRef = useRef(true)
-
-  const { audioState, handleAudioChange } = useAudioControl()
 
   useEffect(() => {
     return () => {
@@ -102,24 +85,7 @@ export const MainMenu = () => {
       />
       <div className='absolute inset-0 z-0 bg-gradient-to-b from-black/0 to-black/90 pointer-events-none' />
 
-      {showUpgrades && (
-        <BandHQ
-          onClose={() => setShowUpgrades(false)}
-          player={player}
-          band={band}
-          social={social}
-          updatePlayer={updatePlayer}
-          updateBand={updateBand}
-          addToast={addToast}
-          settings={settings}
-          updateSettings={updateSettings}
-          deleteSave={deleteSave}
-          setlist={setlist}
-          setSetlist={setSetlist}
-          audioState={audioState}
-          onAudioChange={handleAudioChange}
-        />
-      )}
+      {showHQ && <BandHQ {...bandHQProps} />}
 
       <div className='relative z-10 flex flex-col items-center'>
         <motion.h1
@@ -175,7 +141,7 @@ export const MainMenu = () => {
           </GlitchButton>
 
           <GlitchButton
-            onClick={() => setShowUpgrades(true)}
+            onClick={openHQ}
             className='relative z-20 border-(--warning-yellow) text-(--warning-yellow) hover:bg-(--warning-yellow) hover:shadow-[4px_4px_0px_var(--toxic-green)]'
           >
             Band HQ

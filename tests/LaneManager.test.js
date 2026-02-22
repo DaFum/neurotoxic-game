@@ -64,24 +64,21 @@ const getLaneGraphics = ({ laneIndex, layer }) =>
 
 describe('LaneManager', () => {
   let LaneManager
-  let HIT_BAR_INACTIVE_ALPHA
-  let HIT_BAR_ACTIVE_ALPHA
-  let HIT_BAR_BORDER_COLOR
   let app
   let stageContainer
   let gameStateRef
   let laneManager
 
+  const HIT_BAR_INACTIVE_ALPHA = 0.45
+  const HIT_BAR_ACTIVE_ALPHA = 0.95
+  // Corresponds to getPixiColorFromToken('--star-white')
+  const HIT_BAR_BORDER_COLOR = 0xffffff
+
   beforeEach(async () => {
     graphicsInstances.length = 0
     mockBuildRhythmLayout.mock.resetCalls()
 
-    ;({
-      LaneManager,
-      HIT_BAR_INACTIVE_ALPHA,
-      HIT_BAR_ACTIVE_ALPHA,
-      HIT_BAR_BORDER_COLOR
-    } = await import('../src/components/stage/LaneManager.js'))
+    ;({ LaneManager } = await import('../src/components/stage/LaneManager.js'))
 
     app = {
       screen: {

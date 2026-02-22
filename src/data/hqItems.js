@@ -431,6 +431,8 @@ export const HQ_ITEMS = {
     }
   ],
   hq: [
+    // Items with type: 'unlock_hq' are currently tracked for ownership only.
+    // Gameplay effects (e.g. immediate stat boosts) are pending implementation.
     {
       id: 'hq_room_coffee',
       name: 'Profi Espressomaschine',
