@@ -17,21 +17,33 @@ mock.module('../src/utils/logger.js', {
   namedExports: { logger: mockLogger }
 })
 
-// Mock audioState
+// Mock audioState and resetGigState
 const mockAudioState = {
   loop: null,
   part: null,
-  midiParts: []
+  midiParts: [],
+  gigSource: null,
+  ambientSource: null,
+  transportEndEventId: null,
+  transportStopEventId: null
 }
+const mockResetGigState = mock.fn()
+
 mock.module('../src/utils/audio/state.js', {
-  namedExports: { audioState: mockAudioState }
+  namedExports: {
+    audioState: mockAudioState,
+    resetGigState: mockResetGigState
+  }
 })
 
 // Import SUT
 const {
   clearTransportEvent,
   stopAndDisconnectSource,
-  stopTransportAndClear
+  stopTransportAndClear,
+  cleanupGigPlayback,
+  cleanupAmbientPlayback,
+  cleanupTransportEvents
 } = await import('../src/utils/audio/cleanupUtils.js')
 
 test('clearTransportEvent', async t => {
@@ -229,5 +241,96 @@ test('stopTransportAndClear', async t => {
     assert.strictEqual(mockAudioState.part, null)
     // Should verify it didn't crash
     assert.strictEqual(mockTone.getTransport().stop.mock.calls.length, 1)
+  })
+})
+
+test('cleanupGigPlayback', async t => {
+  t.beforeEach(() => {
+    mockResetGigState.mock.resetCalls()
+    mockAudioState.gigSource = null
+  })
+
+  await t.test('cleans up gigSource if present', () => {
+    const mockSource = {
+      stop: mock.fn(),
+      disconnect: mock.fn()
+    }
+    mockAudioState.gigSource = mockSource
+
+    cleanupGigPlayback()
+
+    assert.strictEqual(mockSource.stop.mock.calls.length, 1)
+    assert.strictEqual(mockSource.disconnect.mock.calls.length, 1)
+    assert.strictEqual(mockResetGigState.mock.calls.length, 1)
+  })
+
+  await t.test('calls resetGigState even if gigSource is null', () => {
+    mockAudioState.gigSource = null
+
+    cleanupGigPlayback()
+
+    assert.strictEqual(mockResetGigState.mock.calls.length, 1)
+  })
+})
+
+test('cleanupAmbientPlayback', async t => {
+  t.beforeEach(() => {
+    mockAudioState.ambientSource = null
+  })
+
+  await t.test('cleans up ambientSource if present', () => {
+    const mockSource = {
+      stop: mock.fn(),
+      disconnect: mock.fn()
+    }
+    mockAudioState.ambientSource = mockSource
+
+    cleanupAmbientPlayback()
+
+    assert.strictEqual(mockSource.stop.mock.calls.length, 1)
+    assert.strictEqual(mockSource.disconnect.mock.calls.length, 1)
+    assert.strictEqual(mockAudioState.ambientSource, null)
+  })
+
+  await t.test('does nothing if ambientSource is null', () => {
+    mockAudioState.ambientSource = null
+
+    cleanupAmbientPlayback()
+
+    assert.strictEqual(mockAudioState.ambientSource, null)
+  })
+})
+
+test('cleanupTransportEvents', async t => {
+  t.beforeEach(() => {
+    mockTone.getTransport().clear.mock.resetCalls()
+    mockAudioState.transportEndEventId = null
+    mockAudioState.transportStopEventId = null
+  })
+
+  await t.test('clears transport events and resets IDs', () => {
+    const endId = 123
+    const stopId = 456
+    mockAudioState.transportEndEventId = endId
+    mockAudioState.transportStopEventId = stopId
+
+    cleanupTransportEvents()
+
+    assert.strictEqual(mockTone.getTransport().clear.mock.calls.length, 2)
+    assert.ok(mockTone.getTransport().clear.mock.calls.some(c => c.arguments[0] === endId))
+    assert.ok(mockTone.getTransport().clear.mock.calls.some(c => c.arguments[0] === stopId))
+    assert.strictEqual(mockAudioState.transportEndEventId, null)
+    assert.strictEqual(mockAudioState.transportStopEventId, null)
+  })
+
+  await t.test('handles null IDs gracefully', () => {
+    mockAudioState.transportEndEventId = null
+    mockAudioState.transportStopEventId = null
+
+    cleanupTransportEvents()
+
+    assert.strictEqual(mockTone.getTransport().clear.mock.calls.length, 0)
+    assert.strictEqual(mockAudioState.transportEndEventId, null)
+    assert.strictEqual(mockAudioState.transportStopEventId, null)
   })
 })

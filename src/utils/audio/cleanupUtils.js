@@ -1,6 +1,6 @@
 import * as Tone from 'tone'
 import { logger } from '../logger.js'
-import { audioState } from './state.js'
+import { audioState, resetGigState } from './state.js'
 
 /**
  * Clears transport event by ID.
@@ -54,4 +54,30 @@ export function stopTransportAndClear() {
     audioState.midiParts = []
   }
   Tone.getTransport().cancel()
+}
+
+/**
+ * Cleans up gig playback resources and resets gig state.
+ */
+export function cleanupGigPlayback() {
+  stopAndDisconnectSource(audioState.gigSource, 'Gig')
+  resetGigState()
+}
+
+/**
+ * Cleans up ambient playback resources.
+ */
+export function cleanupAmbientPlayback() {
+  stopAndDisconnectSource(audioState.ambientSource, 'Ambient')
+  audioState.ambientSource = null
+}
+
+/**
+ * Cleans up transport event IDs.
+ */
+export function cleanupTransportEvents() {
+  clearTransportEvent(audioState.transportEndEventId, 'end')
+  audioState.transportEndEventId = null
+  clearTransportEvent(audioState.transportStopEventId, 'stop')
+  audioState.transportStopEventId = null
 }

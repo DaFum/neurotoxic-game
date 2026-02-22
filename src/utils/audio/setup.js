@@ -5,12 +5,13 @@ import {
   getPreferredAudioContextState,
   isClosedAudioContextState
 } from '../audioContextState.js'
-import { audioState, resetGigState } from './state.js'
+import { audioState } from './state.js'
 import { HIHAT_CONFIG, CRASH_CONFIG } from './constants.js'
 import {
-  clearTransportEvent,
-  stopAndDisconnectSource,
-  stopTransportAndClear
+  stopTransportAndClear,
+  cleanupGigPlayback,
+  cleanupAmbientPlayback,
+  cleanupTransportEvents
 } from './cleanupUtils.js'
 
 /**
@@ -104,21 +105,9 @@ export function disposeAudio() {
   // So we handle the disposal of shared resources manually
 
   stopTransportAndClear()
-
-  // Note: we can't clear transport events here if they depend on playback logic clearing them
-  // But we can clear by ID if we have them in state.
-  clearTransportEvent(audioState.transportEndEventId, 'end')
-  audioState.transportEndEventId = null
-  clearTransportEvent(audioState.transportStopEventId, 'stop')
-  audioState.transportStopEventId = null
-
-  // stopGigPlayback logic (partial)
-  stopAndDisconnectSource(audioState.gigSource, 'Gig')
-  resetGigState() // Use helper
-
-  // stopAmbientPlayback logic (partial)
-  stopAndDisconnectSource(audioState.ambientSource, 'Ambient')
-  audioState.ambientSource = null
+  cleanupTransportEvents()
+  cleanupGigPlayback()
+  cleanupAmbientPlayback()
 
   audioState.audioBufferCache.clear()
   audioState.currentCacheByteSize = 0
