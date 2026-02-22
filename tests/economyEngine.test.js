@@ -48,7 +48,6 @@ test('calculateGigFinancials handles base case with ticket sales and guarantee',
   const result = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 80,
-    crowdStats: { hype: 80 },
     modifiers: buildModifiers(),
     bandInventory: buildInventory(),
     playerState: { fame: 100 },
@@ -76,7 +75,6 @@ test('calculateGigFinancials applies fame scaling to fill rate', () => {
   const lowFameResult = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 80,
-    crowdStats: { hype: 80 },
     modifiers: buildModifiers(),
     bandInventory: buildInventory(),
     playerState: { fame: 10 },
@@ -87,7 +85,6 @@ test('calculateGigFinancials applies fame scaling to fill rate', () => {
   const highFameResult = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 80,
-    crowdStats: { hype: 80 },
     modifiers: buildModifiers(),
     bandInventory: buildInventory(),
     playerState: { fame: 1000 },
@@ -113,7 +110,6 @@ test('calculateGigFinancials applies promo boost to fill rate', () => {
   const noPromo = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 80,
-    crowdStats: { hype: 80 },
     modifiers: buildModifiers({ promo: false }),
     bandInventory: buildInventory(),
     playerState: { fame: 50 },
@@ -123,7 +119,6 @@ test('calculateGigFinancials applies promo boost to fill rate', () => {
   const withPromo = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 80,
-    crowdStats: { hype: 80 },
     modifiers: buildModifiers({ promo: true }),
     bandInventory: buildInventory(),
     playerState: { fame: 50 },
@@ -148,7 +143,6 @@ test('calculateGigFinancials applies price sensitivity penalty', () => {
   const result = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 80,
-    crowdStats: { hype: 80 },
     modifiers: buildModifiers(),
     bandInventory: buildInventory(),
     playerState: { fame: 50 },
@@ -172,7 +166,6 @@ test('calculateGigFinancials scales merch sales with performance', () => {
   const poorPerformance = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 40,
-    crowdStats: { hype: 40 },
     modifiers: buildModifiers({ merch: true }),
     bandInventory: buildInventory(),
     playerState: { fame: 100 },
@@ -182,7 +175,6 @@ test('calculateGigFinancials scales merch sales with performance', () => {
   const greatPerformance = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 95,
-    crowdStats: { hype: 95 },
     modifiers: buildModifiers({ merch: true }),
     bandInventory: buildInventory(),
     playerState: { fame: 100 },
@@ -208,7 +200,6 @@ test('calculateGigFinancials applies S-rank merch bonus', () => {
   const sRank = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 95,
-    crowdStats: { hype: 95 },
     modifiers: buildModifiers({ merch: true }),
     bandInventory: buildInventory(),
     playerState: { fame: 100 },
@@ -225,7 +216,6 @@ test('calculateGigFinancials penalizes merch sales for misses', () => {
   const noMisses = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 80,
-    crowdStats: { hype: 80 },
     modifiers: buildModifiers({ merch: true }),
     bandInventory: buildInventory(),
     playerState: { fame: 100 },
@@ -235,7 +225,6 @@ test('calculateGigFinancials penalizes merch sales for misses', () => {
   const manyMisses = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 80,
-    crowdStats: { hype: 80 },
     modifiers: buildModifiers({ merch: true }),
     bandInventory: buildInventory(),
     playerState: { fame: 100 },
@@ -268,7 +257,6 @@ test('calculateGigFinancials handles sold out merch gracefully', () => {
   const result = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 90,
-    crowdStats: { hype: 90 },
     modifiers: buildModifiers({ merch: true }),
     bandInventory: emptyInventory,
     playerState: { fame: 200 },
@@ -297,7 +285,6 @@ test('calculateGigFinancials uses all inventory types for sales limit', () => {
   const result = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 100,
-    crowdStats: { hype: 100 },
     modifiers: buildModifiers({ merch: true }),
     bandInventory: inv,
     playerState: { fame: 200 },
@@ -317,7 +304,6 @@ test('calculateGigFinancials includes transport costs based on distance', () => 
   const result = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 80,
-    crowdStats: { hype: 80 },
     modifiers: buildModifiers(),
     bandInventory: buildInventory(),
     playerState: { fame: 100 },
@@ -336,7 +322,6 @@ test('calculateGigFinancials includes catering when enabled', () => {
   const noCatering = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 80,
-    crowdStats: { hype: 80 },
     modifiers: buildModifiers({ catering: false }),
     bandInventory: buildInventory(),
     playerState: { fame: 100 },
@@ -346,7 +331,6 @@ test('calculateGigFinancials includes catering when enabled', () => {
   const withCatering = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 80,
-    crowdStats: { hype: 80 },
     modifiers: buildModifiers({ catering: true }),
     bandInventory: buildInventory(),
     playerState: { fame: 100 },
@@ -373,7 +357,6 @@ test('calculateGigFinancials supports new merch key', () => {
   const withMerchKey = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 80,
-    crowdStats: { hype: 80 },
     modifiers: buildModifiers({ merch: true, merchTable: false }),
     bandInventory: buildInventory(),
     playerState: { fame: 100 },
@@ -394,7 +377,6 @@ test('calculateGigFinancials handles zero capacity venue', () => {
   const result = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 80,
-    crowdStats: { hype: 80 },
     modifiers: buildModifiers(),
     bandInventory: buildInventory(),
     playerState: { fame: 100 },
@@ -418,7 +400,6 @@ test('calculateGigFinancials handles extreme performance scores', () => {
   const zeroScore = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 0,
-    crowdStats: { hype: 0 },
     modifiers: buildModifiers(),
     bandInventory: buildInventory(),
     playerState: { fame: 100 },
@@ -430,7 +411,6 @@ test('calculateGigFinancials handles extreme performance scores', () => {
   const perfectScore = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 100,
-    crowdStats: { hype: 100 },
     modifiers: buildModifiers(),
     bandInventory: buildInventory(),
     playerState: { fame: 100 },
@@ -452,7 +432,6 @@ test('calculateGigFinancials merch table modifier increases sales', () => {
   const noTable = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 80,
-    crowdStats: { hype: 80 },
     modifiers: buildModifiers({ merchTable: false }),
     bandInventory: buildInventory(),
     playerState: { fame: 100 },
@@ -462,7 +441,6 @@ test('calculateGigFinancials merch table modifier increases sales', () => {
   const withTable = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 80,
-    crowdStats: { hype: 80 },
     modifiers: buildModifiers({ merch: true }),
     bandInventory: buildInventory(),
     playerState: { fame: 100 },
@@ -500,7 +478,6 @@ test('calculateGigFinancials net profit matches income minus expenses', () => {
   const result = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 75,
-    crowdStats: { hype: 75 },
     modifiers: buildModifiers(),
     bandInventory: buildInventory(),
     playerState: { fame: 150 },
@@ -520,7 +497,6 @@ test('calculateGigFinancials handles high fame with high price', () => {
   const result = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 85,
-    crowdStats: { hype: 85 },
     modifiers: buildModifiers(),
     bandInventory: buildInventory(),
     playerState: { fame: 5000 },
@@ -596,7 +572,6 @@ test('calculateGigFinancials applies van tuning upgrade to fuel cost', () => {
   const res1 = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 80,
-    crowdStats: { hype: 80 },
     modifiers: buildModifiers(),
     bandInventory: buildInventory(),
     playerState: { fame: 100 },
@@ -615,7 +590,6 @@ test('calculateGigFinancials applies van tuning upgrade to fuel cost', () => {
   const res2 = calculateGigFinancials({
     gigData: gigData,
     performanceScore: 80,
-    crowdStats: { hype: 80 },
     modifiers: buildModifiers(),
     bandInventory: buildInventory(),
     playerState: playerState,

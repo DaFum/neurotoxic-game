@@ -184,11 +184,9 @@ test('Golden Path: Full Tour Cycle', async t => {
       100,
       Math.max(30, state.lastGigStats.score / 500)
     )
-    const crowdStats = { hype: state.lastGigStats.peakHype }
     const financials = calculateGigFinancials({
       gigData: state.currentGig,
       performanceScore,
-      crowdStats,
       modifiers: state.gigModifiers,
       bandInventory: state.band.inventory,
       playerState: state.player,
