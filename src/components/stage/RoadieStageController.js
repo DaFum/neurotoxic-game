@@ -155,9 +155,10 @@ export class RoadieStageController {
       const g = new PIXI.Graphics()
       this.bgGraphics = g
       const roadColor = getPixiColorFromToken('--void-black')
-      const grassColor = getPixiColorFromToken('--roadie-grass') || getPixiColorFromToken('--toxic-green') // Fallback
-      const venueColor = getPixiColorFromToken('--roadie-venue-blue') || getPixiColorFromToken('--blood-red') // Fallback token
-      const stripeColor = getPixiColorFromToken('--star-white')
+      // Use standard colors since specific tokens don't exist yet
+      const grassColor = getPixiColorFromToken('--toxic-green')
+      const venueColor = getPixiColorFromToken('--blood-red')
+      const stripeColor = getPixiColorFromToken('--star-white') || 0xFFFFFF
 
       // Use screen width for better drawing
       const width = this.app ? this.app.screen.width : 2000

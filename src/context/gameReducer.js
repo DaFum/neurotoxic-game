@@ -395,7 +395,7 @@ const handleCompleteRoadieMinigame = (state, payload) => {
     player: nextPlayer,
     gigModifiers: nextModifiers,
     minigame: { ...DEFAULT_MINIGAME_STATE },
-    currentScene: GAME_PHASES.GIG
+    currentScene: GAME_PHASES.PRE_GIG_MINIGAME
   }
 }
 

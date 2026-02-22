@@ -127,7 +127,11 @@ export class TourbusStageController {
 
     // Use TilingSprite if texture loaded, else Graphics
     if (this.textures.road) {
-        this.roadStripes = new PIXI.TilingSprite(this.textures.road, width, height)
+        this.roadStripes = new PIXI.TilingSprite({
+            texture: this.textures.road,
+            width,
+            height
+        })
         this.roadContainer.addChild(this.roadStripes)
     } else {
         const bg = new PIXI.Graphics()
