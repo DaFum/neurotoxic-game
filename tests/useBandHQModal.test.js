@@ -10,12 +10,12 @@ const mockUseGameState = mock.fn(() => ({
   social: {},
   settings: {},
   setlist: [],
-  updatePlayer: () => {},
-  updateBand: () => {},
-  addToast: () => {},
-  updateSettings: () => {},
-  deleteSave: () => {},
-  setSetlist: () => {}
+  updatePlayer: mock.fn(),
+  updateBand: mock.fn(),
+  addToast: mock.fn(),
+  updateSettings: mock.fn(),
+  deleteSave: mock.fn(),
+  setSetlist: mock.fn()
 }))
 
 mock.module('../src/context/GameState.jsx', {

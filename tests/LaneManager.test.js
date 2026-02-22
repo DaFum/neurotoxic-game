@@ -71,6 +71,7 @@ describe('LaneManager', () => {
 
   const HIT_BAR_INACTIVE_ALPHA = 0.45
   const HIT_BAR_ACTIVE_ALPHA = 0.95
+  // Corresponds to getPixiColorFromToken('--star-white')
   const HIT_BAR_BORDER_COLOR = 0xffffff
 
   beforeEach(async () => {

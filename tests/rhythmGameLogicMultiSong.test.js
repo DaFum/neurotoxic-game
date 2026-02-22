@@ -101,6 +101,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     Object.values(mockAudioManager).forEach(m => m.mock.resetCalls())
     Object.values(mockAudioEngine).forEach(m => m.mock.resetCalls())
     Object.values(mockRhythmUtils).forEach(m => m.mock.resetCalls())
+    Object.values(mockGigStats).forEach(m => m.mock.resetCalls())
 
     mockChangeScene = createMockChangeScene()
     mockSetLastGigStats = createMockSetLastGigStats()
@@ -225,8 +226,9 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     const mockState = {
       setlist: [song1, song2],
       band: { members: [], harmony: 100, performance: {} },
+      activeEvent: null,
       gameMap: { nodes: { n1: { layer: 0 } } },
-      player: { currentNodeId: 'n1' },
+      player: { currentNodeId: 'n1', money: 0 },
       gigModifiers: {},
       addToast: () => {},
       hasUpgrade: () => false,
@@ -266,8 +268,9 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     const mockState = {
       setlist: [song],
       band: { members: [], harmony: 100, performance: {} },
+      activeEvent: null,
       gameMap: { nodes: { n1: { layer: 0 } } },
-      player: { currentNodeId: 'n1' },
+      player: { currentNodeId: 'n1', money: 0 },
       gigModifiers: {},
       addToast: () => {},
       hasUpgrade: () => false,
@@ -292,8 +295,9 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     const mockState = {
       setlist: [song],
       band: { members: [], harmony: 100, performance: {} },
+      activeEvent: null,
       gameMap: { nodes: { n1: { layer: 0 } } },
-      player: { currentNodeId: 'n1' },
+      player: { currentNodeId: 'n1', money: 0 },
       gigModifiers: {},
       addToast: () => {},
       hasUpgrade: () => false,
@@ -316,6 +320,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     act(() => { result.current.update(16) })
     assert.strictEqual(mockChangeScene.mock.calls.length, 0)
 
+    // Directly mutating internal ref to simulate the callback effect of audio ending
+    // This couples the test to implementation but is necessary as we mock the audio engine internals
     result.current.gameStateRef.current.setlistCompleted = true
     act(() => { result.current.update(16) })
     assert.strictEqual(mockChangeScene.mock.calls.length, 1)
@@ -326,8 +332,9 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     const mockState = {
       setlist: [song],
       band: { members: [], harmony: 100, performance: {} },
+      activeEvent: null,
       gameMap: { nodes: { n1: { layer: 0 } } },
-      player: { currentNodeId: 'n1' },
+      player: { currentNodeId: 'n1', money: 0 },
       gigModifiers: {},
       addToast: () => {},
       hasUpgrade: () => false,
@@ -351,6 +358,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     const durationBefore = result.current.gameStateRef.current.totalDuration
     mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => NaN)
 
+    assert.ok(capturedOnEnded, 'capturedOnEnded should be defined')
     await act(async () => {
         await capturedOnEnded()
         await new Promise(r => setTimeout(r, 50))
