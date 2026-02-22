@@ -23,32 +23,72 @@ import { SONGS_DB } from '../../data/songs.js'
 
 const MidiParser = ToneJsMidi?.Midi ?? ToneJsMidi?.default?.Midi ?? null
 
-// ⚡ BOLT OPTIMIZATION: Sparse array for O(1) drum lookup (size 128 for MIDI range)
+// ⚡ BOLT OPTIMIZATION: Direct handler dispatch avoids string comparisons and property lookups
+// on the critical audio scheduling path.
+const DRUM_HANDLERS = [
+  // 0: Kick (note, duration)
+  (kit, map, time, vel) =>
+    kit.kick.triggerAttackRelease(map.note, map.duration, time, vel),
+  // 1: Snare (duration)
+  (kit, map, time, vel) => kit.snare.triggerAttackRelease(map.duration, time, vel),
+  // 2: HiHat (freq, duration)
+  (kit, map, time, vel) =>
+    kit.hihat.triggerAttackRelease(map.freq, map.duration, time, vel),
+  // 3: Crash (freq, duration)
+  (kit, map, time, vel) =>
+    kit.crash.triggerAttackRelease(map.freq, map.duration, time, vel)
+]
+
 const DRUM_MAPPING = new Array(128)
 // Kick
-DRUM_MAPPING[35] = { part: 'kick', note: 'C1', duration: '8n', velScale: 1 }
-DRUM_MAPPING[36] = { part: 'kick', note: 'C1', duration: '8n', velScale: 1 }
+DRUM_MAPPING[35] = { handler: 0, note: 'C1', duration: '8n', velScale: 1 }
+DRUM_MAPPING[36] = { handler: 0, note: 'C1', duration: '8n', velScale: 1 }
 // Snare (LayeredSnare takes duration, time, velocity)
-DRUM_MAPPING[37] = { part: 'snare', duration: '32n', velScale: 0.4 }
-DRUM_MAPPING[38] = { part: 'snare', duration: '16n', velScale: 1 }
-DRUM_MAPPING[40] = { part: 'snare', duration: '16n', velScale: 1 }
+DRUM_MAPPING[37] = { handler: 1, duration: '32n', velScale: 0.4 }
+DRUM_MAPPING[38] = { handler: 1, duration: '16n', velScale: 1 }
+DRUM_MAPPING[40] = { handler: 1, duration: '16n', velScale: 1 }
 // HiHat (MetalSynth takes frequency, duration, time, velocity)
-DRUM_MAPPING[42] = { part: 'hihat', freq: 8000, duration: '32n', velScale: 0.7 }
-DRUM_MAPPING[44] = { part: 'hihat', freq: 8000, duration: '32n', velScale: 0.7 }
-DRUM_MAPPING[46] = { part: 'hihat', freq: 6000, duration: '16n', velScale: 0.8 }
+DRUM_MAPPING[42] = {
+  handler: 2,
+  freq: 8000,
+  duration: '32n',
+  velScale: 0.7
+}
+DRUM_MAPPING[44] = {
+  handler: 2,
+  freq: 8000,
+  duration: '32n',
+  velScale: 0.7
+}
+DRUM_MAPPING[46] = {
+  handler: 2,
+  freq: 6000,
+  duration: '16n',
+  velScale: 0.8
+}
 // Crash
-DRUM_MAPPING[49] = { part: 'crash', freq: 4000, duration: '4n', velScale: 0.7 }
-DRUM_MAPPING[57] = { part: 'crash', freq: 4000, duration: '4n', velScale: 0.7 }
+DRUM_MAPPING[49] = { handler: 3, freq: 4000, duration: '4n', velScale: 0.7 }
+DRUM_MAPPING[57] = { handler: 3, freq: 4000, duration: '4n', velScale: 0.7 }
 // Ride (mapped to HiHat)
-DRUM_MAPPING[51] = { part: 'hihat', freq: 5000, duration: '8n', velScale: 0.5 }
-DRUM_MAPPING[59] = { part: 'hihat', freq: 5000, duration: '8n', velScale: 0.5 }
+DRUM_MAPPING[51] = {
+  handler: 2,
+  freq: 5000,
+  duration: '8n',
+  velScale: 0.5
+}
+DRUM_MAPPING[59] = {
+  handler: 2,
+  freq: 5000,
+  duration: '8n',
+  velScale: 0.5
+}
 // Toms (mapped to Kick)
-DRUM_MAPPING[41] = { part: 'kick', note: 'G1', duration: '8n', velScale: 0.8 }
-DRUM_MAPPING[43] = { part: 'kick', note: 'G1', duration: '8n', velScale: 0.8 }
-DRUM_MAPPING[45] = { part: 'kick', note: 'D2', duration: '8n', velScale: 0.7 }
-DRUM_MAPPING[47] = { part: 'kick', note: 'D2', duration: '8n', velScale: 0.7 }
-DRUM_MAPPING[48] = { part: 'kick', note: 'A2', duration: '8n', velScale: 0.6 }
-DRUM_MAPPING[50] = { part: 'kick', note: 'A2', duration: '8n', velScale: 0.6 }
+DRUM_MAPPING[41] = { handler: 0, note: 'G1', duration: '8n', velScale: 0.8 }
+DRUM_MAPPING[43] = { handler: 0, note: 'G1', duration: '8n', velScale: 0.8 }
+DRUM_MAPPING[45] = { handler: 0, note: 'D2', duration: '8n', velScale: 0.7 }
+DRUM_MAPPING[47] = { handler: 0, note: 'D2', duration: '8n', velScale: 0.7 }
+DRUM_MAPPING[48] = { handler: 0, note: 'A2', duration: '8n', velScale: 0.6 }
+DRUM_MAPPING[50] = { handler: 0, note: 'A2', duration: '8n', velScale: 0.6 }
 
 /**
  * Triggers a specific drum sound based on MIDI pitch.
@@ -59,19 +99,10 @@ DRUM_MAPPING[50] = { part: 'kick', note: 'A2', duration: '8n', velScale: 0.6 }
 function playDrumNote(midiPitch, time, velocity, kit = audioState.drumKit) {
   if (!kit) return
 
-  // ⚡ BOLT OPTIMIZATION: O(1) array lookup and removed try-catch for performance
+  // ⚡ BOLT OPTIMIZATION: O(1) array lookup and direct handler execution
   const map = DRUM_MAPPING[midiPitch]
   if (map) {
-    const vel = velocity * map.velScale
-    if (map.part === 'kick') {
-      kit.kick.triggerAttackRelease(map.note, map.duration, time, vel)
-    } else if (map.part === 'snare') {
-      kit.snare.triggerAttackRelease(map.duration, time, vel)
-    } else if (map.part === 'hihat') {
-      kit.hihat.triggerAttackRelease(map.freq, map.duration, time, vel)
-    } else if (map.part === 'crash') {
-      kit.crash.triggerAttackRelease(map.freq, map.duration, time, vel)
-    }
+    DRUM_HANDLERS[map.handler](kit, map, time, velocity * map.velScale)
   } else {
     // Default to closed HiHat for unknown percussion
     kit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.4)
