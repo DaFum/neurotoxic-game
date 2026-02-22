@@ -288,7 +288,7 @@ export class TourbusStageController {
     if (this.app) {
       try {
         this.app.ticker.remove(this.handleTicker)
-        this.app.destroy({ removeView: true, children: true, texture: true })
+        this.app.destroy({ removeView: true }, { children: true, texture: true })
       } catch (e) {
         logger.warn('TourbusStageController', 'Destroy failed', e)
       }

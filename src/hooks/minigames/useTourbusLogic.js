@@ -178,8 +178,14 @@ export const useTourbusLogic = () => {
   // Setup keyboard controls
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.code === 'ArrowLeft' || e.code === 'KeyA') moveLeft()
-      if (e.code === 'ArrowRight' || e.code === 'KeyD') moveRight()
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+        e.preventDefault()
+        moveLeft()
+      }
+      if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+        e.preventDefault()
+        moveRight()
+      }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)

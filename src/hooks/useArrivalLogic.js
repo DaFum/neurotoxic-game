@@ -77,9 +77,9 @@ export const useArrivalLogic = () => {
         changeScene('OVERWORLD')
       }
     } catch (e) {
-        // If error, reset guard so user can try again
-        isHandlingRef.current = false
-        throw e
+      // If error, reset guard so user can try again
+      isHandlingRef.current = false
+      throw e
     }
     // Do NOT reset isHandlingRef.current in success path to ensure one-shot behavior until unmount
   }, [

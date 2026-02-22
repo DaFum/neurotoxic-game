@@ -2,14 +2,12 @@
 import React, { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useTourbusLogic } from '../hooks/minigames/useTourbusLogic'
+import { useArrivalLogic } from '../hooks/useArrivalLogic'
 import { createTourbusStageController } from '../components/stage/TourbusStageController'
 import { PixiStage } from '../components/PixiStage'
-import { useGameState } from '../context/GameState'
-import { useArrivalLogic } from '../hooks/useArrivalLogic'
 
 export const TourbusScene = () => {
   const { uiState, gameStateRef, stats, update, actions } = useTourbusLogic()
-  // const { changeScene, gameMap, player, startGig, advanceDay, saveGame, triggerEvent, addToast, updateBand, band } = useGameState() // Removed direct usage
   const { handleArrivalSequence } = useArrivalLogic()
 
   // Controller factory for Tourbus

@@ -11,7 +11,6 @@ import { ALL_VENUES } from '../data/venues'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import { EXPENSE_CONSTANTS } from '../utils/economyEngine'
 import { audioManager } from '../utils/AudioManager'
-import { ActionTypes } from '../context/gameReducer'
 
 /**
  * The map navigation scene where players select their next destination.
