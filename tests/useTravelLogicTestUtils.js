@@ -12,6 +12,21 @@ const mockExpenseConstants = {
   }
 }
 
+const mockCalculateRefuelCost = mock.fn(currentFuel => {
+  const missing = Math.max(
+    0,
+    mockExpenseConstants.TRANSPORT.MAX_FUEL - currentFuel
+  )
+  return Math.ceil(missing * mockExpenseConstants.TRANSPORT.FUEL_PRICE)
+})
+
+const mockCalculateRepairCost = mock.fn(currentCondition => {
+  const missing = Math.max(0, 100 - currentCondition)
+  return Math.ceil(
+    missing * mockExpenseConstants.TRANSPORT.REPAIR_COST_PER_UNIT
+  )
+})
+
 const mockAudioManager = {
   playSFX: mock.fn()
 }
@@ -30,6 +45,8 @@ class MockStateError extends Error {}
 mock.module('../src/utils/economyEngine.js', {
   namedExports: {
     calculateTravelExpenses: mockCalculateTravelExpenses,
+    calculateRefuelCost: mockCalculateRefuelCost,
+    calculateRepairCost: mockCalculateRepairCost,
     EXPENSE_CONSTANTS: mockExpenseConstants
   }
 })
