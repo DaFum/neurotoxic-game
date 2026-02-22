@@ -15,10 +15,11 @@ const selectEvent = (pool, gameState, triggerPoint) => {
   }
 
   // 2. Filter by Trigger & Condition
-  let eligibleEvents = pool.filter(
-    e => !triggerPoint || e.trigger === triggerPoint
-  )
-  eligibleEvents = eligibleEvents.filter(e => {
+  let eligibleEvents = pool.filter(e => {
+    // Trigger check
+    if (triggerPoint && e.trigger !== triggerPoint) return false
+
+    // Condition check
     if (!e.condition) return true
     try {
       return e.condition(gameState)
@@ -289,9 +290,10 @@ export const eventEngine = {
 
   selectEvent: selectEvent,
   filterEvents: (pool, trigger, state) =>
-    pool
-      .filter(e => !trigger || e.trigger === trigger)
-      .filter(e => (e.condition ? e.condition(state) : true))
+    pool.filter(e => {
+      if (trigger && e.trigger !== trigger) return false
+      return e.condition ? e.condition(state) : true
+    })
 }
 
 /**
