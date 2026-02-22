@@ -4,6 +4,7 @@ import { HecklerOverlay } from './HecklerOverlay'
 
 const LANE_NAMES = ['Guitar', 'Drums', 'Bass']
 const LANE_KEYS = ['←', '↓', '→']
+const LANE_INDICES = [0, 1, 2]
 
 const LaneInputZone = memo(function LaneInputZone({ laneIndex, onLaneInput }) {
   const handleMouseDown = useCallback(
@@ -53,6 +54,42 @@ LaneInputZone.propTypes = {
   onLaneInput: PropTypes.func
 }
 
+const LaneInputArea = memo(function LaneInputArea({ onLaneInput }) {
+  return (
+    <div className='absolute inset-0 z-40 flex pb-16 pt-32 pointer-events-none'>
+      {LANE_INDICES.map(laneIndex => (
+        <LaneInputZone
+          key={laneIndex}
+          laneIndex={laneIndex}
+          onLaneInput={onLaneInput}
+        />
+      ))}
+    </div>
+  )
+})
+
+LaneInputArea.propTypes = {
+  onLaneInput: PropTypes.func
+}
+
+const ControlsHint = memo(function ControlsHint() {
+  return (
+    <div className='absolute bottom-3 w-full flex justify-center gap-8 z-10 pointer-events-none'>
+      {LANE_NAMES.map((name, i) => (
+        <div
+          key={i}
+          className='flex items-center gap-1.5 text-(--ash-gray)/60 font-mono text-xs'
+        >
+          <span className='border border-(--ash-gray)/30 px-1.5 py-0.5 text-[10px]'>
+            {LANE_KEYS[i]}
+          </span>
+          <span className='uppercase tracking-wider'>{name}</span>
+        </div>
+      ))}
+    </div>
+  )
+})
+
 const SegmentedBar = memo(function SegmentedBar({
   value,
   segments = 20,
@@ -78,8 +115,6 @@ const SegmentedBar = memo(function SegmentedBar({
     </div>
   )
 })
-
-const LANE_INDICES = [0, 1, 2]
 
 export const GigHUD = memo(function GigHUD({ stats, onLaneInput, gameStateRef }) {
   const {
@@ -111,15 +146,7 @@ export const GigHUD = memo(function GigHUD({ stats, onLaneInput, gameStateRef })
       <HecklerOverlay gameStateRef={gameStateRef} />
 
       {/* Input Zones with lane labels */}
-      <div className='absolute inset-0 z-40 flex pb-16 pt-32 pointer-events-none'>
-        {LANE_INDICES.map(laneIndex => (
-          <LaneInputZone
-            key={laneIndex}
-            laneIndex={laneIndex}
-            onLaneInput={onLaneInput}
-          />
-        ))}
-      </div>
+      <LaneInputArea onLaneInput={onLaneInput} />
 
       {/* Stats Overlay */}
       <div className='absolute top-32 left-4 z-10 text-(--star-white) font-mono pointer-events-none'>
@@ -211,19 +238,7 @@ export const GigHUD = memo(function GigHUD({ stats, onLaneInput, gameStateRef })
       </div>
 
       {/* Controls Hint */}
-      <div className='absolute bottom-3 w-full flex justify-center gap-8 z-10 pointer-events-none'>
-        {LANE_NAMES.map((name, i) => (
-          <div
-            key={i}
-            className='flex items-center gap-1.5 text-(--ash-gray)/60 font-mono text-xs'
-          >
-            <span className='border border-(--ash-gray)/30 px-1.5 py-0.5 text-[10px]'>
-              {LANE_KEYS[i]}
-            </span>
-            <span className='uppercase tracking-wider'>{name}</span>
-          </div>
-        ))}
-      </div>
+      <ControlsHint />
 
       {isGameOver && (
         <div className='absolute inset-0 z-50 bg-(--void-black)/90 flex flex-col items-center justify-center pointer-events-none'>
