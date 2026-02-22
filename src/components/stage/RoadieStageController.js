@@ -25,6 +25,7 @@ export class RoadieStageController {
     this.handleTicker = this.handleTicker.bind(this)
     this.handleResize = this.handleResize.bind(this)
 
+    this._flashTimeout = null
     this.lastDamage = 0
     this.textures = {
         roadie: null,
@@ -80,7 +81,9 @@ export class RoadieStageController {
             } else {
                 this.playerSprite = new PIXI.Graphics()
                 this.playerSprite.circle(0, 0, 20)
-                this.playerSprite.fill(0x00FF00)
+                // getPixiColorFromToken('--toxic-green') or token value
+                const toxicGreen = getPixiColorFromToken('--toxic-green')
+                this.playerSprite.fill(toxicGreen)
             }
             this.playerContainer.addChild(this.playerSprite)
 
@@ -143,8 +146,10 @@ export class RoadieStageController {
 
       const g = new PIXI.Graphics()
       this.bgGraphics = g
-      const roadColor = getPixiColorFromToken('--void-black') || 0x333333
-      const grassColor = 0x224422
+      const roadColor = getPixiColorFromToken('--void-black')
+      const grassColor = getPixiColorFromToken('--roadie-grass') || getPixiColorFromToken('--toxic-green') // Fallback
+      const venueColor = getPixiColorFromToken('--roadie-venue-blue') || getPixiColorFromToken('--blood-red') // Fallback token
+      const stripeColor = getPixiColorFromToken('--star-white')
 
       // Use screen width for better drawing
       const width = this.app ? this.app.screen.width : 2000
@@ -161,13 +166,13 @@ export class RoadieStageController {
 
       // Venue zone (row 7)
       g.rect(0, cellH * 7, width, cellH)
-      g.fill(0x4444FF)
+      g.fill(venueColor)
 
       // Stripes
       for (let r=2; r<=6; r++) {
          for (let x=0; x<width; x+=100) {
              g.rect(x, r * cellH - 2, 60, 4)
-             g.fill(0xFFFFFF)
+             g.fill(stripeColor)
          }
       }
 
@@ -212,12 +217,17 @@ export class RoadieStageController {
       // Check Damage trigger
       if (state.equipmentDamage > this.lastDamage) {
           // Trigger Hit Effect
-          this.effectManager.spawnHitEffect(this.playerContainer.x, this.playerContainer.y, 0xFF0000)
+          const redColor = getPixiColorFromToken('--blood-red')
+          this.effectManager.spawnHitEffect(this.playerContainer.x, this.playerContainer.y, redColor)
           this.lastDamage = state.equipmentDamage
 
           // Flash player
-          this.playerSprite.tint = 0xFF0000
-          setTimeout(() => { if (this.playerSprite) this.playerSprite.tint = 0xFFFFFF }, 200)
+          this.playerSprite.tint = redColor
+          if (this._flashTimeout) clearTimeout(this._flashTimeout)
+          this._flashTimeout = setTimeout(() => {
+              if (this.playerSprite && !this.isDisposed) this.playerSprite.tint = 0xFFFFFF
+              this._flashTimeout = null
+          }, 200)
       }
 
       // Render Traffic
@@ -278,14 +288,25 @@ export class RoadieStageController {
 
   dispose() {
       this.isDisposed = true
-      if (this.app) {
-          this.app.ticker.remove(this.handleTicker)
-          this.app.destroy(true, { children: true })
-          this.app = null
+      window.removeEventListener('resize', this.handleResize)
+      if (this._flashTimeout) {
+          clearTimeout(this._flashTimeout)
+          this._flashTimeout = null
       }
+
       if (this.effectManager) {
           this.effectManager.dispose()
           this.effectManager = null
+      }
+
+      if (this.app) {
+          try {
+            this.app.ticker.remove(this.handleTicker)
+            this.app.destroy({ removeView: true, children: true, texture: true })
+          } catch (e) {
+            logger.warn('RoadieStageController', 'Destroy failed', e)
+          }
+          this.app = null
       }
   }
 }

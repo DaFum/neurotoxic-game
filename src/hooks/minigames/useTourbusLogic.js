@@ -2,10 +2,9 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameState } from '../../context/GameState'
 import { audioManager } from '../../utils/AudioManager'
-
-export const LANE_COUNT = 3
 import { hasUpgrade } from '../../utils/upgradeUtils'
 
+export const LANE_COUNT = 3
 export const BASE_SPEED = 0.05 // relative units per ms
 export const MAX_SPEED = 0.12
 export const SPAWN_RATE_MS = 1500
@@ -14,7 +13,7 @@ export const BUS_Y_PERCENT = 85 // Bus position in % of screen height
 export const BUS_HEIGHT_PERCENT = 10
 
 export const useTourbusLogic = () => {
-  const { minigame, player, completeTravelMinigame } = useGameState()
+  const { player, completeTravelMinigame } = useGameState()
 
   // Game Loop State (Mutable, no re-renders)
   const gameStateRef = useRef({
@@ -65,6 +64,12 @@ export const useTourbusLogic = () => {
       collided: false
     })
   }
+
+  // Track upgrades via ref to keep update stable
+  const upgradesRef = useRef(player.van?.upgrades || [])
+  useEffect(() => {
+    upgradesRef.current = player.van?.upgrades || []
+  }, [player.van?.upgrades])
 
   const update = useCallback((deltaMS) => {
     const game = gameStateRef.current
@@ -119,9 +124,10 @@ export const useTourbusLogic = () => {
         if (obs.type === 'OBSTACLE') {
           // Damage Mitigation
           let hitDamage = 10
-          if (hasUpgrade(player.van?.upgrades, 'van_armor')) {
+          // Prioritize Armor (2) over Bullbar (5)
+          if (hasUpgrade(upgradesRef.current, 'van_armor')) {
             hitDamage = 2
-          } else if (hasUpgrade(player.van?.upgrades, 'van_bullbar')) {
+          } else if (hasUpgrade(upgradesRef.current, 'van_bullbar')) {
             hitDamage = 5
           }
 
@@ -167,7 +173,7 @@ export const useTourbusLogic = () => {
       return prev
     })
 
-  }, [completeTravelMinigame, player])
+  }, [completeTravelMinigame])
 
   // Setup keyboard controls
   useEffect(() => {
