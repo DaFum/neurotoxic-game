@@ -59,7 +59,7 @@ export const useTravelLogic = ({
   addToast,
   changeScene,
   onShowHQ,
-  dispatch // Added dispatch
+  onStartTravelMinigame
 }) => {
   const [isTraveling, setIsTraveling] = useState(false)
   const [travelTarget, setTravelTarget] = useState(null)
@@ -301,11 +301,11 @@ export const useTravelLogic = ({
       }
 
       // Dispatch Minigame Start
-      if (dispatch) {
-        dispatch(createStartTravelMinigameAction(node.id))
+      if (onStartTravelMinigame) {
+        onStartTravelMinigame(node.id)
       } else {
         // Fallback for tests or missing dispatch
-        logger.warn('useTravelLogic', 'Missing dispatch, using legacy travel')
+        logger.warn('useTravelLogic', 'Missing onStartTravelMinigame, using legacy travel')
         setIsTraveling(true)
         if (failsafeTimeoutRef.current) {
           clearTimeout(failsafeTimeoutRef.current)
@@ -318,7 +318,7 @@ export const useTravelLogic = ({
         }, TRAVEL_ANIMATION_TIMEOUT_MS)
       }
     },
-    [onTravelComplete, dispatch]
+    [onTravelComplete, onStartTravelMinigame]
   )
 
   /**

@@ -329,7 +329,7 @@ const handleCompleteTravelMinigame = (state, payload) => {
 
   const nextPlayer = {
     ...state.player,
-    money: Math.max(0, state.player.money - totalCost),
+    money: clampPlayerMoney(state.player.money - totalCost),
     location: targetNode.venue?.name || 'Unknown',
     currentNodeId: targetNode.id,
     totalTravels: state.player.totalTravels + 1,

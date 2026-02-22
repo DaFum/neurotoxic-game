@@ -76,15 +76,12 @@ export const useArrivalLogic = () => {
       } else {
         changeScene('OVERWORLD')
       }
-    } finally {
-      // Release lock after a short delay or immediately?
-      // Since this triggers scene changes which unmounts component, lock might not matter.
-      // But keeping it set prevents double-clicks until unmount.
-      // If we stay mounted (e.g. if arrival fails), we should clear it.
-      // Assuming successful scene change unmounts:
-      // setTimeout(() => { isHandlingRef.current = false }, 1000)
-      isHandlingRef.current = false
+    } catch (e) {
+        // If error, reset guard so user can try again
+        isHandlingRef.current = false
+        throw e
     }
+    // Do NOT reset isHandlingRef.current in success path to ensure one-shot behavior until unmount
   }, [
     advanceDay,
     saveGame,

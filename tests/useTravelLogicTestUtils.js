@@ -47,6 +47,8 @@ mock.module('../src/utils/economyEngine.js', {
     calculateTravelExpenses: mockCalculateTravelExpenses,
     calculateRefuelCost: mockCalculateRefuelCost,
     calculateRepairCost: mockCalculateRepairCost,
+    calculateTravelMinigameResult: mock.fn(),
+    calculateRoadieMinigameResult: mock.fn(),
     EXPENSE_CONSTANTS: mockExpenseConstants
   }
 })
@@ -59,7 +61,8 @@ mock.module('../src/utils/AudioManager.js', {
 
 mock.module('../src/utils/logger.js', {
   namedExports: {
-    logger: mockLogger
+    logger: mockLogger,
+    LOG_LEVELS: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, NONE: 4 }
   }
 })
 

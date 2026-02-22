@@ -26,7 +26,7 @@ test('Minigame State Transitions', async (t) => {
       gameMap: {
         nodes: {
             node_0: { id: 'node_0', x: 0, y: 0, venue: { name: 'Start' } },
-            node_1: { id: 'node_1', x: 10, y: 10, venue: { name: 'End' } } // dist ~30km -> ~3.6L fuel
+            node_1: { id: 'node_1', x: 10, y: 10, venue: { name: 'End' } } // dist ~90km -> 10.8L fuel
         }
       },
       player: {
@@ -53,6 +53,7 @@ test('Minigame State Transitions', async (t) => {
     assert.deepStrictEqual(newState.minigame, DEFAULT_MINIGAME_STATE)
     assert.strictEqual(newState.player.currentNodeId, 'node_1')
     assert.strictEqual(newState.player.location, 'End')
+    assert.strictEqual(newState.currentScene, GAME_PHASES.TRAVEL_MINIGAME)
 
     // Check costs
     // Distance calculation: sqrt(10^2 + 10^2) * 5 + 20 = 90.71km -> 90km (floor)
@@ -87,10 +88,12 @@ test('Minigame State Transitions', async (t) => {
     assert.strictEqual(newState.minigame.gigId, 'gig_123')
   })
 
-  await t.test('COMPLETE_ROADIE_MINIGAME resets minigame state', () => {
+  await t.test('COMPLETE_ROADIE_MINIGAME resets minigame state and applies economy effects', () => {
     const activeState = {
       ...initialState,
       currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
+      player: { ...initialState.player, money: 500 },
+      band: { ...initialState.band, harmony: 80 },
       minigame: {
         ...DEFAULT_MINIGAME_STATE,
         active: true,
@@ -105,5 +108,11 @@ test('Minigame State Transitions', async (t) => {
     const newState = gameReducer(activeState, action)
 
     assert.deepStrictEqual(newState.minigame, DEFAULT_MINIGAME_STATE)
+
+    // equipmentDamage=5 -> stress=1 -> harmony-=1; repairCost=10 -> money-=10
+    // harmony: 80 - 1 = 79
+    // money: 500 - 10 = 490
+    assert.strictEqual(newState.band.harmony, 79)
+    assert.strictEqual(newState.player.money, 490)
   })
 })
