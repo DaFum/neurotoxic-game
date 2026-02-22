@@ -11,6 +11,7 @@ import { ALL_VENUES } from '../data/venues'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import { EXPENSE_CONSTANTS } from '../utils/economyEngine'
 import { audioManager } from '../utils/AudioManager'
+import { ActionTypes } from '../context/gameReducer'
 
 /**
  * The map navigation scene where players select their next destination.
@@ -62,7 +63,7 @@ export const Overworld = () => {
     onShowHQ: openHQ,
     dispatch: (action) => {
         // Intercept START_TRAVEL_MINIGAME if dispatched via legacy logic
-        if (action.type === 'START_TRAVEL_MINIGAME') {
+        if (action.type === ActionTypes.START_TRAVEL_MINIGAME) {
             startTravelMinigame(action.payload.targetNodeId)
         }
     }

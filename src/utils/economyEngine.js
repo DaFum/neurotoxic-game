@@ -486,7 +486,7 @@ export const shouldTriggerBankruptcy = (newMoney, netIncome) => {
  */
 export const calculateTravelMinigameResult = (damageTaken, itemsCollected) => {
   const conditionLoss = Math.floor(damageTaken / 10)
-  const fuelBonus = itemsCollected.filter(i => i === 'FUEL').length * 10
+  const fuelBonus = (itemsCollected || []).filter(i => i === 'FUEL').length * 10
   return { conditionLoss, fuelBonus }
 }
 
@@ -496,7 +496,8 @@ export const calculateTravelMinigameResult = (damageTaken, itemsCollected) => {
  * @returns {object} { stress, repairCost }
  */
 export const calculateRoadieMinigameResult = (equipmentDamage) => {
-  const stress = Math.floor(equipmentDamage / 5)
-  const repairCost = Math.floor(equipmentDamage * 2)
+  const safeDamage = Math.max(0, equipmentDamage)
+  const stress = Math.floor(safeDamage / 5)
+  const repairCost = Math.floor(safeDamage * 2)
   return { stress, repairCost }
 }

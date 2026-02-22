@@ -156,7 +156,7 @@ export class TourbusStageController {
           // Fallback
           const g = new PIXI.Graphics()
           g.rect(-25, -80, 50, 80)
-          g.fill(0x00FF00)
+          g.fill(getPixiColorFromToken('--toxic-green'))
           this.busSprite = g
       }
       // Scale bus
@@ -223,10 +223,10 @@ export class TourbusStageController {
             sprite = new PIXI.Graphics()
             if (obs.type === 'FUEL') {
                sprite.circle(0, 0, 20)
-               sprite.fill(0xFFFF00)
+               sprite.fill(getPixiColorFromToken('--warning-yellow'))
             } else {
                sprite.rect(-25, -25, 50, 50)
-               sprite.fill(0xFF0000)
+               sprite.fill(getPixiColorFromToken('--blood-red'))
             }
         }
 
@@ -250,9 +250,9 @@ export class TourbusStageController {
           if (!sprite.hasExploded) {
               sprite.hasExploded = true
               if (obs.type === 'OBSTACLE') {
-                  this.effectManager.spawnHitEffect(x, y, 0xFF0000) // Red explosion
+                  this.effectManager.spawnHitEffect(x, y, getPixiColorFromToken('--blood-red')) // Red explosion
               } else if (obs.type === 'FUEL') {
-                  this.effectManager.spawnHitEffect(x, y, 0x00FF00) // Green sparkle
+                  this.effectManager.spawnHitEffect(x, y, getPixiColorFromToken('--toxic-green')) // Green sparkle
               }
           }
       }
@@ -272,18 +272,20 @@ export class TourbusStageController {
     this.isDisposed = true
     this.initPromise = null
     window.removeEventListener('resize', this.handleResize)
+
+    if (this.effectManager) {
+        this.effectManager.dispose()
+        this.effectManager = null
+    }
+
     if (this.app) {
       try {
         this.app.ticker.remove(this.handleTicker)
-        this.app.destroy({ removeView: true, children: true })
+        this.app.destroy({ removeView: true, children: true, texture: true })
       } catch (e) {
         logger.warn('TourbusStageController', 'Destroy failed', e)
       }
       this.app = null
-    }
-    if (this.effectManager) {
-        this.effectManager.dispose()
-        this.effectManager = null
     }
     this.obstacleMap = null
   }

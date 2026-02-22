@@ -119,8 +119,11 @@ export const useTourbusLogic = () => {
         if (obs.type === 'OBSTACLE') {
           // Damage Mitigation
           let hitDamage = 10
-          if (hasUpgrade(player.van?.upgrades, 'van_bullbar')) hitDamage = 5
-          if (hasUpgrade(player.van?.upgrades, 'van_armor')) hitDamage = 2
+          if (hasUpgrade(player.van?.upgrades, 'van_armor')) {
+            hitDamage = 2
+          } else if (hasUpgrade(player.van?.upgrades, 'van_bullbar')) {
+            hitDamage = 5
+          }
 
           game.damage += hitDamage
           audioManager.playSFX('crash') // Play SFX immediately on collision
