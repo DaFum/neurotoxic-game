@@ -16,11 +16,16 @@ stateDiagram-v2
     SETTINGS --> MENU: Return
     CREDITS --> MENU: Return
 
+    OVERWORLD --> TRAVEL_MINIGAME: Move to node
+    TRAVEL_MINIGAME --> OVERWORLD: Arrival (success/fail)
+
     OVERWORLD --> PREGIG: Start gig at reachable GIG node
     OVERWORLD --> GAMEOVER: Stranded / fail condition
 
-    PREGIG --> GIG: Start set
+    PREGIG --> PRE_GIG_MINIGAME: Confirm loadout
     PREGIG --> OVERWORLD: Back out
+
+    PRE_GIG_MINIGAME --> GIG: Equipment delivered
 
     GIG --> POSTGIG: Song resolve
     GIG --> OVERWORLD: Escape/quit path
@@ -37,6 +42,10 @@ stateDiagram-v2
 | --- | --- | --- |
 | `CHANGE_SCENE` | `* -> payload` | Generic scene transition entrypoint. |
 | `START_GIG` | `* -> PREGIG` | Also sets `currentGig`. |
+| `START_TRAVEL_MINIGAME` | `OVERWORLD -> TRAVEL_MINIGAME` | Sets `minigameState`. |
+| `COMPLETE_TRAVEL_MINIGAME` | `TRAVEL_MINIGAME -> OVERWORLD` | Triggers arrival logic. |
+| `START_ROADIE_MINIGAME` | `PREGIG -> PRE_GIG_MINIGAME` | Sets equipment list. |
+| `COMPLETE_ROADIE_MINIGAME` | `PRE_GIG_MINIGAME -> GIG` | Applies damage penalties. |
 | `LOAD_GAME` | `* -> safeLoadedScene` | Scene validated against allowlist. |
 | `RESET_STATE` | `* -> INTRO` | Uses fresh initial state factory. |
 

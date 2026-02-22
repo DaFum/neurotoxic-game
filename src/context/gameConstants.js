@@ -27,3 +27,5 @@ export const DEFAULT_MINIGAME_STATE = {
   accumulatedDamage: 0,
   score: 0
 }
+
+export const DEFAULT_EQUIPMENT_COUNT = 10;

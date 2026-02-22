@@ -12,8 +12,8 @@
 | --------------- | ------------------------------------------------ |
 | **Frontend**    | React 19.2.4, Vite 7.3.1, JavaScript (ESModules) |
 | **Game Engine** | Pixi.js 8.16.0                                   |
-| **Styling**     | Tailwind CSS 4.2.0, Framer Motion 12.34.0        |
-| **Audio**       | Tone.js 15.1.22 (WebAudio buffers)               |
+| **Styling**     | Tailwind CSS 4.2.0, Framer Motion 12.34.2        |
+| **Audio**       | Tone.js 15.5.0 (WebAudio buffers)                |
 
 ## Project Structure
 
@@ -99,6 +99,17 @@ For domain-specific guidance, consult specialized agent documentation:
 - Audio asset URL maps are unified through `buildAssetUrlMap`; avoid reintroducing wrapper-only APIs such as `buildMidiUrlMap`.
 - Minigame architecture uses the `StageController` pattern: logic lives in custom hooks (`useTourbusLogic`, `useRoadieLogic`), rendering in PixiJS classes (`TourbusStageController`, `RoadieStageController`), and state flows through `gameReducer`.
 - `useArrivalLogic` encapsulates the complex side-effects of arriving at a map node (autosave, event trigger, day advance) to avoid logic duplication between `useTravelLogic` and `TourbusScene`.
+
+### [minigame-architecture-guard]
+
+- **Structure**: Minigames (`TRAVEL_MINIGAME`, `PRE_GIG_MINIGAME`) follow a split-layer pattern:
+  - **Logic**: Pure React hooks (`useTourbusLogic`, `useRoadieLogic`) managing collision, movement, and scoring.
+  - **Rendering**: PixiJS StageControllers (`TourbusStageController`, `RoadieStageController`) driving the visual loop.
+  - **State**: Global state updates (damage, items) flow through `gameReducer` actions (`COMPLETE_TRAVEL_MINIGAME`, `COMPLETE_ROADIE_MINIGAME`).
+- **Flow**:
+  - `OVERWORLD` → `TRAVEL_MINIGAME` (Tourbus) → `OVERWORLD` (Arrival)
+  - `PREGIG` → `PRE_GIG_MINIGAME` (Roadie) → `GIG`
+- **Constraints**: Minigame hooks must not directly manipulate DOM or Pixi objects; they return reactive state for the StageController to consume.
 
 ### [state-safety-action-creator-guard]
 

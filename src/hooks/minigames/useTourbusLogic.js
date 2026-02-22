@@ -1,4 +1,3 @@
-
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameState } from '../../context/GameState'
 import { audioManager } from '../../utils/AudioManager'
@@ -135,7 +134,7 @@ export const useTourbusLogic = () => {
           audioManager.playSFX('crash') // Play SFX immediately on collision
         } else if (obs.type === 'FUEL') {
            game.itemsCollected.push('FUEL')
-           audioManager.playSFX('cash')
+           audioManager.playSFX('pickup')
         }
       }
 

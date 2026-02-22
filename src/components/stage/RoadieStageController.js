@@ -310,7 +310,8 @@ export class RoadieStageController {
       if (this.app) {
           try {
             this.app.ticker.remove(this.handleTicker)
-            this.app.destroy({ removeView: true, children: true, texture: true })
+            // v8 signature: destroy(rendererOptions, destroyOptions)
+            this.app.destroy({ removeView: true }, { children: true, texture: true })
           } catch (e) {
             logger.warn('RoadieStageController', 'Destroy failed', e)
           }

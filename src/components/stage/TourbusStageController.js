@@ -25,6 +25,10 @@ export class TourbusStageController {
     this.effectManager = null
     this.roadStripes = null // TilingSprite for road
 
+    // Performance optimization: Pre-allocate Maps/Sets
+    this.obstacleMap = new Map()
+    this.currentIds = new Set()
+
     // Textures
     this.textures = {
       bus: null,
@@ -207,11 +211,10 @@ export class TourbusStageController {
     }
 
     // Render Obstacles
-    if (!this.obstacleMap) this.obstacleMap = new Map()
-    const currentIds = new Set()
+    this.currentIds.clear()
 
     state.obstacles.forEach(obs => {
-      currentIds.add(obs.id)
+      this.currentIds.add(obs.id)
       let sprite = this.obstacleMap.get(obs.id)
 
       if (!sprite) {
@@ -267,7 +270,7 @@ export class TourbusStageController {
 
     // Cleanup removed obstacles
     for (const [id, sprite] of this.obstacleMap.entries()) {
-      if (!currentIds.has(id)) {
+      if (!this.currentIds.has(id)) {
         this.obstacleContainer.removeChild(sprite)
         sprite.destroy()
         this.obstacleMap.delete(id)
@@ -294,7 +297,16 @@ export class TourbusStageController {
       }
       this.app = null
     }
-    this.obstacleMap = null
+
+    // Clear maps
+    if (this.obstacleMap) {
+        this.obstacleMap.clear()
+        this.obstacleMap = null
+    }
+    if (this.currentIds) {
+        this.currentIds.clear()
+        this.currentIds = null
+    }
   }
 }
 

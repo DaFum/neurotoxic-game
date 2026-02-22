@@ -1,5 +1,4 @@
 import { mock } from 'node:test'
-import assert from 'node:assert/strict'
 import { renderHook } from '@testing-library/react'
 
 // Mocks
@@ -18,12 +17,35 @@ const mockGameState = {
 
 const mockUseGameState = mock.fn(() => mockGameState)
 
-// Helper to update mock state
+// Helper to update mock state - Deep merge implementation
+const deepMerge = (target, source) => {
+  for (const key in source) {
+    if (source[key] instanceof Object && key in target) {
+      Object.assign(source[key], deepMerge(target[key], source[key]))
+    }
+  }
+  Object.assign(target || {}, source)
+  return target
+}
+
 export const setMockGameState = (overrides) => {
+  // Simple deep merge for known structures or just use overrides if structure is simple
+  // For simplicity in tests, we can just assign, but let's be safer
+  // Actually, Object.assign is shallow. Let's do a slightly better merge for band/player
+  if (overrides.band) {
+     Object.assign(mockGameState.band, overrides.band)
+     delete overrides.band // handled
+  }
+  if (overrides.player) {
+     Object.assign(mockGameState.player, overrides.player)
+     delete overrides.player
+  }
   Object.assign(mockGameState, overrides)
 }
 
 export const resetMockGameState = () => {
+  mockUseGameState.mock.resetCalls()
+
   mockGameState.advanceDay.mock.resetCalls()
   mockGameState.saveGame.mock.resetCalls()
   mockGameState.updateBand.mock.resetCalls()
@@ -37,8 +59,8 @@ export const resetMockGameState = () => {
   mockGameState.player = { currentNodeId: 'node_start' }
 }
 
-// Mock modules
-mock.module('../src/context/GameState.js', {
+// Mock modules - Correct path specifier
+mock.module('../src/context/GameState.jsx', {
   namedExports: {
     useGameState: mockUseGameState
   }
@@ -47,7 +69,8 @@ mock.module('../src/context/GameState.js', {
 // Mock utils
 mock.module('../src/utils/gameStateUtils.js', {
   namedExports: {
-    clampBandHarmony: (val) => Math.min(100, Math.max(0, val))
+    // Correct clamp: 1 to 100
+    clampBandHarmony: (val) => Math.min(100, Math.max(1, val))
   }
 })
 

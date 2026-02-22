@@ -16,7 +16,7 @@ const TRAFFIC_SPEEDS = [0.005, -0.009, 0.012, -0.007, 0.015, -0.010]
 const CAR_SPAWN_RATES = [2500, 2200, 1600, 2800, 1400, 2000] // Slightly denser
 
 export const useRoadieLogic = () => {
-  const { minigame, player, completeRoadieMinigame } = useGameState()
+  const { completeRoadieMinigame } = useGameState()
 
   // Mutable Game State
   const gameStateRef = useRef({

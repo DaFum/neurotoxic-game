@@ -52,8 +52,8 @@ The game is a state machine. `App.jsx` switches on `currentScene` string:
 ```
 INTRO → MENU ↔ SETTINGS | CREDITS
          ↓
-     OVERWORLD → TRAVEL_MINIGAME → OVERWORLD
-         ↓             ↓
+     OVERWORLD ↔ TRAVEL_MINIGAME
+         ↓
      PREGIG → PRE_GIG_MINIGAME → GIG → POSTGIG → OVERWORLD
          ↓
      GAMEOVER → MENU
@@ -134,6 +134,11 @@ Typography: Headers use `var(--font-display)` (Metal Mania), body uses `var(--fo
 
 ## Critical Patterns
 
+### Minigame Architecture
+
+- **Separation of Concerns**: Logic lives in hooks (`useTourbusLogic`, `useRoadieLogic`), rendering in `StageController` classes (`TourbusStageController`, `RoadieStageController`), and state persistence in `gameReducer`.
+- **Testing**: Minigame logic must be tested via unit tests (e.g., `tests/minigameState.test.js`) separate from PixiJS rendering tests.
+
 ### State Safety
 
 - Always clamp: `Math.max(0, player.money - cost)` — never let money go negative
@@ -188,4 +193,4 @@ Additional docs: `docs/ARCHITECTURE.md` (system diagrams), `docs/STATE_TRANSITIO
 
 Commits use Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`).
 
-_Documentation sync: dependency/tooling baseline reviewed on 2026-02-19. Gig-function audit applied 2026-02-21._
+_Documentation sync: dependency/tooling baseline reviewed on 2026-02-19. Minigame architecture documented 2026-02-21._

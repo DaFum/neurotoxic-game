@@ -12,15 +12,17 @@ Scenes are route-level game screens selected by `currentScene` in `App.jsx`:
 - `CREDITS` → `Credits.jsx`
 - `GAMEOVER` → `GameOver.jsx`
 - `OVERWORLD` → `Overworld.jsx`
+- `TRAVEL_MINIGAME` → `TourbusScene.jsx`
 - `PREGIG` → `PreGig.jsx`
+- `PRE_GIG_MINIGAME` → `RoadieRunScene.jsx`
 - `GIG` → `Gig.jsx`
 - `POSTGIG` → `PostGig.jsx`
 
 ## Code-Aligned Gameflow Contracts
 
 1. Intro/menu chain must remain stable (`INTRO` handoff to `MENU`).
-2. Overworld drives travel/map interactions and can route to `PREGIG` / `GAMEOVER` based on state.
-3. Gig pipeline must remain coherent: `PREGIG` → `GIG` → `POSTGIG` with stats persistence.
+2. Overworld map travel triggers `TRAVEL_MINIGAME` (`TourbusScene`) before resolving arrival logic in `Overworld`.
+3. Gig pipeline must remain coherent: `PREGIG` → `PRE_GIG_MINIGAME` (Roadie Run) → `GIG` → `POSTGIG`.
 4. Post-gig resolution must support both continuation (`OVERWORLD`) and fail outcomes (`GAMEOVER`).
 5. Global overlays are controlled by `App.jsx`; scenes should not duplicate global overlay responsibility.
 6. **Modifier cost source of truth**: `PreGig.jsx` imports modifier costs from `MODIFIER_COSTS` in `economyEngine.js`. Never re-declare cost values inline in scene files; both the UI preview and the PostGig expense calculation must use the same constant.

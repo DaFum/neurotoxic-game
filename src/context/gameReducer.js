@@ -24,7 +24,7 @@ import {
   DEFAULT_BAND_STATE,
   DEFAULT_SOCIAL_STATE
 } from './initialState.js'
-import { GAME_PHASES, MINIGAME_TYPES, DEFAULT_MINIGAME_STATE } from './gameConstants.js'
+import { GAME_PHASES, MINIGAME_TYPES, DEFAULT_MINIGAME_STATE, DEFAULT_EQUIPMENT_COUNT } from './gameConstants.js'
 
 /**
  * Action Types Enum
@@ -343,7 +343,8 @@ const handleCompleteTravelMinigame = (state, payload) => {
   return {
     ...state,
     player: nextPlayer,
-    minigame: { ...DEFAULT_MINIGAME_STATE }
+    minigame: { ...DEFAULT_MINIGAME_STATE },
+    currentScene: GAME_PHASES.OVERWORLD
   }
 }
 
@@ -358,7 +359,7 @@ const handleStartRoadieMinigame = (state, payload) => {
       active: true,
       type: MINIGAME_TYPES.ROADIE,
       gigId: gigId,
-      equipmentRemaining: 10 // Example default, can be dynamic
+      equipmentRemaining: DEFAULT_EQUIPMENT_COUNT
     }
   }
 }
@@ -381,21 +382,20 @@ const handleCompleteRoadieMinigame = (state, payload) => {
   }
 
   // Pass damage to gig modifiers or stats?
-  // We can add a temporary 'damaged_gear' modifier if damage is high
   const nextModifiers = { ...state.gigModifiers }
   if (equipmentDamage > 50) {
-    // Add a hidden penalty or just log it
-    logger.warn('GameState', 'Heavy equipment damage applied')
-    // We could potentially set a flag here if we had a modifier for it
-    // nextModifiers.damaged_gear = true;
+    // Apply a penalty for heavily damaged gear
+    logger.warn('GameState', 'Heavy equipment damage applied: damaged_gear active')
+    nextModifiers.damaged_gear = true
   }
 
   return {
     ...state,
     band: nextBand,
     player: nextPlayer,
-    gigModifiers: nextModifiers, // Ensure modifiers are returned
-    minigame: { ...DEFAULT_MINIGAME_STATE }
+    gigModifiers: nextModifiers,
+    minigame: { ...DEFAULT_MINIGAME_STATE },
+    currentScene: GAME_PHASES.GIG
   }
 }
 

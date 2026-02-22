@@ -10,9 +10,11 @@ These files run performance-critical Pixi stage systems:
 - `EffectManager.js`
 - `LaneManager.js`
 - `NoteManager.js`
+- `TourbusStageController.js` (Minigame Renderer)
+- `RoadieStageController.js` (Minigame Renderer)
 - `utils.js` (Calculations and layout constants)
 
-They are called from `PixiStageController` and execute inside the gig render loop.
+They are called from `PixiStageController` (or Minigame controllers) and execute inside the gig or minigame render loop.
 
 ## Internal-Only Symbols (do not re-export)
 

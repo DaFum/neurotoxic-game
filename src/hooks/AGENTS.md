@@ -2,7 +2,9 @@
 
 Scope: Applies to all files in `src/hooks/`.
 
-Nested override: `src/hooks/rhythmGame/AGENTS.md` takes precedence for `src/hooks/rhythmGame/*`.
+Nested overrides:
+- `src/hooks/rhythmGame/AGENTS.md` for `src/hooks/rhythmGame/*`
+- `src/hooks/minigames/AGENTS.md` for `src/hooks/minigames/*`
 
 ## Purpose
 
@@ -11,6 +13,7 @@ Hooks orchestrate gameplay state transitions, side effects, and cross-module coo
 Current top-level hooks:
 
 - `useTravelLogic.js`
+- `useArrivalLogic.js`
 - `usePurchaseLogic.js`
 - `useAudioControl.js`
 - `useRhythmGameLogic.js`
