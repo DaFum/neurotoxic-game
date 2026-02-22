@@ -7,8 +7,15 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import {
   calculateTravelExpenses,
+  calculateRefuelCost,
+  calculateRepairCost,
   EXPENSE_CONSTANTS
 } from '../utils/economyEngine.js'
+import {
+  isConnected as isConnectedUtil,
+  getNodeVisibility as getNodeVisibilityUtil,
+  checkSoftlock
+} from '../utils/mapUtils.js'
 import { audioManager } from '../utils/AudioManager.js'
 import { logger } from '../utils/logger.js'
 import { handleError, StateError } from '../utils/errorHandler.js'
@@ -78,11 +85,7 @@ export const useTravelLogic = ({
    */
   const isConnected = useCallback(
     targetNodeId => {
-      if (!gameMap) return false
-      const connections = gameMap.connections.filter(
-        c => c.from === player.currentNodeId
-      )
-      return connections.some(c => c.to === targetNodeId)
+      return isConnectedUtil(gameMap, player.currentNodeId, targetNodeId)
     },
     [gameMap, player.currentNodeId]
   )
@@ -94,9 +97,7 @@ export const useTravelLogic = ({
    * @returns {string} 'visible', 'dimmed', or 'hidden'
    */
   const getNodeVisibility = useCallback((nodeLayer, currentLayer) => {
-    if (nodeLayer <= currentLayer + 1) return 'visible'
-    if (nodeLayer === currentLayer + 2) return 'dimmed'
-    return 'hidden'
+    return getNodeVisibilityUtil(nodeLayer, currentLayer)
   }, [])
 
   /**
@@ -379,12 +380,12 @@ export const useTravelLogic = ({
 
       const currentStartNode = gameMap?.nodes[player.currentNodeId]
       const currentLayer = currentStartNode?.layer || 0
-      const visibility = getNodeVisibility(node.layer, currentLayer)
+      const visibility = getNodeVisibilityUtil(node.layer, currentLayer)
 
       // Allow travel to START node from anywhere if connected, bypassing standard layer/visibility rules if needed.
       if (node.type === 'START') {
         // Always allow returning to HQ regardless of connections or visibility
-      } else if (visibility !== 'visible' || !isConnected(node.id)) {
+      } else if (visibility !== 'visible' || !isConnectedUtil(gameMap, player.currentNodeId, node.id)) {
         addToast(
           visibility !== 'visible'
             ? 'Cannot travel: location not visible'
@@ -439,8 +440,6 @@ export const useTravelLogic = ({
     },
     [
       isTraveling,
-      isConnected,
-      getNodeVisibility,
       startGig,
       addToast,
       onShowHQ,
@@ -457,16 +456,13 @@ export const useTravelLogic = ({
     if (isTraveling) return
 
     const player = playerRef.current
-
     const currentFuel = player.van?.fuel ?? 0
-    const missing = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - currentFuel
+    const cost = calculateRefuelCost(currentFuel)
 
-    if (missing <= 0) {
+    if (cost <= 0) {
       addToast('Tank is already full!', 'info')
       return
     }
-
-    const cost = Math.ceil(missing * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
 
     if ((player.money ?? 0) < cost) {
       addToast(`Not enough money! Need ${cost}€ to fill up.`, 'error')
@@ -493,18 +489,13 @@ export const useTravelLogic = ({
     if (isTraveling) return
 
     const player = playerRef.current
-
     const currentCondition = player.van?.condition ?? 100
-    const missing = 100 - currentCondition
+    const cost = calculateRepairCost(currentCondition)
 
-    if (missing <= 0) {
+    if (cost <= 0) {
       addToast('Van is already in perfect condition!', 'info')
       return
     }
-
-    const cost = Math.ceil(
-      missing * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT
-    )
 
     if ((player.money ?? 0) < cost) {
       addToast(`Not enough money! Need ${cost}€ to repair.`, 'error')
@@ -542,45 +533,14 @@ export const useTravelLogic = ({
       return
     }
 
-    const currentFuel = player.van?.fuel ?? 0
-    const currentNode = gameMap.nodes[player.currentNodeId]
-    const neighbors = gameMap.connections
-      .filter(c => c.from === player.currentNodeId)
-      .map(c => gameMap.nodes[c.to])
-
-    const canReachAny = neighbors.some(n => {
-      if (!n) return false
-      const { fuelLiters } = calculateTravelExpenses(
-        n,
-        gameMap.nodes[player.currentNodeId],
-        { van: player.van }
-      )
-      return currentFuel >= fuelLiters
-    })
-
-    if (!canReachAny && currentNode?.type !== 'GIG') {
-      const currentFuelClamped = Math.max(0, currentFuel)
-      const missingFuel =
-        EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - currentFuelClamped
-      const refuelCost = Math.ceil(
-        missingFuel * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE
-      )
-      const playerMoneyClamped = Math.max(0, player.money ?? 0)
-
-      if (playerMoneyClamped < refuelCost) {
-        if (!timeoutRef.current) {
-          logger.error('TravelLogic', 'GAME OVER: Stranded')
-          addToast(
-            'GAME OVER: Stranded! Cannot travel and cannot afford fuel.',
-            'error'
-          )
-          timeoutRef.current = setTimeout(() => changeScene('GAMEOVER'), 3000)
-        }
-      } else {
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current)
-          timeoutRef.current = null
-        }
+    if (checkSoftlock(gameMap, player)) {
+      if (!timeoutRef.current) {
+        logger.error('TravelLogic', 'GAME OVER: Stranded')
+        addToast(
+          'GAME OVER: Stranded! Cannot travel and cannot afford fuel.',
+          'error'
+        )
+        timeoutRef.current = setTimeout(() => changeScene('GAMEOVER'), 3000)
       }
     } else {
       if (timeoutRef.current) {

@@ -4,6 +4,8 @@ import {
   calculateGigFinancials,
   calculateTravelExpenses,
   calculateFuelCost,
+  calculateRefuelCost,
+  calculateRepairCost,
   EXPENSE_CONSTANTS
 } from '../src/utils/economyEngine.js'
 
@@ -625,4 +627,26 @@ test('calculateGigFinancials applies van tuning upgrade to fuel cost', () => {
     fuelItem2.value < fuelItem1.value,
     'Fuel cost should be lower with upgrade'
   )
+})
+
+test('calculateRefuelCost calculates correctly', () => {
+  // Max fuel = 100, Price = 1.75
+  // Current fuel = 50. Missing = 50. Cost = 50 * 1.75 = 87.5 -> 88
+  const cost = calculateRefuelCost(50)
+  const expected = Math.ceil(50 * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
+  assert.equal(cost, expected)
+
+  // Current fuel = 120 (overfilled). Missing = 0. Cost = 0.
+  assert.equal(calculateRefuelCost(120), 0)
+})
+
+test('calculateRepairCost calculates correctly', () => {
+  // Max condition = 100, Cost = 3
+  // Current condition = 80. Missing = 20. Cost = 20 * 3 = 60
+  const cost = calculateRepairCost(80)
+  const expected = Math.ceil(20 * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT)
+  assert.equal(cost, expected)
+
+  // Current condition = 100. Cost = 0.
+  assert.equal(calculateRepairCost(100), 0)
 })

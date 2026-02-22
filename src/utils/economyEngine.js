@@ -232,6 +232,26 @@ export const calculateTravelExpenses = (
 }
 
 /**
+ * Calculates the cost to refuel the van to full capacity.
+ * @param {number} currentFuel - Current fuel level.
+ * @returns {number} Cost in euros.
+ */
+export const calculateRefuelCost = currentFuel => {
+  const missing = Math.max(0, EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - currentFuel)
+  return Math.ceil(missing * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
+}
+
+/**
+ * Calculates the cost to repair the van to full condition.
+ * @param {number} currentCondition - Current condition (0-100).
+ * @returns {number} Cost in euros.
+ */
+export const calculateRepairCost = currentCondition => {
+  const missing = Math.max(0, 100 - currentCondition)
+  return Math.ceil(missing * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT)
+}
+
+/**
  * Calculates expenses for the gig.
  */
 const calculateGigExpenses = (gigData, modifiers, playerState = null) => {
