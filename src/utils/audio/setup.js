@@ -170,6 +170,163 @@ export function disposeAudio() {
   audioState.isSetup = false
 }
 
+function setupMasterChain() {
+  // Limiter prevents clipping, Compressor glues the mix
+  audioState.masterLimiter = new Tone.Limiter(-3).toDestination()
+  audioState.masterComp = new Tone.Compressor(-18, 4).connect(
+    audioState.masterLimiter
+  )
+  audioState.musicGain = new Tone.Gain(1).connect(audioState.masterComp)
+
+  // Global reverb send for natural space
+  audioState.reverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(
+    audioState.musicGain
+  )
+  audioState.reverbSend = new Tone.Gain(0.3).connect(audioState.reverb)
+}
+
+function setupGuitar() {
+  // FM synthesis for richer harmonic content
+  audioState.guitar = new Tone.PolySynth(Tone.FMSynth, {
+    harmonicity: 2,
+    modulationIndex: 3,
+    oscillator: { type: 'sawtooth' },
+    modulation: { type: 'square' },
+    envelope: { attack: 0.005, decay: 0.3, sustain: 0.15, release: 0.3 },
+    modulationEnvelope: {
+      attack: 0.01,
+      decay: 0.2,
+      sustain: 0.1,
+      release: 0.3
+    }
+  })
+
+  audioState.distortion = new Tone.Distortion(0.4)
+  audioState.guitarChorus = new Tone.Chorus(4, 2.5, 0.3).start()
+  audioState.guitarEq = new Tone.EQ3(-1, -3, 3) // Gentle mid scoop
+  audioState.widener = new Tone.StereoWidener(0.5)
+
+  audioState.guitar.chain(
+    audioState.distortion,
+    audioState.guitarChorus,
+    audioState.guitarEq,
+    audioState.widener,
+    audioState.musicGain
+  )
+  audioState.guitar.connect(audioState.reverbSend)
+  audioState.guitar.volume.value = -2
+}
+
+function setupBass() {
+  // MonoSynth with fatsawtooth-based waveform for warmer, fuller tone
+  audioState.bass = new Tone.PolySynth(Tone.MonoSynth, {
+    oscillator: { type: 'fatsawtooth', spread: 10, count: 3 },
+    envelope: { attack: 0.01, decay: 0.4, sustain: 0.3, release: 0.3 },
+    filterEnvelope: {
+      attack: 0.005,
+      decay: 0.3,
+      sustain: 0.2,
+      baseFrequency: 100,
+      octaves: 2.5
+    }
+  })
+
+  audioState.bassEq = new Tone.EQ3(3, -1, -4)
+  audioState.bassComp = new Tone.Compressor(-15, 5)
+  audioState.bass.chain(
+    audioState.bassComp,
+    audioState.bassEq,
+    audioState.musicGain
+  )
+  audioState.bass.volume.value = 0
+}
+
+function setupDrums() {
+  // Drum bus with own reverb send
+  audioState.drumBus = new Tone.Gain(1).connect(audioState.musicGain)
+  audioState.drumBus.connect(audioState.reverbSend)
+
+  audioState.drumKit = {
+    kick: new Tone.MembraneSynth({
+      pitchDecay: 0.05,
+      octaves: 6,
+      oscillator: { type: 'sine' },
+      envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 0.4 }
+    }).connect(audioState.drumBus),
+    snare: createLayeredSnare(audioState.drumBus),
+    hihat: new Tone.MetalSynth(HIHAT_CONFIG).connect(audioState.drumBus),
+    crash: new Tone.MetalSynth(CRASH_CONFIG).connect(audioState.drumBus)
+  }
+
+  // Level Mixing (more balanced)
+  audioState.drumKit.kick.volume.value = 2
+  audioState.drumKit.snare.volume.value = 0
+  audioState.drumKit.hihat.volume.value = -12
+  audioState.drumKit.crash.volume.value = -8
+}
+
+function setupSFX() {
+  audioState.sfxGain = new Tone.Gain(0.25).connect(audioState.masterLimiter)
+  audioState.sfxSynth = new Tone.PolySynth(Tone.Synth, {
+    oscillator: { type: 'triangle' },
+    envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.2 }
+  }).connect(audioState.sfxGain)
+}
+
+function setupMidiChain() {
+  // Used for ambient playback. Richer synths with subtle spatial processing
+  // to faithfully represent the MIDI content without heavy coloration.
+  audioState.midiDryBus = new Tone.Gain(1).connect(audioState.musicGain)
+
+  // Subtle reverb for spatial depth on ambient MIDI playback
+  audioState.midiReverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(
+    audioState.musicGain
+  )
+  audioState.midiReverbSend = new Tone.Gain(0.25).connect(
+    audioState.midiReverb
+  )
+  audioState.midiDryBus.connect(audioState.midiReverbSend)
+
+  // Lead/Guitar: FM synthesis for richer harmonic content
+  audioState.midiLead = new Tone.PolySynth(Tone.FMSynth, {
+    harmonicity: 2,
+    modulationIndex: 2.5,
+    oscillator: { type: 'sawtooth' },
+    modulation: { type: 'square' },
+    envelope: { attack: 0.005, decay: 0.3, sustain: 0.2, release: 0.4 },
+    modulationEnvelope: {
+      attack: 0.01,
+      decay: 0.2,
+      sustain: 0.1,
+      release: 0.3
+    }
+  }).connect(audioState.midiDryBus)
+
+  // Bass: Fatter oscillator for warmth and presence
+  audioState.midiBass = new Tone.PolySynth(Tone.Synth, {
+    oscillator: { type: 'fatsawtooth', spread: 10, count: 3 },
+    envelope: { attack: 0.01, decay: 0.3, sustain: 0.25, release: 0.3 }
+  }).connect(audioState.midiDryBus)
+  audioState.midiBass.volume.value = -3
+
+  audioState.midiDrumKit = {
+    kick: new Tone.MembraneSynth({
+      pitchDecay: 0.05,
+      octaves: 6,
+      oscillator: { type: 'sine' },
+      envelope: { attack: 0.001, decay: 0.35, sustain: 0, release: 0.2 }
+    }).connect(audioState.midiDryBus),
+    snare: createLayeredSnare(audioState.midiDryBus),
+    hihat: new Tone.MetalSynth(HIHAT_CONFIG).connect(audioState.midiDryBus),
+    crash: new Tone.MetalSynth(CRASH_CONFIG).connect(audioState.midiDryBus)
+  }
+
+  // MIDI drum levels
+  audioState.midiDrumKit.kick.volume.value = 2
+  audioState.midiDrumKit.hihat.volume.value = -10
+  audioState.midiDrumKit.crash.volume.value = -6
+}
+
 /**
  * Initializes the audio subsystem, including synths, effects, and master compressor.
  * @returns {Promise<void>}
@@ -237,158 +394,12 @@ export async function setupAudio() {
       logger.warn('AudioEngine', 'Tone.start() was blocked or failed', e)
     }
 
-    // === Master Chain ===
-    // Limiter prevents clipping, Compressor glues the mix
-    audioState.masterLimiter = new Tone.Limiter(-3).toDestination()
-    audioState.masterComp = new Tone.Compressor(-18, 4).connect(
-      audioState.masterLimiter
-    )
-    audioState.musicGain = new Tone.Gain(1).connect(audioState.masterComp)
-
-    // Global reverb send for natural space
-    audioState.reverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(
-      audioState.musicGain
-    )
-    audioState.reverbSend = new Tone.Gain(0.3).connect(audioState.reverb)
-
-    // === Guitar ===
-    // FM synthesis for richer harmonic content
-    audioState.guitar = new Tone.PolySynth(Tone.FMSynth, {
-      harmonicity: 2,
-      modulationIndex: 3,
-      oscillator: { type: 'sawtooth' },
-      modulation: { type: 'square' },
-      envelope: { attack: 0.005, decay: 0.3, sustain: 0.15, release: 0.3 },
-      modulationEnvelope: {
-        attack: 0.01,
-        decay: 0.2,
-        sustain: 0.1,
-        release: 0.3
-      }
-    })
-
-    audioState.distortion = new Tone.Distortion(0.4)
-    audioState.guitarChorus = new Tone.Chorus(4, 2.5, 0.3).start()
-    audioState.guitarEq = new Tone.EQ3(-1, -3, 3) // Gentle mid scoop
-    audioState.widener = new Tone.StereoWidener(0.5)
-
-    audioState.guitar.chain(
-      audioState.distortion,
-      audioState.guitarChorus,
-      audioState.guitarEq,
-      audioState.widener,
-      audioState.musicGain
-    )
-    audioState.guitar.connect(audioState.reverbSend)
-
-    // === Bass ===
-    // MonoSynth with fatsawtooth-based waveform for warmer, fuller tone
-    audioState.bass = new Tone.PolySynth(Tone.MonoSynth, {
-      oscillator: { type: 'fatsawtooth', spread: 10, count: 3 },
-      envelope: { attack: 0.01, decay: 0.4, sustain: 0.3, release: 0.3 },
-      filterEnvelope: {
-        attack: 0.005,
-        decay: 0.3,
-        sustain: 0.2,
-        baseFrequency: 100,
-        octaves: 2.5
-      }
-    })
-
-    audioState.bassEq = new Tone.EQ3(3, -1, -4)
-    audioState.bassComp = new Tone.Compressor(-15, 5)
-    audioState.bass.chain(
-      audioState.bassComp,
-      audioState.bassEq,
-      audioState.musicGain
-    )
-
-    // === Drums ===
-    // Drum bus with own reverb send
-    audioState.drumBus = new Tone.Gain(1).connect(audioState.musicGain)
-    audioState.drumBus.connect(audioState.reverbSend)
-
-    audioState.drumKit = {
-      kick: new Tone.MembraneSynth({
-        pitchDecay: 0.05,
-        octaves: 6,
-        oscillator: { type: 'sine' },
-        envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 0.4 }
-      }).connect(audioState.drumBus),
-      snare: createLayeredSnare(audioState.drumBus),
-      hihat: new Tone.MetalSynth(HIHAT_CONFIG).connect(audioState.drumBus),
-      crash: new Tone.MetalSynth(CRASH_CONFIG).connect(audioState.drumBus)
-    }
-
-    // Level Mixing (more balanced)
-    audioState.drumKit.kick.volume.value = 2
-    audioState.drumKit.snare.volume.value = 0
-    audioState.drumKit.hihat.volume.value = -12
-    audioState.drumKit.crash.volume.value = -8
-
-    // Instrument Volumes
-    audioState.guitar.volume.value = -2
-    audioState.bass.volume.value = 0
-
-    // === SFX Synth ===
-    audioState.sfxGain = new Tone.Gain(0.25).connect(audioState.masterLimiter)
-    audioState.sfxSynth = new Tone.PolySynth(Tone.Synth, {
-      oscillator: { type: 'triangle' },
-      envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.2 }
-    }).connect(audioState.sfxGain)
-
-    // === Clean MIDI Chain ===
-    // Used for ambient playback. Richer synths with subtle spatial processing
-    // to faithfully represent the MIDI content without heavy coloration.
-    audioState.midiDryBus = new Tone.Gain(1).connect(audioState.musicGain)
-
-    // Subtle reverb for spatial depth on ambient MIDI playback
-    audioState.midiReverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(
-      audioState.musicGain
-    )
-    audioState.midiReverbSend = new Tone.Gain(0.25).connect(
-      audioState.midiReverb
-    )
-    audioState.midiDryBus.connect(audioState.midiReverbSend)
-
-    // Lead/Guitar: FM synthesis for richer harmonic content
-    audioState.midiLead = new Tone.PolySynth(Tone.FMSynth, {
-      harmonicity: 2,
-      modulationIndex: 2.5,
-      oscillator: { type: 'sawtooth' },
-      modulation: { type: 'square' },
-      envelope: { attack: 0.005, decay: 0.3, sustain: 0.2, release: 0.4 },
-      modulationEnvelope: {
-        attack: 0.01,
-        decay: 0.2,
-        sustain: 0.1,
-        release: 0.3
-      }
-    }).connect(audioState.midiDryBus)
-
-    // Bass: Fatter oscillator for warmth and presence
-    audioState.midiBass = new Tone.PolySynth(Tone.Synth, {
-      oscillator: { type: 'fatsawtooth', spread: 10, count: 3 },
-      envelope: { attack: 0.01, decay: 0.3, sustain: 0.25, release: 0.3 }
-    }).connect(audioState.midiDryBus)
-    audioState.midiBass.volume.value = -3
-
-    audioState.midiDrumKit = {
-      kick: new Tone.MembraneSynth({
-        pitchDecay: 0.05,
-        octaves: 6,
-        oscillator: { type: 'sine' },
-        envelope: { attack: 0.001, decay: 0.35, sustain: 0, release: 0.2 }
-      }).connect(audioState.midiDryBus),
-      snare: createLayeredSnare(audioState.midiDryBus),
-      hihat: new Tone.MetalSynth(HIHAT_CONFIG).connect(audioState.midiDryBus),
-      crash: new Tone.MetalSynth(CRASH_CONFIG).connect(audioState.midiDryBus)
-    }
-
-    // MIDI drum levels
-    audioState.midiDrumKit.kick.volume.value = 2
-    audioState.midiDrumKit.hihat.volume.value = -10
-    audioState.midiDrumKit.crash.volume.value = -6
+    setupMasterChain()
+    setupGuitar()
+    setupBass()
+    setupDrums()
+    setupSFX()
+    setupMidiChain()
 
     audioState.isSetup = true
   } catch (error) {
