@@ -23,33 +23,32 @@ import { SONGS_DB } from '../../data/songs.js'
 
 const MidiParser = ToneJsMidi?.Midi ?? ToneJsMidi?.default?.Midi ?? null
 
-// ⚡ BOLT OPTIMIZATION: Static mapping for O(1) drum lookup
-const DRUM_MAPPING = {
-  // Kick
-  35: { part: 'kick', note: 'C1', duration: '8n' },
-  36: { part: 'kick', note: 'C1', duration: '8n' },
-  // Snare (LayeredSnare takes duration, time, velocity)
-  37: { part: 'snare', duration: '32n', velScale: 0.4 },
-  38: { part: 'snare', duration: '16n' },
-  40: { part: 'snare', duration: '16n' },
-  // HiHat (MetalSynth takes frequency, duration, time, velocity)
-  42: { part: 'hihat', freq: 8000, duration: '32n', velScale: 0.7 },
-  44: { part: 'hihat', freq: 8000, duration: '32n', velScale: 0.7 },
-  46: { part: 'hihat', freq: 6000, duration: '16n', velScale: 0.8 },
-  // Crash
-  49: { part: 'crash', freq: 4000, duration: '4n', velScale: 0.7 },
-  57: { part: 'crash', freq: 4000, duration: '4n', velScale: 0.7 },
-  // Ride (mapped to HiHat)
-  51: { part: 'hihat', freq: 5000, duration: '8n', velScale: 0.5 },
-  59: { part: 'hihat', freq: 5000, duration: '8n', velScale: 0.5 },
-  // Toms (mapped to Kick)
-  41: { part: 'kick', note: 'G1', duration: '8n', velScale: 0.8 },
-  43: { part: 'kick', note: 'G1', duration: '8n', velScale: 0.8 },
-  45: { part: 'kick', note: 'D2', duration: '8n', velScale: 0.7 },
-  47: { part: 'kick', note: 'D2', duration: '8n', velScale: 0.7 },
-  48: { part: 'kick', note: 'A2', duration: '8n', velScale: 0.6 },
-  50: { part: 'kick', note: 'A2', duration: '8n', velScale: 0.6 }
-}
+// ⚡ BOLT OPTIMIZATION: Sparse array for O(1) drum lookup (size 128 for MIDI range)
+const DRUM_MAPPING = new Array(128)
+// Kick
+DRUM_MAPPING[35] = { part: 'kick', note: 'C1', duration: '8n', velScale: 1 }
+DRUM_MAPPING[36] = { part: 'kick', note: 'C1', duration: '8n', velScale: 1 }
+// Snare (LayeredSnare takes duration, time, velocity)
+DRUM_MAPPING[37] = { part: 'snare', duration: '32n', velScale: 0.4 }
+DRUM_MAPPING[38] = { part: 'snare', duration: '16n', velScale: 1 }
+DRUM_MAPPING[40] = { part: 'snare', duration: '16n', velScale: 1 }
+// HiHat (MetalSynth takes frequency, duration, time, velocity)
+DRUM_MAPPING[42] = { part: 'hihat', freq: 8000, duration: '32n', velScale: 0.7 }
+DRUM_MAPPING[44] = { part: 'hihat', freq: 8000, duration: '32n', velScale: 0.7 }
+DRUM_MAPPING[46] = { part: 'hihat', freq: 6000, duration: '16n', velScale: 0.8 }
+// Crash
+DRUM_MAPPING[49] = { part: 'crash', freq: 4000, duration: '4n', velScale: 0.7 }
+DRUM_MAPPING[57] = { part: 'crash', freq: 4000, duration: '4n', velScale: 0.7 }
+// Ride (mapped to HiHat)
+DRUM_MAPPING[51] = { part: 'hihat', freq: 5000, duration: '8n', velScale: 0.5 }
+DRUM_MAPPING[59] = { part: 'hihat', freq: 5000, duration: '8n', velScale: 0.5 }
+// Toms (mapped to Kick)
+DRUM_MAPPING[41] = { part: 'kick', note: 'G1', duration: '8n', velScale: 0.8 }
+DRUM_MAPPING[43] = { part: 'kick', note: 'G1', duration: '8n', velScale: 0.8 }
+DRUM_MAPPING[45] = { part: 'kick', note: 'D2', duration: '8n', velScale: 0.7 }
+DRUM_MAPPING[47] = { part: 'kick', note: 'D2', duration: '8n', velScale: 0.7 }
+DRUM_MAPPING[48] = { part: 'kick', note: 'A2', duration: '8n', velScale: 0.6 }
+DRUM_MAPPING[50] = { part: 'kick', note: 'A2', duration: '8n', velScale: 0.6 }
 
 /**
  * Triggers a specific drum sound based on MIDI pitch.
@@ -59,25 +58,23 @@ const DRUM_MAPPING = {
  */
 function playDrumNote(midiPitch, time, velocity, kit = audioState.drumKit) {
   if (!kit) return
-  try {
-    const map = DRUM_MAPPING[midiPitch]
-    if (map) {
-      const vel = velocity * (map.velScale ?? 1)
-      if (map.part === 'kick') {
-        kit.kick.triggerAttackRelease(map.note, map.duration, time, vel)
-      } else if (map.part === 'snare') {
-        kit.snare.triggerAttackRelease(map.duration, time, vel)
-      } else if (map.part === 'hihat') {
-        kit.hihat.triggerAttackRelease(map.freq, map.duration, time, vel)
-      } else if (map.part === 'crash') {
-        kit.crash.triggerAttackRelease(map.freq, map.duration, time, vel)
-      }
-    } else {
-      // Default to closed HiHat for unknown percussion
-      kit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.4)
+
+  // ⚡ BOLT OPTIMIZATION: O(1) array lookup and removed try-catch for performance
+  const map = DRUM_MAPPING[midiPitch]
+  if (map) {
+    const vel = velocity * map.velScale
+    if (map.part === 'kick') {
+      kit.kick.triggerAttackRelease(map.note, map.duration, time, vel)
+    } else if (map.part === 'snare') {
+      kit.snare.triggerAttackRelease(map.duration, time, vel)
+    } else if (map.part === 'hihat') {
+      kit.hihat.triggerAttackRelease(map.freq, map.duration, time, vel)
+    } else if (map.part === 'crash') {
+      kit.crash.triggerAttackRelease(map.freq, map.duration, time, vel)
     }
-  } catch (e) {
-    logger.warn('AudioEngine', `Drum trigger failed for pitch ${midiPitch}`, e)
+  } else {
+    // Default to closed HiHat for unknown percussion
+    kit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.4)
   }
 }
 
@@ -543,41 +540,37 @@ function createMidiParts(midi, useCleanPlayback) {
       // We skip redundant isValidMidiNote/normalizeMidiPitch checks here for performance.
       const midiPitch = value.midiPitch
 
-      try {
-        // Clamp duration to prevent "duration must be greater than 0" error
-        // and cap at MAX_NOTE_DURATION to prevent resource exhaustion
-        const duration = Math.min(
-          MAX_NOTE_DURATION,
-          Math.max(
-            MIN_NOTE_DURATION,
-            Number.isFinite(value?.duration)
-              ? value.duration
-              : MIN_NOTE_DURATION
-          )
+      // ⚡ BOLT OPTIMIZATION: Removed try-catch for performance
+      // Clamp duration to prevent "duration must be greater than 0" error
+      // and cap at MAX_NOTE_DURATION to prevent resource exhaustion
+      const duration = Math.min(
+        MAX_NOTE_DURATION,
+        Math.max(
+          MIN_NOTE_DURATION,
+          Number.isFinite(value?.duration)
+            ? value.duration
+            : MIN_NOTE_DURATION
         )
+      )
 
-        // Clamp velocity
-        const velocity = Math.max(
-          0,
-          Math.min(1, Number.isFinite(value?.velocity) ? value.velocity : 1)
-        )
+      // Clamp velocity
+      const velocity = Math.max(
+        0,
+        Math.min(1, Number.isFinite(value?.velocity) ? value.velocity : 1)
+      )
 
-        if (value?.percussionTrack) {
-          playDrumNote(midiPitch, time, velocity, drumSet)
-          return
-        }
+      if (value?.percussionTrack) {
+        playDrumNote(midiPitch, time, velocity, drumSet)
+        return
+      }
 
-        // Use pre-computed frequency note string from cache
-        const freq = value.frequencyNote ?? getNoteName(midiPitch)
+      // Use pre-computed frequency note string from cache
+      const freq = value.frequencyNote ?? getNoteName(midiPitch)
 
-        if (midiPitch < 45) {
-          bassSynth.triggerAttackRelease(freq, duration, time, velocity)
-        } else {
-          leadSynth.triggerAttackRelease(freq, duration, time, velocity)
-        }
-      } catch (e) {
-        // Prevent single note errors from crashing the loop
-        logger.warn('AudioEngine', 'Note scheduling error:', e)
+      if (midiPitch < 45) {
+        bassSynth.triggerAttackRelease(freq, duration, time, velocity)
+      } else {
+        leadSynth.triggerAttackRelease(freq, duration, time, velocity)
       }
     }, eventsWithFrequencies)
 
