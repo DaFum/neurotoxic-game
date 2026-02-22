@@ -10,7 +10,9 @@ import { loadAudioBuffer } from './assets.js'
 import { createAndConnectBufferSource } from './sharedBufferUtils.js'
 import {
   stopTransportAndClear,
-  stopAndDisconnectSource
+  cleanupGigPlayback,
+  cleanupAmbientPlayback,
+  cleanupTransportEvents
 } from './cleanupUtils.js'
 
 /**
@@ -205,9 +207,8 @@ export function stopGigPlayback() {
       'AudioEngine',
       `Stopping gig playback: "${audioState.gigFilename}" at ${getGigTimeMs().toFixed(0)}ms`
     )
-    stopAndDisconnectSource(audioState.gigSource, 'Gig')
   }
-  resetGigState()
+  cleanupGigPlayback()
 }
 
 /**
@@ -436,43 +437,12 @@ export function resumeGigPlayback() {
 }
 
 /**
- * Clears any scheduled transport end callback.
- * @returns {void}
- */
-const clearTransportEndEvent = () => {
-  if (audioState.transportEndEventId == null) return
-  try {
-    Tone.getTransport().clear(audioState.transportEndEventId)
-  } catch (error) {
-    logger.warn('AudioEngine', 'Failed to clear transport end event', error)
-  } finally {
-    audioState.transportEndEventId = null
-  }
-}
-
-/**
- * Clears any scheduled transport stop callback.
- * @returns {void}
- */
-const clearTransportStopEvent = () => {
-  if (audioState.transportStopEventId == null) return
-  try {
-    Tone.getTransport().clear(audioState.transportStopEventId)
-  } catch (error) {
-    logger.warn('AudioEngine', 'Failed to clear transport stop event', error)
-  } finally {
-    audioState.transportStopEventId = null
-  }
-}
-
-/**
  * Internal function to stop audio without invalidating pending requests.
  * Used by playback functions to clear previous state.
  */
 export function stopAudioInternal() {
   stopTransportAndClear()
-  clearTransportEndEvent()
-  clearTransportStopEvent()
+  cleanupTransportEvents()
 }
 
 /**
@@ -482,18 +452,8 @@ export function stopAudioInternal() {
 export function stopAmbientPlayback() {
   if (audioState.ambientSource) {
     logger.debug('AudioEngine', 'Stopping ambient OGG playback.')
-    try {
-      audioState.ambientSource.stop()
-    } catch (error) {
-      logger.warn('AudioEngine', 'Failed to stop ambient playback', error)
-    }
-    try {
-      audioState.ambientSource.disconnect()
-    } catch {
-      // Source may already be disconnected after stop
-    }
-    audioState.ambientSource = null
   }
+  cleanupAmbientPlayback()
 }
 
 /**
