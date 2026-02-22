@@ -250,8 +250,9 @@ export async function playSongFromData(song, delay = 0, options = {}) {
     if (!audioState.guitar || !audioState.bass || !audioState.drumKit) return
 
     // Use pre-computed noteName or fallback if missing (though it should be present)
+    // ⚡ BOLT OPTIMIZATION: Avoid calling getNoteName if noteName is explicitly null (drums)
     const noteName =
-      value.noteName ?? getNoteName(value.note)
+      value.noteName === null ? null : value.noteName ?? getNoteName(value.note)
 
     if (value.lane === 'guitar') {
       audioState.guitar.triggerAttackRelease(
@@ -565,43 +566,48 @@ function createMidiParts(midi, useCleanPlayback) {
     if (eventsWithFrequencies.length === 0) return
 
     const trackPart = new Tone.Part((time, value) => {
-      if (!leadSynth || !bassSynth || !drumSet) return
+      // ⚡ BOLT SAFETY: Wrap in try-catch to prevent scheduler interruptions
+      try {
+        if (!leadSynth || !bassSynth || !drumSet) return
 
-      // Since we filtered in the loop, we know midiPitch is valid (0-127).
-      // We skip redundant isValidMidiNote/normalizeMidiPitch checks here for performance.
-      const midiPitch = value.midiPitch
+        // Since we filtered in the loop, we know midiPitch is valid (0-127).
+        // We skip redundant isValidMidiNote/normalizeMidiPitch checks here for performance.
+        const midiPitch = value.midiPitch
 
-      // ⚡ BOLT OPTIMIZATION: Removed try-catch for performance
-      // Clamp duration to prevent "duration must be greater than 0" error
-      // and cap at MAX_NOTE_DURATION to prevent resource exhaustion
-      const duration = Math.min(
-        MAX_NOTE_DURATION,
-        Math.max(
-          MIN_NOTE_DURATION,
-          Number.isFinite(value?.duration)
-            ? value.duration
-            : MIN_NOTE_DURATION
+        // Clamp duration to prevent "duration must be greater than 0" error
+        // and cap at MAX_NOTE_DURATION to prevent resource exhaustion
+        const duration = Math.min(
+          MAX_NOTE_DURATION,
+          Math.max(
+            MIN_NOTE_DURATION,
+            Number.isFinite(value?.duration)
+              ? value.duration
+              : MIN_NOTE_DURATION
+          )
         )
-      )
 
-      // Clamp velocity
-      const velocity = Math.max(
-        0,
-        Math.min(1, Number.isFinite(value?.velocity) ? value.velocity : 1)
-      )
+        // Clamp velocity
+        const velocity = Math.max(
+          0,
+          Math.min(1, Number.isFinite(value?.velocity) ? value.velocity : 1)
+        )
 
-      if (value?.percussionTrack) {
-        playDrumNote(midiPitch, time, velocity, drumSet)
-        return
-      }
+        if (value?.percussionTrack) {
+          playDrumNote(midiPitch, time, velocity, drumSet)
+          return
+        }
 
-      // Use pre-computed frequency note string from cache
-      const freq = value.frequencyNote ?? getNoteName(midiPitch)
+        // Use pre-computed frequency note string from cache
+        const freq = value.frequencyNote ?? getNoteName(midiPitch)
 
-      if (midiPitch < 45) {
-        bassSynth.triggerAttackRelease(freq, duration, time, velocity)
-      } else {
-        leadSynth.triggerAttackRelease(freq, duration, time, velocity)
+        if (midiPitch < 45) {
+          bassSynth.triggerAttackRelease(freq, duration, time, velocity)
+        } else {
+          leadSynth.triggerAttackRelease(freq, duration, time, velocity)
+        }
+      } catch (err) {
+        // Log concisely and return early to keep the scheduler alive
+        logger.error('AudioEngine', 'Error in MIDI callback', err)
       }
     }, eventsWithFrequencies)
 
