@@ -35,10 +35,30 @@ export const CHATTER_DB = [
   { text: 'Next person who says “scenic route” is carrying the kick drum.', weight: 0.8, category: 'travel', speaker: 'Lars' },
   { text: 'My neck is permanently shaped like this headrest.', weight: 0.6, category: 'travel', speaker: 'Marius' },
   { text: 'We’re one pothole away from turning into a percussion ensemble.', weight: 1, category: 'travel', speaker: 'Lars' },
+  { text: 'My legs are asleep. Again. Congratulations, legs.', weight: 1, category: 'travel' },
+  { text: 'Who packed the merch box on top of the merch box? Genius.', weight: 1, category: 'travel' },
+  { text: 'If we stop one more time, we’ll arrive next week.', weight: 0.7, category: 'travel', speaker: 'Lars' },
+  { text: 'I can’t tell if that smell is the van or my hoodie.', weight: 1, category: 'travel' },
+  { text: 'This seatbelt buckle is trying to kill my hip bone.', weight: 0.8, category: 'travel' },
+  { text: 'We should sell “van air” in jars. Limited edition.', weight: 0.5, category: 'travel', speaker: 'Marius' },
+  { text: 'I just heard the van sigh. That’s… not great.', weight: 0.8, category: 'travel' },
+  { text: 'If the drummer says “shortcut” I’m jumping out.', weight: 0.7, category: 'travel' },
+  { text: 'We’re basically a moving storage unit with opinions.', weight: 0.6, category: 'travel' },
+  { text: 'My spine just made a noise I don’t want to name.', weight: 1, category: 'travel' },
+  { text: 'Are we touring or just driving in circles to avoid our feelings?', weight: 0.4, category: 'travel', speaker: 'Marius' },
+  { text: 'If the van radio finds one more static station, I’m starting a cult.', weight: 0.6, category: 'travel' },
+  { text: 'How do we have 40 cables and still not the right one?', weight: 1, category: 'travel' },
+  { text: 'I miss silence. Like, medically.', weight: 0.7, category: 'travel', speaker: 'Matze' },
+  { text: 'We’re one toll booth away from bankruptcy.', weight: 0.6, category: 'travel' },
+  { text: 'If the van breaks, we’re carrying amps like pilgrims.', weight: 0.7, category: 'travel', speaker: 'Lars' },
+  { text: 'I just found a drum key in the cupholder. That explains nothing.', weight: 0.8, category: 'travel' },
+  { text: 'Why is the floor always slightly wet? Don’t answer that.', weight: 1, category: 'travel' },
+  { text: 'Gas station sandwiches are a lifestyle choice. A bad one.', weight: 1, category: 'travel' },
+  { text: 'We should write a song called “Rest Stop Romance”.', weight: 0.4, category: 'travel', speaker: 'Marius' },
 
   // --- PRE-GIG (Preparation) ---
-  { text: 'Where is the sound guy?', weight: 2, condition: state => state.currentScene === 'PREGIG' },
-  { text: 'I need a beer before we start.', weight: 2, condition: state => state.currentScene === 'PREGIG' },
+  { text: 'Where is the sound guy?', weight: 2, condition: s => s.currentScene === 'PREGIG' },
+  { text: 'I need a beer before we start.', weight: 2, condition: s => s.currentScene === 'PREGIG' },
   { text: 'My strings feel sticky.', weight: 2, condition: state => state.currentScene === 'PREGIG', speaker: 'Matze' },
   { text: 'Does this venue have a backstage?', weight: 1, condition: state => state.currentScene === 'PREGIG' },
   { text: "Let's stick to the setlist this time, okay?", weight: 2, condition: state => state.currentScene === 'PREGIG', speaker: 'Lars' },
@@ -63,6 +83,22 @@ export const CHATTER_DB = [
   { text: 'These strings feel like they’ve seen war.', weight: 2, condition: state => state.currentScene === 'PREGIG', speaker: 'Matze' },
   { text: 'If my in-ears cut out, I’m playing by memory and spite.', weight: 2, condition: state => state.currentScene === 'PREGIG', speaker: 'Lars' },
   { text: 'One more “can you turn up” and I’m turning up the whole band.', weight: 2, condition: state => state.currentScene === 'PREGIG', speaker: 'Lars' },
+  { text: 'Which one of you touched my amp settings?', weight: 2, condition: s => s.currentScene === 'PREGIG' },
+  { text: 'If the stage is tiny, we play like it’s a stadium.', weight: 1, condition: s => s.currentScene === 'PREGIG' },
+  { text: 'Can we get water on stage or is it “suffer artistically” tonight?', weight: 1, condition: s => s.currentScene === 'PREGIG' },
+  { text: 'Why is the power strip always missing when we need it most?', weight: 2, condition: s => s.currentScene === 'PREGIG' },
+  { text: 'I’m not nervous. My stomach is just… touring.', weight: 1, condition: s => s.currentScene === 'PREGIG', speaker: 'Marius' },
+  { text: 'If we start late, I’m blaming the stairs. Again.', weight: 2, condition: s => s.currentScene === 'PREGIG', speaker: 'Lars' },
+  { text: 'Does anyone remember the count-in for the new intro? Anyone?', weight: 2, condition: s => s.currentScene === 'PREGIG' },
+  { text: 'If the lights blind me, I’m playing by smell.', weight: 1, condition: s => s.currentScene === 'PREGIG', speaker: 'Matze' },
+  { text: 'I need my monitor to be louder than my thoughts.', weight: 2, condition: s => s.currentScene === 'PREGIG' },
+  { text: 'We should label our cables. We won’t, but we should.', weight: 1, condition: s => s.currentScene === 'PREGIG' },
+  { text: 'If the click track fails, we become jazz. Against our will.', weight: 2, condition: s => s.currentScene === 'PREGIG', speaker: 'Lars' },
+  { text: 'Tell me again why we didn’t bring a spare guitar?', weight: 2, condition: s => s.currentScene === 'PREGIG', speaker: 'Matze' },
+  { text: 'I can’t find the tuner. This is how wars start.', weight: 2, condition: s => s.currentScene === 'PREGIG' },
+  { text: 'If the stage is wobbling, we’re calling it “energy”.', weight: 1, condition: s => s.currentScene === 'PREGIG' },
+  { text: 'Who’s doing the intro speech? Please say “not me”.', weight: 1, condition: s => s.currentScene === 'PREGIG' },
+
 
   // --- POST-GIG (Reaction) ---
   { text: 'That crowd was insane!', weight: 5, condition: state => state.currentScene === 'POSTGIG' && state.lastGigStats?.score > 10000 },
@@ -89,6 +125,19 @@ export const CHATTER_DB = [
   { text: 'I missed one cue and it felt like a lifetime.', weight: 3, condition: state => state.currentScene === 'POSTGIG', speaker: 'Marius' },
   { text: 'That room was ours tonight. No doubt.', weight: 5, condition: state => state.currentScene === 'POSTGIG' && (state.lastGigStats?.score || 0) > 9000 },
   { text: 'We need to tighten the intros. And… everything else.', weight: 5, condition: state => state.currentScene === 'POSTGIG' && (state.lastGigStats?.misses || 0) > 8 },
+  { text: 'My heartbeat is still doing double-time.', weight: 2, condition: s => s.currentScene === 'POSTGIG' },
+  { text: 'I can’t tell if I’m exhausted or enlightened.', weight: 2, condition: s => s.currentScene === 'POSTGIG', speaker: 'Marius' },
+  { text: 'That was either the best set of the tour or I’m delirious.', weight: 3, condition: s => s.currentScene === 'POSTGIG' },
+  { text: 'Someone hugged me and I’m pretty sure it was sweat.', weight: 2, condition: s => s.currentScene === 'POSTGIG' },
+  { text: 'If we play like that tomorrow, we’re dangerous.', weight: 4, condition: s => s.currentScene === 'POSTGIG' },
+  { text: 'My hands feel like they belong to someone else now.', weight: 2, condition: s => s.currentScene === 'POSTGIG', speaker: 'Matze' },
+  { text: 'Did we remember to thank the sound tech? Please say yes.', weight: 2, condition: s => s.currentScene === 'POSTGIG' },
+  { text: 'I saw someone crowd-surf in a room with no space. Respect.', weight: 3, condition: s => s.currentScene === 'POSTGIG' },
+  { text: 'That encore felt like a fistfight with gravity.', weight: 3, condition: s => s.currentScene === 'POSTGIG', speaker: 'Lars' },
+  { text: 'If the venue wants us back, that’s basically a win condition.', weight: 3, condition: s => s.currentScene === 'POSTGIG' },
+  { text: 'I left part of my soul on that stage. And maybe a pick.', weight: 2, condition: s => s.currentScene === 'POSTGIG' },
+  { text: 'We need to write down what worked tonight. Before we forget.', weight: 2, condition: s => s.currentScene === 'POSTGIG' },
+  { text: 'My ears are ringing in a key that doesn’t exist.', weight: 2, condition: s => s.currentScene === 'POSTGIG', speaker: 'Marius' },
 
   // --- CONDITION: LOW MOOD ---
   { text: 'I swear if I have to drive another hour...', weight: 10, condition: state => state.band.members.some(m => m.mood < 30) },
@@ -104,6 +153,13 @@ export const CHATTER_DB = [
   { text: 'I’m not mad. I’m just… touring.', weight: 8, condition: state => state.band.members.some(m => m.mood < 25) },
   { text: 'Can we skip today and pretend it never happened?', weight: 10, condition: state => state.band.members.some(m => m.mood < 20) },
   { text: 'I’m one broken cable away from quitting music forever.', weight: 8, condition: state => state.band.members.some(m => m.mood < 25) },
+  { text: 'I’m too tired to be annoyed, but here we are.', weight: 8, condition: s => s.band.members.some(m => m.mood < 30) },
+  { text: 'If the van makes that noise again, I’m naming it and hating it.', weight: 8, condition: s => s.band.members.some(m => m.mood < 25) },
+  { text: 'I want to be a person again, not a touring object.', weight: 10, condition: s => s.band.members.some(m => m.mood < 20) },
+  { text: 'Everything is sticky and I’m emotionally sticky too.', weight: 8, condition: s => s.band.members.some(m => m.mood < 25) },
+  { text: 'I’m not “quiet”, I’m conserving rage.', weight: 8, condition: s => s.band.members.some(m => m.mood < 30), speaker: 'Lars' },
+  { text: 'If we don’t get food soon, I’m eating a cymbal.', weight: 8, condition: s => s.band.members.some(m => m.mood < 25), speaker: 'Lars' },
+  { text: 'I’m allergic to optimism right now.', weight: 8, condition: s => s.band.members.some(m => m.mood < 25), speaker: 'Marius' },
 
   // --- CONDITION: HIGH MOOD ---
   { text: 'We are gonna crush it tonight!', weight: 5, condition: state => state.band.members.some(m => m.mood > 80) },
@@ -118,6 +174,12 @@ export const CHATTER_DB = [
   { text: 'We’re a machine when we’re locked in.', weight: 5, condition: state => state.band.members.some(m => m.mood > 85) },
   { text: 'I’m proud of us. Don’t make it weird.', weight: 1, condition: state => state.band.members.some(m => m.mood > 95) },
   { text: 'Somebody take a photo, I wanna remember this grin.', weight: 1, condition: state => state.band.members.some(m => m.mood > 95) },
+  { text: 'That groove felt illegal. Let’s do it again tomorrow.', weight: 5, condition: s => s.band.members.some(m => m.mood > 85) },
+  { text: 'I’m vibrating with serotonin and tinnitus.', weight: 4, condition: s => s.band.members.some(m => m.mood > 80), speaker: 'Marius' },
+  { text: 'We’re actually getting good at this. Wild.', weight: 5, condition: s => s.band.members.some(m => m.mood > 85) },
+  { text: 'Tonight’s gonna be one of those “remember this” nights.', weight: 5, condition: s => s.band.members.some(m => m.mood > 90) },
+  { text: 'If we keep playing like this, we’ll scare ourselves.', weight: 4, condition: s => s.band.members.some(m => m.mood > 80), speaker: 'Lars' },
+  { text: 'I feel unstoppable. Somebody stop me from buying new gear.', weight: 3, condition: s => s.band.members.some(m => m.mood > 90) },
 
   // --- CONDITION: MONEY ---
   { text: 'Can we afford gas?', weight: 10, condition: state => state.player.money < 100 },
@@ -130,6 +192,11 @@ export const CHATTER_DB = [
   { text: 'This is finally “replace the van noise” money.', weight: 4, condition: state => state.player.money > 2200 },
   { text: 'Round of meals is on us. For once.', weight: 5, condition: state => state.player.money > 2000 },
   { text: 'I’m not saying we’re rich… but I’m looking at real food.', weight: 4, condition: state => state.player.money > 2000, speaker: 'Marius' },
+  { text: 'We can afford snacks AND coffee? Who are we?', weight: 4, condition: s => s.player.money > 2000 },
+  { text: 'If the van needs repairs, we’re donating organs.', weight: 10, condition: s => s.player.money < 120 },
+  { text: 'We’re in “sleep in the van to save money” mode again.', weight: 10, condition: s => s.player.money < 100 },
+  { text: 'If the venue offers free drinks, that’s basically income.', weight: 8, condition: s => s.player.money < 150, speaker: 'Marius' },
+  { text: 'Okay, we can replace at least ONE cable without crying.', weight: 4, condition: s => s.player.money > 1800 },
 
   // --- CONDITION: FAME/SOCIAL ---
   { text: 'Did you see that comment on Insta?', weight: 3, condition: state => state.social?.instagram > 500 },
@@ -142,6 +209,11 @@ export const CHATTER_DB = [
   { text: 'If this momentum keeps up, we need more merch designs.', weight: 3, condition: state => (state.social?.instagram || 0) > 1000 },
   { text: 'Viral means expectations. And expectations mean pressure.', weight: 5, condition: state => (state.social?.viral || 0) > 0 },
   { text: 'If we’re trending, I’m pretending I’m calm.', weight: 5, condition: state => (state.social?.viral || 0) > 0, speaker: 'Lars' },
+  { text: 'Someone posted our breakdown and the comments are unhinged.', weight: 3, condition: s => (s.social?.instagram || 0) > 700 },
+  { text: 'If we hit 1k, I’m demanding a tour bus. A tiny one.', weight: 3, condition: s => (s.social?.instagram || 0) > 1000, speaker: 'Lars' },
+  { text: 'We got recognized at the merch table. I panicked.', weight: 3, condition: s => (s.social?.instagram || 0) > 900, speaker: 'Matze' },
+  { text: 'Viral means people will actually notice mistakes. Great.', weight: 5, condition: s => (s.social?.viral || 0) > 0, speaker: 'Marius' },
+  { text: 'Someone made a meme of our face. That’s… marketing?', weight: 3, condition: s => (s.social?.instagram || 0) > 800 },
 
   // --- LOCATION SPECIFIC (General) ---
   { text: 'Home sweet home.', weight: 10, condition: state => state.player.location === 'Stendal' },
@@ -153,6 +225,10 @@ export const CHATTER_DB = [
   { text: 'Berlin prices make me want to play faster just to leave sooner.', weight: 5, condition: state => state.player.location && state.player.location.includes('Berlin') },
   { text: 'Berlin has everything. Including zero parking.', weight: 5, condition: state => state.player.location && state.player.location.includes('Berlin') },
   { text: 'Berlin crowds are either ice-cold or absolutely feral. No middle.', weight: 4, condition: state => state.player.location && state.player.location.includes('Berlin') },
+  { text: 'Stendal feels like the tutorial level. Comforting and cursed.', weight: 8, condition: s => s.player.location === 'Stendal', speaker: 'Marius' },
+  { text: 'Berlin is a boss fight with parking tickets.', weight: 5, condition: s => s.player.location && s.player.location.includes('Berlin') },
+  { text: 'Stendal: where everyone knows someone who knows us.', weight: 8, condition: s => s.player.location === 'Stendal' },
+  { text: 'Berlin nights are loud even when you’re not playing.', weight: 4, condition: s => s.player.location && s.player.location.includes('Berlin') },
 
   // --- GIG SPECIFIC (In-Game) ---
   { text: 'FASTER!', weight: 5, condition: state => state.currentScene === 'GIG' && state.band.members.some(m => m.stamina > 80) },
@@ -164,7 +240,13 @@ export const CHATTER_DB = [
   { text: 'They’re with us—keep pushing!', weight: 5, condition: state => state.currentScene === 'GIG' && state.band.members.some(m => m.stamina > 75) },
   { text: 'I can’t feel my hands, but the song isn’t over!', weight: 5, condition: state => state.currentScene === 'GIG' && state.band.members.some(m => m.stamina < 35), speaker: 'Matze' },
   { text: 'If I cramp up, just drag me offstage later.', weight: 5, condition: state => state.currentScene === 'GIG' && state.band.members.some(m => m.stamina < 30), speaker: 'Lars' },
-  { text: 'Breath. Hit. Repeat.', weight: 4, condition: state => state.currentScene === 'GIG' && state.band.members.some(m => m.stamina < 35), speaker: 'Marius' }
+  { text: 'Breath. Hit. Repeat.', weight: 4, condition: state => state.currentScene === 'GIG' && state.band.members.some(m => m.stamina < 35), speaker: 'Marius' },
+ { text: 'HARDER!', weight: 5, condition: s => s.currentScene === 'GIG' && s.band.members.some(m => m.stamina > 80), speaker: 'Lars' },
+  { text: 'DON’T DROP IT!', weight: 5, condition: s => s.currentScene === 'GIG' && s.band.members.some(m => m.stamina > 75) },
+  { text: 'My forearms are filing for divorce!', weight: 5, condition: s => s.currentScene === 'GIG' && s.band.members.some(m => m.stamina < 30), speaker: 'Matze' },
+  { text: 'If I miss again, just stare at me dramatically.', weight: 4, condition: s => s.currentScene === 'GIG' && s.band.members.some(m => m.stamina < 35), speaker: 'Marius' },
+  { text: 'KEEP IT TOGETHER!', weight: 5, condition: s => s.currentScene === 'GIG' && s.band.members.some(m => m.stamina > 80) }
+
 ];
 
 export const ALLOWED_DEFAULT_SCENES = ['MENU', 'OVERWORLD', 'PREGIG', 'POSTGIG'];

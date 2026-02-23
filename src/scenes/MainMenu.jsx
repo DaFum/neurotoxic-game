@@ -20,6 +20,7 @@ export const MainMenu = () => {
   const [isLoadingGame, setIsLoadingGame] = useState(false)
 
   useEffect(() => {
+    isMountedRef.current = true
     return () => {
       isMountedRef.current = false
     }

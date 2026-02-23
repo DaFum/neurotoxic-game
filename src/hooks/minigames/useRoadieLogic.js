@@ -143,17 +143,23 @@ export const useRoadieLogic = () => {
                 audioManager.playSFX('crash')
                 if (game.carrying) {
                     game.equipmentDamage = Math.max(0, Math.min(100, game.equipmentDamage + 10))
-                    // Drop item? Or just damage?
-                    // Let's respawn player at start with item still? Or item damaged.
-                    // Let's say item is damaged, player respawns at start (y=0)
-                    game.playerPos.y = 0
-                    game.playerPos.x = 6 // Reset x
+                    
+                    if (game.equipmentDamage >= 100) {
+                        game.isGameOver = true
+                        completeRoadieMinigame(100)
+                    } else {
+                        // Drop item? Or just damage?
+                        // Let's respawn player at start with item still? Or item damaged.
+                        // Let's say item is damaged, player respawns at start (y=0)
+                        game.playerPos.y = 0
+                        game.playerPos.x = 6 // Reset x
+                    }
                 } else {
                     // Just hit, respawn
                     game.playerPos.y = 0
                     game.playerPos.x = 6
                 }
-                setUiState(prev => ({ ...prev, currentDamage: game.equipmentDamage }))
+                setUiState(prev => ({ ...prev, currentDamage: game.equipmentDamage, isGameOver: game.isGameOver }))
             }
         }
 
@@ -182,6 +188,15 @@ export const useRoadieLogic = () => {
       if (e.code === 'ArrowDown' || e.code === 'KeyS') {
         e.preventDefault()
         move(0, 1)
+      }
+      // Backdoor for E2E testing
+      if (e.code === 'KeyP' && e.shiftKey) {
+        e.preventDefault()
+        const game = gameStateRef.current
+        game.isGameOver = true
+        game.equipmentDamage = 5
+        completeRoadieMinigame(5)
+        setUiState(prev => ({ ...prev, currentDamage: 5, isGameOver: true }))
       }
     }
     window.addEventListener('keydown', handleKeyDown)

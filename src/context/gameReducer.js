@@ -19,6 +19,7 @@ import {
 import { logger } from '../utils/logger.js'
 import {
   initialState,
+  createInitialState,
   DEFAULT_GIG_MODIFIERS,
   DEFAULT_PLAYER_STATE,
   DEFAULT_BAND_STATE,
@@ -472,7 +473,7 @@ export const gameReducer = (state, action) => {
 
     case ActionTypes.RESET_STATE:
       logger.info('GameState', 'State Reset (Debug)')
-      return { ...initialState }
+      return { ...createInitialState(), settings: state.settings }
 
     case ActionTypes.APPLY_EVENT_DELTA:
       logger.info('GameState', 'Applying Event Delta', action.payload)

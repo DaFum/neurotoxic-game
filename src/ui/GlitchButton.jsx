@@ -78,8 +78,8 @@ export const GlitchButton = ({
       </span>
 
       {isLoading && (
-        <span className='absolute inset-0 flex items-center justify-center z-20'>
-          <Loader2 className='animate-spin w-5 h-5' />
+        <span className='absolute inset-0 flex items-center justify-center z-20' aria-hidden="true">
+          <Loader2 className='animate-spin w-5 h-5' aria-hidden="true" />
         </span>
       )}
 

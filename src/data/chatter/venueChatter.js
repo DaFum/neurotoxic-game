@@ -1,5 +1,5 @@
 export const VENUE_CHATTER_DB = [
-// STENDAL / TANGERMÜNDE / MAGDEBURG
+  // STENDAL / TANGERMÜNDE / MAGDEBURG
   {
     venueId: 'stendal_adler',
     id: 'chatter_stendal_adler',
@@ -466,7 +466,7 @@ export const VENUE_CHATTER_DB = [
         'Get the vocals right, the crowd will carry the rest.'
       ],
       GIG: [
-        'Keep it momentum—Beatpol loves speed.',
+        'Keep the momentum—Beatpol loves speed.',
         'If they sing, give them the mic.',
         'Hit the breakdown like it’s a final exam.',
         'Make the last chorus a full-room shout.'

@@ -13,6 +13,7 @@ export const ShopItem = ({ item, isOwned, isDisabled, onBuy }) => {
   const isPurchased = isOwned && !isConsumable
 
   useEffect(() => {
+    isMountedRef.current = true
     return () => {
       isMountedRef.current = false
     }
@@ -28,6 +29,8 @@ export const ShopItem = ({ item, isOwned, isDisabled, onBuy }) => {
       if (!isMountedRef.current) return
 
       await onBuy(item)
+    } catch (err) {
+      console.error('Purchase failed:', err)
     } finally {
       if (isMountedRef.current) {
         setIsProcessing(false)
@@ -97,5 +100,10 @@ ShopItem.propTypes = {
   }).isRequired,
   isOwned: PropTypes.bool.isRequired,
   isDisabled: PropTypes.bool.isRequired,
+  /** 
+   * Callback executed on purchase attempt.
+   * The parent parameter onBuy is expected to handle its own user-facing errors.
+   * Any rejections here are caught to prevent unhandled promise rejections.
+   */
   onBuy: PropTypes.func.isRequired
 }
