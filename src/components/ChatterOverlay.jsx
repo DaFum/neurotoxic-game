@@ -19,7 +19,7 @@ const SCENE_LABELS = {
   CREDITS: 'Crew Feed',
   GAMEOVER: 'Last Broadcast',
   [GAME_PHASES.TRAVEL_MINIGAME]: 'Travel Feed',
-  [GAME_PHASES.PRE_GIG_MINIGAME]: 'Crew Feed'
+  [GAME_PHASES.PRE_GIG_MINIGAME]: 'Roadie Feed'
 }
 
 const OVERWORLD_STYLE = {
@@ -77,9 +77,7 @@ const SCENE_STYLES = {
     barColor: 'bg-(--blood-red)',
     icon: '\uD83D\uDC80'
   },
-  [GAME_PHASES.TRAVEL_MINIGAME]: {
-    ...OVERWORLD_STYLE
-  },
+  [GAME_PHASES.TRAVEL_MINIGAME]: OVERWORLD_STYLE,
   [GAME_PHASES.PRE_GIG_MINIGAME]: {
     accent: 'var(--warning-yellow)',
     borderColor: 'border-(--warning-yellow)',
@@ -203,8 +201,8 @@ export const ChatterOverlay = ({ gameState }) => {
   }, [])
 
   // Scene-aware positioning:
-  // OVERWORLD = bottom-left (near the bus), everything else = bottom-center
-  const isOverworld = currentScene === 'OVERWORLD'
+  // OVERWORLD / TRAVEL_MINIGAME = bottom-left (near the bus), everything else = bottom-center
+  const isOverworld = currentScene === 'OVERWORLD' || currentScene === GAME_PHASES.TRAVEL_MINIGAME
   const positionClassName = isOverworld
     ? 'fixed bottom-28 left-8 pointer-events-none w-[min(22rem,85vw)]'
     : 'fixed bottom-16 left-1/2 -translate-x-1/2 pointer-events-none w-[min(24rem,90vw)]'
