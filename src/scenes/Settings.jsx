@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { useGameState } from '../context/GameState'
 import { useAudioControl } from '../hooks/useAudioControl'
 import { GlitchButton } from '../ui/GlitchButton'
@@ -9,6 +10,19 @@ import { SettingsPanel } from '../ui/shared'
 export const Settings = () => {
   const { changeScene, settings, updateSettings, deleteSave } = useGameState()
   const { audioState, handleAudioChange } = useAudioControl()
+
+  const handleReturn = useCallback(() => changeScene('MENU'), [changeScene])
+
+  const handleToggleCRT = useCallback(() => {
+    updateSettings({ crtEnabled: !settings.crtEnabled })
+  }, [updateSettings, settings.crtEnabled])
+
+  const handleLogLevelChange = useCallback(
+    level => {
+      updateSettings({ logLevel: level })
+    },
+    [updateSettings]
+  )
 
   return (
     <div className='flex flex-col items-center justify-center h-full w-full bg-(--void-black) z-50 p-8'>
@@ -25,16 +39,14 @@ export const Settings = () => {
           onMusicChange={handleAudioChange.setMusic}
           onSfxChange={handleAudioChange.setSfx}
           onToggleMute={handleAudioChange.toggleMute}
-          onToggleCRT={() =>
-            updateSettings({ crtEnabled: !settings.crtEnabled })
-          }
-          onLogLevelChange={level => updateSettings({ logLevel: level })}
+          onToggleCRT={handleToggleCRT}
+          onLogLevelChange={handleLogLevelChange}
           onDeleteSave={deleteSave}
         />
       </div>
 
       <div className='mt-8'>
-        <GlitchButton onClick={() => changeScene('MENU')}>RETURN</GlitchButton>
+        <GlitchButton onClick={handleReturn}>RETURN</GlitchButton>
       </div>
     </div>
   )
