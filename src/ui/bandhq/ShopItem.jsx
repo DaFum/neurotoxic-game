@@ -1,16 +1,29 @@
+import { useState } from 'react'
 import PropTypes from 'prop-types'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
 import { getPrimaryEffect } from '../../hooks/usePurchaseLogic'
+import { GlitchButton } from '../GlitchButton'
 
 export const ShopItem = ({ item, isOwned, isDisabled, onBuy }) => {
+  const [isProcessing, setIsProcessing] = useState(false)
   const primaryEffect = getPrimaryEffect(item)
   const isConsumable = primaryEffect?.type === 'inventory_add'
+  const isPurchased = isOwned && !isConsumable
+
+  const handlePurchase = async () => {
+    if (isDisabled || isPurchased) return
+    setIsProcessing(true)
+    // Artificial delay for UX
+    await new Promise(resolve => setTimeout(resolve, 500))
+    onBuy(item)
+    setIsProcessing(false)
+  }
 
   return (
     <div
       className={`p-4 border-2 relative flex flex-col justify-between transition-colors
         ${
-          isOwned && !isConsumable
+          isPurchased
             ? 'border-(--toxic-green) bg-(--toxic-green)/10'
             : 'border-(--ash-gray) bg-(--void-black)/80'
         }`}
@@ -40,20 +53,16 @@ export const ShopItem = ({ item, isOwned, isDisabled, onBuy }) => {
         >
           {item.cost} {item.currency === 'fame' ? '★' : '€'}
         </span>
-        <button
-          onClick={() => onBuy(item)}
-          disabled={isDisabled}
-          className={`px-3 py-1 text-xs font-bold uppercase transition-all duration-200 border-2
-            ${
-              isOwned && !isConsumable
-                ? 'border-(--ash-gray) text-(--ash-gray) cursor-default'
-                : isDisabled
-                  ? 'border-(--disabled-border) text-(--disabled-text) bg-(--disabled-bg) cursor-not-allowed'
-                  : 'border-(--toxic-green) bg-(--toxic-green) text-(--void-black) hover:invert shadow-[4px_4px_0px_var(--void-black)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
-            }`}
+        <GlitchButton
+          onClick={handlePurchase}
+          disabled={isDisabled || isPurchased}
+          variant={isPurchased ? 'owned' : 'primary'}
+          isLoading={isProcessing}
+          size='sm'
+          className='min-w-[80px]'
         >
-          {isOwned && !isConsumable ? 'OWNED' : 'BUY'}
-        </button>
+          {isPurchased ? 'OWNED' : 'BUY'}
+        </GlitchButton>
       </div>
     </div>
   )
