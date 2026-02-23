@@ -9,13 +9,28 @@ import { useEffect, useRef, useCallback } from 'react'
 export const useGigEffects = (stats) => {
   const chaosContainerRef = useRef(null)
   const bandAnimationsRef = useRef({})
+  const bandMembersRef = useRef([])
+  const bandMemberSettersRef = useRef([])
+
+  /**
+   * Returns a stable ref callback for a band member at the given index.
+   * @param {number} index
+   */
+  const setBandMemberRef = useCallback((index) => {
+    if (!bandMemberSettersRef.current[index]) {
+      bandMemberSettersRef.current[index] = (el) => {
+        bandMembersRef.current[index] = el
+      }
+    }
+    return bandMemberSettersRef.current[index]
+  }, [])
 
   /**
    * Triggers a CSS animation on the corresponding band member DOM element.
    * @param {number} laneIndex
    */
   const triggerBandAnimation = useCallback(laneIndex => {
-    const memberEl = document.getElementById(`band-member-${laneIndex}`)
+    const memberEl = bandMembersRef.current[laneIndex]
     if (memberEl) {
       let anim = bandAnimationsRef.current[laneIndex]
 
@@ -82,5 +97,5 @@ export const useGigEffects = (stats) => {
     chaosStyle.filter = 'invert(0.1) contrast(1.5) saturate(2)'
   }
 
-  return { chaosContainerRef, chaosStyle, triggerBandAnimation }
+  return { chaosContainerRef, chaosStyle, triggerBandAnimation, setBandMemberRef }
 }
