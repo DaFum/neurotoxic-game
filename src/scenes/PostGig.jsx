@@ -15,6 +15,10 @@ import {
   checkViralEvent
 } from '../utils/socialEngine'
 
+const PERF_SCORE_MIN = 30
+const PERF_SCORE_MAX = 100
+const PERF_SCORE_SCALER = 500
+
 export const PostGig = () => {
   const {
     currentGig,
@@ -37,7 +41,10 @@ export const PostGig = () => {
 
   const perfScore = useMemo(() => {
     const rawScore = lastGigStats?.score || 0
-    return Math.min(100, Math.max(30, rawScore / 500))
+    return Math.min(
+      PERF_SCORE_MAX,
+      Math.max(PERF_SCORE_MIN, rawScore / PERF_SCORE_SCALER)
+    )
   }, [lastGigStats])
 
   useEffect(() => {
