@@ -73,12 +73,16 @@ export const useTravelLogic = ({
   const playerRef = useRef(player)
   const bandRef = useRef(band)
   const gameMapRef = useRef(gameMap)
+  const isTravelingRef = useRef(isTraveling)
+  const pendingTravelNodeRef = useRef(pendingTravelNode)
 
   useEffect(() => {
     playerRef.current = player
     bandRef.current = band
     gameMapRef.current = gameMap
-  }, [player, band, gameMap])
+    isTravelingRef.current = isTraveling
+    pendingTravelNodeRef.current = pendingTravelNode
+  }, [player, band, gameMap, isTraveling, pendingTravelNode])
 
   /**
    * Checks if a target node is connected to the current node
@@ -331,7 +335,7 @@ export const useTravelLogic = ({
   const handleTravel = useCallback(
     node => {
       // Early interaction block if already traveling
-      if (isTraveling) return
+      if (isTravelingRef.current) return
 
       const player = playerRef.current
       const band = bandRef.current
@@ -414,7 +418,7 @@ export const useTravelLogic = ({
 
       if (Math.max(0, player.money ?? 0) < totalCost) {
         addToast('Not enough money for gas and food!', 'error')
-        if (pendingTravelNode?.id === node.id) {
+        if (pendingTravelNodeRef.current?.id === node.id) {
           clearPendingTravel()
         }
         return
@@ -422,14 +426,14 @@ export const useTravelLogic = ({
 
       if (Math.max(0, player.van?.fuel ?? 0) < fuelLiters) {
         addToast('Not enough fuel in the tank!', 'error')
-        if (pendingTravelNode?.id === node.id) {
+        if (pendingTravelNodeRef.current?.id === node.id) {
           clearPendingTravel()
         }
         return
       }
 
       // Two-click confirmation: if this node is already pending, confirm and travel
-      if (pendingTravelNode?.id === node.id) {
+      if (pendingTravelNodeRef.current?.id === node.id) {
         startTravelSequence(node)
         return
       }
@@ -449,11 +453,9 @@ export const useTravelLogic = ({
       }, 5000)
     },
     [
-      isTraveling,
       startGig,
       addToast,
       onShowHQ,
-      pendingTravelNode,
       startTravelSequence,
       clearPendingTravel
     ]

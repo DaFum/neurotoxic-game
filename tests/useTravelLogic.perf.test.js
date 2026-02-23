@@ -1,6 +1,6 @@
 import { test, describe, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
-import { renderHook } from '@testing-library/react'
+import { renderHook, act } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
 import {
   setupTravelLogicTest,
@@ -58,5 +58,43 @@ describe('useTravelLogic Performance', () => {
       initialHandleTravel,
       'handleTravel should be referentially stable when only unrelated player stats change'
     )
+  })
+
+  test('handleTravel remains stable when pendingTravelNode changes', () => {
+    const initialProps = createTravelLogicProps({
+      player: { money: 1000, currentNodeId: 'node_start', van: { fuel: 100 } }
+    })
+
+    const { result } = renderHook(props => useTravelLogic(props), {
+      initialProps
+    })
+
+    const initialHandleTravel = result.current.handleTravel
+    const targetNode = initialProps.gameMap.nodes.node_target
+
+    // First click: sets pending state
+    act(() => {
+      result.current.handleTravel(targetNode)
+    })
+
+    const nextHandleTravel = result.current.handleTravel
+
+    // Verify that state actually changed
+    assert.equal(
+      result.current.pendingTravelNode.id,
+      targetNode.id,
+      'State should update'
+    )
+
+    assert.strictEqual(
+      nextHandleTravel,
+      initialHandleTravel,
+      'handleTravel should be referentially stable even when pendingTravelNode changes'
+    )
+
+    // Clean up pending timeout to prevent test errors
+    act(() => {
+      result.current.clearPendingTravel()
+    })
   })
 })
