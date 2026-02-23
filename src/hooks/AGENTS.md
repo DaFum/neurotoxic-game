@@ -15,12 +15,12 @@ Current top-level hooks:
 
 - `useTravelLogic.js`: Handles resource checks and triggers minigames.
 - `useArrivalLogic.js`: Shared arrival sequence (Save, Advance Day, Event Trigger) and **Scene Routing**. Routes directly to `PREGIG` for GIG/FESTIVAL/FINALE nodes.
-- `usePurchaseLogic.js`
-- `useAudioControl.js`
-- `useRhythmGameLogic.js`
-- `useBandHQModal.js`
-- `useGigEffects.js`
-- `useGigInput.js`
+- `usePurchaseLogic.js`: Manages shop item ownership checks, affordability validation, and purchase transactions.
+- `useAudioControl.js`: Provides reactive audio state (volume, mute) and control methods backed by the `AudioManager`.
+- `useRhythmGameLogic.js`: Orchestrates the main rhythm game loop, integrating scoring, audio, and input sub-hooks.
+- `useBandHQModal.js`: Manages the visibility and props for the BandHQ modal in various scenes.
+- `useGigEffects.js`: Handles visual effects during gigs, including Chaos Mode jitter and band member animations.
+- `useGigInput.js`: Manages keyboard and touch input listeners for the Gig scene, including pause menu toggling.
 
 ## Code-Aligned Rules
 
