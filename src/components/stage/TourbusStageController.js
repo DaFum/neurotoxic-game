@@ -1,7 +1,7 @@
 
 import * as PIXI from 'pixi.js'
 import { EffectManager } from './EffectManager'
-import { getPixiColorFromToken } from '../stage/utils'
+import { getPixiColorFromToken, loadTexture } from './utils'
 import { logger } from '../../utils/logger'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
 
@@ -105,9 +105,12 @@ export class TourbusStageController {
             fuel: getGenImageUrl(IMG_PROMPTS.MINIGAME_FUEL)
         }
 
+
         // Load all concurrently
         const bundles = Object.keys(urls).map(key =>
-            PIXI.Assets.load(urls[key]).then(tex => { this.textures[key] = tex })
+            loadTexture(urls[key]).then(tex => {
+                if (tex) this.textures[key] = tex
+            })
         )
 
         await Promise.allSettled(bundles)
@@ -125,15 +128,20 @@ export class TourbusStageController {
     // Clear previous
     this.roadContainer.removeChildren().forEach(c => c.destroy())
 
-    // Use TilingSprite if texture loaded, else Graphics
-    if (this.textures.road) {
+    // Use TilingSprite if texture loaded AND source is valid, else Graphics fallback.
+    // Image-element textures may have sources that crash TilingSprite (_resolution null).
+    const roadTex = this.textures.road
+    const isRoadTexValid = roadTex?.source && !roadTex.source.destroyed
+
+    if (isRoadTexValid) {
         this.roadStripes = new PIXI.TilingSprite({
-            texture: this.textures.road,
+            texture: roadTex,
             width,
             height
         })
         this.roadContainer.addChild(this.roadStripes)
     } else {
+        this.roadStripes = null
         const bg = new PIXI.Graphics()
         bg.rect(0, 0, width, height)
         bg.fill(getPixiColorFromToken('--void-black'))
@@ -157,6 +165,8 @@ export class TourbusStageController {
   }
 
   createBus() {
+      const height = this.app.screen.height
+
       if (this.textures.bus) {
           this.busSprite = new PIXI.Sprite(this.textures.bus)
           this.busSprite.anchor.set(0.5, 1)
@@ -167,8 +177,12 @@ export class TourbusStageController {
           g.fill(getPixiColorFromToken('--toxic-green'))
           this.busSprite = g
       }
-      // Scale bus
-      const busScale = (this.laneWidth * 0.6) / (this.busSprite.width || 60)
+      // Scale bus to fit lane width AND a max height
+      const targetW = this.laneWidth * 0.6
+      const targetH = height * 0.25
+      const texW = this.busSprite.texture?.width || this.busSprite.width || 60
+      const texH = this.busSprite.texture?.height || this.busSprite.height || 80
+      const busScale = Math.min(targetW / texW, targetH / texH)
       this.busSprite.scale.set(busScale)
 
       this.container.addChild(this.busSprite)
@@ -232,8 +246,10 @@ export class TourbusStageController {
         if (tex) {
             sprite = new PIXI.Sprite(tex)
             sprite.anchor.set(0.5)
-            // Scale
-            const scale = (this.laneWidth * 0.5) / tex.width
+            // Scale to fit lane width AND a max height
+            const targetW = this.laneWidth * 0.4
+            const targetH = height * 0.15
+            const scale = Math.min(targetW / tex.width, targetH / tex.height)
             sprite.scale.set(scale)
         } else {
             sprite = new PIXI.Graphics()
@@ -296,8 +312,8 @@ export class TourbusStageController {
 
     if (this.app) {
       try {
-        this.app.ticker.remove(this.handleTicker)
-        this.app.destroy({ removeView: true }, { children: true, texture: true })
+        this.app.ticker?.remove(this.handleTicker)
+        this.app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })
       } catch (e) {
         logger.warn('TourbusStageController', 'Destroy failed', e)
       }

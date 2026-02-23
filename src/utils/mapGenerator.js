@@ -101,12 +101,13 @@ export class MapGenerator {
         const venue = candidates[Math.floor(this.random() * candidates.length)]
         usedVenueIds.add(venue.id)
 
-        // Determine Node Type based on probability
-        // ~70% GIG, ~20% REST_STOP, ~10% SPECIAL
+        // Determine Node Type based on probability and venue
+        // ~70% GIG/FESTIVAL, ~20% REST_STOP, ~10% SPECIAL
         const typeRoll = this.random()
         let nodeType = 'GIG'
         if (typeRoll > 0.9) nodeType = 'SPECIAL'
         else if (typeRoll > 0.7) nodeType = 'REST_STOP'
+        else if (venue.capacity >= 1000) nodeType = 'FESTIVAL'
 
         const node = {
           id: `node_${i}_${j}`,

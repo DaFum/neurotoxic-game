@@ -105,6 +105,18 @@ export const Overworld = () => {
     () => getGenImageUrl(IMG_PROMPTS.ICON_PIN_CLUB),
     []
   )
+  const pinRestUrl = useMemo(
+    () => getGenImageUrl(IMG_PROMPTS.ICON_PIN_REST),
+    []
+  )
+  const pinSpecialUrl = useMemo(
+    () => getGenImageUrl(IMG_PROMPTS.ICON_PIN_SPECIAL),
+    []
+  )
+  const pinFinaleUrl = useMemo(
+    () => getGenImageUrl(IMG_PROMPTS.ICON_PIN_FINALE),
+    []
+  )
 
   // Memoized connection rendering
   const renderedConnections = useMemo(() => {
@@ -141,6 +153,9 @@ export const Overworld = () => {
       let iconUrl = pinClubUrl
       if (node.type === 'FESTIVAL') iconUrl = pinFestivalUrl
       else if (node.type === 'START') iconUrl = pinHomeUrl
+      else if (node.type === 'REST_STOP') iconUrl = pinRestUrl
+      else if (node.type === 'SPECIAL') iconUrl = pinSpecialUrl
+      else if (node.type === 'FINALE') iconUrl = pinFinaleUrl
 
       return (
         <MapNode
@@ -170,6 +185,9 @@ export const Overworld = () => {
     pinClubUrl,
     pinFestivalUrl,
     pinHomeUrl,
+    pinRestUrl,
+    pinSpecialUrl,
+    pinFinaleUrl,
     vanUrl
   ])
 

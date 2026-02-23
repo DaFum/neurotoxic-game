@@ -3,7 +3,7 @@ import * as PIXI from 'pixi.js'
 import { CELL_SIZE } from '../../hooks/minigames/useRoadieLogic'
 import { EffectManager } from './EffectManager'
 import { logger } from '../../utils/logger'
-import { getPixiColorFromToken } from '../stage/utils'
+import { getPixiColorFromToken, loadTexture } from './utils'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
 
 export class RoadieStageController {
@@ -72,11 +72,19 @@ export class RoadieStageController {
             this.playerContainer = new PIXI.Container()
             this.container.addChild(this.playerContainer)
 
+            // Compute cell dimensions for sprite sizing
+            const screenW = this.app.screen.width
+            const screenH = this.app.screen.height
+            const cellW = screenW / 12
+            const cellH = screenH / 8
+
             // Player Sprite
             if (this.textures.roadie) {
                 this.playerSprite = new PIXI.Sprite(this.textures.roadie)
                 this.playerSprite.anchor.set(0.5)
-                this.playerSprite.scale.set(0.5) // Adjust scale to fit cell
+                // Scale to fit ~1 cell
+                const playerScale = Math.min(cellW / this.textures.roadie.width, cellH / this.textures.roadie.height) * 0.8
+                this.playerSprite.scale.set(playerScale)
             } else {
                 this.playerSprite = new PIXI.Graphics()
                 this.playerSprite.circle(0, 0, 20)
@@ -88,9 +96,8 @@ export class RoadieStageController {
             // Item Sprite (Placeholder for now, visible only when carrying)
             this.itemSprite = new PIXI.Sprite()
             this.itemSprite.anchor.set(0.5)
-            this.itemSprite.y = -15 // Above head
+            this.itemSprite.y = -(cellH * 0.3) // Above head
             this.itemSprite.visible = false
-            this.itemSprite.scale.set(0.4)
             this.playerContainer.addChild(this.itemSprite)
 
             window.addEventListener('resize', this.handleResize)
@@ -117,15 +124,14 @@ export class RoadieStageController {
               guitar: getGenImageUrl(IMG_PROMPTS.MINIGAME_ITEM_GUITAR)
           }
 
+
           const loaded = {}
           const keys = Object.keys(urls)
-          const results = await Promise.allSettled(keys.map(k => PIXI.Assets.load(urls[k]).then(t => ({ key: k, texture: t }))))
+          const results = await Promise.allSettled(keys.map(k => loadTexture(urls[k]).then(t => ({ key: k, texture: t }))))
 
           results.forEach(res => {
-              if (res.status === 'fulfilled') {
+              if (res.status === 'fulfilled' && res.value && res.value.texture) {
                   loaded[res.value.key] = res.value.texture
-              } else {
-                  logger.warn('RoadieStageController', `Failed to load asset`, res.reason)
               }
           })
 
@@ -215,8 +221,15 @@ export class RoadieStageController {
           this.itemSprite.visible = true
           // Set texture based on type
           const tex = this.textures.items[state.carrying.type]
-          if (tex) this.itemSprite.texture = tex
-          else this.itemSprite.texture = PIXI.Texture.WHITE // Fallback
+          if (tex) {
+              this.itemSprite.texture = tex
+              // Scale item to fit ~0.6 of a cell
+              const itemScale = Math.min(cellW / tex.width, cellH / tex.height) * 0.6
+              this.itemSprite.scale.set(itemScale)
+          } else {
+              this.itemSprite.texture = PIXI.Texture.WHITE
+              this.itemSprite.scale.set(0.3)
+          }
       } else {
           this.itemSprite.visible = false
       }
@@ -267,16 +280,16 @@ export class RoadieStageController {
               sprite.scale.x = Math.abs(sprite.scale.x)
           }
 
-          // Adjust Scale if texture
+          // Adjust Scale if texture — constrain both width AND height
           if (sprite instanceof PIXI.Sprite && sprite.texture?.width > 0) {
-              // Target width = car.width * cellW
               const targetW = car.width * cellW
-              const scale = targetW / sprite.texture.width
+              const targetH = cellH * 0.7
+              const scale = Math.min(targetW / sprite.texture.width, targetH / sprite.texture.height)
               sprite.scale.set(Math.abs(scale) * Math.sign(sprite.scale.x), Math.abs(scale))
           } else {
               // Fallback or Graphics
               sprite.width = car.width * cellW
-              sprite.height = cellH * 0.8
+              sprite.height = cellH * 0.7
           }
       })
 
@@ -314,7 +327,7 @@ export class RoadieStageController {
 
       if (this.app) {
           try {
-            this.app.ticker.remove(this.handleTicker)
+            this.app.ticker?.remove(this.handleTicker)
             // v8 signature: destroy(rendererOptions, destroyOptions)
             this.app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })
           } catch (e) {

@@ -18,7 +18,8 @@ Representative domains:
 
 ## Key Gig-Domain Contracts
 
-- **`economyEngine.js`** exports `MODIFIER_COSTS` as the single source of truth for PreGig modifier costs (catering/promo/merch/soundcheck/guestlist). Both the PreGig UI preview and the PostGig expense calculation must import from this constant — never duplicate the cost values inline.
+- **`economyEngine.js`** exports `MODIFIER_COSTS` as the single source of truth for PreGig modifier costs. **Refactor Note**: Travel only consumes fuel liters and food money; gas money is paid only via Refuel. `calculateGigExpenses` excludes travel transport/food.
+- **`mapGenerator.js`** assigns `FESTIVAL` type for venues with capacity ≥ 1000.
 - **`gigStats.js`** exports `calculateAccuracy(perfectHits, misses)` and `buildGigStatsSnapshot`; the snapshot now includes `accuracy` (0–100). Tests in `tests/gigStats.test.js` verify this contract.
 - **`simulationUtils.js`** `calculateGigPhysics` returns `multipliers` (guitar/drums/bass) based on band traits. These values are merged into `gameStateRef.current.modifiers` by the audio hook so the scoring hook can apply them — do not read them directly from `calculateGigPhysics` output in scoring logic.
 - **`socialEngine.js`** `checkViralEvent` checks `stats.accuracy`; this field is now populated via `buildGigStatsSnapshot`.

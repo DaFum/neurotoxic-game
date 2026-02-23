@@ -1,4 +1,7 @@
 
+import * as PIXI from 'pixi.js'
+import { logger } from '../../utils/logger'
+
 const PIXI_TOKEN_FALLBACKS = Object.freeze({
   '--void-black': '#0a0a0a',
   '--toxic-green': '#00ff41',
@@ -158,4 +161,71 @@ export const buildRhythmLayout = ({ screenWidth, screenHeight }) => {
     rhythmOffsetY: screenHeight * RHYTHM_LAYOUT.rhythmOffsetRatio,
     laneTotalWidth
   }
+}
+
+/**
+ * Simple cache for textures loaded via the Image element fallback.
+ * Separate from PIXI.Assets.cache to avoid issues with TilingSprite
+ * (Image-based textures lack proper source metadata for tiling).
+ * @type {Map<string, PIXI.Texture>}
+ */
+const _imageTextureCache = new Map()
+
+/**
+ * Robustly loads a texture, falling back to an Image element if Pixi Assets fails.
+ * Useful for generated URLs without extensions or with query parameters.
+ * @param {string} url - The URL to load.
+ * @returns {Promise<PIXI.Texture|null>} The loaded texture or null.
+ */
+export const loadTexture = async url => {
+  // Check Pixi's own cache first (safe check to avoid warning)
+  if (PIXI.Assets.cache.has(url)) {
+    const cached = PIXI.Assets.cache.get(url)
+    // Validate the texture's source is still alive (StrictMode can destroy it)
+    if (cached?.source && !cached.source.destroyed) return cached
+  }
+
+  // Check our Image-fallback cache
+  const imgCached = _imageTextureCache.get(url)
+  if (imgCached?.source && !imgCached.source.destroyed) return imgCached
+
+  // Detect if URL has a file extension that PixiJS can parse.
+  // Generated image URLs (e.g. Pollinations API) lack extensions,
+  // causing PIXI.Assets.load() to emit a noisy warning before failing.
+  // For those, skip straight to the Image element approach.
+  const hasExtension = (() => {
+    try {
+      const pathname = new URL(url).pathname
+      const lastSegment = pathname.split('/').pop() || ''
+      return lastSegment.includes('.')
+    } catch {
+      return false
+    }
+  })()
+
+  if (hasExtension) {
+    try {
+      return await PIXI.Assets.load(url)
+    } catch (err) {
+      logger.warn('loadTexture', 'Pixi Assets load failed, falling back to Image element', err)
+    }
+  }
+
+  // Image element fallback — works for any URL that returns image data
+  return new Promise(resolve => {
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => {
+      const source = new PIXI.ImageSource({ resource: img })
+      const texture = new PIXI.Texture({ source })
+      // Store in our own cache (NOT PIXI.Assets.cache — avoids TilingSprite issues)
+      _imageTextureCache.set(url, texture)
+      resolve(texture)
+    }
+    img.onerror = () => {
+      logger.warn('loadTexture', `Failed to load image: ${url}`)
+      resolve(null)
+    }
+    img.src = url
+  })
 }

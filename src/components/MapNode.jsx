@@ -101,13 +101,29 @@ export const MapNode = memo(
           <div className='font-bold text-(--toxic-green)'>
             {node.venue?.name || 'Unknown'}
           </div>
-          {node.type === 'GIG' && (
+          {(node.type === 'GIG' || node.type === 'FESTIVAL' || node.type === 'FINALE') && (
             <div className='text-[10px] text-(--ash-gray) font-mono'>
+              {node.type === 'FESTIVAL' && <div className='text-(--warning-yellow) font-bold mb-1'>FESTIVAL</div>}
               Cap: {node.venue?.capacity} | Pay: ~{node.venue?.pay}
               {'\u20AC'}
               <br />
               Ticket: {node.venue?.price}
               {'\u20AC'} | Diff: {'\u2605'.repeat(node.venue?.diff || 0)}
+            </div>
+          )}
+          {node.type === 'REST_STOP' && (
+            <div className='text-[10px] text-(--warning-yellow) font-mono'>
+              REST STOP — Recover Stamina & Mood
+            </div>
+          )}
+          {node.type === 'SPECIAL' && (
+            <div className='text-[10px] text-(--purple-glow,#a855f7) font-mono'>
+              MYSTERY — Unknown Encounter
+            </div>
+          )}
+          {node.type === 'FINALE' && (
+            <div className='text-[10px] text-(--warning-yellow) font-mono font-bold'>
+              ★ FINALE — The Final Show ★
             </div>
           )}
           {isCurrent && (

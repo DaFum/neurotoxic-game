@@ -375,11 +375,11 @@ const result = safeStorageOperation(
 
 ```javascript
 /**
- * Calculates travel expenses including fuel and food costs.
+ * Calculates travel expenses.
  * @param {Object} destination - Target node
  * @param {Object} origin - Starting node
  * @param {Object} player - Player state
- * @returns {{dist: number, fuelLiters: number, totalCost: number}}
+ * @returns {{dist: number, fuelLiters: number, totalCost: number}} totalCost is food only.
  */
 export const calculateTravelExpenses = (destination, origin, player) => {
   // Implementation

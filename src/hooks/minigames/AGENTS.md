@@ -40,4 +40,6 @@ Verify logic stability via unit tests:
 node --test --import tsx --experimental-test-module-mocks tests/minigameState.test.js
 ```
 
-_Last updated: 2026-02-21._
+- **Arrival Hand-off**: Minigame completion dispatches results but routing is handled by the shared `useArrivalLogic` hook to allow persistent-scene performance entry.
+
+_Last updated: 2026-02-23._

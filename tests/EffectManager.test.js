@@ -73,7 +73,8 @@ mock.module('../src/utils/logger.js', {
 
 mock.module('../src/components/stage/utils.js', {
   namedExports: {
-    getPixiColorFromToken: mock.fn(() => 0xffffff)
+    getPixiColorFromToken: mock.fn(() => 0xffffff),
+    loadTexture: mock.fn(async (url) => MockPIXI.Assets.load(url))
   }
 })
 
