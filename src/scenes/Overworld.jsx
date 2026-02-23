@@ -7,6 +7,7 @@ import { ToggleRadio } from '../components/ToggleRadio'
 import { MapConnection } from '../components/MapConnection'
 import { MapNode } from '../components/MapNode'
 import { BandHQ } from '../ui/BandHQ'
+import { GlitchButton } from '../ui/GlitchButton'
 import { ALL_VENUES } from '../data/venues'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import { EXPENSE_CONSTANTS } from '../utils/economyEngine'
@@ -34,6 +35,30 @@ export const Overworld = () => {
 
   const [hoveredNode, setHoveredNode] = useState(null)
   const { showHQ, openHQ, bandHQProps } = useBandHQModal()
+  const [isSaving, setIsSaving] = useState(false)
+  const [isRefueling, setIsRefueling] = useState(false)
+  const [isRepairing, setIsRepairing] = useState(false)
+
+  const handleSaveWrapper = async () => {
+    setIsSaving(true)
+    await new Promise(resolve => setTimeout(resolve, 500))
+    saveGame()
+    setIsSaving(false)
+  }
+
+  const handleRefuelWrapper = async () => {
+    setIsRefueling(true)
+    await new Promise(resolve => setTimeout(resolve, 500))
+    handleRefuel()
+    setIsRefueling(false)
+  }
+
+  const handleRepairWrapper = async () => {
+    setIsRepairing(true)
+    await new Promise(resolve => setTimeout(resolve, 500))
+    handleRepair()
+    setIsRepairing(false)
+  }
 
   const {
     isTraveling,
@@ -235,30 +260,39 @@ export const Overworld = () => {
       </div>
 
       <div className='absolute bottom-8 right-8 z-50 pointer-events-auto flex flex-col gap-2 items-end'>
-        <button
-          onClick={handleRefuel}
+        <GlitchButton
+          onClick={handleRefuelWrapper}
           disabled={
             isTraveling ||
             (player.van?.fuel ?? 0) >= EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
           }
-          className='bg-(--void-black) border border-(--warning-yellow) text-(--warning-yellow) px-4 py-2 hover:bg-(--warning-yellow) hover:text-(--void-black) font-mono text-sm disabled:opacity-50'
+          variant='warning'
+          size='sm'
+          isLoading={isRefueling}
+          className='font-mono'
         >
           [REFUEL]
-        </button>
-        <button
-          onClick={handleRepair}
+        </GlitchButton>
+        <GlitchButton
+          onClick={handleRepairWrapper}
           disabled={isTraveling || (player.van?.condition ?? 100) >= 100}
-          className='bg-(--void-black) border border-(--toxic-green) text-(--toxic-green) px-4 py-2 hover:bg-(--toxic-green) hover:text-(--void-black) font-mono text-sm disabled:opacity-50'
+          variant='primary'
+          size='sm'
+          isLoading={isRepairing}
+          className='font-mono'
         >
           [REPAIR]
-        </button>
-        <button
-          onClick={saveGame}
+        </GlitchButton>
+        <GlitchButton
+          onClick={handleSaveWrapper}
           disabled={isTraveling}
-          className='bg-(--void-black) border border-(--toxic-green) text-(--toxic-green) px-4 py-2 hover:bg-(--toxic-green) hover:text-(--void-black) font-mono text-sm disabled:opacity-50'
+          variant='primary'
+          size='sm'
+          isLoading={isSaving}
+          className='font-mono'
         >
           [SAVE GAME]
-        </button>
+        </GlitchButton>
       </div>
 
       <div className='relative w-full h-full max-w-6xl max-h-[80vh] border-4 border-(--toxic-green) bg-(--void-black)/80 rounded-lg shadow-[0_0_50px_var(--toxic-green-20)] overflow-hidden'>
