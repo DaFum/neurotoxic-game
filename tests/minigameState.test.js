@@ -108,7 +108,8 @@ test('Minigame State Transitions', async (t) => {
     const newState = gameReducer(activeState, action)
 
     assert.deepStrictEqual(newState.minigame, DEFAULT_MINIGAME_STATE)
-    assert.strictEqual(newState.currentScene, GAME_PHASES.GIG)
+    // Scene transition is now handled by UI overlay, so scene remains PRE_GIG_MINIGAME
+    assert.strictEqual(newState.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
 
     // equipmentDamage=5 -> stress=1 -> harmony-=1; repairCost=10 -> money-=10
     // harmony: 80 - 1 = 79

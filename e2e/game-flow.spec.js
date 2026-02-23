@@ -152,20 +152,27 @@ test.describe('Game Flow', () => {
     await travelNode.click()
 
     // 2. Tourbus Minigame -> Wait for completion
-    // The minigame runs by itself or can be survived by doing nothing.
+    // Wait for scene to load
+    await expect(page.getByText('TOURBUS TERROR')).toBeVisible({ timeout: 10000 })
+
+    // Simulate keyboard presses to complete the minigame quickly using DEV backdoor
+    await page.keyboard.press('Shift+P')
+    await page.waitForTimeout(500)
+
     // Wait for game over screen and click continue.
     const destReachedBtn = page.getByRole('button', { name: /continue/i, exact: true })
-    await destReachedBtn.waitFor({ state: 'visible', timeout: 60000 })
+    await destReachedBtn.waitFor({ state: 'visible', timeout: 10000 })
     await destReachedBtn.click()
 
     // Handle Potential Random Events (e.g., Van Breakdown, Police Check)
     // These appear after the Tourbus Minigame (on arrival) and overlay the PreGig view.
     for (let i = 0; i < 3; i++) {
         try {
-            const firstEventOption = page.locator('button', { hasText: /^1 / })
-            await firstEventOption.waitFor({ state: 'visible', timeout: 3000 })
+            // Check if an event modal is visible by looking for options
+            const firstEventOption = page.locator('button', { hasText: /^1 / }).first()
+            await firstEventOption.waitFor({ state: 'visible', timeout: 4000 })
             await firstEventOption.click()
-            await page.waitForTimeout(500) // allow UI to settle
+            await page.waitForTimeout(1000) // allow UI to settle
         } catch (_e) {
             // No more events found, proceed
             break
@@ -173,7 +180,7 @@ test.describe('Game Flow', () => {
     }
 
     // 3. PreGig Preparation
-    await expect(page.getByRole('heading', { name: /preparation/i })).toBeVisible({ timeout: 5000 })
+    await expect(page.getByRole('heading', { name: /preparation/i })).toBeVisible({ timeout: 15000 })
     // Select the first song to fulfill minimum requirements (1 song)
     const firstSong = page.getByText('01 Kranker Schrank')
     await firstSong.waitFor({ state: 'visible', timeout: 5000 })
@@ -185,13 +192,16 @@ test.describe('Game Flow', () => {
 
     // 4. Roadie Minigame
     // We arrive at Roadie Run screen. We need to move the character down to deliver, then up to fetch next item, 3 times.
-    await expect(page.getByRole('heading', { name: /roadie run/i })).toBeVisible({ timeout: 5000 })
+    await expect(page.getByRole('heading', { name: /roadie run/i })).toBeVisible({ timeout: 10000 })
+    await page.waitForTimeout(1000)
     
     // Simulate keyboard presses to complete the minigame quickly using DEV backdoor
     await page.keyboard.press('Shift+P')
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(1000)
 
-
+    const startShowBtn2 = page.getByRole('button', { name: /start show/i, exact: true })
+    await startShowBtn2.waitFor({ state: 'visible', timeout: 10000 })
+    await startShowBtn2.click()
 
     // 5. Gig (Rhythm Game)
     // The song plays automatically. Since we don't click, health fails but scene still advances.

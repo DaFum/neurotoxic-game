@@ -394,8 +394,8 @@ const handleCompleteRoadieMinigame = (state, payload) => {
     band: nextBand,
     player: nextPlayer,
     gigModifiers: nextModifiers,
-    minigame: { ...DEFAULT_MINIGAME_STATE },
-    currentScene: GAME_PHASES.GIG
+    minigame: { ...DEFAULT_MINIGAME_STATE }
+    // Scene transition handled by UI overlay
   }
 }
 
