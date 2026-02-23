@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { useBandHQModal } from '../hooks/useBandHQModal.js'
@@ -16,6 +16,8 @@ export const MainMenu = () => {
   const { changeScene, loadGame, addToast, resetState } = useGameState()
   const { showHQ, openHQ, bandHQProps } = useBandHQModal()
   const isMountedRef = useRef(true)
+  const [isStarting, setIsStarting] = useState(false)
+  const [isLoadingGame, setIsLoadingGame] = useState(false)
 
   useEffect(() => {
     return () => {
@@ -38,7 +40,13 @@ export const MainMenu = () => {
     })
   }
 
-  const handleStartTour = () => {
+  const handleStartTour = async () => {
+    setIsStarting(true)
+    // Add artificial delay for UX weight
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    if (!isMountedRef.current) return
+
     // State transitions MUST happen synchronously so React batches them.
     // If they run after an `await`, each dispatch triggers a separate render,
     // causing the intermediate INTRO scene to mount and unmount MainMenu.
@@ -54,9 +62,16 @@ export const MainMenu = () => {
   /**
    * Handles loading a saved game.
    */
-  const handleLoad = () => {
+  const handleLoad = async () => {
+    setIsLoadingGame(true)
+    // Add artificial delay for UX weight
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    if (!isMountedRef.current) return
+
     if (!loadGame()) {
       addToast('No save game found!', 'error')
+      if (isMountedRef.current) setIsLoadingGame(false)
       return
     }
 
@@ -124,12 +139,17 @@ export const MainMenu = () => {
           transition={{ duration: 0.5, delay: 0.8 }}
           className='flex flex-col gap-3'
         >
-          <GlitchButton onClick={handleStartTour} className='relative z-20'>
+          <GlitchButton
+            onClick={handleStartTour}
+            isLoading={isStarting}
+            className='relative z-20'
+          >
             Start Tour
           </GlitchButton>
 
           <GlitchButton
             onClick={handleLoad}
+            isLoading={isLoadingGame}
             className='relative z-20 border-(--blood-red) text-(--blood-red) hover:bg-(--blood-red) hover:shadow-[4px_4px_0px_var(--toxic-green)]'
           >
             Load Game
