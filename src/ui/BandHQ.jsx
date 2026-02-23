@@ -110,6 +110,7 @@ export const BandHQ = ({
 
         {/* Navigation */}
         <div className='flex border-b-2 border-(--ash-gray) overflow-x-auto'>
+          {/* Tabs: STATS, DETAILS, SHOP, UPGRADES, SETLIST, SETTINGS */}
           {['STATS', 'DETAILS', 'SHOP', 'UPGRADES', 'SETLIST', 'SETTINGS'].map(tab => (
             <button
               key={tab}
@@ -208,7 +209,9 @@ BandHQ.propTypes = {
   }).isRequired,
   social: PropTypes.shape({
     instagram: PropTypes.number,
-    tiktok: PropTypes.number
+    tiktok: PropTypes.number,
+    youtube: PropTypes.number,
+    newsletter: PropTypes.number
   }).isRequired,
   onClose: PropTypes.func.isRequired,
   updatePlayer: PropTypes.func.isRequired,

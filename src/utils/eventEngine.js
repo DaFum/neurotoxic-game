@@ -219,24 +219,28 @@ export const eventEngine = {
         result = { ...success, outcome: 'success' }
       } else {
         // Bandleader Trait Check: 50% chance to save a failed check in conflict events
+        // Pre-consume RNG for determinism
+        const bandleaderRoll = rng()
         let savedByBandleader = false
+
         if (
           gameState.activeEvent?.tags?.includes('conflict') &&
           gameState.band?.members?.some(m =>
             m.traits?.some(t => t.id === 'bandleader')
           )
         ) {
-          if (rng() < 0.5) {
+          if (bandleaderRoll < 0.5) {
             savedByBandleader = true
           }
         }
 
         if (savedByBandleader) {
+          const baseDesc = success?.description || ''
+          const savedText = ' (Saved by Bandleader!)' // TODO: Externalize string
           result = {
             ...success,
             outcome: 'success',
-            description:
-              (success.description || '') + ' (Saved by Bandleader!)'
+            description: baseDesc + savedText
           }
         } else {
           result = { ...failure, outcome: 'failure' }

@@ -145,3 +145,29 @@ ProgressBar.propTypes = {
   warn: PropTypes.bool,
   className: PropTypes.string
 }
+
+/**
+ * Panel - A styled container with an optional title.
+ * @param {Object} props
+ * @param {string} [props.title] - Optional title for the panel header.
+ * @param {React.ReactNode} props.children - Panel content.
+ * @param {string} [props.className] - Additional CSS classes.
+ */
+export const Panel = ({ title, children, className = '' }) => (
+  <div className={`bg-(--void-black)/40 border border-(--ash-gray)/40 p-4 h-full ${className}`}>
+    {title && (
+      <h3 className='text-(--toxic-green) text-sm font-bold mb-3 border-b border-(--ash-gray)/40 pb-1 font-mono uppercase tracking-wider'>
+        {title}
+      </h3>
+    )}
+    <div className='space-y-1'>
+      {children}
+    </div>
+  </div>
+)
+
+Panel.propTypes = {
+  title: PropTypes.string,
+  children: PropTypes.node.isRequired,
+  className: PropTypes.string
+}
