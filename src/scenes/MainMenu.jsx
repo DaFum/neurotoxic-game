@@ -47,9 +47,7 @@ export const MainMenu = () => {
 
     if (!isMountedRef.current) return
 
-    // State transitions MUST happen synchronously so React batches them.
-    // If they run after an `await`, each dispatch triggers a separate render,
-    // causing the intermediate INTRO scene to mount and unmount MainMenu.
+    // State transitions (batched automatically by React 18+)
     resetState()
     changeScene('OVERWORLD')
 
@@ -75,7 +73,7 @@ export const MainMenu = () => {
       return
     }
 
-    // Scene transition must be synchronous (see handleStartTour comment).
+    // State transitions (batched automatically by React 18+)
     changeScene('OVERWORLD')
 
     // Audio is fire-and-forget; Overworld re-syncs audio.

@@ -60,7 +60,7 @@ describe('GlitchButton', () => {
     // The children are wrapped in a span with relative z-10 ...
     // We can't easily query that span without a testid, but we can check if button has the loader
     // The loader is an svg inside the button.
-    // assert.ok(button.querySelector('svg'), 'Should contain loader SVG')
+    assert.ok(button.querySelector('svg'), 'Should contain loader SVG')
   })
 
   it('applies small size classes', () => {
