@@ -202,6 +202,7 @@ export class MapGenerator {
   resolveOverlaps(nodes) {
     const iterations = 150 // Increased iterations
     const minDistance = 6 // % of map width/height (approx 2x pin size)
+    const minDistanceSq = minDistance * minDistance
     const nodeList = Object.values(nodes)
     // Reduce movement strength over time to stabilize
     let strength = 0.5
@@ -215,10 +216,12 @@ export class MapGenerator {
 
           let dx = n1.x - n2.x
           let dy = n1.y - n2.y
-          let dist = Math.sqrt(dx * dx + dy * dy)
+          const distSq = dx * dx + dy * dy
 
-          if (dist < minDistance) {
+          if (distSq < minDistanceSq) {
             moved = true
+            let dist = Math.sqrt(distSq)
+
             if (dist < 0.1) {
               // Exact overlap (or very close), push randomly
               dx = this.random() - 0.5 || 0.1
