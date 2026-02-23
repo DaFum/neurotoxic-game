@@ -116,6 +116,10 @@ const processEffect = (eff, delta) => {
         delta.social.viral = (delta.social.viral || 0) + eff.value
       if (eff.stat === 'score')
         delta.flags.score = (delta.flags.score || 0) + eff.value
+      if (eff.stat === 'luck')
+        delta.band.luck = (delta.band.luck || 0) + eff.value
+      if (eff.stat === 'skill')
+        delta.band.skill = (delta.band.skill || 0) + eff.value
       break
     case 'item':
       if (eff.item) {

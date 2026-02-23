@@ -439,5 +439,248 @@ export const TRANSPORT_EVENTS = [
         outcomeText: 'Efficiency first.'
       }
     ]
+  },
+  {
+    id: 'fuel_leak',
+    category: 'transport',
+    title: 'FUEL LEAK',
+    description: 'You smell gasoline while driving.',
+    trigger: 'travel',
+    chance: 0.04,
+    options: [
+      {
+        label: 'Fix immediately [-150€, -2h]',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'resource', resource: 'money', value: -150 },
+            { type: 'stat', stat: 'time', value: -2 }
+          ]
+        },
+        outcomeText: 'Safe, but expensive.'
+      },
+      {
+        label: 'Ignore it [Luck]',
+        skillCheck: {
+          stat: 'luck',
+          threshold: 5,
+          success: { type: 'stat', stat: 'time', value: 0 },
+          failure: { type: 'chain', eventId: 'van_critical_failure' }
+        },
+        outcomeText: 'You rolled the dice.'
+      }
+    ]
+  },
+  {
+    id: 'flat_battery',
+    category: 'transport',
+    title: 'FLAT BATTERY',
+    description: 'The van won’t start at a rest stop.',
+    trigger: 'travel',
+    chance: 0.06,
+    options: [
+      {
+        label: 'Jump start [-1h]',
+        effect: { type: 'stat', stat: 'time', value: -1 },
+        outcomeText: 'Back on the road.'
+      },
+      {
+        label: 'Call help [-80€]',
+        effect: { type: 'resource', resource: 'money', value: -80 },
+        outcomeText: 'Embarrassing, but solved.'
+      }
+    ]
+  },
+  {
+    id: 'missed_exit',
+    category: 'transport',
+    title: 'MISSED EXIT',
+    description: 'Someone talked over the GPS. You missed the exit by miles.',
+    trigger: 'travel',
+    chance: 0.06,
+    options: [
+      {
+        label: 'Take the next exit [-1h]',
+        effect: { type: 'stat', stat: 'time', value: -1 },
+        outcomeText: 'Annoying, but simple.'
+      },
+      {
+        label: 'Blame someone [-5 Harmony]',
+        effect: { type: 'stat', stat: 'harmony', value: -5 },
+        outcomeText: 'It gets spicy fast.'
+      }
+    ]
+  },
+  {
+    id: 'van_smell_attack',
+    category: 'transport',
+    title: 'VAN SMELL ATTACK',
+    description: 'Something in the van smells… alive.',
+    trigger: 'travel',
+    chance: 0.05,
+    options: [
+      {
+        label: 'Stop and clean [-0.5h, +5 Mood]',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'stat', stat: 'time', value: -0.5 },
+            { type: 'stat', stat: 'mood', value: 5 }
+          ]
+        },
+        outcomeText: 'The air becomes breathable again.'
+      },
+      {
+        label: 'Ignore it [-5 Mood]',
+        effect: { type: 'stat', stat: 'mood', value: -5 },
+        outcomeText: 'You suffer in silence.'
+      }
+    ]
+  },
+  {
+    id: 'rest_stop_fight',
+    category: 'transport',
+    title: 'REST STOP DRAMA',
+    description: 'A random guy comments on your van. Lars is ready to fight.',
+    trigger: 'travel',
+    chance: 0.03,
+    options: [
+      {
+        label: 'De-escalate [Charisma]',
+        skillCheck: {
+          stat: 'charisma',
+          threshold: 7,
+          success: { type: 'stat', stat: 'harmony', value: 5 },
+          failure: { type: 'stat', stat: 'harmony', value: -8 }
+        },
+        outcomeText: 'You try to be the adult.'
+      },
+      {
+        label: 'Leave fast [-0.5h]',
+        effect: { type: 'stat', stat: 'time', value: -0.5 },
+        outcomeText: 'You choose flight.'
+      }
+    ]
+  },
+  {
+    id: 'lost_key',
+    category: 'transport',
+    title: 'LOST KEY',
+    description: 'The van key is missing. Panic spreads.',
+    trigger: 'travel',
+    chance: 0.03,
+    options: [
+      {
+        label: 'Search thoroughly [-1h]',
+        effect: { type: 'stat', stat: 'time', value: -1 },
+        outcomeText: 'Found it under a merch box. Of course.'
+      },
+      {
+        label: 'Call locksmith [-120€]',
+        effect: { type: 'resource', resource: 'money', value: -120 },
+        outcomeText: 'It hurts, but it works.'
+      }
+    ]
+  },
+  {
+    id: 'rainstorm_drive',
+    category: 'transport',
+    title: 'RAINSTORM',
+    description: 'Rain hits like a wall. Visibility drops.',
+    trigger: 'travel',
+    chance: 0.05,
+    options: [
+      {
+        label: 'Drive slowly [-1h]',
+        effect: { type: 'stat', stat: 'time', value: -1 },
+        outcomeText: 'Safe, boring.'
+      },
+      {
+        label: 'Push through [Stamina]',
+        skillCheck: {
+          stat: 'stamina',
+          threshold: 7,
+          success: { type: 'stat', stat: 'time', value: -0.5 },
+          failure: { type: 'stat', stat: 'time', value: -2 }
+        },
+        outcomeText: 'Stress driving mode.'
+      }
+    ]
+  },
+  {
+    id: 'cheap_hotel_or_van',
+    category: 'transport',
+    title: 'SLEEP CHOICE',
+    description: 'It’s late. Do you pay for beds or sleep in the van?',
+    trigger: 'travel',
+    chance: 0.04,
+    options: [
+      {
+        label: 'Hotel [-120€, +15 Stamina]',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'resource', resource: 'money', value: -120 },
+            { type: 'stat', stat: 'stamina', value: 15 }
+          ]
+        },
+        outcomeText: 'Real beds feel unreal.'
+      },
+      {
+        label: 'Van sleep [+0€, -5 Mood]',
+        effect: { type: 'stat', stat: 'mood', value: -5 },
+        outcomeText: 'Crunchy sleep. Crunchy vibes.'
+      }
+    ]
+  },
+  {
+    id: 'fuel_warning_light',
+    category: 'transport',
+    title: 'FUEL WARNING LIGHT',
+    description: 'The fuel light turns on. You all pretend not to see it.',
+    trigger: 'travel',
+    chance: 0.06,
+    options: [
+      {
+        label: 'Refuel now [-40€]',
+        effect: { type: 'resource', resource: 'money', value: -40 },
+        outcomeText: 'Adult decision.'
+      },
+      {
+        label: 'Risk it [Luck]',
+        skillCheck: {
+          stat: 'luck',
+          threshold: 6,
+          success: { type: 'stat', stat: 'mood', value: 3 },
+          failure: { type: 'chain', eventId: 'van_breakdown_engine' }
+        },
+        outcomeText: 'You gamble with fumes.'
+      }
+    ]
+  },
+  {
+    id: 'tire_pressure_warning',
+    category: 'transport',
+    title: 'TIRE PRESSURE WARNING',
+    description: 'A warning light appears. The van looks innocent.',
+    trigger: 'travel',
+    chance: 0.05,
+    options: [
+      {
+        label: 'Check it [-0.5h]',
+        effect: { type: 'stat', stat: 'time', value: -0.5 },
+        outcomeText: 'It was low. Now it’s fine.'
+      },
+      {
+        label: 'Ignore [Risk]',
+        skillCheck: {
+          stat: 'luck',
+          threshold: 5,
+          success: { type: 'stat', stat: 'time', value: 0 },
+          failure: { type: 'chain', eventId: 'van_breakdown_tire' }
+        },
+        outcomeText: 'You pretend nothing’s wrong.'
+      }
+    ]
   }
 ]

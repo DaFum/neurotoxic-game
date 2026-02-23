@@ -141,6 +141,18 @@ export const applyEventDelta = (state, delta) => {
     if (typeof delta.band.luck === 'number') {
       nextBand.luck = Math.max(0, (nextBand.luck || 0) + delta.band.luck)
     }
+    if (typeof delta.band.skill === 'number') {
+      nextBand.members = nextBand.members.map(member => ({
+        ...member,
+        baseStats: {
+          ...member.baseStats,
+          skill: Math.max(
+            1,
+            Math.min(10, (member.baseStats?.skill || 5) + delta.band.skill)
+          )
+        }
+      }))
+    }
     nextState.band = nextBand
   }
 

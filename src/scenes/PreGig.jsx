@@ -89,7 +89,7 @@ export const PreGig = () => {
         triggerEvent('gig', 'pre_gig')
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Intentionally run once on mount
   }, [])
 
   /**

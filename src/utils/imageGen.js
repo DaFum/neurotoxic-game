@@ -4,14 +4,43 @@ const MODEL = 'flux'
 const KEY = 'pk_xDL8u2ty4Sxucaa3' // gitleaks:allow
 
 /**
- * Generates a URL for a procedurally generated image.
+ * Generates a URL string for a procedurally generated image.
+ * Use this for direct URL assignment (img src, CSS backgroundImage, PIXI loaders).
  * @param {string} description - The detailed prompt for the image.
  * @returns {string} The complete image URL.
  */
 export const getGenImageUrl = description => {
-  // URL Encode the description
   const encodedDesc = encodeURIComponent(description)
   return `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}&=`
+}
+
+/**
+ * Fetches a generated image with explicit Accept headers.
+ * @param {string} description - The detailed prompt for the image.
+ * @returns {Promise<Response>} The fetch response.
+ */
+export const fetchGenImage = description => {
+  const encodedDesc = encodeURIComponent(description)
+  return fetch(
+    `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}`,
+    {
+      headers: {
+        Accept: 'image/jpeg, image/png, video/mp4'
+      }
+    }
+  )
+}
+
+/**
+ * Fetches a generated image and returns an object URL for use in src/CSS.
+ * @param {string} description - The detailed prompt for the image.
+ * @returns {Promise<string>} A blob object URL.
+ */
+export const fetchGenImageAsObjectUrl = async description => {
+  const res = await fetchGenImage(description)
+  if (!res.ok) throw new Error(`Image fetch failed: ${res.status}`)
+  const blob = await res.blob()
+  return URL.createObjectURL(blob)
 }
 
 export const IMG_PROMPTS = {
