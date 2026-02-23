@@ -1,10 +1,10 @@
 
 import * as PIXI from 'pixi.js'
+import { CELL_SIZE } from '../../hooks/minigames/useRoadieLogic'
+import { EffectManager } from './EffectManager'
 import { logger } from '../../utils/logger'
 import { getPixiColorFromToken } from '../stage/utils'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
-import { EffectManager } from './EffectManager'
-import { CELL_SIZE } from '../../hooks/minigames/useRoadieLogic'
 
 export class RoadieStageController {
   constructor({ containerRef, gameStateRef, updateRef, statsRef }) {
@@ -98,6 +98,7 @@ export class RoadieStageController {
 
         } catch (e) {
             logger.error('RoadieStageController', 'Init Failed', e)
+            this.dispose()
         }
     })()
     return this.initPromise
@@ -152,9 +153,9 @@ export class RoadieStageController {
 
       const g = new PIXI.Graphics()
       this.bgGraphics = g
-      const roadColor = getPixiColorFromToken('--void-black')
-      const grassColor = getPixiColorFromToken('--roadie-grass') || getPixiColorFromToken('--toxic-green')
-      const venueColor = getPixiColorFromToken('--roadie-venue-blue') || getPixiColorFromToken('--blood-red')
+      const roadColor = getPixiColorFromToken('--void-black') || 0x000000
+      const grassColor = getPixiColorFromToken('--roadie-grass') || getPixiColorFromToken('--toxic-green') || 0x00FF41
+      const venueColor = getPixiColorFromToken('--roadie-venue-blue') || getPixiColorFromToken('--blood-red') || 0xCC0000
       const stripeColor = getPixiColorFromToken('--star-white') || 0xFFFFFF
 
       // Use screen width for better drawing

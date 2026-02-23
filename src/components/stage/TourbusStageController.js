@@ -1,9 +1,9 @@
 
 import * as PIXI from 'pixi.js'
-import { logger } from '../../utils/logger'
-import { getPixiColorFromToken } from '../stage/utils'
-import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
 import { EffectManager } from './EffectManager'
+import { getPixiColorFromToken } from '../stage/utils'
+import { logger } from '../../utils/logger'
+import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
 
 export class TourbusStageController {
   constructor({ containerRef, gameStateRef, updateRef, statsRef }) {
