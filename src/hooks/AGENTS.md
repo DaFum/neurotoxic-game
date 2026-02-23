@@ -18,6 +18,9 @@ Current top-level hooks:
 - `usePurchaseLogic.js`
 - `useAudioControl.js`
 - `useRhythmGameLogic.js`
+- `useBandHQModal.js`
+- `useGigEffects.js`
+- `useGigInput.js`
 
 ## Code-Aligned Rules
 
@@ -54,4 +57,4 @@ npm run test
 npm run build
 ```
 
-_Last updated: 2026-02-21._
+_Last updated: 2026-02-23._
