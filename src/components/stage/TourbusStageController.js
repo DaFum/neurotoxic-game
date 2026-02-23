@@ -123,7 +123,7 @@ export class TourbusStageController {
     this.laneWidth = width / 3
 
     // Clear previous
-    this.roadContainer.removeChildren()
+    this.roadContainer.removeChildren().forEach(c => c.destroy())
 
     // Use TilingSprite if texture loaded, else Graphics
     if (this.textures.road) {
