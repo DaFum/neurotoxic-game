@@ -92,7 +92,7 @@ export class EffectManager {
     const g = (color >> 8) & 0xff
     const b = color & 0xff
 
-    let texture = null
+    let texture
     if (r > g && r > b && this.textures.blood) {
       texture = this.textures.blood
     } else if (this.textures.toxic) {

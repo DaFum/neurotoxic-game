@@ -8,6 +8,7 @@ export default [
   {
     ignores: ['dist/**', 'src/data/songs.js', '.claude/**']
   },
+  react.configs.flat.recommended,
   {
     files: ['**/*.{js,jsx,mjs,cjs}'],
     languageOptions: {
@@ -20,28 +21,29 @@ export default [
       },
       globals: {
         ...globals.browser,
-        ...globals.es2021,
-        ...globals.node
+        ...globals.es2021
       }
     },
     plugins: {
-      react,
       'react-hooks': reactHooks
     },
     settings: {
       react: {
-        version: 'detect'
+        version: '19.2.4'
       }
     },
     rules: {
       ...js.configs.recommended.rules,
+      ...reactHooks.configs.recommended.rules,
       ...prettier.rules,
-      'react-hooks/rules-of-hooks': 'error',
-      'react/jsx-key': 'error',
       'react/react-in-jsx-scope': 'off',
       'react/jsx-uses-react': 'off',
-      'react/jsx-uses-vars': 'error',
+      'react/prop-types': 'warn',
+      'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
+      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/refs': 'warn',
+      'react-hooks/preserve-manual-memoization': 'warn',
       'no-restricted-imports': [
         'error',
         {
@@ -62,6 +64,21 @@ export default [
           caughtErrorsIgnorePattern: '^_'
         }
       ]
+    }
+  },
+  {
+    files: [
+      '.eslintrc.cjs',
+      'vite.config.js',
+      '*.config.js',
+      'tests/**/*.{js,jsx,mjs}',
+      'e2e/**/*.{js,jsx,mjs}',
+      'extract_venues.js'
+    ],
+    languageOptions: {
+      globals: {
+        ...globals.node
+      }
     }
   }
 ]

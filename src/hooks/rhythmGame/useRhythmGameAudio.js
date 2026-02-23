@@ -188,7 +188,7 @@ export const useRhythmGameAudio = ({
 
         const currentSong = activeSetlist[index]
         let notes = []
-        let audioDelay = 0
+        let audioDelay
         let bgAudioStarted = false
         const rng = Math.random
         gameStateRef.current.rng = rng
@@ -373,7 +373,7 @@ export const useRhythmGameAudio = ({
               rng
             )
             if (success) {
-              bgAudioStarted = true
+              // bgAudioStarted = true // useless assignment as it's never read again
               logger.info(
                 'RhythmGame',
                 `Gig audio: procedural metal generator for "${currentSong.name}"`
