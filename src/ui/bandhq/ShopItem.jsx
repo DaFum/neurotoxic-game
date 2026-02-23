@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
 import { getPrimaryEffect } from '../../hooks/usePurchaseLogic'
@@ -6,17 +6,33 @@ import { GlitchButton } from '../GlitchButton'
 
 export const ShopItem = ({ item, isOwned, isDisabled, onBuy }) => {
   const [isProcessing, setIsProcessing] = useState(false)
+  const isMountedRef = useRef(true)
+
   const primaryEffect = getPrimaryEffect(item)
   const isConsumable = primaryEffect?.type === 'inventory_add'
   const isPurchased = isOwned && !isConsumable
 
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
+
   const handlePurchase = async () => {
-    if (isDisabled || isPurchased) return
+    if (isDisabled || isPurchased || isProcessing) return
     setIsProcessing(true)
-    // Artificial delay for UX
-    await new Promise(resolve => setTimeout(resolve, 500))
-    onBuy(item)
-    setIsProcessing(false)
+    try {
+      // Artificial delay for UX
+      await new Promise(resolve => setTimeout(resolve, 500))
+
+      if (!isMountedRef.current) return
+
+      await onBuy(item)
+    } finally {
+      if (isMountedRef.current) {
+        setIsProcessing(false)
+      }
+    }
   }
 
   return (

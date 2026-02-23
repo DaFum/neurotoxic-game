@@ -71,7 +71,7 @@ export const GlitchButton = ({
     >
       <span
         className={`relative z-10 flex items-center justify-center gap-2 ${
-          isIntervention && variant !== 'owned' ? '' : 'group-hover:animate-pulse'
+          isIntervention || variant === 'owned' ? '' : 'group-hover:animate-pulse'
         } ${isLoading ? 'opacity-0' : 'opacity-100'}`}
       >
         {children}
