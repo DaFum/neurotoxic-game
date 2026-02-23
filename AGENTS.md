@@ -12,7 +12,7 @@
 | --------------- | ------------------------------------------------ |
 | **Frontend**    | React 19.2.4, Vite 7.3.1, JavaScript (ESModules) |
 | **Game Engine** | Pixi.js 8.16.0                                   |
-| **Styling**     | Tailwind CSS 4.2.0, Framer Motion 12.34.2        |
+| **Styling**     | Tailwind CSS 4.2.0, Framer Motion 12.34.3        |
 | **Audio**       | Tone.js 15.5.0 (WebAudio buffers)                |
 
 ## Project Structure
@@ -49,7 +49,7 @@ npm run lint         # Run ESLint
 npm run format       # Run Prettier
 ```
 
-Notes: `npm run test` uses Node's built-in test runner with `tsx`; `npm run test:e2e` runs Playwright when configured.
+Notes: `npm run test` uses Node's built-in test runner with `tsx` and `tests/setup.mjs`; `npm run test:e2e` runs Playwright when configured.
 
 ## Critical Constraints
 

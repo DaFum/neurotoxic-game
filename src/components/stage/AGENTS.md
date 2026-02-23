@@ -49,4 +49,4 @@ npm run test
 npm run build
 ```
 
-_Last updated: 2026-02-21._
+_Last updated: 2026-02-23._

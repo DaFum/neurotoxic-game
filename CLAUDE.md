@@ -18,7 +18,7 @@ npm run lint       # ESLint
 npm run format     # Prettier --write .
 ```
 
-Tests use Node's built-in `node:test` module with `tsx` for ESM transpilation. Test files live in `tests/`. To run a single test: `node --test --import tsx --experimental-test-module-mocks tests/economyEngine.test.js`
+Tests use Node's built-in `node:test` module with `tsx` for ESM transpilation. Test files live in `tests/`. To run a single test: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/economyEngine.test.js`
 
 ## Tech Stack & Version Constraints
 
@@ -28,11 +28,11 @@ Tests use Node's built-in `node:test` module with `tsx` for ESM transpilation. T
 | Build     | Vite          | 7.3.1                                  |
 | Language  | JavaScript    | ES2021 (ESModules, `"type": "module"`) |
 | Rendering | Pixi.js       | 8.16.0                                 |
-| Animation | Framer Motion | 12.34.2                                |
+| Animation | Framer Motion | 12.34.3                                |
 | Styling   | Tailwind CSS  | 4.2.0                                  |
 | Audio     | Tone.js       | 15.5.0                                 |
 
-**DO NOT upgrade**: React (stay 19.2.4), Vite (stay 7.3.1), Tailwind (stay 4.2.0), Framer Motion (stay 12.34.2), Tone.js (stay 15.5.0). Node.js 22.3+ required.
+**DO NOT upgrade**: React (stay 19.2.4), Vite (stay 7.3.1), Tailwind (stay 4.2.0), Framer Motion (stay 12.34.3), Tone.js (stay 15.5.0). Node.js 22.3+ required.
 
 ## Architecture
 
@@ -193,4 +193,4 @@ Additional docs: `docs/ARCHITECTURE.md` (system diagrams), `docs/STATE_TRANSITIO
 
 Commits use Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`).
 
-_Documentation sync: dependency/tooling baseline reviewed on 2026-02-19. Minigame architecture documented 2026-02-21. Economy refactor and map icons documented 2026-02-23._
+_Documentation sync: dependency/tooling baseline reviewed on 2026-02-23. Minigame architecture documented 2026-02-21. Economy refactor and map icons documented 2026-02-23._
