@@ -188,6 +188,7 @@ export const useTourbusLogic = () => {
       // Backdoor for E2E testing
       if (import.meta.env?.DEV && e.code === 'KeyP' && e.shiftKey) {
         e.preventDefault()
+        if (gameStateRef.current.isGameOver) return
         gameStateRef.current.distance = TARGET_DISTANCE
         gameStateRef.current.isGameOver = true
         completeTravelMinigame(0, [])

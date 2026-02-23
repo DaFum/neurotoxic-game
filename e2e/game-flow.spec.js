@@ -170,7 +170,8 @@ test.describe('Game Flow', () => {
         try {
             // Check if an event modal is visible by looking for options
             const firstEventOption = page.locator('button', { hasText: /^1 / }).first()
-            await firstEventOption.waitFor({ state: 'visible', timeout: 4000 })
+            // Reduced timeout for event check to fail fast if no event
+            await firstEventOption.waitFor({ state: 'visible', timeout: 2000 })
             await firstEventOption.click()
             await page.waitForTimeout(1000) // allow UI to settle
         } catch (_e) {
@@ -199,9 +200,9 @@ test.describe('Game Flow', () => {
     await page.keyboard.press('Shift+P')
     await page.waitForTimeout(1000)
 
-    const startShowBtn2 = page.getByRole('button', { name: /start show/i, exact: true })
-    await startShowBtn2.waitFor({ state: 'visible', timeout: 10000 })
-    await startShowBtn2.click()
+    // Wait for button to be visible again (reusing same selector logic/text)
+    await startShowBtn.waitFor({ state: 'visible', timeout: 10000 })
+    await startShowBtn.click()
 
     // 5. Gig (Rhythm Game)
     // The song plays automatically. Since we don't click, health fails but scene still advances.

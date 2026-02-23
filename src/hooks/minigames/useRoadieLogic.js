@@ -16,7 +16,7 @@ const TRAFFIC_SPEEDS = [0.005, -0.009, 0.012, -0.007, 0.015, -0.010]
 const CAR_SPAWN_RATES = [2500, 2200, 1600, 2800, 1400, 2000] // Slightly denser
 
 export const useRoadieLogic = () => {
-  const { completeRoadieMinigame } = useGameState()
+  const { completeRoadieMinigame, currentScene, changeScene } = useGameState()
 
   // Mutable Game State
   const gameStateRef = useRef({
@@ -212,6 +212,20 @@ export const useRoadieLogic = () => {
          setUiState(prev => ({ ...prev, carrying: gameStateRef.current.carrying, itemsRemaining: gameStateRef.current.itemsToDeliver.length }))
      }
   }, [])
+
+  // Safety Fallback: Ensure scene advances if UI hangs
+  useEffect(() => {
+    let timeout
+    if (uiState.isGameOver && currentScene === 'PRE_GIG_MINIGAME') {
+      timeout = setTimeout(() => {
+        // Double check scene hasn't changed
+        if (currentScene === 'PRE_GIG_MINIGAME') {
+           changeScene('GIG')
+        }
+      }, 10000) // 10s fallback
+    }
+    return () => clearTimeout(timeout)
+  }, [uiState.isGameOver, currentScene, changeScene])
 
   return {
     gameStateRef,
