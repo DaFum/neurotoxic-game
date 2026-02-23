@@ -146,6 +146,8 @@ export const useRoadieLogic = () => {
                     
                     if (game.equipmentDamage >= 100) {
                         game.isGameOver = true
+                        game.playerPos.y = 0
+                        game.playerPos.x = 6
                         completeRoadieMinigame(100)
                     } else {
                         // Drop item? Or just damage?
@@ -190,7 +192,7 @@ export const useRoadieLogic = () => {
         move(0, 1)
       }
       // Backdoor for E2E testing
-      if (e.code === 'KeyP' && e.shiftKey) {
+      if (import.meta.env?.DEV && e.code === 'KeyP' && e.shiftKey) {
         e.preventDefault()
         const game = gameStateRef.current
         game.isGameOver = true
