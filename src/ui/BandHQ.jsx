@@ -48,6 +48,7 @@ export const BandHQ = ({
   className = ''
 }) => {
   const [activeTab, setActiveTab] = useState('STATS') // STATS, SHOP, UPGRADES, SETLIST, SETTINGS
+  const [processingItemId, setProcessingItemId] = useState(null)
 
   const unifiedUpgradeCatalog = useMemo(() => getUnifiedUpgradeCatalog(), [])
 
@@ -61,6 +62,20 @@ export const BandHQ = ({
 
   const { handleBuy, isItemOwned, isItemDisabled } =
     usePurchaseLogic(purchaseLogicParams)
+
+  const handleBuyWithLock = async (item) => {
+    if (processingItemId) return
+    setProcessingItemId(item.id)
+    try {
+      // Artificial delay for UX lifted from ShopItem
+      await new Promise(resolve => setTimeout(resolve, 500))
+      await handleBuy(item)
+    } catch (err) {
+      console.error('Purchase failed:', err)
+    } finally {
+      setProcessingItemId(null)
+    }
+  }
 
   return (
     <div
@@ -119,9 +134,10 @@ export const BandHQ = ({
           {activeTab === 'SHOP' && (
             <ShopTab
               player={player}
-              handleBuy={handleBuy}
+              handleBuy={handleBuyWithLock}
               isItemOwned={isItemOwned}
               isItemDisabled={isItemDisabled}
+              processingItemId={processingItemId}
             />
           )}
 
@@ -129,9 +145,10 @@ export const BandHQ = ({
             <UpgradesTab
               player={player}
               upgrades={unifiedUpgradeCatalog}
-              handleBuy={handleBuy}
+              handleBuy={handleBuyWithLock}
               isItemOwned={isItemOwned}
               isItemDisabled={isItemDisabled}
+              processingItemId={processingItemId}
             />
           )}
 

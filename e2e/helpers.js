@@ -31,6 +31,15 @@ export async function skipToMenu(page) {
       state: 'visible',
       timeout: 10000
     })
+
+    // Dismiss tutorial if it appears
+    try {
+      const skipAllBtn = page.getByRole('button', { name: /skip all/i })
+      await skipAllBtn.waitFor({ state: 'visible', timeout: 2000 })
+      await skipAllBtn.click()
+    } catch (_e) {
+      // Tutorial might not appear, ignore
+    }
   } catch (error) {
     console.log('Error in skipToMenu:', error.message)
     throw error // Don't swallow navigation errors

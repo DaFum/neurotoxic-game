@@ -88,4 +88,130 @@ test.describe('Game Flow', () => {
       )
     }
   })
+
+  test('Main Menu -> Credits -> Main Menu', async ({ page }) => {
+    await skipToMenu(page)
+    
+    // Click credits, expect title to show
+    await page.getByRole('button', { name: /credits/i }).click()
+    await expect(page.getByRole('heading', { name: /credits/i, exact: true })).toBeVisible()
+    
+    // Click return, expect main menu to show
+    await page.getByRole('button', { name: /return/i }).click()
+    await expect(page.getByRole('heading', { name: /neurotoxic/i, exact: true })).toBeVisible()
+  })
+
+  test('Main Menu -> Band HQ -> Close', async ({ page }) => {
+    await skipToMenu(page)
+    
+    // Click Band HQ, expect dialog to open
+    await page.getByRole('button', { name: /band hq/i }).click()
+    await expect(page.getByRole('heading', { name: /band hq/i, exact: true })).toBeVisible()
+    
+    // Navigate tabs inside Band HQ to be safe
+    await page.getByRole('button', { name: 'SHOP' }).click()
+    await page.getByRole('button', { name: 'SETTINGS' }).click()
+    
+    // Click leave, expect Band HQ button to be visible again on main menu
+    await page.getByRole('button', { name: /leave \[esc\]/i }).click()
+    await expect(page.getByRole('button', { name: /start tour/i })).toBeVisible()
+  })
+
+  test('Complete Game Flow (Overworld -> Gig -> PostGig)', async ({ page }) => {
+    // This test goes through rhythm game and minigames, so it needs extra time.
+    test.setTimeout(180000)
+    
+    await skipToMenu(page)
+    const startBtn = page.getByRole('button', { name: /start tour/i })
+    const result = await raceWithCrash(page, () => startBtn.click(), 5000)
+    if (result === 'crash' || result === 'timeout') {
+      test.skip(true, 'Chromium crashed on Start Tour.')
+      return
+    }
+
+    // 1. Overworld
+    await expect(page.getByRole('heading', { name: /tour plan/i })).toBeVisible({ timeout: 5000 })
+    
+    // The Band HQ might be open depending on earlier flow, ensure it's closed
+    const hqHeading = page.getByRole('heading', { name: /band hq/i, exact: true })
+    if (await hqHeading.isVisible()) {
+      await page.getByRole('button', { name: /leave \[esc\]/i }).click()
+      await hqHeading.waitFor({ state: 'hidden' })
+    }
+    
+    // Find a reachable node and click it (avoid the current node 'Proberaum' or wherever the van currently is)
+    // Explicitly target a known gig or festival venue to ensure the PreGig and Roadie minigame actually occur
+    const travelNode = page.getByRole('button', { name: /Travel to (Goldgrube|MTC|Die Distille|Stadtfest|Deichbrand|Wacken)/i }).first()
+    await travelNode.waitFor({ state: 'visible', timeout: 5000 })
+    
+    // Click once to select/hover
+    await travelNode.click()
+    
+    // Wait for the Confirm? state to appear then click again
+    await expect(page.getByText('CONFIRM?').locator('visible=true')).toBeVisible()
+    await travelNode.click()
+
+    // 2. Tourbus Minigame -> Wait for completion
+    // The minigame runs by itself or can be survived by doing nothing.
+    // Wait for game over screen and click continue.
+    const destReachedBtn = page.getByRole('button', { name: /continue/i, exact: true })
+    await destReachedBtn.waitFor({ state: 'visible', timeout: 60000 })
+    await destReachedBtn.click()
+
+    // Handle Potential Random Events (e.g., Van Breakdown, Police Check)
+    // These appear after the Tourbus Minigame (on arrival) and overlay the PreGig view.
+    for (let i = 0; i < 3; i++) {
+        try {
+            const firstEventOption = page.locator('button', { hasText: /^1 / })
+            await firstEventOption.waitFor({ state: 'visible', timeout: 3000 })
+            await firstEventOption.click()
+            await page.waitForTimeout(500) // allow UI to settle
+        } catch (_e) {
+            // No more events found, proceed
+            break
+        }
+    }
+
+    // 3. PreGig Preparation
+    await expect(page.getByRole('heading', { name: /preparation/i })).toBeVisible({ timeout: 5000 })
+    // Select the first song to fulfill minimum requirements (1 song)
+    const firstSong = page.getByText('01 Kranker Schrank')
+    await firstSong.waitFor({ state: 'visible', timeout: 5000 })
+    await firstSong.click()
+    
+    const startShowBtn = page.getByRole('button', { name: /start show/i, exact: true })
+    await expect(startShowBtn).toBeEnabled()
+    await startShowBtn.click()
+
+    // 4. Roadie Minigame
+    // We arrive at Roadie Run screen. We need to move the character down to deliver, then up to fetch next item, 3 times.
+    await expect(page.getByRole('heading', { name: /roadie run/i })).toBeVisible({ timeout: 5000 })
+    
+    // Simulate keyboard presses to complete the minigame quickly using DEV backdoor
+    await page.keyboard.press('Shift+P')
+    await page.waitForTimeout(500)
+
+
+
+    // 5. Gig (Rhythm Game)
+    // The song plays automatically. Since we don't click, health fails but scene still advances.
+    // We just wait for the gig report to show up.
+    await expect(page.getByRole('heading', { name: /gig report/i })).toBeVisible({ timeout: 60000 })
+    
+    // 6. PostGig Report
+    await page.getByRole('button', { name: /continue to socials/i }).click()
+    
+    // Social Strategy Phase
+    await expect(page.getByRole('heading', { name: /post to social media/i })).toBeVisible()
+    const firstSocialOpt = page.locator('button:has-text("Platform")').first()
+    await firstSocialOpt.click()
+
+    // PostGig Viral/Flop Result
+    const backToTourBtn = page.getByRole('button', { name: /back to tour/i })
+    await backToTourBtn.waitFor({ state: 'visible' })
+    await backToTourBtn.click()
+
+    // 7. Back to Overworld
+    await expect(page.getByRole('heading', { name: /tour plan/i })).toBeVisible({ timeout: 5000 })
+  })
 })

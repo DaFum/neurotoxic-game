@@ -6,7 +6,8 @@ export const UpgradesTab = ({
   upgrades,
   handleBuy,
   isItemOwned,
-  isItemDisabled
+  isItemDisabled,
+  processingItemId
 }) => {
   return (
     <div className='max-h-[60vh] overflow-y-auto'>
@@ -26,6 +27,7 @@ export const UpgradesTab = ({
             isOwned={isItemOwned(item)}
             isDisabled={isItemDisabled(item)}
             onBuy={handleBuy}
+            processingItemId={processingItemId}
           />
         ))}
       </div>
@@ -41,5 +43,6 @@ UpgradesTab.propTypes = {
   upgrades: PropTypes.arrayOf(PropTypes.object).isRequired,
   handleBuy: PropTypes.func.isRequired,
   isItemOwned: PropTypes.func.isRequired,
-  isItemDisabled: PropTypes.func.isRequired
+  isItemDisabled: PropTypes.func.isRequired,
+  processingItemId: PropTypes.string
 }

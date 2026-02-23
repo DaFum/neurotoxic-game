@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types'
+import { Loader2 } from 'lucide-react'
 
 /**
  * A stylized button component with glitch and hover effects.
@@ -7,16 +8,28 @@ import PropTypes from 'prop-types'
  * @param {React.ReactNode} props.children - Button content.
  * @param {string} [props.className] - Additional classes.
  * @param {boolean} [props.disabled] - Disabled state.
+ * @param {string} [props.size] - Button size ('sm' | 'lg').
+ * @param {boolean} [props.isLoading] - Loading state.
  */
 export const GlitchButton = ({
   onClick,
   children,
   className = '',
   disabled = false,
-  variant = 'primary'
+  variant = 'primary',
+  size = 'lg',
+  isLoading = false
 }) => {
+  // If loading or owned, treat as disabled for interactions
+  const isIntervention = disabled || isLoading || variant === 'owned'
+
   const getVariantClasses = () => {
-    if (disabled)
+    // Owned variant takes precedence over generic disabled state to maintain visibility
+    if (variant === 'owned') {
+      return 'border-2 border-(--ash-gray) text-(--ash-gray) cursor-default opacity-100'
+    }
+
+    if (isIntervention)
       return 'border-2 border-(--ash-gray) text-(--ash-gray) cursor-not-allowed opacity-60'
 
     switch (variant) {
@@ -36,14 +49,20 @@ export const GlitchButton = ({
     }
   }
 
+  const sizeClasses = {
+    sm: 'px-4 py-2 text-sm',
+    lg: 'px-8 py-4 text-xl'
+  }
+
   return (
     <button
       onClick={onClick}
-      disabled={disabled}
-      aria-disabled={disabled}
+      disabled={isIntervention}
+      aria-disabled={isIntervention}
+      aria-busy={isLoading}
       className={`
-        relative px-8 py-4 bg-(--void-black)
-        font-[Metal_Mania] text-xl font-bold uppercase tracking-widest
+        relative ${sizeClasses[size] || sizeClasses.lg} bg-(--void-black)
+        font-[Metal_Mania] font-bold uppercase tracking-widest
         transition-all duration-100
         group
         ${getVariantClasses()}
@@ -51,12 +70,21 @@ export const GlitchButton = ({
       `}
     >
       <span
-        className={`relative z-10 ${disabled ? '' : 'group-hover:animate-pulse'}`}
+        className={`relative z-10 flex items-center justify-center gap-2 ${
+          isIntervention || variant === 'owned' ? '' : 'group-hover:animate-pulse'
+        } ${isLoading ? 'opacity-0' : 'opacity-100'}`}
       >
         {children}
       </span>
-      {/* Diagonal stripe overlay when disabled */}
-      {disabled && (
+
+      {isLoading && (
+        <span className='absolute inset-0 flex items-center justify-center z-20' aria-hidden="true">
+          <Loader2 className='animate-spin w-5 h-5' aria-hidden="true" />
+        </span>
+      )}
+
+      {/* Diagonal stripe overlay when disabled (but not for owned items which are just static) */}
+      {isIntervention && variant !== 'owned' && (
         <span
           className='absolute inset-0 pointer-events-none opacity-10'
           style={{
@@ -66,7 +94,7 @@ export const GlitchButton = ({
         />
       )}
       {/* Glitch Overlay Effect on Hover */}
-      {!disabled && (
+      {!isIntervention && (
         <span className='absolute inset-0 bg-(--star-white) opacity-0 group-hover:opacity-10 mix-blend-difference pointer-events-none' />
       )}
     </button>
@@ -78,5 +106,7 @@ GlitchButton.propTypes = {
   children: PropTypes.node.isRequired,
   className: PropTypes.string,
   disabled: PropTypes.bool,
-  variant: PropTypes.oneOf(['primary', 'danger'])
+  variant: PropTypes.oneOf(['primary', 'danger', 'owned']),
+  size: PropTypes.oneOf(['sm', 'lg']),
+  isLoading: PropTypes.bool
 }
