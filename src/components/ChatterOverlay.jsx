@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { getRandomChatter } from '../data/chatter'
 import { motion, AnimatePresence } from 'framer-motion'
+import { GAME_PHASES } from '../context/gameConstants'
 
 const CHATTER_DELAY_MIN_MS = 8000
 const CHATTER_DELAY_RANGE_MS = 17000
@@ -16,7 +17,9 @@ const SCENE_LABELS = {
   POSTGIG: 'Aftershow Feed',
   SETTINGS: 'System Feed',
   CREDITS: 'Crew Feed',
-  GAMEOVER: 'Last Broadcast'
+  GAMEOVER: 'Last Broadcast',
+  [GAME_PHASES.TRAVEL_MINIGAME]: 'Van Radio',
+  [GAME_PHASES.PRE_GIG_MINIGAME]: 'Stage Crew'
 }
 
 /**
@@ -71,6 +74,22 @@ const SCENE_STYLES = {
     speakerColor: 'text-(--ash-gray)',
     barColor: 'bg-(--blood-red)',
     icon: '\uD83D\uDC80'
+  },
+  [GAME_PHASES.TRAVEL_MINIGAME]: {
+    accent: 'var(--warning-yellow)',
+    borderColor: 'border-(--warning-yellow)',
+    labelColor: 'text-(--warning-yellow)',
+    speakerColor: 'text-(--toxic-green)',
+    barColor: 'bg-(--warning-yellow)',
+    icon: '\uD83D\uDE90' // Van icon
+  },
+  [GAME_PHASES.PRE_GIG_MINIGAME]: {
+    accent: 'var(--shadow-purple)',
+    borderColor: 'border-(--shadow-purple)',
+    labelColor: 'text-(--shadow-purple)',
+    speakerColor: 'text-(--star-white)',
+    barColor: 'bg-(--shadow-purple)',
+    icon: '\uD83D\uDCE6' // Box icon
   }
 }
 
@@ -81,6 +100,8 @@ const DEFAULT_STYLE = SCENE_STYLES.MENU
  *
  * Positioning:
  * - OVERWORLD: bottom-left near the bus / event log area
+ * - TRAVEL_MINIGAME: bottom-left (to avoid obscuring the road)
+ * - PRE_GIG_MINIGAME: top-right (to avoid obscuring the HUD)
  * - All other scenes: bottom-center of the window
  *
  * z-index: 200 (--z-chatter) — above CRT (80), modal (100), and tutorial (150)
@@ -187,11 +208,18 @@ export const ChatterOverlay = ({ gameState }) => {
   }, [])
 
   // Scene-aware positioning:
-  // OVERWORLD = bottom-left (near the bus), everything else = bottom-center
-  const isOverworld = currentScene === 'OVERWORLD'
-  const positionClassName = isOverworld
-    ? 'fixed bottom-28 left-8 pointer-events-none w-[min(22rem,85vw)]'
-    : 'fixed bottom-16 left-1/2 -translate-x-1/2 pointer-events-none w-[min(24rem,90vw)]'
+  // OVERWORLD = bottom-left (near the bus)
+  // TRAVEL_MINIGAME = bottom-left
+  // PRE_GIG_MINIGAME = top-right (avoid HUD)
+  // Everything else = bottom-center
+
+  let positionClassName = 'fixed bottom-16 left-1/2 -translate-x-1/2 pointer-events-none w-[min(24rem,90vw)]'
+
+  if (currentScene === 'OVERWORLD' || currentScene === GAME_PHASES.TRAVEL_MINIGAME) {
+    positionClassName = 'fixed bottom-28 left-8 pointer-events-none w-[min(22rem,85vw)]'
+  } else if (currentScene === GAME_PHASES.PRE_GIG_MINIGAME) {
+    positionClassName = 'fixed top-24 right-8 pointer-events-none w-[min(22rem,85vw)]'
+  }
 
   return (
     <div

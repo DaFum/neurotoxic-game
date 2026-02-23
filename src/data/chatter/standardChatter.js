@@ -1,5 +1,11 @@
+import { GAME_PHASES } from '../../context/gameConstants';
+
 export const CHATTER_DB = [
-  // --- GENERAL TRAVEL / OVERWORLD ---
+  // --- GENERAL TRAVEL / OVERWORLD / TRAVEL MINIGAME ---
+  // The user requested existing Travel chatter in TRAVEL_MINIGAME.
+  // The 'category: travel' lines are generally unconditional in their original form (weight based),
+  // but if they had conditions like `s.currentScene === 'OVERWORLD'`, we'd update them.
+  // Most here have no condition, so they apply to all ALLOWED_DEFAULT_SCENES (which now includes TRAVEL_MINIGAME).
   { text: 'My back hurts from sleeping in this seat.', weight: 1, category: 'travel' },
   { text: 'Did we pack the spare snare?', weight: 1, category: 'travel', speaker: 'Lars' },
   { text: "I'm starving. Fast food again?", weight: 1, category: 'travel' },
@@ -56,48 +62,70 @@ export const CHATTER_DB = [
   { text: 'Gas station sandwiches are a lifestyle choice. A bad one.', weight: 1, category: 'travel' },
   { text: 'We should write a song called “Rest Stop Romance”.', weight: 0.4, category: 'travel', speaker: 'Marius' },
 
+  // --- MINIGAMES (TOURBUS) ---
+  { text: 'Watch out for that pothole!', weight: 5, condition: s => s.currentScene === GAME_PHASES.TRAVEL_MINIGAME, speaker: 'Lars' },
+  { text: 'I think I saw a speed camera...', weight: 5, condition: s => s.currentScene === GAME_PHASES.TRAVEL_MINIGAME, speaker: 'Matze' },
+  { text: 'Left! No, right! The other left!', weight: 5, condition: s => s.currentScene === GAME_PHASES.TRAVEL_MINIGAME },
+  { text: 'This lane is cursed. Switch it.', weight: 5, condition: s => s.currentScene === GAME_PHASES.TRAVEL_MINIGAME },
+  { text: 'If we hit one more bump, the bass amp is toast.', weight: 5, condition: s => s.currentScene === GAME_PHASES.TRAVEL_MINIGAME, speaker: 'Marius' },
+  { text: 'Is that smoke or just steam? Drive faster.', weight: 4, condition: s => s.currentScene === GAME_PHASES.TRAVEL_MINIGAME },
+  { text: 'The fuel gauge is lying. Trust me.', weight: 4, condition: s => s.currentScene === GAME_PHASES.TRAVEL_MINIGAME, speaker: 'Lars' },
+  { text: 'Can we drift this thing? Hypothetically.', weight: 3, condition: s => s.currentScene === GAME_PHASES.TRAVEL_MINIGAME, speaker: 'Matze' },
+
+  // --- MINIGAMES (ROADIE) ---
+  // Using PREGIG chatter for Roadie Minigame + specific lines
+  { text: 'This amp weighs more than my ego.', weight: 5, condition: s => s.currentScene === GAME_PHASES.PRE_GIG_MINIGAME, speaker: 'Marius' },
+  { text: 'Don’t drop the beer crate! Priorities!', weight: 5, condition: s => s.currentScene === GAME_PHASES.PRE_GIG_MINIGAME },
+  { text: 'Where does this cable even go?', weight: 5, condition: s => s.currentScene === GAME_PHASES.PRE_GIG_MINIGAME, speaker: 'Matze' },
+  { text: 'Lift with your legs, not your back!', weight: 5, condition: s => s.currentScene === GAME_PHASES.PRE_GIG_MINIGAME, speaker: 'Lars' },
+  { text: 'Who packed the heaviest box on top?', weight: 5, condition: s => s.currentScene === GAME_PHASES.PRE_GIG_MINIGAME },
+  { text: 'I need three arms for this load-in.', weight: 4, condition: s => s.currentScene === GAME_PHASES.PRE_GIG_MINIGAME },
+  { text: 'This stage is a maze designed to break ankles.', weight: 4, condition: s => s.currentScene === GAME_PHASES.PRE_GIG_MINIGAME },
+  { text: 'Hurry up, soundcheck starts in 5 minutes!', weight: 4, condition: s => s.currentScene === GAME_PHASES.PRE_GIG_MINIGAME },
+
   // --- PRE-GIG (Preparation) ---
-  { text: 'Where is the sound guy?', weight: 2, condition: s => s.currentScene === 'PREGIG' },
-  { text: 'I need a beer before we start.', weight: 2, condition: s => s.currentScene === 'PREGIG' },
-  { text: 'My strings feel sticky.', weight: 2, condition: state => state.currentScene === 'PREGIG', speaker: 'Matze' },
-  { text: 'Does this venue have a backstage?', weight: 1, condition: state => state.currentScene === 'PREGIG' },
-  { text: "Let's stick to the setlist this time, okay?", weight: 2, condition: state => state.currentScene === 'PREGIG', speaker: 'Lars' },
-  { text: 'If the kick mic dies mid‑set, we riot.', weight: 2, condition: state => state.currentScene === 'PREGIG' },
-  { text: 'One more tuning check or I’ll snap this guitar in half.', weight: 2, condition: state => state.currentScene === 'PREGIG' },
-  { text: 'These strings are either dead or perfect. No in‑between.', weight: 2, condition: state => state.currentScene === 'PREGIG', speaker: 'Matze' },
-  { text: 'Does this place even have a monitor mix, or just vibes?', weight: 1, condition: state => state.currentScene === 'PREGIG' },
-  { text: 'No new songs tonight. Last time was a trainwreck.', weight: 2, condition: state => state.currentScene === 'PREGIG', speaker: 'Lars' },
-  { text: 'Who stole my setlist again?', weight: 1, condition: state => state.currentScene === 'PREGIG' },
-  { text: 'If the intro track fails, we just walk on angry.', weight: 1, condition: state => state.currentScene === 'PREGIG' },
-  { text: 'Where do we load in? Why is it always stairs?', weight: 2, condition: state => state.currentScene === 'PREGIG' },
-  { text: 'Do we have gaffer tape? Please tell me we have gaffer tape.', weight: 2, condition: state => state.currentScene === 'PREGIG' },
-  { text: 'My pedalboard is doing that haunted thing again.', weight: 2, condition: state => state.currentScene === 'PREGIG' },
-  { text: 'If the monitors are bad, I’m going full vibes-only.', weight: 1, condition: state => state.currentScene === 'PREGIG' },
-  { text: 'Who’s got the setlist printouts? Not the wrinkled one.', weight: 1, condition: state => state.currentScene === 'PREGIG' },
-  { text: 'I can’t hear anything and we haven’t even started. Great sign.', weight: 2, condition: state => state.currentScene === 'PREGIG' },
-  { text: 'Soundcheck feels like speed-dating with feedback.', weight: 1, condition: state => state.currentScene === 'PREGIG' },
-  { text: 'If the DI box crackles, I’m blaming the universe.', weight: 2, condition: state => state.currentScene === 'PREGIG' },
-  { text: 'Please tell me the merch table isn’t next to the toilet.', weight: 1, condition: state => state.currentScene === 'PREGIG' },
-  { text: 'I’m sweating and the lights aren’t even on yet.', weight: 1, condition: state => state.currentScene === 'PREGIG' },
-  { text: 'Five minutes to doors and I still don’t know where the backstage is.', weight: 1, condition: state => state.currentScene === 'PREGIG' },
-  { text: 'These strings feel like they’ve seen war.', weight: 2, condition: state => state.currentScene === 'PREGIG', speaker: 'Matze' },
-  { text: 'If my in-ears cut out, I’m playing by memory and spite.', weight: 2, condition: state => state.currentScene === 'PREGIG', speaker: 'Lars' },
-  { text: 'One more “can you turn up” and I’m turning up the whole band.', weight: 2, condition: state => state.currentScene === 'PREGIG', speaker: 'Lars' },
-  { text: 'Which one of you touched my amp settings?', weight: 2, condition: s => s.currentScene === 'PREGIG' },
-  { text: 'If the stage is tiny, we play like it’s a stadium.', weight: 1, condition: s => s.currentScene === 'PREGIG' },
-  { text: 'Can we get water on stage or is it “suffer artistically” tonight?', weight: 1, condition: s => s.currentScene === 'PREGIG' },
-  { text: 'Why is the power strip always missing when we need it most?', weight: 2, condition: s => s.currentScene === 'PREGIG' },
-  { text: 'I’m not nervous. My stomach is just… touring.', weight: 1, condition: s => s.currentScene === 'PREGIG', speaker: 'Marius' },
-  { text: 'If we start late, I’m blaming the stairs. Again.', weight: 2, condition: s => s.currentScene === 'PREGIG', speaker: 'Lars' },
-  { text: 'Does anyone remember the count-in for the new intro? Anyone?', weight: 2, condition: s => s.currentScene === 'PREGIG' },
-  { text: 'If the lights blind me, I’m playing by smell.', weight: 1, condition: s => s.currentScene === 'PREGIG', speaker: 'Matze' },
-  { text: 'I need my monitor to be louder than my thoughts.', weight: 2, condition: s => s.currentScene === 'PREGIG' },
-  { text: 'We should label our cables. We won’t, but we should.', weight: 1, condition: s => s.currentScene === 'PREGIG' },
-  { text: 'If the click track fails, we become jazz. Against our will.', weight: 2, condition: s => s.currentScene === 'PREGIG', speaker: 'Lars' },
-  { text: 'Tell me again why we didn’t bring a spare guitar?', weight: 2, condition: s => s.currentScene === 'PREGIG', speaker: 'Matze' },
-  { text: 'I can’t find the tuner. This is how wars start.', weight: 2, condition: s => s.currentScene === 'PREGIG' },
-  { text: 'If the stage is wobbling, we’re calling it “energy”.', weight: 1, condition: s => s.currentScene === 'PREGIG' },
-  { text: 'Who’s doing the intro speech? Please say “not me”.', weight: 1, condition: s => s.currentScene === 'PREGIG' },
+  // Updated conditions to include PRE_GIG_MINIGAME (Roadie game)
+  { text: 'Where is the sound guy?', weight: 2, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'I need a beer before we start.', weight: 2, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'My strings feel sticky.', weight: 2, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene), speaker: 'Matze' },
+  { text: 'Does this venue have a backstage?', weight: 1, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: "Let's stick to the setlist this time, okay?", weight: 2, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene), speaker: 'Lars' },
+  { text: 'If the kick mic dies mid‑set, we riot.', weight: 2, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'One more tuning check or I’ll snap this guitar in half.', weight: 2, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'These strings are either dead or perfect. No in‑between.', weight: 2, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene), speaker: 'Matze' },
+  { text: 'Does this place even have a monitor mix, or just vibes?', weight: 1, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'No new songs tonight. Last time was a trainwreck.', weight: 2, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene), speaker: 'Lars' },
+  { text: 'Who stole my setlist again?', weight: 1, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'If the intro track fails, we just walk on angry.', weight: 1, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'Where do we load in? Why is it always stairs?', weight: 2, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'Do we have gaffer tape? Please tell me we have gaffer tape.', weight: 2, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'My pedalboard is doing that haunted thing again.', weight: 2, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'If the monitors are bad, I’m going full vibes-only.', weight: 1, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'Who’s got the setlist printouts? Not the wrinkled one.', weight: 1, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'I can’t hear anything and we haven’t even started. Great sign.', weight: 2, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'Soundcheck feels like speed-dating with feedback.', weight: 1, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'If the DI box crackles, I’m blaming the universe.', weight: 2, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'Please tell me the merch table isn’t next to the toilet.', weight: 1, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'I’m sweating and the lights aren’t even on yet.', weight: 1, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'Five minutes to doors and I still don’t know where the backstage is.', weight: 1, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'These strings feel like they’ve seen war.', weight: 2, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene), speaker: 'Matze' },
+  { text: 'If my in-ears cut out, I’m playing by memory and spite.', weight: 2, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene), speaker: 'Lars' },
+  { text: 'One more “can you turn up” and I’m turning up the whole band.', weight: 2, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene), speaker: 'Lars' },
+  { text: 'Which one of you touched my amp settings?', weight: 2, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'If the stage is tiny, we play like it’s a stadium.', weight: 1, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'Can we get water on stage or is it “suffer artistically” tonight?', weight: 1, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'Why is the power strip always missing when we need it most?', weight: 2, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'I’m not nervous. My stomach is just… touring.', weight: 1, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene), speaker: 'Marius' },
+  { text: 'If we start late, I’m blaming the stairs. Again.', weight: 2, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene), speaker: 'Lars' },
+  { text: 'Does anyone remember the count-in for the new intro? Anyone?', weight: 2, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'If the lights blind me, I’m playing by smell.', weight: 1, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene), speaker: 'Matze' },
+  { text: 'I need my monitor to be louder than my thoughts.', weight: 2, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'We should label our cables. We won’t, but we should.', weight: 1, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'If the click track fails, we become jazz. Against our will.', weight: 2, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene), speaker: 'Lars' },
+  { text: 'Tell me again why we didn’t bring a spare guitar?', weight: 2, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene), speaker: 'Matze' },
+  { text: 'I can’t find the tuner. This is how wars start.', weight: 2, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'If the stage is wobbling, we’re calling it “energy”.', weight: 1, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
+  { text: 'Who’s doing the intro speech? Please say “not me”.', weight: 1, condition: s => ['PREGIG', GAME_PHASES.PRE_GIG_MINIGAME].includes(s.currentScene) },
 
 
   // --- POST-GIG (Reaction) ---
@@ -347,4 +375,4 @@ export const CHATTER_DB = [
 
 ];
 
-export const ALLOWED_DEFAULT_SCENES = ['MENU', 'OVERWORLD', 'PREGIG', 'POSTGIG'];
+export const ALLOWED_DEFAULT_SCENES = ['MENU', 'OVERWORLD', 'PREGIG', 'POSTGIG', GAME_PHASES.TRAVEL_MINIGAME, GAME_PHASES.PRE_GIG_MINIGAME];
