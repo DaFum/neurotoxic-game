@@ -369,7 +369,10 @@ const handleCompleteRoadieMinigame = (state, payload) => {
   logger.info('GameState', 'Roadie Minigame Complete', payload)
 
   // Apply Results
-  const { stress, repairCost } = calculateRoadieMinigameResult(equipmentDamage)
+  const { stress, repairCost } = calculateRoadieMinigameResult(
+    equipmentDamage,
+    state.band
+  )
 
   const nextBand = {
     ...state.band,

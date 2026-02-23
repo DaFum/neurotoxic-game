@@ -218,7 +218,29 @@ export const eventEngine = {
       if (total >= threshold) {
         result = { ...success, outcome: 'success' }
       } else {
-        result = { ...failure, outcome: 'failure' }
+        // Bandleader Trait Check: 50% chance to save a failed check in conflict events
+        let savedByBandleader = false
+        if (
+          gameState.activeEvent?.tags?.includes('conflict') &&
+          gameState.band?.members?.some(m =>
+            m.traits?.some(t => t.id === 'bandleader')
+          )
+        ) {
+          if (rng() < 0.5) {
+            savedByBandleader = true
+          }
+        }
+
+        if (savedByBandleader) {
+          result = {
+            ...success,
+            outcome: 'success',
+            description:
+              (success.description || '') + ' (Saved by Bandleader!)'
+          }
+        } else {
+          result = { ...failure, outcome: 'failure' }
+        }
       }
     } else {
       result = { ...choice.effect, outcome: 'direct' }

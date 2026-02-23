@@ -223,6 +223,19 @@ export const useRhythmGameScoring = ({
         const comboForScore = state.combo
         let finalScore = points + comboForScore * 10
         if (toxicModeActive) finalScore *= 4
+
+        // Perfektionist Trait (Matze): +15% score if accuracy > 85%
+        // Uses state.stats which is updated inside this loop but after setScore?
+        // Actually state.stats is updated below in setCombo/setHealth.
+        // We should use current values.
+        const currentAccuracy = calculateAccuracy(
+          state.stats.perfectHits,
+          state.stats.misses
+        )
+        if (state.modifiers.hasPerfektionist && currentAccuracy > 85) {
+          finalScore *= 1.15
+        }
+
         finalScore = Math.floor(finalScore)
 
         setScore(s => {

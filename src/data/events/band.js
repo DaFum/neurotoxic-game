@@ -3,6 +3,7 @@ export const BAND_EVENTS = [
   {
     id: 'internal_dispute',
     category: 'band',
+    tags: ['conflict'],
     title: 'CREATIVE DIFFERENCES',
     description:
       'Matze thinks the new song should be slower. Marius wants it faster.',
@@ -145,6 +146,7 @@ export const BAND_EVENTS = [
   {
     id: 'ego_clash',
     category: 'band',
+    tags: ['conflict'],
     title: 'EGO CLASH',
     description: 'Lars wants a longer drum solo. Everyone else disagrees.',
     trigger: 'random',
@@ -165,6 +167,7 @@ export const BAND_EVENTS = [
   {
     id: 'gear_upgrade_argument',
     category: 'band',
+    tags: ['conflict'],
     title: 'GEAR UPGRADE ARGUMENT',
     description: 'Matze insists he needs a new amp “for the tone”.',
     trigger: 'random',
@@ -190,6 +193,7 @@ export const BAND_EVENTS = [
   {
     id: 'setlist_argument',
     category: 'band',
+    tags: ['conflict'],
     title: 'SETLIST ARGUMENT',
     description: 'Lars wants more fast songs. Marius wants more “groove”.',
     trigger: 'random',
@@ -220,6 +224,7 @@ export const BAND_EVENTS = [
   {
     id: 'van_silence',
     category: 'band',
+    tags: ['conflict'],
     title: 'THE SILENCE',
     description: 'Nobody talks for an hour. It’s not peaceful. It’s tension.',
     trigger: 'random',
@@ -245,6 +250,7 @@ export const BAND_EVENTS = [
   {
     id: 'late_soundcheck_blame',
     category: 'band',
+    tags: ['conflict'],
     title: 'BLAME GAME',
     description: 'Soundcheck is late and everyone blames everyone.',
     trigger: 'random',
@@ -271,6 +277,7 @@ export const BAND_EVENTS = [
   {
     id: 'practice_room_rage',
     category: 'band',
+    tags: ['conflict'],
     title: 'PRACTICE ROOM RAGE',
     description: 'A riff loop turns into an argument. Again.',
     trigger: 'random',
@@ -430,6 +437,7 @@ export const BAND_EVENTS = [
   {
     id: 'ego_clash_2',
     category: 'band',
+    tags: ['conflict'],
     title: 'EGO CLASH II',
     description: 'Marius wants to “rebrand” the band mid-tour. Lars wants to sleep.',
     trigger: 'random',
@@ -532,6 +540,7 @@ export const BAND_EVENTS = [
   {
     id: 'backstage_argument',
     category: 'band',
+    tags: ['conflict'],
     title: 'BACKSTAGE ARGUMENT',
     description: 'A small comment turns into a big fight five minutes before stage.',
     trigger: 'random',
@@ -630,6 +639,7 @@ export const BAND_EVENTS = [
   {
     id: 'tempo_police',
     category: 'band',
+    tags: ['conflict'],
     title: 'TEMPO POLICE',
     description: 'Lars insists everyone is rushing. Marius insists Lars is dragging.',
     trigger: 'random',

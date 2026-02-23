@@ -478,9 +478,17 @@ export const calculateTravelMinigameResult = (damageTaken, itemsCollected) => {
  * @param {number} equipmentDamage - Total equipment damage.
  * @returns {object} { stress, repairCost }
  */
-export const calculateRoadieMinigameResult = (equipmentDamage) => {
+export const calculateRoadieMinigameResult = (equipmentDamage, bandState) => {
   const safeDamage = Math.max(0, equipmentDamage)
   const stress = Math.floor(safeDamage / 5)
-  const repairCost = Math.floor(safeDamage * 2)
+  let repairCost = Math.floor(safeDamage * 2)
+
+  // Gear Nerd Trait: 20% discount on repairs
+  if (
+    bandState?.members?.some(m => m.traits?.some(t => t.id === 'gear_nerd'))
+  ) {
+    repairCost = Math.floor(repairCost * 0.8)
+  }
+
   return { stress, repairCost }
 }
