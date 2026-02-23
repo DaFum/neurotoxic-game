@@ -3,7 +3,7 @@ import * as PIXI from 'pixi.js'
 import { CELL_SIZE } from '../../hooks/minigames/useRoadieLogic'
 import { EffectManager } from './EffectManager'
 import { logger } from '../../utils/logger'
-import { getPixiColorFromToken, loadTexture } from '../stage/utils'
+import { getPixiColorFromToken, loadTexture } from './utils'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
 
 export class RoadieStageController {

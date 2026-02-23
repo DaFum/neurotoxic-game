@@ -1,7 +1,7 @@
 
 import * as PIXI from 'pixi.js'
 import { EffectManager } from './EffectManager'
-import { getPixiColorFromToken, loadTexture } from '../stage/utils'
+import { getPixiColorFromToken, loadTexture } from './utils'
 import { logger } from '../../utils/logger'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
 
@@ -300,7 +300,7 @@ export class TourbusStageController {
     if (this.app) {
       try {
         this.app.ticker.remove(this.handleTicker)
-        this.app.destroy({ removeView: true }, { children: true, texture: true })
+        this.app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })
       } catch (e) {
         logger.warn('TourbusStageController', 'Destroy failed', e)
       }

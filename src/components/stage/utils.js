@@ -169,19 +169,26 @@ export const buildRhythmLayout = ({ screenWidth, screenHeight }) => {
  * @param {string} url - The URL to load.
  * @returns {Promise<PIXI.Texture|null>} The loaded texture or null.
  */
-export const loadTexture = async (url) => {
-    try {
-        return await PIXI.Assets.load(url)
-    } catch (e) {
-        return new Promise((resolve) => {
-            const img = new Image()
-            img.crossOrigin = 'anonymous'
-            img.onload = () => resolve(PIXI.Texture.from(img))
-            img.onerror = () => {
-                logger.warn('loadTexture', `Failed to load image: ${url}`)
-                resolve(null)
-            }
-            img.src = url
-        })
-    }
+export const loadTexture = async url => {
+  try {
+    return await PIXI.Assets.load(url)
+  } catch (err) {
+    logger.warn('loadTexture', 'Pixi Assets load failed, falling back to Image element', err)
+    return new Promise(resolve => {
+      const img = new Image()
+      img.crossOrigin = 'anonymous'
+      img.onload = () => {
+        const source = new PIXI.ImageSource({ resource: img })
+        const texture = new PIXI.Texture({ source })
+        // Register in cache for future use
+        PIXI.Assets.cache.set(url, texture)
+        resolve(texture)
+      }
+      img.onerror = () => {
+        logger.warn('loadTexture', `Failed to load image: ${url}`)
+        resolve(null)
+      }
+      img.src = url
+    })
+  }
 }
