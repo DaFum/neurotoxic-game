@@ -20,8 +20,8 @@ export const GlitchButton = ({
   size = 'lg',
   isLoading = false
 }) => {
-  // If loading, treat as disabled for interactions
-  const isIntervention = disabled || isLoading
+  // If loading or owned, treat as disabled for interactions
+  const isIntervention = disabled || isLoading || variant === 'owned'
 
   const getVariantClasses = () => {
     // Owned variant takes precedence over generic disabled state to maintain visibility

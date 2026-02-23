@@ -1,41 +1,20 @@
-import { useState, useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
 import { getPrimaryEffect } from '../../hooks/usePurchaseLogic'
 import { GlitchButton } from '../GlitchButton'
 
-export const ShopItem = ({ item, isOwned, isDisabled, onBuy }) => {
-  const [isProcessing, setIsProcessing] = useState(false)
-  const isMountedRef = useRef(true)
+export const ShopItem = ({ item, isOwned, isDisabled, onBuy, processingItemId }) => {
 
   const primaryEffect = getPrimaryEffect(item)
   const isConsumable = primaryEffect?.type === 'inventory_add'
   const isPurchased = isOwned && !isConsumable
 
-  useEffect(() => {
-    isMountedRef.current = true
-    return () => {
-      isMountedRef.current = false
-    }
-  }, [])
+  const isProcessingThis = processingItemId === item.id
+  const isAnyProcessing = !!processingItemId
 
-  const handlePurchase = async () => {
-    if (isDisabled || isPurchased || isProcessing) return
-    setIsProcessing(true)
-    try {
-      // Artificial delay for UX
-      await new Promise(resolve => setTimeout(resolve, 500))
-
-      if (!isMountedRef.current) return
-
-      await onBuy(item)
-    } catch (err) {
-      console.error('Purchase failed:', err)
-    } finally {
-      if (isMountedRef.current) {
-        setIsProcessing(false)
-      }
-    }
+  const handlePurchase = () => {
+    if (isDisabled || isPurchased || isAnyProcessing) return
+    onBuy(item)
   }
 
   return (
@@ -74,9 +53,9 @@ export const ShopItem = ({ item, isOwned, isDisabled, onBuy }) => {
         </span>
         <GlitchButton
           onClick={handlePurchase}
-          disabled={isDisabled || isPurchased}
+          disabled={isDisabled || isPurchased || (isAnyProcessing && !isProcessingThis)}
           variant={isPurchased ? 'owned' : 'primary'}
-          isLoading={isProcessing}
+          isLoading={isProcessingThis}
           size='sm'
           className='min-w-[80px]'
         >
@@ -100,10 +79,7 @@ ShopItem.propTypes = {
   }).isRequired,
   isOwned: PropTypes.bool.isRequired,
   isDisabled: PropTypes.bool.isRequired,
-  /** 
-   * Callback executed on purchase attempt.
-   * The parent parameter onBuy is expected to handle its own user-facing errors.
-   * Any rejections here are caught to prevent unhandled promise rejections.
-   */
-  onBuy: PropTypes.func.isRequired
+  /** Callback executed on purchase attempt. Parent handles lock. */
+  onBuy: PropTypes.func.isRequired,
+  processingItemId: PropTypes.string
 }
