@@ -3,6 +3,7 @@
 Scope: Applies to all files in `src/hooks/`.
 
 Nested overrides:
+
 - `src/hooks/rhythmGame/AGENTS.md` for `src/hooks/rhythmGame/*`
 - `src/hooks/minigames/AGENTS.md` for `src/hooks/minigames/*`
 
@@ -12,8 +13,8 @@ Hooks orchestrate gameplay state transitions, side effects, and cross-module coo
 
 Current top-level hooks:
 
-- `useTravelLogic.js`
-- `useArrivalLogic.js`
+- `useTravelLogic.js`: Handles resource checks and triggers minigames.
+- `useArrivalLogic.js`: Shared arrival sequence (Save, Advance Day, Event Trigger) and **Scene Routing**. Routes directly to `PREGIG` for GIG/FESTIVAL/FINALE nodes.
 - `usePurchaseLogic.js`
 - `useAudioControl.js`
 - `useRhythmGameLogic.js`

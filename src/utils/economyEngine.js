@@ -224,9 +224,9 @@ export const calculateTravelExpenses = (
   playerState = null
 ) => {
   const dist = calculateDistance(node, fromNode)
-  const { fuelLiters, fuelCost } = calculateFuelCost(dist, playerState)
+  const { fuelLiters } = calculateFuelCost(dist, playerState)
   const foodCost = 3 * EXPENSE_CONSTANTS.FOOD.FAST_FOOD // Band of 3
-  const totalCost = fuelCost + foodCost
+  const totalCost = foodCost
 
   return { dist, fuelLiters, totalCost }
 }
@@ -257,25 +257,8 @@ export const calculateRepairCost = currentCondition => {
 const calculateGigExpenses = (gigData, modifiers, playerState = null) => {
   const expenses = { total: 0, breakdown: [] }
 
-  // Transport
-  const { fuelCost } = calculateFuelCost(gigData.dist || 100, playerState)
-
-  expenses.breakdown.push({
-    label: 'Fuel',
-    value: fuelCost,
-    detail: `${gigData.dist || 100}km`
-  })
-  expenses.total += fuelCost
-
-  // Food & Drink
-  const bandSize = 3
-  const foodCost = bandSize * EXPENSE_CONSTANTS.FOOD.FAST_FOOD
-  expenses.breakdown.push({
-    label: 'Food & Drinks',
-    value: foodCost,
-    detail: 'Subsistence'
-  })
-  expenses.total += foodCost
+  // Operational Expenses (Modifiers)
+  // Transport and subsistence are now exclusively handled during travel phase.
 
   // Modifiers (Budget items)
   if (modifiers.catering) {

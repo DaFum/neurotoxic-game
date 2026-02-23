@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { logger } from '../../utils/logger.js'
-import { getPixiColorFromToken } from './utils.js'
+import { getPixiColorFromToken, loadTexture } from './utils.js'
 
 export class EffectManager {
   static MAX_POOL_SIZE = 50
@@ -32,8 +32,8 @@ export class EffectManager {
   async loadAssets() {
     try {
       const results = await Promise.allSettled([
-        PIXI.Assets.load(getGenImageUrl(IMG_PROMPTS.HIT_BLOOD)),
-        PIXI.Assets.load(getGenImageUrl(IMG_PROMPTS.HIT_TOXIC))
+        loadTexture(getGenImageUrl(IMG_PROMPTS.HIT_BLOOD)),
+        loadTexture(getGenImageUrl(IMG_PROMPTS.HIT_TOXIC))
       ])
 
       if (results[0].status === 'fulfilled')

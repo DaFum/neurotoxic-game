@@ -12,7 +12,7 @@ Current component groups:
 
 - **Pixi stage integration**: `PixiStage.jsx`, `PixiStageController.js`
 - **Gig overlays**: `GigHUD.jsx`, `HecklerOverlay.jsx`, `ChatterOverlay.jsx`
-- **Overworld map rendering**: `MapNode.jsx`, `MapConnection.jsx`
+- **Overworld map rendering**: `MapNode.jsx` (handles icons/tooltips for GIG/FESTIVAL/REST/SPECIAL/FINALE), `MapConnection.jsx`
 - **Session UX widgets**: `ToggleRadio.jsx`, `TutorialManager.jsx`
 
 ## Code-Aligned Runtime Contracts
@@ -20,8 +20,9 @@ Current component groups:
 1. `PixiStage` owns controller lifecycle and must always destroy/dispose resources on unmount.
 2. `PixiStageController` orchestrates stage managers (`CrowdManager`, `LaneManager`, `EffectManager`, `NoteManager`) and is expected to be resilient to init/dispose failures.
 3. `GigHUD` is a presentation/overlay component driven by `stats` and `gameStateRef`; toxic-mode visual state depends on runtime stat flags. **`stats.accuracy` is a required prop** (`PropTypes.number.isRequired`); the "LOW ACC" warning fires when `accuracy < 70`.
-4. `ChatterOverlay` consumes a read-only game-state slice and must avoid mutating global game state.
-5. `ToggleRadio` controls ambient playback through shared audio control state and must remain lightweight (memoized).
+4. `MapNode.jsx` hover tooltips are type-aware; performance nodes (`GIG`, `FESTIVAL`, `FINALE`) must display venue capacity, pay, and difficulty.
+5. `ChatterOverlay` consumes a read-only game-state slice and must avoid mutating global game state.
+6. `ToggleRadio` controls ambient playback through shared audio control state and must remain lightweight.
 
 ## Editing Rules
 
@@ -56,4 +57,4 @@ npm run test
 npm run build
 ```
 
-_Last updated: 2026-02-21._
+_Last updated: 2026-02-23._

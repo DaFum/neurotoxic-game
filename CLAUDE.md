@@ -52,13 +52,11 @@ The game is a state machine. `App.jsx` switches on `currentScene` string:
 ```
 INTRO → MENU ↔ SETTINGS | CREDITS
          ↓
-     OVERWORLD ↔ TRAVEL_MINIGAME
-         ↓
-     OVERWORLD
-         ↓
-     PREGIG → PRE_GIG_MINIGAME → GIG → POSTGIG → OVERWORLD
-         ↓
-     GAMEOVER → MENU
+      OVERWORLD ↔ TRAVEL_MINIGAME
+          ↓
+      OVERWORLD (or PREGIG if Performance)
+          ↓
+      PREGIG → PRE_GIG_MINIGAME → GIG → POSTGIG → OVERWORLD
 ```
 
 ### Game Engines — `src/utils/`
@@ -66,9 +64,9 @@ INTRO → MENU ↔ SETTINGS | CREDITS
 Core logic lives in stateless utility modules:
 
 - **eventEngine.js** — Event pool filtering/triggering based on conditions (day, location, harmony, money) and choice resolution.
-- **economyEngine.js** — Ticket sales, merch, expenses, gig financials. Exports `MODIFIER_COSTS` as the single source of truth for PreGig modifier costs (catering/promo/merch/soundcheck/guestlist); both the `PreGig.jsx` UI preview and `calculateGigExpenses` must import from this constant.
+- **economyEngine.js** — Ticket sales, merch, expenses, gig financials. Travel only consumes fuel liters and food money; refueling at gas stations is the only monetary fuel cost. `calculateGigExpenses` focuses on performance modifiers and excludes travel overhead.
 - **simulationUtils.js** — Daily updates (harmony decay, mood, stamina, social growth, van degradation).
-- **mapGenerator.js** — Procedural Germany map with venue nodes and travel connections.
+- **mapGenerator.js** — Procedural Germany map with venue nodes and travel connections. Assigns `FESTIVAL` type to nodes with capacity ≥ 1000.
 - **audioEngine.js** — Facade for audio/MIDI playback, timing clock, and WebAudio synth (see `src/utils/audio/`).
 - **rhythmUtils.js** — 3-lane note spawning, hit windows (Perfect/Good/Miss).
 - **socialEngine.js** — Follower growth and viral mechanics.
@@ -167,9 +165,9 @@ useEffect(() => {
 
 Production requires HTTPS (WebAudio API mixed-content policy). Ambient playback is started by main-menu tour actions via `AudioManager.startAmbient()`, preferring OGG playback with MIDI fallback; gig playback uses configured excerpts and bounded playback windows. Audio logic is implemented in `src/utils/audio/`.
 
-*   **Tone.js Only**: The project uses Tone.js wrappers for audio playback and synthesis. Do NOT introduce Howler.js.
-*   **Multi-Song Gigs**: Sequential playback is driven by `setlistCompleted` (set when `playSongAtIndex` exhausts the setlist) together with `isNearTrackEnd` (gig clock ≥ `totalDuration − 300 ms`). Do **not** re-introduce `audioPlaybackEnded` — that flag is legacy and was replaced by this dual-gate mechanism. When the last song's `onEnded` fires, `totalDuration` is snapped to the current frozen gig-clock value so the loop finalises on the next frame.
-*   **Note-driven audio end**: For songs with JSON notes, OGG/MIDI playback is capped to `maxNoteTime + NOTE_TAIL_MS` so music stops when bars finish falling, not at the end of the audio excerpt. For procedurally-generated songs (no JSON notes) the full excerpt duration is used.
+- **Tone.js Only**: The project uses Tone.js wrappers for audio playback and synthesis. Do NOT introduce Howler.js.
+- **Multi-Song Gigs**: Sequential playback is driven by `setlistCompleted` (set when `playSongAtIndex` exhausts the setlist) together with `isNearTrackEnd` (gig clock ≥ `totalDuration − 300 ms`). Do **not** re-introduce `audioPlaybackEnded` — that flag is legacy and was replaced by this dual-gate mechanism. When the last song's `onEnded` fires, `totalDuration` is snapped to the current frozen gig-clock value so the loop finalises on the next frame.
+- **Note-driven audio end**: For songs with JSON notes, OGG/MIDI playback is capped to `maxNoteTime + NOTE_TAIL_MS` so music stops when bars finish falling, not at the end of the audio excerpt. For procedurally-generated songs (no JSON notes) the full excerpt duration is used.
 
 ## Sub-Agent Documentation
 
@@ -185,7 +183,7 @@ Each `src/` subdirectory contains an `AGENTS.md` with domain-specific guidance. 
 | Data       | `src/data/AGENTS.md`       |
 | UI         | `src/ui/AGENTS.md`         |
 
-Additional docs: `docs/ARCHITECTURE.md` (system diagrams), `docs/STATE_TRANSITIONS.md` (state machine), `docs/CODING_STANDARDS.md`, `docs/TAILWIND_V4_PATTERNS.md`.
+Additional docs: `docs/ARCHITECTURE.md` (system diagrams), `docs/STATE_TRANSITIONS.md` (state machine), `docs/CODING_STANDARDS.md`, `docs/TAILWIND_V4_PATTERNS.md`, `docs/agent_knowledge_update.md`. Exploration reports are available in `docs/*_Exploration_Report.md`.
 
 ## CI/CD
 
@@ -195,4 +193,4 @@ Additional docs: `docs/ARCHITECTURE.md` (system diagrams), `docs/STATE_TRANSITIO
 
 Commits use Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`).
 
-_Documentation sync: dependency/tooling baseline reviewed on 2026-02-19. Minigame architecture documented 2026-02-21._
+_Documentation sync: dependency/tooling baseline reviewed on 2026-02-19. Minigame architecture documented 2026-02-21. Economy refactor and map icons documented 2026-02-23._

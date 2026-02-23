@@ -17,9 +17,10 @@ stateDiagram-v2
     CREDITS --> MENU: Return
 
     OVERWORLD --> TRAVEL_MINIGAME: Move to node
-    TRAVEL_MINIGAME --> OVERWORLD: Arrival (success/fail)
+    TRAVEL_MINIGAME --> PREGIG: Arrival at GIG/FESTIVAL/FINALE
+    TRAVEL_MINIGAME --> OVERWORLD: Arrival at non-GIG node
 
-    OVERWORLD --> PREGIG: Start gig at reachable GIG node
+    OVERWORLD --> PREGIG: Start gig at current GIG node
     OVERWORLD --> GAMEOVER: Stranded / fail condition
 
     PREGIG --> PRE_GIG_MINIGAME: Confirm loadout
@@ -36,18 +37,25 @@ stateDiagram-v2
     GAMEOVER --> MENU: Restart
 ```
 
+### Node Types & Interaction
+
+- `GIG`, `FESTIVAL`, `FINALE`: Trigger performance flow (`PREGIG`).
+- `REST_STOP`: Recover Stamina/Mood.
+- `SPECIAL`: Trigger unique events.
+- `START`: Return to HQ.
+
 ## Reducer-Driven Transition Rules
 
-| Action | Transition | Notes |
-| --- | --- | --- |
-| `CHANGE_SCENE` | `* -> payload` | Generic scene transition entrypoint. |
-| `START_GIG` | `* -> PREGIG` | Also sets `currentGig`. |
-| `START_TRAVEL_MINIGAME` | `OVERWORLD -> TRAVEL_MINIGAME` | Sets `minigameState`. |
-| `COMPLETE_TRAVEL_MINIGAME` | `TRAVEL_MINIGAME -> OVERWORLD` | Triggers arrival logic. |
-| `START_ROADIE_MINIGAME` | `PREGIG -> PRE_GIG_MINIGAME` | Sets equipment list. |
-| `COMPLETE_ROADIE_MINIGAME` | `PRE_GIG_MINIGAME -> GIG` | Applies damage penalties. |
-| `LOAD_GAME` | `* -> safeLoadedScene` | Scene validated against allowlist. |
-| `RESET_STATE` | `* -> INTRO` | Uses fresh initial state factory. |
+| Action                     | Transition                     | Notes                                                 |
+| -------------------------- | ------------------------------ | ----------------------------------------------------- |
+| `CHANGE_SCENE`             | `* -> payload`                 | Generic scene transition entrypoint.                  |
+| `START_GIG`                | `* -> PREGIG`                  | Also sets `currentGig`.                               |
+| `START_TRAVEL_MINIGAME`    | `OVERWORLD -> TRAVEL_MINIGAME` | Sets `minigameState`.                                 |
+| `COMPLETE_TRAVEL_MINIGAME` | `TRAVEL_MINIGAME -> *`         | Updates state; routing deferred to `useArrivalLogic`. |
+| `START_ROADIE_MINIGAME`    | `PREGIG -> PRE_GIG_MINIGAME`   | Sets equipment list.                                  |
+| `COMPLETE_ROADIE_MINIGAME` | `PRE_GIG_MINIGAME -> GIG`      | Applies damage penalties.                             |
+| `LOAD_GAME`                | `* -> safeLoadedScene`         | Scene validated against allowlist.                    |
+| `RESET_STATE`              | `* -> INTRO`                   | Uses fresh initial state factory.                     |
 
 ## Event Lifecycle
 
@@ -63,25 +71,30 @@ stateDiagram-v2
 ```
 
 Notes:
+
 - `activeEvent` controls modal visibility.
 - `pendingEvents`, `eventCooldowns`, and `activeStoryFlags` constrain repeat/event pacing.
 
 ## Core Resource Transitions
 
 ### Money
+
 - Updated through player updates, gig results, and event deltas.
 - Clamped in reducer to never drop below zero.
 
 ### Harmony
+
 - Updated by travel/events/gig outcomes.
 - Clamped in reducer to stay in valid gameplay range (`1..100`).
 
 ### Day progression
+
 - `ADVANCE_DAY` advances simulation and can trigger downstream economy/social effects.
 
 ## Gig Runtime State (High level)
 
 Gig internals are managed by rhythm hooks and Pixi stage runtime:
+
 - `useRhythmGameLogic` orchestrates rhythm lifecycle.
 - `hooks/rhythmGame/*` modules manage timing loop, scoring, input, notes, and effects.
 - Final gig stats are persisted via `SET_LAST_GIG_STATS` and consumed in `POSTGIG`.

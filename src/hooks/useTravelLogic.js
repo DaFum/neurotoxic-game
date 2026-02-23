@@ -134,8 +134,9 @@ export const useTravelLogic = ({
           addToast('Home Sweet Home.', 'success')
           break
         }
-        default: {
-          // GIG node
+        case 'FESTIVAL':
+        case 'FINALE':
+        case 'GIG': {
           if ((band?.harmony ?? 0) <= 0) {
             addToast("Band's harmony too low to perform!", 'warning')
             return
@@ -351,7 +352,7 @@ export const useTravelLogic = ({
         )
 
         // If it's the current node, trigger the interaction logic but DO NOT start travel
-        if (node.type === 'GIG') {
+        if (node.type === 'GIG' || node.type === 'FESTIVAL' || node.type === 'FINALE') {
           if ((band?.harmony ?? 0) <= 0) {
             addToast("Band's harmony too low to perform!", 'warning')
             return
@@ -437,7 +438,7 @@ export const useTravelLogic = ({
       clearPendingTravel()
       setPendingTravelNode(node)
       addToast(
-        `${node.venue.name} (${dist}km) | Cost: ${totalCost}\u20AC | Fuel: ${fuelLiters}L \u2014 Click again to confirm`,
+        `${node.venue.name} (${dist}km) | Food: ${totalCost}\u20AC | Fuel: ${fuelLiters.toFixed(1)}L \u2014 Click again to confirm`,
         'warning'
       )
 

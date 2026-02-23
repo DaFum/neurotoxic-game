@@ -18,7 +18,7 @@ Scope: Applies to all files in `src/context/`.
 3. Scene safety: load path sanitizes scene against allowed scene values.
 4. Save safety: persisted payloads must pass `validateSaveData` before state restore.
 5. Inventory safety: `applyInventoryItemDelta` is the canonical inventory mutator; numeric inventory deltas clamp at minimum `0` and boolean ownership flags are applied explicitly.
-6. Gig flow contract: `START_GIG` transitions to `PREGIG` **and resets `gigModifiers` to `DEFAULT_GIG_MODIFIERS`** so previous-gig selections never carry forward silently; gig completion paths persist stats then route to `POSTGIG`.
+6. Gig flow contract: `START_GIG` transitions to `PREGIG` and resets `gigModifiers`. `COMPLETE_TRAVEL_MINIGAME` updates the state but **does not** reset the scene; routing is deferred to `useArrivalLogic` to support direct performance entry.
 
 ## Editing Rules
 
@@ -30,7 +30,6 @@ Scope: Applies to all files in `src/context/`.
 3. Keep side effects (storage/audio/event orchestration) in `GameState.jsx` or hooks, not in reducer/data files.
 4. Preserve backwards compatibility for existing saves unless an explicit migration path is introduced.
 5. Keep error handling safe: no sensitive data in logs/storage error surfaces.
-
 
 ## State Safety Guard (Code-Aligned)
 
@@ -56,4 +55,4 @@ npm run test
 npm run build
 ```
 
-_Last updated: 2026-02-21._
+_Last updated: 2026-02-23._

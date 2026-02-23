@@ -299,7 +299,7 @@ test('calculateGigFinancials uses all inventory types for sales limit', () => {
   )
 })
 
-test('calculateGigFinancials includes transport costs based on distance', () => {
+test('calculateGigFinancials no longer includes transport/food in gig report (handled via Travel phase)', () => {
   const gigData = buildGigData({ dist: 200 })
   const result = calculateGigFinancials({
     gigData: gigData,
@@ -311,8 +311,9 @@ test('calculateGigFinancials includes transport costs based on distance', () => 
   })
 
   const fuelItem = result.expenses.breakdown.find(b => b.label === 'Fuel')
-  assert.ok(fuelItem, 'Should include fuel costs')
-  assert.ok(fuelItem.value > 0, 'Fuel cost should be positive for distance > 0')
+  const foodItem = result.expenses.breakdown.find(b => b.label === 'Food & Drinks')
+  assert.ok(!fuelItem, 'Should NOT include fuel costs in gig report')
+  assert.ok(!foodItem, 'Should NOT include food costs in gig report')
 })
 
 test('calculateGigFinancials includes catering when enabled', () => {
@@ -534,7 +535,7 @@ test('calculateTravelExpenses returns correct cost structure', () => {
     Math.abs(result.fuelLiters - 2.4) < 0.001,
     'Fuel liters should be approx 2.4'
   )
-  assert.equal(result.totalCost, 28, 'Total cost should be 28')
+  assert.equal(result.totalCost, 24, 'Total cost should be 24 (Food only)')
 })
 
 test('calculateTravelExpenses computes distance consistently across node coordinates', () => {
@@ -564,44 +565,8 @@ test('calculateFuelCost applies van tuning upgrade', () => {
   assert.equal(res2.fuelLiters, 12 * 0.8)
 })
 
-test('calculateGigFinancials applies van tuning upgrade to fuel cost', () => {
-  const gigData = buildGigData({ dist: 100 })
-  const baseCost = calculateFuelCost(100).fuelCost
-
-  // Without upgrade (passing fame number)
-  const res1 = calculateGigFinancials({
-    gigData: gigData,
-    performanceScore: 80,
-    modifiers: buildModifiers(),
-    bandInventory: buildInventory(),
-    playerState: { fame: 100 },
-    gigStats: buildGigStats()
-  })
-  const fuelItem1 = res1.expenses.breakdown.find(b => b.label === 'Fuel')
-  assert.equal(fuelItem1.value, baseCost)
-
-  // With upgrade (passing player object)
-  const playerState = {
-    fame: 100,
-    van: {
-      upgrades: ['van_tuning']
-    }
-  }
-  const res2 = calculateGigFinancials({
-    gigData: gigData,
-    performanceScore: 80,
-    modifiers: buildModifiers(),
-    bandInventory: buildInventory(),
-    playerState: playerState,
-    gigStats: buildGigStats()
-  })
-  const fuelItem2 = res2.expenses.breakdown.find(b => b.label === 'Fuel')
-
-  assert.ok(
-    fuelItem2.value < fuelItem1.value,
-    'Fuel cost should be lower with upgrade'
-  )
-})
+// Note: calculateGigFinancials no longer applies upgrades to fuel because fuel is not in the gig report.
+// Upgrade testing is handled in calculateFuelCost tests.
 
 test('calculateRefuelCost calculates correctly', () => {
   // Max fuel = 100, Price = 1.75

@@ -62,6 +62,8 @@ Notes: `npm run test` uses Node's built-in test runner with `tsx`; `npm run test
 
 - Root runtime composition: `ErrorBoundary` → `GameStateProvider` → scene renderer + global overlays (`HUD`, `ToastOverlay`, `ChatterOverlay`, `TutorialManager`, `EventModal`).
 - Scene set in active use: `INTRO`, `MENU`, `SETTINGS`, `CREDITS`, `GAMEOVER`, `OVERWORLD`, `TRAVEL_MINIGAME`, `PREGIG`, `PRE_GIG_MINIGAME`, `GIG`, `POSTGIG`.
+- **Node Types**: `START`, `GIG`, `FESTIVAL` (Capacity ≥ 1000), `REST_STOP`, `SPECIAL`, `FINALE`.
+- **Game Flow**: `TRAVEL_MINIGAME` now routes directly to `PREGIG` for performance venues, skipping the overworld flash.
 - Reducer/Event guardrails currently enforce:
   - `player.money >= 0` via shared state clamps
   - `band.harmony` clamped to `1..100` via shared state clamps
@@ -74,22 +76,21 @@ Notes: `npm run test` uses Node's built-in test runner with `tsx`; `npm run test
 
 For domain-specific guidance, consult specialized agent documentation:
 
-| Agent          | Location                   | Expertise                                  |
-| -------------- | -------------------------- | ------------------------------------------ |
-| **Context**    | `src/context/AGENTS.md`    | State management, reducers, actions        |
-| **Hooks**      | `src/hooks/AGENTS.md`      | Travel logic, purchase logic, custom hooks |
-| **Scenes**     | `src/scenes/AGENTS.md`     | Screen navigation, game flow               |
-| **Utils**      | `src/utils/AGENTS.md`      | Game engines, calculations, audio          |
-| **Components** | `src/components/AGENTS.md` | Pixi.js, real-time rendering               |
-| **Data**       | `src/data/AGENTS.md`       | Events, venues, songs, balance             |
-| **UI**         | `src/ui/AGENTS.md`         | Design system, reusable components         |
-| **Stage**      | `src/components/stage/AGENTS.md` | Pixi stage managers, render-loop lifecycle |
-| **Rhythm Hooks** | `src/hooks/rhythmGame/AGENTS.md` | Gig loop timing/input/scoring orchestration |
-| **Audio Utils** | `src/utils/audio/AGENTS.md` | Low-level WebAudio/Tone resource handling   |
-| **Event Data** | `src/data/events/AGENTS.md` | Event catalog schema and balancing rules    |
-| **UI Shared**  | `src/ui/shared/AGENTS.md`  | Reusable settings/slider controls          |
-| **Minigames**  | `src/hooks/minigames/AGENTS.md` | Minigame loop timing, input handling, scoring orchestration |
-
+| Agent            | Location                         | Expertise                                                   |
+| ---------------- | -------------------------------- | ----------------------------------------------------------- |
+| **Context**      | `src/context/AGENTS.md`          | State management, reducers, actions                         |
+| **Hooks**        | `src/hooks/AGENTS.md`            | Travel logic, purchase logic, custom hooks                  |
+| **Scenes**       | `src/scenes/AGENTS.md`           | Screen navigation, game flow                                |
+| **Utils**        | `src/utils/AGENTS.md`            | Game engines, calculations, audio                           |
+| **Components**   | `src/components/AGENTS.md`       | Pixi.js, real-time rendering                                |
+| **Data**         | `src/data/AGENTS.md`             | Events, venues, songs, balance                              |
+| **UI**           | `src/ui/AGENTS.md`               | Design system, reusable components                          |
+| **Stage**        | `src/components/stage/AGENTS.md` | Pixi stage managers, render-loop lifecycle                  |
+| **Rhythm Hooks** | `src/hooks/rhythmGame/AGENTS.md` | Gig loop timing/input/scoring orchestration                 |
+| **Audio Utils**  | `src/utils/audio/AGENTS.md`      | Low-level WebAudio/Tone resource handling                   |
+| **Event Data**   | `src/data/events/AGENTS.md`      | Event catalog schema and balancing rules                    |
+| **UI Shared**    | `src/ui/shared/AGENTS.md`        | Reusable settings/slider controls                           |
+| **Minigames**    | `src/hooks/minigames/AGENTS.md`  | Minigame loop timing, input handling, scoring orchestration |
 
 ## Architecture Guard Updates
 
@@ -98,8 +99,9 @@ For domain-specific guidance, consult specialized agent documentation:
 - State guardrails are centralized via `src/utils/gameStateUtils.js` helpers (`clampPlayerMoney`, `clampBandHarmony`, `applyInventoryItemDelta`) and reused by both reducer flows and event-delta application paths.
 - Tempo timing in `src/utils/rhythmUtils.js` now uses a single processed-map path (`ensureProcessedTempoMap` + `findTempoSegment`) instead of maintaining a legacy fallback branch.
 - Audio asset URL maps are unified through `buildAssetUrlMap`; avoid reintroducing wrapper-only APIs such as `buildMidiUrlMap`.
-- Minigame architecture uses the `StageController` pattern: logic lives in custom hooks (`useTourbusLogic`, `useRoadieLogic`), rendering in PixiJS classes (`TourbusStageController`, `RoadieStageController`), and state flows through `gameReducer`.
-- `useArrivalLogic` encapsulates the complex side-effects of arriving at a map node (autosave, event trigger, day advance) to avoid logic duplication between `useTravelLogic` and `TourbusScene`.
+- `useArrivalLogic` encapsulates the complex side-effects of arriving at a map node (autosave, event trigger, day advance) and handles routing to avoid logic duplication.
+- **Economy Flow**: Travel only consumes Fuel Liters and Money for Food. Monetary gas costs are handled exclusively via the "Refuel" action.
+- **Map Icons**: Node types use distinct icons: House (Start), Skull (Club), Flame (Festival), Campfire (Rest), Mystery (Special), Star (Finale).
 
 ### [minigame-architecture-guard]
 
@@ -120,17 +122,19 @@ For domain-specific guidance, consult specialized agent documentation:
 
 ## Documentation
 
-| Document                          | Purpose                                       |
-| --------------------------------- | --------------------------------------------- |
+| Document                            | Purpose                                       |
+| ----------------------------------- | --------------------------------------------- |
 | `.github/copilot-instructions.md`   | Detailed coding conventions for AI assistants |
-| `CLAUDE.md`                        | Assistant-facing architecture and style notes |
-| `WIKI.md`                          | Documentation entry index                     |
-| `docs/ARCHITECTURE.md`             | System/module architecture snapshot           |
-| `docs/STATE_TRANSITIONS.md`        | Scene/event state machine behavior            |
-| `docs/CODING_STANDARDS.md`         | JavaScript/React coding standards             |
-| `docs/TAILWIND_V4_PATTERNS.md`     | Tailwind + animation/rendering patterns       |
-| `neurotoxic-game-threat-model.md`  | Frontend threat model assumptions and risks   |
-| `security_best_practices_report.md`| Current security findings summary             |
+| `CLAUDE.md`                         | Assistant-facing architecture and style notes |
+| `WIKI.md`                           | Documentation entry index                     |
+| `docs/ARCHITECTURE.md`              | System/module architecture snapshot           |
+| `docs/STATE_TRANSITIONS.md`         | Scene/event state machine behavior            |
+| `docs/CODING_STANDARDS.md`          | JavaScript/React coding standards             |
+| `docs/TAILWIND_V4_PATTERNS.md`      | Tailwind + animation/rendering patterns       |
+| `docs/agent_knowledge_update.md`    | Recent system findings & corrections          |
+| `docs/*_Exploration_Report.md`      | Deep-dive discovery & architecture analysis   |
+| `neurotoxic-game-threat-model.md`   | Frontend threat model assumptions and risks   |
+| `security_best_practices_report.md` | Current security findings summary             |
 
 ## Git Workflow
 
@@ -253,4 +257,5 @@ _"Complexity is not an excuse for friction."_
 - UI: Toast taxonomy remains `success`/`error`/`warning`/`info`, with `info` rendered using the blue token (`--info-blue`).
 - Chatter: Default fallback chatter is limited to `MENU`, `OVERWORLD`, `PREGIG`, and `POSTGIG`; `GIG` requires explicit conditional chatter entries.
 - State safety: Event delta handling intentionally rejects `flags.score` and keeps score ownership outside the global overworld player schema.
-- Last updated: 2026-02-19.
+- **Economy Update**: Refactored `calculateTravelExpenses` and `calculateGigExpenses` to prevent double-charging fuel. Fuel cost is now paid only at gas stations; travel only deducts liters and food.
+- Last updated: 2026-02-23.

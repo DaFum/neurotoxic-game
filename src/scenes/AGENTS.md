@@ -11,12 +11,10 @@ Scenes are route-level game screens selected by `currentScene` in `App.jsx`:
 - `SETTINGS` → `Settings.jsx`
 - `CREDITS` → `Credits.jsx`
 - `GAMEOVER` → `GameOver.jsx`
-- `OVERWORLD` → `Overworld.jsx`
-- `TRAVEL_MINIGAME` → `TourbusScene.jsx`
-- `PREGIG` → `PreGig.jsx`
-- `PRE_GIG_MINIGAME` → `RoadieRunScene.jsx`
-- `GIG` → `Gig.jsx`
-- `POSTGIG` → `PostGig.jsx`
+- `OVERWORLD` → `TourbusScene.jsx` (`TRAVEL_MINIGAME`)
+- `PREGIG` → `RoadieRunScene.jsx` (`PRE_GIG_MINIGAME`) → `Gig.jsx`
+- **New Types**: `OVERWORLD` map now supports `FESTIVAL` and `FINALE` icons/performance logic.
+- **Direct Flow**: `TRAVEL_MINIGAME` routes directly to `PREGIG` for performance nodes via `useArrivalLogic`.
 
 ## Code-Aligned Gameflow Contracts
 

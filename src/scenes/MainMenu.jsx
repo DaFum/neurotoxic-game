@@ -38,40 +38,35 @@ export const MainMenu = () => {
     })
   }
 
-  const handleStartTour = async () => {
-    try {
-      await audioManager.ensureAudioContext()
-    } catch (err) {
-      reportAudioIssue(err, 'Audio initialization failed.')
-    } finally {
-      resetState()
-      startAmbientSafely()
-      if (isMountedRef.current) {
-        changeScene('OVERWORLD')
-      }
-    }
+  const handleStartTour = () => {
+    // State transitions MUST happen synchronously so React batches them.
+    // If they run after an `await`, each dispatch triggers a separate render,
+    // causing the intermediate INTRO scene to mount and unmount MainMenu.
+    resetState()
+    changeScene('OVERWORLD')
+
+    // Audio setup is fire-and-forget — never blocks scene transitions.
+    void audioManager.ensureAudioContext()
+      .catch(err => reportAudioIssue(err, 'Audio initialization failed.'))
+      .then(() => startAmbientSafely())
   }
 
   /**
    * Handles loading a saved game.
    */
-  const handleLoad = async () => {
+  const handleLoad = () => {
     if (!loadGame()) {
       addToast('No save game found!', 'error')
       return
     }
 
-    try {
-      await audioManager.ensureAudioContext()
-    } catch (err) {
-      reportAudioIssue(err, 'Audio initialization failed.')
-    } finally {
-      // Fire-and-forget keeps navigation responsive; Overworld re-syncs audio.
-      startAmbientSafely()
-      if (isMountedRef.current) {
-        changeScene('OVERWORLD')
-      }
-    }
+    // Scene transition must be synchronous (see handleStartTour comment).
+    changeScene('OVERWORLD')
+
+    // Audio is fire-and-forget; Overworld re-syncs audio.
+    void audioManager.ensureAudioContext()
+      .catch(err => reportAudioIssue(err, 'Audio initialization failed.'))
+      .then(() => startAmbientSafely())
   }
 
   return (

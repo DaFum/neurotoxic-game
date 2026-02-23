@@ -10,7 +10,7 @@ Nested override: `src/data/events/AGENTS.md` takes precedence for `src/data/even
 
 Core files:
 
-- `characters.js`, `venues.js`, `songs.js`
+- `characters.js`, `venues.js` (FESTIVAL type assigned for Capacity ≥ 1000), `songs.js`
 - `hqItems.js`, `upgrades.js`, `upgradeCatalog.js`
 - `chatter.js`
 - event aggregation entry: `events.js`

@@ -59,9 +59,9 @@ test('Minigame State Transitions', async (t) => {
     // Distance calculation: sqrt(10^2 + 10^2) * 5 + 20 = 90.71km -> 90km (floor)
     // Fuel Cost: (90 / 100) * 12 * 1.75 = 18.9 -> 18 (floor)
     // Food Cost: 24 (3 * 8)
-    // Total Cost: 18 + 24 = 42
-    // 1000 - 42 = 958
-    assert.strictEqual(newState.player.money, 958)
+    // Total Cost: 24 (Food only, fuel is paid via Refuel)
+    // 1000 - 24 = 976
+    assert.strictEqual(newState.player.money, 976)
 
     // Check condition
     // 100 - 2 = 98
@@ -108,6 +108,7 @@ test('Minigame State Transitions', async (t) => {
     const newState = gameReducer(activeState, action)
 
     assert.deepStrictEqual(newState.minigame, DEFAULT_MINIGAME_STATE)
+    assert.strictEqual(newState.currentScene, GAME_PHASES.GIG)
 
     // equipmentDamage=5 -> stress=1 -> harmony-=1; repairCost=10 -> money-=10
     // harmony: 80 - 1 = 79

@@ -6,7 +6,7 @@ This document is a code-aligned architecture snapshot for the current `main` app
 
 - **App shell**: `src/main.jsx` mounts `App` and imports global styles from `src/index.css`.
 - **Root composition**: `src/App.jsx` wraps the game in `ErrorBoundary` + `GameStateProvider`, then renders scene content, overlays, analytics, and dev-only debug tools.
-- **Scene routing**: scene selection is controlled by `currentScene` in global state (`INTRO`, `MENU`, `SETTINGS`, `CREDITS`, `GAMEOVER`, `OVERWORLD`, `TRAVEL_MINIGAME`, `PREGIG`, `PRE_GIG_MINIGAME`, `GIG`, `POSTGIG`).
+- **Scene routing**: scene selection is controlled by `currentScene` in global state. The overworld supports multiple node types: `START`, `GIG`, `FESTIVAL`, `REST_STOP`, `SPECIAL`, and `FINALE`.
 - **Lazy loading**: heavy scenes are lazy-loaded through `createNamedLazyLoader` (`src/utils/lazySceneLoader.js`) to reduce first-render bundle work.
 
 ## Source Layout (Current)
@@ -133,13 +133,17 @@ Global state lives in `GameStateProvider` and is mutated only through reducer ac
    - `INTRO` auto/transitions into `MENU`.
 2. **Overworld loop**
    - Map travel triggers `TRAVEL_MINIGAME`.
-   - Completion returns to `OVERWORLD` via `useArrivalLogic`.
+   - Completion triggers `useArrivalLogic`, which routes directly to `PREGIG` for GIG/FESTIVAL/FINALE nodes, or returns to `OVERWORLD` otherwise.
 3. **Gig loop**
    - `START_GIG` sets the venue and transitions to `PREGIG`.
    - `PREGIG` confirms setlist and starts `PRE_GIG_MINIGAME` (Roadie Run).
    - Minigame completion transitions to `GIG`, then `POSTGIG`.
 4. **Post-gig resolution**
    - Payout/stats/effects applied, then return to `OVERWORLD` or go to `GAMEOVER` if fail conditions are met.
+5. **Economy Model**
+   - Travel consumes **Fuel Liters** and **Money for Food**.
+   - **Refuel** action (at Overworld/Gas Stations) is the only place gas money is deducted.
+   - Post-Gig P&L reports only track performance-related income/expense, excluding travel overhead to ensure net profit matches wallet changes.
 
 ## Diagnostics and Reliability
 
