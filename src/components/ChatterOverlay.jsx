@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { getRandomChatter } from '../data/chatter'
 import { motion, AnimatePresence } from 'framer-motion'
+import { GAME_PHASES } from '../context/gameConstants'
 
 const CHATTER_DELAY_MIN_MS = 8000
 const CHATTER_DELAY_RANGE_MS = 17000
@@ -16,7 +17,18 @@ const SCENE_LABELS = {
   POSTGIG: 'Aftershow Feed',
   SETTINGS: 'System Feed',
   CREDITS: 'Crew Feed',
-  GAMEOVER: 'Last Broadcast'
+  GAMEOVER: 'Last Broadcast',
+  [GAME_PHASES.TRAVEL_MINIGAME]: 'Travel Feed',
+  [GAME_PHASES.PRE_GIG_MINIGAME]: 'Roadie Feed'
+}
+
+const OVERWORLD_STYLE = {
+  accent: 'var(--toxic-green)',
+  borderColor: 'border-(--toxic-green)',
+  labelColor: 'text-(--toxic-green)',
+  speakerColor: 'text-(--warning-yellow)',
+  barColor: 'bg-(--toxic-green)',
+  icon: '\uD83D\uDE90'
 }
 
 /**
@@ -24,14 +36,7 @@ const SCENE_LABELS = {
  * Each entry defines border color, accent color, icon, etc.
  */
 const SCENE_STYLES = {
-  OVERWORLD: {
-    accent: 'var(--toxic-green)',
-    borderColor: 'border-(--toxic-green)',
-    labelColor: 'text-(--toxic-green)',
-    speakerColor: 'text-(--warning-yellow)',
-    barColor: 'bg-(--toxic-green)',
-    icon: '\uD83D\uDE90'
-  },
+  OVERWORLD: OVERWORLD_STYLE,
   PREGIG: {
     accent: 'var(--warning-yellow)',
     borderColor: 'border-(--warning-yellow)',
@@ -71,6 +76,15 @@ const SCENE_STYLES = {
     speakerColor: 'text-(--ash-gray)',
     barColor: 'bg-(--blood-red)',
     icon: '\uD83D\uDC80'
+  },
+  [GAME_PHASES.TRAVEL_MINIGAME]: OVERWORLD_STYLE,
+  [GAME_PHASES.PRE_GIG_MINIGAME]: {
+    accent: 'var(--warning-yellow)',
+    borderColor: 'border-(--warning-yellow)',
+    labelColor: 'text-(--warning-yellow)',
+    speakerColor: 'text-(--toxic-green)',
+    barColor: 'bg-(--warning-yellow)',
+    icon: '\uD83D\uDCE6'
   }
 }
 
@@ -187,8 +201,8 @@ export const ChatterOverlay = ({ gameState }) => {
   }, [])
 
   // Scene-aware positioning:
-  // OVERWORLD = bottom-left (near the bus), everything else = bottom-center
-  const isOverworld = currentScene === 'OVERWORLD'
+  // OVERWORLD / TRAVEL_MINIGAME = bottom-left (near the bus), everything else = bottom-center
+  const isOverworld = currentScene === 'OVERWORLD' || currentScene === GAME_PHASES.TRAVEL_MINIGAME
   const positionClassName = isOverworld
     ? 'fixed bottom-28 left-8 pointer-events-none w-[min(22rem,85vw)]'
     : 'fixed bottom-16 left-1/2 -translate-x-1/2 pointer-events-none w-[min(24rem,90vw)]'
