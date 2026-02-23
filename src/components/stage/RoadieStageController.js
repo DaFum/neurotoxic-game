@@ -3,7 +3,7 @@ import * as PIXI from 'pixi.js'
 import { CELL_SIZE } from '../../hooks/minigames/useRoadieLogic'
 import { EffectManager } from './EffectManager'
 import { logger } from '../../utils/logger'
-import { getPixiColorFromToken } from '../stage/utils'
+import { getPixiColorFromToken, loadTexture } from '../stage/utils'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
 
 export class RoadieStageController {
@@ -117,15 +117,14 @@ export class RoadieStageController {
               guitar: getGenImageUrl(IMG_PROMPTS.MINIGAME_ITEM_GUITAR)
           }
 
+
           const loaded = {}
           const keys = Object.keys(urls)
-          const results = await Promise.allSettled(keys.map(k => PIXI.Assets.load(urls[k]).then(t => ({ key: k, texture: t }))))
+          const results = await Promise.allSettled(keys.map(k => loadTexture(urls[k]).then(t => ({ key: k, texture: t }))))
 
           results.forEach(res => {
-              if (res.status === 'fulfilled') {
+              if (res.status === 'fulfilled' && res.value && res.value.texture) {
                   loaded[res.value.key] = res.value.texture
-              } else {
-                  logger.warn('RoadieStageController', `Failed to load asset`, res.reason)
               }
           })
 

@@ -1,7 +1,7 @@
 
 import * as PIXI from 'pixi.js'
 import { EffectManager } from './EffectManager'
-import { getPixiColorFromToken } from '../stage/utils'
+import { getPixiColorFromToken, loadTexture } from '../stage/utils'
 import { logger } from '../../utils/logger'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
 
@@ -105,9 +105,12 @@ export class TourbusStageController {
             fuel: getGenImageUrl(IMG_PROMPTS.MINIGAME_FUEL)
         }
 
+
         // Load all concurrently
         const bundles = Object.keys(urls).map(key =>
-            PIXI.Assets.load(urls[key]).then(tex => { this.textures[key] = tex })
+            loadTexture(urls[key]).then(tex => {
+                if (tex) this.textures[key] = tex
+            })
         )
 
         await Promise.allSettled(bundles)

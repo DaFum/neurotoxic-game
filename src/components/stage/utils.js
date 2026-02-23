@@ -1,4 +1,7 @@
 
+import * as PIXI from 'pixi.js'
+import { logger } from '../../utils/logger'
+
 const PIXI_TOKEN_FALLBACKS = Object.freeze({
   '--void-black': '#0a0a0a',
   '--toxic-green': '#00ff41',
@@ -158,4 +161,27 @@ export const buildRhythmLayout = ({ screenWidth, screenHeight }) => {
     rhythmOffsetY: screenHeight * RHYTHM_LAYOUT.rhythmOffsetRatio,
     laneTotalWidth
   }
+}
+
+/**
+ * Robustly loads a texture, falling back to an Image element if Pixi Assets fails.
+ * Useful for generated URLs without extensions or with query parameters.
+ * @param {string} url - The URL to load.
+ * @returns {Promise<PIXI.Texture|null>} The loaded texture or null.
+ */
+export const loadTexture = async (url) => {
+    try {
+        return await PIXI.Assets.load(url)
+    } catch (e) {
+        return new Promise((resolve) => {
+            const img = new Image()
+            img.crossOrigin = 'anonymous'
+            img.onload = () => resolve(PIXI.Texture.from(img))
+            img.onerror = () => {
+                logger.warn('loadTexture', `Failed to load image: ${url}`)
+                resolve(null)
+            }
+            img.src = url
+        })
+    }
 }
