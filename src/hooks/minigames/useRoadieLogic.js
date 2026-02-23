@@ -98,7 +98,8 @@ export const useRoadieLogic = () => {
         ...prev,
         itemsRemaining: game.itemsToDeliver.length,
         itemsDelivered: game.itemsDelivered.length,
-        carrying: game.carrying
+        carrying: game.carrying,
+        isGameOver: game.isGameOver
     }))
 
   }, [completeRoadieMinigame])

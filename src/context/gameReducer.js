@@ -343,8 +343,8 @@ const handleCompleteTravelMinigame = (state, payload) => {
   return {
     ...state,
     player: nextPlayer,
-    minigame: { ...DEFAULT_MINIGAME_STATE },
-    currentScene: GAME_PHASES.OVERWORLD
+    minigame: { ...DEFAULT_MINIGAME_STATE }
+    // Scene stays at TRAVEL_MINIGAME — handleArrivalSequence will route
   }
 }
 
@@ -395,7 +395,7 @@ const handleCompleteRoadieMinigame = (state, payload) => {
     player: nextPlayer,
     gigModifiers: nextModifiers,
     minigame: { ...DEFAULT_MINIGAME_STATE },
-    currentScene: GAME_PHASES.PRE_GIG_MINIGAME
+    currentScene: GAME_PHASES.GIG
   }
 }
 

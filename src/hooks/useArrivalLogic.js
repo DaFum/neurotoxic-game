@@ -39,13 +39,20 @@ export const useArrivalLogic = () => {
       }
 
       // 4. Trigger Events
-      let travelEventActive = triggerEvent('transport', 'travel')
-      if (!travelEventActive) {
-        travelEventActive = triggerEvent('band', 'travel')
+      // Only trigger travel events for non-GIG destinations.
+      // GIG destinations get events in the PreGig scene instead.
+      const currentNode = gameMap?.nodes[player.currentNodeId]
+      const isGigNode = currentNode?.type === 'GIG' || currentNode?.type === 'FESTIVAL' || currentNode?.type === 'FINALE'
+
+      let travelEventActive = false
+      if (!isGigNode) {
+        travelEventActive = triggerEvent('transport', 'travel')
+        if (!travelEventActive) {
+          travelEventActive = triggerEvent('band', 'travel')
+        }
       }
 
       // 5. Handle Node Arrival & Routing
-      const currentNode = gameMap?.nodes[player.currentNodeId]
 
       if (currentNode) {
         if (currentNode.type === 'REST_STOP') {
@@ -66,7 +73,7 @@ export const useArrivalLogic = () => {
         }
       }
 
-      if (currentNode && currentNode.type === 'GIG') {
+      if (currentNode && (currentNode.type === 'GIG' || currentNode.type === 'FESTIVAL' || currentNode.type === 'FINALE')) {
         if ((band?.harmony ?? 0) <= 0) {
           addToast("Band's harmony too low to perform!", 'warning')
           changeScene('OVERWORLD')

@@ -11,7 +11,7 @@ const KEY = 'pk_xDL8u2ty4Sxucaa3' // gitleaks:allow
 export const getGenImageUrl = description => {
   // URL Encode the description
   const encodedDesc = encodeURIComponent(description)
-  return `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}`
+  return `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}&=`
 }
 
 export const IMG_PROMPTS = {
@@ -62,14 +62,17 @@ export const IMG_PROMPTS = {
   NOTE_SKULL: 'pixel art white skull icon simple transparent background',
   NOTE_LIGHTNING:
     'pixel art green lightning bolt icon simple transparent background',
-  HIT_BLOOD: 'pixel art red blood splatter explosion transparent background',
-  HIT_TOXIC: 'pixel art toxic green explosion cloud transparent background',
+  HIT_BLOOD: 'pixel art red blood splatter explosion isolated on solid black background no shadow',
+  HIT_TOXIC: 'pixel art toxic green explosion cloud isolated on solid black background no shadow',
 
   // Map Icons
   ICON_VAN: 'pixel art black tour van side view small icon',
   ICON_PIN_CLUB: 'pixel art map pin skull shape green',
   ICON_PIN_FESTIVAL: 'pixel art map pin flame shape red',
   ICON_PIN_HOME: 'pixel art home icon rehearsal room garage door grunge style',
+  ICON_PIN_REST: 'pixel art map pin campfire shape orange rest stop cozy icon',
+  ICON_PIN_SPECIAL: 'pixel art map pin mystery portal purple swirl cosmic icon',
+  ICON_PIN_FINALE: 'pixel art map pin golden trophy crown star icon',
 
   // HQ
   BAND_HQ_BG:
@@ -144,17 +147,17 @@ export const IMG_PROMPTS = {
   ITEM_HQ_SKULL: 'pixel art animal skull decoration icon',
 
   // Minigame - Tourbus
-  MINIGAME_ROAD: 'top down view dark asphalt highway road texture pixel art seamless',
-  MINIGAME_OBSTACLE_ROCK: 'pixel art large rock stone obstacle on road top down',
-  MINIGAME_OBSTACLE_BARRIER: 'pixel art construction barrier red white stripes top down',
-  MINIGAME_FUEL: 'pixel art red gas can fuel jerrycan icon',
+  MINIGAME_ROAD: 'top down view dark asphalt highway road texture pixel art seamless tileable',
+  MINIGAME_OBSTACLE_ROCK: 'pixel art large rock boulder obstacle isolated on solid black background no shadow flat icon top down view',
+  MINIGAME_OBSTACLE_BARRIER: 'pixel art orange traffic cone isolated on solid black background no shadow flat icon top down view',
+  MINIGAME_FUEL: 'pixel art red gas jerrycan isolated on solid black background no shadow flat icon top down view',
 
   // Minigame - Roadie
-  MINIGAME_ROADIE_IDLE: 'pixel art roadie character carrying heavy box top down view',
-  MINIGAME_CAR_A: 'pixel art sedan car top down view red',
-  MINIGAME_CAR_B: 'pixel art sports car top down view yellow',
-  MINIGAME_CAR_C: 'pixel art truck top down view blue',
-  MINIGAME_ITEM_AMP: 'pixel art guitar amplifier stack top down icon',
-  MINIGAME_ITEM_DRUMS: 'pixel art drum kit bass drum top down icon',
-  MINIGAME_ITEM_GUITAR: 'pixel art guitar hard case rectangular top down icon'
+  MINIGAME_ROADIE_IDLE: 'pixel art roadie character carrying heavy box isolated on solid black background no shadow top down view small sprite',
+  MINIGAME_CAR_A: 'pixel art red sedan car isolated on solid black background no shadow top down view small sprite',
+  MINIGAME_CAR_B: 'pixel art yellow sports car isolated on solid black background no shadow top down view small sprite',
+  MINIGAME_CAR_C: 'pixel art blue pickup truck isolated on solid black background no shadow top down view small sprite',
+  MINIGAME_ITEM_AMP: 'pixel art guitar amplifier isolated on solid black background no shadow flat icon small',
+  MINIGAME_ITEM_DRUMS: 'pixel art drum kit isolated on solid black background no shadow flat icon small',
+  MINIGAME_ITEM_GUITAR: 'pixel art guitar hard case isolated on solid black background no shadow flat icon small'
 }

@@ -12,16 +12,16 @@ Web-based Roguelike Tour Manager with rhythm action mechanics. Manage a Death Gr
 
 ## Tech Stack
 
-| Category    | Technology    | Version                     |
-| ----------- | ------------- | --------------------------- |
-| Framework   | React         | 19.2.4                      |
-| Build       | Vite          | 7.3.1                       |
-| Language    | JavaScript    | ECMAScript 2021 (ESModules) |
-| Game Engine | Pixi.js       | 8.16.0                      |
-| Animation   | Framer Motion | 12.34.0                     |
-| Styling     | Tailwind CSS  | 4.1.18                      |
-| Audio       | Tone.js       | 15.x                        |
-| Linting     | ESLint        | 9.39.2                      |
+| Category    | Technology       | Version                     |
+| ----------- | ---------------- | --------------------------- |
+| Framework   | React            | 19.2.4                      |
+| Build       | Vite             | 7.3.1                       |
+| Language    | JavaScript       | ECMAScript 2021 (ESModules) |
+| Game Engine | Pixi.js ) 8.16.0 |
+| Animation   | Framer Motion    | 12.34.2                     |
+| Styling     | Tailwind CSS     | 4.2.0                       |
+| Audio       | Tone.js          | 15.5.0                      |
+| Linting     | ESLint           | 9.39.2                      |
 
 ## Visual Design System (STRICT)
 
@@ -229,9 +229,9 @@ import { eventEngine } from '../utils/eventEngine'
 
 ### Version Pinning (DO NOT UPGRADE)
 
-- `react@^18.2.0` (not v19)
-- `vite@^5.0.0` (not alpha/beta)
-- `tailwindcss@^4.0.0` (v4 syntax required)
+- `react@19.2.4`
+- `vite@7.3.1`
+- `tailwindcss@^4.2.0` (v4 syntax required)
 
 ### Tailwind v4 Syntax
 
@@ -294,4 +294,4 @@ npm run format   # Prettier
 
 **Remember**: Aesthetic coherence and functional stability over feature bloat.
 
-_Documentation sync: dependency/tooling baseline reviewed on 2026-02-17._
+_Documentation sync: dependency/tooling baseline reviewed on 2026-02-17. Flow and Economy updates 2026-02-23._
