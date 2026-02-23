@@ -137,14 +137,14 @@ export const DetailedStatsTab = ({ player, band, social }) => {
                     if (potentialTraits.length === 0) return <div className='text-xs text-(--ash-gray)'>None</div>
 
                     return potentialTraits.map(trait => {
-                      const isUnlocked = m.traits?.some(t => t.id === trait.id)
+                      const isTraitActive = m.traits?.some(t => t.id === trait.id)
                       return (
                         <div
                           key={trait.id}
-                          className={`text-xs flex justify-between items-center ${isUnlocked ? 'text-(--toxic-green)' : 'text-(--ash-gray) opacity-50'}`}
+                          className={`text-xs flex justify-between items-center ${isTraitActive ? 'text-(--toxic-green)' : 'text-(--ash-gray) opacity-50'}`}
                         >
                           <span>{trait.name}</span>
-                          {isUnlocked ? (
+                          {isTraitActive ? (
                             <span className='text-[10px] uppercase border border-(--toxic-green) px-1 rounded'>Active</span>
                           ) : (
                             <span className='text-[10px] uppercase'>Locked</span>

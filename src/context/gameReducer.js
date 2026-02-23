@@ -279,7 +279,9 @@ const handleConsumeItem = (state, payload) => {
  * @returns {Object} Updated state
  */
 const handleAdvanceDay = state => {
-  const { player, band, social } = calculateDailyUpdates(state)
+  // Use Math.random for now, but explicit for clarity/future mocking
+  const rng = Math.random
+  const { player, band, social } = calculateDailyUpdates(state, rng)
   const nextBand = { ...band }
   if (typeof nextBand.harmony === 'number') {
     nextBand.harmony = clampBandHarmony(nextBand.harmony)

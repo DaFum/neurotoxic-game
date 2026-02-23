@@ -83,7 +83,7 @@ export const PostGig = () => {
     lastGigStats,
     gigModifiers,
     player,
-    band.inventory,
+    band, // Corrected dependency for virality calculation
     perfScore
   ])
 

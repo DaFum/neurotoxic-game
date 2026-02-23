@@ -124,9 +124,10 @@ export const calculateGigPhysics = (bandState, song) => {
 /**
  * Calculates daily state updates including costs, mood drift, and decay.
  * @param {object} currentState - The full state before update.
+ * @param {Function} [rng=Math.random] - Random number generator for determinism.
  * @returns {object} The updated parts of state (player, band, social).
  */
-export const calculateDailyUpdates = currentState => {
+export const calculateDailyUpdates = (currentState, rng = Math.random) => {
   const nextPlayer = {
     ...currentState.player,
     day: currentState.player.day + 1
@@ -257,7 +258,7 @@ export const calculateDailyUpdates = currentState => {
           m.traits?.some(t => t.id === 'party_animal')
         ) {
           mood += 2
-          if (Math.random() < 0.3) {
+          if (rng() < 0.3) {
             stamina -= 5
           }
         }
@@ -268,7 +269,7 @@ export const calculateDailyUpdates = currentState => {
       return {
         ...m,
         mood: Math.min(100, mood),
-        stamina: Math.min(100, stamina)
+        stamina: Math.max(0, Math.min(100, stamina))
       }
     })
   }
