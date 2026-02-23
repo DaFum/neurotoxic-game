@@ -87,4 +87,26 @@ describe('GlitchButton', () => {
     assert.ok(button.className.includes('opacity-100'), 'Owned variant should have opacity-100')
     assert.ok(button.className.includes('cursor-default'), 'Owned variant should have default cursor')
   })
+
+  it('forwards additional props to the button element', () => {
+    const { getByRole } = render(
+      <GlitchButton onClick={() => {}} aria-label="Custom Label" data-testid="custom-btn">
+        Props Test
+      </GlitchButton>
+    )
+    const button = getByRole('button')
+    assert.strictEqual(button.getAttribute('aria-label'), 'Custom Label')
+    assert.strictEqual(button.getAttribute('data-testid'), 'custom-btn')
+  })
+
+  it('applies warning variant style correctly', () => {
+    const { container } = render(
+      <GlitchButton onClick={() => {}} variant='warning'>
+        Warning
+      </GlitchButton>
+    )
+    const button = container.querySelector('button')
+    assert.ok(button.className.includes('border-(--warning-yellow)'), 'Should have warning border')
+    assert.ok(button.className.includes('text-(--warning-yellow)'), 'Should have warning text')
+  })
 })
