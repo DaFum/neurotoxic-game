@@ -200,7 +200,6 @@ export class TourbusStageController {
     const state = this.gameStateRef.current
     if (!state) return
 
-    const width = this.app.screen.width
     const height = this.app.screen.height
 
     // Scroll Road

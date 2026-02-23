@@ -1,8 +1,7 @@
 
 import { describe, it, mock, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
-import { TourbusStageController, createTourbusStageController } from '../src/components/stage/TourbusStageController.js'
-import { EffectManager } from '../src/components/stage/EffectManager.js'
+import { createTourbusStageController } from '../src/components/stage/TourbusStageController.js'
 
 // Mock DOM
 global.window = {

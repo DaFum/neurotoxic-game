@@ -20,7 +20,6 @@ import { audioManager } from '../utils/AudioManager.js'
 import { logger } from '../utils/logger.js'
 import { handleError, StateError } from '../utils/errorHandler.js'
 import { calcBaseBreakdownChance } from '../utils/upgradeUtils.js'
-import { createStartTravelMinigameAction } from '../context/actionCreators.js'
 
 /**
  * Failsafe timeout duration in milliseconds

@@ -15,7 +15,6 @@ import {
 } from './playbackUtils.js'
 import {
   isPercussionTrack,
-  isValidMidiNote,
   normalizeMidiPitch,
   getNoteName
 } from './midiUtils.js'

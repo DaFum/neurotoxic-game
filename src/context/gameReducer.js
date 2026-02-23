@@ -18,7 +18,6 @@ import {
 } from '../utils/economyEngine.js'
 import { logger } from '../utils/logger.js'
 import {
-  initialState,
   createInitialState,
   DEFAULT_GIG_MODIFIERS,
   DEFAULT_PLAYER_STATE,

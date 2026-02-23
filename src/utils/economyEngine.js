@@ -254,7 +254,7 @@ export const calculateRepairCost = currentCondition => {
 /**
  * Calculates expenses for the gig.
  */
-const calculateGigExpenses = (gigData, modifiers, playerState = null) => {
+const calculateGigExpenses = (gigData, modifiers) => {
   const expenses = { total: 0, breakdown: [] }
 
   // Operational Expenses (Modifiers)
@@ -395,8 +395,7 @@ export const calculateGigFinancials = ({
   // 5. Expenses (Transport, Food, Modifiers)
   const operationalExpenses = calculateGigExpenses(
     gigData,
-    modifiers,
-    playerState
+    modifiers
   )
   report.expenses.breakdown.push(...operationalExpenses.breakdown)
   report.expenses.total += operationalExpenses.total

@@ -62,7 +62,7 @@ test('ProgressBar: has accessibility attributes', (t) => {
   t.after(cleanup)
   t.after(teardownJSDOM)
 
-  const { container, getByRole } = render(
+  const { getByRole } = render(
     <ProgressBar label="A11y Test" value={75} max={100} color="bg-green-500" aria-label="Custom Label" />
   )
 

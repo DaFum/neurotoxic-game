@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { logger } from '../../utils/logger.js'
-import { getPixiColorFromToken, loadTexture } from './utils.js'
+import { loadTexture } from './utils.js'
 
 export class EffectManager {
   static MAX_POOL_SIZE = 50
