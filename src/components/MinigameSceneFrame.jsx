@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
+import { useGameState } from '../context/GameState'
 import { PixiStage } from './PixiStage'
 import { ActionButton } from '../ui/shared'
-import { useGameState } from '../context/GameState'
 
 export const MinigameSceneFrame = ({
   controllerFactory,
@@ -18,16 +18,17 @@ export const MinigameSceneFrame = ({
   const continueButtonRef = useRef(null)
   const previousFocusRef = useRef(null)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (uiState?.isGameOver) {
       previousFocusRef.current = document.activeElement
-      // Yield to allow render cycle to complete and ref to populate
-      setTimeout(() => {
-        continueButtonRef.current?.focus()
-      }, 0)
-    } else if (previousFocusRef.current) {
-      previousFocusRef.current.focus()
-      previousFocusRef.current = null
+      continueButtonRef.current?.focus()
+    }
+
+    return () => {
+      if (previousFocusRef.current) {
+        previousFocusRef.current.focus()
+        previousFocusRef.current = null
+      }
     }
   }, [uiState?.isGameOver])
 

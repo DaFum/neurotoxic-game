@@ -213,13 +213,18 @@ export const useRoadieLogic = () => {
      }
   }, [])
 
+  const currentSceneRef = useRef(currentScene)
+  useEffect(() => {
+    currentSceneRef.current = currentScene
+  }, [currentScene])
+
   // Safety Fallback: Ensure scene advances if UI hangs
   useEffect(() => {
     let timeout
     if (uiState.isGameOver && currentScene === 'PRE_GIG_MINIGAME') {
       timeout = setTimeout(() => {
         // Double check scene hasn't changed
-        if (currentScene === 'PRE_GIG_MINIGAME') {
+        if (currentSceneRef.current === 'PRE_GIG_MINIGAME') {
            changeScene('GIG')
         }
       }, 10000) // 10s fallback
