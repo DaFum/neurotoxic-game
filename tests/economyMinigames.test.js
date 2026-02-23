@@ -5,17 +5,18 @@ import { calculateTravelMinigameResult, calculateRoadieMinigameResult } from '..
 
 test('Minigame Economy Calculations', async (t) => {
   await t.test('Travel Minigame Results', () => {
-    // 20 damage -> 2% condition loss
-    // 3 Fuel cans -> 30L bonus
+    // 20 damage -> 10% condition loss (50% scaling)
+    // 3 Fuel cans -> 0L bonus (disabled)
     const result = calculateTravelMinigameResult(20, ['FUEL', 'FUEL', 'FUEL'])
-    assert.strictEqual(result.conditionLoss, 2)
-    assert.strictEqual(result.fuelBonus, 30)
+    assert.strictEqual(result.conditionLoss, 10)
+    assert.strictEqual(result.fuelBonus, 0)
   })
 
   await t.test('Travel Minigame Edge Cases', () => {
     // Null items
+    // 10 damage -> 5 condition loss
     const resultNull = calculateTravelMinigameResult(10, null)
-    assert.strictEqual(resultNull.conditionLoss, 1)
+    assert.strictEqual(resultNull.conditionLoss, 5)
     assert.strictEqual(resultNull.fuelBonus, 0)
 
     // Undefined items

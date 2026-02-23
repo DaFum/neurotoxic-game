@@ -335,7 +335,7 @@ const handleCompleteTravelMinigame = (state, payload) => {
     totalTravels: state.player.totalTravels + 1,
     van: {
       ...state.player.van,
-      fuel: Math.max(0, Math.min(100, state.player.van.fuel - fuelLiters + fuelBonus)),
+      fuel: Math.max(0, Math.min(100, state.player.van.fuel - fuelLiters)),
       condition: Math.max(0, state.player.van.condition - conditionLoss)
     }
   }
