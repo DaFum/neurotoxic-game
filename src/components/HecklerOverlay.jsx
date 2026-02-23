@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, memo } from 'react'
 import PropTypes from 'prop-types'
 
 /**
@@ -6,7 +6,7 @@ import PropTypes from 'prop-types'
  * @param {object} props
  * @param {object} props.gameStateRef - Mutable game state ref containing projectiles array.
  */
-export const HecklerOverlay = ({ gameStateRef }) => {
+export const HecklerOverlay = memo(function HecklerOverlay({ gameStateRef }) {
   const [items, setItems] = useState([])
   const itemsRef = useRef(items)
 
@@ -48,7 +48,7 @@ export const HecklerOverlay = ({ gameStateRef }) => {
       ))}
     </div>
   )
-}
+})
 
 HecklerOverlay.propTypes = {
   gameStateRef: PropTypes.shape({
