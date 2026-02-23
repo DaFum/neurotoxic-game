@@ -22,7 +22,7 @@ export const getGenImageUrl = description => {
 export const fetchGenImage = description => {
   const encodedDesc = encodeURIComponent(description)
   return fetch(
-    `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}`,
+    `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}&=`,
     {
       headers: {
         Accept: 'image/jpeg, image/png, video/mp4'
