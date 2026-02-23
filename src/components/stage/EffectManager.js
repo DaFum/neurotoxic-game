@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { logger } from '../../utils/logger.js'
-import { loadTexture } from './utils.js'
+import { loadTexture, getPixiColorFromToken } from './utils.js'
 
 export class EffectManager {
   static MAX_POOL_SIZE = 50
@@ -49,7 +49,7 @@ export class EffectManager {
     if (this.genericHitTexture) return
 
     const graphics = new PIXI.Graphics()
-    const whiteColor = 0xffffff
+    const whiteColor = getPixiColorFromToken('--star-white')
 
     // Draw a white circle with white stroke to create a base texture
     // that can be tinted to any color while preserving opacity variation.

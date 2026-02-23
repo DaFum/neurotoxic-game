@@ -530,16 +530,20 @@ export const GameStateProvider = ({ children }) => {
   )
 
   // Expose state to window for debugging/testing
+  const dispatchValueRef = useRef(dispatchValue)
+  dispatchValueRef.current = dispatchValue
+
   useEffect(() => {
     if (import.meta.env.DEV) {
-      window.gameState = { ...state, ...dispatchValue }
+      Object.defineProperty(window, 'gameState', {
+        configurable: true,
+        get: () => ({ ...stateRef.current, ...dispatchValueRef.current })
+      })
     }
     return () => {
-      if (import.meta.env.DEV) {
-        delete window.gameState
-      }
+      delete window.gameState
     }
-  }, [state, dispatchValue])
+  }, [])
 
   return (
     <GameDispatchContext.Provider value={dispatchValue}>

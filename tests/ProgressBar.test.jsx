@@ -10,7 +10,7 @@ test('ProgressBar: renders default correctly', (t) => {
   t.after(teardownJSDOM)
 
   const { container } = render(
-    <ProgressBar label="Test" value={50} max={100} color="bg-red-500" />
+    <ProgressBar label="Test" value={50} max={100} color="bg-(--blood-red)" />
   )
 
   // Should have label
@@ -28,7 +28,7 @@ test('ProgressBar: renders mini variant correctly', (t) => {
   t.after(teardownJSDOM)
 
   const { container } = render(
-    <ProgressBar label="Mini" value={20} max={100} color="bg-blue-500" size="mini" />
+    <ProgressBar label="Mini" value={20} max={100} color="bg-(--condition-blue)" size="mini" />
   )
 
   // Should NOT have label or value
@@ -50,7 +50,7 @@ test('ProgressBar: applies warn animation', (t) => {
   t.after(teardownJSDOM)
 
   const { container } = render(
-    <ProgressBar label="Warn" value={10} max={100} color="bg-yellow-500" warn={true} />
+    <ProgressBar label="Warn" value={10} max={100} color="bg-(--warning-yellow)" warn={true} />
   )
 
   const innerBar = container.querySelector('.animate-fuel-warning')
@@ -63,7 +63,7 @@ test('ProgressBar: has accessibility attributes', (t) => {
   t.after(teardownJSDOM)
 
   const { getByRole } = render(
-    <ProgressBar label="A11y Test" value={75} max={100} color="bg-green-500" aria-label="Custom Label" />
+    <ProgressBar label="A11y Test" value={75} max={100} color="bg-(--toxic-green)" aria-label="Custom Label" />
   )
 
   const progressBar = getByRole('progressbar')

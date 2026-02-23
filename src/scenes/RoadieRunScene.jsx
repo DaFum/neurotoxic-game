@@ -24,7 +24,7 @@ export const RoadieRunScene = () => {
       onComplete={() => changeScene('GIG')}
       completionTitle="SETUP COMPLETE"
       completionButtonText="START SHOW"
-      renderCompletionStats={(state) => `Equipment Damage: ${state.currentDamage}%`}
+      renderCompletionStats={(state) => `Equipment Damage: ${Math.max(0, state.currentDamage)}%`}
     >
       {/* HUD */}
       <div className="absolute top-4 left-4 z-30 text-(--star-white) font-mono pointer-events-none bg-(--void-black)/50 p-2 border border-(--star-white)/20">

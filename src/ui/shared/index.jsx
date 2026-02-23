@@ -4,12 +4,39 @@
  * @module shared
  */
 
-import { memo } from 'react'
+import { memo, forwardRef } from 'react'
 import PropTypes from 'prop-types'
 
 // Export SettingsPanel
 export { SettingsPanel } from './SettingsPanel'
 export { VolumeSlider } from './VolumeSlider'
+
+/**
+ * ActionButton - A standardized action button for overlays and dialogues.
+ * @param {Object} props
+ * @param {string} props.children - Button label.
+ * @param {Function} props.onClick - Click handler.
+ * @param {string} [props.type='button'] - Button type attribute.
+ * @param {string} [props.className] - Additional CSS classes.
+ * @param {React.Ref} ref - Forwarded ref.
+ */
+export const ActionButton = memo(forwardRef(({ children, onClick, type = 'button', className = '' }, ref) => (
+  <button
+    ref={ref}
+    type={type}
+    onClick={onClick}
+    className={`px-8 py-4 bg-(--toxic-green) text-(--void-black) font-bold uppercase hover:scale-105 transition-transform ${className}`}
+  >
+    {children}
+  </button>
+)))
+
+ActionButton.propTypes = {
+  children: PropTypes.node.isRequired,
+  onClick: PropTypes.func.isRequired,
+  type: PropTypes.string,
+  className: PropTypes.string
+}
 
 /**
  * StatBox - Displays a single statistic with an icon
