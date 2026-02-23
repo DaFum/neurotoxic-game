@@ -53,7 +53,7 @@ test('Minigame State Transitions', async (t) => {
     assert.deepStrictEqual(newState.minigame, DEFAULT_MINIGAME_STATE)
     assert.strictEqual(newState.player.currentNodeId, 'node_1')
     assert.strictEqual(newState.player.location, 'End')
-    assert.strictEqual(newState.currentScene, GAME_PHASES.TRAVEL_MINIGAME)
+    assert.strictEqual(newState.currentScene, GAME_PHASES.OVERWORLD)
 
     // Check costs
     // Distance calculation: sqrt(10^2 + 10^2) * 5 + 20 = 90.71km -> 90km (floor)

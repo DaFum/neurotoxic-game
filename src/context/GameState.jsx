@@ -84,6 +84,13 @@ export const GameStateProvider = ({ children }) => {
     }
   }, [state.settings?.logLevel])
 
+  // Expose state to window for testing/debugging
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      window.gameState = { ...state, dispatch }
+    }
+  }, [state, dispatch])
+
   // Actions wrappers using ActionTypes for type safety
 
   /**

@@ -5,10 +5,26 @@ import { useRoadieLogic } from '../hooks/minigames/useRoadieLogic'
 import { createRoadieStageController } from '../components/stage/RoadieStageController'
 import { PixiStage } from '../components/PixiStage'
 import { useGameState } from '../context/GameState'
+import { IMG_PROMPTS, getGenImageUrl } from '../utils/imageGen'
 
 export const RoadieRunScene = () => {
   const { uiState, gameStateRef, stats, update, actions } = useRoadieLogic()
-  const { changeScene } = useGameState()
+  const { changeScene, band } = useGameState()
+
+  // Character Images based on Harmony
+  let matzeImg = IMG_PROMPTS.MATZE_PLAYING
+  let larsImg = IMG_PROMPTS.LARS_PLAYING
+  let mariusImg = IMG_PROMPTS.MARIUS_PLAYING
+
+  if (band.harmony < 30) {
+    matzeImg = IMG_PROMPTS.MATZE_ANGRY
+    larsImg = IMG_PROMPTS.LARS_DRINKING
+    mariusImg = IMG_PROMPTS.MARIUS_IDLE
+  } else if (band.harmony < 60) {
+    matzeImg = IMG_PROMPTS.MATZE_ANGRY
+    larsImg = IMG_PROMPTS.LARS_PLAYING
+    mariusImg = IMG_PROMPTS.MARIUS_SCREAMING
+  }
 
   const controllerFactory = useMemo(() => createRoadieStageController, [])
 
@@ -22,6 +38,43 @@ export const RoadieRunScene = () => {
     <div className="w-full h-full bg-(--void-black) relative overflow-hidden flex flex-col items-center justify-center">
       <div className="absolute inset-0 pointer-events-none">
          <PixiStage logic={logic} controllerFactory={controllerFactory} />
+      </div>
+
+      {/* Band Members Overlay */}
+      <div className='absolute inset-0 z-30 pointer-events-none'>
+        {/* Matze (Guitar) - Left */}
+        <div
+          id='band-member-0'
+          className='absolute left-[15%] top-[30%] w-32 h-48 transition-transform duration-100'
+        >
+          <img
+            src={getGenImageUrl(matzeImg)}
+            alt='Matze'
+            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--blood-red)]'
+          />
+        </div>
+        {/* Lars (Drums) - Center Back */}
+        <div
+          id='band-member-1'
+          className='absolute left-[50%] top-[20%] -translate-x-1/2 w-40 h-40 transition-transform duration-100'
+        >
+          <img
+            src={getGenImageUrl(larsImg)}
+            alt='Lars'
+            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--toxic-green-glow)]'
+          />
+        </div>
+        {/* Marius (Bass) - Right */}
+        <div
+          id='band-member-2'
+          className='absolute right-[15%] top-[30%] w-32 h-48 transition-transform duration-100'
+        >
+          <img
+            src={getGenImageUrl(mariusImg)}
+            alt='Marius'
+            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--toxic-green)]'
+          />
+        </div>
       </div>
 
       {/* HUD */}
