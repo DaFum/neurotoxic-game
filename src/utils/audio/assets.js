@@ -210,15 +210,16 @@ async function loadAudioBufferInternal(filename, cacheKey) {
 
     // Evict items until we are within both size and count limits.
     // We always allow at least one item (the new one) to remain, even if it exceeds the byte limit.
-    while (
-      (audioState.audioBufferCache.size >= MAX_AUDIO_BUFFER_CACHE_SIZE &&
-        MAX_AUDIO_BUFFER_CACHE_SIZE > 0) ||
-      (audioState.currentCacheByteSize + newBufferSize >
-        MAX_AUDIO_BUFFER_BYTE_SIZE &&
-        audioState.audioBufferCache.size > 0)
-    ) {
-      const oldestKey = audioState.audioBufferCache.keys().next().value
-      const oldestBuffer = audioState.audioBufferCache.get(oldestKey)
+    for (const [oldestKey, oldestBuffer] of audioState.audioBufferCache) {
+      if (
+        (audioState.audioBufferCache.size < MAX_AUDIO_BUFFER_CACHE_SIZE ||
+          MAX_AUDIO_BUFFER_CACHE_SIZE <= 0) &&
+        audioState.currentCacheByteSize + newBufferSize <=
+          MAX_AUDIO_BUFFER_BYTE_SIZE
+      ) {
+        break
+      }
+
       audioState.currentCacheByteSize -= getAudioBufferSize(oldestBuffer)
       audioState.audioBufferCache.delete(oldestKey)
     }
