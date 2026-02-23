@@ -75,13 +75,15 @@ export const useTravelLogic = ({
   const isTravelingRef = useRef(isTraveling)
   const pendingTravelNodeRef = useRef(pendingTravelNode)
 
+  // Synchronously update control flow refs to ensure handlers see latest state immediately
+  isTravelingRef.current = isTraveling
+  pendingTravelNodeRef.current = pendingTravelNode
+
   useEffect(() => {
     playerRef.current = player
     bandRef.current = band
     gameMapRef.current = gameMap
-    isTravelingRef.current = isTraveling
-    pendingTravelNodeRef.current = pendingTravelNode
-  }, [player, band, gameMap, isTraveling, pendingTravelNode])
+  }, [player, band, gameMap])
 
   /**
    * Checks if a target node is connected to the current node
