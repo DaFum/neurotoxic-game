@@ -5,10 +5,10 @@ import { logger } from '../utils/logger'
 
 /**
  * Renders the Pixi.js stage for the rhythm game.
- * @param {{ logic: { gameStateRef: object, stats: object, update: Function } }} props - Component props.
+ * @param {{ logic: { gameStateRef: object, stats: object, update: Function }, controllerFactory: Function }} props - Component props.
  * @returns {JSX.Element} Pixi canvas wrapper.
  */
-export const PixiStage = ({ logic }) => {
+export const PixiStage = ({ logic, controllerFactory = createPixiStageController }) => {
   const containerRef = useRef(null)
   const { gameStateRef, update } = logic
   const updateRef = useRef(update)
@@ -24,7 +24,7 @@ export const PixiStage = ({ logic }) => {
   }, [logic.stats])
 
   useEffect(() => {
-    controllerRef.current = createPixiStageController({
+    controllerRef.current = controllerFactory({
       containerRef,
       gameStateRef,
       updateRef,
@@ -42,7 +42,7 @@ export const PixiStage = ({ logic }) => {
       }
     }
     // gameStateRef is a stable useRef – dependency is constant
-  }, [gameStateRef])
+  }, [gameStateRef, controllerFactory])
 
   return (
     <div
@@ -65,5 +65,6 @@ PixiStage.propTypes = {
       isGameOver: PropTypes.bool,
       isAudioReady: PropTypes.bool
     }).isRequired
-  }).isRequired
+  }).isRequired,
+  controllerFactory: PropTypes.func
 }

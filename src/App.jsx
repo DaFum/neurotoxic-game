@@ -12,8 +12,9 @@ import { ErrorBoundary } from './ui/CrashHandler'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { createNamedLazyLoader } from './utils/lazySceneLoader'
+import { GAME_PHASES } from './context/gameConstants'
 
-const SCENES_WITHOUT_HUD = ['INTRO', 'MENU', 'SETTINGS', 'CREDITS', 'GAMEOVER']
+const SCENES_WITHOUT_HUD = ['INTRO', 'MENU', 'SETTINGS', 'CREDITS', 'GAMEOVER', GAME_PHASES.TRAVEL_MINIGAME, GAME_PHASES.PRE_GIG_MINIGAME]
 
 const Overworld = lazy(
   createNamedLazyLoader(() => import('./scenes/Overworld'), 'Overworld')
@@ -24,6 +25,12 @@ const PreGig = lazy(
 )
 const PostGig = lazy(
   createNamedLazyLoader(() => import('./scenes/PostGig'), 'PostGig')
+)
+const TourbusScene = lazy(
+  createNamedLazyLoader(() => import('./scenes/TourbusScene'), 'TourbusScene')
+)
+const RoadieRunScene = lazy(
+  createNamedLazyLoader(() => import('./scenes/RoadieRunScene'), 'RoadieRunScene')
 )
 const Settings = lazy(
   createNamedLazyLoader(() => import('./scenes/Settings'), 'Settings')
@@ -71,8 +78,12 @@ function GameContent() {
         return <GameOver />
       case 'OVERWORLD':
         return <Overworld />
+      case GAME_PHASES.TRAVEL_MINIGAME:
+        return <TourbusScene />
       case 'PREGIG':
         return <PreGig />
+      case GAME_PHASES.PRE_GIG_MINIGAME:
+        return <RoadieRunScene />
       case 'GIG':
         return <Gig />
       case 'POSTGIG':

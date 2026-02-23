@@ -20,6 +20,7 @@ import { audioManager } from '../utils/AudioManager.js'
 import { logger } from '../utils/logger.js'
 import { handleError, StateError } from '../utils/errorHandler.js'
 import { calcBaseBreakdownChance } from '../utils/upgradeUtils.js'
+import { createStartTravelMinigameAction } from '../context/actionCreators.js'
 
 /**
  * Failsafe timeout duration in milliseconds
@@ -57,7 +58,8 @@ export const useTravelLogic = ({
   startGig,
   addToast,
   changeScene,
-  onShowHQ
+  onShowHQ,
+  onStartTravelMinigame
 }) => {
   const [isTraveling, setIsTraveling] = useState(false)
   const [travelTarget, setTravelTarget] = useState(null)
@@ -284,7 +286,7 @@ export const useTravelLogic = ({
     node => {
       travelCompletedRef.current = false
       setTravelTarget(node)
-      setIsTraveling(true)
+      // setIsTraveling(true) // Disable local animation state
       setPendingTravelNode(null)
 
       if (pendingTimeoutRef.current) {
@@ -298,18 +300,25 @@ export const useTravelLogic = ({
         // Ignore audio errors
       }
 
-      // Failsafe timeout - store in ref for cleanup
-      if (failsafeTimeoutRef.current) {
-        clearTimeout(failsafeTimeoutRef.current)
-      }
-      failsafeTimeoutRef.current = window.setTimeout(() => {
-        if (!travelCompletedRef.current) {
-          onTravelComplete(node)
+      // Dispatch Minigame Start
+      if (onStartTravelMinigame) {
+        onStartTravelMinigame(node.id)
+      } else {
+        // Fallback for tests or missing dispatch
+        logger.warn('useTravelLogic', 'Missing onStartTravelMinigame, using legacy travel')
+        setIsTraveling(true)
+        if (failsafeTimeoutRef.current) {
+          clearTimeout(failsafeTimeoutRef.current)
         }
-        failsafeTimeoutRef.current = null
-      }, TRAVEL_ANIMATION_TIMEOUT_MS)
+        failsafeTimeoutRef.current = window.setTimeout(() => {
+          if (!travelCompletedRef.current) {
+            onTravelComplete(node)
+          }
+          failsafeTimeoutRef.current = null
+        }, TRAVEL_ANIMATION_TIMEOUT_MS)
+      }
     },
-    [onTravelComplete]
+    [onTravelComplete, onStartTravelMinigame]
   )
 
   /**

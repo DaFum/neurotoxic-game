@@ -12,8 +12,8 @@
 | --------------- | ------------------------------------------------ |
 | **Frontend**    | React 19.2.4, Vite 7.3.1, JavaScript (ESModules) |
 | **Game Engine** | Pixi.js 8.16.0                                   |
-| **Styling**     | Tailwind CSS 4.2.0, Framer Motion 12.34.0        |
-| **Audio**       | Tone.js 15.1.22 (WebAudio buffers)               |
+| **Styling**     | Tailwind CSS 4.2.0, Framer Motion 12.34.2        |
+| **Audio**       | Tone.js 15.5.0 (WebAudio buffers)                |
 
 ## Project Structure
 
@@ -61,7 +61,7 @@ Notes: `npm run test` uses Node's built-in test runner with `tsx`; `npm run test
 ## Current Runtime Truths (Code-Aligned)
 
 - Root runtime composition: `ErrorBoundary` → `GameStateProvider` → scene renderer + global overlays (`HUD`, `ToastOverlay`, `ChatterOverlay`, `TutorialManager`, `EventModal`).
-- Scene set in active use: `INTRO`, `MENU`, `SETTINGS`, `CREDITS`, `GAMEOVER`, `OVERWORLD`, `PREGIG`, `GIG`, `POSTGIG`.
+- Scene set in active use: `INTRO`, `MENU`, `SETTINGS`, `CREDITS`, `GAMEOVER`, `OVERWORLD`, `TRAVEL_MINIGAME`, `PREGIG`, `PRE_GIG_MINIGAME`, `GIG`, `POSTGIG`.
 - Reducer/Event guardrails currently enforce:
   - `player.money >= 0` via shared state clamps
   - `band.harmony` clamped to `1..100` via shared state clamps
@@ -88,6 +88,7 @@ For domain-specific guidance, consult specialized agent documentation:
 | **Audio Utils** | `src/utils/audio/AGENTS.md` | Low-level WebAudio/Tone resource handling   |
 | **Event Data** | `src/data/events/AGENTS.md` | Event catalog schema and balancing rules    |
 | **UI Shared**  | `src/ui/shared/AGENTS.md`  | Reusable settings/slider controls          |
+| **Minigames**  | `src/hooks/minigames/AGENTS.md` | Minigame loop timing, input handling, scoring orchestration |
 
 
 ## Architecture Guard Updates
@@ -97,6 +98,19 @@ For domain-specific guidance, consult specialized agent documentation:
 - State guardrails are centralized via `src/utils/gameStateUtils.js` helpers (`clampPlayerMoney`, `clampBandHarmony`, `applyInventoryItemDelta`) and reused by both reducer flows and event-delta application paths.
 - Tempo timing in `src/utils/rhythmUtils.js` now uses a single processed-map path (`ensureProcessedTempoMap` + `findTempoSegment`) instead of maintaining a legacy fallback branch.
 - Audio asset URL maps are unified through `buildAssetUrlMap`; avoid reintroducing wrapper-only APIs such as `buildMidiUrlMap`.
+- Minigame architecture uses the `StageController` pattern: logic lives in custom hooks (`useTourbusLogic`, `useRoadieLogic`), rendering in PixiJS classes (`TourbusStageController`, `RoadieStageController`), and state flows through `gameReducer`.
+- `useArrivalLogic` encapsulates the complex side-effects of arriving at a map node (autosave, event trigger, day advance) to avoid logic duplication between `useTravelLogic` and `TourbusScene`.
+
+### [minigame-architecture-guard]
+
+- **Structure**: Minigames (`TRAVEL_MINIGAME`, `PRE_GIG_MINIGAME`) follow a split-layer pattern:
+  - **Logic**: Pure React hooks (`useTourbusLogic`, `useRoadieLogic`) managing collision, movement, and scoring.
+  - **Rendering**: PixiJS StageControllers (`TourbusStageController`, `RoadieStageController`) driving the visual loop.
+  - **State**: Global state updates (damage, items) flow through `gameReducer` actions (`COMPLETE_TRAVEL_MINIGAME`, `COMPLETE_ROADIE_MINIGAME`).
+- **Flow**:
+  - `OVERWORLD` → `TRAVEL_MINIGAME` (Tourbus) → `OVERWORLD` (Arrival)
+  - `PREGIG` → `PRE_GIG_MINIGAME` (Roadie) → `GIG`
+- **Constraints**: Minigame hooks must not directly manipulate DOM or Pixi objects; they return reactive state for the StageController to consume.
 
 ### [state-safety-action-creator-guard]
 

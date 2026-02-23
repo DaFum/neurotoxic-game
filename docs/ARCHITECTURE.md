@@ -6,7 +6,7 @@ This document is a code-aligned architecture snapshot for the current `main` app
 
 - **App shell**: `src/main.jsx` mounts `App` and imports global styles from `src/index.css`.
 - **Root composition**: `src/App.jsx` wraps the game in `ErrorBoundary` + `GameStateProvider`, then renders scene content, overlays, analytics, and dev-only debug tools.
-- **Scene routing**: scene selection is controlled by `currentScene` in global state (`INTRO`, `MENU`, `SETTINGS`, `CREDITS`, `GAMEOVER`, `OVERWORLD`, `PREGIG`, `GIG`, `POSTGIG`).
+- **Scene routing**: scene selection is controlled by `currentScene` in global state (`INTRO`, `MENU`, `SETTINGS`, `CREDITS`, `GAMEOVER`, `OVERWORLD`, `TRAVEL_MINIGAME`, `PREGIG`, `PRE_GIG_MINIGAME`, `GIG`, `POSTGIG`).
 - **Lazy loading**: heavy scenes are lazy-loaded through `createNamedLazyLoader` (`src/utils/lazySceneLoader.js`) to reduce first-render bundle work.
 
 ## Source Layout (Current)
@@ -26,6 +26,8 @@ src/
 │   ├── ToggleRadio.jsx
 │   ├── TutorialManager.jsx
 │   └── stage/
+│       ├── TourbusStageController.js
+│       ├── RoadieStageController.js
 │       ├── utils.js              # Stage-specific utilities
 │       └── ...                   # Pixi manager classes
 ├── context/
@@ -47,6 +49,9 @@ src/
 │   ├── usePurchaseLogic.js
 │   ├── useAudioControl.js
 │   ├── useRhythmGameLogic.js
+│   ├── minigames/
+│   │   ├── useTourbusLogic.js
+│   │   └── useRoadieLogic.js
 │   └── rhythmGame/
 │       ├── useRhythmGameAudio.js
 │       ├── useRhythmGameInput.js
@@ -57,7 +62,9 @@ src/
 │   ├── IntroVideo.jsx
 │   ├── MainMenu.jsx
 │   ├── Overworld.jsx
+│   ├── TourbusScene.jsx
 │   ├── PreGig.jsx
+│   ├── RoadieRunScene.jsx
 │   ├── Gig.jsx
 │   ├── PostGig.jsx
 │   ├── Settings.jsx
@@ -125,9 +132,12 @@ Global state lives in `GameStateProvider` and is mutated only through reducer ac
 1. **Intro/Menu**
    - `INTRO` auto/transitions into `MENU`.
 2. **Overworld loop**
-   - Map travel, event checks, HQ/shop actions, resource updates.
+   - Map travel triggers `TRAVEL_MINIGAME`.
+   - Completion returns to `OVERWORLD` via `useArrivalLogic`.
 3. **Gig loop**
-   - `START_GIG` sets the venue and transitions to `PREGIG`, then `GIG`, then `POSTGIG`.
+   - `START_GIG` sets the venue and transitions to `PREGIG`.
+   - `PREGIG` confirms setlist and starts `PRE_GIG_MINIGAME` (Roadie Run).
+   - Minigame completion transitions to `GIG`, then `POSTGIG`.
 4. **Post-gig resolution**
    - Payout/stats/effects applied, then return to `OVERWORLD` or go to `GAMEOVER` if fail conditions are met.
 
@@ -139,4 +149,4 @@ Global state lives in `GameStateProvider` and is mutated only through reducer ac
 
 ---
 
-_Last updated: 2026-02-19._
+_Last updated: 2026-02-23. Minigame architecture integrated._

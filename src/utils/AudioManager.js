@@ -274,7 +274,7 @@ class AudioSystem {
    */
   playSFX(key) {
     if (!this.prefsLoaded) return
-    const validTypes = ['hit', 'miss', 'menu', 'travel', 'cash']
+    const validTypes = ['hit', 'miss', 'menu', 'travel', 'cash', 'crash', 'honk', 'pickup', 'deliver']
     if (!validTypes.includes(key)) {
       logger.warn('AudioSystem', `Unknown SFX type: ${key}`)
       return

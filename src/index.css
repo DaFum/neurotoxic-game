@@ -48,6 +48,10 @@
   --stamina-green: #16a34a;
   --mood-pink: #db2777;
 
+  /* Minigame Colors */
+  --roadie-grass: #1a4d1a;
+  --roadie-venue-blue: #0044cc;
+
   /* UI Components */
   --panel-bg: rgb(var(--void-black-rgb) / 40%);
   --disabled-bg: var(--concrete-gray);

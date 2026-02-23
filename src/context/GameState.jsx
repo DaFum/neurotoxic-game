@@ -44,7 +44,11 @@ import {
   createPopPendingEventAction,
   createConsumeItemAction,
   createAdvanceDayAction,
-  createAddCooldownAction
+  createAddCooldownAction,
+  createStartTravelMinigameAction,
+  createCompleteTravelMinigameAction,
+  createStartRoadieMinigameAction,
+  createCompleteRoadieMinigameAction
 } from './actionCreators'
 import PropTypes from 'prop-types'
 
@@ -237,6 +241,29 @@ export const GameStateProvider = ({ children }) => {
    * Resets the game state to initial values.
    */
   const resetState = useCallback(() => dispatch(createResetStateAction()), [])
+
+  // Minigame Actions
+  const startTravelMinigame = useCallback(
+    targetNodeId => dispatch(createStartTravelMinigameAction(targetNodeId)),
+    []
+  )
+
+  const completeTravelMinigame = useCallback(
+    (damageTaken, itemsCollected) =>
+      dispatch(createCompleteTravelMinigameAction(damageTaken, itemsCollected)),
+    []
+  )
+
+  const startRoadieMinigame = useCallback(
+    gigId => dispatch(createStartRoadieMinigameAction(gigId)),
+    []
+  )
+
+  const completeRoadieMinigame = useCallback(
+    equipmentDamage =>
+      dispatch(createCompleteRoadieMinigameAction(equipmentDamage)),
+    []
+  )
 
   // Persistence
   /**
@@ -471,7 +498,11 @@ export const GameStateProvider = ({ children }) => {
       loadGame,
       deleteSave,
       resetState,
-      updateSettings
+      updateSettings,
+      startTravelMinigame,
+      completeTravelMinigame,
+      startRoadieMinigame,
+      completeRoadieMinigame
     }),
     [
       changeScene,

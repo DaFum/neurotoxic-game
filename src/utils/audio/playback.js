@@ -49,6 +49,26 @@ export function playSFX(type) {
       audioState.sfxSynth.triggerAttackRelease('B5', '16n', now, 0.4)
       audioState.sfxSynth.triggerAttackRelease('E6', '16n', now + 0.05, 0.4)
       break
+    case 'crash':
+      // Low noise burst
+      audioState.sfxSynth.triggerAttackRelease('C1', '8n', now, 1.0)
+      audioState.sfxSynth.triggerAttackRelease('F1', '8n', now + 0.02, 0.8)
+      break
+    case 'honk':
+      // Car horn
+      audioState.sfxSynth.triggerAttackRelease('F#4', '8n', now, 0.6)
+      audioState.sfxSynth.triggerAttackRelease('A4', '8n', now, 0.6)
+      break
+    case 'pickup':
+      // Quick upward blip
+      audioState.sfxSynth.triggerAttackRelease('C5', '32n', now, 0.5)
+      audioState.sfxSynth.triggerAttackRelease('E5', '32n', now + 0.05, 0.5)
+      break
+    case 'deliver':
+      // Heavy success thud
+      audioState.sfxSynth.triggerAttackRelease('C2', '4n', now, 0.8)
+      audioState.sfxSynth.triggerAttackRelease('G2', '4n', now, 0.6)
+      break
     default:
       logger.warn('AudioEngine', `Unknown SFX type: ${type}`)
       break

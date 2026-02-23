@@ -53,7 +53,8 @@ export const PreGig = () => {
     activeEvent,
     band,
     updateBand,
-    addToast
+    addToast,
+    startRoadieMinigame
   } = useGameState()
   const [isStarting, setIsStarting] = useState(false)
   const currentModifiers = getGigModifiers(band, gigModifiers)
@@ -340,7 +341,9 @@ export const PreGig = () => {
           setIsStarting(true)
           try {
             await audioManager.ensureAudioContext()
-            changeScene('GIG')
+            // Safe access for ID
+            const gigId = currentGig?.id || `gig_${Date.now()}`
+            startRoadieMinigame(gigId)
           } catch (err) {
             setIsStarting(false)
             handleError(err, {

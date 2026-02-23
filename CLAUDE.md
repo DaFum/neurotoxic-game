@@ -52,7 +52,11 @@ The game is a state machine. `App.jsx` switches on `currentScene` string:
 ```
 INTRO → MENU ↔ SETTINGS | CREDITS
          ↓
-     OVERWORLD → PREGIG → GIG → POSTGIG → OVERWORLD
+     OVERWORLD ↔ TRAVEL_MINIGAME
+         ↓
+     OVERWORLD
+         ↓
+     PREGIG → PRE_GIG_MINIGAME → GIG → POSTGIG → OVERWORLD
          ↓
      GAMEOVER → MENU
 ```
@@ -72,8 +76,8 @@ Core logic lives in stateless utility modules:
 
 ### Rhythm Game — `src/components/` + `src/hooks/`
 
-- **PixiStageController.js** — Pixi.js app lifecycle, note sprites, animation loop
-- **PixiStage.jsx** — React wrapper for the Pixi canvas
+- **PixiStageController.js** — Pixi.js app lifecycle for Rhythm Game
+- **PixiStage.jsx** — React wrapper for the Pixi canvas; accepts `controllerFactory` prop to inject different stage controllers (e.g. `TourbusStageController`, `RoadieStageController`).
 - **stage managers under `src/components/stage/*`** — crowd/effects/lanes/notes managers + utils
 - **useRhythmGameLogic.js** — Keyboard input (arrow keys), combo tracking, hype calculation; its `stats` object includes `accuracy` (0–100, live-computed from `perfectHits / (perfectHits + misses)`)
 - **rhythm sub-hooks under `src/hooks/rhythmGame/*`** — split audio/input/loop/scoring/state orchestration; `useRhythmGameAudio` merges `calculateGigPhysics` multipliers into `gameStateRef.current.modifiers` so `useRhythmGameScoring` can apply band-trait bonuses without re-deriving them
@@ -81,8 +85,10 @@ Core logic lives in stateless utility modules:
 ### Custom Hooks — `src/hooks/`
 
 - **useTravelLogic.js** — Travel, fuel consumption, event triggering on move
+- **useArrivalLogic.js** — Shared arrival sequence (Save, Advance Day, Event Trigger) used by Travel Logic and Minigames.
 - **usePurchaseLogic.js** — Shop validation (`canAfford`, `isItemOwned`, `isItemDisabled`)
 - **useAudioControl.js** — Ambient music toggle
+- **src/hooks/minigames/** — `useTourbusLogic.js`, `useRoadieLogic.js` (Minigame game loops)
 
 ### Data — `src/data/`
 
@@ -114,6 +120,8 @@ Static game data: `venues.js`, `characters.js`, `songs.js`, `upgrades.js`, `hqIt
 <div className="bg-[var(--void-black)]">
 ```
 
+In PixiJS, use `getPixiColorFromToken('--token-name')` instead of hex literals.
+
 | Variable           | Hex     | Usage                     |
 | ------------------ | ------- | ------------------------- |
 | `--toxic-green`    | #00FF41 | Primary UI, text, borders |
@@ -128,6 +136,11 @@ Typography: Headers use `var(--font-display)` (Metal Mania), body uses `var(--fo
 
 ## Critical Patterns
 
+### Minigame Architecture
+
+- **Separation of Concerns**: Logic lives in hooks (`useTourbusLogic`, `useRoadieLogic`), rendering in `StageController` classes (`TourbusStageController`, `RoadieStageController`), and state persistence in `gameReducer`.
+- **Testing**: Minigame logic must be tested via unit tests (e.g., `tests/minigameState.test.js`) separate from PixiJS rendering tests.
+
 ### State Safety
 
 - Always clamp: `Math.max(0, player.money - cost)` — never let money go negative
@@ -136,7 +149,7 @@ Typography: Headers use `var(--font-display)` (Metal Mania), body uses `var(--fo
 
 ### Pixi.js Memory Management
 
-Always clean up Pixi apps on unmount to prevent leaks:
+Always clean up Pixi apps on unmount to prevent leaks. Use v8 destroy signature:
 
 ```jsx
 const isMountedRef = useRef(true)
@@ -144,7 +157,8 @@ useEffect(() => {
   const app = new Application({ ... })
   return () => {
     isMountedRef.current = false
-    app.destroy(true, { children: true, texture: true })
+    // v8 signature: destroy(rendererOptions, destroyOptions)
+    app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })
   }
 }, [])
 ```
@@ -181,4 +195,4 @@ Additional docs: `docs/ARCHITECTURE.md` (system diagrams), `docs/STATE_TRANSITIO
 
 Commits use Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`).
 
-_Documentation sync: dependency/tooling baseline reviewed on 2026-02-19. Gig-function audit applied 2026-02-21._
+_Documentation sync: dependency/tooling baseline reviewed on 2026-02-19. Minigame architecture documented 2026-02-21._

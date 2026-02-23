@@ -141,5 +141,20 @@ export const IMG_PROMPTS = {
   ITEM_HQ_CAT: 'pixel art black cat sitting icon',
   ITEM_HQ_PIPELINE: 'pixel art beer tap pipeline icon',
   ITEM_HQ_SHRINE: 'pixel art shrine with candles and whiskey bottle icon',
-  ITEM_HQ_SKULL: 'pixel art animal skull decoration icon'
+  ITEM_HQ_SKULL: 'pixel art animal skull decoration icon',
+
+  // Minigame - Tourbus
+  MINIGAME_ROAD: 'top down view dark asphalt highway road texture pixel art seamless',
+  MINIGAME_OBSTACLE_ROCK: 'pixel art large rock stone obstacle on road top down',
+  MINIGAME_OBSTACLE_BARRIER: 'pixel art construction barrier red white stripes top down',
+  MINIGAME_FUEL: 'pixel art red gas can fuel jerrycan icon',
+
+  // Minigame - Roadie
+  MINIGAME_ROADIE_IDLE: 'pixel art roadie character carrying heavy box top down view',
+  MINIGAME_CAR_A: 'pixel art sedan car top down view red',
+  MINIGAME_CAR_B: 'pixel art sports car top down view yellow',
+  MINIGAME_CAR_C: 'pixel art truck top down view blue',
+  MINIGAME_ITEM_AMP: 'pixel art guitar amplifier stack top down icon',
+  MINIGAME_ITEM_DRUMS: 'pixel art drum kit bass drum top down icon',
+  MINIGAME_ITEM_GUITAR: 'pixel art guitar hard case rectangular top down icon'
 }
