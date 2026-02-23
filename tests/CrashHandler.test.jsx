@@ -2,7 +2,6 @@ import { test, mock } from 'node:test'
 import assert from 'node:assert/strict'
 import { render } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
-import React from 'react'
 
 // Mock GlitchButton
 const GlitchButton = ({ children, onClick }) => <button onClick={onClick}>{children}</button>

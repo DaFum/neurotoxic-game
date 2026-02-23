@@ -1,10 +1,8 @@
-
-import React, { useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { useMemo } from 'react'
 import { useTourbusLogic } from '../hooks/minigames/useTourbusLogic'
 import { useArrivalLogic } from '../hooks/useArrivalLogic'
 import { createTourbusStageController } from '../components/stage/TourbusStageController'
-import { PixiStage } from '../components/PixiStage'
+import { MinigameSceneFrame } from '../components/MinigameSceneFrame'
 
 export const TourbusScene = () => {
   const { uiState, gameStateRef, stats, update, actions } = useTourbusLogic()
@@ -21,10 +19,14 @@ export const TourbusScene = () => {
   }), [gameStateRef, stats, update])
 
   return (
-    <div className="w-full h-full bg-(--void-black) relative overflow-hidden">
-      {/* Pixi Stage */}
-      <PixiStage logic={logic} controllerFactory={controllerFactory} />
-
+    <MinigameSceneFrame
+      controllerFactory={controllerFactory}
+      logic={logic}
+      uiState={uiState}
+      onComplete={handleArrivalSequence}
+      completionTitle="DESTINATION REACHED"
+      renderCompletionStats={(state) => `Van Condition: ${Math.max(0, 100 - state.damage)}%`}
+    >
       {/* UI Overlay */}
       <div className="absolute top-4 left-4 z-30 text-(--star-white) font-mono pointer-events-none">
         <h2 className="text-2xl text-(--toxic-green)">TOURBUS TERROR</h2>
@@ -45,24 +47,6 @@ export const TourbusScene = () => {
           onClick={actions.moveRight}
         />
       </div>
-
-      {/* Game Over Screen */}
-      {uiState.isGameOver && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-(--void-black)/80 backdrop-blur-sm"
-        >
-          <h1 className="text-4xl text-(--toxic-green) font-bold mb-4">DESTINATION REACHED</h1>
-          <p className="text-(--star-white) mb-8">Van Condition: {Math.max(0, 100 - uiState.damage)}%</p>
-          <button
-            onClick={handleArrivalSequence}
-            className="px-8 py-4 bg-(--toxic-green) text-(--void-black) font-bold uppercase hover:scale-105 transition-transform"
-          >
-            CONTINUE
-          </button>
-        </motion.div>
-      )}
-    </div>
+    </MinigameSceneFrame>
   )
 }

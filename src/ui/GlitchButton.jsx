@@ -18,7 +18,8 @@ export const GlitchButton = ({
   disabled = false,
   variant = 'primary',
   size = 'lg',
-  isLoading = false
+  isLoading = false,
+  ...props
 }) => {
   // If loading or owned, treat as disabled for interactions
   const isIntervention = disabled || isLoading || variant === 'owned'
@@ -36,6 +37,12 @@ export const GlitchButton = ({
       case 'danger':
         return `border-2 border-(--blood-red) text-(--star-white)
                 hover:bg-(--blood-red) hover:text-(--void-black)
+                hover:translate-x-1 hover:-translate-y-1
+                hover:shadow-[4px_4px_0px_var(--toxic-green)]
+                active:translate-x-0 active:translate-y-0 active:shadow-none`
+      case 'warning':
+        return `border-2 border-(--warning-yellow) text-(--warning-yellow)
+                hover:bg-(--warning-yellow) hover:text-(--void-black)
                 hover:translate-x-1 hover:-translate-y-1
                 hover:shadow-[4px_4px_0px_var(--toxic-green)]
                 active:translate-x-0 active:translate-y-0 active:shadow-none`
@@ -68,6 +75,7 @@ export const GlitchButton = ({
         ${getVariantClasses()}
         ${className}
       `}
+      {...props}
     >
       <span
         className={`relative z-10 flex items-center justify-center gap-2 ${
@@ -106,7 +114,7 @@ GlitchButton.propTypes = {
   children: PropTypes.node.isRequired,
   className: PropTypes.string,
   disabled: PropTypes.bool,
-  variant: PropTypes.oneOf(['primary', 'danger', 'owned']),
+  variant: PropTypes.oneOf(['primary', 'danger', 'owned', 'warning']),
   size: PropTypes.oneOf(['sm', 'lg']),
   isLoading: PropTypes.bool
 }

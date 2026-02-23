@@ -88,18 +88,6 @@ export const calculateCrowdOffset = ({ combo, timeMs }) => {
 }
 
 /**
- * Calculates a crowd member Y position based on combo intensity.
- * @param {object} params - Crowd animation inputs.
- * @param {number} params.baseY - Base Y position.
- * @param {number} params.combo - Current combo count.
- * @param {number} params.timeMs - Current time in ms.
- * @returns {number} Adjusted Y position.
- */
-const calculateCrowdY = ({ baseY, combo, timeMs }) => {
-  return baseY - calculateCrowdOffset({ combo, timeMs })
-}
-
-/**
  * Calculates the lane start X position.
  * @param {object} params - Lane layout inputs.
  * @param {number} params.screenWidth - Current screen width.

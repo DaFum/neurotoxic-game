@@ -46,7 +46,7 @@ test('Minigame State Transitions', async (t) => {
 
     const action = {
       type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
-      payload: { damageTaken: 20, itemsCollected: ['FUEL'] } // 20 damage -> -2 condition. 1 Fuel -> +10L
+      payload: { damageTaken: 20, itemsCollected: ['FUEL'] } // 20 damage -> -10 condition. 1 Fuel -> +0L
     }
     const newState = gameReducer(activeState, action)
 
@@ -64,15 +64,15 @@ test('Minigame State Transitions', async (t) => {
     assert.strictEqual(newState.player.money, 976)
 
     // Check condition
-    // 100 - 2 = 98
-    assert.strictEqual(newState.player.van.condition, 98)
+    // 100 - 10 = 90
+    assert.strictEqual(newState.player.van.condition, 90)
 
     // Check fuel
     // Distance: 90km
     // Consumption: (90 / 100) * 12 = 10.8L
-    // Bonus: 10L (1 item)
-    // Result: 100 - 10.8 + 10 = 99.2
-    assert.strictEqual(newState.player.van.fuel, 99.2)
+    // Bonus: 0L
+    // Result: 100 - 10.8 = 89.2
+    assert.strictEqual(newState.player.van.fuel, 89.2)
   })
 
   await t.test('START_ROADIE_MINIGAME updates state correctly', () => {
@@ -108,7 +108,8 @@ test('Minigame State Transitions', async (t) => {
     const newState = gameReducer(activeState, action)
 
     assert.deepStrictEqual(newState.minigame, DEFAULT_MINIGAME_STATE)
-    assert.strictEqual(newState.currentScene, GAME_PHASES.GIG)
+    // Scene transition is now handled by UI overlay, so scene remains PRE_GIG_MINIGAME
+    assert.strictEqual(newState.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
 
     // equipmentDamage=5 -> stress=1 -> harmony-=1; repairCost=10 -> money-=10
     // harmony: 80 - 1 = 79

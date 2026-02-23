@@ -1,6 +1,5 @@
 
 import * as PIXI from 'pixi.js'
-import { CELL_SIZE } from '../../hooks/minigames/useRoadieLogic'
 import { EffectManager } from './EffectManager'
 import { logger } from '../../utils/logger'
 import { getPixiColorFromToken, loadTexture } from './utils'

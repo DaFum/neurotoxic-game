@@ -18,7 +18,6 @@ import {
 } from '../utils/economyEngine.js'
 import { logger } from '../utils/logger.js'
 import {
-  initialState,
   createInitialState,
   DEFAULT_GIG_MODIFIERS,
   DEFAULT_PLAYER_STATE,
@@ -336,7 +335,7 @@ const handleCompleteTravelMinigame = (state, payload) => {
     totalTravels: state.player.totalTravels + 1,
     van: {
       ...state.player.van,
-      fuel: Math.max(0, Math.min(100, state.player.van.fuel - fuelLiters + fuelBonus)),
+      fuel: Math.max(0, Math.min(100, state.player.van.fuel - fuelLiters)),
       condition: Math.max(0, state.player.van.condition - conditionLoss)
     }
   }
@@ -395,8 +394,8 @@ const handleCompleteRoadieMinigame = (state, payload) => {
     band: nextBand,
     player: nextPlayer,
     gigModifiers: nextModifiers,
-    minigame: { ...DEFAULT_MINIGAME_STATE },
-    currentScene: GAME_PHASES.GIG
+    minigame: { ...DEFAULT_MINIGAME_STATE }
+    // Scene transition handled by UI overlay
   }
 }
 

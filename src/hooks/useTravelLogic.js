@@ -20,7 +20,6 @@ import { audioManager } from '../utils/AudioManager.js'
 import { logger } from '../utils/logger.js'
 import { handleError, StateError } from '../utils/errorHandler.js'
 import { calcBaseBreakdownChance } from '../utils/upgradeUtils.js'
-import { createStartTravelMinigameAction } from '../context/actionCreators.js'
 
 /**
  * Failsafe timeout duration in milliseconds
@@ -73,6 +72,12 @@ export const useTravelLogic = ({
   const playerRef = useRef(player)
   const bandRef = useRef(band)
   const gameMapRef = useRef(gameMap)
+  const isTravelingRef = useRef(isTraveling)
+  const pendingTravelNodeRef = useRef(pendingTravelNode)
+
+  // Synchronously update control flow refs to ensure handlers see latest state immediately
+  isTravelingRef.current = isTraveling
+  pendingTravelNodeRef.current = pendingTravelNode
 
   useEffect(() => {
     playerRef.current = player
@@ -331,11 +336,12 @@ export const useTravelLogic = ({
   const handleTravel = useCallback(
     node => {
       // Early interaction block if already traveling
-      if (isTraveling) return
+      if (isTravelingRef.current) return
 
       const player = playerRef.current
       const band = bandRef.current
       const gameMap = gameMapRef.current
+      const pendingTravelNode = pendingTravelNodeRef.current
 
       if (!node?.venue) {
         addToast('Error: Invalid location.', 'error')
@@ -449,11 +455,9 @@ export const useTravelLogic = ({
       }, 5000)
     },
     [
-      isTraveling,
       startGig,
       addToast,
       onShowHQ,
-      pendingTravelNode,
       startTravelSequence,
       clearPendingTravel
     ]
@@ -463,7 +467,7 @@ export const useTravelLogic = ({
    * Handles refueling the van
    */
   const handleRefuel = useCallback(() => {
-    if (isTraveling) return
+    if (isTravelingRef.current) return
 
     const player = playerRef.current
     const currentFuel = player.van?.fuel ?? 0
@@ -496,7 +500,7 @@ export const useTravelLogic = ({
    * Handles repairing the van
    */
   const handleRepair = useCallback(() => {
-    if (isTraveling) return
+    if (isTravelingRef.current) return
 
     const player = playerRef.current
     const currentCondition = player.van?.condition ?? 100
