@@ -17,7 +17,18 @@ const SCENE_LABELS = {
   POSTGIG: 'Aftershow Feed',
   SETTINGS: 'System Feed',
   CREDITS: 'Crew Feed',
-  GAMEOVER: 'Last Broadcast'
+  GAMEOVER: 'Last Broadcast',
+  [GAME_PHASES.TRAVEL_MINIGAME]: 'Travel Feed',
+  [GAME_PHASES.PRE_GIG_MINIGAME]: 'Crew Feed'
+}
+
+const OVERWORLD_STYLE = {
+  accent: 'var(--toxic-green)',
+  borderColor: 'border-(--toxic-green)',
+  labelColor: 'text-(--toxic-green)',
+  speakerColor: 'text-(--warning-yellow)',
+  barColor: 'bg-(--toxic-green)',
+  icon: '\uD83D\uDE90'
 }
 
 /**
@@ -25,14 +36,7 @@ const SCENE_LABELS = {
  * Each entry defines border color, accent color, icon, etc.
  */
 const SCENE_STYLES = {
-  OVERWORLD: {
-    accent: 'var(--toxic-green)',
-    borderColor: 'border-(--toxic-green)',
-    labelColor: 'text-(--toxic-green)',
-    speakerColor: 'text-(--warning-yellow)',
-    barColor: 'bg-(--toxic-green)',
-    icon: '\uD83D\uDE90'
-  },
+  OVERWORLD: OVERWORLD_STYLE,
   PREGIG: {
     accent: 'var(--warning-yellow)',
     borderColor: 'border-(--warning-yellow)',
@@ -74,12 +78,7 @@ const SCENE_STYLES = {
     icon: '\uD83D\uDC80'
   },
   [GAME_PHASES.TRAVEL_MINIGAME]: {
-    accent: 'var(--toxic-green)',
-    borderColor: 'border-(--toxic-green)',
-    labelColor: 'text-(--toxic-green)',
-    speakerColor: 'text-(--warning-yellow)',
-    barColor: 'bg-(--toxic-green)',
-    icon: '\uD83D\uDE90'
+    ...OVERWORLD_STYLE
   },
   [GAME_PHASES.PRE_GIG_MINIGAME]: {
     accent: 'var(--warning-yellow)',
