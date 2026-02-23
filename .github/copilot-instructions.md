@@ -17,11 +17,11 @@ Web-based Roguelike Tour Manager with rhythm action mechanics. Manage a Death Gr
 | Framework   | React            | 19.2.4                      |
 | Build       | Vite             | 7.3.1                       |
 | Language    | JavaScript       | ECMAScript 2021 (ESModules) |
-| Game Engine | Pixi.js ) 8.16.0 |
-| Animation   | Framer Motion    | 12.34.2                     |
+| Game Engine | Pixi.js          | 8.16.0                      |
+| Animation   | Framer Motion    | 12.34.3                     |
 | Styling     | Tailwind CSS     | 4.2.0                       |
 | Audio       | Tone.js          | 15.5.0                      |
-| Linting     | ESLint           | 9.39.2                      |
+| Linting     | ESLint           | 10.0.1                      |
 
 ## Visual Design System (STRICT)
 
@@ -106,7 +106,9 @@ ActionTypes = {
   APPLY_EVENT_DELTA,
   POP_PENDING_EVENT,
   CONSUME_ITEM,
-  ADVANCE_DAY
+  ADVANCE_DAY,
+  START_TRAVEL_MINIGAME,
+  COMPLETE_TRAVEL_MINIGAME
 }
 ```
 
@@ -163,7 +165,7 @@ useEffect(() => {
 
   return () => {
     isMountedRef.current = false
-    app.destroy(true, { children: true, texture: true })
+    app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })
   }
 }, [])
 ```
@@ -268,6 +270,9 @@ npm run lint     # ESLint
 npm run format   # Prettier
 ```
 
+**Note:** Tests use `node:test` with `tsx`. When running manual tests, use:
+`node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/your-test.test.js`
+
 ## Sub-Agent Documentation
 
 | Area       | File                       | Expertise                      |
@@ -294,4 +299,4 @@ npm run format   # Prettier
 
 **Remember**: Aesthetic coherence and functional stability over feature bloat.
 
-_Documentation sync: dependency/tooling baseline reviewed on 2026-02-17. Flow and Economy updates 2026-02-23._
+_Documentation sync: dependency/tooling baseline reviewed on 2026-02-23. Flow and Economy updates 2026-02-23._
