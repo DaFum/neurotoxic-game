@@ -36,7 +36,7 @@ export const Gig = () => {
   const { stats, actions, gameStateRef } = logic
 
   // Use extracted effects hook
-  const { chaosContainerRef, chaosStyle, triggerBandAnimation } = useGigEffects(stats)
+  const { chaosContainerRef, chaosStyle, triggerBandAnimation, setBandMemberRef } = useGigEffects(stats)
 
   // Use extracted input hook
   const { handleLaneInput } = useGigInput({
@@ -122,6 +122,7 @@ export const Gig = () => {
         {/* Matze (Guitar) - Left */}
         <div
           id='band-member-0'
+          ref={setBandMemberRef(0)}
           className='absolute left-[15%] top-[30%] w-32 h-48 transition-transform duration-100'
         >
           <img
@@ -133,6 +134,7 @@ export const Gig = () => {
         {/* Lars (Drums) - Center Back */}
         <div
           id='band-member-1'
+          ref={setBandMemberRef(1)}
           className='absolute left-[50%] top-[20%] -translate-x-1/2 w-40 h-40 transition-transform duration-100'
         >
           <img
@@ -144,6 +146,7 @@ export const Gig = () => {
         {/* Marius (Bass) - Right */}
         <div
           id='band-member-2'
+          ref={setBandMemberRef(2)}
           className='absolute right-[15%] top-[30%] w-32 h-48 transition-transform duration-100'
         >
           <img
