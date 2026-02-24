@@ -1,5 +1,6 @@
 // Logic for Social Media Virality and Posting
 import { secureRandom } from './crypto.js'
+import { bandHasTrait } from './traitLogic.js'
 
 // Platform metadata used internally by calculateSocialGrowth.
 // Not exported — UI consumers should use the social engine functions directly.
@@ -33,11 +34,7 @@ export const calculateViralityScore = (
   if (gigEvents.includes('influencer_spotted')) baseChance *= 3.0
 
   // Social Manager Trait: +15% virality chance
-  if (
-    bandState?.members?.some(m =>
-      m.traits?.some(t => t.id === 'social_manager')
-    )
-  ) {
+  if (bandHasTrait(bandState, 'social_manager')) {
     baseChance *= 1.15
   }
 

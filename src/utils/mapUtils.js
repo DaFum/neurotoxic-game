@@ -29,9 +29,10 @@ export const getNodeVisibility = (nodeLayer, currentLayer) => {
  * Checks if the player is softlocked (stranded) due to lack of fuel and money.
  * @param {object} gameMap - The game map object.
  * @param {object} player - The player state object.
+ * @param {object} [band=null] - The band state object.
  * @returns {boolean} True if stranded.
  */
-export const checkSoftlock = (gameMap, player) => {
+export const checkSoftlock = (gameMap, player, band = null) => {
   if (!gameMap || !player.currentNodeId) return false
 
   const currentFuel = player.van?.fuel ?? 0
@@ -42,9 +43,14 @@ export const checkSoftlock = (gameMap, player) => {
 
   const canReachAny = neighbors.some(n => {
     if (!n) return false
-    const { fuelLiters } = calculateTravelExpenses(n, currentNode, {
-      van: player.van
-    })
+    const { fuelLiters } = calculateTravelExpenses(
+      n,
+      currentNode,
+      {
+        van: player.van
+      },
+      band
+    )
     return currentFuel >= fuelLiters
   })
 

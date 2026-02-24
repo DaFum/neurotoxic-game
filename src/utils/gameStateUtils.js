@@ -58,6 +58,19 @@ export const applyEventDelta = (state, delta) => {
     if (typeof delta.player.fame === 'number') {
       nextPlayer.fame = Math.max(0, nextPlayer.fame + delta.player.fame)
     }
+
+    // Player Stats
+    if (delta.player.stats) {
+      nextPlayer.stats = { ...nextPlayer.stats }
+      Object.keys(delta.player.stats).forEach(key => {
+        if (typeof delta.player.stats[key] === 'number') {
+           nextPlayer.stats[key] = (nextPlayer.stats[key] || 0) + delta.player.stats[key]
+        } else {
+           nextPlayer.stats[key] = delta.player.stats[key]
+        }
+      })
+    }
+
     if (delta.player.van) {
       const nextVan = { ...nextPlayer.van }
       if (typeof delta.player.van.fuel === 'number') {

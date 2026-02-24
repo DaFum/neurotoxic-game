@@ -7,6 +7,7 @@ export const UpgradesTab = ({
   handleBuy,
   isItemOwned,
   isItemDisabled,
+  getAdjustedCost,
   processingItemId
 }) => {
   return (
@@ -26,6 +27,7 @@ export const UpgradesTab = ({
             item={item}
             isOwned={isItemOwned(item)}
             isDisabled={isItemDisabled(item)}
+            adjustedCost={getAdjustedCost ? getAdjustedCost(item) : undefined}
             onBuy={handleBuy}
             processingItemId={processingItemId}
           />
@@ -44,5 +46,6 @@ UpgradesTab.propTypes = {
   handleBuy: PropTypes.func.isRequired,
   isItemOwned: PropTypes.func.isRequired,
   isItemDisabled: PropTypes.func.isRequired,
+  getAdjustedCost: PropTypes.func,
   processingItemId: PropTypes.string
 }
