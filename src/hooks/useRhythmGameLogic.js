@@ -95,10 +95,13 @@ export const useRhythmGameLogic = () => {
     [registerInput, activateToxicMode, retryAudioInitialization]
   )
 
-  return {
-    gameStateRef,
-    stats,
-    actions,
-    update
-  }
+  return useMemo(
+    () => ({
+      gameStateRef,
+      stats,
+      actions,
+      update
+    }),
+    [gameStateRef, stats, actions, update]
+  )
 }
