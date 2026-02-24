@@ -17,6 +17,7 @@ import {
   calculateRoadieMinigameResult
 } from '../utils/economyEngine.js'
 import { checkTraitUnlocks } from '../utils/unlockCheck.js'
+import { applyTraitUnlocks } from '../utils/traitUtils.js'
 import { CHARACTERS } from '../data/characters.js'
 import { logger } from '../utils/logger.js'
 import {
@@ -143,6 +144,10 @@ const handleLoadGame = (state, payload) => {
     van: {
       ...DEFAULT_PLAYER_STATE.van,
       ...(loadedState.player?.van || {})
+    },
+    stats: {
+      ...DEFAULT_PLAYER_STATE.stats,
+      ...(loadedState.player?.stats || {})
     }
   }
   // Validate Player
@@ -295,24 +300,17 @@ const handleAdvanceDay = (state, payload) => {
     { type: 'SOCIAL_UPDATE' }
   )
 
-  let toasts = [...state.toasts]
-  if (socialUnlocks.length > 0) {
-    socialUnlocks.forEach(u => {
-      const member = nextBand.members.find(m => m.name === u.memberId)
-      const trait = CHARACTERS[u.memberId.toUpperCase()]?.traits?.find(t => t.id === u.traitId)
-      if (member && trait && !member.traits.some(t => t.id === u.traitId)) {
-        member.traits.push(trait)
-        toasts.push({
-          id: Date.now() + Math.random(),
-          message: `Unlocked Trait: ${trait.name} (${u.memberId})`,
-          type: 'success'
-        })
-      }
-    })
-  }
+  const traitResult = applyTraitUnlocks({ band: nextBand, toasts: state.toasts }, socialUnlocks)
 
   logger.info('GameState', `Day Advanced to ${player.day}`)
-  return { ...state, player, band: nextBand, social, eventCooldowns: [], toasts }
+  return {
+    ...state,
+    player,
+    band: traitResult.band,
+    social,
+    eventCooldowns: [],
+    toasts: traitResult.toasts
+  }
 }
 
 const handleStartTravelMinigame = (state, payload) => {
@@ -374,32 +372,13 @@ const handleCompleteTravelMinigame = (state, payload) => {
     { type: 'TRAVEL_COMPLETE' }
   )
 
-  let nextBand = { ...state.band }
-  let toasts = [...state.toasts]
-
-  if (travelUnlocks.length > 0) {
-    nextBand.members = nextBand.members.map(m => {
-      const unlock = travelUnlocks.find(u => u.memberId === m.name)
-      if (unlock) {
-        const trait = CHARACTERS[m.name.toUpperCase()]?.traits?.find(t => t.id === unlock.traitId)
-        if (trait && !m.traits.some(t => t.id === trait.id)) {
-          toasts.push({
-            id: Date.now() + Math.random(),
-            message: `Unlocked Trait: ${trait.name} (${m.name})`,
-            type: 'success'
-          })
-          return { ...m, traits: [...m.traits, trait] }
-        }
-      }
-      return m
-    })
-  }
+  const traitResult = applyTraitUnlocks({ band: state.band, toasts: state.toasts }, travelUnlocks)
 
   return {
     ...state,
     player: nextPlayer,
-    band: nextBand,
-    toasts,
+    band: traitResult.band,
+    toasts: traitResult.toasts,
     minigame: { ...DEFAULT_MINIGAME_STATE }
   }
 }
@@ -466,32 +445,12 @@ const handleCompleteRoadieMinigame = (state, payload) => {
  */
 const handleUnlockTrait = (state, payload) => {
   const { memberId, traitId } = payload
-  const memberIndex = state.band.members.findIndex(m => m.name === memberId)
-  if (memberIndex === -1) return state
-
-  const member = state.band.members[memberIndex]
-  if (member.traits.some(t => t.id === traitId)) return state // Already unlocked
-
-  const traitDef = CHARACTERS[memberId.toUpperCase()]?.traits?.find(t => t.id === traitId)
-  if (!traitDef) return state
-
-  const nextMembers = [...state.band.members]
-  nextMembers[memberIndex] = {
-    ...member,
-    traits: [...member.traits, traitDef]
-  }
+  const traitResult = applyTraitUnlocks(state, [{ memberId, traitId }])
 
   return {
     ...state,
-    band: { ...state.band, members: nextMembers },
-    toasts: [
-      ...state.toasts,
-      {
-        id: Date.now(),
-        message: `Unlocked Trait: ${traitDef.name} (${memberId})`,
-        type: 'success'
-      }
-    ]
+    band: traitResult.band,
+    toasts: traitResult.toasts
   }
 }
 
@@ -544,27 +503,13 @@ export const gameReducer = (state, action) => {
 
     case ActionTypes.SET_LAST_GIG_STATS: {
       const performanceUnlocks = checkTraitUnlocks(state, { type: 'GIG_COMPLETE', gigStats: action.payload })
-      let nextBand = { ...state.band }
-      let toasts = [...state.toasts]
-
-      if (performanceUnlocks.length > 0) {
-        nextBand.members = nextBand.members.map(m => {
-          const unlock = performanceUnlocks.find(u => u.memberId === m.name)
-          if (unlock) {
-            const trait = CHARACTERS[m.name.toUpperCase()]?.traits?.find(t => t.id === unlock.traitId)
-            if (trait && !m.traits.some(t => t.id === trait.id)) {
-              toasts.push({
-                id: Date.now() + Math.random(),
-                message: `Unlocked Trait: ${trait.name} (${m.name})`,
-                type: 'success'
-              })
-              return { ...m, traits: [...m.traits, trait] }
-            }
-          }
-          return m
-        })
+      const traitResult = applyTraitUnlocks(state, performanceUnlocks)
+      return {
+        ...state,
+        lastGigStats: action.payload,
+        band: traitResult.band,
+        toasts: traitResult.toasts
       }
-      return { ...state, lastGigStats: action.payload, band: nextBand, toasts }
     }
 
     case ActionTypes.SET_ACTIVE_EVENT:
@@ -613,30 +558,13 @@ export const gameReducer = (state, action) => {
       // We will need to update eventEngine to output this signal.
 
       const eventUnlocks = checkTraitUnlocks(nextState, { type: 'EVENT_RESOLVED' })
-      // Logic to apply unlocks similar to above...
-      // Since checkTraitUnlocks relies on `player.stats.conflictsResolved`, we need that stat to update first.
+      const traitResult = applyTraitUnlocks({ band: nextState.band, toasts: nextState.toasts }, eventUnlocks)
 
-      let nextBand = { ...nextState.band }
-      let toasts = [...nextState.toasts]
-
-      if (eventUnlocks.length > 0) {
-        nextBand.members = nextBand.members.map(m => {
-          const unlock = eventUnlocks.find(u => u.memberId === m.name)
-          if (unlock) {
-            const trait = CHARACTERS[m.name.toUpperCase()]?.traits?.find(t => t.id === unlock.traitId)
-            if (trait && !m.traits.some(t => t.id === trait.id)) {
-              toasts.push({
-                id: Date.now() + Math.random(),
-                message: `Unlocked Trait: ${trait.name} (${m.name})`,
-                type: 'success'
-              })
-              return { ...m, traits: [...m.traits, trait] }
-            }
-          }
-          return m
-        })
+      return {
+        ...nextState,
+        band: traitResult.band,
+        toasts: traitResult.toasts
       }
-      return { ...nextState, band: nextBand, toasts }
     }
 
     case ActionTypes.POP_PENDING_EVENT:

@@ -35,7 +35,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_merch_shirts_bundle',
       name: 'Karton T-Shirts (25 Stk.)',
-      category: 'GEAR',
+      category: 'MERCH',
       cost: 150, // 6€/Shirt production cost
       currency: 'money',
       img: 'ITEM_MERCH_SHIRTS',
@@ -45,7 +45,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_merch_hoodies_bundle',
       name: 'Karton Hoodies (10 Stk.)',
-      category: 'GEAR',
+      category: 'MERCH',
       cost: 200, // 20€/Hoodie production cost
       currency: 'money',
       img: 'ITEM_MERCH_HOODIES',
@@ -55,7 +55,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_merch_patches_bundle',
       name: 'Karton Patches (50 Stk.)',
-      category: 'GEAR',
+      category: 'MERCH',
       cost: 50, // 1€/Patch production cost
       currency: 'money',
       img: 'ITEM_MERCH_PATCHES',
@@ -65,7 +65,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_merch_vinyl_bundle',
       name: 'Vinyl Pressung (20 Stk.)',
-      category: 'GEAR',
+      category: 'MERCH',
       cost: 300, // 15€/LP production cost
       currency: 'money',
       img: 'ITEM_MERCH_VINYL',
@@ -75,7 +75,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_merch_cds_bundle',
       name: 'CD Spindel (50 Stk.)',
-      category: 'GEAR',
+      category: 'MERCH',
       cost: 100, // 2€/CD production cost
       currency: 'money',
       img: 'ITEM_MERCH_CDS',
@@ -119,7 +119,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_gear_tour_food_canned',
       name: 'Dosenfutter (10er Pack)',
-      category: 'GEAR',
+      category: 'CONSUMABLE',
       cost: 30, // 3€/Can
       currency: 'money',
       img: 'ITEM_CANNED_FOOD',
@@ -129,7 +129,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_gear_tour_beer_bulk',
       name: 'Kasten Bier (30 Flaschen)',
-      category: 'GEAR',
+      category: 'CONSUMABLE',
       cost: 40, // Bulk discount beer
       currency: 'money',
       img: 'ITEM_BEER_CRATE',

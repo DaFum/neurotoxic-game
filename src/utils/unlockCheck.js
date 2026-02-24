@@ -27,8 +27,8 @@ export const checkTraitUnlocks = (state, context = {}) => {
       newUnlocks.push({ memberId: matze.name, traitId: 'virtuoso' })
     }
 
-    // Perfektionist (Matze): > 95% Accuracy
-    if (matze && !hasTrait(matze, 'perfektionist') && accuracy > 95) {
+    // Perfektionist (Matze): 100% Accuracy (match UI hint)
+    if (matze && !hasTrait(matze, 'perfektionist') && accuracy === 100) {
       newUnlocks.push({ memberId: matze.name, traitId: 'perfektionist' })
     }
 
@@ -43,9 +43,9 @@ export const checkTraitUnlocks = (state, context = {}) => {
 
   // 2. Travel Unlocks
   if (context.type === 'TRAVEL_COMPLETE') {
-    // Road Warrior (Marius): Travel 3000km total
+    // Road Warrior (Marius): Travel 5000km total (match UI hint)
     if (marius && !hasTrait(marius, 'road_warrior')) {
-      if ((player.stats?.totalDistance || 0) >= 3000) {
+      if ((player.stats?.totalDistance || 0) >= 5000) {
         newUnlocks.push({ memberId: marius.name, traitId: 'road_warrior' })
       }
     }
@@ -53,7 +53,7 @@ export const checkTraitUnlocks = (state, context = {}) => {
 
   // 3. Purchase Unlocks
   if (context.type === 'PURCHASE') {
-    const { item, inventory } = context
+    const { item } = context
 
     // Party Animal (Lars): Own a Beer Fridge
     if (lars && !hasTrait(lars, 'party_animal')) {
@@ -64,24 +64,13 @@ export const checkTraitUnlocks = (state, context = {}) => {
 
     // Gear Nerd (Matze): Own 5+ Gear/Instrument items
     if (matze && !hasTrait(matze, 'gear_nerd')) {
-      // Count gear in inventory + instruments (which might be in inventory or implied?)
-      // Current inventory structure: { strings: true, shirts: 50 ... }
-      // We rely on context.inventory or state.band.inventory
-      // BUT `inventory` in state is mixed. We need to know which keys are GEAR.
-      // Since we don't have the item DB here easily, we might need to rely on the purchase event providing info
-      // OR approximate.
-      // Let's assume the caller passes the current count or we count known gear keys.
-      // Better: Check context.gearCount if provided, or iterate keys.
-      // For now, let's use a simple heuristic or expect caller to pass relevant data.
-      // Actually, let's check `item.category` from context if available.
-
-      // Alternative: Just count keys that are NOT 'shirts', 'hoodies', 'patches', 'cds', 'vinyl'.
-      const nonMerchKeys = Object.keys(inventory || {}).filter(k =>
-        !['shirts', 'hoodies', 'patches', 'cds', 'vinyl'].includes(k) && inventory[k]
-      )
-      // This is weak. Let's rely on the hook to verify this or pass a flag.
-      // Or: Check if we just bought the 5th item.
-      if (context.gearCount && context.gearCount >= 5) {
+      /**
+       * Gear Nerd Unlock Logic
+       * The `context.gearCount` is pre-calculated by the caller (usePurchaseLogic)
+       * which filters inventory against HQ_ITEMS to ensure only GEAR/INSTRUMENT categories count.
+       * We rely on this count being >= 5.
+       */
+      if ((context.gearCount || 0) >= 5) {
         newUnlocks.push({ memberId: matze.name, traitId: 'gear_nerd' })
       }
     }

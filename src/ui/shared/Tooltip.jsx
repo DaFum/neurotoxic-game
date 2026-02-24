@@ -14,7 +14,7 @@ export const Tooltip = ({ children, content, className = '' }) => {
 
   return (
     <div
-      className={`relative inline-block ${className}`}
+      className={`relative ${className}`}
       onMouseEnter={() => setIsVisible(true)}
       onMouseLeave={() => setIsVisible(false)}
       onFocus={() => setIsVisible(true)}
