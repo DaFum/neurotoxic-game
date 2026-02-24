@@ -22,7 +22,7 @@ export const useRhythmGameLogic = () => {
     player,
     changeScene,
     gigModifiers,
-    currentGig
+    endGig
   } = useGameState()
 
   // 1. Core State (React + Ref)
@@ -51,18 +51,6 @@ export const useRhythmGameLogic = () => {
     contextActions: { addToast }
   })
 
-  const handleSceneChange = useCallback(
-    scene => {
-      if (currentGig?.isPractice) {
-        addToast('Practice Session Complete', 'success')
-        changeScene('OVERWORLD')
-      } else {
-        changeScene(scene)
-      }
-    },
-    [currentGig, changeScene, addToast]
-  )
-
   // 4. Game Loop (Update)
   const { update } = useRhythmGameLoop({
     gameStateRef,
@@ -72,7 +60,8 @@ export const useRhythmGameLogic = () => {
     contextState: { activeEvent },
     contextActions: {
       setLastGigStats,
-      changeScene: handleSceneChange
+      endGig,
+      changeScene
     }
   })
 

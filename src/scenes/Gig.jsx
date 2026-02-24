@@ -24,7 +24,8 @@ export const Gig = () => {
     activeEvent,
     setActiveEvent,
     setLastGigStats,
-    band
+    band,
+    endGig
   } = useGameState()
 
   const [isPaused, setIsPaused] = useState(false)
@@ -99,14 +100,9 @@ export const Gig = () => {
 
       const snapshot = buildGigStatsSnapshot(score, statsSnapshot, toxicTime)
       setLastGigStats(snapshot)
-      if (currentGig?.isPractice) {
-        addToast('Practice Session Complete', 'success')
-        changeScene('OVERWORLD')
-      } else {
-        changeScene('POSTGIG')
-      }
+      endGig()
     }
-  }, [changeScene, setLastGigStats, addToast, gameStateRef, currentGig])
+  }, [endGig, setLastGigStats, addToast, gameStateRef])
 
   // Use extracted input hook
   const { handleLaneInput } = useGigInput({

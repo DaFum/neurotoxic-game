@@ -131,10 +131,12 @@ export const setupRhythmGameLogicTest = async () => {
 
 export const createMockChangeScene = () => mock.fn()
 export const createMockSetLastGigStats = () => mock.fn()
+export const createMockEndGig = () => mock.fn()
 
 export const setupDefaultMockImplementation = (
   mockChangeScene,
-  mockSetLastGigStats
+  mockSetLastGigStats,
+  mockEndGig
 ) => {
   const defaultState = {
     setlist: ['jam'],
@@ -146,7 +148,8 @@ export const setupDefaultMockImplementation = (
     gameMap: { nodes: { node1: { layer: 0 } } },
     player: { currentNodeId: 'node1', money: 0 },
     changeScene: mockChangeScene,
-    gigModifiers: {}
+    gigModifiers: {},
+    endGig: mockEndGig
   }
   mockUseGameState.mock.mockImplementation(() => defaultState)
 

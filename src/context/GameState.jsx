@@ -271,6 +271,20 @@ export const GameStateProvider = ({ children }) => {
     []
   )
 
+  /**
+   * Completes the current gig and transitions to the appropriate post-gig scene.
+   * Handles Practice Mode logic (redirects to OVERWORLD instead of POSTGIG).
+   */
+  const endGig = useCallback(() => {
+    const currentState = stateRef.current
+    if (currentState.currentGig?.isPractice) {
+      addToast('Practice Session Complete', 'success')
+      changeScene('OVERWORLD')
+    } else {
+      changeScene('POSTGIG')
+    }
+  }, [addToast, changeScene])
+
   // Persistence
   /**
    * Deletes the save file and reloads the application.
@@ -520,7 +534,8 @@ export const GameStateProvider = ({ children }) => {
       completeTravelMinigame,
       startRoadieMinigame,
       completeRoadieMinigame,
-      unlockTrait
+      unlockTrait,
+      endGig
     }),
     [
       changeScene,
@@ -548,7 +563,8 @@ export const GameStateProvider = ({ children }) => {
       completeTravelMinigame,
       startRoadieMinigame,
       completeRoadieMinigame,
-      unlockTrait
+      unlockTrait,
+      endGig
     ]
   )
 

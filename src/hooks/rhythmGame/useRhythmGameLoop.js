@@ -25,7 +25,7 @@ export const useRhythmGameLoop = ({
   const { handleMiss } = scoringActions
   const { setIsToxicMode } = setters
   const { activeEvent } = contextState
-  const { setLastGigStats, changeScene } = contextActions
+  const { setLastGigStats, endGig } = contextActions
 
   const handleCollision = useCallback(() => handleMiss(1, false), [handleMiss])
 
@@ -41,9 +41,9 @@ export const useRhythmGameLoop = ({
         )
       )
       stopAudio()
-      changeScene('POSTGIG')
+      endGig()
     },
-    [changeScene, setLastGigStats]
+    [endGig, setLastGigStats]
   )
 
   const update = useCallback(
