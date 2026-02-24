@@ -5,6 +5,7 @@ import { EffectManager } from './stage/EffectManager.js'
 import { NoteManager } from './stage/NoteManager.js'
 import { logger } from '../utils/logger.js'
 import { getGigTimeMs } from '../utils/audioEngine.js'
+import { getOptimalResolution } from './stage/utils.js'
 
 /**
  * Manages Pixi.js stage lifecycle and rendering updates.
@@ -66,7 +67,7 @@ class PixiStageController {
           backgroundAlpha: 0,
           resizeTo: container,
           antialias: true,
-          resolution: window.devicePixelRatio || 1,
+          resolution: getOptimalResolution(),
           autoDensity: true
         })
 

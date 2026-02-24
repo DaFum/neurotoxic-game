@@ -217,3 +217,12 @@ export const loadTexture = async url => {
     img.src = url
   })
 }
+
+/**
+ * Returns an optimized resolution value capped to prevent performance bottlenecks on high-DPI devices.
+ * @returns {number} Optimized resolution (1.0 to 2.0).
+ */
+export const getOptimalResolution = () => {
+  const dpr = typeof window !== 'undefined' ? (window.devicePixelRatio || 1) : 1
+  return Math.min(dpr, 2)
+}
