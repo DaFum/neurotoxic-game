@@ -346,7 +346,7 @@ const handleCompleteTravelMinigame = (state, payload) => {
     }
   }
 
-  const { dist, totalCost, fuelLiters } = calculateTravelExpenses(targetNode, currentNode, { van: state.player.van }, state.band)
+  const { dist, totalCost, fuelLiters } = calculateTravelExpenses(targetNode, currentNode, state.player, state.band)
   const { conditionLoss } = calculateTravelMinigameResult(damageTaken, itemsCollected)
 
   const nextPlayer = {

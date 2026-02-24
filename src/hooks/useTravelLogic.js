@@ -210,7 +210,7 @@ export const useTravelLogic = ({
       const { fuelLiters, totalCost } = calculateTravelExpenses(
         node,
         currentStartNode,
-        { van: player.van },
+        player,
         band
       )
 
@@ -416,7 +416,7 @@ export const useTravelLogic = ({
       const { dist, totalCost, fuelLiters } = calculateTravelExpenses(
         node,
         currentStartNode,
-        { van: player.van },
+        player,
         band
       )
 

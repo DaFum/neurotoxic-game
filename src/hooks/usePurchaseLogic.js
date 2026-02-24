@@ -9,6 +9,7 @@ import { handleError, StateError } from '../utils/errorHandler.js'
 import { bandHasTrait } from '../utils/traitLogic.js'
 import { checkTraitUnlocks } from '../utils/unlockCheck.js'
 import { applyTraitUnlocks } from '../utils/traitUtils.js'
+import { HQ_ITEMS } from '../data/hqItems.js'
 
 /**
  * Selects the primary effect payload from catalog entries during migration.
@@ -46,8 +47,8 @@ export const usePurchaseLogic = ({
   const getAdjustedCost = useCallback(
     item => {
       let cost = item.cost
-      // Gear Nerd Trait: 20% discount on equipment
-      if (item.category === 'GEAR' && bandHasTrait(band, 'gear_nerd')) {
+      // Gear Nerd Trait: 20% discount on equipment (Money only to avoid fractional fame)
+      if (item.category === 'GEAR' && item.currency === 'money' && bandHasTrait(band, 'gear_nerd')) {
         cost = Math.floor(cost * 0.8)
       }
       return cost
@@ -444,11 +445,20 @@ export const usePurchaseLogic = ({
           inventory: { ...band.inventory, ...(bandPatch?.inventory || {}) }
         }
 
-        // Note: gearCount is now calculated inside checkTraitUnlocks using filtering
+        // Count ONLY gear items for gear_nerd check
+        // Filter inventory to only count items with category 'GEAR' or 'INSTRUMENT' (if applicable)
+        // HQ_ITEMS must be available.
+        const allGearItems = [...(HQ_ITEMS.gear || []), ...(HQ_ITEMS.instruments || [])]
+        const gearCount = Object.entries(nextBand.inventory || {}).filter(([key, value]) => {
+          const isOwned = value === true || (typeof value === 'number' && value > 0)
+          if (!isOwned) return false
+          const itemDef = allGearItems.find(i => i.id === key)
+          return itemDef && (itemDef.category === 'GEAR' || itemDef.category === 'INSTRUMENT')
+        }).length
 
         const purchaseUnlocks = checkTraitUnlocks(
           { player: nextPlayer, band: nextBand, social: {} },
-          { type: 'PURCHASE', item, inventory: nextBand.inventory }
+          { type: 'PURCHASE', item, inventory: nextBand.inventory, gearCount }
         )
 
         if (purchaseUnlocks.length > 0) {

@@ -256,9 +256,10 @@ export const eventEngine = {
 
       // Track conflict resolution for unlocking 'bandleader'
       if (result.outcome === 'success' && gameState.activeEvent?.tags?.includes('conflict')) {
-        // Add a hidden effect to increment conflict stats
-        if (!result.effects) result.effects = []
-        if (result.type !== 'composite') {
+        if (result.type === 'composite') {
+           // DEEP CLONE: Break array reference to prevent mutating global EVENTS_DB
+           result = { ...result, effects: [...result.effects] }
+        } else {
            // Convert simple result to composite to add stat tracking
            const originalEffect = { ...result }
            delete originalEffect.outcome
@@ -271,8 +272,7 @@ export const eventEngine = {
            }
         }
 
-        // Add the stat increment
-        // Note: we need to handle this custom stat in processEffect
+        // Add the stat increment safely (array is now a fresh copy)
         result.effects.push({
           type: 'stat_increment',
           stat: 'conflictsResolved',
