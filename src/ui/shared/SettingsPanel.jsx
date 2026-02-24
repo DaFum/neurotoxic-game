@@ -142,6 +142,13 @@ export const SettingsPanel = ({
 const DataManagement = ({ onDeleteSave }) => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
 
+  const handleOpenConfirm = () => setIsConfirmOpen(true)
+  const handleCloseConfirm = () => setIsConfirmOpen(false)
+  const handleDeleteSave = () => {
+    onDeleteSave()
+    setIsConfirmOpen(false)
+  }
+
   return (
     <div>
       <h2 className='font-[Metal_Mania] text-4xl uppercase text-(--blood-red) mb-6 border-b border-(--ash-gray) pb-2'>
@@ -152,7 +159,7 @@ const DataManagement = ({ onDeleteSave }) => {
           WARNING: This action is irreversible. All tour progress will be lost.
         </p>
         <ActionButton
-          onClick={() => setIsConfirmOpen(true)}
+          onClick={handleOpenConfirm}
           className='bg-(--blood-red) text-(--void-black) border-(--blood-red) shadow-[4px_4px_0px_var(--blood-red)] hover:invert'
         >
           DELETE SAVE
@@ -161,7 +168,7 @@ const DataManagement = ({ onDeleteSave }) => {
 
       <Modal
         isOpen={isConfirmOpen}
-        onClose={() => setIsConfirmOpen(false)}
+        onClose={handleCloseConfirm}
         title='CONFIRM DELETE'
       >
         <div className='space-y-6'>
@@ -170,15 +177,12 @@ const DataManagement = ({ onDeleteSave }) => {
             undone.
           </p>
           <div className='flex gap-4 justify-end'>
-            <ActionButton onClick={() => setIsConfirmOpen(false)}>
+            <ActionButton onClick={handleCloseConfirm}>
               CANCEL
             </ActionButton>
             <ActionButton
-              onClick={() => {
-                onDeleteSave()
-                setIsConfirmOpen(false)
-              }}
-              variant='danger'
+              onClick={handleDeleteSave}
+              className='bg-(--blood-red) text-(--void-black) border-(--blood-red) hover:invert'
             >
               CONFIRM
             </ActionButton>

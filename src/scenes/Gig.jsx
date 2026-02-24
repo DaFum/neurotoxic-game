@@ -50,20 +50,78 @@ export const Gig = () => {
   }, [])
 
   useEffect(() => {
+    // Correct initial mount vs user interaction logic
     if (!hasInteractedRef.current) {
-      if (isPaused) hasInteractedRef.current = true
+      // If user has not interacted yet, check if paused was triggered
+      if (!isPaused) {
+        // Initial state is unpaused, do nothing until interaction
+        return
+      }
+      // If paused is true on first effect run (shouldn't happen with default false, but safe)
+      // or if logic toggles it.
+      // We want to skip the "Resume" effect on mount.
+      // But if user clicks Pause, isPaused becomes true.
+      // We need to know if this is the *transition*.
+
+      // Actually, standard pattern:
+      // On mount (isPaused=false), do nothing.
+      // When isPaused changes to true -> Pause.
+      // When isPaused changes to false -> Resume.
+
+      // My fix logic:
+      if (isPaused) {
+         // First interaction was a Pause
+         pauseAudio()
+         addToast('PAUSED', 'info')
+         setTimeout(() => resumeBtnRef.current?.focus(), 50)
+         hasInteractedRef.current = true
+      } else {
+         // Still unpaused initial state, do not set interacted yet?
+         // Actually, we just need to ensure we don't call ResumeAudio on mount.
+         // ResumeAudio should only be called if we were previously paused.
+         // But isPaused tracks that.
+         // The issue is React Strict Mode might double invoke.
+         // hasInteractedRef guards against mount.
+      }
       return
     }
 
     if (isPaused) {
       pauseAudio()
       addToast('PAUSED', 'info')
-      // Focus resume button for a11y
       setTimeout(() => resumeBtnRef.current?.focus(), 50)
     } else {
       resumeAudio()
       addToast('RESUMED', 'info')
     }
+  }, [isPaused, addToast])
+
+  // To properly implement the requested logic:
+  // "if false and isPaused is false set hasInteractedRef.current = true and return" (Initial mount)
+  // "but if hasInteractedRef.current is false and isPaused is true..." (Immediate pause? Unlikely but safe)
+
+  useEffect(() => {
+      if (!hasInteractedRef.current) {
+          if (!isPaused) {
+              hasInteractedRef.current = true
+              return
+          }
+          // If starts paused (unlikely) or quick toggle
+          pauseAudio()
+          addToast('PAUSED', 'info')
+          setTimeout(() => resumeBtnRef.current?.focus(), 50)
+          hasInteractedRef.current = true
+          return
+      }
+
+      if (isPaused) {
+          pauseAudio()
+          addToast('PAUSED', 'info')
+          setTimeout(() => resumeBtnRef.current?.focus(), 50)
+      } else {
+          resumeAudio()
+          addToast('RESUMED', 'info')
+      }
   }, [isPaused, addToast])
 
   const handleQuitGig = useCallback(async () => {
@@ -77,7 +135,17 @@ export const Gig = () => {
     } finally {
       // Use fallback stats if gameStateRef is unavailable or uninitialized
       const score = gameStateRef.current?.score || 0
-      const statsSnapshot = gameStateRef.current?.stats || {}
+      // Ensure statsSnapshot has defaults to prevent NaN in buildGigStatsSnapshot
+      const rawStats = gameStateRef.current?.stats || {}
+      const statsSnapshot = {
+          perfectHits: rawStats.perfectHits || 0,
+          perfects: rawStats.perfects || 0, // Alias if used
+          hits: rawStats.hits || 0,
+          misses: rawStats.misses || 0,
+          earlyHits: rawStats.earlyHits || 0,
+          lateHits: rawStats.lateHits || 0,
+          maxCombo: rawStats.maxCombo || 0
+      }
       const toxicTime = gameStateRef.current?.toxicTimeTotal || 0
 
       const snapshot = buildGigStatsSnapshot(score, statsSnapshot, toxicTime)
@@ -230,18 +298,18 @@ export const Gig = () => {
       {/* Pause Overlay */}
       {isPaused && (
         <div
-          className="absolute inset-0 z-[100] bg-(--void-black)/90 flex flex-col items-center justify-center pointer-events-auto"
-          role="dialog"
-          aria-modal="true"
+          className='absolute inset-0 z-[100] bg-(--void-black)/90 flex flex-col items-center justify-center pointer-events-auto'
+          role='dialog'
+          aria-modal='true'
         >
-          <h2 className="text-6xl font-[Metal_Mania] text-(--toxic-green) mb-8 animate-pulse drop-shadow-[0_0_15px_var(--toxic-green)]">
+          <h2 className='text-6xl font-[var(--font-display)] text-(--toxic-green) mb-8 animate-pulse drop-shadow-[0_0_15px_var(--toxic-green)]'>
             PAUSED
           </h2>
-          <div className="flex flex-col gap-6 w-64">
-            <GlitchButton ref={resumeBtnRef} onClick={handleTogglePause} size="lg">
+          <div className='flex flex-col gap-6 w-64'>
+            <GlitchButton ref={resumeBtnRef} onClick={handleTogglePause} size='lg'>
               RESUME
             </GlitchButton>
-            <GlitchButton onClick={handleQuitGig} variant="danger">
+            <GlitchButton onClick={handleQuitGig} variant='danger'>
               QUIT GIG
             </GlitchButton>
           </div>

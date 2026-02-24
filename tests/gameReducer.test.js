@@ -7,27 +7,27 @@ import assert from 'node:assert'
 
 // Mock applyTraitUnlocks with improved matching logic
 const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
-    const band = { ...state.band }
-    // Deep copy members to avoid mutation issues in test
-    band.members = band.members.map(m => ({ ...m, traits: [...m.traits] }))
+  const band = { ...state.band }
+  // Deep copy members to avoid mutation issues in test
+  band.members = band.members.map(m => ({ ...m, traits: [...m.traits] }))
 
-    unlocks.forEach(u => {
-        // Mock matching logic: ID match OR case-insensitive name match
-        const member = band.members.find(m =>
-            (m.id && m.id === u.memberId) ||
-            (m.name && m.name.toLowerCase() === u.memberId.toLowerCase())
-        )
-        if (member) {
-            member.traits.push({ id: u.traitId })
-        }
-    })
-
-    return {
-        band,
-        toasts: unlocks.length > 0
-            ? [...(state.toasts || []), { message: `Unlocked ${unlocks[0].traitId}`, type: 'success' }]
-            : (state.toasts || [])
+  unlocks.forEach(u => {
+    // Mock matching logic: ID match OR case-insensitive name match
+    const member = band.members.find(m =>
+      (m.id && m.id === u.memberId) ||
+      (m.name && m.name.toLowerCase() === u.memberId.toLowerCase())
+    )
+    if (member) {
+      member.traits.push({ id: u.traitId })
     }
+  })
+
+  return {
+    band,
+    toasts: unlocks.length > 0
+      ? [...(state.toasts || []), { message: `Unlocked ${unlocks[0].traitId}`, type: 'success' }]
+      : (state.toasts || [])
+  }
 })
 
 mock.module('../src/utils/traitUtils.js', {
@@ -43,6 +43,7 @@ describe('gameReducer', () => {
 
   beforeEach(() => {
     testState = createInitialState()
+    mockApplyTraitUnlocks.mock.resetCalls()
   })
 
   describe('CHANGE_SCENE', () => {
