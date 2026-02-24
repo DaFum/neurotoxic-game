@@ -85,6 +85,7 @@ function GameContent() {
       case GAME_PHASES.PRE_GIG_MINIGAME:
         return <RoadieRunScene />
       case 'GIG':
+      case 'PRACTICE':
         return <Gig />
       case 'POSTGIG':
         return <PostGig />

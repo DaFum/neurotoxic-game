@@ -152,4 +152,42 @@ describe('useRhythmGameLogic', () => {
       mockChangeScene.mock.calls.some(call => call.arguments[0] === 'POSTGIG')
     )
   })
+
+  test('transitions to OVERWORLD when practice is complete', async () => {
+    mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 9800)
+
+    // Override useGameState for this test to simulate practice mode
+    mockRhythmGameLogicDependencies.mockUseGameState.mock.mockImplementation(() => ({
+      setlist: ['jam'],
+      band: { members: [] },
+      activeEvent: null,
+      hasUpgrade: mock.fn(() => false),
+      setLastGigStats: mockSetLastGigStats,
+      addToast: mock.fn(),
+      gameMap: { nodes: { node1: { layer: 0 } } },
+      player: { currentNodeId: 'node1', money: 0 },
+      changeScene: mockChangeScene,
+      gigModifiers: {},
+      currentGig: { isPractice: true }
+    }))
+
+    const result = await initHook()
+
+    act(() => {
+      simulateGameLoopUpdate(result, {
+        totalDuration: 10000,
+        notes: [
+          { time: 200, laneIndex: 0, hit: true, visible: false, type: 'note' }
+        ],
+        nextMissCheckIndex: 1,
+        setlistCompleted: true
+      })
+    })
+
+    assert.ok(mockAudioEngine.stopAudio.mock.calls.length >= 1)
+    assert.ok(mockSetLastGigStats.mock.calls.length >= 1)
+    assert.ok(
+      mockChangeScene.mock.calls.some(call => call.arguments[0] === 'OVERWORLD')
+    )
+  })
 })

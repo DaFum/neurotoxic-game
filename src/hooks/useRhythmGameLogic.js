@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useCallback } from 'react'
 import { useGameState } from '../context/GameState'
 import { useRhythmGameState } from './rhythmGame/useRhythmGameState'
 import { useRhythmGameScoring } from './rhythmGame/useRhythmGameScoring'
@@ -21,7 +21,8 @@ export const useRhythmGameLogic = () => {
     gameMap,
     player,
     changeScene,
-    gigModifiers
+    gigModifiers,
+    currentGig
   } = useGameState()
 
   // 1. Core State (React + Ref)
@@ -50,6 +51,18 @@ export const useRhythmGameLogic = () => {
     contextActions: { addToast }
   })
 
+  const handleSceneChange = useCallback(
+    scene => {
+      if (currentGig?.isPractice) {
+        addToast('Practice Session Complete', 'success')
+        changeScene('OVERWORLD')
+      } else {
+        changeScene(scene)
+      }
+    },
+    [currentGig, changeScene, addToast]
+  )
+
   // 4. Game Loop (Update)
   const { update } = useRhythmGameLoop({
     gameStateRef,
@@ -57,7 +70,10 @@ export const useRhythmGameLogic = () => {
     setters,
     state,
     contextState: { activeEvent },
-    contextActions: { setLastGigStats, changeScene }
+    contextActions: {
+      setLastGigStats,
+      changeScene: handleSceneChange
+    }
   })
 
   // 5. Input Handling
