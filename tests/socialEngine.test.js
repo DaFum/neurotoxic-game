@@ -106,7 +106,8 @@ const mockGameState = {
   player: { money: 1000 },
   band: {
     harmony: 80,
-    members: [{ name: 'Matze', mood: 50, stamina: 50 }]
+    members: [{ name: 'Matze', mood: 50, stamina: 50 }],
+    inventory: { golden_pick: false }
   },
   social: { instagram: 100, tiktok: 100, youtube: 100, newsletter: 100, loyalty: 0, controversyLevel: 0 },
   lastGigStats: { score: 20000, accuracy: 80 },

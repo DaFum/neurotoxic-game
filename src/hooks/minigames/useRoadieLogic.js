@@ -2,10 +2,8 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameState } from '../../context/GameState'
 import { audioManager } from '../../utils/AudioManager'
+import { GRID_WIDTH, GRID_HEIGHT } from './constants'
 
-export const GRID_WIDTH = 12
-export const GRID_HEIGHT = 8 // Rows: 0 (Start), 1-6 (Road), 7 (Venue)
-export const CELL_SIZE = 60
 export const MOVE_COOLDOWN_BASE = 120 // ms (Faster base movement)
 
 const TRAFFIC_ROWS = [1, 2, 3, 4, 5, 6]

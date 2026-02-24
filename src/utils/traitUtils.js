@@ -32,7 +32,11 @@ export const applyTraitUnlocks = (currentState, unlocks) => {
   const nextToasts = [...(currentState.toasts ?? [])]
 
   unlocks.forEach(u => {
-    const memberIndex = nextBand.members.findIndex(m => m.name === u.memberId)
+    // Find member by ID or case-insensitive name
+    const memberIndex = nextBand.members.findIndex(m =>
+      (m.id && m.id === u.memberId) ||
+      (m.name && m.name.toLowerCase() === u.memberId.toLowerCase())
+    )
     if (memberIndex === -1) return
 
     const member = nextBand.members[memberIndex]
@@ -40,8 +44,11 @@ export const applyTraitUnlocks = (currentState, unlocks) => {
     // Check if trait is already unlocked
     if (member.traits.some(t => t.id === u.traitId)) return
 
-    // Find trait definition
-    const traitDef = CHARACTERS[u.memberId.toUpperCase()]?.traits?.find(t => t.id === u.traitId)
+    // Find trait definition using the member's name to resolve static character data
+    // This allows u.memberId to be an arbitrary ID (uuid) as long as the member object has a valid name.
+    const charKey = member.name ? member.name.toUpperCase() : null
+    const traitDef = charKey ? CHARACTERS[charKey]?.traits?.find(t => t.id === u.traitId) : null
+
     if (!traitDef) return
 
     // Apply trait

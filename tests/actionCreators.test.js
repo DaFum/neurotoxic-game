@@ -2,7 +2,7 @@
  * @fileoverview Tests for the action creators module
  */
 
-import { describe, it } from 'node:test'
+import { describe, it, test } from 'node:test'
 import assert from 'node:assert'
 import {
   createChangeSceneAction,
@@ -24,7 +24,8 @@ import {
   createApplyEventDeltaAction,
   createPopPendingEventAction,
   createConsumeItemAction,
-  createAdvanceDayAction
+  createAdvanceDayAction,
+  createUnlockTraitAction
 } from '../src/context/actionCreators.js'
 import { ActionTypes } from '../src/context/gameReducer.js'
 
@@ -241,6 +242,16 @@ describe('Action Creators', () => {
       const action = createAdvanceDayAction()
 
       assert.strictEqual(action.type, ActionTypes.ADVANCE_DAY)
+    })
+  })
+
+  describe('createUnlockTraitAction', () => {
+    it('creates correct action', () => {
+      const action = createUnlockTraitAction('matze', 'gear_nerd')
+      assert.deepStrictEqual(action, {
+        type: ActionTypes.UNLOCK_TRAIT,
+        payload: { memberId: 'matze', traitId: 'gear_nerd' }
+      })
     })
   })
 })

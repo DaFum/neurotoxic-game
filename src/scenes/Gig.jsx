@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react'
 import { useGameState } from '../context/GameState'
 import { useRhythmGameLogic } from '../hooks/useRhythmGameLogic'
 import { useGigEffects } from '../hooks/useGigEffects'
@@ -8,6 +8,9 @@ import { GigHUD } from '../components/GigHUD'
 import { IMG_PROMPTS, getGenImageUrl } from '../utils/imageGen'
 import { audioManager } from '../utils/AudioManager'
 import { GlitchButton } from '../ui/GlitchButton'
+import { pauseAudio, resumeAudio, stopAudio } from '../utils/audioEngine'
+import { buildGigStatsSnapshot } from '../utils/gigStats'
+import { handleError } from '../utils/errorHandler'
 
 /**
  * The core Rhythm Game scene.
@@ -24,6 +27,10 @@ export const Gig = () => {
     band
   } = useGameState()
 
+  const [isPaused, setIsPaused] = useState(false)
+  const hasInteractedRef = useRef(false)
+  const resumeBtnRef = useRef(null)
+
   useEffect(() => {
     if (!currentGig) {
       addToast('No gig active! Returning to map.', 'error')
@@ -38,6 +45,64 @@ export const Gig = () => {
   // Use extracted effects hook
   const { chaosContainerRef, chaosStyle, triggerBandAnimation, setBandMemberRef } = useGigEffects(stats)
 
+  // Pause Logic Effect - must be before handlers to follow structure
+  useEffect(() => {
+      if (!hasInteractedRef.current) {
+          if (!isPaused) {
+              hasInteractedRef.current = true
+              return
+          }
+          // If starts paused (unlikely) or quick toggle
+          pauseAudio()
+          addToast('PAUSED', 'info')
+          // Focus management delegated to Modal or done here if needed
+          hasInteractedRef.current = true
+          return
+      }
+
+      if (isPaused) {
+          pauseAudio()
+          addToast('PAUSED', 'info')
+      } else {
+          resumeAudio()
+          addToast('RESUMED', 'info')
+      }
+  }, [isPaused, addToast])
+
+  const handleTogglePause = useCallback(() => {
+    setIsPaused(prev => !prev)
+  }, [])
+
+  const handleQuitGig = useCallback(async () => {
+    if (gameStateRef.current) {
+      gameStateRef.current.hasSubmittedResults = true
+    }
+    try {
+      stopAudio()
+    } catch (e) {
+      handleError(e, { addToast, fallbackMessage: 'Audio cleanup failed.' })
+    } finally {
+      // Use fallback stats if gameStateRef is unavailable or uninitialized
+      const score = gameStateRef.current?.score || 0
+      // Ensure statsSnapshot has defaults to prevent NaN in buildGigStatsSnapshot
+      const rawStats = gameStateRef.current?.stats || {}
+      const statsSnapshot = {
+          perfectHits: rawStats.perfectHits || 0,
+          perfects: rawStats.perfects || 0, // Alias if used
+          hits: rawStats.hits || 0,
+          misses: rawStats.misses || 0,
+          earlyHits: rawStats.earlyHits || 0,
+          lateHits: rawStats.lateHits || 0,
+          maxCombo: rawStats.maxCombo || 0
+      }
+      const toxicTime = gameStateRef.current?.toxicTimeTotal || 0
+
+      const snapshot = buildGigStatsSnapshot(score, statsSnapshot, toxicTime)
+      setLastGigStats(snapshot)
+      changeScene('POSTGIG')
+    }
+  }, [changeScene, setLastGigStats, addToast, gameStateRef])
+
   // Use extracted input hook
   const { handleLaneInput } = useGigInput({
     actions,
@@ -47,7 +112,8 @@ export const Gig = () => {
     changeScene,
     addToast,
     setLastGigStats,
-    triggerBandAnimation
+    triggerBandAnimation,
+    onTogglePause: handleTogglePause
   })
 
   // Determine Background URL
@@ -175,7 +241,29 @@ export const Gig = () => {
         stats={stats}
         gameStateRef={gameStateRef}
         onLaneInput={handleLaneInput}
+        onTogglePause={handleTogglePause}
       />
+
+      {/* Pause Overlay */}
+      {isPaused && (
+        <div
+          className='absolute inset-0 z-[100] bg-(--void-black)/90 flex flex-col items-center justify-center pointer-events-auto'
+          role='dialog'
+          aria-modal='true'
+        >
+          <h2 className='text-6xl font-[var(--font-display)] text-(--toxic-green) mb-8 animate-pulse drop-shadow-[0_0_15px_var(--toxic-green)]'>
+            PAUSED
+          </h2>
+          <div className='flex flex-col gap-6 w-64'>
+            <GlitchButton ref={resumeBtnRef} onClick={handleTogglePause} size='lg'>
+              RESUME
+            </GlitchButton>
+            <GlitchButton onClick={handleQuitGig} variant='danger'>
+              QUIT GIG
+            </GlitchButton>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

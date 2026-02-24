@@ -34,7 +34,8 @@ export const PostGig = () => {
     social,
     lastGigStats,
     addToast,
-    changeScene
+    changeScene,
+    unlockTrait
   } = useGameState()
   const [phase, setPhase] = useState('REPORT') // REPORT, SOCIAL, COMPLETE
   const [financials, setFinancials] = useState(null)
@@ -145,6 +146,13 @@ export const PostGig = () => {
       updatePlayer({ money: clampPlayerMoney(player.money + result.moneyChange) })
     }
 
+    if (result.unlockTrait) {
+      unlockTrait(result.unlockTrait.memberId, result.unlockTrait.traitId)
+      // Try to get a friendly name from trait metadata if available, else raw ID
+      const traitName = result.unlockTrait.traitId.replace(/_/g, ' ').toUpperCase()
+      addToast(`Trait Unlocked: ${traitName}`, 'success')
+    }
+
     updateSocial({
       [result.platform]: Math.max(0, (social[result.platform] || 0) + totalFollowers),
       viral: social.viral + (result.success ? 1 : 0) + gigViralBonus,
@@ -156,7 +164,7 @@ export const PostGig = () => {
     })
 
     setPhase('COMPLETE')
-  }, [lastGigStats, perfScore, social, player, band, updateSocial, updateBand, updatePlayer])
+  }, [lastGigStats, perfScore, social, player, band, updateSocial, updateBand, updatePlayer, unlockTrait, addToast])
 
   const handleContinue = useCallback(() => {
     if (!financials) return

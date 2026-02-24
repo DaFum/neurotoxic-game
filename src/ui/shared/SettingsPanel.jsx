@@ -1,5 +1,8 @@
+import { useState } from 'react'
 import PropTypes from 'prop-types'
 import { VolumeSlider } from './VolumeSlider'
+import { ActionButton } from './ActionButton'
+import { Modal } from './Modal'
 import { LOG_LEVELS } from '../../utils/logger.js'
 
 /**
@@ -110,10 +113,14 @@ export const SettingsPanel = ({
             LOG PROTOCOLS
           </h2>
           <div className='flex items-center justify-between'>
-            <label className='font-[Courier_New] text-sm uppercase tracking-wide text-(--ash-gray)'>
+            <label
+              htmlFor='logLevelSelect'
+              className='font-[Courier_New] text-sm uppercase tracking-wide text-(--ash-gray)'
+            >
               MINIMUM LOG LEVEL
             </label>
             <select
+              id='logLevelSelect'
               value={settings?.logLevel ?? LOG_LEVELS.DEBUG}
               onChange={e => onLogLevelChange(parseInt(e.target.value, 10))}
               className='bg-(--void-black) text-(--toxic-green) border-2 border-(--toxic-green) p-1 font-mono focus:outline-none'
@@ -129,33 +136,67 @@ export const SettingsPanel = ({
       )}
 
       {/* Data Management */}
-      <div>
-        <h2 className='font-[Metal_Mania] text-4xl uppercase text-(--blood-red) mb-6 border-b border-(--ash-gray) pb-2'>
-          DATA PURGE
-        </h2>
-        <div className='flex justify-between items-center'>
-          <p className='font-[Courier_New] text-lg text-(--ash-gray) max-w-xs'>
-            WARNING: This action is irreversible. All tour progress will be
-            lost.
-          </p>
-          <button
-            onClick={() => {
-              if (
-                window.confirm(
-                  'Are you sure you want to delete your save game?'
-                )
-              ) {
-                onDeleteSave()
-              }
-            }}
-            className='bg-(--blood-red) text-(--void-black) px-4 py-2 font-bold hover:invert border-2 border-(--blood-red) rounded-none shadow-[4px_4px_0px_var(--blood-red)] font-mono'
-          >
-            DELETE SAVE
-          </button>
-        </div>
-      </div>
+      <DataManagement onDeleteSave={onDeleteSave} />
     </div>
   )
+}
+
+const DataManagement = ({ onDeleteSave }) => {
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+
+  const handleOpenConfirm = () => setIsConfirmOpen(true)
+  const handleCloseConfirm = () => setIsConfirmOpen(false)
+  const handleDeleteSave = () => {
+    onDeleteSave()
+    setIsConfirmOpen(false)
+  }
+
+  return (
+    <div>
+      <h2 className='font-(--font-display) text-4xl uppercase text-(--blood-red) mb-6 border-b border-(--ash-gray) pb-2'>
+        DATA PURGE
+      </h2>
+      <div className='flex justify-between items-center'>
+        <p className='font-(--font-ui) text-lg text-(--ash-gray) max-w-xs'>
+          WARNING: This action is irreversible. All tour progress will be lost.
+        </p>
+        <ActionButton
+          onClick={handleOpenConfirm}
+          className='bg-(--blood-red) text-(--void-black) border-(--blood-red) shadow-[4px_4px_0px_var(--blood-red)] hover:invert'
+        >
+          DELETE SAVE
+        </ActionButton>
+      </div>
+
+      <Modal
+        isOpen={isConfirmOpen}
+        onClose={handleCloseConfirm}
+        title='CONFIRM DELETE'
+      >
+        <div className='space-y-6'>
+          <p className='font-(--font-ui) text-(--ash-gray)'>
+            Are you sure you want to delete your save game? This cannot be
+            undone.
+          </p>
+          <div className='flex gap-4 justify-end'>
+            <ActionButton onClick={handleCloseConfirm}>
+              CANCEL
+            </ActionButton>
+            <ActionButton
+              onClick={handleDeleteSave}
+              className='bg-(--blood-red) text-(--void-black) border-(--blood-red) hover:invert'
+            >
+              CONFIRM
+            </ActionButton>
+          </div>
+        </div>
+      </Modal>
+    </div>
+  )
+}
+
+DataManagement.propTypes = {
+  onDeleteSave: PropTypes.func.isRequired
 }
 
 SettingsPanel.propTypes = {

@@ -48,7 +48,8 @@ import {
   createStartTravelMinigameAction,
   createCompleteTravelMinigameAction,
   createStartRoadieMinigameAction,
-  createCompleteRoadieMinigameAction
+  createCompleteRoadieMinigameAction,
+  createUnlockTraitAction
 } from './actionCreators'
 import PropTypes from 'prop-types'
 
@@ -262,6 +263,11 @@ export const GameStateProvider = ({ children }) => {
   const completeRoadieMinigame = useCallback(
     equipmentDamage =>
       dispatch(createCompleteRoadieMinigameAction(equipmentDamage)),
+    []
+  )
+
+  const unlockTrait = useCallback(
+    (memberId, traitId) => dispatch(createUnlockTraitAction(memberId, traitId)),
     []
   )
 
@@ -513,7 +519,8 @@ export const GameStateProvider = ({ children }) => {
       startTravelMinigame,
       completeTravelMinigame,
       startRoadieMinigame,
-      completeRoadieMinigame
+      completeRoadieMinigame,
+      unlockTrait
     }),
     [
       changeScene,
@@ -536,7 +543,12 @@ export const GameStateProvider = ({ children }) => {
       loadGame,
       deleteSave,
       resetState,
-      updateSettings
+      updateSettings,
+      startTravelMinigame,
+      completeTravelMinigame,
+      startRoadieMinigame,
+      completeRoadieMinigame,
+      unlockTrait
     ]
   )
 
