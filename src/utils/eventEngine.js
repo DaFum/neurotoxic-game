@@ -124,6 +124,12 @@ const processEffect = (eff, delta) => {
       if (eff.stat === 'skill')
         delta.band.skill = (delta.band.skill || 0) + eff.value
       break
+    case 'stat_increment':
+      if (eff.stat === 'conflictsResolved') {
+        if (!delta.player.stats) delta.player.stats = {}
+        delta.player.stats.conflictsResolved = (delta.player.stats.conflictsResolved || 0) + eff.value
+      }
+      break
     case 'item':
       if (eff.item) {
         if (!delta.band.inventory) delta.band.inventory = {}
@@ -247,6 +253,33 @@ export const eventEngine = {
           result = { ...failure, outcome: 'failure' }
         }
       }
+
+      // Track conflict resolution for unlocking 'bandleader'
+      if (result.outcome === 'success' && gameState.activeEvent?.tags?.includes('conflict')) {
+        // Add a hidden effect to increment conflict stats
+        if (!result.effects) result.effects = []
+        if (result.type !== 'composite') {
+           // Convert simple result to composite to add stat tracking
+           const originalEffect = { ...result }
+           delete originalEffect.outcome
+           delete originalEffect.description
+           result = {
+             type: 'composite',
+             effects: [ originalEffect ],
+             outcome: 'success',
+             description: result.description
+           }
+        }
+
+        // Add the stat increment
+        // Note: we need to handle this custom stat in processEffect
+        result.effects.push({
+          type: 'stat_increment',
+          stat: 'conflictsResolved',
+          value: 1
+        })
+      }
+
     } else {
       result = { ...choice.effect, outcome: 'direct' }
     }

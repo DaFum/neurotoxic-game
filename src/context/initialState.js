@@ -30,7 +30,11 @@ export const DEFAULT_PLAYER_STATE = {
     upgrades: [],
     breakdownChance: 0.05
   },
-  passiveFollowers: 0
+  passiveFollowers: 0,
+  stats: {
+    totalDistance: 0,
+    conflictsResolved: 0
+  }
 }
 
 /**
@@ -145,7 +149,7 @@ export const createInitialState = () => ({
   player: { ...DEFAULT_PLAYER_STATE, van: { ...DEFAULT_PLAYER_STATE.van } },
   band: {
     ...DEFAULT_BAND_STATE,
-    members: DEFAULT_BAND_STATE.members.map(m => ({ ...m })),
+    members: DEFAULT_BAND_STATE.members.map(m => ({ ...m, traits: [...m.traits] })),
     performance: { ...DEFAULT_BAND_STATE.performance },
     inventory: { ...DEFAULT_BAND_STATE.inventory }
   },

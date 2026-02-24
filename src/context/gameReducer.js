@@ -16,6 +16,8 @@ import {
   calculateTravelMinigameResult,
   calculateRoadieMinigameResult
 } from '../utils/economyEngine.js'
+import { checkTraitUnlocks } from '../utils/unlockCheck.js'
+import { CHARACTERS } from '../data/characters.js'
 import { logger } from '../utils/logger.js'
 import {
   createInitialState,
@@ -57,7 +59,8 @@ export const ActionTypes = {
   START_TRAVEL_MINIGAME: 'START_TRAVEL_MINIGAME',
   COMPLETE_TRAVEL_MINIGAME: 'COMPLETE_TRAVEL_MINIGAME',
   START_ROADIE_MINIGAME: 'START_ROADIE_MINIGAME',
-  COMPLETE_ROADIE_MINIGAME: 'COMPLETE_ROADIE_MINIGAME'
+  COMPLETE_ROADIE_MINIGAME: 'COMPLETE_ROADIE_MINIGAME',
+  UNLOCK_TRAIT: 'UNLOCK_TRAIT'
 }
 
 /**
@@ -280,16 +283,36 @@ const handleConsumeItem = (state, payload) => {
  */
 const handleAdvanceDay = (state, payload) => {
   const rng = payload?.rng || Math.random
-  // Validate RNG availability in tests if payload.rng is expected but missing?
-  // For now we fallback to Math.random but the logic is injected.
-
   const { player, band, social } = calculateDailyUpdates(state, rng)
   const nextBand = { ...band }
   if (typeof nextBand.harmony === 'number') {
     nextBand.harmony = clampBandHarmony(nextBand.harmony)
   }
+
+  // Check Social Unlocks
+  const socialUnlocks = checkTraitUnlocks(
+    { player, band: nextBand, social },
+    { type: 'SOCIAL_UPDATE' }
+  )
+
+  let toasts = [...state.toasts]
+  if (socialUnlocks.length > 0) {
+    socialUnlocks.forEach(u => {
+      const member = nextBand.members.find(m => m.name === u.memberId)
+      const trait = CHARACTERS[u.memberId.toUpperCase()]?.traits?.find(t => t.id === u.traitId)
+      if (member && trait && !member.traits.some(t => t.id === u.traitId)) {
+        member.traits.push(trait)
+        toasts.push({
+          id: Date.now() + Math.random(),
+          message: `Unlocked Trait: ${trait.name} (${u.memberId})`,
+          type: 'success'
+        })
+      }
+    })
+  }
+
   logger.info('GameState', `Day Advanced to ${player.day}`)
-  return { ...state, player, band: nextBand, social, eventCooldowns: [] }
+  return { ...state, player, band: nextBand, social, eventCooldowns: [], toasts }
 }
 
 const handleStartTravelMinigame = (state, payload) => {
@@ -321,15 +344,12 @@ const handleCompleteTravelMinigame = (state, payload) => {
     return {
       ...state,
       minigame: { ...DEFAULT_MINIGAME_STATE },
-      currentScene: GAME_PHASES.OVERWORLD // Force scene reset to prevent stuck state
+      currentScene: GAME_PHASES.OVERWORLD
     }
   }
 
-  // Calculate Costs
-  const { fuelLiters, totalCost } = calculateTravelExpenses(targetNode, currentNode, { van: state.player.van }, state.band)
-
-  // Apply Minigame Results
-  const { conditionLoss, fuelBonus } = calculateTravelMinigameResult(damageTaken, itemsCollected)
+  const { dist, totalCost, fuelLiters } = calculateTravelExpenses(targetNode, currentNode, { van: state.player.van }, state.band)
+  const { conditionLoss } = calculateTravelMinigameResult(damageTaken, itemsCollected)
 
   const nextPlayer = {
     ...state.player,
@@ -341,14 +361,46 @@ const handleCompleteTravelMinigame = (state, payload) => {
       ...state.player.van,
       fuel: Math.max(0, Math.min(100, state.player.van.fuel - fuelLiters)),
       condition: Math.max(0, state.player.van.condition - conditionLoss)
+    },
+    stats: {
+      ...state.player.stats,
+      totalDistance: (state.player.stats?.totalDistance || 0) + dist
     }
+  }
+
+  // Check Travel Unlocks
+  const travelUnlocks = checkTraitUnlocks(
+    { ...state, player: nextPlayer },
+    { type: 'TRAVEL_COMPLETE' }
+  )
+
+  let nextBand = { ...state.band }
+  let toasts = [...state.toasts]
+
+  if (travelUnlocks.length > 0) {
+    nextBand.members = nextBand.members.map(m => {
+      const unlock = travelUnlocks.find(u => u.memberId === m.name)
+      if (unlock) {
+        const trait = CHARACTERS[m.name.toUpperCase()]?.traits?.find(t => t.id === unlock.traitId)
+        if (trait && !m.traits.some(t => t.id === trait.id)) {
+          toasts.push({
+            id: Date.now() + Math.random(),
+            message: `Unlocked Trait: ${trait.name} (${m.name})`,
+            type: 'success'
+          })
+          return { ...m, traits: [...m.traits, trait] }
+        }
+      }
+      return m
+    })
   }
 
   return {
     ...state,
     player: nextPlayer,
+    band: nextBand,
+    toasts,
     minigame: { ...DEFAULT_MINIGAME_STATE }
-    // Scene stays at TRAVEL_MINIGAME — handleArrivalSequence will route
   }
 }
 
@@ -407,6 +459,43 @@ const handleCompleteRoadieMinigame = (state, payload) => {
 }
 
 /**
+ * Handles explicit trait unlocking via action.
+ * @param {Object} state - Current state
+ * @param {Object} payload - { memberId, traitId }
+ * @returns {Object} Updated state
+ */
+const handleUnlockTrait = (state, payload) => {
+  const { memberId, traitId } = payload
+  const memberIndex = state.band.members.findIndex(m => m.name === memberId)
+  if (memberIndex === -1) return state
+
+  const member = state.band.members[memberIndex]
+  if (member.traits.some(t => t.id === traitId)) return state // Already unlocked
+
+  const traitDef = CHARACTERS[memberId.toUpperCase()]?.traits?.find(t => t.id === traitId)
+  if (!traitDef) return state
+
+  const nextMembers = [...state.band.members]
+  nextMembers[memberIndex] = {
+    ...member,
+    traits: [...member.traits, traitDef]
+  }
+
+  return {
+    ...state,
+    band: { ...state.band, members: nextMembers },
+    toasts: [
+      ...state.toasts,
+      {
+        id: Date.now(),
+        message: `Unlocked Trait: ${traitDef.name} (${memberId})`,
+        type: 'success'
+      }
+    ]
+  }
+}
+
+/**
  * Main state reducer for the game.
  * @param {Object} state - Current state
  * @param {Object} action - Action with type and payload
@@ -453,8 +542,30 @@ export const gameReducer = (state, action) => {
     case ActionTypes.SET_SETLIST:
       return { ...state, setlist: action.payload }
 
-    case ActionTypes.SET_LAST_GIG_STATS:
-      return { ...state, lastGigStats: action.payload }
+    case ActionTypes.SET_LAST_GIG_STATS: {
+      const performanceUnlocks = checkTraitUnlocks(state, { type: 'GIG_COMPLETE', gigStats: action.payload })
+      let nextBand = { ...state.band }
+      let toasts = [...state.toasts]
+
+      if (performanceUnlocks.length > 0) {
+        nextBand.members = nextBand.members.map(m => {
+          const unlock = performanceUnlocks.find(u => u.memberId === m.name)
+          if (unlock) {
+            const trait = CHARACTERS[m.name.toUpperCase()]?.traits?.find(t => t.id === unlock.traitId)
+            if (trait && !m.traits.some(t => t.id === trait.id)) {
+              toasts.push({
+                id: Date.now() + Math.random(),
+                message: `Unlocked Trait: ${trait.name} (${m.name})`,
+                type: 'success'
+              })
+              return { ...m, traits: [...m.traits, trait] }
+            }
+          }
+          return m
+        })
+      }
+      return { ...state, lastGigStats: action.payload, band: nextBand, toasts }
+    }
 
     case ActionTypes.SET_ACTIVE_EVENT:
       if (action.payload) {
@@ -481,9 +592,52 @@ export const gameReducer = (state, action) => {
       logger.info('GameState', 'State Reset (Debug)')
       return { ...createInitialState(), settings: state.settings }
 
-    case ActionTypes.APPLY_EVENT_DELTA:
+    case ActionTypes.APPLY_EVENT_DELTA: {
       logger.info('GameState', 'Applying Event Delta', action.payload)
-      return applyEventDelta(state, action.payload)
+      const nextState = applyEventDelta(state, action.payload)
+
+      // If event involved conflict resolution (heuristic: mood change or specific flag?), check unlock
+      // Better: The payload itself doesn't carry 'resolved' flag easily unless we augment it.
+      // But applyEventDelta returns a new state. We can check heuristics.
+      // Or we assume `action.payload` might come from `resolveEventChoice` which knows if it was successful.
+      // Let's rely on checking `activeEvent` tags or `description` in payload if available?
+      // Actually `applyEventDelta` takes a delta object.
+      // Let's check `stats.conflictsResolved` which isn't tracked yet in delta.
+
+      // FIX: We need to increment `conflictsResolved` if the event was a conflict and result was success.
+      // This logic belongs in `resolveEventChoice` or here if we can detect it.
+      // Since `applyEventDelta` is generic, let's assume specific event logic handles the increment via 'stat' effect
+      // OR we add a specific check here.
+
+      // For now, let's assume 'conflict_resolved' flag is added to delta by eventEngine if successful.
+      // We will need to update eventEngine to output this signal.
+
+      const eventUnlocks = checkTraitUnlocks(nextState, { type: 'EVENT_RESOLVED' })
+      // Logic to apply unlocks similar to above...
+      // Since checkTraitUnlocks relies on `player.stats.conflictsResolved`, we need that stat to update first.
+
+      let nextBand = { ...nextState.band }
+      let toasts = [...nextState.toasts]
+
+      if (eventUnlocks.length > 0) {
+        nextBand.members = nextBand.members.map(m => {
+          const unlock = eventUnlocks.find(u => u.memberId === m.name)
+          if (unlock) {
+            const trait = CHARACTERS[m.name.toUpperCase()]?.traits?.find(t => t.id === unlock.traitId)
+            if (trait && !m.traits.some(t => t.id === trait.id)) {
+              toasts.push({
+                id: Date.now() + Math.random(),
+                message: `Unlocked Trait: ${trait.name} (${m.name})`,
+                type: 'success'
+              })
+              return { ...m, traits: [...m.traits, trait] }
+            }
+          }
+          return m
+        })
+      }
+      return { ...nextState, band: nextBand, toasts }
+    }
 
     case ActionTypes.POP_PENDING_EVENT:
       return { ...state, pendingEvents: state.pendingEvents.slice(1) }
@@ -514,6 +668,9 @@ export const gameReducer = (state, action) => {
 
     case ActionTypes.COMPLETE_ROADIE_MINIGAME:
       return handleCompleteRoadieMinigame(state, action.payload)
+
+    case ActionTypes.UNLOCK_TRAIT:
+      return handleUnlockTrait(state, action.payload)
 
     default:
       return state

@@ -7,6 +7,8 @@
 import { useCallback } from 'react'
 import { handleError, StateError } from '../utils/errorHandler.js'
 import { bandHasTrait } from '../utils/traitLogic.js'
+import { checkTraitUnlocks } from '../utils/unlockCheck.js'
+import { CHARACTERS } from '../data/characters.js'
 
 /**
  * Selects the primary effect payload from catalog entries during migration.
@@ -433,6 +435,44 @@ export const usePurchaseLogic = ({
         // Apply updates
         updatePlayer(playerPatch)
         if (bandPatch) updateBand(bandPatch)
+
+        // Check Purchase Unlocks
+        // We need to construct the next state optimistically to check unlocks
+        const nextPlayer = { ...player, ...playerPatch, van: { ...player.van, ...playerPatch.van } }
+        const nextBand = {
+          ...band,
+          ...(bandPatch || {}),
+          inventory: { ...band.inventory, ...(bandPatch?.inventory || {}) }
+        }
+
+        // Count gear for gear_nerd check
+        // Assuming current inventory plus purchased item if it's gear
+        const currentGearCount = Object.values(nextBand.inventory || {}).filter(val => val === true || (typeof val === 'number' && val > 0)).length
+        // Refined logic in checkTraitUnlocks will handle heuristics, here we pass relevant context
+
+        const purchaseUnlocks = checkTraitUnlocks(
+          { player: nextPlayer, band: nextBand, social: {} }, // Social not needed for purchase unlocks
+          { type: 'PURCHASE', item, inventory: nextBand.inventory, gearCount: currentGearCount }
+        )
+
+        if (purchaseUnlocks.length > 0) {
+          const membersWithUnlocks = (nextBand.members || []).map(m => {
+            const unlock = purchaseUnlocks.find(u => u.memberId === m.name)
+            if (unlock) {
+              const trait = CHARACTERS[m.name.toUpperCase()]?.traits?.find(t => t.id === unlock.traitId)
+              if (trait && !m.traits.some(t => t.id === trait.id)) {
+                addToast(`Unlocked Trait: ${trait.name} (${m.name})`, 'success')
+                return { ...m, traits: [...m.traits, trait] }
+              }
+            }
+            return m
+          })
+
+          // Re-apply band update with new traits
+          // If bandPatch existed, merge. If not, create one.
+          updateBand({ ...(bandPatch || {}), members: membersWithUnlocks })
+        }
+
         addToast(`${item.name} purchased!`, 'success')
 
         return true

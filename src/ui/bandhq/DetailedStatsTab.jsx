@@ -131,6 +131,7 @@ export const DetailedStatsTab = ({ player, band, social }) => {
                       return (
                         <Tooltip
                           key={trait.id}
+                          className="w-full"
                           content={
                             <div className='text-left'>
                               <div className='font-bold mb-1'>{trait.name}</div>
@@ -144,7 +145,7 @@ export const DetailedStatsTab = ({ player, band, social }) => {
                           }
                         >
                           <div
-                            className={`text-xs flex justify-between items-center ${isTraitActive ? 'text-(--toxic-green)' : 'text-(--ash-gray) opacity-50'}`}
+                            className={`w-full text-xs flex justify-between items-center ${isTraitActive ? 'text-(--toxic-green)' : 'text-(--ash-gray) opacity-50'}`}
                           >
                             <span className='underline decoration-dotted decoration-(--ash-gray)/50 cursor-help'>
                               {trait.name}
