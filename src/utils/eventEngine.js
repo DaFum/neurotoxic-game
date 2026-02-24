@@ -1,4 +1,5 @@
 import { EVENTS_DB } from '../data/events/index.js'
+import { EVENT_STRINGS } from '../data/events/constants.js'
 import { logger } from './logger.js'
 
 /**
@@ -236,7 +237,7 @@ export const eventEngine = {
 
         if (savedByBandleader) {
           const baseDesc = success?.description || ''
-          const savedText = ' (Saved by Bandleader!)' // TODO: Externalize string
+          const savedText = EVENT_STRINGS.SAVED_BY_BANDLEADER
           result = {
             ...success,
             outcome: 'success',
