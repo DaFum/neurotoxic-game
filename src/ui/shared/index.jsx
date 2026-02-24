@@ -10,6 +10,7 @@ import PropTypes from 'prop-types'
 // Export SettingsPanel
 export { SettingsPanel } from './SettingsPanel'
 export { VolumeSlider } from './VolumeSlider'
+export { Tooltip } from './Tooltip'
 
 /**
  * ActionButton - A standardized action button for overlays and dialogues.

@@ -19,19 +19,22 @@ export const CHARACTERS = {
         id: 'perfektionist',
         name: 'Perfektionist',
         desc: '+15% Score if >85% Hit Rate',
-        effect: 'score_bonus_high_acc'
+        effect: 'score_bonus_high_acc',
+        unlockHint: 'Hit 100% Accuracy in a single gig.'
       },
       {
         id: 'gear_nerd',
         name: 'Gear Nerd',
         desc: '-20% Equipment Costs',
-        effect: 'discount_equip'
+        effect: 'discount_equip',
+        unlockHint: 'Purchase 5 different gear items.'
       },
       {
         id: 'virtuoso',
         name: 'Virtuoso',
         desc: '+10% Hit Window',
-        effect: 'hit_window_bonus'
+        effect: 'hit_window_bonus',
+        unlockHint: 'Complete a solo without missing a note.'
       }
     ],
     equipment: {
@@ -48,13 +51,15 @@ export const CHARACTERS = {
         id: 'party_animal',
         name: 'Party Animal',
         desc: 'Random hangover (-Stamina) but +Mood when drinking',
-        effect: 'hangover_risk'
+        effect: 'hangover_risk',
+        unlockHint: 'Buy the beer fridge and drain it.'
       },
       {
         id: 'blast_machine',
         name: 'Blast Beat Machine',
         desc: '+25% Score on fast sections',
-        effect: 'score_bonus_fast'
+        effect: 'score_bonus_fast',
+        unlockHint: 'Maintain a 50+ combo during a fast section (>160 BPM).'
       }
     ],
     equipment: { set: 'Pearl Export', cymbals: 'Zildjian/Sabian Mix' }
@@ -74,19 +79,22 @@ export const CHARACTERS = {
         id: 'bandleader',
         name: 'Bandleader',
         desc: '+50% chance to solve conflicts',
-        effect: 'conflict_solver'
+        effect: 'conflict_solver',
+        unlockHint: 'Successfully resolve 3 band conflicts.'
       },
       {
         id: 'social_manager',
         name: 'Social Nerd',
         desc: '+15% Viral Chance',
-        effect: 'viral_bonus'
+        effect: 'viral_bonus',
+        unlockHint: 'Reach 1000 followers on any platform.'
       },
       {
         id: 'road_warrior',
         name: 'Road Warrior',
         desc: '-15% Fuel Consumption',
-        effect: 'fuel_discount'
+        effect: 'fuel_discount',
+        unlockHint: 'Travel 5000km in total.'
       }
     ],
     equipment: { bass: 'Ibanez SR505', amp: 'Ampeg SVT-3 Pro' }

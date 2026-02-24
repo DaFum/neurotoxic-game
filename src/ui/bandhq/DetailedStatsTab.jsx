@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import { StatBox, ProgressBar, Panel } from '../shared'
+import { StatBox, ProgressBar, Panel, Tooltip } from '../shared'
 import { CHARACTERS } from '../../data/characters'
 
 // Helpers (Module Scope)
@@ -129,17 +129,33 @@ export const DetailedStatsTab = ({ player, band, social }) => {
                     return potentialTraits.map(trait => {
                       const isTraitActive = m.traits?.some(t => t.id === trait.id)
                       return (
-                        <div
+                        <Tooltip
                           key={trait.id}
-                          className={`text-xs flex justify-between items-center ${isTraitActive ? 'text-(--toxic-green)' : 'text-(--ash-gray) opacity-50'}`}
+                          content={
+                            <div className='text-left'>
+                              <div className='font-bold mb-1'>{trait.name}</div>
+                              <div className='mb-2'>{trait.desc}</div>
+                              {!isTraitActive && (
+                                <div className='text-(--ash-gray) italic border-t border-(--ash-gray)/30 pt-1'>
+                                  To Unlock: {trait.unlockHint}
+                                </div>
+                              )}
+                            </div>
+                          }
                         >
-                          <span>{trait.name}</span>
-                          {isTraitActive ? (
-                            <span className='text-[10px] uppercase border border-(--toxic-green) px-1 rounded'>Active</span>
-                          ) : (
-                            <span className='text-[10px] uppercase'>Locked</span>
-                          )}
-                        </div>
+                          <div
+                            className={`text-xs flex justify-between items-center ${isTraitActive ? 'text-(--toxic-green)' : 'text-(--ash-gray) opacity-50'}`}
+                          >
+                            <span className='underline decoration-dotted decoration-(--ash-gray)/50 cursor-help'>
+                              {trait.name}
+                            </span>
+                            {isTraitActive ? (
+                              <span className='text-[10px] uppercase border border-(--toxic-green) px-1 rounded'>Active</span>
+                            ) : (
+                              <span className='text-[10px] uppercase'>Locked</span>
+                            )}
+                          </div>
+                        </Tooltip>
                       )
                     })
                   })()}

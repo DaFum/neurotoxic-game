@@ -39,9 +39,9 @@ export const DEFAULT_PLAYER_STATE = {
  */
 export const DEFAULT_BAND_STATE = {
   members: [
-    { ...CHARACTERS.MATZE, mood: 80, stamina: 100 },
-    { ...CHARACTERS.LARS, mood: 80, stamina: 100 },
-    { ...CHARACTERS.MARIUS, mood: 80, stamina: 100 }
+    { ...CHARACTERS.MATZE, mood: 80, stamina: 100, traits: [] },
+    { ...CHARACTERS.LARS, mood: 80, stamina: 100, traits: [] },
+    { ...CHARACTERS.MARIUS, mood: 80, stamina: 100, traits: [] }
   ],
   harmony: 80,
   harmonyRegenTravel: false,
