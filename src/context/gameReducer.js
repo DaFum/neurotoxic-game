@@ -237,6 +237,7 @@ const handleLoadGame = (state, payload) => {
     'OVERWORLD',
     'PREGIG',
     'GIG',
+    'PRACTICE',
     'POSTGIG',
     'HQ',
     'BAND_HQ'

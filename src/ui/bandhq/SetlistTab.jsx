@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types'
 import { useGameState } from '../../context/GameState'
+import { ActionButton } from '../shared'
 import { SONGS_DB } from '../../data/songs'
 
 export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
@@ -30,7 +31,7 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
   return (
     <div className='max-h-[60vh] overflow-y-auto'>
       <div className='flex justify-between items-center mb-4 font-mono text-(--star-white)'>
-        <button
+        <ActionButton
           onClick={() => {
             if (setlist.length === 0) {
               addToast('Select at least one song to practice!', 'warning')
@@ -45,10 +46,10 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
             })
             changeScene('PRACTICE')
           }}
-          className='px-4 py-2 bg-(--toxic-green) text-(--void-black) font-bold uppercase hover:bg-(--star-white) transition-colors'
+          className='px-4 py-2 text-sm'
         >
           START PRACTICE
-        </button>
+        </ActionButton>
         <div>
           SELECTED: <span className='text-(--toxic-green)'>{setlist.length}</span>
         </div>
