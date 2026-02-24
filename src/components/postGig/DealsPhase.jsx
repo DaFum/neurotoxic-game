@@ -26,8 +26,9 @@ export const DealsPhase = ({ offers, onAccept, onSkip }) => (
             </div>
           </div>
           <button
+            type="button"
             onClick={() => onAccept(deal)}
-            className='ml-4 px-4 py-2 bg-(--toxic-green) text-black font-bold uppercase hover:scale-105 transition-transform'
+            className='ml-4 px-4 py-2 bg-(--toxic-green) text-(--void-black) font-bold uppercase hover:scale-105 transition-transform'
           >
             ACCEPT
           </button>
@@ -37,6 +38,7 @@ export const DealsPhase = ({ offers, onAccept, onSkip }) => (
 
     <div className='text-center mt-6'>
       <button
+        type="button"
         onClick={onSkip}
         className='text-sm text-(--ash-gray) hover:text-(--star-white) underline decoration-dotted'
       >

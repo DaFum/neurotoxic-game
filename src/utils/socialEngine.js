@@ -294,5 +294,11 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
     }
   }
 
+  // Fisher-Yates shuffle to ensure random selection if >2 offers
+  for (let i = offers.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1))
+    ;[offers[i], offers[j]] = [offers[j], offers[i]]
+  }
+
   return offers.slice(0, 2)
 }

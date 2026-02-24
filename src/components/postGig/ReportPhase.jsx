@@ -48,7 +48,7 @@ export const ReportPhase = ({ financials, onNext }) => (
         NET PROFIT
       </div>
       <div
-        className={`text-5xl font-bold font-[Metal_Mania] tabular-nums ${
+        className={`text-5xl font-bold font-[var(--font-display)] tabular-nums ${
           financials.net >= 0
             ? 'text-(--toxic-green) drop-shadow-[0_0_20px_var(--toxic-green)]'
             : 'text-(--blood-red) drop-shadow-[0_0_20px_var(--blood-red)]'
@@ -66,6 +66,7 @@ export const ReportPhase = ({ financials, onNext }) => (
       className='text-center'
     >
       <button
+        type="button"
         onClick={onNext}
         className='bg-(--toxic-green) text-(--void-black) px-8 py-3 font-bold hover:bg-(--star-white) transition-colors uppercase tracking-wider shadow-[4px_4px_0px_var(--void-black)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
       >

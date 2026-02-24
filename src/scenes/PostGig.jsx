@@ -231,7 +231,7 @@ export const PostGig = () => {
       return
     }
 
-    updatePlayer({ money: player.money - 200 })
+    updatePlayer({ money: Math.max(0, player.money - 200) })
     updateSocial({ controversyLevel: Math.max(0, (social.controversyLevel || 0) - 25) })
     addToast('Story Spun. Controversy reduced.', 'success')
   }, [player, social, updatePlayer, updateSocial, addToast])

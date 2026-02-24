@@ -160,7 +160,7 @@ export const createInitialState = () => ({
     performance: { ...DEFAULT_BAND_STATE.performance },
     inventory: { ...DEFAULT_BAND_STATE.inventory }
   },
-  social: { ...DEFAULT_SOCIAL_STATE },
+  social: { ...DEFAULT_SOCIAL_STATE, activeDeals: [...DEFAULT_SOCIAL_STATE.activeDeals] },
   settings: { ...DEFAULT_SETTINGS },
   gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
   minigame: { ...DEFAULT_MINIGAME_STATE }

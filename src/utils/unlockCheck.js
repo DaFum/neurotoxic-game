@@ -42,7 +42,7 @@ export const checkTraitUnlocks = (state, context = {}) => {
 
     // Melodic Genius (Marius): Slow Song (<120 BPM) && Max Combo > 30
     if (marius && !hasTrait(marius, 'melodic_genius')) {
-      const isSlow = (song?.bpm || 0) < 120
+      const isSlow = (typeof song?.bpm === 'number') && song.bpm < 120
       if (isSlow && maxCombo > 30) {
         newUnlocks.push({ memberId: marius.name, traitId: 'melodic_genius' })
       }

@@ -62,6 +62,10 @@ export const getGigModifiers = (bandState, gigModifiers = {}) => {
 export const calculateGigPhysics = (bandState, song) => {
   const members = Array.isArray(bandState.members) ? bandState.members : []
 
+  // Pre-calculate song properties
+  const isSlowSong = song.bpm < 120
+  const isTechnicalSong = (song.difficulty || 2) > 3
+
   // 1. Hit Windows based on Skill
   // Formula: Base 150ms + (Skill * 5ms)
   const matze = members.find(m => m.name === CHARACTERS.MATZE.name)
@@ -103,8 +107,6 @@ export const calculateGigPhysics = (bandState, song) => {
 
   // Check Song Speed (High BPM)
   const isFastSong = song.bpm > 160
-  const isSlowSong = song.bpm < 120
-  const isTechnicalSong = (song.difficulty || 2) > 3
 
   // Lars: Blast Beat Machine
   if (lars && isFastSong && hasTrait(lars, 'blast_machine')) {

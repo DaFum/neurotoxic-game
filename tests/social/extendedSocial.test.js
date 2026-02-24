@@ -22,19 +22,32 @@ describe('Extended Social & Trait Systems', () => {
       const gameState = {
         player: { money: 1000 },
         band: { members: [], harmony: 80 },
-        social: { trend: 'DRAMA' }
+        social: { trend: 'DRAMA' } // Trend is DRAMA
       }
 
       const mockGigResult = {}
-      // Using a deterministic RNG to check weighting logic is tricky without mocking math.random deeply,
-      // but we can check if options are filtered correctly or if it runs without error.
-      // Ideally we would mock Math.random to verify the weight boost, but for now we verify execution.
 
-      const options = generatePostOptions(mockGigResult, gameState)
+      // Mock Math.random to deterministically pick weighted options
+      // Weights: Normal = 1.0, Trending = 11.0 (1.0 + 10.0 bonus)
+      // We want to verify that DRAMA options are prioritized.
+
+      // Since sorting is b._weight - a._weight, highly weighted items appear first.
+      // We can inspect if the returned options include DRAMA items more often or at top.
+      // But generatePostOptions randomizes inside the map: weight * rng().
+
+      // Let's force rng to return 0.99 for everyone so raw weight dominates.
+      const mockRng = () => 0.99
+
+      const options = generatePostOptions(mockGigResult, gameState, mockRng)
+
       assert.ok(Array.isArray(options), 'Should return array of options')
       assert.strictEqual(options.length, 3, 'Should always return 3 options')
 
-      // Basic sanity check that it runs with a trend
+      // The first option should likely be a DRAMA option because of the massive weight boost (11 vs 1)
+      // Assuming at least one Drama option is available in POST_OPTIONS
+      const firstOption = options[0]
+      // Note: POST_OPTIONS must have Drama items. 'drama_leaked_dms' is one.
+      assert.strictEqual(firstOption.category, 'Drama', 'Top weighted option should be the trending category (Drama)')
     })
   })
 

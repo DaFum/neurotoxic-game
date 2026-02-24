@@ -482,7 +482,7 @@ export const POST_OPTIONS = [
     name: 'Wholesome Band Dinner',
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Lifestyle', // Fits WHOLESOME trend logic
-    badges: [POST_BADGES.SAFE, '🛡️'], // Explicitly adding shield for logic check
+    badges: [POST_BADGES.SAFE],
     condition: ({ band }) => band.harmony > 50,
     resolve: () => ({
       type: 'FIXED',
@@ -521,6 +521,7 @@ export const POST_OPTIONS = [
     resolve: ({ diceRoll }) => {
       if (diceRoll < 0.6) {
         return {
+          type: 'RNG_SUCCESS',
           success: true,
           platform: SOCIAL_PLATFORMS.TIKTOK.id,
           followers: 4000,
@@ -529,6 +530,7 @@ export const POST_OPTIONS = [
         }
       } else {
         return {
+          type: 'RNG_FAIL',
           success: false,
           platform: SOCIAL_PLATFORMS.TIKTOK.id,
           followers: -1000,

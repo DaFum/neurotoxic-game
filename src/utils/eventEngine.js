@@ -290,7 +290,7 @@ export const eventEngine = {
 
     // Track Stage Dive attempts for unlocking 'showman'
     // Moved outside of skillCheck block because this choice is direct
-    if (gameState.activeEvent?.id === 'gig_mid_stage_diver' && choice.label.includes('Let it happen')) {
+    if (gameState.activeEvent?.id === 'gig_mid_stage_diver' && choice.flags?.includes('stageDive')) {
       if (result.type === 'composite') {
           result = { ...result, effects: [...result.effects] }
       } else {

@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 
 export const CompletePhase = ({ result, onContinue, onSpinStory, player, social }) => {
-  const hasPR = player.hqUpgrades?.includes('pr_manager_contract')
+  const hasPR = player?.hqUpgrades?.includes('pr_manager_contract')
   const isHighControversy = (social?.controversyLevel || 0) > 50
 
   return (
@@ -15,7 +15,7 @@ export const CompletePhase = ({ result, onContinue, onSpinStory, player, social 
       initial={{ scale: 0.5, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
-      className={`text-4xl font-[Metal_Mania] mb-4 ${
+      className={`text-4xl font-[var(--font-display)] mb-4 ${
         result.success
           ? 'text-(--toxic-green) drop-shadow-[0_0_20px_var(--toxic-green)] animate-neon-flicker'
           : 'text-(--blood-red)'
@@ -90,10 +90,11 @@ export const CompletePhase = ({ result, onContinue, onSpinStory, player, social 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.9 }}
-      className="flex flex-col gap-4 items-center"
+      className='flex flex-col gap-4 items-center'
     >
-      {hasPR && isHighControversy && (
+      {hasPR && isHighControversy && onSpinStory && (
         <button
+          type="button"
           onClick={onSpinStory}
           className='bg-(--blood-red) text-(--star-white) px-6 py-2 font-bold hover:bg-(--star-white) hover:text-(--blood-red) border-2 border-(--blood-red) uppercase tracking-wider text-sm'
         >
@@ -102,6 +103,7 @@ export const CompletePhase = ({ result, onContinue, onSpinStory, player, social 
       )}
 
       <button
+        type="button"
         onClick={onContinue}
         className='bg-(--toxic-green) text-(--void-black) px-8 py-3 font-bold hover:bg-(--star-white) uppercase tracking-wider shadow-[4px_4px_0px_var(--void-black)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all'
       >
@@ -116,7 +118,6 @@ CompletePhase.propTypes = {
   result: PropTypes.shape({
     success: PropTypes.bool.isRequired,
     message: PropTypes.string.isRequired,
-    followers: PropTypes.number,
     totalFollowers: PropTypes.number.isRequired,
     platform: PropTypes.string.isRequired
   }).isRequired,
