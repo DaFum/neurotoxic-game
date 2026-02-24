@@ -179,6 +179,8 @@ Panel.propTypes = {
   className: PropTypes.string
 }
 
+import { useEffect } from 'react'
+
 /**
  * Modal - A shared overlay component.
  * @param {Object} props
@@ -188,15 +190,31 @@ Panel.propTypes = {
  * @param {React.ReactNode} props.children - Content.
  */
 export const Modal = ({ isOpen, onClose, title, children }) => {
+  useEffect(() => {
+    const handleKeyDown = e => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose()
+      }
+    }
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown)
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
+
   if (!isOpen) return null
 
   return (
     <div
-      className='fixed inset-0 z-50 flex items-center justify-center bg-(--void-black)/90'
+      className='fixed inset-0 z-50 flex items-center justify-center bg-(--void-black)/90 cursor-pointer'
       role='dialog'
       aria-modal='true'
+      onClick={onClose}
     >
-      <div className='w-full max-w-md border-4 border-(--toxic-green) p-6 bg-(--void-black) shadow-[0_0_25px_var(--toxic-green-glow)]'>
+      <div
+        className='w-full max-w-md border-4 border-(--toxic-green) p-6 bg-(--void-black) shadow-[0_0_25px_var(--toxic-green-glow)] cursor-auto'
+        onClick={e => e.stopPropagation()}
+      >
         {title && (
           <h2 className='text-3xl font-[Metal_Mania] text-(--toxic-green) mb-4 uppercase tracking-widest text-center'>
             {title}
