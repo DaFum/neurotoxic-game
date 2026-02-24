@@ -83,8 +83,25 @@ export class EffectManager {
 
     // Cap active effects using MAX_ACTIVE_EFFECTS
     while (this.activeEffects.length >= EffectManager.MAX_ACTIVE_EFFECTS) {
-      const oldest = this.activeEffects.shift()
+      // Find oldest effect (lowest life)
+      let oldestIndex = 0
+      let minLife = 2.0 // Life starts at 1.0
+
+      for (let i = 0; i < this.activeEffects.length; i++) {
+        if (this.activeEffects[i].life < minLife) {
+          minLife = this.activeEffects[i].life
+          oldestIndex = i
+        }
+      }
+
+      const oldest = this.activeEffects[oldestIndex]
       this.releaseEffectToPool(oldest)
+
+      // Swap-and-pop removal
+      const last = this.activeEffects.pop()
+      if (oldestIndex < this.activeEffects.length) {
+        this.activeEffects[oldestIndex] = last
+      }
     }
 
     // Determine texture based on color (Red component dominance)
@@ -142,8 +159,13 @@ export class EffectManager {
       effect.life -= deltaSec * 3 // Fade out speed
 
       if (effect.life <= 0) {
-        this.activeEffects.splice(i, 1)
         this.releaseEffectToPool(effect)
+
+        // Swap-and-pop removal
+        const last = this.activeEffects.pop()
+        if (i < this.activeEffects.length) {
+          this.activeEffects[i] = last
+        }
       } else {
         effect.alpha = effect.life
         effect.scale.set(0.5 + (1.0 - effect.life) * 1.5) // Expand from 0.5 to 2.0
