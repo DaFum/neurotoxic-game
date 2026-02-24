@@ -120,13 +120,7 @@ test('generatePostOptions returns array of exactly 3 options', () => {
   assert.equal(options.length, 3, 'Should have exactly 3 options')
 })
 
-test('generatePostOptions includes expected options based on game state', () => {
-  // Safe option always passes
-  const options = generatePostOptions({}, mockGameState)
-  const safeTitle = options.some(opt => opt.id === 'perf_acoustic_cover')
-  assert.ok(options.length === 3, 'Has 3 options')
-})
-
+// Removed redundant and flaky expected-option test
 test('generatePostOptions forces sponsor post if active', () => {
   const sponsoredState = { ...mockGameState, social: { ...mockGameState.social, sponsorActive: true, instagram: 6000 } }
   const options = generatePostOptions({}, sponsoredState)

@@ -146,7 +146,7 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
     dailyCost -= adRevenue // Can result in net positive daily income if huge 
   }
   
-  // Newsletter Merch Sales Perk
+  // Newsletter Merch Sales Perk (Note: Can result in net daily income/negative dailyCost)
   if ((nextSocial.newsletter || 0) >= 1000 && rng() < 0.3) {
     dailyCost -= Math.floor((nextSocial.newsletter || 0) / 100) * 5
   }
@@ -231,6 +231,7 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
   nextBand.harmony = Math.max(1, Math.min(100, nextBand.harmony))
 
   // 3. Social Decay
+  nextSocial.viral = nextSocial.viral || 0
   // Viral decay
   if (nextSocial.viral > 0) nextSocial.viral -= 1
   

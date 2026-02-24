@@ -3,6 +3,7 @@ import { secureRandom } from './crypto.js'
 import { POST_OPTIONS } from '../data/postOptions.js'
 import { SOCIAL_PLATFORMS } from '../data/platforms.js'
 import { bandHasTrait } from './traitLogic.js'
+import { StateError } from './errorHandler.js'
 
 /**
  * Calculates viral potential based on performance and events.
@@ -45,8 +46,7 @@ export const generatePostOptions = (gigResult, gameState, rng = secureRandom) =>
     try {
       return opt.condition(gameState)
     } catch (e) {
-      console.warn(`Condition failed for post option ${opt.id}:`, e)
-      return false
+      throw new StateError(`Condition failed for post option ${opt.id}`, { cause: e, meta: { optId: opt.id, gameState } })
     }
   })
 
@@ -96,8 +96,7 @@ export const generatePostOptions = (gigResult, gameState, rng = secureRandom) =>
  */
 export const resolvePost = (postOption, gameState, diceRoll = secureRandom()) => {
   if (!postOption.resolve) {
-    console.error(`Post option ${postOption.id} is missing a resolve function.`)
-    return { success: false, followers: 0, platform: postOption.platform || 'unknown', message: 'Failed to post.' }
+    throw new StateError(`Post option ${postOption.id} is missing a resolve function.`)
   }
 
   try {
@@ -121,8 +120,7 @@ export const resolvePost = (postOption, gameState, diceRoll = secureRandom()) =>
       egoClear: result.egoClear
     }
   } catch (e) {
-    console.error(`Resolution failed for post ${postOption.id}:`, e)
-    return { success: false, followers: 0, platform: postOption.platform, message: 'An error occurred while posting.' }
+    throw new StateError(`Resolution failed for post ${postOption.id}`, { cause: e, meta: { optId: postOption.id, gameState } })
   }
 }
 

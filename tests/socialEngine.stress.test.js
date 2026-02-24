@@ -35,6 +35,7 @@ const createRandomGameState = () => ({
     accuracy: Math.floor(Math.random() * 100),
     events: Math.random() > 0.5 ? ['stage_diver', 'influencer_spotted'] : []
   },
+  gigEvents: Math.random() > 0.5 ? ['stage_diver', 'influencer_spotted'] : [],
   activeEvent: Math.random() > 0.8 ? { id: 'van_breakdown', type: 'negative_travel' } : null
 })
 

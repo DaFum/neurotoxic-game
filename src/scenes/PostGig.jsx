@@ -11,9 +11,10 @@ import {
 import {
   generatePostOptions,
   resolvePost,
-  calculateSocialGrowth,
-  checkViralEvent
+  checkViralEvent,
+  calculateSocialGrowth
 } from '../utils/socialEngine'
+import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils'
 
 const PERF_SCORE_MIN = 30
 const PERF_SCORE_MAX = 100
@@ -89,14 +90,11 @@ export const PostGig = () => {
     }
   }, [
     financials,
-    currentGig,
-    lastGigStats,
+    currentGig?.id,
+    lastGigStats?.score,
     gigModifiers,
-    player,
-    band,
-    social,
-    activeEvent,
-    perfScore
+    perfScore,
+    activeEvent?.id
   ])
 
   const handlePostSelection = useCallback((option) => {
@@ -126,7 +124,7 @@ export const PostGig = () => {
     if (result.harmonyChange || result.allMembersMoodChange || result.allMembersStaminaChange || result.moodChange || result.staminaChange) {
       const newBand = { ...band }
       if (result.harmonyChange) {
-        newBand.harmony = newBand.harmony + result.harmonyChange
+        newBand.harmony = clampBandHarmony(newBand.harmony + result.harmonyChange)
       }
       if (result.allMembersMoodChange || result.allMembersStaminaChange || result.targetMember) {
         newBand.members = newBand.members.map(m => {
@@ -144,7 +142,7 @@ export const PostGig = () => {
     }
 
     if (result.moneyChange) {
-      updatePlayer({ money: Math.max(0, player.money + result.moneyChange) })
+      updatePlayer({ money: clampPlayerMoney(player.money + result.moneyChange) })
     }
 
     updateSocial({
@@ -373,7 +371,7 @@ const SocialOptionButton = memo(({ opt, index, onSelect }) => {
           {opt.name}
         </div>
         <div className='flex gap-1 text-sm bg-(--void-black) px-1 rounded'>
-          {opt.badges?.map((b, i) => <span key={i}>{b}</span>)}
+          {opt.badges?.map((b, i) => <span key={`${b}-${i}`}>{b}</span>)}
         </div>
       </div>
       <div className='text-xs text-(--ash-gray) font-mono space-y-1 mb-2 w-full'>
@@ -399,7 +397,7 @@ const SocialOptionButton = memo(({ opt, index, onSelect }) => {
           )}
         </div>
       </div>
-      <div className='absolute inset-0 bg-white/5 translate-x-[-100%] group-hover:animate-[shimmer_0.8s_ease-out] skew-x-12 pointer-events-none' />
+      <div className='absolute inset-0 bg-(--star-white)/5 translate-x-[-100%] group-hover:animate-[shimmer_0.8s_ease-out] skew-x-12 pointer-events-none' />
     </motion.button>
   )
 })
@@ -429,7 +427,7 @@ export const SocialPhase = ({ options, onSelect }) => (
     <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
       {options.map((opt, i) => (
         <SocialOptionButton
-          key={opt.id || i}
+          key={opt.id}
           opt={opt}
           index={i}
           onSelect={onSelect}
