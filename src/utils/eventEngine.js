@@ -284,30 +284,31 @@ export const eventEngine = {
         })
       }
 
-      // Track Stage Dive attempts for unlocking 'showman'
-      if (gameState.activeEvent?.id === 'gig_mid_stage_diver' && choice.label.includes('Let it happen')) {
-        if (result.type === 'composite') {
-           result = { ...result, effects: [...result.effects] }
-        } else {
-           const originalEffect = { ...result }
-           delete originalEffect.outcome
-           delete originalEffect.description
-           result = {
-             type: 'composite',
-             effects: [ originalEffect ],
-             outcome: result.outcome,
-             description: result.description
-           }
-        }
-        result.effects.push({
-          type: 'stat_increment',
-          stat: 'stageDives',
-          value: 1
-        })
-      }
-
     } else {
       result = { ...choice.effect, outcome: 'direct' }
+    }
+
+    // Track Stage Dive attempts for unlocking 'showman'
+    // Moved outside of skillCheck block because this choice is direct
+    if (gameState.activeEvent?.id === 'gig_mid_stage_diver' && choice.label.includes('Let it happen')) {
+      if (result.type === 'composite') {
+          result = { ...result, effects: [...result.effects] }
+      } else {
+          const originalEffect = { ...result }
+          delete originalEffect.outcome
+          delete originalEffect.description
+          result = {
+            type: 'composite',
+            effects: [ originalEffect ],
+            outcome: result.outcome,
+            description: result.description
+          }
+      }
+      result.effects.push({
+        type: 'stat_increment',
+        stat: 'stageDives',
+        value: 1
+      })
     }
 
     if (!result.nextEventId && choice.nextEventId) {

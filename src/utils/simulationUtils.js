@@ -103,6 +103,8 @@ export const calculateGigPhysics = (bandState, song) => {
 
   // Check Song Speed (High BPM)
   const isFastSong = song.bpm > 160
+  const isSlowSong = song.bpm < 120
+  const isTechnicalSong = (song.difficulty || 2) > 3
 
   // Lars: Blast Beat Machine
   if (lars && isFastSong && hasTrait(lars, 'blast_machine')) {

@@ -83,6 +83,8 @@ const validateSocial = social => {
     if (key === 'lastGigDay' && val === null) return
     if (key === 'egoFocus' && (val === null || typeof val === 'string')) return
     if (key === 'sponsorActive' && typeof val === 'boolean') return
+    if (key === 'trend' && typeof val === 'string') return
+    if (key === 'activeDeals' && Array.isArray(val)) return
     if (typeof val !== 'number') {
       throw new Error(`Social value "${key}" must be a number: ${val}`)
     }
