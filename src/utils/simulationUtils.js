@@ -108,20 +108,26 @@ export const calculateGigPhysics = (bandState, song) => {
     if (hasBlastTrait) multipliers.drums = 1.5
   }
 
+  // Perfektionist Trait (Matze)
+  const hasPerfektionist =
+    matze && matze.traits?.some(t => t.id === 'perfektionist')
+
   return {
     hitWindows,
     speedModifier,
     multipliers,
-    avgStamina
+    avgStamina,
+    hasPerfektionist
   }
 }
 
 /**
  * Calculates daily state updates including costs, mood drift, and decay.
  * @param {object} currentState - The full state before update.
+ * @param {Function} [rng=Math.random] - Random number generator for determinism.
  * @returns {object} The updated parts of state (player, band, social).
  */
-export const calculateDailyUpdates = currentState => {
+export const calculateDailyUpdates = (currentState, rng = Math.random) => {
   const nextPlayer = {
     ...currentState.player,
     day: currentState.player.day + 1
@@ -244,14 +250,26 @@ export const calculateDailyUpdates = currentState => {
       let stamina = typeof m.stamina === 'number' ? m.stamina : 100
 
       if (hasCoffee) mood += 2
-      if (hasBeerFridge) mood += 1
+      if (hasBeerFridge) {
+        mood += 1
+        // Party Animal Trait (Lars): Extra mood, but risk of stamina loss
+        if (
+          m.name === CHARACTERS.LARS.name &&
+          m.traits?.some(t => t.id === 'party_animal')
+        ) {
+          mood += 2
+          if (rng() < 0.3) {
+            stamina -= 5
+          }
+        }
+      }
       if (hasSofa) stamina += 3
       if (hasOldCouch) stamina += 1
 
       return {
         ...m,
         mood: Math.min(100, mood),
-        stamina: Math.min(100, stamina)
+        stamina: Math.max(0, Math.min(100, stamina))
       }
     })
   }

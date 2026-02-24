@@ -4,6 +4,7 @@ import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import { usePurchaseLogic } from '../hooks/usePurchaseLogic'
 import { StatsTab } from './bandhq/StatsTab'
+import { DetailedStatsTab } from './bandhq/DetailedStatsTab'
 import { ShopTab } from './bandhq/ShopTab'
 import { UpgradesTab } from './bandhq/UpgradesTab'
 import { SetlistTab } from './bandhq/SetlistTab'
@@ -109,7 +110,8 @@ export const BandHQ = ({
 
         {/* Navigation */}
         <div className='flex border-b-2 border-(--ash-gray) overflow-x-auto'>
-          {['STATS', 'SHOP', 'UPGRADES', 'SETLIST', 'SETTINGS'].map(tab => (
+          {/* Tabs: STATS, DETAILS, SHOP, UPGRADES, SETLIST, SETTINGS */}
+          {['STATS', 'DETAILS', 'SHOP', 'UPGRADES', 'SETLIST', 'SETTINGS'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -129,6 +131,10 @@ export const BandHQ = ({
         <div className='flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-(--void-black)'>
           {activeTab === 'STATS' && (
             <StatsTab player={player} band={band} social={social} />
+          )}
+
+          {activeTab === 'DETAILS' && (
+            <DetailedStatsTab player={player} band={band} social={social} />
           )}
 
           {activeTab === 'SHOP' && (
@@ -203,7 +209,9 @@ BandHQ.propTypes = {
   }).isRequired,
   social: PropTypes.shape({
     instagram: PropTypes.number,
-    tiktok: PropTypes.number
+    tiktok: PropTypes.number,
+    youtube: PropTypes.number,
+    newsletter: PropTypes.number
   }).isRequired,
   onClose: PropTypes.func.isRequired,
   updatePlayer: PropTypes.func.isRequired,

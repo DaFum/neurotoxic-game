@@ -278,8 +278,12 @@ const handleConsumeItem = (state, payload) => {
  * @param {Object} state - Current state
  * @returns {Object} Updated state
  */
-const handleAdvanceDay = state => {
-  const { player, band, social } = calculateDailyUpdates(state)
+const handleAdvanceDay = (state, payload) => {
+  const rng = payload?.rng || Math.random
+  // Validate RNG availability in tests if payload.rng is expected but missing?
+  // For now we fallback to Math.random but the logic is injected.
+
+  const { player, band, social } = calculateDailyUpdates(state, rng)
   const nextBand = { ...band }
   if (typeof nextBand.harmony === 'number') {
     nextBand.harmony = clampBandHarmony(nextBand.harmony)
@@ -369,7 +373,10 @@ const handleCompleteRoadieMinigame = (state, payload) => {
   logger.info('GameState', 'Roadie Minigame Complete', payload)
 
   // Apply Results
-  const { stress, repairCost } = calculateRoadieMinigameResult(equipmentDamage)
+  const { stress, repairCost } = calculateRoadieMinigameResult(
+    equipmentDamage,
+    state.band
+  )
 
   const nextBand = {
     ...state.band,
@@ -485,7 +492,7 @@ export const gameReducer = (state, action) => {
       return handleConsumeItem(state, action.payload)
 
     case ActionTypes.ADVANCE_DAY:
-      return handleAdvanceDay(state)
+      return handleAdvanceDay(state, action.payload)
 
     case ActionTypes.ADD_COOLDOWN:
       if (action.payload && !state.eventCooldowns.includes(action.payload)) {

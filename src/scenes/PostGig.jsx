@@ -74,7 +74,7 @@ export const PostGig = () => {
       })
       setFinancials(result)
 
-      const vScore = calculateViralityScore(perfScore, [], currentGig)
+      const vScore = calculateViralityScore(perfScore, [], currentGig, band)
       setPostOptions(generatePostOptions({ viralityScore: vScore }))
     }
   }, [
@@ -83,7 +83,7 @@ export const PostGig = () => {
     lastGigStats,
     gigModifiers,
     player,
-    band.inventory,
+    band, // Corrected dependency for virality calculation
     perfScore
   ])
 

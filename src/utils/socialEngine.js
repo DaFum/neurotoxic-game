@@ -12,7 +12,12 @@ const SOCIAL_PLATFORMS = {
 /**
  * Calculates viral potential based on performance and events.
  */
-export const calculateViralityScore = (performanceScore, gigEvents, venue) => {
+export const calculateViralityScore = (
+  performanceScore,
+  gigEvents,
+  venue,
+  bandState
+) => {
   let baseChance = 0.05 // 5%
 
   // Performance Multiplier
@@ -20,11 +25,20 @@ export const calculateViralityScore = (performanceScore, gigEvents, venue) => {
   else if (performanceScore > 75) baseChance *= 1.5
 
   // Venue Multiplier
-  if (venue.name.includes('Kaminstube')) baseChance *= 1.5 // Historical
+  if (venue?.name?.includes('Kaminstube')) baseChance *= 1.5 // Historical
 
   // Event Multiplier (e.g. "Stage Diver", "Influencer")
   if (gigEvents.includes('stage_diver')) baseChance *= 2.0
   if (gigEvents.includes('influencer_spotted')) baseChance *= 3.0
+
+  // Social Manager Trait: +15% virality chance
+  if (
+    bandState?.members?.some(m =>
+      m.traits?.some(t => t.id === 'social_manager')
+    )
+  ) {
+    baseChance *= 1.15
+  }
 
   // Cap at 90%
   return Math.min(0.9, baseChance)

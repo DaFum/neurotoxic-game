@@ -223,6 +223,21 @@ export const useRhythmGameScoring = ({
         const comboForScore = state.combo
         let finalScore = points + comboForScore * 10
         if (toxicModeActive) finalScore *= 4
+
+        // Update hits immediately for accuracy calculation
+        gameStateRef.current.stats.perfectHits++
+
+        // Perfektionist Trait (Matze): +15% score if accuracy > 85%
+        const currentAccuracy = calculateAccuracy(
+          gameStateRef.current.stats.perfectHits,
+          gameStateRef.current.stats.misses
+        )
+        setAccuracy(currentAccuracy)
+
+        if (state.modifiers.hasPerfektionist && currentAccuracy > 85) {
+          finalScore *= 1.15
+        }
+
         finalScore = Math.floor(finalScore)
 
         setScore(s => {
@@ -244,11 +259,6 @@ export const useRhythmGameScoring = ({
           gameStateRef.current.health = next
           return next
         })
-        gameStateRef.current.stats.perfectHits++
-        setAccuracy(calculateAccuracy(
-          gameStateRef.current.stats.perfectHits,
-          gameStateRef.current.stats.misses
-        ))
 
         if (!toxicModeActive) {
           setOverload(o => {
