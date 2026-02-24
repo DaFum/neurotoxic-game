@@ -1,6 +1,8 @@
 import PropTypes from 'prop-types'
 import { useState } from 'react'
-import { VolumeSlider, ActionButton, Modal } from './index'
+import { VolumeSlider } from './VolumeSlider'
+import { ActionButton } from './ActionButton'
+import { Modal } from './Modal'
 import { LOG_LEVELS } from '../../utils/logger.js'
 
 /**
