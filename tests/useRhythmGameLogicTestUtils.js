@@ -136,7 +136,7 @@ export const setupDefaultMockImplementation = (
   mockChangeScene,
   mockSetLastGigStats
 ) => {
-  mockUseGameState.mock.mockImplementation(() => ({
+  const defaultState = {
     setlist: ['jam'],
     band: { members: [] },
     activeEvent: null,
@@ -147,7 +147,8 @@ export const setupDefaultMockImplementation = (
     player: { currentNodeId: 'node1', money: 0 },
     changeScene: mockChangeScene,
     gigModifiers: {}
-  }))
+  }
+  mockUseGameState.mock.mockImplementation(() => defaultState)
 
   mockAudioManager.ensureAudioContext.mock.mockImplementation(async () => true)
   mockAudioEngine.startGigPlayback.mock.mockImplementation(async () => true)
