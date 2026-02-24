@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useCallback } from 'react'
 import { useGameState } from '../context/GameState'
 import { GlitchButton } from '../ui/GlitchButton'
 
@@ -7,6 +8,8 @@ import { GlitchButton } from '../ui/GlitchButton'
  */
 export const Credits = () => {
   const { changeScene } = useGameState()
+
+  const handleReturn = useCallback(() => changeScene('MENU'), [changeScene])
 
   const credits = [
     { role: 'VOCAL CODE VOMIT', name: 'Jules "Agent of Segfaults" Agent' },
@@ -78,7 +81,7 @@ export const Credits = () => {
       </div>
 
       <div className='absolute bottom-8 z-20'>
-        <GlitchButton onClick={() => changeScene('MENU')}>RETURN</GlitchButton>
+        <GlitchButton onClick={handleReturn}>RETURN</GlitchButton>
       </div>
     </div>
   )
