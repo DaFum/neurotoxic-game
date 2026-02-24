@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { SONGS_DB } from '../data/songs'
@@ -7,6 +7,7 @@ import { MODIFIER_COSTS } from '../utils/economyEngine'
 import { audioManager } from '../utils/AudioManager'
 import { getSongId } from '../utils/audio/songUtils'
 import { handleError } from '../utils/errorHandler'
+import GigModifierButton from '../ui/GigModifierButton'
 
 const GIG_MODIFIER_OPTIONS = [
   {
@@ -107,31 +108,35 @@ export const PreGig = () => {
     }
   }
 
-  /**
-   * Toggles a gig modifier (budget item).
-   * @param {string} key - The modifier key.
-   */
-  const toggleModifier = key => {
-    const isActive = gigModifiers[key]
-    const cost = MODIFIER_COSTS[key] || 0
-
-    if (!isActive) {
-      const projectedTotal = calculatedBudget + cost
-      if (projectedTotal > player.money) {
-        addToast('Not enough money for this upgrade!', 'error')
-        return
-      }
-    }
-
-    setGigModifiers({ [key]: !isActive })
-  }
-
   const calculatedBudget = useMemo(() => {
     return Object.entries(gigModifiers).reduce((acc, [key, active]) => {
       if (!active) return acc
       return acc + (MODIFIER_COSTS[key] || 0)
     }, 0)
   }, [gigModifiers])
+
+
+  /**
+   * Toggles a gig modifier (budget item).
+   * @param {string} key - The modifier key.
+   */
+  const toggleModifier = useCallback(
+    key => {
+      const isActive = gigModifiers[key]
+      const cost = MODIFIER_COSTS[key] || 0
+
+      if (!isActive) {
+        const projectedTotal = calculatedBudget + cost
+        if (projectedTotal > player.money) {
+          addToast('Not enough money for this upgrade!', 'error')
+          return
+        }
+      }
+
+      setGigModifiers({ [key]: !isActive })
+    },
+    [gigModifiers, calculatedBudget, player.money, addToast, setGigModifiers]
+  )
 
   return (
     <div className='w-full h-full flex flex-col items-center justify-center p-8 bg-(--void-black) text-(--star-white) relative'>
@@ -177,27 +182,12 @@ export const PreGig = () => {
           </h3>
           <div className='flex flex-col gap-2.5'>
             {GIG_MODIFIER_OPTIONS.map(item => (
-              <button
+              <GigModifierButton
                 key={item.key}
-                onClick={() => toggleModifier(item.key)}
-                className={`flex justify-between items-center p-3 border-2 transition-all group relative overflow-hidden
-                        ${
-                          gigModifiers[item.key]
-                            ? 'bg-(--toxic-green) text-black border-(--toxic-green) shadow-[0_0_10px_var(--toxic-green-20)]'
-                            : 'border-(--ash-gray)/30 hover:border-(--star-white)/60 text-(--ash-gray)'
-                        }`}
-              >
-                <span className='flex flex-col text-left'>
-                  <span className='font-bold text-sm'>{item.label}</span>
-                  <span className='text-[10px] opacity-70'>{item.desc}</span>
-                </span>
-                <span className='font-mono text-sm font-bold tabular-nums'>
-                  {item.cost}€
-                </span>
-                {!gigModifiers[item.key] && (
-                  <div className='absolute inset-0 bg-white/5 translate-x-[-100%] group-hover:animate-[shimmer_0.8s_ease-out] skew-x-12 pointer-events-none' />
-                )}
-              </button>
+                item={item}
+                isActive={!!gigModifiers[item.key]}
+                onClick={toggleModifier}
+              />
             ))}
 
             <div className='border-t border-(--ash-gray)/20 pt-2.5'>
