@@ -210,7 +210,8 @@ export const useTravelLogic = ({
       const { fuelLiters, totalCost } = calculateTravelExpenses(
         node,
         currentStartNode,
-        { van: player.van }
+        { van: player.van },
+        band
       )
 
       // Affordability check
@@ -415,7 +416,8 @@ export const useTravelLogic = ({
       const { dist, totalCost, fuelLiters } = calculateTravelExpenses(
         node,
         currentStartNode,
-        { van: player.van }
+        { van: player.van },
+        band
       )
 
       if (Math.max(0, player.money ?? 0) < totalCost) {
@@ -547,7 +549,7 @@ export const useTravelLogic = ({
       return
     }
 
-    if (checkSoftlock(gameMap, player)) {
+    if (checkSoftlock(gameMap, player, band)) {
       if (!timeoutRef.current) {
         logger.error('TravelLogic', 'GAME OVER: Stranded')
         addToast(
@@ -569,7 +571,7 @@ export const useTravelLogic = ({
         timeoutRef.current = null
       }
     }
-  }, [player, gameMap, isTraveling, changeScene, addToast])
+  }, [player, band, gameMap, isTraveling, changeScene, addToast])
 
   // Cleanup all timeouts on unmount
   useEffect(() => {

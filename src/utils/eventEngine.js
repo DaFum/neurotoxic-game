@@ -2,6 +2,7 @@ import { EVENTS_DB } from '../data/events/index.js'
 import { EVENT_STRINGS } from '../data/events/constants.js'
 import { logger } from './logger.js'
 import { secureRandom } from './crypto.js'
+import { bandHasTrait } from './traitLogic.js'
 
 /**
  * Filters and selects an event based on context, priority, and probability.
@@ -227,9 +228,7 @@ export const eventEngine = {
 
         if (
           gameState.activeEvent?.tags?.includes('conflict') &&
-          gameState.band?.members?.some(m =>
-            m.traits?.some(t => t.id === 'bandleader')
-          )
+          bandHasTrait(gameState.band, 'bandleader')
         ) {
           if (bandleaderRoll < 0.5) {
             savedByBandleader = true

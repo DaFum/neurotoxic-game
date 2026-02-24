@@ -1,12 +1,14 @@
 // Detailed Character Definitions and Traits
 //
 // Trait Implementation Status:
-// - blast_machine (Lars): Partially implemented (Score multiplier on fast songs)
-// - perfektionist (Matze): Pending
-// - gear_nerd (Matze): Pending
-// - party_animal (Lars): Pending
-// - bandleader (Marius): Pending
-// - social_manager (Marius): Pending
+// - blast_machine (Lars): Implemented
+// - perfektionist (Matze): Implemented
+// - gear_nerd (Matze): Implemented (Repair discount + Shop discount)
+// - party_animal (Lars): Partially Implemented (Fridge interaction)
+// - bandleader (Marius): Implemented
+// - social_manager (Marius): Implemented
+// - virtuoso (Matze): Implemented
+// - road_warrior (Marius): Implemented
 export const CHARACTERS = {
   MATZE: {
     name: 'Matze',
@@ -24,6 +26,12 @@ export const CHARACTERS = {
         name: 'Gear Nerd',
         desc: '-20% Equipment Costs',
         effect: 'discount_equip'
+      },
+      {
+        id: 'virtuoso',
+        name: 'Virtuoso',
+        desc: '+10% Hit Window',
+        effect: 'hit_window_bonus'
       }
     ],
     equipment: {
@@ -73,6 +81,12 @@ export const CHARACTERS = {
         name: 'Social Nerd',
         desc: '+15% Viral Chance',
         effect: 'viral_bonus'
+      },
+      {
+        id: 'road_warrior',
+        name: 'Road Warrior',
+        desc: '-15% Fuel Consumption',
+        effect: 'fuel_discount'
       }
     ],
     equipment: { bass: 'Ibanez SR505', amp: 'Ampeg SVT-3 Pro' }

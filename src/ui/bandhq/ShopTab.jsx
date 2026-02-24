@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import { HQ_ITEMS } from '../../data/hqItems'
 import { ShopItem } from './ShopItem'
 
-export const ShopTab = ({ player, handleBuy, isItemOwned, isItemDisabled, processingItemId }) => {
+export const ShopTab = ({ player, handleBuy, isItemOwned, isItemDisabled, getAdjustedCost, processingItemId }) => {
   return (
     <div className='max-h-[60vh] overflow-y-auto'>
       <div className='mb-4 text-right font-mono text-(--star-white)'>
@@ -16,6 +16,7 @@ export const ShopTab = ({ player, handleBuy, isItemOwned, isItemDisabled, proces
             item={item}
             isOwned={isItemOwned(item)}
             isDisabled={isItemDisabled(item)}
+            adjustedCost={getAdjustedCost ? getAdjustedCost(item) : undefined}
             onBuy={handleBuy}
             processingItemId={processingItemId}
           />
@@ -32,5 +33,6 @@ ShopTab.propTypes = {
   handleBuy: PropTypes.func.isRequired,
   isItemOwned: PropTypes.func.isRequired,
   isItemDisabled: PropTypes.func.isRequired,
+  getAdjustedCost: PropTypes.func,
   processingItemId: PropTypes.string
 }

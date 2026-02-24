@@ -1,4 +1,5 @@
 import { logger } from './logger.js'
+import { bandHasTrait } from './traitLogic.js'
 
 /**
  * Per-modifier costs used both in the PreGig UI preview and the PostGig expense calculation.
@@ -188,9 +189,10 @@ const calculateDistance = (nodeA, nodeB = null) => {
  * Calculates fuel consumption and cost based on distance and player upgrades.
  * @param {number} dist - The distance in km.
  * @param {object} [playerState=null] - Optional player state for upgrade checks.
+ * @param {object} [bandState=null] - Optional band state for trait checks.
  * @returns {object} { fuelLiters, fuelCost }
  */
-export const calculateFuelCost = (dist, playerState = null) => {
+export const calculateFuelCost = (dist, playerState = null, bandState = null) => {
   if (dist < 0) return { fuelLiters: 0, fuelCost: 0 }
 
   let fuelLiters = (dist / 100) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM
@@ -205,6 +207,11 @@ export const calculateFuelCost = (dist, playerState = null) => {
     fuelLiters *= 0.8 // 20% reduction
   }
 
+  // Road Warrior Trait: 15% discount on fuel consumption
+  if (bandHasTrait(bandState, 'road_warrior')) {
+    fuelLiters *= 0.85
+  }
+
   const fuelCost = Math.floor(
     fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE
   )
@@ -217,14 +224,16 @@ export const calculateFuelCost = (dist, playerState = null) => {
  * @param {object} node - The target node.
  * @param {object} [fromNode=null] - The source node.
  * @param {object} [playerState=null] - Optional player state for upgrade-aware costs.
+ * @param {object} [bandState=null] - Optional band state for trait checks.
  */
 export const calculateTravelExpenses = (
   node,
   fromNode = null,
-  playerState = null
+  playerState = null,
+  bandState = null
 ) => {
   const dist = calculateDistance(node, fromNode)
-  const { fuelLiters } = calculateFuelCost(dist, playerState)
+  const { fuelLiters } = calculateFuelCost(dist, playerState, bandState)
   const foodCost = 3 * EXPENSE_CONSTANTS.FOOD.FAST_FOOD // Band of 3
   const totalCost = foodCost
 
@@ -484,9 +493,7 @@ export const calculateRoadieMinigameResult = (equipmentDamage, bandState) => {
   let repairCost = Math.floor(safeDamage * 2)
 
   // Gear Nerd Trait: 20% discount on repairs
-  if (
-    bandState?.members?.some(m => m.traits?.some(t => t.id === 'gear_nerd'))
-  ) {
+  if (bandHasTrait(bandState, 'gear_nerd')) {
     repairCost = Math.floor(repairCost * 0.8)
   }
 

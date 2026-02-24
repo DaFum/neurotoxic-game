@@ -6,6 +6,7 @@
 
 import { useCallback } from 'react'
 import { handleError, StateError } from '../utils/errorHandler.js'
+import { bandHasTrait } from '../utils/traitLogic.js'
 
 /**
  * Selects the primary effect payload from catalog entries during migration.
@@ -35,6 +36,23 @@ export const usePurchaseLogic = ({
   updateBand,
   addToast
 }) => {
+  /**
+   * Calculates the adjusted cost of an item based on active traits.
+   * @param {Object} item - Item to check
+   * @returns {number} Adjusted cost
+   */
+  const getAdjustedCost = useCallback(
+    item => {
+      let cost = item.cost
+      // Gear Nerd Trait: 20% discount on equipment
+      if (item.category === 'GEAR' && bandHasTrait(band, 'gear_nerd')) {
+        cost = Math.floor(cost * 0.8)
+      }
+      return cost
+    },
+    [band]
+  )
+
   /**
    * Checks if an item is already owned
    * @param {Object} item - Item to check
@@ -72,9 +90,9 @@ export const usePurchaseLogic = ({
       const currencyValue = payingWithFame
         ? (player.fame ?? 0)
         : (player.money ?? 0)
-      return currencyValue >= item.cost
+      return currencyValue >= getAdjustedCost(item)
     },
-    [player.money, player.fame]
+    [player.money, player.fame, getAdjustedCost]
   )
 
   /**
@@ -302,6 +320,7 @@ export const usePurchaseLogic = ({
         const startingMoney = player.money ?? 0
         const startingFame = player.fame ?? 0
         const currencyValue = payingWithFame ? startingFame : startingMoney
+        const finalCost = getAdjustedCost(item)
 
         const isConsumable = effect.type === 'inventory_add'
         const isOwned = isItemOwned(item)
@@ -311,15 +330,15 @@ export const usePurchaseLogic = ({
           return false
         }
 
-        if (currencyValue < item.cost) {
+        if (currencyValue < finalCost) {
           addToast(`Not enough ${payingWithFame ? 'Fame' : 'Money'}!`, 'error')
           return false
         }
 
         // Build patches
         let playerPatch = payingWithFame
-          ? { fame: Math.max(0, startingFame - item.cost) }
-          : { money: Math.max(0, startingMoney - item.cost) }
+          ? { fame: Math.max(0, startingFame - finalCost) }
+          : { money: Math.max(0, startingMoney - finalCost) }
 
         let bandPatch = null
 
@@ -457,6 +476,7 @@ export const usePurchaseLogic = ({
     handleBuy,
     isItemOwned,
     canAfford,
-    isItemDisabled
+    isItemDisabled,
+    getAdjustedCost
   }
 }
