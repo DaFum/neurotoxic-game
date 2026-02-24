@@ -3,6 +3,7 @@ import { CHARACTERS } from '../data/characters.js'
 import { EXPENSE_CONSTANTS } from './economyEngine.js'
 import { applyReputationDecay } from './socialEngine.js'
 import { calcBaseBreakdownChance } from './upgradeUtils.js'
+import { hasTrait, bandHasTrait } from './traitLogic.js'
 
 /**
  * Derives dynamic game modifiers for the Gig scene based on band state and active toggles.
@@ -75,6 +76,11 @@ export const calculateGigPhysics = (bandState, song) => {
     bass: 150 + getMemberSkill(marius) * 5
   }
 
+  // Virtuoso Trait (Matze): +10% Hit Window
+  if (hasTrait(matze, 'virtuoso')) {
+    hitWindows.guitar *= 1.10
+  }
+
   // 2. Scroll Speed based on Global Stamina
   // Avg Stamina:
   // members array is already guarded above
@@ -99,18 +105,12 @@ export const calculateGigPhysics = (bandState, song) => {
   const isFastSong = song.bpm > 160
 
   // Lars: Blast Beat Machine
-  // Assuming we check 'traits' array on member objects
-  // Since state structure might vary, let's check safely
-  // TODO: implement remaining trait effects: perfektionist, gear_nerd, party_animal, bandleader, social_manager
-  if (lars && lars.traits && isFastSong) {
-    // Simple check if trait ID exists (assuming data structure from characters.js)
-    const hasBlastTrait = lars.traits.some(t => t.id === 'blast_machine')
-    if (hasBlastTrait) multipliers.drums = 1.5
+  if (lars && isFastSong && hasTrait(lars, 'blast_machine')) {
+    multipliers.drums = 1.5
   }
 
   // Perfektionist Trait (Matze)
-  const hasPerfektionist =
-    matze && matze.traits?.some(t => t.id === 'perfektionist')
+  const hasPerfektionist = hasTrait(matze, 'perfektionist')
 
   return {
     hitWindows,
@@ -292,7 +292,7 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
         // Party Animal Trait (Lars): Extra mood, but risk of stamina loss
         if (
           m.name === CHARACTERS.LARS.name &&
-          m.traits?.some(t => t.id === 'party_animal')
+          hasTrait(m, 'party_animal')
         ) {
           mood += 2
           if (rng() < 0.3) {

@@ -3,7 +3,7 @@ import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
 import { getPrimaryEffect } from '../../hooks/usePurchaseLogic'
 import { GlitchButton } from '../GlitchButton'
 
-export const ShopItem = ({ item, isOwned, isDisabled, onBuy, processingItemId }) => {
+export const ShopItem = ({ item, isOwned, isDisabled, adjustedCost, onBuy, processingItemId }) => {
 
   const primaryEffect = getPrimaryEffect(item)
   const isConsumable = primaryEffect?.type === 'inventory_add'
@@ -49,7 +49,14 @@ export const ShopItem = ({ item, isOwned, isDisabled, onBuy, processingItemId })
               : 'text-(--star-white)'
           }`}
         >
-          {item.cost} {item.currency === 'fame' ? '★' : '€'}
+          {adjustedCost !== undefined && adjustedCost < item.cost ? (
+            <>
+              <span className='line-through opacity-50 mr-2'>{item.cost}</span>
+              <span className='text-(--toxic-green)'>{adjustedCost}</span>
+            </>
+          ) : (
+            (adjustedCost !== undefined ? adjustedCost : item.cost)
+          )} {item.currency === 'fame' ? '★' : '€'}
         </span>
         <GlitchButton
           onClick={handlePurchase}
@@ -79,6 +86,7 @@ ShopItem.propTypes = {
   }).isRequired,
   isOwned: PropTypes.bool.isRequired,
   isDisabled: PropTypes.bool.isRequired,
+  adjustedCost: PropTypes.number,
   /** Callback executed on purchase attempt. Parent handles lock. */
   onBuy: PropTypes.func.isRequired,
   processingItemId: PropTypes.string

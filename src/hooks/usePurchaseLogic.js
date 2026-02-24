@@ -6,6 +6,10 @@
 
 import { useCallback } from 'react'
 import { handleError, StateError } from '../utils/errorHandler.js'
+import { bandHasTrait } from '../utils/traitLogic.js'
+import { checkTraitUnlocks } from '../utils/unlockCheck.js'
+import { applyTraitUnlocks } from '../utils/traitUtils.js'
+import { HQ_ITEMS } from '../data/hqItems.js'
 
 /**
  * Selects the primary effect payload from catalog entries during migration.
@@ -35,6 +39,23 @@ export const usePurchaseLogic = ({
   updateBand,
   addToast
 }) => {
+  /**
+   * Calculates the adjusted cost of an item based on active traits.
+   * @param {Object} item - Item to check
+   * @returns {number} Adjusted cost
+   */
+  const getAdjustedCost = useCallback(
+    item => {
+      let cost = item.cost
+      // Gear Nerd Trait: 20% discount on equipment (Money only to avoid fractional fame)
+      if (item.category === 'GEAR' && item.currency === 'money' && bandHasTrait(band, 'gear_nerd')) {
+        cost = Math.floor(cost * 0.8)
+      }
+      return cost
+    },
+    [band]
+  )
+
   /**
    * Checks if an item is already owned
    * @param {Object} item - Item to check
@@ -72,9 +93,9 @@ export const usePurchaseLogic = ({
       const currencyValue = payingWithFame
         ? (player.fame ?? 0)
         : (player.money ?? 0)
-      return currencyValue >= item.cost
+      return currencyValue >= getAdjustedCost(item)
     },
-    [player.money, player.fame]
+    [player.money, player.fame, getAdjustedCost]
   )
 
   /**
@@ -302,6 +323,7 @@ export const usePurchaseLogic = ({
         const startingMoney = player.money ?? 0
         const startingFame = player.fame ?? 0
         const currencyValue = payingWithFame ? startingFame : startingMoney
+        const finalCost = getAdjustedCost(item)
 
         const isConsumable = effect.type === 'inventory_add'
         const isOwned = isItemOwned(item)
@@ -311,15 +333,15 @@ export const usePurchaseLogic = ({
           return false
         }
 
-        if (currencyValue < item.cost) {
+        if (currencyValue < finalCost) {
           addToast(`Not enough ${payingWithFame ? 'Fame' : 'Money'}!`, 'error')
           return false
         }
 
         // Build patches
         let playerPatch = payingWithFame
-          ? { fame: Math.max(0, startingFame - item.cost) }
-          : { money: Math.max(0, startingMoney - item.cost) }
+          ? { fame: Math.max(0, startingFame - finalCost) }
+          : { money: Math.max(0, startingMoney - finalCost) }
 
         let bandPatch = null
 
@@ -413,7 +435,47 @@ export const usePurchaseLogic = ({
 
         // Apply updates
         updatePlayer(playerPatch)
-        if (bandPatch) updateBand(bandPatch)
+
+        // Check Purchase Unlocks
+        const nextPlayer = { ...player, ...playerPatch, van: { ...player.van, ...playerPatch.van } }
+        const nextBand = {
+          ...band,
+          ...(bandPatch || {}),
+          inventory: { ...band.inventory, ...(bandPatch?.inventory || {}) }
+        }
+
+        // Count ONLY gear items for gear_nerd check
+        // Match inventory keys against item effect keys (e.g. 'strings' matches effect.item: 'strings')
+        const allGearItems = [...(HQ_ITEMS.gear || []), ...(HQ_ITEMS.instruments || [])]
+        const gearCount = Object.entries(nextBand.inventory || {}).filter(([key, value]) => {
+          const isOwned = value === true || (typeof value === 'number' && value > 0)
+          if (!isOwned) return false
+          const itemDef = allGearItems.find(i => {
+            const e = i.effect || i.effects?.[0]
+            return (e?.item === key) || i.id === key
+          })
+          return itemDef && (itemDef.category === 'GEAR' || itemDef.category === 'INSTRUMENT')
+        }).length
+
+        const purchaseUnlocks = checkTraitUnlocks(
+          { player: nextPlayer, band: nextBand, social: {} },
+          { type: 'PURCHASE', item, inventory: nextBand.inventory, gearCount }
+        )
+
+        if (purchaseUnlocks.length > 0) {
+          const traitResult = applyTraitUnlocks({ band: nextBand, toasts: [] }, purchaseUnlocks)
+
+          // Apply combined band patch with trait unlock members
+          updateBand({ ...(bandPatch || {}), members: traitResult.band.members })
+
+          // Show generated toasts
+          traitResult.toasts.forEach(t => { addToast(t.message, t.type) })
+        } else {
+          // No unlocks — apply original bandPatch if it existed
+          if (bandPatch) updateBand(bandPatch)
+        }
+
+        // Player update was already called above
         addToast(`${item.name} purchased!`, 'success')
 
         return true
@@ -433,7 +495,8 @@ export const usePurchaseLogic = ({
       applyStatModifier,
       applyUnlockUpgrade,
       applyUnlockHQ,
-      applyPassive
+      applyPassive,
+      getAdjustedCost
     ]
   )
 
@@ -457,6 +520,7 @@ export const usePurchaseLogic = ({
     handleBuy,
     isItemOwned,
     canAfford,
-    isItemDisabled
+    isItemDisabled,
+    getAdjustedCost
   }
 }

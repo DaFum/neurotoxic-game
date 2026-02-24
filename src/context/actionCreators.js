@@ -257,3 +257,13 @@ export const createCompleteRoadieMinigameAction = equipmentDamage => ({
   type: ActionTypes.COMPLETE_ROADIE_MINIGAME,
   payload: { equipmentDamage }
 })
+
+/**
+ * Creates unlock trait action
+ * @param {Object} payload - { memberId, traitId }
+ * @returns {Object} Action object
+ */
+export const createUnlockTraitAction = (memberId, traitId) => ({
+  type: ActionTypes.UNLOCK_TRAIT,
+  payload: { memberId, traitId }
+})

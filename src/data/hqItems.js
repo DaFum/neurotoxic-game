@@ -4,6 +4,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_gear_strings',
       name: 'Saitensatz (10er Pack)',
+      category: 'GEAR',
       cost: 20, // Low cost consumable
       currency: 'money',
       img: 'ITEM_STRINGS',
@@ -13,6 +14,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_gear_cables',
       name: 'Goldkabel',
+      category: 'GEAR',
       cost: 50, // Mid-range cable cost
       currency: 'money',
       img: 'ITEM_CABLES',
@@ -22,6 +24,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_gear_drum_parts',
       name: 'Stick-Bundle & Felle',
+      category: 'GEAR',
       cost: 60, // Standard drum maintenance
       currency: 'money',
       img: 'ITEM_DRUM_PARTS',
@@ -32,6 +35,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_merch_shirts_bundle',
       name: 'Karton T-Shirts (25 Stk.)',
+      category: 'MERCH',
       cost: 150, // 6€/Shirt production cost
       currency: 'money',
       img: 'ITEM_MERCH_SHIRTS',
@@ -41,6 +45,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_merch_hoodies_bundle',
       name: 'Karton Hoodies (10 Stk.)',
+      category: 'MERCH',
       cost: 200, // 20€/Hoodie production cost
       currency: 'money',
       img: 'ITEM_MERCH_HOODIES',
@@ -50,6 +55,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_merch_patches_bundle',
       name: 'Karton Patches (50 Stk.)',
+      category: 'MERCH',
       cost: 50, // 1€/Patch production cost
       currency: 'money',
       img: 'ITEM_MERCH_PATCHES',
@@ -59,6 +65,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_merch_vinyl_bundle',
       name: 'Vinyl Pressung (20 Stk.)',
+      category: 'MERCH',
       cost: 300, // 15€/LP production cost
       currency: 'money',
       img: 'ITEM_MERCH_VINYL',
@@ -68,6 +75,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_merch_cds_bundle',
       name: 'CD Spindel (50 Stk.)',
+      category: 'MERCH',
       cost: 100, // 2€/CD production cost
       currency: 'money',
       img: 'ITEM_MERCH_CDS',
@@ -78,6 +86,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_gear_broken_pedal',
       name: 'Defektes Pedal (mit Klebeband)',
+      category: 'GEAR',
       cost: 10, // Scrap value
       currency: 'money',
       img: 'ITEM_BROKEN_PEDAL',
@@ -88,6 +97,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_gear_cheap_mics',
       name: 'Billigmikrofone (5er Pack)',
+      category: 'GEAR',
       cost: 80, // Very cheap for 5 mics
       currency: 'money',
       img: 'ITEM_CHEAP_MICS',
@@ -98,6 +108,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_gear_diy_patch_kit',
       name: 'DIY Patch-Kit',
+      category: 'GEAR',
       cost: 20, // Cheap sewing kit
       currency: 'money',
       img: 'ITEM_DIY_PATCH_KIT',
@@ -108,6 +119,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_gear_tour_food_canned',
       name: 'Dosenfutter (10er Pack)',
+      category: 'CONSUMABLE',
       cost: 30, // 3€/Can
       currency: 'money',
       img: 'ITEM_CANNED_FOOD',
@@ -117,6 +129,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_gear_tour_beer_bulk',
       name: 'Kasten Bier (30 Flaschen)',
+      category: 'CONSUMABLE',
       cost: 40, // Bulk discount beer
       currency: 'money',
       img: 'ITEM_BEER_CRATE',
@@ -128,6 +141,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_gear_lucky_rabbit_foot',
       name: 'Abgefahrene Hasenpfote',
+      category: 'GEAR',
       cost: 150, // Magic item cost
       currency: 'money',
       img: 'ITEM_RABBIT_FOOT',
@@ -137,6 +151,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_gear_duct_tape_roll',
       name: 'Panzertape (Industrie)',
+      category: 'GEAR',
       cost: 80, // High quality tape
       currency: 'money',
       img: 'ITEM_DUCT_TAPE',
@@ -151,6 +166,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_gear_incense_sticks',
       name: 'Räucherstäbchen "Nag Champa"',
+      category: 'GEAR',
       cost: 30, // Mood items
       currency: 'money',
       img: 'ITEM_INCENSE',
@@ -165,6 +181,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_gear_voodoo_doll',
       name: 'Nadelkissen Puppe',
+      category: 'GEAR',
       cost: 660, // Occult item cost (Adjusted to multiple of 10)
       currency: 'money',
       img: 'ITEM_VOODOO_DOLL',
@@ -177,6 +194,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_inst_guitar_custom',
       name: 'Custom 8-String Axt',
+      category: 'INSTRUMENT',
       cost: 2500, // High-end instrument
       currency: 'money',
       img: 'ITEM_GUITAR_CUSTOM',
@@ -186,6 +204,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_inst_guitar_flying_v',
       name: 'Rusty Flying V',
+      category: 'INSTRUMENT',
       cost: 1200, // Mid-range vintage
       currency: 'money',
       img: 'ITEM_GUITAR_V',
@@ -195,6 +214,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_inst_bass_sansamp',
       name: 'Darkglass Preamp',
+      category: 'INSTRUMENT',
       cost: 1800, // Pro gear
       currency: 'money',
       img: 'ITEM_BASS_PREAMP',
@@ -206,6 +226,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_inst_drum_trigger',
       name: 'Axis Longboards & Trigger',
+      category: 'INSTRUMENT',
       cost: 2200, // Pro drum gear
       currency: 'money',
       img: 'ITEM_DRUM_TRIGGER',
@@ -219,6 +240,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_inst_cowbell_inferno',
       name: 'Die Heilige Cowbell',
+      category: 'INSTRUMENT',
       cost: 500, // Meme instrument
       currency: 'money',
       img: 'ITEM_COWBELL',
@@ -233,6 +255,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_inst_second_guitar',
       name: 'Gebrauchte Zweitgitarre',
+      category: 'INSTRUMENT',
       cost: 500, // Backup gear
       currency: 'money',
       img: 'ITEM_GUITAR_CHEAP',
@@ -243,6 +266,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_inst_broken_drum_kit',
       name: 'Abgenutztes Drumkit',
+      category: 'INSTRUMENT',
       cost: 1000, // Beater kit
       currency: 'money',
       img: 'ITEM_DRUM_BROKEN',
@@ -256,6 +280,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_inst_bass_effect_pedal_cheap',
       name: 'Billiges Bass-Pedal',
+      category: 'INSTRUMENT',
       cost: 150, // Cheap FX
       currency: 'money',
       img: 'ITEM_PEDAL_CHEAP',
@@ -266,6 +291,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_inst_theremin_doom',
       name: 'Theremin des Todes',
+      category: 'INSTRUMENT',
       cost: 3000, // Boutique obscure instrument
       currency: 'money',
       img: 'ITEM_THEREMIN',
@@ -275,6 +301,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_inst_didgeridoo',
       name: 'Elektrisches Didgeridoo',
+      category: 'INSTRUMENT',
       cost: 900, // Niche instrument
       currency: 'money',
       img: 'ITEM_DIDGERIDOO',
@@ -286,6 +313,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_van_suspension',
       name: 'Verstärkte Aufhängung',
+      category: 'VAN',
       cost: 500, // Moderate upgrade
       currency: 'fame',
       img: 'ITEM_VAN_SUSPENSION',
@@ -300,6 +328,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_van_sound_system',
       name: 'Mobiles Studio',
+      category: 'VAN',
       cost: 1000, // Major upgrade
       currency: 'fame',
       img: 'ITEM_VAN_STUDIO',
@@ -309,6 +338,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_van_storage',
       name: 'Dachbox & Hänger',
+      category: 'VAN',
       cost: 800, // Utility upgrade
       currency: 'fame',
       img: 'ITEM_VAN_STORAGE',
@@ -323,6 +353,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_van_tuning',
       name: 'Motor Tuning',
+      category: 'VAN',
       cost: 1500, // Performance upgrade
       currency: 'fame',
       img: 'ITEM_VAN_TUNING',
@@ -333,6 +364,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_van_tyre_spare',
       name: 'Ersatzreifen (wenig Profil)',
+      category: 'VAN',
       cost: 100, // Cheap fix
       currency: 'fame',
       img: 'ITEM_VAN_TIRE',
@@ -347,6 +379,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_van_paint_job',
       name: 'Grauer Lack (DIY)',
+      category: 'VAN',
       cost: 300, // Cosmetic/Reputation
       currency: 'fame',
       img: 'ITEM_VAN_PAINT',
@@ -361,6 +394,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_van_sleeping_bags',
       name: 'Schlafsäcke (3 Stk.)',
+      category: 'VAN',
       cost: 150, // Survival gear
       currency: 'fame',
       img: 'ITEM_SLEEPING_BAGS',
@@ -370,6 +404,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_van_tape_glue',
       name: 'Klebeband & Kleber',
+      category: 'VAN',
       cost: 20, // Consumable fix
       currency: 'fame',
       img: 'ITEM_GLUE_TAPE',
@@ -380,6 +415,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_van_mattress',
       name: 'Stinkende Matratzen',
+      category: 'VAN',
       cost: 300, // QoL upgrade
       currency: 'fame',
       img: 'ITEM_MATTRESS',
@@ -394,6 +430,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_van_spoiler',
       name: 'Riesiger Heckspoiler',
+      category: 'VAN',
       cost: 200, // Cosmetic
       currency: 'fame',
       img: 'ITEM_SPOILER',
@@ -409,6 +446,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_van_disco',
       name: 'Disco Kugel',
+      category: 'VAN',
       cost: 600, // Vibe upgrade
       currency: 'fame',
       img: 'ITEM_DISCO_BALL',
@@ -418,6 +456,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_van_flamethrower',
       name: 'Auspuff-Flammenwerfer',
+      category: 'VAN',
       cost: 2500, // Extreme upgrade
       currency: 'fame',
       img: 'ITEM_FLAMETHROWER',
@@ -436,6 +475,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_room_coffee',
       name: 'Profi Espressomaschine',
+      category: 'HQ',
       cost: 400, // Appliance cost
       currency: 'money',
       img: 'ITEM_HQ_COFFEE',
@@ -445,6 +485,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_room_sofa',
       name: 'Ledercouch & Konsole',
+      category: 'HQ',
       cost: 600, // Furniture cost
       currency: 'money',
       img: 'ITEM_HQ_SOFA',
@@ -454,6 +495,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_room_marketing',
       name: 'Social Media Botnetz',
+      category: 'HQ',
       cost: 1000, // Service cost
       currency: 'fame',
       img: 'ITEM_HQ_BOTNET',
@@ -468,6 +510,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_room_label',
       name: 'Plattenvertrag (Indie)',
+      category: 'HQ',
       cost: 5000, // Major milestone cost
       currency: 'fame',
       img: 'ITEM_HQ_LABEL',
@@ -478,6 +521,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_room_old_couch',
       name: 'Durchgesessene Couch',
+      category: 'HQ',
       cost: 100, // Cheap furniture
       currency: 'money',
       img: 'ITEM_HQ_OLD_COUCH',
@@ -487,6 +531,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_room_poster_wall',
       name: 'DIY Posterwand',
+      category: 'HQ',
       cost: 50, // Decoration cost
       currency: 'money',
       img: 'ITEM_HQ_POSTERS',
@@ -496,6 +541,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_room_cheap_beer_fridge',
       name: 'Billig-Bier Kühlschrank',
+      category: 'HQ',
       cost: 200, // Appliance cost
       currency: 'money',
       img: 'ITEM_HQ_FRIDGE',
@@ -505,6 +551,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_room_diy_soundproofing',
       name: 'Eierkarton-Dämmung',
+      category: 'HQ',
       cost: 100, // Material cost
       currency: 'money',
       img: 'ITEM_HQ_EGGS',
@@ -515,6 +562,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_room_cat',
       name: 'Band-Katze "Satan"',
+      category: 'HQ',
       cost: 50, // Adoption fee
       currency: 'money',
       img: 'ITEM_HQ_CAT',
@@ -529,6 +577,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_room_beer_pipeline',
       name: 'Direkte Bierleitung',
+      category: 'HQ',
       cost: 2000, // Luxury installation
       currency: 'money',
       img: 'ITEM_HQ_PIPELINE',
@@ -543,6 +592,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_room_shrine',
       name: 'Schrein für Lemmy',
+      category: 'HQ',
       cost: 660, // Occult cost (Adjusted to multiple of 10)
       currency: 'fame',
       img: 'ITEM_HQ_SHRINE',
@@ -552,6 +602,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_room_skull',
       name: 'Echter Tierschädel',
+      category: 'HQ',
       cost: 300, // Decor cost
       currency: 'money',
       img: 'ITEM_HQ_SKULL',

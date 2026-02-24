@@ -589,3 +589,22 @@ test('calculateRepairCost calculates correctly', () => {
   // Current condition = 100. Cost = 0.
   assert.equal(calculateRepairCost(100), 0)
 })
+
+test('calculateFuelCost applies road_warrior trait discount', () => {
+  const dist = 100
+  // Without trait
+  const res1 = calculateFuelCost(dist, null, null)
+  assert.equal(res1.fuelLiters, 12)
+
+  // With trait
+  const bandState = {
+    members: [
+      {
+        traits: [{ id: 'road_warrior' }]
+      }
+    ]
+  }
+  const res2 = calculateFuelCost(dist, null, bandState)
+  // 12 * 0.85 = 10.2
+  assert.ok(Math.abs(res2.fuelLiters - 10.2) < 1e-6, 'fuelLiters within tolerance')
+})

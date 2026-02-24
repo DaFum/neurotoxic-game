@@ -34,11 +34,7 @@ export const calculateViralityScore = (
   if (gigEvents.includes('influencer_spotted')) baseChance *= 3.0
 
   // Social Manager Trait: +15% virality chance
-  if (
-    bandState?.members?.some(m =>
-      m.traits?.some(t => t.id === 'social_manager')
-    )
-  ) {
+  if (bandHasTrait(bandState, 'social_manager')) {
     baseChance *= 1.15
   }
 

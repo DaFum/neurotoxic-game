@@ -93,7 +93,13 @@ test('Minigame State Transitions', async (t) => {
       ...initialState,
       currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
       player: { ...initialState.player, money: 500 },
-      band: { ...initialState.band, harmony: 80 },
+      band: {
+        ...initialState.band,
+        harmony: 80,
+        members: initialState.band.members.map(m =>
+          m.name === 'Matze' ? { ...m, traits: [{ id: 'gear_nerd' }] } : m
+        )
+      },
       minigame: {
         ...DEFAULT_MINIGAME_STATE,
         active: true,

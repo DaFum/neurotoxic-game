@@ -61,7 +61,7 @@ export const BandHQ = ({
     addToast
   }
 
-  const { handleBuy, isItemOwned, isItemDisabled } =
+  const { handleBuy, isItemOwned, isItemDisabled, getAdjustedCost } =
     usePurchaseLogic(purchaseLogicParams)
 
   const handleBuyWithLock = async (item) => {
@@ -143,6 +143,7 @@ export const BandHQ = ({
               handleBuy={handleBuyWithLock}
               isItemOwned={isItemOwned}
               isItemDisabled={isItemDisabled}
+              getAdjustedCost={getAdjustedCost}
               processingItemId={processingItemId}
             />
           )}
@@ -154,6 +155,7 @@ export const BandHQ = ({
               handleBuy={handleBuyWithLock}
               isItemOwned={isItemOwned}
               isItemDisabled={isItemDisabled}
+              getAdjustedCost={getAdjustedCost}
               processingItemId={processingItemId}
             />
           )}

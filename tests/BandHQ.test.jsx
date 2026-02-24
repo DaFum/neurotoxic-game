@@ -35,7 +35,8 @@ mock.module('../src/hooks/usePurchaseLogic.js', {
     usePurchaseLogic: () => ({
       handleBuy: () => {},
       isItemOwned: () => false,
-      isItemDisabled: () => false
+      isItemDisabled: () => false,
+      getAdjustedCost: (item) => item.cost // Mock passthrough
     }),
     getPrimaryEffect: () => ({})
   }
@@ -45,7 +46,10 @@ mock.module('../src/ui/shared/index.jsx', {
   namedExports: {
     StatBox: () => React.createElement('div', { 'data-testid': 'stat-box' }),
     ProgressBar: () => React.createElement('div', { 'data-testid': 'progress-bar' }),
-    SettingsPanel: () => React.createElement('div', { 'data-testid': 'settings-panel' })
+    SettingsPanel: () => React.createElement('div', { 'data-testid': 'settings-panel' }),
+    Panel: ({ children }) => React.createElement('div', { 'data-testid': 'panel' }, children),
+    ActionButton: ({ children, type = 'button' }) => React.createElement('button', { 'data-testid': 'action-button', type }, children),
+    Tooltip: ({ children }) => React.createElement('div', { 'data-testid': 'tooltip' }, children)
   }
 })
 

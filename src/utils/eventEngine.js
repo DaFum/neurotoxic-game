@@ -2,6 +2,7 @@ import { EVENTS_DB } from '../data/events/index.js'
 import { EVENT_STRINGS } from '../data/events/constants.js'
 import { logger } from './logger.js'
 import { secureRandom } from './crypto.js'
+import { bandHasTrait } from './traitLogic.js'
 
 /**
  * Filters and selects an event based on context, priority, and probability.
@@ -123,6 +124,12 @@ const processEffect = (eff, delta) => {
       if (eff.stat === 'skill')
         delta.band.skill = (delta.band.skill || 0) + eff.value
       break
+    case 'stat_increment':
+      if (eff.stat === 'conflictsResolved') {
+        if (!delta.player.stats) delta.player.stats = {}
+        delta.player.stats.conflictsResolved = (delta.player.stats.conflictsResolved || 0) + eff.value
+      }
+      break
     case 'item':
       if (eff.item) {
         if (!delta.band.inventory) delta.band.inventory = {}
@@ -227,9 +234,7 @@ export const eventEngine = {
 
         if (
           gameState.activeEvent?.tags?.includes('conflict') &&
-          gameState.band?.members?.some(m =>
-            m.traits?.some(t => t.id === 'bandleader')
-          )
+          bandHasTrait(gameState.band, 'bandleader')
         ) {
           if (bandleaderRoll < 0.5) {
             savedByBandleader = true
@@ -248,6 +253,33 @@ export const eventEngine = {
           result = { ...failure, outcome: 'failure' }
         }
       }
+
+      // Track conflict resolution for unlocking 'bandleader'
+      if (result.outcome === 'success' && gameState.activeEvent?.tags?.includes('conflict')) {
+        if (result.type === 'composite') {
+           // DEEP CLONE: Break array reference to prevent mutating global EVENTS_DB
+           result = { ...result, effects: [...result.effects] }
+        } else {
+           // Convert simple result to composite to add stat tracking
+           const originalEffect = { ...result }
+           delete originalEffect.outcome
+           delete originalEffect.description
+           result = {
+             type: 'composite',
+             effects: [ originalEffect ],
+             outcome: 'success',
+             description: result.description
+           }
+        }
+
+        // Add the stat increment safely (array is now a fresh copy)
+        result.effects.push({
+          type: 'stat_increment',
+          stat: 'conflictsResolved',
+          value: 1
+        })
+      }
+
     } else {
       result = { ...choice.effect, outcome: 'direct' }
     }

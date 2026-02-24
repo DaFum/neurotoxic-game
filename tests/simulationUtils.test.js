@@ -405,3 +405,24 @@ test('calculateDailyUpdates handles missing lastGigDay safely', () => {
 
   assert.equal(social.instagram, 100, 'Should not decay if lastGigDay missing')
 })
+
+test('calculateGigPhysics applies virtuoso trait hit window bonus', () => {
+  const song = { bpm: 120 }
+
+  const normalBand = buildBandWithMembers([
+    { name: 'Matze', baseStats: { skill: 8 }, traits: [] }
+  ])
+  const normalPhysics = calculateGigPhysics(normalBand, song)
+  const baseWindow = normalPhysics.hitWindows.guitar
+
+  const virtuosoBand = buildBandWithMembers([
+    { name: 'Matze', baseStats: { skill: 8 }, traits: [{ id: 'virtuoso' }] }
+  ])
+  const virtuosoPhysics = calculateGigPhysics(virtuosoBand, song)
+
+  // 10% bonus
+  assert.ok(
+    Math.abs(virtuosoPhysics.hitWindows.guitar - baseWindow * 1.1) < 1e-6,
+    'Guitar hit window should be increased by 10%'
+  )
+})

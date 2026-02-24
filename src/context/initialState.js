@@ -30,7 +30,11 @@ export const DEFAULT_PLAYER_STATE = {
     upgrades: [],
     breakdownChance: 0.05
   },
-  passiveFollowers: 0
+  passiveFollowers: 0,
+  stats: {
+    totalDistance: 0,
+    conflictsResolved: 0
+  }
 }
 
 /**
@@ -39,9 +43,9 @@ export const DEFAULT_PLAYER_STATE = {
  */
 export const DEFAULT_BAND_STATE = {
   members: [
-    { ...CHARACTERS.MATZE, mood: 80, stamina: 100 },
-    { ...CHARACTERS.LARS, mood: 80, stamina: 100 },
-    { ...CHARACTERS.MARIUS, mood: 80, stamina: 100 }
+    { ...CHARACTERS.MATZE, mood: 80, stamina: 100, traits: [] },
+    { ...CHARACTERS.LARS, mood: 80, stamina: 100, traits: [] },
+    { ...CHARACTERS.MARIUS, mood: 80, stamina: 100, traits: [] }
   ],
   harmony: 80,
   harmonyRegenTravel: false,
@@ -149,7 +153,7 @@ export const createInitialState = () => ({
   player: { ...DEFAULT_PLAYER_STATE, van: { ...DEFAULT_PLAYER_STATE.van } },
   band: {
     ...DEFAULT_BAND_STATE,
-    members: DEFAULT_BAND_STATE.members.map(m => ({ ...m })),
+    members: DEFAULT_BAND_STATE.members.map(m => ({ ...m, traits: [...m.traits] })),
     performance: { ...DEFAULT_BAND_STATE.performance },
     inventory: { ...DEFAULT_BAND_STATE.inventory }
   },
