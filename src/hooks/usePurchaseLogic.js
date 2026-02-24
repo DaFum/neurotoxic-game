@@ -452,7 +452,8 @@ export const usePurchaseLogic = ({
       applyStatModifier,
       applyUnlockUpgrade,
       applyUnlockHQ,
-      applyPassive
+      applyPassive,
+      getAdjustedCost
     ]
   )
 

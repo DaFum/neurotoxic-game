@@ -48,7 +48,7 @@ mock.module('../src/ui/shared/index.jsx', {
     ProgressBar: () => React.createElement('div', { 'data-testid': 'progress-bar' }),
     SettingsPanel: () => React.createElement('div', { 'data-testid': 'settings-panel' }),
     Panel: ({ children }) => React.createElement('div', { 'data-testid': 'panel' }, children),
-    ActionButton: ({ children }) => React.createElement('button', { 'data-testid': 'action-button' }, children),
+    ActionButton: ({ children }) => React.createElement('button', { 'data-testid': 'action-button', type: 'button' }, children),
     Tooltip: ({ children }) => React.createElement('div', { 'data-testid': 'tooltip' }, children)
   }
 })

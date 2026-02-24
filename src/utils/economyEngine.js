@@ -485,6 +485,7 @@ export const calculateTravelMinigameResult = (damageTaken, itemsCollected) => {
 /**
  * Calculates effects of Roadie Minigame results.
  * @param {number} equipmentDamage - Total equipment damage.
+ * @param {object} bandState - Current band traits/state used by bandHasTrait.
  * @returns {object} { stress, repairCost }
  */
 export const calculateRoadieMinigameResult = (equipmentDamage, bandState) => {

@@ -421,5 +421,8 @@ test('calculateGigPhysics applies virtuoso trait hit window bonus', () => {
   const virtuosoPhysics = calculateGigPhysics(virtuosoBand, song)
 
   // 10% bonus
-  assert.equal(virtuosoPhysics.hitWindows.guitar, baseWindow * 1.1)
+  assert.ok(
+    Math.abs(virtuosoPhysics.hitWindows.guitar - baseWindow * 1.1) < 1e-6,
+    'Guitar hit window should be increased by 10%'
+  )
 })

@@ -606,5 +606,5 @@ test('calculateFuelCost applies road_warrior trait discount', () => {
   }
   const res2 = calculateFuelCost(dist, null, bandState)
   // 12 * 0.85 = 10.2
-  assert.equal(res2.fuelLiters, 10.2)
+  assert.ok(Math.abs(res2.fuelLiters - 10.2) < 1e-6, 'fuelLiters within tolerance')
 })
