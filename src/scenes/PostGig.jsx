@@ -104,7 +104,15 @@ export const PostGig = () => {
     const result = resolvePost(option, gameState, secureRandom())
 
     // Use checkViralEvent for bonus viral flag based on actual gig stats
-    const isGigViral = lastGigStats && checkViralEvent(lastGigStats)
+    // Pass context so trait bonuses (e.g. social_manager) are applied via calculateViralityScore
+    const isGigViral = lastGigStats && checkViralEvent(lastGigStats, {
+      context: {
+        perfScore,
+        band,
+        venue: currentGig?.venue,
+        events: lastGigStats?.events
+      }
+    })
     const gigViralBonus = isGigViral ? 1 : 0
 
     // Use calculateSocialGrowth for platform-aware organic growth on top of post

@@ -290,3 +290,27 @@ test('checkViralEvent handles random roll with modifiers', () => {
   assert.equal(checkViralEvent(stats, 0.1, 0.05), true) // roll < 0.11
   assert.equal(checkViralEvent(stats, 0.1, 0.15), false) // roll > 0.11
 })
+
+test('checkViralEvent uses calculateViralityScore when context is provided', () => {
+  const stats = { accuracy: 80, maxCombo: 10 }
+  // Use Marius as he usually has the trait, but specific name not required by current logic, just trait existence
+  const band = { members: [{ name: 'Marius', traits: [{ id: 'social_manager' }] }] }
+  const context = {
+    perfScore: 80,
+    band,
+    venue: { name: 'Club' },
+    events: []
+  }
+
+  // Logic recap:
+  // Base 0.05
+  // Perf > 75 -> 0.075
+  // Social Manager (+15%) -> 0.08625
+
+  // Roll 0.08
+  // With context: 0.08 < 0.08625 -> TRUE
+  // Without context (uses fallback base 0.01): 0.08 < 0.01 -> FALSE
+
+  assert.equal(checkViralEvent(stats, { roll: 0.08, context }), true)
+  assert.equal(checkViralEvent(stats, { roll: 0.08 }), false)
+})
