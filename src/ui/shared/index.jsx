@@ -73,6 +73,12 @@ StatBox.propTypes = {
   className: PropTypes.string
 }
 
+const SIZE_CLASSES = {
+  sm: 'h-3',
+  md: 'h-5',
+  mini: 'h-1.5'
+};
+
 /**
  * ProgressBar - Displays a progress bar with label
  * @param {Object} props
@@ -122,9 +128,9 @@ export const ProgressBar = memo(function ProgressBar({
         </div>
       )}
       <div
-        className={`w-full bg-(--void-black) border ${isMini ? 'border-(--ash-gray)/50 overflow-hidden' : 'border-(--ash-gray)'} ${
-          size === 'sm' ? 'h-3' : size === 'md' ? 'h-5' : 'h-1.5'
-        }`}
+        className={`w-full bg-(--void-black) border ${
+          isMini ? 'border-(--ash-gray)/50 overflow-hidden' : 'border-(--ash-gray)'
+        } ${SIZE_CLASSES[size] || SIZE_CLASSES.mini}`}
       >
         <div
           className={`h-full ${color} transition-all duration-500 ${warn ? 'animate-fuel-warning' : ''}`}
