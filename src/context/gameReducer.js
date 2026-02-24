@@ -18,7 +18,6 @@ import {
 } from '../utils/economyEngine.js'
 import { checkTraitUnlocks } from '../utils/unlockCheck.js'
 import { applyTraitUnlocks } from '../utils/traitUtils.js'
-import { CHARACTERS } from '../data/characters.js'
 import { logger } from '../utils/logger.js'
 import {
   createInitialState,
@@ -187,6 +186,7 @@ const handleLoadGame = (state, payload) => {
   if (Array.isArray(mergedBand.members)) {
     mergedBand.members = mergedBand.members.map(m => ({
       ...m,
+      traits: Array.isArray(m.traits) ? m.traits : [],
       mood: Math.max(
         0,
         Math.min(100, typeof m.mood === 'number' ? m.mood : 50)
@@ -540,22 +540,6 @@ export const gameReducer = (state, action) => {
     case ActionTypes.APPLY_EVENT_DELTA: {
       logger.info('GameState', 'Applying Event Delta', action.payload)
       const nextState = applyEventDelta(state, action.payload)
-
-      // If event involved conflict resolution (heuristic: mood change or specific flag?), check unlock
-      // Better: The payload itself doesn't carry 'resolved' flag easily unless we augment it.
-      // But applyEventDelta returns a new state. We can check heuristics.
-      // Or we assume `action.payload` might come from `resolveEventChoice` which knows if it was successful.
-      // Let's rely on checking `activeEvent` tags or `description` in payload if available?
-      // Actually `applyEventDelta` takes a delta object.
-      // Let's check `stats.conflictsResolved` which isn't tracked yet in delta.
-
-      // FIX: We need to increment `conflictsResolved` if the event was a conflict and result was success.
-      // This logic belongs in `resolveEventChoice` or here if we can detect it.
-      // Since `applyEventDelta` is generic, let's assume specific event logic handles the increment via 'stat' effect
-      // OR we add a specific check here.
-
-      // For now, let's assume 'conflict_resolved' flag is added to delta by eventEngine if successful.
-      // We will need to update eventEngine to output this signal.
 
       const eventUnlocks = checkTraitUnlocks(nextState, { type: 'EVENT_RESOLVED' })
       const traitResult = applyTraitUnlocks({ band: nextState.band, toasts: nextState.toasts }, eventUnlocks)

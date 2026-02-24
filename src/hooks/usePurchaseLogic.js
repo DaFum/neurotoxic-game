@@ -435,7 +435,6 @@ export const usePurchaseLogic = ({
 
         // Apply updates
         updatePlayer(playerPatch)
-        if (bandPatch) updateBand(bandPatch)
 
         // Check Purchase Unlocks
         const nextPlayer = { ...player, ...playerPatch, van: { ...player.van, ...playerPatch.van } }
@@ -446,13 +445,15 @@ export const usePurchaseLogic = ({
         }
 
         // Count ONLY gear items for gear_nerd check
-        // Filter inventory to only count items with category 'GEAR' or 'INSTRUMENT' (if applicable)
-        // HQ_ITEMS must be available.
+        // Match inventory keys against item effect keys (e.g. 'strings' matches effect.item: 'strings')
         const allGearItems = [...(HQ_ITEMS.gear || []), ...(HQ_ITEMS.instruments || [])]
         const gearCount = Object.entries(nextBand.inventory || {}).filter(([key, value]) => {
           const isOwned = value === true || (typeof value === 'number' && value > 0)
           if (!isOwned) return false
-          const itemDef = allGearItems.find(i => i.id === key)
+          const itemDef = allGearItems.find(i => {
+            const e = i.effect || i.effects?.[0]
+            return (e?.item === key) || i.id === key
+          })
           return itemDef && (itemDef.category === 'GEAR' || itemDef.category === 'INSTRUMENT')
         }).length
 
@@ -462,20 +463,15 @@ export const usePurchaseLogic = ({
         )
 
         if (purchaseUnlocks.length > 0) {
-          // Use applyTraitUnlocks to handle logic immutably and generate unique toasts
-          // However, we are in a hook, not a reducer. We need to update state and show toasts.
-          // Since we can't merge partial state easily into the reducer flow here without a big refactor,
-          // we will replicate the result of applyTraitUnlocks into updateBand calls.
-
           const traitResult = applyTraitUnlocks({ band: nextBand, toasts: [] }, purchaseUnlocks)
 
-          // Apply updated band members
+          // Apply combined band patch with trait unlock members
           updateBand({ ...(bandPatch || {}), members: traitResult.band.members })
 
           // Show generated toasts
-          traitResult.toasts.forEach(t => addToast(t.message, t.type))
+          traitResult.toasts.forEach(t => { addToast(t.message, t.type) })
         } else {
-          // If no unlocks, apply original bandPatch if it existed
+          // No unlocks — apply original bandPatch if it existed
           if (bandPatch) updateBand(bandPatch)
         }
 

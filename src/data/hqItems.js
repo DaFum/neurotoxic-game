@@ -194,7 +194,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_inst_guitar_custom',
       name: 'Custom 8-String Axt',
-      category: 'GEAR',
+      category: 'INSTRUMENT',
       cost: 2500, // High-end instrument
       currency: 'money',
       img: 'ITEM_GUITAR_CUSTOM',
@@ -204,7 +204,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_inst_guitar_flying_v',
       name: 'Rusty Flying V',
-      category: 'GEAR',
+      category: 'INSTRUMENT',
       cost: 1200, // Mid-range vintage
       currency: 'money',
       img: 'ITEM_GUITAR_V',
@@ -214,7 +214,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_inst_bass_sansamp',
       name: 'Darkglass Preamp',
-      category: 'GEAR',
+      category: 'INSTRUMENT',
       cost: 1800, // Pro gear
       currency: 'money',
       img: 'ITEM_BASS_PREAMP',
@@ -226,7 +226,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_inst_drum_trigger',
       name: 'Axis Longboards & Trigger',
-      category: 'GEAR',
+      category: 'INSTRUMENT',
       cost: 2200, // Pro drum gear
       currency: 'money',
       img: 'ITEM_DRUM_TRIGGER',
@@ -240,7 +240,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_inst_cowbell_inferno',
       name: 'Die Heilige Cowbell',
-      category: 'GEAR',
+      category: 'INSTRUMENT',
       cost: 500, // Meme instrument
       currency: 'money',
       img: 'ITEM_COWBELL',
@@ -255,7 +255,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_inst_second_guitar',
       name: 'Gebrauchte Zweitgitarre',
-      category: 'GEAR',
+      category: 'INSTRUMENT',
       cost: 500, // Backup gear
       currency: 'money',
       img: 'ITEM_GUITAR_CHEAP',
@@ -266,7 +266,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_inst_broken_drum_kit',
       name: 'Abgenutztes Drumkit',
-      category: 'GEAR',
+      category: 'INSTRUMENT',
       cost: 1000, // Beater kit
       currency: 'money',
       img: 'ITEM_DRUM_BROKEN',
@@ -280,7 +280,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_inst_bass_effect_pedal_cheap',
       name: 'Billiges Bass-Pedal',
-      category: 'GEAR',
+      category: 'INSTRUMENT',
       cost: 150, // Cheap FX
       currency: 'money',
       img: 'ITEM_PEDAL_CHEAP',
@@ -291,7 +291,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_inst_theremin_doom',
       name: 'Theremin des Todes',
-      category: 'GEAR',
+      category: 'INSTRUMENT',
       cost: 3000, // Boutique obscure instrument
       currency: 'money',
       img: 'ITEM_THEREMIN',
@@ -301,7 +301,7 @@ export const HQ_ITEMS = {
     {
       id: 'hq_inst_didgeridoo',
       name: 'Elektrisches Didgeridoo',
-      category: 'GEAR',
+      category: 'INSTRUMENT',
       cost: 900, // Niche instrument
       currency: 'money',
       img: 'ITEM_DIDGERIDOO',

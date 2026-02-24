@@ -13,21 +13,22 @@ export const Tooltip = ({ children, content, className = '' }) => {
   const tooltipId = useId()
 
   return (
-    <div
-      className={`relative ${className}`}
-      onMouseEnter={() => setIsVisible(true)}
-      onMouseLeave={() => setIsVisible(false)}
-      onFocus={() => setIsVisible(true)}
-      onBlur={() => setIsVisible(false)}
-      tabIndex={0}
-      aria-describedby={isVisible ? tooltipId : undefined}
-    >
-      {children}
+    <div className={`inline-block relative ${className}`}>
+      <span
+        tabIndex={0}
+        onMouseEnter={() => setIsVisible(true)}
+        onMouseLeave={() => setIsVisible(false)}
+        onFocus={() => setIsVisible(true)}
+        onBlur={() => setIsVisible(false)}
+        aria-describedby={isVisible ? tooltipId : undefined}
+      >
+        {children}
+      </span>
       {isVisible && (
         <div
           id={tooltipId}
           role="tooltip"
-          className='absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-(--void-black) border border-(--ash-gray) shadow-lg z-50 text-xs text-(--star-white)'
+          className='pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-(--void-black) border border-(--ash-gray) shadow-lg z-50 text-xs text-(--star-white)'
         >
           {content}
         </div>

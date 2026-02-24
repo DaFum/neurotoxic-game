@@ -1,6 +1,13 @@
 import { CHARACTERS } from '../data/characters.js'
 
 /**
+ * Monotonic counter for generating unique trait toast IDs.
+ * Mirrors the pattern used by createAddToastAction in actionCreators.js.
+ * @type {number}
+ */
+let traitToastIdCounter = 0
+
+/**
  * Applies unlocked traits to the band state immutably and generates toasts.
  * Handles multiple unlocks per member and avoids duplicates.
  *
@@ -12,16 +19,17 @@ export const applyTraitUnlocks = (currentState, unlocks) => {
   if (!unlocks || unlocks.length === 0) {
     return {
       band: currentState.band,
-      toasts: currentState.toasts
+      toasts: currentState.toasts ?? []
     }
   }
 
   // Create shallow copy of band and members for immutable update
+  const members = currentState.band?.members ?? []
   const nextBand = {
     ...currentState.band,
-    members: currentState.band.members.map(m => ({ ...m, traits: [...m.traits] }))
+    members: members.map(m => ({ ...m, traits: [...m.traits] }))
   }
-  const nextToasts = [...currentState.toasts]
+  const nextToasts = [...(currentState.toasts ?? [])]
 
   unlocks.forEach(u => {
     const memberIndex = nextBand.members.findIndex(m => m.name === u.memberId)
@@ -39,9 +47,9 @@ export const applyTraitUnlocks = (currentState, unlocks) => {
     // Apply trait
     member.traits.push(traitDef)
 
-    // Add toast
+    // Add toast with deterministic monotonic ID
     nextToasts.push({
-      id: Date.now() + Math.random(), // Unique ID preventing collisions
+      id: `trait-${Date.now()}-${++traitToastIdCounter}`,
       message: `Unlocked Trait: ${traitDef.name} (${u.memberId})`,
       type: 'success'
     })
