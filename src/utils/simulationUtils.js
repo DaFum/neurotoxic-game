@@ -183,9 +183,7 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
       (nextPlayer.van.condition ?? 100) - 2
     )
     // Increased breakdown chance when condition is low
-    // CRITICAL FIX: Reconstruct base breakdown chance from upgrades every day.
-    // Do NOT read nextPlayer.van.breakdownChance as base, or it compounds condition multipliers infinitely.
-
+    // Calculate base breakdown chance from upgrades every day to avoid compounding multipliers.
     const baseBreakdownChance = calcBaseBreakdownChance(
       nextPlayer.van.upgrades ?? []
     )
