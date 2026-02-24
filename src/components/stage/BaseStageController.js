@@ -53,6 +53,8 @@ export class BaseStageController {
         // Subclass logic goes here
         await this.setup()
 
+        if (this.isDisposed) return
+
         this.resizeObserver = new ResizeObserver(() => this.handleResize())
         this.resizeObserver.observe(container)
         this.app.ticker.add(this.handleTicker)

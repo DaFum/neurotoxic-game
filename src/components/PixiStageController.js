@@ -101,8 +101,7 @@ class PixiStageController extends BaseStageController {
    */
   manualUpdate(deltaMS) {
     if (!this.app || this.isDisposed) return
-    if (this.updateRef?.current) this.updateRef.current(deltaMS)
-    this.update(deltaMS)
+    this.handleTicker({ deltaMS })
   }
 
   /**
