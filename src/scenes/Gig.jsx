@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react'
 import { useGameState } from '../context/GameState'
 import { useRhythmGameLogic } from '../hooks/useRhythmGameLogic'
 import { useGigEffects } from '../hooks/useGigEffects'
@@ -28,6 +28,8 @@ export const Gig = () => {
   } = useGameState()
 
   const [isPaused, setIsPaused] = useState(false)
+  const hasInteractedRef = useRef(false)
+  const resumeBtnRef = useRef(null)
 
   useEffect(() => {
     if (!currentGig) {
@@ -44,18 +46,25 @@ export const Gig = () => {
   const { chaosContainerRef, chaosStyle, triggerBandAnimation, setBandMemberRef } = useGigEffects(stats)
 
   const handleTogglePause = useCallback(() => {
-    setIsPaused(prev => {
-      const next = !prev
-      if (next) {
-        pauseAudio()
-        addToast('PAUSED', 'info')
-      } else {
-        resumeAudio()
-        addToast('RESUMED', 'info')
-      }
-      return next
-    })
-  }, [addToast])
+    setIsPaused(prev => !prev)
+  }, [])
+
+  useEffect(() => {
+    if (!hasInteractedRef.current) {
+      if (isPaused) hasInteractedRef.current = true
+      return
+    }
+
+    if (isPaused) {
+      pauseAudio()
+      addToast('PAUSED', 'info')
+      // Focus resume button for a11y
+      setTimeout(() => resumeBtnRef.current?.focus(), 50)
+    } else {
+      resumeAudio()
+      addToast('RESUMED', 'info')
+    }
+  }, [isPaused, addToast])
 
   const handleQuitGig = useCallback(async () => {
     if (gameStateRef.current) {
@@ -66,14 +75,13 @@ export const Gig = () => {
     } catch (e) {
       handleError(e, { addToast, fallbackMessage: 'Audio cleanup failed.' })
     } finally {
-      if (gameStateRef.current) {
-        const snapshot = buildGigStatsSnapshot(
-          gameStateRef.current.score,
-          gameStateRef.current.stats,
-          gameStateRef.current.toxicTimeTotal
-        )
-        setLastGigStats(snapshot)
-      }
+      // Use fallback stats if gameStateRef is unavailable or uninitialized
+      const score = gameStateRef.current?.score || 0
+      const statsSnapshot = gameStateRef.current?.stats || {}
+      const toxicTime = gameStateRef.current?.toxicTimeTotal || 0
+
+      const snapshot = buildGigStatsSnapshot(score, statsSnapshot, toxicTime)
+      setLastGigStats(snapshot)
       changeScene('POSTGIG')
     }
   }, [changeScene, setLastGigStats, addToast, gameStateRef])
@@ -221,12 +229,16 @@ export const Gig = () => {
 
       {/* Pause Overlay */}
       {isPaused && (
-        <div className="absolute inset-0 z-[100] bg-(--void-black)/90 flex flex-col items-center justify-center pointer-events-auto">
+        <div
+          className="absolute inset-0 z-[100] bg-(--void-black)/90 flex flex-col items-center justify-center pointer-events-auto"
+          role="dialog"
+          aria-modal="true"
+        >
           <h2 className="text-6xl font-[Metal_Mania] text-(--toxic-green) mb-8 animate-pulse drop-shadow-[0_0_15px_var(--toxic-green)]">
             PAUSED
           </h2>
           <div className="flex flex-col gap-6 w-64">
-            <GlitchButton onClick={handleTogglePause} size="lg">
+            <GlitchButton ref={resumeBtnRef} onClick={handleTogglePause} size="lg">
               RESUME
             </GlitchButton>
             <GlitchButton onClick={handleQuitGig} variant="danger">

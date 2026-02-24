@@ -148,7 +148,9 @@ export const PostGig = () => {
 
     if (result.unlockTrait) {
       unlockTrait(result.unlockTrait.memberId, result.unlockTrait.traitId)
-      addToast(`Trait Unlocked: ${result.unlockTrait.traitId}`, 'success')
+      // Try to get a friendly name from trait metadata if available, else raw ID
+      const traitName = result.unlockTrait.traitId.replace(/_/g, ' ').toUpperCase()
+      addToast(`Trait Unlocked: ${traitName}`, 'success')
     }
 
     updateSocial({

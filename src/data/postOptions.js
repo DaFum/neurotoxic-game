@@ -438,21 +438,24 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Commercial',
     badges: [POST_BADGES.SAFE, POST_BADGES.COMMERCIAL],
-    condition: ({ band }) => band.inventory.golden_pick === true,
+    condition: ({ band }) => band?.inventory?.golden_pick === true,
     resolve: ({ band }) => {
-        // Matze is the guitarist usually.
-        const target = band.members[0].name // Matze
-        return {
-            type: 'FIXED',
-            success: true,
-            platform: SOCIAL_PLATFORMS.YOUTUBE.id,
-            followers: 1500,
-            moneyChange: 100,
-            targetMember: target,
-            moodChange: 20,
-            message: `${target} finally revealed the secret of the tone. Guitar nerds are losing it.`,
-            unlockTrait: { memberId: 'matze', traitId: 'gear_nerd' }
-        }
+      // Find potential gear nerd or fallback to first member
+      const member = band.members.find(m => m.traits?.some(t => t.id === 'gear_nerd')) || band.members[0]
+      const target = member.name
+      const memberId = member.id || 'matze' // Fallback id if not present on object
+
+      return {
+        type: 'FIXED',
+        success: true,
+        platform: SOCIAL_PLATFORMS.YOUTUBE.id,
+        followers: 1500,
+        moneyChange: 100,
+        targetMember: target,
+        moodChange: 20,
+        message: `${target} finally revealed the secret of the tone. Guitar nerds are losing it.`,
+        unlockTrait: { memberId, traitId: 'gear_nerd' }
+      }
     }
   }
 ]

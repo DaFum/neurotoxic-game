@@ -169,7 +169,7 @@ class RoadieStageController {
       // Use screen width for better drawing
       const width = this.app ? this.app.screen.width : 2000
       const height = this.app ? this.app.screen.height : 600
-      const cellH = height / 8 // dynamic height
+      const cellH = height / GRID_HEIGHT // dynamic height
 
       // Start zone (row 0)
       g.rect(0, 0, width, cellH)

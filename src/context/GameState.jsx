@@ -543,7 +543,12 @@ export const GameStateProvider = ({ children }) => {
       loadGame,
       deleteSave,
       resetState,
-      updateSettings
+      updateSettings,
+      startTravelMinigame,
+      completeTravelMinigame,
+      startRoadieMinigame,
+      completeRoadieMinigame,
+      unlockTrait
     ]
   )
 
