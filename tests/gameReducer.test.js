@@ -386,6 +386,56 @@ describe('gameReducer', () => {
       assert.ok(nextState.toasts[0].message.includes('Unlocked'), 'Toast should mention unlock')
     })
   })
+
+  describe('SET_LAST_GIG_STATS', () => {
+    it('should not check trait unlocks in practice mode', () => {
+      const testState = {
+        ...createInitialState(),
+        currentGig: { isPractice: true },
+        band: {
+          ...createInitialState().band,
+          members: [{ name: 'Matze', traits: [] }]
+        }
+      }
+
+      const action = {
+        type: ActionTypes.SET_LAST_GIG_STATS,
+        payload: { score: 10000, perfectHits: 50 }
+      }
+
+      const newState = gameReducer(testState, action)
+
+      assert.strictEqual(mockApplyTraitUnlocks.mock.calls.length, 0, 'Should not call applyTraitUnlocks')
+      assert.deepStrictEqual(newState.lastGigStats, action.payload)
+    })
+
+    it('should check trait unlocks in normal mode', () => {
+      const testState = {
+        ...createInitialState(),
+        currentGig: { isPractice: false },
+        band: {
+          ...createInitialState().band,
+          members: [{ name: 'Matze', traits: [] }]
+        }
+      }
+
+      const action = {
+        type: ActionTypes.SET_LAST_GIG_STATS,
+        payload: { score: 10000, perfectHits: 50 }
+      }
+
+      // We need to mock checkTraitUnlocks for this test to be truly isolated,
+      // but since it's imported inside the reducer file, we rely on its behavior or verify via applyTraitUnlocks
+      // Note: we can't easily spy on checkTraitUnlocks because it's a direct import in gameReducer.js
+      // However, we mock applyTraitUnlocks. gameReducer calls applyTraitUnlocks with result of checkTraitUnlocks.
+      // So if applyTraitUnlocks is called, we know the path was taken.
+
+      const newState = gameReducer(testState, action)
+
+      assert.strictEqual(mockApplyTraitUnlocks.mock.calls.length, 1, 'Should call applyTraitUnlocks')
+      assert.deepStrictEqual(newState.lastGigStats, action.payload)
+    })
+  })
 })
 
 describe('ActionTypes', () => {

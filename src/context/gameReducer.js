@@ -503,6 +503,13 @@ export const gameReducer = (state, action) => {
       return { ...state, setlist: action.payload }
 
     case ActionTypes.SET_LAST_GIG_STATS: {
+      // Prevent trait unlocks during practice mode
+      if (state.currentGig?.isPractice) {
+        return {
+          ...state,
+          lastGigStats: action.payload
+        }
+      }
       const performanceUnlocks = checkTraitUnlocks(state, { type: 'GIG_COMPLETE', gigStats: action.payload })
       const traitResult = applyTraitUnlocks(state, performanceUnlocks)
       return {
