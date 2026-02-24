@@ -536,7 +536,7 @@ const FinancialList = ({ items, type }) => (
   <ul className='space-y-2.5 text-sm font-mono'>
     {items.map((item, i) => (
       <motion.li
-        key={item.label}
+        key={`${item.label}-${i}`}
         initial={{ opacity: 0, x: type === 'income' ? -10 : 10 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.3 + i * 0.1 }}

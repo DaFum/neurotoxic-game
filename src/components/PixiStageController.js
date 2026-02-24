@@ -39,8 +39,7 @@ class PixiStageController extends BaseStageController {
 
     this.colorMatrix = new PIXI.ColorMatrixFilter()
     this.toxicFilters = [this.colorMatrix]
-    this.stageContainer = new PIXI.Container()
-    this.app.stage.addChild(this.stageContainer)
+    this.stageContainer = this.container
 
     // Initialize Managers and start loading assets in parallel
     this.crowdManager = new CrowdManager(this.app, this.stageContainer)
@@ -102,6 +101,7 @@ class PixiStageController extends BaseStageController {
    */
   manualUpdate(deltaMS) {
     if (!this.app || this.isDisposed) return
+    if (this.updateRef?.current) this.updateRef.current(deltaMS)
     this.update(deltaMS)
   }
 

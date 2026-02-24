@@ -119,6 +119,11 @@ describe('PixiStageController', () => {
       addEventListener: mock.fn(),
       removeEventListener: mock.fn()
     }
+    globalThis.ResizeObserver = class ResizeObserver {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    }
 
     // Reset mocks
     mockCrowdManager.init.mock.resetCalls()
@@ -163,6 +168,7 @@ describe('PixiStageController', () => {
 
   afterEach(() => {
     delete globalThis.window
+    delete globalThis.ResizeObserver
   })
 
   test('init initializes managers', async () => {
