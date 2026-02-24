@@ -12,16 +12,16 @@ Web-based Roguelike Tour Manager with rhythm action mechanics. Manage a Death Gr
 
 ## Tech Stack
 
-| Category    | Technology       | Version                     |
-| ----------- | ---------------- | --------------------------- |
-| Framework   | React            | 19.2.4                      |
-| Build       | Vite             | 7.3.1                       |
-| Language    | JavaScript       | ECMAScript 2021 (ESModules) |
-| Game Engine | Pixi.js          | 8.16.0                      |
-| Animation   | Framer Motion    | 12.34.3                     |
-| Styling     | Tailwind CSS     | 4.2.0                       |
-| Audio       | Tone.js          | 15.5.0                      |
-| Linting     | ESLint           | 10.0.1                      |
+| Category    | Technology    | Version                     |
+| ----------- | ------------- | --------------------------- |
+| Framework   | React         | 19.2.4                      |
+| Build       | Vite          | 7.3.1                       |
+| Language    | JavaScript    | ECMAScript 2021 (ESModules) |
+| Game Engine | Pixi.js       | 8.16.0                      |
+| Animation   | Framer Motion | 12.34.3                     |
+| Styling     | Tailwind CSS  | 4.2.0                       |
+| Audio       | Tone.js       | 15.5.0                      |
+| Linting     | ESLint        | 10.0.1                      |
 
 ## Visual Design System (STRICT)
 
@@ -299,4 +299,4 @@ npm run format   # Prettier
 
 **Remember**: Aesthetic coherence and functional stability over feature bloat.
 
-_Documentation sync: dependency/tooling baseline reviewed on 2026-02-23. Flow and Economy updates 2026-02-23._
+_Documentation sync: dependency/tooling baseline reviewed on 2026-02-23. Flow and Economy updates 2026-02-23. Social System Overhaul documented 2026-02-24._

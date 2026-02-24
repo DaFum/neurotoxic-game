@@ -21,8 +21,8 @@ Representative domains:
 - **`economyEngine.js`** exports `MODIFIER_COSTS` as the single source of truth for PreGig modifier costs. **Refactor Note**: Travel only consumes fuel liters and food money; gas money is paid only via Refuel. `calculateGigExpenses` excludes travel transport/food.
 - **`mapGenerator.js`** assigns `FESTIVAL` type for venues with capacity ≥ 1000.
 - **`gigStats.js`** exports `calculateAccuracy(perfectHits, misses)` and `buildGigStatsSnapshot`; the snapshot now includes `accuracy` (0–100). Tests in `tests/gigStats.test.js` verify this contract.
-- **`simulationUtils.js`** `calculateGigPhysics` returns `multipliers` (guitar/drums/bass) based on band traits. These values are merged into `gameStateRef.current.modifiers` by the audio hook so the scoring hook can apply them — do not read them directly from `calculateGigPhysics` output in scoring logic.
-- **`socialEngine.js`** `checkViralEvent` checks `stats.accuracy`; this field is now populated via `buildGigStatsSnapshot`.
+- **`simulationUtils.js`** returns daily passive updates, including Harmony drains from `social.egoFocus`, passive Platform Perks based on follower counts, and van degradation. `calculateGigPhysics` returns modifiers used by audio logic.
+- **`socialEngine.js`** checks virality via `checkViralEvent`, assigns dynamic post combinations via `generatePostOptions`, and resolves complex `POST_OPTIONS` side actions (`resolvePost`) impacting Band/Player/Social state.
 
 ## Code-Aligned Rules
 
@@ -56,4 +56,4 @@ npm run test
 npm run build
 ```
 
-_Last updated: 2026-02-23._
+_Last updated: 2026-02-24._

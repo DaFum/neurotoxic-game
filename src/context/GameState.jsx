@@ -325,7 +325,18 @@ export const GameStateProvider = ({ children }) => {
         const saved = localStorage.getItem('neurotoxic_v3_save')
         if (!saved) return false
 
-        const data = JSON.parse(saved)
+        const parsed = JSON.parse(saved)
+
+        // Merge loaded data with complete initial defaults for backwards compatibility
+        const defaultState = createInitialState()
+        const data = {
+          ...defaultState,
+          ...parsed,
+          player: { ...defaultState.player, ...parsed.player },
+          band: { ...defaultState.band, ...parsed.band },
+          social: { ...defaultState.social, ...parsed.social },
+          settings: { ...defaultState.settings, ...parsed.settings }
+        }
 
         // Validate Schema
         try {

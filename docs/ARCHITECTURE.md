@@ -40,6 +40,7 @@ src/
 │   ├── venues.js
 │   ├── songs.js
 │   ├── chatter.js
+│   ├── postOptions.js
 │   ├── upgrades.js
 │   ├── upgradeCatalog.js
 │   ├── hqItems.js
@@ -111,7 +112,7 @@ Global state lives in `GameStateProvider` and is mutated only through reducer ac
 - `currentScene`
 - `player` (money/day/time/location/van/fame/tutorial state)
 - `band` (members/harmony/inventory/performance)
-- `social`
+- `social` (platform followers, virality, controversy level, loyalty, ego focus)
 - `gameMap`
 - `currentGig`, `setlist`, `lastGigStats`
 - `activeEvent`, `pendingEvents`, `eventCooldowns`, `activeStoryFlags`
@@ -153,4 +154,4 @@ Global state lives in `GameStateProvider` and is mutated only through reducer ac
 
 ---
 
-_Last updated: 2026-02-23. Minigame architecture integrated._
+_Last updated: 2026-02-24. Social Engine architecture integrated._

@@ -84,8 +84,15 @@ Notes:
 
 ### Harmony
 
-- Updated by travel/events/gig outcomes.
+- Updated by travel/events/gig outcomes, and specific Social media posts.
 - Clamped in reducer to stay in valid gameplay range (`1..100`).
+- Passively drained by `social.egoFocus` (Lead Singer Syndrome) until resolved.
+
+### Social State
+
+- Follower counts decay passively during `ADVANCE_DAY` if no gig happens.
+- `controversyLevel` decays passively over time.
+- `loyalty` provides a multiplier floor for bad organic performances.
 
 ### Day progression
 
@@ -101,4 +108,4 @@ Gig internals are managed by rhythm hooks and Pixi stage runtime:
 
 ---
 
-_Last updated: 2026-02-23._
+_Last updated: 2026-02-24._

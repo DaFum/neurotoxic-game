@@ -81,8 +81,10 @@ const validateSocial = social => {
 
   Object.entries(social).forEach(([key, val]) => {
     if (key === 'lastGigDay' && val === null) return
+    if (key === 'egoFocus' && (val === null || typeof val === 'string')) return
+    if (key === 'sponsorActive' && typeof val === 'boolean') return
     if (typeof val !== 'number') {
-      throw new Error(`Social value "${key}" must be a number`)
+      throw new Error(`Social value "${key}" must be a number: ${val}`)
     }
   })
 }

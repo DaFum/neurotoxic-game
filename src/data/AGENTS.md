@@ -13,6 +13,7 @@ Core files:
 - `characters.js`, `venues.js` (FESTIVAL type assigned for Capacity ≥ 1000), `songs.js`
 - `hqItems.js`, `upgrades.js`, `upgradeCatalog.js`
 - `chatter.js`
+- `postOptions.js` (Dictionary for dynamic social media actions and side effects)
 - event aggregation entry: `events.js`
 
 ## Code-Aligned Data Rules
@@ -45,4 +46,4 @@ npm run test
 npm run build
 ```
 
-_Last updated: 2026-02-23._
+_Last updated: 2026-02-24._
