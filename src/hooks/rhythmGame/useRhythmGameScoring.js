@@ -216,6 +216,7 @@ export const useRhythmGameScoring = ({
           points *= state.modifiers.drumMultiplier || drumMultiplier
         }
         if (laneIndex === 0) points *= state.modifiers.guitarScoreMult || 1.0
+        if (laneIndex === 2) points *= state.modifiers.bassScoreMult || 1.0
 
         // Guestlist Effect: +20% score
         if (state.modifiers.guestlist) points *= 1.2

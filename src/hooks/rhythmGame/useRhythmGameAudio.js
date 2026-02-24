@@ -110,6 +110,8 @@ export const useRhythmGameAudio = ({
         drumMultiplier: physics.multipliers.drums,
         guitarScoreMult:
           physics.multipliers.guitar * (activeModifiers.guitarScoreMult ?? 1.0),
+        bassScoreMult:
+          physics.multipliers.bass * (activeModifiers.bassScoreMult ?? 1.0),
         hasPerfektionist: physics.hasPerfektionist
       }
       gameStateRef.current.modifiers = mergedModifiers

@@ -109,6 +109,28 @@ export const calculateGigPhysics = (bandState, song) => {
     multipliers.drums = 1.5
   }
 
+  // Lars: Party Animal (Crowd loves the energy)
+  if (lars && hasTrait(lars, 'party_animal')) {
+    multipliers.drums *= 1.1
+  }
+
+  // Matze: Gear Nerd (Reliable tone)
+  if (matze && hasTrait(matze, 'gear_nerd')) {
+    multipliers.guitar *= 1.1
+  }
+
+  // Marius: Social Nerd / Manager (Crowd Engagement)
+  if (marius && hasTrait(marius, 'social_manager')) {
+    multipliers.bass *= 1.1
+  }
+
+  // Marius: Bandleader (Coordination)
+  if (marius && hasTrait(marius, 'bandleader')) {
+    hitWindows.guitar += 5
+    hitWindows.drums += 5
+    hitWindows.bass += 5
+  }
+
   // Perfektionist Trait (Matze)
   const hasPerfektionist = hasTrait(matze, 'perfektionist')
 
