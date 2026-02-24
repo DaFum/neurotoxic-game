@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback, memo } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
@@ -87,7 +87,7 @@ export const PostGig = () => {
     perfScore
   ])
 
-  const handlePostSelection = option => {
+  const handlePostSelection = useCallback((option) => {
     const result = resolvePost(option, Math.random())
 
     // Use checkViralEvent for bonus viral flag based on actual gig stats
@@ -113,9 +113,9 @@ export const PostGig = () => {
     })
 
     setPhase('COMPLETE')
-  }
+  }, [lastGigStats, perfScore, social, player.day, updateSocial])
 
-  const handleContinue = () => {
+  const handleContinue = useCallback(() => {
     if (!financials) return
 
     const fameGain = 50 + Math.floor(perfScore * 1.5)
@@ -132,7 +132,11 @@ export const PostGig = () => {
     } else {
       changeScene('OVERWORLD')
     }
-  }
+  }, [financials, perfScore, player.money, player.fame, updatePlayer, addToast, changeScene])
+
+  const handleNextPhase = useCallback(() => {
+    setPhase('SOCIAL')
+  }, [])
 
   if (!financials)
     return (
@@ -168,7 +172,7 @@ export const PostGig = () => {
         {phase === 'REPORT' && (
           <ReportPhase
             financials={financials}
-            onNext={() => setPhase('SOCIAL')}
+            onNext={handleNextPhase}
           />
         )}
 
@@ -308,7 +312,49 @@ ReportPhase.propTypes = {
   onNext: PropTypes.func.isRequired
 }
 
-const SocialPhase = ({ options, onSelect }) => (
+const SocialOptionButton = memo(({ opt, index, onSelect }) => {
+  const handleClick = useCallback(() => onSelect(opt), [onSelect, opt])
+
+  return (
+    <motion.button
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.1 + index * 0.15 }}
+      onClick={handleClick}
+      className='border-2 border-(--toxic-green)/40 p-4 hover:bg-(--toxic-green)/10 hover:border-(--toxic-green) text-left group transition-all relative overflow-hidden'
+    >
+      <div className='font-bold mb-2 group-hover:text-(--toxic-green) transition-colors'>
+        {opt.title}
+      </div>
+      <div className='text-xs text-(--ash-gray) font-mono space-y-1'>
+        <div className='flex justify-between'>
+          <span>Platform</span>
+          <span className='text-(--star-white)/60'>{opt.platform}</span>
+        </div>
+        <div className='flex justify-between'>
+          <span>Viral Chance</span>
+          <span className='text-(--warning-yellow)'>
+            {Math.round((opt.viralChance ?? 0) * 100)}%
+          </span>
+        </div>
+      </div>
+      <div className='absolute inset-0 bg-white/5 translate-x-[-100%] group-hover:animate-[shimmer_0.8s_ease-out] skew-x-12 pointer-events-none' />
+    </motion.button>
+  )
+})
+
+SocialOptionButton.displayName = 'SocialOptionButton'
+SocialOptionButton.propTypes = {
+  opt: PropTypes.shape({
+    title: PropTypes.string.isRequired,
+    platform: PropTypes.string.isRequired,
+    viralChance: PropTypes.number
+  }).isRequired,
+  index: PropTypes.number.isRequired,
+  onSelect: PropTypes.func.isRequired
+}
+
+export const SocialPhase = ({ options, onSelect }) => (
   <div className='space-y-6'>
     <div className='text-center mb-2'>
       <h3 className='text-xl font-mono tracking-widest'>
@@ -320,31 +366,12 @@ const SocialPhase = ({ options, onSelect }) => (
     </div>
     <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
       {options.map((opt, i) => (
-        <motion.button
+        <SocialOptionButton
           key={i}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 + i * 0.15 }}
-          onClick={() => onSelect(opt)}
-          className='border-2 border-(--toxic-green)/40 p-4 hover:bg-(--toxic-green)/10 hover:border-(--toxic-green) text-left group transition-all relative overflow-hidden'
-        >
-          <div className='font-bold mb-2 group-hover:text-(--toxic-green) transition-colors'>
-            {opt.title}
-          </div>
-          <div className='text-xs text-(--ash-gray) font-mono space-y-1'>
-            <div className='flex justify-between'>
-              <span>Platform</span>
-              <span className='text-(--star-white)/60'>{opt.platform}</span>
-            </div>
-            <div className='flex justify-between'>
-              <span>Viral Chance</span>
-              <span className='text-(--warning-yellow)'>
-                {Math.round((opt.viralChance ?? 0) * 100)}%
-              </span>
-            </div>
-          </div>
-          <div className='absolute inset-0 bg-white/5 translate-x-[-100%] group-hover:animate-[shimmer_0.8s_ease-out] skew-x-12 pointer-events-none' />
-        </motion.button>
+          opt={opt}
+          index={i}
+          onSelect={onSelect}
+        />
       ))}
     </div>
   </div>
