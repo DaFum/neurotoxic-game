@@ -39,7 +39,7 @@ export const useRhythmGameScoring = ({
     setIsGameOver,
     setAccuracy
   } = setters
-  const { addToast, changeScene, setLastGigStats, endGig } = contextActions
+  const { addToast, setLastGigStats, endGig } = contextActions
 
   // Extract primitives from performance to stabilise callback dependency arrays
   const crowdDecay = performance?.crowdDecay ?? 1.0
