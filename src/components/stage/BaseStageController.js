@@ -20,12 +20,16 @@ export class BaseStageController {
   }
 
   async init(options = {}) {
+    this.isDisposed = false
     if (this.initPromise) return this.initPromise
 
     this.initPromise = (async () => {
       try {
         const container = this.containerRef.current
-        if (!container) return
+        if (!container) {
+          this.initPromise = null
+          return
+        }
 
         this.app = new PIXI.Application()
         await this.app.init({
@@ -49,7 +53,15 @@ export class BaseStageController {
         // Subclass logic goes here
         await this.setup()
 
-        window.addEventListener('resize', this.handleResize)
+        if (this.isDisposed) return
+
+        if (typeof ResizeObserver !== 'undefined') {
+          this.resizeObserver = new ResizeObserver(() => this.handleResize())
+          this.resizeObserver.observe(container)
+        } else {
+          window.addEventListener('resize', this.handleResize)
+          this._usingWindowResize = true
+        }
         this.app.ticker.add(this.handleTicker)
 
       } catch (e) {
@@ -80,7 +92,14 @@ export class BaseStageController {
   dispose() {
     this.isDisposed = true
     this.initPromise = null
-    window.removeEventListener('resize', this.handleResize)
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect()
+      this.resizeObserver = null
+    }
+    if (this._usingWindowResize) {
+      window.removeEventListener('resize', this.handleResize)
+      this._usingWindowResize = false
+    }
 
     if (this.app) {
       try {

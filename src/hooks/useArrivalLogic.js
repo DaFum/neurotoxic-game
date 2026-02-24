@@ -89,7 +89,8 @@ export const useArrivalLogic = ({ onShowHQ } = {}) => {
     addToast,
     band,
     gameMap,
-    player
+    player,
+    onShowHQ
   ])
 
   return { handleArrivalSequence }

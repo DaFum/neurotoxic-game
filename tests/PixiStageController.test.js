@@ -112,12 +112,19 @@ describe('PixiStageController', () => {
   let updateRef
   let statsRef
   let createPixiStageController
+  let originalResizeObserver
 
   beforeEach(async () => {
+    originalResizeObserver = globalThis.ResizeObserver
     globalThis.window = {
       devicePixelRatio: 1,
       addEventListener: mock.fn(),
       removeEventListener: mock.fn()
+    }
+    globalThis.ResizeObserver = class ResizeObserver {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
     }
 
     // Reset mocks
@@ -163,6 +170,11 @@ describe('PixiStageController', () => {
 
   afterEach(() => {
     delete globalThis.window
+    if (originalResizeObserver) {
+      globalThis.ResizeObserver = originalResizeObserver
+    } else {
+      delete globalThis.ResizeObserver
+    }
   })
 
   test('init initializes managers', async () => {
