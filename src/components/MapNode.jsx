@@ -1,6 +1,12 @@
-import { memo } from 'react'
+import { memo, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
+
+const VAN_STYLE = { transform: 'translate(0, -50%)' }
+const MOTION_INITIAL = { scale: 0 }
+const MOTION_ANIMATE = { scale: 1 }
+const MOTION_HOVER = { scale: 1.2, zIndex: 60 }
+const MOTION_NO_HOVER = {}
 
 export const MapNode = memo(
   ({
@@ -15,12 +21,14 @@ export const MapNode = memo(
     iconUrl,
     vanUrl
   }) => {
+    const positionStyle = useMemo(() => ({ left: `${node.x}%`, top: `${node.y}%` }), [node.x, node.y])
+
     // Determine visuals based on props
     if (visibility === 'hidden' && node.type !== 'START') {
       return (
         <div
           className='absolute w-6 h-6 flex items-center justify-center text-(--ash-gray) pointer-events-none'
-          style={{ left: `${node.x}%`, top: `${node.y}%` }}
+          style={positionStyle}
         >
           ?
         </div>
@@ -34,7 +42,7 @@ export const MapNode = memo(
           ${!isReachable && !isCurrent ? 'opacity-30 grayscale pointer-events-none' : 'opacity-100'}
           ${isReachable ? 'cursor-pointer' : ''}
       `}
-        style={{ left: `${node.x}%`, top: `${node.y}%` }}
+        style={positionStyle}
         onClick={() => handleTravel(node)}
         onMouseEnter={() => setHoveredNode(node)}
         onMouseLeave={() => setHoveredNode(null)}
@@ -59,7 +67,7 @@ export const MapNode = memo(
         {isCurrent && !isTraveling && (
           <div
             className='absolute pointer-events-none z-50'
-            style={{ transform: 'translate(0, -50%)' }}
+            style={VAN_STYLE}
           >
             <img
               src={vanUrl}
@@ -70,9 +78,9 @@ export const MapNode = memo(
         )}
 
         <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          whileHover={isReachable ? { scale: 1.2, zIndex: 60 } : {}}
+          initial={MOTION_INITIAL}
+          animate={MOTION_ANIMATE}
+          whileHover={isReachable ? MOTION_HOVER : MOTION_NO_HOVER}
         >
           <img
             src={iconUrl}
