@@ -39,7 +39,7 @@ export const useRhythmGameScoring = ({
     setIsGameOver,
     setAccuracy
   } = setters
-  const { addToast, changeScene, setLastGigStats } = contextActions
+  const { addToast, changeScene, setLastGigStats, endGig } = contextActions
 
   // Extract primitives from performance to stabilise callback dependency arrays
   const crowdDecay = performance?.crowdDecay ?? 1.0
@@ -133,7 +133,7 @@ export const useRhythmGameScoring = ({
                   gameStateRef.current.toxicTimeTotal
                 )
               )
-              changeScene('POSTGIG')
+              endGig()
             }, 4000)
           }
         }
@@ -143,7 +143,7 @@ export const useRhythmGameScoring = ({
     },
     [
       addToast,
-      changeScene,
+      endGig,
       setLastGigStats,
       gameStateRef,
       setCombo,

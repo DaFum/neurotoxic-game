@@ -149,9 +149,7 @@ describe('useRhythmGameLogic', () => {
       })
     })
 
-    // We can't guarantee synchronous endGig call here due to setTimeout in mock
-    // But we can check if the machinery is set up correctly in the loop test above
-    // Or we wait:
+    // Wait for async callback
     await act(async () => {
        await new Promise(r => setTimeout(r, 10))
     })
