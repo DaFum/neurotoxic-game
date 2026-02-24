@@ -49,53 +49,6 @@ export const Gig = () => {
     setIsPaused(prev => !prev)
   }, [])
 
-  useEffect(() => {
-    // Correct initial mount vs user interaction logic
-    if (!hasInteractedRef.current) {
-      // If user has not interacted yet, check if paused was triggered
-      if (!isPaused) {
-        // Initial state is unpaused, do nothing until interaction
-        return
-      }
-      // If paused is true on first effect run (shouldn't happen with default false, but safe)
-      // or if logic toggles it.
-      // We want to skip the "Resume" effect on mount.
-      // But if user clicks Pause, isPaused becomes true.
-      // We need to know if this is the *transition*.
-
-      // Actually, standard pattern:
-      // On mount (isPaused=false), do nothing.
-      // When isPaused changes to true -> Pause.
-      // When isPaused changes to false -> Resume.
-
-      // My fix logic:
-      if (isPaused) {
-         // First interaction was a Pause
-         pauseAudio()
-         addToast('PAUSED', 'info')
-         setTimeout(() => resumeBtnRef.current?.focus(), 50)
-         hasInteractedRef.current = true
-      } else {
-         // Still unpaused initial state, do not set interacted yet?
-         // Actually, we just need to ensure we don't call ResumeAudio on mount.
-         // ResumeAudio should only be called if we were previously paused.
-         // But isPaused tracks that.
-         // The issue is React Strict Mode might double invoke.
-         // hasInteractedRef guards against mount.
-      }
-      return
-    }
-
-    if (isPaused) {
-      pauseAudio()
-      addToast('PAUSED', 'info')
-      setTimeout(() => resumeBtnRef.current?.focus(), 50)
-    } else {
-      resumeAudio()
-      addToast('RESUMED', 'info')
-    }
-  }, [isPaused, addToast])
-
   // To properly implement the requested logic:
   // "if false and isPaused is false set hasInteractedRef.current = true and return" (Initial mount)
   // "but if hasInteractedRef.current is false and isPaused is true..." (Immediate pause? Unlikely but safe)
