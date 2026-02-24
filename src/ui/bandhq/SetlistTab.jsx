@@ -1,7 +1,11 @@
 import PropTypes from 'prop-types'
+import { useGameState } from '../../context/GameState'
+import { ActionButton } from '../shared'
 import { SONGS_DB } from '../../data/songs'
 
 export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
+  const { setCurrentGig, changeScene } = useGameState()
+
   const toggleSongInSetlist = songId => {
     const currentIndex = setlist.findIndex(
       s => (typeof s === 'string' ? s : s.id) === songId
@@ -26,8 +30,29 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
 
   return (
     <div className='max-h-[60vh] overflow-y-auto'>
-      <div className='mb-4 text-right font-mono text-(--star-white)'>
-        SELECTED: <span className='text-(--toxic-green)'>{setlist.length}</span>
+      <div className='flex justify-between items-center mb-4 font-mono text-(--star-white)'>
+        <ActionButton
+          onClick={() => {
+            if (setlist.length === 0) {
+              addToast('Select at least one song to practice!', 'warning')
+              return
+            }
+            setCurrentGig({
+              name: 'Rehearsal Room',
+              diff: 1,
+              venue: 'Band HQ',
+              description: 'Practice makes perfect.',
+              isPractice: true
+            })
+            changeScene('PRACTICE')
+          }}
+          className='px-4 py-2 text-sm'
+        >
+          START PRACTICE
+        </ActionButton>
+        <div>
+          SELECTED: <span className='text-(--toxic-green)'>{setlist.length}</span>
+        </div>
       </div>
       <div className='space-y-2 pb-4'>
         {SONGS_DB.map(song => {

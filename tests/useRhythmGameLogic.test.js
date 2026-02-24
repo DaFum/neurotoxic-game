@@ -7,6 +7,7 @@ import {
   setupRhythmGameLogicTest,
   createMockChangeScene,
   createMockSetLastGigStats,
+  createMockEndGig,
   setupDefaultMockImplementation,
   simulateGameLoopUpdate,
   resetAllMocks
@@ -25,6 +26,7 @@ const { useRhythmGameLogic } = await setupRhythmGameLogicTest()
 describe('useRhythmGameLogic', () => {
   let mockChangeScene
   let mockSetLastGigStats
+  let mockEndGig
 
   beforeEach(() => {
     // Reset mocks
@@ -32,8 +34,9 @@ describe('useRhythmGameLogic', () => {
 
     mockChangeScene = createMockChangeScene()
     mockSetLastGigStats = createMockSetLastGigStats()
+    mockEndGig = createMockEndGig()
 
-    setupDefaultMockImplementation(mockChangeScene, mockSetLastGigStats)
+    setupDefaultMockImplementation(mockChangeScene, mockSetLastGigStats, mockEndGig)
 
     setupJSDOM()
   })
@@ -104,7 +107,7 @@ describe('useRhythmGameLogic', () => {
     assert.equal(result.current.stats.combo, 1)
   })
 
-  test('transitions to POSTGIG when all notes are processed near song end', async () => {
+  test('calls endGig when all notes are processed near song end', async () => {
     mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 9800)
 
     const result = await initHook()
@@ -122,12 +125,10 @@ describe('useRhythmGameLogic', () => {
 
     assert.ok(mockAudioEngine.stopAudio.mock.calls.length >= 1)
     assert.ok(mockSetLastGigStats.mock.calls.length >= 1)
-    assert.ok(
-      mockChangeScene.mock.calls.some(call => call.arguments[0] === 'POSTGIG')
-    )
+    assert.ok(mockEndGig.mock.calls.length >= 1)
   })
 
-  test('transitions to POSTGIG when audio playback reports ended', async () => {
+  test('calls endGig when audio playback reports ended', async () => {
     mockAudioEngine.getGigTimeMs.mock.mockImplementation(() => 1000)
     mockAudioEngine.startGigPlayback.mock.mockImplementation(
       async ({ onEnded }) => {
@@ -148,8 +149,11 @@ describe('useRhythmGameLogic', () => {
       })
     })
 
-    assert.ok(
-      mockChangeScene.mock.calls.some(call => call.arguments[0] === 'POSTGIG')
-    )
+    // Wait for async callback
+    await act(async () => {
+       await new Promise(r => setTimeout(r, 10))
+    })
+
+    assert.ok(mockEndGig.mock.calls.length >= 1)
   })
 })

@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useCallback } from 'react'
 import { useGameState } from '../context/GameState'
 import { useRhythmGameState } from './rhythmGame/useRhythmGameState'
 import { useRhythmGameScoring } from './rhythmGame/useRhythmGameScoring'
@@ -21,7 +21,8 @@ export const useRhythmGameLogic = () => {
     gameMap,
     player,
     changeScene,
-    gigModifiers
+    gigModifiers,
+    endGig
   } = useGameState()
 
   // 1. Core State (React + Ref)
@@ -32,7 +33,7 @@ export const useRhythmGameLogic = () => {
     gameStateRef,
     setters,
     performance: band.performance, // Injected for dynamic stats
-    contextActions: { addToast, changeScene, setLastGigStats }
+    contextActions: { addToast, setLastGigStats, endGig }
   })
   const { activateToxicMode } = scoringActions
 
@@ -57,7 +58,11 @@ export const useRhythmGameLogic = () => {
     setters,
     state,
     contextState: { activeEvent },
-    contextActions: { setLastGigStats, changeScene }
+    contextActions: {
+      setLastGigStats,
+      endGig,
+      changeScene
+    }
   })
 
   // 5. Input Handling
