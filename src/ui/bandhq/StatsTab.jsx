@@ -20,7 +20,7 @@ export const StatsTab = ({ player, band, social }) => {
             <StatBox label='Day' value={player.day} icon='📅' />
             <StatBox
               label='Followers'
-              value={social.instagram + social.tiktok}
+              value={(social.instagram ?? 0) + (social.tiktok ?? 0) + (social.youtube ?? 0) + (social.newsletter ?? 0)}
               icon='👥'
             />
           </div>
