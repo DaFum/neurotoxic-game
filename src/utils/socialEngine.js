@@ -1,15 +1,8 @@
 // Logic for Social Media Virality and Posting
 import { secureRandom } from './crypto.js'
 import { POST_OPTIONS } from '../data/postOptions.js'
-
-// Platform metadata used internally by calculateSocialGrowth.
-// Not exported — UI consumers should use the social engine functions directly.
-export const SOCIAL_PLATFORMS = {
-  INSTAGRAM: { id: 'instagram', label: 'Instagram', multiplier: 1.2 },
-  TIKTOK: { id: 'tiktok', label: 'TikTok', multiplier: 1.5 }, // Volatile
-  YOUTUBE: { id: 'youtube', label: 'YouTube', multiplier: 0.8 },
-  NEWSLETTER: { id: 'newsletter', label: 'Newsletter', multiplier: 0.5 }
-}
+import { SOCIAL_PLATFORMS } from '../data/platforms.js'
+import { bandHasTrait } from './traitLogic.js'
 
 /**
  * Calculates viral potential based on performance and events.
@@ -46,7 +39,7 @@ export const calculateViralityScore = (
  * Generates options for the "Post-Gig Social Media Strategy" phase.
  * It evaluates conditions from POST_OPTIONS, assigns weights, and selects exactly 3.
  */
-export const generatePostOptions = (gigResult, gameState) => {
+export const generatePostOptions = (gigResult, gameState, rng = secureRandom) => {
   // 1. Evaluate and collect eligible options
   let eligibleOptions = POST_OPTIONS.filter(opt => {
     try {
@@ -75,7 +68,7 @@ export const generatePostOptions = (gigResult, gameState) => {
     let weight = 1.0
     // Example: If very low money, boost crowdfund weight
     if (opt.id === 'comm_crowdfund' && gameState.player.money < 100) weight += 50
-    return { ...opt, _weight: weight * secureRandom() }
+    return { ...opt, _weight: weight * rng() }
   })
 
   // 3. Sort by weight descending
@@ -124,7 +117,8 @@ export const resolvePost = (postOption, gameState, diceRoll = secureRandom()) =>
       targetMember: result.targetMember,
       allMembersMoodChange: result.allMembersMoodChange,
       allMembersStaminaChange: result.allMembersStaminaChange,
-      egoDrop: result.egoDrop
+      egoDrop: result.egoDrop,
+      egoClear: result.egoClear
     }
   } catch (e) {
     console.error(`Resolution failed for post ${postOption.id}:`, e)

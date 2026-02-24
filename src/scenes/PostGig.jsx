@@ -126,7 +126,7 @@ export const PostGig = () => {
     if (result.harmonyChange || result.allMembersMoodChange || result.allMembersStaminaChange || result.moodChange || result.staminaChange) {
       const newBand = { ...band }
       if (result.harmonyChange) {
-        newBand.harmony = Math.max(1, Math.min(100, newBand.harmony + result.harmonyChange))
+        newBand.harmony = newBand.harmony + result.harmonyChange
       }
       if (result.allMembersMoodChange || result.allMembersStaminaChange || result.targetMember) {
         newBand.members = newBand.members.map(m => {
@@ -429,7 +429,7 @@ export const SocialPhase = ({ options, onSelect }) => (
     <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
       {options.map((opt, i) => (
         <SocialOptionButton
-          key={i}
+          key={opt.id || i}
           opt={opt}
           index={i}
           onSelect={onSelect}
@@ -512,8 +512,8 @@ const CompletePhase = ({ result, onContinue }) => (
       ) : null}
       
       {result.controversyChange ? (
-         <div className='text-(--blood-red)'>
-           ⚠️ Controversy +{result.controversyChange}
+         <div className={result.controversyChange > 0 ? 'text-(--blood-red)' : 'text-(--toxic-green)'}>
+           {result.controversyChange > 0 ? '⚠️' : '🛡️'} Controversy {result.controversyChange > 0 ? '+' : ''}{result.controversyChange}
          </div>
       ) : null}
       

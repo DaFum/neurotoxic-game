@@ -205,7 +205,10 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
       stamina = Math.min(100, stamina + 3)
     }
 
-    return { ...m, mood, stamina }
+    // Instagram Gear Endorsement Perk (Free stamina recovery)
+    if ((nextSocial.instagram || 0) >= 10000) stamina += 2
+
+    return { ...m, mood, stamina: Math.min(100, stamina) }
   })
 
   // Harmony Decay (Drifts towards 50 like mood)
@@ -240,6 +243,9 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
   // Sponsor Trigger Metric
   if (!nextSocial.sponsorActive && (nextSocial.instagram || 0) > 5000 && rng() < 0.1) {
     nextSocial.sponsorActive = true
+  } else if (nextSocial.sponsorActive && (nextSocial.instagram || 0) < 5000) {
+    // If organic followers drop below milestone, they drop the sponsorship
+    nextSocial.sponsorActive = false
   }
 
   // TikTok Viral Surge Perk
@@ -302,9 +308,6 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
       }
       if (hasSofa) stamina += 3
       if (hasOldCouch) stamina += 1
-      
-      // Instagram Gear Endorsement Perk (Free stamina recovery)
-      if ((nextSocial.instagram || 0) >= 10000) stamina += 2
 
       return {
         ...m,

@@ -60,7 +60,7 @@ export const DetailedStatsTab = ({ player, band, social }) => {
             />
             <DetailRow 
               label="Controversy" 
-              value={`${social.controversyLevel || 0}/100`} 
+              value={`${Math.min(100, social.controversyLevel || 0)}/100`} 
               subtext={social.controversyLevel >= 100 ? "SHADOWBANNED (-75% Growth)" : "Risk of Shadowban"}
               locked={!isUnlocked(social.controversyLevel)} 
             />

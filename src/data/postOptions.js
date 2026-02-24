@@ -1,4 +1,4 @@
-import { SOCIAL_PLATFORMS } from '../utils/socialEngine'
+import { SOCIAL_PLATFORMS } from './platforms.js'
 
 export const POST_BADGES = {
   RISK: '⚠️',
@@ -17,18 +17,18 @@ export const POST_OPTIONS = [
   {
     id: 'perf_smashed_gear',
     name: 'Instrument Destruction Clip',
-    platform: 'tiktok',
+    platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Performance',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
     condition: ({ player }) => player.money > 500,
-    resolve: ({ band }) => {
+    resolve: ({ band, diceRoll }) => {
       // Pick a random member
       const memberNames = band.members.map(m => m.name)
-      const target = memberNames[Math.floor(Math.random() * memberNames.length)]
+      const target = memberNames[Math.floor(diceRoll * memberNames.length)]
       return {
         type: 'FIXED',
         success: true,
-        platform: 'tiktok',
+        platform: SOCIAL_PLATFORMS.TIKTOK.id,
         followers: 2500,
         moneyChange: -300,
         targetMember: target,
@@ -40,7 +40,7 @@ export const POST_OPTIONS = [
   {
     id: 'perf_acoustic_cover',
     name: 'Acoustic Backstage Cover',
-    platform: 'youtube',
+    platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Performance',
     badges: [POST_BADGES.SAFE],
     condition: () => true, // Always available
@@ -57,17 +57,18 @@ export const POST_OPTIONS = [
   {
     id: 'perf_ego_flex',
     name: 'Vocalist Ego Flex',
-    platform: 'instagram',
+    platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Performance',
     badges: [POST_BADGES.RISK],
     condition: ({ lastGigStats }) => lastGigStats && lastGigStats.score > 25000,
     resolve: ({ band }) => {
-      // Assuming Matze is lead/vocalist for now, or just the first member
-      const vocalist = band.members[0].name
+      // Dynamically select the lead singer or fallback to index 0
+      const vocalistObj = band.members.find(m => m.traits?.some(t => t.id === 'lead_singer')) || band.members[0]
+      const vocalist = vocalistObj.name
       return {
         type: 'FIXED',
         success: true,
-        platform: 'instagram',
+        platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
         followers: 1200,
         targetMember: vocalist,
         moodChange: 15,
@@ -80,14 +81,14 @@ export const POST_OPTIONS = [
   {
     id: 'perf_sound_guy_rant',
     name: 'Calling Out the Sound Guy',
-    platform: 'tiktok',
+    platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Performance',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
     condition: ({ lastGigStats }) => lastGigStats && lastGigStats.accuracy < 60,
     resolve: () => ({
       type: 'FIXED',
       success: true,
-      platform: 'tiktok',
+      platform: SOCIAL_PLATFORMS.TIKTOK.id,
       followers: 1500,
       controversyChange: 10,
       staminaChange: -5,
@@ -99,7 +100,7 @@ export const POST_OPTIONS = [
   {
     id: 'perf_moshpit_chaos',
     name: 'Moshpit Chaos Clip',
-    platform: 'tiktok',
+    platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Performance',
     badges: [POST_BADGES.VIRAL],
     condition: ({ activeEvent, gigEvents }) => 
@@ -107,7 +108,7 @@ export const POST_OPTIONS = [
     resolve: () => ({
       type: 'FIXED',
       success: true,
-      platform: 'tiktok',
+      platform: SOCIAL_PLATFORMS.TIKTOK.id,
       followers: 2000,
       message: 'The wall of death was legendary. TikTok is eating it up!'
     })
@@ -115,15 +116,17 @@ export const POST_OPTIONS = [
   {
     id: 'perf_tech_playthrough',
     name: 'Technical Playthrough',
-    platform: 'youtube',
+    platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Performance',
     badges: [POST_BADGES.SAFE],
-    condition: ({ lastGigStats, social }) => 
-      (lastGigStats && lastGigStats.score > 15000) || social.egoFocus === 'Matze',
+    condition: ({ lastGigStats, social, band }) => {
+      const isVirtuoso = band.members.some(m => m.traits?.some(t => t.id === 'virtuoso'))
+      return (lastGigStats && lastGigStats.score > 15000) || social.egoFocus || isVirtuoso
+    },
     resolve: () => ({
       type: 'FIXED',
       success: true,
-      platform: 'youtube',
+      platform: SOCIAL_PLATFORMS.YOUTUBE.id,
       followers: 800,
       message: 'Guitar nerds are dissecting every frame.'
     })
@@ -131,7 +134,7 @@ export const POST_OPTIONS = [
   {
     id: 'perf_band_selfie',
     name: 'Sweaty Band Selfie',
-    platform: 'instagram',
+    platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Performance',
     badges: [POST_BADGES.SAFE],
     condition: () => true,
@@ -147,14 +150,14 @@ export const POST_OPTIONS = [
   {
     id: 'perf_apology_video',
     name: 'Apology Video',
-    platform: 'youtube',
+    platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Performance',
     badges: [POST_BADGES.RISK],
     condition: ({ lastGigStats }) => lastGigStats && lastGigStats.score < 5000,
     resolve: () => ({
       type: 'FIXED',
       success: true,
-      platform: 'youtube', // Or tiktok
+      platform: SOCIAL_PLATFORMS.YOUTUBE.id,
       followers: 1200, 
       harmonyChange: -5,
       allMembersMoodChange: true,
@@ -163,11 +166,10 @@ export const POST_OPTIONS = [
     })
   },
 
-  // --- CATEGORY: DRAMA, CONTROVERSY & LIFESTYLE ---
   {
     id: 'drama_drunk_stream',
     name: 'Drunk Afterparty Stream',
-    platform: 'tiktok',
+    platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Drama',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
     condition: () => true, // Post-gig, always available
@@ -177,7 +179,7 @@ export const POST_OPTIONS = [
         return {
           type: 'RNG_SUCCESS',
           success: true,
-          platform: 'tiktok',
+          platform: SOCIAL_PLATFORMS.TIKTOK.id,
           followers: 3000,
           moodChange: 10,
           allMembersMoodChange: true,
@@ -187,7 +189,7 @@ export const POST_OPTIONS = [
         return {
           type: 'RNG_FAIL',
           success: false,
-          platform: 'tiktok',
+          platform: SOCIAL_PLATFORMS.TIKTOK.id,
           followers: -2000,
           harmonyChange: -20,
           controversyChange: 30, // Big spike towards shadowban
@@ -200,14 +202,14 @@ export const POST_OPTIONS = [
   {
     id: 'drama_political_take',
     name: 'Edgy Political Hot Take',
-    platform: 'newsletter',
+    platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Drama',
     badges: [POST_BADGES.RISK],
     condition: () => true,
     resolve: () => ({
       type: 'FIXED',
       success: true,
-      platform: 'newsletter', // Represents twitter/x in our generic platforms
+      platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
       followers: -1000, // Alienate mainstream
       loyaltyChange: 20, // Converts casuals to hardcore
       controversyChange: 15,
@@ -217,14 +219,14 @@ export const POST_OPTIONS = [
   {
     id: 'drama_van_breakdown',
     name: 'Tour Van Breakdown Rant',
-    platform: 'instagram',
+    platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Drama',
     badges: [POST_BADGES.STORY],
     condition: ({ activeEvent }) => activeEvent?.type === 'negative_travel' || activeEvent?.id === 'van_breakdown', // Simplified condition based on recent event
     resolve: () => ({
       type: 'FIXED',
       success: true,
-      platform: 'instagram',
+      platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
       followers: 1500,
       loyaltyChange: 10, // Builds sympathy
       message: '"We\'ll make it no matter what." Fans eat up the struggle.'
@@ -233,14 +235,14 @@ export const POST_OPTIONS = [
   {
     id: 'drama_leak_demo',
     name: 'Leaked Demo Snippet',
-    platform: 'newsletter',
+    platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Drama',
     badges: [POST_BADGES.VIRAL, POST_BADGES.STORY],
     condition: ({ band }) => band.harmony > 70,
     resolve: () => ({
       type: 'FIXED',
       success: true,
-      platform: 'newsletter',
+      platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
       followers: 800, // Newsletter spikes don't need to be huge raw numbers, they are high value
       loyaltyChange: 25, // Massive hype
       harmonyChange: -10, // Manager is pissed
@@ -251,14 +253,14 @@ export const POST_OPTIONS = [
   {
     id: 'drama_manufactured',
     name: 'Manufactured Band Drama',
-    platform: 'tiktok',
+    platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Drama',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
     condition: () => true,
     resolve: () => ({
       type: 'FIXED',
       success: true,
-      platform: 'tiktok',
+      platform: SOCIAL_PLATFORMS.TIKTOK.id,
       followers: 5000,
       harmonyChange: -15,
       controversyChange: 25,
@@ -268,18 +270,18 @@ export const POST_OPTIONS = [
   {
     id: 'drama_crowdsurf_fail',
     name: 'Crowd Surfing Fail',
-    platform: 'instagram',
+    platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Drama',
     badges: [POST_BADGES.RISK],
     condition: () => true,
     resolve: ({ band, diceRoll }) => {
       const memberNames = band.members.map(m => m.name)
-      const target = memberNames[Math.floor(Math.random() * memberNames.length)]
+      const target = memberNames[Math.floor(diceRoll * memberNames.length)]
       if (diceRoll > 0.5) {
         return {
           type: 'RNG_SUCCESS',
           success: true,
-          platform: 'instagram',
+          platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
           followers: 1000,
           targetMember: target,
           staminaChange: -5,
@@ -289,7 +291,7 @@ export const POST_OPTIONS = [
         return {
            type: 'RNG_FAIL',
            success: false,
-           platform: 'instagram',
+           platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
            followers: -500,
            targetMember: target,
            staminaChange: -5,
@@ -301,31 +303,34 @@ export const POST_OPTIONS = [
   {
     id: 'drama_gear_flex',
     name: 'Gear Flex',
-    platform: 'instagram',
+    platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Drama', // or Lifestyle
     badges: [POST_BADGES.SAFE],
     condition: () => true,
-    resolve: () => ({
-      type: 'FIXED',
-      success: true,
-      platform: 'instagram',
-      followers: 100, // Safe but low
-      targetMember: 'Matze', // Assuming Matze likes gear
-      moodChange: 5,
-      message: 'Guitar geeks unite! Matze is happy.'
-    })
+    resolve: ({ band }) => {
+      const gearNerd = band.members.find(m => m.traits?.some(t => t.id === 'gear_nerd'))?.name || band.members[0].name
+      return {
+        type: 'FIXED',
+        success: true,
+        platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+        followers: 100, // Safe but low
+        targetMember: gearNerd,
+        moodChange: 5,
+        message: `Guitar geeks unite! ${gearNerd} is happy.`
+      }
+    }
   },
   {
     id: 'drama_cryptic_teaser',
     name: 'Cryptic Teaser',
-    platform: 'newsletter',
+    platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Drama',
     badges: [POST_BADGES.STORY],
     condition: () => true,
     resolve: () => ({
       type: 'FIXED',
       success: true,
-      platform: 'newsletter',
+      platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
       followers: 150,
       loyaltyChange: 15,
       message: 'The fans are connecting red string on message boards.'
@@ -334,25 +339,28 @@ export const POST_OPTIONS = [
   {
     id: 'drama_tour_bus_prank',
     name: 'Tour Bus Prank',
-    platform: 'tiktok',
+    platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Drama',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
     condition: () => true,
-    resolve: () => ({
-       type: 'FIXED',
-       success: true,
-       platform: 'tiktok',
-       followers: 2500,
-       targetMember: 'Lars', // Lars the prankster
-       moodChange: 10,
-       harmonyChange: -5,
-       message: 'Lars loved it. The rest of the band is annoyed.'
-    })
+    resolve: ({ band }) => {
+      const prankster = band.members.find(m => m.traits?.some(t => t.id === 'party_animal'))?.name || band.members[1]?.name || band.members[0].name
+      return {
+        type: 'FIXED',
+        success: true,
+        platform: SOCIAL_PLATFORMS.TIKTOK.id,
+        followers: 2500,
+        targetMember: prankster, 
+        moodChange: 10,
+        harmonyChange: -5,
+        message: `${prankster} loved it. The rest of the band is annoyed.`
+      }
+    }
   },
   {
     id: 'drama_emotional_interview',
     name: 'Emotional Backstage Interview',
-    platform: 'youtube',
+    platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Drama',
     badges: [POST_BADGES.STORY, POST_BADGES.SAFE],
     condition: ({ band }) => band.harmony > 60,
@@ -371,14 +379,14 @@ export const POST_OPTIONS = [
   {
     id: 'comm_sellout_ad',
     name: 'Shameless Sellout Sponsorship',
-    platform: 'instagram',
+    platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Commercial',
     badges: [POST_BADGES.COMMERCIAL, POST_BADGES.RISK],
     condition: ({ social }) => social.instagram > 5000,
     resolve: () => ({
       type: 'FIXED',
       success: true,
-      platform: 'instagram',
+      platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
       followers: 0,
       moneyChange: 500,
       loyaltyChange: -10,
@@ -388,35 +396,36 @@ export const POST_OPTIONS = [
   {
     id: 'comm_tour_merch',
     name: 'Limited "Tour Only" Merch Drop',
-    platform: 'newsletter',
+    platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Commercial',
     badges: [POST_BADGES.COMMERCIAL],
     condition: ({ lastGigStats }) => lastGigStats && lastGigStats.score > 15000,
     resolve: ({ social }) => {
       // Hype to Money mechanic (using loyalty as proxy for hype for now)
       const hypeCash = Math.min((social.loyalty || 0) * 10, 1000)
+      const hypeBurn = Math.floor((social.loyalty || 0) * 0.5) // Burn only half hype instead of all
       return {
         type: 'FIXED',
         success: true,
-        platform: 'newsletter',
+        platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
         followers: 0,
         moneyChange: hypeCash,
-        loyaltyChange: -(social.loyalty || 0), // Burn the hype
-        message: `Cashed in on the tour hype! Made ${hypeCash}€ but the buzz reset.`
+        loyaltyChange: -hypeBurn,
+        message: `Cashed in on the tour hype! Made ${hypeCash}€.`
       }
     }
   },
   {
     id: 'comm_crowdfund',
     name: 'Crowdfunding Begging',
-    platform: 'youtube',
+    platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Commercial',
     badges: [POST_BADGES.COMMERCIAL, POST_BADGES.RISK],
     condition: ({ player }) => player.money < 100,
     resolve: () => ({
       type: 'FIXED',
       success: true,
-      platform: 'youtube', // Affects all, but we label it youtube
+      platform: SOCIAL_PLATFORMS.YOUTUBE.id,
       followers: -500, // Looks desperate
       controversyChange: 5,
       moneyChange: 300,

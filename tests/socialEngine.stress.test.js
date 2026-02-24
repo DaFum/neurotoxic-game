@@ -33,7 +33,7 @@ const createRandomGameState = () => ({
   lastGigStats: {
     score: Math.floor(Math.random() * 40000),
     accuracy: Math.floor(Math.random() * 100),
-    events: Math.random() > 0.8 ? ['stage_diver'] : []
+    events: Math.random() > 0.5 ? ['stage_diver', 'influencer_spotted'] : []
   },
   activeEvent: Math.random() > 0.8 ? { id: 'van_breakdown', type: 'negative_travel' } : null
 })
@@ -82,6 +82,7 @@ test('Stress Test: calculateDailyUpdates over 10,000 random states', () => {
     // Verify critical bounds
     assert.ok(nextState.band.harmony >= 1 && nextState.band.harmony <= 100, `Harmony out of bounds: ${nextState.band.harmony}`)
     assert.ok(!isNaN(nextState.player.money), 'Money is NaN')
+    assert.ok(nextState.player.money >= 0, `Money dropped below zero: ${nextState.player.money}`)
     
     nextState.band.members.forEach(m => {
       assert.ok(m.mood >= 0 && m.mood <= 100, `Mood out of bounds for ${m.name}: ${m.mood}`)
