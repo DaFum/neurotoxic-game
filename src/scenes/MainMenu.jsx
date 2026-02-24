@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { useBandHQModal } from '../hooks/useBandHQModal.js'
@@ -26,22 +26,25 @@ export const MainMenu = () => {
     }
   }, [])
 
-  const reportAudioIssue = (error, fallbackMessage) => {
-    if (!isMountedRef.current) return
-    try {
-      handleError(error, { addToast, fallbackMessage })
-    } catch {
-      // Never block scene transitions on toast/reporting failures.
-    }
-  }
+  const reportAudioIssue = useCallback(
+    (error, fallbackMessage) => {
+      if (!isMountedRef.current) return
+      try {
+        handleError(error, { addToast, fallbackMessage })
+      } catch {
+        // Never block scene transitions on toast/reporting failures.
+      }
+    },
+    [addToast]
+  )
 
-  const startAmbientSafely = () => {
+  const startAmbientSafely = useCallback(() => {
     void audioManager.startAmbient().catch(err => {
       reportAudioIssue(err, 'Ambient audio failed to start.')
     })
-  }
+  }, [reportAudioIssue])
 
-  const handleStartTour = async () => {
+  const handleStartTour = useCallback(async () => {
     setIsStarting(true)
     // Add artificial delay for UX weight
     await new Promise(resolve => setTimeout(resolve, 500))
@@ -53,15 +56,16 @@ export const MainMenu = () => {
     changeScene('OVERWORLD')
 
     // Audio setup is fire-and-forget — never blocks scene transitions.
-    void audioManager.ensureAudioContext()
+    void audioManager
+      .ensureAudioContext()
       .catch(err => reportAudioIssue(err, 'Audio initialization failed.'))
       .then(() => startAmbientSafely())
-  }
+  }, [resetState, changeScene, reportAudioIssue, startAmbientSafely])
 
   /**
    * Handles loading a saved game.
    */
-  const handleLoad = async () => {
+  const handleLoad = useCallback(async () => {
     setIsLoadingGame(true)
     // Add artificial delay for UX weight
     await new Promise(resolve => setTimeout(resolve, 500))
@@ -78,10 +82,13 @@ export const MainMenu = () => {
     changeScene('OVERWORLD')
 
     // Audio is fire-and-forget; Overworld re-syncs audio.
-    void audioManager.ensureAudioContext()
+    void audioManager
+      .ensureAudioContext()
       .catch(err => reportAudioIssue(err, 'Audio initialization failed.'))
       .then(() => startAmbientSafely())
-  }
+  }, [loadGame, addToast, changeScene, reportAudioIssue, startAmbientSafely])
+
+  const handleCredits = useCallback(() => changeScene('CREDITS'), [changeScene])
 
   return (
     <div className='flex flex-col items-center justify-center h-full w-full bg-(--void-black) z-50 relative overflow-hidden'>
@@ -168,9 +175,7 @@ export const MainMenu = () => {
           transition={{ delay: 1.2 }}
           className='flex gap-4 mt-6'
         >
-          <GlitchButton onClick={() => changeScene('CREDITS')}>
-            CREDITS
-          </GlitchButton>
+          <GlitchButton onClick={handleCredits}>CREDITS</GlitchButton>
         </motion.div>
       </div>
 
