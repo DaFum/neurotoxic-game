@@ -213,9 +213,9 @@ export const PreGig = () => {
             </h4>
             {currentModifiers.activeEffects.length > 0 ? (
               <ul className='text-xs space-y-1'>
-                {currentModifiers.activeEffects.map((eff, i) => (
+                {currentModifiers.activeEffects.map((eff) => (
                   <li
-                    key={`${eff}-${i}`}
+                    key={eff}
                     className='text-(--star-white)/60 flex items-center gap-1.5'
                   >
                     <span className='w-1 h-1 bg-(--toxic-green) inline-block' />

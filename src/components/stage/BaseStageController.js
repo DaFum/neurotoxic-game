@@ -55,8 +55,13 @@ export class BaseStageController {
 
         if (this.isDisposed) return
 
-        this.resizeObserver = new ResizeObserver(() => this.handleResize())
-        this.resizeObserver.observe(container)
+        if (typeof ResizeObserver !== 'undefined') {
+          this.resizeObserver = new ResizeObserver(() => this.handleResize())
+          this.resizeObserver.observe(container)
+        } else {
+          window.addEventListener('resize', this.handleResize)
+          this._usingWindowResize = true
+        }
         this.app.ticker.add(this.handleTicker)
 
       } catch (e) {
@@ -91,7 +96,10 @@ export class BaseStageController {
       this.resizeObserver.disconnect()
       this.resizeObserver = null
     }
-    window.removeEventListener('resize', this.handleResize)
+    if (this._usingWindowResize) {
+      window.removeEventListener('resize', this.handleResize)
+      this._usingWindowResize = false
+    }
 
     if (this.app) {
       try {
