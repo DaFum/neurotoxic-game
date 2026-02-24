@@ -117,7 +117,8 @@ export const resolvePost = (postOption, gameState, diceRoll = secureRandom()) =>
       allMembersMoodChange: result.allMembersMoodChange,
       allMembersStaminaChange: result.allMembersStaminaChange,
       egoDrop: result.egoDrop,
-      egoClear: result.egoClear
+      egoClear: result.egoClear,
+      unlockTrait: result.unlockTrait
     }
   } catch (e) {
     throw new StateError(`Resolution failed for post ${postOption.id}`, { cause: e, meta: { optId: postOption.id, gameState } })

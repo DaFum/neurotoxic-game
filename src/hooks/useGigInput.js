@@ -25,7 +25,8 @@ export const useGigInput = ({
   changeScene,
   addToast,
   setLastGigStats,
-  triggerBandAnimation
+  triggerBandAnimation,
+  onTogglePause
 }) => {
   const hasUnlockedAudioRef = useRef(false)
 
@@ -47,56 +48,8 @@ export const useGigInput = ({
       ensureAudioFromGesture()
 
       if (e.key === 'Escape') {
-        if (activeEvent) {
-          setActiveEvent(null)
-          addToast('Resumed', 'info')
-        } else {
-          setActiveEvent({
-            title: 'PAUSED',
-            description: 'Game Paused',
-            options: [
-              {
-                label: 'RESUME',
-                action: () => {
-                  setActiveEvent(null)
-                  addToast('Resuming...', 'info')
-                }
-              },
-              {
-                label: 'QUIT GIG',
-                variant: 'danger',
-                action: async () => {
-                  // Manually flag gig as submitted/stopped to prevent multi-song chaining
-                  // when stopAudio() triggers onEnded callbacks.
-                  if (gameStateRef.current) {
-                    gameStateRef.current.hasSubmittedResults = true
-                  }
-
-                  try {
-                    const { stopAudio } = await import('../utils/audioEngine')
-                    stopAudio()
-                  } catch (audioCleanupError) {
-                    handleError(audioCleanupError, {
-                      addToast,
-                      fallbackMessage: 'Audio cleanup failed during quit.'
-                    })
-                  } finally {
-                    setActiveEvent(null)
-                    if (gameStateRef.current) {
-                      const snapshot = buildGigStatsSnapshot(
-                        gameStateRef.current.score,
-                        gameStateRef.current.stats,
-                        gameStateRef.current.toxicTimeTotal
-                      )
-                      setLastGigStats(snapshot)
-                    }
-                    changeScene('POSTGIG')
-                  }
-                }
-              }
-            ]
-          })
-        }
+        onTogglePause?.()
+        return
       }
 
       const laneIndex = gameStateRef.current.lanes.findIndex(

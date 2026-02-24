@@ -4,8 +4,9 @@ import { EffectManager } from './EffectManager'
 import { getPixiColorFromToken, loadTexture, getOptimalResolution } from './utils'
 import { logger } from '../../utils/logger'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
+import { LANE_COUNT, BUS_Y_PERCENT, BUS_HEIGHT_PERCENT } from '../../hooks/minigames/useTourbusLogic'
 
-export class TourbusStageController {
+class TourbusStageController {
   constructor({ containerRef, gameStateRef, updateRef, statsRef }) {
     this.containerRef = containerRef
     this.gameStateRef = gameStateRef
@@ -123,7 +124,7 @@ export class TourbusStageController {
   drawRoad() {
     const width = this.app.screen.width
     const height = this.app.screen.height
-    this.laneWidth = width / 3
+    this.laneWidth = width / LANE_COUNT
 
     // Clear previous
     this.roadContainer.removeChildren().forEach(c => c.destroy())
@@ -148,7 +149,7 @@ export class TourbusStageController {
         this.roadContainer.addChild(bg)
 
         // Draw lane dividers
-        for (let i = 1; i < 3; i++) {
+        for (let i = 1; i < LANE_COUNT; i++) {
             const line = new PIXI.Graphics()
             line.rect(i * this.laneWidth - 2, 0, 4, height)
             line.fill({ color: getPixiColorFromToken('--ash-gray'), alpha: 0.3 })
@@ -179,7 +180,8 @@ export class TourbusStageController {
       }
       // Scale bus to fit lane width AND a max height
       const targetW = this.laneWidth * 0.6
-      const targetH = height * 0.25
+      // Visual height slightly larger than collision box for aesthetics
+      const targetH = height * ((BUS_HEIGHT_PERCENT + 5) / 100)
       const texW = this.busSprite.texture?.width || this.busSprite.width || 60
       const texH = this.busSprite.texture?.height || this.busSprite.height || 80
       const busScale = Math.min(targetW / texW, targetH / texH)
@@ -223,7 +225,8 @@ export class TourbusStageController {
       const lerpFactor = 1 - Math.exp(-10 * dtSeconds)
 
       this.busSprite.x += (targetX - this.busSprite.x) * lerpFactor
-      this.busSprite.y = height * 0.9 // Fixed Y at 90%
+      // Position bottom of bus at bottom of collision box
+      this.busSprite.y = height * ((BUS_Y_PERCENT + BUS_HEIGHT_PERCENT) / 100)
 
       // Wobble effect based on speed (use ticker.lastTime instead of Date.now() for consistency)
       this.busSprite.rotation = Math.sin(ticker.lastTime / 100) * 0.05

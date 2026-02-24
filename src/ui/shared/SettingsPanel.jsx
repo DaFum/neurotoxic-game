@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import { VolumeSlider } from './VolumeSlider'
+import { VolumeSlider } from './index'
 import { LOG_LEVELS } from '../../utils/logger.js'
 
 /**

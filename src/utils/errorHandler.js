@@ -39,7 +39,7 @@ export const ErrorCategory = {
  * Base Game Error class
  * @extends Error
  */
-export class GameError extends Error {
+class GameError extends Error {
   constructor(
     message,
     {

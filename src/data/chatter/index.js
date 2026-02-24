@@ -1,7 +1,7 @@
 import { CHATTER_DB, ALLOWED_DEFAULT_SCENES } from './standardChatter.js';
 import { VENUE_CHATTER_DB } from './venueChatter.js';
 
-export { CHATTER_DB, VENUE_CHATTER_DB, ALLOWED_DEFAULT_SCENES };
+export { CHATTER_DB, ALLOWED_DEFAULT_SCENES };
 
 export const getRandomChatter = state => {
   let pool = []

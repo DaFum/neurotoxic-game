@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useGameState } from '../context/GameState'
 import { useRhythmGameLogic } from '../hooks/useRhythmGameLogic'
 import { useGigEffects } from '../hooks/useGigEffects'
@@ -8,6 +8,9 @@ import { GigHUD } from '../components/GigHUD'
 import { IMG_PROMPTS, getGenImageUrl } from '../utils/imageGen'
 import { audioManager } from '../utils/AudioManager'
 import { GlitchButton } from '../ui/GlitchButton'
+import { pauseAudio, resumeAudio, stopAudio } from '../utils/audioEngine'
+import { buildGigStatsSnapshot } from '../utils/gigStats'
+import { handleError } from '../utils/errorHandler'
 
 /**
  * The core Rhythm Game scene.
@@ -24,6 +27,8 @@ export const Gig = () => {
     band
   } = useGameState()
 
+  const [isPaused, setIsPaused] = useState(false)
+
   useEffect(() => {
     if (!currentGig) {
       addToast('No gig active! Returning to map.', 'error')
@@ -38,6 +43,41 @@ export const Gig = () => {
   // Use extracted effects hook
   const { chaosContainerRef, chaosStyle, triggerBandAnimation, setBandMemberRef } = useGigEffects(stats)
 
+  const handleTogglePause = useCallback(() => {
+    setIsPaused(prev => {
+      const next = !prev
+      if (next) {
+        pauseAudio()
+        addToast('PAUSED', 'info')
+      } else {
+        resumeAudio()
+        addToast('RESUMED', 'info')
+      }
+      return next
+    })
+  }, [addToast])
+
+  const handleQuitGig = useCallback(async () => {
+    if (gameStateRef.current) {
+      gameStateRef.current.hasSubmittedResults = true
+    }
+    try {
+      stopAudio()
+    } catch (e) {
+      handleError(e, { addToast, fallbackMessage: 'Audio cleanup failed.' })
+    } finally {
+      if (gameStateRef.current) {
+        const snapshot = buildGigStatsSnapshot(
+          gameStateRef.current.score,
+          gameStateRef.current.stats,
+          gameStateRef.current.toxicTimeTotal
+        )
+        setLastGigStats(snapshot)
+      }
+      changeScene('POSTGIG')
+    }
+  }, [changeScene, setLastGigStats, addToast, gameStateRef])
+
   // Use extracted input hook
   const { handleLaneInput } = useGigInput({
     actions,
@@ -47,7 +87,8 @@ export const Gig = () => {
     changeScene,
     addToast,
     setLastGigStats,
-    triggerBandAnimation
+    triggerBandAnimation,
+    onTogglePause: handleTogglePause
   })
 
   // Determine Background URL
@@ -175,7 +216,25 @@ export const Gig = () => {
         stats={stats}
         gameStateRef={gameStateRef}
         onLaneInput={handleLaneInput}
+        onTogglePause={handleTogglePause}
       />
+
+      {/* Pause Overlay */}
+      {isPaused && (
+        <div className="absolute inset-0 z-[100] bg-(--void-black)/90 flex flex-col items-center justify-center pointer-events-auto">
+          <h2 className="text-6xl font-[Metal_Mania] text-(--toxic-green) mb-8 animate-pulse drop-shadow-[0_0_15px_var(--toxic-green)]">
+            PAUSED
+          </h2>
+          <div className="flex flex-col gap-6 w-64">
+            <GlitchButton onClick={handleTogglePause} size="lg">
+              RESUME
+            </GlitchButton>
+            <GlitchButton onClick={handleQuitGig} variant="danger">
+              QUIT GIG
+            </GlitchButton>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -44,6 +44,7 @@ describe('useGigInput', () => {
   let addToast
   let setLastGigStats
   let triggerBandAnimation
+  let onTogglePause
 
   beforeEach(() => {
     setupJSDOM()
@@ -63,6 +64,7 @@ describe('useGigInput', () => {
     addToast = mock.fn()
     setLastGigStats = mock.fn()
     triggerBandAnimation = mock.fn()
+    onTogglePause = mock.fn()
 
     mockAudioManager.ensureAudioContext.mock.resetCalls()
     mockStopAudio.mock.resetCalls()
@@ -83,7 +85,8 @@ describe('useGigInput', () => {
         changeScene,
         addToast,
         setLastGigStats,
-        triggerBandAnimation
+        triggerBandAnimation,
+        onTogglePause
       })
     )
 
@@ -108,7 +111,8 @@ describe('useGigInput', () => {
         changeScene,
         addToast,
         setLastGigStats,
-        triggerBandAnimation
+        triggerBandAnimation,
+        onTogglePause
       })
     )
 
@@ -117,35 +121,7 @@ describe('useGigInput', () => {
       window.dispatchEvent(event)
     })
 
-    assert.equal(setActiveEvent.mock.calls.length, 1)
-    const callArg = setActiveEvent.mock.calls[0].arguments[0]
-    assert.equal(callArg.title, 'PAUSED')
-  })
-
-  test('Resume from pause menu', () => {
-    // Start with activeEvent set (paused)
-    const props = {
-        actions,
-        gameStateRef,
-        activeEvent: { title: 'PAUSED' },
-        setActiveEvent,
-        changeScene,
-        addToast,
-        setLastGigStats,
-        triggerBandAnimation
-    }
-
-    renderHook(() => useGigInput(props))
-
-    act(() => {
-      const event = new window.KeyboardEvent('keydown', { key: 'Escape' })
-      window.dispatchEvent(event)
-    })
-
-    assert.equal(setActiveEvent.mock.calls.length, 1)
-    assert.equal(setActiveEvent.mock.calls[0].arguments[0], null)
-    assert.equal(addToast.mock.calls.length, 1)
-    assert.equal(addToast.mock.calls[0].arguments[0], 'Resumed')
+    assert.equal(onTogglePause.mock.calls.length, 1)
   })
 
   test('Lane key triggers input', () => {
@@ -158,7 +134,8 @@ describe('useGigInput', () => {
         changeScene,
         addToast,
         setLastGigStats,
-        triggerBandAnimation
+        triggerBandAnimation,
+        onTogglePause
       })
     )
 
