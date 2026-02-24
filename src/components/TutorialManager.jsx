@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { useGameState } from '../context/GameState'
 import { motion, AnimatePresence } from 'framer-motion'
 
-const TOTAL_STEPS = 4
+const TUTORIAL_STEPS = [0, 1, 2, 3]
+const TOTAL_STEPS = TUTORIAL_STEPS.length
 
 export const TutorialManager = () => {
   const { player, updatePlayer, currentScene, settings, updateSettings } =
@@ -89,13 +90,13 @@ export const TutorialManager = () => {
 
             {/* Progress dots */}
             <div className='flex items-center gap-1.5 mb-4'>
-              {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+              {TUTORIAL_STEPS.map((stepId) => (
                 <div
-                  key={`step-${i}`}
+                  key={stepId}
                   className={`w-2 h-2 transition-colors ${
-                    i === step
+                    stepId === step
                       ? 'bg-(--toxic-green)'
-                      : i < step
+                      : stepId < step
                         ? 'bg-(--toxic-green)/40'
                         : 'bg-(--ash-gray)/30'
                   }`}

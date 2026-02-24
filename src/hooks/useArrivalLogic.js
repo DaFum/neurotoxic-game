@@ -7,7 +7,7 @@ import { handleNodeArrival } from '../utils/arrivalUtils'
  * Hook to encapsulate reusable arrival sequence logic for both legacy travel and Minigame integration.
  * Ensures consistent side effects (Events, Autosave, Day Advance, Routing).
  */
-export const useArrivalLogic = () => {
+export const useArrivalLogic = ({ onShowHQ } = {}) => {
   const {
     advanceDay,
     saveGame,
@@ -54,7 +54,7 @@ export const useArrivalLogic = () => {
       }
 
       // 5. Handle Node Arrival & Routing
-
+      // Delegates routing (HQ, Gig, Rest Stop) to shared utility
       if (currentNode) {
         handleNodeArrival({
             node: currentNode,
@@ -64,19 +64,13 @@ export const useArrivalLogic = () => {
             startGig,
             addToast,
             changeScene,
+            onShowHQ,
             eventAlreadyActive: travelEventActive
         })
       }
 
-      // If it's a gig node, handleNodeArrival tries to start it.
-      // If startGig fails or it's not a gig, we ensure we route to OVERWORLD unless GIG started?
-      // handleNodeArrival only calls startGig for GIG nodes.
-      // It doesn't handle routing for non-GIG nodes except implicitly falling through.
-      // But useArrivalLogic is called when arriving, usually transition to OVERWORLD is needed if not Gig.
-      // The original code fell through to changeScene('OVERWORLD') if not Gig.
-
-      const isGig = currentNode && (currentNode.type === 'GIG' || currentNode.type === 'FESTIVAL' || currentNode.type === 'FINALE')
-      if (!isGig) {
+      // Ensure we route to OVERWORLD if not a Gig/Festival/Finale where action is taken
+      if (!isGigNode) {
          changeScene('OVERWORLD')
       }
     } catch (e) {

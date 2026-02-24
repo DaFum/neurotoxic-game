@@ -69,7 +69,7 @@ export const usePurchaseLogic = ({
         upgrades: [...currentUpgrades, upgradeId]
       }
     }
-    return playerPatch.van
+    return playerPatch.van ?? player.van ?? {}
   }, [player.van])
 
   /**
@@ -423,14 +423,7 @@ export const usePurchaseLogic = ({
           !isConsumable &&
           effect.type !== 'unlock_upgrade'
         ) {
-          const currentUpgrades =
-            playerPatch.van?.upgrades ?? player.van?.upgrades ?? []
-          if (!currentUpgrades.includes(item.id)) {
-            playerPatch.van = {
-              ...(playerPatch.van ?? player.van ?? {}),
-              upgrades: [...currentUpgrades, item.id]
-            }
-          }
+          playerPatch.van = addVanUpgrade(playerPatch, item.id)
         }
 
         // Apply updates
@@ -496,7 +489,8 @@ export const usePurchaseLogic = ({
       applyUnlockUpgrade,
       applyUnlockHQ,
       applyPassive,
-      getAdjustedCost
+      getAdjustedCost,
+      addVanUpgrade
     ]
   )
 

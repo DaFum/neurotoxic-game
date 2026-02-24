@@ -111,17 +111,33 @@ class PixiStageController extends BaseStageController {
    * @param {number} deltaMS - Time delta.
    */
   update(deltaMS) {
-    const state = this.gameStateRef.current
-    const stats = this.statsRef.current
+    // Defensive guards for async init or disposal race conditions
+    if (
+      !this.app ||
+      this.isDisposed ||
+      !this.stageContainer ||
+      !this.laneManager ||
+      !this.crowdManager ||
+      !this.noteManager ||
+      !this.effectManager ||
+      !this.toxicFilters
+    ) {
+      return
+    }
 
-    if (state.isGameOver) {
+    const state = this.gameStateRef?.current
+    const stats = this.statsRef?.current
+
+    if (!state || state.isGameOver) {
       return
     }
 
     const elapsed = getGigTimeMs()
 
     if (stats?.isToxicMode) {
-      this.colorMatrix.hue(Math.sin(elapsed / 100) * 180, false)
+      if (this.colorMatrix) {
+        this.colorMatrix.hue(Math.sin(elapsed / 100) * 180, false)
+      }
       if (!this.isToxicActive) {
         this.stageContainer.filters = this.toxicFilters
         this.isToxicActive = true
@@ -148,8 +164,6 @@ class PixiStageController extends BaseStageController {
    * @returns {void}
    */
   dispose() {
-    super.dispose()
-
     this.noteManager?.dispose()
     this.effectManager?.dispose()
     this.laneManager?.dispose()
@@ -165,6 +179,8 @@ class PixiStageController extends BaseStageController {
       this.colorMatrix.destroy()
       this.colorMatrix = null
     }
+
+    super.dispose()
   }
 }
 

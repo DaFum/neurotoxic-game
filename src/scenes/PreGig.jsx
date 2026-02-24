@@ -215,7 +215,7 @@ export const PreGig = () => {
               <ul className='text-xs space-y-1'>
                 {currentModifiers.activeEffects.map((eff, i) => (
                   <li
-                    key={`${eff}-${i}`}
+                    key={eff}
                     className='text-(--star-white)/60 flex items-center gap-1.5'
                   >
                     <span className='w-1 h-1 bg-(--toxic-green) inline-block' />
@@ -296,7 +296,7 @@ export const PreGig = () => {
               }
               return (
                 <motion.div
-                  key={`${id}-${i}`}
+                  key={id}
                   initial={{ height: 0 }}
                   animate={{ height: `${songData.energy?.peak || 50}%` }}
                   transition={{ duration: 0.4, delay: i * 0.1 }}

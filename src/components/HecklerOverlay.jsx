@@ -12,7 +12,7 @@ export const HecklerOverlay = memo(function HecklerOverlay({ gameStateRef }) {
 
   useEffect(() => {
     itemsRef.current = items
-  }) // Updates on every render
+  }, [items])
 
   useEffect(() => {
     let rAF

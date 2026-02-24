@@ -72,6 +72,7 @@ export const handleNodeArrival = ({
           fallbackMessage: 'Failed to start Gig.'
         })
       }
+      break
     }
   }
 }

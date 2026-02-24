@@ -126,7 +126,7 @@ export const useTravelLogic = ({
         eventAlreadyActive
       })
     },
-    [updateBand, triggerEvent, startGig, addToast, onShowHQ]
+    [updateBand, triggerEvent, startGig, addToast, onShowHQ, changeScene]
   )
 
   /**

@@ -21,6 +21,9 @@ class TourbusStageController extends BaseStageController {
     this.obstacleMap = new Map()
     this.currentIds = new Set()
 
+    // Animation state
+    this.wobbleTime = 0
+
     // Textures
     this.textures = {
       bus: null,
@@ -175,10 +178,9 @@ class TourbusStageController extends BaseStageController {
       // Position bottom of bus at bottom of collision box
       this.busSprite.y = height * ((BUS_Y_PERCENT + BUS_HEIGHT_PERCENT) / 100)
 
-      // Wobble effect based on speed (use ticker.lastTime instead of Date.now() for consistency)
-      // Since we don't have ticker.lastTime passed in update(dt), we use a fallback or add it to Base
-      // For now, assume simple wobble
-      this.busSprite.rotation = Math.sin(Date.now() / 100) * 0.05
+      // Wobble effect based on accumulated deterministic time
+      this.wobbleTime += dt
+      this.busSprite.rotation = Math.sin(this.wobbleTime / 100) * 0.05
     }
 
     // Render Obstacles
@@ -252,8 +254,6 @@ class TourbusStageController extends BaseStageController {
   }
 
   dispose() {
-    super.dispose()
-
     if (this.effectManager) {
         this.effectManager.dispose()
         this.effectManager = null
@@ -268,6 +268,8 @@ class TourbusStageController extends BaseStageController {
         this.currentIds.clear()
         this.currentIds = null
     }
+
+    super.dispose()
   }
 }
 

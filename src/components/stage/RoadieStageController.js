@@ -255,7 +255,6 @@ class RoadieStageController extends BaseStageController {
   }
 
   dispose() {
-      super.dispose()
       if (this._flashTimeout) {
           clearTimeout(this._flashTimeout)
           this._flashTimeout = null
@@ -274,6 +273,8 @@ class RoadieStageController extends BaseStageController {
           this.effectManager.dispose()
           this.effectManager = null
       }
+
+      super.dispose()
   }
 }
 

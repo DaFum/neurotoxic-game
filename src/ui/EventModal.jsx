@@ -103,7 +103,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
                 hidden: { opacity: 0, x: -20 },
                 visible: { opacity: 1, x: 0 }
               }}
-              key={option.label || index}
+              key={option.id || option.nextEventId || `${option.label}-${index}`}
               onClick={() => {
                 if (option.action) option.action()
                 else onOptionSelect(option)
