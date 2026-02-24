@@ -178,3 +178,39 @@ Panel.propTypes = {
   children: PropTypes.node.isRequired,
   className: PropTypes.string
 }
+
+/**
+ * Modal - A shared overlay component.
+ * @param {Object} props
+ * @param {boolean} props.isOpen - Whether the modal is visible.
+ * @param {Function} props.onClose - Callback to close the modal.
+ * @param {string} [props.title] - Optional title.
+ * @param {React.ReactNode} props.children - Content.
+ */
+export const Modal = ({ isOpen, onClose, title, children }) => {
+  if (!isOpen) return null
+
+  return (
+    <div
+      className='fixed inset-0 z-50 flex items-center justify-center bg-(--void-black)/90'
+      role='dialog'
+      aria-modal='true'
+    >
+      <div className='w-full max-w-md border-4 border-(--toxic-green) p-6 bg-(--void-black) shadow-[0_0_25px_var(--toxic-green-glow)]'>
+        {title && (
+          <h2 className='text-3xl font-[Metal_Mania] text-(--toxic-green) mb-4 uppercase tracking-widest text-center'>
+            {title}
+          </h2>
+        )}
+        {children}
+      </div>
+    </div>
+  )
+}
+
+Modal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  title: PropTypes.string,
+  children: PropTypes.node
+}
