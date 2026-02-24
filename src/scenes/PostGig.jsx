@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo, useCallback, memo } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
+import { secureRandom } from '../utils/crypto'
 import {
   calculateGigFinancials,
   shouldTriggerBankruptcy
@@ -88,7 +89,7 @@ export const PostGig = () => {
   ])
 
   const handlePostSelection = useCallback((option) => {
-    const result = resolvePost(option, Math.random())
+    const result = resolvePost(option, secureRandom())
 
     // Use checkViralEvent for bonus viral flag based on actual gig stats
     const isGigViral = lastGigStats && checkViralEvent(lastGigStats)

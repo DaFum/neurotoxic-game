@@ -26,6 +26,11 @@ mock.module('../src/data/events/index.js', {
   namedExports: { EVENTS_DB: MOCK_EVENTS }
 })
 
+const mockSecureRandom = mock.fn(() => 0.5)
+mock.module('../src/utils/crypto.js', {
+  namedExports: { secureRandom: mockSecureRandom }
+})
+
 // Import module under test after mocking
 const { eventEngine } = await import('../src/utils/eventEngine.js')
 
@@ -108,7 +113,7 @@ test('eventEngine.resolveChoice handles simple effects', () => {
 })
 
 test('eventEngine.resolveChoice handles skill checks (success)', () => {
-  mockRandom.mock.mockImplementationOnce(() => 0.9) // High roll
+  mockSecureRandom.mock.mockImplementationOnce(() => 0.9) // High roll
   const option = {
     nextEventId: 'next_event',
     skillCheck: {
@@ -125,7 +130,7 @@ test('eventEngine.resolveChoice handles skill checks (success)', () => {
 })
 
 test('eventEngine.resolveChoice handles skill checks (failure)', () => {
-  mockRandom.mock.mockImplementationOnce(() => 0.1) // Low roll
+  mockSecureRandom.mock.mockImplementationOnce(() => 0.1) // Low roll
   const option = {
     nextEventId: 'next_event',
     skillCheck: {
@@ -141,10 +146,10 @@ test('eventEngine.resolveChoice handles skill checks (failure)', () => {
 })
 
 test('eventEngine.resolveChoice handles luck checks', () => {
-  // Luck check uses Math.random() * 10
+  // Luck check uses secureRandom() * 10
   // Threshold 5. Mock random 0.6 -> 6.0 > 5 -> Success
-  mockRandom.mock.mockImplementationOnce(() => 0.6)
-  const initialCalls = mockRandom.mock.calls.length
+  mockSecureRandom.mock.mockImplementationOnce(() => 0.6)
+  const initialCalls = mockSecureRandom.mock.calls.length
 
   const option = {
     nextEventId: 'next_event',
@@ -157,7 +162,7 @@ test('eventEngine.resolveChoice handles luck checks', () => {
 
   const result = eventEngine.resolveChoice(option, {})
   assert.equal(result.value, 5)
-  assert.strictEqual(mockRandom.mock.calls.length, initialCalls + 2)
+  assert.strictEqual(mockSecureRandom.mock.calls.length, initialCalls + 2)
 })
 
 test('eventEngine.resolveChoice sets nextEventId', () => {
