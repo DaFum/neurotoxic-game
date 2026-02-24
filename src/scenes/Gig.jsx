@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useGameState } from '../context/GameState'
 import { useRhythmGameLogic } from '../hooks/useRhythmGameLogic'
 import { useGigEffects } from '../hooks/useGigEffects'
@@ -51,33 +51,43 @@ export const Gig = () => {
   })
 
   // Determine Background URL
-  let bgPrompt = IMG_PROMPTS.VENUE_CLUB
-  if (currentGig?.name?.includes('Kaminstube'))
-    bgPrompt = IMG_PROMPTS.VENUE_KAMINSTUBE
-  else if (
-    currentGig?.name?.includes('Festival') ||
-    currentGig?.name?.includes('Open Air')
-  )
-    bgPrompt = IMG_PROMPTS.VENUE_FESTIVAL
-  else if (currentGig?.diff <= 2) bgPrompt = IMG_PROMPTS.VENUE_DIVE_BAR
-  else if (currentGig?.diff >= 5) bgPrompt = IMG_PROMPTS.VENUE_GALACTIC
+  const bgUrl = useMemo(() => {
+    let bgPrompt = IMG_PROMPTS.VENUE_CLUB
+    if (currentGig?.name?.includes('Kaminstube'))
+      bgPrompt = IMG_PROMPTS.VENUE_KAMINSTUBE
+    else if (
+      currentGig?.name?.includes('Festival') ||
+      currentGig?.name?.includes('Open Air')
+    )
+      bgPrompt = IMG_PROMPTS.VENUE_FESTIVAL
+    else if (currentGig?.diff <= 2) bgPrompt = IMG_PROMPTS.VENUE_DIVE_BAR
+    else if (currentGig?.diff >= 5) bgPrompt = IMG_PROMPTS.VENUE_GALACTIC
 
-  const bgUrl = getGenImageUrl(bgPrompt)
+    return getGenImageUrl(bgPrompt)
+  }, [currentGig?.name, currentGig?.diff])
 
   // Character Images based on Harmony
-  let matzeImg = IMG_PROMPTS.MATZE_PLAYING
-  let larsImg = IMG_PROMPTS.LARS_PLAYING
-  let mariusImg = IMG_PROMPTS.MARIUS_PLAYING
+  const { matzeUrl, larsUrl, mariusUrl } = useMemo(() => {
+    let matzePrompt = IMG_PROMPTS.MATZE_PLAYING
+    let larsPrompt = IMG_PROMPTS.LARS_PLAYING
+    let mariusPrompt = IMG_PROMPTS.MARIUS_PLAYING
 
-  if (band.harmony < 30) {
-    matzeImg = IMG_PROMPTS.MATZE_ANGRY
-    larsImg = IMG_PROMPTS.LARS_DRINKING
-    mariusImg = IMG_PROMPTS.MARIUS_IDLE
-  } else if (band.harmony < 60) {
-    matzeImg = IMG_PROMPTS.MATZE_ANGRY
-    larsImg = IMG_PROMPTS.LARS_PLAYING
-    mariusImg = IMG_PROMPTS.MARIUS_SCREAMING
-  }
+    if (band.harmony < 30) {
+      matzePrompt = IMG_PROMPTS.MATZE_ANGRY
+      larsPrompt = IMG_PROMPTS.LARS_DRINKING
+      mariusPrompt = IMG_PROMPTS.MARIUS_IDLE
+    } else if (band.harmony < 60) {
+      matzePrompt = IMG_PROMPTS.MATZE_ANGRY
+      larsPrompt = IMG_PROMPTS.LARS_PLAYING
+      mariusPrompt = IMG_PROMPTS.MARIUS_SCREAMING
+    }
+
+    return {
+      matzeUrl: getGenImageUrl(matzePrompt),
+      larsUrl: getGenImageUrl(larsPrompt),
+      mariusUrl: getGenImageUrl(mariusPrompt)
+    }
+  }, [band.harmony])
 
   // Render blocking overlay if audio is locked (moved here to avoid hook violations)
   if (stats.isAudioReady === false) {
@@ -126,7 +136,7 @@ export const Gig = () => {
           className='absolute left-[15%] top-[30%] w-32 h-48 transition-transform duration-100'
         >
           <img
-            src={getGenImageUrl(matzeImg)}
+            src={matzeUrl}
             alt='Matze'
             className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--blood-red)]'
           />
@@ -138,7 +148,7 @@ export const Gig = () => {
           className='absolute left-[50%] top-[20%] -translate-x-1/2 w-40 h-40 transition-transform duration-100'
         >
           <img
-            src={getGenImageUrl(larsImg)}
+            src={larsUrl}
             alt='Lars'
             className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--toxic-green-glow)]'
           />
@@ -150,7 +160,7 @@ export const Gig = () => {
           className='absolute right-[15%] top-[30%] w-32 h-48 transition-transform duration-100'
         >
           <img
-            src={getGenImageUrl(mariusImg)}
+            src={mariusUrl}
             alt='Marius'
             className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--toxic-green)]'
           />
