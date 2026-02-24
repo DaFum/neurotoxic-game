@@ -1,7 +1,7 @@
 
 import * as PIXI from 'pixi.js'
 import { EffectManager } from './EffectManager'
-import { getPixiColorFromToken, loadTexture } from './utils'
+import { getPixiColorFromToken, loadTexture, getOptimalResolution } from './utils'
 import { logger } from '../../utils/logger'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
 
@@ -52,7 +52,7 @@ export class TourbusStageController {
           backgroundAlpha: 0,
           resizeTo: container,
           antialias: true,
-          resolution: window.devicePixelRatio || 1,
+          resolution: getOptimalResolution(),
           autoDensity: true
         })
 

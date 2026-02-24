@@ -2,7 +2,7 @@
 import * as PIXI from 'pixi.js'
 import { EffectManager } from './EffectManager'
 import { logger } from '../../utils/logger'
-import { getPixiColorFromToken, loadTexture } from './utils'
+import { getPixiColorFromToken, loadTexture, getOptimalResolution } from './utils'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
 
 export class RoadieStageController {
@@ -44,7 +44,9 @@ export class RoadieStageController {
             await this.app.init({
                 backgroundAlpha: 0,
                 resizeTo: container,
-                antialias: true
+                antialias: true,
+                resolution: getOptimalResolution(),
+                autoDensity: true
             })
 
             if (this.isDisposed) {
