@@ -1,5 +1,6 @@
 import { EVENTS_DB } from '../data/events/index.js'
 import { logger } from './logger.js'
+import { secureRandom } from './crypto.js'
 
 /**
  * Filters and selects an event based on context, priority, and probability.
@@ -48,7 +49,7 @@ const selectEvent = (pool, gameState, triggerPoint) => {
 
   // Fisher-Yates shuffle for unbiased randomness and better performance
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
+    const j = Math.floor(secureRandom() * (i + 1))
     ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
   }
 
@@ -60,7 +61,7 @@ const selectEvent = (pool, gameState, triggerPoint) => {
       chance *= 5.0 // Huge boost
     }
 
-    if (Math.random() < chance) {
+    if (secureRandom() < chance) {
       logger.debug('EventEngine', 'Event Selected', event.id)
       return event
     }
@@ -169,10 +170,10 @@ export const eventEngine = {
    * Resolves a player's choice for an event, handling skill checks and immediate effects.
    * @param {object} choice - The choice object selected by the player.
    * @param {object} gameState - The current game state.
-   * @param {function} [rng=Math.random] - Random number generator.
+   * @param {function} [rng=secureRandom] - Random number generator.
    * @returns {object} The result object containing effects and outcomes.
    */
-  resolveChoice: (choice, gameState, rng = Math.random) => {
+  resolveChoice: (choice, gameState, rng = secureRandom) => {
     let result
 
     if (choice.skillCheck) {
@@ -331,10 +332,10 @@ export const eventEngine = {
  *
  * @param {object} choice - Event choice selected by the player.
  * @param {object} gameState - Snapshot of the current game state.
- * @param {function} [rng=Math.random] - Random number generator.
+ * @param {function} [rng=secureRandom] - Random number generator.
  * @returns {{ result: object | null, delta: object | null, outcomeText: string, description: string }} Resolution payload.
  */
-export const resolveEventChoice = (choice, gameState, rng = Math.random) => {
+export const resolveEventChoice = (choice, gameState, rng = secureRandom) => {
   if (!choice || !gameState) {
     return { result: null, delta: null, outcomeText: '', description: '' }
   }

@@ -1,4 +1,5 @@
 // Logic for Social Media Virality and Posting
+import { secureRandom } from './crypto.js'
 
 // Platform metadata used internally by calculateSocialGrowth.
 // Not exported — UI consumers should use the social engine functions directly.
@@ -142,10 +143,10 @@ export const calculateSocialGrowth = (
  * Checks if a viral event triggers based on gig stats.
  * @param {object} stats - { accuracy, maxCombo, score }
  * @param {number} [modifiers=0] - Additional probability boost (0-1)
- * @param {number} [roll=Math.random()] - Deterministic roll (0-1)
+ * @param {number} [roll=secureRandom()] - Deterministic roll (0-1)
  * @returns {boolean} True if viral event occurs
  */
-export const checkViralEvent = (stats, modifiers = 0, roll = Math.random()) => {
+export const checkViralEvent = (stats, modifiers = 0, roll = secureRandom()) => {
   if (stats.accuracy > 95) return true
   // Combo threshold logic: Assuming 2.5x multiplier roughly correlates to 30-50 combo depending on scaling.
   // Using maxCombo directly.
