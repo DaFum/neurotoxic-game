@@ -38,6 +38,7 @@ class PixiStageController {
 
     this.toxicFilters = null
     this.emptyFilters = []
+    this.isToxicActive = false
   }
 
   /**
@@ -52,6 +53,7 @@ class PixiStageController {
     this.initPromise = (async () => {
       try {
         this.isDisposed = false
+        this.isToxicActive = false
 
         const container = this.containerRef.current
         if (!container) {
@@ -182,9 +184,15 @@ class PixiStageController {
 
     if (stats?.isToxicMode) {
       this.colorMatrix.hue(Math.sin(elapsed / 100) * 180, false)
-      this.stageContainer.filters = this.toxicFilters
+      if (!this.isToxicActive) {
+        this.stageContainer.filters = this.toxicFilters
+        this.isToxicActive = true
+      }
     } else {
-      this.stageContainer.filters = this.emptyFilters
+      if (this.isToxicActive) {
+        this.stageContainer.filters = this.emptyFilters
+        this.isToxicActive = false
+      }
     }
 
     this.laneManager.update(state)
