@@ -165,16 +165,45 @@ export const calculateSocialGrowth = (
 /**
  * Checks if a viral event triggers based on gig stats.
  * @param {object} stats - { accuracy, maxCombo, score }
- * @param {number} [modifiers=0] - Additional probability boost (0-1)
- * @param {number} [roll=secureRandom()] - Deterministic roll (0-1)
+ * @param {object|number} [options={}] - Options object OR legacy modifiers number.
+ * @param {number} [legacyRoll=secureRandom()] - Legacy roll argument (only used if options is number).
  * @returns {boolean} True if viral event occurs
  */
-export const checkViralEvent = (stats, modifiers = 0, roll = secureRandom()) => {
+export const checkViralEvent = (stats, options = {}, legacyRoll = secureRandom()) => {
+  // Backwards compatibility handling
+  let modifiers = 0
+  let roll = legacyRoll
+  let context = null
+
+  if (typeof options === 'number') {
+    modifiers = options
+  } else {
+    // New signature usage
+    modifiers = options.modifiers || 0
+    roll = options.roll !== undefined ? options.roll : secureRandom()
+    context = options.context || null
+  }
+
   if (stats.accuracy > 95) return true
   // Combo threshold logic: Assuming 2.5x multiplier roughly correlates to 30-50 combo depending on scaling.
   // Using maxCombo directly.
   if (stats.maxCombo > 50) return true
-  const chance = 0.01 + modifiers
+
+  let chance = 0.01 // Default low base chance
+
+  // If we have context, use the full virality score logic (which includes traits like social_manager)
+  if (context && typeof context.perfScore === 'number') {
+    chance = calculateViralityScore(
+      context.perfScore,
+      context.events || [],
+      context.venue,
+      context.band
+    )
+  }
+
+  // Apply modifiers
+  chance += modifiers
+
   return roll < chance
 }
 
