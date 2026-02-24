@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react'
 import { useGameState } from '../context/GameState'
 import { clampBandHarmony } from '../utils/gameStateUtils'
+import { handleNodeArrival } from '../utils/arrivalUtils'
 
 /**
  * Hook to encapsulate reusable arrival sequence logic for both legacy travel and Minigame integration.
@@ -55,33 +56,28 @@ export const useArrivalLogic = () => {
       // 5. Handle Node Arrival & Routing
 
       if (currentNode) {
-        if (currentNode.type === 'REST_STOP') {
-          const newMembers = (band?.members ?? []).map(m => ({
-            ...m,
-            stamina: Math.min(100, Math.max(0, m.stamina + 20)),
-            mood: Math.min(100, Math.max(0, m.mood + 10))
-          }))
-          updateBand({ members: newMembers })
-          addToast('Rested at stop. Band feels better.', 'success')
-        } else if (currentNode.type === 'SPECIAL' && !travelEventActive) {
-          const specialEvent = triggerEvent('special')
-          if (!specialEvent) {
-            addToast('A mysterious place, but nothing happened.', 'info')
-          }
-        } else if (currentNode.type === 'START') {
-          addToast('Home Sweet Home.', 'success')
-        }
+        handleNodeArrival({
+            node: currentNode,
+            band,
+            updateBand,
+            triggerEvent,
+            startGig,
+            addToast,
+            changeScene,
+            eventAlreadyActive: travelEventActive
+        })
       }
 
-      if (currentNode && (currentNode.type === 'GIG' || currentNode.type === 'FESTIVAL' || currentNode.type === 'FINALE')) {
-        if ((band?.harmony ?? 0) <= 0) {
-          addToast("Band's harmony too low to perform!", 'warning')
-          changeScene('OVERWORLD')
-        } else {
-          startGig(currentNode.venue)
-        }
-      } else {
-        changeScene('OVERWORLD')
+      // If it's a gig node, handleNodeArrival tries to start it.
+      // If startGig fails or it's not a gig, we ensure we route to OVERWORLD unless GIG started?
+      // handleNodeArrival only calls startGig for GIG nodes.
+      // It doesn't handle routing for non-GIG nodes except implicitly falling through.
+      // But useArrivalLogic is called when arriving, usually transition to OVERWORLD is needed if not Gig.
+      // The original code fell through to changeScene('OVERWORLD') if not Gig.
+
+      const isGig = currentNode && (currentNode.type === 'GIG' || currentNode.type === 'FESTIVAL' || currentNode.type === 'FINALE')
+      if (!isGig) {
+         changeScene('OVERWORLD')
       }
     } catch (e) {
       // If error, reset guard so user can try again

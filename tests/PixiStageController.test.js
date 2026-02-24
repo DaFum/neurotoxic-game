@@ -114,7 +114,11 @@ describe('PixiStageController', () => {
   let createPixiStageController
 
   beforeEach(async () => {
-    globalThis.window = { devicePixelRatio: 1 }
+    globalThis.window = {
+      devicePixelRatio: 1,
+      addEventListener: mock.fn(),
+      removeEventListener: mock.fn()
+    }
 
     // Reset mocks
     mockCrowdManager.init.mock.resetCalls()

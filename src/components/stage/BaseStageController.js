@@ -1,0 +1,95 @@
+
+import * as PIXI from 'pixi.js'
+import { logger } from '../../utils/logger'
+import { getOptimalResolution } from './utils'
+
+export class BaseStageController {
+  constructor({ containerRef, gameStateRef, updateRef, statsRef }) {
+    this.containerRef = containerRef
+    this.gameStateRef = gameStateRef
+    this.updateRef = updateRef
+    this.statsRef = statsRef
+    this.app = null
+    this.isDisposed = false
+    this.initPromise = null
+    this.container = null
+
+    // Bind methods
+    this.handleTicker = this.handleTicker.bind(this)
+    this.handleResize = this.handleResize.bind(this)
+  }
+
+  async init(options = {}) {
+    if (this.initPromise) return this.initPromise
+
+    this.initPromise = (async () => {
+      try {
+        const container = this.containerRef.current
+        if (!container) return
+
+        this.app = new PIXI.Application()
+        await this.app.init({
+          backgroundAlpha: 0,
+          resizeTo: container,
+          antialias: true,
+          resolution: getOptimalResolution(),
+          autoDensity: true,
+          ...options
+        })
+
+        if (this.isDisposed || !this.app) {
+          this.dispose()
+          return
+        }
+
+        container.appendChild(this.app.canvas)
+        this.container = new PIXI.Container()
+        this.app.stage.addChild(this.container)
+
+        // Subclass logic goes here
+        await this.setup()
+
+        window.addEventListener('resize', this.handleResize)
+        this.app.ticker.add(this.handleTicker)
+
+      } catch (e) {
+        logger.error(this.constructor.name, 'Init Failed', e)
+        this.dispose()
+      }
+    })()
+    return this.initPromise
+  }
+
+  // Abstract methods to be overridden
+  async setup() {}
+  update(dt) {}
+  draw() {}
+
+  handleResize() {
+    if (!this.app) return
+    this.draw()
+  }
+
+  handleTicker(ticker) {
+    if (this.isDisposed) return
+    if (this.updateRef.current) this.updateRef.current(ticker.deltaMS)
+
+    this.update(ticker.deltaMS)
+  }
+
+  dispose() {
+    this.isDisposed = true
+    this.initPromise = null
+    window.removeEventListener('resize', this.handleResize)
+
+    if (this.app) {
+      try {
+        this.app.ticker?.remove(this.handleTicker)
+        this.app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })
+      } catch (e) {
+        logger.warn(this.constructor.name, 'Destroy failed', e)
+      }
+      this.app = null
+    }
+  }
+}

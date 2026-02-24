@@ -16,6 +16,7 @@ import {
   getNodeVisibility as getNodeVisibilityUtil,
   checkSoftlock
 } from '../utils/mapUtils.js'
+import { handleNodeArrival } from '../utils/arrivalUtils.js'
 import { audioManager } from '../utils/AudioManager.js'
 import { logger } from '../utils/logger.js'
 import { handleError, StateError } from '../utils/errorHandler.js'
@@ -111,54 +112,19 @@ export const useTravelLogic = ({
    * Handles logic when arriving at a node
    * @param {Object} node - Arrived node
    */
-  const handleNodeArrival = useCallback(
+  const handleNodeArrivalCallback = useCallback(
     (node, eventAlreadyActive = false) => {
-      const band = bandRef.current
-      switch (node.type) {
-        case 'REST_STOP': {
-          const newMembers = (band?.members ?? []).map(m => ({
-            ...m,
-            stamina: Math.min(100, Math.max(0, m.stamina + 20)),
-            mood: Math.min(100, Math.max(0, m.mood + 10))
-          }))
-          updateBand({ members: newMembers })
-          addToast('Rested at stop. Band feels better.', 'success')
-          break
-        }
-        case 'SPECIAL': {
-          if (!eventAlreadyActive) {
-            const specialEvent = triggerEvent('special')
-            if (!specialEvent) {
-              addToast('A mysterious place, but nothing happened.', 'info')
-            }
-          }
-          break
-        }
-        case 'START': {
-          onShowHQ?.()
-          addToast('Home Sweet Home.', 'success')
-          break
-        }
-        case 'FESTIVAL':
-        case 'FINALE':
-        case 'GIG': {
-          if ((band?.harmony ?? 0) <= 0) {
-            addToast("Band's harmony too low to perform!", 'warning')
-            return
-          }
-          logger.info('TravelLogic', 'Starting Gig at destination', {
-            venue: node.venue.name
-          })
-          try {
-            startGig(node.venue)
-          } catch (error) {
-            handleError(error, {
-              addToast,
-              fallbackMessage: 'Failed to start Gig.'
-            })
-          }
-        }
-      }
+      handleNodeArrival({
+        node,
+        band: bandRef.current,
+        updateBand,
+        triggerEvent,
+        startGig,
+        addToast,
+        changeScene,
+        onShowHQ,
+        eventAlreadyActive
+      })
     },
     [updateBand, triggerEvent, startGig, addToast, onShowHQ]
   )
@@ -260,7 +226,7 @@ export const useTravelLogic = ({
       // Always handle node arrival regardless of events —
       // gigs must start even when a travel event pops up.
       // Pass flag so SPECIAL nodes don't overwrite an active travel event.
-      handleNodeArrival(node, travelEventActive)
+      handleNodeArrivalCallback(node, travelEventActive)
     },
     [
       travelTarget,
@@ -270,7 +236,7 @@ export const useTravelLogic = ({
       triggerEvent,
       advanceDay,
       addToast,
-      handleNodeArrival
+      handleNodeArrivalCallback
     ]
   )
 

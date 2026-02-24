@@ -7,20 +7,10 @@ const TOTAL_STEPS = 4
 export const TutorialManager = () => {
   const { player, updatePlayer, currentScene, settings, updateSettings } =
     useGameState()
-  const [step, setStep] = useState(player.tutorialStep || 0)
-
-  useEffect(() => {
-    // Sync local step with global player state if changed elsewhere (e.g. load game)
-    if (player.tutorialStep !== undefined && player.tutorialStep !== step) {
-      setStep(player.tutorialStep)
-    }
-    // step is used for comparison, but we only want to update if player.tutorialStep mismatches.
-    // Adding step to dependency array is safe here.
-  }, [player.tutorialStep, step])
+  const step = player.tutorialStep ?? 0
 
   const completeStep = () => {
     const nextStep = step + 1
-    setStep(nextStep)
     updatePlayer({ tutorialStep: nextStep })
 
     // If we passed the last tutorial step (currently 3), mark as seen globally
@@ -30,7 +20,6 @@ export const TutorialManager = () => {
   }
 
   const skipTutorial = () => {
-    setStep(-1)
     updatePlayer({ tutorialStep: -1 })
     updateSettings({ tutorialSeen: true })
   }
@@ -102,7 +91,7 @@ export const TutorialManager = () => {
             <div className='flex items-center gap-1.5 mb-4'>
               {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
                 <div
-                  key={i}
+                  key={`step-${i}`}
                   className={`w-2 h-2 transition-colors ${
                     i === step
                       ? 'bg-(--toxic-green)'

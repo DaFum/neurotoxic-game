@@ -251,22 +251,7 @@ const ReportPhase = ({ financials, onNext }) => (
         <h3 className='text-lg border-b-2 border-(--toxic-green) mb-4 pb-2 tracking-widest font-mono text-(--toxic-green)'>
           INCOME
         </h3>
-        <ul className='space-y-2.5 text-sm font-mono'>
-          {financials.income.breakdown.map((item, i) => (
-            <motion.li
-              key={i}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 + i * 0.1 }}
-              className='flex justify-between items-center'
-            >
-              <span className='text-(--star-white)/70'>{item.label}</span>
-              <span className='text-(--toxic-green) font-bold tabular-nums'>
-                +{item.value}€
-              </span>
-            </motion.li>
-          ))}
-        </ul>
+        <FinancialList items={financials.income.breakdown} type="income" />
         <div className='mt-4 pt-2 border-t border-(--toxic-green)/40 flex justify-between font-bold text-(--toxic-green)'>
           <span className='text-sm tracking-wider'>TOTAL</span>
           <span className='tabular-nums'>{financials.income.total}€</span>
@@ -282,22 +267,7 @@ const ReportPhase = ({ financials, onNext }) => (
         <h3 className='text-lg border-b-2 border-(--blood-red) text-(--blood-red) mb-4 pb-2 tracking-widest font-mono'>
           EXPENSES
         </h3>
-        <ul className='space-y-2.5 text-sm font-mono'>
-          {financials.expenses.breakdown.map((item, i) => (
-            <motion.li
-              key={i}
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 + i * 0.1 }}
-              className='flex justify-between items-center'
-            >
-              <span className='text-(--star-white)/70'>{item.label}</span>
-              <span className='text-(--blood-red) font-bold tabular-nums'>
-                -{item.value}€
-              </span>
-            </motion.li>
-          ))}
-        </ul>
+        <FinancialList items={financials.expenses.breakdown} type="expense" />
         <div className='mt-4 pt-2 border-t border-(--blood-red)/40 flex justify-between font-bold text-(--blood-red)'>
           <span className='text-sm tracking-wider'>TOTAL</span>
           <span className='tabular-nums'>{financials.expenses.total}€</span>
@@ -561,3 +531,24 @@ CompletePhase.propTypes = {
   }).isRequired,
   onContinue: PropTypes.func.isRequired
 }
+
+const FinancialList = ({ items, type }) => (
+  <ul className='space-y-2.5 text-sm font-mono'>
+    {items.map((item, i) => (
+      <motion.li
+        key={item.label}
+        initial={{ opacity: 0, x: type === 'income' ? -10 : 10 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.3 + i * 0.1 }}
+        className='flex justify-between items-center'
+      >
+        <span className='text-(--star-white)/70'>{item.label}</span>
+        <span
+          className={`${type === 'income' ? 'text-(--toxic-green)' : 'text-(--blood-red)'} font-bold tabular-nums`}
+        >
+          {type === 'income' ? '+' : '-'}{item.value}€
+        </span>
+      </motion.li>
+    ))}
+  </ul>
+)
