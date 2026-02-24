@@ -1,5 +1,5 @@
-import PropTypes from 'prop-types'
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import { VolumeSlider } from './VolumeSlider'
 import { ActionButton } from './ActionButton'
 import { Modal } from './Modal'
@@ -153,11 +153,11 @@ const DataManagement = ({ onDeleteSave }) => {
 
   return (
     <div>
-      <h2 className='font-[Metal_Mania] text-4xl uppercase text-(--blood-red) mb-6 border-b border-(--ash-gray) pb-2'>
+      <h2 className='font-(--font-display) text-4xl uppercase text-(--blood-red) mb-6 border-b border-(--ash-gray) pb-2'>
         DATA PURGE
       </h2>
       <div className='flex justify-between items-center'>
-        <p className='font-[Courier_New] text-lg text-(--ash-gray) max-w-xs'>
+        <p className='font-(--font-ui) text-lg text-(--ash-gray) max-w-xs'>
           WARNING: This action is irreversible. All tour progress will be lost.
         </p>
         <ActionButton
@@ -174,7 +174,7 @@ const DataManagement = ({ onDeleteSave }) => {
         title='CONFIRM DELETE'
       >
         <div className='space-y-6'>
-          <p className='font-mono text-(--ash-gray)'>
+          <p className='font-(--font-ui) text-(--ash-gray)'>
             Are you sure you want to delete your save game? This cannot be
             undone.
           </p>

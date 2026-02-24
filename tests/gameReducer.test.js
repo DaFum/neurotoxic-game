@@ -335,12 +335,18 @@ describe('gameReducer', () => {
   })
 
   describe('UNLOCK_TRAIT', () => {
-    test('UNLOCK_TRAIT unlocks a trait for a band member (Name fallback)', () => {
-      const testState = createInitialState()
-      testState.band.members = [
-          { name: 'Matze', traits: [] },
-          { name: 'Lars', traits: [] }
-      ]
+    it('UNLOCK_TRAIT unlocks a trait for a band member (Name fallback)', () => {
+      // Use immutable update pattern
+      const testState = {
+        ...createInitialState(),
+        band: {
+          ...createInitialState().band,
+          members: [
+            { name: 'Matze', traits: [] },
+            { name: 'Lars', traits: [] }
+          ]
+        }
+      }
 
       const action = {
         type: ActionTypes.UNLOCK_TRAIT,
@@ -349,18 +355,27 @@ describe('gameReducer', () => {
 
       const nextState = gameReducer(testState, action)
 
-      // Verify mock was called at least once
-      assert.ok(mockApplyTraitUnlocks.mock.calls.length >= 1)
+      // Verify mock was called exactly once for this action
+      assert.strictEqual(mockApplyTraitUnlocks.mock.calls.length, 1)
+
+      // Verify arguments: (state, [{ memberId: 'matze', traitId: 'gear_nerd' }])
+      const callArgs = mockApplyTraitUnlocks.mock.calls[0].arguments
+      assert.deepStrictEqual(callArgs[1], [{ memberId: 'matze', traitId: 'gear_nerd' }])
 
       // Verify state change (simulated by mock)
       const matze = nextState.band.members.find(m => m.name === 'Matze')
-      assert.equal(matze.traits.length, 1)
-      assert.equal(matze.traits[0].id, 'gear_nerd')
+      assert.strictEqual(matze.traits.length, 1)
+      assert.strictEqual(matze.traits[0].id, 'gear_nerd')
     })
 
-    test('UNLOCK_TRAIT adds toast', () => {
-      const testState = createInitialState()
-      testState.band.members = [{ name: 'Matze', traits: [] }]
+    it('UNLOCK_TRAIT adds toast', () => {
+      const testState = {
+        ...createInitialState(),
+        band: {
+          ...createInitialState().band,
+          members: [{ name: 'Matze', traits: [] }]
+        }
+      }
 
       const action = {
           type: ActionTypes.UNLOCK_TRAIT,

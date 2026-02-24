@@ -246,7 +246,7 @@ describe('Action Creators', () => {
   })
 
   describe('createUnlockTraitAction', () => {
-    test('creates correct action', () => {
+    it('creates correct action', () => {
       const action = createUnlockTraitAction('matze', 'gear_nerd')
       assert.deepStrictEqual(action, {
         type: ActionTypes.UNLOCK_TRAIT,

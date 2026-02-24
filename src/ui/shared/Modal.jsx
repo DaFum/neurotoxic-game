@@ -15,6 +15,8 @@ import PropTypes from 'prop-types'
  * @param {React.ReactNode} props.children - Content.
  */
 export const Modal = ({ isOpen, onClose, title, children }) => {
+  const dialogRef = React.useRef(null)
+
   useEffect(() => {
     const handleKeyDown = e => {
       if (e.key === 'Escape' && isOpen) {
@@ -23,6 +25,8 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
     }
     if (isOpen) {
       window.addEventListener('keydown', handleKeyDown)
+      // Focus the dialog for accessibility
+      setTimeout(() => dialogRef.current?.focus(), 50)
     }
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, onClose])
@@ -32,16 +36,18 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
   return (
     <div
       className='fixed inset-0 z-50 flex items-center justify-center bg-(--void-black)/90 cursor-pointer'
-      role='dialog'
-      aria-modal='true'
       onClick={onClose}
     >
       <div
-        className='w-full max-w-md border-4 border-(--toxic-green) p-6 bg-(--void-black) shadow-[0_0_25px_var(--toxic-green-glow)] cursor-auto'
+        ref={dialogRef}
+        className='w-full max-w-md border-4 border-(--toxic-green) p-6 bg-(--void-black) shadow-[0_0_25px_var(--toxic-green-glow)] cursor-auto focus:outline-none'
+        role='dialog'
+        aria-modal='true'
+        tabIndex={-1}
         onClick={e => e.stopPropagation()}
       >
         {title && (
-          <h2 className='text-3xl font-[Metal_Mania] text-(--toxic-green) mb-4 uppercase tracking-widest text-center'>
+          <h2 className='text-3xl font-(--font-display) text-(--toxic-green) mb-4 uppercase tracking-widest text-center'>
             {title}
           </h2>
         )}

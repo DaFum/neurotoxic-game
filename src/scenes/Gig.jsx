@@ -45,14 +45,7 @@ export const Gig = () => {
   // Use extracted effects hook
   const { chaosContainerRef, chaosStyle, triggerBandAnimation, setBandMemberRef } = useGigEffects(stats)
 
-  const handleTogglePause = useCallback(() => {
-    setIsPaused(prev => !prev)
-  }, [])
-
-  // To properly implement the requested logic:
-  // "if false and isPaused is false set hasInteractedRef.current = true and return" (Initial mount)
-  // "but if hasInteractedRef.current is false and isPaused is true..." (Immediate pause? Unlikely but safe)
-
+  // Pause Logic Effect - must be before handlers to follow structure
   useEffect(() => {
       if (!hasInteractedRef.current) {
           if (!isPaused) {
@@ -62,7 +55,7 @@ export const Gig = () => {
           // If starts paused (unlikely) or quick toggle
           pauseAudio()
           addToast('PAUSED', 'info')
-          setTimeout(() => resumeBtnRef.current?.focus(), 50)
+          // Focus management delegated to Modal or done here if needed
           hasInteractedRef.current = true
           return
       }
@@ -70,12 +63,15 @@ export const Gig = () => {
       if (isPaused) {
           pauseAudio()
           addToast('PAUSED', 'info')
-          setTimeout(() => resumeBtnRef.current?.focus(), 50)
       } else {
           resumeAudio()
           addToast('RESUMED', 'info')
       }
   }, [isPaused, addToast])
+
+  const handleTogglePause = useCallback(() => {
+    setIsPaused(prev => !prev)
+  }, [])
 
   const handleQuitGig = useCallback(async () => {
     if (gameStateRef.current) {

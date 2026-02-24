@@ -1,10 +1,10 @@
 
 import * as PIXI from 'pixi.js'
+import { GRID_WIDTH, GRID_HEIGHT } from '../../hooks/minigames/constants'
 import { EffectManager } from './EffectManager'
 import { logger } from '../../utils/logger'
 import { getPixiColorFromToken, loadTexture, getOptimalResolution } from './utils'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
-import { GRID_WIDTH, GRID_HEIGHT } from '../../hooks/minigames/constants'
 
 class RoadieStageController {
   constructor({ containerRef, gameStateRef, updateRef, statsRef }) {
