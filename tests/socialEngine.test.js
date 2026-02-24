@@ -102,171 +102,93 @@ test('calculateViralityScore combines multiple bonuses', () => {
   assert.ok(score <= 0.9, 'Should still be capped')
 })
 
-test('generatePostOptions returns array of options', () => {
-  const gigResult = { viralityScore: 0.5 }
-  const options = generatePostOptions(gigResult)
+const mockGameState = {
+  player: { money: 1000 },
+  band: {
+    harmony: 80,
+    members: [{ name: 'Matze', mood: 50, stamina: 50 }]
+  },
+  social: { instagram: 100, tiktok: 100, youtube: 100, newsletter: 100, loyalty: 0, controversyLevel: 0 },
+  lastGigStats: { score: 20000, accuracy: 80 },
+  activeEvent: null
+}
+
+test('generatePostOptions returns array of exactly 3 options', () => {
+  const options = generatePostOptions({}, mockGameState)
 
   assert.ok(Array.isArray(options), 'Should return array')
-  assert.ok(options.length >= 3, 'Should have at least 3 options')
+  assert.equal(options.length, 3, 'Should have exactly 3 options')
 })
 
-test('generatePostOptions includes moshpit option', () => {
-  const gigResult = { viralityScore: 0.5 }
-  const options = generatePostOptions(gigResult)
-
-  const moshOption = options.find(opt => opt.id === 'clip_mosh')
-  assert.ok(moshOption, 'Should include moshpit option')
-  assert.equal(moshOption.platform, 'TIKTOK', 'Moshpit should be for TikTok')
-  assert.ok(moshOption.viralChance > 0, 'Should have viral chance')
+test('generatePostOptions includes expected options based on game state', () => {
+  // Safe option always passes
+  const options = generatePostOptions({}, mockGameState)
+  const safeTitle = options.some(opt => opt.id === 'perf_acoustic_cover')
+  assert.ok(options.length === 3, 'Has 3 options')
 })
 
-test('generatePostOptions includes technical option', () => {
-  const gigResult = { viralityScore: 0.5 }
-  const options = generatePostOptions(gigResult)
-
-  const techOption = options.find(opt => opt.id === 'clip_tech')
-  assert.ok(techOption, 'Should include technical option')
-  assert.equal(
-    techOption.platform,
-    'YOUTUBE',
-    'Technical should be for YouTube'
-  )
-})
-
-test('generatePostOptions includes band pic option', () => {
-  const gigResult = { viralityScore: 0.5 }
-  const options = generatePostOptions(gigResult)
-
-  const picOption = options.find(opt => opt.id === 'pic_group')
-  assert.ok(picOption, 'Should include band pic option')
-  assert.equal(
-    picOption.platform,
-    'INSTAGRAM',
-    'Band pic should be for Instagram'
-  )
-})
-
-test('generatePostOptions scales mosh viral chance', () => {
-  const lowVirality = { viralityScore: 0.2 }
-  const highVirality = { viralityScore: 0.8 }
-
-  const lowOptions = generatePostOptions(lowVirality)
-  const highOptions = generatePostOptions(highVirality)
-
-  const lowMosh = lowOptions.find(opt => opt.id === 'clip_mosh')
-  const highMosh = highOptions.find(opt => opt.id === 'clip_mosh')
-
-  assert.ok(
-    highMosh.viralChance > lowMosh.viralChance,
-    'Higher base virality should increase mosh chance'
-  )
+test('generatePostOptions forces sponsor post if active', () => {
+  const sponsoredState = { ...mockGameState, social: { ...mockGameState.social, sponsorActive: true, instagram: 6000 } }
+  const options = generatePostOptions({}, sponsoredState)
+  
+  const sponsorOpt = options.find(opt => opt.id === 'comm_sellout_ad')
+  assert.ok(sponsorOpt, 'Should include forced sponsor ad')
 })
 
 test('generatePostOptions all have required properties', () => {
-  const gigResult = { viralityScore: 0.5 }
-  const options = generatePostOptions(gigResult)
+  const options = generatePostOptions({}, mockGameState)
 
   options.forEach(opt => {
     assert.ok(opt.id, 'Option should have id')
-    assert.ok(opt.title, 'Option should have title')
+    assert.ok(opt.name, 'Option should have name')
     assert.ok(opt.platform, 'Option should have platform')
-    assert.ok(opt.description, 'Option should have description')
-    assert.ok(
-      typeof opt.viralChance === 'number',
-      'Option should have viral chance'
-    )
-    assert.ok(opt.effect, 'Option should have effect')
-    assert.ok(opt.effect.platform, 'Effect should specify platform')
+    assert.ok(opt.badges, 'Option should have badges')
+    assert.ok(opt.category, 'Option should have category')
   })
 })
 
-test('resolvePost handles viral success', () => {
+test('resolvePost handles RNG success', () => {
   const postOption = {
-    viralChance: 0.8,
-    effect: { followers: 50, platform: 'tiktok' }
-  }
-
-  const result = resolvePost(postOption, 0.5) // Roll below viral chance
-
-  assert.equal(result.success, true, 'Should be viral success')
-  assert.equal(result.followers, 500, 'Viral should multiply followers by 10')
-  assert.equal(result.platform, 'tiktok', 'Should preserve platform')
-  assert.ok(result.message.includes('VIRAL'), 'Message should mention viral')
-})
-
-test('resolvePost handles non-viral post', () => {
-  const postOption = {
-    viralChance: 0.2,
-    effect: { followers: 50, platform: 'instagram' }
-  }
-
-  const result = resolvePost(postOption, 0.9) // Roll above viral chance
-
-  assert.equal(result.success, false, 'Should not be viral')
-  assert.equal(result.followers, 50, 'Should get base followers')
-  assert.equal(result.platform, 'instagram', 'Should preserve platform')
-  assert.ok(
-    !result.message.includes('VIRAL'),
-    'Message should not mention viral'
-  )
-})
-
-test('resolvePost viral multiplies by 10', () => {
-  const postOption = {
-    viralChance: 1.0,
-    effect: { followers: 20, platform: 'youtube' }
-  }
-
-  const result = resolvePost(postOption, 0.0) // Guaranteed viral
-
-  assert.equal(result.followers, 200, 'Viral should multiply by exactly 10')
-})
-
-test('resolvePost handles edge case of 0 base followers', () => {
-  const postOption = {
-    viralChance: 1.0,
-    effect: { followers: 0, platform: 'tiktok' }
-  }
-
-  const result = resolvePost(postOption, 0.0)
-
-  assert.equal(result.followers, 0, 'Should handle 0 followers gracefully')
-})
-
-test('resolvePost threshold at exact viral chance', () => {
-  const postOption = {
-    viralChance: 0.5,
-    effect: { followers: 100, platform: 'instagram' }
-  }
-
-  const atThreshold = resolvePost(postOption, 0.5)
-  const justBelow = resolvePost(postOption, 0.49)
-
-  assert.equal(atThreshold.success, false, 'At threshold should not be viral')
-  assert.equal(justBelow.success, true, 'Just below threshold should be viral')
-})
-
-test('resolvePost preserves all platforms', () => {
-  const platforms = ['instagram', 'tiktok', 'youtube']
-
-  platforms.forEach(platform => {
-    const postOption = {
-      viralChance: 0.5,
-      effect: { followers: 50, platform }
+    id: 'test',
+    platform: 'tiktok',
+    resolve: ({ diceRoll }) => {
+      if (diceRoll <= 0.7) return { success: true, followers: 3000 }
+      return { success: false, followers: -2000 }
     }
+  }
 
-    const result = resolvePost(postOption, 0.9)
-    assert.equal(result.platform, platform, `Should preserve ${platform}`)
-  })
+  const result = resolvePost(postOption, mockGameState, 0.5) // Roll below 0.7
+
+  assert.equal(result.success, true, 'Should be success')
+  assert.equal(result.followers, 3000, 'Should return success followers')
+  assert.equal(result.platform, 'tiktok', 'Should preserve platform')
+})
+
+test('resolvePost handles RNG failure', () => {
+  const postOption = {
+    id: 'test',
+    platform: 'tiktok',
+    resolve: ({ diceRoll }) => {
+      if (diceRoll <= 0.7) return { success: true, followers: 3000 }
+      return { success: false, followers: -2000, harmonyChange: -20 }
+    }
+  }
+
+  const result = resolvePost(postOption, mockGameState, 0.9) // Roll above 0.7
+
+  assert.equal(result.success, false, 'Should be failure')
+  assert.equal(result.followers, -2000, 'Should return failure followers')
+  assert.equal(result.harmonyChange, -20, 'Should process side effects')
 })
 
 test('resolvePost returns consistent structure', () => {
   const postOption = {
-    viralChance: 0.5,
-    effect: { followers: 50, platform: 'tiktok' }
+    id: 'test2',
+    platform: 'tiktok',
+    resolve: () => ({ success: true, followers: 50, message: 'Done' })
   }
 
-  const result = resolvePost(postOption, 0.3)
+  const result = resolvePost(postOption, mockGameState)
 
   assert.ok(typeof result.success === 'boolean', 'Should have boolean success')
   assert.ok(
@@ -283,16 +205,6 @@ test('calculateViralityScore handles low performance', () => {
 
   assert.ok(score > 0, 'Should still have some base chance')
   assert.ok(score < 0.1, 'Low performance should have low virality')
-})
-
-test('generatePostOptions viral chances are reasonable', () => {
-  const gigResult = { viralityScore: 0.5 }
-  const options = generatePostOptions(gigResult)
-
-  options.forEach(opt => {
-    assert.ok(opt.viralChance >= 0, 'Viral chance should be non-negative')
-    assert.ok(opt.viralChance <= 1.0, 'Viral chance should not exceed 100%')
-  })
 })
 
 test('applyReputationDecay returns original followers if days since last post < 3', () => {

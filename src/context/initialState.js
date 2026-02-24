@@ -75,7 +75,11 @@ export const DEFAULT_SOCIAL_STATE = {
   youtube: 14,
   newsletter: 0,
   viral: 0,
-  lastGigDay: null
+  lastGigDay: null,
+  controversyLevel: 0,
+  loyalty: 0,
+  egoFocus: null,
+  sponsorActive: false
 }
 
 /**

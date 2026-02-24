@@ -49,6 +49,22 @@ export const DetailedStatsTab = ({ player, band, social }) => {
           <DetailRow label="Newsletter" value={social.newsletter} locked={!isUnlocked(social.newsletter)} />
           <DetailRow label="Total Reach" value={totalReach} />
           <DetailRow label="Viral Status" value={social.viral ? 'VIRAL' : 'Normal'} locked={!social.viral} />
+          
+          <div className='mt-2 border-t border-(--ash-gray)/20 pt-2'>
+            <div className='text-xs text-(--ash-gray) mb-1 font-bold'>Advanced Metrics</div>
+            <DetailRow 
+              label="Fan Loyalty" 
+              value={social.loyalty || 0} 
+              subtext="Shields against bad gigs"
+              locked={!isUnlocked(social.loyalty)} 
+            />
+            <DetailRow 
+              label="Controversy" 
+              value={`${social.controversyLevel || 0}/100`} 
+              subtext={social.controversyLevel >= 100 ? "SHADOWBANNED (-75% Growth)" : "Risk of Shadowban"}
+              locked={!isUnlocked(social.controversyLevel)} 
+            />
+          </div>
         </Panel>
 
         <Panel title="Van Condition">

@@ -9,7 +9,6 @@ import {
   shouldTriggerBankruptcy
 } from '../utils/economyEngine'
 import {
-  calculateViralityScore,
   generatePostOptions,
   resolvePost,
   calculateSocialGrowth,
@@ -29,6 +28,7 @@ export const PostGig = () => {
     triggerEvent,
     activeEvent,
     band,
+    updateBand,
     updateSocial,
     social,
     lastGigStats,
@@ -75,8 +75,17 @@ export const PostGig = () => {
       })
       setFinancials(result)
 
-      const vScore = calculateViralityScore(perfScore, [], currentGig, band)
-      setPostOptions(generatePostOptions({ viralityScore: vScore }))
+      // Pass the necessary game state to evaluate post conditions
+      const gameStateForPosts = {
+        player,
+        band,
+        social,
+        lastGigStats,
+        activeEvent,
+        currentGig,
+        gigEvents: lastGigStats?.events || []
+      }
+      setPostOptions(generatePostOptions(currentGig, gameStateForPosts))
     }
   }, [
     financials,
@@ -84,12 +93,16 @@ export const PostGig = () => {
     lastGigStats,
     gigModifiers,
     player,
-    band, // Corrected dependency for virality calculation
+    band,
+    social,
+    activeEvent,
     perfScore
   ])
 
   const handlePostSelection = useCallback((option) => {
-    const result = resolvePost(option, secureRandom())
+    // We pass gameState into resolvePost to allow for complex RNG derivations if needed
+    const gameState = { player, band, social }
+    const result = resolvePost(option, gameState, secureRandom())
 
     // Use checkViralEvent for bonus viral flag based on actual gig stats
     const isGigViral = lastGigStats && checkViralEvent(lastGigStats)
@@ -100,21 +113,52 @@ export const PostGig = () => {
       result.platform,
       perfScore,
       social[result.platform] || 0,
-      isGigViral // Use actual gig viral status, not post result.success
+      isGigViral, // Use actual gig viral status, not post result.success
+      social.controversyLevel || 0,
+      social.loyalty || 0
     )
     const totalFollowers = result.followers + organicGrowth
 
     const finalResult = { ...result, totalFollowers }
     setPostResult(finalResult)
 
+    // Apply specific complex side effects
+    if (result.harmonyChange || result.allMembersMoodChange || result.allMembersStaminaChange || result.moodChange || result.staminaChange) {
+      const newBand = { ...band }
+      if (result.harmonyChange) {
+        newBand.harmony = Math.max(1, Math.min(100, newBand.harmony + result.harmonyChange))
+      }
+      if (result.allMembersMoodChange || result.allMembersStaminaChange || result.targetMember) {
+        newBand.members = newBand.members.map(m => {
+          let updatedM = { ...m }
+          if (result.allMembersMoodChange || m.name === result.targetMember) {
+            if (result.moodChange) updatedM.mood = Math.max(0, Math.min(100, updatedM.mood + result.moodChange))
+          }
+          if (result.allMembersStaminaChange || m.name === result.targetMember) {
+            if (result.staminaChange) updatedM.stamina = Math.max(0, Math.min(100, updatedM.stamina + result.staminaChange))
+          }
+          return updatedM
+        })
+      }
+      updateBand(newBand)
+    }
+
+    if (result.moneyChange) {
+      updatePlayer({ money: Math.max(0, player.money + result.moneyChange) })
+    }
+
     updateSocial({
-      [result.platform]: (social[result.platform] || 0) + totalFollowers,
+      [result.platform]: Math.max(0, (social[result.platform] || 0) + totalFollowers),
       viral: social.viral + (result.success ? 1 : 0) + gigViralBonus,
-      lastGigDay: player.day
+      lastGigDay: player.day,
+      controversyLevel: Math.max(0, (social.controversyLevel || 0) + (result.controversyChange || 0)),
+      loyalty: Math.max(0, (social.loyalty || 0) + (result.loyaltyChange || 0)),
+      egoFocus: result.egoClear ? null : (result.egoDrop ? result.egoDrop : social.egoFocus),
+      sponsorActive: option.id === 'comm_sellout_ad' ? false : social.sponsorActive
     })
 
     setPhase('COMPLETE')
-  }, [lastGigStats, perfScore, social, player.day, updateSocial])
+  }, [lastGigStats, perfScore, social, player, band, updateSocial, updateBand, updatePlayer])
 
   const handleContinue = useCallback(() => {
     if (!financials) return
@@ -322,21 +366,37 @@ const SocialOptionButton = memo(({ opt, index, onSelect }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 + index * 0.15 }}
       onClick={handleClick}
-      className='border-2 border-(--toxic-green)/40 p-4 hover:bg-(--toxic-green)/10 hover:border-(--toxic-green) text-left group transition-all relative overflow-hidden'
+      className='flex flex-col border-2 border-(--toxic-green)/40 p-4 hover:bg-(--toxic-green)/10 hover:border-(--toxic-green) text-left group transition-all relative overflow-hidden bg-(--void-black)/80 min-h-[140px]'
     >
-      <div className='font-bold mb-2 group-hover:text-(--toxic-green) transition-colors'>
-        {opt.title}
+      <div className='flex justify-between items-start mb-2 w-full'>
+        <div className='font-bold text-lg group-hover:text-(--toxic-green) transition-colors leading-tight pr-2'>
+          {opt.name}
+        </div>
+        <div className='flex gap-1 text-sm bg-(--void-black) px-1 rounded'>
+          {opt.badges?.map((b, i) => <span key={i}>{b}</span>)}
+        </div>
       </div>
-      <div className='text-xs text-(--ash-gray) font-mono space-y-1'>
-        <div className='flex justify-between'>
+      <div className='text-xs text-(--ash-gray) font-mono space-y-1 mb-2 w-full'>
+        <div className='flex justify-between border-b border-(--ash-gray)/20 pb-1'>
           <span>Platform</span>
           <span className='text-(--star-white)/60'>{opt.platform}</span>
         </div>
-        <div className='flex justify-between'>
-          <span>Viral Chance</span>
-          <span className='text-(--warning-yellow)'>
-            {Math.round((opt.viralChance ?? 0) * 100)}%
-          </span>
+        <div className='flex justify-between pt-1'>
+          <span>Category</span>
+          <span className='text-(--star-white)/60'>{opt.category}</span>
+        </div>
+      </div>
+      
+      {/* Side Effects Preview */}
+      <div className='mt-auto pt-2 text-[10px] uppercase font-mono tracking-wider w-full'>
+        <div className='flex flex-wrap gap-2'>
+          {/* Example preview indicators based on the resolve function signature if possible, or just imply risk based on badges */}
+          {opt.badges?.includes('⚠️') && (
+             <span className="text-(--blood-red)">High Variance Risk</span>
+          )}
+          {opt.badges?.includes('🛡️') && (
+             <span className="text-(--stamina-green)">Consistent Growth</span>
+          )}
         </div>
       </div>
       <div className='absolute inset-0 bg-white/5 translate-x-[-100%] group-hover:animate-[shimmer_0.8s_ease-out] skew-x-12 pointer-events-none' />
@@ -347,9 +407,10 @@ const SocialOptionButton = memo(({ opt, index, onSelect }) => {
 SocialOptionButton.displayName = 'SocialOptionButton'
 SocialOptionButton.propTypes = {
   opt: PropTypes.shape({
-    title: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
     platform: PropTypes.string.isRequired,
-    viralChance: PropTypes.number
+    category: PropTypes.string,
+    badges: PropTypes.arrayOf(PropTypes.string)
   }).isRequired,
   index: PropTypes.number.isRequired,
   onSelect: PropTypes.func.isRequired
@@ -381,9 +442,8 @@ export const SocialPhase = ({ options, onSelect }) => (
 SocialPhase.propTypes = {
   options: PropTypes.arrayOf(
     PropTypes.shape({
-      title: PropTypes.string.isRequired,
-      platform: PropTypes.string.isRequired,
-      viralChance: PropTypes.number
+      name: PropTypes.string.isRequired,
+      platform: PropTypes.string.isRequired
     })
   ).isRequired,
   onSelect: PropTypes.func.isRequired
@@ -431,6 +491,45 @@ const CompletePhase = ({ result, onContinue }) => (
         {result.platform}
       </div>
     </motion.div>
+    
+    {/* Side Effects Summary */}
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: 0.8 }}
+      className='mb-8 flex flex-col items-center gap-2 font-mono text-sm'
+    >
+      {result.moneyChange ? (
+        <div className={result.moneyChange > 0 ? 'text-(--toxic-green)' : 'text-(--blood-red)'}>
+          💰 {result.moneyChange > 0 ? '+' : ''}{result.moneyChange}€
+        </div>
+      ) : null}
+      
+      {result.harmonyChange ? (
+        <div className={result.harmonyChange > 0 ? 'text-(--toxic-green)' : 'text-(--blood-red)'}>
+          🎸 Harmony {result.harmonyChange > 0 ? '+' : ''}{result.harmonyChange}
+        </div>
+      ) : null}
+      
+      {result.controversyChange ? (
+         <div className='text-(--blood-red)'>
+           ⚠️ Controversy +{result.controversyChange}
+         </div>
+      ) : null}
+      
+      {result.loyaltyChange ? (
+         <div className={result.loyaltyChange > 0 ? 'text-(--toxic-green)' : 'text-(--blood-red)'}>
+           🛡️ Loyalty {result.loyaltyChange > 0 ? '+' : ''}{result.loyaltyChange}
+         </div>
+      ) : null}
+      
+      {(result.staminaChange || result.moodChange) ? (
+         <div className='text-(--ash-gray)'>
+            👥 {result.targetMember ? `${result.targetMember} Affected` : 'Band Affected'}
+         </div>
+      ) : null}
+    </motion.div>
+
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}

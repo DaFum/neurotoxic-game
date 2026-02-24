@@ -138,7 +138,19 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
   // 1. Costs
   // Rent/Food scaled by band size
   const bandSize = Array.isArray(nextBand.members) ? nextBand.members.length : 3
-  const dailyCost = EXPENSE_CONSTANTS.DAILY.BASE_COST + bandSize * 5
+  let dailyCost = EXPENSE_CONSTANTS.DAILY.BASE_COST + bandSize * 5
+
+  // YouTube Passive Ad Revenue Perk (per 10k subscribers)
+  if ((nextSocial.youtube || 0) >= 10000) {
+    const adRevenue = Math.floor((nextSocial.youtube || 0) / 10000) * 10
+    dailyCost -= adRevenue // Can result in net positive daily income if huge 
+  }
+  
+  // Newsletter Merch Sales Perk
+  if ((nextSocial.newsletter || 0) >= 1000 && rng() < 0.3) {
+    dailyCost -= Math.floor((nextSocial.newsletter || 0) / 100) * 5
+  }
+
   nextPlayer.money = Math.max(0, nextPlayer.money - dailyCost)
 
   // Van condition decay (wear from daily travel)
@@ -203,12 +215,37 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
     nextBand.harmony += 2
   }
 
+  // Ego System Drain (Lead Singer Syndrome)
+  if (nextSocial.egoFocus) {
+    nextBand.harmony -= 2 // Passive drain for spotlighting a single member
+    // Passive decay chance (20% per day to forget the drama)
+    if (rng() < 0.2) {
+      nextSocial.egoFocus = null
+    }
+  }
+
   // Clamp harmony to valid range after all modifications
   nextBand.harmony = Math.max(1, Math.min(100, nextBand.harmony))
 
   // 3. Social Decay
   // Viral decay
   if (nextSocial.viral > 0) nextSocial.viral -= 1
+  
+  // Controversy/Shadowban Decay
+  if (nextSocial.controversyLevel > 0) {
+    // Passive cooldown
+    nextSocial.controversyLevel = Math.max(0, nextSocial.controversyLevel - 1)
+  }
+
+  // Sponsor Trigger Metric
+  if (!nextSocial.sponsorActive && (nextSocial.instagram || 0) > 5000 && rng() < 0.1) {
+    nextSocial.sponsorActive = true
+  }
+
+  // TikTok Viral Surge Perk
+  if ((nextSocial.tiktok || 0) > 10000 && rng() < 0.05) {
+    nextSocial.viral += 1 // Free viral token
+  }
 
   // Follower decay for inactive platforms (days since last gig approximated by day count)
   // Apply mild organic decay every 3+ days to prevent stale follower counts
@@ -265,6 +302,9 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
       }
       if (hasSofa) stamina += 3
       if (hasOldCouch) stamina += 1
+      
+      // Instagram Gear Endorsement Perk (Free stamina recovery)
+      if ((nextSocial.instagram || 0) >= 10000) stamina += 2
 
       return {
         ...m,

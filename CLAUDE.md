@@ -65,11 +65,11 @@ Core logic lives in stateless utility modules:
 
 - **eventEngine.js** — Event pool filtering/triggering based on conditions (day, location, harmony, money) and choice resolution.
 - **economyEngine.js** — Ticket sales, merch, expenses, gig financials. Travel only consumes fuel liters and food money; refueling at gas stations is the only monetary fuel cost. `calculateGigExpenses` focuses on performance modifiers and excludes travel overhead.
-- **simulationUtils.js** — Daily updates (harmony decay, mood, stamina, social growth, van degradation).
+- **simulationUtils.js** — Daily updates (harmony decay, mood, stamina, social growth, van degradation, and **Passive Platform Perks** such as YouTube Ads, IG Endorsements, TikTok Surge, and Merch Sales).
 - **mapGenerator.js** — Procedural Germany map with venue nodes and travel connections. Assigns `FESTIVAL` type to nodes with capacity ≥ 1000.
 - **audioEngine.js** — Facade for audio/MIDI playback, timing clock, and WebAudio synth (see `src/utils/audio/`).
 - **rhythmUtils.js** — 3-lane note spawning, hit windows (Perfect/Good/Miss).
-- **socialEngine.js** — Follower growth and viral mechanics.
+- **socialEngine.js** — Dynamic social media post generation (`generatePostOptions`), resolution (`resolvePost`), follower growth mechanics, and virality.
 - **errorHandler.js** — Typed errors (`GameError`, `StateError`, `AudioError`), toast dispatch.
 
 ### Rhythm Game — `src/components/` + `src/hooks/`
@@ -90,7 +90,7 @@ Core logic lives in stateless utility modules:
 
 ### Data — `src/data/`
 
-Static game data: `venues.js`, `characters.js`, `songs.js`, `upgrades.js`, `hqItems.js`, `chatter.js`. Event definitions live in `src/data/events/*` and are aggregated through `src/data/events.js`.
+Static game data: `venues.js`, `characters.js`, `songs.js`, `upgrades.js`, `hqItems.js`, `chatter.js`, and `postOptions.js` (a condition-driven dictionary of dynamic social media actions). Event definitions live in `src/data/events/*` and are aggregated through `src/data/events.js`.
 
 ## Code Style
 
@@ -193,4 +193,4 @@ Additional docs: `docs/ARCHITECTURE.md` (system diagrams), `docs/STATE_TRANSITIO
 
 Commits use Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`).
 
-_Documentation sync: dependency/tooling baseline reviewed on 2026-02-23. Minigame architecture documented 2026-02-21. Economy refactor and map icons documented 2026-02-23._
+_Documentation sync: dependency/tooling baseline reviewed on 2026-02-23. Minigame architecture documented 2026-02-21. Economy refactor and map icons documented 2026-02-23. Social Engine Overhaul documented 2026-02-24._

@@ -1,9 +1,10 @@
 // Logic for Social Media Virality and Posting
 import { secureRandom } from './crypto.js'
+import { POST_OPTIONS } from '../data/postOptions.js'
 
 // Platform metadata used internally by calculateSocialGrowth.
 // Not exported — UI consumers should use the social engine functions directly.
-const SOCIAL_PLATFORMS = {
+export const SOCIAL_PLATFORMS = {
   INSTAGRAM: { id: 'instagram', label: 'Instagram', multiplier: 1.2 },
   TIKTOK: { id: 'tiktok', label: 'TikTok', multiplier: 1.5 }, // Volatile
   YOUTUBE: { id: 'youtube', label: 'YouTube', multiplier: 0.8 },
@@ -47,70 +48,91 @@ export const calculateViralityScore = (
 
 /**
  * Generates options for the "Post-Gig Social Media Strategy" phase.
+ * It evaluates conditions from POST_OPTIONS, assigns weights, and selects exactly 3.
  */
-export const generatePostOptions = gigResult => {
-  const options = []
-
-  // Option 1: Moshpit Chaos (High Viral, TikTok)
-  options.push({
-    id: 'clip_mosh',
-    title: 'Moshpit Chaos Clip',
-    platform: 'TIKTOK',
-    description: 'Short, chaotic clip of the wall of death.',
-    viralChance: gigResult.viralityScore * 1.5,
-    quality: 'Rough',
-    cost: 0,
-    effect: { followers: 50, platform: 'tiktok' }
+export const generatePostOptions = (gigResult, gameState) => {
+  // 1. Evaluate and collect eligible options
+  let eligibleOptions = POST_OPTIONS.filter(opt => {
+    try {
+      return opt.condition(gameState)
+    } catch (e) {
+      console.warn(`Condition failed for post option ${opt.id}:`, e)
+      return false
+    }
   })
 
-  // Option 2: Technical Breakdown (YouTube, Quality)
-  options.push({
-    id: 'clip_tech',
-    title: 'Technical Playthrough',
-    platform: 'YOUTUBE',
-    description: "Focus on Matze's solo. Musicians love this.",
-    viralChance: gigResult.viralityScore * 0.8, // Niche
-    quality: 'High',
-    cost: 0,
-    effect: { followers: 10, platform: 'youtube' } // Loyal fans
+  const results = []
+
+  // 1a. Forced Sponsor Post Override
+  if (gameState.social?.sponsorActive) {
+    // Force a specific commercial post or synthesize one
+    const sponsorOpt = eligibleOptions.find(o => o.id === 'comm_sellout_ad')
+    if (sponsorOpt) {
+      results.push({ ...sponsorOpt, _force: true })
+      // Remove from pool so it's not selected again
+      eligibleOptions = eligibleOptions.filter(o => o.id !== 'comm_sellout_ad')
+    }
+  }
+
+  // 2. Assign weights (optional logic based on game state, basic for now)
+  const weightedOptions = eligibleOptions.map(opt => {
+    let weight = 1.0
+    // Example: If very low money, boost crowdfund weight
+    if (opt.id === 'comm_crowdfund' && gameState.player.money < 100) weight += 50
+    return { ...opt, _weight: weight * secureRandom() }
   })
 
-  // Option 3: Band Pic (Instagram, Safe)
-  options.push({
-    id: 'pic_group',
-    title: 'Sweaty Band Selfie',
-    platform: 'INSTAGRAM',
-    description: 'Classic "Thank you [City]!" post.',
-    viralChance: 0.2, // Low viral but consistent
-    quality: 'Medium',
-    cost: 0,
-    effect: { followers: 20, platform: 'instagram' }
-  })
+  // 3. Sort by weight descending
+  weightedOptions.sort((a, b) => b._weight - a._weight)
 
-  return options
+  // 4. Fill remaining slots to reach 3 total
+  const needed = 3 - results.length
+  const selectedRandom = weightedOptions.slice(0, needed)
+  results.push(...selectedRandom)
+
+  // 5. Clean up output
+  return results.map(opt => {
+    // Strip internal properties before sending to UI
+    const { _weight, _force, ...cleanOpt } = opt
+    return cleanOpt
+  })
 }
 
 /**
- * Resolves the outcome of a social media post based on a random roll.
- * @param {object} postOption - The selected post option.
- * @param {number} diceRoll - A random number between 0 and 1.
- * @returns {object} The result containing success status, follower gain, and message.
+ * Resolves the outcome of a social media post based on its defined resolver.
+ * @param {object} postOption - The selected post option from POST_OPTIONS.
+ * @param {object} gameState - Current state required for resolution.
+ * @param {number} [diceRoll=secureRandom()] - Random number between 0 and 1.
+ * @returns {object} The full resolution map containing success, followers, and side effects.
  */
-export const resolvePost = (postOption, diceRoll) => {
-  const viralChance = postOption?.viralChance ?? 0
-  const baseFollowers = postOption?.effect?.followers ?? 0
-  const platform = postOption?.effect?.platform ?? 'unknown'
+export const resolvePost = (postOption, gameState, diceRoll = secureRandom()) => {
+  if (!postOption.resolve) {
+    console.error(`Post option ${postOption.id} is missing a resolve function.`)
+    return { success: false, followers: 0, platform: postOption.platform || 'unknown', message: 'Failed to post.' }
+  }
 
-  const isViral = diceRoll < viralChance
-  const followerGain = isViral ? baseFollowers * 10 : baseFollowers
-
-  return {
-    success: isViral,
-    followers: followerGain,
-    platform,
-    message: isViral
-      ? 'IT WENT VIRAL! Notifications exploding!'
-      : 'Solid engagement. Fans are happy.'
+  try {
+    const result = postOption.resolve({ ...gameState, diceRoll })
+    return {
+      success: result.success ?? true,
+      followers: result.followers ?? 0,
+      platform: result.platform || postOption.platform,
+      message: result.message || 'Post completed.',
+      // Side effects (optional, will be undefined if not provided)
+      moneyChange: result.moneyChange,
+      moodChange: result.moodChange,
+      harmonyChange: result.harmonyChange,
+      staminaChange: result.staminaChange,
+      controversyChange: result.controversyChange,
+      loyaltyChange: result.loyaltyChange,
+      targetMember: result.targetMember,
+      allMembersMoodChange: result.allMembersMoodChange,
+      allMembersStaminaChange: result.allMembersStaminaChange,
+      egoDrop: result.egoDrop
+    }
+  } catch (e) {
+    console.error(`Resolution failed for post ${postOption.id}:`, e)
+    return { success: false, followers: 0, platform: postOption.platform, message: 'An error occurred while posting.' }
   }
 }
 
@@ -120,23 +142,35 @@ export const resolvePost = (postOption, diceRoll) => {
  * @param {number} performance - Gig performance score (0-100)
  * @param {number} currentFollowers - Existing follower count
  * @param {boolean} [isViral=false] - Whether a viral event occurred
+ * @param {number} [controversyLevel=0] - Current shadowban meter
+ * @param {number} [loyalty=0] - Buffer against bad growth
  * @returns {number} Net follower growth
  */
 export const calculateSocialGrowth = (
   platform,
   performance,
   currentFollowers,
-  isViral = false
+  isViral = false,
+  controversyLevel = 0,
+  loyalty = 0
 ) => {
   const platformData = Object.values(SOCIAL_PLATFORMS).find(
     p => p.id === platform
   )
   const multiplier = platformData ? platformData.multiplier : 1.0
 
-  const baseGrowth = Math.max(0, performance - 50) * 0.5 // e.g. 80 score -> 15 base
-  const viralBonus = isViral ? currentFollowers * 0.1 + 100 : 0
+  // Loyalty shield: reduces the penalty of low performance
+  const effectivePerf = Math.min(100, performance + (loyalty * 0.5))
+  let baseGrowth = Math.max(0, effectivePerf - 50) * 0.5 // e.g. 80 score -> 15 base
+  
+  // Shadowban penalty
+  if (controversyLevel >= 100) {
+    baseGrowth *= 0.25 // 75% reduction in organic growth
+  }
 
-  return Math.floor(baseGrowth * multiplier + viralBonus)
+  const viralBonus = isViral ? (currentFollowers * 0.1) + 100 : 0
+
+  return Math.floor((baseGrowth * multiplier) + viralBonus)
 }
 
 /**
