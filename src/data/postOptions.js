@@ -457,5 +457,86 @@ export const POST_OPTIONS = [
         unlockTrait: { memberId, traitId: 'gear_nerd' }
       }
     }
+  },
+
+  // --- NEW TREND-ALIGNED POSTS ---
+
+  {
+    id: 'tech_rig_rundown',
+    name: 'Detailed Rig Rundown',
+    platform: SOCIAL_PLATFORMS.YOUTUBE.id,
+    category: 'Commercial', // Fits TECH trend
+    badges: [POST_BADGES.SAFE, POST_BADGES.STORY],
+    condition: ({ band }) => band.members.some(m => m.traits?.some(t => t.id === 'gear_nerd' || t.id === 'tech_wizard')),
+    resolve: () => ({
+      type: 'FIXED',
+      success: true,
+      platform: SOCIAL_PLATFORMS.YOUTUBE.id,
+      followers: 1200,
+      moneyChange: 50, // Ad revenue
+      message: 'The comments section is arguing about cable capacitance. It is glorious.'
+    })
+  },
+  {
+    id: 'wholesome_dinner',
+    name: 'Wholesome Band Dinner',
+    platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+    category: 'Lifestyle', // Fits WHOLESOME trend logic
+    badges: [POST_BADGES.SAFE, '🛡️'], // Explicitly adding shield for logic check
+    condition: ({ band }) => band.harmony > 50,
+    resolve: () => ({
+      type: 'FIXED',
+      success: true,
+      platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+      followers: 400,
+      harmonyChange: 10,
+      moodChange: 5,
+      allMembersMoodChange: true,
+      message: 'Fans love seeing the band actually getting along.'
+    })
+  },
+  {
+    id: 'music_theory_thread',
+    name: 'Deep Music Theory Thread',
+    platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
+    category: 'Performance', // Fits MUSIC trend
+    badges: [POST_BADGES.STORY],
+    condition: ({ band }) => band.members.some(m => m.traits?.some(t => t.id === 'melodic_genius' || t.id === 'virtuoso')),
+    resolve: () => ({
+      type: 'FIXED',
+      success: true,
+      platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
+      followers: 300,
+      loyaltyChange: 15,
+      message: 'You explained the use of mixolydian b6. The music nerds are ecstatic.'
+    })
+  },
+  {
+    id: 'drama_leaked_dms',
+    name: '"Accidentally" Leaked DMs',
+    platform: SOCIAL_PLATFORMS.TIKTOK.id,
+    category: 'Drama', // Fits DRAMA trend
+    badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
+    condition: () => true,
+    resolve: ({ diceRoll }) => {
+      if (diceRoll < 0.6) {
+        return {
+          success: true,
+          platform: SOCIAL_PLATFORMS.TIKTOK.id,
+          followers: 4000,
+          controversyChange: 20,
+          message: 'It went viral instantly. The gossip channels are covering it.'
+        }
+      } else {
+        return {
+          success: false,
+          platform: SOCIAL_PLATFORMS.TIKTOK.id,
+          followers: -1000,
+          controversyChange: 40,
+          harmonyChange: -20,
+          message: 'It backfired. You look petty and everyone hates it.'
+        }
+      }
+    }
   }
 ]

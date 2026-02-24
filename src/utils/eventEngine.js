@@ -129,6 +129,10 @@ const processEffect = (eff, delta) => {
         if (!delta.player.stats) delta.player.stats = {}
         delta.player.stats.conflictsResolved = (delta.player.stats.conflictsResolved || 0) + eff.value
       }
+      if (eff.stat === 'stageDives') {
+        if (!delta.player.stats) delta.player.stats = {}
+        delta.player.stats.stageDives = (delta.player.stats.stageDives || 0) + eff.value
+      }
       break
     case 'item':
       if (eff.item) {
@@ -276,6 +280,28 @@ export const eventEngine = {
         result.effects.push({
           type: 'stat_increment',
           stat: 'conflictsResolved',
+          value: 1
+        })
+      }
+
+      // Track Stage Dive attempts for unlocking 'showman'
+      if (gameState.activeEvent?.id === 'gig_mid_stage_diver' && choice.label.includes('Let it happen')) {
+        if (result.type === 'composite') {
+           result = { ...result, effects: [...result.effects] }
+        } else {
+           const originalEffect = { ...result }
+           delete originalEffect.outcome
+           delete originalEffect.description
+           result = {
+             type: 'composite',
+             effects: [ originalEffect ],
+             outcome: result.outcome,
+             description: result.description
+           }
+        }
+        result.effects.push({
+          type: 'stat_increment',
+          stat: 'stageDives',
           value: 1
         })
       }

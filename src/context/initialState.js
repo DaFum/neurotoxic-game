@@ -33,7 +33,8 @@ export const DEFAULT_PLAYER_STATE = {
   passiveFollowers: 0,
   stats: {
     totalDistance: 0,
-    conflictsResolved: 0
+    conflictsResolved: 0,
+    stageDives: 0
   }
 }
 
@@ -83,7 +84,9 @@ export const DEFAULT_SOCIAL_STATE = {
   controversyLevel: 0,
   loyalty: 0,
   egoFocus: null,
-  sponsorActive: false
+  sponsorActive: false,
+  trend: 'NEUTRAL', // 'NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME'
+  activeDeals: [] // List of { id, remainingGigs, ... }
 }
 
 /**

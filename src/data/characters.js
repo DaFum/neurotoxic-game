@@ -9,6 +9,14 @@
 // - social_manager (Marius): Implemented
 // - virtuoso (Matze): Implemented
 // - road_warrior (Marius): Implemented
+// - tech_wizard (Matze): Implemented
+// - showman (Lars): Implemented
+// - melodic_genius (Marius): Implemented
+//
+// TODO: Relationship Mechanics
+// - Add `relationships` object to each character: { [otherMemberId]: score }
+// - Add dynamic events that trigger based on low/high relationship scores
+// - Traits like 'Grudge Holder' or 'Peacemaker' could affect these scores
 export const CHARACTERS = {
   MATZE: {
     name: 'Matze',
@@ -35,6 +43,13 @@ export const CHARACTERS = {
         desc: '+10% Hit Window',
         effect: 'hit_window_bonus',
         unlockHint: 'Complete a solo without missing a note.'
+      },
+      {
+        id: 'tech_wizard',
+        name: 'Tech Wizard',
+        desc: '+10% Score on Technical Songs',
+        effect: 'score_bonus_tech',
+        unlockHint: 'Get 100% Accuracy on a Technical song.'
       }
     ],
     equipment: {
@@ -60,6 +75,13 @@ export const CHARACTERS = {
         desc: '+25% Score on fast sections',
         effect: 'score_bonus_fast',
         unlockHint: 'Maintain a 50+ combo during a fast section (>160 BPM).'
+      },
+      {
+        id: 'showman',
+        name: 'Showman',
+        desc: '+20% Virality Bonus',
+        effect: 'viral_bonus_show',
+        unlockHint: 'Perform 3 Stage Dives successfully.'
       }
     ],
     equipment: { set: 'Pearl Export', cymbals: 'Zildjian/Sabian Mix' }
@@ -95,6 +117,13 @@ export const CHARACTERS = {
         desc: '-15% Fuel Consumption',
         effect: 'fuel_discount',
         unlockHint: 'Travel 5000km in total.'
+      },
+      {
+        id: 'melodic_genius',
+        name: 'Melodic Genius',
+        desc: '+10% Max Combo on Slow Songs',
+        effect: 'combo_bonus_slow',
+        unlockHint: 'Maintain a 30+ combo in a slow song (<120 BPM).'
       }
     ],
     equipment: { bass: 'Ibanez SR505', amp: 'Ampeg SVT-3 Pro' }

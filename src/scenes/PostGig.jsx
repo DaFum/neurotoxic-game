@@ -12,7 +12,8 @@ import {
   generatePostOptions,
   resolvePost,
   checkViralEvent,
-  calculateSocialGrowth
+  calculateSocialGrowth,
+  generateBrandOffers
 } from '../utils/socialEngine'
 import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils'
 
@@ -37,10 +38,11 @@ export const PostGig = () => {
     changeScene,
     unlockTrait
   } = useGameState()
-  const [phase, setPhase] = useState('REPORT') // REPORT, SOCIAL, COMPLETE
+  const [phase, setPhase] = useState('REPORT') // REPORT, SOCIAL, DEALS, COMPLETE
   const [financials, setFinancials] = useState(null)
   const [postOptions, setPostOptions] = useState([])
   const [postResult, setPostResult] = useState(null)
+  const [brandOffers, setBrandOffers] = useState([])
 
   const perfScore = useMemo(() => {
     const rawScore = lastGigStats?.score || 0
@@ -88,6 +90,10 @@ export const PostGig = () => {
         gigEvents: lastGigStats?.events || []
       }
       setPostOptions(generatePostOptions(currentGig, gameStateForPosts))
+
+      // Generate potential brand offers (Post-Gig opportunity)
+      const offers = generateBrandOffers(gameStateForPosts, secureRandom)
+      setBrandOffers(offers)
     }
   }, [
     financials,
@@ -171,8 +177,59 @@ export const PostGig = () => {
       sponsorActive: option.id === 'comm_sellout_ad' ? false : social.sponsorActive
     })
 
+    // If there are brand offers, go to DEALS phase, else COMPLETE
+    if (brandOffers.length > 0) {
+      setPhase('DEALS')
+    } else {
+      setPhase('COMPLETE')
+    }
+  }, [lastGigStats, perfScore, social, player, band, updateSocial, updateBand, updatePlayer, unlockTrait, addToast, brandOffers])
+
+  const handleAcceptDeal = useCallback((deal) => {
+    // Apply upfront bonuses
+    if (deal.offer.upfront) {
+      updatePlayer({ money: clampPlayerMoney(player.money + deal.offer.upfront) })
+    }
+    if (deal.offer.item) {
+      const newInventory = { ...band.inventory, [deal.offer.item]: true }
+      updateBand({ inventory: newInventory })
+    }
+
+    // Apply penalties immediately if defined (e.g. sellout hit)
+    if (deal.penalty) {
+      const newSocial = { ...social }
+      if (deal.penalty.loyalty) newSocial.loyalty = Math.max(0, (newSocial.loyalty || 0) + deal.penalty.loyalty)
+      if (deal.penalty.controversy) newSocial.controversyLevel = Math.max(0, (newSocial.controversyLevel || 0) + deal.penalty.controversy)
+
+      // Store active deal
+      const newActiveDeals = [...(newSocial.activeDeals || []), { ...deal, remainingGigs: deal.offer.duration }]
+      newSocial.activeDeals = newActiveDeals
+
+      updateSocial(newSocial)
+    } else {
+       // Store active deal without immediate penalties
+       const newActiveDeals = [...(social.activeDeals || []), { ...deal, remainingGigs: deal.offer.duration }]
+       updateSocial({ activeDeals: newActiveDeals })
+    }
+
+    addToast(`Accepted deal: ${deal.name}`, 'success')
     setPhase('COMPLETE')
-  }, [lastGigStats, perfScore, social, player, band, updateSocial, updateBand, updatePlayer, unlockTrait, addToast])
+  }, [player, band, social, updatePlayer, updateBand, updateSocial, addToast])
+
+  const handleRejectDeals = useCallback(() => {
+    setPhase('COMPLETE')
+  }, [])
+
+  const handleSpinStory = useCallback(() => {
+    if (player.money < 200) {
+      addToast('Not enough cash for PR!', 'error')
+      return
+    }
+
+    updatePlayer({ money: player.money - 200 })
+    updateSocial({ controversyLevel: Math.max(0, (social.controversyLevel || 0) - 25) })
+    addToast('Story Spun. Controversy reduced.', 'success')
+  }, [player, social, updatePlayer, updateSocial, addToast])
 
   const handleContinue = useCallback(() => {
     if (!financials) return
@@ -236,11 +293,21 @@ export const PostGig = () => {
         )}
 
         {phase === 'SOCIAL' && (
-          <SocialPhase options={postOptions} onSelect={handlePostSelection} />
+          <SocialPhase options={postOptions} onSelect={handlePostSelection} trend={social.trend} />
+        )}
+
+        {phase === 'DEALS' && (
+          <DealsPhase offers={brandOffers} onAccept={handleAcceptDeal} onSkip={handleRejectDeals} />
         )}
 
         {phase === 'COMPLETE' && (
-          <CompletePhase result={postResult} onContinue={handleContinue} />
+          <CompletePhase
+            result={postResult}
+            onContinue={handleContinue}
+            onSpinStory={handleSpinStory}
+            player={player}
+            social={social}
+          />
         )}
       </motion.div>
     </div>
@@ -400,12 +467,17 @@ SocialOptionButton.propTypes = {
   onSelect: PropTypes.func.isRequired
 }
 
-export const SocialPhase = ({ options, onSelect }) => (
+export const SocialPhase = ({ options, onSelect, trend }) => (
   <div className='space-y-6'>
     <div className='text-center mb-2'>
       <h3 className='text-xl font-mono tracking-widest'>
         POST TO SOCIAL MEDIA
       </h3>
+      {trend && (
+        <div className='text-sm text-(--toxic-green) tracking-widest mt-1 font-bold animate-pulse'>
+          CURRENT TREND: {trend}
+        </div>
+      )}
       <div className='text-[10px] text-(--ash-gray) tracking-wider mt-1'>
         CHOOSE YOUR STRATEGY
       </div>
@@ -430,10 +502,67 @@ SocialPhase.propTypes = {
       platform: PropTypes.string.isRequired
     })
   ).isRequired,
-  onSelect: PropTypes.func.isRequired
+  onSelect: PropTypes.func.isRequired,
+  trend: PropTypes.string
 }
 
-const CompletePhase = ({ result, onContinue }) => (
+const DealsPhase = ({ offers, onAccept, onSkip }) => (
+  <div className='space-y-6'>
+    <div className='text-center mb-4'>
+      <h3 className='text-xl font-mono tracking-widest text-(--warning-yellow)'>
+        INCOMING BRAND OFFERS
+      </h3>
+      <div className='text-[10px] text-(--ash-gray) tracking-wider mt-1'>
+        SELL OUT OR STAY TRUE?
+      </div>
+    </div>
+
+    <div className='grid grid-cols-1 gap-4'>
+      {offers.map((deal) => (
+        <div key={deal.id} className='border-2 border-(--toxic-green) p-4 bg-(--void-black)/80 flex justify-between items-center group hover:bg-(--toxic-green)/10 transition-colors'>
+          <div className='flex-1'>
+            <div className='font-bold text-lg text-(--toxic-green)'>{deal.name}</div>
+            <div className='text-xs text-(--ash-gray) italic mb-2'>{deal.description}</div>
+            <div className='text-xs font-mono grid grid-cols-2 gap-x-4 gap-y-1 text-(--star-white)/80'>
+              <div>💰 Upfront: {deal.offer.upfront}€</div>
+              <div>📅 Duration: {deal.offer.duration} Gigs</div>
+              {deal.offer.perGig && <div>💵 Per Gig: {deal.offer.perGig}€</div>}
+              {deal.offer.item && <div>🎁 Item: {deal.offer.item}</div>}
+              {deal.penalty && <div className='text-(--blood-red)'>⚠️ Risk: {JSON.stringify(deal.penalty)}</div>}
+            </div>
+          </div>
+          <button
+            onClick={() => onAccept(deal)}
+            className='ml-4 px-4 py-2 bg-(--toxic-green) text-black font-bold uppercase hover:scale-105 transition-transform'
+          >
+            ACCEPT
+          </button>
+        </div>
+      ))}
+    </div>
+
+    <div className='text-center mt-6'>
+      <button
+        onClick={onSkip}
+        className='text-sm text-(--ash-gray) hover:text-(--star-white) underline decoration-dotted'
+      >
+        Reject All Offers & Continue &gt;
+      </button>
+    </div>
+  </div>
+)
+
+DealsPhase.propTypes = {
+  offers: PropTypes.array.isRequired,
+  onAccept: PropTypes.func.isRequired,
+  onSkip: PropTypes.func.isRequired
+}
+
+const CompletePhase = ({ result, onContinue, onSpinStory, player, social }) => {
+  const hasPR = player.hqUpgrades?.includes('pr_manager_contract')
+  const isHighControversy = (social?.controversyLevel || 0) > 50
+
+  return (
   <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
@@ -518,7 +647,17 @@ const CompletePhase = ({ result, onContinue }) => (
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.9 }}
+      className="flex flex-col gap-4 items-center"
     >
+      {hasPR && isHighControversy && (
+        <button
+          onClick={onSpinStory}
+          className='bg-(--blood-red) text-(--star-white) px-6 py-2 font-bold hover:bg-(--star-white) hover:text-(--blood-red) border-2 border-(--blood-red) uppercase tracking-wider text-sm'
+        >
+          Spin Story (-200€, -25 Controversy)
+        </button>
+      )}
+
       <button
         onClick={onContinue}
         className='bg-(--toxic-green) text-(--void-black) px-8 py-3 font-bold hover:bg-(--star-white) uppercase tracking-wider shadow-[4px_4px_0px_var(--void-black)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all'
@@ -527,7 +666,8 @@ const CompletePhase = ({ result, onContinue }) => (
       </button>
     </motion.div>
   </motion.div>
-)
+  )
+}
 
 CompletePhase.propTypes = {
   result: PropTypes.shape({
@@ -537,7 +677,10 @@ CompletePhase.propTypes = {
     totalFollowers: PropTypes.number.isRequired,
     platform: PropTypes.string.isRequired
   }).isRequired,
-  onContinue: PropTypes.func.isRequired
+  onContinue: PropTypes.func.isRequired,
+  onSpinStory: PropTypes.func,
+  player: PropTypes.object,
+  social: PropTypes.object
 }
 
 const FinancialList = ({ items, type }) => (

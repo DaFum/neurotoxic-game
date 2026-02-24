@@ -109,6 +109,17 @@ export const calculateGigPhysics = (bandState, song) => {
     multipliers.drums = 1.5
   }
 
+  // Marius: Melodic Genius (Better flow on slow songs)
+  if (marius && isSlowSong && hasTrait(marius, 'melodic_genius')) {
+    // Bonus to hit window instead of score multiplier to simulate "flow"
+    hitWindows.bass *= 1.15
+  }
+
+  // Matze: Tech Wizard (Bonus score on complex songs)
+  if (matze && isTechnicalSong && hasTrait(matze, 'tech_wizard')) {
+    multipliers.guitar *= 1.15
+  }
+
   // Lars: Party Animal (Crowd loves the energy)
   if (lars && hasTrait(lars, 'party_animal')) {
     multipliers.drums *= 1.1

@@ -613,6 +613,16 @@ export const HQ_ITEMS = {
         stat: 'fame',
         value: 5
       }
+    },
+    {
+      id: 'pr_manager_contract',
+      name: 'Retainer: PR Manager',
+      category: 'HQ',
+      cost: 500,
+      currency: 'money',
+      img: 'ITEM_HQ_BOTNET',
+      description: 'A contact who can spin any story. Unlocks "Spin Story" option when Controversy is high.',
+      effect: { type: 'unlock_hq', id: 'pr_manager_contract' }
     }
   ]
 }
