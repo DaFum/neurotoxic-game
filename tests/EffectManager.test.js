@@ -289,4 +289,26 @@ describe('EffectManager', () => {
     assert.equal(pooledEffect.visible, true)
     assert.equal(pooledEffect.x, 100)
   })
+
+  test('spawnHitEffect removes the oldest effect (lowest life) even if array is unordered', () => {
+    // Fill to capacity
+    for (let i = 0; i < 50; i++) {
+      effectManager.spawnHitEffect(i, 0, 0xFFFFFF)
+      effectManager.activeEffects[i].id = `effect-${i}`
+      effectManager.activeEffects[i].life = 1.0
+    }
+
+    // Pick a victim (index 25) and make it oldest
+    effectManager.activeEffects[25].life = 0.1
+
+    // Spawn 51st effect
+    effectManager.spawnHitEffect(100, 0, 0xFFFFFF)
+
+    // Verify victim is gone (or rather, no effect has life 0.1)
+    const hasVictim = effectManager.activeEffects.some(e => e.life === 0.1)
+    assert.equal(hasVictim, false, 'The oldest effect should have been removed')
+
+    // Verify length is still 50
+    assert.equal(effectManager.activeEffects.length, 50)
+  })
 })
