@@ -111,10 +111,11 @@ test('Minigame State Transitions', async (t) => {
     // Scene transition is now handled by UI overlay, so scene remains PRE_GIG_MINIGAME
     assert.strictEqual(newState.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
 
-    // equipmentDamage=5 -> stress=1 -> harmony-=1; repairCost=10 -> money-=10
+    // equipmentDamage=5 -> stress=1 -> harmony-=1; repairCost=10.
+    // Matze has 'gear_nerd' -> -20% repair cost -> repairCost = 8 -> money-=8
     // harmony: 80 - 1 = 79
-    // money: 500 - 10 = 490
+    // money: 500 - 8 = 492
     assert.strictEqual(newState.band.harmony, 79)
-    assert.strictEqual(newState.player.money, 490)
+    assert.strictEqual(newState.player.money, 492)
   })
 })
