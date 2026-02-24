@@ -57,6 +57,22 @@ export const usePurchaseLogic = ({
   )
 
   /**
+   * Helper to add a van upgrade to the player patch if not already present.
+   */
+  const addVanUpgrade = useCallback((playerPatch, upgradeId) => {
+    const currentUpgrades =
+      playerPatch.van?.upgrades ?? player.van?.upgrades ?? []
+
+    if (!currentUpgrades.includes(upgradeId)) {
+      return {
+        ...(playerPatch.van ?? player.van ?? {}),
+        upgrades: [...currentUpgrades, upgradeId]
+      }
+    }
+    return playerPatch.van ?? player.van ?? {}
+  }, [player.van])
+
+  /**
    * Checks if an item is already owned
    * @param {Object} item - Item to check
    * @returns {boolean} True if owned
@@ -361,15 +377,7 @@ export const usePurchaseLogic = ({
             bandPatch = result.bandPatch
 
             if (item.oneTime !== false) {
-              const currentUpgrades =
-                playerPatch.van?.upgrades ?? player.van?.upgrades ?? []
-
-              if (!currentUpgrades.includes(item.id)) {
-                playerPatch.van = {
-                  ...(playerPatch.van ?? player.van ?? {}),
-                  upgrades: [...currentUpgrades, item.id]
-                }
-              }
+              playerPatch.van = addVanUpgrade(playerPatch, item.id)
             }
             break
           }
@@ -390,15 +398,7 @@ export const usePurchaseLogic = ({
             playerPatch = result.playerPatch
             bandPatch = result.bandPatch
             // Mark passive items as owned via van upgrades to ensure isItemOwned returns true
-            const currentUpgrades =
-              playerPatch.van?.upgrades ?? player.van?.upgrades ?? []
-
-            if (!currentUpgrades.includes(item.id)) {
-              playerPatch.van = {
-                ...(playerPatch.van ?? player.van ?? {}),
-                upgrades: [...currentUpgrades, item.id]
-              }
-            }
+            playerPatch.van = addVanUpgrade(playerPatch, item.id)
             break
           }
 
@@ -423,14 +423,7 @@ export const usePurchaseLogic = ({
           !isConsumable &&
           effect.type !== 'unlock_upgrade'
         ) {
-          const currentUpgrades =
-            playerPatch.van?.upgrades ?? player.van?.upgrades ?? []
-          if (!currentUpgrades.includes(item.id)) {
-            playerPatch.van = {
-              ...(playerPatch.van ?? player.van ?? {}),
-              upgrades: [...currentUpgrades, item.id]
-            }
-          }
+          playerPatch.van = addVanUpgrade(playerPatch, item.id)
         }
 
         // Apply updates
@@ -496,7 +489,8 @@ export const usePurchaseLogic = ({
       applyUnlockUpgrade,
       applyUnlockHQ,
       applyPassive,
-      getAdjustedCost
+      getAdjustedCost,
+      addVanUpgrade
     ]
   )
 

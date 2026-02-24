@@ -24,6 +24,31 @@ import { SONGS_DB } from '../../data/songs.js'
 const MidiParser = ToneJsMidi?.Midi ?? ToneJsMidi?.default?.Midi ?? null
 
 /**
+ * Internal helper to trigger instrument notes.
+ */
+function triggerInstrumentNote(lane, midiPitch, time, velocity, noteName = null) {
+  if (lane === 'drums') {
+    playDrumNote(midiPitch, time, velocity)
+  } else if (lane === 'bass') {
+    if (audioState.bass) {
+      audioState.bass.triggerAttackRelease(
+        noteName ?? getNoteName(midiPitch),
+        '8n',
+        time,
+        velocity
+      )
+    }
+  } else if (audioState.guitar) {
+    audioState.guitar.triggerAttackRelease(
+      noteName ?? getNoteName(midiPitch),
+      '16n',
+      time,
+      velocity
+    )
+  }
+}
+
+/**
  * Plays a specific note at a scheduled Tone.js time.
  * @param {number} midiPitch - The MIDI note number.
  * @param {string} lane - The lane ID ('guitar', 'bass', 'drums').
@@ -34,30 +59,7 @@ export function playNoteAtTime(midiPitch, lane, whenSeconds, velocity = 127) {
   if (!audioState.isSetup) return
   const now = Number.isFinite(whenSeconds) ? whenSeconds : Tone.now()
   const vel = Math.max(0, Math.min(1, velocity / 127))
-
-  // Use the lane to determine instrument, fallback to pitch heuristics if needed
-  if (lane === 'drums') {
-    playDrumNote(midiPitch, now, vel)
-  } else if (lane === 'bass') {
-    if (audioState.bass) {
-      // ⚡ BOLT OPTIMIZATION: Use pre-computed note string
-      audioState.bass.triggerAttackRelease(
-        getNoteName(midiPitch),
-        '8n',
-        now,
-        vel
-      )
-    }
-  } else if (audioState.guitar) {
-    // Guitar (or default)
-    // ⚡ BOLT OPTIMIZATION: Use pre-computed note string
-    audioState.guitar.triggerAttackRelease(
-      getNoteName(midiPitch),
-      '16n',
-      now,
-      vel
-    )
-  }
+  triggerInstrumentNote(lane, midiPitch, now, vel)
 }
 
 /**
@@ -172,23 +174,7 @@ export async function playSongFromData(song, delay = 0, options = {}) {
           ? null
           : value.noteName ?? getNoteName(value.note)
 
-      if (value.lane === 'guitar') {
-        audioState.guitar.triggerAttackRelease(
-          noteName,
-          '16n',
-          time,
-          value.velocity
-        )
-      } else if (value.lane === 'bass') {
-        audioState.bass.triggerAttackRelease(
-          noteName,
-          '8n',
-          time,
-          value.velocity
-        )
-      } else if (value.lane === 'drums') {
-        playDrumNote(value.note, time, value.velocity)
-      }
+      triggerInstrumentNote(value.lane, value.note, time, value.velocity, noteName)
     } catch (err) {
       // Log concisely and return early to keep the scheduler alive
       logger.error('AudioEngine', 'Error in Song callback', err)

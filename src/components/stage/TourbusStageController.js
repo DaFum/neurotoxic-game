@@ -1,24 +1,15 @@
 
 import * as PIXI from 'pixi.js'
+import { BaseStageController } from './BaseStageController'
 import { EffectManager } from './EffectManager'
-import { getPixiColorFromToken, loadTexture, getOptimalResolution } from './utils'
+import { getPixiColorFromToken, loadTexture } from './utils'
 import { logger } from '../../utils/logger'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
 import { LANE_COUNT, BUS_Y_PERCENT, BUS_HEIGHT_PERCENT } from '../../hooks/minigames/useTourbusLogic'
 
-class TourbusStageController {
-  constructor({ containerRef, gameStateRef, updateRef, statsRef }) {
-    this.containerRef = containerRef
-    this.gameStateRef = gameStateRef
-    this.updateRef = updateRef
-    this.statsRef = statsRef
-    this.app = null
-    this.isDisposed = false
-    this.initPromise = null
-    this.handleTicker = this.handleTicker.bind(this)
-    this.handleResize = this.handleResize.bind(this)
-
-    this.container = null
+class TourbusStageController extends BaseStageController {
+  constructor(params) {
+    super(params)
     this.busSprite = null
     this.laneWidth = 0
     this.roadContainer = null
@@ -30,6 +21,9 @@ class TourbusStageController {
     this.obstacleMap = new Map()
     this.currentIds = new Set()
 
+    // Animation state
+    this.wobbleTime = 0
+
     // Textures
     this.textures = {
       bus: null,
@@ -40,32 +34,7 @@ class TourbusStageController {
     }
   }
 
-  async init() {
-    if (this.initPromise) return this.initPromise
-
-    this.initPromise = (async () => {
-      try {
-        const container = this.containerRef.current
-        if (!container) return
-
-        this.app = new PIXI.Application()
-        await this.app.init({
-          backgroundAlpha: 0,
-          resizeTo: container,
-          antialias: true,
-          resolution: getOptimalResolution(),
-          autoDensity: true
-        })
-
-        if (this.isDisposed || !this.app) {
-          this.dispose()
-          return
-        }
-
-        container.appendChild(this.app.canvas)
-        this.container = new PIXI.Container()
-        this.app.stage.addChild(this.container)
-
+  async setup() {
         // Setup Layers
         this.roadContainer = new PIXI.Container()
         this.obstacleContainer = new PIXI.Container()
@@ -83,16 +52,6 @@ class TourbusStageController {
         // Initial Draw
         this.drawRoad()
         this.createBus()
-
-        window.addEventListener('resize', this.handleResize)
-        this.app.ticker.add(this.handleTicker)
-
-      } catch (err) {
-        logger.error('TourbusStageController', 'Init Failed', err)
-        this.dispose()
-      }
-    })()
-    return this.initPromise
   }
 
   async loadAssets() {
@@ -119,6 +78,10 @@ class TourbusStageController {
     } catch (e) {
         logger.warn('TourbusStageController', 'Failed to load assets', e)
     }
+  }
+
+  draw() {
+      this.drawRoad()
   }
 
   drawRoad() {
@@ -158,13 +121,6 @@ class TourbusStageController {
     }
   }
 
-  handleResize() {
-      if (!this.app) return
-      // App resizes automatically via resizeTo
-      // We just need to redraw road to fit new dimensions
-      this.drawRoad()
-  }
-
   createBus() {
       const height = this.app.screen.height
 
@@ -190,14 +146,8 @@ class TourbusStageController {
       this.container.addChild(this.busSprite)
   }
 
-  handleTicker(ticker) {
-    if (this.isDisposed) return
-    if (this.updateRef.current) {
-      this.updateRef.current(ticker.deltaMS)
-    }
-
-    // Update Effects
-    if (this.effectManager) this.effectManager.update(ticker.deltaMS)
+  update(dt) {
+    if (this.effectManager) this.effectManager.update(dt)
 
     const state = this.gameStateRef.current
     if (!state) return
@@ -210,7 +160,7 @@ class TourbusStageController {
         // Let's say speed 0.05 => 50 units per sec.
         // We need pixel speed.
         // Height is 100 units. So 1 unit = height/100 pixels.
-        const pixelSpeed = state.speed * (height / 100) * ticker.deltaMS
+        const pixelSpeed = state.speed * (height / 100) * dt
         this.roadStripes.tilePosition.y += pixelSpeed
     }
 
@@ -221,15 +171,16 @@ class TourbusStageController {
       // Frame-independent Lerp
       // Using exponential decay: lerp(a, b, 1 - exp(-decay * dt))
       // Decay factor ~10 for snappy movement
-      const dtSeconds = ticker.deltaMS / 1000
+      const dtSeconds = dt / 1000
       const lerpFactor = 1 - Math.exp(-10 * dtSeconds)
 
       this.busSprite.x += (targetX - this.busSprite.x) * lerpFactor
       // Position bottom of bus at bottom of collision box
       this.busSprite.y = height * ((BUS_Y_PERCENT + BUS_HEIGHT_PERCENT) / 100)
 
-      // Wobble effect based on speed (use ticker.lastTime instead of Date.now() for consistency)
-      this.busSprite.rotation = Math.sin(ticker.lastTime / 100) * 0.05
+      // Wobble effect based on accumulated deterministic time
+      this.wobbleTime += dt
+      this.busSprite.rotation = Math.sin(this.wobbleTime / 100) * 0.05
     }
 
     // Render Obstacles
@@ -303,23 +254,9 @@ class TourbusStageController {
   }
 
   dispose() {
-    this.isDisposed = true
-    this.initPromise = null
-    window.removeEventListener('resize', this.handleResize)
-
     if (this.effectManager) {
         this.effectManager.dispose()
         this.effectManager = null
-    }
-
-    if (this.app) {
-      try {
-        this.app.ticker?.remove(this.handleTicker)
-        this.app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })
-      } catch (e) {
-        logger.warn('TourbusStageController', 'Destroy failed', e)
-      }
-      this.app = null
     }
 
     // Clear maps
@@ -331,6 +268,8 @@ class TourbusStageController {
         this.currentIds.clear()
         this.currentIds = null
     }
+
+    super.dispose()
   }
 }
 

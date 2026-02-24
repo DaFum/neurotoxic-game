@@ -2,25 +2,16 @@ import { useState, useEffect } from 'react'
 import { useGameState } from '../context/GameState'
 import { motion, AnimatePresence } from 'framer-motion'
 
-const TOTAL_STEPS = 4
+const TUTORIAL_STEPS = [0, 1, 2, 3]
+const TOTAL_STEPS = TUTORIAL_STEPS.length
 
 export const TutorialManager = () => {
   const { player, updatePlayer, currentScene, settings, updateSettings } =
     useGameState()
-  const [step, setStep] = useState(player.tutorialStep || 0)
-
-  useEffect(() => {
-    // Sync local step with global player state if changed elsewhere (e.g. load game)
-    if (player.tutorialStep !== undefined && player.tutorialStep !== step) {
-      setStep(player.tutorialStep)
-    }
-    // step is used for comparison, but we only want to update if player.tutorialStep mismatches.
-    // Adding step to dependency array is safe here.
-  }, [player.tutorialStep, step])
+  const step = player.tutorialStep ?? 0
 
   const completeStep = () => {
     const nextStep = step + 1
-    setStep(nextStep)
     updatePlayer({ tutorialStep: nextStep })
 
     // If we passed the last tutorial step (currently 3), mark as seen globally
@@ -30,7 +21,6 @@ export const TutorialManager = () => {
   }
 
   const skipTutorial = () => {
-    setStep(-1)
     updatePlayer({ tutorialStep: -1 })
     updateSettings({ tutorialSeen: true })
   }
@@ -100,13 +90,13 @@ export const TutorialManager = () => {
 
             {/* Progress dots */}
             <div className='flex items-center gap-1.5 mb-4'>
-              {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+              {TUTORIAL_STEPS.map((stepId) => (
                 <div
-                  key={i}
+                  key={stepId}
                   className={`w-2 h-2 transition-colors ${
-                    i === step
+                    stepId === step
                       ? 'bg-(--toxic-green)'
-                      : i < step
+                      : stepId < step
                         ? 'bg-(--toxic-green)/40'
                         : 'bg-(--ash-gray)/30'
                   }`}

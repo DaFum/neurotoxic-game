@@ -1,6 +1,6 @@
 import {
   createContext,
-  useContext,
+  use,
   useReducer,
   useEffect,
   useCallback,
@@ -569,11 +569,11 @@ export const GameStateProvider = ({ children }) => {
   }, [])
 
   return (
-    <GameDispatchContext.Provider value={dispatchValue}>
-      <GameStateContext.Provider value={state}>
+    <GameDispatchContext value={dispatchValue}>
+      <GameStateContext value={state}>
         {children}
-      </GameStateContext.Provider>
-    </GameDispatchContext.Provider>
+      </GameStateContext>
+    </GameDispatchContext>
   )
 }
 
@@ -586,8 +586,8 @@ GameStateProvider.propTypes = {
  * @returns {object} The game state and action dispatchers.
  */
 export const useGameState = () => {
-  const state = useContext(GameStateContext)
-  const dispatch = useContext(GameDispatchContext)
+  const state = use(GameStateContext)
+  const dispatch = use(GameDispatchContext)
 
   /**
    * Checks if the player owns a specific van upgrade.

@@ -1,29 +1,21 @@
 import * as PIXI from 'pixi.js'
+import { BaseStageController } from './stage/BaseStageController.js'
 import { CrowdManager } from './stage/CrowdManager.js'
 import { LaneManager } from './stage/LaneManager.js'
 import { EffectManager } from './stage/EffectManager.js'
 import { NoteManager } from './stage/NoteManager.js'
 import { logger } from '../utils/logger.js'
 import { getGigTimeMs } from '../utils/audioEngine.js'
-import { getOptimalResolution } from './stage/utils.js'
 
 /**
  * Manages Pixi.js stage lifecycle and rendering updates.
  */
-class PixiStageController {
+class PixiStageController extends BaseStageController {
   /**
    * @param {object} params - Controller dependencies.
-   * @param {React.MutableRefObject<HTMLElement|null>} params.containerRef - DOM container ref.
-   * @param {React.MutableRefObject<object>} params.gameStateRef - Mutable game state ref.
-   * @param {React.MutableRefObject<Function|null>} params.updateRef - Update callback ref.
-   * @param {React.MutableRefObject<object>} params.statsRef - Stats ref for UI-driven effects.
    */
-  constructor({ containerRef, gameStateRef, updateRef, statsRef }) {
-    this.containerRef = containerRef
-    this.gameStateRef = gameStateRef
-    this.updateRef = updateRef
-    this.statsRef = statsRef
-    this.app = null
+  constructor(params) {
+    super(params)
     this.colorMatrix = null
     this.stageContainer = null
 
@@ -33,10 +25,6 @@ class PixiStageController {
     this.effectManager = null
     this.noteManager = null
 
-    this.isDisposed = false
-    this.initPromise = null
-    this.handleTicker = this.handleTicker.bind(this)
-
     this.toxicFilters = null
     this.emptyFilters = []
     this.isToxicActive = false
@@ -44,96 +32,51 @@ class PixiStageController {
 
   /**
    * Initializes the Pixi application and stage objects.
-   * @returns {Promise<void>} Resolves when initialization completes.
+   * Called by BaseStageController.init().
    */
-  async init() {
-    if (this.initPromise) {
-      return this.initPromise
-    }
+  async setup() {
+    this.isToxicActive = false
 
-    this.initPromise = (async () => {
-      try {
-        this.isDisposed = false
-        this.isToxicActive = false
+    this.colorMatrix = new PIXI.ColorMatrixFilter()
+    this.toxicFilters = [this.colorMatrix]
+    this.stageContainer = new PIXI.Container()
+    this.app.stage.addChild(this.stageContainer)
 
-        const container = this.containerRef.current
-        if (!container) {
-          this.initPromise = null
-          return
-        }
+    // Initialize Managers and start loading assets in parallel
+    this.crowdManager = new CrowdManager(this.app, this.stageContainer)
+    const crowdLoad = this.withTimeout(this.crowdManager.loadAssets(), 'Crowd Assets')
 
-        this.app = new PIXI.Application()
-        await this.app.init({
-          backgroundAlpha: 0,
-          resizeTo: container,
-          antialias: true,
-          resolution: getOptimalResolution(),
-          autoDensity: true
-        })
+    this.laneManager = new LaneManager(
+      this.app,
+      this.stageContainer,
+      this.gameStateRef
+    )
+    this.laneManager.init()
 
-        if (this.isDisposed || !this.containerRef.current || !this.app) {
-          this.dispose()
-          return
-        }
+    // Rhythm container is needed for effects and notes.
+    // LaneManager owns the rhythm container.
+    const rhythmContainer = this.laneManager.container
 
-        container.appendChild(this.app.canvas)
-        this.colorMatrix = new PIXI.ColorMatrixFilter()
-        this.toxicFilters = [this.colorMatrix]
-        this.stageContainer = new PIXI.Container()
-        this.app.stage.addChild(this.stageContainer)
+    this.effectManager = new EffectManager(this.app, rhythmContainer)
+    const effectLoad = this.withTimeout(this.effectManager.loadAssets(), 'Effect Assets')
 
-        // Initialize Managers and start loading assets in parallel
-        this.crowdManager = new CrowdManager(this.app, this.stageContainer)
-        const crowdLoad = this.withTimeout(this.crowdManager.loadAssets(), 'Crowd Assets')
+    this.noteManager = new NoteManager(
+      this.app,
+      rhythmContainer,
+      this.gameStateRef,
+      (x, y, color) => this.effectManager.spawnHitEffect(x, y, color)
+    )
+    const noteLoad = this.withTimeout(this.noteManager.loadAssets(), 'Note Assets')
 
-        this.laneManager = new LaneManager(
-          this.app,
-          this.stageContainer,
-          this.gameStateRef
-        )
-        this.laneManager.init()
+    // Await all loads in parallel
+    await Promise.all([crowdLoad, effectLoad, noteLoad])
 
-        // Rhythm container is needed for effects and notes.
-        // LaneManager owns the rhythm container.
-        const rhythmContainer = this.laneManager.container
+    if (this.isDisposed) return
 
-        this.effectManager = new EffectManager(this.app, rhythmContainer)
-        const effectLoad = this.withTimeout(this.effectManager.loadAssets(), 'Effect Assets')
-
-        this.noteManager = new NoteManager(
-          this.app,
-          rhythmContainer,
-          this.gameStateRef,
-          (x, y, color) => this.effectManager.spawnHitEffect(x, y, color)
-        )
-        const noteLoad = this.withTimeout(this.noteManager.loadAssets(), 'Note Assets')
-
-        // Await all loads in parallel
-        await Promise.all([crowdLoad, effectLoad, noteLoad])
-
-        if (this.isDisposed) {
-          this.dispose()
-          return
-        }
-
-        // Initialize managers now that assets are loaded
-        this.crowdManager.init()
-        this.effectManager.init()
-        this.noteManager.init()
-
-        this.app.ticker.add(this.handleTicker)
-      } catch (error) {
-        logger.error(
-          'PixiStageController',
-          'Failed to initialize stage.',
-          error
-        )
-        this.dispose()
-        throw error
-      }
-    })()
-
-    return this.initPromise
+    // Initialize managers now that assets are loaded
+    this.crowdManager.init()
+    this.effectManager.init()
+    this.noteManager.init()
   }
 
   /**
@@ -159,32 +102,42 @@ class PixiStageController {
    */
   manualUpdate(deltaMS) {
     if (!this.app || this.isDisposed) return
-    this.handleTicker({ deltaMS })
+    this.update(deltaMS)
   }
 
   /**
    * Handles ticker updates from Pixi.js.
-   * @param {PIXI.Ticker} ticker - Pixi ticker instance.
-   * @returns {void}
+   * Called by BaseStageController.handleTicker().
+   * @param {number} deltaMS - Time delta.
    */
-  handleTicker(ticker) {
-    if (this.isDisposed) return
-
-    if (this.updateRef.current) {
-      this.updateRef.current(ticker.deltaMS)
+  update(deltaMS) {
+    // Defensive guards for async init or disposal race conditions
+    if (
+      !this.app ||
+      this.isDisposed ||
+      !this.stageContainer ||
+      !this.laneManager ||
+      !this.crowdManager ||
+      !this.noteManager ||
+      !this.effectManager ||
+      !this.toxicFilters
+    ) {
+      return
     }
 
-    const state = this.gameStateRef.current
-    const stats = this.statsRef.current
+    const state = this.gameStateRef?.current
+    const stats = this.statsRef?.current
 
-    if (state.isGameOver) {
+    if (!state || state.isGameOver) {
       return
     }
 
     const elapsed = getGigTimeMs()
 
     if (stats?.isToxicMode) {
-      this.colorMatrix.hue(Math.sin(elapsed / 100) * 180, false)
+      if (this.colorMatrix) {
+        this.colorMatrix.hue(Math.sin(elapsed / 100) * 180, false)
+      }
       if (!this.isToxicActive) {
         this.stageContainer.filters = this.toxicFilters
         this.isToxicActive = true
@@ -203,7 +156,7 @@ class PixiStageController {
       elapsed
     )
     this.noteManager.update(state, elapsed, this.laneManager.layout)
-    this.effectManager.update(ticker.deltaMS)
+    this.effectManager.update(deltaMS)
   }
 
   /**
@@ -211,13 +164,6 @@ class PixiStageController {
    * @returns {void}
    */
   dispose() {
-    this.isDisposed = true
-    this.initPromise = null
-    if (this.app && this.app.ticker) {
-      this.app.ticker.remove(this.handleTicker)
-      this.app.ticker.stop()
-    }
-
     this.noteManager?.dispose()
     this.effectManager?.dispose()
     this.laneManager?.dispose()
@@ -234,24 +180,7 @@ class PixiStageController {
       this.colorMatrix = null
     }
 
-    if (this.app) {
-      try {
-        if (this.app.renderer || this.app.stage) {
-          this.app.destroy(true, {
-            children: true,
-            texture: true,
-            textureSource: true
-          })
-        }
-      } catch (e) {
-        logger.warn('PixiStageController', 'Pixi App destroy failed', e)
-      }
-      this.app = null
-    }
-
-    if (this.containerRef?.current) {
-      this.containerRef.current.textContent = ''
-    }
+    super.dispose()
   }
 }
 

@@ -18,10 +18,13 @@ export const HecklerOverlay = memo(function HecklerOverlay({ gameStateRef }) {
     let rAF
     const loop = () => {
       if (gameStateRef.current) {
+        const hasProjectiles = gameStateRef.current.projectiles.length > 0
+        const hasItems = itemsRef.current.length > 0
+
         // Only update if projectiles exist or if we need to clear them
-        if (gameStateRef.current.projectiles.length > 0) {
+        if (hasProjectiles) {
           setItems([...gameStateRef.current.projectiles])
-        } else if (itemsRef.current.length > 0) {
+        } else if (hasItems) {
           setItems([])
         }
       }

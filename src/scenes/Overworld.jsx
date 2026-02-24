@@ -142,7 +142,7 @@ export const Overworld = () => {
   // Memoized connection rendering
   const renderedConnections = useMemo(() => {
     if (!gameMap) return null
-    return gameMap.connections.map((conn, i) => {
+    return gameMap.connections.map((conn) => {
       const start = gameMap.nodes[conn.from]
       const end = gameMap.nodes[conn.to]
       if (!start || !end) return null
@@ -153,7 +153,7 @@ export const Overworld = () => {
 
       return (
         <MapConnection
-          key={i}
+          key={`${conn.from}-${conn.to}`}
           start={start}
           end={end}
           startVis={startVis}

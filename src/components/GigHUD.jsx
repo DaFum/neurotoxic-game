@@ -59,7 +59,7 @@ const LaneInputArea = memo(function LaneInputArea({ onLaneInput }) {
     <div className='absolute inset-0 z-40 flex pb-16 pt-32 pointer-events-none'>
       {LANE_INDICES.map(laneIndex => (
         <LaneInputZone
-          key={laneIndex}
+          key={LANE_NAMES[laneIndex]}
           laneIndex={laneIndex}
           onLaneInput={onLaneInput}
         />
@@ -77,7 +77,7 @@ const ControlsHint = memo(function ControlsHint() {
     <div className='absolute bottom-3 w-full flex justify-center gap-8 z-10 pointer-events-none'>
       {LANE_NAMES.map((name, i) => (
         <div
-          key={i}
+          key={name}
           className='flex items-center gap-1.5 text-(--ash-gray)/60 font-mono text-xs'
         >
           <span className='border border-(--ash-gray)/30 px-1.5 py-0.5 text-[10px]'>
@@ -102,7 +102,7 @@ const SegmentedBar = memo(function SegmentedBar({
     <div className={`flex gap-[2px] ${className}`}>
       {Array.from({ length: segments }).map((_, i) => (
         <div
-          key={i}
+          key={`seg-${i}`}
           className={`flex-1 h-full transition-all duration-150 ${
             i < filledCount
               ? isLow

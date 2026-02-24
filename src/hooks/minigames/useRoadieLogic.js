@@ -218,16 +218,15 @@ export const useRoadieLogic = () => {
 
   // Safety Fallback: Ensure scene advances if UI hangs
   useEffect(() => {
-    let timeout
     if (uiState.isGameOver && currentScene === 'PRE_GIG_MINIGAME') {
-      timeout = setTimeout(() => {
+      const timeout = setTimeout(() => {
         // Double check scene hasn't changed
         if (currentSceneRef.current === 'PRE_GIG_MINIGAME') {
            changeScene('GIG')
         }
       }, 10000) // 10s fallback
+      return () => clearTimeout(timeout)
     }
-    return () => clearTimeout(timeout)
   }, [uiState.isGameOver, currentScene, changeScene])
 
   return {

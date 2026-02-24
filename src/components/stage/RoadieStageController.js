@@ -1,28 +1,20 @@
 
 import * as PIXI from 'pixi.js'
+import { BaseStageController } from './BaseStageController'
 import { GRID_WIDTH, GRID_HEIGHT } from '../../hooks/minigames/constants'
 import { EffectManager } from './EffectManager'
 import { logger } from '../../utils/logger'
-import { getPixiColorFromToken, loadTexture, getOptimalResolution } from './utils'
+import { getPixiColorFromToken, loadTexture } from './utils'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
 
-class RoadieStageController {
-  constructor({ containerRef, gameStateRef, updateRef, statsRef }) {
-    this.containerRef = containerRef
-    this.gameStateRef = gameStateRef
-    this.updateRef = updateRef
-    this.statsRef = statsRef
-    this.app = null
-    this.container = null
+class RoadieStageController extends BaseStageController {
+  constructor(params) {
+    super(params)
     this.playerContainer = null
     this.playerSprite = null
     this.itemSprite = null
     this.carSprites = new Map()
     this.effectManager = null
-    this.isDisposed = false
-    this.initPromise = null
-    this.handleTicker = this.handleTicker.bind(this)
-    this.handleResize = this.handleResize.bind(this)
 
     this._flashTimeout = null
     this.lastDamage = 0
@@ -33,84 +25,49 @@ class RoadieStageController {
     }
   }
 
-  async init() {
-    if (this.initPromise) return this.initPromise
+  async setup() {
+      // Draw Background Grid (Static)
+      this.drawBackground()
 
-    this.initPromise = (async () => {
-        try {
-            const container = this.containerRef.current
-            if (!container) return
+      // Effect Manager
+      this.effectManager = new EffectManager(this.app, this.container)
+      this.effectManager.init()
 
-            this.app = new PIXI.Application()
-            await this.app.init({
-                backgroundAlpha: 0,
-                resizeTo: container,
-                antialias: true,
-                resolution: getOptimalResolution(),
-                autoDensity: true
-            })
+      // Load Assets
+      await this.loadAssets()
+      await this.effectManager.loadAssets()
 
-            if (this.isDisposed) {
-                this.dispose()
-                return
-            }
+      // Player Container (Groups body + item)
+      this.playerContainer = new PIXI.Container()
+      this.container.addChild(this.playerContainer)
 
-            container.appendChild(this.app.canvas)
-            this.container = new PIXI.Container()
-            this.app.stage.addChild(this.container)
+      // Compute cell dimensions for sprite sizing
+      const screenW = this.app.screen.width
+      const screenH = this.app.screen.height
+      const cellW = screenW / GRID_WIDTH
+      const cellH = screenH / GRID_HEIGHT
 
-            // Draw Background Grid (Static)
-            this.drawBackground()
+      // Player Sprite
+      if (this.textures.roadie) {
+          this.playerSprite = new PIXI.Sprite(this.textures.roadie)
+          this.playerSprite.anchor.set(0.5)
+          // Scale to fit ~1 cell
+          const playerScale = Math.min(cellW / this.textures.roadie.width, cellH / this.textures.roadie.height) * 0.8
+          this.playerSprite.scale.set(playerScale)
+      } else {
+          this.playerSprite = new PIXI.Graphics()
+          this.playerSprite.circle(0, 0, 20)
+          const toxicGreen = getPixiColorFromToken('--toxic-green')
+          this.playerSprite.fill(toxicGreen)
+      }
+      this.playerContainer.addChild(this.playerSprite)
 
-            // Effect Manager
-            this.effectManager = new EffectManager(this.app, this.container)
-            this.effectManager.init()
-
-            // Load Assets
-            await this.loadAssets()
-            await this.effectManager.loadAssets()
-
-            // Player Container (Groups body + item)
-            this.playerContainer = new PIXI.Container()
-            this.container.addChild(this.playerContainer)
-
-            // Compute cell dimensions for sprite sizing
-            const screenW = this.app.screen.width
-            const screenH = this.app.screen.height
-            const cellW = screenW / GRID_WIDTH
-            const cellH = screenH / GRID_HEIGHT
-
-            // Player Sprite
-            if (this.textures.roadie) {
-                this.playerSprite = new PIXI.Sprite(this.textures.roadie)
-                this.playerSprite.anchor.set(0.5)
-                // Scale to fit ~1 cell
-                const playerScale = Math.min(cellW / this.textures.roadie.width, cellH / this.textures.roadie.height) * 0.8
-                this.playerSprite.scale.set(playerScale)
-            } else {
-                this.playerSprite = new PIXI.Graphics()
-                this.playerSprite.circle(0, 0, 20)
-                const toxicGreen = getPixiColorFromToken('--toxic-green')
-                this.playerSprite.fill(toxicGreen)
-            }
-            this.playerContainer.addChild(this.playerSprite)
-
-            // Item Sprite (Placeholder for now, visible only when carrying)
-            this.itemSprite = new PIXI.Sprite()
-            this.itemSprite.anchor.set(0.5)
-            this.itemSprite.y = -(cellH * 0.3) // Above head
-            this.itemSprite.visible = false
-            this.playerContainer.addChild(this.itemSprite)
-
-            window.addEventListener('resize', this.handleResize)
-            this.app.ticker.add(this.handleTicker)
-
-        } catch (e) {
-            logger.error('RoadieStageController', 'Init Failed', e)
-            this.dispose()
-        }
-    })()
-    return this.initPromise
+      // Item Sprite (Placeholder for now, visible only when carrying)
+      this.itemSprite = new PIXI.Sprite()
+      this.itemSprite.anchor.set(0.5)
+      this.itemSprite.y = -(cellH * 0.3) // Above head
+      this.itemSprite.visible = false
+      this.playerContainer.addChild(this.itemSprite)
   }
 
   async loadAssets() {
@@ -149,11 +106,11 @@ class RoadieStageController {
       }
   }
 
+  draw() {
+      this.drawBackground()
+  }
+
   drawBackground() {
-      // Clear previous background (assuming it's the first child or search for it)
-      // Since container only has background + playerContainer + carSprites, and background is first.
-      // But clearing all children destroys playerContainer.
-      // I should store bg reference.
       if (this.bgGraphics) {
           this.container.removeChild(this.bgGraphics)
           this.bgGraphics.destroy()
@@ -195,16 +152,8 @@ class RoadieStageController {
       this.container.addChildAt(g, 0)
   }
 
-  handleResize() {
-      if (!this.app) return
-      this.drawBackground()
-  }
-
-  handleTicker(ticker) {
-      if (this.isDisposed) return
-      if (this.updateRef.current) this.updateRef.current(ticker.deltaMS)
-
-      if (this.effectManager) this.effectManager.update(ticker.deltaMS)
+  update(dt) {
+      if (this.effectManager) this.effectManager.update(dt)
 
       const state = this.gameStateRef.current
       if (!state) return
@@ -306,8 +255,6 @@ class RoadieStageController {
   }
 
   dispose() {
-      this.isDisposed = true
-      window.removeEventListener('resize', this.handleResize)
       if (this._flashTimeout) {
           clearTimeout(this._flashTimeout)
           this._flashTimeout = null
@@ -327,16 +274,7 @@ class RoadieStageController {
           this.effectManager = null
       }
 
-      if (this.app) {
-          try {
-            this.app.ticker?.remove(this.handleTicker)
-            // v8 signature: destroy(rendererOptions, destroyOptions)
-            this.app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })
-          } catch (e) {
-            logger.warn('RoadieStageController', 'Destroy failed', e)
-          }
-          this.app = null
-      }
+      super.dispose()
   }
 }
 

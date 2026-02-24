@@ -1,12 +1,13 @@
 import { useCallback, useRef } from 'react'
 import { useGameState } from '../context/GameState'
 import { clampBandHarmony } from '../utils/gameStateUtils'
+import { handleNodeArrival } from '../utils/arrivalUtils'
 
 /**
  * Hook to encapsulate reusable arrival sequence logic for both legacy travel and Minigame integration.
  * Ensures consistent side effects (Events, Autosave, Day Advance, Routing).
  */
-export const useArrivalLogic = () => {
+export const useArrivalLogic = ({ onShowHQ } = {}) => {
   const {
     advanceDay,
     saveGame,
@@ -53,35 +54,24 @@ export const useArrivalLogic = () => {
       }
 
       // 5. Handle Node Arrival & Routing
-
+      // Delegates routing (HQ, Gig, Rest Stop) to shared utility
       if (currentNode) {
-        if (currentNode.type === 'REST_STOP') {
-          const newMembers = (band?.members ?? []).map(m => ({
-            ...m,
-            stamina: Math.min(100, Math.max(0, m.stamina + 20)),
-            mood: Math.min(100, Math.max(0, m.mood + 10))
-          }))
-          updateBand({ members: newMembers })
-          addToast('Rested at stop. Band feels better.', 'success')
-        } else if (currentNode.type === 'SPECIAL' && !travelEventActive) {
-          const specialEvent = triggerEvent('special')
-          if (!specialEvent) {
-            addToast('A mysterious place, but nothing happened.', 'info')
-          }
-        } else if (currentNode.type === 'START') {
-          addToast('Home Sweet Home.', 'success')
-        }
+        handleNodeArrival({
+            node: currentNode,
+            band,
+            updateBand,
+            triggerEvent,
+            startGig,
+            addToast,
+            changeScene,
+            onShowHQ,
+            eventAlreadyActive: travelEventActive
+        })
       }
 
-      if (currentNode && (currentNode.type === 'GIG' || currentNode.type === 'FESTIVAL' || currentNode.type === 'FINALE')) {
-        if ((band?.harmony ?? 0) <= 0) {
-          addToast("Band's harmony too low to perform!", 'warning')
-          changeScene('OVERWORLD')
-        } else {
-          startGig(currentNode.venue)
-        }
-      } else {
-        changeScene('OVERWORLD')
+      // Ensure we route to OVERWORLD if not a Gig/Festival/Finale where action is taken
+      if (!isGigNode) {
+         changeScene('OVERWORLD')
       }
     } catch (e) {
       // If error, reset guard so user can try again

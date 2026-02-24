@@ -53,7 +53,7 @@ export const Credits = () => {
 
           {credits.map((c, i) => (
             <motion.div
-              key={i}
+              key={c.role}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 + i * 0.3 }}
