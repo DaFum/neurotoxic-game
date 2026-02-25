@@ -10,7 +10,7 @@ import { BandHQ } from '../ui/BandHQ'
 import { GlitchButton } from '../ui/GlitchButton'
 import { ALL_VENUES } from '../data/venues'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
-import { EXPENSE_CONSTANTS } from '../utils/economyEngine'
+import { EXPENSE_CONSTANTS, calculateEffectiveTicketPrice } from '../utils/economyEngine'
 import { audioManager } from '../utils/AudioManager'
 
 /**
@@ -32,7 +32,8 @@ export const Overworld = () => {
     addToast,
     advanceDay,
     changeScene,
-    startTravelMinigame
+    startTravelMinigame,
+    activeStoryFlags
   } = useGameState()
 
   const [hoveredNode, setHoveredNode] = useState(null)
@@ -182,6 +183,10 @@ export const Overworld = () => {
       else if (node.type === 'SPECIAL') iconUrl = pinSpecialUrl
       else if (node.type === 'FINALE') iconUrl = pinFinaleUrl
 
+      const effectivePrice = calculateEffectiveTicketPrice(node.venue || {}, {
+        discountedTickets: activeStoryFlags?.includes('discounted_tickets_active')
+      })
+
       return (
         <MapNode
           key={node.id}
@@ -195,6 +200,7 @@ export const Overworld = () => {
           setHoveredNode={setHoveredNode}
           iconUrl={iconUrl}
           vanUrl={vanUrl}
+          ticketPrice={effectivePrice}
         />
       )
     })
@@ -213,7 +219,8 @@ export const Overworld = () => {
     pinRestUrl,
     pinSpecialUrl,
     pinFinaleUrl,
-    vanUrl
+    vanUrl,
+    activeStoryFlags
   ])
 
   // Hover connection memo

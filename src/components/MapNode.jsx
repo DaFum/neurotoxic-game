@@ -19,7 +19,8 @@ export const MapNode = memo(
     handleTravel,
     setHoveredNode,
     iconUrl,
-    vanUrl
+    vanUrl,
+    ticketPrice
   }) => {
     const positionStyle = useMemo(() => ({ left: `${node.x}%`, top: `${node.y}%` }), [node.x, node.y])
 
@@ -115,7 +116,7 @@ export const MapNode = memo(
               Cap: {node.venue?.capacity} | Pay: ~{node.venue?.pay}
               {'\u20AC'}
               <br />
-              Ticket: {node.venue?.price}
+              Ticket: {ticketPrice ?? node.venue?.price}
               {'\u20AC'} | Diff: {'\u2605'.repeat(node.venue?.diff || 0)}
             </div>
           )}
@@ -153,7 +154,8 @@ export const MapNode = memo(
       prev.isPendingConfirm === next.isPendingConfirm &&
       prev.iconUrl === next.iconUrl &&
       prev.handleTravel === next.handleTravel &&
-      prev.setHoveredNode === next.setHoveredNode
+      prev.setHoveredNode === next.setHoveredNode &&
+      prev.ticketPrice === next.ticketPrice
     )
   }
 )
@@ -181,5 +183,6 @@ MapNode.propTypes = {
   handleTravel: PropTypes.func.isRequired,
   setHoveredNode: PropTypes.func.isRequired,
   iconUrl: PropTypes.string.isRequired,
-  vanUrl: PropTypes.string.isRequired
+  vanUrl: PropTypes.string.isRequired,
+  ticketPrice: PropTypes.number
 }
