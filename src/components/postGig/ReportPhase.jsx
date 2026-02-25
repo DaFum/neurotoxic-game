@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
+import { ActionButton } from '../../ui/shared'
 
 const FinancialList = ({ items, type }) => (
   <ul className='space-y-2.5 text-sm font-mono'>
@@ -91,13 +92,13 @@ export const ReportPhase = ({ financials, onNext }) => {
         transition={{ delay: 1.2 }}
         className='text-center'
       >
-        <button
-          type="button"
+        <ActionButton
           onClick={onNext}
-          className='bg-(--toxic-green) text-(--void-black) px-8 py-3 font-bold hover:bg-(--star-white) transition-colors uppercase tracking-wider shadow-[4px_4px_0px_var(--void-black)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
+          variant='primary'
+          className='px-8 py-3 text-(--void-black)'
         >
           Continue to Socials &gt;
-        </button>
+        </ActionButton>
       </motion.div>
     </div>
   )

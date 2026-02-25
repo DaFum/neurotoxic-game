@@ -260,6 +260,11 @@ export const generateDailyTrend = (rng = secureRandom) => {
   return trends[idx]
 }
 
+// TODO: Advanced Brand Deal System
+// - Implement negotiation mini-game (Risk/Reward mechanic).
+// - Track brand reputation (working with "evil" brands hurts loyalty).
+// - Dynamic brand names based on procedural generation.
+
 /**
  * Generates available brand deal offers based on band status.
  * @param {object} gameState - Current game state.
@@ -279,6 +284,9 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
 
     // Check trait match (if required trait exists in band)
     if (deal.requirements.trait && !bandHasTrait(band, deal.requirements.trait)) return false
+
+    // Check if already active
+    if (social.activeDeals?.some(d => d.id === deal.id)) return false
 
     return true
   })

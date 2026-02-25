@@ -11,6 +11,11 @@ const POST_BADGES = {
 /**
  * Registry of all available social media post options.
  * Each option defines its conditions for appearing, base effects, and RNG logic.
+ *
+ * TODO:
+ * - Implement dynamic text generation based on recent events (e.g. using specific venue names).
+ * - Add more granular trait interactions (e.g. "Clumsy" trait increasing failure chance of stunts).
+ * - Support multi-platform cross-posting with diminishing returns.
  */
 export const POST_OPTIONS = [
   // --- CATEGORY: PERFORMANCE & STAGE ANTICS ---
@@ -20,7 +25,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Performance',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
-    condition: ({ player }) => player.money > 500,
+    condition: ({ player, band }) => player.money > 500 && Array.isArray(band?.members),
     resolve: ({ band, diceRoll }) => {
       // Pick a random member
       const memberNames = band.members.map(m => m.name)
@@ -60,7 +65,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Performance',
     badges: [POST_BADGES.RISK],
-    condition: ({ lastGigStats }) => lastGigStats && lastGigStats.score > 25000,
+    condition: ({ lastGigStats, band }) => lastGigStats && lastGigStats.score > 25000 && Array.isArray(band?.members),
     resolve: ({ band }) => {
       // Dynamically select the lead singer or fallback to index 0
       const vocalistObj = band.members.find(m => m.traits?.some(t => t.id === 'lead_singer')) || band.members[0]
@@ -120,6 +125,7 @@ export const POST_OPTIONS = [
     category: 'Performance',
     badges: [POST_BADGES.SAFE],
     condition: ({ lastGigStats, social, band }) => {
+      if (!Array.isArray(band?.members)) return false
       const isVirtuoso = band.members.some(m => m.traits?.some(t => t.id === 'virtuoso'))
       return (lastGigStats && lastGigStats.score > 15000) || social.egoFocus || isVirtuoso
     },
@@ -273,7 +279,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Drama',
     badges: [POST_BADGES.RISK],
-    condition: () => true,
+    condition: ({ band }) => Array.isArray(band?.members),
     resolve: ({ band, diceRoll }) => {
       const memberNames = band.members.map(m => m.name)
       const target = memberNames[Math.floor(diceRoll * memberNames.length)]
@@ -306,7 +312,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Drama', // or Lifestyle
     badges: [POST_BADGES.SAFE],
-    condition: () => true,
+    condition: ({ band }) => Array.isArray(band?.members),
     resolve: ({ band }) => {
       const gearNerd = band.members.find(m => m.traits?.some(t => t.id === 'gear_nerd'))?.name || band.members[0].name
       return {
@@ -342,7 +348,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Drama',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
-    condition: () => true,
+    condition: ({ band }) => Array.isArray(band?.members),
     resolve: ({ band }) => {
       const prankster = band.members.find(m => m.traits?.some(t => t.id === 'party_animal'))?.name || band.members[1]?.name || band.members[0].name
       return {
@@ -438,7 +444,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Commercial',
     badges: [POST_BADGES.SAFE, POST_BADGES.COMMERCIAL],
-    condition: ({ band }) => band?.inventory?.golden_pick === true,
+    condition: ({ band }) => band?.inventory?.golden_pick === true && Array.isArray(band?.members),
     resolve: ({ band }) => {
       // Find potential gear nerd or fallback to first member
       const member = band.members.find(m => m.traits?.some(t => t.id === 'gear_nerd')) || band.members[0]
@@ -467,7 +473,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Commercial', // Fits TECH trend
     badges: [POST_BADGES.SAFE, POST_BADGES.STORY],
-    condition: ({ band }) => Array.isArray(band.members) && band.members.some(m => m.traits?.some(t => t.id === 'gear_nerd' || t.id === 'tech_wizard')),
+    condition: ({ band }) => Array.isArray(band?.members) && band.members.some(m => m.traits?.some(t => t.id === 'gear_nerd' || t.id === 'tech_wizard')),
     resolve: () => ({
       type: 'FIXED',
       success: true,
@@ -501,7 +507,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Performance', // Fits MUSIC trend
     badges: [POST_BADGES.STORY],
-    condition: ({ band }) => Array.isArray(band.members) && band.members.some(m => m.traits?.some(t => t.id === 'melodic_genius' || t.id === 'virtuoso')),
+    condition: ({ band }) => Array.isArray(band?.members) && band.members.some(m => m.traits?.some(t => t.id === 'melodic_genius' || t.id === 'virtuoso')),
     resolve: () => ({
       type: 'FIXED',
       success: true,
