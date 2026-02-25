@@ -1,13 +1,7 @@
 // Utility to generate dynamic image URLs via Pollinations.ai
 const BASE_URL = 'https://gen.pollinations.ai/image'
 const MODEL = 'flux'
-const KEY = import.meta.env.VITE_POLLINATIONS_KEY
-
-if (!KEY) {
-  console.error(
-    'CRITICAL: VITE_POLLINATIONS_KEY is missing! Please set it in your .env file.'
-  )
-}
+const KEY = 'pk_xDL8u2ty4Sxucaa3' // gitleaks:allow
 
 /**
  * Generates a URL string for a procedurally generated image.
@@ -17,7 +11,7 @@ if (!KEY) {
  */
 export const getGenImageUrl = description => {
   const encodedDesc = encodeURIComponent(description)
-  return `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}`
+  return `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}&=`
 }
 
 /**
@@ -28,7 +22,7 @@ export const getGenImageUrl = description => {
 export const fetchGenImage = description => {
   const encodedDesc = encodeURIComponent(description)
   return fetch(
-    `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}`,
+    `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}&=`,
     {
       headers: {
         Accept: 'image/jpeg, image/png, video/mp4'

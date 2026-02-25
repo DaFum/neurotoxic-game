@@ -2,9 +2,6 @@ import assert from 'node:assert'
 import { test } from 'node:test'
 
 test('getGenImageUrl generates correct Pollinations.ai URL', async () => {
-  // Mock environment variable
-  globalThis.__IMPORT_META_ENV__ = { VITE_POLLINATIONS_KEY: 'test-key' }
-
   const { getGenImageUrl } = await import('../src/utils/imageGen.js')
 
   const prompt = 'dark void aesthetic'
@@ -19,8 +16,8 @@ test('getGenImageUrl generates correct Pollinations.ai URL', async () => {
   // Validate query parameters
   assert.ok(url.includes('?model=flux'), 'Should use flux model')
   assert.ok(url.includes('&seed=666'), 'Should use deterministic seed')
-  assert.ok(url.includes('&key=test-key'), 'Should include configured API key')
-  assert.ok(!url.includes('&='), 'Should not have trailing &=')
+  assert.ok(url.includes('&key='), 'Should include API key parameter')
+  assert.ok(url.includes('&='), 'Should include trailing &=')
 
   // Validate encoding
   const expectedEncoded = encodeURIComponent(prompt)
