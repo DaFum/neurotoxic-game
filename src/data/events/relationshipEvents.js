@@ -34,7 +34,10 @@ export const RELATIONSHIP_EVENTS = [
       },
       {
         label: 'Let them fight it out',
-        effect: { type: 'stat', stat: 'harmony', value: -20 },
+        effect: { type: 'composite', effects: [
+          { type: 'stat', stat: 'harmony', value: -20 },
+          { type: 'relationship', member1: '{member1}', member2: '{member2}', value: -15 }
+        ]},
         outcomeText: 'Sometimes toxicity has to run its course.'
       }
     ]
@@ -63,7 +66,8 @@ export const RELATIONSHIP_EVENTS = [
         label: 'Ride the wave [+10 Harmony, +10 Mood]',
         effect: { type: 'composite', effects: [
           { type: 'stat', stat: 'harmony', value: 10 },
-          { type: 'stat', stat: 'mood', value: 10 }
+          { type: 'stat', stat: 'mood', value: 10 },
+          { type: 'relationship', member1: '{member1}', member2: '{member2}', value: 10 }
         ]},
         outcomeText: 'What a moment.'
       }

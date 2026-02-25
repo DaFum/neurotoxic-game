@@ -80,7 +80,7 @@ const selectEvent = (pool, gameState, triggerPoint) => {
          description = description.replace(regex, value)
       })
 
-      return { ...event, title, description }
+      return { ...event, title, description, context: variables }
     }
   }
   return null
@@ -89,8 +89,30 @@ const selectEvent = (pool, gameState, triggerPoint) => {
 /**
  * Processes a single effect object into state delta modifications.
  */
-const processEffect = (eff, delta) => {
+const processEffect = (eff, delta, context = {}) => {
   switch (eff.type) {
+    case 'relationship':
+      if (!delta.band.relationshipChange) delta.band.relationshipChange = []
+
+      // eslint-disable-next-line no-inner-declarations
+      const resolveName = (str) => {
+        if (!str || typeof str !== 'string') return str
+        let resolved = str
+        Object.entries(context).forEach(([key, value]) => {
+          if (typeof value === 'string') {
+            const regex = new RegExp(`{${key}}`, 'gi')
+            resolved = resolved.replace(regex, value)
+          }
+        })
+        return resolved
+      }
+
+      delta.band.relationshipChange.push({
+        member1: resolveName(eff.member1),
+        member2: resolveName(eff.member2),
+        change: eff.value
+      })
+      break
     case 'resource':
       if (eff.resource === 'money')
         delta.player.money = (delta.player.money || 0) + eff.value
@@ -385,17 +407,18 @@ export const eventEngine = {
   /**
    * Converts a resolution result into a state delta object for the reducer.
    * @param {object} result - The result object from resolveChoice.
+   * @param {object} context - Context variables from the event (e.g. member names).
    * @returns {object|null} A delta object representing state changes, or null.
    */
-  applyResult: result => {
+  applyResult: (result, context = {}) => {
     if (!result) return null
 
     const delta = { player: {}, band: {}, social: {}, flags: {} }
 
     if (result.type === 'composite') {
-      result.effects.forEach(eff => processEffect(eff, delta))
+      result.effects.forEach(eff => processEffect(eff, delta, context))
     } else {
-      processEffect(result, delta)
+      processEffect(result, delta, context)
     }
 
     if (result.nextEventId) {
@@ -427,7 +450,7 @@ export const resolveEventChoice = (choice, gameState, rng = secureRandom) => {
   }
 
   const result = eventEngine.resolveChoice(choice, gameState, rng)
-  const delta = eventEngine.applyResult(result)
+  const delta = eventEngine.applyResult(result, gameState.activeEvent?.context)
 
   return {
     result,

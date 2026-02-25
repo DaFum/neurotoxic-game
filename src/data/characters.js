@@ -13,15 +13,12 @@
 // - showman (Marius): Implemented
 // - melodic_genius (Lars): Implemented
 //
-// TODO: Relationship Mechanics
-// - Add `relationships` object to each character: { [otherMemberId]: score }
-// - Add dynamic events that trigger based on low/high relationship scores
-// - Traits like 'Grudge Holder' or 'Peacemaker' could affect these scores
 export const CHARACTERS = {
   MATZE: {
     name: 'Matze',
     role: 'Guitar',
     baseStats: { skill: 8, stamina: 7, charisma: 5, technical: 9, improv: 6 },
+    relationships: { Marius: 50, Lars: 50 },
     traits: [
       {
         id: 'perfektionist',
@@ -68,6 +65,7 @@ export const CHARACTERS = {
     name: 'Marius',
     role: 'Drums',
     baseStats: { skill: 9, stamina: 8, charisma: 7, technical: 7, improv: 9 },
+    relationships: { Matze: 50, Lars: 50 },
     traits: [
       {
         id: 'party_animal',
@@ -110,6 +108,7 @@ export const CHARACTERS = {
       technical: 7,
       composition: 7
     },
+    relationships: { Matze: 50, Marius: 50 },
     traits: [
       {
         id: 'bandleader',
