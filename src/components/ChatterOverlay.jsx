@@ -90,6 +90,8 @@ const SCENE_STYLES = {
 
 const DEFAULT_STYLE = SCENE_STYLES.MENU
 
+const CHATTER_CONTAINER_STYLE = { zIndex: 'var(--z-chatter)' }
+
 /**
  * Displays an animated social chatter box that is always visible on top of all content.
  *
@@ -210,7 +212,7 @@ export const ChatterOverlay = ({ gameState }) => {
   return (
     <div
       className={positionClassName}
-      style={{ zIndex: 'var(--z-chatter)' }}
+      style={CHATTER_CONTAINER_STYLE}
       role='status'
       aria-live='polite'
     >
