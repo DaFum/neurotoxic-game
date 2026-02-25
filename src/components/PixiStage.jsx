@@ -1,18 +1,16 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, memo } from 'react'
 import PropTypes from 'prop-types'
 import { createPixiStageController } from './PixiStageController'
 import { logger } from '../utils/logger'
 
 /**
  * Renders the Pixi.js stage for the rhythm game.
- * @param {{ logic: { gameStateRef: object, stats: object, update: Function }, controllerFactory: Function }} props - Component props.
+ * @param {{ gameStateRef: object, update: Function, controllerFactory: Function }} props - Component props.
  * @returns {JSX.Element} Pixi canvas wrapper.
  */
-export const PixiStage = ({ logic, controllerFactory = createPixiStageController }) => {
+export const PixiStage = memo(({ gameStateRef, update, controllerFactory = createPixiStageController }) => {
   const containerRef = useRef(null)
-  const { gameStateRef, update } = logic
   const updateRef = useRef(update)
-  const statsRef = useRef(logic.stats)
   const controllerRef = useRef(null)
 
   useEffect(() => {
@@ -20,15 +18,10 @@ export const PixiStage = ({ logic, controllerFactory = createPixiStageController
   }, [update])
 
   useEffect(() => {
-    statsRef.current = logic.stats
-  }, [logic.stats])
-
-  useEffect(() => {
     controllerRef.current = controllerFactory({
       containerRef,
       gameStateRef,
-      updateRef,
-      statsRef
+      updateRef
     })
 
     controllerRef.current.init().catch(err => {
@@ -50,21 +43,10 @@ export const PixiStage = ({ logic, controllerFactory = createPixiStageController
       ref={containerRef}
     />
   )
-}
+})
 
 PixiStage.propTypes = {
-  logic: PropTypes.shape({
-    gameStateRef: PropTypes.object.isRequired,
-    update: PropTypes.func.isRequired,
-    stats: PropTypes.shape({
-      score: PropTypes.number,
-      combo: PropTypes.number,
-      health: PropTypes.number,
-      overload: PropTypes.number,
-      isToxicMode: PropTypes.bool,
-      isGameOver: PropTypes.bool,
-      isAudioReady: PropTypes.bool
-    }).isRequired
-  }).isRequired,
+  gameStateRef: PropTypes.object.isRequired,
+  update: PropTypes.func.isRequired,
   controllerFactory: PropTypes.func
 }

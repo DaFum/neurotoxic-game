@@ -45,7 +45,11 @@ export const MinigameSceneFrame = ({
   return (
     <div className="w-full h-full bg-(--void-black) relative overflow-hidden flex flex-col items-center justify-center">
       <div className="absolute inset-0 pointer-events-none">
-        <PixiStage logic={logic} controllerFactory={controllerFactory} />
+        <PixiStage
+          gameStateRef={logic.gameStateRef}
+          update={logic.update}
+          controllerFactory={controllerFactory}
+        />
       </div>
 
       {settings?.crtEnabled && <div className="crt-overlay pointer-events-none fixed inset-0 z-500" />}

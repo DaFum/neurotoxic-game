@@ -4,11 +4,10 @@ import { logger } from '../../utils/logger'
 import { getOptimalResolution } from './utils'
 
 export class BaseStageController {
-  constructor({ containerRef, gameStateRef, updateRef, statsRef }) {
+  constructor({ containerRef, gameStateRef, updateRef }) {
     this.containerRef = containerRef
     this.gameStateRef = gameStateRef
     this.updateRef = updateRef
-    this.statsRef = statsRef
     this.app = null
     this.isDisposed = false
     this.initPromise = null
