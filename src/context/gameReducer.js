@@ -90,7 +90,8 @@ const handleChangeScene = (state, payload) => {
  */
 const handleUpdatePlayer = (state, payload) => {
   logger.debug('GameState', 'Update Player', payload)
-  const mergedPlayer = { ...state.player, ...payload }
+  const updates = typeof payload === 'function' ? payload(state.player) : payload
+  const mergedPlayer = { ...state.player, ...updates }
 
   // Clamp money to prevent negative values
   if (typeof mergedPlayer.money === 'number') {
@@ -109,7 +110,8 @@ const handleUpdatePlayer = (state, payload) => {
  */
 const handleUpdateBand = (state, payload) => {
   logger.debug('GameState', 'Update Band', payload)
-  const mergedBand = { ...state.band, ...payload }
+  const updates = typeof payload === 'function' ? payload(state.band) : payload
+  const mergedBand = { ...state.band, ...updates }
 
   // Clamp harmony to valid range 1-100
   if (typeof mergedBand.harmony === 'number') {

@@ -409,14 +409,7 @@ export const GameStateProvider = ({ children }) => {
       }
 
       // Pass full state context for flags/cooldowns
-      const context = {
-        player: currentState.player,
-        band: currentState.band,
-        social: currentState.social,
-        activeStoryFlags: currentState.activeStoryFlags,
-        eventCooldowns: currentState.eventCooldowns,
-        pendingEvents: currentState.pendingEvents
-      }
+      const context = currentState
 
       let event = eventEngine.checkEvent(category, context, triggerPoint)
 

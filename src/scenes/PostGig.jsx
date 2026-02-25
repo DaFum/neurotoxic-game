@@ -217,11 +217,10 @@ export const PostGig = () => {
   const handleAcceptDeal = useCallback((deal) => {
     // Apply upfront bonuses
     if (deal.offer.upfront) {
-      updatePlayer({ money: clampPlayerMoney(player.money + deal.offer.upfront) })
+      updatePlayer(prev => ({ money: clampPlayerMoney(prev.money + deal.offer.upfront) }))
     }
     if (deal.offer.item) {
-      const newInventory = { ...band.inventory, [deal.offer.item]: true }
-      updateBand({ inventory: newInventory })
+      updateBand(prev => ({ inventory: { ...prev.inventory, [deal.offer.item]: true } }))
     }
 
     // Use functional update to ensure fresh state access
@@ -245,13 +244,13 @@ export const PostGig = () => {
 
     // Remove processed deal and check if more remain
     setBrandOffers(prev => {
-      const remaining = prev.slice(1) // Remove first
+      const remaining = prev.filter(o => o.id !== deal.id)
       if (remaining.length === 0) {
         setPhase('COMPLETE')
       }
       return remaining
     })
-  }, [player, band, updatePlayer, updateBand, updateSocial, addToast])
+  }, [updatePlayer, updateBand, updateSocial, addToast])
 
   const handleRejectDeals = useCallback(() => {
     // Clears all remaining offers (Reject All / Skip Phase)
@@ -363,7 +362,7 @@ export const PostGig = () => {
         )}
 
         {phase === 'DEALS' && (
-          <DealsPhase offers={brandOffers.slice(0, 1)} onAccept={handleAcceptDeal} onSkip={handleRejectDeals} />
+          <DealsPhase offers={brandOffers} onAccept={handleAcceptDeal} onSkip={handleRejectDeals} />
         )}
 
         {phase === 'COMPLETE' && (
