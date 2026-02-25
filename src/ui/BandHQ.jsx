@@ -118,6 +118,7 @@ export const BandHQ = ({
           {['STATS', 'DETAILS', 'SHOP', 'UPGRADES', 'SETLIST', 'SETTINGS'].map(
             tab => (
               <button
+                type='button'
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`flex-1 min-w-[120px] py-4 text-center font-bold text-xl uppercase tracking-wider transition-colors duration-150 font-mono

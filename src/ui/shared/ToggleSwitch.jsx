@@ -10,9 +10,13 @@ import PropTypes from 'prop-types'
  * @param {string} props.ariaLabel - Accessible label.
  * @param {string} [props.className] - Additional CSS classes.
  */
-export const ToggleSwitch = memo(
-  ({ isOn, onToggle, ariaLabel, className = '' }) => (
-    <div className={`flex items-center gap-2 ${className}`}>
+const ToggleSwitchComponent = ({
+  isOn,
+  onToggle,
+  ariaLabel,
+  className = ''
+}) => (
+  <div className={`flex items-center gap-2 ${className}`}>
       <span
         className={`font-mono text-[10px] uppercase tracking-widest w-8 text-right transition-colors duration-300 ${
           isOn ? 'text-(--toxic-green)' : 'text-(--ash-gray)/40'
@@ -41,11 +45,13 @@ export const ToggleSwitch = memo(
         `}
         />
       </button>
-    </div>
-  )
+  </div>
 )
 
-ToggleSwitch.propTypes = {
+export const ToggleSwitch = memo(ToggleSwitchComponent)
+ToggleSwitch.displayName = 'ToggleSwitch'
+
+ToggleSwitchComponent.propTypes = {
   isOn: PropTypes.bool.isRequired,
   onToggle: PropTypes.func.isRequired,
   ariaLabel: PropTypes.string.isRequired,

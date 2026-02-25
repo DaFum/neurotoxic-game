@@ -20,7 +20,7 @@ export const RoadieRunScene = () => {
       stats,
       update
     }),
-    [gameStateRef, update]
+    [gameStateRef, stats, update]
   )
 
   const handleComplete = useCallback(() => changeScene('GIG'), [changeScene])
@@ -55,6 +55,7 @@ export const RoadieRunScene = () => {
 
       {/* Controls Toggle (Desktop Mode Support) */}
       <button
+        type='button'
         className='absolute top-4 right-4 z-50 p-2 bg-(--void-black)/50 text-(--toxic-green) border border-(--toxic-green) rounded hover:bg-(--toxic-green)/20 pointer-events-auto text-xs font-mono hidden md:block'
         onClick={() => setShowControls(prev => !prev)}
         aria-label='Toggle Controls'
@@ -73,6 +74,7 @@ export const RoadieRunScene = () => {
       >
         <div />
         <button
+          type='button'
           className='w-14 h-14 bg-(--star-white)/10 active:bg-(--toxic-green)/50 border border-(--star-white)/30 rounded flex items-center justify-center text-(--star-white)'
           onClick={handleMoveUp}
         >
@@ -80,18 +82,21 @@ export const RoadieRunScene = () => {
         </button>
         <div />
         <button
+          type='button'
           className='w-14 h-14 bg-(--star-white)/10 active:bg-(--toxic-green)/50 border border-(--star-white)/30 rounded flex items-center justify-center text-(--star-white)'
           onClick={handleMoveLeft}
         >
           ◄
         </button>
         <button
+          type='button'
           className='w-14 h-14 bg-(--star-white)/10 active:bg-(--toxic-green)/50 border border-(--star-white)/30 rounded flex items-center justify-center text-(--star-white)'
           onClick={handleMoveDown}
         >
           ▼
         </button>
         <button
+          type='button'
           className='w-14 h-14 bg-(--star-white)/10 active:bg-(--toxic-green)/50 border border-(--star-white)/30 rounded flex items-center justify-center text-(--star-white)'
           onClick={handleMoveRight}
         >

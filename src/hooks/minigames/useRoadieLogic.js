@@ -194,7 +194,7 @@ export const useRoadieLogic = () => {
     if (traffic.length > writeIdx) {
       traffic.length = writeIdx
     }
-  }, [])
+  }, [completeRoadieMinigame])
 
   useEffect(() => {
     const handleKeyDown = e => {

@@ -1,7 +1,13 @@
 // Utility to generate dynamic image URLs via Pollinations.ai
 const BASE_URL = 'https://gen.pollinations.ai/image'
 const MODEL = 'flux'
-const KEY = 'pk_xDL8u2ty4Sxucaa3' // gitleaks:allow
+const KEY = import.meta.env.VITE_POLLINATIONS_KEY
+
+if (!KEY) {
+  console.error(
+    'CRITICAL: VITE_POLLINATIONS_KEY is missing! Please set it in your .env file.'
+  )
+}
 
 /**
  * Generates a URL string for a procedurally generated image.
@@ -11,7 +17,7 @@ const KEY = 'pk_xDL8u2ty4Sxucaa3' // gitleaks:allow
  */
 export const getGenImageUrl = description => {
   const encodedDesc = encodeURIComponent(description)
-  return `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}&=`
+  return `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}`
 }
 
 /**
@@ -22,7 +28,7 @@ export const getGenImageUrl = description => {
 export const fetchGenImage = description => {
   const encodedDesc = encodeURIComponent(description)
   return fetch(
-    `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}&=`,
+    `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}`,
     {
       headers: {
         Accept: 'image/jpeg, image/png, video/mp4'
@@ -73,15 +79,15 @@ export const IMG_PROMPTS = {
   MATZE_ANGRY: 'pixel art metal guitarist angry shouting smashing guitar',
 
   // Marius (Drums)
-  Marius_IDLE: 'pixel art metal drummer sitting behind kit waiting dark',
-  Marius_PLAYING:
+  MARIUS_IDLE: 'pixel art metal drummer sitting behind kit waiting dark',
+  MARIUS_PLAYING:
     'pixel art metal drummer blast beating fast blur sticks motion',
-  Marius_DRINKING: 'pixel art metal drummer drinking beer cheers happy',
+  MARIUS_DRINKING: 'pixel art metal drummer drinking beer cheers happy',
 
   // Lars (Bass)
-  Lars_IDLE: 'pixel art bassist standing cool sunglasses dark clothes',
-  Lars_PLAYING: 'pixel art bassist playing rhythm headbanging',
-  Lars_SCREAMING:
+  LARS_IDLE: 'pixel art bassist standing cool sunglasses dark clothes',
+  LARS_PLAYING: 'pixel art bassist playing rhythm headbanging',
+  LARS_SCREAMING:
     'pixel art bassist screaming into microphone aggressive growl',
 
   // Crowd

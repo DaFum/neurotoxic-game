@@ -506,7 +506,7 @@ export const useTravelLogic = ({
     } catch (_e) {
       // Ignore audio errors
     }
-  }, [isTraveling, updatePlayer, addToast])
+  }, [updatePlayer, addToast])
 
   /**
    * Handles repairing the van
@@ -549,7 +549,7 @@ export const useTravelLogic = ({
     } catch (_e) {
       // Ignore audio errors
     }
-  }, [isTraveling, updatePlayer, addToast])
+  }, [updatePlayer, addToast])
 
   // Softlock detection effect
   useEffect(() => {

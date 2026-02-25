@@ -8,7 +8,7 @@ import {
   LANE_COUNT,
   BUS_Y_PERCENT,
   BUS_HEIGHT_PERCENT
-} from '../../hooks/minigames/useTourbusLogic'
+} from '../../hooks/minigames/constants'
 
 class TourbusStageController extends BaseStageController {
   constructor(params) {

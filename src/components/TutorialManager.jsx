@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useGameState } from '../context/GameState'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useGameState } from '../context/GameState'
 
 const TUTORIAL_STEPS = [0, 1, 2, 3]
 const TOTAL_STEPS = TUTORIAL_STEPS.length

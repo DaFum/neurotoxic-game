@@ -101,12 +101,11 @@ export class BaseStageController {
     if (this.app) {
       try {
         this.app.ticker?.remove(this.handleTicker)
-        this.app.destroy({
-          removeView: true,
-          children: true,
-          texture: true,
-          textureSource: true
-        })
+        // PixiJS v8 destroy signature: destroy(rendererDestroyOptions, options)
+        this.app.destroy(
+          { removeView: true },
+          { children: true, texture: true, textureSource: true }
+        )
       } catch (e) {
         logger.warn(this.constructor.name, 'Destroy failed', e)
       }

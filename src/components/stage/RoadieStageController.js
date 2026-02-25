@@ -13,6 +13,7 @@ class RoadieStageController extends BaseStageController {
     this.playerSprite = null
     this.itemSprite = null
     this.carSprites = new Map()
+    this.currentIds = new Set() // Reuse Set to avoid GC
     this.effectManager = null
 
     this._flashTimeout = null
@@ -124,16 +125,14 @@ class RoadieStageController extends BaseStageController {
 
     const g = new PIXI.Graphics()
     this.bgGraphics = g
-    const roadColor = getPixiColorFromToken('--void-black') || 0x000000
+    const roadColor = getPixiColorFromToken('--void-black')
     const grassColor =
       getPixiColorFromToken('--roadie-grass') ||
-      getPixiColorFromToken('--toxic-green') ||
-      0x00ff41
+      getPixiColorFromToken('--toxic-green')
     const venueColor =
       getPixiColorFromToken('--roadie-venue-blue') ||
-      getPixiColorFromToken('--blood-red') ||
-      0xcc0000
-    const stripeColor = getPixiColorFromToken('--star-white') || 0xffffff
+      getPixiColorFromToken('--blood-red')
+    const stripeColor = getPixiColorFromToken('--star-white')
 
     // Use screen width for better drawing
     const width = this.app ? this.app.screen.width : 2000
@@ -219,14 +218,20 @@ class RoadieStageController extends BaseStageController {
     }
 
     // Render Traffic
-    const currentIds = new Set()
+    this.currentIds.clear()
     state.traffic.forEach(car => {
-      currentIds.add(car.id)
+      this.currentIds.add(car.id)
       let sprite = this.carSprites.get(car.id)
       if (!sprite) {
-        // Pick random car texture based on hash of ID or random
+        // Pick stable car texture based on hash of ID
         if (this.textures.cars.length > 0) {
-          const texIndex = Math.floor(Math.random() * this.textures.cars.length)
+          // Simple hash of ID string
+          let hash = 0
+          for (let i = 0; i < car.id.length; i++) {
+            hash = (hash << 5) - hash + car.id.charCodeAt(i)
+            hash |= 0
+          }
+          const texIndex = Math.abs(hash) % this.textures.cars.length
           sprite = new PIXI.Sprite(this.textures.cars[texIndex])
           sprite.anchor.set(0.5)
         } else {
@@ -269,7 +274,7 @@ class RoadieStageController extends BaseStageController {
 
     // Cleanup
     for (const [id, sprite] of this.carSprites.entries()) {
-      if (!currentIds.has(id)) {
+      if (!this.currentIds.has(id)) {
         this.container.removeChild(sprite)
         sprite.destroy()
         this.carSprites.delete(id)

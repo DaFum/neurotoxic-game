@@ -51,7 +51,7 @@ vi.mock('../../src/ui/shared', () => ({
   ProgressBar: () => null
 }))
 const GlitchButtonCapture = vi.fn(({ children, onClick }) => (
-  <button data-testid='glitch-button' onClick={onClick}>
+  <button type='button' data-testid='glitch-button' onClick={onClick}>
     {children}
   </button>
 ))
@@ -106,23 +106,23 @@ describe('Settings Referential Stability', () => {
     const secondRenderButtonProps = GlitchButtonCapture.mock.calls[1][0]
 
     // Check stability
-    const isStable_ToggleCRT =
+    const isStableToggleCRT =
       firstRenderPanelProps.onToggleCRT === secondRenderPanelProps.onToggleCRT
-    const isStable_LogLevelChange =
+    const isStableLogLevelChange =
       firstRenderPanelProps.onLogLevelChange ===
       secondRenderPanelProps.onLogLevelChange
-    const isStable_Return =
+    const isStableReturn =
       firstRenderButtonProps.onClick === secondRenderButtonProps.onClick
 
     // We print the results for manual verification in this step
     console.log('Stability Baseline Results:')
-    console.log(`onToggleCRT stable: ${isStable_ToggleCRT}`)
-    console.log(`onLogLevelChange stable: ${isStable_LogLevelChange}`)
-    console.log(`onClick (Return) stable: ${isStable_Return}`)
+    console.log(`onToggleCRT stable: ${isStableToggleCRT}`)
+    console.log(`onLogLevelChange stable: ${isStableLogLevelChange}`)
+    console.log(`onClick (Return) stable: ${isStableReturn}`)
 
     // Assertions - these will fail in the baseline
-    expect(isStable_ToggleCRT).toBe(true)
-    expect(isStable_LogLevelChange).toBe(true)
-    expect(isStable_Return).toBe(true)
+    expect(isStableToggleCRT).toBe(true)
+    expect(isStableLogLevelChange).toBe(true)
+    expect(isStableReturn).toBe(true)
   })
 })

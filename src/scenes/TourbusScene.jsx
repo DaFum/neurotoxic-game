@@ -18,7 +18,7 @@ export const TourbusScene = () => {
       stats,
       update
     }),
-    [gameStateRef, update]
+    [gameStateRef, stats, update]
   )
 
   return (
@@ -43,12 +43,16 @@ export const TourbusScene = () => {
 
       {/* Controls Overlay (Touch/Mobile) */}
       <div className='absolute inset-0 z-40 flex justify-between pointer-events-auto'>
-        <div
-          className='w-1/2 h-full active:bg-(--star-white)/5 transition-colors'
+        <button
+          type='button'
+          aria-label='Move Left'
+          className='w-1/2 h-full active:bg-(--star-white)/5 transition-colors focus:outline-none'
           onClick={actions.moveLeft}
         />
-        <div
-          className='w-1/2 h-full active:bg-(--star-white)/5 transition-colors'
+        <button
+          type='button'
+          aria-label='Move Right'
+          className='w-1/2 h-full active:bg-(--star-white)/5 transition-colors focus:outline-none'
           onClick={actions.moveRight}
         />
       </div>
