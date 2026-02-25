@@ -28,7 +28,7 @@ describe('calculateGigPhysics - Character Traits', () => {
 
   it('should apply party_animal trait correctly (Marius)', () => {
     const MariusWithTrait = {
-      ...MARIUS,
+      ...Marius,
       traits: [{ id: 'party_animal' }]
     }
     const bandState = { members: [matze, MariusWithTrait, Lars] }
@@ -40,7 +40,7 @@ describe('calculateGigPhysics - Character Traits', () => {
 
   it('should apply bandleader trait correctly (Lars)', () => {
     const LarsWithTrait = {
-      ...LARS,
+      ...Lars,
       traits: [{ id: 'bandleader' }]
     }
     const bandState = { members: [matze, Marius, LarsWithTrait] }
@@ -58,7 +58,7 @@ describe('calculateGigPhysics - Character Traits', () => {
 
   it('should apply social_manager trait correctly (Lars)', () => {
     const LarsWithTrait = {
-      ...LARS,
+      ...Lars,
       traits: [{ id: 'social_manager' }]
     }
     const bandState = { members: [matze, Marius, LarsWithTrait] }

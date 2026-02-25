@@ -110,7 +110,7 @@ test('getGigModifiers applies tired Marius speed increase', () => {
 
   assert.equal(modifiers.drumSpeedMult, 1.2, 'Tired Marius should speed up tempo')
   assert.ok(
-    modifiers.activeEffects.some(e => e.includes('TIRED Marius')),
+    modifiers.activeEffects.some(e => e.includes('TIRED MARIUS')),
     'Should describe Marius effect'
   )
 })

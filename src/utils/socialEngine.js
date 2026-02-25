@@ -305,7 +305,26 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
 
   // Pick up to 2 random offers
   const offers = []
-  const pool = [...eligibleDeals]
+  const pool = [...eligibleDeals].map(deal => {
+    let dynamicName = deal.name
+    // Procedural generation of brand names for generic brands
+    if (deal.id === 'energy_drink_cx') {
+      const prefixes = ['Toxic', 'Neon', 'Quantum', 'Hyper']
+      const suffixes = ['Rush', 'Blast', 'Surge', 'Core']
+      dynamicName = `${prefixes[Math.floor(rng() * prefixes.length)]} ${suffixes[Math.floor(rng() * suffixes.length)]} Energy`
+    }
+    if (deal.id === 'guitar_brand_shred') {
+      const prefixes = ['Shred', 'Axe', 'Riff', 'Metal']
+      const suffixes = ['Master', 'Grinder', 'Forge', 'Works']
+      dynamicName = `${prefixes[Math.floor(rng() * prefixes.length)]}${suffixes[Math.floor(rng() * suffixes.length)]} Guitars`
+    }
+    if (deal.id === 'indie_label_void') {
+      const prefixes = ['Void', 'Abyss', 'Shadow', 'Underground']
+      const suffixes = ['Records', 'Audio', 'Tapes', 'Sound']
+      dynamicName = `${prefixes[Math.floor(rng() * prefixes.length)]} ${suffixes[Math.floor(rng() * suffixes.length)]}`
+    }
+    return { ...deal, name: dynamicName }
+  })
 
   // Chance to generate any offer at all: 30% per eligible deal
   for (const deal of pool) {

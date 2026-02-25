@@ -269,8 +269,7 @@ export const usePurchaseLogic = ({
           break
 
         case 'hq_room_label':
-          nextPlayerPatch.money =
-            (nextPlayerPatch.money ?? player.money ?? 0) + 500
+          nextPlayerPatch.money = Math.max(0, (nextPlayerPatch.money ?? player.money ?? 0) + 500)
           addToast('Signed! +500€ Advance.', 'success')
           break
 

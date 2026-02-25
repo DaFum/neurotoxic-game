@@ -373,9 +373,14 @@ export const POST_OPTIONS = [
     badges: [POST_BADGES.RISK],
     condition: ({ band }) => Array.isArray(band?.members) && band.members.length > 0,
     resolve: ({ band, diceRoll }) => {
-      const memberNames = band.members.map(m => m.name)
-      const target = memberNames[Math.floor(diceRoll * memberNames.length)]
-      if (diceRoll > 0.5) {
+      const targetObj = band.members[Math.floor(diceRoll * band.members.length)]
+      const target = targetObj.name
+      let successChance = 0.5
+      if (targetObj.traits?.some(t => t.id === 'clumsy')) {
+        successChance = 0.7 // Clumsy requires a higher roll (>0.7) to succeed
+      }
+
+      if (diceRoll > successChance) {
         return {
           type: 'RNG_SUCCESS',
           success: true,
@@ -553,6 +558,64 @@ export const POST_OPTIONS = [
         moodChange: 20,
         message: `${target} finally revealed the secret of the tone. Guitar nerds are losing it.`,
         unlockTrait: { memberId, traitId: 'gear_nerd' }
+      }
+    }
+  },
+  {
+    id: 'collab_influencer',
+    name: 'Influencer Collaboration',
+    platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+    category: 'Commercial',
+    badges: [POST_BADGES.VIRAL, POST_BADGES.COMMERCIAL],
+    condition: ({ social, player }) => player.money >= 100 && Object.keys(social?.influencers || {}).length > 0,
+    resolve: ({ social, diceRoll }) => {
+      // Pick a random influencer safely
+      const influencers = social?.influencers || {}
+      const influencerIds = Object.keys(influencers)
+      
+      if (influencerIds.length === 0) {
+        return {
+          type: 'FIXED',
+          success: false,
+          platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+          text: 'No influencer available to collaborate with.',
+          effects: { money: 0, followers: { [SOCIAL_PLATFORMS.INSTAGRAM.id]: 0 }, controversy: 0 }
+        }
+      }
+
+      const roll = diceRoll ?? Math.random()
+      const selectedId = influencerIds[Math.floor(roll * influencerIds.length) % influencerIds.length]
+      const influencer = influencers[selectedId] || {}
+      
+      let cost = 100
+      let followersGain = 1000
+      let traitBonusText = ''
+      
+      if (influencer.tier === 'Macro') { cost = 300; followersGain = 3000 }
+      if (influencer.tier === 'Mega') { cost = 800; followersGain = 10000 }
+      
+      // Influencer Traits
+      let platform = SOCIAL_PLATFORMS.INSTAGRAM.id
+      let controversyChange = 0
+      
+      if (influencer.trait === 'tech_savvy') {
+        platform = SOCIAL_PLATFORMS.YOUTUBE.id
+        traitBonusText = ' The gear nerds loved the technical breakdown.'
+      } else if (influencer.trait === 'drama_magnet') {
+        platform = SOCIAL_PLATFORMS.TIKTOK.id
+        controversyChange = 20
+        followersGain = Math.floor(followersGain * 1.5)
+        traitBonusText = ' Massive reach, but it came with some toxic drama.'
+      }
+
+      return {
+        type: 'FIXED',
+        success: true,
+        platform: platform,
+        followers: followersGain,
+        moneyChange: -cost,
+        controversyChange,
+        message: `Collaborated with ${selectedId}. Cost ${cost}€.${traitBonusText}`
       }
     }
   },

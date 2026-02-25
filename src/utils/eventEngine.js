@@ -18,29 +18,28 @@ const selectEvent = (pool, gameState, triggerPoint) => {
   }
 
   // 2. Filter by Trigger & Condition
-  let eligibleEvents = pool.filter(e => {
+  let eligibleEvents = []
+  for (const e of pool) {
     // Trigger check
-    if (triggerPoint && e.trigger !== triggerPoint) return false
+    if (triggerPoint && e.trigger !== triggerPoint) continue
+
+    // Filter by Cooldown
+    if (gameState.eventCooldowns && gameState.eventCooldowns.includes(e.id)) continue
 
     // Condition check
-    if (!e.condition) return true
-    try {
-      return e.condition(gameState)
-    } catch (err) {
-      logger.error(
-        'EventEngine',
-        `Condition check failed for event ${e.id}`,
-        err
-      )
-      return false
+    if (!e.condition) {
+      eligibleEvents.push({ event: e, contextvars: {} })
+      continue
     }
-  })
-
-  // 3. Filter by Cooldown
-  if (gameState.eventCooldowns) {
-    eligibleEvents = eligibleEvents.filter(
-      e => !gameState.eventCooldowns.includes(e.id)
-    )
+    
+    try {
+      const condResult = e.condition(gameState)
+      if (condResult) {
+        eligibleEvents.push({ event: e, contextvars: typeof condResult === 'object' ? condResult : {} })
+      }
+    } catch (err) {
+      logger.error('EventEngine', `Condition check failed for event ${e.id}`, err)
+    }
   }
 
   if (eligibleEvents.length === 0) return null
@@ -55,7 +54,8 @@ const selectEvent = (pool, gameState, triggerPoint) => {
     ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
   }
 
-  for (const event of shuffled) {
+  for (const eligible of shuffled) {
+    const { event, contextvars } = eligible
     let chance = event.chance
 
     // Boost chance if flag matches
@@ -65,7 +65,22 @@ const selectEvent = (pool, gameState, triggerPoint) => {
 
     if (secureRandom() < chance) {
       logger.debug('EventEngine', 'Event Selected', event.id)
-      return event
+      
+      // Dynamic text parsing
+      const variables = {
+         ...contextvars,
+         venue: gameState.player?.currentLocation || 'the venue'
+      }
+      
+      let title = event.title || ''
+      let description = event.description || ''
+      Object.entries(variables).forEach(([key, value]) => {
+         const regex = new RegExp(`{${key}}`, 'gi')
+         title = title.replace(regex, value)
+         description = description.replace(regex, value)
+      })
+
+      return { ...event, title, description }
     }
   }
   return null

@@ -50,6 +50,13 @@ export const CHARACTERS = {
         desc: '+10% Score on Technical Songs',
         effect: 'score_bonus_tech',
         unlockHint: 'Get 100% Accuracy on a Technical song.'
+      },
+      {
+        id: 'grudge_holder',
+        name: 'Grudge Holder',
+        desc: 'Amplifies negative relationship changes',
+        effect: 'rel_neg_amp',
+        unlockHint: 'Have a relationship score drop below 30.'
       }
     ],
     equipment: {
@@ -57,7 +64,7 @@ export const CHARACTERS = {
       amp: 'Mesa Boogie Dual Rectifier'
     }
   },
-  Marius: {
+  MARIUS: {
     name: 'Marius',
     role: 'Drums',
     baseStats: { skill: 9, stamina: 8, charisma: 7, technical: 7, improv: 9 },
@@ -82,11 +89,18 @@ export const CHARACTERS = {
         desc: '+20% Virality Bonus',
         effect: 'viral_bonus_show',
         unlockHint: 'Perform 3 Stage Dives successfully.'
+      },
+      {
+        id: 'clumsy',
+        name: 'Clumsy',
+        desc: 'Increased failure chance on physical stunts',
+        effect: 'stunt_fail_risk',
+        unlockHint: 'Requires 2 failed stage dives.'
       }
     ],
     equipment: { set: 'Pearl Export', cymbals: 'Zildjian/Sabian Mix' }
   },
-  Lars: {
+  LARS: {
     name: 'Lars',
     role: 'Bass/Vocals',
     baseStats: {
@@ -124,6 +138,13 @@ export const CHARACTERS = {
         desc: '+10% Max Combo on Slow Songs',
         effect: 'combo_bonus_slow',
         unlockHint: 'Maintain a 30+ combo in a slow song (<120 BPM).'
+      },
+      {
+        id: 'peacemaker',
+        name: 'Peacemaker',
+        desc: 'Amplifies positive relationship changes',
+        effect: 'rel_pos_amp',
+        unlockHint: 'Consistently maintain high band harmony.'
       }
     ],
     equipment: { bass: 'Ibanez SR505', amp: 'Ampeg SVT-3 Pro' }

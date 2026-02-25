@@ -191,7 +191,16 @@ export const PostGig = () => {
       egoFocus: result.egoClear ? null : (result.egoDrop ? result.egoDrop : social.egoFocus),
       sponsorActive: option.id === 'comm_sellout_ad' ? false : social.sponsorActive,
       trend: social.trend,
-      activeDeals: social.activeDeals
+      activeDeals: social.activeDeals,
+      influencers: social.influencers
+    }
+
+    // Cross-posting Logic: 25% diminishing returns across other main platforms
+    if (result.success && totalFollowers > 0) {
+      const otherPlatforms = ['instagram', 'tiktok', 'youtube'].filter(p => p !== result.platform)
+      otherPlatforms.forEach(p => {
+         updatedSocial[p] = Math.max(0, (social[p] || 0) + Math.floor(totalFollowers * 0.25))
+      })
     }
 
     updateSocial(updatedSocial)

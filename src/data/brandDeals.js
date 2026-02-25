@@ -18,7 +18,8 @@ export const BRAND_DEALS = [
       duration: 5 // gigs
     },
     penalty: {
-      controversy: 5
+      controversy: 5,
+      loyalty: -10 // Evil brand hurts loyalty
     }
   },
   {

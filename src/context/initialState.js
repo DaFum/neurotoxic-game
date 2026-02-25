@@ -46,9 +46,9 @@ export const DEFAULT_PLAYER_STATE = {
  */
 export const DEFAULT_BAND_STATE = {
   members: [
-    { ...CHARACTERS.MATZE, mood: 80, stamina: 100, traits: [] },
-    { ...CHARACTERS.MARIUS, mood: 80, stamina: 100, traits: [] },
-    { ...CHARACTERS.LARS, mood: 80, stamina: 100, traits: [] }
+    { ...CHARACTERS.MATZE, mood: 80, stamina: 100, traits: [], relationships: { Marius: 50, Lars: 50 } },
+    { ...CHARACTERS.MARIUS, mood: 80, stamina: 100, traits: [], relationships: { Matze: 50, Lars: 50 } },
+    { ...CHARACTERS.LARS, mood: 80, stamina: 100, traits: [], relationships: { Matze: 50, Marius: 50 } }
   ],
   harmony: 80,
   harmonyRegenTravel: false,
@@ -89,7 +89,12 @@ export const DEFAULT_SOCIAL_STATE = {
   egoFocus: null,
   sponsorActive: false,
   trend: 'NEUTRAL', // 'NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME'
-  activeDeals: [] // List of { id, remainingGigs, ... }
+  activeDeals: [], // List of { id, remainingGigs, ... }
+  influencers: {
+    tech_reviewer_01: { tier: 'Macro', trait: 'tech_savvy', score: 0 },
+    drama_queen_99: { tier: 'Mega', trait: 'drama_magnet', score: 0 },
+    local_scene_kid: { tier: 'Micro', trait: 'tastemaker', score: 0 }
+  }
 }
 
 /**
