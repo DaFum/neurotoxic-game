@@ -9,14 +9,13 @@ const CreditsTestHarness = () => {
   const { currentScene } = useGameState()
   return (
     <div>
-      <div data-testid="scene">{currentScene}</div>
+      <div data-testid='scene'>{currentScene}</div>
       <Credits />
     </div>
   )
 }
 
 describe('Credits Scene', () => {
-
   test('renders credits content', () => {
     const { getByText } = render(
       <GameStateProvider>
@@ -33,11 +32,11 @@ describe('Credits Scene', () => {
         <CreditsTestHarness />
       </GameStateProvider>
     )
-    
+
     // Initial scene might be OVERWORLD or MENU based on initial state, but let's click RETURN
     const returnBtn = getByText('RETURN')
     fireEvent.click(returnBtn)
-    
+
     // Check if the scene updated to MENU
     expect(getByTestId('scene').textContent).toBe('MENU')
   })

@@ -271,9 +271,7 @@ function setupMidiChain() {
   audioState.midiReverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(
     audioState.musicGain
   )
-  audioState.midiReverbSend = new Tone.Gain(0.25).connect(
-    audioState.midiReverb
-  )
+  audioState.midiReverbSend = new Tone.Gain(0.25).connect(audioState.midiReverb)
   audioState.midiDryBus.connect(audioState.midiReverbSend)
 
   // Lead/Guitar: FM synthesis for richer harmonic content

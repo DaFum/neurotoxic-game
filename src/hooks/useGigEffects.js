@@ -6,7 +6,7 @@ import { useEffect, useRef, useCallback, useMemo } from 'react'
  * @param {Object} stats - The current game stats (e.g., isToxicMode, overload).
  * @returns {Object} - Refs and styles for the Gig component.
  */
-export const useGigEffects = (stats) => {
+export const useGigEffects = stats => {
   const chaosContainerRef = useRef(null)
   const bandAnimationsRef = useRef({})
   const bandMembersRef = useRef([])
@@ -16,9 +16,9 @@ export const useGigEffects = (stats) => {
    * Returns a stable ref callback for a band member at the given index.
    * @param {number} index
    */
-  const setBandMemberRef = useCallback((index) => {
+  const setBandMemberRef = useCallback(index => {
     if (!bandMemberSettersRef.current[index]) {
-      bandMemberSettersRef.current[index] = (el) => {
+      bandMemberSettersRef.current[index] = el => {
         bandMembersRef.current[index] = el
       }
     }
@@ -100,5 +100,10 @@ export const useGigEffects = (stats) => {
     return style
   }, [stats.overload, stats.isToxicMode])
 
-  return { chaosContainerRef, chaosStyle, triggerBandAnimation, setBandMemberRef }
+  return {
+    chaosContainerRef,
+    chaosStyle,
+    triggerBandAnimation,
+    setBandMemberRef
+  }
 }

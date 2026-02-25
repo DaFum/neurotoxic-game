@@ -56,9 +56,27 @@ export const DEFAULT_PLAYER_STATE = {
  */
 export const DEFAULT_BAND_STATE = {
   members: [
-    { ...CHARACTERS.MATZE, mood: 80, stamina: 100, traits: [], relationships: { Marius: 50, Lars: 50 } },
-    { ...CHARACTERS.MARIUS, mood: 80, stamina: 100, traits: [], relationships: { Matze: 50, Lars: 50 } },
-    { ...CHARACTERS.LARS, mood: 80, stamina: 100, traits: [], relationships: { Matze: 50, Marius: 50 } }
+    {
+      ...CHARACTERS.MATZE,
+      mood: 80,
+      stamina: 100,
+      traits: [],
+      relationships: { Marius: 50, Lars: 50 }
+    },
+    {
+      ...CHARACTERS.MARIUS,
+      mood: 80,
+      stamina: 100,
+      traits: [],
+      relationships: { Matze: 50, Lars: 50 }
+    },
+    {
+      ...CHARACTERS.LARS,
+      mood: 80,
+      stamina: 100,
+      traits: [],
+      relationships: { Matze: 50, Marius: 50 }
+    }
   ],
   harmony: 80,
   harmonyRegenTravel: false,
@@ -179,7 +197,10 @@ export const createInitialState = () => ({
   activeQuests: [],
   band: {
     ...DEFAULT_BAND_STATE,
-    members: DEFAULT_BAND_STATE.members.map(m => ({ ...m, traits: [...m.traits] })),
+    members: DEFAULT_BAND_STATE.members.map(m => ({
+      ...m,
+      traits: [...m.traits]
+    })),
     performance: { ...DEFAULT_BAND_STATE.performance },
     inventory: { ...DEFAULT_BAND_STATE.inventory }
   },

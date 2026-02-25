@@ -143,7 +143,12 @@ DRUM_MAPPING[50] = {
  * @param {number} time - The time to trigger the note.
  * @param {number} velocity - The velocity of the note (0-1).
  */
-export function playDrumNote(midiPitch, time, velocity, kit = audioState.drumKit) {
+export function playDrumNote(
+  midiPitch,
+  time,
+  velocity,
+  kit = audioState.drumKit
+) {
   if (!kit) return
 
   // ⚡ BOLT OPTIMIZATION: O(1) array lookup and direct handler execution

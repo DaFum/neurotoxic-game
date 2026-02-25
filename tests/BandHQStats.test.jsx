@@ -1,37 +1,44 @@
-import { afterAll, afterEach, beforeAll, describe, expect, test, vi } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  test,
+  vi
+} from 'vitest'
 
 import React from 'react'
 import { render, cleanup } from '@testing-library/react'
 
-
 // Mock shared UI components
 vi.mock('../src/ui/shared/index.jsx', () => ({
-    StatBox: ({ label, value }) => (
-      <div data-testid="stat-box">
-        <span data-testid="stat-label">{label}</span>
-        <span data-testid="stat-value">{value}</span>
-      </div>
-    ),
-    ProgressBar: () => <div data-testid="progress-bar" />,
-    Panel: ({ title, children }) => (
-      <div data-testid="panel">
-        <div data-testid="panel-title">{title}</div>
-        {children}
-      </div>
-    ),
-    Tooltip: ({ children }) => <div data-testid="tooltip">{children}</div>,
-    SettingsPanel: () => <div />,
-    VolumeSlider: () => <div />,
-    Modal: () => <div />,
-    ActionButton: () => <button />
-  }))
+  StatBox: ({ label, value }) => (
+    <div data-testid='stat-box'>
+      <span data-testid='stat-label'>{label}</span>
+      <span data-testid='stat-value'>{value}</span>
+    </div>
+  ),
+  ProgressBar: () => <div data-testid='progress-bar' />,
+  Panel: ({ title, children }) => (
+    <div data-testid='panel'>
+      <div data-testid='panel-title'>{title}</div>
+      {children}
+    </div>
+  ),
+  Tooltip: ({ children }) => <div data-testid='tooltip'>{children}</div>,
+  SettingsPanel: () => <div />,
+  VolumeSlider: () => <div />,
+  Modal: () => <div />,
+  ActionButton: () => <button />
+}))
 // Mock CHARACTERS data
 vi.mock('../src/data/characters.js', () => ({
-    CHARACTERS: {
-      AXEL: { name: 'Axel', traits: [] },
-      FREDDIE: { name: 'Freddie', traits: [] }
-    }
-  }))
+  CHARACTERS: {
+    AXEL: { name: 'Axel', traits: [] },
+    FREDDIE: { name: 'Freddie', traits: [] }
+  }
+}))
 describe('BandHQ Stats Discrepancy', () => {
   let StatsTab
   let DetailedStatsTab
@@ -47,7 +54,6 @@ describe('BandHQ Stats Discrepancy', () => {
 
   afterEach(() => {
     cleanup()
-
   })
 
   test('StatsTab and DetailedStatsTab follower counts match', () => {
@@ -78,12 +84,16 @@ describe('BandHQ Stats Discrepancy', () => {
 
     // Find the StatBox for Followers in StatsTab
     const statBoxes = getAllByTestId('stat-box')
-    const followersBox = statBoxes.find(box =>
-      box.querySelector('[data-testid="stat-label"]').textContent === 'Followers'
+    const followersBox = statBoxes.find(
+      box =>
+        box.querySelector('[data-testid="stat-label"]').textContent ===
+        'Followers'
     )
 
     expect(followersBox).toBeTruthy()
-    const statsTabValue = parseInt(followersBox.querySelector('[data-testid="stat-value"]').textContent)
+    const statsTabValue = parseInt(
+      followersBox.querySelector('[data-testid="stat-value"]').textContent
+    )
 
     // Render DetailedStatsTab
     const { getByText } = render(<DetailedStatsTab {...props} />)
@@ -101,7 +111,7 @@ describe('BandHQ Stats Discrepancy', () => {
     // </div>
 
     // Helper to find value by label text
-    const findValueByLabel = (labelText) => {
+    const findValueByLabel = labelText => {
       const labelElement = getByText(labelText)
       // The value is in the next sibling's child (based on DetailRow structure in DetailedStatsTab.jsx)
       // Structure: span(label) -> div(wrapper) -> div(value)

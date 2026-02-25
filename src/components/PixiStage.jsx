@@ -8,42 +8,44 @@ import { logger } from '../utils/logger'
  * @param {{ gameStateRef: object, update: Function, controllerFactory: Function }} props - Component props.
  * @returns {JSX.Element} Pixi canvas wrapper.
  */
-export const PixiStage = memo(({ gameStateRef, update, controllerFactory = createPixiStageController }) => {
-  const containerRef = useRef(null)
-  const updateRef = useRef(update)
-  const controllerRef = useRef(null)
+export const PixiStage = memo(
+  ({ gameStateRef, update, controllerFactory = createPixiStageController }) => {
+    const containerRef = useRef(null)
+    const updateRef = useRef(update)
+    const controllerRef = useRef(null)
 
-  useEffect(() => {
-    updateRef.current = update
-  }, [update])
+    useEffect(() => {
+      updateRef.current = update
+    }, [update])
 
-  useEffect(() => {
-    controllerRef.current = controllerFactory({
-      containerRef,
-      gameStateRef,
-      updateRef
-    })
+    useEffect(() => {
+      controllerRef.current = controllerFactory({
+        containerRef,
+        gameStateRef,
+        updateRef
+      })
 
-    controllerRef.current.init().catch(err => {
-      logger.error('PixiStage', 'Pixi Stage Init Failed', err)
-    })
+      controllerRef.current.init().catch(err => {
+        logger.error('PixiStage', 'Pixi Stage Init Failed', err)
+      })
 
-    return () => {
-      if (controllerRef.current) {
-        controllerRef.current.dispose()
-        controllerRef.current = null
+      return () => {
+        if (controllerRef.current) {
+          controllerRef.current.dispose()
+          controllerRef.current = null
+        }
       }
-    }
-    // gameStateRef is a stable useRef – dependency is constant
-  }, [gameStateRef, controllerFactory])
+      // gameStateRef is a stable useRef – dependency is constant
+    }, [gameStateRef, controllerFactory])
 
-  return (
-    <div
-      className='absolute inset-0 z-20 pointer-events-none'
-      ref={containerRef}
-    />
-  )
-})
+    return (
+      <div
+        className='absolute inset-0 z-20 pointer-events-none'
+        ref={containerRef}
+      />
+    )
+  }
+)
 
 PixiStage.propTypes = {
   gameStateRef: PropTypes.object.isRequired,

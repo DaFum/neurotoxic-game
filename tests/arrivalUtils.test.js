@@ -133,7 +133,10 @@ describe('handleNodeArrival', () => {
       assert.strictEqual(mocks.addToast.mock.calls.length, 1)
       assert.strictEqual(mocks.addToast.mock.calls[0].arguments[1], 'warning')
       assert.strictEqual(mocks.changeScene.mock.calls.length, 1)
-      assert.strictEqual(mocks.changeScene.mock.calls[0].arguments[0], 'OVERWORLD')
+      assert.strictEqual(
+        mocks.changeScene.mock.calls[0].arguments[0],
+        'OVERWORLD'
+      )
     })
   })
 
@@ -155,6 +158,8 @@ describe('handleNodeArrival', () => {
     assert.strictEqual(mocks.startGig.mock.calls.length, 1)
     // handleError should be called and it should call addToast
     assert.strictEqual(mocks.addToast.mock.calls.length, 1)
-    assert.ok(mocks.addToast.mock.calls[0].arguments[0].includes('Failed to load song'))
+    assert.ok(
+      mocks.addToast.mock.calls[0].arguments[0].includes('Failed to load song')
+    )
   })
 })

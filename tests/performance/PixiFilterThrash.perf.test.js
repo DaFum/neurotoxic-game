@@ -24,7 +24,9 @@ const MockPIXI = {
     addChild() {}
     destroy() {}
     removeChildren() {}
-    get filters() { return this._filters }
+    get filters() {
+      return this._filters
+    }
     set filters(v) {
       filterSetCount++
       this._filters = v
@@ -52,10 +54,42 @@ const mockManager = {
   layout: 'layout'
 }
 
-mock.module('../../src/components/stage/CrowdManager.js', { namedExports: { CrowdManager: class { constructor() { Object.assign(this, mockManager) } } } })
-mock.module('../../src/components/stage/LaneManager.js', { namedExports: { LaneManager: class { constructor() { Object.assign(this, mockManager) } } } })
-mock.module('../../src/components/stage/EffectManager.js', { namedExports: { EffectManager: class { constructor() { Object.assign(this, mockManager) } } } })
-mock.module('../../src/components/stage/NoteManager.js', { namedExports: { NoteManager: class { constructor() { Object.assign(this, mockManager) } } } })
+mock.module('../../src/components/stage/CrowdManager.js', {
+  namedExports: {
+    CrowdManager: class {
+      constructor() {
+        Object.assign(this, mockManager)
+      }
+    }
+  }
+})
+mock.module('../../src/components/stage/LaneManager.js', {
+  namedExports: {
+    LaneManager: class {
+      constructor() {
+        Object.assign(this, mockManager)
+      }
+    }
+  }
+})
+mock.module('../../src/components/stage/EffectManager.js', {
+  namedExports: {
+    EffectManager: class {
+      constructor() {
+        Object.assign(this, mockManager)
+      }
+    }
+  }
+})
+mock.module('../../src/components/stage/NoteManager.js', {
+  namedExports: {
+    NoteManager: class {
+      constructor() {
+        Object.assign(this, mockManager)
+      }
+    }
+  }
+})
 
 const mockAudioEngine = {
   getGigTimeMs: mock.fn(() => 1234)
@@ -74,14 +108,15 @@ describe('PixiStageController Filter Performance', () => {
   let createPixiStageController
 
   beforeEach(async () => {
-    globalThis.window = { 
+    globalThis.window = {
       devicePixelRatio: 1,
       addEventListener: mock.fn(),
       removeEventListener: mock.fn()
     }
 
     // Re-import to apply mocks
-    const controllerModule = await import('../../src/components/PixiStageController.js')
+    const controllerModule =
+      await import('../../src/components/PixiStageController.js')
     createPixiStageController = controllerModule.createPixiStageController
 
     containerRef = { current: { appendChild: mock.fn() } }
@@ -126,6 +161,9 @@ describe('PixiStageController Filter Performance', () => {
 
     // With optimization, this should be very low (e.g. 1-5).
     // Without optimization, it is > 200.
-    assert.ok(filterSetCount <= 5, `Expected <= 5 filter assignments, got ${filterSetCount}`)
+    assert.ok(
+      filterSetCount <= 5,
+      `Expected <= 5 filter assignments, got ${filterSetCount}`
+    )
   })
 })

@@ -7,12 +7,16 @@ export const CONSEQUENCE_EVENTS = [
     id: 'consequences_venue_complaint',
     category: 'financial',
     title: 'VENUE COMPLAINT',
-    description: 'The venue manager is furious about your recent performance and demands compensation.',
+    description:
+      'The venue manager is furious about your recent performance and demands compensation.',
     trigger: 'post_gig',
     chance: 0.85,
-    condition: (state) => {
-      const score = state.lastGigStats?.score ?? 0;
-      return score < 30 && !(state.eventCooldowns || []).includes('consequences_venue_complaint');
+    condition: state => {
+      const score = state.lastGigStats?.score ?? 0
+      return (
+        score < 30 &&
+        !(state.eventCooldowns || []).includes('consequences_venue_complaint')
+      )
     },
     options: [
       {
@@ -38,7 +42,7 @@ export const CONSEQUENCE_EVENTS = [
             { type: 'cooldown', eventId: 'consequences_venue_complaint' }
           ]
         },
-        outcomeText: 'You walk away, but the internet doesn\'t forget.'
+        outcomeText: "You walk away, but the internet doesn't forget."
       },
       {
         label: 'Deny [Charisma 7]',
@@ -61,7 +65,7 @@ export const CONSEQUENCE_EVENTS = [
               { type: 'stat', stat: 'harmony', value: -10 },
               { type: 'cooldown', eventId: 'consequences_venue_complaint' }
             ],
-            description: 'They didn\'t buy it. The backlash is worse.'
+            description: "They didn't buy it. The backlash is worse."
           }
         }
       }
@@ -71,13 +75,20 @@ export const CONSEQUENCE_EVENTS = [
     id: 'consequences_ticket_sales_collapse',
     category: 'financial',
     title: 'TICKET SALES COLLAPSE',
-    description: 'Promoters are threatening to cancel gigs due to low pre-sales and recent controversies.',
+    description:
+      'Promoters are threatening to cancel gigs due to low pre-sales and recent controversies.',
     trigger: 'post_gig',
-    chance: 0.70,
-    condition: (state) => {
-      const consecutiveBadShows = state.player?.stats?.consecutiveBadShows || 0;
-      const controversy = state.social?.controversyLevel || 0;
-      return consecutiveBadShows >= 2 && controversy >= 40 && !(state.eventCooldowns || []).includes('consequences_ticket_sales_collapse');
+    chance: 0.7,
+    condition: state => {
+      const consecutiveBadShows = state.player?.stats?.consecutiveBadShows || 0
+      const controversy = state.social?.controversyLevel || 0
+      return (
+        consecutiveBadShows >= 2 &&
+        controversy >= 40 &&
+        !(state.eventCooldowns || []).includes(
+          'consequences_ticket_sales_collapse'
+        )
+      )
     },
     options: [
       {
@@ -110,11 +121,16 @@ export const CONSEQUENCE_EVENTS = [
     id: 'consequences_bandmate_scandal',
     category: 'band',
     title: 'BANDMATE SCANDAL',
-    description: '{egoFocus} was photographed at the afterparty in a compromising situation.',
+    description:
+      '{egoFocus} was photographed at the afterparty in a compromising situation.',
     trigger: 'post_gig',
     chance: 0.75,
-    condition: (state) => {
-      return state.social?.egoFocus !== null && (state.social?.controversyLevel || 0) >= 30 && !(state.eventCooldowns || []).includes('consequences_bandmate_scandal');
+    condition: state => {
+      return (
+        state.social?.egoFocus !== null &&
+        (state.social?.controversyLevel || 0) >= 30 &&
+        !(state.eventCooldowns || []).includes('consequences_bandmate_scandal')
+      )
     },
     options: [
       {
@@ -128,7 +144,8 @@ export const CONSEQUENCE_EVENTS = [
             { type: 'cooldown', eventId: 'consequences_bandmate_scandal' }
           ]
         },
-        outcomeText: 'The band sticks together. The media hates it, but the diehards love the loyalty.'
+        outcomeText:
+          'The band sticks together. The media hates it, but the diehards love the loyalty.'
       },
       {
         label: 'Distance yourself [-10 Controversy, -20 Harmony]',
@@ -165,7 +182,8 @@ export const CONSEQUENCE_EVENTS = [
               { type: 'stat', stat: 'harmony', value: -15 },
               { type: 'cooldown', eventId: 'consequences_bandmate_scandal' }
             ],
-            description: 'Your excuse made no sense. Everyone is laughing at you.'
+            description:
+              'Your excuse made no sense. Everyone is laughing at you.'
           }
         }
       }
@@ -175,14 +193,19 @@ export const CONSEQUENCE_EVENTS = [
     id: 'consequences_cancel_culture_quest',
     category: 'special',
     title: 'THE INTERNET HAS SPOKEN',
-    description: 'The backlash has reached critical mass. Hashtags about cancelling the band are trending globally.',
+    description:
+      'The backlash has reached critical mass. Hashtags about cancelling the band are trending globally.',
     trigger: 'post_gig',
-    chance: 0.90,
-    condition: (state) => {
-      const controversy = state.social?.controversyLevel || 0;
-      const flags = state.activeStoryFlags || [];
-      const quests = state.activeQuests || [];
-      return controversy >= 85 && !flags.includes('cancel_quest_active') && !quests.some(q => q.id === 'quest_apology_tour');
+    chance: 0.9,
+    condition: state => {
+      const controversy = state.social?.controversyLevel || 0
+      const flags = state.activeStoryFlags || []
+      const quests = state.activeQuests || []
+      return (
+        controversy >= 85 &&
+        !flags.includes('cancel_quest_active') &&
+        !quests.some(q => q.id === 'quest_apology_tour')
+      )
     },
     options: [
       {
@@ -206,7 +229,8 @@ export const CONSEQUENCE_EVENTS = [
             { type: 'stat', stat: 'harmony', value: -15 }
           ]
         },
-        outcomeText: 'You vanish from the internet. The storm passes, but you lose your hardcore fans.'
+        outcomeText:
+          'You vanish from the internet. The storm passes, but you lose your hardcore fans.'
       }
     ]
   },
@@ -214,14 +238,19 @@ export const CONSEQUENCE_EVENTS = [
     id: 'consequences_ego_breakup_threat',
     category: 'band',
     title: 'BREAKUP THREAT',
-    description: 'The tension in the van is unbearable. Someone is about to quit the band.',
+    description:
+      'The tension in the van is unbearable. Someone is about to quit the band.',
     trigger: 'travel',
-    chance: 0.80,
-    condition: (state) => {
-      const harmony = state.band?.harmony || 0;
-      const egoFocus = state.social?.egoFocus || null;
-      const flags = state.activeStoryFlags || [];
-      return egoFocus !== null && harmony < 25 && !flags.includes('breakup_quest_active');
+    chance: 0.8,
+    condition: state => {
+      const harmony = state.band?.harmony || 0
+      const egoFocus = state.social?.egoFocus || null
+      const flags = state.activeStoryFlags || []
+      return (
+        egoFocus !== null &&
+        harmony < 25 &&
+        !flags.includes('breakup_quest_active')
+      )
     },
     options: [
       {
@@ -233,7 +262,8 @@ export const CONSEQUENCE_EVENTS = [
             { type: 'stat', stat: 'harmony', value: 5 }
           ]
         },
-        outcomeText: 'You beg them to stay. It\'s going to take work to fix this.'
+        outcomeText:
+          "You beg them to stay. It's going to take work to fix this."
       },
       {
         label: 'Let them walk (Game Over)',
@@ -246,11 +276,15 @@ export const CONSEQUENCE_EVENTS = [
     id: 'consequences_comeback_album',
     category: 'special',
     title: 'THE COMEBACK IS REAL',
-    description: 'After completing the apology tour and cleaning up your image, labels are interested again.',
+    description:
+      'After completing the apology tour and cleaning up your image, labels are interested again.',
     trigger: 'post_gig',
     chance: 1.0,
-    condition: (state) => {
-      return (state.pendingEvents || []).includes('consequences_comeback_album') && !(state.activeStoryFlags || []).includes('comeback_triggered');
+    condition: state => {
+      return (
+        (state.pendingEvents || []).includes('consequences_comeback_album') &&
+        !(state.activeStoryFlags || []).includes('comeback_triggered')
+      )
     },
     options: [
       {
@@ -281,4 +315,4 @@ export const CONSEQUENCE_EVENTS = [
       }
     ]
   }
-];
+]

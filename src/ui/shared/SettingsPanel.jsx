@@ -142,9 +142,7 @@ const DataManagement = ({ onDeleteSave }) => {
             undone.
           </p>
           <div className='flex gap-4 justify-end'>
-            <ActionButton onClick={handleCloseConfirm}>
-              CANCEL
-            </ActionButton>
+            <ActionButton onClick={handleCloseConfirm}>CANCEL</ActionButton>
             <ActionButton
               onClick={handleDeleteSave}
               className='bg-(--blood-red) text-(--void-black) border-(--blood-red) hover:invert'

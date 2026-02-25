@@ -90,7 +90,7 @@ export const TutorialManager = () => {
 
             {/* Progress dots */}
             <div className='flex items-center gap-1.5 mb-4'>
-              {TUTORIAL_STEPS.map((stepId) => (
+              {TUTORIAL_STEPS.map(stepId => (
                 <div
                   key={stepId}
                   className={`w-2 h-2 transition-colors ${

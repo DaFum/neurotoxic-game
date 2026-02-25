@@ -51,7 +51,20 @@ export const buildMidiTrackEvents = (notes, percussionTrack) => {
   }, [])
 }
 
-const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+const NOTE_NAMES = [
+  'C',
+  'C#',
+  'D',
+  'D#',
+  'E',
+  'F',
+  'F#',
+  'G',
+  'G#',
+  'A',
+  'A#',
+  'B'
+]
 const NOTE_CACHE = new Array(128)
 
 // Pre-compute note names for MIDI 0-127

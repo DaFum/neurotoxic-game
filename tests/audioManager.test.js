@@ -62,12 +62,15 @@ test('AudioManager Tests', async t => {
     assert.strictEqual(callsAfter[callsAfter.length - 1].arguments[0], newMute)
   })
 
-  await t.test('resumeMusic resumes paused transport via engine facade', async () => {
-    mockAudioEngine.getTransportState.mock.mockImplementation(() => 'paused')
-    const result = await audioManager.resumeMusic()
-    assert.equal(result, true)
-    assert.equal(mockAudioEngine.resumeAudio.mock.calls.length > 0, true)
-  })
+  await t.test(
+    'resumeMusic resumes paused transport via engine facade',
+    async () => {
+      mockAudioEngine.getTransportState.mock.mockImplementation(() => 'paused')
+      const result = await audioManager.resumeMusic()
+      assert.equal(result, true)
+      assert.equal(mockAudioEngine.resumeAudio.mock.calls.length > 0, true)
+    }
+  )
 
   await t.test('startAmbient calls playRandomAmbientOgg', async () => {
     const callsBefore = mockAudioEngine.playRandomAmbientOgg.mock.calls.length

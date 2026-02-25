@@ -11,7 +11,12 @@ import { PauseButton } from './hud/PauseButton'
 import { ToxicModeFlash } from './hud/ToxicModeFlash'
 import { GameOverOverlay } from './hud/GameOverOverlay'
 
-export const GigHUD = memo(function GigHUD({ stats, onLaneInput, gameStateRef, onTogglePause }) {
+export const GigHUD = memo(function GigHUD({
+  stats,
+  onLaneInput,
+  gameStateRef,
+  onTogglePause
+}) {
   const {
     score,
     combo,

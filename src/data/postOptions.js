@@ -25,7 +25,9 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Drama',
     badges: [POST_BADGES.RISK, POST_BADGES.STORY],
-    condition: ({ social, activeQuests }) => (social?.reputationCooldown || 0) === 0 && (activeQuests || []).some(q => q.id === 'quest_apology_tour'),
+    condition: ({ social, activeQuests }) =>
+      (social?.reputationCooldown || 0) === 0 &&
+      (activeQuests || []).some(q => q.id === 'quest_apology_tour'),
     resolve: () => ({
       type: 'FIXED',
       success: true,
@@ -44,7 +46,9 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Drama',
     badges: [POST_BADGES.VIRAL, POST_BADGES.STORY],
-    condition: ({ social }) => (social?.controversyLevel || 0) >= 50 && (social?.reputationCooldown || 0) === 0,
+    condition: ({ social }) =>
+      (social?.controversyLevel || 0) >= 50 &&
+      (social?.reputationCooldown || 0) === 0,
     resolve: ({ diceRoll }) => {
       if (diceRoll < 0.55) {
         return {
@@ -55,7 +59,8 @@ export const POST_OPTIONS = [
           controversyChange: -30,
           loyaltyChange: 25,
           reputationCooldownSet: 7,
-          message: 'The leak worked beautifully. People think you are misunderstood.'
+          message:
+            'The leak worked beautifully. People think you are misunderstood.'
         }
       } else {
         return {
@@ -93,7 +98,8 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Commercial',
     badges: [POST_BADGES.COMMERCIAL],
-    condition: ({ social }) => (social?.controversyLevel || 0) >= 40 && (social?.loyalty || 0) >= 20,
+    condition: ({ social }) =>
+      (social?.controversyLevel || 0) >= 40 && (social?.loyalty || 0) >= 20,
     resolve: ({ social }) => {
       const loyaltyVal = social?.loyalty || 0
       const moneyGain = Math.min(loyaltyVal * 8, 600)
@@ -117,7 +123,10 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Performance',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
-    condition: ({ player, band }) => player.money > 500 && Array.isArray(band?.members) && band.members.length > 0,
+    condition: ({ player, band }) =>
+      player.money > 500 &&
+      Array.isArray(band?.members) &&
+      band.members.length > 0,
     resolve: ({ band, diceRoll }) => {
       // Pick a random member
       const memberNames = band.members.map(m => m.name)
@@ -148,7 +157,8 @@ export const POST_OPTIONS = [
       followers: 500,
       harmonyChange: 5,
       egoClear: true,
-      message: 'A beautiful bonding moment caught on tape. Internal tension eased.'
+      message:
+        'A beautiful bonding moment caught on tape. Internal tension eased.'
     })
   },
   {
@@ -157,10 +167,16 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Performance',
     badges: [POST_BADGES.RISK],
-    condition: ({ lastGigStats, band }) => lastGigStats && lastGigStats.score > 25000 && Array.isArray(band?.members) && band.members.length > 0,
+    condition: ({ lastGigStats, band }) =>
+      lastGigStats &&
+      lastGigStats.score > 25000 &&
+      Array.isArray(band?.members) &&
+      band.members.length > 0,
     resolve: ({ band }) => {
       // Dynamically select the lead singer or fallback to index 0
-      const vocalistObj = band.members.find(m => m.traits?.some(t => t.id === 'lead_singer')) || band.members[0]
+      const vocalistObj =
+        band.members.find(m => m.traits?.some(t => t.id === 'lead_singer')) ||
+        band.members[0]
       const vocalist = vocalistObj.name
       return {
         type: 'FIXED',
@@ -200,8 +216,9 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Performance',
     badges: [POST_BADGES.VIRAL],
-    condition: ({ activeEvent, gigEvents }) => 
-      activeEvent?.id === 'stage_diver' || (gigEvents && gigEvents.includes('stage_diver')),
+    condition: ({ activeEvent, gigEvents }) =>
+      activeEvent?.id === 'stage_diver' ||
+      (gigEvents && gigEvents.includes('stage_diver')),
     resolve: () => ({
       type: 'FIXED',
       success: true,
@@ -217,9 +234,16 @@ export const POST_OPTIONS = [
     category: 'Performance',
     badges: [POST_BADGES.SAFE],
     condition: ({ lastGigStats, social, band }) => {
-      if (!Array.isArray(band?.members) || band.members.length === 0) return false
-      const isVirtuoso = band.members.some(m => m.traits?.some(t => t.id === 'virtuoso'))
-      return (lastGigStats && lastGigStats.score > 15000) || social.egoFocus || isVirtuoso
+      if (!Array.isArray(band?.members) || band.members.length === 0)
+        return false
+      const isVirtuoso = band.members.some(m =>
+        m.traits?.some(t => t.id === 'virtuoso')
+      )
+      return (
+        (lastGigStats && lastGigStats.score > 15000) ||
+        social.egoFocus ||
+        isVirtuoso
+      )
     },
     resolve: () => ({
       type: 'FIXED',
@@ -256,7 +280,7 @@ export const POST_OPTIONS = [
       type: 'FIXED',
       success: true,
       platform: SOCIAL_PLATFORMS.YOUTUBE.id,
-      followers: 1200, 
+      followers: 1200,
       harmonyChange: -5,
       allMembersMoodChange: true,
       moodChange: -5,
@@ -311,7 +335,8 @@ export const POST_OPTIONS = [
       followers: -1000, // Alienate mainstream
       loyaltyChange: 20, // Converts casuals to hardcore
       controversyChange: 15,
-      message: 'Mainstream fans bailed, but the hardcore cult just grew stronger.'
+      message:
+        'Mainstream fans bailed, but the hardcore cult just grew stronger.'
     })
   },
   {
@@ -320,7 +345,9 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Drama',
     badges: [POST_BADGES.STORY],
-    condition: ({ activeEvent }) => activeEvent?.type === 'negative_travel' || activeEvent?.id === 'van_breakdown', // Simplified condition based on recent event
+    condition: ({ activeEvent }) =>
+      activeEvent?.type === 'negative_travel' ||
+      activeEvent?.id === 'van_breakdown', // Simplified condition based on recent event
     resolve: () => ({
       type: 'FIXED',
       success: true,
@@ -344,7 +371,8 @@ export const POST_OPTIONS = [
       followers: 800, // Newsletter spikes don't need to be huge raw numbers, they are high value
       loyaltyChange: 25, // Massive hype
       harmonyChange: -10, // Manager is pissed
-      message: 'The discord is going wild over the new riff. Management is furious.'
+      message:
+        'The discord is going wild over the new riff. Management is furious.'
     })
   },
 
@@ -362,7 +390,8 @@ export const POST_OPTIONS = [
       followers: 5000,
       harmonyChange: -15,
       controversyChange: 25,
-      message: 'Massive viral hit, but the fake argument felt a little too real.'
+      message:
+        'Massive viral hit, but the fake argument felt a little too real.'
     })
   },
   {
@@ -371,7 +400,8 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Drama',
     badges: [POST_BADGES.RISK],
-    condition: ({ band }) => Array.isArray(band?.members) && band.members.length > 0,
+    condition: ({ band }) =>
+      Array.isArray(band?.members) && band.members.length > 0,
     resolve: ({ band, diceRoll }) => {
       const targetObj = band.members[Math.floor(diceRoll * band.members.length)]
       const target = targetObj.name
@@ -392,13 +422,13 @@ export const POST_OPTIONS = [
         }
       } else {
         return {
-           type: 'RNG_FAIL',
-           success: false,
-           platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
-           followers: -500,
-           targetMember: target,
-           staminaChange: -5,
-           message: `${target} got dropped. It was just sad to watch.`
+          type: 'RNG_FAIL',
+          success: false,
+          platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+          followers: -500,
+          targetMember: target,
+          staminaChange: -5,
+          message: `${target} got dropped. It was just sad to watch.`
         }
       }
     }
@@ -409,9 +439,12 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Drama', // or Lifestyle
     badges: [POST_BADGES.SAFE],
-    condition: ({ band }) => Array.isArray(band?.members) && band.members.length > 0,
+    condition: ({ band }) =>
+      Array.isArray(band?.members) && band.members.length > 0,
     resolve: ({ band }) => {
-      const gearNerd = band.members.find(m => m.traits?.some(t => t.id === 'gear_nerd'))?.name || band.members[0].name
+      const gearNerd =
+        band.members.find(m => m.traits?.some(t => t.id === 'gear_nerd'))
+          ?.name || band.members[0].name
       return {
         type: 'FIXED',
         success: true,
@@ -445,15 +478,20 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Drama',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
-    condition: ({ band }) => Array.isArray(band?.members) && band.members.length > 0,
+    condition: ({ band }) =>
+      Array.isArray(band?.members) && band.members.length > 0,
     resolve: ({ band }) => {
-      const prankster = band.members.find(m => m.traits?.some(t => t.id === 'party_animal'))?.name || band.members[1]?.name || band.members[0].name
+      const prankster =
+        band.members.find(m => m.traits?.some(t => t.id === 'party_animal'))
+          ?.name ||
+        band.members[1]?.name ||
+        band.members[0].name
       return {
         type: 'FIXED',
         success: true,
         platform: SOCIAL_PLATFORMS.TIKTOK.id,
         followers: 2500,
-        targetMember: prankster, 
+        targetMember: prankster,
         moodChange: 10,
         harmonyChange: -5,
         message: `${prankster} loved it. The rest of the band is annoyed.`
@@ -468,13 +506,13 @@ export const POST_OPTIONS = [
     badges: [POST_BADGES.STORY, POST_BADGES.SAFE],
     condition: ({ band }) => (band?.harmony ?? 0) > 60,
     resolve: () => ({
-       type: 'FIXED',
-       success: true,
-       platform: SOCIAL_PLATFORMS.YOUTUBE.id,
-       followers: 1000,
-       harmonyChange: 5,
-       egoClear: true,
-       message: 'A deep, vulnerable chat. The fans feel closer to you.'
+      type: 'FIXED',
+      success: true,
+      platform: SOCIAL_PLATFORMS.YOUTUBE.id,
+      followers: 1000,
+      harmonyChange: 5,
+      egoClear: true,
+      message: 'A deep, vulnerable chat. The fans feel closer to you.'
     })
   },
 
@@ -532,7 +570,8 @@ export const POST_OPTIONS = [
       followers: -500, // Looks desperate
       controversyChange: 5,
       moneyChange: 300,
-      message: 'You got gas money, but you lost some self-respect and followers.'
+      message:
+        'You got gas money, but you lost some self-respect and followers.'
     })
   },
   {
@@ -541,10 +580,15 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Commercial',
     badges: [POST_BADGES.SAFE, POST_BADGES.COMMERCIAL],
-    condition: ({ band }) => band?.inventory?.golden_pick === true && Array.isArray(band?.members) && band.members.length > 0,
+    condition: ({ band }) =>
+      band?.inventory?.golden_pick === true &&
+      Array.isArray(band?.members) &&
+      band.members.length > 0,
     resolve: ({ band }) => {
       // Find potential gear nerd or fallback to first member
-      const member = band.members.find(m => m.traits?.some(t => t.id === 'gear_nerd')) || band.members[0]
+      const member =
+        band.members.find(m => m.traits?.some(t => t.id === 'gear_nerd')) ||
+        band.members[0]
       const target = member.name
       const memberId = member.id || member.name // Use name as fallback ID
 
@@ -567,12 +611,13 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Commercial',
     badges: [POST_BADGES.VIRAL, POST_BADGES.COMMERCIAL],
-    condition: ({ social, player }) => player.money >= 100 && Object.keys(social?.influencers || {}).length > 0,
+    condition: ({ social, player }) =>
+      player.money >= 100 && Object.keys(social?.influencers || {}).length > 0,
     resolve: ({ social, player, diceRoll }) => {
       const influencers = social?.influencers || {}
-      
+
       // helper to get cost
-      const getCost = (inf) => {
+      const getCost = inf => {
         let base = 100
         if (inf.tier === 'Macro') base = 300
         if (inf.tier === 'Mega') base = 800
@@ -598,7 +643,10 @@ export const POST_OPTIONS = [
 
       // Pick one from affordable
       const roll = diceRoll ?? Math.random()
-      const selectedId = affordableIds[Math.floor(roll * affordableIds.length) % affordableIds.length]
+      const selectedId =
+        affordableIds[
+          Math.floor(roll * affordableIds.length) % affordableIds.length
+        ]
       const influencer = influencers[selectedId]
 
       const cost = getCost(influencer)
@@ -610,7 +658,7 @@ export const POST_OPTIONS = [
       let platform = SOCIAL_PLATFORMS.INSTAGRAM.id
       let controversyChange = 0
       let traitBonusText = ''
-      
+
       if (influencer.trait === 'tech_savvy') {
         platform = SOCIAL_PLATFORMS.YOUTUBE.id
         traitBonusText = ' The gear nerds loved the technical breakdown.'
@@ -642,14 +690,19 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Commercial', // Fits TECH trend
     badges: [POST_BADGES.SAFE, POST_BADGES.STORY],
-    condition: ({ band }) => Array.isArray(band?.members) && band.members.some(m => m.traits?.some(t => t.id === 'gear_nerd' || t.id === 'tech_wizard')),
+    condition: ({ band }) =>
+      Array.isArray(band?.members) &&
+      band.members.some(m =>
+        m.traits?.some(t => t.id === 'gear_nerd' || t.id === 'tech_wizard')
+      ),
     resolve: () => ({
       type: 'FIXED',
       success: true,
       platform: SOCIAL_PLATFORMS.YOUTUBE.id,
       followers: 1200,
       moneyChange: 50, // Ad revenue
-      message: 'The comments section is arguing about cable capacitance. It is glorious.'
+      message:
+        'The comments section is arguing about cable capacitance. It is glorious.'
     })
   },
   {
@@ -676,14 +729,19 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Performance', // Fits MUSIC trend
     badges: [POST_BADGES.STORY],
-    condition: ({ band }) => Array.isArray(band?.members) && band.members.some(m => m.traits?.some(t => t.id === 'melodic_genius' || t.id === 'virtuoso')),
+    condition: ({ band }) =>
+      Array.isArray(band?.members) &&
+      band.members.some(m =>
+        m.traits?.some(t => t.id === 'melodic_genius' || t.id === 'virtuoso')
+      ),
     resolve: () => ({
       type: 'FIXED',
       success: true,
       platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
       followers: 300,
       loyaltyChange: 15,
-      message: 'You explained the use of mixolydian b6. The music nerds are ecstatic.'
+      message:
+        'You explained the use of mixolydian b6. The music nerds are ecstatic.'
     })
   },
   {
@@ -701,7 +759,8 @@ export const POST_OPTIONS = [
           platform: SOCIAL_PLATFORMS.TIKTOK.id,
           followers: 4000,
           controversyChange: 20,
-          message: 'It went viral instantly. The gossip channels are covering it.'
+          message:
+            'It went viral instantly. The gossip channels are covering it.'
         }
       } else {
         return {

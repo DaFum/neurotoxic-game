@@ -1,364 +1,2010 @@
 export const CHATTER_DB = [
   // --- GENERAL TRAVEL / OVERWORLD ---
-  { text: 'My back hurts from sleeping in this seat.', weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'Did we pack the spare snare?', weight: 1, category: 'travel', speaker: 'Marius' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: "I'm starving. Fast food again?", weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'This van smells like stale beer and broken dreams.', weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'Are we there yet?', weight: 0.5, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'I should have been a dentist.', weight: 0.2, category: 'travel', speaker: 'Lars' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'Did anyone bring a phone charger?', weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'Turn up the radio!', weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'This map looks like a bad tour tattoo.', weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'Did we forget the banner again?', weight: 1, category: 'travel', speaker: 'Marius' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: "If the promoter ghosts us, we're playing in the parking lot.", weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'Every kilometer adds a new rattle to this van.', weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'Same highway, different city, same broken AUX cable.', weight: 0.5, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'Imagine explaining this life to a normal person.', weight: 0.2, category: 'travel', speaker: 'Lars' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'Someone sit on the pedalboard so it stops sliding.', weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'Who called shotgun and then fell asleep?', weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'Who packed the cables like spaghetti again?', weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'I can taste the gas station coffee in my soul.', weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'If this van had feelings, it would sue us.', weight: 0.8, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'We’ve been on the road so long my phone thinks we live at rest stops.', weight: 0.5, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'Why does everything we own smell like rehearsal room?', weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'Someone open a window before we evolve gills.', weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'I just found a guitar pick in my shoe. Again.', weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'If the GPS says “recalculating” one more time, I’m walking.', weight: 0.8, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'The van makes a new noise every city. Collect them all.', weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'We should start charging rent for this backseat.', weight: 0.5, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'Did we bring the extension cord? Please say yes.', weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'I miss showers with actual water pressure.', weight: 0.8, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'Who ate the last snack and chose violence?', weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'If we get pulled over, you’re explaining the merch boxes.', weight: 0.7, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'I just realized we’ve been listening to the same album for 600km.', weight: 0.6, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'I swear I packed the adapters…', weight: 1, category: 'travel', speaker: 'Matze' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'Next person who says “scenic route” is carrying the kick drum.', weight: 0.8, category: 'travel', speaker: 'Marius' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'My neck is permanently shaped like this headrest.', weight: 0.6, category: 'travel', speaker: 'Lars' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'We’re one pothole away from turning into a percussion ensemble.', weight: 1, category: 'travel', speaker: 'Marius' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'My legs are asleep. Again. Congratulations, legs.', weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'Who packed the merch box on top of the merch box? Genius.', weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'If we stop one more time, we’ll arrive next week.', weight: 0.7, category: 'travel', speaker: 'Marius' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'I can’t tell if that smell is the van or my hoodie.', weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'This seatbelt buckle is trying to kill my hip bone.', weight: 0.8, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'We should sell “van air” in jars. Limited edition.', weight: 0.5, category: 'travel', speaker: 'Lars' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'I just heard the van sigh. That’s… not great.', weight: 0.8, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'If the drummer says “shortcut” I’m jumping out.', weight: 0.7, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'We’re basically a moving storage unit with opinions.', weight: 0.6, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'My spine just made a noise I don’t want to name.', weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'Are we touring or just driving in circles to avoid our feelings?', weight: 0.4, category: 'travel', speaker: 'Lars' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'If the van radio finds one more static station, I’m starting a cult.', weight: 0.6, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'How do we have 40 cables and still not the right one?', weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'I miss silence. Like, medically.', weight: 0.7, category: 'travel', speaker: 'Matze' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'We’re one toll booth away from bankruptcy.', weight: 0.6, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'If the van breaks, we’re carrying amps like pilgrims.', weight: 0.7, category: 'travel', speaker: 'Marius' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'I just found a drum key in the cupholder. That explains nothing.', weight: 0.8, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'Why is the floor always slightly wet? Don’t answer that.', weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'Gas station sandwiches are a lifestyle choice. A bad one.', weight: 1, category: 'travel' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
-  { text: 'We should write a song called “Rest Stop Romance”.', weight: 0.4, category: 'travel', speaker: 'Lars' , condition: state => state.currentScene === 'TRAVEL_MINIGAME' || state.currentScene === 'OVERWORLD' },
+  {
+    text: 'My back hurts from sleeping in this seat.',
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'Did we pack the spare snare?',
+    weight: 1,
+    category: 'travel',
+    speaker: 'Marius',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: "I'm starving. Fast food again?",
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'This van smells like stale beer and broken dreams.',
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'Are we there yet?',
+    weight: 0.5,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'I should have been a dentist.',
+    weight: 0.2,
+    category: 'travel',
+    speaker: 'Lars',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'Did anyone bring a phone charger?',
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'Turn up the radio!',
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'This map looks like a bad tour tattoo.',
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'Did we forget the banner again?',
+    weight: 1,
+    category: 'travel',
+    speaker: 'Marius',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: "If the promoter ghosts us, we're playing in the parking lot.",
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'Every kilometer adds a new rattle to this van.',
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'Same highway, different city, same broken AUX cable.',
+    weight: 0.5,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'Imagine explaining this life to a normal person.',
+    weight: 0.2,
+    category: 'travel',
+    speaker: 'Lars',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'Someone sit on the pedalboard so it stops sliding.',
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'Who called shotgun and then fell asleep?',
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'Who packed the cables like spaghetti again?',
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'I can taste the gas station coffee in my soul.',
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'If this van had feelings, it would sue us.',
+    weight: 0.8,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'We’ve been on the road so long my phone thinks we live at rest stops.',
+    weight: 0.5,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'Why does everything we own smell like rehearsal room?',
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'Someone open a window before we evolve gills.',
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'I just found a guitar pick in my shoe. Again.',
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'If the GPS says “recalculating” one more time, I’m walking.',
+    weight: 0.8,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'The van makes a new noise every city. Collect them all.',
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'We should start charging rent for this backseat.',
+    weight: 0.5,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'Did we bring the extension cord? Please say yes.',
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'I miss showers with actual water pressure.',
+    weight: 0.8,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'Who ate the last snack and chose violence?',
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'If we get pulled over, you’re explaining the merch boxes.',
+    weight: 0.7,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'I just realized we’ve been listening to the same album for 600km.',
+    weight: 0.6,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'I swear I packed the adapters…',
+    weight: 1,
+    category: 'travel',
+    speaker: 'Matze',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'Next person who says “scenic route” is carrying the kick drum.',
+    weight: 0.8,
+    category: 'travel',
+    speaker: 'Marius',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'My neck is permanently shaped like this headrest.',
+    weight: 0.6,
+    category: 'travel',
+    speaker: 'Lars',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'We’re one pothole away from turning into a percussion ensemble.',
+    weight: 1,
+    category: 'travel',
+    speaker: 'Marius',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'My legs are asleep. Again. Congratulations, legs.',
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'Who packed the merch box on top of the merch box? Genius.',
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'If we stop one more time, we’ll arrive next week.',
+    weight: 0.7,
+    category: 'travel',
+    speaker: 'Marius',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'I can’t tell if that smell is the van or my hoodie.',
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'This seatbelt buckle is trying to kill my hip bone.',
+    weight: 0.8,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'We should sell “van air” in jars. Limited edition.',
+    weight: 0.5,
+    category: 'travel',
+    speaker: 'Lars',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'I just heard the van sigh. That’s… not great.',
+    weight: 0.8,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'If the drummer says “shortcut” I’m jumping out.',
+    weight: 0.7,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'We’re basically a moving storage unit with opinions.',
+    weight: 0.6,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'My spine just made a noise I don’t want to name.',
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'Are we touring or just driving in circles to avoid our feelings?',
+    weight: 0.4,
+    category: 'travel',
+    speaker: 'Lars',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'If the van radio finds one more static station, I’m starting a cult.',
+    weight: 0.6,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'How do we have 40 cables and still not the right one?',
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'I miss silence. Like, medically.',
+    weight: 0.7,
+    category: 'travel',
+    speaker: 'Matze',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'We’re one toll booth away from bankruptcy.',
+    weight: 0.6,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'If the van breaks, we’re carrying amps like pilgrims.',
+    weight: 0.7,
+    category: 'travel',
+    speaker: 'Marius',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'I just found a drum key in the cupholder. That explains nothing.',
+    weight: 0.8,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'Why is the floor always slightly wet? Don’t answer that.',
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'Gas station sandwiches are a lifestyle choice. A bad one.',
+    weight: 1,
+    category: 'travel',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
+  {
+    text: 'We should write a song called “Rest Stop Romance”.',
+    weight: 0.4,
+    category: 'travel',
+    speaker: 'Lars',
+    condition: state =>
+      state.currentScene === 'TRAVEL_MINIGAME' ||
+      state.currentScene === 'OVERWORLD'
+  },
 
   // --- PRE-GIG (Preparation) ---
-  { text: 'Where is the sound guy?', weight: 2, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'I need a beer before we start.', weight: 2, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'My strings feel sticky.', weight: 2, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene), speaker: 'Matze' },
-  { text: 'Does this venue have a backstage?', weight: 1, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: "Let's stick to the setlist this time, okay?", weight: 2, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene), speaker: 'Marius' },
-  { text: 'If the kick mic dies mid‑set, we riot.', weight: 2, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'One more tuning check or I’ll snap this guitar in half.', weight: 2, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'These strings are either dead or perfect. No in‑between.', weight: 2, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene), speaker: 'Matze' },
-  { text: 'Does this place even have a monitor mix, or just vibes?', weight: 1, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'No new songs tonight. Last time was a trainwreck.', weight: 2, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene), speaker: 'Marius' },
-  { text: 'Who stole my setlist again?', weight: 1, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'If the intro track fails, we just walk on angry.', weight: 1, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'Where do we load in? Why is it always stairs?', weight: 2, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'Do we have gaffer tape? Please tell me we have gaffer tape.', weight: 2, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'My pedalboard is doing that haunted thing again.', weight: 2, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'If the monitors are bad, I’m going full vibes-only.', weight: 1, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'Who’s got the setlist printouts? Not the wrinkled one.', weight: 1, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'I can’t hear anything and we haven’t even started. Great sign.', weight: 2, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'Soundcheck feels like speed-dating with feedback.', weight: 1, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'If the DI box crackles, I’m blaming the universe.', weight: 2, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'Please tell me the merch table isn’t next to the toilet.', weight: 1, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'I’m sweating and the lights aren’t even on yet.', weight: 1, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'Five minutes to doors and I still don’t know where the backstage is.', weight: 1, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'These strings feel like they’ve seen war.', weight: 2, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene), speaker: 'Matze' },
-  { text: 'If my in-ears cut out, I’m playing by memory and spite.', weight: 2, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene), speaker: 'Marius' },
-  { text: 'One more “can you turn up” and I’m turning up the whole band.', weight: 2, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene), speaker: 'Marius' },
-  { text: 'Which one of you touched my amp settings?', weight: 2, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'If the stage is tiny, we play like it’s a stadium.', weight: 1, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'Can we get water on stage or is it “suffer artistically” tonight?', weight: 1, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'Why is the power strip always missing when we need it most?', weight: 2, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'I’m not nervous. My stomach is just… touring.', weight: 1, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene), speaker: 'Lars' },
-  { text: 'If we start late, I’m blaming the stairs. Again.', weight: 2, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene), speaker: 'Marius' },
-  { text: 'Does anyone remember the count-in for the new intro? Anyone?', weight: 2, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'If the lights blind me, I’m playing by smell.', weight: 1, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene), speaker: 'Matze' },
-  { text: 'I need my monitor to be louder than my thoughts.', weight: 2, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'We should label our cables. We won’t, but we should.', weight: 1, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'If the click track fails, we become jazz. Against our will.', weight: 2, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene), speaker: 'Marius' },
-  { text: 'Tell me again why we didn’t bring a spare guitar?', weight: 2, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene), speaker: 'Matze' },
-  { text: 'I can’t find the tuner. This is how wars start.', weight: 2, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'If the stage is wobbling, we’re calling it “energy”.', weight: 1, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-  { text: 'Who’s doing the intro speech? Please say “not me”.', weight: 1, condition: state => ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene) },
-
+  {
+    text: 'Where is the sound guy?',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'I need a beer before we start.',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'My strings feel sticky.',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
+    speaker: 'Matze'
+  },
+  {
+    text: 'Does this venue have a backstage?',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: "Let's stick to the setlist this time, okay?",
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
+    speaker: 'Marius'
+  },
+  {
+    text: 'If the kick mic dies mid‑set, we riot.',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'One more tuning check or I’ll snap this guitar in half.',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'These strings are either dead or perfect. No in‑between.',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
+    speaker: 'Matze'
+  },
+  {
+    text: 'Does this place even have a monitor mix, or just vibes?',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'No new songs tonight. Last time was a trainwreck.',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
+    speaker: 'Marius'
+  },
+  {
+    text: 'Who stole my setlist again?',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'If the intro track fails, we just walk on angry.',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'Where do we load in? Why is it always stairs?',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'Do we have gaffer tape? Please tell me we have gaffer tape.',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'My pedalboard is doing that haunted thing again.',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'If the monitors are bad, I’m going full vibes-only.',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'Who’s got the setlist printouts? Not the wrinkled one.',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'I can’t hear anything and we haven’t even started. Great sign.',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'Soundcheck feels like speed-dating with feedback.',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'If the DI box crackles, I’m blaming the universe.',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'Please tell me the merch table isn’t next to the toilet.',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'I’m sweating and the lights aren’t even on yet.',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'Five minutes to doors and I still don’t know where the backstage is.',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'These strings feel like they’ve seen war.',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
+    speaker: 'Matze'
+  },
+  {
+    text: 'If my in-ears cut out, I’m playing by memory and spite.',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
+    speaker: 'Marius'
+  },
+  {
+    text: 'One more “can you turn up” and I’m turning up the whole band.',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
+    speaker: 'Marius'
+  },
+  {
+    text: 'Which one of you touched my amp settings?',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'If the stage is tiny, we play like it’s a stadium.',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'Can we get water on stage or is it “suffer artistically” tonight?',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'Why is the power strip always missing when we need it most?',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'I’m not nervous. My stomach is just… touring.',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
+    speaker: 'Lars'
+  },
+  {
+    text: 'If we start late, I’m blaming the stairs. Again.',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
+    speaker: 'Marius'
+  },
+  {
+    text: 'Does anyone remember the count-in for the new intro? Anyone?',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'If the lights blind me, I’m playing by smell.',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
+    speaker: 'Matze'
+  },
+  {
+    text: 'I need my monitor to be louder than my thoughts.',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'We should label our cables. We won’t, but we should.',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'If the click track fails, we become jazz. Against our will.',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
+    speaker: 'Marius'
+  },
+  {
+    text: 'Tell me again why we didn’t bring a spare guitar?',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
+    speaker: 'Matze'
+  },
+  {
+    text: 'I can’t find the tuner. This is how wars start.',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'If the stage is wobbling, we’re calling it “energy”.',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'Who’s doing the intro speech? Please say “not me”.',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
 
   // --- POST-GIG (Reaction) ---
-  { text: 'That crowd was insane!', weight: 5, condition: state => state.currentScene === 'POSTGIG' && state.lastGigStats?.score > 10000 },
-  { text: 'I think I broke a stick.', weight: 2, condition: state => state.currentScene === 'POSTGIG', speaker: 'Marius' },
-  { text: 'We need to sell more merch.', weight: 2, condition: state => state.currentScene === 'POSTGIG' },
-  { text: 'My ears are ringing.', weight: 2, condition: state => state.currentScene === 'POSTGIG' },
-  { text: "Rough set. Let's practice more.", weight: 5, condition: state => state.currentScene === 'POSTGIG' && state.lastGigStats?.misses > 10 },
-  { text: 'I almost fell off the stage, totally worth it.', weight: 3, condition: state => state.currentScene === 'POSTGIG' },
-  { text: 'That last breakdown nearly killed my wrists.', weight: 2, condition: state => state.currentScene === 'POSTGIG', speaker: 'Marius' },
-  { text: 'We sold more patches than shirts. Respect.', weight: 2, condition: state => state.currentScene === 'POSTGIG' },
-  { text: 'I can still feel the bass in my chest.', weight: 2, condition: state => state.currentScene === 'POSTGIG' },
-  { text: 'If that was us on an off‑night, we’re doing fine.', weight: 4, condition: state => state.currentScene === 'POSTGIG' },
-  { text: 'That was the loudest “small room” I’ve ever played.', weight: 3, condition: state => state.currentScene === 'POSTGIG' },
-  { text: 'My shirt is basically a souvenir at this point.', weight: 2, condition: state => state.currentScene === 'POSTGIG' },
-  { text: 'I saw someone cry in the front row. Did we do that?', weight: 3, condition: state => state.currentScene === 'POSTGIG' },
-  { text: 'We survived. That counts.', weight: 2, condition: state => state.currentScene === 'POSTGIG' },
-  { text: 'Load-out after midnight should be illegal.', weight: 2, condition: state => state.currentScene === 'POSTGIG' },
-  { text: 'The crowd carried us through that last song.', weight: 3, condition: state => state.currentScene === 'POSTGIG' },
-  { text: 'That was either perfect or I blacked out. Both are fine.', weight: 2, condition: state => state.currentScene === 'POSTGIG' },
-  { text: 'If we do that every night, we’re unstoppable.', weight: 4, condition: state => state.currentScene === 'POSTGIG' },
-  { text: 'Next time I’m bringing earplugs. For my soul.', weight: 2, condition: state => state.currentScene === 'POSTGIG' },
-  { text: 'That was a massacre… but like, in a good way.', weight: 3, condition: state => state.currentScene === 'POSTGIG', speaker: 'Marius' },
-  { text: 'My hands are vibrating in frequencies science can’t name.', weight: 2, condition: state => state.currentScene === 'POSTGIG', speaker: 'Matze' },
-  { text: 'I missed one cue and it felt like a lifetime.', weight: 3, condition: state => state.currentScene === 'POSTGIG', speaker: 'Lars' },
-  { text: 'That room was ours tonight. No doubt.', weight: 5, condition: state => state.currentScene === 'POSTGIG' && (state.lastGigStats?.score || 0) > 9000 },
-  { text: 'We need to tighten the intros. And… everything else.', weight: 5, condition: state => state.currentScene === 'POSTGIG' && (state.lastGigStats?.misses || 0) > 8 },
-  { text: 'My heartbeat is still doing double-time.', weight: 2, condition: state => state.currentScene === 'POSTGIG' },
-  { text: 'I can’t tell if I’m exhausted or enlightened.', weight: 2, condition: state => state.currentScene === 'POSTGIG', speaker: 'Lars' },
-  { text: 'That was either the best set of the tour or I’m delirious.', weight: 3, condition: state => state.currentScene === 'POSTGIG' },
-  { text: 'Someone hugged me and I’m pretty sure it was sweat.', weight: 2, condition: state => state.currentScene === 'POSTGIG' },
-  { text: 'If we play like that tomorrow, we’re dangerous.', weight: 4, condition: state => state.currentScene === 'POSTGIG' },
-  { text: 'My hands feel like they belong to someone else now.', weight: 2, condition: state => state.currentScene === 'POSTGIG', speaker: 'Matze' },
-  { text: 'Did we remember to thank the sound tech? Please say yes.', weight: 2, condition: state => state.currentScene === 'POSTGIG' },
-  { text: 'I saw someone crowd-surf in a room with no space. Respect.', weight: 3, condition: state => state.currentScene === 'POSTGIG' },
-  { text: 'That encore felt like a fistfight with gravity.', weight: 3, condition: state => state.currentScene === 'POSTGIG', speaker: 'Marius' },
-  { text: 'If the venue wants us back, that’s basically a win condition.', weight: 3, condition: state => state.currentScene === 'POSTGIG' },
-  { text: 'I left part of my soul on that stage. And maybe a pick.', weight: 2, condition: state => state.currentScene === 'POSTGIG' },
-  { text: 'We need to write down what worked tonight. Before we forget.', weight: 2, condition: state => state.currentScene === 'POSTGIG' },
-  { text: 'My ears are ringing in a key that doesn’t exist.', weight: 2, condition: state => state.currentScene === 'POSTGIG', speaker: 'Lars' },
+  {
+    text: 'That crowd was insane!',
+    weight: 5,
+    condition: state =>
+      state.currentScene === 'POSTGIG' && state.lastGigStats?.score > 10000
+  },
+  {
+    text: 'I think I broke a stick.',
+    weight: 2,
+    condition: state => state.currentScene === 'POSTGIG',
+    speaker: 'Marius'
+  },
+  {
+    text: 'We need to sell more merch.',
+    weight: 2,
+    condition: state => state.currentScene === 'POSTGIG'
+  },
+  {
+    text: 'My ears are ringing.',
+    weight: 2,
+    condition: state => state.currentScene === 'POSTGIG'
+  },
+  {
+    text: "Rough set. Let's practice more.",
+    weight: 5,
+    condition: state =>
+      state.currentScene === 'POSTGIG' && state.lastGigStats?.misses > 10
+  },
+  {
+    text: 'I almost fell off the stage, totally worth it.',
+    weight: 3,
+    condition: state => state.currentScene === 'POSTGIG'
+  },
+  {
+    text: 'That last breakdown nearly killed my wrists.',
+    weight: 2,
+    condition: state => state.currentScene === 'POSTGIG',
+    speaker: 'Marius'
+  },
+  {
+    text: 'We sold more patches than shirts. Respect.',
+    weight: 2,
+    condition: state => state.currentScene === 'POSTGIG'
+  },
+  {
+    text: 'I can still feel the bass in my chest.',
+    weight: 2,
+    condition: state => state.currentScene === 'POSTGIG'
+  },
+  {
+    text: 'If that was us on an off‑night, we’re doing fine.',
+    weight: 4,
+    condition: state => state.currentScene === 'POSTGIG'
+  },
+  {
+    text: 'That was the loudest “small room” I’ve ever played.',
+    weight: 3,
+    condition: state => state.currentScene === 'POSTGIG'
+  },
+  {
+    text: 'My shirt is basically a souvenir at this point.',
+    weight: 2,
+    condition: state => state.currentScene === 'POSTGIG'
+  },
+  {
+    text: 'I saw someone cry in the front row. Did we do that?',
+    weight: 3,
+    condition: state => state.currentScene === 'POSTGIG'
+  },
+  {
+    text: 'We survived. That counts.',
+    weight: 2,
+    condition: state => state.currentScene === 'POSTGIG'
+  },
+  {
+    text: 'Load-out after midnight should be illegal.',
+    weight: 2,
+    condition: state => state.currentScene === 'POSTGIG'
+  },
+  {
+    text: 'The crowd carried us through that last song.',
+    weight: 3,
+    condition: state => state.currentScene === 'POSTGIG'
+  },
+  {
+    text: 'That was either perfect or I blacked out. Both are fine.',
+    weight: 2,
+    condition: state => state.currentScene === 'POSTGIG'
+  },
+  {
+    text: 'If we do that every night, we’re unstoppable.',
+    weight: 4,
+    condition: state => state.currentScene === 'POSTGIG'
+  },
+  {
+    text: 'Next time I’m bringing earplugs. For my soul.',
+    weight: 2,
+    condition: state => state.currentScene === 'POSTGIG'
+  },
+  {
+    text: 'That was a massacre… but like, in a good way.',
+    weight: 3,
+    condition: state => state.currentScene === 'POSTGIG',
+    speaker: 'Marius'
+  },
+  {
+    text: 'My hands are vibrating in frequencies science can’t name.',
+    weight: 2,
+    condition: state => state.currentScene === 'POSTGIG',
+    speaker: 'Matze'
+  },
+  {
+    text: 'I missed one cue and it felt like a lifetime.',
+    weight: 3,
+    condition: state => state.currentScene === 'POSTGIG',
+    speaker: 'Lars'
+  },
+  {
+    text: 'That room was ours tonight. No doubt.',
+    weight: 5,
+    condition: state =>
+      state.currentScene === 'POSTGIG' &&
+      (state.lastGigStats?.score || 0) > 9000
+  },
+  {
+    text: 'We need to tighten the intros. And… everything else.',
+    weight: 5,
+    condition: state =>
+      state.currentScene === 'POSTGIG' && (state.lastGigStats?.misses || 0) > 8
+  },
+  {
+    text: 'My heartbeat is still doing double-time.',
+    weight: 2,
+    condition: state => state.currentScene === 'POSTGIG'
+  },
+  {
+    text: 'I can’t tell if I’m exhausted or enlightened.',
+    weight: 2,
+    condition: state => state.currentScene === 'POSTGIG',
+    speaker: 'Lars'
+  },
+  {
+    text: 'That was either the best set of the tour or I’m delirious.',
+    weight: 3,
+    condition: state => state.currentScene === 'POSTGIG'
+  },
+  {
+    text: 'Someone hugged me and I’m pretty sure it was sweat.',
+    weight: 2,
+    condition: state => state.currentScene === 'POSTGIG'
+  },
+  {
+    text: 'If we play like that tomorrow, we’re dangerous.',
+    weight: 4,
+    condition: state => state.currentScene === 'POSTGIG'
+  },
+  {
+    text: 'My hands feel like they belong to someone else now.',
+    weight: 2,
+    condition: state => state.currentScene === 'POSTGIG',
+    speaker: 'Matze'
+  },
+  {
+    text: 'Did we remember to thank the sound tech? Please say yes.',
+    weight: 2,
+    condition: state => state.currentScene === 'POSTGIG'
+  },
+  {
+    text: 'I saw someone crowd-surf in a room with no space. Respect.',
+    weight: 3,
+    condition: state => state.currentScene === 'POSTGIG'
+  },
+  {
+    text: 'That encore felt like a fistfight with gravity.',
+    weight: 3,
+    condition: state => state.currentScene === 'POSTGIG',
+    speaker: 'Marius'
+  },
+  {
+    text: 'If the venue wants us back, that’s basically a win condition.',
+    weight: 3,
+    condition: state => state.currentScene === 'POSTGIG'
+  },
+  {
+    text: 'I left part of my soul on that stage. And maybe a pick.',
+    weight: 2,
+    condition: state => state.currentScene === 'POSTGIG'
+  },
+  {
+    text: 'We need to write down what worked tonight. Before we forget.',
+    weight: 2,
+    condition: state => state.currentScene === 'POSTGIG'
+  },
+  {
+    text: 'My ears are ringing in a key that doesn’t exist.',
+    weight: 2,
+    condition: state => state.currentScene === 'POSTGIG',
+    speaker: 'Lars'
+  },
 
   // --- CONDITION: LOW MOOD ---
-  { text: 'I swear if I have to drive another hour...', weight: 10, condition: state => state.band.members.some(m => m.mood < 30) },
-  { text: 'I hate this tour. I wanna go home.', weight: 10, condition: state => state.band.members.some(m => m.mood < 20) },
-  { text: "Don't talk to me right now.", weight: 8, condition: state => state.band.members.some(m => m.mood < 25) },
-  { text: 'If one more person asks “So what’s your real job?” I’m done.', weight: 10, condition: state => state.band.members.some(m => m.mood < 30) },
-  { text: 'Why does every town look the same at 3am?', weight: 10, condition: state => state.band.members.some(m => m.mood < 20) },
-  { text: 'I’m three bad shows away from selling all my gear.', weight: 8, condition: state => state.band.members.some(m => m.mood < 25) },
-  { text: 'I’m running on fumes and bad decisions.', weight: 8, condition: state => state.band.members.some(m => m.mood < 30) },
-  { text: 'If I hear one more motivational speech, I’ll bite.', weight: 8, condition: state => state.band.members.some(m => m.mood < 25) },
-  { text: 'Everything hurts and we haven’t even loaded in.', weight: 10, condition: state => state.band.members.some(m => m.mood < 30) },
-  { text: 'I miss my bed. And my dignity.', weight: 10, condition: state => state.band.members.some(m => m.mood < 20) },
-  { text: 'I’m not mad. I’m just… touring.', weight: 8, condition: state => state.band.members.some(m => m.mood < 25) },
-  { text: 'Can we skip today and pretend it never happened?', weight: 10, condition: state => state.band.members.some(m => m.mood < 20) },
-  { text: 'I’m one broken cable away from quitting music forever.', weight: 8, condition: state => state.band.members.some(m => m.mood < 25) },
-  { text: 'I’m too tired to be annoyed, but here we are.', weight: 8, condition: state => state.band.members.some(m => m.mood < 30) },
-  { text: 'If the van makes that noise again, I’m naming it and hating it.', weight: 8, condition: state => state.band.members.some(m => m.mood < 25) },
-  { text: 'I want to be a person again, not a touring object.', weight: 10, condition: state => state.band.members.some(m => m.mood < 20) },
-  { text: 'Everything is sticky and I’m emotionally sticky too.', weight: 8, condition: state => state.band.members.some(m => m.mood < 25) },
-  { text: 'I’m not “quiet”, I’m conserving rage.', weight: 8, condition: state => state.band.members.some(m => m.mood < 30), speaker: 'Marius' },
-  { text: 'If we don’t get food soon, I’m eating a cymbal.', weight: 8, condition: state => state.band.members.some(m => m.mood < 25), speaker: 'Marius' },
-  { text: 'I’m allergic to optimism right now.', weight: 8, condition: state => state.band.members.some(m => m.mood < 25), speaker: 'Lars' },
+  {
+    text: 'I swear if I have to drive another hour...',
+    weight: 10,
+    condition: state => state.band.members.some(m => m.mood < 30)
+  },
+  {
+    text: 'I hate this tour. I wanna go home.',
+    weight: 10,
+    condition: state => state.band.members.some(m => m.mood < 20)
+  },
+  {
+    text: "Don't talk to me right now.",
+    weight: 8,
+    condition: state => state.band.members.some(m => m.mood < 25)
+  },
+  {
+    text: 'If one more person asks “So what’s your real job?” I’m done.',
+    weight: 10,
+    condition: state => state.band.members.some(m => m.mood < 30)
+  },
+  {
+    text: 'Why does every town look the same at 3am?',
+    weight: 10,
+    condition: state => state.band.members.some(m => m.mood < 20)
+  },
+  {
+    text: 'I’m three bad shows away from selling all my gear.',
+    weight: 8,
+    condition: state => state.band.members.some(m => m.mood < 25)
+  },
+  {
+    text: 'I’m running on fumes and bad decisions.',
+    weight: 8,
+    condition: state => state.band.members.some(m => m.mood < 30)
+  },
+  {
+    text: 'If I hear one more motivational speech, I’ll bite.',
+    weight: 8,
+    condition: state => state.band.members.some(m => m.mood < 25)
+  },
+  {
+    text: 'Everything hurts and we haven’t even loaded in.',
+    weight: 10,
+    condition: state => state.band.members.some(m => m.mood < 30)
+  },
+  {
+    text: 'I miss my bed. And my dignity.',
+    weight: 10,
+    condition: state => state.band.members.some(m => m.mood < 20)
+  },
+  {
+    text: 'I’m not mad. I’m just… touring.',
+    weight: 8,
+    condition: state => state.band.members.some(m => m.mood < 25)
+  },
+  {
+    text: 'Can we skip today and pretend it never happened?',
+    weight: 10,
+    condition: state => state.band.members.some(m => m.mood < 20)
+  },
+  {
+    text: 'I’m one broken cable away from quitting music forever.',
+    weight: 8,
+    condition: state => state.band.members.some(m => m.mood < 25)
+  },
+  {
+    text: 'I’m too tired to be annoyed, but here we are.',
+    weight: 8,
+    condition: state => state.band.members.some(m => m.mood < 30)
+  },
+  {
+    text: 'If the van makes that noise again, I’m naming it and hating it.',
+    weight: 8,
+    condition: state => state.band.members.some(m => m.mood < 25)
+  },
+  {
+    text: 'I want to be a person again, not a touring object.',
+    weight: 10,
+    condition: state => state.band.members.some(m => m.mood < 20)
+  },
+  {
+    text: 'Everything is sticky and I’m emotionally sticky too.',
+    weight: 8,
+    condition: state => state.band.members.some(m => m.mood < 25)
+  },
+  {
+    text: 'I’m not “quiet”, I’m conserving rage.',
+    weight: 8,
+    condition: state => state.band.members.some(m => m.mood < 30),
+    speaker: 'Marius'
+  },
+  {
+    text: 'If we don’t get food soon, I’m eating a cymbal.',
+    weight: 8,
+    condition: state => state.band.members.some(m => m.mood < 25),
+    speaker: 'Marius'
+  },
+  {
+    text: 'I’m allergic to optimism right now.',
+    weight: 8,
+    condition: state => state.band.members.some(m => m.mood < 25),
+    speaker: 'Lars'
+  },
 
   // --- CONDITION: HIGH MOOD ---
-  { text: 'We are gonna crush it tonight!', weight: 5, condition: state => state.band.members.some(m => m.mood > 80) },
-  { text: 'Life is good. The road is freedom.', weight: 5, condition: state => state.band.members.some(m => m.mood > 90) },
-  { text: 'I love you guys.', weight: 1, condition: state => state.band.members.some(m => m.mood > 95) },
-  { text: 'This van, this band, this tour – perfect chaos.', weight: 5, condition: state => state.band.members.some(m => m.mood > 80) },
-  { text: 'Every show feels bigger than the last lately.', weight: 5, condition: state => state.band.members.some(m => m.mood > 90) },
-  { text: 'Screenshot this moment in my brain forever.', weight: 1, condition: state => state.band.members.some(m => m.mood > 95) },
-  { text: 'Tonight feels like we leveled up.', weight: 5, condition: state => state.band.members.some(m => m.mood > 85) },
-  { text: 'I could play two sets right now. Don’t tempt me.', weight: 4, condition: state => state.band.members.some(m => m.mood > 80) },
-  { text: 'This is why we do it. This exact feeling.', weight: 5, condition: state => state.band.members.some(m => m.mood > 90) },
-  { text: 'We’re a machine when we’re locked in.', weight: 5, condition: state => state.band.members.some(m => m.mood > 85) },
-  { text: 'I’m proud of us. Don’t make it weird.', weight: 1, condition: state => state.band.members.some(m => m.mood > 95) },
-  { text: 'Somebody take a photo, I wanna remember this grin.', weight: 1, condition: state => state.band.members.some(m => m.mood > 95) },
-  { text: 'That groove felt illegal. Let’s do it again tomorrow.', weight: 5, condition: state => state.band.members.some(m => m.mood > 85) },
-  { text: 'I’m vibrating with serotonin and tinnitus.', weight: 4, condition: state => state.band.members.some(m => m.mood > 80), speaker: 'Lars' },
-  { text: 'We’re actually getting good at this. Wild.', weight: 5, condition: state => state.band.members.some(m => m.mood > 85) },
-  { text: 'Tonight’s gonna be one of those “remember this” nights.', weight: 5, condition: state => state.band.members.some(m => m.mood > 90) },
-  { text: 'If we keep playing like this, we’ll scare ourselves.', weight: 4, condition: state => state.band.members.some(m => m.mood > 80), speaker: 'Marius' },
-  { text: 'I feel unstoppable. Somebody stop me from buying new gear.', weight: 3, condition: state => state.band.members.some(m => m.mood > 90) },
+  {
+    text: 'We are gonna crush it tonight!',
+    weight: 5,
+    condition: state => state.band.members.some(m => m.mood > 80)
+  },
+  {
+    text: 'Life is good. The road is freedom.',
+    weight: 5,
+    condition: state => state.band.members.some(m => m.mood > 90)
+  },
+  {
+    text: 'I love you guys.',
+    weight: 1,
+    condition: state => state.band.members.some(m => m.mood > 95)
+  },
+  {
+    text: 'This van, this band, this tour – perfect chaos.',
+    weight: 5,
+    condition: state => state.band.members.some(m => m.mood > 80)
+  },
+  {
+    text: 'Every show feels bigger than the last lately.',
+    weight: 5,
+    condition: state => state.band.members.some(m => m.mood > 90)
+  },
+  {
+    text: 'Screenshot this moment in my brain forever.',
+    weight: 1,
+    condition: state => state.band.members.some(m => m.mood > 95)
+  },
+  {
+    text: 'Tonight feels like we leveled up.',
+    weight: 5,
+    condition: state => state.band.members.some(m => m.mood > 85)
+  },
+  {
+    text: 'I could play two sets right now. Don’t tempt me.',
+    weight: 4,
+    condition: state => state.band.members.some(m => m.mood > 80)
+  },
+  {
+    text: 'This is why we do it. This exact feeling.',
+    weight: 5,
+    condition: state => state.band.members.some(m => m.mood > 90)
+  },
+  {
+    text: 'We’re a machine when we’re locked in.',
+    weight: 5,
+    condition: state => state.band.members.some(m => m.mood > 85)
+  },
+  {
+    text: 'I’m proud of us. Don’t make it weird.',
+    weight: 1,
+    condition: state => state.band.members.some(m => m.mood > 95)
+  },
+  {
+    text: 'Somebody take a photo, I wanna remember this grin.',
+    weight: 1,
+    condition: state => state.band.members.some(m => m.mood > 95)
+  },
+  {
+    text: 'That groove felt illegal. Let’s do it again tomorrow.',
+    weight: 5,
+    condition: state => state.band.members.some(m => m.mood > 85)
+  },
+  {
+    text: 'I’m vibrating with serotonin and tinnitus.',
+    weight: 4,
+    condition: state => state.band.members.some(m => m.mood > 80),
+    speaker: 'Lars'
+  },
+  {
+    text: 'We’re actually getting good at this. Wild.',
+    weight: 5,
+    condition: state => state.band.members.some(m => m.mood > 85)
+  },
+  {
+    text: 'Tonight’s gonna be one of those “remember this” nights.',
+    weight: 5,
+    condition: state => state.band.members.some(m => m.mood > 90)
+  },
+  {
+    text: 'If we keep playing like this, we’ll scare ourselves.',
+    weight: 4,
+    condition: state => state.band.members.some(m => m.mood > 80),
+    speaker: 'Marius'
+  },
+  {
+    text: 'I feel unstoppable. Somebody stop me from buying new gear.',
+    weight: 3,
+    condition: state => state.band.members.some(m => m.mood > 90)
+  },
 
   // --- CONDITION: MONEY ---
-  { text: 'Can we afford gas?', weight: 10, condition: state => state.player.money < 100 },
-  { text: 'We are rich! Steak dinner tonight!', weight: 5, condition: state => state.player.money > 2000 },
-  { text: 'If we busk at the next rest stop, we might make fuel money.', weight: 10, condition: state => state.player.money < 100 },
-  { text: 'Okay, this is “new cymbal” money territory.', weight: 5, condition: state => state.player.money > 2000, speaker: 'Marius' },
-  { text: 'If we buy coffee now, we’re eating air later.', weight: 10, condition: state => state.player.money < 120 },
-  { text: 'Okay… who knows how to fix things with zip ties?', weight: 8, condition: state => state.player.money < 150 },
-  { text: 'We can’t keep living on “maybe the merch sells”.', weight: 10, condition: state => state.player.money < 100 },
-  { text: 'This is finally “replace the van noise” money.', weight: 4, condition: state => state.player.money > 2200 },
-  { text: 'Round of meals is on us. For once.', weight: 5, condition: state => state.player.money > 2000 },
-  { text: 'I’m not saying we’re rich… but I’m looking at real food.', weight: 4, condition: state => state.player.money > 2000, speaker: 'Lars' },
-  { text: 'We can afford snacks AND coffee? Who are we?', weight: 4, condition: state => state.player.money > 2000 },
-  { text: 'If the van needs repairs, we’re donating organs.', weight: 10, condition: state => state.player.money < 120 },
-  { text: 'We’re in “sleep in the van to save money” mode again.', weight: 10, condition: state => state.player.money < 100 },
-  { text: 'If the venue offers free drinks, that’s basically income.', weight: 8, condition: state => state.player.money < 150, speaker: 'Lars' },
-  { text: 'Okay, we can replace at least ONE cable without crying.', weight: 4, condition: state => state.player.money > 1800 },
+  {
+    text: 'Can we afford gas?',
+    weight: 10,
+    condition: state => state.player.money < 100
+  },
+  {
+    text: 'We are rich! Steak dinner tonight!',
+    weight: 5,
+    condition: state => state.player.money > 2000
+  },
+  {
+    text: 'If we busk at the next rest stop, we might make fuel money.',
+    weight: 10,
+    condition: state => state.player.money < 100
+  },
+  {
+    text: 'Okay, this is “new cymbal” money territory.',
+    weight: 5,
+    condition: state => state.player.money > 2000,
+    speaker: 'Marius'
+  },
+  {
+    text: 'If we buy coffee now, we’re eating air later.',
+    weight: 10,
+    condition: state => state.player.money < 120
+  },
+  {
+    text: 'Okay… who knows how to fix things with zip ties?',
+    weight: 8,
+    condition: state => state.player.money < 150
+  },
+  {
+    text: 'We can’t keep living on “maybe the merch sells”.',
+    weight: 10,
+    condition: state => state.player.money < 100
+  },
+  {
+    text: 'This is finally “replace the van noise” money.',
+    weight: 4,
+    condition: state => state.player.money > 2200
+  },
+  {
+    text: 'Round of meals is on us. For once.',
+    weight: 5,
+    condition: state => state.player.money > 2000
+  },
+  {
+    text: 'I’m not saying we’re rich… but I’m looking at real food.',
+    weight: 4,
+    condition: state => state.player.money > 2000,
+    speaker: 'Lars'
+  },
+  {
+    text: 'We can afford snacks AND coffee? Who are we?',
+    weight: 4,
+    condition: state => state.player.money > 2000
+  },
+  {
+    text: 'If the van needs repairs, we’re donating organs.',
+    weight: 10,
+    condition: state => state.player.money < 120
+  },
+  {
+    text: 'We’re in “sleep in the van to save money” mode again.',
+    weight: 10,
+    condition: state => state.player.money < 100
+  },
+  {
+    text: 'If the venue offers free drinks, that’s basically income.',
+    weight: 8,
+    condition: state => state.player.money < 150,
+    speaker: 'Lars'
+  },
+  {
+    text: 'Okay, we can replace at least ONE cable without crying.',
+    weight: 4,
+    condition: state => state.player.money > 1800
+  },
 
   // --- CONDITION: FAME/SOCIAL ---
-  { text: 'Did you see that comment on Insta?', weight: 3, condition: state => state.social?.instagram > 500 },
-  { text: 'We are going viral!', weight: 5, condition: state => state.social?.viral > 0 },
-  { text: 'Somebody just used our track in their story. Nice.', weight: 3, condition: state => state.social?.instagram > 500 },
-  { text: 'If we’re viral, we better not waste tonight’s set.', weight: 5, condition: state => state.social?.viral > 0 },
-  { text: 'Someone tagged us in a clip and it actually sounds good.', weight: 3, condition: state => (state.social?.instagram || 0) > 500 },
-  { text: 'We got a weird DM from a “label”. That’s a scam, right?', weight: 3, condition: state => (state.social?.instagram || 0) > 800 },
-  { text: 'The comments are spicy today. Love it.', weight: 3, condition: state => (state.social?.instagram || 0) > 500 },
-  { text: 'If this momentum keeps up, we need more merch designs.', weight: 3, condition: state => (state.social?.instagram || 0) > 1000 },
-  { text: 'Viral means expectations. And expectations mean pressure.', weight: 5, condition: state => (state.social?.viral || 0) > 0 },
-  { text: 'If we’re trending, I’m pretending I’m calm.', weight: 5, condition: state => (state.social?.viral || 0) > 0, speaker: 'Marius' },
-  { text: 'Someone posted our breakdown and the comments are unhinged.', weight: 3, condition: state => (state.social?.instagram || 0) > 700 },
-  { text: 'If we hit 1k, I’m demanding a tour bus. A tiny one.', weight: 3, condition: state => (state.social?.instagram || 0) > 1000, speaker: 'Marius' },
-  { text: 'We got recognized at the merch table. I panicked.', weight: 3, condition: state => (state.social?.instagram || 0) > 900, speaker: 'Matze' },
-  { text: 'Viral means people will actually notice mistakes. Great.', weight: 5, condition: state => (state.social?.viral || 0) > 0, speaker: 'Lars' },
-  { text: 'Someone made a meme of our face. That’s… marketing?', weight: 3, condition: state => (state.social?.instagram || 0) > 800 },
+  {
+    text: 'Did you see that comment on Insta?',
+    weight: 3,
+    condition: state => state.social?.instagram > 500
+  },
+  {
+    text: 'We are going viral!',
+    weight: 5,
+    condition: state => state.social?.viral > 0
+  },
+  {
+    text: 'Somebody just used our track in their story. Nice.',
+    weight: 3,
+    condition: state => state.social?.instagram > 500
+  },
+  {
+    text: 'If we’re viral, we better not waste tonight’s set.',
+    weight: 5,
+    condition: state => state.social?.viral > 0
+  },
+  {
+    text: 'Someone tagged us in a clip and it actually sounds good.',
+    weight: 3,
+    condition: state => (state.social?.instagram || 0) > 500
+  },
+  {
+    text: 'We got a weird DM from a “label”. That’s a scam, right?',
+    weight: 3,
+    condition: state => (state.social?.instagram || 0) > 800
+  },
+  {
+    text: 'The comments are spicy today. Love it.',
+    weight: 3,
+    condition: state => (state.social?.instagram || 0) > 500
+  },
+  {
+    text: 'If this momentum keeps up, we need more merch designs.',
+    weight: 3,
+    condition: state => (state.social?.instagram || 0) > 1000
+  },
+  {
+    text: 'Viral means expectations. And expectations mean pressure.',
+    weight: 5,
+    condition: state => (state.social?.viral || 0) > 0
+  },
+  {
+    text: 'If we’re trending, I’m pretending I’m calm.',
+    weight: 5,
+    condition: state => (state.social?.viral || 0) > 0,
+    speaker: 'Marius'
+  },
+  {
+    text: 'Someone posted our breakdown and the comments are unhinged.',
+    weight: 3,
+    condition: state => (state.social?.instagram || 0) > 700
+  },
+  {
+    text: 'If we hit 1k, I’m demanding a tour bus. A tiny one.',
+    weight: 3,
+    condition: state => (state.social?.instagram || 0) > 1000,
+    speaker: 'Marius'
+  },
+  {
+    text: 'We got recognized at the merch table. I panicked.',
+    weight: 3,
+    condition: state => (state.social?.instagram || 0) > 900,
+    speaker: 'Matze'
+  },
+  {
+    text: 'Viral means people will actually notice mistakes. Great.',
+    weight: 5,
+    condition: state => (state.social?.viral || 0) > 0,
+    speaker: 'Lars'
+  },
+  {
+    text: 'Someone made a meme of our face. That’s… marketing?',
+    weight: 3,
+    condition: state => (state.social?.instagram || 0) > 800
+  },
 
   // --- LOCATION SPECIFIC (General) ---
-  { text: 'Home sweet home.', weight: 10, condition: state => state.player.location === 'Stendal' },
-  { text: 'Berlin is too expensive.', weight: 5, condition: state => state.player.location && state.player.location.includes('Berlin') },
-  { text: 'Back in Stendal. Same streets, louder band.', weight: 10, condition: state => state.player.location === 'Stendal' },
-  { text: 'Berlin fees, Berlin chaos, Berlin sweat.', weight: 5, condition: state => state.player.location && state.player.location.includes('Berlin') },
-  { text: 'Stendal air hits different. Like nostalgia and kebab.', weight: 10, condition: state => state.player.location === 'Stendal' },
-  { text: 'Back in Stendal… let’s not wake the neighbors.', weight: 8, condition: state => state.player.location === 'Stendal' },
-  { text: 'Berlin prices make me want to play faster just to leave sooner.', weight: 5, condition: state => state.player.location && state.player.location.includes('Berlin') },
-  { text: 'Berlin has everything. Including zero parking.', weight: 5, condition: state => state.player.location && state.player.location.includes('Berlin') },
-  { text: 'Berlin crowds are either ice-cold or absolutely feral. No middle.', weight: 4, condition: state => state.player.location && state.player.location.includes('Berlin') },
-  { text: 'Stendal feels like the tutorial level. Comforting and cursed.', weight: 8, condition: state => state.player.location === 'Stendal', speaker: 'Lars' },
-  { text: 'Berlin is a boss fight with parking tickets.', weight: 5, condition: state => state.player.location && state.player.location.includes('Berlin') },
-  { text: 'Stendal: where everyone knows someone who knows us.', weight: 8, condition: state => state.player.location === 'Stendal' },
-  { text: 'Berlin nights are loud even when you’re not playing.', weight: 4, condition: state => state.player.location && state.player.location.includes('Berlin') },
+  {
+    text: 'Home sweet home.',
+    weight: 10,
+    condition: state => state.player.location === 'Stendal'
+  },
+  {
+    text: 'Berlin is too expensive.',
+    weight: 5,
+    condition: state =>
+      state.player.location && state.player.location.includes('Berlin')
+  },
+  {
+    text: 'Back in Stendal. Same streets, louder band.',
+    weight: 10,
+    condition: state => state.player.location === 'Stendal'
+  },
+  {
+    text: 'Berlin fees, Berlin chaos, Berlin sweat.',
+    weight: 5,
+    condition: state =>
+      state.player.location && state.player.location.includes('Berlin')
+  },
+  {
+    text: 'Stendal air hits different. Like nostalgia and kebab.',
+    weight: 10,
+    condition: state => state.player.location === 'Stendal'
+  },
+  {
+    text: 'Back in Stendal… let’s not wake the neighbors.',
+    weight: 8,
+    condition: state => state.player.location === 'Stendal'
+  },
+  {
+    text: 'Berlin prices make me want to play faster just to leave sooner.',
+    weight: 5,
+    condition: state =>
+      state.player.location && state.player.location.includes('Berlin')
+  },
+  {
+    text: 'Berlin has everything. Including zero parking.',
+    weight: 5,
+    condition: state =>
+      state.player.location && state.player.location.includes('Berlin')
+  },
+  {
+    text: 'Berlin crowds are either ice-cold or absolutely feral. No middle.',
+    weight: 4,
+    condition: state =>
+      state.player.location && state.player.location.includes('Berlin')
+  },
+  {
+    text: 'Stendal feels like the tutorial level. Comforting and cursed.',
+    weight: 8,
+    condition: state => state.player.location === 'Stendal',
+    speaker: 'Lars'
+  },
+  {
+    text: 'Berlin is a boss fight with parking tickets.',
+    weight: 5,
+    condition: state =>
+      state.player.location && state.player.location.includes('Berlin')
+  },
+  {
+    text: 'Stendal: where everyone knows someone who knows us.',
+    weight: 8,
+    condition: state => state.player.location === 'Stendal'
+  },
+  {
+    text: 'Berlin nights are loud even when you’re not playing.',
+    weight: 4,
+    condition: state =>
+      state.player.location && state.player.location.includes('Berlin')
+  },
 
   // --- GIG SPECIFIC (In-Game) ---
-  { text: 'FASTER!', weight: 5, condition: state => state.currentScene === 'GIG' && state.band.members.some(m => m.stamina > 80) },
-  { text: 'My arms are burning!', weight: 5, condition: state => state.currentScene === 'GIG' && state.band.members.some(m => m.stamina < 30), speaker: 'Marius' },
-  { text: 'Push it, they’re still moving!', weight: 5, condition: state => state.currentScene === 'GIG' && state.band.members.some(m => m.stamina > 80) },
-  { text: 'If I drop this beat, pretend it was on purpose.', weight: 5, condition: state => state.currentScene === 'GIG' && state.band.members.some(m => m.stamina < 30), speaker: 'Marius' },
-  { text: 'LOCK IN!', weight: 5, condition: state => state.currentScene === 'GIG' && state.band.members.some(m => m.stamina > 80) },
-  { text: 'Don’t you dare slow down now!', weight: 5, condition: state => state.currentScene === 'GIG' && state.band.members.some(m => m.stamina > 80) },
-  { text: 'They’re with us—keep pushing!', weight: 5, condition: state => state.currentScene === 'GIG' && state.band.members.some(m => m.stamina > 75) },
-  { text: 'I can’t feel my hands, but the song isn’t over!', weight: 5, condition: state => state.currentScene === 'GIG' && state.band.members.some(m => m.stamina < 35), speaker: 'Matze' },
-  { text: 'If I cramp up, just drag me offstage later.', weight: 5, condition: state => state.currentScene === 'GIG' && state.band.members.some(m => m.stamina < 30), speaker: 'Marius' },
-  { text: 'Breath. Hit. Repeat.', weight: 4, condition: state => state.currentScene === 'GIG' && state.band.members.some(m => m.stamina < 35), speaker: 'Lars' },
-  { text: 'HARDER!', weight: 5, condition: state => state.currentScene === 'GIG' && state.band.members.some(m => m.stamina > 80), speaker: 'Marius' },
-  { text: 'DON’T DROP IT!', weight: 5, condition: state => state.currentScene === 'GIG' && state.band.members.some(m => m.stamina > 75) },
-  { text: 'My forearms are filing for divorce!', weight: 5, condition: state => state.currentScene === 'GIG' && state.band.members.some(m => m.stamina < 30), speaker: 'Matze' },
-  { text: 'If I miss again, just stare at me dramatically.', weight: 4, condition: state => state.currentScene === 'GIG' && state.band.members.some(m => m.stamina < 35), speaker: 'Lars' },
-  { text: 'KEEP IT TOGETHER!', weight: 5, condition: state => state.currentScene === 'GIG' && state.band.members.some(m => m.stamina > 80) },
+  {
+    text: 'FASTER!',
+    weight: 5,
+    condition: state =>
+      state.currentScene === 'GIG' &&
+      state.band.members.some(m => m.stamina > 80)
+  },
+  {
+    text: 'My arms are burning!',
+    weight: 5,
+    condition: state =>
+      state.currentScene === 'GIG' &&
+      state.band.members.some(m => m.stamina < 30),
+    speaker: 'Marius'
+  },
+  {
+    text: 'Push it, they’re still moving!',
+    weight: 5,
+    condition: state =>
+      state.currentScene === 'GIG' &&
+      state.band.members.some(m => m.stamina > 80)
+  },
+  {
+    text: 'If I drop this beat, pretend it was on purpose.',
+    weight: 5,
+    condition: state =>
+      state.currentScene === 'GIG' &&
+      state.band.members.some(m => m.stamina < 30),
+    speaker: 'Marius'
+  },
+  {
+    text: 'LOCK IN!',
+    weight: 5,
+    condition: state =>
+      state.currentScene === 'GIG' &&
+      state.band.members.some(m => m.stamina > 80)
+  },
+  {
+    text: 'Don’t you dare slow down now!',
+    weight: 5,
+    condition: state =>
+      state.currentScene === 'GIG' &&
+      state.band.members.some(m => m.stamina > 80)
+  },
+  {
+    text: 'They’re with us—keep pushing!',
+    weight: 5,
+    condition: state =>
+      state.currentScene === 'GIG' &&
+      state.band.members.some(m => m.stamina > 75)
+  },
+  {
+    text: 'I can’t feel my hands, but the song isn’t over!',
+    weight: 5,
+    condition: state =>
+      state.currentScene === 'GIG' &&
+      state.band.members.some(m => m.stamina < 35),
+    speaker: 'Matze'
+  },
+  {
+    text: 'If I cramp up, just drag me offstage later.',
+    weight: 5,
+    condition: state =>
+      state.currentScene === 'GIG' &&
+      state.band.members.some(m => m.stamina < 30),
+    speaker: 'Marius'
+  },
+  {
+    text: 'Breath. Hit. Repeat.',
+    weight: 4,
+    condition: state =>
+      state.currentScene === 'GIG' &&
+      state.band.members.some(m => m.stamina < 35),
+    speaker: 'Lars'
+  },
+  {
+    text: 'HARDER!',
+    weight: 5,
+    condition: state =>
+      state.currentScene === 'GIG' &&
+      state.band.members.some(m => m.stamina > 80),
+    speaker: 'Marius'
+  },
+  {
+    text: 'DON’T DROP IT!',
+    weight: 5,
+    condition: state =>
+      state.currentScene === 'GIG' &&
+      state.band.members.some(m => m.stamina > 75)
+  },
+  {
+    text: 'My forearms are filing for divorce!',
+    weight: 5,
+    condition: state =>
+      state.currentScene === 'GIG' &&
+      state.band.members.some(m => m.stamina < 30),
+    speaker: 'Matze'
+  },
+  {
+    text: 'If I miss again, just stare at me dramatically.',
+    weight: 4,
+    condition: state =>
+      state.currentScene === 'GIG' &&
+      state.band.members.some(m => m.stamina < 35),
+    speaker: 'Lars'
+  },
+  {
+    text: 'KEEP IT TOGETHER!',
+    weight: 5,
+    condition: state =>
+      state.currentScene === 'GIG' &&
+      state.band.members.some(m => m.stamina > 80)
+  },
 
   // --- CONDITION: BAND HARMONY ---
-  { text: 'Nobody is talking. That\'s either zen or war.', weight: 8, condition: state => state.band.harmony < 40 },
-  { text: 'If the next rehearsal goes like the last one, we need a mediator.', weight: 8, condition: state => state.band.harmony < 35 },
-  { text: 'I can feel the tension and it\'s not the strings.', weight: 8, condition: state => state.band.harmony < 40, speaker: 'Matze' },
-  { text: 'We need to talk. Or scream. Either works.', weight: 10, condition: state => state.band.harmony < 30 },
-  { text: 'This silence in the van isn\'t "creative", it\'s hostile.', weight: 8, condition: state => state.band.harmony < 35 },
-  { text: 'Someone say something before I start a fight with the GPS.', weight: 8, condition: state => state.band.harmony < 30, speaker: 'Marius' },
-  { text: 'If we can\'t agree on pizza toppings, how are we writing songs?', weight: 8, condition: state => state.band.harmony < 40 },
-  { text: 'We\'re tight right now. Like, actually communicating.', weight: 5, condition: state => state.band.harmony > 85 },
-  { text: 'When the vibe is this good, even load-out feels easy.', weight: 5, condition: state => state.band.harmony > 85 },
-  { text: 'We\'re locked in. This is what bands dream about.', weight: 5, condition: state => state.band.harmony > 90 },
-  { text: 'Nobody\'s annoyed. That\'s basically a miracle on tour.', weight: 4, condition: state => state.band.harmony > 85, speaker: 'Lars' },
-  { text: 'Even the van sounds better when we get along.', weight: 4, condition: state => state.band.harmony > 90 },
-  { text: 'Harmony this high should be illegal on a Tuesday.', weight: 3, condition: state => state.band.harmony > 90, speaker: 'Marius' },
-  { text: 'We\'re vibing so hard even the sound guy noticed.', weight: 4, condition: state => state.band.harmony > 85 },
+  {
+    text: "Nobody is talking. That's either zen or war.",
+    weight: 8,
+    condition: state => state.band.harmony < 40
+  },
+  {
+    text: 'If the next rehearsal goes like the last one, we need a mediator.',
+    weight: 8,
+    condition: state => state.band.harmony < 35
+  },
+  {
+    text: "I can feel the tension and it's not the strings.",
+    weight: 8,
+    condition: state => state.band.harmony < 40,
+    speaker: 'Matze'
+  },
+  {
+    text: 'We need to talk. Or scream. Either works.',
+    weight: 10,
+    condition: state => state.band.harmony < 30
+  },
+  {
+    text: 'This silence in the van isn\'t "creative", it\'s hostile.',
+    weight: 8,
+    condition: state => state.band.harmony < 35
+  },
+  {
+    text: 'Someone say something before I start a fight with the GPS.',
+    weight: 8,
+    condition: state => state.band.harmony < 30,
+    speaker: 'Marius'
+  },
+  {
+    text: "If we can't agree on pizza toppings, how are we writing songs?",
+    weight: 8,
+    condition: state => state.band.harmony < 40
+  },
+  {
+    text: "We're tight right now. Like, actually communicating.",
+    weight: 5,
+    condition: state => state.band.harmony > 85
+  },
+  {
+    text: 'When the vibe is this good, even load-out feels easy.',
+    weight: 5,
+    condition: state => state.band.harmony > 85
+  },
+  {
+    text: "We're locked in. This is what bands dream about.",
+    weight: 5,
+    condition: state => state.band.harmony > 90
+  },
+  {
+    text: "Nobody's annoyed. That's basically a miracle on tour.",
+    weight: 4,
+    condition: state => state.band.harmony > 85,
+    speaker: 'Lars'
+  },
+  {
+    text: 'Even the van sounds better when we get along.',
+    weight: 4,
+    condition: state => state.band.harmony > 90
+  },
+  {
+    text: 'Harmony this high should be illegal on a Tuesday.',
+    weight: 3,
+    condition: state => state.band.harmony > 90,
+    speaker: 'Marius'
+  },
+  {
+    text: "We're vibing so hard even the sound guy noticed.",
+    weight: 4,
+    condition: state => state.band.harmony > 85
+  },
 
   // --- CONDITION: VAN STATE ---
-  { text: 'The fuel light is on. Again. Beautiful.', weight: 10, condition: state => state.player.van.fuel < 25 },
-  { text: 'We\'re running on fumes and denial.', weight: 10, condition: state => state.player.van.fuel < 20 },
-  { text: 'If we coast downhill, we might make it to a station.', weight: 8, condition: state => state.player.van.fuel < 25 },
-  { text: 'Fuel gauge says "pray". Got it.', weight: 10, condition: state => state.player.van.fuel < 15, speaker: 'Marius' },
-  { text: 'We should start pushing. For practice.', weight: 8, condition: state => state.player.van.fuel < 20, speaker: 'Lars' },
-  { text: 'The van is making sounds that aren\'t music.', weight: 10, condition: state => state.player.van.condition < 30 },
-  { text: 'I think a piece of the van just fell off. Should we get that?', weight: 10, condition: state => state.player.van.condition < 25 },
-  { text: 'This van is held together by gaffer tape and hope.', weight: 8, condition: state => state.player.van.condition < 35, speaker: 'Matze' },
-  { text: 'Every bump sounds like a farewell from a component.', weight: 8, condition: state => state.player.van.condition < 30 },
-  { text: 'If the van dies on the Autobahn, we\'re a roadside attraction.', weight: 10, condition: state => state.player.van.condition < 20 },
-  { text: 'Van\'s running smooth. Did someone actually fix something?', weight: 4, condition: state => state.player.van.condition > 90 },
-  { text: 'Full tank, open road. This is why we do it.', weight: 4, condition: state => state.player.van.fuel > 85 },
-  { text: 'Van sounds healthy. Suspicious, but healthy.', weight: 3, condition: state => state.player.van.condition > 90, speaker: 'Marius' },
-  { text: 'We actually have fuel AND a working engine. What year is this?', weight: 3, condition: state => state.player.van.fuel > 80 && state.player.van.condition > 80 },
+  {
+    text: 'The fuel light is on. Again. Beautiful.',
+    weight: 10,
+    condition: state => state.player.van.fuel < 25
+  },
+  {
+    text: "We're running on fumes and denial.",
+    weight: 10,
+    condition: state => state.player.van.fuel < 20
+  },
+  {
+    text: 'If we coast downhill, we might make it to a station.',
+    weight: 8,
+    condition: state => state.player.van.fuel < 25
+  },
+  {
+    text: 'Fuel gauge says "pray". Got it.',
+    weight: 10,
+    condition: state => state.player.van.fuel < 15,
+    speaker: 'Marius'
+  },
+  {
+    text: 'We should start pushing. For practice.',
+    weight: 8,
+    condition: state => state.player.van.fuel < 20,
+    speaker: 'Lars'
+  },
+  {
+    text: "The van is making sounds that aren't music.",
+    weight: 10,
+    condition: state => state.player.van.condition < 30
+  },
+  {
+    text: 'I think a piece of the van just fell off. Should we get that?',
+    weight: 10,
+    condition: state => state.player.van.condition < 25
+  },
+  {
+    text: 'This van is held together by gaffer tape and hope.',
+    weight: 8,
+    condition: state => state.player.van.condition < 35,
+    speaker: 'Matze'
+  },
+  {
+    text: 'Every bump sounds like a farewell from a component.',
+    weight: 8,
+    condition: state => state.player.van.condition < 30
+  },
+  {
+    text: "If the van dies on the Autobahn, we're a roadside attraction.",
+    weight: 10,
+    condition: state => state.player.van.condition < 20
+  },
+  {
+    text: "Van's running smooth. Did someone actually fix something?",
+    weight: 4,
+    condition: state => state.player.van.condition > 90
+  },
+  {
+    text: 'Full tank, open road. This is why we do it.',
+    weight: 4,
+    condition: state => state.player.van.fuel > 85
+  },
+  {
+    text: 'Van sounds healthy. Suspicious, but healthy.',
+    weight: 3,
+    condition: state => state.player.van.condition > 90,
+    speaker: 'Marius'
+  },
+  {
+    text: 'We actually have fuel AND a working engine. What year is this?',
+    weight: 3,
+    condition: state =>
+      state.player.van.fuel > 80 && state.player.van.condition > 80
+  },
 
   // --- CONDITION: TOUR PROGRESSION ---
-  { text: 'Day one energy. Everything still smells clean.', weight: 8, condition: state => state.player.day <= 2 },
-  { text: 'First few shows. Let\'s not embarrass ourselves.', weight: 8, condition: state => state.player.day <= 3, speaker: 'Lars' },
-  { text: 'We\'re still figuring out who snores the loudest.', weight: 6, condition: state => state.player.day <= 3 },
-  { text: 'The honeymoon phase of touring. Enjoy it.', weight: 6, condition: state => state.player.day <= 4 },
-  { text: 'We\'re in the thick of it now. No turning back.', weight: 5, condition: state => state.player.day >= 10 && state.player.day <= 20 },
-  { text: 'Every city starts to blur together around day twelve.', weight: 5, condition: state => state.player.day >= 12 },
-  { text: 'I\'ve lost track of what day it is. That\'s a good sign. Or terrible.', weight: 5, condition: state => state.player.day >= 15, speaker: 'Lars' },
-  { text: 'We\'ve been out long enough that home feels fictional.', weight: 8, condition: state => state.player.day >= 25 },
-  { text: 'Day twenty-something. My body is a ruin. My spirit is a weapon.', weight: 8, condition: state => state.player.day >= 25, speaker: 'Marius' },
-  { text: 'If we survive this tour, we can survive anything.', weight: 8, condition: state => state.player.day >= 28 },
-  { text: 'First road trip together. This van still has that "new drama" smell.', weight: 6, condition: state => state.player.totalTravels <= 2 },
-  { text: 'We\'ve driven so many routes I could navigate blindfolded.', weight: 4, condition: state => state.player.totalTravels >= 15 },
-  { text: 'Veteran roads. We know every pothole by name.', weight: 4, condition: state => state.player.totalTravels >= 20, speaker: 'Marius' },
-  { text: 'How many rest stops have we seen? All of them. All.', weight: 4, condition: state => state.player.totalTravels >= 18 },
+  {
+    text: 'Day one energy. Everything still smells clean.',
+    weight: 8,
+    condition: state => state.player.day <= 2
+  },
+  {
+    text: "First few shows. Let's not embarrass ourselves.",
+    weight: 8,
+    condition: state => state.player.day <= 3,
+    speaker: 'Lars'
+  },
+  {
+    text: "We're still figuring out who snores the loudest.",
+    weight: 6,
+    condition: state => state.player.day <= 3
+  },
+  {
+    text: 'The honeymoon phase of touring. Enjoy it.',
+    weight: 6,
+    condition: state => state.player.day <= 4
+  },
+  {
+    text: "We're in the thick of it now. No turning back.",
+    weight: 5,
+    condition: state => state.player.day >= 10 && state.player.day <= 20
+  },
+  {
+    text: 'Every city starts to blur together around day twelve.',
+    weight: 5,
+    condition: state => state.player.day >= 12
+  },
+  {
+    text: "I've lost track of what day it is. That's a good sign. Or terrible.",
+    weight: 5,
+    condition: state => state.player.day >= 15,
+    speaker: 'Lars'
+  },
+  {
+    text: "We've been out long enough that home feels fictional.",
+    weight: 8,
+    condition: state => state.player.day >= 25
+  },
+  {
+    text: 'Day twenty-something. My body is a ruin. My spirit is a weapon.',
+    weight: 8,
+    condition: state => state.player.day >= 25,
+    speaker: 'Marius'
+  },
+  {
+    text: 'If we survive this tour, we can survive anything.',
+    weight: 8,
+    condition: state => state.player.day >= 28
+  },
+  {
+    text: 'First road trip together. This van still has that "new drama" smell.',
+    weight: 6,
+    condition: state => state.player.totalTravels <= 2
+  },
+  {
+    text: "We've driven so many routes I could navigate blindfolded.",
+    weight: 4,
+    condition: state => state.player.totalTravels >= 15
+  },
+  {
+    text: 'Veteran roads. We know every pothole by name.',
+    weight: 4,
+    condition: state => state.player.totalTravels >= 20,
+    speaker: 'Marius'
+  },
+  {
+    text: 'How many rest stops have we seen? All of them. All.',
+    weight: 4,
+    condition: state => state.player.totalTravels >= 18
+  },
 
   // --- CONDITION: FAME MILESTONES ---
-  { text: 'We\'re nobodies. But nobodies with a van and a dream.', weight: 6, condition: state => (state.player.fame || 0) < 50 },
-  { text: 'One day they\'ll know our name. Today is not that day.', weight: 6, condition: state => (state.player.fame || 0) < 50, speaker: 'Lars' },
-  { text: 'Playing to empty rooms builds character. Supposedly.', weight: 6, condition: state => (state.player.fame || 0) < 30 },
-  { text: 'People are starting to recognize us. That\'s new.', weight: 5, condition: state => (state.player.fameLevel || 0) >= 2 },
-  { text: 'Someone asked for an autograph and I panicked.', weight: 5, condition: state => (state.player.fameLevel || 0) >= 2, speaker: 'Matze' },
-  { text: 'We got mentioned in a zine. A ZINE. We made it.', weight: 5, condition: state => (state.player.fameLevel || 0) >= 2 },
-  { text: 'Promoters are calling US now. This is backwards and I love it.', weight: 4, condition: state => (state.player.fameLevel || 0) >= 3 },
-  { text: 'We\'re not underground anymore. We\'re ground level?', weight: 4, condition: state => (state.player.fameLevel || 0) >= 3, speaker: 'Lars' },
-  { text: 'Local legend status. Every kebab shop knows our name.', weight: 3, condition: state => (state.player.fameLevel || 0) >= 4 },
-  { text: 'People are showing up BEFORE we start playing. Wild.', weight: 3, condition: state => (state.player.fameLevel || 0) >= 4 },
-  { text: 'We\'re headlining now. Headlining. Let that sink in.', weight: 2, condition: state => (state.player.fameLevel || 0) >= 5, speaker: 'Marius' },
-  { text: 'If we get any bigger, we need a bigger van. Or a bus. A bus!', weight: 2, condition: state => (state.player.fameLevel || 0) >= 5 },
+  {
+    text: "We're nobodies. But nobodies with a van and a dream.",
+    weight: 6,
+    condition: state => (state.player.fame || 0) < 50
+  },
+  {
+    text: "One day they'll know our name. Today is not that day.",
+    weight: 6,
+    condition: state => (state.player.fame || 0) < 50,
+    speaker: 'Lars'
+  },
+  {
+    text: 'Playing to empty rooms builds character. Supposedly.',
+    weight: 6,
+    condition: state => (state.player.fame || 0) < 30
+  },
+  {
+    text: "People are starting to recognize us. That's new.",
+    weight: 5,
+    condition: state => (state.player.fameLevel || 0) >= 2
+  },
+  {
+    text: 'Someone asked for an autograph and I panicked.',
+    weight: 5,
+    condition: state => (state.player.fameLevel || 0) >= 2,
+    speaker: 'Matze'
+  },
+  {
+    text: 'We got mentioned in a zine. A ZINE. We made it.',
+    weight: 5,
+    condition: state => (state.player.fameLevel || 0) >= 2
+  },
+  {
+    text: 'Promoters are calling US now. This is backwards and I love it.',
+    weight: 4,
+    condition: state => (state.player.fameLevel || 0) >= 3
+  },
+  {
+    text: "We're not underground anymore. We're ground level?",
+    weight: 4,
+    condition: state => (state.player.fameLevel || 0) >= 3,
+    speaker: 'Lars'
+  },
+  {
+    text: 'Local legend status. Every kebab shop knows our name.',
+    weight: 3,
+    condition: state => (state.player.fameLevel || 0) >= 4
+  },
+  {
+    text: 'People are showing up BEFORE we start playing. Wild.',
+    weight: 3,
+    condition: state => (state.player.fameLevel || 0) >= 4
+  },
+  {
+    text: "We're headlining now. Headlining. Let that sink in.",
+    weight: 2,
+    condition: state => (state.player.fameLevel || 0) >= 5,
+    speaker: 'Marius'
+  },
+  {
+    text: 'If we get any bigger, we need a bigger van. Or a bus. A bus!',
+    weight: 2,
+    condition: state => (state.player.fameLevel || 0) >= 5
+  },
 
   // --- CONDITION: INVENTORY AWARENESS ---
-  { text: 'We\'re out of spare strings. This is a horror movie now.', weight: 10, condition: state => state.band.inventory.strings === false, speaker: 'Matze' },
-  { text: 'No cables? What are we, acoustic?', weight: 10, condition: state => state.band.inventory.cables === false },
-  { text: 'Marius is going to lose it when he finds out we have no drum parts.', weight: 10, condition: state => state.band.inventory.drum_parts === false },
-  { text: 'Without spare strings, every bend is a gamble.', weight: 8, condition: state => state.band.inventory.strings === false },
-  { text: 'We need cables like we need oxygen. Which is badly.', weight: 8, condition: state => state.band.inventory.cables === false, speaker: 'Matze' },
-  { text: 'If a head breaks, we\'re done. No drum parts. Zero.', weight: 8, condition: state => state.band.inventory.drum_parts === false, speaker: 'Marius' },
-  { text: 'The golden pick is in the case. We\'re invincible.', weight: 3, condition: state => state.band.inventory.golden_pick === true },
-  { text: 'I can feel the golden pick radiating power. Or static.', weight: 3, condition: state => state.band.inventory.golden_pick === true, speaker: 'Matze' },
-  { text: 'We\'re fully stocked. Strings, cables, the works.', weight: 2, condition: state => state.band.inventory.strings === true && state.band.inventory.cables === true && state.band.inventory.drum_parts === true },
-  { text: 'Merch boxes full, spares packed, cables labeled. Who are we?', weight: 2, condition: state => state.band.inventory.strings === true && state.band.inventory.cables === true && state.band.inventory.drum_parts === true },
-  { text: 'Shirts are running low. We need to restock before the next show.', weight: 6, condition: state => state.band.inventory.shirts < 10 },
-  { text: 'We\'ve got zero hoodies left. That\'s cold. Literally.', weight: 6, condition: state => state.band.inventory.hoodies <= 0 },
+  {
+    text: "We're out of spare strings. This is a horror movie now.",
+    weight: 10,
+    condition: state => state.band.inventory.strings === false,
+    speaker: 'Matze'
+  },
+  {
+    text: 'No cables? What are we, acoustic?',
+    weight: 10,
+    condition: state => state.band.inventory.cables === false
+  },
+  {
+    text: 'Marius is going to lose it when he finds out we have no drum parts.',
+    weight: 10,
+    condition: state => state.band.inventory.drum_parts === false
+  },
+  {
+    text: 'Without spare strings, every bend is a gamble.',
+    weight: 8,
+    condition: state => state.band.inventory.strings === false
+  },
+  {
+    text: 'We need cables like we need oxygen. Which is badly.',
+    weight: 8,
+    condition: state => state.band.inventory.cables === false,
+    speaker: 'Matze'
+  },
+  {
+    text: "If a head breaks, we're done. No drum parts. Zero.",
+    weight: 8,
+    condition: state => state.band.inventory.drum_parts === false,
+    speaker: 'Marius'
+  },
+  {
+    text: "The golden pick is in the case. We're invincible.",
+    weight: 3,
+    condition: state => state.band.inventory.golden_pick === true
+  },
+  {
+    text: 'I can feel the golden pick radiating power. Or static.',
+    weight: 3,
+    condition: state => state.band.inventory.golden_pick === true,
+    speaker: 'Matze'
+  },
+  {
+    text: "We're fully stocked. Strings, cables, the works.",
+    weight: 2,
+    condition: state =>
+      state.band.inventory.strings === true &&
+      state.band.inventory.cables === true &&
+      state.band.inventory.drum_parts === true
+  },
+  {
+    text: 'Merch boxes full, spares packed, cables labeled. Who are we?',
+    weight: 2,
+    condition: state =>
+      state.band.inventory.strings === true &&
+      state.band.inventory.cables === true &&
+      state.band.inventory.drum_parts === true
+  },
+  {
+    text: 'Shirts are running low. We need to restock before the next show.',
+    weight: 6,
+    condition: state => state.band.inventory.shirts < 10
+  },
+  {
+    text: "We've got zero hoodies left. That's cold. Literally.",
+    weight: 6,
+    condition: state => state.band.inventory.hoodies <= 0
+  },
 
   // --- CONDITION: GIG MODIFIERS ---
-  { text: 'Catering booked! Real food before a show? Luxury.', weight: 5, condition: state => state.gigModifiers?.catering === true },
-  { text: 'Hot meal before the set. I could cry.', weight: 5, condition: state => state.gigModifiers?.catering === true, speaker: 'Marius' },
-  { text: 'We actually did promo for this one. Like professionals.', weight: 5, condition: state => state.gigModifiers?.promo === true },
-  { text: 'Posters are up, socials are posted. We\'re trying.', weight: 5, condition: state => state.gigModifiers?.promo === true, speaker: 'Lars' },
-  { text: 'Soundcheck secured. No more guessing the monitor mix.', weight: 5, condition: state => state.gigModifiers?.soundcheck === true },
-  { text: 'A real soundcheck? We\'re basically royalty.', weight: 5, condition: state => state.gigModifiers?.soundcheck === true, speaker: 'Marius' },
-  { text: 'Guest list is set. VIPs incoming. By VIP I mean friends who owe us.', weight: 4, condition: state => state.gigModifiers?.guestlist === true },
-  { text: 'Merch table is set up and looking sharp. Let\'s sell some patches.', weight: 4, condition: state => state.gigModifiers?.merch === true },
-  { text: 'No soundcheck, no promo, no catering. Raw dog touring.', weight: 6, condition: state => state.gigModifiers?.soundcheck !== true && state.gigModifiers?.promo !== true && state.gigModifiers?.catering !== true },
-  { text: 'Full rider booked. Soundcheck, food, promo. The works.', weight: 3, condition: state => state.gigModifiers?.soundcheck === true && state.gigModifiers?.promo === true && state.gigModifiers?.catering === true },
+  {
+    text: 'Catering booked! Real food before a show? Luxury.',
+    weight: 5,
+    condition: state => state.gigModifiers?.catering === true
+  },
+  {
+    text: 'Hot meal before the set. I could cry.',
+    weight: 5,
+    condition: state => state.gigModifiers?.catering === true,
+    speaker: 'Marius'
+  },
+  {
+    text: 'We actually did promo for this one. Like professionals.',
+    weight: 5,
+    condition: state => state.gigModifiers?.promo === true
+  },
+  {
+    text: "Posters are up, socials are posted. We're trying.",
+    weight: 5,
+    condition: state => state.gigModifiers?.promo === true,
+    speaker: 'Lars'
+  },
+  {
+    text: 'Soundcheck secured. No more guessing the monitor mix.',
+    weight: 5,
+    condition: state => state.gigModifiers?.soundcheck === true
+  },
+  {
+    text: "A real soundcheck? We're basically royalty.",
+    weight: 5,
+    condition: state => state.gigModifiers?.soundcheck === true,
+    speaker: 'Marius'
+  },
+  {
+    text: 'Guest list is set. VIPs incoming. By VIP I mean friends who owe us.',
+    weight: 4,
+    condition: state => state.gigModifiers?.guestlist === true
+  },
+  {
+    text: "Merch table is set up and looking sharp. Let's sell some patches.",
+    weight: 4,
+    condition: state => state.gigModifiers?.merch === true
+  },
+  {
+    text: 'No soundcheck, no promo, no catering. Raw dog touring.',
+    weight: 6,
+    condition: state =>
+      state.gigModifiers?.soundcheck !== true &&
+      state.gigModifiers?.promo !== true &&
+      state.gigModifiers?.catering !== true
+  },
+  {
+    text: 'Full rider booked. Soundcheck, food, promo. The works.',
+    weight: 3,
+    condition: state =>
+      state.gigModifiers?.soundcheck === true &&
+      state.gigModifiers?.promo === true &&
+      state.gigModifiers?.catering === true
+  },
 
   // --- CONDITION: LUCK ---
-  { text: 'Everything is going our way. Suspicious.', weight: 5, condition: state => (state.band.luck || 0) > 3 },
-  { text: 'Lucky streak. Don\'t jinx it. DON\'T JINX IT.', weight: 5, condition: state => (state.band.luck || 0) > 3, speaker: 'Lars' },
-  { text: 'The universe is on our side today. Enjoy it while it lasts.', weight: 4, condition: state => (state.band.luck || 0) > 4 },
-  { text: 'Green lights, free parking, no flat tires. What timeline is this?', weight: 4, condition: state => (state.band.luck || 0) > 5, speaker: 'Marius' },
-  { text: 'Bad luck follows us like a stray dog.', weight: 8, condition: state => (state.band.luck || 0) < -2 },
-  { text: 'If something can go wrong, it already did. Twice.', weight: 8, condition: state => (state.band.luck || 0) < -2 },
-  { text: 'We\'re cursed. That\'s the only explanation.', weight: 10, condition: state => (state.band.luck || 0) < -4, speaker: 'Lars' },
-  { text: 'At this point even the van is giving us side-eye.', weight: 8, condition: state => (state.band.luck || 0) < -3, speaker: 'Marius' },
+  {
+    text: 'Everything is going our way. Suspicious.',
+    weight: 5,
+    condition: state => (state.band.luck || 0) > 3
+  },
+  {
+    text: "Lucky streak. Don't jinx it. DON'T JINX IT.",
+    weight: 5,
+    condition: state => (state.band.luck || 0) > 3,
+    speaker: 'Lars'
+  },
+  {
+    text: 'The universe is on our side today. Enjoy it while it lasts.',
+    weight: 4,
+    condition: state => (state.band.luck || 0) > 4
+  },
+  {
+    text: 'Green lights, free parking, no flat tires. What timeline is this?',
+    weight: 4,
+    condition: state => (state.band.luck || 0) > 5,
+    speaker: 'Marius'
+  },
+  {
+    text: 'Bad luck follows us like a stray dog.',
+    weight: 8,
+    condition: state => (state.band.luck || 0) < -2
+  },
+  {
+    text: 'If something can go wrong, it already did. Twice.',
+    weight: 8,
+    condition: state => (state.band.luck || 0) < -2
+  },
+  {
+    text: "We're cursed. That's the only explanation.",
+    weight: 10,
+    condition: state => (state.band.luck || 0) < -4,
+    speaker: 'Lars'
+  },
+  {
+    text: 'At this point even the van is giving us side-eye.',
+    weight: 8,
+    condition: state => (state.band.luck || 0) < -3,
+    speaker: 'Marius'
+  },
 
   // --- MINIGAME: TRAVEL ---
-  { text: 'Eyes on the road!', weight: 5, condition: state => state.currentScene === 'TRAVEL_MINIGAME', speaker: 'Marius' },
-  { text: 'Look out for that pothole!', weight: 5, condition: state => state.currentScene === 'TRAVEL_MINIGAME' },
-  { text: 'We’re making good time.', weight: 3, condition: state => state.currentScene === 'TRAVEL_MINIGAME' },
-  { text: 'Is that a shortcut?', weight: 3, condition: state => state.currentScene === 'TRAVEL_MINIGAME', speaker: 'Lars' },
-  { text: 'Hold on tight!', weight: 4, condition: state => state.currentScene === 'TRAVEL_MINIGAME' },
+  {
+    text: 'Eyes on the road!',
+    weight: 5,
+    condition: state => state.currentScene === 'TRAVEL_MINIGAME',
+    speaker: 'Marius'
+  },
+  {
+    text: 'Look out for that pothole!',
+    weight: 5,
+    condition: state => state.currentScene === 'TRAVEL_MINIGAME'
+  },
+  {
+    text: 'We’re making good time.',
+    weight: 3,
+    condition: state => state.currentScene === 'TRAVEL_MINIGAME'
+  },
+  {
+    text: 'Is that a shortcut?',
+    weight: 3,
+    condition: state => state.currentScene === 'TRAVEL_MINIGAME',
+    speaker: 'Lars'
+  },
+  {
+    text: 'Hold on tight!',
+    weight: 4,
+    condition: state => state.currentScene === 'TRAVEL_MINIGAME'
+  },
 
   // --- MINIGAME: ROADIE ---
-  { text: 'Don’t drop the amp!', weight: 5, condition: state => state.currentScene === 'PRE_GIG_MINIGAME' },
-  { text: 'My back!', weight: 3, condition: state => state.currentScene === 'PRE_GIG_MINIGAME', speaker: 'Matze' },
-  { text: 'Hurry up, doors open soon!', weight: 5, condition: state => state.currentScene === 'PRE_GIG_MINIGAME', speaker: 'Marius' },
-  { text: 'Careful with the merchandise box.', weight: 4, condition: state => state.currentScene === 'PRE_GIG_MINIGAME' },
-  { text: 'Why is this case so heavy?', weight: 3, condition: state => state.currentScene === 'PRE_GIG_MINIGAME', speaker: 'Lars' }
+  {
+    text: 'Don’t drop the amp!',
+    weight: 5,
+    condition: state => state.currentScene === 'PRE_GIG_MINIGAME'
+  },
+  {
+    text: 'My back!',
+    weight: 3,
+    condition: state => state.currentScene === 'PRE_GIG_MINIGAME',
+    speaker: 'Matze'
+  },
+  {
+    text: 'Hurry up, doors open soon!',
+    weight: 5,
+    condition: state => state.currentScene === 'PRE_GIG_MINIGAME',
+    speaker: 'Marius'
+  },
+  {
+    text: 'Careful with the merchandise box.',
+    weight: 4,
+    condition: state => state.currentScene === 'PRE_GIG_MINIGAME'
+  },
+  {
+    text: 'Why is this case so heavy?',
+    weight: 3,
+    condition: state => state.currentScene === 'PRE_GIG_MINIGAME',
+    speaker: 'Lars'
+  }
+]
 
-];
-
-export const ALLOWED_DEFAULT_SCENES = ['MENU', 'OVERWORLD', 'PREGIG', 'POSTGIG', 'TRAVEL_MINIGAME', 'PRE_GIG_MINIGAME'];
+export const ALLOWED_DEFAULT_SCENES = [
+  'MENU',
+  'OVERWORLD',
+  'PREGIG',
+  'POSTGIG',
+  'TRAVEL_MINIGAME',
+  'PRE_GIG_MINIGAME'
+]

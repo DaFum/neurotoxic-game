@@ -35,7 +35,7 @@ describe('useTravelLogic Performance', () => {
       player: { money: 1000, currentNodeId: 'node_start', van: { fuel: 100 } }
     })
 
-    const { result, rerender } = renderHook((props) => useTravelLogic(props), {
+    const { result, rerender } = renderHook(props => useTravelLogic(props), {
       initialProps
     })
 

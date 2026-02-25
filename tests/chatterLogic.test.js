@@ -5,8 +5,16 @@ import assert from 'node:assert/strict'
 mock.module('../src/data/chatter/standardChatter.js', {
   namedExports: {
     CHATTER_DB: [
-      { text: 'Standard 1', weight: 1, condition: state => state.currentScene === 'ALLOWED' },
-      { text: 'Standard 2', weight: 9, condition: state => state.currentScene === 'ALLOWED' }
+      {
+        text: 'Standard 1',
+        weight: 1,
+        condition: state => state.currentScene === 'ALLOWED'
+      },
+      {
+        text: 'Standard 2',
+        weight: 9,
+        condition: state => state.currentScene === 'ALLOWED'
+      }
     ],
     ALLOWED_DEFAULT_SCENES: ['ALLOWED']
   }
@@ -62,7 +70,7 @@ test('getRandomChatter returns null when pool is empty', () => {
   assert.strictEqual(result, null)
 })
 
-test('getRandomChatter returns venue-specific chatter', (t) => {
+test('getRandomChatter returns venue-specific chatter', t => {
   const state = buildState({
     currentScene: 'SPECIAL',
     gameMap: {
@@ -77,7 +85,7 @@ test('getRandomChatter returns venue-specific chatter', (t) => {
   assert.strictEqual(result.text, 'Venue Special')
 })
 
-test('getRandomChatter falls back to ANY venue chatter', (t) => {
+test('getRandomChatter falls back to ANY venue chatter', t => {
   const state = buildState({
     currentScene: 'OTHER',
     gameMap: {
@@ -92,7 +100,7 @@ test('getRandomChatter falls back to ANY venue chatter', (t) => {
   assert.strictEqual(result.text, 'Venue Any')
 })
 
-test('getRandomChatter supports legacy lines format', (t) => {
+test('getRandomChatter supports legacy lines format', t => {
   const state = buildState({
     currentScene: 'OTHER',
     gameMap: {
@@ -117,7 +125,7 @@ test('getRandomChatter includes standard chatter when conditions met', () => {
   assert.ok(['Standard 1', 'Standard 2'].includes(result.text))
 })
 
-test('getRandomChatter implements weighted random selection', (t) => {
+test('getRandomChatter implements weighted random selection', t => {
   const state = buildState({
     currentScene: 'ALLOWED',
     gameMap: { nodes: { node1: { id: 'node1', type: 'CITY' } } } // No venue

@@ -44,30 +44,35 @@ export const Gig = () => {
   const { stats, actions, gameStateRef, update } = logic
 
   // Use extracted effects hook
-  const { chaosContainerRef, chaosStyle, triggerBandAnimation, setBandMemberRef } = useGigEffects(stats)
+  const {
+    chaosContainerRef,
+    chaosStyle,
+    triggerBandAnimation,
+    setBandMemberRef
+  } = useGigEffects(stats)
 
   // Pause Logic Effect - must be before handlers to follow structure
   useEffect(() => {
-      if (!hasInteractedRef.current) {
-          if (!isPaused) {
-              hasInteractedRef.current = true
-              return
-          }
-          // If starts paused (unlikely) or quick toggle
-          pauseAudio()
-          addToast('PAUSED', 'info')
-          // Focus management delegated to Modal or done here if needed
-          hasInteractedRef.current = true
-          return
+    if (!hasInteractedRef.current) {
+      if (!isPaused) {
+        hasInteractedRef.current = true
+        return
       }
+      // If starts paused (unlikely) or quick toggle
+      pauseAudio()
+      addToast('PAUSED', 'info')
+      // Focus management delegated to Modal or done here if needed
+      hasInteractedRef.current = true
+      return
+    }
 
-      if (isPaused) {
-          pauseAudio()
-          addToast('PAUSED', 'info')
-      } else {
-          resumeAudio()
-          addToast('RESUMED', 'info')
-      }
+    if (isPaused) {
+      pauseAudio()
+      addToast('PAUSED', 'info')
+    } else {
+      resumeAudio()
+      addToast('RESUMED', 'info')
+    }
   }, [isPaused, addToast])
 
   const handleTogglePause = useCallback(() => {
@@ -88,13 +93,13 @@ export const Gig = () => {
       // Ensure statsSnapshot has defaults to prevent NaN in buildGigStatsSnapshot
       const rawStats = gameStateRef.current?.stats || {}
       const statsSnapshot = {
-          perfectHits: rawStats.perfectHits || 0,
-          perfects: rawStats.perfects || 0, // Alias if used
-          hits: rawStats.hits || 0,
-          misses: rawStats.misses || 0,
-          earlyHits: rawStats.earlyHits || 0,
-          lateHits: rawStats.lateHits || 0,
-          maxCombo: rawStats.maxCombo || 0
+        perfectHits: rawStats.perfectHits || 0,
+        perfects: rawStats.perfects || 0, // Alias if used
+        hits: rawStats.hits || 0,
+        misses: rawStats.misses || 0,
+        earlyHits: rawStats.earlyHits || 0,
+        lateHits: rawStats.lateHits || 0,
+        maxCombo: rawStats.maxCombo || 0
       }
       const toxicTime = gameStateRef.current?.toxicTimeTotal || 0
 
@@ -256,7 +261,11 @@ export const Gig = () => {
             PAUSED
           </h2>
           <div className='flex flex-col gap-6 w-64'>
-            <GlitchButton ref={resumeBtnRef} onClick={handleTogglePause} size='lg'>
+            <GlitchButton
+              ref={resumeBtnRef}
+              onClick={handleTogglePause}
+              size='lg'
+            >
               RESUME
             </GlitchButton>
             <GlitchButton onClick={handleQuitGig} variant='danger'>

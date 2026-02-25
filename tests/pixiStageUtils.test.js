@@ -27,7 +27,6 @@ test('buildRhythmLayout derives lane and hit line positions', () => {
   assert.equal(layout.rhythmOffsetY, 600 * RHYTHM_LAYOUT.rhythmOffsetRatio)
 })
 
-
 test('getPixiColorFromToken falls back when CSS variables are unavailable', () => {
   const originalWindow = globalThis.window
   const originalDocument = globalThis.document

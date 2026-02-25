@@ -330,7 +330,8 @@ export const BAND_EVENTS = [
     id: 'new_song_debut_fear',
     category: 'band',
     title: 'NEW SONG PANIC',
-    description: 'Someone suggests playing the new song tonight. The room goes quiet.',
+    description:
+      'Someone suggests playing the new song tonight. The room goes quiet.',
     trigger: 'random',
     chance: 0.04,
     options: [
@@ -387,7 +388,8 @@ export const BAND_EVENTS = [
     id: 'sleeping_floor_fight',
     category: 'band',
     title: 'SLEEPING ARRANGEMENTS',
-    description: 'The floor spot looks… worse than usual. Everybody wants the couch.',
+    description:
+      'The floor spot looks… worse than usual. Everybody wants the couch.',
     trigger: 'random',
     chance: 0.04,
     options: [
@@ -418,7 +420,8 @@ export const BAND_EVENTS = [
     id: 'band_prank',
     category: 'band',
     title: 'TOUR PRANK',
-    description: 'Someone swapped your strings with ancient rusty ones as a “joke”.',
+    description:
+      'Someone swapped your strings with ancient rusty ones as a “joke”.',
     trigger: 'random',
     chance: 0.03,
     options: [
@@ -439,7 +442,8 @@ export const BAND_EVENTS = [
     category: 'band',
     tags: ['conflict'],
     title: 'EGO CLASH II',
-    description: 'Lars wants to “rebrand” the band mid-tour. Marius wants to sleep.',
+    description:
+      'Lars wants to “rebrand” the band mid-tour. Marius wants to sleep.',
     trigger: 'random',
     chance: 0.03,
     options: [
@@ -542,7 +546,8 @@ export const BAND_EVENTS = [
     category: 'band',
     tags: ['conflict'],
     title: 'BACKSTAGE ARGUMENT',
-    description: 'A small comment turns into a big fight five minutes before stage.',
+    description:
+      'A small comment turns into a big fight five minutes before stage.',
     trigger: 'random',
     chance: 0.03,
     options: [
@@ -614,7 +619,8 @@ export const BAND_EVENTS = [
     id: 'band_bonding_walk',
     category: 'band',
     title: 'BONDING WALK',
-    description: 'You have two hours to kill. Someone suggests a walk together.',
+    description:
+      'You have two hours to kill. Someone suggests a walk together.',
     trigger: 'random',
     chance: 0.03,
     options: [
@@ -641,7 +647,8 @@ export const BAND_EVENTS = [
     category: 'band',
     tags: ['conflict'],
     title: 'TEMPO POLICE',
-    description: 'Marius insists everyone is rushing. Lars insists Marius is dragging.',
+    description:
+      'Marius insists everyone is rushing. Lars insists Marius is dragging.',
     trigger: 'random',
     chance: 0.04,
     options: [

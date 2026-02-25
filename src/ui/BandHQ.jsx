@@ -68,7 +68,7 @@ export const BandHQ = ({
   const { handleBuy, isItemOwned, isItemDisabled, getAdjustedCost } =
     usePurchaseLogic(purchaseLogicParams)
 
-  const handleBuyWithLock = async (item) => {
+  const handleBuyWithLock = async item => {
     if (processingItemId) return
     setProcessingItemId(item.id)
     try {
@@ -115,20 +115,22 @@ export const BandHQ = ({
         {/* Navigation */}
         <div className='flex border-b-2 border-(--ash-gray) overflow-x-auto'>
           {/* Tabs: STATS, DETAILS, SHOP, UPGRADES, SETLIST, SETTINGS */}
-          {['STATS', 'DETAILS', 'SHOP', 'UPGRADES', 'SETLIST', 'SETTINGS'].map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex-1 min-w-[120px] py-4 text-center font-bold text-xl uppercase tracking-wider transition-colors duration-150 font-mono
+          {['STATS', 'DETAILS', 'SHOP', 'UPGRADES', 'SETLIST', 'SETTINGS'].map(
+            tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`flex-1 min-w-[120px] py-4 text-center font-bold text-xl uppercase tracking-wider transition-colors duration-150 font-mono
                 ${
                   activeTab === tab
                     ? 'bg-(--toxic-green) text-(--void-black)'
                     : 'text-(--ash-gray) hover:text-(--star-white) bg-(--void-black)/50 hover:bg-(--void-black)/70'
                 }`}
-            >
-              {tab}
-            </button>
-          ))}
+              >
+                {tab}
+              </button>
+            )
+          )}
         </div>
 
         {/* Content Area */}
@@ -138,10 +140,10 @@ export const BandHQ = ({
           )}
 
           {activeTab === 'DETAILS' && (
-            <DetailedStatsTab 
-              player={player} 
-              band={band} 
-              social={social} 
+            <DetailedStatsTab
+              player={player}
+              band={band}
+              social={social}
               activeQuests={activeQuests}
               venueBlacklist={venueBlacklist}
               reputationByRegion={reputationByRegion}

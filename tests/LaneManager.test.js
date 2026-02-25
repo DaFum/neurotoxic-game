@@ -77,7 +77,6 @@ describe('LaneManager', () => {
   beforeEach(async () => {
     graphicsInstances.length = 0
     mockBuildRhythmLayout.mock.resetCalls()
-
     ;({ LaneManager } = await import('../src/components/stage/LaneManager.js'))
 
     app = {
@@ -109,14 +108,22 @@ describe('LaneManager', () => {
     })
     const fillCalls = inactiveGraphics.fill.mock.calls
 
-    assert.equal(fillCalls.length, 1, 'Should have drawn inactive graphics in init')
+    assert.equal(
+      fillCalls.length,
+      1,
+      'Should have drawn inactive graphics in init'
+    )
     assert.deepEqual(fillCalls[0].arguments[0], {
       color: 0xff0000,
       alpha: HIT_BAR_INACTIVE_ALPHA
     })
 
     // Check visibility
-    assert.equal(inactiveGraphics.visible, true, 'Inactive graphics should be visible by default')
+    assert.equal(
+      inactiveGraphics.visible,
+      true,
+      'Inactive graphics should be visible by default'
+    )
   })
 
   test('draws static lane guide strip for readability', () => {
@@ -143,8 +150,16 @@ describe('LaneManager', () => {
       layer: 'inactive'
     })
 
-    assert.equal(activeGraphics.visible, false, 'Active graphics should be hidden initially')
-    assert.equal(inactiveGraphics.visible, true, 'Inactive graphics should be visible initially')
+    assert.equal(
+      activeGraphics.visible,
+      false,
+      'Active graphics should be hidden initially'
+    )
+    assert.equal(
+      inactiveGraphics.visible,
+      true,
+      'Inactive graphics should be visible initially'
+    )
 
     // Simulate key press
     gameStateRef.current.lanes[0].active = true
@@ -152,14 +167,26 @@ describe('LaneManager', () => {
     laneManager.update(gameStateRef.current)
 
     // Verify visibility toggle
-    assert.equal(activeGraphics.visible, true, 'Active graphics should be visible after update')
-    assert.equal(inactiveGraphics.visible, false, 'Inactive graphics should be hidden after update')
+    assert.equal(
+      activeGraphics.visible,
+      true,
+      'Active graphics should be visible after update'
+    )
+    assert.equal(
+      inactiveGraphics.visible,
+      false,
+      'Inactive graphics should be hidden after update'
+    )
 
     // Verify active graphics drawing parameters (from init)
     const fillCalls = activeGraphics.fill.mock.calls
     const strokeCalls = activeGraphics.stroke.mock.calls
 
-    assert.equal(fillCalls.length, 1, 'Should have drawn active graphics in init')
+    assert.equal(
+      fillCalls.length,
+      1,
+      'Should have drawn active graphics in init'
+    )
     assert.deepEqual(fillCalls[0].arguments[0], {
       color: 0xff0000,
       alpha: HIT_BAR_ACTIVE_ALPHA

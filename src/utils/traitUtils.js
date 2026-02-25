@@ -33,9 +33,10 @@ export const applyTraitUnlocks = (currentState, unlocks) => {
 
   unlocks.forEach(u => {
     // Find member by ID or case-insensitive name
-    const memberIndex = nextBand.members.findIndex(m =>
-      (m.id && m.id === u.memberId) ||
-      (m.name && m.name.toLowerCase() === u.memberId.toLowerCase())
+    const memberIndex = nextBand.members.findIndex(
+      m =>
+        (m.id && m.id === u.memberId) ||
+        (m.name && m.name.toLowerCase() === u.memberId.toLowerCase())
     )
     if (memberIndex === -1) return
 
@@ -47,7 +48,9 @@ export const applyTraitUnlocks = (currentState, unlocks) => {
     // Find trait definition using the member's name to resolve static character data
     // This allows u.memberId to be an arbitrary ID (uuid) as long as the member object has a valid name.
     const charKey = member.name ? member.name.toUpperCase() : null
-    const traitDef = charKey ? CHARACTERS[charKey]?.traits?.find(t => t.id === u.traitId) : null
+    const traitDef = charKey
+      ? CHARACTERS[charKey]?.traits?.find(t => t.id === u.traitId)
+      : null
 
     if (!traitDef) return
 

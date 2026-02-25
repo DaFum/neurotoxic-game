@@ -7,14 +7,14 @@ vi.mock('../../src/utils/audioEngine.js', () => ({
   getGigTimeMs: vi.fn(() => 0),
   pauseAudio: vi.fn(),
   resumeAudio: vi.fn(),
-  stopAudio: vi.fn(),
+  stopAudio: vi.fn()
 }))
 
 vi.mock('../../src/utils/logger.js', () => ({
   logger: {
     error: vi.fn(),
     warn: vi.fn(),
-    info: vi.fn(),
+    info: vi.fn()
   }
 }))
 
@@ -24,7 +24,7 @@ describe('PixiStage Performance Optimization', () => {
   test('does NOT re-render when stats change', () => {
     const mockController = {
       init: vi.fn().mockResolvedValue(null),
-      dispose: vi.fn(),
+      dispose: vi.fn()
     }
     const controllerFactory = vi.fn().mockReturnValue(mockController)
 
@@ -66,7 +66,7 @@ describe('PixiStage Performance Optimization', () => {
   test('PixiStage remains stable when props are stable', () => {
     const mockController = {
       init: vi.fn().mockResolvedValue(null),
-      dispose: vi.fn(),
+      dispose: vi.fn()
     }
     const controllerFactory = vi.fn().mockReturnValue(mockController)
     const gameStateRef = { current: {} }
@@ -74,28 +74,28 @@ describe('PixiStage Performance Optimization', () => {
 
     let internalRenderCount = 0
     vi.mock('../../src/components/PixiStageController', () => ({
-        createPixiStageController: vi.fn()
+      createPixiStageController: vi.fn()
     }))
 
     // We can't easily count internal renders of PixiStage without modifying it or using devtools.
     // However, we can verify that the controller's init/dispose are NOT called again.
     const { rerender } = render(
-        <PixiStage
-          gameStateRef={gameStateRef}
-          update={update}
-          controllerFactory={controllerFactory}
-        />
+      <PixiStage
+        gameStateRef={gameStateRef}
+        update={update}
+        controllerFactory={controllerFactory}
+      />
     )
 
     expect(mockController.init).toHaveBeenCalledTimes(1)
 
     // Rerender with same props
     rerender(
-        <PixiStage
-          gameStateRef={gameStateRef}
-          update={update}
-          controllerFactory={controllerFactory}
-        />
+      <PixiStage
+        gameStateRef={gameStateRef}
+        update={update}
+        controllerFactory={controllerFactory}
+      />
     )
 
     // Should NOT have called dispose/init again because dependencies haven't changed

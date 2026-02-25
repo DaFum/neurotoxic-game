@@ -26,7 +26,12 @@ import {
   DEFAULT_BAND_STATE,
   DEFAULT_SOCIAL_STATE
 } from './initialState.js'
-import { GAME_PHASES, MINIGAME_TYPES, DEFAULT_MINIGAME_STATE, DEFAULT_EQUIPMENT_COUNT } from './gameConstants.js'
+import {
+  GAME_PHASES,
+  MINIGAME_TYPES,
+  DEFAULT_MINIGAME_STATE,
+  DEFAULT_EQUIPMENT_COUNT
+} from './gameConstants.js'
 import { ALLOWED_TRENDS } from '../data/socialTrends.js'
 
 /**
@@ -90,7 +95,8 @@ const handleChangeScene = (state, payload) => {
  */
 const handleUpdatePlayer = (state, payload) => {
   logger.debug('GameState', 'Update Player', payload)
-  const updates = typeof payload === 'function' ? payload(state.player) : payload
+  const updates =
+    typeof payload === 'function' ? payload(state.player) : payload
   const mergedPlayer = { ...state.player, ...updates }
 
   // Clamp money to prevent negative values
@@ -231,8 +237,12 @@ const handleLoadGame = (state, payload) => {
       ? loadedState.eventCooldowns
       : [],
     reputationByRegion: loadedState.reputationByRegion || {},
-    venueBlacklist: Array.isArray(loadedState.venueBlacklist) ? loadedState.venueBlacklist : [],
-    activeQuests: Array.isArray(loadedState.activeQuests) ? loadedState.activeQuests : [],
+    venueBlacklist: Array.isArray(loadedState.venueBlacklist)
+      ? loadedState.venueBlacklist
+      : [],
+    activeQuests: Array.isArray(loadedState.activeQuests)
+      ? loadedState.activeQuests
+      : [],
     npcs: loadedState.npcs || {},
     gigModifiers: {
       ...DEFAULT_GIG_MODIFIERS,
@@ -300,7 +310,10 @@ const handleConsumeItem = (state, payload) => {
  */
 const handleAdvanceDay = (state, payload) => {
   const rng = payload?.rng || Math.random
-  const { player, band, social, pendingFlags } = calculateDailyUpdates(state, rng)
+  const { player, band, social, pendingFlags } = calculateDailyUpdates(
+    state,
+    rng
+  )
   const nextBand = { ...band }
   if (typeof nextBand.harmony === 'number') {
     nextBand.harmony = clampBandHarmony(nextBand.harmony)
@@ -312,7 +325,10 @@ const handleAdvanceDay = (state, payload) => {
     { type: 'SOCIAL_UPDATE' }
   )
 
-  const traitResult = applyTraitUnlocks({ band: nextBand, toasts: state.toasts }, socialUnlocks)
+  const traitResult = applyTraitUnlocks(
+    { band: nextBand, toasts: state.toasts },
+    socialUnlocks
+  )
 
   let nextState = {
     ...state,
@@ -326,7 +342,10 @@ const handleAdvanceDay = (state, payload) => {
   nextState = handleFailQuests(nextState)
 
   if (pendingFlags?.scandal) {
-    nextState.pendingEvents = [...(nextState.pendingEvents || []), 'consequences_bandmate_scandal']
+    nextState.pendingEvents = [
+      ...(nextState.pendingEvents || []),
+      'consequences_bandmate_scandal'
+    ]
   }
 
   logger.info('GameState', `Day Advanced to ${player.day}`)
@@ -366,8 +385,16 @@ const handleCompleteTravelMinigame = (state, payload) => {
     }
   }
 
-  const { dist, totalCost, fuelLiters } = calculateTravelExpenses(targetNode, currentNode, state.player, state.band)
-  const { conditionLoss } = calculateTravelMinigameResult(damageTaken, itemsCollected)
+  const { dist, totalCost, fuelLiters } = calculateTravelExpenses(
+    targetNode,
+    currentNode,
+    state.player,
+    state.band
+  )
+  const { conditionLoss } = calculateTravelMinigameResult(
+    damageTaken,
+    itemsCollected
+  )
 
   const nextPlayer = {
     ...state.player,
@@ -392,7 +419,10 @@ const handleCompleteTravelMinigame = (state, payload) => {
     { type: 'TRAVEL_COMPLETE' }
   )
 
-  const traitResult = applyTraitUnlocks({ band: state.band, toasts: state.toasts }, travelUnlocks)
+  const traitResult = applyTraitUnlocks(
+    { band: state.band, toasts: state.toasts },
+    travelUnlocks
+  )
 
   return {
     ...state,
@@ -443,7 +473,10 @@ const handleCompleteRoadieMinigame = (state, payload) => {
   const nextModifiers = { ...state.gigModifiers }
   if (equipmentDamage > 50) {
     // Apply a penalty for heavily damaged gear
-    logger.warn('GameState', 'Heavy equipment damage applied: damaged_gear active')
+    logger.warn(
+      'GameState',
+      'Heavy equipment damage applied: damaged_gear active'
+    )
     nextModifiers.damaged_gear = true
   }
 
@@ -466,18 +499,30 @@ const handleCompleteQuest = (state, { questId }) => {
   const quest = state.activeQuests?.find(q => q.id === questId)
   if (!quest) return state
   let nextState = { ...state }
-  
+
   // Remove from activeQuests
-  nextState.activeQuests = (nextState.activeQuests || []).filter(q => q.id !== questId)
-  
+  nextState.activeQuests = (nextState.activeQuests || []).filter(
+    q => q.id !== questId
+  )
+
   // Add reward flag
   if (quest.rewardFlag) {
-    nextState.activeStoryFlags = [...(nextState.activeStoryFlags || []), quest.rewardFlag]
+    nextState.activeStoryFlags = [
+      ...(nextState.activeStoryFlags || []),
+      quest.rewardFlag
+    ]
   }
-  
+
   // Toast
-  nextState.toasts = [...(nextState.toasts || []), { id: `${Date.now()}-${questId}`, message: `[${quest.label}]: COMPLETE`, type: 'success' }]
-  
+  nextState.toasts = [
+    ...(nextState.toasts || []),
+    {
+      id: `${Date.now()}-${questId}`,
+      message: `[${quest.label}]: COMPLETE`,
+      type: 'success'
+    }
+  ]
+
   if (quest.id === 'quest_prove_yourself') {
     nextState.venueBlacklist = (nextState.venueBlacklist || []).slice(2) // clear 2
     nextState.player = {
@@ -511,16 +556,19 @@ const handleAdvanceQuest = (state, { questId, amount = 1 }) => {
   return nextState
 }
 
-const handleRecordBadShow = (state) => {
+const handleRecordBadShow = state => {
   let nextState = { ...state }
   const currentBadShows = (nextState.player.stats?.consecutiveBadShows || 0) + 1
-  
+
   nextState.player = {
     ...nextState.player,
     stats: { ...nextState.player.stats, consecutiveBadShows: currentBadShows }
   }
 
-  if (currentBadShows >= 3 && !nextState.activeQuests?.some(q => q.id === 'quest_prove_yourself')) {
+  if (
+    currentBadShows >= 3 &&
+    !nextState.activeQuests?.some(q => q.id === 'quest_prove_yourself')
+  ) {
     nextState = handleAddQuest(nextState, {
       id: 'quest_prove_yourself',
       label: 'PROVE YOURSELF',
@@ -528,19 +576,32 @@ const handleRecordBadShow = (state) => {
       progress: 0,
       required: 4,
       rewardFlag: 'prove_yourself_complete',
-      failurePenalty: { social: { controversyLevel: 10 }, band: { harmony: -20 } }
+      failurePenalty: {
+        social: { controversyLevel: 10 },
+        band: { harmony: -20 }
+      }
     })
     nextState.player.stats.proveYourselfMode = true
-    nextState.activeStoryFlags = [...(nextState.activeStoryFlags || []), 'prove_yourself_active']
-    nextState.toasts = [...(nextState.toasts || []), { id: Date.now().toString(), message: '3 DISASTERS IN A ROW — Prove yourself in small venues first.', type: 'error' }]
+    nextState.activeStoryFlags = [
+      ...(nextState.activeStoryFlags || []),
+      'prove_yourself_active'
+    ]
+    nextState.toasts = [
+      ...(nextState.toasts || []),
+      {
+        id: Date.now().toString(),
+        message: '3 DISASTERS IN A ROW — Prove yourself in small venues first.',
+        type: 'error'
+      }
+    ]
   }
 
   return nextState
 }
 
-const handleRecordGoodShow = (state) => {
+const handleRecordGoodShow = state => {
   let nextState = { ...state }
-  
+
   nextState.player = {
     ...nextState.player,
     stats: { ...nextState.player.stats, consecutiveBadShows: 0 }
@@ -552,35 +613,67 @@ const handleRecordGoodShow = (state) => {
 const handleAddVenueBlacklist = (state, venueName) => {
   let nextState = { ...state }
   if (nextState.social.loyalty >= 30) {
-    nextState.social = { ...nextState.social, loyalty: nextState.social.loyalty - 15 }
-    nextState.toasts = [...(nextState.toasts || []), { id: Date.now().toString(), message: `Loyal fans defended you — venue gave one more chance!`, type: 'info' }]
+    nextState.social = {
+      ...nextState.social,
+      loyalty: nextState.social.loyalty - 15
+    }
+    nextState.toasts = [
+      ...(nextState.toasts || []),
+      {
+        id: Date.now().toString(),
+        message: `Loyal fans defended you — venue gave one more chance!`,
+        type: 'info'
+      }
+    ]
   } else {
     nextState.venueBlacklist = [...(nextState.venueBlacklist || []), venueName]
-    nextState.toasts = [...(nextState.toasts || []), { id: Date.now().toString(), message: `BLACKLISTED: ${venueName}`, type: 'error' }]
+    nextState.toasts = [
+      ...(nextState.toasts || []),
+      {
+        id: Date.now().toString(),
+        message: `BLACKLISTED: ${venueName}`,
+        type: 'error'
+      }
+    ]
   }
   return nextState
 }
 
-const handleFailQuests = (state) => {
+const handleFailQuests = state => {
   let nextState = { ...state }
   if (!nextState.activeQuests) return state
 
-  const expiredQuests = nextState.activeQuests.filter(q => q.deadline !== null && nextState.player.day > q.deadline)
+  const expiredQuests = nextState.activeQuests.filter(
+    q => q.deadline !== null && nextState.player.day > q.deadline
+  )
   if (expiredQuests.length === 0) return state
 
   expiredQuests.forEach(quest => {
     if (quest.failurePenalty) {
       if (quest.failurePenalty.social?.controversyLevel) {
-        nextState.social.controversyLevel = (nextState.social.controversyLevel || 0) + quest.failurePenalty.social.controversyLevel
+        nextState.social.controversyLevel =
+          (nextState.social.controversyLevel || 0) +
+          quest.failurePenalty.social.controversyLevel
       }
       if (quest.failurePenalty.band?.harmony) {
-        nextState.band.harmony = clampBandHarmony((nextState.band.harmony || 0) + quest.failurePenalty.band.harmony)
+        nextState.band.harmony = clampBandHarmony(
+          (nextState.band.harmony || 0) + quest.failurePenalty.band.harmony
+        )
       }
     }
-    nextState.toasts = [...(nextState.toasts || []), { id: `${Date.now()}-${quest.id}`, message: `[${quest.label}]: FAILED`, type: 'error' }]
+    nextState.toasts = [
+      ...(nextState.toasts || []),
+      {
+        id: `${Date.now()}-${quest.id}`,
+        message: `[${quest.label}]: FAILED`,
+        type: 'error'
+      }
+    ]
   })
 
-  nextState.activeQuests = nextState.activeQuests.filter(q => q.deadline === null || nextState.player.day <= q.deadline)
+  nextState.activeQuests = nextState.activeQuests.filter(
+    q => q.deadline === null || nextState.player.day <= q.deadline
+  )
   return nextState
 }
 
@@ -638,8 +731,14 @@ export const gameReducer = (state, action) => {
         }
       }
 
-      if (updates.sponsorActive !== undefined && typeof updates.sponsorActive !== 'boolean') {
-        logger.warn('GameState', 'Invalid sponsorActive update (must be boolean)')
+      if (
+        updates.sponsorActive !== undefined &&
+        typeof updates.sponsorActive !== 'boolean'
+      ) {
+        logger.warn(
+          'GameState',
+          'Invalid sponsorActive update (must be boolean)'
+        )
         delete updates.sponsorActive
       }
 
@@ -649,11 +748,18 @@ export const gameReducer = (state, action) => {
           delete updates.activeDeals
         } else {
           // Validate structure of items
-          const validDeals = updates.activeDeals.filter(d =>
-            d && typeof d === 'object' && typeof d.id === 'string' && typeof d.remainingGigs === 'number'
+          const validDeals = updates.activeDeals.filter(
+            d =>
+              d &&
+              typeof d === 'object' &&
+              typeof d.id === 'string' &&
+              typeof d.remainingGigs === 'number'
           )
           if (validDeals.length !== updates.activeDeals.length) {
-             logger.warn('GameState', 'Filtered invalid deals from activeDeals update')
+            logger.warn(
+              'GameState',
+              'Filtered invalid deals from activeDeals update'
+            )
           }
           updates.activeDeals = validDeals
         }
@@ -695,9 +801,12 @@ export const gameReducer = (state, action) => {
           lastGigStats: action.payload
         }
       }
-      const performanceUnlocks = checkTraitUnlocks(state, { type: 'GIG_COMPLETE', gigStats: action.payload })
+      const performanceUnlocks = checkTraitUnlocks(state, {
+        type: 'GIG_COMPLETE',
+        gigStats: action.payload
+      })
       const traitResult = applyTraitUnlocks(state, performanceUnlocks)
-      
+
       let nextState = {
         ...state,
         lastGigStats: action.payload,
@@ -705,34 +814,59 @@ export const gameReducer = (state, action) => {
         toasts: traitResult.toasts,
         reputationByRegion: { ...state.reputationByRegion }
       }
-      
+
       const score = action.payload?.score ?? 0
       const location = state.player?.location || 'Unknown'
       const capacity = state.currentGig?.venue?.capacity || 0
-      
-      if (score < 30) {
-         nextState.reputationByRegion[location] = (nextState.reputationByRegion[location] || 0) - 10
-         logger.warn('GameState', `Regional reputation loss in ${location} due to poor gig performance (-10)`)
-         nextState = handleRecordBadShow(nextState)
-         if ((nextState.reputationByRegion[location] || 0) <= -30) {
-           nextState = handleAddVenueBlacklist(nextState, state.currentGig?.venue?.name || 'Local Venue')
-         }
-      } else if (score >= 60) {
-         // Increase reputation on good gigs up to 100 max
-         const currentRep = nextState.reputationByRegion[location] || 0
-         if (currentRep < 100) {
-           const bonus = score >= 90 ? 10 : 5
-           nextState.reputationByRegion[location] = Math.min(100, currentRep + bonus)
-           logger.info('GameState', `Regional reputation gain in ${location} (+${bonus})`)
-         }
 
-         nextState = handleRecordGoodShow(nextState)
-         if (nextState.activeQuests?.some(q => q.id === 'quest_apology_tour') && capacity <= 300) {
-           nextState = handleAdvanceQuest(nextState, { questId: 'quest_apology_tour', amount: 1 })
-         }
-         if (nextState.activeQuests?.some(q => q.id === 'quest_prove_yourself') && capacity <= 150) {
-           nextState = handleAdvanceQuest(nextState, { questId: 'quest_prove_yourself', amount: 1 })
-         }
+      if (score < 30) {
+        nextState.reputationByRegion[location] =
+          (nextState.reputationByRegion[location] || 0) - 10
+        logger.warn(
+          'GameState',
+          `Regional reputation loss in ${location} due to poor gig performance (-10)`
+        )
+        nextState = handleRecordBadShow(nextState)
+        if ((nextState.reputationByRegion[location] || 0) <= -30) {
+          nextState = handleAddVenueBlacklist(
+            nextState,
+            state.currentGig?.venue?.name || 'Local Venue'
+          )
+        }
+      } else if (score >= 60) {
+        // Increase reputation on good gigs up to 100 max
+        const currentRep = nextState.reputationByRegion[location] || 0
+        if (currentRep < 100) {
+          const bonus = score >= 90 ? 10 : 5
+          nextState.reputationByRegion[location] = Math.min(
+            100,
+            currentRep + bonus
+          )
+          logger.info(
+            'GameState',
+            `Regional reputation gain in ${location} (+${bonus})`
+          )
+        }
+
+        nextState = handleRecordGoodShow(nextState)
+        if (
+          nextState.activeQuests?.some(q => q.id === 'quest_apology_tour') &&
+          capacity <= 300
+        ) {
+          nextState = handleAdvanceQuest(nextState, {
+            questId: 'quest_apology_tour',
+            amount: 1
+          })
+        }
+        if (
+          nextState.activeQuests?.some(q => q.id === 'quest_prove_yourself') &&
+          capacity <= 150
+        ) {
+          nextState = handleAdvanceQuest(nextState, {
+            questId: 'quest_prove_yourself',
+            amount: 1
+          })
+        }
       }
 
       // Comeback album: queue if controversy recovered and apology tour complete
@@ -741,13 +875,20 @@ export const gameReducer = (state, action) => {
         !nextState.activeStoryFlags?.includes('comeback_triggered') &&
         (nextState.social?.controversyLevel || 0) < 30
       ) {
-        nextState.pendingEvents = [...(nextState.pendingEvents || []), 'consequences_comeback_album']
+        nextState.pendingEvents = [
+          ...(nextState.pendingEvents || []),
+          'consequences_comeback_album'
+        ]
       }
 
       // Ego management quest auto-complete
-      const egoQuest = nextState.activeQuests?.find(q => q.id === 'quest_ego_management')
+      const egoQuest = nextState.activeQuests?.find(
+        q => q.id === 'quest_ego_management'
+      )
       if (egoQuest && nextState.band.harmony >= 50) {
-        nextState = handleCompleteQuest(nextState, { questId: 'quest_ego_management' })
+        nextState = handleCompleteQuest(nextState, {
+          questId: 'quest_ego_management'
+        })
       }
 
       return nextState
@@ -782,8 +923,13 @@ export const gameReducer = (state, action) => {
       logger.info('GameState', 'Applying Event Delta', action.payload)
       const nextState = applyEventDelta(state, action.payload)
 
-      const eventUnlocks = checkTraitUnlocks(nextState, { type: 'EVENT_RESOLVED' })
-      const traitResult = applyTraitUnlocks({ band: nextState.band, toasts: nextState.toasts }, eventUnlocks)
+      const eventUnlocks = checkTraitUnlocks(nextState, {
+        type: 'EVENT_RESOLVED'
+      })
+      const traitResult = applyTraitUnlocks(
+        { band: nextState.band, toasts: nextState.toasts },
+        eventUnlocks
+      )
 
       return {
         ...nextState,
@@ -824,7 +970,6 @@ export const gameReducer = (state, action) => {
 
     case ActionTypes.UNLOCK_TRAIT:
       return handleUnlockTrait(state, action.payload)
-
 
     case ActionTypes.ADD_VENUE_BLACKLIST:
       return handleAddVenueBlacklist(state, action.payload)

@@ -97,9 +97,9 @@ export class MapGenerator {
             candidates = mediumVenues.filter(v => !usedVenueIds.has(v.id))
           }
           if (candidates.length === 0) {
-              candidates = hardVenues.filter(v => !usedVenueIds.has(v.id))
+            candidates = hardVenues.filter(v => !usedVenueIds.has(v.id))
           }
-          
+
           // Absolute zero-resort fallback: allow duplicates from full pool to prevent crash,
           // but exclude specialized venues.
           if (candidates.length === 0) {

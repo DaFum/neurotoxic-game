@@ -108,7 +108,11 @@ test('getGigModifiers applies tired Marius speed increase', () => {
   const band = buildBandWithMembers([{ name: 'Marius', stamina: 15 }])
   const modifiers = getGigModifiers(band)
 
-  assert.equal(modifiers.drumSpeedMult, 1.2, 'Tired Marius should speed up tempo')
+  assert.equal(
+    modifiers.drumSpeedMult,
+    1.2,
+    'Tired Marius should speed up tempo'
+  )
   assert.ok(
     modifiers.activeEffects.some(e => e.includes('TIRED MARIUS')),
     'Should describe Marius effect'
@@ -138,7 +142,11 @@ test('getGigModifiers can apply multiple effects', () => {
   )
   assert.equal(modifiers.hitWindowBonus, 20, 'Should have harmony bonus')
   assert.equal(modifiers.guitarScoreMult, 0.5, 'Should have Matze penalty')
-  assert.equal(modifiers.drumSpeedMult, 1.2, 'Should have Marius speed increase')
+  assert.equal(
+    modifiers.drumSpeedMult,
+    1.2,
+    'Should have Marius speed increase'
+  )
 })
 
 test('calculateGigPhysics returns physics object', () => {

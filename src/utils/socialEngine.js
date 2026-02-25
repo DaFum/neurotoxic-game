@@ -37,7 +37,7 @@ export const calculateViralityScore = (
 
   // Showman Trait (Marius): +20% virality chance on live shows
   if (bandHasTrait(bandState, 'showman')) {
-    baseChance *= 1.20
+    baseChance *= 1.2
   }
 
   // Cap at 90%
@@ -48,26 +48,40 @@ export const calculateViralityScore = (
  * Generates options for the "Post-Gig Social Media Strategy" phase.
  * It evaluates conditions from POST_OPTIONS, assigns weights, and selects exactly 3.
  */
-export const generatePostOptions = (gigResult, gameState, rng = secureRandom) => {
+export const generatePostOptions = (
+  gigResult,
+  gameState,
+  rng = secureRandom
+) => {
   // 1. Evaluate and collect eligible options
   let eligibleOptions = POST_OPTIONS.filter(opt => {
     try {
       return opt.condition(gameState)
     } catch (e) {
-      throw new StateError(`Condition failed for post option ${opt.id}`, { cause: e, meta: { optId: opt.id, gameState } })
+      throw new StateError(`Condition failed for post option ${opt.id}`, {
+        cause: e,
+        meta: { optId: opt.id, gameState }
+      })
     }
   })
 
-  const cooldownBlockedIds = ['recovery_apology_tour_promo', 'recovery_leaked_good_deed']
+  const cooldownBlockedIds = [
+    'recovery_apology_tour_promo',
+    'recovery_leaked_good_deed'
+  ]
   if ((gameState.social?.reputationCooldown || 0) > 0) {
-    eligibleOptions = eligibleOptions.filter(opt => !cooldownBlockedIds.includes(opt.id))
+    eligibleOptions = eligibleOptions.filter(
+      opt => !cooldownBlockedIds.includes(opt.id)
+    )
   }
 
   const results = []
 
   // 1a. Forced Sponsor Post Override
   // Check if there are active deals of type SPONSORSHIP.
-  const hasActiveSponsor = gameState.social?.activeDeals && gameState.social.activeDeals.some(d => d.type === 'SPONSORSHIP')
+  const hasActiveSponsor =
+    gameState.social?.activeDeals &&
+    gameState.social.activeDeals.some(d => d.type === 'SPONSORSHIP')
   if (gameState.social?.sponsorActive || hasActiveSponsor) {
     // Force a specific commercial post or synthesize one
     const sponsorOpt = eligibleOptions.find(o => o.id === 'comm_sellout_ad')
@@ -82,7 +96,8 @@ export const generatePostOptions = (gigResult, gameState, rng = secureRandom) =>
   const weightedOptions = eligibleOptions.map(opt => {
     let weight = 1.0
     // Example: If very low money, boost crowdfund weight
-    if (opt.id === 'comm_crowdfund' && gameState.player.money < 100) weight += 50
+    if (opt.id === 'comm_crowdfund' && gameState.player.money < 100)
+      weight += 50
 
     // Trend Matching Bonus
     const currentTrend = gameState.social?.trend
@@ -92,7 +107,8 @@ export const generatePostOptions = (gigResult, gameState, rng = secureRandom) =>
         (currentTrend === 'DRAMA' && opt.category === 'Drama') ||
         (currentTrend === 'TECH' && opt.category === 'Commercial') || // Tech usually commercial/gear
         (currentTrend === 'MUSIC' && opt.category === 'Performance') ||
-        (currentTrend === 'WHOLESOME' && (opt.category === 'Lifestyle' || opt.badges?.includes('🛡️'))) // Wholesome logic
+        (currentTrend === 'WHOLESOME' &&
+          (opt.category === 'Lifestyle' || opt.badges?.includes('🛡️'))) // Wholesome logic
 
       if (isMatch) weight += 10.0
     }
@@ -123,9 +139,15 @@ export const generatePostOptions = (gigResult, gameState, rng = secureRandom) =>
  * @param {number} [diceRoll=secureRandom()] - Random number between 0 and 1.
  * @returns {object} The full resolution map containing success, followers, and side effects.
  */
-export const resolvePost = (postOption, gameState, diceRoll = secureRandom()) => {
+export const resolvePost = (
+  postOption,
+  gameState,
+  diceRoll = secureRandom()
+) => {
   if (!postOption.resolve) {
-    throw new StateError(`Post option ${postOption.id} is missing a resolve function.`)
+    throw new StateError(
+      `Post option ${postOption.id} is missing a resolve function.`
+    )
   }
 
   try {
@@ -152,7 +174,10 @@ export const resolvePost = (postOption, gameState, diceRoll = secureRandom()) =>
       influencerUpdate: result.influencerUpdate
     }
   } catch (e) {
-    throw new StateError(`Resolution failed for post ${postOption.id}`, { cause: e, meta: { optId: postOption.id, gameState } })
+    throw new StateError(`Resolution failed for post ${postOption.id}`, {
+      cause: e,
+      meta: { optId: postOption.id, gameState }
+    })
   }
 }
 
@@ -180,9 +205,9 @@ export const calculateSocialGrowth = (
   const multiplier = platformData ? platformData.multiplier : 1.0
 
   // Loyalty shield: reduces the penalty of low performance
-  const effectivePerf = Math.min(100, performance + (loyalty * 0.5))
+  const effectivePerf = Math.min(100, performance + loyalty * 0.5)
   let baseGrowth = Math.max(0, effectivePerf - 50) * 0.5 // e.g. 80 score -> 15 base
-  
+
   // Shadowban / Cancel Culture penalty
   if (controversyLevel >= 80) {
     // High controversy leads to negative growth (Cancel Culture)
@@ -191,9 +216,9 @@ export const calculateSocialGrowth = (
     baseGrowth = -Math.abs(baseGrowth * penaltyFactor)
   }
 
-  const viralBonus = isViral ? (currentFollowers * 0.1) + 100 : 0
+  const viralBonus = isViral ? currentFollowers * 0.1 + 100 : 0
 
-  return Math.floor((baseGrowth * multiplier) + viralBonus)
+  return Math.floor(baseGrowth * multiplier + viralBonus)
 }
 
 /**
@@ -203,7 +228,11 @@ export const calculateSocialGrowth = (
  * @param {number} [legacyRoll=secureRandom()] - Legacy roll argument (only used if options is number).
  * @returns {boolean} True if viral event occurs
  */
-export const checkViralEvent = (stats, options = {}, legacyRoll = secureRandom()) => {
+export const checkViralEvent = (
+  stats,
+  options = {},
+  legacyRoll = secureRandom()
+) => {
   // Backwards compatibility handling
   let modifiers = 0
   let roll = legacyRoll
@@ -274,30 +303,99 @@ export const generateDailyTrend = (rng = secureRandom) => {
  * @returns {string} Generated brand name.
  */
 export const generateBrandName = (baseName, alignment, rng = secureRandom) => {
-  const pick = (arr) => arr[Math.floor(rng() * arr.length)]
+  const pick = arr => arr[Math.floor(rng() * arr.length)]
 
   if (alignment === BRAND_ALIGNMENTS.EVIL) {
-    const prefixes = ['Toxic', 'Neon', 'Quantum', 'Hyper', 'Radioactive', 'Cyber', 'Acid', 'Vile']
-    const suffixes = ['Rush', 'Blast', 'Surge', 'Core', 'Sludge', 'Venom', 'Waste', 'X']
+    const prefixes = [
+      'Toxic',
+      'Neon',
+      'Quantum',
+      'Hyper',
+      'Radioactive',
+      'Cyber',
+      'Acid',
+      'Vile'
+    ]
+    const suffixes = [
+      'Rush',
+      'Blast',
+      'Surge',
+      'Core',
+      'Sludge',
+      'Venom',
+      'Waste',
+      'X'
+    ]
     const types = ['Energy', 'Systems', 'Labs', 'Corp', 'Chemicals']
     return `${pick(prefixes)} ${pick(suffixes)} ${pick(types)}`
   }
 
   if (alignment === BRAND_ALIGNMENTS.CORPORATE) {
-    const prefixes = ['Global', 'United', 'Apex', 'Summit', 'Prime', 'Omni', 'Macro', 'Elite']
-    const suffixes = ['Dynamics', 'Solutions', 'Holdings', 'Ventures', 'Capital', 'Industries', 'Group']
+    const prefixes = [
+      'Global',
+      'United',
+      'Apex',
+      'Summit',
+      'Prime',
+      'Omni',
+      'Macro',
+      'Elite'
+    ]
+    const suffixes = [
+      'Dynamics',
+      'Solutions',
+      'Holdings',
+      'Ventures',
+      'Capital',
+      'Industries',
+      'Group'
+    ]
     return `${pick(prefixes)} ${pick(suffixes)}`
   }
 
   if (alignment === BRAND_ALIGNMENTS.INDIE) {
-    const prefixes = ['Void', 'Abyss', 'Shadow', 'Underground', 'Basement', 'Garage', 'Lo-Fi', 'Raw']
-    const suffixes = ['Records', 'Audio', 'Tapes', 'Sound', 'Collective', 'Zine', 'Press']
+    const prefixes = [
+      'Void',
+      'Abyss',
+      'Shadow',
+      'Underground',
+      'Basement',
+      'Garage',
+      'Lo-Fi',
+      'Raw'
+    ]
+    const suffixes = [
+      'Records',
+      'Audio',
+      'Tapes',
+      'Sound',
+      'Collective',
+      'Zine',
+      'Press'
+    ]
     return `${pick(prefixes)} ${pick(suffixes)}`
   }
 
   if (alignment === BRAND_ALIGNMENTS.SUSTAINABLE) {
-    const prefixes = ['Green', 'Eco', 'Pure', 'Nature', 'Gaia', 'Solar', 'Bio', 'Earth']
-    const suffixes = ['Path', 'Roots', 'Harvest', 'Bloom', 'Cycle', 'Life', 'Leaf']
+    const prefixes = [
+      'Green',
+      'Eco',
+      'Pure',
+      'Nature',
+      'Gaia',
+      'Solar',
+      'Bio',
+      'Earth'
+    ]
+    const suffixes = [
+      'Path',
+      'Roots',
+      'Harvest',
+      'Bloom',
+      'Cycle',
+      'Life',
+      'Leaf'
+    ]
     const types = ['Snacks', 'Wear', 'Gear', 'Organics', 'Co-op']
     return `${pick(prefixes)}${pick(suffixes)} ${pick(types)}`
   }
@@ -319,14 +417,17 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
   // Filter available deals
   const eligibleDeals = BRAND_DEALS.filter(deal => {
     // Check followers
-    const totalFollowers = (social.instagram || 0) + (social.tiktok || 0) + (social.youtube || 0)
+    const totalFollowers =
+      (social.instagram || 0) + (social.tiktok || 0) + (social.youtube || 0)
     if (totalFollowers < deal.requirements.followers) return false
 
     // Check trend match
-    if (social.trend && !deal.requirements.trend.includes(social.trend)) return false
+    if (social.trend && !deal.requirements.trend.includes(social.trend))
+      return false
 
     // Check trait match (if required trait exists in band)
-    if (deal.requirements.trait && !bandHasTrait(band, deal.requirements.trait)) return false
+    if (deal.requirements.trait && !bandHasTrait(band, deal.requirements.trait))
+      return false
 
     // Check if already active
     if (social.activeDeals?.some(d => d.id === deal.id)) return false
@@ -359,10 +460,10 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
 
     // Base chance 0.3
     // Rep bonus: 0.003 per point (100 rep = +0.3)
-    let chance = 0.3 + (rep * 0.003)
+    let chance = 0.3 + rep * 0.003
 
     // Penalty for negative rep if we allow it, or just 0
-    if (rep < 0) chance += (rep * 0.005) // Higher penalty for bad rep
+    if (rep < 0) chance += rep * 0.005 // Higher penalty for bad rep
 
     if (rng() < chance) {
       // Generate dynamic name
@@ -382,7 +483,12 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
  * @param {Function} rng - Random number generator.
  * @returns {object} { success: boolean, deal: object, feedback: string, status: 'ACCEPTED'|'REVOKED'|'FAILED' }
  */
-export const negotiateDeal = (deal, strategy, gameState, rng = secureRandom) => {
+export const negotiateDeal = (
+  deal,
+  strategy,
+  gameState,
+  rng = secureRandom
+) => {
   const band = gameState.band
   let successChance = 0.5
   let feedback = ''

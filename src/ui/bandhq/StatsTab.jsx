@@ -11,16 +11,17 @@ export const StatsTab = ({ player, band, social }) => {
             CAREER STATUS
           </h3>
           <div className='grid grid-cols-2 gap-4'>
-            <StatBox
-              label='Funds'
-              value={`${player.money}€`}
-              icon='€'
-            />
+            <StatBox label='Funds' value={`${player.money}€`} icon='€' />
             <StatBox label='Fame' value={player.fame} icon='★' />
             <StatBox label='Day' value={player.day} icon='📅' />
             <StatBox
               label='Followers'
-              value={(social.instagram ?? 0) + (social.tiktok ?? 0) + (social.youtube ?? 0) + (social.newsletter ?? 0)}
+              value={
+                (social.instagram ?? 0) +
+                (social.tiktok ?? 0) +
+                (social.youtube ?? 0) +
+                (social.newsletter ?? 0)
+              }
               icon='👥'
             />
           </div>

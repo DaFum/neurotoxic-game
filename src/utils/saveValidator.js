@@ -92,19 +92,25 @@ const validateSocial = social => {
     }
 
     if (key === 'activeDeals') {
-      if (!Array.isArray(val)) throw new Error('social.activeDeals must be an array')
+      if (!Array.isArray(val))
+        throw new Error('social.activeDeals must be an array')
       val.forEach((deal, i) => {
-        if (!deal || typeof deal !== 'object') throw new Error(`activeDeals[${i}] must be an object`)
-        if (typeof deal.id !== 'string') throw new Error(`activeDeals[${i}].id must be a string`)
-        if (typeof deal.remainingGigs !== 'number') throw new Error(`activeDeals[${i}].remainingGigs must be a number`)
+        if (!deal || typeof deal !== 'object')
+          throw new Error(`activeDeals[${i}] must be an object`)
+        if (typeof deal.id !== 'string')
+          throw new Error(`activeDeals[${i}].id must be a string`)
+        if (typeof deal.remainingGigs !== 'number')
+          throw new Error(`activeDeals[${i}].remainingGigs must be a number`)
       })
       return
     }
 
     if (key === 'brandReputation') {
-      if (typeof val !== 'object' || Array.isArray(val)) throw new Error('social.brandReputation must be an object')
+      if (typeof val !== 'object' || Array.isArray(val))
+        throw new Error('social.brandReputation must be an object')
       Object.entries(val).forEach(([align, score]) => {
-        if (typeof score !== 'number') throw new Error(`brandReputation.${align} must be a number`)
+        if (typeof score !== 'number')
+          throw new Error(`brandReputation.${align} must be a number`)
       })
       return
     }

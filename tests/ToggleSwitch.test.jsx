@@ -9,7 +9,7 @@ describe('ToggleSwitch', () => {
 
   test('renders correctly with ON state', () => {
     const { getByRole, getByText } = render(
-      <ToggleSwitch isOn={true} onToggle={() => {}} ariaLabel="Test Switch" />
+      <ToggleSwitch isOn={true} onToggle={() => {}} ariaLabel='Test Switch' />
     )
 
     const switchButton = getByRole('switch')
@@ -24,7 +24,7 @@ describe('ToggleSwitch', () => {
 
   test('renders correctly with OFF state', () => {
     const { getByRole, getByText } = render(
-      <ToggleSwitch isOn={false} onToggle={() => {}} ariaLabel="Test Switch" />
+      <ToggleSwitch isOn={false} onToggle={() => {}} ariaLabel='Test Switch' />
     )
 
     const switchButton = getByRole('switch')
@@ -37,7 +37,11 @@ describe('ToggleSwitch', () => {
   test('calls onToggle when clicked', () => {
     const handleToggle = vi.fn()
     const { getByRole } = render(
-      <ToggleSwitch isOn={false} onToggle={handleToggle} ariaLabel="Test Switch" />
+      <ToggleSwitch
+        isOn={false}
+        onToggle={handleToggle}
+        ariaLabel='Test Switch'
+      />
     )
 
     const switchButton = getByRole('switch')
@@ -48,7 +52,11 @@ describe('ToggleSwitch', () => {
 
   test('has correct accessibility attributes', () => {
     const { getByRole } = render(
-      <ToggleSwitch isOn={true} onToggle={() => {}} ariaLabel="Accessible Switch" />
+      <ToggleSwitch
+        isOn={true}
+        onToggle={() => {}}
+        ariaLabel='Accessible Switch'
+      />
     )
 
     const switchButton = getByRole('switch')

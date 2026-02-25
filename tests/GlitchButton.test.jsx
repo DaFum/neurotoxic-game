@@ -1,8 +1,15 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi
+} from 'vitest'
 import { render, cleanup, fireEvent } from '@testing-library/react'
 import { GlitchButton } from '../src/ui/GlitchButton'
-
-
 
 describe('GlitchButton', () => {
   beforeEach(() => {
@@ -16,16 +23,19 @@ describe('GlitchButton', () => {
   })
 
   it('renders children correctly', () => {
-    const { getByText } = render(<GlitchButton onClick={() => {}}>Click Me</GlitchButton>)
+    const { getByText } = render(
+      <GlitchButton onClick={() => {}}>Click Me</GlitchButton>
+    )
     const button = getByText('Click Me')
     expect(button).toBeInTheDocument()
     expect(button).toHaveTextContent('Click Me')
-
   })
 
   it('handles click events', () => {
     const handleClick = vi.fn()
-    const { getByText } = render(<GlitchButton onClick={handleClick}>Click Me</GlitchButton>)
+    const { getByText } = render(
+      <GlitchButton onClick={handleClick}>Click Me</GlitchButton>
+    )
     const button = getByText('Click Me')
     fireEvent.click(button)
     expect(handleClick.mock.calls.length).toBe(1)
@@ -88,7 +98,11 @@ describe('GlitchButton', () => {
 
   it('forwards additional props to the button element', () => {
     const { getByRole } = render(
-      <GlitchButton onClick={() => {}} aria-label="Custom Label" data-testid="custom-btn">
+      <GlitchButton
+        onClick={() => {}}
+        aria-label='Custom Label'
+        data-testid='custom-btn'
+      >
         Props Test
       </GlitchButton>
     )

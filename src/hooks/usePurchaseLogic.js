@@ -49,7 +49,11 @@ export const usePurchaseLogic = ({
     item => {
       let cost = item.cost
       // Gear Nerd Trait: 20% discount on equipment (Money only to avoid fractional fame)
-      if (item.category === 'GEAR' && item.currency === 'money' && bandHasTrait(band, 'gear_nerd')) {
+      if (
+        item.category === 'GEAR' &&
+        item.currency === 'money' &&
+        bandHasTrait(band, 'gear_nerd')
+      ) {
         cost = Math.floor(cost * 0.8)
       }
       return cost
@@ -60,18 +64,21 @@ export const usePurchaseLogic = ({
   /**
    * Helper to add a van upgrade to the player patch if not already present.
    */
-  const addVanUpgrade = useCallback((playerPatch, upgradeId) => {
-    const currentUpgrades =
-      playerPatch.van?.upgrades ?? player.van?.upgrades ?? []
+  const addVanUpgrade = useCallback(
+    (playerPatch, upgradeId) => {
+      const currentUpgrades =
+        playerPatch.van?.upgrades ?? player.van?.upgrades ?? []
 
-    if (!currentUpgrades.includes(upgradeId)) {
-      return {
-        ...(playerPatch.van ?? player.van ?? {}),
-        upgrades: [...currentUpgrades, upgradeId]
+      if (!currentUpgrades.includes(upgradeId)) {
+        return {
+          ...(playerPatch.van ?? player.van ?? {}),
+          upgrades: [...currentUpgrades, upgradeId]
+        }
       }
-    }
-    return playerPatch.van ?? player.van ?? {}
-  }, [player.van])
+      return playerPatch.van ?? player.van ?? {}
+    },
+    [player.van]
+  )
 
   /**
    * Checks if an item is already owned
@@ -269,7 +276,10 @@ export const usePurchaseLogic = ({
           break
 
         case 'hq_room_label':
-          nextPlayerPatch.money = Math.max(0, (nextPlayerPatch.money ?? player.money ?? 0) + 500)
+          nextPlayerPatch.money = Math.max(
+            0,
+            (nextPlayerPatch.money ?? player.money ?? 0) + 500
+          )
           addToast('Signed! +500€ Advance.', 'success')
           break
 
@@ -430,7 +440,11 @@ export const usePurchaseLogic = ({
         updatePlayer(playerPatch)
 
         // Check Purchase Unlocks
-        const nextPlayer = { ...player, ...playerPatch, van: { ...player.van, ...playerPatch.van } }
+        const nextPlayer = {
+          ...player,
+          ...playerPatch,
+          van: { ...player.van, ...playerPatch.van }
+        }
         const nextBand = {
           ...band,
           ...(bandPatch || {}),
@@ -439,16 +453,25 @@ export const usePurchaseLogic = ({
 
         // Count ONLY gear items for gear_nerd check
         // Match inventory keys against item effect keys (e.g. 'strings' matches effect.item: 'strings')
-        const allGearItems = [...(HQ_ITEMS.gear || []), ...(HQ_ITEMS.instruments || [])]
-        const gearCount = Object.entries(nextBand.inventory || {}).filter(([key, value]) => {
-          const isOwned = value === true || (typeof value === 'number' && value > 0)
-          if (!isOwned) return false
-          const itemDef = allGearItems.find(i => {
-            const e = i.effect || i.effects?.[0]
-            return (e?.item === key) || i.id === key
-          })
-          return itemDef && (itemDef.category === 'GEAR' || itemDef.category === 'INSTRUMENT')
-        }).length
+        const allGearItems = [
+          ...(HQ_ITEMS.gear || []),
+          ...(HQ_ITEMS.instruments || [])
+        ]
+        const gearCount = Object.entries(nextBand.inventory || {}).filter(
+          ([key, value]) => {
+            const isOwned =
+              value === true || (typeof value === 'number' && value > 0)
+            if (!isOwned) return false
+            const itemDef = allGearItems.find(i => {
+              const e = i.effect || i.effects?.[0]
+              return e?.item === key || i.id === key
+            })
+            return (
+              itemDef &&
+              (itemDef.category === 'GEAR' || itemDef.category === 'INSTRUMENT')
+            )
+          }
+        ).length
 
         const purchaseUnlocks = checkTraitUnlocks(
           { player: nextPlayer, band: nextBand, social: {} },
@@ -456,13 +479,21 @@ export const usePurchaseLogic = ({
         )
 
         if (purchaseUnlocks.length > 0) {
-          const traitResult = applyTraitUnlocks({ band: nextBand, toasts: [] }, purchaseUnlocks)
+          const traitResult = applyTraitUnlocks(
+            { band: nextBand, toasts: [] },
+            purchaseUnlocks
+          )
 
           // Apply combined band patch with trait unlock members
-          updateBand({ ...(bandPatch || {}), members: traitResult.band.members })
+          updateBand({
+            ...(bandPatch || {}),
+            members: traitResult.band.members
+          })
 
           // Show generated toasts
-          traitResult.toasts.forEach(t => { addToast(t.message, t.type) })
+          traitResult.toasts.forEach(t => {
+            addToast(t.message, t.type)
+          })
         } else {
           // No unlocks — apply original bandPatch if it existed
           if (bandPatch) updateBand(bandPatch)
@@ -503,7 +534,8 @@ export const usePurchaseLogic = ({
     item => {
       const effect = getPrimaryEffect(item)
       if (!effect) return true
-      if (item.requiresReputation && (social?.controversyLevel || 0) >= 50) return true
+      if (item.requiresReputation && (social?.controversyLevel || 0) >= 50)
+        return true
       const isConsumable = effect.type === 'inventory_add'
       const isOwned = isItemOwned(item)
       return (isOwned && !isConsumable) || !canAfford(item)

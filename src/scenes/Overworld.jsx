@@ -10,7 +10,10 @@ import { BandHQ } from '../ui/BandHQ'
 import { GlitchButton } from '../ui/GlitchButton'
 import { ALL_VENUES } from '../data/venues'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
-import { EXPENSE_CONSTANTS, calculateEffectiveTicketPrice } from '../utils/economyEngine'
+import {
+  EXPENSE_CONSTANTS,
+  calculateEffectiveTicketPrice
+} from '../utils/economyEngine'
 import { audioManager } from '../utils/AudioManager'
 
 /**
@@ -147,7 +150,7 @@ export const Overworld = () => {
   // Memoized connection rendering
   const renderedConnections = useMemo(() => {
     if (!gameMap) return null
-    return gameMap.connections.map((conn) => {
+    return gameMap.connections.map(conn => {
       const start = gameMap.nodes[conn.from]
       const end = gameMap.nodes[conn.to]
       if (!start || !end) return null
@@ -184,7 +187,9 @@ export const Overworld = () => {
       else if (node.type === 'FINALE') iconUrl = pinFinaleUrl
 
       const effectivePrice = calculateEffectiveTicketPrice(node.venue || {}, {
-        discountedTickets: activeStoryFlags?.includes('discounted_tickets_active')
+        discountedTickets: activeStoryFlags?.includes(
+          'discounted_tickets_active'
+        )
       })
 
       return (

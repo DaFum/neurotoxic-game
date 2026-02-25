@@ -49,10 +49,13 @@ export const useTourbusLogic = () => {
 
   const moveRight = useCallback(() => {
     if (gameStateRef.current.isGameOver) return
-    gameStateRef.current.busLane = Math.min(LANE_COUNT - 1, gameStateRef.current.busLane + 1)
+    gameStateRef.current.busLane = Math.min(
+      LANE_COUNT - 1,
+      gameStateRef.current.busLane + 1
+    )
   }, [])
 
-  const spawnObstacle = (time) => {
+  const spawnObstacle = time => {
     const lane = Math.floor(Math.random() * LANE_COUNT)
     const type = Math.random() > 0.8 ? 'FUEL' : 'OBSTACLE' // 20% chance for fuel
     gameStateRef.current.obstacles.push({
@@ -70,113 +73,123 @@ export const useTourbusLogic = () => {
     upgradesRef.current = player.van?.upgrades || []
   }, [player.van?.upgrades])
 
-  const update = useCallback((deltaMS) => {
-    const game = gameStateRef.current
-    if (game.isGameOver) return
+  const update = useCallback(
+    deltaMS => {
+      const game = gameStateRef.current
+      if (game.isGameOver) return
 
-    // Update stats ref for Pixi
-    statsRef.current.health = Math.max(0, 100 - game.damage)
-    statsRef.current.isGameOver = game.isGameOver
+      // Update stats ref for Pixi
+      statsRef.current.health = Math.max(0, 100 - game.damage)
+      statsRef.current.isGameOver = game.isGameOver
 
-    // Progression: Speed increases with distance
-    // Reach Max Speed at 80% of target distance
-    const progress = Math.min(1, game.distance / (TARGET_DISTANCE * 0.8))
-    game.speed = BASE_SPEED + (MAX_SPEED - BASE_SPEED) * progress
+      // Progression: Speed increases with distance
+      // Reach Max Speed at 80% of target distance
+      const progress = Math.min(1, game.distance / (TARGET_DISTANCE * 0.8))
+      game.speed = BASE_SPEED + (MAX_SPEED - BASE_SPEED) * progress
 
-    // Spawn Rate scales with speed to maintain constant spatial density.
-    // Rate = (BASE_SPEED * SPAWN_RATE_MS) / currentSpeed
-    // We maintain a density where obstacles appear at consistent distances relative to speed.
-    // We also apply a clamp (600ms) to ensure it doesn't get unplayably fast if speed were to spike.
-    const currentSpawnRate = Math.max(600, (BASE_SPEED * SPAWN_RATE_MS) / game.speed)
+      // Spawn Rate scales with speed to maintain constant spatial density.
+      // Rate = (BASE_SPEED * SPAWN_RATE_MS) / currentSpeed
+      // We maintain a density where obstacles appear at consistent distances relative to speed.
+      // We also apply a clamp (600ms) to ensure it doesn't get unplayably fast if speed were to spike.
+      const currentSpawnRate = Math.max(
+        600,
+        (BASE_SPEED * SPAWN_RATE_MS) / game.speed
+      )
 
-    // Move Distance
-    game.distance += game.speed * deltaMS
+      // Move Distance
+      game.distance += game.speed * deltaMS
 
-    // Spawn Obstacles
-    game.lastSpawnTime += deltaMS
-    if (game.lastSpawnTime > currentSpawnRate) {
-      spawnObstacle(performance.now())
-      game.lastSpawnTime = 0
-    }
+      // Spawn Obstacles
+      game.lastSpawnTime += deltaMS
+      if (game.lastSpawnTime > currentSpawnRate) {
+        spawnObstacle(performance.now())
+        game.lastSpawnTime = 0
+      }
 
-    // Move Obstacles & Collision
-    const survivingObstacles = []
+      // Move Obstacles & Collision
+      const survivingObstacles = []
 
-    // Speed of obstacles relative to bus.
-    // If we assume camera follows bus, objects move down.
-    // Speed in % of screen height per ms.
-    // Let's say 0.05 units per ms -> 50% screen per second.
-    const obstacleSpeed = game.speed
+      // Speed of obstacles relative to bus.
+      // If we assume camera follows bus, objects move down.
+      // Speed in % of screen height per ms.
+      // Let's say 0.05 units per ms -> 50% screen per second.
+      const obstacleSpeed = game.speed
 
-    game.obstacles.forEach(obs => {
-      obs.y += obstacleSpeed * deltaMS
+      game.obstacles.forEach(obs => {
+        obs.y += obstacleSpeed * deltaMS
 
-      let collided = false
-      if (
-        !obs.collided &&
-        obs.y > BUS_Y_PERCENT &&
-        obs.y < BUS_Y_PERCENT + BUS_HEIGHT_PERCENT &&
-        obs.lane === game.busLane
-      ) {
-        collided = true
-        obs.collided = true
-        if (obs.type === 'OBSTACLE') {
-          // Damage Mitigation
-          let hitDamage = 10
-          // Prioritize Armor (2) over Bullbar (5)
-          if (hasUpgrade(upgradesRef.current, 'van_armor')) {
-            hitDamage = 2
-          } else if (hasUpgrade(upgradesRef.current, 'van_bullbar')) {
-            hitDamage = 5
+        let collided = false
+        if (
+          !obs.collided &&
+          obs.y > BUS_Y_PERCENT &&
+          obs.y < BUS_Y_PERCENT + BUS_HEIGHT_PERCENT &&
+          obs.lane === game.busLane
+        ) {
+          collided = true
+          obs.collided = true
+          if (obs.type === 'OBSTACLE') {
+            // Damage Mitigation
+            let hitDamage = 10
+            // Prioritize Armor (2) over Bullbar (5)
+            if (hasUpgrade(upgradesRef.current, 'van_armor')) {
+              hitDamage = 2
+            } else if (hasUpgrade(upgradesRef.current, 'van_bullbar')) {
+              hitDamage = 5
+            }
+
+            game.damage = Math.max(0, Math.min(100, game.damage + hitDamage))
+            audioManager.playSFX('crash') // Play SFX immediately on collision
+          } else if (obs.type === 'FUEL') {
+            game.itemsCollected.push('FUEL')
+            audioManager.playSFX('pickup')
           }
-
-          game.damage = Math.max(0, Math.min(100, game.damage + hitDamage))
-          audioManager.playSFX('crash') // Play SFX immediately on collision
-        } else if (obs.type === 'FUEL') {
-           game.itemsCollected.push('FUEL')
-           audioManager.playSFX('pickup')
         }
-      }
 
-      if (obs.y < 120) { // Keep if strictly less than 120 (buffer below screen)
-         survivingObstacles.push(obs)
-      }
-    })
-    gameStateRef.current.obstacles = survivingObstacles
-
-    // Check Win/Loss
-    if (game.distance >= TARGET_DISTANCE && !game.isGameOver) {
-      game.isGameOver = true
-      completeTravelMinigame(game.damage, game.itemsCollected)
-    }
-
-    // Sync UI occasionally
-    setUiState(prev => {
-      // Optimize updates to avoid React thrashing
-      const distDiff = Math.abs(prev.distance - game.distance)
-
-      // SFX Triggers moved to main update loop to avoid double-fire in Strict Mode
-
-      // Check items collected logic requires separate tracking or relying on game loop event
-      // Since itemsCollected is an array, we can track length in UI state or just fire here?
-      // Mutable game state doesn't allow "diff" easily unless we store prev in ref.
-      // But here we are inside update loop. We know if we just collided.
-
-      if (distDiff > 50 || prev.damage !== game.damage || prev.isGameOver !== game.isGameOver) {
-        return {
-          distance: Math.floor(game.distance),
-          damage: game.damage,
-          isGameOver: game.isGameOver
+        if (obs.y < 120) {
+          // Keep if strictly less than 120 (buffer below screen)
+          survivingObstacles.push(obs)
         }
-      }
-      return prev
-    })
+      })
+      gameStateRef.current.obstacles = survivingObstacles
 
-  }, [completeTravelMinigame])
+      // Check Win/Loss
+      if (game.distance >= TARGET_DISTANCE && !game.isGameOver) {
+        game.isGameOver = true
+        completeTravelMinigame(game.damage, game.itemsCollected)
+      }
+
+      // Sync UI occasionally
+      setUiState(prev => {
+        // Optimize updates to avoid React thrashing
+        const distDiff = Math.abs(prev.distance - game.distance)
+
+        // SFX Triggers moved to main update loop to avoid double-fire in Strict Mode
+
+        // Check items collected logic requires separate tracking or relying on game loop event
+        // Since itemsCollected is an array, we can track length in UI state or just fire here?
+        // Mutable game state doesn't allow "diff" easily unless we store prev in ref.
+        // But here we are inside update loop. We know if we just collided.
+
+        if (
+          distDiff > 50 ||
+          prev.damage !== game.damage ||
+          prev.isGameOver !== game.isGameOver
+        ) {
+          return {
+            distance: Math.floor(game.distance),
+            damage: game.damage,
+            isGameOver: game.isGameOver
+          }
+        }
+        return prev
+      })
+    },
+    [completeTravelMinigame]
+  )
 
   // Setup keyboard controls
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKeyDown = e => {
       if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
         e.preventDefault()
         moveLeft()
@@ -192,7 +205,11 @@ export const useTourbusLogic = () => {
         gameStateRef.current.distance = TARGET_DISTANCE
         gameStateRef.current.isGameOver = true
         completeTravelMinigame(0, [])
-        setUiState(prev => ({ ...prev, distance: TARGET_DISTANCE, isGameOver: true }))
+        setUiState(prev => ({
+          ...prev,
+          distance: TARGET_DISTANCE,
+          isGameOver: true
+        }))
       }
     }
     window.addEventListener('keydown', handleKeyDown)

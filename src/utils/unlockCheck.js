@@ -13,7 +13,7 @@ export const checkTraitUnlocks = (state, context = {}) => {
   const members = band?.members || []
 
   // Helpers to find members
-  const getMember = (name) => members.find(m => m.name === name)
+  const getMember = name => members.find(m => m.name === name)
   const Matze = getMember(CHARACTERS.MATZE.name)
   const Marius = getMember(CHARACTERS.MARIUS.name)
   const Lars = getMember(CHARACTERS.LARS.name)
@@ -42,7 +42,7 @@ export const checkTraitUnlocks = (state, context = {}) => {
 
     // Melodic Genius (Lars): Slow Song (<120 BPM) && Max Combo > 30
     if (Lars && !hasTrait(Lars, 'melodic_genius')) {
-      const isSlow = (typeof song?.bpm === 'number') && song.bpm < 120
+      const isSlow = typeof song?.bpm === 'number' && song.bpm < 120
       if (isSlow && maxCombo > 30) {
         newUnlocks.push({ memberId: Lars.name, traitId: 'melodic_genius' })
       }
@@ -73,7 +73,10 @@ export const checkTraitUnlocks = (state, context = {}) => {
 
     // Party Animal (Marius): Own a Beer Fridge
     if (Marius && !hasTrait(Marius, 'party_animal')) {
-      if (item?.id === 'hq_room_cheap_beer_fridge' || (player.hqUpgrades || []).includes('hq_room_cheap_beer_fridge')) {
+      if (
+        item?.id === 'hq_room_cheap_beer_fridge' ||
+        (player.hqUpgrades || []).includes('hq_room_cheap_beer_fridge')
+      ) {
         newUnlocks.push({ memberId: Marius.name, traitId: 'party_animal' })
       }
     }
@@ -125,7 +128,10 @@ export const checkTraitUnlocks = (state, context = {}) => {
 
     // Grudge Holder (Matze): Relationship < 30
     if (Matze && !hasTrait(Matze, 'grudge_holder')) {
-      if (Matze.relationships && Object.values(Matze.relationships).some(score => score < 30)) {
+      if (
+        Matze.relationships &&
+        Object.values(Matze.relationships).some(score => score < 30)
+      ) {
         newUnlocks.push({ memberId: Matze.name, traitId: 'grudge_holder' })
       }
     }

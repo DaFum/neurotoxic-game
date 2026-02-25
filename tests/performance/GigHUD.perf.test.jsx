@@ -1,17 +1,23 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi
+} from 'vitest'
 
 import { render, fireEvent, cleanup } from '@testing-library/react'
 
-
 // Mock HecklerOverlay to avoid animation loops and isolate the test
 vi.mock('../../src/components/HecklerOverlay.jsx', () => ({
-    HecklerOverlay: () => <div data-testid="heckler-overlay-mock" />
-  }))
+  HecklerOverlay: () => <div data-testid='heckler-overlay-mock' />
+}))
 afterEach(cleanup)
 
 test('GigHUD: renders lane inputs and handles interactions', async () => {
-
-
   const { GigHUD } = await import('../../src/components/GigHUD.jsx')
 
   const stats = {
@@ -28,7 +34,11 @@ test('GigHUD: renders lane inputs and handles interactions', async () => {
   const onLaneInput = vi.fn()
 
   const { getByRole, getAllByRole, rerender } = render(
-    <GigHUD stats={stats} gameStateRef={gameStateRef} onLaneInput={onLaneInput} />
+    <GigHUD
+      stats={stats}
+      gameStateRef={gameStateRef}
+      onLaneInput={onLaneInput}
+    />
   )
 
   // Verify 3 lane inputs are rendered
@@ -62,7 +72,13 @@ test('GigHUD: renders lane inputs and handles interactions', async () => {
 
   // Re-render with new stats (simulate game loop update)
   const newStats = { ...stats, score: 100 }
-  rerender(<GigHUD stats={newStats} gameStateRef={gameStateRef} onLaneInput={onLaneInput} />)
+  rerender(
+    <GigHUD
+      stats={newStats}
+      gameStateRef={gameStateRef}
+      onLaneInput={onLaneInput}
+    />
+  )
 
   // Verify interactions still work after re-render
   fireEvent.mouseDown(laneInputs[2]) // Bass lane

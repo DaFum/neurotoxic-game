@@ -113,7 +113,14 @@ const mockGameState = {
     members: [{ name: 'Matze', mood: 50, stamina: 50 }],
     inventory: { golden_pick: false }
   },
-  social: { instagram: 100, tiktok: 100, youtube: 100, newsletter: 100, loyalty: 0, controversyLevel: 0 },
+  social: {
+    instagram: 100,
+    tiktok: 100,
+    youtube: 100,
+    newsletter: 100,
+    loyalty: 0,
+    controversyLevel: 0
+  },
   lastGigStats: { score: 20000, accuracy: 80 },
   activeEvent: null
 }
@@ -127,9 +134,12 @@ test('generatePostOptions returns array of exactly 3 options', () => {
 
 // Removed redundant and flaky expected-option test
 test('generatePostOptions forces sponsor post if active', () => {
-  const sponsoredState = { ...mockGameState, social: { ...mockGameState.social, sponsorActive: true, instagram: 6000 } }
+  const sponsoredState = {
+    ...mockGameState,
+    social: { ...mockGameState.social, sponsorActive: true, instagram: 6000 }
+  }
   const options = generatePostOptions({}, sponsoredState)
-  
+
   const sponsorOpt = options.find(opt => opt.id === 'comm_sellout_ad')
   assert.ok(sponsorOpt, 'Should include forced sponsor ad')
 })
@@ -298,7 +308,9 @@ test('checkViralEvent handles random roll with modifiers', () => {
 test('checkViralEvent uses calculateViralityScore when context is provided', () => {
   const stats = { accuracy: 80, maxCombo: 10 }
   // Use Lars as he usually has the trait, but specific name not required by current logic, just trait existence
-  const band = { members: [{ name: 'Lars', traits: [{ id: 'social_manager' }] }] }
+  const band = {
+    members: [{ name: 'Lars', traits: [{ id: 'social_manager' }] }]
+  }
   const context = {
     perfScore: 80,
     band,

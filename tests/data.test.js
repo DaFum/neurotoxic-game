@@ -84,8 +84,6 @@ test('SONGS_DB sourceOgg field', () => {
   })
 })
 
-
-
 test('ALL_VENUES data integrity', () => {
   assert.ok(Array.isArray(ALL_VENUES))
   ALL_VENUES.forEach(venue => {

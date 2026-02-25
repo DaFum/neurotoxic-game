@@ -9,14 +9,20 @@ describe('secureRandom', () => {
 
   beforeEach(() => {
     // Save original globals
-    originalCryptoDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'crypto')
-    originalWindowDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'window')
+    originalCryptoDescriptor = Object.getOwnPropertyDescriptor(
+      globalThis,
+      'crypto'
+    )
+    originalWindowDescriptor = Object.getOwnPropertyDescriptor(
+      globalThis,
+      'window'
+    )
     originalRandom = Math.random
 
     // Polyfill window if not present to avoid ReferenceError in tests
     // In Node.js, accessing an undeclared 'window' variable throws ReferenceError
     if (!originalWindowDescriptor) {
-       globalThis.window = undefined;
+      globalThis.window = undefined
     }
   })
 
@@ -40,7 +46,7 @@ describe('secureRandom', () => {
 
   test('should use crypto.getRandomValues when available', () => {
     const mockCrypto = {
-      getRandomValues: (array) => {
+      getRandomValues: array => {
         array[0] = 1234567890
         return array
       }
@@ -57,7 +63,7 @@ describe('secureRandom', () => {
 
   test('should return 0 when random value is 0', () => {
     const mockCrypto = {
-      getRandomValues: (array) => {
+      getRandomValues: array => {
         array[0] = 0
         return array
       }
@@ -74,8 +80,8 @@ describe('secureRandom', () => {
 
   test('should return correct value for max uint32', () => {
     const mockCrypto = {
-      getRandomValues: (array) => {
-        array[0] = 0xFFFFFFFF
+      getRandomValues: array => {
+        array[0] = 0xffffffff
         return array
       }
     }
@@ -86,7 +92,7 @@ describe('secureRandom', () => {
     })
 
     const result = secureRandom()
-    assert.equal(result, 0xFFFFFFFF / 4294967296)
+    assert.equal(result, 0xffffffff / 4294967296)
   })
 
   test('should fallback to Math.random when crypto is undefined', () => {
@@ -105,7 +111,7 @@ describe('secureRandom', () => {
   })
 
   test('should fallback to Math.random when getRandomValues is missing', () => {
-     Object.defineProperty(globalThis, 'crypto', {
+    Object.defineProperty(globalThis, 'crypto', {
       value: {},
       configurable: true
     })

@@ -4,48 +4,66 @@ import React from 'react'
 
 // Mock dependencies
 vi.mock('../../src/components/HecklerOverlay.jsx', () => ({
-  HecklerOverlay: () => <div data-testid="heckler-overlay-mock" />
+  HecklerOverlay: () => <div data-testid='heckler-overlay-mock' />
 }))
 
 // Mock sub-components with tracking
 // We must wrap mocks in React.memo to simulate the real components behavior,
 // otherwise they will re-render on every parent render regardless of props.
-const ScoreDisplaySpy = vi.fn(() => <div data-testid="score-display" />)
+const ScoreDisplaySpy = vi.fn(() => <div data-testid='score-display' />)
 const ScoreDisplayMock = React.memo(ScoreDisplaySpy)
 
-const HealthBarSpy = vi.fn(() => <div data-testid="health-bar" />)
+const HealthBarSpy = vi.fn(() => <div data-testid='health-bar' />)
 const HealthBarMock = React.memo(HealthBarSpy)
 
-const ComboDisplaySpy = vi.fn(() => <div data-testid="combo-display" />)
+const ComboDisplaySpy = vi.fn(() => <div data-testid='combo-display' />)
 const ComboDisplayMock = React.memo(ComboDisplaySpy)
 
-const OverloadMeterSpy = vi.fn(() => <div data-testid="overload-meter" />)
+const OverloadMeterSpy = vi.fn(() => <div data-testid='overload-meter' />)
 const OverloadMeterMock = React.memo(OverloadMeterSpy)
 
-const LaneInputAreaSpy = vi.fn(() => <div data-testid="lane-input-area" />)
+const LaneInputAreaSpy = vi.fn(() => <div data-testid='lane-input-area' />)
 const LaneInputAreaMock = React.memo(LaneInputAreaSpy)
 
-const ControlsHintSpy = vi.fn(() => <div data-testid="controls-hint" />)
+const ControlsHintSpy = vi.fn(() => <div data-testid='controls-hint' />)
 const ControlsHintMock = React.memo(ControlsHintSpy)
 
-const PauseButtonSpy = vi.fn(() => <div data-testid="pause-button" />)
+const PauseButtonSpy = vi.fn(() => <div data-testid='pause-button' />)
 const PauseButtonMock = React.memo(PauseButtonSpy)
 
-const ToxicModeFlashSpy = vi.fn(() => <div data-testid="toxic-mode-flash" />)
+const ToxicModeFlashSpy = vi.fn(() => <div data-testid='toxic-mode-flash' />)
 const ToxicModeFlashMock = React.memo(ToxicModeFlashSpy)
 
-const GameOverOverlaySpy = vi.fn(() => <div data-testid="game-over-overlay" />)
+const GameOverOverlaySpy = vi.fn(() => <div data-testid='game-over-overlay' />)
 const GameOverOverlayMock = React.memo(GameOverOverlaySpy)
 
-vi.mock('../../src/components/hud/ScoreDisplay.jsx', () => ({ ScoreDisplay: ScoreDisplayMock }))
-vi.mock('../../src/components/hud/HealthBar.jsx', () => ({ HealthBar: HealthBarMock }))
-vi.mock('../../src/components/hud/ComboDisplay.jsx', () => ({ ComboDisplay: ComboDisplayMock }))
-vi.mock('../../src/components/hud/OverloadMeter.jsx', () => ({ OverloadMeter: OverloadMeterMock }))
-vi.mock('../../src/components/hud/LaneInputArea.jsx', () => ({ LaneInputArea: LaneInputAreaMock }))
-vi.mock('../../src/components/hud/ControlsHint.jsx', () => ({ ControlsHint: ControlsHintMock }))
-vi.mock('../../src/components/hud/PauseButton.jsx', () => ({ PauseButton: PauseButtonMock }))
-vi.mock('../../src/components/hud/ToxicModeFlash.jsx', () => ({ ToxicModeFlash: ToxicModeFlashMock }))
-vi.mock('../../src/components/hud/GameOverOverlay.jsx', () => ({ GameOverOverlay: GameOverOverlayMock }))
+vi.mock('../../src/components/hud/ScoreDisplay.jsx', () => ({
+  ScoreDisplay: ScoreDisplayMock
+}))
+vi.mock('../../src/components/hud/HealthBar.jsx', () => ({
+  HealthBar: HealthBarMock
+}))
+vi.mock('../../src/components/hud/ComboDisplay.jsx', () => ({
+  ComboDisplay: ComboDisplayMock
+}))
+vi.mock('../../src/components/hud/OverloadMeter.jsx', () => ({
+  OverloadMeter: OverloadMeterMock
+}))
+vi.mock('../../src/components/hud/LaneInputArea.jsx', () => ({
+  LaneInputArea: LaneInputAreaMock
+}))
+vi.mock('../../src/components/hud/ControlsHint.jsx', () => ({
+  ControlsHint: ControlsHintMock
+}))
+vi.mock('../../src/components/hud/PauseButton.jsx', () => ({
+  PauseButton: PauseButtonMock
+}))
+vi.mock('../../src/components/hud/ToxicModeFlash.jsx', () => ({
+  ToxicModeFlash: ToxicModeFlashMock
+}))
+vi.mock('../../src/components/hud/GameOverOverlay.jsx', () => ({
+  GameOverOverlay: GameOverOverlayMock
+}))
 
 afterEach(() => {
   cleanup()

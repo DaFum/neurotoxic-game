@@ -389,7 +389,8 @@ export const useRhythmGameAudio = ({
         gameStateRef.current.notes = notes
         gameStateRef.current.nextMissCheckIndex = 0
         // Signal NoteManager to reset its render pointer for the new song
-        gameStateRef.current.notesVersion = gameStateRef.current.notesVersion + 1
+        gameStateRef.current.notesVersion =
+          gameStateRef.current.notesVersion + 1
 
         const maxNoteTime = notes.reduce((max, n) => Math.max(max, n.time), 0)
         const buffer = 4000
@@ -416,7 +417,6 @@ export const useRhythmGameAudio = ({
 
       // Start the first song
       await playSongAtIndex(0)
-
     } catch (error) {
       handleError(error, {
         addToast,

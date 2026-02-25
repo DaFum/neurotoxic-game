@@ -47,7 +47,11 @@ describe('Extended Social & Trait Systems', () => {
       // Assuming at least one Drama option is available in POST_OPTIONS
       const firstOption = options[0]
       // Note: POST_OPTIONS must have Drama items. 'drama_leaked_dms' is one.
-      assert.strictEqual(firstOption.category, 'Drama', 'Top weighted option should be the trending category (Drama)')
+      assert.strictEqual(
+        firstOption.category,
+        'Drama',
+        'Top weighted option should be the trending category (Drama)'
+      )
     })
   })
 
@@ -77,7 +81,11 @@ describe('Extended Social & Trait Systems', () => {
 
       const mockRng = () => 0.1
       const offers = generateBrandOffers(gameState, mockRng)
-      assert.strictEqual(offers.length, 0, 'Should return no offers for poor band')
+      assert.strictEqual(
+        offers.length,
+        0,
+        'Should return no offers for poor band'
+      )
     })
   })
 
@@ -88,8 +96,18 @@ describe('Extended Social & Trait Systems', () => {
       assert.ok(normal > 0, 'Should grow normally')
 
       // Cancel culture (Controversy 90)
-      const canceled = calculateSocialGrowth('instagram', 80, 1000, false, 90, 0)
-      assert.ok(canceled < 0, `Should have negative growth with high controversy, got ${canceled}`)
+      const canceled = calculateSocialGrowth(
+        'instagram',
+        80,
+        1000,
+        false,
+        90,
+        0
+      )
+      assert.ok(
+        canceled < 0,
+        `Should have negative growth with high controversy, got ${canceled}`
+      )
     })
   })
 
@@ -121,7 +139,9 @@ describe('Extended Social & Trait Systems', () => {
         }
       }
       const unlocks = checkTraitUnlocks(state, context)
-      assert.deepStrictEqual(unlocks, [{ memberId: 'Lars', traitId: 'melodic_genius' }])
+      assert.deepStrictEqual(unlocks, [
+        { memberId: 'Lars', traitId: 'melodic_genius' }
+      ])
     })
 
     it('Unlocks Tech Wizard for Matze on technical song accuracy', () => {
@@ -138,7 +158,9 @@ describe('Extended Social & Trait Systems', () => {
         }
       }
       const unlocks = checkTraitUnlocks(state, context)
-      const hasTechWizard = unlocks.some(u => u.memberId === 'Matze' && u.traitId === 'tech_wizard')
+      const hasTechWizard = unlocks.some(
+        u => u.memberId === 'Matze' && u.traitId === 'tech_wizard'
+      )
       assert.ok(hasTechWizard, 'Should unlock tech_wizard')
     })
 
@@ -155,7 +177,9 @@ describe('Extended Social & Trait Systems', () => {
         type: 'EVENT_RESOLVED'
       }
       const unlocks = checkTraitUnlocks(state, context)
-      assert.deepStrictEqual(unlocks, [{ memberId: 'Marius', traitId: 'showman' }])
+      assert.deepStrictEqual(unlocks, [
+        { memberId: 'Marius', traitId: 'showman' }
+      ])
     })
   })
 })

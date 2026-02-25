@@ -46,7 +46,10 @@ export const resolveSongPlaybackWindow = (song, options = {}) => {
     : null
 
   const excerptDurationMs =
-    derivedDurationMs ?? explicitDurationMs ?? authoredDurationMs ?? defaultDurationMs
+    derivedDurationMs ??
+    explicitDurationMs ??
+    authoredDurationMs ??
+    defaultDurationMs
 
   return { excerptStartMs, excerptEndMs, excerptDurationMs }
 }

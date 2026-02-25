@@ -79,15 +79,20 @@ export const GlitchButton = ({
     >
       <span
         className={`relative z-10 flex items-center justify-center gap-2 ${
-          isIntervention || variant === 'owned' ? '' : 'group-hover:animate-pulse'
+          isIntervention || variant === 'owned'
+            ? ''
+            : 'group-hover:animate-pulse'
         } ${isLoading ? 'opacity-0' : 'opacity-100'}`}
       >
         {children}
       </span>
 
       {isLoading && (
-        <span className='absolute inset-0 flex items-center justify-center z-20' aria-hidden="true">
-          <Loader2 className='animate-spin w-5 h-5' aria-hidden="true" />
+        <span
+          className='absolute inset-0 flex items-center justify-center z-20'
+          aria-hidden='true'
+        >
+          <Loader2 className='animate-spin w-5 h-5' aria-hidden='true' />
         </span>
       )}
 

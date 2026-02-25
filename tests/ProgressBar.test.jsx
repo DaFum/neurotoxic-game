@@ -1,4 +1,13 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi
+} from 'vitest'
 
 import { render, cleanup } from '@testing-library/react'
 
@@ -7,10 +16,8 @@ import { ProgressBar } from '../src/ui/shared/index.jsx'
 afterEach(cleanup)
 
 test('ProgressBar: renders default correctly', () => {
-
-
   const { container } = render(
-    <ProgressBar label="Test" value={50} max={100} color="bg-(--blood-red)" />
+    <ProgressBar label='Test' value={50} max={100} color='bg-(--blood-red)' />
   )
 
   // Should have label
@@ -23,10 +30,14 @@ test('ProgressBar: renders default correctly', () => {
 })
 
 test('ProgressBar: renders mini variant correctly', () => {
-
-
   const { container } = render(
-    <ProgressBar label="Mini" value={20} max={100} color="bg-(--condition-blue)" size="mini" />
+    <ProgressBar
+      label='Mini'
+      value={20}
+      max={100}
+      color='bg-(--condition-blue)'
+      size='mini'
+    />
   )
 
   // Should NOT have label or value
@@ -43,10 +54,14 @@ test('ProgressBar: renders mini variant correctly', () => {
 })
 
 test('ProgressBar: applies warn animation', () => {
-
-
   const { container } = render(
-    <ProgressBar label="Warn" value={10} max={100} color="bg-(--warning-yellow)" warn={true} />
+    <ProgressBar
+      label='Warn'
+      value={10}
+      max={100}
+      color='bg-(--warning-yellow)'
+      warn={true}
+    />
   )
 
   const innerBar = container.querySelector('.animate-fuel-warning')
@@ -54,10 +69,14 @@ test('ProgressBar: applies warn animation', () => {
 })
 
 test('ProgressBar: has accessibility attributes', () => {
-
-
   const { getByRole } = render(
-    <ProgressBar label="A11y Test" value={75} max={100} color="bg-(--toxic-green)" aria-label="Custom Label" />
+    <ProgressBar
+      label='A11y Test'
+      value={75}
+      max={100}
+      color='bg-(--toxic-green)'
+      aria-label='Custom Label'
+    />
   )
 
   const progressBar = getByRole('progressbar')

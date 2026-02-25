@@ -14,7 +14,7 @@ const mockAudioManager = {
   playSFX: mock.fn()
 }
 const mockGigStats = {
-  updateGigPerformanceStats: mock.fn((stats) => stats),
+  updateGigPerformanceStats: mock.fn(stats => stats),
   buildGigStatsSnapshot: mock.fn(() => ({ accuracy: 100 })),
   calculateAccuracy: mock.fn(() => 100)
 }
@@ -27,13 +27,18 @@ const mockRhythmUtils = {
 
 // Apply mocks
 mock.module('../src/utils/audioEngine.js', { namedExports: mockAudioEngine })
-mock.module('../src/utils/AudioManager.js', { namedExports: { audioManager: mockAudioManager } })
+mock.module('../src/utils/AudioManager.js', {
+  namedExports: { audioManager: mockAudioManager }
+})
 mock.module('../src/utils/gigStats.js', { namedExports: mockGigStats })
-mock.module('../src/utils/audio/timingUtils.js', { namedExports: mockTimingUtils })
+mock.module('../src/utils/audio/timingUtils.js', {
+  namedExports: mockTimingUtils
+})
 mock.module('../src/utils/rhythmUtils.js', { namedExports: mockRhythmUtils })
 
 // Import hook (must be after mocks)
-const { useRhythmGameScoring } = await import('../src/hooks/rhythmGame/useRhythmGameScoring.js')
+const { useRhythmGameScoring } =
+  await import('../src/hooks/rhythmGame/useRhythmGameScoring.js')
 
 describe('useRhythmGameScoring Game Over', () => {
   beforeEach(() => {
@@ -64,11 +69,11 @@ describe('useRhythmGameScoring Game Over', () => {
     const setters = {
       setScore: mock.fn(),
       setCombo: mock.fn(),
-      setHealth: mock.fn((updater) => {
+      setHealth: mock.fn(updater => {
         if (typeof updater === 'function') {
-           const newVal = updater(gameStateRef.current.health)
-           gameStateRef.current.health = newVal
-           return newVal
+          const newVal = updater(gameStateRef.current.health)
+          gameStateRef.current.health = newVal
+          return newVal
         }
         gameStateRef.current.health = updater
         return updater
@@ -85,11 +90,13 @@ describe('useRhythmGameScoring Game Over', () => {
       setLastGigStats: mock.fn()
     }
 
-    const { result } = renderHook(() => useRhythmGameScoring({
-      gameStateRef,
-      setters,
-      contextActions
-    }))
+    const { result } = renderHook(() =>
+      useRhythmGameScoring({
+        gameStateRef,
+        setters,
+        contextActions
+      })
+    )
 
     act(() => {
       // Trigger miss to reduce health below 0
@@ -98,8 +105,16 @@ describe('useRhythmGameScoring Game Over', () => {
     })
 
     // Check if stopAudio was called
-    assert.equal(mockAudioEngine.stopAudio.mock.calls.length, 1, 'stopAudio should be called')
+    assert.equal(
+      mockAudioEngine.stopAudio.mock.calls.length,
+      1,
+      'stopAudio should be called'
+    )
 
-    assert.equal(gameStateRef.current.isGameOver, true, 'isGameOver should be true on game over')
+    assert.equal(
+      gameStateRef.current.isGameOver,
+      true,
+      'isGameOver should be true on game over'
+    )
   })
 })

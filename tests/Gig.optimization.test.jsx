@@ -1,57 +1,68 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi
+} from 'vitest'
 
 /* eslint-disable @eslint-react/no-unnecessary-use-prefix */
 
 import React from 'react'
 import { render } from '@testing-library/react'
 
-
 // Mock dependencies before importing the component
-const getGenImageUrlMock = vi.fn((prompt) => `mocked-url-${prompt ? prompt.substring(0, 10) : 'none'}`)
+const getGenImageUrlMock = vi.fn(
+  prompt => `mocked-url-${prompt ? prompt.substring(0, 10) : 'none'}`
+)
 
 vi.mock('../src/utils/imageGen.js', () => ({
-    getGenImageUrl: getGenImageUrlMock,
-    IMG_PROMPTS: {
-      VENUE_CLUB: 'club',
-      VENUE_KAMINSTUBE: 'kaminstube',
-      VENUE_FESTIVAL: 'festival',
-      VENUE_DIVE_BAR: 'dive_bar',
-      VENUE_GALACTIC: 'galactic',
-      MATZE_PLAYING: 'matze_playing',
-      Marius_PLAYING: 'Marius_playing',
-      Lars_PLAYING: 'Lars_playing',
-      MATZE_ANGRY: 'matze_angry',
-      Marius_DRINKING: 'Marius_drinking',
-      Lars_IDLE: 'Lars_idle',
-      Lars_SCREAMING: 'Lars_screaming'
-    }
-  }))
+  getGenImageUrl: getGenImageUrlMock,
+  IMG_PROMPTS: {
+    VENUE_CLUB: 'club',
+    VENUE_KAMINSTUBE: 'kaminstube',
+    VENUE_FESTIVAL: 'festival',
+    VENUE_DIVE_BAR: 'dive_bar',
+    VENUE_GALACTIC: 'galactic',
+    MATZE_PLAYING: 'matze_playing',
+    Marius_PLAYING: 'Marius_playing',
+    Lars_PLAYING: 'Lars_playing',
+    MATZE_ANGRY: 'matze_angry',
+    Marius_DRINKING: 'Marius_drinking',
+    Lars_IDLE: 'Lars_idle',
+    Lars_SCREAMING: 'Lars_screaming'
+  }
+}))
 vi.mock('../src/components/PixiStage', () => ({
-    PixiStage: () => React.createElement('div', { 'data-testid': 'pixi-stage' })
-  }))
+  PixiStage: () => React.createElement('div', { 'data-testid': 'pixi-stage' })
+}))
 vi.mock('../src/components/GigHUD', () => ({
-    GigHUD: () => React.createElement('div', { 'data-testid': 'gig-hud' })
-  }))
+  GigHUD: () => React.createElement('div', { 'data-testid': 'gig-hud' })
+}))
 // Mock GlitchButton since it's used in Gig
 vi.mock('../src/ui/GlitchButton', () => ({
-    GlitchButton: ({ children, onClick }) => React.createElement('button', { type: 'button', onClick }, children)
-  }))
+  GlitchButton: ({ children, onClick }) =>
+    React.createElement('button', { type: 'button', onClick }, children)
+}))
 // Mock audioManager
 vi.mock('../src/utils/AudioManager', () => ({
-    audioManager: {
-      ensureAudioContext: vi.fn().mockResolvedValue(true)
-    }
-  }))
+  audioManager: {
+    ensureAudioContext: vi.fn().mockResolvedValue(true)
+  }
+}))
 // Mock audioEngine to prevent Tone.js initialization crash
 vi.mock('../src/utils/audioEngine', () => ({
-    pauseAudio: vi.fn(),
-    resumeAudio: vi.fn(),
-    stopAudio: vi.fn(),
-    setupAudio: vi.fn(),
-    ensureAudioContext: vi.fn().mockResolvedValue(true),
-    getAudioContextTimeSec: vi.fn().mockReturnValue(0),
-    getToneStartTimeSec: vi.fn().mockReturnValue(0),
-    disposeAudio: vi.fn()
+  pauseAudio: vi.fn(),
+  resumeAudio: vi.fn(),
+  stopAudio: vi.fn(),
+  setupAudio: vi.fn(),
+  ensureAudioContext: vi.fn().mockResolvedValue(true),
+  getAudioContextTimeSec: vi.fn().mockReturnValue(0),
+  getToneStartTimeSec: vi.fn().mockReturnValue(0),
+  disposeAudio: vi.fn()
 }))
 // Mock hooks
 const mockUseGameState = {
@@ -87,7 +98,7 @@ const mockUseGigEffects = {
   chaosContainerRef: { current: null },
   chaosStyle: {},
   triggerBandAnimation: vi.fn(),
-  setBandMemberRef: (_id) => (_el) => {}
+  setBandMemberRef: _id => _el => {}
 }
 
 const mockUseGigInput = {
@@ -96,17 +107,17 @@ const mockUseGigInput = {
 
 // We need to mock these modules to return our mock objects
 vi.mock('../src/context/GameState', () => ({
-    useGameState: () => mockUseGameState
-  }))
+  useGameState: () => mockUseGameState
+}))
 vi.mock('../src/hooks/useRhythmGameLogic', () => ({
-    useRhythmGameLogic: () => mockUseRhythmGameLogic
-  }))
+  useRhythmGameLogic: () => mockUseRhythmGameLogic
+}))
 vi.mock('../src/hooks/useGigEffects', () => ({
-    useGigEffects: () => mockUseGigEffects
-  }))
+  useGigEffects: () => mockUseGigEffects
+}))
 vi.mock('../src/hooks/useGigInput', () => ({
-    useGigInput: () => mockUseGigInput
-  }))
+  useGigInput: () => mockUseGigInput
+}))
 // Import Gig after mocking
 const { Gig } = await import('../src/scenes/Gig.jsx')
 
@@ -117,7 +128,6 @@ describe('Gig Optimization', () => {
   })
 
   afterEach(() => {
-
     vi.clearAllMocks()
   })
 
@@ -141,7 +151,10 @@ describe('Gig Optimization', () => {
     // and see if the memoization works. But here the hook is mocked globally.
 
     // Let's use a mutable stats object in our mock
-    mockUseRhythmGameLogic.stats = { ...mockUseRhythmGameLogic.stats, score: 100 }
+    mockUseRhythmGameLogic.stats = {
+      ...mockUseRhythmGameLogic.stats,
+      score: 100
+    }
 
     // Re-rendering the component. In a real app, the hook would return a new object, triggering re-render.
     // Here we manually rerender.

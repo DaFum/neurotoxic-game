@@ -15,11 +15,8 @@ import {
 
 const ASYNC_INIT_TIMEOUT_MS = 200
 
-const {
-  mockAudioManager,
-  mockAudioEngine,
-  mockRhythmUtils
-} = mockRhythmGameLogicDependencies
+const { mockAudioManager, mockAudioEngine, mockRhythmUtils } =
+  mockRhythmGameLogicDependencies
 
 const { useRhythmGameLogic } = await setupRhythmGameLogicTest()
 
@@ -36,7 +33,11 @@ describe('useRhythmGameLogic', () => {
     mockSetLastGigStats = createMockSetLastGigStats()
     mockEndGig = createMockEndGig()
 
-    setupDefaultMockImplementation(mockChangeScene, mockSetLastGigStats, mockEndGig)
+    setupDefaultMockImplementation(
+      mockChangeScene,
+      mockSetLastGigStats,
+      mockEndGig
+    )
 
     setupJSDOM()
   })
@@ -151,7 +152,7 @@ describe('useRhythmGameLogic', () => {
 
     // Wait for async callback
     await act(async () => {
-       await new Promise(r => setTimeout(r, 10))
+      await new Promise(r => setTimeout(r, 10))
     })
 
     assert.ok(mockEndGig.mock.calls.length >= 1)

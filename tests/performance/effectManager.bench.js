@@ -10,8 +10,8 @@ function runBaseline() {
     const effect = new PIXI.Graphics()
     effect.clear() // Simulate the code
     effect.circle(0, 0, 40)
-    effect.fill({ color: 0xFFFFFF, alpha: 0.8 })
-    effect.stroke({ width: 4, color: 0xFF0000 })
+    effect.fill({ color: 0xffffff, alpha: 0.8 })
+    effect.stroke({ width: 4, color: 0xff0000 })
 
     // Mimic property setting
     effect.x = 100
@@ -36,7 +36,7 @@ function runOptimized() {
   for (let i = 0; i < ITERATIONS; i++) {
     const effect = new PIXI.Sprite(texture)
     effect.anchor.set(0.5)
-    effect.tint = 0xFF0000
+    effect.tint = 0xff0000
 
     // Mimic property setting
     effect.x = 100
@@ -62,7 +62,9 @@ const baselineTime = runBaseline()
 console.log(`Baseline (New Graphics per effect): ${baselineTime.toFixed(2)}ms`)
 
 const optimizedTime = runOptimized()
-console.log(`Optimized (Reuse Sprite w/ Texture): ${optimizedTime.toFixed(2)}ms`)
+console.log(
+  `Optimized (Reuse Sprite w/ Texture): ${optimizedTime.toFixed(2)}ms`
+)
 
 const improvement = baselineTime - optimizedTime
 const percent = (improvement / baselineTime) * 100

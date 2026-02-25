@@ -1,7 +1,15 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi
+} from 'vitest'
 
 import { render, fireEvent, cleanup, act } from '@testing-library/react'
-
 
 const listeners = new Set()
 
@@ -30,11 +38,11 @@ const audioManagerMock = {
 }
 
 vi.mock('../src/utils/AudioManager', () => ({
-    audioManager: audioManagerMock
-  }))
+  audioManager: audioManagerMock
+}))
 beforeEach(() => {
-    cleanup()
-    listeners.clear()
+  cleanup()
+  listeners.clear()
 })
 
 test('ToggleRadio reacts to external playback changes and user toggles', async t => {

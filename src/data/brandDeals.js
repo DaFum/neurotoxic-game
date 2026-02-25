@@ -5,7 +5,8 @@ export const BRAND_DEALS = [
   {
     id: 'energy_drink_cx',
     name: 'Toxic Energy Drink',
-    description: 'The green stuff that glows. They want you to drink it on stage.',
+    description:
+      'The green stuff that glows. They want you to drink it on stage.',
     type: 'SPONSORSHIP',
     alignment: 'EVIL',
     requirements: {

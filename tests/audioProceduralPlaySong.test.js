@@ -40,7 +40,9 @@ const mockAudioState = {
   transportStopEventId: null,
   part: null
 }
-mock.module('../src/utils/audio/state.js', { namedExports: { audioState: mockAudioState } })
+mock.module('../src/utils/audio/state.js', {
+  namedExports: { audioState: mockAudioState }
+})
 
 // Mock Tone.js
 const mockTransport = {
@@ -74,11 +76,11 @@ const mockTone = {
   getTransport: mock.fn(() => mockTransport),
   Part: MockPart,
   now: mock.fn(() => 1000), // Fixed time: 1000s
-  Frequency: mock.fn((midi) => ({
+  Frequency: mock.fn(midi => ({
     toNote: () => 'C4',
     toFrequency: () => 440
   })),
-  Time: mock.fn((val) => ({
+  Time: mock.fn(val => ({
     toSeconds: () => 0.5
   }))
 }
@@ -86,7 +88,9 @@ mock.module('tone', { namedExports: mockTone })
 
 // Mock Setup
 const mockEnsureAudioContext = mock.fn(async () => true)
-mock.module('../src/utils/audio/setup.js', { namedExports: { ensureAudioContext: mockEnsureAudioContext } })
+mock.module('../src/utils/audio/setup.js', {
+  namedExports: { ensureAudioContext: mockEnsureAudioContext }
+})
 
 // Mock Playback
 const mockStopAudioInternal = mock.fn()
@@ -130,7 +134,7 @@ const { playSongFromData } = await import('../src/utils/audio/procedural.js')
 
 // --- Tests ---
 
-test('playSongFromData Tests', async (t) => {
+test('playSongFromData Tests', async t => {
   // Test Data
   const validSong = {
     bpm: 120,
@@ -178,69 +182,139 @@ test('playSongFromData Tests', async (t) => {
     const result = await playSongFromData(validSong)
 
     assert.strictEqual(result, true, 'Should return true on success')
-    assert.strictEqual(mockEnsureAudioContext.mock.calls.length, 1, 'Should check audio context')
-    assert.strictEqual(mockStopAudioInternal.mock.calls.length, 1, 'Should stop previous audio')
+    assert.strictEqual(
+      mockEnsureAudioContext.mock.calls.length,
+      1,
+      'Should check audio context'
+    )
+    assert.strictEqual(
+      mockStopAudioInternal.mock.calls.length,
+      1,
+      'Should stop previous audio'
+    )
 
     // Check Part creation
     assert.strictEqual(MockPart.instances.length, 1, 'Should create Tone.Part')
-    assert.strictEqual(MockPart.prototype.start.mock.calls.length, 1, 'Should start Tone.Part')
+    assert.strictEqual(
+      MockPart.prototype.start.mock.calls.length,
+      1,
+      'Should start Tone.Part'
+    )
 
     // Check Transport start
-    assert.strictEqual(mockTransport.start.mock.calls.length, 1, 'Should start Transport')
+    assert.strictEqual(
+      mockTransport.start.mock.calls.length,
+      1,
+      'Should start Transport'
+    )
     const startArgs = mockTransport.start.mock.calls[0].arguments
     assert.ok(startArgs[0] >= 1000.1, 'Start time should include lookahead')
   })
 
-  await t.test('AudioContext Locked: Returns false if context not ensured', async () => {
-    mockEnsureAudioContext.mock.mockImplementationOnce(async () => false)
-    const result = await playSongFromData(validSong)
+  await t.test(
+    'AudioContext Locked: Returns false if context not ensured',
+    async () => {
+      mockEnsureAudioContext.mock.mockImplementationOnce(async () => false)
+      const result = await playSongFromData(validSong)
 
-    assert.strictEqual(result, false, 'Should return false if audio context is locked')
-    assert.strictEqual(mockStopAudioInternal.mock.calls.length, 0, 'Should not stop audio if locked')
-  })
+      assert.strictEqual(
+        result,
+        false,
+        'Should return false if audio context is locked'
+      )
+      assert.strictEqual(
+        mockStopAudioInternal.mock.calls.length,
+        0,
+        'Should not stop audio if locked'
+      )
+    }
+  )
 
-  await t.test('Race Condition: Aborts if playRequestId changes during ensureContext', async () => {
-    mockEnsureAudioContext.mock.mockImplementationOnce(async () => {
-      mockAudioState.playRequestId++
-      return true
-    })
+  await t.test(
+    'Race Condition: Aborts if playRequestId changes during ensureContext',
+    async () => {
+      mockEnsureAudioContext.mock.mockImplementationOnce(async () => {
+        mockAudioState.playRequestId++
+        return true
+      })
 
-    const result = await playSongFromData(validSong)
+      const result = await playSongFromData(validSong)
 
-    assert.strictEqual(result, false, 'Should return false if request ID changed')
-    assert.strictEqual(mockStopAudioInternal.mock.calls.length, 0, 'Should not stop audio')
-  })
+      assert.strictEqual(
+        result,
+        false,
+        'Should return false if request ID changed'
+      )
+      assert.strictEqual(
+        mockStopAudioInternal.mock.calls.length,
+        0,
+        'Should not stop audio'
+      )
+    }
+  )
 
-  await t.test('Missing Components: Returns false if audio components missing', async () => {
-    mockAudioState.guitar = null
-    const result = await playSongFromData(validSong)
+  await t.test(
+    'Missing Components: Returns false if audio components missing',
+    async () => {
+      mockAudioState.guitar = null
+      const result = await playSongFromData(validSong)
 
-    assert.strictEqual(result, false, 'Should return false if guitar is missing')
-    assert.strictEqual(mockLogger.error.mock.calls.length, 1, 'Should log error')
-  })
+      assert.strictEqual(
+        result,
+        false,
+        'Should return false if guitar is missing'
+      )
+      assert.strictEqual(
+        mockLogger.error.mock.calls.length,
+        1,
+        'Should log error'
+      )
+    }
+  )
 
-  await t.test('Invalid Notes: Returns false if notes is not an array', async () => {
-    const invalidSong = { ...validSong, notes: null }
-    const result = await playSongFromData(invalidSong)
+  await t.test(
+    'Invalid Notes: Returns false if notes is not an array',
+    async () => {
+      const invalidSong = { ...validSong, notes: null }
+      const result = await playSongFromData(invalidSong)
 
-    assert.strictEqual(result, false, 'Should return false if notes is null')
-    assert.strictEqual(mockLogger.error.mock.calls.length, 1, 'Should log error')
-  })
+      assert.strictEqual(result, false, 'Should return false if notes is null')
+      assert.strictEqual(
+        mockLogger.error.mock.calls.length,
+        1,
+        'Should log error'
+      )
+    }
+  )
 
-  await t.test('No Valid Notes: Returns false if no valid notes found', async () => {
-    const invalidNotesSong = { ...validSong, notes: [{ t: -1, p: 60, v: 100 }] } // invalid time
-    const result = await playSongFromData(invalidNotesSong)
+  await t.test(
+    'No Valid Notes: Returns false if no valid notes found',
+    async () => {
+      const invalidNotesSong = {
+        ...validSong,
+        notes: [{ t: -1, p: 60, v: 100 }]
+      } // invalid time
+      const result = await playSongFromData(invalidNotesSong)
 
-    assert.strictEqual(result, false, 'Should return false if no valid notes')
-    assert.strictEqual(mockLogger.warn.mock.calls.length, 1, 'Should warn about no valid notes')
-  })
+      assert.strictEqual(result, false, 'Should return false if no valid notes')
+      assert.strictEqual(
+        mockLogger.warn.mock.calls.length,
+        1,
+        'Should warn about no valid notes'
+      )
+    }
+  )
 
   await t.test('onEnded: Schedules callback', async () => {
     const onEnded = mock.fn()
     const result = await playSongFromData(validSong, 0, { onEnded })
 
     assert.strictEqual(result, true)
-    assert.strictEqual(mockTransport.scheduleOnce.mock.calls.length, 1, 'Should schedule onEnded')
+    assert.strictEqual(
+      mockTransport.scheduleOnce.mock.calls.length,
+      1,
+      'Should schedule onEnded'
+    )
   })
 
   await t.test('Delay: Passes delay to Transport.start', async () => {
@@ -251,7 +325,11 @@ test('playSongFromData Tests', async (t) => {
     const startArgs = mockTransport.start.mock.calls[0].arguments
     // startTime = Tone.now() + Math.max(0.1, delay)
     // 1000 + 2 = 1002
-    assert.strictEqual(startArgs[0], 1002, 'Should pass delay to Transport.start time')
+    assert.strictEqual(
+      startArgs[0],
+      1002,
+      'Should pass delay to Transport.start time'
+    )
   })
 
   await t.test('Tempo Map: Handles tempo map', async () => {
@@ -267,6 +345,10 @@ test('playSongFromData Tests', async (t) => {
     const partEvents = MockPart.instances[0].events
     assert.strictEqual(partEvents.length, 3, 'Should create part with 3 events')
     // We expect times to be calculated
-    assert.strictEqual(typeof partEvents[0].time, 'number', 'Event time should be number')
+    assert.strictEqual(
+      typeof partEvents[0].time,
+      'number',
+      'Event time should be number'
+    )
   })
 })

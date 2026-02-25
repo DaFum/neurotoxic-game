@@ -7,7 +7,7 @@ import { GameOver } from '../src/scenes/GameOver.jsx'
 // Intercepts the game state to set up conditions for the GameOver screen
 const GameOverTestHarness = ({ children }) => {
   const { updatePlayer, player, currentScene } = useGameState()
-  
+
   useEffect(() => {
     if (player.score !== 100) {
       updatePlayer({ score: 100, day: 5, fame: 50, totalTravels: 2 })
@@ -15,10 +15,10 @@ const GameOverTestHarness = ({ children }) => {
   }, [player.score, updatePlayer])
 
   if (player.score !== 100) return <div>Setting up state...</div>
-  
+
   return (
     <div>
-      <div data-testid="scene">{currentScene}</div>
+      <div data-testid='scene'>{currentScene}</div>
       {children}
     </div>
   )
@@ -43,7 +43,7 @@ describe('GameOver Scene', () => {
         </GameOverTestHarness>
       </GameStateProvider>
     )
-    
+
     await findByText('SOLD OUT')
     expect(getByText('The tour has ended prematurely.')).toBeInTheDocument()
     expect(getByText('100')).toBeInTheDocument() // Score
@@ -59,14 +59,14 @@ describe('GameOver Scene', () => {
         </GameOverTestHarness>
       </GameStateProvider>
     )
-    
+
     await findByText('RETURN TO MENU')
     const returnBtn = getByText('RETURN TO MENU')
     fireEvent.click(returnBtn)
-    
+
     // We expect the scene to change to MENU
     await waitFor(() => {
-        expect(getByTestId('scene').textContent).toBe('MENU')
+      expect(getByTestId('scene').textContent).toBe('MENU')
     })
   })
 })

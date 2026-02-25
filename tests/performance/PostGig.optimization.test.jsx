@@ -12,7 +12,6 @@ describe('PostGig Optimization', () => {
 
   afterEach(() => {
     cleanup()
-
   })
 
   test('SocialPhase: buttons receive new onClick handlers on every render', async () => {
@@ -29,8 +28,11 @@ describe('PostGig Optimization', () => {
     const btn1 = getAllByRole('button')[0]
 
     // Helper to get React props from DOM node
-    const getProps = (node) => {
-      const key = Object.keys(node).find(k => k.startsWith('__reactProps$') || k.startsWith('__reactEventHandlers$'))
+    const getProps = node => {
+      const key = Object.keys(node).find(
+        k =>
+          k.startsWith('__reactProps$') || k.startsWith('__reactEventHandlers$')
+      )
       return key ? node[key] : null
     }
 

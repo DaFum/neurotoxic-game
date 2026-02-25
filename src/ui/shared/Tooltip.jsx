@@ -27,7 +27,7 @@ export const Tooltip = ({ children, content, className = '' }) => {
       {isVisible && (
         <div
           id={tooltipId}
-          role="tooltip"
+          role='tooltip'
           className='pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-(--void-black) border border-(--ash-gray) shadow-lg z-50 text-xs text-(--star-white)'
         >
           {content}

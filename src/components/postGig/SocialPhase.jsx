@@ -11,7 +11,7 @@ const SocialOptionButton = memo(({ opt, index, onSelect }) => {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 + index * 0.15 }}
-      className="h-full"
+      className='h-full'
     >
       <ActionButton
         onClick={handleClick}
@@ -22,7 +22,9 @@ const SocialOptionButton = memo(({ opt, index, onSelect }) => {
             {opt.name}
           </div>
           <div className='flex gap-1 text-sm bg-(--void-black)/50 px-1 rounded backdrop-blur-sm'>
-            {opt.badges?.map((b) => <span key={b}>{b}</span>)}
+            {opt.badges?.map(b => (
+              <span key={b}>{b}</span>
+            ))}
           </div>
         </div>
         <div className='text-xs text-(--ash-gray) font-mono space-y-1 mb-2 w-full z-10 relative'>
@@ -40,10 +42,10 @@ const SocialOptionButton = memo(({ opt, index, onSelect }) => {
         <div className='mt-auto pt-2 text-[10px] uppercase font-mono tracking-wider w-full z-10 relative'>
           <div className='flex flex-wrap gap-2'>
             {opt.badges?.includes('⚠️') && (
-               <span className="text-(--blood-red)">High Variance Risk</span>
+              <span className='text-(--blood-red)'>High Variance Risk</span>
             )}
             {opt.badges?.includes('🛡️') && (
-               <span className="text-(--toxic-green)">Consistent Growth</span>
+              <span className='text-(--toxic-green)'>Consistent Growth</span>
             )}
           </div>
         </div>

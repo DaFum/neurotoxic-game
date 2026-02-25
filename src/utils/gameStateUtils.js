@@ -64,9 +64,10 @@ export const applyEventDelta = (state, delta) => {
       nextPlayer.stats = { ...nextPlayer.stats }
       Object.keys(delta.player.stats).forEach(key => {
         if (typeof delta.player.stats[key] === 'number') {
-           nextPlayer.stats[key] = (nextPlayer.stats[key] || 0) + delta.player.stats[key]
+          nextPlayer.stats[key] =
+            (nextPlayer.stats[key] || 0) + delta.player.stats[key]
         } else {
-           nextPlayer.stats[key] = delta.player.stats[key]
+          nextPlayer.stats[key] = delta.player.stats[key]
         }
       })
     }
@@ -147,14 +148,21 @@ export const applyEventDelta = (state, delta) => {
       nextBand.members = nextBand.members.map(member => {
         let newRelationships = { ...member.relationships }
         let hasChanges = false
-        
+
         delta.band.relationshipChange.forEach(change => {
-          if (change.member1 === member.name || change.member2 === member.name) {
-            const otherMember = change.member1 === member.name ? change.member2 : change.member1
-            
+          if (
+            change.member1 === member.name ||
+            change.member2 === member.name
+          ) {
+            const otherMember =
+              change.member1 === member.name ? change.member2 : change.member1
+
             let amount = change.change
             // Apply traits
-            if (amount < 0 && member.traits?.some(t => t.id === 'grudge_holder')) {
+            if (
+              amount < 0 &&
+              member.traits?.some(t => t.id === 'grudge_holder')
+            ) {
               amount *= 1.5 // Grudge Holder amplifies negative
             }
             if (amount > 0 && member.traits?.some(t => t.id === 'peacemaker')) {
@@ -165,11 +173,14 @@ export const applyEventDelta = (state, delta) => {
             }
 
             const currentScore = newRelationships[otherMember] || 50
-            newRelationships[otherMember] = Math.max(0, Math.min(100, Math.round(currentScore + amount)))
+            newRelationships[otherMember] = Math.max(
+              0,
+              Math.min(100, Math.round(currentScore + amount))
+            )
             hasChanges = true
           }
         })
-        
+
         if (hasChanges) {
           return { ...member, relationships: newRelationships }
         }

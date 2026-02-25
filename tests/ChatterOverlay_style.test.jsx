@@ -12,7 +12,8 @@ vi.mock('../src/data/chatter.js', () => ({
 test('ChatterOverlay renders with correct z-index style', async () => {
   // Use a dynamic import to ensure mocks are applied if needed (though here we mock before import anyway)
   // But for consistency with existing tests:
-  const { ChatterOverlay } = await import('../src/components/ChatterOverlay.jsx')
+  const { ChatterOverlay } =
+    await import('../src/components/ChatterOverlay.jsx')
 
   const gameState = {
     currentScene: 'GIG',

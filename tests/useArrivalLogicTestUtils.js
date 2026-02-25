@@ -28,17 +28,17 @@ const deepMerge = (target, source) => {
   return target
 }
 
-export const setMockGameState = (overrides) => {
+export const setMockGameState = overrides => {
   // Simple deep merge for known structures or just use overrides if structure is simple
   // For simplicity in tests, we can just assign, but let's be safer
   // Actually, Object.assign is shallow. Let's do a slightly better merge for band/player
   if (overrides.band) {
-     Object.assign(mockGameState.band, overrides.band)
-     delete overrides.band // handled
+    Object.assign(mockGameState.band, overrides.band)
+    delete overrides.band // handled
   }
   if (overrides.player) {
-     Object.assign(mockGameState.player, overrides.player)
-     delete overrides.player
+    Object.assign(mockGameState.player, overrides.player)
+    delete overrides.player
   }
   Object.assign(mockGameState, overrides)
 }
@@ -70,7 +70,7 @@ mock.module('../src/context/GameState.jsx', {
 mock.module('../src/utils/gameStateUtils.js', {
   namedExports: {
     // Correct clamp: 1 to 100
-    clampBandHarmony: (val) => Math.min(100, Math.max(1, val))
+    clampBandHarmony: val => Math.min(100, Math.max(1, val))
   }
 })
 

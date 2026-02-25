@@ -11,7 +11,7 @@ export default defineConfig({
     include: ['tests/**/*.test.jsx', 'tests/**/*.spec.jsx'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'html']
     }
-  },
+  }
 })

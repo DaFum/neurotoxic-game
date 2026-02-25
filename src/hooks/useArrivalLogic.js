@@ -43,7 +43,10 @@ export const useArrivalLogic = ({ onShowHQ } = {}) => {
       // Only trigger travel events for non-GIG destinations.
       // GIG destinations get events in the PreGig scene instead.
       const currentNode = gameMap?.nodes[player.currentNodeId]
-      const isGigNode = currentNode?.type === 'GIG' || currentNode?.type === 'FESTIVAL' || currentNode?.type === 'FINALE'
+      const isGigNode =
+        currentNode?.type === 'GIG' ||
+        currentNode?.type === 'FESTIVAL' ||
+        currentNode?.type === 'FINALE'
 
       let travelEventActive = false
       if (!isGigNode) {
@@ -57,21 +60,21 @@ export const useArrivalLogic = ({ onShowHQ } = {}) => {
       // Delegates routing (HQ, Gig, Rest Stop) to shared utility
       if (currentNode) {
         handleNodeArrival({
-            node: currentNode,
-            band,
-            updateBand,
-            triggerEvent,
-            startGig,
-            addToast,
-            changeScene,
-            onShowHQ,
-            eventAlreadyActive: travelEventActive
+          node: currentNode,
+          band,
+          updateBand,
+          triggerEvent,
+          startGig,
+          addToast,
+          changeScene,
+          onShowHQ,
+          eventAlreadyActive: travelEventActive
         })
       }
 
       // Ensure we route to OVERWORLD if not a Gig/Festival/Finale where action is taken
       if (!isGigNode) {
-         changeScene('OVERWORLD')
+        changeScene('OVERWORLD')
       }
     } catch (e) {
       // If error, reset guard so user can try again

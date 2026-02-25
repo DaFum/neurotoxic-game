@@ -1,5 +1,9 @@
 import * as PIXI from 'pixi.js'
-import { calculateCrowdOffset, CROWD_LAYOUT, getPixiColorFromToken } from './utils.js'
+import {
+  calculateCrowdOffset,
+  CROWD_LAYOUT,
+  getPixiColorFromToken
+} from './utils.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { handleError } from '../../utils/errorHandler.js'
 
@@ -84,17 +88,11 @@ export class CrowdManager {
 
   update(combo, isToxicMode, timeMs) {
     const yOffset = calculateCrowdOffset({ combo, timeMs })
-    const nextColor = isToxicMode
-      ? 0x00ff41
-      : combo > 20
-        ? 0xffffff
-        : 0x555555
+    const nextColor = isToxicMode ? 0x00ff41 : combo > 20 ? 0xffffff : 0x555555
 
     const shouldMosh = isToxicMode || combo > 20
     const targetTexture =
-      shouldMosh && this.textures.mosh
-        ? this.textures.mosh
-        : this.textures.idle
+      shouldMosh && this.textures.mosh ? this.textures.mosh : this.textures.idle
 
     this.crowdMembers.forEach(member => {
       member.y = member.baseY - yOffset

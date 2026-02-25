@@ -16,7 +16,8 @@ const FinancialList = ({ items, type }) => (
         <span
           className={`${type === 'income' ? 'text-(--toxic-green)' : 'text-(--blood-red)'} font-bold tabular-nums`}
         >
-          {type === 'income' ? '+' : '-'}{item.value}€
+          {type === 'income' ? '+' : '-'}
+          {item.value}€
         </span>
       </motion.li>
     ))}
@@ -27,7 +28,8 @@ FinancialList.propTypes = {
   items: PropTypes.arrayOf(
     PropTypes.shape({
       label: PropTypes.string.isRequired,
-      value: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired
+      value: PropTypes.oneOfType([PropTypes.number, PropTypes.string])
+        .isRequired
     })
   ).isRequired,
   type: PropTypes.oneOf(['income', 'expense']).isRequired
@@ -35,7 +37,11 @@ FinancialList.propTypes = {
 
 export const ReportPhase = ({ financials, onNext }) => {
   if (!financials) {
-    return <div className="text-center font-mono animate-pulse">Loading Report...</div>
+    return (
+      <div className='text-center font-mono animate-pulse'>
+        Loading Report...
+      </div>
+    )
   }
 
   return (
@@ -50,7 +56,7 @@ export const ReportPhase = ({ financials, onNext }) => {
           <h3 className='text-lg border-b-2 border-(--toxic-green) mb-4 pb-2 tracking-widest font-mono text-(--toxic-green)'>
             INCOME
           </h3>
-          <FinancialList items={financials.income.breakdown} type="income" />
+          <FinancialList items={financials.income.breakdown} type='income' />
           <div className='mt-4 pt-2 border-t border-(--toxic-green)/40 flex justify-between font-bold text-(--toxic-green)'>
             <span className='text-sm tracking-wider'>TOTAL</span>
             <span className='tabular-nums'>{financials.income.total}€</span>
@@ -66,7 +72,7 @@ export const ReportPhase = ({ financials, onNext }) => {
           <h3 className='text-lg border-b-2 border-(--blood-red) text-(--blood-red) mb-4 pb-2 tracking-widest font-mono'>
             EXPENSES
           </h3>
-          <FinancialList items={financials.expenses.breakdown} type="expense" />
+          <FinancialList items={financials.expenses.breakdown} type='expense' />
           <div className='mt-4 pt-2 border-t border-(--blood-red)/40 flex justify-between font-bold text-(--blood-red)'>
             <span className='text-sm tracking-wider'>TOTAL</span>
             <span className='tabular-nums'>{financials.expenses.total}€</span>

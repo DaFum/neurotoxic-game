@@ -173,8 +173,6 @@ describe('rhythmUtils', () => {
     })
   })
 
-
-
   describe('parseSongNotes excerpt alignment', () => {
     // Notes in rhythm_songs.json are pre-extracted from the excerpt window:
     // tick 0 in the note array corresponds to the start of the excerpt, NOT
@@ -193,11 +191,11 @@ describe('rhythmUtils', () => {
         excerptStartMs: 36000, // Large value — must NOT shift note times
         excerptDurationMs: 1200,
         notes: [
-          { t: 0, lane: 'guitar' },   // 0 ms   — index 0 (kept by 1-in-4)
+          { t: 0, lane: 'guitar' }, // 0 ms   — index 0 (kept by 1-in-4)
           { t: 240, lane: 'guitar' }, // 250 ms  — index 1
           { t: 480, lane: 'guitar' }, // 500 ms  — index 2
           { t: 960, lane: 'guitar' }, // 1000 ms — index 3
-          { t: 1920, lane: 'drums' }  // 2000 ms — index 4 (> 1200 ms cap → excluded)
+          { t: 1920, lane: 'drums' } // 2000 ms — index 4 (> 1200 ms cap → excluded)
         ]
       }
 
@@ -210,7 +208,6 @@ describe('rhythmUtils', () => {
       assert.strictEqual(notes[0].laneIndex, 0) // guitar
     })
 
-
     test('uses resolved playback window (excerptEndMs priority) to cap note duration', () => {
       // excerptEndMs - excerptStartMs = 3500 - 1000 = 2500 ms cap (highest priority).
       // Note times are NOT shifted by excerptStartMs.
@@ -221,21 +218,21 @@ describe('rhythmUtils', () => {
         excerptStartMs: 1000,
         excerptEndMs: 3500,
         excerptDurationMs: 400, // overridden by derived cap (2500 ms)
-        durationMs: 900,        // overridden by derived cap (2500 ms)
+        durationMs: 900, // overridden by derived cap (2500 ms)
         notes: [
-          { t: 0, lane: 'guitar' },    // 0 ms    index 0  ✓ < 2500
-          { t: 240, lane: 'guitar' },  // 250 ms   index 1
-          { t: 480, lane: 'guitar' },  // 500 ms   index 2
-          { t: 960, lane: 'guitar' },  // 1000 ms  index 3
-          { t: 1920, lane: 'drums' },  // 2000 ms  index 4  ✓ < 2500
-          { t: 2400, lane: 'bass' },   // 2500 ms  index 5
+          { t: 0, lane: 'guitar' }, // 0 ms    index 0  ✓ < 2500
+          { t: 240, lane: 'guitar' }, // 250 ms   index 1
+          { t: 480, lane: 'guitar' }, // 500 ms   index 2
+          { t: 960, lane: 'guitar' }, // 1000 ms  index 3
+          { t: 1920, lane: 'drums' }, // 2000 ms  index 4  ✓ < 2500
+          { t: 2400, lane: 'bass' }, // 2500 ms  index 5
           { t: 2880, lane: 'guitar' }, // 3000 ms  index 6
-          { t: 3360, lane: 'drums' },  // 3500 ms  index 7
-          { t: 3840, lane: 'bass' },   // 4000 ms  index 8  > 2500 → excluded
+          { t: 3360, lane: 'drums' }, // 3500 ms  index 7
+          { t: 3840, lane: 'bass' }, // 4000 ms  index 8  > 2500 → excluded
           { t: 4320, lane: 'guitar' }, // 4500 ms  index 9
-          { t: 4800, lane: 'drums' },  // 5000 ms  index 10
-          { t: 5280, lane: 'bass' },   // 5500 ms  index 11
-          { t: 5760, lane: 'guitar' }  // 6000 ms  index 12 > 2500 → excluded
+          { t: 4800, lane: 'drums' }, // 5000 ms  index 10
+          { t: 5280, lane: 'bass' }, // 5500 ms  index 11
+          { t: 5760, lane: 'guitar' } // 6000 ms  index 12 > 2500 → excluded
         ]
       }
 
@@ -251,7 +248,6 @@ describe('rhythmUtils', () => {
       assert.strictEqual(notes[1].time, 2100)
       assert.strictEqual(notes[1].laneIndex, 1) // drums
     })
-
 
     test('does not impose a synthetic 30s excerpt cap when excerpt metadata is missing', () => {
       const song = {

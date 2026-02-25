@@ -74,7 +74,8 @@ export const IMG_PROMPTS = {
 
   // Marius (Drums)
   Marius_IDLE: 'pixel art metal drummer sitting behind kit waiting dark',
-  Marius_PLAYING: 'pixel art metal drummer blast beating fast blur sticks motion',
+  Marius_PLAYING:
+    'pixel art metal drummer blast beating fast blur sticks motion',
   Marius_DRINKING: 'pixel art metal drummer drinking beer cheers happy',
 
   // Lars (Bass)
@@ -91,8 +92,10 @@ export const IMG_PROMPTS = {
   NOTE_SKULL: 'pixel art white skull icon simple transparent background',
   NOTE_LIGHTNING:
     'pixel art green lightning bolt icon simple transparent background',
-  HIT_BLOOD: 'pixel art red blood splatter explosion isolated on solid black background no shadow',
-  HIT_TOXIC: 'pixel art toxic green explosion cloud isolated on solid black background no shadow',
+  HIT_BLOOD:
+    'pixel art red blood splatter explosion isolated on solid black background no shadow',
+  HIT_TOXIC:
+    'pixel art toxic green explosion cloud isolated on solid black background no shadow',
 
   // Map Icons
   ICON_VAN: 'pixel art black tour van side view small icon',
@@ -176,17 +179,28 @@ export const IMG_PROMPTS = {
   ITEM_HQ_SKULL: 'pixel art animal skull decoration icon',
 
   // Minigame - Tourbus
-  MINIGAME_ROAD: 'top down view dark asphalt highway road texture pixel art seamless tileable',
-  MINIGAME_OBSTACLE_ROCK: 'pixel art large rock boulder obstacle isolated on solid black background no shadow flat icon top down view',
-  MINIGAME_OBSTACLE_BARRIER: 'pixel art orange traffic cone isolated on solid black background no shadow flat icon top down view',
-  MINIGAME_FUEL: 'pixel art red gas jerrycan isolated on solid black background no shadow flat icon top down view',
+  MINIGAME_ROAD:
+    'top down view dark asphalt highway road texture pixel art seamless tileable',
+  MINIGAME_OBSTACLE_ROCK:
+    'pixel art large rock boulder obstacle isolated on solid black background no shadow flat icon top down view',
+  MINIGAME_OBSTACLE_BARRIER:
+    'pixel art orange traffic cone isolated on solid black background no shadow flat icon top down view',
+  MINIGAME_FUEL:
+    'pixel art red gas jerrycan isolated on solid black background no shadow flat icon top down view',
 
   // Minigame - Roadie
-  MINIGAME_ROADIE_IDLE: 'pixel art roadie character carrying heavy box isolated on solid black background no shadow top down view small sprite',
-  MINIGAME_CAR_A: 'pixel art red sedan car isolated on solid black background no shadow top down view small sprite',
-  MINIGAME_CAR_B: 'pixel art yellow sports car isolated on solid black background no shadow top down view small sprite',
-  MINIGAME_CAR_C: 'pixel art blue pickup truck isolated on solid black background no shadow top down view small sprite',
-  MINIGAME_ITEM_AMP: 'pixel art guitar amplifier isolated on solid black background no shadow flat icon small',
-  MINIGAME_ITEM_DRUMS: 'pixel art drum kit isolated on solid black background no shadow flat icon small',
-  MINIGAME_ITEM_GUITAR: 'pixel art guitar hard case isolated on solid black background no shadow flat icon small'
+  MINIGAME_ROADIE_IDLE:
+    'pixel art roadie character carrying heavy box isolated on solid black background no shadow top down view small sprite',
+  MINIGAME_CAR_A:
+    'pixel art red sedan car isolated on solid black background no shadow top down view small sprite',
+  MINIGAME_CAR_B:
+    'pixel art yellow sports car isolated on solid black background no shadow top down view small sprite',
+  MINIGAME_CAR_C:
+    'pixel art blue pickup truck isolated on solid black background no shadow top down view small sprite',
+  MINIGAME_ITEM_AMP:
+    'pixel art guitar amplifier isolated on solid black background no shadow flat icon small',
+  MINIGAME_ITEM_DRUMS:
+    'pixel art drum kit isolated on solid black background no shadow flat icon small',
+  MINIGAME_ITEM_GUITAR:
+    'pixel art guitar hard case isolated on solid black background no shadow flat icon small'
 }

@@ -46,7 +46,7 @@ const SIZE_CLASSES = {
   sm: 'h-3',
   md: 'h-5',
   mini: 'h-1.5'
-};
+}
 
 /**
  * ProgressBar - Displays a progress bar with label
@@ -98,7 +98,9 @@ export const ProgressBar = memo(function ProgressBar({
       )}
       <div
         className={`w-full bg-(--void-black) border ${
-          isMini ? 'border-(--ash-gray)/50 overflow-hidden' : 'border-(--ash-gray)'
+          isMini
+            ? 'border-(--ash-gray)/50 overflow-hidden'
+            : 'border-(--ash-gray)'
         } ${SIZE_CLASSES[size] || SIZE_CLASSES.mini}`}
       >
         <div
@@ -129,15 +131,15 @@ ProgressBar.propTypes = {
  * @param {string} [props.className] - Additional CSS classes.
  */
 export const Panel = ({ title, children, className = '' }) => (
-  <div className={`bg-(--void-black)/40 border border-(--ash-gray)/40 p-4 h-full ${className}`}>
+  <div
+    className={`bg-(--void-black)/40 border border-(--ash-gray)/40 p-4 h-full ${className}`}
+  >
     {title && (
       <h3 className='text-(--toxic-green) text-sm font-bold mb-3 border-b border-(--ash-gray)/40 pb-1 font-mono uppercase tracking-wider'>
         {title}
       </h3>
     )}
-    <div className='space-y-1'>
-      {children}
-    </div>
+    <div className='space-y-1'>{children}</div>
   </div>
 )
 

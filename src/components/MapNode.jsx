@@ -22,7 +22,10 @@ export const MapNode = memo(
     vanUrl,
     ticketPrice
   }) => {
-    const positionStyle = useMemo(() => ({ left: `${node.x}%`, top: `${node.y}%` }), [node.x, node.y])
+    const positionStyle = useMemo(
+      () => ({ left: `${node.x}%`, top: `${node.y}%` }),
+      [node.x, node.y]
+    )
 
     // Determine visuals based on props
     if (visibility === 'hidden' && node.type !== 'START') {
@@ -66,10 +69,7 @@ export const MapNode = memo(
         }
       >
         {isCurrent && !isTraveling && (
-          <div
-            className='absolute pointer-events-none z-50'
-            style={VAN_STYLE}
-          >
+          <div className='absolute pointer-events-none z-50' style={VAN_STYLE}>
             <img
               src={vanUrl}
               alt='Van'
@@ -110,9 +110,15 @@ export const MapNode = memo(
           <div className='font-bold text-(--toxic-green)'>
             {node.venue?.name || 'Unknown'}
           </div>
-          {(node.type === 'GIG' || node.type === 'FESTIVAL' || node.type === 'FINALE') && (
+          {(node.type === 'GIG' ||
+            node.type === 'FESTIVAL' ||
+            node.type === 'FINALE') && (
             <div className='text-[10px] text-(--ash-gray) font-mono'>
-              {node.type === 'FESTIVAL' && <div className='text-(--warning-yellow) font-bold mb-1'>FESTIVAL</div>}
+              {node.type === 'FESTIVAL' && (
+                <div className='text-(--warning-yellow) font-bold mb-1'>
+                  FESTIVAL
+                </div>
+              )}
               Cap: {node.venue?.capacity} | Pay: ~{node.venue?.pay}
               {'\u20AC'}
               <br />

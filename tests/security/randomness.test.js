@@ -42,15 +42,23 @@ test('eventEngine uses secureRandom for event selection', async () => {
     namedExports: { logger: { debug: mock.fn(), error: mock.fn() } }
   })
   mock.module('../../src/data/events/index.js', {
-    namedExports: { EVENTS_DB: { travel: [{ id: 'test', trigger: 'travel', chance: 0.5 }] } }
+    namedExports: {
+      EVENTS_DB: { travel: [{ id: 'test', trigger: 'travel', chance: 0.5 }] }
+    }
   })
 
   const { eventEngine } = await import('../../src/utils/eventEngine.js')
-  const { secureRandom: mockedSecureRandom } = await import('../../src/utils/crypto.js')
+  const { secureRandom: mockedSecureRandom } =
+    await import('../../src/utils/crypto.js')
 
   const state = {
-    player: {}, band: {}, social: {}, flags: {},
-    activeStoryFlags: [], eventCooldowns: [], pendingEvents: []
+    player: {},
+    band: {},
+    social: {},
+    flags: {},
+    activeStoryFlags: [],
+    eventCooldowns: [],
+    pendingEvents: []
   }
 
   mockedSecureRandom.mock.resetCalls()
@@ -59,5 +67,8 @@ test('eventEngine uses secureRandom for event selection', async () => {
   // checkEvent calls selectEvent
   // selectEvent calls secureRandom for Fisher-Yates shuffle (at least once if eligibleEvents.length > 1)
   // and for each event chance check.
-  assert.ok(mockedSecureRandom.mock.calls.length >= 1, 'secureRandom should have been called by eventEngine')
+  assert.ok(
+    mockedSecureRandom.mock.calls.length >= 1,
+    'secureRandom should have been called by eventEngine'
+  )
 })
