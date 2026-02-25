@@ -247,6 +247,7 @@ export const GIG_EVENTS = [
       {
         label: 'Let it happen [+200 Score]',
         effect: { type: 'stat', stat: 'score', value: 200 },
+        flags: ['stageDive'],
         outcomeText: 'Chaos fuels the song.'
       },
       {

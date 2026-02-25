@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import { memo, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Panel, Grid, ActionButton } from '../../ui/shared'
+import { Panel, ActionButton } from '../../ui/shared'
 
 const SocialOptionButton = memo(({ opt, index, onSelect }) => {
   const handleClick = useCallback(() => onSelect(opt), [onSelect, opt])
@@ -15,7 +15,7 @@ const SocialOptionButton = memo(({ opt, index, onSelect }) => {
     >
       <ActionButton
         onClick={handleClick}
-        className='flex flex-col h-full items-start justify-start p-4 min-h-[140px] text-left relative overflow-hidden'
+        className='flex flex-col h-full items-start justify-start p-4 min-h-[140px] text-left relative overflow-hidden w-full'
       >
         <div className='flex justify-between items-start mb-2 w-full z-10 relative'>
           <div className='font-bold text-lg leading-tight pr-2 group-hover:text-(--toxic-green) transition-colors'>
@@ -79,7 +79,7 @@ export const SocialPhase = ({ options, onSelect, trend }) => (
         CHOOSE YOUR STRATEGY
       </div>
     </div>
-    <Grid cols={3} gap={4}>
+    <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
       {options.map((opt, i) => (
         <SocialOptionButton
           key={opt.id}
@@ -88,7 +88,7 @@ export const SocialPhase = ({ options, onSelect, trend }) => (
           onSelect={onSelect}
         />
       ))}
-    </Grid>
+    </div>
   </Panel>
 )
 
