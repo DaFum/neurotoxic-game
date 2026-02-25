@@ -96,6 +96,7 @@ const validateSocial = social => {
       val.forEach((deal, i) => {
         if (!deal || typeof deal !== 'object') throw new Error(`activeDeals[${i}] must be an object`)
         if (typeof deal.id !== 'string') throw new Error(`activeDeals[${i}].id must be a string`)
+        if (typeof deal.remainingGigs !== 'number') throw new Error(`activeDeals[${i}].remainingGigs must be a number`)
       })
       return
     }

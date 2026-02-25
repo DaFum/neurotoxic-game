@@ -131,6 +131,29 @@ describe('saveValidator', () => {
       data.social.lastGigDay = 'not a number'
       assert.throws(() => validateSaveData(data), /Social value "lastGigDay" must be a number/)
     })
+
+    it('validates activeDeals correctly', () => {
+      const data = getValidData()
+      data.social.activeDeals = [
+        { id: 'deal1', remainingGigs: 3 }
+      ]
+      assert.strictEqual(validateSaveData(data), true)
+    })
+
+    it('throws if activeDeals is not an array', () => {
+      const data = getValidData()
+      data.social.activeDeals = 'invalid'
+      assert.throws(() => validateSaveData(data), /social.activeDeals must be an array/)
+    })
+
+    it('throws if activeDeals items are invalid', () => {
+      const data = getValidData()
+      data.social.activeDeals = [{ id: 123 }]
+      assert.throws(() => validateSaveData(data), /activeDeals\[0\].id must be a string/)
+
+      data.social.activeDeals = [{ id: 'deal1' }] // Missing remainingGigs
+      assert.throws(() => validateSaveData(data), /activeDeals\[0\].remainingGigs must be a number/)
+    })
   })
 
   describe('gameMap validation', () => {

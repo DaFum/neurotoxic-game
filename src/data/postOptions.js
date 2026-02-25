@@ -25,7 +25,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Performance',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
-    condition: ({ player, band }) => player.money > 500 && Array.isArray(band?.members),
+    condition: ({ player, band }) => player.money > 500 && Array.isArray(band?.members) && band.members.length > 0,
     resolve: ({ band, diceRoll }) => {
       // Pick a random member
       const memberNames = band.members.map(m => m.name)
@@ -65,7 +65,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Performance',
     badges: [POST_BADGES.RISK],
-    condition: ({ lastGigStats, band }) => lastGigStats && lastGigStats.score > 25000 && Array.isArray(band?.members),
+    condition: ({ lastGigStats, band }) => lastGigStats && lastGigStats.score > 25000 && Array.isArray(band?.members) && band.members.length > 0,
     resolve: ({ band }) => {
       // Dynamically select the lead singer or fallback to index 0
       const vocalistObj = band.members.find(m => m.traits?.some(t => t.id === 'lead_singer')) || band.members[0]
@@ -125,7 +125,7 @@ export const POST_OPTIONS = [
     category: 'Performance',
     badges: [POST_BADGES.SAFE],
     condition: ({ lastGigStats, social, band }) => {
-      if (!Array.isArray(band?.members)) return false
+      if (!Array.isArray(band?.members) || band.members.length === 0) return false
       const isVirtuoso = band.members.some(m => m.traits?.some(t => t.id === 'virtuoso'))
       return (lastGigStats && lastGigStats.score > 15000) || social.egoFocus || isVirtuoso
     },
@@ -279,7 +279,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Drama',
     badges: [POST_BADGES.RISK],
-    condition: ({ band }) => Array.isArray(band?.members),
+    condition: ({ band }) => Array.isArray(band?.members) && band.members.length > 0,
     resolve: ({ band, diceRoll }) => {
       const memberNames = band.members.map(m => m.name)
       const target = memberNames[Math.floor(diceRoll * memberNames.length)]
@@ -312,7 +312,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Drama', // or Lifestyle
     badges: [POST_BADGES.SAFE],
-    condition: ({ band }) => Array.isArray(band?.members),
+    condition: ({ band }) => Array.isArray(band?.members) && band.members.length > 0,
     resolve: ({ band }) => {
       const gearNerd = band.members.find(m => m.traits?.some(t => t.id === 'gear_nerd'))?.name || band.members[0].name
       return {
@@ -348,7 +348,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Drama',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
-    condition: ({ band }) => Array.isArray(band?.members),
+    condition: ({ band }) => Array.isArray(band?.members) && band.members.length > 0,
     resolve: ({ band }) => {
       const prankster = band.members.find(m => m.traits?.some(t => t.id === 'party_animal'))?.name || band.members[1]?.name || band.members[0].name
       return {
@@ -444,7 +444,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Commercial',
     badges: [POST_BADGES.SAFE, POST_BADGES.COMMERCIAL],
-    condition: ({ band }) => band?.inventory?.golden_pick === true && Array.isArray(band?.members),
+    condition: ({ band }) => band?.inventory?.golden_pick === true && Array.isArray(band?.members) && band.members.length > 0,
     resolve: ({ band }) => {
       // Find potential gear nerd or fallback to first member
       const member = band.members.find(m => m.traits?.some(t => t.id === 'gear_nerd')) || band.members[0]

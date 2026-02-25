@@ -260,5 +260,5 @@ _"Complexity is not an excuse for friction."_
 - **Economy Update**: Refactored `calculateTravelExpenses` and `calculateGigExpenses` to prevent double-charging fuel. Fuel cost is now paid only at gas stations; travel only deducts liters and food.
 - **Social System Overhaul**: `socialEngine.js` generates dynamic arrays of `postOptions.js`, causing wide-ranging Game State side effects (Shadowban `controversyLevel`, Fan `loyalty`, Lead Singer `egoFocus`, and Harmony/Mood swings). `simulationUtils.js` incorporates passive multi-platform perks (IG Stamina, YouTube Money, TikTok Surges) triggered at 10k follower milestones.
 - **Traits & Brand Deals**: Expanded trait system (Showman, Tech Wizard, Melodic Genius) with specific unlock conditions. Added `Brand Deals` system (`generateBrandOffers`) and Social Trends (`generateDailyTrend`) affecting post weights.
-- **UI Architecture**: Refactored `PostGig` scene into modular components (`ReportPhase`, `SocialPhase`, `DealsPhase`, `CompletePhase`) to support the expanded social features and improve maintainability.
-- Last updated: 2026-02-24.
+- **UI Architecture**: Refactored `PostGig` scene into modular components (`ReportPhase`, `SocialPhase`, `DealsPhase`, `CompletePhase`). Includes comprehensive validation (`saveValidator.js`) and "Reject All" functionality for streamlined gameplay.
+- Last updated: 2026-02-25.

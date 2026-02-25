@@ -244,15 +244,11 @@ export const PostGig = () => {
   }, [player, band, updatePlayer, updateBand, updateSocial, addToast])
 
   const handleRejectDeals = useCallback(() => {
-    // Remove processed deal (skip) and check if more remain
-    setBrandOffers(prev => {
-      const remaining = prev.slice(1) // Remove first
-      if (remaining.length === 0) {
-        setPhase('COMPLETE')
-      }
-      return remaining
-    })
-  }, [])
+    // Clears all remaining offers (Reject All / Skip Phase)
+    setBrandOffers([])
+    setPhase('COMPLETE')
+    addToast('Skipped brand deals.', 'info')
+  }, [addToast])
 
   const handleSpinStory = useCallback(() => {
     if (player.money < 200) {

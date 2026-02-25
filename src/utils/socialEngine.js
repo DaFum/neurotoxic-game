@@ -257,7 +257,9 @@ export const applyReputationDecay = (followers, daysSinceLastPost) => {
 export const generateDailyTrend = (rng = secureRandom) => {
   // Weighted choice could go here, for now uniform random
   const idx = Math.floor(rng() * ALLOWED_TRENDS.length)
-  return ALLOWED_TRENDS[idx]
+  // Ensure valid index even if rng() === 1
+  const safeIdx = Math.min(idx, ALLOWED_TRENDS.length - 1)
+  return ALLOWED_TRENDS[safeIdx]
 }
 
 // TODO: Advanced Brand Deal System
