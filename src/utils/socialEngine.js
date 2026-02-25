@@ -43,12 +43,6 @@ export const calculateViralityScore = (
   return Math.min(0.9, baseChance)
 }
 
-// TODO: Influencer System Expansion
-// - Add `collaborateWithInfluencer` action type in POST_OPTIONS
-// - Track `relationship` score with specific influencers (e.g. `tech_reviewer_01`, `drama_queen_99`)
-// - Influencer traits: `Tech Savvy` (boosts gear reviews), `Drama Magnet` (boosts controversy posts)
-// - Add `influencerTier`: Micro -> Macro -> Mega (affects cost and reach)
-
 /**
  * Generates options for the "Post-Gig Social Media Strategy" phase.
  * It evaluates conditions from POST_OPTIONS, assigns weights, and selects exactly 3.
@@ -153,7 +147,8 @@ export const resolvePost = (postOption, gameState, diceRoll = secureRandom()) =>
       egoDrop: result.egoDrop,
       egoClear: result.egoClear,
       reputationCooldownSet: result.reputationCooldownSet,
-      unlockTrait: result.unlockTrait
+      unlockTrait: result.unlockTrait,
+      influencerUpdate: result.influencerUpdate
     }
   } catch (e) {
     throw new StateError(`Resolution failed for post ${postOption.id}`, { cause: e, meta: { optId: postOption.id, gameState } })
