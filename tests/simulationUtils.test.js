@@ -104,19 +104,19 @@ test('getGigModifiers does not apply Matze penalty when mood is okay', () => {
   )
 })
 
-test('getGigModifiers applies tired Lars speed increase', () => {
-  const band = buildBandWithMembers([{ name: 'Lars', stamina: 15 }])
+test('getGigModifiers applies tired Marius speed increase', () => {
+  const band = buildBandWithMembers([{ name: 'Marius', stamina: 15 }])
   const modifiers = getGigModifiers(band)
 
-  assert.equal(modifiers.drumSpeedMult, 1.2, 'Tired Lars should speed up tempo')
+  assert.equal(modifiers.drumSpeedMult, 1.2, 'Tired Marius should speed up tempo')
   assert.ok(
-    modifiers.activeEffects.some(e => e.includes('TIRED LARS')),
-    'Should describe Lars effect'
+    modifiers.activeEffects.some(e => e.includes('TIRED Marius')),
+    'Should describe Marius effect'
   )
 })
 
-test('getGigModifiers does not apply Lars penalty when stamina is okay', () => {
-  const band = buildBandWithMembers([{ name: 'Lars', stamina: 50 }])
+test('getGigModifiers does not apply Marius penalty when stamina is okay', () => {
+  const band = buildBandWithMembers([{ name: 'Marius', stamina: 50 }])
   const modifiers = getGigModifiers(band)
 
   assert.equal(modifiers.drumSpeedMult, 1.0, 'Should have normal drum speed')
@@ -126,7 +126,7 @@ test('getGigModifiers can apply multiple effects', () => {
   const band = buildBandWithMembers(
     [
       { name: 'Matze', mood: 10 },
-      { name: 'Lars', stamina: 10 }
+      { name: 'Marius', stamina: 10 }
     ],
     { harmony: 85 }
   )
@@ -138,7 +138,7 @@ test('getGigModifiers can apply multiple effects', () => {
   )
   assert.equal(modifiers.hitWindowBonus, 20, 'Should have harmony bonus')
   assert.equal(modifiers.guitarScoreMult, 0.5, 'Should have Matze penalty')
-  assert.equal(modifiers.drumSpeedMult, 1.2, 'Should have Lars speed increase')
+  assert.equal(modifiers.drumSpeedMult, 1.2, 'Should have Marius speed increase')
 })
 
 test('calculateGigPhysics returns physics object', () => {
@@ -177,13 +177,13 @@ test('calculateGigPhysics calculates hit windows based on skill', () => {
 test('calculateGigPhysics skill increases hit windows', () => {
   const lowSkillBand = buildBandWithMembers([
     { name: 'Matze', baseStats: { skill: 1 } },
-    { name: 'Lars', baseStats: { skill: 1 } },
-    { name: 'Marius', baseStats: { skill: 1 } }
+    { name: 'Marius', baseStats: { skill: 1 } },
+    { name: 'Lars', baseStats: { skill: 1 } }
   ])
   const highSkillBand = buildBandWithMembers([
     { name: 'Matze', baseStats: { skill: 10 } },
-    { name: 'Lars', baseStats: { skill: 10 } },
-    { name: 'Marius', baseStats: { skill: 10 } }
+    { name: 'Marius', baseStats: { skill: 10 } },
+    { name: 'Lars', baseStats: { skill: 10 } }
   ])
   const song = { bpm: 120 }
 
@@ -207,8 +207,8 @@ test('calculateGigPhysics skill increases hit windows', () => {
 test('calculateGigPhysics reduces speed for low stamina', () => {
   const tiredBand = buildBandWithMembers([
     { name: 'Matze', stamina: 20 },
-    { name: 'Lars', stamina: 25 },
-    { name: 'Marius', stamina: 20 }
+    { name: 'Marius', stamina: 25 },
+    { name: 'Lars', stamina: 20 }
   ])
   const song = { bpm: 120 }
   const physics = calculateGigPhysics(tiredBand, song)
@@ -223,8 +223,8 @@ test('calculateGigPhysics reduces speed for low stamina', () => {
 test('calculateGigPhysics normal speed for adequate stamina', () => {
   const band = buildBandWithMembers([
     { name: 'Matze', stamina: 50 },
-    { name: 'Lars', stamina: 50 },
-    { name: 'Marius', stamina: 50 }
+    { name: 'Marius', stamina: 50 },
+    { name: 'Lars', stamina: 50 }
   ])
   const song = { bpm: 120 }
   const physics = calculateGigPhysics(band, song)
@@ -260,7 +260,7 @@ test('calculateGigPhysics returns default multipliers', () => {
 
 test('calculateGigPhysics applies blast machine trait for fast songs', () => {
   const band = buildBandWithMembers([
-    { name: 'Lars', traits: [{ id: 'blast_machine' }] }
+    { name: 'Marius', traits: [{ id: 'blast_machine' }] }
   ])
   const fastSong = { bpm: 180 }
   const physics = calculateGigPhysics(band, fastSong)
@@ -274,7 +274,7 @@ test('calculateGigPhysics applies blast machine trait for fast songs', () => {
 
 test('calculateGigPhysics does not apply blast machine for slow songs', () => {
   const band = buildBandWithMembers([
-    { name: 'Lars', traits: [{ id: 'blast_machine' }] }
+    { name: 'Marius', traits: [{ id: 'blast_machine' }] }
   ])
   const slowSong = { bpm: 120 }
   const physics = calculateGigPhysics(band, slowSong)
@@ -289,8 +289,8 @@ test('calculateGigPhysics does not apply blast machine for slow songs', () => {
 test('calculateGigPhysics includes avgStamina in result', () => {
   const band = buildBandWithMembers([
     { name: 'Matze', stamina: 60 },
-    { name: 'Lars', stamina: 75 },
-    { name: 'Marius', stamina: 90 }
+    { name: 'Marius', stamina: 75 },
+    { name: 'Lars', stamina: 90 }
   ])
   const song = { bpm: 120 }
   const physics = calculateGigPhysics(band, song)
@@ -325,7 +325,7 @@ test('calculateGigPhysics handles missing member gracefully', () => {
   const song = { bpm: 120 }
   const physics = calculateGigPhysics(band, song)
 
-  assert.ok(physics, 'Should handle missing Lars')
+  assert.ok(physics, 'Should handle missing Marius')
   assert.ok(physics.hitWindows, 'Should still calculate hit windows')
 })
 
@@ -333,8 +333,8 @@ test('calculateGigPhysics handles missing skill property', () => {
   const band = buildBandState({
     members: [
       { name: 'Matze', mood: 70, stamina: 80, traits: [] },
-      { name: 'Lars', mood: 65, stamina: 75, traits: [] },
-      { name: 'Marius', mood: 75, stamina: 70, traits: [] }
+      { name: 'Marius', mood: 65, stamina: 75, traits: [] },
+      { name: 'Lars', mood: 75, stamina: 70, traits: [] }
     ]
   })
 

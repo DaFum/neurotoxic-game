@@ -349,7 +349,7 @@
     },
     {
       "title": "Data & Content",
-      "purpose": "Explain content data contracts across src/data/events/* (band.js, financial.js, gig.js, special.js, transport.js), src/data/venues.js (~45 German venues with id, name, city, region, type, capacity, basePay, difficulty, prestige fields), src/data/songs.js (setlist tracks with bpm, difficulty, intensity, notePattern, crowdAppeal, staminaDrain), src/data/characters.js (3 default band members: Matze, Lars, Marius with stats/traits), src/data/chatter.js (social media templates), src/data/upgrades.js (VAN|GEAR|MERCH|PROMO categories), and src/data/hqItems.js: unique ID requirements, shape expectations, duplicate validation in events index, and runtime consumers.",
+      "purpose": "Explain content data contracts across src/data/events/* (band.js, financial.js, gig.js, special.js, transport.js), src/data/venues.js (~45 German venues with id, name, city, region, type, capacity, basePay, difficulty, prestige fields), src/data/songs.js (setlist tracks with bpm, difficulty, intensity, notePattern, crowdAppeal, staminaDrain), src/data/characters.js (3 default band members: Matze, Marius, Lars with stats/traits), src/data/chatter.js (social media templates), src/data/upgrades.js (VAN|GEAR|MERCH|PROMO categories), and src/data/hqItems.js: unique ID requirements, shape expectations, duplicate validation in events index, and runtime consumers.",
       "parent": "Overview",
       "page_notes": [
         {

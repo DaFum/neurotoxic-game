@@ -297,7 +297,7 @@ export const FINANCIAL_EVENTS = [
     id: 'broken_drum_head',
     category: 'financial',
     title: 'BROKEN DRUM HEAD',
-    description: 'Lars cracked a drum head. Again.',
+    description: 'Marius cracked a drum head. Again.',
     trigger: 'random',
     chance: 0.04,
     options: [

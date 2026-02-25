@@ -146,7 +146,7 @@ export const initialState = {
 - van: { fuel: 100, condition: 100, upgrades: [], breakdownChance: 0.05 }
 - tutorialStep: 0, score: 0, fame: 0
   **Default Band State:**
-- 3 members (Matze, Lars, Marius)
+- 3 members (Matze, Marius, Lars)
 - harmony: 80
 - inventory: shirts, hoodies, patches, CDs, vinyl, strings, cables, drum_parts, golden_pick
 - performance: guitarDifficulty (1.0), drumMultiplier (1.0), crowdDecay (1.0)

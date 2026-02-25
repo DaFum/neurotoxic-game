@@ -293,8 +293,8 @@ test('checkViralEvent handles random roll with modifiers', () => {
 
 test('checkViralEvent uses calculateViralityScore when context is provided', () => {
   const stats = { accuracy: 80, maxCombo: 10 }
-  // Use Marius as he usually has the trait, but specific name not required by current logic, just trait existence
-  const band = { members: [{ name: 'Marius', traits: [{ id: 'social_manager' }] }] }
+  // Use Lars as he usually has the trait, but specific name not required by current logic, just trait existence
+  const band = { members: [{ name: 'Lars', traits: [{ id: 'social_manager' }] }] }
   const context = {
     perfScore: 80,
     band,

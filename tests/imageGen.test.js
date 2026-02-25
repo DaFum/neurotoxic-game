@@ -28,8 +28,8 @@ test('IMG_PROMPTS contains expected keys and string values', () => {
     'OVERWORLD_MAP',
     'POST_GIG_BG',
     'MATZE_IDLE',
-    'LARS_IDLE',
-    'MARIUS_IDLE',
+    'Marius_IDLE',
+    'Lars_IDLE',
     'EVENT_GIG',
     'ITEM_HQ_SKULL'
   ]

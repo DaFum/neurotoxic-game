@@ -104,7 +104,7 @@ export const useRhythmGameAudio = ({
       const speedMult = 1.0 + layer * 0.05
 
       // Merge band-state modifiers (harmony/member effects) with physics multipliers
-      // so the scoring hook can pick up trait-based bonuses (e.g. Lars blast_machine).
+      // so the scoring hook can pick up trait-based bonuses (e.g. Marius blast_machine).
       const mergedModifiers = {
         ...activeModifiers,
         drumMultiplier: physics.multipliers.drums,

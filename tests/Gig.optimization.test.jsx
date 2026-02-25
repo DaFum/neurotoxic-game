@@ -18,12 +18,12 @@ vi.mock('../src/utils/imageGen.js', () => ({
       VENUE_DIVE_BAR: 'dive_bar',
       VENUE_GALACTIC: 'galactic',
       MATZE_PLAYING: 'matze_playing',
-      LARS_PLAYING: 'lars_playing',
-      MARIUS_PLAYING: 'marius_playing',
+      Marius_PLAYING: 'Marius_playing',
+      Lars_PLAYING: 'Lars_playing',
       MATZE_ANGRY: 'matze_angry',
-      LARS_DRINKING: 'lars_drinking',
-      MARIUS_IDLE: 'marius_idle',
-      MARIUS_SCREAMING: 'marius_screaming'
+      Marius_DRINKING: 'Marius_drinking',
+      Lars_IDLE: 'Lars_idle',
+      Lars_SCREAMING: 'Lars_screaming'
     }
   }))
 vi.mock('../src/components/PixiStage', () => ({

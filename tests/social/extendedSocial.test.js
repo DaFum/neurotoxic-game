@@ -107,10 +107,10 @@ describe('Extended Social & Trait Systems', () => {
   })
 
   describe('New Trait Unlocks', () => {
-    it('Unlocks Melodic Genius for Marius on slow song combo', () => {
+    it('Unlocks Melodic Genius for Lars on slow song combo', () => {
       const state = {
         band: {
-          members: [{ name: 'Marius', traits: [] }]
+          members: [{ name: 'Lars', traits: [] }]
         }
       }
       const context = {
@@ -121,7 +121,7 @@ describe('Extended Social & Trait Systems', () => {
         }
       }
       const unlocks = checkTraitUnlocks(state, context)
-      assert.deepStrictEqual(unlocks, [{ memberId: 'Marius', traitId: 'melodic_genius' }])
+      assert.deepStrictEqual(unlocks, [{ memberId: 'Lars', traitId: 'melodic_genius' }])
     })
 
     it('Unlocks Tech Wizard for Matze on technical song accuracy', () => {
@@ -142,10 +142,10 @@ describe('Extended Social & Trait Systems', () => {
       assert.ok(hasTechWizard, 'Should unlock tech_wizard')
     })
 
-    it('Unlocks Showman for Lars on stage dives', () => {
+    it('Unlocks Showman for Marius on stage dives', () => {
       const state = {
         band: {
-          members: [{ name: 'Lars', traits: [] }]
+          members: [{ name: 'Marius', traits: [] }]
         },
         player: {
           stats: { stageDives: 3 }
@@ -155,7 +155,7 @@ describe('Extended Social & Trait Systems', () => {
         type: 'EVENT_RESOLVED'
       }
       const unlocks = checkTraitUnlocks(state, context)
-      assert.deepStrictEqual(unlocks, [{ memberId: 'Lars', traitId: 'showman' }])
+      assert.deepStrictEqual(unlocks, [{ memberId: 'Marius', traitId: 'showman' }])
     })
   })
 })

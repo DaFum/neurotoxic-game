@@ -6,17 +6,17 @@ export const BAND_EVENTS = [
     tags: ['conflict'],
     title: 'CREATIVE DIFFERENCES',
     description:
-      'Matze thinks the new song should be slower. Marius wants it faster.',
+      'Matze thinks the new song should be slower. Lars wants it faster.',
     trigger: 'random',
     chance: 0.05,
     options: [
       {
         label: 'Side with Matze (Slow)',
         effect: { type: 'stat', stat: 'harmony', value: -5 },
-        outcomeText: 'Marius is annoyed.'
+        outcomeText: 'Lars is annoyed.'
       },
       {
-        label: 'Side with Marius (Fast)',
+        label: 'Side with Lars (Fast)',
         effect: { type: 'stat', stat: 'harmony', value: -5 },
         outcomeText: 'Matze sulks.'
       },
@@ -148,7 +148,7 @@ export const BAND_EVENTS = [
     category: 'band',
     tags: ['conflict'],
     title: 'EGO CLASH',
-    description: 'Lars wants a longer drum solo. Everyone else disagrees.',
+    description: 'Marius wants a longer drum solo. Everyone else disagrees.',
     trigger: 'random',
     chance: 0.04,
     options: [
@@ -195,19 +195,19 @@ export const BAND_EVENTS = [
     category: 'band',
     tags: ['conflict'],
     title: 'SETLIST ARGUMENT',
-    description: 'Lars wants more fast songs. Marius wants more “groove”.',
+    description: 'Marius wants more fast songs. Lars wants more “groove”.',
     trigger: 'random',
     chance: 0.05,
     options: [
       {
-        label: 'Go faster (Side with Lars)',
+        label: 'Go faster (Side with Marius)',
         effect: { type: 'stat', stat: 'harmony', value: -5 },
-        outcomeText: 'Marius rolls his eyes.'
+        outcomeText: 'Lars rolls his eyes.'
       },
       {
-        label: 'Go groovier (Side with Marius)',
+        label: 'Go groovier (Side with Lars)',
         effect: { type: 'stat', stat: 'harmony', value: -5 },
-        outcomeText: 'Lars taps his sticks impatiently.'
+        outcomeText: 'Marius taps his sticks impatiently.'
       },
       {
         label: 'Compromise [Charisma]',
@@ -377,7 +377,7 @@ export const BAND_EVENTS = [
         outcomeText: 'Small talk for cash.'
       },
       {
-        label: 'Force Lars [-5 Harmony]',
+        label: 'Force Marius [-5 Harmony]',
         effect: { type: 'stat', stat: 'harmony', value: -5 },
         outcomeText: 'He does it, but he remembers.'
       }
@@ -439,7 +439,7 @@ export const BAND_EVENTS = [
     category: 'band',
     tags: ['conflict'],
     title: 'EGO CLASH II',
-    description: 'Marius wants to “rebrand” the band mid-tour. Lars wants to sleep.',
+    description: 'Lars wants to “rebrand” the band mid-tour. Marius wants to sleep.',
     trigger: 'random',
     chance: 0.03,
     options: [
@@ -641,7 +641,7 @@ export const BAND_EVENTS = [
     category: 'band',
     tags: ['conflict'],
     title: 'TEMPO POLICE',
-    description: 'Lars insists everyone is rushing. Marius insists Lars is dragging.',
+    description: 'Marius insists everyone is rushing. Lars insists Marius is dragging.',
     trigger: 'random',
     chance: 0.04,
     options: [

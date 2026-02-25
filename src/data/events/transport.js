@@ -541,7 +541,7 @@ export const TRANSPORT_EVENTS = [
     id: 'rest_stop_fight',
     category: 'transport',
     title: 'REST STOP DRAMA',
-    description: 'A random guy comments on your van. Lars is ready to fight.',
+    description: 'A random guy comments on your van. Marius is ready to fight.',
     trigger: 'travel',
     chance: 0.03,
     options: [

@@ -35,7 +35,7 @@ The `calculateDailyUpdates()` function applies the following changes every day:
   - **High controversy** (≥50): +1.3x additional multiplier (neglected maintenance)
     **HQ Upgrades Active Effects:**
 - **Coffee machine**: +2 mood daily
-- **Beer fridge**: +1 mood, +2 for Lars if party_animal (30% stamina loss risk)
+- **Beer fridge**: +1 mood, +2 for Marius if party_animal (30% stamina loss risk)
 - **Sofa**: +3 stamina daily
 - **Old couch**: +1 stamina daily
 - **Soundproofing**: +1 harmony daily
@@ -47,18 +47,18 @@ The `calculateGigPhysics()` function derives gameplay modifiers based on band st
 **Hit Windows** (base 150ms + skill × 5ms):
 
 - **Virtuoso trait** (Matze): +10% to guitar hit window
-- **Bandleader trait** (Marius): +5ms to all lanes
-- **Melodic Genius trait** (Marius): +15% to bass hit window on slow songs (<120 BPM)
+- **Bandleader trait** (Lars): +5ms to all lanes
+- **Melodic Genius trait** (Lars): +15% to bass hit window on slow songs (<120 BPM)
   **Speed Modifier:**
 - Normal: 1.0x
 - Low stamina (<30 avg): 0.8x drag effect
   **Score Multipliers:**
-- **Blast Machine** (Lars, BPM >160): 1.5x drums
+- **Blast Machine** (Marius, BPM >160): 1.5x drums
 - **Tech Wizard** (Matze, difficulty >3): 1.15x guitar
-- **Melodic Genius** (Marius, BPM <120): +15% bass hit window (simulates flow)
-- **Party Animal** (Lars): 1.1x drums
+- **Melodic Genius** (Lars, BPM <120): +15% bass hit window (simulates flow)
+- **Party Animal** (Marius): 1.1x drums
 - **Gear Nerd** (Matze): 1.1x guitar
-- **Social Manager** (Marius): 1.1x bass
+- **Social Manager** (Lars): 1.1x bass
 
 ### Gig Modifiers
 
@@ -69,7 +69,7 @@ The `getGigModifiers()` function applies harmony and member-state effects during
 - **Low harmony (<30)**: Enables note jitter, creates "DISCONNECT" effect
   **Member Status:**
 - **Matze mood <20**: Guitar score ×0.5 (GRUMPY)
-- **Lars stamina <20**: Drums speed ×1.2 faster (RUSHING TEMPO)
+- **Marius stamina <20**: Drums speed ×1.2 faster (RUSHING TEMPO)
 
 ---
 
@@ -97,9 +97,9 @@ Each member has:
 **Matze (Guitar):**
 
 - skill: 8, stamina: 7, charisma: 5, technical: 9, improv: 6
-  **Lars (Drums):**
+  **Marius (Drums):**
 - skill: 9, stamina: 8, charisma: 7, technical: 7, improv: 9
-  **Marius (Bass/Vocals):**
+  **Lars (Bass/Vocals):**
 - skill: 7, stamina: 6, charisma: 8, technical: 7, composition: 7
 
 ### Starting State
@@ -120,13 +120,13 @@ Each member has:
 2. **perfektionist** — +15% score if >85% accuracy (Unlock: 100% accuracy in gig)
 3. **gear_nerd** — -20% equipment costs (Unlock: own 5+ gear items)
 4. **tech_wizard** — +10% score on technical songs (Unlock: 100% accuracy on difficulty >3)
-   **Lars (Drums) — 3 traits:**
+   **Marius (Drums) — 3 traits:**
 5. **blast_machine** — +50% score on fast sections (BPM >160) (Unlock: 50+ combo in fast song)
 6. **party_animal** — Risky drunk behavior (Unlock: purchase beer fridge)
    - ✅ Implemented: +10% drum multiplier, +2 mood/stamina risk interaction
    - ❌ Missing: "Random hangover" daily mechanic
 7. **showman** — +20% virality bonus (Unlock: 3 stage dives)
-   **Marius (Bass) — 4 traits:**
+   **Lars (Bass) — 4 traits:**
 8. **bandleader** — +50% chance to solve conflicts (Unlock: resolve 3 conflicts)
 9. **social_manager** (mislabeled "Social Nerd") — +15% viral chance (Unlock: 1000+ followers)
 10. **road_warrior** — -15% fuel consumption (Unlock: 5000+ km traveled)

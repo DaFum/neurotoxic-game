@@ -42,12 +42,12 @@ export const getGigModifiers = (bandState, gigModifiers = {}) => {
     )
   }
 
-  // Lars (Drums)
-  const lars = members.find(m => m.name === CHARACTERS.LARS.name)
-  if (lars && lars.stamina < 20) {
+  // Marius (Drums)
+  const Marius = members.find(m => m.name === CHARACTERS.Marius.name)
+  if (Marius && Marius.stamina < 20) {
     modifiers.drumSpeedMult = 1.2 // 20% faster
     modifiers.activeEffects.push(
-      `TIRED ${CHARACTERS.LARS.name.toUpperCase()}: Rushing Tempo`
+      `TIRED ${CHARACTERS.Marius.name.toUpperCase()}: Rushing Tempo`
     )
   }
 
@@ -69,15 +69,15 @@ export const calculateGigPhysics = (bandState, song) => {
   // 1. Hit Windows based on Skill
   // Formula: Base 150ms + (Skill * 5ms)
   const matze = members.find(m => m.name === CHARACTERS.MATZE.name)
-  const lars = members.find(m => m.name === CHARACTERS.LARS.name)
-  const marius = members.find(m => m.name === CHARACTERS.MARIUS.name)
+  const Marius = members.find(m => m.name === CHARACTERS.Marius.name)
+  const Lars = members.find(m => m.name === CHARACTERS.Lars.name)
 
   const getMemberSkill = member =>
     member?.baseStats?.skill ?? member?.skill ?? 0
   const hitWindows = {
     guitar: 150 + getMemberSkill(matze) * 5,
-    drums: 150 + getMemberSkill(lars) * 5,
-    bass: 150 + getMemberSkill(marius) * 5
+    drums: 150 + getMemberSkill(Marius) * 5,
+    bass: 150 + getMemberSkill(Lars) * 5
   }
 
   // Virtuoso Trait (Matze): +10% Hit Window
@@ -108,13 +108,13 @@ export const calculateGigPhysics = (bandState, song) => {
   // Check Song Speed (High BPM)
   const isFastSong = song.bpm > 160
 
-  // Lars: Blast Beat Machine
-  if (lars && isFastSong && hasTrait(lars, 'blast_machine')) {
+  // Marius: Blast Beat Machine
+  if (Marius && isFastSong && hasTrait(Marius, 'blast_machine')) {
     multipliers.drums = 1.5
   }
 
-  // Marius: Melodic Genius (Better flow on slow songs)
-  if (marius && isSlowSong && hasTrait(marius, 'melodic_genius')) {
+  // Lars: Melodic Genius (Better flow on slow songs)
+  if (Lars && isSlowSong && hasTrait(Lars, 'melodic_genius')) {
     // Bonus to hit window instead of score multiplier to simulate "flow"
     hitWindows.bass *= 1.15
   }
@@ -124,8 +124,8 @@ export const calculateGigPhysics = (bandState, song) => {
     multipliers.guitar *= 1.15
   }
 
-  // Lars: Party Animal (Crowd loves the energy)
-  if (lars && hasTrait(lars, 'party_animal')) {
+  // Marius: Party Animal (Crowd loves the energy)
+  if (Marius && hasTrait(Marius, 'party_animal')) {
     multipliers.drums *= 1.1
   }
 
@@ -134,13 +134,13 @@ export const calculateGigPhysics = (bandState, song) => {
     multipliers.guitar *= 1.1
   }
 
-  // Marius: Social Nerd / Manager (Crowd Engagement)
-  if (marius && hasTrait(marius, 'social_manager')) {
+  // Lars: Social Nerd / Manager (Crowd Engagement)
+  if (Lars && hasTrait(Lars, 'social_manager')) {
     multipliers.bass *= 1.1
   }
 
-  // Marius: Bandleader (Coordination)
-  if (marius && hasTrait(marius, 'bandleader')) {
+  // Lars: Bandleader (Coordination)
+  if (Lars && hasTrait(Lars, 'bandleader')) {
     hitWindows.guitar += 5
     hitWindows.drums += 5
     hitWindows.bass += 5
@@ -367,9 +367,9 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
       if (hasCoffee) mood += 2
       if (hasBeerFridge) {
         mood += 1
-        // Party Animal Trait (Lars): Extra mood, but risk of stamina loss
+        // Party Animal Trait (Marius): Extra mood, but risk of stamina loss
         if (
-          m.name === CHARACTERS.LARS.name &&
+          m.name === CHARACTERS.Marius.name &&
           hasTrait(m, 'party_animal')
         ) {
           mood += 2

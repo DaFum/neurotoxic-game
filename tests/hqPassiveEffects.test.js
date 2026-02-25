@@ -73,7 +73,7 @@ describe('HQ Passive Effects', () => {
       band: {
         members: [
           { name: 'Matze', mood: 50, stamina: 50 },
-          { name: 'Lars', mood: 50, stamina: 50 }
+          { name: 'Marius', mood: 50, stamina: 50 }
         ],
         harmony: 50
       },

@@ -13,8 +13,8 @@ import { applyEventDelta } from '../src/utils/gameStateUtils.js'
  */
 const DEFAULT_MEMBERS = [
   { name: 'Matze', mood: 80, stamina: 100, baseStats: { skill: 5 } },
-  { name: 'Lars', mood: 80, stamina: 100, baseStats: { skill: 4 } },
-  { name: 'Marius', mood: 80, stamina: 100, baseStats: { skill: 3 } }
+  { name: 'Marius', mood: 80, stamina: 100, baseStats: { skill: 4 } },
+  { name: 'Lars', mood: 80, stamina: 100, baseStats: { skill: 3 } }
 ]
 
 const DEFAULT_VAN = {

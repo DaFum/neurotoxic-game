@@ -215,7 +215,7 @@ export const GIG_EVENTS = [
     id: 'gig_mid_broken_stick',
     category: 'gig',
     title: 'BROKEN STICK',
-    description: 'Lars snaps a stick mid-song.',
+    description: 'Marius snaps a stick mid-song.',
     trigger: 'gig_mid',
     chance: 0.09,
     options: [
@@ -225,7 +225,7 @@ export const GIG_EVENTS = [
         outcomeText: 'He improvises with half a stick.'
       },
       {
-        label: 'Throw spare to Lars [Luck]',
+        label: 'Throw spare to Marius [Luck]',
         skillCheck: {
           stat: 'luck',
           threshold: 5,

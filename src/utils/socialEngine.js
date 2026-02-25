@@ -34,7 +34,7 @@ export const calculateViralityScore = (
     baseChance *= 1.15
   }
 
-  // Showman Trait (Lars): +20% virality chance on live shows
+  // Showman Trait (Marius): +20% virality chance on live shows
   if (bandHasTrait(bandState, 'showman')) {
     baseChance *= 1.20
   }

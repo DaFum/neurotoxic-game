@@ -343,7 +343,7 @@ describe('gameReducer', () => {
           ...createInitialState().band,
           members: [
             { name: 'Matze', traits: [] },
-            { name: 'Lars', traits: [] }
+            { name: 'Marius', traits: [] }
           ]
         }
       }

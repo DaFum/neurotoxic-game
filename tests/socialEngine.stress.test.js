@@ -15,8 +15,8 @@ const createRandomGameState = () => ({
     harmony: Math.floor(Math.random() * 120) - 10, // Test out of bounds bounds
     members: [
       { name: 'Matze', mood: Math.floor(Math.random() * 100), stamina: Math.floor(Math.random() * 100) },
-      { name: 'Lars', mood: Math.floor(Math.random() * 100), stamina: Math.floor(Math.random() * 100) },
-      { name: 'Marius', mood: Math.floor(Math.random() * 100), stamina: Math.floor(Math.random() * 100) }
+      { name: 'Marius', mood: Math.floor(Math.random() * 100), stamina: Math.floor(Math.random() * 100) },
+      { name: 'Lars', mood: Math.floor(Math.random() * 100), stamina: Math.floor(Math.random() * 100) }
     ]
   },
   social: {

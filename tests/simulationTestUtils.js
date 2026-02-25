@@ -9,14 +9,14 @@ export const buildBandState = (overrides = {}) => ({
       traits: []
     },
     {
-      name: 'Lars',
+      name: 'Marius',
       mood: 65,
       stamina: 75,
       baseStats: { skill: 4 },
       traits: []
     },
     {
-      name: 'Marius',
+      name: 'Lars',
       mood: 75,
       stamina: 70,
       baseStats: { skill: 3 },

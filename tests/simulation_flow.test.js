@@ -18,7 +18,7 @@ test('Game Loop Logic Simulation', async t => {
     band: {
       members: [
         { name: 'Matze', mood: 50 },
-        { name: 'Lars', mood: 50 }
+        { name: 'Marius', mood: 50 }
       ],
       harmony: 50,
       harmonyRegenTravel: false

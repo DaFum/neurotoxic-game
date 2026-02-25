@@ -72,15 +72,15 @@ export const IMG_PROMPTS = {
     'pixel art metal guitarist shredding solo fast fingers lightning effect',
   MATZE_ANGRY: 'pixel art metal guitarist angry shouting smashing guitar',
 
-  // Lars (Drums)
-  LARS_IDLE: 'pixel art metal drummer sitting behind kit waiting dark',
-  LARS_PLAYING: 'pixel art metal drummer blast beating fast blur sticks motion',
-  LARS_DRINKING: 'pixel art metal drummer drinking beer cheers happy',
+  // Marius (Drums)
+  Marius_IDLE: 'pixel art metal drummer sitting behind kit waiting dark',
+  Marius_PLAYING: 'pixel art metal drummer blast beating fast blur sticks motion',
+  Marius_DRINKING: 'pixel art metal drummer drinking beer cheers happy',
 
-  // Marius (Bass)
-  MARIUS_IDLE: 'pixel art bassist standing cool sunglasses dark clothes',
-  MARIUS_PLAYING: 'pixel art bassist playing rhythm headbanging',
-  MARIUS_SCREAMING:
+  // Lars (Bass)
+  Lars_IDLE: 'pixel art bassist standing cool sunglasses dark clothes',
+  Lars_PLAYING: 'pixel art bassist playing rhythm headbanging',
+  Lars_SCREAMING:
     'pixel art bassist screaming into microphone aggressive growl',
 
   // Crowd

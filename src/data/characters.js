@@ -1,17 +1,17 @@
 // Detailed Character Definitions and Traits
 //
 // Trait Implementation Status:
-// - blast_machine (Lars): Implemented
+// - blast_machine (Marius): Implemented
 // - perfektionist (Matze): Implemented
 // - gear_nerd (Matze): Implemented (Repair discount + Shop discount)
-// - party_animal (Lars): Partially Implemented (Fridge interaction)
-// - bandleader (Marius): Implemented
-// - social_manager (Marius): Implemented
+// - party_animal (Marius): Partially Implemented (Fridge interaction)
+// - bandleader (Lars): Implemented
+// - social_manager (Lars): Implemented
 // - virtuoso (Matze): Implemented
-// - road_warrior (Marius): Implemented
+// - road_warrior (Lars): Implemented
 // - tech_wizard (Matze): Implemented
-// - showman (Lars): Implemented
-// - melodic_genius (Marius): Implemented
+// - showman (Marius): Implemented
+// - melodic_genius (Lars): Implemented
 //
 // TODO: Relationship Mechanics
 // - Add `relationships` object to each character: { [otherMemberId]: score }
@@ -57,8 +57,8 @@ export const CHARACTERS = {
       amp: 'Mesa Boogie Dual Rectifier'
     }
   },
-  LARS: {
-    name: 'Lars',
+  Marius: {
+    name: 'Marius',
     role: 'Drums',
     baseStats: { skill: 9, stamina: 8, charisma: 7, technical: 7, improv: 9 },
     traits: [
@@ -86,8 +86,8 @@ export const CHARACTERS = {
     ],
     equipment: { set: 'Pearl Export', cymbals: 'Zildjian/Sabian Mix' }
   },
-  MARIUS: {
-    name: 'Marius',
+  Lars: {
+    name: 'Lars',
     role: 'Bass/Vocals',
     baseStats: {
       skill: 7,

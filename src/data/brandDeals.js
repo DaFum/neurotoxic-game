@@ -10,7 +10,7 @@ export const BRAND_DEALS = [
     requirements: {
       followers: 2000,
       trend: ['TECH', 'NEUTRAL'],
-      trait: 'party_animal' // Lars helps
+      trait: 'party_animal' // Marius helps
     },
     offer: {
       upfront: 500,
@@ -48,7 +48,7 @@ export const BRAND_DEALS = [
     requirements: {
       followers: 1000,
       trend: ['DRAMA', 'WHOLESOME'],
-      trait: 'melodic_genius' // Marius helps
+      trait: 'melodic_genius' // Lars helps
     },
     offer: {
       upfront: 2000,

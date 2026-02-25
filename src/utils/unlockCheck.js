@@ -15,8 +15,8 @@ export const checkTraitUnlocks = (state, context = {}) => {
   // Helpers to find members
   const getMember = (name) => members.find(m => m.name === name)
   const matze = getMember(CHARACTERS.MATZE.name)
-  const lars = getMember(CHARACTERS.LARS.name)
-  const marius = getMember(CHARACTERS.MARIUS.name)
+  const Marius = getMember(CHARACTERS.Marius.name)
+  const Lars = getMember(CHARACTERS.Lars.name)
 
   // 1. Performance Unlocks (Post-Gig)
   if (context.type === 'GIG_COMPLETE' && context.gigStats) {
@@ -32,19 +32,19 @@ export const checkTraitUnlocks = (state, context = {}) => {
       newUnlocks.push({ memberId: matze.name, traitId: 'perfektionist' })
     }
 
-    // Blast Machine (Lars): Fast song (>160 BPM) && Max Combo > 50
-    if (lars && !hasTrait(lars, 'blast_machine')) {
+    // Blast Machine (Marius): Fast song (>160 BPM) && Max Combo > 50
+    if (Marius && !hasTrait(Marius, 'blast_machine')) {
       const isFast = (song?.bpm || 0) > 160
       if (isFast && maxCombo > 50) {
-        newUnlocks.push({ memberId: lars.name, traitId: 'blast_machine' })
+        newUnlocks.push({ memberId: Marius.name, traitId: 'blast_machine' })
       }
     }
 
-    // Melodic Genius (Marius): Slow Song (<120 BPM) && Max Combo > 30
-    if (marius && !hasTrait(marius, 'melodic_genius')) {
+    // Melodic Genius (Lars): Slow Song (<120 BPM) && Max Combo > 30
+    if (Lars && !hasTrait(Lars, 'melodic_genius')) {
       const isSlow = (typeof song?.bpm === 'number') && song.bpm < 120
       if (isSlow && maxCombo > 30) {
-        newUnlocks.push({ memberId: marius.name, traitId: 'melodic_genius' })
+        newUnlocks.push({ memberId: Lars.name, traitId: 'melodic_genius' })
       }
     }
 
@@ -59,10 +59,10 @@ export const checkTraitUnlocks = (state, context = {}) => {
 
   // 2. Travel Unlocks
   if (context.type === 'TRAVEL_COMPLETE') {
-    // Road Warrior (Marius): Travel 5000km total (match UI hint)
-    if (marius && !hasTrait(marius, 'road_warrior')) {
+    // Road Warrior (Lars): Travel 5000km total (match UI hint)
+    if (Lars && !hasTrait(Lars, 'road_warrior')) {
       if ((player.stats?.totalDistance || 0) >= 5000) {
-        newUnlocks.push({ memberId: marius.name, traitId: 'road_warrior' })
+        newUnlocks.push({ memberId: Lars.name, traitId: 'road_warrior' })
       }
     }
   }
@@ -71,10 +71,10 @@ export const checkTraitUnlocks = (state, context = {}) => {
   if (context.type === 'PURCHASE') {
     const { item } = context
 
-    // Party Animal (Lars): Own a Beer Fridge
-    if (lars && !hasTrait(lars, 'party_animal')) {
+    // Party Animal (Marius): Own a Beer Fridge
+    if (Marius && !hasTrait(Marius, 'party_animal')) {
       if (item?.id === 'hq_room_cheap_beer_fridge' || (player.hqUpgrades || []).includes('hq_room_cheap_beer_fridge')) {
-        newUnlocks.push({ memberId: lars.name, traitId: 'party_animal' })
+        newUnlocks.push({ memberId: Marius.name, traitId: 'party_animal' })
       }
     }
 
@@ -94,32 +94,32 @@ export const checkTraitUnlocks = (state, context = {}) => {
 
   // 4. Social Unlocks
   if (context.type === 'SOCIAL_UPDATE') {
-    // Social Manager (Marius): 1000+ Followers on any channel
-    if (marius && !hasTrait(marius, 'social_manager')) {
+    // Social Manager (Lars): 1000+ Followers on any channel
+    if (Lars && !hasTrait(Lars, 'social_manager')) {
       const maxFollowers = Math.max(
         social.instagram || 0,
         social.tiktok || 0,
         social.youtube || 0
       )
       if (maxFollowers >= 1000) {
-        newUnlocks.push({ memberId: marius.name, traitId: 'social_manager' })
+        newUnlocks.push({ memberId: Lars.name, traitId: 'social_manager' })
       }
     }
   }
 
   // 5. Event Unlocks
   if (context.type === 'EVENT_RESOLVED') {
-    // Bandleader (Marius): Resolve 3 conflicts
-    if (marius && !hasTrait(marius, 'bandleader')) {
+    // Bandleader (Lars): Resolve 3 conflicts
+    if (Lars && !hasTrait(Lars, 'bandleader')) {
       if ((player.stats?.conflictsResolved || 0) >= 3) {
-        newUnlocks.push({ memberId: marius.name, traitId: 'bandleader' })
+        newUnlocks.push({ memberId: Lars.name, traitId: 'bandleader' })
       }
     }
 
-    // Showman (Lars): Perform 3 Stage Dives
-    if (lars && !hasTrait(lars, 'showman')) {
+    // Showman (Marius): Perform 3 Stage Dives
+    if (Marius && !hasTrait(Marius, 'showman')) {
       if ((player.stats?.stageDives || 0) >= 3) {
-        newUnlocks.push({ memberId: lars.name, traitId: 'showman' })
+        newUnlocks.push({ memberId: Marius.name, traitId: 'showman' })
       }
     }
   }

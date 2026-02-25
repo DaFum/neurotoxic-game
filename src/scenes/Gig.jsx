@@ -134,25 +134,25 @@ export const Gig = () => {
   }, [currentGig?.name, currentGig?.diff])
 
   // Character Images based on Harmony
-  const { matzeUrl, larsUrl, mariusUrl } = useMemo(() => {
+  const { matzeUrl, MariusUrl, LarsUrl } = useMemo(() => {
     let matzePrompt = IMG_PROMPTS.MATZE_PLAYING
-    let larsPrompt = IMG_PROMPTS.LARS_PLAYING
-    let mariusPrompt = IMG_PROMPTS.MARIUS_PLAYING
+    let MariusPrompt = IMG_PROMPTS.Marius_PLAYING
+    let LarsPrompt = IMG_PROMPTS.Lars_PLAYING
 
     if (band.harmony < 30) {
       matzePrompt = IMG_PROMPTS.MATZE_ANGRY
-      larsPrompt = IMG_PROMPTS.LARS_DRINKING
-      mariusPrompt = IMG_PROMPTS.MARIUS_IDLE
+      MariusPrompt = IMG_PROMPTS.Marius_DRINKING
+      LarsPrompt = IMG_PROMPTS.Lars_IDLE
     } else if (band.harmony < 60) {
       matzePrompt = IMG_PROMPTS.MATZE_ANGRY
-      larsPrompt = IMG_PROMPTS.LARS_PLAYING
-      mariusPrompt = IMG_PROMPTS.MARIUS_SCREAMING
+      MariusPrompt = IMG_PROMPTS.Marius_PLAYING
+      LarsPrompt = IMG_PROMPTS.Lars_SCREAMING
     }
 
     return {
       matzeUrl: getGenImageUrl(matzePrompt),
-      larsUrl: getGenImageUrl(larsPrompt),
-      mariusUrl: getGenImageUrl(mariusPrompt)
+      MariusUrl: getGenImageUrl(MariusPrompt),
+      LarsUrl: getGenImageUrl(LarsPrompt)
     }
   }, [band.harmony])
 
@@ -208,27 +208,27 @@ export const Gig = () => {
             className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--blood-red)]'
           />
         </div>
-        {/* Lars (Drums) - Center Back */}
+        {/* Marius (Drums) - Center Back */}
         <div
           id='band-member-1'
           ref={setBandMemberRef(1)}
           className='absolute left-[50%] top-[20%] -translate-x-1/2 w-40 h-40 transition-transform duration-100'
         >
           <img
-            src={larsUrl}
-            alt='Lars'
+            src={MariusUrl}
+            alt='Marius'
             className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--toxic-green-glow)]'
           />
         </div>
-        {/* Marius (Bass) - Right */}
+        {/* Lars (Bass) - Right */}
         <div
           id='band-member-2'
           ref={setBandMemberRef(2)}
           className='absolute right-[15%] top-[30%] w-32 h-48 transition-transform duration-100'
         >
           <img
-            src={mariusUrl}
-            alt='Marius'
+            src={LarsUrl}
+            alt='Lars'
             className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--toxic-green)]'
           />
         </div>

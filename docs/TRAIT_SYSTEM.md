@@ -25,7 +25,7 @@ Based on my thorough analysis of the trait system across the codebase, here are 
   - Description: +10% Score on Technical Songs
   - Unlock Hint: Get 100% Accuracy on a Technical song
   - Implementation: Applied in `simulationUtils.js` (calculateGigPhysics) when difficulty > 3; multipliers.guitar \*= 1.15
-    **LARS (Drums)**
+    **Marius (Drums)**
 - **blast_machine** → "Blast Beat Machine"
   - Effect: `score_bonus_fast` (+25% score on fast sections)
   - Description: +25% Score on fast sections
@@ -41,7 +41,7 @@ Based on my thorough analysis of the trait system across the codebase, here are 
   - Description: +20% Virality Bonus
   - Unlock Hint: Perform 3 Stage Dives successfully
   - Implementation: Applied in `socialEngine.js` (calculateViralityScore); baseChance \*= 1.20
-    **MARIUS (Bass/Vocals)**
+    **Lars (Bass/Vocals)**
 - **bandleader** → "Bandleader"
   - Effect: `conflict_solver` (+50% chance to solve conflicts)
   - Description: +50% chance to solve conflicts
@@ -74,18 +74,18 @@ Traits are unlocked through the following context types defined in `src/utils/un
 - `virtuoso` (Matze): `misses === 0` (0 misses in entire gig)
 - `perfektionist` (Matze): `accuracy === 100` (exact 100% accuracy)
 - `tech_wizard` (Matze): Technical song (`difficulty > 3`) + `accuracy === 100`
-- `blast_machine` (Lars): Fast song (`bpm > 160`) + `maxCombo > 50`
-- `melodic_genius` (Marius): Slow song (`bpm < 120`) + `maxCombo > 30`
+- `blast_machine` (Marius): Fast song (`bpm > 160`) + `maxCombo > 50`
+- `melodic_genius` (Lars): Slow song (`bpm < 120`) + `maxCombo > 30`
   **B. TRAVEL_COMPLETE (After Travel Minigame)**
-- `road_warrior` (Marius): `player.stats.totalDistance >= 5000`
+- `road_warrior` (Lars): `player.stats.totalDistance >= 5000`
   **C. PURCHASE (When Buying from HQ Shop)**
-- `party_animal` (Lars): Purchase `hq_room_cheap_beer_fridge` OR item already in `player.hqUpgrades`
+- `party_animal` (Marius): Purchase `hq_room_cheap_beer_fridge` OR item already in `player.hqUpgrades`
 - `gear_nerd` (Matze): Own 5+ GEAR/INSTRUMENT category items (counted via `context.gearCount >= 5`)
   **D. SOCIAL_UPDATE (Daily Social Media Check)**
-- `social_manager` (Marius): `Math.max(instagram, tiktok, youtube) >= 1000`
+- `social_manager` (Lars): `Math.max(instagram, tiktok, youtube) >= 1000`
   **E. EVENT_RESOLVED (When Events Are Resolved)**
-- `bandleader` (Marius): `player.stats.conflictsResolved >= 3`
-- `showman` (Lars): `player.stats.stageDives >= 3`
+- `bandleader` (Lars): `player.stats.conflictsResolved >= 3`
+- `showman` (Marius): `player.stats.stageDives >= 3`
   **Unlock Detection:**
 - Checked via `hasTrait(member, traitId)` - returns false if member doesn't have trait
 - Prevents duplicate unlocks by checking `member.traits.some(t => t.id === traitId)` before adding
@@ -136,8 +136,8 @@ Traits are unlocked through the following context types defined in `src/utils/un
 DEFAULT_BAND_STATE = {
   members: [
     { ...CHARACTERS.MATZE, mood: 80, stamina: 100, traits: [] },
-    { ...CHARACTERS.LARS, mood: 80, stamina: 100, traits: [] },
-    { ...CHARACTERS.MARIUS, mood: 80, stamina: 100, traits: [] }
+    { ...CHARACTERS.Marius, mood: 80, stamina: 100, traits: [] },
+    { ...CHARACTERS.Lars, mood: 80, stamina: 100, traits: [] }
   ]
 }
 ```
@@ -222,7 +222,7 @@ UI/Scene components can call unlockTrait() directly
 
 **A. PARTIALLY IMPLEMENTED TRAITS:**
 
-1. **party_animal** (Lars)
+1. **party_animal** (Marius)
    - ✅ Implemented: Drum multiplier +10% during gigs
    - ✅ Implemented: Unlocked by purchasing `hq_room_cheap_beer_fridge`
    - ❌ **NOT IMPLEMENTED**: "Random hangover (-Stamina)" daily effect
