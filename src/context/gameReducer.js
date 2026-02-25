@@ -651,11 +651,15 @@ const handleFailQuests = state => {
   expiredQuests.forEach(quest => {
     if (quest.failurePenalty) {
       if (quest.failurePenalty.social?.controversyLevel) {
+        // Deep clone before mutating
+        nextState.social = { ...nextState.social }
         nextState.social.controversyLevel =
           (nextState.social.controversyLevel || 0) +
           quest.failurePenalty.social.controversyLevel
       }
       if (quest.failurePenalty.band?.harmony) {
+        // Deep clone before mutating
+        nextState.band = { ...nextState.band }
         nextState.band.harmony = clampBandHarmony(
           (nextState.band.harmony || 0) + quest.failurePenalty.band.harmony
         )

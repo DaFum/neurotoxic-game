@@ -88,7 +88,11 @@ export class CrowdManager {
 
   update(combo, isToxicMode, timeMs) {
     const yOffset = calculateCrowdOffset({ combo, timeMs })
-    const nextColor = isToxicMode ? 0x00ff41 : combo > 20 ? 0xffffff : 0x555555
+    const nextColor = isToxicMode
+      ? getPixiColorFromToken('--color-toxic')
+      : combo > 20
+        ? getPixiColorFromToken('--color-foreground')
+        : getPixiColorFromToken('--color-muted')
 
     const shouldMosh = isToxicMode || combo > 20
     const targetTexture =

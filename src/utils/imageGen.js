@@ -73,15 +73,15 @@ export const IMG_PROMPTS = {
   MATZE_ANGRY: 'pixel art metal guitarist angry shouting smashing guitar',
 
   // Marius (Drums)
-  Marius_IDLE: 'pixel art metal drummer sitting behind kit waiting dark',
-  Marius_PLAYING:
+  MARIUS_IDLE: 'pixel art metal drummer sitting behind kit waiting dark',
+  MARIUS_PLAYING:
     'pixel art metal drummer blast beating fast blur sticks motion',
-  Marius_DRINKING: 'pixel art metal drummer drinking beer cheers happy',
+  MARIUS_DRINKING: 'pixel art metal drummer drinking beer cheers happy',
 
   // Lars (Bass)
-  Lars_IDLE: 'pixel art bassist standing cool sunglasses dark clothes',
-  Lars_PLAYING: 'pixel art bassist playing rhythm headbanging',
-  Lars_SCREAMING:
+  LARS_IDLE: 'pixel art bassist standing cool sunglasses dark clothes',
+  LARS_PLAYING: 'pixel art bassist playing rhythm headbanging',
+  LARS_SCREAMING:
     'pixel art bassist screaming into microphone aggressive growl',
 
   // Crowd

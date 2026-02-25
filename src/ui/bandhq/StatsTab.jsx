@@ -123,6 +123,8 @@ StatsTab.propTypes = {
   }).isRequired,
   social: PropTypes.shape({
     instagram: PropTypes.number,
-    tiktok: PropTypes.number
+    tiktok: PropTypes.number,
+    youtube: PropTypes.number,
+    newsletter: PropTypes.number
   }).isRequired
 }

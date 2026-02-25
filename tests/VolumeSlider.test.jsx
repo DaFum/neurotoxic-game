@@ -1,3 +1,5 @@
+import React from 'react'
+import { render, cleanup } from '@testing-library/react'
 import {
   afterAll,
   afterEach,
@@ -8,9 +10,6 @@ import {
   test,
   vi
 } from 'vitest'
-
-import React from 'react'
-import { render, cleanup } from '@testing-library/react'
 
 import { VolumeSlider } from '../src/ui/shared/VolumeSlider.jsx'
 

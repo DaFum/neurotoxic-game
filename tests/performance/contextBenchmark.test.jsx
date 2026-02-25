@@ -1,13 +1,4 @@
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  test,
-  vi
-} from 'vitest'
+import { expect, test } from 'vitest'
 
 import { JSDOM } from 'jsdom'
 
@@ -103,23 +94,11 @@ test('GameStateProvider Re-render Benchmark', async () => {
 
   // After update
   // Consumer re-renders because context value changed (state updated)
-  assert.strictEqual(
-    consumerRenders,
-    1,
-    'Consumer should re-render after state update'
-  )
+  expect(consumerRenders).toBe(1)
 
   // Trigger component also re-renders because useGameState returns new object
-  assert.strictEqual(
-    triggerRenders,
-    1,
-    'Unoptimized Trigger should re-render after state update'
-  )
+  expect(triggerRenders).toBe(1)
 
   // Optimized Trigger should NOT re-render because dispatch context is stable
-  assert.strictEqual(
-    optimizedRenders,
-    1,
-    'Optimized Trigger should NOT re-render'
-  )
+  expect(optimizedRenders).toBe(1)
 })

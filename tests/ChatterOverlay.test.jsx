@@ -15,7 +15,7 @@ vi.mock('../src/data/chatter.js', () => ({
 
 afterEach(() => {
   vi.useRealTimers()
-  vi.restoreAllMocks()
+  vi.clearAllMocks()
 })
 test('ChatterOverlay passes scene state to getRandomChatter', async () => {
   //  removed (handled by vitest env)

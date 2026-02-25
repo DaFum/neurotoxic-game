@@ -99,9 +99,7 @@ const calculateTicketIncome = (
   }
 
   // Price Sensitivity: Higher price reduces attendance slightly unless Fame is very high
-  if (context.discountedTickets) {
-    // skip price penalty if discounted tickets flagged
-  } else if (gigData.price > 15) {
+  if (!context.discountedTickets && gigData.price > 15) {
     const pricePenalty = (gigData.price - 15) * 0.02 // -2% per Euro over 15
     const mitigation = fameRatio * 0.5
     fillRate -= Math.max(0, pricePenalty - mitigation)

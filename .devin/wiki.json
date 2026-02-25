@@ -1,11 +1,11 @@
 {
   "repo_notes": [
     {
-      "content": "NEUROTOXIC: GRIND THE VOID v3.0 is a client-side single-page web game (React 19.2.4 + Vite 7.3.1) combining a roguelike tour manager with a 3-lane rhythm action game rendered with Pixi.js 8 at 60fps. No backend; all state persists to localStorage. The player manages a Death Grindcore band touring procedurally-generated German cities. The audio system has been modularized into src/utils/audio/ (6 modules: setup.js, playback.js, procedural.js, assets.js, state.js, constants.js) plus src/utils/AudioManager.js (314-line singleton coordinator) and a thin facade in src/utils/audioEngine.js (46 lines). Total audio subsystem is ~2,600 lines using Tone.js 15 for Web Audio synthesis/scheduling. The rhythm game hook has been decomposed into 5 sub-hooks under src/hooks/rhythmGame/ orchestrated by useRhythmGameLogic.js.",
+      "content": "NEUROTOXIC: GRIND THE VOID v3.0 is a client-side single-page web game (React 19.2.4 + Vite 7.3.1) combining a roguelike tour manager with a 3-lane rhythm action game rendered with Pixi.js 8 at 60fps. No backend; all state persists to localStorage. The player manages a Death Grindcore band touring procedurally-generated German cities. The audio system has been modularized into src/utils/audio/ (6 modules: setup.js, playback.js, procedural.js, assets.js, state.js, constants.js) plus src/utils/AudioManager.js (singleton coordinator) and a thin facade in src/utils/audioEngine.js. Total audio subsystem is ~2,600 lines using Tone.js 15 for Web Audio synthesis/scheduling. The rhythm game hook has been decomposed into 5 sub-hooks under src/hooks/rhythmGame/ orchestrated by useRhythmGameLogic.js.",
       "author": "Developer"
     },
     {
-      "content": "Prioritize inspection order: src/utils/audio/ directory (setup.js for Tone.js boot, playback.js for playback control, procedural.js for synth generation), src/utils/AudioManager.js (singleton lifecycle), src/context/GameState.jsx (GameStateProvider, useGameState), src/context/gameReducer.js (ActionTypes, gameReducer), src/hooks/rhythmGame/ directory (useRhythmGameLoop for timing, useRhythmGameScoring for hit judgment, useRhythmGameAudio for playback sync), src/hooks/useTravelLogic.js (565 lines), src/hooks/usePurchaseLogic.js (415 lines), src/components/PixiStageController.js + src/components/stage/ managers, then src/ui and src/data.",
+      "content": "Prioritize inspection order: src/utils/audio/ directory (setup.js for Tone.js boot, playback.js for playback control, procedural.js for synth generation), src/utils/AudioManager.js (singleton lifecycle), src/context/GameState.jsx (GameStateProvider, useGameState), src/context/gameReducer.js (ActionTypes, gameReducer), src/hooks/rhythmGame/ directory (useRhythmGameLoop for timing, useRhythmGameScoring for hit judgment, useRhythmGameAudio for playback sync), src/hooks/useTravelLogic.js (travel mechanics), src/hooks/usePurchaseLogic.js (purchase mechanics), src/components/PixiStageController.js + src/components/stage/ managers, then src/ui and src/data.",
       "author": "Architecture"
     },
     {
@@ -25,7 +25,7 @@
       "author": "Architecture"
     },
     {
-      "content": "Procedural asset generation (images) integrated via Pollinations.ai (imageGen.js, 146 lines) and social media simulation (socialEngine.js, 150 lines). Procedural map generation (mapGenerator.js, 279 lines) builds a graph of ~45 German venue nodes with travel connections, distance costs, and venue metadata that feeds the travel and event systems. The unlock/achievement system (unlockManager.js, 56 lines) tracks progression milestones. The tutorial system (TutorialManager.jsx) provides step-by-step onboarding tooltips for new players.",
+      "content": "Procedural asset generation (images) integrated via Pollinations.ai (imageGen.js) and social media simulation (socialEngine.js). Procedural map generation (mapGenerator.js) builds a graph of ~45 German venue nodes with travel connections, distance costs, and venue metadata that feeds the travel and event systems. The unlock/achievement system (unlockManager.js) tracks progression milestones. The tutorial system (TutorialManager.jsx) provides step-by-step onboarding tooltips for new players.",
       "author": "Developer"
     },
     {
@@ -58,11 +58,11 @@
     },
     {
       "title": "Game Concept",
-      "purpose": "Document the player loop with file-level anchors: travel decisions in src/scenes/Overworld.jsx and src/hooks/useTravelLogic.js (565 lines), gig preparation in src/scenes/PreGig.jsx, rhythm execution in src/scenes/Gig.jsx via useRhythmGameLogic() and its 5 sub-hooks in src/hooks/rhythmGame/, and outcome application in src/scenes/PostGig.jsx using calculateGigFinancials(), resolvePost(), and reducer updates for money/fuel/harmony/followers.",
+      "purpose": "Document the player loop with file-level anchors: travel decisions in src/scenes/Overworld.jsx and src/hooks/useTravelLogic.js, gig preparation in src/scenes/PreGig.jsx, rhythm execution in src/scenes/Gig.jsx via useRhythmGameLogic() and its 5 sub-hooks in src/hooks/rhythmGame/, and outcome application in src/scenes/PostGig.jsx using calculateGigFinancials(), resolvePost(), and reducer updates for money/fuel/harmony/followers.",
       "parent": "Overview",
       "page_notes": [
         {
-          "content": "Describe strategic pressure around money, fuel, and harmony and where these values are consumed by utility functions in src/utils/economyEngine.js (430 lines) and src/utils/simulationUtils.js (230 lines). Money is spent on fuel, upgrades, and repairs; fuel enables travel between cities; harmony represents band cohesion and affects gig performance. These three resources create strategic tension: players must balance immediate spending (fuel for travel, upgrades for performance) against long-term sustainability (maintaining harmony, building fame for better venues). The economy functions enforce non-negative money constraints and harmony thresholds that trigger game-over conditions.",
+          "content": "Describe strategic pressure around money, fuel, and harmony and where these values are consumed by utility functions in src/utils/economyEngine.js and src/utils/simulationUtils.js. Money is spent on fuel, upgrades, and repairs; fuel enables travel between cities; harmony represents band cohesion and affects gig performance. These three resources create strategic tension: players must balance immediate spending (fuel for travel, upgrades for performance) against long-term sustainability (maintaining harmony, building fame for better venues). The economy functions enforce non-negative money constraints and harmony thresholds that trigger game-over conditions.",
           "author": "Gameplay"
         },
         {
@@ -153,7 +153,7 @@
     },
     {
       "title": "Core Subsystems Overview",
-      "purpose": "Provide a subsystem dependency map that names primary files and key functions: AudioManager (src/utils/AudioManager.js, 314 lines) + modularized audio modules (src/utils/audio/: setup.js 548 lines, playback.js 582 lines, procedural.js 813 lines, assets.js 233 lines) for playback lifecycle; GameStateProvider + gameReducer for state transitions; useRhythmGameLogic orchestrating 5 sub-hooks for rhythm timing; PixiStageController + 4 stage managers for render/update cycle; calculateGigFinancials()/calculateTravelExpenses() economy pipeline (economyEngine.js, 430 lines); mapGenerator (279 lines) for travel topology; checkEvent()/resolveChoice() event resolution (eventEngine.js, 295 lines); and socialEngine.js (150 lines), imageGen.js (146 lines), hecklerLogic.js (101 lines) for procedural content generation.",
+      "purpose": "Provide a subsystem dependency map that names primary files and key functions: AudioManager (src/utils/AudioManager.js) + modularized audio modules (src/utils/audio/: setup.js, playback.js, procedural.js, assets.js) for playback lifecycle; GameStateProvider + gameReducer for state transitions; useRhythmGameLogic orchestrating 5 sub-hooks for rhythm timing; PixiStageController + 4 stage managers for render/update cycle; calculateGigFinancials()/calculateTravelExpenses() economy pipeline (economyEngine.js); mapGenerator for travel topology; checkEvent()/resolveChoice() event resolution (eventEngine.js); and socialEngine.js, imageGen.js, hecklerLogic.js for procedural content generation.",
       "parent": "Overview",
       "page_notes": [
         {
@@ -168,7 +168,7 @@
     },
     {
       "title": "Audio System Architecture",
-      "purpose": "Document the modularized audio subsystem (~2,600 lines total) spanning src/utils/AudioManager.js (314-line singleton coordinator), src/utils/audioEngine.js (46-line facade re-exporting key functions), and 6 specialized modules in src/utils/audio/: setup.js (548 lines — Tone.js boot via setupAudio()/ensureAudioContext, Tone.Context timing params, instrument chains for guitar/bass/drums/SFX/clean-MIDI buses, compressor/limiter/musicGain routing), playback.js (582 lines — loadAudioBuffer, playRandomAmbientOgg/playRandomAmbientMidi, startGigPlayback, stopGigPlayback/stopAudioInternal, disposal guarantees), procedural.js (813 lines — procedural synth generation for backing tracks and SFX), assets.js (233 lines — MIDI/audio asset loading), state.js (audio state tracking), constants.js (shared audio config constants).",
+      "purpose": "Document the modularized audio subsystem (~2,600 lines total) spanning src/utils/AudioManager.js (singleton coordinator), src/utils/audioEngine.js (facade re-exporting key functions), and 6 specialized modules in src/utils/audio/: setup.js (Tone.js boot via setupAudio()/ensureAudioContext, Tone.Context timing params, instrument chains for guitar/bass/drums/SFX/clean-MIDI buses, compressor/limiter/musicGain routing), playback.js (loadAudioBuffer, playRandomAmbientOgg/playRandomAmbientMidi, startGigPlayback, stopGigPlayback/stopAudioInternal, disposal guarantees), procedural.js (procedural synth generation for backing tracks and SFX), assets.js (MIDI/audio asset loading), state.js (audio state tracking), constants.js (shared audio config constants).",
       "parent": "Core Subsystems Overview",
       "page_notes": [
         {
@@ -187,7 +187,7 @@
     },
     {
       "title": "Rhythm Game Logic",
-      "purpose": "Document the decomposed rhythm game hook system: src/hooks/useRhythmGameLogic.js (84-line orchestrator) composing 5 specialized sub-hooks in src/hooks/rhythmGame/: useRhythmGameState.js (94 lines — game state tracking, refs for frame-loop data), useRhythmGameInput.js (39 lines — keyboard arrow key / A-S-D and touch input handling), useRhythmGameAudio.js (332 lines — audio playback integration, gig clock sync), useRhythmGameLoop.js (202 lines — ticker-driven game loop, note advancement, timing), useRhythmGameScoring.js (267 lines — hit-window judgment, combo math, hype calculation, miss/penalty handling). Song data sourced from src/assets/rhythm_songs.json, note spawning from src/utils/rhythmUtils.js (311 lines).",
+      "purpose": "Document the decomposed rhythm game hook system: src/hooks/useRhythmGameLogic.js (orchestrator) composing 5 specialized sub-hooks in src/hooks/rhythmGame/: useRhythmGameState.js (game state tracking, refs for frame-loop data), useRhythmGameInput.js (keyboard arrow key / A-S-D and touch input handling), useRhythmGameAudio.js (audio playback integration, gig clock sync), useRhythmGameLoop.js (ticker-driven game loop, note advancement, timing), useRhythmGameScoring.js (hit-window judgment, combo math, hype calculation, miss/penalty handling). Song data sourced from src/assets/rhythm_songs.json, note spawning from src/utils/rhythmUtils.js.",
       "parent": "Core Subsystems Overview",
       "page_notes": [
         {
@@ -206,7 +206,7 @@
     },
     {
       "title": "Pixi Rendering Pipeline",
-      "purpose": "Describe rendering internals across src/components/PixiStageController.js (229 lines), src/components/PixiStage.jsx (React canvas wrapper), and 4 stage managers in src/components/stage/: NoteManager.js (208 lines — falling note sprite lifecycle, spawn/recycle/destroy), LaneManager.js (156 lines — lane rendering, hit zones, visual feedback), CrowdManager.js (61 lines — crowd visualization reacting to performance), EffectManager.js (68 lines — hit/miss visual effects, particles). Document Pixi.js 8 Application lifecycle, ticker/frame callbacks, world-to-screen coordinate transforms, HUD overlay interoperability via src/components/GigHUD.jsx, and unmount cleanup (destroy textures, remove listeners, stop ticker).",
+      "purpose": "Describe rendering internals across src/components/PixiStageController.js, src/components/PixiStage.jsx (React canvas wrapper), and 4 stage managers in src/components/stage/: NoteManager.js (falling note sprite lifecycle, spawn/recycle/destroy), LaneManager.js (lane rendering, hit zones, visual feedback), CrowdManager.js (crowd visualization reacting to performance), EffectManager.js (hit/miss visual effects, particles). Document Pixi.js 8 Application lifecycle, ticker/frame callbacks, world-to-screen coordinate transforms, HUD overlay interoperability via src/components/GigHUD.jsx, and unmount cleanup (destroy textures, remove listeners, stop ticker).",
       "parent": "Core Subsystems Overview",
       "page_notes": [
         {
@@ -364,7 +364,7 @@
     },
     {
       "title": "Code Entity Map",
-      "purpose": "Create a symbol index with exact file/function anchors for rapid onboarding: GameStateProvider/useGameState (GameState.jsx), ActionTypes/gameReducer branches (gameReducer.js), createChangeSceneAction (actionCreators.js), useRhythmGameLogic coordinator + 5 sub-hooks (rhythmGame/), useTravelLogic transitions (565 lines), usePurchaseLogic predicates (415 lines), calculateGigFinancials/calculateTravelExpenses (economyEngine.js, 430 lines), checkEvent/resolveChoice (eventEngine.js, 295 lines), applyEventDelta (gameStateUtils.js, 154 lines), AudioManager singleton (AudioManager.js, 314 lines), setupAudio/ensureAudioContext (audio/setup.js, 548 lines), generateMap (mapGenerator.js, 279 lines), and stage managers NoteManager/LaneManager/CrowdManager/EffectManager (components/stage/).",
+      "purpose": "Create a symbol index with exact file/function anchors for rapid onboarding: GameStateProvider/useGameState (GameState.jsx), ActionTypes/gameReducer branches (gameReducer.js), createChangeSceneAction (actionCreators.js), useRhythmGameLogic coordinator + 5 sub-hooks (rhythmGame/), useTravelLogic transitions, usePurchaseLogic predicates, calculateGigFinancials/calculateTravelExpenses (economyEngine.js), checkEvent/resolveChoice (eventEngine.js), applyEventDelta (gameStateUtils.js), AudioManager singleton (AudioManager.js), setupAudio/ensureAudioContext (audio/setup.js), generateMap (mapGenerator.js), and stage managers NoteManager/LaneManager/CrowdManager/EffectManager (components/stage/).",
       "parent": "Overview",
       "page_notes": [
         {
@@ -430,11 +430,11 @@
     },
     {
       "title": "Gig Playback & Audio Fallback Chains",
-      "purpose": "Document gig audio execution runtime flow across src/hooks/rhythmGame/useRhythmGameAudio.js (332 lines), src/utils/audioPlaybackUtils.js, src/utils/audioSelectionUtils.js, src/utils/audio/playback.js (582 lines), src/utils/audio/procedural.js (813 lines), and src/utils/AudioManager.js (314 lines): the four playback fallback chains (song excerpt -> WebAudio buffer fallback -> generated backing -> silent safety mode), trigger conditions for each branch, handoff points between scene logic and low-level playback control, and mixer/synth defaults from audio/setup.js.",
+      "purpose": "Document gig audio execution runtime flow across src/hooks/rhythmGame/useRhythmGameAudio.js, src/utils/audioPlaybackUtils.js, src/utils/audioSelectionUtils.js, src/utils/audio/playback.js, src/utils/audio/procedural.js, and src/utils/AudioManager.js: the four playback fallback chains (song excerpt -> WebAudio buffer fallback -> generated backing -> silent safety mode), trigger conditions for each branch, handoff points between scene logic and low-level playback control, and mixer/synth defaults from audio/setup.js.",
       "parent": "Audio System Architecture",
       "page_notes": [
         {
-          "content": "Capture exact branch order and guard conditions used at gig start, including when parsed chart notes exist but audio bootstrap fails, and when procedural note generation (audio/procedural.js, 813 lines) is invoked as a resilience path.",
+          "content": "Capture exact branch order and guard conditions used at gig start, including when parsed chart notes exist but audio bootstrap fails, and when procedural note generation (audio/procedural.js) is invoked as a resilience path.",
           "author": "Architecture"
         },
         {
@@ -445,7 +445,7 @@
     },
     {
       "title": "Synchronization & Scaling Formulas",
-      "purpose": "Document implementation-level formulas that tie rhythm timing, render sync, simulation, and balancing together across src/hooks/rhythmGame/ sub-hooks, src/components/PixiStageController.js, src/components/stage/ managers, src/utils/rhythmUtils.js (311 lines), src/utils/simulationUtils.js (230 lines), src/utils/economyEngine.js (430 lines), and src/utils/gigStats.js (35 lines), including the dual mutable ref model (gameStateRef vs statsRef), note positioning math, hit/miss windows, visual hit feedback timing, and daily/performance modifier calculations.",
+      "purpose": "Document implementation-level formulas that tie rhythm timing, render sync, simulation, and balancing together across src/hooks/rhythmGame/ sub-hooks, src/components/PixiStageController.js, src/components/stage/ managers, src/utils/rhythmUtils.js, src/utils/simulationUtils.js, src/utils/economyEngine.js, and src/utils/gigStats.js, including the dual mutable ref model (gameStateRef vs statsRef), note positioning math, hit/miss windows, visual hit feedback timing, and daily/performance modifier calculations.",
       "parent": "Core Subsystems Overview",
       "page_notes": [
         {
@@ -464,7 +464,7 @@
     },
     {
       "title": "Social Engine & Procedural Assets",
-      "purpose": "Document src/utils/socialEngine.js (150 lines) mechanics: platform multiplier tables, virality scoring formula, integration with GameStateProvider via dispatched ActionTypes for followers/fame updates, and social post rendering via src/components/ChatterOverlay.jsx using templates from src/data/chatter.js. Also document src/utils/imageGen.js (146 lines) integration with Pollinations.ai for procedural images: prompt construction from IMG_PROMPTS categories, network request lifecycle, in-memory caching strategy, fallback behavior on fetch failure or offline state, and where generated assets are consumed by scene/UI components.",
+      "purpose": "Document src/utils/socialEngine.js mechanics: platform multiplier tables, virality scoring formula, integration with GameStateProvider via dispatched ActionTypes for followers/fame updates, and social post rendering via src/components/ChatterOverlay.jsx using templates from src/data/chatter.js. Also document src/utils/imageGen.js integration with Pollinations.ai for procedural images: prompt construction from IMG_PROMPTS categories, network request lifecycle, in-memory caching strategy, fallback behavior on fetch failure or offline state, and where generated assets are consumed by scene/UI components.",
       "parent": "Core Subsystems Overview",
       "page_notes": [
         {
@@ -475,7 +475,7 @@
     },
     {
       "title": "Tutorial & Unlock Systems",
-      "purpose": "Document the onboarding and progression systems: src/components/TutorialManager.jsx provides step-by-step onboarding tooltips guided by player.tutorialStep state, showing contextual help during first travel, first gig preparation, and first rhythm performance. src/utils/unlockManager.js (56 lines) tracks achievement/unlock milestones based on game progression (venues visited, gigs completed, fame thresholds), feeding into UI unlock indicators and gating access to higher-tier venues via venue requirements fields in src/data/venues.js.",
+      "purpose": "Document the onboarding and progression systems: src/components/TutorialManager.jsx provides step-by-step onboarding tooltips guided by player.tutorialStep state, showing contextual help during first travel, first gig preparation, and first rhythm performance. src/utils/unlockManager.js tracks achievement/unlock milestones based on game progression (venues visited, gigs completed, fame thresholds), feeding into UI unlock indicators and gating access to higher-tier venues via venue requirements fields in src/data/venues.js.",
       "parent": "Overview",
       "page_notes": [
         {

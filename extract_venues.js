@@ -8,7 +8,7 @@ const venueMatch = content.match(
 )
 
 if (venueMatch) {
-  const venueData = `export const VENUE_CHATTER_DB = ${venueMatch[1]};`
+  const venueData = `export const VENUE_CHATTER_DB = ${venueMatch[1]}`
   fs.writeFileSync('./src/data/chatter/venueChatter.js', venueData)
   console.log(
     'SUCCESS: Extracted VENUE_CHATTER_DB to ./src/data/chatter/venueChatter.js'

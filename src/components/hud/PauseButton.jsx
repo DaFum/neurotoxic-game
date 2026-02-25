@@ -20,6 +20,7 @@ export const PauseButton = memo(function PauseButton({
           strokeWidth={1.5}
           stroke='currentColor'
           className='w-8 h-8'
+          aria-hidden='true'
         >
           <path
             strokeLinecap='round'

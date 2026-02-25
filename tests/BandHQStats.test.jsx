@@ -30,7 +30,7 @@ vi.mock('../src/ui/shared/index.jsx', () => ({
   SettingsPanel: () => <div />,
   VolumeSlider: () => <div />,
   Modal: () => <div />,
-  ActionButton: () => <button />
+  ActionButton: () => <button type='button' />
 }))
 // Mock CHARACTERS data
 vi.mock('../src/data/characters.js', () => ({

@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useGameState } from '../../context/GameState'
 import { negotiateDeal } from '../../utils/socialEngine'
 import { Modal, ActionButton } from '../../ui/shared'
@@ -12,6 +12,16 @@ export const DealsPhase = ({ offers, onAccept, onSkip }) => {
   const [negotiationModalOpen, setNegotiationModalOpen] = useState(false)
   const [selectedDeal, setSelectedDeal] = useState(null)
   const [negotiationResult, setNegotiationResult] = useState(null) // To show result in modal before closing
+  const negotiationTimerRef = useRef(null)
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (negotiationTimerRef.current) {
+        clearTimeout(negotiationTimerRef.current)
+      }
+    }
+  }, [])
 
   const handleNegotiationStart = deal => {
     setSelectedDeal(deal)
@@ -58,40 +68,10 @@ export const DealsPhase = ({ offers, onAccept, onSkip }) => {
     // Or just close and let the toast/UI update handle it.
     // Let's keep modal open for a second or show a "Continue" button in modal if we want.
     // For now, let's just close it after a short delay or immediately.
-    setTimeout(() => {
+    negotiationTimerRef.current = setTimeout(() => {
       setNegotiationModalOpen(false)
       setSelectedDeal(null)
     }, 1500)
-  }
-
-  const getAlignmentBadge = alignment => {
-    switch (alignment) {
-      case BRAND_ALIGNMENTS.EVIL:
-        return '😈 EVIL'
-      case BRAND_ALIGNMENTS.CORPORATE:
-        return '🏢 CORP'
-      case BRAND_ALIGNMENTS.INDIE:
-        return '🎸 INDIE'
-      case BRAND_ALIGNMENTS.SUSTAINABLE:
-        return '🌱 ECO'
-      default:
-        return '❓ UNKNOWN'
-    }
-  }
-
-  const getAlignmentColor = alignment => {
-    switch (alignment) {
-      case BRAND_ALIGNMENTS.EVIL:
-        return 'text-(--toxic-green)'
-      case BRAND_ALIGNMENTS.CORPORATE:
-        return 'text-(--electric-blue)'
-      case BRAND_ALIGNMENTS.INDIE:
-        return 'text-(--hot-pink)'
-      case BRAND_ALIGNMENTS.SUSTAINABLE:
-        return 'text-(--warning-yellow)'
-      default:
-        return 'text-(--ash-gray)'
-    }
   }
 
   return (
@@ -241,6 +221,7 @@ export const DealsPhase = ({ offers, onAccept, onSkip }) => {
             </p>
 
             <button
+              type='button'
               onClick={() => handleNegotiationSubmit('SAFE')}
               className='w-full p-3 border border-(--toxic-green) hover:bg-(--toxic-green)/20 text-left group transition-all'
             >
@@ -253,6 +234,7 @@ export const DealsPhase = ({ offers, onAccept, onSkip }) => {
             </button>
 
             <button
+              type='button'
               onClick={() => handleNegotiationSubmit('PERSUASIVE')}
               className='w-full p-3 border border-(--electric-blue) hover:bg-(--electric-blue)/20 text-left group transition-all'
             >
@@ -266,6 +248,7 @@ export const DealsPhase = ({ offers, onAccept, onSkip }) => {
             </button>
 
             <button
+              type='button'
               onClick={() => handleNegotiationSubmit('AGGRESSIVE')}
               className='w-full p-3 border border-(--blood-red) hover:bg-(--blood-red)/20 text-left group transition-all'
             >
@@ -303,4 +286,34 @@ DealsPhase.propTypes = {
   offers: PropTypes.array.isRequired,
   onAccept: PropTypes.func.isRequired,
   onSkip: PropTypes.func.isRequired
+}
+
+const getAlignmentBadge = alignment => {
+  switch (alignment) {
+    case BRAND_ALIGNMENTS.EVIL:
+      return '😈 EVIL'
+    case BRAND_ALIGNMENTS.CORPORATE:
+      return '🏢 CORP'
+    case BRAND_ALIGNMENTS.INDIE:
+      return '🎸 INDIE'
+    case BRAND_ALIGNMENTS.SUSTAINABLE:
+      return '🌱 ECO'
+    default:
+      return '❓ UNKNOWN'
+  }
+}
+
+const getAlignmentColor = alignment => {
+  switch (alignment) {
+    case BRAND_ALIGNMENTS.EVIL:
+      return 'text-(--toxic-green)'
+    case BRAND_ALIGNMENTS.CORPORATE:
+      return 'text-(--electric-blue)'
+    case BRAND_ALIGNMENTS.INDIE:
+      return 'text-(--hot-pink)'
+    case BRAND_ALIGNMENTS.SUSTAINABLE:
+      return 'text-(--warning-yellow)'
+    default:
+      return 'text-(--ash-gray)'
+  }
 }

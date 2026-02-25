@@ -241,7 +241,7 @@ export const POST_OPTIONS = [
       )
       return (
         (lastGigStats && lastGigStats.score > 15000) ||
-        social.egoFocus ||
+        (social && social.egoFocus) ||
         isVirtuoso
       )
     },

@@ -248,7 +248,10 @@ export const PostGig = () => {
             ...social.influencers,
             [id]: {
               ...currentInfluencer,
-              score: Math.min(100, (currentInfluencer.score || 0) + scoreChange)
+              score: Math.min(
+                100,
+                Math.max(0, (currentInfluencer.score || 0) + scoreChange)
+              )
             }
           }
         }
@@ -296,7 +299,8 @@ export const PostGig = () => {
       updateBand,
       updatePlayer,
       unlockTrait,
-      addToast
+      addToast,
+      currentGig
     ]
   )
 
