@@ -19,8 +19,6 @@ describe('VolumeSlider', () => {
     const handleChange = () => {}
     const { getByLabelText } = render(React.createElement(VolumeSlider, { label: 'Music Volume', value: 0.5, onChange: handleChange }))
 
-    // This should find the input associated with the label 'Music Volume'
-    // This will FAIL now (because label is not linked), and PASS after fix.
     const input = getByLabelText('Music Volume')
     expect(input).toBeTruthy()
     expect(input.tagName).toBe('INPUT')

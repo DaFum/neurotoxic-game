@@ -41,7 +41,10 @@ export const PostGig = () => {
     lastGigStats,
     addToast,
     changeScene,
-    unlockTrait
+    unlockTrait,
+    reputationByRegion,
+    activeStoryFlags,
+    addQuest
   } = useGameState()
   const [phase, setPhase] = useState('REPORT') // REPORT, SOCIAL, DEALS, COMPLETE
   const [financials, setFinancials] = useState(null)
@@ -80,7 +83,13 @@ export const PostGig = () => {
         modifiers: gigModifiers,
         bandInventory: band.inventory,
         playerState: player,
-        gigStats: lastGigStats
+        gigStats: lastGigStats,
+        context: {
+          controversyLevel: social?.controversyLevel || 0,
+          regionRep: reputationByRegion?.[player?.location] || 0,
+          loyalty: social?.loyalty || 0,
+          discountedTickets: activeStoryFlags?.includes('discounted_tickets_active')
+        }
       })
       setFinancials(result)
 
@@ -178,6 +187,7 @@ export const PostGig = () => {
       lastGigDay: player.day,
       controversyLevel: Math.max(0, (social.controversyLevel || 0) + (result.controversyChange || 0)),
       loyalty: Math.max(0, (social.loyalty || 0) + (result.loyaltyChange || 0)),
+      reputationCooldown: result.reputationCooldownSet !== undefined ? result.reputationCooldownSet : social.reputationCooldown,
       egoFocus: result.egoClear ? null : (result.egoDrop ? result.egoDrop : social.egoFocus),
       sponsorActive: option.id === 'comm_sellout_ad' ? false : social.sponsorActive,
       trend: social.trend,
@@ -272,13 +282,37 @@ export const PostGig = () => {
       fame: player.fame + fameGain
     })
 
+    if (activeStoryFlags?.includes('cancel_quest_active')) {
+      addQuest({
+        id: 'quest_apology_tour',
+        label: 'APOLOGY TOUR',
+        deadline: player.day + 14,
+        progress: 0,
+        required: 3,
+        rewardFlag: 'apology_tour_complete',
+        failurePenalty: { social: { controversyLevel: 25 }, band: { harmony: -20 } }
+      })
+    }
+    
+    if (activeStoryFlags?.includes('breakup_quest_active')) {
+      addQuest({
+        id: 'quest_ego_management',
+        label: 'SAVE THE BAND',
+        deadline: player.day + 5,
+        progress: 0,
+        required: 1,
+        rewardFlag: 'ego_crisis_resolved',
+        failurePenalty: { type: 'game_over' }
+      })
+    }
+
     if (shouldTriggerBankruptcy(newMoney, financials.net)) {
       addToast('GAME OVER: BANKRUPT! The tour is over.', 'error')
       changeScene('GAMEOVER')
     } else {
       changeScene('OVERWORLD')
     }
-  }, [financials, perfScore, player.money, player.fame, updatePlayer, addToast, changeScene])
+  }, [financials, perfScore, player.money, player.fame, updatePlayer, addToast, changeScene, activeStoryFlags, addQuest, player.day])
 
   const handleNextPhase = useCallback(() => {
     setPhase('SOCIAL')

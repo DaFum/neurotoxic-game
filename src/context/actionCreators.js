@@ -267,3 +267,8 @@ export const createUnlockTraitAction = (memberId, traitId) => ({
   type: ActionTypes.UNLOCK_TRAIT,
   payload: { memberId, traitId }
 })
+
+export const createAddVenueBlacklistAction = venueName => ({ type: ActionTypes.ADD_VENUE_BLACKLIST, payload: venueName })
+export const createAddQuestAction = quest => ({ type: ActionTypes.ADD_QUEST, payload: quest })
+export const createAdvanceQuestAction = (questId, amount = 1) => ({ type: ActionTypes.ADVANCE_QUEST, payload: { questId, amount } })
+export const createCompleteQuestAction = questId => ({ type: ActionTypes.COMPLETE_QUEST, payload: { questId } })

@@ -35,6 +35,7 @@ export const getPrimaryEffect = item => {
 export const usePurchaseLogic = ({
   player,
   band,
+  social,
   updatePlayer,
   updateBand,
   addToast
@@ -503,11 +504,12 @@ export const usePurchaseLogic = ({
     item => {
       const effect = getPrimaryEffect(item)
       if (!effect) return true
+      if (item.requiresReputation && (social?.controversyLevel || 0) >= 50) return true
       const isConsumable = effect.type === 'inventory_add'
       const isOwned = isItemOwned(item)
       return (isOwned && !isConsumable) || !canAfford(item)
     },
-    [isItemOwned, canAfford]
+    [isItemOwned, canAfford, social]
   )
 
   return {

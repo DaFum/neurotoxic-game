@@ -359,5 +359,207 @@ export const CRISIS_EVENTS = [
           'You hired a cheap lawyer. A compromise was reached. Nobody is happy.'
       }
     ]
+  },
+  {
+    id: 'crisis_poor_performance',
+    category: 'band',
+    tags: ['crisis', 'performance'],
+    title: 'DISASTROUS GIG',
+    description: 'Word is spreading about your terrible performance last night. Fans are demanding refunds.',
+    trigger: 'post_gig',
+    chance: 1.0,
+    condition: gs => (gs.lastGigStats?.score || 100) < 30 && !gs.eventCooldowns?.includes('crisis_poor_performance'),
+    options: [
+      {
+        label: 'Blame the sound engineer [Charisma]',
+        skillCheck: {
+          stat: 'charisma',
+          threshold: 7,
+          success: {
+            type: 'composite',
+            effects: [
+              { type: 'stat', stat: 'controversyLevel', value: 5 },
+              { type: 'stat', stat: 'harmony', value: 5 }
+            ],
+            description: 'People bought your excuse, but industry folks noticed the shifting blame.'
+          },
+          failure: {
+            type: 'composite',
+            effects: [
+              { type: 'stat', stat: 'controversyLevel', value: 20 },
+              { type: 'stat', stat: 'loyalty', value: -10 }
+            ],
+            description: 'The sound guy posted the raw stems. You sounded awful. Backlash is immense.'
+          }
+        },
+        outcomeText: 'You fired off an angry tweet.'
+      },
+      {
+        label: 'Issue a humble apology',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'stat', stat: 'loyalty', value: 10 },
+            { type: 'stat', stat: 'controversyLevel', value: -5 }
+          ]
+        },
+        outcomeText: 'You admitted you had a bad night. True fans respect the honesty.'
+      }
+    ]
+  },
+  {
+    id: 'crisis_leaked_story',
+    category: 'band',
+    tags: ['crisis', 'scandal'],
+    title: 'LEAKED RUMORS',
+    description: 'An anonymous source leaked an embarrassing, out-of-context story about the band to a major music drama channel.',
+    trigger: 'travel',
+    chance: 0.4,
+    condition: gs => (gs.social?.controversyLevel || 0) >= 60,
+    options: [
+      {
+        label: 'Let true fans defend you (Loyalty Shield)',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'stat', stat: 'controversyLevel', value: -15 },
+            { type: 'stat', stat: 'loyalty', value: -20 }
+          ]
+        },
+        outcomeText: 'Your hardcore fanbase went to war in the comments, shutting down the rumors. They are exhausted, but it worked.',
+      },
+      {
+        label: 'Deny everything',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'stat', stat: 'controversyLevel', value: 15 },
+            { type: 'stat', stat: 'harmony', value: -10 }
+          ]
+        },
+        outcomeText: 'The denial looked suspicious. The rumors only grew louder.'
+      }
+    ]
+  },
+  {
+    id: 'crisis_mass_unfollow',
+    category: 'social',
+    tags: ['crisis', 'social_media'],
+    title: 'MASS UNFOLLOW',
+    description: 'A dedicated hate-campaign has started trending. People are unfollowing you in droves to avoid association.',
+    trigger: 'post_gig',
+    chance: 0.5,
+    condition: gs => (gs.social?.controversyLevel || 0) >= 75 && !gs.eventCooldowns?.includes('crisis_mass_unfollow'),
+    options: [
+      {
+        label: 'Watch the numbers drop',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'stat', stat: 'loyalty', value: 5 },
+            { type: 'stat', stat: 'harmony', value: -10 }
+          ]
+        },
+        outcomeText: 'You lost thousands of followers, but the ones remaining are your true cult.'
+      }
+    ]
+  },
+  {
+    id: 'crisis_ego_clash',
+    category: 'band',
+    tags: ['crisis', 'ego', 'drama'],
+    title: 'EGO CLASH',
+    description: 'The constant spotlight on one member has finally boiled over into a full screaming match in the van.',
+    trigger: 'travel',
+    chance: 0.6,
+    condition: gs => gs.social?.egoFocus !== null && (gs.band?.harmony || 100) < 40,
+    options: [
+      {
+        label: 'Intervene and mediate [Charisma]',
+        skillCheck: {
+          stat: 'charisma',
+          threshold: 7,
+          success: {
+            type: 'composite',
+            effects: [
+              { type: 'stat', stat: 'harmony', value: 20 },
+              { type: 'stat', stat: 'controversyLevel', value: -5 }
+            ],
+            description: 'You managed to de-escalate the situation before punches were thrown.'
+          },
+          failure: {
+            type: 'composite',
+            effects: [
+              { type: 'stat', stat: 'harmony', value: -20 },
+              { type: 'stat', stat: 'mood', value: -15 }
+            ],
+            description: 'You just made it worse. Someone stormed out into the rain.'
+          }
+        },
+        outcomeText: 'You stepped between them.'
+      },
+      {
+        label: 'Let them fight it out',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'stat', stat: 'harmony', value: -10 },
+            { type: 'stat', stat: 'controversyLevel', value: 10 }
+          ]
+        },
+        outcomeText: 'The argument leaked online. The band is barely holding together.'
+      }
+    ]
+  },
+  {
+    id: 'crisis_notice_50',
+    category: 'band',
+    tags: ['crisis', 'milestone'],
+    title: 'WARNING SIGNS',
+    description: 'Your controversy has reached a boiling point. Venues and sponsors are starting to get nervous. Harmony is draining faster.',
+    trigger: 'post_gig',
+    chance: 1.0,
+    condition: gs => (gs.social?.controversyLevel || 0) >= 50 && !gs.activeStoryFlags?.includes('saw_crisis_50'),
+    options: [
+      {
+        label: 'We need to be careful',
+        effect: { type: 'flag', flag: 'saw_crisis_50' },
+        outcomeText: 'The pressure is mounting.'
+      }
+    ]
+  },
+  {
+    id: 'crisis_notice_80',
+    category: 'band',
+    tags: ['crisis', 'milestone'],
+    title: 'ALGORITHM PENALTY',
+    description: 'The platforms have labeled your account as problematic. Your growth is severely restricted, and sponsors are dropping out.',
+    trigger: 'post_gig',
+    chance: 1.0,
+    condition: gs => (gs.social?.controversyLevel || 0) >= 80 && !gs.activeStoryFlags?.includes('saw_crisis_80'),
+    options: [
+      {
+        label: 'This is bad',
+        effect: { type: 'flag', flag: 'saw_crisis_80' },
+        outcomeText: 'You are fighting an uphill battle now.'
+      }
+    ]
+  },
+  {
+    id: 'crisis_notice_100',
+    category: 'band',
+    tags: ['crisis', 'milestone'],
+    title: 'SHADOWBANNED',
+    description: 'You have been completely shadowbanned. Your follower count is actively shrinking, and the industry has blacklisted you.',
+    trigger: 'post_gig',
+    chance: 1.0,
+    condition: gs => (gs.social?.controversyLevel || 0) >= 100 && !gs.activeStoryFlags?.includes('saw_crisis_100'),
+    options: [
+      {
+        label: 'Are we cancelled?',
+        effect: { type: 'flag', flag: 'saw_crisis_100' },
+        outcomeText: 'Yes. Yes you are.'
+      }
+    ]
   }
 ]

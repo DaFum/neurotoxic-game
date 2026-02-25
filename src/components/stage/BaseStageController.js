@@ -104,7 +104,7 @@ export class BaseStageController {
     if (this.app) {
       try {
         this.app.ticker?.remove(this.handleTicker)
-        this.app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })
+        this.app.destroy({ removeView: true, children: true, texture: true, textureSource: true })
       } catch (e) {
         logger.warn(this.constructor.name, 'Destroy failed', e)
       }

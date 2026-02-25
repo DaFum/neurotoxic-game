@@ -34,7 +34,9 @@ export const DEFAULT_PLAYER_STATE = {
   stats: {
     totalDistance: 0,
     conflictsResolved: 0,
-    stageDives: 0
+    stageDives: 0,
+    consecutiveBadShows: 0,
+    proveYourselfMode: false
   }
 }
 
@@ -83,6 +85,7 @@ export const DEFAULT_SOCIAL_STATE = {
   lastGigDay: null,
   controversyLevel: 0,
   loyalty: 0,
+  reputationCooldown: 0,
   egoFocus: null,
   sponsorActive: false,
   trend: 'NEUTRAL', // 'NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME'
@@ -140,6 +143,8 @@ export const initialState = {
   activeStoryFlags: [],
   eventCooldowns: [],
   pendingEvents: [],
+  venueBlacklist: [],
+  activeQuests: [],
   reputationByRegion: {},
   settings: { ...DEFAULT_SETTINGS },
   npcs: {},
@@ -154,6 +159,8 @@ export const initialState = {
 export const createInitialState = () => ({
   ...initialState,
   player: structuredClone(DEFAULT_PLAYER_STATE),
+  venueBlacklist: [],
+  activeQuests: [],
   band: {
     ...DEFAULT_BAND_STATE,
     members: DEFAULT_BAND_STATE.members.map(m => ({ ...m, traits: [...m.traits] })),

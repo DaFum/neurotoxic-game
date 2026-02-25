@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { CHARACTERS } from '../src/data/characters.js'
 import { SONGS_DB } from '../src/data/songs.js'
-import { UPGRADES_DB } from '../src/data/upgrades.js'
+
 import { ALL_VENUES } from '../src/data/venues.js'
 // Chatter might be a simple export
 // import { CHATTER_DB } from '../src/data/chatter.js';
@@ -84,23 +84,7 @@ test('SONGS_DB sourceOgg field', () => {
   })
 })
 
-test('UPGRADES_DB data integrity', () => {
-  Object.values(UPGRADES_DB).forEach(category => {
-    assert.ok(Array.isArray(category))
-    category.forEach(upgrade => {
-      assert.strictEqual(typeof upgrade.id, 'string')
-      assert.strictEqual(typeof upgrade.name, 'string')
-      assert.strictEqual(typeof upgrade.cost, 'number')
-      assert.ok(
-        Array.isArray(upgrade.effects),
-        'Upgrade should have effects array'
-      )
-      upgrade.effects.forEach(effect => {
-        assert.ok(effect.type, 'Each upgrade effect should define a type')
-      })
-    })
-  })
-})
+
 
 test('ALL_VENUES data integrity', () => {
   assert.ok(Array.isArray(ALL_VENUES))

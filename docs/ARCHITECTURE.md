@@ -36,15 +36,26 @@ src/
 │   ├── gameReducer.js
 │   └── actionCreators.js
 ├── data/
-│   ├── events.js
 │   ├── venues.js
 │   ├── songs.js
-│   ├── chatter.js
+│   ├── chatter/
+│   │   ├── index.js
+│   │   ├── standardChatter.js
+│   │   └── venueChatter.js
 │   ├── postOptions.js
-│   ├── upgrades.js
 │   ├── upgradeCatalog.js
 │   ├── hqItems.js
+│   ├── brandDeals.js
+│   ├── characters.js
 │   └── events/
+│       ├── index.js
+│       ├── transport.js
+│       ├── band.js
+│       ├── gig.js
+│       ├── financial.js
+│       ├── special.js
+│       ├── crisis.js
+│       └── consequences.js
 ├── hooks/
 │   ├── useTravelLogic.js
 │   ├── usePurchaseLogic.js
@@ -110,15 +121,16 @@ Global state lives in `GameStateProvider` and is mutated only through reducer ac
 ### High-level slices
 
 - `currentScene`
-- `player` (money/day/time/location/van/fame/tutorial state)
+- `player` (money/day/time/location/van/fame/tutorial state/stats)
 - `band` (members/harmony/inventory/performance)
-- `social` (platform followers, virality, controversy level, loyalty, ego focus)
+- `social` (platform followers, virality, controversy level, loyalty, ego focus, reputationCooldown)
 - `gameMap`
 - `currentGig`, `setlist`, `lastGigStats`
 - `activeEvent`, `pendingEvents`, `eventCooldowns`, `activeStoryFlags`
 - `toasts`
 - `settings`
 - `gigModifiers`
+- `venueBlacklist`, `activeQuests`, `reputationByRegion`
 
 ### Guardrails implemented in reducer
 
@@ -154,4 +166,4 @@ Global state lives in `GameStateProvider` and is mutated only through reducer ac
 
 ---
 
-_Last updated: 2026-02-24. Social Engine architecture integrated._
+_Last updated: 2026-02-25. Consequence system, quest system, and source tree corrections applied._

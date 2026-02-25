@@ -23,6 +23,7 @@ const MockPIXI = {
     }
     addChild() {}
     destroy() {}
+    removeChildren() {}
     get filters() { return this._filters }
     set filters(v) {
       filterSetCount++
@@ -73,8 +74,11 @@ describe('PixiStageController Filter Performance', () => {
   let createPixiStageController
 
   beforeEach(async () => {
-    filterSetCount = 0
-    globalThis.window = { devicePixelRatio: 1 }
+    globalThis.window = { 
+      devicePixelRatio: 1,
+      addEventListener: mock.fn(),
+      removeEventListener: mock.fn()
+    }
 
     // Re-import to apply mocks
     const controllerModule = await import('../../src/components/PixiStageController.js')

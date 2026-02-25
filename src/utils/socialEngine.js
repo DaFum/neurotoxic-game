@@ -63,10 +63,17 @@ export const generatePostOptions = (gigResult, gameState, rng = secureRandom) =>
     }
   })
 
+  const cooldownBlockedIds = ['recovery_apology_tour_promo', 'recovery_leaked_good_deed']
+  if ((gameState.social?.reputationCooldown || 0) > 0) {
+    eligibleOptions = eligibleOptions.filter(opt => !cooldownBlockedIds.includes(opt.id))
+  }
+
   const results = []
 
   // 1a. Forced Sponsor Post Override
-  if (gameState.social?.sponsorActive) {
+  // Check if there are active deals of type SPONSORSHIP.
+  const hasActiveSponsor = gameState.social?.activeDeals && gameState.social.activeDeals.some(d => d.type === 'SPONSORSHIP')
+  if (gameState.social?.sponsorActive || hasActiveSponsor) {
     // Force a specific commercial post or synthesize one
     const sponsorOpt = eligibleOptions.find(o => o.id === 'comm_sellout_ad')
     if (sponsorOpt) {
@@ -145,6 +152,7 @@ export const resolvePost = (postOption, gameState, diceRoll = secureRandom()) =>
       allMembersStaminaChange: result.allMembersStaminaChange,
       egoDrop: result.egoDrop,
       egoClear: result.egoClear,
+      reputationCooldownSet: result.reputationCooldownSet,
       unlockTrait: result.unlockTrait
     }
   } catch (e) {

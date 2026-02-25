@@ -18,6 +18,98 @@ const POST_BADGES = {
  * - Support multi-platform cross-posting with diminishing returns.
  */
 export const POST_OPTIONS = [
+  // --- CATEGORY: RECOVERY & CRISIS ---
+  {
+    id: 'recovery_apology_tour_promo',
+    name: 'Apology Tour Promo',
+    platform: SOCIAL_PLATFORMS.YOUTUBE.id,
+    category: 'Drama',
+    badges: [POST_BADGES.RISK, POST_BADGES.STORY],
+    condition: ({ social, activeQuests }) => (social?.reputationCooldown || 0) === 0 && (activeQuests || []).some(q => q.id === 'quest_apology_tour'),
+    resolve: () => ({
+      type: 'FIXED',
+      success: true,
+      platform: SOCIAL_PLATFORMS.YOUTUBE.id,
+      followers: 2000,
+      controversyChange: -20,
+      loyaltyChange: 20,
+      harmonyChange: 5,
+      reputationCooldownSet: 5,
+      message: 'The fans are responding well to your honesty.'
+    })
+  },
+  {
+    id: 'recovery_leaked_good_deed',
+    name: 'Leaked Good Deed',
+    platform: SOCIAL_PLATFORMS.TIKTOK.id,
+    category: 'Drama',
+    badges: [POST_BADGES.VIRAL, POST_BADGES.STORY],
+    condition: ({ social }) => (social?.controversyLevel || 0) >= 50 && (social?.reputationCooldown || 0) === 0,
+    resolve: ({ diceRoll }) => {
+      if (diceRoll < 0.55) {
+        return {
+          type: 'RNG_SUCCESS',
+          success: true,
+          platform: SOCIAL_PLATFORMS.TIKTOK.id,
+          followers: 3500,
+          controversyChange: -30,
+          loyaltyChange: 25,
+          reputationCooldownSet: 7,
+          message: 'The leak worked beautifully. People think you are misunderstood.'
+        }
+      } else {
+        return {
+          type: 'RNG_FAIL',
+          success: false,
+          platform: SOCIAL_PLATFORMS.TIKTOK.id,
+          followers: -500,
+          controversyChange: 15,
+          message: 'It looked completely staged. Backlash increased.'
+        }
+      }
+    }
+  },
+  {
+    id: 'recovery_prove_yourself_clip',
+    name: 'Gritty Small Venue Clip',
+    platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+    category: 'Performance',
+    badges: [POST_BADGES.SAFE, POST_BADGES.STORY],
+    condition: ({ player }) => player?.stats?.proveYourselfMode === true,
+    resolve: () => ({
+      type: 'FIXED',
+      success: true,
+      platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
+      followers: 1500,
+      loyaltyChange: 20,
+      controversyChange: -10,
+      harmonyChange: 5,
+      message: 'Back to your roots. The hardcore fans love this energy.'
+    })
+  },
+  {
+    id: 'comm_loyalty_merch_drive',
+    name: 'Emergency Newsletter Merch Drive',
+    platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
+    category: 'Commercial',
+    badges: [POST_BADGES.COMMERCIAL],
+    condition: ({ social }) => (social?.controversyLevel || 0) >= 40 && (social?.loyalty || 0) >= 20,
+    resolve: ({ social }) => {
+      const loyaltyVal = social?.loyalty || 0
+      const moneyGain = Math.min(loyaltyVal * 8, 600)
+      const loyaltyBurn = Math.floor(loyaltyVal * 0.3)
+      return {
+        type: 'FIXED',
+        success: true,
+        platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
+        followers: 0,
+        moneyChange: moneyGain,
+        loyaltyChange: -loyaltyBurn,
+        message: 'You tapped your most loyal fans for cash during the crisis.'
+      }
+    }
+  },
+
   // --- CATEGORY: PERFORMANCE & STAGE ANTICS ---
   {
     id: 'perf_smashed_gear',

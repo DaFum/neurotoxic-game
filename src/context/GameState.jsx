@@ -49,7 +49,9 @@ import {
   createCompleteTravelMinigameAction,
   createStartRoadieMinigameAction,
   createCompleteRoadieMinigameAction,
-  createUnlockTraitAction
+  createUnlockTraitAction,
+  createAddQuestAction,
+  createAdvanceQuestAction
 } from './actionCreators'
 import PropTypes from 'prop-types'
 
@@ -268,6 +270,16 @@ export const GameStateProvider = ({ children }) => {
 
   const unlockTrait = useCallback(
     (memberId, traitId) => dispatch(createUnlockTraitAction(memberId, traitId)),
+    []
+  )
+
+  const addQuest = useCallback(
+    quest => dispatch(createAddQuestAction(quest)),
+    []
+  )
+
+  const advanceQuest = useCallback(
+    (questId, progressAmount) => dispatch(createAdvanceQuestAction(questId, progressAmount)),
     []
   )
 
@@ -535,7 +547,9 @@ export const GameStateProvider = ({ children }) => {
       startRoadieMinigame,
       completeRoadieMinigame,
       unlockTrait,
-      endGig
+      endGig,
+      addQuest,
+      advanceQuest
     }),
     [
       changeScene,
@@ -564,7 +578,9 @@ export const GameStateProvider = ({ children }) => {
       startRoadieMinigame,
       completeRoadieMinigame,
       unlockTrait,
-      endGig
+      endGig,
+      addQuest,
+      advanceQuest
     ]
   )
 
@@ -573,7 +589,9 @@ export const GameStateProvider = ({ children }) => {
   dispatchValueRef.current = dispatchValue
 
   useEffect(() => {
-    if (import.meta.env.DEV) {
+    // Safely check for DEV environment to avoid crashes in test runners that don't polyfill import.meta.env
+    const isDev = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV
+    if (isDev) {
       Object.defineProperty(window, 'gameState', {
         configurable: true,
         get: () => ({ ...stateRef.current, ...dispatchValueRef.current })

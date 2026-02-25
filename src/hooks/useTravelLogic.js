@@ -58,6 +58,8 @@ export const useTravelLogic = ({
   startGig,
   addToast,
   changeScene,
+  reputationByRegion,
+  venueBlacklist = [],
   onShowHQ,
   onStartTravelMinigame
 }) => {
@@ -73,6 +75,8 @@ export const useTravelLogic = ({
   const playerRef = useRef(player)
   const bandRef = useRef(band)
   const gameMapRef = useRef(gameMap)
+  const reputationByRegionRef = useRef(reputationByRegion)
+  const venueBlacklistRef = useRef(venueBlacklist)
   const isTravelingRef = useRef(isTraveling)
   const pendingTravelNodeRef = useRef(pendingTravelNode)
 
@@ -84,7 +88,9 @@ export const useTravelLogic = ({
     playerRef.current = player
     bandRef.current = band
     gameMapRef.current = gameMap
-  }, [player, band, gameMap])
+    reputationByRegionRef.current = reputationByRegion
+    venueBlacklistRef.current = venueBlacklist
+  }, [player, band, gameMap, reputationByRegion, venueBlacklist])
 
   /**
    * Checks if a target node is connected to the current node
@@ -364,6 +370,31 @@ export const useTravelLogic = ({
       const currentStartNode = gameMap?.nodes[player.currentNodeId]
       const currentLayer = currentStartNode?.layer || 0
       const visibility = getNodeVisibilityUtil(node.layer, currentLayer)
+
+      const reputation = reputationByRegionRef.current || {}
+      const bList = venueBlacklistRef.current || []
+
+      if (node.type !== 'START' && node.venue) {
+        if (bList.includes(node.venue.name)) {
+          addToast(`Booking refused: ${node.venue.name} has permanently blacklisted you!`, 'error')
+          if (pendingTravelNode?.id === node.id) clearPendingTravel()
+          return
+        }
+
+        if (player?.stats?.proveYourselfMode && node.venue.capacity > 150) {
+          addToast(`PROVE YOURSELF MODE: You must rebuild your reputation in small venues (150 cap or less). ${node.venue.name} is too big!`, 'error')
+          if (pendingTravelNode?.id === node.id) clearPendingTravel()
+          return
+        }
+
+        if ((reputation[node.venue.name] || 0) <= -30) {
+          addToast(`Booking refused: The venue in ${node.venue.name} blacklisted you due to poor regional reputation!`, 'error')
+          if (pendingTravelNode?.id === node.id) {
+            clearPendingTravel()
+          }
+          return
+        }
+      }
 
       // Allow travel to START node from anywhere if connected, bypassing standard layer/visibility rules if needed.
       if (node.type === 'START') {
