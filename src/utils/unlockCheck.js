@@ -14,7 +14,7 @@ export const checkTraitUnlocks = (state, context = {}) => {
 
   // Helpers to find members
   const getMember = (name) => members.find(m => m.name === name)
-  const matze = getMember(CHARACTERS.MATZE.name)
+  const Matze = getMember(CHARACTERS.MATZE.name)
   const Marius = getMember(CHARACTERS.MARIUS.name)
   const Lars = getMember(CHARACTERS.LARS.name)
 
@@ -23,13 +23,13 @@ export const checkTraitUnlocks = (state, context = {}) => {
     const { accuracy, misses, song, maxCombo } = context.gigStats
 
     // Virtuoso (Matze): 100% Accuracy (0 Misses)
-    if (matze && !hasTrait(matze, 'virtuoso') && misses === 0) {
-      newUnlocks.push({ memberId: matze.name, traitId: 'virtuoso' })
+    if (Matze && !hasTrait(Matze, 'virtuoso') && misses === 0) {
+      newUnlocks.push({ memberId: Matze.name, traitId: 'virtuoso' })
     }
 
     // Perfektionist (Matze): 100% Accuracy (match UI hint)
-    if (matze && !hasTrait(matze, 'perfektionist') && accuracy === 100) {
-      newUnlocks.push({ memberId: matze.name, traitId: 'perfektionist' })
+    if (Matze && !hasTrait(Matze, 'perfektionist') && accuracy === 100) {
+      newUnlocks.push({ memberId: Matze.name, traitId: 'perfektionist' })
     }
 
     // Blast Machine (Marius): Fast song (>160 BPM) && Max Combo > 50
@@ -49,10 +49,10 @@ export const checkTraitUnlocks = (state, context = {}) => {
     }
 
     // Tech Wizard (Matze): Technical Song (Difficulty > 3) && 100% Accuracy
-    if (matze && !hasTrait(matze, 'tech_wizard')) {
+    if (Matze && !hasTrait(Matze, 'tech_wizard')) {
       const isTechnical = (song?.difficulty || 0) > 3
       if (isTechnical && accuracy === 100) {
-        newUnlocks.push({ memberId: matze.name, traitId: 'tech_wizard' })
+        newUnlocks.push({ memberId: Matze.name, traitId: 'tech_wizard' })
       }
     }
   }
@@ -79,7 +79,7 @@ export const checkTraitUnlocks = (state, context = {}) => {
     }
 
     // Gear Nerd (Matze): Own 5+ Gear/Instrument items
-    if (matze && !hasTrait(matze, 'gear_nerd')) {
+    if (Matze && !hasTrait(Matze, 'gear_nerd')) {
       /**
        * Gear Nerd Unlock Logic
        * The `context.gearCount` is pre-calculated by the caller (usePurchaseLogic)
@@ -87,7 +87,7 @@ export const checkTraitUnlocks = (state, context = {}) => {
        * We rely on this count being >= 5.
        */
       if ((context.gearCount || 0) >= 5) {
-        newUnlocks.push({ memberId: matze.name, traitId: 'gear_nerd' })
+        newUnlocks.push({ memberId: Matze.name, traitId: 'gear_nerd' })
       }
     }
   }
@@ -120,6 +120,20 @@ export const checkTraitUnlocks = (state, context = {}) => {
     if (Marius && !hasTrait(Marius, 'showman')) {
       if ((player.stats?.stageDives || 0) >= 3) {
         newUnlocks.push({ memberId: Marius.name, traitId: 'showman' })
+      }
+    }
+
+    // Grudge Holder (Matze): Relationship < 30
+    if (Matze && !hasTrait(Matze, 'grudge_holder')) {
+      if (Matze.relationships && Object.values(Matze.relationships).some(score => score < 30)) {
+        newUnlocks.push({ memberId: Matze.name, traitId: 'grudge_holder' })
+      }
+    }
+
+    // Peacemaker (Lars): High Band Harmony (e.g. > 90)
+    if (Lars && !hasTrait(Lars, 'peacemaker')) {
+      if ((band.harmony || 0) >= 90) {
+        newUnlocks.push({ memberId: Lars.name, traitId: 'peacemaker' })
       }
     }
   }
