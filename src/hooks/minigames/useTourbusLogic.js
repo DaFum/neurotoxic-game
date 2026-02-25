@@ -83,11 +83,11 @@ export const useTourbusLogic = () => {
     const progress = Math.min(1, game.distance / (TARGET_DISTANCE * 0.8))
     game.speed = BASE_SPEED + (MAX_SPEED - BASE_SPEED) * progress
 
-    // Spawn Rate scales with speed (spawn faster if moving faster to keep density constant-ish)
-    // Rate = Base / SpeedMultiplier?
-    // Or just fixed time? If fixed time, density decreases as speed increases.
-    // We want density to be challenging.
-    const currentSpawnRate = Math.max(600, SPAWN_RATE_MS - (progress * 800))
+    // Spawn Rate scales with speed to maintain constant spatial density.
+    // Rate = (BASE_SPEED * SPAWN_RATE_MS) / currentSpeed
+    // We maintain a density where obstacles appear at consistent distances relative to speed.
+    // We also apply a clamp (600ms) to ensure it doesn't get unplayably fast if speed were to spike.
+    const currentSpawnRate = Math.max(600, (BASE_SPEED * SPAWN_RATE_MS) / game.speed)
 
     // Move Distance
     game.distance += game.speed * deltaMS
