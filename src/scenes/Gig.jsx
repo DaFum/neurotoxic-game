@@ -41,7 +41,7 @@ export const Gig = () => {
 
   // Use the extracted logic hook
   const logic = useRhythmGameLogic()
-  const { stats, actions, gameStateRef } = logic
+  const { stats, actions, gameStateRef, update } = logic
 
   // Use extracted effects hook
   const { chaosContainerRef, chaosStyle, triggerBandAnimation, setBandMemberRef } = useGigEffects(stats)
@@ -235,7 +235,7 @@ export const Gig = () => {
       </div>
 
       {/* Layer 2: Pixi Canvas (Notes) */}
-      <PixiStage logic={logic} />
+      <PixiStage gameStateRef={gameStateRef} update={update} />
 
       {/* Layer 3 & 4: HUD & Inputs */}
       <GigHUD

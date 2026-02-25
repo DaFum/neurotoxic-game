@@ -17,7 +17,7 @@ export const RoadieRunScene = () => {
     gameStateRef,
     stats,
     update
-  }), [gameStateRef, stats, update])
+  }), [gameStateRef, update])
 
   const handleComplete = useCallback(() => changeScene('GIG'), [changeScene])
 

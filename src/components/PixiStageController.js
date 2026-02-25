@@ -125,7 +125,6 @@ class PixiStageController extends BaseStageController {
     }
 
     const state = this.gameStateRef?.current
-    const stats = this.statsRef?.current
 
     if (!state || state.isGameOver) {
       return
@@ -133,7 +132,7 @@ class PixiStageController extends BaseStageController {
 
     const elapsed = getGigTimeMs()
 
-    if (stats?.isToxicMode) {
+    if (state.isToxicMode) {
       if (this.colorMatrix) {
         this.colorMatrix.hue(Math.sin(elapsed / 100) * 180, false)
       }
@@ -150,8 +149,8 @@ class PixiStageController extends BaseStageController {
 
     this.laneManager.update(state)
     this.crowdManager.update(
-      stats?.combo ?? 0,
-      stats?.isToxicMode ?? false,
+      state.combo ?? 0,
+      state.isToxicMode ?? false,
       elapsed
     )
     this.noteManager.update(state, elapsed, this.laneManager.layout)

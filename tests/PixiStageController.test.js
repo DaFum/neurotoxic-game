@@ -111,7 +111,6 @@ describe('PixiStageController', () => {
   let gameStateRef
   let containerRef
   let updateRef
-  let statsRef
   let createPixiStageController
   let originalResizeObserver
 
@@ -155,17 +154,17 @@ describe('PixiStageController', () => {
       current: {
         lanes: [],
         running: true,
-        modifiers: {}
+        modifiers: {},
+        combo: 10,
+        isToxicMode: false
       }
     }
     updateRef = { current: mock.fn() }
-    statsRef = { current: { combo: 10 } }
 
     controller = createPixiStageController({
       containerRef,
       gameStateRef,
-      updateRef,
-      statsRef
+      updateRef
     })
   })
 

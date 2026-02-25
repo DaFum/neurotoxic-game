@@ -16,7 +16,7 @@ export const TourbusScene = () => {
     gameStateRef,
     stats,
     update
-  }), [gameStateRef, stats, update])
+  }), [gameStateRef, update])
 
   return (
     <MinigameSceneFrame
