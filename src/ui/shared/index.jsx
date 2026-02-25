@@ -4,7 +4,7 @@
  * @module shared
  */
 
-import React, { memo } from 'react'
+import { memo } from 'react'
 import PropTypes from 'prop-types'
 
 // Export components
