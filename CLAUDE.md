@@ -183,7 +183,7 @@ Each `src/` subdirectory contains an `AGENTS.md` with domain-specific guidance. 
 | Data       | `src/data/AGENTS.md`       |
 | UI         | `src/ui/AGENTS.md`         |
 
-Additional docs: `docs/ARCHITECTURE.md` (system diagrams), `docs/STATE_TRANSITIONS.md` (state machine), `docs/CODING_STANDARDS.md` (coding standards ), `docs/TAILWIND_V4_PATTERNS.md` (tailwind v4 patterns), `docs/agent_knowledge_update.md` (agent knowledge update), Exploration reports are available in `docs/*_Exploration_Report.md`.
+Additional docs: `docs/ARCHITECTURE.md` (system diagrams), `docs/STATE_TRANSITIONS.md` (state machine), `docs/CODING_STANDARDS.md` (coding standards), `docs/TAILWIND_V4_PATTERNS.md` (tailwind v4 patterns), `docs/agent_knowledge_update.md` (agent knowledge update), `docs/TRAIT_SYSTEM.md` (trait system), `docs/CRISIS_MANAGEMENT.md` (crisis management), Exploration reports are available in `docs/*_Exploration_Report.md`.
 
 ## CI/CD
 

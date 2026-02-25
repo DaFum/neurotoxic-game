@@ -282,8 +282,16 @@ npm run format   # Prettier
 | Scenes     | `src/scenes/AGENTS.md`     | Navigation, game flow          |
 | Utils      | `src/utils/AGENTS.md`      | Engines, calculations          |
 | Components | `src/components/AGENTS.md` | Pixi.js, rendering             |
-| Data       | `src/data/AGENTS.md`       | Events, venues, balance        |
 | UI         | `src/ui/AGENTS.md`         | Design system                  |
+
+## Additional Documentation
+
+- `docs/ARCHITECTURE.md`: System diagrams & architecture snapshot
+- `docs/STATE_TRANSITIONS.md`: Scene and event state machine behavior
+- `docs/CODING_STANDARDS.md`: JavaScript/React coding standards
+- `docs/TAILWIND_V4_PATTERNS.md`: Tailwind + animation/rendering patterns
+- `docs/TRAIT_SYSTEM.md`: Detailed breakdown of the character trait system
+- `docs/CRISIS_MANAGEMENT.md`: Analysis of controversy, loyalty, and brand deals
 
 ## Quality Checklist
 

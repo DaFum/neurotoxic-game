@@ -68,7 +68,7 @@ Based on my thorough analysis of the trait system across the codebase, here are 
 ### 2. HOW TRAITS ARE UNLOCKED (CONDITIONS/TRIGGERS)
 
 **Unlock Pipeline: checkTraitUnlocks → applyTraitUnlocks → UNLOCK_TRAIT reducer**
-Traits are unlocked through the following context types defined in `/home/user/neurotoxic-game/src/utils/unlockCheck.js`:
+Traits are unlocked through the following context types defined in `src/utils/unlockCheck.js`:
 **A. GIG_COMPLETE (Post-Gig Performance)**
 
 - `virtuoso` (Matze): `misses === 0` (0 misses in entire gig)

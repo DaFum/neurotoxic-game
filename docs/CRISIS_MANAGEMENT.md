@@ -400,12 +400,12 @@ Post Selection → Post Resolution → Controversy Change
 
 ## ABSOLUTE FILE PATHS FOR REFERENCE
 
-- `/home/user/neurotoxic-game/src/utils/socialEngine.js` - Crisis mechanics
-- `/home/user/neurotoxic-game/src/context/initialState.js` - State schema
-- `/home/user/neurotoxic-game/src/context/gameReducer.js` - Action types & handlers
-- `/home/user/neurotoxic-game/src/data/postOptions.js` - Post resolution logic
-- `/home/user/neurotoxic-game/src/scenes/PostGig.jsx` - Crisis UI & flow
-- `/home/user/neurotoxic-game/src/components/postGig/CompletePhase.jsx` - Crisis display
-- `/home/user/neurotoxic-game/src/utils/simulationUtils.js` - Daily decay logic
-- `/home/user/neurotoxic-game/src/ui/bandhq/DetailedStatsTab.jsx` - Controversy display
-- `/home/user/neurotoxic-game/src/data/brandDeals.js` - Brand penalties
+- `src/utils/socialEngine.js` - Crisis mechanics
+- `src/context/initialState.js` - State schema
+- `src/context/gameReducer.js` - Action types & handlers
+- `src/data/postOptions.js` - Post resolution logic
+- `src/scenes/PostGig.jsx` - Crisis UI & flow
+- `src/components/postGig/CompletePhase.jsx` - Crisis display
+- `src/utils/simulationUtils.js` - Daily decay logic
+- `src/ui/bandhq/DetailedStatsTab.jsx` - Controversy display
+- `src/data/brandDeals.js` - Brand penalties

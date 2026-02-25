@@ -122,19 +122,21 @@ For domain-specific guidance, consult specialized agent documentation:
 
 ## Documentation
 
-| Document                            | Purpose                                       |
-| ----------------------------------- | --------------------------------------------- |
-| `.github/copilot-instructions.md`   | Detailed coding conventions for AI assistants |
-| `CLAUDE.md`                         | Assistant-facing architecture and style notes |
-| `WIKI.md`                           | Documentation entry index                     |
-| `docs/ARCHITECTURE.md`              | System/module architecture snapshot           |
-| `docs/STATE_TRANSITIONS.md`         | Scene/event state machine behavior            |
-| `docs/CODING_STANDARDS.md`          | JavaScript/React coding standards             |
-| `docs/TAILWIND_V4_PATTERNS.md`      | Tailwind + animation/rendering patterns       |
-| `docs/agent_knowledge_update.md`    | Recent system findings & corrections          |
-| `docs/*_Exploration_Report.md`      | Deep-dive discovery & architecture analysis   |
-| `neurotoxic-game-threat-model.md`   | Frontend threat model assumptions and risks   |
-| `security_best_practices_report.md` | Current security findings summary             |
+| Document                            | Purpose                                           |
+| ----------------------------------- | ------------------------------------------------- |
+| `.github/copilot-instructions.md`   | Detailed coding conventions for AI assistants     |
+| `CLAUDE.md`                         | Assistant-facing architecture and style notes     |
+| `WIKI.md`                           | Documentation entry index                         |
+| `docs/ARCHITECTURE.md`              | System/module architecture snapshot               |
+| `docs/STATE_TRANSITIONS.md`         | Scene/event state machine behavior                |
+| `docs/CODING_STANDARDS.md`          | JavaScript/React coding standards                 |
+| `docs/TAILWIND_V4_PATTERNS.md`      | Tailwind + animation/rendering patterns           |
+| `docs/agent_knowledge_update.md`    | Recent system findings & corrections              |
+| `docs/TRAIT_SYSTEM.md`              | Detailed breakdown of the character trait system  |
+| `docs/CRISIS_MANAGEMENT.md`         | Analysis of controversy, loyalty, and brand deals |
+| `docs/*_Exploration_Report.md`      | Deep-dive discovery & architecture analysis       |
+| `neurotoxic-game-threat-model.md`   | Frontend threat model assumptions and risks       |
+| `security_best_practices_report.md` | Current security findings summary                 |
 
 ## Git Workflow
 
