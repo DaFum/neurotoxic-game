@@ -136,17 +136,17 @@ export const Gig = () => {
   // Character Images based on Harmony
   const { matzeUrl, MariusUrl, LarsUrl } = useMemo(() => {
     let matzePrompt = IMG_PROMPTS.MATZE_PLAYING
-    let MariusPrompt = IMG_PROMPTS.Marius_PLAYING
-    let LarsPrompt = IMG_PROMPTS.Lars_PLAYING
+    let MariusPrompt = IMG_PROMPTS.MARIUS_PLAYING
+    let LarsPrompt = IMG_PROMPTS.LARS_PLAYING
 
     if (band.harmony < 30) {
       matzePrompt = IMG_PROMPTS.MATZE_ANGRY
-      MariusPrompt = IMG_PROMPTS.Marius_DRINKING
-      LarsPrompt = IMG_PROMPTS.Lars_IDLE
+      MariusPrompt = IMG_PROMPTS.MARIUS_DRINKING
+      LarsPrompt = IMG_PROMPTS.LARS_IDLE
     } else if (band.harmony < 60) {
       matzePrompt = IMG_PROMPTS.MATZE_ANGRY
-      MariusPrompt = IMG_PROMPTS.Marius_PLAYING
-      LarsPrompt = IMG_PROMPTS.Lars_SCREAMING
+      MariusPrompt = IMG_PROMPTS.MARIUS_PLAYING
+      LarsPrompt = IMG_PROMPTS.LARS_SCREAMING
     }
 
     return {

@@ -80,10 +80,12 @@ const calculateTicketIncome = (gigData, playerFame, modifiers, context = {}) => 
     fillRate -= Math.min(0.30, (controversyLevel - 40) * 0.01)
   }
 
-  // Regional reputation penalty: -2% per -10 rep, max -20%
+  // Regional reputation bonus/penalty
   const regionRep = context.regionRep || 0
   if (regionRep < 0) {
-    fillRate -= Math.min(0.20, Math.abs(regionRep) * 0.002)
+    fillRate -= Math.min(0.20, Math.abs(regionRep) * 0.002) // -2% per -10 rep, max -20%
+  } else if (regionRep > 0) {
+    fillRate += Math.min(0.20, regionRep * 0.002) // +2% per +10 rep, max +20%
   }
 
   // Discounted tickets flag: +10% fill

@@ -15,8 +15,8 @@ export const checkTraitUnlocks = (state, context = {}) => {
   // Helpers to find members
   const getMember = (name) => members.find(m => m.name === name)
   const matze = getMember(CHARACTERS.MATZE.name)
-  const Marius = getMember(CHARACTERS.Marius.name)
-  const Lars = getMember(CHARACTERS.Lars.name)
+  const Marius = getMember(CHARACTERS.MARIUS.name)
+  const Lars = getMember(CHARACTERS.LARS.name)
 
   // 1. Performance Unlocks (Post-Gig)
   if (context.type === 'GIG_COMPLETE' && context.gigStats) {

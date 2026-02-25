@@ -43,11 +43,11 @@ export const getGigModifiers = (bandState, gigModifiers = {}) => {
   }
 
   // Marius (Drums)
-  const Marius = members.find(m => m.name === CHARACTERS.Marius.name)
+  const Marius = members.find(m => m.name === CHARACTERS.MARIUS.name)
   if (Marius && Marius.stamina < 20) {
     modifiers.drumSpeedMult = 1.2 // 20% faster
     modifiers.activeEffects.push(
-      `TIRED ${CHARACTERS.Marius.name.toUpperCase()}: Rushing Tempo`
+      `TIRED ${CHARACTERS.MARIUS.name.toUpperCase()}: Rushing Tempo`
     )
   }
 
@@ -69,8 +69,8 @@ export const calculateGigPhysics = (bandState, song) => {
   // 1. Hit Windows based on Skill
   // Formula: Base 150ms + (Skill * 5ms)
   const matze = members.find(m => m.name === CHARACTERS.MATZE.name)
-  const Marius = members.find(m => m.name === CHARACTERS.Marius.name)
-  const Lars = members.find(m => m.name === CHARACTERS.Lars.name)
+  const Marius = members.find(m => m.name === CHARACTERS.MARIUS.name)
+  const Lars = members.find(m => m.name === CHARACTERS.LARS.name)
 
   const getMemberSkill = member =>
     member?.baseStats?.skill ?? member?.skill ?? 0
@@ -369,7 +369,7 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
         mood += 1
         // Party Animal Trait (Marius): Extra mood, but risk of stamina loss
         if (
-          m.name === CHARACTERS.Marius.name &&
+          m.name === CHARACTERS.MARIUS.name &&
           hasTrait(m, 'party_animal')
         ) {
           mood += 2

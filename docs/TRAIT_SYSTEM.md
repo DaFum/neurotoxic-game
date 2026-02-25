@@ -136,8 +136,8 @@ Traits are unlocked through the following context types defined in `src/utils/un
 DEFAULT_BAND_STATE = {
   members: [
     { ...CHARACTERS.MATZE, mood: 80, stamina: 100, traits: [] },
-    { ...CHARACTERS.Marius, mood: 80, stamina: 100, traits: [] },
-    { ...CHARACTERS.Lars, mood: 80, stamina: 100, traits: [] }
+    { ...CHARACTERS.MARIUS, mood: 80, stamina: 100, traits: [] },
+    { ...CHARACTERS.LARS, mood: 80, stamina: 100, traits: [] }
   ]
 }
 ```

@@ -10,8 +10,8 @@ import { ALL_VENUES } from '../src/data/venues.js'
 
 test('CHARACTERS data integrity', () => {
   assert.ok(CHARACTERS.MATZE)
-  assert.ok(CHARACTERS.Marius)
-  assert.ok(CHARACTERS.Lars)
+  assert.ok(CHARACTERS.MARIUS)
+  assert.ok(CHARACTERS.LARS)
 
   Object.values(CHARACTERS).forEach(char => {
     assert.strictEqual(typeof char.name, 'string')

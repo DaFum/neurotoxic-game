@@ -718,6 +718,14 @@ export const gameReducer = (state, action) => {
            nextState = handleAddVenueBlacklist(nextState, state.currentGig?.venue?.name || 'Local Venue')
          }
       } else if (score >= 60) {
+         // Increase reputation on good gigs up to 100 max
+         const currentRep = nextState.reputationByRegion[location] || 0
+         if (currentRep < 100) {
+           const bonus = score >= 90 ? 10 : 5
+           nextState.reputationByRegion[location] = Math.min(100, currentRep + bonus)
+           logger.info('GameState', `Regional reputation gain in ${location} (+${bonus})`)
+         }
+
          nextState = handleRecordGoodShow(nextState)
          if (nextState.activeQuests?.some(q => q.id === 'quest_apology_tour') && capacity <= 300) {
            nextState = handleAdvanceQuest(nextState, { questId: 'quest_apology_tour', amount: 1 })
