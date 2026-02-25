@@ -301,7 +301,9 @@ export const PostGig = () => {
             ? 'GIG REPORT'
             : phase === 'SOCIAL'
               ? 'SOCIAL MEDIA STRATEGY'
-              : 'TOUR UPDATE'}
+              : phase === 'DEALS'
+                ? 'BRAND OFFERS'
+                : 'TOUR UPDATE'}
         </h2>
 
         {phase === 'REPORT' && (

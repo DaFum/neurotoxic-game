@@ -1,5 +1,5 @@
-import PropTypes from 'prop-types'
 import { memo, useCallback } from 'react'
+import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { Panel, ActionButton } from '../../ui/shared'
 
@@ -43,7 +43,7 @@ const SocialOptionButton = memo(({ opt, index, onSelect }) => {
                <span className="text-(--blood-red)">High Variance Risk</span>
             )}
             {opt.badges?.includes('🛡️') && (
-               <span className="text-(--stamina-green)">Consistent Growth</span>
+               <span className="text-(--toxic-green)">Consistent Growth</span>
             )}
           </div>
         </div>
@@ -55,6 +55,7 @@ const SocialOptionButton = memo(({ opt, index, onSelect }) => {
 SocialOptionButton.displayName = 'SocialOptionButton'
 SocialOptionButton.propTypes = {
   opt: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     name: PropTypes.string.isRequired,
     platform: PropTypes.string.isRequired,
     category: PropTypes.string,
@@ -95,6 +96,7 @@ export const SocialPhase = ({ options, onSelect, trend }) => (
 SocialPhase.propTypes = {
   options: PropTypes.arrayOf(
     PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
       name: PropTypes.string.isRequired,
       platform: PropTypes.string.isRequired
     })

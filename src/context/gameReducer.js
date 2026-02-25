@@ -474,7 +474,39 @@ export const gameReducer = (state, action) => {
 
     case ActionTypes.UPDATE_SOCIAL: {
       if (!action.payload || typeof action.payload !== 'object') return state
-      return { ...state, social: { ...state.social, ...action.payload } }
+      const updates = { ...action.payload }
+
+      // Validate special fields
+      if (updates.trend !== undefined) {
+        const ALLOWED_TRENDS = ['NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME']
+        if (!ALLOWED_TRENDS.includes(updates.trend)) {
+          logger.warn('GameState', `Invalid trend update: ${updates.trend}`)
+          delete updates.trend
+        }
+      }
+
+      if (updates.sponsorActive !== undefined && typeof updates.sponsorActive !== 'boolean') {
+        logger.warn('GameState', 'Invalid sponsorActive update (must be boolean)')
+        delete updates.sponsorActive
+      }
+
+      if (updates.activeDeals !== undefined) {
+        if (!Array.isArray(updates.activeDeals)) {
+          logger.warn('GameState', 'Invalid activeDeals update (must be array)')
+          delete updates.activeDeals
+        } else {
+          // Validate structure of items
+          const validDeals = updates.activeDeals.filter(d =>
+            d && typeof d === 'object' && typeof d.id === 'string' && typeof d.remainingGigs === 'number'
+          )
+          if (validDeals.length !== updates.activeDeals.length) {
+             logger.warn('GameState', 'Filtered invalid deals from activeDeals update')
+          }
+          updates.activeDeals = validDeals
+        }
+      }
+
+      return { ...state, social: { ...state.social, ...updates } }
     }
 
     case ActionTypes.UPDATE_SETTINGS: {

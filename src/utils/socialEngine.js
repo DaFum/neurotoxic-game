@@ -89,7 +89,7 @@ export const generatePostOptions = (gigResult, gameState, rng = secureRandom) =>
         (currentTrend === 'DRAMA' && opt.category === 'Drama') ||
         (currentTrend === 'TECH' && opt.category === 'Commercial') || // Tech usually commercial/gear
         (currentTrend === 'MUSIC' && opt.category === 'Performance') ||
-        (currentTrend === 'WHOLESOME' && opt.badges?.includes('🛡️')) // Wholesome logic
+        (currentTrend === 'WHOLESOME' && (opt.category === 'Lifestyle' || opt.badges?.includes('🛡️'))) // Wholesome logic
 
       if (isMatch) weight += 10.0
     }
@@ -272,7 +272,9 @@ export const generateDailyTrend = (rng = secureRandom) => {
  * @returns {Array} List of offer objects.
  */
 export const generateBrandOffers = (gameState, rng = secureRandom) => {
-  const { social, band } = gameState
+  const social = gameState?.social || {}
+  const band = gameState?.band || {}
+
   // Filter available deals
   const eligibleDeals = BRAND_DEALS.filter(deal => {
     // Check followers

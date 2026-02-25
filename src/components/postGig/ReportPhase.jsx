@@ -23,6 +23,16 @@ const FinancialList = ({ items, type }) => (
   </ul>
 )
 
+FinancialList.propTypes = {
+  items: PropTypes.arrayOf(
+    PropTypes.shape({
+      label: PropTypes.string.isRequired,
+      value: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired
+    })
+  ).isRequired,
+  type: PropTypes.oneOf(['income', 'expense']).isRequired
+}
+
 export const ReportPhase = ({ financials, onNext }) => {
   if (!financials) {
     return <div className="text-center font-mono animate-pulse">Loading Report...</div>

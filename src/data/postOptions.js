@@ -489,7 +489,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Lifestyle', // Fits WHOLESOME trend logic
     badges: [POST_BADGES.SAFE],
-    condition: ({ band }) => band.harmony > 50,
+    condition: ({ band }) => band?.harmony > 50,
     resolve: () => ({
       type: 'FIXED',
       success: true,

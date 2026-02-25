@@ -354,8 +354,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     act(() => { result.current.update(16) })
 
     // endGig is called, which triggers changeScene
-    assert.strictEqual(mockEndGig.mock.calls.length, 1, 'Should call endGig once')
-    assert.strictEqual(mockChangeScene.mock.calls.length, 1, 'Should call changeScene once')
+    assert.strictEqual(mockEndGig.mock.calls.length, 1, 'Should call endGig exactly once')
+    assert.strictEqual(mockChangeScene.mock.calls.length, 1, 'Should call changeScene exactly once')
     assert.strictEqual(mockChangeScene.mock.calls[0].arguments[0], 'POSTGIG', 'Should transition to POSTGIG')
   })
 
