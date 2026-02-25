@@ -27,6 +27,7 @@ import {
   DEFAULT_SOCIAL_STATE
 } from './initialState.js'
 import { GAME_PHASES, MINIGAME_TYPES, DEFAULT_MINIGAME_STATE, DEFAULT_EQUIPMENT_COUNT } from './gameConstants.js'
+import { ALLOWED_TRENDS } from '../data/socialTrends.js'
 
 /**
  * Action Types Enum
@@ -473,12 +474,19 @@ export const gameReducer = (state, action) => {
       return handleUpdateBand(state, action.payload)
 
     case ActionTypes.UPDATE_SOCIAL: {
-      if (!action.payload || typeof action.payload !== 'object') return state
-      const updates = { ...action.payload }
+      let updates = action.payload
+
+      // Support functional updates: updateSocial(prev => ...)
+      if (typeof updates === 'function') {
+        updates = updates(state.social)
+      }
+
+      if (!updates || typeof updates !== 'object') return state
+
+      updates = { ...updates }
 
       // Validate special fields
       if (updates.trend !== undefined) {
-        const ALLOWED_TRENDS = ['NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME']
         if (!ALLOWED_TRENDS.includes(updates.trend)) {
           logger.warn('GameState', `Invalid trend update: ${updates.trend}`)
           delete updates.trend

@@ -4,6 +4,8 @@
  * data corruption and malicious injection.
  */
 
+import { ALLOWED_TRENDS } from '../data/socialTrends.js'
+
 /**
  * Validates the structure and types of the save data.
  * @param {any} data - The parsed JSON data from localStorage.
@@ -85,8 +87,7 @@ const validateSocial = social => {
     if (key === 'sponsorActive' && typeof val === 'boolean') return
 
     if (key === 'trend') {
-      const allowedTrends = ['NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME']
-      if (typeof val === 'string' && allowedTrends.includes(val)) return
+      if (typeof val === 'string' && ALLOWED_TRENDS.includes(val)) return
       throw new Error(`Social trend "${val}" is invalid`)
     }
 

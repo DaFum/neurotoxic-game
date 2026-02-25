@@ -5,6 +5,7 @@ import { SOCIAL_PLATFORMS } from '../data/platforms.js'
 import { BRAND_DEALS } from '../data/brandDeals.js'
 import { bandHasTrait } from './traitLogic.js'
 import { StateError } from './errorHandler.js'
+import { ALLOWED_TRENDS } from '../data/socialTrends.js'
 
 /**
  * Calculates viral potential based on performance and events.
@@ -254,10 +255,9 @@ export const applyReputationDecay = (followers, daysSinceLastPost) => {
  * @returns {string} One of 'NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME'.
  */
 export const generateDailyTrend = (rng = secureRandom) => {
-  const trends = ['NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME']
   // Weighted choice could go here, for now uniform random
-  const idx = Math.floor(rng() * trends.length)
-  return trends[idx]
+  const idx = Math.floor(rng() * ALLOWED_TRENDS.length)
+  return ALLOWED_TRENDS[idx]
 }
 
 // TODO: Advanced Brand Deal System

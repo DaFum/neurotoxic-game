@@ -214,29 +214,44 @@ export const PostGig = () => {
       updateBand({ inventory: newInventory })
     }
 
-    // Apply penalties immediately if defined (e.g. sellout hit)
-    if (deal.penalty) {
-      const newSocial = { ...social }
-      if (deal.penalty.loyalty) newSocial.loyalty = Math.max(0, (newSocial.loyalty || 0) + deal.penalty.loyalty)
-      if (deal.penalty.controversy) newSocial.controversyLevel = Math.max(0, (newSocial.controversyLevel || 0) + deal.penalty.controversy)
+    // Use functional update to ensure fresh state access
+    updateSocial((prevSocial) => {
+      const updates = {}
+
+      // Apply penalties immediately if defined
+      if (deal.penalty) {
+        if (deal.penalty.loyalty) updates.loyalty = Math.max(0, (prevSocial.loyalty || 0) + deal.penalty.loyalty)
+        if (deal.penalty.controversy) updates.controversyLevel = Math.max(0, (prevSocial.controversyLevel || 0) + deal.penalty.controversy)
+      }
 
       // Store active deal
-      const newActiveDeals = [...(newSocial.activeDeals || []), { ...deal, remainingGigs: deal.offer.duration }]
-      newSocial.activeDeals = newActiveDeals
+      const prevDeals = prevSocial.activeDeals || []
+      updates.activeDeals = [...prevDeals, { ...deal, remainingGigs: deal.offer.duration }]
 
-      updateSocial(newSocial)
-    } else {
-       // Store active deal without immediate penalties
-       const newActiveDeals = [...(social.activeDeals || []), { ...deal, remainingGigs: deal.offer.duration }]
-       updateSocial({ activeDeals: newActiveDeals })
-    }
+      return updates
+    })
 
     addToast(`Accepted deal: ${deal.name}`, 'success')
-    setPhase('COMPLETE')
-  }, [player, band, social, updatePlayer, updateBand, updateSocial, addToast])
+
+    // Remove processed deal and check if more remain
+    setBrandOffers(prev => {
+      const remaining = prev.slice(1) // Remove first
+      if (remaining.length === 0) {
+        setPhase('COMPLETE')
+      }
+      return remaining
+    })
+  }, [player, band, updatePlayer, updateBand, updateSocial, addToast])
 
   const handleRejectDeals = useCallback(() => {
-    setPhase('COMPLETE')
+    // Remove processed deal (skip) and check if more remain
+    setBrandOffers(prev => {
+      const remaining = prev.slice(1) // Remove first
+      if (remaining.length === 0) {
+        setPhase('COMPLETE')
+      }
+      return remaining
+    })
   }, [])
 
   const handleSpinStory = useCallback(() => {
@@ -245,10 +260,10 @@ export const PostGig = () => {
       return
     }
 
-    updatePlayer({ money: Math.max(0, player.money - 200) })
-    updateSocial({ controversyLevel: Math.max(0, (social.controversyLevel || 0) - 25) })
+    updatePlayer({ money: clampPlayerMoney(player.money - 200) })
+    updateSocial((prev) => ({ controversyLevel: Math.max(0, (prev.controversyLevel || 0) - 25) }))
     addToast('Story Spun. Controversy reduced.', 'success')
-  }, [player, social, updatePlayer, updateSocial, addToast])
+  }, [player, updatePlayer, updateSocial, addToast])
 
   const handleContinue = useCallback(() => {
     if (!financials) return
@@ -318,7 +333,7 @@ export const PostGig = () => {
         )}
 
         {phase === 'DEALS' && (
-          <DealsPhase offers={brandOffers} onAccept={handleAcceptDeal} onSkip={handleRejectDeals} />
+          <DealsPhase offers={brandOffers.slice(0, 1)} onAccept={handleAcceptDeal} onSkip={handleRejectDeals} />
         )}
 
         {phase === 'COMPLETE' && (

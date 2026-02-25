@@ -244,7 +244,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Drama',
     badges: [POST_BADGES.VIRAL, POST_BADGES.STORY],
-    condition: ({ band }) => band.harmony > 70,
+    condition: ({ band }) => (band?.harmony ?? 0) > 70,
     resolve: () => ({
       type: 'FIXED',
       success: true,
@@ -369,7 +369,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Drama',
     badges: [POST_BADGES.STORY, POST_BADGES.SAFE],
-    condition: ({ band }) => band.harmony > 60,
+    condition: ({ band }) => (band?.harmony ?? 0) > 60,
     resolve: () => ({
        type: 'FIXED',
        success: true,
@@ -449,7 +449,7 @@ export const POST_OPTIONS = [
       // Find potential gear nerd or fallback to first member
       const member = band.members.find(m => m.traits?.some(t => t.id === 'gear_nerd')) || band.members[0]
       const target = member.name
-      const memberId = member.id || 'matze' // Fallback id if not present on object
+      const memberId = member.id || member.name // Use name as fallback ID
 
       return {
         type: 'FIXED',
