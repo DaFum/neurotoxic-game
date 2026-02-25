@@ -215,6 +215,10 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
       conditionMultiplier = 1.0
     }
 
+    // Controversy penalty: Stress/rush jobs lead to neglected maintenance
+    if ((nextSocial.controversyLevel || 0) >= 80) conditionMultiplier += 0.5
+    else if ((nextSocial.controversyLevel || 0) >= 50) conditionMultiplier += 0.2
+
     const adjustedBreakdownChance = baseBreakdownChance * conditionMultiplier
     // Clamp to a reasonable range so chance stays between 0% and 50%
     nextPlayer.van.breakdownChance = Math.max(
@@ -253,9 +257,19 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
     nextBand.harmony += 2
   }
 
+  // Bad Show Streak Penalty
+  if ((nextPlayer.stats?.consecutiveBadShows || 0) > 0) {
+    nextBand.harmony -= Math.min(10, nextPlayer.stats.consecutiveBadShows * 2)
+  }
+
   // Ego System Drain (Lead Singer Syndrome)
+  let pendingFlags = {}
   if (nextSocial.egoFocus) {
     nextBand.harmony -= 2 // Passive drain for spotlighting a single member
+    // Proactive scandal trigger (12% daily chance)
+    if (rng() < 0.12) {
+      pendingFlags.scandal = true
+    }
     // Passive decay chance (20% per day to forget the drama)
     if (rng() < 0.2) {
       nextSocial.egoFocus = null
@@ -285,6 +299,11 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
   if (nextSocial.controversyLevel > 0) {
     // Passive cooldown
     nextSocial.controversyLevel = Math.max(0, nextSocial.controversyLevel - 1)
+  }
+
+  // Reputation cooldown decay
+  if ((nextSocial.reputationCooldown || 0) > 0) {
+    nextSocial.reputationCooldown = Math.max(0, nextSocial.reputationCooldown - 1)
   }
 
   // Sponsor Trigger Metric
@@ -384,5 +403,5 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
       (nextSocial.instagram || 0) + nextPlayer.passiveFollowers
   }
 
-  return { player: nextPlayer, band: nextBand, social: nextSocial }
+  return { player: nextPlayer, band: nextBand, social: nextSocial, pendingFlags }
 }

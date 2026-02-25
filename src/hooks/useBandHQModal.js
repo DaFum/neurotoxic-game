@@ -28,6 +28,9 @@ export const useBandHQModal = () => {
       deleteSave: gameState.deleteSave,
       setlist: gameState.setlist,
       setSetlist: gameState.setSetlist,
+      activeQuests: gameState.activeQuests,
+      venueBlacklist: gameState.venueBlacklist,
+      reputationByRegion: gameState.reputationByRegion,
       audioState,
       onAudioChange: handleAudioChange
     }),
@@ -44,6 +47,9 @@ export const useBandHQModal = () => {
       gameState.deleteSave,
       gameState.setlist,
       gameState.setSetlist,
+      gameState.activeQuests,
+      gameState.venueBlacklist,
+      gameState.reputationByRegion,
       audioState,
       handleAudioChange
     ]

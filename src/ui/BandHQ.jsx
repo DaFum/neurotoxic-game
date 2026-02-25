@@ -46,6 +46,9 @@ export const BandHQ = ({
   setSetlist,
   audioState,
   onAudioChange,
+  activeQuests,
+  venueBlacklist,
+  reputationByRegion,
   className = ''
 }) => {
   const [activeTab, setActiveTab] = useState('STATS') // STATS, SHOP, UPGRADES, SETLIST, SETTINGS
@@ -56,6 +59,7 @@ export const BandHQ = ({
   const purchaseLogicParams = {
     player,
     band,
+    social,
     updatePlayer,
     updateBand,
     addToast
@@ -134,7 +138,14 @@ export const BandHQ = ({
           )}
 
           {activeTab === 'DETAILS' && (
-            <DetailedStatsTab player={player} band={band} social={social} />
+            <DetailedStatsTab 
+              player={player} 
+              band={band} 
+              social={social} 
+              activeQuests={activeQuests}
+              venueBlacklist={venueBlacklist}
+              reputationByRegion={reputationByRegion}
+            />
           )}
 
           {activeTab === 'SHOP' && (
@@ -234,5 +245,8 @@ BandHQ.propTypes = {
     setSfx: PropTypes.func,
     toggleMute: PropTypes.func
   }).isRequired,
+  activeQuests: PropTypes.array,
+  venueBlacklist: PropTypes.array,
+  reputationByRegion: PropTypes.object,
   className: PropTypes.string
 }

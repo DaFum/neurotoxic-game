@@ -49,7 +49,9 @@ import {
   createCompleteTravelMinigameAction,
   createStartRoadieMinigameAction,
   createCompleteRoadieMinigameAction,
-  createUnlockTraitAction
+  createUnlockTraitAction,
+  createAddQuestAction,
+  createAdvanceQuestAction
 } from './actionCreators'
 import PropTypes from 'prop-types'
 
@@ -268,6 +270,16 @@ export const GameStateProvider = ({ children }) => {
 
   const unlockTrait = useCallback(
     (memberId, traitId) => dispatch(createUnlockTraitAction(memberId, traitId)),
+    []
+  )
+
+  const addQuest = useCallback(
+    quest => dispatch(createAddQuestAction(quest)),
+    []
+  )
+
+  const advanceQuest = useCallback(
+    (questId, progressAmount) => dispatch(createAdvanceQuestAction(questId, progressAmount)),
     []
   )
 
@@ -535,7 +547,9 @@ export const GameStateProvider = ({ children }) => {
       startRoadieMinigame,
       completeRoadieMinigame,
       unlockTrait,
-      endGig
+      endGig,
+      addQuest,
+      advanceQuest
     }),
     [
       changeScene,
@@ -564,7 +578,9 @@ export const GameStateProvider = ({ children }) => {
       startRoadieMinigame,
       completeRoadieMinigame,
       unlockTrait,
-      endGig
+      endGig,
+      addQuest,
+      advanceQuest
     ]
   )
 

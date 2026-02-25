@@ -61,7 +61,13 @@ export const ActionTypes = {
   COMPLETE_TRAVEL_MINIGAME: 'COMPLETE_TRAVEL_MINIGAME',
   START_ROADIE_MINIGAME: 'START_ROADIE_MINIGAME',
   COMPLETE_ROADIE_MINIGAME: 'COMPLETE_ROADIE_MINIGAME',
-  UNLOCK_TRAIT: 'UNLOCK_TRAIT'
+  UNLOCK_TRAIT: 'UNLOCK_TRAIT',
+
+  ADD_VENUE_BLACKLIST: 'ADD_VENUE_BLACKLIST',
+  ADD_QUEST: 'ADD_QUEST',
+  ADVANCE_QUEST: 'ADVANCE_QUEST',
+  COMPLETE_QUEST: 'COMPLETE_QUEST',
+  FAIL_QUESTS: 'FAIL_QUESTS'
 }
 
 /**
@@ -223,6 +229,8 @@ const handleLoadGame = (state, payload) => {
       ? loadedState.eventCooldowns
       : [],
     reputationByRegion: loadedState.reputationByRegion || {},
+    venueBlacklist: Array.isArray(loadedState.venueBlacklist) ? loadedState.venueBlacklist : [],
+    activeQuests: Array.isArray(loadedState.activeQuests) ? loadedState.activeQuests : [],
     npcs: loadedState.npcs || {},
     gigModifiers: {
       ...DEFAULT_GIG_MODIFIERS,
@@ -290,7 +298,7 @@ const handleConsumeItem = (state, payload) => {
  */
 const handleAdvanceDay = (state, payload) => {
   const rng = payload?.rng || Math.random
-  const { player, band, social } = calculateDailyUpdates(state, rng)
+  const { player, band, social, pendingFlags } = calculateDailyUpdates(state, rng)
   const nextBand = { ...band }
   if (typeof nextBand.harmony === 'number') {
     nextBand.harmony = clampBandHarmony(nextBand.harmony)
@@ -304,8 +312,7 @@ const handleAdvanceDay = (state, payload) => {
 
   const traitResult = applyTraitUnlocks({ band: nextBand, toasts: state.toasts }, socialUnlocks)
 
-  logger.info('GameState', `Day Advanced to ${player.day}`)
-  return {
+  let nextState = {
     ...state,
     player,
     band: traitResult.band,
@@ -313,6 +320,15 @@ const handleAdvanceDay = (state, payload) => {
     eventCooldowns: [],
     toasts: traitResult.toasts
   }
+
+  nextState = handleFailQuests(nextState)
+
+  if (pendingFlags?.scandal) {
+    nextState.pendingEvents = [...(nextState.pendingEvents || []), 'consequences_bandmate_scandal']
+  }
+
+  logger.info('GameState', `Day Advanced to ${player.day}`)
+  return nextState
 }
 
 const handleStartTravelMinigame = (state, payload) => {
@@ -439,6 +455,133 @@ const handleCompleteRoadieMinigame = (state, payload) => {
   }
 }
 
+const handleAddQuest = (state, quest) => {
+  if (state.activeQuests?.some(q => q.id === quest.id)) return state
+  return { ...state, activeQuests: [...(state.activeQuests || []), quest] }
+}
+
+const handleCompleteQuest = (state, { questId }) => {
+  const quest = state.activeQuests?.find(q => q.id === questId)
+  if (!quest) return state
+  let nextState = { ...state }
+  
+  // Remove from activeQuests
+  nextState.activeQuests = (nextState.activeQuests || []).filter(q => q.id !== questId)
+  
+  // Add reward flag
+  if (quest.rewardFlag) {
+    nextState.activeStoryFlags = [...(nextState.activeStoryFlags || []), quest.rewardFlag]
+  }
+  
+  // Toast
+  nextState.toasts = [...(nextState.toasts || []), { id: `${Date.now()}-${questId}`, message: `[${quest.label}]: COMPLETE`, type: 'success' }]
+  
+  if (quest.id === 'quest_prove_yourself') {
+    nextState.venueBlacklist = (nextState.venueBlacklist || []).slice(2) // clear 2
+    nextState.player = {
+      ...nextState.player,
+      stats: { ...nextState.player.stats, proveYourselfMode: false }
+    }
+  }
+
+  return nextState
+}
+
+const handleAdvanceQuest = (state, { questId, amount = 1 }) => {
+  let nextState = { ...state }
+  let questCompleted = false
+  if (!nextState.activeQuests) return state
+
+  nextState.activeQuests = nextState.activeQuests.map(q => {
+    if (q.id === questId) {
+      const newProgress = q.progress + amount
+      if (newProgress >= q.required) {
+        questCompleted = true
+      }
+      return { ...q, progress: newProgress }
+    }
+    return q
+  })
+
+  if (questCompleted) {
+    return handleCompleteQuest(nextState, { questId })
+  }
+  return nextState
+}
+
+const handleRecordBadShow = (state) => {
+  let nextState = { ...state }
+  const currentBadShows = (nextState.player.stats?.consecutiveBadShows || 0) + 1
+  
+  nextState.player = {
+    ...nextState.player,
+    stats: { ...nextState.player.stats, consecutiveBadShows: currentBadShows }
+  }
+
+  if (currentBadShows >= 3 && !nextState.activeQuests?.some(q => q.id === 'quest_prove_yourself')) {
+    nextState = handleAddQuest(nextState, {
+      id: 'quest_prove_yourself',
+      label: 'PROVE YOURSELF',
+      deadline: nextState.player.day + 20,
+      progress: 0,
+      required: 4,
+      rewardFlag: 'prove_yourself_complete',
+      failurePenalty: { social: { controversyLevel: 10 }, band: { harmony: -20 } }
+    })
+    nextState.player.stats.proveYourselfMode = true
+    nextState.activeStoryFlags = [...(nextState.activeStoryFlags || []), 'prove_yourself_active']
+    nextState.toasts = [...(nextState.toasts || []), { id: Date.now().toString(), message: '3 DISASTERS IN A ROW — Prove yourself in small venues first.', type: 'error' }]
+  }
+
+  return nextState
+}
+
+const handleRecordGoodShow = (state) => {
+  let nextState = { ...state }
+  
+  nextState.player = {
+    ...nextState.player,
+    stats: { ...nextState.player.stats, consecutiveBadShows: 0 }
+  }
+
+  return nextState
+}
+
+const handleAddVenueBlacklist = (state, venueName) => {
+  let nextState = { ...state }
+  if (nextState.social.loyalty >= 30) {
+    nextState.social = { ...nextState.social, loyalty: nextState.social.loyalty - 15 }
+    nextState.toasts = [...(nextState.toasts || []), { id: Date.now().toString(), message: `Loyal fans defended you — venue gave one more chance!`, type: 'info' }]
+  } else {
+    nextState.venueBlacklist = [...(nextState.venueBlacklist || []), venueName]
+    nextState.toasts = [...(nextState.toasts || []), { id: Date.now().toString(), message: `BLACKLISTED: ${venueName}`, type: 'error' }]
+  }
+  return nextState
+}
+
+const handleFailQuests = (state) => {
+  let nextState = { ...state }
+  if (!nextState.activeQuests) return state
+
+  const expiredQuests = nextState.activeQuests.filter(q => q.deadline !== null && nextState.player.day > q.deadline)
+  if (expiredQuests.length === 0) return state
+
+  expiredQuests.forEach(quest => {
+    if (quest.failurePenalty) {
+      if (quest.failurePenalty.social?.controversyLevel) {
+        nextState.social.controversyLevel = (nextState.social.controversyLevel || 0) + quest.failurePenalty.social.controversyLevel
+      }
+      if (quest.failurePenalty.band?.harmony) {
+        nextState.band.harmony = clampBandHarmony((nextState.band.harmony || 0) + quest.failurePenalty.band.harmony)
+      }
+    }
+    nextState.toasts = [...(nextState.toasts || []), { id: `${Date.now()}-${quest.id}`, message: `[${quest.label}]: FAILED`, type: 'error' }]
+  })
+
+  nextState.activeQuests = nextState.activeQuests.filter(q => q.deadline === null || nextState.player.day <= q.deadline)
+  return nextState
+}
+
 /**
  * Handles explicit trait unlocking via action.
  * @param {Object} state - Current state
@@ -553,22 +696,51 @@ export const gameReducer = (state, action) => {
       const performanceUnlocks = checkTraitUnlocks(state, { type: 'GIG_COMPLETE', gigStats: action.payload })
       const traitResult = applyTraitUnlocks(state, performanceUnlocks)
       
-      const score = action.payload?.score ?? 0
-      const location = state.player?.location || 'Unknown'
-      const nextReputation = { ...state.reputationByRegion }
-      
-      if (score < 30) {
-         nextReputation[location] = (nextReputation[location] || 0) - 10
-         logger.warn('GameState', `Regional reputation loss in ${location} due to poor gig performance (-10)`)
-      }
-
-      return {
+      let nextState = {
         ...state,
         lastGigStats: action.payload,
         band: traitResult.band,
         toasts: traitResult.toasts,
-        reputationByRegion: nextReputation
+        reputationByRegion: { ...state.reputationByRegion }
       }
+      
+      const score = action.payload?.score ?? 0
+      const location = state.player?.location || 'Unknown'
+      const capacity = state.currentGig?.venue?.capacity || 0
+      
+      if (score < 30) {
+         nextState.reputationByRegion[location] = (nextState.reputationByRegion[location] || 0) - 10
+         logger.warn('GameState', `Regional reputation loss in ${location} due to poor gig performance (-10)`)
+         nextState = handleRecordBadShow(nextState)
+         if ((nextState.reputationByRegion[location] || 0) <= -30) {
+           nextState = handleAddVenueBlacklist(nextState, state.currentGig?.venue?.name || 'Local Venue')
+         }
+      } else if (score >= 60) {
+         nextState = handleRecordGoodShow(nextState)
+         if (nextState.activeQuests?.some(q => q.id === 'quest_apology_tour') && capacity <= 300) {
+           nextState = handleAdvanceQuest(nextState, { questId: 'quest_apology_tour', amount: 1 })
+         }
+         if (nextState.activeQuests?.some(q => q.id === 'quest_prove_yourself') && capacity <= 150) {
+           nextState = handleAdvanceQuest(nextState, { questId: 'quest_prove_yourself', amount: 1 })
+         }
+      }
+
+      // Comeback album: queue if controversy recovered and apology tour complete
+      if (
+        nextState.activeStoryFlags?.includes('apology_tour_complete') &&
+        !nextState.activeStoryFlags?.includes('comeback_triggered') &&
+        (nextState.social?.controversyLevel || 0) < 30
+      ) {
+        nextState.pendingEvents = [...(nextState.pendingEvents || []), 'consequences_comeback_album']
+      }
+
+      // Ego management quest auto-complete
+      const egoQuest = nextState.activeQuests?.find(q => q.id === 'quest_ego_management')
+      if (egoQuest && nextState.band.harmony >= 50) {
+        nextState = handleCompleteQuest(nextState, { questId: 'quest_ego_management' })
+      }
+
+      return nextState
     }
 
     case ActionTypes.SET_ACTIVE_EVENT:
@@ -642,6 +814,22 @@ export const gameReducer = (state, action) => {
 
     case ActionTypes.UNLOCK_TRAIT:
       return handleUnlockTrait(state, action.payload)
+
+
+    case ActionTypes.ADD_VENUE_BLACKLIST:
+      return handleAddVenueBlacklist(state, action.payload)
+
+    case ActionTypes.ADD_QUEST:
+      return handleAddQuest(state, action.payload)
+
+    case ActionTypes.ADVANCE_QUEST:
+      return handleAdvanceQuest(state, action.payload)
+
+    case ActionTypes.COMPLETE_QUEST:
+      return handleCompleteQuest(state, action.payload)
+
+    case ActionTypes.FAIL_QUESTS:
+      return handleFailQuests(state)
 
     default:
       return state

@@ -498,6 +498,7 @@ export const HQ_ITEMS = {
       category: 'HQ',
       cost: 1000, // Service cost
       currency: 'fame',
+      requiresReputation: true,
       img: 'ITEM_HQ_BOTNET',
       description: 'Passive Follower Generation (+10/Tag).',
       effect: {
@@ -513,6 +514,7 @@ export const HQ_ITEMS = {
       category: 'HQ',
       cost: 5000, // Major milestone cost
       currency: 'fame',
+      requiresReputation: true,
       img: 'ITEM_HQ_LABEL',
       description: 'Sofort +500€ Bonus.',
       effect: { type: 'unlock_hq', id: 'hq_label' }
@@ -620,6 +622,7 @@ export const HQ_ITEMS = {
       category: 'HQ',
       cost: 500,
       currency: 'money',
+      requiresReputation: true,
       img: 'ITEM_HQ_BOTNET', // TODO: placeholder - uses hq_room_marketing until own asset available
       description: 'Ein Kontakt, der jede Geschichte zurechtrücken kann. Schaltet die Option „Geschichte drehen“ frei, wenn die Kontroverse hoch ist.',
       effect: { type: 'unlock_hq', id: 'pr_manager_contract' }

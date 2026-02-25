@@ -11,7 +11,9 @@ The `calculateDailyUpdates()` function applies the following changes every day:
   **Harmony Decay:**
 - **Neutral drift**: Moves 2 points toward 50 (equilibrium)
 - **Ego System drain**: -2 harmony per day if `egoFocus` is active, 20% daily chance to clear ego
+- **Ego → scandal**: 12% daily chance `egoFocus` triggers `pendingFlags.scandal`, queuing bandmate scandal event
 - **High controversy** (≥50): Additional -1 harmony per day
+- **Bad show streak** (≥2): Additional -3 harmony per streak count
 - **High harmony regen** (>60): Restores +3 stamina to band members
   **Stamina Decay:**
 - Base loss: -5 per day (life on road is tiring)
@@ -20,7 +22,8 @@ The `calculateDailyUpdates()` function applies the following changes every day:
   **Social Decay:**
 - Viral countdown: -1 per day
 - Controversy decay: -1 per day (passive cooldown)
-- **Sponsor trigger**: Activates if Instagram ≥ 5k (10% chance), drops if falls below 5k or controversy ≥ 80
+- **Sponsor trigger**: Activates if Instagram ≥ 5k (10% chance), drops if falls below 5k or controversy ≥ 80 (20% daily chance)
+- **Reputation cooldown decay**: -1 per day (blocks reputation-gated posts while active)
 - **TikTok surge perk**: +1 viral token if TikTok ≥ 10k (5% chance)
 - **Follower decay**: After 3+ days without activity, all platforms decay by 1% per day
   **Van Degradation:**
@@ -29,6 +32,7 @@ The `calculateDailyUpdates()` function applies the following changes every day:
   - Good (≥60): baseline multiplier 1.0x
   - Worn (30-60): 1.6x multiplier
   - Critical (<30): 3.0x multiplier
+  - **High controversy** (≥50): +1.3x additional multiplier (neglected maintenance)
     **HQ Upgrades Active Effects:**
 - **Coffee machine**: +2 mood daily
 - **Beer fridge**: +1 mood, +2 for Lars if party_animal (30% stamina loss risk)
@@ -211,10 +215,11 @@ Mostly superseded by HQ_ITEMS but still relevant:
   lastGigDay: null,      // Tracks activity for decay
   controversyLevel: 0,   // 0-100+, shadowban at ≥80
   loyalty: 0,            // Buffer against bad performance
-  egoFocus: null,        // Member name spotlighted (harmony -2/day)
+  egoFocus: null,        // Member name spotlighted (harmony -2/day, 12% scandal chance)
   sponsorActive: false,  // Brand deal active
   trend: 'NEUTRAL',      // 'NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME'
-  activeDeals: []        // List of brand deals with remainingGigs
+  activeDeals: [],       // List of brand deals with remainingGigs
+  reputationCooldown: 0  // Blocks reputation-gated posts, decays -1/day
 }
 ```
 

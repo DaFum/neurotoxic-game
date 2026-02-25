@@ -245,19 +245,25 @@ export const PreGig = () => {
           <div className='flex-1 overflow-y-auto pr-2 space-y-2'>
             {SONGS_DB.map(song => {
               const isSelected = setlist.find(s => getSongId(s) === song.id)
+              const isLocked = player?.stats?.proveYourselfMode && song.difficulty > 2
+
               return (
                 <div
                   key={song.id}
-                  onClick={() => toggleSong(song)}
-                  className={`p-3 border-2 cursor-pointer flex justify-between items-center transition-all
+                  onClick={() => { if (!isLocked) toggleSong(song) }}
+                  className={`p-3 border-2 flex justify-between items-center transition-all ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}
                     ${
                       isSelected
                         ? 'border-(--toxic-green) bg-(--toxic-green)/10 text-(--toxic-green) shadow-[0_0_8px_var(--toxic-green-20)]'
-                        : 'border-(--ash-gray)/20 hover:border-(--star-white)/40 text-(--ash-gray)'
+                        : isLocked
+                          ? 'border-(--blood-red)/30 bg-(--blood-red)/10 text-(--blood-red)/50'
+                          : 'border-(--ash-gray)/20 hover:border-(--star-white)/40 text-(--ash-gray)'
                     }`}
                 >
                   <div>
-                    <div className='font-bold text-sm'>{song.name}</div>
+                    <div className='font-bold text-sm'>
+                      {song.name} {isLocked && <span className="text-[10px] text-(--blood-red) ml-2 border border-(--blood-red)/50 px-1">LOCKED (Prove Yourself)</span>}
+                    </div>
                     <div className='text-[10px] font-mono mt-0.5 flex gap-2'>
                       <span>{song.duration}s</span>
                       <span className='text-(--ash-gray)/40'>|</span>

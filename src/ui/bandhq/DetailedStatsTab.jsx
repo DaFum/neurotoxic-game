@@ -14,8 +14,8 @@ const CHAR_MAP = Object.fromEntries(
   Object.values(CHARACTERS).map(c => [c.name, c])
 )
 
-const DetailRow = ({ label, value, subtext, locked }) => (
-  <div className={`flex justify-between items-center py-1 border-b border-(--ash-gray)/20 font-mono text-sm ${locked ? 'opacity-40 grayscale' : ''}`}>
+const DetailRow = ({ label, value, subtext, locked, className = '' }) => (
+  <div className={`flex justify-between items-center py-1 border-b border-(--ash-gray)/20 font-mono text-sm ${locked ? 'opacity-40 grayscale' : ''} ${className}`}>
     <span className='text-(--ash-gray)'>{label}</span>
     <div className='text-right'>
       <div className={`font-bold ${locked ? 'text-(--ash-gray)' : 'text-(--star-white)'}`}>{value}</div>
@@ -24,8 +24,11 @@ const DetailRow = ({ label, value, subtext, locked }) => (
   </div>
 )
 
-export const DetailedStatsTab = ({ player, band, social }) => {
+export const DetailedStatsTab = ({ player, band, social, ...state }) => {
   const totalReach = (social.instagram ?? 0) + (social.tiktok ?? 0) + (social.youtube ?? 0) + (social.newsletter ?? 0)
+  const activeQuests = state.activeQuests || []
+  const venueBlacklist = state.venueBlacklist || []
+  const reputationByRegion = state.reputationByRegion || {}
 
   return (
     <div className='space-y-8'>
@@ -40,6 +43,9 @@ export const DetailedStatsTab = ({ player, band, social }) => {
           <DetailRow label="Total Travels" value={player.totalTravels} />
           <DetailRow label="Passive Followers" value={`+${player.passiveFollowers}/day`} locked={!isUnlocked(player.passiveFollowers)} />
           <DetailRow label="HQ Upgrades" value={`${(player.hqUpgrades || []).length} Installed`} subtext={player.hqUpgrades?.join(', ') || 'None'} />
+          {player.stats?.proveYourselfMode && (
+             <DetailRow label="Mode" value="PROVE YOURSELF" subtext="Venue Restrictions Active" className="bg-(--toxic-green)/10" />
+          )}
         </Panel>
 
         <Panel title="Social Media Reach">
@@ -50,6 +56,13 @@ export const DetailedStatsTab = ({ player, band, social }) => {
           <DetailRow label="Total Reach" value={totalReach} />
           <DetailRow label="Viral Status" value={social.viral ? 'VIRAL' : 'Normal'} locked={!social.viral} />
           
+          <div className='mt-2 border-t border-(--ash-gray)/20 pt-2'>
+            <div className='text-xs text-(--ash-gray) mb-1 font-bold italic tracking-tighter'>SOCIAL DYNAMICS</div>
+            <DetailRow label="Current Trend" value={social.trend || 'NEUTRAL'} />
+            <DetailRow label="Rep Cooldown" value={social.reputationCooldown || 0} subtext="Days until rep-gated posts clear" locked={!isUnlocked(social.reputationCooldown)} />
+            <DetailRow label="Brand Deals" value={social.activeDeals?.length || 0} subtext={social.activeDeals?.map(d => d.id).join(', ') || 'No active contracts'} locked={!isUnlocked(social.activeDeals)} />
+          </div>
+
           <div className='mt-2 border-t border-(--ash-gray)/20 pt-2'>
             <div className='text-xs text-(--ash-gray) mb-1 font-bold'>Advanced Metrics</div>
             <DetailRow 
@@ -77,6 +90,56 @@ export const DetailedStatsTab = ({ player, band, social }) => {
         </Panel>
       </div>
 
+      {/* Region and Quests */}
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+        <Panel title="Regional Standing">
+          {Object.keys(reputationByRegion).length === 0 ? (
+            <div className='text-xs text-(--ash-gray) italic py-4 text-center'>No regional data yet. Play gigs to build reputation.</div>
+          ) : (
+            <div className='space-y-1'>
+               {Object.entries(reputationByRegion).map(([region, rep]) => (
+                  <DetailRow 
+                    key={region} 
+                    label={region} 
+                    value={rep} 
+                    subtext={venueBlacklist.some(v => v.includes(region)) ? "BLACKLISTED VENUES" : null}
+                  />
+               ))}
+            </div>
+          )}
+          {venueBlacklist.length > 0 && (
+            <div className='mt-2 pt-2 border-t border-(--ash-gray)/20'>
+              <div className='text-[10px] text-(--ash-gray) mb-1 uppercase tracking-widest'>Blacklisted Venues</div>
+              <div className='text-xs text-(--toxic-green) font-mono italic'>{venueBlacklist.join(', ')}</div>
+            </div>
+          )}
+        </Panel>
+
+        <Panel title="Active Quests">
+          {activeQuests.length === 0 ? (
+            <div className='text-xs text-(--ash-gray) italic py-4 text-center'>No active quests. Stay toxic to trigger events.</div>
+          ) : (
+            <div className='space-y-4'>
+              {activeQuests.map(q => (
+                <div key={q.id} className='space-y-1 border-b border-(--ash-gray)/10 pb-2 last:border-0'>
+                  <div className='flex justify-between items-center text-xs'>
+                    <span className='font-bold text-(--star-white)'>{q.label}</span>
+                    <span className='text-(--ash-gray)'>Day {q.deadline}</span>
+                  </div>
+                  <ProgressBar 
+                    value={q.progress} 
+                    max={q.required} 
+                    color='bg-(--toxic-green)' 
+                    size='mini' 
+                    showValue={true} 
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </Panel>
+      </div>
+
       {/* Band Metrics */}
       <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
         <Panel title="Band Metrics">
@@ -85,6 +148,9 @@ export const DetailedStatsTab = ({ player, band, social }) => {
           </div>
           <DetailRow label="Luck" value={band.luck} subtext="Affects random events" />
           <DetailRow label="Inventory Slots" value={band.inventorySlots} />
+          {social.egoFocus && (
+             <DetailRow label="Ego Spotlight" value={social.egoFocus} subtext="Harmony Drain Active" className="bg-(--mood-pink)/10" />
+          )}
           <div className='mt-2 border-t border-(--ash-gray)/20 pt-2'>
             <div className='text-xs text-(--ash-gray) mb-1 font-bold'>Performance Modifiers</div>
             <DetailRow label="Guitar Difficulty" value={`x${band.performance?.guitarDifficulty ?? 1.0}`} />

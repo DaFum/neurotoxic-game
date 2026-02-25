@@ -163,6 +163,12 @@ const processEffect = (eff, delta) => {
     case 'flag':
       delta.flags.addStoryFlag = eff.flag
       break
+    case 'cooldown':
+      delta.flags.addCooldown = eff.eventId
+      break
+    case 'social_set':
+      delta.social[eff.stat] = eff.value
+      break
     case 'chain':
       delta.flags.queueEvent = eff.eventId
       break

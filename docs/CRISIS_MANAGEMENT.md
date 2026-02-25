@@ -15,8 +15,17 @@ DEFAULT_SOCIAL_STATE = {
   egoFocus: null, // ← EGO/DRAMA tracking
   sponsorActive: false,
   trend: 'NEUTRAL',
-  activeDeals: []
+  activeDeals: [],
+  reputationCooldown: 0 // ← Blocks reputation-gated posts, decays -1/day
 }
+
+// Also in player.stats:
+consecutiveBadShows: 0, // ← Tracks bad show streaks for 'prove yourself' quest
+proveYourselfMode: false // ← Restricts venue booking to ≤150 capacity
+
+// Root state:
+venueBlacklist: [] // ← Venue names banned from booking
+activeQuests: [] // ← Active timed quests (apology tour, ego management, etc.)
 ```
 
 ### B. Crisis Mechanics in `socialEngine.js`
@@ -112,6 +121,7 @@ _Note: The features listed below have been resolved via updates to `crisis.js`, 
 - The `crisis_poor_performance` event triggers when your gig score drops below 30%.
 - A poor gig instantly penalizes the band's regional `reputationByRegion` in that city by -10.
 - `useTravelLogic` actively checks `reputationByRegion`. If it falls to -30 or below, the local venues completely block the band from booking entirely.
+- **Consequence system**: 3 consecutive bad shows trigger `quest_prove_yourself`, restricting the band to venues with capacity ≤150 until they play 4 good shows.
 
 ### B. Controversy-Specific Events
 
@@ -139,6 +149,7 @@ _Note: The features listed below have been resolved via updates to `crisis.js`, 
 
 - The `crisis_redemption_charity` event acts as a reputation repair path that exchanges potential revenue for massive controversy reduction (-25).
 - Some high-risk crisis options allow you to publicly apologize with a Charisma check (e.g. `crisis_shadowban_scare` 8+ Charisma check).
+- **Consequence events** add 6 new narrative events in `consequences.js`: cancel culture quest, bandmate scandal, comeback album, and more. These set `story_flag` triggers that dispatch timed quests from PostGig.
 
 ### D. Follower Loss Events
 
@@ -159,13 +170,12 @@ _Note: The features listed below have been resolved via updates to `crisis.js`, 
 
 - `crisis_leaked_story` specifically utilizes a _Loyalty Shield_ option, where you can let true fans defend you, exchanging `loyalty` to effectively drop `controversyLevel`.
 - Loyalty buffers the mechanical performance drops as previously designed, but now carries event consequences.
+- **Economy integration**: `calculateTicketIncome` now accepts a `context` object with `controversyLevel`, `regionRep`, `loyalty`, and `discountedTickets`. Loyalty over 20 generates a merch buy bonus during high controversy (via `calculateMerchIncome`).
 
 ### F. Ego Crisis Events
 
 **Missing:**
 
-- No "vocalist demands solo career" event
-- No "band member quits" mechanics
 - No "ego generates scandal" link
 - No "manage egos to prevent breakup" quest
 
@@ -197,6 +207,8 @@ _Note: The features listed below have been resolved via updates to `crisis.js`, 
 **Implemented:**
 
 - "Limited bookings" mechanically implemented through the regional venue blacklisting. Falling to -30 in a region completely locks it out until time/events can recover the standing.
+- **Prove Yourself Mode**: After 3 consecutive bad shows, the band enters `proveYourselfMode`, restricting venue access to ≤150 capacity until 4 good shows are completed.
+- **Reputation Cooldown**: `reputationCooldown` blocks reputation-gated social posts and decays at -1/day.
 
 ### I. Crisis Interactions with Other Systems
 
@@ -374,20 +386,24 @@ Post Selection → Post Resolution → Controversy Change
 
 ## 6. RECOVERY MECHANICS SUMMARY
 
-| Recovery Type                | Implemented | Status                                                          |
-| ---------------------------- | ----------- | --------------------------------------------------------------- |
-| Passive daily decay          | ✅          | -1/day (very slow)                                              |
-| PR Manager buyout            | ✅          | -200€ to reduce -25                                             |
-| Loyalty shield               | ✅          | Event `crisis_leaked_story` burns loyalty to shield controversy |
-| Time-based reset             | ❌          | No "scandal expires" mechanic                                   |
-| Event-driven redemption      | ✅          | `crisis_redemption_charity`, apologies via PR                   |
-| Regional reputation repair   | ✅          | `reputationByRegion` tracks performance impacts                 |
-| Band member apology          | ✅          | Events offer apology options (e.g. `crisis_bad_review`)         |
-| Charity/good deed events     | ✅          | `crisis_redemption_charity` event lowers controversy            |
-| Controversy-triggered quests | ✅          | Tipping point events at 50/80/100 (`crisis_notice_*`)           |
-| Automatic sponsorship drop   | ✅          | 20% daily chance to drop sponsor when controversy >= 80         |
-| Venue blacklist mechanic     | ✅          | Venues refuse bookings if regional reputation <= -30            |
-| Follower refund mechanism    | ❌          | Lost followers stay lost                                        |
+| Recovery Type                | Implemented | Status                                                           |
+| ---------------------------- | ----------- | ---------------------------------------------------------------- |
+| Passive daily decay          | ✅          | -1/day (very slow)                                               |
+| PR Manager buyout            | ✅          | -200€ to reduce -25                                              |
+| Loyalty shield               | ✅          | Event `crisis_leaked_story` burns loyalty to shield controversy  |
+| Time-based reset             | ❌          | No "scandal expires" mechanic                                    |
+| Event-driven redemption      | ✅          | `crisis_redemption_charity`, apologies via PR                    |
+| Regional reputation repair   | ✅          | `reputationByRegion` tracks performance impacts                  |
+| Band member apology          | ✅          | Events offer apology options (e.g. `crisis_bad_review`)          |
+| Charity/good deed events     | ✅          | `crisis_redemption_charity` event lowers controversy             |
+| Controversy-triggered quests | ✅          | Tipping point events at 50/80/100 (`crisis_notice_*`)            |
+| Automatic sponsorship drop   | ✅          | 20% daily chance to drop sponsor when controversy >= 80          |
+| Venue blacklist mechanic     | ✅          | Venues refuse bookings if regional reputation <= -30             |
+| Follower refund mechanism    | ❌          | Lost followers stay lost                                         |
+| Loyalty → merch bonus        | ✅          | `calculateMerchIncome` adds `loyaltyBuyBonus` during controversy |
+| Prove Yourself quest         | ✅          | 3 bad shows → restricted to small venues until 4 good shows      |
+| Reputation cooldown          | ✅          | Blocks reputation-gated posts, decays -1/day                     |
+| Ego → scandal link           | ✅          | 12% daily chance `egoFocus` triggers bandmate scandal event      |
 
 ---
 

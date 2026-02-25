@@ -63,6 +63,11 @@ export const generatePostOptions = (gigResult, gameState, rng = secureRandom) =>
     }
   })
 
+  const cooldownBlockedIds = ['recovery_apology_tour_promo', 'recovery_leaked_good_deed']
+  if ((gameState.social?.reputationCooldown || 0) > 0) {
+    eligibleOptions = eligibleOptions.filter(opt => !cooldownBlockedIds.includes(opt.id))
+  }
+
   const results = []
 
   // 1a. Forced Sponsor Post Override
@@ -147,6 +152,7 @@ export const resolvePost = (postOption, gameState, diceRoll = secureRandom()) =>
       allMembersStaminaChange: result.allMembersStaminaChange,
       egoDrop: result.egoDrop,
       egoClear: result.egoClear,
+      reputationCooldownSet: result.reputationCooldownSet,
       unlockTrait: result.unlockTrait
     }
   } catch (e) {

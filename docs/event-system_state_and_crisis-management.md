@@ -62,7 +62,26 @@ All events follow this schema (defined across multiple event files):
   egoFocus: null,                          // Member name or null (tracks ego drama)
   sponsorActive: false,                    // Forces specific post in rotation
   trend: 'NEUTRAL',                        // 'NEUTRAL'|'DRAMA'|'TECH'|'MUSIC'|'WHOLESOME'
-  activeDeals: []                          // [{ id, remainingGigs, type, ... }]
+  activeDeals: [],                         // [{ id, remainingGigs, type, ... }]
+  reputationCooldown: 0                    // Blocks reputation-gated posts, decays -1/day
+}
+```
+
+**Player Stats** (`DEFAULT_PLAYER_STATE.stats`):
+
+```javascript
+{
+  consecutiveBadShows: 0,                  // Bad show streak counter (triggers quest at 3)
+  proveYourselfMode: false                 // Restricts travel to venues ≤150 capacity
+}
+```
+
+**Root State (new fields)**:
+
+```javascript
+{
+  venueBlacklist: [],                      // Venue names blocked from booking
+  activeQuests: []                         // Timed quests: [{ id, label, deadline, progress, required, rewardFlag, failurePenalty }]
 }
 ```
 
@@ -129,6 +148,15 @@ All events follow this schema (defined across multiple event files):
 11. **`crisis_notice_50`** (band) - Warning at `>=50` (story flag: `saw_crisis_50`)
 12. **`crisis_notice_80`** (band) - Algorithm penalty warning at `>=80` (story flag: `saw_crisis_80`)
 13. **`crisis_notice_100`** (band) - Full shadowban confirmation at `>=100` (story flag: `saw_crisis_100`)
+
+**Consequence Event Pool** (6 consequence events in `/src/data/events/consequences.js`):
+
+14. **`consequences_cancel_culture_quest`** (band) - Triggers at `controversyLevel >= 70` + `instagram >= 5000`
+15. **`consequences_bandmate_scandal`** (band) - Queued via `pendingFlags.scandal` from ego system
+16. **`consequences_comeback_album`** (special) - Queued when apology tour complete + controversy < 30
+17. **`consequences_prove_yourself_start`** (band) - Triggered inline by 3 consecutive bad shows
+18. **`consequences_reputation_freeze`** (band) - Triggers at `controversyLevel >= 50`
+19. **`consequences_discounted_tickets`** (financial) - Available at low regional reputation
     **Crisis Mechanics:**
 
 - **Controversy Decay**: Passive -1 per day (very slow)
@@ -157,7 +185,7 @@ export const ActionTypes = {
   SET_GIG: 'SET_GIG',
   START_GIG: 'START_GIG',
   SET_SETLIST: 'SET_SETLIST',
-  SET_LAST_GIG_STATS: 'SET_LAST_GIG_STATS', // ← Triggers regional rep loss
+  SET_LAST_GIG_STATS: 'SET_LAST_GIG_STATS', // ← Triggers regional rep loss + bad show tracking
   SET_ACTIVE_EVENT: 'SET_ACTIVE_EVENT',
   ADD_TOAST: 'ADD_TOAST',
   REMOVE_TOAST: 'REMOVE_TOAST',
@@ -167,13 +195,20 @@ export const ActionTypes = {
   APPLY_EVENT_DELTA: 'APPLY_EVENT_DELTA', // ← Applies event consequences
   POP_PENDING_EVENT: 'POP_PENDING_EVENT',
   CONSUME_ITEM: 'CONSUME_ITEM',
-  ADVANCE_DAY: 'ADVANCE_DAY', // ← Triggers daily decay
+  ADVANCE_DAY: 'ADVANCE_DAY', // ← Triggers daily decay + quest expiry
   ADD_COOLDOWN: 'ADD_COOLDOWN',
   START_TRAVEL_MINIGAME: 'START_TRAVEL_MINIGAME',
   COMPLETE_TRAVEL_MINIGAME: 'COMPLETE_TRAVEL_MINIGAME',
   START_ROADIE_MINIGAME: 'START_ROADIE_MINIGAME',
   COMPLETE_ROADIE_MINIGAME: 'COMPLETE_ROADIE_MINIGAME',
-  UNLOCK_TRAIT: 'UNLOCK_TRAIT'
+  UNLOCK_TRAIT: 'UNLOCK_TRAIT',
+  RECORD_BAD_SHOW: 'RECORD_BAD_SHOW', // ← Increments bad show streak
+  RECORD_GOOD_SHOW: 'RECORD_GOOD_SHOW', // ← Resets bad show streak
+  ADD_VENUE_BLACKLIST: 'ADD_VENUE_BLACKLIST', // ← Blacklists venue
+  ADD_QUEST: 'ADD_QUEST', // ← Adds timed quest
+  ADVANCE_QUEST: 'ADVANCE_QUEST', // ← Increments quest progress
+  COMPLETE_QUEST: 'COMPLETE_QUEST', // ← Completes quest + rewards
+  FAIL_QUESTS: 'FAIL_QUESTS' // ← Expires overdue quests + penalties
 }
 ```
 
@@ -181,7 +216,9 @@ export const ActionTypes = {
 
 - `UPDATE_SOCIAL` - Validates and updates `controversyLevel`, `loyalty`, `trend`, `activeDeals`
 - `APPLY_EVENT_DELTA` - Processes effect objects, applying all state mutations
-- `ADVANCE_DAY` - Calls `calculateDailyUpdates()` which decrements controversy by 1
+- `ADVANCE_DAY` - Calls `calculateDailyUpdates()` which decrements controversy by 1, decays `reputationCooldown`, and returns `pendingFlags` (ego→scandal trigger)
+- `SET_LAST_GIG_STATS` - Tracks bad show streaks, triggers venue blacklisting, advances quests on good shows
+- `ADD_QUEST` / `ADVANCE_QUEST` / `COMPLETE_QUEST` / `FAIL_QUESTS` - Full quest lifecycle management
 
 ---
 
@@ -192,11 +229,12 @@ export const ActionTypes = {
 1. **Regional Reputation** (`reputationByRegion` in root state)
    - Penalized by -10 when gig score < 30
    - Venues refuse booking if `reputation <= -30` (checked in `useTravelLogic`)
-   - No known recovery mechanism (would need events to restore)
+   - Used in economy: `calculateTicketIncome` applies up to -20% fill rate penalty based on `regionRep`
 2. **Social Reputation** (represented by `controversyLevel` + `loyalty`)
    - `controversyLevel` is the "damage" metric
    - `loyalty` is the "fan buffer" metric
    - Together they control algorithmic growth penalties
+   - Controversy also affects ticket fill rate (up to -30% at high levels)
 3. **Follower Growth** (calculated via `calculateSocialGrowth()`)
    - Base: `Math.max(0, performance - 50) * 0.5`
    - Loyalty shield: Adds `loyalty * 0.5` to effective performance

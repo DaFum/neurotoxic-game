@@ -176,6 +176,8 @@ export const applyEventDelta = (state, delta) => {
         const currentValue =
           typeof nextSocial[key] === 'number' ? nextSocial[key] : 0
         nextSocial[key] = Math.max(0, currentValue + value)
+      } else {
+        nextSocial[key] = value // For string and null assignments like egoFocus
       }
     })
     nextState.social = nextSocial
@@ -195,6 +197,14 @@ export const applyEventDelta = (state, delta) => {
         ...nextState.pendingEvents,
         delta.flags.queueEvent
       ]
+    }
+    if (delta.flags.addCooldown) {
+      if (!nextState.eventCooldowns.includes(delta.flags.addCooldown)) {
+        nextState.eventCooldowns = [
+          ...nextState.eventCooldowns,
+          delta.flags.addCooldown
+        ]
+      }
     }
   }
 

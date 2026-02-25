@@ -56,7 +56,7 @@ const TICKET_SALES_CONSTANTS = {
 /**
  * Calculates ticket sales revenue and attendance.
  */
-const calculateTicketIncome = (gigData, playerFame, modifiers) => {
+const calculateTicketIncome = (gigData, playerFame, modifiers, context = {}) => {
   // Base draw is ~30%. Fame fills the rest.
   const baseDrawRatio = TICKET_SALES_CONSTANTS.BASE_DRAW_RATIO
   // Fame needs to be ~10x capacity to fill it easily
@@ -74,8 +74,27 @@ const calculateTicketIncome = (gigData, playerFame, modifiers) => {
   // Soundcheck Boost (word-of-mouth from quality prep)
   if (modifiers.soundcheck) fillRate += 0.1
 
+  // Controversy attendance penalty: -1% per point above 40, max -30%
+  const controversyLevel = context.controversyLevel || 0
+  if (controversyLevel >= 40) {
+    fillRate -= Math.min(0.30, (controversyLevel - 40) * 0.01)
+  }
+
+  // Regional reputation penalty: -2% per -10 rep, max -20%
+  const regionRep = context.regionRep || 0
+  if (regionRep < 0) {
+    fillRate -= Math.min(0.20, Math.abs(regionRep) * 0.002)
+  }
+
+  // Discounted tickets flag: +10% fill
+  if (context.discountedTickets) {
+    fillRate += 0.10
+  }
+
   // Price Sensitivity: Higher price reduces attendance slightly unless Fame is very high
-  if (gigData.price > 15) {
+  if (context.discountedTickets) {
+    // skip price penalty if discounted tickets flagged
+  } else if (gigData.price > 15) {
     const pricePenalty = (gigData.price - 15) * 0.02 // -2% per Euro over 15
     const mitigation = fameRatio * 0.5
     fillRate -= Math.max(0, pricePenalty - mitigation)
@@ -105,7 +124,8 @@ const calculateMerchIncome = (
   performanceScore,
   gigStats,
   modifiers,
-  bandInventory
+  bandInventory,
+  context = {}
 ) => {
   let buyRate = 0.15 + (performanceScore / 100) * 0.2 // 15% - 35%
   const breakdownItems = []
@@ -127,6 +147,17 @@ const calculateMerchIncome = (
   }
 
   if (modifiers.merch) buyRate += 0.1 // Boosted merch table effect to reward investment
+
+  // Loyalty converts to merch sales during controversy
+  if ((context?.controversyLevel || 0) >= 40 && (context?.loyalty || 0) >= 20) {
+    const loyaltyBuyBonus = Math.min(0.15, (context.loyalty / 100) * 0.2)
+    buyRate = Math.min(0.45, buyRate + loyaltyBuyBonus)
+    breakdownItems.push({
+      label: 'LOYAL FANS',
+      value: 0,
+      detail: 'Supporting you despite PR'
+    })
+  }
 
   // Penalty: Misses drive people away (scaled penalty)
   if (gigStats && gigStats.misses > 0) {
@@ -334,7 +365,8 @@ export const calculateGigFinancials = ({
   modifiers,
   bandInventory,
   playerState,
-  gigStats
+  gigStats,
+  context = {}
 }) => {
   const playerFame = playerState?.fame || 0
 
@@ -344,6 +376,13 @@ export const calculateGigFinancials = ({
     fame: playerFame
   })
 
+  // Hack for applying discount tickets effect visually without modifying original gig data.
+  // The UI pre-renders prices, but this assures the final math reflects the story outcome.
+  let effectiveGigData = { ...gigData }
+  if (context.discountedTickets && effectiveGigData.price > 10) {
+    effectiveGigData.price = Math.floor(effectiveGigData.price * 0.6)
+  }
+
   const report = {
     income: { total: 0, breakdown: [] },
     expenses: { total: 0, breakdown: [] },
@@ -351,7 +390,7 @@ export const calculateGigFinancials = ({
   }
 
   // 1. Ticket Sales
-  const tickets = calculateTicketIncome(gigData, playerFame, modifiers)
+  const tickets = calculateTicketIncome(effectiveGigData, playerFame, modifiers, context)
   report.income.breakdown.push(tickets.breakdownItem)
   report.income.total += tickets.revenue
 
@@ -385,7 +424,8 @@ export const calculateGigFinancials = ({
     performanceScore,
     gigStats,
     modifiers,
-    bandInventory
+    bandInventory,
+    context
   )
   report.income.breakdown.push(...merch.breakdownItems)
   report.income.total += merch.revenue

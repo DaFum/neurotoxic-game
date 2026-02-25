@@ -19,6 +19,9 @@ The gig financials calculation is driven by `calculateGigFinancials()` which pro
    - Fame scaling: Fame ÷ (capacity × 10) factors in
    - Modifiers: +15% promo boost, +10% soundcheck boost
    - Price sensitivity: -2% per Euro above €15 (mitigated by fame)
+   - **Controversy penalty**: -1% per point above 40, max -30%
+   - **Regional reputation penalty**: -2% per -10 rep, max -20%
+   - **Discounted tickets**: +10% fill when active
    - **Formula:** `fillRate = baseDrawRatio + fameRatio × 0.7`
    - **Clamped:** 10% - 100% of capacity
    - **Revenue:** ticketsSold × ticket price
@@ -35,6 +38,7 @@ The gig financials calculation is driven by `calculateGigFinancials()` which pro
      - **Bad Show (<40):** 0.5× multiplier
    - Miss penalty: -1.5% per miss (capped at 50% of buyRate)
    - Merch modifier: +10% boost
+   - **Loyalty buy bonus**: When controversy ≥40 and loyalty ≥20, up to +15% buy rate (fans buy merch to support)
    - **Limited by inventory:** Only sells what's in stock
    - **Costs:** €10 COGS per unit, €25 avg selling price
    - **Net margin:** €15 per sale
@@ -135,7 +139,8 @@ if (score < 30) {
 - **Storage:** `state.reputationByRegion` (object with region/city keys)
 - **Trigger:** When setting `lastGigStats` after gig completion
 - **Rule:** If `score < 30` → reputation[location] -= 10
-- **Usage:** (Not currently visible in economy calculations, likely for future features like venue access, NPC reactions)
+- **Economy Usage:** `calculateTicketIncome` uses `regionRep` parameter to apply up to -20% fill rate penalty
+- **Venue Blacklisting:** At reputation ≤ -30, venues are blacklisted via `handleAddVenueBlacklist`
 
 ---
 
@@ -256,13 +261,16 @@ Travel costs (fuel + food)
 
 ### Summary Table: Ticket Sales Calculation
 
-| Factor                  | Base                       | Bonus                 | Penalty        |
-| ----------------------- | -------------------------- | --------------------- | -------------- |
-| **Base Draw**           | 30% capacity               | —                     | —              |
-| **Fame Scaling**        | Fame/(cap×10) weighted 70% | +100% at fame=cap×10+ | —              |
-| **Promo Modifier**      | —                          | +15%                  | —              |
-| **Soundcheck Modifier** | —                          | +10%                  | —              |
-| **Price Sensitivity**   | —                          | Mitigation×fame       | -2% per €>15   |
-| **Final Range**         | —                          | —                     | **10% - 100%** |
+| Factor                  | Base                       | Bonus                 | Penalty                   |
+| ----------------------- | -------------------------- | --------------------- | ------------------------- |
+| **Base Draw**           | 30% capacity               | —                     | —                         |
+| **Fame Scaling**        | Fame/(cap×10) weighted 70% | +100% at fame=cap×10+ | —                         |
+| **Promo Modifier**      | —                          | +15%                  | —                         |
+| **Soundcheck Modifier** | —                          | +10%                  | —                         |
+| **Price Sensitivity**   | —                          | Mitigation×fame       | -2% per €>15              |
+| **Controversy**         | —                          | —                     | -1%/pt above 40, max -30% |
+| **Regional Reputation** | —                          | —                     | -2%/−10 rep, max -20%     |
+| **Discounted Tickets**  | —                          | +10% fill             | —                         |
+| **Final Range**         | —                          | —                     | **10% - 100%**            |
 
 The economy is **tightly coupled** to gig performance, encouraging players to manage band morale, stamina, and composition while balancing pre-gig investments for better attendance and income multipliers.
