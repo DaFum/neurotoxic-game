@@ -3,7 +3,7 @@
  * @module Modal
  */
 
-import React, { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 
 /**
@@ -15,7 +15,7 @@ import PropTypes from 'prop-types'
  * @param {React.ReactNode} props.children - Content.
  */
 export const Modal = ({ isOpen, onClose, title, children }) => {
-  const dialogRef = React.useRef(null)
+  const dialogRef = useRef(null)
 
   useEffect(() => {
     const handleKeyDown = e => {
