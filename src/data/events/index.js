@@ -4,7 +4,10 @@ import { BAND_EVENTS } from './band.js'
 import { GIG_EVENTS } from './gig.js'
 import { FINANCIAL_EVENTS } from './financial.js'
 import { SPECIAL_EVENTS } from './special.js'
+import { CRISIS_EVENTS } from './crisis.js'
 import { logger } from '../../utils/logger.js'
+
+const VALID_CATEGORIES = ['transport', 'band', 'gig', 'financial', 'special']
 
 // Validation Helper
 const validateEvents = (events, categoryName = 'unknown') => {
@@ -22,9 +25,7 @@ const validateEvents = (events, categoryName = 'unknown') => {
       return false
     }
     ids.add(e.id)
-    if (
-      !['transport', 'band', 'gig', 'financial', 'special'].includes(e.category)
-    ) {
+    if (!VALID_CATEGORIES.includes(e.category)) {
       logger.warn(
         'EventValidation',
         `Invalid Event Category in ${categoryName}: ${e.category} for event ${e.id}`
@@ -34,10 +35,15 @@ const validateEvents = (events, categoryName = 'unknown') => {
   })
 }
 
+// Split crisis events into their respective category pools
+const crisisBand = CRISIS_EVENTS.filter(e => e.category === 'band')
+const crisisFinancial = CRISIS_EVENTS.filter(e => e.category === 'financial')
+const crisisSpecial = CRISIS_EVENTS.filter(e => e.category === 'special')
+
 export const EVENTS_DB = {
   transport: validateEvents(TRANSPORT_EVENTS, 'transport'),
-  band: validateEvents(BAND_EVENTS, 'band'),
+  band: validateEvents([...BAND_EVENTS, ...crisisBand], 'band'),
   gig: validateEvents(GIG_EVENTS, 'gig'),
-  financial: validateEvents(FINANCIAL_EVENTS, 'financial'),
-  special: validateEvents(SPECIAL_EVENTS, 'special')
+  financial: validateEvents([...FINANCIAL_EVENTS, ...crisisFinancial], 'financial'),
+  special: validateEvents([...SPECIAL_EVENTS, ...crisisSpecial], 'special')
 }
