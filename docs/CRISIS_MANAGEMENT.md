@@ -96,119 +96,134 @@ if (deal.penalty) {
 
 ---
 
-## 2. CRITICAL GAPS & MISSING FEATURES
+## 2. CRITICAL GAPS & MISSING FEATURES (RESOLVED)
 
-### A. No Explicit "Bad Review" or "Poor Performance" Events
+_Note: The features listed below have been resolved via updates to `crisis.js`, `simulationUtils.js`, `gameReducer.js`, and `useTravelLogic.js`._
+
+### A. Explicit "Bad Review" or "Poor Performance" Events
 
 **Missing:**
 
-- No event triggered when gig score is critically low (e.g., < 30%)
 - No negative feedback event from venues after bad shows
-- No "tour reputation" tracking by region
-- No local backlash that prevents re-booking at venues
 - No cascading failure scenarios (e.g., "If you play badly 3 times, venues stop booking you")
-  **What exists instead:**
-- `reputationByRegion: {}` field in state (line 143 of `initialState.js`) is **UNUSED**
-- Regional reputation is never updated or checked anywhere
 
-### B. No Controversy-Specific Events
+**Implemented:**
+
+- The `crisis_poor_performance` event triggers when your gig score drops below 30%.
+- A poor gig instantly penalizes the band's regional `reputationByRegion` in that city by -10.
+- `useTravelLogic` actively checks `reputationByRegion`. If it falls to -30 or below, the local venues completely block the band from booking entirely.
+
+### B. Controversy-Specific Events
 
 **Missing crisis events:**
 
-- No "scandal" events that trigger from high controversy
-- No "leaked story" events
 - No "bandmate caught doing something stupid" consequences
 - No "apology tour" mechanic to recover
 - No "cancel culture backlash" minigames or quests
-  **What does exist:**
-- Post options can ADD controversy (e.g., "Drunk Stream" failure: +30)
-- But no story-driven crisis events tied to controversy level itself
 
-### C. No Recovery Events or "Redemption Arc"
+**Implemented:**
+
+- The `crisis_leaked_story` event triggers specifically from high controversy (>= 60).
+- `crisis_online_backlash` and `crisis_bad_review` are specifically linked to high controversy/low harmony.
+- These events provide choices that balance losing fans and money vs absorbing the hate.
+
+### C. Recovery Events & "Redemption Arc"
 
 **Missing:**
 
 - No "comeback album" event
-- No "charity concert" to repair reputation
-- No "public apology" event
 - No "leaked good-deed footage" counter-scandal
 - No time-locked reputation repair quests
-- Only mechanical recovery: -1/day passive + PR Manager (-25 for 200€)
 
-### D. No Follower Loss Events (Except Posts)
+**Implemented:**
+
+- The `crisis_redemption_charity` event acts as a reputation repair path that exchanges potential revenue for massive controversy reduction (-25).
+- Some high-risk crisis options allow you to publicly apologize with a Charisma check (e.g. `crisis_shadowban_scare` 8+ Charisma check).
+
+### D. Follower Loss Events
+
+**Implemented:**
+
+- High controversy leads to event-driven follower loss situations, rather than just post penalties.
+- `crisis_mass_unfollow` explicitly drops loyalty and harmony as a dedicated hate-campaign.
+- Hitting 80+ controversy severely limits algorithmic growth and triggers the `crisis_notice_80` algorithmic shadowban penalty warning.
+
+### E. Loyalty-Specific Crisis Mechanics
 
 **Missing:**
 
-- No "mass unfollower" event when controversy spikes
-- No "algorithmic shadowban begins" event
-- No "brand drops band" automatic event when controversy hits threshold
-- No notification system for hitting controversy milestones
-  **What exists:**
-- Posts can return negative follower change (e.g., "Crowdfunding": -500 followers)
-- But no event-driven mass follower loss
-
-### E. No Loyalty-Specific Crisis Mechanics
-
-**Missing:**
-
-- Loyalty is tracked but no events are tied to it
-- No "true fans defend you during scandal" events
 - No "loyalty converts to merchandise sales during controversy"
 - No "loyalty shields you from being dropped by venues" mechanics
-- Loyalty only mechanically shields gig performance (effectivePerf calculation)
 
-### F. No Ego Crisis Events
+**Implemented:**
 
-**What exists:**
+- `crisis_leaked_story` specifically utilizes a _Loyalty Shield_ option, where you can let true fans defend you, exchanging `loyalty` to effectively drop `controversyLevel`.
+- Loyalty buffers the mechanical performance drops as previously designed, but now carries event consequences.
 
-- `egoFocus` field tracks which member is focused on
-- `egoFocus` decays harmony by -2 per day
-- Posts can set `egoDrop` (focus on a member) or `egoClear` (resolve egos)
-  **Missing:**
-- No "ego clash escalates to physical fight" event
+### F. Ego Crisis Events
+
+**Missing:**
+
 - No "vocalist demands solo career" event
 - No "band member quits" mechanics
 - No "ego generates scandal" link
 - No "manage egos to prevent breakup" quest
 
-### G. No Financial Consequences of Crisis
+**Implemented:**
+
+- `crisis_ego_clash` specifically requires an active `egoFocus` on a band member alongside low band `harmony` (<40).
+- This event creates a screaming match that escalates to severe harmony damage unless passed via a Charisma check or ignored (causing online leaks).
+
+### G. Financial Consequences of Crisis
 
 **Missing:**
 
-- No "sponsorship drops due to scandal" automatic event
-- No "venue cancels tour due to controversy" event
 - No "ticket sales collapse" event when controversy is high
 - Gig financials are determined only by score & capacity, NOT by band reputation
 
-### H. No Stage-Gated Crisis Recovery
+**Implemented:**
+
+- `crisis_sponsor_ultimatum` triggers an automatic event when controversy surpasses 80, potentially costing massive cash or voiding deals entirely.
+- Passive checks in `calculateDailyUpdates` now enforce a constant 20% risk per day of your active sponsor dropping the band if controversy hits >=80.
+- `crisis_venue_cancels` costs the band cancellation fees if controversy is >65.
+
+### H. Stage-Gated Crisis Recovery
 
 **Missing:**
 
 - No "prove yourself tour" where you must play small venues to rebuild
 - No "reputation cooldown" between crisis posts
-- No "limited bookings" mechanic when controversial
-- No "venues check your score before booking" logic
 
-### I. No Crisis Interactions with Other Systems
+**Implemented:**
 
-**Missing:**
+- "Limited bookings" mechanically implemented through the regional venue blacklisting. Falling to -30 in a region completely locks it out until time/events can recover the standing.
 
-- Crisis doesn't affect:
-  - Band member morale/mood (harmony decays, but moods aren't affected by scandal)
-  - Member departure risk
-  - Van breakdown chance
-  - HQ upgrade availability
-  - Setlist restrictions
-  - Minigame difficulty
-
-### J. No "Controversy Tipping Points" Events
+### I. Crisis Interactions with Other Systems
 
 **Missing:**
 
-- No event at `controversyLevel = 50` ("Notice of backlash")
-- No event at `controversyLevel = 80` ("Algorithmic slowdown begins")
-- No event at `controversyLevel = 100` ("Full shadowban active")
+- Member departure risk
+- Van breakdown chance
+- HQ upgrade availability
+- Setlist restrictions
+- Minigame difficulty
+
+**Implemented:**
+
+- Crisis directly affects `band.harmony` and `band.members[0].mood`. Within `calculateDailyUpdates`, tipping the `controversyLevel` to 50 or above triggers an increased, faster daily decay on member morale and inter-band harmony.
+
+### J. "Controversy Tipping Points" Events
+
+**Missing:**
+
 - No "point of no return" scenario
+
+**Implemented:**
+
+- Milestone warning events were introduced for key thresholds:
+  - `crisis_notice_50`: Warning of backlash and faster harmony drift.
+  - `crisis_notice_80`: Algorithmic slowdown begins and sponsors panic.
+  - `crisis_notice_100`: Shadowbanned officially confirmed via event triggers.
 
 ---
 
@@ -357,22 +372,22 @@ Post Selection → Post Resolution → Controversy Change
 
 ---
 
-## 6. MISSING RECOVERY MECHANICS SUMMARY
+## 6. RECOVERY MECHANICS SUMMARY
 
-| Recovery Type                | Implemented | Status                                |
-| ---------------------------- | ----------- | ------------------------------------- |
-| Passive daily decay          | ✅          | -1/day (very slow)                    |
-| PR Manager buyout            | ✅          | -200€ to reduce -25                   |
-| Loyalty shield               | ✅          | Reduces gig performance penalty       |
-| Time-based reset             | ❌          | No "scandal expires" mechanic         |
-| Event-driven redemption      | ❌          | No "comeback" events                  |
-| Regional reputation repair   | ❌          | `reputationByRegion` unused           |
-| Band member apology          | ❌          | No apology events                     |
-| Charity/good deed events     | ❌          | Missing                               |
-| Controversy-triggered quests | ❌          | No milestone events                   |
-| Automatic sponsorship drop   | ❌          | Sponsors don't care about controversy |
-| Venue blacklist mechanic     | ❌          | No booking restrictions               |
-| Follower refund mechanism    | ❌          | Lost followers stay lost              |
+| Recovery Type                | Implemented | Status                                                          |
+| ---------------------------- | ----------- | --------------------------------------------------------------- |
+| Passive daily decay          | ✅          | -1/day (very slow)                                              |
+| PR Manager buyout            | ✅          | -200€ to reduce -25                                             |
+| Loyalty shield               | ✅          | Event `crisis_leaked_story` burns loyalty to shield controversy |
+| Time-based reset             | ❌          | No "scandal expires" mechanic                                   |
+| Event-driven redemption      | ✅          | `crisis_redemption_charity`, apologies via PR                   |
+| Regional reputation repair   | ✅          | `reputationByRegion` tracks performance impacts                 |
+| Band member apology          | ✅          | Events offer apology options (e.g. `crisis_bad_review`)         |
+| Charity/good deed events     | ✅          | `crisis_redemption_charity` event lowers controversy            |
+| Controversy-triggered quests | ✅          | Tipping point events at 50/80/100 (`crisis_notice_*`)           |
+| Automatic sponsorship drop   | ✅          | 20% daily chance to drop sponsor when controversy >= 80         |
+| Venue blacklist mechanic     | ✅          | Venues refuse bookings if regional reputation <= -30            |
+| Follower refund mechanism    | ❌          | Lost followers stay lost                                        |
 
 ---
 
@@ -386,15 +401,16 @@ Post Selection → Post Resolution → Controversy Change
 4. Passive -1/day decay
 5. PR Manager expensive recovery option
 6. Trend system influences post weighting
-   **Critical Gaps:**
-7. **No triggered crisis events** - Only posts add controversy, no story events
-8. **No recovery narrative** - No redemption arc, comeback tour, or apology mechanics
-9. **No venue/regional consequences** - `reputationByRegion` exists but is never used
-10. **No band member drama escalation** - Harmony decays but no "member quits" events
-11. **No financial consequences** - Sponsorships/gigs unaffected by crisis
-12. **No progression tipping points** - No milestone events at 50/80/100 controversy
-13. **No interdependencies** - Crisis doesn't affect stamina, mood, van condition, etc.
-14. **Slow recovery** - 100 days passive decay is punishing; no way to accelerate
+
+**Resolved Gaps (Implemented in `crisis.js` & `simulationUtils.js`):**
+
+7. **Triggered crisis events** - New `crisis_bad_review`, `crisis_online_backlash`, `crisis_mass_unfollow` events.
+8. **Recovery narrative** - `crisis_redemption_charity` and various apologies offer major controversy reduction.
+9. **Venue/regional consequences** - `reputationByRegion` penalizes poor gigs (<30 score) and blocks venue bookings at <=-30.
+10. **Band member drama** - `crisis_ego_clash` triggers escalating fights relying on Charisma to resolve.
+11. **Financial consequences** - `crisis_venue_cancels`, `crisis_sponsor_ultimatum`, plus a daily risk of sponsors dropping at >=80 controversy.
+12. **Progression tipping points** - Milestone warning events (`crisis_notice_50/80/100`) trigger at thresholds.
+13. **Interdependencies** - High controversy (>=50) increases daily harmony and mood drains.
 
 ---
 

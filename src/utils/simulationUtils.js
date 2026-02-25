@@ -262,6 +262,17 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
     }
   }
 
+  // High Controversy passive effects
+  const controversy = nextSocial.controversyLevel || 0
+  if (controversy >= 50) {
+    // Harmony drain is worse under stress
+    nextBand.harmony -= 1
+    nextBand.members = nextBand.members.map(m => ({
+      ...m,
+      mood: Math.max(0, m.mood - 1)
+    }))
+  }
+
   // Clamp harmony to valid range after all modifications
   nextBand.harmony = Math.max(1, Math.min(100, nextBand.harmony))
 
@@ -279,9 +290,15 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
   // Sponsor Trigger Metric
   if (!nextSocial.sponsorActive && (nextSocial.instagram || 0) > 5000 && rng() < 0.1) {
     nextSocial.sponsorActive = true
-  } else if (nextSocial.sponsorActive && (nextSocial.instagram || 0) < 5000) {
+  } else if (nextSocial.sponsorActive) {
     // If organic followers drop below milestone, they drop the sponsorship
-    nextSocial.sponsorActive = false
+    if ((nextSocial.instagram || 0) < 5000) {
+        nextSocial.sponsorActive = false
+    } 
+    // Sponsorship Drops due to high controversy
+    else if (controversy >= 80 && rng() < 0.2) { 
+        nextSocial.sponsorActive = false
+    }
   }
 
   // TikTok Viral Surge Perk

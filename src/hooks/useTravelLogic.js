@@ -58,6 +58,7 @@ export const useTravelLogic = ({
   startGig,
   addToast,
   changeScene,
+  reputationByRegion,
   onShowHQ,
   onStartTravelMinigame
 }) => {
@@ -73,6 +74,7 @@ export const useTravelLogic = ({
   const playerRef = useRef(player)
   const bandRef = useRef(band)
   const gameMapRef = useRef(gameMap)
+  const reputationByRegionRef = useRef(reputationByRegion)
   const isTravelingRef = useRef(isTraveling)
   const pendingTravelNodeRef = useRef(pendingTravelNode)
 
@@ -84,7 +86,8 @@ export const useTravelLogic = ({
     playerRef.current = player
     bandRef.current = band
     gameMapRef.current = gameMap
-  }, [player, band, gameMap])
+    reputationByRegionRef.current = reputationByRegion
+  }, [player, band, gameMap, reputationByRegion])
 
   /**
    * Checks if a target node is connected to the current node
@@ -364,6 +367,17 @@ export const useTravelLogic = ({
       const currentStartNode = gameMap?.nodes[player.currentNodeId]
       const currentLayer = currentStartNode?.layer || 0
       const visibility = getNodeVisibilityUtil(node.layer, currentLayer)
+
+      const reputation = reputationByRegionRef.current || {}
+      if (node.type !== 'START' && node.venue) {
+        if ((reputation[node.venue.name] || 0) <= -30) {
+          addToast(`Booking refused: The venue in ${node.venue.name} blacklisted you due to poor past performance!`, 'error')
+          if (pendingTravelNode?.id === node.id) {
+            clearPendingTravel()
+          }
+          return
+        }
+      }
 
       // Allow travel to START node from anywhere if connected, bypassing standard layer/visibility rules if needed.
       if (node.type === 'START') {

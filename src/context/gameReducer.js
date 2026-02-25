@@ -552,11 +552,22 @@ export const gameReducer = (state, action) => {
       }
       const performanceUnlocks = checkTraitUnlocks(state, { type: 'GIG_COMPLETE', gigStats: action.payload })
       const traitResult = applyTraitUnlocks(state, performanceUnlocks)
+      
+      const score = action.payload?.score ?? 0
+      const location = state.player?.location || 'Unknown'
+      const nextReputation = { ...state.reputationByRegion }
+      
+      if (score < 30) {
+         nextReputation[location] = (nextReputation[location] || 0) - 10
+         logger.warn('GameState', `Regional reputation loss in ${location} due to poor gig performance (-10)`)
+      }
+
       return {
         ...state,
         lastGigStats: action.payload,
         band: traitResult.band,
-        toasts: traitResult.toasts
+        toasts: traitResult.toasts,
+        reputationByRegion: nextReputation
       }
     }
 
