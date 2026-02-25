@@ -68,7 +68,7 @@ export const HUD = () => {
       <div className='flex flex-col gap-2'>
         <div className='bg-(--void-black)/90 border border-(--toxic-green)/60 backdrop-blur-sm p-2.5 text-(--toxic-green) shadow-[0_0_8px_var(--toxic-green-20)] animate-pulse-glow'>
           <div className='flex items-center gap-2 mb-1.5'>
-            <DolMariusign
+            <DollarSign
               size={14}
               className={
                 player.money < 40
