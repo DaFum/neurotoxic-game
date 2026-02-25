@@ -293,16 +293,20 @@ npm install
 npm run dev        # Vite dev server at http://localhost:5173
 npm run build      # Production build to ./dist
 npm run preview    # Preview production build locally
-npm run test       # Node test runner (--import tsx --experimental-test-module-mocks)
+npm run test       # Node logic tests (--import tsx --experimental-test-module-mocks)
 npm run test:e2e   # Playwright end-to-end tests
-npm run test:ui    # Run UI tests
-npm run test:all   # Run all tests
+npm run test:ui    # Vitest UI components and integration tests
+npm run test:all   # Run both logic (node:test) and UI (Vitest) tests
 npm run lint       # ESLint
 npm run format     # Prettier --write .
 ```
 
-**Note:** Tests use `node:test` with `tsx`. When running manual tests, use:
-`node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/your-test.test.js`
+**Note:** The project uses two test runners:
+
+1. **Logic Tests**: Use pure `node:test`.
+   Run one: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/your-test.test.js`
+2. **UI Tests**: Use `Vitest`.
+   Run one: `npx vitest run tests/YourComponent.test.jsx`
 
 ## Sub-Agent Documentation
 

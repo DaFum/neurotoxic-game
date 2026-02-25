@@ -34,7 +34,7 @@ vi.mock('../src/components/GigHUD', () => ({
   }))
 // Mock GlitchButton since it's used in Gig
 vi.mock('../src/ui/GlitchButton', () => ({
-    GlitchButton: ({ children, onClick }) => React.createElement('button', { onClick }, children)
+    GlitchButton: ({ children, onClick }) => React.createElement('button', { type: 'button', onClick }, children)
   }))
 // Mock audioManager
 vi.mock('../src/utils/AudioManager', () => ({

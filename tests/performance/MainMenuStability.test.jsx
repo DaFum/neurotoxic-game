@@ -26,7 +26,7 @@ vi.mock('../../src/hooks/useBandHQModal.js', () => ({
     })
   }))
 const glitchButtonRender = vi.fn(({ children, onClick }) => {
-  return <button onClick={onClick}>{children}</button>
+  return <button type='button' onClick={onClick}>{children}</button>
 })
 
 vi.mock('../../src/ui/GlitchButton', () => ({
@@ -90,6 +90,9 @@ describe('MainMenu Performance Stability', () => {
     const startTourCall2 = secondCalls.find(
       c => c[0].children === 'Start Tour'
     )
+
+    expect(creditsCall2).toBeDefined()
+    expect(startTourCall2).toBeDefined()
 
     // Assert stability (this should pass after optimization)
     expect(creditsCall1[0].onClick).toBe(creditsCall2[0].onClick)

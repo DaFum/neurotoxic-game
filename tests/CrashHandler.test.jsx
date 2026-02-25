@@ -11,7 +11,14 @@ const GlitchButton = ({ children, onClick }) => (
 )
 vi.mock('../src/ui/GlitchButton.jsx', () => ({ GlitchButton }))
 
+let originalEnv
+
+beforeEach(() => {
+  originalEnv = globalThis.__IMPORT_META_ENV__
+})
+
 afterEach(() => {
+  globalThis.__IMPORT_META_ENV__ = originalEnv
   vi.restoreAllMocks()
 })
 
@@ -41,7 +48,7 @@ test('CrashHandler exposes stack trace in DEV mode', async () => {
   expect(preTags[0].textContent).toMatch(/ThrowingComponent/)
 })
 
-test.skip('CrashHandler HIDES stack trace in PROD mode', async () => {
+test('CrashHandler HIDES stack trace in PROD mode', async () => {
   //  removed (handled by vitest env)
 
 

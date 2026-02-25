@@ -12,15 +12,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run dev        # Vite dev server at http://localhost:5173
 npm run build      # Production build to ./dist
 npm run preview    # Preview production build locally
-npm run test       # Node test runner (--import tsx --experimental-test-module-mocks)
+npm run test       # Node logic tests (node:test)
 npm run test:e2e   # Playwright end-to-end tests
-npm run test:ui    # Run UI tests
-npm run test:all   # Run all tests
+npm run test:ui    # Vitest UI tests
+npm run test:all   # Run all tests (Logic + UI)
 npm run lint       # ESLint
 npm run format     # Prettier --write .
 ```
 
-Tests use Node's built-in `node:test` module with `tsx` for ESM transpilation. Test files live in `tests/`. To run a single test: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/economyEngine.test.js`
+Testing is split into two categories:
+
+- **Logic Tests**: Use Node's built-in `node:test` module with `tsx`.
+  Run one: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/economyEngine.test.js`
+- **UI Tests**: Use `Vitest` for React components.
+  Run one: `npx vitest run tests/Credits.test.jsx`
 
 ## Tech Stack & Version Constraints
 

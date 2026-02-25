@@ -39,7 +39,7 @@ describe('GlitchButton', () => {
       </GlitchButton>
     )
     const button = getByText('Disabled').closest('button')
-    expect(button.disabled)
+    expect(button).toBeDisabled()
     fireEvent.click(button)
     expect(handleClick.mock.calls.length).toBe(0)
   })
@@ -58,7 +58,8 @@ describe('GlitchButton', () => {
     // The children are wrapped in a span with relative z-10 ...
     // We can't easily query that span without a testid, but we can check if button has the loader
     // The loader is an svg inside the button.
-    expect(button.querySelector('svg')).toBeInTheDocument()  })
+    expect(button.querySelector('svg')).toBeInTheDocument()
+  })
 
   it('applies small size classes', () => {
     const { container } = render(

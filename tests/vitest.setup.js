@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom'
 import { cleanup } from '@testing-library/react'
-import { afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, vi } from 'vitest'
 
 // Cleanup after each test case
 afterEach(() => {
@@ -48,6 +48,10 @@ const localStorageMock = (function () {
 })()
 
 vi.stubGlobal('localStorage', localStorageMock)
+
+beforeEach(() => {
+  localStorage.clear()
+})
 
 // Mock AudioContext
 const AudioContextMock = vi.fn().mockImplementation(() => ({
