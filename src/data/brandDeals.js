@@ -7,6 +7,7 @@ export const BRAND_DEALS = [
     name: 'Toxic Energy Drink',
     description: 'The green stuff that glows. They want you to drink it on stage.',
     type: 'SPONSORSHIP',
+    alignment: 'EVIL',
     requirements: {
       followers: 2000,
       trend: ['TECH', 'NEUTRAL'],
@@ -27,6 +28,7 @@ export const BRAND_DEALS = [
     name: 'ShredMaster Guitars',
     description: 'An endorsement deal for up-and-coming shredders.',
     type: 'ENDORSEMENT',
+    alignment: 'CORPORATE',
     requirements: {
       followers: 5000,
       trend: ['MUSIC', 'TECH'],
@@ -46,6 +48,7 @@ export const BRAND_DEALS = [
     name: 'Void Records',
     description: 'A small indie label interested in your "unique" sound.',
     type: 'RECORD_DEAL',
+    alignment: 'INDIE',
     requirements: {
       followers: 1000,
       trend: ['DRAMA', 'WHOLESOME'],
@@ -65,6 +68,7 @@ export const BRAND_DEALS = [
     name: 'No-Kill Grill Snacks',
     description: 'Cruelty-free jerky for the road.',
     type: 'SPONSORSHIP',
+    alignment: 'SUSTAINABLE',
     requirements: {
       followers: 1500,
       trend: ['WHOLESOME'],

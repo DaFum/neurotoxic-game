@@ -101,6 +101,14 @@ const validateSocial = social => {
       return
     }
 
+    if (key === 'brandReputation') {
+      if (typeof val !== 'object' || Array.isArray(val)) throw new Error('social.brandReputation must be an object')
+      Object.entries(val).forEach(([align, score]) => {
+        if (typeof score !== 'number') throw new Error(`brandReputation.${align} must be a number`)
+      })
+      return
+    }
+
     if (typeof val !== 'number') {
       throw new Error(`Social value "${key}" must be a number: ${val}`)
     }

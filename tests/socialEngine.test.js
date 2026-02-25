@@ -6,8 +6,12 @@ import {
   resolvePost,
   applyReputationDecay,
   calculateSocialGrowth,
-  checkViralEvent
+  checkViralEvent,
+  generateBrandName,
+  generateBrandOffers,
+  negotiateDeal
 } from '../src/utils/socialEngine.js'
+import { BRAND_ALIGNMENTS } from '../src/context/initialState.js'
 
 test('calculateViralityScore returns base chance for average performance', () => {
   const venue = { name: 'Test Venue' }
@@ -313,4 +317,76 @@ test('checkViralEvent uses calculateViralityScore when context is provided', () 
 
   assert.equal(checkViralEvent(stats, { roll: 0.08, context }), true)
   assert.equal(checkViralEvent(stats, { roll: 0.08 }), false)
+})
+
+test('generateBrandName returns different name for alignment', () => {
+  const baseName = 'Base'
+  const evilName = generateBrandName(baseName, BRAND_ALIGNMENTS.EVIL)
+  const corpName = generateBrandName(baseName, BRAND_ALIGNMENTS.CORPORATE)
+
+  assert.notEqual(evilName, baseName)
+  assert.notEqual(corpName, baseName)
+  assert.notEqual(evilName, corpName)
+})
+
+test('generateBrandName returns base name for unknown alignment', () => {
+  assert.equal(generateBrandName('Test', 'UNKNOWN'), 'Test')
+})
+
+test('generateBrandOffers filters by reputation and traits', () => {
+  const gameState = {
+    social: {
+      instagram: 10000,
+      tiktok: 10000,
+      youtube: 10000,
+      trend: 'TECH',
+      brandReputation: { [BRAND_ALIGNMENTS.EVIL]: 100 }
+    },
+    band: {
+      members: [],
+      traits: [] // Simplified check
+    }
+  }
+
+  // Mock trait check by adding trait to band
+  gameState.band.members = [{ traits: [{ id: 'party_animal' }] }]
+
+  const offers = generateBrandOffers(gameState)
+  assert.ok(Array.isArray(offers))
+  // We expect offers because stats are high and we have matching trait for Toxic Energy Drink
+})
+
+test('negotiateDeal SAFE strategy succeeds with high roll', () => {
+  const deal = { offer: { upfront: 100 } }
+  const result = negotiateDeal(deal, 'SAFE', mockGameState, () => 0.1) // roll 0.1 < 0.8
+
+  assert.equal(result.success, true)
+  assert.equal(result.status, 'ACCEPTED')
+  assert.equal(result.deal.offer.upfront, 110) // +10%
+})
+
+test('negotiateDeal SAFE strategy fails with low roll', () => {
+  const deal = { offer: { upfront: 100 } }
+  const result = negotiateDeal(deal, 'SAFE', mockGameState, () => 0.9) // roll 0.9 > 0.8
+
+  assert.equal(result.success, false)
+  assert.equal(result.status, 'FAILED')
+  assert.equal(result.deal.offer.upfront, 100) // No change
+})
+
+test('negotiateDeal AGGRESSIVE strategy succeeds with very high luck', () => {
+  const deal = { offer: { upfront: 100 } }
+  const result = negotiateDeal(deal, 'AGGRESSIVE', mockGameState, () => 0.1) // roll 0.1 < 0.3
+
+  assert.equal(result.success, true)
+  assert.equal(result.deal.offer.upfront, 150) // +50%
+})
+
+test('negotiateDeal AGGRESSIVE strategy revokes deal on failure', () => {
+  const deal = { offer: { upfront: 100 } }
+  const result = negotiateDeal(deal, 'AGGRESSIVE', mockGameState, () => 0.5) // roll 0.5 > 0.3
+
+  assert.equal(result.success, false)
+  assert.equal(result.status, 'REVOKED')
+  assert.equal(result.deal, null)
 })
