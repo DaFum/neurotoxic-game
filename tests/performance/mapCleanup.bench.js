@@ -1,7 +1,7 @@
 import { performance } from 'node:perf_hooks'
 
 const MAP_SIZE = 10000
-const iterations = 1000
+const ITERATIONS = 1000
 
 const map = new Map()
 
@@ -19,13 +19,13 @@ function destroy(key) {
 console.log(
   `Benchmarking Map cleanup: Array.from(map.keys()) vs direct iteration...`
 )
-console.log(`Map size: ${MAP_SIZE}, Iterations: ${iterations}\n`)
+console.log(`Map size: ${MAP_SIZE}, Iterations: ${ITERATIONS}\n`)
 
 // Baseline: Array.from(map.keys())
 let totalTimeBase = 0
-for (let i = 0; i < iterations; i++) {
+for (let i = 0; i < ITERATIONS; i++) {
   resetMap()
-  let start = performance.now()
+  const start = performance.now()
   const keysToRemove = Array.from(map.keys())
   for (const key of keysToRemove) {
     destroy(key)
@@ -36,9 +36,9 @@ console.log(`Baseline (Array.from): ${totalTimeBase.toFixed(2)}ms`)
 
 // Opt 1: for (const key of map.keys())
 let totalTimeOpt1 = 0
-for (let i = 0; i < iterations; i++) {
+for (let i = 0; i < ITERATIONS; i++) {
   resetMap()
-  let start = performance.now()
+  const start = performance.now()
   for (const key of map.keys()) {
     destroy(key)
   }

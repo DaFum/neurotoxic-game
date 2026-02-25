@@ -77,7 +77,11 @@ describe('Settings Referential Stability', () => {
       const [count, setCount] = useState(0)
       return (
         <div>
-          <button data-testid='rerender' onClick={() => setCount(count + 1)}>
+          <button
+            type='button'
+            data-testid='rerender'
+            onClick={() => setCount(count + 1)}
+          >
             Rerender ({count})
           </button>
           <Settings />

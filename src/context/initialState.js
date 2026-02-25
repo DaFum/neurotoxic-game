@@ -199,7 +199,8 @@ export const createInitialState = () => ({
     ...DEFAULT_BAND_STATE,
     members: DEFAULT_BAND_STATE.members.map(m => ({
       ...m,
-      traits: [...m.traits]
+      traits: [...m.traits],
+      relationships: { ...m.relationships }
     })),
     performance: { ...DEFAULT_BAND_STATE.performance },
     inventory: { ...DEFAULT_BAND_STATE.inventory }

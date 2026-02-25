@@ -26,6 +26,7 @@ import { CompletePhase } from '../components/postGig/CompletePhase'
 const PERF_SCORE_MIN = 30
 const PERF_SCORE_MAX = 100
 const PERF_SCORE_SCALER = 500
+const MAX_FAME_GAIN = 500
 
 export const PostGig = () => {
   const {
@@ -407,7 +408,10 @@ export const PostGig = () => {
   const handleContinue = useCallback(() => {
     if (!financials) return
 
-    const fameGain = 50 + Math.floor(perfScore * 1.5)
+    const fameGain = Math.min(
+      MAX_FAME_GAIN,
+      50 + Math.floor(perfScore * 1.5)
+    )
     const newMoney = Math.max(0, player.money + financials.net)
 
     updatePlayer({

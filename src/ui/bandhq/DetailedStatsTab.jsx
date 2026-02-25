@@ -240,7 +240,7 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
                     max={q.required}
                     color='bg-(--toxic-green)'
                     size='mini'
-                    showValue={true}
+                    showValue
                   />
                 </div>
               ))}

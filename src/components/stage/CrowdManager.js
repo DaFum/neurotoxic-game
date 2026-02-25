@@ -57,6 +57,7 @@ export class CrowdManager {
     this.stageContainer.addChild(this.container)
 
     const fallbackColor = getPixiColorFromToken('--star-white')
+    const mutedColor = getPixiColorFromToken('--color-muted')
 
     for (let i = 0; i < CROWD_LAYOUT.memberCount; i += 1) {
       const radius =
@@ -74,13 +75,13 @@ export class CrowdManager {
         crowd.fill(fallbackColor)
       }
 
-      crowd.tint = 0x333333
+      crowd.tint = mutedColor
       crowd.x = Math.random() * this.app.screen.width
       crowd.y =
         Math.random() * (this.app.screen.height * CROWD_LAYOUT.yRangeRatio)
       crowd.baseY = crowd.y
       crowd.radius = radius
-      crowd.currentFillColor = 0x333333
+      crowd.currentFillColor = mutedColor
       this.container.addChild(crowd)
       this.crowdMembers.push(crowd)
     }

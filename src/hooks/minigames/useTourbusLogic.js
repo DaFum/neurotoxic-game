@@ -117,14 +117,12 @@ export const useTourbusLogic = () => {
       game.obstacles.forEach(obs => {
         obs.y += obstacleSpeed * deltaMS
 
-        let collided = false
         if (
           !obs.collided &&
           obs.y > BUS_Y_PERCENT &&
           obs.y < BUS_Y_PERCENT + BUS_HEIGHT_PERCENT &&
           obs.lane === game.busLane
         ) {
-          collided = true
           obs.collided = true
           if (obs.type === 'OBSTACLE') {
             // Damage Mitigation

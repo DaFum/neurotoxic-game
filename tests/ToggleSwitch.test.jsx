@@ -50,6 +50,23 @@ describe('ToggleSwitch', () => {
     expect(handleToggle).toHaveBeenCalledTimes(1)
   })
 
+  test('calls onToggle when Space or Enter is pressed', () => {
+    const handleToggle = vi.fn()
+    const { getByRole } = render(
+      <ToggleSwitch
+        isOn={false}
+        onToggle={handleToggle}
+        ariaLabel='Test Switch'
+      />
+    )
+
+    const switchButton = getByRole('switch')
+    fireEvent.keyDown(switchButton, { key: ' ', code: 'Space' })
+    fireEvent.keyDown(switchButton, { key: 'Enter', code: 'Enter' })
+
+    expect(handleToggle).toHaveBeenCalledTimes(2)
+  })
+
   test('has correct accessibility attributes', () => {
     const { getByRole } = render(
       <ToggleSwitch

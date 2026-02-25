@@ -241,7 +241,7 @@ export const POST_OPTIONS = [
       )
       return (
         (lastGigStats && lastGigStats.score > 15000) ||
-        (social && social.egoFocus) ||
+        social?.egoFocus ||
         isVirtuoso
       )
     },
@@ -523,7 +523,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Commercial',
     badges: [POST_BADGES.COMMERCIAL, POST_BADGES.RISK],
-    condition: ({ social }) => social.instagram > 5000,
+    condition: ({ social }) => (social?.instagram ?? 0) > 5000,
     resolve: () => ({
       type: 'FIXED',
       success: true,
