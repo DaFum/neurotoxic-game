@@ -83,8 +83,22 @@ const validateSocial = social => {
     if (key === 'lastGigDay' && val === null) return
     if (key === 'egoFocus' && (val === null || typeof val === 'string')) return
     if (key === 'sponsorActive' && typeof val === 'boolean') return
-    if (key === 'trend' && typeof val === 'string') return
-    if (key === 'activeDeals' && Array.isArray(val)) return
+
+    if (key === 'trend') {
+      const allowedTrends = ['NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME']
+      if (typeof val === 'string' && allowedTrends.includes(val)) return
+      throw new Error(`Social trend "${val}" is invalid`)
+    }
+
+    if (key === 'activeDeals') {
+      if (!Array.isArray(val)) throw new Error('social.activeDeals must be an array')
+      val.forEach((deal, i) => {
+        if (!deal || typeof deal !== 'object') throw new Error(`activeDeals[${i}] must be an object`)
+        if (typeof deal.id !== 'string') throw new Error(`activeDeals[${i}].id must be a string`)
+      })
+      return
+    }
+
     if (typeof val !== 'number') {
       throw new Error(`Social value "${key}" must be a number: ${val}`)
     }

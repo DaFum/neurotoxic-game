@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
+import { ActionButton } from '../../ui/shared'
 
 export const CompletePhase = ({ result, onContinue, onSpinStory, player, social }) => {
   const hasPR = player?.hqUpgrades?.includes('pr_manager_contract')
@@ -15,7 +16,7 @@ export const CompletePhase = ({ result, onContinue, onSpinStory, player, social 
       initial={{ scale: 0.5, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
-      className={`text-4xl font-[var(--font-display)] mb-4 ${
+      className={`text-4xl font-(--font-display) mb-4 ${
         result.success
           ? 'text-(--toxic-green) drop-shadow-[0_0_20px_var(--toxic-green)] animate-neon-flicker'
           : 'text-(--blood-red)'
@@ -93,22 +94,21 @@ export const CompletePhase = ({ result, onContinue, onSpinStory, player, social 
       className='flex flex-col gap-4 items-center'
     >
       {hasPR && isHighControversy && onSpinStory && (
-        <button
-          type="button"
+        <ActionButton
           onClick={onSpinStory}
-          className='bg-(--blood-red) text-(--star-white) px-6 py-2 font-bold hover:bg-(--star-white) hover:text-(--blood-red) border-2 border-(--blood-red) uppercase tracking-wider text-sm'
+          className='bg-(--blood-red) text-(--star-white) px-6 py-2 border-2 border-(--blood-red) hover:bg-(--star-white) hover:text-(--blood-red)'
         >
           Spin Story (-200€, -25 Controversy)
-        </button>
+        </ActionButton>
       )}
 
-      <button
-        type="button"
+      <ActionButton
         onClick={onContinue}
-        className='bg-(--toxic-green) text-(--void-black) px-8 py-3 font-bold hover:bg-(--star-white) uppercase tracking-wider shadow-[4px_4px_0px_var(--void-black)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all'
+        variant='primary'
+        className='px-8 py-3 text-(--void-black)'
       >
         Back to Tour &gt;
-      </button>
+      </ActionButton>
     </motion.div>
   </motion.div>
   )
@@ -119,7 +119,14 @@ CompletePhase.propTypes = {
     success: PropTypes.bool.isRequired,
     message: PropTypes.string.isRequired,
     totalFollowers: PropTypes.number.isRequired,
-    platform: PropTypes.string.isRequired
+    platform: PropTypes.string.isRequired,
+    moneyChange: PropTypes.number,
+    harmonyChange: PropTypes.number,
+    controversyChange: PropTypes.number,
+    loyaltyChange: PropTypes.number,
+    staminaChange: PropTypes.number,
+    moodChange: PropTypes.number,
+    targetMember: PropTypes.string
   }).isRequired,
   onContinue: PropTypes.func.isRequired,
   onSpinStory: PropTypes.func,

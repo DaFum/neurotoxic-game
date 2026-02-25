@@ -95,10 +95,6 @@ export const PostGig = () => {
         gigEvents: lastGigStats?.events || []
       }
       setPostOptions(generatePostOptions(currentGig, gameStateForPosts))
-
-      // Generate potential brand offers (Post-Gig opportunity)
-      const offers = generateBrandOffers(gameStateForPosts, secureRandom)
-      setBrandOffers(offers)
     }
   }, [
     financials,
@@ -140,24 +136,29 @@ export const PostGig = () => {
     const finalResult = { ...result, totalFollowers }
     setPostResult(finalResult)
 
-    // Apply specific complex side effects
-    if (result.harmonyChange || result.allMembersMoodChange || result.allMembersStaminaChange || result.moodChange || result.staminaChange) {
-      const newBand = { ...band }
-      if (result.harmonyChange) {
-        newBand.harmony = clampBandHarmony(newBand.harmony + result.harmonyChange)
-      }
-      if (result.allMembersMoodChange || result.allMembersStaminaChange || result.targetMember) {
-        newBand.members = newBand.members.map(m => {
-          let updatedM = { ...m }
-          if (result.allMembersMoodChange || m.name === result.targetMember) {
-            if (result.moodChange) updatedM.mood = Math.max(0, Math.min(100, updatedM.mood + result.moodChange))
-          }
-          if (result.allMembersStaminaChange || m.name === result.targetMember) {
-            if (result.staminaChange) updatedM.stamina = Math.max(0, Math.min(100, updatedM.stamina + result.staminaChange))
-          }
-          return updatedM
-        })
-      }
+    // Prepare updated state objects
+    const newBand = { ...band }
+    let hasBandUpdates = false
+
+    if (result.harmonyChange) {
+      newBand.harmony = clampBandHarmony(newBand.harmony + result.harmonyChange)
+      hasBandUpdates = true
+    }
+    if (result.allMembersMoodChange || result.allMembersStaminaChange || result.targetMember) {
+      newBand.members = newBand.members.map(m => {
+        let updatedM = { ...m }
+        if (result.allMembersMoodChange || m.name === result.targetMember) {
+          if (result.moodChange) updatedM.mood = Math.max(0, Math.min(100, updatedM.mood + result.moodChange))
+        }
+        if (result.allMembersStaminaChange || m.name === result.targetMember) {
+          if (result.staminaChange) updatedM.stamina = Math.max(0, Math.min(100, updatedM.stamina + result.staminaChange))
+        }
+        return updatedM
+      })
+      hasBandUpdates = true
+    }
+
+    if (hasBandUpdates) {
       updateBand(newBand)
     }
 
@@ -167,28 +168,41 @@ export const PostGig = () => {
 
     if (result.unlockTrait) {
       unlockTrait(result.unlockTrait.memberId, result.unlockTrait.traitId)
-      // Try to get a friendly name from trait metadata if available, else raw ID
       const traitName = result.unlockTrait.traitId.replace(/_/g, ' ').toUpperCase()
       addToast(`Trait Unlocked: ${traitName}`, 'success')
     }
 
-    updateSocial({
+    const updatedSocial = {
       [result.platform]: Math.max(0, (social[result.platform] || 0) + totalFollowers),
       viral: social.viral + (result.success ? 1 : 0) + gigViralBonus,
       lastGigDay: player.day,
       controversyLevel: Math.max(0, (social.controversyLevel || 0) + (result.controversyChange || 0)),
       loyalty: Math.max(0, (social.loyalty || 0) + (result.loyaltyChange || 0)),
       egoFocus: result.egoClear ? null : (result.egoDrop ? result.egoDrop : social.egoFocus),
-      sponsorActive: option.id === 'comm_sellout_ad' ? false : social.sponsorActive
-    })
+      sponsorActive: option.id === 'comm_sellout_ad' ? false : social.sponsorActive,
+      trend: social.trend,
+      activeDeals: social.activeDeals
+    }
+
+    updateSocial(updatedSocial)
+
+    // Generate brand offers with UPDATED state (Post-Social-Update)
+    const updatedGameState = {
+      player, // Money update handled separately but not critical for offer generation
+      band: hasBandUpdates ? newBand : band,
+      social: { ...social, ...updatedSocial }
+    }
+
+    const offers = generateBrandOffers(updatedGameState, secureRandom)
+    setBrandOffers(offers)
 
     // If there are brand offers, go to DEALS phase, else COMPLETE
-    if (brandOffers.length > 0) {
+    if (offers.length > 0) {
       setPhase('DEALS')
     } else {
       setPhase('COMPLETE')
     }
-  }, [lastGigStats, perfScore, social, player, band, updateSocial, updateBand, updatePlayer, unlockTrait, addToast, brandOffers])
+  }, [lastGigStats, perfScore, social, player, band, updateSocial, updateBand, updatePlayer, unlockTrait, addToast])
 
   const handleAcceptDeal = useCallback((deal) => {
     // Apply upfront bonuses

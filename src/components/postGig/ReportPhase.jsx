@@ -1,81 +1,6 @@
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 
-export const ReportPhase = ({ financials, onNext }) => (
-  <div className='space-y-6'>
-    <div className='grid grid-cols-2 gap-8'>
-      {/* Income Column */}
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.2 }}
-      >
-        <h3 className='text-lg border-b-2 border-(--toxic-green) mb-4 pb-2 tracking-widest font-mono text-(--toxic-green)'>
-          INCOME
-        </h3>
-        <FinancialList items={financials.income.breakdown} type="income" />
-        <div className='mt-4 pt-2 border-t border-(--toxic-green)/40 flex justify-between font-bold text-(--toxic-green)'>
-          <span className='text-sm tracking-wider'>TOTAL</span>
-          <span className='tabular-nums'>{financials.income.total}€</span>
-        </div>
-      </motion.div>
-
-      {/* Expenses Column */}
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.2 }}
-      >
-        <h3 className='text-lg border-b-2 border-(--blood-red) text-(--blood-red) mb-4 pb-2 tracking-widest font-mono'>
-          EXPENSES
-        </h3>
-        <FinancialList items={financials.expenses.breakdown} type="expense" />
-        <div className='mt-4 pt-2 border-t border-(--blood-red)/40 flex justify-between font-bold text-(--blood-red)'>
-          <span className='text-sm tracking-wider'>TOTAL</span>
-          <span className='tabular-nums'>{financials.expenses.total}€</span>
-        </div>
-      </motion.div>
-    </div>
-
-    {/* Net Result */}
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: 0.8, type: 'spring' }}
-      className='text-center py-6 border-y-2 border-(--ash-gray)/30'
-    >
-      <div className='text-[10px] text-(--ash-gray) tracking-widest mb-2'>
-        NET PROFIT
-      </div>
-      <div
-        className={`text-5xl font-bold font-[var(--font-display)] tabular-nums ${
-          financials.net >= 0
-            ? 'text-(--toxic-green) drop-shadow-[0_0_20px_var(--toxic-green)]'
-            : 'text-(--blood-red) drop-shadow-[0_0_20px_var(--blood-red)]'
-        }`}
-      >
-        {financials.net > 0 ? '+' : ''}
-        {financials.net}€
-      </div>
-    </motion.div>
-
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay: 1.2 }}
-      className='text-center'
-    >
-      <button
-        type="button"
-        onClick={onNext}
-        className='bg-(--toxic-green) text-(--void-black) px-8 py-3 font-bold hover:bg-(--star-white) transition-colors uppercase tracking-wider shadow-[4px_4px_0px_var(--void-black)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
-      >
-        Continue to Socials &gt;
-      </button>
-    </motion.div>
-  </div>
-)
-
 const FinancialList = ({ items, type }) => (
   <ul className='space-y-2.5 text-sm font-mono'>
     {items.map((item, i) => (
@@ -97,7 +22,88 @@ const FinancialList = ({ items, type }) => (
   </ul>
 )
 
-const financialCategoryShape = PropTypes.shape({
+export const ReportPhase = ({ financials, onNext }) => {
+  if (!financials) {
+    return <div className="text-center font-mono animate-pulse">Loading Report...</div>
+  }
+
+  return (
+    <div className='space-y-6'>
+      <div className='grid grid-cols-2 gap-8'>
+        {/* Income Column */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <h3 className='text-lg border-b-2 border-(--toxic-green) mb-4 pb-2 tracking-widest font-mono text-(--toxic-green)'>
+            INCOME
+          </h3>
+          <FinancialList items={financials.income.breakdown} type="income" />
+          <div className='mt-4 pt-2 border-t border-(--toxic-green)/40 flex justify-between font-bold text-(--toxic-green)'>
+            <span className='text-sm tracking-wider'>TOTAL</span>
+            <span className='tabular-nums'>{financials.income.total}€</span>
+          </div>
+        </motion.div>
+
+        {/* Expenses Column */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <h3 className='text-lg border-b-2 border-(--blood-red) text-(--blood-red) mb-4 pb-2 tracking-widest font-mono'>
+            EXPENSES
+          </h3>
+          <FinancialList items={financials.expenses.breakdown} type="expense" />
+          <div className='mt-4 pt-2 border-t border-(--blood-red)/40 flex justify-between font-bold text-(--blood-red)'>
+            <span className='text-sm tracking-wider'>TOTAL</span>
+            <span className='tabular-nums'>{financials.expenses.total}€</span>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Net Result */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.8, type: 'spring' }}
+        className='text-center py-6 border-y-2 border-(--ash-gray)/30'
+      >
+        <div className='text-[10px] text-(--ash-gray) tracking-widest mb-2'>
+          NET PROFIT
+        </div>
+        <div
+          className={`text-5xl font-bold font-(--font-display) tabular-nums ${
+            financials.net >= 0
+              ? 'text-(--toxic-green) drop-shadow-[0_0_20px_var(--toxic-green)]'
+              : 'text-(--blood-red) drop-shadow-[0_0_20px_var(--blood-red)]'
+          }`}
+        >
+          {financials.net > 0 ? '+' : ''}
+          {financials.net}€
+        </div>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.2 }}
+        className='text-center'
+      >
+        <button
+          type="button"
+          onClick={onNext}
+          className='bg-(--toxic-green) text-(--void-black) px-8 py-3 font-bold hover:bg-(--star-white) transition-colors uppercase tracking-wider shadow-[4px_4px_0px_var(--void-black)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
+        >
+          Continue to Socials &gt;
+        </button>
+      </motion.div>
+    </div>
+  )
+}
+
+const FINANCIAL_CATEGORY_SHAPE = PropTypes.shape({
   total: PropTypes.number.isRequired,
   breakdown: PropTypes.arrayOf(
     PropTypes.shape({
@@ -110,9 +116,9 @@ const financialCategoryShape = PropTypes.shape({
 
 ReportPhase.propTypes = {
   financials: PropTypes.shape({
-    income: financialCategoryShape.isRequired,
-    expenses: financialCategoryShape.isRequired,
+    income: FINANCIAL_CATEGORY_SHAPE.isRequired,
+    expenses: FINANCIAL_CATEGORY_SHAPE.isRequired,
     net: PropTypes.number.isRequired
-  }).isRequired,
+  }),
   onNext: PropTypes.func.isRequired
 }

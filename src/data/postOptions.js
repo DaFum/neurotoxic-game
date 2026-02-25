@@ -467,7 +467,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Commercial', // Fits TECH trend
     badges: [POST_BADGES.SAFE, POST_BADGES.STORY],
-    condition: ({ band }) => band.members.some(m => m.traits?.some(t => t.id === 'gear_nerd' || t.id === 'tech_wizard')),
+    condition: ({ band }) => Array.isArray(band.members) && band.members.some(m => m.traits?.some(t => t.id === 'gear_nerd' || t.id === 'tech_wizard')),
     resolve: () => ({
       type: 'FIXED',
       success: true,
@@ -501,7 +501,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Performance', // Fits MUSIC trend
     badges: [POST_BADGES.STORY],
-    condition: ({ band }) => band.members.some(m => m.traits?.some(t => t.id === 'melodic_genius' || t.id === 'virtuoso')),
+    condition: ({ band }) => Array.isArray(band.members) && band.members.some(m => m.traits?.some(t => t.id === 'melodic_genius' || t.id === 'virtuoso')),
     resolve: () => ({
       type: 'FIXED',
       success: true,

@@ -153,7 +153,7 @@ export const initialState = {
  */
 export const createInitialState = () => ({
   ...initialState,
-  player: { ...DEFAULT_PLAYER_STATE, van: { ...DEFAULT_PLAYER_STATE.van } },
+  player: structuredClone(DEFAULT_PLAYER_STATE),
   band: {
     ...DEFAULT_BAND_STATE,
     members: DEFAULT_BAND_STATE.members.map(m => ({ ...m, traits: [...m.traits] })),
