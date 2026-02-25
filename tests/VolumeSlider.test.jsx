@@ -1,18 +1,18 @@
-import { test, describe, afterEach, beforeEach } from 'node:test'
-import assert from 'node:assert/strict'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
+
 import React from 'react'
 import { render, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from './testUtils.js'
+
 import { VolumeSlider } from '../src/ui/shared/VolumeSlider.jsx'
 
 describe('VolumeSlider', () => {
   beforeEach(() => {
-    setupJSDOM()
+    //  removed (handled by vitest env)
   })
 
   afterEach(() => {
     cleanup()
-    teardownJSDOM()
+
   })
 
   test('renders with accessible label association', () => {
@@ -22,11 +22,11 @@ describe('VolumeSlider', () => {
     // This should find the input associated with the label 'Music Volume'
     // This will FAIL now (because label is not linked), and PASS after fix.
     const input = getByLabelText('Music Volume')
-    assert.ok(input, 'Input should be accessible by visible label')
-    assert.equal(input.tagName, 'INPUT')
-    assert.equal(input.type, 'range')
+    expect(input).toBeTruthy()
+    expect(input.tagName).toBe('INPUT')
+    expect(input.type).toBe('range')
 
     // Also verify aria-valuetext if we implement it
-    // assert.equal(input.getAttribute('aria-valuetext'), '50%')
+    // expect(input.getAttribute('aria-valuetext')).toBe('50%')
   })
 })

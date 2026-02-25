@@ -1,45 +1,46 @@
-import { describe, it, beforeEach, afterEach, mock } from 'node:test'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
 import { render, cleanup, fireEvent } from '@testing-library/react'
 import { GlitchButton } from '../src/ui/GlitchButton'
-import { setupJSDOM, teardownJSDOM } from './testUtils.js'
-import assert from 'node:assert'
+
+
 
 describe('GlitchButton', () => {
   beforeEach(() => {
-    setupJSDOM()
+    //  removed (handled by vitest env)
   })
 
   afterEach(() => {
     cleanup()
-    teardownJSDOM()
-    mock.restoreAll()
+
+    vi.restoreAllMocks()
   })
 
   it('renders children correctly', () => {
     const { getByText } = render(<GlitchButton onClick={() => {}}>Click Me</GlitchButton>)
     const button = getByText('Click Me')
-    assert.ok(button)
+
+
   })
 
   it('handles click events', () => {
-    const handleClick = mock.fn()
+    const handleClick = vi.fn()
     const { getByText } = render(<GlitchButton onClick={handleClick}>Click Me</GlitchButton>)
     const button = getByText('Click Me')
     fireEvent.click(button)
-    assert.strictEqual(handleClick.mock.calls.length, 1)
+    expect(handleClick.mock.calls.length).toBe(1)
   })
 
   it('applies disabled state correctly', () => {
-    const handleClick = mock.fn()
+    const handleClick = vi.fn()
     const { getByText } = render(
       <GlitchButton onClick={handleClick} disabled>
         Disabled
       </GlitchButton>
     )
     const button = getByText('Disabled').closest('button')
-    assert.ok(button.disabled)
+    expect(button.disabled)
     fireEvent.click(button)
-    assert.strictEqual(handleClick.mock.calls.length, 0)
+    expect(handleClick.mock.calls.length).toBe(0)
   })
 
   it('shows loading state correctly', () => {
@@ -49,7 +50,7 @@ describe('GlitchButton', () => {
       </GlitchButton>
     )
     const button = getByRole('button')
-    assert.ok(button.disabled, 'Button should be disabled when loading')
+    expect(button.disabled)
     assert.strictEqual(
       button.getAttribute('aria-busy'),
       'true',
@@ -60,7 +61,7 @@ describe('GlitchButton', () => {
     // The children are wrapped in a span with relative z-10 ...
     // We can't easily query that span without a testid, but we can check if button has the loader
     // The loader is an svg inside the button.
-    assert.ok(button.querySelector('svg'), 'Should contain loader SVG')
+    expect(button.querySelector('svg'))
   })
 
   it('applies small size classes', () => {
@@ -70,9 +71,9 @@ describe('GlitchButton', () => {
       </GlitchButton>
     )
     const button = container.querySelector('button')
-    assert.ok(button.className.includes('px-4'), 'Should have small padding X')
-    assert.ok(button.className.includes('py-2'), 'Should have small padding Y')
-    assert.ok(button.className.includes('text-sm'), 'Should have small text')
+    expect(button.className.includes('px-4'))
+    expect(button.className.includes('py-2'))
+    expect(button.className.includes('text-sm'))
   })
 
   it('applies owned variant style correctly', () => {
@@ -83,9 +84,9 @@ describe('GlitchButton', () => {
     )
     const button = container.querySelector('button')
     // Should NOT have opacity-60 even if disabled
-    assert.ok(!button.className.includes('opacity-60'), 'Owned variant should not have opacity-60')
-    assert.ok(button.className.includes('opacity-100'), 'Owned variant should have opacity-100')
-    assert.ok(button.className.includes('cursor-default'), 'Owned variant should have default cursor')
+    expect(!button.className.includes('opacity-60'))
+    expect(button.className.includes('opacity-100'))
+    expect(button.className.includes('cursor-default'))
   })
 
   it('forwards additional props to the button element', () => {
@@ -95,8 +96,8 @@ describe('GlitchButton', () => {
       </GlitchButton>
     )
     const button = getByRole('button')
-    assert.strictEqual(button.getAttribute('aria-label'), 'Custom Label')
-    assert.strictEqual(button.getAttribute('data-testid'), 'custom-btn')
+    expect(button.getAttribute('aria-label')).toBe('Custom Label')
+    expect(button.getAttribute('data-testid')).toBe('custom-btn')
   })
 
   it('applies warning variant style correctly', () => {
@@ -106,7 +107,7 @@ describe('GlitchButton', () => {
       </GlitchButton>
     )
     const button = container.querySelector('button')
-    assert.ok(button.className.includes('border-(--warning-yellow)'), 'Should have warning border')
-    assert.ok(button.className.includes('text-(--warning-yellow)'), 'Should have warning text')
+    expect(button.className.includes('border-(--warning-yellow)'))
+    expect(button.className.includes('text-(--warning-yellow)'))
   })
 })

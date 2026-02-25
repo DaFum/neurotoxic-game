@@ -1,77 +1,77 @@
-import { test } from 'node:test'
-import assert from 'node:assert/strict'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
+
 import { render, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from './testUtils.js'
+
 import { ProgressBar } from '../src/ui/shared/index.jsx'
 
-test('ProgressBar: renders default correctly', (t) => {
-  setupJSDOM()
-  t.after(cleanup)
-  t.after(teardownJSDOM)
+test('ProgressBar: renders default correctly', () => {
+  //  removed (handled by vitest env)
+  afterEach(cleanup)
+
 
   const { container } = render(
     <ProgressBar label="Test" value={50} max={100} color="bg-(--blood-red)" />
   )
 
   // Should have label
-  assert.ok(container.textContent.includes('Test'))
+  expect(container.textContent.includes('Test'))
   // Should have value
-  assert.ok(container.textContent.includes('50/100'))
+  expect(container.textContent.includes('50/100')).toBeTruthy()
   // Should have standard height (h-5 for md)
   const bar = container.querySelector('.h-5')
-  assert.ok(bar, 'Should have h-5 class for default size')
+  expect(bar).toBeTruthy().toBeTruthy()
 })
 
-test('ProgressBar: renders mini variant correctly', (t) => {
-  setupJSDOM()
-  t.after(cleanup)
-  t.after(teardownJSDOM)
+test('ProgressBar: renders mini variant correctly', () => {
+  //  removed (handled by vitest env)
+  afterEach(cleanup)
+
 
   const { container } = render(
     <ProgressBar label="Mini" value={20} max={100} color="bg-(--condition-blue)" size="mini" />
   )
 
   // Should NOT have label or value
-  assert.equal(container.textContent, '', 'Mini variant should not display text')
+  expect(container.textContent).toBe('')
 
   // Should have mini height (h-1.5)
   // Note: we look for the element that has the height class.
   // The outer div has w-full and className. The inner div has the height and border.
   const barWrapper = container.querySelector('.h-1\\.5')
-  assert.ok(barWrapper, 'Should have h-1.5 class for mini size')
+  expect(barWrapper).toBeTruthy()
 
   // Should have overflow-hidden (if we add it to the wrapper as per plan)
-  assert.ok(barWrapper.classList.contains('overflow-hidden'), 'Should have overflow-hidden')
+  expect(barWrapper.classList.contains('overflow-hidden')).toBeTruthy()
 })
 
-test('ProgressBar: applies warn animation', (t) => {
-  setupJSDOM()
-  t.after(cleanup)
-  t.after(teardownJSDOM)
+test('ProgressBar: applies warn animation', () => {
+  //  removed (handled by vitest env)
+  afterEach(cleanup)
+
 
   const { container } = render(
     <ProgressBar label="Warn" value={10} max={100} color="bg-(--warning-yellow)" warn={true} />
   )
 
   const innerBar = container.querySelector('.animate-fuel-warning')
-  assert.ok(innerBar, 'Should have animate-fuel-warning class')
+  expect(innerBar).toBeTruthy()
 })
 
-test('ProgressBar: has accessibility attributes', (t) => {
-  setupJSDOM()
-  t.after(cleanup)
-  t.after(teardownJSDOM)
+test('ProgressBar: has accessibility attributes', () => {
+  //  removed (handled by vitest env)
+  afterEach(cleanup)
+
 
   const { getByRole } = render(
     <ProgressBar label="A11y Test" value={75} max={100} color="bg-(--toxic-green)" aria-label="Custom Label" />
   )
 
   const progressBar = getByRole('progressbar')
-  assert.ok(progressBar, 'Should have role="progressbar"')
+  expect(progressBar).toBeTruthy()
 
   // Check ARIA attributes
-  assert.equal(progressBar.getAttribute('aria-valuenow'), '75')
-  assert.equal(progressBar.getAttribute('aria-valuemin'), '0')
-  assert.equal(progressBar.getAttribute('aria-valuemax'), '100')
-  assert.equal(progressBar.getAttribute('aria-label'), 'Custom Label')
+  expect(progressBar.getAttribute('aria-valuenow')).toBe('75')
+  expect(progressBar.getAttribute('aria-valuemin')).toBe('0')
+  expect(progressBar.getAttribute('aria-valuemax')).toBe('100')
+  expect(progressBar.getAttribute('aria-label')).toBe('Custom Label')
 })

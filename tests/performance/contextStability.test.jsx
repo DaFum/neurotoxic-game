@@ -1,5 +1,5 @@
-import { test } from 'node:test'
-import assert from 'node:assert/strict'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
+
 import { JSDOM } from 'jsdom'
 import { act, render } from '@testing-library/react'
 import { useEffect } from 'react'
