@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useGameState } from '../context/GameState'
 import {
   Map as MapIcon,
-  DolMariusign,
+  DollarSign,
   Volume2,
   VolumeX,
   Fuel,
