@@ -1,42 +1,33 @@
-import { test, describe, before, after, mock } from 'node:test'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
 import { renderHook } from '@testing-library/react'
-import assert from 'node:assert'
-import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
+
+
 
 // Mock dependencies BEFORE import
-mock.module('../../src/context/GameState', {
-  namedExports: {
+vi.mock('../../src/context/GameState', () => ({
     // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
     useGameState: () => ({
-      completeRoadieMinigame: mock.fn(),
+      completeRoadieMinigame: vi.fn(),
       currentScene: 'PRE_GIG_MINIGAME',
-      changeScene: mock.fn()
+      changeScene: vi.fn()
     })
-  }
-})
-
-mock.module('../../src/utils/AudioManager', {
-  namedExports: {
+  }))
+vi.mock('../../src/utils/AudioManager', () => ({
     audioManager: {
-      playSFX: mock.fn(),
-      init: mock.fn()
+      playSFX: vi.fn(),
+      init: vi.fn()
     }
-  }
-})
-
+  }))
 describe('RoadieLogic Performance', () => {
   let useRoadieLogic
 
-  before(async () => {
-    setupJSDOM()
+  beforeAll(async () => {
+    //  removed (handled by vitest env)
     // Dynamic import after mocks
     const module = await import('../../src/hooks/minigames/useRoadieLogic.js')
     useRoadieLogic = module.useRoadieLogic
   })
 
-  after(() => {
-    teardownJSDOM()
-  })
 
   test('update loop performance', () => {
     const { result, unmount } = renderHook(() => useRoadieLogic())
@@ -68,10 +59,9 @@ describe('RoadieLogic Performance', () => {
     console.log(`[Perf] 50k updates with ${trafficCount} cars took: ${(end - start).toFixed(2)}ms`)
 
     // Basic verification
-    assert.strictEqual(game.traffic.length, trafficCount, 'Traffic should remain')
+    expect(game.traffic.length).toBe(trafficCount)
     // Check if cars moved
-    assert.notEqual(game.traffic[0].x, 5, 'Cars should have moved')
-
+    expect(game.traffic[0].x).not.toBe(5)
     unmount()
   })
 })

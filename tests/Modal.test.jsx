@@ -1,19 +1,9 @@
-import { test, describe, afterEach, beforeEach, mock } from 'node:test'
-import assert from 'node:assert/strict'
+import { describe, expect, test, vi } from 'vitest'
 import React from 'react'
-import { render, cleanup, fireEvent } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from './testUtils.js'
+import { render, fireEvent } from '@testing-library/react'
 import { Modal } from '../src/ui/shared/Modal.jsx'
 
 describe('Modal Component', () => {
-  beforeEach(() => {
-    setupJSDOM()
-  })
-
-  afterEach(() => {
-    cleanup()
-    teardownJSDOM()
-  })
 
   test('does not render when isOpen is false', () => {
     const { container } = render(
@@ -21,7 +11,7 @@ describe('Modal Component', () => {
         <div>Modal Content</div>
       </Modal>
     )
-    assert.equal(container.firstChild, null)
+    expect(container.firstChild).toBeNull()
   })
 
   test('renders children and title when isOpen is true', () => {
@@ -30,12 +20,12 @@ describe('Modal Component', () => {
         <div>Modal Content</div>
       </Modal>
     )
-    assert.ok(getByText('Test Title'))
-    assert.ok(getByText('Modal Content'))
+    expect(getByText('Test Title')).toBeInTheDocument()
+    expect(getByText('Modal Content')).toBeInTheDocument()
   })
 
   test('calls onClose when clicking outside', () => {
-    const onCloseMock = mock.fn()
+    const onCloseMock = vi.fn()
     const { getByText } = render(
       <Modal isOpen={true} onClose={onCloseMock}>
         <div>Modal Content</div>
@@ -45,11 +35,11 @@ describe('Modal Component', () => {
     // Click the background overlay
     const overlay = getByText('Modal Content').parentElement.parentElement
     fireEvent.click(overlay)
-    assert.equal(onCloseMock.mock.calls.length, 1)
+    expect(onCloseMock).toHaveBeenCalledTimes(1)
   })
 
   test('does not call onClose when clicking inside the modal dialog', () => {
-    const onCloseMock = mock.fn()
+    const onCloseMock = vi.fn()
     const { getByRole } = render(
       <Modal isOpen={true} onClose={onCloseMock}>
         <div>Modal Content</div>
@@ -59,11 +49,11 @@ describe('Modal Component', () => {
     // Click the dialog itself
     const dialog = getByRole('dialog')
     fireEvent.click(dialog)
-    assert.equal(onCloseMock.mock.calls.length, 0)
+    expect(onCloseMock).not.toHaveBeenCalled()
   })
 
   test('calls onClose when Escape key is pressed', () => {
-    const onCloseMock = mock.fn()
+    const onCloseMock = vi.fn()
     render(
       <Modal isOpen={true} onClose={onCloseMock}>
         <div>Modal Content</div>
@@ -71,6 +61,6 @@ describe('Modal Component', () => {
     )
     
     fireEvent.keyDown(window, { key: 'Escape' })
-    assert.equal(onCloseMock.mock.calls.length, 1)
+    expect(onCloseMock).toHaveBeenCalledTimes(1)
   })
 })

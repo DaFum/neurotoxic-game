@@ -1,21 +1,18 @@
-import { test, mock } from 'node:test'
-import assert from 'node:assert/strict'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
+
 import { render, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from './testUtils.js'
+
 
 // Mock HecklerOverlay to avoid animation loops and isolate the test
-mock.module('../src/components/HecklerOverlay.jsx', {
-  namedExports: {
+vi.mock('../src/components/HecklerOverlay.jsx', () => ({
     HecklerOverlay: () => <div data-testid="heckler-overlay-mock" />
-  }
-})
+  }))
+afterEach(cleanup)
 
-test('GigHUD: renders toxic border flash element when isToxicMode is true', async (t) => {
-  setupJSDOM()
-  t.after(cleanup)
-  t.after(teardownJSDOM)
+test('GigHUD: renders toxic border flash element when isToxicMode is true', async () => {
 
-  // Dynamic import is needed when using mock.module
+
+  // Dynamic import is needed when using vi.mock
   const { GigHUD } = await import('../src/components/GigHUD.jsx')
 
   const stats = {
@@ -34,15 +31,13 @@ test('GigHUD: renders toxic border flash element when isToxicMode is true', asyn
   // Look for the specific element with the class inside the container
   const flashElement = container.querySelector('.toxic-border-flash')
 
-  assert.ok(flashElement, 'Should find an element with toxic-border-flash class')
+  expect(flashElement).toBeTruthy()
   // Ensure it's not the root element itself (it should be a child now)
-  assert.notEqual(flashElement, container.firstChild, 'The flash element should be a child, not the root container')
+  expect(flashElement).not.toBe(container.firstChild)
 })
 
-test('GigHUD: does not render toxic border flash element when isToxicMode is false', async (t) => {
-  setupJSDOM()
-  t.after(cleanup)
-  t.after(teardownJSDOM)
+test('GigHUD: does not render toxic border flash element when isToxicMode is false', async () => {
+
 
   const { GigHUD } = await import('../src/components/GigHUD.jsx')
 
@@ -61,5 +56,5 @@ test('GigHUD: does not render toxic border flash element when isToxicMode is fal
 
   const flashElement = container.querySelector('.toxic-border-flash')
 
-  assert.strictEqual(flashElement, null, 'Should NOT find an element with toxic-border-flash class')
+  expect(flashElement).toBe(null)
 })

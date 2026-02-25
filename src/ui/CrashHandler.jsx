@@ -26,7 +26,7 @@ export class ErrorBoundary extends React.Component {
     if (this.state.hasError) {
       return (
         <div
-          className='flex flex-col items-center justify-center h-screen w-screen bg-(--void-black) text-(--blood-red) p-8 relative'
+          className='flex flex-col items-center justify-center fixed inset-0 bg-(--void-black) text-(--blood-red) p-8 relative'
           style={{ zIndex: 'var(--z-crash)' }}
         >
           <h1 className='text-6xl font-[Metal_Mania] mb-4'>SYSTEM FAILURE</h1>
@@ -34,7 +34,7 @@ export class ErrorBoundary extends React.Component {
             The simulation has crashed. Reboot required.
           </p>
 
-          {import.meta.env.DEV && (
+          {globalThis.__IMPORT_META_ENV__?.DEV && (
             <div className='bg-(--blood-red)/20 border border-(--blood-red) p-4 mb-8 w-full max-w-2xl overflow-auto max-h-64 text-xs font-mono'>
               <p className='font-bold mb-2'>
                 {this.state.error && this.state.error.toString()}

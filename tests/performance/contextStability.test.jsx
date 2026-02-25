@@ -1,59 +1,8 @@
-import { test } from 'node:test'
-import assert from 'node:assert/strict'
-import { JSDOM } from 'jsdom'
+import { expect, test, vi } from 'vitest'
+
+
 import { act, render } from '@testing-library/react'
 import { useEffect } from 'react'
-
-// Setup JSDOM global environment
-const dom = new JSDOM('<!doctype html><html><body></body></html>', {
-  url: 'http://localhost'
-})
-global.window = dom.window
-global.document = dom.window.document
-
-// Handle navigator
-Object.defineProperty(global, 'navigator', {
-  value: dom.window.navigator,
-  writable: true,
-  configurable: true
-})
-
-global.HTMLElement = dom.window.HTMLElement
-
-// Mock localStorage
-const localStorageMock = (function () {
-  let store = {}
-  return {
-    getItem: function (key) {
-      return store[key] || null
-    },
-    setItem: function (key, value) {
-      store[key] = value.toString()
-    },
-    clear: function () {
-      store = {}
-    },
-    removeItem: function (key) {
-      delete store[key]
-    }
-  }
-})()
-Object.defineProperty(window, 'localStorage', { value: localStorageMock })
-global.localStorage = localStorageMock // Add to global
-
-// Mock AudioContext to prevent Tone.js initialization errors during import/render
-global.window.AudioContext = class {
-  constructor() {
-    this.state = 'suspended'
-  }
-  createGain() {
-    return { connect: () => {}, gain: { value: 1 } }
-  }
-  createOscillator() {
-    return { connect: () => {}, start: () => {}, stop: () => {} }
-  }
-  destination = {}
-}
 
 test('GameState context functions stability', async _t => {
   // Dynamic import to ensure globals are set
@@ -104,10 +53,7 @@ test('GameState context functions stability', async _t => {
   })
 
   // Should have re-rendered
-  assert.ok(
-    renderCount > initialRenderCount,
-    'Should verify re-render occurred'
-  )
+  expect(renderCount).toBeGreaterThan(initialRenderCount)
 
   if (changeSceneRef === initialChangeScene) {
     console.log('Success: changeScene is STABLE!')
@@ -116,9 +62,5 @@ test('GameState context functions stability', async _t => {
   }
 
   // Verification: Stable
-  assert.strictEqual(
-    changeSceneRef,
-    initialChangeScene,
-    'changeScene function reference should be stable after optimization'
-  )
+  expect(changeSceneRef).toBe(initialChangeScene)
 })

@@ -1,37 +1,24 @@
-import { test, describe, afterEach, mock } from 'node:test'
-import assert from 'node:assert/strict'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
+
 import React from 'react'
 import { render, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from './testUtils.js'
+
 
 // Mock dependencies
-mock.module('../src/data/hqItems.js', {
-  namedExports: {
+vi.mock('../src/data/hqItems.js', () => ({
     HQ_ITEMS: { gear: [], instruments: [] }
-  }
-})
-
-mock.module('../src/data/upgradeCatalog.js', {
-  namedExports: {
+  }))
+vi.mock('../src/data/upgradeCatalog.js', () => ({
     getUnifiedUpgradeCatalog: () => []
-  }
-})
-
-mock.module('../src/data/songs.js', {
-  namedExports: {
+  }))
+vi.mock('../src/data/songs.js', () => ({
     SONGS_DB: []
-  }
-})
-
-mock.module('../src/utils/imageGen.js', {
-  namedExports: {
+  }))
+vi.mock('../src/utils/imageGen.js', () => ({
     getGenImageUrl: () => 'mock-url',
     IMG_PROMPTS: {}
-  }
-})
-
-mock.module('../src/hooks/usePurchaseLogic.js', {
-  namedExports: {
+  }))
+vi.mock('../src/hooks/usePurchaseLogic.js', () => ({
     usePurchaseLogic: () => ({
       handleBuy: () => {},
       isItemOwned: () => false,
@@ -39,25 +26,24 @@ mock.module('../src/hooks/usePurchaseLogic.js', {
       getAdjustedCost: (item) => item.cost // Mock passthrough
     }),
     getPrimaryEffect: () => ({})
-  }
-})
-
-mock.module('../src/ui/shared/index.jsx', {
-  namedExports: {
+  }))
+vi.mock('../src/ui/shared/index.jsx', () => ({
     StatBox: () => React.createElement('div', { 'data-testid': 'stat-box' }),
     ProgressBar: () => React.createElement('div', { 'data-testid': 'progress-bar' }),
     SettingsPanel: () => React.createElement('div', { 'data-testid': 'settings-panel' }),
     Panel: ({ children }) => React.createElement('div', { 'data-testid': 'panel' }, children),
-    ActionButton: ({ children, type = 'button' }) => React.createElement('button', { 'data-testid': 'action-button', type }, children),
+    ActionButton: ({ children, type = 'button' }) => {
+      const validTypes = ['button', 'submit', 'reset']
+      const sanitizedType = validTypes.includes(type) ? type : 'button'
+      return React.createElement('button', { 'data-testid': 'action-button', type: sanitizedType }, children)
+    },
     Tooltip: ({ children }) => React.createElement('div', { 'data-testid': 'tooltip' }, children)
-  }
-})
-
+  }))
 describe('BandHQ', () => {
   let BandHQ
 
-  test.before(async () => {
-      setupJSDOM()
+  beforeAll(async () => {
+      //  removed (handled by vitest env)
       // Dynamic import
       const module = await import('../src/ui/BandHQ.jsx')
       BandHQ = module.BandHQ
@@ -65,7 +51,7 @@ describe('BandHQ', () => {
 
   afterEach(() => {
     cleanup()
-    teardownJSDOM()
+
   })
 
   test('renders without crashing', () => {
@@ -87,7 +73,7 @@ describe('BandHQ', () => {
     }
 
     const { container } = render(React.createElement(BandHQ, props))
-    assert.ok(container.querySelector('h2'), 'Should render header')
-    assert.ok(container.textContent.includes('BAND HQ'), 'Should contain title')
+    expect(container.querySelector('h2')).toBeTruthy()
+    expect(container.textContent.includes('BAND HQ')).toBeTruthy()
   })
 })

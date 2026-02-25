@@ -1,94 +1,68 @@
-import { describe, it, beforeEach, afterEach, mock } from 'node:test'
-import { strict as assert } from 'node:assert'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
 import React from 'react'
 import { render, screen } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
+
 
 // Mock dependencies before import
-const changeSceneMock = mock.fn()
-const loadGameMock = mock.fn()
-const addToastMock = mock.fn()
-const resetStateMock = mock.fn()
+const changeSceneMock = vi.fn()
+const loadGameMock = vi.fn()
+const addToastMock = vi.fn()
+const resetStateMock = vi.fn()
 
-mock.module('../../src/context/GameState', {
-  namedExports: {
+vi.mock('../../src/context/GameState', () => ({
     useGameState: () => ({
       changeScene: changeSceneMock,
       loadGame: loadGameMock,
       addToast: addToastMock,
       resetState: resetStateMock
     })
-  }
-})
-
-const openHQMock = mock.fn()
-mock.module('../../src/hooks/useBandHQModal.js', {
-  namedExports: {
+  }))
+const openHQMock = vi.fn()
+vi.mock('../../src/hooks/useBandHQModal.js', () => ({
     useBandHQModal: () => ({
       showHQ: false,
       openHQ: openHQMock,
       bandHQProps: {}
     })
-  }
+  }))
+const glitchButtonRender = vi.fn(({ children, onClick }) => {
+  return <button type='button' onClick={onClick}>{children}</button>
 })
 
-const glitchButtonRender = mock.fn(({ children, onClick }) => {
-  return <button onClick={onClick}>{children}</button>
-})
-
-mock.module('../../src/ui/GlitchButton', {
-  namedExports: {
+vi.mock('../../src/ui/GlitchButton', () => ({
     GlitchButton: glitchButtonRender
-  }
-})
-
-mock.module('../../src/ui/BandHQ', {
-  namedExports: {
+  }))
+vi.mock('../../src/ui/BandHQ', () => ({
     BandHQ: () => <div />
-  }
-})
-
-mock.module('framer-motion', {
-  namedExports: {
+  }))
+vi.mock('framer-motion', () => ({
     motion: {
       div: ({ children, ...props }) => <div {...props}>{children}</div>,
       h1: ({ children, ...props }) => <h1 {...props}>{children}</h1>,
       h2: ({ children, ...props }) => <h2 {...props}>{children}</h2>
     }
-  }
-})
-
-mock.module('../../src/utils/imageGen', {
-  namedExports: {
+  }))
+vi.mock('../../src/utils/imageGen', () => ({
     getGenImageUrl: () => '',
     IMG_PROMPTS: {}
-  }
-})
-
-mock.module('../../src/utils/AudioManager', {
-  namedExports: {
+  }))
+vi.mock('../../src/utils/AudioManager', () => ({
     audioManager: {
       startAmbient: async () => {},
       ensureAudioContext: async () => {}
     }
-  }
-})
-
-mock.module('../../src/utils/errorHandler', {
-  namedExports: {
-    handleError: mock.fn()
-  }
-})
-
+  }))
+vi.mock('../../src/utils/errorHandler', () => ({
+    handleError: vi.fn()
+  }))
 // Dynamic import
 const { MainMenu } = await import('../../src/scenes/MainMenu.jsx')
 
 describe('MainMenu Performance Stability', () => {
-  beforeEach(setupJSDOM)
+  // // setupJSDOM removed removed
   afterEach(() => {
-    teardownJSDOM()
-    mock.restoreAll()
-    glitchButtonRender.mock.resetCalls()
+    vi.clearAllMocks()
+    glitchButtonRender.mockReset()
   })
 
   it('handlers should be stable after optimization', async () => {
@@ -97,36 +71,31 @@ describe('MainMenu Performance Stability', () => {
     // First render calls
     const initialCalls = [...glitchButtonRender.mock.calls]
     const creditsCall1 = initialCalls.find(
-      c => c.arguments[0].children === 'CREDITS'
+      c => c[0].children === 'CREDITS'
     )
     const startTourCall1 = initialCalls.find(
-      c => c.arguments[0].children === 'Start Tour'
+      c => c[0].children === 'Start Tour'
     )
 
-    assert.ok(creditsCall1, 'CREDITS button rendered')
-    assert.ok(startTourCall1, 'Start Tour button rendered')
+    expect(creditsCall1).toBeTruthy()
+    expect(startTourCall1).toBeTruthy()
 
     // Force re-render
     rerender(<MainMenu />)
 
     const secondCalls = glitchButtonRender.mock.calls.slice(initialCalls.length)
     const creditsCall2 = secondCalls.find(
-      c => c.arguments[0].children === 'CREDITS'
+      c => c[0].children === 'CREDITS'
     )
     const startTourCall2 = secondCalls.find(
-      c => c.arguments[0].children === 'Start Tour'
+      c => c[0].children === 'Start Tour'
     )
 
+    expect(creditsCall2).toBeDefined()
+    expect(startTourCall2).toBeDefined()
+
     // Assert stability (this should pass after optimization)
-    assert.equal(
-      creditsCall1.arguments[0].onClick,
-      creditsCall2.arguments[0].onClick,
-      'CREDITS handler should be stable'
-    )
-    assert.equal(
-      startTourCall1.arguments[0].onClick,
-      startTourCall2.arguments[0].onClick,
-      'Start Tour handler should be stable'
-    )
+    expect(creditsCall1[0].onClick).toBe(creditsCall2[0].onClick)
+    expect(startTourCall1[0].onClick).toBe(startTourCall2[0].onClick)
   })
 })

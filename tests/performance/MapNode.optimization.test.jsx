@@ -1,18 +1,18 @@
-import { test, describe, beforeEach, afterEach } from 'node:test'
-import assert from 'node:assert/strict'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
+
 import React from 'react'
 import { render, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
+
 import { MapNode } from '../../src/components/MapNode.jsx'
 
 describe('MapNode Optimization', () => {
   beforeEach(() => {
-    setupJSDOM()
+    //  removed (handled by vitest env)
   })
 
   afterEach(() => {
     cleanup()
-    teardownJSDOM()
+
   })
 
   test('MapNode: style object for position should be referentially stable across re-renders', async () => {
@@ -72,7 +72,7 @@ describe('MapNode Optimization', () => {
     const props2 = getProps(div2)
     const style2 = props2.style
 
-    assert.deepEqual(style1, style2, 'Styles should be deeply equal')
-    assert.strictEqual(style1, style2, 'Style object reference should be stable (memoized)')
+    expect(style1).toEqual(style2)
+    expect(style1).toBe(style2)
   })
 })

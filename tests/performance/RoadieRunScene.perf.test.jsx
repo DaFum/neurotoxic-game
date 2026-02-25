@@ -1,14 +1,14 @@
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
 
-import { test } from 'node:test'
-import assert from 'node:assert'
+
 import React from 'react'
 import { render, act, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
+
 
 // Mocks
-const mockChangeScene = test.mock.fn()
-const mockUpdate = test.mock.fn()
-const mockMove = test.mock.fn()
+const mockChangeScene = vi.fn()
+const mockUpdate = vi.fn()
+const mockMove = vi.fn()
 
 let mockUiState = {
   itemsRemaining: 3,
@@ -32,44 +32,32 @@ const mockUseRoadieLogic = () => ({
 })
 
 // Register mocks
-test.mock.module('../../src/context/GameState', {
-  namedExports: {
+vi.mock('../../src/context/GameState', () => ({
     useGameState: mockUseGameState
-  }
-})
-
-test.mock.module('../../src/hooks/minigames/useRoadieLogic', {
-  namedExports: {
+  }))
+vi.mock('../../src/hooks/minigames/useRoadieLogic', () => ({
     useRoadieLogic: mockUseRoadieLogic
-  }
-})
-
-test.mock.module('../../src/components/stage/RoadieStageController', {
-  namedExports: {
+  }))
+vi.mock('../../src/components/stage/RoadieStageController', () => ({
     createRoadieStageController: () => ({ destroy: () => {} })
-  }
-})
-
-test.mock.module('../../src/components/PixiStage', {
-  namedExports: {
+  }))
+vi.mock('../../src/components/PixiStage', () => ({
     PixiStage: () => React.createElement('div', { 'data-testid': 'pixi-stage' })
-  }
-})
-
+  }))
 // Dynamic import
 const { RoadieRunScene } = await import('../../src/scenes/RoadieRunScene.jsx')
 
-test.describe('RoadieRunScene Performance', () => {
-  test.beforeEach(() => {
-    setupJSDOM()
+describe('RoadieRunScene Performance', () => {
+  beforeEach(() => {
+    //  removed (handled by vitest env)
     mockUiState = { ...mockUiState }
-    mockMove.mock.resetCalls()
+    mockMove.mockReset()
   })
 
-  test.afterEach(() => {
+  afterEach(() => {
     cleanup()
-    teardownJSDOM()
-    test.mock.reset()
+
+    vi.clearAllMocks()
   })
 
   test('button handlers should be referentially stable across re-renders', async () => {
@@ -82,8 +70,8 @@ test.describe('RoadieRunScene Performance', () => {
     await act(async () => {
       upButton.click()
     })
-    assert.strictEqual(mockMove.mock.calls.length, 1)
-    assert.deepStrictEqual(mockMove.mock.calls[0].arguments, [0, -1])
+    expect(mockMove.mock.calls.length).toBe(1)
+    expect(mockMove.mock.calls[0]).toEqual([0, -1])
 
     // Trigger re-render by changing uiState
     mockUiState = { ...mockUiState, itemsRemaining: 2 }
@@ -93,7 +81,7 @@ test.describe('RoadieRunScene Performance', () => {
     await act(async () => {
       leftButton.click()
     })
-    assert.strictEqual(mockMove.mock.calls.length, 2)
-    assert.deepStrictEqual(mockMove.mock.calls[1].arguments, [-1, 0])
+    expect(mockMove.mock.calls.length).toBe(2)
+    expect(mockMove.mock.calls[1]).toEqual([-1, 0])
   })
 })

@@ -1,16 +1,15 @@
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
 
 /* eslint-disable @eslint-react/no-unnecessary-use-prefix */
-import { test, describe, afterEach, beforeEach, mock } from 'node:test'
-import assert from 'node:assert'
+
 import React from 'react'
 import { render } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from './testUtils.js'
+
 
 // Mock dependencies before importing the component
-const getGenImageUrlMock = mock.fn((prompt) => `mocked-url-${prompt ? prompt.substring(0, 10) : 'none'}`)
+const getGenImageUrlMock = vi.fn((prompt) => `mocked-url-${prompt ? prompt.substring(0, 10) : 'none'}`)
 
-mock.module('../src/utils/imageGen.js', {
-  namedExports: {
+vi.mock('../src/utils/imageGen.js', () => ({
     getGenImageUrl: getGenImageUrlMock,
     IMG_PROMPTS: {
       VENUE_CLUB: 'club',
@@ -26,45 +25,42 @@ mock.module('../src/utils/imageGen.js', {
       MARIUS_IDLE: 'marius_idle',
       MARIUS_SCREAMING: 'marius_screaming'
     }
-  }
-})
-
-mock.module('../src/components/PixiStage', {
-  namedExports: {
+  }))
+vi.mock('../src/components/PixiStage', () => ({
     PixiStage: () => React.createElement('div', { 'data-testid': 'pixi-stage' })
-  }
-})
-
-mock.module('../src/components/GigHUD', {
-  namedExports: {
+  }))
+vi.mock('../src/components/GigHUD', () => ({
     GigHUD: () => React.createElement('div', { 'data-testid': 'gig-hud' })
-  }
-})
-
+  }))
 // Mock GlitchButton since it's used in Gig
-mock.module('../src/ui/GlitchButton', {
-  namedExports: {
-    GlitchButton: ({ children, onClick }) => React.createElement('button', { onClick }, children)
-  }
-})
-
+vi.mock('../src/ui/GlitchButton', () => ({
+    GlitchButton: ({ children, onClick }) => React.createElement('button', { type: 'button', onClick }, children)
+  }))
 // Mock audioManager
-mock.module('../src/utils/AudioManager', {
-  namedExports: {
+vi.mock('../src/utils/AudioManager', () => ({
     audioManager: {
-      ensureAudioContext: async () => true
+      ensureAudioContext: vi.fn().mockResolvedValue(true)
     }
-  }
-})
-
+  }))
+// Mock audioEngine to prevent Tone.js initialization crash
+vi.mock('../src/utils/audioEngine', () => ({
+    pauseAudio: vi.fn(),
+    resumeAudio: vi.fn(),
+    stopAudio: vi.fn(),
+    setupAudio: vi.fn(),
+    ensureAudioContext: vi.fn().mockResolvedValue(true),
+    getAudioContextTimeSec: vi.fn().mockReturnValue(0),
+    getToneStartTimeSec: vi.fn().mockReturnValue(0),
+    disposeAudio: vi.fn()
+}))
 // Mock hooks
 const mockUseGameState = {
   currentGig: { name: 'Test Gig', diff: 3 },
-  changeScene: mock.fn(),
-  addToast: mock.fn(),
+  changeScene: vi.fn(),
+  addToast: vi.fn(),
   activeEvent: null,
-  setActiveEvent: mock.fn(),
-  setLastGigStats: mock.fn(),
+  setActiveEvent: vi.fn(),
+  setLastGigStats: vi.fn(),
   band: { harmony: 50, performance: 50 }
 }
 
@@ -80,9 +76,9 @@ const mockUseRhythmGameLogic = {
     accuracy: 100
   },
   actions: {
-    retryAudioInitialization: mock.fn(),
-    registerInput: mock.fn(),
-    activateToxicMode: mock.fn()
+    retryAudioInitialization: vi.fn(),
+    registerInput: vi.fn(),
+    activateToxicMode: vi.fn()
   },
   gameStateRef: { current: {} }
 }
@@ -90,51 +86,39 @@ const mockUseRhythmGameLogic = {
 const mockUseGigEffects = {
   chaosContainerRef: { current: null },
   chaosStyle: {},
-  triggerBandAnimation: mock.fn(),
+  triggerBandAnimation: vi.fn(),
   setBandMemberRef: (_id) => (_el) => {}
 }
 
 const mockUseGigInput = {
-  handleLaneInput: mock.fn()
+  handleLaneInput: vi.fn()
 }
 
 // We need to mock these modules to return our mock objects
-mock.module('../src/context/GameState', {
-  namedExports: {
+vi.mock('../src/context/GameState', () => ({
     useGameState: () => mockUseGameState
-  }
-})
-
-mock.module('../src/hooks/useRhythmGameLogic', {
-  namedExports: {
+  }))
+vi.mock('../src/hooks/useRhythmGameLogic', () => ({
     useRhythmGameLogic: () => mockUseRhythmGameLogic
-  }
-})
-
-mock.module('../src/hooks/useGigEffects', {
-  namedExports: {
+  }))
+vi.mock('../src/hooks/useGigEffects', () => ({
     useGigEffects: () => mockUseGigEffects
-  }
-})
-
-mock.module('../src/hooks/useGigInput', {
-  namedExports: {
+  }))
+vi.mock('../src/hooks/useGigInput', () => ({
     useGigInput: () => mockUseGigInput
-  }
-})
-
+  }))
 // Import Gig after mocking
 const { Gig } = await import('../src/scenes/Gig.jsx')
 
 describe('Gig Optimization', () => {
   beforeEach(() => {
-    setupJSDOM()
-    getGenImageUrlMock.mock.resetCalls()
+    //  removed (handled by vitest env)
+    getGenImageUrlMock.mockReset()
   })
 
   afterEach(() => {
-    teardownJSDOM()
-    mock.reset()
+
+    vi.clearAllMocks()
   })
 
   test('calls getGenImageUrl multiple times on render', async () => {
@@ -144,7 +128,7 @@ describe('Gig Optimization', () => {
     // Check initial calls
     // 1 for bgUrl + 3 for band members = 4 calls
     const initialCalls = getGenImageUrlMock.mock.calls.length
-    assert.ok(initialCalls >= 4, `Expected at least 4 calls, got ${initialCalls}`)
+    expect(initialCalls).toBeGreaterThanOrEqual(4)
 
     // Re-render with same props/state (simulating parent re-render or hook update)
     // We can simulate a hook update by changing the return value of the mocked hook and re-rendering
@@ -167,6 +151,6 @@ describe('Gig Optimization', () => {
 
     // With memoization, it should NOT call again.
     // 4 initial + 0 re-render = 4 calls
-    assert.strictEqual(afterReRenderCalls, initialCalls, `Expected no new calls on re-render, got ${afterReRenderCalls} (initial: ${initialCalls})`)
+    expect(afterReRenderCalls).toBe(initialCalls)
   })
 })

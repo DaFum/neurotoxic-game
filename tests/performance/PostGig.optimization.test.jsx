@@ -1,18 +1,18 @@
-import { test, describe, beforeEach, afterEach } from 'node:test'
-import assert from 'node:assert/strict'
+import { afterEach, beforeEach, describe, expect, test } from 'vitest'
+
 import React from 'react'
 import { render, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
-import { SocialPhase } from '../../src/scenes/PostGig.jsx'
+
+import { SocialPhase } from '../../src/components/postGig/SocialPhase.jsx'
 
 describe('PostGig Optimization', () => {
   beforeEach(() => {
-    setupJSDOM()
+    //  removed (handled by vitest env)
   })
 
   afterEach(() => {
     cleanup()
-    teardownJSDOM()
+
   })
 
   test('SocialPhase: buttons receive new onClick handlers on every render', async () => {
@@ -22,11 +22,11 @@ describe('PostGig Optimization', () => {
     ]
     const onSelect = () => {}
 
-    const { getByText, rerender } = render(
+    const { getByText, getAllByRole, rerender } = render(
       <SocialPhase options={options} onSelect={onSelect} />
     )
 
-    const btn1 = getByText('Op1').closest('button')
+    const btn1 = getAllByRole('button')[0]
 
     // Helper to get React props from DOM node
     const getProps = (node) => {
@@ -50,16 +50,16 @@ describe('PostGig Optimization', () => {
     // Rerender with SAME props
     rerender(<SocialPhase options={options} onSelect={onSelect} />)
 
-    const btn1_after = getByText('Op1').closest('button')
+    const btn1_after = getAllByRole('button')[0]
     const props2 = getProps(btn1_after)
     const onClick2 = props2.onClick
 
     // Verify we can access props
-    assert.ok(props1, 'Should access React props on DOM node')
-    assert.ok(onClick1, 'Should have onClick handler')
+    expect(props1).toBeTruthy()
+    expect(onClick1).toBeTruthy()
 
     // Assert that onClick handler has NOT changed
     // Because we optimized it to use a memoized component with stable callbacks.
-    assert.strictEqual(onClick1, onClick2, 'onClick handler should be stable after optimization')
+    expect(onClick1).toBe(onClick2)
   })
 })

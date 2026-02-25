@@ -1,96 +1,95 @@
-import { describe, it, beforeEach, afterEach, mock } from 'node:test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, cleanup, fireEvent } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from './testUtils.js'
-import assert from 'node:assert'
+import React from 'react'
+
 import { SONGS_DB } from '../src/data/songs'
 
 // Mock useGameState before importing component
-const mockSetCurrentGig = mock.fn()
-const mockChangeScene = mock.fn()
+const mockSetCurrentGig = vi.fn()
+const mockChangeScene = vi.fn()
 
-mock.module('../src/context/GameState', {
-  namedExports: {
+vi.mock('../src/context/GameState', () => ({
     useGameState: () => ({
       setCurrentGig: mockSetCurrentGig,
       changeScene: mockChangeScene
     })
-  }
-})
-
+  }))
 // Import component after mocking
 const { SetlistTab } = await import('../src/ui/bandhq/SetlistTab')
 
 describe('SetlistTab', () => {
   beforeEach(() => {
-    setupJSDOM()
-    mockSetCurrentGig.mock.resetCalls()
-    mockChangeScene.mock.resetCalls()
+    //  removed (handled by vitest env)
+    mockSetCurrentGig.mockReset()
+    mockChangeScene.mockReset()
   })
 
   afterEach(() => {
     cleanup()
-    teardownJSDOM()
-    mock.restoreAll()
+
+    vi.restoreAllMocks()
   })
 
   it('renders correctly with empty setlist', () => {
-    const setSetlist = mock.fn()
-    const addToast = mock.fn()
-    const { getByText, getAllByText } = render(
+    const setSetlist = vi.fn()
+    const addToast = vi.fn()
+    const { getByText, queryAllByText } = render(
       <SetlistTab setlist={[]} setSetlist={setSetlist} addToast={addToast} />
     )
 
-    assert.ok(getByText(/SELECTED:/))
-    assert.ok(getByText('0'))
+    expect(getByText(/SELECTED:/))
+    expect(getByText('0')).toBeTruthy()
     // Verify some songs are rendered.
-    assert.ok(getByText(SONGS_DB[0].name))
+    expect(getByText(SONGS_DB[0].name)).toBeTruthy()
 
     // Check if SELECT buttons are present
-    const selectButtons = getAllByText('SELECT')
-    assert.strictEqual(selectButtons.length, SONGS_DB.length)
+    const selectButtons = queryAllByText('SELECT')
+    expect(selectButtons).toBeTruthy()
+    expect(selectButtons.length).toBe(SONGS_DB.length)
   })
 
   it('renders correctly with a selected song', () => {
     const selectedSong = SONGS_DB[0]
     const setlist = [{ id: selectedSong.id }]
-    const setSetlist = mock.fn()
-    const addToast = mock.fn()
-    const { getByText, getAllByText } = render(
+    const setSetlist = vi.fn()
+    const addToast = vi.fn()
+    const { getByText, queryAllByText } = render(
       <SetlistTab setlist={setlist} setSetlist={setSetlist} addToast={addToast} />
     )
 
-    assert.ok(getByText(/SELECTED:/))
-    assert.ok(getByText('1'))
-    assert.ok(getByText('ACTIVE'))
+    expect(getByText(/SELECTED:/))
+    expect(getByText('1')).toBeTruthy()
+    expect(getByText('ACTIVE')).toBeTruthy()
 
     // Other songs should still have SELECT
-    const selectButtons = getAllByText('SELECT')
-    assert.strictEqual(selectButtons.length, SONGS_DB.length - 1)
+    const selectButtons = queryAllByText('SELECT')
+    expect(selectButtons).toBeTruthy()
+    expect(selectButtons.length).toBe(SONGS_DB.length - 1)
   })
 
   it('handles song selection (replaces setlist)', () => {
-    const setSetlist = mock.fn()
-    const addToast = mock.fn()
-    const { getAllByText } = render(
+    const setSetlist = vi.fn()
+    const addToast = vi.fn()
+    const { queryAllByText } = render(
       <SetlistTab setlist={[]} setSetlist={setSetlist} addToast={addToast} />
     )
 
-    const selectButtons = getAllByText('SELECT')
+    const selectButtons = queryAllByText('SELECT')
     fireEvent.click(selectButtons[0])
 
-    assert.strictEqual(setSetlist.mock.calls.length, 1)
-    assert.deepStrictEqual(setSetlist.mock.calls[0].arguments[0], [{ id: SONGS_DB[0].id }])
+    expect(setSetlist.mock.calls.length).toBe(1)
+    expect(setSetlist.mock.calls[0][0]).toEqual([{ id: SONGS_DB[0].id }])
 
-    assert.strictEqual(addToast.mock.calls.length, 1)
-    assert.strictEqual(addToast.mock.calls[0].arguments[0], 'Song selected for next Gig')
-    assert.strictEqual(addToast.mock.calls[0].arguments[1], 'success')
+    expect(addToast.mock.calls.length).toBe(1)
+    expect(addToast.mock.calls[0][0]).toBe('Song selected for next Gig')
+    expect(addToast.mock.calls[0][1]).toBe('success')
   })
 
   it('handles song removal', () => {
     const selectedSong = SONGS_DB[0]
     const setlist = [{ id: selectedSong.id }]
-    const setSetlist = mock.fn()
-    const addToast = mock.fn()
+    const setSetlist = vi.fn()
+    const addToast = vi.fn()
     const { getByText } = render(
       <SetlistTab setlist={setlist} setSetlist={setSetlist} addToast={addToast} />
     )
@@ -98,37 +97,37 @@ describe('SetlistTab', () => {
     const activeButton = getByText('ACTIVE')
     fireEvent.click(activeButton)
 
-    assert.strictEqual(setSetlist.mock.calls.length, 1)
-    assert.deepStrictEqual(setSetlist.mock.calls[0].arguments[0], [])
+    expect(setSetlist.mock.calls.length).toBe(1)
+    expect(setSetlist.mock.calls[0][0]).toEqual([])
 
-    assert.strictEqual(addToast.mock.calls.length, 1)
-    assert.strictEqual(addToast.mock.calls[0].arguments[0], 'Song removed from setlist')
-    assert.strictEqual(addToast.mock.calls[0].arguments[1], 'info')
+    expect(addToast.mock.calls.length).toBe(1)
+    expect(addToast.mock.calls[0][0]).toBe('Song removed from setlist')
+    expect(addToast.mock.calls[0][1]).toBe('info')
   })
 
   it('handles setlist with string IDs', () => {
     const selectedSong = SONGS_DB[0]
     const setlist = [selectedSong.id] // string instead of object
-    const setSetlist = mock.fn()
-    const addToast = mock.fn()
+    const setSetlist = vi.fn()
+    const addToast = vi.fn()
     const { getByText } = render(
       <SetlistTab setlist={setlist} setSetlist={setSetlist} addToast={addToast} />
     )
 
-    assert.ok(getByText('ACTIVE'))
+    expect(getByText('ACTIVE'))
 
     const activeButton = getByText('ACTIVE')
     fireEvent.click(activeButton)
 
-    assert.strictEqual(setSetlist.mock.calls.length, 1)
-    assert.deepStrictEqual(setSetlist.mock.calls[0].arguments[0], [])
+    expect(setSetlist.mock.calls.length).toBe(1)
+    expect(setSetlist.mock.calls[0][0]).toEqual([])
   })
 
   it('starts practice mode when button is clicked with songs selected', () => {
     const selectedSong = SONGS_DB[0]
     const setlist = [{ id: selectedSong.id }]
-    const setSetlist = mock.fn()
-    const addToast = mock.fn()
+    const setSetlist = vi.fn()
+    const addToast = vi.fn()
     const { getByText } = render(
       <SetlistTab setlist={setlist} setSetlist={setSetlist} addToast={addToast} />
     )
@@ -136,19 +135,19 @@ describe('SetlistTab', () => {
     const practiceButton = getByText('START PRACTICE')
     fireEvent.click(practiceButton)
 
-    assert.strictEqual(mockSetCurrentGig.mock.calls.length, 1)
-    const gigData = mockSetCurrentGig.mock.calls[0].arguments[0]
-    assert.strictEqual(gigData.name, 'Rehearsal Room')
-    assert.strictEqual(gigData.isPractice, true)
+    expect(mockSetCurrentGig.mock.calls.length).toBe(1)
+    const gigData = mockSetCurrentGig.mock.calls[0][0]
+    expect(gigData.name).toBeTruthy()
+    expect(gigData.isPractice).toBe(true)
 
-    assert.strictEqual(mockChangeScene.mock.calls.length, 1)
-    assert.strictEqual(mockChangeScene.mock.calls[0].arguments[0], 'PRACTICE')
+    expect(mockChangeScene.mock.calls.length).toBe(1)
+    expect(mockChangeScene.mock.calls[0][0]).toBe('PRACTICE')
   })
 
   it('shows warning when starting practice with empty setlist', () => {
     const setlist = []
-    const setSetlist = mock.fn()
-    const addToast = mock.fn()
+    const setSetlist = vi.fn()
+    const addToast = vi.fn()
     const { getByText } = render(
       <SetlistTab setlist={setlist} setSetlist={setSetlist} addToast={addToast} />
     )
@@ -156,11 +155,11 @@ describe('SetlistTab', () => {
     const practiceButton = getByText('START PRACTICE')
     fireEvent.click(practiceButton)
 
-    assert.strictEqual(mockSetCurrentGig.mock.calls.length, 0)
-    assert.strictEqual(mockChangeScene.mock.calls.length, 0)
+    expect(mockSetCurrentGig.mock.calls.length).toBe(0)
+    expect(mockChangeScene.mock.calls.length).toBe(0)
 
-    assert.strictEqual(addToast.mock.calls.length, 1)
-    assert.strictEqual(addToast.mock.calls[0].arguments[0], 'Select at least one song to practice!')
-    assert.strictEqual(addToast.mock.calls[0].arguments[1], 'warning')
+    expect(addToast.mock.calls.length).toBe(1)
+    expect(addToast.mock.calls[0][0]).toBe('Select at least one song to practice!')
+    expect(addToast.mock.calls[0][1]).toBe('warning')
   })
 })

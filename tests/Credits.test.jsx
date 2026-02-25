@@ -1,8 +1,6 @@
-import { test, describe, afterEach, beforeEach } from 'node:test'
-import assert from 'node:assert/strict'
-import React, { useEffect } from 'react'
-import { render, cleanup, fireEvent, act } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from './testUtils.js'
+import { describe, expect, test, vi } from 'vitest'
+import React from 'react'
+import { render, fireEvent } from '@testing-library/react'
 import { GameStateProvider, useGameState } from '../src/context/GameState.jsx'
 import { Credits } from '../src/scenes/Credits.jsx'
 
@@ -18,14 +16,6 @@ const CreditsTestHarness = () => {
 }
 
 describe('Credits Scene', () => {
-  beforeEach(() => {
-    setupJSDOM()
-  })
-
-  afterEach(() => {
-    cleanup()
-    teardownJSDOM()
-  })
 
   test('renders credits content', () => {
     const { getByText } = render(
@@ -33,8 +23,8 @@ describe('Credits Scene', () => {
         <Credits />
       </GameStateProvider>
     )
-    assert.ok(getByText('CREDITS'))
-    assert.ok(getByText('VOCAL CODE VOMIT'))
+    expect(getByText('CREDITS')).toBeInTheDocument()
+    expect(getByText('VOCAL CODE VOMIT')).toBeInTheDocument()
   })
 
   test('calls changeScene("MENU") when RETURN is clicked', async () => {
@@ -49,6 +39,6 @@ describe('Credits Scene', () => {
     fireEvent.click(returnBtn)
     
     // Check if the scene updated to MENU
-    assert.equal(getByTestId('scene').textContent, 'MENU')
+    expect(getByTestId('scene').textContent).toBe('MENU')
   })
 })

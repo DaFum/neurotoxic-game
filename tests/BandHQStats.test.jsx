@@ -1,12 +1,11 @@
-import { test, describe, afterEach, mock } from 'node:test'
-import assert from 'node:assert/strict'
+import { afterAll, afterEach, beforeAll, describe, expect, test, vi } from 'vitest'
+
 import React from 'react'
 import { render, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from './testUtils.js'
+
 
 // Mock shared UI components
-mock.module('../src/ui/shared/index.jsx', {
-  namedExports: {
+vi.mock('../src/ui/shared/index.jsx', () => ({
     StatBox: ({ label, value }) => (
       <div data-testid="stat-box">
         <span data-testid="stat-label">{label}</span>
@@ -25,25 +24,20 @@ mock.module('../src/ui/shared/index.jsx', {
     VolumeSlider: () => <div />,
     Modal: () => <div />,
     ActionButton: () => <button />
-  }
-})
-
+  }))
 // Mock CHARACTERS data
-mock.module('../src/data/characters.js', {
-  namedExports: {
+vi.mock('../src/data/characters.js', () => ({
     CHARACTERS: {
       AXEL: { name: 'Axel', traits: [] },
       FREDDIE: { name: 'Freddie', traits: [] }
     }
-  }
-})
-
+  }))
 describe('BandHQ Stats Discrepancy', () => {
   let StatsTab
   let DetailedStatsTab
 
-  test.before(async () => {
-    setupJSDOM()
+  beforeAll(async () => {
+    //  removed (handled by vitest env)
     // Dynamic imports to ensure mocks are applied
     const statsModule = await import('../src/ui/bandhq/StatsTab.jsx')
     const detailsModule = await import('../src/ui/bandhq/DetailedStatsTab.jsx')
@@ -53,7 +47,7 @@ describe('BandHQ Stats Discrepancy', () => {
 
   afterEach(() => {
     cleanup()
-    teardownJSDOM()
+
   })
 
   test('StatsTab and DetailedStatsTab follower counts match', () => {
@@ -88,7 +82,7 @@ describe('BandHQ Stats Discrepancy', () => {
       box.querySelector('[data-testid="stat-label"]').textContent === 'Followers'
     )
 
-    assert.ok(followersBox, 'Followers StatBox should exist in StatsTab')
+    expect(followersBox).toBeTruthy()
     const statsTabValue = parseInt(followersBox.querySelector('[data-testid="stat-value"]').textContent)
 
     // Render DetailedStatsTab
@@ -122,9 +116,9 @@ describe('BandHQ Stats Discrepancy', () => {
     // DetailedStatsTab sums all (3600)
 
     // Check if the fix works
-    assert.equal(statsTabValue, 3600, 'StatsTab should show correct total followers')
-    assert.equal(detailedStatsTabValue, 3600, 'DetailedStatsTab shows correct total')
+    expect(statsTabValue).toBe(3600)
+    expect(detailedStatsTabValue).toBe(3600)
 
-    assert.equal(statsTabValue, detailedStatsTabValue, 'Follower counts should match')
+    expect(statsTabValue).toBe(detailedStatsTabValue)
   })
 })
