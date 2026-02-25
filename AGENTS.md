@@ -42,11 +42,15 @@ neurotoxic-game/
 ```bash
 cd neurotoxic-game
 npm install
-npm run dev          # Start dev server (http://localhost:5173)
-npm run build        # Production build
-npm run test         # Run unit tests
-npm run lint         # Run ESLint
-npm run format       # Run Prettier
+npm run dev        # Vite dev server at http://localhost:5173
+npm run build      # Production build to ./dist
+npm run preview    # Preview production build locally
+npm run test       # Node test runner (--import tsx --experimental-test-module-mocks)
+npm run test:e2e   # Playwright end-to-end tests
+npm run test:ui    # Run UI tests
+npm run test:all   # Run all tests
+npm run lint       # ESLint
+npm run format     # Prettier --write .
 ```
 
 Notes: `npm run test` uses Node's built-in test runner with `tsx` and `tests/setup.mjs`; `npm run test:e2e` runs Playwright when configured.

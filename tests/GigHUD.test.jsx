@@ -7,9 +7,9 @@ import { render, cleanup } from '@testing-library/react'
 vi.mock('../src/components/HecklerOverlay.jsx', () => ({
     HecklerOverlay: () => <div data-testid="heckler-overlay-mock" />
   }))
+afterEach(cleanup)
+
 test('GigHUD: renders toxic border flash element when isToxicMode is true', async () => {
-  //  removed (handled by vitest env)
-  afterEach(cleanup)
 
 
   // Dynamic import is needed when using vi.mock
@@ -33,12 +33,10 @@ test('GigHUD: renders toxic border flash element when isToxicMode is true', asyn
 
   expect(flashElement).toBeTruthy()
   // Ensure it's not the root element itself (it should be a child now)
-  assert.notEqual(flashElement, container.firstChild, 'The flash element should be a child, not the root container')
+  expect(flashElement).not.toBe(container.firstChild)
 })
 
 test('GigHUD: does not render toxic border flash element when isToxicMode is false', async () => {
-  //  removed (handled by vitest env)
-  afterEach(cleanup)
 
 
   const { GigHUD } = await import('../src/components/GigHUD.jsx')

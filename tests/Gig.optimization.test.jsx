@@ -39,9 +39,20 @@ vi.mock('../src/ui/GlitchButton', () => ({
 // Mock audioManager
 vi.mock('../src/utils/AudioManager', () => ({
     audioManager: {
-      ensureAudioContext: async () => true
+      ensureAudioContext: vi.fn().mockResolvedValue(true)
     }
   }))
+// Mock audioEngine to prevent Tone.js initialization crash
+vi.mock('../src/utils/audioEngine', () => ({
+    pauseAudio: vi.fn(),
+    resumeAudio: vi.fn(),
+    stopAudio: vi.fn(),
+    setupAudio: vi.fn(),
+    ensureAudioContext: vi.fn().mockResolvedValue(true),
+    getAudioContextTimeSec: vi.fn().mockReturnValue(0),
+    getToneStartTimeSec: vi.fn().mockReturnValue(0),
+    disposeAudio: vi.fn()
+}))
 // Mock hooks
 const mockUseGameState = {
   currentGig: { name: 'Test Gig', diff: 3 },
@@ -117,7 +128,7 @@ describe('Gig Optimization', () => {
     // Check initial calls
     // 1 for bgUrl + 3 for band members = 4 calls
     const initialCalls = getGenImageUrlMock.mock.calls.length
-    expect(initialCalls >= 4).toBeTruthy()
+    expect(initialCalls).toBeGreaterThanOrEqual(4)
 
     // Re-render with same props/state (simulating parent re-render or hook update)
     // We can simulate a hook update by changing the return value of the mocked hook and re-rendering

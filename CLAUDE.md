@@ -14,6 +14,8 @@ npm run build      # Production build to ./dist
 npm run preview    # Preview production build locally
 npm run test       # Node test runner (--import tsx --experimental-test-module-mocks)
 npm run test:e2e   # Playwright end-to-end tests
+npm run test:ui    # Run UI tests
+npm run test:all   # Run all tests
 npm run lint       # ESLint
 npm run format     # Prettier --write .
 ```
@@ -120,13 +122,38 @@ Static game data: `venues.js`, `characters.js`, `songs.js`, `upgrades.js`, `hqIt
 
 In PixiJS, use `getPixiColorFromToken('--token-name')` instead of hex literals.
 
-| Variable           | Hex     | Usage                     |
-| ------------------ | ------- | ------------------------- |
-| `--toxic-green`    | #00FF41 | Primary UI, text, borders |
-| `--void-black`     | #0A0A0A | Backgrounds               |
-| `--blood-red`      | #CC0000 | Errors, critical states   |
-| `--ash-gray`       | #3A3A3A | Secondary text, borders   |
-| `--warning-yellow` | #FFCC00 | Warnings                  |
+| Variable              | Hex                  | Usage                                     |
+| --------------------- | -------------------- | ----------------------------------------- |
+| `--toxic-green`       | #00ff41              | Primary UI, main text, active borders     |
+| `--toxic-green-dark`  | #0c3                 | Hover states, secondary buttons           |
+| `--toxic-green-light` | #3f6                 | Highlighted text, active glows            |
+| `--toxic-green-glow`  | rgb(0 255 65 / 60%)  | CRT bloom and interactive glow effects    |
+| `--toxic-green-20`    | rgb(0 255 65 / 20%)  | Subtle borders and background overlays    |
+| `--toxic-green-10`    | rgb(0 255 65 / 10%)  | Very subtle container tints               |
+| `--void-black`        | #0a0a0a              | Main site background, deep shadows        |
+| `--void-black-rgb`    | 10 10 10             | RGB base for transparent overlays         |
+| `--shadow-black`      | #1a1a1a              | Panel backgrounds, secondary layers       |
+| `--concrete-gray`     | #2a2a2a              | Disabled UI backgrounds                   |
+| `--ash-gray`          | #888                 | Secondary/muted text and borders          |
+| `--blood-red`         | #c00                 | Errors, critical game states              |
+| `--blood-red-bright`  | #f00                 | Danger alerts, critical health            |
+| `--rust-orange`       | #c50                 | Warning accents, weathered UI             |
+| `--warning-yellow`    | #fc0                 | Important alerts, map interaction prompts |
+| `--warning-yellow-30` | rgb(255 204 0 / 30%) | Muted warning overlays                    |
+| `--warning-yellow-50` | rgb(255 204 0 / 50%) | Strong warning glows                      |
+| `--cosmic-purple`     | #60c                 | "Lost Scriptures" theme, glitch shadows   |
+| `--void-blue`         | #03c                 | Secondary theme accents, cosmic depth     |
+| `--star-white`        | #fff                 | Flash effects, score count-up highlights  |
+| `--success-green`     | #00ff41              | Positive outcomes, completion states      |
+| `--error-red`         | #f03                 | Error messages, failed actions            |
+| `--warning-orange`    | #f90                 | Alerts requiring attention                |
+| `--info-blue`         | #09f                 | Informational tooltips/popups             |
+| `--fuel-yellow`       | #eab308              | Fuel Gauge and related travel stats       |
+| `--condition-blue`    | #3b82f6              | Van/Gear condition indicators             |
+| `--stamina-green`     | #16a34a              | Band member performance stamina           |
+| `--mood-pink`         | #db2777              | Band harmony/social mood levels           |
+| `--roadie-grass`      | #1a4d1a              | Roadie Run minigame environment           |
+| `--roadie-venue-blue` | #0044cc              | Roadie Run minigame obstacles/floor       |
 
 <!-- jscpd:ignore-end -->
 

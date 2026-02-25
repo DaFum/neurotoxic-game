@@ -4,9 +4,9 @@ import { render, cleanup } from '@testing-library/react'
 
 import { ProgressBar } from '../src/ui/shared/index.jsx'
 
+afterEach(cleanup)
+
 test('ProgressBar: renders default correctly', () => {
-  //  removed (handled by vitest env)
-  afterEach(cleanup)
 
 
   const { container } = render(
@@ -14,17 +14,15 @@ test('ProgressBar: renders default correctly', () => {
   )
 
   // Should have label
-  expect(container.textContent.includes('Test'))
+  expect(container.textContent).toContain('Test')
   // Should have value
   expect(container.textContent.includes('50/100')).toBeTruthy()
   // Should have standard height (h-5 for md)
   const bar = container.querySelector('.h-5')
-  expect(bar).toBeTruthy().toBeTruthy()
+  expect(bar).toBeTruthy()
 })
 
 test('ProgressBar: renders mini variant correctly', () => {
-  //  removed (handled by vitest env)
-  afterEach(cleanup)
 
 
   const { container } = render(
@@ -45,8 +43,6 @@ test('ProgressBar: renders mini variant correctly', () => {
 })
 
 test('ProgressBar: applies warn animation', () => {
-  //  removed (handled by vitest env)
-  afterEach(cleanup)
 
 
   const { container } = render(
@@ -58,8 +54,6 @@ test('ProgressBar: applies warn animation', () => {
 })
 
 test('ProgressBar: has accessibility attributes', () => {
-  //  removed (handled by vitest env)
-  afterEach(cleanup)
 
 
   const { getByRole } = render(

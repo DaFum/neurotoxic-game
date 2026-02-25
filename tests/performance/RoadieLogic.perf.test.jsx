@@ -28,9 +28,6 @@ describe('RoadieLogic Performance', () => {
     useRoadieLogic = module.useRoadieLogic
   })
 
-  afterAll(() => {
-
-  })
 
   test('update loop performance', () => {
     const { result, unmount } = renderHook(() => useRoadieLogic())
@@ -64,8 +61,7 @@ describe('RoadieLogic Performance', () => {
     // Basic verification
     expect(game.traffic.length).toBe(trafficCount)
     // Check if cars moved
-    assert.notEqual(game.traffic[0].x, 5, 'Cars should have moved')
-
+    expect(game.traffic[0].x).not.toBe(5)
     unmount()
   })
 })

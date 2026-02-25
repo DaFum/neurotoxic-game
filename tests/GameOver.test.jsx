@@ -1,8 +1,6 @@
-import { test, describe, afterEach, beforeEach } from 'node:test'
-import assert from 'node:assert/strict'
+import { describe, expect, test, vi } from 'vitest'
 import React, { useEffect } from 'react'
-import { render, cleanup, fireEvent, waitFor } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from './testUtils.js'
+import { render, fireEvent, waitFor } from '@testing-library/react'
 import { GameStateProvider, useGameState } from '../src/context/GameState.jsx'
 import { GameOver } from '../src/scenes/GameOver.jsx'
 
@@ -28,18 +26,13 @@ const GameOverTestHarness = ({ children }) => {
 
 describe('GameOver Scene', () => {
   beforeEach(() => {
-    setupJSDOM()
     // Mock localStorage to ensure a clean state
-    globalThis.localStorage = {
-      getItem: () => null,
-      setItem: () => {},
-      removeItem: () => {}
-    }
-  })
-
-  afterEach(() => {
-    cleanup()
-    teardownJSDOM()
+    vi.stubGlobal('localStorage', {
+      getItem: vi.fn().mockReturnValue(null),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn()
+    })
   })
 
   test('renders game over stats correctly with context', async () => {
@@ -52,10 +45,10 @@ describe('GameOver Scene', () => {
     )
     
     await findByText('SOLD OUT')
-    assert.ok(getByText('The tour has ended prematurely.'))
-    assert.ok(getByText('100')) // Score
-    assert.ok(getByText('5')) // Days
-    assert.ok(getByText('50')) // Fame
+    expect(getByText('The tour has ended prematurely.')).toBeInTheDocument()
+    expect(getByText('100')).toBeInTheDocument() // Score
+    expect(getByText('5')).toBeInTheDocument() // Days
+    expect(getByText('50')).toBeInTheDocument() // Fame
   })
 
   test('handles RETURN TO MENU', async () => {
@@ -73,7 +66,7 @@ describe('GameOver Scene', () => {
     
     // We expect the scene to change to MENU
     await waitFor(() => {
-        assert.equal(getByTestId('scene').textContent, 'MENU')
+        expect(getByTestId('scene').textContent).toBe('MENU')
     })
   })
 })

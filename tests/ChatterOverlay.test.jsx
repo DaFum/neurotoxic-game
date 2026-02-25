@@ -1,29 +1,26 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
+import { afterEach, expect, test, vi } from 'vitest'
 
 import { render, act } from '@testing-library/react'
 
 
 // Setup mock before importing the component
-const getRandomChatterMock = vi.fn(() => ({ text: 'Test chatter', speaker: 'Test Speaker' }))
+const getRandomChatterMock = vi.hoisted(() => vi.fn(() => ({ text: 'Test chatter', speaker: 'Test Speaker' })))
 
 vi.mock('../src/data/chatter.js', () => ({
     getRandomChatter: getRandomChatterMock,
     CHATTER_DB: [],
     ALLOWED_DEFAULT_SCENES: ['GIG']
   }))
+
+afterEach(() => {
+  vi.useRealTimers()
+  vi.restoreAllMocks()
+})
 test('ChatterOverlay passes scene state to getRandomChatter', async () => {
   //  removed (handled by vitest env)
 
 
-  // Use fake timers if available, otherwise we might need a different approach
-  // Assuming Node 22+ with timer mocking support
-  if (vi) {
-      vi.useFakeTimers({ apis: ['setTimeout', 'Date'] })
-  } else {
-      test.skip('vi not available, skipping timer-dependent test steps')
-      return
-  }
-
+  vi.useFakeTimers({ apis: ['setTimeout', 'Date'] })
   // Dynamic import to apply mock
   const { ChatterOverlay } = await import('../src/components/ChatterOverlay.jsx')
 
@@ -46,7 +43,7 @@ test('ChatterOverlay passes scene state to getRandomChatter', async () => {
   })
 
   // Verify getRandomChatter was called
-  expect(getRandomChatterMock.mock.calls.length > 0).toBeTruthy()
+  expect(getRandomChatterMock).toHaveBeenCalled()
 
   // check the first call's first argument
   const callArgs = getRandomChatterMock.mock.calls[0][0]

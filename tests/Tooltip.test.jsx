@@ -1,19 +1,9 @@
-import { test, describe, afterEach, beforeEach } from 'node:test'
-import assert from 'node:assert/strict'
+import { describe, expect, test } from 'vitest'
 import React from 'react'
-import { render, cleanup, fireEvent } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from './testUtils.js'
+import { render, fireEvent } from '@testing-library/react'
 import { Tooltip } from '../src/ui/shared/Tooltip.jsx'
 
 describe('Tooltip Component', () => {
-  beforeEach(() => {
-    setupJSDOM()
-  })
-
-  afterEach(() => {
-    cleanup()
-    teardownJSDOM()
-  })
 
   test('does not show content initially', () => {
     const { queryByText } = render(
@@ -21,7 +11,7 @@ describe('Tooltip Component', () => {
         <button>Hover Me</button>
       </Tooltip>
     )
-    assert.equal(queryByText('Tooltip Content'), null)
+    expect(queryByText('Tooltip Content')).toBeNull()
   })
 
   test('shows content on mouse enter and hides on mouse leave', () => {
@@ -33,10 +23,10 @@ describe('Tooltip Component', () => {
     
     const trigger = getByText('Hover Me').parentElement
     fireEvent.mouseEnter(trigger)
-    assert.ok(getByText('Tooltip Content'))
+    expect(getByText('Tooltip Content')).toBeInTheDocument()
 
     fireEvent.mouseLeave(trigger)
-    assert.equal(queryByText('Tooltip Content'), null)
+    expect(queryByText('Tooltip Content')).toBeNull()
   })
 
   test('shows content on focus and hides on blur', () => {
@@ -48,9 +38,9 @@ describe('Tooltip Component', () => {
     
     const trigger = getByText('Hover Me').parentElement
     fireEvent.focus(trigger)
-    assert.ok(getByText('Tooltip Content'))
+    expect(getByText('Tooltip Content')).toBeInTheDocument()
 
     fireEvent.blur(trigger)
-    assert.equal(queryByText('Tooltip Content'), null)
+    expect(queryByText('Tooltip Content')).toBeNull()
   })
 })

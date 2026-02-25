@@ -32,21 +32,18 @@ const audioManagerMock = {
 vi.mock('../src/utils/AudioManager', () => ({
     audioManager: audioManagerMock
   }))
-test('ToggleRadio reacts to external playback changes and user toggles', async t => {
-  //  removed (handled by vitest env)
-  // Cleanup:
+beforeEach(() => {
     cleanup()
     listeners.clear()
+})
 
-
-
-  audioManagerMock.currentSongId = null
+test('ToggleRadio reacts to external playback changes and user toggles', async t => {
   audioManagerMock._isPlaying = false
 
   const { ToggleRadio } = await import('../src/components/ToggleRadio.jsx')
 
   const { getByRole } = render(<ToggleRadio />)
-  expect(getByRole('button').textContent).toMatch(/[■▶]/)
+  expect(getByRole('button').textContent).toBe('▶')
 
   act(() => {
     audioManagerMock.currentSongId = 'ambient'
@@ -54,33 +51,25 @@ test('ToggleRadio reacts to external playback changes and user toggles', async t
     audioManagerMock.emitChange()
   })
 
-  expect(getByRole('button').textContent).toMatch(/[■▶]/)
+  expect(getByRole('button').textContent).toBe('■')
 
   fireEvent.click(getByRole('button'))
-  expect(audioManagerMock.stopMusic.mock.calls.length).toBe(1)
-  expect(getByRole('button').textContent).toMatch(/[■▶]/)
+  expect(audioManagerMock.stopMusic).toHaveBeenCalledTimes(1)
+  expect(getByRole('button').textContent).toBe('▶')
 })
 
 test('ToggleRadio triggers resume path and updates after async change', async t => {
-  //  removed (handled by vitest env)
-  // Cleanup:
-    cleanup()
-    listeners.clear()
-
-
-
-  audioManagerMock.currentSongId = 'ambient'
   audioManagerMock._isPlaying = false
 
   const { ToggleRadio } = await import('../src/components/ToggleRadio.jsx')
   const { getByRole } = render(<ToggleRadio />)
 
-  expect(getByRole('button').textContent).toMatch(/[■▶]/)
+  expect(getByRole('button').textContent).toBe('▶')
 
   await act(async () => {
     fireEvent.click(getByRole('button'))
   })
 
-  expect(audioManagerMock.resumeMusic.mock.calls.length).toBe(1)
-  expect(getByRole('button').textContent).toMatch(/[■▶]/)
+  expect(audioManagerMock.resumeMusic).toHaveBeenCalledTimes(1)
+  expect(getByRole('button').textContent).toBe('■')
 })

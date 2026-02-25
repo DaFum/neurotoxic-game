@@ -1,5 +1,4 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
-import { strict as assert } from 'node:assert'
 import React from 'react'
 import { render, screen } from '@testing-library/react'
 
@@ -62,8 +61,7 @@ const { MainMenu } = await import('../../src/scenes/MainMenu.jsx')
 describe('MainMenu Performance Stability', () => {
   // // setupJSDOM removed removed
   afterEach(() => {
-
-    vi.restoreAllMocks()
+    vi.clearAllMocks()
     glitchButtonRender.mockReset()
   })
 
@@ -94,15 +92,7 @@ describe('MainMenu Performance Stability', () => {
     )
 
     // Assert stability (this should pass after optimization)
-    assert.equal(
-      creditsCall1[0].onClick,
-      creditsCall2[0].onClick,
-      'CREDITS handler should be stable'
-    )
-    assert.equal(
-      startTourCall1[0].onClick,
-      startTourCall2[0].onClick,
-      'Start Tour handler should be stable'
-    )
+    expect(creditsCall1[0].onClick).toBe(creditsCall2[0].onClick)
+    expect(startTourCall1[0].onClick).toBe(startTourCall2[0].onClick)
   })
 })

@@ -4,8 +4,16 @@ import { render } from '@testing-library/react'
 
 
 // Mock GlitchButton
-const GlitchButton = ({ children, onClick }) => <button onClick={onClick}>{children}</button>
+const GlitchButton = ({ children, onClick }) => (
+  <button type="button" onClick={onClick}>
+    {children}
+  </button>
+)
 vi.mock('../src/ui/GlitchButton.jsx', () => ({ GlitchButton }))
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 const ThrowingComponent = () => {
   throw new Error('Test Error')
@@ -27,8 +35,7 @@ test('CrashHandler exposes stack trace in DEV mode', async () => {
     </ErrorBoundary>
   )
 
-  expect(getByText('Error: Test Error'))
-
+  expect(getByText('Error: Test Error')).toBeInTheDocument()
   const preTags = container.querySelectorAll('pre')
   expect(preTags.length > 0).toBeTruthy()
   expect(preTags[0].textContent).toMatch(/ThrowingComponent/)
@@ -50,8 +57,7 @@ test.skip('CrashHandler HIDES stack trace in PROD mode', async () => {
     </ErrorBoundary>
   )
 
-  expect(getByText('The simulation has crashed. Reboot required.'))
-
+  expect(getByText('The simulation has crashed. Reboot required.')).toBeInTheDocument()
   // Verify error message is NOT visible
   expect(queryByText('Error: Test Error')).toBe(null)
 

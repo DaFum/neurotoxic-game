@@ -11,7 +11,7 @@ import { render, fireEvent } from '@testing-library/react'
 vi.mock('framer-motion', () => ({
     motion: {
       div: ({ children, ...props }) => React.createElement('div', props, children),
-      button: ({ children, ...props }) => React.createElement('button', props, children)
+      button: ({ children, ...props }) => React.createElement('button', { ...props, type: props.type || 'button' }, children)
     },
     AnimatePresence: ({ children }) => children
   }))
@@ -25,7 +25,7 @@ vi.mock('../src/utils/AudioManager', () => ({
 // Mock GigModifierButton to inspect props
 vi.mock('../src/ui/GigModifierButton', () => ({
   default: ({ item, onClick }) => (
-    <button onClick={() => onClick(item.key)}>
+    <button type="button" onClick={() => onClick(item.key)}>
       {item.label}
     </button>
   )
@@ -73,7 +73,7 @@ describe('PreGig', () => {
     //  removed (handled by vitest env)
     // Reset mocks
     Object.values(mockUseGameState).forEach(fn => {
-        if (typeof fn === 'function' && fn.mock && fn.mock.resetCalls) fn.mockReset()
+        if (typeof fn === 'function' && fn.mockReset) fn.mockReset()
     })
     // Restore default state
     mockUseGameState.player = { money: 1000 }

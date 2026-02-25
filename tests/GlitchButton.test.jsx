@@ -18,7 +18,8 @@ describe('GlitchButton', () => {
   it('renders children correctly', () => {
     const { getByText } = render(<GlitchButton onClick={() => {}}>Click Me</GlitchButton>)
     const button = getByText('Click Me')
-
+    expect(button).toBeInTheDocument()
+    expect(button).toHaveTextContent('Click Me')
 
   })
 
@@ -50,19 +51,14 @@ describe('GlitchButton', () => {
       </GlitchButton>
     )
     const button = getByRole('button')
-    expect(button.disabled)
-    assert.strictEqual(
-      button.getAttribute('aria-busy'),
-      'true',
-      'Should have aria-busy=true'
-    )
+    expect(button.disabled).toBe(true)
+    expect(button).toHaveAttribute('aria-busy', 'true')
 
     // Check if opacity is applied to children wrapper
     // The children are wrapped in a span with relative z-10 ...
     // We can't easily query that span without a testid, but we can check if button has the loader
     // The loader is an svg inside the button.
-    expect(button.querySelector('svg'))
-  })
+    expect(button.querySelector('svg')).toBeInTheDocument()  })
 
   it('applies small size classes', () => {
     const { container } = render(
@@ -71,9 +67,9 @@ describe('GlitchButton', () => {
       </GlitchButton>
     )
     const button = container.querySelector('button')
-    expect(button.className.includes('px-4'))
-    expect(button.className.includes('py-2'))
-    expect(button.className.includes('text-sm'))
+    expect(button.className).toContain('px-4')
+    expect(button.className).toContain('py-2')
+    expect(button.className).toContain('text-sm')
   })
 
   it('applies owned variant style correctly', () => {
@@ -84,9 +80,9 @@ describe('GlitchButton', () => {
     )
     const button = container.querySelector('button')
     // Should NOT have opacity-60 even if disabled
-    expect(!button.className.includes('opacity-60'))
-    expect(button.className.includes('opacity-100'))
-    expect(button.className.includes('cursor-default'))
+    expect(button.className).not.toContain('opacity-60')
+    expect(button.className).toContain('opacity-100')
+    expect(button.className).toContain('cursor-default')
   })
 
   it('forwards additional props to the button element', () => {
@@ -107,7 +103,7 @@ describe('GlitchButton', () => {
       </GlitchButton>
     )
     const button = container.querySelector('button')
-    expect(button.className.includes('border-(--warning-yellow)'))
-    expect(button.className.includes('text-(--warning-yellow)'))
+    expect(button.className).toContain('border-(--warning-yellow)')
+    expect(button.className).toContain('text-(--warning-yellow)')
   })
 })

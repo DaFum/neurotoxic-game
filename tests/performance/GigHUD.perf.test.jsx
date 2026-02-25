@@ -7,9 +7,9 @@ import { render, fireEvent, cleanup } from '@testing-library/react'
 vi.mock('../../src/components/HecklerOverlay.jsx', () => ({
     HecklerOverlay: () => <div data-testid="heckler-overlay-mock" />
   }))
+afterEach(cleanup)
+
 test('GigHUD: renders lane inputs and handles interactions', async () => {
-  //  removed (handled by vitest env)
-  afterEach(cleanup)
 
 
   const { GigHUD } = await import('../../src/components/GigHUD.jsx')
@@ -42,23 +42,23 @@ test('GigHUD: renders lane inputs and handles interactions', async () => {
 
   // Test MouseDown on first lane (Guitar)
   fireEvent.mouseDown(laneInputs[0])
-  assert.equal(onLaneInput.mock.calls.length, 1)
-  expect(onLaneInput.mock.calls[0].arguments, [0, true])
+  expect(onLaneInput).toHaveBeenCalledTimes(1)
+  expect(onLaneInput).toHaveBeenLastCalledWith(0, true)
 
   // Test MouseUp on first lane
   fireEvent.mouseUp(laneInputs[0])
-  expect(onLaneInput.mock.calls.length).toBe(2)
-  expect(onLaneInput.mock.calls[1].arguments, [0, false])
+  expect(onLaneInput).toHaveBeenCalledTimes(2)
+  expect(onLaneInput).toHaveBeenLastCalledWith(0, false)
 
   // Test TouchStart on second lane (Drums)
   fireEvent.touchStart(laneInputs[1])
-  expect(onLaneInput.mock.calls.length).toBe(3)
-  expect(onLaneInput.mock.calls[2].arguments, [1, true])
+  expect(onLaneInput).toHaveBeenCalledTimes(3)
+  expect(onLaneInput).toHaveBeenLastCalledWith(1, true)
 
   // Test TouchEnd on second lane
   fireEvent.touchEnd(laneInputs[1])
-  expect(onLaneInput.mock.calls.length).toBe(4)
-  expect(onLaneInput.mock.calls[3].arguments, [1, false])
+  expect(onLaneInput).toHaveBeenCalledTimes(4)
+  expect(onLaneInput).toHaveBeenLastCalledWith(1, false)
 
   // Re-render with new stats (simulate game loop update)
   const newStats = { ...stats, score: 100 }
@@ -66,6 +66,6 @@ test('GigHUD: renders lane inputs and handles interactions', async () => {
 
   // Verify interactions still work after re-render
   fireEvent.mouseDown(laneInputs[2]) // Bass lane
-  expect(onLaneInput.mock.calls.length).toBe(5)
-  expect(onLaneInput.mock.calls[4].arguments, [2, true])
+  expect(onLaneInput).toHaveBeenCalledTimes(5)
+  expect(onLaneInput).toHaveBeenLastCalledWith(2, true)
 })

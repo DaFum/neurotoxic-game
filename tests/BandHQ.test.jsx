@@ -32,7 +32,11 @@ vi.mock('../src/ui/shared/index.jsx', () => ({
     ProgressBar: () => React.createElement('div', { 'data-testid': 'progress-bar' }),
     SettingsPanel: () => React.createElement('div', { 'data-testid': 'settings-panel' }),
     Panel: ({ children }) => React.createElement('div', { 'data-testid': 'panel' }, children),
-    ActionButton: ({ children, type = 'button' }) => React.createElement('button', { 'data-testid': 'action-button', type }, children),
+    ActionButton: ({ children, type = 'button' }) => {
+      const validTypes = ['button', 'submit', 'reset']
+      const sanitizedType = validTypes.includes(type) ? type : 'button'
+      return React.createElement('button', { 'data-testid': 'action-button', type: sanitizedType }, children)
+    },
     Tooltip: ({ children }) => React.createElement('div', { 'data-testid': 'tooltip' }, children)
   }))
 describe('BandHQ', () => {

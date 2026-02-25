@@ -28,4 +28,38 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 })
 
+// Mock localStorage
+const localStorageMock = (function () {
+  let store = {}
+  return {
+    getItem: function (key) {
+      return store[key] || null
+    },
+    setItem: function (key, value) {
+      store[key] = value.toString()
+    },
+    clear: function () {
+      store = {}
+    },
+    removeItem: function (key) {
+      delete store[key]
+    }
+  }
+})()
+
+vi.stubGlobal('localStorage', localStorageMock)
+
+// Mock AudioContext
+const AudioContextMock = vi.fn().mockImplementation(() => ({
+  state: 'suspended',
+  createGain: vi.fn().mockImplementation(() => ({ connect: vi.fn(), gain: { value: 1 } })),
+  createOscillator: vi.fn().mockImplementation(() => ({ connect: vi.fn(), start: vi.fn(), stop: vi.fn() })),
+  destination: {}
+}))
+
+vi.stubGlobal('AudioContext', AudioContextMock)
+if (typeof window !== 'undefined') {
+  window.AudioContext = AudioContextMock
+}
+
 HTMLCanvasElement.prototype.getContext = vi.fn()
