@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useMemo } from 'react'
 
 /**
  * Manages visual effects for the Gig scene, including Chaos Mode jitter and band animations.
@@ -83,19 +83,22 @@ export const useGigEffects = (stats) => {
   }, [stats.isToxicMode])
 
   // Chaos Mode Visuals (Filters)
-  const chaosStyle = {}
-  if (stats.overload > 50) {
-    chaosStyle.filter = `saturate(${1 + (stats.overload - 50) / 25})`
-  }
-  if (stats.overload > 80) {
-    // Subtle hue shift based on overload
-    chaosStyle.filter =
-      (chaosStyle.filter || '') + ` hue-rotate(${stats.overload - 80}deg)`
-  }
-  if (stats.isToxicMode) {
-    // Full Chaos Filter
-    chaosStyle.filter = 'invert(0.1) contrast(1.5) saturate(2)'
-  }
+  const chaosStyle = useMemo(() => {
+    const style = {}
+    if (stats.overload > 50) {
+      style.filter = `saturate(${1 + (stats.overload - 50) / 25})`
+    }
+    if (stats.overload > 80) {
+      // Subtle hue shift based on overload
+      style.filter =
+        (style.filter || '') + ` hue-rotate(${stats.overload - 80}deg)`
+    }
+    if (stats.isToxicMode) {
+      // Full Chaos Filter
+      style.filter = 'invert(0.1) contrast(1.5) saturate(2)'
+    }
+    return style
+  }, [stats.overload, stats.isToxicMode])
 
   return { chaosContainerRef, chaosStyle, triggerBandAnimation, setBandMemberRef }
 }

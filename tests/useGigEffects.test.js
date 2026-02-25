@@ -52,4 +52,28 @@ describe('useGigEffects', () => {
     assert.equal(getElementByIdSpy.mock.callCount(), 0, 'Should not query DOM by ID')
     assert.equal(mockElement.animate.mock.callCount(), 1, 'Should call animate on the element')
   })
+
+  test('chaosStyle memoization check', () => {
+    const { result, rerender } = renderHook(
+      (props) => useGigEffects(props),
+      { initialProps: { overload: 40, isToxicMode: false } }
+    )
+
+    const style1 = result.current.chaosStyle
+    assert.deepEqual(style1, {}, 'Initial style should be empty')
+
+    // Same props -> Same reference
+    rerender({ overload: 40, isToxicMode: false })
+    assert.strictEqual(result.current.chaosStyle, style1, 'Style ref should be same')
+
+    // Different overload -> New reference
+    rerender({ overload: 60, isToxicMode: false })
+    const style2 = result.current.chaosStyle
+    assert.notStrictEqual(style2, style1, 'Style ref should change')
+    assert.ok(style2.filter.includes('saturate'), 'Should have saturate')
+
+    // Same overload -> Same reference as style2
+    rerender({ overload: 60, isToxicMode: false })
+    assert.strictEqual(result.current.chaosStyle, style2, 'Style ref should be same as style2')
+  })
 })
