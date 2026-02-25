@@ -568,35 +568,48 @@ export const POST_OPTIONS = [
     category: 'Commercial',
     badges: [POST_BADGES.VIRAL, POST_BADGES.COMMERCIAL],
     condition: ({ social, player }) => player.money >= 100 && Object.keys(social?.influencers || {}).length > 0,
-    resolve: ({ social, diceRoll }) => {
-      // Pick a random influencer safely
+    resolve: ({ social, player, diceRoll }) => {
       const influencers = social?.influencers || {}
-      const influencerIds = Object.keys(influencers)
       
-      if (influencerIds.length === 0) {
+      // helper to get cost
+      const getCost = (inf) => {
+        let base = 100
+        if (inf.tier === 'Macro') base = 300
+        if (inf.tier === 'Mega') base = 800
+        // Relationship discount: 0.5% per point, max 50%
+        const discount = Math.min(0.5, (inf.score || 0) * 0.005)
+        return Math.floor(base * (1 - discount))
+      }
+
+      // Filter by affordability
+      const affordableIds = Object.keys(influencers).filter(id => {
+        return getCost(influencers[id]) <= player.money
+      })
+
+      if (affordableIds.length === 0) {
         return {
           type: 'FIXED',
           success: false,
           platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
-          text: 'No influencer available to collaborate with.',
-          effects: { money: 0, followers: { [SOCIAL_PLATFORMS.INSTAGRAM.id]: 0 }, controversy: 0 }
+          message: 'You cannot afford any available influencers right now.',
+          moneyChange: 0
         }
       }
 
+      // Pick one from affordable
       const roll = diceRoll ?? Math.random()
-      const selectedId = influencerIds[Math.floor(roll * influencerIds.length) % influencerIds.length]
-      const influencer = influencers[selectedId] || {}
-      
-      let cost = 100
+      const selectedId = affordableIds[Math.floor(roll * affordableIds.length) % affordableIds.length]
+      const influencer = influencers[selectedId]
+
+      const cost = getCost(influencer)
       let followersGain = 1000
-      let traitBonusText = ''
-      
-      if (influencer.tier === 'Macro') { cost = 300; followersGain = 3000 }
-      if (influencer.tier === 'Mega') { cost = 800; followersGain = 10000 }
-      
+      if (influencer.tier === 'Macro') followersGain = 3000
+      if (influencer.tier === 'Mega') followersGain = 10000
+
       // Influencer Traits
       let platform = SOCIAL_PLATFORMS.INSTAGRAM.id
       let controversyChange = 0
+      let traitBonusText = ''
       
       if (influencer.trait === 'tech_savvy') {
         platform = SOCIAL_PLATFORMS.YOUTUBE.id
@@ -615,6 +628,7 @@ export const POST_OPTIONS = [
         followers: followersGain,
         moneyChange: -cost,
         controversyChange,
+        influencerUpdate: { id: selectedId, scoreChange: 10 },
         message: `Collaborated with ${selectedId}. Cost ${cost}€.${traitBonusText}`
       }
     }

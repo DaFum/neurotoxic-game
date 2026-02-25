@@ -195,6 +195,21 @@ export const PostGig = () => {
       influencers: social.influencers
     }
 
+    // Handle Influencer Update
+    if (result.influencerUpdate) {
+      const { id, scoreChange } = result.influencerUpdate
+      const currentInfluencer = social.influencers?.[id]
+      if (currentInfluencer) {
+        updatedSocial.influencers = {
+          ...social.influencers,
+          [id]: {
+            ...currentInfluencer,
+            score: Math.min(100, (currentInfluencer.score || 0) + scoreChange)
+          }
+        }
+      }
+    }
+
     // Cross-posting Logic: 25% diminishing returns across other main platforms
     if (result.success && totalFollowers > 0) {
       const otherPlatforms = ['instagram', 'tiktok', 'youtube'].filter(p => p !== result.platform)
