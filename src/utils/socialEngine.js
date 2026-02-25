@@ -6,6 +6,7 @@ import { BRAND_DEALS } from '../data/brandDeals.js'
 import { bandHasTrait } from './traitLogic.js'
 import { StateError } from './errorHandler.js'
 import { ALLOWED_TRENDS } from '../data/socialTrends.js'
+import { BRAND_ALIGNMENTS } from '../context/initialState.js'
 
 /**
  * Calculates viral potential based on performance and events.
@@ -265,13 +266,47 @@ export const generateDailyTrend = (rng = secureRandom) => {
   return ALLOWED_TRENDS[safeIdx]
 }
 
-// TODO: Advanced Brand Deal System
-// - Implement negotiation mini-game (Risk/Reward mechanic).
-// - Track brand reputation (working with "evil" brands hurts loyalty).
-// - Dynamic brand names based on procedural generation.
+/**
+ * Generates a dynamic brand name based on alignment.
+ * @param {string} baseName - Fallback or base name.
+ * @param {string} alignment - Brand alignment (EVIL, CORPORATE, INDIE, SUSTAINABLE).
+ * @param {Function} rng - Random number generator.
+ * @returns {string} Generated brand name.
+ */
+export const generateBrandName = (baseName, alignment, rng = secureRandom) => {
+  const pick = (arr) => arr[Math.floor(rng() * arr.length)]
+
+  if (alignment === BRAND_ALIGNMENTS.EVIL) {
+    const prefixes = ['Toxic', 'Neon', 'Quantum', 'Hyper', 'Radioactive', 'Cyber', 'Acid', 'Vile']
+    const suffixes = ['Rush', 'Blast', 'Surge', 'Core', 'Sludge', 'Venom', 'Waste', 'X']
+    const types = ['Energy', 'Systems', 'Labs', 'Corp', 'Chemicals']
+    return `${pick(prefixes)} ${pick(suffixes)} ${pick(types)}`
+  }
+
+  if (alignment === BRAND_ALIGNMENTS.CORPORATE) {
+    const prefixes = ['Global', 'United', 'Apex', 'Summit', 'Prime', 'Omni', 'Macro', 'Elite']
+    const suffixes = ['Dynamics', 'Solutions', 'Holdings', 'Ventures', 'Capital', 'Industries', 'Group']
+    return `${pick(prefixes)} ${pick(suffixes)}`
+  }
+
+  if (alignment === BRAND_ALIGNMENTS.INDIE) {
+    const prefixes = ['Void', 'Abyss', 'Shadow', 'Underground', 'Basement', 'Garage', 'Lo-Fi', 'Raw']
+    const suffixes = ['Records', 'Audio', 'Tapes', 'Sound', 'Collective', 'Zine', 'Press']
+    return `${pick(prefixes)} ${pick(suffixes)}`
+  }
+
+  if (alignment === BRAND_ALIGNMENTS.SUSTAINABLE) {
+    const prefixes = ['Green', 'Eco', 'Pure', 'Nature', 'Gaia', 'Solar', 'Bio', 'Earth']
+    const suffixes = ['Path', 'Roots', 'Harvest', 'Bloom', 'Cycle', 'Life', 'Leaf']
+    const types = ['Snacks', 'Wear', 'Gear', 'Organics', 'Co-op']
+    return `${pick(prefixes)}${pick(suffixes)} ${pick(types)}`
+  }
+
+  return baseName
+}
 
 /**
- * Generates available brand deal offers based on band status.
+ * Generates available brand deal offers based on band status and reputation.
  * @param {object} gameState - Current game state.
  * @param {Function} rng - Random number generator.
  * @returns {Array} List of offer objects.
@@ -279,6 +314,7 @@ export const generateDailyTrend = (rng = secureRandom) => {
 export const generateBrandOffers = (gameState, rng = secureRandom) => {
   const social = gameState?.social || {}
   const band = gameState?.band || {}
+  const reputation = social.brandReputation || {}
 
   // Filter available deals
   const eligibleDeals = BRAND_DEALS.filter(deal => {
@@ -298,41 +334,130 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
     return true
   })
 
-  // Pick up to 2 random offers
+  // Pick up to 2 random offers, weighted by reputation
   const offers = []
-  const pool = [...eligibleDeals].map(deal => {
-    let dynamicName = deal.name
-    // Procedural generation of brand names for generic brands
-    if (deal.id === 'energy_drink_cx') {
-      const prefixes = ['Toxic', 'Neon', 'Quantum', 'Hyper']
-      const suffixes = ['Rush', 'Blast', 'Surge', 'Core']
-      dynamicName = `${prefixes[Math.floor(rng() * prefixes.length)]} ${suffixes[Math.floor(rng() * suffixes.length)]} Energy`
-    }
-    if (deal.id === 'guitar_brand_shred') {
-      const prefixes = ['Shred', 'Axe', 'Riff', 'Metal']
-      const suffixes = ['Master', 'Grinder', 'Forge', 'Works']
-      dynamicName = `${prefixes[Math.floor(rng() * prefixes.length)]}${suffixes[Math.floor(rng() * suffixes.length)]} Guitars`
-    }
-    if (deal.id === 'indie_label_void') {
-      const prefixes = ['Void', 'Abyss', 'Shadow', 'Underground']
-      const suffixes = ['Records', 'Audio', 'Tapes', 'Sound']
-      dynamicName = `${prefixes[Math.floor(rng() * prefixes.length)]} ${suffixes[Math.floor(rng() * suffixes.length)]}`
-    }
-    return { ...deal, name: dynamicName }
-  })
 
-  // Chance to generate any offer at all: 30% per eligible deal
-  for (const deal of pool) {
-    if (rng() < 0.3) {
-      offers.push(deal)
-    }
-  }
+  // Logic: Reputation increases the "chance" check.
+  // Base chance 30%.
+  // Reputation 0-100.
+  // Rep 50 -> +15% chance. Rep 100 -> +30% chance.
+  // Negative reputation reduces chance? Assuming reputation is 0-100 based on validation, but logic might allow negative?
 
-  // Fisher-Yates shuffle to ensure random selection if >2 offers
-  for (let i = offers.length - 1; i > 0; i--) {
+  const pool = [...eligibleDeals]
+
+  // Shuffle pool first to avoid bias if we just iterate
+  for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1))
-    ;[offers[i], offers[j]] = [offers[j], offers[i]]
+    ;[pool[i], pool[j]] = [pool[j], pool[i]]
   }
 
-  return offers.slice(0, 2)
+  for (const deal of pool) {
+    if (offers.length >= 2) break
+
+    const align = deal.alignment
+    const rep = reputation[align] || 0
+
+    // Base chance 0.3
+    // Rep bonus: 0.003 per point (100 rep = +0.3)
+    let chance = 0.3 + (rep * 0.003)
+
+    // Penalty for negative rep if we allow it, or just 0
+    if (rep < 0) chance += (rep * 0.005) // Higher penalty for bad rep
+
+    if (rng() < chance) {
+      // Generate dynamic name
+      const dynamicName = generateBrandName(deal.name, align, rng)
+      offers.push({ ...deal, name: dynamicName })
+    }
+  }
+
+  return offers
+}
+
+/**
+ * Negotiates a brand deal with risk/reward mechanics.
+ * @param {object} deal - The original deal object.
+ * @param {string} strategy - 'AGGRESSIVE', 'PERSUASIVE', 'SAFE'.
+ * @param {object} gameState - Current game state.
+ * @param {Function} rng - Random number generator.
+ * @returns {object} { success: boolean, deal: object, feedback: string, status: 'ACCEPTED'|'REVOKED'|'FAILED' }
+ */
+export const negotiateDeal = (deal, strategy, gameState, rng = secureRandom) => {
+  const band = gameState.band
+  let successChance = 0.5
+  let feedback = ''
+  let status = 'ACCEPTED'
+  let newDeal = structuredClone(deal)
+
+  // Modifiers
+  const hasManager = bandHasTrait(band, 'social_manager')
+  const isFamous = (gameState.player.fame || 0) > 1000
+
+  // Roll once
+  const roll = rng()
+  let isSuccess = false
+
+  switch (strategy) {
+    case 'SAFE':
+      successChance = 0.8
+      if (hasManager) successChance += 0.1
+
+      if (roll < successChance) {
+        newDeal.offer.upfront = Math.floor(newDeal.offer.upfront * 1.1) // +10%
+        feedback = 'Modest increase secured.'
+        isSuccess = true
+      } else {
+        feedback = 'They refused to budge.'
+        // No change, but not revoked
+        status = 'FAILED'
+        isSuccess = false
+      }
+      break
+
+    case 'PERSUASIVE':
+      successChance = 0.5
+      if (hasManager) successChance += 0.2
+      if (isFamous) successChance += 0.1
+
+      if (roll < successChance) {
+        newDeal.offer.upfront = Math.floor(newDeal.offer.upfront * 1.2) // +20%
+        if (newDeal.offer.perGig) {
+          newDeal.offer.perGig = Math.floor(newDeal.offer.perGig * 1.1) // +10%
+        }
+        feedback = 'Great negotiation! Terms improved.'
+        isSuccess = true
+      } else {
+        newDeal.offer.upfront = Math.floor(newDeal.offer.upfront * 0.9) // -10%
+        feedback = 'They were annoyed. Offer reduced.'
+        status = 'ACCEPTED' // Still accepted, but worse
+        isSuccess = false
+      }
+      break
+
+    case 'AGGRESSIVE':
+      successChance = 0.3
+      if (isFamous) successChance += 0.2 // Fame helps aggression
+
+      if (roll < successChance) {
+        newDeal.offer.upfront = Math.floor(newDeal.offer.upfront * 1.5) // +50%
+        feedback = 'You dominated the room. Massive payout!'
+        isSuccess = true
+      } else {
+        feedback = 'They walked out. Deal revoked.'
+        status = 'REVOKED'
+        newDeal = null
+        isSuccess = false
+      }
+      break
+
+    default:
+      throw new Error(`Unknown strategy: ${strategy}`)
+  }
+
+  return {
+    success: isSuccess,
+    deal: newDeal,
+    feedback,
+    status
+  }
 }

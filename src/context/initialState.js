@@ -9,6 +9,16 @@ import { LOG_LEVELS } from '../utils/logger.js'
 import { DEFAULT_MINIGAME_STATE } from './gameConstants.js'
 
 /**
+ * Brand alignment constants
+ */
+export const BRAND_ALIGNMENTS = {
+  EVIL: 'EVIL',
+  CORPORATE: 'CORPORATE',
+  INDIE: 'INDIE',
+  SUSTAINABLE: 'SUSTAINABLE'
+}
+
+/**
  * Default player state configuration
  * @type {Object}
  */
@@ -90,6 +100,7 @@ export const DEFAULT_SOCIAL_STATE = {
   sponsorActive: false,
   trend: 'NEUTRAL', // 'NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME'
   activeDeals: [], // List of { id, remainingGigs, ... }
+  brandReputation: {}, // { [ALIGNMENT]: 0-100 }
   influencers: {
     tech_reviewer_01: { tier: 'Macro', trait: 'tech_savvy', score: 0 },
     drama_queen_99: { tier: 'Mega', trait: 'drama_magnet', score: 0 },
@@ -172,7 +183,11 @@ export const createInitialState = () => ({
     performance: { ...DEFAULT_BAND_STATE.performance },
     inventory: { ...DEFAULT_BAND_STATE.inventory }
   },
-  social: { ...DEFAULT_SOCIAL_STATE, activeDeals: [...DEFAULT_SOCIAL_STATE.activeDeals] },
+  social: {
+    ...DEFAULT_SOCIAL_STATE,
+    activeDeals: [...DEFAULT_SOCIAL_STATE.activeDeals],
+    brandReputation: { ...DEFAULT_SOCIAL_STATE.brandReputation }
+  },
   settings: { ...DEFAULT_SETTINGS },
   gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
   minigame: { ...DEFAULT_MINIGAME_STATE }

@@ -16,6 +16,7 @@ import {
   generateBrandOffers
 } from '../utils/socialEngine'
 import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils'
+import { BRAND_ALIGNMENTS } from '../context/initialState'
 
 import { ReportPhase } from '../components/postGig/ReportPhase'
 import { SocialPhase } from '../components/postGig/SocialPhase'
@@ -255,6 +256,27 @@ export const PostGig = () => {
       if (deal.penalty) {
         if (deal.penalty.loyalty) updates.loyalty = Math.max(0, (prevSocial.loyalty || 0) + deal.penalty.loyalty)
         if (deal.penalty.controversy) updates.controversyLevel = Math.max(0, (prevSocial.controversyLevel || 0) + deal.penalty.controversy)
+      }
+
+      // Update Brand Reputation
+      if (deal.alignment) {
+        updates.brandReputation = { ...(prevSocial.brandReputation || {}) }
+        const currentRep = updates.brandReputation[deal.alignment] || 0
+        updates.brandReputation[deal.alignment] = Math.min(100, currentRep + 5)
+
+        // Opposing alignments logic
+        const opposingMap = {
+          [BRAND_ALIGNMENTS.EVIL]: BRAND_ALIGNMENTS.SUSTAINABLE,
+          [BRAND_ALIGNMENTS.SUSTAINABLE]: BRAND_ALIGNMENTS.EVIL,
+          [BRAND_ALIGNMENTS.CORPORATE]: BRAND_ALIGNMENTS.INDIE,
+          [BRAND_ALIGNMENTS.INDIE]: BRAND_ALIGNMENTS.CORPORATE
+        }
+
+        const opposing = opposingMap[deal.alignment]
+        if (opposing) {
+          const oppRep = updates.brandReputation[opposing] || 0
+          updates.brandReputation[opposing] = Math.max(0, oppRep - 3)
+        }
       }
 
       // Store active deal
