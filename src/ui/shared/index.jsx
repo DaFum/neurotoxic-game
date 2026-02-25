@@ -13,6 +13,7 @@ export { VolumeSlider } from './VolumeSlider'
 export { Tooltip } from './Tooltip'
 export { Modal } from './Modal'
 export { ActionButton } from './ActionButton'
+export { ToggleSwitch } from './ToggleSwitch'
 
 /**
  * StatBox - Displays a single statistic with an icon

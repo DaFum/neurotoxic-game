@@ -3,45 +3,8 @@ import PropTypes from 'prop-types'
 import { VolumeSlider } from './VolumeSlider'
 import { ActionButton } from './ActionButton'
 import { Modal } from './Modal'
+import { ToggleSwitch } from './ToggleSwitch'
 import { LOG_LEVELS } from '../../utils/logger.js'
-
-/**
- * Reusable toggle switch with ON/OFF label.
- */
-const ToggleSwitch = ({ isOn, onToggle, ariaLabel }) => (
-  <div className='flex items-center gap-2'>
-    <span
-      className={`font-mono text-[10px] uppercase tracking-widest w-8 text-right transition-colors ${
-        isOn ? 'text-(--toxic-green)' : 'text-(--ash-gray)/40'
-      }`}
-    >
-      {isOn ? 'ON' : 'OFF'}
-    </span>
-    <button
-      onClick={onToggle}
-      role='switch'
-      aria-checked={isOn}
-      aria-label={ariaLabel}
-      className={`w-16 h-8 border-2 rounded-none shadow-[4px_4px_0px_var(--blood-red)] flex items-center p-1 transition-all ${
-        isOn
-          ? 'justify-end bg-(--toxic-green)/20 border-(--toxic-green)'
-          : 'justify-start border-(--ash-gray)'
-      }`}
-    >
-      <div
-        className={`w-6 h-6 transition-colors ${
-          isOn ? 'bg-(--toxic-green)' : 'bg-(--ash-gray)'
-        }`}
-      />
-    </button>
-  </div>
-)
-
-ToggleSwitch.propTypes = {
-  isOn: PropTypes.bool.isRequired,
-  onToggle: PropTypes.func.isRequired,
-  ariaLabel: PropTypes.string.isRequired
-}
 
 export const SettingsPanel = ({
   settings,
