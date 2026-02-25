@@ -193,4 +193,4 @@ Additional docs: `docs/ARCHITECTURE.md` (system diagrams), `docs/STATE_TRANSITIO
 
 Commits use Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`).
 
-_Documentation sync: dependency/tooling baseline reviewed on 2026-02-23. Minigame architecture documented 2026-02-21. Economy refactor and map icons documented 2026-02-23. Social Engine Overhaul documented 2026-02-24._
+_Documentation sync: dependency/tooling baseline reviewed on 2026-02-23. Minigame architecture documented 2026-02-21. Economy refactor and map icons documented 2026-02-23. Social Engine Overhaul documented 2026-02-24. Brand Deals & Crisis Management added 2026-02-24. PostGig UI modularization completed 2026-02-24. State Validation & Brand Deal fixes 2026-02-25._

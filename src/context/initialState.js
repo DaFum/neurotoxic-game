@@ -33,7 +33,8 @@ export const DEFAULT_PLAYER_STATE = {
   passiveFollowers: 0,
   stats: {
     totalDistance: 0,
-    conflictsResolved: 0
+    conflictsResolved: 0,
+    stageDives: 0
   }
 }
 
@@ -83,7 +84,9 @@ export const DEFAULT_SOCIAL_STATE = {
   controversyLevel: 0,
   loyalty: 0,
   egoFocus: null,
-  sponsorActive: false
+  sponsorActive: false,
+  trend: 'NEUTRAL', // 'NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME'
+  activeDeals: [] // List of { id, remainingGigs, ... }
 }
 
 /**
@@ -150,14 +153,14 @@ export const initialState = {
  */
 export const createInitialState = () => ({
   ...initialState,
-  player: { ...DEFAULT_PLAYER_STATE, van: { ...DEFAULT_PLAYER_STATE.van } },
+  player: structuredClone(DEFAULT_PLAYER_STATE),
   band: {
     ...DEFAULT_BAND_STATE,
     members: DEFAULT_BAND_STATE.members.map(m => ({ ...m, traits: [...m.traits] })),
     performance: { ...DEFAULT_BAND_STATE.performance },
     inventory: { ...DEFAULT_BAND_STATE.inventory }
   },
-  social: { ...DEFAULT_SOCIAL_STATE },
+  social: { ...DEFAULT_SOCIAL_STATE, activeDeals: [...DEFAULT_SOCIAL_STATE.activeDeals] },
   settings: { ...DEFAULT_SETTINGS },
   gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
   minigame: { ...DEFAULT_MINIGAME_STATE }

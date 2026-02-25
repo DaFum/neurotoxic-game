@@ -613,6 +613,16 @@ export const HQ_ITEMS = {
         stat: 'fame',
         value: 5
       }
+    },
+    {
+      id: 'pr_manager_contract',
+      name: 'Retainer: PR Manager',
+      category: 'HQ',
+      cost: 500,
+      currency: 'money',
+      img: 'ITEM_HQ_BOTNET', // TODO: placeholder - uses hq_room_marketing until own asset available
+      description: 'Ein Kontakt, der jede Geschichte zurechtrücken kann. Schaltet die Option „Geschichte drehen“ frei, wenn die Kontroverse hoch ist.',
+      effect: { type: 'unlock_hq', id: 'pr_manager_contract' }
     }
   ]
 }

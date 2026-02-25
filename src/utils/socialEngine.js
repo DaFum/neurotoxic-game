@@ -2,8 +2,10 @@
 import { secureRandom } from './crypto.js'
 import { POST_OPTIONS } from '../data/postOptions.js'
 import { SOCIAL_PLATFORMS } from '../data/platforms.js'
+import { BRAND_DEALS } from '../data/brandDeals.js'
 import { bandHasTrait } from './traitLogic.js'
 import { StateError } from './errorHandler.js'
+import { ALLOWED_TRENDS } from '../data/socialTrends.js'
 
 /**
  * Calculates viral potential based on performance and events.
@@ -32,9 +34,20 @@ export const calculateViralityScore = (
     baseChance *= 1.15
   }
 
+  // Showman Trait (Lars): +20% virality chance on live shows
+  if (bandHasTrait(bandState, 'showman')) {
+    baseChance *= 1.20
+  }
+
   // Cap at 90%
   return Math.min(0.9, baseChance)
 }
+
+// TODO: Influencer System Expansion
+// - Add `collaborateWithInfluencer` action type in POST_OPTIONS
+// - Track `relationship` score with specific influencers (e.g. `tech_reviewer_01`, `drama_queen_99`)
+// - Influencer traits: `Tech Savvy` (boosts gear reviews), `Drama Magnet` (boosts controversy posts)
+// - Add `influencerTier`: Micro -> Macro -> Mega (affects cost and reach)
 
 /**
  * Generates options for the "Post-Gig Social Media Strategy" phase.
@@ -68,6 +81,20 @@ export const generatePostOptions = (gigResult, gameState, rng = secureRandom) =>
     let weight = 1.0
     // Example: If very low money, boost crowdfund weight
     if (opt.id === 'comm_crowdfund' && gameState.player.money < 100) weight += 50
+
+    // Trend Matching Bonus
+    const currentTrend = gameState.social?.trend
+    if (currentTrend && opt.category) {
+      // Map categories to trends if needed, or exact match
+      const isMatch =
+        (currentTrend === 'DRAMA' && opt.category === 'Drama') ||
+        (currentTrend === 'TECH' && opt.category === 'Commercial') || // Tech usually commercial/gear
+        (currentTrend === 'MUSIC' && opt.category === 'Performance') ||
+        (currentTrend === 'WHOLESOME' && (opt.category === 'Lifestyle' || opt.badges?.includes('🛡️'))) // Wholesome logic
+
+      if (isMatch) weight += 10.0
+    }
+
     return { ...opt, _weight: weight * rng() }
   })
 
@@ -152,9 +179,12 @@ export const calculateSocialGrowth = (
   const effectivePerf = Math.min(100, performance + (loyalty * 0.5))
   let baseGrowth = Math.max(0, effectivePerf - 50) * 0.5 // e.g. 80 score -> 15 base
   
-  // Shadowban penalty
-  if (controversyLevel >= 100) {
-    baseGrowth *= 0.25 // 75% reduction in organic growth
+  // Shadowban / Cancel Culture penalty
+  if (controversyLevel >= 80) {
+    // High controversy leads to negative growth (Cancel Culture)
+    // The higher the controversy, the worse it gets.
+    const penaltyFactor = (controversyLevel - 70) * 0.05 // e.g. 80 -> 0.5, 100 -> 1.5
+    baseGrowth = -Math.abs(baseGrowth * penaltyFactor)
   }
 
   const viralBonus = isViral ? (currentFollowers * 0.1) + 100 : 0
@@ -217,4 +247,70 @@ export const applyReputationDecay = (followers, daysSinceLastPost) => {
   if (daysSinceLastPost < 3) return followers
   const decayRate = 0.01 * (daysSinceLastPost - 2) // 1% per day after day 2
   return Math.floor(followers * (1 - Math.min(0.5, decayRate)))
+}
+
+/**
+ * Generates a daily social media trend.
+ * @param {Function} rng - Random number generator.
+ * @returns {string} One of 'NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME'.
+ */
+export const generateDailyTrend = (rng = secureRandom) => {
+  // Weighted choice could go here, for now uniform random
+  const idx = Math.floor(rng() * ALLOWED_TRENDS.length)
+  // Ensure valid index even if rng() === 1
+  const safeIdx = Math.min(idx, ALLOWED_TRENDS.length - 1)
+  return ALLOWED_TRENDS[safeIdx]
+}
+
+// TODO: Advanced Brand Deal System
+// - Implement negotiation mini-game (Risk/Reward mechanic).
+// - Track brand reputation (working with "evil" brands hurts loyalty).
+// - Dynamic brand names based on procedural generation.
+
+/**
+ * Generates available brand deal offers based on band status.
+ * @param {object} gameState - Current game state.
+ * @param {Function} rng - Random number generator.
+ * @returns {Array} List of offer objects.
+ */
+export const generateBrandOffers = (gameState, rng = secureRandom) => {
+  const social = gameState?.social || {}
+  const band = gameState?.band || {}
+
+  // Filter available deals
+  const eligibleDeals = BRAND_DEALS.filter(deal => {
+    // Check followers
+    const totalFollowers = (social.instagram || 0) + (social.tiktok || 0) + (social.youtube || 0)
+    if (totalFollowers < deal.requirements.followers) return false
+
+    // Check trend match
+    if (social.trend && !deal.requirements.trend.includes(social.trend)) return false
+
+    // Check trait match (if required trait exists in band)
+    if (deal.requirements.trait && !bandHasTrait(band, deal.requirements.trait)) return false
+
+    // Check if already active
+    if (social.activeDeals?.some(d => d.id === deal.id)) return false
+
+    return true
+  })
+
+  // Pick up to 2 random offers
+  const offers = []
+  const pool = [...eligibleDeals]
+
+  // Chance to generate any offer at all: 30% per eligible deal
+  for (const deal of pool) {
+    if (rng() < 0.3) {
+      offers.push(deal)
+    }
+  }
+
+  // Fisher-Yates shuffle to ensure random selection if >2 offers
+  for (let i = offers.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1))
+    ;[offers[i], offers[j]] = [offers[j], offers[i]]
+  }
+
+  return offers.slice(0, 2)
 }

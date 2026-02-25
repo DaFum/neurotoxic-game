@@ -93,6 +93,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
   let useRhythmGameLogic
   let mockChangeScene
   let mockSetLastGigStats
+  let mockEndGig
 
   beforeEach(async () => {
     setupJSDOM()
@@ -125,6 +126,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
 
     mockChangeScene = createMockChangeScene()
     mockSetLastGigStats = createMockSetLastGigStats()
+    mockEndGig = mock.fn(() => mockChangeScene('POSTGIG'))
 
     // Dynamic import to load the hook with mocks active
     const module = await import('../src/hooks/useRhythmGameLogic.js')
@@ -166,7 +168,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       gameMap: { nodes: { node1: { layer: 0 } } },
       player: { currentNodeId: 'node1', money: 0 },
       changeScene: mockChangeScene,
-      gigModifiers: {}
+      gigModifiers: {},
+      endGig: mockEndGig
     }
     mockUseGameState.mock.mockImplementation(() => mockState)
 
@@ -237,6 +240,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     act(() => {
         result.current.update(16)
     })
+    // Now endGig is called, which calls changeScene('POSTGIG')
+    assert.ok(mockEndGig.mock.calls.length > 0)
     assert.ok(mockChangeScene.mock.calls.length > 0)
   })
 
@@ -254,7 +259,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       addToast: () => {},
       hasUpgrade: () => false,
       setLastGigStats: mockSetLastGigStats,
-      changeScene: mockChangeScene
+      changeScene: mockChangeScene,
+      endGig: mockEndGig
     }
     mockUseGameState.mock.mockImplementation(() => mockState)
     mockAudioEngine.hasAudioAsset.mock.mockImplementation(() => true)
@@ -296,7 +302,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       addToast: () => {},
       hasUpgrade: () => false,
       setLastGigStats: mockSetLastGigStats,
-      changeScene: mockChangeScene
+      changeScene: mockChangeScene,
+      endGig: mockEndGig
     }
     mockUseGameState.mock.mockImplementation(() => mockState)
     mockAudioEngine.hasAudioAsset.mock.mockImplementation(() => true)
@@ -323,7 +330,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       addToast: () => {},
       hasUpgrade: () => false,
       setLastGigStats: mockSetLastGigStats,
-      changeScene: mockChangeScene
+      changeScene: mockChangeScene,
+      endGig: mockEndGig
     }
     mockUseGameState.mock.mockImplementation(() => mockState)
     mockAudioEngine.hasAudioAsset.mock.mockImplementation(() => true)
@@ -342,10 +350,12 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     assert.strictEqual(mockChangeScene.mock.calls.length, 0)
 
     // Directly mutating internal ref to simulate the callback effect of audio ending
-    // This couples the test to implementation but is necessary as we mock the audio engine internals
     result.current.gameStateRef.current.setlistCompleted = true
     act(() => { result.current.update(16) })
-    assert.strictEqual(mockChangeScene.mock.calls.length, 1, 'Should call changeScene once')
+
+    // endGig is called, which triggers changeScene
+    assert.strictEqual(mockEndGig.mock.calls.length, 1, 'Should call endGig exactly once')
+    assert.strictEqual(mockChangeScene.mock.calls.length, 1, 'Should call changeScene exactly once')
     assert.strictEqual(mockChangeScene.mock.calls[0].arguments[0], 'POSTGIG', 'Should transition to POSTGIG')
   })
 
@@ -361,7 +371,8 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       addToast: () => {},
       hasUpgrade: () => false,
       setLastGigStats: mockSetLastGigStats,
-      changeScene: mockChangeScene
+      changeScene: mockChangeScene,
+      endGig: mockEndGig
     }
     mockUseGameState.mock.mockImplementation(() => mockState)
     mockAudioEngine.hasAudioAsset.mock.mockImplementation(() => true)

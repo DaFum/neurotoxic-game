@@ -39,6 +39,22 @@ export const checkTraitUnlocks = (state, context = {}) => {
         newUnlocks.push({ memberId: lars.name, traitId: 'blast_machine' })
       }
     }
+
+    // Melodic Genius (Marius): Slow Song (<120 BPM) && Max Combo > 30
+    if (marius && !hasTrait(marius, 'melodic_genius')) {
+      const isSlow = (typeof song?.bpm === 'number') && song.bpm < 120
+      if (isSlow && maxCombo > 30) {
+        newUnlocks.push({ memberId: marius.name, traitId: 'melodic_genius' })
+      }
+    }
+
+    // Tech Wizard (Matze): Technical Song (Difficulty > 3) && 100% Accuracy
+    if (matze && !hasTrait(matze, 'tech_wizard')) {
+      const isTechnical = (song?.difficulty || 0) > 3
+      if (isTechnical && accuracy === 100) {
+        newUnlocks.push({ memberId: matze.name, traitId: 'tech_wizard' })
+      }
+    }
   }
 
   // 2. Travel Unlocks
@@ -97,6 +113,13 @@ export const checkTraitUnlocks = (state, context = {}) => {
     if (marius && !hasTrait(marius, 'bandleader')) {
       if ((player.stats?.conflictsResolved || 0) >= 3) {
         newUnlocks.push({ memberId: marius.name, traitId: 'bandleader' })
+      }
+    }
+
+    // Showman (Lars): Perform 3 Stage Dives
+    if (lars && !hasTrait(lars, 'showman')) {
+      if ((player.stats?.stageDives || 0) >= 3) {
+        newUnlocks.push({ memberId: lars.name, traitId: 'showman' })
       }
     }
   }
