@@ -117,6 +117,11 @@ const processEffect = (eff, delta) => {
         delta.player.fame = (delta.player.fame || 0) + eff.value
       if (eff.stat === 'viral')
         delta.social.viral = (delta.social.viral || 0) + eff.value
+      if (eff.stat === 'controversyLevel')
+        delta.social.controversyLevel =
+          (delta.social.controversyLevel || 0) + eff.value
+      if (eff.stat === 'loyalty')
+        delta.social.loyalty = (delta.social.loyalty || 0) + eff.value
       if (eff.stat === 'score')
         delta.flags.score = (delta.flags.score || 0) + eff.value
       if (eff.stat === 'luck')
