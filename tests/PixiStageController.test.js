@@ -17,6 +17,7 @@ const MockPIXI = {
   Container: class {
     addChild() {}
     destroy() {}
+    removeChildren() {}
   },
   ColorMatrixFilter: class {
     destroy() {}

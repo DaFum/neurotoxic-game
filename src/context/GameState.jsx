@@ -573,7 +573,9 @@ export const GameStateProvider = ({ children }) => {
   dispatchValueRef.current = dispatchValue
 
   useEffect(() => {
-    if (import.meta.env.DEV) {
+    // Safely check for DEV environment to avoid crashes in test runners that don't polyfill import.meta.env
+    const isDev = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV
+    if (isDev) {
       Object.defineProperty(window, 'gameState', {
         configurable: true,
         get: () => ({ ...stateRef.current, ...dispatchValueRef.current })

@@ -383,9 +383,22 @@ class AudioSystem {
    * Disposes of the audio system, unloading resources.
    */
   dispose() {
-    this.stopMusic()
-    audioEngine.disposeAudio?.()
+    this.stopMusic({ emit: false })
+    this.currentSongId = null
+    this.ambientStartPromise = null
+    this.isStartingAmbient = false
     this.prefsLoaded = false
+    
+    // Explicitly call the engine's dispose function to clear contexts
+    try {
+      if (typeof audioEngine.disposeAudio === 'function') {
+        audioEngine.disposeAudio()
+      }
+    } catch (e) {
+      logger.warn('AudioSystem', 'Error during engine dispose:', e)
+    }
+    
+    // Clear all listeners to prevent memory leaks in the React tree
     this.listeners.clear()
   }
 }

@@ -66,7 +66,9 @@ export const generatePostOptions = (gigResult, gameState, rng = secureRandom) =>
   const results = []
 
   // 1a. Forced Sponsor Post Override
-  if (gameState.social?.sponsorActive) {
+  // Check if there are active deals of type SPONSORSHIP.
+  const hasActiveSponsor = gameState.social?.activeDeals && gameState.social.activeDeals.some(d => d.type === 'SPONSORSHIP')
+  if (gameState.social?.sponsorActive || hasActiveSponsor) {
     // Force a specific commercial post or synthesize one
     const sponsorOpt = eligibleOptions.find(o => o.id === 'comm_sellout_ad')
     if (sponsorOpt) {

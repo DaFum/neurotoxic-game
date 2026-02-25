@@ -173,11 +173,22 @@ class PixiStageController extends BaseStageController {
     this.laneManager = null
     this.crowdManager = null
 
+    // Clear filters from container explicitly to release the array references
+    if (this.stageContainer) {
+      this.stageContainer.filters = null
+      this.stageContainer.removeChildren()
+      this.stageContainer.destroy({ children: true })
+      this.stageContainer = null
+    }
+
     // Destroy color matrix filter to free GPU memory
     if (this.colorMatrix) {
       this.colorMatrix.destroy()
       this.colorMatrix = null
     }
+
+    this.toxicFilters = null
+    this.emptyFilters = null
 
     super.dispose()
   }

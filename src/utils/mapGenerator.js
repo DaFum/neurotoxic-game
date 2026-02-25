@@ -88,13 +88,25 @@ export class MapGenerator {
 
         // Filter out used venues
         const availableVenues = venuePool.filter(v => !usedVenueIds.has(v.id))
-        // Fallback to full pool if all used (should be rare with enough venues)
-        // Ensure we don't pick reserved venues (Home/Finale) even in fallback
+        // Fallback to harder pools if the current pool is exhausted
         let candidates = availableVenues
         if (candidates.length === 0) {
-          candidates = venuePool.filter(
-            v => v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum'
-          )
+          // Instead of purely falling back to the same exhausted pool and causing duplicates,
+          // shift difficulty up to find fresh venues.
+          if (i < 3) {
+            candidates = mediumVenues.filter(v => !usedVenueIds.has(v.id))
+          }
+          if (candidates.length === 0) {
+              candidates = hardVenues.filter(v => !usedVenueIds.has(v.id))
+          }
+          
+          // Absolute zero-resort fallback: allow duplicates from full pool to prevent crash,
+          // but exclude specialized venues.
+          if (candidates.length === 0) {
+            candidates = venuePool.filter(
+              v => v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum'
+            )
+          }
         }
 
         // Pick random venue
