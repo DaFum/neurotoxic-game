@@ -294,6 +294,21 @@ export const calculateRepairCost = currentCondition => {
 }
 
 /**
+ * Calculates the effective ticket price, accounting for any discounts or modifiers.
+ * @param {object} gigData - The gig data containing the base price.
+ * @param {object} context - Context object containing flags like discountedTickets.
+ * @returns {number} The effective ticket price.
+ */
+export const calculateEffectiveTicketPrice = (gigData, context = {}) => {
+  if (!gigData) return 0
+  let price = gigData.price || 0
+  if (context.discountedTickets && price > 10) {
+    price = Math.floor(price * 0.5)
+  }
+  return price
+}
+
+/**
  * Calculates expenses for the gig.
  */
 const calculateGigExpenses = (modifiers) => {
@@ -378,12 +393,8 @@ export const calculateGigFinancials = ({
     fame: playerFame
   })
 
-  // Hack for applying discount tickets effect visually without modifying original gig data.
-  // The UI pre-renders prices, but this assures the final math reflects the story outcome.
-  let effectiveGigData = { ...gigData }
-  if (context.discountedTickets && effectiveGigData.price > 10) {
-    effectiveGigData.price = Math.floor(effectiveGigData.price * 0.6)
-  }
+  const effectivePrice = calculateEffectiveTicketPrice(gigData, context)
+  const effectiveGigData = { ...gigData, price: effectivePrice }
 
   const report = {
     income: { total: 0, breakdown: [] },

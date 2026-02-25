@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   calculateGigFinancials,
+  calculateEffectiveTicketPrice,
   calculateTravelExpenses,
   calculateFuelCost,
   calculateRefuelCost,
@@ -607,4 +608,75 @@ test('calculateFuelCost applies road_warrior trait discount', () => {
   const res2 = calculateFuelCost(dist, null, bandState)
   // 12 * 0.85 = 10.2
   assert.ok(Math.abs(res2.fuelLiters - 10.2) < 1e-6, 'fuelLiters within tolerance')
+})
+
+test('calculateEffectiveTicketPrice handles discounts correctly', async (t) => {
+  await t.test('returns 0 if no gig data', () => {
+    assert.equal(calculateEffectiveTicketPrice(null, {}), 0)
+  })
+
+  await t.test('returns original price if not discounted', () => {
+    const gig = { price: 20 }
+    assert.equal(calculateEffectiveTicketPrice(gig, { discountedTickets: false }), 20)
+  })
+
+  await t.test('returns original price if price <= 10', () => {
+    const gig = { price: 10 }
+    assert.equal(calculateEffectiveTicketPrice(gig, { discountedTickets: true }), 10)
+
+    const gig2 = { price: 8 }
+    assert.equal(calculateEffectiveTicketPrice(gig2, { discountedTickets: true }), 8)
+  })
+
+  await t.test('applies 50% discount if price > 10 and discountedTickets is true', () => {
+    const gig = { price: 20 }
+    assert.equal(calculateEffectiveTicketPrice(gig, { discountedTickets: true }), 10)
+
+    const gig2 = { price: 15 }
+    assert.equal(calculateEffectiveTicketPrice(gig2, { discountedTickets: true }), 7) // Math.floor(7.5)
+  })
+})
+
+test('calculateGigFinancials uses effective price', () => {
+  const gigData = buildGigData({ price: 20 })
+  const score = 100
+  const fame = 100
+
+  const financialsNormal = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: score,
+    playerState: { fame },
+    modifiers: buildModifiers(),
+    bandInventory: buildInventory(),
+    context: { discountedTickets: false }
+  })
+
+  const financialsDiscount = calculateGigFinancials({
+    gigData: gigData,
+    performanceScore: score,
+    playerState: { fame },
+    modifiers: buildModifiers(),
+    bandInventory: buildInventory(),
+    context: { discountedTickets: true }
+  })
+
+  // Discounted tickets should increase attendance (due to +10% fill bonus and avoided price penalty)
+  const normalTickets = financialsNormal.income.breakdown.find(b => b.label === 'Ticket Sales')
+  const discountTickets = financialsDiscount.income.breakdown.find(b => b.label === 'Ticket Sales')
+
+  const normalSold = parseInt(normalTickets.detail.split(' ')[0])
+  const discountSold = parseInt(discountTickets.detail.split(' ')[0])
+
+  assert.ok(
+    discountSold > normalSold,
+    'Discounted tickets should result in higher attendance'
+  )
+
+  // Verify effective price was reduced (Revenue / Sold approx Price)
+  const normalAvgPrice = normalTickets.value / normalSold
+  const discountAvgPrice = discountTickets.value / discountSold
+
+  // Normal price 20, Discount price 10
+  assert.ok(Math.abs(normalAvgPrice - 20) < 0.1, 'Normal price should be ~20')
+  assert.ok(Math.abs(discountAvgPrice - 10) < 0.1, 'Discount price should be ~10')
 })
