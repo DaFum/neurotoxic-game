@@ -118,12 +118,6 @@ describe('Settings Referential Stability', () => {
     const isStableReturn =
       firstRenderButtonProps.onClick === secondRenderButtonProps.onClick
 
-    // We print the results for manual verification in this step
-    console.log('Stability Baseline Results:')
-    console.log(`onToggleCRT stable: ${isStableToggleCRT}`)
-    console.log(`onLogLevelChange stable: ${isStableLogLevelChange}`)
-    console.log(`onClick (Return) stable: ${isStableReturn}`)
-
     // Assertions - these will fail in the baseline
     expect(isStableToggleCRT).toBe(true)
     expect(isStableLogLevelChange).toBe(true)

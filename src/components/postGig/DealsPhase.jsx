@@ -4,6 +4,7 @@ import { useGameState } from '../../context/GameState'
 import { negotiateDeal } from '../../utils/socialEngine'
 import { Modal, ActionButton } from '../../ui/shared'
 import { BRAND_ALIGNMENTS } from '../../context/initialState'
+import { handleError } from '../../utils/errorHandler.js'
 
 export const DealsPhase = ({ offers, onAccept, onSkip }) => {
   const { player, band, social, addToast } = useGameState()
@@ -32,49 +33,59 @@ export const DealsPhase = ({ offers, onAccept, onSkip }) => {
   const handleNegotiationSubmit = strategy => {
     if (!selectedDeal) return
 
-    const gameState = { player, band, social }
-    const result = negotiateDeal(selectedDeal, strategy, gameState)
+    try {
+      const gameState = { player, band, social }
+      const result = negotiateDeal(selectedDeal, strategy, gameState)
 
-    setNegotiationResult(result)
+      setNegotiationResult(result)
 
-    if (result.status === 'REVOKED') {
-      setNegotiatedDeals(prev => ({
-        ...prev,
-        [selectedDeal.id]: { status: 'REVOKED', deal: null }
-      }))
-      addToast(result.feedback, 'error')
-    } else if (result.status === 'FAILED') {
-      setNegotiatedDeals(prev => ({
-        ...prev,
-        [selectedDeal.id]: { status: 'FAILED', deal: selectedDeal }
-      }))
-      addToast(result.feedback, 'warning')
-    } else if (result.success) {
-      setNegotiatedDeals(prev => ({
-        ...prev,
-        [selectedDeal.id]: { status: 'SUCCESS', deal: result.deal }
-      }))
-      addToast(result.feedback, 'success')
-    } else {
-      // Accepted but worse terms (Persuasive fail)
-      setNegotiatedDeals(prev => ({
-        ...prev,
-        [selectedDeal.id]: { status: 'WORSENED', deal: result.deal }
-      }))
-      addToast(result.feedback, 'warning')
-    }
+      if (result.status === 'REVOKED') {
+        setNegotiatedDeals(prev => ({
+          ...prev,
+          [selectedDeal.id]: { status: 'REVOKED', deal: null }
+        }))
+        addToast(result.feedback, 'error')
+      } else if (result.status === 'FAILED') {
+        setNegotiatedDeals(prev => ({
+          ...prev,
+          [selectedDeal.id]: { status: 'FAILED', deal: selectedDeal }
+        }))
+        addToast(result.feedback, 'warning')
+      } else if (result.success) {
+        setNegotiatedDeals(prev => ({
+          ...prev,
+          [selectedDeal.id]: { status: 'SUCCESS', deal: result.deal }
+        }))
+        addToast(result.feedback, 'success')
+      } else {
+        // Accepted but worse terms (Persuasive fail)
+        setNegotiatedDeals(prev => ({
+          ...prev,
+          [selectedDeal.id]: { status: 'WORSENED', deal: result.deal }
+        }))
+        addToast(result.feedback, 'warning')
+      }
 
-    // Delay closing to let user see result?
-    // Or just close and let the toast/UI update handle it.
-    // Let's keep modal open for a second or show a "Continue" button in modal if we want.
-    // For now, let's just close it after a short delay or immediately.
-    if (negotiationTimerRef.current) {
-      clearTimeout(negotiationTimerRef.current)
-    }
-    negotiationTimerRef.current = setTimeout(() => {
+      // Delay closing to let user see result?
+      // Or just close and let the toast/UI update handle it.
+      // Let's keep modal open for a second or show a "Continue" button in modal if we want.
+      // For now, let's just close it after a short delay or immediately.
+      if (negotiationTimerRef.current) {
+        clearTimeout(negotiationTimerRef.current)
+      }
+      negotiationTimerRef.current = setTimeout(() => {
+        setNegotiationModalOpen(false)
+        setSelectedDeal(null)
+      }, 1500)
+    } catch (error) {
+      handleError(error, {
+        addToast,
+        fallbackMessage: 'Negotiation failed unexpectedly.'
+      })
+      // Close modal on error to prevent stuck state
       setNegotiationModalOpen(false)
       setSelectedDeal(null)
-    }, 1500)
+    }
   }
 
   return (

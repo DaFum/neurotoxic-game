@@ -369,7 +369,7 @@ export const CRISIS_EVENTS = [
     trigger: 'post_gig',
     chance: 1.0,
     condition: gs =>
-      (gs.lastGigStats?.score || 100) < 30 &&
+      (gs.lastGigStats?.score ?? 100) < 30 &&
       !gs.eventCooldowns?.includes('crisis_poor_performance'),
     options: [
       {

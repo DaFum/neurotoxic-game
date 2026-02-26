@@ -90,10 +90,10 @@ export class CrowdManager {
   update(combo, isToxicMode, timeMs) {
     const yOffset = calculateCrowdOffset({ combo, timeMs })
     const nextColor = isToxicMode
-      ? getPixiColorFromToken('--toxic-green') || 0x00ff41
+      ? getPixiColorFromToken('--toxic-green')
       : combo > 20
-        ? getPixiColorFromToken('--star-white') || 0xffffff
-        : getPixiColorFromToken('--ash-gray') || 0x888888
+        ? getPixiColorFromToken('--star-white')
+        : getPixiColorFromToken('--ash-gray')
 
     const shouldMosh = isToxicMode || combo > 20
     const targetTexture =

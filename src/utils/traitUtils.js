@@ -37,6 +37,7 @@ export const applyTraitUnlocks = (currentState, unlocks) => {
       m =>
         (m.id && m.id === u.memberId) ||
         (m.name &&
+          typeof m.name === 'string' &&
           typeof u.memberId === 'string' &&
           m.name.toLowerCase() === u.memberId.toLowerCase())
     )

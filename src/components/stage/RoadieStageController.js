@@ -128,12 +128,10 @@ class RoadieStageController extends BaseStageController {
     const roadColor = getPixiColorFromToken('--void-black')
     const grassColor =
       getPixiColorFromToken('--roadie-grass') ||
-      getPixiColorFromToken('--toxic-green') ||
-      0x00ff41
+      getPixiColorFromToken('--toxic-green')
     const venueColor =
       getPixiColorFromToken('--roadie-venue-blue') ||
-      getPixiColorFromToken('--blood-red') ||
-      0xcc0000
+      getPixiColorFromToken('--blood-red')
     const stripeColor = getPixiColorFromToken('--star-white')
 
     // Use screen width for better drawing
@@ -166,6 +164,8 @@ class RoadieStageController extends BaseStageController {
   }
 
   update(dt) {
+    if (this.isDisposed || !this.app || !this.playerContainer) return
+
     if (this.effectManager) this.effectManager.update(dt)
 
     const state = this.gameStateRef.current
@@ -201,7 +201,7 @@ class RoadieStageController extends BaseStageController {
     // Check Damage trigger
     if (state.equipmentDamage > this.lastDamage) {
       // Trigger Hit Effect
-      const redColor = getPixiColorFromToken('--blood-red') || 0xcc0000
+      const redColor = getPixiColorFromToken('--blood-red')
       if (this.effectManager) {
         this.effectManager.spawnHitEffect(
           this.playerContainer.x,
