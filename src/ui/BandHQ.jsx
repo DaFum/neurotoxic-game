@@ -118,12 +118,20 @@ export const BandHQ = ({
         </div>
 
         {/* Navigation */}
-        <div className='flex border-b-2 border-(--ash-gray) overflow-x-auto'>
+        <div
+          role='tablist'
+          aria-label='Band HQ Sections'
+          className='flex border-b-2 border-(--ash-gray) overflow-x-auto'
+        >
           {/* Tabs: STATS, DETAILS, SHOP, UPGRADES, SETLIST, SETTINGS */}
           {['STATS', 'DETAILS', 'SHOP', 'UPGRADES', 'SETLIST', 'SETTINGS'].map(
             tab => (
               <button
                 type='button'
+                role='tab'
+                aria-selected={activeTab === tab}
+                aria-controls={`panel-${tab}`}
+                id={`tab-${tab}`}
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`flex-1 min-w-[120px] py-4 text-center font-bold text-xl uppercase tracking-wider transition-colors duration-150 font-mono
@@ -140,7 +148,13 @@ export const BandHQ = ({
         </div>
 
         {/* Content Area */}
-        <div className='flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-(--void-black)'>
+        <div
+          role='tabpanel'
+          id={`panel-${activeTab}`}
+          aria-labelledby={`tab-${activeTab}`}
+          tabIndex={0}
+          className='flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-(--void-black) focus-visible:outline-none'
+        >
           {activeTab === 'STATS' && (
             <StatsTab player={player} band={band} social={social} />
           )}
