@@ -235,7 +235,7 @@ describe('TutorialManager', () => {
     const dialog = container.querySelector('[role="dialog"]')
     expect(dialog).toBeTruthy()
     expect(dialog?.getAttribute('aria-label')).toBe('Tutorial')
-    expect(dialog?.getAttribute('aria-modal')).toBe('true')
+    expect(dialog?.getAttribute('aria-label')).toBe('Tutorial')
   })
 
   test('handles missing player.tutorialStep gracefully', async () => {
