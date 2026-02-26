@@ -233,9 +233,11 @@ describe('PixiStage', () => {
     })
 
     // Changing the ref's content should not recreate controller
+    // Changing the ref's content should not recreate controller
+    ref1.current = { score: 100 }
     rerender(
       <PixiStage
-        gameStateRef={ref2}
+        gameStateRef={ref1}
         update={mockUpdate}
         controllerFactory={mockFactory}
       />
@@ -243,7 +245,6 @@ describe('PixiStage', () => {
 
     // Factory should still only have been called once
     expect(mockFactory).toHaveBeenCalledTimes(1)
-  })
 
   test('recreates controller when controllerFactory changes', async () => {
     const { PixiStage } = await import('../src/components/PixiStage.jsx')
