@@ -451,7 +451,7 @@ export const CRISIS_EVENTS = [
   },
   {
     id: 'crisis_mass_unfollow',
-    category: 'social',
+    category: 'band',
     tags: ['crisis', 'social_media'],
     title: 'MASS UNFOLLOW',
     description:

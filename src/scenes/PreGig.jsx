@@ -255,8 +255,21 @@ export const PreGig = () => {
               return (
                 <div
                   key={song.id}
+                  role='button'
+                  tabIndex={isLocked ? -1 : 0}
+                  aria-label={`Select song ${song.name}`}
+                  aria-disabled={isLocked}
                   onClick={() => {
                     if (!isLocked) toggleSong(song)
+                  }}
+                  onKeyDown={e => {
+                    if (
+                      !isLocked &&
+                      (e.key === 'Enter' || e.key === ' ')
+                    ) {
+                      e.preventDefault()
+                      toggleSong(song)
+                    }
                   }}
                   className={`p-3 border-2 flex justify-between items-center transition-all ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}
                     ${

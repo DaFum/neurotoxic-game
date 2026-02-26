@@ -92,7 +92,8 @@ describe('BandHQ Stats Discrepancy', () => {
 
     expect(followersBox).toBeTruthy()
     const statsTabValue = parseInt(
-      followersBox.querySelector('[data-testid="stat-value"]').textContent
+      followersBox.querySelector('[data-testid="stat-value"]').textContent,
+      10
     )
 
     // Render DetailedStatsTab
@@ -117,7 +118,7 @@ describe('BandHQ Stats Discrepancy', () => {
       // Structure: span(label) -> div(wrapper) -> div(value)
       const row = labelElement.closest('.flex') // DetailRow has flex class
       const valueDiv = row.querySelector('.text-right > div:first-child')
-      return parseInt(valueDiv.textContent)
+      return parseInt(valueDiv.textContent, 10)
     }
 
     const detailedStatsTabValue = findValueByLabel('Total Reach')

@@ -60,7 +60,14 @@ export const generatePostOptions = (
     } catch (e) {
       throw new StateError(`Condition failed for post option ${opt.id}`, {
         cause: e,
-        meta: { optId: opt.id, gameState }
+        meta: {
+          optId: opt.id,
+          snapshot: {
+            day: gameState.player?.day,
+            money: gameState.player?.money,
+            currentGigId: gameState.currentGig?.id
+          }
+        }
       })
     }
   })
@@ -176,7 +183,14 @@ export const resolvePost = (
   } catch (e) {
     throw new StateError(`Resolution failed for post ${postOption.id}`, {
       cause: e,
-      meta: { optId: postOption.id, gameState }
+      meta: {
+        optId: postOption.id,
+        snapshot: {
+          day: gameState.player?.day,
+          money: gameState.player?.money,
+          currentGigId: gameState.currentGig?.id
+        }
+      }
     })
   }
 }

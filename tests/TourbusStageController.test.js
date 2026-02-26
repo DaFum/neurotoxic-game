@@ -32,19 +32,17 @@ let currentLoad
 mock.module('pixi.js', {
   Application: class {
     constructor() {
-      return {
-        canvas: { style: {} },
-        stage: { addChild: mock.fn() },
-        screen: { width: 800, height: 600 },
-        ticker: {
-          add: currentTickerAdd,
-          remove: currentTickerRemove,
-          lastTime: 1000,
-          deltaMS: 16.6
-        },
-        init: mock.fn(() => Promise.resolve()),
-        destroy: currentAppDestroy
+      this.canvas = { style: {} }
+      this.stage = { addChild: mock.fn() }
+      this.screen = { width: 800, height: 600 }
+      this.ticker = {
+        add: currentTickerAdd,
+        remove: currentTickerRemove,
+        lastTime: 1000,
+        deltaMS: 16.6
       }
+      this.init = mock.fn(() => Promise.resolve())
+      this.destroy = currentAppDestroy
     }
   },
   Container: class {

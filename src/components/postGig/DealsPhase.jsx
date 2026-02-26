@@ -68,6 +68,9 @@ export const DealsPhase = ({ offers, onAccept, onSkip }) => {
     // Or just close and let the toast/UI update handle it.
     // Let's keep modal open for a second or show a "Continue" button in modal if we want.
     // For now, let's just close it after a short delay or immediately.
+    if (negotiationTimerRef.current) {
+      clearTimeout(negotiationTimerRef.current)
+    }
     negotiationTimerRef.current = setTimeout(() => {
       setNegotiationModalOpen(false)
       setSelectedDeal(null)
@@ -134,7 +137,10 @@ export const DealsPhase = ({ offers, onAccept, onSkip }) => {
                   )}
                   {displayDeal.penalty && (
                     <div className='text-(--blood-red)'>
-                      ⚠️ Risk: {JSON.stringify(displayDeal.penalty)}
+                      ⚠️ Risk:{' '}
+                      {Object.entries(displayDeal.penalty)
+                        .map(([k, v]) => `${k}: ${v}`)
+                        .join(', ')}
                     </div>
                   )}
                 </div>

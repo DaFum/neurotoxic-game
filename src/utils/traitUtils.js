@@ -36,7 +36,9 @@ export const applyTraitUnlocks = (currentState, unlocks) => {
     const memberIndex = nextBand.members.findIndex(
       m =>
         (m.id && m.id === u.memberId) ||
-        (m.name && m.name.toLowerCase() === u.memberId.toLowerCase())
+        (m.name &&
+          typeof u.memberId === 'string' &&
+          m.name.toLowerCase() === u.memberId.toLowerCase())
     )
     if (memberIndex === -1) return
 

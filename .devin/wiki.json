@@ -168,7 +168,7 @@
     },
     {
       "title": "Audio System Architecture",
-      "purpose": "Document the modularized audio subsystem (~2,600 lines total) spanning src/utils/AudioManager.js (singleton coordinator), src/utils/audioEngine.js (facade re-exporting key functions), and 6 specialized modules in src/utils/audio/: setup.js (Tone.js boot via setupAudio()/ensureAudioContext, Tone.Context timing params, instrument chains for guitar/bass/drums/SFX/clean-MIDI buses, compressor/limiter/musicGain routing), playback.js (loadAudioBuffer, playRandomAmbientOgg/playRandomAmbientMidi, startGigPlayback, stopGigPlayback/stopAudioInternal, disposal guarantees), procedural.js (procedural synth generation for backing tracks and SFX), assets.js (MIDI/audio asset loading), state.js (audio state tracking), constants.js (shared audio config constants).",
+      "purpose": "Document the modularized audio subsystem (~2,600 lines total) spanning src/utils/AudioManager.js (singleton coordinator), src/utils/audioEngine.js (facade re-exporting key functions), and 6 specialized modules in src/utils/audio/: src/utils/audio/setup.js (Tone.js boot via setupAudio()/ensureAudioContext, Tone.Context timing params, instrument chains for guitar/bass/drums/SFX/clean-MIDI buses, compressor/limiter/musicGain routing), playback.js (loadAudioBuffer, playRandomAmbientOgg/playRandomAmbientMidi, startGigPlayback, stopGigPlayback/stopAudioInternal, disposal guarantees), procedural.js (procedural synth generation for backing tracks and SFX), assets.js (MIDI/audio asset loading), state.js (audio state tracking), constants.js (shared audio config constants).",
       "parent": "Core Subsystems Overview",
       "page_notes": [
         {
@@ -180,7 +180,7 @@
           "author": "Architecture"
         },
         {
-          "content": "Audio mixer architecture uses separate buses for instrument groups (guitar, bass, drums, SFX, vocals/MIDI) feeding into master compressor and limiter chains. Gain staging: individual instruments at -6dB, bus compressors with 4:1 ratio, master limiter at -0.1dB ceiling. Volume controls in settings affect musicGain node (pre-master). The mixer topology is initialized once in setup.js and reused across gigs; only source nodes (Players, Synths) are created/destroyed per-song. This architecture enables dynamic mixing (boost drums during fills, duck rhythm during vocals) without rebuilding the entire audio graph.",
+          "content": "Audio mixer architecture uses separate buses for instrument groups (guitar, bass, drums, SFX, vocals/MIDI) feeding into master compressor and limiter chains. Gain staging: individual instruments at -6dB, bus compressors with 4:1 ratio, master limiter at -0.1dB ceiling. Volume controls in settings affect musicGain node (pre-master). The mixer topology is initialized once in src/utils/audio/setup.js and reused across gigs; only source nodes (Players, Synths) are created/destroyed per-song. This architecture enables dynamic mixing (boost drums during fills, duck rhythm during vocals) without rebuilding the entire audio graph.",
           "author": "Architecture"
         }
       ]

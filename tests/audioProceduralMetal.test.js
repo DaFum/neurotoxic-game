@@ -144,7 +144,8 @@ mock.module('../src/utils/audio/playbackUtils.js', {
   namedExports: {
     resolveAssetUrl: mock.fn(),
     normalizeMidiPlaybackOptions: options => ({
-      onEnded: options?.onEnded || null,
+      onEnded:
+        typeof options?.onEnded === 'function' ? options.onEnded : null,
       useCleanPlayback: true
     })
   }
