@@ -4,7 +4,7 @@
  * @module actionCreators
  */
 
-import { ActionTypes } from './gameReducer.js'
+import { ActionTypes } from './actionTypes.js'
 
 /**
  * Monotonic counter for generating unique toast IDs
