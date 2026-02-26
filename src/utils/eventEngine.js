@@ -168,7 +168,7 @@ const processEffect = (eff, delta, context = {}) => {
       if (eff.stat === 'loyalty')
         delta.social.loyalty = (delta.social.loyalty || 0) + eff.value
       if (eff.stat === 'score')
-        delta.player.score = (delta.player.score || 0) + eff.value
+        delta.score = (delta.score || 0) + eff.value
       if (eff.stat === 'luck')
         delta.band.luck = (delta.band.luck || 0) + eff.value
       if (eff.stat === 'skill')

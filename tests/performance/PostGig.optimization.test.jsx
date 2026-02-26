@@ -44,7 +44,8 @@ describe('PostGig Optimization', () => {
 
     // Capture the onClick handler from the first render of the first button
     const firstRenderProps = mockActionButton.mock.calls[0][0]
-    const firstRenderOnClick = firstRenderProps.onClick
+    // Verify the handler is passed correctly (uses captured variable)
+    expect(typeof firstRenderProps.onClick).toBe('function')
 
     mockActionButton.mockClear()
 

@@ -174,4 +174,46 @@ describe('useTravelLogic', () => {
       assert.equal(updateArg.van.condition, 100)
     })
   })
+
+  test('handleRefuel does nothing when traveling', () => {
+    const { result, props, targetNode } = setupTravelScenario(useTravelLogic)
+
+    // Start travel to set isTravelingRef.current to true
+    act(() => {
+      result.current.handleTravel(targetNode)
+    })
+    act(() => {
+      result.current.handleTravel(targetNode)
+    })
+
+    assert.equal(result.current.isTraveling, true)
+
+    // Attempt refuel
+    act(() => {
+      result.current.handleRefuel()
+    })
+
+    assert.equal(props.updatePlayer.mock.calls.length, 0)
+  })
+
+  test('handleRepair does nothing when traveling', () => {
+    const { result, props, targetNode } = setupTravelScenario(useTravelLogic)
+
+    // Start travel
+    act(() => {
+      result.current.handleTravel(targetNode)
+    })
+    act(() => {
+      result.current.handleTravel(targetNode)
+    })
+
+    assert.equal(result.current.isTraveling, true)
+
+    // Attempt repair
+    act(() => {
+      result.current.handleRepair()
+    })
+
+    assert.equal(props.updatePlayer.mock.calls.length, 0)
+  })
 })

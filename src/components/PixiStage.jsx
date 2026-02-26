@@ -20,30 +20,32 @@ export const PixiStage = memo(
 
     useEffect(() => {
       let mounted = true
-      controllerRef.current = controllerFactory({
+      const controller = controllerFactory({
         containerRef,
         gameStateRef,
         updateRef
       })
+      controllerRef.current = controller
 
-      controllerRef.current
+      controller
         .init()
         .then(() => {
-          if (!mounted) {
-            controllerRef.current?.dispose()
-            controllerRef.current = null
+          if (mounted && controllerRef.current === controller) {
+            // Init success
+          } else {
+            controller.dispose()
           }
         })
         .catch(err => {
-          if (mounted) {
+          if (mounted && controllerRef.current === controller) {
             logger.error('PixiStage', 'Pixi Stage Init Failed', err)
           }
         })
 
       return () => {
         mounted = false
-        if (controllerRef.current) {
-          controllerRef.current.dispose()
+        if (controllerRef.current === controller) {
+          controller.dispose()
           controllerRef.current = null
         }
       }

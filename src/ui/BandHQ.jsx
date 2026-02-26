@@ -80,7 +80,7 @@ export const BandHQ = ({
       if (err instanceof GameError || err instanceof StateError) {
         handleError(err, { addToast })
       } else {
-        handleError(new GameError('Purchase failed', err), { addToast })
+        handleError(new GameError('Purchase failed', { cause: err }), { addToast })
       }
     } finally {
       setProcessingItemId(null)

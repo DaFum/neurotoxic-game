@@ -91,7 +91,7 @@ export const useTourbusLogic = () => {
 
       // Spawn Obstacles
       game.lastSpawnTime += deltaMS
-      if (game.lastSpawnTime > currentSpawnRate) {
+      while (game.lastSpawnTime >= currentSpawnRate) {
         const time = performance.now()
         const lane = Math.floor(Math.random() * LANE_COUNT)
         const type = Math.random() > 0.8 ? 'FUEL' : 'OBSTACLE' // 20% chance for fuel
@@ -102,7 +102,7 @@ export const useTourbusLogic = () => {
           type,
           collided: false
         })
-        game.lastSpawnTime = 0
+        game.lastSpawnTime -= currentSpawnRate
       }
 
       // Move Obstacles & Collision

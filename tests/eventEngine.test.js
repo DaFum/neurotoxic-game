@@ -509,7 +509,7 @@ test('eventEngine.applyResult handles crowd_energy stat as fame', () => {
 test('eventEngine.applyResult handles score stat increment', () => {
   const result = { type: 'stat', stat: 'score', value: 100 }
   const delta = eventEngine.applyResult(result)
-  assert.equal(delta.player.score, 100, 'score should increment in player stats')
+  assert.equal(delta.score, 100, 'score should increment in top-level score')
 })
 
 test('eventEngine.applyResult accumulates fame from mixed stats (fame, hype, crowd_energy)', () => {

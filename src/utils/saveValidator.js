@@ -7,13 +7,16 @@
 import { ALLOWED_TRENDS } from '../data/socialTrends.js'
 import { StateError } from './errorHandler.js'
 
+const isPlainObject = value =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
 /**
  * Validates the structure and types of the save data.
  * @param {any} data - The parsed JSON data from localStorage.
  * @returns {boolean} True if valid, throws error if invalid.
  */
 export const validateSaveData = data => {
-  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+  if (!isPlainObject(data)) {
     throw new StateError('Save data must be an object')
   }
 
@@ -34,7 +37,7 @@ export const validateSaveData = data => {
   validateSocial(data.social)
 
   // Validate GameMap (simplified check)
-  if (typeof data.gameMap !== 'object') {
+  if (!isPlainObject(data.gameMap)) {
     throw new StateError('gameMap must be an object')
   }
 
@@ -42,7 +45,7 @@ export const validateSaveData = data => {
 }
 
 const validatePlayer = player => {
-  if (typeof player !== 'object') throw new StateError('player must be an object')
+  if (!isPlainObject(player)) throw new StateError('player must be an object')
 
   const numericFields = ['money', 'day', 'time', 'score', 'fame', 'fameLevel']
   for (const field of numericFields) {
@@ -51,13 +54,13 @@ const validatePlayer = player => {
     }
   }
 
-  if (player.van && typeof player.van !== 'object') {
+  if (player.van && !isPlainObject(player.van)) {
     throw new StateError('player.van must be an object')
   }
 }
 
 const validateBand = band => {
-  if (typeof band !== 'object') throw new StateError('band must be an object')
+  if (!isPlainObject(band)) throw new StateError('band must be an object')
 
   if (band.members && !Array.isArray(band.members)) {
     throw new StateError('band.members must be an array')
@@ -65,7 +68,7 @@ const validateBand = band => {
 
   if (band.members) {
     band.members.forEach((member, index) => {
-      if (typeof member !== 'object') {
+      if (!isPlainObject(member)) {
         throw new StateError(`band.members[${index}] must be an object`)
       }
       if (typeof member.name !== 'string') {
@@ -80,7 +83,7 @@ const validateBand = band => {
 }
 
 const validateSocial = social => {
-  if (typeof social !== 'object') throw new StateError('social must be an object')
+  if (!isPlainObject(social)) throw new StateError('social must be an object')
 
   Object.entries(social).forEach(([key, val]) => {
     if (key === 'lastGigDay' && val === null) return
@@ -96,7 +99,7 @@ const validateSocial = social => {
       if (!Array.isArray(val))
         throw new StateError('social.activeDeals must be an array')
       val.forEach((deal, i) => {
-        if (!deal || typeof deal !== 'object')
+        if (!isPlainObject(deal))
           throw new StateError(`activeDeals[${i}] must be an object`)
         if (typeof deal.id !== 'string')
           throw new StateError(`activeDeals[${i}].id must be a string`)
@@ -107,7 +110,7 @@ const validateSocial = social => {
     }
 
     if (key === 'brandReputation') {
-      if (typeof val !== 'object' || Array.isArray(val))
+      if (!isPlainObject(val))
         throw new StateError('social.brandReputation must be an object')
       Object.entries(val).forEach(([align, score]) => {
         if (typeof score !== 'number')

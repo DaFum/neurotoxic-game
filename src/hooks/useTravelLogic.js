@@ -479,7 +479,7 @@ export const useTravelLogic = ({
    * Handles refueling the van
    */
   const handleRefuel = useCallback(() => {
-    if (isTraveling) return
+    if (isTravelingRef.current) return
 
     const currentFuel = player.van?.fuel ?? 0
     const cost = calculateRefuelCost(currentFuel)
@@ -505,13 +505,13 @@ export const useTravelLogic = ({
     } catch (_e) {
       // Ignore audio errors
     }
-  }, [isTraveling, player, updatePlayer, addToast])
+  }, [player, updatePlayer, addToast])
 
   /**
    * Handles repairing the van
    */
   const handleRepair = useCallback(() => {
-    if (isTraveling) return
+    if (isTravelingRef.current) return
 
     const currentCondition = player.van?.condition ?? 100
     const cost = calculateRepairCost(currentCondition)
@@ -547,7 +547,7 @@ export const useTravelLogic = ({
     } catch (_e) {
       // Ignore audio errors
     }
-  }, [isTraveling, player, updatePlayer, addToast])
+  }, [player, updatePlayer, addToast])
 
   // Softlock detection effect
   useEffect(() => {
