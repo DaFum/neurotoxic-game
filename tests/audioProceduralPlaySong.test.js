@@ -130,7 +130,7 @@ mock.module('../src/data/songs.js', {
 })
 
 // Import the module under test AFTER mocking
-const { playSongFromData } = await import('../src/utils/audio/procedural.js')
+const { playSongFromData } = await import('../src/utils/audio/midiPlayback.js')
 
 // --- Tests ---
 

@@ -5,10 +5,8 @@ import { audioState } from './state.js'
 import { MIN_NOTE_DURATION, MAX_NOTE_DURATION } from './constants.js'
 import { ensureAudioContext } from './setup.js'
 import { stopAudio, stopAudioInternal } from './playback.js'
-import { midiUrlMap, oggCandidates, loadAudioBuffer } from './assets.js'
-import { createAndConnectBufferSource } from './sharedBufferUtils.js'
+import { midiUrlMap } from './assets.js'
 import { calculateTimeFromTicks, preprocessTempoMap } from '../rhythmUtils.js'
-import { selectRandomItem } from './selectionUtils.js'
 import {
   resolveAssetUrl,
   normalizeMidiPlaybackOptions
@@ -19,7 +17,6 @@ import {
   getNoteName
 } from './midiUtils.js'
 import { playDrumNote } from './drumMappings.js'
-import { SONGS_DB } from '../../data/songs.js'
 
 const MidiParser = ToneJsMidi?.Midi ?? ToneJsMidi?.default?.Midi ?? null
 
@@ -208,137 +205,6 @@ export async function playSongFromData(song, delay = 0, options = {}) {
   }
 
   Tone.getTransport().start(startTime)
-  return true
-}
-
-/**
- * Generates a procedural riff pattern.
- * @param {number} diff - Difficulty level.
- * @param {Function} random - Random number generator function.
- * @returns {Array} Array of note strings or nulls.
- */
-function generateRiffPattern(diff, random) {
-  const steps = 16
-  const pattern = []
-  const density = 0.3 + diff * 0.1
-
-  for (let i = 0; i < steps; i++) {
-    if (random() < density) {
-      if (diff <= 2) pattern.push(random() > 0.8 ? 'E3' : 'E2')
-      else if (diff <= 4)
-        pattern.push(random() > 0.7 ? (random() > 0.5 ? 'F2' : 'G2') : 'E2')
-      else {
-        const notes = ['E2', 'A#2', 'F2', 'C3', 'D#3']
-        pattern.push(notes[Math.floor(random() * notes.length)])
-      }
-    } else {
-      pattern.push(null)
-    }
-  }
-  return pattern
-}
-
-/**
- * Plays procedural drums based on legacy logic.
- * @param {number} time - Audio time.
- * @param {number} diff - Difficulty.
- * @param {string|null} note - The guitar note played on this step.
- * @param {Function} random - Random number generator.
- */
-function playDrumsLegacy(time, diff, note, random) {
-  if (diff === 5) {
-    audioState.drumKit.kick.triggerAttackRelease('C1', '16n', time)
-    if (random() > 0.5) {
-      audioState.drumKit.snare.triggerAttackRelease('16n', time)
-    }
-    audioState.drumKit.hihat.triggerAttackRelease(8000, '32n', time, 0.5)
-  } else {
-    if (note === 'E2' || random() < diff * 0.1) {
-      audioState.drumKit.kick.triggerAttackRelease('C1', '8n', time)
-    }
-    if (random() > 0.9) {
-      audioState.drumKit.snare.triggerAttackRelease('16n', time)
-    }
-    // Hihat on the beat — the 0.1 lower bound is intentional for musical density
-    const beatPhase = time % 0.25
-    if (beatPhase < 0.1 || beatPhase > 0.24) {
-      audioState.drumKit.hihat.triggerAttackRelease(8000, '32n', time)
-    }
-  }
-}
-
-// The actual generation logic (Legacy / Fallback)
-/**
- * Starts the procedural metal music generator for a specific song configuration.
- * @param {object} song - The song object containing metadata like BPM and difficulty.
- * @param {number} [delay=0] - Delay in seconds before the audio starts.
- * @param {Function} [random=Math.random] - RNG function for deterministic generation.
- * @returns {Promise<boolean>}
- */
-export async function startMetalGenerator(
-  song,
-  delay = 0,
-  options = {},
-  random = Math.random
-) {
-  const { onEnded } = normalizeMidiPlaybackOptions(options)
-  const reqId = ++audioState.playRequestId
-  const unlocked = await ensureAudioContext()
-  if (!unlocked) return false
-  if (reqId !== audioState.playRequestId) return false
-
-  stopAudioInternal()
-  Tone.getTransport().cancel()
-  Tone.getTransport().position = 0
-
-  // Guard BPM against zero/negative/falsy values
-  // Use ?? for difficulty to correctly handle 0 as a valid difficulty
-  const rawBpm = song.bpm || 80 + (song.difficulty ?? 2) * 30
-  const bpm = Math.max(1, rawBpm)
-
-  Tone.getTransport().bpm.value = bpm
-
-  const pattern = generateRiffPattern(song.difficulty || 2, random)
-
-  audioState.loop = new Tone.Sequence(
-    (time, note) => {
-      if (!audioState.guitar || !audioState.drumKit) return
-
-      if (note) audioState.guitar.triggerAttackRelease(note, '16n', time)
-
-      playDrumsLegacy(time, song.difficulty || 2, note, random)
-    },
-    pattern,
-    '16n'
-  )
-
-  audioState.loop.start(0)
-
-  // Explicit race condition check with cleanup for robustness
-  if (reqId !== audioState.playRequestId) {
-    if (audioState.loop) {
-      audioState.loop.dispose()
-      audioState.loop = null
-    }
-    return false
-  }
-
-  // Schedule Transport.start in advance to prevent pops/crackles
-  // Using "+0.1" schedules 100ms ahead for reliable scheduling
-  const startDelay = Math.max(0.1, delay)
-
-  const duration =
-    song.duration ||
-    (song.excerptDurationMs ? song.excerptDurationMs / 1000 : 0)
-
-  if (duration > 0 && onEnded) {
-    Tone.getTransport().scheduleOnce(() => {
-      if (reqId !== audioState.playRequestId) return
-      onEnded()
-    }, duration)
-  }
-
-  Tone.getTransport().start(`+${startDelay}`)
   return true
 }
 
@@ -629,7 +495,7 @@ function scheduleMidiTransport(midi, params) {
  * @param {number} [options.startTimeSec] - Absolute Tone.js time to start playback.
  * @param {number|null} [ownedRequestId=null] - Internal request ownership override.
  */
-async function playMidiFileInternal(
+export async function playMidiFileInternal(
   filename,
   offset = 0,
   loop = false,
@@ -712,153 +578,4 @@ export async function playMidiFile(
   options = {}
 ) {
   return playMidiFileInternal(filename, offset, loop, delay, options)
-}
-
-/**
- * Plays a random MIDI file from the available set for ambient music.
- * @param {Array} [songs] - Song metadata array for excerpt offset lookup.
- * @param {Function} [rng] - Random number generator function.
- * @returns {Promise<boolean>} Whether playback started successfully.
- */
-export async function playRandomAmbientMidi(
-  songs = SONGS_DB,
-  rng = Math.random
-) {
-  logger.debug('AudioEngine', 'playRandomAmbientMidi called')
-  // Requirement: Stop transport before starting ambient
-  stopAudio()
-  const reqId = audioState.playRequestId
-
-  const midiFiles = Object.keys(midiUrlMap)
-  if (midiFiles.length === 0) {
-    logger.warn('AudioEngine', 'No MIDI files found in midiUrlMap')
-    return false
-  }
-
-  // Requirement: pick a random MIDI from the assets folder
-  const filename = selectRandomItem(midiFiles, rng)
-  if (!filename) {
-    logger.warn('AudioEngine', 'Random MIDI selection returned null')
-    return false
-  }
-
-  // If the MIDI is known in SONGS_DB, we might use metadata, but for Ambient we always start from 0
-  const meta = songs.find(s => s.sourceMid === filename)
-  // Requirement: Ambient always plays from the beginning (0s)
-  const offsetSeconds = 0
-
-  logger.debug(
-    'AudioEngine',
-    `Playing ambient: ${meta?.name ?? filename} (offset ${offsetSeconds}s)`
-  )
-  return playMidiFileInternal(
-    filename,
-    offsetSeconds,
-    false,
-    0,
-    {
-      useCleanPlayback: true,
-      onEnded: () => {
-        if (reqId !== audioState.playRequestId) {
-          logger.debug(
-            'AudioEngine',
-            `Ambient MIDI chain cancelled (reqId ${reqId} vs current ${audioState.playRequestId}).`
-          )
-          return
-        }
-        logger.debug(
-          'AudioEngine',
-          'Ambient MIDI track ended, chaining next track.'
-        )
-        playRandomAmbientMidi(songs, rng).catch(error => {
-          logger.error(
-            'AudioEngine',
-            'Failed to start next ambient MIDI track',
-            error
-          )
-        })
-      }
-    },
-    reqId
-  )
-}
-
-/**
- * Plays a random OGG file from the bundled assets for ambient music.
- * Uses raw AudioBufferSourceNode connected to the musicGain bus for
- * lower CPU usage and better quality than MIDI synthesis.
- * @param {Function} [rng] - Random number generator function.
- * @param {object} [options] - Playback options.
- * @param {boolean} [options.skipStop=false] - Skip internal stopAudio() when caller already stopped audio.
- * @returns {Promise<boolean>} Whether playback started successfully.
- */
-export async function playRandomAmbientOgg(
-  rng = Math.random,
-  { skipStop = false } = {}
-) {
-  logger.debug('AudioEngine', 'playRandomAmbientOgg called')
-  // Skip stopAudio() when caller has already stopped audio to avoid double-stop
-  // and unnecessary playRequestId increments (e.g., AudioManager.startAmbient calls stopMusic first)
-  if (!skipStop) {
-    stopAudio()
-  }
-
-  if (oggCandidates.length === 0) {
-    logger.warn('AudioEngine', 'No OGG files available for ambient playback')
-    return false
-  }
-
-  const filename = selectRandomItem(oggCandidates, rng)
-  if (!filename) {
-    logger.warn('AudioEngine', 'Random OGG selection returned null')
-    return false
-  }
-
-  const reqId = ++audioState.playRequestId
-  const unlocked = await ensureAudioContext()
-  if (!unlocked) return false
-  if (reqId !== audioState.playRequestId) return false
-
-  const buffer = await loadAudioBuffer(filename)
-  if (!buffer) return false
-  if (reqId !== audioState.playRequestId) return false
-
-  const source = createAndConnectBufferSource(buffer)
-  if (!source) return false
-
-  audioState.ambientSource = source
-  const chainReqId = audioState.playRequestId
-
-  source.onended = () => {
-    if (audioState.ambientSource !== source) {
-      logger.debug(
-        'AudioEngine',
-        'Ambient OGG onended: source mismatch, skipping chain.'
-      )
-      return
-    }
-    if (chainReqId !== audioState.playRequestId) {
-      logger.debug(
-        'AudioEngine',
-        `Ambient OGG chain cancelled (reqId ${chainReqId} vs current ${audioState.playRequestId}).`
-      )
-      return
-    }
-    audioState.ambientSource = null
-    logger.debug('AudioEngine', 'Ambient OGG track ended, chaining next track.')
-    playRandomAmbientOgg(rng).catch(error => {
-      logger.error(
-        'AudioEngine',
-        'Failed to chain next ambient OGG track',
-        error
-      )
-    })
-  }
-
-  source.start()
-  logger.debug(
-    'AudioEngine',
-    `Ambient OGG started: ${filename} (${buffer.duration.toFixed(1)}s)`
-  )
-  return true
 }
