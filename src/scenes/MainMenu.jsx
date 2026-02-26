@@ -56,25 +56,6 @@ export const MainMenu = () => {
     })
   }, [reportAudioIssue])
 
-  const handleStartTour = useCallback(async () => {
-    // Check for existing player identity
-    const savedPlayerId = localStorage.getItem('neurotoxic_player_id')
-    const savedPlayerName = localStorage.getItem('neurotoxic_player_name')
-
-    if (!savedPlayerId || !savedPlayerName) {
-      setShowNameInput(true)
-      return
-    }
-
-    // Ensure state has the ID/Name if starting fresh
-    updatePlayer({
-      playerId: savedPlayerId,
-      playerName: savedPlayerName
-    })
-
-    proceedToTour()
-  }, [updatePlayer, proceedToTour])
-
   const proceedToTour = useCallback(async () => {
     setIsStarting(true)
     // Add artificial delay for UX weight
@@ -103,6 +84,25 @@ export const MainMenu = () => {
       .catch(err => reportAudioIssue(err, 'Audio initialization failed.'))
       .then(() => startAmbientSafely())
   }, [resetState, changeScene, reportAudioIssue, startAmbientSafely, updatePlayer])
+
+  const handleStartTour = useCallback(async () => {
+    // Check for existing player identity
+    const savedPlayerId = localStorage.getItem('neurotoxic_player_id')
+    const savedPlayerName = localStorage.getItem('neurotoxic_player_name')
+
+    if (!savedPlayerId || !savedPlayerName) {
+      setShowNameInput(true)
+      return
+    }
+
+    // Ensure state has the ID/Name if starting fresh
+    updatePlayer({
+      playerId: savedPlayerId,
+      playerName: savedPlayerName
+    })
+
+    proceedToTour()
+  }, [updatePlayer, proceedToTour])
 
   const handleNameSubmit = useCallback(() => {
     if (!playerNameInput.trim()) {
@@ -156,6 +156,7 @@ export const MainMenu = () => {
           title="IDENTITY REQUIRED"
           onClose={() => setShowNameInput(false)}
           className="max-w-md"
+          aria-label="Identity required dialog"
         >
           <div className="flex flex-col gap-4">
             <p className="text-(--ash-gray) font-mono text-sm">
@@ -170,6 +171,7 @@ export const MainMenu = () => {
               className="bg-(--void-black) border border-(--toxic-green) p-2 text-(--toxic-green) font-mono text-lg focus:outline-none focus:ring-1 focus:ring-(--toxic-green) uppercase"
               maxLength={20}
               onKeyDown={e => e.key === 'Enter' && handleNameSubmit()}
+              aria-label="Enter alias for global network"
             />
             <GlitchButton onClick={handleNameSubmit}>
               CONFIRM IDENTITY

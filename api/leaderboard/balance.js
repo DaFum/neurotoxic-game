@@ -13,6 +13,11 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Invalid money value' })
       }
 
+      // Basic sanitization/validation for playerId key
+      if (!/^[a-zA-Z0-9_-]+$/.test(playerId)) {
+        return res.status(400).json({ error: 'Invalid playerId format' })
+      }
+
       await redis.hset('players', { [playerId]: playerName })
       await redis.zadd('lb:balance', { gt: true }, { score: money, member: playerId })
 
