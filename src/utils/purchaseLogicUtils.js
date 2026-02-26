@@ -1,5 +1,5 @@
 import { bandHasTrait } from './traitLogic.js'
-import { clampPlayerMoney } from './gameStateUtils.js'
+import { clampPlayerMoney, clampBandHarmony } from './gameStateUtils.js'
 
 /**
  * Selects the primary effect payload from catalog entries during migration.
@@ -49,7 +49,19 @@ export const buildVanWithUpgrade = (van, upgradeId) => {
 }
 
 /**
- * Checks if an item is already owned
+ * Checks if an item is already owned.
+ *
+ * Note: 'inventory_add' represents consumables and does not count as owned (multiple purchases allowed),
+ * while 'inventory_set' is treated as a boolean-owned flag.
+ *
+ * This checks:
+ * - getPrimaryEffect(item)
+ * - effect.type (inventory_set vs others)
+ * - inventoryKey (from effect.item)
+ * - player.van.upgrades
+ * - player.hqUpgrades
+ * - band.inventory
+ *
  * @param {Object} item - Item to check
  * @param {Object} player - Player state
  * @param {Object} band - Band state
@@ -138,13 +150,24 @@ export const applyStatModifier = (effect, playerPatch, player, band) => {
     case 'player': {
       const basePlayerStat =
         nextPlayerPatch[effect.stat] ?? player[effect.stat] ?? 0
-      nextPlayerPatch[effect.stat] = Math.max(0, basePlayerStat + val)
+
+      if (effect.stat === 'money') {
+        nextPlayerPatch[effect.stat] = clampPlayerMoney(basePlayerStat + val)
+      } else {
+        nextPlayerPatch[effect.stat] = Math.max(0, basePlayerStat + val)
+      }
       break
     }
 
     case 'band':
-      nextBandPatch = {
-        [effect.stat]: Math.max(0, (band[effect.stat] || 0) + val)
+      if (effect.stat === 'harmony') {
+        nextBandPatch = {
+          harmony: clampBandHarmony((band.harmony || 0) + val)
+        }
+      } else {
+        nextBandPatch = {
+          [effect.stat]: Math.max(0, (band[effect.stat] || 0) + val)
+        }
       }
       break
 
@@ -168,16 +191,25 @@ export const applyStatModifier = (effect, playerPatch, player, band) => {
  * @param {Object} playerVan - Current player van state
  * @returns {Object} Updated player patch
  */
-export const applyUnlockUpgrade = (effect, item, playerPatch, playerVan) => ({
-  ...playerPatch,
-  van: {
-    ...(playerVan ?? {}),
-    upgrades: [
-      ...(playerVan?.upgrades ?? []),
-      effect.id ? effect.id : item.id
-    ]
+export const applyUnlockUpgrade = (effect, item, playerPatch, playerVan) => {
+  const upgradeId = effect.id ? effect.id : item.id
+  const currentUpgrades = playerVan?.upgrades ?? []
+
+  if (currentUpgrades.includes(upgradeId)) {
+    return playerPatch
   }
-})
+
+  return {
+    ...playerPatch,
+    van: {
+      ...(playerVan ?? {}),
+      upgrades: [
+        ...currentUpgrades,
+        upgradeId
+      ]
+    }
+  }
+}
 
 /**
  * Applies unlock HQ effect
@@ -207,7 +239,7 @@ export const applyUnlockHQ = (item, playerPatch, player, band) => {
 
     case 'hq_room_diy_soundproofing':
       nextBandPatch = {
-        harmony: Math.max(0, Math.min(100, (band.harmony ?? 0) + 5))
+        harmony: clampBandHarmony((band.harmony ?? 0) + 5)
       }
       messages.push({ message: 'Less noise, more peace. Harmony +5', type: 'success' })
       break

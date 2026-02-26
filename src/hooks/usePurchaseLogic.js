@@ -159,7 +159,9 @@ export const usePurchaseLogic = ({
             playerPatch = result.playerPatch
             bandPatch = result.bandPatch
             if (result.messages) {
-              result.messages.forEach(msg => addToast(msg.message, msg.type))
+              result.messages.forEach(msg => {
+                addToast(msg.message, msg.type)
+              })
             }
             break
           }

@@ -91,7 +91,7 @@ export async function startMetalGenerator(
 
   Tone.getTransport().bpm.value = bpm
 
-  const pattern = generateRiffPattern(song.difficulty || 2, random)
+  const pattern = generateRiffPattern(song.difficulty ?? 2, random)
 
   audioState.loop = new Tone.Sequence(
     (time, note) => {
@@ -99,7 +99,7 @@ export async function startMetalGenerator(
 
       if (note) audioState.guitar.triggerAttackRelease(note, '16n', time)
 
-      playDrumsLegacy(time, song.difficulty || 2, note, random)
+      playDrumsLegacy(time, song.difficulty ?? 2, note, random)
     },
     pattern,
     '16n'

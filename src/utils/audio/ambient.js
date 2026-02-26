@@ -140,7 +140,7 @@ export async function playRandomAmbientOgg(
     }
     audioState.ambientSource = null
     logger.debug('AudioEngine', 'Ambient OGG track ended, chaining next track.')
-    playRandomAmbientOgg(rng).catch(error => {
+    playRandomAmbientOgg(rng, { skipStop: true }).catch(error => {
       logger.error(
         'AudioEngine',
         'Failed to chain next ambient OGG track',
