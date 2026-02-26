@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import introVideo from '../assets/Neurotoxic_start.webm'
 import { GlitchButton } from '../ui/GlitchButton'
@@ -8,6 +9,7 @@ import { logger } from '../utils/logger'
  * Scene for playing the intro video before the main menu.
  */
 export const IntroVideo = () => {
+  const { t } = useTranslation()
   const { changeScene } = useGameState()
   const videoRef = useRef(null)
   const [autoplayBlocked, setAutoplayBlocked] = useState(false)
@@ -44,6 +46,7 @@ export const IntroVideo = () => {
         playsInline
         muted
         onEnded={handleEnd}
+        onError={handleEnd} // Auto-skip if video fails to load (e.g. missing asset)
         onClick={handleEnd} // Click video to skip (if playing)
       />
 
@@ -51,14 +54,14 @@ export const IntroVideo = () => {
       {autoplayBlocked && (
         <div className='absolute inset-0 z-50 flex items-center justify-center bg-black/80'>
           <GlitchButton onClick={handleManualPlay} className='scale-150'>
-            START TOUR
+            {t('ui:intro_play')}
           </GlitchButton>
         </div>
       )}
 
       {/* Skip Button */}
       <div className='absolute bottom-8 right-8 z-50 opacity-80 hover:opacity-100 transition-opacity'>
-        <GlitchButton onClick={handleEnd}>SKIP INTRO</GlitchButton>
+        <GlitchButton onClick={handleEnd}>{t('ui:intro_skip')}</GlitchButton>
       </div>
     </div>
   )

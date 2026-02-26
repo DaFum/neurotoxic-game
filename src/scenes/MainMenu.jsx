@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { useBandHQModal } from '../hooks/useBandHQModal.js'
@@ -13,6 +14,7 @@ import { handleError } from '../utils/errorHandler'
  * @returns {JSX.Element} The rendered menu.
  */
 export const MainMenu = () => {
+  const { t } = useTranslation()
   const { changeScene, loadGame, addToast, resetState } = useGameState()
   const { showHQ, openHQ, bandHQProps } = useBandHQModal()
   const isMountedRef = useRef(true)
@@ -150,7 +152,7 @@ export const MainMenu = () => {
             isLoading={isStarting}
             className='relative z-20'
           >
-            Start Tour
+            {t('ui:start_game')}
           </GlitchButton>
 
           <GlitchButton
@@ -158,14 +160,14 @@ export const MainMenu = () => {
             isLoading={isLoadingGame}
             className='relative z-20 border-(--blood-red) text-(--blood-red) hover:bg-(--blood-red) hover:shadow-[4px_4px_0px_var(--toxic-green)]'
           >
-            Load Game
+            {t('ui:load_game')}
           </GlitchButton>
 
           <GlitchButton
             onClick={openHQ}
             className='relative z-20 border-(--warning-yellow) text-(--warning-yellow) hover:bg-(--warning-yellow) hover:shadow-[4px_4px_0px_var(--toxic-green)]'
           >
-            Band HQ
+            {t('ui:band_hq')}
           </GlitchButton>
         </motion.div>
 
@@ -175,7 +177,7 @@ export const MainMenu = () => {
           transition={{ delay: 1.2 }}
           className='flex gap-4 mt-6'
         >
-          <GlitchButton onClick={handleCredits}>CREDITS</GlitchButton>
+          <GlitchButton onClick={handleCredits}>{t('ui:credits')}</GlitchButton>
         </motion.div>
       </div>
 

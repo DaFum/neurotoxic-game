@@ -7,6 +7,7 @@ import {
   useMemo,
   useRef
 } from 'react'
+import { useTranslation } from 'react-i18next'
 import { eventEngine, resolveEventChoice } from '../utils/eventEngine'
 import { MapGenerator } from '../utils/mapGenerator'
 import { logger } from '../utils/logger'
@@ -64,6 +65,7 @@ const GameDispatchContext = createContext()
  * @param {React.ReactNode} props.children
  */
 export const GameStateProvider = ({ children }) => {
+  const { t } = useTranslation()
   const [state, dispatch] = useReducer(gameReducer, null, createInitialState)
 
   // Use a ref to access the latest state in actions without creating a dependency loop
@@ -237,8 +239,8 @@ export const GameStateProvider = ({ children }) => {
     const currentState = stateRef.current
     const nextDay = currentState.player.day + 1
     dispatch(createAdvanceDayAction())
-    addToast(`Day ${nextDay}: Living Costs Deducted.`, 'info')
-  }, [addToast])
+    addToast(t('ui:day_advance', { day: nextDay }), 'info')
+  }, [addToast, t])
 
   /**
    * Resets the game state to initial values.
@@ -465,7 +467,7 @@ export const GameStateProvider = ({ children }) => {
             const added = addUnlock(delta.flags.unlock)
             if (added) {
               addToast(
-                `UNLOCKED: ${delta.flags.unlock.toUpperCase()}!`,
+                t('ui:unlocked', { unlock: delta.flags.unlock.toUpperCase() }),
                 'success'
               )
             }
@@ -473,7 +475,8 @@ export const GameStateProvider = ({ children }) => {
 
           // Game Over - Early Exit
           if (delta.flags?.gameOver) {
-            addToast(`GAME OVER: ${description}`, 'error')
+            const context = currentState.activeEvent?.context || {}
+            addToast(t('ui:game_over', { description: t(description, context) }), 'error')
             changeScene('GAMEOVER')
             setActiveEvent(null)
             return { outcomeText, description, result }
@@ -487,10 +490,14 @@ export const GameStateProvider = ({ children }) => {
 
         // 5. Feedback (Success Path)
         if (outcomeText || description) {
+          const context = currentState.activeEvent?.context || {}
+          const msgOutcome = outcomeText ? t(outcomeText, context) : ''
+          const msgDesc = description ? t(description, context) : ''
+
           const message =
-            outcomeText && description
-              ? `${outcomeText} — ${description}`
-              : outcomeText || description
+            msgOutcome && msgDesc
+              ? `${msgOutcome} — ${msgDesc}`
+              : msgOutcome || msgDesc
           addToast(message, 'info')
         }
 
@@ -500,7 +507,7 @@ export const GameStateProvider = ({ children }) => {
       } catch (error) {
         // 7. Error Handling
         logger.error('Event', 'Failed to resolve event choice:', error)
-        addToast('EVENT ERROR: Resolution failed.', 'error')
+        addToast(t('ui:event_error'), 'error')
         setActiveEvent(null)
         return {
           outcomeText: choice.outcomeText ?? '',
@@ -509,7 +516,7 @@ export const GameStateProvider = ({ children }) => {
         }
       }
     },
-    [setActiveEvent, addToast, changeScene]
+    [setActiveEvent, addToast, changeScene, t]
   )
 
   const dispatchValue = useMemo(

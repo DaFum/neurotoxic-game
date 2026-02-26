@@ -1,0 +1,14 @@
+{
+  "internal_dispute": {
+    "title": "KREATIVE DIFFERENZEN",
+    "description": "Matze findet, der neue Song sollte langsamer sein. Lars will ihn schneller.",
+    "option_slow": "Auf Matzes Seite (Langsam)",
+    "outcome_slow": "Lars ist genervt.",
+    "option_fast": "Auf Lars' Seite (Schnell)",
+    "outcome_fast": "Matze schmollt.",
+    "option_compromise": "Kompromiss [Charisma]",
+    "outcome_compromise": "Du versuchst zu vermitteln.",
+    "success_compromise": "Alle sind glücklich.",
+    "failure_compromise": "Jetzt hassen dich beide."
+  }
+}

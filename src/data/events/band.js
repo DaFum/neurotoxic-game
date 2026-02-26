@@ -4,24 +4,23 @@ export const BAND_EVENTS = [
     id: 'internal_dispute',
     category: 'band',
     tags: ['conflict'],
-    title: 'CREATIVE DIFFERENCES',
-    description:
-      'Matze thinks the new song should be slower. Lars wants it faster.',
+    title: 'events:internal_dispute.title',
+    description: 'events:internal_dispute.description',
     trigger: 'random',
     chance: 0.05,
     options: [
       {
-        label: 'Side with Matze (Slow)',
+        label: 'events:internal_dispute.option_slow',
         effect: { type: 'stat', stat: 'harmony', value: -5 },
-        outcomeText: 'Lars is annoyed.'
+        outcomeText: 'events:internal_dispute.outcome_slow'
       },
       {
-        label: 'Side with Lars (Fast)',
+        label: 'events:internal_dispute.option_fast',
         effect: { type: 'stat', stat: 'harmony', value: -5 },
-        outcomeText: 'Matze sulks.'
+        outcomeText: 'events:internal_dispute.outcome_fast'
       },
       {
-        label: 'Compromise [Charisma]',
+        label: 'events:internal_dispute.option_compromise',
         skillCheck: {
           stat: 'charisma',
           threshold: 6,
@@ -29,16 +28,16 @@ export const BAND_EVENTS = [
             type: 'stat',
             stat: 'harmony',
             value: 5,
-            description: 'Everyone is happy.'
+            description: 'events:internal_dispute.success_compromise'
           },
           failure: {
             type: 'stat',
             stat: 'harmony',
             value: -10,
-            description: 'Now they both hate you.'
+            description: 'events:internal_dispute.failure_compromise'
           }
         },
-        outcomeText: 'You tried to mediate.'
+        outcomeText: 'events:internal_dispute.outcome_compromise'
       }
     ]
   },
