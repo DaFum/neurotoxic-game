@@ -82,7 +82,7 @@ export const calculateGigPhysics = (bandState, song) => {
 
   // Virtuoso Trait (Matze): +10% Hit Window
   if (hasTrait(matze, 'virtuoso')) {
-    hitWindows.guitar *= 1.10
+    hitWindows.guitar *= 1.1
   }
 
   // 2. Scroll Speed based on Global Stamina
@@ -180,9 +180,9 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
   // YouTube Passive Ad Revenue Perk (per 10k subscribers)
   if ((nextSocial.youtube || 0) >= 10000) {
     const adRevenue = Math.floor((nextSocial.youtube || 0) / 10000) * 10
-    dailyCost -= adRevenue // Can result in net positive daily income if huge 
+    dailyCost -= adRevenue // Can result in net positive daily income if huge
   }
-  
+
   // Newsletter Merch Sales Perk (Note: Can result in net daily income/negative dailyCost)
   if ((nextSocial.newsletter || 0) >= 1000 && rng() < 0.3) {
     dailyCost -= Math.floor((nextSocial.newsletter || 0) / 100) * 5
@@ -217,7 +217,8 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
 
     // Controversy penalty: Stress/rush jobs lead to neglected maintenance
     if ((nextSocial.controversyLevel || 0) >= 80) conditionMultiplier += 0.5
-    else if ((nextSocial.controversyLevel || 0) >= 50) conditionMultiplier += 0.2
+    else if ((nextSocial.controversyLevel || 0) >= 50)
+      conditionMultiplier += 0.2
 
     const adjustedBreakdownChance = baseBreakdownChance * conditionMultiplier
     // Clamp to a reasonable range so chance stays between 0% and 50%
@@ -294,7 +295,7 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
   nextSocial.viral = nextSocial.viral || 0
   // Viral decay
   if (nextSocial.viral > 0) nextSocial.viral -= 1
-  
+
   // Controversy/Shadowban Decay
   if (nextSocial.controversyLevel > 0) {
     // Passive cooldown
@@ -303,20 +304,27 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
 
   // Reputation cooldown decay
   if ((nextSocial.reputationCooldown || 0) > 0) {
-    nextSocial.reputationCooldown = Math.max(0, nextSocial.reputationCooldown - 1)
+    nextSocial.reputationCooldown = Math.max(
+      0,
+      nextSocial.reputationCooldown - 1
+    )
   }
 
   // Sponsor Trigger Metric
-  if (!nextSocial.sponsorActive && (nextSocial.instagram || 0) > 5000 && rng() < 0.1) {
+  if (
+    !nextSocial.sponsorActive &&
+    (nextSocial.instagram || 0) > 5000 &&
+    rng() < 0.1
+  ) {
     nextSocial.sponsorActive = true
   } else if (nextSocial.sponsorActive) {
     // If organic followers drop below milestone, they drop the sponsorship
     if ((nextSocial.instagram || 0) < 5000) {
-        nextSocial.sponsorActive = false
-    } 
+      nextSocial.sponsorActive = false
+    }
     // Sponsorship Drops due to high controversy
-    else if (controversy >= 80 && rng() < 0.2) { 
-        nextSocial.sponsorActive = false
+    else if (controversy >= 80 && rng() < 0.2) {
+      nextSocial.sponsorActive = false
     }
   }
 
@@ -368,10 +376,7 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
       if (hasBeerFridge) {
         mood += 1
         // Party Animal Trait (Marius): Extra mood, but risk of stamina loss
-        if (
-          m.name === CHARACTERS.MARIUS.name &&
-          hasTrait(m, 'party_animal')
-        ) {
+        if (m.name === CHARACTERS.MARIUS.name && hasTrait(m, 'party_animal')) {
           mood += 2
           if (rng() < 0.3) {
             stamina -= 5
@@ -403,5 +408,10 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
       (nextSocial.instagram || 0) + nextPlayer.passiveFollowers
   }
 
-  return { player: nextPlayer, band: nextBand, social: nextSocial, pendingFlags }
+  return {
+    player: nextPlayer,
+    band: nextBand,
+    social: nextSocial,
+    pendingFlags
+  }
 }

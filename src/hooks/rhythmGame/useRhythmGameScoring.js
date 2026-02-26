@@ -99,7 +99,9 @@ export const useRhythmGameScoring = ({
           { combo: gameStateRef.current.combo, overload: next }
         )
         gameStateRef.current.stats = updatedStats
-        setAccuracy(calculateAccuracy(updatedStats.perfectHits, updatedStats.misses))
+        setAccuracy(
+          calculateAccuracy(updatedStats.perfectHits, updatedStats.misses)
+        )
         return next
       })
 

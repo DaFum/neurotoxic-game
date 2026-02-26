@@ -28,8 +28,10 @@ mock.module('../src/utils/AudioManager', {
 })
 
 // Import hook after mocks
-const { useRoadieLogic, MOVE_COOLDOWN_BASE } = await import('../src/hooks/minigames/useRoadieLogic.js')
-const { GRID_WIDTH, GRID_HEIGHT } = await import('../src/hooks/minigames/constants.js')
+const { useRoadieLogic, MOVE_COOLDOWN_BASE } =
+  await import('../src/hooks/minigames/useRoadieLogic.js')
+const { GRID_WIDTH, GRID_HEIGHT } =
+  await import('../src/hooks/minigames/constants.js')
 
 describe('useRoadieLogic', () => {
   beforeEach(() => {
@@ -54,7 +56,11 @@ describe('useRoadieLogic', () => {
     assert.equal(game.isGameOver, false)
     assert.ok(game.carrying, 'Should start carrying an item')
     // itemsToDeliver has 3 items. One is popped immediately. Remaining is 2.
-    assert.equal(result.current.uiState.itemsRemaining, 2, 'Should have 2 items remaining (1 carrying, 2 in list)')
+    assert.equal(
+      result.current.uiState.itemsRemaining,
+      2,
+      'Should have 2 items remaining (1 carrying, 2 in list)'
+    )
   })
 
   test('moves player within bounds', () => {
@@ -62,36 +68,48 @@ describe('useRoadieLogic', () => {
     const game = result.current.gameStateRef.current
 
     // Move Right
-    act(() => { result.current.actions.move(1, 0) })
+    act(() => {
+      result.current.actions.move(1, 0)
+    })
     assert.deepEqual(game.playerPos, { x: 7, y: 0 })
 
     // Move Left (wait for cooldown)
     game.lastMoveTime = 0 // Reset cooldown hack
-    act(() => { result.current.actions.move(-1, 0) })
+    act(() => {
+      result.current.actions.move(-1, 0)
+    })
     assert.deepEqual(game.playerPos, { x: 6, y: 0 })
 
     // Boundary Left
     game.playerPos.x = 0
     game.lastMoveTime = 0
-    act(() => { result.current.actions.move(-1, 0) })
+    act(() => {
+      result.current.actions.move(-1, 0)
+    })
     assert.deepEqual(game.playerPos, { x: 0, y: 0 })
 
     // Boundary Right
     game.playerPos.x = GRID_WIDTH - 1
     game.lastMoveTime = 0
-    act(() => { result.current.actions.move(1, 0) })
+    act(() => {
+      result.current.actions.move(1, 0)
+    })
     assert.deepEqual(game.playerPos, { x: GRID_WIDTH - 1, y: 0 })
 
     // Boundary Up
     game.playerPos.y = 0
     game.lastMoveTime = 0
-    act(() => { result.current.actions.move(0, -1) })
+    act(() => {
+      result.current.actions.move(0, -1)
+    })
     assert.deepEqual(game.playerPos, { x: GRID_WIDTH - 1, y: 0 })
 
     // Boundary Down
     game.playerPos.y = GRID_HEIGHT - 1
     game.lastMoveTime = 0
-    act(() => { result.current.actions.move(0, 1) })
+    act(() => {
+      result.current.actions.move(0, 1)
+    })
     assert.deepEqual(game.playerPos, { x: GRID_WIDTH - 1, y: GRID_HEIGHT - 1 })
   })
 
@@ -104,7 +122,9 @@ describe('useRoadieLogic', () => {
     game.lastMoveTime = 0
 
     // Move down into venue
-    act(() => { result.current.actions.move(0, 1) })
+    act(() => {
+      result.current.actions.move(0, 1)
+    })
 
     assert.equal(game.playerPos.y, GRID_HEIGHT - 1)
     assert.equal(game.carrying, null, 'Should drop item')
@@ -126,7 +146,9 @@ describe('useRoadieLogic', () => {
     game.lastMoveTime = 0
 
     // Move up to start
-    act(() => { result.current.actions.move(0, -1) })
+    act(() => {
+      result.current.actions.move(0, -1)
+    })
 
     assert.equal(game.playerPos.y, 0)
     assert.ok(game.carrying, 'Should pick up item')
@@ -144,7 +166,9 @@ describe('useRoadieLogic', () => {
     // Advance time in small steps to ensure spawning and not immediate despawning
     // Total 3000ms, steps of 100ms
     for (let i = 0; i < 30; i++) {
-      act(() => { result.current.update(100) })
+      act(() => {
+        result.current.update(100)
+      })
     }
 
     assert.ok(game.traffic.length > 0, 'Should spawn traffic')
@@ -157,16 +181,20 @@ describe('useRoadieLogic', () => {
     // Setup collision scenario
     game.playerPos = { x: 6, y: 1 } // Player in lane 1
     // Place car in same lane, overlapping
-    game.traffic = [{
-      id: 'test-car',
-      row: 1,
-      x: 6.0,
-      speed: 0, // Stationary for test
-      width: 1.5
-    }]
+    game.traffic = [
+      {
+        id: 'test-car',
+        row: 1,
+        x: 6.0,
+        speed: 0, // Stationary for test
+        width: 1.5
+      }
+    ]
 
     // Update to trigger collision check
-    act(() => { result.current.update(16) })
+    act(() => {
+      result.current.update(16)
+    })
 
     assert.equal(mockPlaySFX.mock.calls.length, 1)
     assert.equal(mockPlaySFX.mock.calls[0].arguments[0], 'crash')
@@ -185,7 +213,9 @@ describe('useRoadieLogic', () => {
     game.lastMoveTime = 0
 
     // Move to finish
-    act(() => { result.current.actions.move(0, 1) })
+    act(() => {
+      result.current.actions.move(0, 1)
+    })
 
     assert.equal(game.isGameOver, true)
     assert.equal(mockCompleteRoadieMinigame.mock.calls.length, 1)

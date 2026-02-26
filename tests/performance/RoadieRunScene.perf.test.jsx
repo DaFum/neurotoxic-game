@@ -1,9 +1,16 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
-
-
 import React from 'react'
-import { render, act, cleanup } from '@testing-library/react'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi
+} from 'vitest'
 
+import { render, act, cleanup } from '@testing-library/react'
 
 // Mocks
 const mockChangeScene = vi.fn()
@@ -33,17 +40,17 @@ const mockUseRoadieLogic = () => ({
 
 // Register mocks
 vi.mock('../../src/context/GameState', () => ({
-    useGameState: mockUseGameState
-  }))
+  useGameState: mockUseGameState
+}))
 vi.mock('../../src/hooks/minigames/useRoadieLogic', () => ({
-    useRoadieLogic: mockUseRoadieLogic
-  }))
+  useRoadieLogic: mockUseRoadieLogic
+}))
 vi.mock('../../src/components/stage/RoadieStageController', () => ({
-    createRoadieStageController: () => ({ destroy: () => {} })
-  }))
+  createRoadieStageController: () => ({ destroy: () => {} })
+}))
 vi.mock('../../src/components/PixiStage', () => ({
-    PixiStage: () => React.createElement('div', { 'data-testid': 'pixi-stage' })
-  }))
+  PixiStage: () => React.createElement('div', { 'data-testid': 'pixi-stage' })
+}))
 // Dynamic import
 const { RoadieRunScene } = await import('../../src/scenes/RoadieRunScene.jsx')
 

@@ -14,7 +14,15 @@ import { SpeedInsights } from '@vercel/speed-insights/react'
 import { createNamedLazyLoader } from './utils/lazySceneLoader'
 import { GAME_PHASES } from './context/gameConstants'
 
-const SCENES_WITHOUT_HUD = ['INTRO', 'MENU', 'SETTINGS', 'CREDITS', 'GAMEOVER', GAME_PHASES.TRAVEL_MINIGAME, GAME_PHASES.PRE_GIG_MINIGAME]
+const SCENES_WITHOUT_HUD = [
+  'INTRO',
+  'MENU',
+  'SETTINGS',
+  'CREDITS',
+  'GAMEOVER',
+  GAME_PHASES.TRAVEL_MINIGAME,
+  GAME_PHASES.PRE_GIG_MINIGAME
+]
 
 const Overworld = lazy(
   createNamedLazyLoader(() => import('./scenes/Overworld'), 'Overworld')
@@ -30,7 +38,10 @@ const TourbusScene = lazy(
   createNamedLazyLoader(() => import('./scenes/TourbusScene'), 'TourbusScene')
 )
 const RoadieRunScene = lazy(
-  createNamedLazyLoader(() => import('./scenes/RoadieRunScene'), 'RoadieRunScene')
+  createNamedLazyLoader(
+    () => import('./scenes/RoadieRunScene'),
+    'RoadieRunScene'
+  )
 )
 const Settings = lazy(
   createNamedLazyLoader(() => import('./scenes/Settings'), 'Settings')

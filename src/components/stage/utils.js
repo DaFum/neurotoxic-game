@@ -1,4 +1,3 @@
-
 import * as PIXI from 'pixi.js'
 import { logger } from '../../utils/logger'
 
@@ -195,7 +194,11 @@ export const loadTexture = async url => {
     try {
       return await PIXI.Assets.load(url)
     } catch (err) {
-      logger.warn('loadTexture', 'Pixi Assets load failed, falling back to Image element', err)
+      logger.warn(
+        'loadTexture',
+        'Pixi Assets load failed, falling back to Image element',
+        err
+      )
     }
   }
 
@@ -223,6 +226,6 @@ export const loadTexture = async url => {
  * @returns {number} Optimized resolution (1.0 to 2.0).
  */
 export const getOptimalResolution = () => {
-  const dpr = typeof window !== 'undefined' ? (window.devicePixelRatio || 1) : 1
+  const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1
   return Math.min(dpr, 2)
 }

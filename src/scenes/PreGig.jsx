@@ -22,7 +22,12 @@ const GIG_MODIFIER_OPTIONS = [
     cost: MODIFIER_COSTS.promo,
     desc: '+Crowd Fill'
   },
-  { key: 'merch', label: 'Merch Table', cost: MODIFIER_COSTS.merch, desc: '+Sales' },
+  {
+    key: 'merch',
+    label: 'Merch Table',
+    cost: MODIFIER_COSTS.merch,
+    desc: '+Sales'
+  },
   {
     key: 'catering',
     label: 'Catering / Energy',
@@ -114,7 +119,6 @@ export const PreGig = () => {
       return acc + (MODIFIER_COSTS[key] || 0)
     }, 0)
   }, [gigModifiers])
-
 
   /**
    * Toggles a gig modifier (budget item).
@@ -213,7 +217,7 @@ export const PreGig = () => {
             </h4>
             {currentModifiers.activeEffects.length > 0 ? (
               <ul className='text-xs space-y-1'>
-                {currentModifiers.activeEffects.map((eff) => (
+                {currentModifiers.activeEffects.map(eff => (
                   <li
                     key={eff}
                     className='text-(--star-white)/60 flex items-center gap-1.5'
@@ -245,12 +249,29 @@ export const PreGig = () => {
           <div className='flex-1 overflow-y-auto pr-2 space-y-2'>
             {SONGS_DB.map(song => {
               const isSelected = setlist.find(s => getSongId(s) === song.id)
-              const isLocked = player?.stats?.proveYourselfMode && song.difficulty > 2
+              const isLocked =
+                player?.stats?.proveYourselfMode && song.difficulty > 2
 
               return (
                 <div
                   key={song.id}
-                  onClick={() => { if (!isLocked) toggleSong(song) }}
+                  role='button'
+                  tabIndex={isLocked ? -1 : 0}
+                  aria-label={`Select song ${song.name}`}
+                  aria-pressed={!!isSelected}
+                  aria-disabled={isLocked}
+                  onClick={() => {
+                    if (!isLocked) toggleSong(song)
+                  }}
+                  onKeyDown={e => {
+                    if (
+                      !isLocked &&
+                      (e.key === 'Enter' || e.key === ' ')
+                    ) {
+                      e.preventDefault()
+                      toggleSong(song)
+                    }
+                  }}
                   className={`p-3 border-2 flex justify-between items-center transition-all ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}
                     ${
                       isSelected
@@ -262,7 +283,12 @@ export const PreGig = () => {
                 >
                   <div>
                     <div className='font-bold text-sm'>
-                      {song.name} {isLocked && <span className="text-[10px] text-(--blood-red) ml-2 border border-(--blood-red)/50 px-1">LOCKED (Prove Yourself)</span>}
+                      {song.name}{' '}
+                      {isLocked && (
+                        <span className='text-[10px] text-(--blood-red) ml-2 border border-(--blood-red)/50 px-1'>
+                          LOCKED (Prove Yourself)
+                        </span>
+                      )}
                     </div>
                     <div className='text-[10px] font-mono mt-0.5 flex gap-2'>
                       <span>{song.duration}s</span>

@@ -58,15 +58,28 @@ export const applyEventDelta = (state, delta) => {
     if (typeof delta.player.fame === 'number') {
       nextPlayer.fame = Math.max(0, nextPlayer.fame + delta.player.fame)
     }
+    const scoreDelta =
+      typeof delta.player.score === 'number'
+        ? delta.player.score
+        : typeof delta.score === 'number'
+          ? delta.score
+          : 0
+
+    if (scoreDelta !== 0) {
+      nextPlayer.score = Math.max(0, (nextPlayer.score || 0) + scoreDelta)
+    }
 
     // Player Stats
     if (delta.player.stats) {
       nextPlayer.stats = { ...nextPlayer.stats }
       Object.keys(delta.player.stats).forEach(key => {
         if (typeof delta.player.stats[key] === 'number') {
-           nextPlayer.stats[key] = (nextPlayer.stats[key] || 0) + delta.player.stats[key]
+          nextPlayer.stats[key] = Math.max(
+            0,
+            (nextPlayer.stats[key] || 0) + delta.player.stats[key]
+          )
         } else {
-           nextPlayer.stats[key] = delta.player.stats[key]
+          nextPlayer.stats[key] = delta.player.stats[key]
         }
       })
     }
@@ -147,14 +160,21 @@ export const applyEventDelta = (state, delta) => {
       nextBand.members = nextBand.members.map(member => {
         let newRelationships = { ...member.relationships }
         let hasChanges = false
-        
+
         delta.band.relationshipChange.forEach(change => {
-          if (change.member1 === member.name || change.member2 === member.name) {
-            const otherMember = change.member1 === member.name ? change.member2 : change.member1
-            
+          if (
+            change.member1 === member.name ||
+            change.member2 === member.name
+          ) {
+            const otherMember =
+              change.member1 === member.name ? change.member2 : change.member1
+
             let amount = change.change
             // Apply traits
-            if (amount < 0 && member.traits?.some(t => t.id === 'grudge_holder')) {
+            if (
+              amount < 0 &&
+              member.traits?.some(t => t.id === 'grudge_holder')
+            ) {
               amount *= 1.5 // Grudge Holder amplifies negative
             }
             if (amount > 0 && member.traits?.some(t => t.id === 'peacemaker')) {
@@ -165,11 +185,14 @@ export const applyEventDelta = (state, delta) => {
             }
 
             const currentScore = newRelationships[otherMember] || 50
-            newRelationships[otherMember] = Math.max(0, Math.min(100, Math.round(currentScore + amount)))
+            newRelationships[otherMember] = Math.max(
+              0,
+              Math.min(100, Math.round(currentScore + amount))
+            )
             hasChanges = true
           }
         })
-        
+
         if (hasChanges) {
           return { ...member, relationships: newRelationships }
         }

@@ -64,7 +64,9 @@ export const ToastOverlay = () => {
                 >
                   {style.icon}
                 </span>
-                <p className={`font-[Courier_New] text-sm leading-snug ${style.text}`}>
+                <p
+                  className={`font-[Courier_New] text-sm leading-snug ${style.text}`}
+                >
                   {toast.message}
                 </p>
               </div>

@@ -1,4 +1,3 @@
-
 import * as PIXI from 'pixi.js'
 import { logger } from '../../utils/logger'
 import { getOptimalResolution } from './utils'
@@ -62,7 +61,6 @@ export class BaseStageController {
           this._usingWindowResize = true
         }
         this.app.ticker.add(this.handleTicker)
-
       } catch (e) {
         logger.error(this.constructor.name, 'Init Failed', e)
         this.dispose()
@@ -103,7 +101,11 @@ export class BaseStageController {
     if (this.app) {
       try {
         this.app.ticker?.remove(this.handleTicker)
-        this.app.destroy({ removeView: true, children: true, texture: true, textureSource: true })
+        // PixiJS v8 destroy signature: destroy(rendererDestroyOptions, options)
+        this.app.destroy(
+          { removeView: true },
+          { children: true, texture: true, textureSource: true }
+        )
       } catch (e) {
         logger.warn(this.constructor.name, 'Destroy failed', e)
       }

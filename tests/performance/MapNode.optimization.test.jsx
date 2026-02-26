@@ -1,4 +1,13 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi
+} from 'vitest'
 
 import React from 'react'
 import { render, cleanup } from '@testing-library/react'
@@ -12,7 +21,6 @@ describe('MapNode Optimization', () => {
 
   afterEach(() => {
     cleanup()
-
   })
 
   test('MapNode: style object for position should be referentially stable across re-renders', async () => {
@@ -31,18 +39,18 @@ describe('MapNode Optimization', () => {
         node={node}
         isCurrent={false}
         isTraveling={false}
-        visibility="visible"
+        visibility='visible'
         isReachable={true}
         isPendingConfirm={false}
         handleTravel={handleTravel}
         setHoveredNode={setHoveredNode}
-        iconUrl="icon.png"
-        vanUrl="van.png"
+        iconUrl='icon.png'
+        vanUrl='van.png'
       />
     )
 
     // Helper to get React props from DOM node
-    const getProps = (domNode) => {
+    const getProps = domNode => {
       const key = Object.keys(domNode).find(k => k.startsWith('__reactProps$'))
       return key ? domNode[key] : null
     }
@@ -58,13 +66,13 @@ describe('MapNode Optimization', () => {
         node={node}
         isCurrent={false}
         isTraveling={true}
-        visibility="visible"
+        visibility='visible'
         isReachable={true}
         isPendingConfirm={false}
         handleTravel={handleTravel}
         setHoveredNode={setHoveredNode}
-        iconUrl="icon.png"
-        vanUrl="van.png"
+        iconUrl='icon.png'
+        vanUrl='van.png'
       />
     )
 

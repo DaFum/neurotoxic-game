@@ -43,6 +43,9 @@ test('resolveEventChoice appends SAVED_BY_BANDLEADER string on successful bandle
   const { description, result } = resolveEventChoice(choice, gameState, mockRng)
 
   assert.equal(result.outcome, 'success')
-  assert.ok(description.includes(EVENT_STRINGS.SAVED_BY_BANDLEADER), `Description "${description}" should include "${EVENT_STRINGS.SAVED_BY_BANDLEADER}"`)
+  assert.ok(
+    description.includes(EVENT_STRINGS.SAVED_BY_BANDLEADER),
+    `Description "${description}" should include "${EVENT_STRINGS.SAVED_BY_BANDLEADER}"`
+  )
   assert.equal(description, 'Success!' + EVENT_STRINGS.SAVED_BY_BANDLEADER)
 })

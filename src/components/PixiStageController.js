@@ -43,7 +43,10 @@ class PixiStageController extends BaseStageController {
 
     // Initialize Managers and start loading assets in parallel
     this.crowdManager = new CrowdManager(this.app, this.stageContainer)
-    const crowdLoad = this.withTimeout(this.crowdManager.loadAssets(), 'Crowd Assets')
+    const crowdLoad = this.withTimeout(
+      this.crowdManager.loadAssets(),
+      'Crowd Assets'
+    )
 
     this.laneManager = new LaneManager(
       this.app,
@@ -57,7 +60,10 @@ class PixiStageController extends BaseStageController {
     const rhythmContainer = this.laneManager.container
 
     this.effectManager = new EffectManager(this.app, rhythmContainer)
-    const effectLoad = this.withTimeout(this.effectManager.loadAssets(), 'Effect Assets')
+    const effectLoad = this.withTimeout(
+      this.effectManager.loadAssets(),
+      'Effect Assets'
+    )
 
     this.noteManager = new NoteManager(
       this.app,
@@ -65,7 +71,10 @@ class PixiStageController extends BaseStageController {
       this.gameStateRef,
       (x, y, color) => this.effectManager.spawnHitEffect(x, y, color)
     )
-    const noteLoad = this.withTimeout(this.noteManager.loadAssets(), 'Note Assets')
+    const noteLoad = this.withTimeout(
+      this.noteManager.loadAssets(),
+      'Note Assets'
+    )
 
     // Await all loads in parallel
     await Promise.all([crowdLoad, effectLoad, noteLoad])
@@ -86,9 +95,12 @@ class PixiStageController extends BaseStageController {
    */
   async withTimeout(promise, label) {
     let timerId
-    const timeout = new Promise((resolve) => {
+    const timeout = new Promise(resolve => {
       timerId = setTimeout(() => {
-        logger.warn('PixiStageController', `${label} load timed out, proceeding with fallbacks.`)
+        logger.warn(
+          'PixiStageController',
+          `${label} load timed out, proceeding with fallbacks.`
+        )
         resolve(null)
       }, 10000)
     })

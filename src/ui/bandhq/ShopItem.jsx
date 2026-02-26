@@ -3,8 +3,14 @@ import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
 import { getPrimaryEffect } from '../../hooks/usePurchaseLogic'
 import { GlitchButton } from '../GlitchButton'
 
-export const ShopItem = ({ item, isOwned, isDisabled, adjustedCost, onBuy, processingItemId }) => {
-
+export const ShopItem = ({
+  item,
+  isOwned,
+  isDisabled,
+  adjustedCost,
+  onBuy,
+  processingItemId
+}) => {
   const primaryEffect = getPrimaryEffect(item)
   const isConsumable = primaryEffect?.type === 'inventory_add'
   const isPurchased = isOwned && !isConsumable
@@ -54,13 +60,18 @@ export const ShopItem = ({ item, isOwned, isDisabled, adjustedCost, onBuy, proce
               <span className='line-through opacity-50 mr-2'>{item.cost}</span>
               <span className='text-(--toxic-green)'>{adjustedCost}</span>
             </>
+          ) : adjustedCost !== undefined ? (
+            adjustedCost
           ) : (
-            (adjustedCost !== undefined ? adjustedCost : item.cost)
-          )} {item.currency === 'fame' ? '★' : '€'}
+            item.cost
+          )}{' '}
+          {item.currency === 'fame' ? '★' : '€'}
         </span>
         <GlitchButton
           onClick={handlePurchase}
-          disabled={isDisabled || isPurchased || (isAnyProcessing && !isProcessingThis)}
+          disabled={
+            isDisabled || isPurchased || (isAnyProcessing && !isProcessingThis)
+          }
           variant={isPurchased ? 'owned' : 'primary'}
           isLoading={isProcessingThis}
           size='sm'

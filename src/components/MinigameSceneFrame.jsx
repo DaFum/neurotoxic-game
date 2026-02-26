@@ -33,7 +33,7 @@ export const MinigameSceneFrame = ({
   }, [uiState?.isGameOver])
 
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKeyDown = e => {
       if (uiState?.isGameOver && e.key === 'Escape') {
         onComplete()
       }
@@ -43,8 +43,8 @@ export const MinigameSceneFrame = ({
   }, [uiState?.isGameOver, onComplete])
 
   return (
-    <div className="w-full h-full bg-(--void-black) relative overflow-hidden flex flex-col items-center justify-center">
-      <div className="absolute inset-0 pointer-events-none">
+    <div className='w-full h-full bg-(--void-black) relative overflow-hidden flex flex-col items-center justify-center'>
+      <div className='absolute inset-0 pointer-events-none'>
         <PixiStage
           gameStateRef={logic.gameStateRef}
           update={logic.update}
@@ -52,7 +52,9 @@ export const MinigameSceneFrame = ({
         />
       </div>
 
-      {settings?.crtEnabled && <div className="crt-overlay pointer-events-none fixed inset-0 z-500" />}
+      {settings?.crtEnabled && (
+        <div className='crt-overlay pointer-events-none fixed inset-0 z-500' />
+      )}
 
       {/* Custom UI Elements (HUD, Controls) */}
       {children}
@@ -62,15 +64,18 @@ export const MinigameSceneFrame = ({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-(--void-black)/80 backdrop-blur-sm pointer-events-auto"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="completion-title"
+          className='absolute inset-0 z-50 flex flex-col items-center justify-center bg-(--void-black)/80 backdrop-blur-sm pointer-events-auto'
+          role='dialog'
+          aria-modal='true'
+          aria-labelledby='completion-title'
         >
-          <h1 id="completion-title" className="text-4xl text-(--toxic-green) font-bold mb-4">
+          <h1
+            id='completion-title'
+            className='text-4xl text-(--toxic-green) font-bold mb-4'
+          >
             {completionTitle}
           </h1>
-          <div className="text-(--star-white) mb-8">
+          <div className='text-(--star-white) mb-8'>
             {renderCompletionStats ? renderCompletionStats(uiState) : null}
           </div>
           <ActionButton ref={continueButtonRef} onClick={onComplete}>

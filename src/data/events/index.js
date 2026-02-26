@@ -44,13 +44,26 @@ const crisisSpecial = CRISIS_EVENTS.filter(e => e.category === 'special')
 
 // Split consequence events into their respective category pools
 const consequenceBand = CONSEQUENCE_EVENTS.filter(e => e.category === 'band')
-const consequenceFinancial = CONSEQUENCE_EVENTS.filter(e => e.category === 'financial')
-const consequenceSpecial = CONSEQUENCE_EVENTS.filter(e => e.category === 'special')
+const consequenceFinancial = CONSEQUENCE_EVENTS.filter(
+  e => e.category === 'financial'
+)
+const consequenceSpecial = CONSEQUENCE_EVENTS.filter(
+  e => e.category === 'special'
+)
 
 export const EVENTS_DB = {
   transport: validateEvents(TRANSPORT_EVENTS, 'transport'),
-  band: validateEvents([...BAND_EVENTS, ...crisisBand, ...consequenceBand, ...RELATIONSHIP_EVENTS], 'band'),
+  band: validateEvents(
+    [...BAND_EVENTS, ...crisisBand, ...consequenceBand, ...RELATIONSHIP_EVENTS],
+    'band'
+  ),
   gig: validateEvents(GIG_EVENTS, 'gig'),
-  financial: validateEvents([...FINANCIAL_EVENTS, ...crisisFinancial, ...consequenceFinancial], 'financial'),
-  special: validateEvents([...SPECIAL_EVENTS, ...crisisSpecial, ...consequenceSpecial], 'special')
+  financial: validateEvents(
+    [...FINANCIAL_EVENTS, ...crisisFinancial, ...consequenceFinancial],
+    'financial'
+  ),
+  special: validateEvents(
+    [...SPECIAL_EVENTS, ...crisisSpecial, ...consequenceSpecial],
+    'special'
+  )
 }

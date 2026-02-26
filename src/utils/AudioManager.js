@@ -274,7 +274,17 @@ class AudioSystem {
    */
   playSFX(key) {
     if (!this.prefsLoaded) return
-    const validTypes = ['hit', 'miss', 'menu', 'travel', 'cash', 'crash', 'honk', 'pickup', 'deliver']
+    const validTypes = [
+      'hit',
+      'miss',
+      'menu',
+      'travel',
+      'cash',
+      'crash',
+      'honk',
+      'pickup',
+      'deliver'
+    ]
     if (!validTypes.includes(key)) {
       logger.warn('AudioSystem', `Unknown SFX type: ${key}`)
       return
@@ -388,7 +398,7 @@ class AudioSystem {
     this.ambientStartPromise = null
     this.isStartingAmbient = false
     this.prefsLoaded = false
-    
+
     // Explicitly call the engine's dispose function to clear contexts
     try {
       if (typeof audioEngine.disposeAudio === 'function') {
@@ -397,7 +407,7 @@ class AudioSystem {
     } catch (e) {
       logger.warn('AudioSystem', 'Error during engine dispose:', e)
     }
-    
+
     // Clear all listeners to prevent memory leaks in the React tree
     this.listeners.clear()
   }

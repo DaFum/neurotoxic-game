@@ -74,7 +74,7 @@ mock.module('../src/utils/logger.js', {
 mock.module('../src/components/stage/utils.js', {
   namedExports: {
     getPixiColorFromToken: mock.fn(() => 0xffffff),
-    loadTexture: mock.fn(async (url) => MockPIXI.Assets.load(url))
+    loadTexture: mock.fn(async url => MockPIXI.Assets.load(url))
   }
 })
 
@@ -89,15 +89,22 @@ describe('EffectManager', () => {
     const pixiModule = await import('pixi.js')
     PIXI = pixiModule
 
-    const managerModule = await import('../src/components/stage/EffectManager.js')
+    const managerModule =
+      await import('../src/components/stage/EffectManager.js')
     EffectManager = managerModule.EffectManager
 
     parentContainer = new PIXI.Container()
 
     mockRenderer = {
-      generateTexture: mock.fn(() => ({ id: 'generated-texture', destroy: mock.fn() })),
+      generateTexture: mock.fn(() => ({
+        id: 'generated-texture',
+        destroy: mock.fn()
+      })),
       textureGenerator: {
-        generateTexture: mock.fn(() => ({ id: 'generated-texture', destroy: mock.fn() }))
+        generateTexture: mock.fn(() => ({
+          id: 'generated-texture',
+          destroy: mock.fn()
+        }))
       }
     }
 
@@ -141,7 +148,7 @@ describe('EffectManager', () => {
     effectManager.textures.toxic = { id: 'toxic' }
 
     // Red color: 0xCC0000 (R=204, G=0, B=0)
-    effectManager.spawnHitEffect(100, 100, 0xCC0000)
+    effectManager.spawnHitEffect(100, 100, 0xcc0000)
 
     assert.equal(effectManager.activeEffects.length, 1)
     const effect = effectManager.activeEffects[0]
@@ -150,7 +157,7 @@ describe('EffectManager', () => {
     assert.equal(effect.texture, effectManager.textures.blood)
     assert.equal(effect.x, 100)
     assert.equal(effect.y, 100)
-    assert.equal(effect.tint, 0xCC0000)
+    assert.equal(effect.tint, 0xcc0000)
   })
 
   test('spawnHitEffect uses toxic texture for non-red colors', () => {
@@ -158,24 +165,28 @@ describe('EffectManager', () => {
     effectManager.textures.toxic = { id: 'toxic' }
 
     // Green color: 0x00FF41
-    effectManager.spawnHitEffect(100, 100, 0x00FF41)
+    effectManager.spawnHitEffect(100, 100, 0x00ff41)
 
     assert.equal(effectManager.activeEffects.length, 1)
     const effect = effectManager.activeEffects[0]
 
     assert.ok(effect instanceof PIXI.Sprite)
     assert.equal(effect.texture, effectManager.textures.toxic)
-    assert.equal(effect.tint, 0x00FF41)
+    assert.equal(effect.tint, 0x00ff41)
   })
 
   test('spawnHitEffect falls back to generic Sprite if textures missing', () => {
     effectManager.textures.blood = null
     effectManager.textures.toxic = null
 
-    effectManager.spawnHitEffect(100, 100, 0xCC0000)
+    effectManager.spawnHitEffect(100, 100, 0xcc0000)
 
     // Should create generic texture
-    assert.equal(mockRenderer.textureGenerator.generateTexture.mock.calls.length + mockRenderer.generateTexture.mock.calls.length, 1)
+    assert.equal(
+      mockRenderer.textureGenerator.generateTexture.mock.calls.length +
+        mockRenderer.generateTexture.mock.calls.length,
+      1
+    )
 
     assert.equal(effectManager.activeEffects.length, 1)
     const effect = effectManager.activeEffects[0]
@@ -184,12 +195,12 @@ describe('EffectManager', () => {
     assert.ok(effect instanceof PIXI.Sprite)
     // Verify it uses the generated texture
     assert.equal(effect.texture.id, 'generated-texture')
-    assert.equal(effect.tint, 0xCC0000)
+    assert.equal(effect.tint, 0xcc0000)
   })
 
   test('update handles lifecycle and cleanup', () => {
     effectManager.textures.toxic = { id: 'toxic' }
-    effectManager.spawnHitEffect(0, 0, 0xFFFFFF)
+    effectManager.spawnHitEffect(0, 0, 0xffffff)
     const effect = effectManager.activeEffects[0]
 
     // Initial state
@@ -211,11 +222,11 @@ describe('EffectManager', () => {
     // Generate a generic texture first
     effectManager.textures.blood = null
     effectManager.textures.toxic = null
-    effectManager.spawnHitEffect(0, 0, 0xFFFFFF)
+    effectManager.spawnHitEffect(0, 0, 0xffffff)
     const genericTexture = effectManager.genericHitTexture
 
     // Spawn some effects
-    effectManager.spawnHitEffect(1, 1, 0xFFFFFF)
+    effectManager.spawnHitEffect(1, 1, 0xffffff)
 
     const effect1 = effectManager.activeEffects[0]
     const effect2 = effectManager.activeEffects[1]
@@ -248,7 +259,9 @@ describe('EffectManager', () => {
 
     // Check container destruction
     assert.equal(container.destroy.mock.calls.length, 1)
-    assert.deepEqual(container.destroy.mock.calls[0].arguments, [{ children: true }])
+    assert.deepEqual(container.destroy.mock.calls[0].arguments, [
+      { children: true }
+    ])
   })
 
   test('spawnHitEffect enforces max active effects limit (50) and recycles', () => {
@@ -256,7 +269,7 @@ describe('EffectManager', () => {
 
     // Spawn 51 effects
     for (let i = 0; i < 51; i++) {
-      effectManager.spawnHitEffect(i, i, 0xFFFFFF)
+      effectManager.spawnHitEffect(i, i, 0xffffff)
     }
 
     assert.equal(effectManager.activeEffects.length, 50)
@@ -275,14 +288,14 @@ describe('EffectManager', () => {
     effectManager.textures.toxic = { id: 'toxic' }
 
     // Create one and kill it to populate pool
-    effectManager.spawnHitEffect(0, 0, 0xFFFFFF)
+    effectManager.spawnHitEffect(0, 0, 0xffffff)
     effectManager.update(1000) // Kill it
 
     assert.equal(effectManager.spritePool.length, 1)
     const pooledEffect = effectManager.spritePool[0]
 
     // Spawn new one
-    effectManager.spawnHitEffect(100, 100, 0xFFFFFF)
+    effectManager.spawnHitEffect(100, 100, 0xffffff)
 
     assert.equal(effectManager.spritePool.length, 0)
     assert.equal(effectManager.activeEffects[0], pooledEffect)
@@ -293,7 +306,7 @@ describe('EffectManager', () => {
   test('spawnHitEffect removes the oldest effect (lowest life) even if array is unordered', () => {
     // Fill to capacity
     for (let i = 0; i < 50; i++) {
-      effectManager.spawnHitEffect(i, 0, 0xFFFFFF)
+      effectManager.spawnHitEffect(i, 0, 0xffffff)
       effectManager.activeEffects[i].id = `effect-${i}`
       effectManager.activeEffects[i].life = 1.0
     }
@@ -302,7 +315,7 @@ describe('EffectManager', () => {
     effectManager.activeEffects[25].life = 0.1
 
     // Spawn 51st effect
-    effectManager.spawnHitEffect(100, 0, 0xFFFFFF)
+    effectManager.spawnHitEffect(100, 0, 0xffffff)
 
     // Verify victim is gone (or rather, no effect has life 0.1)
     const hasVictim = effectManager.activeEffects.some(e => e.life === 0.1)

@@ -22,7 +22,11 @@ test('Van Breakdown: Base breakdown chance with no upgrades and perfect conditio
   // Base chance is 0.05 (5%)
   // Condition 100 -> Multiplier 1.0
   // Result: 0.05
-  assert.equal(player.van.breakdownChance, 0.05, 'Base breakdown chance should be 0.05')
+  assert.equal(
+    player.van.breakdownChance,
+    0.05,
+    'Base breakdown chance should be 0.05'
+  )
 })
 
 test('Van Breakdown: Condition below 60 increases breakdown chance', () => {
@@ -44,7 +48,11 @@ test('Van Breakdown: Condition below 60 increases breakdown chance', () => {
   // Base 0.05
   // Condition 57 -> Multiplier 1.6
   // Result: 0.05 * 1.6 = 0.08
-  assert.equal(player.van.breakdownChance, 0.08, 'Breakdown chance should be 0.08 for worn condition')
+  assert.equal(
+    player.van.breakdownChance,
+    0.08,
+    'Breakdown chance should be 0.08 for worn condition'
+  )
 })
 
 test('Van Breakdown: Condition below 30 significantly increases breakdown chance', () => {
@@ -66,7 +74,11 @@ test('Van Breakdown: Condition below 30 significantly increases breakdown chance
   // Base 0.05
   // Condition 27 -> Multiplier 3.0
   // Result: 0.05 * 3.0 = 0.15
-  assert.equal(player.van.breakdownChance, 0.15, 'Breakdown chance should be 0.15 for very low condition')
+  assert.equal(
+    player.van.breakdownChance,
+    0.15,
+    'Breakdown chance should be 0.15 for very low condition'
+  )
 })
 
 test('Van Breakdown: Upgrades reduce base breakdown chance', () => {
@@ -88,7 +100,11 @@ test('Van Breakdown: Upgrades reduce base breakdown chance', () => {
   // Base 0.05 - 0.01 = 0.04
   // Condition 100 -> Multiplier 1.0
   // Result: 0.04
-  assert.equal(player.van.breakdownChance, 0.04, 'Breakdown chance should be reduced by upgrades')
+  assert.equal(
+    player.van.breakdownChance,
+    0.04,
+    'Breakdown chance should be reduced by upgrades'
+  )
 })
 
 test('Van Breakdown: NO COMPOUNDING - Breakdown chance is stable over multiple days with similar condition', () => {
@@ -120,7 +136,11 @@ test('Van Breakdown: NO COMPOUNDING - Breakdown chance is stable over multiple d
   // Day 1
   let update1 = calculateDailyUpdates(currentState)
   assert.equal(update1.player.van.condition, 48)
-  assert.equal(update1.player.van.breakdownChance, 0.08, 'Day 1 chance should be 0.08')
+  assert.equal(
+    update1.player.van.breakdownChance,
+    0.08,
+    'Day 1 chance should be 0.08'
+  )
 
   // Day 2 (Feed previous state back in)
   // Merge back the full state structure properly
@@ -132,7 +152,11 @@ test('Van Breakdown: NO COMPOUNDING - Breakdown chance is stable over multiple d
   }
   let update2 = calculateDailyUpdates(state2)
   assert.equal(update2.player.van.condition, 46)
-  assert.equal(update2.player.van.breakdownChance, 0.08, 'Day 2 chance should remain 0.08 (no compounding)')
+  assert.equal(
+    update2.player.van.breakdownChance,
+    0.08,
+    'Day 2 chance should remain 0.08 (no compounding)'
+  )
 
   // Day 3
   let state3 = {
@@ -143,5 +167,9 @@ test('Van Breakdown: NO COMPOUNDING - Breakdown chance is stable over multiple d
   }
   let update3 = calculateDailyUpdates(state3)
   assert.equal(update3.player.van.condition, 44)
-  assert.equal(update3.player.van.breakdownChance, 0.08, 'Day 3 chance should remain 0.08 (no compounding)')
+  assert.equal(
+    update3.player.van.breakdownChance,
+    0.08,
+    'Day 3 chance should remain 0.08 (no compounding)'
+  )
 })

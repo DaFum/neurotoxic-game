@@ -1,23 +1,29 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi
+} from 'vitest'
 import { renderHook } from '@testing-library/react'
-
-
 
 // Mock dependencies BEFORE import
 vi.mock('../../src/context/GameState', () => ({
-    // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
-    useGameState: () => ({
-      completeRoadieMinigame: vi.fn(),
-      currentScene: 'PRE_GIG_MINIGAME',
-      changeScene: vi.fn()
-    })
-  }))
+  // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
+  useGameState: () => ({
+    completeRoadieMinigame: vi.fn(),
+    currentScene: 'PRE_GIG_MINIGAME',
+    changeScene: vi.fn()
+  })
+}))
 vi.mock('../../src/utils/AudioManager', () => ({
-    audioManager: {
-      playSFX: vi.fn(),
-      init: vi.fn()
-    }
-  }))
+  audioManager: {
+    playSFX: vi.fn(),
+    init: vi.fn()
+  }
+}))
 describe('RoadieLogic Performance', () => {
   let useRoadieLogic
 
@@ -28,7 +34,6 @@ describe('RoadieLogic Performance', () => {
     useRoadieLogic = module.useRoadieLogic
   })
 
-
   test('update loop performance', () => {
     const { result, unmount } = renderHook(() => useRoadieLogic())
     const update = result.current.update
@@ -38,13 +43,13 @@ describe('RoadieLogic Performance', () => {
     // Add enough traffic to make it simulate real load
     const trafficCount = 100
     for (let i = 0; i < trafficCount; i++) {
-        game.traffic.push({
-            id: `test-${i}`,
-            row: i % 6,
-            x: 5,
-            speed: 0.000001, // Slow speed to keep them in bounds
-            width: 1.5
-        })
+      game.traffic.push({
+        id: `test-${i}`,
+        row: i % 6,
+        x: 5,
+        speed: 0.000001, // Slow speed to keep them in bounds
+        width: 1.5
+      })
     }
 
     const start = performance.now()
@@ -56,7 +61,9 @@ describe('RoadieLogic Performance', () => {
     }
 
     const end = performance.now()
-    console.log(`[Perf] 50k updates with ${trafficCount} cars took: ${(end - start).toFixed(2)}ms`)
+    console.log(
+      `[Perf] 50k updates with ${trafficCount} cars took: ${(end - start).toFixed(2)}ms`
+    )
 
     // Basic verification
     expect(game.traffic.length).toBe(trafficCount)

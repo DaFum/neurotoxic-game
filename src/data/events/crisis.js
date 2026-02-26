@@ -12,8 +12,8 @@ export const CRISIS_EVENTS = [
     trigger: 'post_gig',
     chance: 0.55,
     condition: gs =>
-      (gs.social?.controversyLevel || 0) >= 20 &&
-      (gs.band?.harmony || 100) < 75,
+      (gs.social?.controversyLevel ?? 0) >= 20 &&
+      (gs.band?.harmony ?? 100) < 75,
     options: [
       {
         label: 'Say nothing (absorb the hit)',
@@ -69,7 +69,7 @@ export const CRISIS_EVENTS = [
       'A thread calling out your "problematic" stage antics has hit 10k shares. The algorithm is not your friend today.',
     trigger: 'post_gig',
     chance: 0.6,
-    condition: gs => (gs.social?.controversyLevel || 0) >= 50,
+    condition: gs => (gs.social?.controversyLevel ?? 0) >= 50,
     options: [
       {
         label: 'Ride it out (no response)',
@@ -115,8 +115,7 @@ export const CRISIS_EVENTS = [
               { type: 'stat', stat: 'controversyLevel', value: 15 },
               { type: 'stat', stat: 'harmony', value: -5 }
             ],
-            description:
-              'It looked forced. The internet smelled desperation.'
+            description: 'It looked forced. The internet smelled desperation.'
           }
         },
         outcomeText: 'You recorded a heartfelt session in the van.'
@@ -132,7 +131,7 @@ export const CRISIS_EVENTS = [
       'Your posts are reaching 12 people. Something is very wrong. The platform has buried you.',
     trigger: 'travel',
     chance: 0.7,
-    condition: gs => (gs.social?.controversyLevel || 0) >= 80,
+    condition: gs => (gs.social?.controversyLevel ?? 0) >= 80,
     options: [
       {
         label: 'Nuke all controversial posts',
@@ -196,7 +195,7 @@ export const CRISIS_EVENTS = [
       'The venue manager left a voicemail. They have "concerns about your current public image" and are pulling your upcoming booking.',
     trigger: 'post_gig',
     chance: 0.5,
-    condition: gs => (gs.social?.controversyLevel || 0) >= 65,
+    condition: gs => (gs.social?.controversyLevel ?? 0) >= 65,
     options: [
       {
         label: 'Accept the cancellation [-150€ deposit]',
@@ -259,7 +258,7 @@ export const CRISIS_EVENTS = [
       "A local non-profit reached out. They need a headliner for a benefit show. It won't pay anything — but the goodwill might.",
     trigger: 'travel',
     chance: 0.3,
-    condition: gs => (gs.social?.controversyLevel || 0) >= 40,
+    condition: gs => (gs.social?.controversyLevel ?? 0) >= 40,
     options: [
       {
         label: 'Play the charity show (free)',
@@ -304,8 +303,8 @@ export const CRISIS_EVENTS = [
     trigger: 'post_gig',
     chance: 0.8,
     condition: gs =>
-      (gs.social?.controversyLevel || 0) >= 80 &&
-      (gs.social?.activeDeals?.length || 0) > 0,
+      (gs.social?.controversyLevel ?? 0) >= 80 &&
+      (gs.social?.activeDeals?.length ?? 0) > 0,
     options: [
       {
         label: 'Promise to clean up your image',
@@ -365,10 +364,13 @@ export const CRISIS_EVENTS = [
     category: 'band',
     tags: ['crisis', 'performance'],
     title: 'DISASTROUS GIG',
-    description: 'Word is spreading about your terrible performance last night. Fans are demanding refunds.',
+    description:
+      'Word is spreading about your terrible performance last night. Fans are demanding refunds.',
     trigger: 'post_gig',
     chance: 1.0,
-    condition: gs => (gs.lastGigStats?.score || 100) < 30 && !gs.eventCooldowns?.includes('crisis_poor_performance'),
+    condition: gs =>
+      (gs.lastGigStats?.score ?? 100) < 30 &&
+      !gs.eventCooldowns?.includes('crisis_poor_performance'),
     options: [
       {
         label: 'Blame the sound engineer [Charisma]',
@@ -381,7 +383,8 @@ export const CRISIS_EVENTS = [
               { type: 'stat', stat: 'controversyLevel', value: 5 },
               { type: 'stat', stat: 'harmony', value: 5 }
             ],
-            description: 'People bought your excuse, but industry folks noticed the shifting blame.'
+            description:
+              'People bought your excuse, but industry folks noticed the shifting blame.'
           },
           failure: {
             type: 'composite',
@@ -389,7 +392,8 @@ export const CRISIS_EVENTS = [
               { type: 'stat', stat: 'controversyLevel', value: 20 },
               { type: 'stat', stat: 'loyalty', value: -10 }
             ],
-            description: 'The sound guy posted the raw stems. You sounded awful. Backlash is immense.'
+            description:
+              'The sound guy posted the raw stems. You sounded awful. Backlash is immense.'
           }
         },
         outcomeText: 'You fired off an angry tweet.'
@@ -403,7 +407,8 @@ export const CRISIS_EVENTS = [
             { type: 'stat', stat: 'controversyLevel', value: -5 }
           ]
         },
-        outcomeText: 'You admitted you had a bad night. True fans respect the honesty.'
+        outcomeText:
+          'You admitted you had a bad night. True fans respect the honesty.'
       }
     ]
   },
@@ -412,10 +417,11 @@ export const CRISIS_EVENTS = [
     category: 'band',
     tags: ['crisis', 'scandal'],
     title: 'LEAKED RUMORS',
-    description: 'An anonymous source leaked an embarrassing, out-of-context story about the band to a major music drama channel.',
+    description:
+      'An anonymous source leaked an embarrassing, out-of-context story about the band to a major music drama channel.',
     trigger: 'travel',
     chance: 0.4,
-    condition: gs => (gs.social?.controversyLevel || 0) >= 60,
+    condition: gs => (gs.social?.controversyLevel ?? 0) >= 60,
     options: [
       {
         label: 'Let true fans defend you (Loyalty Shield)',
@@ -426,7 +432,8 @@ export const CRISIS_EVENTS = [
             { type: 'stat', stat: 'loyalty', value: -20 }
           ]
         },
-        outcomeText: 'Your hardcore fanbase went to war in the comments, shutting down the rumors. They are exhausted, but it worked.',
+        outcomeText:
+          'Your hardcore fanbase went to war in the comments, shutting down the rumors. They are exhausted, but it worked.'
       },
       {
         label: 'Deny everything',
@@ -437,19 +444,23 @@ export const CRISIS_EVENTS = [
             { type: 'stat', stat: 'harmony', value: -10 }
           ]
         },
-        outcomeText: 'The denial looked suspicious. The rumors only grew louder.'
+        outcomeText:
+          'The denial looked suspicious. The rumors only grew louder.'
       }
     ]
   },
   {
     id: 'crisis_mass_unfollow',
-    category: 'social',
+    category: 'band',
     tags: ['crisis', 'social_media'],
     title: 'MASS UNFOLLOW',
-    description: 'A dedicated hate-campaign has started trending. People are unfollowing you in droves to avoid association.',
+    description:
+      'A dedicated hate-campaign has started trending. People are unfollowing you in droves to avoid association.',
     trigger: 'post_gig',
     chance: 0.5,
-    condition: gs => (gs.social?.controversyLevel || 0) >= 75 && !gs.eventCooldowns?.includes('crisis_mass_unfollow'),
+    condition: gs =>
+      (gs.social?.controversyLevel ?? 0) >= 75 &&
+      !gs.eventCooldowns?.includes('crisis_mass_unfollow'),
     options: [
       {
         label: 'Watch the numbers drop',
@@ -460,7 +471,8 @@ export const CRISIS_EVENTS = [
             { type: 'stat', stat: 'harmony', value: -10 }
           ]
         },
-        outcomeText: 'You lost thousands of followers, but the ones remaining are your true cult.'
+        outcomeText:
+          'You lost thousands of followers, but the ones remaining are your true cult.'
       }
     ]
   },
@@ -469,10 +481,12 @@ export const CRISIS_EVENTS = [
     category: 'band',
     tags: ['crisis', 'ego', 'drama'],
     title: 'EGO CLASH',
-    description: 'The constant spotlight on one member has finally boiled over into a full screaming match in the van.',
+    description:
+      'The constant spotlight on one member has finally boiled over into a full screaming match in the van.',
     trigger: 'travel',
     chance: 0.6,
-    condition: gs => gs.social?.egoFocus !== null && (gs.band?.harmony || 100) < 40,
+    condition: gs =>
+      gs.social?.egoFocus != null && (gs.band?.harmony ?? 100) < 40,
     options: [
       {
         label: 'Intervene and mediate [Charisma]',
@@ -485,7 +499,8 @@ export const CRISIS_EVENTS = [
               { type: 'stat', stat: 'harmony', value: 20 },
               { type: 'stat', stat: 'controversyLevel', value: -5 }
             ],
-            description: 'You managed to de-escalate the situation before punches were thrown.'
+            description:
+              'You managed to de-escalate the situation before punches were thrown.'
           },
           failure: {
             type: 'composite',
@@ -493,7 +508,8 @@ export const CRISIS_EVENTS = [
               { type: 'stat', stat: 'harmony', value: -20 },
               { type: 'stat', stat: 'mood', value: -15 }
             ],
-            description: 'You just made it worse. Someone stormed out into the rain.'
+            description:
+              'You just made it worse. Someone stormed out into the rain.'
           }
         },
         outcomeText: 'You stepped between them.'
@@ -507,7 +523,8 @@ export const CRISIS_EVENTS = [
             { type: 'stat', stat: 'controversyLevel', value: 10 }
           ]
         },
-        outcomeText: 'The argument leaked online. The band is barely holding together.'
+        outcomeText:
+          'The argument leaked online. The band is barely holding together.'
       }
     ]
   },
@@ -516,10 +533,13 @@ export const CRISIS_EVENTS = [
     category: 'band',
     tags: ['crisis', 'milestone'],
     title: 'WARNING SIGNS',
-    description: 'Your controversy has reached a boiling point. Venues and sponsors are starting to get nervous. Harmony is draining faster.',
+    description:
+      'Your controversy has reached a boiling point. Venues and sponsors are starting to get nervous. Harmony is draining faster.',
     trigger: 'post_gig',
     chance: 1.0,
-    condition: gs => (gs.social?.controversyLevel || 0) >= 50 && !gs.activeStoryFlags?.includes('saw_crisis_50'),
+    condition: gs =>
+      (gs.social?.controversyLevel ?? 0) >= 50 &&
+      !gs.activeStoryFlags?.includes('saw_crisis_50'),
     options: [
       {
         label: 'We need to be careful',
@@ -533,10 +553,13 @@ export const CRISIS_EVENTS = [
     category: 'band',
     tags: ['crisis', 'milestone'],
     title: 'ALGORITHM PENALTY',
-    description: 'The platforms have labeled your account as problematic. Your growth is severely restricted, and sponsors are dropping out.',
+    description:
+      'The platforms have labeled your account as problematic. Your growth is severely restricted, and sponsors are dropping out.',
     trigger: 'post_gig',
     chance: 1.0,
-    condition: gs => (gs.social?.controversyLevel || 0) >= 80 && !gs.activeStoryFlags?.includes('saw_crisis_80'),
+    condition: gs =>
+      (gs.social?.controversyLevel ?? 0) >= 80 &&
+      !gs.activeStoryFlags?.includes('saw_crisis_80'),
     options: [
       {
         label: 'This is bad',
@@ -550,10 +573,13 @@ export const CRISIS_EVENTS = [
     category: 'band',
     tags: ['crisis', 'milestone'],
     title: 'SHADOWBANNED',
-    description: 'You have been completely shadowbanned. Your follower count is actively shrinking, and the industry has blacklisted you.',
+    description:
+      'You have been completely shadowbanned. Your follower count is actively shrinking, and the industry has blacklisted you.',
     trigger: 'post_gig',
     chance: 1.0,
-    condition: gs => (gs.social?.controversyLevel || 0) >= 100 && !gs.activeStoryFlags?.includes('saw_crisis_100'),
+    condition: gs =>
+      (gs.social?.controversyLevel ?? 0) >= 100 &&
+      !gs.activeStoryFlags?.includes('saw_crisis_100'),
     options: [
       {
         label: 'Are we cancelled?',

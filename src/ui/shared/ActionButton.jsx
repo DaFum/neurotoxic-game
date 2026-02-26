@@ -15,20 +15,22 @@ import PropTypes from 'prop-types'
  * @param {string} [props.className] - Additional CSS classes.
  * @param {React.Ref} [props.ref] - Forwarded ref.
  */
-export const ActionButton = memo(({ children, onClick, type = 'button', className = '', ref, ...rest }) => (
-  <button
-    ref={ref}
-    type={type}
-    onClick={onClick}
-    className={`px-8 py-4 bg-(--toxic-green) text-(--void-black) font-bold uppercase
+export const ActionButton = memo(
+  ({ children, onClick, type = 'button', className = '', ref, ...rest }) => (
+    <button
+      ref={ref}
+      type={type}
+      onClick={onClick}
+      className={`px-8 py-4 bg-(--toxic-green) text-(--void-black) font-bold uppercase
                 hover:scale-105 transition-transform
                 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-(--toxic-green-20)
                 ${className}`}
-    {...rest}
-  >
-    {children}
-  </button>
-))
+      {...rest}
+    >
+      {children}
+    </button>
+  )
+)
 
 ActionButton.propTypes = {
   children: PropTypes.node.isRequired,

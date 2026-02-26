@@ -56,7 +56,12 @@ const TICKET_SALES_CONSTANTS = {
 /**
  * Calculates ticket sales revenue and attendance.
  */
-const calculateTicketIncome = (gigData, playerFame, modifiers, context = {}) => {
+const calculateTicketIncome = (
+  gigData,
+  playerFame,
+  modifiers,
+  context = {}
+) => {
   // Base draw is ~30%. Fame fills the rest.
   const baseDrawRatio = TICKET_SALES_CONSTANTS.BASE_DRAW_RATIO
   // Fame needs to be ~10x capacity to fill it easily
@@ -77,26 +82,24 @@ const calculateTicketIncome = (gigData, playerFame, modifiers, context = {}) => 
   // Controversy attendance penalty: -1% per point above 40, max -30%
   const controversyLevel = context.controversyLevel || 0
   if (controversyLevel >= 40) {
-    fillRate -= Math.min(0.30, (controversyLevel - 40) * 0.01)
+    fillRate -= Math.min(0.3, (controversyLevel - 40) * 0.01)
   }
 
   // Regional reputation bonus/penalty
   const regionRep = context.regionRep || 0
   if (regionRep < 0) {
-    fillRate -= Math.min(0.20, Math.abs(regionRep) * 0.002) // -2% per -10 rep, max -20%
+    fillRate -= Math.min(0.2, Math.abs(regionRep) * 0.002) // -2% per -10 rep, max -20%
   } else if (regionRep > 0) {
-    fillRate += Math.min(0.20, regionRep * 0.002) // +2% per +10 rep, max +20%
+    fillRate += Math.min(0.2, regionRep * 0.002) // +2% per +10 rep, max +20%
   }
 
   // Discounted tickets flag: +10% fill
   if (context.discountedTickets) {
-    fillRate += 0.10
+    fillRate += 0.1
   }
 
   // Price Sensitivity: Higher price reduces attendance slightly unless Fame is very high
-  if (context.discountedTickets) {
-    // skip price penalty if discounted tickets flagged
-  } else if (gigData.price > 15) {
+  if (!context.discountedTickets && gigData.price > 15) {
     const pricePenalty = (gigData.price - 15) * 0.02 // -2% per Euro over 15
     const mitigation = fameRatio * 0.5
     fillRate -= Math.max(0, pricePenalty - mitigation)
@@ -225,7 +228,11 @@ const calculateDistance = (nodeA, nodeB = null) => {
  * @param {object} [bandState=null] - Optional band state for trait checks.
  * @returns {object} { fuelLiters, fuelCost }
  */
-export const calculateFuelCost = (dist, playerState = null, bandState = null) => {
+export const calculateFuelCost = (
+  dist,
+  playerState = null,
+  bandState = null
+) => {
   if (dist < 0) return { fuelLiters: 0, fuelCost: 0 }
 
   let fuelLiters = (dist / 100) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM
@@ -279,7 +286,10 @@ export const calculateTravelExpenses = (
  * @returns {number} Cost in euros.
  */
 export const calculateRefuelCost = currentFuel => {
-  const missing = Math.max(0, EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - currentFuel)
+  const missing = Math.max(
+    0,
+    EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - currentFuel
+  )
   return Math.ceil(missing * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
 }
 
@@ -311,7 +321,7 @@ export const calculateEffectiveTicketPrice = (gigData, context = {}) => {
 /**
  * Calculates expenses for the gig.
  */
-const calculateGigExpenses = (modifiers) => {
+const calculateGigExpenses = modifiers => {
   const expenses = { total: 0, breakdown: [] }
 
   // Operational Expenses (Modifiers)
@@ -403,7 +413,12 @@ export const calculateGigFinancials = ({
   }
 
   // 1. Ticket Sales
-  const tickets = calculateTicketIncome(effectiveGigData, playerFame, modifiers, context)
+  const tickets = calculateTicketIncome(
+    effectiveGigData,
+    playerFame,
+    modifiers,
+    context
+  )
   report.income.breakdown.push(tickets.breakdownItem)
   report.income.total += tickets.revenue
 
@@ -455,9 +470,7 @@ export const calculateGigFinancials = ({
   report.income.total += barRevenue
 
   // 5. Expenses (Transport, Food, Modifiers)
-  const operationalExpenses = calculateGigExpenses(
-    modifiers
-  )
+  const operationalExpenses = calculateGigExpenses(modifiers)
   report.expenses.breakdown.push(...operationalExpenses.breakdown)
   report.expenses.total += operationalExpenses.total
 

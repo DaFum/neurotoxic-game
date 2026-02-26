@@ -1,11 +1,19 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi
+} from 'vitest'
 
 import { render } from '@testing-library/react'
 
-
 // Mock GlitchButton
 const GlitchButton = ({ children, onClick }) => (
-  <button type="button" onClick={onClick}>
+  <button type='button' onClick={onClick}>
     {children}
   </button>
 )
@@ -29,7 +37,6 @@ const ThrowingComponent = () => {
 test('CrashHandler exposes stack trace in DEV mode', async () => {
   //  removed (handled by vitest env)
 
-
   globalThis.__IMPORT_META_ENV__ = { DEV: true }
 
   vi.spyOn(console, 'error').mockImplementation(() => {})
@@ -51,7 +58,6 @@ test('CrashHandler exposes stack trace in DEV mode', async () => {
 test('CrashHandler HIDES stack trace in PROD mode', async () => {
   //  removed (handled by vitest env)
 
-
   globalThis.__IMPORT_META_ENV__ = { DEV: false }
 
   vi.spyOn(console, 'error').mockImplementation(() => {})
@@ -64,7 +70,9 @@ test('CrashHandler HIDES stack trace in PROD mode', async () => {
     </ErrorBoundary>
   )
 
-  expect(getByText('The simulation has crashed. Reboot required.')).toBeInTheDocument()
+  expect(
+    getByText('The simulation has crashed. Reboot required.')
+  ).toBeInTheDocument()
   // Verify error message is NOT visible
   expect(queryByText('Error: Test Error')).toBe(null)
 

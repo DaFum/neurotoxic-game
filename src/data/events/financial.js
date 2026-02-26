@@ -457,7 +457,8 @@ export const FINANCIAL_EVENTS = [
     id: 'rehearsal_room_discount',
     category: 'financial',
     title: 'REHEARSAL ROOM DISCOUNT',
-    description: 'Your rehearsal space owner offers a discount if you play a private show.',
+    description:
+      'Your rehearsal space owner offers a discount if you play a private show.',
     trigger: 'random',
     chance: 0.02,
     options: [

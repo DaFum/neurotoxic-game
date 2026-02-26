@@ -9,7 +9,12 @@ describe('checkTraitUnlocks', () => {
     relationships
   })
 
-  const createState = (members, playerStats = {}, social = {}, bandHarmony = 0) => ({
+  const createState = (
+    members,
+    playerStats = {},
+    social = {},
+    bandHarmony = 0
+  ) => ({
     band: { members, harmony: bandHarmony },
     player: { stats: playerStats, hqUpgrades: [] },
     social
@@ -26,7 +31,9 @@ describe('checkTraitUnlocks', () => {
       }
 
       const unlocks = checkTraitUnlocks(state, context)
-      assert.deepStrictEqual(unlocks, [{ memberId: 'Matze', traitId: 'virtuoso' }])
+      assert.deepStrictEqual(unlocks, [
+        { memberId: 'Matze', traitId: 'virtuoso' }
+      ])
     })
 
     it('unlocks Perfektionist for Matze with 100% accuracy', () => {
@@ -38,7 +45,9 @@ describe('checkTraitUnlocks', () => {
       }
 
       const unlocks = checkTraitUnlocks(state, context)
-      assert.deepStrictEqual(unlocks, [{ memberId: 'Matze', traitId: 'perfektionist' }])
+      assert.deepStrictEqual(unlocks, [
+        { memberId: 'Matze', traitId: 'perfektionist' }
+      ])
     })
 
     it('unlocks Blast Machine for Marius with fast song (>160 BPM) and maxCombo > 50', () => {
@@ -50,7 +59,9 @@ describe('checkTraitUnlocks', () => {
       }
 
       const unlocks = checkTraitUnlocks(state, context)
-      assert.deepStrictEqual(unlocks, [{ memberId: 'Marius', traitId: 'blast_machine' }])
+      assert.deepStrictEqual(unlocks, [
+        { memberId: 'Marius', traitId: 'blast_machine' }
+      ])
     })
 
     it('does not unlock Blast Machine for Marius if combo is too low', () => {
@@ -74,7 +85,9 @@ describe('checkTraitUnlocks', () => {
       }
 
       const unlocks = checkTraitUnlocks(state, context)
-      assert.deepStrictEqual(unlocks, [{ memberId: 'Lars', traitId: 'melodic_genius' }])
+      assert.deepStrictEqual(unlocks, [
+        { memberId: 'Lars', traitId: 'melodic_genius' }
+      ])
     })
 
     it('unlocks Tech Wizard for Matze with technical song (>3 difficulty) and 100% accuracy', () => {
@@ -87,7 +100,9 @@ describe('checkTraitUnlocks', () => {
       }
 
       const unlocks = checkTraitUnlocks(state, context)
-      assert.deepStrictEqual(unlocks, [{ memberId: 'Matze', traitId: 'tech_wizard' }])
+      assert.deepStrictEqual(unlocks, [
+        { memberId: 'Matze', traitId: 'tech_wizard' }
+      ])
     })
   })
 
@@ -99,7 +114,9 @@ describe('checkTraitUnlocks', () => {
       const context = { type: 'TRAVEL_COMPLETE' }
 
       const unlocks = checkTraitUnlocks(state, context)
-      assert.deepStrictEqual(unlocks, [{ memberId: 'Lars', traitId: 'road_warrior' }])
+      assert.deepStrictEqual(unlocks, [
+        { memberId: 'Lars', traitId: 'road_warrior' }
+      ])
     })
 
     it('does not unlock Road Warrior for Lars with < 5000 total distance', () => {
@@ -117,21 +134,28 @@ describe('checkTraitUnlocks', () => {
     it('unlocks Party Animal for Marius when buying cheap beer fridge', () => {
       const marius = createMember('Marius')
       const state = createState([marius])
-      const context = { type: 'PURCHASE', item: { id: 'hq_room_cheap_beer_fridge' } }
+      const context = {
+        type: 'PURCHASE',
+        item: { id: 'hq_room_cheap_beer_fridge' }
+      }
 
       const unlocks = checkTraitUnlocks(state, context)
-      assert.deepStrictEqual(unlocks, [{ memberId: 'Marius', traitId: 'party_animal' }])
+      assert.deepStrictEqual(unlocks, [
+        { memberId: 'Marius', traitId: 'party_animal' }
+      ])
     })
 
     it('unlocks Party Animal for Marius when owning cheap beer fridge (via upgrades)', () => {
-        const marius = createMember('Marius')
-        const state = createState([marius])
-        state.player.hqUpgrades = ['hq_room_cheap_beer_fridge']
-        const context = { type: 'PURCHASE', item: { id: 'some_other_item' } }
+      const marius = createMember('Marius')
+      const state = createState([marius])
+      state.player.hqUpgrades = ['hq_room_cheap_beer_fridge']
+      const context = { type: 'PURCHASE', item: { id: 'some_other_item' } }
 
-        const unlocks = checkTraitUnlocks(state, context)
-        assert.deepStrictEqual(unlocks, [{ memberId: 'Marius', traitId: 'party_animal' }])
-      })
+      const unlocks = checkTraitUnlocks(state, context)
+      assert.deepStrictEqual(unlocks, [
+        { memberId: 'Marius', traitId: 'party_animal' }
+      ])
+    })
 
     it('unlocks Gear Nerd for Matze when gear count >= 5', () => {
       const matze = createMember('Matze')
@@ -139,7 +163,9 @@ describe('checkTraitUnlocks', () => {
       const context = { type: 'PURCHASE', gearCount: 5 }
 
       const unlocks = checkTraitUnlocks(state, context)
-      assert.deepStrictEqual(unlocks, [{ memberId: 'Matze', traitId: 'gear_nerd' }])
+      assert.deepStrictEqual(unlocks, [
+        { memberId: 'Matze', traitId: 'gear_nerd' }
+      ])
     })
   })
 
@@ -147,11 +173,17 @@ describe('checkTraitUnlocks', () => {
   describe('SOCIAL_UPDATE', () => {
     it('unlocks Social Manager for Lars when max followers >= 1000', () => {
       const lars = createMember('Lars')
-      const state = createState([lars], {}, { instagram: 1000, tiktok: 500, youtube: 200 })
+      const state = createState(
+        [lars],
+        {},
+        { instagram: 1000, tiktok: 500, youtube: 200 }
+      )
       const context = { type: 'SOCIAL_UPDATE' }
 
       const unlocks = checkTraitUnlocks(state, context)
-      assert.deepStrictEqual(unlocks, [{ memberId: 'Lars', traitId: 'social_manager' }])
+      assert.deepStrictEqual(unlocks, [
+        { memberId: 'Lars', traitId: 'social_manager' }
+      ])
     })
   })
 
@@ -163,7 +195,9 @@ describe('checkTraitUnlocks', () => {
       const context = { type: 'EVENT_RESOLVED' }
 
       const unlocks = checkTraitUnlocks(state, context)
-      assert.deepStrictEqual(unlocks, [{ memberId: 'Lars', traitId: 'bandleader' }])
+      assert.deepStrictEqual(unlocks, [
+        { memberId: 'Lars', traitId: 'bandleader' }
+      ])
     })
 
     it('unlocks Showman for Marius when stage dives >= 3', () => {
@@ -172,7 +206,9 @@ describe('checkTraitUnlocks', () => {
       const context = { type: 'EVENT_RESOLVED' }
 
       const unlocks = checkTraitUnlocks(state, context)
-      assert.deepStrictEqual(unlocks, [{ memberId: 'Marius', traitId: 'showman' }])
+      assert.deepStrictEqual(unlocks, [
+        { memberId: 'Marius', traitId: 'showman' }
+      ])
     })
 
     it('unlocks Grudge Holder for Matze when any relationship < 30', () => {
@@ -181,7 +217,9 @@ describe('checkTraitUnlocks', () => {
       const context = { type: 'EVENT_RESOLVED' }
 
       const unlocks = checkTraitUnlocks(state, context)
-      assert.deepStrictEqual(unlocks, [{ memberId: 'Matze', traitId: 'grudge_holder' }])
+      assert.deepStrictEqual(unlocks, [
+        { memberId: 'Matze', traitId: 'grudge_holder' }
+      ])
     })
 
     it('unlocks Peacemaker for Lars when band harmony >= 90', () => {
@@ -190,14 +228,19 @@ describe('checkTraitUnlocks', () => {
       const context = { type: 'EVENT_RESOLVED' }
 
       const unlocks = checkTraitUnlocks(state, context)
-      assert.deepStrictEqual(unlocks, [{ memberId: 'Lars', traitId: 'peacemaker' }])
+      assert.deepStrictEqual(unlocks, [
+        { memberId: 'Lars', traitId: 'peacemaker' }
+      ])
     })
   })
 
   // Edge Cases
   describe('Edge Cases', () => {
     it('does not unlock trait if already owned', () => {
-      const matze = createMember('Matze', [{ id: 'virtuoso' }, { id: 'perfektionist' }])
+      const matze = createMember('Matze', [
+        { id: 'virtuoso' },
+        { id: 'perfektionist' }
+      ])
       const state = createState([matze])
       const context = {
         type: 'GIG_COMPLETE',
@@ -209,21 +252,21 @@ describe('checkTraitUnlocks', () => {
     })
 
     it('returns empty array if member not found', () => {
-        const state = createState([]) // No members
-        const context = {
-            type: 'GIG_COMPLETE',
-            gigStats: { misses: 0 }
-        }
-        const unlocks = checkTraitUnlocks(state, context)
-        assert.deepStrictEqual(unlocks, [])
+      const state = createState([]) // No members
+      const context = {
+        type: 'GIG_COMPLETE',
+        gigStats: { misses: 0 }
+      }
+      const unlocks = checkTraitUnlocks(state, context)
+      assert.deepStrictEqual(unlocks, [])
     })
 
     it('returns empty array for unknown context type', () => {
-        const matze = createMember('Matze')
-        const state = createState([matze])
-        const context = { type: 'UNKNOWN_TYPE' }
-        const unlocks = checkTraitUnlocks(state, context)
-        assert.deepStrictEqual(unlocks, [])
+      const matze = createMember('Matze')
+      const state = createState([matze])
+      const context = { type: 'UNKNOWN_TYPE' }
+      const unlocks = checkTraitUnlocks(state, context)
+      assert.deepStrictEqual(unlocks, [])
     })
   })
 })

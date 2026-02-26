@@ -4,7 +4,6 @@ import { render, fireEvent } from '@testing-library/react'
 import { Modal } from '../src/ui/shared/Modal.jsx'
 
 describe('Modal Component', () => {
-
   test('does not render when isOpen is false', () => {
     const { container } = render(
       <Modal isOpen={false} onClose={() => {}}>
@@ -16,7 +15,7 @@ describe('Modal Component', () => {
 
   test('renders children and title when isOpen is true', () => {
     const { getByText } = render(
-      <Modal isOpen={true} onClose={() => {}} title="Test Title">
+      <Modal isOpen={true} onClose={() => {}} title='Test Title'>
         <div>Modal Content</div>
       </Modal>
     )
@@ -31,7 +30,7 @@ describe('Modal Component', () => {
         <div>Modal Content</div>
       </Modal>
     )
-    
+
     // Click the background overlay
     const overlay = getByText('Modal Content').parentElement.parentElement
     fireEvent.click(overlay)
@@ -45,7 +44,7 @@ describe('Modal Component', () => {
         <div>Modal Content</div>
       </Modal>
     )
-    
+
     // Click the dialog itself
     const dialog = getByRole('dialog')
     fireEvent.click(dialog)
@@ -59,7 +58,7 @@ describe('Modal Component', () => {
         <div>Modal Content</div>
       </Modal>
     )
-    
+
     fireEvent.keyDown(window, { key: 'Escape' })
     expect(onCloseMock).toHaveBeenCalledTimes(1)
   })

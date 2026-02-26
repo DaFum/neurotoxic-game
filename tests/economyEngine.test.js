@@ -312,7 +312,9 @@ test('calculateGigFinancials no longer includes transport/food in gig report (ha
   })
 
   const fuelItem = result.expenses.breakdown.find(b => b.label === 'Fuel')
-  const foodItem = result.expenses.breakdown.find(b => b.label === 'Food & Drinks')
+  const foodItem = result.expenses.breakdown.find(
+    b => b.label === 'Food & Drinks'
+  )
   assert.ok(!fuelItem, 'Should NOT include fuel costs in gig report')
   assert.ok(!foodItem, 'Should NOT include food costs in gig report')
 })
@@ -584,7 +586,9 @@ test('calculateRepairCost calculates correctly', () => {
   // Max condition = 100, Cost = 3
   // Current condition = 80. Missing = 20. Cost = 20 * 3 = 60
   const cost = calculateRepairCost(80)
-  const expected = Math.ceil(20 * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT)
+  const expected = Math.ceil(
+    20 * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT
+  )
   assert.equal(cost, expected)
 
   // Current condition = 100. Cost = 0.
@@ -607,34 +611,55 @@ test('calculateFuelCost applies road_warrior trait discount', () => {
   }
   const res2 = calculateFuelCost(dist, null, bandState)
   // 12 * 0.85 = 10.2
-  assert.ok(Math.abs(res2.fuelLiters - 10.2) < 1e-6, 'fuelLiters within tolerance')
+  assert.ok(
+    Math.abs(res2.fuelLiters - 10.2) < 1e-6,
+    'fuelLiters within tolerance'
+  )
 })
 
-test('calculateEffectiveTicketPrice handles discounts correctly', async (t) => {
+test('calculateEffectiveTicketPrice handles discounts correctly', async t => {
   await t.test('returns 0 if no gig data', () => {
     assert.equal(calculateEffectiveTicketPrice(null, {}), 0)
   })
 
   await t.test('returns original price if not discounted', () => {
     const gig = { price: 20 }
-    assert.equal(calculateEffectiveTicketPrice(gig, { discountedTickets: false }), 20)
+    assert.equal(
+      calculateEffectiveTicketPrice(gig, { discountedTickets: false }),
+      20
+    )
   })
 
   await t.test('returns original price if price <= 10', () => {
     const gig = { price: 10 }
-    assert.equal(calculateEffectiveTicketPrice(gig, { discountedTickets: true }), 10)
+    assert.equal(
+      calculateEffectiveTicketPrice(gig, { discountedTickets: true }),
+      10
+    )
 
     const gig2 = { price: 8 }
-    assert.equal(calculateEffectiveTicketPrice(gig2, { discountedTickets: true }), 8)
+    assert.equal(
+      calculateEffectiveTicketPrice(gig2, { discountedTickets: true }),
+      8
+    )
   })
 
-  await t.test('applies 50% discount if price > 10 and discountedTickets is true', () => {
-    const gig = { price: 20 }
-    assert.equal(calculateEffectiveTicketPrice(gig, { discountedTickets: true }), 10)
+  await t.test(
+    'applies 50% discount if price > 10 and discountedTickets is true',
+    () => {
+      const gig = { price: 20 }
+      assert.equal(
+        calculateEffectiveTicketPrice(gig, { discountedTickets: true }),
+        10
+      )
 
-    const gig2 = { price: 15 }
-    assert.equal(calculateEffectiveTicketPrice(gig2, { discountedTickets: true }), 7) // Math.floor(7.5)
-  })
+      const gig2 = { price: 15 }
+      assert.equal(
+        calculateEffectiveTicketPrice(gig2, { discountedTickets: true }),
+        7
+      ) // Math.floor(7.5)
+    }
+  )
 })
 
 test('calculateGigFinancials uses effective price', () => {
@@ -661,8 +686,12 @@ test('calculateGigFinancials uses effective price', () => {
   })
 
   // Discounted tickets should increase attendance (due to +10% fill bonus and avoided price penalty)
-  const normalTickets = financialsNormal.income.breakdown.find(b => b.label === 'Ticket Sales')
-  const discountTickets = financialsDiscount.income.breakdown.find(b => b.label === 'Ticket Sales')
+  const normalTickets = financialsNormal.income.breakdown.find(
+    b => b.label === 'Ticket Sales'
+  )
+  const discountTickets = financialsDiscount.income.breakdown.find(
+    b => b.label === 'Ticket Sales'
+  )
 
   const normalSold = parseInt(normalTickets.detail.split(' ')[0])
   const discountSold = parseInt(discountTickets.detail.split(' ')[0])
@@ -678,5 +707,8 @@ test('calculateGigFinancials uses effective price', () => {
 
   // Normal price 20, Discount price 10
   assert.ok(Math.abs(normalAvgPrice - 20) < 0.1, 'Normal price should be ~20')
-  assert.ok(Math.abs(discountAvgPrice - 10) < 0.1, 'Discount price should be ~10')
+  assert.ok(
+    Math.abs(discountAvgPrice - 10) < 0.1,
+    'Discount price should be ~10'
+  )
 })

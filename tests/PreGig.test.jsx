@@ -1,31 +1,45 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi
+} from 'vitest'
 /* eslint-disable @eslint-react/no-unnecessary-use-prefix */
 
 import React from 'react'
 import { render, fireEvent } from '@testing-library/react'
 
-
 // Mocks
 
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
-    motion: {
-      div: ({ children, ...props }) => React.createElement('div', props, children),
-      button: ({ children, ...props }) => React.createElement('button', { ...props, type: props.type || 'button' }, children)
-    },
-    AnimatePresence: ({ children }) => children
-  }))
+  motion: {
+    div: ({ children, ...props }) =>
+      React.createElement('div', props, children),
+    button: ({ children, ...props }) =>
+      React.createElement(
+        'button',
+        { ...props, type: props.type || 'button' },
+        children
+      )
+  },
+  AnimatePresence: ({ children }) => children
+}))
 // Mock audioManager
 vi.mock('../src/utils/AudioManager', () => ({
-    audioManager: {
-      ensureAudioContext: vi.fn(),
-      play: vi.fn()
-    }
-  }))
+  audioManager: {
+    ensureAudioContext: vi.fn(),
+    play: vi.fn()
+  }
+}))
 // Mock GigModifierButton to inspect props
 vi.mock('../src/ui/GigModifierButton', () => ({
   default: ({ item, onClick }) => (
-    <button type="button" onClick={() => onClick(item.key)}>
+    <button type='button' onClick={() => onClick(item.key)}>
       {item.label}
     </button>
   )
@@ -33,17 +47,23 @@ vi.mock('../src/ui/GigModifierButton', () => ({
 
 // Mock utility functions
 vi.mock('../src/utils/simulationUtils', () => ({
-    getGigModifiers: vi.fn(() => ({ activeEffects: [] }))
-  }))
+  getGigModifiers: vi.fn(() => ({ activeEffects: [] }))
+}))
 vi.mock('../src/utils/economyEngine', () => ({
-    MODIFIER_COSTS: { soundcheck: 50, promo: 100, merch: 75, catering: 60, guestlist: 80 }
-  }))
+  MODIFIER_COSTS: {
+    soundcheck: 50,
+    promo: 100,
+    merch: 75,
+    catering: 60,
+    guestlist: 80
+  }
+}))
 vi.mock('../src/utils/audio/songUtils', () => ({
-    getSongId: vi.fn(s => s.id)
-  }))
+  getSongId: vi.fn(s => s.id)
+}))
 vi.mock('../src/utils/errorHandler', () => ({
-    handleError: vi.fn()
-  }))
+  handleError: vi.fn()
+}))
 // Mock useGameState
 const mockUseGameState = {
   currentGig: { id: 'gig1', name: 'Test Gig' },
@@ -63,8 +83,8 @@ const mockUseGameState = {
 }
 
 vi.mock('../src/context/GameState', () => ({
-    useGameState: () => mockUseGameState
-  }))
+  useGameState: () => mockUseGameState
+}))
 // Import PreGig after mocks
 const { PreGig } = await import('../src/scenes/PreGig.jsx')
 
@@ -73,7 +93,7 @@ describe('PreGig', () => {
     //  removed (handled by vitest env)
     // Reset mocks
     Object.values(mockUseGameState).forEach(fn => {
-        if (typeof fn === 'function' && fn.mockReset) fn.mockReset()
+      if (typeof fn === 'function' && fn.mockReset) fn.mockReset()
     })
     // Restore default state
     mockUseGameState.player = { money: 1000 }
@@ -81,7 +101,6 @@ describe('PreGig', () => {
   })
 
   afterEach(() => {
-
     vi.clearAllMocks()
   })
 
@@ -101,5 +120,4 @@ describe('PreGig', () => {
     // Expect { soundcheck: true } (toggling from undefined/false)
     expect(callArgs).toEqual({ soundcheck: true })
   })
-
 })

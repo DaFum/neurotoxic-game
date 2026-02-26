@@ -54,7 +54,7 @@ mock.module('pixi.js', {
 // Mock dependencies
 mock.module('../src/utils/imageGen.js', {
   namedExports: {
-    getGenImageUrl: mock.fn((prompt) => `url://${prompt}`),
+    getGenImageUrl: mock.fn(prompt => `url://${prompt}`),
     IMG_PROMPTS: { CROWD_IDLE: 'idle', CROWD_MOSH: 'mosh' }
   }
 })
@@ -92,7 +92,8 @@ describe('CrowdManager', () => {
     const pixiModule = await import('pixi.js')
     PIXI = pixiModule
 
-    const managerModule = await import('../src/components/stage/CrowdManager.js')
+    const managerModule =
+      await import('../src/components/stage/CrowdManager.js')
     CrowdManager = managerModule.CrowdManager
 
     parentContainer = new PIXI.Container()
@@ -116,7 +117,7 @@ describe('CrowdManager', () => {
     const mockTextureIdle = { id: 'idle' }
     const mockTextureMosh = { id: 'mosh' }
 
-    PIXI.Assets.load.mock.mockImplementation(async (url) => {
+    PIXI.Assets.load.mock.mockImplementation(async url => {
       if (url.includes('idle')) return mockTextureIdle
       if (url.includes('mosh')) return mockTextureMosh
       return null

@@ -51,7 +51,8 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
           START PRACTICE
         </ActionButton>
         <div>
-          SELECTED: <span className='text-(--toxic-green)'>{setlist.length}</span>
+          SELECTED:{' '}
+          <span className='text-(--toxic-green)'>{setlist.length}</span>
         </div>
       </div>
       <div className='space-y-2 pb-4'>

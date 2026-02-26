@@ -36,7 +36,10 @@ describe('useArrivalLogic', () => {
     assert.ok(mockGameState.triggerEvent.mock.calls.length >= 1)
     // 4. Default Routing (no current node found -> OVERWORLD)
     assert.equal(mockGameState.changeScene.mock.calls.length, 1)
-    assert.equal(mockGameState.changeScene.mock.calls[0].arguments[0], 'OVERWORLD')
+    assert.equal(
+      mockGameState.changeScene.mock.calls[0].arguments[0],
+      'OVERWORLD'
+    )
   })
 
   test('applies harmony regen if upgrade active', () => {
@@ -75,7 +78,11 @@ describe('useArrivalLogic', () => {
     assert.equal(updateArg.members[0].mood, 60)
     assert.equal(updateArg.members[0].stamina, 70)
 
-    assert.ok(mockGameState.addToast.mock.calls.some(c => c.arguments[0].includes('Rested')))
+    assert.ok(
+      mockGameState.addToast.mock.calls.some(c =>
+        c.arguments[0].includes('Rested')
+      )
+    )
   })
 
   test('handles GIG node with sufficient harmony', () => {
@@ -113,8 +120,15 @@ describe('useArrivalLogic', () => {
 
     assert.equal(mockGameState.startGig.mock.calls.length, 0)
     assert.equal(mockGameState.changeScene.mock.calls.length, 1)
-    assert.equal(mockGameState.changeScene.mock.calls[0].arguments[0], 'OVERWORLD')
-    assert.ok(mockGameState.addToast.mock.calls.some(c => c.arguments[0].includes('too low')))
+    assert.equal(
+      mockGameState.changeScene.mock.calls[0].arguments[0],
+      'OVERWORLD'
+    )
+    assert.ok(
+      mockGameState.addToast.mock.calls.some(c =>
+        c.arguments[0].includes('too low')
+      )
+    )
   })
 
   test('idempotency guard prevents double execution', () => {

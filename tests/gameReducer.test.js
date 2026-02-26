@@ -13,9 +13,10 @@ const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
 
   unlocks.forEach(u => {
     // Mock matching logic: ID match OR case-insensitive name match
-    const member = band.members.find(m =>
-      (m.id && m.id === u.memberId) ||
-      (m.name && m.name.toLowerCase() === u.memberId.toLowerCase())
+    const member = band.members.find(
+      m =>
+        (m.id && m.id === u.memberId) ||
+        (m.name && m.name.toLowerCase() === u.memberId.toLowerCase())
     )
     if (member) {
       member.traits.push({ id: u.traitId })
@@ -24,19 +25,25 @@ const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
 
   return {
     band,
-    toasts: unlocks.length > 0
-      ? [...(state.toasts || []), { message: `Unlocked ${unlocks[0].traitId}`, type: 'success' }]
-      : (state.toasts || [])
+    toasts:
+      unlocks.length > 0
+        ? [
+            ...(state.toasts || []),
+            { message: `Unlocked ${unlocks[0].traitId}`, type: 'success' }
+          ]
+        : state.toasts || []
   }
 })
 
 mock.module('../src/utils/traitUtils.js', {
-    namedExports: { applyTraitUnlocks: mockApplyTraitUnlocks }
+  namedExports: { applyTraitUnlocks: mockApplyTraitUnlocks }
 })
 
 // Import SUT after mocking
-const { gameReducer, ActionTypes } = await import('../src/context/gameReducer.js')
-const { createInitialState, initialState } = await import('../src/context/initialState.js')
+const { gameReducer, ActionTypes } =
+  await import('../src/context/gameReducer.js')
+const { createInitialState, initialState } =
+  await import('../src/context/initialState.js')
 
 describe('gameReducer', () => {
   let testState
@@ -360,7 +367,9 @@ describe('gameReducer', () => {
 
       // Verify arguments: (state, [{ memberId: 'matze', traitId: 'gear_nerd' }])
       const callArgs = mockApplyTraitUnlocks.mock.calls[0].arguments
-      assert.deepStrictEqual(callArgs[1], [{ memberId: 'matze', traitId: 'gear_nerd' }])
+      assert.deepStrictEqual(callArgs[1], [
+        { memberId: 'matze', traitId: 'gear_nerd' }
+      ])
 
       // Verify state change (simulated by mock)
       const matze = nextState.band.members.find(m => m.name === 'Matze')
@@ -378,12 +387,15 @@ describe('gameReducer', () => {
       }
 
       const action = {
-          type: ActionTypes.UNLOCK_TRAIT,
-          payload: { memberId: 'matze', traitId: 'gear_nerd' }
+        type: ActionTypes.UNLOCK_TRAIT,
+        payload: { memberId: 'matze', traitId: 'gear_nerd' }
       }
       const nextState = gameReducer(testState, action)
       assert.ok(nextState.toasts.length > 0, 'Should add a toast')
-      assert.ok(nextState.toasts[0].message.includes('Unlocked'), 'Toast should mention unlock')
+      assert.ok(
+        nextState.toasts[0].message.includes('Unlocked'),
+        'Toast should mention unlock'
+      )
     })
   })
 
@@ -405,7 +417,11 @@ describe('gameReducer', () => {
 
       const newState = gameReducer(testState, action)
 
-      assert.strictEqual(mockApplyTraitUnlocks.mock.calls.length, 0, 'Should not call applyTraitUnlocks')
+      assert.strictEqual(
+        mockApplyTraitUnlocks.mock.calls.length,
+        0,
+        'Should not call applyTraitUnlocks'
+      )
       assert.deepStrictEqual(newState.lastGigStats, action.payload)
     })
 
@@ -432,7 +448,11 @@ describe('gameReducer', () => {
 
       const newState = gameReducer(testState, action)
 
-      assert.strictEqual(mockApplyTraitUnlocks.mock.calls.length, 1, 'Should call applyTraitUnlocks')
+      assert.strictEqual(
+        mockApplyTraitUnlocks.mock.calls.length,
+        1,
+        'Should call applyTraitUnlocks'
+      )
       assert.deepStrictEqual(newState.lastGigStats, action.payload)
     })
   })

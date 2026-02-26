@@ -1,4 +1,3 @@
-
 export const GAME_PHASES = {
   OVERWORLD: 'OVERWORLD',
   TRAVEL_MINIGAME: 'TRAVEL_MINIGAME',
@@ -28,4 +27,4 @@ export const DEFAULT_MINIGAME_STATE = {
   score: 0
 }
 
-export const DEFAULT_EQUIPMENT_COUNT = 10;
+export const DEFAULT_EQUIPMENT_COUNT = 10

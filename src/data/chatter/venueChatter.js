@@ -1243,10 +1243,7 @@ export const VENUE_CHATTER_DB = [
     venueId: 'kassel_goldgrube',
     id: 'chatter_kassel_goldgrube',
     linesByScene: {
-      ANY: [
-        'Small room, golden name.',
-        'Nights here feel like secret shows.'
-      ],
+      ANY: ['Small room, golden name.', 'Nights here feel like secret shows.'],
       OVERWORLD: [
         'Kassel feels quiet until you find the Goldgrube.',
         'If it’s small, it’s real.',
@@ -1479,4 +1476,4 @@ export const VENUE_CHATTER_DB = [
       ]
     }
   }
-];
+]

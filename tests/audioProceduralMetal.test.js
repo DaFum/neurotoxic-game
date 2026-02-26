@@ -30,7 +30,9 @@ const mockAudioState = {
   transportEndEventId: null,
   transportStopEventId: null
 }
-mock.module('../src/utils/audio/state.js', { namedExports: { audioState: mockAudioState } })
+mock.module('../src/utils/audio/state.js', {
+  namedExports: { audioState: mockAudioState }
+})
 
 // Mock Tone.js
 const mockTransport = {
@@ -76,22 +78,27 @@ const mockTone = {
   getTransport: mock.fn(() => mockTransport),
   Sequence: MockSequence,
   now: mock.fn(() => 1000), // Fixed time: 1000s
-  Frequency: mock.fn((val) => ({
+  Frequency: mock.fn(val => ({
     toNote: () => val, // Simple pass-through or mock logic
     toFrequency: () => 440
   })),
-  Time: mock.fn((val) => ({
+  Time: mock.fn(val => ({
     toSeconds: () => 0.5
   }))
 }
 mock.module('tone', { namedExports: mockTone })
 
 // Mock @tonejs/midi (not used directly but imported)
-mock.module('@tonejs/midi', { namedExports: { Midi: class {} }, defaultExport: { Midi: class {} } })
+mock.module('@tonejs/midi', {
+  namedExports: { Midi: class {} },
+  defaultExport: { Midi: class {} }
+})
 
 // Mock Setup
 const mockEnsureAudioContext = mock.fn(async () => true)
-mock.module('../src/utils/audio/setup.js', { namedExports: { ensureAudioContext: mockEnsureAudioContext } })
+mock.module('../src/utils/audio/setup.js', {
+  namedExports: { ensureAudioContext: mockEnsureAudioContext }
+})
 
 // Mock Playback
 const mockStopAudioInternal = mock.fn()
@@ -136,8 +143,9 @@ mock.module('../src/utils/audio/selectionUtils.js', {
 mock.module('../src/utils/audio/playbackUtils.js', {
   namedExports: {
     resolveAssetUrl: mock.fn(),
-    normalizeMidiPlaybackOptions: (options) => ({
-      onEnded: options?.onEnded || null,
+    normalizeMidiPlaybackOptions: options => ({
+      onEnded:
+        typeof options?.onEnded === 'function' ? options.onEnded : null,
       useCleanPlayback: true
     })
   }
@@ -164,7 +172,7 @@ const { startMetalGenerator } = await import('../src/utils/audio/procedural.js')
 
 // --- Tests ---
 
-test('startMetalGenerator Tests', async (t) => {
+test('startMetalGenerator Tests', async t => {
   // Reset mocks before each test
   t.beforeEach(() => {
     mockAudioState.playRequestId = 0
@@ -201,36 +209,74 @@ test('startMetalGenerator Tests', async (t) => {
     const result = await startMetalGenerator(song, delay, {}, random)
 
     assert.strictEqual(result, true, 'Should return true on success')
-    assert.strictEqual(mockEnsureAudioContext.mock.calls.length, 1, 'Should ensure audio context')
-    assert.strictEqual(mockStopAudioInternal.mock.calls.length, 1, 'Should stop previous audio')
+    assert.strictEqual(
+      mockEnsureAudioContext.mock.calls.length,
+      1,
+      'Should ensure audio context'
+    )
+    assert.strictEqual(
+      mockStopAudioInternal.mock.calls.length,
+      1,
+      'Should stop previous audio'
+    )
 
     // Check BPM
     assert.strictEqual(mockTransport.bpm.value, 120, 'Should set BPM correctly')
 
     // Check Sequence creation
-    assert.ok(mockAudioState.loop instanceof MockSequence, 'Should create Tone.Sequence')
-    assert.strictEqual(mockAudioState.loop.started, true, 'Sequence should be started')
-    assert.strictEqual(mockAudioState.loop.startTime, 0, 'Sequence should start at 0 (relative to transport)')
+    assert.ok(
+      mockAudioState.loop instanceof MockSequence,
+      'Should create Tone.Sequence'
+    )
+    assert.strictEqual(
+      mockAudioState.loop.started,
+      true,
+      'Sequence should be started'
+    )
+    assert.strictEqual(
+      mockAudioState.loop.startTime,
+      0,
+      'Sequence should start at 0 (relative to transport)'
+    )
 
     // Check Transport start
-    assert.strictEqual(mockTransport.start.mock.calls.length, 1, 'Should start Transport')
+    assert.strictEqual(
+      mockTransport.start.mock.calls.length,
+      1,
+      'Should start Transport'
+    )
     const startArgs = mockTransport.start.mock.calls[0].arguments
     // Expect +0.5 (delay) but capped at min 0.1 lookahead.
     // Wait, code says `const startDelay = Math.max(0.1, delay)`.
     // And `Tone.getTransport().start(\`+\${startDelay}\`)`
     // Wait, the code actually does: `Tone.getTransport().start(\`+\${startDelay}\`)`
     // mockTransport.start mock receives the string argument.
-    assert.strictEqual(startArgs[0], '+0.5', 'Should start transport with correct delay')
+    assert.strictEqual(
+      startArgs[0],
+      '+0.5',
+      'Should start transport with correct delay'
+    )
   })
 
-  await t.test('AudioContext Locked: Returns false if context not ensured', async () => {
-    mockEnsureAudioContext.mock.mockImplementationOnce(async () => false)
-    const song = { difficulty: 3 }
-    const result = await startMetalGenerator(song)
+  await t.test(
+    'AudioContext Locked: Returns false if context not ensured',
+    async () => {
+      mockEnsureAudioContext.mock.mockImplementationOnce(async () => false)
+      const song = { difficulty: 3 }
+      const result = await startMetalGenerator(song)
 
-    assert.strictEqual(result, false, 'Should return false if audio context is locked')
-    assert.strictEqual(mockTransport.start.mock.calls.length, 0, 'Should not start transport')
-  })
+      assert.strictEqual(
+        result,
+        false,
+        'Should return false if audio context is locked'
+      )
+      assert.strictEqual(
+        mockTransport.start.mock.calls.length,
+        0,
+        'Should not start transport'
+      )
+    }
+  )
 
   await t.test('Race Condition: Aborts if playRequestId changes', async () => {
     mockEnsureAudioContext.mock.mockImplementationOnce(async () => {
@@ -240,23 +286,45 @@ test('startMetalGenerator Tests', async (t) => {
     const song = { difficulty: 3 }
     const result = await startMetalGenerator(song)
 
-    assert.strictEqual(result, false, 'Should return false if request ID changed')
-    assert.strictEqual(mockTransport.start.mock.calls.length, 0, 'Should not start transport')
+    assert.strictEqual(
+      result,
+      false,
+      'Should return false if request ID changed'
+    )
+    assert.strictEqual(
+      mockTransport.start.mock.calls.length,
+      0,
+      'Should not start transport'
+    )
   })
 
-  await t.test('BPM Calculation: Defaults correctly if BPM missing', async () => {
-    const song = { difficulty: 2 } // Missing bpm
-    // Code: const rawBpm = song.bpm || 80 + (song.difficulty ?? 2) * 30
-    // 80 + 2 * 30 = 140
-    await startMetalGenerator(song)
+  await t.test(
+    'BPM Calculation: Defaults correctly if BPM missing',
+    async () => {
+      const song = { difficulty: 2 } // Missing bpm
+      // Code: const rawBpm = song.bpm || 80 + (song.difficulty ?? 2) * 30
+      // 80 + 2 * 30 = 140
+      await startMetalGenerator(song)
 
-    assert.strictEqual(mockTransport.bpm.value, 140, 'Should calculate BPM from difficulty')
-  })
+      assert.strictEqual(
+        mockTransport.bpm.value,
+        140,
+        'Should calculate BPM from difficulty'
+      )
+    }
+  )
 
-  await t.test('Cleanup: Calls stopAudioInternal which handles previous cleanup', async () => {
-    await startMetalGenerator({ difficulty: 1 })
-    assert.strictEqual(mockStopAudioInternal.mock.calls.length, 1, 'Should call stopAudioInternal')
-  })
+  await t.test(
+    'Cleanup: Calls stopAudioInternal which handles previous cleanup',
+    async () => {
+      await startMetalGenerator({ difficulty: 1 })
+      assert.strictEqual(
+        mockStopAudioInternal.mock.calls.length,
+        1,
+        'Should call stopAudioInternal'
+      )
+    }
+  )
 
   await t.test('OnEnded: Schedules callback if duration provided', async () => {
     const song = { difficulty: 1, duration: 10 }
@@ -264,7 +332,11 @@ test('startMetalGenerator Tests', async (t) => {
 
     await startMetalGenerator(song, 0, { onEnded })
 
-    assert.strictEqual(mockTransport.scheduleOnce.mock.calls.length, 1, 'Should schedule onEnded')
+    assert.strictEqual(
+      mockTransport.scheduleOnce.mock.calls.length,
+      1,
+      'Should schedule onEnded'
+    )
 
     // Verify the scheduled callback calls onEnded
     const callback = mockTransport.scheduleOnce.mock.calls[0].arguments[0]
@@ -273,7 +345,11 @@ test('startMetalGenerator Tests', async (t) => {
     assert.strictEqual(time, 10, 'Should schedule at duration')
 
     callback()
-    assert.strictEqual(onEnded.mock.calls.length, 1, 'Scheduled callback should execute onEnded')
+    assert.strictEqual(
+      onEnded.mock.calls.length,
+      1,
+      'Scheduled callback should execute onEnded'
+    )
   })
 
   await t.test('Callback Execution: Trigger guitar and drums', async () => {
@@ -291,8 +367,12 @@ test('startMetalGenerator Tests', async (t) => {
     callback(100, 'E2')
 
     // Check guitar trigger
-    assert.strictEqual(mockAudioState.guitar.triggerAttackRelease.mock.calls.length, 1)
-    const guitarArgs = mockAudioState.guitar.triggerAttackRelease.mock.calls[0].arguments
+    assert.strictEqual(
+      mockAudioState.guitar.triggerAttackRelease.mock.calls.length,
+      1
+    )
+    const guitarArgs =
+      mockAudioState.guitar.triggerAttackRelease.mock.calls[0].arguments
     assert.strictEqual(guitarArgs[0], 'E2')
     assert.strictEqual(guitarArgs[2], 100)
 
@@ -300,15 +380,24 @@ test('startMetalGenerator Tests', async (t) => {
     // difficulty 5 -> kick, snare (random > 0.5), hihat
     // random() returns 0.05.
     // kick is always triggered at diff 5
-    assert.strictEqual(mockAudioState.drumKit.kick.triggerAttackRelease.mock.calls.length, 1)
+    assert.strictEqual(
+      mockAudioState.drumKit.kick.triggerAttackRelease.mock.calls.length,
+      1
+    )
 
     // random > 0.5 for snare? 0.05 is not > 0.5. So no snare?
     // Wait, let's check code:
     // `if (diff === 5) { ... if (random() > 0.5) ... }`
     // So with 0.05, snare is NOT triggered.
-    assert.strictEqual(mockAudioState.drumKit.snare.triggerAttackRelease.mock.calls.length, 0)
+    assert.strictEqual(
+      mockAudioState.drumKit.snare.triggerAttackRelease.mock.calls.length,
+      0
+    )
 
     // Hihat always triggered at diff 5
-    assert.strictEqual(mockAudioState.drumKit.hihat.triggerAttackRelease.mock.calls.length, 1)
+    assert.strictEqual(
+      mockAudioState.drumKit.hihat.triggerAttackRelease.mock.calls.length,
+      1
+    )
   })
 })

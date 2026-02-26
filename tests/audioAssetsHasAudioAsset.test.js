@@ -29,7 +29,7 @@ mock.module('../src/utils/audio/playbackUtils.js', {
 // Note: We need to import this AFTER mocking
 const { hasAudioAsset } = await import('../src/utils/audio/assets.js')
 
-test('hasAudioAsset', async (t) => {
+test('hasAudioAsset', async t => {
   await t.test('returns true for existing asset with full path', () => {
     assert.strictEqual(hasAudioAsset('valid.ogg'), true)
   })
@@ -43,11 +43,14 @@ test('hasAudioAsset', async (t) => {
     assert.strictEqual(hasAudioAsset('path/to/nested.ogg'), true)
   })
 
-  await t.test('returns true for existing nested asset by basename (if in map)', () => {
-    // basenames are stored in the map by buildAssetUrlMap logic if unique
-    // our mock explicitly puts 'nested.ogg' in the map
-    assert.strictEqual(hasAudioAsset('nested.ogg'), true)
-  })
+  await t.test(
+    'returns true for existing nested asset by basename (if in map)',
+    () => {
+      // basenames are stored in the map by buildAssetUrlMap logic if unique
+      // our mock explicitly puts 'nested.ogg' in the map
+      assert.strictEqual(hasAudioAsset('nested.ogg'), true)
+    }
+  )
 
   await t.test('returns true when input has ./ prefix', () => {
     assert.strictEqual(hasAudioAsset('./valid.ogg'), true)
@@ -57,12 +60,15 @@ test('hasAudioAsset', async (t) => {
     assert.strictEqual(hasAudioAsset('/valid.ogg'), true)
   })
 
-  await t.test('returns true for loose matching by basename even if path is wrong', () => {
-    // 'conflict.ogg' is in the map.
-    // 'wrong/path/conflict.ogg' is NOT in the map.
-    // logic: oggUrlMap['wrong/path/conflict.ogg'] (false) || oggUrlMap['conflict.ogg'] (true)
-    assert.strictEqual(hasAudioAsset('wrong/path/conflict.ogg'), true)
-  })
+  await t.test(
+    'returns true for loose matching by basename even if path is wrong',
+    () => {
+      // 'conflict.ogg' is in the map.
+      // 'wrong/path/conflict.ogg' is NOT in the map.
+      // logic: oggUrlMap['wrong/path/conflict.ogg'] (false) || oggUrlMap['conflict.ogg'] (true)
+      assert.strictEqual(hasAudioAsset('wrong/path/conflict.ogg'), true)
+    }
+  )
 
   await t.test('returns false for non-existent asset', () => {
     assert.strictEqual(hasAudioAsset('invalid.ogg'), false)
@@ -76,6 +82,6 @@ test('hasAudioAsset', async (t) => {
   })
 
   await t.test('returns false for partial match that is not in map', () => {
-     assert.strictEqual(hasAudioAsset('val'), false)
+    assert.strictEqual(hasAudioAsset('val'), false)
   })
 })

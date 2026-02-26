@@ -25,9 +25,8 @@ const {
 // Setup the test environment
 const setupRhythmGameScoringTest = async () => {
   mockRhythmGameLogicModules()
-  const { useRhythmGameScoring } = await import(
-    '../src/hooks/rhythmGame/useRhythmGameScoring.js'
-  )
+  const { useRhythmGameScoring } =
+    await import('../src/hooks/rhythmGame/useRhythmGameScoring.js')
   return { useRhythmGameScoring }
 }
 
@@ -53,24 +52,36 @@ const createMockGameState = () => ({
   toxicTimeTotal: 0
 })
 
-const createMockSetters = (gameStateRef) => ({
+const createMockSetters = gameStateRef => ({
   setScore: mock.fn(updater => {
-    const next = typeof updater === 'function' ? updater(gameStateRef.current.score) : updater
+    const next =
+      typeof updater === 'function'
+        ? updater(gameStateRef.current.score)
+        : updater
     gameStateRef.current.score = next
     return next
   }),
   setCombo: mock.fn(updater => {
-    const next = typeof updater === 'function' ? updater(gameStateRef.current.combo) : updater
+    const next =
+      typeof updater === 'function'
+        ? updater(gameStateRef.current.combo)
+        : updater
     gameStateRef.current.combo = next
     return next
   }),
   setHealth: mock.fn(updater => {
-    const next = typeof updater === 'function' ? updater(gameStateRef.current.health) : updater
+    const next =
+      typeof updater === 'function'
+        ? updater(gameStateRef.current.health)
+        : updater
     gameStateRef.current.health = next
     return next
   }),
   setOverload: mock.fn(updater => {
-    const next = typeof updater === 'function' ? updater(gameStateRef.current.overload) : updater
+    const next =
+      typeof updater === 'function'
+        ? updater(gameStateRef.current.overload)
+        : updater
     gameStateRef.current.overload = next
     return next
   }),
@@ -219,22 +230,25 @@ describe('useRhythmGameScoring', async () => {
     gameStateRef.current.health = 1
 
     const { result } = renderHook(() =>
-        useRhythmGameScoring({
-          gameStateRef,
-          setters,
-          performance: {},
-          contextActions
-        })
-      )
-
-      act(() => {
-        result.current.handleMiss(1, false)
+      useRhythmGameScoring({
+        gameStateRef,
+        setters,
+        performance: {},
+        contextActions
       })
+    )
 
-      assert.equal(gameStateRef.current.health, 0)
-      assert.equal(gameStateRef.current.isGameOver, true)
-      assert.equal(mockAudioEngine.stopAudio.mock.calls.length, 1)
-      assert.equal(contextActions.addToast.mock.calls[0].arguments[0], 'BAND COLLAPSED')
+    act(() => {
+      result.current.handleMiss(1, false)
+    })
+
+    assert.equal(gameStateRef.current.health, 0)
+    assert.equal(gameStateRef.current.isGameOver, true)
+    assert.equal(mockAudioEngine.stopAudio.mock.calls.length, 1)
+    assert.equal(
+      contextActions.addToast.mock.calls[0].arguments[0],
+      'BAND COLLAPSED'
+    )
   })
 
   test('activateToxicMode sets flag and toast', () => {
@@ -252,7 +266,10 @@ describe('useRhythmGameScoring', async () => {
     })
 
     assert.equal(gameStateRef.current.isToxicMode, true)
-    assert.equal(contextActions.addToast.mock.calls[0].arguments[0], 'TOXIC OVERLOAD!')
+    assert.equal(
+      contextActions.addToast.mock.calls[0].arguments[0],
+      'TOXIC OVERLOAD!'
+    )
   })
 
   test('Toxic Mode applies 4x score multiplier', () => {
@@ -296,7 +313,10 @@ describe('useRhythmGameScoring', async () => {
 
     assert.equal(gameStateRef.current.isToxicMode, false)
     assert.equal(setters.setIsToxicMode.mock.calls[0].arguments[0], false)
-    assert.equal(contextActions.addToast.mock.calls[0].arguments[0], 'TOXIC MODE LOST!')
+    assert.equal(
+      contextActions.addToast.mock.calls[0].arguments[0],
+      'TOXIC MODE LOST!'
+    )
   })
 
   test('Empty hit does not deactivate Toxic Mode', () => {
@@ -317,7 +337,9 @@ describe('useRhythmGameScoring', async () => {
 
     assert.equal(gameStateRef.current.isToxicMode, true)
     // setIsToxicMode should not have been called with false
-    const calls = setters.setIsToxicMode.mock.calls.filter(c => c.arguments[0] === false)
+    const calls = setters.setIsToxicMode.mock.calls.filter(
+      c => c.arguments[0] === false
+    )
     assert.equal(calls.length, 0)
   })
 
@@ -403,6 +425,9 @@ describe('useRhythmGameScoring', async () => {
     // Hit adds 4 overload. 96 + 4 = 100. Should trigger Toxic Mode.
     assert.equal(gameStateRef.current.isToxicMode, true)
     assert.equal(gameStateRef.current.overload, 0) // Reset to 0
-    assert.equal(contextActions.addToast.mock.calls[0].arguments[0], 'TOXIC OVERLOAD!')
+    assert.equal(
+      contextActions.addToast.mock.calls[0].arguments[0],
+      'TOXIC OVERLOAD!'
+    )
   })
 })

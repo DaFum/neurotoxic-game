@@ -1,5 +1,9 @@
 import * as PIXI from 'pixi.js'
-import { calculateCrowdOffset, CROWD_LAYOUT, getPixiColorFromToken } from './utils.js'
+import {
+  calculateCrowdOffset,
+  CROWD_LAYOUT,
+  getPixiColorFromToken
+} from './utils.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { handleError } from '../../utils/errorHandler.js'
 
@@ -53,6 +57,7 @@ export class CrowdManager {
     this.stageContainer.addChild(this.container)
 
     const fallbackColor = getPixiColorFromToken('--star-white')
+    const mutedColor = getPixiColorFromToken('--ash-gray')
 
     for (let i = 0; i < CROWD_LAYOUT.memberCount; i += 1) {
       const radius =
@@ -70,13 +75,13 @@ export class CrowdManager {
         crowd.fill(fallbackColor)
       }
 
-      crowd.tint = 0x333333
+      crowd.tint = mutedColor
       crowd.x = Math.random() * this.app.screen.width
       crowd.y =
         Math.random() * (this.app.screen.height * CROWD_LAYOUT.yRangeRatio)
       crowd.baseY = crowd.y
       crowd.radius = radius
-      crowd.currentFillColor = 0x333333
+      crowd.currentFillColor = mutedColor
       this.container.addChild(crowd)
       this.crowdMembers.push(crowd)
     }
@@ -85,16 +90,14 @@ export class CrowdManager {
   update(combo, isToxicMode, timeMs) {
     const yOffset = calculateCrowdOffset({ combo, timeMs })
     const nextColor = isToxicMode
-      ? 0x00ff41
+      ? getPixiColorFromToken('--toxic-green')
       : combo > 20
-        ? 0xffffff
-        : 0x555555
+        ? getPixiColorFromToken('--star-white')
+        : getPixiColorFromToken('--ash-gray')
 
     const shouldMosh = isToxicMode || combo > 20
     const targetTexture =
-      shouldMosh && this.textures.mosh
-        ? this.textures.mosh
-        : this.textures.idle
+      shouldMosh && this.textures.mosh ? this.textures.mosh : this.textures.idle
 
     this.crowdMembers.forEach(member => {
       member.y = member.baseY - yOffset

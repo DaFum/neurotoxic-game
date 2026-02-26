@@ -7,7 +7,7 @@ import { useGigEffects } from '../src/hooks/useGigEffects.js'
 describe('useGigEffects', () => {
   beforeEach(() => {
     setupJSDOM()
-    global.requestAnimationFrame = mock.fn((cb) => setTimeout(cb, 0))
+    global.requestAnimationFrame = mock.fn(cb => setTimeout(cb, 0))
     global.cancelAnimationFrame = mock.fn()
   })
 
@@ -22,16 +22,20 @@ describe('useGigEffects', () => {
     const { result } = renderHook(() => useGigEffects(stats))
 
     // Check if setBandMemberRef is returned
-    assert.equal(typeof result.current.setBandMemberRef, 'function', 'setBandMemberRef should be returned')
+    assert.equal(
+      typeof result.current.setBandMemberRef,
+      'function',
+      'setBandMemberRef should be returned'
+    )
 
     // Create a mock element
     const mockElement = document.createElement('div')
 
     // Mock animate
     const animMock = {
-        cancel: mock.fn(),
-        play: mock.fn(),
-        effect: { target: mockElement }
+      cancel: mock.fn(),
+      play: mock.fn(),
+      effect: { target: mockElement }
     }
     mockElement.animate = mock.fn(() => animMock)
 
@@ -49,22 +53,33 @@ describe('useGigEffects', () => {
     })
 
     // Assertions
-    assert.equal(getElementByIdSpy.mock.callCount(), 0, 'Should not query DOM by ID')
-    assert.equal(mockElement.animate.mock.callCount(), 1, 'Should call animate on the element')
+    assert.equal(
+      getElementByIdSpy.mock.callCount(),
+      0,
+      'Should not query DOM by ID'
+    )
+    assert.equal(
+      mockElement.animate.mock.callCount(),
+      1,
+      'Should call animate on the element'
+    )
   })
 
   test('chaosStyle memoization check', () => {
-    const { result, rerender } = renderHook(
-      (props) => useGigEffects(props),
-      { initialProps: { overload: 40, isToxicMode: false } }
-    )
+    const { result, rerender } = renderHook(props => useGigEffects(props), {
+      initialProps: { overload: 40, isToxicMode: false }
+    })
 
     const style1 = result.current.chaosStyle
     assert.deepEqual(style1, {}, 'Initial style should be empty')
 
     // Same props -> Same reference
     rerender({ overload: 40, isToxicMode: false })
-    assert.strictEqual(result.current.chaosStyle, style1, 'Style ref should be same')
+    assert.strictEqual(
+      result.current.chaosStyle,
+      style1,
+      'Style ref should be same'
+    )
 
     // Different overload -> New reference
     rerender({ overload: 60, isToxicMode: false })
@@ -74,6 +89,10 @@ describe('useGigEffects', () => {
 
     // Same overload -> Same reference as style2
     rerender({ overload: 60, isToxicMode: false })
-    assert.strictEqual(result.current.chaosStyle, style2, 'Style ref should be same as style2')
+    assert.strictEqual(
+      result.current.chaosStyle,
+      style2,
+      'Style ref should be same as style2'
+    )
   })
 })

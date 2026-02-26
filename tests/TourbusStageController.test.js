@@ -1,131 +1,149 @@
-
 import { describe, it, mock, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
-import { createTourbusStageController } from '../src/components/stage/TourbusStageController.js'
 
 // Mock DOM
 global.window = {
-    devicePixelRatio: 1,
-    addEventListener: mock.fn(),
-    removeEventListener: mock.fn()
+  devicePixelRatio: 1,
+  addEventListener: mock.fn(),
+  removeEventListener: mock.fn()
 }
 global.document = {
-    createElement: mock.fn(() => ({
-        getContext: mock.fn(() => ({
-            fillRect: mock.fn(),
-            getImageData: mock.fn()
-        })),
-        addEventListener: mock.fn(),
-        removeEventListener: mock.fn()
+  createElement: mock.fn(() => ({
+    getContext: mock.fn(() => ({
+      fillRect: mock.fn(),
+      getImageData: mock.fn()
     })),
-    body: {
-        appendChild: mock.fn()
-    }
+    addEventListener: mock.fn(),
+    removeEventListener: mock.fn()
+  })),
+  body: {
+    appendChild: mock.fn()
+  }
 }
 
 // Global mocks reset
 // We use closures to hold the latest mocks
-let currentTickerAdd;
-let currentTickerRemove;
-let currentAppDestroy;
-let currentLoad;
+let currentTickerAdd
+let currentTickerRemove
+let currentAppDestroy
+let currentLoad
 
 mock.module('pixi.js', {
-  Application: class {
-    constructor() {
-        return {
-            canvas: { style: {} },
-            stage: { addChild: mock.fn() },
-            screen: { width: 800, height: 600 },
-            ticker: {
-                add: currentTickerAdd,
-                remove: currentTickerRemove,
-                lastTime: 1000,
-                deltaMS: 16.6
-            },
-            init: mock.fn(() => Promise.resolve()),
-            destroy: currentAppDestroy
+  namedExports: {
+    Application: class {
+      constructor() {
+        this.canvas = { style: {} }
+        this.stage = { addChild: mock.fn() }
+        this.screen = { width: 800, height: 600 }
+        this.ticker = {
+          add: currentTickerAdd,
+          remove: currentTickerRemove,
+          lastTime: 1000,
+          deltaMS: 16.6
         }
-    }
-  },
-  Container: class {
-    constructor() {
-      this.addChild = mock.fn()
-      this.removeChild = mock.fn()
-      this.removeChildren = mock.fn()
-    }
-  },
-  Graphics: class {
-    constructor() {
-      this.rect = mock.fn()
-      this.circle = mock.fn()
-      this.fill = mock.fn()
-    }
-  },
-  Sprite: class {
-    constructor() {
-      this.anchor = { set: mock.fn() }
-      this.scale = { set: mock.fn() }
-      this.x = 0
-      this.y = 0
-      this.rotation = 0
-      this.destroy = mock.fn()
-    }
-  },
-  TilingSprite: class {
-    constructor() {
+        this.init = mock.fn(() => Promise.resolve())
+        this.destroy = currentAppDestroy
+      }
+    },
+    Container: class {
+      constructor() {
+        this.addChild = mock.fn()
+        this.removeChild = mock.fn()
+        this.removeChildren = mock.fn()
+      }
+    },
+    Graphics: class {
+      constructor() {
+        this.rect = mock.fn()
+        this.circle = mock.fn()
+        this.fill = mock.fn()
+        this.destroy = mock.fn()
+      }
+    },
+    Sprite: class {
+      constructor() {
+        this.anchor = { set: mock.fn() }
+        this.scale = { set: mock.fn() }
+        this.x = 0
+        this.y = 0
+        this.rotation = 0
+        this.destroy = mock.fn()
+      }
+    },
+    TilingSprite: class {
+      constructor() {
         this.tilePosition = { x: 0, y: 0 }
+        this.destroy = mock.fn()
+      }
+    },
+    Assets: {
+      load: (...args) => currentLoad(...args)
     }
-  },
-  Assets: {
-    load: (...args) => currentLoad(...args)
   }
 })
 
 // Mock EffectManager
 mock.module('../src/components/stage/EffectManager.js', {
-  EffectManager: class {
-    constructor() {}
-    init() {}
-    loadAssets() { return Promise.resolve() }
-    update() {}
-    spawnHitEffect() {}
-    dispose() {}
+  namedExports: {
+    EffectManager: class {
+      constructor() {}
+      init() {}
+      loadAssets() {
+        return Promise.resolve()
+      }
+      update() {}
+      spawnHitEffect() {}
+      dispose() {}
+    }
   }
 })
 
 // Mock Utils
 mock.module('../src/utils/logger.js', {
-  logger: {
-    info: mock.fn(),
-    warn: mock.fn(),
-    error: mock.fn()
+  namedExports: {
+    logger: {
+      info: mock.fn(),
+      warn: mock.fn(),
+      error: mock.fn()
+    }
   }
 })
 
 mock.module('../src/components/stage/utils', {
-    getPixiColorFromToken: mock.fn(() => 0xFFFFFF)
+  namedExports: {
+    getPixiColorFromToken: mock.fn(() => 0xffffff),
+    loadTexture: mock.fn(() => Promise.resolve({ width: 100, height: 100 })),
+    getOptimalResolution: mock.fn(() => 1)
+  }
 })
 
 mock.module('../src/utils/imageGen', {
+  namedExports: {
     IMG_PROMPTS: {
-        ICON_VAN: 'ICON_VAN',
-        MINIGAME_ROAD: 'MINIGAME_ROAD',
-        MINIGAME_OBSTACLE_ROCK: 'MINIGAME_OBSTACLE_ROCK',
-        MINIGAME_OBSTACLE_BARRIER: 'MINIGAME_OBSTACLE_BARRIER',
-        MINIGAME_FUEL: 'MINIGAME_FUEL'
+      ICON_VAN: 'ICON_VAN',
+      MINIGAME_ROAD: 'MINIGAME_ROAD',
+      MINIGAME_OBSTACLE_ROCK: 'MINIGAME_OBSTACLE_ROCK',
+      MINIGAME_OBSTACLE_BARRIER: 'MINIGAME_OBSTACLE_BARRIER',
+      MINIGAME_FUEL: 'MINIGAME_FUEL'
     },
     getGenImageUrl: mock.fn(() => 'mock-url')
+  }
 })
 
 describe('TourbusStageController', () => {
+  let createTourbusStageController
   let controller
   let containerRef
   let gameStateRef
   let updateRef
   let statsRef
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    const module = await import(
+      '../src/components/stage/TourbusStageController.js'
+    )
+    createTourbusStageController = module.createTourbusStageController
+
     containerRef = { current: { appendChild: mock.fn() } }
     gameStateRef = {
       current: {
@@ -154,27 +172,27 @@ describe('TourbusStageController', () => {
 
     // Force inject mock app
     controller.app = new (class MockApp {
-        constructor() {
-            this.canvas = { style: {} }
-            this.stage = { addChild: mock.fn() }
-            this.screen = { width: 800, height: 600 }
-            this.ticker = {
-                add: currentTickerAdd,
-                remove: currentTickerRemove,
-                lastTime: 1000,
-                deltaMS: 16.6
-            }
-            this.init = mock.fn(() => Promise.resolve())
-            this.destroy = currentAppDestroy
+      constructor() {
+        this.canvas = { style: {} }
+        this.stage = { addChild: mock.fn() }
+        this.screen = { width: 800, height: 600 }
+        this.ticker = {
+          add: currentTickerAdd,
+          remove: currentTickerRemove,
+          lastTime: 1000,
+          deltaMS: 16.6
         }
+        this.init = mock.fn(() => Promise.resolve())
+        this.destroy = currentAppDestroy
+      }
     })()
 
     controller.container = new (class Container {
-        constructor() {
-            this.addChild = mock.fn()
-            this.removeChild = mock.fn()
-            this.removeChildren = mock.fn()
-        }
+      constructor() {
+        this.addChild = mock.fn()
+        this.removeChild = mock.fn()
+        this.removeChildren = mock.fn()
+      }
     })()
 
     // Partial manual init
@@ -195,20 +213,7 @@ describe('TourbusStageController', () => {
   })
 
   it('should handle asset loading', async () => {
-    // Manually set a texture to bypass async mock weirdness in loadAssets
-    // if loadAssets itself is failing to await correctly in test context
-
-    // First try normal loadAssets
     await controller.loadAssets()
-
-    // If mocking works, this passes. If mock.fn logic in module mock is flawed,
-    // we can fallback or inspect.
-    // The previous fail showed `null == true`, meaning texture was null.
-    // Let's force it if normal call failed in previous test (it did).
-    if (!controller.textures.bus) {
-        controller.textures.bus = { width: 100, height: 100 }
-    }
-
     assert.ok(controller.textures.bus)
   })
 

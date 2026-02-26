@@ -1,18 +1,27 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi
+} from 'vitest'
 
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
 vi.mock('../src/context/GameState', () => ({
-    useGameState: () => ({
-      toasts: [
-        { id: 1, type: 'success', message: 'Saved' },
-        { id: 2, type: 'warning', message: 'Low harmony' },
-        { id: 3, type: 'error', message: 'Crash' },
-        { id: 4, type: 'info', message: 'Traveling' }
-      ]
-    })
-  }))
+  useGameState: () => ({
+    toasts: [
+      { id: 1, type: 'success', message: 'Saved' },
+      { id: 2, type: 'warning', message: 'Low harmony' },
+      { id: 3, type: 'error', message: 'Crash' },
+      { id: 4, type: 'info', message: 'Traveling' }
+    ]
+  })
+}))
 const { ToastOverlay } = await import('../src/ui/ToastOverlay.jsx')
 
 test('ToastOverlay renders all taxonomy variants with themed classes', () => {

@@ -95,7 +95,8 @@ export const SPECIAL_EVENTS = [
     id: 'midnight_radio',
     category: 'special',
     title: 'MIDNIGHT RADIO',
-    description: 'The radio plays a song that sounds exactly like your next album.',
+    description:
+      'The radio plays a song that sounds exactly like your next album.',
     trigger: 'special_location',
     chance: 0.3,
     options: [
@@ -140,7 +141,8 @@ export const SPECIAL_EVENTS = [
     id: 'the_other_band',
     category: 'special',
     title: 'THE OTHER BAND',
-    description: 'A band “from another timeline” offers to swap setlists for one night.',
+    description:
+      'A band “from another timeline” offers to swap setlists for one night.',
     trigger: 'special_location',
     chance: 0.2,
     options: [

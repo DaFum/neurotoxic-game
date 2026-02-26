@@ -78,7 +78,12 @@ export class LaneManager {
       staticGraphics.rect(laneX, 0, laneWidth, laneHeight)
       staticGraphics.fill({ color: LANE_BASE_FILL, alpha: LANE_BASE_ALPHA })
 
-      staticGraphics.rect(laneX + laneWidth * 0.35, 0, laneWidth * 0.3, laneHeight)
+      staticGraphics.rect(
+        laneX + laneWidth * 0.35,
+        0,
+        laneWidth * 0.3,
+        laneHeight
+      )
       staticGraphics.fill({ color: lane.color, alpha: LANE_GUIDE_ALPHA })
 
       staticGraphics.stroke({
@@ -96,7 +101,10 @@ export class LaneManager {
       })
 
       inactiveGraphics.rect(laneX, hitLineY, laneWidth, hitLineHeight)
-      inactiveGraphics.fill({ color: lane.color, alpha: HIT_BAR_INACTIVE_ALPHA })
+      inactiveGraphics.fill({
+        color: lane.color,
+        alpha: HIT_BAR_INACTIVE_ALPHA
+      })
       inactiveGraphics.stroke({
         width: hitLineStrokeWidth,
         color: lane.color
@@ -124,7 +132,11 @@ export class LaneManager {
         return
       }
 
-      const { static: staticGraphics, active: activeGraphics, inactive: inactiveGraphics } = graphicsSet
+      const {
+        static: staticGraphics,
+        active: activeGraphics,
+        inactive: inactiveGraphics
+      } = graphicsSet
 
       // Redraw graphics only if layout updated
       if (layoutUpdated) {
@@ -171,7 +183,10 @@ export class LaneManager {
           layout.laneWidth,
           layout.hitLineHeight
         )
-        inactiveGraphics.fill({ color: lane.color, alpha: HIT_BAR_INACTIVE_ALPHA })
+        inactiveGraphics.fill({
+          color: lane.color,
+          alpha: HIT_BAR_INACTIVE_ALPHA
+        })
         inactiveGraphics.stroke({
           width: layout.hitLineStrokeWidth,
           color: lane.color

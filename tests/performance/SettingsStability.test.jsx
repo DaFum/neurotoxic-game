@@ -1,8 +1,16 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
+import React, { useState } from 'react'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi
+} from 'vitest'
 
 import { render, cleanup, fireEvent } from '@testing-library/react'
-
-import React, { useState } from 'react'
 
 // Mock dependencies before importing Settings
 const mockChangeScene = vi.fn()
@@ -10,45 +18,45 @@ const mockUpdateSettings = vi.fn()
 const mockDeleteSave = vi.fn()
 
 vi.mock('../../src/context/GameState.jsx', () => ({
-    useGameState: () => ({
-      changeScene: mockChangeScene,
-      settings: { crtEnabled: true, logLevel: 1 },
-      updateSettings: mockUpdateSettings,
-      deleteSave: mockDeleteSave
-    })
-  }))
+  useGameState: () => ({
+    changeScene: mockChangeScene,
+    settings: { crtEnabled: true, logLevel: 1 },
+    updateSettings: mockUpdateSettings,
+    deleteSave: mockDeleteSave
+  })
+}))
 const mockSetMusic = vi.fn()
 const mockSetSfx = vi.fn()
 const mockToggleMute = vi.fn()
 
 vi.mock('../../src/hooks/useAudioControl.js', () => ({
-    useAudioControl: () => ({
-      audioState: { musicVol: 0.5, sfxVol: 0.5, isMuted: false },
-      handleAudioChange: {
-        setMusic: mockSetMusic,
-        setSfx: mockSetSfx,
-        toggleMute: mockToggleMute
-      }
-    })
-  }))
+  useAudioControl: () => ({
+    audioState: { musicVol: 0.5, sfxVol: 0.5, isMuted: false },
+    handleAudioChange: {
+      setMusic: mockSetMusic,
+      setSfx: mockSetSfx,
+      toggleMute: mockToggleMute
+    }
+  })
+}))
 // Mock child components to capture props
 // We need to mock the named export from ../../src/ui/shared
-const SettingsPanelCapture = vi.fn(() => <div data-testid="settings-panel" />)
+const SettingsPanelCapture = vi.fn(() => <div data-testid='settings-panel' />)
 vi.mock('../../src/ui/shared', () => ({
-    SettingsPanel: SettingsPanelCapture,
-    VolumeSlider: () => null,
-    ActionButton: () => null,
-    StatBox: () => null,
-    ProgressBar: () => null
-  }))
+  SettingsPanel: SettingsPanelCapture,
+  VolumeSlider: () => null,
+  ActionButton: () => null,
+  StatBox: () => null,
+  ProgressBar: () => null
+}))
 const GlitchButtonCapture = vi.fn(({ children, onClick }) => (
-  <button data-testid="glitch-button" onClick={onClick}>
+  <button type='button' data-testid='glitch-button' onClick={onClick}>
     {children}
   </button>
 ))
 vi.mock('../../src/ui/GlitchButton.jsx', () => ({
-    GlitchButton: GlitchButtonCapture
-  }))
+  GlitchButton: GlitchButtonCapture
+}))
 // Now import Settings
 const { Settings } = await import('../../src/scenes/Settings.jsx')
 
@@ -61,7 +69,6 @@ describe('Settings Referential Stability', () => {
 
   afterEach(() => {
     cleanup()
-
   })
 
   test('handlers should be stable across re-renders', () => {
@@ -69,7 +76,11 @@ describe('Settings Referential Stability', () => {
       const [count, setCount] = useState(0)
       return (
         <div>
-          <button data-testid="rerender" onClick={() => setCount(count + 1)}>
+          <button
+            type='button'
+            data-testid='rerender'
+            onClick={() => setCount(count + 1)}
+          >
             Rerender ({count})
           </button>
           <Settings />
@@ -98,19 +109,17 @@ describe('Settings Referential Stability', () => {
     const secondRenderButtonProps = GlitchButtonCapture.mock.calls[1][0]
 
     // Check stability
-    const isStable_ToggleCRT = firstRenderPanelProps.onToggleCRT === secondRenderPanelProps.onToggleCRT
-    const isStable_LogLevelChange = firstRenderPanelProps.onLogLevelChange === secondRenderPanelProps.onLogLevelChange
-    const isStable_Return = firstRenderButtonProps.onClick === secondRenderButtonProps.onClick
-
-    // We print the results for manual verification in this step
-    console.log('Stability Baseline Results:')
-    console.log(`onToggleCRT stable: ${isStable_ToggleCRT}`)
-    console.log(`onLogLevelChange stable: ${isStable_LogLevelChange}`)
-    console.log(`onClick (Return) stable: ${isStable_Return}`)
+    const isStableToggleCRT =
+      firstRenderPanelProps.onToggleCRT === secondRenderPanelProps.onToggleCRT
+    const isStableLogLevelChange =
+      firstRenderPanelProps.onLogLevelChange ===
+      secondRenderPanelProps.onLogLevelChange
+    const isStableReturn =
+      firstRenderButtonProps.onClick === secondRenderButtonProps.onClick
 
     // Assertions - these will fail in the baseline
-    expect(isStable_ToggleCRT).toBe(true)
-    expect(isStable_LogLevelChange).toBe(true)
-    expect(isStable_Return).toBe(true)
+    expect(isStableToggleCRT).toBe(true)
+    expect(isStableLogLevelChange).toBe(true)
+    expect(isStableReturn).toBe(true)
   })
 })

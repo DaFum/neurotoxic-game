@@ -26,6 +26,7 @@ import { CompletePhase } from '../components/postGig/CompletePhase'
 const PERF_SCORE_MIN = 30
 const PERF_SCORE_MAX = 100
 const PERF_SCORE_SCALER = 500
+const MAX_FAME_GAIN = 500
 
 export const PostGig = () => {
   const {
@@ -89,7 +90,9 @@ export const PostGig = () => {
           controversyLevel: social?.controversyLevel || 0,
           regionRep: reputationByRegion?.[player?.location] || 0,
           loyalty: social?.loyalty || 0,
-          discountedTickets: activeStoryFlags?.includes('discounted_tickets_active')
+          discountedTickets: activeStoryFlags?.includes(
+            'discounted_tickets_active'
+          )
         }
       })
       setFinancials(result)
@@ -108,195 +111,284 @@ export const PostGig = () => {
     }
   }, [
     financials,
-    currentGig?.id,
-    lastGigStats?.score,
+    currentGig,
+    lastGigStats,
     gigModifiers,
     perfScore,
-    activeEvent?.id
+    activeEvent,
+    activeStoryFlags,
+    band,
+    player,
+    social,
+    reputationByRegion
   ])
 
-  const handlePostSelection = useCallback((option) => {
-    // We pass gameState into resolvePost to allow for complex RNG derivations if needed
-    const gameState = { player, band, social }
-    const result = resolvePost(option, gameState, secureRandom())
+  const handlePostSelection = useCallback(
+    option => {
+      // We pass gameState into resolvePost to allow for complex RNG derivations if needed
+      const gameState = { player, band, social }
+      const result = resolvePost(option, gameState, secureRandom())
 
-    // Use checkViralEvent for bonus viral flag based on actual gig stats
-    // Pass context so trait bonuses (e.g. social_manager) are applied via calculateViralityScore
-    const isGigViral = lastGigStats && checkViralEvent(lastGigStats, {
-      context: {
+      // Use checkViralEvent for bonus viral flag based on actual gig stats
+      // Pass context so trait bonuses (e.g. social_manager) are applied via calculateViralityScore
+      const isGigViral =
+        lastGigStats &&
+        checkViralEvent(lastGigStats, {
+          context: {
+            perfScore,
+            band,
+            venue: currentGig?.venue,
+            events: lastGigStats?.events
+          }
+        })
+      const gigViralBonus = isGigViral ? 1 : 0
+
+      // Use calculateSocialGrowth for platform-aware organic growth on top of post
+      const organicGrowth = calculateSocialGrowth(
+        result.platform,
         perfScore,
-        band,
-        venue: currentGig?.venue,
-        events: lastGigStats?.events
+        social[result.platform] || 0,
+        isGigViral, // Use actual gig viral status, not post result.success
+        social.controversyLevel || 0,
+        social.loyalty || 0
+      )
+      const totalFollowers = result.followers + organicGrowth
+
+      const finalResult = { ...result, totalFollowers }
+      setPostResult(finalResult)
+
+      // Prepare updated state objects
+      const newBand = { ...band }
+      let hasBandUpdates = false
+
+      if (result.harmonyChange) {
+        newBand.harmony = clampBandHarmony(
+          newBand.harmony + result.harmonyChange
+        )
+        hasBandUpdates = true
       }
-    })
-    const gigViralBonus = isGigViral ? 1 : 0
+      if (
+        result.allMembersMoodChange ||
+        result.allMembersStaminaChange ||
+        result.targetMember
+      ) {
+        newBand.members = newBand.members.map(m => {
+          let updatedM = { ...m }
+          if (result.allMembersMoodChange || m.name === result.targetMember) {
+            if (result.moodChange)
+              updatedM.mood = Math.max(
+                0,
+                Math.min(100, updatedM.mood + result.moodChange)
+              )
+          }
+          if (
+            result.allMembersStaminaChange ||
+            m.name === result.targetMember
+          ) {
+            if (result.staminaChange)
+              updatedM.stamina = Math.max(
+                0,
+                Math.min(100, updatedM.stamina + result.staminaChange)
+              )
+          }
+          return updatedM
+        })
+        hasBandUpdates = true
+      }
 
-    // Use calculateSocialGrowth for platform-aware organic growth on top of post
-    const organicGrowth = calculateSocialGrowth(
-      result.platform,
-      perfScore,
-      social[result.platform] || 0,
-      isGigViral, // Use actual gig viral status, not post result.success
-      social.controversyLevel || 0,
-      social.loyalty || 0
-    )
-    const totalFollowers = result.followers + organicGrowth
+      if (hasBandUpdates) {
+        updateBand(newBand)
+      }
 
-    const finalResult = { ...result, totalFollowers }
-    setPostResult(finalResult)
+      if (result.moneyChange) {
+        updatePlayer({
+          money: clampPlayerMoney(player.money + result.moneyChange)
+        })
+      }
 
-    // Prepare updated state objects
-    const newBand = { ...band }
-    let hasBandUpdates = false
+      if (result.unlockTrait) {
+        unlockTrait(result.unlockTrait.memberId, result.unlockTrait.traitId)
+        const traitName = result.unlockTrait.traitId
+          .replace(/_/g, ' ')
+          .toUpperCase()
+        addToast(`Trait Unlocked: ${traitName}`, 'success')
+      }
 
-    if (result.harmonyChange) {
-      newBand.harmony = clampBandHarmony(newBand.harmony + result.harmonyChange)
-      hasBandUpdates = true
-    }
-    if (result.allMembersMoodChange || result.allMembersStaminaChange || result.targetMember) {
-      newBand.members = newBand.members.map(m => {
-        let updatedM = { ...m }
-        if (result.allMembersMoodChange || m.name === result.targetMember) {
-          if (result.moodChange) updatedM.mood = Math.max(0, Math.min(100, updatedM.mood + result.moodChange))
-        }
-        if (result.allMembersStaminaChange || m.name === result.targetMember) {
-          if (result.staminaChange) updatedM.stamina = Math.max(0, Math.min(100, updatedM.stamina + result.staminaChange))
-        }
-        return updatedM
-      })
-      hasBandUpdates = true
-    }
+      const updatedSocial = {
+        [result.platform]: Math.max(
+          0,
+          (social[result.platform] || 0) + totalFollowers
+        ),
+        viral: (social.viral || 0) + (result.success ? 1 : 0) + gigViralBonus,
+        lastGigDay: player.day,
+        controversyLevel: Math.max(
+          0,
+          (social.controversyLevel || 0) + (result.controversyChange || 0)
+        ),
+        loyalty: Math.max(
+          0,
+          (social.loyalty || 0) + (result.loyaltyChange || 0)
+        ),
+        reputationCooldown:
+          result.reputationCooldownSet !== undefined
+            ? result.reputationCooldownSet
+            : social.reputationCooldown,
+        egoFocus: result.egoClear
+          ? null
+          : result.egoDrop
+            ? result.egoDrop
+            : social.egoFocus,
+        sponsorActive:
+          option.id === 'comm_sellout_ad' ? false : social.sponsorActive,
+        trend: social.trend,
+        activeDeals: social.activeDeals,
+        influencers: social.influencers
+      }
 
-    if (hasBandUpdates) {
-      updateBand(newBand)
-    }
-
-    if (result.moneyChange) {
-      updatePlayer({ money: clampPlayerMoney(player.money + result.moneyChange) })
-    }
-
-    if (result.unlockTrait) {
-      unlockTrait(result.unlockTrait.memberId, result.unlockTrait.traitId)
-      const traitName = result.unlockTrait.traitId.replace(/_/g, ' ').toUpperCase()
-      addToast(`Trait Unlocked: ${traitName}`, 'success')
-    }
-
-    const updatedSocial = {
-      [result.platform]: Math.max(0, (social[result.platform] || 0) + totalFollowers),
-      viral: social.viral + (result.success ? 1 : 0) + gigViralBonus,
-      lastGigDay: player.day,
-      controversyLevel: Math.max(0, (social.controversyLevel || 0) + (result.controversyChange || 0)),
-      loyalty: Math.max(0, (social.loyalty || 0) + (result.loyaltyChange || 0)),
-      reputationCooldown: result.reputationCooldownSet !== undefined ? result.reputationCooldownSet : social.reputationCooldown,
-      egoFocus: result.egoClear ? null : (result.egoDrop ? result.egoDrop : social.egoFocus),
-      sponsorActive: option.id === 'comm_sellout_ad' ? false : social.sponsorActive,
-      trend: social.trend,
-      activeDeals: social.activeDeals,
-      influencers: social.influencers
-    }
-
-    // Handle Influencer Update
-    if (result.influencerUpdate) {
-      const { id, scoreChange } = result.influencerUpdate
-      const currentInfluencer = social.influencers?.[id]
-      if (currentInfluencer) {
-        updatedSocial.influencers = {
-          ...social.influencers,
-          [id]: {
-            ...currentInfluencer,
-            score: Math.min(100, (currentInfluencer.score || 0) + scoreChange)
+      // Handle Influencer Update
+      if (result.influencerUpdate) {
+        const { id, scoreChange } = result.influencerUpdate
+        const currentInfluencer = social.influencers?.[id]
+        if (currentInfluencer) {
+          updatedSocial.influencers = {
+            ...social.influencers,
+            [id]: {
+              ...currentInfluencer,
+              score: Math.min(
+                100,
+                Math.max(0, (currentInfluencer.score || 0) + scoreChange)
+              )
+            }
           }
         }
       }
-    }
 
-    // Cross-posting Logic: 25% diminishing returns across other main platforms
-    if (result.success && totalFollowers > 0) {
-      const otherPlatforms = ['instagram', 'tiktok', 'youtube'].filter(p => p !== result.platform)
-      otherPlatforms.forEach(p => {
-         updatedSocial[p] = Math.max(0, (social[p] || 0) + Math.floor(totalFollowers * 0.25))
-      })
-    }
-
-    updateSocial(updatedSocial)
-
-    // Generate brand offers with UPDATED state (Post-Social-Update)
-    const updatedGameState = {
-      player, // Money update handled separately but not critical for offer generation
-      band: hasBandUpdates ? newBand : band,
-      social: { ...social, ...updatedSocial }
-    }
-
-    const offers = generateBrandOffers(updatedGameState, secureRandom)
-    setBrandOffers(offers)
-
-    // If there are brand offers, go to DEALS phase, else COMPLETE
-    if (offers.length > 0) {
-      setPhase('DEALS')
-    } else {
-      setPhase('COMPLETE')
-    }
-  }, [lastGigStats, perfScore, social, player, band, updateSocial, updateBand, updatePlayer, unlockTrait, addToast])
-
-  const handleAcceptDeal = useCallback((deal) => {
-    // Apply upfront bonuses
-    if (deal.offer.upfront) {
-      updatePlayer(prev => ({ money: clampPlayerMoney(prev.money + deal.offer.upfront) }))
-    }
-    if (deal.offer.item) {
-      updateBand(prev => ({ inventory: { ...prev.inventory, [deal.offer.item]: true } }))
-    }
-
-    // Use functional update to ensure fresh state access
-    updateSocial((prevSocial) => {
-      const updates = {}
-
-      // Apply penalties immediately if defined
-      if (deal.penalty) {
-        if (deal.penalty.loyalty) updates.loyalty = Math.max(0, (prevSocial.loyalty || 0) + deal.penalty.loyalty)
-        if (deal.penalty.controversy) updates.controversyLevel = Math.max(0, (prevSocial.controversyLevel || 0) + deal.penalty.controversy)
+      // Cross-posting Logic: 25% diminishing returns across other main platforms
+      if (result.success && totalFollowers > 0) {
+        const otherPlatforms = ['instagram', 'tiktok', 'youtube'].filter(
+          p => p !== result.platform
+        )
+        otherPlatforms.forEach(p => {
+          updatedSocial[p] = Math.max(
+            0,
+            (social[p] || 0) + Math.floor(totalFollowers * 0.25)
+          )
+        })
       }
 
-      // Update Brand Reputation
-      if (deal.alignment) {
-        updates.brandReputation = { ...(prevSocial.brandReputation || {}) }
-        const currentRep = updates.brandReputation[deal.alignment] || 0
-        updates.brandReputation[deal.alignment] = Math.min(100, currentRep + 5)
+      updateSocial(updatedSocial)
 
-        // Opposing alignments logic
-        const opposingMap = {
-          [BRAND_ALIGNMENTS.EVIL]: BRAND_ALIGNMENTS.SUSTAINABLE,
-          [BRAND_ALIGNMENTS.SUSTAINABLE]: BRAND_ALIGNMENTS.EVIL,
-          [BRAND_ALIGNMENTS.CORPORATE]: BRAND_ALIGNMENTS.INDIE,
-          [BRAND_ALIGNMENTS.INDIE]: BRAND_ALIGNMENTS.CORPORATE
-        }
-
-        const opposing = opposingMap[deal.alignment]
-        if (opposing) {
-          const oppRep = updates.brandReputation[opposing] || 0
-          updates.brandReputation[opposing] = Math.max(0, oppRep - 3)
-        }
+      // Generate brand offers with UPDATED state (Post-Social-Update)
+      const updatedGameState = {
+        player, // Money update handled separately but not critical for offer generation
+        band: hasBandUpdates ? newBand : band,
+        social: { ...social, ...updatedSocial }
       }
 
-      // Store active deal
-      const prevDeals = prevSocial.activeDeals || []
-      updates.activeDeals = [...prevDeals, { ...deal, remainingGigs: deal.offer.duration }]
+      const offers = generateBrandOffers(updatedGameState, secureRandom)
+      setBrandOffers(offers)
 
-      return updates
-    })
-
-    addToast(`Accepted deal: ${deal.name}`, 'success')
-
-    // Remove processed deal and check if more remain
-    setBrandOffers(prev => {
-      const remaining = prev.filter(o => o.id !== deal.id)
-      if (remaining.length === 0) {
+      // If there are brand offers, go to DEALS phase, else COMPLETE
+      if (offers.length > 0) {
+        setPhase('DEALS')
+      } else {
         setPhase('COMPLETE')
       }
-      return remaining
-    })
-  }, [updatePlayer, updateBand, updateSocial, addToast])
+    },
+    [
+      lastGigStats,
+      perfScore,
+      social,
+      player,
+      band,
+      updateSocial,
+      updateBand,
+      updatePlayer,
+      unlockTrait,
+      addToast,
+      currentGig
+    ]
+  )
+
+  const handleAcceptDeal = useCallback(
+    deal => {
+      // Apply upfront bonuses
+      if (deal.offer.upfront) {
+        updatePlayer(prev => ({
+          money: clampPlayerMoney(prev.money + deal.offer.upfront)
+        }))
+      }
+      if (deal.offer.item) {
+        updateBand(prev => ({
+          inventory: { ...prev.inventory, [deal.offer.item]: true }
+        }))
+      }
+
+      // Use functional update to ensure fresh state access
+      updateSocial(prevSocial => {
+        const updates = {}
+
+        // Apply penalties immediately if defined
+        if (deal.penalty) {
+          if (deal.penalty.loyalty)
+            updates.loyalty = Math.max(
+              0,
+              (prevSocial.loyalty || 0) + deal.penalty.loyalty
+            )
+          if (deal.penalty.controversy)
+            updates.controversyLevel = Math.max(
+              0,
+              (prevSocial.controversyLevel || 0) + deal.penalty.controversy
+            )
+        }
+
+        // Update Brand Reputation
+        if (deal.alignment) {
+          updates.brandReputation = { ...(prevSocial.brandReputation || {}) }
+          const currentRep = updates.brandReputation[deal.alignment] || 0
+          updates.brandReputation[deal.alignment] = Math.min(
+            100,
+            currentRep + 5
+          )
+
+          // Opposing alignments logic
+          const opposingMap = {
+            [BRAND_ALIGNMENTS.EVIL]: BRAND_ALIGNMENTS.SUSTAINABLE,
+            [BRAND_ALIGNMENTS.SUSTAINABLE]: BRAND_ALIGNMENTS.EVIL,
+            [BRAND_ALIGNMENTS.CORPORATE]: BRAND_ALIGNMENTS.INDIE,
+            [BRAND_ALIGNMENTS.INDIE]: BRAND_ALIGNMENTS.CORPORATE
+          }
+
+          const opposing = opposingMap[deal.alignment]
+          if (opposing) {
+            const oppRep = updates.brandReputation[opposing] || 0
+            updates.brandReputation[opposing] = Math.max(0, oppRep - 3)
+          }
+        }
+
+        // Store active deal
+        const prevDeals = prevSocial.activeDeals || []
+        updates.activeDeals = [
+          ...prevDeals,
+          { ...deal, remainingGigs: deal.offer.duration }
+        ]
+
+        return updates
+      })
+
+      addToast(`Accepted deal: ${deal.name}`, 'success')
+
+      // Remove processed deal and check if more remain
+      setBrandOffers(prev => {
+        const remaining = prev.filter(o => o.id !== deal.id)
+        if (remaining.length === 0) {
+          setPhase('COMPLETE')
+        }
+        return remaining
+      })
+    },
+    [updatePlayer, updateBand, updateSocial, addToast]
+  )
 
   const handleRejectDeals = useCallback(() => {
     // Clears all remaining offers (Reject All / Skip Phase)
@@ -312,14 +404,19 @@ export const PostGig = () => {
     }
 
     updatePlayer({ money: clampPlayerMoney(player.money - 200) })
-    updateSocial((prev) => ({ controversyLevel: Math.max(0, (prev.controversyLevel || 0) - 25) }))
+    updateSocial(prev => ({
+      controversyLevel: Math.max(0, (prev.controversyLevel || 0) - 25)
+    }))
     addToast('Story Spun. Controversy reduced.', 'success')
   }, [player, updatePlayer, updateSocial, addToast])
 
   const handleContinue = useCallback(() => {
     if (!financials) return
 
-    const fameGain = 50 + Math.floor(perfScore * 1.5)
+    const fameGain = Math.min(
+      MAX_FAME_GAIN,
+      50 + Math.floor(perfScore * 1.5)
+    )
     const newMoney = Math.max(0, player.money + financials.net)
 
     updatePlayer({
@@ -335,10 +432,13 @@ export const PostGig = () => {
         progress: 0,
         required: 3,
         rewardFlag: 'apology_tour_complete',
-        failurePenalty: { social: { controversyLevel: 25 }, band: { harmony: -20 } }
+        failurePenalty: {
+          social: { controversyLevel: 25 },
+          band: { harmony: -20 }
+        }
       })
     }
-    
+
     if (activeStoryFlags?.includes('breakup_quest_active')) {
       addQuest({
         id: 'quest_ego_management',
@@ -357,7 +457,18 @@ export const PostGig = () => {
     } else {
       changeScene('OVERWORLD')
     }
-  }, [financials, perfScore, player.money, player.fame, updatePlayer, addToast, changeScene, activeStoryFlags, addQuest, player.day])
+  }, [
+    financials,
+    perfScore,
+    player.money,
+    player.fame,
+    updatePlayer,
+    addToast,
+    changeScene,
+    activeStoryFlags,
+    addQuest,
+    player.day
+  ])
 
   const handleNextPhase = useCallback(() => {
     setPhase('SOCIAL')
@@ -397,18 +508,23 @@ export const PostGig = () => {
         </h2>
 
         {phase === 'REPORT' && (
-          <ReportPhase
-            financials={financials}
-            onNext={handleNextPhase}
-          />
+          <ReportPhase financials={financials} onNext={handleNextPhase} />
         )}
 
         {phase === 'SOCIAL' && (
-          <SocialPhase options={postOptions} onSelect={handlePostSelection} trend={social.trend} />
+          <SocialPhase
+            options={postOptions}
+            onSelect={handlePostSelection}
+            trend={social.trend}
+          />
         )}
 
         {phase === 'DEALS' && (
-          <DealsPhase offers={brandOffers} onAccept={handleAcceptDeal} onSkip={handleRejectDeals} />
+          <DealsPhase
+            offers={brandOffers}
+            onAccept={handleAcceptDeal}
+            onSkip={handleRejectDeals}
+          />
         )}
 
         {phase === 'COMPLETE' && (

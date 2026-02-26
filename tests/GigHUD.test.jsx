@@ -1,17 +1,23 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi
+} from 'vitest'
 
 import { render, cleanup } from '@testing-library/react'
 
-
 // Mock HecklerOverlay to avoid animation loops and isolate the test
 vi.mock('../src/components/HecklerOverlay.jsx', () => ({
-    HecklerOverlay: () => <div data-testid="heckler-overlay-mock" />
-  }))
+  HecklerOverlay: () => <div data-testid='heckler-overlay-mock' />
+}))
 afterEach(cleanup)
 
 test('GigHUD: renders toxic border flash element when isToxicMode is true', async () => {
-
-
   // Dynamic import is needed when using vi.mock
   const { GigHUD } = await import('../src/components/GigHUD.jsx')
 
@@ -26,7 +32,9 @@ test('GigHUD: renders toxic border flash element when isToxicMode is true', asyn
   }
   const gameStateRef = { current: { projectiles: [] } }
 
-  const { container } = render(<GigHUD stats={stats} gameStateRef={gameStateRef} />)
+  const { container } = render(
+    <GigHUD stats={stats} gameStateRef={gameStateRef} />
+  )
 
   // Look for the specific element with the class inside the container
   const flashElement = container.querySelector('.toxic-border-flash')
@@ -37,8 +45,6 @@ test('GigHUD: renders toxic border flash element when isToxicMode is true', asyn
 })
 
 test('GigHUD: does not render toxic border flash element when isToxicMode is false', async () => {
-
-
   const { GigHUD } = await import('../src/components/GigHUD.jsx')
 
   const stats = {
@@ -52,7 +58,9 @@ test('GigHUD: does not render toxic border flash element when isToxicMode is fal
   }
   const gameStateRef = { current: { projectiles: [] } }
 
-  const { container } = render(<GigHUD stats={stats} gameStateRef={gameStateRef} />)
+  const { container } = render(
+    <GigHUD stats={stats} gameStateRef={gameStateRef} />
+  )
 
   const flashElement = container.querySelector('.toxic-border-flash')
 

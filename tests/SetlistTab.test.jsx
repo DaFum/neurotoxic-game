@@ -9,11 +9,11 @@ const mockSetCurrentGig = vi.fn()
 const mockChangeScene = vi.fn()
 
 vi.mock('../src/context/GameState', () => ({
-    useGameState: () => ({
-      setCurrentGig: mockSetCurrentGig,
-      changeScene: mockChangeScene
-    })
-  }))
+  useGameState: () => ({
+    setCurrentGig: mockSetCurrentGig,
+    changeScene: mockChangeScene
+  })
+}))
 // Import component after mocking
 const { SetlistTab } = await import('../src/ui/bandhq/SetlistTab')
 
@@ -54,7 +54,11 @@ describe('SetlistTab', () => {
     const setSetlist = vi.fn()
     const addToast = vi.fn()
     const { getByText, queryAllByText } = render(
-      <SetlistTab setlist={setlist} setSetlist={setSetlist} addToast={addToast} />
+      <SetlistTab
+        setlist={setlist}
+        setSetlist={setSetlist}
+        addToast={addToast}
+      />
     )
 
     expect(getByText(/SELECTED:/))
@@ -91,7 +95,11 @@ describe('SetlistTab', () => {
     const setSetlist = vi.fn()
     const addToast = vi.fn()
     const { getByText } = render(
-      <SetlistTab setlist={setlist} setSetlist={setSetlist} addToast={addToast} />
+      <SetlistTab
+        setlist={setlist}
+        setSetlist={setSetlist}
+        addToast={addToast}
+      />
     )
 
     const activeButton = getByText('ACTIVE')
@@ -111,7 +119,11 @@ describe('SetlistTab', () => {
     const setSetlist = vi.fn()
     const addToast = vi.fn()
     const { getByText } = render(
-      <SetlistTab setlist={setlist} setSetlist={setSetlist} addToast={addToast} />
+      <SetlistTab
+        setlist={setlist}
+        setSetlist={setSetlist}
+        addToast={addToast}
+      />
     )
 
     expect(getByText('ACTIVE'))
@@ -129,7 +141,11 @@ describe('SetlistTab', () => {
     const setSetlist = vi.fn()
     const addToast = vi.fn()
     const { getByText } = render(
-      <SetlistTab setlist={setlist} setSetlist={setSetlist} addToast={addToast} />
+      <SetlistTab
+        setlist={setlist}
+        setSetlist={setSetlist}
+        addToast={addToast}
+      />
     )
 
     const practiceButton = getByText('START PRACTICE')
@@ -149,7 +165,11 @@ describe('SetlistTab', () => {
     const setSetlist = vi.fn()
     const addToast = vi.fn()
     const { getByText } = render(
-      <SetlistTab setlist={setlist} setSetlist={setSetlist} addToast={addToast} />
+      <SetlistTab
+        setlist={setlist}
+        setSetlist={setSetlist}
+        addToast={addToast}
+      />
     )
 
     const practiceButton = getByText('START PRACTICE')
@@ -159,7 +179,9 @@ describe('SetlistTab', () => {
     expect(mockChangeScene.mock.calls.length).toBe(0)
 
     expect(addToast.mock.calls.length).toBe(1)
-    expect(addToast.mock.calls[0][0]).toBe('Select at least one song to practice!')
+    expect(addToast.mock.calls[0][0]).toBe(
+      'Select at least one song to practice!'
+    )
     expect(addToast.mock.calls[0][1]).toBe('warning')
   })
 })

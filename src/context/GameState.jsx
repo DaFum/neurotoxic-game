@@ -100,7 +100,7 @@ export const GameStateProvider = ({ children }) => {
 
   /**
    * Updates player state properties (money, fame, etc.).
-   * @param {object} updates - Object containing keys to update.
+   * @param {object|Function} updates - Object containing keys to update or updater function(prev).
    */
   const updatePlayer = useCallback(
     updates => dispatch(createUpdatePlayerAction(updates)),
@@ -109,7 +109,7 @@ export const GameStateProvider = ({ children }) => {
 
   /**
    * Updates band state properties (members, harmony, inventory).
-   * @param {object} updates - Object containing keys to update.
+   * @param {object|Function} updates - Object containing keys to update or updater function(prev).
    */
   const updateBand = useCallback(
     updates => dispatch(createUpdateBandAction(updates)),
@@ -118,7 +118,7 @@ export const GameStateProvider = ({ children }) => {
 
   /**
    * Updates social media metrics.
-   * @param {object} updates - Object containing keys to update.
+   * @param {object|Function} updates - Object containing keys to update or updater function(prev).
    */
   const updateSocial = useCallback(
     updates => dispatch(createUpdateSocialAction(updates)),
@@ -279,7 +279,8 @@ export const GameStateProvider = ({ children }) => {
   )
 
   const advanceQuest = useCallback(
-    (questId, progressAmount) => dispatch(createAdvanceQuestAction(questId, progressAmount)),
+    (questId, progressAmount) =>
+      dispatch(createAdvanceQuestAction(questId, progressAmount)),
     []
   )
 
@@ -583,7 +584,10 @@ export const GameStateProvider = ({ children }) => {
 
   useEffect(() => {
     // Safely check for DEV environment to avoid crashes in test runners that don't polyfill import.meta.env
-    const isDev = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV
+    const isDev =
+      typeof import.meta !== 'undefined' &&
+      import.meta.env &&
+      import.meta.env.DEV
     if (isDev) {
       Object.defineProperty(window, 'gameState', {
         configurable: true,
@@ -597,15 +601,21 @@ export const GameStateProvider = ({ children }) => {
 
   return (
     <GameDispatchContext value={dispatchValue}>
-      <GameStateContext value={state}>
-        {children}
-      </GameStateContext>
+      <GameStateContext value={state}>{children}</GameStateContext>
     </GameDispatchContext>
   )
 }
 
 GameStateProvider.propTypes = {
   children: PropTypes.node
+}
+
+/**
+ * Hook to access the global game dispatch functions only (stable reference).
+ * @returns {object} The action dispatchers.
+ */
+export const useGameDispatch = () => {
+  return use(GameDispatchContext)
 }
 
 /**

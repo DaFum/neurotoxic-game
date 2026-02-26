@@ -284,7 +284,10 @@ export const useTravelLogic = ({
         onStartTravelMinigame(node.id)
       } else {
         // Fallback for tests or missing dispatch
-        logger.warn('useTravelLogic', 'Missing onStartTravelMinigame, using legacy travel')
+        logger.warn(
+          'useTravelLogic',
+          'Missing onStartTravelMinigame, using legacy travel'
+        )
         setIsTraveling(true)
         if (failsafeTimeoutRef.current) {
           clearTimeout(failsafeTimeoutRef.current)
@@ -331,7 +334,11 @@ export const useTravelLogic = ({
         )
 
         // If it's the current node, trigger the interaction logic but DO NOT start travel
-        if (node.type === 'GIG' || node.type === 'FESTIVAL' || node.type === 'FINALE') {
+        if (
+          node.type === 'GIG' ||
+          node.type === 'FESTIVAL' ||
+          node.type === 'FINALE'
+        ) {
           if ((band?.harmony ?? 0) <= 0) {
             addToast("Band's harmony too low to perform!", 'warning')
             return
@@ -376,19 +383,28 @@ export const useTravelLogic = ({
 
       if (node.type !== 'START' && node.venue) {
         if (bList.includes(node.venue.name)) {
-          addToast(`Booking refused: ${node.venue.name} has permanently blacklisted you!`, 'error')
+          addToast(
+            `Booking refused: ${node.venue.name} has permanently blacklisted you!`,
+            'error'
+          )
           if (pendingTravelNode?.id === node.id) clearPendingTravel()
           return
         }
 
         if (player?.stats?.proveYourselfMode && node.venue.capacity > 150) {
-          addToast(`PROVE YOURSELF MODE: You must rebuild your reputation in small venues (150 cap or less). ${node.venue.name} is too big!`, 'error')
+          addToast(
+            `PROVE YOURSELF MODE: You must rebuild your reputation in small venues (150 cap or less). ${node.venue.name} is too big!`,
+            'error'
+          )
           if (pendingTravelNode?.id === node.id) clearPendingTravel()
           return
         }
 
         if ((reputation[node.venue.name] || 0) <= -30) {
-          addToast(`Booking refused: The venue in ${node.venue.name} blacklisted you due to poor regional reputation!`, 'error')
+          addToast(
+            `Booking refused: The venue in ${node.venue.name} blacklisted you due to poor regional reputation!`,
+            'error'
+          )
           if (pendingTravelNode?.id === node.id) {
             clearPendingTravel()
           }
@@ -399,7 +415,10 @@ export const useTravelLogic = ({
       // Allow travel to START node from anywhere if connected, bypassing standard layer/visibility rules if needed.
       if (node.type === 'START') {
         // Always allow returning to HQ regardless of connections or visibility
-      } else if (visibility !== 'visible' || !isConnectedUtil(gameMap, player.currentNodeId, node.id)) {
+      } else if (
+        visibility !== 'visible' ||
+        !isConnectedUtil(gameMap, player.currentNodeId, node.id)
+      ) {
         addToast(
           visibility !== 'visible'
             ? 'Cannot travel: location not visible'
@@ -453,13 +472,7 @@ export const useTravelLogic = ({
         pendingTimeoutRef.current = null
       }, 5000)
     },
-    [
-      startGig,
-      addToast,
-      onShowHQ,
-      startTravelSequence,
-      clearPendingTravel
-    ]
+    [startGig, addToast, onShowHQ, startTravelSequence, clearPendingTravel]
   )
 
   /**
@@ -468,7 +481,6 @@ export const useTravelLogic = ({
   const handleRefuel = useCallback(() => {
     if (isTravelingRef.current) return
 
-    const player = playerRef.current
     const currentFuel = player.van?.fuel ?? 0
     const cost = calculateRefuelCost(currentFuel)
 
@@ -493,7 +505,7 @@ export const useTravelLogic = ({
     } catch (_e) {
       // Ignore audio errors
     }
-  }, [isTraveling, updatePlayer, addToast])
+  }, [player, updatePlayer, addToast])
 
   /**
    * Handles repairing the van
@@ -501,7 +513,6 @@ export const useTravelLogic = ({
   const handleRepair = useCallback(() => {
     if (isTravelingRef.current) return
 
-    const player = playerRef.current
     const currentCondition = player.van?.condition ?? 100
     const cost = calculateRepairCost(currentCondition)
 
@@ -516,7 +527,9 @@ export const useTravelLogic = ({
     }
 
     // Recalculate breakdown chance at full condition (multiplier 1.0)
-    const repairedBreakdown = calcBaseBreakdownChance(player.van?.upgrades ?? [])
+    const repairedBreakdown = calcBaseBreakdownChance(
+      player.van?.upgrades ?? []
+    )
 
     updatePlayer({
       money: Math.max(0, (player.money ?? 0) - cost),
@@ -534,7 +547,7 @@ export const useTravelLogic = ({
     } catch (_e) {
       // Ignore audio errors
     }
-  }, [isTraveling, updatePlayer, addToast])
+  }, [player, updatePlayer, addToast])
 
   // Softlock detection effect
   useEffect(() => {

@@ -1,9 +1,11 @@
-
 import { test } from 'node:test'
 import assert from 'node:assert'
-import { calculateTravelMinigameResult, calculateRoadieMinigameResult } from '../src/utils/economyEngine.js'
+import {
+  calculateTravelMinigameResult,
+  calculateRoadieMinigameResult
+} from '../src/utils/economyEngine.js'
 
-test('Minigame Economy Calculations', async (t) => {
+test('Minigame Economy Calculations', async t => {
   await t.test('Travel Minigame Results', () => {
     // 20 damage -> 10% condition loss (50% scaling)
     // 3 Fuel cans -> 0L bonus (disabled)

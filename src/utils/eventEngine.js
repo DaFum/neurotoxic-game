@@ -24,21 +24,29 @@ const selectEvent = (pool, gameState, triggerPoint) => {
     if (triggerPoint && e.trigger !== triggerPoint) continue
 
     // Filter by Cooldown
-    if (gameState.eventCooldowns && gameState.eventCooldowns.includes(e.id)) continue
+    if (gameState.eventCooldowns && gameState.eventCooldowns.includes(e.id))
+      continue
 
     // Condition check
     if (!e.condition) {
       eligibleEvents.push({ event: e, contextvars: {} })
       continue
     }
-    
+
     try {
       const condResult = e.condition(gameState)
       if (condResult) {
-        eligibleEvents.push({ event: e, contextvars: typeof condResult === 'object' ? condResult : {} })
+        eligibleEvents.push({
+          event: e,
+          contextvars: typeof condResult === 'object' ? condResult : {}
+        })
       }
     } catch (err) {
-      logger.error('EventEngine', `Condition check failed for event ${e.id}`, err)
+      logger.error(
+        'EventEngine',
+        `Condition check failed for event ${e.id}`,
+        err
+      )
     }
   }
 
@@ -65,19 +73,19 @@ const selectEvent = (pool, gameState, triggerPoint) => {
 
     if (secureRandom() < chance) {
       logger.debug('EventEngine', 'Event Selected', event.id)
-      
+
       // Dynamic text parsing
       const variables = {
-         ...contextvars,
-         venue: gameState.player?.currentLocation || 'the venue'
+        ...contextvars,
+        venue: gameState.player?.currentLocation || 'the venue'
       }
-      
+
       let title = event.title || ''
       let description = event.description || ''
       Object.entries(variables).forEach(([key, value]) => {
-         const regex = new RegExp(`{${key}}`, 'gi')
-         title = title.replace(regex, value)
-         description = description.replace(regex, value)
+        const regex = new RegExp(`{${key}}`, 'gi')
+        title = title.replace(regex, value)
+        description = description.replace(regex, value)
       })
 
       return { ...event, title, description, context: variables }
@@ -95,7 +103,7 @@ const processEffect = (eff, delta, context = {}) => {
       if (!delta.band.relationshipChange) delta.band.relationshipChange = []
 
       // eslint-disable-next-line no-inner-declarations
-      const resolveName = (str) => {
+      const resolveName = str => {
         if (!str || typeof str !== 'string') return str
         let resolved = str
         Object.entries(context).forEach(([key, value]) => {
@@ -160,7 +168,7 @@ const processEffect = (eff, delta, context = {}) => {
       if (eff.stat === 'loyalty')
         delta.social.loyalty = (delta.social.loyalty || 0) + eff.value
       if (eff.stat === 'score')
-        delta.flags.score = (delta.flags.score || 0) + eff.value
+        delta.score = (delta.score || 0) + eff.value
       if (eff.stat === 'luck')
         delta.band.luck = (delta.band.luck || 0) + eff.value
       if (eff.stat === 'skill')
@@ -169,11 +177,13 @@ const processEffect = (eff, delta, context = {}) => {
     case 'stat_increment':
       if (eff.stat === 'conflictsResolved') {
         if (!delta.player.stats) delta.player.stats = {}
-        delta.player.stats.conflictsResolved = (delta.player.stats.conflictsResolved || 0) + eff.value
+        delta.player.stats.conflictsResolved =
+          (delta.player.stats.conflictsResolved || 0) + eff.value
       }
       if (eff.stat === 'stageDives') {
         if (!delta.player.stats) delta.player.stats = {}
-        delta.player.stats.stageDives = (delta.player.stats.stageDives || 0) + eff.value
+        delta.player.stats.stageDives =
+          (delta.player.stats.stageDives || 0) + eff.value
       }
       break
     case 'item':
@@ -307,21 +317,24 @@ export const eventEngine = {
       }
 
       // Track conflict resolution for unlocking 'bandleader'
-      if (result.outcome === 'success' && gameState.activeEvent?.tags?.includes('conflict')) {
+      if (
+        result.outcome === 'success' &&
+        gameState.activeEvent?.tags?.includes('conflict')
+      ) {
         if (result.type === 'composite') {
-           // DEEP CLONE: Break array reference to prevent mutating global EVENTS_DB
-           result = { ...result, effects: [...result.effects] }
+          // DEEP CLONE: Break array reference to prevent mutating global EVENTS_DB
+          result = { ...result, effects: [...result.effects] }
         } else {
-           // Convert simple result to composite to add stat tracking
-           const originalEffect = { ...result }
-           delete originalEffect.outcome
-           delete originalEffect.description
-           result = {
-             type: 'composite',
-             effects: [ originalEffect ],
-             outcome: 'success',
-             description: result.description
-           }
+          // Convert simple result to composite to add stat tracking
+          const originalEffect = { ...result }
+          delete originalEffect.outcome
+          delete originalEffect.description
+          result = {
+            type: 'composite',
+            effects: [originalEffect],
+            outcome: 'success',
+            description: result.description
+          }
         }
 
         // Add the stat increment safely (array is now a fresh copy)
@@ -331,26 +344,28 @@ export const eventEngine = {
           value: 1
         })
       }
-
     } else {
       result = { ...choice.effect, outcome: 'direct' }
     }
 
     // Track Stage Dive attempts for unlocking 'showman'
     // Moved outside of skillCheck block because this choice is direct
-    if (gameState.activeEvent?.id === 'gig_mid_stage_diver' && choice.flags?.includes('stageDive')) {
+    if (
+      gameState.activeEvent?.id === 'gig_mid_stage_diver' &&
+      choice.flags?.includes('stageDive')
+    ) {
       if (result.type === 'composite') {
-          result = { ...result, effects: [...result.effects] }
+        result = { ...result, effects: [...result.effects] }
       } else {
-          const originalEffect = { ...result }
-          delete originalEffect.outcome
-          delete originalEffect.description
-          result = {
-            type: 'composite',
-            effects: [ originalEffect ],
-            outcome: result.outcome,
-            description: result.description
-          }
+        const originalEffect = { ...result }
+        delete originalEffect.outcome
+        delete originalEffect.description
+        result = {
+          type: 'composite',
+          effects: [originalEffect],
+          outcome: result.outcome,
+          description: result.description
+        }
       }
       result.effects.push({
         type: 'stat_increment',

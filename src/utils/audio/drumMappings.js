@@ -143,17 +143,33 @@ DRUM_MAPPING[50] = {
  * @param {number} time - The time to trigger the note.
  * @param {number} velocity - The velocity of the note (0-1).
  */
-export function playDrumNote(midiPitch, time, velocity, kit = audioState.drumKit) {
+export function playDrumNote(
+  midiPitch,
+  time,
+  velocity,
+  kit = audioState.drumKit
+) {
   if (!kit) return
+
+  const velRaw = Number.isFinite(velocity) ? velocity : 0
+  const vel = Math.max(0, Math.min(1, velRaw))
 
   // ⚡ BOLT OPTIMIZATION: O(1) array lookup and direct handler execution
   const map = DRUM_MAPPING[midiPitch]
   const handler = map ? DRUM_HANDLERS[map.handler] : null
 
   if (handler) {
-    handler(kit, map, time, velocity * map.velScale)
+    try {
+      handler(kit, map, time, vel * map.velScale)
+    } catch (e) {
+      // Ignored: Tone.js node likely disposed or context suspended
+    }
   } else {
     // Default to closed HiHat for unknown percussion or missing handler
-    kit.hihat.triggerAttackRelease(8000, '32n', time, velocity * 0.4)
+    try {
+      kit.hihat.triggerAttackRelease(8000, '32n', time, vel * 0.4)
+    } catch (e) {
+      // Ignored
+    }
   }
 }

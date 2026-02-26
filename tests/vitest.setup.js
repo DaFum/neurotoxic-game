@@ -11,7 +11,7 @@ afterEach(() => {
 global.ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
-  disconnect: vi.fn(),
+  disconnect: vi.fn()
 }))
 
 Object.defineProperty(window, 'matchMedia', {
@@ -24,8 +24,8 @@ Object.defineProperty(window, 'matchMedia', {
     removeListener: vi.fn(),
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
+    dispatchEvent: vi.fn()
+  }))
 })
 
 // Mock localStorage
@@ -56,8 +56,16 @@ beforeEach(() => {
 // Mock AudioContext
 const AudioContextMock = vi.fn().mockImplementation(() => ({
   state: 'suspended',
-  createGain: vi.fn().mockImplementation(() => ({ connect: vi.fn(), gain: { value: 1 } })),
-  createOscillator: vi.fn().mockImplementation(() => ({ connect: vi.fn(), start: vi.fn(), stop: vi.fn() })),
+  createGain: vi
+    .fn()
+    .mockImplementation(() => ({ connect: vi.fn(), gain: { value: 1 } })),
+  createOscillator: vi
+    .fn()
+    .mockImplementation(() => ({
+      connect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn()
+    })),
   destination: {}
 }))
 
