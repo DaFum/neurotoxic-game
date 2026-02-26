@@ -1,3 +1,4 @@
+import React, { useState } from 'react'
 import {
   afterAll,
   afterEach,
@@ -10,8 +11,6 @@ import {
 } from 'vitest'
 
 import { render, cleanup, fireEvent } from '@testing-library/react'
-
-import React, { useState } from 'react'
 
 // Mock dependencies before importing Settings
 const mockChangeScene = vi.fn()

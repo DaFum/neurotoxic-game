@@ -68,10 +68,6 @@ export const useTourbusLogic = () => {
       const game = gameStateRef.current
       if (game.isGameOver) return
 
-      // Update stats ref for Pixi
-      statsRef.current.health = Math.max(0, 100 - game.damage)
-      statsRef.current.isGameOver = game.isGameOver
-
       // Progression: Speed increases with distance
       // Reach Max Speed at 80% of target distance
       const progress = Math.min(1, game.distance / (TARGET_DISTANCE * 0.8))
@@ -154,6 +150,10 @@ export const useTourbusLogic = () => {
         game.isGameOver = true
         completeTravelMinigame(game.damage, game.itemsCollected)
       }
+
+      // Update stats ref for Pixi
+      statsRef.current.health = Math.max(0, 100 - game.damage)
+      statsRef.current.isGameOver = game.isGameOver
 
       // Sync UI occasionally
       setUiState(prev => {

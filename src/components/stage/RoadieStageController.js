@@ -5,6 +5,7 @@ import { EffectManager } from './EffectManager'
 import { logger } from '../../utils/logger'
 import { getPixiColorFromToken, loadTexture } from './utils'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
+import { handleError, GameError } from '../../utils/errorHandler'
 
 class RoadieStageController extends BaseStageController {
   constructor(params) {
@@ -35,7 +36,10 @@ class RoadieStageController extends BaseStageController {
 
     // Load Assets
     await this.loadAssets()
+    if (this.isDisposed) return
+
     await this.effectManager.loadAssets()
+    if (this.isDisposed) return
 
     // Player Container (Groups body + item)
     this.playerContainer = new PIXI.Container()
@@ -93,6 +97,8 @@ class RoadieStageController extends BaseStageController {
         keys.map(k => loadTexture(urls[k]).then(t => ({ key: k, texture: t })))
       )
 
+      if (this.isDisposed) return
+
       results.forEach(res => {
         if (res.status === 'fulfilled' && res.value && res.value.texture) {
           loaded[res.value.key] = res.value.texture
@@ -109,7 +115,7 @@ class RoadieStageController extends BaseStageController {
         GUITAR: loaded.guitar
       }
     } catch (e) {
-      logger.warn('RoadieStageController', 'Asset load failed', e)
+      handleError(new GameError('Asset load failed', { cause: e }))
     }
   }
 
@@ -168,8 +174,10 @@ class RoadieStageController extends BaseStageController {
 
     if (this.effectManager) this.effectManager.update(dt)
 
+    if (!this.gameStateRef.current) return
     const state = this.gameStateRef.current
-    if (!state) return
+
+    if (!state.playerPos) return
 
     const screenW = this.app.screen.width
     const screenH = this.app.screen.height
@@ -177,25 +185,29 @@ class RoadieStageController extends BaseStageController {
     const cellH = screenH / GRID_HEIGHT
 
     // Update Player Position
-    this.playerContainer.x = (state.playerPos.x + 0.5) * cellW
-    this.playerContainer.y = (state.playerPos.y + 0.5) * cellH
+    if (this.playerContainer) {
+      this.playerContainer.x = (state.playerPos.x + 0.5) * cellW
+      this.playerContainer.y = (state.playerPos.y + 0.5) * cellH
+    }
 
     // Visuals: Carrying
-    if (state.carrying) {
-      this.itemSprite.visible = true
-      // Set texture based on type
-      const tex = this.textures.items[state.carrying.type]
-      if (tex) {
-        this.itemSprite.texture = tex
-        // Scale item to fit ~0.6 of a cell
-        const itemScale = Math.min(cellW / tex.width, cellH / tex.height) * 0.6
-        this.itemSprite.scale.set(itemScale)
+    if (this.itemSprite && this.textures.items) {
+      if (state.carrying) {
+        this.itemSprite.visible = true
+        // Set texture based on type
+        const tex = this.textures.items[state.carrying.type]
+        if (tex && tex.width > 0 && tex.height > 0) {
+          this.itemSprite.texture = tex
+          // Scale item to fit ~0.6 of a cell
+          const itemScale = Math.min(cellW / tex.width, cellH / tex.height) * 0.6
+          this.itemSprite.scale.set(itemScale)
+        } else {
+          this.itemSprite.texture = PIXI.Texture.WHITE
+          this.itemSprite.scale.set(0.3)
+        }
       } else {
-        this.itemSprite.texture = PIXI.Texture.WHITE
-        this.itemSprite.scale.set(0.3)
+        this.itemSprite.visible = false
       }
-    } else {
-      this.itemSprite.visible = false
     }
 
     // Check Damage trigger
@@ -212,76 +224,82 @@ class RoadieStageController extends BaseStageController {
       this.lastDamage = state.equipmentDamage
 
       // Flash player
-      this.playerSprite.tint = redColor
-      if (this._flashTimeout) clearTimeout(this._flashTimeout)
-      this._flashTimeout = setTimeout(() => {
-        if (this.playerSprite && !this.isDisposed)
-          this.playerSprite.tint = getPixiColorFromToken('--star-white')
-        this._flashTimeout = null
-      }, 200)
+      if (this.playerSprite) {
+        this.playerSprite.tint = redColor
+        if (this._flashTimeout) clearTimeout(this._flashTimeout)
+        this._flashTimeout = setTimeout(() => {
+          if (this.playerSprite && !this.isDisposed)
+            this.playerSprite.tint = getPixiColorFromToken('--star-white')
+          this._flashTimeout = null
+        }, 200)
+      }
     }
 
     // Render Traffic
-    this.currentIds.clear()
-    state.traffic.forEach(car => {
-      this.currentIds.add(car.id)
-      let sprite = this.carSprites.get(car.id)
-      if (!sprite) {
-        // Pick stable car texture based on hash of ID
-        if (this.textures.cars.length > 0) {
-          // Simple hash of ID string
-          let hash = 0
-          for (let i = 0; i < car.id.length; i++) {
-            hash = (hash << 5) - hash + car.id.charCodeAt(i)
-            hash |= 0
+    if (Array.isArray(state.traffic)) {
+      this.currentIds.clear()
+      state.traffic.forEach(car => {
+        this.currentIds.add(car.id)
+        let sprite = this.carSprites.get(car.id)
+        if (!sprite) {
+          // Pick stable car texture based on hash of ID
+          if (this.textures.cars.length > 0) {
+            // Simple hash of ID string
+            let hash = 0
+            for (let i = 0; i < car.id.length; i++) {
+              hash = (hash << 5) - hash + car.id.charCodeAt(i)
+              hash |= 0
+            }
+            const texIndex = Math.abs(hash) % this.textures.cars.length
+            sprite = new PIXI.Sprite(this.textures.cars[texIndex])
+            sprite.anchor.set(0.5)
+          } else {
+            sprite = new PIXI.Graphics()
+            sprite.rect(-30, -20, 60, 40)
+            sprite.fill(getPixiColorFromToken('--blood-red'))
           }
-          const texIndex = Math.abs(hash) % this.textures.cars.length
-          sprite = new PIXI.Sprite(this.textures.cars[texIndex])
-          sprite.anchor.set(0.5)
-        } else {
-          sprite = new PIXI.Graphics()
-          sprite.rect(-30, -20, 60, 40)
-          sprite.fill(getPixiColorFromToken('--blood-red'))
+          this.container.addChild(sprite)
+          this.carSprites.set(car.id, sprite)
         }
-        this.container.addChild(sprite)
-        this.carSprites.set(car.id, sprite)
-      }
 
-      sprite.x = (car.x + car.width / 2) * cellW
-      sprite.y = (car.row + 0.5) * cellH
+        sprite.x = (car.x + car.width / 2) * cellW
+        sprite.y = (car.row + 0.5) * cellH
 
-      // Flip if moving left
-      if (car.speed < 0) {
-        sprite.scale.x = -Math.abs(sprite.scale.x)
-      } else {
-        sprite.scale.x = Math.abs(sprite.scale.x)
-      }
+        // Flip if moving left
+        if (car.speed < 0) {
+          sprite.scale.x = -Math.abs(sprite.scale.x)
+        } else {
+          sprite.scale.x = Math.abs(sprite.scale.x)
+        }
 
-      // Adjust Scale if texture — constrain both width AND height
-      if (sprite instanceof PIXI.Sprite && sprite.texture?.width > 0) {
-        const targetW = car.width * cellW
-        const targetH = cellH * 0.7
-        const scale = Math.min(
-          targetW / sprite.texture.width,
-          targetH / sprite.texture.height
-        )
-        sprite.scale.set(
-          Math.abs(scale) * Math.sign(sprite.scale.x),
-          Math.abs(scale)
-        )
-      } else {
-        // Fallback or Graphics
-        sprite.width = car.width * cellW
-        sprite.height = cellH * 0.7
-      }
-    })
+        // Adjust Scale if texture — constrain both width AND height
+        if (sprite instanceof PIXI.Sprite && sprite.texture?.width > 0) {
+          const targetW = car.width * cellW
+          const targetH = cellH * 0.7
+          const scale = Math.min(
+            targetW / sprite.texture.width,
+            targetH / sprite.texture.height
+          )
+          sprite.scale.set(
+            Math.abs(scale) * Math.sign(sprite.scale.x),
+            Math.abs(scale)
+          )
+        } else {
+          // Fallback or Graphics
+          sprite.width = car.width * cellW
+          sprite.height = cellH * 0.7
+        }
+      })
+    }
 
     // Cleanup
-    for (const [id, sprite] of this.carSprites.entries()) {
-      if (!this.currentIds.has(id)) {
-        this.container.removeChild(sprite)
-        sprite.destroy()
-        this.carSprites.delete(id)
+    if (this.carSprites) {
+      for (const [id, sprite] of this.carSprites.entries()) {
+        if (!this.currentIds.has(id)) {
+          this.container.removeChild(sprite)
+          sprite.destroy()
+          this.carSprites.delete(id)
+        }
       }
     }
   }

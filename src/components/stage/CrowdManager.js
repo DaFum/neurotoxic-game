@@ -57,7 +57,7 @@ export class CrowdManager {
     this.stageContainer.addChild(this.container)
 
     const fallbackColor = getPixiColorFromToken('--star-white')
-    const mutedColor = getPixiColorFromToken('--color-muted')
+    const mutedColor = getPixiColorFromToken('--ash-gray')
 
     for (let i = 0; i < CROWD_LAYOUT.memberCount; i += 1) {
       const radius =

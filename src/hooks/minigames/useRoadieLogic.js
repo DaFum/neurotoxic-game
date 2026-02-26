@@ -84,6 +84,7 @@ export const useRoadieLogic = () => {
         // Win Condition check
         if (game.itemsToDeliver.length === 0 && !game.carrying) {
           game.isGameOver = true
+          hasTransitionedRef.current = true
           completeRoadieMinigame(game.equipmentDamage)
         }
       }
@@ -153,6 +154,7 @@ export const useRoadieLogic = () => {
               game.isGameOver = true
               game.playerPos.y = 0
               game.playerPos.x = 6
+              hasTransitionedRef.current = true
               completeRoadieMinigame(100)
             } else {
               // Drop item? Or just damage?
@@ -220,6 +222,7 @@ export const useRoadieLogic = () => {
         const game = gameStateRef.current
         game.isGameOver = true
         game.equipmentDamage = 5
+        hasTransitionedRef.current = true
         completeRoadieMinigame(5)
         setUiState(prev => ({ ...prev, currentDamage: 5, isGameOver: true }))
       }
@@ -244,6 +247,8 @@ export const useRoadieLogic = () => {
   }, [])
 
   const currentSceneRef = useRef(currentScene)
+  const hasTransitionedRef = useRef(false)
+
   useEffect(() => {
     currentSceneRef.current = currentScene
   }, [currentScene])
@@ -251,9 +256,15 @@ export const useRoadieLogic = () => {
   // Safety Fallback: Ensure scene advances if UI hangs
   useEffect(() => {
     if (uiState.isGameOver && currentScene === 'PRE_GIG_MINIGAME') {
+      if (hasTransitionedRef.current) return
+
       const timeout = setTimeout(() => {
         // Double check scene hasn't changed
-        if (currentSceneRef.current === 'PRE_GIG_MINIGAME') {
+        if (
+          currentSceneRef.current === 'PRE_GIG_MINIGAME' &&
+          !hasTransitionedRef.current
+        ) {
+          hasTransitionedRef.current = true
           changeScene('GIG')
         }
       }, 10000) // 10s fallback

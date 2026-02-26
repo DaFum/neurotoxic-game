@@ -124,6 +124,8 @@ export const POST_OPTIONS = [
     category: 'Performance',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
     condition: ({ player, band }) =>
+      player &&
+      typeof player.money === 'number' &&
       player.money > 500 &&
       Array.isArray(band?.members) &&
       band.members.length > 0,
@@ -562,7 +564,8 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Commercial',
     badges: [POST_BADGES.COMMERCIAL, POST_BADGES.RISK],
-    condition: ({ player }) => player.money < 100,
+    condition: ({ player }) =>
+      player && typeof player.money === 'number' && player.money < 100,
     resolve: () => ({
       type: 'FIXED',
       success: true,
@@ -612,7 +615,10 @@ export const POST_OPTIONS = [
     category: 'Commercial',
     badges: [POST_BADGES.VIRAL, POST_BADGES.COMMERCIAL],
     condition: ({ social, player }) =>
-      player.money >= 100 && Object.keys(social?.influencers || {}).length > 0,
+      player &&
+      typeof player.money === 'number' &&
+      player.money >= 100 &&
+      Object.keys(social?.influencers || {}).length > 0,
     resolve: ({ social, player, diceRoll }) => {
       const influencers = social?.influencers || {}
 
