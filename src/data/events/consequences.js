@@ -41,7 +41,7 @@ export const CONSEQUENCE_EVENTS = [
             { type: 'cooldown', eventId: 'consequences_venue_complaint' }
           ]
         },
-        outcomeText: "events:consequences_venue_complaint.opt2.outcome"
+        outcomeText: 'events:consequences_venue_complaint.opt2.outcome'
       },
       {
         label: 'events:consequences_venue_complaint.opt3.label',
@@ -64,7 +64,7 @@ export const CONSEQUENCE_EVENTS = [
               { type: 'stat', stat: 'harmony', value: -10 },
               { type: 'cooldown', eventId: 'consequences_venue_complaint' }
             ],
-            description: "events:consequences_venue_complaint.opt3.d_d21d"
+            description: 'events:consequences_venue_complaint.opt3.d_d21d'
           }
         }
       }
@@ -124,7 +124,7 @@ export const CONSEQUENCE_EVENTS = [
     chance: 0.75,
     condition: state => {
       if (
-        state.social?.egoFocus !== null &&
+        state.social?.egoFocus != null &&
         (state.social?.controversyLevel || 0) >= 30 &&
         !(state.eventCooldowns || []).includes('consequences_bandmate_scandal')
       ) {
@@ -257,7 +257,7 @@ export const CONSEQUENCE_EVENTS = [
             { type: 'stat', stat: 'harmony', value: 5 }
           ]
         },
-        outcomeText: "events:consequences_ego_breakup_threat.opt1.outcome"
+        outcomeText: 'events:consequences_ego_breakup_threat.opt1.outcome'
       },
       {
         label: 'events:consequences_ego_breakup_threat.opt2.label',
