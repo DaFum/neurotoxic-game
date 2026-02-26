@@ -7,43 +7,43 @@ vi.mock('../src/scenes/MainMenu', () => ({
 }))
 
 vi.mock('../src/scenes/Overworld', () => ({
-  default: () => <div data-testid='overworld-scene'>Overworld</div>
+  Overworld: () => <div data-testid='overworld-scene'>Overworld</div>
 }))
 
 vi.mock('../src/scenes/Gig', () => ({
-  default: () => <div data-testid='gig-scene'>Gig</div>
+  Gig: () => <div data-testid='gig-scene'>Gig</div>
 }))
 
 vi.mock('../src/scenes/PreGig', () => ({
-  default: () => <div data-testid='pregig-scene'>PreGig</div>
+  PreGig: () => <div data-testid='pregig-scene'>PreGig</div>
 }))
 
 vi.mock('../src/scenes/PostGig', () => ({
-  default: () => <div data-testid='postgig-scene'>PostGig</div>
+  PostGig: () => <div data-testid='postgig-scene'>PostGig</div>
 }))
 
 vi.mock('../src/scenes/TourbusScene', () => ({
-  default: () => <div data-testid='tourbus-scene'>Tourbus</div>
+  TourbusScene: () => <div data-testid='tourbus-scene'>Tourbus</div>
 }))
 
 vi.mock('../src/scenes/RoadieRunScene', () => ({
-  default: () => <div data-testid='roadie-scene'>Roadie Run</div>
+  RoadieRunScene: () => <div data-testid='roadie-scene'>Roadie Run</div>
 }))
 
 vi.mock('../src/scenes/Settings', () => ({
-  default: () => <div data-testid='settings-scene'>Settings</div>
+  Settings: () => <div data-testid='settings-scene'>Settings</div>
 }))
 
 vi.mock('../src/scenes/Credits', () => ({
-  default: () => <div data-testid='credits-scene'>Credits</div>
+  Credits: () => <div data-testid='credits-scene'>Credits</div>
 }))
 
 vi.mock('../src/scenes/GameOver', () => ({
-  default: () => <div data-testid='gameover-scene'>Game Over</div>
+  GameOver: () => <div data-testid='gameover-scene'>Game Over</div>
 }))
 
 vi.mock('../src/scenes/IntroVideo', () => ({
-  default: () => <div data-testid='intro-scene'>Intro</div>
+  IntroVideo: () => <div data-testid='intro-scene'>Intro</div>
 }))
 
 // Mock UI components
@@ -137,7 +137,7 @@ describe('App', () => {
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
-    expect(screen.getByTestId('main-menu-scene')).toBeTruthy()
+    expect(await screen.findByTestId('main-menu-scene')).toBeTruthy()
   })
 
   test('renders Intro scene when currentScene is INTRO', async () => {
@@ -145,7 +145,7 @@ describe('App', () => {
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
-    expect(screen.getByTestId('intro-scene')).toBeTruthy()
+    expect(await screen.findByTestId('intro-scene')).toBeTruthy()
   })
 
   test('renders Overworld scene when currentScene is OVERWORLD', async () => {
@@ -153,7 +153,7 @@ describe('App', () => {
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
-    expect(screen.getByTestId('overworld-scene')).toBeTruthy()
+    expect(await screen.findByTestId('overworld-scene')).toBeTruthy()
   })
 
   test('renders PreGig scene when currentScene is PREGIG', async () => {
@@ -161,7 +161,7 @@ describe('App', () => {
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
-    expect(screen.getByTestId('pregig-scene')).toBeTruthy()
+    expect(await screen.findByTestId('pregig-scene')).toBeTruthy()
   })
 
   test('renders Gig scene when currentScene is GIG', async () => {
@@ -169,7 +169,7 @@ describe('App', () => {
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
-    expect(screen.getByTestId('gig-scene')).toBeTruthy()
+    expect(await screen.findByTestId('gig-scene')).toBeTruthy()
   })
 
   test('renders Gig scene when currentScene is PRACTICE', async () => {
@@ -177,7 +177,7 @@ describe('App', () => {
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
-    expect(screen.getByTestId('gig-scene')).toBeTruthy()
+    expect(await screen.findByTestId('gig-scene')).toBeTruthy()
   })
 
   test('renders PostGig scene when currentScene is POSTGIG', async () => {
@@ -185,7 +185,7 @@ describe('App', () => {
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
-    expect(screen.getByTestId('postgig-scene')).toBeTruthy()
+    expect(await screen.findByTestId('postgig-scene')).toBeTruthy()
   })
 
   test('renders Settings scene when currentScene is SETTINGS', async () => {
@@ -193,7 +193,7 @@ describe('App', () => {
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
-    expect(screen.getByTestId('settings-scene')).toBeTruthy()
+    expect(await screen.findByTestId('settings-scene')).toBeTruthy()
   })
 
   test('renders Credits scene when currentScene is CREDITS', async () => {
@@ -201,7 +201,7 @@ describe('App', () => {
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
-    expect(screen.getByTestId('credits-scene')).toBeTruthy()
+    expect(await screen.findByTestId('credits-scene')).toBeTruthy()
   })
 
   test('renders GameOver scene when currentScene is GAMEOVER', async () => {
@@ -209,7 +209,7 @@ describe('App', () => {
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
-    expect(screen.getByTestId('gameover-scene')).toBeTruthy()
+    expect(await screen.findByTestId('gameover-scene')).toBeTruthy()
   })
 
   test('renders Tourbus minigame scene', async () => {
@@ -217,7 +217,7 @@ describe('App', () => {
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
-    expect(screen.getByTestId('tourbus-scene')).toBeTruthy()
+    expect(await screen.findByTestId('tourbus-scene')).toBeTruthy()
   })
 
   test('renders Roadie minigame scene', async () => {
@@ -225,7 +225,7 @@ describe('App', () => {
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
-    expect(screen.getByTestId('roadie-scene')).toBeTruthy()
+    expect(await screen.findByTestId('roadie-scene')).toBeTruthy()
   })
 
   test('renders default MainMenu for unknown scene', async () => {

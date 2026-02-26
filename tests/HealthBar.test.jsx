@@ -35,7 +35,7 @@ describe('HealthBar', () => {
   })
 
   test('applies warning styling when health is low', () => {
-    const { getByText, container } = render(
+    const { getByText } = render(
       <HealthBar health={15} isToxicMode={false} />
     )
     const healthValue = getByText('15%')

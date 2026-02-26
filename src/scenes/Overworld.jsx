@@ -73,11 +73,11 @@ export const Overworld = () => {
   })
 
   const [isSaving, setIsSaving] = useState(false)
-  const isMounted = useRef(true)
+  const isMountedRef = useRef(true)
 
   useEffect(() => {
     return () => {
-      isMounted.current = false
+      isMountedRef.current = false
     }
   }, [])
 
@@ -85,7 +85,7 @@ export const Overworld = () => {
     if (isSaving) return
     setIsSaving(true)
     setTimeout(() => {
-      if (isMounted.current) {
+      if (isMountedRef.current) {
         saveGame()
         setIsSaving(false)
       }

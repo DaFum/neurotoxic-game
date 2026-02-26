@@ -11,6 +11,7 @@ export const GameOver = () => {
 
   useEffect(() => {
     if (!player || player.score === undefined) {
+      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
       changeScene('MENU')
     }
   }, [player, changeScene])

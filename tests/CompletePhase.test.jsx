@@ -316,10 +316,13 @@ describe('CompletePhase', () => {
       />
     )
 
+    // Find the specific div containing the money change
     const moneyElement = Array.from(container.querySelectorAll('div')).find(
-      el => el.textContent.includes('💰')
+      el =>
+        el.textContent.includes('💰') &&
+        el.className.includes('text-(--toxic-green)')
     )
-    expect(moneyElement?.className).toContain('text-(--toxic-green)')
+    expect(moneyElement).toBeTruthy()
   })
 
   test('applies correct color styling for negative money change', async () => {
@@ -339,9 +342,12 @@ describe('CompletePhase', () => {
       />
     )
 
+    // Find the specific div containing the money change
     const moneyElement = Array.from(container.querySelectorAll('div')).find(
-      el => el.textContent.includes('💰')
+      el =>
+        el.textContent.includes('💰') &&
+        el.className.includes('text-(--blood-red)')
     )
-    expect(moneyElement?.className).toContain('text-(--blood-red)')
+    expect(moneyElement).toBeTruthy()
   })
 })
