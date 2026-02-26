@@ -11,7 +11,7 @@ const KEY = 'pk_xDL8u2ty4Sxucaa3' // gitleaks:allow
  */
 export const getGenImageUrl = description => {
   const encodedDesc = encodeURIComponent(description)
-  return `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}`
+  return `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}&=`
 }
 
 /**
@@ -22,7 +22,7 @@ export const getGenImageUrl = description => {
 export const fetchGenImage = description => {
   const encodedDesc = encodeURIComponent(description)
   return fetch(
-    `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}`,
+    `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}&=`,
     {
       headers: {
         Accept: 'image/jpeg, image/png, video/mp4'
