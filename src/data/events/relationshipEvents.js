@@ -55,7 +55,7 @@ export const RELATIONSHIP_EVENTS = [
             }
           ]
         },
-        outcomeText: 'events:toxic_infighting.opt3.outcome'
+        outcomeText: 'events:toxic_infighting.opt2.outcome'
       }
     ]
   },
@@ -94,7 +94,7 @@ export const RELATIONSHIP_EVENTS = [
             }
           ]
         },
-        outcomeText: 'events:synergy_moment.opt2.outcome'
+        outcomeText: 'events:synergy_moment.opt1.outcome'
       }
     ]
   }

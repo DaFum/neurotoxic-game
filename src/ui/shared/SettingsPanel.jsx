@@ -62,9 +62,9 @@ export const SettingsPanel = ({
             onChange={e => onSfxChange(parseFloat(e.target.value))}
           />
           <div className='flex items-center justify-between'>
-            <label className='font-[Courier_New] text-sm uppercase tracking-wide text-(--ash-gray)'>
+            <span className='font-[Courier_New] text-sm uppercase tracking-wide text-(--ash-gray)'>
               {t('ui:mute_all')}
-            </label>
+            </span>
             <ToggleSwitch
               isOn={isMuted}
               onToggle={onToggleMute}
@@ -80,9 +80,9 @@ export const SettingsPanel = ({
           {t('ui:visual_interface')}
         </h2>
         <div className='flex items-center justify-between'>
-          <label className='font-[Courier_New] text-sm uppercase tracking-wide text-(--ash-gray)'>
+          <span className='font-[Courier_New] text-sm uppercase tracking-wide text-(--ash-gray)'>
             {t('ui:crt_effect')}
-          </label>
+          </span>
           <ToggleSwitch
             isOn={settings?.crtEnabled ?? false}
             onToggle={onToggleCRT}

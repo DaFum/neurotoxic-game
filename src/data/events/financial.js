@@ -32,22 +32,22 @@ export const FINANCIAL_EVENTS = [
               type: 'resource',
               resource: 'money',
               value: -300,
-              description: 'events:gear_theft.opt2.d_8026'
+              description: 'events:gear_theft.opt1.d_8026'
             },
             { type: 'stat', stat: 'mood', value: -10 }
           ]
         },
-        outcomeText: 'events:gear_theft.opt2.outcome'
+        outcomeText: 'events:gear_theft.opt1.outcome'
       },
       {
-        label: 'events:gear_theft.opt3.label',
+        label: 'events:gear_theft.opt2.label',
         effect: {
           type: 'stat',
           stat: 'harmony',
           value: -10,
-          description: 'events:gear_theft.opt3.d_6b9d'
+          description: 'events:gear_theft.opt2.d_6b9d'
         },
-        outcomeText: 'events:gear_theft.opt3.outcome'
+        outcomeText: 'events:gear_theft.opt2.outcome'
       }
     ]
   },

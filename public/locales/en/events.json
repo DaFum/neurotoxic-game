@@ -518,6 +518,7 @@
   "police_control.opt2.label": "Talk your way out [Charisma]",
   "police_control.opt2.outcome": "You rolled down the window with a smile.",
   "police_control.opt3.d_a844": "Adrenaline rush! Escaped!",
+  "police_control.opt3.d_arrested": "Arrested. Tour Over.",
   "police_control.opt3.label": "Flee! [Driving Skill]",
   "police_control.opt3.outcome": "FLOOR IT!",
   "police_control.title": "POLICE CONTROL",
