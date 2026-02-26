@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
-import { getPrimaryEffect } from '../../hooks/usePurchaseLogic'
+import { getPrimaryEffect } from '../../utils/purchaseLogicUtils'
 import { GlitchButton } from '../GlitchButton'
 
 export const ShopItem = ({
