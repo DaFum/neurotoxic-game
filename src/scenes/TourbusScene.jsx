@@ -46,13 +46,13 @@ export const TourbusScene = () => {
         <button
           type='button'
           aria-label='Move Left'
-          className='w-1/2 h-full active:bg-(--star-white)/5 transition-colors focus:outline-none'
+          className='w-1/2 h-full active:bg-(--star-white)/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green) focus-visible:ring-inset'
           onClick={actions.moveLeft}
         />
         <button
           type='button'
           aria-label='Move Right'
-          className='w-1/2 h-full active:bg-(--star-white)/5 transition-colors focus:outline-none'
+          className='w-1/2 h-full active:bg-(--star-white)/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green) focus-visible:ring-inset'
           onClick={actions.moveRight}
         />
       </div>

@@ -53,13 +53,6 @@ describe('PostGig Optimization', () => {
 
     // Since SocialOptionButton is memoized and props are identical,
     // it should NOT re-render, and thus ActionButton should NOT be called again.
-    // If it *does* re-render, we check stability of the handler.
-    if (mockActionButton.mock.calls.length > 0) {
-      const secondRenderProps = mockActionButton.mock.calls[0][0]
-      expect(secondRenderProps.onClick).toBe(firstRenderOnClick)
-    } else {
-      // Ideal case: no re-render
-      expect(mockActionButton).not.toHaveBeenCalled()
-    }
+    expect(mockActionButton).not.toHaveBeenCalled()
   })
 })

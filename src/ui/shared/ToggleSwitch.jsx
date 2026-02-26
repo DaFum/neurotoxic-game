@@ -51,7 +51,7 @@ const ToggleSwitchComponent = ({
 export const ToggleSwitch = memo(ToggleSwitchComponent)
 ToggleSwitch.displayName = 'ToggleSwitch'
 
-ToggleSwitchComponent.propTypes = {
+ToggleSwitch.propTypes = {
   isOn: PropTypes.bool.isRequired,
   onToggle: PropTypes.func.isRequired,
   ariaLabel: PropTypes.string.isRequired,

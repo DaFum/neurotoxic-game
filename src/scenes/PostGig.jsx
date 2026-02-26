@@ -214,7 +214,7 @@ export const PostGig = () => {
           0,
           (social[result.platform] || 0) + totalFollowers
         ),
-        viral: social.viral + (result.success ? 1 : 0) + gigViralBonus,
+        viral: (social.viral || 0) + (result.success ? 1 : 0) + gigViralBonus,
         lastGigDay: player.day,
         controversyLevel: Math.max(
           0,
