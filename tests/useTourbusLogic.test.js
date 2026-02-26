@@ -172,7 +172,7 @@ describe('useTourbusLogic', () => {
       const game = result.current.gameStateRef.current
 
       // Setup obstacle in collision path
-      // Bus is at lane 1, Y is BUS_Y_PERCENT (85) to BUS_Y_PERCENT + BUS_HEIGHT_PERCENT (95)
+      // Bus is at lane 1, Y is BUS_Y_PERCENT to BUS_Y_PERCENT + 1
       game.obstacles.push({
         id: 'test-obs',
         lane: 1,

@@ -33,10 +33,10 @@ export const Gig = () => {
 
   useEffect(() => {
     if (!currentGig) {
-      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+      /* eslint-disable @eslint-react/hooks-extra/no-direct-set-state-in-use-effect */
       addToast('No gig active! Returning to map.', 'error')
-      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
       changeScene('OVERWORLD')
+      /* eslint-enable @eslint-react/hooks-extra/no-direct-set-state-in-use-effect */
     }
   }, [currentGig, changeScene, addToast])
 

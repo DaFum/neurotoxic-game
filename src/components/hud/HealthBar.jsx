@@ -11,7 +11,9 @@ const SegmentedBar = memo(function SegmentedBar({
   const isLow = value < lowThreshold
   return (
     <div className={`flex gap-[2px] ${className}`}>
+      {/* Segments are stable, not re-ordered, and have no IDs */}
       {Array.from({ length: segments }).map((_, i) => (
+        // eslint-disable-next-line react/no-array-index-key
         <div
           key={i}
           className={`flex-1 h-full transition-all duration-150 ${
