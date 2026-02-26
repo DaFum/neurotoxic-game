@@ -1,6 +1,5 @@
 import { describe, expect, test, vi, afterEach } from 'vitest'
 import { render, cleanup } from '@testing-library/react'
-import React from 'react'
 import { PixiStage } from '../../src/components/PixiStage'
 
 vi.mock('../../src/utils/audioEngine.js', () => ({
@@ -72,7 +71,6 @@ describe('PixiStage Performance Optimization', () => {
     const gameStateRef = { current: {} }
     const update = vi.fn()
 
-    let internalRenderCount = 0
     vi.mock('../../src/components/PixiStageController', () => ({
       createPixiStageController: vi.fn()
     }))

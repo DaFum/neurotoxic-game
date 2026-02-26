@@ -1,15 +1,11 @@
 import {
-  afterAll,
   afterEach,
-  beforeAll,
-  beforeEach,
   describe,
   expect,
-  test,
+  it,
   vi
 } from 'vitest'
-import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { render } from '@testing-library/react'
 
 // Mock dependencies before import
 const changeSceneMock = vi.fn()
@@ -66,6 +62,22 @@ vi.mock('../../src/utils/AudioManager', () => ({
 }))
 vi.mock('../../src/utils/errorHandler', () => ({
   handleError: vi.fn()
+}))
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key) => {
+      if (key === 'ui:credits') return 'CREDITS'
+      if (key === 'ui:start_game') return 'Start Tour'
+      return key
+    },
+    i18n: {
+      changeLanguage: () => new Promise(() => {})
+    }
+  }),
+  initReactI18next: {
+    type: '3rdParty',
+    init: () => {}
+  }
 }))
 // Dynamic import
 const { MainMenu } = await import('../../src/scenes/MainMenu.jsx')

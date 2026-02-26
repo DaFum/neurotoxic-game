@@ -138,15 +138,6 @@ test('applyEventDelta clamps relationship scores to 0-100', () => {
       ]
     }
   }
-  const delta = {
-    band: {
-      relationshipChange: [
-        { member1: 'A', member2: 'B', change: 10 },
-        { member1: 'A', member2: 'B', change: -10 }
-      ]
-    }
-  }
-
   // Test overflow
   const deltaOverflow = {
     band: { relationshipChange: [{ member1: 'A', member2: 'B', change: 20 }] }

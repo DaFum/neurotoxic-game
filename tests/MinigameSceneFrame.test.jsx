@@ -13,7 +13,7 @@ vi.mock('../src/context/GameState.jsx', () => ({
 
 // Mock PixiStage component
 vi.mock('../src/components/PixiStage.jsx', () => ({
-  PixiStage: ({ gameStateRef, update, controllerFactory }) => (
+  PixiStage: ({ gameStateRef: _gameStateRef, update: _update, controllerFactory: _controllerFactory }) => (
     <div data-testid='pixi-stage-mock'>Pixi Stage Mock</div>
   )
 }))

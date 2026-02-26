@@ -63,7 +63,7 @@ class MockPart {
     this.callback = callback
     this.events = events
   }
-  start(time) {}
+  start(_time) {}
   dispose() {}
 }
 
@@ -77,11 +77,11 @@ const mockTone = {
   getTransport: mock.fn(() => mockTransport),
   Part: MockPart,
   now: mock.fn(() => 1000), // Fixed time: 1000s
-  Frequency: mock.fn(midi => ({
+  Frequency: mock.fn(_midi => ({
     toNote: () => 'C4',
     toFrequency: () => 440
   })),
-  Time: mock.fn(val => ({
+  Time: mock.fn(_val => ({
     toSeconds: () => 0.5
   }))
 }

@@ -1,5 +1,5 @@
-import { describe, expect, test, vi } from 'vitest'
-import React, { useEffect } from 'react'
+import { describe, expect, test, vi, beforeEach } from 'vitest'
+import { useEffect } from 'react'
 import { render, fireEvent, waitFor } from '@testing-library/react'
 import { GameStateProvider, useGameState } from '../src/context/GameState.jsx'
 import { GameOver } from '../src/scenes/GameOver.jsx'
@@ -10,6 +10,7 @@ const GameOverTestHarness = ({ children }) => {
 
   useEffect(() => {
     if (player.score !== 100) {
+      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
       updatePlayer({ score: 100, day: 5, fame: 50, totalTravels: 2 })
     }
   }, [player.score, updatePlayer])

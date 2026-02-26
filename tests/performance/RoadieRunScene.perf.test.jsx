@@ -1,8 +1,6 @@
 import React from 'react'
 import {
-  afterAll,
   afterEach,
-  beforeAll,
   beforeEach,
   describe,
   expect,

@@ -9,17 +9,9 @@ import {
 } from './useRhythmGameLogicTestUtils.js'
 
 const {
-  mockUseGameState,
-  mockSimulationUtils,
-  mockAudioManager,
   mockAudioEngine,
-  mockAudioTimingUtils,
   mockGigStats,
-  mockRhythmUtils,
-  mockHecklerLogic,
-  mockErrorHandler,
-  mockLogger,
-  mockSongs
+  mockRhythmUtils
 } = mockRhythmGameLogicDependencies
 
 // Setup the test environment

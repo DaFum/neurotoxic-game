@@ -2,16 +2,6 @@ import { test, describe } from 'node:test'
 import assert from 'node:assert/strict'
 import { applyTraitUnlocks } from '../src/utils/traitUtils.js'
 
-// Mock CHARACTERS to control trait definitions
-const MOCK_CHARACTERS = {
-  MATZE: {
-    traits: [
-      { id: 'gear_nerd', name: 'Gear Nerd' },
-      { id: 'virtuoso', name: 'Virtuoso' }
-    ]
-  }
-}
-
 // We can't easily mock the data module import here without experimental-test-module-mocks AND a fresh context,
 // but applyTraitUnlocks imports CHARACTERS.
 // Assuming CHARACTERS has the real data, we'll use a real trait 'gear_nerd' for Matze.

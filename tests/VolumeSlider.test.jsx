@@ -1,23 +1,15 @@
 import React from 'react'
 import { render, cleanup } from '@testing-library/react'
 import {
-  afterAll,
   afterEach,
-  beforeAll,
-  beforeEach,
   describe,
   expect,
-  test,
-  vi
+  test
 } from 'vitest'
 
 import { VolumeSlider } from '../src/ui/shared/VolumeSlider.jsx'
 
 describe('VolumeSlider', () => {
-  beforeEach(() => {
-    //  removed (handled by vitest env)
-  })
-
   afterEach(() => {
     cleanup()
   })

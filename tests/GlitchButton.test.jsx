@@ -1,11 +1,9 @@
 import {
-  afterAll,
   afterEach,
-  beforeAll,
   beforeEach,
   describe,
   expect,
-  test,
+  it,
   vi
 } from 'vitest'
 import { render, cleanup, fireEvent } from '@testing-library/react'

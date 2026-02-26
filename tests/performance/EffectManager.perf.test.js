@@ -1,5 +1,4 @@
 import { test, describe, before, after, mock } from 'node:test'
-import assert from 'node:assert'
 import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
 
 // Mock PIXI

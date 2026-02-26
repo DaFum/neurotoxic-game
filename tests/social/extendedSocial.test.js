@@ -1,4 +1,4 @@
-import { describe, it, before, after, mock } from 'node:test'
+import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import {
   generateDailyTrend,
@@ -8,7 +8,6 @@ import {
   generateBrandOffers
 } from '../../src/utils/socialEngine.js'
 import { checkTraitUnlocks } from '../../src/utils/unlockCheck.js'
-import { CHARACTERS } from '../../src/data/characters.js'
 
 describe('Extended Social & Trait Systems', () => {
   describe('Trend System', () => {

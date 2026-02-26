@@ -30,6 +30,7 @@ export const setupMainMenuAudioTest = async () => {
 
   mock.module('../src/hooks/useAudioControl', {
     namedExports: {
+      // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
       useAudioControl: () => ({
         audioState: { isMuted: false },
         handleAudioChange: () => {}

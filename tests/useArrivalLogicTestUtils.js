@@ -17,17 +17,6 @@ const mockGameState = {
 
 const mockUseGameState = mock.fn(() => mockGameState)
 
-// Helper to update mock state - Deep merge implementation
-const deepMerge = (target, source) => {
-  for (const key in source) {
-    if (source[key] instanceof Object && key in target) {
-      Object.assign(source[key], deepMerge(target[key], source[key]))
-    }
-  }
-  Object.assign(target || {}, source)
-  return target
-}
-
 export const setMockGameState = overrides => {
   // Simple deep merge for known structures or just use overrides if structure is simple
   // For simplicity in tests, we can just assign, but let's be safer

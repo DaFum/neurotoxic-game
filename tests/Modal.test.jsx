@@ -1,5 +1,4 @@
 import { describe, expect, test, vi } from 'vitest'
-import React from 'react'
 import { render, fireEvent } from '@testing-library/react'
 import { Modal } from '../src/ui/shared/Modal.jsx'
 

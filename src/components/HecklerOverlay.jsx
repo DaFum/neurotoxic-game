@@ -23,8 +23,10 @@ export const HecklerOverlay = memo(function HecklerOverlay({ gameStateRef }) {
 
         // Only update if projectiles exist or if we need to clear them
         if (hasProjectiles) {
+          // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
           setItems([...gameStateRef.current.projectiles])
         } else if (hasItems) {
+          // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
           setItems([])
         }
       }

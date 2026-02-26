@@ -99,10 +99,10 @@ const selectEvent = (pool, gameState, triggerPoint) => {
  */
 const processEffect = (eff, delta, context = {}) => {
   switch (eff.type) {
-    case 'relationship':
+    case 'relationship': {
       if (!delta.band.relationshipChange) delta.band.relationshipChange = []
 
-      // eslint-disable-next-line no-inner-declarations
+
       const resolveName = str => {
         if (!str || typeof str !== 'string') return str
         let resolved = str
@@ -121,6 +121,7 @@ const processEffect = (eff, delta, context = {}) => {
         change: eff.value
       })
       break
+    }
     case 'resource':
       if (eff.resource === 'money')
         delta.player.money = (delta.player.money || 0) + eff.value

@@ -1,9 +1,5 @@
 import {
-  afterAll,
-  afterEach,
-  beforeAll,
   beforeEach,
-  describe,
   expect,
   test,
   vi
@@ -45,7 +41,7 @@ beforeEach(() => {
   listeners.clear()
 })
 
-test('ToggleRadio reacts to external playback changes and user toggles', async t => {
+test('ToggleRadio reacts to external playback changes and user toggles', async _t => {
   audioManagerMock._isPlaying = false
 
   const { ToggleRadio } = await import('../src/components/ToggleRadio.jsx')
@@ -66,7 +62,7 @@ test('ToggleRadio reacts to external playback changes and user toggles', async t
   expect(getByRole('button').textContent).toBe('▶')
 })
 
-test('ToggleRadio triggers resume path and updates after async change', async t => {
+test('ToggleRadio triggers resume path and updates after async change', async _t => {
   audioManagerMock._isPlaying = false
 
   const { ToggleRadio } = await import('../src/components/ToggleRadio.jsx')

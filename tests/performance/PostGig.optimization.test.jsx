@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
-import React from 'react'
 import { render, cleanup } from '@testing-library/react'
 
 // Mock ActionButton to capture renders

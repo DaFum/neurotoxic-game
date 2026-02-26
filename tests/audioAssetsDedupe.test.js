@@ -41,7 +41,7 @@ mock.module('../src/utils/audio/playbackUtils.js', {
 
 // Mock Setup
 const mockContext = {
-  decodeAudioData: mock.fn(async buffer => {
+  decodeAudioData: mock.fn(async _buffer => {
     // Simulate async decoding
     await new Promise(r => setTimeout(r, 10))
     return {
@@ -66,10 +66,8 @@ const { loadAudioBuffer } = await import('../src/utils/audio/assets.js')
 test('loadAudioBuffer Deduplication Tests', async t => {
   // Setup global fetch mock
   const originalFetch = global.fetch
-  let fetchCallCount = 0
 
   global.fetch = mock.fn(async url => {
-    fetchCallCount++
     if (url.includes('fail')) {
       return { ok: false, status: 404 }
     }
@@ -86,7 +84,6 @@ test('loadAudioBuffer Deduplication Tests', async t => {
     mockAudioState.currentCacheByteSize = 0
     mockLogger.debug.mock.resetCalls()
     mockLogger.warn.mock.resetCalls()
-    fetchCallCount = 0
     global.fetch.mock.resetCalls()
     mockContext.decodeAudioData.mock.resetCalls()
   })

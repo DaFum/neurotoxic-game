@@ -26,7 +26,11 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
     if (isOpen) {
       window.addEventListener('keydown', handleKeyDown)
       // Focus the dialog for accessibility
-      setTimeout(() => dialogRef.current?.focus(), 50)
+      const timer = setTimeout(() => dialogRef.current?.focus(), 50)
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown)
+        clearTimeout(timer)
+      }
     }
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, onClose])

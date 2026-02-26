@@ -42,8 +42,7 @@ const {
 
 const {
   LANE_COUNT,
-  BUS_Y_PERCENT,
-  BUS_HEIGHT_PERCENT
+  BUS_Y_PERCENT
 } = await import('../src/hooks/minigames/constants.js')
 
 describe('useTourbusLogic', () => {

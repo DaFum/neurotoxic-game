@@ -1,5 +1,4 @@
-import PropTypes from 'prop-types'
-import { useState, useEffect, useMemo, useCallback, memo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
@@ -66,10 +65,13 @@ export const PostGig = () => {
     if (!currentGig) return
 
     if (!activeEvent) {
+      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
       const financialEvent = triggerEvent('financial', 'post_gig')
       if (!financialEvent) {
+        // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
         const specialEvent = triggerEvent('special', 'post_gig')
         if (!specialEvent) {
+          // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
           triggerEvent('band', 'post_gig')
         }
       }
@@ -95,6 +97,7 @@ export const PostGig = () => {
           )
         }
       })
+      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
       setFinancials(result)
 
       // Pass the necessary game state to evaluate post conditions
@@ -107,6 +110,7 @@ export const PostGig = () => {
         currentGig,
         gigEvents: lastGigStats?.events || []
       }
+      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
       setPostOptions(generatePostOptions(currentGig, gameStateForPosts))
     }
   }, [
