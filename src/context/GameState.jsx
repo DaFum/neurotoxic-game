@@ -20,6 +20,7 @@ import {
 import { validateSaveData } from '../utils/saveValidator'
 import { addUnlock } from '../utils/unlockManager'
 import { hasUpgrade as checkUpgrade } from '../utils/upgradeUtils'
+import { useLeaderboardSync } from '../hooks/useLeaderboardSync'
 
 // Import modular state management
 import { createInitialState } from './initialState'
@@ -67,6 +68,9 @@ const GameDispatchContext = createContext()
 export const GameStateProvider = ({ children }) => {
   const { t } = useTranslation()
   const [state, dispatch] = useReducer(gameReducer, null, createInitialState)
+
+  // Leaderboard Sync Hook
+  useLeaderboardSync(state.player)
 
   // Use a ref to access the latest state in actions without creating a dependency loop
   // This allows actions to be stable (memoized once) while still accessing current state.

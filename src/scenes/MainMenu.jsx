@@ -5,6 +5,7 @@ import { useGameState } from '../context/GameState'
 import { useBandHQModal } from '../hooks/useBandHQModal.js'
 import { GlitchButton } from '../ui/GlitchButton'
 import { BandHQ } from '../ui/BandHQ'
+import { Modal } from '../ui/shared/Modal'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import { audioManager } from '../utils/AudioManager'
 import { handleError } from '../utils/errorHandler'
@@ -15,11 +16,13 @@ import { handleError } from '../utils/errorHandler'
  */
 export const MainMenu = () => {
   const { t } = useTranslation()
-  const { changeScene, loadGame, addToast, resetState } = useGameState()
+  const { changeScene, loadGame, addToast, resetState, updatePlayer } = useGameState()
   const { showHQ, openHQ, bandHQProps } = useBandHQModal()
   const isMountedRef = useRef(true)
   const [isStarting, setIsStarting] = useState(false)
   const [isLoadingGame, setIsLoadingGame] = useState(false)
+  const [showNameInput, setShowNameInput] = useState(false)
+  const [playerNameInput, setPlayerNameInput] = useState('')
 
   useEffect(() => {
     isMountedRef.current = true
@@ -47,6 +50,25 @@ export const MainMenu = () => {
   }, [reportAudioIssue])
 
   const handleStartTour = useCallback(async () => {
+    // Check for existing player identity
+    const savedPlayerId = localStorage.getItem('neurotoxic_player_id')
+    const savedPlayerName = localStorage.getItem('neurotoxic_player_name')
+
+    if (!savedPlayerId || !savedPlayerName) {
+      setShowNameInput(true)
+      return
+    }
+
+    // Ensure state has the ID/Name if starting fresh
+    updatePlayer({
+      playerId: savedPlayerId,
+      playerName: savedPlayerName
+    })
+
+    proceedToTour()
+  }, [updatePlayer])
+
+  const proceedToTour = useCallback(async () => {
     setIsStarting(true)
     // Add artificial delay for UX weight
     await new Promise(resolve => setTimeout(resolve, 500))
@@ -55,6 +77,17 @@ export const MainMenu = () => {
 
     // State transitions (batched automatically by React 18+)
     resetState()
+
+    // Re-apply identity after reset (since reset clears state to default)
+    const savedPlayerId = localStorage.getItem('neurotoxic_player_id')
+    const savedPlayerName = localStorage.getItem('neurotoxic_player_name')
+    if (savedPlayerId && savedPlayerName) {
+      updatePlayer({
+        playerId: savedPlayerId,
+        playerName: savedPlayerName
+      })
+    }
+
     changeScene('OVERWORLD')
 
     // Audio setup is fire-and-forget — never blocks scene transitions.
@@ -62,7 +95,23 @@ export const MainMenu = () => {
       .ensureAudioContext()
       .catch(err => reportAudioIssue(err, 'Audio initialization failed.'))
       .then(() => startAmbientSafely())
-  }, [resetState, changeScene, reportAudioIssue, startAmbientSafely])
+  }, [resetState, changeScene, reportAudioIssue, startAmbientSafely, updatePlayer])
+
+  const handleNameSubmit = useCallback(() => {
+    if (!playerNameInput.trim()) {
+      addToast('Please enter a name', 'error')
+      return
+    }
+
+    const newId = crypto.randomUUID()
+    const newName = playerNameInput.trim()
+
+    localStorage.setItem('neurotoxic_player_id', newId)
+    localStorage.setItem('neurotoxic_player_name', newName)
+
+    setShowNameInput(false)
+    proceedToTour()
+  }, [playerNameInput, addToast, proceedToTour])
 
   /**
    * Handles loading a saved game.
@@ -94,6 +143,34 @@ export const MainMenu = () => {
 
   return (
     <div className='flex flex-col items-center justify-center h-full w-full bg-(--void-black) z-50 relative overflow-hidden'>
+      {showNameInput && (
+        <Modal
+          isOpen={true}
+          title="IDENTITY REQUIRED"
+          onClose={() => setShowNameInput(false)}
+          className="max-w-md"
+        >
+          <div className="flex flex-col gap-4">
+            <p className="text-(--ash-gray) font-mono text-sm">
+              Enter your alias for the global underground network.
+            </p>
+            <input
+              type="text"
+              value={playerNameInput}
+              onChange={(e) => setPlayerNameInput(e.target.value)}
+              placeholder="ENTER NAME..."
+              className="bg-(--void-black) border border-(--toxic-green) p-2 text-(--toxic-green) font-mono text-lg focus:outline-none focus:ring-1 focus:ring-(--toxic-green) uppercase"
+              maxLength={20}
+              autoFocus
+              onKeyDown={(e) => e.key === 'Enter' && handleNameSubmit()}
+            />
+            <GlitchButton onClick={handleNameSubmit}>
+              CONFIRM IDENTITY
+            </GlitchButton>
+          </div>
+        </Modal>
+      )}
+
       {/* Dynamic Background */}
       <div
         className='absolute inset-0 z-0 opacity-40 bg-cover bg-center pointer-events-none'

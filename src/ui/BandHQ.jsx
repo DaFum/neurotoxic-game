@@ -10,6 +10,7 @@ import { ShopTab } from './bandhq/ShopTab'
 import { UpgradesTab } from './bandhq/UpgradesTab'
 import { SetlistTab } from './bandhq/SetlistTab'
 import { SettingsTab } from './bandhq/SettingsTab'
+import { LeaderboardTab } from './bandhq/LeaderboardTab'
 
 /**
  * BandHQ Component
@@ -124,7 +125,7 @@ export const BandHQ = ({
           className='flex border-b-2 border-(--ash-gray) overflow-x-auto'
         >
           {/* Tabs: STATS, DETAILS, SHOP, UPGRADES, SETLIST, SETTINGS */}
-          {['STATS', 'DETAILS', 'SHOP', 'UPGRADES', 'SETLIST', 'SETTINGS'].map(
+          {['STATS', 'DETAILS', 'SHOP', 'UPGRADES', 'SETLIST', 'LEADERBOARD', 'SETTINGS'].map(
             tab => (
               <button
                 type='button'
@@ -199,6 +200,10 @@ export const BandHQ = ({
               setSetlist={setSetlist}
               addToast={addToast}
             />
+          )}
+
+          {activeTab === 'LEADERBOARD' && (
+            <LeaderboardTab setlist={setlist} />
           )}
 
           {activeTab === 'SETTINGS' && (
