@@ -434,6 +434,10 @@
       "parent": "Audio System Architecture",
       "page_notes": [
         {
+          "content": "Gig notes parsing and playback must resolve excerpt windows via `resolveSongPlaybackWindow`. `excerptEndMs - excerptStartMs` is used to calculate `excerptDurationMs`, which is then passed as `durationMs`. Callers are responsible for providing these values; there is no synthetic default excerpt cap when metadata is absent.",
+          "author": "Architecture"
+        },
+        {
           "content": "Capture exact branch order and guard conditions used at gig start, including when parsed chart notes exist but audio bootstrap fails, and when procedural note generation (audio/procedural.js) is invoked as a resilience path.",
           "author": "Architecture"
         },

@@ -199,7 +199,7 @@ test('applyEventDelta handles multiple relationship changes', () => {
   assert.equal(nextState.band.members[2].relationships.B, 40)
 })
 
-test('applyEventDelta handles both traits simultaneously (edge case)', () => {
+test('applyEventDelta handles both traits simultaneously (edge case) and symmetric updates', () => {
   // If a member has both traits (unlikely but possible via bugs/cheats/design changes)
   const state = {
     band: {
@@ -215,9 +215,8 @@ test('applyEventDelta handles both traits simultaneously (edge case)', () => {
   }
 
   // Negative change:
-  // Grudge: * 1.5
-  // Peacemaker: * 0.5
-  // Net: * 0.75
+  // Weirdo has traits: -20 * 1.5 * 0.5 = -15. 50 - 15 = 35.
+  // Normal has no traits: -20. 50 - 20 = 30.
   const deltaNegative = {
     band: {
       relationshipChange: [
@@ -226,19 +225,18 @@ test('applyEventDelta handles both traits simultaneously (edge case)', () => {
     }
   }
   const nextStateNegative = applyEventDelta(state, deltaNegative)
-  // -20 * 1.5 * 0.5 = -15. 50 - 15 = 35.
   assert.equal(nextStateNegative.band.members[0].relationships.Normal, 35)
+  assert.equal(nextStateNegative.band.members[1].relationships.Weirdo, 30)
 
   // Positive change:
-  // Grudge: No effect
-  // Peacemaker: * 1.5
-  // Net: * 1.5
+  // Weirdo has traits: Grudge (no effect), Peacemaker (* 1.5) = +30. 50 + 30 = 80.
+  // Normal has no traits: +20. 50 + 20 = 70.
   const deltaPositive = {
     band: {
       relationshipChange: [{ member1: 'Weirdo', member2: 'Normal', change: 20 }]
     }
   }
   const nextStatePositive = applyEventDelta(state, deltaPositive)
-  // 20 * 1.5 = 30. 50 + 30 = 80.
   assert.equal(nextStatePositive.band.members[0].relationships.Normal, 80)
+  assert.equal(nextStatePositive.band.members[1].relationships.Weirdo, 70)
 })

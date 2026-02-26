@@ -44,21 +44,21 @@ mock.module('pixi.js', {
   namedExports: MockPIXI
 })
 
-// Mock Managers (minimal implementation)
-const mockManager = {
+// Mock Managers (factory approach for fresh instances)
+const createMockManager = () => ({
   init: mock.fn(),
   loadAssets: mock.fn(),
   update: mock.fn(),
   dispose: mock.fn(),
   container: 'rhythmContainer',
   layout: 'layout'
-}
+})
 
 mock.module('../../src/components/stage/CrowdManager.js', {
   namedExports: {
     CrowdManager: class {
       constructor() {
-        Object.assign(this, mockManager)
+        Object.assign(this, createMockManager())
       }
     }
   }
@@ -67,7 +67,7 @@ mock.module('../../src/components/stage/LaneManager.js', {
   namedExports: {
     LaneManager: class {
       constructor() {
-        Object.assign(this, mockManager)
+        Object.assign(this, createMockManager())
       }
     }
   }
@@ -76,7 +76,7 @@ mock.module('../../src/components/stage/EffectManager.js', {
   namedExports: {
     EffectManager: class {
       constructor() {
-        Object.assign(this, mockManager)
+        Object.assign(this, createMockManager())
       }
     }
   }
@@ -85,7 +85,7 @@ mock.module('../../src/components/stage/NoteManager.js', {
   namedExports: {
     NoteManager: class {
       constructor() {
-        Object.assign(this, mockManager)
+        Object.assign(this, createMockManager())
       }
     }
   }
@@ -108,6 +108,8 @@ describe('PixiStageController Filter Performance', () => {
   let createPixiStageController
 
   beforeEach(async () => {
+    filterSetCount = 0 // Reset counter
+
     globalThis.window = {
       devicePixelRatio: 1,
       addEventListener: mock.fn(),

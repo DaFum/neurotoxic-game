@@ -166,7 +166,7 @@ test.describe('Game Flow', () => {
 
     // Wait for the Confirm? state to appear then click again
     await expect(
-      page.getByText('CONFIRM?').locator('visible=true')
+      page.getByText('CONFIRM?').filter({ visible: true })
     ).toBeVisible()
     await travelNode.click()
 

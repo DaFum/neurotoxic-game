@@ -1,3 +1,4 @@
+import React from 'react'
 import {
   afterAll,
   afterEach,
@@ -9,7 +10,6 @@ import {
   vi
 } from 'vitest'
 
-import React from 'react'
 import { render, act, cleanup } from '@testing-library/react'
 
 // Mocks

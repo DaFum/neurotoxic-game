@@ -74,6 +74,7 @@ export const TutorialManager = () => {
           exit={{ opacity: 0 }}
           role='dialog'
           aria-label='Tutorial'
+          aria-modal='true'
           className='fixed bottom-20 left-1/2 transform -translate-x-1/2 z-(--z-tutorial) w-full max-w-md'
         >
           <div className='bg-(--void-black)/95 border-2 border-(--toxic-green) p-6 shadow-[0_0_20px_var(--toxic-green)] relative'>
@@ -106,12 +107,14 @@ export const TutorialManager = () => {
 
             <div className='flex justify-between items-center'>
               <button
+                type='button'
                 onClick={skipTutorial}
                 className='text-xs text-(--ash-gray) hover:text-(--star-white) underline'
               >
                 SKIP ALL
               </button>
               <button
+                type='button'
                 onClick={completeStep}
                 className='bg-(--toxic-green) text-(--void-black) px-6 py-1.5 font-bold hover:bg-(--star-white) transition-colors'
               >

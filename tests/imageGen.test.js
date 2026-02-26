@@ -5,23 +5,26 @@ test('getGenImageUrl generates correct Pollinations.ai URL', async () => {
   const { getGenImageUrl } = await import('../src/utils/imageGen.js')
 
   const prompt = 'dark void aesthetic'
-  const url = getGenImageUrl(prompt)
+  const urlString = getGenImageUrl(prompt)
+  const url = new URL(urlString)
 
   // Validate URL structure
-  assert.ok(
-    url.startsWith('https://gen.pollinations.ai/image/'),
-    'URL should start with base URL'
+  assert.equal(
+    url.origin + url.pathname,
+    'https://gen.pollinations.ai/image/' + encodeURIComponent(prompt)
   )
 
   // Validate query parameters
-  assert.ok(url.includes('?model=flux'), 'Should use flux model')
-  assert.ok(url.includes('&seed=666'), 'Should use deterministic seed')
-  assert.ok(url.includes('&key='), 'Should include API key parameter')
-  assert.ok(url.includes('&='), 'Should include trailing &=')
-
-  // Validate encoding
-  const expectedEncoded = encodeURIComponent(prompt)
-  assert.ok(url.includes(expectedEncoded), 'Should contain encoded prompt')
+  assert.equal(url.searchParams.get('model'), 'flux', 'Should use flux model')
+  assert.equal(
+    url.searchParams.get('seed'),
+    '666',
+    'Should use deterministic seed'
+  )
+  assert.ok(
+    url.searchParams.get('key'),
+    'Should include non-empty API key parameter'
+  )
 })
 
 test('IMG_PROMPTS contains expected keys and string values', async () => {

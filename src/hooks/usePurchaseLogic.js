@@ -64,7 +64,7 @@ export const usePurchaseLogic = ({
   /**
    * Helper to add a van upgrade to the player patch if not already present.
    */
-  const addVanUpgrade = useCallback(
+  const buildVanWithUpgrade = useCallback(
     (playerPatch, upgradeId) => {
       const currentUpgrades =
         playerPatch.van?.upgrades ?? player.van?.upgrades ?? []
@@ -387,7 +387,7 @@ export const usePurchaseLogic = ({
             bandPatch = result.bandPatch
 
             if (item.oneTime !== false) {
-              playerPatch.van = addVanUpgrade(playerPatch, item.id)
+              playerPatch.van = buildVanWithUpgrade(playerPatch, item.id)
             }
             break
           }
@@ -408,7 +408,7 @@ export const usePurchaseLogic = ({
             playerPatch = result.playerPatch
             bandPatch = result.bandPatch
             // Mark passive items as owned via van upgrades to ensure isItemOwned returns true
-            playerPatch.van = addVanUpgrade(playerPatch, item.id)
+            playerPatch.van = buildVanWithUpgrade(playerPatch, item.id)
             break
           }
 
@@ -433,7 +433,7 @@ export const usePurchaseLogic = ({
           !isConsumable &&
           effect.type !== 'unlock_upgrade'
         ) {
-          playerPatch.van = addVanUpgrade(playerPatch, item.id)
+          playerPatch.van = buildVanWithUpgrade(playerPatch, item.id)
         }
 
         // Apply updates
@@ -521,7 +521,7 @@ export const usePurchaseLogic = ({
       applyUnlockHQ,
       applyPassive,
       getAdjustedCost,
-      addVanUpgrade
+      buildVanWithUpgrade
     ]
   )
 

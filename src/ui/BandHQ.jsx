@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import { usePurchaseLogic } from '../hooks/usePurchaseLogic'
+import { handleError, GameError, StateError } from '../utils/errorHandler'
 import { StatsTab } from './bandhq/StatsTab'
 import { DetailedStatsTab } from './bandhq/DetailedStatsTab'
 import { ShopTab } from './bandhq/ShopTab'
@@ -76,7 +77,11 @@ export const BandHQ = ({
       await new Promise(resolve => setTimeout(resolve, 500))
       await handleBuy(item)
     } catch (err) {
-      console.error('Purchase failed:', err)
+      if (err instanceof GameError || err instanceof StateError) {
+        handleError(err, { addToast })
+      } else {
+        handleError(new GameError('Purchase failed', err), { addToast })
+      }
     } finally {
       setProcessingItemId(null)
     }
