@@ -159,7 +159,7 @@ mock.module('../src/utils/audio/sharedBufferUtils.js', {
 })
 
 // Import the module under test AFTER mocking
-const { playMidiFile } = await import('../src/utils/audio/procedural.js')
+const { playMidiFile } = await import('../src/utils/audio/midiPlayback.js')
 
 // --- Tests ---
 

@@ -38,14 +38,18 @@ export {
   getAudioTimeMs
 } from './audio/playback.js'
 
+export { startMetalGenerator } from './audio/proceduralMetal.js'
+
 export {
   playSongFromData,
-  startMetalGenerator,
   playMidiFile,
-  playRandomAmbientMidi,
-  playRandomAmbientOgg,
   playNoteAtTime
-} from './audio/procedural.js'
+} from './audio/midiPlayback.js'
+
+export {
+  playRandomAmbientMidi,
+  playRandomAmbientOgg
+} from './audio/ambient.js'
 
 export * from './audio/midiUtils.js'
 // playbackUtils functions are internal to src/utils/audio/ and not re-exported.
