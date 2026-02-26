@@ -451,11 +451,7 @@ export const GameStateProvider = ({ children }) => {
         // 2. Logic Execution
         const { result, delta, outcomeText, description } = resolveEventChoice(
           choice,
-          {
-            player: currentState.player,
-            band: currentState.band,
-            social: currentState.social
-          }
+          currentState
         )
 
         // 3. State Application

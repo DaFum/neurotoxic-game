@@ -123,11 +123,14 @@ export const CONSEQUENCE_EVENTS = [
     trigger: 'post_gig',
     chance: 0.75,
     condition: state => {
-      return (
+      if (
         state.social?.egoFocus !== null &&
         (state.social?.controversyLevel || 0) >= 30 &&
         !(state.eventCooldowns || []).includes('consequences_bandmate_scandal')
-      )
+      ) {
+        return { egoFocus: state.social.egoFocus }
+      }
+      return false
     },
     options: [
       {
