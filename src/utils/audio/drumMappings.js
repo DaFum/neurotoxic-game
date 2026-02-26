@@ -151,7 +151,8 @@ export function playDrumNote(
 ) {
   if (!kit) return
 
-  const vel = Math.max(0, Math.min(1, velocity))
+  const velRaw = Number.isFinite(velocity) ? velocity : 0
+  const vel = Math.max(0, Math.min(1, velRaw))
 
   // ⚡ BOLT OPTIMIZATION: O(1) array lookup and direct handler execution
   const map = DRUM_MAPPING[midiPitch]

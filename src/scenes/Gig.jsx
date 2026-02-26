@@ -30,7 +30,6 @@ export const Gig = () => {
 
   const [isPaused, setIsPaused] = useState(false)
   const hasInteractedRef = useRef(false)
-  const resumeBtnRef = useRef(null)
 
   useEffect(() => {
     if (!currentGig) {
@@ -261,7 +260,7 @@ export const Gig = () => {
             PAUSED
           </h2>
           <div className='flex flex-col gap-6 w-64'>
-            <GlitchButton ref={resumeBtnRef} onClick={handleTogglePause}>
+            <GlitchButton onClick={handleTogglePause}>
               RESUME
             </GlitchButton>
             <GlitchButton onClick={handleQuitGig} variant='danger'>

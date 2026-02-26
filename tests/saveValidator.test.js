@@ -1,7 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import { validateSaveData } from '../src/utils/saveValidator.js'
-import { StateError } from '../src/utils/errorHandler.js'
 
 describe('saveValidator', () => {
   const getValidData = () => ({

@@ -111,11 +111,16 @@ export const PostGig = () => {
     }
   }, [
     financials,
-    currentGig?.id,
-    lastGigStats?.score,
+    currentGig,
+    lastGigStats,
     gigModifiers,
     perfScore,
-    activeEvent?.id
+    activeEvent,
+    activeStoryFlags,
+    band,
+    player,
+    social,
+    reputationByRegion
   ])
 
   const handlePostSelection = useCallback(

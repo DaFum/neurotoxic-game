@@ -100,7 +100,7 @@ export const GameStateProvider = ({ children }) => {
 
   /**
    * Updates player state properties (money, fame, etc.).
-   * @param {object} updates - Object containing keys to update.
+   * @param {object|Function} updates - Object containing keys to update or updater function(prev).
    */
   const updatePlayer = useCallback(
     updates => dispatch(createUpdatePlayerAction(updates)),
@@ -109,7 +109,7 @@ export const GameStateProvider = ({ children }) => {
 
   /**
    * Updates band state properties (members, harmony, inventory).
-   * @param {object} updates - Object containing keys to update.
+   * @param {object|Function} updates - Object containing keys to update or updater function(prev).
    */
   const updateBand = useCallback(
     updates => dispatch(createUpdateBandAction(updates)),
@@ -118,7 +118,7 @@ export const GameStateProvider = ({ children }) => {
 
   /**
    * Updates social media metrics.
-   * @param {object} updates - Object containing keys to update.
+   * @param {object|Function} updates - Object containing keys to update or updater function(prev).
    */
   const updateSocial = useCallback(
     updates => dispatch(createUpdateSocialAction(updates)),

@@ -25,6 +25,10 @@ test('getGenImageUrl generates correct Pollinations.ai URL', async () => {
     url.searchParams.has('key'),
     'Should include key parameter'
   )
+
+  for (const key of url.searchParams.keys()) {
+    assert.notEqual(key, '', 'Should not include empty query parameter names')
+  }
 })
 
 test('IMG_PROMPTS contains expected keys and string values', async () => {

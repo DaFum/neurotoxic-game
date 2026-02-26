@@ -58,14 +58,15 @@ export const applyEventDelta = (state, delta) => {
     if (typeof delta.player.fame === 'number') {
       nextPlayer.fame = Math.max(0, nextPlayer.fame + delta.player.fame)
     }
-    if (typeof delta.player.score === 'number') {
-      nextPlayer.score = Math.max(
-        0,
-        (nextPlayer.score || 0) + delta.player.score
-      )
-    }
-    if (typeof delta.score === 'number') {
-      nextPlayer.score = Math.max(0, (nextPlayer.score || 0) + delta.score)
+    const scoreDelta =
+      typeof delta.player.score === 'number'
+        ? delta.player.score
+        : typeof delta.score === 'number'
+          ? delta.score
+          : 0
+
+    if (scoreDelta !== 0) {
+      nextPlayer.score = Math.max(0, (nextPlayer.score || 0) + scoreDelta)
     }
 
     // Player Stats

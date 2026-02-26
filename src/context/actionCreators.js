@@ -230,7 +230,8 @@ export const createStartTravelMinigameAction = targetNodeId => ({
 
 /**
  * Creates complete travel minigame action
- * @param {Object} results - Results { damageTaken, itemsCollected }
+ * @param {number} damageTaken - Amount of damage taken
+ * @param {Array} itemsCollected - Array of collected items
  * @returns {Object} Action object
  */
 export const createCompleteTravelMinigameAction = (
