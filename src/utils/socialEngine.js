@@ -248,7 +248,7 @@ export const checkViralEvent = (
   legacyRoll = secureRandom()
 ) => {
   // Backwards compatibility handling
-  let modifiers = 0
+  let modifiers
   let roll = legacyRoll
 
   if (typeof options === 'number') {
@@ -264,7 +264,9 @@ export const checkViralEvent = (
   // Using maxCombo directly.
   if (stats.maxCombo > 50) return true
 
-  let chance = 0.01 // Default low base chance
+  let chance
+
+  const context = options.context
 
   // If we have context, use the full virality score logic (which includes traits like social_manager)
   if (context && typeof context.perfScore === 'number') {
@@ -274,6 +276,8 @@ export const checkViralEvent = (
       context.venue,
       context.band
     )
+  } else {
+    chance = 0.01 // Default low base chance
   }
 
   // Apply modifiers
@@ -502,8 +506,8 @@ export const negotiateDeal = (
   rng = secureRandom
 ) => {
   const band = gameState.band
-  let successChance = 0.5
-  let feedback = ''
+  let successChance
+  let feedback
   let status = 'ACCEPTED'
   let newDeal = structuredClone(deal)
 
@@ -513,7 +517,7 @@ export const negotiateDeal = (
 
   // Roll once
   const roll = rng()
-  let isSuccess = false
+  let isSuccess
 
   switch (strategy) {
     case 'SAFE':
