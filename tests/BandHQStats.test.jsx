@@ -1,5 +1,4 @@
 import {
-  afterAll,
   afterEach,
   beforeAll,
   describe,
@@ -8,7 +7,6 @@ import {
   vi
 } from 'vitest'
 
-import React from 'react'
 import { render, cleanup } from '@testing-library/react'
 
 // Mock shared UI components
@@ -77,10 +75,10 @@ describe('BandHQ Stats Discrepancy', () => {
       }
     }
 
-    const totalFollowers = 1000 + 2000 + 500 + 100 // 3600
+    // 1000 + 2000 + 500 + 100 = 3600
 
     // Render StatsTab
-    const { getByTestId, getAllByTestId } = render(<StatsTab {...props} />)
+    const { getAllByTestId } = render(<StatsTab {...props} />)
 
     // Find the StatBox for Followers in StatsTab
     const statBoxes = getAllByTestId('stat-box')

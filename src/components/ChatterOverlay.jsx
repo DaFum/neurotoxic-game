@@ -165,6 +165,7 @@ export const ChatterOverlay = ({ gameState }) => {
           ])
 
           // Auto-remove individual message after lifetime
+          // eslint-disable-next-line @eslint-react/web-api/no-leaked-timeout
           const removalId = setTimeout(() => {
             removalTimeouts.delete(removalId)
             if (active) {

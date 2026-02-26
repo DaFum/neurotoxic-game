@@ -218,7 +218,6 @@ describe('PixiStage', () => {
     const mockFactory = vi.fn(() => mockController)
 
     const ref1 = { current: { score: 0 } }
-    const ref2 = { current: { score: 100 } }
 
     const { rerender } = render(
       <PixiStage
@@ -245,6 +244,7 @@ describe('PixiStage', () => {
 
     // Factory should still only have been called once
     expect(mockFactory).toHaveBeenCalledTimes(1)
+  })
 
   test('recreates controller when controllerFactory changes', async () => {
     const { PixiStage } = await import('../src/components/PixiStage.jsx')

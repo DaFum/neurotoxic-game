@@ -1,6 +1,5 @@
 import { test, expect, vi } from 'vitest'
 import { render } from '@testing-library/react'
-import { ChatterOverlay } from '../src/components/ChatterOverlay'
 
 // Mock data to prevent network or other issues
 vi.mock('../src/data/chatter.js', () => ({

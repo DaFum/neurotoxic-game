@@ -1,14 +1,12 @@
 import {
-  afterAll,
   afterEach,
-  beforeAll,
   beforeEach,
   describe,
   expect,
   test,
   vi
 } from 'vitest'
-/* eslint-disable @eslint-react/no-unnecessary-use-prefix */
+
 
 import React from 'react'
 import { render, fireEvent } from '@testing-library/react'

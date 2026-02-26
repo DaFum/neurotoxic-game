@@ -1,7 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { audioManager } from '../utils/AudioManager'
-import { buildGigStatsSnapshot } from '../utils/gigStats'
-import { handleError } from '../utils/errorHandler'
 
 /**
  * Manages user input for the Gig scene, including keyboard and touch events.

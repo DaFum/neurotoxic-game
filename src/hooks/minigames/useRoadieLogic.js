@@ -238,6 +238,7 @@ export const useRoadieLogic = () => {
       gameStateRef.current.itemsToDeliver.length > 0
     ) {
       gameStateRef.current.carrying = gameStateRef.current.itemsToDeliver.pop()
+      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
       setUiState(prev => ({
         ...prev,
         carrying: gameStateRef.current.carrying,

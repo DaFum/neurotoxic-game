@@ -250,7 +250,6 @@ export const checkViralEvent = (
   // Backwards compatibility handling
   let modifiers = 0
   let roll = legacyRoll
-  let context = null
 
   if (typeof options === 'number') {
     modifiers = options
@@ -258,7 +257,6 @@ export const checkViralEvent = (
     // New signature usage
     modifiers = options.modifiers || 0
     roll = options.roll !== undefined ? options.roll : secureRandom()
-    context = options.context || null
   }
 
   if (stats.accuracy > 95) return true

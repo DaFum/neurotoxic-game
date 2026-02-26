@@ -1,7 +1,5 @@
 import {
-  afterAll,
   afterEach,
-  beforeAll,
   beforeEach,
   describe,
   expect,
@@ -9,7 +7,7 @@ import {
   vi
 } from 'vitest'
 
-/* eslint-disable @eslint-react/no-unnecessary-use-prefix */
+
 
 import React from 'react'
 import { render } from '@testing-library/react'

@@ -28,7 +28,7 @@ mock.module('../src/utils/AudioManager', {
 })
 
 // Import hook after mocks
-const { useRoadieLogic, MOVE_COOLDOWN_BASE } =
+const { useRoadieLogic } =
   await import('../src/hooks/minigames/useRoadieLogic.js')
 const { GRID_WIDTH, GRID_HEIGHT } =
   await import('../src/hooks/minigames/constants.js')

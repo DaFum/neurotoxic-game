@@ -2,7 +2,7 @@
  * @fileoverview Tests for the action creators module
  */
 
-import { describe, it, test } from 'node:test'
+import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import {
   createChangeSceneAction,

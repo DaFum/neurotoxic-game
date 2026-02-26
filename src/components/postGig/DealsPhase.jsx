@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useGameState } from '../../context/GameState'
 import { negotiateDeal } from '../../utils/socialEngine'
 import { Modal, ActionButton } from '../../ui/shared'

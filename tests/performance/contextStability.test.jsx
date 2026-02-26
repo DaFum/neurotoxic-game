@@ -1,4 +1,4 @@
-import { expect, test, vi } from 'vitest'
+import { expect, test } from 'vitest'
 
 import { act, render } from '@testing-library/react'
 import { useEffect } from 'react'

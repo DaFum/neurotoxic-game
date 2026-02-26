@@ -1,7 +1,5 @@
 import {
-  afterEach,
   beforeAll,
-  beforeEach,
   describe,
   expect,
   test,
@@ -11,7 +9,7 @@ import { renderHook } from '@testing-library/react'
 
 // Mock dependencies BEFORE import
 vi.mock('../../src/context/GameState', () => ({
-  // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
+
   useGameState: () => ({
     completeRoadieMinigame: vi.fn(),
     currentScene: 'PRE_GIG_MINIGAME',

@@ -106,7 +106,6 @@ test('Relationship Mechanics', async t => {
       member2: '{member2}',
       value: -10
     }
-    const delta = { band: {} }
     const context = { member1: 'Matze', member2: 'Lars' }
 
     const engine = eventEngine

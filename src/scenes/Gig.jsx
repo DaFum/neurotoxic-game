@@ -33,7 +33,9 @@ export const Gig = () => {
 
   useEffect(() => {
     if (!currentGig) {
+      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
       addToast('No gig active! Returning to map.', 'error')
+      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
       changeScene('OVERWORLD')
     }
   }, [currentGig, changeScene, addToast])
@@ -59,6 +61,7 @@ export const Gig = () => {
       }
       // If starts paused (unlikely) or quick toggle
       pauseAudio()
+      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
       addToast('PAUSED', 'info')
       // Focus management delegated to Modal or done here if needed
       hasInteractedRef.current = true
@@ -67,9 +70,11 @@ export const Gig = () => {
 
     if (isPaused) {
       pauseAudio()
+      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
       addToast('PAUSED', 'info')
     } else {
       resumeAudio()
+      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
       addToast('RESUMED', 'info')
     }
   }, [isPaused, addToast])

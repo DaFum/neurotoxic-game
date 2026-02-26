@@ -1,5 +1,4 @@
-import { describe, expect, test, vi } from 'vitest'
-import React from 'react'
+import { describe, expect, test } from 'vitest'
 import { render, fireEvent } from '@testing-library/react'
 import { GameStateProvider, useGameState } from '../src/context/GameState.jsx'
 import { Credits } from '../src/scenes/Credits.jsx'

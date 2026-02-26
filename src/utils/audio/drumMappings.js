@@ -161,14 +161,14 @@ export function playDrumNote(
   if (handler) {
     try {
       handler(kit, map, time, vel * map.velScale)
-    } catch (e) {
+    } catch (_e) {
       // Ignored: Tone.js node likely disposed or context suspended
     }
   } else {
     // Default to closed HiHat for unknown percussion or missing handler
     try {
       kit.hihat.triggerAttackRelease(8000, '32n', time, vel * 0.4)
-    } catch (e) {
+    } catch (_e) {
       // Ignored
     }
   }

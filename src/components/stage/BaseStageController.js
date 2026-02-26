@@ -71,7 +71,7 @@ export class BaseStageController {
 
   // Abstract methods to be overridden
   async setup() {}
-  update(dt) {}
+  update(_dt) {}
   draw() {}
 
   handleResize() {

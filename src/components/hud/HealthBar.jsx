@@ -13,7 +13,7 @@ const SegmentedBar = memo(function SegmentedBar({
     <div className={`flex gap-[2px] ${className}`}>
       {Array.from({ length: segments }).map((_, i) => (
         <div
-          key={`seg-${i}`}
+          key={i}
           className={`flex-1 h-full transition-all duration-150 ${
             i < filledCount
               ? isLow

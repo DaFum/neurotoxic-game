@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import { StatBox, ProgressBar, Panel, Tooltip } from '../shared'
+import { ProgressBar, Panel, Tooltip } from '../shared'
 import { CHARACTERS } from '../../data/characters'
 
 // Helpers (Module Scope)

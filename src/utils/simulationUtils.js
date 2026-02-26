@@ -3,7 +3,7 @@ import { CHARACTERS } from '../data/characters.js'
 import { EXPENSE_CONSTANTS } from './economyEngine.js'
 import { applyReputationDecay } from './socialEngine.js'
 import { calcBaseBreakdownChance } from './upgradeUtils.js'
-import { hasTrait, bandHasTrait } from './traitLogic.js'
+import { hasTrait } from './traitLogic.js'
 
 /**
  * Derives dynamic game modifiers for the Gig scene based on band state and active toggles.

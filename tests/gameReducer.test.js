@@ -2,7 +2,7 @@
  * @fileoverview Tests for the game reducer module
  */
 
-import { describe, it, beforeEach, test, mock } from 'node:test'
+import { describe, it, beforeEach, mock } from 'node:test'
 import assert from 'node:assert'
 
 // Mock applyTraitUnlocks with improved matching logic

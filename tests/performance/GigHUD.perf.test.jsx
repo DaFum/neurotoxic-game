@@ -1,9 +1,5 @@
 import {
-  afterAll,
   afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
   expect,
   test,
   vi
@@ -33,7 +29,7 @@ test('GigHUD: renders lane inputs and handles interactions', async () => {
 
   const onLaneInput = vi.fn()
 
-  const { getByRole, getAllByRole, rerender } = render(
+  const { getAllByRole, rerender } = render(
     <GigHUD
       stats={stats}
       gameStateRef={gameStateRef}

@@ -39,7 +39,7 @@ const mockTransport = {
   cancel: mock.fn(),
   stop: mock.fn(),
   start: mock.fn(),
-  scheduleOnce: mock.fn((cb, time) => {
+  scheduleOnce: mock.fn((_cb, _time) => {
     // Return a fake event ID
     return 123
   }),
@@ -82,7 +82,7 @@ const mockTone = {
     toNote: () => val, // Simple pass-through or mock logic
     toFrequency: () => 440
   })),
-  Time: mock.fn(val => ({
+  Time: mock.fn(_val => ({
     toSeconds: () => 0.5
   }))
 }
@@ -200,9 +200,7 @@ test('startMetalGenerator Tests', async t => {
     const song = { difficulty: 3, bpm: 120, duration: 30 }
     const delay = 0.5
     // Deterministic random
-    let randCallCount = 0
     const random = () => {
-      randCallCount++
       return 0.1 // Low value to ensure density check passes
     }
 

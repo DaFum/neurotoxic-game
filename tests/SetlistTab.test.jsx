@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, cleanup, fireEvent } from '@testing-library/react'
-import React from 'react'
 
 import { SONGS_DB } from '../src/data/songs'
 

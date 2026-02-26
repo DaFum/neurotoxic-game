@@ -1,24 +1,15 @@
 import {
-  afterAll,
   afterEach,
-  beforeAll,
-  beforeEach,
   describe,
   expect,
-  test,
-  vi
+  test
 } from 'vitest'
 
-import React from 'react'
 import { render, cleanup } from '@testing-library/react'
 
 import { MapNode } from '../../src/components/MapNode.jsx'
 
 describe('MapNode Optimization', () => {
-  beforeEach(() => {
-    //  removed (handled by vitest env)
-  })
-
   afterEach(() => {
     cleanup()
   })
