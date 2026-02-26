@@ -18,14 +18,14 @@ export const TRANSPORT_EVENTS = [
               type: 'stat',
               stat: 'time',
               value: -2,
-              description: 'events:van_breakdown_tire.opt2.d_bb01'
+              description: 'events:van_breakdown_tire.opt1.d_bb01'
             }
           ]
         },
-        outcomeText: 'events:van_breakdown_tire.opt2.outcome'
+        outcomeText: 'events:van_breakdown_tire.opt1.outcome'
       },
       {
-        label: 'events:van_breakdown_tire.opt3.label',
+        label: 'events:van_breakdown_tire.opt2.label',
         skillCheck: {
           stat: 'stamina', // Check against random band member's stamina
           threshold: 5, // Easy check
@@ -33,7 +33,7 @@ export const TRANSPORT_EVENTS = [
             type: 'stat',
             stat: 'time',
             value: -1,
-            description: 'events:van_breakdown_tire.opt3.d_f283'
+            description: 'events:van_breakdown_tire.opt2.d_f283'
           },
           failure: {
             type: 'composite',
@@ -43,12 +43,12 @@ export const TRANSPORT_EVENTS = [
                 type: 'stat',
                 stat: 'stamina',
                 value: -10,
-                description: 'events:van_breakdown_tire.opt4.d_18ab'
+                description: 'events:van_breakdown_tire.opt2.d_18ab'
               }
             ]
           }
         },
-        outcomeText: 'events:van_breakdown_tire.opt4.outcome'
+        outcomeText: 'events:van_breakdown_tire.opt2.outcome'
       }
     ]
   },
