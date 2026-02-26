@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import { validateSaveData } from '../src/utils/saveValidator.js'
+import { StateError } from '../src/utils/errorHandler.js'
 
 describe('saveValidator', () => {
   const getValidData = () => ({
@@ -31,18 +32,24 @@ describe('saveValidator', () => {
 
   describe('root object validation', () => {
     it('throws if data is null', () => {
-      assert.throws(() => validateSaveData(null), /Save data must be an object/)
+      assert.throws(
+        () => validateSaveData(null),
+        { name: 'StateError', message: /Save data must be an object/ }
+      )
     })
 
     it('throws if data is not an object', () => {
       assert.throws(
         () => validateSaveData('invalid'),
-        /Save data must be an object/
+        { name: 'StateError', message: /Save data must be an object/ }
       )
     })
 
     it('throws if data is an array', () => {
-      assert.throws(() => validateSaveData([]), /Save data must be an object/)
+      assert.throws(
+        () => validateSaveData([]),
+        { name: 'StateError', message: /Save data must be an object/ }
+      )
     })
 
     it('throws if required top-level keys are missing', () => {
@@ -52,7 +59,10 @@ describe('saveValidator', () => {
         delete data[key]
         assert.throws(
           () => validateSaveData(data),
-          new RegExp(`Missing required top-level key: ${key}`)
+          {
+            name: 'StateError',
+            message: new RegExp(`Missing required top-level key: ${key}`)
+          }
         )
       })
     })
@@ -62,7 +72,10 @@ describe('saveValidator', () => {
     it('throws if player is not an object', () => {
       const data = getValidData()
       data.player = 'not an object'
-      assert.throws(() => validateSaveData(data), /player must be an object/)
+      assert.throws(
+        () => validateSaveData(data),
+        { name: 'StateError', message: /player must be an object/ }
+      )
     })
 
     it('throws if numeric fields are not numbers', () => {
@@ -79,7 +92,10 @@ describe('saveValidator', () => {
         data.player[field] = 'not a number'
         assert.throws(
           () => validateSaveData(data),
-          new RegExp(`player.${field} must be a number`)
+          {
+            name: 'StateError',
+            message: new RegExp(`player.${field} must be a number`)
+          }
         )
       })
     })
@@ -89,7 +105,7 @@ describe('saveValidator', () => {
       data.player.van = 'not an object'
       assert.throws(
         () => validateSaveData(data),
-        /player.van must be an object/
+        { name: 'StateError', message: /player.van must be an object/ }
       )
     })
   })
@@ -98,7 +114,10 @@ describe('saveValidator', () => {
     it('throws if band is not an object', () => {
       const data = getValidData()
       data.band = 'not an object'
-      assert.throws(() => validateSaveData(data), /band must be an object/)
+      assert.throws(
+        () => validateSaveData(data),
+        { name: 'StateError', message: /band must be an object/ }
+      )
     })
 
     it('throws if band.members is not an array', () => {
@@ -106,7 +125,7 @@ describe('saveValidator', () => {
       data.band.members = {}
       assert.throws(
         () => validateSaveData(data),
-        /band.members must be an array/
+        { name: 'StateError', message: /band.members must be an array/ }
       )
     })
 
@@ -115,7 +134,7 @@ describe('saveValidator', () => {
       data.band.members = ['not an object']
       assert.throws(
         () => validateSaveData(data),
-        /band.members\[0\] must be an object/
+        { name: 'StateError', message: /band.members\[0\] must be an object/ }
       )
     })
 
@@ -124,7 +143,7 @@ describe('saveValidator', () => {
       data.band.members = [{ name: 123 }]
       assert.throws(
         () => validateSaveData(data),
-        /band.members\[0\].name must be a string/
+        { name: 'StateError', message: /band.members\[0\].name must be a string/ }
       )
     })
 
@@ -133,7 +152,7 @@ describe('saveValidator', () => {
       data.band.harmony = 'not a number'
       assert.throws(
         () => validateSaveData(data),
-        /band.harmony must be a number/
+        { name: 'StateError', message: /band.harmony must be a number/ }
       )
     })
   })
@@ -142,7 +161,10 @@ describe('saveValidator', () => {
     it('throws if social is not an object', () => {
       const data = getValidData()
       data.social = 'not an object'
-      assert.throws(() => validateSaveData(data), /social must be an object/)
+      assert.throws(
+        () => validateSaveData(data),
+        { name: 'StateError', message: /social must be an object/ }
+      )
     })
 
     it('throws if social values are not numbers (except lastGigDay)', () => {
@@ -150,7 +172,7 @@ describe('saveValidator', () => {
       data.social.fans = 'not a number'
       assert.throws(
         () => validateSaveData(data),
-        /Social value "fans" must be a number/
+        { name: 'StateError', message: /Social value "fans" must be a number/ }
       )
     })
 
@@ -165,7 +187,7 @@ describe('saveValidator', () => {
       data.social.lastGigDay = 'not a number'
       assert.throws(
         () => validateSaveData(data),
-        /Social value "lastGigDay" must be a number/
+        { name: 'StateError', message: /Social value "lastGigDay" must be a number/ }
       )
     })
 
@@ -180,7 +202,7 @@ describe('saveValidator', () => {
       data.social.activeDeals = 'invalid'
       assert.throws(
         () => validateSaveData(data),
-        /social.activeDeals must be an array/
+        { name: 'StateError', message: /social.activeDeals must be an array/ }
       )
     })
 
@@ -189,13 +211,13 @@ describe('saveValidator', () => {
       data.social.activeDeals = [{ id: 123 }]
       assert.throws(
         () => validateSaveData(data),
-        /activeDeals\[0\].id must be a string/
+        { name: 'StateError', message: /activeDeals\[0\].id must be a string/ }
       )
 
       data.social.activeDeals = [{ id: 'deal1' }] // Missing remainingGigs
       assert.throws(
         () => validateSaveData(data),
-        /activeDeals\[0\].remainingGigs must be a number/
+        { name: 'StateError', message: /activeDeals\[0\].remainingGigs must be a number/ }
       )
     })
   })
@@ -204,7 +226,10 @@ describe('saveValidator', () => {
     it('throws if gameMap is not an object', () => {
       const data = getValidData()
       data.gameMap = 'not an object'
-      assert.throws(() => validateSaveData(data), /gameMap must be an object/)
+      assert.throws(
+        () => validateSaveData(data),
+        { name: 'StateError', message: /gameMap must be an object/ }
+      )
     })
   })
 })

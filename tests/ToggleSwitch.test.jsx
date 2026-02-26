@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { render, fireEvent, cleanup } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { ToggleSwitch } from '../src/ui/shared/ToggleSwitch.jsx'
 
 describe('ToggleSwitch', () => {
@@ -50,7 +51,8 @@ describe('ToggleSwitch', () => {
     expect(handleToggle).toHaveBeenCalledTimes(1)
   })
 
-  test('calls onToggle when Space or Enter is pressed', () => {
+  test('calls onToggle when Space or Enter is pressed', async () => {
+    const user = userEvent.setup()
     const handleToggle = vi.fn()
     const { getByRole } = render(
       <ToggleSwitch
@@ -61,8 +63,9 @@ describe('ToggleSwitch', () => {
     )
 
     const switchButton = getByRole('switch')
-    fireEvent.keyDown(switchButton, { key: ' ', code: 'Space' })
-    fireEvent.keyDown(switchButton, { key: 'Enter', code: 'Enter' })
+    switchButton.focus()
+    await user.keyboard(' ')
+    await user.keyboard('{Enter}')
 
     expect(handleToggle).toHaveBeenCalledTimes(2)
   })

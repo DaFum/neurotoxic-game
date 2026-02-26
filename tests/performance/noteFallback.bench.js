@@ -1,5 +1,10 @@
 import { performance } from 'node:perf_hooks'
 
+const COLOR_TOKENS = {
+  '--star-white': 0xffffff,
+  '--blood-red': 0xcc0000
+}
+
 // Mocks
 class MockGraphics {
   constructor() {
@@ -29,7 +34,7 @@ class MockSprite {
     this.width = 0
     this.height = 0
     this.anchor = { set: () => {} }
-    this.tint = 0xffffff
+    this.tint = COLOR_TOKENS['--star-white']
     this.visible = true
     this.alpha = 1
     this.scale = { set: () => {} }
@@ -99,7 +104,7 @@ function initializeNoteSpriteOptimized(sprite, lane, _laneIndex) {
 }
 
 const iterations = 1000000
-const lane = { renderX: 100, color: 0xff0000 }
+const lane = { renderX: 100, color: COLOR_TOKENS['--blood-red'] }
 
 console.log('Benchmarking Note Fallback Initialization...')
 

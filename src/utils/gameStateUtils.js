@@ -64,14 +64,19 @@ export const applyEventDelta = (state, delta) => {
         (nextPlayer.score || 0) + delta.player.score
       )
     }
+    if (typeof delta.score === 'number') {
+      nextPlayer.score = Math.max(0, (nextPlayer.score || 0) + delta.score)
+    }
 
     // Player Stats
     if (delta.player.stats) {
       nextPlayer.stats = { ...nextPlayer.stats }
       Object.keys(delta.player.stats).forEach(key => {
         if (typeof delta.player.stats[key] === 'number') {
-          nextPlayer.stats[key] =
+          nextPlayer.stats[key] = Math.max(
+            0,
             (nextPlayer.stats[key] || 0) + delta.player.stats[key]
+          )
         } else {
           nextPlayer.stats[key] = delta.player.stats[key]
         }

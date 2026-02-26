@@ -9,6 +9,7 @@ import { handleError, StateError } from '../utils/errorHandler.js'
 import { bandHasTrait } from '../utils/traitLogic.js'
 import { checkTraitUnlocks } from '../utils/unlockCheck.js'
 import { applyTraitUnlocks } from '../utils/traitUtils.js'
+import { clampPlayerMoney } from '../utils/gameStateUtils.js'
 import { HQ_ITEMS } from '../data/hqItems.js'
 
 /**
@@ -276,8 +277,7 @@ export const usePurchaseLogic = ({
           break
 
         case 'hq_room_label':
-          nextPlayerPatch.money = Math.max(
-            0,
+          nextPlayerPatch.money = clampPlayerMoney(
             (nextPlayerPatch.money ?? player.money ?? 0) + 500
           )
           addToast('Signed! +500€ Advance.', 'success')

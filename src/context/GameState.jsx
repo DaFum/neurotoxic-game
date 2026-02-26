@@ -611,6 +611,14 @@ GameStateProvider.propTypes = {
 }
 
 /**
+ * Hook to access the global game dispatch functions only (stable reference).
+ * @returns {object} The action dispatchers.
+ */
+export const useGameDispatch = () => {
+  return use(GameDispatchContext)
+}
+
+/**
  * Hook to access the global game state context.
  * @returns {object} The game state and action dispatchers.
  */

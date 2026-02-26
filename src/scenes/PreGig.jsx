@@ -258,6 +258,7 @@ export const PreGig = () => {
                   role='button'
                   tabIndex={isLocked ? -1 : 0}
                   aria-label={`Select song ${song.name}`}
+                  aria-pressed={!!isSelected}
                   aria-disabled={isLocked}
                   onClick={() => {
                     if (!isLocked) toggleSong(song)

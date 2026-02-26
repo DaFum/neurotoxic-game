@@ -12,8 +12,8 @@ export const CRISIS_EVENTS = [
     trigger: 'post_gig',
     chance: 0.55,
     condition: gs =>
-      (gs.social?.controversyLevel || 0) >= 20 &&
-      (gs.band?.harmony || 100) < 75,
+      (gs.social?.controversyLevel ?? 0) >= 20 &&
+      (gs.band?.harmony ?? 100) < 75,
     options: [
       {
         label: 'Say nothing (absorb the hit)',
@@ -69,7 +69,7 @@ export const CRISIS_EVENTS = [
       'A thread calling out your "problematic" stage antics has hit 10k shares. The algorithm is not your friend today.',
     trigger: 'post_gig',
     chance: 0.6,
-    condition: gs => (gs.social?.controversyLevel || 0) >= 50,
+    condition: gs => (gs.social?.controversyLevel ?? 0) >= 50,
     options: [
       {
         label: 'Ride it out (no response)',
@@ -131,7 +131,7 @@ export const CRISIS_EVENTS = [
       'Your posts are reaching 12 people. Something is very wrong. The platform has buried you.',
     trigger: 'travel',
     chance: 0.7,
-    condition: gs => (gs.social?.controversyLevel || 0) >= 80,
+    condition: gs => (gs.social?.controversyLevel ?? 0) >= 80,
     options: [
       {
         label: 'Nuke all controversial posts',
@@ -195,7 +195,7 @@ export const CRISIS_EVENTS = [
       'The venue manager left a voicemail. They have "concerns about your current public image" and are pulling your upcoming booking.',
     trigger: 'post_gig',
     chance: 0.5,
-    condition: gs => (gs.social?.controversyLevel || 0) >= 65,
+    condition: gs => (gs.social?.controversyLevel ?? 0) >= 65,
     options: [
       {
         label: 'Accept the cancellation [-150€ deposit]',
@@ -258,7 +258,7 @@ export const CRISIS_EVENTS = [
       "A local non-profit reached out. They need a headliner for a benefit show. It won't pay anything — but the goodwill might.",
     trigger: 'travel',
     chance: 0.3,
-    condition: gs => (gs.social?.controversyLevel || 0) >= 40,
+    condition: gs => (gs.social?.controversyLevel ?? 0) >= 40,
     options: [
       {
         label: 'Play the charity show (free)',
@@ -303,8 +303,8 @@ export const CRISIS_EVENTS = [
     trigger: 'post_gig',
     chance: 0.8,
     condition: gs =>
-      (gs.social?.controversyLevel || 0) >= 80 &&
-      (gs.social?.activeDeals?.length || 0) > 0,
+      (gs.social?.controversyLevel ?? 0) >= 80 &&
+      (gs.social?.activeDeals?.length ?? 0) > 0,
     options: [
       {
         label: 'Promise to clean up your image',
@@ -421,7 +421,7 @@ export const CRISIS_EVENTS = [
       'An anonymous source leaked an embarrassing, out-of-context story about the band to a major music drama channel.',
     trigger: 'travel',
     chance: 0.4,
-    condition: gs => (gs.social?.controversyLevel || 0) >= 60,
+    condition: gs => (gs.social?.controversyLevel ?? 0) >= 60,
     options: [
       {
         label: 'Let true fans defend you (Loyalty Shield)',
@@ -459,7 +459,7 @@ export const CRISIS_EVENTS = [
     trigger: 'post_gig',
     chance: 0.5,
     condition: gs =>
-      (gs.social?.controversyLevel || 0) >= 75 &&
+      (gs.social?.controversyLevel ?? 0) >= 75 &&
       !gs.eventCooldowns?.includes('crisis_mass_unfollow'),
     options: [
       {
@@ -486,7 +486,7 @@ export const CRISIS_EVENTS = [
     trigger: 'travel',
     chance: 0.6,
     condition: gs =>
-      gs.social?.egoFocus !== null && (gs.band?.harmony || 100) < 40,
+      gs.social?.egoFocus != null && (gs.band?.harmony ?? 100) < 40,
     options: [
       {
         label: 'Intervene and mediate [Charisma]',
@@ -538,7 +538,7 @@ export const CRISIS_EVENTS = [
     trigger: 'post_gig',
     chance: 1.0,
     condition: gs =>
-      (gs.social?.controversyLevel || 0) >= 50 &&
+      (gs.social?.controversyLevel ?? 0) >= 50 &&
       !gs.activeStoryFlags?.includes('saw_crisis_50'),
     options: [
       {
@@ -558,7 +558,7 @@ export const CRISIS_EVENTS = [
     trigger: 'post_gig',
     chance: 1.0,
     condition: gs =>
-      (gs.social?.controversyLevel || 0) >= 80 &&
+      (gs.social?.controversyLevel ?? 0) >= 80 &&
       !gs.activeStoryFlags?.includes('saw_crisis_80'),
     options: [
       {
@@ -578,7 +578,7 @@ export const CRISIS_EVENTS = [
     trigger: 'post_gig',
     chance: 1.0,
     condition: gs =>
-      (gs.social?.controversyLevel || 0) >= 100 &&
+      (gs.social?.controversyLevel ?? 0) >= 100 &&
       !gs.activeStoryFlags?.includes('saw_crisis_100'),
     options: [
       {

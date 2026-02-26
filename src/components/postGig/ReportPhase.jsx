@@ -38,7 +38,12 @@ FinancialList.propTypes = {
 export const ReportPhase = ({ financials, onNext }) => {
   if (!financials) {
     return (
-      <div className='text-center font-mono animate-pulse'>
+      <div
+        className='text-center font-mono animate-pulse'
+        role='status'
+        aria-live='polite'
+        aria-busy='true'
+      >
         Loading Report...
       </div>
     )

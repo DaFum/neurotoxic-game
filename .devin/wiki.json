@@ -364,7 +364,7 @@
     },
     {
       "title": "Code Entity Map",
-      "purpose": "Create a symbol index with exact file/function anchors for rapid onboarding: GameStateProvider/useGameState (GameState.jsx), ActionTypes/gameReducer branches (gameReducer.js), createChangeSceneAction (actionCreators.js), useRhythmGameLogic coordinator + 5 sub-hooks (rhythmGame/), useTravelLogic transitions, usePurchaseLogic predicates, calculateGigFinancials/calculateTravelExpenses (economyEngine.js), checkEvent/resolveChoice (eventEngine.js), applyEventDelta (gameStateUtils.js), AudioManager singleton (AudioManager.js), setupAudio/ensureAudioContext (audio/setup.js), generateMap (mapGenerator.js), and stage managers NoteManager/LaneManager/CrowdManager/EffectManager (components/stage/).",
+      "purpose": "Create a symbol index with exact file/function anchors for rapid onboarding: GameStateProvider/useGameState (GameState.jsx), ActionTypes/gameReducer branches (gameReducer.js), createChangeSceneAction (actionCreators.js), useRhythmGameLogic coordinator + 5 sub-hooks (rhythmGame/), useTravelLogic transitions, usePurchaseLogic predicates, calculateGigFinancials/calculateTravelExpenses (economyEngine.js), checkEvent/resolveChoice (eventEngine.js), applyEventDelta (gameStateUtils.js), AudioManager singleton (AudioManager.js), setupAudio/ensureAudioContext (src/utils/audio/setup.js), generateMap (mapGenerator.js), and stage managers NoteManager/LaneManager/CrowdManager/EffectManager (components/stage/).",
       "parent": "Overview",
       "page_notes": [
         {

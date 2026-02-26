@@ -311,3 +311,11 @@ export const createCompleteQuestAction = questId => ({
   type: ActionTypes.COMPLETE_QUEST,
   payload: { questId }
 })
+
+/**
+ * Creates an action to fail expired quests.
+ * @returns {Object} Action object
+ */
+export const createFailQuestsAction = () => ({
+  type: ActionTypes.FAIL_QUESTS
+})

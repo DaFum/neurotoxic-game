@@ -50,7 +50,10 @@ export const applyTraitUnlocks = (currentState, unlocks) => {
 
     // Find trait definition using the member's name to resolve static character data
     // This allows u.memberId to be an arbitrary ID (uuid) as long as the member object has a valid name.
-    const charKey = member.name ? member.name.toUpperCase() : null
+    const charKey =
+      typeof member.name === 'string' && member.name
+        ? member.name.toUpperCase()
+        : null
     const traitDef = charKey
       ? CHARACTERS[charKey]?.traits?.find(t => t.id === u.traitId)
       : null

@@ -58,7 +58,7 @@ test('GameStateProvider Re-render Benchmark', async () => {
 
   let optimizedRenders = 0
   const OptimizedTrigger = React.memo(() => {
-    const { updatePlayer } = useGameState()
+    const { updatePlayer } = useGameDispatch()
     optimizedRenders++
     return (
       <button
@@ -100,5 +100,5 @@ test('GameStateProvider Re-render Benchmark', async () => {
   expect(triggerRenders).toBe(1)
 
   // Optimized Trigger should NOT re-render because dispatch context is stable
-  expect(optimizedRenders).toBe(1)
+  expect(optimizedRenders).toBe(0)
 })
