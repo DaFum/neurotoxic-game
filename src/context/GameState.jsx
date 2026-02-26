@@ -462,17 +462,22 @@ export const GameStateProvider = ({ children }) => {
           if (delta.flags?.unlock) {
             const added = addUnlock(delta.flags.unlock)
             if (added) {
-              addToast(
-                t('ui:unlocked', { unlock: delta.flags.unlock.toUpperCase() }),
-                'success'
-              )
+              const unlockKey = `unlocks:${delta.flags.unlock.toLowerCase()}`
+              const unlockLabel = t(unlockKey, {
+                defaultValue: delta.flags.unlock.toUpperCase()
+              })
+              addToast(t('ui:unlocked', { unlock: unlockLabel }), 'success')
             }
           }
 
           // Game Over - Early Exit
           if (delta.flags?.gameOver) {
             const context = currentState.activeEvent?.context || {}
-            addToast(t('ui:game_over', { description: t(description, context) }), 'error')
+            const translatedDesc = description ? t(description, context) : ''
+            addToast(
+              t('ui:game_over', { description: translatedDesc }),
+              'error'
+            )
             changeScene('GAMEOVER')
             setActiveEvent(null)
             return { outcomeText, description, result }
@@ -507,7 +512,7 @@ export const GameStateProvider = ({ children }) => {
         setActiveEvent(null)
         return {
           outcomeText: choice.outcomeText ?? '',
-          description: 'Resolution failed.',
+          description: choice.description ? t(choice.description) : '',
           result: null
         }
       }
