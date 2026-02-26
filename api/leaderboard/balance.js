@@ -19,7 +19,9 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'GET') {
     try {
-      const limit = Math.min(Math.max(1, parseInt(req.query.limit || '100', 10)), 100)
+      let limit = parseInt(req.query.limit, 10)
+      if (isNaN(limit)) limit = 100
+      limit = Math.min(Math.max(1, limit), 100)
 
       const range = await redis.zrange('lb:balance', 0, limit - 1, {
         rev: true,
@@ -36,7 +38,7 @@ export default async function handler(req, res) {
       const leaderboard = range.map((entry, index) => ({
         rank: index + 1,
         playerId: entry.member,
-        playerName: names[index] || 'Unknown',
+        playerName: names?.[entry.member] || 'Unknown',
         score: entry.score
       }))
 

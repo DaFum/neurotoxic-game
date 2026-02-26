@@ -9,10 +9,15 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Missing required fields' })
       }
 
+      // Basic sanitization/validation for songId key
+      if (!/^[a-zA-Z0-9_-]+$/.test(songId)) {
+        return res.status(400).json({ error: 'Invalid songId format' })
+      }
+
       await redis.hset('players', { [playerId]: playerName })
 
       // Update score only if new score is greater (GT)
-      await redis.zadd(`lb:song:${songId}`, { score, member: playerId }, { gt: true })
+      await redis.zadd(`lb:song:${songId}`, { gt: true }, { score, member: playerId })
 
       return res.status(200).json({ success: true })
     } catch (error) {
@@ -24,7 +29,13 @@ export default async function handler(req, res) {
       const { songId } = req.query
       if (!songId) return res.status(400).json({ error: 'Missing songId' })
 
-      const limit = Math.min(Math.max(1, parseInt(req.query.limit || '100', 10)), 100)
+      if (!/^[a-zA-Z0-9_-]+$/.test(songId)) {
+        return res.status(400).json({ error: 'Invalid songId format' })
+      }
+
+      let limit = parseInt(req.query.limit, 10)
+      if (isNaN(limit)) limit = 100
+      limit = Math.min(Math.max(1, limit), 100)
 
       const range = await redis.zrange(`lb:song:${songId}`, 0, limit - 1, {
         rev: true,
@@ -39,7 +50,7 @@ export default async function handler(req, res) {
       const leaderboard = range.map((entry, index) => ({
         rank: index + 1,
         playerId: entry.member,
-        playerName: names[index] || 'Unknown',
+        playerName: names?.[entry.member] || 'Unknown',
         score: entry.score
       }))
 
