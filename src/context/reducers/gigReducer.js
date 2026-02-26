@@ -62,7 +62,10 @@ export const handleRecordBadShow = state => {
         band: { harmony: -20 }
       }
     })
-    nextState.player.stats.proveYourselfMode = true
+    nextState.player = {
+      ...nextState.player,
+      stats: { ...nextState.player.stats, proveYourselfMode: true }
+    }
     nextState.activeStoryFlags = [
       ...(nextState.activeStoryFlags || []),
       'prove_yourself_active'

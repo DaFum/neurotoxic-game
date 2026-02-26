@@ -114,6 +114,37 @@ describe('purchaseLogicUtils', () => {
     })
   })
 
+  describe('applyInventorySet', () => {
+    test('sets inventory item to value', () => {
+      const effect = { item: 'pass', value: true }
+      const bandInventory = { pass: false, other: 1 }
+      const result = applyInventorySet(effect, bandInventory)
+      assert.deepStrictEqual(result, { inventory: { pass: true, other: 1 } })
+    })
+
+    test('handles undefined inventory', () => {
+      const effect = { item: 'pass', value: true }
+      const result = applyInventorySet(effect, undefined)
+      assert.deepStrictEqual(result, { inventory: { pass: true } })
+    })
+  })
+
+  describe('applyInventoryAdd', () => {
+    test('adds value to existing inventory item', () => {
+      const effect = { item: 'coffee', value: 5 }
+      const bandInventory = { coffee: 10 }
+      const result = applyInventoryAdd(effect, bandInventory)
+      assert.deepStrictEqual(result, { inventory: { coffee: 15 } })
+    })
+
+    test('initializes inventory item if missing', () => {
+      const effect = { item: 'coffee', value: 5 }
+      const bandInventory = {}
+      const result = applyInventoryAdd(effect, bandInventory)
+      assert.deepStrictEqual(result, { inventory: { coffee: 5 } })
+    })
+  })
+
   describe('applyStatModifier', () => {
     test('applies to player stat', () => {
       const effect = { target: 'player', stat: 'fame', value: 10 }
@@ -122,6 +153,15 @@ describe('purchaseLogicUtils', () => {
       const band = {}
       const result = applyStatModifier(effect, playerPatch, player, band)
       assert.equal(result.playerPatch.fame, 60)
+    })
+
+    test('applies to player money (clamped)', () => {
+      const effect = { target: 'player', stat: 'money', value: -200 }
+      const playerPatch = {}
+      const player = { money: 100 }
+      const band = {}
+      const result = applyStatModifier(effect, playerPatch, player, band)
+      assert.equal(result.playerPatch.money, 0)
     })
 
     test('applies to van stat', () => {
@@ -134,12 +174,25 @@ describe('purchaseLogicUtils', () => {
     })
 
     test('applies to band stat', () => {
-        const effect = { target: 'band', stat: 'harmony', value: 5 }
-        const playerPatch = {}
-        const player = {}
-        const band = { harmony: 10 }
-        const result = applyStatModifier(effect, playerPatch, player, band)
-        assert.equal(result.bandPatch.harmony, 15)
+      const effect = { target: 'band', stat: 'luck', value: 5 }
+      const playerPatch = {}
+      const player = {}
+      const band = { luck: 10 }
+      const result = applyStatModifier(effect, playerPatch, player, band)
+      assert.equal(result.bandPatch.luck, 15)
+    })
+
+    test('applies to band harmony (clamped 1-100)', () => {
+      const effect = { target: 'band', stat: 'harmony', value: 50 }
+      const playerPatch = {}
+      const player = {}
+      const band = { harmony: 80 }
+      const result = applyStatModifier(effect, playerPatch, player, band)
+      assert.equal(result.bandPatch.harmony, 100)
+
+      const effectLow = { target: 'band', stat: 'harmony', value: -100 }
+      const resultLow = applyStatModifier(effectLow, playerPatch, player, band)
+      assert.equal(resultLow.bandPatch.harmony, 1)
     })
 
     test('applies to performance stat by default', () => {
@@ -152,15 +205,64 @@ describe('purchaseLogicUtils', () => {
     })
   })
 
+  describe('applyUnlockUpgrade', () => {
+    test('unlocks new upgrade', () => {
+      const effect = { id: 'turbo' }
+      const item = { id: 'turbo' }
+      const playerPatch = {}
+      const playerVan = { upgrades: [] }
+      const result = applyUnlockUpgrade(effect, item, playerPatch, playerVan)
+      assert.deepStrictEqual(result.van.upgrades, ['turbo'])
+    })
+
+    test('does not duplicate existing upgrade', () => {
+      const effect = { id: 'turbo' }
+      const item = { id: 'turbo' }
+      const playerPatch = {}
+      const playerVan = { upgrades: ['turbo'] }
+      const result = applyUnlockUpgrade(effect, item, playerPatch, playerVan)
+      // Should return original patch or same shape without duplication
+      // In our implementation, it returns playerPatch unchanged if exists
+      assert.deepStrictEqual(result, playerPatch)
+    })
+  })
+
   describe('applyUnlockHQ', () => {
     test('returns correct messages for special items', () => {
-        const item = { id: 'hq_room_poster_wall' }
-        const playerPatch = {}
-        const player = {}
-        const band = {}
-        const result = applyUnlockHQ(item, playerPatch, player, band)
-        assert.ok(result.messages.length > 0)
-        assert.equal(result.messages[0].type, 'success')
+      const item = { id: 'hq_room_poster_wall' }
+      const playerPatch = {}
+      const player = {}
+      const band = {}
+      const result = applyUnlockHQ(item, playerPatch, player, band)
+      assert.ok(result.messages.length > 0)
+      assert.equal(result.messages[0].type, 'success')
+    })
+
+    test('clamps harmony for soundproofing', () => {
+      const item = { id: 'hq_room_diy_soundproofing' }
+      const playerPatch = {}
+      const player = {}
+      const band = { harmony: 98 }
+      const result = applyUnlockHQ(item, playerPatch, player, band)
+      assert.equal(result.bandPatch.harmony, 100)
+    })
+  })
+
+  describe('applyPassive', () => {
+    test('applies harmony regen travel', () => {
+      const effect = { key: 'harmony_regen_travel' }
+      const playerPatch = {}
+      const player = {}
+      const result = applyPassive(effect, playerPatch, player)
+      assert.deepStrictEqual(result.bandPatch, { harmonyRegenTravel: true })
+    })
+
+    test('applies passive followers', () => {
+      const effect = { key: 'passive_followers', value: 10 }
+      const playerPatch = {}
+      const player = { passiveFollowers: 5 }
+      const result = applyPassive(effect, playerPatch, player)
+      assert.equal(result.playerPatch.passiveFollowers, 15)
     })
   })
 })
