@@ -46,5 +46,5 @@ export const useLeaderboardSync = (player) => {
     }
 
     syncBalance()
-  }, [player.day, player.money, player.playerId, player.playerName])
+  }, [player])
 }

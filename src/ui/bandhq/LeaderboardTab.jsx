@@ -76,8 +76,9 @@ export const LeaderboardTab = ({ setlist }) => {
       {/* Song Selector */}
       {view === 'SONG' && (
         <div className="flex flex-col gap-2">
-           <label className="text-(--toxic-green) font-mono text-sm uppercase">Select Song:</label>
+           <label htmlFor="songSelect" className="text-(--toxic-green) font-mono text-sm uppercase">Select Song:</label>
            <select
+             id="songSelect"
              className="bg-(--void-black) border border-(--toxic-green) text-(--toxic-green) p-2 font-mono uppercase focus:outline-none"
              value={selectedSongId}
              onChange={(e) => setSelectedSongId(e.target.value)}
@@ -87,7 +88,7 @@ export const LeaderboardTab = ({ setlist }) => {
                  {song.title || song.id}
                </option>
              ))}
-             {setlist.length === 0 && <option value="">NO SONGS UNLOCKED</option>}
+             {setlist.length === 0 && <option value="" disabled>NO SONGS UNLOCKED</option>}
            </select>
         </div>
       )}

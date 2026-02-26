@@ -478,14 +478,14 @@ export const PostGig = () => {
   }, [
     financials,
     perfScore,
-    player.money,
-    player.fame,
+    player,
+    currentGig,
+    lastGigStats,
     updatePlayer,
     addToast,
     changeScene,
     activeStoryFlags,
-    addQuest,
-    player.day
+    addQuest
   ])
 
   const handleNextPhase = useCallback(() => {

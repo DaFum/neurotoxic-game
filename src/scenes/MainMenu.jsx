@@ -23,6 +23,7 @@ export const MainMenu = () => {
   const [isLoadingGame, setIsLoadingGame] = useState(false)
   const [showNameInput, setShowNameInput] = useState(false)
   const [playerNameInput, setPlayerNameInput] = useState('')
+  const inputRef = useRef(null)
 
   useEffect(() => {
     isMountedRef.current = true
@@ -30,6 +31,12 @@ export const MainMenu = () => {
       isMountedRef.current = false
     }
   }, [])
+
+  useEffect(() => {
+    if (showNameInput) {
+      inputRef.current?.focus()
+    }
+  }, [showNameInput])
 
   const reportAudioIssue = useCallback(
     (error, fallbackMessage) => {
@@ -66,7 +73,7 @@ export const MainMenu = () => {
     })
 
     proceedToTour()
-  }, [updatePlayer])
+  }, [updatePlayer, proceedToTour])
 
   const proceedToTour = useCallback(async () => {
     setIsStarting(true)
@@ -155,14 +162,14 @@ export const MainMenu = () => {
               Enter your alias for the global underground network.
             </p>
             <input
+              ref={inputRef}
               type="text"
               value={playerNameInput}
-              onChange={(e) => setPlayerNameInput(e.target.value)}
+              onChange={e => setPlayerNameInput(e.target.value)}
               placeholder="ENTER NAME..."
               className="bg-(--void-black) border border-(--toxic-green) p-2 text-(--toxic-green) font-mono text-lg focus:outline-none focus:ring-1 focus:ring-(--toxic-green) uppercase"
               maxLength={20}
-              autoFocus
-              onKeyDown={(e) => e.key === 'Enter' && handleNameSubmit()}
+              onKeyDown={e => e.key === 'Enter' && handleNameSubmit()}
             />
             <GlitchButton onClick={handleNameSubmit}>
               CONFIRM IDENTITY

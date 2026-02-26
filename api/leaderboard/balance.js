@@ -38,7 +38,7 @@ export default async function handler(req, res) {
       const leaderboard = range.map((entry, index) => ({
         rank: index + 1,
         playerId: entry.member,
-        playerName: names?.[entry.member] || 'Unknown',
+        playerName: names[index] || 'Unknown',
         score: entry.score
       }))
 
