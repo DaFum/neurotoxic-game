@@ -138,10 +138,15 @@ DRUM_MAPPING[50] = {
 }
 
 /**
- * Triggers a specific drum sound based on MIDI pitch.
- * @param {number} midiPitch - The MIDI note number.
- * @param {number} time - The time to trigger the note.
- * @param {number} velocity - The velocity of the note (0-1).
+ * Löst entsprechend der MIDI-Note den passenden Schlagzeugklang aus.
+ *
+ * Die übergebene Velocity wird auf den Bereich 0–1 begrenzt. Falls die MIDI-Note
+ * keiner Zuordnung entspricht, wird ein geschlossenes HiHat als Fallback ausgelöst.
+ *
+ * @param {number} midiPitch - Die MIDI-Notennummer, die den zu spielenden Schlagzeugtyp bestimmt.
+ * @param {number} time - Zeitpunkt, zu dem der Ton ausgelöst werden soll.
+ * @param {number} velocity - Anschlagstärke; Werte außerhalb von 0–1 werden auf diesen Bereich begrenzt.
+ * @param {object} [kit=audioState.drumKit] - Das Schlagzeug-Kit/Synth-Objekt, das die Trigger-Methoden bereitstellt.
  */
 export function playDrumNote(
   midiPitch,
@@ -161,14 +166,14 @@ export function playDrumNote(
   if (handler) {
     try {
       handler(kit, map, time, vel * map.velScale)
-    } catch (e) {
+    } catch (_e) {
       // Ignored: Tone.js node likely disposed or context suspended
     }
   } else {
     // Default to closed HiHat for unknown percussion or missing handler
     try {
       kit.hihat.triggerAttackRelease(8000, '32n', time, vel * 0.4)
-    } catch (e) {
+    } catch (_e) {
       // Ignored
     }
   }
