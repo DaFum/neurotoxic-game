@@ -12,8 +12,10 @@ import {
  */
 export const isConnected = (gameMap, fromNodeId, targetNodeId) => {
   if (!gameMap) return false
-  const connections = gameMap.connections.filter(c => c.from === fromNodeId)
-  return connections.some(c => c.to === targetNodeId)
+  // Optimization: Single pass check avoids allocating intermediate array
+  return gameMap.connections.some(
+    c => c.from === fromNodeId && c.to === targetNodeId
+  )
 }
 
 /**
