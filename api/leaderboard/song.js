@@ -9,6 +9,10 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Missing required fields' })
       }
 
+      if (score < 0 || score > 10000000) {
+        return res.status(400).json({ error: 'Invalid score value' })
+      }
+
       // Basic sanitization/validation for songId key
       if (!/^[a-zA-Z0-9_-]+$/.test(songId)) {
         return res.status(400).json({ error: 'Invalid songId format' })
@@ -50,7 +54,7 @@ export default async function handler(req, res) {
       const leaderboard = range.map((entry, index) => ({
         rank: index + 1,
         playerId: entry.member,
-        playerName: names?.[entry.member] || 'Unknown',
+        playerName: names[index] || 'Unknown',
         score: entry.score
       }))
 

@@ -9,8 +9,12 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Missing required fields' })
       }
 
+      if (money < 0 || money > 10000000) {
+        return res.status(400).json({ error: 'Invalid money value' })
+      }
+
       await redis.hset('players', { [playerId]: playerName })
-      await redis.zadd('lb:balance', { score: money, member: playerId })
+      await redis.zadd('lb:balance', { gt: true }, { score: money, member: playerId })
 
       return res.status(200).json({ success: true })
     } catch (error) {
