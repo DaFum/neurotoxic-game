@@ -25,5 +25,9 @@
   "game_over": "GAME OVER: {{description}}",
   "event_error": "EVENT ERROR: Resolution failed.",
   "intro_play": "Start Tour",
-  "intro_skip": "Skip Intro"
+  "intro_skip": "Skip Intro",
+  "settings.audio_mute": "Mute all audio",
+  "settings.audio_unmute": "Unmute all audio",
+  "settings.crt_enable": "Enable CRT Effect",
+  "settings.crt_disable": "Disable CRT Effect"
 }

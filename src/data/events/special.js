@@ -3,33 +3,33 @@ export const SPECIAL_EVENTS = [
   {
     id: 'deal_devil',
     category: 'special',
-    title: 'THE CROSSROADS',
-    description: 'A man in a suit offers you a golden pick.',
+    title: 'events:deal_devil.title',
+    description: 'events:deal_devil.desc',
     trigger: 'special_location',
     chance: 1.0,
     options: [
       {
-        label: 'Take it',
+        label: 'events:deal_devil.opt1.label',
         effect: { type: 'item', item: 'golden_pick' },
-        outcomeText: 'It feels warm.'
+        outcomeText: 'events:deal_devil.opt1.outcome'
       },
       {
-        label: 'Refuse',
+        label: 'events:deal_devil.opt2.label',
         effect: { type: 'stat', stat: 'luck', value: 1 },
-        outcomeText: 'He vanishes.'
+        outcomeText: 'events:deal_devil.opt2.outcome'
       }
     ]
   },
   {
     id: 'mysterious_producer',
     category: 'special',
-    title: 'MYSTERIOUS PRODUCER',
-    description: 'A shadowy figure offers to “elevate your sound.”',
+    title: 'events:mysterious_producer.title',
+    description: 'events:mysterious_producer.desc',
     trigger: 'special_location',
     chance: 0.5,
     options: [
       {
-        label: 'Accept [+Skill, -Harmony]',
+        label: 'events:mysterious_producer.opt1.label',
         effect: {
           type: 'composite',
           effects: [
@@ -37,129 +37,127 @@ export const SPECIAL_EVENTS = [
             { type: 'stat', stat: 'harmony', value: -5 }
           ]
         },
-        outcomeText: 'Sharper sound. Bigger egos.'
+        outcomeText: 'events:mysterious_producer.opt1.outcome'
       },
       {
-        label: 'Refuse [+Luck]',
+        label: 'events:mysterious_producer.opt2.label',
         effect: { type: 'stat', stat: 'luck', value: 2 },
-        outcomeText: 'You trust your instincts.'
+        outcomeText: 'events:mysterious_producer.opt2.outcome'
       }
     ]
   },
   {
     id: 'strange_roadside_shrine',
     category: 'special',
-    title: 'ROADSIDE SHRINE',
-    description: 'You find a small shrine made of guitar picks and candles.',
+    title: 'events:strange_roadside_shrine.title',
+    description: 'events:strange_roadside_shrine.desc',
     trigger: 'special_location',
     chance: 0.35,
     options: [
       {
-        label: 'Leave an offering [-10€]',
+        label: 'events:strange_roadside_shrine.opt1.label',
         effect: { type: 'resource', resource: 'money', value: -10 },
-        outcomeText: 'The air feels lighter.'
+        outcomeText: 'events:strange_roadside_shrine.opt1.outcome'
       },
       {
-        label: 'Take a pick [Risk]',
+        label: 'events:strange_roadside_shrine.opt2.label',
         skillCheck: {
           stat: 'luck',
           threshold: 7,
           success: { type: 'item', item: 'mystery_pick' },
           failure: { type: 'stat', stat: 'mood', value: -10 }
         },
-        outcomeText: 'You tempt fate.'
+        outcomeText: 'events:strange_roadside_shrine.opt2.outcome'
       }
     ]
   },
   {
     id: 'legendary_patch_trader',
     category: 'special',
-    title: 'PATCH TRADER',
-    description: 'A strange collector offers a legendary patch for a price.',
+    title: 'events:legendary_patch_trader.title',
+    description: 'events:legendary_patch_trader.desc',
     trigger: 'special_location',
     chance: 0.25,
     options: [
       {
-        label: 'Buy it [-80€]',
+        label: 'events:legendary_patch_trader.opt1.label',
         effect: { type: 'resource', resource: 'money', value: -80 },
-        outcomeText: 'It looks powerful. Somehow.'
+        outcomeText: 'events:legendary_patch_trader.opt1.outcome'
       },
       {
-        label: 'Decline',
+        label: 'events:legendary_patch_trader.opt2.label',
         effect: { type: 'stat', stat: 'luck', value: 1 },
-        outcomeText: 'You walk away. The air shimmers.'
+        outcomeText: 'events:legendary_patch_trader.opt2.outcome'
       }
     ]
   },
   {
     id: 'midnight_radio',
     category: 'special',
-    title: 'MIDNIGHT RADIO',
-    description:
-      'The radio plays a song that sounds exactly like your next album.',
+    title: 'events:midnight_radio.title',
+    description: 'events:midnight_radio.desc',
     trigger: 'special_location',
     chance: 0.3,
     options: [
       {
-        label: 'Record it [+2 Skill]',
+        label: 'events:midnight_radio.opt1.label',
         effect: { type: 'stat', stat: 'skill', value: 2 },
-        outcomeText: 'Inspiration hits like a truck.'
+        outcomeText: 'events:midnight_radio.opt1.outcome'
       },
       {
-        label: 'Turn it off [-5 Mood]',
+        label: 'events:midnight_radio.opt2.label',
         effect: { type: 'stat', stat: 'mood', value: -5 },
-        outcomeText: 'Too weird. Too late.'
+        outcomeText: 'events:midnight_radio.opt2.outcome'
       }
     ]
   },
   {
     id: 'ghost_backstage',
     category: 'special',
-    title: 'GHOST BACKSTAGE',
-    description: 'You swear you hear a crowd cheering in an empty hallway.',
+    title: 'events:ghost_backstage.title',
+    description: 'events:ghost_backstage.desc',
     trigger: 'special_location',
     chance: 0.25,
     options: [
       {
-        label: 'Follow the sound [Luck]',
+        label: 'events:ghost_backstage.opt1.label',
         skillCheck: {
           stat: 'luck',
           threshold: 6,
           success: { type: 'stat', stat: 'mood', value: 10 },
           failure: { type: 'stat', stat: 'mood', value: -10 }
         },
-        outcomeText: 'You step into the unknown.'
+        outcomeText: 'events:ghost_backstage.opt1.outcome'
       },
       {
-        label: 'Ignore it',
+        label: 'events:ghost_backstage.opt2.label',
         effect: { type: 'stat', stat: 'harmony', value: 1 },
-        outcomeText: 'You pretend it never happened.'
+        outcomeText: 'events:ghost_backstage.opt2.outcome'
       }
     ]
   },
   {
     id: 'the_other_band',
     category: 'special',
-    title: 'THE OTHER BAND',
-    description:
-      'A band “from another timeline” offers to swap setlists for one night.',
+    title: 'events:the_other_band.title',
+    description: 'events:the_other_band.desc',
     trigger: 'special_location',
     chance: 0.2,
     options: [
       {
-        label: 'Swap [Skill]',
+        label: 'events:the_other_band.opt1.label',
         skillCheck: {
           stat: 'skill',
           threshold: 9,
           success: { type: 'stat', stat: 'hype', value: 15 },
           failure: { type: 'stat', stat: 'hype', value: -15 }
         },
-        outcomeText: 'It’s either legendary or a trainwreck.'
+        outcomeText: 'events:the_other_band.opt1.outcome'
       },
       {
-        label: 'Decline',
+        label: 'events:the_other_band.opt2.label',
         effect: { type: 'stat', stat: 'mood', value: 2 },
-        outcomeText: 'You stay in your universe.'
+        outcomeText: 'events:the_other_band.opt2.outcome'
       }
     ]
   }

@@ -3,9 +3,8 @@ export const RELATIONSHIP_EVENTS = [
     id: 'toxic_infighting',
     category: 'band',
     tags: ['conflict', 'relationship_low'],
-    title: "{MEMBER1} AND {MEMBER2} AT EACH OTHER'S THROATS",
-    description:
-      'The tension between {member1} and {member2} finally boils over. They are screaming at each other in the {venue}.',
+    title: "events:toxic_infighting.title",
+    description: 'events:toxic_infighting.desc',
     trigger: 'random',
     chance: 0.1,
     condition: state => {
@@ -21,7 +20,7 @@ export const RELATIONSHIP_EVENTS = [
     },
     options: [
       {
-        label: 'Intervene [Charisma]',
+        label: 'events:toxic_infighting.opt1.label',
         skillCheck: {
           stat: 'charisma',
           threshold: 7,
@@ -29,7 +28,7 @@ export const RELATIONSHIP_EVENTS = [
             type: 'stat',
             stat: 'harmony',
             value: 10,
-            description: 'You talked them down.'
+            description: 'events:toxic_infighting.opt1.d_b5f9'
           },
           failure: {
             type: 'composite',
@@ -37,13 +36,13 @@ export const RELATIONSHIP_EVENTS = [
               { type: 'stat', stat: 'harmony', value: -15 },
               { type: 'stat', stat: 'mood', value: -10 }
             ],
-            description: 'You just made it worse.'
+            description: 'events:toxic_infighting.opt1.d_50d4'
           }
         },
-        outcomeText: 'You stepped in.'
+        outcomeText: 'events:toxic_infighting.opt1.outcome'
       },
       {
-        label: 'Let them fight it out',
+        label: 'events:toxic_infighting.opt2.label',
         effect: {
           type: 'composite',
           effects: [
@@ -56,7 +55,7 @@ export const RELATIONSHIP_EVENTS = [
             }
           ]
         },
-        outcomeText: 'Sometimes toxicity has to run its course.'
+        outcomeText: 'events:toxic_infighting.opt3.outcome'
       }
     ]
   },
@@ -64,9 +63,8 @@ export const RELATIONSHIP_EVENTS = [
     id: 'synergy_moment',
     category: 'band',
     tags: ['relationship_high'],
-    title: 'PERFECT SYNERGY',
-    description:
-      '{member1} and {member2} are totally in sync. The positive energy at the {venue} is infectious.',
+    title: 'events:synergy_moment.title',
+    description: 'events:synergy_moment.desc',
     trigger: 'random',
     chance: 0.1,
     condition: state => {
@@ -82,7 +80,7 @@ export const RELATIONSHIP_EVENTS = [
     },
     options: [
       {
-        label: 'Ride the wave [+10 Harmony, +10 Mood]',
+        label: 'events:synergy_moment.opt1.label',
         effect: {
           type: 'composite',
           effects: [
@@ -96,7 +94,7 @@ export const RELATIONSHIP_EVENTS = [
             }
           ]
         },
-        outcomeText: 'What a moment.'
+        outcomeText: 'events:synergy_moment.opt2.outcome'
       }
     ]
   }

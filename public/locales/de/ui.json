@@ -25,5 +25,9 @@
   "game_over": "GAME OVER: {{description}}",
   "event_error": "EVENT FEHLER: Auflösung fehlgeschlagen.",
   "intro_play": "Tour Starten",
-  "intro_skip": "Intro Überspringen"
+  "intro_skip": "Intro Überspringen",
+  "settings.audio_mute": "Ton ausschalten",
+  "settings.audio_unmute": "Ton einschalten",
+  "settings.crt_enable": "CRT-Effekt aktivieren",
+  "settings.crt_disable": "CRT-Effekt deaktivieren"
 }

@@ -32,13 +32,13 @@ export const SettingsPanel = ({
         <div className='flex gap-4'>
           <ActionButton
             onClick={() => i18n.changeLanguage('en')}
-            className={`flex-1 ${i18n.language.startsWith('en') ? 'bg-(--toxic-green) text-(--void-black)' : ''}`}
+            className={`flex-1 ${i18n.language.startsWith('en') ? 'bg-(--toxic-green) text-(--void-black)' : 'bg-(--void-black) text-(--ash-gray)'}`}
           >
             ENGLISH
           </ActionButton>
           <ActionButton
             onClick={() => i18n.changeLanguage('de')}
-            className={`flex-1 ${i18n.language.startsWith('de') ? 'bg-(--toxic-green) text-(--void-black)' : ''}`}
+            className={`flex-1 ${i18n.language.startsWith('de') ? 'bg-(--toxic-green) text-(--void-black)' : 'bg-(--void-black) text-(--ash-gray)'}`}
           >
             DEUTSCH
           </ActionButton>
@@ -68,7 +68,7 @@ export const SettingsPanel = ({
             <ToggleSwitch
               isOn={isMuted}
               onToggle={onToggleMute}
-              ariaLabel={isMuted ? 'Unmute all audio' : 'Mute all audio'}
+              ariaLabel={isMuted ? t('ui:settings.audio_unmute') : t('ui:settings.audio_mute')}
             />
           </div>
         </div>
@@ -87,7 +87,9 @@ export const SettingsPanel = ({
             isOn={settings?.crtEnabled ?? false}
             onToggle={onToggleCRT}
             ariaLabel={
-              settings?.crtEnabled ? 'Disable CRT Effect' : 'Enable CRT Effect'
+              settings?.crtEnabled
+                ? t('ui:settings.crt_disable')
+                : t('ui:settings.crt_enable')
             }
           />
         </div>
