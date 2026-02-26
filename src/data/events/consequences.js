@@ -242,7 +242,7 @@ export const CONSEQUENCE_EVENTS = [
       const egoFocus = state.social?.egoFocus || null
       const flags = state.activeStoryFlags || []
       return (
-        egoFocus !== null &&
+        egoFocus != null &&
         harmony < 25 &&
         !flags.includes('breakup_quest_active')
       )

@@ -9,7 +9,7 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: 'en',
-    ns: ['ui', 'events', 'venues', 'items'], // Namespaces for game areas
+    ns: ['ui', 'events', 'venues', 'items', 'unlocks'], // Namespaces for game areas
     defaultNS: 'ui',
     interpolation: { escapeValue: false },
     backend: {
