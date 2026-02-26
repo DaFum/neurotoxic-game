@@ -12,10 +12,12 @@ vi.mock('../src/context/GameState.jsx', () => ({
 }))
 
 // Mock PixiStage component
+const mockPixiStage = vi.fn()
 vi.mock('../src/components/PixiStage.jsx', () => ({
-  PixiStage: ({ gameStateRef: _gameStateRef, update: _update, controllerFactory: _controllerFactory }) => (
-    <div data-testid='pixi-stage-mock'>Pixi Stage Mock</div>
-  )
+  PixiStage: (props) => {
+    mockPixiStage(props)
+    return <div data-testid='pixi-stage-mock'>Pixi Stage Mock</div>
+  }
 }))
 
 afterEach(() => {
@@ -357,6 +359,11 @@ describe('MinigameSceneFrame', () => {
 
     // PixiStage mock should have been rendered with correct props
     expect(screen.getByTestId('pixi-stage-mock')).toBeTruthy()
+    expect(mockPixiStage).toHaveBeenCalledWith(expect.objectContaining({
+      gameStateRef: customLogic.gameStateRef,
+      update: customLogic.update,
+      controllerFactory: mockControllerFactory
+    }))
   })
 
   test('handles missing optional props gracefully', async () => {

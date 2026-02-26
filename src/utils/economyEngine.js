@@ -537,7 +537,7 @@ export const shouldTriggerBankruptcy = (newMoney, netIncome) => {
 /**
  * Calculates effects of Travel Minigame results.
  * @param {number} damageTaken - Total damage taken.
- * @param {string[]} itemsCollected - Array of collected item types.
+ * @param {string[]} _itemsCollected - Array of collected item types.
  * @returns {object} { conditionLoss, fuelBonus }
  */
 export const calculateTravelMinigameResult = (damageTaken, _itemsCollected) => {
