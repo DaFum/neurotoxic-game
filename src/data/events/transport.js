@@ -99,7 +99,7 @@ export const TRANSPORT_EVENTS = [
     id: 'van_critical_failure',
     category: 'transport',
     title: 'events:van_critical_failure.title',
-    description: "events:van_critical_failure.desc",
+    description: 'events:van_critical_failure.desc',
     trigger: 'travel',
     chance: 0, // Triggered by chain only
     options: [
@@ -113,11 +113,11 @@ export const TRANSPORT_EVENTS = [
               type: 'stat',
               stat: 'time',
               value: -24,
-              description: 'events:van_critical_failure.opt2.d_eebb'
+              description: 'events:van_critical_failure.opt1.d_eebb'
             }
           ]
         },
-        outcomeText: 'events:van_critical_failure.opt2.outcome'
+        outcomeText: 'events:van_critical_failure.opt1.outcome'
       },
       {
         label: 'events:van_critical_failure.opt3.label',
@@ -136,7 +136,7 @@ export const TRANSPORT_EVENTS = [
     id: 'police_control',
     category: 'transport',
     title: 'events:police_control.title',
-    description: "events:police_control.desc",
+    description: 'events:police_control.desc',
     trigger: 'travel',
     chance: 0.05,
     options: [
@@ -258,13 +258,13 @@ export const TRANSPORT_EVENTS = [
                 type: 'stat',
                 stat: 'time',
                 value: -3,
-                description: 'events:traffic_jam.opt3.d_deb3'
+                description: 'events:traffic_jam.opt2.d_deb3'
               },
               { type: 'resource', resource: 'fuel', value: -10 }
             ]
           }
         },
-        outcomeText: 'events:traffic_jam.opt3.outcome'
+        outcomeText: 'events:traffic_jam.opt2.outcome'
       }
     ]
   },
@@ -334,13 +334,13 @@ export const TRANSPORT_EVENTS = [
                 type: 'resource',
                 resource: 'money',
                 value: -500,
-                description: 'events:wild_accident.opt2.d_7bd0'
+                description: 'events:wild_accident.opt1.d_7bd0'
               },
               { type: 'stat', stat: 'van_condition', value: -20 }
             ]
           }
         },
-        outcomeText: 'events:wild_accident.opt2.outcome'
+        outcomeText: 'events:wild_accident.opt1.outcome'
       }
     ]
   },
