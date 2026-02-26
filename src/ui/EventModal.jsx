@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 
@@ -20,6 +21,7 @@ const CATEGORY_IMAGE_MAP = {
  * @param {Function} props.onOptionSelect - Callback when an option is selected.
  */
 export const EventModal = ({ event, onOptionSelect, className = '' }) => {
+  const { t } = useTranslation()
   const containerRef = useRef(null)
 
   // Keyboard shortcut: press 1-4 to select options
@@ -80,10 +82,10 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
           id='event-title'
           className='text-3xl font-[Metal_Mania] text-(--blood-red) mb-4 animate-pulse text-center'
         >
-          {'\u26A0'} {event.title} {'\u26A0'}
+          {'\u26A0'} {t(event.title, event.context)} {'\u26A0'}
         </h2>
         <p className='font-mono text-(--star-white) mb-6 text-lg border-l-4 border-(--toxic-green) pl-4'>
-          {event.description}
+          {t(event.description, event.context)}
         </p>
 
         {/* Keyboard hint */}
@@ -119,12 +121,12 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
                 </span>
                 <div className='flex-1'>
                   <span className='font-bold uppercase tracking-wider'>
-                    {option.label}
+                    {t(option.label, event.context)}
                   </span>
                   {/* Outcome hint if available */}
                   {option.outcomeText && (
                     <span className='block text-xs mt-1 text-(--ash-gray) group-hover:text-(--void-black)/60 font-mono italic'>
-                      {option.outcomeText}
+                      {t(option.outcomeText, event.context)}
                     </span>
                   )}
                   {/* Skill check indicator */}

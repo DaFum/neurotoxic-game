@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
 import { VolumeSlider } from './VolumeSlider'
 import { ActionButton } from './ActionButton'
 import { Modal } from './Modal'
@@ -19,32 +20,55 @@ export const SettingsPanel = ({
   onDeleteSave,
   className = ''
 }) => {
+  const { t, i18n } = useTranslation()
+
   return (
     <div className={`space-y-8 ${className}`}>
+      {/* Language Settings */}
+      <div>
+        <h2 className='font-[Metal_Mania] text-4xl uppercase text-(--toxic-green) mb-6 border-b border-(--ash-gray) pb-2'>
+          {t('ui:language')}
+        </h2>
+        <div className='flex gap-4'>
+          <ActionButton
+            onClick={() => i18n.changeLanguage('en')}
+            className={`flex-1 ${i18n.language.startsWith('en') ? 'bg-(--toxic-green) text-(--void-black)' : 'bg-(--void-black) text-(--ash-gray)'}`}
+          >
+            ENGLISH
+          </ActionButton>
+          <ActionButton
+            onClick={() => i18n.changeLanguage('de')}
+            className={`flex-1 ${i18n.language.startsWith('de') ? 'bg-(--toxic-green) text-(--void-black)' : 'bg-(--void-black) text-(--ash-gray)'}`}
+          >
+            DEUTSCH
+          </ActionButton>
+        </div>
+      </div>
+
       {/* Audio Settings */}
       <div>
         <h2 className='font-[Metal_Mania] text-4xl uppercase text-(--toxic-green) mb-6 border-b border-(--ash-gray) pb-2'>
-          AUDIO PROTOCOLS
+          {t('ui:audio_protocols')}
         </h2>
         <div className='space-y-6'>
           <VolumeSlider
-            label='MUSIC VOLUME'
+            label={t('ui:music_volume')}
             value={musicVol}
             onChange={e => onMusicChange(parseFloat(e.target.value))}
           />
           <VolumeSlider
-            label='SFX VOLUME'
+            label={t('ui:sfx_volume')}
             value={sfxVol}
             onChange={e => onSfxChange(parseFloat(e.target.value))}
           />
           <div className='flex items-center justify-between'>
-            <label className='font-[Courier_New] text-sm uppercase tracking-wide text-(--ash-gray)'>
-              MUTE ALL
-            </label>
+            <span className='font-[Courier_New] text-sm uppercase tracking-wide text-(--ash-gray)'>
+              {t('ui:mute_all')}
+            </span>
             <ToggleSwitch
               isOn={isMuted}
               onToggle={onToggleMute}
-              ariaLabel={isMuted ? 'Unmute all audio' : 'Mute all audio'}
+              ariaLabel={isMuted ? t('ui:settings.audio_unmute') : t('ui:settings.audio_mute')}
             />
           </div>
         </div>
@@ -53,17 +77,19 @@ export const SettingsPanel = ({
       {/* Visual Settings */}
       <div>
         <h2 className='font-[Metal_Mania] text-4xl uppercase text-(--toxic-green) mb-6 border-b border-(--ash-gray) pb-2'>
-          VISUAL INTERFACE
+          {t('ui:visual_interface')}
         </h2>
         <div className='flex items-center justify-between'>
-          <label className='font-[Courier_New] text-sm uppercase tracking-wide text-(--ash-gray)'>
-            CRT EFFECT
-          </label>
+          <span className='font-[Courier_New] text-sm uppercase tracking-wide text-(--ash-gray)'>
+            {t('ui:crt_effect')}
+          </span>
           <ToggleSwitch
             isOn={settings?.crtEnabled ?? false}
             onToggle={onToggleCRT}
             ariaLabel={
-              settings?.crtEnabled ? 'Disable CRT Effect' : 'Enable CRT Effect'
+              settings?.crtEnabled
+                ? t('ui:settings.crt_disable')
+                : t('ui:settings.crt_enable')
             }
           />
         </div>
@@ -73,14 +99,14 @@ export const SettingsPanel = ({
       {import.meta.env.DEV && (
         <div>
           <h2 className='font-[Metal_Mania] text-4xl uppercase text-(--toxic-green) mb-6 border-b border-(--ash-gray) pb-2'>
-            LOG PROTOCOLS
+            {t('ui:log_protocols')}
           </h2>
           <div className='flex items-center justify-between'>
             <label
               htmlFor='logLevelSelect'
               className='font-[Courier_New] text-sm uppercase tracking-wide text-(--ash-gray)'
             >
-              MINIMUM LOG LEVEL
+              {t('ui:min_log_level')}
             </label>
             <select
               id='logLevelSelect'
@@ -105,6 +131,7 @@ export const SettingsPanel = ({
 }
 
 const DataManagement = ({ onDeleteSave }) => {
+  const { t } = useTranslation()
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
 
   const handleOpenConfirm = () => setIsConfirmOpen(true)
@@ -117,37 +144,36 @@ const DataManagement = ({ onDeleteSave }) => {
   return (
     <div>
       <h2 className='font-(--font-display) text-4xl uppercase text-(--blood-red) mb-6 border-b border-(--ash-gray) pb-2'>
-        DATA PURGE
+        {t('ui:data_purge')}
       </h2>
       <div className='flex justify-between items-center'>
         <p className='font-(--font-ui) text-lg text-(--ash-gray) max-w-xs'>
-          WARNING: This action is irreversible. All tour progress will be lost.
+          {t('ui:delete_warning')}
         </p>
         <ActionButton
           onClick={handleOpenConfirm}
           className='bg-(--blood-red) text-(--void-black) border-(--blood-red) shadow-[4px_4px_0px_var(--blood-red)] hover:invert'
         >
-          DELETE SAVE
+          {t('ui:delete_save')}
         </ActionButton>
       </div>
 
       <Modal
         isOpen={isConfirmOpen}
         onClose={handleCloseConfirm}
-        title='CONFIRM DELETE'
+        title={t('ui:confirm_delete')}
       >
         <div className='space-y-6'>
           <p className='font-(--font-ui) text-(--ash-gray)'>
-            Are you sure you want to delete your save game? This cannot be
-            undone.
+            {t('ui:confirm_delete_text')}
           </p>
           <div className='flex gap-4 justify-end'>
-            <ActionButton onClick={handleCloseConfirm}>CANCEL</ActionButton>
+            <ActionButton onClick={handleCloseConfirm}>{t('ui:cancel')}</ActionButton>
             <ActionButton
               onClick={handleDeleteSave}
               className='bg-(--blood-red) text-(--void-black) border-(--blood-red) hover:invert'
             >
-              CONFIRM
+              {t('ui:confirm')}
             </ActionButton>
           </div>
         </div>

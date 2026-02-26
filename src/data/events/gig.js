@@ -3,18 +3,18 @@ export const GIG_EVENTS = [
   {
     id: 'gig_mid_strings_snapped',
     category: 'gig',
-    title: 'STRING SNAPPED!',
-    description: 'A sharp TWANG sounds from the guitar amp.',
+    title: 'events:gig_mid_strings_snapped.title',
+    description: 'events:gig_mid_strings_snapped.desc',
     trigger: 'gig_mid',
     chance: 0.1,
     options: [
       {
-        label: 'Keep playing (Miss notes)',
+        label: 'events:gig_mid_strings_snapped.opt1.label',
         effect: { type: 'stat', stat: 'score', value: -500 },
-        outcomeText: 'It sounded terrible.'
+        outcomeText: 'events:gig_mid_strings_snapped.opt1.outcome'
       },
       {
-        label: 'Change it fast [Tech]',
+        label: 'events:gig_mid_strings_snapped.opt2.label',
         skillCheck: {
           stat: 'technical',
           threshold: 5,
@@ -22,84 +22,84 @@ export const GIG_EVENTS = [
             type: 'stat',
             stat: 'score',
             value: 100,
-            description: 'Crowd cheered the fix!'
+            description: 'events:gig_mid_strings_snapped.opt2.d_a1d3'
           },
           failure: {
             type: 'stat',
             stat: 'score',
             value: -200,
-            description: 'Took too long.'
+            description: 'events:gig_mid_strings_snapped.opt2.d_8f05'
           }
         },
-        outcomeText: 'You scrambled for a string.'
+        outcomeText: 'events:gig_mid_strings_snapped.opt2.outcome'
       }
     ]
   },
   {
     id: 'gig_intro_drunk_fan',
     category: 'gig',
-    title: 'DRUNK HECKLER',
-    description: "Someone is yelling 'PLAY FREEBIRD' repeatedly.",
+    title: 'events:gig_intro_drunk_fan.title',
+    description: "events:gig_intro_drunk_fan.desc",
     trigger: 'gig_intro',
     chance: 0.2,
     options: [
       {
-        label: 'Ignore',
+        label: 'events:gig_intro_drunk_fan.opt1.label',
         effect: { type: 'stat', stat: 'mood', value: -2 },
-        outcomeText: 'You started the set.'
+        outcomeText: 'events:gig_intro_drunk_fan.opt1.outcome'
       },
       {
-        label: 'Mock him',
+        label: 'events:gig_intro_drunk_fan.opt2.label',
         skillCheck: {
           stat: 'charisma',
           threshold: 5,
           success: { type: 'stat', stat: 'hype', value: 10 },
           failure: { type: 'stat', stat: 'hype', value: -10 }
         },
-        outcomeText: 'Crowd reaction.'
+        outcomeText: 'events:gig_intro_drunk_fan.opt2.outcome'
       }
     ]
   },
   {
     id: 'amp_feedback_loop',
     category: 'gig',
-    title: 'FEEDBACK SCREAM',
-    description: 'The amp starts screaming uncontrollably.',
+    title: 'events:amp_feedback_loop.title',
+    description: 'events:amp_feedback_loop.desc',
     trigger: 'gig_mid',
     chance: 0.08,
     options: [
       {
-        label: 'Embrace it [+200 Score]',
+        label: 'events:amp_feedback_loop.opt1.label',
         effect: { type: 'stat', stat: 'score', value: 200 },
-        outcomeText: 'Crowd thinks it’s intentional.'
+        outcomeText: 'events:amp_feedback_loop.opt1.outcome'
       },
       {
-        label: 'Fix it fast [Technical]',
+        label: 'events:amp_feedback_loop.opt2.label',
         skillCheck: {
           stat: 'technical',
           threshold: 6,
           success: { type: 'stat', stat: 'score', value: 150 },
           failure: { type: 'stat', stat: 'score', value: -300 }
         },
-        outcomeText: 'You dove for the knobs.'
+        outcomeText: 'events:amp_feedback_loop.opt2.outcome'
       }
     ]
   },
   {
     id: 'crowd_surf_disaster',
     category: 'gig',
-    title: 'CROWD SURF GONE WRONG',
-    description: 'Someone falls during a crowd surf.',
+    title: 'events:crowd_surf_disaster.title',
+    description: 'events:crowd_surf_disaster.desc',
     trigger: 'gig_mid',
     chance: 0.05,
     options: [
       {
-        label: 'Stop show [-500 Score]',
+        label: 'events:crowd_surf_disaster.opt1.label',
         effect: { type: 'stat', stat: 'score', value: -500 },
-        outcomeText: 'Responsible move.'
+        outcomeText: 'events:crowd_surf_disaster.opt1.outcome'
       },
       {
-        label: 'Keep playing [+300 Score, -5 Mood]',
+        label: 'events:crowd_surf_disaster.opt2.label',
         effect: {
           type: 'composite',
           effects: [
@@ -107,286 +107,286 @@ export const GIG_EVENTS = [
             { type: 'stat', stat: 'mood', value: -5 }
           ]
         },
-        outcomeText: 'Controversial.'
+        outcomeText: 'events:crowd_surf_disaster.opt2.outcome'
       }
     ]
   },
   {
     id: 'gig_intro_dead_air',
     category: 'gig',
-    title: 'DEAD AIR',
-    description: 'The intro track fails. The room stares at you.',
+    title: 'events:gig_intro_dead_air.title',
+    description: 'events:gig_intro_dead_air.desc',
     trigger: 'gig_intro',
     chance: 0.12,
     options: [
       {
-        label: 'Start raw [+10 Hype]',
+        label: 'events:gig_intro_dead_air.opt1.label',
         effect: { type: 'stat', stat: 'hype', value: 10 },
-        outcomeText: 'No intro. Just violence.'
+        outcomeText: 'events:gig_intro_dead_air.opt1.outcome'
       },
       {
-        label: 'Fix it quickly [Tech]',
+        label: 'events:gig_intro_dead_air.opt2.label',
         skillCheck: {
           stat: 'technical',
           threshold: 6,
           success: { type: 'stat', stat: 'hype', value: 5 },
           failure: { type: 'stat', stat: 'hype', value: -10 }
         },
-        outcomeText: 'You wrestle the cable gods.'
+        outcomeText: 'events:gig_intro_dead_air.opt2.outcome'
       }
     ]
   },
   {
     id: 'gig_intro_monitor_fail',
     category: 'gig',
-    title: 'NO MONITORS',
-    description: 'Monitors cut out right as you start.',
+    title: 'events:gig_intro_monitor_fail.title',
+    description: 'events:gig_intro_monitor_fail.desc',
     trigger: 'gig_intro',
     chance: 0.1,
     options: [
       {
-        label: 'Play through it [-200 Score]',
+        label: 'events:gig_intro_monitor_fail.opt1.label',
         effect: { type: 'stat', stat: 'score', value: -200 },
-        outcomeText: 'You guess your way through the first song.'
+        outcomeText: 'events:gig_intro_monitor_fail.opt1.outcome'
       },
       {
-        label: 'Signal the tech [Charisma]',
+        label: 'events:gig_intro_monitor_fail.opt2.label',
         skillCheck: {
           stat: 'charisma',
           threshold: 6,
           success: { type: 'stat', stat: 'score', value: 150 },
           failure: { type: 'stat', stat: 'score', value: -250 }
         },
-        outcomeText: 'You try to communicate with gestures and panic.'
+        outcomeText: 'events:gig_intro_monitor_fail.opt2.outcome'
       }
     ]
   },
   {
     id: 'gig_mid_pick_drop',
     category: 'gig',
-    title: 'PICK DROP',
-    description: 'Your pick flies into the void mid-riff.',
+    title: 'events:gig_mid_pick_drop.title',
+    description: 'events:gig_mid_pick_drop.desc',
     trigger: 'gig_mid',
     chance: 0.12,
     options: [
       {
-        label: 'Finger it (dangerous) [-150 Score]',
+        label: 'events:gig_mid_pick_drop.opt1.label',
         effect: { type: 'stat', stat: 'score', value: -150 },
-        outcomeText: 'It’s… not ideal.'
+        outcomeText: 'events:gig_mid_pick_drop.opt1.outcome'
       },
       {
-        label: 'Grab a spare [Tech]',
+        label: 'events:gig_mid_pick_drop.opt2.label',
         skillCheck: {
           stat: 'technical',
           threshold: 5,
           success: { type: 'stat', stat: 'score', value: 80 },
           failure: { type: 'stat', stat: 'score', value: -120 }
         },
-        outcomeText: 'You dive for the mic stand tape-picks.'
+        outcomeText: 'events:gig_mid_pick_drop.opt2.outcome'
       }
     ]
   },
   {
     id: 'gig_mid_feedback',
     category: 'gig',
-    title: 'FEEDBACK HOWL',
-    description: 'A sudden feedback howl cuts through the mix.',
+    title: 'events:gig_mid_feedback.title',
+    description: 'events:gig_mid_feedback.desc',
     trigger: 'gig_mid',
     chance: 0.1,
     options: [
       {
-        label: 'Make it a moment [+120 Score]',
+        label: 'events:gig_mid_feedback.opt1.label',
         effect: { type: 'stat', stat: 'score', value: 120 },
-        outcomeText: 'The crowd thinks it’s intentional.'
+        outcomeText: 'events:gig_mid_feedback.opt1.outcome'
       },
       {
-        label: 'Kill it fast [Tech]',
+        label: 'events:gig_mid_feedback.opt2.label',
         skillCheck: {
           stat: 'technical',
           threshold: 6,
           success: { type: 'stat', stat: 'score', value: 100 },
           failure: { type: 'stat', stat: 'score', value: -200 }
         },
-        outcomeText: 'You wrestle the gain.'
+        outcomeText: 'events:gig_mid_feedback.opt2.outcome'
       }
     ]
   },
   {
     id: 'gig_mid_broken_stick',
     category: 'gig',
-    title: 'BROKEN STICK',
-    description: 'Marius snaps a stick mid-song.',
+    title: 'events:gig_mid_broken_stick.title',
+    description: 'events:gig_mid_broken_stick.desc',
     trigger: 'gig_mid',
     chance: 0.09,
     options: [
       {
-        label: 'Keep going [-120 Score]',
+        label: 'events:gig_mid_broken_stick.opt1.label',
         effect: { type: 'stat', stat: 'score', value: -120 },
-        outcomeText: 'He improvises with half a stick.'
+        outcomeText: 'events:gig_mid_broken_stick.opt1.outcome'
       },
       {
-        label: 'Throw spare to Marius [Luck]',
+        label: 'events:gig_mid_broken_stick.opt2.label',
         skillCheck: {
           stat: 'luck',
           threshold: 5,
           success: { type: 'stat', stat: 'score', value: 140 },
           failure: { type: 'stat', stat: 'score', value: -160 }
         },
-        outcomeText: 'The throw is… questionable.'
+        outcomeText: 'events:gig_mid_broken_stick.opt2.outcome'
       }
     ]
   },
   {
     id: 'gig_mid_stage_diver',
     category: 'gig',
-    title: 'STAGE DIVER',
-    description: 'Someone attempts a stage dive at the worst possible time.',
+    title: 'events:gig_mid_stage_diver.title',
+    description: 'events:gig_mid_stage_diver.desc',
     trigger: 'gig_mid',
     chance: 0.06,
     options: [
       {
-        label: 'Let it happen [+200 Score]',
+        label: 'events:gig_mid_stage_diver.opt1.label',
         effect: { type: 'stat', stat: 'score', value: 200 },
         flags: ['stageDive'],
-        outcomeText: 'Chaos fuels the song.'
+        outcomeText: 'events:gig_mid_stage_diver.opt1.outcome'
       },
       {
-        label: 'Wave them off [-80 Score]',
+        label: 'events:gig_mid_stage_diver.opt2.label',
         effect: { type: 'stat', stat: 'score', value: -80 },
-        outcomeText: 'Safety first, hype second.'
+        outcomeText: 'events:gig_mid_stage_diver.opt2.outcome'
       }
     ]
   },
   {
     id: 'gig_mid_tempo_wobble',
     category: 'gig',
-    title: 'TEMPO WOBBLE',
-    description: 'The band drifts slightly. The groove is threatened.',
+    title: 'events:gig_mid_tempo_wobble.title',
+    description: 'events:gig_mid_tempo_wobble.desc',
     trigger: 'gig_mid',
     chance: 0.1,
     options: [
       {
-        label: 'Lock in [Skill]',
+        label: 'events:gig_mid_tempo_wobble.opt1.label',
         skillCheck: {
           stat: 'skill',
           threshold: 7,
           success: { type: 'stat', stat: 'score', value: 200 },
           failure: { type: 'stat', stat: 'score', value: -250 }
         },
-        outcomeText: 'You stare each other into perfect timing.'
+        outcomeText: 'events:gig_mid_tempo_wobble.opt1.outcome'
       },
       {
-        label: 'Just blast through [-150 Score]',
+        label: 'events:gig_mid_tempo_wobble.opt2.label',
         effect: { type: 'stat', stat: 'score', value: -150 },
-        outcomeText: 'Speed covers sins… sometimes.'
+        outcomeText: 'events:gig_mid_tempo_wobble.opt2.outcome'
       }
     ]
   },
   {
     id: 'gig_mid_crowd_chant',
     category: 'gig',
-    title: 'CROWD CHANT',
-    description: 'The crowd starts chanting your name mid-set.',
+    title: 'events:gig_mid_crowd_chant.title',
+    description: 'events:gig_mid_crowd_chant.desc',
     trigger: 'gig_mid',
     chance: 0.05,
     options: [
       {
-        label: 'Acknowledge [+10 Hype]',
+        label: 'events:gig_mid_crowd_chant.opt1.label',
         effect: { type: 'stat', stat: 'hype', value: 10 },
-        outcomeText: 'You point and grin.'
+        outcomeText: 'events:gig_mid_crowd_chant.opt1.outcome'
       },
       {
-        label: 'Stay focused [+100 Score]',
+        label: 'events:gig_mid_crowd_chant.opt2.label',
         effect: { type: 'stat', stat: 'score', value: 100 },
-        outcomeText: 'Professional mode.'
+        outcomeText: 'events:gig_mid_crowd_chant.opt2.outcome'
       }
     ]
   },
   {
     id: 'gig_intro_wrong_song',
     category: 'gig',
-    title: 'WRONG START',
-    description: 'Someone starts the wrong song. Everybody notices.',
+    title: 'events:gig_intro_wrong_song.title',
+    description: 'events:gig_intro_wrong_song.desc',
     trigger: 'gig_intro',
     chance: 0.06,
     options: [
       {
-        label: 'Laugh and switch [Charisma]',
+        label: 'events:gig_intro_wrong_song.opt1.label',
         skillCheck: {
           stat: 'charisma',
           threshold: 6,
           success: { type: 'stat', stat: 'hype', value: 8 },
           failure: { type: 'stat', stat: 'hype', value: -8 }
         },
-        outcomeText: 'You try to make it charming.'
+        outcomeText: 'events:gig_intro_wrong_song.opt1.outcome'
       },
       {
-        label: 'Power through [-300 Score]',
+        label: 'events:gig_intro_wrong_song.opt2.label',
         effect: { type: 'stat', stat: 'score', value: -300 },
-        outcomeText: 'Confusion becomes the theme.'
+        outcomeText: 'events:gig_intro_wrong_song.opt2.outcome'
       }
     ]
   },
   {
     id: 'gig_mid_string_tuning_drift',
     category: 'gig',
-    title: 'TUNING DRIFT',
-    description: 'The guitar slowly slips out of tune under hot lights.',
+    title: 'events:gig_mid_string_tuning_drift.title',
+    description: 'events:gig_mid_string_tuning_drift.desc',
     trigger: 'gig_mid',
     chance: 0.08,
     options: [
       {
-        label: 'Tune quickly [Tech]',
+        label: 'events:gig_mid_string_tuning_drift.opt1.label',
         skillCheck: {
           stat: 'technical',
           threshold: 6,
           success: { type: 'stat', stat: 'score', value: 120 },
           failure: { type: 'stat', stat: 'score', value: -180 }
         },
-        outcomeText: 'You tune between parts like a machine.'
+        outcomeText: 'events:gig_mid_string_tuning_drift.opt1.outcome'
       },
       {
-        label: 'Ignore it [-200 Score]',
+        label: 'events:gig_mid_string_tuning_drift.opt2.label',
         effect: { type: 'stat', stat: 'score', value: -200 },
-        outcomeText: 'The crowd hears it. You hear it more.'
+        outcomeText: 'events:gig_mid_string_tuning_drift.opt2.outcome'
       }
     ]
   },
   {
     id: 'gig_mid_power_dip',
     category: 'gig',
-    title: 'POWER DIP',
-    description: 'The lights flicker. The amp sounds… worried.',
+    title: 'events:gig_mid_power_dip.title',
+    description: 'events:gig_mid_power_dip.desc',
     trigger: 'gig_mid',
     chance: 0.04,
     options: [
       {
-        label: 'Keep playing [Luck]',
+        label: 'events:gig_mid_power_dip.opt1.label',
         skillCheck: {
           stat: 'luck',
           threshold: 5,
           success: { type: 'stat', stat: 'score', value: 150 },
           failure: { type: 'stat', stat: 'score', value: -350 }
         },
-        outcomeText: 'You gamble with electricity.'
+        outcomeText: 'events:gig_mid_power_dip.opt1.outcome'
       },
       {
-        label: 'Signal to cut a song [-100 Score]',
+        label: 'events:gig_mid_power_dip.opt2.label',
         effect: { type: 'stat', stat: 'score', value: -100 },
-        outcomeText: 'You shorten the set to survive.'
+        outcomeText: 'events:gig_mid_power_dip.opt2.outcome'
       }
     ]
   },
   {
     id: 'gig_intro_huge_cheer',
     category: 'gig',
-    title: 'HUGE CHEER',
-    description: 'The room erupts when you walk on stage. Unexpected.',
+    title: 'events:gig_intro_huge_cheer.title',
+    description: 'events:gig_intro_huge_cheer.desc',
     trigger: 'gig_intro',
     chance: 0.05,
     options: [
       {
-        label: 'Ride it [+300 Score, +10 Hype]',
+        label: 'events:gig_intro_huge_cheer.opt1.label',
         effect: {
           type: 'composite',
           effects: [
@@ -394,50 +394,50 @@ export const GIG_EVENTS = [
             { type: 'stat', stat: 'hype', value: 10 }
           ]
         },
-        outcomeText: 'You feel ten feet tall.'
+        outcomeText: 'events:gig_intro_huge_cheer.opt1.outcome'
       }
     ]
   },
   {
     id: 'gig_mid_mic_cut',
     category: 'gig',
-    title: 'MIC CUTS OUT',
-    description: 'Vocals vanish mid-chorus.',
+    title: 'events:gig_mid_mic_cut.title',
+    description: 'events:gig_mid_mic_cut.desc',
     trigger: 'gig_mid',
     chance: 0.08,
     options: [
       {
-        label: 'Let the crowd sing [+200 Score]',
+        label: 'events:gig_mid_mic_cut.opt1.label',
         effect: { type: 'stat', stat: 'score', value: 200 },
-        outcomeText: 'They carry you.'
+        outcomeText: 'events:gig_mid_mic_cut.opt1.outcome'
       },
       {
-        label: 'Swap mic [Tech]',
+        label: 'events:gig_mid_mic_cut.opt2.label',
         skillCheck: {
           stat: 'technical',
           threshold: 6,
           success: { type: 'stat', stat: 'score', value: 120 },
           failure: { type: 'stat', stat: 'score', value: -220 }
         },
-        outcomeText: 'You juggle cables mid-song.'
+        outcomeText: 'events:gig_mid_mic_cut.opt2.outcome'
       }
     ]
   },
   {
     id: 'gig_mid_bad_mix',
     category: 'gig',
-    title: 'BAD MIX NIGHT',
-    description: 'Everything sounds like mud. You can’t fix the room.',
+    title: 'events:gig_mid_bad_mix.title',
+    description: 'events:gig_mid_bad_mix.desc',
     trigger: 'gig_mid',
     chance: 0.06,
     options: [
       {
-        label: 'Play simpler [+80 Score]',
+        label: 'events:gig_mid_bad_mix.opt1.label',
         effect: { type: 'stat', stat: 'score', value: 80 },
-        outcomeText: 'You adapt to survive.'
+        outcomeText: 'events:gig_mid_bad_mix.opt1.outcome'
       },
       {
-        label: 'Get angry [-150 Score, -5 Mood]',
+        label: 'events:gig_mid_bad_mix.opt2.label',
         effect: {
           type: 'composite',
           effects: [
@@ -445,22 +445,22 @@ export const GIG_EVENTS = [
             { type: 'stat', stat: 'mood', value: -5 }
           ]
         },
-        outcomeText: 'Rage doesn’t EQ the room.'
+        outcomeText: 'events:gig_mid_bad_mix.opt2.outcome'
       }
     ]
   },
   {
     id: 'gig_mid_perfect_breakdown',
     category: 'gig',
-    title: 'PERFECT BREAKDOWN',
-    description: 'Everything locks in. The pit explodes.',
+    title: 'events:gig_mid_perfect_breakdown.title',
+    description: 'events:gig_mid_perfect_breakdown.desc',
     trigger: 'gig_mid',
     chance: 0.05,
     options: [
       {
-        label: 'FEED IT [+500 Score]',
+        label: 'events:gig_mid_perfect_breakdown.opt1.label',
         effect: { type: 'stat', stat: 'score', value: 500 },
-        outcomeText: 'That’s a core memory.'
+        outcomeText: 'events:gig_mid_perfect_breakdown.opt1.outcome'
       }
     ]
   }

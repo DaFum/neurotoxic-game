@@ -4,24 +4,23 @@ export const BAND_EVENTS = [
     id: 'internal_dispute',
     category: 'band',
     tags: ['conflict'],
-    title: 'CREATIVE DIFFERENCES',
-    description:
-      'Matze thinks the new song should be slower. Lars wants it faster.',
+    title: 'events:internal_dispute.title',
+    description: 'events:internal_dispute.description',
     trigger: 'random',
     chance: 0.05,
     options: [
       {
-        label: 'Side with Matze (Slow)',
+        label: 'events:internal_dispute.option_slow',
         effect: { type: 'stat', stat: 'harmony', value: -5 },
-        outcomeText: 'Lars is annoyed.'
+        outcomeText: 'events:internal_dispute.outcome_slow'
       },
       {
-        label: 'Side with Lars (Fast)',
+        label: 'events:internal_dispute.option_fast',
         effect: { type: 'stat', stat: 'harmony', value: -5 },
-        outcomeText: 'Matze sulks.'
+        outcomeText: 'events:internal_dispute.outcome_fast'
       },
       {
-        label: 'Compromise [Charisma]',
+        label: 'events:internal_dispute.option_compromise',
         skillCheck: {
           stat: 'charisma',
           threshold: 6,
@@ -29,30 +28,29 @@ export const BAND_EVENTS = [
             type: 'stat',
             stat: 'harmony',
             value: 5,
-            description: 'Everyone is happy.'
+            description: 'events:internal_dispute.success_compromise'
           },
           failure: {
             type: 'stat',
             stat: 'harmony',
             value: -10,
-            description: 'Now they both hate you.'
+            description: 'events:internal_dispute.failure_compromise'
           }
         },
-        outcomeText: 'You tried to mediate.'
+        outcomeText: 'events:internal_dispute.outcome_compromise'
       }
     ]
   },
   {
     id: 'late_night_party',
     category: 'band',
-    title: 'LATE NIGHT PARTY',
-    description:
-      'The local scene invites you to an afterparty. It will be legendary, but exhausting.',
+    title: 'events:late_night_party.title',
+    description: 'events:late_night_party.desc',
     trigger: 'random',
     chance: 0.05,
     options: [
       {
-        label: 'Party Hard [-20 Stamina, +10 Mood]',
+        label: 'events:late_night_party.opt1.label',
         effect: {
           type: 'composite',
           effects: [
@@ -60,21 +58,21 @@ export const BAND_EVENTS = [
               type: 'stat',
               stat: 'stamina',
               value: -20,
-              description: 'Drank too much.'
+              description: 'events:late_night_party.opt2.d_178c'
             },
             {
               type: 'stat',
               stat: 'mood',
               value: 10,
-              description: 'Best night ever!'
+              description: 'events:late_night_party.opt3.d_d207'
             },
             { type: 'stat', stat: 'harmony', value: 5 }
           ]
         },
-        outcomeText: 'You wake up with a headache but great memories.'
+        outcomeText: 'events:late_night_party.opt3.outcome'
       },
       {
-        label: 'Go to Sleep [+10 Stamina, -5 Mood]',
+        label: 'events:late_night_party.opt4.label',
         effect: {
           type: 'composite',
           effects: [
@@ -83,24 +81,24 @@ export const BAND_EVENTS = [
               type: 'stat',
               stat: 'mood',
               value: -5,
-              description: 'FOMO hits hard.'
+              description: 'events:late_night_party.opt5.d_bcd1'
             }
           ]
         },
-        outcomeText: 'Boring, but responsible.'
+        outcomeText: 'events:late_night_party.opt5.outcome'
       }
     ]
   },
   {
     id: 'writers_block',
     category: 'band',
-    title: "WRITER'S BLOCK",
-    description: 'The band is stuck on a new riff. Frustration is rising.',
+    title: "events:writers_block.title",
+    description: 'events:writers_block.desc',
     trigger: 'random',
     chance: 0.04,
     options: [
       {
-        label: 'Push through [Skill Check]',
+        label: 'events:writers_block.opt1.label',
         skillCheck: {
           stat: 'skill',
           threshold: 8,
@@ -108,7 +106,7 @@ export const BAND_EVENTS = [
             type: 'stat',
             stat: 'harmony',
             value: 10,
-            description: 'Breakthrough! New song written.'
+            description: 'events:writers_block.opt1.d_daa8'
           },
           failure: {
             type: 'composite',
@@ -117,16 +115,16 @@ export const BAND_EVENTS = [
                 type: 'stat',
                 stat: 'mood',
                 value: -15,
-                description: 'Everyone is angry.'
+                description: 'events:writers_block.opt2.d_5ccd'
               },
               { type: 'stat', stat: 'stamina', value: -10 }
             ]
           }
         },
-        outcomeText: 'You spent hours in the practice room.'
+        outcomeText: 'events:writers_block.opt2.outcome'
       },
       {
-        label: 'Take a break [-50€]',
+        label: 'events:writers_block.opt3.label',
         effect: {
           type: 'composite',
           effects: [
@@ -134,12 +132,12 @@ export const BAND_EVENTS = [
               type: 'resource',
               resource: 'money',
               value: -50,
-              description: 'Went for beers.'
+              description: 'events:writers_block.opt4.d_56f9'
             },
             { type: 'stat', stat: 'mood', value: 5 }
           ]
         },
-        outcomeText: 'Sometimes you just need a distraction.'
+        outcomeText: 'events:writers_block.opt4.outcome'
       }
     ]
   },
@@ -147,20 +145,20 @@ export const BAND_EVENTS = [
     id: 'ego_clash',
     category: 'band',
     tags: ['conflict'],
-    title: 'EGO CLASH',
-    description: 'Marius wants a longer drum solo. Everyone else disagrees.',
+    title: 'events:ego_clash.title',
+    description: 'events:ego_clash.desc',
     trigger: 'random',
     chance: 0.04,
     options: [
       {
-        label: 'Let him have it [+5 Harmony]',
+        label: 'events:ego_clash.opt1.label',
         effect: { type: 'stat', stat: 'harmony', value: 5 },
-        outcomeText: 'He feels seen.'
+        outcomeText: 'events:ego_clash.opt1.outcome'
       },
       {
-        label: 'Shut it down [-10 Harmony]',
+        label: 'events:ego_clash.opt2.label',
         effect: { type: 'stat', stat: 'harmony', value: -10 },
-        outcomeText: 'Awkward silence.'
+        outcomeText: 'events:ego_clash.opt2.outcome'
       }
     ]
   },
@@ -168,25 +166,25 @@ export const BAND_EVENTS = [
     id: 'gear_upgrade_argument',
     category: 'band',
     tags: ['conflict'],
-    title: 'GEAR UPGRADE ARGUMENT',
-    description: 'Matze insists he needs a new amp “for the tone”.',
+    title: 'events:gear_upgrade_argument.title',
+    description: 'events:gear_upgrade_argument.desc',
     trigger: 'random',
     chance: 0.04,
     options: [
       {
-        label: 'Approve purchase [-200€]',
+        label: 'events:gear_upgrade_argument.opt1.label',
         effect: { type: 'resource', resource: 'money', value: -200 },
-        outcomeText: 'Tone improved. Wallet destroyed.'
+        outcomeText: 'events:gear_upgrade_argument.opt1.outcome'
       },
       {
-        label: 'Say no [Charisma]',
+        label: 'events:gear_upgrade_argument.opt2.label',
         skillCheck: {
           stat: 'charisma',
           threshold: 6,
           success: { type: 'stat', stat: 'harmony', value: 5 },
           failure: { type: 'stat', stat: 'harmony', value: -10 }
         },
-        outcomeText: 'You tried to reason.'
+        outcomeText: 'events:gear_upgrade_argument.opt2.outcome'
       }
     ]
   },
@@ -194,30 +192,30 @@ export const BAND_EVENTS = [
     id: 'setlist_argument',
     category: 'band',
     tags: ['conflict'],
-    title: 'SETLIST ARGUMENT',
-    description: 'Marius wants more fast songs. Lars wants more “groove”.',
+    title: 'events:setlist_argument.title',
+    description: 'events:setlist_argument.desc',
     trigger: 'random',
     chance: 0.05,
     options: [
       {
-        label: 'Go faster (Side with Marius)',
+        label: 'events:setlist_argument.opt1.label',
         effect: { type: 'stat', stat: 'harmony', value: -5 },
-        outcomeText: 'Lars rolls his eyes.'
+        outcomeText: 'events:setlist_argument.opt1.outcome'
       },
       {
-        label: 'Go groovier (Side with Lars)',
+        label: 'events:setlist_argument.opt2.label',
         effect: { type: 'stat', stat: 'harmony', value: -5 },
-        outcomeText: 'Marius taps his sticks impatiently.'
+        outcomeText: 'events:setlist_argument.opt2.outcome'
       },
       {
-        label: 'Compromise [Charisma]',
+        label: 'events:setlist_argument.opt3.label',
         skillCheck: {
           stat: 'charisma',
           threshold: 6,
           success: { type: 'stat', stat: 'harmony', value: 8 },
           failure: { type: 'stat', stat: 'harmony', value: -12 }
         },
-        outcomeText: 'You negotiate like a tired diplomat.'
+        outcomeText: 'events:setlist_argument.opt3.outcome'
       }
     ]
   },
@@ -225,25 +223,25 @@ export const BAND_EVENTS = [
     id: 'van_silence',
     category: 'band',
     tags: ['conflict'],
-    title: 'THE SILENCE',
-    description: 'Nobody talks for an hour. It’s not peaceful. It’s tension.',
+    title: 'events:van_silence.title',
+    description: 'events:van_silence.desc',
     trigger: 'random',
     chance: 0.04,
     options: [
       {
-        label: 'Crack a joke [Charisma]',
+        label: 'events:van_silence.opt1.label',
         skillCheck: {
           stat: 'charisma',
           threshold: 5,
           success: { type: 'stat', stat: 'harmony', value: 6 },
           failure: { type: 'stat', stat: 'mood', value: -5 }
         },
-        outcomeText: 'You try to break the ice.'
+        outcomeText: 'events:van_silence.opt1.outcome'
       },
       {
-        label: 'Let it be',
+        label: 'events:van_silence.opt2.label',
         effect: { type: 'stat', stat: 'harmony', value: -3 },
-        outcomeText: 'The silence stays heavy.'
+        outcomeText: 'events:van_silence.opt2.outcome'
       }
     ]
   },
@@ -251,13 +249,13 @@ export const BAND_EVENTS = [
     id: 'late_soundcheck_blame',
     category: 'band',
     tags: ['conflict'],
-    title: 'BLAME GAME',
-    description: 'Soundcheck is late and everyone blames everyone.',
+    title: 'events:late_soundcheck_blame.title',
+    description: 'events:late_soundcheck_blame.desc',
     trigger: 'random',
     chance: 0.05,
     options: [
       {
-        label: 'Take responsibility [-5 Mood, +5 Harmony]',
+        label: 'events:late_soundcheck_blame.opt1.label',
         effect: {
           type: 'composite',
           effects: [
@@ -265,12 +263,12 @@ export const BAND_EVENTS = [
             { type: 'stat', stat: 'harmony', value: 5 }
           ]
         },
-        outcomeText: 'It stings, but it helps.'
+        outcomeText: 'events:late_soundcheck_blame.opt1.outcome'
       },
       {
-        label: 'Call it out [-8 Harmony]',
+        label: 'events:late_soundcheck_blame.opt2.label',
         effect: { type: 'stat', stat: 'harmony', value: -8 },
-        outcomeText: 'Now it’s personal.'
+        outcomeText: 'events:late_soundcheck_blame.opt2.outcome'
       }
     ]
   },
@@ -278,13 +276,13 @@ export const BAND_EVENTS = [
     id: 'practice_room_rage',
     category: 'band',
     tags: ['conflict'],
-    title: 'PRACTICE ROOM RAGE',
-    description: 'A riff loop turns into an argument. Again.',
+    title: 'events:practice_room_rage.title',
+    description: 'events:practice_room_rage.desc',
     trigger: 'random',
     chance: 0.04,
     options: [
       {
-        label: 'Push through [Skill]',
+        label: 'events:practice_room_rage.opt1.label',
         skillCheck: {
           stat: 'skill',
           threshold: 7,
@@ -297,46 +295,45 @@ export const BAND_EVENTS = [
             ]
           }
         },
-        outcomeText: 'Hours disappear into noise.'
+        outcomeText: 'events:practice_room_rage.opt1.outcome'
       },
       {
-        label: 'Call it a day [+5 Mood, -5 Progress]',
+        label: 'events:practice_room_rage.opt2.label',
         effect: { type: 'stat', stat: 'mood', value: 5 },
-        outcomeText: 'You choose sanity.'
+        outcomeText: 'events:practice_room_rage.opt2.outcome'
       }
     ]
   },
   {
     id: 'band_photo_day',
     category: 'band',
-    title: 'BAND PHOTO DAY',
-    description: 'You promised new press photos. Nobody is ready.',
+    title: 'events:band_photo_day.title',
+    description: 'events:band_photo_day.desc',
     trigger: 'random',
     chance: 0.03,
     options: [
       {
-        label: 'Do it properly [-20€]',
+        label: 'events:band_photo_day.opt1.label',
         effect: { type: 'resource', resource: 'money', value: -20 },
-        outcomeText: 'At least you look like a real band.'
+        outcomeText: 'events:band_photo_day.opt1.outcome'
       },
       {
-        label: 'DIY photos [+5 Mood]',
+        label: 'events:band_photo_day.opt2.label',
         effect: { type: 'stat', stat: 'mood', value: 5 },
-        outcomeText: 'You shoot it in a parking garage. Somehow works.'
+        outcomeText: 'events:band_photo_day.opt2.outcome'
       }
     ]
   },
   {
     id: 'new_song_debut_fear',
     category: 'band',
-    title: 'NEW SONG PANIC',
-    description:
-      'Someone suggests playing the new song tonight. The room goes quiet.',
+    title: 'events:new_song_debut_fear.title',
+    description: 'events:new_song_debut_fear.desc',
     trigger: 'random',
     chance: 0.04,
     options: [
       {
-        label: 'Do it [+10 Hype, Risk]',
+        label: 'events:new_song_debut_fear.opt1.label',
         skillCheck: {
           stat: 'skill',
           threshold: 8,
@@ -349,25 +346,25 @@ export const BAND_EVENTS = [
           },
           failure: { type: 'stat', stat: 'harmony', value: -10 }
         },
-        outcomeText: 'You commit.'
+        outcomeText: 'events:new_song_debut_fear.opt1.outcome'
       },
       {
-        label: 'No new songs [+5 Harmony]',
+        label: 'events:new_song_debut_fear.opt2.label',
         effect: { type: 'stat', stat: 'harmony', value: 5 },
-        outcomeText: 'Safe choice. Less drama.'
+        outcomeText: 'events:new_song_debut_fear.opt2.outcome'
       }
     ]
   },
   {
     id: 'merch_table_duty',
     category: 'band',
-    title: 'MERCH TABLE DUTY',
-    description: 'Nobody wants to run the merch table after the set.',
+    title: 'events:merch_table_duty.title',
+    description: 'events:merch_table_duty.desc',
     trigger: 'random',
     chance: 0.05,
     options: [
       {
-        label: 'You do it [-5 Stamina, +10€]',
+        label: 'events:merch_table_duty.opt1.label',
         effect: {
           type: 'composite',
           effects: [
@@ -375,36 +372,35 @@ export const BAND_EVENTS = [
             { type: 'resource', resource: 'money', value: 10 }
           ]
         },
-        outcomeText: 'Small talk for cash.'
+        outcomeText: 'events:merch_table_duty.opt1.outcome'
       },
       {
-        label: 'Force Marius [-5 Harmony]',
+        label: 'events:merch_table_duty.opt2.label',
         effect: { type: 'stat', stat: 'harmony', value: -5 },
-        outcomeText: 'He does it, but he remembers.'
+        outcomeText: 'events:merch_table_duty.opt2.outcome'
       }
     ]
   },
   {
     id: 'sleeping_floor_fight',
     category: 'band',
-    title: 'SLEEPING ARRANGEMENTS',
-    description:
-      'The floor spot looks… worse than usual. Everybody wants the couch.',
+    title: 'events:sleeping_floor_fight.title',
+    description: 'events:sleeping_floor_fight.desc',
     trigger: 'random',
     chance: 0.04,
     options: [
       {
-        label: 'Draw straws [Luck]',
+        label: 'events:sleeping_floor_fight.opt1.label',
         skillCheck: {
           stat: 'luck',
           threshold: 5,
           success: { type: 'stat', stat: 'harmony', value: 5 },
           failure: { type: 'stat', stat: 'harmony', value: -5 }
         },
-        outcomeText: 'Fair… in theory.'
+        outcomeText: 'events:sleeping_floor_fight.opt1.outcome'
       },
       {
-        label: 'You take the floor [+5 Harmony, -5 Stamina]',
+        label: 'events:sleeping_floor_fight.opt2.label',
         effect: {
           type: 'composite',
           effects: [
@@ -412,28 +408,27 @@ export const BAND_EVENTS = [
             { type: 'stat', stat: 'stamina', value: -5 }
           ]
         },
-        outcomeText: 'Hero move. Terrible sleep.'
+        outcomeText: 'events:sleeping_floor_fight.opt2.outcome'
       }
     ]
   },
   {
     id: 'band_prank',
     category: 'band',
-    title: 'TOUR PRANK',
-    description:
-      'Someone swapped your strings with ancient rusty ones as a “joke”.',
+    title: 'events:band_prank.title',
+    description: 'events:band_prank.desc',
     trigger: 'random',
     chance: 0.03,
     options: [
       {
-        label: 'Laugh it off [+5 Mood]',
+        label: 'events:band_prank.opt1.label',
         effect: { type: 'stat', stat: 'mood', value: 5 },
-        outcomeText: 'You pretend it’s funny.'
+        outcomeText: 'events:band_prank.opt1.outcome'
       },
       {
-        label: 'Get angry [-8 Harmony]',
+        label: 'events:band_prank.opt2.label',
         effect: { type: 'stat', stat: 'harmony', value: -8 },
-        outcomeText: 'Now it’s a war.'
+        outcomeText: 'events:band_prank.opt2.outcome'
       }
     ]
   },
@@ -441,14 +436,13 @@ export const BAND_EVENTS = [
     id: 'ego_clash_2',
     category: 'band',
     tags: ['conflict'],
-    title: 'EGO CLASH II',
-    description:
-      'Lars wants to “rebrand” the band mid-tour. Marius wants to sleep.',
+    title: 'events:ego_clash_2.title',
+    description: 'events:ego_clash_2.desc',
     trigger: 'random',
     chance: 0.03,
     options: [
       {
-        label: 'Hear him out [+5 Mood, -5 Time]',
+        label: 'events:ego_clash_2.opt1.label',
         effect: {
           type: 'composite',
           effects: [
@@ -456,10 +450,10 @@ export const BAND_EVENTS = [
             { type: 'stat', stat: 'time', value: -0.5 }
           ]
         },
-        outcomeText: 'You brainstorm at 2am. Why.'
+        outcomeText: 'events:ego_clash_2.opt1.outcome'
       },
       {
-        label: 'Shut it down [+5 Stamina, -5 Harmony]',
+        label: 'events:ego_clash_2.opt2.label',
         effect: {
           type: 'composite',
           effects: [
@@ -467,77 +461,77 @@ export const BAND_EVENTS = [
             { type: 'stat', stat: 'harmony', value: -5 }
           ]
         },
-        outcomeText: 'Sleep wins. Friendships lose.'
+        outcomeText: 'events:ego_clash_2.opt2.outcome'
       }
     ]
   },
   {
     id: 'vocal_warmup_cringe',
     category: 'band',
-    title: 'VOCAL WARMUP CRINGE',
-    description: 'Someone starts intense warmups in the van. Everyone suffers.',
+    title: 'events:vocal_warmup_cringe.title',
+    description: 'events:vocal_warmup_cringe.desc',
     trigger: 'random',
     chance: 0.04,
     options: [
       {
-        label: 'Join in [+5 Harmony]',
+        label: 'events:vocal_warmup_cringe.opt1.label',
         effect: { type: 'stat', stat: 'harmony', value: 5 },
-        outcomeText: 'Painful bonding.'
+        outcomeText: 'events:vocal_warmup_cringe.opt1.outcome'
       },
       {
-        label: 'Beg for silence [-5 Mood]',
+        label: 'events:vocal_warmup_cringe.opt2.label',
         effect: { type: 'stat', stat: 'mood', value: -5 },
-        outcomeText: 'Nobody listens.'
+        outcomeText: 'events:vocal_warmup_cringe.opt2.outcome'
       }
     ]
   },
   {
     id: 'band_meeting',
     category: 'band',
-    title: 'BAND MEETING',
-    description: 'You need to talk about expectations. Nobody wants to.',
+    title: 'events:band_meeting.title',
+    description: 'events:band_meeting.desc',
     trigger: 'random',
     chance: 0.03,
     options: [
       {
-        label: 'Do it properly [Charisma]',
+        label: 'events:band_meeting.opt1.label',
         skillCheck: {
           stat: 'charisma',
           threshold: 7,
           success: { type: 'stat', stat: 'harmony', value: 12 },
           failure: { type: 'stat', stat: 'harmony', value: -8 }
         },
-        outcomeText: 'You attempt emotional leadership.'
+        outcomeText: 'events:band_meeting.opt1.outcome'
       },
       {
-        label: 'Skip it',
+        label: 'events:band_meeting.opt2.label',
         effect: { type: 'stat', stat: 'harmony', value: -3 },
-        outcomeText: 'Avoidance is a strategy…'
+        outcomeText: 'events:band_meeting.opt2.outcome'
       }
     ]
   },
   {
     id: 'lost_setlist_notes',
     category: 'band',
-    title: 'LOST NOTES',
-    description: 'Your setlist notes disappeared. The show is tonight.',
+    title: 'events:lost_setlist_notes.title',
+    description: 'events:lost_setlist_notes.desc',
     trigger: 'random',
     chance: 0.04,
     options: [
       {
-        label: 'Rewrite from memory [Skill]',
+        label: 'events:lost_setlist_notes.opt1.label',
         skillCheck: {
           stat: 'skill',
           threshold: 6,
           success: { type: 'stat', stat: 'mood', value: 5 },
           failure: { type: 'stat', stat: 'mood', value: -5 }
         },
-        outcomeText: 'You trust your brain.'
+        outcomeText: 'events:lost_setlist_notes.opt1.outcome'
       },
       {
-        label: 'Wing it',
+        label: 'events:lost_setlist_notes.opt2.label',
         effect: { type: 'stat', stat: 'harmony', value: -4 },
-        outcomeText: 'Confidence is not a plan.'
+        outcomeText: 'events:lost_setlist_notes.opt2.outcome'
       }
     ]
   },
@@ -545,24 +539,23 @@ export const BAND_EVENTS = [
     id: 'backstage_argument',
     category: 'band',
     tags: ['conflict'],
-    title: 'BACKSTAGE ARGUMENT',
-    description:
-      'A small comment turns into a big fight five minutes before stage.',
+    title: 'events:backstage_argument.title',
+    description: 'events:backstage_argument.desc',
     trigger: 'random',
     chance: 0.03,
     options: [
       {
-        label: 'Calm everyone down [Charisma]',
+        label: 'events:backstage_argument.opt1.label',
         skillCheck: {
           stat: 'charisma',
           threshold: 8,
           success: { type: 'stat', stat: 'harmony', value: 10 },
           failure: { type: 'stat', stat: 'harmony', value: -15 }
         },
-        outcomeText: 'You try to prevent disaster.'
+        outcomeText: 'events:backstage_argument.opt1.outcome'
       },
       {
-        label: 'Let them vent [-5 Harmony, +5 Mood]',
+        label: 'events:backstage_argument.opt2.label',
         effect: {
           type: 'composite',
           effects: [
@@ -570,20 +563,20 @@ export const BAND_EVENTS = [
             { type: 'stat', stat: 'mood', value: 5 }
           ]
         },
-        outcomeText: 'It’s messy, but honest.'
+        outcomeText: 'events:backstage_argument.opt2.outcome'
       }
     ]
   },
   {
     id: 'creative_high',
     category: 'band',
-    title: 'CREATIVE HIGH',
-    description: 'A new riff appears out of nowhere. Everyone is smiling.',
+    title: 'events:creative_high.title',
+    description: 'events:creative_high.desc',
     trigger: 'random',
     chance: 0.03,
     options: [
       {
-        label: 'Capture it [+10 Mood, +5 Harmony]',
+        label: 'events:creative_high.opt1.label',
         effect: {
           type: 'composite',
           effects: [
@@ -591,41 +584,40 @@ export const BAND_EVENTS = [
             { type: 'stat', stat: 'harmony', value: 5 }
           ]
         },
-        outcomeText: 'You record a demo on a phone mic.'
+        outcomeText: 'events:creative_high.opt1.outcome'
       }
     ]
   },
   {
     id: 'sore_throat',
     category: 'band',
-    title: 'SORE THROAT',
-    description: 'Someone’s voice sounds rough today.',
+    title: 'events:sore_throat.title',
+    description: 'events:sore_throat.desc',
     trigger: 'random',
     chance: 0.04,
     options: [
       {
-        label: 'Buy tea & honey [-10€]',
+        label: 'events:sore_throat.opt1.label',
         effect: { type: 'resource', resource: 'money', value: -10 },
-        outcomeText: 'Warm, sticky, helpful.'
+        outcomeText: 'events:sore_throat.opt1.outcome'
       },
       {
-        label: 'Ignore it [-5 Mood]',
+        label: 'events:sore_throat.opt2.label',
         effect: { type: 'stat', stat: 'mood', value: -5 },
-        outcomeText: 'Tomorrow will be worse.'
+        outcomeText: 'events:sore_throat.opt2.outcome'
       }
     ]
   },
   {
     id: 'band_bonding_walk',
     category: 'band',
-    title: 'BONDING WALK',
-    description:
-      'You have two hours to kill. Someone suggests a walk together.',
+    title: 'events:band_bonding_walk.title',
+    description: 'events:band_bonding_walk.desc',
     trigger: 'random',
     chance: 0.03,
     options: [
       {
-        label: 'Go together [+8 Harmony, +5 Mood]',
+        label: 'events:band_bonding_walk.opt1.label',
         effect: {
           type: 'composite',
           effects: [
@@ -633,12 +625,12 @@ export const BAND_EVENTS = [
             { type: 'stat', stat: 'mood', value: 5 }
           ]
         },
-        outcomeText: 'You talk like humans for once.'
+        outcomeText: 'events:band_bonding_walk.opt1.outcome'
       },
       {
-        label: 'Stay alone [+5 Mood]',
+        label: 'events:band_bonding_walk.opt2.label',
         effect: { type: 'stat', stat: 'mood', value: 5 },
-        outcomeText: 'Recharge time.'
+        outcomeText: 'events:band_bonding_walk.opt2.outcome'
       }
     ]
   },
@@ -646,14 +638,13 @@ export const BAND_EVENTS = [
     id: 'tempo_police',
     category: 'band',
     tags: ['conflict'],
-    title: 'TEMPO POLICE',
-    description:
-      'Marius insists everyone is rushing. Lars insists Marius is dragging.',
+    title: 'events:tempo_police.title',
+    description: 'events:tempo_police.desc',
     trigger: 'random',
     chance: 0.04,
     options: [
       {
-        label: 'Do metronome drills [-10 Stamina, +8 Harmony]',
+        label: 'events:tempo_police.opt1.label',
         effect: {
           type: 'composite',
           effects: [
@@ -661,37 +652,37 @@ export const BAND_EVENTS = [
             { type: 'stat', stat: 'harmony', value: 8 }
           ]
         },
-        outcomeText: 'Painful, but it works.'
+        outcomeText: 'events:tempo_police.opt1.outcome'
       },
       {
-        label: 'Ignore it [-6 Harmony]',
+        label: 'events:tempo_police.opt2.label',
         effect: { type: 'stat', stat: 'harmony', value: -6 },
-        outcomeText: 'The argument continues forever.'
+        outcomeText: 'events:tempo_police.opt2.outcome'
       }
     ]
   },
   {
     id: 'forgotten_lyrics',
     category: 'band',
-    title: 'FORGOTTEN LYRICS',
-    description: 'Someone admits they forgot a verse. On tour. Right now.',
+    title: 'events:forgotten_lyrics.title',
+    description: 'events:forgotten_lyrics.desc',
     trigger: 'random',
     chance: 0.03,
     options: [
       {
-        label: 'Rehearse quickly [-5 Time]',
+        label: 'events:forgotten_lyrics.opt1.label',
         effect: { type: 'stat', stat: 'time', value: -0.5 },
-        outcomeText: 'You whisper-sing in a hallway.'
+        outcomeText: 'events:forgotten_lyrics.opt1.outcome'
       },
       {
-        label: 'Improvise [Charisma]',
+        label: 'events:forgotten_lyrics.opt2.label',
         skillCheck: {
           stat: 'charisma',
           threshold: 6,
           success: { type: 'stat', stat: 'mood', value: 5 },
           failure: { type: 'stat', stat: 'harmony', value: -6 }
         },
-        outcomeText: 'Confidence, baby.'
+        outcomeText: 'events:forgotten_lyrics.opt2.outcome'
       }
     ]
   }
