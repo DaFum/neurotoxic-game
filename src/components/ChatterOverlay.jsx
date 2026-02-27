@@ -119,7 +119,7 @@ export const ChatterOverlay = ({ gameState }) => {
     () =>
       t(`ui:chatter_labels.${currentScene}`, {
         defaultValue:
-          t(SCENE_LABELS[currentScene]) ||
+          SCENE_LABELS[currentScene] ||
           t('ui:chatter_labels.default_fallback', { defaultValue: 'Band Feed' })
       }),
     [currentScene, t]
