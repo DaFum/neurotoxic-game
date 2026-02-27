@@ -9,7 +9,9 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: 'en',
-    ns: ['ui', 'events', 'venues', 'items', 'unlocks'], // Namespaces for game areas
+    supportedLngs: ['en', 'de'],
+    load: 'languageOnly', // Eliminate region-specific loads (e.g. de-DE -> de) to reduce requests
+    ns: ['ui'], // Only load UI strings initially; others (events, items) load on demand
     defaultNS: 'ui',
     interpolation: { escapeValue: false },
     backend: {
