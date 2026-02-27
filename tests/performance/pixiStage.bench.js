@@ -4,7 +4,14 @@ import { performance } from 'node:perf_hooks'
 const NOTE_JITTER_RANGE = 10
 const NOTE_CENTER_OFFSET = 50
 
-function calculateNoteY({ elapsed, noteTime, targetY, speed }) {
+// Old implementation (object-based)
+function calculateNoteY_Old({ elapsed, noteTime, targetY, speed }) {
+  // Simplified calculation
+  return targetY - (noteTime - elapsed) * speed
+}
+
+// New implementation (positional arguments)
+function calculateNoteY_New(elapsed, noteTime, targetY, speed) {
   // Simplified calculation
   return targetY - (noteTime - elapsed) * speed
 }
@@ -35,60 +42,46 @@ for (let i = 0; i < numNotes; i++) {
     x: 0,
     y: 0,
     // Add a property to simulate instanceof check if needed, but here we assume all are "Sprites"
-    isSprite: true
+    isSprite: true,
+    jitter: (Math.random() - 0.5) * NOTE_JITTER_RANGE
   }
   notes.push(note)
   sprites.push(sprite)
   noteSprites.set(note, sprite)
 }
 
-// Baseline: Current implementation with Math.random() in the loop
+// Baseline: Old Object-based signature
 function runBaseline() {
   let elapsed = 0
   for (let frame = 0; frame < numFrames; frame++) {
     elapsed += 16
     for (const [note, sprite] of noteSprites) {
-      // Logic from PixiStageController
-      const jitterOffset = state.modifiers.noteJitter
-        ? (Math.random() - 0.5) * NOTE_JITTER_RANGE
-        : 0
+      const jitterOffset = state.modifiers.noteJitter ? sprite.jitter : 0
 
-      sprite.y = calculateNoteY({
+      // OLD CALL
+      sprite.y = calculateNoteY_Old({
         elapsed,
         noteTime: note.time,
         targetY: 500,
         speed: state.speed
       })
 
-      // Assuming sprite instanceof PIXI.Sprite is true
       sprite.x =
         state.lanes[note.laneIndex].renderX + NOTE_CENTER_OFFSET + jitterOffset
     }
   }
 }
 
-// Optimized: Pre-calculated jitter stored on sprite (or note)
-// We'll simulate that we've already attached a jitter property to the sprite or note
-for (const [_note, sprite] of noteSprites) {
-  sprite.jitter = (Math.random() - 0.5) * NOTE_JITTER_RANGE
-}
-
+// Optimized: New Positional signature
 function runOptimized() {
   let elapsed = 0
   for (let frame = 0; frame < numFrames; frame++) {
     elapsed += 16
     for (const [note, sprite] of noteSprites) {
-      // Optimized logic: use stored jitter
-      const jitterOffset = state.modifiers.noteJitter
-        ? sprite.jitter // Use pre-calculated
-        : 0
+      const jitterOffset = state.modifiers.noteJitter ? sprite.jitter : 0
 
-      sprite.y = calculateNoteY({
-        elapsed,
-        noteTime: note.time,
-        targetY: 500,
-        speed: state.speed
-      })
+      // NEW CALL
+      sprite.y = calculateNoteY_New(elapsed, note.time, 500, state.speed)
 
       sprite.x =
         state.lanes[note.laneIndex].renderX + NOTE_CENTER_OFFSET + jitterOffset
@@ -107,14 +100,14 @@ runBaseline()
 const endBase = performance.now()
 const timeBase = endBase - startBase
 
-console.log(`Baseline (Math.random per frame): ${timeBase.toFixed(2)}ms`)
+console.log(`Baseline (Object params): ${timeBase.toFixed(2)}ms`)
 
 const startOpt = performance.now()
 runOptimized()
 const endOpt = performance.now()
 const timeOpt = endOpt - startOpt
 
-console.log(`Optimized (Pre-calculated): ${timeOpt.toFixed(2)}ms`)
+console.log(`Optimized (Positional params): ${timeOpt.toFixed(2)}ms`)
 console.log(
   `Improvement: ${(timeBase - timeOpt).toFixed(2)}ms (${(((timeBase - timeOpt) / timeBase) * 100).toFixed(1)}%)`
 )

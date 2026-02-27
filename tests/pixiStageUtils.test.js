@@ -8,12 +8,7 @@ import {
 } from '../src/components/stage/utils.js'
 
 test('calculateNoteY returns target position at hit time', () => {
-  const result = calculateNoteY({
-    elapsed: 5000,
-    noteTime: 5000,
-    targetY: 420,
-    speed: 500
-  })
+  const result = calculateNoteY(5000, 5000, 420, 500)
 
   assert.equal(result, 420)
 })

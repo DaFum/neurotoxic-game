@@ -121,12 +121,7 @@ export class NoteManager {
 
       const jitterOffset = state.modifiers.noteJitter ? sprite.jitterOffset : 0
 
-      sprite.y = calculateNoteY({
-        elapsed,
-        noteTime: note.time,
-        targetY,
-        speed: state.speed
-      })
+      sprite.y = calculateNoteY(elapsed, note.time, targetY, state.speed)
 
       // Unified positioning logic for both texture and fallback sprites
       // Fallback sprites (isFallback=true) do not jitter and are centered at renderX + 50

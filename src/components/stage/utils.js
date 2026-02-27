@@ -62,14 +62,13 @@ export const getPixiColorFromToken = tokenName => {
 
 /**
  * Calculates the Y position for a note sprite.
- * @param {object} params - Position inputs.
- * @param {number} params.elapsed - Elapsed time since start in ms.
- * @param {number} params.noteTime - Scheduled note time in ms.
- * @param {number} params.targetY - Target hit line Y position.
- * @param {number} params.speed - Note travel speed.
+ * @param {number} elapsed - Elapsed time since start in ms.
+ * @param {number} noteTime - Scheduled note time in ms.
+ * @param {number} targetY - Target hit line Y position.
+ * @param {number} speed - Note travel speed.
  * @returns {number} Calculated Y position.
  */
-export const calculateNoteY = ({ elapsed, noteTime, targetY, speed }) => {
+export const calculateNoteY = (elapsed, noteTime, targetY, speed) => {
   const timeUntilHit = noteTime - elapsed
   return targetY - (timeUntilHit / 1000) * speed
 }
