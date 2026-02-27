@@ -1,19 +1,33 @@
 import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
 import { StatBox, ProgressBar } from '../shared'
 
 export const StatsTab = ({ player, band, social }) => {
+  const { t } = useTranslation(['ui'])
   return (
     <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
       {/* Financials & Fame */}
       <div className='space-y-6'>
         <div className='bg-(--void-black)/40 border-2 border-(--ash-gray) p-4'>
           <h3 className='text-(--toxic-green) text-lg font-bold mb-4 border-b border-(--ash-gray) pb-2 font-mono'>
-            CAREER STATUS
+            {t('stats.career_overview', { defaultValue: 'CAREER STATUS' })}
           </h3>
           <div className='grid grid-cols-2 gap-4'>
-            <StatBox label='Funds' value={`${player.money}€`} icon='€' />
-            <StatBox label='Fame' value={player.fame} icon='★' />
-            <StatBox label='Day' value={player.day} icon='📅' />
+            <StatBox
+              label={t('stats.funds', { defaultValue: 'Funds' })}
+              value={`${player.money}€`}
+              icon='€'
+            />
+            <StatBox
+              label={t('stats.fame', { defaultValue: 'Fame' })}
+              value={player.fame}
+              icon='★'
+            />
+            <StatBox
+              label={t('ui.day', { defaultValue: 'Day' })}
+              value={player.day}
+              icon='📅'
+            />
             <StatBox
               label='Followers'
               value={
@@ -29,17 +43,17 @@ export const StatsTab = ({ player, band, social }) => {
 
         <div className='bg-(--void-black)/40 border-2 border-(--ash-gray) p-4'>
           <h3 className='text-(--toxic-green) text-lg font-bold mb-4 border-b border-(--ash-gray) pb-2 font-mono'>
-            VAN STATUS
+            {t('stats.van_condition', { defaultValue: 'VAN STATUS' })}
           </h3>
           <div className='space-y-2'>
             <ProgressBar
-              label='Fuel'
+              label={t('stats.fuel', { defaultValue: 'Fuel' })}
               value={player.van?.fuel}
               max={100}
               color='bg-(--fuel-yellow)'
             />
             <ProgressBar
-              label='Condition'
+              label={t('stats.condition', { defaultValue: 'Condition' })}
               value={player.van?.condition}
               max={100}
               color='bg-(--condition-blue)'

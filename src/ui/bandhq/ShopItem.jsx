@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { getPrimaryEffect } from '../../utils/purchaseLogicUtils'
 import { GlitchButton } from '../GlitchButton'
@@ -11,6 +12,7 @@ export const ShopItem = ({
   onBuy,
   processingItemId
 }) => {
+  const { t } = useTranslation(['items', 'ui'])
   const primaryEffect = getPrimaryEffect(item)
   const isConsumable = primaryEffect?.type === 'inventory_add'
   const isPurchased = isOwned && !isConsumable
@@ -40,11 +42,11 @@ export const ShopItem = ({
             className='w-12 h-12 object-contain bg-(--void-black) border-2 border-(--ash-gray)'
           />
           <h4 className='font-bold text-(--toxic-green) leading-tight font-mono uppercase'>
-            {item.name}
+            {t(item.name)}
           </h4>
         </div>
         <p className='text-xs text-(--ash-gray) mb-2 font-mono'>
-          {item.description}
+          {t(item.description)}
         </p>
       </div>
       <div className='flex justify-between items-center mt-2'>
@@ -77,7 +79,9 @@ export const ShopItem = ({
           size='sm'
           className='min-w-[80px]'
         >
-          {isPurchased ? 'OWNED' : 'BUY'}
+          {isPurchased
+            ? t('hq.owned', { defaultValue: 'OWNED' })
+            : t('hq.buy', { defaultValue: 'BUY' })}
         </GlitchButton>
       </div>
     </div>

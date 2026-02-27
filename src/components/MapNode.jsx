@@ -1,4 +1,5 @@
 import { memo, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 
@@ -22,6 +23,7 @@ export const MapNode = memo(
     vanUrl,
     ticketPrice
   }) => {
+    const { t } = useTranslation(['venues', 'ui'])
     const positionStyle = useMemo(
       () => ({ left: `${node.x}%`, top: `${node.y}%` }),
       [node.x, node.y]
@@ -53,7 +55,7 @@ export const MapNode = memo(
         role={isReachable ? 'button' : undefined}
         aria-label={
           isReachable
-            ? `Travel to ${node.venue?.name}${isPendingConfirm ? ' - click to confirm' : ''}`
+            ? `Travel to ${t(node.venue?.name)}${isPendingConfirm ? ' - click to confirm' : ''}`
             : undefined
         }
         tabIndex={isReachable ? 0 : undefined}
@@ -108,7 +110,7 @@ export const MapNode = memo(
 
         <div className='hidden group-hover:block absolute bottom-8 bg-(--void-black)/90 border border-(--toxic-green) p-2 rounded z-50 whitespace-nowrap pointer-events-none'>
           <div className='font-bold text-(--toxic-green)'>
-            {node.venue?.name || 'Unknown'}
+            {t(node.venue?.name) || 'Unknown'}
           </div>
           {(node.type === 'GIG' ||
             node.type === 'FESTIVAL' ||

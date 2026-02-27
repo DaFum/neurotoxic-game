@@ -65,5 +65,28 @@
   "stats.daysSurvived": "DAYS SURVIVED",
   "stats.fameReached": "FAME REACHED",
   "stats.totalTravels": "TOTAL TRAVELS",
-  "stats.totalScore": "TOTAL SCORE"
+  "stats.totalScore": "TOTAL SCORE",
+  "hq.start_practice": "START PRACTICE",
+  "hq.practice_desc": "Practice makes perfect.",
+  "hq.song_active": "ACTIVE",
+  "hq.song_select": "SELECT",
+  "hq.selected": "SELECTED",
+  "hq.buy": "BUY",
+  "hq.owned": "OWNED",
+  "hq.leave": "LEAVE [ESC]",
+  "hq.title": "BAND HQ",
+  "chatter_labels": {
+    "INTRO": "Intro Feed",
+    "MENU": "Main Feed",
+    "OVERWORLD": "Tour Feed",
+    "PREGIG": "Pre-Gig Feed",
+    "GIG": "Live Feed",
+    "POSTGIG": "Aftershow Feed",
+    "SETTINGS": "System Feed",
+    "CREDITS": "Crew Feed",
+    "GAMEOVER": "Last Broadcast",
+    "TRAVEL_MINIGAME": "Travel Feed",
+    "PRE_GIG_MINIGAME": "Roadie Feed",
+    "default_speaker": "Band"
+  }
 }

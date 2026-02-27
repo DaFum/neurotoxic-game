@@ -3,159 +3,155 @@ export const HQ_ITEMS = {
     // Standard Consumables
     {
       id: 'hq_gear_strings',
-      name: 'Saitensatz (10er Pack)',
+      name: 'items:hq_gear_strings.name',
       category: 'GEAR',
       cost: 20, // Low cost consumable
       currency: 'money',
       img: 'ITEM_STRINGS',
-      description: 'Ersatzsaiten für den Notfall.',
+      description: 'items:hq_gear_strings.description',
       effect: { type: 'inventory_set', item: 'strings', value: true }
     },
     {
       id: 'hq_gear_cables',
-      name: 'Goldkabel',
+      name: 'items:hq_gear_cables.name',
       category: 'GEAR',
       cost: 50, // Mid-range cable cost
       currency: 'money',
       img: 'ITEM_CABLES',
-      description: 'Kein Wackelkontakt mehr. Signal ist sauber.',
+      description: 'items:hq_gear_cables.description',
       effect: { type: 'inventory_set', item: 'cables', value: true }
     },
     {
       id: 'hq_gear_drum_parts',
-      name: 'Stick-Bundle & Felle',
+      name: 'items:hq_gear_drum_parts.name',
       category: 'GEAR',
       cost: 60, // Standard drum maintenance
       currency: 'money',
       img: 'ITEM_DRUM_PARTS',
-      description: 'Frisches Holz und neue Felle für den Drummer.',
+      description: 'items:hq_gear_drum_parts.description',
       effect: { type: 'inventory_set', item: 'drum_parts', value: true }
     },
     // Merch Restocks
     {
       id: 'hq_merch_shirts_bundle',
-      name: 'Karton T-Shirts (25 Stk.)',
+      name: 'items:hq_merch_shirts_bundle.name',
       category: 'MERCH',
       cost: 150, // 6€/Shirt production cost
       currency: 'money',
       img: 'ITEM_MERCH_SHIRTS',
-      description: 'Nachschub für den Merch-Stand.',
+      description: 'items:hq_merch_shirts_bundle.description',
       effect: { type: 'inventory_add', item: 'shirts', value: 25 }
     },
     {
       id: 'hq_merch_hoodies_bundle',
-      name: 'Karton Hoodies (10 Stk.)',
+      name: 'items:hq_merch_hoodies_bundle.name',
       category: 'MERCH',
       cost: 200, // 20€/Hoodie production cost
       currency: 'money',
       img: 'ITEM_MERCH_HOODIES',
-      description: 'Premium Ware. Hohe Marge.',
+      description: 'items:hq_merch_hoodies_bundle.description',
       effect: { type: 'inventory_add', item: 'hoodies', value: 10 }
     },
     {
       id: 'hq_merch_patches_bundle',
-      name: 'Karton Patches (50 Stk.)',
+      name: 'items:hq_merch_patches_bundle.name',
       category: 'MERCH',
       cost: 50, // 1€/Patch production cost
       currency: 'money',
       img: 'ITEM_MERCH_PATCHES',
-      description: 'Für die Kutte. Schnell verkauft.',
+      description: 'items:hq_merch_patches_bundle.description',
       effect: { type: 'inventory_add', item: 'patches', value: 50 }
     },
     {
       id: 'hq_merch_vinyl_bundle',
-      name: 'Vinyl Pressung (20 Stk.)',
+      name: 'items:hq_merch_vinyl_bundle.name',
       category: 'MERCH',
       cost: 300, // 15€/LP production cost
       currency: 'money',
       img: 'ITEM_MERCH_VINYL',
-      description: 'Für die echten Sammler.',
+      description: 'items:hq_merch_vinyl_bundle.description',
       effect: { type: 'inventory_add', item: 'vinyl', value: 20 }
     },
     {
       id: 'hq_merch_cds_bundle',
-      name: 'CD Spindel (50 Stk.)',
+      name: 'items:hq_merch_cds_bundle.name',
       category: 'MERCH',
       cost: 100, // 2€/CD production cost
       currency: 'money',
       img: 'ITEM_MERCH_CDS',
-      description: 'Gibt es noch CD-Player? Egal.',
+      description: 'items:hq_merch_cds_bundle.description',
       effect: { type: 'inventory_add', item: 'cds', value: 50 }
     },
     // Realistic/Gritty Gear
     {
       id: 'hq_gear_broken_pedal',
-      name: 'Defektes Pedal (mit Klebeband)',
+      name: 'items:hq_gear_broken_pedal.name',
       category: 'GEAR',
       cost: 10, // Scrap value
       currency: 'money',
       img: 'ITEM_BROKEN_PEDAL',
-      description:
-        'Funktioniert irgendwie, aber wer weiß wie lange noch. Aussetzer garantiert.',
+      description: 'items:hq_gear_broken_pedal.description',
       effect: { type: 'inventory_set', item: 'broken_pedal', value: true }
     },
     {
       id: 'hq_gear_cheap_mics',
-      name: 'Billigmikrofone (5er Pack)',
+      name: 'items:hq_gear_cheap_mics.name',
       category: 'GEAR',
       cost: 80, // Very cheap for 5 mics
       currency: 'money',
       img: 'ITEM_CHEAP_MICS',
-      description:
-        'Für Vocals, wenn die guten kaputt sind. Klingt wie aus der Tonne.',
+      description: 'items:hq_gear_cheap_mics.description',
       effect: { type: 'inventory_add', item: 'cheap_mics', value: 5 }
     },
     {
       id: 'hq_gear_diy_patch_kit',
-      name: 'DIY Patch-Kit',
+      name: 'items:hq_gear_diy_patch_kit.name',
       category: 'GEAR',
       cost: 20, // Cheap sewing kit
       currency: 'money',
       img: 'ITEM_DIY_PATCH_KIT',
-      description:
-        'Zum Flicken von Klamotten und Taschen. Für den authentischen Look.',
+      description: 'items:hq_gear_diy_patch_kit.description',
       effect: { type: 'inventory_set', item: 'diy_patch_kit', value: true }
     },
     {
       id: 'hq_gear_tour_food_canned',
-      name: 'Dosenfutter (10er Pack)',
+      name: 'items:hq_gear_tour_food_canned.name',
       category: 'CONSUMABLE',
       cost: 30, // 3€/Can
       currency: 'money',
       img: 'ITEM_CANNED_FOOD',
-      description: 'Günstig und hält. Nicht lecker, aber es füllt den Magen.',
+      description: 'items:hq_gear_tour_food_canned.description',
       effect: { type: 'inventory_add', item: 'canned_food', value: 10 }
     },
     {
       id: 'hq_gear_tour_beer_bulk',
-      name: 'Kasten Bier (30 Flaschen)',
+      name: 'items:hq_gear_tour_beer_bulk.name',
       category: 'CONSUMABLE',
       cost: 40, // Bulk discount beer
       currency: 'money',
       img: 'ITEM_BEER_CRATE',
-      description:
-        'Für die Moral und die Aftershow-Party. Günstig im Großhandel.',
+      description: 'items:hq_gear_tour_beer_bulk.description',
       effect: { type: 'inventory_add', item: 'beer_bulk', value: 30 }
     },
     // Bizarre Gear (Luck/Status Boosts via Inventory Flags or immediate stats)
     {
       id: 'hq_gear_lucky_rabbit_foot',
-      name: 'Abgefahrene Hasenpfote',
+      name: 'items:hq_gear_lucky_rabbit_foot.name',
       category: 'GEAR',
       cost: 150, // Magic item cost
       currency: 'money',
       img: 'ITEM_RABBIT_FOOT',
-      description: 'Es riecht komisch, aber bringt Glück (+2 Luck).',
+      description: 'items:hq_gear_lucky_rabbit_foot.description',
       effect: { type: 'stat_modifier', target: 'band', stat: 'luck', value: 2 }
     },
     {
       id: 'hq_gear_duct_tape_roll',
-      name: 'Panzertape (Industrie)',
+      name: 'items:hq_gear_duct_tape_roll.name',
       category: 'GEAR',
       cost: 80, // High quality tape
       currency: 'money',
       img: 'ITEM_DUCT_TAPE',
-      description: 'Repariert den Van sofort ein bisschen (+5 Condition).',
+      description: 'items:hq_gear_duct_tape_roll.description',
       effect: {
         type: 'stat_modifier',
         target: 'van',
@@ -165,12 +161,12 @@ export const HQ_ITEMS = {
     },
     {
       id: 'hq_gear_incense_sticks',
-      name: 'Räucherstäbchen "Nag Champa"',
+      name: 'items:hq_gear_incense_sticks.name',
       category: 'GEAR',
       cost: 30, // Mood items
       currency: 'money',
       img: 'ITEM_INCENSE',
-      description: 'Beruhigt die Nerven sofort (+5 Harmony).',
+      description: 'items:hq_gear_incense_sticks.description',
       effect: {
         type: 'stat_modifier',
         target: 'band',
@@ -180,12 +176,12 @@ export const HQ_ITEMS = {
     },
     {
       id: 'hq_gear_voodoo_doll',
-      name: 'Nadelkissen Puppe',
+      name: 'items:hq_gear_voodoo_doll.name',
       category: 'GEAR',
       cost: 660, // Occult item cost (Adjusted to multiple of 10)
       currency: 'money',
       img: 'ITEM_VOODOO_DOLL',
-      description: 'Verflucht die Konkurrenz (+5 Luck).',
+      description: 'items:hq_gear_voodoo_doll.description',
       effect: { type: 'stat_modifier', target: 'band', stat: 'luck', value: 5 }
     }
   ],
@@ -193,44 +189,43 @@ export const HQ_ITEMS = {
     // Guitars & Strings
     {
       id: 'hq_inst_guitar_custom',
-      name: 'Custom 8-String Axt',
+      name: 'items:hq_inst_guitar_custom.name',
       category: 'INSTRUMENT',
       cost: 2500, // High-end instrument
       currency: 'money',
       img: 'ITEM_GUITAR_CUSTOM',
-      description: 'Erleichtert das Treffen von Noten enorm (-15% Diff).',
+      description: 'items:hq_inst_guitar_custom.description',
       effect: { type: 'stat_modifier', stat: 'guitarDifficulty', value: -0.15 }
     },
     {
       id: 'hq_inst_guitar_flying_v',
-      name: 'Rusty Flying V',
+      name: 'items:hq_inst_guitar_flying_v.name',
       category: 'INSTRUMENT',
       cost: 1200, // Mid-range vintage
       currency: 'money',
       img: 'ITEM_GUITAR_V',
-      description: 'Sieht brutal aus. Crowd Decay -5%.',
+      description: 'items:hq_inst_guitar_flying_v.description',
       effect: { type: 'stat_modifier', stat: 'crowdDecay', value: -0.05 }
     },
     {
       id: 'hq_inst_bass_sansamp',
-      name: 'Darkglass Preamp',
+      name: 'items:hq_inst_bass_sansamp.name',
       category: 'INSTRUMENT',
       cost: 1800, // Pro gear
       currency: 'money',
       img: 'ITEM_BASS_PREAMP',
-      description:
-        'Der Bass drückt so sehr, dass die Crowd länger bleibt (-10% Decay).',
+      description: 'items:hq_inst_bass_sansamp.description',
       effect: { type: 'stat_modifier', stat: 'crowdDecay', value: -0.1 }
     },
     // Drums
     {
       id: 'hq_inst_drum_trigger',
-      name: 'Axis Longboards & Trigger',
+      name: 'items:hq_inst_drum_trigger.name',
       category: 'INSTRUMENT',
       cost: 2200, // Pro drum gear
       currency: 'money',
       img: 'ITEM_DRUM_TRIGGER',
-      description: 'Jeder Kick sitzt. +20% Drum Score.',
+      description: 'items:hq_inst_drum_trigger.description',
       effect: {
         type: 'stat_modifier',
         stat: 'drumMultiplier',
@@ -239,12 +234,12 @@ export const HQ_ITEMS = {
     },
     {
       id: 'hq_inst_cowbell_inferno',
-      name: 'Die Heilige Cowbell',
+      name: 'items:hq_inst_cowbell_inferno.name',
       category: 'INSTRUMENT',
       cost: 500, // Meme instrument
       currency: 'money',
       img: 'ITEM_COWBELL',
-      description: 'Mehr Cowbell = Mehr Score (+5%).',
+      description: 'items:hq_inst_cowbell_inferno.description',
       effect: {
         type: 'stat_modifier',
         stat: 'drumMultiplier',
@@ -254,23 +249,22 @@ export const HQ_ITEMS = {
     // Cheap/Broken Instruments
     {
       id: 'hq_inst_second_guitar',
-      name: 'Gebrauchte Zweitgitarre',
+      name: 'items:hq_inst_second_guitar.name',
       category: 'INSTRUMENT',
       cost: 500, // Backup gear
       currency: 'money',
       img: 'ITEM_GUITAR_CHEAP',
-      description:
-        'Klingt scheiße, aber verhindert Totalausfall. (-5% Guitar Score equiv).',
+      description: 'items:hq_inst_second_guitar.description',
       effect: { type: 'stat_modifier', stat: 'guitarDifficulty', value: 0.05 } // Makes it slightly harder
     },
     {
       id: 'hq_inst_broken_drum_kit',
-      name: 'Abgenutztes Drumkit',
+      name: 'items:hq_inst_broken_drum_kit.name',
       category: 'INSTRUMENT',
       cost: 1000, // Beater kit
       currency: 'money',
       img: 'ITEM_DRUM_BROKEN',
-      description: 'Klingt dumpf, Felle kurz vorm Reißen. (-10% Drum Score).',
+      description: 'items:hq_inst_broken_drum_kit.description',
       effect: {
         type: 'stat_modifier',
         stat: 'drumMultiplier',
@@ -279,45 +273,45 @@ export const HQ_ITEMS = {
     },
     {
       id: 'hq_inst_bass_effect_pedal_cheap',
-      name: 'Billiges Bass-Pedal',
+      name: 'items:hq_inst_bass_effect_pedal_cheap.name',
       category: 'INSTRUMENT',
       cost: 150, // Cheap FX
       currency: 'money',
       img: 'ITEM_PEDAL_CHEAP',
-      description: 'Verzerrt unvorhersehbar. (+5% Crowd Decay).',
+      description: 'items:hq_inst_bass_effect_pedal_cheap.description',
       effect: { type: 'stat_modifier', stat: 'crowdDecay', value: 0.05 }
     },
     // Weird Instruments
     {
       id: 'hq_inst_theremin_doom',
-      name: 'Theremin des Todes',
+      name: 'items:hq_inst_theremin_doom.name',
       category: 'INSTRUMENT',
       cost: 3000, // Boutique obscure instrument
       currency: 'money',
       img: 'ITEM_THEREMIN',
-      description: 'Macht gruselige Geräusche. Crowd liebt es (-15% Decay).',
+      description: 'items:hq_inst_theremin_doom.description',
       effect: { type: 'stat_modifier', stat: 'crowdDecay', value: -0.15 }
     },
     {
       id: 'hq_inst_didgeridoo',
-      name: 'Elektrisches Didgeridoo',
+      name: 'items:hq_inst_didgeridoo.name',
       category: 'INSTRUMENT',
       cost: 900, // Niche instrument
       currency: 'money',
       img: 'ITEM_DIDGERIDOO',
-      description: 'Warum? Warum nicht. (+2 Luck).',
+      description: 'items:hq_inst_didgeridoo.description',
       effect: { type: 'stat_modifier', target: 'band', stat: 'luck', value: 2 }
     }
   ],
   van: [
     {
       id: 'hq_van_suspension',
-      name: 'Verstärkte Aufhängung',
+      name: 'items:hq_van_suspension.name',
       category: 'VAN',
       cost: 500, // Moderate upgrade
       currency: 'fame',
       img: 'ITEM_VAN_SUSPENSION',
-      description: 'Reduziert die Wahrscheinlichkeit von Pannen (-20% rel).',
+      description: 'items:hq_van_suspension.description',
       effect: {
         type: 'stat_modifier',
         target: 'van',
@@ -327,22 +321,22 @@ export const HQ_ITEMS = {
     },
     {
       id: 'hq_van_sound_system',
-      name: 'Mobiles Studio',
+      name: 'items:hq_van_sound_system.name',
       category: 'VAN',
       cost: 1000, // Major upgrade
       currency: 'fame',
       img: 'ITEM_VAN_STUDIO',
-      description: 'Band regeneriert Harmonie während der Fahrt.',
+      description: 'items:hq_van_sound_system.description',
       effect: { type: 'unlock_upgrade', id: 'van_sound_system' }
     },
     {
       id: 'hq_van_storage',
-      name: 'Dachbox & Hänger',
+      name: 'items:hq_van_storage.name',
       category: 'VAN',
       cost: 800, // Utility upgrade
       currency: 'fame',
       img: 'ITEM_VAN_STORAGE',
-      description: '+10 Inventar Slots (WIP - Geplantes Feature).',
+      description: 'items:hq_van_storage.description',
       effect: {
         type: 'stat_modifier',
         target: 'band',
@@ -352,23 +346,23 @@ export const HQ_ITEMS = {
     },
     {
       id: 'hq_van_tuning',
-      name: 'Motor Tuning',
+      name: 'items:hq_van_tuning.name',
       category: 'VAN',
       cost: 1500, // Performance upgrade
       currency: 'fame',
       img: 'ITEM_VAN_TUNING',
-      description: 'Der Van verbraucht 20% weniger Sprit.',
+      description: 'items:hq_van_tuning.description',
       effect: { type: 'unlock_upgrade', id: 'van_tuning' }
     },
     // Cheap/DIY Van Items
     {
       id: 'hq_van_tyre_spare',
-      name: 'Ersatzreifen (wenig Profil)',
+      name: 'items:hq_van_tyre_spare.name',
       category: 'VAN',
       cost: 100, // Cheap fix
       currency: 'fame',
       img: 'ITEM_VAN_TIRE',
-      description: 'Reduziert Pannenrisiko leicht (-5%).',
+      description: 'items:hq_van_tyre_spare.description',
       effect: {
         type: 'stat_modifier',
         target: 'van',
@@ -378,12 +372,12 @@ export const HQ_ITEMS = {
     },
     {
       id: 'hq_van_paint_job',
-      name: 'Grauer Lack (DIY)',
+      name: 'items:hq_van_paint_job.name',
       category: 'VAN',
       cost: 300, // Cosmetic/Reputation
       currency: 'fame',
       img: 'ITEM_VAN_PAINT',
-      description: 'Rostschutz > Optik. (+5 Fame).',
+      description: 'items:hq_van_paint_job.description',
       effect: {
         type: 'stat_modifier',
         target: 'player',
@@ -393,33 +387,33 @@ export const HQ_ITEMS = {
     },
     {
       id: 'hq_van_sleeping_bags',
-      name: 'Schlafsäcke (3 Stk.)',
+      name: 'items:hq_van_sleeping_bags.name',
       category: 'VAN',
       cost: 150, // Survival gear
       currency: 'fame',
       img: 'ITEM_SLEEPING_BAGS',
-      description: 'Besser als der kalte Boden.',
+      description: 'items:hq_van_sleeping_bags.description',
       effect: { type: 'inventory_add', item: 'sleeping_bags', value: 3 }
     },
     {
       id: 'hq_van_tape_glue',
-      name: 'Klebeband & Kleber',
+      name: 'items:hq_van_tape_glue.name',
       category: 'VAN',
       cost: 20, // Consumable fix
       currency: 'fame',
       img: 'ITEM_GLUE_TAPE',
-      description: 'Für schnelle Reparaturen. Hält irgendwie.',
+      description: 'items:hq_van_tape_glue.description',
       effect: { type: 'inventory_set', item: 'tape_glue', value: true }
     },
     // Skurrile Van Upgrades
     {
       id: 'hq_van_mattress',
-      name: 'Stinkende Matratzen',
+      name: 'items:hq_van_mattress.name',
       category: 'VAN',
       cost: 300, // QoL upgrade
       currency: 'fame',
       img: 'ITEM_MATTRESS',
-      description: 'Besser als der Boden. (+5 Max Harmonie/Tag Theorie).',
+      description: 'items:hq_van_mattress.description',
       effect: {
         type: 'stat_modifier',
         target: 'band',
@@ -429,13 +423,12 @@ export const HQ_ITEMS = {
     },
     {
       id: 'hq_van_spoiler',
-      name: 'Riesiger Heckspoiler',
+      name: 'items:hq_van_spoiler.name',
       category: 'VAN',
       cost: 200, // Cosmetic
       currency: 'fame',
       img: 'ITEM_SPOILER',
-      description:
-        'Bringt nichts, sieht aber schnell aus. (+1 Fame beim Kauf).',
+      description: 'items:hq_van_spoiler.description',
       effect: {
         type: 'stat_modifier',
         target: 'player',
@@ -445,22 +438,22 @@ export const HQ_ITEMS = {
     },
     {
       id: 'hq_van_disco',
-      name: 'Disco Kugel',
+      name: 'items:hq_van_disco.name',
       category: 'VAN',
       cost: 600, // Vibe upgrade
       currency: 'fame',
       img: 'ITEM_DISCO_BALL',
-      description: 'Party im Bus! (+2 Luck).',
+      description: 'items:hq_van_disco.description',
       effect: { type: 'stat_modifier', target: 'band', stat: 'luck', value: 2 }
     },
     {
       id: 'hq_van_flamethrower',
-      name: 'Auspuff-Flammenwerfer',
+      name: 'items:hq_van_flamethrower.name',
       category: 'VAN',
       cost: 2500, // Extreme upgrade
       currency: 'fame',
       img: 'ITEM_FLAMETHROWER',
-      description: 'Einschüchternd. (+100 Fame Sofortbonus).',
+      description: 'items:hq_van_flamethrower.description',
       effect: {
         type: 'stat_modifier',
         target: 'player',
@@ -474,33 +467,33 @@ export const HQ_ITEMS = {
     // Gameplay effects (e.g. immediate stat boosts) are pending implementation.
     {
       id: 'hq_room_coffee',
-      name: 'Profi Espressomaschine',
+      name: 'items:hq_room_coffee.name',
       category: 'HQ',
       cost: 400, // Appliance cost
       currency: 'money',
       img: 'ITEM_HQ_COFFEE',
-      description: 'Besuch im HQ stellt sofort 20 Mood bei allen her. (Sofort)',
+      description: 'items:hq_room_coffee.description',
       effect: { type: 'unlock_hq', id: 'hq_coffee' }
     },
     {
       id: 'hq_room_sofa',
-      name: 'Ledercouch & Konsole',
+      name: 'items:hq_room_sofa.name',
       category: 'HQ',
       cost: 600, // Furniture cost
       currency: 'money',
       img: 'ITEM_HQ_SOFA',
-      description: 'Besuch im HQ stellt sofort 30 Stamina her. (Sofort)',
+      description: 'items:hq_room_sofa.description',
       effect: { type: 'unlock_hq', id: 'hq_sofa' }
     },
     {
       id: 'hq_room_marketing',
-      name: 'Social Media Botnetz',
+      name: 'items:hq_room_marketing.name',
       category: 'HQ',
       cost: 1000, // Service cost
       currency: 'fame',
       requiresReputation: true,
       img: 'ITEM_HQ_BOTNET',
-      description: 'Passive Follower Generation (+10/Tag).',
+      description: 'items:hq_room_marketing.description',
       effect: {
         type: 'stat_modifier',
         target: 'player',
@@ -510,65 +503,65 @@ export const HQ_ITEMS = {
     },
     {
       id: 'hq_room_label',
-      name: 'Plattenvertrag (Indie)',
+      name: 'items:hq_room_label.name',
       category: 'HQ',
       cost: 5000, // Major milestone cost
       currency: 'fame',
       requiresReputation: true,
       img: 'ITEM_HQ_LABEL',
-      description: 'Sofort +500€ Bonus.',
+      description: 'items:hq_room_label.description',
       effect: { type: 'unlock_hq', id: 'hq_label' }
     },
     // Gritty HQ Items
     {
       id: 'hq_room_old_couch',
-      name: 'Durchgesessene Couch',
+      name: 'items:hq_room_old_couch.name',
       category: 'HQ',
       cost: 100, // Cheap furniture
       currency: 'money',
       img: 'ITEM_HQ_OLD_COUCH',
-      description: 'Ort zum Abhängen. (+10 Stamina Sofort).',
+      description: 'items:hq_room_old_couch.description',
       effect: { type: 'unlock_hq', id: 'hq_old_couch' }
     },
     {
       id: 'hq_room_poster_wall',
-      name: 'DIY Posterwand',
+      name: 'items:hq_room_poster_wall.name',
       category: 'HQ',
       cost: 50, // Decoration cost
       currency: 'money',
       img: 'ITEM_HQ_POSTERS',
-      description: 'Authentizität für Fans. (+10 Fame Sofort).',
+      description: 'items:hq_room_poster_wall.description',
       effect: { type: 'unlock_hq', id: 'hq_poster_wall' }
     },
     {
       id: 'hq_room_cheap_beer_fridge',
-      name: 'Billig-Bier Kühlschrank',
+      name: 'items:hq_room_cheap_beer_fridge.name',
       category: 'HQ',
       cost: 200, // Appliance cost
       currency: 'money',
       img: 'ITEM_HQ_FRIDGE',
-      description: 'Immer kaltes Bier. (+5 Mood Sofort).',
+      description: 'items:hq_room_cheap_beer_fridge.description',
       effect: { type: 'unlock_hq', id: 'hq_cheap_beer_fridge' }
     },
     {
       id: 'hq_room_diy_soundproofing',
-      name: 'Eierkarton-Dämmung',
+      name: 'items:hq_room_diy_soundproofing.name',
       category: 'HQ',
       cost: 100, // Material cost
       currency: 'money',
       img: 'ITEM_HQ_EGGS',
-      description: 'Weniger Lärmbelästigung. (+5 Harmony Sofort).',
+      description: 'items:hq_room_diy_soundproofing.description',
       effect: { type: 'unlock_hq', id: 'hq_diy_soundproofing' }
     },
     // Bizarre HQ Items
     {
       id: 'hq_room_cat',
-      name: 'Band-Katze "Satan"',
+      name: 'items:hq_room_cat.name',
       category: 'HQ',
       cost: 50, // Adoption fee
       currency: 'money',
       img: 'ITEM_HQ_CAT',
-      description: 'Macht alles besser. (+10 Harmony).',
+      description: 'items:hq_room_cat.description',
       effect: {
         type: 'stat_modifier',
         target: 'band',
@@ -578,12 +571,12 @@ export const HQ_ITEMS = {
     },
     {
       id: 'hq_room_beer_pipeline',
-      name: 'Direkte Bierleitung',
+      name: 'items:hq_room_beer_pipeline.name',
       category: 'HQ',
       cost: 2000, // Luxury installation
       currency: 'money',
       img: 'ITEM_HQ_PIPELINE',
-      description: 'Vom Pub nebenan. (+20 Harmony).',
+      description: 'items:hq_room_beer_pipeline.description',
       effect: {
         type: 'stat_modifier',
         target: 'band',
@@ -593,22 +586,22 @@ export const HQ_ITEMS = {
     },
     {
       id: 'hq_room_shrine',
-      name: 'Schrein für Lemmy',
+      name: 'items:hq_room_shrine.name',
       category: 'HQ',
       cost: 660, // Occult cost (Adjusted to multiple of 10)
       currency: 'fame',
       img: 'ITEM_HQ_SHRINE',
-      description: 'Täglicher Segen des Rockgottes. (+10 Luck).',
+      description: 'items:hq_room_shrine.description',
       effect: { type: 'stat_modifier', target: 'band', stat: 'luck', value: 10 }
     },
     {
       id: 'hq_room_skull',
-      name: 'Echter Tierschädel',
+      name: 'items:hq_room_skull.name',
       category: 'HQ',
       cost: 300, // Decor cost
       currency: 'money',
       img: 'ITEM_HQ_SKULL',
-      description: 'Deko ist alles. (+5 Fame Sofort).',
+      description: 'items:hq_room_skull.description',
       effect: {
         type: 'stat_modifier',
         target: 'player',
@@ -618,14 +611,13 @@ export const HQ_ITEMS = {
     },
     {
       id: 'pr_manager_contract',
-      name: 'Retainer: PR Manager',
+      name: 'items:pr_manager_contract.name',
       category: 'HQ',
       cost: 500,
       currency: 'money',
       requiresReputation: true,
       img: 'ITEM_HQ_BOTNET', // TODO: placeholder - uses hq_room_marketing until own asset available
-      description:
-        'Ein Kontakt, der jede Geschichte zurechtrücken kann. Schaltet die Option „Geschichte drehen“ frei, wenn die Kontroverse hoch ist.',
+      description: 'items:pr_manager_contract.description',
       effect: { type: 'unlock_hq', id: 'pr_manager_contract' }
     }
   ]

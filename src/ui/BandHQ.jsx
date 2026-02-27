@@ -109,17 +109,18 @@ export const BandHQ = ({
         <div className='flex justify-between items-center p-6 border-b-2 border-(--toxic-green) bg-(--void-black)/50'>
           <div>
             <h2 className="text-4xl text-(--toxic-green) font-['Metal_Mania'] drop-shadow-[0_0_5px_var(--toxic-green)]">
-              BAND HQ
+              {t('hq.title', { defaultValue: 'BAND HQ' })}
             </h2>
             <p className='text-(--ash-gray) text-sm font-mono uppercase tracking-widest'>
-              Stendal Rehearsal Room | Day {player.day}
+              {t('venues:stendal_proberaum.name')} |{' '}
+              {t('ui.day', { defaultValue: 'Day' })} {player.day}
             </p>
           </div>
           <button
             onClick={onClose}
             className='px-6 py-2 border-2 border-(--blood-red) text-(--blood-red) font-bold hover:bg-(--blood-red) hover:text-(--void-black) transition-colors duration-200 uppercase font-mono'
           >
-            LEAVE [ESC]
+            {t('hq.leave', { defaultValue: 'LEAVE [ESC]' })}
           </button>
         </div>
 

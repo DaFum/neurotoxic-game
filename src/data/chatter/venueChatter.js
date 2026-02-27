@@ -5,33 +5,33 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_stendal_adler',
     linesByScene: {
       ANY: [
-        'Sweaty, low ceiling, perfect for total chaos.',
-        'If the crowd climbs on the bar, we did it right.',
-        'You can smell the history in the walls. And the beer.'
+        'chatter:venues.stendal_adler.ANY_01',
+        'chatter:venues.stendal_adler.ANY_02',
+        'chatter:venues.stendal_adler.ANY_03'
       ],
       OVERWORLD: [
-        'Back in Stendal—don’t wake the neighbors with the load-in.',
-        'We know every pothole here by first name.',
-        'Home turf means no excuses.',
-        'If we mess up in Stendal, our moms will hear about it.'
+        'chatter:venues.stendal_adler.OVERWORLD_01',
+        'chatter:venues.stendal_adler.OVERWORLD_02',
+        'chatter:venues.stendal_adler.OVERWORLD_03',
+        'chatter:venues.stendal_adler.OVERWORLD_04'
       ],
       PREGIG: [
-        'Someone find the power outlets before we start a fire.',
-        'If the monitors suck, we’re still doing this.',
-        'Stendal crowd is close—tuning better be tight.',
-        'If the banner falls here, it’s personal.'
+        'chatter:venues.stendal_adler.PREGIG_01',
+        'chatter:venues.stendal_adler.PREGIG_02',
+        'chatter:venues.stendal_adler.PREGIG_03',
+        'chatter:venues.stendal_adler.PREGIG_04'
       ],
       GIG: [
-        'Hit it hard—this room turns riffs into fights.',
-        'Keep the tempo up, the front row is already boiling.',
-        'If they chant, we go faster.',
-        'Make the breakdown feel like the ceiling’s dropping.'
+        'chatter:venues.stendal_adler.GIG_01',
+        'chatter:venues.stendal_adler.GIG_02',
+        'chatter:venues.stendal_adler.GIG_03',
+        'chatter:venues.stendal_adler.GIG_04'
       ],
       POSTGIG: [
-        'Stendal approved. That’s a real medal.',
-        'We just turned hometown into a sweat report.',
-        'Load-out’s easy. Explaining the bruises is not.',
-        'If we didn’t break something, did we even play?'
+        'chatter:venues.stendal_adler.POSTGIG_01',
+        'chatter:venues.stendal_adler.POSTGIG_02',
+        'chatter:venues.stendal_adler.POSTGIG_03',
+        'chatter:venues.stendal_adler.POSTGIG_04'
       ]
     }
   },
@@ -40,32 +40,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_tangermuende_kaminstube',
     linesByScene: {
       ANY: [
-        'Feels like playing in someone’s living room with better beer.',
-        'Cozy vibes until the first blastbeat hits the furniture.'
+        'chatter:venues.tangermuende_kaminstube.ANY_01',
+        'chatter:venues.tangermuende_kaminstube.ANY_02'
       ],
       OVERWORLD: [
-        'Tangermünde feels calm… which is suspicious.',
-        'If the fireplace is going, we’re in for a sauna set.',
-        'This town looks like a postcard. We’re the graffiti on it.',
-        'Quiet streets, loud intentions.'
+        'chatter:venues.tangermuende_kaminstube.OVERWORLD_01',
+        'chatter:venues.tangermuende_kaminstube.OVERWORLD_02',
+        'chatter:venues.tangermuende_kaminstube.OVERWORLD_03',
+        'chatter:venues.tangermuende_kaminstube.OVERWORLD_04'
       ],
       PREGIG: [
-        'Keep the volume controlled… haha, just kidding.',
-        'Soundcheck in here is basically a whisper test.',
-        'Don’t step on the rug with muddy boots—tour etiquette.',
-        'If the room is this small, the mix better be clean.'
+        'chatter:venues.tangermuende_kaminstube.PREGIG_01',
+        'chatter:venues.tangermuende_kaminstube.PREGIG_02',
+        'chatter:venues.tangermuende_kaminstube.PREGIG_03',
+        'chatter:venues.tangermuende_kaminstube.PREGIG_04'
       ],
       GIG: [
-        'Play it tight—every note is in everyone’s face.',
-        'If they’re quiet, it’s because they’re locked in.',
-        'Make the chorus feel like a warm punch.',
-        'One breakdown and the whole living room becomes a pit.'
+        'chatter:venues.tangermuende_kaminstube.GIG_01',
+        'chatter:venues.tangermuende_kaminstube.GIG_02',
+        'chatter:venues.tangermuende_kaminstube.GIG_03',
+        'chatter:venues.tangermuende_kaminstube.GIG_04'
       ],
       POSTGIG: [
-        'That was intimate and violent. Perfect combo.',
-        'My amp is sweating more than me.',
-        'If grandma was there, she’s a fan now.',
-        'Load-out is short. The memory is long.'
+        'chatter:venues.tangermuende_kaminstube.POSTGIG_01',
+        'chatter:venues.tangermuende_kaminstube.POSTGIG_02',
+        'chatter:venues.tangermuende_kaminstube.POSTGIG_03',
+        'chatter:venues.tangermuende_kaminstube.POSTGIG_04'
       ]
     }
   },
@@ -74,32 +74,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_tangermuende_burgfest',
     linesByScene: {
       ANY: [
-        'Castle walls mean extra reverb for every blastbeat.',
-        'If the rain starts, this turns into a medieval mudpit.'
+        'chatter:venues.tangermuende_burgfest.ANY_01',
+        'chatter:venues.tangermuende_burgfest.ANY_02'
       ],
       OVERWORLD: [
-        'We’re literally hauling gear into a castle. Normal band life.',
-        'If tourists stare, stare back harder.',
-        'Windy day = faster set, scientifically proven.',
-        'This place looks historic. We’re here to vandalize it with sound.'
+        'chatter:venues.tangermuende_burgfest.OVERWORLD_01',
+        'chatter:venues.tangermuende_burgfest.OVERWORLD_02',
+        'chatter:venues.tangermuende_burgfest.OVERWORLD_03',
+        'chatter:venues.tangermuende_burgfest.OVERWORLD_04'
       ],
       PREGIG: [
-        'Tune carefully—these walls will amplify every mistake.',
-        'If the stage is slippery, we play like knights with ankle pain.',
-        'Soundcheck feels like summoning something ancient.',
-        'If the banner survives the wind, we’re blessed.'
+        'chatter:venues.tangermuende_burgfest.PREGIG_01',
+        'chatter:venues.tangermuende_burgfest.PREGIG_02',
+        'chatter:venues.tangermuende_burgfest.PREGIG_03',
+        'chatter:venues.tangermuende_burgfest.PREGIG_04'
       ],
       GIG: [
-        'Hit the snare like it’s a battering ram.',
-        'If the crowd chants, it echoes like war drums.',
-        'Make the breakdown feel medieval and mean.',
-        'If it rains, we play like we’re fighting the sky.'
+        'chatter:venues.tangermuende_burgfest.GIG_01',
+        'chatter:venues.tangermuende_burgfest.GIG_02',
+        'chatter:venues.tangermuende_burgfest.GIG_03',
+        'chatter:venues.tangermuende_burgfest.GIG_04'
       ],
       POSTGIG: [
-        'We just played a castle. That’s ridiculous. I love it.',
-        'Mud in the cases, glory in the lungs.',
-        'If the crowd stayed in the rain, they’re family now.',
-        'Load-out is pain. The reverb was worth it.'
+        'chatter:venues.tangermuende_burgfest.POSTGIG_01',
+        'chatter:venues.tangermuende_burgfest.POSTGIG_02',
+        'chatter:venues.tangermuende_burgfest.POSTGIG_03',
+        'chatter:venues.tangermuende_burgfest.POSTGIG_04'
       ]
     }
   },
@@ -108,32 +108,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_magdeburg_moritzhof',
     linesByScene: {
       ANY: [
-        'Arts center by day, riff temple by night.',
-        'Crowd is close enough to read the setlist over your shoulder.'
+        'chatter:venues.magdeburg_moritzhof.ANY_01',
+        'chatter:venues.magdeburg_moritzhof.ANY_02'
       ],
       OVERWORLD: [
-        'Magdeburg always feels like it’s quietly judging our cables.',
-        'If the courtyard is calm, we’ll fix that.',
-        'This place looks classy. We will ruin it politely.',
-        'Park the van and pray the gear survives the corners.'
+        'chatter:venues.magdeburg_moritzhof.OVERWORLD_01',
+        'chatter:venues.magdeburg_moritzhof.OVERWORLD_02',
+        'chatter:venues.magdeburg_moritzhof.OVERWORLD_03',
+        'chatter:venues.magdeburg_moritzhof.OVERWORLD_04'
       ],
       PREGIG: [
-        'Get the tones right—this room makes details obvious.',
-        'If the sound guy smiles, we’re safe.',
-        'Monitors first, existential crisis later.',
-        'Don’t rush tuning—Moritzhof hears everything.'
+        'chatter:venues.magdeburg_moritzhof.PREGIG_01',
+        'chatter:venues.magdeburg_moritzhof.PREGIG_02',
+        'chatter:venues.magdeburg_moritzhof.PREGIG_03',
+        'chatter:venues.magdeburg_moritzhof.PREGIG_04'
       ],
       GIG: [
-        'Play clean and heavy—no hiding in this sound.',
-        'If the crowd is right there, give them everything.',
-        'Make the chorus land like a headline.',
-        'Push the last song like it’s the only one.'
+        'chatter:venues.magdeburg_moritzhof.GIG_01',
+        'chatter:venues.magdeburg_moritzhof.GIG_02',
+        'chatter:venues.magdeburg_moritzhof.GIG_03',
+        'chatter:venues.magdeburg_moritzhof.GIG_04'
       ],
       POSTGIG: [
-        'That felt sharp. Like, actually professional.',
-        'My ears are ringing in high-definition.',
-        'If the crowd clapped between songs, we earned it.',
-        'Load-out hurts less when the set was that good.'
+        'chatter:venues.magdeburg_moritzhof.POSTGIG_01',
+        'chatter:venues.magdeburg_moritzhof.POSTGIG_02',
+        'chatter:venues.magdeburg_moritzhof.POSTGIG_03',
+        'chatter:venues.magdeburg_moritzhof.POSTGIG_04'
       ]
     }
   },
@@ -142,32 +142,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_magdeburg_factory',
     linesByScene: {
       ANY: [
-        'Old industrial vibes, perfect for metallic noise.',
-        'Concrete floor, iron attitude, zero mercy.'
+        'chatter:venues.magdeburg_factory.ANY_01',
+        'chatter:venues.magdeburg_factory.ANY_02'
       ],
       OVERWORLD: [
-        'This building looks like it was built to be loud.',
-        'Industrial vibes = industrial riffs.',
-        'If the air smells like metal, we’re in the right place.',
-        'Every step echoes like a threat. Love it.'
+        'chatter:venues.magdeburg_factory.OVERWORLD_01',
+        'chatter:venues.magdeburg_factory.OVERWORLD_02',
+        'chatter:venues.magdeburg_factory.OVERWORLD_03',
+        'chatter:venues.magdeburg_factory.OVERWORLD_04'
       ],
       PREGIG: [
-        'Soundcheck: tame the reverb or embrace the chaos.',
-        'If the lights flicker, call it production value.',
-        'Tape the cables—this floor eats ankles.',
-        'If the subs are awake, this will be brutal.'
+        'chatter:venues.magdeburg_factory.PREGIG_01',
+        'chatter:venues.magdeburg_factory.PREGIG_02',
+        'chatter:venues.magdeburg_factory.PREGIG_03',
+        'chatter:venues.magdeburg_factory.PREGIG_04'
       ],
       GIG: [
-        'Hit it like a machine—no mercy, no gaps.',
-        'Let the bass shake the building’s skeleton.',
-        'If the crowd moves, the room becomes a factory line.',
-        'Make the breakdown sound like steel bending.'
+        'chatter:venues.magdeburg_factory.GIG_01',
+        'chatter:venues.magdeburg_factory.GIG_02',
+        'chatter:venues.magdeburg_factory.GIG_03',
+        'chatter:venues.magdeburg_factory.GIG_04'
       ],
       POSTGIG: [
-        'My lungs are full of dust and victory.',
-        'That room hits back. Respect.',
-        'If the building didn’t collapse, we held back.',
-        'Load-out feels like an industrial accident.'
+        'chatter:venues.magdeburg_factory.POSTGIG_01',
+        'chatter:venues.magdeburg_factory.POSTGIG_02',
+        'chatter:venues.magdeburg_factory.POSTGIG_03',
+        'chatter:venues.magdeburg_factory.POSTGIG_04'
       ]
     }
   },
@@ -176,32 +176,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_magdeburg_stadtpark',
     linesByScene: {
       ANY: [
-        'Open air means no ceiling to stop the snare cracks.',
-        'If the birds take off during the breakdown, we win.'
+        'chatter:venues.magdeburg_stadtpark.ANY_01',
+        'chatter:venues.magdeburg_stadtpark.ANY_02'
       ],
       OVERWORLD: [
-        'Park gig means sunlight, moshing, and confusion.',
-        'If families stare, we play louder but smile.',
-        'Outdoor stage = chasing cables in the grass.',
-        'If it gets cold later, we play faster.'
+        'chatter:venues.magdeburg_stadtpark.OVERWORLD_01',
+        'chatter:venues.magdeburg_stadtpark.OVERWORLD_02',
+        'chatter:venues.magdeburg_stadtpark.OVERWORLD_03',
+        'chatter:venues.magdeburg_stadtpark.OVERWORLD_04'
       ],
       PREGIG: [
-        'Wind check, then soundcheck.',
-        'Tape everything. Nature is a thief.',
-        'If the monitors fight the wind, we fight back.',
-        'Don’t drop picks—grass eats them forever.'
+        'chatter:venues.magdeburg_stadtpark.PREGIG_01',
+        'chatter:venues.magdeburg_stadtpark.PREGIG_02',
+        'chatter:venues.magdeburg_stadtpark.PREGIG_03',
+        'chatter:venues.magdeburg_stadtpark.PREGIG_04'
       ],
       GIG: [
-        'Throw the sound into the sky.',
-        'If the crowd jumps, the park becomes a storm.',
-        'Make the chorus carry past the trees.',
-        'If the wind steals vocals, scream harder.'
+        'chatter:venues.magdeburg_stadtpark.GIG_01',
+        'chatter:venues.magdeburg_stadtpark.GIG_02',
+        'chatter:venues.magdeburg_stadtpark.GIG_03',
+        'chatter:venues.magdeburg_stadtpark.GIG_04'
       ],
       POSTGIG: [
-        'We just made a park feel like a club.',
-        'Sunset sweat is a special kind of gross.',
-        'If the birds stayed, we weren’t loud enough.',
-        'Load-out in the dark: touring’s favorite minigame.'
+        'chatter:venues.magdeburg_stadtpark.POSTGIG_01',
+        'chatter:venues.magdeburg_stadtpark.POSTGIG_02',
+        'chatter:venues.magdeburg_stadtpark.POSTGIG_03',
+        'chatter:venues.magdeburg_stadtpark.POSTGIG_04'
       ]
     }
   },
@@ -212,32 +212,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_leipzig_conne',
     linesByScene: {
       ANY: [
-        'Legendary room, no excuses here.',
-        'If the skate kids show up, the pit gets serious.'
+        'chatter:venues.leipzig_conne.ANY_01',
+        'chatter:venues.leipzig_conne.ANY_02'
       ],
       OVERWORLD: [
-        'Leipzig always feels like it’s watching your setlist.',
-        'This city runs on art, caffeine, and opinions.',
-        'If we find parking near Conne, buy a lottery ticket.',
-        'Tonight’s either iconic or a lesson.'
+        'chatter:venues.leipzig_conne.OVERWORLD_01',
+        'chatter:venues.leipzig_conne.OVERWORLD_02',
+        'chatter:venues.leipzig_conne.OVERWORLD_03',
+        'chatter:venues.leipzig_conne.OVERWORLD_04'
       ],
       PREGIG: [
-        'Get the tones right—this room punishes sloppy.',
-        'Don’t skip tuning. Not here.',
-        'If the monitors are weird, we brute-force it.',
-        'Soundcheck like it’s the show.'
+        'chatter:venues.leipzig_conne.PREGIG_01',
+        'chatter:venues.leipzig_conne.PREGIG_02',
+        'chatter:venues.leipzig_conne.PREGIG_03',
+        'chatter:venues.leipzig_conne.PREGIG_04'
       ],
       GIG: [
-        'Lock in—this crowd rewards precision.',
-        'Hit the breakdown like a hammer.',
-        'If they start chanting, don’t blink.',
-        'Keep it tight, keep it loud.'
+        'chatter:venues.leipzig_conne.GIG_01',
+        'chatter:venues.leipzig_conne.GIG_02',
+        'chatter:venues.leipzig_conne.GIG_03',
+        'chatter:venues.leipzig_conne.GIG_04'
       ],
       POSTGIG: [
-        'Conne approved. That’s worth something.',
-        'That felt like a real tour stamp.',
-        'Load-out hurts, but the room was ours.',
-        'If the pit was smiling, we did it.'
+        'chatter:venues.leipzig_conne.POSTGIG_01',
+        'chatter:venues.leipzig_conne.POSTGIG_02',
+        'chatter:venues.leipzig_conne.POSTGIG_03',
+        'chatter:venues.leipzig_conne.POSTGIG_04'
       ]
     }
   },
@@ -246,32 +246,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_leipzig_ut',
     linesByScene: {
       ANY: [
-        'Old cinema turned riff cathedral.',
-        'Projector off, amps on, screen replaced by sweat.'
+        'chatter:venues.leipzig_ut.ANY_01',
+        'chatter:venues.leipzig_ut.ANY_02'
       ],
       OVERWORLD: [
-        'Feels like we’re about to soundtrack a riot movie.',
-        'Old building, new noise—perfect deal.',
-        'If the marquee was honest, it’d say “too loud”.',
-        'Leipzig nights feel cinematic here.'
+        'chatter:venues.leipzig_ut.OVERWORLD_01',
+        'chatter:venues.leipzig_ut.OVERWORLD_02',
+        'chatter:venues.leipzig_ut.OVERWORLD_03',
+        'chatter:venues.leipzig_ut.OVERWORLD_04'
       ],
       PREGIG: [
-        'Soundcheck like a film score: dramatic and precise.',
-        'If the reverb blooms, ride it.',
-        'Don’t let the room swallow the vocals.',
-        'This stage looks classy. Let’s ruin it.'
+        'chatter:venues.leipzig_ut.PREGIG_01',
+        'chatter:venues.leipzig_ut.PREGIG_02',
+        'chatter:venues.leipzig_ut.PREGIG_03',
+        'chatter:venues.leipzig_ut.PREGIG_04'
       ],
       GIG: [
-        'Make the chorus hit like a scene change.',
-        'If the balcony moves, we win.',
-        'Hit the quiet parts like suspense.',
-        'Then explode like the final act.'
+        'chatter:venues.leipzig_ut.GIG_01',
+        'chatter:venues.leipzig_ut.GIG_02',
+        'chatter:venues.leipzig_ut.GIG_03',
+        'chatter:venues.leipzig_ut.GIG_04'
       ],
       POSTGIG: [
-        'That was cinema. Violent cinema.',
-        'My ears are ringing in widescreen.',
-        'If the crowd stayed glued, the plot worked.',
-        'Load-out feels like leaving the theater—sweaty and victorious.'
+        'chatter:venues.leipzig_ut.POSTGIG_01',
+        'chatter:venues.leipzig_ut.POSTGIG_02',
+        'chatter:venues.leipzig_ut.POSTGIG_03',
+        'chatter:venues.leipzig_ut.POSTGIG_04'
       ]
     }
   },
@@ -280,32 +280,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_leipzig_distille',
     linesByScene: {
       ANY: [
-        'Tiny stage, huge noise.',
-        'If it sells out, you can’t even drop a pick.'
+        'chatter:venues.leipzig_distille.ANY_01',
+        'chatter:venues.leipzig_distille.ANY_02'
       ],
       OVERWORLD: [
-        'Small room energy, big night consequences.',
-        'If the line outside is long, we’re in trouble—in a good way.',
-        'Leipzig can be gentle. Distille is not.',
-        'Tonight we’re playing in a human-sized pressure cooker.'
+        'chatter:venues.leipzig_distille.OVERWORLD_01',
+        'chatter:venues.leipzig_distille.OVERWORLD_02',
+        'chatter:venues.leipzig_distille.OVERWORLD_03',
+        'chatter:venues.leipzig_distille.OVERWORLD_04'
       ],
       PREGIG: [
-        'Keep your pedalboard tight—there’s no space for mistakes.',
-        'Soundcheck is basically already the show.',
-        'If the stage is tiny, play with big posture.',
-        'Don’t lose picks. The floor will keep them.'
+        'chatter:venues.leipzig_distille.PREGIG_01',
+        'chatter:venues.leipzig_distille.PREGIG_02',
+        'chatter:venues.leipzig_distille.PREGIG_03',
+        'chatter:venues.leipzig_distille.PREGIG_04'
       ],
       GIG: [
-        'Front row is basically on stage—use it.',
-        'If the pit starts, it’s instant.',
-        'Keep it fast—momentum is everything here.',
-        'Make the breakdown feel like the room shrinks.'
+        'chatter:venues.leipzig_distille.GIG_01',
+        'chatter:venues.leipzig_distille.GIG_02',
+        'chatter:venues.leipzig_distille.GIG_03',
+        'chatter:venues.leipzig_distille.GIG_04'
       ],
       POSTGIG: [
-        'That was a sweatbox masterpiece.',
-        'My shirt is a sponge with opinions.',
-        'If we didn’t bump elbows, it wasn’t Distille.',
-        'Load-out is quick. Recovery is not.'
+        'chatter:venues.leipzig_distille.POSTGIG_01',
+        'chatter:venues.leipzig_distille.POSTGIG_02',
+        'chatter:venues.leipzig_distille.POSTGIG_03',
+        'chatter:venues.leipzig_distille.POSTGIG_04'
       ]
     }
   },
@@ -314,32 +314,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_leipzig_taeubchen',
     linesByScene: {
       ANY: [
-        'Feels almost too fancy for our volume.',
-        'If the lights hit right, this room looks massive.'
+        'chatter:venues.leipzig_taeubchen.ANY_01',
+        'chatter:venues.leipzig_taeubchen.ANY_02'
       ],
       OVERWORLD: [
-        'This place looks polite. We won’t be.',
-        'Leipzig fancy night—time to be the bad influence.',
-        'If the lobby is clean, our cases aren’t.',
-        'Tonight we bring dirt to the nice lights.'
+        'chatter:venues.leipzig_taeubchen.OVERWORLD_01',
+        'chatter:venues.leipzig_taeubchen.OVERWORLD_02',
+        'chatter:venues.leipzig_taeubchen.OVERWORLD_03',
+        'chatter:venues.leipzig_taeubchen.OVERWORLD_04'
       ],
       PREGIG: [
-        'Don’t overthink it—just get the mix right.',
-        'If the stage feels big, play like it’s bigger.',
-        'Soundcheck fast, chaos later.',
-        'Let the lights do their thing, we do ours.'
+        'chatter:venues.leipzig_taeubchen.PREGIG_01',
+        'chatter:venues.leipzig_taeubchen.PREGIG_02',
+        'chatter:venues.leipzig_taeubchen.PREGIG_03',
+        'chatter:venues.leipzig_taeubchen.PREGIG_04'
       ],
       GIG: [
-        'Make it huge—this room deserves drama.',
-        'If the crowd dances, it’s over. We won.',
-        'Hit the chorus like a headline act.',
-        'Don’t hold back because it looks fancy.'
+        'chatter:venues.leipzig_taeubchen.GIG_01',
+        'chatter:venues.leipzig_taeubchen.GIG_02',
+        'chatter:venues.leipzig_taeubchen.GIG_03',
+        'chatter:venues.leipzig_taeubchen.GIG_04'
       ],
       POSTGIG: [
-        'We just turned fancy into sweaty.',
-        'The room looked big—and it felt bigger.',
-        'If people smiled leaving, we did the job.',
-        'Load-out: try not to scratch anything… oops.'
+        'chatter:venues.leipzig_taeubchen.POSTGIG_01',
+        'chatter:venues.leipzig_taeubchen.POSTGIG_02',
+        'chatter:venues.leipzig_taeubchen.POSTGIG_03',
+        'chatter:venues.leipzig_taeubchen.POSTGIG_04'
       ]
     }
   },
@@ -348,32 +348,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_leipzig_werk2',
     linesByScene: {
       ANY: [
-        'Big hall, big expectations.',
-        'If the subs wake up, the floor starts breathing.'
+        'chatter:venues.leipzig_werk2.ANY_01',
+        'chatter:venues.leipzig_werk2.ANY_02'
       ],
       OVERWORLD: [
-        'Werk2 night: either we level up or we learn.',
-        'Big hall means big echoes. Earn them.',
-        'Leipzig brings the energy—match it.',
-        'If the queue is long, the pressure is real.'
+        'chatter:venues.leipzig_werk2.OVERWORLD_01',
+        'chatter:venues.leipzig_werk2.OVERWORLD_02',
+        'chatter:venues.leipzig_werk2.OVERWORLD_03',
+        'chatter:venues.leipzig_werk2.OVERWORLD_04'
       ],
       PREGIG: [
-        'Dial the kick. This room loves low-end.',
-        'Soundcheck like a headline, play like a riot.',
-        'If the monitors are good, we go wild.',
-        'No sloppy intros—this hall exposes everything.'
+        'chatter:venues.leipzig_werk2.PREGIG_01',
+        'chatter:venues.leipzig_werk2.PREGIG_02',
+        'chatter:venues.leipzig_werk2.PREGIG_03',
+        'chatter:venues.leipzig_werk2.PREGIG_04'
       ],
       GIG: [
-        'Push it—this room can take it.',
-        'If the floor breathes, we’re doing it right.',
-        'Make the breakdown hit like an earthquake.',
-        'Keep the tempo locked—big rooms punish drift.'
+        'chatter:venues.leipzig_werk2.GIG_01',
+        'chatter:venues.leipzig_werk2.GIG_02',
+        'chatter:venues.leipzig_werk2.GIG_03',
+        'chatter:venues.leipzig_werk2.GIG_04'
       ],
       POSTGIG: [
-        'That felt massive. Like, actually massive.',
-        'My ribs are still humming from the subs.',
-        'If the back row moved, we won the whole room.',
-        'Load-out is long, but that set pays for it.'
+        'chatter:venues.leipzig_werk2.POSTGIG_01',
+        'chatter:venues.leipzig_werk2.POSTGIG_02',
+        'chatter:venues.leipzig_werk2.POSTGIG_03',
+        'chatter:venues.leipzig_werk2.POSTGIG_04'
       ]
     }
   },
@@ -382,32 +382,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_leipzig_agra',
     linesByScene: {
       ANY: [
-        'Festival-hall energy, even on a weekday.',
-        'Too big to hide a bad show in here.'
+        'chatter:venues.leipzig_agra.ANY_01',
+        'chatter:venues.leipzig_agra.ANY_02'
       ],
       OVERWORLD: [
-        'This hall is huge. Our nerves just got smaller.',
-        'If we own this room, we can own anything.',
-        'Walking in feels like entering a boss fight.',
-        'Big hall = big footsteps = big expectations.'
+        'chatter:venues.leipzig_agra.OVERWORLD_01',
+        'chatter:venues.leipzig_agra.OVERWORLD_02',
+        'chatter:venues.leipzig_agra.OVERWORLD_03',
+        'chatter:venues.leipzig_agra.OVERWORLD_04'
       ],
       PREGIG: [
-        'Check everything twice. This room amplifies consequences.',
-        'Soundcheck like you’re being recorded.',
-        'If the reverb is wild, play tighter.',
-        'No excuses in a hall this big.'
+        'chatter:venues.leipzig_agra.PREGIG_01',
+        'chatter:venues.leipzig_agra.PREGIG_02',
+        'chatter:venues.leipzig_agra.PREGIG_03',
+        'chatter:venues.leipzig_agra.PREGIG_04'
       ],
       GIG: [
-        'Make it feel like a festival, even if it’s Tuesday.',
-        'Hit the chorus so it reaches the back wall.',
-        'If the crowd roars, ride it like a wave.',
-        'Play big. Think bigger.'
+        'chatter:venues.leipzig_agra.GIG_01',
+        'chatter:venues.leipzig_agra.GIG_02',
+        'chatter:venues.leipzig_agra.GIG_03',
+        'chatter:venues.leipzig_agra.GIG_04'
       ],
       POSTGIG: [
-        'That room doesn’t forgive—so that win feels huge.',
-        'My voice is somewhere in the rafters now.',
-        'If we pulled that off, we’re ready for more.',
-        'Load-out feels like moving a small apartment.'
+        'chatter:venues.leipzig_agra.POSTGIG_01',
+        'chatter:venues.leipzig_agra.POSTGIG_02',
+        'chatter:venues.leipzig_agra.POSTGIG_03',
+        'chatter:venues.leipzig_agra.POSTGIG_04'
       ]
     }
   },
@@ -416,32 +416,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_leipzig_arena',
     linesByScene: {
       ANY: [
-        'Arena mode: tiny humans, huge PA.',
-        'This is the “call your parents” kind of stage.'
+        'chatter:venues.leipzig_arena.ANY_01',
+        'chatter:venues.leipzig_arena.ANY_02'
       ],
       OVERWORLD: [
-        'This place is so big it has its own weather.',
-        'Walking to the stage feels like a pilgrimage.',
-        'If we get lost backstage, just follow the bass.',
-        'Arena day: nerves, cardio, and destiny.'
+        'chatter:venues.leipzig_arena.OVERWORLD_01',
+        'chatter:venues.leipzig_arena.OVERWORLD_02',
+        'chatter:venues.leipzig_arena.OVERWORLD_03',
+        'chatter:venues.leipzig_arena.OVERWORLD_04'
       ],
       PREGIG: [
-        'Line check, then deep breathing.',
-        'If the in-ears fail here, it’s a nightmare.',
-        'Don’t overplay—let the PA do the lifting.',
-        'This stage demands confidence. Borrow some.'
+        'chatter:venues.leipzig_arena.PREGIG_01',
+        'chatter:venues.leipzig_arena.PREGIG_02',
+        'chatter:venues.leipzig_arena.PREGIG_03',
+        'chatter:venues.leipzig_arena.PREGIG_04'
       ],
       GIG: [
-        'Make every move count—everyone can see everything.',
-        'If the crowd roars, don’t panic. Feed it.',
-        'Hit the chorus like it’s the only thing that matters.',
-        'Big stage, big sound, bigger heart.'
+        'chatter:venues.leipzig_arena.GIG_01',
+        'chatter:venues.leipzig_arena.GIG_02',
+        'chatter:venues.leipzig_arena.GIG_03',
+        'chatter:venues.leipzig_arena.GIG_04'
       ],
       POSTGIG: [
-        'We just did arena stuff. That’s insane.',
-        'My ears are ringing in stadium size.',
-        'If the crowd stayed loud, we earned it.',
-        'Now we go back to the van like nothing happened.'
+        'chatter:venues.leipzig_arena.POSTGIG_01',
+        'chatter:venues.leipzig_arena.POSTGIG_02',
+        'chatter:venues.leipzig_arena.POSTGIG_03',
+        'chatter:venues.leipzig_arena.POSTGIG_04'
       ]
     }
   },
@@ -450,32 +450,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_dresden_beatpol',
     linesByScene: {
       ANY: [
-        'Classic tour stop, sticky floor guaranteed.',
-        'If they sing along here, you’re officially on the circuit.'
+        'chatter:venues.dresden_beatpol.ANY_01',
+        'chatter:venues.dresden_beatpol.ANY_02'
       ],
       OVERWORLD: [
-        'Dresden nights always feel a bit electric.',
-        'If the venue smells like beer, it’s Beatpol season.',
-        'Park, unload, repeat—tour ritual.',
-        'This city can be classy. We’re not.'
+        'chatter:venues.dresden_beatpol.OVERWORLD_01',
+        'chatter:venues.dresden_beatpol.OVERWORLD_02',
+        'chatter:venues.dresden_beatpol.OVERWORLD_03',
+        'chatter:venues.dresden_beatpol.OVERWORLD_04'
       ],
       PREGIG: [
-        'Quick soundcheck, then straight to chaos.',
-        'Don’t fight the sticky floor—become one with it.',
-        'If the monitors are weird, trust muscle memory.',
-        'Get the vocals right, the crowd will carry the rest.'
+        'chatter:venues.dresden_beatpol.PREGIG_01',
+        'chatter:venues.dresden_beatpol.PREGIG_02',
+        'chatter:venues.dresden_beatpol.PREGIG_03',
+        'chatter:venues.dresden_beatpol.PREGIG_04'
       ],
       GIG: [
-        'Keep the momentum—Beatpol loves speed.',
-        'If they sing, give them the mic.',
-        'Hit the breakdown like it’s a final exam.',
-        'Make the last chorus a full-room shout.'
+        'chatter:venues.dresden_beatpol.GIG_01',
+        'chatter:venues.dresden_beatpol.GIG_02',
+        'chatter:venues.dresden_beatpol.GIG_03',
+        'chatter:venues.dresden_beatpol.GIG_04'
       ],
       POSTGIG: [
-        'That was a proper circuit night.',
-        'My shoes are still stuck to the floor in spirit.',
-        'If we sold merch here, we earned it.',
-        'Load-out after midnight: the Beatpol tradition.'
+        'chatter:venues.dresden_beatpol.POSTGIG_01',
+        'chatter:venues.dresden_beatpol.POSTGIG_02',
+        'chatter:venues.dresden_beatpol.POSTGIG_03',
+        'chatter:venues.dresden_beatpol.POSTGIG_04'
       ]
     }
   },
@@ -484,32 +484,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_dresden_chemie',
     linesByScene: {
       ANY: [
-        'Punk basement energy turned up to eleven.',
-        'Walls remember every scream in this room.'
+        'chatter:venues.dresden_chemie.ANY_01',
+        'chatter:venues.dresden_chemie.ANY_02'
       ],
       OVERWORLD: [
-        'Basement venues always feel like trouble. Good trouble.',
-        'Dresden underground: loud hearts, low ceilings.',
-        'If the door looks sketchy, the show will be perfect.',
-        'This place is basically a promise of sweat.'
+        'chatter:venues.dresden_chemie.OVERWORLD_01',
+        'chatter:venues.dresden_chemie.OVERWORLD_02',
+        'chatter:venues.dresden_chemie.OVERWORLD_03',
+        'chatter:venues.dresden_chemie.OVERWORLD_04'
       ],
       PREGIG: [
-        'Tape your cables—this floor eats ankles.',
-        'Soundcheck is optional, attitude is not.',
-        'If the monitors fail, scream louder.',
-        'This room rewards bravery, not comfort.'
+        'chatter:venues.dresden_chemie.PREGIG_01',
+        'chatter:venues.dresden_chemie.PREGIG_02',
+        'chatter:venues.dresden_chemie.PREGIG_03',
+        'chatter:venues.dresden_chemie.PREGIG_04'
       ],
       GIG: [
-        'Push it—this crowd wants the real thing.',
-        'If the pit starts, let it breathe.',
-        'Hit the snare like it owes you money.',
-        'Make the breakdown feel like a basement revolt.'
+        'chatter:venues.dresden_chemie.GIG_01',
+        'chatter:venues.dresden_chemie.GIG_02',
+        'chatter:venues.dresden_chemie.GIG_03',
+        'chatter:venues.dresden_chemie.GIG_04'
       ],
       POSTGIG: [
-        'That room tried to kill us. We won.',
-        'My lungs are full of sweat and pride.',
-        'If the crowd screamed, the walls will remember.',
-        'Load-out feels like crawling out of a bunker.'
+        'chatter:venues.dresden_chemie.POSTGIG_01',
+        'chatter:venues.dresden_chemie.POSTGIG_02',
+        'chatter:venues.dresden_chemie.POSTGIG_03',
+        'chatter:venues.dresden_chemie.POSTGIG_04'
       ]
     }
   },
@@ -520,32 +520,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_hannover_chez',
     linesByScene: {
       ANY: [
-        'Feels like home for every touring van.',
-        'If the crowd moves, this room shakes with them.'
+        'chatter:venues.hannover_chez.ANY_01',
+        'chatter:venues.hannover_chez.ANY_02'
       ],
       OVERWORLD: [
-        'Chez nights feel like family reunions with amps.',
-        'If we’re late, blame the ring road.',
-        'Hannover always has touring vans parked like trophies.',
-        'This place smells like stickers and good decisions.'
+        'chatter:venues.hannover_chez.OVERWORLD_01',
+        'chatter:venues.hannover_chez.OVERWORLD_02',
+        'chatter:venues.hannover_chez.OVERWORLD_03',
+        'chatter:venues.hannover_chez.OVERWORLD_04'
       ],
       PREGIG: [
-        'Soundcheck fast—this room wants the show now.',
-        'If the lights go red, we’re in war mode.',
-        'Don’t overthink the mix—energy wins here.',
-        'If the monitors are rough, the crowd will compensate.'
+        'chatter:venues.hannover_chez.PREGIG_01',
+        'chatter:venues.hannover_chez.PREGIG_02',
+        'chatter:venues.hannover_chez.PREGIG_03',
+        'chatter:venues.hannover_chez.PREGIG_04'
       ],
       GIG: [
-        'Keep it loud—Chez doesn’t do subtle.',
-        'If the room shakes, we’re doing it right.',
-        'Hit the chorus so the bar sings too.',
-        'Make the last song feel like a goodbye hug with bruises.'
+        'chatter:venues.hannover_chez.GIG_01',
+        'chatter:venues.hannover_chez.GIG_02',
+        'chatter:venues.hannover_chez.GIG_03',
+        'chatter:venues.hannover_chez.GIG_04'
       ],
       POSTGIG: [
-        'Chez delivered. As always.',
-        'That felt like home, just louder.',
-        'If the crowd stuck around, we owe them a bow.',
-        'Load-out: high-fives first, stairs later.'
+        'chatter:venues.hannover_chez.POSTGIG_01',
+        'chatter:venues.hannover_chez.POSTGIG_02',
+        'chatter:venues.hannover_chez.POSTGIG_03',
+        'chatter:venues.hannover_chez.POSTGIG_04'
       ]
     }
   },
@@ -554,32 +554,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_hannover_musikzentrum',
     linesByScene: {
       ANY: [
-        'Serious stage, serious sound.',
-        'The lights here can cook you alive.'
+        'chatter:venues.hannover_musikzentrum.ANY_01',
+        'chatter:venues.hannover_musikzentrum.ANY_02'
       ],
       OVERWORLD: [
-        'Big venue energy—act cool, panic later.',
-        'This stage looks like responsibility.',
-        'If the lobby is calm, the room won’t be.',
-        'Hannover nights can feel huge in here.'
+        'chatter:venues.hannover_musikzentrum.OVERWORLD_01',
+        'chatter:venues.hannover_musikzentrum.OVERWORLD_02',
+        'chatter:venues.hannover_musikzentrum.OVERWORLD_03',
+        'chatter:venues.hannover_musikzentrum.OVERWORLD_04'
       ],
       PREGIG: [
-        'Check the in-ears twice. No surprises.',
-        'Soundcheck like you mean it—this place is unforgiving.',
-        'If the monitors are clean, we go full throttle.',
-        'Don’t rush the line check. Big stages amplify chaos.'
+        'chatter:venues.hannover_musikzentrum.PREGIG_01',
+        'chatter:venues.hannover_musikzentrum.PREGIG_02',
+        'chatter:venues.hannover_musikzentrum.PREGIG_03',
+        'chatter:venues.hannover_musikzentrum.PREGIG_04'
       ],
       GIG: [
-        'Play big—this room can take it.',
-        'Hit the low end so it punches through the chest.',
-        'If the crowd roars, don’t flinch—feed it.',
-        'Make the last chorus feel like a headline moment.'
+        'chatter:venues.hannover_musikzentrum.GIG_01',
+        'chatter:venues.hannover_musikzentrum.GIG_02',
+        'chatter:venues.hannover_musikzentrum.GIG_03',
+        'chatter:venues.hannover_musikzentrum.GIG_04'
       ],
       POSTGIG: [
-        'That felt huge. Like, real huge.',
-        'My skin is still warm from those lights.',
-        'If we nailed this room, we’re leveling up.',
-        'Load-out is long, but that set paid for it.'
+        'chatter:venues.hannover_musikzentrum.POSTGIG_01',
+        'chatter:venues.hannover_musikzentrum.POSTGIG_02',
+        'chatter:venues.hannover_musikzentrum.POSTGIG_03',
+        'chatter:venues.hannover_musikzentrum.POSTGIG_04'
       ]
     }
   },
@@ -590,32 +590,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_berlin_so36',
     linesByScene: {
       ANY: [
-        'Kreuzberg history staring right back at you.',
-        'If you mess up here, the walls will remember.'
+        'chatter:venues.berlin_so36.ANY_01',
+        'chatter:venues.berlin_so36.ANY_02'
       ],
       OVERWORLD: [
-        'Berlin traffic tried to kill us. Now we kill the set.',
-        'If we find parking, it’s basically a miracle.',
-        'Kreuzberg air: kebab, chaos, and confidence.',
-        'This street looks normal. The room isn’t.'
+        'chatter:venues.berlin_so36.OVERWORLD_01',
+        'chatter:venues.berlin_so36.OVERWORLD_02',
+        'chatter:venues.berlin_so36.OVERWORLD_03',
+        'chatter:venues.berlin_so36.OVERWORLD_04'
       ],
       PREGIG: [
-        'Soundcheck messy? That’s just Berlin culture.',
-        'Monitors better be decent—this room deserves it.',
-        'Don’t rush tuning. So36 hears everything.',
-        'If the banner falls, pretend it’s performance art.'
+        'chatter:venues.berlin_so36.PREGIG_01',
+        'chatter:venues.berlin_so36.PREGIG_02',
+        'chatter:venues.berlin_so36.PREGIG_03',
+        'chatter:venues.berlin_so36.PREGIG_04'
       ],
       GIG: [
-        'Hold the tempo—this crowd will smell fear.',
-        'If they chant, we go harder.',
-        'Make the chorus hit like a brick through neon.',
-        'Push the breakdown until the room turns feral.'
+        'chatter:venues.berlin_so36.GIG_01',
+        'chatter:venues.berlin_so36.GIG_02',
+        'chatter:venues.berlin_so36.GIG_03',
+        'chatter:venues.berlin_so36.GIG_04'
       ],
       POSTGIG: [
-        'We survived So36. That’s a badge.',
-        'My ears are ringing in Kreuzberg dialect.',
-        'If the crowd stayed till the end, we did it right.',
-        'Load-out feels like a victory lap… with stairs.'
+        'chatter:venues.berlin_so36.POSTGIG_01',
+        'chatter:venues.berlin_so36.POSTGIG_02',
+        'chatter:venues.berlin_so36.POSTGIG_03',
+        'chatter:venues.berlin_so36.POSTGIG_04'
       ]
     }
   },
@@ -624,32 +624,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_berlin_cassiopeia',
     linesByScene: {
       ANY: [
-        'Skate, graffiti, and noise in one courtyard.',
-        'Perfect place for losing your voice and your hearing.'
+        'chatter:venues.berlin_cassiopeia.ANY_01',
+        'chatter:venues.berlin_cassiopeia.ANY_02'
       ],
       OVERWORLD: [
-        'Courtyard vibe now, warzone later.',
-        'Berlin nights start outside and end in sweat.',
-        'If the skaters stare, it’s respect.',
-        'This place feels like summer and bad decisions.'
+        'chatter:venues.berlin_cassiopeia.OVERWORLD_01',
+        'chatter:venues.berlin_cassiopeia.OVERWORLD_02',
+        'chatter:venues.berlin_cassiopeia.OVERWORLD_03',
+        'chatter:venues.berlin_cassiopeia.OVERWORLD_04'
       ],
       PREGIG: [
-        'Soundcheck quick—neighbors already hate us.',
-        'If the courtyard echo is weird, ignore it.',
-        'Tape the cables—people will trip as a hobby.',
-        'Monitors or vibes? We’ll take either.'
+        'chatter:venues.berlin_cassiopeia.PREGIG_01',
+        'chatter:venues.berlin_cassiopeia.PREGIG_02',
+        'chatter:venues.berlin_cassiopeia.PREGIG_03',
+        'chatter:venues.berlin_cassiopeia.PREGIG_04'
       ],
       GIG: [
-        'If the pit starts outside, bring it inside.',
-        'Keep it moving—this crowd loves momentum.',
-        'Hit the chorus so the yard can hear it.',
-        'Make the breakdown feel like a skate ramp collapse.'
+        'chatter:venues.berlin_cassiopeia.GIG_01',
+        'chatter:venues.berlin_cassiopeia.GIG_02',
+        'chatter:venues.berlin_cassiopeia.GIG_03',
+        'chatter:venues.berlin_cassiopeia.GIG_04'
       ],
       POSTGIG: [
-        'That was courtyard chaos, bottled.',
-        'My throat is gone and I’m proud.',
-        'If the crowd stayed loud, Berlin approved.',
-        'Load-out under night sky feels weirdly poetic.'
+        'chatter:venues.berlin_cassiopeia.POSTGIG_01',
+        'chatter:venues.berlin_cassiopeia.POSTGIG_02',
+        'chatter:venues.berlin_cassiopeia.POSTGIG_03',
+        'chatter:venues.berlin_cassiopeia.POSTGIG_04'
       ]
     }
   },
@@ -658,32 +658,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_berlin_lido',
     linesByScene: {
       ANY: [
-        'Red curtains, loud bands, zero subtlety.',
-        'Stage feels small until the lights go on.'
+        'chatter:venues.berlin_lido.ANY_01',
+        'chatter:venues.berlin_lido.ANY_02'
       ],
       OVERWORLD: [
-        'Berlin glamour on the outside, chaos on the inside.',
-        'Those curtains are about to witness violence.',
-        'If the balcony’s full, the pressure doubles.',
-        'This room looks like a movie set. We’re the monster.'
+        'chatter:venues.berlin_lido.OVERWORLD_01',
+        'chatter:venues.berlin_lido.OVERWORLD_02',
+        'chatter:venues.berlin_lido.OVERWORLD_03',
+        'chatter:venues.berlin_lido.OVERWORLD_04'
       ],
       PREGIG: [
-        'Soundcheck like it’s theater—precise and dramatic.',
-        'Don’t let the room swallow the vocals.',
-        'If the lights are hot, pace yourself.',
-        'Tune up. The curtains judge silently.'
+        'chatter:venues.berlin_lido.PREGIG_01',
+        'chatter:venues.berlin_lido.PREGIG_02',
+        'chatter:venues.berlin_lido.PREGIG_03',
+        'chatter:venues.berlin_lido.PREGIG_04'
       ],
       GIG: [
-        'Make it dramatic—this room loves a show.',
-        'If the balcony sings, we’ve won Berlin for a night.',
-        'Hit the breakdown like a curtain drop.',
-        'Keep it tight—no hiding under velvet.'
+        'chatter:venues.berlin_lido.GIG_01',
+        'chatter:venues.berlin_lido.GIG_02',
+        'chatter:venues.berlin_lido.GIG_03',
+        'chatter:venues.berlin_lido.GIG_04'
       ],
       POSTGIG: [
-        'Velvet room, sweaty outcome.',
-        'My ears are ringing in red.',
-        'If the crowd stayed glued, we did the job.',
-        'Load-out feels like leaving a stage play—bruised and happy.'
+        'chatter:venues.berlin_lido.POSTGIG_01',
+        'chatter:venues.berlin_lido.POSTGIG_02',
+        'chatter:venues.berlin_lido.POSTGIG_03',
+        'chatter:venues.berlin_lido.POSTGIG_04'
       ]
     }
   },
@@ -692,32 +692,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_berlin_astra',
     linesByScene: {
       ANY: [
-        'Big room, bigger echoes.',
-        'If the balcony moves, you know it’s a good night.'
+        'chatter:venues.berlin_astra.ANY_01',
+        'chatter:venues.berlin_astra.ANY_02'
       ],
       OVERWORLD: [
-        'This room is huge. Our confidence better be too.',
-        'Berlin big-stage energy: act cool, breathe later.',
-        'If the line outside is long, the night is serious.',
-        'Astra nights feel like a test and a prize.'
+        'chatter:venues.berlin_astra.OVERWORLD_01',
+        'chatter:venues.berlin_astra.OVERWORLD_02',
+        'chatter:venues.berlin_astra.OVERWORLD_03',
+        'chatter:venues.berlin_astra.OVERWORLD_04'
       ],
       PREGIG: [
-        'Dial the subs. This room lives on low end.',
-        'Soundcheck clean—big rooms punish slop.',
-        'If the in-ears work, we go full throttle.',
-        'Don’t waste the stage—use the space.'
+        'chatter:venues.berlin_astra.PREGIG_01',
+        'chatter:venues.berlin_astra.PREGIG_02',
+        'chatter:venues.berlin_astra.PREGIG_03',
+        'chatter:venues.berlin_astra.PREGIG_04'
       ],
       GIG: [
-        'Play big—make the back row feel it.',
-        'If the balcony jumps, ride the wave.',
-        'Hit the chorus like it’s a stadium chant.',
-        'Make the breakdown shake the room’s spine.'
+        'chatter:venues.berlin_astra.GIG_01',
+        'chatter:venues.berlin_astra.GIG_02',
+        'chatter:venues.berlin_astra.GIG_03',
+        'chatter:venues.berlin_astra.GIG_04'
       ],
       POSTGIG: [
-        'That felt enormous. Like, chest-rattle enormous.',
-        'My body is still humming from the PA.',
-        'If Berlin cheered, we earned it.',
-        'Now back to van life like nothing happened.'
+        'chatter:venues.berlin_astra.POSTGIG_01',
+        'chatter:venues.berlin_astra.POSTGIG_02',
+        'chatter:venues.berlin_astra.POSTGIG_03',
+        'chatter:venues.berlin_astra.POSTGIG_04'
       ]
     }
   },
@@ -726,32 +726,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_berlin_k17',
     linesByScene: {
       ANY: [
-        'Dark club energy, perfect for blastbeats.',
-        'Feels like a second home for heavy bands.'
+        'chatter:venues.berlin_k17.ANY_01',
+        'chatter:venues.berlin_k17.ANY_02'
       ],
       OVERWORLD: [
-        'The outside is quiet. The inside is a dungeon.',
-        'Berlin night mode: activated.',
-        'If the door guy nods, we’re safe.',
-        'This place smells like distortion and decisions.'
+        'chatter:venues.berlin_k17.OVERWORLD_01',
+        'chatter:venues.berlin_k17.OVERWORLD_02',
+        'chatter:venues.berlin_k17.OVERWORLD_03',
+        'chatter:venues.berlin_k17.OVERWORLD_04'
       ],
       PREGIG: [
-        'If the fog machine works, it’s instant hell. Perfect.',
-        'Soundcheck: tame the mud, keep the punch.',
-        'Monitors better be decent—this room deserves it.',
-        'Tape the setlist—sweat will erase history.'
+        'chatter:venues.berlin_k17.PREGIG_01',
+        'chatter:venues.berlin_k17.PREGIG_02',
+        'chatter:venues.berlin_k17.PREGIG_03',
+        'chatter:venues.berlin_k17.PREGIG_04'
       ],
       GIG: [
-        'Keep it brutal—K17 loves heavy truth.',
-        'If the crowd headbangs in sync, we’re hypnotizing them.',
-        'Hit the breakdown until the walls sweat.',
-        'No mercy. This room asked for it.'
+        'chatter:venues.berlin_k17.GIG_01',
+        'chatter:venues.berlin_k17.GIG_02',
+        'chatter:venues.berlin_k17.GIG_03',
+        'chatter:venues.berlin_k17.GIG_04'
       ],
       POSTGIG: [
-        'K17 nights always leave a mark.',
-        'My throat is sandpaper and victory.',
-        'If the pit survived, we did it right.',
-        'Load-out feels like crawling out of a cave.'
+        'chatter:venues.berlin_k17.POSTGIG_01',
+        'chatter:venues.berlin_k17.POSTGIG_02',
+        'chatter:venues.berlin_k17.POSTGIG_03',
+        'chatter:venues.berlin_k17.POSTGIG_04'
       ]
     }
   },
@@ -762,32 +762,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_hamburg_knust',
     linesByScene: {
       ANY: [
-        'Brick walls and tight sound.',
-        'If the front row is sweating, the mix is right.'
+        'chatter:venues.hamburg_knust.ANY_01',
+        'chatter:venues.hamburg_knust.ANY_02'
       ],
       OVERWORLD: [
-        'Hamburg air tastes like harbor and rain.',
-        'Brick venue means brick riffs.',
-        'If we’re soaked already, the night will be great.',
-        'Unload fast before the weather changes its mind.'
+        'chatter:venues.hamburg_knust.OVERWORLD_01',
+        'chatter:venues.hamburg_knust.OVERWORLD_02',
+        'chatter:venues.hamburg_knust.OVERWORLD_03',
+        'chatter:venues.hamburg_knust.OVERWORLD_04'
       ],
       PREGIG: [
-        'Soundcheck should be tight—this room rewards precision.',
-        'Dial the vocals. Brick walls love clarity.',
-        'If the snare pops, we’re golden.',
-        'Don’t overdo volume—the room will do it for us.'
+        'chatter:venues.hamburg_knust.PREGIG_01',
+        'chatter:venues.hamburg_knust.PREGIG_02',
+        'chatter:venues.hamburg_knust.PREGIG_03',
+        'chatter:venues.hamburg_knust.PREGIG_04'
       ],
       GIG: [
-        'Keep it punchy—this sound is a weapon.',
-        'If the crowd sweats, the mix is correct.',
-        'Hit the chorus so it bounces off brick and back into them.',
-        'Make the breakdown feel like a wall collapsing.'
+        'chatter:venues.hamburg_knust.GIG_01',
+        'chatter:venues.hamburg_knust.GIG_02',
+        'chatter:venues.hamburg_knust.GIG_03',
+        'chatter:venues.hamburg_knust.GIG_04'
       ],
       POSTGIG: [
-        'That was tight, loud, and clean. Dream combo.',
-        'My ears are ringing with brick reverb.',
-        'If Hamburg cheered, we earned it.',
-        'Load-out into rain: classic Hamburg goodbye.'
+        'chatter:venues.hamburg_knust.POSTGIG_01',
+        'chatter:venues.hamburg_knust.POSTGIG_02',
+        'chatter:venues.hamburg_knust.POSTGIG_03',
+        'chatter:venues.hamburg_knust.POSTGIG_04'
       ]
     }
   },
@@ -796,32 +796,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_hamburg_headcrash',
     linesByScene: {
       ANY: [
-        'Compact, loud, merciless.',
-        'Every mistake is visible from the bar.'
+        'chatter:venues.hamburg_headcrash.ANY_01',
+        'chatter:venues.hamburg_headcrash.ANY_02'
       ],
       OVERWORLD: [
-        'This place is small enough to smell your fear.',
-        'Hamburg chaos fits perfectly in this room.',
-        'If the bar is full, the pit will be worse.',
-        'Tonight’s gonna be short and violent.'
+        'chatter:venues.hamburg_headcrash.OVERWORLD_01',
+        'chatter:venues.hamburg_headcrash.OVERWORLD_02',
+        'chatter:venues.hamburg_headcrash.OVERWORLD_03',
+        'chatter:venues.hamburg_headcrash.OVERWORLD_04'
       ],
       PREGIG: [
-        'Soundcheck fast—this room wants impact, not speeches.',
-        'Keep the stage tidy or trip in song one.',
-        'Monitors might be vibes. Accept it.',
-        'Tune up. Everyone’s basically standing on your pedals.'
+        'chatter:venues.hamburg_headcrash.PREGIG_01',
+        'chatter:venues.hamburg_headcrash.PREGIG_02',
+        'chatter:venues.hamburg_headcrash.PREGIG_03',
+        'chatter:venues.hamburg_headcrash.PREGIG_04'
       ],
       GIG: [
-        'No subtlety—Headcrash doesn’t care.',
-        'If the crowd is inches away, give them inches of mercy: zero.',
-        'Hit the breakdown like you’re proving a point.',
-        'Keep it moving—momentum is oxygen here.'
+        'chatter:venues.hamburg_headcrash.GIG_01',
+        'chatter:venues.hamburg_headcrash.GIG_02',
+        'chatter:venues.hamburg_headcrash.GIG_03',
+        'chatter:venues.hamburg_headcrash.GIG_04'
       ],
       POSTGIG: [
-        'That room leaves bruises in your memory.',
-        'My shirt is a sponge and a trophy.',
-        'If we didn’t mess up, we’re lying.',
-        'Load-out is quick. Recovery takes days.'
+        'chatter:venues.hamburg_headcrash.POSTGIG_01',
+        'chatter:venues.hamburg_headcrash.POSTGIG_02',
+        'chatter:venues.hamburg_headcrash.POSTGIG_03',
+        'chatter:venues.hamburg_headcrash.POSTGIG_04'
       ]
     }
   },
@@ -830,32 +830,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_hamburg_markthalle',
     linesByScene: {
       ANY: [
-        'Classic hall, serious rock history.',
-        'You feel tiny until the crowd starts.'
+        'chatter:venues.hamburg_markthalle.ANY_01',
+        'chatter:venues.hamburg_markthalle.ANY_02'
       ],
       OVERWORLD: [
-        'Walking in feels like borrowing history.',
-        'If the posters could talk, they’d roast us.',
-        'Hamburg big-hall night—brace yourself.',
-        'This stage has seen legends. Let’s act like we belong.'
+        'chatter:venues.hamburg_markthalle.OVERWORLD_01',
+        'chatter:venues.hamburg_markthalle.OVERWORLD_02',
+        'chatter:venues.hamburg_markthalle.OVERWORLD_03',
+        'chatter:venues.hamburg_markthalle.OVERWORLD_04'
       ],
       PREGIG: [
-        'Soundcheck properly—this hall magnifies everything.',
-        'If the vocals carry, the whole set wins.',
-        'Dial the drums so they punch, not wash.',
-        'No sloppy intros in a room like this.'
+        'chatter:venues.hamburg_markthalle.PREGIG_01',
+        'chatter:venues.hamburg_markthalle.PREGIG_02',
+        'chatter:venues.hamburg_markthalle.PREGIG_03',
+        'chatter:venues.hamburg_markthalle.PREGIG_04'
       ],
       GIG: [
-        'Play like you’re part of the hall’s story.',
-        'Hit the chorus so it reaches the back wall.',
-        'If the crowd roars, don’t panic—ride it.',
-        'Make the breakdown feel like history shaking loose.'
+        'chatter:venues.hamburg_markthalle.GIG_01',
+        'chatter:venues.hamburg_markthalle.GIG_02',
+        'chatter:venues.hamburg_markthalle.GIG_03',
+        'chatter:venues.hamburg_markthalle.GIG_04'
       ],
       POSTGIG: [
-        'That was a “remember this forever” kind of set.',
-        'My ears are ringing with rock museum energy.',
-        'If we earned this room, we earned something real.',
-        'Load-out feels lighter when the set was heavy.'
+        'chatter:venues.hamburg_markthalle.POSTGIG_01',
+        'chatter:venues.hamburg_markthalle.POSTGIG_02',
+        'chatter:venues.hamburg_markthalle.POSTGIG_03',
+        'chatter:venues.hamburg_markthalle.POSTGIG_04'
       ]
     }
   },
@@ -864,32 +864,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_hamburg_logo',
     linesByScene: {
       ANY: [
-        'Club-show textbook, no frills, just noise.',
-        'Perfect size for a sold-out sweatbox.'
+        'chatter:venues.hamburg_logo.ANY_01',
+        'chatter:venues.hamburg_logo.ANY_02'
       ],
       OVERWORLD: [
-        'Hamburg rain + merch boxes = cardio.',
-        'The air smells like harbor and bad decisions.',
-        'If we’re late, blame the bridges. Always.',
-        'This room is small enough to feel everything.'
+        'chatter:venues.hamburg_logo.OVERWORLD_01',
+        'chatter:venues.hamburg_logo.OVERWORLD_02',
+        'chatter:venues.hamburg_logo.OVERWORLD_03',
+        'chatter:venues.hamburg_logo.OVERWORLD_04'
       ],
       PREGIG: [
-        'If the stage is tight, play tighter.',
-        'Soundcheck here is quick—no room for drama.',
-        'Please let the kick mic behave tonight.',
-        'Tape the setlist—sweat deletes ink.'
+        'chatter:venues.hamburg_logo.PREGIG_01',
+        'chatter:venues.hamburg_logo.PREGIG_02',
+        'chatter:venues.hamburg_logo.PREGIG_03',
+        'chatter:venues.hamburg_logo.PREGIG_04'
       ],
       GIG: [
-        'Keep it fast—this room loves momentum.',
-        'Front row is basically on stage. Use it.',
-        'If the floor moves, don’t question it.',
-        'Make the last chorus a full-room shout.'
+        'chatter:venues.hamburg_logo.GIG_01',
+        'chatter:venues.hamburg_logo.GIG_02',
+        'chatter:venues.hamburg_logo.GIG_03',
+        'chatter:venues.hamburg_logo.GIG_04'
       ],
       POSTGIG: [
-        'That was a proper Hamburg sweat session.',
-        'If we sold merch here, we earned it.',
-        'My shirt is now a wet flag.',
-        'Load-out into night air feels like a reward.'
+        'chatter:venues.hamburg_logo.POSTGIG_01',
+        'chatter:venues.hamburg_logo.POSTGIG_02',
+        'chatter:venues.hamburg_logo.POSTGIG_03',
+        'chatter:venues.hamburg_logo.POSTGIG_04'
       ]
     }
   },
@@ -900,32 +900,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_koeln_underground',
     linesByScene: {
       ANY: [
-        'Basement air, upstairs volume.',
-        'Feels like every wall has a sticker story.'
+        'chatter:venues.koeln_underground.ANY_01',
+        'chatter:venues.koeln_underground.ANY_02'
       ],
       OVERWORLD: [
-        'Köln underground energy starts before you even walk in.',
-        'If the stairs are steep, the show is gonna be good.',
-        'This place smells like history and adhesive.',
-        'Tonight we’re adding new sticker lore.'
+        'chatter:venues.koeln_underground.OVERWORLD_01',
+        'chatter:venues.koeln_underground.OVERWORLD_02',
+        'chatter:venues.koeln_underground.OVERWORLD_03',
+        'chatter:venues.koeln_underground.OVERWORLD_04'
       ],
       PREGIG: [
-        'Tape the cables—this basement is ankle-hungry.',
-        'Soundcheck is a handshake with feedback.',
-        'If the monitors are bad, we go full vibe mode.',
-        'Don’t overthink it. Just hit hard.'
+        'chatter:venues.koeln_underground.PREGIG_01',
+        'chatter:venues.koeln_underground.PREGIG_02',
+        'chatter:venues.koeln_underground.PREGIG_03',
+        'chatter:venues.koeln_underground.PREGIG_04'
       ],
       GIG: [
-        'Keep it loud—basements demand it.',
-        'If the pit opens, let it breathe.',
-        'Hit the breakdown until the ceiling learns.',
-        'Make the chorus a chant, not a song.'
+        'chatter:venues.koeln_underground.GIG_01',
+        'chatter:venues.koeln_underground.GIG_02',
+        'chatter:venues.koeln_underground.GIG_03',
+        'chatter:venues.koeln_underground.GIG_04'
       ],
       POSTGIG: [
-        'Basement sweat hits different. Köln style.',
-        'My lungs are full of sticker dust.',
-        'If the crowd stayed close, they’re real ones.',
-        'Load-out is pain. The vibe was gold.'
+        'chatter:venues.koeln_underground.POSTGIG_01',
+        'chatter:venues.koeln_underground.POSTGIG_02',
+        'chatter:venues.koeln_underground.POSTGIG_03',
+        'chatter:venues.koeln_underground.POSTGIG_04'
       ]
     }
   },
@@ -934,32 +934,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_koeln_mtc',
     linesByScene: {
       ANY: [
-        'Low ceiling, loud amps.',
-        'You can high-five the crowd between riffs.'
+        'chatter:venues.koeln_mtc.ANY_01',
+        'chatter:venues.koeln_mtc.ANY_02'
       ],
       OVERWORLD: [
-        'Köln nights always feel like they start too late.',
-        'If the queue wraps, the room will boil.',
-        'This place is basically a pit incubator.',
-        'Parking in Köln is a myth we keep believing.'
+        'chatter:venues.koeln_mtc.OVERWORLD_01',
+        'chatter:venues.koeln_mtc.OVERWORLD_02',
+        'chatter:venues.koeln_mtc.OVERWORLD_03',
+        'chatter:venues.koeln_mtc.OVERWORLD_04'
       ],
       PREGIG: [
-        'Keep the pedalboard tight—this stage is a postage stamp.',
-        'Soundcheck fast, chaos faster.',
-        'If the vocals cut through, it’s gonna be huge.',
-        'Tune up—everyone’s basically in your lap.'
+        'chatter:venues.koeln_mtc.PREGIG_01',
+        'chatter:venues.koeln_mtc.PREGIG_02',
+        'chatter:venues.koeln_mtc.PREGIG_03',
+        'chatter:venues.koeln_mtc.PREGIG_04'
       ],
       GIG: [
-        'No mercy—low ceiling means high energy.',
-        'If the crowd is screaming, give them the mic.',
-        'Hit the breakdown like it’s personal.',
-        'Keep it moving—momentum is oxygen here.'
+        'chatter:venues.koeln_mtc.GIG_01',
+        'chatter:venues.koeln_mtc.GIG_02',
+        'chatter:venues.koeln_mtc.GIG_03',
+        'chatter:venues.koeln_mtc.GIG_04'
       ],
       POSTGIG: [
-        'That was close, loud, and perfect.',
-        'My shirt is a towel with opinions.',
-        'If people were smiling, we did the job.',
-        'Load-out feels like squeezing a couch through a door.'
+        'chatter:venues.koeln_mtc.POSTGIG_01',
+        'chatter:venues.koeln_mtc.POSTGIG_02',
+        'chatter:venues.koeln_mtc.POSTGIG_03',
+        'chatter:venues.koeln_mtc.POSTGIG_04'
       ]
     }
   },
@@ -968,32 +968,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_koeln_luxor',
     linesByScene: {
       ANY: [
-        'Long room, sound hits you from the back.',
-        'If the room is packed, it turns into a tunnel of noise.'
+        'chatter:venues.koeln_luxor.ANY_01',
+        'chatter:venues.koeln_luxor.ANY_02'
       ],
       OVERWORLD: [
-        'This room is a hallway to chaos.',
-        'If the back row moves, we’ve truly won Köln.',
-        'Luxor nights feel like a sprint that lasts an hour.',
-        'Long room means long echoes—earn them.'
+        'chatter:venues.koeln_luxor.OVERWORLD_01',
+        'chatter:venues.koeln_luxor.OVERWORLD_02',
+        'chatter:venues.koeln_luxor.OVERWORLD_03',
+        'chatter:venues.koeln_luxor.OVERWORLD_04'
       ],
       PREGIG: [
-        'Dial the vocals—this tunnel can swallow words.',
-        'Soundcheck the low end so it doesn’t smear.',
-        'Keep timing tight—long rooms punish drift.',
-        'Don’t overthink reverb. The room provides plenty.'
+        'chatter:venues.koeln_luxor.PREGIG_01',
+        'chatter:venues.koeln_luxor.PREGIG_02',
+        'chatter:venues.koeln_luxor.PREGIG_03',
+        'chatter:venues.koeln_luxor.PREGIG_04'
       ],
       GIG: [
-        'Aim the riffs down the tunnel like arrows.',
-        'If the crowd in the back is loud, we’re unstoppable.',
-        'Hit the breakdown so it ricochets.',
-        'Keep the chorus simple enough to chant.'
+        'chatter:venues.koeln_luxor.GIG_01',
+        'chatter:venues.koeln_luxor.GIG_02',
+        'chatter:venues.koeln_luxor.GIG_03',
+        'chatter:venues.koeln_luxor.GIG_04'
       ],
       POSTGIG: [
-        'That tunnel roared back. Love it.',
-        'My ears are ringing in corridor mode.',
-        'If the crowd carried the last song, we earned it.',
-        'Load-out feels like walking out of a storm.'
+        'chatter:venues.koeln_luxor.POSTGIG_01',
+        'chatter:venues.koeln_luxor.POSTGIG_02',
+        'chatter:venues.koeln_luxor.POSTGIG_03',
+        'chatter:venues.koeln_luxor.POSTGIG_04'
       ]
     }
   },
@@ -1004,32 +1004,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_muenchen_backstage',
     linesByScene: {
       ANY: [
-        'Outdoor, indoor, everything loud.',
-        'Easy to get lost between stage and backstage.'
+        'chatter:venues.muenchen_backstage.ANY_01',
+        'chatter:venues.muenchen_backstage.ANY_02'
       ],
       OVERWORLD: [
-        'Backstage is a whole city of stages.',
-        'If we get lost, follow the sound of drum cases.',
-        'Munich looks clean. Our tour does not.',
-        'So many rooms, so many chances to be too loud.'
+        'chatter:venues.muenchen_backstage.OVERWORLD_01',
+        'chatter:venues.muenchen_backstage.OVERWORLD_02',
+        'chatter:venues.muenchen_backstage.OVERWORLD_03',
+        'chatter:venues.muenchen_backstage.OVERWORLD_04'
       ],
       PREGIG: [
-        'Check your gear twice—this place runs like a machine.',
-        'Soundcheck clean, then go feral later.',
-        'If the monitors are good, we can get weird.',
-        'Don’t forget where the merch is. Seriously.'
+        'chatter:venues.muenchen_backstage.PREGIG_01',
+        'chatter:venues.muenchen_backstage.PREGIG_02',
+        'chatter:venues.muenchen_backstage.PREGIG_03',
+        'chatter:venues.muenchen_backstage.PREGIG_04'
       ],
       GIG: [
-        'Play like a festival, even if it’s a club slot.',
-        'If the crowd is wide, pull them in with the chorus.',
-        'Hit the breakdown like it’s outdoors in a storm.',
-        'Keep it tight—big venue energy demands it.'
+        'chatter:venues.muenchen_backstage.GIG_01',
+        'chatter:venues.muenchen_backstage.GIG_02',
+        'chatter:venues.muenchen_backstage.GIG_03',
+        'chatter:venues.muenchen_backstage.GIG_04'
       ],
       POSTGIG: [
-        'That was big energy in a big place.',
-        'My legs are tired from walking backstage alone.',
-        'If we sold merch here, we’re doing something right.',
-        'Load-out feels like moving through a labyrinth.'
+        'chatter:venues.muenchen_backstage.POSTGIG_01',
+        'chatter:venues.muenchen_backstage.POSTGIG_02',
+        'chatter:venues.muenchen_backstage.POSTGIG_03',
+        'chatter:venues.muenchen_backstage.POSTGIG_04'
       ]
     }
   },
@@ -1038,32 +1038,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_muenchen_feierwerk',
     linesByScene: {
       ANY: [
-        'DIY spirit with clean sound.',
-        'Feels like a youth center that grew up with you.'
+        'chatter:venues.muenchen_feierwerk.ANY_01',
+        'chatter:venues.muenchen_feierwerk.ANY_02'
       ],
       OVERWORLD: [
-        'Feierwerk always feels friendly—until we hit play.',
-        'Munich nights can be warm. We’ll make them hotter.',
-        'This place smells like community and cables.',
-        'If the crowd is mixed, the pit will unite them.'
+        'chatter:venues.muenchen_feierwerk.OVERWORLD_01',
+        'chatter:venues.muenchen_feierwerk.OVERWORLD_02',
+        'chatter:venues.muenchen_feierwerk.OVERWORLD_03',
+        'chatter:venues.muenchen_feierwerk.OVERWORLD_04'
       ],
       PREGIG: [
-        'Soundcheck should be easy—this room is honest.',
-        'Dial the snare so it cuts, not stings.',
-        'If the monitors are clean, we go full send.',
-        'Don’t overplay—let the room carry the sound.'
+        'chatter:venues.muenchen_feierwerk.PREGIG_01',
+        'chatter:venues.muenchen_feierwerk.PREGIG_02',
+        'chatter:venues.muenchen_feierwerk.PREGIG_03',
+        'chatter:venues.muenchen_feierwerk.PREGIG_04'
       ],
       GIG: [
-        'Make it loud, but keep it clean.',
-        'If the crowd smiles, then we hit the breakdown.',
-        'Turn the chorus into a shared shout.',
-        'Feierwerk nights love energy more than perfection.'
+        'chatter:venues.muenchen_feierwerk.GIG_01',
+        'chatter:venues.muenchen_feierwerk.GIG_02',
+        'chatter:venues.muenchen_feierwerk.GIG_03',
+        'chatter:venues.muenchen_feierwerk.GIG_04'
       ],
       POSTGIG: [
-        'That felt wholesome and heavy. Rare combo.',
-        'My ears are ringing… politely.',
-        'If the crowd stayed, we earned their trust.',
-        'Load-out feels easy when the vibe was that good.'
+        'chatter:venues.muenchen_feierwerk.POSTGIG_01',
+        'chatter:venues.muenchen_feierwerk.POSTGIG_02',
+        'chatter:venues.muenchen_feierwerk.POSTGIG_03',
+        'chatter:venues.muenchen_feierwerk.POSTGIG_04'
       ]
     }
   },
@@ -1072,32 +1072,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_stuttgart_lka',
     linesByScene: {
       ANY: [
-        'Big stage, big room, big pressure.',
-        'You see every face from up here – and they see you.'
+        'chatter:venues.stuttgart_lka.ANY_01',
+        'chatter:venues.stuttgart_lka.ANY_02'
       ],
       OVERWORLD: [
-        'This place feels like a test you can’t retake.',
-        'If the room fills, Stuttgart gets loud-fast.',
-        'Big stage means big posture—fake it if needed.',
-        'Tonight we’re either sharp or exposed.'
+        'chatter:venues.stuttgart_lka.OVERWORLD_01',
+        'chatter:venues.stuttgart_lka.OVERWORLD_02',
+        'chatter:venues.stuttgart_lka.OVERWORLD_03',
+        'chatter:venues.stuttgart_lka.OVERWORLD_04'
       ],
       PREGIG: [
-        'Soundcheck like a pro, panic later in the van.',
-        'Dial the low end so it punches, not muddies.',
-        'If the lights are hot, pace yourself.',
-        'No sloppy intros—this room magnifies everything.'
+        'chatter:venues.stuttgart_lka.PREGIG_01',
+        'chatter:venues.stuttgart_lka.PREGIG_02',
+        'chatter:venues.stuttgart_lka.PREGIG_03',
+        'chatter:venues.stuttgart_lka.PREGIG_04'
       ],
       GIG: [
-        'Play big—make the back row feel the kick.',
-        'If the crowd roars, ride it like a wave.',
-        'Hit the chorus like it’s a headline moment.',
-        'Make the breakdown feel like the floor is lifting.'
+        'chatter:venues.stuttgart_lka.GIG_01',
+        'chatter:venues.stuttgart_lka.GIG_02',
+        'chatter:venues.stuttgart_lka.GIG_03',
+        'chatter:venues.stuttgart_lka.GIG_04'
       ],
       POSTGIG: [
-        'That room doesn’t forgive, so that win feels huge.',
-        'My ribs are still humming.',
-        'If Stuttgart cheered, we earned it.',
-        'Load-out is long, but the set pays for it.'
+        'chatter:venues.stuttgart_lka.POSTGIG_01',
+        'chatter:venues.stuttgart_lka.POSTGIG_02',
+        'chatter:venues.stuttgart_lka.POSTGIG_03',
+        'chatter:venues.stuttgart_lka.POSTGIG_04'
       ]
     }
   },
@@ -1108,32 +1108,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_dortmund_fzw',
     linesByScene: {
       ANY: [
-        'Modern hall with festival energy.',
-        'When the lights kick in, it feels twice as big.'
+        'chatter:venues.dortmund_fzw.ANY_01',
+        'chatter:venues.dortmund_fzw.ANY_02'
       ],
       OVERWORLD: [
-        'FZW night: clean venue, dirty riffs.',
-        'If the room is big, make the set bigger.',
-        'Dortmund energy is direct. So are we.',
-        'Modern hall means no excuses.'
+        'chatter:venues.dortmund_fzw.OVERWORLD_01',
+        'chatter:venues.dortmund_fzw.OVERWORLD_02',
+        'chatter:venues.dortmund_fzw.OVERWORLD_03',
+        'chatter:venues.dortmund_fzw.OVERWORLD_04'
       ],
       PREGIG: [
-        'Dial the kick—this room loves a solid punch.',
-        'Soundcheck tight: big rooms punish drift.',
-        'If the monitors are good, we go full throttle.',
-        'Keep cables tidy—this stage is unforgiving.'
+        'chatter:venues.dortmund_fzw.PREGIG_01',
+        'chatter:venues.dortmund_fzw.PREGIG_02',
+        'chatter:venues.dortmund_fzw.PREGIG_03',
+        'chatter:venues.dortmund_fzw.PREGIG_04'
       ],
       GIG: [
-        'Make it feel like a festival slot.',
-        'Hit the chorus so the whole hall answers.',
-        'If the pit opens, don’t hesitate—feed it.',
-        'Breakdown should feel like a lighting cue in your bones.'
+        'chatter:venues.dortmund_fzw.GIG_01',
+        'chatter:venues.dortmund_fzw.GIG_02',
+        'chatter:venues.dortmund_fzw.GIG_03',
+        'chatter:venues.dortmund_fzw.GIG_04'
       ],
       POSTGIG: [
-        'That felt bigger than it looked.',
-        'My body is still buzzing from the PA.',
-        'If the crowd stayed loud, we did it right.',
-        'Load-out is work, but that set was payment.'
+        'chatter:venues.dortmund_fzw.POSTGIG_01',
+        'chatter:venues.dortmund_fzw.POSTGIG_02',
+        'chatter:venues.dortmund_fzw.POSTGIG_03',
+        'chatter:venues.dortmund_fzw.POSTGIG_04'
       ]
     }
   },
@@ -1142,32 +1142,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_dortmund_junkyard',
     linesByScene: {
       ANY: [
-        'Industrial yard, loud music, cold air.',
-        'Perfect spot for outdoor chaos.'
+        'chatter:venues.dortmund_junkyard.ANY_01',
+        'chatter:venues.dortmund_junkyard.ANY_02'
       ],
       OVERWORLD: [
-        'Outdoor gig among metal? Feels correct.',
-        'If the air is cold, the riffs get sharper.',
-        'This place looks like a music video set.',
-        'Industrial yard energy: raw and honest.'
+        'chatter:venues.dortmund_junkyard.OVERWORLD_01',
+        'chatter:venues.dortmund_junkyard.OVERWORLD_02',
+        'chatter:venues.dortmund_junkyard.OVERWORLD_03',
+        'chatter:venues.dortmund_junkyard.OVERWORLD_04'
       ],
       PREGIG: [
-        'Tape everything. Wind is a thief.',
-        'Soundcheck is half music, half weather report.',
-        'If the monitors fight the air, we fight back.',
-        'Don’t drop picks—gravel keeps souvenirs.'
+        'chatter:venues.dortmund_junkyard.PREGIG_01',
+        'chatter:venues.dortmund_junkyard.PREGIG_02',
+        'chatter:venues.dortmund_junkyard.PREGIG_03',
+        'chatter:venues.dortmund_junkyard.PREGIG_04'
       ],
       GIG: [
-        'Throw the sound into the open sky.',
-        'If the crowd jumps, the yard becomes a storm.',
-        'Hit the breakdown like steel bending.',
-        'Play fast—cold air demands movement.'
+        'chatter:venues.dortmund_junkyard.GIG_01',
+        'chatter:venues.dortmund_junkyard.GIG_02',
+        'chatter:venues.dortmund_junkyard.GIG_03',
+        'chatter:venues.dortmund_junkyard.GIG_04'
       ],
       POSTGIG: [
-        'Outdoor chaos always hits different.',
-        'My hands are cold, my heart is loud.',
-        'If people stayed outside for this, they’re real.',
-        'Load-out in the night air feels oddly peaceful.'
+        'chatter:venues.dortmund_junkyard.POSTGIG_01',
+        'chatter:venues.dortmund_junkyard.POSTGIG_02',
+        'chatter:venues.dortmund_junkyard.POSTGIG_03',
+        'chatter:venues.dortmund_junkyard.POSTGIG_04'
       ]
     }
   },
@@ -1176,32 +1176,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_bremen_tower',
     linesByScene: {
       ANY: [
-        'Tiny tower, tall volume.',
-        'If you hit hard, the whole building vibrates.'
+        'chatter:venues.bremen_tower.ANY_01',
+        'chatter:venues.bremen_tower.ANY_02'
       ],
       OVERWORLD: [
-        'This venue is vertical. Our patience is not.',
-        'If we’re carrying gear upstairs, that’s the warm-up.',
-        'Bremen nights feel like tight rooms and loud hearts.',
-        'One wrong turn and you’re in a stairwell solo.'
+        'chatter:venues.bremen_tower.OVERWORLD_01',
+        'chatter:venues.bremen_tower.OVERWORLD_02',
+        'chatter:venues.bremen_tower.OVERWORLD_03',
+        'chatter:venues.bremen_tower.OVERWORLD_04'
       ],
       PREGIG: [
-        'Keep the stage tidy—space is a luxury here.',
-        'Soundcheck is basically already loud enough.',
-        'If the bass is too much, the tower will tell us.',
-        'Don’t drift tempo—small rooms magnify wobble.'
+        'chatter:venues.bremen_tower.PREGIG_01',
+        'chatter:venues.bremen_tower.PREGIG_02',
+        'chatter:venues.bremen_tower.PREGIG_03',
+        'chatter:venues.bremen_tower.PREGIG_04'
       ],
       GIG: [
-        'Keep it punchy—this room loves impact.',
-        'If the building vibrates, we’re correct.',
-        'Hit the chorus like a chant in a stairwell.',
-        'Breakdown should feel like bricks arguing.'
+        'chatter:venues.bremen_tower.GIG_01',
+        'chatter:venues.bremen_tower.GIG_02',
+        'chatter:venues.bremen_tower.GIG_03',
+        'chatter:venues.bremen_tower.GIG_04'
       ],
       POSTGIG: [
-        'My legs hurt from stairs and victory.',
-        'That room shakes back. Respect.',
-        'If the crowd was packed, the energy doubled.',
-        'Load-out is cardio disguised as tradition.'
+        'chatter:venues.bremen_tower.POSTGIG_01',
+        'chatter:venues.bremen_tower.POSTGIG_02',
+        'chatter:venues.bremen_tower.POSTGIG_03',
+        'chatter:venues.bremen_tower.POSTGIG_04'
       ]
     }
   },
@@ -1210,32 +1210,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_frankfurt_batschkapp',
     linesByScene: {
       ANY: [
-        'Legendary club, no room for weak sets.',
-        'You either rise to the room or get swallowed.'
+        'chatter:venues.frankfurt_batschkapp.ANY_01',
+        'chatter:venues.frankfurt_batschkapp.ANY_02'
       ],
       OVERWORLD: [
-        'Walking in feels like entering a boss arena.',
-        'Frankfurt doesn’t do half energy.',
-        'If we own this room, it counts for years.',
-        'This place has chewed bands up—be the exception.'
+        'chatter:venues.frankfurt_batschkapp.OVERWORLD_01',
+        'chatter:venues.frankfurt_batschkapp.OVERWORLD_02',
+        'chatter:venues.frankfurt_batschkapp.OVERWORLD_03',
+        'chatter:venues.frankfurt_batschkapp.OVERWORLD_04'
       ],
       PREGIG: [
-        'Soundcheck like you’re being judged. You are.',
-        'Dial the vocals—legendary rooms demand clarity.',
-        'No sloppy intros. Not here.',
-        'If the monitors are good, we’re dangerous.'
+        'chatter:venues.frankfurt_batschkapp.PREGIG_01',
+        'chatter:venues.frankfurt_batschkapp.PREGIG_02',
+        'chatter:venues.frankfurt_batschkapp.PREGIG_03',
+        'chatter:venues.frankfurt_batschkapp.PREGIG_04'
       ],
       GIG: [
-        'Play like the room owes you respect—then earn it.',
-        'If the pit opens, keep the tempo locked.',
-        'Hit the chorus so the bar sings too.',
-        'Make the breakdown feel like the floor is shifting.'
+        'chatter:venues.frankfurt_batschkapp.GIG_01',
+        'chatter:venues.frankfurt_batschkapp.GIG_02',
+        'chatter:venues.frankfurt_batschkapp.GIG_03',
+        'chatter:venues.frankfurt_batschkapp.GIG_04'
       ],
       POSTGIG: [
-        'Batschkapp didn’t swallow us. We bit back.',
-        'That win feels heavier than the gear.',
-        'If the crowd cheered, we earned our stamp.',
-        'Load-out is pain, but the bragging rights are free.'
+        'chatter:venues.frankfurt_batschkapp.POSTGIG_01',
+        'chatter:venues.frankfurt_batschkapp.POSTGIG_02',
+        'chatter:venues.frankfurt_batschkapp.POSTGIG_03',
+        'chatter:venues.frankfurt_batschkapp.POSTGIG_04'
       ]
     }
   },
@@ -1245,28 +1245,28 @@ export const VENUE_CHATTER_DB = [
     linesByScene: {
       ANY: ['Small room, golden name.', 'Nights here feel like secret shows.'],
       OVERWORLD: [
-        'Kassel feels quiet until you find the Goldgrube.',
-        'If it’s small, it’s real.',
-        'This place looks like a hidden level.',
-        'Tonight we’re mining riffs, apparently.'
+        'chatter:venues.kassel_goldgrube.OVERWORLD_01',
+        'chatter:venues.kassel_goldgrube.OVERWORLD_02',
+        'chatter:venues.kassel_goldgrube.OVERWORLD_03',
+        'chatter:venues.kassel_goldgrube.OVERWORLD_04'
       ],
       PREGIG: [
-        'Soundcheck is intimate—no hiding in the mix.',
-        'Keep it tidy, the stage is cozy.',
-        'If the monitors are rough, the crowd will still feel it.',
-        'Tune up—every note lands close.'
+        'chatter:venues.kassel_goldgrube.PREGIG_01',
+        'chatter:venues.kassel_goldgrube.PREGIG_02',
+        'chatter:venues.kassel_goldgrube.PREGIG_03',
+        'chatter:venues.kassel_goldgrube.PREGIG_04'
       ],
       GIG: [
-        'Turn small energy into big damage.',
-        'If they sing, it’ll feel like a secret choir.',
-        'Hit the breakdown and watch the room become one.',
-        'Keep it tight—this place hears everything.'
+        'chatter:venues.kassel_goldgrube.GIG_01',
+        'chatter:venues.kassel_goldgrube.GIG_02',
+        'chatter:venues.kassel_goldgrube.GIG_03',
+        'chatter:venues.kassel_goldgrube.GIG_04'
       ],
       POSTGIG: [
-        'That felt like a secret victory.',
-        'My shirt is goldgrube-certified wet.',
-        'If the crowd stayed close, they’re family now.',
-        'Load-out is easy. The grin is harder to pack.'
+        'chatter:venues.kassel_goldgrube.POSTGIG_01',
+        'chatter:venues.kassel_goldgrube.POSTGIG_02',
+        'chatter:venues.kassel_goldgrube.POSTGIG_03',
+        'chatter:venues.kassel_goldgrube.POSTGIG_04'
       ]
     }
   },
@@ -1275,32 +1275,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_nuernberg_hirsch',
     linesByScene: {
       ANY: [
-        'Wide stage, heavy sound.',
-        'If the horns go up, you’re doing it right.'
+        'chatter:venues.nuernberg_hirsch.ANY_01',
+        'chatter:venues.nuernberg_hirsch.ANY_02'
       ],
       OVERWORLD: [
-        'Nürnberg energy: loud, direct, no nonsense.',
-        'Big stage means big moves—don’t be shy.',
-        'If the crowd is already chanting, we’re in trouble.',
-        'Tonight we aim for horns and bruises.'
+        'chatter:venues.nuernberg_hirsch.OVERWORLD_01',
+        'chatter:venues.nuernberg_hirsch.OVERWORLD_02',
+        'chatter:venues.nuernberg_hirsch.OVERWORLD_03',
+        'chatter:venues.nuernberg_hirsch.OVERWORLD_04'
       ],
       PREGIG: [
-        'Dial the drums—this room loves punch.',
-        'Soundcheck: get the low end tight, then go wild.',
-        'If the monitors are clean, we can sprint.',
-        'No sloppy transitions—wide stages expose gaps.'
+        'chatter:venues.nuernberg_hirsch.PREGIG_01',
+        'chatter:venues.nuernberg_hirsch.PREGIG_02',
+        'chatter:venues.nuernberg_hirsch.PREGIG_03',
+        'chatter:venues.nuernberg_hirsch.PREGIG_04'
       ],
       GIG: [
-        'Make the chorus a horn-raising moment.',
-        'If the pit opens, keep the tempo locked.',
-        'Hit the breakdown like a hammer.',
-        'Play big—this room wants big.'
+        'chatter:venues.nuernberg_hirsch.GIG_01',
+        'chatter:venues.nuernberg_hirsch.GIG_02',
+        'chatter:venues.nuernberg_hirsch.GIG_03',
+        'chatter:venues.nuernberg_hirsch.GIG_04'
       ],
       POSTGIG: [
-        'Horns up means mission accomplished.',
-        'My ribs are still humming from the subs.',
-        'If the crowd stayed loud, we did it right.',
-        'Load-out feels lighter after a heavy set.'
+        'chatter:venues.nuernberg_hirsch.POSTGIG_01',
+        'chatter:venues.nuernberg_hirsch.POSTGIG_02',
+        'chatter:venues.nuernberg_hirsch.POSTGIG_03',
+        'chatter:venues.nuernberg_hirsch.POSTGIG_04'
       ]
     }
   },
@@ -1311,32 +1311,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_rostock_mau',
     linesByScene: {
       ANY: [
-        'Harbor air and heavy riffs.',
-        'Perfect place to make the Baltic Sea shake.'
+        'chatter:venues.rostock_mau.ANY_01',
+        'chatter:venues.rostock_mau.ANY_02'
       ],
       OVERWORLD: [
-        'Sea air makes everything feel sharper.',
-        'Rostock nights taste like salt and feedback.',
-        'If the wind is strong, so are we.',
-        'Harbor city = heavy night.'
+        'chatter:venues.rostock_mau.OVERWORLD_01',
+        'chatter:venues.rostock_mau.OVERWORLD_02',
+        'chatter:venues.rostock_mau.OVERWORLD_03',
+        'chatter:venues.rostock_mau.OVERWORLD_04'
       ],
       PREGIG: [
-        'Soundcheck: keep it tight, the room will carry.',
-        'If the bass hits right, it’s ship-engine heavy.',
-        'Don’t let the vocals get lost in the salt air.',
-        'Tape cables—people trip like it’s tradition.'
+        'chatter:venues.rostock_mau.PREGIG_01',
+        'chatter:venues.rostock_mau.PREGIG_02',
+        'chatter:venues.rostock_mau.PREGIG_03',
+        'chatter:venues.rostock_mau.PREGIG_04'
       ],
       GIG: [
-        'Make the chorus roll like waves.',
-        'If the pit spins, it’s a whirlpool.',
-        'Hit the breakdown like a storm warning.',
-        'Keep it moving—cold sea air demands speed.'
+        'chatter:venues.rostock_mau.GIG_01',
+        'chatter:venues.rostock_mau.GIG_02',
+        'chatter:venues.rostock_mau.GIG_03',
+        'chatter:venues.rostock_mau.GIG_04'
       ],
       POSTGIG: [
-        'That was salty, loud, and perfect.',
-        'My throat is sandpaper and pride.',
-        'If the crowd stayed loud, the harbor heard it.',
-        'Load-out feels like docking after a storm.'
+        'chatter:venues.rostock_mau.POSTGIG_01',
+        'chatter:venues.rostock_mau.POSTGIG_02',
+        'chatter:venues.rostock_mau.POSTGIG_03',
+        'chatter:venues.rostock_mau.POSTGIG_04'
       ]
     }
   },
@@ -1345,32 +1345,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_erfurt_centrum',
     linesByScene: {
       ANY: [
-        'Feels like the center of everything for one night.',
-        'Crowd stands close enough to tune your guitar for you.'
+        'chatter:venues.erfurt_centrum.ANY_01',
+        'chatter:venues.erfurt_centrum.ANY_02'
       ],
       OVERWORLD: [
-        'Erfurt feels calm—until we plug in.',
-        'This venue turns a normal night into an event.',
-        'If the streets are quiet, we’ll fix that.',
-        'Tonight we make the centrum live up to its name.'
+        'chatter:venues.erfurt_centrum.OVERWORLD_01',
+        'chatter:venues.erfurt_centrum.OVERWORLD_02',
+        'chatter:venues.erfurt_centrum.OVERWORLD_03',
+        'chatter:venues.erfurt_centrum.OVERWORLD_04'
       ],
       PREGIG: [
-        'Soundcheck: get the vocals clear, the rest will follow.',
-        'Don’t rush—this room rewards details.',
-        'If the crowd is close, tuning better be perfect.',
-        'Check the monitors, then check your nerves.'
+        'chatter:venues.erfurt_centrum.PREGIG_01',
+        'chatter:venues.erfurt_centrum.PREGIG_02',
+        'chatter:venues.erfurt_centrum.PREGIG_03',
+        'chatter:venues.erfurt_centrum.PREGIG_04'
       ],
       GIG: [
-        'Turn the chorus into a full-room shout.',
-        'If the pit opens, let it breathe and then feed it.',
-        'Hit the breakdown like a heartbeat spike.',
-        'Keep it tight—this crowd listens hard.'
+        'chatter:venues.erfurt_centrum.GIG_01',
+        'chatter:venues.erfurt_centrum.GIG_02',
+        'chatter:venues.erfurt_centrum.GIG_03',
+        'chatter:venues.erfurt_centrum.GIG_04'
       ],
       POSTGIG: [
-        'That felt like a city-sized hug with bruises.',
-        'My ears are ringing in Thüringen.',
-        'If they sang, we did the job.',
-        'Load-out hurts less when the crowd was that close.'
+        'chatter:venues.erfurt_centrum.POSTGIG_01',
+        'chatter:venues.erfurt_centrum.POSTGIG_02',
+        'chatter:venues.erfurt_centrum.POSTGIG_03',
+        'chatter:venues.erfurt_centrum.POSTGIG_04'
       ]
     }
   },
@@ -1379,32 +1379,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_saarbruecken_garage',
     linesByScene: {
       ANY: [
-        'Big room, louder locals.',
-        'If the balcony starts jumping, hold on tight.'
+        'chatter:venues.saarbruecken_garage.ANY_01',
+        'chatter:venues.saarbruecken_garage.ANY_02'
       ],
       OVERWORLD: [
-        'This place feels like it’s built for loud nights.',
-        'Saarbrücken brings volume like it’s tradition.',
-        'If the balcony is full, the pressure doubles.',
-        'Garage name, arena energy.'
+        'chatter:venues.saarbruecken_garage.OVERWORLD_01',
+        'chatter:venues.saarbruecken_garage.OVERWORLD_02',
+        'chatter:venues.saarbruecken_garage.OVERWORLD_03',
+        'chatter:venues.saarbruecken_garage.OVERWORLD_04'
       ],
       PREGIG: [
-        'Dial the PA—this room can hit like a truck.',
-        'Soundcheck the subs, then pray for your ribs.',
-        'If the monitors are clean, we go full send.',
-        'Don’t waste the stage—use the space.'
+        'chatter:venues.saarbruecken_garage.PREGIG_01',
+        'chatter:venues.saarbruecken_garage.PREGIG_02',
+        'chatter:venues.saarbruecken_garage.PREGIG_03',
+        'chatter:venues.saarbruecken_garage.PREGIG_04'
       ],
       GIG: [
-        'Make the balcony move.',
-        'Hit the chorus like a stadium chant.',
-        'If the pit opens wide, keep the tempo locked.',
-        'Breakdown should feel like a garage door slamming.'
+        'chatter:venues.saarbruecken_garage.GIG_01',
+        'chatter:venues.saarbruecken_garage.GIG_02',
+        'chatter:venues.saarbruecken_garage.GIG_03',
+        'chatter:venues.saarbruecken_garage.GIG_04'
       ],
       POSTGIG: [
-        'That room was huge and hungry.',
-        'My body is still humming from the low end.',
-        'If the balcony jumped, we did it right.',
-        'Load-out is long, but the win is longer.'
+        'chatter:venues.saarbruecken_garage.POSTGIG_01',
+        'chatter:venues.saarbruecken_garage.POSTGIG_02',
+        'chatter:venues.saarbruecken_garage.POSTGIG_03',
+        'chatter:venues.saarbruecken_garage.POSTGIG_04'
       ]
     }
   },
@@ -1413,32 +1413,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_freiburg_jazzhaus',
     linesByScene: {
       ANY: [
-        'Jazz in the name, distortion in the air.',
-        'Low ceiling, nice lights, nasty volume.'
+        'chatter:venues.freiburg_jazzhaus.ANY_01',
+        'chatter:venues.freiburg_jazzhaus.ANY_02'
       ],
       OVERWORLD: [
-        'Freiburg looks peaceful. We are not.',
-        'Jazzhaus sounds classy—let’s misbehave.',
-        'If the crowd is quiet, they’re listening hard.',
-        'This room feels like a secret club for loud mistakes.'
+        'chatter:venues.freiburg_jazzhaus.OVERWORLD_01',
+        'chatter:venues.freiburg_jazzhaus.OVERWORLD_02',
+        'chatter:venues.freiburg_jazzhaus.OVERWORLD_03',
+        'chatter:venues.freiburg_jazzhaus.OVERWORLD_04'
       ],
       PREGIG: [
-        'Soundcheck clean—this room has clarity.',
-        'Dial the vocals so they don’t drown in beauty.',
-        'If the lights are warm, keep the set hotter.',
-        'Don’t overplay—let the room speak.'
+        'chatter:venues.freiburg_jazzhaus.PREGIG_01',
+        'chatter:venues.freiburg_jazzhaus.PREGIG_02',
+        'chatter:venues.freiburg_jazzhaus.PREGIG_03',
+        'chatter:venues.freiburg_jazzhaus.PREGIG_04'
       ],
       GIG: [
-        'Play tight—this room hears everything.',
-        'Hit the chorus like a clean punch.',
-        'If they nod instead of mosh, that’s still respect.',
-        'Breakdown should feel like jazz… but violent.'
+        'chatter:venues.freiburg_jazzhaus.GIG_01',
+        'chatter:venues.freiburg_jazzhaus.GIG_02',
+        'chatter:venues.freiburg_jazzhaus.GIG_03',
+        'chatter:venues.freiburg_jazzhaus.GIG_04'
       ],
       POSTGIG: [
-        'Classy room, filthy set. Perfect.',
-        'My ears are ringing with elegance and pain.',
-        'If the crowd stayed locked in, we did it right.',
-        'Load-out feels like leaving a secret society.'
+        'chatter:venues.freiburg_jazzhaus.POSTGIG_01',
+        'chatter:venues.freiburg_jazzhaus.POSTGIG_02',
+        'chatter:venues.freiburg_jazzhaus.POSTGIG_03',
+        'chatter:venues.freiburg_jazzhaus.POSTGIG_04'
       ]
     }
   },
@@ -1447,32 +1447,32 @@ export const VENUE_CHATTER_DB = [
     id: 'chatter_kiel_pumpe',
     linesByScene: {
       ANY: [
-        'Old building, fresh noise.',
-        'If the pipes rattle, you know the PA is working.'
+        'chatter:venues.kiel_pumpe.ANY_01',
+        'chatter:venues.kiel_pumpe.ANY_02'
       ],
       OVERWORLD: [
-        'Kiel air is sharp—good for sharp riffs.',
-        'This building looks like it wants to shake.',
-        'If the street is quiet, the venue won’t be.',
-        'Tonight we test how much vibration is legal.'
+        'chatter:venues.kiel_pumpe.OVERWORLD_01',
+        'chatter:venues.kiel_pumpe.OVERWORLD_02',
+        'chatter:venues.kiel_pumpe.OVERWORLD_03',
+        'chatter:venues.kiel_pumpe.OVERWORLD_04'
       ],
       PREGIG: [
-        'Soundcheck the low end—make the pipes complain.',
-        'Tape cables—old buildings hide surprises.',
-        'If the monitors are weird, we adapt.',
-        'Check the kick mic, then check it again.'
+        'chatter:venues.kiel_pumpe.PREGIG_01',
+        'chatter:venues.kiel_pumpe.PREGIG_02',
+        'chatter:venues.kiel_pumpe.PREGIG_03',
+        'chatter:venues.kiel_pumpe.PREGIG_04'
       ],
       GIG: [
-        'Make the chorus bounce off old walls.',
-        'If the pipes rattle, we’re winning.',
-        'Hit the breakdown until the room becomes a drum.',
-        'Keep it tight—old rooms magnify timing.'
+        'chatter:venues.kiel_pumpe.GIG_01',
+        'chatter:venues.kiel_pumpe.GIG_02',
+        'chatter:venues.kiel_pumpe.GIG_03',
+        'chatter:venues.kiel_pumpe.GIG_04'
       ],
       POSTGIG: [
-        'Pipes rattled. Mission complete.',
-        'My lungs are full of old-building air and victory.',
-        'If the crowd stayed loud, Kiel approved.',
-        'Load-out feels like exiting a vibrating machine.'
+        'chatter:venues.kiel_pumpe.POSTGIG_01',
+        'chatter:venues.kiel_pumpe.POSTGIG_02',
+        'chatter:venues.kiel_pumpe.POSTGIG_03',
+        'chatter:venues.kiel_pumpe.POSTGIG_04'
       ]
     }
   }

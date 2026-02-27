@@ -65,5 +65,28 @@
   "stats.daysSurvived": "ÜBERLEBTE TAGE",
   "stats.fameReached": "ERREICHTER RUHM",
   "stats.totalTravels": "GESAMTE REISEN",
-  "stats.totalScore": "GESAMTPUNKTZAHL"
+  "stats.totalScore": "GESAMTPUNKTZAHL",
+  "hq.start_practice": "PROBE STARTEN",
+  "hq.practice_desc": "Übung macht den Meister.",
+  "hq.song_active": "AKTIV",
+  "hq.song_select": "AUSWÄHLEN",
+  "hq.selected": "AUSGEWÄHLT",
+  "hq.buy": "KAUFEN",
+  "hq.owned": "BESITZT",
+  "hq.leave": "VERLASSEN [ESC]",
+  "hq.title": "BAND HQ",
+  "chatter_labels": {
+    "INTRO": "Intro Feed",
+    "MENU": "Haupt-Feed",
+    "OVERWORLD": "Tour-Feed",
+    "PREGIG": "Pre-Gig-Feed",
+    "GIG": "Live-Feed",
+    "POSTGIG": "Aftershow-Feed",
+    "SETTINGS": "System-Feed",
+    "CREDITS": "Crew-Feed",
+    "GAMEOVER": "Letzte Übertragung",
+    "TRAVEL_MINIGAME": "Reise-Feed",
+    "PRE_GIG_MINIGAME": "Roadie-Feed",
+    "default_speaker": "Band"
+  }
 }
