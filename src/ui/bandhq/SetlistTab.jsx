@@ -88,7 +88,6 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
                 >
                   {song.name}
                 </h4>
-              </div>
               <div className='flex gap-4 text-xs font-mono text-(--ash-gray) mt-1'>
                 <span>
                   {t('bandhq.metadata.diff', { defaultValue: 'DIFF' })}:{' '}
@@ -103,6 +102,7 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
                   {(song.duration % 60).toString().padStart(2, '0')}
                 </span>
               </div>
+            </div>
               <button
                 type='button'
                 onClick={() => toggleSongInSetlist(song.id)}
