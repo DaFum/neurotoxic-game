@@ -1,17 +1,13 @@
 import { afterEach, beforeAll, describe, expect, test, vi } from 'vitest'
 
 import { cleanup, render } from '@testing-library/react'
-import React from 'react'
-
-// Mock react-i18next
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key, options) => {
-      // Mock basic translation logic for tests
-      if (key === 'ui:detailedStats.vanUpgrades.installed') {
-        return `${options.count} Installed`
-      }
-      if (key === 'ui:detailedStats.hqUpgrades.installed') {
+      if (
+        key === 'ui:detailedStats.vanUpgrades.installed' ||
+        key === 'ui:detailedStats.hqUpgrades.installed'
+      ) {
         return `${options.count} Installed`
       }
       return key
@@ -26,7 +22,6 @@ vi.mock('react-i18next', () => ({
   }
 }))
 
-// Mock shared UI components
 vi.mock('../src/ui/shared/index.jsx', () => ({
   StatBox: ({ label, value }) => (
     <div data-testid='stat-box'>
@@ -48,7 +43,6 @@ vi.mock('../src/ui/shared/index.jsx', () => ({
   ActionButton: () => <button type='button' />
 }))
 
-// Mock CHARACTERS data
 vi.mock('../src/data/characters.js', () => ({
   CHARACTERS: {
     AXEL: { name: 'Axel', traits: [] },
@@ -92,25 +86,37 @@ describe('BandHQ Stats Discrepancy', () => {
       }
     }
 
-    // 1000 + 2000 + 500 + 100 = 3600
+    const expectedReach = 3600
 
-    // Render StatsTab
-    const { getAllByTestId } = render(<StatsTab {...props} />)
-
-    // Find the StatBox for Followers in StatsTab
+    const { getAllByTestId, getByText, unmount } = render(<StatsTab {...props} />)
     const statBoxes = getAllByTestId('stat-box')
-    // StatsTab uses hardcoded "Followers" label in some versions or translation keys
-    // Let's inspect what is rendered. Since we mocked t => key, it might be 'ui:stats.followers' or similar.
-    // However, StatBox label prop is what we see.
-    // Let's find the one that has the value 3600 or check all.
+    const followersBox = statBoxes.find(
+      box =>
+        box.querySelector('[data-testid="stat-label"]').textContent ===
+        'stats.followers'
+    )
 
-    // Actually, looking at StatsTab implementation (not provided here but assumed based on test context),
-    // it likely sums social stats.
+    expect(followersBox).toBeTruthy()
+    const statsTabValue = parseInt(
+      followersBox.querySelector('[data-testid="stat-value"]').textContent,
+      10
+    )
 
-    // We can just check that *one* of the boxes has 3600.
-    const values = statBoxes.map(box => box.querySelector('[data-testid="stat-value"]').textContent)
-    const totalFollowersValue = values.find(v => v === '3600' || v === 3600)
+    unmount()
 
-    expect(totalFollowersValue).toBeTruthy()
+    const { container } = render(<DetailedStatsTab {...props} />)
+    const totalReachLabel = getByText('ui:stats.totalReach')
+    const detailRow = totalReachLabel.closest('.flex')
+
+    expect(detailRow).toBeTruthy()
+    const detailedStatsTabValue = parseInt(
+      detailRow.querySelector('.text-right > div:first-child').textContent,
+      10
+    )
+
+    expect(statsTabValue).toBe(expectedReach)
+    expect(detailedStatsTabValue).toBe(expectedReach)
+    expect(statsTabValue).toBe(detailedStatsTabValue)
+    expect(container.textContent).toContain('ui:stats.totalReach')
   })
 })
