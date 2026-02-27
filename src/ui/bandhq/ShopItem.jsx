@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen'
+import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { getPrimaryEffect } from '../../utils/purchaseLogicUtils'
 import { GlitchButton } from '../GlitchButton'
 

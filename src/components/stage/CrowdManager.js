@@ -2,7 +2,8 @@ import * as PIXI from 'pixi.js'
 import {
   calculateCrowdOffset,
   CROWD_LAYOUT,
-  getPixiColorFromToken
+  getPixiColorFromToken,
+  loadTexture
 } from './utils.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { handleError } from '../../utils/errorHandler.js'
@@ -23,8 +24,8 @@ export class CrowdManager {
   async loadAssets() {
     try {
       const results = await Promise.allSettled([
-        PIXI.Assets.load(getGenImageUrl(IMG_PROMPTS.CROWD_IDLE)),
-        PIXI.Assets.load(getGenImageUrl(IMG_PROMPTS.CROWD_MOSH))
+        loadTexture(getGenImageUrl(IMG_PROMPTS.CROWD_IDLE)),
+        loadTexture(getGenImageUrl(IMG_PROMPTS.CROWD_MOSH))
       ])
 
       // Handle IDLE texture

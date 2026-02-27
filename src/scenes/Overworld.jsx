@@ -9,7 +9,7 @@ import { MapNode } from '../components/MapNode'
 import { BandHQ } from '../ui/BandHQ'
 import { GlitchButton } from '../ui/GlitchButton'
 import { ALL_VENUES } from '../data/venues'
-import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
+import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 import {
   EXPENSE_CONSTANTS,
   calculateEffectiveTicketPrice

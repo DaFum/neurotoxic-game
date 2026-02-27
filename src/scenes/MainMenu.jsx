@@ -6,7 +6,7 @@ import { useBandHQModal } from '../hooks/useBandHQModal.js'
 import { GlitchButton } from '../ui/GlitchButton'
 import { BandHQ } from '../ui/BandHQ'
 import { Modal, AnimatedDivider, AnimatedSubtitle } from '../ui/shared'
-import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
+import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 import { audioManager } from '../utils/AudioManager'
 import { handleError } from '../utils/errorHandler'
 

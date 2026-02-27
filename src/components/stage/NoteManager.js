@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js'
 import { handleError } from '../../utils/errorHandler.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
-import { calculateNoteY } from './utils.js'
+import { calculateNoteY, loadTexture } from './utils.js'
 
 const NOTE_SPAWN_LEAD_MS = 2000
 const NOTE_JITTER_RANGE = 10
@@ -42,8 +42,8 @@ export class NoteManager {
   async loadAssets() {
     try {
       const results = await Promise.allSettled([
-        PIXI.Assets.load(getGenImageUrl(IMG_PROMPTS.NOTE_SKULL)),
-        PIXI.Assets.load(getGenImageUrl(IMG_PROMPTS.NOTE_LIGHTNING))
+        loadTexture(getGenImageUrl(IMG_PROMPTS.NOTE_SKULL)),
+        loadTexture(getGenImageUrl(IMG_PROMPTS.NOTE_LIGHTNING))
       ])
 
       if (results[0].status === 'fulfilled') {

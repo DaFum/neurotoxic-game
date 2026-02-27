@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
-import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
+import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 import { secureRandom } from '../utils/crypto'
 import {
   calculateGigFinancials,
