@@ -53,6 +53,16 @@ const buildState = (scene, overrides = {}) => ({
   }
 })
 
+const getActivatedConditionalEntries = state =>
+  CHATTER_DB.filter(entry => typeof entry.condition === 'function' && entry.condition(state))
+
+const getConditionDelta = ({ activeState, inactiveState }) => {
+  const inactiveEntries = new Set(getActivatedConditionalEntries(inactiveState))
+  return getActivatedConditionalEntries(activeState).filter(
+    entry => !inactiveEntries.has(entry)
+  )
+}
+
 test('getRandomChatter supports default chatter in all top-level scenes', () => {
   const scenes = ['MENU', 'OVERWORLD', 'PREGIG', 'POSTGIG']
 
@@ -96,15 +106,16 @@ test('harmony chatter fires when band.harmony is high', () => {
 })
 
 test('van chatter fires when fuel is low', () => {
-  const state = buildState('OVERWORLD', {
+  const lowFuelState = buildState('OVERWORLD', {
     player: { van: { fuel: 15, condition: 100 } }
   })
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text.toLowerCase().includes('fuel')
-  )
+  const highFuelState = buildState('OVERWORLD', {
+    player: { van: { fuel: 95, condition: 100 } }
+  })
+  const matches = getConditionDelta({
+    activeState: lowFuelState,
+    inactiveState: highFuelState
+  })
   assert.ok(matches.length > 0, 'Expected low-fuel chatter to activate')
 })
 
@@ -125,24 +136,18 @@ test('van chatter fires when condition is critical', () => {
 })
 
 test('tour progression chatter fires for late tour', () => {
-  const state = buildState('OVERWORLD', { player: { day: 28 } })
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text.includes('survive')
-  )
+  const matches = getConditionDelta({
+    activeState: buildState('OVERWORLD', { player: { day: 28 } }),
+    inactiveState: buildState('OVERWORLD', { player: { day: 5 } })
+  })
   assert.ok(matches.length > 0, 'Expected late-tour chatter to activate')
 })
 
 test('tour progression chatter fires for early tour', () => {
-  const state = buildState('OVERWORLD', { player: { day: 1 } })
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text.includes('Day one')
-  )
+  const matches = getConditionDelta({
+    activeState: buildState('OVERWORLD', { player: { day: 1 } }),
+    inactiveState: buildState('OVERWORLD', { player: { day: 8 } })
+  })
   assert.ok(matches.length > 0, 'Expected early-tour chatter to activate')
 })
 
@@ -219,37 +224,42 @@ test('inventory chatter fires for golden pick', () => {
 })
 
 test('gig modifier chatter fires when catering is booked', () => {
-  const state = buildState('OVERWORLD', { gigModifiers: { catering: true } })
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text.toLowerCase().includes('catering')
-  )
+  const matches = getConditionDelta({
+    activeState: buildState('OVERWORLD', { gigModifiers: { catering: true } }),
+    inactiveState: buildState('OVERWORLD', { gigModifiers: { catering: false } })
+  })
   assert.ok(matches.length > 0, 'Expected catering chatter to activate')
 })
 
 test('gig modifier chatter fires when nothing is booked', () => {
-  const state = buildState('OVERWORLD', {
-    gigModifiers: { soundcheck: false, promo: false, catering: false }
+  const matches = getConditionDelta({
+    activeState: buildState('OVERWORLD', {
+      gigModifiers: {
+        soundcheck: false,
+        promo: false,
+        catering: false,
+        merch: false,
+        guestlist: false
+      }
+    }),
+    inactiveState: buildState('OVERWORLD', {
+      gigModifiers: {
+        soundcheck: true,
+        promo: true,
+        catering: true,
+        merch: false,
+        guestlist: false
+      }
+    })
   })
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text.includes('Raw dog')
-  )
   assert.ok(matches.length > 0, 'Expected no-modifiers chatter to activate')
 })
 
 test('luck chatter fires when luck is high', () => {
-  const state = buildState('OVERWORLD', { band: { luck: 5 } })
-  const matches = CHATTER_DB.filter(
-    e =>
-      typeof e.condition === 'function' &&
-      e.condition(state) &&
-      e.text.includes('going our way')
-  )
+  const matches = getConditionDelta({
+    activeState: buildState('OVERWORLD', { band: { luck: 5 } }),
+    inactiveState: buildState('OVERWORLD', { band: { luck: 0 } })
+  })
   assert.ok(matches.length > 0, 'Expected high-luck chatter to activate')
 })
 
