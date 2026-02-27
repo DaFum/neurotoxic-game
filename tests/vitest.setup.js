@@ -67,7 +67,11 @@ const AudioContextMock = vi.fn(() => ({
   createGain: vi.fn().mockReturnValue({
     connect: vi.fn(),
     disconnect: vi.fn(),
-    gain: { value: 1, linearRampToValueAtTime: vi.fn(), setTargetAtTime: vi.fn() }
+    gain: {
+      value: 1,
+      linearRampToValueAtTime: vi.fn(),
+      setTargetAtTime: vi.fn()
+    }
   }),
   createOscillator: vi.fn().mockReturnValue({
     connect: vi.fn(),
@@ -195,7 +199,7 @@ vi.mock('tone', async () => {
   }
 })
 
-HTMLCanvasElement.prototype.getContext = vi.fn((contextId) => {
+HTMLCanvasElement.prototype.getContext = vi.fn(contextId => {
   if (contextId === '2d') {
     return {
       imageSmoothingEnabled: true,

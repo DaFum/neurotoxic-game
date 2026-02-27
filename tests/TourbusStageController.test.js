@@ -139,9 +139,8 @@ describe('TourbusStageController', () => {
   let statsRef
 
   beforeEach(async () => {
-    const module = await import(
-      '../src/components/stage/TourbusStageController.js'
-    )
+    const module =
+      await import('../src/components/stage/TourbusStageController.js')
     createTourbusStageController = module.createTourbusStageController
 
     containerRef = { current: { appendChild: mock.fn() } }

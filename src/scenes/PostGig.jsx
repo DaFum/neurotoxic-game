@@ -417,10 +417,7 @@ export const PostGig = () => {
   const handleContinue = useCallback(() => {
     if (!financials) return
 
-    const fameGain = Math.min(
-      MAX_FAME_GAIN,
-      50 + Math.floor(perfScore * 1.5)
-    )
+    const fameGain = Math.min(MAX_FAME_GAIN, 50 + Math.floor(perfScore * 1.5))
     const newMoney = Math.max(0, player.money + financials.net)
 
     updatePlayer({
@@ -455,6 +452,27 @@ export const PostGig = () => {
       })
     }
 
+    // Leaderboard Song Score Submission
+    if (player.playerId && player.playerName && currentGig?.songId) {
+      fetch('/api/leaderboard/song', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          playerId: player.playerId,
+          playerName: player.playerName,
+          songId: currentGig.songId,
+          score: lastGigStats?.score || 0
+        })
+      })
+        .then(async res => {
+          if (!res.ok) {
+            const err = await res.text()
+            throw new Error(`HTTP ${res.status}: ${err}`)
+          }
+        })
+        .catch(err => console.error('Score submit failed', err))
+    }
+
     if (shouldTriggerBankruptcy(newMoney, financials.net)) {
       addToast('GAME OVER: BANKRUPT! The tour is over.', 'error')
       changeScene('GAMEOVER')
@@ -464,14 +482,14 @@ export const PostGig = () => {
   }, [
     financials,
     perfScore,
-    player.money,
-    player.fame,
+    player,
+    currentGig,
+    lastGigStats,
     updatePlayer,
     addToast,
     changeScene,
     activeStoryFlags,
-    addQuest,
-    player.day
+    addQuest
   ])
 
   const handleNextPhase = useCallback(() => {

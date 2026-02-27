@@ -290,7 +290,8 @@ export const usePurchaseLogic = ({
       const isConsumable = effect.type === 'inventory_add'
       const isOwned = isItemOwned(item, player, band)
       return (
-        (isOwned && !isConsumable) || !canAfford(item, player, getAdjustedCost(item, band))
+        (isOwned && !isConsumable) ||
+        !canAfford(item, player, getAdjustedCost(item, band))
       )
     },
     [player, band, social]

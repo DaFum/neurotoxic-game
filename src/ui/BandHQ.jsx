@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
@@ -10,6 +11,7 @@ import { ShopTab } from './bandhq/ShopTab'
 import { UpgradesTab } from './bandhq/UpgradesTab'
 import { SetlistTab } from './bandhq/SetlistTab'
 import { SettingsTab } from './bandhq/SettingsTab'
+import { LeaderboardTab } from './bandhq/LeaderboardTab'
 
 /**
  * BandHQ Component
@@ -52,7 +54,8 @@ export const BandHQ = ({
   reputationByRegion,
   className = ''
 }) => {
-  const [activeTab, setActiveTab] = useState('STATS') // STATS, SHOP, UPGRADES, SETLIST, SETTINGS
+  const { t } = useTranslation()
+  const [activeTab, setActiveTab] = useState('STATS')
   const [processingItemId, setProcessingItemId] = useState(null)
 
   const unifiedUpgradeCatalog = useMemo(() => getUnifiedUpgradeCatalog(), [])
@@ -80,7 +83,9 @@ export const BandHQ = ({
       if (err instanceof GameError || err instanceof StateError) {
         handleError(err, { addToast })
       } else {
-        handleError(new GameError('Purchase failed', { context: err }), { addToast })
+        handleError(new GameError('Purchase failed', { context: err }), {
+          addToast
+        })
       }
     } finally {
       setProcessingItemId(null)
@@ -123,28 +128,34 @@ export const BandHQ = ({
           aria-label='Band HQ Sections'
           className='flex border-b-2 border-(--ash-gray) overflow-x-auto'
         >
-          {/* Tabs: STATS, DETAILS, SHOP, UPGRADES, SETLIST, SETTINGS */}
-          {['STATS', 'DETAILS', 'SHOP', 'UPGRADES', 'SETLIST', 'SETTINGS'].map(
-            tab => (
-              <button
-                type='button'
-                role='tab'
-                aria-selected={activeTab === tab}
-                aria-controls={`panel-${tab}`}
-                id={`tab-${tab}`}
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`flex-1 min-w-[120px] py-4 text-center font-bold text-xl uppercase tracking-wider transition-colors duration-150 font-mono
+          {/* Tabs */}
+          {[
+            { id: 'STATS', key: 'tabs.stats' },
+            { id: 'DETAILS', key: 'tabs.details' },
+            { id: 'SHOP', key: 'tabs.shop' },
+            { id: 'UPGRADES', key: 'tabs.upgrades' },
+            { id: 'SETLIST', key: 'tabs.setlist' },
+            { id: 'LEADERBOARD', key: 'tabs.leaderboard' },
+            { id: 'SETTINGS', key: 'tabs.settings' }
+          ].map(tab => (
+            <button
+              type='button'
+              role='tab'
+              aria-selected={activeTab === tab.id}
+              aria-controls={`panel-${tab.id}`}
+              id={`tab-${tab.id}`}
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 min-w-[120px] py-4 text-center font-bold text-xl uppercase tracking-wider transition-colors duration-150 font-mono
                 ${
-                  activeTab === tab
+                  activeTab === tab.id
                     ? 'bg-(--toxic-green) text-(--void-black)'
                     : 'text-(--ash-gray) hover:text-(--star-white) bg-(--void-black)/50 hover:bg-(--void-black)/70'
                 }`}
-              >
-                {tab}
-              </button>
-            )
-          )}
+            >
+              {t(tab.key)}
+            </button>
+          ))}
         </div>
 
         {/* Content Area */}
@@ -200,6 +211,8 @@ export const BandHQ = ({
               addToast={addToast}
             />
           )}
+
+          {activeTab === 'LEADERBOARD' && <LeaderboardTab setlist={setlist} />}
 
           {activeTab === 'SETTINGS' && (
             <SettingsTab

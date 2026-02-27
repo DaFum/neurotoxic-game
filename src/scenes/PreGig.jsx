@@ -268,10 +268,7 @@ export const PreGig = () => {
                     if (!isLocked) toggleSong(song)
                   }}
                   onKeyDown={e => {
-                    if (
-                      !isLocked &&
-                      (e.key === 'Enter' || e.key === ' ')
-                    ) {
+                    if (!isLocked && (e.key === 'Enter' || e.key === ' ')) {
                       e.preventDefault()
                       toggleSong(song)
                     }

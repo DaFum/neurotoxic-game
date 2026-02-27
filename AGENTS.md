@@ -18,6 +18,7 @@
 - **Pixi.js v8 destroy**: `app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })`.
 - **Audio end gate**: Do NOT re-introduce `audioPlaybackEnded` — use `setlistCompleted` + `isNearTrackEnd` dual-gate instead.
 - **Economy**: Travel deducts fuel liters and food money only. Gas station refuel is the only monetary fuel cost. `MODIFIER_COSTS` in `economyEngine.js` is the single source of truth for PreGig modifier costs.
+- **Internationalization (I18n)**: All user-facing text MUST be localized. Use `t('key')` or `<Trans>`. Hardcoded English strings are forbidden. Keys must be namespaced (e.g., `ui:button.save`). Both English (`en`) and German (`de`) translations must be provided for every new key.
 
 ## Gotchas
 

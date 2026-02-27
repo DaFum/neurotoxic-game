@@ -240,7 +240,7 @@ export const CRISIS_EVENTS = [
     category: 'special',
     tags: ['crisis', 'charity', 'recovery'],
     title: 'events:crisis_redemption_charity.title',
-    description: "events:crisis_redemption_charity.desc",
+    description: 'events:crisis_redemption_charity.desc',
     trigger: 'travel',
     chance: 0.3,
     condition: gs => (gs.social?.controversyLevel ?? 0) >= 40,
@@ -281,7 +281,7 @@ export const CRISIS_EVENTS = [
     category: 'financial',
     tags: ['crisis', 'sponsorship'],
     title: 'events:crisis_sponsor_ultimatum.title',
-    description: "events:crisis_sponsor_ultimatum.desc",
+    description: 'events:crisis_sponsor_ultimatum.desc',
     trigger: 'post_gig',
     chance: 0.8,
     condition: gs =>

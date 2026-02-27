@@ -8,11 +8,8 @@ import {
   mockRhythmGameLogicDependencies
 } from './useRhythmGameLogicTestUtils.js'
 
-const {
-  mockAudioEngine,
-  mockGigStats,
-  mockRhythmUtils
-} = mockRhythmGameLogicDependencies
+const { mockAudioEngine, mockGigStats, mockRhythmUtils } =
+  mockRhythmGameLogicDependencies
 
 // Setup the test environment
 const setupRhythmGameScoringTest = async () => {

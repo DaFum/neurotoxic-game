@@ -2,11 +2,7 @@ import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameState } from '../../context/GameState'
 import { audioManager } from '../../utils/AudioManager'
 import { hasUpgrade } from '../../utils/upgradeUtils'
-import {
-  LANE_COUNT,
-  BUS_Y_PERCENT,
-  BUS_HEIGHT_PERCENT
-} from './constants'
+import { LANE_COUNT, BUS_Y_PERCENT, BUS_HEIGHT_PERCENT } from './constants'
 
 export const BASE_SPEED = 0.05 // relative units per ms
 export const MAX_SPEED = 0.12

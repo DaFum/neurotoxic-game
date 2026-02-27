@@ -25,9 +25,8 @@ afterEach(() => {
 
 describe('TutorialManager', () => {
   test('renders welcome message for step 0 on MENU scene', async () => {
-    const { TutorialManager } = await import(
-      '../src/components/TutorialManager.jsx'
-    )
+    const { TutorialManager } =
+      await import('../src/components/TutorialManager.jsx')
 
     render(<TutorialManager />)
 
@@ -40,9 +39,8 @@ describe('TutorialManager', () => {
   })
 
   test('displays correct step counter', async () => {
-    const { TutorialManager } = await import(
-      '../src/components/TutorialManager.jsx'
-    )
+    const { TutorialManager } =
+      await import('../src/components/TutorialManager.jsx')
 
     render(<TutorialManager />)
 
@@ -50,9 +48,8 @@ describe('TutorialManager', () => {
   })
 
   test('calls updatePlayer when NEXT button is clicked', async () => {
-    const { TutorialManager } = await import(
-      '../src/components/TutorialManager.jsx'
-    )
+    const { TutorialManager } =
+      await import('../src/components/TutorialManager.jsx')
     const user = userEvent.setup()
 
     render(<TutorialManager />)
@@ -67,9 +64,8 @@ describe('TutorialManager', () => {
     mockGameStateValue.player.tutorialStep = 3
     mockGameStateValue.currentScene = 'GIG'
 
-    const { TutorialManager } = await import(
-      '../src/components/TutorialManager.jsx'
-    )
+    const { TutorialManager } =
+      await import('../src/components/TutorialManager.jsx')
 
     render(<TutorialManager />)
 
@@ -80,9 +76,8 @@ describe('TutorialManager', () => {
     mockGameStateValue.player.tutorialStep = 3
     mockGameStateValue.currentScene = 'GIG'
 
-    const { TutorialManager } = await import(
-      '../src/components/TutorialManager.jsx'
-    )
+    const { TutorialManager } =
+      await import('../src/components/TutorialManager.jsx')
     const user = userEvent.setup()
 
     render(<TutorialManager />)
@@ -98,9 +93,8 @@ describe('TutorialManager', () => {
     mockGameStateValue.player.tutorialStep = 0
     mockGameStateValue.currentScene = 'MENU'
 
-    const { TutorialManager } = await import(
-      '../src/components/TutorialManager.jsx'
-    )
+    const { TutorialManager } =
+      await import('../src/components/TutorialManager.jsx')
     const user = userEvent.setup()
 
     render(<TutorialManager />)
@@ -117,9 +111,8 @@ describe('TutorialManager', () => {
     mockGameStateValue.player.tutorialStep = 0
     mockGameStateValue.currentScene = 'MENU'
 
-    const { TutorialManager } = await import(
-      '../src/components/TutorialManager.jsx'
-    )
+    const { TutorialManager } =
+      await import('../src/components/TutorialManager.jsx')
 
     const { container } = render(<TutorialManager />)
 
@@ -131,9 +124,8 @@ describe('TutorialManager', () => {
     mockGameStateValue.player.tutorialStep = -1
     mockGameStateValue.currentScene = 'MENU'
 
-    const { TutorialManager } = await import(
-      '../src/components/TutorialManager.jsx'
-    )
+    const { TutorialManager } =
+      await import('../src/components/TutorialManager.jsx')
 
     const { container } = render(<TutorialManager />)
 
@@ -145,16 +137,13 @@ describe('TutorialManager', () => {
     mockGameStateValue.currentScene = 'OVERWORLD'
     mockGameStateValue.settings.tutorialSeen = false
 
-    const { TutorialManager } = await import(
-      '../src/components/TutorialManager.jsx'
-    )
+    const { TutorialManager } =
+      await import('../src/components/TutorialManager.jsx')
 
     render(<TutorialManager />)
 
     expect(screen.getByText('THE MAP')).toBeTruthy()
-    expect(
-      screen.getByText(/Travel between cities to play Gigs/i)
-    ).toBeTruthy()
+    expect(screen.getByText(/Travel between cities to play Gigs/i)).toBeTruthy()
   })
 
   test('shows stats tutorial on OVERWORLD scene for step 2', async () => {
@@ -162,9 +151,8 @@ describe('TutorialManager', () => {
     mockGameStateValue.currentScene = 'OVERWORLD'
     mockGameStateValue.settings.tutorialSeen = false
 
-    const { TutorialManager } = await import(
-      '../src/components/TutorialManager.jsx'
-    )
+    const { TutorialManager } =
+      await import('../src/components/TutorialManager.jsx')
 
     render(<TutorialManager />)
 
@@ -179,9 +167,8 @@ describe('TutorialManager', () => {
     mockGameStateValue.currentScene = 'GIG'
     mockGameStateValue.settings.tutorialSeen = false
 
-    const { TutorialManager } = await import(
-      '../src/components/TutorialManager.jsx'
-    )
+    const { TutorialManager } =
+      await import('../src/components/TutorialManager.jsx')
 
     render(<TutorialManager />)
 
@@ -196,9 +183,8 @@ describe('TutorialManager', () => {
     mockGameStateValue.currentScene = 'OVERWORLD'
     mockGameStateValue.settings.tutorialSeen = false
 
-    const { TutorialManager } = await import(
-      '../src/components/TutorialManager.jsx'
-    )
+    const { TutorialManager } =
+      await import('../src/components/TutorialManager.jsx')
 
     const { container } = render(<TutorialManager />)
 
@@ -211,9 +197,8 @@ describe('TutorialManager', () => {
     mockGameStateValue.currentScene = 'MENU' // Wrong scene for step 1
     mockGameStateValue.settings.tutorialSeen = false
 
-    const { TutorialManager } = await import(
-      '../src/components/TutorialManager.jsx'
-    )
+    const { TutorialManager } =
+      await import('../src/components/TutorialManager.jsx')
 
     const { container } = render(<TutorialManager />)
 
@@ -226,9 +211,8 @@ describe('TutorialManager', () => {
     mockGameStateValue.currentScene = 'MENU'
     mockGameStateValue.settings.tutorialSeen = false
 
-    const { TutorialManager } = await import(
-      '../src/components/TutorialManager.jsx'
-    )
+    const { TutorialManager } =
+      await import('../src/components/TutorialManager.jsx')
 
     const { container } = render(<TutorialManager />)
 
@@ -243,9 +227,8 @@ describe('TutorialManager', () => {
     mockGameStateValue.currentScene = 'MENU'
     mockGameStateValue.settings.tutorialSeen = false
 
-    const { TutorialManager } = await import(
-      '../src/components/TutorialManager.jsx'
-    )
+    const { TutorialManager } =
+      await import('../src/components/TutorialManager.jsx')
 
     // Should default to step 0
     render(<TutorialManager />)

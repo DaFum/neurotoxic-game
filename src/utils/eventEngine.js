@@ -102,7 +102,6 @@ const processEffect = (eff, delta, context = {}) => {
     case 'relationship': {
       if (!delta.band.relationshipChange) delta.band.relationshipChange = []
 
-
       const resolveName = str => {
         if (!str || typeof str !== 'string') return str
         let resolved = str
@@ -168,8 +167,7 @@ const processEffect = (eff, delta, context = {}) => {
           (delta.social.controversyLevel || 0) + eff.value
       if (eff.stat === 'loyalty')
         delta.social.loyalty = (delta.social.loyalty || 0) + eff.value
-      if (eff.stat === 'score')
-        delta.score = (delta.score || 0) + eff.value
+      if (eff.stat === 'score') delta.score = (delta.score || 0) + eff.value
       if (eff.stat === 'luck')
         delta.band.luck = (delta.band.luck || 0) + eff.value
       if (eff.stat === 'skill')

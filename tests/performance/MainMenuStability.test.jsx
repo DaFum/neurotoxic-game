@@ -1,10 +1,4 @@
-import {
-  afterEach,
-  describe,
-  expect,
-  it,
-  vi
-} from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render } from '@testing-library/react'
 
 // Mock dependencies before import
@@ -65,7 +59,7 @@ vi.mock('../../src/utils/errorHandler', () => ({
 }))
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key) => {
+    t: key => {
       if (key === 'ui:credits') return 'CREDITS'
       if (key === 'ui:start_game') return 'Start Tour'
       return key

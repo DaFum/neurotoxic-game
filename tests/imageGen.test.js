@@ -21,10 +21,7 @@ test('getGenImageUrl generates correct Pollinations.ai URL', async () => {
     '666',
     'Should use deterministic seed'
   )
-  assert.ok(
-    url.searchParams.has('key'),
-    'Should include key parameter'
-  )
+  assert.ok(url.searchParams.has('key'), 'Should include key parameter')
 
   for (const key of url.searchParams.keys()) {
     assert.notEqual(key, '', 'Should not include empty query parameter names')

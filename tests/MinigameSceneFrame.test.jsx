@@ -14,7 +14,7 @@ vi.mock('../src/context/GameState.jsx', () => ({
 // Mock PixiStage component
 const mockPixiStage = vi.fn()
 vi.mock('../src/components/PixiStage.jsx', () => ({
-  PixiStage: (props) => {
+  PixiStage: props => {
     mockPixiStage(props)
     return <div data-testid='pixi-stage-mock'>Pixi Stage Mock</div>
   }
@@ -34,9 +34,8 @@ describe('MinigameSceneFrame', () => {
   const mockOnComplete = vi.fn()
 
   test('renders PixiStage with correct props', async () => {
-    const { MinigameSceneFrame } = await import(
-      '../src/components/MinigameSceneFrame.jsx'
-    )
+    const { MinigameSceneFrame } =
+      await import('../src/components/MinigameSceneFrame.jsx')
 
     render(
       <MinigameSceneFrame
@@ -53,9 +52,8 @@ describe('MinigameSceneFrame', () => {
   test('does not show CRT overlay when crtEnabled is false', async () => {
     mockGameState.settings.crtEnabled = false
 
-    const { MinigameSceneFrame } = await import(
-      '../src/components/MinigameSceneFrame.jsx'
-    )
+    const { MinigameSceneFrame } =
+      await import('../src/components/MinigameSceneFrame.jsx')
 
     const { container } = render(
       <MinigameSceneFrame
@@ -73,9 +71,8 @@ describe('MinigameSceneFrame', () => {
   test('shows CRT overlay when crtEnabled is true', async () => {
     mockGameState.settings.crtEnabled = true
 
-    const { MinigameSceneFrame } = await import(
-      '../src/components/MinigameSceneFrame.jsx'
-    )
+    const { MinigameSceneFrame } =
+      await import('../src/components/MinigameSceneFrame.jsx')
 
     const { container } = render(
       <MinigameSceneFrame
@@ -91,9 +88,8 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('does not show completion overlay when game is not over', async () => {
-    const { MinigameSceneFrame } = await import(
-      '../src/components/MinigameSceneFrame.jsx'
-    )
+    const { MinigameSceneFrame } =
+      await import('../src/components/MinigameSceneFrame.jsx')
 
     render(
       <MinigameSceneFrame
@@ -108,9 +104,8 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('shows completion overlay when game is over', async () => {
-    const { MinigameSceneFrame } = await import(
-      '../src/components/MinigameSceneFrame.jsx'
-    )
+    const { MinigameSceneFrame } =
+      await import('../src/components/MinigameSceneFrame.jsx')
 
     render(
       <MinigameSceneFrame
@@ -125,9 +120,8 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('displays custom completion title', async () => {
-    const { MinigameSceneFrame } = await import(
-      '../src/components/MinigameSceneFrame.jsx'
-    )
+    const { MinigameSceneFrame } =
+      await import('../src/components/MinigameSceneFrame.jsx')
 
     render(
       <MinigameSceneFrame
@@ -143,9 +137,8 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('displays custom completion button text', async () => {
-    const { MinigameSceneFrame } = await import(
-      '../src/components/MinigameSceneFrame.jsx'
-    )
+    const { MinigameSceneFrame } =
+      await import('../src/components/MinigameSceneFrame.jsx')
 
     render(
       <MinigameSceneFrame
@@ -161,9 +154,8 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('calls onComplete when continue button is clicked', async () => {
-    const { MinigameSceneFrame } = await import(
-      '../src/components/MinigameSceneFrame.jsx'
-    )
+    const { MinigameSceneFrame } =
+      await import('../src/components/MinigameSceneFrame.jsx')
     const user = userEvent.setup()
 
     render(
@@ -182,9 +174,8 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('renders custom completion stats when provided', async () => {
-    const { MinigameSceneFrame } = await import(
-      '../src/components/MinigameSceneFrame.jsx'
-    )
+    const { MinigameSceneFrame } =
+      await import('../src/components/MinigameSceneFrame.jsx')
 
     const renderStats = uiState => (
       <div data-testid='custom-stats'>Score: {uiState.score}</div>
@@ -205,9 +196,8 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('renders children elements', async () => {
-    const { MinigameSceneFrame } = await import(
-      '../src/components/MinigameSceneFrame.jsx'
-    )
+    const { MinigameSceneFrame } =
+      await import('../src/components/MinigameSceneFrame.jsx')
 
     render(
       <MinigameSceneFrame
@@ -224,9 +214,8 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('focuses continue button when game over', async () => {
-    const { MinigameSceneFrame } = await import(
-      '../src/components/MinigameSceneFrame.jsx'
-    )
+    const { MinigameSceneFrame } =
+      await import('../src/components/MinigameSceneFrame.jsx')
 
     render(
       <MinigameSceneFrame
@@ -244,9 +233,8 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('calls onComplete when Escape key is pressed during game over', async () => {
-    const { MinigameSceneFrame } = await import(
-      '../src/components/MinigameSceneFrame.jsx'
-    )
+    const { MinigameSceneFrame } =
+      await import('../src/components/MinigameSceneFrame.jsx')
     const user = userEvent.setup()
 
     render(
@@ -264,9 +252,8 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('does not call onComplete when Escape is pressed before game over', async () => {
-    const { MinigameSceneFrame } = await import(
-      '../src/components/MinigameSceneFrame.jsx'
-    )
+    const { MinigameSceneFrame } =
+      await import('../src/components/MinigameSceneFrame.jsx')
     const user = userEvent.setup()
 
     render(
@@ -284,9 +271,8 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('restores focus to previous element on unmount', async () => {
-    const { MinigameSceneFrame } = await import(
-      '../src/components/MinigameSceneFrame.jsx'
-    )
+    const { MinigameSceneFrame } =
+      await import('../src/components/MinigameSceneFrame.jsx')
 
     // Create a dummy focused element
     const dummyElement = document.createElement('button')
@@ -319,9 +305,8 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('completion overlay has correct ARIA attributes', async () => {
-    const { MinigameSceneFrame } = await import(
-      '../src/components/MinigameSceneFrame.jsx'
-    )
+    const { MinigameSceneFrame } =
+      await import('../src/components/MinigameSceneFrame.jsx')
 
     const { container } = render(
       <MinigameSceneFrame
@@ -339,9 +324,8 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('passes logic.update and logic.gameStateRef to PixiStage', async () => {
-    const { MinigameSceneFrame } = await import(
-      '../src/components/MinigameSceneFrame.jsx'
-    )
+    const { MinigameSceneFrame } =
+      await import('../src/components/MinigameSceneFrame.jsx')
 
     const customLogic = {
       gameStateRef: { current: { test: 'value' } },
@@ -359,17 +343,18 @@ describe('MinigameSceneFrame', () => {
 
     // PixiStage mock should have been rendered with correct props
     expect(screen.getByTestId('pixi-stage-mock')).toBeTruthy()
-    expect(mockPixiStage).toHaveBeenCalledWith(expect.objectContaining({
-      gameStateRef: customLogic.gameStateRef,
-      update: customLogic.update,
-      controllerFactory: mockControllerFactory
-    }))
+    expect(mockPixiStage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        gameStateRef: customLogic.gameStateRef,
+        update: customLogic.update,
+        controllerFactory: mockControllerFactory
+      })
+    )
   })
 
   test('handles missing optional props gracefully', async () => {
-    const { MinigameSceneFrame } = await import(
-      '../src/components/MinigameSceneFrame.jsx'
-    )
+    const { MinigameSceneFrame } =
+      await import('../src/components/MinigameSceneFrame.jsx')
 
     // Should not crash with minimal props
     render(
@@ -384,9 +369,8 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('handles missing children prop', async () => {
-    const { MinigameSceneFrame } = await import(
-      '../src/components/MinigameSceneFrame.jsx'
-    )
+    const { MinigameSceneFrame } =
+      await import('../src/components/MinigameSceneFrame.jsx')
 
     render(
       <MinigameSceneFrame
@@ -402,9 +386,8 @@ describe('MinigameSceneFrame', () => {
   })
 
   test('handles missing renderCompletionStats prop', async () => {
-    const { MinigameSceneFrame } = await import(
-      '../src/components/MinigameSceneFrame.jsx'
-    )
+    const { MinigameSceneFrame } =
+      await import('../src/components/MinigameSceneFrame.jsx')
 
     render(
       <MinigameSceneFrame

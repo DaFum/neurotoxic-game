@@ -1,8 +1,4 @@
-import {
-  expect,
-  test,
-  vi
-} from 'vitest'
+import { expect, test, vi } from 'vitest'
 
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'

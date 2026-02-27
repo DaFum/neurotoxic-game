@@ -1,12 +1,5 @@
 import { useState } from 'react'
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  test,
-  vi
-} from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import { render, cleanup, fireEvent } from '@testing-library/react'
 

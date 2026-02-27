@@ -140,10 +140,7 @@ export const applyStatModifier = (effect, playerPatch, player, band) => {
     case 'van':
       nextPlayerPatch.van = {
         ...(player.van ?? {}),
-        [effect.stat]: Math.max(
-          0,
-          ((player.van ?? {})[effect.stat] || 0) + val
-        )
+        [effect.stat]: Math.max(0, ((player.van ?? {})[effect.stat] || 0) + val)
       }
       break
 
@@ -203,10 +200,7 @@ export const applyUnlockUpgrade = (effect, item, playerPatch, playerVan) => {
     ...playerPatch,
     van: {
       ...(playerVan ?? {}),
-      upgrades: [
-        ...currentUpgrades,
-        upgradeId
-      ]
+      upgrades: [...currentUpgrades, upgradeId]
     }
   }
 }
@@ -241,7 +235,10 @@ export const applyUnlockHQ = (item, playerPatch, player, band) => {
       nextBandPatch = {
         harmony: clampBandHarmony((band.harmony ?? 0) + 5)
       }
-      messages.push({ message: 'Less noise, more peace. Harmony +5', type: 'success' })
+      messages.push({
+        message: 'Less noise, more peace. Harmony +5',
+        type: 'success'
+      })
       break
 
     case 'hq_room_label':

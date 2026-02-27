@@ -23,6 +23,8 @@ export const BRAND_ALIGNMENTS = {
  * @type {Object}
  */
 export const DEFAULT_PLAYER_STATE = {
+  playerId: null,
+  playerName: '',
   money: 500,
   day: 1,
   time: 12,

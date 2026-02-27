@@ -154,7 +154,7 @@ export const handleLoadGame = (state, payload) => {
   return safeState
 }
 
-export const handleResetState = (state) => {
+export const handleResetState = state => {
   logger.info('GameState', 'State Reset (Debug)')
   return { ...createInitialState(), settings: state.settings }
 }

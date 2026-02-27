@@ -144,8 +144,7 @@ mock.module('../src/utils/audio/playbackUtils.js', {
   namedExports: {
     resolveAssetUrl: mock.fn(),
     normalizeMidiPlaybackOptions: options => ({
-      onEnded:
-        typeof options?.onEnded === 'function' ? options.onEnded : null,
+      onEnded: typeof options?.onEnded === 'function' ? options.onEnded : null,
       useCleanPlayback: true
     })
   }
@@ -168,9 +167,8 @@ mock.module('../src/data/songs.js', {
 })
 
 // Import the function under test
-const { startMetalGenerator } = await import(
-  '../src/utils/audio/proceduralMetal.js'
-)
+const { startMetalGenerator } =
+  await import('../src/utils/audio/proceduralMetal.js')
 
 // --- Tests ---
 

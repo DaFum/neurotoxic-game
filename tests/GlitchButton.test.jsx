@@ -1,11 +1,4 @@
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi
-} from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, cleanup, fireEvent } from '@testing-library/react'
 import { GlitchButton } from '../src/ui/GlitchButton'
 

@@ -57,6 +57,21 @@ const validatePlayer = player => {
   if (player.van && !isPlainObject(player.van)) {
     throw new StateError('player.van must be an object')
   }
+
+  if (
+    player.playerId !== undefined &&
+    player.playerId !== null &&
+    typeof player.playerId !== 'string'
+  ) {
+    throw new StateError('player.playerId must be a string or null')
+  }
+
+  if (
+    player.playerName !== undefined &&
+    typeof player.playerName !== 'string'
+  ) {
+    throw new StateError('player.playerName must be a string')
+  }
 }
 
 const validateBand = band => {
@@ -104,7 +119,9 @@ const validateSocial = social => {
         if (typeof deal.id !== 'string')
           throw new StateError(`activeDeals[${i}].id must be a string`)
         if (typeof deal.remainingGigs !== 'number')
-          throw new StateError(`activeDeals[${i}].remainingGigs must be a number`)
+          throw new StateError(
+            `activeDeals[${i}].remainingGigs must be a number`
+          )
       })
       return
     }
