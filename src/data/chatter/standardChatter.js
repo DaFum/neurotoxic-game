@@ -1489,7 +1489,7 @@ export const CHATTER_DB = [
     condition: state => state.band.harmony < 30
   },
   {
-    text: 'chatter:standard.msg_234't "creative", it\'s hostile.',
+    text: 'chatter:standard.msg_234',
     weight: 8,
     condition: state => state.band.harmony < 35
   },

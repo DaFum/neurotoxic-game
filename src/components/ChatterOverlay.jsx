@@ -9,20 +9,6 @@ const CHATTER_DELAY_MIN_MS = 8000
 const CHATTER_DELAY_RANGE_MS = 17000
 const MESSAGE_LIFETIME_MS = 10000
 
-const SCENE_LABELS = {
-  INTRO: 'Intro Feed',
-  MENU: 'Main Feed',
-  OVERWORLD: 'Tour Feed',
-  PREGIG: 'Pre-Gig Feed',
-  GIG: 'Live Feed',
-  POSTGIG: 'Aftershow Feed',
-  SETTINGS: 'System Feed',
-  CREDITS: 'Crew Feed',
-  GAMEOVER: 'Last Broadcast',
-  [GAME_PHASES.TRAVEL_MINIGAME]: 'Travel Feed',
-  [GAME_PHASES.PRE_GIG_MINIGAME]: 'Roadie Feed'
-}
-
 const OVERWORLD_STYLE = {
   accent: 'var(--toxic-green)',
   borderColor: 'border-(--toxic-green)',
@@ -118,9 +104,9 @@ export const ChatterOverlay = ({ gameState }) => {
   const sceneLabel = useMemo(
     () =>
       t(`ui:chatter_labels.${currentScene}`, {
-        defaultValue:
-          SCENE_LABELS[currentScene] ||
-          t('ui:chatter_labels.default_fallback', { defaultValue: 'Band Feed' })
+        defaultValue: t('ui:chatter_labels.default_fallback', {
+          defaultValue: 'Band Feed'
+        })
       }),
     [currentScene, t]
   )

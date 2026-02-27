@@ -125,52 +125,69 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
           })}
         >
           <DetailRow
-            label='Instagram'
+            label={t('ui:stats.instagram', { defaultValue: 'Instagram' })}
             value={social.instagram}
             locked={!isUnlocked(social.instagram)}
           />
           <DetailRow
-            label='TikTok'
+            label={t('ui:stats.tiktok', { defaultValue: 'TikTok' })}
             value={social.tiktok}
             locked={!isUnlocked(social.tiktok)}
           />
           <DetailRow
-            label='YouTube'
+            label={t('ui:stats.youtube', { defaultValue: 'YouTube' })}
             value={social.youtube}
             locked={!isUnlocked(social.youtube)}
           />
           <DetailRow
-            label='Newsletter'
+            label={t('ui:stats.newsletter', { defaultValue: 'Newsletter' })}
             value={social.newsletter}
             locked={!isUnlocked(social.newsletter)}
           />
-          <DetailRow label='Total Reach' value={totalReach} />
           <DetailRow
-            label='Viral Status'
-            value={social.viral ? 'VIRAL' : 'Normal'}
+            label={t('ui:stats.totalReach', { defaultValue: 'Total Reach' })}
+            value={totalReach}
+          />
+          <DetailRow
+            label={t('ui:stats.viralStatus', { defaultValue: 'Viral Status' })}
+            value={
+              social.viral
+                ? t('ui:stats.viral', { defaultValue: 'VIRAL' })
+                : t('ui:stats.normal', { defaultValue: 'Normal' })
+            }
             locked={!social.viral}
           />
 
           <div className='mt-2 border-t border-(--ash-gray)/20 pt-2'>
             <div className='text-xs text-(--ash-gray) mb-1 font-bold italic tracking-tighter'>
-              SOCIAL DYNAMICS
+              {t('ui:stats.socialDynamics', {
+                defaultValue: 'SOCIAL DYNAMICS'
+              })}
             </div>
             <DetailRow
-              label='Current Trend'
+              label={t('ui:stats.currentTrend', {
+                defaultValue: 'Current Trend'
+              })}
               value={social.trend || 'NEUTRAL'}
             />
             <DetailRow
-              label='Rep Cooldown'
+              label={t('ui:stats.repCooldown', {
+                defaultValue: 'Rep Cooldown'
+              })}
               value={social.reputationCooldown || 0}
-              subtext='Days until rep-gated posts clear'
+              subtext={t('ui:stats.repCooldownDesc', {
+                defaultValue: 'Days until rep-gated posts clear'
+              })}
               locked={!isUnlocked(social.reputationCooldown)}
             />
             <DetailRow
-              label='Brand Deals'
+              label={t('ui:stats.brandDeals', { defaultValue: 'Brand Deals' })}
               value={social.activeDeals?.length || 0}
               subtext={
                 social.activeDeals?.map(d => d.id).join(', ') ||
-                'No active contracts'
+                t('ui:stats.noContracts', {
+                  defaultValue: 'No active contracts'
+                })
               }
               locked={!isUnlocked(social.activeDeals)}
             />
@@ -178,21 +195,29 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
 
           <div className='mt-2 border-t border-(--ash-gray)/20 pt-2'>
             <div className='text-xs text-(--ash-gray) mb-1 font-bold'>
-              Advanced Metrics
+              {t('ui:stats.advancedMetrics', {
+                defaultValue: 'Advanced Metrics'
+              })}
             </div>
             <DetailRow
-              label='Fan Loyalty'
+              label={t('ui:stats.fanLoyalty', { defaultValue: 'Fan Loyalty' })}
               value={social.loyalty || 0}
-              subtext='Shields against bad gigs'
+              subtext={t('ui:stats.fanLoyaltyDesc', {
+                defaultValue: 'Shields against bad gigs'
+              })}
               locked={!isUnlocked(social.loyalty)}
             />
             <DetailRow
-              label='Controversy'
+              label={t('ui:stats.controversy', { defaultValue: 'Controversy' })}
               value={`${Math.min(100, social.controversyLevel || 0)}/100`}
               subtext={
                 social.controversyLevel >= 100
-                  ? 'SHADOWBANNED (-75% Growth)'
-                  : 'Risk of Shadowban'
+                  ? t('ui:stats.shadowbanned', {
+                      defaultValue: 'SHADOWBANNED (-75% Growth)'
+                    })
+                  : t('ui:stats.riskOfShadowban', {
+                      defaultValue: 'Risk of Shadowban'
+                    })
               }
               locked={!isUnlocked(social.controversyLevel)}
             />
@@ -219,13 +244,21 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
             />
           </div>
           <DetailRow
-            label='Breakdown Chance'
+            label={t('ui:detailedStats.breakdownChance', {
+              defaultValue: 'Breakdown Chance'
+            })}
             value={`${((player.van?.breakdownChance ?? 0) * 100).toFixed(1)}%`}
           />
           <DetailRow
-            label='Upgrades'
-            value={`${(player.van?.upgrades || []).length} Installed`}
-            subtext={player.van?.upgrades?.join(', ') || 'None'}
+            label={t('ui:detailedStats.upgrades', { defaultValue: 'Upgrades' })}
+            value={t('ui:detailedStats.hqUpgrades.installed', {
+              count: (player.van?.upgrades || []).length,
+              defaultValue: `${(player.van?.upgrades || []).length} Installed`
+            })}
+            subtext={
+              player.van?.upgrades?.join(', ') ||
+              t('ui:detailedStats.none', { defaultValue: 'None' })
+            }
           />
         </Panel>
       </div>
@@ -239,7 +272,10 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
         >
           {Object.keys(reputationByRegion).length === 0 ? (
             <div className='text-xs text-(--ash-gray) italic py-4 text-center'>
-              No regional data yet. Play gigs to build reputation.
+              {t('ui:detailedStats.noRegionalData', {
+                defaultValue:
+                  'No regional data yet. Play gigs to build reputation.'
+              })}
             </div>
           ) : (
             <div className='space-y-1'>
@@ -250,7 +286,9 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
                   value={rep}
                   subtext={
                     venueBlacklist.some(v => v.includes(region))
-                      ? 'BLACKLISTED VENUES'
+                      ? t('ui:detailedStats.blacklisted', {
+                          defaultValue: 'BLACKLISTED VENUES'
+                        })
                       : null
                   }
                 />
@@ -260,7 +298,9 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
           {venueBlacklist.length > 0 && (
             <div className='mt-2 pt-2 border-t border-(--ash-gray)/20'>
               <div className='text-[10px] text-(--ash-gray) mb-1 uppercase tracking-widest'>
-                Blacklisted Venues
+                {t('ui:detailedStats.blacklistedVenues', {
+                  defaultValue: 'Blacklisted Venues'
+                })}
               </div>
               <div className='text-xs text-(--toxic-green) font-mono italic'>
                 {venueBlacklist.join(', ')}
@@ -274,7 +314,9 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
         >
           {activeQuests.length === 0 ? (
             <div className='text-xs text-(--ash-gray) italic py-4 text-center'>
-              No active quests. Stay toxic to trigger events.
+              {t('ui:detailedStats.noActiveQuests', {
+                defaultValue: 'No active quests. Stay toxic to trigger events.'
+              })}
             </div>
           ) : (
             <div className='space-y-4'>
@@ -287,7 +329,9 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
                     <span className='font-bold text-(--star-white)'>
                       {q.label}
                     </span>
-                    <span className='text-(--ash-gray)'>Day {q.deadline}</span>
+                    <span className='text-(--ash-gray)'>
+                      {t('ui.day', { defaultValue: 'Day' })} {q.deadline}
+                    </span>
                   </div>
                   <ProgressBar
                     value={q.progress}
@@ -317,33 +361,52 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
             />
           </div>
           <DetailRow
-            label='Luck'
+            label={t('ui:detailedStats.luck', { defaultValue: 'Luck' })}
             value={band.luck}
-            subtext='Affects random events'
+            subtext={t('ui:detailedStats.luckDesc', {
+              defaultValue: 'Affects random events'
+            })}
           />
-          <DetailRow label='Inventory Slots' value={band.inventorySlots} />
+          <DetailRow
+            label={t('ui:detailedStats.inventorySlots', {
+              defaultValue: 'Inventory Slots'
+            })}
+            value={band.inventorySlots}
+          />
           {social.egoFocus && (
             <DetailRow
-              label='Ego Spotlight'
+              label={t('ui:detailedStats.egoSpotlight', {
+                defaultValue: 'Ego Spotlight'
+              })}
               value={social.egoFocus}
-              subtext='Harmony Drain Active'
+              subtext={t('ui:detailedStats.harmonyDrain', {
+                defaultValue: 'Harmony Drain Active'
+              })}
               className='bg-(--mood-pink)/10'
             />
           )}
           <div className='mt-2 border-t border-(--ash-gray)/20 pt-2'>
             <div className='text-xs text-(--ash-gray) mb-1 font-bold'>
-              Performance Modifiers
+              {t('ui:detailedStats.perfModifiers', {
+                defaultValue: 'Performance Modifiers'
+              })}
             </div>
             <DetailRow
-              label='Guitar Difficulty'
+              label={t('ui:detailedStats.guitarDiff', {
+                defaultValue: 'Guitar Difficulty'
+              })}
               value={`x${band.performance?.guitarDifficulty ?? 1.0}`}
             />
             <DetailRow
-              label='Drum Speed'
+              label={t('ui:detailedStats.drumSpeed', {
+                defaultValue: 'Drum Speed'
+              })}
               value={`x${band.performance?.drumMultiplier ?? 1.0}`}
             />
             <DetailRow
-              label='Crowd Decay'
+              label={t('ui:detailedStats.crowdDecay', {
+                defaultValue: 'Crowd Decay'
+              })}
               value={`x${band.performance?.crowdDecay ?? 1.0}`}
             />
           </div>
@@ -378,7 +441,7 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
       {/* Members Detail */}
       <div className='space-y-4'>
         <h3 className='text-xl text-(--star-white) font-(family-name:--font-display) border-b border-(--toxic-green) pb-2'>
-          BAND MEMBERS
+          {t('ui:detailedStats.bandMembers', { defaultValue: 'BAND MEMBERS' })}
         </h3>
         <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
           {(band.members || []).map(m => (
@@ -391,20 +454,23 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
                   {m.name}
                 </h4>
                 <span className='text-xs text-(--ash-gray) uppercase'>
-                  {m.role || 'Member'}
+                  {m.role ||
+                    t('ui:detailedStats.member', { defaultValue: 'Member' })}
                 </span>
               </div>
 
               <div className='space-y-3 mb-4'>
                 <ProgressBar
-                  label='Stamina'
+                  label={t('ui:detailedStats.stamina', {
+                    defaultValue: 'Stamina'
+                  })}
                   value={m.stamina}
                   max={100}
                   color='bg-(--stamina-green)'
                   size='sm'
                 />
                 <ProgressBar
-                  label='Mood'
+                  label={t('ui:detailedStats.mood', { defaultValue: 'Mood' })}
                   value={m.mood}
                   max={100}
                   color='bg-(--mood-pink)'
@@ -414,27 +480,37 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
 
               <div className='space-y-1 text-sm'>
                 <div className='font-bold text-(--ash-gray) text-xs mb-1 uppercase tracking-wider'>
-                  Skills
+                  {t('ui:detailedStats.skills', { defaultValue: 'Skills' })}
                 </div>
                 <DetailRow
-                  label='Skill (Base)'
+                  label={t('ui:detailedStats.skillBase', {
+                    defaultValue: 'Skill (Base)'
+                  })}
                   value={m.baseStats?.skill ?? m.skill ?? 0}
                 />
                 <DetailRow
-                  label='Charisma'
+                  label={t('ui:detailedStats.charisma', {
+                    defaultValue: 'Charisma'
+                  })}
                   value={m.baseStats?.charisma ?? m.charisma ?? 0}
                 />
                 <DetailRow
-                  label='Technical'
+                  label={t('ui:detailedStats.technical', {
+                    defaultValue: 'Technical'
+                  })}
                   value={m.baseStats?.technical ?? m.technical ?? 0}
                 />
                 <DetailRow
-                  label='Improv'
+                  label={t('ui:detailedStats.improv', {
+                    defaultValue: 'Improv'
+                  })}
                   value={m.baseStats?.improv ?? m.improv ?? 0}
                   locked={!isUnlocked(m.baseStats?.improv ?? m.improv ?? 0)}
                 />
                 <DetailRow
-                  label='Composition'
+                  label={t('ui:detailedStats.composition', {
+                    defaultValue: 'Composition'
+                  })}
                   value={m.baseStats?.composition ?? m.composition ?? 0}
                   locked={
                     !isUnlocked(m.baseStats?.composition ?? m.composition ?? 0)
@@ -444,7 +520,7 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
 
               <div className='mt-4 pt-2 border-t border-(--ash-gray)/30'>
                 <div className='font-bold text-(--ash-gray) text-xs mb-1 uppercase tracking-wider'>
-                  Traits
+                  {t('ui:detailedStats.traits', { defaultValue: 'Traits' })}
                 </div>
                 <div className='space-y-1'>
                   {(() => {
@@ -452,7 +528,9 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
                     const potentialTraits = def?.traits || []
                     if (potentialTraits.length === 0)
                       return (
-                        <div className='text-xs text-(--ash-gray)'>None</div>
+                        <div className='text-xs text-(--ash-gray)'>
+                          {t('ui:detailedStats.none', { defaultValue: 'None' })}
+                        </div>
                       )
 
                     return potentialTraits.map(trait => {
@@ -469,7 +547,10 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
                               <div className='mb-2'>{trait.desc}</div>
                               {!isTraitActive && (
                                 <div className='text-(--ash-gray) italic border-t border-(--ash-gray)/30 pt-1'>
-                                  To Unlock: {trait.unlockHint}
+                                  {t('ui:detailedStats.toUnlock', {
+                                    defaultValue: 'To Unlock'
+                                  })}
+                                  : {trait.unlockHint}
                                 </div>
                               )}
                             </div>
@@ -483,11 +564,15 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
                             </span>
                             {isTraitActive ? (
                               <span className='text-[10px] uppercase border border-(--toxic-green) px-1 rounded'>
-                                Active
+                                {t('ui:detailedStats.active', {
+                                  defaultValue: 'Active'
+                                })}
                               </span>
                             ) : (
                               <span className='text-[10px] uppercase'>
-                                Locked
+                                {t('ui:detailedStats.locked', {
+                                  defaultValue: 'Locked'
+                                })}
                               </span>
                             )}
                           </div>
@@ -500,7 +585,9 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
 
               <div className='mt-2 pt-2 border-t border-(--ash-gray)/30'>
                 <div className='font-bold text-(--ash-gray) text-xs mb-1 uppercase tracking-wider'>
-                  Equipment
+                  {t('ui:detailedStats.equipment', {
+                    defaultValue: 'Equipment'
+                  })}
                 </div>
                 {m.equipment ? (
                   Object.entries(m.equipment).map(([k, v]) => (
@@ -514,7 +601,9 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
                   ))
                 ) : (
                   <div className='text-xs text-(--ash-gray)/50'>
-                    Standard Gear
+                    {t('ui:detailedStats.standardGear', {
+                      defaultValue: 'Standard Gear'
+                    })}
                   </div>
                 )}
               </div>
