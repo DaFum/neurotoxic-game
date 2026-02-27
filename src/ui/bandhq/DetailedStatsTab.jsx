@@ -76,22 +76,44 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
               defaultValue: player.location
             })}
           />
-          <DetailRow label='Total Travels' value={player.totalTravels} />
           <DetailRow
-            label='Passive Followers'
-            value={`+${player.passiveFollowers}/day`}
+            label={t('ui:detailedStats.totalTravels', {
+              defaultValue: 'Total Travels'
+            })}
+            value={player.totalTravels}
+          />
+          <DetailRow
+            label={t('ui:detailedStats.passiveFollowers', {
+              defaultValue: 'Passive Followers'
+            })}
+            value={t('ui:detailedStats.passiveFollowersPerDay', {
+              count: player.passiveFollowers,
+              defaultValue: `+${player.passiveFollowers}/day`
+            })}
             locked={!isUnlocked(player.passiveFollowers)}
           />
           <DetailRow
-            label='HQ Upgrades'
-            value={`${(player.hqUpgrades || []).length} Installed`}
-            subtext={player.hqUpgrades?.join(', ') || 'None'}
+            label={t('ui:detailedStats.hqUpgrades.count', {
+              defaultValue: 'HQ Upgrades'
+            })}
+            value={t('ui:detailedStats.hqUpgrades.installed', {
+              count: (player.hqUpgrades || []).length,
+              defaultValue: `${(player.hqUpgrades || []).length} Installed`
+            })}
+            subtext={
+              player.hqUpgrades?.join(', ') ||
+              t('ui:detailedStats.hqUpgrades.none', { defaultValue: 'None' })
+            }
           />
           {player.stats?.proveYourselfMode && (
             <DetailRow
-              label='Mode'
-              value='PROVE YOURSELF'
-              subtext='Venue Restrictions Active'
+              label={t('ui:detailedStats.mode.label', { defaultValue: 'Mode' })}
+              value={t('ui:detailedStats.mode.proveYourself', {
+                defaultValue: 'PROVE YOURSELF'
+              })}
+              subtext={t('ui:detailedStats.mode.restrictions', {
+                defaultValue: 'Venue Restrictions Active'
+              })}
               className='bg-(--toxic-green)/10'
             />
           )}

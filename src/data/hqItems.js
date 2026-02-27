@@ -616,7 +616,7 @@ export const HQ_ITEMS = {
       cost: 500,
       currency: 'money',
       requiresReputation: true,
-      img: 'ITEM_HQ_BOTNET', // TODO: placeholder - uses hq_room_marketing until own asset available
+      img: 'ITEM_HQ_BOTNET', // TODO: replace with own asset (ticket #FOLLOWUP-ICON-PR) - currently placeholder
       description: 'items:pr_manager_contract.description',
       effect: { type: 'unlock_hq', id: 'pr_manager_contract' }
     }

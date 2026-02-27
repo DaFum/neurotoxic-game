@@ -38,7 +38,7 @@ export const ShopItem = ({
         <div className='flex items-center gap-2 mb-2'>
           <img
             src={getGenImageUrl(IMG_PROMPTS[item.img] || item.name)}
-            alt={item.name}
+            alt={t(item.name)}
             className='w-12 h-12 object-contain bg-(--void-black) border-2 border-(--ash-gray)'
           />
           <h4 className='font-bold text-(--toxic-green) leading-tight font-mono uppercase'>
@@ -46,7 +46,7 @@ export const ShopItem = ({
           </h4>
         </div>
         <p className='text-xs text-(--ash-gray) mb-2 font-mono'>
-          {t(item.description)}
+          {item.description ? t(item.description) : ''}
         </p>
       </div>
       <div className='flex justify-between items-center mt-2'>

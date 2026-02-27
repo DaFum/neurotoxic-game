@@ -55,7 +55,15 @@ export const MapNode = memo(
         role={isReachable ? 'button' : undefined}
         aria-label={
           isReachable
-            ? `Travel to ${t(node.venue?.name)}${isPendingConfirm ? ' - click to confirm' : ''}`
+            ? t('map.travel_to', {
+                name: t(node.venue?.name),
+                defaultValue: `Travel to ${t(node.venue?.name)}`
+              }) +
+              (isPendingConfirm
+                ? t('map.click_to_confirm', {
+                    defaultValue: ' - click to confirm'
+                  })
+                : '')
             : undefined
         }
         tabIndex={isReachable ? 0 : undefined}
@@ -97,20 +105,20 @@ export const MapNode = memo(
         {/* Pending confirmation label */}
         {isPendingConfirm && (
           <div className='absolute -top-7 left-1/2 -translate-x-1/2 text-(--warning-yellow) text-[10px] font-bold whitespace-nowrap pointer-events-none animate-pulse bg-(--void-black)/80 px-1.5 py-0.5 border border-(--warning-yellow)'>
-            CONFIRM?
+            {t('map.confirm_q', { defaultValue: 'CONFIRM?' })}
           </div>
         )}
 
         {/* Default hover label */}
         {isReachable && !isPendingConfirm && (
           <div className='absolute -top-6 left-1/2 -translate-x-1/2 text-(--toxic-green) text-[10px] font-bold animate-bounce whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none'>
-            CLICK TO TRAVEL
+            {t('map.click_to_travel', { defaultValue: 'CLICK TO TRAVEL' })}
           </div>
         )}
 
         <div className='hidden group-hover:block absolute bottom-8 bg-(--void-black)/90 border border-(--toxic-green) p-2 rounded z-50 whitespace-nowrap pointer-events-none'>
           <div className='font-bold text-(--toxic-green)'>
-            {t(node.venue?.name) || 'Unknown'}
+            {t(node.venue?.name) || t('map.unknown', { defaultValue: 'Unknown' })}
           </div>
           {(node.type === 'GIG' ||
             node.type === 'FESTIVAL' ||
@@ -118,34 +126,43 @@ export const MapNode = memo(
             <div className='text-[10px] text-(--ash-gray) font-mono'>
               {node.type === 'FESTIVAL' && (
                 <div className='text-(--warning-yellow) font-bold mb-1'>
-                  FESTIVAL
+                  {t('map.festival', { defaultValue: 'FESTIVAL' })}
                 </div>
               )}
-              Cap: {node.venue?.capacity} | Pay: ~{node.venue?.pay}
+              {t('map.cap', { defaultValue: 'Cap' })}: {node.venue?.capacity} |{' '}
+              {t('map.pay', { defaultValue: 'Pay' })}: ~{node.venue?.pay}
               {'\u20AC'}
               <br />
-              Ticket: {ticketPrice ?? node.venue?.price}
-              {'\u20AC'} | Diff: {'\u2605'.repeat(node.venue?.diff || 0)}
+              {t('map.ticket', { defaultValue: 'Ticket' })}:{' '}
+              {ticketPrice ?? node.venue?.price}
+              {'\u20AC'} | {t('map.diff', { defaultValue: 'Diff' })}:{' '}
+              {'\u2605'.repeat(node.venue?.diff || 0)}
             </div>
           )}
           {node.type === 'REST_STOP' && (
             <div className='text-[10px] text-(--warning-yellow) font-mono'>
-              REST STOP — Recover Stamina & Mood
+              {t('map.rest_stop_desc', {
+                defaultValue: 'REST STOP — Recover Stamina & Mood'
+              })}
             </div>
           )}
           {node.type === 'SPECIAL' && (
             <div className='text-[10px] text-(--purple-glow,#a855f7) font-mono'>
-              MYSTERY — Unknown Encounter
+              {t('map.mystery_desc', {
+                defaultValue: 'MYSTERY — Unknown Encounter'
+              })}
             </div>
           )}
           {node.type === 'FINALE' && (
             <div className='text-[10px] text-(--warning-yellow) font-mono font-bold'>
-              ★ FINALE — The Final Show ★
+              {t('map.finale_desc', {
+                defaultValue: '★ FINALE — The Final Show ★'
+              })}
             </div>
           )}
           {isCurrent && (
             <div className='text-(--blood-red) text-xs font-bold'>
-              [CURRENT LOCATION]
+              {t('map.current_location', { defaultValue: '[CURRENT LOCATION]' })}
             </div>
           )}
         </div>

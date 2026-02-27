@@ -117,6 +117,7 @@ export const BandHQ = ({
             </p>
           </div>
           <button
+            type='button'
             onClick={onClose}
             className='px-6 py-2 border-2 border-(--blood-red) text-(--blood-red) font-bold hover:bg-(--blood-red) hover:text-(--void-black) transition-colors duration-200 uppercase font-mono'
           >

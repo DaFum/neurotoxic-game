@@ -29,7 +29,7 @@ export const StatsTab = ({ player, band, social }) => {
               icon='📅'
             />
             <StatBox
-              label='Followers'
+              label={t('stats.followers', { defaultValue: 'Followers' })}
               value={
                 (social.instagram ?? 0) +
                 (social.tiktok ?? 0) +
@@ -57,9 +57,11 @@ export const StatsTab = ({ player, band, social }) => {
               value={player.van?.condition}
               max={100}
               color='bg-(--condition-blue)'
+              size='sm'
             />
             <div className='mt-2 text-xs text-(--ash-gray) font-mono'>
-              Breakdown Chance:{' '}
+              {t('stats.breakdown_chance', { defaultValue: 'Breakdown Chance' })}
+              :{' '}
               {((player.van?.breakdownChance ?? 0) * 100).toFixed(1)}%
             </div>
           </div>
@@ -69,7 +71,7 @@ export const StatsTab = ({ player, band, social }) => {
       {/* Band Members */}
       <div className='bg-(--void-black)/40 border-2 border-(--ash-gray) p-4'>
         <h3 className='text-(--toxic-green) text-lg font-bold mb-4 border-b border-(--ash-gray) pb-2 font-mono'>
-          BAND STATUS
+          {t('stats.band_status', { defaultValue: 'BAND STATUS' })}
         </h3>
         <div className='space-y-6'>
           {(band.members || []).map(m => (
@@ -79,14 +81,14 @@ export const StatsTab = ({ player, band, social }) => {
               </div>
               <div className='flex-1 space-y-1'>
                 <ProgressBar
-                  label='Stamina'
+                  label={t('stats.stamina', { defaultValue: 'Stamina' })}
                   value={m.stamina}
                   max={100}
                   color='bg-(--stamina-green)'
                   size='sm'
                 />
                 <ProgressBar
-                  label='Mood'
+                  label={t('stats.mood', { defaultValue: 'Mood' })}
                   value={m.mood}
                   max={100}
                   color='bg-(--mood-pink)'
@@ -99,7 +101,7 @@ export const StatsTab = ({ player, band, social }) => {
         <div className='mt-6 pt-4 border-t border-(--ash-gray)'>
           <div className='flex justify-between items-center mb-2'>
             <span className='text-(--ash-gray) font-mono text-sm'>
-              Inventory Slots:
+              {t('stats.inventory_slots', { defaultValue: 'Inventory Slots' })}:
             </span>
             <span className='text-(--star-white) font-mono'>
               {band.inventorySlots}
@@ -107,7 +109,7 @@ export const StatsTab = ({ player, band, social }) => {
           </div>
           <div className='flex justify-between items-center'>
             <span className='text-(--ash-gray) font-mono text-sm'>
-              Harmony:
+              {t('stats.harmony', { defaultValue: 'Harmony' })}:
             </span>
             <span className='text-(--toxic-green) font-mono'>
               {band.harmony}/100
