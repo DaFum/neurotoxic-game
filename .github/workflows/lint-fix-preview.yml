@@ -1,8 +1,13 @@
 name: Lint Fix Preview
+run-name: Lint Fix Preview - PR #${{ github.event.pull_request.number }}
 
 on:
   pull_request:
     types: [opened, synchronize, reopened, edited]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   POST_ON_DIFF_ONLY: 'true' # set to 'false' to post informational comments too
@@ -13,10 +18,12 @@ env:
 permissions:
   contents: read
   issues: write
+  pull-requests: write
 
 jobs:
   lint-preview:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repository (full history required for diffs)
@@ -27,7 +34,8 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
@@ -66,9 +74,9 @@ jobs:
           echo "POST_ON_DIFF_ONLY=$POST_ON_DIFF_ONLY"
 
       - name: Post lint preview comment to PR
-        # Updated condition: when POST_ON_DIFF_ONLY == 'true' post if there is a diff OR if duplicates were found.
-        # Otherwise (POST_ON_DIFF_ONLY != 'true') post when should_comment == '1' (diff OR dup OR missing info).
-        if: ${{ (env.POST_ON_DIFF_ONLY == 'true' && (steps.lint-preview.outputs.has_diff == '1' || steps.lint-preview.outputs.has_dup == '1')) || (env.POST_ON_DIFF_ONLY != 'true' && steps.lint-preview.outputs.should_comment == '1') }}
+        if: |
+          (env.POST_ON_DIFF_ONLY == 'true' && (steps.lint-preview.outputs.has_diff == '1' || steps.lint-preview.outputs.has_dup == '1')) ||
+          (env.POST_ON_DIFF_ONLY != 'true' && steps.lint-preview.outputs.should_comment == '1')
         uses: actions/github-script@v7
         with:
           script: |
@@ -102,3 +110,4 @@ jobs:
                 body,
               });
             }
+            
