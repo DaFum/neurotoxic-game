@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog'
-import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
+import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 import { usePurchaseLogic } from '../hooks/usePurchaseLogic'
 import { handleError, GameError, StateError } from '../utils/errorHandler'
 import { StatsTab } from './bandhq/StatsTab'
@@ -12,6 +12,7 @@ import { UpgradesTab } from './bandhq/UpgradesTab'
 import { SetlistTab } from './bandhq/SetlistTab'
 import { SettingsTab } from './bandhq/SettingsTab'
 import { LeaderboardTab } from './bandhq/LeaderboardTab'
+import { AudioStatePropType, OnAudioChangePropType } from './shared/propTypes'
 
 /**
  * BandHQ Component
@@ -108,17 +109,19 @@ export const BandHQ = ({
         <div className='flex justify-between items-center p-6 border-b-2 border-(--toxic-green) bg-(--void-black)/50'>
           <div>
             <h2 className="text-4xl text-(--toxic-green) font-['Metal_Mania'] drop-shadow-[0_0_5px_var(--toxic-green)]">
-              BAND HQ
+              {t('hq.title', { defaultValue: 'BAND HQ' })}
             </h2>
             <p className='text-(--ash-gray) text-sm font-mono uppercase tracking-widest'>
-              Stendal Rehearsal Room | Day {player.day}
+              {t('venues:stendal_proberaum.name')} |{' '}
+              {t('ui.day', { defaultValue: 'Day' })} {player.day}
             </p>
           </div>
           <button
+            type='button'
             onClick={onClose}
             className='px-6 py-2 border-2 border-(--blood-red) text-(--blood-red) font-bold hover:bg-(--blood-red) hover:text-(--void-black) transition-colors duration-200 uppercase font-mono'
           >
-            LEAVE [ESC]
+            {t('hq.leave', { defaultValue: 'LEAVE [ESC]' })}
           </button>
         </div>
 
@@ -270,16 +273,8 @@ BandHQ.propTypes = {
   deleteSave: PropTypes.func.isRequired,
   setlist: PropTypes.array.isRequired,
   setSetlist: PropTypes.func.isRequired,
-  audioState: PropTypes.shape({
-    musicVol: PropTypes.number,
-    sfxVol: PropTypes.number,
-    isMuted: PropTypes.bool
-  }).isRequired,
-  onAudioChange: PropTypes.shape({
-    setMusic: PropTypes.func,
-    setSfx: PropTypes.func,
-    toggleMute: PropTypes.func
-  }).isRequired,
+  audioState: AudioStatePropType.isRequired,
+  onAudioChange: OnAudioChangePropType.isRequired,
   activeQuests: PropTypes.array,
   venueBlacklist: PropTypes.array,
   reputationByRegion: PropTypes.object,

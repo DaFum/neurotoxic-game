@@ -1,9 +1,11 @@
+import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { useGameState } from '../../context/GameState'
 import { ActionButton } from '../shared'
 import { SONGS_DB } from '../../data/songs'
 
 export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
+  const { t } = useTranslation(['ui', 'venues'])
   const { setCurrentGig, changeScene } = useGameState()
 
   const toggleSongInSetlist = songId => {
@@ -15,11 +17,21 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
     if (currentIndex >= 0) {
       newSetlist = [...setlist]
       newSetlist.splice(currentIndex, 1)
-      addToast('Song removed from setlist', 'info')
+      addToast(
+        t('bandhq.setlist.songRemoved', {
+          defaultValue: 'Song removed from setlist'
+        }),
+        'info'
+      )
     } else {
       // Currently allow 1 active song for MVP flow
       newSetlist = [{ id: songId }]
-      addToast('Song selected for next Gig', 'success')
+      addToast(
+        t('bandhq.setlist.songSelected', {
+          defaultValue: 'Song selected for next Gig'
+        }),
+        'success'
+      )
     }
     setSetlist(newSetlist)
   }
@@ -38,20 +50,22 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
               return
             }
             setCurrentGig({
-              name: 'Rehearsal Room',
+              name: t('venues:stendal_proberaum.name'),
               diff: 1,
-              venue: 'Band HQ',
-              description: 'Practice makes perfect.',
+              venue: t('bandhq.venue', { defaultValue: 'Band HQ' }),
+              description: t('hq.practice_desc', {
+                defaultValue: 'Practice makes perfect.'
+              }),
               isPractice: true
             })
             changeScene('PRACTICE')
           }}
           className='px-4 py-2 text-sm'
         >
-          START PRACTICE
+          {t('hq.start_practice', { defaultValue: 'START PRACTICE' })}
         </ActionButton>
         <div>
-          SELECTED:{' '}
+          {t('hq.selected', { defaultValue: 'SELECTED' })}:{' '}
           <span className='text-(--toxic-green)'>{setlist.length}</span>
         </div>
       </div>
@@ -74,16 +88,23 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
                 >
                   {song.name}
                 </h4>
-                <div className='flex gap-4 text-xs font-mono text-(--ash-gray) mt-1'>
-                  <span>DIFF: {song.difficulty}/7</span>
-                  <span>BPM: {song.bpm}</span>
-                  <span>
-                    DUR: {Math.floor(song.duration / 60)}:
-                    {(song.duration % 60).toString().padStart(2, '0')}
-                  </span>
-                </div>
+              <div className='flex gap-4 text-xs font-mono text-(--ash-gray) mt-1'>
+                <span>
+                  {t('bandhq.metadata.diff', { defaultValue: 'DIFF' })}:{' '}
+                  {song.difficulty}/7
+                </span>
+                <span>
+                  {t('bandhq.metadata.bpm', { defaultValue: 'BPM' })}: {song.bpm}
+                </span>
+                <span>
+                  {t('bandhq.metadata.dur', { defaultValue: 'DUR' })}:{' '}
+                  {Math.floor(song.duration / 60)}:
+                  {(song.duration % 60).toString().padStart(2, '0')}
+                </span>
               </div>
+            </div>
               <button
+                type='button'
                 onClick={() => toggleSongInSetlist(song.id)}
                 className={`px-4 py-2 font-bold uppercase border-2 text-sm transition-all
                   ${
@@ -92,7 +113,9 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
                       : 'border-(--ash-gray) text-(--ash-gray) hover:border-(--star-white) hover:text-(--star-white)'
                   }`}
               >
-                {selected ? 'ACTIVE' : 'SELECT'}
+                {selected
+                  ? t('hq.song_active', { defaultValue: 'ACTIVE' })
+                  : t('hq.song_select', { defaultValue: 'SELECT' })}
               </button>
             </div>
           )

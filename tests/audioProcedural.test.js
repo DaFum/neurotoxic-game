@@ -40,7 +40,7 @@ const mockAudioState = {
   transportStopEventId: null
 }
 mock.module('../src/utils/audio/state.js', {
-  namedExports: { audioState: mockAudioState }
+  namedExports: { audioState: mockAudioState, resetGigState: mock.fn() }
 })
 
 // Mock Tone.js
@@ -122,7 +122,10 @@ mock.module('@tonejs/midi', {
 // Mock Setup
 const mockEnsureAudioContext = mock.fn(async () => true)
 mock.module('../src/utils/audio/setup.js', {
-  namedExports: { ensureAudioContext: mockEnsureAudioContext }
+  namedExports: { 
+    ensureAudioContext: mockEnsureAudioContext,
+    getAudioContextTimeSec: mock.fn(() => 0)
+  }
 })
 
 // Mock Playback
@@ -157,6 +160,9 @@ mock.module('../src/utils/audio/sharedBufferUtils.js', {
     createAndConnectBufferSource: mock.fn()
   }
 })
+
+// Mock env
+globalThis.import = { meta: { env: { BASE_URL: '/' } } }
 
 // Import the module under test AFTER mocking
 const { playMidiFile } = await import('../src/utils/audio/midiPlayback.js')

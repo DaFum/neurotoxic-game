@@ -3,7 +3,7 @@ import { BaseStageController } from './BaseStageController'
 import { GRID_WIDTH, GRID_HEIGHT } from '../../hooks/minigames/constants'
 import { EffectManager } from './EffectManager'
 import { getPixiColorFromToken, loadTexture } from './utils'
-import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
+import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen.js'
 import { handleError, GameError } from '../../utils/errorHandler'
 
 class RoadieStageController extends BaseStageController {

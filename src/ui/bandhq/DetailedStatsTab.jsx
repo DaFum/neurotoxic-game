@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
 import { ProgressBar, Panel, Tooltip } from '../shared'
 import { CHARACTERS } from '../../data/characters'
 
@@ -33,6 +34,7 @@ const DetailRow = ({ label, value, subtext, locked, className = '' }) => (
 )
 
 export const DetailedStatsTab = ({ player, band, social, ...state }) => {
+  const { t } = useTranslation(['ui', 'items', 'venues'])
   const totalReach =
     (social.instagram ?? 0) +
     (social.tiktok ?? 0) +
@@ -46,38 +48,82 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
     <div className='space-y-8'>
       {/* Top Row: Career & Social Overview */}
       <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-        <Panel title='Career Overview'>
-          <DetailRow label='Funds' value={`${player.money}€`} />
+        <Panel
+          title={t('stats.career_overview', {
+            defaultValue: 'Career Overview'
+          })}
+        >
           <DetailRow
-            label='Fame'
-            value={player.fame}
-            subtext={`Level ${player.fameLevel || 0}`}
+            label={t('stats.funds', { defaultValue: 'Funds' })}
+            value={`${player.money}€`}
           />
-          <DetailRow label='Day' value={player.day} />
-          <DetailRow label='Time' value={`${player.time || '12'}:00`} />
-          <DetailRow label='Location' value={player.location} />
-          <DetailRow label='Total Travels' value={player.totalTravels} />
           <DetailRow
-            label='Passive Followers'
-            value={`+${player.passiveFollowers}/day`}
+            label={t('stats.fame', { defaultValue: 'Fame' })}
+            value={player.fame}
+            subtext={`${t('ui.level', { defaultValue: 'Level' })} ${player.fameLevel || 0}`}
+          />
+          <DetailRow
+            label={t('ui.day', { defaultValue: 'Day' })}
+            value={player.day}
+          />
+          <DetailRow
+            label={t('ui.time', { defaultValue: 'Time' })}
+            value={`${player.time || '12'}:00`}
+          />
+          <DetailRow
+            label={t('ui.location', { defaultValue: 'Location' })}
+            value={t('venues:' + player.location + '.name', {
+              defaultValue: player.location
+            })}
+          />
+          <DetailRow
+            label={t('ui:detailedStats.totalTravels', {
+              defaultValue: 'Total Travels'
+            })}
+            value={player.totalTravels}
+          />
+          <DetailRow
+            label={t('ui:detailedStats.passiveFollowers', {
+              defaultValue: 'Passive Followers'
+            })}
+            value={t('ui:detailedStats.passiveFollowersPerDay', {
+              count: player.passiveFollowers,
+              defaultValue: `+${player.passiveFollowers}/day`
+            })}
             locked={!isUnlocked(player.passiveFollowers)}
           />
           <DetailRow
-            label='HQ Upgrades'
-            value={`${(player.hqUpgrades || []).length} Installed`}
-            subtext={player.hqUpgrades?.join(', ') || 'None'}
+            label={t('ui:detailedStats.hqUpgrades.count', {
+              defaultValue: 'HQ Upgrades'
+            })}
+            value={t('ui:detailedStats.hqUpgrades.installed', {
+              count: (player.hqUpgrades || []).length,
+              defaultValue: `${(player.hqUpgrades || []).length} Installed`
+            })}
+            subtext={
+              player.hqUpgrades?.join(', ') ||
+              t('ui:detailedStats.hqUpgrades.none', { defaultValue: 'None' })
+            }
           />
           {player.stats?.proveYourselfMode && (
             <DetailRow
-              label='Mode'
-              value='PROVE YOURSELF'
-              subtext='Venue Restrictions Active'
+              label={t('ui:detailedStats.mode.label', { defaultValue: 'Mode' })}
+              value={t('ui:detailedStats.mode.proveYourself', {
+                defaultValue: 'PROVE YOURSELF'
+              })}
+              subtext={t('ui:detailedStats.mode.restrictions', {
+                defaultValue: 'Venue Restrictions Active'
+              })}
               className='bg-(--toxic-green)/10'
             />
           )}
         </Panel>
 
-        <Panel title='Social Media Reach'>
+        <Panel
+          title={t('stats.social_reach', {
+            defaultValue: 'Social Media Reach'
+          })}
+        >
           <DetailRow
             label='Instagram'
             value={social.instagram}
@@ -153,17 +199,19 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
           </div>
         </Panel>
 
-        <Panel title='Van Condition'>
+        <Panel
+          title={t('stats.van_condition', { defaultValue: 'Van Condition' })}
+        >
           <div className='mb-4 space-y-2'>
             <ProgressBar
-              label='Fuel'
+              label={t('stats.fuel', { defaultValue: 'Fuel' })}
               value={player.van?.fuel}
               max={100}
               color='bg-(--fuel-yellow)'
               size='sm'
             />
             <ProgressBar
-              label='Condition'
+              label={t('stats.condition', { defaultValue: 'Condition' })}
               value={player.van?.condition}
               max={100}
               color='bg-(--condition-blue)'
@@ -184,7 +232,11 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
 
       {/* Region and Quests */}
       <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-        <Panel title='Regional Standing'>
+        <Panel
+          title={t('stats.regional_standing', {
+            defaultValue: 'Regional Standing'
+          })}
+        >
           {Object.keys(reputationByRegion).length === 0 ? (
             <div className='text-xs text-(--ash-gray) italic py-4 text-center'>
               No regional data yet. Play gigs to build reputation.
@@ -217,7 +269,9 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
           )}
         </Panel>
 
-        <Panel title='Active Quests'>
+        <Panel
+          title={t('stats.active_quests', { defaultValue: 'Active Quests' })}
+        >
           {activeQuests.length === 0 ? (
             <div className='text-xs text-(--ash-gray) italic py-4 text-center'>
               No active quests. Stay toxic to trigger events.
@@ -251,10 +305,12 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
 
       {/* Band Metrics */}
       <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-        <Panel title='Band Metrics'>
+        <Panel
+          title={t('stats.band_metrics', { defaultValue: 'Band Metrics' })}
+        >
           <div className='mb-4'>
             <ProgressBar
-              label='Harmony'
+              label={t('stats.harmony', { defaultValue: 'Harmony' })}
               value={band.harmony}
               max={100}
               color='bg-(--toxic-green)'
@@ -293,13 +349,25 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
           </div>
         </Panel>
 
-        <Panel title='Inventory & Equipment'>
+        <Panel
+          title={t('stats.inventory_equipment', {
+            defaultValue: 'Inventory & Equipment'
+          })}
+        >
           <div className='grid grid-cols-2 gap-x-8 gap-y-1'>
             {Object.entries(band.inventory || {}).map(([key, val]) => (
               <DetailRow
                 key={key}
-                label={key.replace(/_/g, ' ').toUpperCase()}
-                value={val === true ? 'OWNED' : val === false ? 'LOCKED' : val}
+                label={t('items:' + key + '.name', {
+                  defaultValue: key.replace(/_/g, ' ').toUpperCase()
+                })}
+                value={
+                  val === true
+                    ? t('ui.owned', { defaultValue: 'OWNED' })
+                    : val === false
+                      ? t('ui.locked', { defaultValue: 'LOCKED' })
+                      : val
+                }
                 locked={!isUnlocked(val)}
               />
             ))}

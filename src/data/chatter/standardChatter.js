@@ -1,7 +1,7 @@
 export const CHATTER_DB = [
   // --- GENERAL TRAVEL / OVERWORLD ---
   {
-    text: 'My back hurts from sleeping in this seat.',
+    text: 'chatter:standard.msg_001',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -9,7 +9,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'Did we pack the spare snare?',
+    text: 'chatter:standard.msg_002',
     weight: 1,
     category: 'travel',
     speaker: 'Marius',
@@ -26,7 +26,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'This van smells like stale beer and broken dreams.',
+    text: 'chatter:standard.msg_004',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -34,7 +34,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'Are we there yet?',
+    text: 'chatter:standard.msg_005',
     weight: 0.5,
     category: 'travel',
     condition: state =>
@@ -42,7 +42,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'I should have been a dentist.',
+    text: 'chatter:standard.msg_006',
     weight: 0.2,
     category: 'travel',
     speaker: 'Lars',
@@ -51,7 +51,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'Did anyone bring a phone charger?',
+    text: 'chatter:standard.msg_007',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -59,7 +59,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'Turn up the radio!',
+    text: 'chatter:standard.msg_008',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -67,7 +67,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'This map looks like a bad tour tattoo.',
+    text: 'chatter:standard.msg_009',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -75,7 +75,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'Did we forget the banner again?',
+    text: 'chatter:standard.msg_010',
     weight: 1,
     category: 'travel',
     speaker: 'Marius',
@@ -92,7 +92,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'Every kilometer adds a new rattle to this van.',
+    text: 'chatter:standard.msg_012',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -100,7 +100,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'Same highway, different city, same broken AUX cable.',
+    text: 'chatter:standard.msg_013',
     weight: 0.5,
     category: 'travel',
     condition: state =>
@@ -108,7 +108,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'Imagine explaining this life to a normal person.',
+    text: 'chatter:standard.msg_014',
     weight: 0.2,
     category: 'travel',
     speaker: 'Lars',
@@ -117,7 +117,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'Someone sit on the pedalboard so it stops sliding.',
+    text: 'chatter:standard.msg_015',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -125,7 +125,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'Who called shotgun and then fell asleep?',
+    text: 'chatter:standard.msg_016',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -133,7 +133,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'Who packed the cables like spaghetti again?',
+    text: 'chatter:standard.msg_017',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -141,7 +141,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'I can taste the gas station coffee in my soul.',
+    text: 'chatter:standard.msg_018',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -149,7 +149,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'If this van had feelings, it would sue us.',
+    text: 'chatter:standard.msg_019',
     weight: 0.8,
     category: 'travel',
     condition: state =>
@@ -157,7 +157,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'We’ve been on the road so long my phone thinks we live at rest stops.',
+    text: 'chatter:standard.msg_020',
     weight: 0.5,
     category: 'travel',
     condition: state =>
@@ -165,7 +165,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'Why does everything we own smell like rehearsal room?',
+    text: 'chatter:standard.msg_021',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -173,7 +173,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'Someone open a window before we evolve gills.',
+    text: 'chatter:standard.msg_022',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -181,7 +181,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'I just found a guitar pick in my shoe. Again.',
+    text: 'chatter:standard.msg_023',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -189,7 +189,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'If the GPS says “recalculating” one more time, I’m walking.',
+    text: 'chatter:standard.msg_024',
     weight: 0.8,
     category: 'travel',
     condition: state =>
@@ -197,7 +197,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'The van makes a new noise every city. Collect them all.',
+    text: 'chatter:standard.msg_025',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -205,7 +205,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'We should start charging rent for this backseat.',
+    text: 'chatter:standard.msg_026',
     weight: 0.5,
     category: 'travel',
     condition: state =>
@@ -213,7 +213,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'Did we bring the extension cord? Please say yes.',
+    text: 'chatter:standard.msg_027',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -221,7 +221,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'I miss showers with actual water pressure.',
+    text: 'chatter:standard.msg_028',
     weight: 0.8,
     category: 'travel',
     condition: state =>
@@ -229,7 +229,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'Who ate the last snack and chose violence?',
+    text: 'chatter:standard.msg_029',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -237,7 +237,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'If we get pulled over, you’re explaining the merch boxes.',
+    text: 'chatter:standard.msg_030',
     weight: 0.7,
     category: 'travel',
     condition: state =>
@@ -245,7 +245,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'I just realized we’ve been listening to the same album for 600km.',
+    text: 'chatter:standard.msg_031',
     weight: 0.6,
     category: 'travel',
     condition: state =>
@@ -253,7 +253,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'I swear I packed the adapters…',
+    text: 'chatter:standard.msg_032',
     weight: 1,
     category: 'travel',
     speaker: 'Matze',
@@ -262,7 +262,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'Next person who says “scenic route” is carrying the kick drum.',
+    text: 'chatter:standard.msg_033',
     weight: 0.8,
     category: 'travel',
     speaker: 'Marius',
@@ -271,7 +271,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'My neck is permanently shaped like this headrest.',
+    text: 'chatter:standard.msg_034',
     weight: 0.6,
     category: 'travel',
     speaker: 'Lars',
@@ -280,7 +280,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'We’re one pothole away from turning into a percussion ensemble.',
+    text: 'chatter:standard.msg_035',
     weight: 1,
     category: 'travel',
     speaker: 'Marius',
@@ -289,7 +289,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'My legs are asleep. Again. Congratulations, legs.',
+    text: 'chatter:standard.msg_036',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -297,7 +297,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'Who packed the merch box on top of the merch box? Genius.',
+    text: 'chatter:standard.msg_037',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -305,7 +305,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'If we stop one more time, we’ll arrive next week.',
+    text: 'chatter:standard.msg_038',
     weight: 0.7,
     category: 'travel',
     speaker: 'Marius',
@@ -314,7 +314,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'I can’t tell if that smell is the van or my hoodie.',
+    text: 'chatter:standard.msg_039',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -322,7 +322,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'This seatbelt buckle is trying to kill my hip bone.',
+    text: 'chatter:standard.msg_040',
     weight: 0.8,
     category: 'travel',
     condition: state =>
@@ -330,7 +330,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'We should sell “van air” in jars. Limited edition.',
+    text: 'chatter:standard.msg_041',
     weight: 0.5,
     category: 'travel',
     speaker: 'Lars',
@@ -339,7 +339,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'I just heard the van sigh. That’s… not great.',
+    text: 'chatter:standard.msg_042',
     weight: 0.8,
     category: 'travel',
     condition: state =>
@@ -347,7 +347,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'If the drummer says “shortcut” I’m jumping out.',
+    text: 'chatter:standard.msg_043',
     weight: 0.7,
     category: 'travel',
     condition: state =>
@@ -355,7 +355,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'We’re basically a moving storage unit with opinions.',
+    text: 'chatter:standard.msg_044',
     weight: 0.6,
     category: 'travel',
     condition: state =>
@@ -363,7 +363,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'My spine just made a noise I don’t want to name.',
+    text: 'chatter:standard.msg_045',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -371,7 +371,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'Are we touring or just driving in circles to avoid our feelings?',
+    text: 'chatter:standard.msg_046',
     weight: 0.4,
     category: 'travel',
     speaker: 'Lars',
@@ -380,7 +380,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'If the van radio finds one more static station, I’m starting a cult.',
+    text: 'chatter:standard.msg_047',
     weight: 0.6,
     category: 'travel',
     condition: state =>
@@ -388,7 +388,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'How do we have 40 cables and still not the right one?',
+    text: 'chatter:standard.msg_048',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -396,7 +396,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'I miss silence. Like, medically.',
+    text: 'chatter:standard.msg_049',
     weight: 0.7,
     category: 'travel',
     speaker: 'Matze',
@@ -405,7 +405,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'We’re one toll booth away from bankruptcy.',
+    text: 'chatter:standard.msg_050',
     weight: 0.6,
     category: 'travel',
     condition: state =>
@@ -413,7 +413,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'If the van breaks, we’re carrying amps like pilgrims.',
+    text: 'chatter:standard.msg_051',
     weight: 0.7,
     category: 'travel',
     speaker: 'Marius',
@@ -422,7 +422,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'I just found a drum key in the cupholder. That explains nothing.',
+    text: 'chatter:standard.msg_052',
     weight: 0.8,
     category: 'travel',
     condition: state =>
@@ -430,7 +430,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'Why is the floor always slightly wet? Don’t answer that.',
+    text: 'chatter:standard.msg_053',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -438,7 +438,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'Gas station sandwiches are a lifestyle choice. A bad one.',
+    text: 'chatter:standard.msg_054',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -446,7 +446,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: 'We should write a song called “Rest Stop Romance”.',
+    text: 'chatter:standard.msg_055',
     weight: 0.4,
     category: 'travel',
     speaker: 'Lars',
@@ -457,26 +457,26 @@ export const CHATTER_DB = [
 
   // --- PRE-GIG (Preparation) ---
   {
-    text: 'Where is the sound guy?',
+    text: 'chatter:standard.msg_056',
     weight: 2,
     condition: state =>
       ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
   },
   {
-    text: 'I need a beer before we start.',
+    text: 'chatter:standard.msg_057',
     weight: 2,
     condition: state =>
       ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
   },
   {
-    text: 'My strings feel sticky.',
+    text: 'chatter:standard.msg_058',
     weight: 2,
     condition: state =>
       ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
     speaker: 'Matze'
   },
   {
-    text: 'Does this venue have a backstage?',
+    text: 'chatter:standard.msg_059',
     weight: 1,
     condition: state =>
       ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
@@ -489,227 +489,227 @@ export const CHATTER_DB = [
     speaker: 'Marius'
   },
   {
-    text: 'If the kick mic dies mid‑set, we riot.',
+    text: 'chatter:standard.msg_061',
     weight: 2,
     condition: state =>
       ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
   },
   {
-    text: 'One more tuning check or I’ll snap this guitar in half.',
+    text: 'chatter:standard.msg_062',
     weight: 2,
     condition: state =>
       ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
   },
   {
-    text: 'These strings are either dead or perfect. No in‑between.',
-    weight: 2,
-    condition: state =>
-      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
-    speaker: 'Matze'
-  },
-  {
-    text: 'Does this place even have a monitor mix, or just vibes?',
-    weight: 1,
-    condition: state =>
-      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
-  },
-  {
-    text: 'No new songs tonight. Last time was a trainwreck.',
-    weight: 2,
-    condition: state =>
-      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
-    speaker: 'Marius'
-  },
-  {
-    text: 'Who stole my setlist again?',
-    weight: 1,
-    condition: state =>
-      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
-  },
-  {
-    text: 'If the intro track fails, we just walk on angry.',
-    weight: 1,
-    condition: state =>
-      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
-  },
-  {
-    text: 'Where do we load in? Why is it always stairs?',
-    weight: 2,
-    condition: state =>
-      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
-  },
-  {
-    text: 'Do we have gaffer tape? Please tell me we have gaffer tape.',
-    weight: 2,
-    condition: state =>
-      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
-  },
-  {
-    text: 'My pedalboard is doing that haunted thing again.',
-    weight: 2,
-    condition: state =>
-      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
-  },
-  {
-    text: 'If the monitors are bad, I’m going full vibes-only.',
-    weight: 1,
-    condition: state =>
-      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
-  },
-  {
-    text: 'Who’s got the setlist printouts? Not the wrinkled one.',
-    weight: 1,
-    condition: state =>
-      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
-  },
-  {
-    text: 'I can’t hear anything and we haven’t even started. Great sign.',
-    weight: 2,
-    condition: state =>
-      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
-  },
-  {
-    text: 'Soundcheck feels like speed-dating with feedback.',
-    weight: 1,
-    condition: state =>
-      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
-  },
-  {
-    text: 'If the DI box crackles, I’m blaming the universe.',
-    weight: 2,
-    condition: state =>
-      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
-  },
-  {
-    text: 'Please tell me the merch table isn’t next to the toilet.',
-    weight: 1,
-    condition: state =>
-      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
-  },
-  {
-    text: 'I’m sweating and the lights aren’t even on yet.',
-    weight: 1,
-    condition: state =>
-      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
-  },
-  {
-    text: 'Five minutes to doors and I still don’t know where the backstage is.',
-    weight: 1,
-    condition: state =>
-      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
-  },
-  {
-    text: 'These strings feel like they’ve seen war.',
+    text: 'chatter:standard.msg_063',
     weight: 2,
     condition: state =>
       ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
     speaker: 'Matze'
   },
   {
-    text: 'If my in-ears cut out, I’m playing by memory and spite.',
+    text: 'chatter:standard.msg_064',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'chatter:standard.msg_065',
     weight: 2,
     condition: state =>
       ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
     speaker: 'Marius'
   },
   {
-    text: 'One more “can you turn up” and I’m turning up the whole band.',
+    text: 'chatter:standard.msg_066',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'chatter:standard.msg_067',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'chatter:standard.msg_068',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'chatter:standard.msg_069',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'chatter:standard.msg_070',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'chatter:standard.msg_071',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'chatter:standard.msg_072',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'chatter:standard.msg_073',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'chatter:standard.msg_074',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'chatter:standard.msg_075',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'chatter:standard.msg_076',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'chatter:standard.msg_077',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'chatter:standard.msg_078',
+    weight: 1,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
+  },
+  {
+    text: 'chatter:standard.msg_079',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
+    speaker: 'Matze'
+  },
+  {
+    text: 'chatter:standard.msg_080',
     weight: 2,
     condition: state =>
       ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
     speaker: 'Marius'
   },
   {
-    text: 'Which one of you touched my amp settings?',
+    text: 'chatter:standard.msg_081',
+    weight: 2,
+    condition: state =>
+      ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
+    speaker: 'Marius'
+  },
+  {
+    text: 'chatter:standard.msg_082',
     weight: 2,
     condition: state =>
       ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
   },
   {
-    text: 'If the stage is tiny, we play like it’s a stadium.',
+    text: 'chatter:standard.msg_083',
     weight: 1,
     condition: state =>
       ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
   },
   {
-    text: 'Can we get water on stage or is it “suffer artistically” tonight?',
+    text: 'chatter:standard.msg_084',
     weight: 1,
     condition: state =>
       ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
   },
   {
-    text: 'Why is the power strip always missing when we need it most?',
+    text: 'chatter:standard.msg_085',
     weight: 2,
     condition: state =>
       ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
   },
   {
-    text: 'I’m not nervous. My stomach is just… touring.',
+    text: 'chatter:standard.msg_086',
     weight: 1,
     condition: state =>
       ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
     speaker: 'Lars'
   },
   {
-    text: 'If we start late, I’m blaming the stairs. Again.',
+    text: 'chatter:standard.msg_087',
     weight: 2,
     condition: state =>
       ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
     speaker: 'Marius'
   },
   {
-    text: 'Does anyone remember the count-in for the new intro? Anyone?',
+    text: 'chatter:standard.msg_088',
     weight: 2,
     condition: state =>
       ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
   },
   {
-    text: 'If the lights blind me, I’m playing by smell.',
+    text: 'chatter:standard.msg_089',
     weight: 1,
     condition: state =>
       ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
     speaker: 'Matze'
   },
   {
-    text: 'I need my monitor to be louder than my thoughts.',
+    text: 'chatter:standard.msg_090',
     weight: 2,
     condition: state =>
       ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
   },
   {
-    text: 'We should label our cables. We won’t, but we should.',
+    text: 'chatter:standard.msg_091',
     weight: 1,
     condition: state =>
       ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
   },
   {
-    text: 'If the click track fails, we become jazz. Against our will.',
+    text: 'chatter:standard.msg_092',
     weight: 2,
     condition: state =>
       ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
     speaker: 'Marius'
   },
   {
-    text: 'Tell me again why we didn’t bring a spare guitar?',
+    text: 'chatter:standard.msg_093',
     weight: 2,
     condition: state =>
       ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene),
     speaker: 'Matze'
   },
   {
-    text: 'I can’t find the tuner. This is how wars start.',
+    text: 'chatter:standard.msg_094',
     weight: 2,
     condition: state =>
       ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
   },
   {
-    text: 'If the stage is wobbling, we’re calling it “energy”.',
+    text: 'chatter:standard.msg_095',
     weight: 1,
     condition: state =>
       ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
   },
   {
-    text: 'Who’s doing the intro speech? Please say “not me”.',
+    text: 'chatter:standard.msg_096',
     weight: 1,
     condition: state =>
       ['PREGIG', 'PRE_GIG_MINIGAME'].includes(state.currentScene)
@@ -717,24 +717,24 @@ export const CHATTER_DB = [
 
   // --- POST-GIG (Reaction) ---
   {
-    text: 'That crowd was insane!',
+    text: 'chatter:standard.msg_097',
     weight: 5,
     condition: state =>
       state.currentScene === 'POSTGIG' && state.lastGigStats?.score > 10000
   },
   {
-    text: 'I think I broke a stick.',
+    text: 'chatter:standard.msg_098',
     weight: 2,
     condition: state => state.currentScene === 'POSTGIG',
     speaker: 'Marius'
   },
   {
-    text: 'We need to sell more merch.',
+    text: 'chatter:standard.msg_099',
     weight: 2,
     condition: state => state.currentScene === 'POSTGIG'
   },
   {
-    text: 'My ears are ringing.',
+    text: 'chatter:standard.msg_100',
     weight: 2,
     condition: state => state.currentScene === 'POSTGIG'
   },
@@ -745,172 +745,172 @@ export const CHATTER_DB = [
       state.currentScene === 'POSTGIG' && state.lastGigStats?.misses > 10
   },
   {
-    text: 'I almost fell off the stage, totally worth it.',
+    text: 'chatter:standard.msg_102',
     weight: 3,
     condition: state => state.currentScene === 'POSTGIG'
   },
   {
-    text: 'That last breakdown nearly killed my wrists.',
+    text: 'chatter:standard.msg_103',
     weight: 2,
     condition: state => state.currentScene === 'POSTGIG',
     speaker: 'Marius'
   },
   {
-    text: 'We sold more patches than shirts. Respect.',
+    text: 'chatter:standard.msg_104',
     weight: 2,
     condition: state => state.currentScene === 'POSTGIG'
   },
   {
-    text: 'I can still feel the bass in my chest.',
+    text: 'chatter:standard.msg_105',
     weight: 2,
     condition: state => state.currentScene === 'POSTGIG'
   },
   {
-    text: 'If that was us on an off‑night, we’re doing fine.',
+    text: 'chatter:standard.msg_106',
     weight: 4,
     condition: state => state.currentScene === 'POSTGIG'
   },
   {
-    text: 'That was the loudest “small room” I’ve ever played.',
+    text: 'chatter:standard.msg_107',
     weight: 3,
     condition: state => state.currentScene === 'POSTGIG'
   },
   {
-    text: 'My shirt is basically a souvenir at this point.',
+    text: 'chatter:standard.msg_108',
     weight: 2,
     condition: state => state.currentScene === 'POSTGIG'
   },
   {
-    text: 'I saw someone cry in the front row. Did we do that?',
+    text: 'chatter:standard.msg_109',
     weight: 3,
     condition: state => state.currentScene === 'POSTGIG'
   },
   {
-    text: 'We survived. That counts.',
+    text: 'chatter:standard.msg_110',
     weight: 2,
     condition: state => state.currentScene === 'POSTGIG'
   },
   {
-    text: 'Load-out after midnight should be illegal.',
+    text: 'chatter:standard.msg_111',
     weight: 2,
     condition: state => state.currentScene === 'POSTGIG'
   },
   {
-    text: 'The crowd carried us through that last song.',
+    text: 'chatter:standard.msg_112',
     weight: 3,
     condition: state => state.currentScene === 'POSTGIG'
   },
   {
-    text: 'That was either perfect or I blacked out. Both are fine.',
+    text: 'chatter:standard.msg_113',
     weight: 2,
     condition: state => state.currentScene === 'POSTGIG'
   },
   {
-    text: 'If we do that every night, we’re unstoppable.',
+    text: 'chatter:standard.msg_114',
     weight: 4,
     condition: state => state.currentScene === 'POSTGIG'
   },
   {
-    text: 'Next time I’m bringing earplugs. For my soul.',
+    text: 'chatter:standard.msg_115',
     weight: 2,
     condition: state => state.currentScene === 'POSTGIG'
   },
   {
-    text: 'That was a massacre… but like, in a good way.',
+    text: 'chatter:standard.msg_116',
     weight: 3,
     condition: state => state.currentScene === 'POSTGIG',
     speaker: 'Marius'
   },
   {
-    text: 'My hands are vibrating in frequencies science can’t name.',
+    text: 'chatter:standard.msg_117',
     weight: 2,
     condition: state => state.currentScene === 'POSTGIG',
     speaker: 'Matze'
   },
   {
-    text: 'I missed one cue and it felt like a lifetime.',
+    text: 'chatter:standard.msg_118',
     weight: 3,
     condition: state => state.currentScene === 'POSTGIG',
     speaker: 'Lars'
   },
   {
-    text: 'That room was ours tonight. No doubt.',
+    text: 'chatter:standard.msg_119',
     weight: 5,
     condition: state =>
       state.currentScene === 'POSTGIG' &&
       (state.lastGigStats?.score || 0) > 9000
   },
   {
-    text: 'We need to tighten the intros. And… everything else.',
+    text: 'chatter:standard.msg_120',
     weight: 5,
     condition: state =>
       state.currentScene === 'POSTGIG' && (state.lastGigStats?.misses || 0) > 8
   },
   {
-    text: 'My heartbeat is still doing double-time.',
+    text: 'chatter:standard.msg_121',
     weight: 2,
     condition: state => state.currentScene === 'POSTGIG'
   },
   {
-    text: 'I can’t tell if I’m exhausted or enlightened.',
+    text: 'chatter:standard.msg_122',
     weight: 2,
     condition: state => state.currentScene === 'POSTGIG',
     speaker: 'Lars'
   },
   {
-    text: 'That was either the best set of the tour or I’m delirious.',
+    text: 'chatter:standard.msg_123',
     weight: 3,
     condition: state => state.currentScene === 'POSTGIG'
   },
   {
-    text: 'Someone hugged me and I’m pretty sure it was sweat.',
+    text: 'chatter:standard.msg_124',
     weight: 2,
     condition: state => state.currentScene === 'POSTGIG'
   },
   {
-    text: 'If we play like that tomorrow, we’re dangerous.',
+    text: 'chatter:standard.msg_125',
     weight: 4,
     condition: state => state.currentScene === 'POSTGIG'
   },
   {
-    text: 'My hands feel like they belong to someone else now.',
+    text: 'chatter:standard.msg_126',
     weight: 2,
     condition: state => state.currentScene === 'POSTGIG',
     speaker: 'Matze'
   },
   {
-    text: 'Did we remember to thank the sound tech? Please say yes.',
+    text: 'chatter:standard.msg_127',
     weight: 2,
     condition: state => state.currentScene === 'POSTGIG'
   },
   {
-    text: 'I saw someone crowd-surf in a room with no space. Respect.',
+    text: 'chatter:standard.msg_128',
     weight: 3,
     condition: state => state.currentScene === 'POSTGIG'
   },
   {
-    text: 'That encore felt like a fistfight with gravity.',
+    text: 'chatter:standard.msg_129',
     weight: 3,
     condition: state => state.currentScene === 'POSTGIG',
     speaker: 'Marius'
   },
   {
-    text: 'If the venue wants us back, that’s basically a win condition.',
+    text: 'chatter:standard.msg_130',
     weight: 3,
     condition: state => state.currentScene === 'POSTGIG'
   },
   {
-    text: 'I left part of my soul on that stage. And maybe a pick.',
+    text: 'chatter:standard.msg_131',
     weight: 2,
     condition: state => state.currentScene === 'POSTGIG'
   },
   {
-    text: 'We need to write down what worked tonight. Before we forget.',
+    text: 'chatter:standard.msg_132',
     weight: 2,
     condition: state => state.currentScene === 'POSTGIG'
   },
   {
-    text: 'My ears are ringing in a key that doesn’t exist.',
+    text: 'chatter:standard.msg_133',
     weight: 2,
     condition: state => state.currentScene === 'POSTGIG',
     speaker: 'Lars'
@@ -918,12 +918,12 @@ export const CHATTER_DB = [
 
   // --- CONDITION: LOW MOOD ---
   {
-    text: 'I swear if I have to drive another hour...',
+    text: 'chatter:standard.msg_134',
     weight: 10,
     condition: state => state.band.members.some(m => m.mood < 30)
   },
   {
-    text: 'I hate this tour. I wanna go home.',
+    text: 'chatter:standard.msg_135',
     weight: 10,
     condition: state => state.band.members.some(m => m.mood < 20)
   },
@@ -933,89 +933,89 @@ export const CHATTER_DB = [
     condition: state => state.band.members.some(m => m.mood < 25)
   },
   {
-    text: 'If one more person asks “So what’s your real job?” I’m done.',
+    text: 'chatter:standard.msg_137',
     weight: 10,
     condition: state => state.band.members.some(m => m.mood < 30)
   },
   {
-    text: 'Why does every town look the same at 3am?',
+    text: 'chatter:standard.msg_138',
     weight: 10,
     condition: state => state.band.members.some(m => m.mood < 20)
   },
   {
-    text: 'I’m three bad shows away from selling all my gear.',
+    text: 'chatter:standard.msg_139',
     weight: 8,
     condition: state => state.band.members.some(m => m.mood < 25)
   },
   {
-    text: 'I’m running on fumes and bad decisions.',
+    text: 'chatter:standard.msg_140',
     weight: 8,
     condition: state => state.band.members.some(m => m.mood < 30)
   },
   {
-    text: 'If I hear one more motivational speech, I’ll bite.',
+    text: 'chatter:standard.msg_141',
     weight: 8,
     condition: state => state.band.members.some(m => m.mood < 25)
   },
   {
-    text: 'Everything hurts and we haven’t even loaded in.',
+    text: 'chatter:standard.msg_142',
     weight: 10,
     condition: state => state.band.members.some(m => m.mood < 30)
   },
   {
-    text: 'I miss my bed. And my dignity.',
+    text: 'chatter:standard.msg_143',
     weight: 10,
     condition: state => state.band.members.some(m => m.mood < 20)
   },
   {
-    text: 'I’m not mad. I’m just… touring.',
+    text: 'chatter:standard.msg_144',
     weight: 8,
     condition: state => state.band.members.some(m => m.mood < 25)
   },
   {
-    text: 'Can we skip today and pretend it never happened?',
+    text: 'chatter:standard.msg_145',
     weight: 10,
     condition: state => state.band.members.some(m => m.mood < 20)
   },
   {
-    text: 'I’m one broken cable away from quitting music forever.',
+    text: 'chatter:standard.msg_146',
     weight: 8,
     condition: state => state.band.members.some(m => m.mood < 25)
   },
   {
-    text: 'I’m too tired to be annoyed, but here we are.',
+    text: 'chatter:standard.msg_147',
     weight: 8,
     condition: state => state.band.members.some(m => m.mood < 30)
   },
   {
-    text: 'If the van makes that noise again, I’m naming it and hating it.',
+    text: 'chatter:standard.msg_148',
     weight: 8,
     condition: state => state.band.members.some(m => m.mood < 25)
   },
   {
-    text: 'I want to be a person again, not a touring object.',
+    text: 'chatter:standard.msg_149',
     weight: 10,
     condition: state => state.band.members.some(m => m.mood < 20)
   },
   {
-    text: 'Everything is sticky and I’m emotionally sticky too.',
+    text: 'chatter:standard.msg_150',
     weight: 8,
     condition: state => state.band.members.some(m => m.mood < 25)
   },
   {
-    text: 'I’m not “quiet”, I’m conserving rage.',
+    text: 'chatter:standard.msg_151',
     weight: 8,
     condition: state => state.band.members.some(m => m.mood < 30),
     speaker: 'Marius'
   },
   {
-    text: 'If we don’t get food soon, I’m eating a cymbal.',
+    text: 'chatter:standard.msg_152',
     weight: 8,
     condition: state => state.band.members.some(m => m.mood < 25),
     speaker: 'Marius'
   },
   {
-    text: 'I’m allergic to optimism right now.',
+    text: 'chatter:standard.msg_153',
     weight: 8,
     condition: state => state.band.members.some(m => m.mood < 25),
     speaker: 'Lars'
@@ -1023,329 +1023,329 @@ export const CHATTER_DB = [
 
   // --- CONDITION: HIGH MOOD ---
   {
-    text: 'We are gonna crush it tonight!',
+    text: 'chatter:standard.msg_154',
     weight: 5,
     condition: state => state.band.members.some(m => m.mood > 80)
   },
   {
-    text: 'Life is good. The road is freedom.',
+    text: 'chatter:standard.msg_155',
     weight: 5,
     condition: state => state.band.members.some(m => m.mood > 90)
   },
   {
-    text: 'I love you guys.',
+    text: 'chatter:standard.msg_156',
     weight: 1,
     condition: state => state.band.members.some(m => m.mood > 95)
   },
   {
-    text: 'This van, this band, this tour – perfect chaos.',
+    text: 'chatter:standard.msg_157',
     weight: 5,
     condition: state => state.band.members.some(m => m.mood > 80)
   },
   {
-    text: 'Every show feels bigger than the last lately.',
+    text: 'chatter:standard.msg_158',
     weight: 5,
     condition: state => state.band.members.some(m => m.mood > 90)
   },
   {
-    text: 'Screenshot this moment in my brain forever.',
+    text: 'chatter:standard.msg_159',
     weight: 1,
     condition: state => state.band.members.some(m => m.mood > 95)
   },
   {
-    text: 'Tonight feels like we leveled up.',
+    text: 'chatter:standard.msg_160',
     weight: 5,
     condition: state => state.band.members.some(m => m.mood > 85)
   },
   {
-    text: 'I could play two sets right now. Don’t tempt me.',
+    text: 'chatter:standard.msg_161',
     weight: 4,
     condition: state => state.band.members.some(m => m.mood > 80)
   },
   {
-    text: 'This is why we do it. This exact feeling.',
+    text: 'chatter:standard.msg_162',
     weight: 5,
     condition: state => state.band.members.some(m => m.mood > 90)
   },
   {
-    text: 'We’re a machine when we’re locked in.',
+    text: 'chatter:standard.msg_163',
     weight: 5,
     condition: state => state.band.members.some(m => m.mood > 85)
   },
   {
-    text: 'I’m proud of us. Don’t make it weird.',
+    text: 'chatter:standard.msg_164',
     weight: 1,
     condition: state => state.band.members.some(m => m.mood > 95)
   },
   {
-    text: 'Somebody take a photo, I wanna remember this grin.',
+    text: 'chatter:standard.msg_165',
     weight: 1,
     condition: state => state.band.members.some(m => m.mood > 95)
   },
   {
-    text: 'That groove felt illegal. Let’s do it again tomorrow.',
+    text: 'chatter:standard.msg_166',
     weight: 5,
     condition: state => state.band.members.some(m => m.mood > 85)
   },
   {
-    text: 'I’m vibrating with serotonin and tinnitus.',
+    text: 'chatter:standard.msg_167',
     weight: 4,
     condition: state => state.band.members.some(m => m.mood > 80),
     speaker: 'Lars'
   },
   {
-    text: 'We’re actually getting good at this. Wild.',
+    text: 'chatter:standard.msg_168',
     weight: 5,
     condition: state => state.band.members.some(m => m.mood > 85)
   },
   {
-    text: 'Tonight’s gonna be one of those “remember this” nights.',
+    text: 'chatter:standard.msg_169',
     weight: 5,
     condition: state => state.band.members.some(m => m.mood > 90)
   },
   {
-    text: 'If we keep playing like this, we’ll scare ourselves.',
+    text: 'chatter:standard.msg_170',
     weight: 4,
     condition: state => state.band.members.some(m => m.mood > 80),
     speaker: 'Marius'
   },
   {
-    text: 'I feel unstoppable. Somebody stop me from buying new gear.',
+    text: 'chatter:standard.msg_171',
     weight: 3,
     condition: state => state.band.members.some(m => m.mood > 90)
   },
 
   // --- CONDITION: MONEY ---
   {
-    text: 'Can we afford gas?',
+    text: 'chatter:standard.msg_172',
     weight: 10,
     condition: state => state.player.money < 100
   },
   {
-    text: 'We are rich! Steak dinner tonight!',
+    text: 'chatter:standard.msg_173',
     weight: 5,
     condition: state => state.player.money > 2000
   },
   {
-    text: 'If we busk at the next rest stop, we might make fuel money.',
+    text: 'chatter:standard.msg_174',
     weight: 10,
     condition: state => state.player.money < 100
   },
   {
-    text: 'Okay, this is “new cymbal” money territory.',
+    text: 'chatter:standard.msg_175',
     weight: 5,
     condition: state => state.player.money > 2000,
     speaker: 'Marius'
   },
   {
-    text: 'If we buy coffee now, we’re eating air later.',
+    text: 'chatter:standard.msg_176',
     weight: 10,
     condition: state => state.player.money < 120
   },
   {
-    text: 'Okay… who knows how to fix things with zip ties?',
+    text: 'chatter:standard.msg_177',
     weight: 8,
     condition: state => state.player.money < 150
   },
   {
-    text: 'We can’t keep living on “maybe the merch sells”.',
+    text: 'chatter:standard.msg_178',
     weight: 10,
     condition: state => state.player.money < 100
   },
   {
-    text: 'This is finally “replace the van noise” money.',
+    text: 'chatter:standard.msg_179',
     weight: 4,
     condition: state => state.player.money > 2200
   },
   {
-    text: 'Round of meals is on us. For once.',
+    text: 'chatter:standard.msg_180',
     weight: 5,
     condition: state => state.player.money > 2000
   },
   {
-    text: 'I’m not saying we’re rich… but I’m looking at real food.',
+    text: 'chatter:standard.msg_181',
     weight: 4,
     condition: state => state.player.money > 2000,
     speaker: 'Lars'
   },
   {
-    text: 'We can afford snacks AND coffee? Who are we?',
+    text: 'chatter:standard.msg_182',
     weight: 4,
     condition: state => state.player.money > 2000
   },
   {
-    text: 'If the van needs repairs, we’re donating organs.',
+    text: 'chatter:standard.msg_183',
     weight: 10,
     condition: state => state.player.money < 120
   },
   {
-    text: 'We’re in “sleep in the van to save money” mode again.',
+    text: 'chatter:standard.msg_184',
     weight: 10,
     condition: state => state.player.money < 100
   },
   {
-    text: 'If the venue offers free drinks, that’s basically income.',
+    text: 'chatter:standard.msg_185',
     weight: 8,
     condition: state => state.player.money < 150,
     speaker: 'Lars'
   },
   {
-    text: 'Okay, we can replace at least ONE cable without crying.',
+    text: 'chatter:standard.msg_186',
     weight: 4,
     condition: state => state.player.money > 1800
   },
 
   // --- CONDITION: FAME/SOCIAL ---
   {
-    text: 'Did you see that comment on Insta?',
+    text: 'chatter:standard.msg_187',
     weight: 3,
     condition: state => state.social?.instagram > 500
   },
   {
-    text: 'We are going viral!',
+    text: 'chatter:standard.msg_188',
     weight: 5,
     condition: state => state.social?.viral > 0
   },
   {
-    text: 'Somebody just used our track in their story. Nice.',
+    text: 'chatter:standard.msg_189',
     weight: 3,
     condition: state => state.social?.instagram > 500
   },
   {
-    text: 'If we’re viral, we better not waste tonight’s set.',
+    text: 'chatter:standard.msg_190',
     weight: 5,
     condition: state => state.social?.viral > 0
   },
   {
-    text: 'Someone tagged us in a clip and it actually sounds good.',
+    text: 'chatter:standard.msg_191',
     weight: 3,
     condition: state => (state.social?.instagram || 0) > 500
   },
   {
-    text: 'We got a weird DM from a “label”. That’s a scam, right?',
+    text: 'chatter:standard.msg_192',
     weight: 3,
     condition: state => (state.social?.instagram || 0) > 800
   },
   {
-    text: 'The comments are spicy today. Love it.',
+    text: 'chatter:standard.msg_193',
     weight: 3,
     condition: state => (state.social?.instagram || 0) > 500
   },
   {
-    text: 'If this momentum keeps up, we need more merch designs.',
+    text: 'chatter:standard.msg_194',
     weight: 3,
     condition: state => (state.social?.instagram || 0) > 1000
   },
   {
-    text: 'Viral means expectations. And expectations mean pressure.',
+    text: 'chatter:standard.msg_195',
     weight: 5,
     condition: state => (state.social?.viral || 0) > 0
   },
   {
-    text: 'If we’re trending, I’m pretending I’m calm.',
+    text: 'chatter:standard.msg_196',
     weight: 5,
     condition: state => (state.social?.viral || 0) > 0,
     speaker: 'Marius'
   },
   {
-    text: 'Someone posted our breakdown and the comments are unhinged.',
+    text: 'chatter:standard.msg_197',
     weight: 3,
     condition: state => (state.social?.instagram || 0) > 700
   },
   {
-    text: 'If we hit 1k, I’m demanding a tour bus. A tiny one.',
+    text: 'chatter:standard.msg_198',
     weight: 3,
     condition: state => (state.social?.instagram || 0) > 1000,
     speaker: 'Marius'
   },
   {
-    text: 'We got recognized at the merch table. I panicked.',
+    text: 'chatter:standard.msg_199',
     weight: 3,
     condition: state => (state.social?.instagram || 0) > 900,
     speaker: 'Matze'
   },
   {
-    text: 'Viral means people will actually notice mistakes. Great.',
+    text: 'chatter:standard.msg_200',
     weight: 5,
     condition: state => (state.social?.viral || 0) > 0,
     speaker: 'Lars'
   },
   {
-    text: 'Someone made a meme of our face. That’s… marketing?',
+    text: 'chatter:standard.msg_201',
     weight: 3,
     condition: state => (state.social?.instagram || 0) > 800
   },
 
   // --- LOCATION SPECIFIC (General) ---
   {
-    text: 'Home sweet home.',
+    text: 'chatter:standard.msg_202',
     weight: 10,
     condition: state => state.player.location === 'Stendal'
   },
   {
-    text: 'Berlin is too expensive.',
+    text: 'chatter:standard.msg_203',
     weight: 5,
     condition: state =>
       state.player.location && state.player.location.includes('Berlin')
   },
   {
-    text: 'Back in Stendal. Same streets, louder band.',
+    text: 'chatter:standard.msg_204',
     weight: 10,
     condition: state => state.player.location === 'Stendal'
   },
   {
-    text: 'Berlin fees, Berlin chaos, Berlin sweat.',
+    text: 'chatter:standard.msg_205',
     weight: 5,
     condition: state =>
       state.player.location && state.player.location.includes('Berlin')
   },
   {
-    text: 'Stendal air hits different. Like nostalgia and kebab.',
+    text: 'chatter:standard.msg_206',
     weight: 10,
     condition: state => state.player.location === 'Stendal'
   },
   {
-    text: 'Back in Stendal… let’s not wake the neighbors.',
+    text: 'chatter:standard.msg_207',
     weight: 8,
     condition: state => state.player.location === 'Stendal'
   },
   {
-    text: 'Berlin prices make me want to play faster just to leave sooner.',
+    text: 'chatter:standard.msg_208',
     weight: 5,
     condition: state =>
       state.player.location && state.player.location.includes('Berlin')
   },
   {
-    text: 'Berlin has everything. Including zero parking.',
+    text: 'chatter:standard.msg_209',
     weight: 5,
     condition: state =>
       state.player.location && state.player.location.includes('Berlin')
   },
   {
-    text: 'Berlin crowds are either ice-cold or absolutely feral. No middle.',
+    text: 'chatter:standard.msg_210',
     weight: 4,
     condition: state =>
       state.player.location && state.player.location.includes('Berlin')
   },
   {
-    text: 'Stendal feels like the tutorial level. Comforting and cursed.',
+    text: 'chatter:standard.msg_211',
     weight: 8,
     condition: state => state.player.location === 'Stendal',
     speaker: 'Lars'
   },
   {
-    text: 'Berlin is a boss fight with parking tickets.',
+    text: 'chatter:standard.msg_212',
     weight: 5,
     condition: state =>
       state.player.location && state.player.location.includes('Berlin')
   },
   {
-    text: 'Stendal: where everyone knows someone who knows us.',
+    text: 'chatter:standard.msg_213',
     weight: 8,
     condition: state => state.player.location === 'Stendal'
   },
   {
-    text: 'Berlin nights are loud even when you’re not playing.',
+    text: 'chatter:standard.msg_214',
     weight: 4,
     condition: state =>
       state.player.location && state.player.location.includes('Berlin')
@@ -1353,14 +1353,14 @@ export const CHATTER_DB = [
 
   // --- GIG SPECIFIC (In-Game) ---
   {
-    text: 'FASTER!',
+    text: 'chatter:standard.msg_215',
     weight: 5,
     condition: state =>
       state.currentScene === 'GIG' &&
       state.band.members.some(m => m.stamina > 80)
   },
   {
-    text: 'My arms are burning!',
+    text: 'chatter:standard.msg_216',
     weight: 5,
     condition: state =>
       state.currentScene === 'GIG' &&
@@ -1368,14 +1368,14 @@ export const CHATTER_DB = [
     speaker: 'Marius'
   },
   {
-    text: 'Push it, they’re still moving!',
+    text: 'chatter:standard.msg_217',
     weight: 5,
     condition: state =>
       state.currentScene === 'GIG' &&
       state.band.members.some(m => m.stamina > 80)
   },
   {
-    text: 'If I drop this beat, pretend it was on purpose.',
+    text: 'chatter:standard.msg_218',
     weight: 5,
     condition: state =>
       state.currentScene === 'GIG' &&
@@ -1383,28 +1383,28 @@ export const CHATTER_DB = [
     speaker: 'Marius'
   },
   {
-    text: 'LOCK IN!',
+    text: 'chatter:standard.msg_219',
     weight: 5,
     condition: state =>
       state.currentScene === 'GIG' &&
       state.band.members.some(m => m.stamina > 80)
   },
   {
-    text: 'Don’t you dare slow down now!',
+    text: 'chatter:standard.msg_220',
     weight: 5,
     condition: state =>
       state.currentScene === 'GIG' &&
       state.band.members.some(m => m.stamina > 80)
   },
   {
-    text: 'They’re with us—keep pushing!',
+    text: 'chatter:standard.msg_221',
     weight: 5,
     condition: state =>
       state.currentScene === 'GIG' &&
       state.band.members.some(m => m.stamina > 75)
   },
   {
-    text: 'I can’t feel my hands, but the song isn’t over!',
+    text: 'chatter:standard.msg_222',
     weight: 5,
     condition: state =>
       state.currentScene === 'GIG' &&
@@ -1412,7 +1412,7 @@ export const CHATTER_DB = [
     speaker: 'Matze'
   },
   {
-    text: 'If I cramp up, just drag me offstage later.',
+    text: 'chatter:standard.msg_223',
     weight: 5,
     condition: state =>
       state.currentScene === 'GIG' &&
@@ -1420,7 +1420,7 @@ export const CHATTER_DB = [
     speaker: 'Marius'
   },
   {
-    text: 'Breath. Hit. Repeat.',
+    text: 'chatter:standard.msg_224',
     weight: 4,
     condition: state =>
       state.currentScene === 'GIG' &&
@@ -1428,7 +1428,7 @@ export const CHATTER_DB = [
     speaker: 'Lars'
   },
   {
-    text: 'HARDER!',
+    text: 'chatter:standard.msg_225',
     weight: 5,
     condition: state =>
       state.currentScene === 'GIG' &&
@@ -1436,14 +1436,14 @@ export const CHATTER_DB = [
     speaker: 'Marius'
   },
   {
-    text: 'DON’T DROP IT!',
+    text: 'chatter:standard.msg_226',
     weight: 5,
     condition: state =>
       state.currentScene === 'GIG' &&
       state.band.members.some(m => m.stamina > 75)
   },
   {
-    text: 'My forearms are filing for divorce!',
+    text: 'chatter:standard.msg_227',
     weight: 5,
     condition: state =>
       state.currentScene === 'GIG' &&
@@ -1451,7 +1451,7 @@ export const CHATTER_DB = [
     speaker: 'Matze'
   },
   {
-    text: 'If I miss again, just stare at me dramatically.',
+    text: 'chatter:standard.msg_228',
     weight: 4,
     condition: state =>
       state.currentScene === 'GIG' &&
@@ -1459,7 +1459,7 @@ export const CHATTER_DB = [
     speaker: 'Lars'
   },
   {
-    text: 'KEEP IT TOGETHER!',
+    text: 'chatter:standard.msg_229',
     weight: 5,
     condition: state =>
       state.currentScene === 'GIG' &&
@@ -1473,7 +1473,7 @@ export const CHATTER_DB = [
     condition: state => state.band.harmony < 40
   },
   {
-    text: 'If the next rehearsal goes like the last one, we need a mediator.',
+    text: 'chatter:standard.msg_231',
     weight: 8,
     condition: state => state.band.harmony < 35
   },
@@ -1484,17 +1484,17 @@ export const CHATTER_DB = [
     speaker: 'Matze'
   },
   {
-    text: 'We need to talk. Or scream. Either works.',
+    text: 'chatter:standard.msg_233',
     weight: 10,
     condition: state => state.band.harmony < 30
   },
   {
-    text: 'This silence in the van isn\'t "creative", it\'s hostile.',
+    text: 'chatter:standard.msg_234't "creative", it\'s hostile.',
     weight: 8,
     condition: state => state.band.harmony < 35
   },
   {
-    text: 'Someone say something before I start a fight with the GPS.',
+    text: 'chatter:standard.msg_235',
     weight: 8,
     condition: state => state.band.harmony < 30,
     speaker: 'Marius'
@@ -1510,7 +1510,7 @@ export const CHATTER_DB = [
     condition: state => state.band.harmony > 85
   },
   {
-    text: 'When the vibe is this good, even load-out feels easy.',
+    text: 'chatter:standard.msg_238',
     weight: 5,
     condition: state => state.band.harmony > 85
   },
@@ -1526,12 +1526,12 @@ export const CHATTER_DB = [
     speaker: 'Lars'
   },
   {
-    text: 'Even the van sounds better when we get along.',
+    text: 'chatter:standard.msg_241',
     weight: 4,
     condition: state => state.band.harmony > 90
   },
   {
-    text: 'Harmony this high should be illegal on a Tuesday.',
+    text: 'chatter:standard.msg_242',
     weight: 3,
     condition: state => state.band.harmony > 90,
     speaker: 'Marius'
@@ -1544,7 +1544,7 @@ export const CHATTER_DB = [
 
   // --- CONDITION: VAN STATE ---
   {
-    text: 'The fuel light is on. Again. Beautiful.',
+    text: 'chatter:standard.msg_244',
     weight: 10,
     condition: state => state.player.van.fuel < 25
   },
@@ -1554,7 +1554,7 @@ export const CHATTER_DB = [
     condition: state => state.player.van.fuel < 20
   },
   {
-    text: 'If we coast downhill, we might make it to a station.',
+    text: 'chatter:standard.msg_246',
     weight: 8,
     condition: state => state.player.van.fuel < 25
   },
@@ -1565,7 +1565,7 @@ export const CHATTER_DB = [
     speaker: 'Marius'
   },
   {
-    text: 'We should start pushing. For practice.',
+    text: 'chatter:standard.msg_248',
     weight: 8,
     condition: state => state.player.van.fuel < 20,
     speaker: 'Lars'
@@ -1576,18 +1576,18 @@ export const CHATTER_DB = [
     condition: state => state.player.van.condition < 30
   },
   {
-    text: 'I think a piece of the van just fell off. Should we get that?',
+    text: 'chatter:standard.msg_250',
     weight: 10,
     condition: state => state.player.van.condition < 25
   },
   {
-    text: 'This van is held together by gaffer tape and hope.',
+    text: 'chatter:standard.msg_251',
     weight: 8,
     condition: state => state.player.van.condition < 35,
     speaker: 'Matze'
   },
   {
-    text: 'Every bump sounds like a farewell from a component.',
+    text: 'chatter:standard.msg_252',
     weight: 8,
     condition: state => state.player.van.condition < 30
   },
@@ -1602,18 +1602,18 @@ export const CHATTER_DB = [
     condition: state => state.player.van.condition > 90
   },
   {
-    text: 'Full tank, open road. This is why we do it.',
+    text: 'chatter:standard.msg_255',
     weight: 4,
     condition: state => state.player.van.fuel > 85
   },
   {
-    text: 'Van sounds healthy. Suspicious, but healthy.',
+    text: 'chatter:standard.msg_256',
     weight: 3,
     condition: state => state.player.van.condition > 90,
     speaker: 'Marius'
   },
   {
-    text: 'We actually have fuel AND a working engine. What year is this?',
+    text: 'chatter:standard.msg_257',
     weight: 3,
     condition: state =>
       state.player.van.fuel > 80 && state.player.van.condition > 80
@@ -1621,7 +1621,7 @@ export const CHATTER_DB = [
 
   // --- CONDITION: TOUR PROGRESSION ---
   {
-    text: 'Day one energy. Everything still smells clean.',
+    text: 'chatter:standard.msg_258',
     weight: 8,
     condition: state => state.player.day <= 2
   },
@@ -1637,7 +1637,7 @@ export const CHATTER_DB = [
     condition: state => state.player.day <= 3
   },
   {
-    text: 'The honeymoon phase of touring. Enjoy it.',
+    text: 'chatter:standard.msg_261',
     weight: 6,
     condition: state => state.player.day <= 4
   },
@@ -1647,7 +1647,7 @@ export const CHATTER_DB = [
     condition: state => state.player.day >= 10 && state.player.day <= 20
   },
   {
-    text: 'Every city starts to blur together around day twelve.',
+    text: 'chatter:standard.msg_263',
     weight: 5,
     condition: state => state.player.day >= 12
   },
@@ -1663,13 +1663,13 @@ export const CHATTER_DB = [
     condition: state => state.player.day >= 25
   },
   {
-    text: 'Day twenty-something. My body is a ruin. My spirit is a weapon.',
+    text: 'chatter:standard.msg_266',
     weight: 8,
     condition: state => state.player.day >= 25,
     speaker: 'Marius'
   },
   {
-    text: 'If we survive this tour, we can survive anything.',
+    text: 'chatter:standard.msg_267',
     weight: 8,
     condition: state => state.player.day >= 28
   },
@@ -1684,13 +1684,13 @@ export const CHATTER_DB = [
     condition: state => state.player.totalTravels >= 15
   },
   {
-    text: 'Veteran roads. We know every pothole by name.',
+    text: 'chatter:standard.msg_270',
     weight: 4,
     condition: state => state.player.totalTravels >= 20,
     speaker: 'Marius'
   },
   {
-    text: 'How many rest stops have we seen? All of them. All.',
+    text: 'chatter:standard.msg_271',
     weight: 4,
     condition: state => state.player.totalTravels >= 18
   },
@@ -1708,7 +1708,7 @@ export const CHATTER_DB = [
     speaker: 'Lars'
   },
   {
-    text: 'Playing to empty rooms builds character. Supposedly.',
+    text: 'chatter:standard.msg_274',
     weight: 6,
     condition: state => (state.player.fame || 0) < 30
   },
@@ -1718,18 +1718,18 @@ export const CHATTER_DB = [
     condition: state => (state.player.fameLevel || 0) >= 2
   },
   {
-    text: 'Someone asked for an autograph and I panicked.',
+    text: 'chatter:standard.msg_276',
     weight: 5,
     condition: state => (state.player.fameLevel || 0) >= 2,
     speaker: 'Matze'
   },
   {
-    text: 'We got mentioned in a zine. A ZINE. We made it.',
+    text: 'chatter:standard.msg_277',
     weight: 5,
     condition: state => (state.player.fameLevel || 0) >= 2
   },
   {
-    text: 'Promoters are calling US now. This is backwards and I love it.',
+    text: 'chatter:standard.msg_278',
     weight: 4,
     condition: state => (state.player.fameLevel || 0) >= 3
   },
@@ -1740,12 +1740,12 @@ export const CHATTER_DB = [
     speaker: 'Lars'
   },
   {
-    text: 'Local legend status. Every kebab shop knows our name.',
+    text: 'chatter:standard.msg_280',
     weight: 3,
     condition: state => (state.player.fameLevel || 0) >= 4
   },
   {
-    text: 'People are showing up BEFORE we start playing. Wild.',
+    text: 'chatter:standard.msg_281',
     weight: 3,
     condition: state => (state.player.fameLevel || 0) >= 4
   },
@@ -1756,7 +1756,7 @@ export const CHATTER_DB = [
     speaker: 'Marius'
   },
   {
-    text: 'If we get any bigger, we need a bigger van. Or a bus. A bus!',
+    text: 'chatter:standard.msg_283',
     weight: 2,
     condition: state => (state.player.fameLevel || 0) >= 5
   },
@@ -1769,22 +1769,22 @@ export const CHATTER_DB = [
     speaker: 'Matze'
   },
   {
-    text: 'No cables? What are we, acoustic?',
+    text: 'chatter:standard.msg_285',
     weight: 10,
     condition: state => state.band.inventory.cables === false
   },
   {
-    text: 'Marius is going to lose it when he finds out we have no drum parts.',
+    text: 'chatter:standard.msg_286',
     weight: 10,
     condition: state => state.band.inventory.drum_parts === false
   },
   {
-    text: 'Without spare strings, every bend is a gamble.',
+    text: 'chatter:standard.msg_287',
     weight: 8,
     condition: state => state.band.inventory.strings === false
   },
   {
-    text: 'We need cables like we need oxygen. Which is badly.',
+    text: 'chatter:standard.msg_288',
     weight: 8,
     condition: state => state.band.inventory.cables === false,
     speaker: 'Matze'
@@ -1801,7 +1801,7 @@ export const CHATTER_DB = [
     condition: state => state.band.inventory.golden_pick === true
   },
   {
-    text: 'I can feel the golden pick radiating power. Or static.',
+    text: 'chatter:standard.msg_291',
     weight: 3,
     condition: state => state.band.inventory.golden_pick === true,
     speaker: 'Matze'
@@ -1815,7 +1815,7 @@ export const CHATTER_DB = [
       state.band.inventory.drum_parts === true
   },
   {
-    text: 'Merch boxes full, spares packed, cables labeled. Who are we?',
+    text: 'chatter:standard.msg_293',
     weight: 2,
     condition: state =>
       state.band.inventory.strings === true &&
@@ -1823,7 +1823,7 @@ export const CHATTER_DB = [
       state.band.inventory.drum_parts === true
   },
   {
-    text: 'Shirts are running low. We need to restock before the next show.',
+    text: 'chatter:standard.msg_294',
     weight: 6,
     condition: state => state.band.inventory.shirts < 10
   },
@@ -1835,18 +1835,18 @@ export const CHATTER_DB = [
 
   // --- CONDITION: GIG MODIFIERS ---
   {
-    text: 'Catering booked! Real food before a show? Luxury.',
+    text: 'chatter:standard.msg_296',
     weight: 5,
     condition: state => state.gigModifiers?.catering === true
   },
   {
-    text: 'Hot meal before the set. I could cry.',
+    text: 'chatter:standard.msg_297',
     weight: 5,
     condition: state => state.gigModifiers?.catering === true,
     speaker: 'Marius'
   },
   {
-    text: 'We actually did promo for this one. Like professionals.',
+    text: 'chatter:standard.msg_298',
     weight: 5,
     condition: state => state.gigModifiers?.promo === true
   },
@@ -1857,7 +1857,7 @@ export const CHATTER_DB = [
     speaker: 'Lars'
   },
   {
-    text: 'Soundcheck secured. No more guessing the monitor mix.',
+    text: 'chatter:standard.msg_300',
     weight: 5,
     condition: state => state.gigModifiers?.soundcheck === true
   },
@@ -1868,7 +1868,7 @@ export const CHATTER_DB = [
     speaker: 'Marius'
   },
   {
-    text: 'Guest list is set. VIPs incoming. By VIP I mean friends who owe us.',
+    text: 'chatter:standard.msg_302',
     weight: 4,
     condition: state => state.gigModifiers?.guestlist === true
   },
@@ -1878,7 +1878,7 @@ export const CHATTER_DB = [
     condition: state => state.gigModifiers?.merch === true
   },
   {
-    text: 'No soundcheck, no promo, no catering. Raw dog touring.',
+    text: 'chatter:standard.msg_304',
     weight: 6,
     condition: state =>
       state.gigModifiers?.soundcheck !== true &&
@@ -1886,7 +1886,7 @@ export const CHATTER_DB = [
       state.gigModifiers?.catering !== true
   },
   {
-    text: 'Full rider booked. Soundcheck, food, promo. The works.',
+    text: 'chatter:standard.msg_305',
     weight: 3,
     condition: state =>
       state.gigModifiers?.soundcheck === true &&
@@ -1896,7 +1896,7 @@ export const CHATTER_DB = [
 
   // --- CONDITION: LUCK ---
   {
-    text: 'Everything is going our way. Suspicious.',
+    text: 'chatter:standard.msg_306',
     weight: 5,
     condition: state => (state.band.luck || 0) > 3
   },
@@ -1907,23 +1907,23 @@ export const CHATTER_DB = [
     speaker: 'Lars'
   },
   {
-    text: 'The universe is on our side today. Enjoy it while it lasts.',
+    text: 'chatter:standard.msg_308',
     weight: 4,
     condition: state => (state.band.luck || 0) > 4
   },
   {
-    text: 'Green lights, free parking, no flat tires. What timeline is this?',
+    text: 'chatter:standard.msg_309',
     weight: 4,
     condition: state => (state.band.luck || 0) > 5,
     speaker: 'Marius'
   },
   {
-    text: 'Bad luck follows us like a stray dog.',
+    text: 'chatter:standard.msg_310',
     weight: 8,
     condition: state => (state.band.luck || 0) < -2
   },
   {
-    text: 'If something can go wrong, it already did. Twice.',
+    text: 'chatter:standard.msg_311',
     weight: 8,
     condition: state => (state.band.luck || 0) < -2
   },
@@ -1934,7 +1934,7 @@ export const CHATTER_DB = [
     speaker: 'Lars'
   },
   {
-    text: 'At this point even the van is giving us side-eye.',
+    text: 'chatter:standard.msg_313',
     weight: 8,
     condition: state => (state.band.luck || 0) < -3,
     speaker: 'Marius'
@@ -1942,58 +1942,58 @@ export const CHATTER_DB = [
 
   // --- MINIGAME: TRAVEL ---
   {
-    text: 'Eyes on the road!',
+    text: 'chatter:standard.msg_314',
     weight: 5,
     condition: state => state.currentScene === 'TRAVEL_MINIGAME',
     speaker: 'Marius'
   },
   {
-    text: 'Look out for that pothole!',
+    text: 'chatter:standard.msg_315',
     weight: 5,
     condition: state => state.currentScene === 'TRAVEL_MINIGAME'
   },
   {
-    text: 'We’re making good time.',
+    text: 'chatter:standard.msg_316',
     weight: 3,
     condition: state => state.currentScene === 'TRAVEL_MINIGAME'
   },
   {
-    text: 'Is that a shortcut?',
+    text: 'chatter:standard.msg_317',
     weight: 3,
     condition: state => state.currentScene === 'TRAVEL_MINIGAME',
     speaker: 'Lars'
   },
   {
-    text: 'Hold on tight!',
+    text: 'chatter:standard.msg_318',
     weight: 4,
     condition: state => state.currentScene === 'TRAVEL_MINIGAME'
   },
 
   // --- MINIGAME: ROADIE ---
   {
-    text: 'Don’t drop the amp!',
+    text: 'chatter:standard.msg_319',
     weight: 5,
     condition: state => state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
-    text: 'My back!',
+    text: 'chatter:standard.msg_320',
     weight: 3,
     condition: state => state.currentScene === 'PRE_GIG_MINIGAME',
     speaker: 'Matze'
   },
   {
-    text: 'Hurry up, doors open soon!',
+    text: 'chatter:standard.msg_321',
     weight: 5,
     condition: state => state.currentScene === 'PRE_GIG_MINIGAME',
     speaker: 'Marius'
   },
   {
-    text: 'Careful with the merchandise box.',
+    text: 'chatter:standard.msg_322',
     weight: 4,
     condition: state => state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
-    text: 'Why is this case so heavy?',
+    text: 'chatter:standard.msg_323',
     weight: 3,
     condition: state => state.currentScene === 'PRE_GIG_MINIGAME',
     speaker: 'Lars'

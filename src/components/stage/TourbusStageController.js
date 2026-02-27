@@ -3,7 +3,7 @@ import { BaseStageController } from './BaseStageController'
 import { EffectManager } from './EffectManager'
 import { getPixiColorFromToken, loadTexture } from './utils'
 import { logger } from '../../utils/logger'
-import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen'
+import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen.js'
 import {
   LANE_COUNT,
   BUS_Y_PERCENT,

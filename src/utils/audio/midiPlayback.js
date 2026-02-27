@@ -9,7 +9,8 @@ import { midiUrlMap } from './assets.js'
 import { calculateTimeFromTicks, preprocessTempoMap } from '../rhythmUtils.js'
 import {
   resolveAssetUrl,
-  normalizeMidiPlaybackOptions
+  normalizeMidiPlaybackOptions,
+  prepareTransportPlayback
 } from './playbackUtils.js'
 import {
   isPercussionTrack,
@@ -71,15 +72,10 @@ export function playNoteAtTime(midiPitch, lane, whenSeconds, velocity = 127) {
  * @param {number} [delay=0] - Delay in seconds before starting.
  */
 export async function playSongFromData(song, delay = 0, options = {}) {
-  const { onEnded } = normalizeMidiPlaybackOptions(options)
-  const reqId = ++audioState.playRequestId
-  const unlocked = await ensureAudioContext()
-  if (!unlocked) return false
-  if (reqId !== audioState.playRequestId) return false
-
-  stopAudioInternal()
-  Tone.getTransport().cancel()
-  Tone.getTransport().position = 0
+  const { success, reqId, normalizedOptions } =
+    await prepareTransportPlayback(options)
+  if (!success) return false
+  const { onEnded } = normalizedOptions
 
   const bpm = Math.max(1, song.bpm || 120) // Ensure BPM is positive
   const tpb = Math.max(1, song.tpb || 480) // Ensure TPB is positive
@@ -235,7 +231,8 @@ function initializePlaybackRequest(filename, offset, loop, ownedRequestId) {
  * @returns {string|null} The resolved URL or null if not found.
  */
 function resolveMidiUrl(filename) {
-  const baseUrl = import.meta.env.BASE_URL || './'
+  const rawBaseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env?.BASE_URL) ? import.meta.env?.BASE_URL : './'
+  const baseUrl = rawBaseUrl.endsWith('/') ? rawBaseUrl : `${rawBaseUrl}/`
   const publicBasePath = `${baseUrl}assets`
   const { url, source } = resolveAssetUrl(filename, midiUrlMap, publicBasePath)
   logger.debug(

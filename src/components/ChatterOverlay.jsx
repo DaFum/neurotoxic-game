@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { getRandomChatter } from '../data/chatter'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -108,14 +109,20 @@ const CHATTER_CONTAINER_STYLE = { zIndex: 'var(--z-chatter)' }
  * @param {object} props.gameState - Read-only game state slice.
  */
 export const ChatterOverlay = ({ gameState }) => {
+  const { t } = useTranslation(['chatter', 'ui'])
   const stateRef = useRef(gameState)
   const [messages, setMessages] = useState([])
 
   const currentScene = gameState.currentScene
 
   const sceneLabel = useMemo(
-    () => SCENE_LABELS[currentScene] || 'Band Feed',
-    [currentScene]
+    () =>
+      t(`ui:chatter_labels.${currentScene}`, {
+        defaultValue:
+          SCENE_LABELS[currentScene] ||
+          t('ui:chatter_labels.default_fallback', { defaultValue: 'Band Feed' })
+      }),
+    [currentScene, t]
   )
 
   const sceneStyle = useMemo(
@@ -155,7 +162,7 @@ export const ChatterOverlay = ({ gameState }) => {
             ? fixedSpeaker
             : memberNames.length > 0
               ? memberNames[Math.floor(Math.random() * memberNames.length)]
-              : 'Band'
+              : t('ui:chatter_labels.default_speaker', { defaultValue: 'Band' })
 
           const newMessage = { id: Date.now(), text, speaker }
 
@@ -259,7 +266,7 @@ export const ChatterOverlay = ({ gameState }) => {
               {/* Message body */}
               <div className='pl-3 pr-2 py-2.5'>
                 <p className='text-xs leading-snug text-(--star-white) font-(family-name:--font-ui)'>
-                  {msg.text}
+                  {t(msg.text)}
                 </p>
               </div>
 

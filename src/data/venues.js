@@ -2,7 +2,7 @@ export const ALL_VENUES = [
   // SACHSEN-ANHALT (Home)
   {
     id: 'stendal_proberaum',
-    name: 'Proberaum',
+    name: 'venues:stendal_proberaum.name',
     x: 50,
     y: 40,
     type: 'HOME',
@@ -10,7 +10,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'stendal_stadtfest',
-    name: 'Stadtfest Stendal',
+    name: 'venues:stendal_stadtfest.name',
     x: 50,
     y: 39,
     type: 'VENUE',
@@ -21,7 +21,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'stendal_adler',
-    name: 'Schwarzer Adler',
+    name: 'venues:stendal_adler.name',
     x: 50,
     y: 41,
     type: 'VENUE',
@@ -32,7 +32,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'tangermuende_kaminstube',
-    name: 'Kaminstube',
+    name: 'venues:tangermuende_kaminstube.name',
     x: 52,
     y: 38,
     type: 'VENUE',
@@ -43,7 +43,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'tangermuende_burgfest',
-    name: 'Burgfest',
+    name: 'venues:tangermuende_burgfest.name',
     x: 52,
     y: 37,
     type: 'VENUE',
@@ -54,7 +54,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'magdeburg_moritzhof',
-    name: 'Moritzhof',
+    name: 'venues:magdeburg_moritzhof.name',
     x: 48,
     y: 45,
     type: 'VENUE',
@@ -65,7 +65,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'magdeburg_factory',
-    name: 'Factory',
+    name: 'venues:magdeburg_factory.name',
     x: 48,
     y: 46,
     type: 'VENUE',
@@ -76,10 +76,10 @@ export const ALL_VENUES = [
   },
   {
     id: 'magdeburg_stadtpark',
-    name: 'Stadtpark OA',
+    name: 'venues:magdeburg_stadtpark.name',
     x: 48,
     y: 44,
-    type: 'VENUE',
+    type: 'FESTIVAL',
     capacity: 1200,
     pay: 2500,
     diff: 5,
@@ -89,7 +89,7 @@ export const ALL_VENUES = [
   // SACHSEN
   {
     id: 'leipzig_conne',
-    name: 'Conne Island',
+    name: 'venues:leipzig_conne.name',
     x: 55,
     y: 55,
     type: 'VENUE',
@@ -100,7 +100,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'leipzig_ut',
-    name: 'UT Connewitz',
+    name: 'venues:leipzig_ut.name',
     x: 55,
     y: 56,
     type: 'VENUE',
@@ -111,7 +111,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'leipzig_distille',
-    name: 'Die Distille',
+    name: 'venues:leipzig_distille.name',
     x: 55,
     y: 54,
     type: 'VENUE',
@@ -122,7 +122,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'leipzig_taeubchen',
-    name: 'Täubchenthal',
+    name: 'venues:leipzig_taeubchen.name',
     x: 56,
     y: 55,
     type: 'VENUE',
@@ -133,7 +133,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'leipzig_werk2',
-    name: 'Werk 2',
+    name: 'venues:leipzig_werk2.name',
     x: 55,
     y: 57,
     type: 'VENUE',
@@ -144,10 +144,10 @@ export const ALL_VENUES = [
   },
   {
     id: 'leipzig_agra',
-    name: 'Agra Halle',
+    name: 'venues:leipzig_agra.name',
     x: 55,
     y: 58,
-    type: 'VENUE',
+    type: 'FESTIVAL',
     capacity: 2500,
     pay: 6500,
     diff: 5,
@@ -155,10 +155,10 @@ export const ALL_VENUES = [
   },
   {
     id: 'leipzig_arena',
-    name: 'QB Arena',
+    name: 'venues:leipzig_arena.name',
     x: 54,
     y: 55,
-    type: 'VENUE',
+    type: 'FESTIVAL',
     capacity: 6500,
     pay: 16000,
     diff: 5,
@@ -166,7 +166,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'dresden_beatpol',
-    name: 'Beatpol',
+    name: 'venues:dresden_beatpol.name',
     x: 65,
     y: 58,
     type: 'VENUE',
@@ -177,7 +177,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'dresden_chemie',
-    name: 'Chemiefabrik',
+    name: 'venues:dresden_chemie.name',
     x: 65,
     y: 57,
     type: 'VENUE',
@@ -190,7 +190,7 @@ export const ALL_VENUES = [
   // NIEDERSACHSEN
   {
     id: 'hannover_chez',
-    name: 'Bei Chez Heinz',
+    name: 'venues:hannover_chez.name',
     x: 35,
     y: 35,
     type: 'VENUE',
@@ -201,10 +201,10 @@ export const ALL_VENUES = [
   },
   {
     id: 'hannover_musikzentrum',
-    name: 'Musikzentrum',
+    name: 'venues:hannover_musikzentrum.name',
     x: 35,
     y: 36,
-    type: 'VENUE',
+    type: 'FESTIVAL',
     capacity: 1500,
     pay: 4000,
     diff: 5,
@@ -214,7 +214,7 @@ export const ALL_VENUES = [
   // OTHERS (Inferred to reach ~47)
   {
     id: 'berlin_so36',
-    name: 'SO36',
+    name: 'venues:berlin_so36.name',
     x: 60,
     y: 35,
     type: 'VENUE',
@@ -225,7 +225,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'berlin_cassiopeia',
-    name: 'Cassiopeia',
+    name: 'venues:berlin_cassiopeia.name',
     x: 61,
     y: 36,
     type: 'VENUE',
@@ -236,7 +236,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'berlin_lido',
-    name: 'Lido',
+    name: 'venues:berlin_lido.name',
     x: 60,
     y: 37,
     type: 'VENUE',
@@ -247,10 +247,10 @@ export const ALL_VENUES = [
   },
   {
     id: 'berlin_astra',
-    name: 'Astra',
+    name: 'venues:berlin_astra.name',
     x: 62,
     y: 36,
-    type: 'VENUE',
+    type: 'FESTIVAL',
     capacity: 1500,
     pay: 3500,
     diff: 5,
@@ -258,7 +258,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'berlin_k17',
-    name: 'K17',
+    name: 'venues:berlin_k17.name',
     x: 61,
     y: 34,
     type: 'VENUE',
@@ -269,7 +269,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'hamburg_knust',
-    name: 'Knust',
+    name: 'venues:hamburg_knust.name',
     x: 35,
     y: 20,
     type: 'VENUE',
@@ -280,7 +280,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'hamburg_headcrash',
-    name: 'Headcrash',
+    name: 'venues:hamburg_headcrash.name',
     x: 35,
     y: 21,
     type: 'VENUE',
@@ -291,10 +291,10 @@ export const ALL_VENUES = [
   },
   {
     id: 'hamburg_markthalle',
-    name: 'Markthalle',
+    name: 'venues:hamburg_markthalle.name',
     x: 34,
     y: 20,
-    type: 'VENUE',
+    type: 'FESTIVAL',
     capacity: 1000,
     pay: 2500,
     diff: 4,
@@ -302,7 +302,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'hamburg_logo',
-    name: 'Logo',
+    name: 'venues:hamburg_logo.name',
     x: 34,
     y: 21,
     type: 'VENUE',
@@ -313,7 +313,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'koeln_underground',
-    name: 'Underground',
+    name: 'venues:koeln_underground.name',
     x: 15,
     y: 55,
     type: 'VENUE',
@@ -324,7 +324,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'koeln_mtc',
-    name: 'MTC',
+    name: 'venues:koeln_mtc.name',
     x: 15,
     y: 56,
     type: 'VENUE',
@@ -335,7 +335,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'koeln_luxor',
-    name: 'Luxor',
+    name: 'venues:koeln_luxor.name',
     x: 15,
     y: 57,
     type: 'VENUE',
@@ -346,10 +346,10 @@ export const ALL_VENUES = [
   },
   {
     id: 'muenchen_backstage',
-    name: 'Backstage',
+    name: 'venues:muenchen_backstage.name',
     x: 50,
     y: 85,
-    type: 'VENUE',
+    type: 'FESTIVAL',
     capacity: 1000,
     pay: 3000,
     diff: 5,
@@ -357,7 +357,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'muenchen_feierwerk',
-    name: 'Feierwerk',
+    name: 'venues:muenchen_feierwerk.name',
     x: 50,
     y: 86,
     type: 'VENUE',
@@ -368,10 +368,10 @@ export const ALL_VENUES = [
   },
   {
     id: 'stuttgart_lka',
-    name: 'LKA Longhorn',
+    name: 'venues:stuttgart_lka.name',
     x: 30,
     y: 75,
-    type: 'VENUE',
+    type: 'FESTIVAL',
     capacity: 1500,
     pay: 4000,
     diff: 5,
@@ -379,7 +379,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'dortmund_fzw',
-    name: 'FZW',
+    name: 'venues:dortmund_fzw.name',
     x: 20,
     y: 45,
     type: 'VENUE',
@@ -390,7 +390,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'dortmund_junkyard',
-    name: 'Junkyard',
+    name: 'venues:dortmund_junkyard.name',
     x: 20,
     y: 46,
     type: 'VENUE',
@@ -401,7 +401,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'bremen_tower',
-    name: 'Tower',
+    name: 'venues:bremen_tower.name',
     x: 30,
     y: 25,
     type: 'VENUE',
@@ -412,10 +412,10 @@ export const ALL_VENUES = [
   },
   {
     id: 'frankfurt_batschkapp',
-    name: 'Batschkapp',
+    name: 'venues:frankfurt_batschkapp.name',
     x: 30,
     y: 60,
-    type: 'VENUE',
+    type: 'FESTIVAL',
     capacity: 1500,
     pay: 3500,
     diff: 5,
@@ -423,7 +423,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'kassel_goldgrube',
-    name: 'Goldgrube',
+    name: 'venues:kassel_goldgrube.name',
     x: 35,
     y: 50,
     type: 'VENUE',
@@ -434,7 +434,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'nuernberg_hirsch',
-    name: 'Hirsch',
+    name: 'venues:nuernberg_hirsch.name',
     x: 45,
     y: 70,
     type: 'VENUE',
@@ -445,7 +445,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'rostock_mau',
-    name: 'MAU Club',
+    name: 'venues:rostock_mau.name',
     x: 55,
     y: 15,
     type: 'VENUE',
@@ -456,7 +456,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'erfurt_centrum',
-    name: 'Centrum',
+    name: 'venues:erfurt_centrum.name',
     x: 45,
     y: 55,
     type: 'VENUE',
@@ -467,10 +467,10 @@ export const ALL_VENUES = [
   },
   {
     id: 'saarbruecken_garage',
-    name: 'Garage',
+    name: 'venues:saarbruecken_garage.name',
     x: 10,
     y: 70,
-    type: 'VENUE',
+    type: 'FESTIVAL',
     capacity: 1000,
     pay: 2500,
     diff: 4,
@@ -478,7 +478,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'freiburg_jazzhaus',
-    name: 'Jazzhaus',
+    name: 'venues:freiburg_jazzhaus.name',
     x: 20,
     y: 85,
     type: 'VENUE',
@@ -489,7 +489,7 @@ export const ALL_VENUES = [
   },
   {
     id: 'kiel_pumpe',
-    name: 'Die Pumpe',
+    name: 'venues:kiel_pumpe.name',
     x: 38,
     y: 10,
     type: 'VENUE',

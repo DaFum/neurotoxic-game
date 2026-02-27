@@ -1,0 +1,15 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="32" height="32" fill="#000000"/>
+  
+  <path d="M6 22V6H9L19 18V6H22V22H19L9 10V22H6Z" fill="#39FF14" opacity="0.3">
+    <animateTransform attributeName="transform" type="translate" values="-1 0; 1 0; -1 0" dur="3s" repeatCount="indefinite" />
+  </path>
+
+  <path d="M8 24V8H11L21 20V8H24V24H21L11 12V24H8Z" fill="#39FF14">
+    <animate attributeName="opacity" values="1;0.9;1;0.8;1" dur="0.2s" repeatCount="indefinite" begin="0s" />
+  </path>
+  
+  <rect x="0" y="14" width="32" height="2" fill="#000000" opacity="0.6">
+     <animate attributeName="y" values="0;32" dur="5s" repeatCount="indefinite" />
+  </rect>
+</svg>

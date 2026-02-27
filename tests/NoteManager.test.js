@@ -56,22 +56,31 @@ mock.module('pixi.js', {
 })
 
 // Mock other dependencies
+const mockHandleError = mock.fn()
 mock.module('../src/utils/errorHandler.js', {
   namedExports: {
-    handleError: mock.fn()
+    handleError: mockHandleError
   }
 })
 
 mock.module('../src/utils/imageGen.js', {
   namedExports: {
-    getGenImageUrl: mock.fn(),
+    getGenImageUrl: mock.fn(prompt => `url://${prompt}`),
     IMG_PROMPTS: { NOTE_SKULL: 'skull', NOTE_LIGHTNING: 'lightning' }
   }
 })
 
+const mockTextureSkull = { id: 'skull' }
+const mockTextureLightning = { id: 'lightning' }
+
 let mockCalculateNoteYResult = 0
 const mockPixiStageUtils = {
-  calculateNoteY: mock.fn(() => mockCalculateNoteYResult)
+  calculateNoteY: mock.fn(() => mockCalculateNoteYResult),
+  loadTexture: mock.fn(async url => {
+    if (url?.includes('skull')) return mockTextureSkull
+    if (url?.includes('lightning')) return mockTextureLightning
+    return null
+  })
 }
 
 mock.module('../src/components/stage/utils.js', {
@@ -108,6 +117,7 @@ describe('NoteManager', () => {
 
     noteManager = new NoteManager(app, parentContainer, gameStateRef, mock.fn())
     noteManager.init()
+    mockHandleError.mock.resetCalls()
   })
 
   afterEach(() => {
@@ -137,6 +147,19 @@ describe('NoteManager', () => {
     assert.equal(sprite.y, -50) // NOTE_INITIAL_Y
     assert.equal(sprite.width, 80) // NOTE_SPRITE_SIZE
     assert.equal(sprite.height, 80) // NOTE_SPRITE_SIZE
+  })
+
+  test('loadAssets reports error when loadTexture returns null', async () => {
+    mockPixiStageUtils.loadTexture.mock.mockImplementation(async () => null)
+
+    await noteManager.loadAssets()
+
+    assert.equal(noteManager.noteTextures.skull, null)
+    assert.equal(noteManager.noteTextures.lightning, null)
+    assert.equal(mockHandleError.mock.calls.length, 2)
+    assert.ok(mockHandleError.mock.calls[0].arguments[0] instanceof Error)
+    assert.equal(mockHandleError.mock.calls[0].arguments[0].message, 'Skull texture returned null')
+    assert.equal(mockHandleError.mock.calls[1].arguments[0].message, 'Lightning texture returned null')
   })
 
   test('acquireSpriteFromPool reuses a sprite from the pool', () => {

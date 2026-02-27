@@ -11,7 +11,7 @@ const KEY = 'pk_xDL8u2ty4Sxucaa3' // gitleaks:allow
  */
 export const getGenImageUrl = description => {
   const encodedDesc = encodeURIComponent(description)
-  return `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}&=`
+  return `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}&=` // "&=" is required to ensure working image generation
 }
 
 /**
@@ -22,7 +22,7 @@ export const getGenImageUrl = description => {
 export const fetchGenImage = description => {
   const encodedDesc = encodeURIComponent(description)
   return fetch(
-    `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}&=`,
+    `${BASE_URL}/${encodedDesc}?model=${MODEL}&seed=666&key=${KEY}&=`, // "&=" is required to ensure working image generation
     {
       headers: {
         Accept: 'image/jpeg, image/png, video/mp4'
@@ -89,7 +89,7 @@ export const IMG_PROMPTS = {
   CROWD_MOSH: 'pixel art mosh pit chaos fighting dancing dust',
 
   // UI Elements
-  NOTE_SKULL: 'pixel art white skull icon simple transparent background',
+  NOTE_SKULL: 'pixel art white skull icon transparent background',
   NOTE_LIGHTNING:
     'pixel art green lightning bolt icon simple transparent background',
   HIT_BLOOD:

@@ -59,6 +59,13 @@ mock.module('../src/utils/imageGen.js', {
   }
 })
 
+const mockHandleError = mock.fn()
+mock.module('../src/utils/errorHandler.js', {
+  namedExports: {
+    handleError: mockHandleError
+  }
+})
+
 mock.module('../src/utils/logger.js', {
   namedExports: {
     logger: {
@@ -67,8 +74,20 @@ mock.module('../src/utils/logger.js', {
   }
 })
 
+const mockTextureIdle = { id: 'idle' }
+const mockTextureMosh = { id: 'mosh' }
+
+const mockPixiStageUtils = {
+  loadTexture: mock.fn(async url => {
+    if (url.includes('idle')) return mockTextureIdle
+    if (url.includes('mosh')) return mockTextureMosh
+    return null
+  })
+}
+
 mock.module('../src/components/stage/utils.js', {
   namedExports: {
+    ...mockPixiStageUtils,
     calculateCrowdOffset: mock.fn(() => 10),
     calculateCrowdY: mock.fn(() => 100),
     getPixiColorFromToken: mock.fn(() => 0xffffff),
@@ -114,9 +133,6 @@ describe('CrowdManager', () => {
   })
 
   test('loadAssets loads textures correctly', async () => {
-    const mockTextureIdle = { id: 'idle' }
-    const mockTextureMosh = { id: 'mosh' }
-
     PIXI.Assets.load.mock.mockImplementation(async url => {
       if (url.includes('idle')) return mockTextureIdle
       if (url.includes('mosh')) return mockTextureMosh
@@ -127,6 +143,20 @@ describe('CrowdManager', () => {
 
     assert.equal(crowdManager.textures.idle, mockTextureIdle)
     assert.equal(crowdManager.textures.mosh, mockTextureMosh)
+  })
+
+  test('loadAssets reports error when loadTexture returns null', async () => {
+    mockPixiStageUtils.loadTexture.mock.mockImplementation(async () => null)
+
+    await crowdManager.loadAssets()
+
+    assert.equal(crowdManager.textures.idle, null)
+    assert.equal(crowdManager.textures.mosh, null)
+    // Should be called twice (idle and mosh)
+    assert.equal(mockHandleError.mock.calls.length, 2)
+    assert.ok(mockHandleError.mock.calls[0].arguments[0] instanceof Error)
+    assert.equal(mockHandleError.mock.calls[0].arguments[0].message, 'IDLE texture returned null')
+    assert.equal(mockHandleError.mock.calls[1].arguments[0].message, 'MOSH texture returned null')
   })
 
   test('init creates Sprites when texture is available', () => {

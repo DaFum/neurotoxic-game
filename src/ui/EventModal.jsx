@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
-import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
+import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 
 const CATEGORY_IMAGE_MAP = {
   transport: IMG_PROMPTS.EVENT_VAN,

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { afterEach, beforeEach, test } from 'node:test'
+import { afterEach, beforeEach, test, mock } from 'node:test'
 import React from 'react'
 import { cleanup, render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -20,6 +20,15 @@ beforeEach(() => {
   )
 
   setupJSDOM()
+  globalThis.localStorage = {
+    getItem: mock.fn(key => {
+      if (key === 'neurotoxic_player_id') return '123'
+      if (key === 'neurotoxic_player_name') return 'TestPlayer'
+      return null
+    }),
+    setItem: mock.fn(),
+    removeItem: mock.fn()
+  }
 })
 
 afterEach(() => {
