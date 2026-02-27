@@ -89,11 +89,12 @@ tail -n 4000 diff.patch > diff.tail || true
   echo
 } > comment.md
 
+# Declare missing array early so set -u doesn't bite us
 missing=()
 [[ "$has_prettier" == "1" ]] || missing+=("prettier dependency")
 [[ "$has_eslint" == "1" ]] || missing+=("eslint dependency")
 [[ "$has_format_script" == "1" ]] || missing+=("format script")
-[[ "$has_lint_fix_script" == "1" ]] || missing+=("lint: fix script")
+[[ "$has_lint_fix_script" == "1" ]] || missing+=("lint:fix script")
 
 if [[ "${#missing[@]}" -gt 0 ]]; then
   {
@@ -147,8 +148,10 @@ fi
 # Duplicate code recommendations — examine jscpd JSON(s)
 has_dup=0
 dup_total=0
-if ls ./jscpd-report/*.json >/dev/null 2>&1; then
-  # compute total duplicates across all report JSONs using node (robust)
+
+# FIX: use find instead of ls-glob to safely check for JSON reports
+if find ./jscpd-report -maxdepth 1 -name '*.json' -print -quit 2>/dev/null | grep -q .; then
+  # FIX: pipe through xargs to strip any trailing newlines/whitespace from node output
   dup_total=$(node -e "
     const fs = require('fs');
     const p = './jscpd-report';
@@ -157,7 +160,6 @@ if ls ./jscpd-report/*.json >/dev/null 2>&1; then
       let total = 0;
       for (const f of files) {
         const data = JSON.parse(fs.readFileSync(\`\${p}/\${f}\`, 'utf8'));
-        // jscpd uses 'duplicates' (array) or older 'clones'
         if (Array.isArray(data.duplicates)) total += data.duplicates.length;
         else if (Array.isArray(data.clones)) total += data.clones.length;
         else if (Array.isArray(data.result?.clones)) total += data.result.clones.length;
@@ -166,36 +168,38 @@ if ls ./jscpd-report/*.json >/dev/null 2>&1; then
     } catch (e) {
       console.log(0);
     }
-  ")
-  # set flag if any duplicates found
-  if [[ "${dup_total:-0}" -gt 0 ]]; then
+  " | tr -d '[:space:]')
+  # FIX: ensure dup_total is always a valid integer with a default fallback
+  dup_total="${dup_total:-0}"
+
+  if [[ "$dup_total" -gt 0 ]]; then
     has_dup=1
-  else
-    has_dup=0
   fi
 
-  # Run analyzer script (it prints Markdown). We include its output regardless so comment.md shows "No significant duplicates" when empty.
+  # Run analyzer script (it prints Markdown).
   node ./scripts/analyze-duplicates.js >> dup.md || true
   cat dup.md >> comment.md
   echo >> comment.md
 fi
 
 should_comment=0
-# should_comment true if diff OR duplicates OR missing info
 if [[ "$has_diff" == "1" || "$has_dup" == "1" || "${#missing[@]}" -gt 0 ]]; then
   should_comment=1
 fi
 
 # Emit outputs for GitHub Actions
 if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
-  echo "has_diff=$has_diff" >> "$GITHUB_OUTPUT"
-  echo "has_dup=$has_dup" >> "$GITHUB_OUTPUT"
-  echo "dup_total=$dup_total" >> "$GITHUB_OUTPUT"
-  echo "should_comment=$should_comment" >> "$GITHUB_OUTPUT"
+  echo "has_diff=${has_diff}" >> "$GITHUB_OUTPUT"
+  echo "has_dup=${has_dup}" >> "$GITHUB_OUTPUT"
+  # FIX: always write a clean integer, never empty
+  echo "dup_total=${dup_total:-0}" >> "$GITHUB_OUTPUT"
+  echo "should_comment=${should_comment}" >> "$GITHUB_OUTPUT"
 
-  echo "comment<<EOF" >> "$GITHUB_OUTPUT"
+  # FIX: use random delimiter instead of EOF to avoid collision if comment.md contains "EOF"
+  delimiter="COMMENT_$(head -c 8 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 8)"
+  echo "comment<<${delimiter}" >> "$GITHUB_OUTPUT"
   cat comment.md >> "$GITHUB_OUTPUT"
-  echo "EOF" >> "$GITHUB_OUTPUT"
+  echo "${delimiter}" >> "$GITHUB_OUTPUT"
 fi
 
 # Print comment.md to job log for transparency
