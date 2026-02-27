@@ -92,6 +92,7 @@ export const MapNode = memo(
           initial={MOTION_INITIAL}
           animate={MOTION_ANIMATE}
           whileHover={isReachable ? MOTION_HOVER : MOTION_NO_HOVER}
+          whileFocus={isReachable ? MOTION_HOVER : MOTION_NO_HOVER}
         >
           <img
             src={iconUrl}
@@ -111,12 +112,12 @@ export const MapNode = memo(
 
         {/* Default hover label */}
         {isReachable && !isPendingConfirm && (
-          <div className='absolute -top-6 left-1/2 -translate-x-1/2 text-(--toxic-green) text-[10px] font-bold animate-bounce whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none'>
+          <div className='absolute -top-6 left-1/2 -translate-x-1/2 text-(--toxic-green) text-[10px] font-bold animate-bounce whitespace-nowrap opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity pointer-events-none'>
             {t('map.click_to_travel', { defaultValue: 'CLICK TO TRAVEL' })}
           </div>
         )}
 
-        <div className='hidden group-hover:block absolute bottom-8 bg-(--void-black)/90 border border-(--toxic-green) p-2 rounded z-50 whitespace-nowrap pointer-events-none'>
+        <div className='hidden group-hover:block group-focus:block absolute bottom-8 bg-(--void-black)/90 border border-(--toxic-green) p-2 rounded z-50 whitespace-nowrap pointer-events-none'>
           <div className='font-bold text-(--toxic-green)'>
             {t(node.venue?.name) || t('map.unknown', { defaultValue: 'Unknown' })}
           </div>
