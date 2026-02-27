@@ -220,7 +220,7 @@ export const MainMenu = () => {
           transition={{ duration: 1, delay: 0.6 }}
           className='text-lg md:text-2xl text-(--toxic-green)/80 mb-2 font-[Courier_New] text-center'
         >
-          Grind The Void
+          {t('ui:main_menu.subtitle')}
         </AnimatedSubtitle>
 
         <motion.div

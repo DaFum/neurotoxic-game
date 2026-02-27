@@ -21,23 +21,29 @@ AnimatedDivider.propTypes = {
 }
 
 export const AnimatedSubtitle = ({
+  as = 'h2',
   initial,
   animate,
   transition,
   className = '',
   children
-}) => (
-  <motion.h2
-    initial={initial}
-    animate={animate}
-    transition={transition}
-    className={`uppercase ${className}`}
-  >
-    {children}
-  </motion.h2>
-)
+}) => {
+  const MotionComponent = motion[as] || motion.h2
+
+  return (
+    <MotionComponent
+      initial={initial}
+      animate={animate}
+      transition={transition}
+      className={`uppercase ${className}`}
+    >
+      {children}
+    </MotionComponent>
+  )
+}
 
 AnimatedSubtitle.propTypes = {
+  as: PropTypes.oneOfType([PropTypes.string, PropTypes.elementType]),
   initial: PropTypes.object,
   animate: PropTypes.object,
   transition: PropTypes.object,

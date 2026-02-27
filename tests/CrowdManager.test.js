@@ -67,11 +67,19 @@ mock.module('../src/utils/logger.js', {
   }
 })
 
+const mockTextureIdle = { id: 'idle' }
+const mockTextureMosh = { id: 'mosh' }
+
 mock.module('../src/components/stage/utils.js', {
   namedExports: {
     calculateCrowdOffset: mock.fn(() => 10),
     calculateCrowdY: mock.fn(() => 100),
     getPixiColorFromToken: mock.fn(() => 0xffffff),
+    loadTexture: mock.fn(async url => {
+      if (url.includes('idle')) return mockTextureIdle
+      if (url.includes('mosh')) return mockTextureMosh
+      return null
+    }),
     CROWD_LAYOUT: {
       containerYRatio: 0.5,
       memberCount: 2, // Small count for testing
@@ -114,9 +122,6 @@ describe('CrowdManager', () => {
   })
 
   test('loadAssets loads textures correctly', async () => {
-    const mockTextureIdle = { id: 'idle' }
-    const mockTextureMosh = { id: 'mosh' }
-
     PIXI.Assets.load.mock.mockImplementation(async url => {
       if (url.includes('idle')) return mockTextureIdle
       if (url.includes('mosh')) return mockTextureMosh

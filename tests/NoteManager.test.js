@@ -69,9 +69,17 @@ mock.module('../src/utils/imageGen.js', {
   }
 })
 
+const mockTextureSkull = { id: 'skull' }
+const mockTextureLightning = { id: 'lightning' }
+
 let mockCalculateNoteYResult = 0
 const mockPixiStageUtils = {
-  calculateNoteY: mock.fn(() => mockCalculateNoteYResult)
+  calculateNoteY: mock.fn(() => mockCalculateNoteYResult),
+  loadTexture: mock.fn(async url => {
+    if (url?.includes('skull')) return mockTextureSkull
+    if (url?.includes('lightning')) return mockTextureLightning
+    return null
+  })
 }
 
 mock.module('../src/components/stage/utils.js', {

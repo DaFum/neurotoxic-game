@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { GlitchButton } from '../ui/GlitchButton'
@@ -8,6 +9,7 @@ import { AnimatedDivider, AnimatedSubtitle } from '../ui/shared'
  * Scene displayed when the game ends (bankruptcy or health failure).
  */
 export const GameOver = () => {
+  const { t } = useTranslation(['ui'])
   const { changeScene, player, loadGame, resetState } = useGameState()
 
   useEffect(() => {
@@ -31,10 +33,10 @@ export const GameOver = () => {
   }
 
   const statRows = [
-    { label: 'DAYS SURVIVED', value: player?.day },
-    { label: 'FAME REACHED', value: player?.fame },
-    { label: 'TOTAL TRAVELS', value: player?.totalTravels ?? 0 },
-    { label: 'TOTAL SCORE', value: player?.score ?? 0 }
+    { label: t('ui:stats.daysSurvived'), value: player?.day },
+    { label: t('ui:stats.fameReached'), value: player?.fame },
+    { label: t('ui:stats.totalTravels'), value: player?.totalTravels ?? 0 },
+    { label: t('ui:stats.totalScore'), value: player?.score ?? 0 }
   ]
 
   return (
@@ -67,7 +69,7 @@ export const GameOver = () => {
         transition={{ delay: 1 }}
         className='text-lg text-(--ash-gray) font-mono mb-10 tracking-[0.3em] relative z-10'
       >
-        The tour has ended prematurely.
+        {t('ui:tour.endedPrematurely')}
       </AnimatedSubtitle>
 
       <motion.div
@@ -109,13 +111,13 @@ export const GameOver = () => {
           onClick={handleRetry}
           className='border-(--star-white) text-(--star-white)'
         >
-          LOAD LAST SAVE
+          {t('ui:gameOver.loadLastSave')}
         </GlitchButton>
         <GlitchButton
           onClick={handleReturnToMenu}
           className='border-(--blood-red) text-(--blood-red)'
         >
-          RETURN TO MENU
+          {t('ui:gameOver.returnToMenu')}
         </GlitchButton>
       </motion.div>
     </div>

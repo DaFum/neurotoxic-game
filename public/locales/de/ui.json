@@ -53,5 +53,13 @@
   "settings.audio_mute": "Ton ausschalten",
   "settings.audio_unmute": "Ton einschalten",
   "settings.crt_enable": "CRT-Effekt aktivieren",
-  "settings.crt_disable": "CRT-Effekt deaktivieren"
+  "settings.crt_disable": "CRT-Effekt deaktivieren",
+  "main_menu.subtitle": "Grind The Void",
+  "tour.endedPrematurely": "Die Tour endete vorzeitig.",
+  "gameOver.loadLastSave": "LETZTEN SPEICHERSTAND LADEN",
+  "gameOver.returnToMenu": "ZURÜCK ZUM MENÜ",
+  "stats.daysSurvived": "ÜBERLEBTE TAGE",
+  "stats.fameReached": "ERREICHTER RUHM",
+  "stats.totalTravels": "GESAMTE REISEN",
+  "stats.totalScore": "GESAMTPUNKTZAHL"
 }

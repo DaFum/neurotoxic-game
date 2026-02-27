@@ -19,7 +19,6 @@ export async function prepareTransportPlayback(options = {}) {
 
   stopTransportAndClear()
   cleanupTransportEvents()
-  Tone.getTransport().cancel()
   Tone.getTransport().position = 0
 
   return { success: true, reqId, normalizedOptions }

@@ -231,7 +231,8 @@ function initializePlaybackRequest(filename, offset, loop, ownedRequestId) {
  * @returns {string|null} The resolved URL or null if not found.
  */
 function resolveMidiUrl(filename) {
-  const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env?.BASE_URL) ? import.meta.env?.BASE_URL : './'
+  const rawBaseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env?.BASE_URL) ? import.meta.env?.BASE_URL : './'
+  const baseUrl = rawBaseUrl.endsWith('/') ? rawBaseUrl : `${rawBaseUrl}/`
   const publicBasePath = `${baseUrl}assets`
   const { url, source } = resolveAssetUrl(filename, midiUrlMap, publicBasePath)
   logger.debug(
