@@ -317,6 +317,13 @@ describe('NoteManager', () => {
     noteManager.update(state, 1100, { hitLineY: 800 })
 
     assert.equal(mockPixiStageUtils.calculateNoteY.mock.calls.length, 2)
+    // Verify call arguments for the second call
+    const args = mockPixiStageUtils.calculateNoteY.mock.calls[1].arguments
+    assert.equal(args[0], 1100) // elapsed
+    assert.equal(args[1], 3000) // note.time
+    assert.equal(args[2], 800) // targetY
+    assert.equal(args[3], 1) // speed
+
     assert.equal(sprite.y, 500)
     assert.equal(sprite.x, 150) // 100 (lane) + 50 (offset) + 0 (jitter)
   })
