@@ -88,7 +88,8 @@
     "GAMEOVER": "Letzte Übertragung",
     "TRAVEL_MINIGAME": "Reise-Feed",
     "PRE_GIG_MINIGAME": "Roadie-Feed",
-    "default_speaker": "Band"
+    "default_speaker": "Band",
+    "default_fallback": "Unbekannt"
   },
   "bandhq.setlist.selectOne": "Wähle mindestens einen Song zum Üben!",
   "bandhq.metadata.diff": "SCHW",
@@ -116,6 +117,13 @@
   "stats.riskOfShadowban": "Shadowban-Risiko",
   "detailedStats": {
     "breakdownChance": "Pannenrisiko",
+    "hqUpgrades": {
+      "installed": "{{count}} Installiert",
+      "none": "Keine"
+    },
+    "vanUpgrades": {
+      "installed": "{{count}} Installiert"
+    },
     "upgrades": "Upgrades",
     "none": "Keine",
     "luck": "Glück",

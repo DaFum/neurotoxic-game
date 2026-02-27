@@ -3,6 +3,20 @@ import { afterEach, beforeAll, describe, expect, test, vi } from 'vitest'
 import React from 'react'
 import { render, cleanup } from '@testing-library/react'
 
+// Mock react-i18next
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key) => key,
+    i18n: {
+      changeLanguage: () => new Promise(() => {})
+    }
+  }),
+  initReactI18next: {
+    type: '3rdParty',
+    init: () => {}
+  }
+}))
+
 // Mock dependencies
 vi.mock('../src/data/hqItems.js', () => ({
   HQ_ITEMS: { gear: [], instruments: [] }
@@ -46,6 +60,7 @@ vi.mock('../src/ui/shared/index.jsx', () => ({
   Tooltip: ({ children }) =>
     React.createElement('div', { 'data-testid': 'tooltip' }, children)
 }))
+
 describe('BandHQ', () => {
   let BandHQ
 
@@ -84,6 +99,7 @@ describe('BandHQ', () => {
 
     const { container } = render(React.createElement(BandHQ, props))
     expect(container.querySelector('h2')).toBeTruthy()
-    expect(container.textContent.includes('BAND HQ')).toBeTruthy()
+    // "BAND HQ" is the default fallback or key, adjust if needed
+    expect(container.textContent).toContain('hq.title')
   })
 })
