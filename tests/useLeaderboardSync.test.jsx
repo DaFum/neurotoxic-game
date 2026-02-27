@@ -38,7 +38,7 @@ describe('useLeaderboardSync', () => {
   })
 
   it('skips sync if day has not advanced beyond last synced day', () => {
-    localStorage.setItem('neurotoxic_last_synced_day', '5')
+    localStorage.setItem('neurotoxic_last_synced_day:id-123', '5')
     const player = {
       playerId: 'id-123',
       playerName: 'Player1',
@@ -52,7 +52,7 @@ describe('useLeaderboardSync', () => {
   })
 
   it('syncs balance if day > last synced day and player is valid', async () => {
-    localStorage.setItem('neurotoxic_last_synced_day', '4')
+    localStorage.setItem('neurotoxic_last_synced_day:id-123', '4')
     mockFetch.mockResolvedValue({ ok: true })
 
     const player = {
@@ -77,11 +77,11 @@ describe('useLeaderboardSync', () => {
       })
     })
 
-    expect(localStorage.getItem('neurotoxic_last_synced_day')).toBe('5')
+    expect(localStorage.getItem('neurotoxic_last_synced_day:id-123')).toBe('5')
   })
 
   it('does not update localStorage if sync fails', async () => {
-    localStorage.setItem('neurotoxic_last_synced_day', '4')
+    localStorage.setItem('neurotoxic_last_synced_day:id-123', '4')
     mockFetch.mockResolvedValue({ ok: false, statusText: 'Server Error' })
 
     const player = {
@@ -98,6 +98,6 @@ describe('useLeaderboardSync', () => {
     })
 
     // Should still be 4 because sync failed
-    expect(localStorage.getItem('neurotoxic_last_synced_day')).toBe('4')
+    expect(localStorage.getItem('neurotoxic_last_synced_day:id-123')).toBe('4')
   })
 })

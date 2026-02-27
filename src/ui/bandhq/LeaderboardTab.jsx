@@ -138,24 +138,29 @@ export const LeaderboardTab = ({ setlist }) => {
                 </tr>
               </thead>
               <tbody>
-                {rankings.map(entry => (
-                  <tr
-                    key={entry.rank}
-                    className='border-b border-(--ash-gray)/10 hover:bg-(--toxic-green)/10 transition-colors'
-                  >
-                    <td className='py-2 px-2 text-(--toxic-green)'>
-                      {entry.rank}
-                    </td>
-                    <td className='py-2 px-2 text-(--star-white)'>
-                      {entry.playerName}
-                    </td>
-                    <td className='py-2 px-2 text-right text-(--toxic-green)'>
-                      {view === 'BALANCE'
-                        ? `€${entry.score.toLocaleString()}`
-                        : entry.score.toLocaleString()}
-                    </td>
-                  </tr>
-                ))}
+                {rankings.map(entry => {
+                  const safeScore = Number.isFinite(entry.score)
+                    ? entry.score
+                    : 0
+                  return (
+                    <tr
+                      key={entry.playerId}
+                      className='border-b border-(--ash-gray)/10 hover:bg-(--toxic-green)/10 transition-colors'
+                    >
+                      <td className='py-2 px-2 text-(--toxic-green)'>
+                        {entry.rank}
+                      </td>
+                      <td className='py-2 px-2 text-(--star-white)'>
+                        {entry.playerName}
+                      </td>
+                      <td className='py-2 px-2 text-right text-(--toxic-green)'>
+                        {view === 'BALANCE'
+                          ? `€${safeScore.toLocaleString()}`
+                          : safeScore.toLocaleString()}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -166,5 +171,10 @@ export const LeaderboardTab = ({ setlist }) => {
 }
 
 LeaderboardTab.propTypes = {
-  setlist: PropTypes.array.isRequired
+  setlist: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      title: PropTypes.string
+    })
+  ).isRequired
 }

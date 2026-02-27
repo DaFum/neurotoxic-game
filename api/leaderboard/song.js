@@ -5,20 +5,36 @@ export default async function handler(req, res) {
     try {
       const { playerId, playerName, songId, score } = req.body
 
-      if (!playerId || !playerName || !songId || typeof score !== 'number') {
+      // Basic Type Checks
+      if (
+        typeof playerId !== 'string' ||
+        typeof playerName !== 'string' ||
+        typeof songId !== 'string' ||
+        typeof score !== 'number'
+      ) {
         return res.status(400).json({ error: 'Missing required fields' })
       }
 
-      if (score < 0 || score > 10000000) {
+      // Detailed Validation
+      if (!Number.isFinite(score) || score < 0 || score > 10000000) {
         return res.status(400).json({ error: 'Invalid score value' })
       }
 
-      // Basic sanitization/validation for songId key
+      const trimmedName = playerName.trim()
+      if (trimmedName.length < 1 || trimmedName.length > 100) {
+        return res.status(400).json({ error: 'Invalid playerName length' })
+      }
+
+      // Validation for keys
+      if (!/^[a-zA-Z0-9_-]{1,64}$/.test(playerId)) {
+        return res.status(400).json({ error: 'Invalid playerId format' })
+      }
+
       if (!/^[a-zA-Z0-9_-]+$/.test(songId)) {
         return res.status(400).json({ error: 'Invalid songId format' })
       }
 
-      await redis.hset('players', { [playerId]: playerName })
+      await redis.hset('players', { [playerId]: trimmedName })
 
       // Update score only if new score is greater (GT)
       await redis.zadd(

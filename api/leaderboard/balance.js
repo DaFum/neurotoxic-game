@@ -5,25 +5,33 @@ export default async function handler(req, res) {
     try {
       const { playerId, playerName, money, day } = req.body
 
-      if (!playerId || !playerName || typeof money !== 'number') {
+      // Basic Type Checks
+      if (
+        typeof playerId !== 'string' ||
+        typeof playerName !== 'string' ||
+        typeof money !== 'number'
+      ) {
         return res.status(400).json({ error: 'Missing required fields' })
       }
 
-      if (money < 0 || money > 10000000) {
+      // Detailed Validation
+      if (!Number.isFinite(money) || money < 0 || money > 10000000) {
         return res.status(400).json({ error: 'Invalid money value' })
       }
 
+      const trimmedName = playerName.trim()
+      if (trimmedName.length < 1 || trimmedName.length > 100) {
+        return res.status(400).json({ error: 'Invalid playerName length' })
+      }
+
       // Basic sanitization/validation for playerId key
-      if (!/^[a-zA-Z0-9_-]+$/.test(playerId)) {
+      if (!/^[a-zA-Z0-9_-]{1,64}$/.test(playerId)) {
         return res.status(400).json({ error: 'Invalid playerId format' })
       }
 
-      await redis.hset('players', { [playerId]: playerName })
-      await redis.zadd(
-        'lb:balance',
-        { gt: true },
-        { score: money, member: playerId }
-      )
+      await redis.hset('players', { [playerId]: trimmedName })
+      // Balance reflects current state, so overwrite is desired (remove gt: true)
+      await redis.zadd('lb:balance', { score: money, member: playerId })
 
       return res.status(200).json({ success: true })
     } catch (error) {

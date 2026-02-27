@@ -6,18 +6,29 @@ import { logger } from '../utils/logger'
  * @param {object} player - The current player state.
  */
 export const useLeaderboardSync = player => {
+  const { playerId, playerName, money, day } = player || {}
+
   useEffect(() => {
+    // 1. Strict Validation
+    if (
+      !playerId ||
+      !playerName ||
+      typeof day !== 'number' ||
+      typeof money !== 'number' ||
+      !Number.isFinite(day) ||
+      !Number.isFinite(money) ||
+      day < 0 ||
+      money < 0
+    ) {
+      return
+    }
+
     const syncBalance = async () => {
-      // 1. Validation
-      if (!player?.playerId || !player?.playerName) return
+      // 2. Check if already synced for this day (Player-Specific)
+      const syncKey = `neurotoxic_last_synced_day:${playerId}`
+      const lastSyncedDay = parseInt(localStorage.getItem(syncKey) || '0', 10)
 
-      // 2. Check if already synced for this day
-      const lastSyncedDay = parseInt(
-        localStorage.getItem('neurotoxic_last_synced_day') || '0',
-        10
-      )
-
-      if (player.day <= lastSyncedDay) return
+      if (day <= lastSyncedDay) return
 
       // 3. Sync Logic
       try {
@@ -25,10 +36,10 @@ export const useLeaderboardSync = player => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            playerId: player.playerId,
-            playerName: player.playerName,
-            money: player.money,
-            day: player.day
+            playerId,
+            playerName,
+            money,
+            day
           })
         })
 
@@ -37,11 +48,8 @@ export const useLeaderboardSync = player => {
         }
 
         // 4. Update Synced State
-        localStorage.setItem(
-          'neurotoxic_last_synced_day',
-          player.day.toString()
-        )
-        logger.info('Leaderboard', `Synced balance for day ${player.day}`)
+        localStorage.setItem(syncKey, day.toString())
+        logger.info('Leaderboard', `Synced balance for day ${day}`)
       } catch (error) {
         // Silent fail for leaderboard sync to not disrupt gameplay
         logger.warn('Leaderboard', 'Balance sync failed', error)
@@ -49,5 +57,5 @@ export const useLeaderboardSync = player => {
     }
 
     syncBalance()
-  }, [player])
+  }, [playerId, playerName, money, day])
 }

@@ -124,7 +124,7 @@ export const MainMenu = () => {
 
     setShowNameInput(false)
     void proceedToTour()
-  }, [playerNameInput, addToast, proceedToTour, updatePlayer])
+  }, [playerNameInput, addToast, proceedToTour, updatePlayer, t])
 
   /**
    * Handles loading a saved game.
@@ -137,7 +137,7 @@ export const MainMenu = () => {
     if (!isMountedRef.current) return
 
     if (!loadGame()) {
-      addToast('No save game found!', 'error')
+      addToast(t('ui:no_save_found'), 'error')
       if (isMountedRef.current) setIsLoadingGame(false)
       return
     }
