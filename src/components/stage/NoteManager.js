@@ -46,18 +46,20 @@ export class NoteManager {
         loadTexture(getGenImageUrl(IMG_PROMPTS.NOTE_LIGHTNING))
       ])
 
-      if (results[0].status === 'fulfilled') {
+      if (results[0].status === 'fulfilled' && results[0].value !== null) {
         this.noteTextures.skull = results[0].value
       } else {
-        handleError(results[0].reason, {
+        const error = results[0].status === 'fulfilled' ? new Error('Skull texture returned null') : results[0].reason
+        handleError(error, {
           fallbackMessage: 'Note Skull texture failed to load.'
         })
       }
 
-      if (results[1].status === 'fulfilled') {
+      if (results[1].status === 'fulfilled' && results[1].value !== null) {
         this.noteTextures.lightning = results[1].value
       } else {
-        handleError(results[1].reason, {
+        const error = results[1].status === 'fulfilled' ? new Error('Lightning texture returned null') : results[1].reason
+        handleError(error, {
           fallbackMessage: 'Note Lightning texture failed to load.'
         })
       }

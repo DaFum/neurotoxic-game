@@ -29,19 +29,21 @@ export class CrowdManager {
       ])
 
       // Handle IDLE texture
-      if (results[0].status === 'fulfilled') {
+      if (results[0].status === 'fulfilled' && results[0].value !== null) {
         this.textures.idle = results[0].value
       } else {
-        handleError(results[0].reason, {
+        const error = results[0].status === 'fulfilled' ? new Error('IDLE texture returned null') : results[0].reason
+        handleError(error, {
           fallbackMessage: 'Crowd IDLE texture failed to load.'
         })
       }
 
       // Handle MOSH texture
-      if (results[1].status === 'fulfilled') {
+      if (results[1].status === 'fulfilled' && results[1].value !== null) {
         this.textures.mosh = results[1].value
       } else {
-        handleError(results[1].reason, {
+        const error = results[1].status === 'fulfilled' ? new Error('MOSH texture returned null') : results[1].reason
+        handleError(error, {
           fallbackMessage: 'Crowd MOSH texture failed to load.'
         })
       }

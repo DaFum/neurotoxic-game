@@ -54,7 +54,11 @@
   "settings.audio_unmute": "Ton einschalten",
   "settings.crt_enable": "CRT-Effekt aktivieren",
   "settings.crt_disable": "CRT-Effekt deaktivieren",
-  "main_menu.subtitle": "Grind The Void",
+  "mainMenu": {
+    "subtitle": {
+      "grindTheVoid": "Grind The Void"
+    }
+  },
   "tour.endedPrematurely": "Die Tour endete vorzeitig.",
   "gameOver.loadLastSave": "LETZTEN SPEICHERSTAND LADEN",
   "gameOver.returnToMenu": "ZURÜCK ZUM MENÜ",

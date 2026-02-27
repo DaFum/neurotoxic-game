@@ -89,7 +89,7 @@ export const IMG_PROMPTS = {
   CROWD_MOSH: 'pixel art mosh pit chaos fighting dancing dust',
 
   // UI Elements
-  NOTE_SKULL: 'pixel art white skull icon simple transparent background',
+  NOTE_SKULL: 'pixel art white skull icon transparent background',
   NOTE_LIGHTNING:
     'pixel art green lightning bolt icon simple transparent background',
   HIT_BLOOD:
