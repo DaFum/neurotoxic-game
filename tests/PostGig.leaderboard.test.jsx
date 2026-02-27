@@ -34,6 +34,32 @@ describe('PostGig Leaderboard Submission', () => {
   const mockAddToast = vi.fn()
   const mockUnlockTrait = vi.fn()
 
+  const getBaseState = () => ({
+    currentGig: { songId: 'song_1', venue: 'Venue A' },
+    player: {
+      money: 500,
+      fame: 100,
+      day: 5,
+      playerId: 'user-uuid',
+      playerName: 'TestUser',
+    },
+    band: { inventory: {}, members: [] },
+    social: { instagram: 100, trend: 'NEUTRAL' },
+    lastGigStats: { score: 12345, events: [] },
+    gigModifiers: {},
+    activeEvent: null,
+    activeStoryFlags: [],
+    triggerEvent: mockTriggerEvent,
+    updatePlayer: mockUpdatePlayer,
+    updateBand: mockUpdateBand,
+    updateSocial: mockUpdateSocial,
+    changeScene: mockChangeScene,
+    addToast: mockAddToast,
+    unlockTrait: mockUnlockTrait,
+    reputationByRegion: {},
+    addQuest: vi.fn(),
+  })
+
   beforeEach(() => {
     vi.clearAllMocks()
     global.fetch = mockFetch
@@ -71,31 +97,7 @@ describe('PostGig Leaderboard Submission', () => {
     vi.spyOn(socialEngine, 'calculateSocialGrowth').mockReturnValue(5)
     vi.spyOn(socialEngine, 'generateBrandOffers').mockReturnValue([]) // Skip deals phase
 
-    useGameState.mockReturnValue({
-      currentGig: { songId: 'song_1', venue: 'Venue A' },
-      player: {
-        money: 500,
-        fame: 100,
-        day: 5,
-        playerId: 'user-uuid',
-        playerName: 'TestUser',
-      },
-      band: { inventory: {}, members: [] },
-      social: { instagram: 100, trend: 'NEUTRAL' },
-      lastGigStats: { score: 12345, events: [] },
-      gigModifiers: {},
-      activeEvent: null,
-      activeStoryFlags: [],
-      triggerEvent: mockTriggerEvent,
-      updatePlayer: mockUpdatePlayer,
-      updateBand: mockUpdateBand,
-      updateSocial: mockUpdateSocial,
-      changeScene: mockChangeScene,
-      addToast: mockAddToast,
-      unlockTrait: mockUnlockTrait,
-      reputationByRegion: {},
-      addQuest: vi.fn(),
-    })
+    useGameState.mockReturnValue(getBaseState())
   })
 
   afterEach(() => {
@@ -152,8 +154,9 @@ describe('PostGig Leaderboard Submission', () => {
   })
 
   it('skips leaderboard submission if songId is missing', async () => {
+    const base = getBaseState()
     useGameState.mockReturnValue({
-      ...useGameState(),
+      ...base,
       currentGig: { venue: 'Venue A' }, // No songId
     })
 

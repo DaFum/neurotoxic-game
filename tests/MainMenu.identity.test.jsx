@@ -29,9 +29,6 @@ vi.mock('../src/utils/AudioManager', () => ({
   },
 }))
 
-// Mock crypto.randomUUID
-global.crypto.randomUUID = vi.fn(() => 'mock-uuid-1234')
-
 describe('MainMenu Identity Flow', () => {
   const mockUpdatePlayer = vi.fn()
   const mockChangeScene = vi.fn()
@@ -41,6 +38,7 @@ describe('MainMenu Identity Flow', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     localStorage.clear()
+    vi.stubGlobal('crypto', { randomUUID: vi.fn(() => 'mock-uuid-1234') })
 
     useGameState.mockReturnValue({
       changeScene: mockChangeScene,
@@ -59,6 +57,7 @@ describe('MainMenu Identity Flow', () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
+    vi.unstubAllGlobals()
   })
 
   it('shows identity modal when no player ID exists in localStorage', async () => {

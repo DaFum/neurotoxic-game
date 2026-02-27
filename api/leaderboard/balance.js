@@ -3,7 +3,7 @@ import { redis } from '../../lib/redis.js'
 export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
-      const { playerId, playerName, money } = req.body
+      const { playerId, playerName, money, day } = req.body
 
       if (!playerId || !playerName || typeof money !== 'number') {
         return res.status(400).json({ error: 'Missing required fields' })

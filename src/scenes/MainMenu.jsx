@@ -116,9 +116,14 @@ export const MainMenu = () => {
     localStorage.setItem('neurotoxic_player_id', newId)
     localStorage.setItem('neurotoxic_player_name', newName)
 
+    updatePlayer({
+      playerId: newId,
+      playerName: newName
+    })
+
     setShowNameInput(false)
-    proceedToTour()
-  }, [playerNameInput, addToast, proceedToTour])
+    void proceedToTour()
+  }, [playerNameInput, addToast, proceedToTour, updatePlayer])
 
   /**
    * Handles loading a saved game.
