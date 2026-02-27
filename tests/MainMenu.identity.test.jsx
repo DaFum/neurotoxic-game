@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { MainMenu } from '../src/scenes/MainMenu'
 import { useGameState } from '../src/context/GameState'

@@ -1,9 +1,14 @@
-import { redis } from '../../lib/redis.js'
+import client from '../../lib/redis.js'
 
 export default async function handler(req, res) {
+  // Ensure connection
+  if (!client.isOpen) {
+    await client.connect()
+  }
+
   if (req.method === 'POST') {
     try {
-      const { playerId, playerName, money, day } = req.body
+      const { playerId, playerName, money, day: _day } = req.body
 
       // Basic Type Checks
       if (
@@ -29,9 +34,12 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Invalid playerId format' })
       }
 
-      await redis.hset('players', { [playerId]: trimmedName })
+      // v4: hSet accepts object
+      await client.hSet('players', { [playerId]: trimmedName })
+
+      // v4: zAdd(key, { score, value })
       // Balance reflects current state, so overwrite is desired (remove gt: true)
-      await redis.zadd('lb:balance', { score: money, member: playerId })
+      await client.zAdd('lb:balance', { score: money, value: playerId })
 
       return res.status(200).json({ success: true })
     } catch (error) {
@@ -44,21 +52,24 @@ export default async function handler(req, res) {
       if (isNaN(limit)) limit = 100
       limit = Math.min(Math.max(1, limit), 100)
 
-      const range = await redis.zrange('lb:balance', 0, limit - 1, {
-        rev: true,
-        withScores: true
+      // v4: zRangeWithScores returns [{ score: number, value: string }]
+      // REV: true for descending
+      const range = await client.zRangeWithScores('lb:balance', 0, limit - 1, {
+        REV: true
       })
 
       if (!range.length) return res.status(200).json([])
 
-      // range is [{ member: 'id', score: 100 }, ...]
-      const playerIds = range.map(r => r.member)
-      const names = await redis.hmget('players', ...playerIds)
+      // range is [{ value: 'id', score: 100 }, ...]
+      const playerIds = range.map(r => r.value)
 
-      // hmget returns array of values corresponding to keys
+      // v4: hmGet returns string[] (aligned with keys)
+      const names = await client.hmGet('players', playerIds)
+
+      // hmGet returns array of values corresponding to keys
       const leaderboard = range.map((entry, index) => ({
         rank: index + 1,
-        playerId: entry.member,
+        playerId: entry.value, // 'value' not 'member' in node-redis v4
         playerName: names[index] || 'Unknown',
         score: entry.score
       }))

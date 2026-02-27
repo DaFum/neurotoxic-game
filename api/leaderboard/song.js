@@ -1,8 +1,13 @@
-import { redis } from '../../lib/redis.js'
+import client from '../../lib/redis.js'
 
 const MAX_SONG_ID_LENGTH = 64
 
 export default async function handler(req, res) {
+  // Ensure connection
+  if (!client.isOpen) {
+    await client.connect()
+  }
+
   if (req.method === 'POST') {
     try {
       const { playerId, playerName, songId, score } = req.body
@@ -39,13 +44,15 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Invalid songId format' })
       }
 
-      await redis.hset('players', { [playerId]: trimmedName })
+      // v4: hSet accepts object
+      await client.hSet('players', { [playerId]: trimmedName })
 
       // Update score only if new score is greater (GT)
-      await redis.zadd(
+      // v4: zAdd(key, { score, value }, { GT: true })
+      await client.zAdd(
         `lb:song:${songId}`,
-        { gt: true },
-        { score, member: playerId }
+        { score, value: playerId },
+        { GT: true }
       )
 
       return res.status(200).json({ success: true })
@@ -69,19 +76,19 @@ export default async function handler(req, res) {
       if (isNaN(limit)) limit = 100
       limit = Math.min(Math.max(1, limit), 100)
 
-      const range = await redis.zrange(`lb:song:${songId}`, 0, limit - 1, {
-        rev: true,
-        withScores: true
+      // v4: zRangeWithScores(key, min, max, options)
+      const range = await client.zRangeWithScores(`lb:song:${songId}`, 0, limit - 1, {
+        REV: true
       })
 
       if (!range.length) return res.status(200).json([])
 
-      const playerIds = range.map(r => r.member)
-      const names = await redis.hmget('players', ...playerIds)
+      const playerIds = range.map(r => r.value) // value not member
+      const names = await client.hmGet('players', playerIds)
 
       const leaderboard = range.map((entry, index) => ({
         rank: index + 1,
-        playerId: entry.member,
+        playerId: entry.value,
         playerName: names[index] || 'Unknown',
         score: entry.score
       }))
