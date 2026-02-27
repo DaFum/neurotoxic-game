@@ -75,6 +75,7 @@
   "hq.owned": "OWNED",
   "hq.leave": "LEAVE [ESC]",
   "hq.title": "BAND HQ",
+  "ui.day": "Day",
   "chatter_labels": {
     "INTRO": "Intro Feed",
     "MENU": "Main Feed",

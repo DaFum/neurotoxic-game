@@ -1243,7 +1243,10 @@ export const VENUE_CHATTER_DB = [
     venueId: 'kassel_goldgrube',
     id: 'chatter_kassel_goldgrube',
     linesByScene: {
-      ANY: ['Small room, golden name.', 'Nights here feel like secret shows.'],
+      ANY: [
+        'chatter:venues.kassel_goldgrube.ANY_01',
+        'chatter:venues.kassel_goldgrube.ANY_02'
+      ],
       OVERWORLD: [
         'chatter:venues.kassel_goldgrube.OVERWORLD_01',
         'chatter:venues.kassel_goldgrube.OVERWORLD_02',
