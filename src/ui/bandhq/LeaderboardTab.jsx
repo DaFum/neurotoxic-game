@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { Panel } from '../shared'
 import { logger } from '../../utils/logger'
@@ -9,6 +10,7 @@ import { GlitchButton } from '../GlitchButton'
  * Displays global player rankings for balance and song scores.
  */
 export const LeaderboardTab = ({ setlist }) => {
+  const { t } = useTranslation()
   const [view, setView] = useState('BALANCE') // 'BALANCE' or 'SONG'
   const [selectedSongId, setSelectedSongId] = useState(setlist[0]?.id || '')
   const [rankings, setRankings] = useState([])
@@ -34,7 +36,7 @@ export const LeaderboardTab = ({ setlist }) => {
             setIsLoading(false)
             return
           }
-          url = `/api/leaderboard/song?songId=${selectedSongId}&limit=100`
+          url = `/api/leaderboard/song?songId=${encodeURIComponent(selectedSongId)}&limit=100`
         }
 
         const res = await fetch(url)
@@ -62,14 +64,14 @@ export const LeaderboardTab = ({ setlist }) => {
           disabled={view === 'BALANCE'}
           className={view === 'BALANCE' ? 'opacity-50 cursor-default' : ''}
         >
-          GLOBAL WEALTH
+          {t('leaderboard.global_wealth')}
         </GlitchButton>
         <GlitchButton
           onClick={() => setView('SONG')}
           disabled={view === 'SONG'}
           className={view === 'SONG' ? 'opacity-50 cursor-default' : ''}
         >
-          SONG SCORES
+          {t('leaderboard.song_scores')}
         </GlitchButton>
       </div>
 
@@ -80,7 +82,7 @@ export const LeaderboardTab = ({ setlist }) => {
             htmlFor='songSelect'
             className='text-(--toxic-green) font-mono text-sm uppercase'
           >
-            Select Song:
+            {t('leaderboard.select_song')}
           </label>
           <select
             id='songSelect'
@@ -95,7 +97,7 @@ export const LeaderboardTab = ({ setlist }) => {
             ))}
             {setlist.length === 0 && (
               <option value='' disabled>
-                NO SONGS UNLOCKED
+                {t('leaderboard.no_songs')}
               </option>
             )}
           </select>
@@ -105,11 +107,15 @@ export const LeaderboardTab = ({ setlist }) => {
       {/* Leaderboard Table */}
       <Panel
         className='flex-1 overflow-hidden flex flex-col'
-        title={view === 'BALANCE' ? 'TOP 100 WEALTHIEST' : 'TOP 100 SHREDDERS'}
+        title={
+          view === 'BALANCE'
+            ? t('leaderboard.top_100_wealth')
+            : t('leaderboard.top_100_scores')
+        }
       >
         {isLoading && (
           <div className='flex-1 flex items-center justify-center text-(--toxic-green) animate-pulse font-mono'>
-            CONNECTING TO UNDERGROUND NETWORK...
+            {t('leaderboard.connecting')}
           </div>
         )}
 
@@ -121,7 +127,7 @@ export const LeaderboardTab = ({ setlist }) => {
 
         {!isLoading && !error && rankings.length === 0 && (
           <div className='flex-1 flex items-center justify-center text-(--ash-gray) font-mono'>
-            NO DATA RECORDED YET.
+            {t('leaderboard.no_data')}
           </div>
         )}
 
@@ -131,9 +137,11 @@ export const LeaderboardTab = ({ setlist }) => {
               <thead className='text-(--ash-gray) border-b border-(--ash-gray)/30 text-xs uppercase sticky top-0 bg-(--void-black)'>
                 <tr>
                   <th className='py-2 px-2'>#</th>
-                  <th className='py-2 px-2'>PLAYER</th>
+                  <th className='py-2 px-2'>{t('leaderboard.col_player')}</th>
                   <th className='py-2 px-2 text-right'>
-                    {view === 'BALANCE' ? 'NET WORTH' : 'SCORE'}
+                    {view === 'BALANCE'
+                      ? t('leaderboard.col_net_worth')
+                      : t('leaderboard.col_score')}
                   </th>
                 </tr>
               </thead>

@@ -1,5 +1,7 @@
 import { redis } from '../../lib/redis.js'
 
+const MAX_SONG_ID_LENGTH = 64
+
 export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
@@ -30,7 +32,10 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Invalid playerId format' })
       }
 
-      if (!/^[a-zA-Z0-9_-]+$/.test(songId)) {
+      if (
+        !/^[a-zA-Z0-9_-]+$/.test(songId) ||
+        songId.length > MAX_SONG_ID_LENGTH
+      ) {
         return res.status(400).json({ error: 'Invalid songId format' })
       }
 
@@ -53,7 +58,10 @@ export default async function handler(req, res) {
       const { songId } = req.query
       if (!songId) return res.status(400).json({ error: 'Missing songId' })
 
-      if (!/^[a-zA-Z0-9_-]+$/.test(songId)) {
+      if (
+        !/^[a-zA-Z0-9_-]+$/.test(songId) ||
+        songId.length > MAX_SONG_ID_LENGTH
+      ) {
         return res.status(400).json({ error: 'Invalid songId format' })
       }
 

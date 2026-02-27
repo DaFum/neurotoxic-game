@@ -150,7 +150,7 @@ export const MainMenu = () => {
       .ensureAudioContext()
       .catch(err => reportAudioIssue(err, 'Audio initialization failed.'))
       .then(() => startAmbientSafely())
-  }, [loadGame, addToast, changeScene, reportAudioIssue, startAmbientSafely])
+  }, [loadGame, addToast, changeScene, reportAudioIssue, startAmbientSafely, t])
 
   const handleCredits = useCallback(() => changeScene('CREDITS'), [changeScene])
 

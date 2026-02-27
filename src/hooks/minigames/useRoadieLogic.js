@@ -84,7 +84,6 @@ export const useRoadieLogic = () => {
         // Win Condition check
         if (game.itemsToDeliver.length === 0 && !game.carrying) {
           game.isGameOver = true
-          hasTransitionedRef.current = true
           completeRoadieMinigame(game.equipmentDamage)
         }
       }
@@ -112,10 +111,10 @@ export const useRoadieLogic = () => {
       // Spawn Traffic
       game.spawners.forEach(spawner => {
         spawner.timer += deltaMS
-        if (spawner.timer > spawner.rate) {
-          spawner.timer = 0
+        while (spawner.timer > spawner.rate) {
+          spawner.timer -= spawner.rate
           game.traffic.push({
-            id: `${performance.now()}-${spawner.row}`,
+            id: `${performance.now()}-${spawner.row}-${spawner.timer}`, // Unique ID
             row: spawner.row,
             x: spawner.speed > 0 ? -1 : GRID_WIDTH, // Start outside
             speed: spawner.speed,
@@ -155,7 +154,6 @@ export const useRoadieLogic = () => {
                 game.isGameOver = true
                 game.playerPos.y = 0
                 game.playerPos.x = 6
-                hasTransitionedRef.current = true
                 completeRoadieMinigame(100)
               } else {
                 // Drop item? Or just damage?

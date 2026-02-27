@@ -463,7 +463,14 @@ export const PostGig = () => {
           songId: currentGig.songId,
           score: lastGigStats?.score || 0
         })
-      }).catch(err => console.error('Score submit failed', err))
+      })
+        .then(async res => {
+          if (!res.ok) {
+            const err = await res.text()
+            throw new Error(`HTTP ${res.status}: ${err}`)
+          }
+        })
+        .catch(err => console.error('Score submit failed', err))
     }
 
     if (shouldTriggerBankruptcy(newMoney, financials.net)) {
