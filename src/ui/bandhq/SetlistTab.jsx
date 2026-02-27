@@ -46,7 +46,12 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
         <ActionButton
           onClick={() => {
             if (setlist.length === 0) {
-              addToast('Select at least one song to practice!', 'warning')
+              addToast(
+                t('bandhq.setlist.selectOne', {
+                  defaultValue: 'Select at least one song to practice!'
+                }),
+                'warning'
+              )
               return
             }
             setCurrentGig({
@@ -88,21 +93,21 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
                 >
                   {song.name}
                 </h4>
-              <div className='flex gap-4 text-xs font-mono text-(--ash-gray) mt-1'>
-                <span>
-                  {t('bandhq.metadata.diff', { defaultValue: 'DIFF' })}:{' '}
-                  {song.difficulty}/7
-                </span>
-                <span>
-                  {t('bandhq.metadata.bpm', { defaultValue: 'BPM' })}: {song.bpm}
-                </span>
-                <span>
-                  {t('bandhq.metadata.dur', { defaultValue: 'DUR' })}:{' '}
-                  {Math.floor(song.duration / 60)}:
-                  {(song.duration % 60).toString().padStart(2, '0')}
-                </span>
+                <div className='flex gap-4 text-xs font-mono text-(--ash-gray) mt-1'>
+                  <span>
+                    {t('bandhq.metadata.diff', { defaultValue: 'DIFF' })}:{' '}
+                    {song.difficulty}/7
+                  </span>
+                  <span>
+                    {t('bandhq.metadata.bpm', { defaultValue: 'BPM' })}: {song.bpm}
+                  </span>
+                  <span>
+                    {t('bandhq.metadata.dur', { defaultValue: 'DUR' })}:{' '}
+                    {Math.floor(song.duration / 60)}:
+                    {(song.duration % 60).toString().padStart(2, '0')}
+                  </span>
+                </div>
               </div>
-            </div>
               <button
                 type='button'
                 onClick={() => toggleSongInSetlist(song.id)}
