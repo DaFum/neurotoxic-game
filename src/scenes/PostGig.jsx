@@ -417,10 +417,7 @@ export const PostGig = () => {
   const handleContinue = useCallback(() => {
     if (!financials) return
 
-    const fameGain = Math.min(
-      MAX_FAME_GAIN,
-      50 + Math.floor(perfScore * 1.5)
-    )
+    const fameGain = Math.min(MAX_FAME_GAIN, 50 + Math.floor(perfScore * 1.5))
     const newMoney = Math.max(0, player.money + financials.net)
 
     updatePlayer({

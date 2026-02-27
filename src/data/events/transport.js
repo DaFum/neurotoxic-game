@@ -181,7 +181,10 @@ export const TRANSPORT_EVENTS = [
             value: 20,
             description: 'events:police_control.opt3.d_a844'
           },
-          failure: { type: 'game_over', description: 'events:police_control.opt3.d_arrested' }
+          failure: {
+            type: 'game_over',
+            description: 'events:police_control.opt3.d_arrested'
+          }
         },
         outcomeText: 'events:police_control.opt3.outcome'
       }

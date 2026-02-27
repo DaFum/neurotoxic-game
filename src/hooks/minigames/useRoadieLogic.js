@@ -104,99 +104,102 @@ export const useRoadieLogic = () => {
     [completeRoadieMinigame]
   )
 
-  const update = useCallback(deltaMS => {
-    const game = gameStateRef.current
-    if (game.isGameOver) return
+  const update = useCallback(
+    deltaMS => {
+      const game = gameStateRef.current
+      if (game.isGameOver) return
 
-    // Spawn Traffic
-    game.spawners.forEach(spawner => {
-      spawner.timer += deltaMS
-      if (spawner.timer > spawner.rate) {
-        spawner.timer = 0
-        game.traffic.push({
-          id: `${performance.now()}-${spawner.row}`,
-          row: spawner.row,
-          x: spawner.speed > 0 ? -1 : GRID_WIDTH, // Start outside
-          speed: spawner.speed,
-          width: 1.5 // Car width in cells
-        })
-      }
-    })
+      // Spawn Traffic
+      game.spawners.forEach(spawner => {
+        spawner.timer += deltaMS
+        if (spawner.timer > spawner.rate) {
+          spawner.timer = 0
+          game.traffic.push({
+            id: `${performance.now()}-${spawner.row}`,
+            row: spawner.row,
+            x: spawner.speed > 0 ? -1 : GRID_WIDTH, // Start outside
+            speed: spawner.speed,
+            width: 1.5 // Car width in cells
+          })
+        }
+      })
 
-    // Move Traffic & Collision (Optimized: in-place update)
-    const traffic = game.traffic
-    let writeIdx = 0
+      // Move Traffic & Collision (Optimized: in-place update)
+      const traffic = game.traffic
+      let writeIdx = 0
 
-    for (let i = 0; i < traffic.length; i++) {
-      const car = traffic[i]
-      car.x += car.speed * deltaMS
+      for (let i = 0; i < traffic.length; i++) {
+        const car = traffic[i]
+        car.x += car.speed * deltaMS
 
-      // Collision
-      // Player is at integer (x,y). Car is at float x, integer row.
-      // Bounding box overlap.
-      // Player width ~0.8. Car width ~1.5.
-      if (car.row === game.playerPos.y) {
-        const pLeft = game.playerPos.x + 0.1
-        const pRight = game.playerPos.x + 0.9
-        const cLeft = car.x
-        const cRight = car.x + car.width
+        // Collision
+        // Player is at integer (x,y). Car is at float x, integer row.
+        // Bounding box overlap.
+        // Player width ~0.8. Car width ~1.5.
+        if (car.row === game.playerPos.y) {
+          const pLeft = game.playerPos.x + 0.1
+          const pRight = game.playerPos.x + 0.9
+          const cLeft = car.x
+          const cRight = car.x + car.width
 
-        if (pLeft < cRight && pRight > cLeft) {
-          // Hit!
-          audioManager.playSFX('crash')
-          if (game.carrying) {
-            game.equipmentDamage = Math.max(
-              0,
-              Math.min(100, game.equipmentDamage + 10)
-            )
+          if (pLeft < cRight && pRight > cLeft) {
+            // Hit!
+            audioManager.playSFX('crash')
+            if (game.carrying) {
+              game.equipmentDamage = Math.max(
+                0,
+                Math.min(100, game.equipmentDamage + 10)
+              )
 
-            if (game.equipmentDamage >= 100) {
-              game.isGameOver = true
+              if (game.equipmentDamage >= 100) {
+                game.isGameOver = true
+                game.playerPos.y = 0
+                game.playerPos.x = 6
+                hasTransitionedRef.current = true
+                completeRoadieMinigame(100)
+              } else {
+                // Drop item? Or just damage?
+                // Let's respawn player at start with item still? Or item damaged.
+                // Let's say item is damaged, player respawns at start (y=0)
+                game.playerPos.y = 0
+                game.playerPos.x = 6 // Reset x
+              }
+            } else {
+              // Just hit, respawn
               game.playerPos.y = 0
               game.playerPos.x = 6
-              hasTransitionedRef.current = true
-              completeRoadieMinigame(100)
-            } else {
-              // Drop item? Or just damage?
-              // Let's respawn player at start with item still? Or item damaged.
-              // Let's say item is damaged, player respawns at start (y=0)
-              game.playerPos.y = 0
-              game.playerPos.x = 6 // Reset x
             }
-          } else {
-            // Just hit, respawn
-            game.playerPos.y = 0
-            game.playerPos.x = 6
+            setUiState(prev => ({
+              ...prev,
+              currentDamage: game.equipmentDamage,
+              isGameOver: game.isGameOver
+            }))
           }
-          setUiState(prev => ({
-            ...prev,
-            currentDamage: game.equipmentDamage,
-            isGameOver: game.isGameOver
-          }))
+        }
+
+        // Cleanup Check
+        let keep = false
+        if (car.speed > 0) {
+          if (car.x < GRID_WIDTH + 2) keep = true
+        } else {
+          if (car.x > -2) keep = true
+        }
+
+        if (keep) {
+          if (i !== writeIdx) {
+            traffic[writeIdx] = car
+          }
+          writeIdx++
         }
       }
 
-      // Cleanup Check
-      let keep = false
-      if (car.speed > 0) {
-        if (car.x < GRID_WIDTH + 2) keep = true
-      } else {
-        if (car.x > -2) keep = true
+      // Truncate array to remove dead items
+      if (traffic.length > writeIdx) {
+        traffic.length = writeIdx
       }
-
-      if (keep) {
-        if (i !== writeIdx) {
-          traffic[writeIdx] = car
-        }
-        writeIdx++
-      }
-    }
-
-    // Truncate array to remove dead items
-    if (traffic.length > writeIdx) {
-      traffic.length = writeIdx
-    }
-  }, [completeRoadieMinigame])
+    },
+    [completeRoadieMinigame]
+  )
 
   useEffect(() => {
     const handleKeyDown = e => {

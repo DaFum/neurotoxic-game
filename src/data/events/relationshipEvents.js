@@ -3,7 +3,7 @@ export const RELATIONSHIP_EVENTS = [
     id: 'toxic_infighting',
     category: 'band',
     tags: ['conflict', 'relationship_low'],
-    title: "events:toxic_infighting.title",
+    title: 'events:toxic_infighting.title',
     description: 'events:toxic_infighting.desc',
     trigger: 'random',
     chance: 0.1,

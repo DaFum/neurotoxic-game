@@ -265,9 +265,7 @@ export const Gig = () => {
             PAUSED
           </h2>
           <div className='flex flex-col gap-6 w-64'>
-            <GlitchButton onClick={handleTogglePause}>
-              RESUME
-            </GlitchButton>
+            <GlitchButton onClick={handleTogglePause}>RESUME</GlitchButton>
             <GlitchButton onClick={handleQuitGig} variant='danger'>
               QUIT GIG
             </GlitchButton>

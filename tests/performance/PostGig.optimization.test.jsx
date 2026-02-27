@@ -13,9 +13,8 @@ vi.mock('../../src/ui/shared', () => ({
 }))
 
 // Dynamic import to apply mocks
-const { SocialPhase } = await import(
-  '../../src/components/postGig/SocialPhase.jsx'
-)
+const { SocialPhase } =
+  await import('../../src/components/postGig/SocialPhase.jsx')
 
 describe('PostGig Optimization', () => {
   beforeEach(() => {

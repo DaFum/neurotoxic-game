@@ -39,7 +39,7 @@ export const GIG_EVENTS = [
     id: 'gig_intro_drunk_fan',
     category: 'gig',
     title: 'events:gig_intro_drunk_fan.title',
-    description: "events:gig_intro_drunk_fan.desc",
+    description: 'events:gig_intro_drunk_fan.desc',
     trigger: 'gig_intro',
     chance: 0.2,
     options: [

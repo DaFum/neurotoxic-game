@@ -86,7 +86,10 @@ describe('purchaseLogicUtils', () => {
     })
 
     test('returns true if inventory item is true for inventory_set', () => {
-      const item = { id: 'inv1', effect: { type: 'inventory_set', item: 'pass' } }
+      const item = {
+        id: 'inv1',
+        effect: { type: 'inventory_set', item: 'pass' }
+      }
       const player = {}
       const band = { inventory: { pass: true } }
       assert.equal(isItemOwned(item, player, band), true)
@@ -201,7 +204,9 @@ describe('purchaseLogicUtils', () => {
       const player = {}
       const band = { performance: { guitarDifficulty: 1.0 } }
       const result = applyStatModifier(effect, playerPatch, player, band)
-      assert.ok(Math.abs(result.bandPatch.performance.guitarDifficulty - 0.9) < 0.0001)
+      assert.ok(
+        Math.abs(result.bandPatch.performance.guitarDifficulty - 0.9) < 0.0001
+      )
     })
   })
 

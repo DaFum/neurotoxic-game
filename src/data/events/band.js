@@ -92,7 +92,7 @@ export const BAND_EVENTS = [
   {
     id: 'writers_block',
     category: 'band',
-    title: "events:writers_block.title",
+    title: 'events:writers_block.title',
     description: 'events:writers_block.desc',
     trigger: 'random',
     chance: 0.04,

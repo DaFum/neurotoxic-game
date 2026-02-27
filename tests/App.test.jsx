@@ -72,7 +72,9 @@ vi.mock('../src/components/ChatterOverlay', () => ({
 }))
 
 vi.mock('../src/ui/CrashHandler', () => ({
-  ErrorBoundary: ({ children }) => <div data-testid='error-boundary'>{children}</div>
+  ErrorBoundary: ({ children }) => (
+    <div data-testid='error-boundary'>{children}</div>
+  )
 }))
 
 // Mock Analytics

@@ -68,7 +68,11 @@ export const SettingsPanel = ({
             <ToggleSwitch
               isOn={isMuted}
               onToggle={onToggleMute}
-              ariaLabel={isMuted ? t('ui:settings.audio_unmute') : t('ui:settings.audio_mute')}
+              ariaLabel={
+                isMuted
+                  ? t('ui:settings.audio_unmute')
+                  : t('ui:settings.audio_mute')
+              }
             />
           </div>
         </div>
@@ -168,7 +172,9 @@ const DataManagement = ({ onDeleteSave }) => {
             {t('ui:confirm_delete_text')}
           </p>
           <div className='flex gap-4 justify-end'>
-            <ActionButton onClick={handleCloseConfirm}>{t('ui:cancel')}</ActionButton>
+            <ActionButton onClick={handleCloseConfirm}>
+              {t('ui:cancel')}
+            </ActionButton>
             <ActionButton
               onClick={handleDeleteSave}
               className='bg-(--blood-red) text-(--void-black) border-(--blood-red) hover:invert'

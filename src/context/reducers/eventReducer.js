@@ -29,7 +29,7 @@ export const handleApplyEventDelta = (state, payload) => {
   }
 }
 
-export const handlePopPendingEvent = (state) => {
+export const handlePopPendingEvent = state => {
   return { ...state, pendingEvents: state.pendingEvents.slice(1) }
 }
 

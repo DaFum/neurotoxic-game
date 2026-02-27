@@ -21,7 +21,11 @@ export default async function handler(req, res) {
       await redis.hset('players', { [playerId]: playerName })
 
       // Update score only if new score is greater (GT)
-      await redis.zadd(`lb:song:${songId}`, { gt: true }, { score, member: playerId })
+      await redis.zadd(
+        `lb:song:${songId}`,
+        { gt: true },
+        { score, member: playerId }
+      )
 
       return res.status(200).json({ success: true })
     } catch (error) {

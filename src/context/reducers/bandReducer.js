@@ -1,5 +1,8 @@
 import { logger } from '../../utils/logger.js'
-import { clampBandHarmony, applyInventoryItemDelta } from '../../utils/gameStateUtils.js'
+import {
+  clampBandHarmony,
+  applyInventoryItemDelta
+} from '../../utils/gameStateUtils.js'
 import { applyTraitUnlocks } from '../../utils/traitUtils.js'
 
 /**

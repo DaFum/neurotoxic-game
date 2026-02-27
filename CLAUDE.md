@@ -21,6 +21,7 @@ Run one UI test: `npx vitest run tests/<file>.test.jsx`
 - **State three-way contract**: Adding/changing actions requires updating `ActionTypes` + reducer case + `actionCreators.js` together.
 - **State safety**: `player.money` clamped >= 0, `band.harmony` clamped 1–100 via helpers in `gameStateUtils.js`. `delta.flags.score` is intentionally unsupported.
 - **Pixi.js v8 destroy**: `app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })` — always on unmount.
+- **Internationalization (I18n)**: All user-facing text MUST be localized. Use `t('key')` or `<Trans>`. Hardcoded English strings are forbidden. Keys must be namespaced (e.g., `ui:button.save`). Both English (`en`) and German (`de`) translations must be provided for every new key.
 
 ## Audio
 

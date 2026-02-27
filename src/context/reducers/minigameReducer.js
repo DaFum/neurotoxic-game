@@ -1,5 +1,8 @@
 import { logger } from '../../utils/logger.js'
-import { clampPlayerMoney, clampBandHarmony } from '../../utils/gameStateUtils.js'
+import {
+  clampPlayerMoney,
+  clampBandHarmony
+} from '../../utils/gameStateUtils.js'
 import {
   calculateTravelExpenses,
   calculateTravelMinigameResult,

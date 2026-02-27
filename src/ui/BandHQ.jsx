@@ -81,7 +81,9 @@ export const BandHQ = ({
       if (err instanceof GameError || err instanceof StateError) {
         handleError(err, { addToast })
       } else {
-        handleError(new GameError('Purchase failed', { context: err }), { addToast })
+        handleError(new GameError('Purchase failed', { context: err }), {
+          addToast
+        })
       }
     } finally {
       setProcessingItemId(null)
@@ -125,27 +127,33 @@ export const BandHQ = ({
           className='flex border-b-2 border-(--ash-gray) overflow-x-auto'
         >
           {/* Tabs: STATS, DETAILS, SHOP, UPGRADES, SETLIST, SETTINGS */}
-          {['STATS', 'DETAILS', 'SHOP', 'UPGRADES', 'SETLIST', 'LEADERBOARD', 'SETTINGS'].map(
-            tab => (
-              <button
-                type='button'
-                role='tab'
-                aria-selected={activeTab === tab}
-                aria-controls={`panel-${tab}`}
-                id={`tab-${tab}`}
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`flex-1 min-w-[120px] py-4 text-center font-bold text-xl uppercase tracking-wider transition-colors duration-150 font-mono
+          {[
+            'STATS',
+            'DETAILS',
+            'SHOP',
+            'UPGRADES',
+            'SETLIST',
+            'LEADERBOARD',
+            'SETTINGS'
+          ].map(tab => (
+            <button
+              type='button'
+              role='tab'
+              aria-selected={activeTab === tab}
+              aria-controls={`panel-${tab}`}
+              id={`tab-${tab}`}
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`flex-1 min-w-[120px] py-4 text-center font-bold text-xl uppercase tracking-wider transition-colors duration-150 font-mono
                 ${
                   activeTab === tab
                     ? 'bg-(--toxic-green) text-(--void-black)'
                     : 'text-(--ash-gray) hover:text-(--star-white) bg-(--void-black)/50 hover:bg-(--void-black)/70'
                 }`}
-              >
-                {tab}
-              </button>
-            )
-          )}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
 
         {/* Content Area */}
@@ -202,9 +210,7 @@ export const BandHQ = ({
             />
           )}
 
-          {activeTab === 'LEADERBOARD' && (
-            <LeaderboardTab setlist={setlist} />
-          )}
+          {activeTab === 'LEADERBOARD' && <LeaderboardTab setlist={setlist} />}
 
           {activeTab === 'SETTINGS' && (
             <SettingsTab

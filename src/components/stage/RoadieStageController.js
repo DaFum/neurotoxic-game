@@ -198,7 +198,8 @@ class RoadieStageController extends BaseStageController {
         if (tex && tex.width > 0 && tex.height > 0) {
           this.itemSprite.texture = tex
           // Scale item to fit ~0.6 of a cell
-          const itemScale = Math.min(cellW / tex.width, cellH / tex.height) * 0.6
+          const itemScale =
+            Math.min(cellW / tex.width, cellH / tex.height) * 0.6
           this.itemSprite.scale.set(itemScale)
         } else {
           this.itemSprite.texture = PIXI.Texture.WHITE

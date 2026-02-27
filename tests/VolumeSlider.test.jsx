@@ -1,11 +1,6 @@
 import React from 'react'
 import { render, cleanup } from '@testing-library/react'
-import {
-  afterEach,
-  describe,
-  expect,
-  test
-} from 'vitest'
+import { afterEach, describe, expect, test } from 'vitest'
 
 import { VolumeSlider } from '../src/ui/shared/VolumeSlider.jsx'
 

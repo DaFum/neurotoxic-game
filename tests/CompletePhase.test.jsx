@@ -25,9 +25,8 @@ describe('CompletePhase', () => {
   }
 
   test('renders success state with viral hit message', async () => {
-    const { CompletePhase } = await import(
-      '../src/components/postGig/CompletePhase.jsx'
-    )
+    const { CompletePhase } =
+      await import('../src/components/postGig/CompletePhase.jsx')
     const mockContinue = vi.fn()
 
     render(
@@ -44,9 +43,8 @@ describe('CompletePhase', () => {
   })
 
   test('renders failure state with flop message', async () => {
-    const { CompletePhase } = await import(
-      '../src/components/postGig/CompletePhase.jsx'
-    )
+    const { CompletePhase } =
+      await import('../src/components/postGig/CompletePhase.jsx')
     const mockContinue = vi.fn()
 
     const failResult = { ...mockResult, success: false, totalFollowers: -50 }
@@ -64,9 +62,8 @@ describe('CompletePhase', () => {
   })
 
   test('displays follower count with platform', async () => {
-    const { CompletePhase } = await import(
-      '../src/components/postGig/CompletePhase.jsx'
-    )
+    const { CompletePhase } =
+      await import('../src/components/postGig/CompletePhase.jsx')
     const mockContinue = vi.fn()
 
     render(
@@ -83,9 +80,8 @@ describe('CompletePhase', () => {
   })
 
   test('displays negative follower count without plus sign', async () => {
-    const { CompletePhase } = await import(
-      '../src/components/postGig/CompletePhase.jsx'
-    )
+    const { CompletePhase } =
+      await import('../src/components/postGig/CompletePhase.jsx')
     const mockContinue = vi.fn()
 
     const negativeResult = { ...mockResult, totalFollowers: -100 }
@@ -103,9 +99,8 @@ describe('CompletePhase', () => {
   })
 
   test('shows money change when present', async () => {
-    const { CompletePhase } = await import(
-      '../src/components/postGig/CompletePhase.jsx'
-    )
+    const { CompletePhase } =
+      await import('../src/components/postGig/CompletePhase.jsx')
     const mockContinue = vi.fn()
 
     const { container } = render(
@@ -121,9 +116,8 @@ describe('CompletePhase', () => {
   })
 
   test('shows harmony change when present', async () => {
-    const { CompletePhase } = await import(
-      '../src/components/postGig/CompletePhase.jsx'
-    )
+    const { CompletePhase } =
+      await import('../src/components/postGig/CompletePhase.jsx')
     const mockContinue = vi.fn()
 
     const { container } = render(
@@ -140,9 +134,8 @@ describe('CompletePhase', () => {
   })
 
   test('shows controversy change when present', async () => {
-    const { CompletePhase } = await import(
-      '../src/components/postGig/CompletePhase.jsx'
-    )
+    const { CompletePhase } =
+      await import('../src/components/postGig/CompletePhase.jsx')
     const mockContinue = vi.fn()
 
     const { container } = render(
@@ -159,9 +152,8 @@ describe('CompletePhase', () => {
   })
 
   test('calls onContinue when continue button is clicked', async () => {
-    const { CompletePhase } = await import(
-      '../src/components/postGig/CompletePhase.jsx'
-    )
+    const { CompletePhase } =
+      await import('../src/components/postGig/CompletePhase.jsx')
     const mockContinue = vi.fn()
     const user = userEvent.setup()
 
@@ -183,9 +175,8 @@ describe('CompletePhase', () => {
   })
 
   test('shows spin story button when player has PR manager and high controversy', async () => {
-    const { CompletePhase } = await import(
-      '../src/components/postGig/CompletePhase.jsx'
-    )
+    const { CompletePhase } =
+      await import('../src/components/postGig/CompletePhase.jsx')
     const mockContinue = vi.fn()
     const mockSpinStory = vi.fn()
 
@@ -206,9 +197,8 @@ describe('CompletePhase', () => {
   })
 
   test('hides spin story button when player lacks PR manager', async () => {
-    const { CompletePhase } = await import(
-      '../src/components/postGig/CompletePhase.jsx'
-    )
+    const { CompletePhase } =
+      await import('../src/components/postGig/CompletePhase.jsx')
     const mockContinue = vi.fn()
     const mockSpinStory = vi.fn()
 
@@ -231,9 +221,8 @@ describe('CompletePhase', () => {
   })
 
   test('hides spin story button when controversy is low', async () => {
-    const { CompletePhase } = await import(
-      '../src/components/postGig/CompletePhase.jsx'
-    )
+    const { CompletePhase } =
+      await import('../src/components/postGig/CompletePhase.jsx')
     const mockContinue = vi.fn()
     const mockSpinStory = vi.fn()
 
@@ -256,9 +245,8 @@ describe('CompletePhase', () => {
   })
 
   test('calls onSpinStory when spin story button is clicked', async () => {
-    const { CompletePhase } = await import(
-      '../src/components/postGig/CompletePhase.jsx'
-    )
+    const { CompletePhase } =
+      await import('../src/components/postGig/CompletePhase.jsx')
     const mockContinue = vi.fn()
     const mockSpinStory = vi.fn()
     const user = userEvent.setup()
@@ -282,9 +270,8 @@ describe('CompletePhase', () => {
   })
 
   test('handles missing optional props gracefully', async () => {
-    const { CompletePhase } = await import(
-      '../src/components/postGig/CompletePhase.jsx'
-    )
+    const { CompletePhase } =
+      await import('../src/components/postGig/CompletePhase.jsx')
     const mockContinue = vi.fn()
 
     const minimalResult = {
@@ -294,17 +281,14 @@ describe('CompletePhase', () => {
       platform: 'Test'
     }
 
-    render(
-      <CompletePhase result={minimalResult} onContinue={mockContinue} />
-    )
+    render(<CompletePhase result={minimalResult} onContinue={mockContinue} />)
 
     expect(screen.getByText('VIRAL HIT!')).toBeTruthy()
   })
 
   test('applies correct color styling for positive money change', async () => {
-    const { CompletePhase } = await import(
-      '../src/components/postGig/CompletePhase.jsx'
-    )
+    const { CompletePhase } =
+      await import('../src/components/postGig/CompletePhase.jsx')
     const mockContinue = vi.fn()
 
     const { container } = render(
@@ -326,9 +310,8 @@ describe('CompletePhase', () => {
   })
 
   test('applies correct color styling for negative money change', async () => {
-    const { CompletePhase } = await import(
-      '../src/components/postGig/CompletePhase.jsx'
-    )
+    const { CompletePhase } =
+      await import('../src/components/postGig/CompletePhase.jsx')
     const mockContinue = vi.fn()
 
     const negativeMoneyResult = { ...mockResult, moneyChange: -200 }

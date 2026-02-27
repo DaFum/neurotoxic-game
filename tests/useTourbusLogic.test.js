@@ -40,10 +40,8 @@ const {
   TARGET_DISTANCE
 } = await import('../src/hooks/minigames/useTourbusLogic.js')
 
-const {
-  LANE_COUNT,
-  BUS_Y_PERCENT
-} = await import('../src/hooks/minigames/constants.js')
+const { LANE_COUNT, BUS_Y_PERCENT } =
+  await import('../src/hooks/minigames/constants.js')
 
 describe('useTourbusLogic', () => {
   beforeEach(() => {

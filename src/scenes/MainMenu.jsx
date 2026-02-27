@@ -5,7 +5,7 @@ import { useGameState } from '../context/GameState'
 import { useBandHQModal } from '../hooks/useBandHQModal.js'
 import { GlitchButton } from '../ui/GlitchButton'
 import { BandHQ } from '../ui/BandHQ'
-import { Modal } from '../ui/shared/Modal'
+import { Modal } from '../ui/shared'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import { audioManager } from '../utils/AudioManager'
 import { handleError } from '../utils/errorHandler'
@@ -16,7 +16,8 @@ import { handleError } from '../utils/errorHandler'
  */
 export const MainMenu = () => {
   const { t } = useTranslation()
-  const { changeScene, loadGame, addToast, resetState, updatePlayer } = useGameState()
+  const { changeScene, loadGame, addToast, resetState, updatePlayer } =
+    useGameState()
   const { showHQ, openHQ, bandHQProps } = useBandHQModal()
   const isMountedRef = useRef(true)
   const [isStarting, setIsStarting] = useState(false)
@@ -83,7 +84,13 @@ export const MainMenu = () => {
       .ensureAudioContext()
       .catch(err => reportAudioIssue(err, 'Audio initialization failed.'))
       .then(() => startAmbientSafely())
-  }, [resetState, changeScene, reportAudioIssue, startAmbientSafely, updatePlayer])
+  }, [
+    resetState,
+    changeScene,
+    reportAudioIssue,
+    startAmbientSafely,
+    updatePlayer
+  ])
 
   const handleStartTour = useCallback(async () => {
     // Check for existing player identity
@@ -95,18 +102,12 @@ export const MainMenu = () => {
       return
     }
 
-    // Ensure state has the ID/Name if starting fresh
-    updatePlayer({
-      playerId: savedPlayerId,
-      playerName: savedPlayerName
-    })
-
     proceedToTour()
-  }, [updatePlayer, proceedToTour])
+  }, [proceedToTour])
 
   const handleNameSubmit = useCallback(() => {
     if (!playerNameInput.trim()) {
-      addToast('Please enter a name', 'error')
+      addToast(t('ui:enter_name_error'), 'error')
       return
     }
 
@@ -158,28 +159,28 @@ export const MainMenu = () => {
       {showNameInput && (
         <Modal
           isOpen={true}
-          title="IDENTITY REQUIRED"
+          title={t('ui:identity_required')}
           onClose={() => setShowNameInput(false)}
-          className="max-w-md"
-          aria-label="Identity required dialog"
+          className='max-w-md'
+          aria-label={t('ui:identity_required')}
         >
-          <div className="flex flex-col gap-4">
-            <p className="text-(--ash-gray) font-mono text-sm">
-              Enter your alias for the global underground network.
+          <div className='flex flex-col gap-4'>
+            <p className='text-(--ash-gray) font-mono text-sm'>
+              {t('ui:enter_alias_desc')}
             </p>
             <input
               ref={inputRef}
-              type="text"
+              type='text'
               value={playerNameInput}
               onChange={e => setPlayerNameInput(e.target.value)}
-              placeholder="ENTER NAME..."
-              className="bg-(--void-black) border border-(--toxic-green) p-2 text-(--toxic-green) font-mono text-lg focus:outline-none focus:ring-1 focus:ring-(--toxic-green) uppercase"
+              placeholder={t('ui:enter_name_placeholder')}
+              className='bg-(--void-black) border border-(--toxic-green) p-2 text-(--toxic-green) font-mono text-lg focus:outline-none focus:ring-1 focus:ring-(--toxic-green) uppercase'
               maxLength={20}
               onKeyDown={e => e.key === 'Enter' && handleNameSubmit()}
-              aria-label="Enter alias for global network"
+              aria-label={t('ui:enter_alias_desc')}
             />
             <GlitchButton onClick={handleNameSubmit}>
-              CONFIRM IDENTITY
+              {t('ui:confirm_identity')}
             </GlitchButton>
           </div>
         </Modal>

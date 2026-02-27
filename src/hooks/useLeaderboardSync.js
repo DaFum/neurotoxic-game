@@ -5,7 +5,7 @@ import { logger } from '../utils/logger'
  * Hook to sync player balance to the global leaderboard.
  * @param {object} player - The current player state.
  */
-export const useLeaderboardSync = (player) => {
+export const useLeaderboardSync = player => {
   useEffect(() => {
     const syncBalance = async () => {
       // 1. Validation
@@ -37,7 +37,10 @@ export const useLeaderboardSync = (player) => {
         }
 
         // 4. Update Synced State
-        localStorage.setItem('neurotoxic_last_synced_day', player.day.toString())
+        localStorage.setItem(
+          'neurotoxic_last_synced_day',
+          player.day.toString()
+        )
         logger.info('Leaderboard', `Synced balance for day ${player.day}`)
       } catch (error) {
         // Silent fail for leaderboard sync to not disrupt gameplay

@@ -19,7 +19,11 @@ export default async function handler(req, res) {
       }
 
       await redis.hset('players', { [playerId]: playerName })
-      await redis.zadd('lb:balance', { gt: true }, { score: money, member: playerId })
+      await redis.zadd(
+        'lb:balance',
+        { gt: true },
+        { score: money, member: playerId }
+      )
 
       return res.status(200).json({ success: true })
     } catch (error) {

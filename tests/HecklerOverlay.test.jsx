@@ -104,7 +104,9 @@ describe('HecklerOverlay', () => {
     ]
     rerender(<HecklerOverlay gameStateRef={gameStateRef} />)
 
-    expect(() => rerender(<HecklerOverlay gameStateRef={gameStateRef} />)).not.toThrow()
+    expect(() =>
+      rerender(<HecklerOverlay gameStateRef={gameStateRef} />)
+    ).not.toThrow()
   })
 
   test('has correct z-index and overflow settings', () => {

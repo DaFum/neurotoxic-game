@@ -7,21 +7,21 @@ import * as socialEngine from '../src/utils/socialEngine'
 
 // Mock dependencies
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key) => key }),
+  useTranslation: () => ({ t: key => key })
 }))
 
 vi.mock('../src/context/GameState', () => ({
-  useGameState: vi.fn(),
+  useGameState: vi.fn()
 }))
 
 vi.mock('../src/utils/imageGen', () => ({
   getGenImageUrl: vi.fn(),
-  IMG_PROMPTS: { POST_GIG_BG: 'mock-bg' },
+  IMG_PROMPTS: { POST_GIG_BG: 'mock-bg' }
 }))
 
 // Mock crypto
 vi.mock('../src/utils/crypto', () => ({
-  secureRandom: () => 0.5,
+  secureRandom: () => 0.5
 }))
 
 describe('PostGig Leaderboard Submission', () => {
@@ -41,7 +41,7 @@ describe('PostGig Leaderboard Submission', () => {
       fame: 100,
       day: 5,
       playerId: 'user-uuid',
-      playerName: 'TestUser',
+      playerName: 'TestUser'
     },
     band: { inventory: {}, members: [] },
     social: { instagram: 100, trend: 'NEUTRAL' },
@@ -57,7 +57,7 @@ describe('PostGig Leaderboard Submission', () => {
     addToast: mockAddToast,
     unlockTrait: mockUnlockTrait,
     reputationByRegion: {},
-    addQuest: vi.fn(),
+    addQuest: vi.fn()
   })
 
   beforeEach(() => {
@@ -80,7 +80,7 @@ describe('PostGig Leaderboard Submission', () => {
           { label: 'Venue Cut', value: 50 },
           { label: 'Travel Cost', value: 10 }
         ]
-      },
+      }
     })
 
     vi.spyOn(socialEngine, 'generatePostOptions').mockReturnValue([
@@ -91,7 +91,7 @@ describe('PostGig Leaderboard Submission', () => {
       success: true,
       followers: 10,
       platform: 'instagram',
-      message: 'Great post!',
+      message: 'Great post!'
     })
 
     vi.spyOn(socialEngine, 'calculateSocialGrowth').mockReturnValue(5)
@@ -115,7 +115,9 @@ describe('PostGig Leaderboard Submission', () => {
     // Let's assume there's a button with text "CONTINUE" or "NEXT".
     // Checking PostGig logic: <ReportPhase onNext={handleNextPhase} />
     // I'll search for a button.
-    const nextBtn = await screen.findByRole('button') // Likely "CONTINUE" or similar
+    const nextBtn = await screen.findByRole('button', {
+      name: /continue|next|social/i
+    })
     fireEvent.click(nextBtn)
 
     // Phase: SOCIAL
@@ -126,7 +128,9 @@ describe('PostGig Leaderboard Submission', () => {
     // Phase: DEALS (Skipped because mock returns empty array) -> COMPLETE
     // Phase: COMPLETE
     // Click Continue (to Overworld)
-    const continueBtn = await screen.findByText(/Back to Tour/i)
+    const continueBtn = await screen.findByRole('button', {
+      name: /back to tour/i
+    })
 
     // Ensure we are in Complete phase
     expect(screen.getByText('Great post!')).toBeInTheDocument()
@@ -138,15 +142,18 @@ describe('PostGig Leaderboard Submission', () => {
 
     // Verify fetch call
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith('/api/leaderboard/song', expect.objectContaining({
-        method: 'POST',
-        body: JSON.stringify({
-          playerId: 'user-uuid',
-          playerName: 'TestUser',
-          songId: 'song_1',
-          score: 12345,
-        }),
-      }))
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/leaderboard/song',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            playerId: 'user-uuid',
+            playerName: 'TestUser',
+            songId: 'song_1',
+            score: 12345
+          })
+        })
+      )
     })
 
     // Verify scene change
@@ -157,7 +164,7 @@ describe('PostGig Leaderboard Submission', () => {
     const base = getBaseState()
     useGameState.mockReturnValue({
       ...base,
-      currentGig: { venue: 'Venue A' }, // No songId
+      currentGig: { venue: 'Venue A' } // No songId
     })
 
     render(<PostGig />)

@@ -47,18 +47,18 @@ describe('saveValidator - Leaderboard Identity', () => {
   it('throws if playerId is not a string or null', () => {
     const data = getValidData()
     data.player.playerId = 12345
-    assert.throws(
-      () => validateSaveData(data),
-      { name: 'StateError', message: /player.playerId must be a string or null/ }
-    )
+    assert.throws(() => validateSaveData(data), {
+      name: 'StateError',
+      message: /player.playerId must be a string or null/
+    })
   })
 
   it('throws if playerName is not a string', () => {
     const data = getValidData()
     data.player.playerName = 12345
-    assert.throws(
-      () => validateSaveData(data),
-      { name: 'StateError', message: /player.playerName must be a string/ }
-    )
+    assert.throws(() => validateSaveData(data), {
+      name: 'StateError',
+      message: /player.playerName must be a string/
+    })
   })
 })

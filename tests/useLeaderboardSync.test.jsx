@@ -7,8 +7,8 @@ vi.mock('../src/utils/logger', () => ({
   logger: {
     info: vi.fn(),
     warn: vi.fn(),
-    error: vi.fn(),
-  },
+    error: vi.fn()
+  }
 }))
 
 describe('useLeaderboardSync', () => {
@@ -29,7 +29,7 @@ describe('useLeaderboardSync', () => {
       playerId: null,
       playerName: '',
       money: 100,
-      day: 5,
+      day: 5
     }
 
     renderHook(() => useLeaderboardSync(player))
@@ -43,7 +43,7 @@ describe('useLeaderboardSync', () => {
       playerId: 'id-123',
       playerName: 'Player1',
       money: 100,
-      day: 5,
+      day: 5
     }
 
     renderHook(() => useLeaderboardSync(player))
@@ -59,7 +59,7 @@ describe('useLeaderboardSync', () => {
       playerId: 'id-123',
       playerName: 'Player1',
       money: 500,
-      day: 5,
+      day: 5
     }
 
     renderHook(() => useLeaderboardSync(player))
@@ -72,8 +72,8 @@ describe('useLeaderboardSync', () => {
           playerId: 'id-123',
           playerName: 'Player1',
           money: 500,
-          day: 5,
-        }),
+          day: 5
+        })
       })
     })
 
@@ -88,7 +88,7 @@ describe('useLeaderboardSync', () => {
       playerId: 'id-123',
       playerName: 'Player1',
       money: 500,
-      day: 5,
+      day: 5
     }
 
     renderHook(() => useLeaderboardSync(player))

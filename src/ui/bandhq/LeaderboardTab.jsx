@@ -54,9 +54,9 @@ export const LeaderboardTab = ({ setlist }) => {
   }, [view, selectedSongId])
 
   return (
-    <div className="h-full flex flex-col gap-4">
+    <div className='h-full flex flex-col gap-4'>
       {/* View Switcher */}
-      <div className="flex gap-4 mb-2">
+      <div className='flex gap-4 mb-2'>
         <GlitchButton
           onClick={() => setView('BALANCE')}
           disabled={view === 'BALANCE'}
@@ -75,61 +75,84 @@ export const LeaderboardTab = ({ setlist }) => {
 
       {/* Song Selector */}
       {view === 'SONG' && (
-        <div className="flex flex-col gap-2">
-           <label htmlFor="songSelect" className="text-(--toxic-green) font-mono text-sm uppercase">Select Song:</label>
-           <select
-             id="songSelect"
-             className="bg-(--void-black) border border-(--toxic-green) text-(--toxic-green) p-2 font-mono uppercase focus:outline-none"
-             value={selectedSongId}
-             onChange={(e) => setSelectedSongId(e.target.value)}
-           >
-             {setlist.map(song => (
-               <option key={song.id} value={song.id}>
-                 {song.title || song.id}
-               </option>
-             ))}
-             {setlist.length === 0 && <option value="" disabled>NO SONGS UNLOCKED</option>}
-           </select>
+        <div className='flex flex-col gap-2'>
+          <label
+            htmlFor='songSelect'
+            className='text-(--toxic-green) font-mono text-sm uppercase'
+          >
+            Select Song:
+          </label>
+          <select
+            id='songSelect'
+            className='bg-(--void-black) border border-(--toxic-green) text-(--toxic-green) p-2 font-mono uppercase focus:outline-none'
+            value={selectedSongId}
+            onChange={e => setSelectedSongId(e.target.value)}
+          >
+            {setlist.map(song => (
+              <option key={song.id} value={song.id}>
+                {song.title || song.id}
+              </option>
+            ))}
+            {setlist.length === 0 && (
+              <option value='' disabled>
+                NO SONGS UNLOCKED
+              </option>
+            )}
+          </select>
         </div>
       )}
 
       {/* Leaderboard Table */}
-      <Panel className="flex-1 overflow-hidden flex flex-col" title={view === 'BALANCE' ? 'TOP 100 WEALTHIEST' : 'TOP 100 SHREDDERS'}>
+      <Panel
+        className='flex-1 overflow-hidden flex flex-col'
+        title={view === 'BALANCE' ? 'TOP 100 WEALTHIEST' : 'TOP 100 SHREDDERS'}
+      >
         {isLoading && (
-          <div className="flex-1 flex items-center justify-center text-(--toxic-green) animate-pulse font-mono">
+          <div className='flex-1 flex items-center justify-center text-(--toxic-green) animate-pulse font-mono'>
             CONNECTING TO UNDERGROUND NETWORK...
           </div>
         )}
 
         {error && (
-          <div className="flex-1 flex items-center justify-center text-(--blood-red) font-mono">
+          <div className='flex-1 flex items-center justify-center text-(--blood-red) font-mono'>
             {error}
           </div>
         )}
 
         {!isLoading && !error && rankings.length === 0 && (
-          <div className="flex-1 flex items-center justify-center text-(--ash-gray) font-mono">
+          <div className='flex-1 flex items-center justify-center text-(--ash-gray) font-mono'>
             NO DATA RECORDED YET.
           </div>
         )}
 
         {!isLoading && !error && rankings.length > 0 && (
-          <div className="overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-(--void-black)">
-            <table className="w-full text-left font-mono">
-              <thead className="text-(--ash-gray) border-b border-(--ash-gray)/30 text-xs uppercase sticky top-0 bg-(--void-black)">
+          <div className='overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-(--void-black)'>
+            <table className='w-full text-left font-mono'>
+              <thead className='text-(--ash-gray) border-b border-(--ash-gray)/30 text-xs uppercase sticky top-0 bg-(--void-black)'>
                 <tr>
-                  <th className="py-2 px-2">#</th>
-                  <th className="py-2 px-2">PLAYER</th>
-                  <th className="py-2 px-2 text-right">{view === 'BALANCE' ? 'NET WORTH' : 'SCORE'}</th>
+                  <th className='py-2 px-2'>#</th>
+                  <th className='py-2 px-2'>PLAYER</th>
+                  <th className='py-2 px-2 text-right'>
+                    {view === 'BALANCE' ? 'NET WORTH' : 'SCORE'}
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {rankings.map((entry) => (
-                  <tr key={entry.rank} className="border-b border-(--ash-gray)/10 hover:bg-(--toxic-green)/10 transition-colors">
-                    <td className="py-2 px-2 text-(--toxic-green)">{entry.rank}</td>
-                    <td className="py-2 px-2 text-(--star-white)">{entry.playerName}</td>
-                    <td className="py-2 px-2 text-right text-(--toxic-green)">
-                      {view === 'BALANCE' ? `€${entry.score.toLocaleString()}` : entry.score.toLocaleString()}
+                {rankings.map(entry => (
+                  <tr
+                    key={entry.rank}
+                    className='border-b border-(--ash-gray)/10 hover:bg-(--toxic-green)/10 transition-colors'
+                  >
+                    <td className='py-2 px-2 text-(--toxic-green)'>
+                      {entry.rank}
+                    </td>
+                    <td className='py-2 px-2 text-(--star-white)'>
+                      {entry.playerName}
+                    </td>
+                    <td className='py-2 px-2 text-right text-(--toxic-green)'>
+                      {view === 'BALANCE'
+                        ? `€${entry.score.toLocaleString()}`
+                        : entry.score.toLocaleString()}
                     </td>
                   </tr>
                 ))}

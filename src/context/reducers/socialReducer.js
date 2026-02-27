@@ -31,10 +31,7 @@ export const handleUpdateSocial = (state, payload) => {
     updates.sponsorActive !== undefined &&
     typeof updates.sponsorActive !== 'boolean'
   ) {
-    logger.warn(
-      'GameState',
-      'Invalid sponsorActive update (must be boolean)'
-    )
+    logger.warn('GameState', 'Invalid sponsorActive update (must be boolean)')
     delete updates.sponsorActive
   }
 

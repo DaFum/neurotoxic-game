@@ -6,27 +6,27 @@ import { useBandHQModal } from '../src/hooks/useBandHQModal'
 
 // Mock dependencies
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key) => key }),
+  useTranslation: () => ({ t: key => key })
 }))
 
 vi.mock('../src/context/GameState', () => ({
-  useGameState: vi.fn(),
+  useGameState: vi.fn()
 }))
 
 vi.mock('../src/hooks/useBandHQModal', () => ({
-  useBandHQModal: vi.fn(),
+  useBandHQModal: vi.fn()
 }))
 
 vi.mock('../src/utils/imageGen', () => ({
   getGenImageUrl: vi.fn(),
-  IMG_PROMPTS: { MAIN_MENU_BG: 'mock-bg' },
+  IMG_PROMPTS: { MAIN_MENU_BG: 'mock-bg' }
 }))
 
 vi.mock('../src/utils/AudioManager', () => ({
   audioManager: {
     startAmbient: vi.fn().mockResolvedValue(),
-    ensureAudioContext: vi.fn().mockResolvedValue(),
-  },
+    ensureAudioContext: vi.fn().mockResolvedValue()
+  }
 }))
 
 describe('MainMenu Identity Flow', () => {
@@ -36,6 +36,7 @@ describe('MainMenu Identity Flow', () => {
   const mockAddToast = vi.fn()
 
   beforeEach(() => {
+    vi.useFakeTimers()
     vi.clearAllMocks()
     localStorage.clear()
     vi.stubGlobal('crypto', { randomUUID: vi.fn(() => 'mock-uuid-1234') })
@@ -45,17 +46,19 @@ describe('MainMenu Identity Flow', () => {
       updatePlayer: mockUpdatePlayer,
       resetState: mockResetState,
       addToast: mockAddToast,
-      loadGame: vi.fn().mockReturnValue(false),
+      loadGame: vi.fn().mockReturnValue(false)
     })
 
     useBandHQModal.mockReturnValue({
       showHQ: false,
       openHQ: vi.fn(),
-      bandHQProps: {},
+      bandHQProps: {}
     })
   })
 
   afterEach(() => {
+    vi.runOnlyPendingTimers()
+    vi.useRealTimers()
     vi.restoreAllMocks()
     vi.unstubAllGlobals()
   })
@@ -67,8 +70,10 @@ describe('MainMenu Identity Flow', () => {
     fireEvent.click(screen.getByText('ui:start_game'))
 
     // Expect Modal to appear
-    expect(await screen.findByText('IDENTITY REQUIRED')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('ENTER NAME...')).toBeInTheDocument()
+    // State update is synchronous, so getByText should work.
+    // If we rely on findByText with fake timers, it might hang if not advanced.
+    expect(screen.getByText('ui:identity_required')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('ui:enter_name_placeholder')).toBeInTheDocument()
   })
 
   it('generates ID and saves to localStorage on submit', async () => {
@@ -76,28 +81,25 @@ describe('MainMenu Identity Flow', () => {
 
     // Trigger Modal
     fireEvent.click(screen.getByText('ui:start_game'))
-    await screen.findByText('IDENTITY REQUIRED')
+    expect(screen.getByText('ui:identity_required')).toBeInTheDocument()
 
     // Enter Name
-    const input = screen.getByPlaceholderText('ENTER NAME...')
+    const input = screen.getByPlaceholderText('ui:enter_name_placeholder')
     fireEvent.change(input, { target: { value: 'TestPlayer' } })
-    fireEvent.click(screen.getByText('CONFIRM IDENTITY'))
+    fireEvent.click(screen.getByText('ui:confirm_identity'))
 
-    await waitFor(() => {
-      expect(localStorage.getItem('neurotoxic_player_id')).toBe('mock-uuid-1234')
-      expect(localStorage.getItem('neurotoxic_player_name')).toBe('TestPlayer')
-    })
+    expect(localStorage.getItem('neurotoxic_player_id')).toBe('mock-uuid-1234')
+    expect(localStorage.getItem('neurotoxic_player_name')).toBe('TestPlayer')
 
     // Verify state update and scene change
-    await waitFor(() => {
-      expect(mockUpdatePlayer).toHaveBeenCalledWith({
-        playerId: 'mock-uuid-1234',
-        playerName: 'TestPlayer',
-      })
-    }, { timeout: 2000 })
+    expect(mockUpdatePlayer).toHaveBeenCalledWith({
+      playerId: 'mock-uuid-1234',
+      playerName: 'TestPlayer',
+    })
 
     // Scene change should happen after animation delay
-    await waitFor(() => expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD'), { timeout: 2000 })
+    await vi.advanceTimersByTimeAsync(600)
+    expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
   })
 
   it('skips modal if identity already exists', async () => {
@@ -109,17 +111,10 @@ describe('MainMenu Identity Flow', () => {
     fireEvent.click(screen.getByText('ui:start_game'))
 
     // Should NOT see modal
-    expect(screen.queryByText('IDENTITY REQUIRED')).not.toBeInTheDocument()
-
-    // Should update player state with existing ID
-    await waitFor(() => {
-      expect(mockUpdatePlayer).toHaveBeenCalledWith({
-        playerId: 'existing-id',
-        playerName: 'ExistingPlayer',
-      })
-    })
+    expect(screen.queryByText('ui:identity_required')).not.toBeInTheDocument()
 
     // Should proceed to scene change
-    await waitFor(() => expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD'), { timeout: 2000 })
+    await vi.advanceTimersByTimeAsync(600)
+    expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
   })
 })

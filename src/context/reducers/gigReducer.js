@@ -3,7 +3,11 @@ import { checkTraitUnlocks } from '../../utils/unlockCheck.js'
 import { applyTraitUnlocks } from '../../utils/traitUtils.js'
 import { DEFAULT_GIG_MODIFIERS } from '../initialState.js'
 import { handleAddVenueBlacklist } from './socialReducer.js'
-import { handleAddQuest, handleAdvanceQuest, handleCompleteQuest } from './questReducer.js'
+import {
+  handleAddQuest,
+  handleAdvanceQuest,
+  handleCompleteQuest
+} from './questReducer.js'
 
 export const handleSetGig = (state, payload) => {
   logger.info('GameState', 'Set Current Gig', payload?.name)
@@ -139,10 +143,7 @@ export const handleSetLastGigStats = (state, payload) => {
     const currentRep = nextState.reputationByRegion[location] || 0
     if (currentRep < 100) {
       const bonus = score >= 90 ? 10 : 5
-      nextState.reputationByRegion[location] = Math.min(
-        100,
-        currentRep + bonus
-      )
+      nextState.reputationByRegion[location] = Math.min(100, currentRep + bonus)
       logger.info(
         'GameState',
         `Regional reputation gain in ${location} (+${bonus})`
