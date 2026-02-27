@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types'
 import { SettingsPanel } from '../shared'
+import { AudioStatePropType, OnAudioChangePropType } from '../shared/propTypes'
 
 export const SettingsTab = ({
   settings,
@@ -28,16 +29,8 @@ export const SettingsTab = ({
 
 SettingsTab.propTypes = {
   settings: PropTypes.object.isRequired,
-  audioState: PropTypes.shape({
-    musicVol: PropTypes.number,
-    sfxVol: PropTypes.number,
-    isMuted: PropTypes.bool
-  }).isRequired,
-  onAudioChange: PropTypes.shape({
-    setMusic: PropTypes.func,
-    setSfx: PropTypes.func,
-    toggleMute: PropTypes.func
-  }).isRequired,
+  audioState: AudioStatePropType.isRequired,
+  onAudioChange: OnAudioChangePropType.isRequired,
   updateSettings: PropTypes.func.isRequired,
   deleteSave: PropTypes.func.isRequired
 }

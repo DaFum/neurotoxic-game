@@ -38,6 +38,20 @@ export const setupMainMenuAudioTest = async () => {
     }
   })
 
+  mock.module('react-i18next', {
+    namedExports: {
+      useTranslation: () => ({
+        t: key => {
+          if (key === 'ui:start_game') return 'Start Tour'
+          if (key === 'ui:load_game') return 'Load Game'
+          if (key === 'ui:band_hq') return 'Band HQ'
+          if (key === 'ui:credits') return 'Credits'
+          return key
+        }
+      })
+    }
+  })
+
   // We need to return a mutable object for useGameState so we can update it in tests if needed,
   // but for these tests a static return is fine, or we can use a mock function.
   // Using a mock function allows for flexibility.

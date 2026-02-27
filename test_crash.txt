@@ -1,0 +1,26 @@
+file:///C:/Users/andre.oswald/Code/Neuro/neurotoxic-game/tests/audioProcedural.test.js:14
+mock.module('../src/utils/logger.js', { namedExports: { logger: mockLogger } })
+     ^
+
+TypeError: mock.module is not a function
+    at file:///C:/Users/andre.oswald/Code/Neuro/neurotoxic-game/tests/audioProcedural.test.js:14:6
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.13.0
+Ô£û tests\audioProcedural.test.js (71.2542ms)
+Ôä╣ tests 1
+Ôä╣ suites 0
+Ôä╣ pass 0
+Ôä╣ fail 1
+Ôä╣ cancelled 0
+Ôä╣ skipped 0
+Ôä╣ todo 0
+Ôä╣ duration_ms 80.7803
+
+Ô£û failing tests:
+
+test at tests\audioProcedural.test.js:1:1
+Ô£û tests\audioProcedural.test.js (71.2542ms)
+  'test failed'

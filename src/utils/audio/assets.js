@@ -146,7 +146,7 @@ export async function loadAudioBuffer(filename) {
  * @returns {Promise<AudioBuffer|null>} Decoded audio buffer or null.
  */
 async function loadAudioBufferInternal(filename, cacheKey) {
-  const baseUrl = import.meta.env.BASE_URL || './'
+  const baseUrl = import.meta.env?.BASE_URL || './'
   const publicBasePath = `${baseUrl}assets`
   const { url, source } = resolveAssetUrl(filename, oggUrlMap, publicBasePath)
   if (!url) {

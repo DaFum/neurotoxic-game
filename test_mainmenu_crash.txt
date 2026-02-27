@@ -1,0 +1,40 @@
+(node:14428) ExperimentalWarning: Module mocking is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Ô£û MainMenu starts ambient audio when starting a tour (45.8143ms)
+Ô£û MainMenu starts ambient audio when loading a save (6.8166ms)
+Ôä╣ tests 2
+Ôä╣ suites 0
+Ôä╣ pass 0
+Ôä╣ fail 2
+Ôä╣ cancelled 0
+Ôä╣ skipped 0
+Ôä╣ todo 0
+Ôä╣ duration_ms 4861.731
+
+Ô£û failing tests:
+
+test at tests\mainMenuAudio.test.js:35:1
+Ô£û MainMenu starts ambient audio when starting a tour (45.8143ms)
+  ReferenceError: mock is not defined
+      at TestContext.<anonymous> (file:///C:/Users/andre.oswald/Code/Neuro/neurotoxic-game/tests/mainMenuAudio.test.js:24:14)
+      at TestHook.runInAsyncScope (node:async_hooks:214:14)
+      at TestHook.run (node:internal/test_runner/test:1106:25)
+      at TestHook.run (node:internal/test_runner/test:1427:18)
+      at Test.runHook (node:internal/test_runner/test:1024:20)
+      at Test.run (node:internal/test_runner/test:1081:27)
+      at Test.start (node:internal/test_runner/test:1003:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17)
+
+test at tests\mainMenuAudio.test.js:47:1
+Ô£û MainMenu starts ambient audio when loading a save (6.8166ms)
+  ReferenceError: mock is not defined
+      at TestContext.<anonymous> (file:///C:/Users/andre.oswald/Code/Neuro/neurotoxic-game/tests/mainMenuAudio.test.js:24:14)
+      at TestHook.runInAsyncScope (node:async_hooks:214:14)
+      at TestHook.run (node:internal/test_runner/test:1106:25)
+      at TestHook.run (node:internal/test_runner/test:1427:18)
+      at Test.runHook (node:internal/test_runner/test:1024:20)
+      at Test.run (node:internal/test_runner/test:1081:27)
+      at Test.processPendingSubtests (node:internal/test_runner/test:788:18)
+      at Test.postRun (node:internal/test_runner/test:1235:19)
+      at Test.run (node:internal/test_runner/test:1163:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3)

@@ -5,7 +5,7 @@ import { useGameState } from '../context/GameState'
 import { useBandHQModal } from '../hooks/useBandHQModal.js'
 import { GlitchButton } from '../ui/GlitchButton'
 import { BandHQ } from '../ui/BandHQ'
-import { Modal } from '../ui/shared'
+import { Modal, AnimatedDivider, AnimatedSubtitle } from '../ui/shared'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen'
 import { audioManager } from '../utils/AudioManager'
 import { handleError } from '../utils/errorHandler'
@@ -208,21 +208,20 @@ export const MainMenu = () => {
           NEUROTOXIC
         </motion.h1>
 
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: '100%' }}
+        <AnimatedDivider
+          width='100%'
           transition={{ duration: 0.6, delay: 0.4 }}
-          className='h-[2px] bg-gradient-to-r from-transparent via-(--toxic-green) to-transparent mb-4 max-w-md'
+          className='bg-gradient-to-r from-transparent via-(--toxic-green) to-transparent mb-4 max-w-md'
         />
 
-        <motion.h2
+        <AnimatedSubtitle
           initial={{ opacity: 0, letterSpacing: '0.5em' }}
           animate={{ opacity: 1, letterSpacing: '0.3em' }}
           transition={{ duration: 1, delay: 0.6 }}
-          className='text-lg md:text-2xl text-(--toxic-green)/80 mb-2 font-[Courier_New] uppercase text-center'
+          className='text-lg md:text-2xl text-(--toxic-green)/80 mb-2 font-[Courier_New] text-center'
         >
           Grind The Void
-        </motion.h2>
+        </AnimatedSubtitle>
 
         <motion.div
           initial={{ opacity: 0 }}

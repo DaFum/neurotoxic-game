@@ -41,7 +41,7 @@ const mockAudioState = {
   part: null
 }
 mock.module('../src/utils/audio/state.js', {
-  namedExports: { audioState: mockAudioState }
+  namedExports: { audioState: mockAudioState, resetGigState: mock.fn() }
 })
 
 // Mock Tone.js
@@ -89,16 +89,23 @@ mock.module('tone', { namedExports: mockTone })
 // Mock Setup
 const mockEnsureAudioContext = mock.fn(async () => true)
 mock.module('../src/utils/audio/setup.js', {
-  namedExports: { ensureAudioContext: mockEnsureAudioContext }
+  namedExports: { 
+    ensureAudioContext: mockEnsureAudioContext,
+    getAudioContextTimeSec: mock.fn(() => 0),
+    getRawAudioContext: mock.fn()
+  }
 })
 
-// Mock Playback
-const mockStopAudioInternal = mock.fn()
-const mockStopAudio = mock.fn()
-mock.module('../src/utils/audio/playback.js', {
+// Mock PlaybackUtils
+const mockStopTransportAndClear = mock.fn()
+mock.module('../src/utils/audio/cleanupUtils.js', {
   namedExports: {
-    stopAudioInternal: mockStopAudioInternal,
-    stopAudio: mockStopAudio
+    stopTransportAndClear: mockStopTransportAndClear,
+    clearTransportEvent: mock.fn(),
+    cleanupTransportEvents: mock.fn(),
+    stopAndDisconnectSource: mock.fn(),
+    cleanupGigPlayback: mock.fn(),
+    cleanupAmbientPlayback: mock.fn()
   }
 })
 
@@ -128,6 +135,37 @@ mock.module('../src/data/songs.js', {
     SONGS_DB: []
   }
 })
+
+// Mock Playback Utils
+mock.module('../src/utils/audio/playbackUtils.js', {
+  namedExports: {
+    resolveAssetUrl: mock.fn(),
+    prepareTransportPlayback: mock.fn(async (options = {}) => {
+      const initialReqId = ++mockAudioState.playRequestId
+      const ensured = await mockEnsureAudioContext()
+      if (!ensured) return { success: false }
+      if (initialReqId !== mockAudioState.playRequestId) return { success: false }
+      
+      mockStopTransportAndClear()
+      
+      return { 
+        success: true, 
+        reqId: initialReqId, 
+        normalizedOptions: { 
+          useCleanPlayback: true,
+          onEnded: typeof options?.onEnded === 'function' ? options.onEnded : null
+        } 
+      }
+    }),
+    normalizeMidiPlaybackOptions: mock.fn(options => ({
+      useCleanPlayback: true,
+      onEnded: typeof options?.onEnded === 'function' ? options.onEnded : null
+    }))
+  }
+})
+
+// Mock env
+globalThis.import = { meta: { env: { BASE_URL: '/' } } }
 
 // Import the module under test AFTER mocking
 const { playSongFromData } = await import('../src/utils/audio/midiPlayback.js')
@@ -170,7 +208,7 @@ test('playSongFromData Tests', async t => {
     mockTransport.scheduleOnce.mock.resetCalls()
 
     mockEnsureAudioContext.mock.resetCalls()
-    mockStopAudioInternal.mock.resetCalls()
+    mockStopTransportAndClear.mock.resetCalls()
 
     MockPart.instances = []
     MockPart.prototype.start.mock.resetCalls()
@@ -188,7 +226,7 @@ test('playSongFromData Tests', async t => {
       'Should check audio context'
     )
     assert.strictEqual(
-      mockStopAudioInternal.mock.calls.length,
+      mockStopTransportAndClear.mock.calls.length,
       1,
       'Should stop previous audio'
     )
@@ -223,7 +261,7 @@ test('playSongFromData Tests', async t => {
         'Should return false if audio context is locked'
       )
       assert.strictEqual(
-        mockStopAudioInternal.mock.calls.length,
+        mockStopTransportAndClear.mock.calls.length,
         0,
         'Should not stop audio if locked'
       )
@@ -246,7 +284,7 @@ test('playSongFromData Tests', async t => {
         'Should return false if request ID changed'
       )
       assert.strictEqual(
-        mockStopAudioInternal.mock.calls.length,
+        mockStopTransportAndClear.mock.calls.length,
         0,
         'Should not stop audio'
       )

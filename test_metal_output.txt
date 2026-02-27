@@ -1,0 +1,25 @@
+file:///C:/Users/andre.oswald/Code/Neuro/neurotoxic-game/src/utils/audio/proceduralMetal.js:3
+import { prepareTransportPlayback } from './playbackUtils.js'
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+SyntaxError: The requested module './playbackUtils.js' does not provide an export named 'prepareTransportPlayback'
+    at #asyncInstantiate (node:internal/modules/esm/module_job:302:21)
+    at async ModuleJob.run (node:internal/modules/esm/module_job:405:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async <anonymous> (C:\Users\andre.oswald\Code\Neuro\neurotoxic-game\tests\audioProceduralMetal.test.js:171:3)
+
+Node.js v24.13.0
+Ô£û tests\audioProceduralMetal.test.js (282.9553ms)
+Ôä╣ tests 1
+Ôä╣ suites 0
+Ôä╣ pass 0
+Ôä╣ fail 1
+Ôä╣ cancelled 0
+Ôä╣ skipped 0
+Ôä╣ todo 0
+Ôä╣ duration_ms 292.8063
+
+Ô£û failing tests:
+
+test at tests\audioProceduralMetal.test.js:1:1
+Ô£û tests\audioProceduralMetal.test.js (282.9553ms)
+  'test failed'

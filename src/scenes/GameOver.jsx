@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { GlitchButton } from '../ui/GlitchButton'
+import { AnimatedDivider, AnimatedSubtitle } from '../ui/shared'
 
 /**
  * Scene displayed when the game ends (bankruptcy or health failure).
@@ -54,21 +55,20 @@ export const GameOver = () => {
         SOLD OUT
       </h1>
 
-      <motion.div
-        initial={{ width: 0 }}
-        animate={{ width: '16rem' }}
+      <AnimatedDivider
+        width='16rem'
         transition={{ duration: 0.8, delay: 0.8 }}
-        className='h-[2px] bg-gradient-to-r from-transparent via-(--blood-red) to-transparent mb-3'
+        className='bg-gradient-to-r from-transparent via-(--blood-red) to-transparent mb-3'
       />
 
-      <motion.h2
+      <AnimatedSubtitle
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
-        className='text-lg text-(--ash-gray) font-mono mb-10 uppercase tracking-[0.3em] relative z-10'
+        className='text-lg text-(--ash-gray) font-mono mb-10 tracking-[0.3em] relative z-10'
       >
         The tour has ended prematurely.
-      </motion.h2>
+      </AnimatedSubtitle>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

@@ -1,8 +1,6 @@
 import * as Tone from 'tone'
 import { audioState } from './state.js'
-import { ensureAudioContext } from './setup.js'
-import { stopAudioInternal } from './playback.js'
-import { normalizeMidiPlaybackOptions } from './playbackUtils.js'
+import { prepareTransportPlayback } from './playbackUtils.js'
 
 /**
  * Generates a procedural riff pattern.
@@ -74,15 +72,10 @@ export async function startMetalGenerator(
   options = {},
   random = Math.random
 ) {
-  const { onEnded } = normalizeMidiPlaybackOptions(options)
-  const reqId = ++audioState.playRequestId
-  const unlocked = await ensureAudioContext()
-  if (!unlocked) return false
-  if (reqId !== audioState.playRequestId) return false
-
-  stopAudioInternal()
-  Tone.getTransport().cancel()
-  Tone.getTransport().position = 0
+  const { success, reqId, normalizedOptions } =
+    await prepareTransportPlayback(options)
+  if (!success) return false
+  const { onEnded } = normalizedOptions
 
   // Guard BPM against zero/negative/falsy values
   // Use ?? for difficulty to correctly handle 0 as a valid difficulty

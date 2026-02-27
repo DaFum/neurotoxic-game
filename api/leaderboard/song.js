@@ -77,9 +77,14 @@ export default async function handler(req, res) {
       limit = Math.min(Math.max(1, limit), 100)
 
       // v4: zRangeWithScores(key, min, max, options)
-      const range = await client.zRangeWithScores(`lb:song:${songId}`, 0, limit - 1, {
-        REV: true
-      })
+      const range = await client.zRangeWithScores(
+        `lb:song:${songId}`,
+        0,
+        limit - 1,
+        {
+          REV: true
+        }
+      )
 
       if (!range.length) return res.status(200).json([])
 

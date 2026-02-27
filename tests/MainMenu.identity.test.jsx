@@ -73,7 +73,9 @@ describe('MainMenu Identity Flow', () => {
     // State update is synchronous, so getByText should work.
     // If we rely on findByText with fake timers, it might hang if not advanced.
     expect(screen.getByText('ui:identity_required')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('ui:enter_name_placeholder')).toBeInTheDocument()
+    expect(
+      screen.getByPlaceholderText('ui:enter_name_placeholder')
+    ).toBeInTheDocument()
   })
 
   it('generates ID and saves to localStorage on submit', async () => {
@@ -94,7 +96,7 @@ describe('MainMenu Identity Flow', () => {
     // Verify state update and scene change
     expect(mockUpdatePlayer).toHaveBeenCalledWith({
       playerId: 'mock-uuid-1234',
-      playerName: 'TestPlayer',
+      playerName: 'TestPlayer'
     })
 
     // Scene change should happen after animation delay

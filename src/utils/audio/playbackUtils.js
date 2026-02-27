@@ -1,3 +1,30 @@
+import * as Tone from 'tone'
+import { audioState } from './state.js'
+import { ensureAudioContext } from './setup.js'
+import { stopTransportAndClear, cleanupTransportEvents } from './cleanupUtils.js'
+
+/**
+ * Prepares the Tone.js transport for playback, returning normalized options and request ID.
+ * @param {object} [options] - Playback options.
+ * @returns {Promise<{success: boolean, reqId: number, normalizedOptions: object}>}
+ */
+export async function prepareTransportPlayback(options = {}) {
+  const normalizedOptions = normalizeMidiPlaybackOptions(options)
+  const reqId = ++audioState.playRequestId
+  const unlocked = await ensureAudioContext()
+
+  if (!unlocked || reqId !== audioState.playRequestId) {
+    return { success: false, reqId, normalizedOptions }
+  }
+
+  stopTransportAndClear()
+  cleanupTransportEvents()
+  Tone.getTransport().cancel()
+  Tone.getTransport().position = 0
+
+  return { success: true, reqId, normalizedOptions }
+}
+
 /**
  * Normalizes MIDI playback options.
  * @param {object} [options] - Optional playback settings.

@@ -12,6 +12,7 @@ import { UpgradesTab } from './bandhq/UpgradesTab'
 import { SetlistTab } from './bandhq/SetlistTab'
 import { SettingsTab } from './bandhq/SettingsTab'
 import { LeaderboardTab } from './bandhq/LeaderboardTab'
+import { AudioStatePropType, OnAudioChangePropType } from './shared/propTypes'
 
 /**
  * BandHQ Component
@@ -270,16 +271,8 @@ BandHQ.propTypes = {
   deleteSave: PropTypes.func.isRequired,
   setlist: PropTypes.array.isRequired,
   setSetlist: PropTypes.func.isRequired,
-  audioState: PropTypes.shape({
-    musicVol: PropTypes.number,
-    sfxVol: PropTypes.number,
-    isMuted: PropTypes.bool
-  }).isRequired,
-  onAudioChange: PropTypes.shape({
-    setMusic: PropTypes.func,
-    setSfx: PropTypes.func,
-    toggleMute: PropTypes.func
-  }).isRequired,
+  audioState: AudioStatePropType.isRequired,
+  onAudioChange: OnAudioChangePropType.isRequired,
   activeQuests: PropTypes.array,
   venueBlacklist: PropTypes.array,
   reputationByRegion: PropTypes.object,

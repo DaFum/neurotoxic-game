@@ -1,0 +1,25 @@
+file:///C:/Users/andre.oswald/Code/Neuro/neurotoxic-game/src/utils/audio/playback.js:7
+  getAudioContextTimeSec
+  ^^^^^^^^^^^^^^^^^^^^^^
+SyntaxError: The requested module './setup.js' does not provide an export named 'getAudioContextTimeSec'
+    at #asyncInstantiate (node:internal/modules/esm/module_job:302:21)
+    at async ModuleJob.run (node:internal/modules/esm/module_job:405:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async <anonymous> (C:\Users\andre.oswald\Code\Neuro\neurotoxic-game\tests\audioProceduralPlaySong.test.js:136:30)
+
+Node.js v24.13.0
+Ô£û tests\audioProceduralPlaySong.test.js (340.4677ms)
+Ôä╣ tests 1
+Ôä╣ suites 0
+Ôä╣ pass 0
+Ôä╣ fail 1
+Ôä╣ cancelled 0
+Ôä╣ skipped 0
+Ôä╣ todo 0
+Ôä╣ duration_ms 350.8951
+
+Ô£û failing tests:
+
+test at tests\audioProceduralPlaySong.test.js:1:1
+Ô£û tests\audioProceduralPlaySong.test.js (340.4677ms)
+  'test failed'
