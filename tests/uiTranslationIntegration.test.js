@@ -3,6 +3,10 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import {
+  flattenToObject,
+  resolveNamespaceKey
+} from './utils/localeTestUtils.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -21,39 +25,6 @@ const UI_SOURCE_FILES = [
 ]
 
 const KEY_PATTERN = /\bt\(\s*['"]([^'"]+)['"]/g
-
-const flattenTranslations = (entry, parentKey = '') => {
-  if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
-    return {}
-  }
-
-  return Object.entries(entry).reduce((accumulator, [childKey, childValue]) => {
-    const nextKey = parentKey ? `${parentKey}.${childKey}` : childKey
-
-    if (childValue && typeof childValue === 'object' && !Array.isArray(childValue)) {
-      return { ...accumulator, ...flattenTranslations(childValue, nextKey) }
-    }
-
-    return { ...accumulator, [nextKey]: childValue }
-  }, {})
-}
-
-const resolveNamespaceKey = rawKey => {
-  if (!rawKey || rawKey.endsWith(':')) {
-    return null
-  }
-
-  if (rawKey.includes(':')) {
-    const [namespace, key] = rawKey.split(/:(.+)/)
-    if (!namespace || !key) {
-      return null
-    }
-
-    return { namespace, key }
-  }
-
-  return { namespace: 'ui', key: rawKey }
-}
 
 const extractLocalizedKeys = () => {
   const localizedKeys = new Set()
@@ -76,7 +47,7 @@ const extractLocalizedKeys = () => {
 const readLocaleMap = (locale, namespace) => {
   const localePath = path.join(REPO_ROOT, 'public', 'locales', locale, `${namespace}.json`)
   const localeData = JSON.parse(readFileSync(localePath, 'utf8'))
-  return { ...flattenTranslations(localeData), ...localeData }
+  return { ...flattenToObject(localeData), ...localeData }
 }
 
 test('localized keys used in UI integration files exist in both en and de locales', () => {
@@ -85,10 +56,20 @@ test('localized keys used in UI integration files exist in both en and de locale
   const missingInEnglish = []
   const missingInGerman = []
 
+  const localeCache = new Map()
+
+  const getCachedLocaleMap = (locale, namespace) => {
+    const cacheKey = `${locale}:${namespace}`
+    if (!localeCache.has(cacheKey)) {
+      localeCache.set(cacheKey, readLocaleMap(locale, namespace))
+    }
+    return localeCache.get(cacheKey)
+  }
+
   localizedKeys.forEach(namespaceKey => {
     const [namespace, key] = namespaceKey.split(/:(.+)/)
-    const englishMap = readLocaleMap('en', namespace)
-    const germanMap = readLocaleMap('de', namespace)
+    const englishMap = getCachedLocaleMap('en', namespace)
+    const germanMap = getCachedLocaleMap('de', namespace)
 
     if (!(key in englishMap)) {
       missingInEnglish.push(namespaceKey)
