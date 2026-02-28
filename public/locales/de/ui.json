@@ -263,6 +263,15 @@
     "opt3": "Selbst reparieren (+1 Std)",
     "risky": "RISKANT"
   },
+  "checklist": {
+    "header": "PRE-GIG SEQUENZ",
+    "task1": "TOURBUS AUFTANKEN",
+    "task2": "VERZERRER-PEDAL AUSRÜSTEN",
+    "task3": "TÜRSTEHER BESTECHEN",
+    "task4": "VERSTÄRKER KALIBRIEREN",
+    "done": "GIG STARTEN",
+    "waiting": "WARTE AUF SEQUENZ"
+  },
   "terminal": {
     "log1": "> INITIALISIERE VOID_ENGINE v3.0...",
     "log2": "> VERBINDE MIT BÜHNENANLAGE...",
@@ -276,9 +285,9 @@
   "contract": {
     "confidential": "DOKUMENT: VERTRAULICH",
     "title": "Bindende Vereinbarung",
-    "p1": "Diese Vereinbarung bindet NEUROTOXIC an <span class=\"bg-[var(--toxic-green)] text-[var(--void-black)] font-bold px-1\">MEGA_CORP_INC</span>.",
-    "p2": "Der Künstler erklärt sich bereit, bei allen Live-Auftritten in Sektor 4 <span class=\"bg-[var(--toxic-green)] text-[var(--toxic-green)] select-none hover:text-[var(--void-black)] transition-colors\">subliminale Werbebotschaften einzufügen</span>.",
-    "warning": "Zuwiderhandlung führt zur <span class=\"bg-[var(--blood-red)] text-[var(--blood-red)] select-none\">sofortigen Beendigung der organischen Funktionen</span>.",
+    "p1": "Diese Vereinbarung bindet NEUROTOXIC an <0>MEGA_CORP_INC</0>.",
+    "p2": "Der Künstler erklärt sich bereit, bei allen Live-Auftritten in Sektor 4 <0>subliminale Werbebotschaften einzufügen</0>.",
+    "warning": "Zuwiderhandlung führt zur <0>sofortigen Beendigung der organischen Funktionen</0>.",
     "sig": "UNTERSCHRIFT (BLUT/VOID):",
     "sign_aria": "Vertrag unterschreiben",
     "sealed": "VERSIEGELT"

@@ -263,6 +263,15 @@
     "opt3": "Fix it yourselves (+1hr)",
     "risky": "RISKY"
   },
+  "checklist": {
+    "header": "PRE-GIG SEQUENCE",
+    "task1": "REFUEL TOURVAN",
+    "task2": "EQUIP DISTORTION PEDAL",
+    "task3": "BRIBE VENUE BOUNCER",
+    "task4": "CALIBRATE AMPS",
+    "done": "INITIATE GIG",
+    "waiting": "AWAITING SEQUENCE"
+  },
   "terminal": {
     "log1": "> INITIALIZING VOID_ENGINE v3.0...",
     "log2": "> CONNECTING TO STAGE RIG...",
@@ -276,9 +285,9 @@
   "contract": {
     "confidential": "DOCUMENT: CONFIDENTIAL",
     "title": "Binding Agreement",
-    "p1": "This agreement binds NEUROTOXIC to <span class=\"bg-[var(--toxic-green)] text-[var(--void-black)] font-bold px-1\">MEGA_CORP_INC</span>.",
-    "p2": "The Artist agrees to <span class=\"bg-[var(--toxic-green)] text-[var(--toxic-green)] select-none hover:text-[var(--void-black)] transition-colors\">subliminally insert corporate messaging</span> during all live performances in sector 4.",
-    "warning": "Failure to comply will result in <span class=\"bg-[var(--blood-red)] text-[var(--blood-red)] select-none\">immediate termination of organic functions</span>.",
+    "p1": "This agreement binds NEUROTOXIC to <0>MEGA_CORP_INC</0>.",
+    "p2": "The Artist agrees to <0>subliminally insert corporate messaging</0> during all live performances in sector 4.",
+    "warning": "Failure to comply will result in <0>immediate termination of organic functions</0>.",
     "sig": "SIGNATURE (BLOOD/VOID):",
     "sign_aria": "Sign Contract",
     "sealed": "SEALED"

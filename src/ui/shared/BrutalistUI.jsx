@@ -297,7 +297,7 @@ export const CorporateSeal = ({ className, title }) => {
 
 // --- UI COMPONENTS ---
 
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 
 // 1. Industrial Toggle
 export const BrutalToggle = ({ label, initialState = false }) => {
@@ -456,6 +456,7 @@ export const StatBlock = ({ label, value, icon: Icon }) => (
 
 // 5. Brutal Amp Fader (Custom Slider)
 export const BrutalFader = ({ label, initialValue = 7, max = 10 }) => {
+  const { t } = useTranslation(['ui'])
   const [val, setVal] = useState(initialValue)
   const segments = Array.from({ length: max }, (_, i) => i + 1)
 
@@ -487,7 +488,7 @@ export const BrutalFader = ({ label, initialValue = 7, max = 10 }) => {
                 }
               }}
               className='flex-1 relative h-full flex items-end group-hover:opacity-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)'
-              aria-label={`Set ${label} to ${segment}`}
+              aria-label={t('ui:set_label_to_segment', { label: t(label), segment })}
               aria-pressed={isActive}
             >
               <div
@@ -793,6 +794,8 @@ export const VoidLoader = ({ size = 'w-16 h-16' }) => {
         className='absolute inset-0 w-full h-full text-(--toxic-green) animate-[spin_4s_linear_infinite_reverse]'
         viewBox='0 0 100 100'
         fill='none'
+        aria-hidden='true'
+        focusable='false'
       >
         <polygon
           points='50,5 90,25 90,75 50,95 10,75 10,25'
@@ -806,6 +809,8 @@ export const VoidLoader = ({ size = 'w-16 h-16' }) => {
         className='absolute w-[60%] h-[60%] text-(--toxic-green) animate-[spin_1.5s_linear_infinite]'
         viewBox='0 0 100 100'
         fill='none'
+        aria-hidden='true'
+        focusable='false'
       >
         <rect
           x='15'
@@ -1127,9 +1132,24 @@ export const SelloutContract = () => {
       </h3>
 
       <div className='text-xs leading-relaxed opacity-80 flex flex-col gap-3 font-mono'>
-        <p dangerouslySetInnerHTML={{ __html: t('ui:contract.p1') }}></p>
-        <p dangerouslySetInnerHTML={{ __html: t('ui:contract.p2') }}></p>
-        <p dangerouslySetInnerHTML={{ __html: t('ui:contract.warning') }}></p>
+        <p>
+          <Trans
+            i18nKey='ui:contract.p1'
+            components={[<span key='0' className='bg-(--toxic-green) text-[color:var(--void-black)] font-bold px-1' />]}
+          />
+        </p>
+        <p>
+          <Trans
+            i18nKey='ui:contract.p2'
+            components={[<span key='0' className='bg-(--toxic-green) text-(--toxic-green) select-none hover:text-[color:var(--void-black)] transition-colors' />]}
+          />
+        </p>
+        <p>
+          <Trans
+            i18nKey='ui:contract.warning'
+            components={[<span key='0' className='bg-(--blood-red) text-(--blood-red) select-none' />]}
+          />
+        </p>
 
         <div className='mt-4 border-t border-dashed border-(--toxic-green)/50 pt-4 flex justify-between items-end'>
           <div className='flex flex-col gap-1 w-1/2'>

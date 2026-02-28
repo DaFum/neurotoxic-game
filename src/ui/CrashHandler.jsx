@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import { withTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
 import { VoidSkullIcon } from './shared/Icons'
+import { handleError } from '../utils/errorHandler'
 
 class ErrorBoundaryComponent extends React.Component {
   constructor(props) {
@@ -15,7 +16,7 @@ class ErrorBoundaryComponent extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('Uncaught error:', error, errorInfo)
+    handleError(error, { source: 'CrashHandler', errorInfo })
     this.setState({ errorInfo })
   }
 
