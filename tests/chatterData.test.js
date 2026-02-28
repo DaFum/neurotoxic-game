@@ -54,7 +54,9 @@ const buildState = (scene, overrides = {}) => ({
 })
 
 const getActivatedConditionalEntries = state =>
-  CHATTER_DB.filter(entry => typeof entry.condition === 'function' && entry.condition(state))
+  CHATTER_DB.filter(
+    entry => typeof entry.condition === 'function' && entry.condition(state)
+  )
 
 const getConditionDelta = ({ activeState, inactiveState }) => {
   const inactiveEntries = new Set(getActivatedConditionalEntries(inactiveState))
@@ -226,7 +228,9 @@ test('inventory chatter fires for golden pick', () => {
 test('gig modifier chatter fires when catering is booked', () => {
   const matches = getConditionDelta({
     activeState: buildState('OVERWORLD', { gigModifiers: { catering: true } }),
-    inactiveState: buildState('OVERWORLD', { gigModifiers: { catering: false } })
+    inactiveState: buildState('OVERWORLD', {
+      gigModifiers: { catering: false }
+    })
   })
   assert.ok(matches.length > 0, 'Expected catering chatter to activate')
 })

@@ -33,7 +33,11 @@ export const flattenToObject = (entry, parentKey = '', result = {}) => {
   for (const [childKey, childValue] of Object.entries(entry)) {
     const nextKey = parentKey ? `${parentKey}.${childKey}` : childKey
 
-    if (childValue && typeof childValue === 'object' && !Array.isArray(childValue)) {
+    if (
+      childValue &&
+      typeof childValue === 'object' &&
+      !Array.isArray(childValue)
+    ) {
       flattenToObject(childValue, nextKey, result)
     } else {
       result[nextKey] = childValue

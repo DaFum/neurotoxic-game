@@ -158,8 +158,14 @@ describe('NoteManager', () => {
     assert.equal(noteManager.noteTextures.lightning, null)
     assert.equal(mockHandleError.mock.calls.length, 2)
     assert.ok(mockHandleError.mock.calls[0].arguments[0] instanceof Error)
-    assert.equal(mockHandleError.mock.calls[0].arguments[0].message, 'Skull texture returned null')
-    assert.equal(mockHandleError.mock.calls[1].arguments[0].message, 'Lightning texture returned null')
+    assert.equal(
+      mockHandleError.mock.calls[0].arguments[0].message,
+      'Skull texture returned null'
+    )
+    assert.equal(
+      mockHandleError.mock.calls[1].arguments[0].message,
+      'Lightning texture returned null'
+    )
   })
 
   test('acquireSpriteFromPool reuses a sprite from the pool', () => {

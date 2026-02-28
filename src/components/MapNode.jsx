@@ -119,7 +119,8 @@ export const MapNode = memo(
 
         <div className='hidden group-hover:block group-focus:block absolute bottom-8 bg-(--void-black)/90 border border-(--toxic-green) p-2 rounded z-50 whitespace-nowrap pointer-events-none'>
           <div className='font-bold text-(--toxic-green)'>
-            {t(node.venue?.name) || t('ui:map.unknown', { defaultValue: 'Unknown' })}
+            {t(node.venue?.name) ||
+              t('ui:map.unknown', { defaultValue: 'Unknown' })}
           </div>
           {(node.type === 'GIG' ||
             node.type === 'FESTIVAL' ||
@@ -130,8 +131,8 @@ export const MapNode = memo(
                   {t('ui:map.festival', { defaultValue: 'FESTIVAL' })}
                 </div>
               )}
-              {t('ui:map.cap', { defaultValue: 'Cap' })}: {node.venue?.capacity} |{' '}
-              {t('ui:map.pay', { defaultValue: 'Pay' })}: ~{node.venue?.pay}
+              {t('ui:map.cap', { defaultValue: 'Cap' })}: {node.venue?.capacity}{' '}
+              | {t('ui:map.pay', { defaultValue: 'Pay' })}: ~{node.venue?.pay}
               {'\u20AC'}
               <br />
               {t('ui:map.ticket', { defaultValue: 'Ticket' })}:{' '}
@@ -163,7 +164,9 @@ export const MapNode = memo(
           )}
           {isCurrent && (
             <div className='text-(--blood-red) text-xs font-bold'>
-              {t('ui:map.current_location', { defaultValue: '[CURRENT LOCATION]' })}
+              {t('ui:map.current_location', {
+                defaultValue: '[CURRENT LOCATION]'
+              })}
             </div>
           )}
         </div>

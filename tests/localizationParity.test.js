@@ -18,8 +18,12 @@ const EN_LOCALE_DIR = path.join(LOCALES_ROOT, 'en')
 const DE_LOCALE_DIR = path.join(LOCALES_ROOT, 'de')
 
 test('english and german locale folders contain identical namespace files', () => {
-  const englishFiles = readdirSync(EN_LOCALE_DIR).filter(file => file.endsWith('.json')).sort()
-  const germanFiles = readdirSync(DE_LOCALE_DIR).filter(file => file.endsWith('.json')).sort()
+  const englishFiles = readdirSync(EN_LOCALE_DIR)
+    .filter(file => file.endsWith('.json'))
+    .sort()
+  const germanFiles = readdirSync(DE_LOCALE_DIR)
+    .filter(file => file.endsWith('.json'))
+    .sort()
 
   assert.deepEqual(
     germanFiles,
@@ -29,7 +33,9 @@ test('english and german locale folders contain identical namespace files', () =
 })
 
 test('english and german locale files expose identical translation keys', () => {
-  const englishFiles = readdirSync(EN_LOCALE_DIR).filter(file => file.endsWith('.json'))
+  const englishFiles = readdirSync(EN_LOCALE_DIR).filter(file =>
+    file.endsWith('.json')
+  )
 
   englishFiles.forEach(fileName => {
     const english = readLocaleJson(EN_LOCALE_DIR, fileName)
@@ -51,11 +57,17 @@ test('english and german locale files expose identical translation keys', () => 
 })
 
 test('english and german locale strings share placeholder variables', () => {
-  const englishFiles = readdirSync(EN_LOCALE_DIR).filter(file => file.endsWith('.json'))
+  const englishFiles = readdirSync(EN_LOCALE_DIR).filter(file =>
+    file.endsWith('.json')
+  )
 
   englishFiles.forEach(fileName => {
-    const englishMap = toKeyMap(flattenToEntries(readLocaleJson(EN_LOCALE_DIR, fileName)))
-    const germanMap = toKeyMap(flattenToEntries(readLocaleJson(DE_LOCALE_DIR, fileName)))
+    const englishMap = toKeyMap(
+      flattenToEntries(readLocaleJson(EN_LOCALE_DIR, fileName))
+    )
+    const germanMap = toKeyMap(
+      flattenToEntries(readLocaleJson(DE_LOCALE_DIR, fileName))
+    )
 
     englishMap.forEach((englishValue, key) => {
       const germanValue = germanMap.get(key)

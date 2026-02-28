@@ -8,7 +8,14 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const readLocaleFile = locale => {
-  const localePath = path.join(__dirname, '..', 'public', 'locales', locale, 'chatter.json')
+  const localePath = path.join(
+    __dirname,
+    '..',
+    'public',
+    'locales',
+    locale,
+    'chatter.json'
+  )
   return JSON.parse(readFileSync(localePath, 'utf8'))
 }
 
@@ -29,8 +36,8 @@ test('english chatter should not contain unresolved templated venue placeholders
 
 test('english chatter should avoid duplicated prepositions in venue names', () => {
   const englishChatter = readLocaleFile('en')
-  const duplicatedAtEntries = Object.entries(englishChatter).filter(([, value]) =>
-    /\bat\s+at\b/i.test(value.replace(/\s+/g, ' '))
+  const duplicatedAtEntries = Object.entries(englishChatter).filter(
+    ([, value]) => /\bat\s+at\b/i.test(value.replace(/\s+/g, ' '))
   )
 
   assert.equal(

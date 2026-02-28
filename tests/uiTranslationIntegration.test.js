@@ -45,7 +45,13 @@ const extractLocalizedKeys = () => {
 }
 
 const readLocaleMap = (locale, namespace) => {
-  const localePath = path.join(REPO_ROOT, 'public', 'locales', locale, `${namespace}.json`)
+  const localePath = path.join(
+    REPO_ROOT,
+    'public',
+    'locales',
+    locale,
+    `${namespace}.json`
+  )
   const localeData = JSON.parse(readFileSync(localePath, 'utf8'))
   return { ...flattenToObject(localeData), ...localeData }
 }

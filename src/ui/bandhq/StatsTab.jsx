@@ -60,9 +60,10 @@ export const StatsTab = ({ player, band, social }) => {
               size='sm'
             />
             <div className='mt-2 text-xs text-(--ash-gray) font-mono'>
-              {t('ui:stats.breakdown_chance', { defaultValue: 'Breakdown Chance' })}
-              :{' '}
-              {((player.van?.breakdownChance ?? 0) * 100).toFixed(1)}%
+              {t('ui:stats.breakdown_chance', {
+                defaultValue: 'Breakdown Chance'
+              })}
+              : {((player.van?.breakdownChance ?? 0) * 100).toFixed(1)}%
             </div>
           </div>
         </div>
@@ -101,7 +102,10 @@ export const StatsTab = ({ player, band, social }) => {
         <div className='mt-6 pt-4 border-t border-(--ash-gray)'>
           <div className='flex justify-between items-center mb-2'>
             <span className='text-(--ash-gray) font-mono text-sm'>
-              {t('ui:stats.inventory_slots', { defaultValue: 'Inventory Slots' })}:
+              {t('ui:stats.inventory_slots', {
+                defaultValue: 'Inventory Slots'
+              })}
+              :
             </span>
             <span className='text-(--star-white) font-mono'>
               {band.inventorySlots}

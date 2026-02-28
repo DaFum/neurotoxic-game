@@ -19,7 +19,9 @@ const TRANS_I18NKEY_PATTERN = /<Trans[^>]*i18nKey=['"]([^'"]+)['"]/g
 
 const readLocaleNamespaceMap = locale => {
   const localePath = path.join(REPO_ROOT, 'public', 'locales', locale)
-  const namespaceFiles = readdirSync(localePath).filter(file => file.endsWith('.json'))
+  const namespaceFiles = readdirSync(localePath).filter(file =>
+    file.endsWith('.json')
+  )
 
   return namespaceFiles.reduce((accumulator, namespaceFile) => {
     const namespace = namespaceFile.replace('.json', '')

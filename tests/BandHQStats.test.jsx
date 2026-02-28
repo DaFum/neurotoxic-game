@@ -100,7 +100,9 @@ describe('BandHQ Stats Discrepancy', () => {
 
     const expectedReach = 3600
 
-    const { getAllByTestId, getByText, unmount } = render(<StatsTab {...props} />)
+    const { getAllByTestId, getByText, unmount } = render(
+      <StatsTab {...props} />
+    )
     const statBoxes = getAllByTestId('stat-box')
     const followersBox = statBoxes.find(
       box =>
