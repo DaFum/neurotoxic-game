@@ -1,7 +1,8 @@
-import { memo, useMemo } from 'react'
+import { memo, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
+import { HexNode } from '../ui/shared'
 
 const VAN_STYLE = { transform: 'translate(0, -50%)' }
 const MOTION_INITIAL = { scale: 0 }
@@ -24,6 +25,8 @@ export const MapNode = memo(
     ticketPrice
   }) => {
     const { t } = useTranslation(['venues', 'ui'])
+    const [isHoveredLocal, setIsHoveredLocal] = useState(false)
+
     const positionStyle = useMemo(
       () => ({ left: `${node.x}%`, top: `${node.y}%` }),
       [node.x, node.y]
@@ -43,26 +46,41 @@ export const MapNode = memo(
 
     return (
       <div
-        className={`absolute flex flex-col items-center group
+        className={`absolute flex flex-col items-center justify-center w-32 h-40 -ml-16 -mt-20 group
           ${isCurrent ? 'z-50' : 'z-10'}
           ${!isReachable && !isCurrent ? 'opacity-30 grayscale pointer-events-none' : 'opacity-100'}
           ${isReachable ? 'cursor-pointer' : ''}
       `}
         style={positionStyle}
         onClick={() => handleTravel(node)}
-        onMouseEnter={() => setHoveredNode(node)}
-        onMouseLeave={() => setHoveredNode(null)}
+        onMouseEnter={() => {
+          setHoveredNode(node)
+          setIsHoveredLocal(true)
+        }}
+        onMouseLeave={() => {
+          setHoveredNode(null)
+          setIsHoveredLocal(false)
+        }}
+        onFocus={() => {
+          if (isReachable) {
+            setHoveredNode(node)
+            setIsHoveredLocal(true)
+          }
+        }}
+        onBlur={() => {
+          if (isReachable) {
+            setHoveredNode(null)
+          }
+          setIsHoveredLocal(false)
+        }}
         role={isReachable ? 'button' : undefined}
         aria-label={
           isReachable
             ? t('ui:map.travel_to', {
-                name: t(node.venue?.name),
-                defaultValue: `Travel to ${t(node.venue?.name)}`
+                name: t(node.venue?.name)
               }) +
               (isPendingConfirm
-                ? t('ui:map.click_to_confirm', {
-                    defaultValue: ' - click to confirm'
-                  })
+                ? t('ui:map.click_to_confirm')
                 : '')
             : undefined
         }
@@ -78,6 +96,14 @@ export const MapNode = memo(
             : undefined
         }
       >
+        {/* Target Crosshairs (appear on hover/focus) */}
+        <div className={`absolute inset-0 border border-(--toxic-green)/30 transition-all duration-300 pointer-events-none z-0 ${isHoveredLocal || isPendingConfirm ? 'scale-100 opacity-100' : 'scale-90 opacity-0'}`}>
+          <div className="absolute top-0 left-1/2 w-[1px] h-4 bg-(--toxic-green) -translate-x-1/2 -translate-y-2"></div>
+          <div className="absolute bottom-0 left-1/2 w-[1px] h-4 bg-(--toxic-green) -translate-x-1/2 translate-y-2"></div>
+          <div className="absolute left-0 top-1/2 w-4 h-[1px] bg-(--toxic-green) -translate-y-1/2 -translate-x-2"></div>
+          <div className="absolute right-0 top-1/2 w-4 h-[1px] bg-(--toxic-green) -translate-y-1/2 translate-x-2"></div>
+        </div>
+
         {isCurrent && !isTraveling && (
           <div className='absolute pointer-events-none z-50' style={VAN_STYLE}>
             <img
@@ -93,34 +119,35 @@ export const MapNode = memo(
           animate={MOTION_ANIMATE}
           whileHover={isReachable ? MOTION_HOVER : MOTION_NO_HOVER}
           whileFocus={isReachable ? MOTION_HOVER : MOTION_NO_HOVER}
+          className="relative z-10 flex items-center justify-center"
         >
-          <img
-            src={iconUrl}
-            alt={t('ui:map.pinAlt')}
-            className={`w-6 h-6 md:w-8 md:h-8 object-contain drop-shadow-md
-                  ${isPendingConfirm ? 'drop-shadow-[0_0_14px_var(--warning-yellow)] animate-confirm-pulse' : ''}
-                  ${isReachable && !isPendingConfirm ? 'drop-shadow-[0_0_10px_var(--toxic-green)] animate-pulse' : ''}`}
-          />
+           <HexNode className={`w-12 h-12 transition-all duration-200 ${isHoveredLocal || isPendingConfirm ? 'text-(--star-white) drop-shadow-[0_0_15px_var(--toxic-green)]' : 'text-(--toxic-green)'}`} />
+           {/* Center icon overlay if needed, or replace HexNode entirely based on type */}
+           <div className="absolute inset-0 flex items-center justify-center mix-blend-difference pointer-events-none">
+             <span className="text-(--void-black) font-bold text-[10px]">
+               {node.type === 'GIG' ? t('ui:map.nodeType.gig') : node.type === 'REST_STOP' ? t('ui:map.nodeType.rest') : t('ui:map.nodeType.fallback', { type: node.type.substring(0,3) })}
+             </span>
+           </div>
         </motion.div>
 
         {/* Pending confirmation label */}
         {isPendingConfirm && (
-          <div className='absolute -top-7 left-1/2 -translate-x-1/2 text-(--warning-yellow) text-[10px] font-bold whitespace-nowrap pointer-events-none animate-pulse bg-(--void-black)/80 px-1.5 py-0.5 border border-(--warning-yellow)'>
-            {t('ui:map.confirm_q', { defaultValue: 'CONFIRM?' })}
+          <div className='absolute top-0 left-1/2 -translate-x-1/2 text-(--warning-yellow) text-[10px] font-bold whitespace-nowrap pointer-events-none animate-pulse bg-(--void-black)/80 px-1.5 py-0.5 border border-(--warning-yellow) z-20'>
+            {t('ui:map.confirm_q')}
           </div>
         )}
 
-        {/* Default hover label */}
-        {isReachable && !isPendingConfirm && (
-          <div className='absolute -top-6 left-1/2 -translate-x-1/2 text-(--toxic-green) text-[10px] font-bold animate-bounce whitespace-nowrap opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity pointer-events-none'>
-            {t('ui:map.click_to_travel', { defaultValue: 'CLICK TO TRAVEL' })}
-          </div>
-        )}
+        {/* Node Label (Always visible, matching BrutalistUI style) */}
+        <div className="mt-2 flex flex-col items-center z-10 pointer-events-none">
+          <span className={`text-[10px] font-bold tracking-widest uppercase text-center transition-colors ${isHoveredLocal || isPendingConfirm ? 'text-(--star-white)' : 'text-(--toxic-green)'}`}>
+            {t(node.venue?.name) || t('ui:map.unknown')}
+          </span>
+        </div>
 
-        <div className='hidden group-hover:block group-focus:block absolute bottom-8 bg-(--void-black)/90 border border-(--toxic-green) p-2 rounded z-50 whitespace-nowrap pointer-events-none'>
+        <div className='hidden group-hover:block group-focus:block absolute top-full mt-2 bg-(--void-black)/90 border border-(--toxic-green) p-2 z-50 whitespace-nowrap pointer-events-none'>
           <div className='font-bold text-(--toxic-green)'>
             {t(node.venue?.name) ||
-              t('ui:map.unknown', { defaultValue: 'Unknown' })}
+              t('ui:map.unknown')}
           </div>
           {(node.type === 'GIG' ||
             node.type === 'FESTIVAL' ||
@@ -128,45 +155,37 @@ export const MapNode = memo(
             <div className='text-[10px] text-(--ash-gray) font-mono'>
               {node.type === 'FESTIVAL' && (
                 <div className='text-(--warning-yellow) font-bold mb-1'>
-                  {t('ui:map.festival', { defaultValue: 'FESTIVAL' })}
+                  {t('ui:map.festival')}
                 </div>
               )}
-              {t('ui:map.cap', { defaultValue: 'Cap' })}: {node.venue?.capacity}{' '}
-              | {t('ui:map.pay', { defaultValue: 'Pay' })}: ~{node.venue?.pay}
+              {t('ui:map.cap')}: {node.venue?.capacity}{' '}
+              | {t('ui:map.pay')}: ~{node.venue?.pay}
               {'\u20AC'}
               <br />
-              {t('ui:map.ticket', { defaultValue: 'Ticket' })}:{' '}
+              {t('ui:map.ticket')}:{' '}
               {ticketPrice ?? node.venue?.price}
-              {'\u20AC'} | {t('ui:map.diff', { defaultValue: 'Diff' })}:{' '}
+              {'\u20AC'} | {t('ui:map.diff')}:{' '}
               {'\u2605'.repeat(node.venue?.diff || 0)}
             </div>
           )}
           {node.type === 'REST_STOP' && (
             <div className='text-[10px] text-(--warning-yellow) font-mono'>
-              {t('ui:map.rest_stop_desc', {
-                defaultValue: 'REST STOP — Recover Stamina & Mood'
-              })}
+              {t('ui:map.rest_stop_desc')}
             </div>
           )}
           {node.type === 'SPECIAL' && (
-            <div className='text-[10px] text-(--purple-glow,#a855f7) font-mono'>
-              {t('ui:map.mystery_desc', {
-                defaultValue: 'MYSTERY — Unknown Encounter'
-              })}
+            <div className='text-[10px] text-(--purple-glow) font-mono'>
+              {t('ui:map.mystery_desc')}
             </div>
           )}
           {node.type === 'FINALE' && (
             <div className='text-[10px] text-(--warning-yellow) font-mono font-bold'>
-              {t('ui:map.finale_desc', {
-                defaultValue: '★ FINALE — The Final Show ★'
-              })}
+              {t('ui:map.finale_desc')}
             </div>
           )}
           {isCurrent && (
             <div className='text-(--blood-red) text-xs font-bold'>
-              {t('ui:map.current_location', {
-                defaultValue: '[CURRENT LOCATION]'
-              })}
+              {t('ui:map.current_location')}
             </div>
           )}
         </div>

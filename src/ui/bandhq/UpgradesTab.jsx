@@ -11,7 +11,7 @@ export const UpgradesTab = ({
   processingItemId
 }) => {
   return (
-    <div className='max-h-[60vh] overflow-y-auto'>
+    <div>
       <div className='mb-4 flex justify-end gap-4 font-mono text-(--star-white)'>
         <span>
           FAME: <span className='text-(--warning-yellow)'>{player.fame}★</span>

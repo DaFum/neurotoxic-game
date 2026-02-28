@@ -45,7 +45,7 @@ describe('GameOver Scene', () => {
       </GameStateProvider>
     )
 
-    await findByText('SOLD OUT')
+    await findByText('ui:gameOver.soldOut')
     expect(getByText('ui:tour.endedPrematurely')).toBeInTheDocument()
     expect(getByText('100')).toBeInTheDocument() // Score
     expect(getByText('5')).toBeInTheDocument() // Days

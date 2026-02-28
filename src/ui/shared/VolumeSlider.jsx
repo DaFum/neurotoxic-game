@@ -1,37 +1,56 @@
-import { useId } from 'react'
 import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
 
 export const VolumeSlider = ({ label, value, onChange }) => {
-  const sliderId = useId()
+  const { t } = useTranslation(['ui'])
   const clampedValue = Math.min(1, Math.max(0, value))
+  const max = 10
+  const val = Math.round(clampedValue * max)
+  const segments = Array.from({ length: max }, (_, i) => i + 1)
   const pct = Math.round(clampedValue * 100)
 
   return (
-    <div className='flex items-center justify-between gap-4'>
-      <label
-        htmlFor={sliderId}
-        className='font-[Courier_New] text-sm uppercase tracking-wide text-(--star-white) shrink-0 cursor-pointer'
+    <div className="w-full max-w-sm flex flex-col gap-2">
+      <div className="flex justify-between items-end">
+        <span className="text-xs tracking-widest uppercase opacity-80" aria-hidden="true">{label}</span>
+        <span className="text-sm font-bold text-(--toxic-green)">{pct}%</span>
+      </div>
+      {/* Expose actual input for accessibility and standard event handling while visually hiding it */}
+      <input
+        type="range"
+        min="0"
+        max="1"
+        step="0.1"
+        value={clampedValue}
+        onChange={onChange}
+        aria-label={label}
+        className="sr-only"
+      />
+      <div
+        className="flex gap-1 h-8 items-end cursor-pointer group"
+        role="presentation"
       >
-        {label}
-      </label>
-      <div className='flex items-center gap-3 flex-1 max-w-[16rem]'>
-        <input
-          id={sliderId}
-          type='range'
-          min='0'
-          max='1'
-          step='0.1'
-          value={value}
-          onChange={onChange}
-          aria-valuetext={`${pct}%`}
-          className='vol-slider flex-1'
-          style={{
-            background: `linear-gradient(to right, var(--toxic-green) ${pct}%, var(--ash-gray) ${pct}%)`
-          }}
-        />
-        <span className='font-mono text-xs text-(--toxic-green) w-10 text-right tabular-nums'>
-          {pct}%
-        </span>
+        {segments.map(segment => {
+          const isActive = segment <= val
+          const height = `${30 + (segment / max) * 70}%`
+          const segmentPct = Math.round((segment / max) * 100)
+          return (
+            <button
+              type="button"
+              key={segment}
+              onClick={() => onChange({ target: { value: segment / max } })}
+              className="flex-1 relative h-full flex items-end group-hover:opacity-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)"
+              aria-label={t('ui:volume.set', { pct: segmentPct })}
+              aria-pressed={isActive}
+            >
+              <div
+                style={{ height }}
+                className={`w-full transition-colors duration-75 border-b-2 border-transparent hover:border-(--void-black)
+                  ${isActive ? 'bg-(--toxic-green) shadow-[0_0_8px_var(--toxic-green)]' : 'bg-(--toxic-green)/20'}`}
+              ></div>
+            </button>
+          )
+        })}
       </div>
     </div>
   )

@@ -10,6 +10,9 @@
   "data_purge": "DATA PURGE",
   "music_volume": "MUSIC VOLUME",
   "sfx_volume": "SFX VOLUME",
+  "volume": {
+    "set": "Set volume to {{pct}}%"
+  },
   "mute_all": "MUTE ALL",
   "crt_effect": "CRT EFFECT",
   "min_log_level": "MINIMUM LOG LEVEL",
@@ -22,6 +25,32 @@
   "language": "LANGUAGE",
   "language_option_en": "ENGLISH",
   "language_option_de": "GERMAN",
+  "crowdEnergy": "CROWD ENERGY",
+  "toxicModeActive": "TOXIC MODE ACTIVE",
+  "keyboardHint": "Press [1-{{count}}] or click to choose",
+  "skillCheck": "Skill Check",
+  "toggle": {
+    "on": "ON",
+    "off": "OFF"
+  },
+  "hazard": {
+    "toxicOverload": "TOXIC OVERLOAD DETECTED // SEVERE SYSTEM STRESS // STAY FOCUSED"
+  },
+  "overload": {
+    "toxic": "TOXIC OVERLOAD"
+  },
+  "event": {
+    "severity": {
+      "critical": "CRITICAL"
+    }
+  },
+  "map": {
+    "nodeType": {
+      "gig": "GIG",
+      "rest": "REST",
+      "fallback": "{{type}}"
+    }
+  },
   "day_advance": "Day {{day}}: Living Costs Deducted.",
   "unlocked": "UNLOCKED: {{unlock}}!",
   "game_over": "GAME OVER: {{description}}",
@@ -62,6 +91,8 @@
     }
   },
   "tour.endedPrematurely": "The tour has ended prematurely.",
+  "gameOver.soldOut": "SOLD OUT",
+  "gameOver.finalStatistics": "FINAL STATISTICS",
   "gameOver.loadLastSave": "LOAD LAST SAVE",
   "gameOver.returnToMenu": "RETURN TO MENU",
   "stats.daysSurvived": "DAYS SURVIVED",
@@ -208,5 +239,135 @@
   "map.finale_desc": "★ FINALE — The Final Show ★",
   "map.current_location": "[CURRENT LOCATION]",
   "map.vanAlt": "Van",
-  "map.pinAlt": "Pin"
+  "map.pinAlt": "Pin",
+  "holdToOverride": "HOLD TO OVERRIDE",
+  "executed": "EXECUTED",
+  "loading": "Loading",
+  "module": "module",
+  "menu": {
+    "inventory": "INVENTORY",
+    "upgrades": "UPGRADES"
+  },
+  "crash": {
+    "title": "SYSTEM FAILURE",
+    "message": "The simulation has crashed. Reboot required.",
+    "rebootButton": "REBOOT SYSTEM"
+  },
+  "crisis": {
+    "title": "VAN BREAKDOWN",
+    "desc": "The transmission just dropped halfway to Leipzig. You have a gig in 4 hours. Do you burn through your cash for a sketchy mechanic, or risk showing up late and losing face?",
+    "opt1": "Pay mechanic (-$250)",
+    "safe": "SAFE",
+    "opt2": "Hitchhike (-20 Rep)",
+    "risk": "RISK",
+    "opt3": "Fix it yourselves (+1hr)",
+    "risky": "RISKY"
+  },
+  "checklist": {
+    "header": "PRE-GIG SEQUENCE",
+    "task1": "REFUEL TOURVAN",
+    "task2": "EQUIP DISTORTION PEDAL",
+    "task3": "BRIBE VENUE BOUNCER",
+    "task4": "CALIBRATE AMPS",
+    "done": "INITIATE GIG",
+    "waiting": "AWAITING SEQUENCE"
+  },
+  "terminal": {
+    "log1": "> INITIALIZING VOID_ENGINE v3.0...",
+    "log2": "> CONNECTING TO STAGE RIG...",
+    "log3": "[OK] AUDIO CONTEXT STARTED",
+    "log4": "[WARN] AMP 3 OVERHEATING",
+    "log5": "> LOADING VENUE: 'THE SLAUGHTERHOUSE'",
+    "log6": "...",
+    "log7": "[ERROR] BAND HARMONY CRITICAL.",
+    "log8": "> AWAITING INPUT_"
+  },
+  "contract": {
+    "confidential": "DOCUMENT: CONFIDENTIAL",
+    "title": "Binding Agreement",
+    "p1": "This agreement binds NEUROTOXIC to <0>MEGA_CORP_INC</0>.",
+    "p2": "The Artist agrees to <0>subliminally insert corporate messaging</0> during all live performances in sector 4.",
+    "warning": "Failure to comply will result in <0>immediate termination of organic functions</0>.",
+    "sig": "SIGNATURE (BLOOD/VOID):",
+    "sign_aria": "Sign Contract",
+    "sealed": "SEALED"
+  },
+  "rhythm": {
+    "header": "RHYTHM_ENGINE_SIM",
+    "hit_lane": "Hit {{lane}} lane",
+    "hit": "HIT",
+    "lane_guitar": "GUITAR",
+    "lane_drums": "DRUMS",
+    "lane_bass": "BASS"
+  },
+  "chatter": {
+    "header": "LIVE_CHATTER_FEED",
+    "msg1": "this band is dead lol",
+    "msg2": "PLAY THE OLD SHIT!!!",
+    "msg3": "WARNING: CROWD HOSTILITY RISING",
+    "random1": "sellouts.",
+    "random2": "can't even stay in rhythm",
+    "random3": "BOOOOOOOOO",
+    "random4": "my ears are bleeding (in a bad way)",
+    "random5": "refund immediately"
+  },
+  "decryptor": {
+    "unlocked": "ITEM_UNLOCKED: 'VOID_CORE'",
+    "click": "CLICK TO DECRYPT"
+  },
+  "hqNavigation": "HQ Navigation",
+  "set_label_to_segment": "Set {{label}} to {{segment}}",
+  "hit_lane": "Hit {{lane}} lane",
+  "sign_contract": "Sign Contract",
+  "pregig": {
+    "title": "PREPARATION",
+    "budget": "BUDGET:",
+    "costs": "COSTS:",
+    "allocation": "BUDGET ALLOCATION",
+    "bandMeeting": {
+      "label": "Band Meeting",
+      "desc": "+Harmony"
+    },
+    "activeModifiers": "ACTIVE MODIFIERS",
+    "noModifiers": "No active buffs or debuffs",
+    "setlist": "SETLIST",
+    "selectSong": "Select song {{name}}",
+    "locked": "LOCKED (Prove Yourself)",
+    "diff": "Diff:",
+    "nrg": "NRG",
+    "selected": "SELECTED",
+    "selectPreview": "Select songs to preview energy curve",
+    "initializing": "INITIALIZING...",
+    "startShow": "START SHOW",
+    "modifiers": {
+      "soundcheck": {
+        "label": "Soundcheck",
+        "desc": "Notes Easier"
+      },
+      "promo": {
+        "label": "Social Promo",
+        "desc": "+Crowd Fill"
+      },
+      "merch": {
+        "label": "Merch Table",
+        "desc": "+Sales"
+      },
+      "catering": {
+        "label": "Catering / Energy",
+        "desc": "Counters Tired Band Penalty"
+      },
+      "guestlist": {
+        "label": "Guest List",
+        "desc": "+VIP Score"
+      }
+    },
+    "toasts": {
+      "noGig": "No gig active! Returning to map.",
+      "noMoneySnacks": "Not enough money for snacks!",
+      "meetingHeld": "Meeting held. Vibes are better.",
+      "noMoneyUpgrade": "Not enough money for this upgrade!",
+      "harmonyLow": "Band harmony too low to perform!",
+      "audioFail": "Audio initialization failed."
+    }
+  }
 }
