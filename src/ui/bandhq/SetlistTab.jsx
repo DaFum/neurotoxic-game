@@ -41,7 +41,7 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
   }
 
   return (
-    <div className='max-h-[60vh] overflow-y-auto'>
+    <div>
       <div className='flex justify-between items-center mb-4 font-mono text-(--star-white)'>
         <ActionButton
           onClick={() => {

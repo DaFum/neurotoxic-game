@@ -11,7 +11,7 @@ export const ShopTab = ({
   processingItemId
 }) => {
   return (
-    <div className='max-h-[60vh] overflow-y-auto'>
+    <div>
       <div className='mb-4 text-right font-mono text-(--star-white)'>
         FUNDS: <span className='text-(--toxic-green)'>{player.money}€</span>
       </div>
