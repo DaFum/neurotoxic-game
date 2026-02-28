@@ -179,6 +179,7 @@ export const MapNode = memo(
       prev.isReachable === next.isReachable &&
       prev.isPendingConfirm === next.isPendingConfirm &&
       prev.iconUrl === next.iconUrl &&
+      prev.vanUrl === next.vanUrl &&
       prev.handleTravel === next.handleTravel &&
       prev.setHoveredNode === next.setHoveredNode &&
       prev.ticketPrice === next.ticketPrice
