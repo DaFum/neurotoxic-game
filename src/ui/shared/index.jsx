@@ -15,6 +15,39 @@ export { Modal } from './Modal'
 export { ActionButton } from './ActionButton'
 export { ToggleSwitch } from './ToggleSwitch'
 export { AnimatedDivider, AnimatedSubtitle } from './AnimatedTypography'
+export { RazorPlayIcon, VoidSkullIcon, UIFrameCorner } from './Icons'
+export {
+  HexBorder,
+  CrosshairIcon,
+  MoneyIcon,
+  AlertIcon,
+  SkullIcon,
+  GearIcon,
+  HexNode,
+  WarningStripe,
+  BiohazardIcon,
+  CorporateSeal,
+  BrutalToggle,
+  BlockMeter,
+  BrutalTabs,
+  StatBlock,
+  BrutalFader,
+  SetlistSelector,
+  CrisisModal,
+  DeadmanButton,
+  TerminalReadout,
+  BrutalSlot,
+  VoidLoader,
+  VoidNavNode,
+  CorruptedText,
+  HazardTicker,
+  IndustrialChecklist,
+  RhythmMatrix,
+  SelloutContract,
+  ToxicChatter,
+  VoidDecryptor,
+} from './BrutalistUI'
+import { UIFrameCorner } from './Icons'
 
 /**
  * StatBox - Displays a single statistic with an icon
@@ -26,13 +59,20 @@ export { AnimatedDivider, AnimatedSubtitle } from './AnimatedTypography'
  */
 export const StatBox = ({ label, value, icon, className = '' }) => (
   <div
-    className={`bg-(--void-black) p-3 flex flex-col items-center justify-center border border-(--ash-gray) ${className}`}
+    className={`relative bg-(--void-black) p-3 flex flex-col items-center justify-center border border-(--ash-gray) group overflow-hidden ${className}`}
   >
-    <div className='text-2xl mb-1 text-(--toxic-green)'>{icon}</div>
-    <div className='text-xl font-bold text-(--star-white) font-mono'>
-      {value}
+    <UIFrameCorner className="absolute top-0 left-0 w-3 h-3 text-(--ash-gray) opacity-30 transition-opacity group-hover:opacity-60" />
+    <UIFrameCorner className="absolute top-0 right-0 w-3 h-3 text-(--ash-gray) rotate-90 opacity-30 transition-opacity group-hover:opacity-60" />
+    <UIFrameCorner className="absolute bottom-0 right-0 w-3 h-3 text-(--ash-gray) rotate-180 opacity-30 transition-opacity group-hover:opacity-60" />
+    <UIFrameCorner className="absolute bottom-0 left-0 w-3 h-3 text-(--ash-gray) -rotate-90 opacity-30 transition-opacity group-hover:opacity-60" />
+
+    <div className="relative z-10 flex flex-col items-center">
+      <div className='text-2xl mb-1 text-(--toxic-green)'>{icon}</div>
+      <div className='text-xl font-bold text-(--star-white) font-mono'>
+        {value}
+      </div>
+      <div className='text-xs text-(--ash-gray) uppercase font-mono'>{label}</div>
     </div>
-    <div className='text-xs text-(--ash-gray) uppercase font-mono'>{label}</div>
   </div>
 )
 
@@ -133,14 +173,22 @@ ProgressBar.propTypes = {
  */
 export const Panel = ({ title, children, className = '' }) => (
   <div
-    className={`bg-(--void-black)/40 border border-(--ash-gray)/40 p-4 h-full ${className}`}
+    className={`relative bg-(--void-black)/40 border-2 border-(--ash-gray)/40 p-4 h-full group overflow-hidden ${className}`}
   >
-    {title && (
-      <h3 className='text-(--toxic-green) text-sm font-bold mb-3 border-b border-(--ash-gray)/40 pb-1 font-mono uppercase tracking-wider'>
-        {title}
-      </h3>
-    )}
-    <div className='space-y-1'>{children}</div>
+    {/* Brutalist Frame Corners */}
+    <UIFrameCorner className="absolute top-0 left-0 w-6 h-6 text-(--ash-gray) opacity-30 transition-opacity group-hover:opacity-60" />
+    <UIFrameCorner className="absolute top-0 right-0 w-6 h-6 text-(--ash-gray) rotate-90 opacity-30 transition-opacity group-hover:opacity-60" />
+    <UIFrameCorner className="absolute bottom-0 right-0 w-6 h-6 text-(--ash-gray) rotate-180 opacity-30 transition-opacity group-hover:opacity-60" />
+    <UIFrameCorner className="absolute bottom-0 left-0 w-6 h-6 text-(--ash-gray) -rotate-90 opacity-30 transition-opacity group-hover:opacity-60" />
+
+    <div className="relative z-10">
+      {title && (
+        <h3 className='text-(--toxic-green) text-sm font-bold mb-3 border-b border-(--ash-gray)/40 pb-1 font-mono uppercase tracking-wider'>
+          {title}
+        </h3>
+      )}
+      <div className='space-y-1'>{children}</div>
+    </div>
   </div>
 )
 

@@ -270,6 +270,11 @@ button {
   }
 }
 
+/* Chromatic Aberration Effect for Toxic Comments */
+.chromatic-text {
+  text-shadow: 1px 0 0 rgb(from var(--blood-red) r g b / 0.8), -1px 0 0 rgb(from var(--void-blue) r g b / 0.8);
+}
+
 /* Pulse glow for borders */
 @keyframes pulse-glow {
   from,
@@ -521,4 +526,76 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
 .toxic-border-flash {
   border: 4px solid var(--toxic-green);
   animation: toxic-border-flash-anim 1s infinite alternate;
+}
+
+/* Brutalist UI Custom Animations & Utilities */
+@keyframes scan {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(200%); }
+}
+
+.typewriter-effect {
+  overflow: hidden;
+  white-space: nowrap;
+  animation: typing 1s steps(30, end);
+}
+
+@keyframes typing { from { width: 0 } to { width: 100% } }
+
+/* Specifically overriding the older generic glitch text to use the multi-layer effect */
+.glitch-text { position: relative; animation: none; text-shadow: none; transform: none; }
+.glitch-text::before, .glitch-text::after {
+  content: attr(data-text); /* Fallback */
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--void-black);
+}
+.glitch-text::before {
+  left: 2px; text-shadow: -1px 0 var(--blood-red); clip-path: inset(24px 0 90px 0);
+  animation: glitch-anim-2 3s infinite linear alternate-reverse;
+}
+.glitch-text::after {
+  left: -2px; text-shadow: -1px 0 var(--void-blue); clip-path: inset(85px 0 140px 0);
+  animation: glitch-anim 2.5s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim {
+  0% { clip-path: inset(4px 0 80px 0); }
+  20% { clip-path: inset(100px 0 140px 0); }
+  40% { clip-path: inset(41px 0 84px 0); }
+  60% { clip-path: inset(6px 0 52px 0); }
+  80% { clip-path: inset(80px 0 120px 0); }
+  100% { clip-path: inset(12px 0 59px 0); }
+}
+
+@keyframes glitch-anim-2 {
+  0% { clip-path: inset(65px 0 100px 0); }
+  20% { clip-path: inset(3px 0 40px 0); }
+  40% { clip-path: inset(80px 0 120px 0); }
+  60% { clip-path: inset(22px 0 60px 0); }
+  80% { clip-path: inset(100px 0 140px 0); }
+  100% { clip-path: inset(45px 0 80px 0); }
+}
+
+@keyframes drop {
+  0% { transform: translate(-50%, -20px); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translate(-50%, 180px); opacity: 0; }
+}
+
+@keyframes slide-in {
+  from { transform: translateX(-10px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: var(--void-black); border-left: 1px solid var(--toxic-green-20); }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: var(--toxic-green); }
+
+.font-script {
+  font-family: "Brush Script MT", "Lucida Handwriting", cursive;
 }

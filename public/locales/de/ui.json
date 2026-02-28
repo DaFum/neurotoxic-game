@@ -10,6 +10,9 @@
   "data_purge": "DATENLÖSCHUNG",
   "music_volume": "MUSIK LAUTSTÄRKE",
   "sfx_volume": "SFX LAUTSTÄRKE",
+  "volume": {
+    "set": "Lautstärke auf {{pct}}% setzen"
+  },
   "mute_all": "ALLES STUMM",
   "crt_effect": "CRT EFFEKT",
   "min_log_level": "MINIMALES LOG LEVEL",
@@ -22,6 +25,32 @@
   "language": "SPRACHE",
   "language_option_en": "ENGLISCH",
   "language_option_de": "DEUTSCH",
+  "crowdEnergy": "PUBLIKUMSENERGIE",
+  "toxicModeActive": "TOXISCHER MODUS AKTIV",
+  "keyboardHint": "Drücke [1-{{count}}] oder klicke zur Auswahl",
+  "skillCheck": "Fähigkeitsprüfung",
+  "toggle": {
+    "on": "AN",
+    "off": "AUS"
+  },
+  "hazard": {
+    "toxicOverload": "TOXISCHER OVERLOAD ERKANNT // KRITISCHE SYSTEMBELASTUNG // FOKUS BEHALTEN"
+  },
+  "overload": {
+    "toxic": "TOXISCHER OVERLOAD"
+  },
+  "event": {
+    "severity": {
+      "critical": "KRITISCH"
+    }
+  },
+  "map": {
+    "nodeType": {
+      "gig": "GIG",
+      "rest": "RAST",
+      "fallback": "{{type}}"
+    }
+  },
   "day_advance": "Tag {{day}}: Lebenshaltungskosten abgezogen.",
   "unlocked": "FREIGESCHALTET: {{unlock}}!",
   "game_over": "GAME OVER: {{description}}",
@@ -62,6 +91,8 @@
     }
   },
   "tour.endedPrematurely": "Die Tour endete vorzeitig.",
+  "gameOver.soldOut": "AUSVERKAUFT",
+  "gameOver.finalStatistics": "ABSCHLUSSSTATISTIKEN",
   "gameOver.loadLastSave": "LETZTEN SPEICHERSTAND LADEN",
   "gameOver.returnToMenu": "ZURÜCK ZUM MENÜ",
   "stats.daysSurvived": "ÜBERLEBTE TAGE",
@@ -208,5 +239,135 @@
   "map.finale_desc": "★ FINALE — Die letzte Show ★",
   "map.current_location": "[AKTUELLE POSITION]",
   "map.vanAlt": "Van",
-  "map.pinAlt": "Pin"
+  "map.pinAlt": "Pin",
+  "holdToOverride": "ZUM ÜBERSCHREIBEN HALTEN",
+  "executed": "AUSGEFÜHRT",
+  "loading": "Lade",
+  "module": "Modul",
+  "menu": {
+    "inventory": "INVENTAR",
+    "upgrades": "UPGRADES"
+  },
+  "crash": {
+    "title": "SYSTEMAUSFALL",
+    "message": "Die Simulation ist abgestürzt. Neustart erforderlich.",
+    "rebootButton": "SYSTEM NEUSTARTEN"
+  },
+  "crisis": {
+    "title": "VAN PANNE",
+    "desc": "Das Getriebe ist auf halbem Weg nach Leipzig kaputtgegangen. Du hast in 4 Stunden einen Auftritt. Verbrennst du dein Geld für einen zwielichtigen Mechaniker oder riskierst du, zu spät zu kommen und das Gesicht zu verlieren?",
+    "opt1": "Mechaniker bezahlen (-$250)",
+    "safe": "SICHER",
+    "opt2": "Per Anhalter (-20 Ruf)",
+    "risk": "RISIKO",
+    "opt3": "Selbst reparieren (+1 Std)",
+    "risky": "RISKANT"
+  },
+  "checklist": {
+    "header": "PRE-GIG SEQUENZ",
+    "task1": "TOURBUS AUFTANKEN",
+    "task2": "VERZERRER-PEDAL AUSRÜSTEN",
+    "task3": "TÜRSTEHER BESTECHEN",
+    "task4": "VERSTÄRKER KALIBRIEREN",
+    "done": "GIG STARTEN",
+    "waiting": "WARTE AUF SEQUENZ"
+  },
+  "terminal": {
+    "log1": "> INITIALISIERE VOID_ENGINE v3.0...",
+    "log2": "> VERBINDE MIT BÜHNENANLAGE...",
+    "log3": "[OK] AUDIO CONTEXT GESTARTET",
+    "log4": "[WARNUNG] VERSTÄRKER 3 ÜBERHITZT",
+    "log5": "> LADE LOCATION: 'THE SLAUGHTERHOUSE'",
+    "log6": "...",
+    "log7": "[FEHLER] BAND-HARMONIE KRITISCH.",
+    "log8": "> WARTE AUF EINGABE_"
+  },
+  "contract": {
+    "confidential": "DOKUMENT: VERTRAULICH",
+    "title": "Bindende Vereinbarung",
+    "p1": "Diese Vereinbarung bindet NEUROTOXIC an <0>MEGA_CORP_INC</0>.",
+    "p2": "Der Künstler erklärt sich bereit, bei allen Live-Auftritten in Sektor 4 <0>subliminale Werbebotschaften einzufügen</0>.",
+    "warning": "Zuwiderhandlung führt zur <0>sofortigen Beendigung der organischen Funktionen</0>.",
+    "sig": "UNTERSCHRIFT (BLUT/VOID):",
+    "sign_aria": "Vertrag unterschreiben",
+    "sealed": "VERSIEGELT"
+  },
+  "rhythm": {
+    "header": "RHYTHM_ENGINE_SIM",
+    "hit_lane": "Triff Spur {{lane}}",
+    "hit": "TREFFER",
+    "lane_guitar": "GITARRE",
+    "lane_drums": "SCHLAGZEUG",
+    "lane_bass": "BASS"
+  },
+  "chatter": {
+    "header": "LIVE_CHATTER_FEED",
+    "msg1": "diese band ist tot lol",
+    "msg2": "SPIELT DEN ALTEN SCHEISS!!!",
+    "msg3": "WARNUNG: PUBLIKUMS-FEINDSELIGKEIT STEIGT",
+    "random1": "ausverkauft.",
+    "random2": "können nicht mal den takt halten",
+    "random3": "BUUUUUUUUUH",
+    "random4": "meine ohren bluten (im negativen sinn)",
+    "random5": "sofortige rückerstattung"
+  },
+  "decryptor": {
+    "unlocked": "ITEM_ENTSPERRT: 'VOID_CORE'",
+    "click": "KLICKEN ZUM ENTSCHLÜSSELN"
+  },
+  "hqNavigation": "HQ-Navigation",
+  "set_label_to_segment": "Setze {{label}} auf {{segment}}",
+  "hit_lane": "Triff Spur {{lane}}",
+  "sign_contract": "Vertrag unterschreiben",
+  "pregig": {
+    "title": "VORBEREITUNG",
+    "budget": "BUDGET:",
+    "costs": "KOSTEN:",
+    "allocation": "BUDGETVERTEILUNG",
+    "bandMeeting": {
+      "label": "Band-Meeting",
+      "desc": "+Harmonie"
+    },
+    "activeModifiers": "AKTIVE MODIFIKATOREN",
+    "noModifiers": "Keine aktiven Buffs oder Debuffs",
+    "setlist": "SETLIST",
+    "selectSong": "Song {{name}} auswählen",
+    "locked": "GESPERRT (Prove Yourself)",
+    "diff": "Schw.:",
+    "nrg": "NRG",
+    "selected": "AUSGEWÄHLT",
+    "selectPreview": "Songs auswählen, um Energiekurve zu sehen",
+    "initializing": "INITIALISIERE...",
+    "startShow": "SHOW STARTEN",
+    "modifiers": {
+      "soundcheck": {
+        "label": "Soundcheck",
+        "desc": "Noten einfacher"
+      },
+      "promo": {
+        "label": "Social Promo",
+        "desc": "+Publikum"
+      },
+      "merch": {
+        "label": "Merch-Tisch",
+        "desc": "+Verkäufe"
+      },
+      "catering": {
+        "label": "Catering / Energie",
+        "desc": "Kontert müde Band"
+      },
+      "guestlist": {
+        "label": "Gästeliste",
+        "desc": "+VIP-Punkte"
+      }
+    },
+    "toasts": {
+      "noGig": "Kein Gig aktiv! Zurück zur Karte.",
+      "noMoneySnacks": "Nicht genug Geld für Snacks!",
+      "meetingHeld": "Meeting abgehalten. Stimmung ist besser.",
+      "noMoneyUpgrade": "Nicht genug Geld für dieses Upgrade!",
+      "harmonyLow": "Band-Harmonie zu niedrig für einen Auftritt!",
+      "audioFail": "Audio-Initialisierung fehlgeschlagen."
+    }
+  }
 }

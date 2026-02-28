@@ -62,5 +62,5 @@ export const getRandomChatter = state => {
     }
   }
 
-  return { text: item.text, speaker: item.speaker || null }
+  return { text: item.text, speaker: item.speaker || null, type: item.type || 'normal' }
 }

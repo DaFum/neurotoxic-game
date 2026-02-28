@@ -62,7 +62,7 @@ test('CrashHandler HIDES stack trace in PROD mode', async () => {
   )
 
   expect(
-    getByText('The simulation has crashed. Reboot required.')
+    getByText('ui:crash.title')
   ).toBeInTheDocument()
   // Verify error message is NOT visible
   expect(queryByText('Error: Test Error')).toBe(null)
