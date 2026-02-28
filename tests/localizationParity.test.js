@@ -1,11 +1,11 @@
-import { readFileSync, readdirSync } from 'node:fs'
+import { readdirSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   extractPlaceholders,
-  flattenTranslations,
+  flattenToEntries,
   readLocaleJson,
   toKeyMap
 } from './utils/localeTestUtils.js'
@@ -35,10 +35,10 @@ test('english and german locale files expose identical translation keys', () => 
     const english = readLocaleJson(EN_LOCALE_DIR, fileName)
     const german = readLocaleJson(DE_LOCALE_DIR, fileName)
 
-    const englishKeys = flattenTranslations(english)
+    const englishKeys = flattenToEntries(english)
       .map(entry => entry.key)
       .sort()
-    const germanKeys = flattenTranslations(german)
+    const germanKeys = flattenToEntries(german)
       .map(entry => entry.key)
       .sort()
 
@@ -54,8 +54,8 @@ test('english and german locale strings share placeholder variables', () => {
   const englishFiles = readdirSync(EN_LOCALE_DIR).filter(file => file.endsWith('.json'))
 
   englishFiles.forEach(fileName => {
-    const englishMap = toKeyMap(flattenTranslations(readLocaleJson(EN_LOCALE_DIR, fileName)))
-    const germanMap = toKeyMap(flattenTranslations(readLocaleJson(DE_LOCALE_DIR, fileName)))
+    const englishMap = toKeyMap(flattenToEntries(readLocaleJson(EN_LOCALE_DIR, fileName)))
+    const germanMap = toKeyMap(flattenToEntries(readLocaleJson(DE_LOCALE_DIR, fileName)))
 
     englishMap.forEach((englishValue, key) => {
       const germanValue = germanMap.get(key)

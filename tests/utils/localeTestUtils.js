@@ -10,7 +10,7 @@ export const extractPlaceholders = value => {
   return matches.map(match => match.replace(/{{\s*|\s*}}/g, ''))
 }
 
-export const flattenTranslations = (entry, parentKey = '') => {
+export const flattenToEntries = (entry, parentKey = '') => {
   if (typeof entry === 'string') {
     return [{ key: parentKey, value: entry }]
   }
@@ -21,24 +21,26 @@ export const flattenTranslations = (entry, parentKey = '') => {
 
   return Object.entries(entry).flatMap(([childKey, childValue]) => {
     const nextKey = parentKey ? `${parentKey}.${childKey}` : childKey
-    return flattenTranslations(childValue, nextKey)
+    return flattenToEntries(childValue, nextKey)
   })
 }
 
-export const flattenTranslationsObj = (entry, parentKey = '') => {
+export const flattenToObject = (entry, parentKey = '', result = {}) => {
   if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
-    return {}
+    return result
   }
 
-  return Object.entries(entry).reduce((accumulator, [childKey, childValue]) => {
+  for (const [childKey, childValue] of Object.entries(entry)) {
     const nextKey = parentKey ? `${parentKey}.${childKey}` : childKey
 
     if (childValue && typeof childValue === 'object' && !Array.isArray(childValue)) {
-      return { ...accumulator, ...flattenTranslationsObj(childValue, nextKey) }
+      flattenToObject(childValue, nextKey, result)
+    } else {
+      result[nextKey] = childValue
     }
+  }
 
-    return { ...accumulator, [nextKey]: childValue }
-  }, {})
+  return result
 }
 
 export const readLocaleJson = (directory, fileName) => {

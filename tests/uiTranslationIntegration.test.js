@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  flattenTranslationsObj,
+  flattenToObject,
   resolveNamespaceKey
 } from './utils/localeTestUtils.js'
 
@@ -47,7 +47,7 @@ const extractLocalizedKeys = () => {
 const readLocaleMap = (locale, namespace) => {
   const localePath = path.join(REPO_ROOT, 'public', 'locales', locale, `${namespace}.json`)
   const localeData = JSON.parse(readFileSync(localePath, 'utf8'))
-  return { ...flattenTranslationsObj(localeData), ...localeData }
+  return { ...flattenToObject(localeData), ...localeData }
 }
 
 test('localized keys used in UI integration files exist in both en and de locales', () => {
@@ -58,20 +58,18 @@ test('localized keys used in UI integration files exist in both en and de locale
 
   const localeCache = new Map()
 
+  const getCachedLocaleMap = (locale, namespace) => {
+    const cacheKey = `${locale}:${namespace}`
+    if (!localeCache.has(cacheKey)) {
+      localeCache.set(cacheKey, readLocaleMap(locale, namespace))
+    }
+    return localeCache.get(cacheKey)
+  }
+
   localizedKeys.forEach(namespaceKey => {
     const [namespace, key] = namespaceKey.split(/:(.+)/)
-
-    const enCacheKey = `en:${namespace}`
-    if (!localeCache.has(enCacheKey)) {
-      localeCache.set(enCacheKey, readLocaleMap('en', namespace))
-    }
-    const englishMap = localeCache.get(enCacheKey)
-
-    const deCacheKey = `de:${namespace}`
-    if (!localeCache.has(deCacheKey)) {
-      localeCache.set(deCacheKey, readLocaleMap('de', namespace))
-    }
-    const germanMap = localeCache.get(deCacheKey)
+    const englishMap = getCachedLocaleMap('en', namespace)
+    const germanMap = getCachedLocaleMap('de', namespace)
 
     if (!(key in englishMap)) {
       missingInEnglish.push(namespaceKey)

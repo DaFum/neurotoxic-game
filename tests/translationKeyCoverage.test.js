@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  flattenTranslationsObj,
+  flattenToObject,
   collectSourceFiles,
   resolveNamespaceKey
 } from './utils/localeTestUtils.js'
@@ -28,7 +28,7 @@ const readLocaleNamespaceMap = locale => {
 
     return {
       ...accumulator,
-      [namespace]: { ...flattenTranslationsObj(namespaceData), ...namespaceData }
+      [namespace]: { ...flattenToObject(namespaceData), ...namespaceData }
     }
   }, {})
 }
