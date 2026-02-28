@@ -99,14 +99,14 @@ export const BandHQ = ({
     >
       {/* Backdrop */}
       <div
-        className='absolute inset-0 bg-(--void-black)/90 backdrop-blur-sm'
+        className='absolute inset-0 z-0 bg-(--void-black)/90 backdrop-blur-sm'
         onClick={onClose}
         aria-hidden="true"
       />
 
       {/* Decorative Background Image overlay */}
       <div
-        className='absolute inset-0 bg-cover bg-center opacity-20 pointer-events-none'
+        className='absolute inset-0 z-0 bg-cover bg-center opacity-20 pointer-events-none'
         style={{
           backgroundImage: `url("${getGenImageUrl(IMG_PROMPTS.BAND_HQ_BG)}")`
         }}
@@ -137,7 +137,7 @@ export const BandHQ = ({
         <div
           role='tablist'
           aria-label='Band HQ Sections'
-          className='flex border-b-2 border-(--toxic-green) overflow-x-auto'
+          className='flex border-b-2 border-(--toxic-green) overflow-x-auto relative z-20'
         >
           {/* Tabs */}
           {[
