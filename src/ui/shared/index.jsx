@@ -25,6 +25,8 @@ export {
   GearIcon,
   HexNode,
   WarningStripe,
+  BiohazardIcon,
+  CorporateSeal,
   BrutalToggle,
   BlockMeter,
   BrutalTabs,
@@ -40,6 +42,10 @@ export {
   CorruptedText,
   HazardTicker,
   IndustrialChecklist,
+  RhythmMatrix,
+  SelloutContract,
+  ToxicChatter,
+  VoidDecryptor,
 } from './BrutalistUI'
 import { UIFrameCorner } from './Icons'
 

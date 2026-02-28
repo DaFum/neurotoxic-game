@@ -68,6 +68,21 @@ export const WarningStripe = () => (
   </svg>
 );
 
+export const BiohazardIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 14.5C13.3807 14.5 14.5 13.3807 14.5 12C14.5 10.6193 13.3807 9.5 12 9.5C10.6193 9.5 9.5 10.6193 9.5 12C9.5 13.3807 10.6193 14.5 12 14.5Z" stroke="currentColor" strokeWidth="2"/>
+    <path d="M12 9.5V4M12 4C9.5 4 7.5 5.5 6.5 7.5M12 4C14.5 4 16.5 5.5 17.5 7.5M9.83494 13.25L5.0718 16M5.0718 16C3.5 14.5 3 12 3.5 9.5M5.0718 16C6.5 17.5 9 18 11.5 17.5M14.1651 13.25L18.9282 16M18.9282 16C20.5 14.5 21 12 20.5 9.5M18.9282 16C17.5 17.5 15 18 12.5 17.5" stroke="currentColor" strokeWidth="2" strokeLinecap="square"/>
+  </svg>
+);
+
+export const CorporateSeal = ({ className }) => (
+  <svg className={className} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="45" stroke="currentColor" strokeWidth="4" strokeDasharray="10 5"/>
+    <circle cx="50" cy="50" r="35" stroke="currentColor" strokeWidth="2"/>
+    <path d="M30 50L45 65L75 35" stroke="currentColor" strokeWidth="6" strokeLinecap="square"/>
+  </svg>
+);
+
 // --- UI COMPONENTS ---
 
 // 1. Industrial Toggle
@@ -605,6 +620,172 @@ export const IndustrialChecklist = () => {
       >
         {allDone ? 'INITIATE GIG' : 'AWAITING SEQUENCE'}
       </button>
+    </div>
+  );
+};
+
+// 16. Rhythm Lane Matrix (Simulation of the Rhythm Engine)
+export const RhythmMatrix = () => {
+  const [hits, setHits] = useState([false, false, false]);
+
+  const triggerHit = (index) => {
+    const newHits = [...hits];
+    newHits[index] = true;
+    setHits(newHits);
+    setTimeout(() => {
+      const resetHits = [...hits];
+      resetHits[index] = false;
+      setHits(resetHits);
+    }, 150);
+  };
+
+  return (
+    <div className="w-full h-64 bg-[#050505] border border-[#39FF14]/30 p-4 flex flex-col relative overflow-hidden">
+      <div className="text-[10px] opacity-50 tracking-[0.3em] absolute top-2 left-2 z-10">RHYTHM_ENGINE_SIM</div>
+
+      {/* 3 Lanes */}
+      <div className="flex-1 flex justify-center gap-4 mt-6">
+        {['GUITAR', 'DRUMS', 'BASS'].map((lane, i) => (
+          <div key={lane} className="w-16 h-full border-x border-[#39FF14]/10 relative flex flex-col justify-end pb-2 group">
+            {/* Falling Note Simulation */}
+            <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-12 h-4 border-2 border-[#39FF14] bg-black animate-[drop_2s_linear_infinite] opacity-50`} style={{ animationDelay: `${i * 0.5}s` }}></div>
+
+            {/* Target Box */}
+            <div
+              className={`w-14 h-8 mx-auto border-2 transition-all duration-75 flex items-center justify-center cursor-pointer select-none
+                ${hits[i] ? 'bg-[#39FF14] border-[#39FF14] shadow-[0_0_20px_#39FF14] scale-110' : 'bg-black border-[#39FF14]/50 hover:border-[#39FF14]'}`}
+              onMouseDown={() => triggerHit(i)}
+            >
+               <span className={`text-[8px] font-bold ${hits[i] ? 'text-black' : 'text-[#39FF14]/50'}`}>HIT</span>
+            </div>
+
+            <span className="text-[10px] text-center mt-2 opacity-50 tracking-widest">{lane}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// 17. Corporate Sellout Contract (Brand Deals)
+export const SelloutContract = () => {
+  const [signed, setSigned] = useState(false);
+
+  return (
+    <div className={`w-full border-4 p-6 relative transition-all duration-500 ${signed ? 'border-[#39FF14] bg-[#39FF14]/5' : 'border-[#39FF14]/30 bg-black'}`}>
+      <div className="absolute top-0 right-0 p-2 border-l border-b border-[#39FF14]/30 text-[8px] opacity-50">DOCUMENT: CONFIDENTIAL</div>
+
+      <h3 className="text-xl font-bold tracking-[0.2em] uppercase mb-4 border-b-2 border-[#39FF14]/30 pb-2">Binding Agreement</h3>
+
+      <div className="text-xs leading-relaxed opacity-80 flex flex-col gap-3 font-mono">
+        <p>This agreement binds NEUROTOXIC to <span className="bg-[#39FF14] text-black font-bold px-1">MEGA_CORP_INC</span>.</p>
+        <p>The Artist agrees to <span className="bg-[#39FF14] text-[#39FF14] select-none hover:text-black transition-colors">subliminally insert corporate messaging</span> during all live performances in sector 4.</p>
+        <p>Failure to comply will result in <span className="bg-red-600 text-red-600 select-none">immediate termination of organic functions</span>.</p>
+
+        <div className="mt-4 border-t border-dashed border-[#39FF14]/50 pt-4 flex justify-between items-end">
+          <div className="flex flex-col gap-1 w-1/2">
+            <span className="text-[10px] opacity-50">SIGNATURE (BLOOD/VOID):</span>
+            {signed ? (
+              <span className="font-script text-2xl text-[#39FF14] -rotate-6 tracking-widest animate-pulse">Neurotoxic</span>
+            ) : (
+              <div className="h-8 border-b-2 border-[#39FF14] w-full cursor-pointer hover:bg-[#39FF14]/20 transition-colors" onClick={() => setSigned(true)}></div>
+            )}
+          </div>
+
+          <div className={`transition-all duration-500 ${signed ? 'opacity-100 scale-100' : 'opacity-0 scale-150'}`}>
+            <CorporateSeal className="w-16 h-16 text-[#39FF14]" />
+            <div className="text-[8px] text-center mt-1">SEALED</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// 18. Toxic Hate Feed (Chatter Overlay)
+export const ToxicChatter = () => {
+  const [messages, setMessages] = useState([
+    { id: 1, user: "VOID_WALKER", text: "this band is dead lol", type: "hate" },
+    { id: 2, user: "TRUE_SCUM", text: "PLAY THE OLD SHIT!!!", type: "hate" },
+    { id: 3, user: "SYS_ADMIN", text: "WARNING: CROWD HOSTILITY RISING", type: "system" }
+  ]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const newHate = [
+        "sellouts.", "can't even stay in rhythm", "BOOOOOOOOO", "my ears are bleeding (in a bad way)", "refund immediately"
+      ];
+      const randomHate = newHate[Math.floor(Math.random() * newHate.length)];
+      setMessages(prev => {
+        const updated = [...prev, { id: Date.now(), user: `USER_${Math.floor(Math.random()*999)}`, text: randomHate, type: "hate" }];
+        return updated.slice(-5); // Keep only last 5
+      });
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="w-full h-64 border border-[#39FF14]/30 bg-[#020202] p-4 flex flex-col justify-end relative shadow-[inset_0_0_20px_rgba(57,255,20,0.05)]">
+      <div className="absolute top-2 left-2 text-[10px] tracking-widest opacity-50">LIVE_CHATTER_FEED</div>
+
+      <div className="flex flex-col gap-2 overflow-hidden">
+        {messages.map((msg, i) => (
+          <div
+            key={msg.id}
+            className={`text-xs p-2 animate-[slideIn_0.2s_ease-out] ${msg.type === 'system' ? 'border border-[#39FF14] bg-[#39FF14]/10' : 'border-l-2 border-[#39FF14]/30'}`}
+            style={{ opacity: 0.4 + (i * 0.15) }} // Fade out older messages
+          >
+            <span className="font-bold opacity-70">[{msg.user}]: </span>
+            <span className={`${msg.type === 'hate' ? 'chromatic-text' : 'text-[#39FF14]'}`}>{msg.text}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// 19. Void Decryptor (Unlocks/Lore)
+export const VoidDecryptor = () => {
+  const [decrypted, setDecrypted] = useState(false);
+  const [glitchText, setGlitchText] = useState("0x8F9A... ENCRYPTED");
+
+  useEffect(() => {
+    if (!decrypted) {
+      const interval = setInterval(() => {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*";
+        let str = "";
+        for(let i=0; i<15; i++) str += chars.charAt(Math.floor(Math.random() * chars.length));
+        setGlitchText(str);
+      }, 50);
+      return () => clearInterval(interval);
+    } else {
+      setGlitchText("ITEM_UNLOCKED: 'VOID_CORE'");
+    }
+  }, [decrypted]);
+
+  return (
+    <div className="w-full h-64 border-2 border-[#39FF14]/50 bg-black flex flex-col items-center justify-center p-6 relative group cursor-pointer" onClick={() => setDecrypted(true)}>
+
+      {/* Glitch Frame Corners */}
+      <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-[#39FF14] transition-all duration-300 group-hover:p-2"></div>
+      <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-[#39FF14] transition-all duration-300 group-hover:p-2"></div>
+
+      <div className={`relative transition-all duration-700 ${decrypted ? 'scale-125' : 'scale-100 animate-[pulse_0.1s_infinite]'}`}>
+        <BiohazardIcon className={`w-20 h-20 ${decrypted ? 'text-[#39FF14] drop-shadow-[0_0_20px_#39FF14]' : 'text-[#39FF14]/30'}`} />
+
+        {/* Scrambler Overlay */}
+        {!decrypted && (
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px] flex items-center justify-center mix-blend-overlay">
+            <div className="w-full h-2 bg-[#39FF14] animate-[scan_1s_linear_infinite]"></div>
+          </div>
+        )}
+      </div>
+
+      <div className={`mt-6 font-mono text-xs tracking-[0.2em] font-bold ${decrypted ? 'text-white' : 'text-[#39FF14]/50'}`}>
+        {glitchText}
+      </div>
+
+      {!decrypted && <div className="absolute bottom-4 text-[8px] opacity-50 animate-bounce">CLICK TO DECRYPT</div>}
     </div>
   );
 };
