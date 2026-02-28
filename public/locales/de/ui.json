@@ -88,6 +88,8 @@
     }
   },
   "tour.endedPrematurely": "Die Tour endete vorzeitig.",
+  "gameOver.soldOut": "AUSVERKAUFT",
+  "gameOver.finalStatistics": "ABSCHLUSSSTATISTIKEN",
   "gameOver.loadLastSave": "LETZTEN SPEICHERSTAND LADEN",
   "gameOver.returnToMenu": "ZURÜCK ZUM MENÜ",
   "stats.daysSurvived": "ÜBERLEBTE TAGE",
@@ -234,5 +236,18 @@
   "map.finale_desc": "★ FINALE — Die letzte Show ★",
   "map.current_location": "[AKTUELLE POSITION]",
   "map.vanAlt": "Van",
-  "map.pinAlt": "Pin"
+  "map.pinAlt": "Pin",
+  "holdToOverride": "ZUM ÜBERSCHREIBEN HALTEN",
+  "executed": "AUSGEFÜHRT",
+  "loading": "Lade",
+  "module": "Modul",
+  "menu": {
+    "inventory": "INVENTAR",
+    "upgrades": "UPGRADES"
+  },
+  "crash": {
+    "title": "SYSTEMAUSFALL",
+    "message": "Die Simulation ist abgestürzt. Neustart erforderlich.",
+    "rebootButton": "SYSTEM NEUSTARTEN"
+  }
 }

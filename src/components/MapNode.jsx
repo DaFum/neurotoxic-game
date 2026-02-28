@@ -2,7 +2,7 @@ import { memo, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
-import { HexNode } from '../ui/shared/BrutalistUI'
+import { HexNode } from '../ui/shared'
 
 const VAN_STYLE = { transform: 'translate(0, -50%)' }
 const MOTION_INITIAL = { scale: 0 }
@@ -60,6 +60,18 @@ export const MapNode = memo(
         onMouseLeave={() => {
           setHoveredNode(null)
           setIsHoveredLocal(false)
+        }}
+        onFocus={() => {
+          if (isReachable) {
+            setHoveredNode(node)
+            setIsHoveredLocal(true)
+          }
+        }}
+        onBlur={() => {
+          if (isReachable) {
+            setHoveredNode(null)
+            setIsHoveredLocal(false)
+          }
         }}
         role={isReachable ? 'button' : undefined}
         aria-label={

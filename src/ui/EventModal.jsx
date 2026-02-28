@@ -67,14 +67,14 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
       className={`fixed inset-0 z-[100] flex items-center justify-center p-4 ${className}`}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+      <div className="absolute inset-0 bg-(--void-black)/80 backdrop-blur-sm"></div>
       {/* Scanline FX on background */}
-      <div className="absolute inset-0 pointer-events-none opacity-20" style={{ backgroundImage: 'linear-gradient(transparent 50%, rgba(0, 0, 0, 0.5) 50%)', backgroundSize: '100% 4px' }}></div>
+      <div className="absolute inset-0 pointer-events-none opacity-20" style={{ backgroundImage: 'linear-gradient(transparent 50%, rgba(var(--void-black-rgb), 0.5) 50%)', backgroundSize: '100% 4px' }}></div>
 
       <motion.div
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        className='relative w-full max-w-lg border-2 border-(--toxic-green) bg-black shadow-[0_0_40px_var(--toxic-green-glow)] animate-[glitch-anim_0.2s_ease-in-out]'
+        className='relative w-full max-w-lg border-2 border-(--toxic-green) bg-[color:var(--void-black)] shadow-[0_0_40px_var(--toxic-green-glow)] animate-[glitch-anim_0.2s_ease-in-out]'
       >
         {/* Hardware details */}
         <div className="absolute top-0 left-0 w-full h-1 bg-(--toxic-green)"></div>
@@ -115,6 +115,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
           >
             {event.options.map((option, index) => (
               <motion.button
+                type="button"
                 variants={{
                   hidden: { opacity: 0, x: -20 },
                   visible: { opacity: 1, x: 0 }
@@ -127,7 +128,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
                   else onOptionSelect(option)
                 }}
                 className={`w-full p-3 border font-bold tracking-widest uppercase transition-colors text-left flex justify-between
-                  ${index === 0 ? 'border-(--toxic-green) bg-(--toxic-green)/10 hover:bg-(--toxic-green) hover:text-black text-(--toxic-green)' : 'border-white/50 text-white/50 hover:border-white hover:text-white hover:bg-white/10'}
+                  ${index === 0 ? 'border-(--toxic-green) bg-(--toxic-green)/10 hover:bg-(--toxic-green) hover:text-[color:var(--void-black)] text-(--toxic-green)' : 'border-(--star-white)/50 text-(--star-white)/50 hover:border-(--star-white) hover:text-(--star-white) hover:bg-(--star-white)/10'}
                 `}
               >
                 <span>

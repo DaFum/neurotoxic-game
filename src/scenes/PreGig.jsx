@@ -377,7 +377,7 @@ export const PreGig = () => {
           }
         }}
       >
-        {!isStarting && <RazorPlayIcon className="w-8 h-8 text-black" />}
+        {!isStarting && <RazorPlayIcon className="w-8 h-8 text-(--void-black)" />}
         {isStarting ? 'INITIALIZING...' : 'START SHOW'}
       </motion.button>
     </div>

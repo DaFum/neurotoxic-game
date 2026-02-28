@@ -1,4 +1,3 @@
-import { useId } from 'react'
 import PropTypes from 'prop-types'
 
 export const VolumeSlider = ({ label, value, onChange }) => {
@@ -27,7 +26,6 @@ export const VolumeSlider = ({ label, value, onChange }) => {
       />
       <div
         className="flex gap-1 h-8 items-end cursor-pointer group"
-        onMouseLeave={() => {}}
         role="presentation"
       >
         {segments.map(segment => {

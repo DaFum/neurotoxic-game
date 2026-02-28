@@ -88,6 +88,8 @@
     }
   },
   "tour.endedPrematurely": "The tour has ended prematurely.",
+  "gameOver.soldOut": "SOLD OUT",
+  "gameOver.finalStatistics": "FINAL STATISTICS",
   "gameOver.loadLastSave": "LOAD LAST SAVE",
   "gameOver.returnToMenu": "RETURN TO MENU",
   "stats.daysSurvived": "DAYS SURVIVED",
@@ -234,5 +236,18 @@
   "map.finale_desc": "★ FINALE — The Final Show ★",
   "map.current_location": "[CURRENT LOCATION]",
   "map.vanAlt": "Van",
-  "map.pinAlt": "Pin"
+  "map.pinAlt": "Pin",
+  "holdToOverride": "HOLD TO OVERRIDE",
+  "executed": "EXECUTED",
+  "loading": "Loading",
+  "module": "module",
+  "menu": {
+    "inventory": "INVENTORY",
+    "upgrades": "UPGRADES"
+  },
+  "crash": {
+    "title": "SYSTEM FAILURE",
+    "message": "The simulation has crashed. Reboot required.",
+    "rebootButton": "REBOOT SYSTEM"
+  }
 }
