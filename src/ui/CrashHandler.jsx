@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { GlitchButton } from './GlitchButton'
+import { VoidSkullIcon } from './shared/Icons'
 
 export class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -29,6 +30,8 @@ export class ErrorBoundary extends React.Component {
           className='flex flex-col items-center justify-center fixed inset-0 bg-(--void-black) text-(--blood-red) p-8 relative'
           style={{ zIndex: 'var(--z-crash)' }}
         >
+          <VoidSkullIcon className="w-32 h-32 text-(--blood-red) animate-pulse mb-6" />
+
           <h1 className='text-6xl font-[Metal_Mania] mb-4'>SYSTEM FAILURE</h1>
           <p className='text-(--toxic-green) font-mono mb-8'>
             The simulation has crashed. Reboot required.

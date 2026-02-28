@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 import { AlertIcon } from './shared/BrutalistUI'
+import { VoidSkullIcon } from './shared/Icons'
 
 const CATEGORY_IMAGE_MAP = {
   transport: IMG_PROMPTS.EVENT_VAN,
@@ -77,11 +78,17 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
       >
         {/* Hardware details */}
         <div className="absolute top-0 left-0 w-full h-1 bg-(--toxic-green)"></div>
-        <div className="absolute top-0 left-2 w-16 h-4 bg-(--toxic-green) text-black text-[10px] font-bold text-center leading-4">CRITICAL</div>
+        <div className="absolute top-0 left-2 px-2 h-4 bg-(--toxic-green) text-(--void-black) text-[10px] font-bold text-center leading-4 uppercase">
+          {t('ui:event.severity.critical', 'CRITICAL')}
+        </div>
 
         <div className='p-8 flex flex-col gap-6'>
           <div className="flex items-start gap-4 border-b border-(--toxic-green)/30 pb-6">
-            <AlertIcon className="w-12 h-12 text-(--toxic-green) animate-pulse shrink-0 mt-1" />
+            {event.category === 'special' ? (
+              <VoidSkullIcon className="w-12 h-12 text-(--toxic-green) animate-pulse shrink-0 mt-1" />
+            ) : (
+              <AlertIcon className="w-12 h-12 text-(--toxic-green) animate-pulse shrink-0 mt-1" />
+            )}
             <div>
               <h2
                 id='event-title'
@@ -97,7 +104,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
 
           {/* Keyboard hint */}
           <p className='text-[10px] text-(--ash-gray) font-mono uppercase tracking-widest text-center'>
-            Press [1-{event.options.length}] or click to choose
+            {t('ui:keyboardHint', { count: event.options.length, defaultValue: `Press [1-${event.options.length}] or click to choose` })}
           </p>
 
           <motion.div
@@ -138,7 +145,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
                   {/* Skill check indicator */}
                   {option.skillCheck && (
                     <span className='inline-block mt-1 text-[10px] text-(--warning-yellow)'>
-                      [{'\u2694'} Skill Check]
+                      [{'\u2694'} {t('ui:skillCheck', 'Skill Check')}]
                     </span>
                   )}
                 </div>

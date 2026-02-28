@@ -154,8 +154,8 @@ export const BandHQ = ({
                 className={`flex-1 min-w-[120px] py-3 px-4 text-center text-sm font-bold tracking-[0.1em] uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2
                   ${
                     isActive
-                      ? 'bg-(--toxic-green) text-black shadow-[0_-2px_10px_var(--toxic-green)]'
-                      : 'bg-black text-(--toxic-green) hover:bg-(--toxic-green)/10'
+                      ? 'bg-(--toxic-green) text-(--void-black) shadow-[0_-2px_10px_var(--toxic-green)]'
+                      : 'bg-(--void-black) text-(--toxic-green) hover:bg-(--toxic-green)/10'
                   }`}
               >
                 {isActive && <span className="text-xs">▶</span>}

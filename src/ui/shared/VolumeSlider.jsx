@@ -33,18 +33,28 @@ export const VolumeSlider = ({ label, value, onChange }) => {
         {segments.map(segment => {
           const isActive = segment <= val
           const height = `${30 + (segment / max) * 70}%`
+          const segmentPct = Math.round((segment / max) * 100)
           return (
-            <div
+            <button
+              type="button"
               key={segment}
               onClick={() => onChange({ target: { value: segment / max } })}
-              className="flex-1 relative h-full flex items-end group-hover:opacity-100"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  if (e.key === ' ') e.preventDefault()
+                  onChange({ target: { value: segment / max } })
+                }
+              }}
+              className="flex-1 relative h-full flex items-end group-hover:opacity-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)"
+              aria-label={`Set volume to ${segmentPct}%`}
+              aria-pressed={isActive}
             >
               <div
                 style={{ height }}
-                className={`w-full transition-colors duration-75 border-b-2 border-transparent hover:border-white
+                className={`w-full transition-colors duration-75 border-b-2 border-transparent hover:border-[color:var(--void-black)]
                   ${isActive ? 'bg-(--toxic-green) shadow-[0_0_8px_var(--toxic-green)]' : 'bg-(--toxic-green)/20'}`}
               ></div>
-            </div>
+            </button>
           )
         })}
       </div>

@@ -16,7 +16,7 @@ export function RazorPlayIcon({ className = '' }) {
       />
       <path d="M7 6V18L17 12L7 6Z" fill="currentColor" />
 
-      <rect x="0" y="11" width="24" height="2" fill="#000000" opacity="0.8">
+      <rect x="0" y="11" width="24" height="2" fill="var(--void-black)" opacity="0.8">
         <animate
           attributeName="y"
           values="2; 20; 2"

@@ -59,13 +59,20 @@ import { UIFrameCorner } from './Icons'
  */
 export const StatBox = ({ label, value, icon, className = '' }) => (
   <div
-    className={`bg-(--void-black) p-3 flex flex-col items-center justify-center border border-(--ash-gray) ${className}`}
+    className={`relative bg-(--void-black) p-3 flex flex-col items-center justify-center border border-(--ash-gray) group overflow-hidden ${className}`}
   >
-    <div className='text-2xl mb-1 text-(--toxic-green)'>{icon}</div>
-    <div className='text-xl font-bold text-(--star-white) font-mono'>
-      {value}
+    <UIFrameCorner className="absolute top-0 left-0 w-3 h-3 text-(--ash-gray) opacity-30 transition-opacity group-hover:opacity-60" />
+    <UIFrameCorner className="absolute top-0 right-0 w-3 h-3 text-(--ash-gray) rotate-90 opacity-30 transition-opacity group-hover:opacity-60" />
+    <UIFrameCorner className="absolute bottom-0 right-0 w-3 h-3 text-(--ash-gray) rotate-180 opacity-30 transition-opacity group-hover:opacity-60" />
+    <UIFrameCorner className="absolute bottom-0 left-0 w-3 h-3 text-(--ash-gray) -rotate-90 opacity-30 transition-opacity group-hover:opacity-60" />
+
+    <div className="relative z-10 flex flex-col items-center">
+      <div className='text-2xl mb-1 text-(--toxic-green)'>{icon}</div>
+      <div className='text-xl font-bold text-(--star-white) font-mono'>
+        {value}
+      </div>
+      <div className='text-xs text-(--ash-gray) uppercase font-mono'>{label}</div>
     </div>
-    <div className='text-xs text-(--ash-gray) uppercase font-mono'>{label}</div>
   </div>
 )
 

@@ -138,7 +138,7 @@ export const ChatterOverlay = ({ gameState }) => {
         const result = getRandomChatter(currentState)
 
         if (result) {
-          const { text, speaker: fixedSpeaker } = result
+          const { text, speaker: fixedSpeaker, type } = result
           const members = currentState.band?.members ?? []
           const memberNames = members
             .map(member => member.name)
@@ -150,7 +150,7 @@ export const ChatterOverlay = ({ gameState }) => {
               ? memberNames[Math.floor(Math.random() * memberNames.length)]
               : t('ui:chatter_labels.default_speaker', { defaultValue: 'Band' })
 
-          const newMessage = { id: Date.now(), text, speaker }
+          const newMessage = { id: Date.now(), text, speaker, type }
 
           setMessages(prev => [
             ...prev.slice(-4), // Keep max 5 (4 old + 1 new)
@@ -251,7 +251,7 @@ export const ChatterOverlay = ({ gameState }) => {
 
               {/* Message body */}
               <div className='pl-3 pr-2 py-2.5'>
-                <p className={`text-xs leading-snug font-(family-name:--font-ui) ${msg.text?.includes('hostile') || msg.text?.includes('hate') || currentScene === 'GAMEOVER' ? 'text-white chromatic-text' : 'text-(--star-white)'}`}>
+                <p className={`text-xs leading-snug font-(family-name:--font-ui) ${msg.type === 'hate' || currentScene === 'GAMEOVER' ? 'text-(--star-white) chromatic-text' : 'text-(--star-white)'}`}>
                   {t(msg.text)}
                 </p>
               </div>

@@ -25,6 +25,8 @@ export const MapNode = memo(
     ticketPrice
   }) => {
     const { t } = useTranslation(['venues', 'ui'])
+    const [isHoveredLocal, setIsHoveredLocal] = useState(false)
+
     const positionStyle = useMemo(
       () => ({ left: `${node.x}%`, top: `${node.y}%` }),
       [node.x, node.y]
@@ -41,8 +43,6 @@ export const MapNode = memo(
         </div>
       )
     }
-
-    const [isHoveredLocal, setIsHoveredLocal] = useState(false)
 
     return (
       <div
@@ -115,7 +115,9 @@ export const MapNode = memo(
            <HexNode className={`w-12 h-12 transition-all duration-200 ${isHoveredLocal || isPendingConfirm ? 'text-(--star-white) drop-shadow-[0_0_15px_var(--toxic-green)]' : 'text-(--toxic-green)'}`} />
            {/* Center icon overlay if needed, or replace HexNode entirely based on type */}
            <div className="absolute inset-0 flex items-center justify-center mix-blend-difference pointer-events-none">
-             <span className="text-black font-bold text-[10px]">{node.type === 'GIG' ? 'GIG' : node.type === 'REST_STOP' ? 'REST' : node.type.substring(0,3)}</span>
+             <span className="text-(--void-black) font-bold text-[10px]">
+               {node.type === 'GIG' ? t('ui:map.nodeType.gig', 'GIG') : node.type === 'REST_STOP' ? t('ui:map.nodeType.rest', 'REST') : t('ui:map.nodeType.fallback', { type: node.type.substring(0,3), defaultValue: node.type.substring(0,3) })}
+             </span>
            </div>
         </motion.div>
 
@@ -165,7 +167,7 @@ export const MapNode = memo(
             </div>
           )}
           {node.type === 'SPECIAL' && (
-            <div className='text-[10px] text-(--purple-glow,#a855f7) font-mono'>
+            <div className='text-[10px] text-(--purple-glow) font-mono'>
               {t('ui:map.mystery_desc', {
                 defaultValue: 'MYSTERY — Unknown Encounter'
               })}

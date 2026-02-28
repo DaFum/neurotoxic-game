@@ -22,6 +22,32 @@
   "language": "LANGUAGE",
   "language_option_en": "ENGLISH",
   "language_option_de": "GERMAN",
+  "crowdEnergy": "CROWD ENERGY",
+  "toxicModeActive": "TOXIC MODE ACTIVE",
+  "keyboardHint": "Press [1-{{count}}] or click to choose",
+  "skillCheck": "Skill Check",
+  "toggle": {
+    "on": "ON",
+    "off": "OFF"
+  },
+  "hazard": {
+    "toxicOverload": "TOXIC OVERLOAD DETECTED // SEVERE SYSTEM STRESS // STAY FOCUSED"
+  },
+  "overload": {
+    "toxic": "TOXIC OVERLOAD"
+  },
+  "event": {
+    "severity": {
+      "critical": "CRITICAL"
+    }
+  },
+  "map": {
+    "nodeType": {
+      "gig": "GIG",
+      "rest": "REST",
+      "fallback": "{{type}}"
+    }
+  },
   "day_advance": "Day {{day}}: Living Costs Deducted.",
   "unlocked": "UNLOCKED: {{unlock}}!",
   "game_over": "GAME OVER: {{description}}",
