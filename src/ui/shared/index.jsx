@@ -16,6 +16,7 @@ export { ActionButton } from './ActionButton'
 export { ToggleSwitch } from './ToggleSwitch'
 export { AnimatedDivider, AnimatedSubtitle } from './AnimatedTypography'
 export { RazorPlayIcon, VoidSkullIcon, UIFrameCorner } from './Icons'
+import { UIFrameCorner } from './Icons'
 
 /**
  * StatBox - Displays a single statistic with an icon
@@ -134,14 +135,22 @@ ProgressBar.propTypes = {
  */
 export const Panel = ({ title, children, className = '' }) => (
   <div
-    className={`bg-(--void-black)/40 border border-(--ash-gray)/40 p-4 h-full ${className}`}
+    className={`relative bg-(--void-black)/40 border-2 border-(--ash-gray)/40 p-4 h-full group overflow-hidden ${className}`}
   >
-    {title && (
-      <h3 className='text-(--toxic-green) text-sm font-bold mb-3 border-b border-(--ash-gray)/40 pb-1 font-mono uppercase tracking-wider'>
-        {title}
-      </h3>
-    )}
-    <div className='space-y-1'>{children}</div>
+    {/* Brutalist Frame Corners */}
+    <UIFrameCorner className="absolute top-0 left-0 w-6 h-6 text-(--ash-gray) opacity-30 transition-opacity group-hover:opacity-60" />
+    <UIFrameCorner className="absolute top-0 right-0 w-6 h-6 text-(--ash-gray) rotate-90 opacity-30 transition-opacity group-hover:opacity-60" />
+    <UIFrameCorner className="absolute bottom-0 right-0 w-6 h-6 text-(--ash-gray) rotate-180 opacity-30 transition-opacity group-hover:opacity-60" />
+    <UIFrameCorner className="absolute bottom-0 left-0 w-6 h-6 text-(--ash-gray) -rotate-90 opacity-30 transition-opacity group-hover:opacity-60" />
+
+    <div className="relative z-10">
+      {title && (
+        <h3 className='text-(--toxic-green) text-sm font-bold mb-3 border-b border-(--ash-gray)/40 pb-1 font-mono uppercase tracking-wider'>
+          {title}
+        </h3>
+      )}
+      <div className='space-y-1'>{children}</div>
+    </div>
   </div>
 )
 
