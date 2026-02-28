@@ -3,6 +3,12 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import {
+  extractPlaceholders,
+  flattenTranslations,
+  readLocaleJson,
+  toKeyMap
+} from './utils/localeTestUtils.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -10,41 +16,6 @@ const __dirname = path.dirname(__filename)
 const LOCALES_ROOT = path.join(__dirname, '..', 'public', 'locales')
 const EN_LOCALE_DIR = path.join(LOCALES_ROOT, 'en')
 const DE_LOCALE_DIR = path.join(LOCALES_ROOT, 'de')
-
-const extractPlaceholders = value => {
-  if (typeof value !== 'string') {
-    return []
-  }
-
-  const matches = value.match(/{{\s*([\w.]+)\s*}}/g) ?? []
-  return matches.map(match => match.replace(/{{\s*|\s*}}/g, ''))
-}
-
-const flattenTranslations = (entry, parentKey = '') => {
-  if (typeof entry === 'string') {
-    return [{ key: parentKey, value: entry }]
-  }
-
-  if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
-    return []
-  }
-
-  return Object.entries(entry).flatMap(([childKey, childValue]) => {
-    const nextKey = parentKey ? `${parentKey}.${childKey}` : childKey
-    return flattenTranslations(childValue, nextKey)
-  })
-}
-
-const readLocaleJson = (directory, fileName) => {
-  const localePath = path.join(directory, fileName)
-  return JSON.parse(readFileSync(localePath, 'utf8'))
-}
-
-const toKeyMap = flattened =>
-  flattened.reduce((accumulator, item) => {
-    accumulator.set(item.key, item.value)
-    return accumulator
-  }, new Map())
 
 test('english and german locale folders contain identical namespace files', () => {
   const englishFiles = readdirSync(EN_LOCALE_DIR).filter(file => file.endsWith('.json')).sort()
