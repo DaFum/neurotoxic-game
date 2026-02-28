@@ -15,6 +15,7 @@ export { Modal } from './Modal'
 export { ActionButton } from './ActionButton'
 export { ToggleSwitch } from './ToggleSwitch'
 export { AnimatedDivider, AnimatedSubtitle } from './AnimatedTypography'
+export { RazorPlayIcon, VoidSkullIcon, UIFrameCorner } from './Icons'
 
 /**
  * StatBox - Displays a single statistic with an icon
