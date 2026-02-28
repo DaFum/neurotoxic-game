@@ -252,5 +252,56 @@
     "title": "SYSTEMAUSFALL",
     "message": "Die Simulation ist abgestürzt. Neustart erforderlich.",
     "rebootButton": "SYSTEM NEUSTARTEN"
+  },
+  "pregig": {
+    "title": "VORBEREITUNG",
+    "budget": "BUDGET:",
+    "costs": "KOSTEN:",
+    "allocation": "BUDGETVERTEILUNG",
+    "bandMeeting": {
+      "label": "Band-Meeting",
+      "desc": "+Harmonie"
+    },
+    "activeModifiers": "AKTIVE MODIFIKATOREN",
+    "noModifiers": "Keine aktiven Buffs oder Debuffs",
+    "setlist": "SETLIST",
+    "selectSong": "Song {{name}} auswählen",
+    "locked": "GESPERRT (Prove Yourself)",
+    "diff": "Schw.:",
+    "nrg": "NRG",
+    "selected": "AUSGEWÄHLT",
+    "selectPreview": "Songs auswählen, um Energiekurve zu sehen",
+    "initializing": "INITIALISIERE...",
+    "startShow": "SHOW STARTEN",
+    "modifiers": {
+      "soundcheck": {
+        "label": "Soundcheck",
+        "desc": "Noten einfacher"
+      },
+      "promo": {
+        "label": "Social Promo",
+        "desc": "+Publikum"
+      },
+      "merch": {
+        "label": "Merch-Tisch",
+        "desc": "+Verkäufe"
+      },
+      "catering": {
+        "label": "Catering / Energie",
+        "desc": "Kontert müde Band"
+      },
+      "guestlist": {
+        "label": "Gästeliste",
+        "desc": "+VIP-Punkte"
+      }
+    },
+    "toasts": {
+      "noGig": "Kein Gig aktiv! Zurück zur Karte.",
+      "noMoneySnacks": "Nicht genug Geld für Snacks!",
+      "meetingHeld": "Meeting abgehalten. Stimmung ist besser.",
+      "noMoneyUpgrade": "Nicht genug Geld für dieses Upgrade!",
+      "harmonyLow": "Band-Harmonie zu niedrig für einen Auftritt!",
+      "audioFail": "Audio-Initialisierung fehlgeschlagen."
+    }
   }
 }

@@ -70,8 +70,8 @@ export const MapNode = memo(
         onBlur={() => {
           if (isReachable) {
             setHoveredNode(null)
-            setIsHoveredLocal(false)
           }
+          setIsHoveredLocal(false)
         }}
         role={isReachable ? 'button' : undefined}
         aria-label={

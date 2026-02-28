@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import { SONGS_DB } from '../data/songs'
 import { getGigModifiers } from '../utils/simulationUtils'
@@ -10,43 +11,45 @@ import { handleError } from '../utils/errorHandler'
 import GigModifierButton from '../ui/GigModifierButton'
 import { RazorPlayIcon } from '../ui/shared/Icons'
 
-const GIG_MODIFIER_OPTIONS = [
-  {
-    key: 'soundcheck',
-    label: 'Soundcheck',
-    cost: MODIFIER_COSTS.soundcheck,
-    desc: 'Notes Easier'
-  },
-  {
-    key: 'promo',
-    label: 'Social Promo',
-    cost: MODIFIER_COSTS.promo,
-    desc: '+Crowd Fill'
-  },
-  {
-    key: 'merch',
-    label: 'Merch Table',
-    cost: MODIFIER_COSTS.merch,
-    desc: '+Sales'
-  },
-  {
-    key: 'catering',
-    label: 'Catering / Energy',
-    cost: MODIFIER_COSTS.catering,
-    desc: 'Counters Tired Band Penalty'
-  },
-  {
-    key: 'guestlist',
-    label: 'Guest List',
-    cost: MODIFIER_COSTS.guestlist,
-    desc: '+VIP Score'
-  }
-]
-
 /**
  * Scene for preparing for a gig: managing budget, setlist, and modifiers.
  */
 export const PreGig = () => {
+  const { t } = useTranslation(['ui'])
+
+  const GIG_MODIFIER_OPTIONS = useMemo(() => [
+    {
+      key: 'soundcheck',
+      label: t('ui:pregig.modifiers.soundcheck.label', 'Soundcheck'),
+      cost: MODIFIER_COSTS.soundcheck,
+      desc: t('ui:pregig.modifiers.soundcheck.desc', 'Notes Easier')
+    },
+    {
+      key: 'promo',
+      label: t('ui:pregig.modifiers.promo.label', 'Social Promo'),
+      cost: MODIFIER_COSTS.promo,
+      desc: t('ui:pregig.modifiers.promo.desc', '+Crowd Fill')
+    },
+    {
+      key: 'merch',
+      label: t('ui:pregig.modifiers.merch.label', 'Merch Table'),
+      cost: MODIFIER_COSTS.merch,
+      desc: t('ui:pregig.modifiers.merch.desc', '+Sales')
+    },
+    {
+      key: 'catering',
+      label: t('ui:pregig.modifiers.catering.label', 'Catering / Energy'),
+      cost: MODIFIER_COSTS.catering,
+      desc: t('ui:pregig.modifiers.catering.desc', 'Counters Tired Band Penalty')
+    },
+    {
+      key: 'guestlist',
+      label: t('ui:pregig.modifiers.guestlist.label', 'Guest List'),
+      cost: MODIFIER_COSTS.guestlist,
+      desc: t('ui:pregig.modifiers.guestlist.desc', '+VIP Score')
+    }
+  ], [t])
+
   const {
     currentGig,
     changeScene,
@@ -69,11 +72,11 @@ export const PreGig = () => {
   useEffect(() => {
     if (!currentGig) {
       // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      addToast('No gig active! Returning to map.', 'error')
+      addToast(t('ui:pregig.toasts.noGig', 'No gig active! Returning to map.'), 'error')
       // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
       changeScene('OVERWORLD')
     }
-  }, [currentGig, changeScene, addToast])
+  }, [currentGig, changeScene, addToast, t])
 
   /**
    * Triggers a band meeting event to boost harmony.
@@ -81,13 +84,13 @@ export const PreGig = () => {
   const handleBandMeeting = () => {
     const cost = 50
     if (player.money < cost) {
-      addToast('Not enough money for snacks!', 'error')
+      addToast(t('ui:pregig.toasts.noMoneySnacks', 'Not enough money for snacks!'), 'error')
       return
     }
 
     updatePlayer({ money: Math.max(0, player.money - cost) })
     updateBand({ harmony: Math.min(100, band.harmony + 15) })
-    addToast('Meeting held. Vibes are better.', 'success')
+    addToast(t('ui:pregig.toasts.meetingHeld', 'Meeting held. Vibes are better.'), 'success')
   }
 
   useEffect(() => {
@@ -137,14 +140,14 @@ export const PreGig = () => {
       if (!isActive) {
         const projectedTotal = calculatedBudget + cost
         if (projectedTotal > player.money) {
-          addToast('Not enough money for this upgrade!', 'error')
+          addToast(t('ui:pregig.toasts.noMoneyUpgrade', 'Not enough money for this upgrade!'), 'error')
           return
         }
       }
 
       setGigModifiers({ [key]: !isActive })
     },
-    [gigModifiers, calculatedBudget, player.money, addToast, setGigModifiers]
+    [gigModifiers, calculatedBudget, player.money, addToast, setGigModifiers, t]
   )
 
   return (
@@ -155,7 +158,7 @@ export const PreGig = () => {
         className='text-center mb-6'
       >
         <h2 className="text-4xl text-(--toxic-green) font-['Metal_Mania'] mb-2">
-          PREPARATION
+          {t('ui:pregig.title', 'PREPARATION')}
         </h2>
         <div className='w-48 h-[1px] bg-gradient-to-r from-transparent via-(--toxic-green) to-transparent mx-auto mb-3' />
         <div className='text-lg mb-1 font-mono text-(--star-white)/80'>
@@ -163,14 +166,14 @@ export const PreGig = () => {
         </div>
         <div className='font-mono text-xs text-(--ash-gray) flex items-center justify-center gap-3'>
           <span>
-            BUDGET:{' '}
+            {t('ui:pregig.budget', 'BUDGET:')}{' '}
             <span className='text-(--toxic-green) font-bold tabular-nums'>
               {player.money}€
             </span>
           </span>
           <span className='text-(--ash-gray)/30'>|</span>
           <span>
-            COSTS:{' '}
+            {t('ui:pregig.costs', 'COSTS:')}{' '}
             <span className='text-(--blood-red) font-bold tabular-nums'>
               -{calculatedBudget}€
             </span>
@@ -187,7 +190,7 @@ export const PreGig = () => {
           className='border-2 border-(--ash-gray)/40 p-4 bg-(--void-black)/70 backdrop-blur-sm overflow-y-auto'
         >
           <h3 className='text-sm text-(--toxic-green) mb-3 tracking-widest font-mono border-b border-(--toxic-green)/30 pb-2'>
-            BUDGET ALLOCATION
+            {t('ui:pregig.allocation', 'BUDGET ALLOCATION')}
           </h3>
           <div className='flex flex-col gap-2.5'>
             {GIG_MODIFIER_OPTIONS.map(item => (
@@ -205,8 +208,8 @@ export const PreGig = () => {
                 className='w-full flex justify-between items-center p-3 border-2 border-(--warning-yellow)/30 hover:border-(--warning-yellow) text-(--warning-yellow)/70 hover:text-(--warning-yellow) transition-all group'
               >
                 <span className='flex flex-col text-left'>
-                  <span className='font-bold text-sm'>Band Meeting</span>
-                  <span className='text-[10px] opacity-70'>+Harmony</span>
+                  <span className='font-bold text-sm'>{t('ui:pregig.bandMeeting.label', 'Band Meeting')}</span>
+                  <span className='text-[10px] opacity-70'>{t('ui:pregig.bandMeeting.desc', '+Harmony')}</span>
                 </span>
                 <span className='font-mono text-sm font-bold tabular-nums'>
                   50€
@@ -218,7 +221,7 @@ export const PreGig = () => {
           {/* Active Modifiers Display */}
           <div className='mt-3 p-3 bg-(--toxic-green)/5 border border-(--toxic-green)/30'>
             <h4 className='text-[10px] font-bold text-(--toxic-green) mb-2 tracking-widest'>
-              ACTIVE MODIFIERS
+              {t('ui:pregig.activeModifiers', 'ACTIVE MODIFIERS')}
             </h4>
             {currentModifiers.activeEffects.length > 0 ? (
               <ul className='text-xs space-y-1'>
@@ -234,7 +237,7 @@ export const PreGig = () => {
               </ul>
             ) : (
               <div className='text-[10px] text-(--ash-gray)/50 italic'>
-                No active buffs or debuffs
+                {t('ui:pregig.noModifiers', 'No active buffs or debuffs')}
               </div>
             )}
           </div>
@@ -248,7 +251,7 @@ export const PreGig = () => {
           className='border-2 border-(--ash-gray)/40 p-4 bg-(--void-black)/70 backdrop-blur-sm flex flex-col'
         >
           <h3 className='text-sm text-(--toxic-green) mb-3 tracking-widest font-mono border-b border-(--toxic-green)/30 pb-2 flex justify-between'>
-            <span>SETLIST</span>
+            <span>{t('ui:pregig.setlist', 'SETLIST')}</span>
             <span className='tabular-nums'>{setlist.length}/3</span>
           </h3>
           <div className='flex-1 overflow-y-auto pr-2 space-y-2'>
@@ -262,7 +265,7 @@ export const PreGig = () => {
                   key={song.id}
                   role='button'
                   tabIndex={isLocked ? -1 : 0}
-                  aria-label={`Select song ${song.name}`}
+                  aria-label={t('ui:pregig.selectSong', 'Select song {{name}}', { name: song.name })}
                   aria-pressed={!!isSelected}
                   aria-disabled={isLocked}
                   onClick={() => {
@@ -288,20 +291,20 @@ export const PreGig = () => {
                       {song.name}{' '}
                       {isLocked && (
                         <span className='text-[10px] text-(--blood-red) ml-2 border border-(--blood-red)/50 px-1'>
-                          LOCKED (Prove Yourself)
+                          {t('ui:pregig.locked', 'LOCKED (Prove Yourself)')}
                         </span>
                       )}
                     </div>
                     <div className='text-[10px] font-mono mt-0.5 flex gap-2'>
                       <span>{song.duration}s</span>
                       <span className='text-(--ash-gray)/40'>|</span>
-                      <span>Diff: {'*'.repeat(song.difficulty)}</span>
+                      <span>{t('ui:pregig.diff', 'Diff:')} {'*'.repeat(song.difficulty)}</span>
                     </div>
                   </div>
                   <div className='flex flex-col items-end gap-1'>
                     <div className='flex items-center gap-1.5'>
                       <span className='text-[9px] text-(--ash-gray)/50 uppercase tracking-wider'>
-                        NRG
+                        {t('ui:pregig.nrg', 'NRG')}
                       </span>
                       <div className='w-14 h-1.5 bg-(--shadow-black) overflow-hidden border border-(--ash-gray)/20'>
                         <div
@@ -312,7 +315,7 @@ export const PreGig = () => {
                     </div>
                     {isSelected && (
                       <span className='text-[9px] text-(--toxic-green) tracking-wider'>
-                        SELECTED
+                        {t('ui:pregig.selected', 'SELECTED')}
                       </span>
                     )}
                   </div>
@@ -344,7 +347,7 @@ export const PreGig = () => {
             })}
             {setlist.length === 0 && (
               <div className='text-(--ash-gray)/30 text-[10px] w-full text-center font-mono'>
-                Select songs to preview energy curve
+                {t('ui:pregig.selectPreview', 'Select songs to preview energy curve')}
               </div>
             )}
           </div>
@@ -359,7 +362,7 @@ export const PreGig = () => {
         disabled={setlist.length === 0 || isStarting}
         onClick={async () => {
           if (band.harmony < 10) {
-            addToast('Band harmony too low to perform!', 'error')
+            addToast(t('ui:pregig.toasts.harmonyLow', 'Band harmony too low to perform!'), 'error')
             return
           }
           setIsStarting(true)
@@ -372,13 +375,13 @@ export const PreGig = () => {
             setIsStarting(false)
             handleError(err, {
               addToast,
-              fallbackMessage: 'Audio initialization failed.'
+              fallbackMessage: t('ui:pregig.toasts.audioFail', 'Audio initialization failed.')
             })
           }
         }}
       >
         {!isStarting && <RazorPlayIcon className="w-8 h-8 text-(--void-black)" />}
-        {isStarting ? 'INITIALIZING...' : 'START SHOW'}
+        {isStarting ? t('ui:pregig.initializing', 'INITIALIZING...') : t('ui:pregig.startShow', 'START SHOW')}
       </motion.button>
     </div>
   )

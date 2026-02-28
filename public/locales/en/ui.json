@@ -252,5 +252,56 @@
     "title": "SYSTEM FAILURE",
     "message": "The simulation has crashed. Reboot required.",
     "rebootButton": "REBOOT SYSTEM"
+  },
+  "pregig": {
+    "title": "PREPARATION",
+    "budget": "BUDGET:",
+    "costs": "COSTS:",
+    "allocation": "BUDGET ALLOCATION",
+    "bandMeeting": {
+      "label": "Band Meeting",
+      "desc": "+Harmony"
+    },
+    "activeModifiers": "ACTIVE MODIFIERS",
+    "noModifiers": "No active buffs or debuffs",
+    "setlist": "SETLIST",
+    "selectSong": "Select song {{name}}",
+    "locked": "LOCKED (Prove Yourself)",
+    "diff": "Diff:",
+    "nrg": "NRG",
+    "selected": "SELECTED",
+    "selectPreview": "Select songs to preview energy curve",
+    "initializing": "INITIALIZING...",
+    "startShow": "START SHOW",
+    "modifiers": {
+      "soundcheck": {
+        "label": "Soundcheck",
+        "desc": "Notes Easier"
+      },
+      "promo": {
+        "label": "Social Promo",
+        "desc": "+Crowd Fill"
+      },
+      "merch": {
+        "label": "Merch Table",
+        "desc": "+Sales"
+      },
+      "catering": {
+        "label": "Catering / Energy",
+        "desc": "Counters Tired Band Penalty"
+      },
+      "guestlist": {
+        "label": "Guest List",
+        "desc": "+VIP Score"
+      }
+    },
+    "toasts": {
+      "noGig": "No gig active! Returning to map.",
+      "noMoneySnacks": "Not enough money for snacks!",
+      "meetingHeld": "Meeting held. Vibes are better.",
+      "noMoneyUpgrade": "Not enough money for this upgrade!",
+      "harmonyLow": "Band harmony too low to perform!",
+      "audioFail": "Audio initialization failed."
+    }
   }
 }
