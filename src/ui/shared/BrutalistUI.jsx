@@ -48,6 +48,26 @@ export const GearIcon = ({ className }) => (
   </svg>
 );
 
+export const HexNode = ({ className }) => (
+  <svg className={className} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M50 5L95 25V75L50 95L5 75V25L50 5Z" stroke="currentColor" strokeWidth="4" strokeLinejoin="miter"/>
+    <circle cx="50" cy="50" r="10" fill="currentColor"/>
+    <path d="M50 25V40M50 60V75M25 50H40M60 50H75" stroke="currentColor" strokeWidth="2"/>
+  </svg>
+);
+
+export const WarningStripe = () => (
+  <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <pattern id="stripes" width="20" height="20" patternTransform="rotate(45)">
+        <rect width="10" height="20" fill="#39FF14"/>
+        <rect x="10" width="10" height="20" fill="black"/>
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#stripes)"/>
+  </svg>
+);
+
 // --- UI COMPONENTS ---
 
 // 1. Industrial Toggle
@@ -434,6 +454,157 @@ export const VoidLoader = ({ size = "w-16 h-16" }) => {
       </svg>
       {/* Core Dot - Pulsing */}
       <div className="w-2 h-2 bg-white rounded-full animate-pulse shadow-[0_0_10px_#fff]"></div>
+    </div>
+  );
+};
+
+// 12. Void Nav-Node (Overworld Navigation Target)
+export const VoidNavNode = ({ id, label, type, isUnlocked = true, status = 'IDLE' }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <div
+      className={`relative w-40 h-48 flex flex-col items-center justify-center cursor-pointer group ${!isUnlocked ? 'opacity-30' : ''}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Target Crosshairs (appear on hover) */}
+      <div className={`absolute inset-0 border border-[#39FF14]/30 transition-all duration-300 ${isHovered ? 'scale-100 opacity-100' : 'scale-90 opacity-0'}`}>
+        <div className="absolute top-0 left-1/2 w-[1px] h-4 bg-[#39FF14] -translate-x-1/2 -translate-y-2"></div>
+        <div className="absolute bottom-0 left-1/2 w-[1px] h-4 bg-[#39FF14] -translate-x-1/2 translate-y-2"></div>
+        <div className="absolute left-0 top-1/2 w-4 h-[1px] bg-[#39FF14] -translate-y-1/2 -translate-x-2"></div>
+        <div className="absolute right-0 top-1/2 w-4 h-[1px] bg-[#39FF14] -translate-y-1/2 translate-x-2"></div>
+      </div>
+
+      <HexNode className={`w-20 h-20 transition-all duration-200 ${isHovered ? 'text-white drop-shadow-[0_0_15px_rgba(57,255,20,0.8)]' : 'text-[#39FF14]'}`} />
+
+      {/* Node Info */}
+      <div className="mt-4 flex flex-col items-center">
+        <span className="text-[10px] opacity-70 tracking-[0.3em] uppercase">{type}</span>
+        <span className={`text-sm font-bold tracking-widest uppercase mt-1 ${isHovered ? 'text-white' : 'text-[#39FF14]'}`}>
+          {label}
+        </span>
+      </div>
+
+      {/* Floating Status Tag */}
+      {status !== 'IDLE' && (
+        <div className="absolute top-2 right-2 bg-[#39FF14] text-black text-[8px] font-bold px-1 tracking-widest animate-pulse">
+          {status}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// 13. Corrupted Data Stream (Text Reveal Effect)
+export const CorruptedText = ({ text, delay = 0 }) => {
+  const [displayedText, setDisplayedText] = useState("");
+  const chars = "!<>-_\\/[]{}—=+*^?#________";
+
+  useEffect(() => {
+    let iteration = 0;
+    let interval = null;
+
+    const startEffect = () => {
+      interval = setInterval(() => {
+        setDisplayedText(text.split("").map((char, index) => {
+          if (index < iteration) {
+            return char;
+          }
+          return chars[Math.floor(Math.random() * chars.length)];
+        }).join(""));
+
+        if (iteration >= text.length) {
+          clearInterval(interval);
+        }
+
+        iteration += 1 / 3; // Speed of reveal
+      }, 30);
+    };
+
+    const timeout = setTimeout(startEffect, delay);
+    return () => { clearTimeout(timeout); clearInterval(interval); };
+  }, [text, delay]);
+
+  return (
+    <span className="font-mono">{displayedText}</span>
+  );
+};
+
+// 14. Hazard Ticker Tape (For Gig Modifiers)
+export const HazardTicker = ({ message }) => {
+  return (
+    <div className="relative w-full h-8 bg-black border-y-2 border-[#39FF14] flex items-center overflow-hidden">
+      {/* Striped Background Ends */}
+      <div className="absolute left-0 top-0 bottom-0 w-8 z-10"><WarningStripe /></div>
+      <div className="absolute right-0 top-0 bottom-0 w-8 z-10"><WarningStripe /></div>
+
+      {/* Scrolling Text Container */}
+      <div className="flex w-full whitespace-nowrap animate-[marquee_10s_linear_infinite] px-8 items-center gap-12">
+        <span className="text-xs font-bold tracking-[0.3em] uppercase text-[#39FF14]">
+          [MODIFIER ACTIVE] {message}
+        </span>
+        <span className="text-xs font-bold tracking-[0.3em] uppercase text-[#39FF14]">
+          [MODIFIER ACTIVE] {message}
+        </span>
+        <span className="text-xs font-bold tracking-[0.3em] uppercase text-[#39FF14]">
+          [MODIFIER ACTIVE] {message}
+        </span>
+      </div>
+    </div>
+  );
+};
+
+// 15. Industrial Checklist (Pre-Gig Setup)
+export const IndustrialChecklist = () => {
+  const [tasks, setTasks] = useState([
+    { id: 1, label: "REFUEL TOURVAN", completed: false },
+    { id: 2, label: "EQUIP DISTORTION PEDAL", completed: false },
+    { id: 3, label: "BRIBE VENUE BOUNCER", completed: false },
+    { id: 4, label: "CALIBRATE AMPS", completed: false }
+  ]);
+
+  const toggleTask = (id) => {
+    setTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+  };
+
+  const allDone = tasks.every(t => t.completed);
+
+  return (
+    <div className="w-full border border-[#39FF14]/30 bg-black p-4 flex flex-col gap-3 relative">
+      <div className="text-[10px] opacity-50 tracking-[0.3em] mb-2">PRE-GIG SEQUENCE</div>
+
+      {tasks.map(task => (
+        <button
+          key={task.id}
+          onClick={() => toggleTask(task.id)}
+          className={`relative w-full text-left p-3 border transition-all duration-200 flex items-center gap-4 group
+            ${task.completed ? 'border-transparent opacity-60' : 'border-[#39FF14]/30 hover:border-[#39FF14] hover:bg-[#39FF14]/10'}`}
+        >
+          {/* Brutal Checkbox */}
+          <div className={`w-5 h-5 border-2 flex items-center justify-center shrink-0 transition-colors
+            ${task.completed ? 'border-[#39FF14] bg-[#39FF14]' : 'border-[#39FF14] bg-black'}`}>
+            {task.completed && <span className="text-black font-bold text-xs leading-none">X</span>}
+          </div>
+
+          <span className={`font-bold tracking-widest uppercase transition-all duration-200
+            ${task.completed ? 'text-[#39FF14]' : 'text-[#39FF14]'}`}>
+            {task.label}
+          </span>
+
+          {/* Strikethrough Line Animation */}
+          <div className={`absolute left-10 top-1/2 h-[2px] bg-white transition-all duration-300 ease-out z-10
+            ${task.completed ? 'w-[calc(100%-3rem)]' : 'w-0'}`}></div>
+        </button>
+      ))}
+
+      <button
+        disabled={!allDone}
+        className={`mt-4 p-4 font-bold tracking-[0.2em] uppercase transition-all duration-300 border-2
+          ${allDone ? 'border-[#39FF14] bg-[#39FF14] text-black shadow-[0_0_20px_#39FF14] hover:bg-white hover:border-white animate-pulse' : 'border-[#39FF14]/20 text-[#39FF14]/20 cursor-not-allowed'}`}
+      >
+        {allDone ? 'INITIATE GIG' : 'AWAITING SEQUENCE'}
+      </button>
     </div>
   );
 };
