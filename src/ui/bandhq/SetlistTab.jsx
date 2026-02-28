@@ -18,7 +18,7 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
       newSetlist = [...setlist]
       newSetlist.splice(currentIndex, 1)
       addToast(
-        t('bandhq.setlist.songRemoved', {
+        t('ui:bandhq.setlist.songRemoved', {
           defaultValue: 'Song removed from setlist'
         }),
         'info'
@@ -27,7 +27,7 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
       // Currently allow 1 active song for MVP flow
       newSetlist = [{ id: songId }]
       addToast(
-        t('bandhq.setlist.songSelected', {
+        t('ui:bandhq.setlist.songSelected', {
           defaultValue: 'Song selected for next Gig'
         }),
         'success'
@@ -47,7 +47,7 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
           onClick={() => {
             if (setlist.length === 0) {
               addToast(
-                t('bandhq.setlist.selectOne', {
+                t('ui:bandhq.setlist.selectOne', {
                   defaultValue: 'Select at least one song to practice!'
                 }),
                 'warning'
@@ -57,8 +57,8 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
             setCurrentGig({
               name: t('venues:stendal_proberaum.name'),
               diff: 1,
-              venue: t('bandhq.venue', { defaultValue: 'Band HQ' }),
-              description: t('hq.practice_desc', {
+              venue: t('ui:bandhq.venue', { defaultValue: 'Band HQ' }),
+              description: t('ui:hq.practice_desc', {
                 defaultValue: 'Practice makes perfect.'
               }),
               isPractice: true
@@ -67,10 +67,10 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
           }}
           className='px-4 py-2 text-sm'
         >
-          {t('hq.start_practice', { defaultValue: 'START PRACTICE' })}
+          {t('ui:hq.start_practice', { defaultValue: 'START PRACTICE' })}
         </ActionButton>
         <div>
-          {t('hq.selected', { defaultValue: 'SELECTED' })}:{' '}
+          {t('ui:hq.selected', { defaultValue: 'SELECTED' })}:{' '}
           <span className='text-(--toxic-green)'>{setlist.length}</span>
         </div>
       </div>
@@ -95,14 +95,14 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
                 </h4>
                 <div className='flex gap-4 text-xs font-mono text-(--ash-gray) mt-1'>
                   <span>
-                    {t('bandhq.metadata.diff', { defaultValue: 'DIFF' })}:{' '}
+                    {t('ui:bandhq.metadata.diff', { defaultValue: 'DIFF' })}:{' '}
                     {song.difficulty}/7
                   </span>
                   <span>
-                    {t('bandhq.metadata.bpm', { defaultValue: 'BPM' })}: {song.bpm}
+                    {t('ui:bandhq.metadata.bpm', { defaultValue: 'BPM' })}: {song.bpm}
                   </span>
                   <span>
-                    {t('bandhq.metadata.dur', { defaultValue: 'DUR' })}:{' '}
+                    {t('ui:bandhq.metadata.dur', { defaultValue: 'DUR' })}:{' '}
                     {Math.floor(song.duration / 60)}:
                     {(song.duration % 60).toString().padStart(2, '0')}
                   </span>
@@ -119,8 +119,8 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
                   }`}
               >
                 {selected
-                  ? t('hq.song_active', { defaultValue: 'ACTIVE' })
-                  : t('hq.song_select', { defaultValue: 'SELECT' })}
+                  ? t('ui:hq.song_active', { defaultValue: 'ACTIVE' })
+                  : t('ui:hq.song_select', { defaultValue: 'SELECT' })}
               </button>
             </div>
           )

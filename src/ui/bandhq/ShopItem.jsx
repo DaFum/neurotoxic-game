@@ -80,8 +80,8 @@ export const ShopItem = ({
           className='min-w-[80px]'
         >
           {isPurchased
-            ? t('hq.owned', { defaultValue: 'OWNED' })
-            : t('hq.buy', { defaultValue: 'BUY' })}
+            ? t('ui:hq.owned', { defaultValue: 'OWNED' })
+            : t('ui:hq.buy', { defaultValue: 'BUY' })}
         </GlitchButton>
       </div>
     </div>

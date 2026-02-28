@@ -47,7 +47,7 @@ test('all literal translation keys used in src exist in both en and de locale na
     for (const match of source.matchAll(TRANSLATION_KEY_PATTERN)) {
       const resolved = resolveNamespaceKey(match[1])
       if (!resolved) {
-        continue
+        assert.fail(`Unresolved i18n key: ${match[1]} must be namespaced`)
       }
 
       const namespaceKey = `${resolved.namespace}:${resolved.key}`

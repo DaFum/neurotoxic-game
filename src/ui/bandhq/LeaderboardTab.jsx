@@ -64,14 +64,14 @@ export const LeaderboardTab = ({ setlist }) => {
           disabled={view === 'BALANCE'}
           className={view === 'BALANCE' ? 'opacity-50 cursor-default' : ''}
         >
-          {t('leaderboard.global_wealth')}
+          {t('ui:leaderboard.global_wealth')}
         </GlitchButton>
         <GlitchButton
           onClick={() => setView('SONG')}
           disabled={view === 'SONG'}
           className={view === 'SONG' ? 'opacity-50 cursor-default' : ''}
         >
-          {t('leaderboard.song_scores')}
+          {t('ui:leaderboard.song_scores')}
         </GlitchButton>
       </div>
 
@@ -82,7 +82,7 @@ export const LeaderboardTab = ({ setlist }) => {
             htmlFor='songSelect'
             className='text-(--toxic-green) font-mono text-sm uppercase'
           >
-            {t('leaderboard.select_song')}
+            {t('ui:leaderboard.select_song')}
           </label>
           <select
             id='songSelect'
@@ -97,7 +97,7 @@ export const LeaderboardTab = ({ setlist }) => {
             ))}
             {setlist.length === 0 && (
               <option value='' disabled>
-                {t('leaderboard.no_songs')}
+                {t('ui:leaderboard.no_songs')}
               </option>
             )}
           </select>
@@ -109,13 +109,13 @@ export const LeaderboardTab = ({ setlist }) => {
         className='flex-1 overflow-hidden flex flex-col'
         title={
           view === 'BALANCE'
-            ? t('leaderboard.top_100_wealth')
-            : t('leaderboard.top_100_scores')
+            ? t('ui:leaderboard.top_100_wealth')
+            : t('ui:leaderboard.top_100_scores')
         }
       >
         {isLoading && (
           <div className='flex-1 flex items-center justify-center text-(--toxic-green) animate-pulse font-mono'>
-            {t('leaderboard.connecting')}
+            {t('ui:leaderboard.connecting')}
           </div>
         )}
 
@@ -127,7 +127,7 @@ export const LeaderboardTab = ({ setlist }) => {
 
         {!isLoading && !error && rankings.length === 0 && (
           <div className='flex-1 flex items-center justify-center text-(--ash-gray) font-mono'>
-            {t('leaderboard.no_data')}
+            {t('ui:leaderboard.no_data')}
           </div>
         )}
 
@@ -137,11 +137,11 @@ export const LeaderboardTab = ({ setlist }) => {
               <thead className='text-(--ash-gray) border-b border-(--ash-gray)/30 text-xs uppercase sticky top-0 bg-(--void-black)'>
                 <tr>
                   <th className='py-2 px-2'>#</th>
-                  <th className='py-2 px-2'>{t('leaderboard.col_player')}</th>
+                  <th className='py-2 px-2'>{t('ui:leaderboard.col_player')}</th>
                   <th className='py-2 px-2 text-right'>
                     {view === 'BALANCE'
-                      ? t('leaderboard.col_net_worth')
-                      : t('leaderboard.col_score')}
+                      ? t('ui:leaderboard.col_net_worth')
+                      : t('ui:leaderboard.col_score')}
                   </th>
                 </tr>
               </thead>
