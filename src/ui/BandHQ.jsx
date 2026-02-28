@@ -129,7 +129,7 @@ export const BandHQ = ({
         <div
           role='tablist'
           aria-label='Band HQ Sections'
-          className='flex border-b-2 border-(--ash-gray) overflow-x-auto'
+          className='flex border-b-2 border-(--toxic-green) overflow-x-auto'
         >
           {/* Tabs */}
           {[
@@ -140,25 +140,29 @@ export const BandHQ = ({
             { id: 'SETLIST', key: 'tabs.setlist' },
             { id: 'LEADERBOARD', key: 'tabs.leaderboard' },
             { id: 'SETTINGS', key: 'tabs.settings' }
-          ].map(tab => (
-            <button
-              type='button'
-              role='tab'
-              aria-selected={activeTab === tab.id}
-              aria-controls={`panel-${tab.id}`}
-              id={`tab-${tab.id}`}
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 min-w-[120px] py-4 text-center font-bold text-xl uppercase tracking-wider transition-colors duration-150 font-mono
-                ${
-                  activeTab === tab.id
-                    ? 'bg-(--toxic-green) text-(--void-black)'
-                    : 'text-(--ash-gray) hover:text-(--star-white) bg-(--void-black)/50 hover:bg-(--void-black)/70'
-                }`}
-            >
-              {t(tab.key)}
-            </button>
-          ))}
+          ].map(tab => {
+            const isActive = activeTab === tab.id
+            return (
+              <button
+                type='button'
+                role='tab'
+                aria-selected={isActive}
+                aria-controls={`panel-${tab.id}`}
+                id={`tab-${tab.id}`}
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 min-w-[120px] py-3 px-4 text-center text-sm font-bold tracking-[0.1em] uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2
+                  ${
+                    isActive
+                      ? 'bg-(--toxic-green) text-black shadow-[0_-2px_10px_var(--toxic-green)]'
+                      : 'bg-black text-(--toxic-green) hover:bg-(--toxic-green)/10'
+                  }`}
+              >
+                {isActive && <span className="text-xs">▶</span>}
+                {t(tab.key)}
+              </button>
+            )
+          })}
         </div>
 
         {/* Content Area */}

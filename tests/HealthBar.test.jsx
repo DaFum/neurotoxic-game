@@ -10,7 +10,7 @@ describe('HealthBar', () => {
 
   test('displays correct health percentage', () => {
     const { getByText } = render(<HealthBar health={75} isToxicMode={false} />)
-    expect(getByText('75%')).toBeInTheDocument()
+    expect(getByText('15 / 20')).toBeInTheDocument()
   })
 
   test('displays CROWD ENERGY label', () => {
@@ -32,40 +32,38 @@ describe('HealthBar', () => {
 
   test('applies warning styling when health is low', () => {
     const { getByText } = render(<HealthBar health={15} isToxicMode={false} />)
-    const healthValue = getByText('15%')
-    expect(healthValue.className).toContain('text-(--blood-red)')
+    const healthValue = getByText('3 / 20')
     expect(healthValue.className).toContain('animate-fuel-warning')
   })
 
   test('does not apply warning styling when health is adequate', () => {
     const { getByText } = render(<HealthBar health={50} isToxicMode={false} />)
-    const healthValue = getByText('50%')
-    expect(healthValue.className).not.toContain('text-(--blood-red)')
+    const healthValue = getByText('10 / 20')
     expect(healthValue.className).not.toContain('animate-fuel-warning')
   })
 
-  test('renders SegmentedBar component', () => {
+  test('renders BlockMeter component segments', () => {
     const { container } = render(<HealthBar health={100} isToxicMode={false} />)
-    // Check for segmented bar container
-    const bars = container.querySelectorAll('.flex.gap-\\[2px\\]')
+    // Check for segmented bar container elements
+    const bars = container.querySelectorAll('.flex-1')
     expect(bars.length).toBeGreaterThan(0)
   })
 
   test('handles edge case: zero health', () => {
     const { getByText } = render(<HealthBar health={0} isToxicMode={false} />)
-    expect(getByText('0%')).toBeInTheDocument()
+    expect(getByText('0 / 20')).toBeInTheDocument()
   })
 
   test('handles edge case: maximum health', () => {
     const { getByText } = render(<HealthBar health={100} isToxicMode={false} />)
-    expect(getByText('100%')).toBeInTheDocument()
+    expect(getByText('20 / 20')).toBeInTheDocument()
   })
 
   test('handles fractional health values', () => {
     const { getByText } = render(
       <HealthBar health={75.6} isToxicMode={false} />
     )
-    expect(getByText('75%')).toBeInTheDocument() // Should floor
+    expect(getByText('15 / 20')).toBeInTheDocument() // Should map to segments appropriately (75.6 -> ~15/20)
   })
 
   test('renders with correct z-index positioning', () => {
@@ -83,20 +81,18 @@ describe('HealthBar', () => {
   })
 })
 
-describe('SegmentedBar (via HealthBar)', () => {
+describe('BlockMeter (via HealthBar)', () => {
   test('renders correct number of segments', () => {
     const { container } = render(<HealthBar health={100} isToxicMode={false} />)
-    // HealthBar uses 25 segments
-    const segments = container.querySelectorAll('.flex-1.h-full')
-    expect(segments.length).toBe(25)
+    // BlockMeter uses 20 segments in HealthBar
+    const segments = container.querySelectorAll('.flex-1')
+    expect(segments.length).toBe(20)
   })
 
   test('applies correct fill color based on health', () => {
     const { container } = render(<HealthBar health={50} isToxicMode={false} />)
     const filledSegments = container.querySelectorAll('.bg-\\(--toxic-green\\)')
-    // At 50%, should have ~12-13 filled segments out of 25
-    expect(filledSegments.length).toBeGreaterThan(10)
-    expect(filledSegments.length).toBeLessThan(15)
+    expect(filledSegments.length).toBe(10)
   })
 
   test('applies warning color when health is below threshold', () => {

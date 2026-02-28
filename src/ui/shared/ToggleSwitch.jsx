@@ -10,43 +10,44 @@ import PropTypes from 'prop-types'
  * @param {string} props.ariaLabel - Accessible label.
  * @param {string} [props.className] - Additional CSS classes.
  */
+import { useState } from 'react'
+
 const ToggleSwitchComponent = ({
   isOn,
   onToggle,
   ariaLabel,
   className = ''
-}) => (
-  <div className={`flex items-center gap-2 ${className}`}>
-    <span
-      className={`font-mono text-[10px] uppercase tracking-widest w-8 text-right transition-colors duration-300 ${
-        isOn ? 'text-(--toxic-green)' : 'text-(--ash-gray)/40'
-      }`}
-      aria-hidden='true'
-    >
-      {isOn ? 'ON' : 'OFF'}
-    </span>
-    <button
-      type='button'
-      onClick={onToggle}
-      role='switch'
-      aria-checked={isOn}
-      aria-label={ariaLabel}
-      className={`
-        w-16 h-8 border-2 rounded-none shadow-[4px_4px_0px_var(--blood-red)]
-        relative flex items-center p-1 transition-colors duration-300 cursor-pointer
-        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green) focus-visible:ring-offset-2 focus-visible:ring-offset-(--void-black)
-        ${isOn ? 'bg-(--toxic-green)/20 border-(--toxic-green)' : 'bg-transparent border-(--ash-gray)'}
-      `}
-    >
-      <div
-        className={`
-          absolute top-1 left-1 w-6 h-6 transition-transform duration-300 ease-out
-          ${isOn ? 'translate-x-8 bg-(--toxic-green)' : 'translate-x-0 bg-(--ash-gray)'}
-        `}
-      />
-    </button>
-  </div>
-)
+}) => {
+  const [isGlitching, setIsGlitching] = useState(false)
+
+  const handleToggle = () => {
+    setIsGlitching(true)
+    setTimeout(() => setIsGlitching(false), 150)
+    onToggle()
+  }
+
+  return (
+    <div className={`flex items-center justify-between w-full max-w-sm border border-(--toxic-green)/30 p-3 bg-black ${className}`}>
+      <span className="text-sm font-bold tracking-widest uppercase" aria-hidden="true">{ariaLabel}</span>
+      <button
+        type="button"
+        onClick={handleToggle}
+        className={`relative w-16 h-8 border-2 border-(--toxic-green) flex items-center p-1 transition-colors duration-75 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green) focus-visible:ring-offset-2 focus-visible:ring-offset-black ${isGlitching ? 'translate-x-[1px] translate-y-[1px]' : ''}`}
+        aria-checked={isOn}
+        role="switch"
+        aria-label={ariaLabel}
+      >
+        <div className={`w-full h-full absolute inset-0 bg-(--toxic-green) transition-opacity duration-150 ${isOn ? 'opacity-20' : 'opacity-0'}`}></div>
+        <div className={`w-5 h-full bg-(--toxic-green) transition-transform duration-100 z-10 ${isOn ? 'translate-x-8' : 'translate-x-0'}`}>
+           <div className="w-[2px] h-full bg-black mx-auto opacity-50"></div>
+        </div>
+        <span className={`absolute text-[10px] font-bold z-0 ${isOn ? 'left-2 text-(--toxic-green)' : 'right-2 text-(--toxic-green)/50'}`}>
+          {isOn ? 'ON' : 'OFF'}
+        </span>
+      </button>
+    </div>
+  )
+}
 
 export const ToggleSwitch = memo(ToggleSwitchComponent)
 ToggleSwitch.displayName = 'ToggleSwitch'

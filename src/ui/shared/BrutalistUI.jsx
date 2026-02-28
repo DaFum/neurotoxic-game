@@ -60,7 +60,7 @@ export const WarningStripe = () => (
   <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <pattern id="stripes" width="20" height="20" patternTransform="rotate(45)">
-        <rect width="10" height="20" fill="#39FF14"/>
+        <rect width="10" height="20" fill="currentColor"/>
         <rect x="10" width="10" height="20" fill="black"/>
       </pattern>
     </defs>
@@ -97,18 +97,18 @@ export const BrutalToggle = ({ label, initialState = false }) => {
   };
 
   return (
-    <div className="flex items-center justify-between w-full max-w-sm border border-[#39FF14]/30 p-3 bg-black">
+    <div className="flex items-center justify-between w-full max-w-sm border border-(--toxic-green)/30 p-3 bg-black">
       <span className="text-sm font-bold tracking-widest uppercase">{label}</span>
       <button
         onClick={toggle}
-        className={`relative w-16 h-8 border-2 border-[#39FF14] flex items-center p-1 transition-colors duration-75 ${isGlitching ? 'translate-x-[1px] translate-y-[1px]' : ''}`}
+        className={`relative w-16 h-8 border-2 border-(--toxic-green) flex items-center p-1 transition-colors duration-75 ${isGlitching ? 'translate-x-[1px] translate-y-[1px]' : ''}`}
         aria-pressed={isOn}
       >
-        <div className={`w-full h-full absolute inset-0 bg-[#39FF14] transition-opacity duration-150 ${isOn ? 'opacity-20' : 'opacity-0'}`}></div>
-        <div className={`w-5 h-full bg-[#39FF14] transition-transform duration-100 z-10 ${isOn ? 'translate-x-8' : 'translate-x-0'}`}>
+        <div className={`w-full h-full absolute inset-0 bg-(--toxic-green) transition-opacity duration-150 ${isOn ? 'opacity-20' : 'opacity-0'}`}></div>
+        <div className={`w-5 h-full bg-(--toxic-green) transition-transform duration-100 z-10 ${isOn ? 'translate-x-8' : 'translate-x-0'}`}>
            <div className="w-[2px] h-full bg-black mx-auto opacity-50"></div>
         </div>
-        <span className={`absolute text-[10px] font-bold z-0 ${isOn ? 'left-2 text-[#39FF14]' : 'right-2 text-[#39FF14]/50'}`}>
+        <span className={`absolute text-[10px] font-bold z-0 ${isOn ? 'left-2 text-(--toxic-green)' : 'right-2 text-(--toxic-green)/50'}`}>
           {isOn ? 'ON' : 'OFF'}
         </span>
       </button>
@@ -123,19 +123,18 @@ export const BlockMeter = ({ label, value, max = 10, isDanger = false }) => {
     <div className="w-full max-w-sm flex flex-col gap-2">
       <div className="flex justify-between items-end">
         <span className="text-xs tracking-widest uppercase opacity-80">{label}</span>
-        <span className={`text-sm font-bold ${isDanger && value > max * 0.8 ? 'text-white animate-pulse' : 'text-[#39FF14]'}`}>
+        <span className={`text-sm font-bold ${isDanger ? 'text-(--blood-red) animate-fuel-warning' : 'text-(--toxic-green)'}`}>
           {value} / {max}
         </span>
       </div>
       <div className="flex gap-1 h-6">
         {blocks.map(block => {
           const isFilled = block < value;
-          const isCritical = isDanger && block >= max * 0.8;
-          let blockClass = "flex-1 border border-[#39FF14]/30 transition-all duration-300";
+          let blockClass = "flex-1 border border-(--toxic-green)/30 transition-all duration-300";
           if (isFilled) {
-            blockClass = isCritical
-              ? "flex-1 bg-white border-white animate-pulse shadow-[0_0_10px_#fff]"
-              : "flex-1 bg-[#39FF14] border-[#39FF14] shadow-[0_0_5px_rgba(57,255,20,0.5)]";
+            blockClass = isDanger
+              ? "flex-1 bg-(--blood-red) border-(--blood-red) shadow-[0_0_10px_var(--blood-red)]"
+              : "flex-1 bg-(--toxic-green) border-(--toxic-green) shadow-[0_0_5px_rgba(57,255,20,0.5)]";
           }
           return <div key={block} className={blockClass}></div>;
         })}
@@ -153,8 +152,8 @@ export const BrutalTabs = () => {
   ];
 
   return (
-    <div className="w-full max-w-sm border border-[#39FF14]/50 p-1">
-      <div role="tablist" aria-label="HQ Navigation" className="flex border-b-2 border-[#39FF14]">
+    <div className="w-full max-w-sm border border-(--toxic-green)/50 p-1">
+      <div role="tablist" aria-label="HQ Navigation" className="flex border-b-2 border-(--toxic-green)">
         {tabs.map(tab => {
           const isActive = activeTab === tab.id;
           return (
@@ -164,7 +163,7 @@ export const BrutalTabs = () => {
               aria-selected={isActive}
               onClick={() => setActiveTab(tab.id)}
               className={`flex-1 py-2 px-4 text-xs font-bold tracking-[0.1em] uppercase transition-all
-                ${isActive ? 'bg-[#39FF14] text-black shadow-[0_-2px_10px_rgba(57,255,20,0.3)]' : 'bg-black text-[#39FF14] hover:bg-[#39FF14]/10'}`}
+                ${isActive ? 'bg-(--toxic-green) text-black shadow-[0_-2px_10px_rgba(57,255,20,0.3)]' : 'bg-black text-(--toxic-green) hover:bg-(--toxic-green)/10'}`}
             >
               {isActive && <span className="mr-2">▶</span>}
               {tab.label}
@@ -173,7 +172,7 @@ export const BrutalTabs = () => {
         })}
       </div>
       <div className="p-4 bg-[#050505] min-h-[100px] relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#39FF14 1px, transparent 1px)', backgroundSize: '10px 10px' }}></div>
+        <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(var(--toxic-green) 1px, transparent 1px)', backgroundSize: '10px 10px' }}></div>
         {tabs.map(tab => (
           <div key={`panel-${tab.id}`} className={activeTab === tab.id ? 'block relative z-10' : 'hidden'}>
             <p className="text-sm opacity-80 typewriter-effect">Loading {tab.label} module...</p>
@@ -187,10 +186,10 @@ export const BrutalTabs = () => {
 // 4. Data/Stat Block
 export const StatBlock = ({ label, value, icon: Icon }) => (
   <div className="relative w-32 h-24 bg-black flex flex-col items-center justify-center group overflow-hidden">
-    <HexBorder className="absolute inset-0 w-full h-full text-[#39FF14]/50 group-hover:text-[#39FF14] transition-colors" />
-    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#39FF14]/10 to-transparent translate-y-[-100%] group-hover:animate-[scan_2s_linear_infinite]"></div>
+    <HexBorder className="absolute inset-0 w-full h-full text-(--toxic-green)/50 group-hover:text-(--toxic-green) transition-colors" />
+    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[var(--toxic-green)]/10 to-transparent translate-y-[-100%] group-hover:animate-[scan_2s_linear_infinite]"></div>
     <div className="z-10 flex flex-col items-center gap-1">
-      {Icon && <Icon className="w-5 h-5 text-[#39FF14]" />}
+      {Icon && <Icon className="w-5 h-5 text-(--toxic-green)" />}
       <span className="text-2xl font-bold tracking-wider">{value}</span>
       <span className="text-[9px] tracking-[0.2em] opacity-60 uppercase">{label}</span>
     </div>
@@ -206,7 +205,7 @@ export const BrutalFader = ({ label, initialValue = 7, max = 10 }) => {
     <div className="w-full max-w-sm flex flex-col gap-2">
        <div className="flex justify-between items-end">
         <span className="text-xs tracking-widest uppercase opacity-80">{label}</span>
-        <span className="text-sm font-bold text-[#39FF14]">{val}</span>
+        <span className="text-sm font-bold text-(--toxic-green)">{val}</span>
       </div>
       <div className="flex gap-1 h-8 items-end cursor-pointer group" onMouseLeave={() => {}}>
         {segments.map(segment => {
@@ -222,7 +221,7 @@ export const BrutalFader = ({ label, initialValue = 7, max = 10 }) => {
               <div
                 style={{ height }}
                 className={`w-full transition-colors duration-75 border-b-2 border-transparent hover:border-white
-                  ${isActive ? 'bg-[#39FF14] shadow-[0_0_8px_rgba(57,255,20,0.4)]' : 'bg-[#39FF14]/20'}`}
+                  ${isActive ? 'bg-(--toxic-green) shadow-[0_0_8px_rgba(57,255,20,0.4)]' : 'bg-(--toxic-green)/20'}`}
               ></div>
             </div>
           );
@@ -250,17 +249,17 @@ export const SetlistSelector = () => {
             key={track.id}
             onClick={() => setSelected(track.id)}
             className={`w-full text-left p-3 border-2 transition-all duration-100 flex justify-between items-center group
-              ${isSelected ? 'border-[#39FF14] bg-[#39FF14]/10 shadow-[inset_0_0_15px_rgba(57,255,20,0.2)]' : 'border-[#39FF14]/30 bg-black hover:border-[#39FF14]/70'}`}
+              ${isSelected ? 'border-(--toxic-green) bg-(--toxic-green)/10 shadow-[inset_0_0_15px_rgba(57,255,20,0.2)]' : 'border-(--toxic-green)/30 bg-black hover:border-(--toxic-green)/70'}`}
           >
             <div className="flex items-center gap-3">
-              <span className={`text-xl font-bold ${isSelected ? 'text-[#39FF14]' : 'text-[#39FF14]/30'}`}>
+              <span className={`text-xl font-bold ${isSelected ? 'text-(--toxic-green)' : 'text-(--toxic-green)/30'}`}>
                 {isSelected ? '[X]' : '[ ]'}
               </span>
-              <span className={`font-bold tracking-widest uppercase ${isSelected ? 'text-white' : 'text-[#39FF14]/80'}`}>
+              <span className={`font-bold tracking-widest uppercase ${isSelected ? 'text-white' : 'text-(--toxic-green)/80'}`}>
                 {track.name}
               </span>
             </div>
-            <span className={`text-[10px] tracking-widest px-2 py-1 border ${isSelected ? 'border-[#39FF14] text-[#39FF14]' : 'border-transparent text-[#39FF14]/50'}`}>
+            <span className={`text-[10px] tracking-widest px-2 py-1 border ${isSelected ? 'border-(--toxic-green) text-(--toxic-green)' : 'border-transparent text-(--toxic-green)/50'}`}>
               {track.difficulty}
             </span>
           </button>
@@ -281,14 +280,14 @@ export const CrisisModal = ({ isOpen, onClose }) => {
       <div className="absolute inset-0 pointer-events-none opacity-20" style={{ backgroundImage: 'linear-gradient(transparent 50%, rgba(0, 0, 0, 0.5) 50%)', backgroundSize: '100% 4px' }}></div>
 
       {/* Modal Box */}
-      <div className="relative w-full max-w-lg border-2 border-[#39FF14] bg-black shadow-[0_0_40px_rgba(57,255,20,0.3)] animate-[glitch-anim_0.2s_ease-in-out]">
+      <div className="relative w-full max-w-lg border-2 border-(--toxic-green) bg-black shadow-[0_0_40px_rgba(57,255,20,0.3)] animate-[glitch-anim_0.2s_ease-in-out]">
         {/* Hardware details */}
-        <div className="absolute top-0 left-0 w-full h-1 bg-[#39FF14]"></div>
-        <div className="absolute top-0 left-2 w-16 h-4 bg-[#39FF14] text-black text-[10px] font-bold text-center leading-4">CRITICAL</div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-(--toxic-green)"></div>
+        <div className="absolute top-0 left-2 w-16 h-4 bg-(--toxic-green) text-black text-[10px] font-bold text-center leading-4">CRITICAL</div>
 
         <div className="p-8 flex flex-col gap-6">
-          <div className="flex items-start gap-4 border-b border-[#39FF14]/30 pb-6">
-            <AlertIcon className="w-12 h-12 text-[#39FF14] animate-pulse shrink-0 mt-1" />
+          <div className="flex items-start gap-4 border-b border-(--toxic-green)/30 pb-6">
+            <AlertIcon className="w-12 h-12 text-(--toxic-green) animate-pulse shrink-0 mt-1" />
             <div>
               <h2 className="text-2xl font-bold tracking-[0.1em] uppercase glitch-text">Van Breakdown</h2>
               <p className="mt-2 text-sm opacity-80 leading-relaxed">
@@ -298,7 +297,7 @@ export const CrisisModal = ({ isOpen, onClose }) => {
           </div>
 
           <div className="flex flex-col gap-3">
-            <button onClick={onClose} className="w-full p-3 border border-[#39FF14] bg-[#39FF14]/10 hover:bg-[#39FF14] hover:text-black font-bold tracking-widest uppercase transition-colors text-left flex justify-between">
+            <button onClick={onClose} className="w-full p-3 border border-(--toxic-green) bg-(--toxic-green)/10 hover:bg-(--toxic-green) hover:text-black font-bold tracking-widest uppercase transition-colors text-left flex justify-between">
               <span>Pay mechanic (-$250)</span>
               <span className="opacity-50 text-xs mt-1">SAFE</span>
             </button>
@@ -364,11 +363,11 @@ export const DeadmanButton = ({ label, onConfirm }) => {
         onTouchStart={startHold}
         onTouchEnd={stopHold}
         className={`relative w-full h-14 border-2 overflow-hidden flex items-center justify-center select-none transition-colors
-          ${isComplete ? 'border-red-500 bg-red-500/20' : 'border-[#39FF14] bg-black hover:border-white'}`}
+          ${isComplete ? 'border-red-500 bg-red-500/20' : 'border-(--toxic-green) bg-black hover:border-white'}`}
       >
         {/* Progress Fill Background */}
         <div
-          className={`absolute left-0 top-0 h-full transition-none ${isComplete ? 'bg-red-500' : 'bg-[#39FF14]'}`}
+          className={`absolute left-0 top-0 h-full transition-none ${isComplete ? 'bg-red-500' : 'bg-(--toxic-green)'}`}
           style={{ width: `${progress}%` }}
         ></div>
 
@@ -379,7 +378,7 @@ export const DeadmanButton = ({ label, onConfirm }) => {
 
         {/* Text */}
         <span className={`relative z-20 font-bold tracking-[0.2em] uppercase mix-blend-difference
-          ${isComplete ? 'text-black' : 'text-[#39FF14]'}`}>
+          ${isComplete ? 'text-black' : 'text-(--toxic-green)'}`}>
           {isComplete ? 'EXECUTED' : label}
         </span>
       </button>
@@ -414,17 +413,17 @@ export const TerminalReadout = () => {
   }, [currentIndex, fullLog]);
 
   return (
-    <div className="w-full h-48 border border-[#39FF14]/30 bg-[#050505] p-4 font-mono text-xs overflow-y-auto flex flex-col gap-1 custom-scrollbar relative shadow-[inset_0_0_20px_rgba(0,0,0,1)]">
+    <div className="w-full h-48 border border-(--toxic-green)/30 bg-[#050505] p-4 font-mono text-xs overflow-y-auto flex flex-col gap-1 custom-scrollbar relative shadow-[inset_0_0_20px_rgba(0,0,0,1)]">
       {/* Scanline overlay */}
       <div className="absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(transparent_50%,rgba(57,255,20,0.2)_50%)] bg-[length:100%_4px]"></div>
 
       {lines.map((line, i) => (
-        <div key={i} className={`${line.includes('[ERROR]') ? 'text-red-500 font-bold' : line.includes('[WARN]') ? 'text-yellow-400' : 'text-[#39FF14]'} opacity-90 leading-relaxed`}>
+        <div key={i} className={`${line.includes('[ERROR]') ? 'text-red-500 font-bold' : line.includes('[WARN]') ? 'text-yellow-400' : 'text-(--toxic-green)'} opacity-90 leading-relaxed`}>
           {line}
         </div>
       ))}
       {currentIndex < fullLog.length && (
-        <div className="w-2 h-3 bg-[#39FF14] animate-pulse mt-1"></div>
+        <div className="w-2 h-3 bg-(--toxic-green) animate-pulse mt-1"></div>
       )}
     </div>
   );
@@ -434,18 +433,18 @@ export const TerminalReadout = () => {
 export const BrutalSlot = ({ label, item = null }) => {
   return (
     <div className="flex flex-col gap-2 items-center">
-      <div className="relative w-20 h-20 border-2 border-[#39FF14]/30 bg-[#0a0a0a] flex items-center justify-center group cursor-pointer hover:border-[#39FF14] transition-colors">
+      <div className="relative w-20 h-20 border-2 border-(--toxic-green)/30 bg-[#0a0a0a] flex items-center justify-center group cursor-pointer hover:border-(--toxic-green) transition-colors">
         {/* Corner Decals */}
-        <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#39FF14] opacity-0 group-hover:opacity-100 transition-opacity"></div>
-        <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#39FF14] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-(--toxic-green) opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-(--toxic-green) opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
         {item ? (
           <>
-            <div className="absolute inset-0 bg-[#39FF14]/10 group-hover:bg-[#39FF14]/20 transition-colors"></div>
+            <div className="absolute inset-0 bg-(--toxic-green)/10 group-hover:bg-(--toxic-green)/20 transition-colors"></div>
             {item.icon}
           </>
         ) : (
-          <CrosshairIcon className="w-6 h-6 text-[#39FF14] opacity-20 group-hover:opacity-50 transition-opacity" />
+          <CrosshairIcon className="w-6 h-6 text-(--toxic-green) opacity-20 group-hover:opacity-50 transition-opacity" />
         )}
       </div>
       <span className="text-[9px] tracking-[0.2em] uppercase opacity-60 text-center max-w-[80px] truncate">
@@ -460,11 +459,11 @@ export const VoidLoader = ({ size = "w-16 h-16" }) => {
   return (
     <div className={`relative ${size} flex items-center justify-center`}>
       {/* Outer Hex - Slow counter-clockwise */}
-      <svg className="absolute inset-0 w-full h-full text-[#39FF14] animate-[spin_4s_linear_infinite_reverse]" viewBox="0 0 100 100" fill="none">
+      <svg className="absolute inset-0 w-full h-full text-(--toxic-green) animate-[spin_4s_linear_infinite_reverse]" viewBox="0 0 100 100" fill="none">
         <polygon points="50,5 90,25 90,75 50,95 10,75 10,25" stroke="currentColor" strokeWidth="2" strokeDasharray="10 20" />
       </svg>
       {/* Inner Square - Fast clockwise */}
-      <svg className="absolute w-[60%] h-[60%] text-[#39FF14] animate-[spin_1.5s_linear_infinite]" viewBox="0 0 100 100" fill="none">
+      <svg className="absolute w-[60%] h-[60%] text-(--toxic-green) animate-[spin_1.5s_linear_infinite]" viewBox="0 0 100 100" fill="none">
         <rect x="15" y="15" width="70" height="70" stroke="currentColor" strokeWidth="4" strokeDasharray="40 10" />
       </svg>
       {/* Core Dot - Pulsing */}
@@ -484,26 +483,26 @@ export const VoidNavNode = ({ id, label, type, isUnlocked = true, status = 'IDLE
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Target Crosshairs (appear on hover) */}
-      <div className={`absolute inset-0 border border-[#39FF14]/30 transition-all duration-300 ${isHovered ? 'scale-100 opacity-100' : 'scale-90 opacity-0'}`}>
-        <div className="absolute top-0 left-1/2 w-[1px] h-4 bg-[#39FF14] -translate-x-1/2 -translate-y-2"></div>
-        <div className="absolute bottom-0 left-1/2 w-[1px] h-4 bg-[#39FF14] -translate-x-1/2 translate-y-2"></div>
-        <div className="absolute left-0 top-1/2 w-4 h-[1px] bg-[#39FF14] -translate-y-1/2 -translate-x-2"></div>
-        <div className="absolute right-0 top-1/2 w-4 h-[1px] bg-[#39FF14] -translate-y-1/2 translate-x-2"></div>
+      <div className={`absolute inset-0 border border-(--toxic-green)/30 transition-all duration-300 ${isHovered ? 'scale-100 opacity-100' : 'scale-90 opacity-0'}`}>
+        <div className="absolute top-0 left-1/2 w-[1px] h-4 bg-(--toxic-green) -translate-x-1/2 -translate-y-2"></div>
+        <div className="absolute bottom-0 left-1/2 w-[1px] h-4 bg-(--toxic-green) -translate-x-1/2 translate-y-2"></div>
+        <div className="absolute left-0 top-1/2 w-4 h-[1px] bg-(--toxic-green) -translate-y-1/2 -translate-x-2"></div>
+        <div className="absolute right-0 top-1/2 w-4 h-[1px] bg-(--toxic-green) -translate-y-1/2 translate-x-2"></div>
       </div>
 
-      <HexNode className={`w-20 h-20 transition-all duration-200 ${isHovered ? 'text-white drop-shadow-[0_0_15px_rgba(57,255,20,0.8)]' : 'text-[#39FF14]'}`} />
+      <HexNode className={`w-20 h-20 transition-all duration-200 ${isHovered ? 'text-white drop-shadow-[0_0_15px_rgba(57,255,20,0.8)]' : 'text-(--toxic-green)'}`} />
 
       {/* Node Info */}
       <div className="mt-4 flex flex-col items-center">
         <span className="text-[10px] opacity-70 tracking-[0.3em] uppercase">{type}</span>
-        <span className={`text-sm font-bold tracking-widest uppercase mt-1 ${isHovered ? 'text-white' : 'text-[#39FF14]'}`}>
+        <span className={`text-sm font-bold tracking-widest uppercase mt-1 ${isHovered ? 'text-white' : 'text-(--toxic-green)'}`}>
           {label}
         </span>
       </div>
 
       {/* Floating Status Tag */}
       {status !== 'IDLE' && (
-        <div className="absolute top-2 right-2 bg-[#39FF14] text-black text-[8px] font-bold px-1 tracking-widest animate-pulse">
+        <div className="absolute top-2 right-2 bg-(--toxic-green) text-black text-[8px] font-bold px-1 tracking-widest animate-pulse">
           {status}
         </div>
       )}
@@ -549,20 +548,20 @@ export const CorruptedText = ({ text, delay = 0 }) => {
 // 14. Hazard Ticker Tape (For Gig Modifiers)
 export const HazardTicker = ({ message }) => {
   return (
-    <div className="relative w-full h-8 bg-black border-y-2 border-[#39FF14] flex items-center overflow-hidden">
+    <div className="relative w-full h-8 bg-black border-y-2 border-(--toxic-green) flex items-center overflow-hidden">
       {/* Striped Background Ends */}
       <div className="absolute left-0 top-0 bottom-0 w-8 z-10"><WarningStripe /></div>
       <div className="absolute right-0 top-0 bottom-0 w-8 z-10"><WarningStripe /></div>
 
       {/* Scrolling Text Container */}
       <div className="flex w-full whitespace-nowrap animate-[marquee_10s_linear_infinite] px-8 items-center gap-12">
-        <span className="text-xs font-bold tracking-[0.3em] uppercase text-[#39FF14]">
+        <span className="text-xs font-bold tracking-[0.3em] uppercase text-(--toxic-green)">
           [MODIFIER ACTIVE] {message}
         </span>
-        <span className="text-xs font-bold tracking-[0.3em] uppercase text-[#39FF14]">
+        <span className="text-xs font-bold tracking-[0.3em] uppercase text-(--toxic-green)">
           [MODIFIER ACTIVE] {message}
         </span>
-        <span className="text-xs font-bold tracking-[0.3em] uppercase text-[#39FF14]">
+        <span className="text-xs font-bold tracking-[0.3em] uppercase text-(--toxic-green)">
           [MODIFIER ACTIVE] {message}
         </span>
       </div>
@@ -586,7 +585,7 @@ export const IndustrialChecklist = () => {
   const allDone = tasks.every(t => t.completed);
 
   return (
-    <div className="w-full border border-[#39FF14]/30 bg-black p-4 flex flex-col gap-3 relative">
+    <div className="w-full border border-(--toxic-green)/30 bg-black p-4 flex flex-col gap-3 relative">
       <div className="text-[10px] opacity-50 tracking-[0.3em] mb-2">PRE-GIG SEQUENCE</div>
 
       {tasks.map(task => (
@@ -594,16 +593,16 @@ export const IndustrialChecklist = () => {
           key={task.id}
           onClick={() => toggleTask(task.id)}
           className={`relative w-full text-left p-3 border transition-all duration-200 flex items-center gap-4 group
-            ${task.completed ? 'border-transparent opacity-60' : 'border-[#39FF14]/30 hover:border-[#39FF14] hover:bg-[#39FF14]/10'}`}
+            ${task.completed ? 'border-transparent opacity-60' : 'border-(--toxic-green)/30 hover:border-(--toxic-green) hover:bg-(--toxic-green)/10'}`}
         >
           {/* Brutal Checkbox */}
           <div className={`w-5 h-5 border-2 flex items-center justify-center shrink-0 transition-colors
-            ${task.completed ? 'border-[#39FF14] bg-[#39FF14]' : 'border-[#39FF14] bg-black'}`}>
+            ${task.completed ? 'border-(--toxic-green) bg-(--toxic-green)' : 'border-(--toxic-green) bg-black'}`}>
             {task.completed && <span className="text-black font-bold text-xs leading-none">X</span>}
           </div>
 
           <span className={`font-bold tracking-widest uppercase transition-all duration-200
-            ${task.completed ? 'text-[#39FF14]' : 'text-[#39FF14]'}`}>
+            ${task.completed ? 'text-(--toxic-green)' : 'text-(--toxic-green)'}`}>
             {task.label}
           </span>
 
@@ -616,7 +615,7 @@ export const IndustrialChecklist = () => {
       <button
         disabled={!allDone}
         className={`mt-4 p-4 font-bold tracking-[0.2em] uppercase transition-all duration-300 border-2
-          ${allDone ? 'border-[#39FF14] bg-[#39FF14] text-black shadow-[0_0_20px_#39FF14] hover:bg-white hover:border-white animate-pulse' : 'border-[#39FF14]/20 text-[#39FF14]/20 cursor-not-allowed'}`}
+          ${allDone ? 'border-(--toxic-green) bg-(--toxic-green) text-black shadow-[0_0_20px_var(--toxic-green)] hover:bg-white hover:border-white animate-pulse' : 'border-(--toxic-green)/20 text-(--toxic-green)/20 cursor-not-allowed'}`}
       >
         {allDone ? 'INITIATE GIG' : 'AWAITING SEQUENCE'}
       </button>
@@ -640,23 +639,23 @@ export const RhythmMatrix = () => {
   };
 
   return (
-    <div className="w-full h-64 bg-[#050505] border border-[#39FF14]/30 p-4 flex flex-col relative overflow-hidden">
+    <div className="w-full h-64 bg-[#050505] border border-(--toxic-green)/30 p-4 flex flex-col relative overflow-hidden">
       <div className="text-[10px] opacity-50 tracking-[0.3em] absolute top-2 left-2 z-10">RHYTHM_ENGINE_SIM</div>
 
       {/* 3 Lanes */}
       <div className="flex-1 flex justify-center gap-4 mt-6">
         {['GUITAR', 'DRUMS', 'BASS'].map((lane, i) => (
-          <div key={lane} className="w-16 h-full border-x border-[#39FF14]/10 relative flex flex-col justify-end pb-2 group">
+          <div key={lane} className="w-16 h-full border-x border-(--toxic-green)/10 relative flex flex-col justify-end pb-2 group">
             {/* Falling Note Simulation */}
-            <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-12 h-4 border-2 border-[#39FF14] bg-black animate-[drop_2s_linear_infinite] opacity-50`} style={{ animationDelay: `${i * 0.5}s` }}></div>
+            <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-12 h-4 border-2 border-(--toxic-green) bg-black animate-[drop_2s_linear_infinite] opacity-50`} style={{ animationDelay: `${i * 0.5}s` }}></div>
 
             {/* Target Box */}
             <div
               className={`w-14 h-8 mx-auto border-2 transition-all duration-75 flex items-center justify-center cursor-pointer select-none
-                ${hits[i] ? 'bg-[#39FF14] border-[#39FF14] shadow-[0_0_20px_#39FF14] scale-110' : 'bg-black border-[#39FF14]/50 hover:border-[#39FF14]'}`}
+                ${hits[i] ? 'bg-(--toxic-green) border-(--toxic-green) shadow-[0_0_20px_var(--toxic-green)] scale-110' : 'bg-black border-(--toxic-green)/50 hover:border-(--toxic-green)'}`}
               onMouseDown={() => triggerHit(i)}
             >
-               <span className={`text-[8px] font-bold ${hits[i] ? 'text-black' : 'text-[#39FF14]/50'}`}>HIT</span>
+               <span className={`text-[8px] font-bold ${hits[i] ? 'text-black' : 'text-(--toxic-green)/50'}`}>HIT</span>
             </div>
 
             <span className="text-[10px] text-center mt-2 opacity-50 tracking-widest">{lane}</span>
@@ -672,28 +671,28 @@ export const SelloutContract = () => {
   const [signed, setSigned] = useState(false);
 
   return (
-    <div className={`w-full border-4 p-6 relative transition-all duration-500 ${signed ? 'border-[#39FF14] bg-[#39FF14]/5' : 'border-[#39FF14]/30 bg-black'}`}>
-      <div className="absolute top-0 right-0 p-2 border-l border-b border-[#39FF14]/30 text-[8px] opacity-50">DOCUMENT: CONFIDENTIAL</div>
+    <div className={`w-full border-4 p-6 relative transition-all duration-500 ${signed ? 'border-(--toxic-green) bg-(--toxic-green)/5' : 'border-(--toxic-green)/30 bg-black'}`}>
+      <div className="absolute top-0 right-0 p-2 border-l border-b border-(--toxic-green)/30 text-[8px] opacity-50">DOCUMENT: CONFIDENTIAL</div>
 
-      <h3 className="text-xl font-bold tracking-[0.2em] uppercase mb-4 border-b-2 border-[#39FF14]/30 pb-2">Binding Agreement</h3>
+      <h3 className="text-xl font-bold tracking-[0.2em] uppercase mb-4 border-b-2 border-(--toxic-green)/30 pb-2">Binding Agreement</h3>
 
       <div className="text-xs leading-relaxed opacity-80 flex flex-col gap-3 font-mono">
-        <p>This agreement binds NEUROTOXIC to <span className="bg-[#39FF14] text-black font-bold px-1">MEGA_CORP_INC</span>.</p>
-        <p>The Artist agrees to <span className="bg-[#39FF14] text-[#39FF14] select-none hover:text-black transition-colors">subliminally insert corporate messaging</span> during all live performances in sector 4.</p>
+        <p>This agreement binds NEUROTOXIC to <span className="bg-(--toxic-green) text-black font-bold px-1">MEGA_CORP_INC</span>.</p>
+        <p>The Artist agrees to <span className="bg-(--toxic-green) text-(--toxic-green) select-none hover:text-black transition-colors">subliminally insert corporate messaging</span> during all live performances in sector 4.</p>
         <p>Failure to comply will result in <span className="bg-red-600 text-red-600 select-none">immediate termination of organic functions</span>.</p>
 
-        <div className="mt-4 border-t border-dashed border-[#39FF14]/50 pt-4 flex justify-between items-end">
+        <div className="mt-4 border-t border-dashed border-(--toxic-green)/50 pt-4 flex justify-between items-end">
           <div className="flex flex-col gap-1 w-1/2">
             <span className="text-[10px] opacity-50">SIGNATURE (BLOOD/VOID):</span>
             {signed ? (
-              <span className="font-script text-2xl text-[#39FF14] -rotate-6 tracking-widest animate-pulse">Neurotoxic</span>
+              <span className="font-script text-2xl text-(--toxic-green) -rotate-6 tracking-widest animate-pulse">Neurotoxic</span>
             ) : (
-              <div className="h-8 border-b-2 border-[#39FF14] w-full cursor-pointer hover:bg-[#39FF14]/20 transition-colors" onClick={() => setSigned(true)}></div>
+              <div className="h-8 border-b-2 border-(--toxic-green) w-full cursor-pointer hover:bg-(--toxic-green)/20 transition-colors" onClick={() => setSigned(true)}></div>
             )}
           </div>
 
           <div className={`transition-all duration-500 ${signed ? 'opacity-100 scale-100' : 'opacity-0 scale-150'}`}>
-            <CorporateSeal className="w-16 h-16 text-[#39FF14]" />
+            <CorporateSeal className="w-16 h-16 text-(--toxic-green)" />
             <div className="text-[8px] text-center mt-1">SEALED</div>
           </div>
         </div>
@@ -725,18 +724,18 @@ export const ToxicChatter = () => {
   }, []);
 
   return (
-    <div className="w-full h-64 border border-[#39FF14]/30 bg-[#020202] p-4 flex flex-col justify-end relative shadow-[inset_0_0_20px_rgba(57,255,20,0.05)]">
+    <div className="w-full h-64 border border-(--toxic-green)/30 bg-[#020202] p-4 flex flex-col justify-end relative shadow-[inset_0_0_20px_rgba(57,255,20,0.05)]">
       <div className="absolute top-2 left-2 text-[10px] tracking-widest opacity-50">LIVE_CHATTER_FEED</div>
 
       <div className="flex flex-col gap-2 overflow-hidden">
         {messages.map((msg, i) => (
           <div
             key={msg.id}
-            className={`text-xs p-2 animate-[slideIn_0.2s_ease-out] ${msg.type === 'system' ? 'border border-[#39FF14] bg-[#39FF14]/10' : 'border-l-2 border-[#39FF14]/30'}`}
+            className={`text-xs p-2 animate-[slideIn_0.2s_ease-out] ${msg.type === 'system' ? 'border border-(--toxic-green) bg-(--toxic-green)/10' : 'border-l-2 border-(--toxic-green)/30'}`}
             style={{ opacity: 0.4 + (i * 0.15) }} // Fade out older messages
           >
             <span className="font-bold opacity-70">[{msg.user}]: </span>
-            <span className={`${msg.type === 'hate' ? 'chromatic-text' : 'text-[#39FF14]'}`}>{msg.text}</span>
+            <span className={`${msg.type === 'hate' ? 'chromatic-text' : 'text-(--toxic-green)'}`}>{msg.text}</span>
           </div>
         ))}
       </div>
@@ -764,24 +763,24 @@ export const VoidDecryptor = () => {
   }, [decrypted]);
 
   return (
-    <div className="w-full h-64 border-2 border-[#39FF14]/50 bg-black flex flex-col items-center justify-center p-6 relative group cursor-pointer" onClick={() => setDecrypted(true)}>
+    <div className="w-full h-64 border-2 border-(--toxic-green)/50 bg-black flex flex-col items-center justify-center p-6 relative group cursor-pointer" onClick={() => setDecrypted(true)}>
 
       {/* Glitch Frame Corners */}
-      <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-[#39FF14] transition-all duration-300 group-hover:p-2"></div>
-      <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-[#39FF14] transition-all duration-300 group-hover:p-2"></div>
+      <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-(--toxic-green) transition-all duration-300 group-hover:p-2"></div>
+      <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-(--toxic-green) transition-all duration-300 group-hover:p-2"></div>
 
       <div className={`relative transition-all duration-700 ${decrypted ? 'scale-125' : 'scale-100 animate-[pulse_0.1s_infinite]'}`}>
-        <BiohazardIcon className={`w-20 h-20 ${decrypted ? 'text-[#39FF14] drop-shadow-[0_0_20px_#39FF14]' : 'text-[#39FF14]/30'}`} />
+        <BiohazardIcon className={`w-20 h-20 ${decrypted ? 'text-(--toxic-green) drop-shadow-[0_0_20px_var(--toxic-green)]' : 'text-(--toxic-green)/30'}`} />
 
         {/* Scrambler Overlay */}
         {!decrypted && (
           <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px] flex items-center justify-center mix-blend-overlay">
-            <div className="w-full h-2 bg-[#39FF14] animate-[scan_1s_linear_infinite]"></div>
+            <div className="w-full h-2 bg-(--toxic-green) animate-[scan_1s_linear_infinite]"></div>
           </div>
         )}
       </div>
 
-      <div className={`mt-6 font-mono text-xs tracking-[0.2em] font-bold ${decrypted ? 'text-white' : 'text-[#39FF14]/50'}`}>
+      <div className={`mt-6 font-mono text-xs tracking-[0.2em] font-bold ${decrypted ? 'text-white' : 'text-(--toxic-green)/50'}`}>
         {glitchText}
       </div>
 
@@ -789,141 +788,3 @@ export const VoidDecryptor = () => {
     </div>
   );
 };
-
-// --- MAIN APP COMPONENT ---
-// Re-export as default for rendering as a scene if needed
-
-export default function App() {
-  const [overload, setOverload] = useState(3);
-  const [modalOpen, setModalOpen] = useState(false);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setOverload(prev => (prev >= 10 ? 0 : prev + 1));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="min-h-screen bg-black text-[#39FF14] font-mono p-4 sm:p-8 flex flex-col items-center overflow-x-hidden">
-
-      <header className="w-full max-w-5xl border-b border-[#39FF14]/30 pb-4 mb-8 flex justify-between items-end">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-[0.2em] uppercase glitch-text">UI_PATTERNS</h1>
-          <p className="text-xs opacity-60 uppercase tracking-widest mt-1">Component Library v2.0 // Void Worship</p>
-        </div>
-        <div className="text-[10px] border border-[#39FF14] px-2 py-1 animate-pulse hidden sm:block">STATUS: ONLINE</div>
-      </header>
-
-      <main className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-3 gap-x-12 gap-y-12">
-
-        {/* LEFT COLUMN */}
-        <div className="flex flex-col gap-12">
-          <section className="flex flex-col gap-6">
-            <h2 className="text-xs tracking-widest opacity-50 border-b border-[#39FF14]/20 pb-1">01 // TOGGLES</h2>
-            <BrutalToggle label="Auto-Distortion" initialState={true} />
-            <BrutalToggle label="Safe Mode" initialState={false} />
-          </section>
-
-          <section className="flex flex-col gap-6">
-            <h2 className="text-xs tracking-widest opacity-50 border-b border-[#39FF14]/20 pb-1">02 // AMP_FADERS</h2>
-            <BrutalFader label="Master Volume" initialValue={8} />
-            <BrutalFader label="Crowd Noise" initialValue={4} />
-          </section>
-        </div>
-
-        {/* MIDDLE COLUMN */}
-        <div className="flex flex-col gap-12">
-          <section className="flex flex-col gap-6">
-            <h2 className="text-xs tracking-widest opacity-50 border-b border-[#39FF14]/20 pb-1">03 // BLOCK_METERS</h2>
-            <BlockMeter label="Amp Overload" value={overload} max={10} isDanger={true} />
-            <BlockMeter label="Band Harmony" value={4} max={10} isDanger={false} />
-          </section>
-
-          <section className="flex flex-col gap-6">
-            <h2 className="text-xs tracking-widest opacity-50 border-b border-[#39FF14]/20 pb-1">04 // TRACK_SELECT</h2>
-            <SetlistSelector />
-          </section>
-        </div>
-
-        {/* RIGHT COLUMN */}
-        <div className="flex flex-col gap-12">
-          <section className="flex flex-col gap-6">
-            <h2 className="text-xs tracking-widest opacity-50 border-b border-[#39FF14]/20 pb-1">05 // DATA_BLOCKS</h2>
-            <div className="flex gap-4 flex-wrap">
-              <StatBlock label="Fame" value="4.2K" icon={CrosshairIcon} />
-              <StatBlock label="Vault" value="$840" icon={MoneyIcon} />
-            </div>
-          </section>
-
-          <section className="flex flex-col gap-6">
-            <h2 className="text-xs tracking-widest opacity-50 border-b border-[#39FF14]/20 pb-1">06 // CRISIS_SYSTEM</h2>
-            <div className="p-4 border border-[#39FF14]/30 bg-[#39FF14]/5">
-              <p className="text-xs opacity-80 mb-4 leading-relaxed">
-                Crisis events interrupt the flow and require immediate resolution.
-              </p>
-              <button
-                onClick={() => setModalOpen(true)}
-                className="w-full p-3 bg-[#39FF14] text-black font-bold tracking-widest uppercase hover:bg-white hover:shadow-[0_0_20px_#fff] transition-all"
-              >
-                Trigger Crisis
-              </button>
-            </div>
-          </section>
-        </div>
-
-      </main>
-
-      <CrisisModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
-
-      {/* Global CSS for custom animations */}
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes scan {
-          0% { transform: translateY(-100%); }
-          100% { transform: translateY(200%); }
-        }
-        .typewriter-effect {
-          overflow: hidden;
-          white-space: nowrap;
-          animation: typing 1s steps(30, end);
-        }
-        @keyframes typing { from { width: 0 } to { width: 100% } }
-
-        .glitch-text { position: relative; }
-        .glitch-text::before, .glitch-text::after {
-          content: attr(data-text); /* Fallback */
-          position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: black;
-        }
-        .glitch-text::before {
-          content: 'UI_PATTERNS';
-          left: 2px; text-shadow: -1px 0 red; clip: rect(24px, 550px, 90px, 0);
-          animation: glitch-anim-2 3s infinite linear alternate-reverse;
-        }
-        .glitch-text::after {
-          content: 'UI_PATTERNS';
-          left: -2px; text-shadow: -1px 0 blue; clip: rect(85px, 550px, 140px, 0);
-          animation: glitch-anim 2.5s infinite linear alternate-reverse;
-        }
-        /* Specific override for the crisis modal title */
-        .glitch-text.text-2xl::before, .glitch-text.text-2xl::after { content: 'Van Breakdown'; }
-
-        @keyframes glitch-anim {
-          0% { clip: rect(4px, 999px, 80px, 0); }
-          20% { clip: rect(100px, 999px, 140px, 0); }
-          40% { clip: rect(41px, 999px, 84px, 0); }
-          60% { clip: rect(6px, 999px, 52px, 0); }
-          80% { clip: rect(80px, 999px, 120px, 0); }
-          100% { clip: rect(12px, 999px, 59px, 0); }
-        }
-        @keyframes glitch-anim-2 {
-          0% { clip: rect(65px, 999px, 100px, 0); }
-          20% { clip: rect(3px, 999px, 40px, 0); }
-          40% { clip: rect(80px, 999px, 120px, 0); }
-          60% { clip: rect(22px, 999px, 60px, 0); }
-          80% { clip: rect(100px, 999px, 140px, 0); }
-          100% { clip: rect(45px, 999px, 80px, 0); }
-        }
-      `}} />
-    </div>
-  );
-}

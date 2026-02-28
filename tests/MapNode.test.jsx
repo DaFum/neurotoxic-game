@@ -195,7 +195,7 @@ describe('MapNode', () => {
 
     const startNode = { ...mockNode, type: 'START' }
 
-    render(
+    const { container } = render(
       <MapNode
         node={startNode}
         isCurrent={false}
@@ -211,8 +211,8 @@ describe('MapNode', () => {
       />
     )
 
-    const pinImage = screen.getByAltText('ui:map.pinAlt')
-    expect(pinImage).toBeTruthy()
+    const svgElement = container.querySelector('svg')
+    expect(svgElement).toBeInTheDocument()
   })
 
   test('applies opacity and grayscale when not reachable', async () => {
@@ -469,7 +469,7 @@ describe('MapNode', () => {
   test('applies pulse animation when isPendingConfirm is true', async () => {
     const { MapNode } = await import('../src/components/MapNode.jsx')
 
-    const { container } = render(
+    const { getByText } = render(
       <MapNode
         node={mockNode}
         isCurrent={false}
@@ -485,8 +485,8 @@ describe('MapNode', () => {
       />
     )
 
-    const pinImage = container.querySelector('img[alt="ui:map.pinAlt"]')
-    expect(pinImage?.className).toContain('animate-confirm-pulse')
+    const confirmLabel = getByText('CONFIRM?')
+    expect(confirmLabel.className).toContain('animate-pulse')
   })
 
   test('uses provided ticketPrice in tooltip', async () => {

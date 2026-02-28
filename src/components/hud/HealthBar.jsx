@@ -36,40 +36,24 @@ SegmentedBar.propTypes = {
   className: PropTypes.string
 }
 
+import { BlockMeter } from '../../ui/shared/BrutalistUI'
+
 export const HealthBar = memo(function HealthBar({ health, isToxicMode }) {
   return (
     <div className='absolute bottom-20 left-1/2 -translate-x-1/2 w-[28rem] z-10 pointer-events-none'>
-      <div className='flex justify-between text-(--star-white) text-xs mb-1 font-bold tracking-widest drop-shadow-md'>
-        <span>CROWD ENERGY</span>
-        <span
-          className={`tabular-nums ${
-            health < 20
-              ? 'text-(--blood-red) animate-fuel-warning'
-              : 'text-(--star-white)'
-          }`}
-        >
-          {Math.floor(health)}%
-        </span>
-      </div>
-      <div
-        className={`w-full h-5 bg-(--void-black)/70 border-2 backdrop-blur-sm p-[3px] ${
-          health < 20
-            ? 'border-(--blood-red) shadow-[0_0_10px_var(--blood-red)]'
-            : 'border-(--ash-gray)/30'
-        }`}
-      >
-        <SegmentedBar
-          value={health}
-          segments={25}
-          lowThreshold={20}
-          className='h-full'
+      <div className="bg-(--void-black)/80 p-4 border border-(--toxic-green)/30 backdrop-blur-sm">
+        <BlockMeter
+          label="CROWD ENERGY"
+          value={Math.round((health / 100) * 20)}
+          max={20}
+          isDanger={health < 20}
         />
+        {isToxicMode && (
+          <div className='mt-3 text-(--blood-red) animate-neon-flicker font-bold tracking-widest text-center font-[var(--font-display)] text-sm border-t border-(--blood-red)/30 pt-2'>
+            TOXIC MODE ACTIVE
+          </div>
+        )}
       </div>
-      {isToxicMode && (
-        <div className='mt-2 text-(--blood-red) animate-neon-flicker font-bold tracking-widest text-center font-[var(--font-display)] text-sm'>
-          TOXIC MODE ACTIVE
-        </div>
-      )}
     </div>
   )
 })

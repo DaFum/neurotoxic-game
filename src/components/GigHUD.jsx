@@ -10,6 +10,7 @@ import { ControlsHint } from './hud/ControlsHint'
 import { PauseButton } from './hud/PauseButton'
 import { ToxicModeFlash } from './hud/ToxicModeFlash'
 import { GameOverOverlay } from './hud/GameOverOverlay'
+import { HazardTicker } from '../ui/shared/BrutalistUI'
 
 export const GigHUD = memo(function GigHUD({
   stats,
@@ -32,6 +33,13 @@ export const GigHUD = memo(function GigHUD({
       <ToxicModeFlash isToxicMode={isToxicMode} />
 
       <HecklerOverlay gameStateRef={gameStateRef} />
+
+      {/* Hazard Ticker - shown dynamically based on modifiers (if any) or fixed toxic mode */}
+      {isToxicMode && (
+        <div className="absolute top-0 w-full z-20">
+          <HazardTicker message="TOXIC OVERLOAD DETECTED // SEVERE SYSTEM STRESS // STAY FOCUSED" />
+        </div>
+      )}
 
       <PauseButton onTogglePause={onTogglePause} isGameOver={isGameOver} />
 
