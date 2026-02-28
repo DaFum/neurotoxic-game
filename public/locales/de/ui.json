@@ -206,5 +206,7 @@
   "map.rest_stop_desc": "RASTPLATZ — Ausdauer & Stimmung erholen",
   "map.mystery_desc": "MYSTERIUM — Unbekannte Begegnung",
   "map.finale_desc": "★ FINALE — Die letzte Show ★",
-  "map.current_location": "[AKTUELLE POSITION]"
+  "map.current_location": "[AKTUELLE POSITION]",
+  "map.vanAlt": "Van",
+  "map.pinAlt": "Pin"
 }

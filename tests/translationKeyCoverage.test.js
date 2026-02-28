@@ -15,6 +15,7 @@ const REPO_ROOT = path.join(__dirname, '..')
 const SOURCE_ROOT = path.join(REPO_ROOT, 'src')
 
 const TRANSLATION_KEY_PATTERN = /\bt\(\s*['"]([^'"]+)['"]/g
+const TRANS_I18NKEY_PATTERN = /<Trans[^>]*i18nKey=['"]([^'"]+)['"]/g
 
 const readLocaleNamespaceMap = locale => {
   const localePath = path.join(REPO_ROOT, 'public', 'locales', locale)
@@ -44,7 +45,12 @@ test('all literal translation keys used in src exist in both en and de locale na
   sourceFiles.forEach(filePath => {
     const source = readFileSync(filePath, 'utf8')
 
-    for (const match of source.matchAll(TRANSLATION_KEY_PATTERN)) {
+    const matches = [
+      ...source.matchAll(TRANSLATION_KEY_PATTERN),
+      ...source.matchAll(TRANS_I18NKEY_PATTERN)
+    ]
+
+    for (const match of matches) {
       const resolved = resolveNamespaceKey(match[1])
       if (!resolved) {
         assert.fail(`Unresolved i18n key: ${match[1]} must be namespaced`)

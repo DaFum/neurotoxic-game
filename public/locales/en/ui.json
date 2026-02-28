@@ -206,5 +206,7 @@
   "map.rest_stop_desc": "REST STOP — Recover Stamina & Mood",
   "map.mystery_desc": "MYSTERY — Unknown Encounter",
   "map.finale_desc": "★ FINALE — The Final Show ★",
-  "map.current_location": "[CURRENT LOCATION]"
+  "map.current_location": "[CURRENT LOCATION]",
+  "map.vanAlt": "Van",
+  "map.pinAlt": "Pin"
 }

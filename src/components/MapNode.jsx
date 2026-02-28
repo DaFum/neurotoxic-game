@@ -82,7 +82,7 @@ export const MapNode = memo(
           <div className='absolute pointer-events-none z-50' style={VAN_STYLE}>
             <img
               src={vanUrl}
-              alt='Van'
+              alt={t('ui:map.vanAlt')}
               className='w-12 h-8 object-contain drop-shadow-[0_0_10px_var(--toxic-green)]'
             />
           </div>
@@ -96,7 +96,7 @@ export const MapNode = memo(
         >
           <img
             src={iconUrl}
-            alt='Pin'
+            alt={t('ui:map.pinAlt')}
             className={`w-6 h-6 md:w-8 md:h-8 object-contain drop-shadow-md
                   ${isPendingConfirm ? 'drop-shadow-[0_0_14px_var(--warning-yellow)] animate-confirm-pulse' : ''}
                   ${isReachable && !isPendingConfirm ? 'drop-shadow-[0_0_10px_var(--toxic-green)] animate-pulse' : ''}`}
