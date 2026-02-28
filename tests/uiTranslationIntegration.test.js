@@ -21,7 +21,8 @@ const UI_SOURCE_FILES = [
   'src/scenes/GameOver.jsx',
   'src/scenes/MainMenu.jsx',
   'src/scenes/IntroVideo.jsx',
-  'src/components/ChatterOverlay.jsx'
+  'src/components/ChatterOverlay.jsx',
+  'src/components/MapNode.jsx'
 ]
 
 const KEY_PATTERN = /\bt\(\s*['"]([^'"]+)['"]/g
@@ -45,7 +46,13 @@ const extractLocalizedKeys = () => {
 }
 
 const readLocaleMap = (locale, namespace) => {
-  const localePath = path.join(REPO_ROOT, 'public', 'locales', locale, `${namespace}.json`)
+  const localePath = path.join(
+    REPO_ROOT,
+    'public',
+    'locales',
+    locale,
+    `${namespace}.json`
+  )
   const localeData = JSON.parse(readFileSync(localePath, 'utf8'))
   return { ...flattenToObject(localeData), ...localeData }
 }

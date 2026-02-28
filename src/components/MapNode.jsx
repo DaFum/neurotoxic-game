@@ -82,7 +82,7 @@ export const MapNode = memo(
           <div className='absolute pointer-events-none z-50' style={VAN_STYLE}>
             <img
               src={vanUrl}
-              alt='Van'
+              alt={t('ui:map.vanAlt')}
               className='w-12 h-8 object-contain drop-shadow-[0_0_10px_var(--toxic-green)]'
             />
           </div>
@@ -96,7 +96,7 @@ export const MapNode = memo(
         >
           <img
             src={iconUrl}
-            alt='Pin'
+            alt={t('ui:map.pinAlt')}
             className={`w-6 h-6 md:w-8 md:h-8 object-contain drop-shadow-md
                   ${isPendingConfirm ? 'drop-shadow-[0_0_14px_var(--warning-yellow)] animate-confirm-pulse' : ''}
                   ${isReachable && !isPendingConfirm ? 'drop-shadow-[0_0_10px_var(--toxic-green)] animate-pulse' : ''}`}
@@ -119,7 +119,8 @@ export const MapNode = memo(
 
         <div className='hidden group-hover:block group-focus:block absolute bottom-8 bg-(--void-black)/90 border border-(--toxic-green) p-2 rounded z-50 whitespace-nowrap pointer-events-none'>
           <div className='font-bold text-(--toxic-green)'>
-            {t(node.venue?.name) || t('ui:map.unknown', { defaultValue: 'Unknown' })}
+            {t(node.venue?.name) ||
+              t('ui:map.unknown', { defaultValue: 'Unknown' })}
           </div>
           {(node.type === 'GIG' ||
             node.type === 'FESTIVAL' ||
@@ -130,8 +131,8 @@ export const MapNode = memo(
                   {t('ui:map.festival', { defaultValue: 'FESTIVAL' })}
                 </div>
               )}
-              {t('ui:map.cap', { defaultValue: 'Cap' })}: {node.venue?.capacity} |{' '}
-              {t('ui:map.pay', { defaultValue: 'Pay' })}: ~{node.venue?.pay}
+              {t('ui:map.cap', { defaultValue: 'Cap' })}: {node.venue?.capacity}{' '}
+              | {t('ui:map.pay', { defaultValue: 'Pay' })}: ~{node.venue?.pay}
               {'\u20AC'}
               <br />
               {t('ui:map.ticket', { defaultValue: 'Ticket' })}:{' '}
@@ -163,7 +164,9 @@ export const MapNode = memo(
           )}
           {isCurrent && (
             <div className='text-(--blood-red) text-xs font-bold'>
-              {t('ui:map.current_location', { defaultValue: '[CURRENT LOCATION]' })}
+              {t('ui:map.current_location', {
+                defaultValue: '[CURRENT LOCATION]'
+              })}
             </div>
           )}
         </div>
@@ -179,6 +182,7 @@ export const MapNode = memo(
       prev.isReachable === next.isReachable &&
       prev.isPendingConfirm === next.isPendingConfirm &&
       prev.iconUrl === next.iconUrl &&
+      prev.vanUrl === next.vanUrl &&
       prev.handleTravel === next.handleTravel &&
       prev.setHoveredNode === next.setHoveredNode &&
       prev.ticketPrice === next.ticketPrice

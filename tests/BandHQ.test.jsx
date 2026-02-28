@@ -6,7 +6,7 @@ import { render, cleanup } from '@testing-library/react'
 // Mock react-i18next
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key) => key,
+    t: key => key,
     i18n: {
       changeLanguage: () => new Promise(() => {})
     }

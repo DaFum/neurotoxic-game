@@ -137,7 +137,9 @@ export const LeaderboardTab = ({ setlist }) => {
               <thead className='text-(--ash-gray) border-b border-(--ash-gray)/30 text-xs uppercase sticky top-0 bg-(--void-black)'>
                 <tr>
                   <th className='py-2 px-2'>#</th>
-                  <th className='py-2 px-2'>{t('ui:leaderboard.col_player')}</th>
+                  <th className='py-2 px-2'>
+                    {t('ui:leaderboard.col_player')}
+                  </th>
                   <th className='py-2 px-2 text-right'>
                     {view === 'BALANCE'
                       ? t('ui:leaderboard.col_net_worth')

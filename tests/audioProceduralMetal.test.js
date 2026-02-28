@@ -97,7 +97,7 @@ mock.module('@tonejs/midi', {
 // Mock Setup
 const mockEnsureAudioContext = mock.fn(async () => true)
 mock.module('../src/utils/audio/setup.js', {
-  namedExports: { 
+  namedExports: {
     ensureAudioContext: mockEnsureAudioContext,
     getAudioContextTimeSec: mock.fn(() => 0)
   }
@@ -153,17 +153,19 @@ mock.module('../src/utils/audio/playbackUtils.js', {
       const initialReqId = ++mockAudioState.playRequestId
       const ensured = await mockEnsureAudioContext()
       if (!ensured) return { success: false }
-      if (initialReqId !== mockAudioState.playRequestId) return { success: false }
-      
+      if (initialReqId !== mockAudioState.playRequestId)
+        return { success: false }
+
       mockStopTransportAndClear()
-      
-      return { 
-        success: true, 
-        reqId: initialReqId, 
-        normalizedOptions: { 
+
+      return {
+        success: true,
+        reqId: initialReqId,
+        normalizedOptions: {
           useCleanPlayback: true,
-          onEnded: typeof options?.onEnded === 'function' ? options.onEnded : null
-        } 
+          onEnded:
+            typeof options?.onEnded === 'function' ? options.onEnded : null
+        }
       }
     }),
     normalizeMidiPlaybackOptions: options => ({

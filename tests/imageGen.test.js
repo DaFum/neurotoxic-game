@@ -25,7 +25,11 @@ test('getGenImageUrl generates correct Pollinations.ai URL', async () => {
 
   for (const key of url.searchParams.keys()) {
     if (key !== '') {
-      assert.notEqual(key, '', 'Should not include empty query parameter names unless it is the empty key used for nocache')
+      assert.notEqual(
+        key,
+        '',
+        'Should not include empty query parameter names unless it is the empty key used for nocache'
+      )
     }
   }
 })

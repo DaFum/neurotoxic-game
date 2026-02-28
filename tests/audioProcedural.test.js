@@ -122,7 +122,7 @@ mock.module('@tonejs/midi', {
 // Mock Setup
 const mockEnsureAudioContext = mock.fn(async () => true)
 mock.module('../src/utils/audio/setup.js', {
-  namedExports: { 
+  namedExports: {
     ensureAudioContext: mockEnsureAudioContext,
     getAudioContextTimeSec: mock.fn(() => 0)
   }
