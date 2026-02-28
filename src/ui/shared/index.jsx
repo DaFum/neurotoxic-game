@@ -21,6 +21,8 @@ export {
   CrosshairIcon,
   MoneyIcon,
   AlertIcon,
+  SkullIcon,
+  GearIcon,
   BrutalToggle,
   BlockMeter,
   BrutalTabs,
@@ -28,6 +30,10 @@ export {
   BrutalFader,
   SetlistSelector,
   CrisisModal,
+  DeadmanButton,
+  TerminalReadout,
+  BrutalSlot,
+  VoidLoader,
 } from './BrutalistUI'
 import { UIFrameCorner } from './Icons'
 

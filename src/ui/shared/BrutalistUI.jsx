@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 // --- SVG DECORATIONS ---
 
@@ -29,6 +29,22 @@ export const AlertIcon = ({ className }) => (
     <path d="M12 2L22 20H2L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter"/>
     <rect x="11" y="10" width="2" height="6" fill="currentColor"/>
     <rect x="11" y="17" width="2" height="2" fill="currentColor"/>
+  </svg>
+);
+
+export const SkullIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M5 7C5 4 8 2 12 2C16 2 19 4 19 7V13C19 16 16 17 16 17L15 22H9L8 17C8 17 5 16 5 13V7Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="miter"/>
+    <circle cx="9" cy="10" r="1" fill="currentColor" stroke="currentColor" strokeWidth="1"/>
+    <circle cx="15" cy="10" r="1" fill="currentColor" stroke="currentColor" strokeWidth="1"/>
+    <path d="M10 16H14" stroke="currentColor" strokeWidth="2"/>
+  </svg>
+);
+
+export const GearIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" strokeWidth="2"/>
+    <path d="M19.4 15A1.65 1.65 0 0 0 19 16.5L20 18L18 20L16.5 19A1.65 1.65 0 0 0 15 19.4V21H12H9V19.4A1.65 1.65 0 0 0 7.5 19L6 20L4 18L5 16.5A1.65 1.65 0 0 0 4.6 15H3V12V9H4.6A1.65 1.65 0 0 0 5 7.5L4 6L6 4L7.5 5A1.65 1.65 0 0 0 9 4.6V3H12H15V4.6A1.65 1.65 0 0 0 16.5 5L18 4L20 6L19 7.5A1.65 1.65 0 0 0 19.4 9H21V12V15H19.4Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="miter"/>
   </svg>
 );
 
@@ -258,6 +274,166 @@ export const CrisisModal = ({ isOpen, onClose }) => {
           </div>
         </div>
       </div>
+    </div>
+  );
+};
+
+// 8. Deadman Button (Hold to Confirm)
+export const DeadmanButton = ({ label, onConfirm }) => {
+  const [progress, setProgress] = useState(0);
+  const [isHolding, setIsHolding] = useState(false);
+  const intervalRef = useRef(null);
+
+  const startHold = () => {
+    if (progress >= 100) return;
+    setIsHolding(true);
+    intervalRef.current = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(intervalRef.current);
+          setIsHolding(false);
+          if (onConfirm) onConfirm();
+          return 100;
+        }
+        return prev + 2; // Speed of fill
+      });
+    }, 20); // 20ms tick
+  };
+
+  const stopHold = () => {
+    clearInterval(intervalRef.current);
+    setIsHolding(false);
+    if (progress < 100) {
+      // Rapid drain if let go too early
+      const drainInterval = setInterval(() => {
+        setProgress((prev) => {
+          if (prev <= 0) {
+            clearInterval(drainInterval);
+            return 0;
+          }
+          return prev - 5;
+        });
+      }, 20);
+    }
+  };
+
+  const isComplete = progress >= 100;
+
+  return (
+    <div className="w-full flex flex-col gap-1">
+      <span className="text-[10px] tracking-widest uppercase opacity-50 text-center">HOLD TO OVERRIDE</span>
+      <button
+        onMouseDown={startHold}
+        onMouseUp={stopHold}
+        onMouseLeave={stopHold}
+        onTouchStart={startHold}
+        onTouchEnd={stopHold}
+        className={`relative w-full h-14 border-2 overflow-hidden flex items-center justify-center select-none transition-colors
+          ${isComplete ? 'border-red-500 bg-red-500/20' : 'border-[#39FF14] bg-black hover:border-white'}`}
+      >
+        {/* Progress Fill Background */}
+        <div
+          className={`absolute left-0 top-0 h-full transition-none ${isComplete ? 'bg-red-500' : 'bg-[#39FF14]'}`}
+          style={{ width: `${progress}%` }}
+        ></div>
+
+        {/* Scanline FX on fill */}
+        {isHolding && !isComplete && (
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjEiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC41Ii8+PC9zdmc+')] opacity-50 z-10 pointer-events-none"></div>
+        )}
+
+        {/* Text */}
+        <span className={`relative z-20 font-bold tracking-[0.2em] uppercase mix-blend-difference
+          ${isComplete ? 'text-black' : 'text-[#39FF14]'}`}>
+          {isComplete ? 'EXECUTED' : label}
+        </span>
+      </button>
+    </div>
+  );
+};
+
+// 9. Terminal Readout (Log)
+export const TerminalReadout = () => {
+  const fullLog = [
+    "> INITIALIZING VOID_ENGINE v3.0...",
+    "> CONNECTING TO STAGE RIG...",
+    "[OK] AUDIO CONTEXT STARTED",
+    "[WARN] AMP 3 OVERHEATING",
+    "> LOADING VENUE: 'THE SLAUGHTERHOUSE'",
+    "...",
+    "[ERROR] BAND HARMONY CRITICAL.",
+    "> AWAITING INPUT_"
+  ];
+
+  const [lines, setLines] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (currentIndex < fullLog.length) {
+      const timer = setTimeout(() => {
+        setLines(prev => [...prev, fullLog[currentIndex]]);
+        setCurrentIndex(currentIndex + 1);
+      }, Math.random() * 400 + 200); // Random typing delay
+      return () => clearTimeout(timer);
+    }
+  }, [currentIndex, fullLog]);
+
+  return (
+    <div className="w-full h-48 border border-[#39FF14]/30 bg-[#050505] p-4 font-mono text-xs overflow-y-auto flex flex-col gap-1 custom-scrollbar relative shadow-[inset_0_0_20px_rgba(0,0,0,1)]">
+      {/* Scanline overlay */}
+      <div className="absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(transparent_50%,rgba(57,255,20,0.2)_50%)] bg-[length:100%_4px]"></div>
+
+      {lines.map((line, i) => (
+        <div key={i} className={`${line.includes('[ERROR]') ? 'text-red-500 font-bold' : line.includes('[WARN]') ? 'text-yellow-400' : 'text-[#39FF14]'} opacity-90 leading-relaxed`}>
+          {line}
+        </div>
+      ))}
+      {currentIndex < fullLog.length && (
+        <div className="w-2 h-3 bg-[#39FF14] animate-pulse mt-1"></div>
+      )}
+    </div>
+  );
+};
+
+// 10. Hardware Inventory Slot
+export const BrutalSlot = ({ label, item = null }) => {
+  return (
+    <div className="flex flex-col gap-2 items-center">
+      <div className="relative w-20 h-20 border-2 border-[#39FF14]/30 bg-[#0a0a0a] flex items-center justify-center group cursor-pointer hover:border-[#39FF14] transition-colors">
+        {/* Corner Decals */}
+        <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#39FF14] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#39FF14] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+        {item ? (
+          <>
+            <div className="absolute inset-0 bg-[#39FF14]/10 group-hover:bg-[#39FF14]/20 transition-colors"></div>
+            {item.icon}
+          </>
+        ) : (
+          <CrosshairIcon className="w-6 h-6 text-[#39FF14] opacity-20 group-hover:opacity-50 transition-opacity" />
+        )}
+      </div>
+      <span className="text-[9px] tracking-[0.2em] uppercase opacity-60 text-center max-w-[80px] truncate">
+        {item ? item.name : label}
+      </span>
+    </div>
+  );
+};
+
+// 11. Void Loader (Geometric Spinner)
+export const VoidLoader = ({ size = "w-16 h-16" }) => {
+  return (
+    <div className={`relative ${size} flex items-center justify-center`}>
+      {/* Outer Hex - Slow counter-clockwise */}
+      <svg className="absolute inset-0 w-full h-full text-[#39FF14] animate-[spin_4s_linear_infinite_reverse]" viewBox="0 0 100 100" fill="none">
+        <polygon points="50,5 90,25 90,75 50,95 10,75 10,25" stroke="currentColor" strokeWidth="2" strokeDasharray="10 20" />
+      </svg>
+      {/* Inner Square - Fast clockwise */}
+      <svg className="absolute w-[60%] h-[60%] text-[#39FF14] animate-[spin_1.5s_linear_infinite]" viewBox="0 0 100 100" fill="none">
+        <rect x="15" y="15" width="70" height="70" stroke="currentColor" strokeWidth="4" strokeDasharray="40 10" />
+      </svg>
+      {/* Core Dot - Pulsing */}
+      <div className="w-2 h-2 bg-white rounded-full animate-pulse shadow-[0_0_10px_#fff]"></div>
     </div>
   );
 };
