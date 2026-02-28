@@ -10,6 +10,9 @@
   "data_purge": "DATENLÖSCHUNG",
   "music_volume": "MUSIK LAUTSTÄRKE",
   "sfx_volume": "SFX LAUTSTÄRKE",
+  "volume": {
+    "set": "Lautstärke auf {{pct}}% setzen"
+  },
   "mute_all": "ALLES STUMM",
   "crt_effect": "CRT EFFEKT",
   "min_log_level": "MINIMALES LOG LEVEL",

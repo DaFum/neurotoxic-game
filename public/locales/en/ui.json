@@ -10,6 +10,9 @@
   "data_purge": "DATA PURGE",
   "music_volume": "MUSIC VOLUME",
   "sfx_volume": "SFX VOLUME",
+  "volume": {
+    "set": "Set volume to {{pct}}%"
+  },
   "mute_all": "MUTE ALL",
   "crt_effect": "CRT EFFECT",
   "min_log_level": "MINIMUM LOG LEVEL",

@@ -1,6 +1,8 @@
 import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
 
 export const VolumeSlider = ({ label, value, onChange }) => {
+  const { t } = useTranslation(['ui'])
   const clampedValue = Math.min(1, Math.max(0, value))
   const max = 10
   const val = Math.round(clampedValue * max)
@@ -37,14 +39,8 @@ export const VolumeSlider = ({ label, value, onChange }) => {
               type="button"
               key={segment}
               onClick={() => onChange({ target: { value: segment / max } })}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  if (e.key === ' ') e.preventDefault()
-                  onChange({ target: { value: segment / max } })
-                }
-              }}
               className="flex-1 relative h-full flex items-end group-hover:opacity-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)"
-              aria-label={`Set volume to ${segmentPct}%`}
+              aria-label={t('ui:volume.set', { pct: segmentPct })}
               aria-pressed={isActive}
             >
               <div

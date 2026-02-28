@@ -355,7 +355,7 @@ export const PreGig = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className='mt-6 px-12 py-4 bg-(--toxic-green) text-black font-bold text-2xl uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-[4px_4px_0px_var(--blood-red)] hover:shadow-[6px_6px_0px_var(--blood-red)] flex items-center justify-center gap-4'
+        className='mt-6 px-12 py-4 bg-(--toxic-green) text-(--void-black) font-bold text-2xl uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-[4px_4px_0px_var(--blood-red)] hover:shadow-[6px_6px_0px_var(--blood-red)] flex items-center justify-center gap-4'
         disabled={setlist.length === 0 || isStarting}
         onClick={async () => {
           if (band.harmony < 10) {

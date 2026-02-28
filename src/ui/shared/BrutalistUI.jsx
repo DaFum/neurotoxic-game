@@ -187,7 +187,7 @@ export const BlockMeter = ({ label, value, max = 10, isDanger = false }) => {
           if (isFilled) {
             blockClass = isDanger
               ? "flex-1 bg-(--blood-red) border-(--blood-red) shadow-[0_0_10px_var(--blood-red)]"
-              : "flex-1 bg-(--toxic-green) border-(--toxic-green) shadow-[0_0_5px_rgba(57,255,20,0.5)]";
+              : "flex-1 bg-(--toxic-green) border-(--toxic-green) shadow-[0_0_5px_var(--toxic-green-50)]";
           }
           return <div key={block} className={blockClass}></div>;
         })}
@@ -262,7 +262,7 @@ export const BrutalFader = ({ label, initialValue = 7, max = 10 }) => {
         <span className="text-xs tracking-widest uppercase opacity-80">{label}</span>
         <span className="text-sm font-bold text-(--toxic-green)">{val}</span>
       </div>
-      <div className="flex gap-1 h-8 items-end cursor-pointer group" onMouseLeave={() => {}} role="presentation">
+      <div className="flex gap-1 h-8 items-end cursor-pointer group" role="presentation">
         {segments.map(segment => {
           const isActive = segment <= val;
           // Calculate dynamic height for the bars to look like an EQ/Volume fader
@@ -314,7 +314,7 @@ export const SetlistSelector = () => {
             key={track.id}
             onClick={() => setSelected(track.id)}
             className={`w-full text-left p-3 border-2 transition-all duration-100 flex justify-between items-center group
-              ${isSelected ? 'border-(--toxic-green) bg-(--toxic-green)/10 shadow-[inset_0_0_15px_rgba(57,255,20,0.2)]' : 'border-(--toxic-green)/30 bg-[color:var(--void-black)] hover:border-(--toxic-green)/70'}`}
+              ${isSelected ? 'border-(--toxic-green) bg-(--toxic-green)/10 shadow-[inset_0_0_15px_var(--toxic-green-20)]' : 'border-(--toxic-green)/30 bg-[color:var(--void-black)] hover:border-(--toxic-green)/70'}`}
           >
             <div className="flex items-center gap-3">
               <span className={`text-xl font-bold ${isSelected ? 'text-(--toxic-green)' : 'text-(--toxic-green)/30'}`}>
@@ -336,14 +336,14 @@ export const SetlistSelector = () => {
 
 // 7. Crisis Modal Overlay
 export const CrisisModal = ({ isOpen, onClose }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['ui'])
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-[color:var(--void-black)]/80 backdrop-blur-sm" onClick={onClose}></div>
+      <div className="absolute inset-0 bg-[color:var(--void-black)]/80 backdrop-blur-sm" onClick={onClose} aria-hidden="true"></div>
       {/* Scanline FX on background */}
-      <div className="absolute inset-0 pointer-events-none opacity-20" style={{ backgroundImage: 'linear-gradient(transparent 50%, rgba(var(--void-black-rgb), 0.5) 50%)', backgroundSize: '100% 4px' }}></div>
+      <div className="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(transparent_50%,var(--void-black-50)_50%)] bg-[length:100%_4px]"></div>
 
       {/* Modal Box */}
       <div className="relative w-full max-w-lg border-2 border-(--toxic-green) bg-[color:var(--void-black)] shadow-[0_0_40px_var(--toxic-green-glow)] animate-[glitch-anim_0.2s_ease-in-out]">
@@ -474,14 +474,14 @@ export const DeadmanButton = ({ label, onConfirm }) => {
 
 // 9. Terminal Readout (Log)
 const FULL_LOG = [
-  "> INITIALIZING VOID_ENGINE v3.0...",
-  "> CONNECTING TO STAGE RIG...",
-  "[OK] AUDIO CONTEXT STARTED",
-  "[WARN] AMP 3 OVERHEATING",
-  "> LOADING VENUE: 'THE SLAUGHTERHOUSE'",
-  "...",
-  "[ERROR] BAND HARMONY CRITICAL.",
-  "> AWAITING INPUT_"
+  { id: 'log_1', text: "> INITIALIZING VOID_ENGINE v3.0..." },
+  { id: 'log_2', text: "> CONNECTING TO STAGE RIG..." },
+  { id: 'log_3', text: "[OK] AUDIO CONTEXT STARTED" },
+  { id: 'log_4', text: "[WARN] AMP 3 OVERHEATING" },
+  { id: 'log_5', text: "> LOADING VENUE: 'THE SLAUGHTERHOUSE'" },
+  { id: 'log_6', text: "..." },
+  { id: 'log_7', text: "[ERROR] BAND HARMONY CRITICAL." },
+  { id: 'log_8', text: "> AWAITING INPUT_" }
 ];
 
 export const TerminalReadout = () => {
@@ -503,9 +503,9 @@ export const TerminalReadout = () => {
       {/* Scanline overlay */}
       <div className="absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(transparent_50%,var(--toxic-green-20)_50%)] bg-[length:100%_4px]"></div>
 
-      {lines.map((line, i) => (
-        <div key={i} className={`${line.includes('[ERROR]') ? 'text-[color:var(--blood-red)] font-bold' : line.includes('[WARN]') ? 'text-[color:var(--warning-yellow)]' : 'text-(--toxic-green)'} opacity-90 leading-relaxed`}>
-          {line}
+      {lines.map((line) => (
+        <div key={line.id} className={`${line.text.includes('[ERROR]') ? 'text-[color:var(--blood-red)] font-bold' : line.text.includes('[WARN]') ? 'text-[color:var(--warning-yellow)]' : 'text-(--toxic-green)'} opacity-90 leading-relaxed`}>
+          {line.text}
         </div>
       ))}
       {currentIndex < FULL_LOG.length && (
@@ -579,7 +579,7 @@ export const VoidNavNode = ({ id, label, type, isUnlocked = true, status = 'IDLE
         <div className="absolute right-0 top-1/2 w-4 h-[1px] bg-(--toxic-green) -translate-y-1/2 translate-x-2"></div>
       </div>
 
-      <HexNode className={`w-20 h-20 transition-all duration-200 ${isHovered ? 'text-[color:var(--star-white)] drop-shadow-[0_0_15px_rgba(57,255,20,0.8)]' : 'text-(--toxic-green)'}`} />
+      <HexNode className={`w-20 h-20 transition-all duration-200 ${isHovered ? 'text-[color:var(--star-white)] drop-shadow-[0_0_15px_var(--toxic-green-80)]' : 'text-(--toxic-green)'}`} />
 
       {/* Node Info */}
       <div className="mt-4 flex flex-col items-center">
@@ -660,23 +660,23 @@ export const HazardTicker = ({ message }) => {
 
 // 15. Industrial Checklist (Pre-Gig Setup)
 export const IndustrialChecklist = () => {
-  const { t } = useTranslation()
-  const [tasks, setTasks] = useState([
-    { id: 1, label: "REFUEL TOURVAN", completed: false },
-    { id: 2, label: "EQUIP DISTORTION PEDAL", completed: false },
-    { id: 3, label: "BRIBE VENUE BOUNCER", completed: false },
-    { id: 4, label: "CALIBRATE AMPS", completed: false }
+  const { t } = useTranslation(['ui'])
+  const [tasks, setTasks] = useState(() => [
+    { id: 1, label: t('ui:checklist.task1', 'REFUEL TOURVAN'), completed: false },
+    { id: 2, label: t('ui:checklist.task2', 'EQUIP DISTORTION PEDAL'), completed: false },
+    { id: 3, label: t('ui:checklist.task3', 'BRIBE VENUE BOUNCER'), completed: false },
+    { id: 4, label: t('ui:checklist.task4', 'CALIBRATE AMPS'), completed: false }
   ]);
 
   const toggleTask = (id) => {
-    setTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+    setTasks(tasks.map(task => task.id === id ? { ...task, completed: !task.completed } : task));
   };
 
-  const allDone = tasks.every(t => t.completed);
+  const allDone = tasks.every(task => task.completed);
 
   return (
     <div className="w-full border border-(--toxic-green)/30 bg-[color:var(--void-black)] p-4 flex flex-col gap-3 relative">
-      <div className="text-[10px] opacity-50 tracking-[0.3em] mb-2">PRE-GIG SEQUENCE</div>
+      <div className="text-[10px] opacity-50 tracking-[0.3em] mb-2">{t('ui:checklist.header', 'PRE-GIG SEQUENCE')}</div>
 
       {tasks.map(task => (
         <button
@@ -709,7 +709,7 @@ export const IndustrialChecklist = () => {
         className={`mt-4 p-4 font-bold tracking-[0.2em] uppercase transition-all duration-300 border-2
           ${allDone ? 'border-(--toxic-green) bg-(--toxic-green) text-[color:var(--void-black)] shadow-[0_0_20px_var(--toxic-green)] hover:bg-[color:var(--star-white)] hover:border-[color:var(--star-white)] animate-pulse' : 'border-(--toxic-green)/20 text-(--toxic-green)/20 cursor-not-allowed'}`}
       >
-        {allDone ? 'INITIATE GIG' : 'AWAITING SEQUENCE'}
+        {allDone ? t('ui:checklist.done', 'INITIATE GIG') : t('ui:checklist.waiting', 'AWAITING SEQUENCE')}
       </button>
     </div>
   );
@@ -829,7 +829,7 @@ export const ToxicChatter = () => {
   }, []);
 
   return (
-    <div className="w-full h-64 border border-(--toxic-green)/30 bg-[#020202] p-4 flex flex-col justify-end relative shadow-[inset_0_0_20px_rgba(57,255,20,0.05)]">
+    <div className="w-full h-64 border border-(--toxic-green)/30 bg-[color:var(--void-black)] p-4 flex flex-col justify-end relative shadow-[inset_0_0_20px_var(--toxic-green-5)]">
       <div className="absolute top-2 left-2 text-[10px] tracking-widest opacity-50">LIVE_CHATTER_FEED</div>
 
       <div className="flex flex-col gap-2 overflow-hidden">
