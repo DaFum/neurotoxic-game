@@ -34,9 +34,9 @@ class ErrorBoundaryComponent extends React.Component {
         >
           <VoidSkullIcon className="w-32 h-32 text-(--blood-red) animate-pulse mb-6" />
 
-          <h1 className='text-6xl font-[Metal_Mania] mb-4'>{t('ui:crash.title', 'SYSTEM FAILURE')}</h1>
+          <h1 className='text-6xl font-[Metal_Mania] mb-4'>{t('ui:crash.title')}</h1>
           <p className='text-(--toxic-green) font-mono mb-8'>
-            {t('ui:crash.message', 'The simulation has crashed. Reboot required.')}
+            {t('ui:crash.message')}
           </p>
 
           {globalThis.__IMPORT_META_ENV__?.DEV && (
@@ -51,7 +51,7 @@ class ErrorBoundaryComponent extends React.Component {
           )}
 
           <GlitchButton onClick={this.handleReboot} variant='danger'>
-            {t('ui:crash.rebootButton', 'REBOOT SYSTEM')}
+            {t('ui:crash.rebootButton')}
           </GlitchButton>
         </div>
       )

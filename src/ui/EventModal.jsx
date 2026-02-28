@@ -74,12 +74,12 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
       <motion.div
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        className='relative w-full max-w-lg border-2 border-(--toxic-green) bg-[color:var(--void-black)] shadow-[0_0_40px_var(--toxic-green-glow)] animate-[glitch-anim_0.2s_ease-in-out]'
+        className='relative w-full max-w-lg border-2 border-(--toxic-green) bg-(--void-black) shadow-[0_0_40px_var(--toxic-green-glow)] animate-[glitch-anim_0.2s_ease-in-out]'
       >
         {/* Hardware details */}
         <div className="absolute top-0 left-0 w-full h-1 bg-(--toxic-green)"></div>
         <div className="absolute top-0 left-2 px-2 h-4 bg-(--toxic-green) text-(--void-black) text-[10px] font-bold text-center leading-4 uppercase">
-          {t('ui:event.severity.critical', 'CRITICAL')}
+          {t('ui:event.severity.critical')}
         </div>
 
         <div className='p-8 flex flex-col gap-6'>
@@ -104,7 +104,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
 
           {/* Keyboard hint */}
           <p className='text-[10px] text-(--ash-gray) font-mono uppercase tracking-widest text-center'>
-            {t('ui:keyboardHint', { count: event.options.length, defaultValue: `Press [1-${event.options.length}] or click to choose` })}
+            {t('ui:keyboardHint', { count: event.options.length })}
           </p>
 
           <motion.div
@@ -128,7 +128,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
                   else onOptionSelect(option)
                 }}
                 className={`w-full p-3 border font-bold tracking-widest uppercase transition-colors text-left flex justify-between
-                  ${index === 0 ? 'border-(--toxic-green) bg-(--toxic-green)/10 hover:bg-(--toxic-green) hover:text-[color:var(--void-black)] text-(--toxic-green)' : 'border-(--star-white)/50 text-(--star-white)/50 hover:border-(--star-white) hover:text-(--star-white) hover:bg-(--star-white)/10'}
+                  ${index === 0 ? 'border-(--toxic-green) bg-(--toxic-green)/10 hover:bg-(--toxic-green) hover:text-(--void-black) text-(--toxic-green)' : 'border-(--star-white)/50 text-(--star-white)/50 hover:border-(--star-white) hover:text-(--star-white) hover:bg-(--star-white)/10'}
                 `}
               >
                 <span>
@@ -146,7 +146,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
                   {/* Skill check indicator */}
                   {option.skillCheck && (
                     <span className='inline-block mt-1 text-[10px] text-(--warning-yellow)'>
-                      [{'\u2694'} {t('ui:skillCheck', 'Skill Check')}]
+                      [{'\u2694'} {t('ui:skillCheck')}]
                     </span>
                   )}
                 </div>

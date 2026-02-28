@@ -64,7 +64,7 @@ export const GameOver = () => {
       </motion.div>
 
       <h1 className='text-8xl md:text-9xl text-(--blood-red) font-[Metal_Mania] mb-2 animate-doom-zoom relative z-10'>
-        {t('ui:gameOver.soldOut', 'SOLD OUT')}
+        {t('ui:gameOver.soldOut')}
       </h1>
 
       <AnimatedDivider
@@ -89,7 +89,7 @@ export const GameOver = () => {
         className='border-2 border-(--blood-red)/60 p-6 w-full max-w-lg mb-8 bg-(--void-black)/80 backdrop-blur-sm relative z-10 shadow-[0_0_30px_var(--blood-red)/20]'
       >
         <div className='text-[10px] text-(--blood-red) tracking-widest mb-4 border-b border-(--blood-red)/30 pb-2'>
-          {t('ui:gameOver.finalStatistics', 'FINAL STATISTICS')}
+          {t('ui:gameOver.finalStatistics')}
         </div>
         <div className='space-y-3 font-mono'>
           {statRows.map((row, i) => (

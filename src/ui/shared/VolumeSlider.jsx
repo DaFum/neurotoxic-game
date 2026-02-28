@@ -45,7 +45,7 @@ export const VolumeSlider = ({ label, value, onChange }) => {
             >
               <div
                 style={{ height }}
-                className={`w-full transition-colors duration-75 border-b-2 border-transparent hover:border-[color:var(--void-black)]
+                className={`w-full transition-colors duration-75 border-b-2 border-transparent hover:border-(--void-black)
                   ${isActive ? 'bg-(--toxic-green) shadow-[0_0_8px_var(--toxic-green)]' : 'bg-(--toxic-green)/20'}`}
               ></div>
             </button>

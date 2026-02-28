@@ -13,8 +13,9 @@ export const HexBorder = ({ className, title }) => {
       preserveAspectRatio='none'
       fill='none'
       xmlns='http://www.w3.org/2000/svg'
-      role={title ? 'img' : undefined}
+      role={title ? 'img' : 'presentation'}
       aria-hidden={!title}
+      focusable='false'
       aria-labelledby={title ? titleId : undefined}
     >
       {title && <title id={titleId}>{title}</title>}
@@ -38,8 +39,9 @@ export const CrosshairIcon = ({ className, title }) => {
       viewBox='0 0 24 24'
       fill='none'
       xmlns='http://www.w3.org/2000/svg'
-      role={title ? 'img' : undefined}
+      role={title ? 'img' : 'presentation'}
       aria-hidden={!title}
+      focusable='false'
       aria-labelledby={title ? titleId : undefined}
     >
       {title && <title id={titleId}>{title}</title>}
@@ -391,7 +393,7 @@ export const BrutalTabs = () => {
     <div className='w-full max-w-sm border border-(--toxic-green)/50 p-1'>
       <div
         role='tablist'
-        aria-label='HQ Navigation'
+        aria-label={t('ui:hqNavigation', 'HQ Navigation')}
         className='flex border-b-2 border-(--toxic-green)'
       >
         {tabs.map(tab => {
@@ -566,7 +568,7 @@ export const CrisisModal = ({ isOpen, onClose }) => {
         {/* Hardware details */}
         <div className='absolute top-0 left-0 w-full h-1 bg-(--toxic-green)'></div>
         <div className='absolute top-0 left-2 w-16 h-4 bg-(--toxic-green) text-[color:var(--void-black)] text-[10px] font-bold text-center leading-4 uppercase'>
-          {t('ui:event.severity.critical', 'CRITICAL')}
+          {t('ui:event.severity.critical')}
         </div>
 
         <div className='p-8 flex flex-col gap-6'>
@@ -574,12 +576,10 @@ export const CrisisModal = ({ isOpen, onClose }) => {
             <AlertIcon className='w-12 h-12 text-(--toxic-green) animate-pulse shrink-0 mt-1' />
             <div>
               <h2 className='text-2xl font-bold tracking-[0.1em] uppercase glitch-text'>
-                Van Breakdown
+                {t('ui:crisis.title')}
               </h2>
               <p className='mt-2 text-sm opacity-80 leading-relaxed'>
-                The transmission just dropped halfway to Leipzig. You have a gig
-                in 4 hours. Do you burn through your cash for a sketchy
-                mechanic, or risk showing up late and losing face?
+                {t('ui:crisis.desc')}
               </p>
             </div>
           </div>
@@ -598,8 +598,8 @@ export const CrisisModal = ({ isOpen, onClose }) => {
               onClick={onClose}
               className='w-full p-3 border border-[color:var(--star-white)]/50 text-[color:var(--star-white)]/50 hover:border-[color:var(--star-white)] hover:text-[color:var(--star-white)] hover:bg-[color:var(--star-white)]/10 font-bold tracking-widest uppercase transition-colors text-left flex justify-between'
             >
-              <span>Fix it yourselves (+1hr)</span>
-              <span className='opacity-50 text-xs mt-1'>RISKY</span>
+              <span>{t('ui:crisis.opt3')}</span>
+              <span className='opacity-50 text-xs mt-1'>{t('ui:crisis.risky')}</span>
             </button>
           </div>
         </div>
@@ -707,26 +707,27 @@ export const DeadmanButton = ({ label, onConfirm }) => {
 }
 
 // 9. Terminal Readout (Log)
-const FULL_LOG = [
-  { id: 'log_1', text: '> INITIALIZING VOID_ENGINE v3.0...' },
-  { id: 'log_2', text: '> CONNECTING TO STAGE RIG...' },
-  { id: 'log_3', text: '[OK] AUDIO CONTEXT STARTED' },
-  { id: 'log_4', text: '[WARN] AMP 3 OVERHEATING' },
-  { id: 'log_5', text: "> LOADING VENUE: 'THE SLAUGHTERHOUSE'" },
-  { id: 'log_6', text: '...' },
-  { id: 'log_7', text: '[ERROR] BAND HARMONY CRITICAL.' },
-  { id: 'log_8', text: '> AWAITING INPUT_' }
+const FULL_LOG_KEYS = [
+  { id: 'log_1', key: 'ui:terminal.log1', type: 'info' },
+  { id: 'log_2', key: 'ui:terminal.log2', type: 'info' },
+  { id: 'log_3', key: 'ui:terminal.log3', type: 'ok' },
+  { id: 'log_4', key: 'ui:terminal.log4', type: 'warn' },
+  { id: 'log_5', key: 'ui:terminal.log5', type: 'info' },
+  { id: 'log_6', key: 'ui:terminal.log6', type: 'info' },
+  { id: 'log_7', key: 'ui:terminal.log7', type: 'error' },
+  { id: 'log_8', key: 'ui:terminal.log8', type: 'info' }
 ]
 
 export const TerminalReadout = () => {
+  const { t } = useTranslation(['ui'])
   const [lines, setLines] = useState([])
   const [currentIndex, setCurrentIndex] = useState(0)
 
   useEffect(() => {
-    if (currentIndex < FULL_LOG.length) {
+    if (currentIndex < FULL_LOG_KEYS.length) {
       const timer = setTimeout(
         () => {
-          setLines(prev => [...prev, FULL_LOG[currentIndex]])
+          setLines(prev => [...prev, FULL_LOG_KEYS[currentIndex]])
           setCurrentIndex(currentIndex + 1)
         },
         Math.random() * 400 + 200
@@ -743,12 +744,12 @@ export const TerminalReadout = () => {
       {lines.map(line => (
         <div
           key={line.id}
-          className={`${line.text.includes('[ERROR]') ? 'text-[color:var(--blood-red)] font-bold' : line.text.includes('[WARN]') ? 'text-[color:var(--warning-yellow)]' : 'text-(--toxic-green)'} opacity-90 leading-relaxed`}
+          className={`${line.type === 'error' ? 'text-[color:var(--blood-red)] font-bold' : line.type === 'warn' ? 'text-[color:var(--warning-yellow)]' : 'text-(--toxic-green)'} opacity-90 leading-relaxed`}
         >
-          {line.text}
+          {t(line.key)}
         </div>
       ))}
-      {currentIndex < FULL_LOG.length && (
+      {currentIndex < FULL_LOG_KEYS.length && (
         <div className='w-2 h-3 bg-(--toxic-green) animate-pulse mt-1'></div>
       )}
     </div>
@@ -952,22 +953,22 @@ export const IndustrialChecklist = () => {
   const [tasks, setTasks] = useState(() => [
     {
       id: 1,
-      label: t('ui:checklist.task1', 'REFUEL TOURVAN'),
+      key: 'ui:checklist.task1',
       completed: false
     },
     {
       id: 2,
-      label: t('ui:checklist.task2', 'EQUIP DISTORTION PEDAL'),
+      key: 'ui:checklist.task2',
       completed: false
     },
     {
       id: 3,
-      label: t('ui:checklist.task3', 'BRIBE VENUE BOUNCER'),
+      key: 'ui:checklist.task3',
       completed: false
     },
     {
       id: 4,
-      label: t('ui:checklist.task4', 'CALIBRATE AMPS'),
+      key: 'ui:checklist.task4',
       completed: false
     }
   ])
@@ -985,7 +986,7 @@ export const IndustrialChecklist = () => {
   return (
     <div className='w-full border border-(--toxic-green)/30 bg-[color:var(--void-black)] p-4 flex flex-col gap-3 relative'>
       <div className='text-[10px] opacity-50 tracking-[0.3em] mb-2'>
-        {t('ui:checklist.header', 'PRE-GIG SEQUENCE')}
+        {t('ui:checklist.header')}
       </div>
 
       {tasks.map(task => (
@@ -1012,7 +1013,7 @@ export const IndustrialChecklist = () => {
             className={`font-bold tracking-widest uppercase transition-all duration-200
             ${task.completed ? 'text-(--toxic-green)' : 'text-(--toxic-green)'}`}
           >
-            {task.label}
+            {t(task.key)}
           </span>
 
           {/* Strikethrough Line Animation */}
@@ -1039,6 +1040,7 @@ export const IndustrialChecklist = () => {
 
 // 16. Rhythm Lane Matrix (Simulation of the Rhythm Engine)
 export const RhythmMatrix = () => {
+  const { t } = useTranslation(['ui'])
   const [hits, setHits] = useState([false, false, false])
 
   const triggerHit = index => {
@@ -1059,7 +1061,7 @@ export const RhythmMatrix = () => {
   return (
     <div className='w-full h-64 bg-[color:var(--shadow-black)] border border-(--toxic-green)/30 p-4 flex flex-col relative overflow-hidden'>
       <div className='text-[10px] opacity-50 tracking-[0.3em] absolute top-2 left-2 z-10'>
-        RHYTHM_ENGINE_SIM
+        {t('ui:rhythm.header')}
       </div>
 
       {/* 3 Lanes */}
@@ -1087,18 +1089,18 @@ export const RhythmMatrix = () => {
                   triggerHit(i)
                 }
               }}
-              aria-label={`Hit ${lane} lane`}
+              aria-label={t('ui:rhythm.hit_lane', { lane })}
               aria-pressed={hits[i]}
             >
               <span
                 className={`text-[8px] font-bold ${hits[i] ? 'text-[color:var(--void-black)]' : 'text-(--toxic-green)/50'}`}
               >
-                HIT
+                {t('ui:rhythm.hit')}
               </span>
             </button>
 
             <span className='text-[10px] text-center mt-2 opacity-50 tracking-widest'>
-              {lane}
+              {t(`ui:rhythm.lane_${lane.toLowerCase()}`)}
             </span>
           </div>
         ))}
@@ -1109,6 +1111,7 @@ export const RhythmMatrix = () => {
 
 // 17. Corporate Sellout Contract (Brand Deals)
 export const SelloutContract = () => {
+  const { t } = useTranslation(['ui'])
   const [signed, setSigned] = useState(false)
 
   return (
@@ -1116,40 +1119,22 @@ export const SelloutContract = () => {
       className={`w-full border-4 p-6 relative transition-all duration-500 ${signed ? 'border-(--toxic-green) bg-(--toxic-green)/5' : 'border-(--toxic-green)/30 bg-[color:var(--void-black)]'}`}
     >
       <div className='absolute top-0 right-0 p-2 border-l border-b border-(--toxic-green)/30 text-[8px] opacity-50'>
-        DOCUMENT: CONFIDENTIAL
+        {t('ui:contract.confidential')}
       </div>
 
       <h3 className='text-xl font-bold tracking-[0.2em] uppercase mb-4 border-b-2 border-(--toxic-green)/30 pb-2'>
-        Binding Agreement
+        {t('ui:contract.title')}
       </h3>
 
       <div className='text-xs leading-relaxed opacity-80 flex flex-col gap-3 font-mono'>
-        <p>
-          This agreement binds NEUROTOXIC to{' '}
-          <span className='bg-(--toxic-green) text-[color:var(--void-black)] font-bold px-1'>
-            MEGA_CORP_INC
-          </span>
-          .
-        </p>
-        <p>
-          The Artist agrees to{' '}
-          <span className='bg-(--toxic-green) text-(--toxic-green) select-none hover:text-[color:var(--void-black)] transition-colors'>
-            subliminally insert corporate messaging
-          </span>{' '}
-          during all live performances in sector 4.
-        </p>
-        <p>
-          Failure to comply will result in{' '}
-          <span className='bg-(--blood-red) text-(--blood-red) select-none'>
-            immediate termination of organic functions
-          </span>
-          .
-        </p>
+        <p dangerouslySetInnerHTML={{ __html: t('ui:contract.p1') }}></p>
+        <p dangerouslySetInnerHTML={{ __html: t('ui:contract.p2') }}></p>
+        <p dangerouslySetInnerHTML={{ __html: t('ui:contract.warning') }}></p>
 
         <div className='mt-4 border-t border-dashed border-(--toxic-green)/50 pt-4 flex justify-between items-end'>
           <div className='flex flex-col gap-1 w-1/2'>
             <span className='text-[10px] opacity-50'>
-              SIGNATURE (BLOOD/VOID):
+              {t('ui:contract.sig')}
             </span>
             {signed ? (
               <span className='font-script text-2xl text-(--toxic-green) -rotate-6 tracking-widest animate-pulse'>
@@ -1158,7 +1143,7 @@ export const SelloutContract = () => {
             ) : (
               <button
                 type='button'
-                aria-label='Sign Contract'
+                aria-label={t('ui:contract.sign_aria')}
                 className='h-8 border-b-2 border-(--toxic-green) w-full cursor-pointer hover:bg-(--toxic-green)/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)'
                 onClick={() => setSigned(true)}
               ></button>
@@ -1169,7 +1154,7 @@ export const SelloutContract = () => {
             className={`transition-all duration-500 ${signed ? 'opacity-100 scale-100' : 'opacity-0 scale-150'}`}
           >
             <CorporateSeal className='w-16 h-16 text-(--toxic-green)' />
-            <div className='text-[8px] text-center mt-1'>SEALED</div>
+            <div className='text-[8px] text-center mt-1'>{t('ui:contract.sealed')}</div>
           </div>
         </div>
       </div>
@@ -1179,13 +1164,14 @@ export const SelloutContract = () => {
 
 // 18. Toxic Hate Feed (Chatter Overlay)
 export const ToxicChatter = () => {
+  const { t } = useTranslation(['ui'])
   const [messages, setMessages] = useState([
-    { id: 1, user: 'VOID_WALKER', text: 'this band is dead lol', type: 'hate' },
-    { id: 2, user: 'TRUE_SCUM', text: 'PLAY THE OLD SHIT!!!', type: 'hate' },
+    { id: 1, user: 'VOID_WALKER', text: 'ui:chatter.msg1', type: 'hate' },
+    { id: 2, user: 'TRUE_SCUM', text: 'ui:chatter.msg2', type: 'hate' },
     {
       id: 3,
       user: 'SYS_ADMIN',
-      text: 'WARNING: CROWD HOSTILITY RISING',
+      text: 'ui:chatter.msg3',
       type: 'system'
     }
   ])
@@ -1193,11 +1179,11 @@ export const ToxicChatter = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       const newHate = [
-        'sellouts.',
-        "can't even stay in rhythm",
-        'BOOOOOOOOO',
-        'my ears are bleeding (in a bad way)',
-        'refund immediately'
+        'ui:chatter.random1',
+        'ui:chatter.random2',
+        'ui:chatter.random3',
+        'ui:chatter.random4',
+        'ui:chatter.random5'
       ]
       const randomHate = newHate[Math.floor(Math.random() * newHate.length)]
       setMessages(prev => {
@@ -1219,7 +1205,7 @@ export const ToxicChatter = () => {
   return (
     <div className='w-full h-64 border border-(--toxic-green)/30 bg-[color:var(--void-black)] p-4 flex flex-col justify-end relative shadow-[inset_0_0_20px_var(--toxic-green-5)]'>
       <div className='absolute top-2 left-2 text-[10px] tracking-widest opacity-50'>
-        LIVE_CHATTER_FEED
+        {t('ui:chatter.header')}
       </div>
 
       <div className='flex flex-col gap-2 overflow-hidden'>
@@ -1233,7 +1219,7 @@ export const ToxicChatter = () => {
             <span
               className={`${msg.type === 'hate' ? 'chromatic-text' : 'text-(--toxic-green)'}`}
             >
-              {msg.text}
+              {t(msg.text)}
             </span>
           </div>
         ))}
@@ -1244,6 +1230,7 @@ export const ToxicChatter = () => {
 
 // 19. Void Decryptor (Unlocks/Lore)
 export const VoidDecryptor = () => {
+  const { t } = useTranslation(['ui'])
   const [decrypted, setDecrypted] = useState(false)
   const [glitchText, setGlitchText] = useState('0x8F9A... ENCRYPTED')
 
@@ -1258,9 +1245,9 @@ export const VoidDecryptor = () => {
       }, 50)
       return () => clearInterval(interval)
     } else {
-      setGlitchText("ITEM_UNLOCKED: 'VOID_CORE'")
+      setGlitchText(t('ui:decryptor.unlocked'))
     }
-  }, [decrypted])
+  }, [decrypted, t])
 
   return (
     <button
@@ -1296,7 +1283,7 @@ export const VoidDecryptor = () => {
 
       {!decrypted && (
         <div className='absolute bottom-4 text-[8px] opacity-50 animate-bounce'>
-          CLICK TO DECRYPT
+          {t('ui:decryptor.click')}
         </div>
       )}
     </button>

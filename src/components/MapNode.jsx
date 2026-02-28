@@ -77,13 +77,10 @@ export const MapNode = memo(
         aria-label={
           isReachable
             ? t('ui:map.travel_to', {
-                name: t(node.venue?.name),
-                defaultValue: `Travel to ${t(node.venue?.name)}`
+                name: t(node.venue?.name)
               }) +
               (isPendingConfirm
-                ? t('ui:map.click_to_confirm', {
-                    defaultValue: ' - click to confirm'
-                  })
+                ? t('ui:map.click_to_confirm')
                 : '')
             : undefined
         }
@@ -128,7 +125,7 @@ export const MapNode = memo(
            {/* Center icon overlay if needed, or replace HexNode entirely based on type */}
            <div className="absolute inset-0 flex items-center justify-center mix-blend-difference pointer-events-none">
              <span className="text-(--void-black) font-bold text-[10px]">
-               {node.type === 'GIG' ? t('ui:map.nodeType.gig', 'GIG') : node.type === 'REST_STOP' ? t('ui:map.nodeType.rest', 'REST') : t('ui:map.nodeType.fallback', { type: node.type.substring(0,3), defaultValue: node.type.substring(0,3) })}
+               {node.type === 'GIG' ? t('ui:map.nodeType.gig') : node.type === 'REST_STOP' ? t('ui:map.nodeType.rest') : t('ui:map.nodeType.fallback', { type: node.type.substring(0,3) })}
              </span>
            </div>
         </motion.div>
@@ -136,21 +133,21 @@ export const MapNode = memo(
         {/* Pending confirmation label */}
         {isPendingConfirm && (
           <div className='absolute top-0 left-1/2 -translate-x-1/2 text-(--warning-yellow) text-[10px] font-bold whitespace-nowrap pointer-events-none animate-pulse bg-(--void-black)/80 px-1.5 py-0.5 border border-(--warning-yellow) z-20'>
-            {t('ui:map.confirm_q', { defaultValue: 'CONFIRM?' })}
+            {t('ui:map.confirm_q')}
           </div>
         )}
 
         {/* Node Label (Always visible, matching BrutalistUI style) */}
         <div className="mt-2 flex flex-col items-center z-10 pointer-events-none">
           <span className={`text-[10px] font-bold tracking-widest uppercase text-center transition-colors ${isHoveredLocal || isPendingConfirm ? 'text-(--star-white)' : 'text-(--toxic-green)'}`}>
-            {t(node.venue?.name) || t('ui:map.unknown', { defaultValue: 'Unknown' })}
+            {t(node.venue?.name) || t('ui:map.unknown')}
           </span>
         </div>
 
         <div className='hidden group-hover:block group-focus:block absolute top-full mt-2 bg-(--void-black)/90 border border-(--toxic-green) p-2 z-50 whitespace-nowrap pointer-events-none'>
           <div className='font-bold text-(--toxic-green)'>
             {t(node.venue?.name) ||
-              t('ui:map.unknown', { defaultValue: 'Unknown' })}
+              t('ui:map.unknown')}
           </div>
           {(node.type === 'GIG' ||
             node.type === 'FESTIVAL' ||
@@ -158,45 +155,37 @@ export const MapNode = memo(
             <div className='text-[10px] text-(--ash-gray) font-mono'>
               {node.type === 'FESTIVAL' && (
                 <div className='text-(--warning-yellow) font-bold mb-1'>
-                  {t('ui:map.festival', { defaultValue: 'FESTIVAL' })}
+                  {t('ui:map.festival')}
                 </div>
               )}
-              {t('ui:map.cap', { defaultValue: 'Cap' })}: {node.venue?.capacity}{' '}
-              | {t('ui:map.pay', { defaultValue: 'Pay' })}: ~{node.venue?.pay}
+              {t('ui:map.cap')}: {node.venue?.capacity}{' '}
+              | {t('ui:map.pay')}: ~{node.venue?.pay}
               {'\u20AC'}
               <br />
-              {t('ui:map.ticket', { defaultValue: 'Ticket' })}:{' '}
+              {t('ui:map.ticket')}:{' '}
               {ticketPrice ?? node.venue?.price}
-              {'\u20AC'} | {t('ui:map.diff', { defaultValue: 'Diff' })}:{' '}
+              {'\u20AC'} | {t('ui:map.diff')}:{' '}
               {'\u2605'.repeat(node.venue?.diff || 0)}
             </div>
           )}
           {node.type === 'REST_STOP' && (
             <div className='text-[10px] text-(--warning-yellow) font-mono'>
-              {t('ui:map.rest_stop_desc', {
-                defaultValue: 'REST STOP — Recover Stamina & Mood'
-              })}
+              {t('ui:map.rest_stop_desc')}
             </div>
           )}
           {node.type === 'SPECIAL' && (
             <div className='text-[10px] text-(--purple-glow) font-mono'>
-              {t('ui:map.mystery_desc', {
-                defaultValue: 'MYSTERY — Unknown Encounter'
-              })}
+              {t('ui:map.mystery_desc')}
             </div>
           )}
           {node.type === 'FINALE' && (
             <div className='text-[10px] text-(--warning-yellow) font-mono font-bold'>
-              {t('ui:map.finale_desc', {
-                defaultValue: '★ FINALE — The Final Show ★'
-              })}
+              {t('ui:map.finale_desc')}
             </div>
           )}
           {isCurrent && (
             <div className='text-(--blood-red) text-xs font-bold'>
-              {t('ui:map.current_location', {
-                defaultValue: '[CURRENT LOCATION]'
-              })}
+              {t('ui:map.current_location')}
             </div>
           )}
         </div>

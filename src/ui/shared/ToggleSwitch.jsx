@@ -54,7 +54,7 @@ const ToggleSwitchComponent = ({
            <div className="w-[2px] h-full bg-(--void-black) mx-auto opacity-50"></div>
         </div>
         <span className={`absolute text-[10px] font-bold z-0 ${isOn ? 'left-2 text-(--toxic-green)' : 'right-2 text-(--toxic-green)/50'}`}>
-          {isOn ? t('ui:toggle.on', 'ON') : t('ui:toggle.off', 'OFF')}
+          {isOn ? t('ui:toggle.on') : t('ui:toggle.off')}
         </span>
       </button>
     </div>

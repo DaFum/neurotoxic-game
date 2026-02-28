@@ -253,6 +253,63 @@
     "message": "Die Simulation ist abgestürzt. Neustart erforderlich.",
     "rebootButton": "SYSTEM NEUSTARTEN"
   },
+  "crisis": {
+    "title": "VAN PANNE",
+    "desc": "Das Getriebe ist auf halbem Weg nach Leipzig kaputtgegangen. Du hast in 4 Stunden einen Auftritt. Verbrennst du dein Geld für einen zwielichtigen Mechaniker oder riskierst du, zu spät zu kommen und das Gesicht zu verlieren?",
+    "opt1": "Mechaniker bezahlen (-$250)",
+    "safe": "SICHER",
+    "opt2": "Per Anhalter (-20 Ruf)",
+    "risk": "RISIKO",
+    "opt3": "Selbst reparieren (+1 Std)",
+    "risky": "RISKANT"
+  },
+  "terminal": {
+    "log1": "> INITIALISIERE VOID_ENGINE v3.0...",
+    "log2": "> VERBINDE MIT BÜHNENANLAGE...",
+    "log3": "[OK] AUDIO CONTEXT GESTARTET",
+    "log4": "[WARNUNG] VERSTÄRKER 3 ÜBERHITZT",
+    "log5": "> LADE LOCATION: 'THE SLAUGHTERHOUSE'",
+    "log6": "...",
+    "log7": "[FEHLER] BAND-HARMONIE KRITISCH.",
+    "log8": "> WARTE AUF EINGABE_"
+  },
+  "contract": {
+    "confidential": "DOKUMENT: VERTRAULICH",
+    "title": "Bindende Vereinbarung",
+    "p1": "Diese Vereinbarung bindet NEUROTOXIC an <span class=\"bg-[var(--toxic-green)] text-[var(--void-black)] font-bold px-1\">MEGA_CORP_INC</span>.",
+    "p2": "Der Künstler erklärt sich bereit, bei allen Live-Auftritten in Sektor 4 <span class=\"bg-[var(--toxic-green)] text-[var(--toxic-green)] select-none hover:text-[var(--void-black)] transition-colors\">subliminale Werbebotschaften einzufügen</span>.",
+    "warning": "Zuwiderhandlung führt zur <span class=\"bg-[var(--blood-red)] text-[var(--blood-red)] select-none\">sofortigen Beendigung der organischen Funktionen</span>.",
+    "sig": "UNTERSCHRIFT (BLUT/VOID):",
+    "sign_aria": "Vertrag unterschreiben",
+    "sealed": "VERSIEGELT"
+  },
+  "rhythm": {
+    "header": "RHYTHM_ENGINE_SIM",
+    "hit_lane": "Triff Spur {{lane}}",
+    "hit": "TREFFER",
+    "lane_guitar": "GITARRE",
+    "lane_drums": "SCHLAGZEUG",
+    "lane_bass": "BASS"
+  },
+  "chatter": {
+    "header": "LIVE_CHATTER_FEED",
+    "msg1": "diese band ist tot lol",
+    "msg2": "SPIELT DEN ALTEN SCHEISS!!!",
+    "msg3": "WARNUNG: PUBLIKUMS-FEINDSELIGKEIT STEIGT",
+    "random1": "ausverkauft.",
+    "random2": "können nicht mal den takt halten",
+    "random3": "BUUUUUUUUUH",
+    "random4": "meine ohren bluten (im negativen sinn)",
+    "random5": "sofortige rückerstattung"
+  },
+  "decryptor": {
+    "unlocked": "ITEM_ENTSPERRT: 'VOID_CORE'",
+    "click": "KLICKEN ZUM ENTSCHLÜSSELN"
+  },
+  "hqNavigation": "HQ-Navigation",
+  "set_label_to_segment": "Setze {{label}} auf {{segment}}",
+  "hit_lane": "Triff Spur {{lane}}",
+  "sign_contract": "Vertrag unterschreiben",
   "pregig": {
     "title": "VORBEREITUNG",
     "budget": "BUDGET:",

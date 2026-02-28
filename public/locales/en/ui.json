@@ -253,6 +253,63 @@
     "message": "The simulation has crashed. Reboot required.",
     "rebootButton": "REBOOT SYSTEM"
   },
+  "crisis": {
+    "title": "VAN BREAKDOWN",
+    "desc": "The transmission just dropped halfway to Leipzig. You have a gig in 4 hours. Do you burn through your cash for a sketchy mechanic, or risk showing up late and losing face?",
+    "opt1": "Pay mechanic (-$250)",
+    "safe": "SAFE",
+    "opt2": "Hitchhike (-20 Rep)",
+    "risk": "RISK",
+    "opt3": "Fix it yourselves (+1hr)",
+    "risky": "RISKY"
+  },
+  "terminal": {
+    "log1": "> INITIALIZING VOID_ENGINE v3.0...",
+    "log2": "> CONNECTING TO STAGE RIG...",
+    "log3": "[OK] AUDIO CONTEXT STARTED",
+    "log4": "[WARN] AMP 3 OVERHEATING",
+    "log5": "> LOADING VENUE: 'THE SLAUGHTERHOUSE'",
+    "log6": "...",
+    "log7": "[ERROR] BAND HARMONY CRITICAL.",
+    "log8": "> AWAITING INPUT_"
+  },
+  "contract": {
+    "confidential": "DOCUMENT: CONFIDENTIAL",
+    "title": "Binding Agreement",
+    "p1": "This agreement binds NEUROTOXIC to <span class=\"bg-[var(--toxic-green)] text-[var(--void-black)] font-bold px-1\">MEGA_CORP_INC</span>.",
+    "p2": "The Artist agrees to <span class=\"bg-[var(--toxic-green)] text-[var(--toxic-green)] select-none hover:text-[var(--void-black)] transition-colors\">subliminally insert corporate messaging</span> during all live performances in sector 4.",
+    "warning": "Failure to comply will result in <span class=\"bg-[var(--blood-red)] text-[var(--blood-red)] select-none\">immediate termination of organic functions</span>.",
+    "sig": "SIGNATURE (BLOOD/VOID):",
+    "sign_aria": "Sign Contract",
+    "sealed": "SEALED"
+  },
+  "rhythm": {
+    "header": "RHYTHM_ENGINE_SIM",
+    "hit_lane": "Hit {{lane}} lane",
+    "hit": "HIT",
+    "lane_guitar": "GUITAR",
+    "lane_drums": "DRUMS",
+    "lane_bass": "BASS"
+  },
+  "chatter": {
+    "header": "LIVE_CHATTER_FEED",
+    "msg1": "this band is dead lol",
+    "msg2": "PLAY THE OLD SHIT!!!",
+    "msg3": "WARNING: CROWD HOSTILITY RISING",
+    "random1": "sellouts.",
+    "random2": "can't even stay in rhythm",
+    "random3": "BOOOOOOOOO",
+    "random4": "my ears are bleeding (in a bad way)",
+    "random5": "refund immediately"
+  },
+  "decryptor": {
+    "unlocked": "ITEM_UNLOCKED: 'VOID_CORE'",
+    "click": "CLICK TO DECRYPT"
+  },
+  "hqNavigation": "HQ Navigation",
+  "set_label_to_segment": "Set {{label}} to {{segment}}",
+  "hit_lane": "Hit {{lane}} lane",
+  "sign_contract": "Sign Contract",
   "pregig": {
     "title": "PREPARATION",
     "budget": "BUDGET:",
