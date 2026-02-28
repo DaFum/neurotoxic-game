@@ -54,6 +54,18 @@ describe('BandHQ Stats Discrepancy', () => {
   let StatsTab
   let DetailedStatsTab
 
+  const parseLocalizedNumber = value => {
+    if (!value) return Number.NaN
+
+    const normalizedValue = value
+      .replace(/[\u00A0\s]/g, '')
+      .replace(/(\d)[,.](?=\d{3}(\D|$))/g, '$1')
+      .replace(',', '.')
+      .replace(/[^\d.-]/g, '')
+
+    return Number.parseFloat(normalizedValue)
+  }
+
   beforeAll(async () => {
     const statsModule = await import('../src/ui/bandhq/StatsTab.jsx')
     const detailsModule = await import('../src/ui/bandhq/DetailedStatsTab.jsx')
@@ -97,9 +109,8 @@ describe('BandHQ Stats Discrepancy', () => {
     )
 
     expect(followersBox).toBeTruthy()
-    const statsTabValue = parseInt(
-      followersBox.querySelector('[data-testid="stat-value"]').textContent,
-      10
+    const statsTabValue = parseLocalizedNumber(
+      followersBox.querySelector('[data-testid="stat-value"]').textContent
     )
 
     unmount()
@@ -109,9 +120,8 @@ describe('BandHQ Stats Discrepancy', () => {
     const detailRow = totalReachLabel.closest('.flex')
 
     expect(detailRow).toBeTruthy()
-    const detailedStatsTabValue = parseInt(
-      detailRow.querySelector('.text-right > div:first-child').textContent,
-      10
+    const detailedStatsTabValue = parseLocalizedNumber(
+      detailRow.querySelector('.text-right > div:first-child').textContent
     )
 
     expect(statsTabValue).toBe(expectedReach)
