@@ -95,8 +95,16 @@ export const BandHQ = ({
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-(--void-black)/90 backdrop-blur-sm ${className}`}
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${className}`}
     >
+      {/* Backdrop */}
+      <div
+        className='absolute inset-0 bg-(--void-black)/90 backdrop-blur-sm'
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      {/* Decorative Background Image overlay */}
       <div
         className='absolute inset-0 bg-cover bg-center opacity-20 pointer-events-none'
         style={{
@@ -104,7 +112,7 @@ export const BandHQ = ({
         }}
       />
 
-      <div className='relative w-full max-w-5xl h-[90vh] border-2 border-(--toxic-green) bg-(--void-black) flex flex-col shadow-[0_0_50px_var(--toxic-green)]'>
+      <div className='relative z-10 w-full max-w-5xl h-[90vh] border-2 border-(--toxic-green) bg-(--void-black) flex flex-col shadow-[0_0_50px_var(--toxic-green)]'>
         {/* Header */}
         <div className='flex justify-between items-center p-6 border-b-2 border-(--toxic-green) bg-(--void-black)/50'>
           <div>
