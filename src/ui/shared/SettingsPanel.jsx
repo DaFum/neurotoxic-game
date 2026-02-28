@@ -34,13 +34,13 @@ export const SettingsPanel = ({
             onClick={() => i18n.changeLanguage('en')}
             className={`flex-1 ${i18n.language.startsWith('en') ? 'bg-(--toxic-green) text-(--void-black)' : 'bg-(--void-black) text-(--ash-gray)'}`}
           >
-            ENGLISH
+            {t('ui:language_option_en')}
           </ActionButton>
           <ActionButton
             onClick={() => i18n.changeLanguage('de')}
             className={`flex-1 ${i18n.language.startsWith('de') ? 'bg-(--toxic-green) text-(--void-black)' : 'bg-(--void-black) text-(--ash-gray)'}`}
           >
-            DEUTSCH
+            {t('ui:language_option_de')}
           </ActionButton>
         </div>
       </div>

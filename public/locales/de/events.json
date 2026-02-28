@@ -644,7 +644,7 @@
   "toxic_infighting.opt1.outcome": "Du bist eingeschritten.",
   "toxic_infighting.opt2.label": "Ausfechten lassen",
   "toxic_infighting.opt2.outcome": "Manchmal muss Toxizität ihren Lauf nehmen.",
-  "toxic_infighting.title": "{{MEMBER1}} UND {{MEMBER2}} GEHEN SICH AN DIE GURGEL",
+  "toxic_infighting.title": "{{member1}} UND {{member2}} GEHEN SICH AN DIE GURGEL",
   "traffic_jam.desc": "Kompletter Stillstand. Nichts bewegt sich.",
   "traffic_jam.opt1.label": "Abwarten [-2h]",
   "traffic_jam.opt1.outcome": "Langweilig, aber sicher.",

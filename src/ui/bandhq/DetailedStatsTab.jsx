@@ -77,25 +77,18 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
             })}
           />
           <DetailRow
-            label={t('ui:detailedStats.totalTravels', {
-              defaultValue: 'Total Travels'
-            })}
+            label={t('ui:detailedStats.totalTravels')}
             value={player.totalTravels}
           />
           <DetailRow
-            label={t('ui:detailedStats.passiveFollowers', {
-              defaultValue: 'Passive Followers'
-            })}
+            label={t('ui:detailedStats.passiveFollowers')}
             value={t('ui:detailedStats.passiveFollowersPerDay', {
-              count: player.passiveFollowers,
-              defaultValue: `+${player.passiveFollowers}/day`
+              count: player.passiveFollowers
             })}
             locked={!isUnlocked(player.passiveFollowers)}
           />
           <DetailRow
-            label={t('ui:detailedStats.hqUpgrades.count', {
-              defaultValue: 'HQ Upgrades'
-            })}
+            label={t('ui:detailedStats.hqUpgrades.count')}
             value={t('ui:detailedStats.hqUpgrades.installed', {
               count: (player.hqUpgrades || []).length,
               defaultValue: `${(player.hqUpgrades || []).length} Installed`
@@ -107,13 +100,9 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
           />
           {player.stats?.proveYourselfMode && (
             <DetailRow
-              label={t('ui:detailedStats.mode.label', { defaultValue: 'Mode' })}
-              value={t('ui:detailedStats.mode.proveYourself', {
-                defaultValue: 'PROVE YOURSELF'
-              })}
-              subtext={t('ui:detailedStats.mode.restrictions', {
-                defaultValue: 'Venue Restrictions Active'
-              })}
+              label={t('ui:detailedStats.mode.label')}
+              value={t('ui:detailedStats.mode.proveYourself')}
+              subtext={t('ui:detailedStats.mode.restrictions')}
               className='bg-(--toxic-green)/10'
             />
           )}
