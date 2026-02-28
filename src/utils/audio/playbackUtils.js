@@ -1,7 +1,10 @@
 import * as Tone from 'tone'
 import { audioState } from './state.js'
 import { ensureAudioContext } from './setup.js'
-import { stopTransportAndClear, cleanupTransportEvents } from './cleanupUtils.js'
+import {
+  stopTransportAndClear,
+  cleanupTransportEvents
+} from './cleanupUtils.js'
 
 /**
  * Prepares the Tone.js transport for playback, returning normalized options and request ID.

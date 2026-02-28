@@ -66,7 +66,7 @@ describe('MapNode', () => {
       />
     )
 
-    const vanImage = screen.getByAltText('Van')
+    const vanImage = screen.getByAltText('ui:map.vanAlt')
     expect(vanImage).toBeTruthy()
     expect(vanImage.src).toContain('van.png')
   })
@@ -211,7 +211,7 @@ describe('MapNode', () => {
       />
     )
 
-    const pinImage = screen.getByAltText('Pin')
+    const pinImage = screen.getByAltText('ui:map.pinAlt')
     expect(pinImage).toBeTruthy()
   })
 
@@ -485,7 +485,7 @@ describe('MapNode', () => {
       />
     )
 
-    const pinImage = container.querySelector('img[alt="Pin"]')
+    const pinImage = container.querySelector('img[alt="ui:map.pinAlt"]')
     expect(pinImage?.className).toContain('animate-confirm-pulse')
   })
 

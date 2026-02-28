@@ -155,8 +155,14 @@ describe('CrowdManager', () => {
     // Should be called twice (idle and mosh)
     assert.equal(mockHandleError.mock.calls.length, 2)
     assert.ok(mockHandleError.mock.calls[0].arguments[0] instanceof Error)
-    assert.equal(mockHandleError.mock.calls[0].arguments[0].message, 'IDLE texture returned null')
-    assert.equal(mockHandleError.mock.calls[1].arguments[0].message, 'MOSH texture returned null')
+    assert.equal(
+      mockHandleError.mock.calls[0].arguments[0].message,
+      'IDLE texture returned null'
+    )
+    assert.equal(
+      mockHandleError.mock.calls[1].arguments[0].message,
+      'MOSH texture returned null'
+    )
   })
 
   test('init creates Sprites when texture is available', () => {

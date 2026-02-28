@@ -65,7 +65,8 @@ const normalized = clones
       .filter(x => x.file != null)
     return {
       lines: c?.lines ?? c?.fragment?.lines ?? c?.duplication?.lines ?? null,
-      tokens: c?.tokens ?? c?.fragment?.tokens ?? c?.duplication?.tokens ?? null,
+      tokens:
+        c?.tokens ?? c?.fragment?.tokens ?? c?.duplication?.tokens ?? null,
       instances: inst
     }
   })
@@ -91,8 +92,8 @@ const shown = top.length
 console.log('### Duplicate code\n')
 console.log(
   `Found **${totalClusters}** duplicate cluster${totalClusters !== 1 ? 's' : ''}` +
-  (totalClusters > shown ? ` — showing top ${shown}` : '') +
-  '. These appear to be copy/pasted blocks. Recommendation: extract shared logic into helper functions/modules (or shared components/hooks), then replace duplicates with calls.\n'
+    (totalClusters > shown ? ` — showing top ${shown}` : '') +
+    '. These appear to be copy/pasted blocks. Recommendation: extract shared logic into helper functions/modules (or shared components/hooks), then replace duplicates with calls.\n'
 )
 console.log('**Top duplicate clusters:**\n')
 
@@ -104,14 +105,19 @@ top.forEach((d, idx) => {
     console.log('- *(instance paths unavailable)*')
   } else {
     d.instances.slice(0, 6).forEach(inst => {
-      const range = inst.start != null && inst.end != null ? `:${inst.start}-${inst.end}` : ''
+      const range =
+        inst.start != null && inst.end != null
+          ? `:${inst.start}-${inst.end}`
+          : ''
       console.log(`- \`${inst.file}${range}\``)
     })
   }
   console.log('')
   console.log('Suggested refactor pattern:')
   console.log('- Identify shared inputs/outputs and isolate side-effects')
-  console.log('- Extract into a helper (e.g. `src/utils/...`, `src/lib/...`) or a shared hook/component')
+  console.log(
+    '- Extract into a helper (e.g. `src/utils/...`, `src/lib/...`) or a shared hook/component'
+  )
   console.log('- Replace each block with a call; keep behavior identical')
   console.log('- Add/adjust tests if available')
   console.log('')

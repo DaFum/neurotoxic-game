@@ -49,53 +49,46 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
       {/* Top Row: Career & Social Overview */}
       <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
         <Panel
-          title={t('stats.career_overview', {
+          title={t('ui:stats.career_overview', {
             defaultValue: 'Career Overview'
           })}
         >
           <DetailRow
-            label={t('stats.funds', { defaultValue: 'Funds' })}
+            label={t('ui:stats.funds', { defaultValue: 'Funds' })}
             value={`${player.money}€`}
           />
           <DetailRow
-            label={t('stats.fame', { defaultValue: 'Fame' })}
+            label={t('ui:stats.fame', { defaultValue: 'Fame' })}
             value={player.fame}
-            subtext={`${t('ui.level', { defaultValue: 'Level' })} ${player.fameLevel || 0}`}
+            subtext={`${t('ui:ui.level', { defaultValue: 'Level' })} ${player.fameLevel || 0}`}
           />
           <DetailRow
-            label={t('ui.day', { defaultValue: 'Day' })}
+            label={t('ui:ui.day', { defaultValue: 'Day' })}
             value={player.day}
           />
           <DetailRow
-            label={t('ui.time', { defaultValue: 'Time' })}
+            label={t('ui:ui.time', { defaultValue: 'Time' })}
             value={`${player.time || '12'}:00`}
           />
           <DetailRow
-            label={t('ui.location', { defaultValue: 'Location' })}
-            value={t('venues:' + player.location + '.name', {
+            label={t('ui:ui.location', { defaultValue: 'Location' })}
+            value={t(`venues:${player.location}.name`, {
               defaultValue: player.location
             })}
           />
           <DetailRow
-            label={t('ui:detailedStats.totalTravels', {
-              defaultValue: 'Total Travels'
-            })}
+            label={t('ui:detailedStats.totalTravels')}
             value={player.totalTravels}
           />
           <DetailRow
-            label={t('ui:detailedStats.passiveFollowers', {
-              defaultValue: 'Passive Followers'
-            })}
+            label={t('ui:detailedStats.passiveFollowers')}
             value={t('ui:detailedStats.passiveFollowersPerDay', {
-              count: player.passiveFollowers,
-              defaultValue: `+${player.passiveFollowers}/day`
+              count: player.passiveFollowers
             })}
             locked={!isUnlocked(player.passiveFollowers)}
           />
           <DetailRow
-            label={t('ui:detailedStats.hqUpgrades.count', {
-              defaultValue: 'HQ Upgrades'
-            })}
+            label={t('ui:detailedStats.hqUpgrades.count')}
             value={t('ui:detailedStats.hqUpgrades.installed', {
               count: (player.hqUpgrades || []).length,
               defaultValue: `${(player.hqUpgrades || []).length} Installed`
@@ -107,20 +100,16 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
           />
           {player.stats?.proveYourselfMode && (
             <DetailRow
-              label={t('ui:detailedStats.mode.label', { defaultValue: 'Mode' })}
-              value={t('ui:detailedStats.mode.proveYourself', {
-                defaultValue: 'PROVE YOURSELF'
-              })}
-              subtext={t('ui:detailedStats.mode.restrictions', {
-                defaultValue: 'Venue Restrictions Active'
-              })}
+              label={t('ui:detailedStats.mode.label')}
+              value={t('ui:detailedStats.mode.proveYourself')}
+              subtext={t('ui:detailedStats.mode.restrictions')}
               className='bg-(--toxic-green)/10'
             />
           )}
         </Panel>
 
         <Panel
-          title={t('stats.social_reach', {
+          title={t('ui:stats.social_reach', {
             defaultValue: 'Social Media Reach'
           })}
         >
@@ -225,18 +214,18 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
         </Panel>
 
         <Panel
-          title={t('stats.van_condition', { defaultValue: 'Van Condition' })}
+          title={t('ui:stats.van_condition', { defaultValue: 'Van Condition' })}
         >
           <div className='mb-4 space-y-2'>
             <ProgressBar
-              label={t('stats.fuel', { defaultValue: 'Fuel' })}
+              label={t('ui:stats.fuel', { defaultValue: 'Fuel' })}
               value={player.van?.fuel}
               max={100}
               color='bg-(--fuel-yellow)'
               size='sm'
             />
             <ProgressBar
-              label={t('stats.condition', { defaultValue: 'Condition' })}
+              label={t('ui:stats.condition', { defaultValue: 'Condition' })}
               value={player.van?.condition}
               max={100}
               color='bg-(--condition-blue)'
@@ -266,7 +255,7 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
       {/* Region and Quests */}
       <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
         <Panel
-          title={t('stats.regional_standing', {
+          title={t('ui:stats.regional_standing', {
             defaultValue: 'Regional Standing'
           })}
         >
@@ -310,7 +299,7 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
         </Panel>
 
         <Panel
-          title={t('stats.active_quests', { defaultValue: 'Active Quests' })}
+          title={t('ui:stats.active_quests', { defaultValue: 'Active Quests' })}
         >
           {activeQuests.length === 0 ? (
             <div className='text-xs text-(--ash-gray) italic py-4 text-center'>
@@ -330,7 +319,7 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
                       {q.label}
                     </span>
                     <span className='text-(--ash-gray)'>
-                      {t('ui.day', { defaultValue: 'Day' })} {q.deadline}
+                      {t('ui:ui.day', { defaultValue: 'Day' })} {q.deadline}
                     </span>
                   </div>
                   <ProgressBar
@@ -350,11 +339,11 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
       {/* Band Metrics */}
       <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
         <Panel
-          title={t('stats.band_metrics', { defaultValue: 'Band Metrics' })}
+          title={t('ui:stats.band_metrics', { defaultValue: 'Band Metrics' })}
         >
           <div className='mb-4'>
             <ProgressBar
-              label={t('stats.harmony', { defaultValue: 'Harmony' })}
+              label={t('ui:stats.harmony', { defaultValue: 'Harmony' })}
               value={band.harmony}
               max={100}
               color='bg-(--toxic-green)'
@@ -413,7 +402,7 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
         </Panel>
 
         <Panel
-          title={t('stats.inventory_equipment', {
+          title={t('ui:stats.inventory_equipment', {
             defaultValue: 'Inventory & Equipment'
           })}
         >
@@ -421,14 +410,14 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
             {Object.entries(band.inventory || {}).map(([key, val]) => (
               <DetailRow
                 key={key}
-                label={t('items:' + key + '.name', {
+                label={t(`items:${key}.name`, {
                   defaultValue: key.replace(/_/g, ' ').toUpperCase()
                 })}
                 value={
                   val === true
-                    ? t('ui.owned', { defaultValue: 'OWNED' })
+                    ? t('ui:ui.owned', { defaultValue: 'OWNED' })
                     : val === false
-                      ? t('ui.locked', { defaultValue: 'LOCKED' })
+                      ? t('ui:ui.locked', { defaultValue: 'LOCKED' })
                       : val
                 }
                 locked={!isUnlocked(val)}

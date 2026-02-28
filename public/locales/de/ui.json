@@ -20,6 +20,8 @@
   "cancel": "ABBRECHEN",
   "confirm": "BESTÄTIGEN",
   "language": "SPRACHE",
+  "language_option_en": "ENGLISCH",
+  "language_option_de": "DEUTSCH",
   "day_advance": "Tag {{day}}: Lebenshaltungskosten abgezogen.",
   "unlocked": "FREIGESCHALTET: {{unlock}}!",
   "game_over": "GAME OVER: {{description}}",
@@ -76,6 +78,11 @@
   "hq.leave": "VERLASSEN [ESC]",
   "hq.title": "BAND HQ",
   "ui.day": "Tag",
+  "ui.level": "Level",
+  "ui.location": "Ort",
+  "ui.time": "Zeit",
+  "ui.locked": "GESPERRT",
+  "ui.owned": "GEHÖRT",
   "chatter_labels": {
     "INTRO": "Intro Feed",
     "MENU": "Haupt-Feed",
@@ -95,6 +102,27 @@
   "bandhq.metadata.diff": "SCHW",
   "bandhq.metadata.bpm": "BPM",
   "bandhq.metadata.dur": "DAUER",
+  "bandhq.venue": "Band HQ",
+  "bandhq.setlist.songSelected": "{{song}} für {{venue}} ausgewählt.",
+  "bandhq.setlist.songRemoved": "{{song}} aus {{venue}} entfernt.",
+  "stats.career_overview": "KARRIERESTATUS",
+  "stats.funds": "Geld",
+  "stats.fame": "Ruhm",
+  "stats.followers": "Follower",
+  "stats.social_reach": "Social-Media-Reichweite",
+  "stats.van_condition": "VAN-STATUS",
+  "stats.fuel": "Treibstoff",
+  "stats.condition": "Zustand",
+  "stats.breakdown_chance": "Pannenrisiko",
+  "stats.band_status": "BANDSTATUS",
+  "stats.stamina": "Ausdauer",
+  "stats.mood": "Stimmung",
+  "stats.inventory_slots": "Inventarplätze",
+  "stats.harmony": "Harmonie",
+  "stats.regional_standing": "Regionaler Ruf",
+  "stats.active_quests": "Aktive Quests",
+  "stats.band_metrics": "Band-Metriken",
+  "stats.inventory_equipment": "Inventar & Ausrüstung",
   "stats.instagram": "Instagram",
   "stats.tiktok": "TikTok",
   "stats.youtube": "YouTube",
@@ -116,10 +144,19 @@
   "stats.shadowbanned": "SHADOWBANNED (-75% Wachstum)",
   "stats.riskOfShadowban": "Shadowban-Risiko",
   "detailedStats": {
+    "totalTravels": "Gesamtreisen",
+    "passiveFollowers": "Passive Follower",
+    "passiveFollowersPerDay": "+{{count}}/Tag",
     "breakdownChance": "Pannenrisiko",
     "hqUpgrades": {
+      "count": "HQ-Upgrades",
       "installed": "{{count}} Installiert",
       "none": "Keine"
+    },
+    "mode": {
+      "label": "Modus",
+      "proveYourself": "BEWEIS DICH",
+      "restrictions": "Venue-Einschränkungen aktiv"
     },
     "vanUpgrades": {
       "installed": "{{count}} Installiert"
@@ -169,5 +206,7 @@
   "map.rest_stop_desc": "RASTPLATZ — Ausdauer & Stimmung erholen",
   "map.mystery_desc": "MYSTERIUM — Unbekannte Begegnung",
   "map.finale_desc": "★ FINALE — Die letzte Show ★",
-  "map.current_location": "[AKTUELLE POSITION]"
+  "map.current_location": "[AKTUELLE POSITION]",
+  "map.vanAlt": "Van",
+  "map.pinAlt": "Pin"
 }
