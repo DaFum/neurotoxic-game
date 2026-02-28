@@ -69,19 +69,15 @@ export const collectSourceFiles = directory => {
 }
 
 export const resolveNamespaceKey = rawKey => {
-  if (!rawKey || rawKey.endsWith(':')) {
+  if (!rawKey || rawKey.endsWith(':') || !rawKey.includes(':')) {
     return null
   }
 
-  if (rawKey.includes(':')) {
-    const [namespace, key] = rawKey.split(/:(.+)/)
+  const [namespace, key] = rawKey.split(/:(.+)/)
 
-    if (!namespace || !key) {
-      return null
-    }
-
-    return { namespace, key }
+  if (!namespace || !key) {
+    return null
   }
 
-  return { namespace: 'ui', key: rawKey }
+  return { namespace, key }
 }

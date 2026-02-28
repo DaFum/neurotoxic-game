@@ -105,7 +105,7 @@ describe('BandHQ Stats Discrepancy', () => {
     const followersBox = statBoxes.find(
       box =>
         box.querySelector('[data-testid="stat-label"]').textContent ===
-        'stats.followers'
+        'ui:stats.followers'
     )
 
     expect(followersBox).toBeTruthy()

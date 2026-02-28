@@ -46,7 +46,7 @@ describe('GameOver Scene', () => {
     )
 
     await findByText('SOLD OUT')
-    expect(getByText('The tour has ended prematurely.')).toBeInTheDocument()
+    expect(getByText('ui:tour.endedPrematurely')).toBeInTheDocument()
     expect(getByText('100')).toBeInTheDocument() // Score
     expect(getByText('5')).toBeInTheDocument() // Days
     expect(getByText('50')).toBeInTheDocument() // Fame
@@ -61,8 +61,8 @@ describe('GameOver Scene', () => {
       </GameStateProvider>
     )
 
-    await findByText('RETURN TO MENU')
-    const returnBtn = getByText('RETURN TO MENU')
+    await findByText('ui:gameOver.returnToMenu')
+    const returnBtn = getByText('ui:gameOver.returnToMenu')
     fireEvent.click(returnBtn)
 
     // We expect the scene to change to MENU
