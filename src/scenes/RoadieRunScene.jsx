@@ -70,7 +70,7 @@ export const RoadieRunScene = () => {
 
       {/* Mobile D-Pad */}
       <div
-        className={`absolute bottom-8 right-8 z-40 grid grid-cols-3 gap-2 pointer-events-auto ${showControls ? '' : 'md:hidden'}`}
+        className={`absolute bottom-24 right-8 z-40 grid grid-cols-3 gap-2 pointer-events-auto ${showControls ? '' : 'md:hidden'}`}
       >
         <div />
         <button
