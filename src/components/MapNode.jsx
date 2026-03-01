@@ -48,7 +48,7 @@ export const MapNode = memo(
 
     return (
       <div
-        className={`absolute flex flex-col items-center justify-center w-20 h-24 -ml-10 -mt-12 group
+        className={`absolute flex flex-col items-center justify-center w-16 h-20 -ml-8 -mt-10 group
           ${isCurrent ? 'z-50' : 'z-10'}
           ${!isReachable && !isCurrent ? 'opacity-30 grayscale pointer-events-none' : 'opacity-100'}
           ${isReachable ? 'cursor-pointer' : ''}
