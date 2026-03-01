@@ -1,57 +1,69 @@
-import { useEffect, useState, useRef, memo } from 'react'
+import { useEffect, useRef, memo } from 'react'
 import PropTypes from 'prop-types'
 
 /**
  * Overlay component that renders projectiles (heckler items).
+ * Optimized to bypass React renders during animation.
  * @param {object} props
  * @param {object} props.gameStateRef - Mutable game state ref containing projectiles array.
  */
 export const HecklerOverlay = memo(function HecklerOverlay({ gameStateRef }) {
-  const [items, setItems] = useState([])
-  const itemsRef = useRef(items)
-
-  useEffect(() => {
-    itemsRef.current = items
-  }, [items])
+  const containerRef = useRef(null)
+  // Cache for created DOM nodes, keyed by projectile ID
+  const nodeCacheRef = useRef(new Map())
 
   useEffect(() => {
     let rAF
     const loop = () => {
-      if (gameStateRef.current) {
-        const hasProjectiles = gameStateRef.current.projectiles.length > 0
-        const hasItems = itemsRef.current.length > 0
+      if (gameStateRef.current && containerRef.current) {
+        const projectiles = gameStateRef.current.projectiles
+        const container = containerRef.current
+        const nodeCache = nodeCacheRef.current
 
-        // Only update if projectiles exist or if we need to clear them
-        if (hasProjectiles) {
-          // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-          setItems([...gameStateRef.current.projectiles])
-        } else if (hasItems) {
-          // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-          setItems([])
+        // Create a set of current IDs for easy lookup
+        const currentIds = new Set(projectiles.map(p => p.id))
+
+        // Remove old nodes that are no longer in the state
+        for (const [id, node] of nodeCache.entries()) {
+          if (!currentIds.has(id)) {
+            container.removeChild(node)
+            nodeCache.delete(id)
+          }
+        }
+
+        // Add new nodes and update existing ones
+        for (let i = 0; i < projectiles.length; i++) {
+          const p = projectiles[i]
+          let node = nodeCache.get(p.id)
+
+          if (!node) {
+            // Create element if it doesn't exist
+            node = document.createElement('div')
+            node.className = 'absolute text-4xl drop-shadow-lg'
+            node.textContent = p.type === 'bottle' ? '🍾' : '🍅'
+            container.appendChild(node)
+            nodeCache.set(p.id, node)
+          }
+
+          // Update position and rotation directly bypassing React render
+          node.style.left = `${p.x}px`
+          node.style.top = `${p.y}px`
+          node.style.transform = `rotate(${p.rotation * 57.29}deg)`
         }
       }
       rAF = requestAnimationFrame(loop)
     }
     loop()
-    return () => cancelAnimationFrame(rAF)
+    return () => {
+      cancelAnimationFrame(rAF)
+    }
   }, [gameStateRef])
 
   return (
-    <div className='absolute inset-0 pointer-events-none overflow-hidden z-20'>
-      {items.map(p => (
-        <div
-          key={p.id}
-          className='absolute text-4xl drop-shadow-lg'
-          style={{
-            left: p.x,
-            top: p.y,
-            transform: `rotate(${p.rotation * 57.29}deg)` // rad to deg
-          }}
-        >
-          {p.type === 'bottle' ? '🍾' : '🍅'}
-        </div>
-      ))}
-    </div>
+    <div
+      ref={containerRef}
+      className='absolute inset-0 pointer-events-none overflow-hidden z-20'
+    />
   )
 })
 
