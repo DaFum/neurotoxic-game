@@ -148,6 +148,14 @@ export const handleError = (error, options = {}) => {
     }
   }
 
+  // Merge external context/source if provided
+  if (options.source) {
+    errorInfo.source = options.source
+  }
+  if (options.errorInfo) {
+    errorInfo.context = { ...errorInfo.context, ...options.errorInfo }
+  }
+
   // Log to error log
   errorLog.push(errorInfo)
   if (errorLog.length > MAX_ERROR_LOG_SIZE) {

@@ -136,7 +136,7 @@ export const BandHQ = ({
         {/* Navigation */}
         <div
           role='tablist'
-          aria-label='Band HQ Sections'
+          aria-label={t('ui:hq.sectionsLabel', { defaultValue: 'Band HQ Sections' })}
           className='flex border-b-2 border-(--toxic-green) overflow-x-auto'
         >
           {/* Tabs */}
@@ -184,7 +184,7 @@ export const BandHQ = ({
           <Suspense
             fallback={
               <div className='flex items-center justify-center h-32 text-(--toxic-green) font-mono animate-pulse uppercase tracking-widest'>
-                {t('ui:ui.loading', { defaultValue: 'Loading...' })}
+                {t('ui:loading', { defaultValue: 'Loading...' })}
               </div>
             }
           >
@@ -235,7 +235,7 @@ export const BandHQ = ({
             )}
 
             {activeTab === 'LEADERBOARD' && (
-              <LeaderboardTab setlist={setlist} />
+              <LeaderboardTab />
             )}
 
             {activeTab === 'SETTINGS' && (

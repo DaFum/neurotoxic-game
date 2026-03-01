@@ -33,8 +33,13 @@
     "on": "ON",
     "off": "OFF"
   },
+  "radio": {
+    "play": "Play/Resume Radio",
+    "stop": "Stop Radio"
+  },
   "hazard": {
-    "toxicOverload": "TOXIC OVERLOAD DETECTED // SEVERE SYSTEM STRESS // STAY FOCUSED"
+    "toxicOverload": "TOXIC OVERLOAD DETECTED // SEVERE SYSTEM STRESS // STAY FOCUSED",
+    "modifierActive": "[MODIFIER ACTIVE]"
   },
   "overload": {
     "toxic": "TOXIC OVERLOAD"
@@ -108,6 +113,7 @@
   "hq.owned": "OWNED",
   "hq.leave": "LEAVE [ESC]",
   "hq.title": "BAND HQ",
+  "hq.sectionsLabel": "Band HQ Sections",
   "ui.day": "Day",
   "ui.level": "Level",
   "ui.location": "Location",
@@ -140,6 +146,17 @@
   "stats.funds": "Funds",
   "stats.fame": "Fame",
   "stats.followers": "Followers",
+  "socials": "SOCIALS",
+  "social_links": {
+    "play_game": "Play Neurotoxic",
+    "type_system_core": "SYSTEM_CORE",
+    "type_audio_vault": "AUDIO_VAULT",
+    "type_visual_feed": "VISUAL_FEED",
+    "type_viral_stream": "VIRAL_STREAM",
+    "type_broadcast_a": "BROADCAST_A",
+    "type_broadcast_b": "BROADCAST_B",
+    "type_data_log": "DATA_LOG"
+  },
   "stats.social_reach": "Social Media Reach",
   "stats.van_condition": "VAN STATUS",
   "stats.fuel": "Fuel",
@@ -248,6 +265,14 @@
     "inventory": "INVENTORY",
     "upgrades": "UPGRADES"
   },
+  "setlistSelector": {
+    "track1": "SUICIDAL JESUS",
+    "track2": "SYSTEMSPRENGER",
+    "track3": "TRAVESTIE MASSAKER",
+    "diffHard": "HARD",
+    "diffExpert": "EXPERT",
+    "diffInsane": "INSANE"
+  },
   "crash": {
     "title": "SYSTEM FAILURE",
     "message": "The simulation has crashed. Reboot required.",
@@ -317,7 +342,6 @@
   },
   "hqNavigation": "HQ Navigation",
   "set_label_to_segment": "Set {{label}} to {{segment}}",
-  "hit_lane": "Hit {{lane}} lane",
   "sign_contract": "Sign Contract",
   "pregig": {
     "title": "PREPARATION",

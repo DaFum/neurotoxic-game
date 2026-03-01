@@ -48,7 +48,8 @@ export const setupMainMenuAudioTest = async () => {
           if (key === 'ui:credits') return 'Credits'
           return key
         }
-      })
+      }),
+      Trans: ({ i18nKey }) => i18nKey
     }
   })
 

@@ -1,9 +1,7 @@
-import { useState } from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { VolumeSlider } from './VolumeSlider'
 import { ActionButton } from './ActionButton'
-import { Modal } from './Modal'
 import { ToggleSwitch } from './ToggleSwitch'
 import { LOG_LEVELS } from '../../utils/logger.js'
 import { DeadmanButton } from './BrutalistUI'
@@ -137,14 +135,6 @@ export const SettingsPanel = ({
 
 const DataManagement = ({ onDeleteSave }) => {
   const { t } = useTranslation()
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
-
-  const handleOpenConfirm = () => setIsConfirmOpen(true)
-  const handleCloseConfirm = () => setIsConfirmOpen(false)
-  const handleDeleteSave = () => {
-    onDeleteSave()
-    setIsConfirmOpen(false)
-  }
 
   return (
     <div>
