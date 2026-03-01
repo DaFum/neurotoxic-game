@@ -48,7 +48,6 @@ export {
   TerminalReadout,
   BrutalSlot,
   VoidLoader,
-  VoidNavNode,
   CorruptedText,
   HazardTicker,
   IndustrialChecklist,

@@ -357,50 +357,50 @@ export const MainMenu = () => {
         >
           <div className='flex flex-col gap-3 sm:gap-4 max-w-sm w-full mx-auto max-h-[80vh] overflow-y-auto overflow-x-hidden custom-scrollbar pr-1 sm:pr-2'>
             <UplinkButton
-              title={t('ui:social_links.play_game')}
-              subtitle='neurotoxic-game.vercel.app'
+              title={t('ui:social_links.game.title')}
+              subtitle={t('ui:social_links.game.subtitle')}
               type={t('ui:social_links.type_system_core')}
               url='https://neurotoxic-game.vercel.app'
               Icon={GameIcon}
             />
             <UplinkButton
-              title={t('ui:social_links.title_bandcamp')}
-              subtitle='neurotoxic.bandcamp.com'
+              title={t('ui:social_links.bandcamp.title')}
+              subtitle={t('ui:social_links.bandcamp.subtitle')}
               type={t('ui:social_links.type_audio_vault')}
               url='https://neurotoxic.bandcamp.com'
               Icon={BandcampIcon}
             />
             <UplinkButton
-              title={t('ui:social_links.title_instagram')}
-              subtitle='instagram.com/neurotoxicband'
+              title={t('ui:social_links.instagram.title')}
+              subtitle={t('ui:social_links.instagram.subtitle')}
               type={t('ui:social_links.type_visual_feed')}
               url='https://instagram.com/neurotoxicband'
               Icon={InstaIcon}
             />
             <UplinkButton
-              title={t('ui:social_links.title_tiktok')}
-              subtitle='tiktok.com/@neurotoxicband'
+              title={t('ui:social_links.tiktok.title')}
+              subtitle={t('ui:social_links.tiktok.subtitle')}
               type={t('ui:social_links.type_viral_stream')}
               url='https://tiktok.com/@neurotoxicband'
               Icon={TikTokIcon}
             />
             <UplinkButton
-              title={t('ui:social_links.title_youtube1')}
-              subtitle='youtube.com/@neurotoxiconcechannel237'
+              title={t('ui:social_links.neurotoxic_once.title')}
+              subtitle={t('ui:social_links.neurotoxic_once.subtitle')}
               type={t('ui:social_links.type_broadcast_a')}
               url='https://youtube.com/@neurotoxiconcechannel237'
               Icon={YouTubeIcon}
             />
             <UplinkButton
-              title={t('ui:social_links.title_youtube2')}
-              subtitle='youtube.com/@neurotoxic3000'
+              title={t('ui:social_links.neurotoxic_3000.title')}
+              subtitle={t('ui:social_links.neurotoxic_3000.subtitle')}
               type={t('ui:social_links.type_broadcast_b')}
               url='https://youtube.com/@neurotoxic3000'
               Icon={YouTubeIcon}
             />
             <UplinkButton
-              title={t('ui:social_links.title_blog')}
-              subtitle='neuroblogxic.blogspot.com'
+              title={t('ui:social_links.blog.title')}
+              subtitle={t('ui:social_links.blog.subtitle')}
               type={t('ui:social_links.type_data_log')}
               url='https://neuroblogxic.blogspot.com'
               Icon={BlogIcon}

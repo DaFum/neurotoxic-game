@@ -59,3 +59,34 @@ test('applyEventDelta should not allow setting constructor or prototype keys', (
   assert.ok(!Object.prototype.hasOwnProperty.call(nextState.social, 'constructor'), 'constructor should not be overwritten')
   assert.ok(!Object.prototype.hasOwnProperty.call(nextState.social, 'prototype'), 'prototype should not be set')
 })
+
+test('applyEventDelta should not allow prototype pollution via band.relationshipChange', () => {
+  const state = {
+    band: {
+      members: [
+        { name: 'Alice', relationships: { Bob: 50 } },
+        { name: 'Bob', relationships: { Alice: 50 } }
+      ]
+    }
+  }
+
+  // Attempting to pollute '__proto__' as the other member
+  const delta = {
+    band: {
+      relationshipChange: [
+        { member1: 'Alice', member2: '__proto__', change: 10 },
+        { member1: 'Bob', member2: 'constructor', change: 10 },
+        { member1: 'Alice', member2: 'prototype', change: 10 }
+      ]
+    }
+  }
+
+  const nextState = applyEventDelta(state, delta)
+
+  const alice = nextState.band.members.find(m => m.name === 'Alice')
+  const bob = nextState.band.members.find(m => m.name === 'Bob')
+
+  assert.ok(!Object.prototype.hasOwnProperty.call(alice.relationships, '__proto__'), '__proto__ should not be added to relationships')
+  assert.ok(!Object.prototype.hasOwnProperty.call(alice.relationships, 'prototype'), 'prototype should not be added to relationships')
+  assert.ok(!Object.prototype.hasOwnProperty.call(bob.relationships, 'constructor'), 'constructor should not be added to relationships')
+})
