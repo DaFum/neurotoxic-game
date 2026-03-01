@@ -61,4 +61,19 @@ describe('Modal Component', () => {
     fireEvent.keyDown(window, { key: 'Escape' })
     expect(onCloseMock).toHaveBeenCalledTimes(1)
   })
+
+  test('calls onClose when the close button is clicked', () => {
+    const onCloseMock = vi.fn()
+    const { getByRole } = render(
+      <Modal isOpen={true} onClose={onCloseMock}>
+        <div>Modal Content</div>
+      </Modal>
+    )
+
+    // The button has an aria-label from i18n (defaults to the key in tests if not mocked with a specific value, but we can just query by role button with the generic catch-all or specifically by label if we know what the mock returns)
+    // The test setup uses a default mock that returns the key or fallback. Let's just find the close button.
+    const closeBtn = getByRole('button', { name: /close/i })
+    fireEvent.click(closeBtn)
+    expect(onCloseMock).toHaveBeenCalledTimes(1)
+  })
 })

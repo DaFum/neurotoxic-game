@@ -18,7 +18,7 @@ import { UIFrameCorner } from './Icons'
  */
 export const Modal = ({ isOpen, onClose, title, children }) => {
   const dialogRef = useRef(null)
-  const { t } = useTranslation()
+  const { t } = useTranslation(['ui'])
 
   useEffect(() => {
     const handleKeyDown = e => {
@@ -71,7 +71,7 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
         <button
           type='button'
           onClick={onClose}
-          aria-label={t('ui:close', 'Close')}
+          aria-label={t('ui:close')}
           className='absolute -top-3 -right-3 w-8 h-8 flex items-center justify-center bg-(--void-black) border-2 border-(--toxic-green) text-(--toxic-green) hover:bg-(--toxic-green) hover:text-(--void-black) transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green) z-20 group-hover:shadow-[0_0_10px_var(--toxic-green-glow)]'
         >
           <span
