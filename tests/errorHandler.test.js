@@ -124,14 +124,28 @@ describe('handleError', () => {
     assert.deepStrictEqual(result.context, {})
   })
 
-  it('should reject unrecognized severity override values', () => {
+  it('should ignore unrecognized severity override and preserve original error severity', () => {
     const error = new StateError('Bad severity')
     const result = handleError(error, {
       silent: true,
       severity: 'SEVERE'
     })
 
-    assert.strictEqual(result.severity, ErrorSeverity.HIGH)
+    assert.strictEqual(result.severity, error.severity)
+  })
+
+
+
+  it('should preserve diagnostics from Error context objects', () => {
+    const wrappedError = new Error('Original context error')
+    const gameError = new StateError('Context wrapper')
+    gameError.context = wrappedError
+
+    const result = handleError(gameError, { silent: true })
+
+    assert.strictEqual(result.context.name, 'Error')
+    assert.strictEqual(result.context.message, 'Original context error')
+    assert.ok(typeof result.context.stack === 'string')
   })
 
   it('should dispatch critical event with sanitized payload', () => {

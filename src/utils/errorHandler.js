@@ -170,8 +170,21 @@ const sanitizeContextObject = context => {
 }
 
 const sanitizeContextPayload = payload => {
-  if (!isPlainObject(payload)) return {}
-  return sanitizeContextObject(payload)
+  if (isPlainObject(payload)) return sanitizeContextObject(payload)
+
+  if (payload instanceof Error) {
+    return sanitizeContextObject({
+      name: payload.name,
+      message: payload.message,
+      stack: payload.stack
+    })
+  }
+
+  if (payload !== null && typeof payload === 'object') {
+    return sanitizeContextObject(Object.assign({}, payload))
+  }
+
+  return {}
 }
 
 const normalizeHandleErrorOptions = options => {
@@ -181,7 +194,7 @@ const normalizeHandleErrorOptions = options => {
     source: typeof safeOptions.source === 'string' ? safeOptions.source : undefined,
     errorInfo:
       typeof safeOptions.errorInfo === 'object' && safeOptions.errorInfo !== null
-        ? sanitizeContextPayload(safeOptions.errorInfo)
+        ? safeOptions.errorInfo
         : null,
     severity: normalizeSeverity(safeOptions.severity)
   }
@@ -240,10 +253,13 @@ export const handleError = (error, options = {}) => {
     errorInfo.source = normalizedOptions.source
   }
   if (normalizedOptions.errorInfo) {
-    errorInfo.context = { ...errorInfo.context, ...normalizedOptions.errorInfo }
+    errorInfo.context = {
+      ...sanitizeContextPayload(errorInfo.context),
+      ...sanitizeContextPayload(normalizedOptions.errorInfo)
+    }
+  } else {
+    errorInfo.context = sanitizeContextPayload(errorInfo.context)
   }
-
-  errorInfo.context = sanitizeContextPayload(errorInfo.context)
 
   if (normalizedOptions.severity) {
     errorInfo.severity = normalizedOptions.severity
