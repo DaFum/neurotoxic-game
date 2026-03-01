@@ -118,6 +118,14 @@ const MAX_ERROR_LOG_SIZE = 100
 
 const VALID_SEVERITIES = new Set(Object.values(ErrorSeverity))
 
+const isPlainObject = value => {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    Object.getPrototypeOf(value) === Object.prototype
+  )
+}
+
 const normalizeSeverity = severity => {
   if (typeof severity !== 'string') return null
   const normalized = severity.toLowerCase()
@@ -125,17 +133,29 @@ const normalizeSeverity = severity => {
 }
 
 const normalizeHandleErrorOptions = options => {
+  const safeOptions = isPlainObject(options) ? options : {}
+
   const normalizedOptions = {
-    source: typeof options.source === 'string' ? options.source : undefined,
+    source: typeof safeOptions.source === 'string' ? safeOptions.source : undefined,
     errorInfo:
-      typeof options.errorInfo === 'object' && options.errorInfo !== null
-        ? options.errorInfo
+      typeof safeOptions.errorInfo === 'object' && safeOptions.errorInfo !== null
+        ? safeOptions.errorInfo
         : null,
-    severity: normalizeSeverity(options.severity)
+    severity: normalizeSeverity(safeOptions.severity)
   }
 
   return normalizedOptions
 }
+
+const sanitizeErrorInfo = errorInfo => ({
+  // Allowed fields for globally dispatched critical error events:
+  // - message: user-safe error summary
+  // - code: optional machine-readable code/category
+  // - timestamp: event time for correlation
+  message: errorInfo?.message || 'Critical error',
+  code: errorInfo?.category || ErrorCategory.UNKNOWN,
+  timestamp: errorInfo?.timestamp || Date.now()
+})
 
 /**
  * Handles an error by logging and optionally showing user feedback
@@ -147,13 +167,14 @@ const normalizeHandleErrorOptions = options => {
  * @returns {Object} Processed error info
  */
 export const handleError = (error, options = {}) => {
+  const safeOptions = isPlainObject(options) ? options : {}
   const {
     addToast,
     silent = false,
     fallbackMessage = 'An error occurred'
-  } = options
+  } = safeOptions
 
-  const normalizedOptions = normalizeHandleErrorOptions(options)
+  const normalizedOptions = normalizeHandleErrorOptions(safeOptions)
 
   let errorInfo
 
@@ -194,7 +215,8 @@ export const handleError = (error, options = {}) => {
     case ErrorSeverity.CRITICAL:
       logger.error('ErrorHandler', errorInfo.message, errorInfo)
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('app:error:critical', { detail: errorInfo }))
+        const sanitizedErrorInfo = sanitizeErrorInfo(errorInfo)
+        window.dispatchEvent(new CustomEvent('app:error:critical', { detail: sanitizedErrorInfo }))
       }
       break
     case ErrorSeverity.HIGH:

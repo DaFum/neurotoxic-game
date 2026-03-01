@@ -419,7 +419,12 @@
     "itemTypes": {
       "AMP": "Verstärker",
       "DRUMS": "Schlagzeug",
-      "GUITAR": "Gitarre"
+      "GUITAR": "Gitarre",
+      "unknown": "Unbekannt"
     }
-  }
+  },
+  "cost": "{{cost}} €",
+  "seconds": "{{count}} Sek.",
+  "currency": "{{value}} €",
+  "currencyNegative": "-{{value}} €"
 }

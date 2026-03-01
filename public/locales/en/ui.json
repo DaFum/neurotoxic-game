@@ -419,7 +419,12 @@
     "itemTypes": {
       "AMP": "Amp",
       "DRUMS": "Drums",
-      "GUITAR": "Guitar"
+      "GUITAR": "Guitar",
+      "unknown": "Unknown item"
     }
-  }
+  },
+  "cost": "€{{cost}}",
+  "seconds": "{{count}}s",
+  "currency": "€{{value}}",
+  "currencyNegative": "-€{{value}}"
 }

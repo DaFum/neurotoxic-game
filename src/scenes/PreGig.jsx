@@ -11,6 +11,14 @@ import { handleError } from '../utils/errorHandler'
 import GigModifierButton from '../ui/GigModifierButton'
 import { RazorPlayIcon } from '../ui/shared/Icons'
 
+
+const BAND_MEETING_COST = 50
+
+const formatLocalizedNumber = value => {
+  const locale = typeof navigator !== 'undefined' ? navigator.language : undefined
+  return new Intl.NumberFormat(locale).format(value)
+}
+
 /**
  * Scene for preparing for a gig: managing budget, setlist, and modifiers.
  */
@@ -82,7 +90,7 @@ export const PreGig = () => {
    * Triggers a band meeting event to boost harmony.
    */
   const handleBandMeeting = () => {
-    const cost = 50
+    const cost = BAND_MEETING_COST
     if (player.money < cost) {
       addToast(t('ui:pregig.toasts.noMoneySnacks'), 'error')
       return
@@ -168,14 +176,14 @@ export const PreGig = () => {
           <span>
             {t('ui:pregig.budget')}{' '}
             <span className='text-(--toxic-green) font-bold tabular-nums'>
-              {player.money}€
+              {t('ui:currency', { value: formatLocalizedNumber(player.money) })}
             </span>
           </span>
           <span className='text-(--ash-gray)/30'>|</span>
           <span>
             {t('ui:pregig.costs')}{' '}
             <span className='text-(--blood-red) font-bold tabular-nums'>
-              -{calculatedBudget}€
+              {t('ui:currencyNegative', { value: formatLocalizedNumber(calculatedBudget) })}
             </span>
           </span>
         </div>
@@ -212,7 +220,7 @@ export const PreGig = () => {
                   <span className='text-[10px] opacity-70'>{t('ui:pregig.bandMeeting.desc')}</span>
                 </span>
                 <span className='font-mono text-sm font-bold tabular-nums'>
-                  50€
+                  {t('ui:cost', { cost: BAND_MEETING_COST })}
                 </span>
               </button>
             </div>
@@ -296,7 +304,7 @@ export const PreGig = () => {
                       )}
                     </div>
                     <div className='text-[10px] font-mono mt-0.5 flex gap-2'>
-                      <span>{song.duration}s</span>
+                      <span>{t('ui:seconds', { count: song.duration })}</span>
                       <span className='text-(--ash-gray)/40'>|</span>
                       <span>{t('ui:pregig.diff')} {'*'.repeat(song.difficulty)}</span>
                     </div>
