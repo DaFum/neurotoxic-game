@@ -103,6 +103,123 @@ describe('handleError', () => {
     assert.strictEqual(result.message, 'Fallback')
   })
 
+
+  it('should allow severity override when options.severity is valid', () => {
+    const error = new StateError('Severity override')
+    const result = handleError(error, {
+      silent: true,
+      severity: 'critical'
+    })
+
+    assert.strictEqual(result.severity, ErrorSeverity.CRITICAL)
+  })
+
+  it('should ignore invalid errorInfo payload types', () => {
+    const error = new StateError('Invalid errorInfo')
+    const result = handleError(error, {
+      silent: true,
+      errorInfo: 'not-an-object'
+    })
+
+    assert.deepStrictEqual(result.context, {})
+  })
+
+  it('should ignore unrecognized severity override and preserve original error severity', () => {
+    const error = new StateError('Bad severity')
+    const result = handleError(error, {
+      silent: true,
+      severity: 'SEVERE'
+    })
+
+    assert.strictEqual(result.severity, error.severity)
+  })
+
+
+
+  it('should preserve diagnostics from Error context objects', () => {
+    const wrappedError = new Error('Original context error')
+    const gameError = new StateError('Context wrapper')
+    gameError.context = wrappedError
+
+    const result = handleError(gameError, { silent: true })
+
+    assert.strictEqual(result.context.name, 'Error')
+    assert.strictEqual(result.context.message, 'Original context error')
+    assert.ok(typeof result.context.stack === 'string')
+  })
+
+
+  it('should redact sensitive keys matched by substring patterns', () => {
+    const error = new Error('Pattern redaction')
+    const result = handleError(error, {
+      silent: true,
+      errorInfo: {
+        accessToken: 'abc',
+        refresh_token: 'def',
+        clientSecret: 'ghi',
+        apiKey: 'jkl',
+        nested: { authHeader: 'Bearer x' }
+      }
+    })
+
+    assert.strictEqual(result.context.accessToken, '[REDACTED]')
+    assert.strictEqual(result.context.refresh_token, '[REDACTED]')
+    assert.strictEqual(result.context.clientSecret, '[REDACTED]')
+    assert.strictEqual(result.context.apiKey, '[REDACTED]')
+    assert.strictEqual(result.context.nested.authHeader, '[REDACTED]')
+  })
+
+  it('should short-circuit cyclic context structures', () => {
+    const cyclic = { safe: 'ok' }
+    cyclic.self = cyclic
+
+    const result = handleError(new Error('Cyclic context'), {
+      silent: true,
+      errorInfo: cyclic
+    })
+
+    assert.strictEqual(result.context.safe, 'ok')
+    assert.strictEqual(result.context.self, '[REDACTED]')
+  })
+
+  it('should dispatch critical event with sanitized payload', () => {
+    const dispatchCalls = []
+    const originalWindow = globalThis.window
+    globalThis.window = {
+      dispatchEvent: event => {
+        dispatchCalls.push(event)
+        return true
+      }
+    }
+
+    try {
+      const result = handleError(new Error('Critical event'), {
+        silent: true,
+        severity: 'critical',
+        errorInfo: { token: 'secret-token', nested: { email: 'a@b.com' } }
+      })
+
+      assert.strictEqual(result.context.token, '[REDACTED]')
+      assert.strictEqual(result.context.nested.email, '[REDACTED]')
+      assert.strictEqual(dispatchCalls.length, 1)
+      assert.strictEqual(dispatchCalls[0].type, 'app:error:critical')
+      assert.deepStrictEqual(dispatchCalls[0].detail, {
+        message: 'Critical event',
+        code: ErrorCategory.UNKNOWN,
+        timestamp: result.timestamp
+      })
+    } finally {
+      globalThis.window = originalWindow
+    }
+  })
+
+  it('should safely handle null options object', () => {
+    const error = new Error('Null options')
+    const result = handleError(error, null)
+
+    assert.strictEqual(result.message, 'Null options')
+    assert.deepStrictEqual(result.context, {})
+  })
   it('should handle AudioError with silent mode and preserve context', () => {
     let toastCalled = false
     const addToast = () => {

@@ -115,6 +115,132 @@ export class AudioError extends GameError {
 const errorLog = []
 const MAX_ERROR_LOG_SIZE = 100
 
+
+const VALID_SEVERITIES = new Set(Object.values(ErrorSeverity))
+
+const SENSITIVE_CONTEXT_KEYS = new Set([
+  'token',
+  'password',
+  'ssn',
+  'email',
+  'authorization',
+  'cookie'
+])
+
+const SENSITIVE_KEY_PATTERNS = [
+  'token',
+  'secret',
+  'key',
+  'password',
+  'ssn',
+  'email',
+  'auth',
+  'authorization',
+  'cookie'
+]
+
+const isPlainObject = value => {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    Object.getPrototypeOf(value) === Object.prototype
+  )
+}
+
+const normalizeSeverity = severity => {
+  if (typeof severity !== 'string') return null
+  const normalized = severity.toLowerCase()
+  return VALID_SEVERITIES.has(normalized) ? normalized : null
+}
+
+const isSensitiveContextKey = key => {
+  if (SENSITIVE_CONTEXT_KEYS.has(key)) return true
+  return SENSITIVE_KEY_PATTERNS.some(pattern => key.includes(pattern))
+}
+
+const sanitizeContextValue = (value, visited) => {
+  if (Array.isArray(value)) {
+    if (visited.has(value)) return '[REDACTED]'
+    visited.add(value)
+    return value.map(item => sanitizeContextValue(item, visited))
+  }
+
+  if (isPlainObject(value)) {
+    return sanitizeContextObject(value, visited)
+  }
+
+  return value
+}
+
+const sanitizeContextObject = (context, visited) => {
+  if (visited.has(context)) {
+    return '[REDACTED]'
+  }
+
+  visited.add(context)
+  const sanitized = {}
+
+  for (const [key, value] of Object.entries(context)) {
+    const normalizedKey = key.toLowerCase()
+    if (isSensitiveContextKey(normalizedKey)) {
+      sanitized[key] = '[REDACTED]'
+      continue
+    }
+
+    sanitized[key] = sanitizeContextValue(value, visited)
+  }
+
+  return sanitized
+}
+
+const sanitizeContextPayload = payload => {
+  const visited = new WeakSet()
+
+  if (isPlainObject(payload)) return sanitizeContextObject(payload, visited)
+
+  if (payload instanceof Error) {
+    return sanitizeContextObject(
+      {
+        name: payload.name,
+        message: payload.message,
+        stack: payload.stack
+      },
+      visited
+    )
+  }
+
+  if (payload !== null && typeof payload === 'object') {
+    return sanitizeContextObject(Object.assign({}, payload), visited)
+  }
+
+  return {}
+}
+
+const normalizeHandleErrorOptions = options => {
+  const safeOptions = isPlainObject(options) ? options : {}
+
+  const normalizedOptions = {
+    source: typeof safeOptions.source === 'string' ? safeOptions.source : undefined,
+    errorInfo:
+      typeof safeOptions.errorInfo === 'object' && safeOptions.errorInfo !== null
+        ? safeOptions.errorInfo
+        : null,
+    severity: normalizeSeverity(safeOptions.severity)
+  }
+
+  return normalizedOptions
+}
+
+const sanitizeErrorInfo = errorInfo => ({
+  // Allowed fields for globally dispatched critical error events:
+  // - message: user-safe error summary
+  // - code: optional machine-readable code/category
+  // - timestamp: event time for correlation
+  message: errorInfo?.message || 'Critical error',
+  code: errorInfo?.category || ErrorCategory.UNKNOWN,
+  timestamp: errorInfo?.timestamp || Date.now()
+})
+
 /**
  * Handles an error by logging and optionally showing user feedback
  * @param {Error} error - The error to handle
@@ -125,11 +251,14 @@ const MAX_ERROR_LOG_SIZE = 100
  * @returns {Object} Processed error info
  */
 export const handleError = (error, options = {}) => {
+  const safeOptions = isPlainObject(options) ? options : {}
   const {
     addToast,
     silent = false,
     fallbackMessage = 'An error occurred'
-  } = options
+  } = safeOptions
+
+  const normalizedOptions = normalizeHandleErrorOptions(safeOptions)
 
   let errorInfo
 
@@ -149,11 +278,20 @@ export const handleError = (error, options = {}) => {
   }
 
   // Merge external context/source if provided
-  if (options.source) {
-    errorInfo.source = options.source
+  if (normalizedOptions.source) {
+    errorInfo.source = normalizedOptions.source
   }
-  if (options.errorInfo) {
-    errorInfo.context = { ...errorInfo.context, ...options.errorInfo }
+  if (normalizedOptions.errorInfo) {
+    errorInfo.context = {
+      ...sanitizeContextPayload(errorInfo.context),
+      ...sanitizeContextPayload(normalizedOptions.errorInfo)
+    }
+  } else {
+    errorInfo.context = sanitizeContextPayload(errorInfo.context)
+  }
+
+  if (normalizedOptions.severity) {
+    errorInfo.severity = normalizedOptions.severity
   }
 
   // Log to error log
@@ -165,12 +303,19 @@ export const handleError = (error, options = {}) => {
   // Log to console/logger based on severity
   switch (errorInfo.severity) {
     case ErrorSeverity.CRITICAL:
+      logger.error('ErrorHandler', errorInfo.message, errorInfo)
+      if (typeof window !== 'undefined') {
+        const sanitizedErrorInfo = sanitizeErrorInfo(errorInfo)
+        window.dispatchEvent(new CustomEvent('app:error:critical', { detail: sanitizedErrorInfo }))
+      }
+      break
     case ErrorSeverity.HIGH:
       logger.error('ErrorHandler', errorInfo.message, errorInfo)
       break
     case ErrorSeverity.MEDIUM:
       logger.warn('ErrorHandler', errorInfo.message, errorInfo)
       break
+    case ErrorSeverity.LOW:
     default:
       logger.debug('ErrorHandler', errorInfo.message, errorInfo)
   }

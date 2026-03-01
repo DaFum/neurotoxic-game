@@ -15,36 +15,36 @@ export const UplinkButton = ({ title, url, subtitle, type, Icon }) => {
       {/* Glitch Background on Hover */}
       {isHovered && (
         <div className="absolute inset-0 bg-(--toxic-green)/10 z-0">
-          <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.5)_50%)] bg-[length:100%_4px] opacity-50"></div>
+          <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,var(--void-black-50)_50%)] bg-[length:100%_4px] opacity-50"></div>
           <div className="w-full h-1 bg-(--toxic-green) absolute top-1/2 animate-[scan_0.5s_linear_infinite]"></div>
         </div>
       )}
 
-      <div className="relative z-10 flex items-center p-4">
+      <div className="relative z-10 flex items-start sm:items-center gap-3 sm:gap-0 p-3 sm:p-4">
         {/* Icon Block */}
-        <div className={`w-14 h-14 border-2 flex items-center justify-center shrink-0 transition-colors
+        <div className={`w-12 h-12 sm:w-14 sm:h-14 border-2 flex items-center justify-center shrink-0 transition-colors
           ${isHovered ? 'border-(--toxic-green) bg-(--toxic-green) text-(--void-black) shadow-[0_0_15px_var(--toxic-green)]' : 'border-(--toxic-green)/50 text-(--toxic-green)'}`}>
-          {Icon && <Icon className="w-8 h-8 shrink-0" />}
+          {Icon && <Icon className="w-6 h-6 sm:w-8 sm:h-8 shrink-0" />}
         </div>
 
         {/* Text Block */}
-        <div className="ml-6 flex-1 min-w-0">
+        <div className="ml-1 sm:ml-6 flex-1 min-w-0">
           <div className="flex flex-col gap-1 items-start justify-start">
-            <h2 className="font-bold tracking-[0.2em] text-lg uppercase glitch-text break-words w-full leading-tight" data-text={title}>
+            <h2 className="font-bold tracking-[0.08em] sm:tracking-[0.2em] text-sm sm:text-lg uppercase glitch-text break-words [overflow-wrap:anywhere] w-full leading-snug" data-text={title}>
               {title}
             </h2>
-            <span className={`shrink-0 text-[9px] tracking-widest px-2 py-1 border transition-colors ${isHovered ? 'border-(--toxic-green) text-(--toxic-green)' : 'border-transparent text-(--toxic-green)/50'}`}>
+            <span className={`text-[8px] sm:text-[9px] tracking-[0.12em] sm:tracking-widest px-2 py-1 border transition-colors whitespace-normal break-words [overflow-wrap:anywhere] max-w-full ${isHovered ? 'border-(--toxic-green) text-(--toxic-green)' : 'border-transparent text-(--toxic-green)/50'}`}>
               {type}
             </span>
           </div>
-          <p className="text-xs opacity-70 mt-1 font-mono tracking-wider break-words whitespace-normal leading-tight">
+          <p className="text-[10px] sm:text-xs opacity-70 mt-1 font-mono tracking-wide break-words [overflow-wrap:anywhere] whitespace-normal leading-tight">
             {subtitle}
           </p>
         </div>
 
         {/* External Link Indicator */}
-        <div className={`shrink-0 ml-4 transition-transform duration-200 ${isHovered ? 'translate-x-1 text-(--star-white)' : 'text-(--toxic-green)/30'}`}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square">
+        <div className={`shrink-0 ml-1 sm:ml-4 mt-1 sm:mt-0 transition-transform duration-200 ${isHovered ? 'translate-x-1 text-(--star-white)' : 'text-(--toxic-green)/30'}`}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" aria-hidden="true" focusable="false" role="presentation">
             <path d="M5 12H19M19 12L12 5M19 12L12 19" />
           </svg>
         </div>
@@ -1279,9 +1279,9 @@ export const HazardTicker = ({ message }) => {
       {/* Scrolling Text Container */}
       <div className='flex w-full whitespace-nowrap animate-[marquee_10s_linear_infinite] px-8 items-center gap-12'>
         {}
-        {Array.from({ length: 3 }).map((_, i) => (
+        {['pill-0', 'pill-1', 'pill-2'].map(pillKey => (
           <span
-            key={i}
+            key={pillKey}
             className='text-xs font-bold tracking-[0.3em] uppercase text-(--toxic-green)'
           >
             {t('ui:hazard.modifierActive', { defaultValue: '[MODIFIER ACTIVE]' })}{' '}
@@ -1596,7 +1596,7 @@ export const ToxicChatter = () => {
 export const VoidDecryptor = () => {
   const { t } = useTranslation(['ui'])
   const [decrypted, setDecrypted] = useState(false)
-  const [glitchText, setGlitchText] = useState('0x8F9A... ENCRYPTED')
+  const [glitchText, setGlitchText] = useState(t('ui:brutalist.glitchPlaceholder'))
 
   useEffect(() => {
     if (!decrypted) {

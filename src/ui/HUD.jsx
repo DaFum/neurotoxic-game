@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useGameState } from '../context/GameState'
+import { useTranslation } from 'react-i18next'
 import {
   Map as MapIcon,
   DollarSign,
@@ -11,6 +12,7 @@ import {
 } from 'lucide-react'
 import { useAudioControl } from '../hooks/useAudioControl'
 import { ProgressBar } from './shared'
+import { translateLocation } from '../utils/locationI18n'
 
 const SHORTCUTS = [
   { key: '?', desc: 'Toggle this help' },
@@ -25,6 +27,8 @@ const SHORTCUTS = [
  */
 export const HUD = () => {
   const { player, band } = useGameState()
+  const { t } = useTranslation(['ui', 'venues'])
+  const locationName = translateLocation(t, player.location, player.location)
   const [showHelp, setShowHelp] = useState(false)
   const { audioState, handleAudioChange } = useAudioControl()
 
@@ -86,7 +90,7 @@ export const HUD = () => {
           <div className='flex items-center gap-2 mb-2'>
             <MapIcon size={14} />
             <span className='text-(--star-white)/80'>
-              Day {player.day} — {player.location}
+              Day {player.day} — {locationName}
             </span>
           </div>
 

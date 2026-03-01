@@ -86,6 +86,7 @@
   "leaderboard.col_player": "PLAYER",
   "leaderboard.col_net_worth": "NET WORTH",
   "leaderboard.col_score": "SCORE",
+  "leaderboard.load_error": "Could not load rankings.",
   "settings.audio_mute": "Mute all audio",
   "settings.audio_unmute": "Unmute all audio",
   "settings.crt_enable": "Enable CRT Effect",
@@ -93,6 +94,12 @@
   "mainMenu": {
     "subtitle": {
       "grindTheVoid": "Grind The Void"
+    },
+    "existingSave": {
+      "title": "SAVE FILE DETECTED",
+      "desc": "A save game already exists. Do you want to load it or start a new tour?",
+      "load": "LOAD EXISTING",
+      "startNew": "START NEW TOUR"
     }
   },
   "tour.endedPrematurely": "The tour has ended prematurely.",
@@ -340,6 +347,9 @@
     "unlocked": "ITEM_UNLOCKED: 'VOID_CORE'",
     "click": "CLICK TO DECRYPT"
   },
+  "brutalist": {
+    "glitchPlaceholder": "0x8F9A... ENCRYPTED"
+  },
   "hqNavigation": "HQ Navigation",
   "set_label_to_segment": "Set {{label}} to {{segment}}",
   "sign_contract": "Sign Contract",
@@ -412,6 +422,19 @@
       "title": "SETUP COMPLETE",
       "button": "START SHOW",
       "equipmentDamage": "Equipment Damage: {{damage}}%"
+    },
+    "itemTypes": {
+      "AMP": "Amp",
+      "DRUMS": "Drums",
+      "GUITAR": "Guitar",
+      "unknown": "Unknown item"
     }
-  }
+  },
+  "cost": "€{{cost}}",
+  "seconds": "{{count}}s",
+  "currency": "€{{value}}",
+  "currencyNegative": "-€{{value}}",
+  "errors.audio_init_failed": "Audio initialization failed.",
+  "errors.ambient_start_failed": "Ambient audio failed to start.",
+  "map.pinTypeAlt": "Map marker: {{type}}"
 }

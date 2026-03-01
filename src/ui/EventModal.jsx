@@ -23,7 +23,7 @@ const CATEGORY_IMAGE_MAP = {
  * @param {Function} props.onOptionSelect - Callback when an option is selected.
  */
 export const EventModal = ({ event, onOptionSelect, className = '' }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['ui', 'events'])
   const containerRef = useRef(null)
 
   // Keyboard shortcut: press 1-4 to select options

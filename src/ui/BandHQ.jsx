@@ -84,9 +84,15 @@ export const BandHQ = ({
       if (err instanceof GameError || err instanceof StateError) {
         handleError(err, { addToast })
       } else {
-        handleError(new GameError('Purchase failed', { context: err }), {
-          addToast
-        })
+        handleError(
+          new GameError('Purchase failed', {
+            context: {
+              originalError: err?.message,
+              stack: err?.stack
+            }
+          }),
+          { addToast }
+        )
       }
     } finally {
       setProcessingItemId(null)
@@ -99,20 +105,20 @@ export const BandHQ = ({
     >
       {/* Backdrop */}
       <div
-        className='fixed inset-0 z-[-1] bg-(--void-black)/90 backdrop-blur-sm'
+        className='fixed inset-0 z-30 bg-(--void-black)/90 backdrop-blur-sm'
         onClick={onClose}
         aria-hidden="true"
       />
 
       {/* Decorative Background Image overlay */}
       <div
-        className='fixed inset-0 z-[-1] bg-cover bg-center opacity-20 pointer-events-none'
+        className='fixed inset-0 z-40 bg-cover bg-center opacity-20 pointer-events-none'
         style={{
           backgroundImage: `url("${getGenImageUrl(IMG_PROMPTS.BAND_HQ_BG)}")`
         }}
       />
 
-      <div className='relative z-10 w-full max-w-5xl h-[90vh] border-2 border-(--toxic-green) bg-(--void-black) flex flex-col shadow-[0_0_50px_var(--toxic-green)]'>
+      <div className='relative z-50 w-full max-w-5xl h-[90vh] border-2 border-(--toxic-green) bg-(--void-black) flex flex-col shadow-[0_0_50px_var(--toxic-green)]'>
         {/* Header */}
         <div className='flex justify-between items-center p-6 border-b-2 border-(--toxic-green) bg-(--void-black)/50'>
           <div>

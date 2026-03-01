@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import { useTravelLogic } from '../hooks/useTravelLogic'
 import { useBandHQModal } from '../hooks/useBandHQModal'
@@ -15,11 +16,13 @@ import {
   calculateEffectiveTicketPrice
 } from '../utils/economyEngine'
 import { audioManager } from '../utils/AudioManager'
+import { translateLocation } from '../utils/locationI18n'
 
 /**
  * The map navigation scene where players select their next destination.
  */
 export const Overworld = () => {
+  const { t } = useTranslation(['ui', 'venues'])
   const {
     startGig,
     player,
@@ -73,6 +76,7 @@ export const Overworld = () => {
   })
 
   const [isSaving, setIsSaving] = useState(false)
+  const locationName = translateLocation(t, player.location, player.location)
   const isMountedRef = useRef(true)
 
   useEffect(() => {
@@ -251,7 +255,7 @@ export const Overworld = () => {
       className={`w-full h-full bg-(--void-black) relative overflow-hidden flex flex-col items-center justify-center p-8 ${isTraveling ? 'pointer-events-none' : ''}`}
     >
       <h2 className='absolute top-20 text-4xl text-(--toxic-green) font-[Metal_Mania] z-10 text-shadow-[0_0_10px_var(--toxic-green)] pointer-events-none'>
-        TOUR PLAN: {player.location}
+        TOUR PLAN: {locationName}
       </h2>
 
       {/* Instructions / Status */}
@@ -354,7 +358,7 @@ export const Overworld = () => {
           <br />
           &gt; {player.day}.01.2026: Tour active.
           <br />
-          &gt; {player.location} secured.
+          &gt; {locationName} secured.
         </p>
       </div>
 

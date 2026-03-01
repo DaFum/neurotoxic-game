@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { HexNode } from '../ui/shared'
+import { translateLocation } from '../utils/locationI18n'
 
 const VAN_STYLE = { transform: 'translate(0, -50%)' }
 const MOTION_INITIAL = { scale: 0 }
@@ -26,6 +27,7 @@ export const MapNode = memo(
   }) => {
     const { t } = useTranslation(['venues', 'ui'])
     const [isHoveredLocal, setIsHoveredLocal] = useState(false)
+    const nodeLocationName = translateLocation(t, node.venue?.name, t('ui:map.unknown'))
 
     const positionStyle = useMemo(
       () => ({ left: `${node.x}%`, top: `${node.y}%` }),
@@ -46,7 +48,7 @@ export const MapNode = memo(
 
     return (
       <div
-        className={`absolute flex flex-col items-center justify-center w-32 h-40 -ml-16 -mt-20 group
+        className={`absolute flex flex-col items-center justify-center w-16 h-20 -ml-8 -mt-10 group
           ${isCurrent ? 'z-50' : 'z-10'}
           ${!isReachable && !isCurrent ? 'opacity-30 grayscale pointer-events-none' : 'opacity-100'}
           ${isReachable ? 'cursor-pointer' : ''}
@@ -77,7 +79,7 @@ export const MapNode = memo(
         aria-label={
           isReachable
             ? t('ui:map.travel_to', {
-                name: t(node.venue?.name)
+                name: nodeLocationName
               }) +
               (isPendingConfirm
                 ? t('ui:map.click_to_confirm')
@@ -119,16 +121,34 @@ export const MapNode = memo(
           animate={MOTION_ANIMATE}
           whileHover={isReachable ? MOTION_HOVER : MOTION_NO_HOVER}
           whileFocus={isReachable ? MOTION_HOVER : MOTION_NO_HOVER}
-          className="relative z-10 flex items-center justify-center"
+          className='relative z-10 flex items-center justify-center'
         >
-           <HexNode className={`w-12 h-12 transition-all duration-200 ${isHoveredLocal || isPendingConfirm ? 'text-(--star-white) drop-shadow-[0_0_15px_var(--toxic-green)]' : 'text-(--toxic-green)'}`} />
-           {/* Center icon overlay if needed, or replace HexNode entirely based on type */}
-           <div className="absolute inset-0 flex items-center justify-center mix-blend-difference pointer-events-none">
-             <span className="text-(--void-black) font-bold text-[10px]">
-               {node.type === 'GIG' ? t('ui:map.nodeType.gig') : node.type === 'REST_STOP' ? t('ui:map.nodeType.rest') : t('ui:map.nodeType.fallback', { type: node.type.substring(0,3) })}
-             </span>
-           </div>
+          <HexNode
+            className={`w-12 h-12 transition-all duration-200 ${isHoveredLocal || isPendingConfirm ? 'text-(--star-white) drop-shadow-[0_0_15px_var(--toxic-green)]' : 'text-(--toxic-green)'}`}
+          />
+
+          <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
+            <img
+              src={iconUrl}
+              alt={t('ui:map.pinTypeAlt', {
+                type: t('ui:map.nodeType.fallback', {
+                  type: node.type.replace('_', ' ')
+                })
+              })}
+              className='w-6 h-6 object-contain drop-shadow-[0_0_8px_var(--void-black)]'
+            />
+          </div>
         </motion.div>
+
+        <div className='text-[9px] font-bold uppercase tracking-wide text-(--ash-gray) mt-1 pointer-events-none'>
+          {node.type === 'GIG'
+            ? t('ui:map.nodeType.gig')
+            : node.type === 'REST_STOP'
+              ? t('ui:map.nodeType.rest')
+              : t('ui:map.nodeType.fallback', {
+                  type: node.type.substring(0, 3)
+                })}
+        </div>
 
         {/* Pending confirmation label */}
         {isPendingConfirm && (
@@ -140,14 +160,13 @@ export const MapNode = memo(
         {/* Node Label (Always visible, matching BrutalistUI style) */}
         <div className="mt-2 flex flex-col items-center z-10 pointer-events-none">
           <span className={`text-[10px] font-bold tracking-widest uppercase text-center transition-colors ${isHoveredLocal || isPendingConfirm ? 'text-(--star-white)' : 'text-(--toxic-green)'}`}>
-            {t(node.venue?.name) || t('ui:map.unknown')}
+            {nodeLocationName}
           </span>
         </div>
 
         <div className='hidden group-hover:block group-focus:block absolute top-full mt-2 bg-(--void-black)/90 border border-(--toxic-green) p-2 z-50 whitespace-nowrap pointer-events-none'>
           <div className='font-bold text-(--toxic-green)'>
-            {t(node.venue?.name) ||
-              t('ui:map.unknown')}
+            {nodeLocationName}
           </div>
           {(node.type === 'GIG' ||
             node.type === 'FESTIVAL' ||
@@ -195,6 +214,8 @@ export const MapNode = memo(
   (prev, next) => {
     return (
       prev.node.id === next.node.id &&
+      prev.node.x === next.node.x &&
+      prev.node.y === next.node.y &&
       prev.isCurrent === next.isCurrent &&
       prev.isTraveling === next.isTraveling &&
       prev.visibility === next.visibility &&

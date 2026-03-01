@@ -46,14 +46,14 @@ export const LeaderboardTab = () => {
         setRankings(data)
       } catch (err) {
         logger.error('Leaderboard', 'Fetch failed', err)
-        setError('Could not load rankings.')
+        setError(t('ui:leaderboard.load_error'))
       } finally {
         setIsLoading(false)
       }
     }
 
     fetchLeaderboard()
-  }, [view, selectedSongId])
+  }, [view, selectedSongId, t])
 
   return (
     <div className='h-full flex flex-col gap-4'>
@@ -180,4 +180,3 @@ export const LeaderboardTab = () => {
   )
 }
 
-LeaderboardTab.propTypes = {}
