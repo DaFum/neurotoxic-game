@@ -703,7 +703,7 @@ export const BrutalTabs = () => {
 
 // 4. Data/Stat Block
 export const StatBlock = ({ label, value, icon: Icon }) => (
-  <div className='relative w-32 h-24 bg-[color:var(--void-black)] flex flex-col items-center justify-center group overflow-hidden'>
+  <div className='relative w-32 h-24 bg-(--void-black) flex flex-col items-center justify-center group overflow-hidden'>
     <HexBorder className='absolute inset-0 w-full h-full text-(--toxic-green)/50 group-hover:text-(--toxic-green) transition-colors' />
     <div className='absolute inset-0 bg-gradient-to-b from-transparent via-[var(--toxic-green)]/10 to-transparent translate-y-[-100%] group-hover:animate-[scan_2s_linear_infinite]'></div>
     <div className='z-10 flex flex-col items-center gap-1'>
@@ -755,7 +755,7 @@ export const BrutalFader = ({ label, initialValue = 7, max = 10 }) => {
             >
               <div
                 style={{ height }}
-                className={`w-full transition-colors duration-75 border-b-2 border-transparent hover:border-[color:var(--void-black)]
+                className={`w-full transition-colors duration-75 border-b-2 border-transparent hover:border-(--void-black)
                   ${isActive ? 'bg-(--toxic-green) shadow-[0_0_8px_var(--toxic-green)]' : 'bg-(--toxic-green)/20'}`}
               ></div>
             </button>
@@ -786,7 +786,7 @@ export const SetlistSelector = () => {
             key={track.id}
             onClick={() => setSelected(track.id)}
             className={`w-full text-left p-3 border-2 transition-all duration-100 flex justify-between items-center group
-              ${isSelected ? 'border-(--toxic-green) bg-(--toxic-green)/10 shadow-[inset_0_0_15px_var(--toxic-green-20)]' : 'border-(--toxic-green)/30 bg-[color:var(--void-black)] hover:border-(--toxic-green)/70'}`}
+              ${isSelected ? 'border-(--toxic-green) bg-(--toxic-green)/10 shadow-[inset_0_0_15px_var(--toxic-green-20)]' : 'border-(--toxic-green)/30 bg-(--void-black) hover:border-(--toxic-green)/70'}`}
           >
             <div className='flex items-center gap-3'>
               <span
@@ -795,7 +795,7 @@ export const SetlistSelector = () => {
                 {isSelected ? '[X]' : '[ ]'}
               </span>
               <span
-                className={`font-bold tracking-widest uppercase ${isSelected ? 'text-[color:var(--star-white)]' : 'text-(--toxic-green)/80'}`}
+                className={`font-bold tracking-widest uppercase ${isSelected ? 'text-(--star-white)' : 'text-(--toxic-green)/80'}`}
               >
                 {track.name}
               </span>
@@ -820,7 +820,7 @@ export const CrisisModal = ({ isOpen, onClose }) => {
     <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
       {/* Backdrop */}
       <div
-        className='absolute inset-0 bg-[color:var(--void-black)]/80 backdrop-blur-sm'
+        className='absolute inset-0 bg-(--void-black)/80 backdrop-blur-sm'
         onClick={onClose}
         aria-hidden='true'
       ></div>
@@ -828,10 +828,10 @@ export const CrisisModal = ({ isOpen, onClose }) => {
       <div className='absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(transparent_50%,var(--void-black-50)_50%)] bg-[length:100%_4px]'></div>
 
       {/* Modal Box */}
-      <div className='relative w-full max-w-lg border-2 border-(--toxic-green) bg-[color:var(--void-black)] shadow-[0_0_40px_var(--toxic-green-glow)] animate-[glitch-anim_0.2s_ease-in-out]'>
+      <div className='relative w-full max-w-lg border-2 border-(--toxic-green) bg-(--void-black) shadow-[0_0_40px_var(--toxic-green-glow)] animate-[glitch-anim_0.2s_ease-in-out]'>
         {/* Hardware details */}
         <div className='absolute top-0 left-0 w-full h-1 bg-(--toxic-green)'></div>
-        <div className='absolute top-0 left-2 w-16 h-4 bg-(--toxic-green) text-[color:var(--void-black)] text-[10px] font-bold text-center leading-4 uppercase'>
+        <div className='absolute top-0 left-2 w-16 h-4 bg-(--toxic-green) text-(--void-black) text-[10px] font-bold text-center leading-4 uppercase'>
           {t('ui:event.severity.critical')}
         </div>
 
@@ -855,7 +855,7 @@ export const CrisisModal = ({ isOpen, onClose }) => {
             <button
               type='button'
               onClick={onClose}
-              className='w-full p-3 border border-(--toxic-green) bg-(--toxic-green)/10 hover:bg-(--toxic-green) hover:text-[color:var(--void-black)] font-bold tracking-widest uppercase transition-colors text-left flex justify-between'
+              className='w-full p-3 border border-(--toxic-green) bg-(--toxic-green)/10 hover:bg-(--toxic-green) hover:text-(--void-black) font-bold tracking-widest uppercase transition-colors text-left flex justify-between'
             >
               <span>{t('ui:crisis.opt1')}</span>
               <span className='opacity-50 text-xs mt-1'>{t('ui:crisis.safe')}</span>
@@ -863,7 +863,7 @@ export const CrisisModal = ({ isOpen, onClose }) => {
             <button
               type='button'
               onClick={onClose}
-              className='w-full p-3 border border-[color:var(--star-white)]/50 text-[color:var(--star-white)]/50 hover:border-[color:var(--star-white)] hover:text-[color:var(--star-white)] hover:bg-[color:var(--star-white)]/10 font-bold tracking-widest uppercase transition-colors text-left flex justify-between'
+              className='w-full p-3 border border-(--star-white)/50 text-(--star-white)/50 hover:border-(--star-white) hover:text-(--star-white) hover:bg-(--star-white)/10 font-bold tracking-widest uppercase transition-colors text-left flex justify-between'
             >
               <span>{t('ui:crisis.opt3')}</span>
               <span className='opacity-50 text-xs mt-1'>{t('ui:crisis.risky')}</span>
@@ -947,20 +947,20 @@ export const DeadmanButton = ({ label, onConfirm }) => {
         onMouseLeave={stopHold}
         onTouchStart={startHold}
         onTouchEnd={stopHold}
-        onKeyDown={(e) => {
+        onKeyDown={e => {
           if (!isHolding && (e.key === 'Enter' || e.key === ' ')) {
             if (e.key === ' ') e.preventDefault()
             startHold()
           }
         }}
-        onKeyUp={(e) => {
+        onKeyUp={e => {
           if (e.key === 'Enter' || e.key === ' ') {
             stopHold()
           }
         }}
         onBlur={stopHold}
         className={`relative w-full h-14 border-2 overflow-hidden flex items-center justify-center select-none transition-colors
-          ${isComplete ? 'border-(--blood-red) bg-(--blood-red)/20' : 'border-(--toxic-green) bg-(--void-black) hover:border-[color:var(--star-white)]'}`}
+          ${isComplete ? 'border-(--blood-red) bg-(--blood-red)/20' : 'border-(--toxic-green) bg-(--void-black) hover:border-(--star-white)'}`}
       >
         {/* Progress Fill Background */}
         <div
@@ -1023,7 +1023,7 @@ export const TerminalReadout = () => {
       {lines.map(line => (
         <div
           key={line.id}
-          className={`${line.type === 'error' ? 'text-[color:var(--blood-red)] font-bold' : line.type === 'warn' ? 'text-[color:var(--warning-yellow)]' : 'text-(--toxic-green)'} opacity-90 leading-relaxed`}
+          className={`${line.type === 'error' ? 'text-(--blood-red) font-bold' : line.type === 'warn' ? 'text-(--warning-yellow)' : 'text-(--toxic-green)'} opacity-90 leading-relaxed`}
         >
           {t(line.key)}
         </div>
@@ -1101,7 +1101,7 @@ export const VoidLoader = ({ size = 'w-16 h-16' }) => {
         />
       </svg>
       {/* Core Dot - Pulsing */}
-      <div className='w-2 h-2 bg-[color:var(--star-white)] rounded-full animate-pulse shadow-[0_0_10px_var(--star-white)]'></div>
+      <div className='w-2 h-2 bg-(--star-white) rounded-full animate-pulse shadow-[0_0_10px_var(--star-white)]'></div>
     </div>
   )
 }
@@ -1136,7 +1136,7 @@ export const VoidNavNode = ({
       </div>
 
       <HexNode
-        className={`w-20 h-20 transition-all duration-200 ${isHovered ? 'text-[color:var(--star-white)] drop-shadow-[0_0_15px_var(--toxic-green-80)]' : 'text-(--toxic-green)'}`}
+        className={`w-20 h-20 transition-all duration-200 ${isHovered ? 'text-(--star-white) drop-shadow-[0_0_15px_var(--toxic-green-80)]' : 'text-(--toxic-green)'}`}
       />
 
       {/* Node Info */}
@@ -1145,7 +1145,7 @@ export const VoidNavNode = ({
           {type}
         </span>
         <span
-          className={`text-sm font-bold tracking-widest uppercase mt-1 ${isHovered ? 'text-[color:var(--star-white)]' : 'text-(--toxic-green)'}`}
+          className={`text-sm font-bold tracking-widest uppercase mt-1 ${isHovered ? 'text-(--star-white)' : 'text-(--toxic-green)'}`}
         >
           {label}
         </span>
@@ -1153,7 +1153,7 @@ export const VoidNavNode = ({
 
       {/* Floating Status Tag */}
       {status !== 'IDLE' && (
-        <div className='absolute top-2 right-2 bg-(--toxic-green) text-[color:var(--void-black)] text-[8px] font-bold px-1 tracking-widest animate-pulse'>
+        <div className='absolute top-2 right-2 bg-(--toxic-green) text-(--void-black) text-[8px] font-bold px-1 tracking-widest animate-pulse'>
           {status}
         </div>
       )}
@@ -1206,7 +1206,7 @@ export const CorruptedText = ({ text, delay = 0 }) => {
 export const HazardTicker = ({ message }) => {
   const { t } = useTranslation(['ui'])
   return (
-    <div className='relative w-full h-8 bg-[color:var(--void-black)] border-y-2 border-(--toxic-green) flex items-center overflow-hidden'>
+    <div className='relative w-full h-8 bg-(--void-black) border-y-2 border-(--toxic-green) flex items-center overflow-hidden'>
       {/* Striped Background Ends */}
       <div className='absolute left-0 top-0 bottom-0 w-8 z-10'>
         <WarningStripe />
@@ -1217,15 +1217,16 @@ export const HazardTicker = ({ message }) => {
 
       {/* Scrolling Text Container */}
       <div className='flex w-full whitespace-nowrap animate-[marquee_10s_linear_infinite] px-8 items-center gap-12'>
-        <span className='text-xs font-bold tracking-[0.3em] uppercase text-(--toxic-green)'>
-          {t('ui:hazard.modifierActive', { defaultValue: '[MODIFIER ACTIVE]' })} {message}
-        </span>
-        <span className='text-xs font-bold tracking-[0.3em] uppercase text-(--toxic-green)'>
-          {t('ui:hazard.modifierActive', { defaultValue: '[MODIFIER ACTIVE]' })} {message}
-        </span>
-        <span className='text-xs font-bold tracking-[0.3em] uppercase text-(--toxic-green)'>
-          {t('ui:hazard.modifierActive', { defaultValue: '[MODIFIER ACTIVE]' })} {message}
-        </span>
+        {/* eslint-disable-next-line @eslint-react/no-array-index-key */}
+        {Array.from({ length: 3 }).map((_, i) => (
+          <span
+            key={i}
+            className='text-xs font-bold tracking-[0.3em] uppercase text-(--toxic-green)'
+          >
+            {t('ui:hazard.modifierActive', { defaultValue: '[MODIFIER ACTIVE]' })}{' '}
+            {message}
+          </span>
+        ))}
       </div>
     </div>
   )
@@ -1268,7 +1269,7 @@ export const IndustrialChecklist = () => {
   const allDone = tasks.every(task => task.completed)
 
   return (
-    <div className='w-full border border-(--toxic-green)/30 bg-[color:var(--void-black)] p-4 flex flex-col gap-3 relative'>
+    <div className='w-full border border-(--toxic-green)/30 bg-(--void-black) p-4 flex flex-col gap-3 relative'>
       <div className='text-[10px] opacity-50 tracking-[0.3em] mb-2'>
         {t('ui:checklist.header')}
       </div>
@@ -1284,10 +1285,10 @@ export const IndustrialChecklist = () => {
           {/* Brutal Checkbox */}
           <div
             className={`w-5 h-5 border-2 flex items-center justify-center shrink-0 transition-colors
-            ${task.completed ? 'border-(--toxic-green) bg-(--toxic-green)' : 'border-(--toxic-green) bg-[color:var(--void-black)]'}`}
+            ${task.completed ? 'border-(--toxic-green) bg-(--toxic-green)' : 'border-(--toxic-green) bg-(--void-black)'}`}
           >
             {task.completed && (
-              <span className='text-[color:var(--void-black)] font-bold text-xs leading-none'>
+              <span className='text-(--void-black) font-bold text-xs leading-none'>
                 X
               </span>
             )}
@@ -1302,7 +1303,7 @@ export const IndustrialChecklist = () => {
 
           {/* Strikethrough Line Animation */}
           <div
-            className={`absolute left-10 top-1/2 h-[2px] bg-[color:var(--star-white)] transition-all duration-300 ease-out z-10
+            className={`absolute left-10 top-1/2 h-[2px] bg-(--star-white) transition-all duration-300 ease-out z-10
             ${task.completed ? 'w-[calc(100%-3rem)]' : 'w-0'}`}
           ></div>
         </button>
@@ -1312,7 +1313,7 @@ export const IndustrialChecklist = () => {
         type='button'
         disabled={!allDone}
         className={`mt-4 p-4 font-bold tracking-[0.2em] uppercase transition-all duration-300 border-2
-          ${allDone ? 'border-(--toxic-green) bg-(--toxic-green) text-[color:var(--void-black)] shadow-[0_0_20px_var(--toxic-green)] hover:bg-[color:var(--star-white)] hover:border-[color:var(--star-white)] animate-pulse' : 'border-(--toxic-green)/20 text-(--toxic-green)/20 cursor-not-allowed'}`}
+          ${allDone ? 'border-(--toxic-green) bg-(--toxic-green) text-(--void-black) shadow-[0_0_20px_var(--toxic-green)] hover:bg-(--star-white) hover:border-(--star-white) animate-pulse' : 'border-(--toxic-green)/20 text-(--toxic-green)/20 cursor-not-allowed'}`}
       >
         {allDone
           ? t('ui:checklist.done', 'INITIATE GIG')
@@ -1359,7 +1360,7 @@ export const RhythmMatrix = () => {
             >
               {/* Falling Note Simulation */}
               <div
-                className={`absolute top-0 left-1/2 -translate-x-1/2 w-12 h-4 border-2 border-(--toxic-green) bg-[color:var(--void-black)] animate-[drop_2s_linear_infinite] opacity-50`}
+                className={`absolute top-0 left-1/2 -translate-x-1/2 w-12 h-4 border-2 border-(--toxic-green) bg-(--void-black) animate-[drop_2s_linear_infinite] opacity-50`}
                 style={{ animationDelay: `${i * 0.5}s` }}
               ></div>
 
@@ -1367,7 +1368,7 @@ export const RhythmMatrix = () => {
               <button
                 type='button'
                 className={`w-14 h-8 mx-auto border-2 transition-all duration-75 flex items-center justify-center cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)
-                  ${hits[i] ? 'bg-(--toxic-green) border-(--toxic-green) shadow-[0_0_20px_var(--toxic-green)] scale-110' : 'bg-[color:var(--void-black)] border-(--toxic-green)/50 hover:border-(--toxic-green)'}`}
+                  ${hits[i] ? 'bg-(--toxic-green) border-(--toxic-green) shadow-[0_0_20px_var(--toxic-green)] scale-110' : 'bg-(--void-black) border-(--toxic-green)/50 hover:border-(--toxic-green)'}`}
                 onMouseDown={() => triggerHit(i)}
                 onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -1379,7 +1380,7 @@ export const RhythmMatrix = () => {
                 aria-pressed={hits[i]}
               >
                 <span
-                  className={`text-[8px] font-bold ${hits[i] ? 'text-[color:var(--void-black)]' : 'text-(--toxic-green)/50'}`}
+                  className={`text-[8px] font-bold ${hits[i] ? 'text-(--void-black)' : 'text-(--toxic-green)/50'}`}
                 >
                   {t('ui:rhythm.hit')}
                 </span>
@@ -1403,7 +1404,7 @@ export const SelloutContract = () => {
 
   return (
     <div
-      className={`w-full border-4 p-6 relative transition-all duration-500 ${signed ? 'border-(--toxic-green) bg-(--toxic-green)/5' : 'border-(--toxic-green)/30 bg-[color:var(--void-black)]'}`}
+      className={`w-full border-4 p-6 relative transition-all duration-500 ${signed ? 'border-(--toxic-green) bg-(--toxic-green)/5' : 'border-(--toxic-green)/30 bg-(--void-black)'}`}
     >
       <div className='absolute top-0 right-0 p-2 border-l border-b border-(--toxic-green)/30 text-[8px] opacity-50'>
         {t('ui:contract.confidential')}
@@ -1417,13 +1418,13 @@ export const SelloutContract = () => {
         <p>
           <Trans
             i18nKey='ui:contract.p1'
-            components={[<span key='0' className='bg-(--toxic-green) text-[color:var(--void-black)] font-bold px-1' />]}
+            components={[<span key='0' className='bg-(--toxic-green) text-(--void-black) font-bold px-1' />]}
           />
         </p>
         <p>
           <Trans
             i18nKey='ui:contract.p2'
-            components={[<span key='0' className='bg-(--toxic-green) text-(--toxic-green) select-none hover:text-[color:var(--void-black)] transition-colors' />]}
+            components={[<span key='0' className='bg-(--toxic-green) text-(--toxic-green) select-none hover:text-(--void-black) transition-colors' />]}
           />
         </p>
         <p>
@@ -1505,7 +1506,7 @@ export const ToxicChatter = () => {
   }, [])
 
   return (
-    <div className='w-full h-64 border border-(--toxic-green)/30 bg-[color:var(--void-black)] p-4 flex flex-col justify-end relative shadow-[inset_0_0_20px_var(--toxic-green-5)]'>
+    <div className='w-full h-64 border border-(--toxic-green)/30 bg-(--void-black) p-4 flex flex-col justify-end relative shadow-[inset_0_0_20px_var(--toxic-green-5)]'>
       <div className='absolute top-2 left-2 text-[10px] tracking-widest opacity-50'>
         {t('ui:chatter.header')}
       </div>
@@ -1554,7 +1555,7 @@ export const VoidDecryptor = () => {
   return (
     <button
       type='button'
-      className='w-full h-64 border-2 border-(--toxic-green)/50 bg-[color:var(--void-black)] flex flex-col items-center justify-center p-6 relative group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)'
+      className='w-full h-64 border-2 border-(--toxic-green)/50 bg-(--void-black) flex flex-col items-center justify-center p-6 relative group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)'
       onClick={() => setDecrypted(true)}
       aria-pressed={decrypted}
     >
@@ -1571,14 +1572,14 @@ export const VoidDecryptor = () => {
 
         {/* Scrambler Overlay */}
         {!decrypted && (
-          <div className='absolute inset-0 bg-[color:var(--void-black)]/50 backdrop-blur-[1px] flex items-center justify-center mix-blend-overlay'>
+          <div className='absolute inset-0 bg-(--void-black)/50 backdrop-blur-[1px] flex items-center justify-center mix-blend-overlay'>
             <div className='w-full h-2 bg-(--toxic-green) animate-[scan_1s_linear_infinite]'></div>
           </div>
         )}
       </div>
 
       <div
-        className={`mt-6 font-mono text-xs tracking-[0.2em] font-bold ${decrypted ? 'text-[color:var(--star-white)]' : 'text-(--toxic-green)/50'}`}
+        className={`mt-6 font-mono text-xs tracking-[0.2em] font-bold ${decrypted ? 'text-(--star-white)' : 'text-(--toxic-green)/50'}`}
       >
         {glitchText}
       </div>
