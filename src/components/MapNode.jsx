@@ -205,8 +205,12 @@ export const MapNode = memo(
       prev.handleTravel === next.handleTravel &&
       prev.setHoveredNode === next.setHoveredNode &&
       prev.ticketPrice === next.ticketPrice &&
+      prev.node.type === next.node.type &&
       prev.node.venue?.capacity === next.node.venue?.capacity &&
-      prev.node.venue?.name === next.node.venue?.name
+      prev.node.venue?.name === next.node.venue?.name &&
+      prev.node.venue?.pay === next.node.venue?.pay &&
+      prev.node.venue?.diff === next.node.venue?.diff &&
+      prev.node.venue?.price === next.node.venue?.price
     )
   }
 )
