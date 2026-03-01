@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useGameState } from '../context/GameState'
+import { useTranslation } from 'react-i18next'
 import {
   Map as MapIcon,
   DollarSign,
@@ -25,6 +26,7 @@ const SHORTCUTS = [
  */
 export const HUD = () => {
   const { player, band } = useGameState()
+  const { t } = useTranslation(['ui', 'venues'])
   const [showHelp, setShowHelp] = useState(false)
   const { audioState, handleAudioChange } = useAudioControl()
 
@@ -86,7 +88,7 @@ export const HUD = () => {
           <div className='flex items-center gap-2 mb-2'>
             <MapIcon size={14} />
             <span className='text-(--star-white)/80'>
-              Day {player.day} — {player.location}
+              Day {player.day} — {t(`venues:${player.location}.name`, { defaultValue: player.location })}
             </span>
           </div>
 

@@ -22,7 +22,7 @@ const formatLocalizedNumber = (value, locale) => {
  * Scene for preparing for a gig: managing budget, setlist, and modifiers.
  */
 export const PreGig = () => {
-  const { t, i18n } = useTranslation(['ui'])
+  const { t, i18n } = useTranslation(['ui', 'venues'])
 
   const GIG_MODIFIER_OPTIONS = useMemo(() => [
     {
@@ -169,7 +169,7 @@ export const PreGig = () => {
         </h2>
         <div className='w-48 h-[1px] bg-gradient-to-r from-transparent via-(--toxic-green) to-transparent mx-auto mb-3' />
         <div className='text-lg mb-1 font-mono text-(--star-white)/80'>
-          {currentGig?.name}
+          {currentGig?.name ? t(currentGig.name) : ''}
         </div>
         <div className='font-mono text-xs text-(--ash-gray) flex items-center justify-center gap-3'>
           <span>
