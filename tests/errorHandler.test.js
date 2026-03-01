@@ -103,6 +103,75 @@ describe('handleError', () => {
     assert.strictEqual(result.message, 'Fallback')
   })
 
+
+  it('should allow severity override when options.severity is valid', () => {
+    const error = new StateError('Severity override')
+    const result = handleError(error, {
+      silent: true,
+      severity: 'critical'
+    })
+
+    assert.strictEqual(result.severity, ErrorSeverity.CRITICAL)
+  })
+
+  it('should ignore invalid errorInfo payload types', () => {
+    const error = new StateError('Invalid errorInfo')
+    const result = handleError(error, {
+      silent: true,
+      errorInfo: 'not-an-object'
+    })
+
+    assert.deepStrictEqual(result.context, {})
+  })
+
+  it('should reject unrecognized severity override values', () => {
+    const error = new StateError('Bad severity')
+    const result = handleError(error, {
+      silent: true,
+      severity: 'SEVERE'
+    })
+
+    assert.strictEqual(result.severity, ErrorSeverity.HIGH)
+  })
+
+  it('should dispatch critical event with sanitized payload', () => {
+    const dispatchCalls = []
+    const originalWindow = globalThis.window
+    globalThis.window = {
+      dispatchEvent: event => {
+        dispatchCalls.push(event)
+        return true
+      }
+    }
+
+    try {
+      const result = handleError(new Error('Critical event'), {
+        silent: true,
+        severity: 'critical',
+        errorInfo: { token: 'secret-token', nested: { email: 'a@b.com' } }
+      })
+
+      assert.strictEqual(result.context.token, '[REDACTED]')
+      assert.strictEqual(result.context.nested.email, '[REDACTED]')
+      assert.strictEqual(dispatchCalls.length, 1)
+      assert.strictEqual(dispatchCalls[0].type, 'app:error:critical')
+      assert.deepStrictEqual(dispatchCalls[0].detail, {
+        message: 'Critical event',
+        code: ErrorCategory.UNKNOWN,
+        timestamp: result.timestamp
+      })
+    } finally {
+      globalThis.window = originalWindow
+    }
+  })
+
+  it('should safely handle null options object', () => {
+    const error = new Error('Null options')
+    const result = handleError(error, null)
+
+    assert.strictEqual(result.message, 'Null options')
+    assert.deepStrictEqual(result.context, {})
+  })
   it('should handle AudioError with silent mode and preserve context', () => {
     let toastCalled = false
     const addToast = () => {

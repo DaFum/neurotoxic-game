@@ -118,6 +118,15 @@ const MAX_ERROR_LOG_SIZE = 100
 
 const VALID_SEVERITIES = new Set(Object.values(ErrorSeverity))
 
+const SENSITIVE_CONTEXT_KEYS = new Set([
+  'token',
+  'password',
+  'ssn',
+  'email',
+  'authorization',
+  'cookie'
+])
+
 const isPlainObject = value => {
   return (
     value !== null &&
@@ -132,6 +141,39 @@ const normalizeSeverity = severity => {
   return VALID_SEVERITIES.has(normalized) ? normalized : null
 }
 
+const sanitizeContextValue = value => {
+  if (Array.isArray(value)) {
+    return value.map(item => sanitizeContextValue(item))
+  }
+
+  if (isPlainObject(value)) {
+    return sanitizeContextObject(value)
+  }
+
+  return value
+}
+
+const sanitizeContextObject = context => {
+  const sanitized = {}
+
+  for (const [key, value] of Object.entries(context)) {
+    const normalizedKey = key.toLowerCase()
+    if (SENSITIVE_CONTEXT_KEYS.has(normalizedKey)) {
+      sanitized[key] = '[REDACTED]'
+      continue
+    }
+
+    sanitized[key] = sanitizeContextValue(value)
+  }
+
+  return sanitized
+}
+
+const sanitizeContextPayload = payload => {
+  if (!isPlainObject(payload)) return {}
+  return sanitizeContextObject(payload)
+}
+
 const normalizeHandleErrorOptions = options => {
   const safeOptions = isPlainObject(options) ? options : {}
 
@@ -139,7 +181,7 @@ const normalizeHandleErrorOptions = options => {
     source: typeof safeOptions.source === 'string' ? safeOptions.source : undefined,
     errorInfo:
       typeof safeOptions.errorInfo === 'object' && safeOptions.errorInfo !== null
-        ? safeOptions.errorInfo
+        ? sanitizeContextPayload(safeOptions.errorInfo)
         : null,
     severity: normalizeSeverity(safeOptions.severity)
   }
@@ -200,6 +242,9 @@ export const handleError = (error, options = {}) => {
   if (normalizedOptions.errorInfo) {
     errorInfo.context = { ...errorInfo.context, ...normalizedOptions.errorInfo }
   }
+
+  errorInfo.context = sanitizeContextPayload(errorInfo.context)
+
   if (normalizedOptions.severity) {
     errorInfo.severity = normalizedOptions.severity
   }

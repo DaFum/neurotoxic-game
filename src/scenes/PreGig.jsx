@@ -14,8 +14,7 @@ import { RazorPlayIcon } from '../ui/shared/Icons'
 
 const BAND_MEETING_COST = 50
 
-const formatLocalizedNumber = value => {
-  const locale = typeof navigator !== 'undefined' ? navigator.language : undefined
+const formatLocalizedNumber = (value, locale) => {
   return new Intl.NumberFormat(locale).format(value)
 }
 
@@ -23,7 +22,7 @@ const formatLocalizedNumber = value => {
  * Scene for preparing for a gig: managing budget, setlist, and modifiers.
  */
 export const PreGig = () => {
-  const { t } = useTranslation(['ui'])
+  const { t, i18n } = useTranslation(['ui'])
 
   const GIG_MODIFIER_OPTIONS = useMemo(() => [
     {
@@ -176,14 +175,14 @@ export const PreGig = () => {
           <span>
             {t('ui:pregig.budget')}{' '}
             <span className='text-(--toxic-green) font-bold tabular-nums'>
-              {t('ui:currency', { value: formatLocalizedNumber(player.money) })}
+              {t('ui:currency', { value: formatLocalizedNumber(player.money, i18n.language) })}
             </span>
           </span>
           <span className='text-(--ash-gray)/30'>|</span>
           <span>
             {t('ui:pregig.costs')}{' '}
             <span className='text-(--blood-red) font-bold tabular-nums'>
-              {t('ui:currencyNegative', { value: formatLocalizedNumber(calculatedBudget) })}
+              {t('ui:currencyNegative', { value: formatLocalizedNumber(calculatedBudget, i18n.language) })}
             </span>
           </span>
         </div>
