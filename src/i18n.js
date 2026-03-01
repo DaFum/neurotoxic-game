@@ -11,7 +11,7 @@ i18n
     fallbackLng: 'en',
     supportedLngs: ['en', 'de'],
     load: 'languageOnly', // Eliminate region-specific loads (e.g. de-DE -> de) to reduce requests
-    ns: ['ui'], // Only load UI strings initially; others (events, items) load on demand
+    ns: ['ui', 'items', 'venues'], // Pre-load namespaces used by BandHQ tabs to prevent scene-level Suspense
     defaultNS: 'ui',
     interpolation: { escapeValue: false },
     backend: {

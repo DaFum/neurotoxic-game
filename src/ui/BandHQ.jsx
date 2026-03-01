@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog'
@@ -137,7 +137,7 @@ export const BandHQ = ({
         <div
           role='tablist'
           aria-label='Band HQ Sections'
-          className='flex border-b-2 border-(--toxic-green) overflow-x-auto relative z-20'
+          className='flex border-b-2 border-(--toxic-green) overflow-x-auto'
         >
           {/* Tabs */}
           {[
@@ -181,63 +181,73 @@ export const BandHQ = ({
           tabIndex={0}
           className='flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-(--void-black) focus-visible:outline-none'
         >
-          {activeTab === 'STATS' && (
-            <StatsTab player={player} band={band} social={social} />
-          )}
+          <Suspense
+            fallback={
+              <div className='flex items-center justify-center h-32 text-(--toxic-green) font-mono animate-pulse uppercase tracking-widest'>
+                {t('ui:ui.loading', { defaultValue: 'Loading...' })}
+              </div>
+            }
+          >
+            {activeTab === 'STATS' && (
+              <StatsTab player={player} band={band} social={social} />
+            )}
 
-          {activeTab === 'DETAILS' && (
-            <DetailedStatsTab
-              player={player}
-              band={band}
-              social={social}
-              activeQuests={activeQuests}
-              venueBlacklist={venueBlacklist}
-              reputationByRegion={reputationByRegion}
-            />
-          )}
+            {activeTab === 'DETAILS' && (
+              <DetailedStatsTab
+                player={player}
+                band={band}
+                social={social}
+                activeQuests={activeQuests}
+                venueBlacklist={venueBlacklist}
+                reputationByRegion={reputationByRegion}
+              />
+            )}
 
-          {activeTab === 'SHOP' && (
-            <ShopTab
-              player={player}
-              handleBuy={handleBuyWithLock}
-              isItemOwned={isItemOwned}
-              isItemDisabled={isItemDisabled}
-              getAdjustedCost={getAdjustedCost}
-              processingItemId={processingItemId}
-            />
-          )}
+            {activeTab === 'SHOP' && (
+              <ShopTab
+                player={player}
+                handleBuy={handleBuyWithLock}
+                isItemOwned={isItemOwned}
+                isItemDisabled={isItemDisabled}
+                getAdjustedCost={getAdjustedCost}
+                processingItemId={processingItemId}
+              />
+            )}
 
-          {activeTab === 'UPGRADES' && (
-            <UpgradesTab
-              player={player}
-              upgrades={unifiedUpgradeCatalog}
-              handleBuy={handleBuyWithLock}
-              isItemOwned={isItemOwned}
-              isItemDisabled={isItemDisabled}
-              getAdjustedCost={getAdjustedCost}
-              processingItemId={processingItemId}
-            />
-          )}
+            {activeTab === 'UPGRADES' && (
+              <UpgradesTab
+                player={player}
+                upgrades={unifiedUpgradeCatalog}
+                handleBuy={handleBuyWithLock}
+                isItemOwned={isItemOwned}
+                isItemDisabled={isItemDisabled}
+                getAdjustedCost={getAdjustedCost}
+                processingItemId={processingItemId}
+              />
+            )}
 
-          {activeTab === 'SETLIST' && (
-            <SetlistTab
-              setlist={setlist}
-              setSetlist={setSetlist}
-              addToast={addToast}
-            />
-          )}
+            {activeTab === 'SETLIST' && (
+              <SetlistTab
+                setlist={setlist}
+                setSetlist={setSetlist}
+                addToast={addToast}
+              />
+            )}
 
-          {activeTab === 'LEADERBOARD' && <LeaderboardTab setlist={setlist} />}
+            {activeTab === 'LEADERBOARD' && (
+              <LeaderboardTab setlist={setlist} />
+            )}
 
-          {activeTab === 'SETTINGS' && (
-            <SettingsTab
-              settings={settings}
-              audioState={audioState}
-              onAudioChange={onAudioChange}
-              updateSettings={updateSettings}
-              deleteSave={deleteSave}
-            />
-          )}
+            {activeTab === 'SETTINGS' && (
+              <SettingsTab
+                settings={settings}
+                audioState={audioState}
+                onAudioChange={onAudioChange}
+                updateSettings={updateSettings}
+                deleteSave={deleteSave}
+              />
+            )}
+          </Suspense>
         </div>
       </div>
     </div>
