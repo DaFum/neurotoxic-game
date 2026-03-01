@@ -5,6 +5,7 @@
 
 import { useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
 import { UIFrameCorner } from './Icons'
 
 /**
@@ -17,6 +18,7 @@ import { UIFrameCorner } from './Icons'
  */
 export const Modal = ({ isOpen, onClose, title, children }) => {
   const dialogRef = useRef(null)
+  const { t } = useTranslation(['ui'])
 
   useEffect(() => {
     const handleKeyDown = e => {
@@ -65,6 +67,20 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
         <UIFrameCorner className='absolute -top-1 -right-1 w-8 h-8 text-(--toxic-green) rotate-90 opacity-50 transition-opacity group-hover:opacity-100' />
         <UIFrameCorner className='absolute -bottom-1 -right-1 w-8 h-8 text-(--toxic-green) rotate-180 opacity-50 transition-opacity group-hover:opacity-100' />
         <UIFrameCorner className='absolute -bottom-1 -left-1 w-8 h-8 text-(--toxic-green) -rotate-90 opacity-50 transition-opacity group-hover:opacity-100' />
+
+        <button
+          type='button'
+          onClick={onClose}
+          aria-label={t('ui:close')}
+          className='absolute -top-3 -right-3 w-8 h-8 flex items-center justify-center bg-(--void-black) border-2 border-(--toxic-green) text-(--toxic-green) hover:bg-(--toxic-green) hover:text-(--void-black) transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green) z-20 group-hover:shadow-[0_0_10px_var(--toxic-green-glow)]'
+        >
+          <span
+            aria-hidden='true'
+            className='font-mono text-lg font-bold leading-none select-none'
+          >
+            ×
+          </span>
+        </button>
 
         <div className='relative z-10'>
           {title && (

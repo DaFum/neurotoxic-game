@@ -364,42 +364,42 @@ export const MainMenu = () => {
               Icon={GameIcon}
             />
             <UplinkButton
-              title='Bandcamp'
+              title={t('ui:social_links.title_bandcamp')}
               subtitle='neurotoxic.bandcamp.com'
               type={t('ui:social_links.type_audio_vault')}
               url='https://neurotoxic.bandcamp.com'
               Icon={BandcampIcon}
             />
             <UplinkButton
-              title='Instagram'
+              title={t('ui:social_links.title_instagram')}
               subtitle='instagram.com/neurotoxicband'
               type={t('ui:social_links.type_visual_feed')}
               url='https://instagram.com/neurotoxicband'
               Icon={InstaIcon}
             />
             <UplinkButton
-              title='TikTok'
+              title={t('ui:social_links.title_tiktok')}
               subtitle='tiktok.com/@neurotoxicband'
               type={t('ui:social_links.type_viral_stream')}
               url='https://tiktok.com/@neurotoxicband'
               Icon={TikTokIcon}
             />
             <UplinkButton
-              title='Neurotoxic Once'
+              title={t('ui:social_links.title_youtube1')}
               subtitle='youtube.com/@neurotoxiconcechannel237'
               type={t('ui:social_links.type_broadcast_a')}
               url='https://youtube.com/@neurotoxiconcechannel237'
               Icon={YouTubeIcon}
             />
             <UplinkButton
-              title='Neurotoxic 3000'
+              title={t('ui:social_links.title_youtube2')}
               subtitle='youtube.com/@neurotoxic3000'
               type={t('ui:social_links.type_broadcast_b')}
               url='https://youtube.com/@neurotoxic3000'
               Icon={YouTubeIcon}
             />
             <UplinkButton
-              title='Neuroblogxic'
+              title={t('ui:social_links.title_blog')}
               subtitle='neuroblogxic.blogspot.com'
               type={t('ui:social_links.type_data_log')}
               url='https://neuroblogxic.blogspot.com'
