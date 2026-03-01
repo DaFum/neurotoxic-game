@@ -956,9 +956,9 @@ export const DeadmanButton = ({ label, onConfirm }) => {
         onTouchStart={startHold}
         onTouchEnd={stopHold}
         onKeyDown={e => {
-          if (!isHolding && (e.key === 'Enter' || e.key === ' ')) {
+          if (e.key === 'Enter' || e.key === ' ') {
             if (e.key === ' ') e.preventDefault()
-            startHold()
+            if (!e.repeat) startHold()
           }
         }}
         onKeyUp={e => {
