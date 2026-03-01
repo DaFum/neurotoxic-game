@@ -88,6 +88,7 @@ export const RoadieRunScene = () => {
           type='button'
           className='w-14 h-14 bg-(--star-white)/10 active:bg-(--toxic-green)/50 border border-(--star-white)/30 rounded flex items-center justify-center text-(--star-white)'
           onClick={handleMoveUp}
+          aria-label='Move Up'
         >
           ▲
         </button>
@@ -96,6 +97,7 @@ export const RoadieRunScene = () => {
           type='button'
           className='w-14 h-14 bg-(--star-white)/10 active:bg-(--toxic-green)/50 border border-(--star-white)/30 rounded flex items-center justify-center text-(--star-white)'
           onClick={handleMoveLeft}
+          aria-label='Move Left'
         >
           ◄
         </button>
@@ -103,6 +105,7 @@ export const RoadieRunScene = () => {
           type='button'
           className='w-14 h-14 bg-(--star-white)/10 active:bg-(--toxic-green)/50 border border-(--star-white)/30 rounded flex items-center justify-center text-(--star-white)'
           onClick={handleMoveDown}
+          aria-label='Move Down'
         >
           ▼
         </button>
@@ -110,6 +113,7 @@ export const RoadieRunScene = () => {
           type='button'
           className='w-14 h-14 bg-(--star-white)/10 active:bg-(--toxic-green)/50 border border-(--star-white)/30 rounded flex items-center justify-center text-(--star-white)'
           onClick={handleMoveRight}
+          aria-label='Move Right'
         >
           ►
         </button>
