@@ -152,6 +152,9 @@ export const applyStatModifier = (effect, playerPatch, player, band) => {
         nextPlayerPatch[effect.stat] = clampPlayerMoney(basePlayerStat + val)
       } else {
         nextPlayerPatch[effect.stat] = Math.max(0, basePlayerStat + val)
+        if (effect.stat === 'fame') {
+          nextPlayerPatch.fameLevel = Math.floor(nextPlayerPatch.fame / 1000)
+        }
       }
       break
     }
@@ -228,6 +231,7 @@ export const applyUnlockHQ = (item, playerPatch, player, band) => {
         0,
         (nextPlayerPatch.fame ?? player.fame ?? 0) + 10
       )
+      nextPlayerPatch.fameLevel = Math.floor(nextPlayerPatch.fame / 1000)
       messages.push({ message: 'Looks cool. Fame +10', type: 'success' })
       break
 

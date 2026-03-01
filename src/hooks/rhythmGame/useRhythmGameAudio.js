@@ -14,7 +14,7 @@ import {
 } from '../../utils/audioEngine'
 import { handleError, AudioError } from '../../utils/errorHandler'
 import { logger } from '../../utils/logger'
-import { SONGS_DB } from '../../data/songs'
+import { SONGS_DB } from '../../data/songs.js'
 import {
   calculateGigPhysics,
   getGigModifiers
@@ -44,7 +44,7 @@ export const useRhythmGameAudio = ({
   contextActions
 }) => {
   const { setIsAudioReady } = setters
-  const { band, gameMap, player, setlist, gigModifiers } = contextState
+  const { band, gameMap, player, setlist, gigModifiers, currentGig } = contextState
   const { addToast } = contextActions
 
   const hasInitializedRef = useRef(false)
@@ -87,7 +87,11 @@ export const useRhythmGameAudio = ({
       isInitializingRef.current = false
 
       const activeModifiers = getGigModifiers(band, gigModifiers)
-      const physics = calculateGigPhysics(band, { bpm: 120 })
+
+      const songId = currentGig?.songId || setlist?.[0]?.id || 'neurotoxic_1'
+      const activeSong = SONGS_DB.find(s => s.id === songId) || SONGS_DB[0]
+      const physics = calculateGigPhysics(band, activeSong)
+
       const currentNode = gameMap?.nodes?.[player.currentNodeId]
 
       if (!currentNode) {

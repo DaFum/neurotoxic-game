@@ -45,6 +45,7 @@ export const handleLoadGame = (state, payload) => {
     0,
     typeof mergedPlayer.fame === 'number' ? mergedPlayer.fame : 0
   )
+  mergedPlayer.fameLevel = Math.floor(mergedPlayer.fame / 1000)
   mergedPlayer.day = Math.max(
     1,
     typeof mergedPlayer.day === 'number' ? mergedPlayer.day : 1
@@ -141,9 +142,7 @@ export const handleLoadGame = (state, payload) => {
     'PREGIG',
     'GIG',
     'PRACTICE',
-    'POSTGIG',
-    'HQ',
-    'BAND_HQ'
+    'POSTGIG'
   ]
   if (!ALLOWED_SCENES.includes(safeState.currentScene)) {
     safeState.currentScene = state.currentScene

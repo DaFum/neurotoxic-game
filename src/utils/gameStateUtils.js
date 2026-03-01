@@ -60,6 +60,8 @@ export const applyEventDelta = (state, delta) => {
     }
     if (typeof delta.player.fame === 'number') {
       nextPlayer.fame = Math.max(0, nextPlayer.fame + delta.player.fame)
+      // Recalculate fameLevel derived from fame (e.g. 1 level per 1000 fame)
+      nextPlayer.fameLevel = Math.floor(nextPlayer.fame / 1000)
     }
     const scoreDelta =
       typeof delta.player.score === 'number'
