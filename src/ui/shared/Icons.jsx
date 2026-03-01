@@ -7,6 +7,7 @@ export function RazorPlayIcon({ className = '' }) {
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      preserveAspectRatio="xMidYMid meet"
     >
       <path
         d="M4 2V22L22 12L4 2Z"
@@ -48,6 +49,7 @@ export function VoidSkullIcon({ className = '' }) {
       viewBox="0 0 32 32"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      preserveAspectRatio="xMidYMid meet"
     >
       <path
         d="M8 4H24V10H28V20H24V28H20V24H12V28H8V20H4V10H8V4Z"
@@ -99,7 +101,7 @@ VoidSkullIcon.propTypes = {
 }
 
 export const BandcampIcon = ({ className = '' }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" role="presentation">
+  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" role="presentation" preserveAspectRatio="xMidYMid meet">
     <path d="M2 6H22V18H2V6Z" stroke="currentColor" strokeWidth="2" strokeLinecap="square"/>
     <circle cx="8" cy="12" r="2" fill="currentColor"/>
     <circle cx="16" cy="12" r="2" fill="currentColor"/>
@@ -109,7 +111,7 @@ export const BandcampIcon = ({ className = '' }) => (
 )
 
 export const InstaIcon = ({ className = '' }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" role="presentation">
+  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" role="presentation" preserveAspectRatio="xMidYMid meet">
     <path d="M3 3H21V21H3V3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="square"/>
     <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2"/>
     <rect x="16" y="6" width="2" height="2" fill="currentColor"/>
@@ -118,14 +120,14 @@ export const InstaIcon = ({ className = '' }) => (
 )
 
 export const TikTokIcon = ({ className = '' }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" role="presentation">
+  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" role="presentation" preserveAspectRatio="xMidYMid meet">
     <path d="M14 2V16H8V22H14V8H20V2H14Z" fill="currentColor"/>
     <path d="M12 4V18H6V24H12V10H18V4H12Z" fill="currentColor" fillOpacity="0.3" transform="translate(-2, 2)"/>
   </svg>
 )
 
 export const YouTubeIcon = ({ className = '' }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" role="presentation">
+  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" role="presentation" preserveAspectRatio="xMidYMid meet">
     <path d="M2 5H22V19H2V5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="square"/>
     <path d="M10 9L16 12L10 15V9Z" fill="currentColor"/>
     <path d="M4 19L8 23M20 19L16 23" stroke="currentColor" strokeWidth="2" strokeLinecap="square"/>
@@ -133,7 +135,7 @@ export const YouTubeIcon = ({ className = '' }) => (
 )
 
 export const BlogIcon = ({ className = '' }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" role="presentation">
+  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" role="presentation" preserveAspectRatio="xMidYMid meet">
     <path d="M3 4H21V20H3V4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="square"/>
     <path d="M6 8L10 12L6 16" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter"/>
     <path d="M12 16H18" stroke="currentColor" strokeWidth="2" strokeLinecap="square"/>
@@ -142,7 +144,7 @@ export const BlogIcon = ({ className = '' }) => (
 )
 
 export const GameIcon = ({ className = '' }) => (
-  <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" role="presentation">
+  <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" role="presentation" preserveAspectRatio="xMidYMid meet">
     <path d="M6 22V6H9L19 18V6H22V22H19L9 10V22H6Z" fill="currentColor" opacity="0.3" transform="translate(-2, 0)"/>
     <path d="M8 24V8H11L21 20V8H24V24H21L11 12V24H8Z" fill="currentColor"/>
   </svg>
@@ -158,6 +160,7 @@ export function UIFrameCorner({ className = '' }) {
       aria-hidden="true"
       focusable="false"
       role="presentation"
+      preserveAspectRatio="xMidYMid meet"
     >
       <path
         d="M2 46V2H46"
