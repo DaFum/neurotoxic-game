@@ -58,6 +58,15 @@ export const BandHQ = ({
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('STATS')
   const [processingItemId, setProcessingItemId] = useState(null)
+  const normalizedSetlist = Array.isArray(setlist) ? setlist : []
+  const normalizedActiveQuests = Array.isArray(activeQuests) ? activeQuests : []
+  const normalizedVenueBlacklist = Array.isArray(venueBlacklist)
+    ? venueBlacklist
+    : []
+  const normalizedReputationByRegion =
+    reputationByRegion && typeof reputationByRegion === 'object'
+      ? reputationByRegion
+      : {}
 
   const unifiedUpgradeCatalog = useMemo(() => getUnifiedUpgradeCatalog(), [])
 
@@ -159,7 +168,7 @@ export const BandHQ = ({
                 id={`tab-${tab.id}`}
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 min-w-[120px] py-3 px-4 text-center text-sm font-bold tracking-[0.1em] uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2
+                className={`flex-1 min-w-[100px] py-3 px-3 text-center text-xs md:text-sm font-bold tracking-[0.1em] uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2 whitespace-nowrap
                   ${
                     isActive
                       ? 'bg-(--toxic-green) text-(--void-black) shadow-[0_-2px_10px_var(--toxic-green)]'
@@ -190,9 +199,9 @@ export const BandHQ = ({
               player={player}
               band={band}
               social={social}
-              activeQuests={activeQuests}
-              venueBlacklist={venueBlacklist}
-              reputationByRegion={reputationByRegion}
+              activeQuests={normalizedActiveQuests}
+              venueBlacklist={normalizedVenueBlacklist}
+              reputationByRegion={normalizedReputationByRegion}
             />
           )}
 
@@ -221,13 +230,15 @@ export const BandHQ = ({
 
           {activeTab === 'SETLIST' && (
             <SetlistTab
-              setlist={setlist}
+              setlist={normalizedSetlist}
               setSetlist={setSetlist}
               addToast={addToast}
             />
           )}
 
-          {activeTab === 'LEADERBOARD' && <LeaderboardTab setlist={setlist} />}
+          {activeTab === 'LEADERBOARD' && (
+            <LeaderboardTab setlist={normalizedSetlist} />
+          )}
 
           {activeTab === 'SETTINGS' && (
             <SettingsTab
