@@ -153,6 +153,7 @@ export const MainMenu = () => {
   }, [loadGame, addToast, changeScene, reportAudioIssue, startAmbientSafely, t])
 
   const handleCredits = useCallback(() => changeScene('CREDITS'), [changeScene])
+  const closeNameInput = useCallback(() => setShowNameInput(false), [])
 
   return (
     <div className='flex flex-col items-center justify-center h-full w-full bg-(--void-black) z-50 relative overflow-hidden'>
@@ -160,7 +161,7 @@ export const MainMenu = () => {
         <Modal
           isOpen={true}
           title={t('ui:identity_required')}
-          onClose={() => setShowNameInput(false)}
+          onClose={closeNameInput}
           className='max-w-md'
           aria-label={t('ui:identity_required')}
         >
