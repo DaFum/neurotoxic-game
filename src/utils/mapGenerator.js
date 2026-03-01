@@ -121,6 +121,9 @@ export class MapGenerator {
           if (candidates.length === 0) {
             // Re-assign candidates to the pre-filtered static fallback pool
             candidates = i < 3 ? fallbackEasy : i < 7 ? fallbackMedium : fallbackHard
+            if (candidates == null || candidates.length === 0) {
+              throw new Error(`Empty fallback pool for difficulty ${i}`)
+            }
             currentAvailablePool = null // We are now picking from a pool that allows duplicates
           }
         }

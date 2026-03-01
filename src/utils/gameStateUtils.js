@@ -245,7 +245,11 @@ export const applyEventDelta = (state, delta) => {
         const currentValue =
           typeof nextSocial[key] === 'number' ? nextSocial[key] : 0
         nextSocial[key] = Math.max(0, currentValue + value)
-      } else {
+      } else if (
+        typeof value === 'string' ||
+        typeof value === 'boolean' ||
+        value === null
+      ) {
         nextSocial[key] = value // For string and null assignments like egoFocus
       }
     })

@@ -121,7 +121,7 @@ test('trySpawnProjectile - verifies all spawned object properties', () => {
 
     assert.ok(projectile)
     assert.equal(typeof projectile.id, 'number')
-    assert.equal(projectile.id, 1234567890)
+    assert.equal(projectile.id, 1234567890.5)
     assert.equal(projectile.x, 1000)
     assert.equal(projectile.y, -100)
     // use approximate equality for floats
@@ -157,11 +157,11 @@ test('trySpawnProjectile - combo boundary (30 vs 31)', () => {
 
 test('trySpawnProjectile - screenWidth influence on x', () => {
   const stats = { health: 100, combo: 0 }
-  const values = [0, 0, 0.5] // spawn, id, x
+  const values = [0, 0, 0.5, 0.5, 0.5, 0.5, 0.5] // spawn, id, x, vx, vy, vr, type
   let i = 0
   const mockRandom = () => {
     if (i >= values.length) {
-      throw new Error('Unexpected random() call in test')
+      assert.fail('Unexpected random() call in test')
     }
     return values[i++]
   }
