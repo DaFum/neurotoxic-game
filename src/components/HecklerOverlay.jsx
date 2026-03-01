@@ -20,12 +20,18 @@ export const HecklerOverlay = memo(function HecklerOverlay({ gameStateRef }) {
         const container = containerRef.current
         const nodeCache = nodeCacheRef.current
 
-        // Create a set of current IDs for easy lookup
-        const currentIds = new Set(projectiles.map(p => p.id))
-
         // Remove old nodes that are no longer in the state
+        // Optimization: Avoid allocating a new Set on every frame.
+        // The projectiles array is small enough that an inner loop is faster than GC overhead.
         for (const [id, node] of nodeCache.entries()) {
-          if (!currentIds.has(id)) {
+          let found = false
+          for (let i = 0; i < projectiles.length; i++) {
+            if (projectiles[i].id === id) {
+              found = true
+              break
+            }
+          }
+          if (!found) {
             container.removeChild(node)
             nodeCache.delete(id)
           }

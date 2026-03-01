@@ -11,7 +11,6 @@ import { handleError } from '../utils/errorHandler'
 import GigModifierButton from '../ui/GigModifierButton'
 import { RazorPlayIcon } from '../ui/shared/Icons'
 
-
 const BAND_MEETING_COST = 50
 
 const formatLocalizedNumber = (value, locale) => {
@@ -24,38 +23,41 @@ const formatLocalizedNumber = (value, locale) => {
 export const PreGig = () => {
   const { t, i18n } = useTranslation(['ui', 'venues'])
 
-  const GIG_MODIFIER_OPTIONS = useMemo(() => [
-    {
-      key: 'soundcheck',
-      label: t('ui:pregig.modifiers.soundcheck.label'),
-      cost: MODIFIER_COSTS.soundcheck,
-      desc: t('ui:pregig.modifiers.soundcheck.desc')
-    },
-    {
-      key: 'promo',
-      label: t('ui:pregig.modifiers.promo.label'),
-      cost: MODIFIER_COSTS.promo,
-      desc: t('ui:pregig.modifiers.promo.desc')
-    },
-    {
-      key: 'merch',
-      label: t('ui:pregig.modifiers.merch.label'),
-      cost: MODIFIER_COSTS.merch,
-      desc: t('ui:pregig.modifiers.merch.desc')
-    },
-    {
-      key: 'catering',
-      label: t('ui:pregig.modifiers.catering.label'),
-      cost: MODIFIER_COSTS.catering,
-      desc: t('ui:pregig.modifiers.catering.desc')
-    },
-    {
-      key: 'guestlist',
-      label: t('ui:pregig.modifiers.guestlist.label'),
-      cost: MODIFIER_COSTS.guestlist,
-      desc: t('ui:pregig.modifiers.guestlist.desc')
-    }
-  ], [t])
+  const GIG_MODIFIER_OPTIONS = useMemo(
+    () => [
+      {
+        key: 'soundcheck',
+        label: t('ui:pregig.modifiers.soundcheck.label'),
+        cost: MODIFIER_COSTS.soundcheck,
+        desc: t('ui:pregig.modifiers.soundcheck.desc')
+      },
+      {
+        key: 'promo',
+        label: t('ui:pregig.modifiers.promo.label'),
+        cost: MODIFIER_COSTS.promo,
+        desc: t('ui:pregig.modifiers.promo.desc')
+      },
+      {
+        key: 'merch',
+        label: t('ui:pregig.modifiers.merch.label'),
+        cost: MODIFIER_COSTS.merch,
+        desc: t('ui:pregig.modifiers.merch.desc')
+      },
+      {
+        key: 'catering',
+        label: t('ui:pregig.modifiers.catering.label'),
+        cost: MODIFIER_COSTS.catering,
+        desc: t('ui:pregig.modifiers.catering.desc')
+      },
+      {
+        key: 'guestlist',
+        label: t('ui:pregig.modifiers.guestlist.label'),
+        cost: MODIFIER_COSTS.guestlist,
+        desc: t('ui:pregig.modifiers.guestlist.desc')
+      }
+    ],
+    [t]
+  )
 
   const {
     currentGig,
@@ -175,14 +177,18 @@ export const PreGig = () => {
           <span>
             {t('ui:pregig.budget')}{' '}
             <span className='text-(--toxic-green) font-bold tabular-nums'>
-              {t('ui:currency', { value: formatLocalizedNumber(player.money, i18n.language) })}
+              {t('ui:currency', {
+                value: formatLocalizedNumber(player.money, i18n.language)
+              })}
             </span>
           </span>
           <span className='text-(--ash-gray)/30'>|</span>
           <span>
             {t('ui:pregig.costs')}{' '}
             <span className='text-(--blood-red) font-bold tabular-nums'>
-              {t('ui:currencyNegative', { value: formatLocalizedNumber(calculatedBudget, i18n.language) })}
+              {t('ui:currencyNegative', {
+                value: formatLocalizedNumber(calculatedBudget, i18n.language)
+              })}
             </span>
           </span>
         </div>
@@ -215,8 +221,12 @@ export const PreGig = () => {
                 className='w-full flex justify-between items-center p-3 border-2 border-(--warning-yellow)/30 hover:border-(--warning-yellow) text-(--warning-yellow)/70 hover:text-(--warning-yellow) transition-all group'
               >
                 <span className='flex flex-col text-left'>
-                  <span className='font-bold text-sm'>{t('ui:pregig.bandMeeting.label')}</span>
-                  <span className='text-[10px] opacity-70'>{t('ui:pregig.bandMeeting.desc')}</span>
+                  <span className='font-bold text-sm'>
+                    {t('ui:pregig.bandMeeting.label')}
+                  </span>
+                  <span className='text-[10px] opacity-70'>
+                    {t('ui:pregig.bandMeeting.desc')}
+                  </span>
                 </span>
                 <span className='font-mono text-sm font-bold tabular-nums'>
                   {t('ui:cost', { cost: BAND_MEETING_COST })}
@@ -305,7 +315,9 @@ export const PreGig = () => {
                     <div className='text-[10px] font-mono mt-0.5 flex gap-2'>
                       <span>{t('ui:seconds', { count: song.duration })}</span>
                       <span className='text-(--ash-gray)/40'>|</span>
-                      <span>{t('ui:pregig.diff')} {'*'.repeat(song.difficulty)}</span>
+                      <span>
+                        {t('ui:pregig.diff')} {'*'.repeat(song.difficulty)}
+                      </span>
                     </div>
                   </div>
                   <div className='flex flex-col items-end gap-1'>
@@ -387,7 +399,9 @@ export const PreGig = () => {
           }
         }}
       >
-        {!isStarting && <RazorPlayIcon className="w-8 h-8 text-(--void-black)" />}
+        {!isStarting && (
+          <RazorPlayIcon className='w-8 h-8 text-(--void-black)' />
+        )}
         {isStarting ? t('ui:pregig.initializing') : t('ui:pregig.startShow')}
       </motion.button>
     </div>

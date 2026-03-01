@@ -8,7 +8,7 @@ export const HealthBar = memo(function HealthBar({ health, isToxicMode }) {
   const { t } = useTranslation()
   return (
     <div className='absolute bottom-20 left-1/2 -translate-x-1/2 w-[28rem] z-10 pointer-events-none'>
-      <div className="bg-(--void-black)/80 p-4 border border-(--toxic-green)/30 backdrop-blur-sm">
+      <div className='bg-(--void-black)/80 p-4 border border-(--toxic-green)/30 backdrop-blur-sm'>
         <BlockMeter
           label={t('ui:crowdEnergy', 'CROWD ENERGY')}
           value={Math.round((health / 100) * 20)}

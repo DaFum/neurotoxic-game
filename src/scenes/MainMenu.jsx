@@ -5,7 +5,18 @@ import { useGameState } from '../context/GameState'
 import { useBandHQModal } from '../hooks/useBandHQModal.js'
 import { GlitchButton } from '../ui/GlitchButton'
 import { BandHQ } from '../ui/BandHQ'
-import { Modal, AnimatedDivider, AnimatedSubtitle, UplinkButton, BandcampIcon, InstaIcon, TikTokIcon, YouTubeIcon, BlogIcon, GameIcon } from '../ui/shared'
+import {
+  Modal,
+  AnimatedDivider,
+  AnimatedSubtitle,
+  UplinkButton,
+  BandcampIcon,
+  InstaIcon,
+  TikTokIcon,
+  YouTubeIcon,
+  BlogIcon,
+  GameIcon
+} from '../ui/shared'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 import { audioManager } from '../utils/AudioManager'
 import { handleError } from '../utils/errorHandler'
@@ -347,51 +358,51 @@ export const MainMenu = () => {
           <div className='flex flex-col gap-3 sm:gap-4 max-w-sm w-full mx-auto max-h-[80vh] overflow-y-auto overflow-x-hidden custom-scrollbar pr-1 sm:pr-2'>
             <UplinkButton
               title={t('ui:social_links.play_game')}
-              subtitle="neurotoxic-game.vercel.app"
+              subtitle='neurotoxic-game.vercel.app'
               type={t('ui:social_links.type_system_core')}
-              url="https://neurotoxic-game.vercel.app"
+              url='https://neurotoxic-game.vercel.app'
               Icon={GameIcon}
             />
             <UplinkButton
-              title="Bandcamp"
-              subtitle="neurotoxic.bandcamp.com"
+              title='Bandcamp'
+              subtitle='neurotoxic.bandcamp.com'
               type={t('ui:social_links.type_audio_vault')}
-              url="https://neurotoxic.bandcamp.com"
+              url='https://neurotoxic.bandcamp.com'
               Icon={BandcampIcon}
             />
             <UplinkButton
-              title="Instagram"
-              subtitle="instagram.com/neurotoxicband"
+              title='Instagram'
+              subtitle='instagram.com/neurotoxicband'
               type={t('ui:social_links.type_visual_feed')}
-              url="https://instagram.com/neurotoxicband"
+              url='https://instagram.com/neurotoxicband'
               Icon={InstaIcon}
             />
             <UplinkButton
-              title="TikTok"
-              subtitle="tiktok.com/@neurotoxicband"
+              title='TikTok'
+              subtitle='tiktok.com/@neurotoxicband'
               type={t('ui:social_links.type_viral_stream')}
-              url="https://tiktok.com/@neurotoxicband"
+              url='https://tiktok.com/@neurotoxicband'
               Icon={TikTokIcon}
             />
             <UplinkButton
-              title="Neurotoxic Once"
-              subtitle="youtube.com/@neurotoxiconcechannel237"
+              title='Neurotoxic Once'
+              subtitle='youtube.com/@neurotoxiconcechannel237'
               type={t('ui:social_links.type_broadcast_a')}
-              url="https://youtube.com/@neurotoxiconcechannel237"
+              url='https://youtube.com/@neurotoxiconcechannel237'
               Icon={YouTubeIcon}
             />
             <UplinkButton
-              title="Neurotoxic 3000"
-              subtitle="youtube.com/@neurotoxic3000"
+              title='Neurotoxic 3000'
+              subtitle='youtube.com/@neurotoxic3000'
               type={t('ui:social_links.type_broadcast_b')}
-              url="https://youtube.com/@neurotoxic3000"
+              url='https://youtube.com/@neurotoxic3000'
               Icon={YouTubeIcon}
             />
             <UplinkButton
-              title="Neuroblogxic"
-              subtitle="neuroblogxic.blogspot.com"
+              title='Neuroblogxic'
+              subtitle='neuroblogxic.blogspot.com'
               type={t('ui:social_links.type_data_log')}
-              url="https://neuroblogxic.blogspot.com"
+              url='https://neuroblogxic.blogspot.com'
               Icon={BlogIcon}
             />
           </div>

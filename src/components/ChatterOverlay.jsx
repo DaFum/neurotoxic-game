@@ -251,7 +251,9 @@ export const ChatterOverlay = ({ gameState }) => {
 
               {/* Message body */}
               <div className='pl-3 pr-2 py-2.5'>
-                <p className={`text-xs leading-snug font-(family-name:--font-ui) ${msg.type === 'hate' || currentScene === 'GAMEOVER' ? 'text-(--star-white) chromatic-text' : 'text-(--star-white)'}`}>
+                <p
+                  className={`text-xs leading-snug font-(family-name:--font-ui) ${msg.type === 'hate' || currentScene === 'GAMEOVER' ? 'text-(--star-white) chromatic-text' : 'text-(--star-white)'}`}
+                >
                   {t(msg.text)}
                 </p>
               </div>

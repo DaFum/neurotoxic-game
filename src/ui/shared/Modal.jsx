@@ -29,7 +29,10 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
       window.addEventListener('keydown', handleKeyDown)
       // Focus the dialog for accessibility ONLY if there isn't an input actively focused inside it
       const timer = setTimeout(() => {
-        if (dialogRef.current && !dialogRef.current.contains(document.activeElement)) {
+        if (
+          dialogRef.current &&
+          !dialogRef.current.contains(document.activeElement)
+        ) {
           dialogRef.current.focus()
         }
       }, 50)
@@ -58,12 +61,12 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
         onClick={e => e.stopPropagation()}
       >
         {/* Brutalist Frame Corners */}
-        <UIFrameCorner className="absolute -top-1 -left-1 w-8 h-8 text-(--toxic-green) opacity-50 transition-opacity group-hover:opacity-100" />
-        <UIFrameCorner className="absolute -top-1 -right-1 w-8 h-8 text-(--toxic-green) rotate-90 opacity-50 transition-opacity group-hover:opacity-100" />
-        <UIFrameCorner className="absolute -bottom-1 -right-1 w-8 h-8 text-(--toxic-green) rotate-180 opacity-50 transition-opacity group-hover:opacity-100" />
-        <UIFrameCorner className="absolute -bottom-1 -left-1 w-8 h-8 text-(--toxic-green) -rotate-90 opacity-50 transition-opacity group-hover:opacity-100" />
+        <UIFrameCorner className='absolute -top-1 -left-1 w-8 h-8 text-(--toxic-green) opacity-50 transition-opacity group-hover:opacity-100' />
+        <UIFrameCorner className='absolute -top-1 -right-1 w-8 h-8 text-(--toxic-green) rotate-90 opacity-50 transition-opacity group-hover:opacity-100' />
+        <UIFrameCorner className='absolute -bottom-1 -right-1 w-8 h-8 text-(--toxic-green) rotate-180 opacity-50 transition-opacity group-hover:opacity-100' />
+        <UIFrameCorner className='absolute -bottom-1 -left-1 w-8 h-8 text-(--toxic-green) -rotate-90 opacity-50 transition-opacity group-hover:opacity-100' />
 
-        <div className="relative z-10">
+        <div className='relative z-10'>
           {title && (
             <h2 className='text-3xl font-(--font-display) text-(--toxic-green) mb-4 uppercase tracking-widest text-center'>
               {title}
