@@ -115,7 +115,6 @@ export class AudioError extends GameError {
 const errorLog = []
 const MAX_ERROR_LOG_SIZE = 100
 
-
 const VALID_SEVERITIES = new Set(Object.values(ErrorSeverity))
 
 const SENSITIVE_CONTEXT_KEYS = new Set([
@@ -220,9 +219,11 @@ const normalizeHandleErrorOptions = options => {
   const safeOptions = isPlainObject(options) ? options : {}
 
   const normalizedOptions = {
-    source: typeof safeOptions.source === 'string' ? safeOptions.source : undefined,
+    source:
+      typeof safeOptions.source === 'string' ? safeOptions.source : undefined,
     errorInfo:
-      typeof safeOptions.errorInfo === 'object' && safeOptions.errorInfo !== null
+      typeof safeOptions.errorInfo === 'object' &&
+      safeOptions.errorInfo !== null
         ? safeOptions.errorInfo
         : null,
     severity: normalizeSeverity(safeOptions.severity)
@@ -306,7 +307,9 @@ export const handleError = (error, options = {}) => {
       logger.error('ErrorHandler', errorInfo.message, errorInfo)
       if (typeof window !== 'undefined') {
         const sanitizedErrorInfo = sanitizeErrorInfo(errorInfo)
-        window.dispatchEvent(new CustomEvent('app:error:critical', { detail: sanitizedErrorInfo }))
+        window.dispatchEvent(
+          new CustomEvent('app:error:critical', { detail: sanitizedErrorInfo })
+        )
       }
       break
     case ErrorSeverity.HIGH:

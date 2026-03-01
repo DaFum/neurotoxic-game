@@ -27,7 +27,11 @@ export const MapNode = memo(
   }) => {
     const { t } = useTranslation(['venues', 'ui'])
     const [isHoveredLocal, setIsHoveredLocal] = useState(false)
-    const nodeLocationName = translateLocation(t, node.venue?.name, t('ui:map.unknown'))
+    const nodeLocationName = translateLocation(
+      t,
+      node.venue?.name,
+      t('ui:map.unknown')
+    )
 
     const positionStyle = useMemo(
       () => ({ left: `${node.x}%`, top: `${node.y}%` }),
@@ -80,10 +84,7 @@ export const MapNode = memo(
           isReachable
             ? t('ui:map.travel_to', {
                 name: nodeLocationName
-              }) +
-              (isPendingConfirm
-                ? t('ui:map.click_to_confirm')
-                : '')
+              }) + (isPendingConfirm ? t('ui:map.click_to_confirm') : '')
             : undefined
         }
         tabIndex={isReachable ? 0 : undefined}
@@ -99,11 +100,13 @@ export const MapNode = memo(
         }
       >
         {/* Target Crosshairs (appear on hover/focus) */}
-        <div className={`absolute inset-0 border border-(--toxic-green)/30 transition-all duration-300 pointer-events-none z-0 ${isHoveredLocal || isPendingConfirm ? 'scale-100 opacity-100' : 'scale-90 opacity-0'}`}>
-          <div className="absolute top-0 left-1/2 w-[1px] h-4 bg-(--toxic-green) -translate-x-1/2 -translate-y-2"></div>
-          <div className="absolute bottom-0 left-1/2 w-[1px] h-4 bg-(--toxic-green) -translate-x-1/2 translate-y-2"></div>
-          <div className="absolute left-0 top-1/2 w-4 h-[1px] bg-(--toxic-green) -translate-y-1/2 -translate-x-2"></div>
-          <div className="absolute right-0 top-1/2 w-4 h-[1px] bg-(--toxic-green) -translate-y-1/2 translate-x-2"></div>
+        <div
+          className={`absolute inset-0 border border-(--toxic-green)/30 transition-all duration-300 pointer-events-none z-0 ${isHoveredLocal || isPendingConfirm ? 'scale-100 opacity-100' : 'scale-90 opacity-0'}`}
+        >
+          <div className='absolute top-0 left-1/2 w-[1px] h-4 bg-(--toxic-green) -translate-x-1/2 -translate-y-2'></div>
+          <div className='absolute bottom-0 left-1/2 w-[1px] h-4 bg-(--toxic-green) -translate-x-1/2 translate-y-2'></div>
+          <div className='absolute left-0 top-1/2 w-4 h-[1px] bg-(--toxic-green) -translate-y-1/2 -translate-x-2'></div>
+          <div className='absolute right-0 top-1/2 w-4 h-[1px] bg-(--toxic-green) -translate-y-1/2 translate-x-2'></div>
         </div>
 
         {isCurrent && !isTraveling && (
@@ -158,8 +161,10 @@ export const MapNode = memo(
         )}
 
         {/* Node Label (Always visible, matching BrutalistUI style) */}
-        <div className="mt-2 flex flex-col items-center z-10 pointer-events-none">
-          <span className={`text-[10px] font-bold tracking-widest uppercase text-center transition-colors ${isHoveredLocal || isPendingConfirm ? 'text-(--star-white)' : 'text-(--toxic-green)'}`}>
+        <div className='mt-2 flex flex-col items-center z-10 pointer-events-none'>
+          <span
+            className={`text-[10px] font-bold tracking-widest uppercase text-center transition-colors ${isHoveredLocal || isPendingConfirm ? 'text-(--star-white)' : 'text-(--toxic-green)'}`}
+          >
             {nodeLocationName}
           </span>
         </div>
@@ -177,12 +182,11 @@ export const MapNode = memo(
                   {t('ui:map.festival')}
                 </div>
               )}
-              {t('ui:map.cap')}: {node.venue?.capacity}{' '}
-              | {t('ui:map.pay')}: ~{node.venue?.pay}
+              {t('ui:map.cap')}: {node.venue?.capacity} | {t('ui:map.pay')}: ~
+              {node.venue?.pay}
               {'\u20AC'}
               <br />
-              {t('ui:map.ticket')}:{' '}
-              {ticketPrice ?? node.venue?.price}
+              {t('ui:map.ticket')}: {ticketPrice ?? node.venue?.price}
               {'\u20AC'} | {t('ui:map.diff')}:{' '}
               {'\u2605'.repeat(node.venue?.diff || 0)}
             </div>

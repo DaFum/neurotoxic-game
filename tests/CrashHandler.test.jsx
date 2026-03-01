@@ -61,9 +61,7 @@ test('CrashHandler HIDES stack trace in PROD mode', async () => {
     </ErrorBoundary>
   )
 
-  expect(
-    getByText('ui:crash.title')
-  ).toBeInTheDocument()
+  expect(getByText('ui:crash.title')).toBeInTheDocument()
   // Verify error message is NOT visible
   expect(queryByText('Error: Test Error')).toBe(null)
 

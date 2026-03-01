@@ -58,10 +58,10 @@ export const GameOver = () => {
         initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.3, duration: 0.8 }}
-        className="relative z-10 mb-4"
+        className='relative z-10 mb-4'
         aria-hidden='true'
       >
-        <VoidSkullIcon className="w-24 h-24 text-(--blood-red) drop-shadow-[0_0_20px_var(--blood-red)]" />
+        <VoidSkullIcon className='w-24 h-24 text-(--blood-red) drop-shadow-[0_0_20px_var(--blood-red)]' />
       </motion.div>
 
       <h1 className='text-8xl md:text-9xl text-(--blood-red) font-[Metal_Mania] mb-2 animate-doom-zoom relative z-10'>

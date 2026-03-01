@@ -103,7 +103,6 @@ describe('handleError', () => {
     assert.strictEqual(result.message, 'Fallback')
   })
 
-
   it('should allow severity override when options.severity is valid', () => {
     const error = new StateError('Severity override')
     const result = handleError(error, {
@@ -134,8 +133,6 @@ describe('handleError', () => {
     assert.strictEqual(result.severity, error.severity)
   })
 
-
-
   it('should preserve diagnostics from Error context objects', () => {
     const wrappedError = new Error('Original context error')
     const gameError = new StateError('Context wrapper')
@@ -147,7 +144,6 @@ describe('handleError', () => {
     assert.strictEqual(result.context.message, 'Original context error')
     assert.ok(typeof result.context.stack === 'string')
   })
-
 
   it('should redact sensitive keys matched by substring patterns', () => {
     const error = new Error('Pattern redaction')
