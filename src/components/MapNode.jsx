@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { HexNode } from '../ui/shared'
+import { translateLocation } from '../utils/locationI18n'
 
 const VAN_STYLE = { transform: 'translate(0, -50%)' }
 const MOTION_INITIAL = { scale: 0 }
@@ -26,6 +27,7 @@ export const MapNode = memo(
   }) => {
     const { t } = useTranslation(['venues', 'ui'])
     const [isHoveredLocal, setIsHoveredLocal] = useState(false)
+    const nodeLocationName = translateLocation(t, node.venue?.name, t('ui:map.unknown'))
 
     const positionStyle = useMemo(
       () => ({ left: `${node.x}%`, top: `${node.y}%` }),
@@ -77,7 +79,7 @@ export const MapNode = memo(
         aria-label={
           isReachable
             ? t('ui:map.travel_to', {
-                name: t(node.venue?.name)
+                name: nodeLocationName
               }) +
               (isPendingConfirm
                 ? t('ui:map.click_to_confirm')
@@ -158,14 +160,13 @@ export const MapNode = memo(
         {/* Node Label (Always visible, matching BrutalistUI style) */}
         <div className="mt-2 flex flex-col items-center z-10 pointer-events-none">
           <span className={`text-[10px] font-bold tracking-widest uppercase text-center transition-colors ${isHoveredLocal || isPendingConfirm ? 'text-(--star-white)' : 'text-(--toxic-green)'}`}>
-            {t(node.venue?.name) || t('ui:map.unknown')}
+            {nodeLocationName}
           </span>
         </div>
 
         <div className='hidden group-hover:block group-focus:block absolute top-full mt-2 bg-(--void-black)/90 border border-(--toxic-green) p-2 z-50 whitespace-nowrap pointer-events-none'>
           <div className='font-bold text-(--toxic-green)'>
-            {t(node.venue?.name) ||
-              t('ui:map.unknown')}
+            {nodeLocationName}
           </div>
           {(node.type === 'GIG' ||
             node.type === 'FESTIVAL' ||

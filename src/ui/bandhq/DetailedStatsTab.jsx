@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { ProgressBar, Panel, Tooltip } from '../shared'
 import { CHARACTERS } from '../../data/characters'
+import { translateLocation } from '../../utils/locationI18n'
 
 // Helpers (Module Scope)
 const isUnlocked = val => {
@@ -43,6 +44,7 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
   const activeQuests = state.activeQuests || []
   const venueBlacklist = state.venueBlacklist || []
   const reputationByRegion = state.reputationByRegion || {}
+  const locationName = translateLocation(t, player.location, player.location)
 
   return (
     <div className='space-y-8'>
@@ -72,9 +74,7 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
           />
           <DetailRow
             label={t('ui:ui.location', { defaultValue: 'Location' })}
-            value={t(`venues:${player.location}.name`, {
-              defaultValue: player.location
-            })}
+            value={locationName}
           />
           <DetailRow
             label={t('ui:detailedStats.totalTravels')}

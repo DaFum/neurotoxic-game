@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { useAudioControl } from '../hooks/useAudioControl'
 import { ProgressBar } from './shared'
+import { translateLocation } from '../utils/locationI18n'
 
 const SHORTCUTS = [
   { key: '?', desc: 'Toggle this help' },
@@ -27,6 +28,7 @@ const SHORTCUTS = [
 export const HUD = () => {
   const { player, band } = useGameState()
   const { t } = useTranslation(['ui', 'venues'])
+  const locationName = translateLocation(t, player.location, player.location)
   const [showHelp, setShowHelp] = useState(false)
   const { audioState, handleAudioChange } = useAudioControl()
 
@@ -88,7 +90,7 @@ export const HUD = () => {
           <div className='flex items-center gap-2 mb-2'>
             <MapIcon size={14} />
             <span className='text-(--star-white)/80'>
-              Day {player.day} — {t(`venues:${player.location}.name`, { defaultValue: player.location })}
+              Day {player.day} — {locationName}
             </span>
           </div>
 
