@@ -93,6 +93,88 @@ test('trySpawnProjectile - higher chance on high combo', () => {
   assert.ok(projectile)
 })
 
+test('trySpawnProjectile - verifies all spawned object properties', () => {
+  const stats = { health: 100, combo: 0 } // Chance: 0.0005
+  const screenWidth = 2000
+  const values = [
+    0.0001, // random() < spawnChance (spawns!)
+    0.5, // id part
+    0.5, // x (0.5 * 2000 = 1000)
+    0.7, // vx ((0.7 - 0.5) * 0.5 = 0.1)
+    0.5, // vy (0.3 + 0.5 * 0.4 = 0.5)
+    0.8, // vr ((0.8 - 0.5) * 0.2 = 0.06)
+    0.6 // type (0.6 > 0.5 -> 'bottle')
+  ]
+  let i = 0
+  const mockRandom = () => values[i++]
+
+  const originalNow = Date.now
+  Date.now = () => 1234567890
+
+  try {
+    const projectile = trySpawnProjectile(stats, mockRandom, screenWidth)
+
+    assert.ok(projectile)
+    assert.equal(typeof projectile.id, 'number')
+    assert.equal(projectile.id, 1234567890)
+    assert.equal(projectile.x, 1000)
+    assert.equal(projectile.y, -100)
+    // use approximate equality for floats
+    assert.ok(Math.abs(projectile.vx - 0.1) < 0.0001)
+    assert.ok(Math.abs(projectile.vy - 0.5) < 0.0001)
+    assert.equal(projectile.rotation, 0)
+    assert.ok(Math.abs(projectile.vr - 0.06) < 0.0001)
+    assert.equal(projectile.type, 'bottle')
+  } finally {
+    Date.now = originalNow
+  }
+})
+
+test('trySpawnProjectile - health boundary (49 vs 50)', () => {
+  const mockRandom = () => 0.001 // Between 0.0005 and 0.002
+
+  // Health 49: chance 0.002, should spawn
+  assert.ok(trySpawnProjectile({ health: 49, combo: 0 }, mockRandom))
+
+  // Health 50: chance 0.0005, should not spawn
+  assert.equal(trySpawnProjectile({ health: 50, combo: 0 }, mockRandom), null)
+})
+
+test('trySpawnProjectile - combo boundary (30 vs 31)', () => {
+  const mockRandom = () => 0.001 // Between 0.0005 and 0.0015
+
+  // Combo 30: chance 0.0005, should not spawn
+  assert.equal(trySpawnProjectile({ health: 100, combo: 30 }, mockRandom), null)
+
+  // Combo 31: chance 0.0005 + 0.001 = 0.0015, should spawn
+  assert.ok(trySpawnProjectile({ health: 100, combo: 31 }, mockRandom))
+})
+
+test('trySpawnProjectile - screenWidth influence on x', () => {
+  const stats = { health: 100, combo: 0 }
+  const values = [0, 0, 0.5] // spawn, id, x
+  let i = 0
+  const mockRandom = () => values[i++]
+
+  const p1 = trySpawnProjectile(stats, mockRandom, 1000)
+  assert.equal(p1.x, 500)
+
+  i = 0
+  const p2 = trySpawnProjectile(stats, mockRandom, 2000)
+  assert.equal(p2.x, 1000)
+})
+
+test('trySpawnProjectile - combined chance (low health AND high combo)', () => {
+  const stats = { health: 40, combo: 40 }
+  // 0.002 + 0.001 = 0.003
+  const mockRandom = () => 0.0025 // Should spawn
+
+  assert.ok(trySpawnProjectile(stats, mockRandom))
+
+  const mockRandomNo = () => 0.0035 // Should not spawn
+  assert.equal(trySpawnProjectile(stats, mockRandomNo), null)
+})
+
 test('checkCollisions - detects collision and calls onHit', () => {
   const screenHeight = 1000
   // hitY = 1000 - 150 = 850
