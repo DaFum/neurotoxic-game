@@ -74,6 +74,11 @@ export class MapGenerator {
     const preFinale = ALL_VENUES.find(v => v.id === 'leipzig_arena')
     if (preFinale) usedVenueIds.add(preFinale.id)
 
+    // Optimization: Maintain dynamic available pools to avoid .filter() in loops
+    const availableEasy = easyVenues.filter(v => !usedVenueIds.has(v.id))
+    const availableMedium = mediumVenues.filter(v => !usedVenueIds.has(v.id))
+    const availableHard = hardVenues.filter(v => !usedVenueIds.has(v.id))
+
     // Generate intermediate layers
     for (let i = 1; i < depth; i++) {
       const layerNodes = []
@@ -81,36 +86,52 @@ export class MapGenerator {
       const nodeCount = Math.floor(this.random() * 3) + 2
 
       for (let j = 0; j < nodeCount; j++) {
-        let venuePool
-        if (i < 3) venuePool = easyVenues
-        else if (i < 7) venuePool = mediumVenues
-        else venuePool = hardVenues
+        let candidates
+        let currentAvailablePool
 
-        // Filter out used venues
-        const availableVenues = venuePool.filter(v => !usedVenueIds.has(v.id))
+        if (i < 3) {
+          candidates = availableEasy
+          currentAvailablePool = availableEasy
+        } else if (i < 7) {
+          candidates = availableMedium
+          currentAvailablePool = availableMedium
+        } else {
+          candidates = availableHard
+          currentAvailablePool = availableHard
+        }
+
         // Fallback to harder pools if the current pool is exhausted
-        let candidates = availableVenues
         if (candidates.length === 0) {
-          // Instead of purely falling back to the same exhausted pool and causing duplicates,
-          // shift difficulty up to find fresh venues.
           if (i < 3) {
-            candidates = mediumVenues.filter(v => !usedVenueIds.has(v.id))
+            candidates = availableMedium
+            currentAvailablePool = availableMedium
           }
           if (candidates.length === 0) {
-            candidates = hardVenues.filter(v => !usedVenueIds.has(v.id))
+            candidates = availableHard
+            currentAvailablePool = availableHard
           }
 
           // Absolute zero-resort fallback: allow duplicates from full pool to prevent crash,
           // but exclude specialized venues.
           if (candidates.length === 0) {
-            candidates = venuePool.filter(
+            // Re-assign candidates to the original static pool for this difficulty layer
+            const staticPool =
+              i < 3 ? easyVenues : i < 7 ? mediumVenues : hardVenues
+            candidates = staticPool.filter(
               v => v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum'
             )
+            currentAvailablePool = null // We are now picking from a pool that allows duplicates
           }
         }
 
         // Pick random venue
-        const venue = candidates[Math.floor(this.random() * candidates.length)]
+        const candidateIdx = Math.floor(this.random() * candidates.length)
+        const venue = candidates[candidateIdx]
+
+        // Only remove if we picked from an available (non-exhausted) pool
+        if (currentAvailablePool) {
+          currentAvailablePool.splice(candidateIdx, 1)
+        }
         usedVenueIds.add(venue.id)
 
         // Determine Node Type based on probability and venue
