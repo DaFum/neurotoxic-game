@@ -6,6 +6,32 @@ import { useId } from 'react'
 
 export const HexBorder = ({ className, title }) => {
   const titleId = useId()
+
+  if (title) {
+    return (
+      <svg
+        className={className}
+      viewBox='0 0 100 100'
+      preserveAspectRatio='none'
+      fill='none'
+      xmlns='http://www.w3.org/2000/svg'
+        role="img"
+        aria-labelledby={titleId}
+
+      >
+        <title id={titleId}>{title}</title>
+        <path
+        d='M5 0H95L100 5V95L95 100H5L0 95V5L5 0Z'
+        stroke='currentColor'
+        strokeWidth='2'
+        vectorEffect='non-scaling-stroke'
+      />
+      <rect x='2' y='2' width='4' height='4' fill='currentColor' />
+      <rect x='94' y='94' width='4' height='4' fill='currentColor' />
+      </svg>
+    )
+  }
+
   return (
     <svg
       className={className}
@@ -13,12 +39,11 @@ export const HexBorder = ({ className, title }) => {
       preserveAspectRatio='none'
       fill='none'
       xmlns='http://www.w3.org/2000/svg'
-      role={title ? 'img' : 'presentation'}
-      aria-hidden={!title}
-      focusable='false'
-      aria-labelledby={title ? titleId : undefined}
+      aria-hidden="true"
+      focusable="false"
+      role="presentation"
+
     >
-      {title && <title id={titleId}>{title}</title>}
       <path
         d='M5 0H95L100 5V95L95 100H5L0 95V5L5 0Z'
         stroke='currentColor'
@@ -33,18 +58,48 @@ export const HexBorder = ({ className, title }) => {
 
 export const CrosshairIcon = ({ className, title }) => {
   const titleId = useId()
+
+  if (title) {
+    return (
+      <svg
+        className={className}
+      viewBox='0 0 24 24'
+      fill='none'
+      xmlns='http://www.w3.org/2000/svg'
+        role="img"
+        aria-labelledby={titleId}
+
+      >
+        <title id={titleId}>{title}</title>
+        <path
+        d='M12 2V6M12 18V22M2 12H6M18 12H22M12 12V12.01'
+        stroke='currentColor'
+        strokeWidth='2'
+        strokeLinecap='square'
+      />
+      <circle
+        cx='12'
+        cy='12'
+        r='4'
+        stroke='currentColor'
+        strokeWidth='1'
+        strokeDasharray='2 2'
+      />
+      </svg>
+    )
+  }
+
   return (
     <svg
       className={className}
       viewBox='0 0 24 24'
       fill='none'
       xmlns='http://www.w3.org/2000/svg'
-      role={title ? 'img' : 'presentation'}
-      aria-hidden={!title}
-      focusable='false'
-      aria-labelledby={title ? titleId : undefined}
+      aria-hidden="true"
+      focusable="false"
+      role="presentation"
+
     >
-      {title && <title id={titleId}>{title}</title>}
       <path
         d='M12 2V6M12 18V22M2 12H6M18 12H22M12 12V12.01'
         stroke='currentColor'
@@ -65,17 +120,41 @@ export const CrosshairIcon = ({ className, title }) => {
 
 export const MoneyIcon = ({ className, title }) => {
   const titleId = useId()
+
+  if (title) {
+    return (
+      <svg
+        className={className}
+      viewBox='0 0 24 24'
+      fill='none'
+      xmlns='http://www.w3.org/2000/svg'
+        role="img"
+        aria-labelledby={titleId}
+
+      >
+        <title id={titleId}>{title}</title>
+        <path
+        d='M12 2V22M8 6H14C16.2091 6 18 7.79086 18 10C18 12.2091 16.2091 14 14 14H10C7.79086 14 6 15.7908 6 18C6 20.2091 7.79086 22 10 22H16'
+        stroke='currentColor'
+        strokeWidth='2'
+        strokeLinecap='square'
+      />
+      <path d='M4 12L6 12M18 12L20 12' stroke='currentColor' strokeWidth='2' />
+      </svg>
+    )
+  }
+
   return (
     <svg
       className={className}
       viewBox='0 0 24 24'
       fill='none'
       xmlns='http://www.w3.org/2000/svg'
-      role={title ? 'img' : undefined}
-      aria-hidden={!title}
-      aria-labelledby={title ? titleId : undefined}
+      aria-hidden="true"
+      focusable="false"
+      role="presentation"
+
     >
-      {title && <title id={titleId}>{title}</title>}
       <path
         d='M12 2V22M8 6H14C16.2091 6 18 7.79086 18 10C18 12.2091 16.2091 14 14 14H10C7.79086 14 6 15.7908 6 18C6 20.2091 7.79086 22 10 22H16'
         stroke='currentColor'
@@ -89,17 +168,43 @@ export const MoneyIcon = ({ className, title }) => {
 
 export const AlertIcon = ({ className, title }) => {
   const titleId = useId()
+
+  if (title) {
+    return (
+      <svg
+        className={className}
+      viewBox='0 0 24 24'
+      fill='none'
+      xmlns='http://www.w3.org/2000/svg'
+        role="img"
+        aria-labelledby={titleId}
+
+      >
+        <title id={titleId}>{title}</title>
+        <path
+        d='M12 2L22 20H2L12 2Z'
+        stroke='currentColor'
+        strokeWidth='2'
+        strokeLinecap='square'
+        strokeLinejoin='miter'
+      />
+      <rect x='11' y='10' width='2' height='6' fill='currentColor' />
+      <rect x='11' y='17' width='2' height='2' fill='currentColor' />
+      </svg>
+    )
+  }
+
   return (
     <svg
       className={className}
       viewBox='0 0 24 24'
       fill='none'
       xmlns='http://www.w3.org/2000/svg'
-      role={title ? 'img' : undefined}
-      aria-hidden={!title}
-      aria-labelledby={title ? titleId : undefined}
+      aria-hidden="true"
+      focusable="false"
+      role="presentation"
+
     >
-      {title && <title id={titleId}>{title}</title>}
       <path
         d='M12 2L22 20H2L12 2Z'
         stroke='currentColor'
@@ -115,17 +220,57 @@ export const AlertIcon = ({ className, title }) => {
 
 export const SkullIcon = ({ className, title }) => {
   const titleId = useId()
+
+  if (title) {
+    return (
+      <svg
+        className={className}
+      viewBox='0 0 24 24'
+      fill='none'
+      xmlns='http://www.w3.org/2000/svg'
+        role="img"
+        aria-labelledby={titleId}
+
+      >
+        <title id={titleId}>{title}</title>
+        <path
+        d='M5 7C5 4 8 2 12 2C16 2 19 4 19 7V13C19 16 16 17 16 17L15 22H9L8 17C8 17 5 16 5 13V7Z'
+        stroke='currentColor'
+        strokeWidth='2'
+        strokeLinejoin='miter'
+      />
+      <circle
+        cx='9'
+        cy='10'
+        r='1'
+        fill='currentColor'
+        stroke='currentColor'
+        strokeWidth='1'
+      />
+      <circle
+        cx='15'
+        cy='10'
+        r='1'
+        fill='currentColor'
+        stroke='currentColor'
+        strokeWidth='1'
+      />
+      <path d='M10 16H14' stroke='currentColor' strokeWidth='2' />
+      </svg>
+    )
+  }
+
   return (
     <svg
       className={className}
       viewBox='0 0 24 24'
       fill='none'
       xmlns='http://www.w3.org/2000/svg'
-      role={title ? 'img' : undefined}
-      aria-hidden={!title}
-      aria-labelledby={title ? titleId : undefined}
+      aria-hidden="true"
+      focusable="false"
+      role="presentation"
+
     >
-      {title && <title id={titleId}>{title}</title>}
       <path
         d='M5 7C5 4 8 2 12 2C16 2 19 4 19 7V13C19 16 16 17 16 17L15 22H9L8 17C8 17 5 16 5 13V7Z'
         stroke='currentColor'
@@ -155,17 +300,45 @@ export const SkullIcon = ({ className, title }) => {
 
 export const GearIcon = ({ className, title }) => {
   const titleId = useId()
+
+  if (title) {
+    return (
+      <svg
+        className={className}
+      viewBox='0 0 24 24'
+      fill='none'
+      xmlns='http://www.w3.org/2000/svg'
+        role="img"
+        aria-labelledby={titleId}
+
+      >
+        <title id={titleId}>{title}</title>
+        <path
+        d='M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z'
+        stroke='currentColor'
+        strokeWidth='2'
+      />
+      <path
+        d='M19.4 15A1.65 1.65 0 0 0 19 16.5L20 18L18 20L16.5 19A1.65 1.65 0 0 0 15 19.4V21H12H9V19.4A1.65 1.65 0 0 0 7.5 19L6 20L4 18L5 16.5A1.65 1.65 0 0 0 4.6 15H3V12V9H4.6A1.65 1.65 0 0 0 5 7.5L4 6L6 4L7.5 5A1.65 1.65 0 0 0 9 4.6V3H12H15V4.6A1.65 1.65 0 0 0 16.5 5L18 4L20 6L19 7.5A1.65 1.65 0 0 0 19.4 9H21V12V15H19.4Z'
+        stroke='currentColor'
+        strokeWidth='2'
+        strokeLinejoin='miter'
+      />
+      </svg>
+    )
+  }
+
   return (
     <svg
       className={className}
       viewBox='0 0 24 24'
       fill='none'
       xmlns='http://www.w3.org/2000/svg'
-      role={title ? 'img' : undefined}
-      aria-hidden={!title}
-      aria-labelledby={title ? titleId : undefined}
+      aria-hidden="true"
+      focusable="false"
+      role="presentation"
+
     >
-      {title && <title id={titleId}>{title}</title>}
       <path
         d='M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z'
         stroke='currentColor'
@@ -183,17 +356,46 @@ export const GearIcon = ({ className, title }) => {
 
 export const HexNode = ({ className, title }) => {
   const titleId = useId()
+
+  if (title) {
+    return (
+      <svg
+        className={className}
+      viewBox='0 0 100 100'
+      fill='none'
+      xmlns='http://www.w3.org/2000/svg'
+        role="img"
+        aria-labelledby={titleId}
+
+      >
+        <title id={titleId}>{title}</title>
+        <path
+        d='M50 5L95 25V75L50 95L5 75V25L50 5Z'
+        stroke='currentColor'
+        strokeWidth='4'
+        strokeLinejoin='miter'
+      />
+      <circle cx='50' cy='50' r='10' fill='currentColor' />
+      <path
+        d='M50 25V40M50 60V75M25 50H40M60 50H75'
+        stroke='currentColor'
+        strokeWidth='2'
+      />
+      </svg>
+    )
+  }
+
   return (
     <svg
       className={className}
       viewBox='0 0 100 100'
       fill='none'
       xmlns='http://www.w3.org/2000/svg'
-      role={title ? 'img' : undefined}
-      aria-hidden={!title}
-      aria-labelledby={title ? titleId : undefined}
+      aria-hidden="true"
+      focusable="false"
+      role="presentation"
+
     >
-      {title && <title id={titleId}>{title}</title>}
       <path
         d='M50 5L95 25V75L50 95L5 75V25L50 5Z'
         stroke='currentColor'
@@ -237,17 +439,45 @@ export const WarningStripe = () => {
 
 export const BiohazardIcon = ({ className, title }) => {
   const titleId = useId()
+
+  if (title) {
+    return (
+      <svg
+        className={className}
+      viewBox='0 0 24 24'
+      fill='none'
+      xmlns='http://www.w3.org/2000/svg'
+        role="img"
+        aria-labelledby={titleId}
+
+      >
+        <title id={titleId}>{title}</title>
+        <path
+        d='M12 14.5C13.3807 14.5 14.5 13.3807 14.5 12C14.5 10.6193 13.3807 9.5 12 9.5C10.6193 9.5 9.5 10.6193 9.5 12C9.5 13.3807 10.6193 14.5 12 14.5Z'
+        stroke='currentColor'
+        strokeWidth='2'
+      />
+      <path
+        d='M12 9.5V4M12 4C9.5 4 7.5 5.5 6.5 7.5M12 4C14.5 4 16.5 5.5 17.5 7.5M9.83494 13.25L5.0718 16M5.0718 16C3.5 14.5 3 12 3.5 9.5M5.0718 16C6.5 17.5 9 18 11.5 17.5M14.1651 13.25L18.9282 16M18.9282 16C20.5 14.5 21 12 20.5 9.5M18.9282 16C17.5 17.5 15 18 12.5 17.5'
+        stroke='currentColor'
+        strokeWidth='2'
+        strokeLinecap='square'
+      />
+      </svg>
+    )
+  }
+
   return (
     <svg
       className={className}
       viewBox='0 0 24 24'
       fill='none'
       xmlns='http://www.w3.org/2000/svg'
-      role={title ? 'img' : undefined}
-      aria-hidden={!title}
-      aria-labelledby={title ? titleId : undefined}
+      aria-hidden="true"
+      focusable="false"
+      role="presentation"
+
     >
-      {title && <title id={titleId}>{title}</title>}
       <path
         d='M12 14.5C13.3807 14.5 14.5 13.3807 14.5 12C14.5 10.6193 13.3807 9.5 12 9.5C10.6193 9.5 9.5 10.6193 9.5 12C9.5 13.3807 10.6193 14.5 12 14.5Z'
         stroke='currentColor'
@@ -265,17 +495,49 @@ export const BiohazardIcon = ({ className, title }) => {
 
 export const CorporateSeal = ({ className, title }) => {
   const titleId = useId()
+
+  if (title) {
+    return (
+      <svg
+        className={className}
+      viewBox='0 0 100 100'
+      fill='none'
+      xmlns='http://www.w3.org/2000/svg'
+        role="img"
+        aria-labelledby={titleId}
+
+      >
+        <title id={titleId}>{title}</title>
+        <circle
+        cx='50'
+        cy='50'
+        r='45'
+        stroke='currentColor'
+        strokeWidth='4'
+        strokeDasharray='10 5'
+      />
+      <circle cx='50' cy='50' r='35' stroke='currentColor' strokeWidth='2' />
+      <path
+        d='M30 50L45 65L75 35'
+        stroke='currentColor'
+        strokeWidth='6'
+        strokeLinecap='square'
+      />
+      </svg>
+    )
+  }
+
   return (
     <svg
       className={className}
       viewBox='0 0 100 100'
       fill='none'
       xmlns='http://www.w3.org/2000/svg'
-      role={title ? 'img' : undefined}
-      aria-hidden={!title}
-      aria-labelledby={title ? titleId : undefined}
+      aria-hidden="true"
+      focusable="false"
+      role="presentation"
+
     >
-      {title && <title id={titleId}>{title}</title>}
       <circle
         cx='50'
         cy='50'
@@ -708,7 +970,7 @@ export const DeadmanButton = ({ label, onConfirm }) => {
 
         {/* Scanline FX on fill */}
         {isHolding && !isComplete && (
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjEiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC41Ii8+PC9zdmc+')] opacity-50 z-10 pointer-events-none"></div>
+          <div className="absolute inset-0 scanline-overlay opacity-50 z-10 pointer-events-none"></div>
         )}
 
         {/* Text */}
@@ -1088,44 +1350,47 @@ export const RhythmMatrix = () => {
 
       {/* 3 Lanes */}
       <div className='flex-1 flex justify-center gap-4 mt-6'>
-        {['GUITAR', 'DRUMS', 'BASS'].map((lane, i) => (
-          <div
-            key={lane}
-            className='w-16 h-full border-x border-(--toxic-green)/10 relative flex flex-col justify-end pb-2 group'
-          >
-            {/* Falling Note Simulation */}
+        {['GUITAR', 'DRUMS', 'BASS'].map((lane, i) => {
+          const localizedLane = t(`ui:rhythm.lane_${lane.toLowerCase()}`)
+          return (
             <div
-              className={`absolute top-0 left-1/2 -translate-x-1/2 w-12 h-4 border-2 border-(--toxic-green) bg-[color:var(--void-black)] animate-[drop_2s_linear_infinite] opacity-50`}
-              style={{ animationDelay: `${i * 0.5}s` }}
-            ></div>
-
-            {/* Target Box */}
-            <button
-              type='button'
-              className={`w-14 h-8 mx-auto border-2 transition-all duration-75 flex items-center justify-center cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)
-                ${hits[i] ? 'bg-(--toxic-green) border-(--toxic-green) shadow-[0_0_20px_var(--toxic-green)] scale-110' : 'bg-[color:var(--void-black)] border-(--toxic-green)/50 hover:border-(--toxic-green)'}`}
-              onMouseDown={() => triggerHit(i)}
-              onKeyDown={e => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  if (e.key === ' ') e.preventDefault()
-                  triggerHit(i)
-                }
-              }}
-              aria-label={t('ui:rhythm.hit_lane', { lane })}
-              aria-pressed={hits[i]}
+              key={lane}
+              className='w-16 h-full border-x border-(--toxic-green)/10 relative flex flex-col justify-end pb-2 group'
             >
-              <span
-                className={`text-[8px] font-bold ${hits[i] ? 'text-[color:var(--void-black)]' : 'text-(--toxic-green)/50'}`}
-              >
-                {t('ui:rhythm.hit')}
-              </span>
-            </button>
+              {/* Falling Note Simulation */}
+              <div
+                className={`absolute top-0 left-1/2 -translate-x-1/2 w-12 h-4 border-2 border-(--toxic-green) bg-[color:var(--void-black)] animate-[drop_2s_linear_infinite] opacity-50`}
+                style={{ animationDelay: `${i * 0.5}s` }}
+              ></div>
 
-            <span className='text-[10px] text-center mt-2 opacity-50 tracking-widest'>
-              {t(`ui:rhythm.lane_${lane.toLowerCase()}`)}
-            </span>
-          </div>
-        ))}
+              {/* Target Box */}
+              <button
+                type='button'
+                className={`w-14 h-8 mx-auto border-2 transition-all duration-75 flex items-center justify-center cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)
+                  ${hits[i] ? 'bg-(--toxic-green) border-(--toxic-green) shadow-[0_0_20px_var(--toxic-green)] scale-110' : 'bg-[color:var(--void-black)] border-(--toxic-green)/50 hover:border-(--toxic-green)'}`}
+                onMouseDown={() => triggerHit(i)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    if (e.key === ' ') e.preventDefault()
+                    triggerHit(i)
+                  }
+                }}
+                aria-label={t('ui:rhythm.hit_lane', { lane: localizedLane })}
+                aria-pressed={hits[i]}
+              >
+                <span
+                  className={`text-[8px] font-bold ${hits[i] ? 'text-[color:var(--void-black)]' : 'text-(--toxic-green)/50'}`}
+                >
+                  {t('ui:rhythm.hit')}
+                </span>
+              </button>
+
+              <span className='text-[10px] text-center mt-2 opacity-50 tracking-widest'>
+                {localizedLane}
+              </span>
+            </div>
+          )
+        })}
       </div>
     </div>
   )

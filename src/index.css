@@ -592,6 +592,15 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
   100% { transform: translateX(-50%); }
 }
 
+.scanline-overlay {
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 3px,
+    var(--void-black) 3px,
+    var(--void-black) 4px
+  );
+}
+
 .custom-scrollbar::-webkit-scrollbar { width: 6px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: var(--void-black); border-left: 1px solid var(--toxic-green-20); }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--toxic-green); }

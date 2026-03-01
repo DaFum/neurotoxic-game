@@ -105,6 +105,9 @@ export function UIFrameCorner({ className = '' }) {
       viewBox="0 0 48 48"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      focusable="false"
+      role="presentation"
     >
       <path
         d="M2 46V2H46"

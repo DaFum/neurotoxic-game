@@ -20,33 +20,33 @@ export const PreGig = () => {
   const GIG_MODIFIER_OPTIONS = useMemo(() => [
     {
       key: 'soundcheck',
-      label: t('ui:pregig.modifiers.soundcheck.label', 'Soundcheck'),
+      label: t('ui:pregig.modifiers.soundcheck.label'),
       cost: MODIFIER_COSTS.soundcheck,
-      desc: t('ui:pregig.modifiers.soundcheck.desc', 'Notes Easier')
+      desc: t('ui:pregig.modifiers.soundcheck.desc')
     },
     {
       key: 'promo',
-      label: t('ui:pregig.modifiers.promo.label', 'Social Promo'),
+      label: t('ui:pregig.modifiers.promo.label'),
       cost: MODIFIER_COSTS.promo,
-      desc: t('ui:pregig.modifiers.promo.desc', '+Crowd Fill')
+      desc: t('ui:pregig.modifiers.promo.desc')
     },
     {
       key: 'merch',
-      label: t('ui:pregig.modifiers.merch.label', 'Merch Table'),
+      label: t('ui:pregig.modifiers.merch.label'),
       cost: MODIFIER_COSTS.merch,
-      desc: t('ui:pregig.modifiers.merch.desc', '+Sales')
+      desc: t('ui:pregig.modifiers.merch.desc')
     },
     {
       key: 'catering',
-      label: t('ui:pregig.modifiers.catering.label', 'Catering / Energy'),
+      label: t('ui:pregig.modifiers.catering.label'),
       cost: MODIFIER_COSTS.catering,
-      desc: t('ui:pregig.modifiers.catering.desc', 'Counters Tired Band Penalty')
+      desc: t('ui:pregig.modifiers.catering.desc')
     },
     {
       key: 'guestlist',
-      label: t('ui:pregig.modifiers.guestlist.label', 'Guest List'),
+      label: t('ui:pregig.modifiers.guestlist.label'),
       cost: MODIFIER_COSTS.guestlist,
-      desc: t('ui:pregig.modifiers.guestlist.desc', '+VIP Score')
+      desc: t('ui:pregig.modifiers.guestlist.desc')
     }
   ], [t])
 
