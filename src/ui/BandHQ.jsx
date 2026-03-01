@@ -105,14 +105,14 @@ export const BandHQ = ({
     >
       {/* Backdrop */}
       <div
-        className='fixed inset-0 z-40 bg-(--void-black)/90 backdrop-blur-sm'
+        className='fixed inset-0 z-30 bg-(--void-black)/90 backdrop-blur-sm'
         onClick={onClose}
         aria-hidden="true"
       />
 
       {/* Decorative Background Image overlay */}
       <div
-        className='fixed inset-0 z-30 bg-cover bg-center opacity-20 pointer-events-none'
+        className='fixed inset-0 z-40 bg-cover bg-center opacity-20 pointer-events-none'
         style={{
           backgroundImage: `url("${getGenImageUrl(IMG_PROMPTS.BAND_HQ_BG)}")`
         }}
