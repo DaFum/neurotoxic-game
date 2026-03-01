@@ -1,17 +1,17 @@
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 
 def verify_main_menu(page):
     page.goto('http://localhost:5173/')
     # Wait for the intro to finish or skip it
     try:
         page.get_by_role("button", name="SKIP INTRO").click(timeout=3000)
-    except Exception:
+    except PlaywrightTimeoutError:
         pass
 
     # Dismiss tutorial if it appears
     try:
         page.get_by_role("button", name="X").click(timeout=3000)
-    except Exception:
+    except PlaywrightTimeoutError:
         pass
 
     # Click SOCIALS button
@@ -21,8 +21,8 @@ def verify_main_menu(page):
     page.wait_for_selector('text=Play Neurotoxic')
 
     # Take screenshot
-    page.screenshot(path='/home/jules/verification/socials_modal.png')
-    print("Screenshot saved to /home/jules/verification/socials_modal.png")
+    page.screenshot(path='socials_modal.png')
+    print("Screenshot saved to socials_modal.png")
 
 with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)

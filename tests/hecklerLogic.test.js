@@ -106,7 +106,12 @@ test('trySpawnProjectile - verifies all spawned object properties', () => {
     0.6 // type (0.6 > 0.5 -> 'bottle')
   ]
   let i = 0
-  const mockRandom = () => values[i++] ?? 0.5
+  const mockRandom = () => {
+    if (i >= values.length) {
+      assert.fail('Unexpected extra random() call in test')
+    }
+    return values[i++]
+  }
 
   const originalNow = Date.now
   Date.now = () => 1234567890
@@ -154,7 +159,12 @@ test('trySpawnProjectile - screenWidth influence on x', () => {
   const stats = { health: 100, combo: 0 }
   const values = [0, 0, 0.5] // spawn, id, x
   let i = 0
-  const mockRandom = () => values[i++] ?? 0.5
+  const mockRandom = () => {
+    if (i >= values.length) {
+      throw new Error('Unexpected random() call in test')
+    }
+    return values[i++]
+  }
 
   const p1 = trySpawnProjectile(stats, mockRandom, 1000)
   assert.equal(p1.x, 500)
