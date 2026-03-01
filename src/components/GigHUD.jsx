@@ -40,7 +40,12 @@ export const GigHUD = memo(function GigHUD({
       {/* Hazard Ticker - shown dynamically based on modifiers (if any) or fixed toxic mode */}
       {isToxicMode && (
         <div className='absolute top-0 w-full z-20'>
-          <HazardTicker message={t('ui:hazard.toxicOverload')} />
+          <HazardTicker
+            message={t(
+              'ui:hazard.toxicOverload',
+              'TOXIC OVERLOAD DETECTED // SEVERE SYSTEM STRESS // STAY FOCUSED'
+            )}
+          />
         </div>
       )}
 

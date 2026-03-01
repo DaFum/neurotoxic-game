@@ -142,7 +142,9 @@ export const BandHQ = ({
         {/* Navigation */}
         <div
           role='tablist'
-          aria-label={t('ui:hq.sectionsLabel')}
+          aria-label={t('ui:hq.sectionsLabel', {
+            defaultValue: 'Band HQ Sections'
+          })}
           className='flex border-b-2 border-(--toxic-green) overflow-x-auto'
         >
           {/* Tabs */}
