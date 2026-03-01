@@ -173,7 +173,7 @@ ProgressBar.propTypes = {
  */
 export const Panel = ({ title, children, className = '' }) => (
   <div
-    className={`relative bg-(--void-black)/40 border-2 border-(--ash-gray)/40 p-4 h-full group overflow-hidden ${className}`}
+    className={`relative bg-(--void-black)/40 border-2 border-(--ash-gray)/40 p-4 group overflow-hidden ${className}`}
   >
     {/* Brutalist Frame Corners */}
     <UIFrameCorner className="absolute top-0 left-0 w-6 h-6 text-(--ash-gray) opacity-30 transition-opacity group-hover:opacity-60" />
