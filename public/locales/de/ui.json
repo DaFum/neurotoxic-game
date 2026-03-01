@@ -147,6 +147,16 @@
   "stats.fame": "Ruhm",
   "stats.followers": "Follower",
   "socials": "SOCIALS",
+  "social_links": {
+    "play_game": "Spiele Neurotoxic",
+    "type_system_core": "SYSTEM_CORE",
+    "type_audio_vault": "AUDIO_VAULT",
+    "type_visual_feed": "VISUAL_FEED",
+    "type_viral_stream": "VIRAL_STREAM",
+    "type_broadcast_a": "BROADCAST_A",
+    "type_broadcast_b": "BROADCAST_B",
+    "type_data_log": "DATA_LOG"
+  },
   "stats.social_reach": "Social-Media-Reichweite",
   "stats.van_condition": "VAN-STATUS",
   "stats.fuel": "Treibstoff",

@@ -285,51 +285,51 @@ export const MainMenu = () => {
         >
           <div className='flex flex-col gap-4 max-w-sm w-full mx-auto max-h-[60vh] overflow-y-auto custom-scrollbar pr-2'>
             <UplinkButton
-              title="Play Neurotoxic"
+              title={t('ui:social_links.play_game')}
               subtitle="neurotoxic-game.vercel.app"
-              type="SYSTEM_CORE"
+              type={t('ui:social_links.type_system_core')}
               url="https://neurotoxic-game.vercel.app"
               Icon={GameIcon}
             />
             <UplinkButton
               title="Bandcamp"
               subtitle="neurotoxic.bandcamp.com"
-              type="AUDIO_VAULT"
+              type={t('ui:social_links.type_audio_vault')}
               url="https://neurotoxic.bandcamp.com"
               Icon={BandcampIcon}
             />
             <UplinkButton
               title="Instagram"
               subtitle="instagram.com/neurotoxicband"
-              type="VISUAL_FEED"
+              type={t('ui:social_links.type_visual_feed')}
               url="https://instagram.com/neurotoxicband"
               Icon={InstaIcon}
             />
             <UplinkButton
               title="TikTok"
               subtitle="tiktok.com/@neurotoxicband"
-              type="VIRAL_STREAM"
+              type={t('ui:social_links.type_viral_stream')}
               url="https://tiktok.com/@neurotoxicband"
               Icon={TikTokIcon}
             />
             <UplinkButton
               title="Neurotoxic Once"
               subtitle="youtube.com/@neurotoxiconcechannel237"
-              type="BROADCAST_A"
+              type={t('ui:social_links.type_broadcast_a')}
               url="https://youtube.com/@neurotoxiconcechannel237"
               Icon={YouTubeIcon}
             />
             <UplinkButton
               title="Neurotoxic 3000"
               subtitle="youtube.com/@neurotoxic3000"
-              type="BROADCAST_B"
+              type={t('ui:social_links.type_broadcast_b')}
               url="https://youtube.com/@neurotoxic3000"
               Icon={YouTubeIcon}
             />
             <UplinkButton
               title="Neuroblogxic"
               subtitle="neuroblogxic.blogspot.com"
-              type="DATA_LOG"
+              type={t('ui:social_links.type_data_log')}
               url="https://neuroblogxic.blogspot.com"
               Icon={BlogIcon}
             />

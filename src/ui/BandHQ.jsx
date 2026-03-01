@@ -235,7 +235,7 @@ export const BandHQ = ({
             )}
 
             {activeTab === 'LEADERBOARD' && (
-              <LeaderboardTab setlist={setlist} />
+              <LeaderboardTab />
             )}
 
             {activeTab === 'SETTINGS' && (

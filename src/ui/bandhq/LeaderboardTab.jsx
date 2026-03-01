@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import PropTypes from 'prop-types'
 import { Panel } from '../shared'
 import { logger } from '../../utils/logger'
 import { GlitchButton } from '../GlitchButton'
@@ -10,7 +9,7 @@ import { SONGS_DB } from '../../data/songs'
  * LeaderboardTab Component
  * Displays global player rankings for balance and song scores.
  */
-export const LeaderboardTab = ({ setlist }) => {
+export const LeaderboardTab = () => {
   const { t } = useTranslation()
   const [view, setView] = useState('BALANCE') // 'BALANCE' or 'SONG'
   const [selectedSongId, setSelectedSongId] = useState(SONGS_DB[0]?.id || '')
@@ -181,11 +180,4 @@ export const LeaderboardTab = ({ setlist }) => {
   )
 }
 
-LeaderboardTab.propTypes = {
-  setlist: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      title: PropTypes.string
-    })
-  ).isRequired
-}
+LeaderboardTab.propTypes = {}
