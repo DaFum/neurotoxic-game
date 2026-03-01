@@ -283,7 +283,7 @@ export const MainMenu = () => {
           onClose={() => setShowSocials(false)}
           title={t('ui:socials')}
         >
-          <div className='flex flex-col gap-4 max-w-sm w-full mx-auto max-h-[60vh] overflow-y-auto custom-scrollbar pr-2'>
+          <div className='flex flex-col gap-4 max-w-sm w-full mx-auto max-h-[75vh] overflow-y-auto custom-scrollbar pr-2'>
             <UplinkButton
               title={t('ui:social_links.play_game')}
               subtitle="neurotoxic-game.vercel.app"

@@ -29,15 +29,15 @@ export const UplinkButton = ({ title, url, subtitle, type, Icon }) => {
 
         {/* Text Block */}
         <div className="ml-6 flex-1 min-w-0">
-          <div className="flex justify-between items-start gap-2">
-            <h2 className="font-bold tracking-[0.2em] text-lg uppercase glitch-text truncate" data-text={title}>
+          <div className="flex flex-col gap-1 items-start justify-start">
+            <h2 className="font-bold tracking-[0.2em] text-lg uppercase glitch-text break-words w-full leading-tight" data-text={title}>
               {title}
             </h2>
             <span className={`shrink-0 text-[9px] tracking-widest px-2 py-1 border transition-colors ${isHovered ? 'border-(--toxic-green) text-(--toxic-green)' : 'border-transparent text-(--toxic-green)/50'}`}>
               {type}
             </span>
           </div>
-          <p className="text-xs opacity-70 mt-1 font-mono tracking-wider truncate">
+          <p className="text-xs opacity-70 mt-1 font-mono tracking-wider break-words whitespace-normal leading-tight">
             {subtitle}
           </p>
         </div>
