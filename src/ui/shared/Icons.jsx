@@ -120,7 +120,7 @@ export const InstaIcon = ({ className = '' }) => (
 )
 
 export const TikTokIcon = ({ className = '' }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" role="presentation" preserveAspectRatio="xMidYMid meet">
+  <svg className={className} viewBox="-2 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" role="presentation" preserveAspectRatio="xMidYMid meet">
     <path d="M14 2V16H8V22H14V8H20V2H14Z" fill="currentColor"/>
     <path d="M12 4V18H6V24H12V10H18V4H12Z" fill="currentColor" fillOpacity="0.3" transform="translate(-2, 2)"/>
   </svg>
