@@ -1,5 +1,6 @@
 // Generates a directed acyclic graph (DAG) for the tour
 import { ALL_VENUES } from '../data/venues.js'
+import { StateError } from './errorHandler.js'
 
 /**
  * Procedural generation for the game map using a Directed Acyclic Graph (DAG).
@@ -122,7 +123,7 @@ export class MapGenerator {
             // Re-assign candidates to the pre-filtered static fallback pool
             candidates = i < 3 ? fallbackEasy : i < 7 ? fallbackMedium : fallbackHard
             if (candidates == null || candidates.length === 0) {
-              throw new Error(`Empty fallback pool for difficulty ${i}`)
+              throw new StateError(`Empty fallback pool for difficulty ${i}`)
             }
             currentAvailablePool = null // We are now picking from a pool that allows duplicates
           }

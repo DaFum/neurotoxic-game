@@ -64,7 +64,7 @@ test('gameReducer LOAD_GAME prevents prototype pollution and state pollution', (
     social: { instagram: 1000 },
     gameMap: { nodes: [] },
     currentScene: 'HACKED', // Should be ignored or reset
-    toasts: [{ id: 1, message: 'Hacked' }], // Should be ignored
+    toasts: [{ id: 1, message: 'Hacked' }], // Allowed, but shouldn't pollute prototype
     __proto__: { pollutions: 'poison' }
   }
 
@@ -77,7 +77,7 @@ test('gameReducer LOAD_GAME prevents prototype pollution and state pollution', (
     'INTRO',
     'currentScene should not be overwritten by save data'
   )
-  assert.deepEqual(newState.toasts, [], 'toasts should be empty after load')
+  assert.deepEqual(newState.toasts, [{ id: 1, message: 'Hacked' }], 'toasts should be loaded from save')
   assert.equal(
     Object.prototype.pollutions,
     undefined,

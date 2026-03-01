@@ -111,6 +111,8 @@ export const handleLoadGame = (state, payload) => {
     eventCooldowns: Array.isArray(loadedState.eventCooldowns)
       ? loadedState.eventCooldowns
       : [],
+    activeEvent: loadedState.activeEvent || null,
+    toasts: Array.isArray(loadedState.toasts) ? loadedState.toasts : [],
     reputationByRegion: loadedState.reputationByRegion || {},
     venueBlacklist: Array.isArray(loadedState.venueBlacklist)
       ? loadedState.venueBlacklist
@@ -125,7 +127,12 @@ export const handleLoadGame = (state, payload) => {
     },
     currentScene: loadedState.currentScene || 'OVERWORLD',
     currentGig: loadedState.currentGig || null,
-    lastGigStats: loadedState.lastGigStats || null
+    lastGigStats: loadedState.lastGigStats || null,
+    settings: {
+      ...state.settings,
+      ...(loadedState.settings || {})
+    },
+    minigame: loadedState.minigame || state.minigame
   }
 
   // Security: Only allow valid gameplay scenes from save

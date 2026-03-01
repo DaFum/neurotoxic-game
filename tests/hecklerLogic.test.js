@@ -166,12 +166,19 @@ test('trySpawnProjectile - screenWidth influence on x', () => {
     return values[i++]
   }
 
-  const p1 = trySpawnProjectile(stats, mockRandom, 1000)
-  assert.equal(p1.x, 500)
+  const originalNow = Date.now
+  Date.now = () => 1234567890
 
-  i = 0
-  const p2 = trySpawnProjectile(stats, mockRandom, 2000)
-  assert.equal(p2.x, 1000)
+  try {
+    const p1 = trySpawnProjectile(stats, mockRandom, 1000)
+    assert.equal(p1.x, 500)
+
+    i = 0
+    const p2 = trySpawnProjectile(stats, mockRandom, 2000)
+    assert.equal(p2.x, 1000)
+  } finally {
+    Date.now = originalNow
+  }
 })
 
 test('trySpawnProjectile - combined chance (low health AND high combo)', () => {
