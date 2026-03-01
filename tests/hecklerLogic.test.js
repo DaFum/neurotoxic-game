@@ -108,18 +108,26 @@ test('trySpawnProjectile - verifies all spawned object properties', () => {
   let i = 0
   const mockRandom = () => values[i++]
 
-  const projectile = trySpawnProjectile(stats, mockRandom, screenWidth)
+  const originalNow = Date.now
+  Date.now = () => 1234567890
 
-  assert.ok(projectile)
-  assert.equal(typeof projectile.id, 'number')
-  assert.equal(projectile.x, 1000)
-  assert.equal(projectile.y, -100)
-  // use approximate equality for floats
-  assert.ok(Math.abs(projectile.vx - 0.1) < 0.0001)
-  assert.ok(Math.abs(projectile.vy - 0.5) < 0.0001)
-  assert.equal(projectile.rotation, 0)
-  assert.ok(Math.abs(projectile.vr - 0.06) < 0.0001)
-  assert.equal(projectile.type, 'bottle')
+  try {
+    const projectile = trySpawnProjectile(stats, mockRandom, screenWidth)
+
+    assert.ok(projectile)
+    assert.equal(typeof projectile.id, 'number')
+    assert.equal(projectile.id, 1234567890)
+    assert.equal(projectile.x, 1000)
+    assert.equal(projectile.y, -100)
+    // use approximate equality for floats
+    assert.ok(Math.abs(projectile.vx - 0.1) < 0.0001)
+    assert.ok(Math.abs(projectile.vy - 0.5) < 0.0001)
+    assert.equal(projectile.rotation, 0)
+    assert.ok(Math.abs(projectile.vr - 0.06) < 0.0001)
+    assert.equal(projectile.type, 'bottle')
+  } finally {
+    Date.now = originalNow
+  }
 })
 
 test('trySpawnProjectile - health boundary (49 vs 50)', () => {
