@@ -41,6 +41,9 @@ export const MainMenu = () => {
     }
   }, [showNameInput])
 
+  const audioInitErrorMessage = t('ui:errors.audio_init_failed')
+  const ambientStartErrorMessage = t('ui:errors.ambient_start_failed')
+
   const reportAudioIssue = useCallback(
     (error, fallbackMessage) => {
       if (!isMountedRef.current) return
@@ -55,9 +58,9 @@ export const MainMenu = () => {
 
   const startAmbientSafely = useCallback(() => {
     void audioManager.startAmbient().catch(err => {
-      reportAudioIssue(err, t('ui:errors.ambient_start_failed'))
+      reportAudioIssue(err, ambientStartErrorMessage)
     })
-  }, [reportAudioIssue, t])
+  }, [ambientStartErrorMessage, reportAudioIssue])
 
   const proceedToTour = useCallback(async () => {
     setIsStarting(true)
@@ -84,13 +87,14 @@ export const MainMenu = () => {
     // Audio setup is fire-and-forget — never blocks scene transitions.
     void audioManager
       .ensureAudioContext()
-      .catch(err => reportAudioIssue(err, t('ui:errors.audio_init_failed')))
+      .catch(err => reportAudioIssue(err, audioInitErrorMessage))
       .then(() => startAmbientSafely())
   }, [
     resetState,
     changeScene,
     reportAudioIssue,
     startAmbientSafely,
+    audioInitErrorMessage,
     updatePlayer
   ])
 
@@ -160,9 +164,17 @@ export const MainMenu = () => {
     // Audio is fire-and-forget; Overworld re-syncs audio.
     void audioManager
       .ensureAudioContext()
-      .catch(err => reportAudioIssue(err, t('ui:errors.audio_init_failed')))
+      .catch(err => reportAudioIssue(err, audioInitErrorMessage))
       .then(() => startAmbientSafely())
-  }, [loadGame, addToast, changeScene, reportAudioIssue, startAmbientSafely, t])
+  }, [
+    loadGame,
+    addToast,
+    changeScene,
+    reportAudioIssue,
+    startAmbientSafely,
+    audioInitErrorMessage,
+    t
+  ])
 
   const handleCredits = useCallback(() => changeScene('CREDITS'), [changeScene])
   const closeNameInput = useCallback(() => setShowNameInput(false), [])
