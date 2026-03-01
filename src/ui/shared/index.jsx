@@ -15,7 +15,7 @@ export { Modal } from './Modal'
 export { ActionButton } from './ActionButton'
 export { ToggleSwitch } from './ToggleSwitch'
 export { AnimatedDivider, AnimatedSubtitle } from './AnimatedTypography'
-export { RazorPlayIcon, VoidSkullIcon, UIFrameCorner } from './Icons'
+export { RazorPlayIcon, VoidSkullIcon, UIFrameCorner, BandcampIcon, InstaIcon, TikTokIcon, YouTubeIcon, BlogIcon, GameIcon } from './Icons'
 export {
   HexBorder,
   CrosshairIcon,
@@ -46,6 +46,7 @@ export {
   SelloutContract,
   ToxicChatter,
   VoidDecryptor,
+  UplinkButton,
 } from './BrutalistUI'
 import { UIFrameCorner } from './Icons'
 

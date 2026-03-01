@@ -1,5 +1,58 @@
 import React, { useState, useEffect, useRef } from 'react'
 
+export const UplinkButton = ({ title, url, subtitle, type, Icon }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="relative w-full block border-2 border-(--toxic-green)/30 bg-(--void-black) hover:border-(--toxic-green) transition-colors duration-100 group overflow-hidden"
+    >
+      {/* Glitch Background on Hover */}
+      {isHovered && (
+        <div className="absolute inset-0 bg-(--toxic-green)/10 z-0">
+          <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.5)_50%)] bg-[length:100%_4px] opacity-50"></div>
+          <div className="w-full h-1 bg-(--toxic-green) absolute top-1/2 animate-[scan_0.5s_linear_infinite]"></div>
+        </div>
+      )}
+
+      <div className="relative z-10 flex items-center p-4">
+        {/* Icon Block */}
+        <div className={`w-14 h-14 border-2 flex items-center justify-center shrink-0 transition-colors
+          ${isHovered ? 'border-(--toxic-green) bg-(--toxic-green) text-(--void-black) shadow-[0_0_15px_var(--toxic-green)]' : 'border-(--toxic-green)/50 text-(--toxic-green)'}`}>
+          {Icon && <Icon className="w-8 h-8" />}
+        </div>
+
+        {/* Text Block */}
+        <div className="ml-6 flex-1">
+          <div className="flex justify-between items-start">
+            <h2 className="font-bold tracking-[0.2em] text-lg uppercase glitch-text" data-text={title}>
+              {title}
+            </h2>
+            <span className={`text-[9px] tracking-widest px-2 py-1 border transition-colors ${isHovered ? 'border-(--toxic-green) text-(--toxic-green)' : 'border-transparent text-(--toxic-green)/50'}`}>
+              {type}
+            </span>
+          </div>
+          <p className="text-xs opacity-70 mt-1 font-mono tracking-wider truncate">
+            {subtitle}
+          </p>
+        </div>
+
+        {/* External Link Indicator */}
+        <div className={`ml-4 transition-transform duration-200 ${isHovered ? 'translate-x-1 text-(--star-white)' : 'text-(--toxic-green)/30'}`}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square">
+            <path d="M5 12H19M19 12L12 5M19 12L12 19" />
+          </svg>
+        </div>
+      </div>
+    </a>
+  );
+};
+
 // --- SVG DECORATIONS ---
 
 import { useId } from 'react'

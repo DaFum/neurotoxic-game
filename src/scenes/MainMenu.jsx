@@ -5,7 +5,7 @@ import { useGameState } from '../context/GameState'
 import { useBandHQModal } from '../hooks/useBandHQModal.js'
 import { GlitchButton } from '../ui/GlitchButton'
 import { BandHQ } from '../ui/BandHQ'
-import { Modal, AnimatedDivider, AnimatedSubtitle } from '../ui/shared'
+import { Modal, AnimatedDivider, AnimatedSubtitle, UplinkButton, BandcampIcon, InstaIcon, TikTokIcon, YouTubeIcon, BlogIcon, GameIcon } from '../ui/shared'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 import { audioManager } from '../utils/AudioManager'
 import { handleError } from '../utils/errorHandler'
@@ -24,6 +24,7 @@ export const MainMenu = () => {
   const [isLoadingGame, setIsLoadingGame] = useState(false)
   const [showNameInput, setShowNameInput] = useState(false)
   const [playerNameInput, setPlayerNameInput] = useState('')
+  const [showSocials, setShowSocials] = useState(false)
   const inputRef = useRef(null)
 
   useEffect(() => {
@@ -269,9 +270,72 @@ export const MainMenu = () => {
           transition={{ delay: 1.2 }}
           className='flex gap-4 mt-6'
         >
+          <GlitchButton onClick={() => setShowSocials(true)}>
+            {t('ui:socials')}
+          </GlitchButton>
           <GlitchButton onClick={handleCredits}>{t('ui:credits')}</GlitchButton>
         </motion.div>
       </div>
+
+      {showSocials && (
+        <Modal
+          isOpen={true}
+          onClose={() => setShowSocials(false)}
+          title={t('ui:socials')}
+        >
+          <div className='flex flex-col gap-4 max-w-sm w-full mx-auto max-h-[60vh] overflow-y-auto custom-scrollbar pr-2'>
+            <UplinkButton
+              title="Play Neurotoxic"
+              subtitle="neurotoxic-game.vercel.app"
+              type="SYSTEM_CORE"
+              url="https://neurotoxic-game.vercel.app"
+              Icon={GameIcon}
+            />
+            <UplinkButton
+              title="Bandcamp"
+              subtitle="neurotoxic.bandcamp.com"
+              type="AUDIO_VAULT"
+              url="https://neurotoxic.bandcamp.com"
+              Icon={BandcampIcon}
+            />
+            <UplinkButton
+              title="Instagram"
+              subtitle="instagram.com/neurotoxicband"
+              type="VISUAL_FEED"
+              url="https://instagram.com/neurotoxicband"
+              Icon={InstaIcon}
+            />
+            <UplinkButton
+              title="TikTok"
+              subtitle="tiktok.com/@neurotoxicband"
+              type="VIRAL_STREAM"
+              url="https://tiktok.com/@neurotoxicband"
+              Icon={TikTokIcon}
+            />
+            <UplinkButton
+              title="Neurotoxic Once"
+              subtitle="youtube.com/@neurotoxiconcechannel237"
+              type="BROADCAST_A"
+              url="https://youtube.com/@neurotoxiconcechannel237"
+              Icon={YouTubeIcon}
+            />
+            <UplinkButton
+              title="Neurotoxic 3000"
+              subtitle="youtube.com/@neurotoxic3000"
+              type="BROADCAST_B"
+              url="https://youtube.com/@neurotoxic3000"
+              Icon={YouTubeIcon}
+            />
+            <UplinkButton
+              title="Neuroblogxic"
+              subtitle="neuroblogxic.blogspot.com"
+              type="DATA_LOG"
+              url="https://neuroblogxic.blogspot.com"
+              Icon={BlogIcon}
+            />
+          </div>
+        </Modal>
+      )}
 
       <motion.div
         initial={{ opacity: 0 }}

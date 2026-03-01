@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 import { Panel } from '../shared'
 import { logger } from '../../utils/logger'
 import { GlitchButton } from '../GlitchButton'
+import { SONGS_DB } from '../../data/songs'
 
 /**
  * LeaderboardTab Component
@@ -12,17 +13,17 @@ import { GlitchButton } from '../GlitchButton'
 export const LeaderboardTab = ({ setlist }) => {
   const { t } = useTranslation()
   const [view, setView] = useState('BALANCE') // 'BALANCE' or 'SONG'
-  const [selectedSongId, setSelectedSongId] = useState(setlist[0]?.id || '')
+  const [selectedSongId, setSelectedSongId] = useState(SONGS_DB[0]?.id || '')
   const [rankings, setRankings] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
 
   useEffect(() => {
     // If we switch to song view and have no song selected, try to select the first one
-    if (view === 'SONG' && !selectedSongId && setlist.length > 0) {
-      setSelectedSongId(setlist[0].id)
+    if (view === 'SONG' && !selectedSongId && SONGS_DB.length > 0) {
+      setSelectedSongId(SONGS_DB[0].id)
     }
-  }, [view, selectedSongId, setlist])
+  }, [view, selectedSongId])
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
@@ -90,12 +91,12 @@ export const LeaderboardTab = ({ setlist }) => {
             value={selectedSongId}
             onChange={e => setSelectedSongId(e.target.value)}
           >
-            {setlist.map(song => (
+            {SONGS_DB.map(song => (
               <option key={song.id} value={song.id}>
                 {song.title || song.id}
               </option>
             ))}
-            {setlist.length === 0 && (
+            {SONGS_DB.length === 0 && (
               <option value='' disabled>
                 {t('ui:leaderboard.no_songs')}
               </option>
