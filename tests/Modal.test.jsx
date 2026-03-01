@@ -24,14 +24,14 @@ describe('Modal Component', () => {
 
   test('calls onClose when clicking outside', () => {
     const onCloseMock = vi.fn()
-    const { getByText } = render(
+    const { getByRole } = render(
       <Modal isOpen={true} onClose={onCloseMock}>
         <div>Modal Content</div>
       </Modal>
     )
 
-    // Click the background overlay
-    const overlay = getByText('Modal Content').parentElement.parentElement
+    // Click the background overlay (which is the parent of the dialog)
+    const overlay = getByRole('dialog').parentElement
     fireEvent.click(overlay)
     expect(onCloseMock).toHaveBeenCalledTimes(1)
   })

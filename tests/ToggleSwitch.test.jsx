@@ -20,7 +20,7 @@ describe('ToggleSwitch', () => {
     expect(switchButton.type).toBe('button')
 
     // Check visual label
-    expect(getByText('ON')).toBeTruthy()
+    expect(getByText('ui:toggle.on')).toBeTruthy()
   })
 
   test('renders correctly with OFF state', () => {
@@ -32,7 +32,7 @@ describe('ToggleSwitch', () => {
     expect(switchButton.getAttribute('aria-checked')).toBe('false')
 
     // Check visual label
-    expect(getByText('OFF')).toBeTruthy()
+    expect(getByText('ui:toggle.off')).toBeTruthy()
   })
 
   test('calls onToggle when clicked', () => {

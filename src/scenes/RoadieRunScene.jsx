@@ -1,13 +1,12 @@
 import { useMemo, useCallback, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useRoadieLogic } from '../hooks/minigames/useRoadieLogic'
 import { createRoadieStageController } from '../components/stage/RoadieStageController'
 import { MinigameSceneFrame } from '../components/MinigameSceneFrame'
 import { useGameState } from '../context/GameState'
 
-const renderCompletionStats = state =>
-  `Equipment Damage: ${Math.max(0, state.currentDamage)}%`
-
 export const RoadieRunScene = () => {
+  const { t } = useTranslation(['ui'])
   const { uiState, gameStateRef, stats, update, actions } = useRoadieLogic()
   const { changeScene } = useGameState()
   const [showControls, setShowControls] = useState(false)
@@ -30,25 +29,33 @@ export const RoadieRunScene = () => {
   const handleMoveDown = useCallback(() => actions.move(0, 1), [actions])
   const handleMoveRight = useCallback(() => actions.move(1, 0), [actions])
 
+  const renderCompletionStats = useCallback(
+    state =>
+      t('ui:roadieRun.completion.equipmentDamage', {
+        damage: Math.max(0, state.currentDamage)
+      }),
+    [t]
+  )
+
   return (
     <MinigameSceneFrame
       controllerFactory={controllerFactory}
       logic={logic}
       uiState={uiState}
       onComplete={handleComplete}
-      completionTitle='SETUP COMPLETE'
-      completionButtonText='START SHOW'
+      completionTitle={t('ui:roadieRun.completion.title')}
+      completionButtonText={t('ui:roadieRun.completion.button')}
       renderCompletionStats={renderCompletionStats}
     >
       {/* HUD */}
       <div className='absolute top-4 left-4 z-30 text-(--star-white) font-mono pointer-events-none bg-(--void-black)/50 p-2 border border-(--star-white)/20'>
-        <h2 className='text-xl text-(--toxic-green)'>ROADIE RUN</h2>
-        <div>ITEMS REMAINING: {uiState.itemsRemaining}</div>
-        <div>DELIVERED: {uiState.itemsDelivered}</div>
-        <div>DAMAGE: {uiState.currentDamage}%</div>
+        <h2 className='text-xl text-(--toxic-green)'>{t('ui:roadieRun.hud.title')}</h2>
+        <div>{t('ui:roadieRun.hud.itemsRemaining')} {uiState.itemsRemaining}</div>
+        <div>{t('ui:roadieRun.hud.delivered')} {uiState.itemsDelivered}</div>
+        <div>{t('ui:roadieRun.hud.damage')} {uiState.currentDamage}%</div>
         {uiState.carrying && (
           <div className='text-(--warning-yellow)'>
-            CARRYING: {uiState.carrying.type}
+            {t('ui:roadieRun.hud.carrying')} {uiState.carrying.type}
           </div>
         )}
       </div>
@@ -58,19 +65,19 @@ export const RoadieRunScene = () => {
         type='button'
         className='absolute top-4 right-4 z-50 p-2 bg-(--void-black)/50 text-(--toxic-green) border border-(--toxic-green) rounded hover:bg-(--toxic-green)/20 pointer-events-auto text-xs font-mono hidden md:block'
         onClick={() => setShowControls(prev => !prev)}
-        aria-label='Toggle Controls'
+        aria-label={t('ui:roadieRun.controls.toggleAria')}
       >
-        {showControls ? 'HIDE CONTROLS' : 'SHOW CONTROLS'}
+        {showControls ? t('ui:roadieRun.controls.hide') : t('ui:roadieRun.controls.show')}
       </button>
 
       {/* Controls Hint */}
       <div className='absolute bottom-4 left-8 text-(--star-white)/50 text-sm font-mono pointer-events-none hidden md:block'>
-        WASD / ARROWS to Move
+        {t('ui:roadieRun.controls.movementHint')}
       </div>
 
       {/* Mobile D-Pad */}
       <div
-        className={`absolute bottom-8 right-8 z-40 grid grid-cols-3 gap-2 pointer-events-auto ${showControls ? '' : 'md:hidden'}`}
+        className={`absolute bottom-24 right-8 z-40 grid grid-cols-3 gap-2 pointer-events-auto ${showControls ? '' : 'md:hidden'}`}
       >
         <div />
         <button

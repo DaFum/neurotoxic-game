@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog'
@@ -95,16 +95,24 @@ export const BandHQ = ({
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-(--void-black)/90 backdrop-blur-sm ${className}`}
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${className}`}
     >
+      {/* Backdrop */}
       <div
-        className='absolute inset-0 bg-cover bg-center opacity-20 pointer-events-none'
+        className='fixed inset-0 z-[-1] bg-(--void-black)/90 backdrop-blur-sm'
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      {/* Decorative Background Image overlay */}
+      <div
+        className='fixed inset-0 z-[-1] bg-cover bg-center opacity-20 pointer-events-none'
         style={{
           backgroundImage: `url("${getGenImageUrl(IMG_PROMPTS.BAND_HQ_BG)}")`
         }}
       />
 
-      <div className='relative w-full max-w-5xl h-[90vh] border-2 border-(--toxic-green) bg-(--void-black) flex flex-col shadow-[0_0_50px_var(--toxic-green)]'>
+      <div className='relative z-10 w-full max-w-5xl h-[90vh] border-2 border-(--toxic-green) bg-(--void-black) flex flex-col shadow-[0_0_50px_var(--toxic-green)]'>
         {/* Header */}
         <div className='flex justify-between items-center p-6 border-b-2 border-(--toxic-green) bg-(--void-black)/50'>
           <div>
@@ -128,8 +136,8 @@ export const BandHQ = ({
         {/* Navigation */}
         <div
           role='tablist'
-          aria-label='Band HQ Sections'
-          className='flex border-b-2 border-(--ash-gray) overflow-x-auto'
+          aria-label={t('ui:hq.sectionsLabel', { defaultValue: 'Band HQ Sections' })}
+          className='flex border-b-2 border-(--toxic-green) overflow-x-auto'
         >
           {/* Tabs */}
           {[
@@ -140,25 +148,29 @@ export const BandHQ = ({
             { id: 'SETLIST', key: 'tabs.setlist' },
             { id: 'LEADERBOARD', key: 'tabs.leaderboard' },
             { id: 'SETTINGS', key: 'tabs.settings' }
-          ].map(tab => (
-            <button
-              type='button'
-              role='tab'
-              aria-selected={activeTab === tab.id}
-              aria-controls={`panel-${tab.id}`}
-              id={`tab-${tab.id}`}
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 min-w-[120px] py-4 text-center font-bold text-xl uppercase tracking-wider transition-colors duration-150 font-mono
-                ${
-                  activeTab === tab.id
-                    ? 'bg-(--toxic-green) text-(--void-black)'
-                    : 'text-(--ash-gray) hover:text-(--star-white) bg-(--void-black)/50 hover:bg-(--void-black)/70'
-                }`}
-            >
-              {t(tab.key)}
-            </button>
-          ))}
+          ].map(tab => {
+            const isActive = activeTab === tab.id
+            return (
+              <button
+                type='button'
+                role='tab'
+                aria-selected={isActive}
+                aria-controls={`panel-${tab.id}`}
+                id={`tab-${tab.id}`}
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 min-w-[120px] py-3 px-4 text-center text-sm font-bold tracking-[0.1em] uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2
+                  ${
+                    isActive
+                      ? 'bg-(--toxic-green) text-(--void-black) shadow-[0_-2px_10px_var(--toxic-green)]'
+                      : 'bg-(--void-black) text-(--toxic-green) hover:bg-(--toxic-green)/10'
+                  }`}
+              >
+                {isActive && <span className="text-xs">▶</span>}
+                {t(tab.key)}
+              </button>
+            )
+          })}
         </div>
 
         {/* Content Area */}
@@ -169,63 +181,73 @@ export const BandHQ = ({
           tabIndex={0}
           className='flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-(--void-black) focus-visible:outline-none'
         >
-          {activeTab === 'STATS' && (
-            <StatsTab player={player} band={band} social={social} />
-          )}
+          <Suspense
+            fallback={
+              <div className='flex items-center justify-center h-32 text-(--toxic-green) font-mono animate-pulse uppercase tracking-widest'>
+                {t('ui:loading', { defaultValue: 'Loading...' })}
+              </div>
+            }
+          >
+            {activeTab === 'STATS' && (
+              <StatsTab player={player} band={band} social={social} />
+            )}
 
-          {activeTab === 'DETAILS' && (
-            <DetailedStatsTab
-              player={player}
-              band={band}
-              social={social}
-              activeQuests={activeQuests}
-              venueBlacklist={venueBlacklist}
-              reputationByRegion={reputationByRegion}
-            />
-          )}
+            {activeTab === 'DETAILS' && (
+              <DetailedStatsTab
+                player={player}
+                band={band}
+                social={social}
+                activeQuests={activeQuests}
+                venueBlacklist={venueBlacklist}
+                reputationByRegion={reputationByRegion}
+              />
+            )}
 
-          {activeTab === 'SHOP' && (
-            <ShopTab
-              player={player}
-              handleBuy={handleBuyWithLock}
-              isItemOwned={isItemOwned}
-              isItemDisabled={isItemDisabled}
-              getAdjustedCost={getAdjustedCost}
-              processingItemId={processingItemId}
-            />
-          )}
+            {activeTab === 'SHOP' && (
+              <ShopTab
+                player={player}
+                handleBuy={handleBuyWithLock}
+                isItemOwned={isItemOwned}
+                isItemDisabled={isItemDisabled}
+                getAdjustedCost={getAdjustedCost}
+                processingItemId={processingItemId}
+              />
+            )}
 
-          {activeTab === 'UPGRADES' && (
-            <UpgradesTab
-              player={player}
-              upgrades={unifiedUpgradeCatalog}
-              handleBuy={handleBuyWithLock}
-              isItemOwned={isItemOwned}
-              isItemDisabled={isItemDisabled}
-              getAdjustedCost={getAdjustedCost}
-              processingItemId={processingItemId}
-            />
-          )}
+            {activeTab === 'UPGRADES' && (
+              <UpgradesTab
+                player={player}
+                upgrades={unifiedUpgradeCatalog}
+                handleBuy={handleBuyWithLock}
+                isItemOwned={isItemOwned}
+                isItemDisabled={isItemDisabled}
+                getAdjustedCost={getAdjustedCost}
+                processingItemId={processingItemId}
+              />
+            )}
 
-          {activeTab === 'SETLIST' && (
-            <SetlistTab
-              setlist={setlist}
-              setSetlist={setSetlist}
-              addToast={addToast}
-            />
-          )}
+            {activeTab === 'SETLIST' && (
+              <SetlistTab
+                setlist={setlist}
+                setSetlist={setSetlist}
+                addToast={addToast}
+              />
+            )}
 
-          {activeTab === 'LEADERBOARD' && <LeaderboardTab setlist={setlist} />}
+            {activeTab === 'LEADERBOARD' && (
+              <LeaderboardTab />
+            )}
 
-          {activeTab === 'SETTINGS' && (
-            <SettingsTab
-              settings={settings}
-              audioState={audioState}
-              onAudioChange={onAudioChange}
-              updateSettings={updateSettings}
-              deleteSave={deleteSave}
-            />
-          )}
+            {activeTab === 'SETTINGS' && (
+              <SettingsTab
+                settings={settings}
+                audioState={audioState}
+                onAudioChange={onAudioChange}
+                updateSettings={updateSettings}
+                deleteSave={deleteSave}
+              />
+            )}
+          </Suspense>
         </div>
       </div>
     </div>

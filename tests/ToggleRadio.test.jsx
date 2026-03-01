@@ -41,8 +41,10 @@ test('ToggleRadio reacts to external playback changes and user toggles', async _
 
   const { ToggleRadio } = await import('../src/components/ToggleRadio.jsx')
 
-  const { getByRole } = render(<ToggleRadio />)
-  expect(getByRole('button').textContent).toBe('▶')
+  const { getByRole, container } = render(<ToggleRadio />)
+
+  // When not playing, RazorPlayIcon SVG should be rendered
+  expect(container.querySelector('svg')).toBeInTheDocument()
 
   act(() => {
     audioManagerMock.currentSongId = 'ambient'
@@ -54,16 +56,16 @@ test('ToggleRadio reacts to external playback changes and user toggles', async _
 
   fireEvent.click(getByRole('button'))
   expect(audioManagerMock.stopMusic).toHaveBeenCalledTimes(1)
-  expect(getByRole('button').textContent).toBe('▶')
+  expect(container.querySelector('svg')).toBeInTheDocument()
 })
 
 test('ToggleRadio triggers resume path and updates after async change', async _t => {
   audioManagerMock._isPlaying = false
 
   const { ToggleRadio } = await import('../src/components/ToggleRadio.jsx')
-  const { getByRole } = render(<ToggleRadio />)
+  const { getByRole, container } = render(<ToggleRadio />)
 
-  expect(getByRole('button').textContent).toBe('▶')
+  expect(container.querySelector('svg')).toBeInTheDocument()
 
   await act(async () => {
     fireEvent.click(getByRole('button'))

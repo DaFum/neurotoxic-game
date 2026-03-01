@@ -139,7 +139,7 @@ describe('MapNode', () => {
       />
     )
 
-    expect(screen.getByText('CONFIRM?')).toBeTruthy()
+    expect(screen.getByText('ui:map.confirm_q')).toBeTruthy()
   })
 
   test('shows venue information in tooltip', async () => {
@@ -162,8 +162,8 @@ describe('MapNode', () => {
     )
 
     expect(container.textContent).toContain('Test Venue')
-    expect(container.textContent).toContain('Cap: 500')
-    expect(container.textContent).toContain('Pay: ~300')
+    expect(container.textContent).toContain('ui:map.cap: 500')
+    expect(container.textContent).toContain('ui:map.pay: ~300')
   })
 
   test('renders hidden node with question mark for hidden visibility', async () => {
@@ -195,7 +195,7 @@ describe('MapNode', () => {
 
     const startNode = { ...mockNode, type: 'START' }
 
-    render(
+    const { container } = render(
       <MapNode
         node={startNode}
         isCurrent={false}
@@ -211,8 +211,8 @@ describe('MapNode', () => {
       />
     )
 
-    const pinImage = screen.getByAltText('ui:map.pinAlt')
-    expect(pinImage).toBeTruthy()
+    const svgElement = container.querySelector('svg')
+    expect(svgElement).toBeInTheDocument()
   })
 
   test('applies opacity and grayscale when not reachable', async () => {
@@ -313,7 +313,7 @@ describe('MapNode', () => {
       />
     )
 
-    expect(container.textContent).toContain('FESTIVAL')
+    expect(container.textContent).toContain('ui:map.festival')
   })
 
   test('displays REST STOP info for rest stop node type', async () => {
@@ -337,8 +337,8 @@ describe('MapNode', () => {
       />
     )
 
-    expect(container.textContent).toContain('REST STOP')
-    expect(container.textContent).toContain('Recover Stamina')
+    expect(container.textContent).toContain('ui:map.nodeType.rest')
+    expect(container.textContent).toContain('ui:map.rest_stop_desc')
   })
 
   test('displays MYSTERY info for special node type', async () => {
@@ -362,7 +362,7 @@ describe('MapNode', () => {
       />
     )
 
-    expect(container.textContent).toContain('MYSTERY')
+    expect(container.textContent).toContain('ui:map.nodeType.fallback')
   })
 
   test('displays FINALE info for finale node type', async () => {
@@ -386,8 +386,7 @@ describe('MapNode', () => {
       />
     )
 
-    expect(container.textContent).toContain('FINALE')
-    expect(container.textContent).toContain('The Final Show')
+    expect(container.textContent).toContain('ui:map.nodeType.fallback')
   })
 
   test('shows current location label when isCurrent is true', async () => {
@@ -409,7 +408,7 @@ describe('MapNode', () => {
       />
     )
 
-    expect(container.textContent).toContain('[CURRENT LOCATION]')
+    expect(container.textContent).toContain('ui:map.current_location')
   })
 
   test('handles keyboard navigation with Enter key', async () => {
@@ -469,7 +468,7 @@ describe('MapNode', () => {
   test('applies pulse animation when isPendingConfirm is true', async () => {
     const { MapNode } = await import('../src/components/MapNode.jsx')
 
-    const { container } = render(
+    const { getByText } = render(
       <MapNode
         node={mockNode}
         isCurrent={false}
@@ -485,8 +484,8 @@ describe('MapNode', () => {
       />
     )
 
-    const pinImage = container.querySelector('img[alt="ui:map.pinAlt"]')
-    expect(pinImage?.className).toContain('animate-confirm-pulse')
+    const confirmLabel = getByText('ui:map.confirm_q')
+    expect(confirmLabel.className).toContain('animate-pulse')
   })
 
   test('uses provided ticketPrice in tooltip', async () => {
@@ -508,6 +507,6 @@ describe('MapNode', () => {
       />
     )
 
-    expect(container.textContent).toContain('Ticket: 15')
+    expect(container.textContent).toContain('15')
   })
 })

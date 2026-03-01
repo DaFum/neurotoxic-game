@@ -3,6 +3,8 @@ import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
+import { AlertIcon } from './shared/BrutalistUI'
+import { VoidSkullIcon } from './shared/Icons'
 
 const CATEGORY_IMAGE_MAP = {
   transport: IMG_PROMPTS.EVENT_VAN,
@@ -62,86 +64,96 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
       role='dialog'
       aria-modal='true'
       aria-labelledby='event-title'
-      className={`fixed inset-0 z-[100] flex items-center justify-center bg-(--void-black)/80 backdrop-blur-sm p-4 ${className}`}
+      className={`fixed inset-0 z-[100] flex items-center justify-center p-4 ${className}`}
     >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-(--void-black)/80 backdrop-blur-sm"></div>
+      {/* Scanline FX on background */}
+      <div className="absolute inset-0 pointer-events-none opacity-20" style={{ backgroundImage: 'linear-gradient(transparent 50%, rgba(var(--void-black-rgb), 0.5) 50%)', backgroundSize: '100% 4px' }}></div>
+
       <motion.div
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        className='w-full max-w-lg border-2 border-(--toxic-green) bg-(--void-black) shadow-[0_0_50px_var(--toxic-green-glow)] p-6'
+        className='relative w-full max-w-lg border-2 border-(--toxic-green) bg-(--void-black) shadow-[0_0_40px_var(--toxic-green-glow)] animate-[glitch-anim_0.2s_ease-in-out]'
       >
-        {categoryImageUrl && (
-          <div className='flex justify-center mb-4'>
-            <img
-              src={categoryImageUrl}
-              alt={event.category}
-              className='w-20 h-20 border-2 border-(--toxic-green) object-cover shadow-[0_0_10px_var(--toxic-green)]'
-            />
+        {/* Hardware details */}
+        <div className="absolute top-0 left-0 w-full h-1 bg-(--toxic-green)"></div>
+        <div className="absolute top-0 left-2 px-2 h-4 bg-(--toxic-green) text-(--void-black) text-[10px] font-bold text-center leading-4 uppercase">
+          {t('ui:event.severity.critical')}
+        </div>
+
+        <div className='p-8 flex flex-col gap-6'>
+          <div className="flex items-start gap-4 border-b border-(--toxic-green)/30 pb-6">
+            {event.category === 'special' ? (
+              <VoidSkullIcon className="w-12 h-12 text-(--toxic-green) animate-pulse shrink-0 mt-1" />
+            ) : (
+              <AlertIcon className="w-12 h-12 text-(--toxic-green) animate-pulse shrink-0 mt-1" />
+            )}
+            <div>
+              <h2
+                id='event-title'
+                className='text-2xl font-bold tracking-[0.1em] uppercase text-(--toxic-green)'
+              >
+                {t(event.title, event.context)}
+              </h2>
+              <p className='mt-2 text-sm opacity-80 leading-relaxed text-(--star-white) font-mono'>
+                {t(event.description, event.context)}
+              </p>
+            </div>
           </div>
-        )}
-        <h2
-          id='event-title'
-          className='text-3xl font-[Metal_Mania] text-(--blood-red) mb-4 animate-pulse text-center'
-        >
-          {'\u26A0'} {t(event.title, event.context)} {'\u26A0'}
-        </h2>
-        <p className='font-mono text-(--star-white) mb-6 text-lg border-l-4 border-(--toxic-green) pl-4'>
-          {t(event.description, event.context)}
-        </p>
 
-        {/* Keyboard hint */}
-        <p className='text-[10px] text-(--ash-gray) font-mono mb-3 uppercase tracking-widest'>
-          Press [1-{event.options.length}] or click to choose
-        </p>
+          {/* Keyboard hint */}
+          <p className='text-[10px] text-(--ash-gray) font-mono uppercase tracking-widest text-center'>
+            {t('ui:keyboardHint', { count: event.options.length })}
+          </p>
 
-        <motion.div
-          className='flex flex-col gap-3'
-          initial='hidden'
-          animate='visible'
-          variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
-        >
-          {event.options.map((option, index) => (
-            <motion.button
-              variants={{
-                hidden: { opacity: 0, x: -20 },
-                visible: { opacity: 1, x: 0 }
-              }}
-              key={
-                option.id || option.nextEventId || `${option.label}-${index}`
-              }
-              onClick={() => {
-                if (option.action) option.action()
-                else onOptionSelect(option)
-              }}
-              className='w-full text-left p-4 border border-(--ash-gray) hover:bg-(--toxic-green) hover:text-(--void-black) hover:border-transparent transition-all group relative overflow-hidden'
-            >
-              <div className='flex items-start gap-3 relative z-10'>
-                {/* Number badge */}
-                <span className='shrink-0 w-6 h-6 flex items-center justify-center border border-(--ash-gray) text-xs font-mono group-hover:border-(--void-black) group-hover:bg-(--void-black)/20 transition-colors'>
-                  {index + 1}
+          <motion.div
+            className='flex flex-col gap-3'
+            initial='hidden'
+            animate='visible'
+            variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
+          >
+            {event.options.map((option, index) => (
+              <motion.button
+                type="button"
+                variants={{
+                  hidden: { opacity: 0, x: -20 },
+                  visible: { opacity: 1, x: 0 }
+                }}
+                key={
+                  option.id || option.nextEventId || `${option.label}-${index}`
+                }
+                onClick={() => {
+                  if (option.action) option.action()
+                  else onOptionSelect(option)
+                }}
+                className={`w-full p-3 border font-bold tracking-widest uppercase transition-colors text-left flex justify-between
+                  ${index === 0 ? 'border-(--toxic-green) bg-(--toxic-green)/10 hover:bg-(--toxic-green) hover:text-(--void-black) text-(--toxic-green)' : 'border-(--star-white)/50 text-(--star-white)/50 hover:border-(--star-white) hover:text-(--star-white) hover:bg-(--star-white)/10'}
+                `}
+              >
+                <span>
+                   <span className="opacity-50 mr-2">[{index + 1}]</span>
+                   {t(option.label, event.context)}
                 </span>
-                <div className='flex-1'>
-                  <span className='font-bold uppercase tracking-wider'>
-                    {t(option.label, event.context)}
-                  </span>
+
+                <div className="flex flex-col items-end text-right">
                   {/* Outcome hint if available */}
                   {option.outcomeText && (
-                    <span className='block text-xs mt-1 text-(--ash-gray) group-hover:text-(--void-black)/60 font-mono italic'>
+                    <span className={`text-[10px] mt-1 opacity-70`}>
                       {t(option.outcomeText, event.context)}
                     </span>
                   )}
                   {/* Skill check indicator */}
                   {option.skillCheck && (
-                    <span className='inline-block mt-1 text-[10px] text-(--warning-yellow) font-mono uppercase'>
-                      [{'\u2694'} Skill Check]
+                    <span className='inline-block mt-1 text-[10px] text-(--warning-yellow)'>
+                      [{'\u2694'} {t('ui:skillCheck')}]
                     </span>
                   )}
                 </div>
-              </div>
-              {/* Scanline effect on hover */}
-              <div className='absolute inset-0 bg-(--star-white)/10 translate-x-[-100%] group-hover:animate-[shimmer_1s_infinite] skew-x-12' />
-            </motion.button>
-          ))}
-        </motion.div>
+              </motion.button>
+            ))}
+          </motion.div>
+        </div>
       </motion.div>
     </div>
   )

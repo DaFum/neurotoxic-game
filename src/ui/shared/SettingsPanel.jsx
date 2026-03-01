@@ -1,11 +1,10 @@
-import { useState } from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { VolumeSlider } from './VolumeSlider'
 import { ActionButton } from './ActionButton'
-import { Modal } from './Modal'
 import { ToggleSwitch } from './ToggleSwitch'
 import { LOG_LEVELS } from '../../utils/logger.js'
+import { DeadmanButton } from './BrutalistUI'
 
 export const SettingsPanel = ({
   settings,
@@ -136,54 +135,23 @@ export const SettingsPanel = ({
 
 const DataManagement = ({ onDeleteSave }) => {
   const { t } = useTranslation()
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
-
-  const handleOpenConfirm = () => setIsConfirmOpen(true)
-  const handleCloseConfirm = () => setIsConfirmOpen(false)
-  const handleDeleteSave = () => {
-    onDeleteSave()
-    setIsConfirmOpen(false)
-  }
 
   return (
     <div>
       <h2 className='font-(--font-display) text-4xl uppercase text-(--blood-red) mb-6 border-b border-(--ash-gray) pb-2'>
         {t('ui:data_purge')}
       </h2>
-      <div className='flex justify-between items-center'>
-        <p className='font-(--font-ui) text-lg text-(--ash-gray) max-w-xs'>
+      <div className='flex justify-between items-center gap-8'>
+        <p className='font-(--font-ui) text-sm text-(--ash-gray) max-w-xs'>
           {t('ui:delete_warning')}
         </p>
-        <ActionButton
-          onClick={handleOpenConfirm}
-          className='bg-(--blood-red) text-(--void-black) border-(--blood-red) shadow-[4px_4px_0px_var(--blood-red)] hover:invert'
-        >
-          {t('ui:delete_save')}
-        </ActionButton>
-      </div>
-
-      <Modal
-        isOpen={isConfirmOpen}
-        onClose={handleCloseConfirm}
-        title={t('ui:confirm_delete')}
-      >
-        <div className='space-y-6'>
-          <p className='font-(--font-ui) text-(--ash-gray)'>
-            {t('ui:confirm_delete_text')}
-          </p>
-          <div className='flex gap-4 justify-end'>
-            <ActionButton onClick={handleCloseConfirm}>
-              {t('ui:cancel')}
-            </ActionButton>
-            <ActionButton
-              onClick={handleDeleteSave}
-              className='bg-(--blood-red) text-(--void-black) border-(--blood-red) hover:invert'
-            >
-              {t('ui:confirm')}
-            </ActionButton>
-          </div>
+        <div className="flex-1 max-w-sm">
+          <DeadmanButton
+            label={t('ui:delete_save')}
+            onConfirm={onDeleteSave}
+          />
         </div>
-      </Modal>
+      </div>
     </div>
   )
 }

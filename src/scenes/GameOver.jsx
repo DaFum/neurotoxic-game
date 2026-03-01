@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { GlitchButton } from '../ui/GlitchButton'
 import { AnimatedDivider, AnimatedSubtitle } from '../ui/shared'
+import { VoidSkullIcon } from '../ui/shared/Icons'
 
 /**
  * Scene displayed when the game ends (bankruptcy or health failure).
@@ -53,8 +54,17 @@ export const GameOver = () => {
       {/* Red scanlines */}
       <div className='absolute inset-0 pointer-events-none opacity-10 bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,var(--blood-red)_2px,var(--blood-red)_4px)]' />
 
+      <motion.div
+        initial={{ opacity: 0, scale: 0.5 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.3, duration: 0.8 }}
+        className="relative z-10 mb-4"
+      >
+        <VoidSkullIcon className="w-24 h-24 text-(--blood-red) drop-shadow-[0_0_20px_var(--blood-red)]" />
+      </motion.div>
+
       <h1 className='text-8xl md:text-9xl text-(--blood-red) font-[Metal_Mania] mb-2 animate-doom-zoom relative z-10'>
-        SOLD OUT
+        {t('ui:gameOver.soldOut')}
       </h1>
 
       <AnimatedDivider
@@ -79,7 +89,7 @@ export const GameOver = () => {
         className='border-2 border-(--blood-red)/60 p-6 w-full max-w-lg mb-8 bg-(--void-black)/80 backdrop-blur-sm relative z-10 shadow-[0_0_30px_var(--blood-red)/20]'
       >
         <div className='text-[10px] text-(--blood-red) tracking-widest mb-4 border-b border-(--blood-red)/30 pb-2'>
-          FINAL STATISTICS
+          {t('ui:gameOver.finalStatistics')}
         </div>
         <div className='space-y-3 font-mono'>
           {statRows.map((row, i) => (
