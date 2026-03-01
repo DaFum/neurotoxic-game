@@ -33,8 +33,13 @@
     "on": "ON",
     "off": "OFF"
   },
+  "radio": {
+    "play": "Play/Resume Radio",
+    "stop": "Stop Radio"
+  },
   "hazard": {
-    "toxicOverload": "TOXIC OVERLOAD DETECTED // SEVERE SYSTEM STRESS // STAY FOCUSED"
+    "toxicOverload": "TOXIC OVERLOAD DETECTED // SEVERE SYSTEM STRESS // STAY FOCUSED",
+    "modifierActive": "[MODIFIER ACTIVE]"
   },
   "overload": {
     "toxic": "TOXIC OVERLOAD"
@@ -108,6 +113,7 @@
   "hq.owned": "OWNED",
   "hq.leave": "LEAVE [ESC]",
   "hq.title": "BAND HQ",
+  "hq.sectionsLabel": "Band HQ Sections",
   "ui.day": "Day",
   "ui.level": "Level",
   "ui.location": "Location",
@@ -248,6 +254,14 @@
     "inventory": "INVENTORY",
     "upgrades": "UPGRADES"
   },
+  "setlistSelector": {
+    "track1": "SUICIDAL JESUS",
+    "track2": "SYSTEMSPRENGER",
+    "track3": "TRAVESTIE MASSAKER",
+    "diffHard": "HARD",
+    "diffExpert": "EXPERT",
+    "diffInsane": "INSANE"
+  },
   "crash": {
     "title": "SYSTEM FAILURE",
     "message": "The simulation has crashed. Reboot required.",
@@ -317,7 +331,6 @@
   },
   "hqNavigation": "HQ Navigation",
   "set_label_to_segment": "Set {{label}} to {{segment}}",
-  "hit_lane": "Hit {{lane}} lane",
   "sign_contract": "Sign Contract",
   "pregig": {
     "title": "PREPARATION",

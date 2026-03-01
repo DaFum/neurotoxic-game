@@ -414,7 +414,7 @@ export const BrutalTabs = () => {
           )
         })}
       </div>
-      <div className='p-4 bg-[color:var(--shadow-black)] min-h-[100px] relative overflow-hidden'>
+      <div className='p-4 bg-(--shadow-black) min-h-[100px] relative overflow-hidden'>
         <div
           className='absolute inset-0 opacity-5 pointer-events-none'
           style={{
@@ -506,11 +506,12 @@ export const BrutalFader = ({ label, initialValue = 7, max = 10 }) => {
 
 // 6. Setlist / Track Selector
 export const SetlistSelector = () => {
+  const { t } = useTranslation(['ui'])
   const [selected, setSelected] = useState(1)
   const tracks = [
-    { id: 1, name: 'SUICIDAL JESUS', difficulty: 'HARD' },
-    { id: 2, name: 'SYSTEMSPRENGER', difficulty: 'EXPERT' },
-    { id: 3, name: 'TRAVESTIE MASSAKER', difficulty: 'INSANE' }
+    { id: 1, name: t('ui:setlistSelector.track1'), difficulty: t('ui:setlistSelector.diffHard') },
+    { id: 2, name: t('ui:setlistSelector.track2'), difficulty: t('ui:setlistSelector.diffExpert') },
+    { id: 3, name: t('ui:setlistSelector.track3'), difficulty: t('ui:setlistSelector.diffInsane') }
   ]
 
   return (
@@ -576,7 +577,10 @@ export const CrisisModal = ({ isOpen, onClose }) => {
           <div className='flex items-start gap-4 border-b border-(--toxic-green)/30 pb-6'>
             <AlertIcon className='w-12 h-12 text-(--toxic-green) animate-pulse shrink-0 mt-1' />
             <div>
-              <h2 className='text-2xl font-bold tracking-[0.1em] uppercase glitch-text'>
+              <h2
+                className='text-2xl font-bold tracking-[0.1em] uppercase glitch-text'
+                data-text={t('ui:crisis.title')}
+              >
                 {t('ui:crisis.title')}
               </h2>
               <p className='mt-2 text-sm opacity-80 leading-relaxed'>
@@ -591,8 +595,8 @@ export const CrisisModal = ({ isOpen, onClose }) => {
               onClick={onClose}
               className='w-full p-3 border border-(--toxic-green) bg-(--toxic-green)/10 hover:bg-(--toxic-green) hover:text-[color:var(--void-black)] font-bold tracking-widest uppercase transition-colors text-left flex justify-between'
             >
-              <span>Pay mechanic (-$250)</span>
-              <span className='opacity-50 text-xs mt-1'>SAFE</span>
+              <span>{t('ui:crisis.opt1')}</span>
+              <span className='opacity-50 text-xs mt-1'>{t('ui:crisis.safe')}</span>
             </button>
             <button
               type='button'
@@ -681,6 +685,18 @@ export const DeadmanButton = ({ label, onConfirm }) => {
         onMouseLeave={stopHold}
         onTouchStart={startHold}
         onTouchEnd={stopHold}
+        onKeyDown={(e) => {
+          if (!isHolding && (e.key === 'Enter' || e.key === ' ')) {
+            if (e.key === ' ') e.preventDefault()
+            startHold()
+          }
+        }}
+        onKeyUp={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            stopHold()
+          }
+        }}
+        onBlur={stopHold}
         className={`relative w-full h-14 border-2 overflow-hidden flex items-center justify-center select-none transition-colors
           ${isComplete ? 'border-(--blood-red) bg-(--blood-red)/20' : 'border-(--toxic-green) bg-(--void-black) hover:border-[color:var(--star-white)]'}`}
       >
@@ -738,7 +754,7 @@ export const TerminalReadout = () => {
   }, [currentIndex])
 
   return (
-    <div className='w-full h-48 border border-(--toxic-green)/30 bg-[color:var(--shadow-black)] p-4 font-mono text-xs overflow-y-auto flex flex-col gap-1 custom-scrollbar relative shadow-[inset_0_0_20px_var(--void-black)]'>
+    <div className='w-full h-48 border border-(--toxic-green)/30 bg-(--shadow-black) p-4 font-mono text-xs overflow-y-auto flex flex-col gap-1 custom-scrollbar relative shadow-[inset_0_0_20px_var(--void-black)]'>
       {/* Scanline overlay */}
       <div className='absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(transparent_50%,var(--toxic-green-20)_50%)] bg-[length:100%_4px]'></div>
 
@@ -763,7 +779,7 @@ export const BrutalSlot = ({ label, item = null }) => {
     <div className='flex flex-col gap-2 items-center'>
       <button
         type='button'
-        className='relative w-20 h-20 border-2 border-(--toxic-green)/30 bg-[color:var(--shadow-black)] flex items-center justify-center group cursor-pointer hover:border-(--toxic-green) transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)'
+        className='relative w-20 h-20 border-2 border-(--toxic-green)/30 bg-(--shadow-black) flex items-center justify-center group cursor-pointer hover:border-(--toxic-green) transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)'
       >
         {/* Corner Decals */}
         <div className='absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-(--toxic-green) opacity-0 group-hover:opacity-100 transition-opacity'></div>
@@ -926,6 +942,7 @@ export const CorruptedText = ({ text, delay = 0 }) => {
 
 // 14. Hazard Ticker Tape (For Gig Modifiers)
 export const HazardTicker = ({ message }) => {
+  const { t } = useTranslation(['ui'])
   return (
     <div className='relative w-full h-8 bg-[color:var(--void-black)] border-y-2 border-(--toxic-green) flex items-center overflow-hidden'>
       {/* Striped Background Ends */}
@@ -939,13 +956,13 @@ export const HazardTicker = ({ message }) => {
       {/* Scrolling Text Container */}
       <div className='flex w-full whitespace-nowrap animate-[marquee_10s_linear_infinite] px-8 items-center gap-12'>
         <span className='text-xs font-bold tracking-[0.3em] uppercase text-(--toxic-green)'>
-          [MODIFIER ACTIVE] {message}
+          {t('ui:hazard.modifierActive', { defaultValue: '[MODIFIER ACTIVE]' })} {message}
         </span>
         <span className='text-xs font-bold tracking-[0.3em] uppercase text-(--toxic-green)'>
-          [MODIFIER ACTIVE] {message}
+          {t('ui:hazard.modifierActive', { defaultValue: '[MODIFIER ACTIVE]' })} {message}
         </span>
         <span className='text-xs font-bold tracking-[0.3em] uppercase text-(--toxic-green)'>
-          [MODIFIER ACTIVE] {message}
+          {t('ui:hazard.modifierActive', { defaultValue: '[MODIFIER ACTIVE]' })} {message}
         </span>
       </div>
     </div>
@@ -1064,7 +1081,7 @@ export const RhythmMatrix = () => {
   }
 
   return (
-    <div className='w-full h-64 bg-[color:var(--shadow-black)] border border-(--toxic-green)/30 p-4 flex flex-col relative overflow-hidden'>
+    <div className='w-full h-64 bg-(--shadow-black) border border-(--toxic-green)/30 p-4 flex flex-col relative overflow-hidden'>
       <div className='text-[10px] opacity-50 tracking-[0.3em] absolute top-2 left-2 z-10'>
         {t('ui:rhythm.header')}
       </div>
