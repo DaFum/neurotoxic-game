@@ -863,7 +863,15 @@ export const CrisisModal = ({ isOpen, onClose }) => {
             <button
               type='button'
               onClick={onClose}
-              className='w-full p-3 border border-(--star-white)/50 text-(--star-white)/50 hover:border-(--star-white) hover:text-(--star-white) hover:bg-(--star-white)/10 font-bold tracking-widest uppercase transition-colors text-left flex justify-between'
+              className='w-full p-3 border border-(--warning-yellow)/50 text-(--warning-yellow)/80 hover:border-(--warning-yellow) hover:text-(--void-black) hover:bg-(--warning-yellow) font-bold tracking-widest uppercase transition-colors text-left flex justify-between'
+            >
+              <span>{t('ui:crisis.opt2')}</span>
+              <span className='opacity-50 text-xs mt-1'>{t('ui:crisis.risk')}</span>
+            </button>
+            <button
+              type='button'
+              onClick={onClose}
+              className='w-full p-3 border border-(--blood-red)/50 text-(--blood-red)/80 hover:border-(--blood-red) hover:text-(--void-black) hover:bg-(--blood-red) font-bold tracking-widest uppercase transition-colors text-left flex justify-between'
             >
               <span>{t('ui:crisis.opt3')}</span>
               <span className='opacity-50 text-xs mt-1'>{t('ui:crisis.risky')}</span>
@@ -1217,7 +1225,7 @@ export const HazardTicker = ({ message }) => {
 
       {/* Scrolling Text Container */}
       <div className='flex w-full whitespace-nowrap animate-[marquee_10s_linear_infinite] px-8 items-center gap-12'>
-        {/* eslint-disable-next-line @eslint-react/no-array-index-key */}
+        {}
         {Array.from({ length: 3 }).map((_, i) => (
           <span
             key={i}
