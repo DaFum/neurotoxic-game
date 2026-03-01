@@ -435,5 +435,6 @@
   "currency": "{{value}} €",
   "currencyNegative": "-{{value}} €",
   "errors.audio_init_failed": "Audio-Initialisierung fehlgeschlagen.",
-  "errors.ambient_start_failed": "Ambient-Audio konnte nicht gestartet werden."
+  "errors.ambient_start_failed": "Ambient-Audio konnte nicht gestartet werden.",
+  "map.pinTypeAlt": "Kartenmarkierung: {{type}}"
 }

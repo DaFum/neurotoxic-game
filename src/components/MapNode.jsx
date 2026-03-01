@@ -119,16 +119,34 @@ export const MapNode = memo(
           animate={MOTION_ANIMATE}
           whileHover={isReachable ? MOTION_HOVER : MOTION_NO_HOVER}
           whileFocus={isReachable ? MOTION_HOVER : MOTION_NO_HOVER}
-          className="relative z-10 flex items-center justify-center"
+          className='relative z-10 flex items-center justify-center'
         >
-           <HexNode className={`w-12 h-12 transition-all duration-200 ${isHoveredLocal || isPendingConfirm ? 'text-(--star-white) drop-shadow-[0_0_15px_var(--toxic-green)]' : 'text-(--toxic-green)'}`} />
-           {/* Center icon overlay if needed, or replace HexNode entirely based on type */}
-           <div className="absolute inset-0 flex items-center justify-center mix-blend-difference pointer-events-none">
-             <span className="text-(--void-black) font-bold text-[10px]">
-               {node.type === 'GIG' ? t('ui:map.nodeType.gig') : node.type === 'REST_STOP' ? t('ui:map.nodeType.rest') : t('ui:map.nodeType.fallback', { type: node.type.substring(0,3) })}
-             </span>
-           </div>
+          <HexNode
+            className={`w-12 h-12 transition-all duration-200 ${isHoveredLocal || isPendingConfirm ? 'text-(--star-white) drop-shadow-[0_0_15px_var(--toxic-green)]' : 'text-(--toxic-green)'}`}
+          />
+
+          <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
+            <img
+              src={iconUrl}
+              alt={t('ui:map.pinTypeAlt', {
+                type: t('ui:map.nodeType.fallback', {
+                  type: node.type.replace('_', ' ')
+                })
+              })}
+              className='w-6 h-6 object-contain drop-shadow-[0_0_8px_var(--void-black)]'
+            />
+          </div>
         </motion.div>
+
+        <div className='text-[9px] font-bold uppercase tracking-wide text-(--ash-gray) mt-1 pointer-events-none'>
+          {node.type === 'GIG'
+            ? t('ui:map.nodeType.gig')
+            : node.type === 'REST_STOP'
+              ? t('ui:map.nodeType.rest')
+              : t('ui:map.nodeType.fallback', {
+                  type: node.type.substring(0, 3)
+                })}
+        </div>
 
         {/* Pending confirmation label */}
         {isPendingConfirm && (
