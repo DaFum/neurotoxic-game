@@ -79,6 +79,11 @@ export class MapGenerator {
     const availableMedium = mediumVenues.filter(v => !usedVenueIds.has(v.id))
     const availableHard = hardVenues.filter(v => !usedVenueIds.has(v.id))
 
+    // Pre-filtered static fallback pools to avoid filtering inside the loop
+    const fallbackEasy = easyVenues.filter(v => v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum')
+    const fallbackMedium = mediumVenues.filter(v => v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum')
+    const fallbackHard = hardVenues.filter(v => v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum')
+
     // Generate intermediate layers
     for (let i = 1; i < depth; i++) {
       const layerNodes = []
@@ -106,7 +111,7 @@ export class MapGenerator {
             candidates = availableMedium
             currentAvailablePool = availableMedium
           }
-          if (candidates.length === 0) {
+          if (candidates.length === 0 && i < 7) {
             candidates = availableHard
             currentAvailablePool = availableHard
           }
@@ -114,12 +119,8 @@ export class MapGenerator {
           // Absolute zero-resort fallback: allow duplicates from full pool to prevent crash,
           // but exclude specialized venues.
           if (candidates.length === 0) {
-            // Re-assign candidates to the original static pool for this difficulty layer
-            const staticPool =
-              i < 3 ? easyVenues : i < 7 ? mediumVenues : hardVenues
-            candidates = staticPool.filter(
-              v => v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum'
-            )
+            // Re-assign candidates to the pre-filtered static fallback pool
+            candidates = i < 3 ? fallbackEasy : i < 7 ? fallbackMedium : fallbackHard
             currentAvailablePool = null // We are now picking from a pool that allows duplicates
           }
         }
@@ -132,7 +133,6 @@ export class MapGenerator {
         if (currentAvailablePool) {
           currentAvailablePool.splice(candidateIdx, 1)
         }
-        usedVenueIds.add(venue.id)
 
         // Determine Node Type based on probability and venue
         // ~70% GIG/FESTIVAL, ~20% REST_STOP, ~10% SPECIAL

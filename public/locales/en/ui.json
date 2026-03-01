@@ -155,13 +155,34 @@
   "stats.followers": "Followers",
   "socials": "SOCIALS",
   "social_links": {
-    "play_game": "Play Neurotoxic",
-    "title_bandcamp": "Bandcamp",
-    "title_instagram": "Instagram",
-    "title_tiktok": "TikTok",
-    "title_youtube1": "Neurotoxic Once",
-    "title_youtube2": "Neurotoxic 3000",
-    "title_blog": "Neuroblogxic",
+    "game": {
+      "title": "Play Neurotoxic",
+      "subtitle": "neurotoxic-game.vercel.app"
+    },
+    "bandcamp": {
+      "title": "Bandcamp",
+      "subtitle": "neurotoxic.bandcamp.com"
+    },
+    "instagram": {
+      "title": "Instagram",
+      "subtitle": "instagram.com/neurotoxicband"
+    },
+    "tiktok": {
+      "title": "TikTok",
+      "subtitle": "tiktok.com/@neurotoxicband"
+    },
+    "neurotoxic_once": {
+      "title": "Neurotoxic Once",
+      "subtitle": "youtube.com/@neurotoxiconcechannel237"
+    },
+    "neurotoxic_3000": {
+      "title": "Neurotoxic 3000",
+      "subtitle": "youtube.com/@neurotoxic3000"
+    },
+    "blog": {
+      "title": "Neuroblogxic",
+      "subtitle": "neuroblogxic.blogspot.com"
+    },
     "type_system_core": "SYSTEM_CORE",
     "type_audio_vault": "AUDIO_VAULT",
     "type_visual_feed": "VISUAL_FEED",

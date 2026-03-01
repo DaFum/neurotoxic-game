@@ -44,6 +44,9 @@ export const applyInventoryItemDelta = (currentValue, deltaValue) => {
  * @param {object} delta - Event delta payload.
  * @returns {object} Updated game state.
  */
+const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
+const isForbiddenKey = key => FORBIDDEN_KEYS.has(key)
+
 export const applyEventDelta = (state, delta) => {
   const nextState = { ...state }
 
@@ -73,14 +76,16 @@ export const applyEventDelta = (state, delta) => {
     if (delta.player.stats) {
       nextPlayer.stats = { ...nextPlayer.stats }
       Object.keys(delta.player.stats).forEach(key => {
-        if (key === '__proto__' || key === 'constructor' || key === 'prototype')
-          return
+        if (isForbiddenKey(key)) return
         if (typeof delta.player.stats[key] === 'number') {
           nextPlayer.stats[key] = Math.max(
             0,
             (nextPlayer.stats[key] || 0) + delta.player.stats[key]
           )
-        } else {
+        } else if (
+          typeof delta.player.stats[key] === 'string' ||
+          typeof delta.player.stats[key] === 'boolean'
+        ) {
           nextPlayer.stats[key] = delta.player.stats[key]
         }
       })
@@ -171,6 +176,8 @@ export const applyEventDelta = (state, delta) => {
             const otherMember =
               change.member1 === member.name ? change.member2 : change.member1
 
+            if (isForbiddenKey(otherMember)) return
+
             let amount = change.change
             // Apply traits
             if (
@@ -205,12 +212,7 @@ export const applyEventDelta = (state, delta) => {
     if (delta.band.inventory) {
       nextBand.inventory = { ...nextBand.inventory }
       Object.entries(delta.band.inventory).forEach(([item, val]) => {
-        if (
-          item === '__proto__' ||
-          item === 'constructor' ||
-          item === 'prototype'
-        )
-          return
+        if (isForbiddenKey(item)) return
         nextBand.inventory[item] = applyInventoryItemDelta(
           nextBand.inventory[item],
           val
@@ -238,8 +240,7 @@ export const applyEventDelta = (state, delta) => {
   if (delta.social) {
     const nextSocial = { ...nextState.social }
     Object.entries(delta.social).forEach(([key, value]) => {
-      if (key === '__proto__' || key === 'constructor' || key === 'prototype')
-        return
+      if (isForbiddenKey(key)) return
       if (typeof value === 'number') {
         const currentValue =
           typeof nextSocial[key] === 'number' ? nextSocial[key] : 0

@@ -1194,60 +1194,6 @@ export const VoidLoader = ({ size = 'w-16 h-16' }) => {
   )
 }
 
-// 12. Void Nav-Node (Overworld Navigation Target)
-export const VoidNavNode = ({
-  label,
-  type,
-  isUnlocked = true,
-  status = 'IDLE'
-}) => {
-  const [isHovered, setIsHovered] = useState(false)
-
-  return (
-    <button
-      type='button'
-      className={`relative w-40 h-48 flex flex-col items-center justify-center cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green) ${!isUnlocked ? 'opacity-30' : ''}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onFocus={() => setIsHovered(true)}
-      onBlur={() => setIsHovered(false)}
-    >
-      {/* Target Crosshairs (appear on hover) */}
-      <div
-        className={`absolute inset-0 border border-(--toxic-green)/30 transition-all duration-300 ${isHovered ? 'scale-100 opacity-100' : 'scale-90 opacity-0'}`}
-      >
-        <div className='absolute top-0 left-1/2 w-[1px] h-4 bg-(--toxic-green) -translate-x-1/2 -translate-y-2'></div>
-        <div className='absolute bottom-0 left-1/2 w-[1px] h-4 bg-(--toxic-green) -translate-x-1/2 translate-y-2'></div>
-        <div className='absolute left-0 top-1/2 w-4 h-[1px] bg-(--toxic-green) -translate-y-1/2 -translate-x-2'></div>
-        <div className='absolute right-0 top-1/2 w-4 h-[1px] bg-(--toxic-green) -translate-y-1/2 translate-x-2'></div>
-      </div>
-
-      <HexNode
-        className={`w-20 h-20 transition-all duration-200 ${isHovered ? 'text-(--star-white) drop-shadow-[0_0_15px_var(--toxic-green-80)]' : 'text-(--toxic-green)'}`}
-      />
-
-      {/* Node Info */}
-      <div className='mt-4 flex flex-col items-center'>
-        <span className='text-[10px] opacity-70 tracking-[0.3em] uppercase'>
-          {type}
-        </span>
-        <span
-          className={`text-sm font-bold tracking-widest uppercase mt-1 ${isHovered ? 'text-(--star-white)' : 'text-(--toxic-green)'}`}
-        >
-          {label}
-        </span>
-      </div>
-
-      {/* Floating Status Tag */}
-      {status !== 'IDLE' && (
-        <div className='absolute top-2 right-2 bg-(--toxic-green) text-(--void-black) text-[8px] font-bold px-1 tracking-widest animate-pulse'>
-          {status}
-        </div>
-      )}
-    </button>
-  )
-}
-
 // 13. Corrupted Data Stream (Text Reveal Effect)
 export const CorruptedText = ({ text, delay = 0 }) => {
   const [displayedText, setDisplayedText] = useState('')
@@ -1310,9 +1256,7 @@ export const HazardTicker = ({ message }) => {
             key={pillKey}
             className='text-xs font-bold tracking-[0.3em] uppercase text-(--toxic-green)'
           >
-            {t('ui:hazard.modifierActive', {
-              defaultValue: '[MODIFIER ACTIVE]'
-            })}{' '}
+            {t('ui:hazard.modifierActive')}{' '}
             {message}
           </span>
         ))}
