@@ -24,16 +24,16 @@ export const UplinkButton = ({ title, url, subtitle, type, Icon }) => {
         {/* Icon Block */}
         <div className={`w-14 h-14 border-2 flex items-center justify-center shrink-0 transition-colors
           ${isHovered ? 'border-(--toxic-green) bg-(--toxic-green) text-(--void-black) shadow-[0_0_15px_var(--toxic-green)]' : 'border-(--toxic-green)/50 text-(--toxic-green)'}`}>
-          {Icon && <Icon className="w-8 h-8" />}
+          {Icon && <Icon className="w-8 h-8 shrink-0" />}
         </div>
 
         {/* Text Block */}
-        <div className="ml-6 flex-1">
-          <div className="flex justify-between items-start">
-            <h2 className="font-bold tracking-[0.2em] text-lg uppercase glitch-text" data-text={title}>
+        <div className="ml-6 flex-1 min-w-0">
+          <div className="flex justify-between items-start gap-2">
+            <h2 className="font-bold tracking-[0.2em] text-lg uppercase glitch-text truncate" data-text={title}>
               {title}
             </h2>
-            <span className={`text-[9px] tracking-widest px-2 py-1 border transition-colors ${isHovered ? 'border-(--toxic-green) text-(--toxic-green)' : 'border-transparent text-(--toxic-green)/50'}`}>
+            <span className={`shrink-0 text-[9px] tracking-widest px-2 py-1 border transition-colors ${isHovered ? 'border-(--toxic-green) text-(--toxic-green)' : 'border-transparent text-(--toxic-green)/50'}`}>
               {type}
             </span>
           </div>
@@ -43,7 +43,7 @@ export const UplinkButton = ({ title, url, subtitle, type, Icon }) => {
         </div>
 
         {/* External Link Indicator */}
-        <div className={`ml-4 transition-transform duration-200 ${isHovered ? 'translate-x-1 text-(--star-white)' : 'text-(--toxic-green)/30'}`}>
+        <div className={`shrink-0 ml-4 transition-transform duration-200 ${isHovered ? 'translate-x-1 text-(--star-white)' : 'text-(--toxic-green)/30'}`}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square">
             <path d="M5 12H19M19 12L12 5M19 12L12 19" />
           </svg>
