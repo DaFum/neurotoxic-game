@@ -86,6 +86,7 @@
   "leaderboard.col_player": "SPIELER",
   "leaderboard.col_net_worth": "VERMÖGEN",
   "leaderboard.col_score": "PUNKTE",
+  "leaderboard.load_error": "Rangliste konnte nicht geladen werden.",
   "settings.audio_mute": "Ton ausschalten",
   "settings.audio_unmute": "Ton einschalten",
   "settings.crt_enable": "CRT-Effekt aktivieren",
@@ -93,6 +94,12 @@
   "mainMenu": {
     "subtitle": {
       "grindTheVoid": "Grind The Void"
+    },
+    "existingSave": {
+      "title": "SPIELSTAND GEFUNDEN",
+      "desc": "Ein Spielstand existiert bereits. Möchtest du ihn laden oder eine neue Tour starten?",
+      "load": "BESTEHENDEN LADEN",
+      "startNew": "NEUE TOUR STARTEN"
     }
   },
   "tour.endedPrematurely": "Die Tour endete vorzeitig.",
@@ -426,5 +433,7 @@
   "cost": "{{cost}} €",
   "seconds": "{{count}} Sek.",
   "currency": "{{value}} €",
-  "currencyNegative": "-{{value}} €"
+  "currencyNegative": "-{{value}} €",
+  "errors.audio_init_failed": "Audio-Initialisierung fehlgeschlagen.",
+  "errors.ambient_start_failed": "Ambient-Audio konnte nicht gestartet werden."
 }

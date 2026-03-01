@@ -86,6 +86,7 @@
   "leaderboard.col_player": "PLAYER",
   "leaderboard.col_net_worth": "NET WORTH",
   "leaderboard.col_score": "SCORE",
+  "leaderboard.load_error": "Could not load rankings.",
   "settings.audio_mute": "Mute all audio",
   "settings.audio_unmute": "Unmute all audio",
   "settings.crt_enable": "Enable CRT Effect",
@@ -93,6 +94,12 @@
   "mainMenu": {
     "subtitle": {
       "grindTheVoid": "Grind The Void"
+    },
+    "existingSave": {
+      "title": "SAVE FILE DETECTED",
+      "desc": "A save game already exists. Do you want to load it or start a new tour?",
+      "load": "LOAD EXISTING",
+      "startNew": "START NEW TOUR"
     }
   },
   "tour.endedPrematurely": "The tour has ended prematurely.",
@@ -426,5 +433,7 @@
   "cost": "€{{cost}}",
   "seconds": "{{count}}s",
   "currency": "€{{value}}",
-  "currencyNegative": "-€{{value}}"
+  "currencyNegative": "-€{{value}}",
+  "errors.audio_init_failed": "Audio initialization failed.",
+  "errors.ambient_start_failed": "Ambient audio failed to start."
 }

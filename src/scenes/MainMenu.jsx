@@ -25,6 +25,7 @@ export const MainMenu = () => {
   const [showNameInput, setShowNameInput] = useState(false)
   const [playerNameInput, setPlayerNameInput] = useState('')
   const [showSocials, setShowSocials] = useState(false)
+  const [showExistingSavePrompt, setShowExistingSavePrompt] = useState(false)
   const inputRef = useRef(null)
 
   useEffect(() => {
@@ -54,9 +55,9 @@ export const MainMenu = () => {
 
   const startAmbientSafely = useCallback(() => {
     void audioManager.startAmbient().catch(err => {
-      reportAudioIssue(err, 'Ambient audio failed to start.')
+      reportAudioIssue(err, t('ui:errors.ambient_start_failed'))
     })
-  }, [reportAudioIssue])
+  }, [reportAudioIssue, t])
 
   const proceedToTour = useCallback(async () => {
     setIsStarting(true)
@@ -83,7 +84,7 @@ export const MainMenu = () => {
     // Audio setup is fire-and-forget — never blocks scene transitions.
     void audioManager
       .ensureAudioContext()
-      .catch(err => reportAudioIssue(err, 'Audio initialization failed.'))
+      .catch(err => reportAudioIssue(err, t('ui:errors.audio_init_failed')))
       .then(() => startAmbientSafely())
   }, [
     resetState,
@@ -93,7 +94,7 @@ export const MainMenu = () => {
     updatePlayer
   ])
 
-  const handleStartTour = useCallback(async () => {
+  const startNewTourFlow = useCallback(() => {
     // Check for existing player identity
     const savedPlayerId = localStorage.getItem('neurotoxic_player_id')
     const savedPlayerName = localStorage.getItem('neurotoxic_player_name')
@@ -103,8 +104,18 @@ export const MainMenu = () => {
       return
     }
 
-    proceedToTour()
+    void proceedToTour()
   }, [proceedToTour])
+
+  const handleStartTour = useCallback(() => {
+    const savedGameExists = !!localStorage.getItem('neurotoxic_v3_save')
+    if (savedGameExists) {
+      setShowExistingSavePrompt(true)
+      return
+    }
+
+    startNewTourFlow()
+  }, [startNewTourFlow])
 
   const handleNameSubmit = useCallback(() => {
     if (!playerNameInput.trim()) {
@@ -149,15 +160,53 @@ export const MainMenu = () => {
     // Audio is fire-and-forget; Overworld re-syncs audio.
     void audioManager
       .ensureAudioContext()
-      .catch(err => reportAudioIssue(err, 'Audio initialization failed.'))
+      .catch(err => reportAudioIssue(err, t('ui:errors.audio_init_failed')))
       .then(() => startAmbientSafely())
   }, [loadGame, addToast, changeScene, reportAudioIssue, startAmbientSafely, t])
 
   const handleCredits = useCallback(() => changeScene('CREDITS'), [changeScene])
   const closeNameInput = useCallback(() => setShowNameInput(false), [])
 
+  const handleStartNewAnyway = useCallback(() => {
+    setShowExistingSavePrompt(false)
+    startNewTourFlow()
+  }, [startNewTourFlow])
+
+  const handleLoadExistingFromPrompt = useCallback(() => {
+    setShowExistingSavePrompt(false)
+    void handleLoad()
+  }, [handleLoad])
+
   return (
     <div className='flex flex-col items-center justify-center h-full w-full bg-(--void-black) z-50 relative overflow-hidden'>
+      {showExistingSavePrompt && (
+        <Modal
+          isOpen={true}
+          title={t('ui:mainMenu.existingSave.title')}
+          onClose={() => setShowExistingSavePrompt(false)}
+        >
+          <div className='flex flex-col gap-4'>
+            <p className='text-(--ash-gray) font-mono text-sm'>
+              {t('ui:mainMenu.existingSave.desc')}
+            </p>
+            <div className='flex gap-2 justify-end'>
+              <GlitchButton
+                onClick={handleLoadExistingFromPrompt}
+                className='border-(--toxic-green) text-(--toxic-green)'
+              >
+                {t('ui:mainMenu.existingSave.load')}
+              </GlitchButton>
+              <GlitchButton
+                onClick={handleStartNewAnyway}
+                className='border-(--blood-red) text-(--blood-red)'
+              >
+                {t('ui:mainMenu.existingSave.startNew')}
+              </GlitchButton>
+            </div>
+          </div>
+        </Modal>
+      )}
+
       {showNameInput && (
         <Modal
           isOpen={true}
