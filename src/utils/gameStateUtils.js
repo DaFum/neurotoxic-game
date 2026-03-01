@@ -73,6 +73,8 @@ export const applyEventDelta = (state, delta) => {
     if (delta.player.stats) {
       nextPlayer.stats = { ...nextPlayer.stats }
       Object.keys(delta.player.stats).forEach(key => {
+        if (key === '__proto__' || key === 'constructor' || key === 'prototype')
+          return
         if (typeof delta.player.stats[key] === 'number') {
           nextPlayer.stats[key] = Math.max(
             0,
@@ -203,6 +205,12 @@ export const applyEventDelta = (state, delta) => {
     if (delta.band.inventory) {
       nextBand.inventory = { ...nextBand.inventory }
       Object.entries(delta.band.inventory).forEach(([item, val]) => {
+        if (
+          item === '__proto__' ||
+          item === 'constructor' ||
+          item === 'prototype'
+        )
+          return
         nextBand.inventory[item] = applyInventoryItemDelta(
           nextBand.inventory[item],
           val
@@ -230,6 +238,8 @@ export const applyEventDelta = (state, delta) => {
   if (delta.social) {
     const nextSocial = { ...nextState.social }
     Object.entries(delta.social).forEach(([key, value]) => {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype')
+        return
       if (typeof value === 'number') {
         const currentValue =
           typeof nextSocial[key] === 'number' ? nextSocial[key] : 0
