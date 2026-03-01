@@ -340,6 +340,9 @@
     "unlocked": "ITEM_UNLOCKED: 'VOID_CORE'",
     "click": "CLICK TO DECRYPT"
   },
+  "brutalist": {
+    "glitchPlaceholder": "0x8F9A... ENCRYPTED"
+  },
   "hqNavigation": "HQ Navigation",
   "set_label_to_segment": "Set {{label}} to {{segment}}",
   "sign_contract": "Sign Contract",
@@ -412,6 +415,11 @@
       "title": "SETUP COMPLETE",
       "button": "START SHOW",
       "equipmentDamage": "Equipment Damage: {{damage}}%"
+    },
+    "itemTypes": {
+      "AMP": "Amp",
+      "DRUMS": "Drums",
+      "GUITAR": "Guitar"
     }
   }
 }

@@ -55,7 +55,7 @@ export const RoadieRunScene = () => {
         <div>{t('ui:roadieRun.hud.damage')} {uiState.currentDamage}%</div>
         {uiState.carrying && (
           <div className='text-(--warning-yellow)'>
-            {t('ui:roadieRun.hud.carrying')} {uiState.carrying.type}
+            {t('ui:roadieRun.hud.carrying')} {t(`ui:roadieRun.itemTypes.${uiState.carrying.type}`)}
           </div>
         )}
       </div>

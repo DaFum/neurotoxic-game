@@ -340,6 +340,9 @@
     "unlocked": "ITEM_ENTSPERRT: 'VOID_CORE'",
     "click": "KLICKEN ZUM ENTSCHLÜSSELN"
   },
+  "brutalist": {
+    "glitchPlaceholder": "0x8F9A... VERSCHLÜSSELT"
+  },
   "hqNavigation": "HQ-Navigation",
   "set_label_to_segment": "Setze {{label}} auf {{segment}}",
   "sign_contract": "Vertrag unterschreiben",
@@ -412,6 +415,11 @@
       "title": "AUFBAU ABGESCHLOSSEN",
       "button": "SHOW STARTEN",
       "equipmentDamage": "Equipment-Schaden: {{damage}}%"
+    },
+    "itemTypes": {
+      "AMP": "Verstärker",
+      "DRUMS": "Schlagzeug",
+      "GUITAR": "Gitarre"
     }
   }
 }

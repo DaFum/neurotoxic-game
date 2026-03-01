@@ -115,6 +115,28 @@ export class AudioError extends GameError {
 const errorLog = []
 const MAX_ERROR_LOG_SIZE = 100
 
+
+const VALID_SEVERITIES = new Set(Object.values(ErrorSeverity))
+
+const normalizeSeverity = severity => {
+  if (typeof severity !== 'string') return null
+  const normalized = severity.toLowerCase()
+  return VALID_SEVERITIES.has(normalized) ? normalized : null
+}
+
+const normalizeHandleErrorOptions = options => {
+  const normalizedOptions = {
+    source: typeof options.source === 'string' ? options.source : undefined,
+    errorInfo:
+      typeof options.errorInfo === 'object' && options.errorInfo !== null
+        ? options.errorInfo
+        : null,
+    severity: normalizeSeverity(options.severity)
+  }
+
+  return normalizedOptions
+}
+
 /**
  * Handles an error by logging and optionally showing user feedback
  * @param {Error} error - The error to handle
@@ -130,6 +152,8 @@ export const handleError = (error, options = {}) => {
     silent = false,
     fallbackMessage = 'An error occurred'
   } = options
+
+  const normalizedOptions = normalizeHandleErrorOptions(options)
 
   let errorInfo
 
@@ -149,11 +173,14 @@ export const handleError = (error, options = {}) => {
   }
 
   // Merge external context/source if provided
-  if (options.source) {
-    errorInfo.source = options.source
+  if (normalizedOptions.source) {
+    errorInfo.source = normalizedOptions.source
   }
-  if (options.errorInfo) {
-    errorInfo.context = { ...errorInfo.context, ...options.errorInfo }
+  if (normalizedOptions.errorInfo) {
+    errorInfo.context = { ...errorInfo.context, ...normalizedOptions.errorInfo }
+  }
+  if (normalizedOptions.severity) {
+    errorInfo.severity = normalizedOptions.severity
   }
 
   // Log to error log
@@ -165,12 +192,18 @@ export const handleError = (error, options = {}) => {
   // Log to console/logger based on severity
   switch (errorInfo.severity) {
     case ErrorSeverity.CRITICAL:
+      logger.error('ErrorHandler', errorInfo.message, errorInfo)
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('app:error:critical', { detail: errorInfo }))
+      }
+      break
     case ErrorSeverity.HIGH:
       logger.error('ErrorHandler', errorInfo.message, errorInfo)
       break
     case ErrorSeverity.MEDIUM:
       logger.warn('ErrorHandler', errorInfo.message, errorInfo)
       break
+    case ErrorSeverity.LOW:
     default:
       logger.debug('ErrorHandler', errorInfo.message, errorInfo)
   }

@@ -59,6 +59,7 @@ export const GameOver = () => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.3, duration: 0.8 }}
         className="relative z-10 mb-4"
+        aria-hidden='true'
       >
         <VoidSkullIcon className="w-24 h-24 text-(--blood-red) drop-shadow-[0_0_20px_var(--blood-red)]" />
       </motion.div>

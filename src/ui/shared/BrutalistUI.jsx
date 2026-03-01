@@ -15,7 +15,7 @@ export const UplinkButton = ({ title, url, subtitle, type, Icon }) => {
       {/* Glitch Background on Hover */}
       {isHovered && (
         <div className="absolute inset-0 bg-(--toxic-green)/10 z-0">
-          <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.5)_50%)] bg-[length:100%_4px] opacity-50"></div>
+          <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,var(--void-black-50)_50%)] bg-[length:100%_4px] opacity-50"></div>
           <div className="w-full h-1 bg-(--toxic-green) absolute top-1/2 animate-[scan_0.5s_linear_infinite]"></div>
         </div>
       )}
@@ -44,7 +44,7 @@ export const UplinkButton = ({ title, url, subtitle, type, Icon }) => {
 
         {/* External Link Indicator */}
         <div className={`shrink-0 ml-4 transition-transform duration-200 ${isHovered ? 'translate-x-1 text-(--star-white)' : 'text-(--toxic-green)/30'}`}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" aria-hidden="true" focusable="false" role="presentation">
             <path d="M5 12H19M19 12L12 5M19 12L12 19" />
           </svg>
         </div>
@@ -1279,9 +1279,9 @@ export const HazardTicker = ({ message }) => {
       {/* Scrolling Text Container */}
       <div className='flex w-full whitespace-nowrap animate-[marquee_10s_linear_infinite] px-8 items-center gap-12'>
         {}
-        {Array.from({ length: 3 }).map((_, i) => (
+        {['pill-0', 'pill-1', 'pill-2'].map(pillKey => (
           <span
-            key={i}
+            key={pillKey}
             className='text-xs font-bold tracking-[0.3em] uppercase text-(--toxic-green)'
           >
             {t('ui:hazard.modifierActive', { defaultValue: '[MODIFIER ACTIVE]' })}{' '}
@@ -1596,7 +1596,7 @@ export const ToxicChatter = () => {
 export const VoidDecryptor = () => {
   const { t } = useTranslation(['ui'])
   const [decrypted, setDecrypted] = useState(false)
-  const [glitchText, setGlitchText] = useState('0x8F9A... ENCRYPTED')
+  const [glitchText, setGlitchText] = useState(t('ui:brutalist.glitchPlaceholder'))
 
   useEffect(() => {
     if (!decrypted) {

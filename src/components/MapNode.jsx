@@ -195,6 +195,8 @@ export const MapNode = memo(
   (prev, next) => {
     return (
       prev.node.id === next.node.id &&
+      prev.node.x === next.node.x &&
+      prev.node.y === next.node.y &&
       prev.isCurrent === next.isCurrent &&
       prev.isTraveling === next.isTraveling &&
       prev.visibility === next.visibility &&

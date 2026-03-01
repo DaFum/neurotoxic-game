@@ -180,4 +180,3 @@ export const LeaderboardTab = () => {
   )
 }
 
-LeaderboardTab.propTypes = {}
