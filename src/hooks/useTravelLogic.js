@@ -21,6 +21,8 @@ import { audioManager } from '../utils/AudioManager.js'
 import { logger } from '../utils/logger.js'
 import { handleError, StateError } from '../utils/errorHandler.js'
 import { calcBaseBreakdownChance } from '../utils/upgradeUtils.js'
+import i18n from '../i18n.js'
+import { translateLocation } from '../utils/locationI18n.js'
 
 /**
  * Failsafe timeout duration in milliseconds
@@ -91,6 +93,10 @@ export const useTravelLogic = ({
     reputationByRegionRef.current = reputationByRegion
     venueBlacklistRef.current = venueBlacklist
   }, [player, band, gameMap, reputationByRegion, venueBlacklist])
+
+  const getLocationName = useCallback(location => {
+    return translateLocation(i18n.t.bind(i18n), location, location || 'Unknown')
+  }, [])
 
   /**
    * Checks if a target node is connected to the current node
@@ -344,7 +350,7 @@ export const useTravelLogic = ({
             return
           }
           logger.info('TravelLogic', 'Entering current node Gig', {
-            venue: node.venue.name
+            venue: getLocationName(node.venue.name)
           })
           try {
             startGig(node.venue)
@@ -364,7 +370,7 @@ export const useTravelLogic = ({
             })
           }
         } else {
-          addToast(`You are at ${node.venue.name}.`, 'info')
+          addToast(`You are at ${getLocationName(node.venue.name)}.`, 'info')
         }
         return
       }
@@ -384,7 +390,7 @@ export const useTravelLogic = ({
       if (node.type !== 'START' && node.venue) {
         if (bList.includes(node.venue.name)) {
           addToast(
-            `Booking refused: ${node.venue.name} has permanently blacklisted you!`,
+            `Booking refused: ${getLocationName(node.venue.name)} has permanently blacklisted you!`,
             'error'
           )
           if (pendingTravelNode?.id === node.id) clearPendingTravel()
@@ -393,7 +399,7 @@ export const useTravelLogic = ({
 
         if (player?.stats?.proveYourselfMode && node.venue.capacity > 150) {
           addToast(
-            `PROVE YOURSELF MODE: You must rebuild your reputation in small venues (150 cap or less). ${node.venue.name} is too big!`,
+            `PROVE YOURSELF MODE: You must rebuild your reputation in small venues (150 cap or less). ${getLocationName(node.venue.name)} is too big!`,
             'error'
           )
           if (pendingTravelNode?.id === node.id) clearPendingTravel()
@@ -402,7 +408,7 @@ export const useTravelLogic = ({
 
         if ((reputation[node.venue.name] || 0) <= -30) {
           addToast(
-            `Booking refused: The venue in ${node.venue.name} blacklisted you due to poor regional reputation!`,
+            `Booking refused: The venue in ${getLocationName(node.venue.name)} blacklisted you due to poor regional reputation!`,
             'error'
           )
           if (pendingTravelNode?.id === node.id) {
@@ -462,7 +468,7 @@ export const useTravelLogic = ({
       clearPendingTravel()
       setPendingTravelNode(node)
       addToast(
-        `${node.venue.name} (${dist}km) | Food: ${totalCost}\u20AC | Fuel: ${fuelLiters.toFixed(1)}L \u2014 Click again to confirm`,
+        `${getLocationName(node.venue.name)} (${dist}km) | Food: ${totalCost}\u20AC | Fuel: ${fuelLiters.toFixed(1)}L \u2014 Click again to confirm`,
         'warning'
       )
 
@@ -472,7 +478,14 @@ export const useTravelLogic = ({
         pendingTimeoutRef.current = null
       }, 5000)
     },
-    [startGig, addToast, onShowHQ, startTravelSequence, clearPendingTravel]
+    [
+      startGig,
+      addToast,
+      onShowHQ,
+      startTravelSequence,
+      clearPendingTravel,
+      getLocationName
+    ]
   )
 
   /**
