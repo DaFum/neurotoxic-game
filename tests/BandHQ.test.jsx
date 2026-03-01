@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, describe, expect, test, vi } from 'vitest'
 
 import React from 'react'
-import { render, cleanup } from '@testing-library/react'
+import { render, cleanup, fireEvent } from '@testing-library/react'
 
 // Mock react-i18next
 vi.mock('react-i18next', () => ({
@@ -39,6 +39,12 @@ vi.mock('../src/hooks/usePurchaseLogic.js', () => ({
     getAdjustedCost: item => item.cost // Mock passthrough
   }),
   getPrimaryEffect: () => ({})
+}))
+vi.mock('../src/context/GameState', () => ({
+  useGameState: () => ({
+    setCurrentGig: () => {},
+    changeScene: () => {}
+  })
 }))
 vi.mock('../src/ui/shared/index.jsx', () => ({
   StatBox: () => React.createElement('div', { 'data-testid': 'stat-box' }),
@@ -101,5 +107,39 @@ describe('BandHQ', () => {
     expect(container.querySelector('h2')).toBeTruthy()
     // "BAND HQ" is the default fallback or key, adjust if needed
     expect(container.textContent).toContain('hq.title')
+  })
+
+  test('keeps rendering when opening details and setlist with malformed props', () => {
+    const props = {
+      player: { money: 100, fame: 50, day: 1, van: {} },
+      band: { members: [] },
+      social: { instagram: 0, tiktok: 0 },
+      onClose: () => {},
+      updatePlayer: () => {},
+      updateBand: () => {},
+      addToast: () => {},
+      settings: {},
+      updateSettings: () => {},
+      deleteSave: () => {},
+      setlist: null,
+      setSetlist: () => {},
+      audioState: { musicVol: 1, sfxVol: 1, isMuted: false },
+      onAudioChange: {
+        setMusic: () => {},
+        setSfx: () => {},
+        toggleMute: () => {}
+      },
+      activeQuests: 'bad-data',
+      venueBlacklist: null,
+      reputationByRegion: 'broken'
+    }
+
+    const { container, getByRole } = render(React.createElement(BandHQ, props))
+
+    fireEvent.click(getByRole('tab', { name: 'tabs.details' }))
+    expect(container.querySelector('[role="tabpanel"]')).toBeTruthy()
+
+    fireEvent.click(getByRole('tab', { name: 'tabs.setlist' }))
+    expect(container.querySelector('[role="tabpanel"]')).toBeTruthy()
   })
 })

@@ -369,5 +369,6 @@
       "harmonyLow": "Band-Harmonie zu niedrig für einen Auftritt!",
       "audioFail": "Audio-Initialisierung fehlgeschlagen."
     }
-  }
+  },
+  "hq.tabError": "Bereich wegen beschädigter Daten nicht verfügbar. Wechsle den Tab oder spiele weiter, um dieses Panel zu aktualisieren."
 }

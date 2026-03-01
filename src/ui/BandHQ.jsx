@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { Component, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog'
@@ -13,6 +13,41 @@ import { SetlistTab } from './bandhq/SetlistTab'
 import { SettingsTab } from './bandhq/SettingsTab'
 import { LeaderboardTab } from './bandhq/LeaderboardTab'
 import { AudioStatePropType, OnAudioChangePropType } from './shared/propTypes'
+
+class BandHQTabErrorBoundary extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.resetKey !== this.props.resetKey && this.state.hasError) {
+      this.setState({ hasError: false })
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className='border border-(--blood-red) bg-(--void-black)/70 p-4 font-mono text-sm text-(--star-white)'>
+          {this.props.fallbackText}
+        </div>
+      )
+    }
+
+    return this.props.children
+  }
+}
+
+BandHQTabErrorBoundary.propTypes = {
+  children: PropTypes.node,
+  fallbackText: PropTypes.string.isRequired,
+  resetKey: PropTypes.string.isRequired
+}
 
 /**
  * BandHQ Component
@@ -168,7 +203,7 @@ export const BandHQ = ({
                 id={`tab-${tab.id}`}
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 min-w-[100px] py-3 px-3 text-center text-xs md:text-sm font-bold tracking-[0.1em] uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2 whitespace-nowrap
+                className={`shrink-0 min-w-[120px] py-3 px-3 text-center text-xs md:text-sm font-bold tracking-[0.08em] uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2 whitespace-nowrap
                   ${
                     isActive
                       ? 'bg-(--toxic-green) text-(--void-black) shadow-[0_-2px_10px_var(--toxic-green)]'
@@ -190,65 +225,73 @@ export const BandHQ = ({
           tabIndex={0}
           className='flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-(--void-black) focus-visible:outline-none'
         >
-          {activeTab === 'STATS' && (
-            <StatsTab player={player} band={band} social={social} />
-          )}
+          <BandHQTabErrorBoundary
+            resetKey={activeTab}
+            fallbackText={t('ui:hq.tabError', {
+              defaultValue:
+                'Section unavailable due to corrupted data. Switch tabs or continue playing to refresh this panel.'
+            })}
+          >
+            {activeTab === 'STATS' && (
+              <StatsTab player={player} band={band} social={social} />
+            )}
 
-          {activeTab === 'DETAILS' && (
-            <DetailedStatsTab
-              player={player}
-              band={band}
-              social={social}
-              activeQuests={normalizedActiveQuests}
-              venueBlacklist={normalizedVenueBlacklist}
-              reputationByRegion={normalizedReputationByRegion}
-            />
-          )}
+            {activeTab === 'DETAILS' && (
+              <DetailedStatsTab
+                player={player}
+                band={band}
+                social={social}
+                activeQuests={normalizedActiveQuests}
+                venueBlacklist={normalizedVenueBlacklist}
+                reputationByRegion={normalizedReputationByRegion}
+              />
+            )}
 
-          {activeTab === 'SHOP' && (
-            <ShopTab
-              player={player}
-              handleBuy={handleBuyWithLock}
-              isItemOwned={isItemOwned}
-              isItemDisabled={isItemDisabled}
-              getAdjustedCost={getAdjustedCost}
-              processingItemId={processingItemId}
-            />
-          )}
+            {activeTab === 'SHOP' && (
+              <ShopTab
+                player={player}
+                handleBuy={handleBuyWithLock}
+                isItemOwned={isItemOwned}
+                isItemDisabled={isItemDisabled}
+                getAdjustedCost={getAdjustedCost}
+                processingItemId={processingItemId}
+              />
+            )}
 
-          {activeTab === 'UPGRADES' && (
-            <UpgradesTab
-              player={player}
-              upgrades={unifiedUpgradeCatalog}
-              handleBuy={handleBuyWithLock}
-              isItemOwned={isItemOwned}
-              isItemDisabled={isItemDisabled}
-              getAdjustedCost={getAdjustedCost}
-              processingItemId={processingItemId}
-            />
-          )}
+            {activeTab === 'UPGRADES' && (
+              <UpgradesTab
+                player={player}
+                upgrades={unifiedUpgradeCatalog}
+                handleBuy={handleBuyWithLock}
+                isItemOwned={isItemOwned}
+                isItemDisabled={isItemDisabled}
+                getAdjustedCost={getAdjustedCost}
+                processingItemId={processingItemId}
+              />
+            )}
 
-          {activeTab === 'SETLIST' && (
-            <SetlistTab
-              setlist={normalizedSetlist}
-              setSetlist={setSetlist}
-              addToast={addToast}
-            />
-          )}
+            {activeTab === 'SETLIST' && (
+              <SetlistTab
+                setlist={normalizedSetlist}
+                setSetlist={setSetlist}
+                addToast={addToast}
+              />
+            )}
 
-          {activeTab === 'LEADERBOARD' && (
-            <LeaderboardTab setlist={normalizedSetlist} />
-          )}
+            {activeTab === 'LEADERBOARD' && (
+              <LeaderboardTab setlist={normalizedSetlist} />
+            )}
 
-          {activeTab === 'SETTINGS' && (
-            <SettingsTab
-              settings={settings}
-              audioState={audioState}
-              onAudioChange={onAudioChange}
-              updateSettings={updateSettings}
-              deleteSave={deleteSave}
-            />
-          )}
+            {activeTab === 'SETTINGS' && (
+              <SettingsTab
+                settings={settings}
+                audioState={audioState}
+                onAudioChange={onAudioChange}
+                updateSettings={updateSettings}
+                deleteSave={deleteSave}
+              />
+            )}
+          </BandHQTabErrorBoundary>
         </div>
       </div>
     </div>

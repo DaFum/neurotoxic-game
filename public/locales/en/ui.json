@@ -369,5 +369,6 @@
       "harmonyLow": "Band harmony too low to perform!",
       "audioFail": "Audio initialization failed."
     }
-  }
+  },
+  "hq.tabError": "Section unavailable due to corrupted data. Switch tabs or continue playing to refresh this panel."
 }
