@@ -67,9 +67,16 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
       className={`fixed inset-0 z-[100] flex items-center justify-center p-4 ${className}`}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-(--void-black)/80 backdrop-blur-sm"></div>
+      <div className='absolute inset-0 bg-(--void-black)/80 backdrop-blur-sm'></div>
       {/* Scanline FX on background */}
-      <div className="absolute inset-0 pointer-events-none opacity-20" style={{ backgroundImage: 'linear-gradient(transparent 50%, rgba(var(--void-black-rgb), 0.5) 50%)', backgroundSize: '100% 4px' }}></div>
+      <div
+        className='absolute inset-0 pointer-events-none opacity-20'
+        style={{
+          backgroundImage:
+            'linear-gradient(transparent 50%, rgba(var(--void-black-rgb), 0.5) 50%)',
+          backgroundSize: '100% 4px'
+        }}
+      ></div>
 
       <motion.div
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -77,17 +84,17 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
         className='relative w-full max-w-lg border-2 border-(--toxic-green) bg-(--void-black) shadow-[0_0_40px_var(--toxic-green-glow)] animate-[glitch-anim_0.2s_ease-in-out]'
       >
         {/* Hardware details */}
-        <div className="absolute top-0 left-0 w-full h-1 bg-(--toxic-green)"></div>
-        <div className="absolute top-0 left-2 px-2 h-4 bg-(--toxic-green) text-(--void-black) text-[10px] font-bold text-center leading-4 uppercase">
+        <div className='absolute top-0 left-0 w-full h-1 bg-(--toxic-green)'></div>
+        <div className='absolute top-0 left-2 px-2 h-4 bg-(--toxic-green) text-(--void-black) text-[10px] font-bold text-center leading-4 uppercase'>
           {t('ui:event.severity.critical')}
         </div>
 
         <div className='p-8 flex flex-col gap-6'>
-          <div className="flex items-start gap-4 border-b border-(--toxic-green)/30 pb-6">
+          <div className='flex items-start gap-4 border-b border-(--toxic-green)/30 pb-6'>
             {event.category === 'special' ? (
-              <VoidSkullIcon className="w-12 h-12 text-(--toxic-green) animate-pulse shrink-0 mt-1" />
+              <VoidSkullIcon className='w-12 h-12 text-(--toxic-green) animate-pulse shrink-0 mt-1' />
             ) : (
-              <AlertIcon className="w-12 h-12 text-(--toxic-green) animate-pulse shrink-0 mt-1" />
+              <AlertIcon className='w-12 h-12 text-(--toxic-green) animate-pulse shrink-0 mt-1' />
             )}
             <div>
               <h2
@@ -115,7 +122,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
           >
             {event.options.map((option, index) => (
               <motion.button
-                type="button"
+                type='button'
                 variants={{
                   hidden: { opacity: 0, x: -20 },
                   visible: { opacity: 1, x: 0 }
@@ -132,11 +139,11 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
                 `}
               >
                 <span>
-                   <span className="opacity-50 mr-2">[{index + 1}]</span>
-                   {t(option.label, event.context)}
+                  <span className='opacity-50 mr-2'>[{index + 1}]</span>
+                  {t(option.label, event.context)}
                 </span>
 
-                <div className="flex flex-col items-end text-right">
+                <div className='flex flex-col items-end text-right'>
                   {/* Outcome hint if available */}
                   {option.outcomeText && (
                     <span className={`text-[10px] mt-1 opacity-70`}>

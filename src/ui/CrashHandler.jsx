@@ -33,9 +33,11 @@ class ErrorBoundaryComponent extends React.Component {
           className='flex flex-col items-center justify-center fixed inset-0 bg-(--void-black) text-(--blood-red) p-8 relative'
           style={{ zIndex: 'var(--z-crash)' }}
         >
-          <VoidSkullIcon className="w-32 h-32 text-(--blood-red) animate-pulse mb-6" />
+          <VoidSkullIcon className='w-32 h-32 text-(--blood-red) animate-pulse mb-6' />
 
-          <h1 className='text-6xl font-[Metal_Mania] mb-4'>{t('ui:crash.title')}</h1>
+          <h1 className='text-6xl font-[Metal_Mania] mb-4'>
+            {t('ui:crash.title')}
+          </h1>
           <p className='text-(--toxic-green) font-mono mb-8'>
             {t('ui:crash.message')}
           </p>

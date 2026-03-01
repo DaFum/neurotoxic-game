@@ -107,7 +107,7 @@ export const BandHQ = ({
       <div
         className='fixed inset-0 z-30 bg-(--void-black)/90 backdrop-blur-sm'
         onClick={onClose}
-        aria-hidden="true"
+        aria-hidden='true'
       />
 
       {/* Decorative Background Image overlay */}
@@ -142,7 +142,7 @@ export const BandHQ = ({
         {/* Navigation */}
         <div
           role='tablist'
-          aria-label={t('ui:hq.sectionsLabel', { defaultValue: 'Band HQ Sections' })}
+          aria-label={t('ui:hq.sectionsLabel')}
           className='flex border-b-2 border-(--toxic-green) overflow-x-auto'
         >
           {/* Tabs */}
@@ -172,7 +172,7 @@ export const BandHQ = ({
                       : 'bg-(--void-black) text-(--toxic-green) hover:bg-(--toxic-green)/10'
                   }`}
               >
-                {isActive && <span className="text-xs">▶</span>}
+                {isActive && <span className='text-xs'>▶</span>}
                 {t(tab.key)}
               </button>
             )
@@ -240,9 +240,7 @@ export const BandHQ = ({
               />
             )}
 
-            {activeTab === 'LEADERBOARD' && (
-              <LeaderboardTab />
-            )}
+            {activeTab === 'LEADERBOARD' && <LeaderboardTab />}
 
             {activeTab === 'SETTINGS' && (
               <SettingsTab

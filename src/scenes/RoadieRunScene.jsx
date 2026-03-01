@@ -49,13 +49,22 @@ export const RoadieRunScene = () => {
     >
       {/* HUD */}
       <div className='absolute top-4 left-4 z-30 text-(--star-white) font-mono pointer-events-none bg-(--void-black)/50 p-2 border border-(--star-white)/20'>
-        <h2 className='text-xl text-(--toxic-green)'>{t('ui:roadieRun.hud.title')}</h2>
-        <div>{t('ui:roadieRun.hud.itemsRemaining')} {uiState.itemsRemaining}</div>
-        <div>{t('ui:roadieRun.hud.delivered')} {uiState.itemsDelivered}</div>
-        <div>{t('ui:roadieRun.hud.damage')} {uiState.currentDamage}%</div>
+        <h2 className='text-xl text-(--toxic-green)'>
+          {t('ui:roadieRun.hud.title')}
+        </h2>
+        <div>
+          {t('ui:roadieRun.hud.itemsRemaining')} {uiState.itemsRemaining}
+        </div>
+        <div>
+          {t('ui:roadieRun.hud.delivered')} {uiState.itemsDelivered}
+        </div>
+        <div>
+          {t('ui:roadieRun.hud.damage')} {uiState.currentDamage}%
+        </div>
         {uiState.carrying && (
           <div className='text-(--warning-yellow)'>
-            {t('ui:roadieRun.hud.carrying')} {t(`ui:roadieRun.itemTypes.${uiState.carrying.type}`, {
+            {t('ui:roadieRun.hud.carrying')}{' '}
+            {t(`ui:roadieRun.itemTypes.${uiState.carrying.type}`, {
               defaultValue: t('ui:roadieRun.itemTypes.unknown', {
                 defaultValue: uiState.carrying.type
               })
@@ -71,7 +80,9 @@ export const RoadieRunScene = () => {
         onClick={() => setShowControls(prev => !prev)}
         aria-label={t('ui:roadieRun.controls.toggleAria')}
       >
-        {showControls ? t('ui:roadieRun.controls.hide') : t('ui:roadieRun.controls.show')}
+        {showControls
+          ? t('ui:roadieRun.controls.hide')
+          : t('ui:roadieRun.controls.show')}
       </button>
 
       {/* Controls Hint */}

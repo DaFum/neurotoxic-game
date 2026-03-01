@@ -10,25 +10,30 @@ export const VolumeSlider = ({ label, value, onChange }) => {
   const pct = Math.round(clampedValue * 100)
 
   return (
-    <div className="w-full max-w-sm flex flex-col gap-2">
-      <div className="flex justify-between items-end">
-        <span className="text-xs tracking-widest uppercase opacity-80" aria-hidden="true">{label}</span>
-        <span className="text-sm font-bold text-(--toxic-green)">{pct}%</span>
+    <div className='w-full max-w-sm flex flex-col gap-2'>
+      <div className='flex justify-between items-end'>
+        <span
+          className='text-xs tracking-widest uppercase opacity-80'
+          aria-hidden='true'
+        >
+          {label}
+        </span>
+        <span className='text-sm font-bold text-(--toxic-green)'>{pct}%</span>
       </div>
       {/* Expose actual input for accessibility and standard event handling while visually hiding it */}
       <input
-        type="range"
-        min="0"
-        max="1"
-        step="0.1"
+        type='range'
+        min='0'
+        max='1'
+        step='0.1'
         value={clampedValue}
         onChange={onChange}
         aria-label={label}
-        className="sr-only"
+        className='sr-only'
       />
       <div
-        className="flex gap-1 h-8 items-end cursor-pointer group"
-        role="presentation"
+        className='flex gap-1 h-8 items-end cursor-pointer group'
+        role='presentation'
       >
         {segments.map(segment => {
           const isActive = segment <= val
@@ -36,10 +41,10 @@ export const VolumeSlider = ({ label, value, onChange }) => {
           const segmentPct = Math.round((segment / max) * 100)
           return (
             <button
-              type="button"
+              type='button'
               key={segment}
               onClick={() => onChange({ target: { value: segment / max } })}
-              className="flex-1 relative h-full flex items-end group-hover:opacity-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)"
+              className='flex-1 relative h-full flex items-end group-hover:opacity-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)'
               aria-label={t('ui:volume.set', { pct: segmentPct })}
               aria-pressed={isActive}
             >

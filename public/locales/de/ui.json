@@ -156,6 +156,12 @@
   "socials": "SOCIALS",
   "social_links": {
     "play_game": "Spiele Neurotoxic",
+    "title_bandcamp": "Bandcamp",
+    "title_instagram": "Instagram",
+    "title_tiktok": "TikTok",
+    "title_youtube1": "Neurotoxic Once",
+    "title_youtube2": "Neurotoxic 3000",
+    "title_blog": "Neuroblogxic",
     "type_system_core": "SYSTEM_CORE",
     "type_audio_vault": "AUDIO_VAULT",
     "type_visual_feed": "VISUAL_FEED",
@@ -353,6 +359,7 @@
   "hqNavigation": "HQ-Navigation",
   "set_label_to_segment": "Setze {{label}} auf {{segment}}",
   "sign_contract": "Vertrag unterschreiben",
+  "close": "Schließen",
   "pregig": {
     "title": "VORBEREITUNG",
     "budget": "BUDGET:",

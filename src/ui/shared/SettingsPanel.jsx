@@ -145,11 +145,8 @@ const DataManagement = ({ onDeleteSave }) => {
         <p className='font-(--font-ui) text-sm text-(--ash-gray) max-w-xs'>
           {t('ui:delete_warning')}
         </p>
-        <div className="flex-1 max-w-sm">
-          <DeadmanButton
-            label={t('ui:delete_save')}
-            onConfirm={onDeleteSave}
-          />
+        <div className='flex-1 max-w-sm'>
+          <DeadmanButton label={t('ui:delete_save')} onConfirm={onDeleteSave} />
         </div>
       </div>
     </div>
