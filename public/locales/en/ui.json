@@ -393,5 +393,25 @@
       "harmonyLow": "Band harmony too low to perform!",
       "audioFail": "Audio initialization failed."
     }
+  },
+  "roadieRun": {
+    "hud": {
+      "title": "ROADIE RUN",
+      "itemsRemaining": "ITEMS REMAINING:",
+      "delivered": "DELIVERED:",
+      "damage": "DAMAGE:",
+      "carrying": "CARRYING:"
+    },
+    "controls": {
+      "toggleAria": "Toggle controls",
+      "hide": "HIDE CONTROLS",
+      "show": "SHOW CONTROLS",
+      "movementHint": "WASD / ARROWS to Move"
+    },
+    "completion": {
+      "title": "SETUP COMPLETE",
+      "button": "START SHOW",
+      "equipmentDamage": "Equipment Damage: {{damage}}%"
+    }
   }
 }

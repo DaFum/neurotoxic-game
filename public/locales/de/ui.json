@@ -393,5 +393,25 @@
       "harmonyLow": "Band-Harmonie zu niedrig für einen Auftritt!",
       "audioFail": "Audio-Initialisierung fehlgeschlagen."
     }
+  },
+  "roadieRun": {
+    "hud": {
+      "title": "ROADIE RUN",
+      "itemsRemaining": "VERBLEIBENDE TEILE:",
+      "delivered": "GELIEFERT:",
+      "damage": "SCHADEN:",
+      "carrying": "TRÄGT:"
+    },
+    "controls": {
+      "toggleAria": "Steuerung umschalten",
+      "hide": "STEUERUNG AUSBLENDEN",
+      "show": "STEUERUNG ANZEIGEN",
+      "movementHint": "WASD / PFEILTASTEN zum Bewegen"
+    },
+    "completion": {
+      "title": "AUFBAU ABGESCHLOSSEN",
+      "button": "SHOW STARTEN",
+      "equipmentDamage": "Equipment-Schaden: {{damage}}%"
+    }
   }
 }
