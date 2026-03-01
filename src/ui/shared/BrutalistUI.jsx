@@ -1196,7 +1196,6 @@ export const VoidLoader = ({ size = 'w-16 h-16' }) => {
 
 // 12. Void Nav-Node (Overworld Navigation Target)
 export const VoidNavNode = ({
-  id,
   label,
   type,
   isUnlocked = true,
