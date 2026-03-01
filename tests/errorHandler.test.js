@@ -148,6 +148,40 @@ describe('handleError', () => {
     assert.ok(typeof result.context.stack === 'string')
   })
 
+
+  it('should redact sensitive keys matched by substring patterns', () => {
+    const error = new Error('Pattern redaction')
+    const result = handleError(error, {
+      silent: true,
+      errorInfo: {
+        accessToken: 'abc',
+        refresh_token: 'def',
+        clientSecret: 'ghi',
+        apiKey: 'jkl',
+        nested: { authHeader: 'Bearer x' }
+      }
+    })
+
+    assert.strictEqual(result.context.accessToken, '[REDACTED]')
+    assert.strictEqual(result.context.refresh_token, '[REDACTED]')
+    assert.strictEqual(result.context.clientSecret, '[REDACTED]')
+    assert.strictEqual(result.context.apiKey, '[REDACTED]')
+    assert.strictEqual(result.context.nested.authHeader, '[REDACTED]')
+  })
+
+  it('should short-circuit cyclic context structures', () => {
+    const cyclic = { safe: 'ok' }
+    cyclic.self = cyclic
+
+    const result = handleError(new Error('Cyclic context'), {
+      silent: true,
+      errorInfo: cyclic
+    })
+
+    assert.strictEqual(result.context.safe, 'ok')
+    assert.strictEqual(result.context.self, '[REDACTED]')
+  })
+
   it('should dispatch critical event with sanitized payload', () => {
     const dispatchCalls = []
     const originalWindow = globalThis.window

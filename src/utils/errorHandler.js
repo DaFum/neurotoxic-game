@@ -127,6 +127,18 @@ const SENSITIVE_CONTEXT_KEYS = new Set([
   'cookie'
 ])
 
+const SENSITIVE_KEY_PATTERNS = [
+  'token',
+  'secret',
+  'key',
+  'password',
+  'ssn',
+  'email',
+  'auth',
+  'authorization',
+  'cookie'
+]
+
 const isPlainObject = value => {
   return (
     value !== null &&
@@ -141,47 +153,64 @@ const normalizeSeverity = severity => {
   return VALID_SEVERITIES.has(normalized) ? normalized : null
 }
 
-const sanitizeContextValue = value => {
+const isSensitiveContextKey = key => {
+  if (SENSITIVE_CONTEXT_KEYS.has(key)) return true
+  return SENSITIVE_KEY_PATTERNS.some(pattern => key.includes(pattern))
+}
+
+const sanitizeContextValue = (value, visited) => {
   if (Array.isArray(value)) {
-    return value.map(item => sanitizeContextValue(item))
+    if (visited.has(value)) return '[REDACTED]'
+    visited.add(value)
+    return value.map(item => sanitizeContextValue(item, visited))
   }
 
   if (isPlainObject(value)) {
-    return sanitizeContextObject(value)
+    return sanitizeContextObject(value, visited)
   }
 
   return value
 }
 
-const sanitizeContextObject = context => {
+const sanitizeContextObject = (context, visited) => {
+  if (visited.has(context)) {
+    return '[REDACTED]'
+  }
+
+  visited.add(context)
   const sanitized = {}
 
   for (const [key, value] of Object.entries(context)) {
     const normalizedKey = key.toLowerCase()
-    if (SENSITIVE_CONTEXT_KEYS.has(normalizedKey)) {
+    if (isSensitiveContextKey(normalizedKey)) {
       sanitized[key] = '[REDACTED]'
       continue
     }
 
-    sanitized[key] = sanitizeContextValue(value)
+    sanitized[key] = sanitizeContextValue(value, visited)
   }
 
   return sanitized
 }
 
 const sanitizeContextPayload = payload => {
-  if (isPlainObject(payload)) return sanitizeContextObject(payload)
+  const visited = new WeakSet()
+
+  if (isPlainObject(payload)) return sanitizeContextObject(payload, visited)
 
   if (payload instanceof Error) {
-    return sanitizeContextObject({
-      name: payload.name,
-      message: payload.message,
-      stack: payload.stack
-    })
+    return sanitizeContextObject(
+      {
+        name: payload.name,
+        message: payload.message,
+        stack: payload.stack
+      },
+      visited
+    )
   }
 
   if (payload !== null && typeof payload === 'object') {
-    return sanitizeContextObject(Object.assign({}, payload))
+    return sanitizeContextObject(Object.assign({}, payload), visited)
   }
 
   return {}
