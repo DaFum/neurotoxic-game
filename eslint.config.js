@@ -61,7 +61,8 @@ export default [
       '*.config.js',
       'tests/**/*.{js,jsx,mjs}',
       'e2e/**/*.{js,jsx,mjs}',
-      'extract_venues.js'
+      'extract_venues.js',
+      'scripts/**/*.{js,cjs,mjs}'
     ],
     languageOptions: {
       globals: {
