@@ -46,7 +46,8 @@ export const PostGig = () => {
     unlockTrait,
     reputationByRegion,
     activeStoryFlags,
-    addQuest
+    addQuest,
+    setlist
   } = useGameState()
   const [phase, setPhase] = useState('REPORT') // REPORT, SOCIAL, DEALS, COMPLETE
   const [financials, setFinancials] = useState(null)
@@ -456,7 +457,14 @@ export const PostGig = () => {
     // Leaderboard Song Score Submission
     // Resolve to leaderboardId (API-safe slug) — currentGig.songId is the raw
     // JSON key which may contain spaces the API rejects (^[a-zA-Z0-9_-]+$).
-    const leaderboardSongId = SONGS_DB.find(s => s.id === currentGig?.songId)?.leaderboardId
+    const setlistFirstId =
+      typeof setlist?.[0] === 'string' ? setlist[0] : setlist?.[0]?.id
+    const playedSongId = currentGig?.songId || setlistFirstId || 'neurotoxic_1'
+
+    const leaderboardSongId = SONGS_DB.find(
+      s => s.id === playedSongId
+    )?.leaderboardId
+
     if (player.playerId && player.playerName && leaderboardSongId) {
       fetch('/api/leaderboard/song', {
         method: 'POST',

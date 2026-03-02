@@ -93,6 +93,50 @@ test('eventEngine.filterEvents allows trigger:random events at any trigger point
   assert.ok(!result.some(e => e.id === 'other'), 'post_gig event should be excluded')
 })
 
+test('eventEngine.selectEvent dampens random band events when harmony < 30', () => {
+  const MOCK_POOL = [
+    { id: 'random_one', trigger: 'random', category: 'band', chance: 0.4 },
+    { id: 'control_event', trigger: 'random', category: 'other', chance: 0.6 }
+  ]
+
+  const state = { band: { harmony: 20 }, activeStoryFlags: [] }
+
+  // Mock secureRandom with a sequence:
+  //  - First call > 0.5 so the Fisher-Yates shuffle does not swap the two elements
+  //  - Second call = 0.3 so 'random_one' would normally pass its 0.4 chance
+  //    but should be rejected due to harmony dampening (effective 0.2)
+  //  - Third call = 0.3 so 'control_event' can still be selected with its 0.6 chance
+  const secureRandomSequence = [0.6, 0.3, 0.3]
+  let secureRandomIndex = 0
+  mockSecureRandom.mock.mockImplementation(() => {
+    const value = secureRandomSequence[secureRandomIndex % secureRandomSequence.length]
+    secureRandomIndex += 1
+    return value
+  })
+
+  try {
+    let controlEventSeen = false
+    // Call it multiple times to account for shuffling, we should never see 'random_one'
+    for (let i = 0; i < 10; i++) {
+      const selectedEvent = eventEngine.selectEvent(MOCK_POOL, state, 'random')
+      // It should either select control_event or nothing (null) depending on shuffle order
+      // But it should NEVER select random_one
+      if (selectedEvent) {
+        assert.notEqual(selectedEvent.id, 'random_one')
+        if (selectedEvent.id === 'control_event') {
+          controlEventSeen = true
+        }
+      }
+    }
+
+    // Sanity check that the test actually exercised a successful selection
+    assert.equal(controlEventSeen, true)
+  } finally {
+    // Reset mock
+    mockSecureRandom.mock.mockImplementation(() => 0.5)
+  }
+})
+
 test('eventEngine.selectEvent respects cooldowns', () => {
   const state = buildGameState({ eventCooldowns: ['event_cooldown'] })
   const selected = eventEngine.selectEvent(

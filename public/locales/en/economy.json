@@ -34,11 +34,11 @@
     },
     "barCut": {
       "label": "Bar Cut",
-      "detail": "15% of Bar"
+      "detail": "{{percent}}% of Bar"
     },
     "vipBarRevenue": {
       "label": "VIP Bar Revenue",
-      "detail": "VIP crowd — 30% of Bar"
+      "detail": "VIP crowd — {{percent}}% of Bar"
     }
   },
   "gigExpenses": {
@@ -70,5 +70,13 @@
       "label": "Guest List",
       "detail": "VIP Treatment (+Bar Revenue, +Score)"
     }
+  },
+  "postGig": {
+    "loading": "Loading Report...",
+    "income": "INCOME",
+    "total": "TOTAL",
+    "expenses": "EXPENSES",
+    "netProfit": "NET PROFIT",
+    "continueToSocials": "Continue to Socials >"
   }
 }

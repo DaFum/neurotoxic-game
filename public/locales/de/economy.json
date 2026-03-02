@@ -34,11 +34,11 @@
     },
     "barCut": {
       "label": "Bar-Anteil",
-      "detail": "15% der Bar"
+      "detail": "{{percent}}% der Bar"
     },
     "vipBarRevenue": {
       "label": "VIP-Bareinnahmen",
-      "detail": "VIP-Publikum — 30% der Bar"
+      "detail": "VIP-Publikum — {{percent}}% der Bar"
     }
   },
   "gigExpenses": {
@@ -70,5 +70,13 @@
       "label": "Gästeliste",
       "detail": "VIP-Behandlung (+Bareinnahmen, +Punkte)"
     }
+  },
+  "postGig": {
+    "loading": "Bericht wird geladen...",
+    "income": "EINNAHMEN",
+    "total": "GESAMT",
+    "expenses": "AUSGABEN",
+    "netProfit": "REINGEWINN",
+    "continueToSocials": "Weiter zu Socials >"
   }
 }

@@ -1,44 +1,37 @@
-# Copilot Instructions — NEUROTOXIC
-
-Consult `AGENTS.md` (root) and `src/*/AGENTS.md` files for domain-specific gotchas.
+# Neurotoxic — Agent Instructions
 
 ## Critical Commands
 
-- Logic tests: `npm run test` (uses `node:test` with `tsx`, NOT vitest/jest)
-- UI tests: `npm run test:ui` (Vitest)
-- Run one logic test: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js`
-- Run one UI test: `npx vitest run tests/<file>.test.jsx`
+- Logic tests (`node:test`): `npm run test`
+- UI tests (Vitest): `npm run test:ui`
+- Run single logic test: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js`
+- Run single UI test: `npx vitest run tests/<file>.test.jsx`
 
 ## Architecture Constraints
 
-- **Version Pinning**: DO NOT upgrade React (19.2.4), Vite (7.3.1), Tailwind (4.2.0), Framer Motion (12.34.3), Tone.js (15.5.0). Do NOT introduce Howler.js.
-- **Tailwind v4 syntax**: `bg-(--void-black)` NOT `bg-[var(--void-black)]`. `@import "tailwindcss"` NOT `@tailwind base`.
-- **No hardcoded colors**: Use CSS variables (`--toxic-green`, `--void-black`, etc.). In PixiJS use `getPixiColorFromToken('--token-name')`. Full palette is defined in `src/index.css`.
-- **State three-way contract**: Adding/changing actions requires updating `ActionTypes` + reducer case + `actionCreators.js` together.
-- **State safety**: `player.money` clamped >= 0, `band.harmony` clamped 1–100 via `gameStateUtils.js`. `delta.flags.score` is unsupported by design.
-- **Pixi.js v8 destroy**: `app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })` — always on unmount.
-- **Internationalization (I18n)**: All user-facing text MUST be localized. Use `t('key')` or `<Trans>`. Hardcoded English strings are forbidden. Keys must be namespaced (e.g., `ui:button.save`). Both English (`en`) and German (`de`) translations must be provided for every new key.
-
-## Audio
-
-- **Tone.js only** — no Howler.js.
-- Do NOT re-introduce `audioPlaybackEnded` — use `setlistCompleted` + `isNearTrackEnd` dual-gate.
-- For songs with JSON notes, audio is capped to `maxNoteTime + NOTE_TAIL_MS`. Procedural songs use full excerpt duration.
-- `AudioManager` uses `audioEngine` facade only — no direct Tone.js access.
-- Production requires HTTPS (WebAudio mixed-content policy).
+- **Version Pinning**: DO NOT upgrade React (19.2), Vite (7.3), Tailwind (4.2), Framer Motion (12.3), Tone.js (15.5). Node.js 22.13+ required. Do NOT introduce Howler.js.
+- **Tailwind v4**: Use `bg-(--void-black)` NOT `bg-[var(--void-black)]`. Use `@import "tailwindcss"` NOT `@tailwind base`.
+- **Colors**: Never hardcode colors. Use CSS vars (e.g., `var(--toxic-green)`). In PixiJS, use `getPixiColorFromToken('--token-name')`.
+- **State Updates**: Adding actions requires updating `ActionTypes`, the reducer case, and `actionCreators.js` together.
+- **State Limits**: Clamp `player.money` >= 0 and `band.harmony` 1–100 via `gameStateUtils.js` helpers.
+- **Audio**: The single runtime clock source is `audioEngine.getGigTimeMs()`. Do not access Tone.js directly.
+- **I18n**: All user-facing text MUST be localized using `t('key')` or `<Trans>`. Keys must be namespaced (e.g., `ui:button.save`). Provide both `en` and `de` translations.
 
 ## Gotchas
 
-- `songs.js` is excluded from ESLint.
-- Minigame hooks must NOT import PIXI — they return reactive state for StageControllers.
-- `useArrivalLogic` owns arrival routing (including direct PREGIG entry) — don't duplicate.
-- `START_GIG` resets `gigModifiers` to defaults. `COMPLETE_TRAVEL_MINIGAME` does NOT reset the scene.
-- `MODIFIER_COSTS` in `economyEngine.js` is the single source of truth — never re-declare inline.
-- Travel deducts fuel liters and food money only. Gas station refuel is the only monetary fuel cost.
-- Default chatter limited to `MENU`, `OVERWORLD`, `PREGIG`, `POSTGIG` — `GIG` requires explicit entries.
-- Audio asset URLs unified through `buildAssetUrlMap` — don't reintroduce `buildMidiUrlMap`.
+- `songs.js` is excluded from ESLint — do not attempt to lint-fix it.
+- Never import PIXI in Minigame hooks (`useTourbusLogic`, `useRoadieLogic`). They only return reactive state for StageControllers.
+- `useArrivalLogic` owns arrival routing (including direct PREGIG entry for performance nodes).
+- `START_GIG` reducer resets `gigModifiers` to defaults; previous gig selections do not carry over.
+- `COMPLETE_TRAVEL_MINIGAME` does NOT reset the scene — routing is deferred to `useArrivalLogic`.
+- Pixi.js v8 cleanup: Always destroy on unmount using `app.destroy({ removeView: true }, { children: true, texture: true, textureSource: true })`.
+- Audio end dual-gate: Do NOT use `audioPlaybackEnded`. Use `setlistCompleted` + `isNearTrackEnd` instead.
+- Note-driven audio end: For songs with JSON notes, OGG/MIDI playback is capped to `maxNoteTime + NOTE_TAIL_MS`. For procedurally-generated songs the full excerpt duration is used.
+- `MODIFIER_COSTS` in `economyEngine.js` is the single source of truth for PreGig modifier costs — never re-declare inline.
+- Default chatter is limited to `MENU`, `OVERWORLD`, `PREGIG`, `POSTGIG` — `GIG` requires explicit conditional entries.
+- **Image Loading**: Always use the `loadTexture` utility for dynamic images (especially `gen.pollinations.ai` URLs) to prevent PixiJS parsing errors and test failures.
+- **Leaderboards API**: Always resolve song IDs via `SONGS_DB.find().leaderboardId` (API-safe slug) before submitting to `/api/leaderboard/song`. Never submit the raw `currentGig.songId` directly.
 
-## Style
+## Style & Conventions
 
-- Prettier: single quotes, no semicolons, 2-space indent, no trailing commas
-- Commits: Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`)
+- Commits must use Conventional Commits (e.g., `feat:`, `fix:`).

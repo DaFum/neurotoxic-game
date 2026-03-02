@@ -7,6 +7,9 @@ import { bandHasTrait } from './traitLogic.js'
 /**
  * Filters and selects an event based on context, priority, and probability.
  */
+export const HARMONY_DEATH_SPIRAL_THRESHOLD = 30
+export const HARMONY_DEATH_SPIRAL_DAMPEN_FACTOR = 0.5
+
 const selectEvent = (pool, gameState, triggerPoint) => {
   // 1. Pending Events (Highest Priority)
   if (gameState.pendingEvents && gameState.pendingEvents.length > 0) {
@@ -72,8 +75,8 @@ const selectEvent = (pool, gameState, triggerPoint) => {
     }
 
     // Dampen random band events when harmony is critically low to prevent death spirals
-    if (event.category === 'band' && event.trigger === 'random' && (gameState.band?.harmony ?? 100) < 30) {
-      chance *= 0.5
+    if (event.category === 'band' && event.trigger === 'random' && (gameState.band?.harmony ?? 100) < HARMONY_DEATH_SPIRAL_THRESHOLD) {
+      chance *= HARMONY_DEATH_SPIRAL_DAMPEN_FACTOR
     }
 
     if (secureRandom() < chance) {
@@ -452,7 +455,13 @@ export const eventEngine = {
     pool.filter(e => {
       // Match exact trigger OR 'random' events (eligible at any trigger point)
       if (trigger && e.trigger !== trigger && e.trigger !== 'random') return false
-      return e.condition ? e.condition(state) : true
+      if (!e.condition) return true
+      try {
+        return e.condition(state)
+      } catch (err) {
+        logger.error('EventEngine', `Condition failed for event ${e.id}`, err)
+        return false
+      }
     })
 }
 

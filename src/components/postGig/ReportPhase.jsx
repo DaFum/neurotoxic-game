@@ -10,14 +10,14 @@ const FinancialList = ({ items, type }) => {
       {items.map((item, i) => (
         <motion.li
           // eslint-disable-next-line @eslint-react/no-array-index-key
-          key={`${item.labelKey ?? item.label}-${i}`}
+          key={`${item.labelKey}-${i}`}
           initial={{ opacity: 0, x: type === 'income' ? -10 : 10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3 + i * 0.1 }}
           className='flex justify-between items-center'
         >
           <span className='text-(--star-white)/70'>
-            {item.labelKey ? t(item.labelKey) : item.label}
+            {t(item.labelKey)}
           </span>
           <span
             className={`${type === 'income' ? 'text-(--toxic-green)' : 'text-(--blood-red)'} font-bold tabular-nums`}
@@ -47,6 +47,8 @@ FinancialList.propTypes = {
 }
 
 export const ReportPhase = ({ financials, onNext }) => {
+  const { t } = useTranslation('economy')
+
   if (!financials) {
     return (
       <div
@@ -55,7 +57,7 @@ export const ReportPhase = ({ financials, onNext }) => {
         aria-live='polite'
         aria-busy='true'
       >
-        Loading Report...
+        {t('economy:postGig.loading')}
       </div>
     )
   }
@@ -70,11 +72,11 @@ export const ReportPhase = ({ financials, onNext }) => {
           transition={{ delay: 0.2 }}
         >
           <h3 className='text-lg border-b-2 border-(--toxic-green) mb-4 pb-2 tracking-widest font-mono text-(--toxic-green)'>
-            INCOME
+            {t('economy:postGig.income')}
           </h3>
           <FinancialList items={financials.income.breakdown} type='income' />
           <div className='mt-4 pt-2 border-t border-(--toxic-green)/40 flex justify-between font-bold text-(--toxic-green)'>
-            <span className='text-sm tracking-wider'>TOTAL</span>
+            <span className='text-sm tracking-wider'>{t('economy:postGig.total')}</span>
             <span className='tabular-nums'>{financials.income.total}€</span>
           </div>
         </motion.div>
@@ -86,11 +88,11 @@ export const ReportPhase = ({ financials, onNext }) => {
           transition={{ delay: 0.2 }}
         >
           <h3 className='text-lg border-b-2 border-(--blood-red) text-(--blood-red) mb-4 pb-2 tracking-widest font-mono'>
-            EXPENSES
+            {t('economy:postGig.expenses')}
           </h3>
           <FinancialList items={financials.expenses.breakdown} type='expense' />
           <div className='mt-4 pt-2 border-t border-(--blood-red)/40 flex justify-between font-bold text-(--blood-red)'>
-            <span className='text-sm tracking-wider'>TOTAL</span>
+            <span className='text-sm tracking-wider'>{t('economy:postGig.total')}</span>
             <span className='tabular-nums'>{financials.expenses.total}€</span>
           </div>
         </motion.div>
@@ -104,7 +106,7 @@ export const ReportPhase = ({ financials, onNext }) => {
         className='text-center py-6 border-y-2 border-(--ash-gray)/30'
       >
         <div className='text-[10px] text-(--ash-gray) tracking-widest mb-2'>
-          NET PROFIT
+          {t('economy:postGig.netProfit')}
         </div>
         <div
           className={`text-5xl font-bold font-(--font-display) tabular-nums ${
@@ -129,7 +131,7 @@ export const ReportPhase = ({ financials, onNext }) => {
           variant='primary'
           className='px-8 py-3 text-(--void-black)'
         >
-          Continue to Socials &gt;
+          {t('economy:postGig.continueToSocials')}
         </ActionButton>
       </motion.div>
     </div>
