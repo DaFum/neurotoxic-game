@@ -128,14 +128,14 @@ export const HUD = () => {
         </div>
 
         <div className='flex gap-1.5'>
-          <button
+          <button type='button'
             onClick={handleAudioChange.toggleMute}
             aria-label={audioState.isMuted ? 'Unmute system' : 'Mute system'}
             className='pointer-events-auto bg-(--void-black)/90 border border-(--toxic-green)/60 p-2 text-(--toxic-green) w-fit hover:bg-(--toxic-green) hover:text-(--void-black) transition-colors'
           >
             {audioState.isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
           </button>
-          <button
+          <button type='button'
             onClick={() => setShowHelp(prev => !prev)}
             aria-label='Toggle keyboard shortcuts help'
             className={`pointer-events-auto bg-(--void-black)/90 border p-2 w-fit transition-colors ${
