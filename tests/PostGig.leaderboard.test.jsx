@@ -27,13 +27,13 @@ vi.mock('../src/utils/crypto', () => ({
 vi.mock('../src/data/songs', () => ({
   SONGS_DB: [
     {
-      id: '01_kranker_schrank',
-      leaderboardId: '01_kranker_schrank',
+      id: 'raw_01_kranker_schrank',
+      leaderboardId: 'slug-01',
       name: '01 Kranker Schrank'
     },
     {
-      id: 'neurotoxic_1',
-      leaderboardId: 'neurotoxic_1',
+      id: 'neurotoxic_1_raw',
+      leaderboardId: 'slug-neurotoxic',
       name: 'Neurotoxic 1'
     }
   ]
@@ -50,7 +50,7 @@ describe('PostGig Leaderboard Submission', () => {
   const mockUnlockTrait = vi.fn()
 
   const getBaseState = () => ({
-    currentGig: { songId: '01_kranker_schrank', venue: 'Venue A' },
+    currentGig: { songId: 'raw_01_kranker_schrank', venue: 'Venue A' },
     player: {
       money: 500,
       fame: 100,
@@ -86,15 +86,15 @@ describe('PostGig Leaderboard Submission', () => {
       income: {
         total: 250,
         breakdown: [
-          { label: 'Ticket Sales', value: 200 },
-          { label: 'Merch Sales', value: 50 }
+          { labelKey: 'ticketSales', label: 'Ticket Sales', value: 200 },
+          { labelKey: 'merchSales', label: 'Merch Sales', value: 50 }
         ]
       },
       expenses: {
         total: 60,
         breakdown: [
-          { label: 'Venue Cut', value: 50 },
-          { label: 'Travel Cost', value: 10 }
+          { labelKey: 'venueCut', label: 'Venue Cut', value: 50 },
+          { labelKey: 'travelCost', label: 'Travel Cost', value: 10 }
         ]
       }
     })
@@ -125,12 +125,6 @@ describe('PostGig Leaderboard Submission', () => {
     render(<PostGig />)
 
     // Phase: REPORT
-    // Click NEXT (Assuming ReportPhase has a Next button, usually just a button with text or generic Continue)
-    // Looking at ReportPhase code (not visible, but assuming standard layout from PostGig)
-    // PostGig renders ReportPhase. ReportPhase usually has a button calling onNext.
-    // Let's assume there's a button with text "CONTINUE" or "NEXT".
-    // Checking PostGig logic: <ReportPhase onNext={handleNextPhase} />
-    // I'll search for a button.
     const nextBtn = await screen.findByRole('button', {
       name: /continue|next|social/i
     })
@@ -165,7 +159,7 @@ describe('PostGig Leaderboard Submission', () => {
           body: JSON.stringify({
             playerId: 'user-uuid',
             playerName: 'TestUser',
-            songId: '01_kranker_schrank',
+            songId: 'slug-01',
             score: 12345
           })
         })
@@ -174,6 +168,49 @@ describe('PostGig Leaderboard Submission', () => {
 
     // Verify scene change
     expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
+  })
+
+  it('resolves song via setlist if currentGig.songId is missing', async () => {
+    const base = getBaseState()
+    useGameState.mockReturnValue({
+      ...base,
+      currentGig: { ...base.currentGig, songId: undefined },
+      setlist: ['neurotoxic_1_raw']
+    })
+
+    render(<PostGig />)
+
+    // Phase: REPORT
+    const nextBtn = await screen.findByRole('button', {
+      name: /continue|next|social/i
+    })
+    fireEvent.click(nextBtn)
+
+    // Phase: SOCIAL
+    const postBtn = await screen.findByText('Selfie')
+    fireEvent.click(postBtn)
+
+    // Phase: COMPLETE
+    const continueBtn = await screen.findByRole('button', {
+      name: /back to tour/i
+    })
+    fireEvent.click(continueBtn)
+
+    // Verify fetch call resolves leaderboardId from setlist
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/leaderboard/song',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            playerId: 'user-uuid',
+            playerName: 'TestUser',
+            songId: 'slug-neurotoxic',
+            score: 12345
+          })
+        })
+      )
+    })
   })
 
   it('skips leaderboard submission if playerId is missing', async () => {
@@ -187,7 +224,10 @@ describe('PostGig Leaderboard Submission', () => {
     render(<PostGig />)
 
     // Report -> Next
-    fireEvent.click(await screen.findByRole('button'))
+    const nextBtn = await screen.findByRole('button', {
+      name: /continue|next|social/i
+    })
+    fireEvent.click(nextBtn)
     // Social -> Post
     fireEvent.click(await screen.findByText('Selfie'))
     // Complete -> Continue

@@ -256,13 +256,21 @@ export const applyEventDelta = (state, delta) => {
           typeof nextSocial[key] === 'number' ? nextSocial[key] : 0
         nextSocial[key] = Math.max(0, currentValue + value)
       } else if (
-        ['egoFocus', 'sponsorActive', 'trend', 'lastGigDay', 'influencers'].includes(key) &&
+        ['egoFocus', 'sponsorActive', 'trend', 'lastGigDay'].includes(key) &&
         (value === null ||
          typeof value === 'string' ||
-         typeof value === 'boolean' ||
-         (key === 'influencers' && typeof value === 'object'))
+         typeof value === 'boolean')
       ) {
         nextSocial[key] = value // Explicitly allow non-numeric assignments for known keys
+      } else if (key === 'influencers') {
+        if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+          const safeInfluencersUpdate = {}
+          Object.entries(value).forEach(([influencerId, influencerData]) => {
+            if (isForbiddenKey(influencerId)) return
+            safeInfluencersUpdate[influencerId] = influencerData
+          })
+          nextSocial[key] = { ...(nextSocial[key] || {}), ...safeInfluencersUpdate }
+        }
       }
     })
     nextState.social = nextSocial
