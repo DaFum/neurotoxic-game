@@ -1,5 +1,6 @@
 import { logger } from '../../utils/logger.js'
 import { clampPlayerMoney } from '../../utils/gameStateUtils.js'
+import { ActionTypes } from '../actionTypes.js'
 
 /**
  * Handles player update actions
@@ -20,4 +21,20 @@ export const handleUpdatePlayer = (state, payload) => {
   }
 
   return { ...state, player: mergedPlayer }
+}
+
+/**
+ * Reducer for player actions.
+ * Extracts the subset of actions specific to the player context.
+ * @param {Object} state - Current state
+ * @param {Object} action - Action with type and payload
+ * @returns {Object} New state
+ */
+export const playerReducer = (state, action) => {
+  switch (action.type) {
+    case ActionTypes.UPDATE_PLAYER:
+      return handleUpdatePlayer(state, action.payload)
+    default:
+      return state
+  }
 }
