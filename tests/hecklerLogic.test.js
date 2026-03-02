@@ -171,10 +171,12 @@ test('trySpawnProjectile - screenWidth influence on x', () => {
 
   try {
     const p1 = trySpawnProjectile(stats, mockRandom, 1000)
+    assert.ok(p1, 'p1 should be defined')
     assert.equal(p1.x, 500)
 
     i = 0
     const p2 = trySpawnProjectile(stats, mockRandom, 2000)
+    assert.ok(p2, 'p2 should be defined')
     assert.equal(p2.x, 1000)
   } finally {
     Date.now = originalNow

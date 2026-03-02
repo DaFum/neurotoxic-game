@@ -113,7 +113,17 @@ export const handleLoadGame = (state, payload) => {
       ? loadedState.eventCooldowns
       : [],
     activeEvent: loadedState.activeEvent || null,
-    toasts: Array.isArray(loadedState.toasts) ? loadedState.toasts : [],
+    toasts: Array.isArray(loadedState.toasts)
+      ? loadedState.toasts
+          .filter(t => t && typeof t === 'object' && t.id && t.message)
+          .map(t => ({
+            ...t,
+            message: String(t.message).trim(),
+            type: ['success', 'error', 'warning', 'info'].includes(t.type)
+              ? t.type
+              : 'info'
+          }))
+      : [],
     reputationByRegion: loadedState.reputationByRegion || {},
     venueBlacklist: Array.isArray(loadedState.venueBlacklist)
       ? loadedState.venueBlacklist
@@ -131,7 +141,11 @@ export const handleLoadGame = (state, payload) => {
     lastGigStats: loadedState.lastGigStats || null,
     settings: {
       ...state.settings,
-      ...(loadedState.settings || {})
+      ...(typeof loadedState.settings === 'object' &&
+      loadedState.settings !== null &&
+      !Array.isArray(loadedState.settings)
+        ? loadedState.settings
+        : {})
     },
     minigame: loadedState.minigame || state.minigame
   }
@@ -141,8 +155,10 @@ export const handleLoadGame = (state, payload) => {
     'OVERWORLD',
     'PREGIG',
     'GIG',
-    'PRACTICE',
-    'POSTGIG'
+    'POSTGIG',
+    'TRAVEL_MINIGAME',
+    'PRE_GIG_MINIGAME',
+    'GAMEOVER'
   ]
   if (!ALLOWED_SCENES.includes(safeState.currentScene)) {
     safeState.currentScene = state.currentScene

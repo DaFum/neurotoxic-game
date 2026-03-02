@@ -88,7 +88,8 @@ export const useRhythmGameAudio = ({
 
       const activeModifiers = getGigModifiers(band, gigModifiers)
 
-      const songId = currentGig?.songId || setlist?.[0]?.id || 'neurotoxic_1'
+      const setlistFirstId = typeof setlist?.[0] === 'string' ? setlist[0] : setlist?.[0]?.id
+      const songId = currentGig?.songId || setlistFirstId || 'neurotoxic_1'
       const activeSong = SONGS_DB.find(s => s.id === songId) || SONGS_DB[0]
       const physics = calculateGigPhysics(band, activeSong)
 
@@ -437,7 +438,8 @@ export const useRhythmGameAudio = ({
     gigModifiers,
     addToast,
     gameStateRef,
-    setIsAudioReady
+    setIsAudioReady,
+    currentGig?.songId
   ])
 
   useEffect(() => {

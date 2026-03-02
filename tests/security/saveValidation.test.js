@@ -77,7 +77,7 @@ test('gameReducer LOAD_GAME prevents prototype pollution and state pollution', (
     'INTRO',
     'currentScene should not be overwritten by save data'
   )
-  assert.deepEqual(newState.toasts, [{ id: 1, message: 'Hacked' }], 'toasts should be loaded from save')
+  assert.deepEqual(newState.toasts, [{ id: 1, message: 'Hacked', type: 'info' }], 'toasts should be loaded from save and sanitized')
   assert.equal(
     Object.prototype.pollutions,
     undefined,
