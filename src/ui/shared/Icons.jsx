@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import PropTypes from 'prop-types'
 
 export function RazorPlayIcon({ className = '' }) {
@@ -113,21 +114,26 @@ VoidSkullIcon.propTypes = {
   className: PropTypes.string
 }
 
-const BaseIcon = ({ className = '', viewBox = '0 0 24 24', children, ...props }) => (
-  <svg
-    {...props}
-    className={className}
-    viewBox={viewBox}
-    fill='none'
-    xmlns='http://www.w3.org/2000/svg'
-    aria-hidden='true'
-    focusable='false'
-    role='presentation'
-    preserveAspectRatio='xMidYMid meet'
-  >
-    {children}
-  </svg>
-)
+const BaseIcon = ({ className = '', viewBox = '0 0 24 24', title, children, ...props }) => {
+  const titleId = useId()
+  return (
+    <svg
+      aria-hidden={!title}
+      focusable={title ? undefined : 'false'}
+      role={title ? 'img' : 'presentation'}
+      aria-labelledby={title ? titleId : undefined}
+      {...props}
+      className={className}
+      viewBox={viewBox}
+      fill='none'
+      xmlns='http://www.w3.org/2000/svg'
+      preserveAspectRatio='xMidYMid meet'
+    >
+      {title && <title id={titleId}>{title}</title>}
+      {children}
+    </svg>
+  )
+}
 
 export const BandcampIcon = ({ className = '', ...props }) => (
   <BaseIcon {...props} className={className}>
