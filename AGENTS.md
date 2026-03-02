@@ -6,7 +6,6 @@
 - Test (UI): `npm run test:ui` (uses Vitest for React components)
 - Run one logic test: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js`
 - Run one UI test: `npx vitest run tests/<file>.test.jsx`
-- Lint: `npm run lint` — Build: `npm run build`
 
 ## Architecture Constraints
 
@@ -35,5 +34,3 @@
 ## Style
 
 - Commits: Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`)
-- Prettier: single quotes, no semicolons, 2-space indent, no trailing commas
-- Components: PascalCase. Functions/variables: camelCase. Constants: SCREAMING_SNAKE_CASE.
