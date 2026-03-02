@@ -2,7 +2,8 @@ import { logger } from '../logger.js'
 import {
   buildAssetUrlMap,
   resolveAssetUrl,
-  PATH_PREFIX_REGEX
+  PATH_PREFIX_REGEX,
+  getBaseAssetPath
 } from './playbackUtils.js'
 import { getRawAudioContext } from './setup.js'
 import { audioState } from './state.js'
@@ -146,14 +147,7 @@ export async function loadAudioBuffer(filename) {
  * @returns {Promise<AudioBuffer|null>} Decoded audio buffer or null.
  */
 async function loadAudioBufferInternal(filename, cacheKey) {
-  const rawBaseUrl =
-    typeof import.meta !== 'undefined' &&
-    import.meta.env &&
-    import.meta.env?.BASE_URL
-      ? import.meta.env?.BASE_URL
-      : './'
-  const baseUrl = rawBaseUrl.endsWith('/') ? rawBaseUrl : `${rawBaseUrl}/`
-  const publicBasePath = `${baseUrl}assets`
+  const { publicBasePath } = getBaseAssetPath()
   const { url, source } = resolveAssetUrl(filename, oggUrlMap, publicBasePath)
   if (!url) {
     const keysPreview =

@@ -113,10 +113,10 @@ VoidSkullIcon.propTypes = {
   className: PropTypes.string
 }
 
-export const BandcampIcon = ({ className = '' }) => (
+const BaseIcon = ({ className = '', viewBox = '0 0 24 24', children }) => (
   <svg
     className={className}
-    viewBox='0 0 24 24'
+    viewBox={viewBox}
     fill='none'
     xmlns='http://www.w3.org/2000/svg'
     aria-hidden='true'
@@ -124,6 +124,12 @@ export const BandcampIcon = ({ className = '' }) => (
     role='presentation'
     preserveAspectRatio='xMidYMid meet'
   >
+    {children}
+  </svg>
+)
+
+export const BandcampIcon = ({ className = '' }) => (
+  <BaseIcon className={className}>
     <path
       d='M2 6H22V18H2V6Z'
       stroke='currentColor'
@@ -139,20 +145,11 @@ export const BandcampIcon = ({ className = '' }) => (
       strokeDasharray='2 2'
     />
     <path d='M10 18L14 18' stroke='currentColor' strokeWidth='4' />
-  </svg>
+  </BaseIcon>
 )
 
 export const InstaIcon = ({ className = '' }) => (
-  <svg
-    className={className}
-    viewBox='0 0 24 24'
-    fill='none'
-    xmlns='http://www.w3.org/2000/svg'
-    aria-hidden='true'
-    focusable='false'
-    role='presentation'
-    preserveAspectRatio='xMidYMid meet'
-  >
+  <BaseIcon className={className}>
     <path
       d='M3 3H21V21H3V3Z'
       stroke='currentColor'
@@ -166,20 +163,11 @@ export const InstaIcon = ({ className = '' }) => (
       stroke='currentColor'
       strokeWidth='2'
     />
-  </svg>
+  </BaseIcon>
 )
 
 export const TikTokIcon = ({ className = '' }) => (
-  <svg
-    className={className}
-    viewBox='-2 0 26 26'
-    fill='none'
-    xmlns='http://www.w3.org/2000/svg'
-    aria-hidden='true'
-    focusable='false'
-    role='presentation'
-    preserveAspectRatio='xMidYMid meet'
-  >
+  <BaseIcon className={className} viewBox='-2 0 26 26'>
     <path d='M14 2V16H8V22H14V8H20V2H14Z' fill='currentColor' />
     <path
       d='M12 4V18H6V24H12V10H18V4H12Z'
@@ -187,20 +175,11 @@ export const TikTokIcon = ({ className = '' }) => (
       fillOpacity='0.3'
       transform='translate(-2, 2)'
     />
-  </svg>
+  </BaseIcon>
 )
 
 export const YouTubeIcon = ({ className = '' }) => (
-  <svg
-    className={className}
-    viewBox='0 0 24 24'
-    fill='none'
-    xmlns='http://www.w3.org/2000/svg'
-    aria-hidden='true'
-    focusable='false'
-    role='presentation'
-    preserveAspectRatio='xMidYMid meet'
-  >
+  <BaseIcon className={className}>
     <path
       d='M2 5H22V19H2V5Z'
       stroke='currentColor'
@@ -214,20 +193,11 @@ export const YouTubeIcon = ({ className = '' }) => (
       strokeWidth='2'
       strokeLinecap='square'
     />
-  </svg>
+  </BaseIcon>
 )
 
 export const BlogIcon = ({ className = '' }) => (
-  <svg
-    className={className}
-    viewBox='0 0 24 24'
-    fill='none'
-    xmlns='http://www.w3.org/2000/svg'
-    aria-hidden='true'
-    focusable='false'
-    role='presentation'
-    preserveAspectRatio='xMidYMid meet'
-  >
+  <BaseIcon className={className}>
     <path
       d='M3 4H21V20H3V4Z'
       stroke='currentColor'
@@ -255,20 +225,11 @@ export const BlogIcon = ({ className = '' }) => (
       fill='currentColor'
       fillOpacity='0.2'
     />
-  </svg>
+  </BaseIcon>
 )
 
 export const GameIcon = ({ className = '' }) => (
-  <svg
-    className={className}
-    viewBox='0 0 32 32'
-    fill='none'
-    xmlns='http://www.w3.org/2000/svg'
-    aria-hidden='true'
-    focusable='false'
-    role='presentation'
-    preserveAspectRatio='xMidYMid meet'
-  >
+  <BaseIcon className={className} viewBox='0 0 32 32'>
     <path
       d='M6 22V6H9L19 18V6H22V22H19L9 10V22H6Z'
       fill='currentColor'
@@ -276,7 +237,7 @@ export const GameIcon = ({ className = '' }) => (
       transform='translate(-2, 0)'
     />
     <path d='M8 24V8H11L21 20V8H24V24H21L11 12V24H8Z' fill='currentColor' />
-  </svg>
+  </BaseIcon>
 )
 
 export function UIFrameCorner({ className = '' }) {

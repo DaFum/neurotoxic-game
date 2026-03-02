@@ -1,7 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import {
-  generateDailyTrend,
   generatePostOptions,
   calculateSocialGrowth,
   calculateViralityScore,
@@ -11,12 +10,6 @@ import { checkTraitUnlocks } from '../../src/utils/unlockCheck.js'
 
 describe('Extended Social & Trait Systems', () => {
   describe('Trend System', () => {
-    it('generateDailyTrend returns a valid trend string', () => {
-      const validTrends = ['NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME']
-      const trend = generateDailyTrend()
-      assert.ok(validTrends.includes(trend), `Trend ${trend} should be valid`)
-    })
-
     it('generatePostOptions boosts trending categories', () => {
       const gameState = {
         player: { money: 1000 },

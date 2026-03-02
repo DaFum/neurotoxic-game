@@ -303,14 +303,6 @@ export const applyReputationDecay = (followers, daysSinceLastPost) => {
  * @param {Function} rng - Random number generator.
  * @returns {string} One of 'NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME'.
  */
-export const generateDailyTrend = (rng = secureRandom) => {
-  // Weighted choice could go here, for now uniform random
-  const idx = Math.floor(rng() * ALLOWED_TRENDS.length)
-  // Ensure valid index even if rng() === 1
-  const safeIdx = Math.min(idx, ALLOWED_TRENDS.length - 1)
-  return ALLOWED_TRENDS[safeIdx]
-}
-
 /**
  * Generates a dynamic brand name based on alignment.
  * @param {string} baseName - Fallback or base name.

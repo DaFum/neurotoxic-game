@@ -64,6 +64,23 @@ export const normalizeMidiPlaybackOptions = options => {
 export const PATH_PREFIX_REGEX = /^\.?\//
 
 /**
+ * Derives the base asset path and public base path from import.meta.
+ * @returns {{baseUrl: string, publicBasePath: string}} The resolved paths.
+ */
+export const getBaseAssetPath = () => {
+  const rawBaseUrl =
+    typeof import.meta !== 'undefined' &&
+    import.meta.env &&
+    import.meta.env?.BASE_URL
+      ? import.meta.env?.BASE_URL
+      : './'
+  const baseUrl = rawBaseUrl.endsWith('/') ? rawBaseUrl : `${rawBaseUrl}/`
+  const publicBasePath = `${baseUrl}assets`
+
+  return { baseUrl, publicBasePath }
+}
+
+/**
  * Encodes a public asset path segment-by-segment to preserve slashes.
  * Primarily used by resolveAssetUrl; exported for direct testing.
  * @param {string} assetPath - Asset path relative to the public base.

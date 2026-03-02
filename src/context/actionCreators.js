@@ -273,16 +273,6 @@ export const createUnlockTraitAction = (memberId, traitId) => ({
 })
 
 /**
- * Creates an action to blacklist a venue.
- * @param {string} venueName - The name of the venue to blacklist.
- * @returns {Object} Action object
- */
-export const createAddVenueBlacklistAction = venueName => ({
-  type: ActionTypes.ADD_VENUE_BLACKLIST,
-  payload: venueName
-})
-
-/**
  * Creates an action to add a new quest.
  * @param {Object} quest - The quest object to add.
  * @returns {Object} Action object
@@ -301,22 +291,4 @@ export const createAddQuestAction = quest => ({
 export const createAdvanceQuestAction = (questId, amount = 1) => ({
   type: ActionTypes.ADVANCE_QUEST,
   payload: { questId, amount }
-})
-
-/**
- * Creates an action to complete a quest.
- * @param {string} questId - The ID of the quest to complete.
- * @returns {Object} Action object
- */
-export const createCompleteQuestAction = questId => ({
-  type: ActionTypes.COMPLETE_QUEST,
-  payload: { questId }
-})
-
-/**
- * Creates an action to fail expired quests.
- * @returns {Object} Action object
- */
-export const createFailQuestsAction = () => ({
-  type: ActionTypes.FAIL_QUESTS
 })

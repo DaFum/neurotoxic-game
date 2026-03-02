@@ -289,6 +289,7 @@ export const MainMenu = () => {
           className='bg-gradient-to-r from-transparent via-(--toxic-green) to-transparent mb-4 max-w-md'
         />
 
+        {/* jscpd:ignore-start */}
         <AnimatedSubtitle
           initial={{ opacity: 0, letterSpacing: '0.5em' }}
           animate={{ opacity: 1, letterSpacing: '0.3em' }}
@@ -306,6 +307,7 @@ export const MainMenu = () => {
         >
           v3.0 // EARLY ACCESS
         </motion.div>
+        {/* jscpd:ignore-end */}
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}

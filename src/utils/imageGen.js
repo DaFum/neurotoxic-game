@@ -31,18 +31,6 @@ export const fetchGenImage = description => {
   )
 }
 
-/**
- * Fetches a generated image and returns an object URL for use in src/CSS.
- * @param {string} description - The detailed prompt for the image.
- * @returns {Promise<string>} A blob object URL.
- */
-export const fetchGenImageAsObjectUrl = async description => {
-  const res = await fetchGenImage(description)
-  if (!res.ok) throw new Error(`Image fetch failed: ${res.status}`)
-  const blob = await res.blob()
-  return URL.createObjectURL(blob)
-}
-
 export const IMG_PROMPTS = {
   // Scenes & Backgrounds
   MAIN_MENU_BG:

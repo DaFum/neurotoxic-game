@@ -21,7 +21,8 @@ mock.module('../src/utils/audio/playbackUtils.js', {
   namedExports: {
     buildAssetUrlMap: mockBuildAssetUrlMap,
     resolveAssetUrl: mockResolveAssetUrl,
-    PATH_PREFIX_REGEX
+    PATH_PREFIX_REGEX,
+    getBaseAssetPath: () => ({ baseUrl: './', publicBasePath: './assets' })
   }
 })
 
