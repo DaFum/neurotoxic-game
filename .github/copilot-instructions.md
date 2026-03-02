@@ -9,7 +9,7 @@
 
 ## Architecture Constraints
 
-- **Version Pinning**: DO NOT upgrade React (19.2), Vite (7.3), Tailwind (4.2), Framer Motion (12.3), Tone.js (15.5). Node.js 22.13+ required. Do NOT introduce Howler.js.
+- **Version Pinning**: Pinned to exact versions: React 19.2.4, Vite 7.3.1, Tailwind 4.2.0, Framer Motion 12.34.3, Tone.js 15.5.0. Node.js 22.13+ required. Do NOT introduce Howler.js.
 - **Tailwind v4**: Use `bg-(--void-black)` NOT `bg-[var(--void-black)]`. Use `@import "tailwindcss"` NOT `@tailwind base`.
 - **Colors**: Never hardcode colors. Use CSS vars (e.g., `var(--toxic-green)`). In PixiJS, use `getPixiColorFromToken('--token-name')`.
 - **State Updates**: Adding actions requires updating `ActionTypes`, the reducer case, and `actionCreators.js` together.
