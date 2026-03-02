@@ -7,6 +7,37 @@ import { bandHasTrait } from './traitLogic.js'
 /**
  * Filters and selects an event based on context, priority, and probability.
  */
+
+const TEMPLATE_REGEX = /\{([^}]+)\}/gi
+
+/**
+ * Resolves a template string by replacing {key} with the corresponding value from the context.
+ * Uses a single pre-compiled regex for performance.
+ * @param {string} str - The string containing {key} templates.
+ * @param {object} context - The context object containing replacement values.
+ * @returns {string} The resolved string.
+ */
+const resolveTemplateString = (str, context) => {
+  if (!str || typeof str !== 'string' || str.indexOf('{') === -1) return str
+
+  return str.replace(TEMPLATE_REGEX, (match, key) => {
+    // Fast path: exact case match
+    if (typeof context[key] === 'string') {
+      return context[key]
+    }
+
+    // Fallback: case-insensitive match (as the original implementation used 'gi')
+    const lowerKey = key.toLowerCase()
+    for (const k in context) {
+      if (k.toLowerCase() === lowerKey && typeof context[k] === 'string') {
+        return context[k]
+      }
+    }
+
+    return match // Return original template if no match is found
+  })
+}
+
 export const HARMONY_DEATH_SPIRAL_THRESHOLD = 30
 export const HARMONY_DEATH_SPIRAL_DAMPEN_FACTOR = 0.5
 
@@ -90,11 +121,9 @@ const selectEvent = (pool, gameState, triggerPoint) => {
 
       let title = event.title || ''
       let description = event.description || ''
-      Object.entries(variables).forEach(([key, value]) => {
-        const regex = new RegExp(`{${key}}`, 'gi')
-        title = title.replace(regex, value)
-        description = description.replace(regex, value)
-      })
+
+      title = resolveTemplateString(title, variables)
+      description = resolveTemplateString(description, variables)
 
       return { ...event, title, description, context: variables }
     }
@@ -110,17 +139,7 @@ const processEffect = (eff, delta, context = {}) => {
     case 'relationship': {
       if (!delta.band.relationshipChange) delta.band.relationshipChange = []
 
-      const resolveName = str => {
-        if (!str || typeof str !== 'string') return str
-        let resolved = str
-        Object.entries(context).forEach(([key, value]) => {
-          if (typeof value === 'string') {
-            const regex = new RegExp(`{${key}}`, 'gi')
-            resolved = resolved.replace(regex, value)
-          }
-        })
-        return resolved
-      }
+      const resolveName = str => resolveTemplateString(str, context)
 
       delta.band.relationshipChange.push({
         member1: resolveName(eff.member1),
