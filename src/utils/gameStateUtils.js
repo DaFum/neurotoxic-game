@@ -263,10 +263,13 @@ export const applyEventDelta = (state, delta) => {
       ) {
         nextSocial[key] = value // Explicitly allow non-numeric assignments for known keys
       } else if (key === 'influencers') {
-        if (Array.isArray(value)) {
-          nextSocial[key] = [...value]
-        } else if (typeof value === 'object' && value !== null) {
-          nextSocial[key] = { ...(nextSocial[key] || {}), ...value }
+        if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+          const safeInfluencersUpdate = {}
+          Object.entries(value).forEach(([influencerId, influencerData]) => {
+            if (isForbiddenKey(influencerId)) return
+            safeInfluencersUpdate[influencerId] = influencerData
+          })
+          nextSocial[key] = { ...(nextSocial[key] || {}), ...safeInfluencersUpdate }
         }
       }
     })

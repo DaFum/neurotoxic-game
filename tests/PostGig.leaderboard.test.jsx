@@ -86,15 +86,15 @@ describe('PostGig Leaderboard Submission', () => {
       income: {
         total: 250,
         breakdown: [
-          { label: 'Ticket Sales', value: 200 },
-          { label: 'Merch Sales', value: 50 }
+          { labelKey: 'ticketSales', label: 'Ticket Sales', value: 200 },
+          { labelKey: 'merchSales', label: 'Merch Sales', value: 50 }
         ]
       },
       expenses: {
         total: 60,
         breakdown: [
-          { label: 'Venue Cut', value: 50 },
-          { label: 'Travel Cost', value: 10 }
+          { labelKey: 'venueCut', label: 'Venue Cut', value: 50 },
+          { labelKey: 'travelCost', label: 'Travel Cost', value: 10 }
         ]
       }
     })
