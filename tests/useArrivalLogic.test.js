@@ -144,4 +144,28 @@ describe('useArrivalLogic', () => {
     assert.equal(mockGameState.advanceDay.mock.calls.length, 1)
     assert.equal(mockGameState.saveGame.mock.calls.length, 1)
   })
+
+  test('resets idempotency guard on error', () => {
+    const { result } = setupArrivalScenario(useArrivalLogic)
+
+    // Mock advanceDay to throw an error
+    mockGameState.advanceDay.mock.mockImplementationOnce(() => {
+      throw new Error('Test Error')
+    })
+
+    assert.throws(() => {
+      act(() => {
+        result.current.handleArrivalSequence()
+      })
+    }, /Test Error/)
+
+    assert.equal(mockGameState.advanceDay.mock.calls.length, 1)
+
+    // Second call should proceed (since isHandlingRef was reset to false)
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    assert.equal(mockGameState.advanceDay.mock.calls.length, 2)
+  })
 })
