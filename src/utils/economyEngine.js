@@ -368,7 +368,7 @@ const calculateGigExpenses = modifiers => {
     expenses.breakdown.push({
       label: 'Guest List',
       value: MODIFIER_COSTS.guestlist,
-      detail: 'VIP Treatment'
+      detail: 'VIP Treatment (+Bar Revenue, +Score)'
     })
     expenses.total += MODIFIER_COSTS.guestlist
   }
@@ -460,12 +460,13 @@ export const calculateGigFinancials = ({
   report.expenses.breakdown.push(merch.costItem)
   report.expenses.total += merch.cost
 
-  // 4. Bar Cut
-  const barRevenue = Math.floor(tickets.ticketsSold * 5 * 0.15)
+  // 4. Bar Cut (Guestlist doubles rate: VIPs spend more at the bar)
+  const barRate = modifiers.guestlist ? 0.3 : 0.15
+  const barRevenue = Math.floor(tickets.ticketsSold * 5 * barRate)
   report.income.breakdown.push({
-    label: 'Bar Cut',
+    label: modifiers.guestlist ? 'VIP Bar Revenue' : 'Bar Cut',
     value: barRevenue,
-    detail: '15% of Bar'
+    detail: modifiers.guestlist ? 'VIP crowd — 30% of Bar' : '15% of Bar'
   })
   report.income.total += barRevenue
 
