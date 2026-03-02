@@ -7,7 +7,7 @@ export const PauseButton = memo(function PauseButton({
 }) {
   return (
     <div className='absolute top-4 right-4 z-50 pointer-events-auto'>
-      <button
+      <button type='button'
         onClick={onTogglePause}
         className={`bg-(--void-black)/80 border border-(--toxic-green) text-(--toxic-green) p-2 transition-all ${isGameOver ? 'opacity-50 pointer-events-none cursor-not-allowed' : 'hover:bg-(--toxic-green) hover:text-(--void-black)'}`}
         aria-label='Pause Game'

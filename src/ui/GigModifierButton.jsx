@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 
 const GigModifierButton = memo(({ item, isActive, onClick }) => {
   return (
-    <button
+    <button type='button'
       onClick={() => onClick(item.key)}
       className={`flex justify-between items-center p-3 border-2 transition-all group relative overflow-hidden
         ${
