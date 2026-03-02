@@ -341,15 +341,17 @@ export const MainMenu = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2 }}
-          className='flex gap-4 mt-6'
+          className='flex flex-col gap-4 mt-6 items-center'
         >
-          <GlitchButton onClick={() => setShowSocials(true)}>
-            {t('ui:socials')}
-          </GlitchButton>
+          <div className='flex gap-4'>
+            <GlitchButton onClick={() => setShowSocials(true)}>
+              {t('ui:socials')}
+            </GlitchButton>
+            <GlitchButton onClick={handleCredits}>{t('ui:credits')}</GlitchButton>
+          </div>
           <GlitchButton onClick={() => setShowFeatures(true)}>
             {t('ui:features.button')}
           </GlitchButton>
-          <GlitchButton onClick={handleCredits}>{t('ui:credits')}</GlitchButton>
         </motion.div>
       </div>
 
