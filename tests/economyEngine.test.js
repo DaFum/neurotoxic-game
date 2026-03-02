@@ -313,12 +313,14 @@ test('calculateGigFinancials no longer includes transport/food in gig report (ha
     gigStats: buildGigStats()
   })
 
-  const fuelItem = result.expenses.breakdown.find(b => b.label === 'Fuel')
-  const foodItem = result.expenses.breakdown.find(
-    b => b.label === 'Food & Drinks'
+  const travelExpenseItems = result.expenses.breakdown.filter(
+    b => b.labelKey?.startsWith('economy:travelExpenses')
   )
-  assert.ok(!fuelItem, 'Should NOT include fuel costs in gig report')
-  assert.ok(!foodItem, 'Should NOT include food costs in gig report')
+  assert.equal(
+    travelExpenseItems.length,
+    0,
+    'Travel-phase expenses (fuel, food) must NOT appear in gig report'
+  )
 })
 
 test('calculateGigFinancials includes catering when enabled', () => {
