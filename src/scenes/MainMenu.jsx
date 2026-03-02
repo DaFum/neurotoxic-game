@@ -36,6 +36,7 @@ export const MainMenu = () => {
   const [showNameInput, setShowNameInput] = useState(false)
   const [playerNameInput, setPlayerNameInput] = useState('')
   const [showSocials, setShowSocials] = useState(false)
+  const [showFeatures, setShowFeatures] = useState(false)
   const [showExistingSavePrompt, setShowExistingSavePrompt] = useState(false)
   const inputRef = useRef(null)
 
@@ -345,9 +346,81 @@ export const MainMenu = () => {
           <GlitchButton onClick={() => setShowSocials(true)}>
             {t('ui:socials')}
           </GlitchButton>
+          <GlitchButton onClick={() => setShowFeatures(true)}>
+            {t('ui:features.button')}
+          </GlitchButton>
           <GlitchButton onClick={handleCredits}>{t('ui:credits')}</GlitchButton>
         </motion.div>
       </div>
+
+      {showFeatures && (
+        <Modal
+          isOpen={true}
+          onClose={() => setShowFeatures(false)}
+          title={t('ui:features.title')}
+        >
+          <div className='flex flex-col gap-6 max-w-3xl w-[90vw] mx-auto max-h-[80vh] overflow-y-auto overflow-x-hidden custom-scrollbar pr-2 sm:pr-4 pb-4'>
+            {t('ui:featureList', { returnObjects: true }).map((section, idx) => (
+              <div key={idx} className='flex flex-col gap-2'>
+                <h3 className='text-(--toxic-green) font-mono text-xl md:text-2xl uppercase tracking-widest border-b border-(--toxic-green)/30 pb-1'>
+                  {section.title}
+                </h3>
+                <p className='text-(--ash-gray) font-mono text-sm md:text-base leading-relaxed mb-2'>
+                  {section.description}
+                </p>
+
+                {section.type === 'bullets' && section.items && (
+                  <ul className='list-none flex flex-col gap-2 pl-2 border-l border-(--toxic-green)/20'>
+                    {section.items.map((item, itemIdx) => {
+                      const splitIdx = item.indexOf(':');
+                      if (splitIdx > -1) {
+                        return (
+                          <li key={itemIdx} className='text-(--ash-gray) font-mono text-sm md:text-base pl-2 relative before:content-["-"] before:absolute before:left-[-8px] before:text-(--toxic-green)'>
+                            <span className='text-(--toxic-green) font-bold'>{item.substring(0, splitIdx + 1)}</span>
+                            {item.substring(splitIdx + 1)}
+                          </li>
+                        )
+                      }
+                      return (
+                        <li key={itemIdx} className='text-(--ash-gray) font-mono text-sm md:text-base pl-2 relative before:content-["-"] before:absolute before:left-[-8px] before:text-(--toxic-green)'>
+                          {item}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                )}
+
+                {section.type === 'table' && section.headers && section.rows && (
+                  <div className='overflow-x-auto w-full border border-(--toxic-green)/30 bg-(--void-black)/50'>
+                    <table className='w-full text-left font-mono text-sm'>
+                      <thead className='bg-(--toxic-green)/10 border-b border-(--toxic-green)/30'>
+                        <tr>
+                          {section.headers.map((header, headerIdx) => (
+                            <th key={headerIdx} className='p-2 text-(--toxic-green) uppercase font-normal'>
+                              {header}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {section.rows.map((row, rowIdx) => (
+                          <tr key={rowIdx} className='border-b border-(--toxic-green)/10 last:border-0'>
+                            {row.map((cell, cellIdx) => (
+                              <td key={cellIdx} className={`p-2 ${cellIdx === 0 ? 'text-(--toxic-green)/90 whitespace-nowrap align-top font-bold' : 'text-(--ash-gray) align-top'}`}>
+                                {cell}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </Modal>
+      )}
 
       {showSocials && (
         <Modal
