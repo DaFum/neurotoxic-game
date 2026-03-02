@@ -31,6 +31,23 @@ export const fetchGenImage = description => {
   )
 }
 
+/**
+ * Fetches a generated image and returns an object URL for use in CSS/styles.
+ * TODO(Integration): Call this in a `useEffect` inside components like `src/ui/BandHQ.jsx`
+ * to fetch dynamic background blobs instead of direct image URL linking.
+ * E.g., `const url = await fetchGenImageAsObjectUrl(prompt); setBg(url);`
+ * Make sure to call `URL.revokeObjectURL(url)` on component unmount.
+ *
+ * @param {string} description - The detailed prompt for the image.
+ * @returns {Promise<string>} A blob object URL.
+ */
+export const fetchGenImageAsObjectUrl = async description => {
+  const res = await fetchGenImage(description)
+  if (!res.ok) throw new Error(`Image fetch failed: ${res.status}`)
+  const blob = await res.blob()
+  return URL.createObjectURL(blob)
+}
+
 export const IMG_PROMPTS = {
   // Scenes & Backgrounds
   MAIN_MENU_BG:

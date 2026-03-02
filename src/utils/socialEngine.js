@@ -300,9 +300,20 @@ export const applyReputationDecay = (followers, daysSinceLastPost) => {
 
 /**
  * Generates a daily social media trend.
+ * TODO(Integration): Call this in `handleAdvanceDay` (src/context/reducers/systemReducer.js)
+ * to set `nextState.social.trend` for the new day, allowing UI/events to reflect current trends.
+ *
  * @param {Function} rng - Random number generator.
  * @returns {string} One of 'NEUTRAL', 'DRAMA', 'TECH', 'MUSIC', 'WHOLESOME'.
  */
+export const generateDailyTrend = (rng = secureRandom) => {
+  // Weighted choice could go here, for now uniform random
+  const idx = Math.floor(rng() * ALLOWED_TRENDS.length)
+  // Ensure valid index even if rng() === 1
+  const safeIdx = Math.min(idx, ALLOWED_TRENDS.length - 1)
+  return ALLOWED_TRENDS[safeIdx]
+}
+
 /**
  * Generates a dynamic brand name based on alignment.
  * @param {string} baseName - Fallback or base name.
