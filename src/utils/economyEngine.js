@@ -53,6 +53,12 @@ const TICKET_SALES_CONSTANTS = {
   FAME_FILL_WEIGHT: 0.7
 }
 
+const BAR_REVENUE_CONSTANTS = {
+  RATE_NORMAL: 0.15,
+  RATE_VIP: 0.3,
+  AVG_SPEND_PER_PERSON: 5
+}
+
 /**
  * Calculates ticket sales revenue and attendance.
  */
@@ -468,8 +474,12 @@ export const calculateGigFinancials = ({
   report.expenses.total += merch.cost
 
   // 4. Bar Cut (Guestlist doubles rate: VIPs spend more at the bar)
-  const barRate = modifiers.guestlist ? 0.3 : 0.15
-  const barRevenue = Math.floor(tickets.ticketsSold * 5 * barRate)
+  const barRate = modifiers.guestlist
+    ? BAR_REVENUE_CONSTANTS.RATE_VIP
+    : BAR_REVENUE_CONSTANTS.RATE_NORMAL
+  const barRevenue = Math.floor(
+    tickets.ticketsSold * BAR_REVENUE_CONSTANTS.AVG_SPEND_PER_PERSON * barRate
+  )
   report.income.breakdown.push({
     labelKey: modifiers.guestlist ? 'economy:gigIncome.vipBarRevenue.label' : 'economy:gigIncome.barCut.label',
     value: barRevenue,

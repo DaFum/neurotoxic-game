@@ -5,6 +5,10 @@ import { applyReputationDecay } from './socialEngine.js'
 import { calcBaseBreakdownChance } from './upgradeUtils.js'
 import { hasTrait } from './traitLogic.js'
 
+const CONTROVERSY_ACCELERATED_DECAY_THRESHOLD = 60
+const CONTROVERSY_ACCELERATED_DECAY_AMOUNT = 2
+const CONTROVERSY_NORMAL_DECAY_AMOUNT = 1
+
 /**
  * Derives dynamic game modifiers for the Gig scene based on band state and active toggles.
  * @param {object} bandState - The current band state (members, harmony, etc.).
@@ -300,7 +304,10 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
   // Controversy/Shadowban Decay
   if (nextSocial.controversyLevel > 0) {
     // Passive cooldown — accelerated above threshold to prevent death spirals
-    const decayAmount = nextSocial.controversyLevel > 60 ? 2 : 1
+    const decayAmount =
+      nextSocial.controversyLevel > CONTROVERSY_ACCELERATED_DECAY_THRESHOLD
+        ? CONTROVERSY_ACCELERATED_DECAY_AMOUNT
+        : CONTROVERSY_NORMAL_DECAY_AMOUNT
     nextSocial.controversyLevel = Math.max(0, nextSocial.controversyLevel - decayAmount)
   }
 

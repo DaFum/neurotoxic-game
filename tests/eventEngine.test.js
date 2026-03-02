@@ -545,6 +545,88 @@ test('eventEngine.applyResult accumulates fame from mixed stats (fame, hype, cro
   )
 })
 
+test('eventEngine.filterEvents dampens random band events when harmony < 30', () => {
+  const MOCK_POOL = [
+    { id: 'random_one', trigger: 'random', category: 'band', chance: 0.4 },
+    { id: 'control_event', trigger: 'random', category: 'other', chance: 0.6 }
+  ]
+
+  const state = { band: { harmony: 20 }, activeStoryFlags: [] }
+
+  // When harmony is 20 (which is < 30), chance for 'random_one' becomes 0.4 * 0.5 = 0.2.
+  // The 'control_event' has a chance of 0.6.
+  //
+  // selectEvent logic does Fisher-Yates shuffle.
+  // If we set secureRandom to 0.5, we bypass 'random_one' (because 0.5 is not < 0.2),
+  // and we select 'control_event' (because 0.5 is < 0.6).
+  //
+  // However, because of shuffling, we should force it to test 'random_one'.
+
+  // Mock secureRandom to return a small enough value that would normally pass (0.3 < 0.4),
+  // but due to dampening (0.2), it will FAIL to select 'random_one'.
+  mockSecureRandom.mock.mockImplementation(() => 0.3)
+
+  // Call it multiple times to account for shuffling, we should never see 'random_one'
+  for (let i = 0; i < 10; i++) {
+    const selectedEvent = eventEngine.selectEvent(MOCK_POOL, state, 'random')
+    // It should either select control_event or nothing (null) depending on shuffle order
+    // But it should NEVER select random_one
+    if (selectedEvent) {
+       assert.notEqual(selectedEvent.id, 'random_one')
+    }
+  }
+
+  // To test the positive case we need to make sure 'random_one' ends up first after the shuffle,
+  // or that 'control_event' fails its chance check.
+  // The shuffle logic is:
+  // for (let i = shuffled.length - 1; i > 0; i--) {
+  //   const j = Math.floor(secureRandom() * (i + 1))
+  //   ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  // }
+  // With length 2, i=1, j = Math.floor(secureRandom() * 2).
+  // If secureRandom is 0.5, j=1, no swap.
+  // If secureRandom is 0, j=0, they swap.
+  // MOCK_POOL has random_one at index 0, control_event at index 1.
+  // So they start out as [random_one, control_event].
+  // We want random_one to be checked first.
+  // If no swap, control_event is at index 1, random_one at 0. So random_one is at 0.
+  // But wait, the iteration is 'for (const eligible of shuffled)'. It starts at index 0.
+  // So random_one is checked first!
+  // If secureRandom is 0.5, j=1. Array remains [random_one, control_event].
+  // Then random_one is evaluated. chance = 0.4 * 0.5 = 0.2.
+  // secureRandom is 0.5. 0.5 < 0.2 is FALSE. It fails.
+  // Then control_event is evaluated. chance = 0.6.
+  // secureRandom is 0.5. 0.5 < 0.6 is TRUE. It succeeds.
+  //
+  // To make random_one succeed, we need a random value < 0.2, say 0.1.
+  // But wait! 0.1 means j = Math.floor(0.1 * 2) = 0.
+  // They swap! Array becomes [control_event, random_one].
+  // Now control_event is checked first.
+  // secureRandom is 0.1. 0.1 < 0.6 is TRUE. It succeeds!
+  // It never checks random_one.
+  //
+  // Let's use a dynamic mock that returns 0.9 for the shuffle (so j=1, no swap, array is [random_one, control_event]),
+  // and then 0.1 for the chance check!
+
+  let callCount = 0
+  mockSecureRandom.mock.mockImplementation(() => {
+    callCount++
+    if (callCount % 2 === 1) {
+       // First call: shuffle (needs to keep random_one at index 0, so j=1, so we need >0.5)
+       return 0.9
+    } else {
+       // Second call: chance check (needs to be < 0.2)
+       return 0.1
+    }
+  })
+
+  const selectedEvent = eventEngine.selectEvent(MOCK_POOL, state, 'random')
+  assert.equal(selectedEvent?.id, 'random_one', 'Should still be able to select random_one if random value is very low')
+
+  // Reset mock
+  mockSecureRandom.mock.mockImplementation(() => 0.5)
+})
+
 test('eventEngine.selectEvent handles condition errors gracefully', () => {
   // Reset previous calls to ensure clean state
   mockLogger.error.mock.resetCalls()

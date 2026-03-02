@@ -17,7 +17,7 @@ const FinancialList = ({ items, type }) => {
           className='flex justify-between items-center'
         >
           <span className='text-(--star-white)/70'>
-            {item.labelKey ? t(item.labelKey) : item.label}
+            {t(item.labelKey ?? item.label, { defaultValue: item.label })}
           </span>
           <span
             className={`${type === 'income' ? 'text-(--toxic-green)' : 'text-(--blood-red)'} font-bold tabular-nums`}
