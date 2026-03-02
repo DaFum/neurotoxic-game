@@ -115,6 +115,7 @@ VoidSkullIcon.propTypes = {
 
 const BaseIcon = ({ className = '', viewBox = '0 0 24 24', children, ...props }) => (
   <svg
+    {...props}
     className={className}
     viewBox={viewBox}
     fill='none'
@@ -123,14 +124,13 @@ const BaseIcon = ({ className = '', viewBox = '0 0 24 24', children, ...props })
     focusable='false'
     role='presentation'
     preserveAspectRatio='xMidYMid meet'
-    {...props}
   >
     {children}
   </svg>
 )
 
 export const BandcampIcon = ({ className = '', ...props }) => (
-  <BaseIcon className={className} {...props}>
+  <BaseIcon {...props} className={className}>
     <path
       d='M2 6H22V18H2V6Z'
       stroke='currentColor'
@@ -150,7 +150,7 @@ export const BandcampIcon = ({ className = '', ...props }) => (
 )
 
 export const InstaIcon = ({ className = '', ...props }) => (
-  <BaseIcon className={className} {...props}>
+  <BaseIcon {...props} className={className}>
     <path
       d='M3 3H21V21H3V3Z'
       stroke='currentColor'
@@ -168,7 +168,7 @@ export const InstaIcon = ({ className = '', ...props }) => (
 )
 
 export const TikTokIcon = ({ className = '', ...props }) => (
-  <BaseIcon className={className} viewBox='-2 0 26 26' {...props}>
+  <BaseIcon {...props} className={className} viewBox='-2 0 26 26'>
     <path d='M14 2V16H8V22H14V8H20V2H14Z' fill='currentColor' />
     <path
       d='M12 4V18H6V24H12V10H18V4H12Z'
@@ -180,7 +180,7 @@ export const TikTokIcon = ({ className = '', ...props }) => (
 )
 
 export const YouTubeIcon = ({ className = '', ...props }) => (
-  <BaseIcon className={className} {...props}>
+  <BaseIcon {...props} className={className}>
     <path
       d='M2 5H22V19H2V5Z'
       stroke='currentColor'
@@ -198,7 +198,7 @@ export const YouTubeIcon = ({ className = '', ...props }) => (
 )
 
 export const BlogIcon = ({ className = '', ...props }) => (
-  <BaseIcon className={className} {...props}>
+  <BaseIcon {...props} className={className}>
     <path
       d='M3 4H21V20H3V4Z'
       stroke='currentColor'
@@ -230,7 +230,7 @@ export const BlogIcon = ({ className = '', ...props }) => (
 )
 
 export const GameIcon = ({ className = '', ...props }) => (
-  <BaseIcon className={className} viewBox='0 0 32 32' {...props}>
+  <BaseIcon {...props} className={className} viewBox='0 0 32 32'>
     <path
       d='M6 22V6H9L19 18V6H22V22H19L9 10V22H6Z'
       fill='currentColor'

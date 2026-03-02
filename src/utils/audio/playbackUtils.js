@@ -75,8 +75,8 @@ export const getBaseAssetPath = () => {
     const rawBaseUrl =
       typeof import.meta !== 'undefined' &&
       import.meta.env &&
-      import.meta.env?.BASE_URL
-        ? import.meta.env?.BASE_URL
+      import.meta.env.BASE_URL
+        ? import.meta.env.BASE_URL
         : './'
     const baseUrl = rawBaseUrl.endsWith('/') ? rawBaseUrl : `${rawBaseUrl}/`
     const publicBasePath = `${baseUrl}assets`
@@ -84,6 +84,13 @@ export const getBaseAssetPath = () => {
   }
 
   return cachedAssetPaths
+}
+
+/**
+ * Resets the cached base asset path. Used for testing.
+ */
+export const __resetBaseAssetPathCache = () => {
+  cachedAssetPaths = null
 }
 
 /**
