@@ -125,6 +125,43 @@ describe('rhythmUtils', () => {
       const result2 = checkHit(notes, 0, NaN, hitWindow)
       assert.strictEqual(result2, null)
     })
+
+    test('should return null for empty notes array', () => {
+      const result = checkHit([], 0, noteTime, hitWindow)
+      assert.strictEqual(result, null, 'Should handle empty array')
+    })
+
+    test('should correctly skip notes outside window in multiple notes array', () => {
+      const multNotes = [
+        createNote(noteTime - hitWindow - 10), // before window
+        createNote(noteTime), // inside window
+        createNote(noteTime + hitWindow + 10) // after window
+      ]
+      const result = checkHit(multNotes, 0, noteTime, hitWindow)
+      assert.ok(result, 'Should find the note inside the window')
+      assert.strictEqual(result.time, noteTime)
+    })
+
+    test('should return the first valid note if multiple fall within hit window', () => {
+      const multNotes = [
+        createNote(noteTime - 10), // first valid note
+        createNote(noteTime + 10) // second valid note
+      ]
+      const result = checkHit(multNotes, 0, noteTime, hitWindow)
+      assert.ok(result, 'Should find a valid note')
+      assert.strictEqual(result.time, noteTime - 10)
+    })
+
+    test('should ignore objects that are not type: note', () => {
+      const projectile = { ...createNote(noteTime), type: 'projectile' }
+      const result = checkHit([projectile], 0, noteTime, hitWindow)
+      assert.strictEqual(result, null, 'Should ignore non-note types')
+    })
+
+    test('should return null if hitWindow is 0', () => {
+      const result = checkHit(notes, 0, noteTime, 0)
+      assert.strictEqual(result, null, 'Should return null when hit window is 0')
+    })
   })
 
   describe('calculateTimeFromTicks', () => {
