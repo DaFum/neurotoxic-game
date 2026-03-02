@@ -115,6 +115,38 @@ describe('purchaseLogicUtils', () => {
       const player = { fame: 100 }
       assert.equal(canAfford(item, player, 100), true)
     })
+
+    test('returns false if fame < adjustedCost', () => {
+      const item = { currency: 'fame' }
+      const player = { fame: 50 }
+      assert.equal(canAfford(item, player, 100), false)
+    })
+
+    test('handles missing player.money (falls back to 0)', () => {
+      const item = { currency: 'money' }
+      const player = {} // no money
+      assert.equal(canAfford(item, player, 0), true)
+      assert.equal(canAfford(item, player, 10), false)
+    })
+
+    test('handles missing player.fame (falls back to 0)', () => {
+      const item = { currency: 'fame' }
+      const player = {} // no fame
+      assert.equal(canAfford(item, player, 0), true)
+      assert.equal(canAfford(item, player, 10), false)
+    })
+
+    test('defaults to money if item.currency is missing or invalid', () => {
+      const item = {} // no currency
+      const itemInvalid = { currency: 'gold' }
+      const player = { money: 50, fame: 100 }
+
+      // Should use money (50) for comparison
+      assert.equal(canAfford(item, player, 40), true)
+      assert.equal(canAfford(item, player, 60), false)
+      assert.equal(canAfford(itemInvalid, player, 40), true)
+      assert.equal(canAfford(itemInvalid, player, 60), false)
+    })
   })
 
   describe('applyInventorySet', () => {
