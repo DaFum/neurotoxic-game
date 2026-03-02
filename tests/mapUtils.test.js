@@ -37,6 +37,28 @@ describe('mapUtils', () => {
     test('returns false if map is missing', () => {
       assert.equal(isConnected(null, 'A', 'B'), false)
     })
+
+    test('returns false for reverse connection if map is directed', () => {
+      assert.equal(isConnected(gameMap, 'B', 'A'), false)
+    })
+
+    test('returns false if source and target are the same but no self-connection exists', () => {
+      assert.equal(isConnected(gameMap, 'A', 'A'), false)
+    })
+
+    test('returns false if gameMap.connections is empty', () => {
+      assert.equal(isConnected({ connections: [] }, 'A', 'B'), false)
+    })
+
+    test('returns false if fromNodeId or targetNodeId is missing', () => {
+      assert.equal(isConnected(gameMap, null, 'B'), false)
+      assert.equal(isConnected(gameMap, 'A', null), false)
+      assert.equal(isConnected(gameMap, null, null), false)
+    })
+
+    test('throws TypeError if gameMap.connections is missing', () => {
+      assert.throws(() => isConnected({}, 'A', 'B'), TypeError)
+    })
   })
 
   describe('getNodeVisibility', () => {
