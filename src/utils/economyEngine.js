@@ -473,11 +473,13 @@ export const calculateGigFinancials = ({
 
   // 4. Bar Cut (Guestlist doubles rate: VIPs spend more at the bar)
   const barRate = modifiers.guestlist ? BAR_RATE_VIP : BAR_RATE_NORMAL
+  const barPercent = Math.round(barRate * 100)
   const barRevenue = Math.floor(tickets.ticketsSold * AVG_SPEND_PER_PERSON_AT_BAR * barRate)
   report.income.breakdown.push({
     labelKey: modifiers.guestlist ? 'economy:gigIncome.vipBarRevenue.label' : 'economy:gigIncome.barCut.label',
     value: barRevenue,
-    detailKey: modifiers.guestlist ? 'economy:gigIncome.vipBarRevenue.detail' : 'economy:gigIncome.barCut.detail'
+    detailKey: modifiers.guestlist ? 'economy:gigIncome.vipBarRevenue.detail' : 'economy:gigIncome.barCut.detail',
+    detailParams: { percent: barPercent }
   })
   report.income.total += barRevenue
 

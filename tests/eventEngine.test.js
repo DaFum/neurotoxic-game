@@ -114,25 +114,27 @@ test('eventEngine.selectEvent dampens random band events when harmony < 30', () 
     return value
   })
 
-  let controlEventSeen = false
-  // Call it multiple times to account for shuffling, we should never see 'random_one'
-  for (let i = 0; i < 10; i++) {
-    const selectedEvent = eventEngine.selectEvent(MOCK_POOL, state, 'random')
-    // It should either select control_event or nothing (null) depending on shuffle order
-    // But it should NEVER select random_one
-    if (selectedEvent) {
-      assert.notEqual(selectedEvent.id, 'random_one')
-      if (selectedEvent.id === 'control_event') {
-        controlEventSeen = true
+  try {
+    let controlEventSeen = false
+    // Call it multiple times to account for shuffling, we should never see 'random_one'
+    for (let i = 0; i < 10; i++) {
+      const selectedEvent = eventEngine.selectEvent(MOCK_POOL, state, 'random')
+      // It should either select control_event or nothing (null) depending on shuffle order
+      // But it should NEVER select random_one
+      if (selectedEvent) {
+        assert.notEqual(selectedEvent.id, 'random_one')
+        if (selectedEvent.id === 'control_event') {
+          controlEventSeen = true
+        }
       }
     }
+
+    // Sanity check that the test actually exercised a successful selection
+    assert.equal(controlEventSeen, true)
+  } finally {
+    // Reset mock
+    mockSecureRandom.mock.mockImplementation(() => 0.5)
   }
-
-  // Sanity check that the test actually exercised a successful selection
-  assert.equal(controlEventSeen, true)
-
-  // Reset mock
-  mockSecureRandom.mock.mockImplementation(() => 0.5)
 })
 
 test('eventEngine.selectEvent respects cooldowns', () => {

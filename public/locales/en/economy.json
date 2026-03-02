@@ -34,11 +34,11 @@
     },
     "barCut": {
       "label": "Bar Cut",
-      "detail": "15% of Bar"
+      "detail": "{{percent}}% of Bar"
     },
     "vipBarRevenue": {
       "label": "VIP Bar Revenue",
-      "detail": "VIP crowd — 30% of Bar"
+      "detail": "VIP crowd — {{percent}}% of Bar"
     }
   },
   "gigExpenses": {
