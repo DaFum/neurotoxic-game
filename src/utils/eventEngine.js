@@ -71,6 +71,11 @@ const selectEvent = (pool, gameState, triggerPoint) => {
       chance *= 5.0 // Huge boost
     }
 
+    // Dampen random band events when harmony is critically low to prevent death spirals
+    if (event.category === 'band' && event.trigger === 'random' && (gameState.band?.harmony ?? 100) < 30) {
+      chance *= 0.5
+    }
+
     if (secureRandom() < chance) {
       logger.debug('EventEngine', 'Event Selected', event.id)
 

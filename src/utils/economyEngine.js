@@ -77,7 +77,7 @@ const calculateTicketIncome = (
   if (modifiers.promo) fillRate += 0.15
 
   // Soundcheck Boost (word-of-mouth from quality prep)
-  if (modifiers.soundcheck) fillRate += 0.1
+  if (modifiers.soundcheck) fillRate += 0.15
 
   // Controversy attendance penalty: -1% per point above 40, max -30%
   const controversyLevel = context.controversyLevel || 0

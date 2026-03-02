@@ -298,8 +298,9 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
 
   // Controversy/Shadowban Decay
   if (nextSocial.controversyLevel > 0) {
-    // Passive cooldown
-    nextSocial.controversyLevel = Math.max(0, nextSocial.controversyLevel - 1)
+    // Passive cooldown — accelerated above threshold to prevent death spirals
+    const decayAmount = nextSocial.controversyLevel > 60 ? 2 : 1
+    nextSocial.controversyLevel = Math.max(0, nextSocial.controversyLevel - decayAmount)
   }
 
   // Reputation cooldown decay
