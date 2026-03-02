@@ -343,7 +343,7 @@ export const MainMenu = () => {
           transition={{ delay: 1.2 }}
           className='flex flex-col gap-4 mt-6 items-center'
         >
-          <div className='flex gap-4'>
+          <div className='flex flex-wrap justify-center gap-4'>
             <GlitchButton onClick={() => setShowSocials(true)}>
               {t('ui:socials')}
             </GlitchButton>
