@@ -16,6 +16,7 @@ import {
 } from '../utils/socialEngine'
 import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils'
 import { BRAND_ALIGNMENTS } from '../context/initialState'
+import { SONGS_DB } from '../data/songs'
 
 import { ReportPhase } from '../components/postGig/ReportPhase'
 import { SocialPhase } from '../components/postGig/SocialPhase'
@@ -453,14 +454,17 @@ export const PostGig = () => {
     }
 
     // Leaderboard Song Score Submission
-    if (player.playerId && player.playerName && currentGig?.songId) {
+    // Resolve to leaderboardId (API-safe slug) — currentGig.songId is the raw
+    // JSON key which may contain spaces the API rejects (^[a-zA-Z0-9_-]+$).
+    const leaderboardSongId = SONGS_DB.find(s => s.id === currentGig?.songId)?.leaderboardId
+    if (player.playerId && player.playerName && leaderboardSongId) {
       fetch('/api/leaderboard/song', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           playerId: player.playerId,
           playerName: player.playerName,
-          songId: currentGig.songId,
+          songId: leaderboardSongId,
           score: lastGigStats?.score || 0
         })
       })
