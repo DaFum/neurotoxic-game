@@ -2,8 +2,18 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   buildGigStatsSnapshot,
-  updateGigPerformanceStats
+  updateGigPerformanceStats,
+  calculateAccuracy
 } from '../src/utils/gigStats.js'
+
+test('calculateAccuracy computes correct percentages', () => {
+  assert.equal(calculateAccuracy(0, 0), 100)
+  assert.equal(calculateAccuracy(10, 0), 100)
+  assert.equal(calculateAccuracy(0, 10), 0)
+  assert.equal(calculateAccuracy(5, 5), 50)
+  assert.equal(calculateAccuracy(1, 2), 33)
+  assert.equal(calculateAccuracy(2, 1), 67)
+})
 
 test('updateGigPerformanceStats tracks peak combo and hype', () => {
   const baseStats = {
