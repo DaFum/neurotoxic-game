@@ -33,7 +33,7 @@ export const SONGS_DB = Object.entries(rhythmSongs).map(([key, song]) => {
       .toLowerCase()
       .replace(/[^a-z0-9_-]/g, '_')
       .replace(/_+/g, '_')
-    .replace(/^_|_$/g, '')
+      .replace(/^_|_$/g, '')
       .slice(0, 64),
     name: song.name,
     title: song.name, // Alias for UI consistency if needed

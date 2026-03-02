@@ -1,5 +1,11 @@
 {
   "gigIncome": {
+    "loadingReport": "Bericht wird geladen...",
+    "income": "EINNAHMEN",
+    "expenses": "AUSGABEN",
+    "total": "GESAMT",
+    "netProfit": "REINGEWINN",
+    "continueToSocials": "Weiter zu Socials >",
     "ticketSales": {
       "label": "Ticketverkäufe",
       "detail": "{{sold}} / {{capacity}} verkauft"

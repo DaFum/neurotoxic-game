@@ -136,6 +136,22 @@ const validateSocial = social => {
       return
     }
 
+    if (key === 'influencers') {
+      if (!isPlainObject(val))
+        throw new StateError('social.influencers must be an object')
+      Object.entries(val).forEach(([id, influencer]) => {
+        if (!isPlainObject(influencer))
+          throw new StateError(`influencers.${id} must be an object`)
+        if (typeof influencer.tier !== 'string')
+          throw new StateError(`influencers.${id}.tier must be a string`)
+        if (typeof influencer.trait !== 'string')
+          throw new StateError(`influencers.${id}.trait must be a string`)
+        if (typeof influencer.score !== 'number')
+          throw new StateError(`influencers.${id}.score must be a number`)
+      })
+      return
+    }
+
     if (typeof val !== 'number') {
       throw new StateError(`Social value "${key}" must be a number: ${val}`)
     }

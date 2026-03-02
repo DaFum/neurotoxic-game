@@ -213,6 +213,51 @@ describe('saveValidator', () => {
         message: /activeDeals\[0\].remainingGigs must be a number/
       })
     })
+
+    it('validates influencers correctly', () => {
+      const data = getValidData()
+      data.social.influencers = {
+        test_influencer: { tier: 'Macro', trait: 'tech_savvy', score: 10 }
+      }
+      assert.strictEqual(validateSaveData(data), true)
+    })
+
+    it('throws if influencers is not an object', () => {
+      const data = getValidData()
+      data.social.influencers = 'invalid'
+      assert.throws(() => validateSaveData(data), {
+        name: 'StateError',
+        message: /social.influencers must be an object/
+      })
+    })
+
+    it('throws if influencer items are invalid', () => {
+      const data = getValidData()
+
+      data.social.influencers = { test: 'not an object' }
+      assert.throws(() => validateSaveData(data), {
+        name: 'StateError',
+        message: /influencers\.test must be an object/
+      })
+
+      data.social.influencers = { test: { trait: 'tech', score: 10 } }
+      assert.throws(() => validateSaveData(data), {
+        name: 'StateError',
+        message: /influencers\.test\.tier must be a string/
+      })
+
+      data.social.influencers = { test: { tier: 'Macro', score: 10 } }
+      assert.throws(() => validateSaveData(data), {
+        name: 'StateError',
+        message: /influencers\.test\.trait must be a string/
+      })
+
+      data.social.influencers = { test: { tier: 'Macro', trait: 'tech' } }
+      assert.throws(() => validateSaveData(data), {
+        name: 'StateError',
+        message: /influencers\.test\.score must be a number/
+      })
+    })
   })
 
   describe('gameMap validation', () => {

@@ -17,7 +17,7 @@ const FinancialList = ({ items, type }) => {
           className='flex justify-between items-center'
         >
           <span className='text-(--star-white)/70'>
-            {t(item.labelKey ?? item.label, { defaultValue: item.label })}
+            {item.labelKey ? t(item.labelKey) : item.label}
           </span>
           <span
             className={`${type === 'income' ? 'text-(--toxic-green)' : 'text-(--blood-red)'} font-bold tabular-nums`}
@@ -47,6 +47,8 @@ FinancialList.propTypes = {
 }
 
 export const ReportPhase = ({ financials, onNext }) => {
+  const { t } = useTranslation('economy')
+
   if (!financials) {
     return (
       <div
@@ -55,7 +57,7 @@ export const ReportPhase = ({ financials, onNext }) => {
         aria-live='polite'
         aria-busy='true'
       >
-        Loading Report...
+        {t('economy:gigIncome.loadingReport', { defaultValue: 'Loading Report...' })}
       </div>
     )
   }
@@ -70,11 +72,13 @@ export const ReportPhase = ({ financials, onNext }) => {
           transition={{ delay: 0.2 }}
         >
           <h3 className='text-lg border-b-2 border-(--toxic-green) mb-4 pb-2 tracking-widest font-mono text-(--toxic-green)'>
-            INCOME
+            {t('economy:gigIncome.income', { defaultValue: 'INCOME' })}
           </h3>
           <FinancialList items={financials.income.breakdown} type='income' />
           <div className='mt-4 pt-2 border-t border-(--toxic-green)/40 flex justify-between font-bold text-(--toxic-green)'>
-            <span className='text-sm tracking-wider'>TOTAL</span>
+            <span className='text-sm tracking-wider'>
+              {t('economy:gigIncome.total', { defaultValue: 'TOTAL' })}
+            </span>
             <span className='tabular-nums'>{financials.income.total}€</span>
           </div>
         </motion.div>
@@ -86,11 +90,13 @@ export const ReportPhase = ({ financials, onNext }) => {
           transition={{ delay: 0.2 }}
         >
           <h3 className='text-lg border-b-2 border-(--blood-red) text-(--blood-red) mb-4 pb-2 tracking-widest font-mono'>
-            EXPENSES
+            {t('economy:gigIncome.expenses', { defaultValue: 'EXPENSES' })}
           </h3>
           <FinancialList items={financials.expenses.breakdown} type='expense' />
           <div className='mt-4 pt-2 border-t border-(--blood-red)/40 flex justify-between font-bold text-(--blood-red)'>
-            <span className='text-sm tracking-wider'>TOTAL</span>
+            <span className='text-sm tracking-wider'>
+              {t('economy:gigIncome.total', { defaultValue: 'TOTAL' })}
+            </span>
             <span className='tabular-nums'>{financials.expenses.total}€</span>
           </div>
         </motion.div>
@@ -104,7 +110,7 @@ export const ReportPhase = ({ financials, onNext }) => {
         className='text-center py-6 border-y-2 border-(--ash-gray)/30'
       >
         <div className='text-[10px] text-(--ash-gray) tracking-widest mb-2'>
-          NET PROFIT
+          {t('economy:gigIncome.netProfit', { defaultValue: 'NET PROFIT' })}
         </div>
         <div
           className={`text-5xl font-bold font-(--font-display) tabular-nums ${
@@ -129,7 +135,7 @@ export const ReportPhase = ({ financials, onNext }) => {
           variant='primary'
           className='px-8 py-3 text-(--void-black)'
         >
-          Continue to Socials &gt;
+          {t('economy:gigIncome.continueToSocials', { defaultValue: 'Continue to Socials >' })}
         </ActionButton>
       </motion.div>
     </div>

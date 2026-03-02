@@ -1,5 +1,11 @@
 {
   "gigIncome": {
+    "loadingReport": "Loading Report...",
+    "income": "INCOME",
+    "expenses": "EXPENSES",
+    "total": "TOTAL",
+    "netProfit": "NET PROFIT",
+    "continueToSocials": "Continue to Socials >",
     "ticketSales": {
       "label": "Ticket Sales",
       "detail": "{{sold}} / {{capacity}} sold"
