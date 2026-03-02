@@ -1,0 +1,17 @@
+{
+  "gigIncome": {
+    "barCut": {
+      "label": "Bar-Anteil",
+      "detail": "15% der Bar"
+    },
+    "vipBarRevenue": {
+      "label": "VIP-Bareinnahmen",
+      "detail": "VIP-Publikum — 30% der Bar"
+    }
+  },
+  "gigExpenses": {
+    "guestList": {
+      "detail": "VIP-Behandlung (+Bareinnahmen, +Punkte)"
+    }
+  }
+}

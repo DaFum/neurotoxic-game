@@ -1,36 +1,45 @@
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
 
-const FinancialList = ({ items, type }) => (
-  <ul className='space-y-2.5 text-sm font-mono'>
-    {items.map((item, i) => (
-      <motion.li
-        // eslint-disable-next-line @eslint-react/no-array-index-key
-        key={`${item.label}-${i}`}
-        initial={{ opacity: 0, x: type === 'income' ? -10 : 10 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.3 + i * 0.1 }}
-        className='flex justify-between items-center'
-      >
-        <span className='text-(--star-white)/70'>{item.label}</span>
-        <span
-          className={`${type === 'income' ? 'text-(--toxic-green)' : 'text-(--blood-red)'} font-bold tabular-nums`}
+const FinancialList = ({ items, type }) => {
+  const { t } = useTranslation('economy')
+  return (
+    <ul className='space-y-2.5 text-sm font-mono'>
+      {items.map((item, i) => (
+        <motion.li
+          // eslint-disable-next-line @eslint-react/no-array-index-key
+          key={`${item.labelKey ?? item.label}-${i}`}
+          initial={{ opacity: 0, x: type === 'income' ? -10 : 10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3 + i * 0.1 }}
+          className='flex justify-between items-center'
         >
-          {type === 'income' ? '+' : '-'}
-          {item.value}€
-        </span>
-      </motion.li>
-    ))}
-  </ul>
-)
+          <span className='text-(--star-white)/70'>
+            {item.labelKey ? t(item.labelKey) : item.label}
+          </span>
+          <span
+            className={`${type === 'income' ? 'text-(--toxic-green)' : 'text-(--blood-red)'} font-bold tabular-nums`}
+          >
+            {type === 'income' ? '+' : '-'}
+            {item.value}€
+          </span>
+        </motion.li>
+      ))}
+    </ul>
+  )
+}
 
 FinancialList.propTypes = {
   items: PropTypes.arrayOf(
     PropTypes.shape({
-      label: PropTypes.string.isRequired,
+      label: PropTypes.string,
+      labelKey: PropTypes.string,
       value: PropTypes.oneOfType([PropTypes.number, PropTypes.string])
-        .isRequired
+        .isRequired,
+      detail: PropTypes.string,
+      detailKey: PropTypes.string
     })
   ).isRequired,
   type: PropTypes.oneOf(['income', 'expense']).isRequired
@@ -130,9 +139,11 @@ const FINANCIAL_CATEGORY_SHAPE = PropTypes.shape({
   total: PropTypes.number.isRequired,
   breakdown: PropTypes.arrayOf(
     PropTypes.shape({
-      label: PropTypes.string.isRequired,
+      label: PropTypes.string,
+      labelKey: PropTypes.string,
       value: PropTypes.number.isRequired,
-      detail: PropTypes.string
+      detail: PropTypes.string,
+      detailKey: PropTypes.string
     })
   ).isRequired
 })

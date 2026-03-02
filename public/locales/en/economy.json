@@ -1,0 +1,17 @@
+{
+  "gigIncome": {
+    "barCut": {
+      "label": "Bar Cut",
+      "detail": "15% of Bar"
+    },
+    "vipBarRevenue": {
+      "label": "VIP Bar Revenue",
+      "detail": "VIP crowd — 30% of Bar"
+    }
+  },
+  "gigExpenses": {
+    "guestList": {
+      "detail": "VIP Treatment (+Bar Revenue, +Score)"
+    }
+  }
+}
