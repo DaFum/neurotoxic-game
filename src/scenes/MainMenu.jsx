@@ -359,7 +359,7 @@ export const MainMenu = () => {
           onClose={() => setShowFeatures(false)}
           title={t('ui:features.title')}
         >
-          <div className='flex flex-col gap-6 max-w-3xl w-[90vw] mx-auto max-h-[80vh] overflow-y-auto overflow-x-hidden custom-scrollbar pr-2 sm:pr-4 pb-4'>
+          <div className='flex flex-col gap-6 w-full mx-auto max-h-[80vh] overflow-y-auto overflow-x-hidden custom-scrollbar pr-2 sm:pr-4 pb-4'>
             {t('ui:featureList', { returnObjects: true }).map(section => (
               <div key={section.title} className='flex flex-col gap-2'>
                 <h3 className='text-(--toxic-green) font-mono text-xl md:text-2xl uppercase tracking-widest border-b border-(--toxic-green)/30 pb-1'>
