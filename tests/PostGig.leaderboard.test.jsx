@@ -27,12 +27,12 @@ vi.mock('../src/utils/crypto', () => ({
 vi.mock('../src/data/songs', () => ({
   SONGS_DB: [
     {
-      id: '01_kranker_schrank',
+      id: '01_kranker_schrank_raw',
       leaderboardId: '01_kranker_schrank',
       name: '01 Kranker Schrank'
     },
     {
-      id: 'neurotoxic_1',
+      id: 'neurotoxic_1_raw',
       leaderboardId: 'neurotoxic_1',
       name: 'Neurotoxic 1'
     }
@@ -50,7 +50,7 @@ describe('PostGig Leaderboard Submission', () => {
   const mockUnlockTrait = vi.fn()
 
   const getBaseState = () => ({
-    currentGig: { songId: '01_kranker_schrank', venue: 'Venue A' },
+    currentGig: { songId: '01_kranker_schrank_raw', venue: 'Venue A' },
     player: {
       money: 500,
       fame: 100,
@@ -121,6 +121,49 @@ describe('PostGig Leaderboard Submission', () => {
     vi.restoreAllMocks()
   })
 
+  it('submits song score to leaderboard on continue using setlist fallback when currentGig.songId is missing', async () => {
+    const state = getBaseState()
+    state.currentGig.songId = undefined
+    state.setlist = [{ id: 'neurotoxic_1_raw', name: 'Neurotoxic 1' }]
+    useGameState.mockReturnValue(state)
+
+    render(<PostGig />)
+
+    const nextBtn = await screen.findByRole('button', {
+      name: /continue|next|social/i
+    })
+    fireEvent.click(nextBtn)
+
+    const postBtn = await screen.findByText('Selfie')
+    fireEvent.click(postBtn)
+
+    const continueBtn = await screen.findByRole('button', {
+      name: /back to tour/i
+    })
+
+    expect(screen.getByText('Great post!')).toBeInTheDocument()
+    expect(mockFetch).not.toHaveBeenCalled()
+
+    fireEvent.click(continueBtn)
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/leaderboard/song',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            playerId: 'user-uuid',
+            playerName: 'TestUser',
+            songId: 'neurotoxic_1',
+            score: 12345
+          })
+        })
+      )
+    })
+
+    expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
+  })
+
   it('submits song score to leaderboard on continue', async () => {
     render(<PostGig />)
 
@@ -187,7 +230,7 @@ describe('PostGig Leaderboard Submission', () => {
     render(<PostGig />)
 
     // Report -> Next
-    fireEvent.click(await screen.findByRole('button'))
+    fireEvent.click(await screen.findByRole('button', { name: /continue|next|social/i }))
     // Social -> Post
     fireEvent.click(await screen.findByText('Selfie'))
     // Complete -> Continue

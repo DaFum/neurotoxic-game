@@ -256,13 +256,14 @@ export const applyEventDelta = (state, delta) => {
           typeof nextSocial[key] === 'number' ? nextSocial[key] : 0
         nextSocial[key] = Math.max(0, currentValue + value)
       } else if (
-        ['egoFocus', 'sponsorActive', 'trend', 'lastGigDay', 'influencers'].includes(key) &&
+        ['egoFocus', 'sponsorActive', 'trend', 'lastGigDay'].includes(key) &&
         (value === null ||
          typeof value === 'string' ||
-         typeof value === 'boolean' ||
-         (key === 'influencers' && typeof value === 'object'))
+         typeof value === 'boolean')
       ) {
         nextSocial[key] = value // Explicitly allow non-numeric assignments for known keys
+      } else if (key === 'influencers' && Array.isArray(value)) {
+        nextSocial[key] = [...value]
       }
     })
     nextState.social = nextSocial

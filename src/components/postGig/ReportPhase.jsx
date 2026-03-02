@@ -35,7 +35,7 @@ FinancialList.propTypes = {
   items: PropTypes.arrayOf(
     PropTypes.shape({
       label: PropTypes.string,
-      labelKey: PropTypes.string,
+      labelKey: PropTypes.string.isRequired,
       value: PropTypes.oneOfType([PropTypes.number, PropTypes.string])
         .isRequired,
       detail: PropTypes.string,
@@ -143,7 +143,7 @@ const FINANCIAL_CATEGORY_SHAPE = PropTypes.shape({
   breakdown: PropTypes.arrayOf(
     PropTypes.shape({
       label: PropTypes.string,
-      labelKey: PropTypes.string,
+      labelKey: PropTypes.string.isRequired,
       value: PropTypes.number.isRequired,
       detail: PropTypes.string,
       detailKey: PropTypes.string,

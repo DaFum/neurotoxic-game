@@ -501,7 +501,8 @@ export const PostGig = () => {
     addToast,
     changeScene,
     activeStoryFlags,
-    addQuest
+    addQuest,
+    setlist
   ])
 
   const handleNextPhase = useCallback(() => {
