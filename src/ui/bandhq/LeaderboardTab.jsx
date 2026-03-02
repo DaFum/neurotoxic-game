@@ -12,7 +12,7 @@ import { SONGS_DB } from '../../data/songs'
 export const LeaderboardTab = () => {
   const { t } = useTranslation()
   const [view, setView] = useState('BALANCE') // 'BALANCE' or 'SONG'
-  const [selectedSongId, setSelectedSongId] = useState(SONGS_DB[0]?.id || '')
+  const [selectedSongId, setSelectedSongId] = useState(SONGS_DB[0]?.leaderboardId || '')
   const [rankings, setRankings] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -20,7 +20,7 @@ export const LeaderboardTab = () => {
   useEffect(() => {
     // If we switch to song view and have no song selected, try to select the first one
     if (view === 'SONG' && !selectedSongId && SONGS_DB.length > 0) {
-      setSelectedSongId(SONGS_DB[0].id)
+      setSelectedSongId(SONGS_DB[0].leaderboardId)
     }
   }, [view, selectedSongId])
 
@@ -91,7 +91,7 @@ export const LeaderboardTab = () => {
             onChange={e => setSelectedSongId(e.target.value)}
           >
             {SONGS_DB.map(song => (
-              <option key={song.id} value={song.id}>
+              <option key={song.id} value={song.leaderboardId}>
                 {song.title || song.id}
               </option>
             ))}

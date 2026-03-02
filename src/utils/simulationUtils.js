@@ -164,6 +164,10 @@ export const calculateGigPhysics = (bandState, song) => {
  * @param {Function} [rng=Math.random] - Random number generator for determinism.
  * @returns {object} The updated parts of state (player, band, social).
  */
+export const CONTROVERSY_ACCELERATED_DECAY_THRESHOLD = 60
+export const CONTROVERSY_ACCELERATED_DECAY_AMOUNT = 2
+export const CONTROVERSY_NORMAL_DECAY_AMOUNT = 1
+
 export const calculateDailyUpdates = (currentState, rng = Math.random) => {
   const nextPlayer = {
     ...currentState.player,
@@ -277,7 +281,8 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
     }
   }
 
-  // High Controversy passive effects
+  // High Controversy passive effects — snapshot before decay so same-day checks
+  // (sponsorship drop at line ~327) use the start-of-day value, not the decayed one.
   const controversy = nextSocial.controversyLevel || 0
   if (controversy >= 50) {
     // Harmony drain is worse under stress
@@ -298,8 +303,9 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
 
   // Controversy/Shadowban Decay
   if (nextSocial.controversyLevel > 0) {
-    // Passive cooldown
-    nextSocial.controversyLevel = Math.max(0, nextSocial.controversyLevel - 1)
+    // Passive cooldown — accelerated above threshold to prevent death spirals
+    const decayAmount = nextSocial.controversyLevel > CONTROVERSY_ACCELERATED_DECAY_THRESHOLD ? CONTROVERSY_ACCELERATED_DECAY_AMOUNT : CONTROVERSY_NORMAL_DECAY_AMOUNT
+    nextSocial.controversyLevel = Math.max(0, nextSocial.controversyLevel - decayAmount)
   }
 
   // Reputation cooldown decay

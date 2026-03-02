@@ -213,6 +213,61 @@ describe('saveValidator', () => {
         message: /activeDeals\[0\].remainingGigs must be a number/
       })
     })
+
+    describe('influencers validation', () => {
+      it('validates influencers correctly', () => {
+        const data = getValidData()
+        data.social.influencers = {
+          'inf1': { tier: 'Micro', trait: 'music_snob', score: 10 }
+        }
+        assert.strictEqual(validateSaveData(data), true)
+      })
+
+      it('throws if influencers is not an object', () => {
+        const data = getValidData()
+        data.social.influencers = 'not an object'
+        assert.throws(() => validateSaveData(data), {
+          name: 'StateError',
+          message: /social.influencers must be an object/
+        })
+      })
+
+      it('throws if an influencer is not an object', () => {
+        const data = getValidData()
+        data.social.influencers = { 'inf1': 'not an object' }
+        assert.throws(() => validateSaveData(data), {
+          name: 'StateError',
+          message: /social.influencers.inf1 must be an object/
+        })
+      })
+
+      it('throws if tier is missing or invalid', () => {
+        const data = getValidData()
+        data.social.influencers = { 'inf1': { trait: 'music_snob', score: 10 } }
+        assert.throws(() => validateSaveData(data), {
+          name: 'StateError',
+          message: /social.influencers.inf1.tier must be a string/
+        })
+      })
+
+      it('throws if trait is missing or invalid', () => {
+        const data = getValidData()
+        data.social.influencers = { 'inf1': { tier: 'Micro', score: 10 } }
+        assert.throws(() => validateSaveData(data), {
+          name: 'StateError',
+          message: /social.influencers.inf1.trait must be a string/
+        })
+      })
+
+      it('throws if score is missing or invalid', () => {
+        const data = getValidData()
+        data.social.influencers = { 'inf1': { tier: 'Micro', trait: 'music_snob' } }
+        assert.throws(() => validateSaveData(data), {
+          name: 'StateError',
+          message: /social.influencers.inf1.score must be a number/
+        })
+      })
+    })
   })
 
   describe('gameMap validation', () => {

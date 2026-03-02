@@ -25,6 +25,16 @@ export const SONGS_DB = Object.entries(rhythmSongs).map(([key, song]) => {
 
   return {
     id: key, // Use JSON key as ID for stability
+    // leaderboardId: API-safe slug derived from the JSON key.
+    // The raw key may contain spaces/special chars that the leaderboard API
+    // rejects (^[a-zA-Z0-9_-]+$, max 64 chars). This slug is stable as long
+    // as the JSON keys don't change, and is the only field used for API calls.
+    leaderboardId: key
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .slice(0, 64),
     name: song.name,
     title: song.name, // Alias for UI consistency if needed
     duration: duration,

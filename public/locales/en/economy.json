@@ -1,0 +1,82 @@
+{
+  "gigIncome": {
+    "ticketSales": {
+      "label": "Ticket Sales",
+      "detail": "{{sold}} / {{capacity}} sold"
+    },
+    "hypeBonus": {
+      "label": "HYPE BONUS",
+      "detail": "Merch frenzy (S-Rank)!"
+    },
+    "badShow": {
+      "label": "BAD SHOW",
+      "detail": "Crowd left early..."
+    },
+    "loyalFans": {
+      "label": "LOYAL FANS",
+      "detail": "Supporting you despite PR"
+    },
+    "merchSales": {
+      "label": "Merch Sales",
+      "detail": "{{buyers}} buyers"
+    },
+    "guarantee": {
+      "label": "Guarantee",
+      "detail": "Fixed fee"
+    },
+    "techSponsor": {
+      "label": "Tech Sponsor",
+      "detail": "Perfect Set (0 Misses)"
+    },
+    "beerSponsor": {
+      "label": "Beer Sponsor",
+      "detail": "Max Hype Reached"
+    },
+    "barCut": {
+      "label": "Bar Cut",
+      "detail": "{{percent}}% of Bar"
+    },
+    "vipBarRevenue": {
+      "label": "VIP Bar Revenue",
+      "detail": "VIP crowd — {{percent}}% of Bar"
+    }
+  },
+  "gigExpenses": {
+    "venueSplit": {
+      "label": "Venue Split",
+      "detail": "{{rate}}% of Door"
+    },
+    "merchRestock": {
+      "label": "Merch Restock",
+      "detail": "COGS"
+    },
+    "catering": {
+      "label": "Catering / Energy",
+      "detail": "Counters Tired Band Penalty"
+    },
+    "socialAds": {
+      "label": "Social Ads",
+      "detail": "Promo Campaign"
+    },
+    "merchStand": {
+      "label": "Merch Stand",
+      "detail": "Better Display"
+    },
+    "soundcheck": {
+      "label": "Soundcheck",
+      "detail": "Prep Time"
+    },
+    "guestList": {
+      "label": "Guest List",
+      "detail": "VIP Treatment (+Bar Revenue, +Score)"
+    }
+  },
+  "postGig": {
+    "loading": "Loading Report...",
+    "income": "INCOME",
+    "total": "TOTAL",
+    "expenses": "EXPENSES",
+    "netProfit": "NET PROFIT",
+    "continueToSocials": "Continue to Socials >"
+  }
+}

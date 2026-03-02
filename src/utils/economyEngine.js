@@ -13,6 +13,10 @@ export const MODIFIER_COSTS = {
   guestlist: 60
 }
 
+export const BAR_RATE_VIP = 0.3
+export const BAR_RATE_NORMAL = 0.15
+export const AVG_SPEND_PER_PERSON_AT_BAR = 5
+
 export const EXPENSE_CONSTANTS = {
   DAILY: {
     BASE_COST: 25
@@ -77,7 +81,7 @@ const calculateTicketIncome = (
   if (modifiers.promo) fillRate += 0.15
 
   // Soundcheck Boost (word-of-mouth from quality prep)
-  if (modifiers.soundcheck) fillRate += 0.1
+  if (modifiers.soundcheck) fillRate += 0.15
 
   // Controversy attendance penalty: -1% per point above 40, max -30%
   const controversyLevel = context.controversyLevel || 0
@@ -114,9 +118,10 @@ const calculateTicketIncome = (
     revenue,
     ticketsSold,
     breakdownItem: {
-      label: 'Ticket Sales',
+      labelKey: 'economy:gigIncome.ticketSales.label',
       value: revenue,
-      detail: `${ticketsSold} / ${gigData.capacity} sold`
+      detailKey: 'economy:gigIncome.ticketSales.detail',
+      detailParams: { sold: ticketsSold, capacity: gigData.capacity }
     }
   }
 }
@@ -138,16 +143,16 @@ const calculateMerchIncome = (
   if (performanceScore >= 95) {
     buyRate *= 1.5 // S-Rank Bonus
     breakdownItems.push({
-      label: 'HYPE BONUS',
+      labelKey: 'economy:gigIncome.hypeBonus.label',
       value: 0,
-      detail: 'Merch frenzy (S-Rank)!'
+      detailKey: 'economy:gigIncome.hypeBonus.detail'
     })
   } else if (performanceScore < 40) {
     buyRate *= 0.5 // Poor performance penalty
     breakdownItems.push({
-      label: 'BAD SHOW',
+      labelKey: 'economy:gigIncome.badShow.label',
       value: 0,
-      detail: 'Crowd left early...'
+      detailKey: 'economy:gigIncome.badShow.detail'
     })
   }
 
@@ -158,9 +163,9 @@ const calculateMerchIncome = (
     const loyaltyBuyBonus = Math.min(0.15, (context.loyalty / 100) * 0.2)
     buyRate = Math.min(0.45, buyRate + loyaltyBuyBonus)
     breakdownItems.push({
-      label: 'LOYAL FANS',
+      labelKey: 'economy:gigIncome.loyalFans.label',
       value: 0,
-      detail: 'Supporting you despite PR'
+      detailKey: 'economy:gigIncome.loyalFans.detail'
     })
   }
 
@@ -186,16 +191,21 @@ const calculateMerchIncome = (
   const merchCost = buyers * merchAvgCost
 
   breakdownItems.push({
-    label: 'Merch Sales',
+    labelKey: 'economy:gigIncome.merchSales.label',
     value: merchRevenue,
-    detail: `${buyers} buyers`
+    detailKey: 'economy:gigIncome.merchSales.detail',
+    detailParams: { buyers }
   })
 
   return {
     revenue: merchRevenue,
     cost: merchCost,
     breakdownItems,
-    costItem: { label: 'Merch Restock', value: merchCost, detail: 'COGS' }
+    costItem: {
+      labelKey: 'economy:gigExpenses.merchRestock.label',
+      value: merchCost,
+      detailKey: 'economy:gigExpenses.merchRestock.detail'
+    }
   }
 }
 
@@ -330,45 +340,45 @@ const calculateGigExpenses = modifiers => {
   // Modifiers (Budget items)
   if (modifiers.catering) {
     expenses.breakdown.push({
-      label: 'Catering / Energy',
+      labelKey: 'economy:gigExpenses.catering.label',
       value: MODIFIER_COSTS.catering,
-      detail: 'Counters Tired Band Penalty'
+      detailKey: 'economy:gigExpenses.catering.detail'
     })
     expenses.total += MODIFIER_COSTS.catering
   }
 
   if (modifiers.promo) {
     expenses.breakdown.push({
-      label: 'Social Ads',
+      labelKey: 'economy:gigExpenses.socialAds.label',
       value: MODIFIER_COSTS.promo,
-      detail: 'Promo Campaign'
+      detailKey: 'economy:gigExpenses.socialAds.detail'
     })
     expenses.total += MODIFIER_COSTS.promo
   }
 
   if (modifiers.merch) {
     expenses.breakdown.push({
-      label: 'Merch Stand',
+      labelKey: 'economy:gigExpenses.merchStand.label',
       value: MODIFIER_COSTS.merch,
-      detail: 'Better Display'
+      detailKey: 'economy:gigExpenses.merchStand.detail'
     })
     expenses.total += MODIFIER_COSTS.merch
   }
 
   if (modifiers.soundcheck) {
     expenses.breakdown.push({
-      label: 'Soundcheck',
+      labelKey: 'economy:gigExpenses.soundcheck.label',
       value: MODIFIER_COSTS.soundcheck,
-      detail: 'Prep Time'
+      detailKey: 'economy:gigExpenses.soundcheck.detail'
     })
     expenses.total += MODIFIER_COSTS.soundcheck
   }
 
   if (modifiers.guestlist) {
     expenses.breakdown.push({
-      label: 'Guest List',
+      labelKey: 'economy:gigExpenses.guestList.label',
       value: MODIFIER_COSTS.guestlist,
-      detail: 'VIP Treatment'
+      detailKey: 'economy:gigExpenses.guestList.detail'
     })
     expenses.total += MODIFIER_COSTS.guestlist
   }
@@ -429,9 +439,10 @@ export const calculateGigFinancials = ({
   if (splitRate > 0) {
     const splitAmount = Math.floor(tickets.revenue * splitRate)
     report.expenses.breakdown.push({
-      label: 'Venue Split',
+      labelKey: 'economy:gigExpenses.venueSplit.label',
       value: splitAmount,
-      detail: `${splitRate * 100}% of Door`
+      detailKey: 'economy:gigExpenses.venueSplit.detail',
+      detailParams: { rate: splitRate * 100 }
     })
     report.expenses.total += splitAmount
   }
@@ -439,9 +450,9 @@ export const calculateGigFinancials = ({
   // 2. Guarantee
   if (gigData.pay > 0) {
     report.income.breakdown.push({
-      label: 'Guarantee',
+      labelKey: 'economy:gigIncome.guarantee.label',
       value: gigData.pay,
-      detail: 'Fixed fee'
+      detailKey: 'economy:gigIncome.guarantee.detail'
     })
     report.income.total += gigData.pay
   }
@@ -460,12 +471,15 @@ export const calculateGigFinancials = ({
   report.expenses.breakdown.push(merch.costItem)
   report.expenses.total += merch.cost
 
-  // 4. Bar Cut
-  const barRevenue = Math.floor(tickets.ticketsSold * 5 * 0.15)
+  // 4. Bar Cut (Guestlist doubles rate: VIPs spend more at the bar)
+  const barRate = modifiers.guestlist ? BAR_RATE_VIP : BAR_RATE_NORMAL
+  const barPercent = Math.round(barRate * 100)
+  const barRevenue = Math.floor(tickets.ticketsSold * AVG_SPEND_PER_PERSON_AT_BAR * barRate)
   report.income.breakdown.push({
-    label: 'Bar Cut',
+    labelKey: modifiers.guestlist ? 'economy:gigIncome.vipBarRevenue.label' : 'economy:gigIncome.barCut.label',
     value: barRevenue,
-    detail: '15% of Bar'
+    detailKey: modifiers.guestlist ? 'economy:gigIncome.vipBarRevenue.detail' : 'economy:gigIncome.barCut.detail',
+    detailParams: { percent: barPercent }
   })
   report.income.total += barRevenue
 
@@ -479,18 +493,18 @@ export const calculateGigFinancials = ({
     if (gigStats.misses === 0) {
       const bonus = 200
       report.income.breakdown.push({
-        label: 'Tech Sponsor',
+        labelKey: 'economy:gigIncome.techSponsor.label',
         value: bonus,
-        detail: 'Perfect Set (0 Misses)'
+        detailKey: 'economy:gigIncome.techSponsor.detail'
       })
       report.income.total += bonus
     }
     if (gigStats.peakHype >= 100) {
       const bonus = 150
       report.income.breakdown.push({
-        label: 'Beer Sponsor',
+        labelKey: 'economy:gigIncome.beerSponsor.label',
         value: bonus,
-        detail: 'Max Hype Reached'
+        detailKey: 'economy:gigIncome.beerSponsor.detail'
       })
       report.income.total += bonus
     }

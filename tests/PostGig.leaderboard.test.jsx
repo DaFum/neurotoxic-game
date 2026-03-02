@@ -24,6 +24,21 @@ vi.mock('../src/utils/crypto', () => ({
   secureRandom: () => 0.5
 }))
 
+vi.mock('../src/data/songs', () => ({
+  SONGS_DB: [
+    {
+      id: '01_kranker_schrank',
+      leaderboardId: '01_kranker_schrank',
+      name: '01 Kranker Schrank'
+    },
+    {
+      id: 'neurotoxic_1',
+      leaderboardId: 'neurotoxic_1',
+      name: 'Neurotoxic 1'
+    }
+  ]
+}))
+
 describe('PostGig Leaderboard Submission', () => {
   const mockFetch = vi.fn().mockResolvedValue({ ok: true })
   const mockUpdatePlayer = vi.fn()
@@ -35,7 +50,7 @@ describe('PostGig Leaderboard Submission', () => {
   const mockUnlockTrait = vi.fn()
 
   const getBaseState = () => ({
-    currentGig: { songId: 'song_1', venue: 'Venue A' },
+    currentGig: { songId: '01_kranker_schrank', venue: 'Venue A' },
     player: {
       money: 500,
       fame: 100,
@@ -57,6 +72,7 @@ describe('PostGig Leaderboard Submission', () => {
     addToast: mockAddToast,
     unlockTrait: mockUnlockTrait,
     reputationByRegion: {},
+    setlist: [],
     addQuest: vi.fn()
   })
 
@@ -149,7 +165,7 @@ describe('PostGig Leaderboard Submission', () => {
           body: JSON.stringify({
             playerId: 'user-uuid',
             playerName: 'TestUser',
-            songId: 'song_1',
+            songId: '01_kranker_schrank',
             score: 12345
           })
         })
@@ -160,11 +176,12 @@ describe('PostGig Leaderboard Submission', () => {
     expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
   })
 
-  it('skips leaderboard submission if songId is missing', async () => {
+  it('skips leaderboard submission if playerId is missing', async () => {
     const base = getBaseState()
     useGameState.mockReturnValue({
       ...base,
-      currentGig: { venue: 'Venue A' } // No songId
+      player: { ...base.player, playerId: null }, // No playerId
+      setlist: []
     })
 
     render(<PostGig />)

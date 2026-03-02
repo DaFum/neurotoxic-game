@@ -7,6 +7,9 @@ import { bandHasTrait } from './traitLogic.js'
 /**
  * Filters and selects an event based on context, priority, and probability.
  */
+export const HARMONY_DEATH_SPIRAL_THRESHOLD = 30
+export const HARMONY_DEATH_SPIRAL_DAMPEN_FACTOR = 0.5
+
 const selectEvent = (pool, gameState, triggerPoint) => {
   // 1. Pending Events (Highest Priority)
   if (gameState.pendingEvents && gameState.pendingEvents.length > 0) {
@@ -20,8 +23,8 @@ const selectEvent = (pool, gameState, triggerPoint) => {
   // 2. Filter by Trigger & Condition
   let eligibleEvents = []
   for (const e of pool) {
-    // Trigger check
-    if (triggerPoint && e.trigger !== triggerPoint) continue
+    // Trigger check — events with trigger:'random' are eligible at any trigger point
+    if (triggerPoint && e.trigger !== triggerPoint && e.trigger !== 'random') continue
 
     // Filter by Cooldown
     if (gameState.eventCooldowns && gameState.eventCooldowns.includes(e.id))
@@ -69,6 +72,11 @@ const selectEvent = (pool, gameState, triggerPoint) => {
     // Boost chance if flag matches
     if (event.requiredFlag && storyFlags.includes(event.requiredFlag)) {
       chance *= 5.0 // Huge boost
+    }
+
+    // Dampen random band events when harmony is critically low to prevent death spirals
+    if (event.category === 'band' && event.trigger === 'random' && (gameState.band?.harmony ?? 100) < HARMONY_DEATH_SPIRAL_THRESHOLD) {
+      chance *= HARMONY_DEATH_SPIRAL_DAMPEN_FACTOR
     }
 
     if (secureRandom() < chance) {
@@ -445,8 +453,15 @@ export const eventEngine = {
   selectEvent: selectEvent,
   filterEvents: (pool, trigger, state) =>
     pool.filter(e => {
-      if (trigger && e.trigger !== trigger) return false
-      return e.condition ? e.condition(state) : true
+      // Match exact trigger OR 'random' events (eligible at any trigger point)
+      if (trigger && e.trigger !== trigger && e.trigger !== 'random') return false
+      if (!e.condition) return true
+      try {
+        return e.condition(state)
+      } catch (err) {
+        logger.error('EventEngine', `Condition failed for event ${e.id}`, err)
+        return false
+      }
     })
 }
 
