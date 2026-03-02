@@ -22,7 +22,6 @@ for (const f of files) {
   try {
     const raw = fs.readFileSync(p, 'utf8')
     const data = JSON.parse(raw)
-    // FIX: added data?.report?.clones to match shell script + broader jscpd format compat
     const list =
       data?.clones ??
       data?.duplicates ??
