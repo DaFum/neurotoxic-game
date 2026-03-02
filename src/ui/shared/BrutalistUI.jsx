@@ -75,9 +75,10 @@ export const UplinkButton = ({ title, url, subtitle, type, Icon }) => {
 
 // --- SVG DECORATIONS ---
 
-import { useId } from 'react'
+import { useId, memo } from 'react'
 
-export const HexBorder = ({ className, title }) => {
+// Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
+export const HexBorder = memo(({ className, title }) => {
   const titleId = useId()
 
   if (title) {
@@ -125,9 +126,10 @@ export const HexBorder = ({ className, title }) => {
       <rect x='94' y='94' width='4' height='4' fill='currentColor' />
     </svg>
   )
-}
+})
 
-export const CrosshairIcon = ({ className, title }) => {
+// Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
+export const CrosshairIcon = memo(({ className, title }) => {
   const titleId = useId()
 
   if (title) {
@@ -185,9 +187,10 @@ export const CrosshairIcon = ({ className, title }) => {
       />
     </svg>
   )
-}
+})
 
-export const MoneyIcon = ({ className, title }) => {
+// Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
+export const MoneyIcon = memo(({ className, title }) => {
   const titleId = useId()
 
   if (title) {
@@ -235,9 +238,10 @@ export const MoneyIcon = ({ className, title }) => {
       <path d='M4 12L6 12M18 12L20 12' stroke='currentColor' strokeWidth='2' />
     </svg>
   )
-}
+})
 
-export const AlertIcon = ({ className, title }) => {
+// Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
+export const AlertIcon = memo(({ className, title }) => {
   const titleId = useId()
 
   if (title) {
@@ -285,9 +289,10 @@ export const AlertIcon = ({ className, title }) => {
       <rect x='11' y='17' width='2' height='2' fill='currentColor' />
     </svg>
   )
-}
+})
 
-export const SkullIcon = ({ className, title }) => {
+// Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
+export const SkullIcon = memo(({ className, title }) => {
   const titleId = useId()
 
   if (title) {
@@ -363,9 +368,10 @@ export const SkullIcon = ({ className, title }) => {
       <path d='M10 16H14' stroke='currentColor' strokeWidth='2' />
     </svg>
   )
-}
+})
 
-export const GearIcon = ({ className, title }) => {
+// Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
+export const GearIcon = memo(({ className, title }) => {
   const titleId = useId()
 
   if (title) {
@@ -417,9 +423,10 @@ export const GearIcon = ({ className, title }) => {
       />
     </svg>
   )
-}
+})
 
-export const HexNode = ({ className, title }) => {
+// Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
+export const HexNode = memo(({ className, title }) => {
   const titleId = useId()
 
   if (title) {
@@ -473,9 +480,10 @@ export const HexNode = ({ className, title }) => {
       />
     </svg>
   )
-}
+})
 
-export const WarningStripe = () => {
+// Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
+export const WarningStripe = memo(() => {
   const patternId = useId()
   return (
     <svg
@@ -498,9 +506,10 @@ export const WarningStripe = () => {
       <rect width='100%' height='100%' fill={`url(#stripes-${patternId})`} />
     </svg>
   )
-}
+})
 
-export const BiohazardIcon = ({ className, title }) => {
+// Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
+export const BiohazardIcon = memo(({ className, title }) => {
   const titleId = useId()
 
   if (title) {
@@ -552,9 +561,10 @@ export const BiohazardIcon = ({ className, title }) => {
       />
     </svg>
   )
-}
+})
 
-export const CorporateSeal = ({ className, title }) => {
+// Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
+export const CorporateSeal = memo(({ className, title }) => {
   const titleId = useId()
 
   if (title) {
@@ -614,7 +624,7 @@ export const CorporateSeal = ({ className, title }) => {
       />
     </svg>
   )
-}
+})
 
 // --- UI COMPONENTS ---
 
