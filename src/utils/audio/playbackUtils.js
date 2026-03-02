@@ -63,21 +63,27 @@ export const normalizeMidiPlaybackOptions = options => {
  */
 export const PATH_PREFIX_REGEX = /^\.?\//
 
+let cachedAssetPaths = null
+
 /**
  * Derives the base asset path and public base path from import.meta.
+ * Computes once lazily and caches the result for performance.
  * @returns {{baseUrl: string, publicBasePath: string}} The resolved paths.
  */
 export const getBaseAssetPath = () => {
-  const rawBaseUrl =
-    typeof import.meta !== 'undefined' &&
-    import.meta.env &&
-    import.meta.env?.BASE_URL
-      ? import.meta.env?.BASE_URL
-      : './'
-  const baseUrl = rawBaseUrl.endsWith('/') ? rawBaseUrl : `${rawBaseUrl}/`
-  const publicBasePath = `${baseUrl}assets`
+  if (!cachedAssetPaths) {
+    const rawBaseUrl =
+      typeof import.meta !== 'undefined' &&
+      import.meta.env &&
+      import.meta.env?.BASE_URL
+        ? import.meta.env?.BASE_URL
+        : './'
+    const baseUrl = rawBaseUrl.endsWith('/') ? rawBaseUrl : `${rawBaseUrl}/`
+    const publicBasePath = `${baseUrl}assets`
+    cachedAssetPaths = { baseUrl, publicBasePath }
+  }
 
-  return { baseUrl, publicBasePath }
+  return cachedAssetPaths
 }
 
 /**

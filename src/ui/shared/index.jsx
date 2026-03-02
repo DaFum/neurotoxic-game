@@ -17,10 +17,11 @@ export { ToggleSwitch } from './ToggleSwitch'
 export { AnimatedDivider, AnimatedSubtitle } from './AnimatedTypography'
 import { UIFrameCorner } from './Icons'
 
+export { UIFrameCorner }
+
 export {
   RazorPlayIcon,
   VoidSkullIcon,
-  UIFrameCorner,
   BandcampIcon,
   InstaIcon,
   TikTokIcon,
