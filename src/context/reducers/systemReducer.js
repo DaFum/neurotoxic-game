@@ -1,7 +1,8 @@
 import { logger } from '../../utils/logger.js'
 import {
   clampBandHarmony,
-  clampPlayerMoney
+  clampPlayerMoney,
+  calculateFameLevel
 } from '../../utils/gameStateUtils.js'
 import { calculateDailyUpdates } from '../../utils/simulationUtils.js'
 import { checkTraitUnlocks } from '../../utils/unlockCheck.js'
@@ -13,6 +14,7 @@ import {
   DEFAULT_BAND_STATE,
   DEFAULT_SOCIAL_STATE
 } from '../initialState.js'
+import { DEFAULT_MINIGAME_STATE } from '../gameConstants.js'
 import { handleFailQuests } from './questReducer.js'
 
 /**
@@ -45,6 +47,7 @@ export const handleLoadGame = (state, payload) => {
     0,
     typeof mergedPlayer.fame === 'number' ? mergedPlayer.fame : 0
   )
+  mergedPlayer.fameLevel = calculateFameLevel(mergedPlayer.fame)
   mergedPlayer.day = Math.max(
     1,
     typeof mergedPlayer.day === 'number' ? mergedPlayer.day : 1
@@ -111,6 +114,19 @@ export const handleLoadGame = (state, payload) => {
     eventCooldowns: Array.isArray(loadedState.eventCooldowns)
       ? loadedState.eventCooldowns
       : [],
+    activeEvent: loadedState.activeEvent || null,
+    toasts: Array.isArray(loadedState.toasts)
+      ? loadedState.toasts
+          .filter(t => t && typeof t === 'object' && t.id && t.message)
+          .map(t => ({
+            ...t,
+            message: String(t.message).trim(),
+            type: ['success', 'error', 'warning', 'info'].includes(t.type)
+              ? t.type
+              : 'info'
+          }))
+          .filter(t => t.message.length > 0)
+      : [],
     reputationByRegion: loadedState.reputationByRegion || {},
     venueBlacklist: Array.isArray(loadedState.venueBlacklist)
       ? loadedState.venueBlacklist
@@ -125,7 +141,19 @@ export const handleLoadGame = (state, payload) => {
     },
     currentScene: loadedState.currentScene || 'OVERWORLD',
     currentGig: loadedState.currentGig || null,
-    lastGigStats: loadedState.lastGigStats || null
+    lastGigStats: loadedState.lastGigStats || null,
+    settings: {
+      ...state.settings,
+      ...(typeof loadedState.settings === 'object' &&
+      loadedState.settings !== null &&
+      !Array.isArray(loadedState.settings)
+        ? loadedState.settings
+        : {})
+    },
+    minigame: {
+      ...DEFAULT_MINIGAME_STATE,
+      ...(loadedState.minigame || {})
+    }
   }
 
   // Security: Only allow valid gameplay scenes from save
@@ -135,8 +163,9 @@ export const handleLoadGame = (state, payload) => {
     'GIG',
     'PRACTICE',
     'POSTGIG',
-    'HQ',
-    'BAND_HQ'
+    'TRAVEL_MINIGAME',
+    'PRE_GIG_MINIGAME',
+    'GAMEOVER'
   ]
   if (!ALLOWED_SCENES.includes(safeState.currentScene)) {
     safeState.currentScene = state.currentScene

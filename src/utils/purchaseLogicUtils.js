@@ -1,5 +1,5 @@
 import { bandHasTrait } from './traitLogic.js'
-import { clampPlayerMoney, clampBandHarmony } from './gameStateUtils.js'
+import { clampPlayerMoney, clampBandHarmony, calculateFameLevel } from './gameStateUtils.js'
 
 /**
  * Selects the primary effect payload from catalog entries during migration.
@@ -152,6 +152,9 @@ export const applyStatModifier = (effect, playerPatch, player, band) => {
         nextPlayerPatch[effect.stat] = clampPlayerMoney(basePlayerStat + val)
       } else {
         nextPlayerPatch[effect.stat] = Math.max(0, basePlayerStat + val)
+        if (effect.stat === 'fame') {
+          nextPlayerPatch.fameLevel = calculateFameLevel(nextPlayerPatch.fame)
+        }
       }
       break
     }
@@ -228,6 +231,7 @@ export const applyUnlockHQ = (item, playerPatch, player, band) => {
         0,
         (nextPlayerPatch.fame ?? player.fame ?? 0) + 10
       )
+      nextPlayerPatch.fameLevel = calculateFameLevel(nextPlayerPatch.fame)
       messages.push({ message: 'Looks cool. Fame +10', type: 'success' })
       break
 

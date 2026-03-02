@@ -121,7 +121,7 @@ test('trySpawnProjectile - verifies all spawned object properties', () => {
 
     assert.ok(projectile)
     assert.equal(typeof projectile.id, 'number')
-    assert.equal(projectile.id, 1234567890)
+    assert.equal(projectile.id, 1234567890.5)
     assert.equal(projectile.x, 1000)
     assert.equal(projectile.y, -100)
     // use approximate equality for floats
@@ -157,21 +157,30 @@ test('trySpawnProjectile - combo boundary (30 vs 31)', () => {
 
 test('trySpawnProjectile - screenWidth influence on x', () => {
   const stats = { health: 100, combo: 0 }
-  const values = [0, 0, 0.5] // spawn, id, x
+  const values = [0, 0, 0.5, 0.5, 0.5, 0.5, 0.5] // spawn, id, x, vx, vy, vr, type
   let i = 0
   const mockRandom = () => {
     if (i >= values.length) {
-      throw new Error('Unexpected random() call in test')
+      assert.fail('Unexpected random() call in test')
     }
     return values[i++]
   }
 
-  const p1 = trySpawnProjectile(stats, mockRandom, 1000)
-  assert.equal(p1.x, 500)
+  const originalNow = Date.now
+  Date.now = () => 1234567890
 
-  i = 0
-  const p2 = trySpawnProjectile(stats, mockRandom, 2000)
-  assert.equal(p2.x, 1000)
+  try {
+    const p1 = trySpawnProjectile(stats, mockRandom, 1000)
+    assert.ok(p1, 'p1 should be defined')
+    assert.equal(p1.x, 500)
+
+    i = 0
+    const p2 = trySpawnProjectile(stats, mockRandom, 2000)
+    assert.ok(p2, 'p2 should be defined')
+    assert.equal(p2.x, 1000)
+  } finally {
+    Date.now = originalNow
+  }
 })
 
 test('trySpawnProjectile - combined chance (low health AND high combo)', () => {

@@ -1,4 +1,13 @@
 /**
+ * Derives fame level from raw fame.
+ * @param {number} fame - Raw fame amount.
+ * @returns {number} Derived fame level.
+ */
+export const calculateFameLevel = fame => {
+  return Math.floor(Math.max(0, fame || 0) / 1000)
+}
+
+/**
  * Clamps player money to a safe, non-negative integer.
  * @param {number} money - Candidate money value.
  * @returns {number} Clamped money value.
@@ -60,6 +69,7 @@ export const applyEventDelta = (state, delta) => {
     }
     if (typeof delta.player.fame === 'number') {
       nextPlayer.fame = Math.max(0, nextPlayer.fame + delta.player.fame)
+      nextPlayer.fameLevel = calculateFameLevel(nextPlayer.fame)
     }
     const scoreDelta =
       typeof delta.player.score === 'number'
@@ -245,8 +255,13 @@ export const applyEventDelta = (state, delta) => {
         const currentValue =
           typeof nextSocial[key] === 'number' ? nextSocial[key] : 0
         nextSocial[key] = Math.max(0, currentValue + value)
-      } else {
-        nextSocial[key] = value // For string and null assignments like egoFocus
+      } else if (
+        (typeof value === 'string' ||
+          typeof value === 'boolean' ||
+          value === null) &&
+        ['egoFocus', 'sponsorActive', 'trend', 'lastGigDay'].includes(key)
+      ) {
+        nextSocial[key] = value // Explicitly allow non-numeric assignments for known keys
       }
     })
     nextState.social = nextSocial
