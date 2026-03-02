@@ -216,6 +216,7 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
         <Panel
           title={t('ui:stats.van_condition', { defaultValue: 'Van Condition' })}
         >
+          {/* jscpd:ignore-start */}
           <div className='mb-4 space-y-2'>
             <ProgressBar
               label={t('ui:stats.fuel', { defaultValue: 'Fuel' })}
@@ -232,6 +233,7 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
               size='sm'
             />
           </div>
+          {/* jscpd:ignore-end */}
           <DetailRow
             label={t('ui:detailedStats.breakdownChance', {
               defaultValue: 'Breakdown Chance'

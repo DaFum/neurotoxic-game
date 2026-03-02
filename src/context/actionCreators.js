@@ -274,6 +274,8 @@ export const createUnlockTraitAction = (memberId, traitId) => ({
 
 /**
  * Creates an action to blacklist a venue.
+ * TODO(Integration): Call this action from UI (e.g. from an overworld map node interaction)
+ * to restrict travel to a specific venue. The `handleAddVenueBlacklist` reducer handles it.
  * @param {string} venueName - The name of the venue to blacklist.
  * @returns {Object} Action object
  */
@@ -305,6 +307,8 @@ export const createAdvanceQuestAction = (questId, amount = 1) => ({
 
 /**
  * Creates an action to complete a quest.
+ * TODO(Integration): Dispatch this action explicitly from `src/ui/Map.jsx` or a dedicated
+ * quest evaluation UI flow when criteria are met. The `handleCompleteQuest` reducer processes it.
  * @param {string} questId - The ID of the quest to complete.
  * @returns {Object} Action object
  */
@@ -315,6 +319,8 @@ export const createCompleteQuestAction = questId => ({
 
 /**
  * Creates an action to fail expired quests.
+ * TODO(Integration): Dispatch this occasionally from the Overworld view or
+ * day-transition UI. It utilizes the `handleFailQuests` reducer.
  * @returns {Object} Action object
  */
 export const createFailQuestsAction = () => ({

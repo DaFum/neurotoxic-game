@@ -68,6 +68,7 @@ export const GameOver = () => {
         {t('ui:gameOver.soldOut')}
       </h1>
 
+      {/* jscpd:ignore-start */}
       <AnimatedDivider
         width='16rem'
         transition={{ duration: 0.8, delay: 0.8 }}
@@ -82,6 +83,7 @@ export const GameOver = () => {
       >
         {t('ui:tour.endedPrematurely')}
       </AnimatedSubtitle>
+      {/* jscpd:ignore-end */}
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

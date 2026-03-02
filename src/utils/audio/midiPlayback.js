@@ -10,7 +10,8 @@ import { calculateTimeFromTicks, preprocessTempoMap } from '../rhythmUtils.js'
 import {
   resolveAssetUrl,
   normalizeMidiPlaybackOptions,
-  prepareTransportPlayback
+  prepareTransportPlayback,
+  getBaseAssetPath
 } from './playbackUtils.js'
 import {
   isPercussionTrack,
@@ -231,14 +232,7 @@ function initializePlaybackRequest(filename, offset, loop, ownedRequestId) {
  * @returns {string|null} The resolved URL or null if not found.
  */
 function resolveMidiUrl(filename) {
-  const rawBaseUrl =
-    typeof import.meta !== 'undefined' &&
-    import.meta.env &&
-    import.meta.env?.BASE_URL
-      ? import.meta.env?.BASE_URL
-      : './'
-  const baseUrl = rawBaseUrl.endsWith('/') ? rawBaseUrl : `${rawBaseUrl}/`
-  const publicBasePath = `${baseUrl}assets`
+  const { publicBasePath } = getBaseAssetPath()
   const { url, source } = resolveAssetUrl(filename, midiUrlMap, publicBasePath)
   logger.debug(
     'AudioEngine',

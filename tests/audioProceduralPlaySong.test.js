@@ -140,6 +140,7 @@ mock.module('../src/data/songs.js', {
 mock.module('../src/utils/audio/playbackUtils.js', {
   namedExports: {
     resolveAssetUrl: mock.fn(),
+    getBaseAssetPath: () => ({ baseUrl: './', publicBasePath: './assets' }),
     prepareTransportPlayback: mock.fn(async (options = {}) => {
       const initialReqId = ++mockAudioState.playRequestId
       const ensured = await mockEnsureAudioContext()

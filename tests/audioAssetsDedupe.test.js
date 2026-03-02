@@ -35,7 +35,8 @@ mock.module('../src/utils/audio/playbackUtils.js', {
       url: mockOggUrlMap[filename],
       source: 'bundled'
     }),
-    PATH_PREFIX_REGEX: /^\.?\//
+    PATH_PREFIX_REGEX: /^\.?\//,
+    getBaseAssetPath: () => ({ baseUrl: './', publicBasePath: './assets' })
   }
 })
 
