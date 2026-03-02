@@ -466,25 +466,25 @@
   "errors.ambient_start_failed": "Ambient-Audio konnte nicht gestartet werden.",
   "map.pinTypeAlt": "Kartenmarkierung: {{type}}",
   "features": {
-    "button": "FEATURES",
-    "title": "FEATURE LIST"
+    "button": "FUNKTIONEN",
+    "title": "FUNKTIONSLISTE"
   },
   "featureList": [
     {
-      "title": "Core Gameplay & Rhythm Mechanics Architecture",
-      "description": "The primary interactive loop is built upon a highly optimized, dual-layered rhythm engine that seamlessly fuses traditional beat-matching with dynamic survival mechanics.",
+      "title": "Kern-Gameplay & Architektur der Rhythmus-Mechaniken",
+      "description": "Die primäre Interaktionsschleife basiert auf einer hochoptimierten, zweistufigen Rhythmus-Engine, die klassisches Beat-Matching nahtlos mit dynamischen Survival-Mechaniken verbindet.",
       "type": "bullets",
       "items": [
-        "Dynamic Audio Engine Synthesis: Powered by a sophisticated integration of WebAudio and Tone.js, the engine supports both procedural MIDI generation and structured OGG file playback. It utilizes byte-size limited buffer caching to prevent memory leaks and features direct drum scheduling dispatch, ensuring zero-latency synchronization between the internal game clock and audio transport.",
-        "Continuous Multi-Song Setlists: Players can chain multiple tracks into a marathon performance. The engine dynamically calculates audio excerpt windows and pre-loads subsequent tracks, completely eliminating \"hanging gigs,\" broken audio contexts, or loading screen interruptions during a set.",
-        "PixiJS-Powered Stage Controller: The visual rhythm highway is rendered via a high-performance PixiJS canvas. It features object pooling for note sprites, aggressive garbage collection (GC) management, and is hard-capped at a 2.0 resolution scale to ensure buttery-smooth framerates on high-DPI and mobile displays.",
-        "Heckler Combat System: Elevating the rhythm genre, this interactive hazard mechanic spawns complex projectiles during a gig. Players must dynamically dodge or deflect these entities using tight collision detection logic, preventing combo interruptions and maintaining crowd hype.",
-        "Toxic Mode Integration: A high-stakes, high-reward gameplay state engineered for veteran players. Activating Toxic Mode triggers full-screen border flashes and intense CRT overlay effects, drastically amplifying the penalties for missed notes (\"empty hits\") while multiplying potential fame and financial payouts.",
-        "Real-Time Gig Physics: A mathematical background engine that calculates performance deltas on the fly. It adjusts ticket income, fame multipliers, and crowd decay penalties based on hit accuracy, active gear modifiers, and real-time player inputs."
+        "Dynamische Audio-Engine-Synthese: Angetrieben von einer ausgefeilten Integration von WebAudio und Tone.js unterstützt die Engine sowohl prozedurale MIDI-Generierung als auch strukturierte OGG-Wiedergabe. Sie nutzt größenlimitierte Buffer-Caches zur Vermeidung von Memory-Leaks und bietet ein direktes Drum-Scheduling-Dispatch, das eine Synchronisation ohne Latenz zwischen der internen Spieluhr und dem Audiotransport sicherstellt.",
+        "Kontinuierliche Multi-Song-Setlists: Spieler:innen können mehrere Tracks zu einer Marathon-Performance verketten. Die Engine berechnet dynamisch die Audio-Ausschnittfenster und lädt folgende Tracks vor, sodass „hanging gigs“, defekte Audiokontexte oder Ladebildschirm-Unterbrechungen während eines Sets vollständig vermieden werden.",
+        "PixiJS-basierter Stage Controller: Die visuelle Rhythmus-Highway wird über eine hochperformante PixiJS-Canvas gerendert. Sie nutzt Object-Pooling für Noten-Sprites, aggressive Garbage-Collection-Steuerung und ist hart auf einen Auflösungs-Scale von 2.0 begrenzt, um butterweiche Framerates auf High-DPI- und Mobil-Displays zu gewährleisten.",
+        "Heckler-Kampfsystem: Zur Erweiterung des Rhythmus-Genres erzeugt diese interaktive Gefahrenmechanik während eines Gigs komplexe Projektile. Spieler:innen müssen diesen Entitäten dynamisch ausweichen oder sie ablenken, gestützt auf präzise Kollisionsabfragen, um Combo-Unterbrechungen zu verhindern und die Crowd-Ekstase aufrechtzuerhalten.",
+        "Toxic-Mode-Integration: Ein Hochrisiko-/Hochbelohnungszustand, der für Veteran:innen entworfen wurde. Die Aktivierung des Toxic Mode löst Vollbild-Randblitze und intensive CRT-Overlay-Effekte aus, verstärkt drastisch die Strafen für verfehlte Noten („Empty Hits“) und vervielfacht gleichzeitig potenzielle Ruhm- und Geld-Ausschüttungen.",
+        "Echtzeit-Gig-Physik: Eine mathematische Hintergrund-Engine, die Performance-Deltas laufend berechnet. Sie passt Ticketeinnahmen, Ruhm-Multiplikatoren und Crowd-Verfallsstrafen basierend auf Trefferpräzision, aktiven Gear-Modifikatoren und den Echtzeit-Eingaben der Spieler:innen an."
       ]
     },
     {
-      "title": "Progression, Economy & RPG Simulation",
+      "title": "Progression, Wirtschaft & RPG-Simulation",
       "description": "The overarching campaign demands meticulous resource management, balancing the volatile finances of a touring band with deep RPG progression systems.",
       "type": "bullets",
       "items": [
