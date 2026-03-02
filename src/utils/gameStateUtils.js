@@ -258,8 +258,8 @@ export const applyEventDelta = (state, delta) => {
       } else if (
         (typeof value === 'string' ||
           typeof value === 'boolean' ||
-          value === null) &&
-        ['egoFocus', 'sponsorActive', 'trend', 'lastGigDay'].includes(key)
+          value === null || typeof value === 'object') &&
+        ['egoFocus', 'sponsorActive', 'trend', 'lastGigDay', 'influencers'].includes(key)
       ) {
         nextSocial[key] = value // Explicitly allow non-numeric assignments for known keys
       }

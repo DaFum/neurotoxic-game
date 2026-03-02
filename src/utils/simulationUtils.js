@@ -164,6 +164,10 @@ export const calculateGigPhysics = (bandState, song) => {
  * @param {Function} [rng=Math.random] - Random number generator for determinism.
  * @returns {object} The updated parts of state (player, band, social).
  */
+export const CONTROVERSY_ACCELERATED_DECAY_THRESHOLD = 60
+export const CONTROVERSY_ACCELERATED_DECAY_AMOUNT = 2
+export const CONTROVERSY_NORMAL_DECAY_AMOUNT = 1
+
 export const calculateDailyUpdates = (currentState, rng = Math.random) => {
   const nextPlayer = {
     ...currentState.player,
@@ -300,7 +304,7 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
   // Controversy/Shadowban Decay
   if (nextSocial.controversyLevel > 0) {
     // Passive cooldown — accelerated above threshold to prevent death spirals
-    const decayAmount = nextSocial.controversyLevel > 60 ? 2 : 1
+    const decayAmount = nextSocial.controversyLevel > CONTROVERSY_ACCELERATED_DECAY_THRESHOLD ? CONTROVERSY_ACCELERATED_DECAY_AMOUNT : CONTROVERSY_NORMAL_DECAY_AMOUNT
     nextSocial.controversyLevel = Math.max(0, nextSocial.controversyLevel - decayAmount)
   }
 

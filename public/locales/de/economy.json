@@ -70,5 +70,13 @@
       "label": "Gästeliste",
       "detail": "VIP-Behandlung (+Bareinnahmen, +Punkte)"
     }
+  },
+  "postGig": {
+    "loading": "Bericht wird geladen...",
+    "income": "EINNAHMEN",
+    "total": "GESAMT",
+    "expenses": "AUSGABEN",
+    "netProfit": "REINGEWINN",
+    "continueToSocials": "Weiter zu Socials >"
   }
 }

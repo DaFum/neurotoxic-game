@@ -35,7 +35,7 @@ describe('PostGig Leaderboard Submission', () => {
   const mockUnlockTrait = vi.fn()
 
   const getBaseState = () => ({
-    currentGig: { songId: 'song_1', venue: 'Venue A' },
+    currentGig: { songId: '01 Kranker Schrank', venue: 'Venue A' },
     player: {
       money: 500,
       fame: 100,
@@ -149,7 +149,7 @@ describe('PostGig Leaderboard Submission', () => {
           body: JSON.stringify({
             playerId: 'user-uuid',
             playerName: 'TestUser',
-            songId: 'song_1',
+            songId: '01_kranker_schrank',
             score: 12345
           })
         })

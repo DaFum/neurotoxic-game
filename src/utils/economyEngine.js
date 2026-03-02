@@ -13,6 +13,10 @@ export const MODIFIER_COSTS = {
   guestlist: 60
 }
 
+export const BAR_RATE_VIP = 0.3
+export const BAR_RATE_NORMAL = 0.15
+export const AVG_SPEND_PER_PERSON_AT_BAR = 5
+
 export const EXPENSE_CONSTANTS = {
   DAILY: {
     BASE_COST: 25
@@ -468,8 +472,8 @@ export const calculateGigFinancials = ({
   report.expenses.total += merch.cost
 
   // 4. Bar Cut (Guestlist doubles rate: VIPs spend more at the bar)
-  const barRate = modifiers.guestlist ? 0.3 : 0.15
-  const barRevenue = Math.floor(tickets.ticketsSold * 5 * barRate)
+  const barRate = modifiers.guestlist ? BAR_RATE_VIP : BAR_RATE_NORMAL
+  const barRevenue = Math.floor(tickets.ticketsSold * AVG_SPEND_PER_PERSON_AT_BAR * barRate)
   report.income.breakdown.push({
     labelKey: modifiers.guestlist ? 'economy:gigIncome.vipBarRevenue.label' : 'economy:gigIncome.barCut.label',
     value: barRevenue,
