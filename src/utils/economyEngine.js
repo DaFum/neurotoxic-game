@@ -116,7 +116,8 @@ const calculateTicketIncome = (
     breakdownItem: {
       labelKey: 'economy:gigIncome.ticketSales.label',
       value: revenue,
-      detail: `${ticketsSold} / ${gigData.capacity} sold`
+      detailKey: 'economy:gigIncome.ticketSales.detail',
+      detailParams: { sold: ticketsSold, capacity: gigData.capacity }
     }
   }
 }
@@ -140,14 +141,14 @@ const calculateMerchIncome = (
     breakdownItems.push({
       labelKey: 'economy:gigIncome.hypeBonus.label',
       value: 0,
-      detail: 'Merch frenzy (S-Rank)!'
+      detailKey: 'economy:gigIncome.hypeBonus.detail'
     })
   } else if (performanceScore < 40) {
     buyRate *= 0.5 // Poor performance penalty
     breakdownItems.push({
       labelKey: 'economy:gigIncome.badShow.label',
       value: 0,
-      detail: 'Crowd left early...'
+      detailKey: 'economy:gigIncome.badShow.detail'
     })
   }
 
@@ -160,7 +161,7 @@ const calculateMerchIncome = (
     breakdownItems.push({
       labelKey: 'economy:gigIncome.loyalFans.label',
       value: 0,
-      detail: 'Supporting you despite PR'
+      detailKey: 'economy:gigIncome.loyalFans.detail'
     })
   }
 
@@ -188,14 +189,19 @@ const calculateMerchIncome = (
   breakdownItems.push({
     labelKey: 'economy:gigIncome.merchSales.label',
     value: merchRevenue,
-    detail: `${buyers} buyers`
+    detailKey: 'economy:gigIncome.merchSales.detail',
+    detailParams: { buyers }
   })
 
   return {
     revenue: merchRevenue,
     cost: merchCost,
     breakdownItems,
-    costItem: { labelKey: 'economy:gigExpenses.merchRestock.label', value: merchCost, detail: 'COGS' }
+    costItem: {
+      labelKey: 'economy:gigExpenses.merchRestock.label',
+      value: merchCost,
+      detailKey: 'economy:gigExpenses.merchRestock.detail'
+    }
   }
 }
 
@@ -332,7 +338,7 @@ const calculateGigExpenses = modifiers => {
     expenses.breakdown.push({
       labelKey: 'economy:gigExpenses.catering.label',
       value: MODIFIER_COSTS.catering,
-      detail: 'Counters Tired Band Penalty'
+      detailKey: 'economy:gigExpenses.catering.detail'
     })
     expenses.total += MODIFIER_COSTS.catering
   }
@@ -341,7 +347,7 @@ const calculateGigExpenses = modifiers => {
     expenses.breakdown.push({
       labelKey: 'economy:gigExpenses.socialAds.label',
       value: MODIFIER_COSTS.promo,
-      detail: 'Promo Campaign'
+      detailKey: 'economy:gigExpenses.socialAds.detail'
     })
     expenses.total += MODIFIER_COSTS.promo
   }
@@ -350,7 +356,7 @@ const calculateGigExpenses = modifiers => {
     expenses.breakdown.push({
       labelKey: 'economy:gigExpenses.merchStand.label',
       value: MODIFIER_COSTS.merch,
-      detail: 'Better Display'
+      detailKey: 'economy:gigExpenses.merchStand.detail'
     })
     expenses.total += MODIFIER_COSTS.merch
   }
@@ -359,7 +365,7 @@ const calculateGigExpenses = modifiers => {
     expenses.breakdown.push({
       labelKey: 'economy:gigExpenses.soundcheck.label',
       value: MODIFIER_COSTS.soundcheck,
-      detail: 'Prep Time'
+      detailKey: 'economy:gigExpenses.soundcheck.detail'
     })
     expenses.total += MODIFIER_COSTS.soundcheck
   }
@@ -431,7 +437,8 @@ export const calculateGigFinancials = ({
     report.expenses.breakdown.push({
       labelKey: 'economy:gigExpenses.venueSplit.label',
       value: splitAmount,
-      detail: `${splitRate * 100}% of Door`
+      detailKey: 'economy:gigExpenses.venueSplit.detail',
+      detailParams: { rate: splitRate * 100 }
     })
     report.expenses.total += splitAmount
   }
@@ -441,7 +448,7 @@ export const calculateGigFinancials = ({
     report.income.breakdown.push({
       labelKey: 'economy:gigIncome.guarantee.label',
       value: gigData.pay,
-      detail: 'Fixed fee'
+      detailKey: 'economy:gigIncome.guarantee.detail'
     })
     report.income.total += gigData.pay
   }
@@ -482,7 +489,7 @@ export const calculateGigFinancials = ({
       report.income.breakdown.push({
         labelKey: 'economy:gigIncome.techSponsor.label',
         value: bonus,
-        detail: 'Perfect Set (0 Misses)'
+        detailKey: 'economy:gigIncome.techSponsor.detail'
       })
       report.income.total += bonus
     }
@@ -491,7 +498,7 @@ export const calculateGigFinancials = ({
       report.income.breakdown.push({
         labelKey: 'economy:gigIncome.beerSponsor.label',
         value: bonus,
-        detail: 'Max Hype Reached'
+        detailKey: 'economy:gigIncome.beerSponsor.detail'
       })
       report.income.total += bonus
     }

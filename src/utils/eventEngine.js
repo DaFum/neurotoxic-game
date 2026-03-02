@@ -450,7 +450,8 @@ export const eventEngine = {
   selectEvent: selectEvent,
   filterEvents: (pool, trigger, state) =>
     pool.filter(e => {
-      if (trigger && e.trigger !== trigger) return false
+      // Match exact trigger OR 'random' events (eligible at any trigger point)
+      if (trigger && e.trigger !== trigger && e.trigger !== 'random') return false
       return e.condition ? e.condition(state) : true
     })
 }

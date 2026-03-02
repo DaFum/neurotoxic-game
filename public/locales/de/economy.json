@@ -1,13 +1,37 @@
 {
   "gigIncome": {
-    "ticketSales": { "label": "Ticketverkäufe" },
-    "hypeBonus": { "label": "HYPE-BONUS" },
-    "badShow": { "label": "SCHLECHTE SHOW" },
-    "loyalFans": { "label": "TREUE FANS" },
-    "merchSales": { "label": "Merch-Verkäufe" },
-    "guarantee": { "label": "Garantie" },
-    "techSponsor": { "label": "Technik-Sponsor" },
-    "beerSponsor": { "label": "Bier-Sponsor" },
+    "ticketSales": {
+      "label": "Ticketverkäufe",
+      "detail": "{{sold}} / {{capacity}} verkauft"
+    },
+    "hypeBonus": {
+      "label": "HYPE-BONUS",
+      "detail": "Merch-Wahnsinn (S-Rang)!"
+    },
+    "badShow": {
+      "label": "SCHLECHTE SHOW",
+      "detail": "Publikum ist früh gegangen..."
+    },
+    "loyalFans": {
+      "label": "TREUE FANS",
+      "detail": "Unterstützen trotz schlechter PR"
+    },
+    "merchSales": {
+      "label": "Merch-Verkäufe",
+      "detail": "{{buyers}} Käufer"
+    },
+    "guarantee": {
+      "label": "Garantie",
+      "detail": "Festhonorar"
+    },
+    "techSponsor": {
+      "label": "Technik-Sponsor",
+      "detail": "Perfektes Set (0 Fehler)"
+    },
+    "beerSponsor": {
+      "label": "Bier-Sponsor",
+      "detail": "Max. Hype erreicht"
+    },
     "barCut": {
       "label": "Bar-Anteil",
       "detail": "15% der Bar"
@@ -18,12 +42,30 @@
     }
   },
   "gigExpenses": {
-    "venueSplit": { "label": "Venue-Anteil" },
-    "merchRestock": { "label": "Merch-Nachbestellung" },
-    "catering": { "label": "Catering / Energie" },
-    "socialAds": { "label": "Social-Werbung" },
-    "merchStand": { "label": "Merch-Stand" },
-    "soundcheck": { "label": "Soundcheck" },
+    "venueSplit": {
+      "label": "Venue-Anteil",
+      "detail": "{{rate}}% vom Einlass"
+    },
+    "merchRestock": {
+      "label": "Merch-Nachbestellung",
+      "detail": "Warenkosten"
+    },
+    "catering": {
+      "label": "Catering / Energie",
+      "detail": "Vermeidet den Müdigkeits-Malus"
+    },
+    "socialAds": {
+      "label": "Social-Werbung",
+      "detail": "Promo-Kampagne"
+    },
+    "merchStand": {
+      "label": "Merch-Stand",
+      "detail": "Bessere Präsentation"
+    },
+    "soundcheck": {
+      "label": "Soundcheck",
+      "detail": "Vorbereitungszeit"
+    },
     "guestList": {
       "label": "Gästeliste",
       "detail": "VIP-Behandlung (+Bareinnahmen, +Punkte)"

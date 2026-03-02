@@ -156,8 +156,10 @@ test('calculateGigFinancials applies price sensitivity penalty', () => {
   )
   assert.ok(ticketItem, 'Should have ticket sales')
   assert.ok(
-    ticketItem.detail.includes('/'),
-    'Should show tickets sold vs capacity'
+    ticketItem.detailKey === 'economy:gigIncome.ticketSales.detail' &&
+      ticketItem.detailParams?.sold !== undefined &&
+      ticketItem.detailParams?.capacity !== undefined,
+    'Should expose sold/capacity params for i18n interpolation'
   )
 })
 
@@ -693,8 +695,8 @@ test('calculateGigFinancials uses effective price', () => {
     b => b.labelKey === 'economy:gigIncome.ticketSales.label'
   )
 
-  const normalSold = parseInt(normalTickets.detail.split(' ')[0])
-  const discountSold = parseInt(discountTickets.detail.split(' ')[0])
+  const normalSold = normalTickets.detailParams.sold
+  const discountSold = discountTickets.detailParams.sold
 
   assert.ok(
     discountSold > normalSold,

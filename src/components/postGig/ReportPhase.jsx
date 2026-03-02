@@ -39,7 +39,8 @@ FinancialList.propTypes = {
       value: PropTypes.oneOfType([PropTypes.number, PropTypes.string])
         .isRequired,
       detail: PropTypes.string,
-      detailKey: PropTypes.string
+      detailKey: PropTypes.string,
+      detailParams: PropTypes.object
     })
   ).isRequired,
   type: PropTypes.oneOf(['income', 'expense']).isRequired
@@ -143,7 +144,8 @@ const FINANCIAL_CATEGORY_SHAPE = PropTypes.shape({
       labelKey: PropTypes.string,
       value: PropTypes.number.isRequired,
       detail: PropTypes.string,
-      detailKey: PropTypes.string
+      detailKey: PropTypes.string,
+      detailParams: PropTypes.object
     })
   ).isRequired
 })

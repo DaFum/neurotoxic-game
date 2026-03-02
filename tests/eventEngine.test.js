@@ -80,6 +80,19 @@ test('eventEngine.filterEvents respects conditions', () => {
   assert.equal(result.length, 0)
 })
 
+test('eventEngine.filterEvents allows trigger:random events at any trigger point', () => {
+  const events = [
+    { id: 'specific', trigger: 'travel' },
+    { id: 'random_one', trigger: 'random' },
+    { id: 'other', trigger: 'post_gig' }
+  ]
+  const result = eventEngine.filterEvents(events, 'travel', {})
+  assert.equal(result.length, 2, 'Should include both travel and random events')
+  assert.ok(result.some(e => e.id === 'specific'))
+  assert.ok(result.some(e => e.id === 'random_one'))
+  assert.ok(!result.some(e => e.id === 'other'), 'post_gig event should be excluded')
+})
+
 test('eventEngine.selectEvent respects cooldowns', () => {
   const state = buildGameState({ eventCooldowns: ['event_cooldown'] })
   const selected = eventEngine.selectEvent(
