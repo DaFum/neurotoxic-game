@@ -20,8 +20,8 @@ const selectEvent = (pool, gameState, triggerPoint) => {
   // 2. Filter by Trigger & Condition
   let eligibleEvents = []
   for (const e of pool) {
-    // Trigger check
-    if (triggerPoint && e.trigger !== triggerPoint) continue
+    // Trigger check — events with trigger:'random' are eligible at any trigger point
+    if (triggerPoint && e.trigger !== triggerPoint && e.trigger !== 'random') continue
 
     // Filter by Cooldown
     if (gameState.eventCooldowns && gameState.eventCooldowns.includes(e.id))

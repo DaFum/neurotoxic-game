@@ -1,5 +1,13 @@
 {
   "gigIncome": {
+    "ticketSales": { "label": "Ticket Sales" },
+    "hypeBonus": { "label": "HYPE BONUS" },
+    "badShow": { "label": "BAD SHOW" },
+    "loyalFans": { "label": "LOYAL FANS" },
+    "merchSales": { "label": "Merch Sales" },
+    "guarantee": { "label": "Guarantee" },
+    "techSponsor": { "label": "Tech Sponsor" },
+    "beerSponsor": { "label": "Beer Sponsor" },
     "barCut": {
       "label": "Bar Cut",
       "detail": "15% of Bar"
@@ -10,7 +18,14 @@
     }
   },
   "gigExpenses": {
+    "venueSplit": { "label": "Venue Split" },
+    "merchRestock": { "label": "Merch Restock" },
+    "catering": { "label": "Catering / Energy" },
+    "socialAds": { "label": "Social Ads" },
+    "merchStand": { "label": "Merch Stand" },
+    "soundcheck": { "label": "Soundcheck" },
     "guestList": {
+      "label": "Guest List",
       "detail": "VIP Treatment (+Bar Revenue, +Score)"
     }
   }

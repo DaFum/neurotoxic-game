@@ -93,10 +93,10 @@ test('calculateGigFinancials applies fame scaling to fill rate', () => {
   })
 
   const lowFameTickets = lowFameResult.income.breakdown.find(
-    b => b.label === 'Ticket Sales'
+    b => b.labelKey === 'economy:gigIncome.ticketSales.label'
   )
   const highFameTickets = highFameResult.income.breakdown.find(
-    b => b.label === 'Ticket Sales'
+    b => b.labelKey === 'economy:gigIncome.ticketSales.label'
   )
 
   assert.ok(
@@ -127,10 +127,10 @@ test('calculateGigFinancials applies promo boost to fill rate', () => {
   })
 
   const noPromoTickets = noPromo.income.breakdown.find(
-    b => b.label === 'Ticket Sales'
+    b => b.labelKey === 'economy:gigIncome.ticketSales.label'
   )
   const promoTickets = withPromo.income.breakdown.find(
-    b => b.label === 'Ticket Sales'
+    b => b.labelKey === 'economy:gigIncome.ticketSales.label'
   )
 
   assert.ok(
@@ -152,7 +152,7 @@ test('calculateGigFinancials applies price sensitivity penalty', () => {
 
   // Should have reduced attendance due to high price
   const ticketItem = result.income.breakdown.find(
-    b => b.label === 'Ticket Sales'
+    b => b.labelKey === 'economy:gigIncome.ticketSales.label'
   )
   assert.ok(ticketItem, 'Should have ticket sales')
   assert.ok(
@@ -183,10 +183,10 @@ test('calculateGigFinancials scales merch sales with performance', () => {
   })
 
   const poorMerch = poorPerformance.income.breakdown.find(
-    b => b.label === 'Merch Sales'
+    b => b.labelKey === 'economy:gigIncome.merchSales.label'
   )
   const greatMerch = greatPerformance.income.breakdown.find(
-    b => b.label === 'Merch Sales'
+    b => b.labelKey === 'economy:gigIncome.merchSales.label'
   )
 
   assert.ok(
@@ -207,7 +207,7 @@ test('calculateGigFinancials applies S-rank merch bonus', () => {
     gigStats: buildGigStats()
   })
 
-  const bonusItem = sRank.income.breakdown.find(b => b.label === 'HYPE BONUS')
+  const bonusItem = sRank.income.breakdown.find(b => b.labelKey === 'economy:gigIncome.hypeBonus.label')
   assert.ok(bonusItem, 'S-rank should trigger hype bonus entry')
 })
 
@@ -233,10 +233,10 @@ test('calculateGigFinancials penalizes merch sales for misses', () => {
   })
 
   const noMissMerch = noMisses.income.breakdown.find(
-    b => b.label === 'Merch Sales'
+    b => b.labelKey === 'economy:gigIncome.merchSales.label'
   )
   const missMerch = manyMisses.income.breakdown.find(
-    b => b.label === 'Merch Sales'
+    b => b.labelKey === 'economy:gigIncome.merchSales.label'
   )
 
   assert.ok(
@@ -264,7 +264,7 @@ test('calculateGigFinancials handles sold out merch gracefully', () => {
     gigStats: buildGigStats()
   })
 
-  const merchItem = result.income.breakdown.find(b => b.label === 'Merch Sales')
+  const merchItem = result.income.breakdown.find(b => b.labelKey === 'economy:gigIncome.merchSales.label')
   assert.equal(
     merchItem.value,
     0,
@@ -292,7 +292,7 @@ test('calculateGigFinancials uses all inventory types for sales limit', () => {
     gigStats: buildGigStats()
   })
 
-  const merchItem = result.income.breakdown.find(b => b.label === 'Merch Sales')
+  const merchItem = result.income.breakdown.find(b => b.labelKey === 'economy:gigIncome.merchSales.label')
   // Should sell something (patches/vinyls) even if shirts/hoodies/cds are 0
   assert.ok(
     merchItem.value > 0,
@@ -342,10 +342,10 @@ test('calculateGigFinancials includes catering when enabled', () => {
   })
 
   const noCateringItem = noCatering.expenses.breakdown.find(
-    b => b.label && b.label.includes('Catering')
+    b => b.labelKey === 'economy:gigExpenses.catering.label'
   )
   const cateringItem = withCatering.expenses.breakdown.find(
-    b => b.label && b.label.includes('Catering')
+    b => b.labelKey === 'economy:gigExpenses.catering.label'
   )
 
   assert.ok(!noCateringItem, 'Should NOT charge for Catering when disabled')
@@ -368,7 +368,7 @@ test('calculateGigFinancials supports new merch key', () => {
   })
 
   const merchItem = withMerchKey.expenses.breakdown.find(
-    b => b.label === 'Merch Stand'
+    b => b.labelKey === 'economy:gigExpenses.merchStand.label'
   )
   assert.ok(
     merchItem && merchItem.value > 0,
@@ -388,7 +388,7 @@ test('calculateGigFinancials handles zero capacity venue', () => {
   })
 
   const ticketItem = result.income.breakdown.find(
-    b => b.label === 'Ticket Sales'
+    b => b.labelKey === 'economy:gigIncome.ticketSales.label'
   )
   assert.equal(
     ticketItem.value,
@@ -452,10 +452,10 @@ test('calculateGigFinancials merch table modifier increases sales', () => {
   })
 
   const noTableMerch = noTable.income.breakdown.find(
-    b => b.label === 'Merch Sales'
+    b => b.labelKey === 'economy:gigIncome.merchSales.label'
   )
   const tableMerch = withTable.income.breakdown.find(
-    b => b.label === 'Merch Sales'
+    b => b.labelKey === 'economy:gigIncome.merchSales.label'
   )
 
   assert.ok(
@@ -509,7 +509,7 @@ test('calculateGigFinancials handles high fame with high price', () => {
 
   // High fame should mitigate price penalty
   const ticketItem = result.income.breakdown.find(
-    b => b.label === 'Ticket Sales'
+    b => b.labelKey === 'economy:gigIncome.ticketSales.label'
   )
   assert.ok(
     ticketItem.value > 0,
@@ -687,10 +687,10 @@ test('calculateGigFinancials uses effective price', () => {
 
   // Discounted tickets should increase attendance (due to +10% fill bonus and avoided price penalty)
   const normalTickets = financialsNormal.income.breakdown.find(
-    b => b.label === 'Ticket Sales'
+    b => b.labelKey === 'economy:gigIncome.ticketSales.label'
   )
   const discountTickets = financialsDiscount.income.breakdown.find(
-    b => b.label === 'Ticket Sales'
+    b => b.labelKey === 'economy:gigIncome.ticketSales.label'
   )
 
   const normalSold = parseInt(normalTickets.detail.split(' ')[0])

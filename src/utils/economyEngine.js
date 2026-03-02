@@ -114,7 +114,7 @@ const calculateTicketIncome = (
     revenue,
     ticketsSold,
     breakdownItem: {
-      label: 'Ticket Sales',
+      labelKey: 'economy:gigIncome.ticketSales.label',
       value: revenue,
       detail: `${ticketsSold} / ${gigData.capacity} sold`
     }
@@ -138,14 +138,14 @@ const calculateMerchIncome = (
   if (performanceScore >= 95) {
     buyRate *= 1.5 // S-Rank Bonus
     breakdownItems.push({
-      label: 'HYPE BONUS',
+      labelKey: 'economy:gigIncome.hypeBonus.label',
       value: 0,
       detail: 'Merch frenzy (S-Rank)!'
     })
   } else if (performanceScore < 40) {
     buyRate *= 0.5 // Poor performance penalty
     breakdownItems.push({
-      label: 'BAD SHOW',
+      labelKey: 'economy:gigIncome.badShow.label',
       value: 0,
       detail: 'Crowd left early...'
     })
@@ -158,7 +158,7 @@ const calculateMerchIncome = (
     const loyaltyBuyBonus = Math.min(0.15, (context.loyalty / 100) * 0.2)
     buyRate = Math.min(0.45, buyRate + loyaltyBuyBonus)
     breakdownItems.push({
-      label: 'LOYAL FANS',
+      labelKey: 'economy:gigIncome.loyalFans.label',
       value: 0,
       detail: 'Supporting you despite PR'
     })
@@ -186,7 +186,7 @@ const calculateMerchIncome = (
   const merchCost = buyers * merchAvgCost
 
   breakdownItems.push({
-    label: 'Merch Sales',
+    labelKey: 'economy:gigIncome.merchSales.label',
     value: merchRevenue,
     detail: `${buyers} buyers`
   })
@@ -195,7 +195,7 @@ const calculateMerchIncome = (
     revenue: merchRevenue,
     cost: merchCost,
     breakdownItems,
-    costItem: { label: 'Merch Restock', value: merchCost, detail: 'COGS' }
+    costItem: { labelKey: 'economy:gigExpenses.merchRestock.label', value: merchCost, detail: 'COGS' }
   }
 }
 
@@ -330,7 +330,7 @@ const calculateGigExpenses = modifiers => {
   // Modifiers (Budget items)
   if (modifiers.catering) {
     expenses.breakdown.push({
-      label: 'Catering / Energy',
+      labelKey: 'economy:gigExpenses.catering.label',
       value: MODIFIER_COSTS.catering,
       detail: 'Counters Tired Band Penalty'
     })
@@ -339,7 +339,7 @@ const calculateGigExpenses = modifiers => {
 
   if (modifiers.promo) {
     expenses.breakdown.push({
-      label: 'Social Ads',
+      labelKey: 'economy:gigExpenses.socialAds.label',
       value: MODIFIER_COSTS.promo,
       detail: 'Promo Campaign'
     })
@@ -348,7 +348,7 @@ const calculateGigExpenses = modifiers => {
 
   if (modifiers.merch) {
     expenses.breakdown.push({
-      label: 'Merch Stand',
+      labelKey: 'economy:gigExpenses.merchStand.label',
       value: MODIFIER_COSTS.merch,
       detail: 'Better Display'
     })
@@ -357,7 +357,7 @@ const calculateGigExpenses = modifiers => {
 
   if (modifiers.soundcheck) {
     expenses.breakdown.push({
-      label: 'Soundcheck',
+      labelKey: 'economy:gigExpenses.soundcheck.label',
       value: MODIFIER_COSTS.soundcheck,
       detail: 'Prep Time'
     })
@@ -366,9 +366,9 @@ const calculateGigExpenses = modifiers => {
 
   if (modifiers.guestlist) {
     expenses.breakdown.push({
-      label: 'Guest List',
+      labelKey: 'economy:gigExpenses.guestList.label',
       value: MODIFIER_COSTS.guestlist,
-      detailKey: 'gigExpenses.guestList.detail'
+      detailKey: 'economy:gigExpenses.guestList.detail'
     })
     expenses.total += MODIFIER_COSTS.guestlist
   }
@@ -429,7 +429,7 @@ export const calculateGigFinancials = ({
   if (splitRate > 0) {
     const splitAmount = Math.floor(tickets.revenue * splitRate)
     report.expenses.breakdown.push({
-      label: 'Venue Split',
+      labelKey: 'economy:gigExpenses.venueSplit.label',
       value: splitAmount,
       detail: `${splitRate * 100}% of Door`
     })
@@ -439,7 +439,7 @@ export const calculateGigFinancials = ({
   // 2. Guarantee
   if (gigData.pay > 0) {
     report.income.breakdown.push({
-      label: 'Guarantee',
+      labelKey: 'economy:gigIncome.guarantee.label',
       value: gigData.pay,
       detail: 'Fixed fee'
     })
@@ -464,9 +464,9 @@ export const calculateGigFinancials = ({
   const barRate = modifiers.guestlist ? 0.3 : 0.15
   const barRevenue = Math.floor(tickets.ticketsSold * 5 * barRate)
   report.income.breakdown.push({
-    labelKey: modifiers.guestlist ? 'gigIncome.vipBarRevenue.label' : 'gigIncome.barCut.label',
+    labelKey: modifiers.guestlist ? 'economy:gigIncome.vipBarRevenue.label' : 'economy:gigIncome.barCut.label',
     value: barRevenue,
-    detailKey: modifiers.guestlist ? 'gigIncome.vipBarRevenue.detail' : 'gigIncome.barCut.detail'
+    detailKey: modifiers.guestlist ? 'economy:gigIncome.vipBarRevenue.detail' : 'economy:gigIncome.barCut.detail'
   })
   report.income.total += barRevenue
 
@@ -480,7 +480,7 @@ export const calculateGigFinancials = ({
     if (gigStats.misses === 0) {
       const bonus = 200
       report.income.breakdown.push({
-        label: 'Tech Sponsor',
+        labelKey: 'economy:gigIncome.techSponsor.label',
         value: bonus,
         detail: 'Perfect Set (0 Misses)'
       })
@@ -489,7 +489,7 @@ export const calculateGigFinancials = ({
     if (gigStats.peakHype >= 100) {
       const bonus = 150
       report.income.breakdown.push({
-        label: 'Beer Sponsor',
+        labelKey: 'economy:gigIncome.beerSponsor.label',
         value: bonus,
         detail: 'Max Hype Reached'
       })
