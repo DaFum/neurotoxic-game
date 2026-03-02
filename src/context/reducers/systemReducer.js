@@ -1,7 +1,8 @@
 import { logger } from '../../utils/logger.js'
 import {
   clampBandHarmony,
-  clampPlayerMoney
+  clampPlayerMoney,
+  calculateFameLevel
 } from '../../utils/gameStateUtils.js'
 import { calculateDailyUpdates } from '../../utils/simulationUtils.js'
 import { checkTraitUnlocks } from '../../utils/unlockCheck.js'
@@ -13,6 +14,7 @@ import {
   DEFAULT_BAND_STATE,
   DEFAULT_SOCIAL_STATE
 } from '../initialState.js'
+import { DEFAULT_MINIGAME_STATE } from '../gameConstants.js'
 import { handleFailQuests } from './questReducer.js'
 
 /**
@@ -45,7 +47,7 @@ export const handleLoadGame = (state, payload) => {
     0,
     typeof mergedPlayer.fame === 'number' ? mergedPlayer.fame : 0
   )
-  mergedPlayer.fameLevel = Math.floor(mergedPlayer.fame / 1000)
+  mergedPlayer.fameLevel = calculateFameLevel(mergedPlayer.fame)
   mergedPlayer.day = Math.max(
     1,
     typeof mergedPlayer.day === 'number' ? mergedPlayer.day : 1
@@ -123,6 +125,7 @@ export const handleLoadGame = (state, payload) => {
               ? t.type
               : 'info'
           }))
+          .filter(t => t.message.length > 0)
       : [],
     reputationByRegion: loadedState.reputationByRegion || {},
     venueBlacklist: Array.isArray(loadedState.venueBlacklist)
@@ -147,7 +150,10 @@ export const handleLoadGame = (state, payload) => {
         ? loadedState.settings
         : {})
     },
-    minigame: loadedState.minigame || state.minigame
+    minigame: {
+      ...DEFAULT_MINIGAME_STATE,
+      ...(loadedState.minigame || {})
+    }
   }
 
   // Security: Only allow valid gameplay scenes from save
@@ -155,6 +161,7 @@ export const handleLoadGame = (state, payload) => {
     'OVERWORLD',
     'PREGIG',
     'GIG',
+    'PRACTICE',
     'POSTGIG',
     'TRAVEL_MINIGAME',
     'PRE_GIG_MINIGAME',

@@ -90,7 +90,8 @@ export const useRhythmGameAudio = ({
 
       const setlistFirstId = typeof setlist?.[0] === 'string' ? setlist[0] : setlist?.[0]?.id
       const songId = currentGig?.songId || setlistFirstId || 'neurotoxic_1'
-      const activeSong = SONGS_DB.find(s => s.id === songId) || SONGS_DB[0]
+      const DEFAULT_SONG = { id: 'default', bpm: 120 }
+      const activeSong = SONGS_DB.find(s => s.id === songId) || SONGS_DB[0] || DEFAULT_SONG
       const physics = calculateGigPhysics(band, activeSong)
 
       const currentNode = gameMap?.nodes?.[player.currentNodeId]
