@@ -254,4 +254,11 @@ describe('safeStorageOperation', () => {
     )
     assert.strictEqual(result, 'fallback')
   })
+
+  it('should return null as default fallback when error is thrown and no fallback provided', () => {
+    const result = safeStorageOperation('test', () => {
+      throw new Error('Storage error without explicit fallback')
+    })
+    assert.strictEqual(result, null)
+  })
 })
