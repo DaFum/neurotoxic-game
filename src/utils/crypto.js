@@ -5,14 +5,15 @@
 export const secureRandom = () => {
   const crypto = globalThis.crypto || window?.crypto
 
-  if (crypto?.getRandomValues) {
-    const array = new Uint32Array(1)
-    crypto.getRandomValues(array)
-    // 0xFFFFFFFF + 1 is 2^32 (4294967296)
-    // This provides a float in the range [0, 1)
-    return array[0] / 4294967296
+  if (!crypto?.getRandomValues) {
+    throw new Error(
+      'Cryptographically secure random number generation is not supported in this environment.'
+    )
   }
 
-  // Fallback to Math.random if crypto is not available (safety)
-  return Math.random()
+  const array = new Uint32Array(1)
+  crypto.getRandomValues(array)
+  // 0xFFFFFFFF + 1 is 2^32 (4294967296)
+  // This provides a float in the range [0, 1)
+  return array[0] / 4294967296
 }
