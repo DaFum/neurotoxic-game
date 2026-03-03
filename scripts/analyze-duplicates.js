@@ -61,7 +61,7 @@ const normalized = clones
           null
         return { file, start, end }
       })
-      .filter(x => x.file != null)
+      .filter(x => typeof x.file === 'string' && x.file.trim().length > 0)
     return {
       lines: c?.lines ?? c?.fragment?.lines ?? c?.duplication?.lines ?? null,
       tokens:
@@ -70,7 +70,12 @@ const normalized = clones
     }
   })
   // FIX: require at least 2 instances WITH files (guards against empty-instance clusters in top)
-  .filter(x => Array.isArray(x.instances) && x.instances.length >= 2)
+  .filter(
+    x =>
+      Array.isArray(x.instances) &&
+      x.instances.length >= 2 &&
+      ((x.lines ?? 0) > 0 || (x.tokens ?? 0) > 0)
+  )
 
 normalized.sort(
   (a, b) => (b.lines ?? 0) - (a.lines ?? 0) || (b.tokens ?? 0) - (a.tokens ?? 0)
