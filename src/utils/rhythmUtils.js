@@ -178,72 +178,53 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
     bass: 2
   }
 
-  // 1. Sort all valid notes by time
-  const sortedNotes = song.notes
-    .filter(n => typeof n.t === 'number' && isFinite(n.t))
-    .sort((a, b) => a.t - b.t)
+  // ⚡ BOLT OPTIMIZATION: Replaced multiple O(N) array passes (filter, sort, filter, map, filter) with a more efficient pipeline
+  const validNotes = []
+  for (let i = 0; i < song.notes.length; i++) {
+    const n = song.notes[i]
+    if (typeof n.t === 'number' && Number.isFinite(n.t)) {
+      validNotes.push(n)
+    }
+  }
 
-  // 2. Filter to keep only every 4th note
-  // This satisfies: "Use only every 4th note for the lane to click at"
-  const filteredNotes = sortedNotes.filter((_, index) => index % 4 === 0)
+  // 1. Sort valid notes by time
+  validNotes.sort((a, b) => a.t - b.t)
 
   // Determine timing strategy: Tempo Map vs Constant BPM
   const useTempoMap = Array.isArray(song.tempoMap) && song.tempoMap.length > 0
+  const activeTempoMap = useTempoMap ? preprocessTempoMap(song.tempoMap, tpb) : []
 
-  // Optimization: Preprocess tempo map once if available
-  const activeTempoMap = useTempoMap
-    ? preprocessTempoMap(song.tempoMap, tpb)
-    : []
+  // 2. Map and filter in a single pass, processing only every 4th note
+  const gameNotes = []
+  for (let i = 0; i < validNotes.length; i += 4) {
+    const n = validNotes[i]
+    const laneIndex = laneMap[n.lane]
 
-  // 3. Map to game note objects
-  const gameNotes = filteredNotes
-    .map(n => {
-      const laneIndex = laneMap[n.lane]
-      if (laneIndex === undefined) {
-        if (onWarn) {
-          onWarn(
-            `parseSongNotes: Unknown lane "${n.lane}" for note at tick ${n.t}. Skipping.`
-          )
-        }
-        return null
-      }
+    if (laneIndex === undefined) {
+      if (onWarn) onWarn(`parseSongNotes: Unknown lane "${n.lane}" for note at tick ${n.t}. Skipping.`)
+      continue
+    }
 
-      const fallbackTimeMs = (n.t / tpb) * (60000 / bpm)
-      const calculatedTimeMs = useTempoMap
-        ? calculateTimeFromTicks(n.t, tpb, activeTempoMap, 'ms')
-        : fallbackTimeMs
+    const fallbackTimeMs = (n.t / tpb) * (60000 / bpm)
+    const calculatedTimeMs = useTempoMap
+      ? calculateTimeFromTicks(n.t, tpb, activeTempoMap, 'ms')
+      : fallbackTimeMs
 
-      // Final sanity check on time
-      const timeMs = Number.isFinite(calculatedTimeMs)
-        ? calculatedTimeMs
-        : fallbackTimeMs
+    const timeMs = Number.isFinite(calculatedTimeMs) ? calculatedTimeMs : fallbackTimeMs
+    const excerptRelativeTimeMs = timeMs
 
-      // Notes in the JSON are pre-extracted from the excerpt window, so their
-      // tick values are already relative to the excerpt start (tick 0 = excerpt
-      // start). We must NOT subtract excerptStartMs here — doing so would push
-      // every note into negative time and filter out the entire song.
-      const excerptRelativeTimeMs = timeMs
-      if (excerptRelativeTimeMs < 0) {
-        return null
-      }
-      if (
-        Number.isFinite(excerptDurationMs) &&
-        excerptRelativeTimeMs > excerptDurationMs
-      ) {
-        return null
-      }
+    if (excerptRelativeTimeMs < 0 || (Number.isFinite(excerptDurationMs) && excerptRelativeTimeMs > excerptDurationMs)) {
+      continue
+    }
 
-      return {
-        time: leadIn + excerptRelativeTimeMs,
-        laneIndex, // Shorthand property notation
-        hit: false,
-        visible: true,
-        songId: song.id,
-        originalNote: n,
-        type: 'note' // Explicit type for future projectiles
-      }
+    gameNotes.push({
+      time: leadIn + excerptRelativeTimeMs,
+      laneIndex,
+      hit: false,
+      missed: false,
+      type: 'note'
     })
-    .filter(n => n !== null && Number.isFinite(n.time))
+  }
 
   // 4. Ensure no simultaneous notes (chords) - strictly single lane
   const uniqueTimeNotes = []

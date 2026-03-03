@@ -69,7 +69,8 @@ export {
  * @param {string} props.icon - Icon or emoji
  * @param {string} [props.className] - Additional CSS classes
  */
-export const StatBox = ({ label, value, icon, className = '' }) => (
+export const StatBox = memo(function StatBox({ label, value, icon, className = '' }) {
+  return (
   <div
     className={`relative bg-(--void-black) p-3 flex flex-col items-center justify-center border border-(--ash-gray) group overflow-hidden ${className}`}
   >
@@ -88,7 +89,8 @@ export const StatBox = ({ label, value, icon, className = '' }) => (
       </div>
     </div>
   </div>
-)
+  )
+})
 
 StatBox.propTypes = {
   label: PropTypes.string.isRequired,
@@ -185,7 +187,8 @@ ProgressBar.propTypes = {
  * @param {React.ReactNode} props.children - Panel content.
  * @param {string} [props.className] - Additional CSS classes.
  */
-export const Panel = ({ title, children, className = '' }) => (
+export const Panel = memo(function Panel({ title, children, className = '' }) {
+  return (
   <div
     className={`relative bg-(--void-black)/40 border-2 border-(--ash-gray)/40 p-4 group overflow-hidden ${className}`}
   >
@@ -204,7 +207,8 @@ export const Panel = ({ title, children, className = '' }) => (
       <div className='space-y-1'>{children}</div>
     </div>
   </div>
-)
+  )
+})
 
 Panel.propTypes = {
   title: PropTypes.string,
