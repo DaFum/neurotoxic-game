@@ -63,7 +63,7 @@
     "sign_aria": "Sign Contract",
     "sealed": "SEALED"
   },
-  "cost": "\u20ac{{cost}}",
+  "cost": "€{{cost}}",
   "crash": {
     "title": "SYSTEM FAILURE",
     "message": "The simulation has crashed. Reboot required.",
@@ -82,8 +82,8 @@
   },
   "crowdEnergy": "CROWD ENERGY",
   "crt_effect": "CRT EFFECT",
-  "currency": "\u20ac{{value}}",
-  "currencyNegative": "-\u20ac{{value}}",
+  "currency": "€{{value}}",
+  "currencyNegative": "-€{{value}}",
   "data_purge": "DATA PURGE",
   "day_advance": "Day {{day}}: Living Costs Deducted.",
   "decryptor": {
@@ -156,96 +156,141 @@
   "executed": "EXECUTED",
   "featureList": [
     {
-      "title": "Core Gameplay & Rhythm Mechanics Architecture",
-      "description": "The primary interactive loop is built upon a highly optimized, dual-layered rhythm engine that seamlessly fuses traditional beat-matching with dynamic survival mechanics.",
+      "title": "ui:featureList.sec0.title",
+      "description": "ui:featureList.sec0.description",
       "type": "bullets",
       "items": [
-        "Dynamic Audio Engine Synthesis: Powered by a sophisticated integration of WebAudio and Tone.js, the engine supports both procedural MIDI generation and structured OGG file playback. It utilizes byte-size limited buffer caching to prevent memory leaks and features direct drum scheduling dispatch, ensuring zero-latency synchronization between the internal game clock and audio transport.",
-        "Continuous Multi-Song Setlists: Players can chain multiple tracks into a marathon performance. The engine dynamically calculates audio excerpt windows and pre-loads subsequent tracks, completely eliminating \"hanging gigs,\" broken audio contexts, or loading screen interruptions during a set.",
-        "PixiJS-Powered Stage Controller: The visual rhythm highway is rendered via a high-performance PixiJS canvas. It features object pooling for note sprites, aggressive garbage collection (GC) management, and is hard-capped at a 2.0 resolution scale to ensure buttery-smooth framerates on high-DPI and mobile displays.",
-        "Heckler Combat System: Elevating the rhythm genre, this interactive hazard mechanic spawns complex projectiles during a gig. Players must dynamically dodge or deflect these entities using tight collision detection logic, preventing combo interruptions and maintaining crowd hype.",
-        "Toxic Mode Integration: A high-stakes, high-reward gameplay state engineered for veteran players. Activating Toxic Mode triggers full-screen border flashes and intense CRT overlay effects, drastically amplifying the penalties for missed notes (\"empty hits\") while multiplying potential fame and financial payouts.",
-        "Real-Time Gig Physics: A mathematical background engine that calculates performance deltas on the fly. It adjusts ticket income, fame multipliers, and crowd decay penalties based on hit accuracy, active gear modifiers, and real-time player inputs."
+        "ui:featureList.sec0.items.0",
+        "ui:featureList.sec0.items.1",
+        "ui:featureList.sec0.items.2",
+        "ui:featureList.sec0.items.3",
+        "ui:featureList.sec0.items.4",
+        "ui:featureList.sec0.items.5"
       ]
     },
     {
-      "title": "Progression, Economy & RPG Simulation",
-      "description": "The overarching campaign demands meticulous resource management, balancing the volatile finances of a touring band with deep RPG progression systems.",
+      "title": "ui:featureList.sec1.title",
+      "description": "ui:featureList.sec1.description",
       "type": "bullets",
       "items": [
-        "Band HQ Management Hub: A centralized, heavily state-validated interface where players manage their career. It features isolated, ARIA-accessible tabs for tracking detailed band Statistics, configuring Setlists, purchasing Upgrades, and browsing the Shop.",
-        "Risk-Free Practice Mode: Accessible directly from the Setlist Tab, this sandbox environment allows players to rehearse difficult songs and master the Heckler mechanics without triggering economy penalties, van wear-and-tear, or permanent trait unlocks.",
-        "Deep Character Trait System: Band members can unlock and equip defining traits (e.g., Bandleader, Perfektionist, PartyAnimal, SocialManager). These traits act as persistent background modifiers that subtly alter game physics, drastically shift social media algorithms, and provide specific economic multipliers.",
-        "Dynamic Economy Engine: A volatile financial simulator that processes daily budgets, negotiates venue revenue splits, and calculates merchandise production costs. It reacts to dynamic variables like fluctuating van fuel efficiency and spontaneous, run-ending events such as gear theft or vehicular breakdowns.",
-        "Unified Upgrade & Inventory Ecosystem: A heavily data-driven shop where players invest in better instruments, robust van repairs, and HQ room decorations. These purchases apply immediate, persistent gameplay effects across both the Travel and Pre-Gig phases."
+        "ui:featureList.sec1.items.0",
+        "ui:featureList.sec1.items.1",
+        "ui:featureList.sec1.items.2",
+        "ui:featureList.sec1.items.3",
+        "ui:featureList.sec1.items.4"
       ]
     },
     {
-      "title": "Meta-Game: Fame, Social Media & Influencers",
-      "description": "Public perception is treated as a core resource, managed through a procedural narrative and social simulation layer.",
+      "title": "ui:featureList.sec2.title",
+      "description": "ui:featureList.sec2.description",
       "type": "table",
       "headers": [
-        "System",
-        "Mechanics & Impact"
+        "ui:featureList.sec2.headers.0",
+        "ui:featureList.sec2.headers.1"
       ],
       "rows": [
         [
-          "Post-Gig Social Simulator",
-          "Generates a procedural social media feed immediately following a gig. Players must navigate audience sentiment, choosing responses that can trigger viral growth or alienate core demographics."
+          "ui:featureList.sec2.rows.0.0",
+          "ui:featureList.sec2.rows.0.1"
         ],
         [
-          "Crisis & Controversy Management",
-          "A high-stakes procedural event engine where the band faces public scandals. Players must employ strategic PR crisis management to mitigate catastrophic follower loss and reputation decay."
+          "ui:featureList.sec2.rows.1.0",
+          "ui:featureList.sec2.rows.1.1"
         ],
         [
-          "Tiered Influencer Network",
-          "A relationship tracking system where players build rapport with NPCs and industry insiders. High relationship tiers unlock an advanced brand deal negotiation minigame to secure lucrative sponsorships."
+          "ui:featureList.sec2.rows.2.0",
+          "ui:featureList.sec2.rows.2.1"
         ],
         [
-          "Global Redis Leaderboards",
-          "A competitive, real-time ranking system powered by a Redis/Vercel backend. It features rigorous API schema validation and player identity verification to ensure absolute competitive integrity globally."
+          "ui:featureList.sec2.rows.3.0",
+          "ui:featureList.sec2.rows.3.1"
         ]
       ]
     },
     {
-      "title": "Overworld Travel & Embedded Arcade Minigames",
-      "description": "The interstitial phases between gigs are gamified to maintain engagement, introducing risk management and skill checks.",
+      "title": "ui:featureList.sec3.title",
+      "description": "ui:featureList.sec3.description",
       "type": "bullets",
       "items": [
-        "Procedural Map Generation: A node-based overworld utilizing squared distance checks to mathematically prevent overlapping venues. It maps out interconnected routes featuring distinct biome and location-specific SVG icons.",
-        "Travel Hazards & \"SPECIAL\" Nodes: Randomized encounters during transit that simulate the grueling nature of touring. These narrative events directly impact band morale, alter immediate financial standings, or apply temporary debuffs to the upcoming gig.",
-        "Roadie Run Minigame: A highly polished, pre-gig arcade sequence where players control roadies setting up the stage. It features seamless responsive control schemes, instantly switching between desktop keyboard shortcuts and mobile-optimized touch D-Pads.",
-        "Tourbus Terror Minigame: A tense travel-survival minigame featuring dynamic spawn rates. Players must navigate highway hazards to protect the band's health pool and prevent catastrophic damage to the tour bus, directly linking arcade performance to the overarching simulation economy."
+        "ui:featureList.sec3.items.0",
+        "ui:featureList.sec3.items.1",
+        "ui:featureList.sec3.items.2",
+        "ui:featureList.sec3.items.3"
       ]
     },
     {
-      "title": "UI/UX, Localization & Technical Architecture",
-      "description": "The game's front-end is built on a custom design language that prioritizes accessibility without sacrificing its distinct, abrasive aesthetic.",
+      "title": "ui:featureList.sec4.title",
+      "description": "ui:featureList.sec4.description",
       "type": "table",
       "headers": [
-        "Layer",
-        "Technical Implementation"
+        "ui:featureList.sec4.headers.0",
+        "ui:featureList.sec4.headers.1"
       ],
       "rows": [
         [
-          "Brutalist UI Design System",
-          "A custom component library (v5.0) characterized by harsh geometric shapes, UIFrameCorners, authentic GlitchButtons, and custom SVG icons strictly coded with preserved aspect ratios."
+          "ui:featureList.sec4.rows.0.0",
+          "ui:featureList.sec4.rows.0.1"
         ],
         [
-          "Immersive HUD & Overlays",
-          "Features scene-aware ChatterOverlays for contextual character dialogue, non-intrusive Toast notifications, and a GigHUD optimized with React memoization to prevent rendering lag during intense rhythm sections."
+          "ui:featureList.sec4.rows.1.0",
+          "ui:featureList.sec4.rows.1.1"
         ],
         [
-          "Comprehensive i18n & a11y",
-          "Complete English (EN) and German (DE) localization backed by strict namespace validation across all narrative events. UI elements are heavily augmented with ARIA roles for screen readers and keyboard navigation."
+          "ui:featureList.sec4.rows.2.0",
+          "ui:featureList.sec4.rows.2.1"
         ],
         [
-          "Robust State Safety & Telemetry",
-          "Centralized React Context utilizing deep schema validation to protect player save data against prototype pollution. Includes a production-safe crash handler boundary (masking stack traces) and Vercel Speed Insights for live telemetry."
+          "ui:featureList.sec4.rows.3.0",
+          "ui:featureList.sec4.rows.3.1"
         ]
       ]
     }
   ],
+  "featureList.sec0.description": "The primary interactive loop is built upon a highly optimized, dual-layered rhythm engine that seamlessly fuses traditional beat-matching with dynamic survival mechanics.",
+  "featureList.sec0.items.0": "Dynamic Audio Engine Synthesis: Powered by a sophisticated integration of WebAudio and Tone.js, the engine supports both procedural MIDI generation and structured OGG file playback. It utilizes byte-size limited buffer caching to prevent memory leaks and features direct drum scheduling dispatch, ensuring zero-latency synchronization between the internal game clock and audio transport.",
+  "featureList.sec0.items.1": "Continuous Multi-Song Setlists: Players can chain multiple tracks into a marathon performance. The engine dynamically calculates audio excerpt windows and pre-loads subsequent tracks, completely eliminating \"hanging gigs,\" broken audio contexts, or loading screen interruptions during a set.",
+  "featureList.sec0.items.2": "PixiJS-Powered Stage Controller: The visual rhythm highway is rendered via a high-performance PixiJS canvas. It features object pooling for note sprites, aggressive garbage collection (GC) management, and is hard-capped at a 2.0 resolution scale to ensure buttery-smooth framerates on high-DPI and mobile displays.",
+  "featureList.sec0.items.3": "Heckler Combat System: Elevating the rhythm genre, this interactive hazard mechanic spawns complex projectiles during a gig. Players must dynamically dodge or deflect these entities using tight collision detection logic, preventing combo interruptions and maintaining crowd hype.",
+  "featureList.sec0.items.4": "Toxic Mode Integration: A high-stakes, high-reward gameplay state engineered for veteran players. Activating Toxic Mode triggers full-screen border flashes and intense CRT overlay effects, drastically amplifying the penalties for missed notes (\"empty hits\") while multiplying potential fame and financial payouts.",
+  "featureList.sec0.items.5": "Real-Time Gig Physics: A mathematical background engine that calculates performance deltas on the fly. It adjusts ticket income, fame multipliers, and crowd decay penalties based on hit accuracy, active gear modifiers, and real-time player inputs.",
+  "featureList.sec0.title": "Core Gameplay & Rhythm Mechanics Architecture",
+  "featureList.sec1.description": "The overarching campaign demands meticulous resource management, balancing the volatile finances of a touring band with deep RPG progression systems.",
+  "featureList.sec1.items.0": "Band HQ Management Hub: A centralized, heavily state-validated interface where players manage their career. It features isolated, ARIA-accessible tabs for tracking detailed band Statistics, configuring Setlists, purchasing Upgrades, and browsing the Shop.",
+  "featureList.sec1.items.1": "Risk-Free Practice Mode: Accessible directly from the Setlist Tab, this sandbox environment allows players to rehearse difficult songs and master the Heckler mechanics without triggering economy penalties, van wear-and-tear, or permanent trait unlocks.",
+  "featureList.sec1.items.2": "Deep Character Trait System: Band members can unlock and equip defining traits (e.g., Bandleader, Perfektionist, PartyAnimal, SocialManager). These traits act as persistent background modifiers that subtly alter game physics, drastically shift social media algorithms, and provide specific economic multipliers.",
+  "featureList.sec1.items.3": "Dynamic Economy Engine: A volatile financial simulator that processes daily budgets, negotiates venue revenue splits, and calculates merchandise production costs. It reacts to dynamic variables like fluctuating van fuel efficiency and spontaneous, run-ending events such as gear theft or vehicular breakdowns.",
+  "featureList.sec1.items.4": "Unified Upgrade & Inventory Ecosystem: A heavily data-driven shop where players invest in better instruments, robust van repairs, and HQ room decorations. These purchases apply immediate, persistent gameplay effects across both the Travel and Pre-Gig phases.",
+  "featureList.sec1.title": "Progression, Economy & RPG Simulation",
+  "featureList.sec2.description": "Public perception is treated as a core resource, managed through a procedural narrative and social simulation layer.",
+  "featureList.sec2.headers.0": "System",
+  "featureList.sec2.headers.1": "Mechanics & Impact",
+  "featureList.sec2.rows.0.0": "Post-Gig Social Simulator",
+  "featureList.sec2.rows.0.1": "Generates a procedural social media feed immediately following a gig. Players must navigate audience sentiment, choosing responses that can trigger viral growth or alienate core demographics.",
+  "featureList.sec2.rows.1.0": "Crisis & Controversy Management",
+  "featureList.sec2.rows.1.1": "A high-stakes procedural event engine where the band faces public scandals. Players must employ strategic PR crisis management to mitigate catastrophic follower loss and reputation decay.",
+  "featureList.sec2.rows.2.0": "Tiered Influencer Network",
+  "featureList.sec2.rows.2.1": "A relationship tracking system where players build rapport with NPCs and industry insiders. High relationship tiers unlock an advanced brand deal negotiation minigame to secure lucrative sponsorships.",
+  "featureList.sec2.rows.3.0": "Global Redis Leaderboards",
+  "featureList.sec2.rows.3.1": "A competitive, real-time ranking system powered by a Redis/Vercel backend. It features rigorous API schema validation and player identity verification to ensure absolute competitive integrity globally.",
+  "featureList.sec2.title": "Meta-Game: Fame, Social Media & Influencers",
+  "featureList.sec3.description": "The interstitial phases between gigs are gamified to maintain engagement, introducing risk management and skill checks.",
+  "featureList.sec3.items.0": "Procedural Map Generation: A node-based overworld utilizing squared distance checks to mathematically prevent overlapping venues. It maps out interconnected routes featuring distinct biome and location-specific SVG icons.",
+  "featureList.sec3.items.1": "Travel Hazards & \"SPECIAL\" Nodes: Randomized encounters during transit that simulate the grueling nature of touring. These narrative events directly impact band morale, alter immediate financial standings, or apply temporary debuffs to the upcoming gig.",
+  "featureList.sec3.items.2": "Roadie Run Minigame: A highly polished, pre-gig arcade sequence where players control roadies setting up the stage. It features seamless responsive control schemes, instantly switching between desktop keyboard shortcuts and mobile-optimized touch D-Pads.",
+  "featureList.sec3.items.3": "Tourbus Terror Minigame: A tense travel-survival minigame featuring dynamic spawn rates. Players must navigate highway hazards to protect the band's health pool and prevent catastrophic damage to the tour bus, directly linking arcade performance to the overarching simulation economy.",
+  "featureList.sec3.title": "Overworld Travel & Embedded Arcade Minigames",
+  "featureList.sec4.description": "The game's front-end is built on a custom design language that prioritizes accessibility without sacrificing its distinct, abrasive aesthetic.",
+  "featureList.sec4.headers.0": "Layer",
+  "featureList.sec4.headers.1": "Technical Implementation",
+  "featureList.sec4.rows.0.0": "Brutalist UI Design System",
+  "featureList.sec4.rows.0.1": "A custom component library (v5.0) characterized by harsh geometric shapes, UIFrameCorners, authentic GlitchButtons, and custom SVG icons strictly coded with preserved aspect ratios.",
+  "featureList.sec4.rows.1.0": "Immersive HUD & Overlays",
+  "featureList.sec4.rows.1.1": "Features scene-aware ChatterOverlays for contextual character dialogue, non-intrusive Toast notifications, and a GigHUD optimized with React memoization to prevent rendering lag during intense rhythm sections.",
+  "featureList.sec4.rows.2.0": "Comprehensive i18n & a11y",
+  "featureList.sec4.rows.2.1": "Complete English (EN) and German (DE) localization backed by strict namespace validation across all narrative events. UI elements are heavily augmented with ARIA roles for screen readers and keyboard navigation.",
+  "featureList.sec4.rows.3.0": "Robust State Safety & Telemetry",
+  "featureList.sec4.rows.3.1": "Centralized React Context utilizing deep schema validation to protect player save data against prototype pollution. Includes a production-safe crash handler boundary (masking stack traces) and Vercel Speed Insights for live telemetry.",
+  "featureList.sec4.title": "UI/UX, Localization & Technical Architecture",
   "features": {
     "button": "FEATURES",
     "title": "FEATURE LIST"
@@ -318,12 +363,12 @@
   "map.current_location": "[CURRENT LOCATION]",
   "map.diff": "Diff",
   "map.festival": "FESTIVAL",
-  "map.finale_desc": "\u2605 FINALE \u2014 The Final Show \u2605",
-  "map.mystery_desc": "MYSTERY \u2014 Unknown Encounter",
+  "map.finale_desc": "★ FINALE — The Final Show ★",
+  "map.mystery_desc": "MYSTERY — Unknown Encounter",
   "map.pay": "Pay",
   "map.pinAlt": "Pin",
   "map.pinTypeAlt": "Map marker: {{type}}",
-  "map.rest_stop_desc": "REST STOP \u2014 Recover Stamina & Mood",
+  "map.rest_stop_desc": "REST STOP — Recover Stamina & Mood",
   "map.ticket": "Ticket",
   "map.travel_to": "Travel to {{name}}",
   "map.unknown": "Unknown",
@@ -391,12 +436,22 @@
       "audioFail": "Audio initialization failed."
     }
   },
+  "quests.button": "QUESTS",
+  "quests.days.plural": "Days Left",
+  "quests.days.singular": "Day Left",
   "quests.empty": "No active quests. Hit the road to find some!",
+  "quests.progress": "Progress",
+  "quests.rewards": "Rewards:",
   "quests.title": "ACTIVE QUESTS",
   "radio": {
     "play": "Play/Resume Radio",
     "stop": "Stop Radio"
   },
+  "rewards.fans": "Fans",
+  "rewards.freeItem": "Free Item",
+  "rewards.harmony": "Harmony",
+  "rewards.skillPoint": "Skill Point",
+  "rewards.special": "Special",
   "rhythm": {
     "header": "RHYTHM_ENGINE_SIM",
     "hit_lane": "Hit {{lane}} lane",

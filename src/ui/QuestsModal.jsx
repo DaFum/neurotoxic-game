@@ -3,25 +3,47 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ProgressBar } from './shared/index.jsx'
 import { GlitchButton } from './GlitchButton.jsx'
 import { useTranslation } from 'react-i18next'
+import { useId } from 'react'
 
-// Inline Icon definitions using SVG path data since @heroicons is not available
-const IconStar = ({ className = '' }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24"><path d="M11.999 1.439l2.844 7.218 7.718.666-5.859 5.093 1.764 7.584-6.467-3.968-6.467 3.968 1.764-7.584-5.859-5.093 7.718-.666 2.844-7.218z" /></svg>
+// Helper component for accessible SVGs
+const BaseIcon = ({ className = '', viewBox = '0 0 24 24', title, children, ...props }) => {
+  const titleId = useId()
+  return (
+    <svg
+      aria-hidden={!title}
+      focusable={title ? undefined : 'false'}
+      role={title ? 'img' : 'presentation'}
+      aria-labelledby={title ? titleId : undefined}
+      {...props}
+      className={className}
+      viewBox={viewBox}
+      fill='currentColor'
+      xmlns='http://www.w3.org/2000/svg'
+      preserveAspectRatio='xMidYMid meet'
+    >
+      {title && <title id={titleId}>{title}</title>}
+      {children}
+    </svg>
+  )
+}
+
+const IconStar = ({ className = '', title }) => (
+  <BaseIcon className={className} title={title}><path d="M11.999 1.439l2.844 7.218 7.718.666-5.859 5.093 1.764 7.584-6.467-3.968-6.467 3.968 1.764-7.584-5.859-5.093 7.718-.666 2.844-7.218z" /></BaseIcon>
 )
-const IconClock = ({ className = '' }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+const IconClock = ({ className = '', title }) => (
+  <BaseIcon className={className} title={title} fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></BaseIcon>
 )
-const IconTrophy = ({ className = '' }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24"><path d="M21 4h-3V3a1 1 0 00-1-1H7a1 1 0 00-1 1v1H3a1 1 0 00-1 1v3c0 2.2 1.8 4 4 4h1v1.6c0 1.9 1.5 3.4 3.4 3.4H9v3a1 1 0 001 1h4a1 1 0 001-1v-3h-1.4c1.9 0 3.4-1.5 3.4-3.4V12h1c2.2 0 4-1.8 4-4V5a1 1 0 00-1-1zM6 10c-1.1 0-2-.9-2-2V6h2v4zm14-2c0 1.1-.9 2-2 2h-2V6h2v2z" /></svg>
+const IconTrophy = ({ className = '', title }) => (
+  <BaseIcon className={className} title={title}><path d="M21 4h-3V3a1 1 0 00-1-1H7a1 1 0 00-1 1v1H3a1 1 0 00-1 1v3c0 2.2 1.8 4 4 4h1v1.6c0 1.9 1.5 3.4 3.4 3.4H9v3a1 1 0 001 1h4a1 1 0 001-1v-3h-1.4c1.9 0 3.4-1.5 3.4-3.4V12h1c2.2 0 4-1.8 4-4V5a1 1 0 00-1-1zM6 10c-1.1 0-2-.9-2-2V6h2v4zm14-2c0 1.1-.9 2-2 2h-2V6h2v2z" /></BaseIcon>
 )
-const IconFire = ({ className = '' }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8 6 4 9 4 14a8 8 0 0016 0c0-5-4-8-8-12zm1 14a3 3 0 11-6 0c0-2 2-4 3-5 1 1 3 3 3 5z" /></svg>
+const IconFire = ({ className = '', title }) => (
+  <BaseIcon className={className} title={title}><path d="M12 2C8 6 4 9 4 14a8 8 0 0016 0c0-5-4-8-8-12zm1 14a3 3 0 11-6 0c0-2 2-4 3-5 1 1 3 3 3 5z" /></BaseIcon>
 )
-const IconThumbUp = ({ className = '' }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.3c1.4 0 2.6-1 2.8-2.3l2-11c.1-.8-.5-1.7-1.4-1.7H14zM4 11H1v11h3V11z" /></svg>
+const IconThumbUp = ({ className = '', title }) => (
+  <BaseIcon className={className} title={title}><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.3c1.4 0 2.6-1 2.8-2.3l2-11c.1-.8-.5-1.7-1.4-1.7H14zM4 11H1v11h3V11z" /></BaseIcon>
 )
-const IconCube = ({ className = '' }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+const IconCube = ({ className = '', title }) => (
+  <BaseIcon className={className} title={title}><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></BaseIcon>
 )
 
 // Map a reward type to an icon
@@ -117,7 +139,7 @@ export const QuestsModal = ({ onClose, activeQuests, player }) => {
                       {timeRemaining !== null && (
                         <div className={`flex items-center gap-1 text-xs font-mono px-2 py-1 rounded ${timeRemaining <= 2 ? 'bg-(--blood-red)/20 text-(--blood-red)' : 'bg-(--fuel-yellow)/10 text-(--fuel-yellow)'}`}>
                           <IconClock className="w-3 h-3" />
-                          <span>{timeRemaining} {timeRemaining === 1 ? 'Day' : 'Days'} Left</span>
+                          <span>{timeRemaining} {timeRemaining === 1 ? t('ui:quests.days.singular') : t('ui:quests.days.plural')}</span>
                         </div>
                       )}
                     </div>
@@ -128,7 +150,7 @@ export const QuestsModal = ({ onClose, activeQuests, player }) => {
 
                     <div className='mb-3'>
                       <div className='flex justify-between text-xs text-(--ash-gray) mb-1 font-mono'>
-                        <span>Progress</span>
+                        <span>{t('ui:quests.progress')}</span>
                         <span>{quest.progress} / {quest.required}</span>
                       </div>
                       <ProgressBar
@@ -140,7 +162,7 @@ export const QuestsModal = ({ onClose, activeQuests, player }) => {
                     </div>
 
                     <div className='flex flex-wrap gap-2 mt-4 pt-3 border-t border-(--ash-gray)/10'>
-                      <span className='text-xs text-(--ash-gray) uppercase font-bold mr-2 self-center'>Rewards:</span>
+                      <span className='text-xs text-(--ash-gray) uppercase font-bold mr-2 self-center'>{t('ui:quests.rewards')}</span>
 
                       {quest.moneyReward > 0 && (
                         <span className='inline-flex items-center gap-1 bg-(--fuel-yellow)/10 text-(--fuel-yellow) px-2 py-1 text-xs font-mono rounded'>
@@ -151,10 +173,10 @@ export const QuestsModal = ({ onClose, activeQuests, player }) => {
                       {quest.rewardType && (
                         <span className='inline-flex items-center gap-1 bg-(--toxic-green)/10 text-(--toxic-green) px-2 py-1 text-xs font-mono rounded'>
                           {getRewardIcon(quest.rewardType)}
-                          {quest.rewardType === 'item' ? 'Free Item' :
-                           quest.rewardType === 'fans' ? `+${quest.rewardData?.fame || 0} Fans` :
-                           quest.rewardType === 'skill_point' ? '+1 Skill Point' :
-                           quest.rewardType === 'harmony' ? `+${quest.rewardData?.harmony || 0} Harmony` : 'Special'}
+                          {quest.rewardType === 'item' ? t('ui:rewards.freeItem') :
+                           quest.rewardType === 'fans' ? `+${quest.rewardData?.fame || 0} ${t('ui:rewards.fans')}` :
+                           quest.rewardType === 'skill_point' ? `+1 ${t('ui:rewards.skillPoint')}` :
+                           quest.rewardType === 'harmony' ? `+${quest.rewardData?.harmony || 0} ${t('ui:rewards.harmony')}` : t('ui:rewards.special')}
                         </span>
                       )}
                     </div>

@@ -2,17 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
-import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 import { AlertIcon } from './shared/BrutalistUI'
 import { VoidSkullIcon } from './shared/Icons'
-
-const CATEGORY_IMAGE_MAP = {
-  transport: IMG_PROMPTS.EVENT_VAN,
-  band: IMG_PROMPTS.EVENT_BAND,
-  gig: IMG_PROMPTS.EVENT_GIG,
-  financial: IMG_PROMPTS.EVENT_MONEY,
-  special: IMG_PROMPTS.EVENT_SPECIAL
-}
 
 /**
  * A modal dialog for displaying game events and capturing player choices.
@@ -44,7 +35,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
 
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [event, onOptionSelect])
+  }, [event, onOptionSelect, outcome])
 
   // Auto-focus container for screen readers
   useEffect(() => {
@@ -52,13 +43,6 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
   }, [event])
 
   if (!event) return null
-
-  const categoryImagePrompt = event.category
-    ? CATEGORY_IMAGE_MAP[event.category]
-    : null
-  const _categoryImageUrl = categoryImagePrompt
-    ? getGenImageUrl(categoryImagePrompt)
-    : null
 
   return (
     <div

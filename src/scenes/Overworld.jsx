@@ -285,7 +285,7 @@ export const Overworld = () => {
           variant='primary'
           size='sm'
         >
-          [QUESTS]
+          [{t('ui:quests.button')}]
         </GlitchButton>
         <GlitchButton
           onClick={handleRefuel}

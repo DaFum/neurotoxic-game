@@ -302,9 +302,9 @@ export const createAddQuestAction = quest => ({
  * @param {number} [amount=1] - The amount to advance progress by.
  * @returns {Object} Action object
  */
-export const createAdvanceQuestAction = (questId, amount = 1) => ({
+export const createAdvanceQuestAction = (questId, amount = 1, randomIdx = undefined) => ({
   type: ActionTypes.ADVANCE_QUEST,
-  payload: { questId, amount }
+  payload: { questId, amount, randomIdx }
 })
 
 /**
@@ -314,9 +314,9 @@ export const createAdvanceQuestAction = (questId, amount = 1) => ({
  * @param {string} questId - The ID of the quest to complete.
  * @returns {Object} Action object
  */
-export const createCompleteQuestAction = questId => ({
+export const createCompleteQuestAction = (questId, randomIdx = undefined) => ({
   type: ActionTypes.COMPLETE_QUEST,
-  payload: { questId }
+  payload: { questId, randomIdx }
 })
 
 /**

@@ -234,8 +234,9 @@ export const handleAdvanceDay = (state, payload) => {
     rng
   )
 
-  // Reset daily event counter
-  player.eventsTriggeredToday = 0
+  // Reset daily event counter immutably
+  const nextPlayer = { ...player, eventsTriggeredToday: 0 }
+
   const nextBand = { ...band }
   if (typeof nextBand.harmony === 'number') {
     nextBand.harmony = clampBandHarmony(nextBand.harmony)
@@ -243,7 +244,7 @@ export const handleAdvanceDay = (state, payload) => {
 
   // Check Social Unlocks
   const socialUnlocks = checkTraitUnlocks(
-    { player, band: nextBand, social },
+    { player: nextPlayer, band: nextBand, social },
     { type: 'SOCIAL_UPDATE' }
   )
 
@@ -254,7 +255,7 @@ export const handleAdvanceDay = (state, payload) => {
 
   let nextState = {
     ...state,
-    player,
+    player: nextPlayer,
     band: traitResult.band,
     social,
     eventCooldowns: [],

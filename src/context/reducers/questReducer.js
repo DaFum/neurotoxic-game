@@ -5,7 +5,7 @@ export const handleAddQuest = (state, quest) => {
   return { ...state, activeQuests: [...(state.activeQuests || []), quest] }
 }
 
-export const handleCompleteQuest = (state, { questId }) => {
+export const handleCompleteQuest = (state, { questId, randomIdx }) => {
   const quest = state.activeQuests?.find(q => q.id === questId)
   if (!quest) return state
   let nextState = { ...state }
@@ -45,14 +45,18 @@ export const handleCompleteQuest = (state, { questId }) => {
   } else if (quest.rewardType === 'skill_point' && quest.rewardData?.memberIndex !== undefined) {
     // Distribute skill point to random member
     const members = [...(nextState.band?.members || [])]
-    const randomIdx = Math.floor(Math.random() * members.length)
-    if (members[randomIdx]) {
-      members[randomIdx] = {
-        ...members[randomIdx],
-        skill: (members[randomIdx].skill || 0) + 1
+    if (members.length > 0) {
+      // Use deterministic index if provided, otherwise default to first member (deterministic fallback)
+      const targetIdx = (typeof randomIdx === 'number' && randomIdx >= 0 && randomIdx < members.length)
+        ? randomIdx
+        : 0;
+
+      members[targetIdx] = {
+        ...members[targetIdx],
+        skill: (members[targetIdx].skill || 0) + 1
       }
       nextState.band = { ...nextState.band, members }
-      rewardMessage += ` +1 Skill (${members[randomIdx].name})`
+      rewardMessage += ` +1 Skill (${members[targetIdx].name})`
     }
   } else if (quest.rewardType === 'harmony' && quest.rewardData?.harmony) {
     nextState.band = {
@@ -92,7 +96,7 @@ export const handleCompleteQuest = (state, { questId }) => {
   return nextState
 }
 
-export const handleAdvanceQuest = (state, { questId, amount = 1 }) => {
+export const handleAdvanceQuest = (state, { questId, amount = 1, randomIdx }) => {
   let nextState = { ...state }
   let questCompleted = false
   if (!nextState.activeQuests) return state
@@ -109,7 +113,7 @@ export const handleAdvanceQuest = (state, { questId, amount = 1 }) => {
   })
 
   if (questCompleted) {
-    return handleCompleteQuest(nextState, { questId })
+    return handleCompleteQuest(nextState, { questId, randomIdx })
   }
   return nextState
 }
