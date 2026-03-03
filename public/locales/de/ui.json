@@ -1,132 +1,28 @@
 {
-  "start_game": "Tour Starten",
-  "load_game": "Spiel Laden",
-  "band_hq": "Band HQ",
-  "credits": "CREDITS",
-  "settings": "Einstellungen",
   "audio_protocols": "AUDIO PROTOKOLLE",
-  "visual_interface": "VISUELLE SCHNITTSTELLE",
-  "log_protocols": "LOG PROTOKOLLE",
-  "data_purge": "DATENLÖSCHUNG",
-  "music_volume": "MUSIK LAUTSTÄRKE",
-  "sfx_volume": "SFX LAUTSTÄRKE",
-  "volume": {
-    "set": "Lautstärke auf {{pct}}% setzen"
+  "band_hq": "Band HQ",
+  "bandhq.metadata.bpm": "BPM",
+  "bandhq.metadata.diff": "SCHW",
+  "bandhq.metadata.dur": "DAUER",
+  "bandhq.setlist.selectOne": "W\u00e4hle mindestens einen Song zum \u00dcben!",
+  "bandhq.setlist.songRemoved": "{{song}} aus {{venue}} entfernt.",
+  "bandhq.setlist.songSelected": "{{song}} f\u00fcr {{venue}} ausgew\u00e4hlt.",
+  "bandhq.venue": "Band HQ",
+  "brutalist": {
+    "glitchPlaceholder": "0x8F9A... VERSCHL\u00dcSSELT"
   },
-  "mute_all": "ALLES STUMM",
-  "crt_effect": "CRT EFFEKT",
-  "min_log_level": "MINIMALES LOG LEVEL",
-  "delete_save": "SPEICHERSTAND LÖSCHEN",
-  "delete_warning": "WARNUNG: Diese Aktion ist unwiderruflich. Aller Fortschritt geht verloren.",
-  "confirm_delete": "LÖSCHEN BESTÄTIGEN",
-  "confirm_delete_text": "Bist du sicher, dass du deinen Spielstand löschen willst? Das kann nicht rückgängig gemacht werden.",
   "cancel": "ABBRECHEN",
-  "confirm": "BESTÄTIGEN",
-  "language": "SPRACHE",
-  "language_option_en": "ENGLISCH",
-  "language_option_de": "DEUTSCH",
-  "crowdEnergy": "PUBLIKUMSENERGIE",
-  "toxicModeActive": "TOXISCHER MODUS AKTIV",
-  "keyboardHint": "Drücke [1-{{count}}] oder klicke zur Auswahl",
-  "skillCheck": "Fähigkeitsprüfung",
-  "toggle": {
-    "on": "AN",
-    "off": "AUS"
+  "chatter": {
+    "header": "LIVE_CHATTER_FEED",
+    "msg1": "diese band ist tot lol",
+    "msg2": "SPIELT DEN ALTEN SCHEISS!!!",
+    "msg3": "WARNUNG: PUBLIKUMS-FEINDSELIGKEIT STEIGT",
+    "random1": "ausverkauft.",
+    "random2": "k\u00f6nnen nicht mal den takt halten",
+    "random3": "BUUUUUUUUUH",
+    "random4": "meine ohren bluten (im negativen sinn)",
+    "random5": "sofortige r\u00fcckerstattung"
   },
-  "radio": {
-    "play": "Radio abspielen/fortsetzen",
-    "stop": "Radio stoppen"
-  },
-  "hazard": {
-    "toxicOverload": "TOXISCHER OVERLOAD ERKANNT // KRITISCHE SYSTEMBELASTUNG // FOKUS BEHALTEN",
-    "modifierActive": "[MODIFIKATOR AKTIV]"
-  },
-  "overload": {
-    "toxic": "TOXISCHER OVERLOAD"
-  },
-  "event": {
-    "severity": {
-      "critical": "KRITISCH"
-    }
-  },
-  "map": {
-    "nodeType": {
-      "gig": "GIG",
-      "rest": "RAST",
-      "fallback": "{{type}}"
-    }
-  },
-  "day_advance": "Tag {{day}}: Lebenshaltungskosten abgezogen.",
-  "unlocked": "FREIGESCHALTET: {{unlock}}!",
-  "game_over": "GAME OVER: {{description}}",
-  "event_error": "EVENT FEHLER: Auflösung fehlgeschlagen.",
-  "intro_play": "Tour Starten",
-  "intro_skip": "Intro Überspringen",
-  "enter_name_error": "Bitte gib einen Namen ein",
-  "identity_required": "IDENTITÄT ERFORDERLICH",
-  "enter_alias_desc": "Gib deinen Alias für das globale Untergrund-Netzwerk ein.",
-  "enter_name_placeholder": "NAME EINGEBEN...",
-  "confirm_identity": "IDENTITÄT BESTÄTIGEN",
-  "no_save_found": "Kein Speicherstand gefunden!",
-  "tabs.stats": "STATISTIK",
-  "tabs.details": "DETAILS",
-  "tabs.shop": "SHOP",
-  "tabs.upgrades": "UPGRADES",
-  "tabs.setlist": "SETLIST",
-  "tabs.leaderboard": "RANGLISTE",
-  "tabs.settings": "EINSTELLUNGEN",
-  "leaderboard.global_wealth": "GESAMTVERMÖGEN",
-  "leaderboard.song_scores": "SONG SCORES",
-  "leaderboard.select_song": "SONG WÄHLEN:",
-  "leaderboard.no_songs": "KEINE SONGS FREIGESCHALTET",
-  "leaderboard.top_100_wealth": "TOP 100 REICHSTE",
-  "leaderboard.top_100_scores": "TOP 100 SHREDDERS",
-  "leaderboard.connecting": "VERBINDE ZUM UNTERGRUND...",
-  "leaderboard.no_data": "NOCH KEINE DATEN VORHANDEN.",
-  "leaderboard.col_player": "SPIELER",
-  "leaderboard.col_net_worth": "VERMÖGEN",
-  "leaderboard.col_score": "PUNKTE",
-  "leaderboard.load_error": "Rangliste konnte nicht geladen werden.",
-  "settings.audio_mute": "Ton ausschalten",
-  "settings.audio_unmute": "Ton einschalten",
-  "settings.crt_enable": "CRT-Effekt aktivieren",
-  "settings.crt_disable": "CRT-Effekt deaktivieren",
-  "mainMenu": {
-    "subtitle": {
-      "grindTheVoid": "Grind The Void"
-    },
-    "existingSave": {
-      "title": "SPIELSTAND GEFUNDEN",
-      "desc": "Ein Spielstand existiert bereits. Möchtest du ihn laden oder eine neue Tour starten?",
-      "load": "BESTEHENDEN LADEN",
-      "startNew": "NEUE TOUR STARTEN"
-    }
-  },
-  "tour.endedPrematurely": "Die Tour endete vorzeitig.",
-  "gameOver.soldOut": "AUSVERKAUFT",
-  "gameOver.finalStatistics": "ABSCHLUSSSTATISTIKEN",
-  "gameOver.loadLastSave": "LETZTEN SPEICHERSTAND LADEN",
-  "gameOver.returnToMenu": "ZURÜCK ZUM MENÜ",
-  "stats.daysSurvived": "ÜBERLEBTE TAGE",
-  "stats.fameReached": "ERREICHTER RUHM",
-  "stats.totalTravels": "GESAMTE REISEN",
-  "stats.totalScore": "GESAMTPUNKTZAHL",
-  "hq.start_practice": "PROBE STARTEN",
-  "hq.practice_desc": "Übung macht den Meister.",
-  "hq.song_active": "AKTIV",
-  "hq.song_select": "AUSWÄHLEN",
-  "hq.selected": "AUSGEWÄHLT",
-  "hq.buy": "KAUFEN",
-  "hq.owned": "BESITZT",
-  "hq.leave": "VERLASSEN [ESC]",
-  "hq.title": "BAND HQ",
-  "hq.sectionsLabel": "Band HQ Bereiche",
-  "ui.day": "Tag",
-  "ui.level": "Level",
-  "ui.location": "Ort",
-  "ui.time": "Zeit",
-  "ui.locked": "GESPERRT",
-  "ui.owned": "GEHÖRT",
   "chatter_labels": {
     "INTRO": "Intro Feed",
     "MENU": "Haupt-Feed",
@@ -136,95 +32,66 @@
     "POSTGIG": "Aftershow-Feed",
     "SETTINGS": "System-Feed",
     "CREDITS": "Crew-Feed",
-    "GAMEOVER": "Letzte Übertragung",
+    "GAMEOVER": "Letzte \u00dcbertragung",
     "TRAVEL_MINIGAME": "Reise-Feed",
     "PRE_GIG_MINIGAME": "Roadie-Feed",
     "default_speaker": "Band",
     "default_fallback": "Unbekannt"
   },
-  "bandhq.setlist.selectOne": "Wähle mindestens einen Song zum Üben!",
-  "bandhq.metadata.diff": "SCHW",
-  "bandhq.metadata.bpm": "BPM",
-  "bandhq.metadata.dur": "DAUER",
-  "bandhq.venue": "Band HQ",
-  "bandhq.setlist.songSelected": "{{song}} für {{venue}} ausgewählt.",
-  "bandhq.setlist.songRemoved": "{{song}} aus {{venue}} entfernt.",
-  "stats.career_overview": "KARRIERESTATUS",
-  "stats.funds": "Geld",
-  "stats.fame": "Ruhm",
-  "stats.followers": "Follower",
-  "socials": "SOCIALS",
-  "social_links": {
-    "game": {
-      "title": "Spiele Neurotoxic",
-      "subtitle": "neurotoxic-game.vercel.app"
-    },
-    "bandcamp": {
-      "title": "Bandcamp",
-      "subtitle": "neurotoxic.bandcamp.com"
-    },
-    "instagram": {
-      "title": "Instagram",
-      "subtitle": "instagram.com/neurotoxicband"
-    },
-    "tiktok": {
-      "title": "TikTok",
-      "subtitle": "tiktok.com/@neurotoxicband"
-    },
-    "neurotoxic_once": {
-      "title": "Neurotoxic Once",
-      "subtitle": "youtube.com/@neurotoxiconcechannel237"
-    },
-    "neurotoxic_3000": {
-      "title": "Neurotoxic 3000",
-      "subtitle": "youtube.com/@neurotoxic3000"
-    },
-    "blog": {
-      "title": "Neuroblogxic",
-      "subtitle": "neuroblogxic.blogspot.com"
-    },
-    "type_system_core": "SYSTEM_CORE",
-    "type_audio_vault": "AUDIO_VAULT",
-    "type_visual_feed": "VISUAL_FEED",
-    "type_viral_stream": "VIRAL_STREAM",
-    "type_broadcast_a": "BROADCAST_A",
-    "type_broadcast_b": "BROADCAST_B",
-    "type_data_log": "DATA_LOG"
+  "checklist": {
+    "header": "PRE-GIG SEQUENZ",
+    "task1": "TOURBUS AUFTANKEN",
+    "task2": "VERZERRER-PEDAL AUSR\u00dcSTEN",
+    "task3": "T\u00dcRSTEHER BESTECHEN",
+    "task4": "VERST\u00c4RKER KALIBRIEREN",
+    "done": "GIG STARTEN",
+    "waiting": "WARTE AUF SEQUENZ"
   },
-  "stats.social_reach": "Social-Media-Reichweite",
-  "stats.van_condition": "VAN-STATUS",
-  "stats.fuel": "Treibstoff",
-  "stats.condition": "Zustand",
-  "stats.breakdown_chance": "Pannenrisiko",
-  "stats.band_status": "BANDSTATUS",
-  "stats.stamina": "Ausdauer",
-  "stats.mood": "Stimmung",
-  "stats.inventory_slots": "Inventarplätze",
-  "stats.harmony": "Harmonie",
-  "stats.regional_standing": "Regionaler Ruf",
-  "stats.active_quests": "Aktive Quests",
-  "stats.band_metrics": "Band-Metriken",
-  "stats.inventory_equipment": "Inventar & Ausrüstung",
-  "stats.instagram": "Instagram",
-  "stats.tiktok": "TikTok",
-  "stats.youtube": "YouTube",
-  "stats.newsletter": "Newsletter",
-  "stats.totalReach": "Gesamt-Reichweite",
-  "stats.viralStatus": "Viral-Status",
-  "stats.viral": "VIRAL",
-  "stats.normal": "Normal",
-  "stats.socialDynamics": "SOZIALE DYNAMIK",
-  "stats.currentTrend": "Aktueller Trend",
-  "stats.repCooldown": "Ruf-Cooldown",
-  "stats.repCooldownDesc": "Tage bis Ruf-Sperren aufgehoben sind",
-  "stats.brandDeals": "Marken-Deals",
-  "stats.noContracts": "Keine aktiven Verträge",
-  "stats.advancedMetrics": "Erweiterte Metriken",
-  "stats.fanLoyalty": "Fan-Loyalität",
-  "stats.fanLoyaltyDesc": "Schützt vor schlechten Gigs",
-  "stats.controversy": "Kontroverse",
-  "stats.shadowbanned": "SHADOWBANNED (-75% Wachstum)",
-  "stats.riskOfShadowban": "Shadowban-Risiko",
+  "close": "Schlie\u00dfen",
+  "confirm": "BEST\u00c4TIGEN",
+  "confirm_delete": "L\u00d6SCHEN BEST\u00c4TIGEN",
+  "confirm_delete_text": "Bist du sicher, dass du deinen Spielstand l\u00f6schen willst? Das kann nicht r\u00fcckg\u00e4ngig gemacht werden.",
+  "confirm_identity": "IDENTIT\u00c4T BEST\u00c4TIGEN",
+  "continue": "CONTINUE",
+  "contract": {
+    "confidential": "DOKUMENT: VERTRAULICH",
+    "title": "Bindende Vereinbarung",
+    "p1": "Diese Vereinbarung bindet NEUROTOXIC an <0>MEGA_CORP_INC</0>.",
+    "p2": "Der K\u00fcnstler erkl\u00e4rt sich bereit, bei allen Live-Auftritten in Sektor 4 <0>subliminale Werbebotschaften einzuf\u00fcgen</0>.",
+    "warning": "Zuwiderhandlung f\u00fchrt zur <0>sofortigen Beendigung der organischen Funktionen</0>.",
+    "sig": "UNTERSCHRIFT (BLUT/VOID):",
+    "sign_aria": "Vertrag unterschreiben",
+    "sealed": "VERSIEGELT"
+  },
+  "cost": "{{cost}} \u20ac",
+  "crash": {
+    "title": "SYSTEMAUSFALL",
+    "message": "Die Simulation ist abgest\u00fcrzt. Neustart erforderlich.",
+    "rebootButton": "SYSTEM NEUSTARTEN"
+  },
+  "credits": "CREDITS",
+  "crisis": {
+    "title": "VAN PANNE",
+    "desc": "Das Getriebe ist auf halbem Weg nach Leipzig kaputtgegangen. Du hast in 4 Stunden einen Auftritt. Verbrennst du dein Geld f\u00fcr einen zwielichtigen Mechaniker oder riskierst du, zu sp\u00e4t zu kommen und das Gesicht zu verlieren?",
+    "opt1": "Mechaniker bezahlen (-$250)",
+    "safe": "SICHER",
+    "opt2": "Per Anhalter (-20 Ruf)",
+    "risk": "RISIKO",
+    "opt3": "Selbst reparieren (+1 Std)",
+    "risky": "RISKANT"
+  },
+  "crowdEnergy": "PUBLIKUMSENERGIE",
+  "crt_effect": "CRT EFFEKT",
+  "currency": "{{value}} \u20ac",
+  "currencyNegative": "-{{value}} \u20ac",
+  "data_purge": "DATENL\u00d6SCHUNG",
+  "day_advance": "Tag {{day}}: Lebenshaltungskosten abgezogen.",
+  "decryptor": {
+    "unlocked": "ITEM_ENTSPERRT: 'VOID_CORE'",
+    "click": "KLICKEN ZUM ENTSCHL\u00dcSSELN"
+  },
+  "delete_save": "SPEICHERSTAND L\u00d6SCHEN",
+  "delete_warning": "WARNUNG: Diese Aktion ist unwiderruflich. Aller Fortschritt geht verloren.",
   "detailedStats": {
     "totalTravels": "Gesamtreisen",
     "passiveFollowers": "Passive Follower",
@@ -238,16 +105,16 @@
     "mode": {
       "label": "Modus",
       "proveYourself": "BEWEIS DICH",
-      "restrictions": "Venue-Einschränkungen aktiv"
+      "restrictions": "Venue-Einschr\u00e4nkungen aktiv"
     },
     "vanUpgrades": {
       "installed": "{{count}} Installiert"
     },
     "upgrades": "Upgrades",
     "none": "Keine",
-    "luck": "Glück",
+    "luck": "Gl\u00fcck",
     "luckDesc": "Beeinflusst Zufallsereignisse",
-    "inventorySlots": "Inventarplätze",
+    "inventorySlots": "Inventarpl\u00e4tze",
     "egoSpotlight": "Ego-Spotlight",
     "harmonyDrain": "Harmonie-Abzug Aktiv",
     "perfModifiers": "Performance-Modifikatoren",
@@ -258,7 +125,7 @@
     "member": "Mitglied",
     "stamina": "Ausdauer",
     "mood": "Stimmung",
-    "skills": "Fähigkeiten",
+    "skills": "F\u00e4higkeiten",
     "skillBase": "Skill (Basis)",
     "charisma": "Charisma",
     "technical": "Technik",
@@ -268,219 +135,37 @@
     "toUnlock": "Zum Freischalten",
     "active": "Aktiv",
     "locked": "Gesperrt",
-    "equipment": "Ausrüstung",
-    "standardGear": "Standard-Ausrüstung",
+    "equipment": "Ausr\u00fcstung",
+    "standardGear": "Standard-Ausr\u00fcstung",
     "noRegionalData": "Noch keine regionalen Daten. Spiele Gigs, um Ruf aufzubauen.",
     "blacklisted": "GESPERRTE VENUES",
     "blacklistedVenues": "Gesperrte Venues",
-    "noActiveQuests": "Keine aktiven Quests. Bleib toxisch, um Events auszulösen."
+    "noActiveQuests": "Keine aktiven Quests. Bleib toxisch, um Events auszul\u00f6sen."
   },
-  "map.travel_to": "Reise nach {{name}}",
-  "map.click_to_confirm": " - Klicken zum Bestätigen",
-  "map.confirm_q": "BESTÄTIGEN?",
-  "map.click_to_travel": "KLICKEN ZUM REISEN",
-  "map.unknown": "Unbekannt",
-  "map.festival": "FESTIVAL",
-  "map.cap": "Kap",
-  "map.pay": "Gage",
-  "map.ticket": "Ticket",
-  "map.diff": "Schw",
-  "map.rest_stop_desc": "RASTPLATZ — Ausdauer & Stimmung erholen",
-  "map.mystery_desc": "MYSTERIUM — Unbekannte Begegnung",
-  "map.finale_desc": "★ FINALE — Die letzte Show ★",
-  "map.current_location": "[AKTUELLE POSITION]",
-  "map.vanAlt": "Van",
-  "map.pinAlt": "Pin",
-  "holdToOverride": "ZUM ÜBERSCHREIBEN HALTEN",
-  "executed": "AUSGEFÜHRT",
-  "loading": "Lade",
-  "module": "Modul",
-  "menu": {
-    "inventory": "INVENTAR",
-    "upgrades": "UPGRADES"
-  },
-  "setlistSelector": {
-    "track1": "SUICIDAL JESUS",
-    "track2": "SYSTEMSPRENGER",
-    "track3": "TRAVESTIE MASSAKER",
-    "diffHard": "SCHWER",
-    "diffExpert": "EXPERT",
-    "diffInsane": "WAHNSINN"
-  },
-  "crash": {
-    "title": "SYSTEMAUSFALL",
-    "message": "Die Simulation ist abgestürzt. Neustart erforderlich.",
-    "rebootButton": "SYSTEM NEUSTARTEN"
-  },
-  "crisis": {
-    "title": "VAN PANNE",
-    "desc": "Das Getriebe ist auf halbem Weg nach Leipzig kaputtgegangen. Du hast in 4 Stunden einen Auftritt. Verbrennst du dein Geld für einen zwielichtigen Mechaniker oder riskierst du, zu spät zu kommen und das Gesicht zu verlieren?",
-    "opt1": "Mechaniker bezahlen (-$250)",
-    "safe": "SICHER",
-    "opt2": "Per Anhalter (-20 Ruf)",
-    "risk": "RISIKO",
-    "opt3": "Selbst reparieren (+1 Std)",
-    "risky": "RISKANT"
-  },
-  "checklist": {
-    "header": "PRE-GIG SEQUENZ",
-    "task1": "TOURBUS AUFTANKEN",
-    "task2": "VERZERRER-PEDAL AUSRÜSTEN",
-    "task3": "TÜRSTEHER BESTECHEN",
-    "task4": "VERSTÄRKER KALIBRIEREN",
-    "done": "GIG STARTEN",
-    "waiting": "WARTE AUF SEQUENZ"
-  },
-  "terminal": {
-    "log1": "> INITIALISIERE VOID_ENGINE v3.0...",
-    "log2": "> VERBINDE MIT BÜHNENANLAGE...",
-    "log3": "[OK] AUDIO CONTEXT GESTARTET",
-    "log4": "[WARNUNG] VERSTÄRKER 3 ÜBERHITZT",
-    "log5": "> LADE LOCATION: 'THE SLAUGHTERHOUSE'",
-    "log6": "...",
-    "log7": "[FEHLER] BAND-HARMONIE KRITISCH.",
-    "log8": "> WARTE AUF EINGABE_"
-  },
-  "contract": {
-    "confidential": "DOKUMENT: VERTRAULICH",
-    "title": "Bindende Vereinbarung",
-    "p1": "Diese Vereinbarung bindet NEUROTOXIC an <0>MEGA_CORP_INC</0>.",
-    "p2": "Der Künstler erklärt sich bereit, bei allen Live-Auftritten in Sektor 4 <0>subliminale Werbebotschaften einzufügen</0>.",
-    "warning": "Zuwiderhandlung führt zur <0>sofortigen Beendigung der organischen Funktionen</0>.",
-    "sig": "UNTERSCHRIFT (BLUT/VOID):",
-    "sign_aria": "Vertrag unterschreiben",
-    "sealed": "VERSIEGELT"
-  },
-  "rhythm": {
-    "header": "RHYTHM_ENGINE_SIM",
-    "hit_lane": "Triff Spur {{lane}}",
-    "hit": "TREFFER",
-    "lane_guitar": "GITARRE",
-    "lane_drums": "SCHLAGZEUG",
-    "lane_bass": "BASS"
-  },
-  "chatter": {
-    "header": "LIVE_CHATTER_FEED",
-    "msg1": "diese band ist tot lol",
-    "msg2": "SPIELT DEN ALTEN SCHEISS!!!",
-    "msg3": "WARNUNG: PUBLIKUMS-FEINDSELIGKEIT STEIGT",
-    "random1": "ausverkauft.",
-    "random2": "können nicht mal den takt halten",
-    "random3": "BUUUUUUUUUH",
-    "random4": "meine ohren bluten (im negativen sinn)",
-    "random5": "sofortige rückerstattung"
-  },
-  "decryptor": {
-    "unlocked": "ITEM_ENTSPERRT: 'VOID_CORE'",
-    "click": "KLICKEN ZUM ENTSCHLÜSSELN"
-  },
-  "brutalist": {
-    "glitchPlaceholder": "0x8F9A... VERSCHLÜSSELT"
-  },
-  "hqNavigation": "HQ-Navigation",
-  "set_label_to_segment": "Setze {{label}} auf {{segment}}",
-  "sign_contract": "Vertrag unterschreiben",
-  "close": "Schließen",
-  "pregig": {
-    "title": "VORBEREITUNG",
-    "budget": "BUDGET:",
-    "costs": "KOSTEN:",
-    "allocation": "BUDGETVERTEILUNG",
-    "bandMeeting": {
-      "label": "Band-Meeting",
-      "desc": "+Harmonie"
-    },
-    "activeModifiers": "AKTIVE MODIFIKATOREN",
-    "noModifiers": "Keine aktiven Buffs oder Debuffs",
-    "setlist": "SETLIST",
-    "selectSong": "Song {{name}} auswählen",
-    "locked": "GESPERRT (Beweise dich)",
-    "diff": "Schw.:",
-    "nrg": "NRG",
-    "selected": "AUSGEWÄHLT",
-    "selectPreview": "Songs auswählen, um Energiekurve zu sehen",
-    "initializing": "INITIALISIERE...",
-    "startShow": "SHOW STARTEN",
-    "modifiers": {
-      "soundcheck": {
-        "label": "Soundcheck",
-        "desc": "Noten einfacher"
-      },
-      "promo": {
-        "label": "Social Promo",
-        "desc": "+Publikum"
-      },
-      "merch": {
-        "label": "Merch-Tisch",
-        "desc": "+Verkäufe"
-      },
-      "catering": {
-        "label": "Catering / Energie",
-        "desc": "Kontert müde Band"
-      },
-      "guestlist": {
-        "label": "Gästeliste",
-        "desc": "+VIP-Punkte"
-      }
-    },
-    "toasts": {
-      "noGig": "Kein Gig aktiv! Zurück zur Karte.",
-      "noMoneySnacks": "Nicht genug Geld für Snacks!",
-      "meetingHeld": "Meeting abgehalten. Stimmung ist besser.",
-      "noMoneyUpgrade": "Nicht genug Geld für dieses Upgrade!",
-      "harmonyLow": "Band-Harmonie zu niedrig für einen Auftritt!",
-      "audioFail": "Audio-Initialisierung fehlgeschlagen."
-    }
-  },
-  "roadieRun": {
-    "hud": {
-      "title": "ROADIE RUN",
-      "itemsRemaining": "VERBLEIBENDE TEILE:",
-      "delivered": "GELIEFERT:",
-      "damage": "SCHADEN:",
-      "carrying": "TRÄGT:"
-    },
-    "controls": {
-      "toggleAria": "Steuerung umschalten",
-      "hide": "STEUERUNG AUSBLENDEN",
-      "show": "STEUERUNG ANZEIGEN",
-      "movementHint": "WASD / PFEILTASTEN zum Bewegen"
-    },
-    "completion": {
-      "title": "AUFBAU ABGESCHLOSSEN",
-      "button": "SHOW STARTEN",
-      "equipmentDamage": "Equipment-Schaden: {{damage}}%"
-    },
-    "itemTypes": {
-      "AMP": "Verstärker",
-      "DRUMS": "Schlagzeug",
-      "GUITAR": "Gitarre",
-      "unknown": "Unbekannt"
-    }
-  },
-  "cost": "{{cost}} €",
-  "seconds": "{{count}} Sek.",
-  "currency": "{{value}} €",
-  "currencyNegative": "-{{value}} €",
-  "errors.audio_init_failed": "Audio-Initialisierung fehlgeschlagen.",
+  "enter_alias_desc": "Gib deinen Alias f\u00fcr das globale Untergrund-Netzwerk ein.",
+  "enter_name_error": "Bitte gib einen Namen ein",
+  "enter_name_placeholder": "NAME EINGEBEN...",
   "errors.ambient_start_failed": "Ambient-Audio konnte nicht gestartet werden.",
-  "map.pinTypeAlt": "Kartenmarkierung: {{type}}",
-  "features": {
-    "button": "FUNKTIONEN",
-    "title": "FUNKTIONSLISTE"
+  "errors.audio_init_failed": "Audio-Initialisierung fehlgeschlagen.",
+  "event": {
+    "severity": {
+      "critical": "KRITISCH"
+    }
   },
+  "event_error": "EVENT FEHLER: Aufl\u00f6sung fehlgeschlagen.",
+  "executed": "AUSGEF\u00dcHRT",
   "featureList": [
     {
       "title": "Kern-Gameplay & Architektur der Rhythmus-Mechaniken",
-      "description": "Die primäre Interaktionsschleife basiert auf einer hochoptimierten, zweistufigen Rhythmus-Engine, die klassisches Beat-Matching nahtlos mit dynamischen Survival-Mechaniken verbindet.",
+      "description": "Die prim\u00e4re Interaktionsschleife basiert auf einer hochoptimierten, zweistufigen Rhythmus-Engine, die klassisches Beat-Matching nahtlos mit dynamischen Survival-Mechaniken verbindet.",
       "type": "bullets",
       "items": [
-        "Dynamische Audio-Engine-Synthese: Angetrieben von einer ausgefeilten Integration von WebAudio und Tone.js unterstützt die Engine sowohl prozedurale MIDI-Generierung als auch strukturierte OGG-Wiedergabe. Sie nutzt größenlimitierte Buffer-Caches zur Vermeidung von Memory-Leaks und bietet ein direktes Drum-Scheduling-Dispatch, das eine Synchronisation ohne Latenz zwischen der internen Spieluhr und dem Audiotransport sicherstellt.",
-        "Kontinuierliche Multi-Song-Setlists: Spieler:innen können mehrere Tracks zu einer Marathon-Performance verketten. Die Engine berechnet dynamisch die Audio-Ausschnittfenster und lädt folgende Tracks vor, sodass „hanging gigs“, defekte Audiokontexte oder Ladebildschirm-Unterbrechungen während eines Sets vollständig vermieden werden.",
-        "PixiJS-basierter Stage Controller: Die visuelle Rhythmus-Highway wird über eine hochperformante PixiJS-Canvas gerendert. Sie nutzt Object-Pooling für Noten-Sprites, aggressive Garbage-Collection-Steuerung und ist hart auf einen Auflösungs-Scale von 2.0 begrenzt, um butterweiche Framerates auf High-DPI- und Mobil-Displays zu gewährleisten.",
-        "Heckler-Kampfsystem: Zur Erweiterung des Rhythmus-Genres erzeugt diese interaktive Gefahrenmechanik während eines Gigs komplexe Projektile. Spieler:innen müssen diesen Entitäten dynamisch ausweichen oder sie ablenken, gestützt auf präzise Kollisionsabfragen, um Combo-Unterbrechungen zu verhindern und die Crowd-Ekstase aufrechtzuerhalten.",
-        "Toxic-Mode-Integration: Ein Hochrisiko-/Hochbelohnungszustand, der für Veteran:innen entworfen wurde. Die Aktivierung des Toxic Mode löst Vollbild-Randblitze und intensive CRT-Overlay-Effekte aus, verstärkt drastisch die Strafen für verfehlte Noten („Empty Hits“) und vervielfacht gleichzeitig potenzielle Ruhm- und Geld-Ausschüttungen.",
-        "Echtzeit-Gig-Physik: Eine mathematische Hintergrund-Engine, die Performance-Deltas laufend berechnet. Sie passt Ticketeinnahmen, Ruhm-Multiplikatoren und Crowd-Verfallsstrafen basierend auf Trefferpräzision, aktiven Gear-Modifikatoren und den Echtzeit-Eingaben der Spieler:innen an."
+        "Dynamische Audio-Engine-Synthese: Angetrieben von einer ausgefeilten Integration von WebAudio und Tone.js unterst\u00fctzt die Engine sowohl prozedurale MIDI-Generierung als auch strukturierte OGG-Wiedergabe. Sie nutzt gr\u00f6\u00dfenlimitierte Buffer-Caches zur Vermeidung von Memory-Leaks und bietet ein direktes Drum-Scheduling-Dispatch, das eine Synchronisation ohne Latenz zwischen der internen Spieluhr und dem Audiotransport sicherstellt.",
+        "Kontinuierliche Multi-Song-Setlists: Spieler:innen k\u00f6nnen mehrere Tracks zu einer Marathon-Performance verketten. Die Engine berechnet dynamisch die Audio-Ausschnittfenster und l\u00e4dt folgende Tracks vor, sodass \u201ehanging gigs\u201c, defekte Audiokontexte oder Ladebildschirm-Unterbrechungen w\u00e4hrend eines Sets vollst\u00e4ndig vermieden werden.",
+        "PixiJS-basierter Stage Controller: Die visuelle Rhythmus-Highway wird \u00fcber eine hochperformante PixiJS-Canvas gerendert. Sie nutzt Object-Pooling f\u00fcr Noten-Sprites, aggressive Garbage-Collection-Steuerung und ist hart auf einen Aufl\u00f6sungs-Scale von 2.0 begrenzt, um butterweiche Framerates auf High-DPI- und Mobil-Displays zu gew\u00e4hrleisten.",
+        "Heckler-Kampfsystem: Zur Erweiterung des Rhythmus-Genres erzeugt diese interaktive Gefahrenmechanik w\u00e4hrend eines Gigs komplexe Projektile. Spieler:innen m\u00fcssen diesen Entit\u00e4ten dynamisch ausweichen oder sie ablenken, gest\u00fctzt auf pr\u00e4zise Kollisionsabfragen, um Combo-Unterbrechungen zu verhindern und die Crowd-Ekstase aufrechtzuerhalten.",
+        "Toxic-Mode-Integration: Ein Hochrisiko-/Hochbelohnungszustand, der f\u00fcr Veteran:innen entworfen wurde. Die Aktivierung des Toxic Mode l\u00f6st Vollbild-Randblitze und intensive CRT-Overlay-Effekte aus, verst\u00e4rkt drastisch die Strafen f\u00fcr verfehlte Noten (\u201eEmpty Hits\u201c) und vervielfacht gleichzeitig potenzielle Ruhm- und Geld-Aussch\u00fcttungen.",
+        "Echtzeit-Gig-Physik: Eine mathematische Hintergrund-Engine, die Performance-Deltas laufend berechnet. Sie passt Ticketeinnahmen, Ruhm-Multiplikatoren und Crowd-Verfallsstrafen basierend auf Trefferpr\u00e4zision, aktiven Gear-Modifikatoren und den Echtzeit-Eingaben der Spieler:innen an."
       ]
     },
     {
@@ -560,5 +245,323 @@
         ]
       ]
     }
-  ]
+  ],
+  "features": {
+    "button": "FUNKTIONEN",
+    "title": "FUNKTIONSLISTE"
+  },
+  "gameOver.finalStatistics": "ABSCHLUSSSTATISTIKEN",
+  "gameOver.loadLastSave": "LETZTEN SPEICHERSTAND LADEN",
+  "gameOver.returnToMenu": "ZUR\u00dcCK ZUM MEN\u00dc",
+  "gameOver.soldOut": "AUSVERKAUFT",
+  "game_over": "GAME OVER: {{description}}",
+  "hazard": {
+    "toxicOverload": "TOXISCHER OVERLOAD ERKANNT // KRITISCHE SYSTEMBELASTUNG // FOKUS BEHALTEN",
+    "modifierActive": "[MODIFIKATOR AKTIV]"
+  },
+  "holdToOverride": "ZUM \u00dcBERSCHREIBEN HALTEN",
+  "hq.buy": "KAUFEN",
+  "hq.leave": "VERLASSEN [ESC]",
+  "hq.owned": "BESITZT",
+  "hq.practice_desc": "\u00dcbung macht den Meister.",
+  "hq.sectionsLabel": "Band HQ Bereiche",
+  "hq.selected": "AUSGEW\u00c4HLT",
+  "hq.song_active": "AKTIV",
+  "hq.song_select": "AUSW\u00c4HLEN",
+  "hq.start_practice": "PROBE STARTEN",
+  "hq.title": "BAND HQ",
+  "hqNavigation": "HQ-Navigation",
+  "identity_required": "IDENTIT\u00c4T ERFORDERLICH",
+  "intro_play": "Tour Starten",
+  "intro_skip": "Intro \u00dcberspringen",
+  "keyboardHint": "Dr\u00fccke [1-{{count}}] oder klicke zur Auswahl",
+  "language": "SPRACHE",
+  "language_option_de": "DEUTSCH",
+  "language_option_en": "ENGLISCH",
+  "leaderboard.col_net_worth": "VERM\u00d6GEN",
+  "leaderboard.col_player": "SPIELER",
+  "leaderboard.col_score": "PUNKTE",
+  "leaderboard.connecting": "VERBINDE ZUM UNTERGRUND...",
+  "leaderboard.global_wealth": "GESAMTVERM\u00d6GEN",
+  "leaderboard.load_error": "Rangliste konnte nicht geladen werden.",
+  "leaderboard.no_data": "NOCH KEINE DATEN VORHANDEN.",
+  "leaderboard.no_songs": "KEINE SONGS FREIGESCHALTET",
+  "leaderboard.select_song": "SONG W\u00c4HLEN:",
+  "leaderboard.song_scores": "SONG SCORES",
+  "leaderboard.top_100_scores": "TOP 100 SHREDDERS",
+  "leaderboard.top_100_wealth": "TOP 100 REICHSTE",
+  "load_game": "Spiel Laden",
+  "loading": "Lade",
+  "log_protocols": "LOG PROTOKOLLE",
+  "mainMenu": {
+    "subtitle": {
+      "grindTheVoid": "Grind The Void"
+    },
+    "existingSave": {
+      "title": "SPIELSTAND GEFUNDEN",
+      "desc": "Ein Spielstand existiert bereits. M\u00f6chtest du ihn laden oder eine neue Tour starten?",
+      "load": "BESTEHENDEN LADEN",
+      "startNew": "NEUE TOUR STARTEN"
+    }
+  },
+  "map": {
+    "nodeType": {
+      "gig": "GIG",
+      "rest": "RAST",
+      "fallback": "{{type}}"
+    }
+  },
+  "map.cap": "Kap",
+  "map.click_to_confirm": " - Klicken zum Best\u00e4tigen",
+  "map.click_to_travel": "KLICKEN ZUM REISEN",
+  "map.confirm_q": "BEST\u00c4TIGEN?",
+  "map.current_location": "[AKTUELLE POSITION]",
+  "map.diff": "Schw",
+  "map.festival": "FESTIVAL",
+  "map.finale_desc": "\u2605 FINALE \u2014 Die letzte Show \u2605",
+  "map.mystery_desc": "MYSTERIUM \u2014 Unbekannte Begegnung",
+  "map.pay": "Gage",
+  "map.pinAlt": "Pin",
+  "map.pinTypeAlt": "Kartenmarkierung: {{type}}",
+  "map.rest_stop_desc": "RASTPLATZ \u2014 Ausdauer & Stimmung erholen",
+  "map.ticket": "Ticket",
+  "map.travel_to": "Reise nach {{name}}",
+  "map.unknown": "Unbekannt",
+  "map.vanAlt": "Van",
+  "menu": {
+    "inventory": "INVENTAR",
+    "upgrades": "UPGRADES"
+  },
+  "min_log_level": "MINIMALES LOG LEVEL",
+  "module": "Modul",
+  "music_volume": "MUSIK LAUTST\u00c4RKE",
+  "mute_all": "ALLES STUMM",
+  "no_save_found": "Kein Speicherstand gefunden!",
+  "overload": {
+    "toxic": "TOXISCHER OVERLOAD"
+  },
+  "pregig": {
+    "title": "VORBEREITUNG",
+    "budget": "BUDGET:",
+    "costs": "KOSTEN:",
+    "allocation": "BUDGETVERTEILUNG",
+    "bandMeeting": {
+      "label": "Band-Meeting",
+      "desc": "+Harmonie"
+    },
+    "activeModifiers": "AKTIVE MODIFIKATOREN",
+    "noModifiers": "Keine aktiven Buffs oder Debuffs",
+    "setlist": "SETLIST",
+    "selectSong": "Song {{name}} ausw\u00e4hlen",
+    "locked": "GESPERRT (Beweise dich)",
+    "diff": "Schw.:",
+    "nrg": "NRG",
+    "selected": "AUSGEW\u00c4HLT",
+    "selectPreview": "Songs ausw\u00e4hlen, um Energiekurve zu sehen",
+    "initializing": "INITIALISIERE...",
+    "startShow": "SHOW STARTEN",
+    "modifiers": {
+      "soundcheck": {
+        "label": "Soundcheck",
+        "desc": "Noten einfacher"
+      },
+      "promo": {
+        "label": "Social Promo",
+        "desc": "+Publikum"
+      },
+      "merch": {
+        "label": "Merch-Tisch",
+        "desc": "+Verk\u00e4ufe"
+      },
+      "catering": {
+        "label": "Catering / Energie",
+        "desc": "Kontert m\u00fcde Band"
+      },
+      "guestlist": {
+        "label": "G\u00e4steliste",
+        "desc": "+VIP-Punkte"
+      }
+    },
+    "toasts": {
+      "noGig": "Kein Gig aktiv! Zur\u00fcck zur Karte.",
+      "noMoneySnacks": "Nicht genug Geld f\u00fcr Snacks!",
+      "meetingHeld": "Meeting abgehalten. Stimmung ist besser.",
+      "noMoneyUpgrade": "Nicht genug Geld f\u00fcr dieses Upgrade!",
+      "harmonyLow": "Band-Harmonie zu niedrig f\u00fcr einen Auftritt!",
+      "audioFail": "Audio-Initialisierung fehlgeschlagen."
+    }
+  },
+  "quests.empty": "No active quests. Hit the road to find some!",
+  "quests.title": "ACTIVE QUESTS",
+  "radio": {
+    "play": "Radio abspielen/fortsetzen",
+    "stop": "Radio stoppen"
+  },
+  "rhythm": {
+    "header": "RHYTHM_ENGINE_SIM",
+    "hit_lane": "Triff Spur {{lane}}",
+    "hit": "TREFFER",
+    "lane_guitar": "GITARRE",
+    "lane_drums": "SCHLAGZEUG",
+    "lane_bass": "BASS"
+  },
+  "roadieRun": {
+    "hud": {
+      "title": "ROADIE RUN",
+      "itemsRemaining": "VERBLEIBENDE TEILE:",
+      "delivered": "GELIEFERT:",
+      "damage": "SCHADEN:",
+      "carrying": "TR\u00c4GT:"
+    },
+    "controls": {
+      "toggleAria": "Steuerung umschalten",
+      "hide": "STEUERUNG AUSBLENDEN",
+      "show": "STEUERUNG ANZEIGEN",
+      "movementHint": "WASD / PFEILTASTEN zum Bewegen"
+    },
+    "completion": {
+      "title": "AUFBAU ABGESCHLOSSEN",
+      "button": "SHOW STARTEN",
+      "equipmentDamage": "Equipment-Schaden: {{damage}}%"
+    },
+    "itemTypes": {
+      "AMP": "Verst\u00e4rker",
+      "DRUMS": "Schlagzeug",
+      "GUITAR": "Gitarre",
+      "unknown": "Unbekannt"
+    }
+  },
+  "seconds": "{{count}} Sek.",
+  "set_label_to_segment": "Setze {{label}} auf {{segment}}",
+  "setlistSelector": {
+    "track1": "SUICIDAL JESUS",
+    "track2": "SYSTEMSPRENGER",
+    "track3": "TRAVESTIE MASSAKER",
+    "diffHard": "SCHWER",
+    "diffExpert": "EXPERT",
+    "diffInsane": "WAHNSINN"
+  },
+  "settings": "Einstellungen",
+  "settings.audio_mute": "Ton ausschalten",
+  "settings.audio_unmute": "Ton einschalten",
+  "settings.crt_disable": "CRT-Effekt deaktivieren",
+  "settings.crt_enable": "CRT-Effekt aktivieren",
+  "sfx_volume": "SFX LAUTST\u00c4RKE",
+  "sign_contract": "Vertrag unterschreiben",
+  "skillCheck": "F\u00e4higkeitspr\u00fcfung",
+  "social_links": {
+    "game": {
+      "title": "Spiele Neurotoxic",
+      "subtitle": "neurotoxic-game.vercel.app"
+    },
+    "bandcamp": {
+      "title": "Bandcamp",
+      "subtitle": "neurotoxic.bandcamp.com"
+    },
+    "instagram": {
+      "title": "Instagram",
+      "subtitle": "instagram.com/neurotoxicband"
+    },
+    "tiktok": {
+      "title": "TikTok",
+      "subtitle": "tiktok.com/@neurotoxicband"
+    },
+    "neurotoxic_once": {
+      "title": "Neurotoxic Once",
+      "subtitle": "youtube.com/@neurotoxiconcechannel237"
+    },
+    "neurotoxic_3000": {
+      "title": "Neurotoxic 3000",
+      "subtitle": "youtube.com/@neurotoxic3000"
+    },
+    "blog": {
+      "title": "Neuroblogxic",
+      "subtitle": "neuroblogxic.blogspot.com"
+    },
+    "type_system_core": "SYSTEM_CORE",
+    "type_audio_vault": "AUDIO_VAULT",
+    "type_visual_feed": "VISUAL_FEED",
+    "type_viral_stream": "VIRAL_STREAM",
+    "type_broadcast_a": "BROADCAST_A",
+    "type_broadcast_b": "BROADCAST_B",
+    "type_data_log": "DATA_LOG"
+  },
+  "socials": "SOCIALS",
+  "start_game": "Tour Starten",
+  "stats.active_quests": "Aktive Quests",
+  "stats.advancedMetrics": "Erweiterte Metriken",
+  "stats.band_metrics": "Band-Metriken",
+  "stats.band_status": "BANDSTATUS",
+  "stats.brandDeals": "Marken-Deals",
+  "stats.breakdown_chance": "Pannenrisiko",
+  "stats.career_overview": "KARRIERESTATUS",
+  "stats.condition": "Zustand",
+  "stats.controversy": "Kontroverse",
+  "stats.currentTrend": "Aktueller Trend",
+  "stats.daysSurvived": "\u00dcBERLEBTE TAGE",
+  "stats.fame": "Ruhm",
+  "stats.fameReached": "ERREICHTER RUHM",
+  "stats.fanLoyalty": "Fan-Loyalit\u00e4t",
+  "stats.fanLoyaltyDesc": "Sch\u00fctzt vor schlechten Gigs",
+  "stats.followers": "Follower",
+  "stats.fuel": "Treibstoff",
+  "stats.funds": "Geld",
+  "stats.harmony": "Harmonie",
+  "stats.instagram": "Instagram",
+  "stats.inventory_equipment": "Inventar & Ausr\u00fcstung",
+  "stats.inventory_slots": "Inventarpl\u00e4tze",
+  "stats.mood": "Stimmung",
+  "stats.newsletter": "Newsletter",
+  "stats.noContracts": "Keine aktiven Vertr\u00e4ge",
+  "stats.normal": "Normal",
+  "stats.regional_standing": "Regionaler Ruf",
+  "stats.repCooldown": "Ruf-Cooldown",
+  "stats.repCooldownDesc": "Tage bis Ruf-Sperren aufgehoben sind",
+  "stats.riskOfShadowban": "Shadowban-Risiko",
+  "stats.shadowbanned": "SHADOWBANNED (-75% Wachstum)",
+  "stats.socialDynamics": "SOZIALE DYNAMIK",
+  "stats.social_reach": "Social-Media-Reichweite",
+  "stats.stamina": "Ausdauer",
+  "stats.tiktok": "TikTok",
+  "stats.totalReach": "Gesamt-Reichweite",
+  "stats.totalScore": "GESAMTPUNKTZAHL",
+  "stats.totalTravels": "GESAMTE REISEN",
+  "stats.van_condition": "VAN-STATUS",
+  "stats.viral": "VIRAL",
+  "stats.viralStatus": "Viral-Status",
+  "stats.youtube": "YouTube",
+  "tabs.details": "DETAILS",
+  "tabs.leaderboard": "RANGLISTE",
+  "tabs.setlist": "SETLIST",
+  "tabs.settings": "EINSTELLUNGEN",
+  "tabs.shop": "SHOP",
+  "tabs.stats": "STATISTIK",
+  "tabs.upgrades": "UPGRADES",
+  "terminal": {
+    "log1": "> INITIALISIERE VOID_ENGINE v3.0...",
+    "log2": "> VERBINDE MIT B\u00dcHNENANLAGE...",
+    "log3": "[OK] AUDIO CONTEXT GESTARTET",
+    "log4": "[WARNUNG] VERST\u00c4RKER 3 \u00dcBERHITZT",
+    "log5": "> LADE LOCATION: 'THE SLAUGHTERHOUSE'",
+    "log6": "...",
+    "log7": "[FEHLER] BAND-HARMONIE KRITISCH.",
+    "log8": "> WARTE AUF EINGABE_"
+  },
+  "toggle": {
+    "on": "AN",
+    "off": "AUS"
+  },
+  "tour.endedPrematurely": "Die Tour endete vorzeitig.",
+  "toxicModeActive": "TOXISCHER MODUS AKTIV",
+  "ui.day": "Tag",
+  "ui.level": "Level",
+  "ui.location": "Ort",
+  "ui.locked": "GESPERRT",
+  "ui.owned": "GEH\u00d6RT",
+  "ui.time": "Zeit",
+  "unlocked": "FREIGESCHALTET: {{unlock}}!",
+  "visual_interface": "VISUELLE SCHNITTSTELLE",
+  "volume": {
+    "set": "Lautst\u00e4rke auf {{pct}}% setzen"
+  }
 }

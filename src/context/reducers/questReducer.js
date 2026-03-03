@@ -1,4 +1,4 @@
-import { clampBandHarmony } from '../../utils/gameStateUtils.js'
+import { clampBandHarmony, clampPlayerMoney, calculateFameLevel } from '../../utils/gameStateUtils.js'
 
 export const handleAddQuest = (state, quest) => {
   if (state.activeQuests?.some(q => q.id === quest.id)) return state
@@ -15,6 +15,53 @@ export const handleCompleteQuest = (state, { questId }) => {
     q => q.id !== questId
   )
 
+  // Apply generic quest rewards
+  let rewardMessage = ''
+
+  if (quest.moneyReward) {
+    nextState.player = {
+      ...nextState.player,
+      money: clampPlayerMoney((nextState.player.money || 0) + quest.moneyReward)
+    }
+    rewardMessage += ` +${quest.moneyReward}€`
+  }
+
+  if (quest.rewardType === 'item' && quest.rewardData?.item) {
+    nextState.band = {
+      ...nextState.band,
+      inventory: {
+        ...(nextState.band?.inventory || {}),
+        [quest.rewardData.item]: true
+      }
+    }
+    rewardMessage += ` +Item`
+  } else if (quest.rewardType === 'fans' && quest.rewardData?.fame) {
+    nextState.player = {
+      ...nextState.player,
+      fame: (nextState.player.fame || 0) + quest.rewardData.fame,
+      fameLevel: calculateFameLevel((nextState.player.fame || 0) + quest.rewardData.fame)
+    }
+    rewardMessage += ` +${quest.rewardData.fame} Fans`
+  } else if (quest.rewardType === 'skill_point' && quest.rewardData?.memberIndex !== undefined) {
+    // Distribute skill point to random member
+    const members = [...(nextState.band?.members || [])]
+    const randomIdx = Math.floor(Math.random() * members.length)
+    if (members[randomIdx]) {
+      members[randomIdx] = {
+        ...members[randomIdx],
+        skill: (members[randomIdx].skill || 0) + 1
+      }
+      nextState.band = { ...nextState.band, members }
+      rewardMessage += ` +1 Skill (${members[randomIdx].name})`
+    }
+  } else if (quest.rewardType === 'harmony' && quest.rewardData?.harmony) {
+    nextState.band = {
+      ...nextState.band,
+      harmony: clampBandHarmony((nextState.band?.harmony || 0) + quest.rewardData.harmony)
+    }
+    rewardMessage += ` +${quest.rewardData.harmony} Harmony`
+  }
+
   // Add reward flag
   if (quest.rewardFlag) {
     nextState.activeStoryFlags = [
@@ -28,11 +75,12 @@ export const handleCompleteQuest = (state, { questId }) => {
     ...(nextState.toasts || []),
     {
       id: `${Date.now()}-${questId}`,
-      message: `[${quest.label}]: COMPLETE`,
+      message: `[${quest.label}]: COMPLETE${rewardMessage}`,
       type: 'success'
     }
   ]
 
+  // Hardcoded old quest logic
   if (quest.id === 'quest_prove_yourself') {
     nextState.venueBlacklist = (nextState.venueBlacklist || []).slice(2) // clear 2
     nextState.player = {

@@ -429,6 +429,11 @@ export const GameStateProvider = ({ children }) => {
         return false
       }
 
+      // Max two events per day limit
+      if (currentState.player?.eventsTriggeredToday >= 2) {
+        return false
+      }
+
       // Pass full state context for flags/cooldowns
       const context = currentState
 
@@ -439,6 +444,9 @@ export const GameStateProvider = ({ children }) => {
         event = eventEngine.processOptions(event, context)
 
         setActiveEvent(event)
+        // Increment daily event count
+        dispatch(createUpdatePlayerAction({ eventsTriggeredToday: (currentState.player.eventsTriggeredToday || 0) + 1 }))
+
         // If it was a pending event, remove it from queue
         if (currentState.pendingEvents.includes(event.id)) {
           dispatch(createPopPendingEventAction())

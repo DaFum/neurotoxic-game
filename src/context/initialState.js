@@ -34,6 +34,7 @@ export const DEFAULT_PLAYER_STATE = {
   score: 0,
   fame: 0,
   fameLevel: 0,
+  eventsTriggeredToday: 0,
   totalTravels: 0,
   hqUpgrades: [],
   van: {

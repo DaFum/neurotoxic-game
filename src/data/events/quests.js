@@ -1,0 +1,168 @@
+
+export const QUEST_EVENTS = [
+  {
+    id: 'quest_trigger_pick_of_destiny',
+    category: 'special',
+    title: 'events:quest_trigger_pick_of_destiny.title',
+    description: 'events:quest_trigger_pick_of_destiny.desc',
+    trigger: 'random',
+    chance: 0.05,
+    condition: state => (!state.activeQuests || state.activeQuests.length === 0) && !state.activeQuests?.some(q => q.id === 'quest_pick_of_destiny'),
+    options: [
+      {
+        label: 'events:quest_trigger_pick_of_destiny.opt1.label',
+        effect: {
+          type: 'quest',
+          quest: {
+            id: 'quest_pick_of_destiny',
+            label: 'Find the Pick of Destiny',
+            description: 'Travel to 3 different venues to find the lost pick.',
+            deadline: 15,
+            progress: 0,
+            required: 3,
+            rewardType: 'item',
+            rewardData: { item: 'lucky_pick' }, // We'll add this item later or use a generic one
+            moneyReward: 200
+          }
+        },
+        outcomeText: 'events:quest_trigger_pick_of_destiny.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_pick_of_destiny.opt2.label',
+        effect: { type: 'none' },
+        outcomeText: 'events:quest_trigger_pick_of_destiny.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'quest_trigger_viral_dance',
+    category: 'band',
+    title: 'events:quest_trigger_viral_dance.title',
+    description: 'events:quest_trigger_viral_dance.desc',
+    trigger: 'random',
+    chance: 0.1,
+    condition: state => (state.social?.tiktok || 0) < 5000 && (!state.activeQuests || state.activeQuests.length === 0) && !state.activeQuests?.some(q => q.id === 'quest_viral_dance'),
+    options: [
+      {
+        label: 'events:quest_trigger_viral_dance.opt1.label',
+        effect: {
+          type: 'quest',
+          quest: {
+            id: 'quest_viral_dance',
+            label: 'The Viral TikTok Dance',
+            description: 'Gain 500 TikTok followers.',
+            deadline: 5,
+            progress: 0,
+            required: 500,
+            rewardType: 'fans',
+            rewardData: { fame: 500 },
+            moneyReward: 0
+          }
+        },
+        outcomeText: 'events:quest_trigger_viral_dance.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_viral_dance.opt2.label',
+        effect: { type: 'none' },
+        outcomeText: 'events:quest_trigger_viral_dance.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'quest_trigger_sponsor_demand',
+    category: 'financial',
+    title: 'events:quest_trigger_sponsor_demand.title',
+    description: 'events:quest_trigger_sponsor_demand.desc',
+    trigger: 'random',
+    chance: 0.08,
+    condition: state => (!state.activeQuests || state.activeQuests.length === 0) && !state.activeQuests?.some(q => q.id === 'quest_sponsor_demand'),
+    options: [
+      {
+        label: 'events:quest_trigger_sponsor_demand.opt1.label',
+        effect: {
+          type: 'quest',
+          quest: {
+            id: 'quest_sponsor_demand',
+            label: 'Sponsor\'s Bizarre Demand',
+            description: 'Play 2 gigs to satisfy the sponsor.',
+            deadline: 7,
+            progress: 0,
+            required: 2,
+            rewardType: 'item',
+            rewardData: { item: 'energy_drink' },
+            moneyReward: 500
+          }
+        },
+        outcomeText: 'events:quest_trigger_sponsor_demand.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_sponsor_demand.opt2.label',
+        effect: { type: 'none' },
+        outcomeText: 'events:quest_trigger_sponsor_demand.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'quest_trigger_harmony_project',
+    category: 'band',
+    title: 'events:quest_trigger_harmony_project.title',
+    description: 'events:quest_trigger_harmony_project.desc',
+    trigger: 'random',
+    chance: 1.0, // High chance if condition is met
+    condition: state => (state.band?.harmony || 0) < 60 && (!state.activeQuests || state.activeQuests.length === 0) && !state.activeQuests?.some(q => q.id === 'quest_harmony_project'),
+    options: [
+      {
+        label: 'events:quest_trigger_harmony_project.opt1.label',
+        effect: {
+          type: 'quest',
+          quest: {
+            id: 'quest_harmony_project',
+            label: 'Harmony Restoration Project',
+            description: 'Successfully complete 1 gig with a high rating to restore harmony.',
+            deadline: 4,
+            progress: 0,
+            required: 1,
+            rewardType: 'harmony',
+            rewardData: { harmony: 20 },
+            moneyReward: 0
+          }
+        },
+        outcomeText: 'events:quest_trigger_harmony_project.opt1.outcome'
+      }
+    ]
+  },
+  {
+    id: 'quest_trigger_local_legend',
+    category: 'special',
+    title: 'events:quest_trigger_local_legend.title',
+    description: 'events:quest_trigger_local_legend.desc',
+    trigger: 'random',
+    chance: 0.07,
+    condition: state => (!state.activeQuests || state.activeQuests.length === 0) && !state.activeQuests?.some(q => q.id === 'quest_local_legend'),
+    options: [
+      {
+        label: 'events:quest_trigger_local_legend.opt1.label',
+        effect: {
+          type: 'quest',
+          quest: {
+            id: 'quest_local_legend',
+            label: 'Local Legend',
+            description: 'Earn 500 fans in total.',
+            deadline: 10,
+            progress: 0,
+            required: 500,
+            rewardType: 'skill_point',
+            rewardData: { memberIndex: 0 }, // We'll distribute to random member in reducer
+            moneyReward: 0
+          }
+        },
+        outcomeText: 'events:quest_trigger_local_legend.opt1.outcome'
+      },
+      {
+        label: 'events:quest_trigger_local_legend.opt2.label',
+        effect: { type: 'none' },
+        outcomeText: 'events:quest_trigger_local_legend.opt2.outcome'
+      }
+    ]
+  }
+]

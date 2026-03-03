@@ -233,6 +233,9 @@ export const handleAdvanceDay = (state, payload) => {
     state,
     rng
   )
+
+  // Reset daily event counter
+  player.eventsTriggeredToday = 0
   const nextBand = { ...band }
   if (typeof nextBand.harmony === 'number') {
     nextBand.harmony = clampBandHarmony(nextBand.harmony)
