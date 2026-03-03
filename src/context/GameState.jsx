@@ -105,6 +105,9 @@ const createPersistedState = currentState => {
   return saveData
 }
 
+const isPlainObject = value =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
 
 /**
  * Global State Provider covering Player, Band, Inventory, and Scene Management.
@@ -347,21 +350,6 @@ export const GameStateProvider = ({ children }) => {
     []
   )
 
-  /**
-   * Completes the current gig and transitions to the appropriate post-gig scene.
-   * Handles Practice Mode logic (redirects to OVERWORLD instead of POSTGIG).
-   */
-  const endGig = useCallback(() => {
-    const currentState = stateRef.current
-    if (currentState.currentGig?.isPractice) {
-      addToast('Practice Session Complete', 'success')
-      changeScene('OVERWORLD')
-    } else {
-      saveGame()
-      changeScene('POSTGIG')
-    }
-  }, [addToast, changeScene, saveGame])
-
   // Persistence
   /**
    * Deletes the save file and reloads the application.
@@ -398,6 +386,32 @@ export const GameStateProvider = ({ children }) => {
   }, [addToast])
 
   /**
+   * Completes the current gig and transitions to the appropriate post-gig scene.
+   * Handles Practice Mode logic (redirects to OVERWORLD instead of POSTGIG).
+   */
+  const endGig = useCallback(() => {
+    const currentState = stateRef.current
+    if (currentState.currentGig?.isPractice) {
+      addToast('Practice Session Complete', 'success')
+      changeScene('OVERWORLD')
+    } else {
+      saveGame()
+      changeScene('POSTGIG')
+    }
+  }, [addToast, changeScene, saveGame])
+
+  const previousSceneRef = useRef(state.currentScene)
+
+  useEffect(() => {
+    const previousScene = previousSceneRef.current
+    previousSceneRef.current = state.currentScene
+
+    if (previousScene === 'POSTGIG' && state.currentScene === 'OVERWORLD') {
+      saveGame()
+    }
+  }, [state.currentScene, saveGame])
+
+  /**
    * Loads the game state from localStorage.
    * @returns {boolean} True if load was successful.
    */
@@ -409,6 +423,12 @@ export const GameStateProvider = ({ children }) => {
         if (!saved) return false
 
         const parsed = JSON.parse(saved)
+        if (!isPlainObject(parsed)) {
+          handleError(new StateError('Save file is corrupt or invalid.'), {
+            addToast
+          })
+          return false
+        }
 
         // Validate Schema
         try {

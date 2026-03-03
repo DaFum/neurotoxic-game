@@ -168,8 +168,7 @@ describe('PostGig Leaderboard Submission', () => {
       )
     })
 
-    // Verify autosave and scene change
-    expect(mockSaveGame).toHaveBeenCalled()
+    // Verify scene change (autosave is handled centrally in GameState)
     expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
   })
 
@@ -237,7 +236,6 @@ describe('PostGig Leaderboard Submission', () => {
     fireEvent.click(await screen.findByText(/Back to Tour/i))
 
     expect(mockFetch).not.toHaveBeenCalled()
-    expect(mockSaveGame).toHaveBeenCalled()
     expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
   })
 })
