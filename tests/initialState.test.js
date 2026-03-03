@@ -1,24 +1,16 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { initialState, createInitialState } from '../src/context/initialState.js'
 
-test('initialState populates unlocks from unlockManager', async t => {
-  // We need to use t.mock.module to mock unlockManager before importing initialState
-  t.mock.module('../src/utils/unlockManager.js', {
-    namedExports: {
-      getUnlocks: () => ['test_unlock_1', 'test_unlock_2']
-    }
-  })
+test('initialState exposes empty unlocks default', () => {
+  assert.deepEqual(initialState.unlocks, [])
+})
 
-  // Dynamic import so it uses the mocked module
-  const { initialState, createInitialState } = await import(
-    '../src/context/initialState.js'
-  )
-
-  assert.deepEqual(initialState.unlocks, ['test_unlock_1', 'test_unlock_2'])
-
-  const createdState = createInitialState()
+test('createInitialState accepts persistedData', () => {
+  const createdState = createInitialState({ unlocks: ['test_unlock_1', 'test_unlock_2'] })
   assert.deepEqual(createdState.unlocks, ['test_unlock_1', 'test_unlock_2'])
 
   // Ensure it's a new copy
-  assert.notEqual(initialState.unlocks, createdState.unlocks)
+  const createdState2 = createInitialState({ unlocks: ['test_unlock_1', 'test_unlock_2'] })
+  assert.notEqual(createdState.unlocks, createdState2.unlocks)
 })

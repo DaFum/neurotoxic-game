@@ -108,7 +108,7 @@ export const gameReducer = (state, action) => {
       return handleLoadGame(state, action.payload)
 
     case ActionTypes.RESET_STATE:
-      return handleResetState(state)
+      return handleResetState(state, action.payload)
 
     case ActionTypes.APPLY_EVENT_DELTA:
       return handleApplyEventDelta(state, action.payload)

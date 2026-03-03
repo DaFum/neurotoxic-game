@@ -166,10 +166,12 @@ export const createLoadGameAction = data => ({
 
 /**
  * Creates a reset state action
+ * @param {Object} [payload={}] - Data to preserve across reset (e.g. settings, unlocks)
  * @returns {Object} Action object
  */
-export const createResetStateAction = () => ({
-  type: ActionTypes.RESET_STATE
+export const createResetStateAction = (payload = {}) => ({
+  type: ActionTypes.RESET_STATE,
+  payload
 })
 
 /**

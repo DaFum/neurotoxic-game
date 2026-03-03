@@ -7,8 +7,6 @@
 import { CHARACTERS } from '../data/characters.js'
 import { LOG_LEVELS } from '../utils/logger.js'
 import { DEFAULT_MINIGAME_STATE } from './gameConstants.js'
-import { getUnlocks } from '../utils/unlockManager.js'
-import { safeStorageOperation } from '../utils/errorHandler.js'
 
 /**
  * Brand alignment constants
@@ -188,14 +186,15 @@ export const initialState = {
   npcs: {},
   gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
   minigame: { ...DEFAULT_MINIGAME_STATE },
-  unlocks: safeStorageOperation('loadUnlocks', () => getUnlocks(), []) || []
+  unlocks: []
 }
 
 /**
  * Creates a fresh copy of the initial state
+ * @param {Object} [persistedData={}] - Persisted data to inject (e.g. unlocks, settings)
  * @returns {Object} A new initial state object
  */
-export const createInitialState = () => ({
+export const createInitialState = (persistedData = {}) => ({
   ...initialState,
   player: structuredClone(DEFAULT_PLAYER_STATE),
   venueBlacklist: [],
@@ -215,8 +214,8 @@ export const createInitialState = () => ({
     activeDeals: [...DEFAULT_SOCIAL_STATE.activeDeals],
     brandReputation: { ...DEFAULT_SOCIAL_STATE.brandReputation }
   },
-  settings: { ...DEFAULT_SETTINGS },
+  settings: { ...DEFAULT_SETTINGS, ...(persistedData.settings || {}) },
   gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
   minigame: { ...DEFAULT_MINIGAME_STATE },
-  unlocks: safeStorageOperation('loadUnlocks', () => getUnlocks(), []) || []
+  unlocks: Array.isArray(persistedData.unlocks) ? [...persistedData.unlocks] : []
 })

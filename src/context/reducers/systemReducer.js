@@ -186,9 +186,19 @@ export const handleLoadGame = (state, payload) => {
   return safeState
 }
 
-export const handleResetState = state => {
+export const handleResetState = (state, payload = {}) => {
   logger.info('GameState', 'State Reset (Debug)')
-  return { ...createInitialState(), settings: state.settings }
+
+  // Construct the data to preserve across reset
+  const persistedData = {
+    settings: payload.settings || state.settings,
+    unlocks: Array.isArray(payload.unlocks) ? payload.unlocks : []
+  }
+
+  return {
+    ...createInitialState(persistedData),
+    settings: persistedData.settings
+  }
 }
 
 export const handleUpdateSettings = (state, payload) => {

@@ -281,6 +281,21 @@ describe('gameReducer', () => {
       assert.strictEqual(newState.currentScene, initialState.currentScene)
       assert.strictEqual(newState.player.money, initialState.player.money)
     })
+
+    it('should retain unlocks on reset when payload is provided', () => {
+      testState.player.money = 9999
+      testState.currentScene = 'GIG'
+
+      const action = {
+        type: ActionTypes.RESET_STATE,
+        payload: { unlocks: ['retained_unlock'] }
+      }
+      const newState = gameReducer(testState, action)
+
+      assert.strictEqual(newState.currentScene, initialState.currentScene)
+      assert.strictEqual(newState.player.money, initialState.player.money)
+      assert.deepStrictEqual(newState.unlocks, ['retained_unlock'])
+    })
   })
 
   describe('LOAD_GAME', () => {
