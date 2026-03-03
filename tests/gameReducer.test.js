@@ -472,6 +472,8 @@ describe('gameReducer', () => {
       const newState = gameReducer(testState, action)
 
       assert.deepStrictEqual(newState.unlocks, ['existing_unlock', 'new_unlock'])
+      assert.deepStrictEqual(testState.unlocks, ['existing_unlock']) // Verify immutability
+      assert.notStrictEqual(newState, testState)
     })
 
     it('should not add a duplicate unlock', () => {
@@ -505,6 +507,22 @@ describe('gameReducer', () => {
       const newState = gameReducer(testState, action)
 
       assert.deepStrictEqual(newState.unlocks, ['new_unlock'])
+    })
+
+    it('should ignore falsy and non-string unlockIds', () => {
+      const testState = {
+        ...createInitialState(),
+        unlocks: ['existing']
+      }
+
+      const testCases = [null, undefined, '', 123, {}, []]
+
+      testCases.forEach(payload => {
+        const action = { type: ActionTypes.ADD_UNLOCK, payload }
+        const newState = gameReducer(testState, action)
+        assert.strictEqual(newState, testState)
+        assert.deepStrictEqual(newState.unlocks, ['existing'])
+      })
     })
   })
 })

@@ -18,7 +18,7 @@ import {
   safeStorageOperation
 } from '../utils/errorHandler'
 import { validateSaveData } from '../utils/saveValidator'
-import { addUnlock } from '../utils/unlockManager'
+import { addUnlock, getUnlocks } from '../utils/unlockManager'
 import { hasUpgrade as checkUpgrade } from '../utils/upgradeUtils'
 import { useLeaderboardSync } from '../hooks/useLeaderboardSync'
 
@@ -390,6 +390,8 @@ export const GameStateProvider = ({ children }) => {
           )
           return false
         }
+
+        data.unlocks = getUnlocks()
 
         dispatch(createLoadGameAction(data))
         return true

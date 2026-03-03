@@ -162,14 +162,6 @@ const DEFAULT_SETTINGS = {
   ...savedSettings
 }
 
-const loadedUnlocks = (() => {
-  try {
-    return getUnlocks()
-  } catch (_e) {
-    return []
-  }
-})()
-
 /**
  * Complete initial state for the game
  * @type {Object}
@@ -195,7 +187,13 @@ export const initialState = {
   npcs: {},
   gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
   minigame: { ...DEFAULT_MINIGAME_STATE },
-  unlocks: loadedUnlocks
+  unlocks: (() => {
+    try {
+      return getUnlocks() || []
+    } catch (_e) {
+      return []
+    }
+  })()
 }
 
 /**
@@ -225,5 +223,11 @@ export const createInitialState = () => ({
   settings: { ...DEFAULT_SETTINGS },
   gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
   minigame: { ...DEFAULT_MINIGAME_STATE },
-  unlocks: [...loadedUnlocks]
+  unlocks: (() => {
+    try {
+      return getUnlocks() || []
+    } catch (_e) {
+      return []
+    }
+  })()
 })
