@@ -2,11 +2,18 @@ import { useEffect } from 'react'
 import { logger } from '../utils/logger'
 
 /**
- * Hook to sync player balance to the global leaderboard.
- * @param {object} player - The current player state.
+ * Hook to sync player stats to the global leaderboards.
+ * @param {object} state - The current game state.
  */
-export const useLeaderboardSync = player => {
-  const { playerId, playerName, money, day } = player || {}
+export const useLeaderboardSync = state => {
+  const { player, social } = state || {}
+  const { playerId, playerName, money, day, fame, stats } = player || {}
+  const { totalDistance, conflictsResolved, stageDives } = stats || {}
+
+  const totalFollowers = (social?.instagram || 0) +
+    (social?.tiktok || 0) +
+    (social?.youtube || 0) +
+    (social?.newsletter || 0)
 
   useEffect(() => {
     // 1. Strict Validation
@@ -23,7 +30,7 @@ export const useLeaderboardSync = player => {
       return
     }
 
-    const syncBalance = async () => {
+    const syncStats = async () => {
       // 2. Check if already synced for this day (Player-Specific)
       const syncKey = `neurotoxic_last_synced_day:${playerId}`
       const lastSyncedDay = parseInt(localStorage.getItem(syncKey) || '0', 10)
@@ -32,15 +39,22 @@ export const useLeaderboardSync = player => {
 
       // 3. Sync Logic
       try {
-        const response = await fetch('/api/leaderboard/balance', {
+        const payload = {
+          playerId,
+          playerName,
+          money,
+          day,
+          fame: fame || 0,
+          followers: totalFollowers,
+          distance: totalDistance || 0,
+          conflicts: conflictsResolved || 0,
+          stageDives: stageDives || 0
+        }
+
+        const response = await fetch('/api/leaderboard/stats', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            playerId,
-            playerName,
-            money,
-            day
-          })
+          body: JSON.stringify(payload)
         })
 
         if (!response.ok) {
@@ -49,13 +63,16 @@ export const useLeaderboardSync = player => {
 
         // 4. Update Synced State
         localStorage.setItem(syncKey, day.toString())
-        logger.info('Leaderboard', `Synced balance for day ${day}`)
+        logger.info('Leaderboard', `Synced stats for day ${day}`)
       } catch (error) {
         // Silent fail for leaderboard sync to not disrupt gameplay
-        logger.warn('Leaderboard', 'Balance sync failed', error)
+        logger.warn('Leaderboard', 'Stats sync failed', error)
       }
     }
 
-    syncBalance()
-  }, [playerId, playerName, money, day])
+    syncStats()
+  }, [
+    playerId, playerName, money, day,
+    fame, totalFollowers, totalDistance, conflictsResolved, stageDives
+  ])
 }
