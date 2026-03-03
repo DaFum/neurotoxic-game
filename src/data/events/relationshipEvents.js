@@ -12,7 +12,8 @@ export const RELATIONSHIP_EVENTS = [
       if (!state.band?.members) return false
       for (const m1 of state.band.members) {
         if (!m1.relationships) continue
-        for (const [m2Name, score] of Object.entries(m1.relationships)) {
+        for (const m2Name in m1.relationships) {
+          const score = m1.relationships[m2Name]
           if (score < 20) return { member1: m1.name, member2: m2Name }
         }
       }
@@ -72,7 +73,8 @@ export const RELATIONSHIP_EVENTS = [
       if (!state.band?.members) return false
       for (const m1 of state.band.members) {
         if (!m1.relationships) continue
-        for (const [m2Name, score] of Object.entries(m1.relationships)) {
+        for (const m2Name in m1.relationships) {
+          const score = m1.relationships[m2Name]
           if (score > 80) return { member1: m1.name, member2: m2Name }
         }
       }
