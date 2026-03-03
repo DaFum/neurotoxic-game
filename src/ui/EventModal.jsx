@@ -107,7 +107,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
                   {t(
                     outcome.description ||
                       outcome.outcomeText ||
-                      'Event resolved.',
+                      'ui:event.resolved',
                     event.context
                   )}
                 </p>

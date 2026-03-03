@@ -48,6 +48,7 @@
     "waiting": "AWAITING SEQUENCE"
   },
   "close": "Close",
+  "closeModal": "Close modal",
   "confirm": "CONFIRM",
   "confirm_delete": "CONFIRM DELETE",
   "confirm_delete_text": "Are you sure you want to delete your save game? This cannot be undone.",
@@ -148,6 +149,7 @@
   "errors.ambient_start_failed": "Ambient audio failed to start.",
   "errors.audio_init_failed": "Audio initialization failed.",
   "event": {
+    "resolved": "Event resolved.",
     "severity": {
       "critical": "CRITICAL"
     }

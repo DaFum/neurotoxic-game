@@ -71,7 +71,7 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
         <button
           type='button'
           onClick={onClose}
-          aria-label={t('ui:close')}
+          aria-label={t('ui:closeModal')}
           className='absolute -top-3 -right-3 w-8 h-8 flex items-center justify-center bg-(--void-black) border-2 border-(--toxic-green) text-(--toxic-green) hover:bg-(--toxic-green) hover:text-(--void-black) transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green) z-20 group-hover:shadow-[0_0_10px_var(--toxic-green-glow)]'
         >
           <span

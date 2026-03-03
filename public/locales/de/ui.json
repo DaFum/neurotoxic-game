@@ -48,6 +48,7 @@
     "waiting": "WARTE AUF SEQUENZ"
   },
   "close": "Schließen",
+  "closeModal": "Modal schließen",
   "confirm": "BESTÄTIGEN",
   "confirm_delete": "LÖSCHEN BESTÄTIGEN",
   "confirm_delete_text": "Bist du sicher, dass du deinen Spielstand löschen willst? Das kann nicht rückgängig gemacht werden.",
@@ -148,6 +149,7 @@
   "errors.ambient_start_failed": "Ambient-Audio konnte nicht gestartet werden.",
   "errors.audio_init_failed": "Audio-Initialisierung fehlgeschlagen.",
   "event": {
+    "resolved": "Ereignis beendet.",
     "severity": {
       "critical": "KRITISCH"
     }

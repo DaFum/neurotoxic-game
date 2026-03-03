@@ -83,6 +83,27 @@ const IconCube = ({ className = '', title }) => (
   </BaseIcon>
 )
 
+// Get translated reward text
+const getRewardText = (quest, t) => {
+  const value = quest.rewardData;
+  switch (quest.rewardType) {
+    case 'item':
+      return t('ui:rewards.freeItem');
+    case 'fame':
+      return `+${value?.fame || 0} ${t('ui:rewards.fame')}`;
+    case 'fans':
+      return `+${value?.fans || 0} ${t('ui:rewards.fans')}`;
+    case 'money':
+      return `+${value?.money || 0} ${t('ui:rewards.money')}`;
+    case 'skill_point':
+      return `+1 ${t('ui:rewards.skillPoint')}`;
+    case 'harmony':
+      return `+${value?.harmony || 0} ${t('ui:rewards.harmony')}`;
+    default:
+      return t('ui:rewards.special');
+  }
+};
+
 // Map a reward type to an icon
 const getRewardIcon = type => {
   switch (type) {
@@ -270,19 +291,7 @@ export const QuestsModal = ({ onClose, activeQuests, player }) => {
                       {quest.rewardType && (
                         <span className='inline-flex items-center gap-1 bg-(--toxic-green)/10 text-(--toxic-green) px-2 py-1 text-xs font-mono rounded'>
                           {getRewardIcon(quest.rewardType)}
-                          {quest.rewardType === 'item'
-                            ? t('ui:rewards.freeItem')
-                            : quest.rewardType === 'fame'
-                              ? `+${quest.rewardData?.fame || 0} ${t('ui:rewards.fame')}`
-                              : quest.rewardType === 'fans'
-                                ? `+${quest.rewardData?.fans || 0} ${t('ui:rewards.fans')}`
-                                : quest.rewardType === 'money'
-                                  ? `+${quest.rewardData?.money || 0} ${t('ui:rewards.money')}`
-                                  : quest.rewardType === 'skill_point'
-                                    ? `+1 ${t('ui:rewards.skillPoint')}`
-                                    : quest.rewardType === 'harmony'
-                                      ? `+${quest.rewardData?.harmony || 0} ${t('ui:rewards.harmony')}`
-                                      : t('ui:rewards.special')}
+                          {getRewardText(quest, t)}
                         </span>
                       )}
                     </div>

@@ -191,14 +191,9 @@ describe('MainMenu Component', () => {
       expect(screen.getAllByText('ui:socials').length).toBeGreaterThan(1)
 
       // Close modal - find the modal's close button
-      const closeButtons = screen.getAllByRole('button')
-      const modalCloseButton = closeButtons.find(
-        btn => btn.getAttribute('aria-label') === 'Close modal'
-      )
-
-      if (modalCloseButton) {
-        fireEvent.click(modalCloseButton)
-      }
+      const modalCloseButton = screen.getByRole('button', { name: 'ui:closeModal' })
+      expect(modalCloseButton).toBeInTheDocument()
+      fireEvent.click(modalCloseButton)
     })
 
     it('displays social links in socials modal', () => {
@@ -232,14 +227,9 @@ describe('MainMenu Component', () => {
       fireEvent.click(screen.getByText('ui:features.button'))
       expect(screen.getByText('ui:features.title')).toBeInTheDocument()
 
-      const closeButtons = screen.getAllByRole('button')
-      const modalCloseButton = closeButtons.find(
-        btn => btn.getAttribute('aria-label') === 'Close modal'
-      )
-
-      if (modalCloseButton) {
-        fireEvent.click(modalCloseButton)
-      }
+      const modalCloseButton = screen.getByRole('button', { name: 'ui:closeModal' })
+      expect(modalCloseButton).toBeInTheDocument()
+      fireEvent.click(modalCloseButton)
     })
 
     it('renders bullet list features', () => {
@@ -315,14 +305,9 @@ describe('MainMenu Component', () => {
         screen.getByText('ui:mainMenu.existingSave.title')
       ).toBeInTheDocument()
 
-      const closeButtons = screen.getAllByRole('button')
-      const modalCloseButton = closeButtons.find(
-        btn => btn.getAttribute('aria-label') === 'Close modal'
-      )
-
-      if (modalCloseButton) {
-        fireEvent.click(modalCloseButton)
-      }
+      const modalCloseButton = screen.getByRole('button', { name: 'ui:closeModal' })
+      expect(modalCloseButton).toBeInTheDocument()
+      fireEvent.click(modalCloseButton)
     })
   })
 
@@ -406,14 +391,9 @@ describe('MainMenu Component', () => {
       fireEvent.click(screen.getByText('ui:start_game'))
       expect(screen.getByText('ui:identity_required')).toBeInTheDocument()
 
-      const closeButtons = screen.getAllByRole('button')
-      const modalCloseButton = closeButtons.find(
-        btn => btn.getAttribute('aria-label') === 'Close modal'
-      )
-
-      if (modalCloseButton) {
-        fireEvent.click(modalCloseButton)
-      }
+      const modalCloseButton = screen.getByRole('button', { name: 'ui:closeModal' })
+      expect(modalCloseButton).toBeInTheDocument()
+      fireEvent.click(modalCloseButton)
     })
 
     it('enforces maxLength of 20 characters', () => {

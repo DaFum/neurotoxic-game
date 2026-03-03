@@ -69,7 +69,7 @@ Follow these rules when generating:
 
 - Write them as strategic guidance to the documentation generator
 - Mention priority folders/components explicitly by path
-- Explain relationships the system might miss
+- Explain relationships that the system might miss
 - State what to ignore (legacy code, generated files, test fixtures)
 - Keep each note focused; consolidate related guidance into fewer, longer notes
 
@@ -158,7 +158,7 @@ Deliver the file and explain:
 
 6. **Iterative refinement workflow:**
    - Pass 1: `repo_notes` only → regenerate → evaluate
-   - Pass 2: Add missing pages to `pages` array (include ALL pages)
+   - Pass 2: Switch to explicit `pages` and provide the complete desired page set (remember the all-or-nothing rule for `pages`, `repo_notes`, and `page_notes` to avoid incremental additions)
    - Pass 3: Add `page_notes` for pages needing refinement
    - Commit and regenerate after each pass
 
