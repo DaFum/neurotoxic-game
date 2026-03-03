@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useId, memo } from 'react'
 
 export const UplinkButton = ({ title, url, subtitle, type, Icon }) => {
   const [isHovered, setIsHovered] = useState(false)
@@ -74,8 +74,6 @@ export const UplinkButton = ({ title, url, subtitle, type, Icon }) => {
 }
 
 // --- SVG DECORATIONS ---
-
-import { useId, memo } from 'react'
 
 // Optimization: Wrapped in React.memo to prevent unnecessary re-renders of static SVG decorations
 export const HexBorder = memo(({ className, title }) => {
