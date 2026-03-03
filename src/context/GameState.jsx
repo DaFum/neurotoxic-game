@@ -430,7 +430,7 @@ export const GameStateProvider = ({ children }) => {
       }
 
       // Max two events per day limit
-      if (currentState.player?.eventsTriggeredToday >= 2) {
+      if ((currentState.player?.eventsTriggeredToday || 0) >= 2) {
         return false
       }
 
