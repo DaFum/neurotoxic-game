@@ -47,7 +47,6 @@
     "task4": "CALIBRATE AMPS",
     "waiting": "AWAITING SEQUENCE"
   },
-  "close": "Close",
   "confirm": "CONFIRM",
   "confirm_delete": "CONFIRM DELETE",
   "confirm_delete_text": "Are you sure you want to delete your save game? This cannot be undone.",
@@ -466,13 +465,6 @@
     "play": "Play/Resume Radio",
     "stop": "Stop Radio"
   },
-  "rewards.fame": "Fame",
-  "rewards.fans": "Fans",
-  "rewards.freeItem": "Free Item",
-  "rewards.harmony": "Harmony",
-  "rewards.money": "Money",
-  "rewards.skillPoint": "Skill Point",
-  "rewards.special": "Special",
   "rhythm": {
     "header": "RHYTHM_ENGINE_SIM",
     "hit": "HIT",
@@ -661,11 +653,6 @@
     "skillPointWithAmount": "+{{count}} Skill Point",
     "harmonyWithAmount": "+{{count}} Harmony",
     "special": "Special",
-    "fame": "Fame",
-    "fans": "Fans",
-    "money": "Money",
-    "skillPoint": "Skill Point",
-    "harmony": "Harmony",
     "freeItem": "Free Item"
   },
   "closeModal": "Close modal"
