@@ -158,7 +158,7 @@ Deliver the file and explain:
 
 6. **Iterative refinement workflow:**
    - Pass 1: `repo_notes` only → regenerate → evaluate
-   - Pass 2: Switch to explicit `pages` and provide the complete desired page set (remember the all-or-nothing rule for `pages`, `repo_notes`, and `page_notes` to avoid incremental additions)
+   - Pass 2: Switch to explicit `pages` and provide the complete desired page set (remember the all-or-nothing rule for `pages` to avoid incremental additions)
    - Pass 3: Add `page_notes` for pages needing refinement
    - Commit and regenerate after each pass
 

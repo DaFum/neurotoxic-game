@@ -48,7 +48,6 @@
     "waiting": "AWAITING SEQUENCE"
   },
   "close": "Close",
-  "closeModal": "Close modal",
   "confirm": "CONFIRM",
   "confirm_delete": "CONFIRM DELETE",
   "confirm_delete_text": "Are you sure you want to delete your save game? This cannot be undone.",
@@ -149,10 +148,10 @@
   "errors.ambient_start_failed": "Ambient audio failed to start.",
   "errors.audio_init_failed": "Audio initialization failed.",
   "event": {
-    "resolved": "Event resolved.",
     "severity": {
       "critical": "CRITICAL"
-    }
+    },
+    "resolved": "Event resolved."
   },
   "event_error": "EVENT ERROR: Resolution failed.",
   "executed": "EXECUTED",
@@ -189,10 +188,22 @@
         "ui:featureList.sec2.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec2.rows.0.0", "ui:featureList.sec2.rows.0.1"],
-        ["ui:featureList.sec2.rows.1.0", "ui:featureList.sec2.rows.1.1"],
-        ["ui:featureList.sec2.rows.2.0", "ui:featureList.sec2.rows.2.1"],
-        ["ui:featureList.sec2.rows.3.0", "ui:featureList.sec2.rows.3.1"]
+        [
+          "ui:featureList.sec2.rows.0.0",
+          "ui:featureList.sec2.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.1.0",
+          "ui:featureList.sec2.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.2.0",
+          "ui:featureList.sec2.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.3.0",
+          "ui:featureList.sec2.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec2.title",
       "type": "table"
@@ -215,10 +226,22 @@
         "ui:featureList.sec4.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec4.rows.0.0", "ui:featureList.sec4.rows.0.1"],
-        ["ui:featureList.sec4.rows.1.0", "ui:featureList.sec4.rows.1.1"],
-        ["ui:featureList.sec4.rows.2.0", "ui:featureList.sec4.rows.2.1"],
-        ["ui:featureList.sec4.rows.3.0", "ui:featureList.sec4.rows.3.1"]
+        [
+          "ui:featureList.sec4.rows.0.0",
+          "ui:featureList.sec4.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.1.0",
+          "ui:featureList.sec4.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.2.0",
+          "ui:featureList.sec4.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.3.0",
+          "ui:featureList.sec4.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec4.title",
       "type": "table"
@@ -630,5 +653,20 @@
   "quests.postgig.saveTheBand.title": "SAVE THE BAND",
   "quests.postgig.saveTheBand.description": "Keep the band together by surviving the current ego crisis.",
   "gig.practiceComplete": "Practice session complete",
-  "toast.gameSaved": "Game saved!"
+  "toast.gameSaved": "Game saved!",
+  "rewards": {
+    "fameWithAmount": "+{{count}} Fame",
+    "fansWithAmount": "+{{count}} Fans",
+    "moneyWithAmount": "+{{count}} Money",
+    "skillPointWithAmount": "+{{count}} Skill Point",
+    "harmonyWithAmount": "+{{count}} Harmony",
+    "special": "Special",
+    "fame": "Fame",
+    "fans": "Fans",
+    "money": "Money",
+    "skillPoint": "Skill Point",
+    "harmony": "Harmony",
+    "freeItem": "Free Item"
+  },
+  "closeModal": "Close modal"
 }

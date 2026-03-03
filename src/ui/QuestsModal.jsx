@@ -90,15 +90,15 @@ const getRewardText = (quest, t) => {
     case 'item':
       return t('ui:rewards.freeItem');
     case 'fame':
-      return `+${value?.fame || 0} ${t('ui:rewards.fame')}`;
+      return t('ui:rewards.fameWithAmount', { count: value?.fame || 0 });
     case 'fans':
-      return `+${value?.fans || 0} ${t('ui:rewards.fans')}`;
+      return t('ui:rewards.fansWithAmount', { count: value?.fans || 0 });
     case 'money':
-      return `+${value?.money || 0} ${t('ui:rewards.money')}`;
+      return t('ui:rewards.moneyWithAmount', { count: value?.money || 0 });
     case 'skill_point':
-      return `+1 ${t('ui:rewards.skillPoint')}`;
+      return t('ui:rewards.skillPointWithAmount', { count: 1 });
     case 'harmony':
-      return `+${value?.harmony || 0} ${t('ui:rewards.harmony')}`;
+      return t('ui:rewards.harmonyWithAmount', { count: value?.harmony || 0 });
     default:
       return t('ui:rewards.special');
   }

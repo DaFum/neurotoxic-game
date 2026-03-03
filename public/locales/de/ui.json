@@ -48,7 +48,6 @@
     "waiting": "WARTE AUF SEQUENZ"
   },
   "close": "Schließen",
-  "closeModal": "Modal schließen",
   "confirm": "BESTÄTIGEN",
   "confirm_delete": "LÖSCHEN BESTÄTIGEN",
   "confirm_delete_text": "Bist du sicher, dass du deinen Spielstand löschen willst? Das kann nicht rückgängig gemacht werden.",
@@ -149,10 +148,10 @@
   "errors.ambient_start_failed": "Ambient-Audio konnte nicht gestartet werden.",
   "errors.audio_init_failed": "Audio-Initialisierung fehlgeschlagen.",
   "event": {
-    "resolved": "Ereignis beendet.",
     "severity": {
       "critical": "KRITISCH"
-    }
+    },
+    "resolved": "Ereignis beendet."
   },
   "event_error": "EVENT FEHLER: Auflösung fehlgeschlagen.",
   "executed": "AUSGEFÜHRT",
@@ -189,10 +188,22 @@
         "ui:featureList.sec2.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec2.rows.0.0", "ui:featureList.sec2.rows.0.1"],
-        ["ui:featureList.sec2.rows.1.0", "ui:featureList.sec2.rows.1.1"],
-        ["ui:featureList.sec2.rows.2.0", "ui:featureList.sec2.rows.2.1"],
-        ["ui:featureList.sec2.rows.3.0", "ui:featureList.sec2.rows.3.1"]
+        [
+          "ui:featureList.sec2.rows.0.0",
+          "ui:featureList.sec2.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.1.0",
+          "ui:featureList.sec2.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.2.0",
+          "ui:featureList.sec2.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.3.0",
+          "ui:featureList.sec2.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec2.title",
       "type": "table"
@@ -215,10 +226,22 @@
         "ui:featureList.sec4.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec4.rows.0.0", "ui:featureList.sec4.rows.0.1"],
-        ["ui:featureList.sec4.rows.1.0", "ui:featureList.sec4.rows.1.1"],
-        ["ui:featureList.sec4.rows.2.0", "ui:featureList.sec4.rows.2.1"],
-        ["ui:featureList.sec4.rows.3.0", "ui:featureList.sec4.rows.3.1"]
+        [
+          "ui:featureList.sec4.rows.0.0",
+          "ui:featureList.sec4.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.1.0",
+          "ui:featureList.sec4.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.2.0",
+          "ui:featureList.sec4.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.3.0",
+          "ui:featureList.sec4.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec4.title",
       "type": "table"
@@ -630,5 +653,20 @@
   "quests.postgig.saveTheBand.title": "RETTE DIE BAND",
   "quests.postgig.saveTheBand.description": "Halte die Band zusammen und überstehe die aktuelle Ego-Krise.",
   "gig.practiceComplete": "Probe abgeschlossen",
-  "toast.gameSaved": "Spiel gespeichert!"
+  "toast.gameSaved": "Spiel gespeichert!",
+  "rewards": {
+    "fameWithAmount": "+{{count}} Ruhm",
+    "fansWithAmount": "+{{count}} Fans",
+    "moneyWithAmount": "+{{count}} Geld",
+    "skillPointWithAmount": "+{{count}} Skillpunkt",
+    "harmonyWithAmount": "+{{count}} Harmonie",
+    "special": "Spezial",
+    "fame": "Ruhm",
+    "fans": "Fans",
+    "money": "Geld",
+    "skillPoint": "Skillpunkt",
+    "harmony": "Harmonie",
+    "freeItem": "Kostenloses Item"
+  },
+  "closeModal": "Modal schließen"
 }

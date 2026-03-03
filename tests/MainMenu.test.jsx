@@ -194,6 +194,7 @@ describe('MainMenu Component', () => {
       const modalCloseButton = screen.getByRole('button', { name: 'ui:closeModal' })
       expect(modalCloseButton).toBeInTheDocument()
       fireEvent.click(modalCloseButton)
+      expect(screen.queryByText('ui:social_links.game.title')).not.toBeInTheDocument()
     })
 
     it('displays social links in socials modal', () => {
@@ -230,6 +231,7 @@ describe('MainMenu Component', () => {
       const modalCloseButton = screen.getByRole('button', { name: 'ui:closeModal' })
       expect(modalCloseButton).toBeInTheDocument()
       fireEvent.click(modalCloseButton)
+      expect(screen.queryByText('ui:features.title')).not.toBeInTheDocument()
     })
 
     it('renders bullet list features', () => {
@@ -308,6 +310,7 @@ describe('MainMenu Component', () => {
       const modalCloseButton = screen.getByRole('button', { name: 'ui:closeModal' })
       expect(modalCloseButton).toBeInTheDocument()
       fireEvent.click(modalCloseButton)
+      expect(screen.queryByText('ui:mainMenu.existingSave.title')).not.toBeInTheDocument()
     })
   })
 
@@ -394,6 +397,7 @@ describe('MainMenu Component', () => {
       const modalCloseButton = screen.getByRole('button', { name: 'ui:closeModal' })
       expect(modalCloseButton).toBeInTheDocument()
       fireEvent.click(modalCloseButton)
+      expect(screen.queryByText('ui:identity_required')).not.toBeInTheDocument()
     })
 
     it('enforces maxLength of 20 characters', () => {
