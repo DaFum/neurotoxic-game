@@ -149,6 +149,38 @@ describe('saveValidator', () => {
       })
     })
 
+    it('throws if band.harmony is not finite', () => {
+      const data = getValidData()
+      data.band.harmony = Number.NaN
+      assert.throws(() => validateSaveData(data), {
+        name: 'StateError',
+        message: /band.harmony must be a finite number/
+      })
+    })
+
+    it('clamps band.harmony into gameplay range', () => {
+      const data = getValidData()
+      data.band.harmony = 500
+      assert.strictEqual(validateSaveData(data), true)
+      assert.strictEqual(data.band.harmony, 100)
+    })
+
+    it('clamps player.money to non-negative integer', () => {
+      const data = getValidData()
+      data.player.money = -42.9
+      assert.strictEqual(validateSaveData(data), true)
+      assert.strictEqual(data.player.money, 0)
+    })
+
+    it('throws if player.money is not finite', () => {
+      const data = getValidData()
+      data.player.money = Number.POSITIVE_INFINITY
+      assert.throws(() => validateSaveData(data), {
+        name: 'StateError',
+        message: /player.money must be a finite number/
+      })
+    })
+
     it('allows missing band.harmony for legacy saves', () => {
       const data = getValidData()
       delete data.band.harmony

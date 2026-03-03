@@ -6,6 +6,7 @@
 
 import { ALLOWED_TRENDS } from '../data/socialTrends.js'
 import { StateError } from './errorHandler.js'
+import { clampBandHarmony, clampPlayerMoney } from './gameStateUtils.js'
 
 const isPlainObject = value =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -54,6 +55,13 @@ const validatePlayer = player => {
     }
   }
 
+  if (player.money !== undefined) {
+    if (!Number.isFinite(player.money)) {
+      throw new StateError('player.money must be a finite number')
+    }
+    player.money = clampPlayerMoney(player.money)
+  }
+
   if (player.van && !isPlainObject(player.van)) {
     throw new StateError('player.van must be an object')
   }
@@ -92,8 +100,14 @@ const validateBand = band => {
     })
   }
 
-  if (band.harmony !== undefined && typeof band.harmony !== 'number') {
-    throw new StateError('band.harmony must be a number')
+  if (band.harmony !== undefined) {
+    if (typeof band.harmony !== 'number') {
+      throw new StateError('band.harmony must be a number')
+    }
+    if (!Number.isFinite(band.harmony)) {
+      throw new StateError('band.harmony must be a finite number')
+    }
+    band.harmony = clampBandHarmony(band.harmony)
   }
 }
 

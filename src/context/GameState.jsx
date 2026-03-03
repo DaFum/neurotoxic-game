@@ -393,12 +393,12 @@ export const GameStateProvider = ({ children }) => {
   const endGig = useCallback(() => {
     const currentState = stateRef.current
     if (currentState.currentGig?.isPractice) {
-      addToast('Practice Session Complete', 'success')
+      addToast(t('ui:gig.practiceComplete'), 'success')
       changeScene('OVERWORLD')
     } else {
       changeScene('POSTGIG')
     }
-  }, [addToast, changeScene])
+  }, [addToast, changeScene, t])
 
   const previousSceneRef = useRef(state.currentScene)
 
