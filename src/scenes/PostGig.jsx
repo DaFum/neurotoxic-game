@@ -42,6 +42,7 @@ export const PostGig = () => {
     social,
     lastGigStats,
     addToast,
+    saveGame,
     changeScene,
     unlockTrait,
     reputationByRegion,
@@ -491,7 +492,10 @@ export const PostGig = () => {
       addToast('GAME OVER: BANKRUPT! The tour is over.', 'error')
       changeScene('GAMEOVER')
     } else {
-      changeScene('OVERWORLD')
+      window.setTimeout(() => {
+        saveGame(false)
+        changeScene('OVERWORLD')
+      }, 0)
     }
   }, [
     financials,
@@ -501,6 +505,7 @@ export const PostGig = () => {
     lastGigStats,
     updatePlayer,
     addToast,
+    saveGame,
     changeScene,
     activeStoryFlags,
     addQuest,

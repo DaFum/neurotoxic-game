@@ -60,6 +60,55 @@ import PropTypes from 'prop-types'
 
 const GameStateContext = createContext()
 const GameDispatchContext = createContext()
+const SAVE_KEY = 'neurotoxic_v3_save'
+const PERSISTED_STATE_KEYS = [
+  'currentScene',
+  'player',
+  'band',
+  'social',
+  'gameMap',
+  'currentGig',
+  'lastGigStats',
+  'activeEvent',
+  'activeStoryFlags',
+  'eventCooldowns',
+  'pendingEvents',
+  'venueBlacklist',
+  'activeQuests',
+  'reputationByRegion',
+  'settings',
+  'npcs',
+  'gigModifiers'
+]
+
+const normalizeSetlistForSave = setlist => {
+  if (!Array.isArray(setlist)) return []
+
+  return setlist
+    .map(song => {
+      if (typeof song === 'string') {
+        return { id: song }
+      }
+      if (song && song.id) {
+        return { id: song.id }
+      }
+      return null
+    })
+    .filter(Boolean)
+}
+
+const createPersistedState = currentState => {
+  const saveData = { timestamp: Date.now() }
+  for (const key of PERSISTED_STATE_KEYS) {
+    saveData[key] = currentState[key]
+  }
+  saveData.setlist = normalizeSetlistForSave(currentState.setlist)
+  return saveData
+}
+
+const isPlainObject = value =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
 
 /**
  * Global State Provider covering Player, Band, Inventory, and Scene Management.
@@ -302,27 +351,13 @@ export const GameStateProvider = ({ children }) => {
     []
   )
 
-  /**
-   * Completes the current gig and transitions to the appropriate post-gig scene.
-   * Handles Practice Mode logic (redirects to OVERWORLD instead of POSTGIG).
-   */
-  const endGig = useCallback(() => {
-    const currentState = stateRef.current
-    if (currentState.currentGig?.isPractice) {
-      addToast('Practice Session Complete', 'success')
-      changeScene('OVERWORLD')
-    } else {
-      changeScene('POSTGIG')
-    }
-  }, [addToast, changeScene])
-
   // Persistence
   /**
    * Deletes the save file and reloads the application.
    */
   const deleteSave = useCallback(() => {
     safeStorageOperation('deleteSave', () => {
-      localStorage.removeItem('neurotoxic_v3_save')
+      localStorage.removeItem(SAVE_KEY)
     })
     changeScene('MENU')
     window.location.reload()
@@ -331,39 +366,55 @@ export const GameStateProvider = ({ children }) => {
   /**
    * Persists the current state to localStorage.
    */
-  const saveGame = useCallback(() => {
-    // Access state via ref
-    const currentState = stateRef.current
-    // Only persist minimal setlist info to avoid bloat
-    const saveData = { ...currentState, timestamp: Date.now() }
-
-    // Normalize setlist to objects with IDs
-    if (Array.isArray(saveData.setlist)) {
-      saveData.setlist = saveData.setlist
-        .map(s => {
-          if (typeof s === 'string') return { id: s }
-          if (s && s.id) return { id: s.id }
-          return null
-        })
-        .filter(Boolean)
-    }
+  const saveGame = useCallback((showToast = true) => {
+    const saveData = createPersistedState(stateRef.current)
 
     const success = safeStorageOperation(
       'saveGame',
       () => {
-        localStorage.setItem('neurotoxic_v3_save', JSON.stringify(saveData))
+        localStorage.setItem(SAVE_KEY, JSON.stringify(saveData))
         return true
       },
       false
     )
 
     if (success) {
-      addToast('GAME SAVED!', 'success')
+      if (showToast) {
+        addToast(t('ui:toast.gameSaved'), 'success')
+      }
       logger.info('System', 'Game Saved Successfully')
     } else {
       handleError(new StorageError('Failed to save game'), { addToast })
     }
-  }, [addToast])
+  }, [addToast, t])
+
+  /**
+   * Completes the current gig and transitions to the appropriate post-gig scene.
+   * Handles Practice Mode logic (redirects to OVERWORLD instead of POSTGIG).
+   */
+  const endGig = useCallback(() => {
+    const currentState = stateRef.current
+    if (currentState.currentGig?.isPractice) {
+      addToast(t('ui:gig.practiceComplete'), 'success')
+      changeScene('OVERWORLD')
+    } else {
+      changeScene('POSTGIG')
+    }
+  }, [addToast, changeScene, t])
+
+  const previousSceneRef = useRef(state.currentScene)
+
+  useEffect(() => {
+    const previousScene = previousSceneRef.current
+    previousSceneRef.current = state.currentScene
+
+    const shouldAutosaveOnTransition =
+      previousScene === 'GIG' && state.currentScene === 'POSTGIG'
+
+    if (shouldAutosaveOnTransition) {
+      saveGame(false)
+    }
+  }, [state.currentScene, saveGame])
 
   /**
    * Loads the game state from localStorage.
@@ -373,25 +424,20 @@ export const GameStateProvider = ({ children }) => {
     return safeStorageOperation(
       'loadGame',
       () => {
-        const saved = localStorage.getItem('neurotoxic_v3_save')
+        const saved = localStorage.getItem(SAVE_KEY)
         if (!saved) return false
 
         const parsed = JSON.parse(saved)
-
-        // Merge loaded data with complete initial defaults for backwards compatibility
-        const defaultState = createInitialState()
-        const data = {
-          ...defaultState,
-          ...parsed,
-          player: { ...defaultState.player, ...parsed.player },
-          band: { ...defaultState.band, ...parsed.band },
-          social: { ...defaultState.social, ...parsed.social },
-          settings: { ...defaultState.settings, ...parsed.settings }
+        if (!isPlainObject(parsed)) {
+          handleError(new StateError('Save file is corrupt or invalid.'), {
+            addToast
+          })
+          return false
         }
 
         // Validate Schema
         try {
-          validateSaveData(data)
+          validateSaveData(parsed)
         } catch (error) {
           handleError(
             new StateError('Save file is corrupt or invalid.', {
@@ -402,14 +448,12 @@ export const GameStateProvider = ({ children }) => {
           return false
         }
 
-        data.unlocks = getUnlocks()
-
-        dispatch(createLoadGameAction(data))
+        dispatch(createLoadGameAction({ ...parsed, unlocks: getUnlocks() }))
         return true
       },
       false
     )
-  }, [addToast])
+  }, [addToast, t])
 
   // Event System Integration
   /**
