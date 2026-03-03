@@ -304,7 +304,17 @@ describe('gameReducer', () => {
         player: { money: 2000, day: 5, location: 'Berlin' },
         band: { harmony: 90 },
         social: { instagram: 500 },
-        gameMap: { nodes: {} }
+        gameMap: { nodes: {} },
+        activeQuests: [
+          {
+            id: 'quest_apology_tour',
+            label: 'ui:quests.postgig.apologyTour.title',
+            description: 'ui:quests.postgig.apologyTour.description',
+            progress: 1,
+            required: 3,
+            deadline: 10
+          }
+        ]
       }
 
       const action = { type: ActionTypes.LOAD_GAME, payload: savedData }
@@ -312,6 +322,8 @@ describe('gameReducer', () => {
 
       assert.strictEqual(newState.player.money, 2000)
       assert.strictEqual(newState.player.day, 5)
+      assert.strictEqual(newState.activeQuests.length, 1)
+      assert.strictEqual(newState.activeQuests[0].id, 'quest_apology_tour')
     })
 
     it('should migrate energy to catering in gigModifiers', () => {
