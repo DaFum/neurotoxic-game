@@ -79,7 +79,7 @@ export const GameStateProvider = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, undefined, initGameState)
 
   // Leaderboard Sync Hook
-  useLeaderboardSync(state.player)
+  useLeaderboardSync(state)
 
   // Use a ref to access the latest state in actions without creating a dependency loop
   // This allows actions to be stable (memoized once) while still accessing current state.

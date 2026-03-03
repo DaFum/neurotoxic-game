@@ -25,54 +25,77 @@ describe('useLeaderboardSync', () => {
   })
 
   it('skips sync if player ID is missing', () => {
-    const player = {
-      playerId: null,
-      playerName: '',
-      money: 100,
-      day: 5
+    const gameState = {
+      player: {
+        playerId: null,
+        playerName: '',
+        money: 100,
+        fame: 0,
+        day: 5
+      }
     }
 
-    renderHook(() => useLeaderboardSync(player))
+    renderHook(() => useLeaderboardSync(gameState))
 
     expect(mockFetch).not.toHaveBeenCalled()
   })
 
   it('skips sync if day has not advanced beyond last synced day', () => {
     localStorage.setItem('neurotoxic_last_synced_day:id-123', '5')
-    const player = {
-      playerId: 'id-123',
-      playerName: 'Player1',
-      money: 100,
-      day: 5
+    const gameState = {
+      player: {
+        playerId: 'id-123',
+        playerName: 'Player1',
+        money: 100,
+        fame: 0,
+        day: 5
+      }
     }
 
-    renderHook(() => useLeaderboardSync(player))
+    renderHook(() => useLeaderboardSync(gameState))
 
     expect(mockFetch).not.toHaveBeenCalled()
   })
 
-  it('syncs balance if day > last synced day and player is valid', async () => {
+  it('syncs stats if day > last synced day and player is valid', async () => {
     localStorage.setItem('neurotoxic_last_synced_day:id-123', '4')
     mockFetch.mockResolvedValue({ ok: true })
 
-    const player = {
-      playerId: 'id-123',
-      playerName: 'Player1',
-      money: 500,
-      day: 5
+    // Provide all required properties via GameState structure used by the hook
+    const gameState = {
+      player: {
+        playerId: 'id-123',
+        playerName: 'Player1',
+        money: 500,
+        fame: 100,
+        day: 5,
+        stats: {
+          totalDistance: 120,
+          conflictsResolved: 3,
+          stageDives: 10
+        }
+      },
+      social: {
+        instagram: 1000
+      }
     }
 
-    renderHook(() => useLeaderboardSync(player))
+    renderHook(() => useLeaderboardSync(gameState))
 
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith('/api/leaderboard/balance', {
+      expect(mockFetch).toHaveBeenCalledWith('/api/leaderboard/stats', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           playerId: 'id-123',
           playerName: 'Player1',
           money: 500,
-          day: 5
+          day: 5,
+          fame: 100,
+          followers: 1000,
+          distance: 120,
+          conflicts: 3,
+          stageDives: 10
         })
       })
     })
@@ -84,14 +107,25 @@ describe('useLeaderboardSync', () => {
     localStorage.setItem('neurotoxic_last_synced_day:id-123', '4')
     mockFetch.mockResolvedValue({ ok: false, statusText: 'Server Error' })
 
-    const player = {
-      playerId: 'id-123',
-      playerName: 'Player1',
-      money: 500,
-      day: 5
+    const gameState = {
+      player: {
+        playerId: 'id-123',
+        playerName: 'Player1',
+        money: 500,
+        fame: 100,
+        day: 5,
+        stats: {
+          totalDistance: 120,
+          conflictsResolved: 3,
+          stageDives: 10
+        }
+      },
+      social: {
+        instagram: 1000
+      }
     }
 
-    renderHook(() => useLeaderboardSync(player))
+    renderHook(() => useLeaderboardSync(gameState))
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalled()

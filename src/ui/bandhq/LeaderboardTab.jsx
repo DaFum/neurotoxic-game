@@ -11,7 +11,8 @@ import { SONGS_DB } from '../../data/songs'
  */
 export const LeaderboardTab = () => {
   const { t } = useTranslation()
-  const [view, setView] = useState('BALANCE') // 'BALANCE' or 'SONG'
+  // view can be 'BALANCE', 'SONG', 'FAME', 'FOLLOWERS', 'DISTANCE', 'CONFLICTS', 'STAGE_DIVES'
+  const [view, setView] = useState('BALANCE')
   const [selectedSongId, setSelectedSongId] = useState(SONGS_DB[0]?.leaderboardId || '')
   const [rankings, setRankings] = useState([])
   const [isLoading, setIsLoading] = useState(false)
@@ -29,7 +30,7 @@ export const LeaderboardTab = () => {
       setIsLoading(true)
       setError(null)
       try {
-        let url = '/api/leaderboard/balance?limit=100'
+        let url = `/api/leaderboard/stats?stat=${view.toLowerCase()}&limit=100`
         if (view === 'SONG') {
           if (!selectedSongId) {
             setRankings([])
@@ -55,10 +56,20 @@ export const LeaderboardTab = () => {
     fetchLeaderboard()
   }, [view, selectedSongId, t])
 
+  const viewTitles = {
+    BALANCE: t('ui:leaderboard.top_100_wealth'),
+    SONG: t('ui:leaderboard.top_100_scores'),
+    FAME: t('ui:leaderboard.top_100_fame', { defaultValue: 'Top 100 Fame' }),
+    FOLLOWERS: t('ui:leaderboard.top_100_followers', { defaultValue: 'Top 100 Followers' }),
+    DISTANCE: t('ui:leaderboard.top_100_distance', { defaultValue: 'Top 100 Distance' }),
+    CONFLICTS: t('ui:leaderboard.top_100_conflicts', { defaultValue: 'Top 100 Conflicts' }),
+    STAGE_DIVES: t('ui:leaderboard.top_100_stage_dives', { defaultValue: 'Top 100 Stage Dives' })
+  }
+
   return (
     <div className='h-full flex flex-col gap-4'>
       {/* View Switcher */}
-      <div className='flex gap-4 mb-2'>
+      <div className='flex gap-4 mb-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-(--void-black)'>
         <GlitchButton
           onClick={() => setView('BALANCE')}
           disabled={view === 'BALANCE'}
@@ -72,6 +83,41 @@ export const LeaderboardTab = () => {
           className={view === 'SONG' ? 'opacity-50 cursor-default' : ''}
         >
           {t('ui:leaderboard.song_scores')}
+        </GlitchButton>
+        <GlitchButton
+          onClick={() => setView('FAME')}
+          disabled={view === 'FAME'}
+          className={view === 'FAME' ? 'opacity-50 cursor-default whitespace-nowrap' : 'whitespace-nowrap'}
+        >
+          {t('ui:leaderboard.fame', { defaultValue: 'Fame' })}
+        </GlitchButton>
+        <GlitchButton
+          onClick={() => setView('FOLLOWERS')}
+          disabled={view === 'FOLLOWERS'}
+          className={view === 'FOLLOWERS' ? 'opacity-50 cursor-default whitespace-nowrap' : 'whitespace-nowrap'}
+        >
+          {t('ui:leaderboard.followers', { defaultValue: 'Followers' })}
+        </GlitchButton>
+        <GlitchButton
+          onClick={() => setView('DISTANCE')}
+          disabled={view === 'DISTANCE'}
+          className={view === 'DISTANCE' ? 'opacity-50 cursor-default whitespace-nowrap' : 'whitespace-nowrap'}
+        >
+          {t('ui:leaderboard.distance', { defaultValue: 'Distance' })}
+        </GlitchButton>
+        <GlitchButton
+          onClick={() => setView('CONFLICTS')}
+          disabled={view === 'CONFLICTS'}
+          className={view === 'CONFLICTS' ? 'opacity-50 cursor-default whitespace-nowrap' : 'whitespace-nowrap'}
+        >
+          {t('ui:leaderboard.conflicts', { defaultValue: 'Conflicts' })}
+        </GlitchButton>
+        <GlitchButton
+          onClick={() => setView('STAGE_DIVES')}
+          disabled={view === 'STAGE_DIVES'}
+          className={view === 'STAGE_DIVES' ? 'opacity-50 cursor-default whitespace-nowrap' : 'whitespace-nowrap'}
+        >
+          {t('ui:leaderboard.stage_dives', { defaultValue: 'Stage Dives' })}
         </GlitchButton>
       </div>
 
@@ -107,11 +153,7 @@ export const LeaderboardTab = () => {
       {/* Leaderboard Table */}
       <Panel
         className='flex-1 overflow-hidden flex flex-col'
-        title={
-          view === 'BALANCE'
-            ? t('ui:leaderboard.top_100_wealth')
-            : t('ui:leaderboard.top_100_scores')
-        }
+        title={viewTitles[view]}
       >
         {isLoading && (
           <div className='flex-1 flex items-center justify-center text-(--toxic-green) animate-pulse font-mono'>
@@ -143,7 +185,9 @@ export const LeaderboardTab = () => {
                   <th className='py-2 px-2 text-right'>
                     {view === 'BALANCE'
                       ? t('ui:leaderboard.col_net_worth')
-                      : t('ui:leaderboard.col_score')}
+                      : view === 'SONG'
+                        ? t('ui:leaderboard.col_score')
+                        : t('ui:leaderboard.col_value', { defaultValue: 'Value' })}
                   </th>
                 </tr>
               </thead>
@@ -166,7 +210,9 @@ export const LeaderboardTab = () => {
                       <td className='py-2 px-2 text-right text-(--toxic-green)'>
                         {view === 'BALANCE'
                           ? `€${safeScore.toLocaleString()}`
-                          : safeScore.toLocaleString()}
+                          : view === 'DISTANCE'
+                            ? `${safeScore.toLocaleString()} km`
+                            : safeScore.toLocaleString()}
                       </td>
                     </tr>
                   )
