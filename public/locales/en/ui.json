@@ -457,7 +457,7 @@
   "quests.days.plural": "Days Left",
   "quests.days.singular": "Day Left",
   "quests.empty": "No active quests. Hit the road to find some!",
-  "quests.moneyReward": "+{{amount}} €",
+  "quests.moneyReward": "+€{{amount}}",
   "quests.progress": "Progress",
   "quests.rewards": "Rewards:",
   "quests.title": "ACTIVE QUESTS",
