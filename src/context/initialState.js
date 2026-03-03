@@ -8,6 +8,7 @@ import { CHARACTERS } from '../data/characters.js'
 import { LOG_LEVELS } from '../utils/logger.js'
 import { DEFAULT_MINIGAME_STATE } from './gameConstants.js'
 import { getUnlocks } from '../utils/unlockManager.js'
+import { safeStorageOperation } from '../utils/errorHandler.js'
 
 /**
  * Brand alignment constants
@@ -187,13 +188,7 @@ export const initialState = {
   npcs: {},
   gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
   minigame: { ...DEFAULT_MINIGAME_STATE },
-  unlocks: (() => {
-    try {
-      return getUnlocks() || []
-    } catch (_e) {
-      return []
-    }
-  })()
+  unlocks: safeStorageOperation('loadUnlocks', () => getUnlocks(), []) || []
 }
 
 /**
@@ -223,11 +218,5 @@ export const createInitialState = () => ({
   settings: { ...DEFAULT_SETTINGS },
   gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
   minigame: { ...DEFAULT_MINIGAME_STATE },
-  unlocks: (() => {
-    try {
-      return getUnlocks() || []
-    } catch (_e) {
-      return []
-    }
-  })()
+  unlocks: safeStorageOperation('loadUnlocks', () => getUnlocks(), []) || []
 })

@@ -330,6 +330,42 @@ describe('gameReducer', () => {
       assert.ok(newState.player.van !== undefined)
       assert.strictEqual(typeof newState.player.van.fuel, 'number')
     })
+
+    it('should hydrate unlocks from payload', () => {
+      const savedData = {
+        player: { money: 2000 },
+        band: {},
+        social: {},
+        gameMap: {},
+        unlocks: ['test1', 'test2']
+      }
+
+      const action = { type: ActionTypes.LOAD_GAME, payload: savedData }
+      const newState = gameReducer(testState, action)
+
+      assert.deepStrictEqual(newState.unlocks, ['test1', 'test2'])
+    })
+
+    it('should fallback unlocks to state.unlocks or empty array', () => {
+      const savedData = {
+        player: { money: 2000 },
+        band: {},
+        social: {},
+        gameMap: {}
+        // unlocks omitted
+      }
+
+      testState.unlocks = ['existing_unlock']
+      const action = { type: ActionTypes.LOAD_GAME, payload: savedData }
+      const newState = gameReducer(testState, action)
+
+      assert.deepStrictEqual(newState.unlocks, ['existing_unlock'])
+
+      // Test complete omission
+      delete testState.unlocks
+      const newState2 = gameReducer(testState, action)
+      assert.deepStrictEqual(newState2.unlocks, [])
+    })
   })
 
   describe('unknown action', () => {

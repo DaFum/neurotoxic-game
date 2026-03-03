@@ -467,12 +467,17 @@ export const GameStateProvider = ({ children }) => {
 
           // Unlocks
           if (delta.flags?.unlock) {
-            const added = addUnlock(delta.flags.unlock)
+            const rawUnlock = String(delta.flags.unlock)
+            const safeUnlockId = rawUnlock.replace(/[^a-zA-Z0-9_]/g, '')
+
+            // Sync in-memory state unconditionally
+            dispatch(createAddUnlockAction(safeUnlockId))
+
+            const added = addUnlock(safeUnlockId)
             if (added) {
-              dispatch(createAddUnlockAction(delta.flags.unlock))
-              const unlockKey = `unlocks:${delta.flags.unlock.toLowerCase()}`
+              const unlockKey = `unlocks:${safeUnlockId.toLowerCase()}`
               const unlockLabel = t(unlockKey, {
-                defaultValue: delta.flags.unlock.toUpperCase()
+                defaultValue: safeUnlockId.toUpperCase()
               })
               addToast(t('ui:unlocked', { unlock: unlockLabel }), 'success')
             }
