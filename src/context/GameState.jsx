@@ -68,7 +68,6 @@ const PERSISTED_STATE_KEYS = [
   'social',
   'gameMap',
   'currentGig',
-  'setlist',
   'lastGigStats',
   'activeEvent',
   'activeStoryFlags',
@@ -85,15 +84,17 @@ const PERSISTED_STATE_KEYS = [
 const normalizeSetlistForSave = setlist => {
   if (!Array.isArray(setlist)) return []
 
-  const normalized = []
-  for (const song of setlist) {
-    if (typeof song === 'string') {
-      normalized.push({ id: song })
-    } else if (song && song.id) {
-      normalized.push({ id: song.id })
-    }
-  }
-  return normalized
+  return setlist
+    .map(song => {
+      if (typeof song === 'string') {
+        return { id: song }
+      }
+      if (song && song.id) {
+        return { id: song.id }
+      }
+      return null
+    })
+    .filter(Boolean)
 }
 
 const createPersistedState = currentState => {
