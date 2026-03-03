@@ -16,16 +16,18 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
   )
 
   // Apply generic quest rewards
-  let rewardMessageKey = ''
-  let rewardParams = {}
+  let generatedToasts = []
 
   if (typeof quest.moneyReward === 'number' && quest.moneyReward !== 0) {
     nextState.player = {
       ...(nextState.player || {}),
       money: clampPlayerMoney((nextState.player?.money || 0) + quest.moneyReward)
     }
-    rewardMessageKey = 'ui:toast.quest_complete_money'
-    rewardParams = { name: quest.label, amount: quest.moneyReward }
+    generatedToasts.push({
+      id: `${Date.now()}-${questId}-money`,
+      message: `ui:toast.quest_complete_money|${JSON.stringify({ name: quest.label, amount: quest.moneyReward })}`,
+      type: 'success'
+    })
   }
 
   if (quest.rewardType === 'item' && quest.rewardData?.item) {
@@ -36,16 +38,22 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
         [quest.rewardData.item]: true
       }
     }
-    rewardMessageKey = 'ui:toast.quest_complete_item'
-    rewardParams = { name: quest.label }
+    generatedToasts.push({
+      id: `${Date.now()}-${questId}-item`,
+      message: `ui:toast.quest_complete_item|${JSON.stringify({ name: quest.label })}`,
+      type: 'success'
+    })
   } else if (quest.rewardType === 'fame' && quest.rewardData?.fame) {
     nextState.player = {
       ...nextState.player,
       fame: (nextState.player.fame || 0) + quest.rewardData.fame,
       fameLevel: calculateFameLevel((nextState.player.fame || 0) + quest.rewardData.fame)
     }
-    rewardMessageKey = 'ui:toast.quest_complete_fame'
-    rewardParams = { name: quest.label, amount: quest.rewardData.fame }
+    generatedToasts.push({
+      id: `${Date.now()}-${questId}-fame`,
+      message: `ui:toast.quest_complete_fame|${JSON.stringify({ name: quest.label, amount: quest.rewardData.fame })}`,
+      type: 'success'
+    })
   } else if (quest.rewardType === 'skill_point') {
     const members = [...(nextState.band?.members || [])]
     if (members.length > 0) {
@@ -62,21 +70,30 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
       }
 
       nextState.band = { ...nextState.band, members }
-      rewardMessageKey = 'ui:toast.quest_complete_skill'
-      rewardParams = { name: quest.label, member: members[memberIdx].name }
+      generatedToasts.push({
+        id: `${Date.now()}-${questId}-skill`,
+        message: `ui:toast.quest_complete_skill|${JSON.stringify({ name: quest.label, member: members[memberIdx].name })}`,
+        type: 'success'
+      })
     }
   } else if (quest.rewardType === 'harmony' && quest.rewardData?.harmony) {
     nextState.band = {
       ...nextState.band,
       harmony: clampBandHarmony((nextState.band?.harmony || 0) + quest.rewardData.harmony)
     }
-    rewardMessageKey = 'ui:toast.quest_complete_harmony'
-    rewardParams = { name: quest.label, amount: quest.rewardData.harmony }
+    generatedToasts.push({
+      id: `${Date.now()}-${questId}-harmony`,
+      message: `ui:toast.quest_complete_harmony|${JSON.stringify({ name: quest.label, amount: quest.rewardData.harmony })}`,
+      type: 'success'
+    })
   }
 
-  if (!rewardMessageKey) {
-    rewardMessageKey = 'ui:toast.quest_complete'
-    rewardParams = { name: quest.label }
+  if (generatedToasts.length === 0) {
+    generatedToasts.push({
+      id: `${Date.now()}-${questId}-generic`,
+      message: `ui:toast.quest_complete|${JSON.stringify({ name: quest.label })}`,
+      type: 'success'
+    })
   }
 
   // Add reward flag
@@ -90,11 +107,7 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
   // Toast
   nextState.toasts = [
     ...(nextState.toasts || []),
-    {
-      id: `${Date.now()}-${questId}`,
-      message: `${rewardMessageKey}|${JSON.stringify(rewardParams)}`,
-      type: 'success'
-    }
+    ...generatedToasts
   ]
 
   // Hardcoded old quest logic

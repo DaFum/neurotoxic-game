@@ -1,5 +1,6 @@
 import { useGameState } from '../context/GameState'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 const TOAST_STYLE_MAP = {
   success: {
@@ -29,8 +30,6 @@ const TOAST_STYLE_MAP = {
  *
  * @returns {JSX.Element} Toast stack overlay.
  */
-import { useTranslation } from 'react-i18next'
-
 export const ToastOverlay = () => {
   const { toasts } = useGameState()
   const { t } = useTranslation(['ui', 'events'])
@@ -72,7 +71,9 @@ export const ToastOverlay = () => {
                 >
                   {toast.message && toast.message.includes('|') && toast.message.startsWith('ui:')
                     ? (() => {
-                        const [key, contextStr] = toast.message.split('|')
+                        const firstPipeIdx = toast.message.indexOf('|')
+                        const key = toast.message.slice(0, firstPipeIdx)
+                        const contextStr = toast.message.slice(firstPipeIdx + 1)
                         try {
                           const context = JSON.parse(contextStr)
                           // Safely translate deeply nested key refs in context
@@ -81,6 +82,7 @@ export const ToastOverlay = () => {
                           }
                           return t(key, context)
                         } catch(_e) {
+                          console.error('Toast message JSON parse error:', _e, contextStr, toast.message);
                           return t(key)
                         }
                       })()

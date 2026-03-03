@@ -6,22 +6,23 @@ import { useTranslation } from 'react-i18next'
 import { useId } from 'react'
 
 // Helper component for accessible SVGs
-const BaseIcon = ({ className = '', viewBox = '0 0 24 24', title, children, ...props }) => {
+const BaseIcon = ({ className = '', viewBox = '0 0 24 24', title, fill = 'currentColor', children, ...props }) => {
   const titleId = useId()
+  const isDecorative = !title || title.trim() === ''
   return (
     <svg
-      aria-hidden={!title}
-      focusable={title ? undefined : 'false'}
-      role={title ? 'img' : 'presentation'}
-      aria-labelledby={title ? titleId : undefined}
+      aria-hidden={isDecorative ? 'true' : undefined}
+      focusable={isDecorative ? 'false' : undefined}
+      role={isDecorative ? 'presentation' : 'img'}
+      aria-labelledby={isDecorative ? undefined : titleId}
+      fill={fill}
+      xmlns='http://www.w3.org/2000/svg'
+      preserveAspectRatio='xMidYMid meet'
       {...props}
       className={className}
       viewBox={viewBox}
-      fill='currentColor'
-      xmlns='http://www.w3.org/2000/svg'
-      preserveAspectRatio='xMidYMid meet'
     >
-      {title && <title id={titleId}>{title}</title>}
+      {!isDecorative && <title id={titleId}>{title}</title>}
       {children}
     </svg>
   )
@@ -50,15 +51,17 @@ const IconCube = ({ className = '', title }) => (
 const getRewardIcon = (type) => {
   switch (type) {
     case 'item': return <IconCube className="w-4 h-4 text-(--toxic-green)" />
-    case 'fame': return <IconStar className="w-4 h-4 text-(--stamina-green)" />
+    case 'fame':
+    case 'fans': return <IconStar className="w-4 h-4 text-(--stamina-green)" />
     case 'skill_point': return <IconFire className="w-4 h-4 text-(--blood-red)" />
     case 'harmony': return <IconThumbUp className="w-4 h-4 text-(--toxic-green)" />
+    case 'money': return <IconTrophy className="w-4 h-4 text-(--fuel-yellow)" />
     default: return <IconTrophy className="w-4 h-4 text-(--fuel-yellow)" />
   }
 }
 
 export const QuestsModal = ({ onClose, activeQuests, player }) => {
-  const { t } = useTranslation(['ui', 'events'])
+  const { t, i18n } = useTranslation(['ui', 'events'])
 
   // Animation variants
   const overlayVariants = {
@@ -174,7 +177,8 @@ export const QuestsModal = ({ onClose, activeQuests, player }) => {
 
                       {quest.moneyReward > 0 && (
                         <span className='inline-flex items-center gap-1 bg-(--fuel-yellow)/10 text-(--fuel-yellow) px-2 py-1 text-xs font-mono rounded'>
-                          <IconTrophy className="w-3 h-3" /> +{quest.moneyReward}€
+                          {/* TODO: Add IconCoin or explicit currency icon later */}
+                          <IconTrophy className="w-3 h-3" /> {t('ui:quests.moneyReward', { amount: new Intl.NumberFormat(i18n.language || undefined).format(quest.moneyReward) })}
                         </span>
                       )}
 
@@ -183,6 +187,8 @@ export const QuestsModal = ({ onClose, activeQuests, player }) => {
                           {getRewardIcon(quest.rewardType)}
                           {quest.rewardType === 'item' ? t('ui:rewards.freeItem') :
                            quest.rewardType === 'fame' ? `+${quest.rewardData?.fame || 0} ${t('ui:rewards.fame')}` :
+                           quest.rewardType === 'fans' ? `+${quest.rewardData?.fans || 0} ${t('ui:rewards.fans')}` :
+                           quest.rewardType === 'money' ? `+${quest.rewardData?.money || 0} ${t('ui:rewards.money')}` :
                            quest.rewardType === 'skill_point' ? `+1 ${t('ui:rewards.skillPoint')}` :
                            quest.rewardType === 'harmony' ? `+${quest.rewardData?.harmony || 0} ${t('ui:rewards.harmony')}` : t('ui:rewards.special')}
                         </span>

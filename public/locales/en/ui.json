@@ -22,122 +22,29 @@
     "random3": "BOOOOOOOOO",
     "random4": "my ears are bleeding (in a bad way)",
     "random5": "refund immediately"
-  "confirm": "CONFIRM",
-  "language": "LANGUAGE",
-  "language_option_en": "ENGLISH",
-  "language_option_de": "GERMAN",
-  "crowdEnergy": "CROWD ENERGY",
-  "toxicModeActive": "TOXIC MODE ACTIVE",
-  "keyboardHint": "Press [1-{{count}}] or click to choose",
-  "skillCheck": "Skill Check",
-  "toggle": {
-    "on": "ON",
-    "off": "OFF"
-  },
-  "radio": {
-    "play": "Play/Resume Radio",
-    "stop": "Stop Radio"
-  },
-  "hazard": {
-    "toxicOverload": "TOXIC OVERLOAD DETECTED // SEVERE SYSTEM STRESS // STAY FOCUSED",
-    "modifierActive": "[MODIFIER ACTIVE]"
-  },
-  "overload": {
-    "toxic": "TOXIC OVERLOAD"
-  },
-  "event": {
-    "severity": {
-      "critical": "CRITICAL"
-    }
-  },
-  "map": {
-    "nodeType": {
-      "gig": "GIG",
-      "rest": "REST",
-      "fallback": "{{type}}"
-    }
-  },
-  "day_advance": "Day {{day}}: Living Costs Deducted.",
-  "unlocked": "UNLOCKED: {{unlock}}!",
-  "game_over": "GAME OVER: {{description}}",
-  "event_error": "EVENT ERROR: Resolution failed.",
-  "intro_play": "Start Tour",
-  "intro_skip": "Skip Intro",
-  "enter_name_error": "Please enter a name",
-  "identity_required": "IDENTITY REQUIRED",
-  "enter_alias_desc": "Enter your alias for the global underground network.",
-  "enter_name_placeholder": "ENTER NAME...",
-  "confirm_identity": "CONFIRM IDENTITY",
-  "no_save_found": "No save game found!",
-  "tabs.stats": "STATS",
-  "tabs.details": "DETAILS",
-  "tabs.shop": "SHOP",
-  "tabs.upgrades": "UPGRADES",
-  "tabs.setlist": "SETLIST",
-  "tabs.leaderboard": "LEADERBOARD",
-  "tabs.settings": "SETTINGS",
-  "leaderboard.global_wealth": "GLOBAL WEALTH",
-  "leaderboard.song_scores": "SONG SCORES",
-  "leaderboard.select_song": "SELECT SONG:",
-  "leaderboard.no_songs": "NO SONGS UNLOCKED",
-  "leaderboard.top_100_wealth": "TOP 100 WEALTHIEST",
-  "leaderboard.top_100_scores": "TOP 100 SHREDDERS",
-  "leaderboard.connecting": "CONNECTING TO UNDERGROUND NETWORK...",
-  "leaderboard.no_data": "NO DATA RECORDED YET.",
-  "leaderboard.col_player": "PLAYER",
-  "leaderboard.col_net_worth": "NET WORTH",
-  "leaderboard.col_score": "SCORE",
-  "leaderboard.col_value": "VALUE",
-  "leaderboard.col_value_km": "{{value}} {{unit}}",
-  "leaderboard.load_error": "Could not load rankings.",
-  "leaderboard.top_100_fame": "TOP 100 FAME",
-  "leaderboard.top_100_followers": "TOP 100 FOLLOWERS",
-  "leaderboard.top_100_distance": "TOP 100 DISTANCE",
-  "leaderboard.top_100_conflicts": "TOP 100 CONFLICTS",
-  "leaderboard.top_100_stage_dives": "TOP 100 STAGE DIVES",
-  "leaderboard.fame": "FAME",
-  "leaderboard.followers": "FOLLOWERS",
-  "leaderboard.distance": "DISTANCE",
-  "leaderboard.conflicts": "CONFLICTS",
-  "leaderboard.stage_dives": "STAGE DIVES",
-  "unit.km": "km",
-  "settings.audio_mute": "Mute all audio",
-  "settings.audio_unmute": "Unmute all audio",
-  "settings.crt_enable": "Enable CRT Effect",
-  "settings.crt_disable": "Disable CRT Effect",
-  "mainMenu": {
-    "subtitle": {
-      "grindTheVoid": "Grind The Void"
-    },
-    "existingSave": {
-      "title": "SAVE FILE DETECTED",
-      "desc": "A save game already exists. Do you want to load it or start a new tour?",
-      "load": "LOAD EXISTING",
-      "startNew": "START NEW TOUR"
-    }
   },
   "chatter_labels": {
+    "CREDITS": "Crew Feed",
+    "GAMEOVER": "Last Broadcast",
+    "GIG": "Live Feed",
     "INTRO": "Intro Feed",
     "MENU": "Main Feed",
     "OVERWORLD": "Tour Feed",
-    "PREGIG": "Pre-Gig Feed",
-    "GIG": "Live Feed",
     "POSTGIG": "Aftershow Feed",
-    "SETTINGS": "System Feed",
-    "CREDITS": "Crew Feed",
-    "GAMEOVER": "Last Broadcast",
-    "TRAVEL_MINIGAME": "Travel Feed",
+    "PREGIG": "Pre-Gig Feed",
     "PRE_GIG_MINIGAME": "Roadie Feed",
-    "default_speaker": "Band",
-    "default_fallback": "Unknown"
+    "SETTINGS": "System Feed",
+    "TRAVEL_MINIGAME": "Travel Feed",
+    "default_fallback": "Unknown",
+    "default_speaker": "Band"
   },
   "checklist": {
+    "done": "INITIATE GIG",
     "header": "PRE-GIG SEQUENCE",
     "task1": "REFUEL TOURVAN",
     "task2": "EQUIP DISTORTION PEDAL",
     "task3": "BRIBE VENUE BOUNCER",
     "task4": "CALIBRATE AMPS",
-    "done": "INITIATE GIG",
     "waiting": "AWAITING SEQUENCE"
   },
   "close": "Close",
@@ -148,30 +55,30 @@
   "continue": "CONTINUE",
   "contract": {
     "confidential": "DOCUMENT: CONFIDENTIAL",
-    "title": "Binding Agreement",
     "p1": "This agreement binds NEUROTOXIC to <0>MEGA_CORP_INC</0>.",
     "p2": "The Artist agrees to <0>subliminally insert corporate messaging</0> during all live performances in sector 4.",
-    "warning": "Failure to comply will result in <0>immediate termination of organic functions</0>.",
+    "sealed": "SEALED",
     "sig": "SIGNATURE (BLOOD/VOID):",
     "sign_aria": "Sign Contract",
-    "sealed": "SEALED"
+    "title": "Binding Agreement",
+    "warning": "Failure to comply will result in <0>immediate termination of organic functions</0>."
   },
   "cost": "€{{cost}}",
   "crash": {
-    "title": "SYSTEM FAILURE",
     "message": "The simulation has crashed. Reboot required.",
-    "rebootButton": "REBOOT SYSTEM"
+    "rebootButton": "REBOOT SYSTEM",
+    "title": "SYSTEM FAILURE"
   },
   "credits": "CREDITS",
   "crisis": {
-    "title": "VAN BREAKDOWN",
     "desc": "The transmission just dropped halfway to Leipzig. You have a gig in 4 hours. Do you burn through your cash for a sketchy mechanic, or risk showing up late and losing face?",
     "opt1": "Pay mechanic (-$250)",
-    "safe": "SAFE",
     "opt2": "Hitchhike (-20 Rep)",
-    "risk": "RISK",
     "opt3": "Fix it yourselves (+1hr)",
-    "risky": "RISKY"
+    "risk": "RISK",
+    "risky": "RISKY",
+    "safe": "SAFE",
+    "title": "VAN BREAKDOWN"
   },
   "crowdEnergy": "CROWD ENERGY",
   "crt_effect": "CRT EFFECT",
@@ -180,60 +87,60 @@
   "data_purge": "DATA PURGE",
   "day_advance": "Day {{day}}: Living Costs Deducted.",
   "decryptor": {
-    "unlocked": "ITEM_UNLOCKED: 'VOID_CORE'",
-    "click": "CLICK TO DECRYPT"
+    "click": "CLICK TO DECRYPT",
+    "unlocked": "ITEM_UNLOCKED: 'VOID_CORE'"
   },
   "delete_save": "DELETE SAVE",
   "delete_warning": "WARNING: This action is irreversible. All tour progress will be lost.",
   "detailedStats": {
-    "totalTravels": "Total Travels",
-    "passiveFollowers": "Passive Followers",
-    "passiveFollowersPerDay": "+{{count}}/day",
+    "active": "Active",
+    "bandMembers": "BAND MEMBERS",
+    "blacklisted": "BLACKLISTED VENUES",
+    "blacklistedVenues": "Blacklisted Venues",
     "breakdownChance": "Breakdown Chance",
+    "charisma": "Charisma",
+    "composition": "Composition",
+    "crowdDecay": "Crowd Decay",
+    "drumSpeed": "Drum Speed",
+    "egoSpotlight": "Ego Spotlight",
+    "equipment": "Equipment",
+    "guitarDiff": "Guitar Difficulty",
+    "harmonyDrain": "Harmony Drain Active",
     "hqUpgrades": {
       "count": "HQ Upgrades",
       "installed": "{{count}} Installed",
       "none": "None"
     },
+    "improv": "Improv",
+    "inventorySlots": "Inventory Slots",
+    "locked": "Locked",
+    "luck": "Luck",
+    "luckDesc": "Affects random events",
+    "member": "Member",
     "mode": {
       "label": "Mode",
       "proveYourself": "PROVE YOURSELF",
       "restrictions": "Venue Restrictions Active"
     },
+    "mood": "Mood",
+    "noActiveQuests": "No active quests. Stay toxic to trigger events.",
+    "noRegionalData": "No regional data yet. Play gigs to build reputation.",
+    "none": "None",
+    "passiveFollowers": "Passive Followers",
+    "passiveFollowersPerDay": "+{{count}}/day",
+    "perfModifiers": "Performance Modifiers",
+    "skillBase": "Skill (Base)",
+    "skills": "Skills",
+    "stamina": "Stamina",
+    "standardGear": "Standard Gear",
+    "technical": "Technical",
+    "toUnlock": "To Unlock",
+    "totalTravels": "Total Travels",
+    "traits": "Traits",
+    "upgrades": "Upgrades",
     "vanUpgrades": {
       "installed": "{{count}} Installed"
-    },
-    "upgrades": "Upgrades",
-    "none": "None",
-    "luck": "Luck",
-    "luckDesc": "Affects random events",
-    "inventorySlots": "Inventory Slots",
-    "egoSpotlight": "Ego Spotlight",
-    "harmonyDrain": "Harmony Drain Active",
-    "perfModifiers": "Performance Modifiers",
-    "guitarDiff": "Guitar Difficulty",
-    "drumSpeed": "Drum Speed",
-    "crowdDecay": "Crowd Decay",
-    "bandMembers": "BAND MEMBERS",
-    "member": "Member",
-    "stamina": "Stamina",
-    "mood": "Mood",
-    "skills": "Skills",
-    "skillBase": "Skill (Base)",
-    "charisma": "Charisma",
-    "technical": "Technical",
-    "improv": "Improv",
-    "composition": "Composition",
-    "traits": "Traits",
-    "toUnlock": "To Unlock",
-    "active": "Active",
-    "locked": "Locked",
-    "equipment": "Equipment",
-    "standardGear": "Standard Gear",
-    "noRegionalData": "No regional data yet. Play gigs to build reputation.",
-    "blacklisted": "BLACKLISTED VENUES",
-    "blacklistedVenues": "Blacklisted Venues",
-    "noActiveQuests": "No active quests. Stay toxic to trigger events."
+    }
   },
   "enter_alias_desc": "Enter your alias for the global underground network.",
   "enter_name_error": "Please enter a name",
@@ -249,9 +156,7 @@
   "executed": "EXECUTED",
   "featureList": [
     {
-      "title": "ui:featureList.sec0.title",
       "description": "ui:featureList.sec0.description",
-      "type": "bullets",
       "items": [
         "ui:featureList.sec0.items.0",
         "ui:featureList.sec0.items.1",
@@ -259,24 +164,24 @@
         "ui:featureList.sec0.items.3",
         "ui:featureList.sec0.items.4",
         "ui:featureList.sec0.items.5"
-      ]
+      ],
+      "title": "ui:featureList.sec0.title",
+      "type": "bullets"
     },
     {
-      "title": "ui:featureList.sec1.title",
       "description": "ui:featureList.sec1.description",
-      "type": "bullets",
       "items": [
         "ui:featureList.sec1.items.0",
         "ui:featureList.sec1.items.1",
         "ui:featureList.sec1.items.2",
         "ui:featureList.sec1.items.3",
         "ui:featureList.sec1.items.4"
-      ]
+      ],
+      "title": "ui:featureList.sec1.title",
+      "type": "bullets"
     },
     {
-      "title": "ui:featureList.sec2.title",
       "description": "ui:featureList.sec2.description",
-      "type": "table",
       "headers": [
         "ui:featureList.sec2.headers.0",
         "ui:featureList.sec2.headers.1"
@@ -298,23 +203,23 @@
           "ui:featureList.sec2.rows.3.0",
           "ui:featureList.sec2.rows.3.1"
         ]
-      ]
+      ],
+      "title": "ui:featureList.sec2.title",
+      "type": "table"
     },
     {
-      "title": "ui:featureList.sec3.title",
       "description": "ui:featureList.sec3.description",
-      "type": "bullets",
       "items": [
         "ui:featureList.sec3.items.0",
         "ui:featureList.sec3.items.1",
         "ui:featureList.sec3.items.2",
         "ui:featureList.sec3.items.3"
-      ]
+      ],
+      "title": "ui:featureList.sec3.title",
+      "type": "bullets"
     },
     {
-      "title": "ui:featureList.sec4.title",
       "description": "ui:featureList.sec4.description",
-      "type": "table",
       "headers": [
         "ui:featureList.sec4.headers.0",
         "ui:featureList.sec4.headers.1"
@@ -336,7 +241,9 @@
           "ui:featureList.sec4.rows.3.0",
           "ui:featureList.sec4.rows.3.1"
         ]
-      ]
+      ],
+      "title": "ui:featureList.sec4.title",
+      "type": "table"
     }
   ],
   "featureList.sec0.description": "The primary interactive loop is built upon a highly optimized, dual-layered rhythm engine that seamlessly fuses traditional beat-matching with dynamic survival mechanics.",
@@ -397,8 +304,8 @@
   "gameOver.soldOut": "SOLD OUT",
   "game_over": "GAME OVER: {{description}}",
   "hazard": {
-    "toxicOverload": "TOXIC OVERLOAD DETECTED // SEVERE SYSTEM STRESS // STAY FOCUSED",
-    "modifierActive": "[MODIFIER ACTIVE]"
+    "modifierActive": "[MODIFIER ACTIVE]",
+    "toxicOverload": "TOXIC OVERLOAD DETECTED // SEVERE SYSTEM STRESS // STAY FOCUSED"
   },
   "holdToOverride": "HOLD TO OVERRIDE",
   "hq.buy": "BUY",
@@ -422,34 +329,46 @@
   "leaderboard.col_net_worth": "NET WORTH",
   "leaderboard.col_player": "PLAYER",
   "leaderboard.col_score": "SCORE",
+  "leaderboard.col_value": "VALUE",
+  "leaderboard.col_value_km": "{{value}} {{unit}}",
+  "leaderboard.conflicts": "CONFLICTS",
   "leaderboard.connecting": "CONNECTING TO UNDERGROUND NETWORK...",
+  "leaderboard.distance": "DISTANCE",
+  "leaderboard.fame": "FAME",
+  "leaderboard.followers": "FOLLOWERS",
   "leaderboard.global_wealth": "GLOBAL WEALTH",
   "leaderboard.load_error": "Could not load rankings.",
   "leaderboard.no_data": "NO DATA RECORDED YET.",
   "leaderboard.no_songs": "NO SONGS UNLOCKED",
   "leaderboard.select_song": "SELECT SONG:",
   "leaderboard.song_scores": "SONG SCORES",
+  "leaderboard.stage_dives": "STAGE DIVES",
+  "leaderboard.top_100_conflicts": "TOP 100 CONFLICTS",
+  "leaderboard.top_100_distance": "TOP 100 DISTANCE",
+  "leaderboard.top_100_fame": "TOP 100 FAME",
+  "leaderboard.top_100_followers": "TOP 100 FOLLOWERS",
   "leaderboard.top_100_scores": "TOP 100 SHREDDERS",
+  "leaderboard.top_100_stage_dives": "TOP 100 STAGE DIVES",
   "leaderboard.top_100_wealth": "TOP 100 WEALTHIEST",
   "load_game": "Load Game",
   "loading": "Loading",
   "log_protocols": "LOG PROTOCOLS",
   "mainMenu": {
-    "subtitle": {
-      "grindTheVoid": "Grind The Void"
-    },
     "existingSave": {
-      "title": "SAVE FILE DETECTED",
       "desc": "A save game already exists. Do you want to load it or start a new tour?",
       "load": "LOAD EXISTING",
-      "startNew": "START NEW TOUR"
+      "startNew": "START NEW TOUR",
+      "title": "SAVE FILE DETECTED"
+    },
+    "subtitle": {
+      "grindTheVoid": "Grind The Void"
     }
   },
   "map": {
     "nodeType": {
+      "fallback": "{{type}}",
       "gig": "GIG",
-      "rest": "REST",
-      "fallback": "{{type}}"
+      "rest": "REST"
     }
   },
   "map.cap": "Cap",
@@ -482,54 +401,54 @@
     "toxic": "TOXIC OVERLOAD"
   },
   "pregig": {
-    "title": "PREPARATION",
-    "budget": "BUDGET:",
-    "costs": "COSTS:",
+    "activeModifiers": "ACTIVE MODIFIERS",
     "allocation": "BUDGET ALLOCATION",
     "bandMeeting": {
-      "label": "Band Meeting",
-      "desc": "+Harmony"
+      "desc": "+Harmony",
+      "label": "Band Meeting"
     },
-    "activeModifiers": "ACTIVE MODIFIERS",
-    "noModifiers": "No active buffs or debuffs",
-    "setlist": "SETLIST",
-    "selectSong": "Select song {{name}}",
-    "locked": "LOCKED (Prove Yourself)",
+    "budget": "BUDGET:",
+    "costs": "COSTS:",
     "diff": "Diff:",
-    "nrg": "NRG",
-    "selected": "SELECTED",
-    "selectPreview": "Select songs to preview energy curve",
     "initializing": "INITIALIZING...",
-    "startShow": "START SHOW",
+    "locked": "LOCKED (Prove Yourself)",
     "modifiers": {
-      "soundcheck": {
-        "label": "Soundcheck",
-        "desc": "Notes Easier"
-      },
-      "promo": {
-        "label": "Social Promo",
-        "desc": "+Crowd Fill"
-      },
-      "merch": {
-        "label": "Merch Table",
-        "desc": "+Sales"
-      },
       "catering": {
-        "label": "Catering / Energy",
-        "desc": "Counters Tired Band Penalty"
+        "desc": "Counters Tired Band Penalty",
+        "label": "Catering / Energy"
       },
       "guestlist": {
-        "label": "Guest List",
-        "desc": "+VIP Score"
+        "desc": "+VIP Score",
+        "label": "Guest List"
+      },
+      "merch": {
+        "desc": "+Sales",
+        "label": "Merch Table"
+      },
+      "promo": {
+        "desc": "+Crowd Fill",
+        "label": "Social Promo"
+      },
+      "soundcheck": {
+        "desc": "Notes Easier",
+        "label": "Soundcheck"
       }
     },
+    "noModifiers": "No active buffs or debuffs",
+    "nrg": "NRG",
+    "selectPreview": "Select songs to preview energy curve",
+    "selectSong": "Select song {{name}}",
+    "selected": "SELECTED",
+    "setlist": "SETLIST",
+    "startShow": "START SHOW",
+    "title": "PREPARATION",
     "toasts": {
+      "audioFail": "Audio initialization failed.",
+      "harmonyLow": "Band harmony too low to perform!",
+      "meetingHeld": "Meeting held. Vibes are better.",
       "noGig": "No gig active! Returning to map.",
       "noMoneySnacks": "Not enough money for snacks!",
-      "meetingHeld": "Meeting held. Vibes are better.",
-      "noMoneyUpgrade": "Not enough money for this upgrade!",
-      "harmonyLow": "Band harmony too low to perform!",
-      "audioFail": "Audio initialization failed."
+      "noMoneyUpgrade": "Not enough money for this upgrade!"
     }
   },
   "quests.button": "QUESTS",
@@ -538,6 +457,7 @@
   "quests.days.plural": "Days Left",
   "quests.days.singular": "Day Left",
   "quests.empty": "No active quests. Hit the road to find some!",
+  "quests.moneyReward": "+€{{amount}}",
   "quests.progress": "Progress",
   "quests.rewards": "Rewards:",
   "quests.title": "ACTIVE QUESTS",
@@ -549,34 +469,35 @@
   "rewards.fans": "Fans",
   "rewards.freeItem": "Free Item",
   "rewards.harmony": "Harmony",
+  "rewards.money": "Money",
   "rewards.skillPoint": "Skill Point",
   "rewards.special": "Special",
   "rhythm": {
     "header": "RHYTHM_ENGINE_SIM",
-    "hit_lane": "Hit {{lane}} lane",
     "hit": "HIT",
-    "lane_guitar": "GUITAR",
+    "hit_lane": "Hit {{lane}} lane",
+    "lane_bass": "BASS",
     "lane_drums": "DRUMS",
-    "lane_bass": "BASS"
+    "lane_guitar": "GUITAR"
   },
   "roadieRun": {
-    "hud": {
-      "title": "ROADIE RUN",
-      "itemsRemaining": "ITEMS REMAINING:",
-      "delivered": "DELIVERED:",
-      "damage": "DAMAGE:",
-      "carrying": "CARRYING:"
+    "completion": {
+      "button": "START SHOW",
+      "equipmentDamage": "Equipment Damage: {{damage}}%",
+      "title": "SETUP COMPLETE"
     },
     "controls": {
-      "toggleAria": "Toggle controls",
       "hide": "HIDE CONTROLS",
+      "movementHint": "WASD / ARROWS to Move",
       "show": "SHOW CONTROLS",
-      "movementHint": "WASD / ARROWS to Move"
+      "toggleAria": "Toggle controls"
     },
-    "completion": {
-      "title": "SETUP COMPLETE",
-      "button": "START SHOW",
-      "equipmentDamage": "Equipment Damage: {{damage}}%"
+    "hud": {
+      "carrying": "CARRYING:",
+      "damage": "DAMAGE:",
+      "delivered": "DELIVERED:",
+      "itemsRemaining": "ITEMS REMAINING:",
+      "title": "ROADIE RUN"
     },
     "itemTypes": {
       "AMP": "Amp",
@@ -588,12 +509,12 @@
   "seconds": "{{count}}s",
   "set_label_to_segment": "Set {{label}} to {{segment}}",
   "setlistSelector": {
+    "diffExpert": "EXPERT",
+    "diffHard": "HARD",
+    "diffInsane": "INSANE",
     "track1": "SUICIDAL JESUS",
     "track2": "SYSTEMSPRENGER",
-    "track3": "TRAVESTIE MASSAKER",
-    "diffHard": "HARD",
-    "diffExpert": "EXPERT",
-    "diffInsane": "INSANE"
+    "track3": "TRAVESTIE MASSAKER"
   },
   "settings": "Settings",
   "settings.audio_mute": "Mute all audio",
@@ -604,41 +525,41 @@
   "sign_contract": "Sign Contract",
   "skillCheck": "Skill Check",
   "social_links": {
-    "game": {
-      "title": "Play Neurotoxic",
-      "subtitle": "neurotoxic-game.vercel.app"
-    },
     "bandcamp": {
-      "title": "Bandcamp",
-      "subtitle": "neurotoxic.bandcamp.com"
-    },
-    "instagram": {
-      "title": "Instagram",
-      "subtitle": "instagram.com/neurotoxicband"
-    },
-    "tiktok": {
-      "title": "TikTok",
-      "subtitle": "tiktok.com/@neurotoxicband"
-    },
-    "neurotoxic_once": {
-      "title": "Neurotoxic Once",
-      "subtitle": "youtube.com/@neurotoxiconcechannel237"
-    },
-    "neurotoxic_3000": {
-      "title": "Neurotoxic 3000",
-      "subtitle": "youtube.com/@neurotoxic3000"
+      "subtitle": "neurotoxic.bandcamp.com",
+      "title": "Bandcamp"
     },
     "blog": {
-      "title": "Neuroblogxic",
-      "subtitle": "neuroblogxic.blogspot.com"
+      "subtitle": "neuroblogxic.blogspot.com",
+      "title": "Neuroblogxic"
     },
-    "type_system_core": "SYSTEM_CORE",
+    "game": {
+      "subtitle": "neurotoxic-game.vercel.app",
+      "title": "Play Neurotoxic"
+    },
+    "instagram": {
+      "subtitle": "instagram.com/neurotoxicband",
+      "title": "Instagram"
+    },
+    "neurotoxic_3000": {
+      "subtitle": "youtube.com/@neurotoxic3000",
+      "title": "Neurotoxic 3000"
+    },
+    "neurotoxic_once": {
+      "subtitle": "youtube.com/@neurotoxiconcechannel237",
+      "title": "Neurotoxic Once"
+    },
+    "tiktok": {
+      "subtitle": "tiktok.com/@neurotoxicband",
+      "title": "TikTok"
+    },
     "type_audio_vault": "AUDIO_VAULT",
-    "type_visual_feed": "VISUAL_FEED",
-    "type_viral_stream": "VIRAL_STREAM",
     "type_broadcast_a": "BROADCAST_A",
     "type_broadcast_b": "BROADCAST_B",
-    "type_data_log": "DATA_LOG"
+    "type_data_log": "DATA_LOG",
+    "type_system_core": "SYSTEM_CORE",
+    "type_viral_stream": "VIRAL_STREAM",
+    "type_visual_feed": "VISUAL_FEED"
   },
   "socials": "SOCIALS",
   "start_game": "Start Tour",
@@ -709,8 +630,8 @@
   "toast.quest_complete_skill": "[{{name}}]: COMPLETE +1 Skill ({{member}})",
   "toast.quest_failed": "[{{name}}]: FAILED",
   "toggle": {
-    "on": "ON",
-    "off": "OFF"
+    "off": "OFF",
+    "on": "ON"
   },
   "tour.endedPrematurely": "The tour has ended prematurely.",
   "toxicModeActive": "TOXIC MODE ACTIVE",
@@ -720,6 +641,7 @@
   "ui.locked": "LOCKED",
   "ui.owned": "OWNED",
   "ui.time": "Time",
+  "unit.km": "km",
   "unlocked": "UNLOCKED: {{unlock}}!",
   "visual_interface": "VISUAL INTERFACE",
   "volume": {
