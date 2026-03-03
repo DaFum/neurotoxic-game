@@ -28,8 +28,6 @@ test('Leaderboard Stats API', async (t) => {
   let statsModule
 
   t.beforeEach(async () => {
-    mock.timers.enable()
-
     mockRedisClient.zAdd.mock.resetCalls()
     mockRedisClient.zRangeWithScores.mock.resetCalls()
     mockRedisClient.hmGet.mock.resetCalls()
@@ -42,7 +40,7 @@ test('Leaderboard Stats API', async (t) => {
   })
 
   t.afterEach(() => {
-    mock.timers.reset()
+    // Reset any required state if needed
   })
 
   await t.test('POST handles valid stats update', async () => {

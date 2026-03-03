@@ -38,8 +38,6 @@ export const LeaderboardTab = () => {
             return
           }
           url = `/api/leaderboard/song?songId=${encodeURIComponent(selectedSongId)}&limit=100`
-        } else if (view === 'STAGE_DIVES') {
-          url = `/api/leaderboard/stats?stat=stage_dives&limit=100`
         }
 
         const res = await fetch(url)
