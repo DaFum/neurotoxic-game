@@ -47,6 +47,7 @@ describe('PostGig Leaderboard Submission', () => {
   const mockChangeScene = vi.fn()
   const mockTriggerEvent = vi.fn()
   const mockAddToast = vi.fn()
+  const mockSaveGame = vi.fn()
   const mockUnlockTrait = vi.fn()
 
   const getBaseState = () => ({
@@ -69,6 +70,7 @@ describe('PostGig Leaderboard Submission', () => {
     updateBand: mockUpdateBand,
     updateSocial: mockUpdateSocial,
     changeScene: mockChangeScene,
+    saveGame: mockSaveGame,
     addToast: mockAddToast,
     unlockTrait: mockUnlockTrait,
     reputationByRegion: {},
@@ -166,8 +168,12 @@ describe('PostGig Leaderboard Submission', () => {
       )
     })
 
-    // Verify scene change (autosave is handled centrally in GameState)
-    expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
+    // Verify autosave and scene change order
+    await waitFor(() => expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD'))
+    expect(mockSaveGame).toHaveBeenCalled()
+    expect(mockSaveGame.mock.invocationCallOrder[0]).toBeLessThan(
+      mockChangeScene.mock.invocationCallOrder[0]
+    )
   })
 
   it('resolves song via setlist if currentGig.songId is missing', async () => {
@@ -234,6 +240,10 @@ describe('PostGig Leaderboard Submission', () => {
     fireEvent.click(await screen.findByText(/Back to Tour/i))
 
     expect(mockFetch).not.toHaveBeenCalled()
-    expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
+    await waitFor(() => expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD'))
+    expect(mockSaveGame).toHaveBeenCalled()
+    expect(mockSaveGame.mock.invocationCallOrder[0]).toBeLessThan(
+      mockChangeScene.mock.invocationCallOrder[0]
+    )
   })
 })

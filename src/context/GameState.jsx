@@ -407,8 +407,7 @@ export const GameStateProvider = ({ children }) => {
     previousSceneRef.current = state.currentScene
 
     const shouldAutosaveOnTransition =
-      (previousScene === 'GIG' && state.currentScene === 'POSTGIG') ||
-      (previousScene === 'POSTGIG' && state.currentScene === 'OVERWORLD')
+      previousScene === 'GIG' && state.currentScene === 'POSTGIG'
 
     if (shouldAutosaveOnTransition) {
       saveGame()
