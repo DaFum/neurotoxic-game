@@ -32,7 +32,7 @@ export const useArrivalLogic = ({ onShowHQ } = {}) => {
       advanceDay()
 
       // 2. Save Game
-      saveGame()
+      saveGame(false)
 
       // 3. Harmony Regen (if applicable)
       if (band?.harmonyRegenTravel) {

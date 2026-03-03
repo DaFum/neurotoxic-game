@@ -366,7 +366,7 @@ export const GameStateProvider = ({ children }) => {
   /**
    * Persists the current state to localStorage.
    */
-  const saveGame = useCallback(() => {
+  const saveGame = useCallback((showToast = true) => {
     const saveData = createPersistedState(stateRef.current)
 
     const success = safeStorageOperation(
@@ -379,12 +379,14 @@ export const GameStateProvider = ({ children }) => {
     )
 
     if (success) {
-      addToast('GAME SAVED!', 'success')
+      if (showToast) {
+        addToast(t('ui:toast.gameSaved'), 'success')
+      }
       logger.info('System', 'Game Saved Successfully')
     } else {
       handleError(new StorageError('Failed to save game'), { addToast })
     }
-  }, [addToast])
+  }, [addToast, t])
 
   /**
    * Completes the current gig and transitions to the appropriate post-gig scene.
@@ -410,7 +412,7 @@ export const GameStateProvider = ({ children }) => {
       previousScene === 'GIG' && state.currentScene === 'POSTGIG'
 
     if (shouldAutosaveOnTransition) {
-      saveGame()
+      saveGame(false)
     }
   }, [state.currentScene, saveGame])
 
@@ -451,7 +453,7 @@ export const GameStateProvider = ({ children }) => {
       },
       false
     )
-  }, [addToast])
+  }, [addToast, t])
 
   // Event System Integration
   /**

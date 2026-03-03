@@ -493,7 +493,7 @@ export const PostGig = () => {
       changeScene('GAMEOVER')
     } else {
       window.setTimeout(() => {
-        saveGame()
+        saveGame(false)
         changeScene('OVERWORLD')
       }, 0)
     }

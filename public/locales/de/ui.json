@@ -651,5 +651,6 @@
   "quests.postgig.apologyTour.description": "Spiele 3 Gigs, um dein Image nach dem Cancel-Shitstorm zu reparieren.",
   "quests.postgig.saveTheBand.title": "RETTE DIE BAND",
   "quests.postgig.saveTheBand.description": "Halte die Band zusammen und überstehe die aktuelle Ego-Krise.",
-  "ui:gig.practiceComplete": "Probe abgeschlossen"
+  "gig.practiceComplete": "Probe abgeschlossen",
+  "toast.gameSaved": "Spiel gespeichert!"
 }
