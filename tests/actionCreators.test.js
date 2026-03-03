@@ -25,7 +25,8 @@ import {
   createPopPendingEventAction,
   createConsumeItemAction,
   createAdvanceDayAction,
-  createUnlockTraitAction
+  createUnlockTraitAction,
+  createAddUnlockAction
 } from '../src/context/actionCreators.js'
 import { ActionTypes } from '../src/context/gameReducer.js'
 
@@ -251,6 +252,16 @@ describe('Action Creators', () => {
       assert.deepStrictEqual(action, {
         type: ActionTypes.UNLOCK_TRAIT,
         payload: { memberId: 'matze', traitId: 'gear_nerd' }
+      })
+    })
+  })
+
+  describe('createAddUnlockAction', () => {
+    it('creates correct action', () => {
+      const action = createAddUnlockAction('test_unlock')
+      assert.deepStrictEqual(action, {
+        type: ActionTypes.ADD_UNLOCK,
+        payload: 'test_unlock'
       })
     })
   })

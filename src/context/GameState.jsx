@@ -18,7 +18,7 @@ import {
   safeStorageOperation
 } from '../utils/errorHandler'
 import { validateSaveData } from '../utils/saveValidator'
-import { addUnlock } from '../utils/unlockManager'
+import { addUnlock, getUnlocks } from '../utils/unlockManager'
 import { hasUpgrade as checkUpgrade } from '../utils/upgradeUtils'
 import { useLeaderboardSync } from '../hooks/useLeaderboardSync'
 
@@ -53,7 +53,8 @@ import {
   createCompleteRoadieMinigameAction,
   createUnlockTraitAction,
   createAddQuestAction,
-  createAdvanceQuestAction
+  createAdvanceQuestAction,
+  createAddUnlockAction
 } from './actionCreators'
 import PropTypes from 'prop-types'
 
@@ -67,7 +68,15 @@ const GameDispatchContext = createContext()
  */
 export const GameStateProvider = ({ children }) => {
   const { t } = useTranslation()
-  const [state, dispatch] = useReducer(gameReducer, null, createInitialState)
+
+  // Lazy initialization of state to ensure fresh data fetch on mount
+  const initGameState = () => {
+    return createInitialState({
+      unlocks: safeStorageOperation('loadUnlocks', () => getUnlocks(), []) || []
+    })
+  }
+
+  const [state, dispatch] = useReducer(gameReducer, undefined, initGameState)
 
   // Leaderboard Sync Hook
   useLeaderboardSync(state.player)
@@ -249,7 +258,10 @@ export const GameStateProvider = ({ children }) => {
   /**
    * Resets the game state to initial values.
    */
-  const resetState = useCallback(() => dispatch(createResetStateAction()), [])
+  const resetState = useCallback(() => {
+    const unlocks = safeStorageOperation('loadUnlocks', () => getUnlocks(), []) || []
+    dispatch(createResetStateAction({ unlocks }))
+  }, [])
 
   // Minigame Actions
   const startTravelMinigame = useCallback(
@@ -390,6 +402,8 @@ export const GameStateProvider = ({ children }) => {
           return false
         }
 
+        data.unlocks = getUnlocks()
+
         dispatch(createLoadGameAction(data))
         return true
       },
@@ -464,13 +478,21 @@ export const GameStateProvider = ({ children }) => {
 
           // Unlocks
           if (delta.flags?.unlock) {
-            const added = addUnlock(delta.flags.unlock)
-            if (added) {
-              const unlockKey = `unlocks:${delta.flags.unlock.toLowerCase()}`
-              const unlockLabel = t(unlockKey, {
-                defaultValue: delta.flags.unlock.toUpperCase()
-              })
-              addToast(t('ui:unlocked', { unlock: unlockLabel }), 'success')
+            const rawUnlock = String(delta.flags.unlock)
+            const safeUnlockId = rawUnlock.trim().replace(/[^a-zA-Z0-9_]/g, '').toLowerCase()
+
+            if (safeUnlockId) {
+              // Sync in-memory state unconditionally
+              dispatch(createAddUnlockAction(safeUnlockId))
+
+              const added = addUnlock(safeUnlockId)
+              if (added) {
+                const unlockKey = `unlocks:${safeUnlockId}`
+                const unlockLabel = t(unlockKey, {
+                  defaultValue: safeUnlockId.toUpperCase()
+                })
+                addToast(t('ui:unlocked', { unlock: unlockLabel }), 'success')
+              }
             }
           }
 

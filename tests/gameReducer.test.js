@@ -281,6 +281,21 @@ describe('gameReducer', () => {
       assert.strictEqual(newState.currentScene, initialState.currentScene)
       assert.strictEqual(newState.player.money, initialState.player.money)
     })
+
+    it('should retain unlocks on reset when payload is provided', () => {
+      testState.player.money = 9999
+      testState.currentScene = 'GIG'
+
+      const action = {
+        type: ActionTypes.RESET_STATE,
+        payload: { unlocks: ['retained_unlock'] }
+      }
+      const newState = gameReducer(testState, action)
+
+      assert.strictEqual(newState.currentScene, initialState.currentScene)
+      assert.strictEqual(newState.player.money, initialState.player.money)
+      assert.deepStrictEqual(newState.unlocks, ['retained_unlock'])
+    })
   })
 
   describe('LOAD_GAME', () => {
@@ -329,6 +344,42 @@ describe('gameReducer', () => {
       // Should have default van properties
       assert.ok(newState.player.van !== undefined)
       assert.strictEqual(typeof newState.player.van.fuel, 'number')
+    })
+
+    it('should hydrate unlocks from payload', () => {
+      const savedData = {
+        player: { money: 2000 },
+        band: {},
+        social: {},
+        gameMap: {},
+        unlocks: ['test1', 'test2']
+      }
+
+      const action = { type: ActionTypes.LOAD_GAME, payload: savedData }
+      const newState = gameReducer(testState, action)
+
+      assert.deepStrictEqual(newState.unlocks, ['test1', 'test2'])
+    })
+
+    it('should fallback unlocks to state.unlocks or empty array', () => {
+      const savedData = {
+        player: { money: 2000 },
+        band: {},
+        social: {},
+        gameMap: {}
+        // unlocks omitted
+      }
+
+      testState.unlocks = ['existing_unlock']
+      const action = { type: ActionTypes.LOAD_GAME, payload: savedData }
+      const newState = gameReducer(testState, action)
+
+      assert.deepStrictEqual(newState.unlocks, ['existing_unlock'])
+
+      // Test complete omission
+      delete testState.unlocks
+      const newState2 = gameReducer(testState, action)
+      assert.deepStrictEqual(newState2.unlocks, [])
     })
   })
 
@@ -456,6 +507,75 @@ describe('gameReducer', () => {
       assert.deepStrictEqual(newState.lastGigStats, action.payload)
     })
   })
+
+  describe('ADD_UNLOCK', () => {
+    it('should add a new unlock', () => {
+      const testState = {
+        ...createInitialState(),
+        unlocks: ['existing_unlock']
+      }
+
+      const action = {
+        type: ActionTypes.ADD_UNLOCK,
+        payload: 'new_unlock'
+      }
+
+      const newState = gameReducer(testState, action)
+
+      assert.deepStrictEqual(newState.unlocks, ['existing_unlock', 'new_unlock'])
+      assert.deepStrictEqual(testState.unlocks, ['existing_unlock']) // Verify immutability
+      assert.notStrictEqual(newState, testState)
+    })
+
+    it('should not add a duplicate unlock', () => {
+      const testState = {
+        ...createInitialState(),
+        unlocks: ['existing_unlock']
+      }
+
+      const action = {
+        type: ActionTypes.ADD_UNLOCK,
+        payload: 'existing_unlock'
+      }
+
+      const newState = gameReducer(testState, action)
+
+      assert.strictEqual(newState, testState) // Check reference equality for early return
+      assert.deepStrictEqual(newState.unlocks, ['existing_unlock'])
+    })
+
+    it('should handle undefined state.unlocks', () => {
+      const testState = {
+        ...createInitialState()
+      }
+      delete testState.unlocks // explicitly remove
+
+      const action = {
+        type: ActionTypes.ADD_UNLOCK,
+        payload: 'new_unlock'
+      }
+
+      const newState = gameReducer(testState, action)
+
+      assert.deepStrictEqual(newState.unlocks, ['new_unlock'])
+    })
+
+    it('should ignore falsy and non-string unlockIds', () => {
+      const testState = {
+        ...createInitialState(),
+        unlocks: ['existing']
+      }
+
+      const testCases = [null, undefined, '', 123, {}, []]
+
+      testCases.forEach(payload => {
+        const action = { type: ActionTypes.ADD_UNLOCK, payload }
+        const newState = gameReducer(testState, action)
+        assert.strictEqual(newState, testState)
+        assert.deepStrictEqual(newState.unlocks, ['existing'])
+      })
+    })
+  })
 })
 
 describe('ActionTypes', () => {
@@ -481,7 +601,8 @@ describe('ActionTypes', () => {
       'POP_PENDING_EVENT',
       'CONSUME_ITEM',
       'ADVANCE_DAY',
-      'UNLOCK_TRAIT'
+      'UNLOCK_TRAIT',
+      'ADD_UNLOCK'
     ]
 
     expectedTypes.forEach(type => {

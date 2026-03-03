@@ -48,7 +48,8 @@ import {
   handleSetMap,
   handleAddToast,
   handleRemoveToast,
-  handleAdvanceDay
+  handleAdvanceDay,
+  handleAddUnlock
 } from './reducers/systemReducer.js'
 
 export { ActionTypes }
@@ -107,7 +108,7 @@ export const gameReducer = (state, action) => {
       return handleLoadGame(state, action.payload)
 
     case ActionTypes.RESET_STATE:
-      return handleResetState(state)
+      return handleResetState(state, action.payload)
 
     case ActionTypes.APPLY_EVENT_DELTA:
       return handleApplyEventDelta(state, action.payload)
@@ -153,6 +154,9 @@ export const gameReducer = (state, action) => {
 
     case ActionTypes.FAIL_QUESTS:
       return handleFailQuests(state)
+
+    case ActionTypes.ADD_UNLOCK:
+      return handleAddUnlock(state, action.payload)
 
     default:
       return state

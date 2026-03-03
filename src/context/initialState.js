@@ -185,14 +185,16 @@ export const initialState = {
   settings: { ...DEFAULT_SETTINGS },
   npcs: {},
   gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
-  minigame: { ...DEFAULT_MINIGAME_STATE }
+  minigame: { ...DEFAULT_MINIGAME_STATE },
+  unlocks: []
 }
 
 /**
  * Creates a fresh copy of the initial state
+ * @param {Object} [persistedData={}] - Persisted data to inject (e.g. unlocks, settings)
  * @returns {Object} A new initial state object
  */
-export const createInitialState = () => ({
+export const createInitialState = (persistedData = {}) => ({
   ...initialState,
   player: structuredClone(DEFAULT_PLAYER_STATE),
   venueBlacklist: [],
@@ -212,7 +214,8 @@ export const createInitialState = () => ({
     activeDeals: [...DEFAULT_SOCIAL_STATE.activeDeals],
     brandReputation: { ...DEFAULT_SOCIAL_STATE.brandReputation }
   },
-  settings: { ...DEFAULT_SETTINGS },
+  settings: { ...DEFAULT_SETTINGS, ...(persistedData.settings || {}) },
   gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
-  minigame: { ...DEFAULT_MINIGAME_STATE }
+  minigame: { ...DEFAULT_MINIGAME_STATE },
+  unlocks: Array.isArray(persistedData.unlocks) ? [...persistedData.unlocks] : []
 })
