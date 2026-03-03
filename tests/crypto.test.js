@@ -95,30 +95,25 @@ describe('secureRandom', () => {
     assert.equal(result, 0xffffffff / 4294967296)
   })
 
-  test('should fallback to Math.random when crypto is undefined', () => {
+  test('should throw error when crypto is undefined', () => {
     Object.defineProperty(globalThis, 'crypto', {
       value: undefined,
       configurable: true
     })
 
-    // Ensure window is also undefined/null so window.crypto is not used
-    // (Already handled by beforeEach setting globalThis.window = undefined if missing)
-
-    Math.random = () => 0.5
-
-    const result = secureRandom()
-    assert.equal(result, 0.5)
+    assert.throws(() => {
+      secureRandom()
+    }, /Cryptographically secure random number generation is not supported in this environment./)
   })
 
-  test('should fallback to Math.random when getRandomValues is missing', () => {
+  test('should throw error when getRandomValues is missing', () => {
     Object.defineProperty(globalThis, 'crypto', {
       value: {},
       configurable: true
     })
 
-    Math.random = () => 0.25
-
-    const result = secureRandom()
-    assert.equal(result, 0.25)
+    assert.throws(() => {
+      secureRandom()
+    }, /Cryptographically secure random number generation is not supported in this environment./)
   })
 })
