@@ -50,7 +50,7 @@ const IconCube = ({ className = '', title }) => (
 const getRewardIcon = (type) => {
   switch (type) {
     case 'item': return <IconCube className="w-4 h-4 text-(--toxic-green)" />
-    case 'fans': return <IconStar className="w-4 h-4 text-(--stamina-green)" />
+    case 'fame': return <IconStar className="w-4 h-4 text-(--stamina-green)" />
     case 'skill_point': return <IconFire className="w-4 h-4 text-(--blood-red)" />
     case 'harmony': return <IconThumbUp className="w-4 h-4 text-(--toxic-green)" />
     default: return <IconTrophy className="w-4 h-4 text-(--fuel-yellow)" />
@@ -85,6 +85,7 @@ export const QuestsModal = ({ onClose, activeQuests, player }) => {
         initial='hidden'
         animate='visible'
         exit='hidden'
+        onClick={onClose}
       >
         <motion.div
           className='relative w-full max-w-2xl bg-(--void-black) border-4 border-(--toxic-green) shadow-[0_0_30px_var(--toxic-green-20)] p-6 max-h-[90vh] overflow-y-auto'
@@ -94,15 +95,15 @@ export const QuestsModal = ({ onClose, activeQuests, player }) => {
           {/* Header */}
           <div className='flex justify-between items-center mb-6 border-b border-(--toxic-green) pb-2'>
             <h2 className='text-3xl font-[Metal_Mania] text-(--toxic-green) tracking-wider drop-shadow-[0_0_8px_var(--toxic-green)]'>
-              {t('ui:quests.title', { defaultValue: 'ACTIVE QUESTS' })}
+              {t('ui:quests.title')}
             </h2>
             <button
               type='button'
               onClick={onClose}
               className='text-(--ash-gray) hover:text-(--blood-red) transition-colors p-2'
-              aria-label='Close Quests'
+              aria-label={t('ui:quests.closeButton')}
             >
-              <svg className='w-6 h-6' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+              <svg className='w-6 h-6' fill='none' viewBox='0 0 24 24' stroke='currentColor' aria-hidden='true' focusable='false'>
                 <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
               </svg>
             </button>
@@ -113,14 +114,21 @@ export const QuestsModal = ({ onClose, activeQuests, player }) => {
             <div className='text-center py-12'>
               <IconTrophy className="w-16 h-16 mx-auto text-(--ash-gray)/20 mb-4" />
               <p className='text-(--ash-gray) font-mono italic'>
-                {t('ui:quests.empty', { defaultValue: 'No active quests. Hit the road to find some!' })}
+                {t('ui:quests.empty')}
               </p>
             </div>
           ) : (
             <div className='space-y-6'>
               {activeQuests.map((quest, index) => {
                 const isOverdue = quest.deadline && player.day > quest.deadline
-                const progressPercent = Math.min(100, Math.round((quest.progress / quest.required) * 100))
+
+                // Safe progress calculation
+                let progressPercent = 0
+                if (typeof quest.required === 'number' && quest.required > 0) {
+                  progressPercent = Math.round((quest.progress / quest.required) * 100)
+                }
+                progressPercent = Math.max(0, Math.min(100, Number.isFinite(progressPercent) ? progressPercent : 0))
+
                 const timeRemaining = quest.deadline ? Math.max(0, quest.deadline - player.day) : null
 
                 return (
@@ -134,7 +142,7 @@ export const QuestsModal = ({ onClose, activeQuests, player }) => {
                   >
                     <div className='flex justify-between items-start mb-2'>
                       <h3 className='text-xl font-bold text-(--star-white) uppercase tracking-wide'>
-                        {t(`events:${quest.id}.title`, { defaultValue: quest.label })}
+                        {t(quest.label)}
                       </h3>
                       {timeRemaining !== null && (
                         <div className={`flex items-center gap-1 text-xs font-mono px-2 py-1 rounded ${timeRemaining <= 2 ? 'bg-(--blood-red)/20 text-(--blood-red)' : 'bg-(--fuel-yellow)/10 text-(--fuel-yellow)'}`}>
@@ -145,7 +153,7 @@ export const QuestsModal = ({ onClose, activeQuests, player }) => {
                     </div>
 
                     <p className='text-sm text-(--ash-gray) mb-4 font-mono'>
-                      {t(`events:${quest.id}.desc`, { defaultValue: quest.description })}
+                      {t(quest.description)}
                     </p>
 
                     <div className='mb-3'>
@@ -174,7 +182,7 @@ export const QuestsModal = ({ onClose, activeQuests, player }) => {
                         <span className='inline-flex items-center gap-1 bg-(--toxic-green)/10 text-(--toxic-green) px-2 py-1 text-xs font-mono rounded'>
                           {getRewardIcon(quest.rewardType)}
                           {quest.rewardType === 'item' ? t('ui:rewards.freeItem') :
-                           quest.rewardType === 'fans' ? `+${quest.rewardData?.fame || 0} ${t('ui:rewards.fans')}` :
+                           quest.rewardType === 'fame' ? `+${quest.rewardData?.fame || 0} ${t('ui:rewards.fame')}` :
                            quest.rewardType === 'skill_point' ? `+1 ${t('ui:rewards.skillPoint')}` :
                            quest.rewardType === 'harmony' ? `+${quest.rewardData?.harmony || 0} ${t('ui:rewards.harmony')}` : t('ui:rewards.special')}
                         </span>
@@ -190,7 +198,7 @@ export const QuestsModal = ({ onClose, activeQuests, player }) => {
           {/* Footer */}
           <div className='mt-8 flex justify-center'>
             <GlitchButton variant='primary' size='md' onClick={onClose}>
-              [CLOSE]
+              {t('ui:quests.closeLabel')}
             </GlitchButton>
           </div>
         </motion.div>

@@ -76,25 +76,25 @@ test('questReducer - Rewards Logic', async t => {
     const nextState = handleCompleteQuest(initialState, { questId: 'q_money' })
 
     assert.equal(nextState.player.money, 600)
-    assert.ok(nextState.toasts[0].message.includes('+500€'))
+    assert.ok(nextState.toasts[0].message.includes('ui:toast.quest_complete_money'))
   })
 
-  await t.test('grants fans reward on complete', () => {
+  await t.test('grants fame reward on complete', () => {
     const initialState = {
       activeQuests: [{
-        id: 'q_fans',
-        rewardType: 'fans',
+        id: 'q_fame',
+        rewardType: 'fame',
         rewardData: { fame: 150 },
-        label: 'Fan Quest'
+        label: 'Fame Quest'
       }],
       player: { fame: 50, fameLevel: 0 }
     }
-    const nextState = handleCompleteQuest(initialState, { questId: 'q_fans' })
+    const nextState = handleCompleteQuest(initialState, { questId: 'q_fame' })
 
     assert.equal(nextState.player.fame, 200)
     // Fame level derives from 200 fame - wait, 200 / 1000 is 0. So it won't be > 0.
     assert.equal(nextState.player.fameLevel, 0)
-    assert.ok(nextState.toasts[0].message.includes('+150 Fans'))
+    assert.ok(nextState.toasts[0].message.includes('ui:toast.quest_complete_fame'))
   })
 
   await t.test('grants item reward on complete', () => {
@@ -110,7 +110,7 @@ test('questReducer - Rewards Logic', async t => {
     const nextState = handleCompleteQuest(initialState, { questId: 'q_item' })
 
     assert.equal(nextState.band.inventory.lucky_pick, true)
-    assert.ok(nextState.toasts[0].message.includes('+Item'))
+    assert.ok(nextState.toasts[0].message.includes('ui:toast.quest_complete_item'))
   })
 
   await t.test('grants skill point reward to a random member', () => {
@@ -132,7 +132,7 @@ test('questReducer - Rewards Logic', async t => {
 
     const totalSkill = nextState.band.members.reduce((acc, m) => acc + m.skill, 0)
     assert.equal(totalSkill, 21, 'One member should have gained +1 skill')
-    assert.ok(nextState.toasts[0].message.includes('+1 Skill'))
+    assert.ok(nextState.toasts[0].message.includes('ui:toast.quest_complete_skill'))
   })
 
   await t.test('grants harmony reward and clamps it', () => {
@@ -148,7 +148,7 @@ test('questReducer - Rewards Logic', async t => {
     const nextState = handleCompleteQuest(initialState, { questId: 'q_harmony' })
 
     assert.equal(nextState.band.harmony, 100)
-    assert.ok(nextState.toasts[0].message.includes('+30 Harmony'))
+    assert.ok(nextState.toasts[0].message.includes('ui:toast.quest_complete_harmony'))
   })
 })
 
@@ -188,6 +188,6 @@ test('questReducer - handleFailQuests', async t => {
     assert.equal(nextState.social.controversyLevel, 20)
     assert.equal(nextState.band.harmony, 40)
     assert.equal(nextState.toasts.length, 1)
-    assert.ok(nextState.toasts[0].message.includes('FAILED'))
+    assert.ok(nextState.toasts[0].message.includes('ui:toast.quest_failed'))
   })
 })

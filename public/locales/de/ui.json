@@ -52,7 +52,7 @@
   "confirm_delete": "LÖSCHEN BESTÄTIGEN",
   "confirm_delete_text": "Bist du sicher, dass du deinen Spielstand löschen willst? Das kann nicht rückgängig gemacht werden.",
   "confirm_identity": "IDENTITÄT BESTÄTIGEN",
-  "continue": "CONTINUE",
+  "continue": "WEITER",
   "contract": {
     "confidential": "DOKUMENT: VERTRAULICH",
     "title": "Bindende Vereinbarung",
@@ -279,9 +279,12 @@
   "featureList.sec3.items.2": "Graphenbasierte Map-Navigation: Ein visuelles Netzwerk (Canvas/SVG), bei dem die Reise zwischen den Städten Geld, Zeit und Treibstoff kostet. Bestimmte Venues sind hinter regionalen Ruf-Schwellenwerten (Reputation) oder Fortschritten in den Story-Flags verschlossen.",
   "featureList.sec3.items.3": "Tourbus Terror Minigame: A tense travel-survival minigame featuring dynamic spawn rates. Players must navigate highway hazards to protect the band's health pool and prevent catastrophic damage to the tour bus, directly linking arcade performance to the overarching simulation economy.",
   "featureList.sec3.title": "Minispiele & Map-Traversierung",
-  "featureList.sec4.description": "The game's front-end is built on a custom design language that prioritizes accessibility without sacrificing its distinct, abrasive aesthetic.",
+  "featureList.sec4.description": "Das Interface ist im Stil einer 90er-Jahre Grunge-Brutalist-Ästhetik gehalten, unterstützt durch moderne React-Rendering-Muster.",
   "featureList.sec4.headers.0": "Layer",
   "featureList.sec4.headers.1": "Technical Implementation",
+  "featureList.sec4.items.0": "Framer Motion Animationen: Komplex verschachtelte, physikbasierte SVG-Animationen, die auf In-Game-Ereignisse reagieren.",
+  "featureList.sec4.items.1": "Barrierefreie Modals: Das UI-System verwendet Focus-Traps und Escape-Key-Handler für Overlay-Menüs, um volle Zugänglichkeit bei intensiven Glitch-Kunst-Effekten zu wahren.",
+  "featureList.sec4.items.2": "Globales Toast-System: Eine Event-Schlange, die nicht blockierende Benachrichtigungen für Einnahmen, Skill-Zuwächse und prozedurale NPC-Nachrichten liefert.",
   "featureList.sec4.rows.0.0": "Brutalist UI Design System",
   "featureList.sec4.rows.0.1": "A custom component library (v5.0) characterized by harsh geometric shapes, UIFrameCorners, authentic GlitchButtons, and custom SVG icons strictly coded with preserved aspect ratios.",
   "featureList.sec4.rows.1.0": "Immersive HUD & Overlays",
@@ -290,7 +293,7 @@
   "featureList.sec4.rows.2.1": "Complete English (EN) and German (DE) localization backed by strict namespace validation across all narrative events. UI elements are heavily augmented with ARIA roles for screen readers and keyboard navigation.",
   "featureList.sec4.rows.3.0": "Robust State Safety & Telemetry",
   "featureList.sec4.rows.3.1": "Centralized React Context utilizing deep schema validation to protect player save data against prototype pollution. Includes a production-safe crash handler boundary (masking stack traces) and Vercel Speed Insights for live telemetry.",
-  "featureList.sec4.title": "UI/UX, Localization & Technical Architecture",
+  "featureList.sec4.title": "Fortgeschrittene UI/UX-Techniken",
   "features": {
     "button": "FUNKTIONEN",
     "title": "FUNKTIONSLISTE"
@@ -437,6 +440,8 @@
     }
   },
   "quests.button": "QUESTS",
+  "quests.closeButton": "Quests schließen",
+  "quests.closeLabel": "[SCHLIESSEN]",
   "quests.days.plural": "Tage übrig",
   "quests.days.singular": "Tag übrig",
   "quests.empty": "Keine aktiven Quests. Geh auf Tour, um welche zu finden!",
@@ -447,6 +452,7 @@
     "play": "Radio abspielen/fortsetzen",
     "stop": "Radio stoppen"
   },
+  "rewards.fame": "Ruhm",
   "rewards.fans": "Fans",
   "rewards.freeItem": "Kostenloses Item",
   "rewards.harmony": "Harmonie",
@@ -602,6 +608,13 @@
     "log7": "[FEHLER] BAND-HARMONIE KRITISCH.",
     "log8": "> WARTE AUF EINGABE_"
   },
+  "toast.quest_complete": "[{{name}}]: ABGESCHLOSSEN",
+  "toast.quest_complete_fame": "[{{name}}]: ABGESCHLOSSEN +{{amount}} Ruhm",
+  "toast.quest_complete_harmony": "[{{name}}]: ABGESCHLOSSEN +{{amount}} Harmonie",
+  "toast.quest_complete_item": "[{{name}}]: ABGESCHLOSSEN +Item",
+  "toast.quest_complete_money": "[{{name}}]: ABGESCHLOSSEN +{{amount}}€",
+  "toast.quest_complete_skill": "[{{name}}]: ABGESCHLOSSEN +1 Skill ({{member}})",
+  "toast.quest_failed": "[{{name}}]: FEHLGESCHLAGEN",
   "toggle": {
     "on": "AN",
     "off": "AUS"

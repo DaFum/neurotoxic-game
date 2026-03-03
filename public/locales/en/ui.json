@@ -274,14 +274,17 @@
   "featureList.sec2.rows.3.1": "A competitive, real-time ranking system powered by a Redis/Vercel backend. It features rigorous API schema validation and player identity verification to ensure absolute competitive integrity globally.",
   "featureList.sec2.title": "Meta-Game: Fame, Social Media & Influencers",
   "featureList.sec3.description": "The interstitial phases between gigs are gamified to maintain engagement, introducing risk management and skill checks.",
-  "featureList.sec3.items.0": "Procedural Map Generation: A node-based overworld utilizing squared distance checks to mathematically prevent overlapping venues. It maps out interconnected routes featuring distinct biome and location-specific SVG icons.",
-  "featureList.sec3.items.1": "Travel Hazards & \"SPECIAL\" Nodes: Randomized encounters during transit that simulate the grueling nature of touring. These narrative events directly impact band morale, alter immediate financial standings, or apply temporary debuffs to the upcoming gig.",
-  "featureList.sec3.items.2": "Roadie Run Minigame: A highly polished, pre-gig arcade sequence where players control roadies setting up the stage. It features seamless responsive control schemes, instantly switching between desktop keyboard shortcuts and mobile-optimized touch D-Pads.",
+  "featureList.sec3.items.0": "Highway Evasion Minigame: A high-speed arcade segment during travel. Van health, upgrades (like armor plating), and fuel efficiency actively dictate survival in this mode.",
+  "featureList.sec3.items.1": "Roadie Gear Run: A pac-man style top-down maze where the crew must recover stolen instruments or transport forgotten cables through a hostile crowd before the gig begins.",
+  "featureList.sec3.items.2": "Graph-Based Map Navigation: A visual network (Canvas/SVG) where traveling between cities consumes money, time, and fuel. Certain venues are gatekept behind regional reputation thresholds or story flags.",
   "featureList.sec3.items.3": "Tourbus Terror Minigame: A tense travel-survival minigame featuring dynamic spawn rates. Players must navigate highway hazards to protect the band's health pool and prevent catastrophic damage to the tour bus, directly linking arcade performance to the overarching simulation economy.",
-  "featureList.sec3.title": "Overworld Travel & Embedded Arcade Minigames",
-  "featureList.sec4.description": "The game's front-end is built on a custom design language that prioritizes accessibility without sacrificing its distinct, abrasive aesthetic.",
+  "featureList.sec3.title": "Minigames & Map Traversal",
+  "featureList.sec4.description": "The interface is themed around a 90s grunge-brutalist aesthetic, underpinned by modern React rendering patterns.",
   "featureList.sec4.headers.0": "Layer",
   "featureList.sec4.headers.1": "Technical Implementation",
+  "featureList.sec4.items.0": "Framer Motion Animations: Complex, nested physics-based SVG animations that react to in-game events.",
+  "featureList.sec4.items.1": "Accessible Modals: The UI system utilizes focus traps and escape-key handlers for overlay menus, ensuring full accessibility even amid intense glitch-art effects.",
+  "featureList.sec4.items.2": "Global Toast System: An event queue that delivers non-blocking notifications for income, skill gains, and procedural NPC messages.",
   "featureList.sec4.rows.0.0": "Brutalist UI Design System",
   "featureList.sec4.rows.0.1": "A custom component library (v5.0) characterized by harsh geometric shapes, UIFrameCorners, authentic GlitchButtons, and custom SVG icons strictly coded with preserved aspect ratios.",
   "featureList.sec4.rows.1.0": "Immersive HUD & Overlays",
@@ -290,7 +293,7 @@
   "featureList.sec4.rows.2.1": "Complete English (EN) and German (DE) localization backed by strict namespace validation across all narrative events. UI elements are heavily augmented with ARIA roles for screen readers and keyboard navigation.",
   "featureList.sec4.rows.3.0": "Robust State Safety & Telemetry",
   "featureList.sec4.rows.3.1": "Centralized React Context utilizing deep schema validation to protect player save data against prototype pollution. Includes a production-safe crash handler boundary (masking stack traces) and Vercel Speed Insights for live telemetry.",
-  "featureList.sec4.title": "UI/UX, Localization & Technical Architecture",
+  "featureList.sec4.title": "Advanced UI/UX Techniques",
   "features": {
     "button": "FEATURES",
     "title": "FEATURE LIST"
@@ -437,6 +440,8 @@
     }
   },
   "quests.button": "QUESTS",
+  "quests.closeButton": "Close Quests",
+  "quests.closeLabel": "[CLOSE]",
   "quests.days.plural": "Days Left",
   "quests.days.singular": "Day Left",
   "quests.empty": "No active quests. Hit the road to find some!",
@@ -447,6 +452,7 @@
     "play": "Play/Resume Radio",
     "stop": "Stop Radio"
   },
+  "rewards.fame": "Fame",
   "rewards.fans": "Fans",
   "rewards.freeItem": "Free Item",
   "rewards.harmony": "Harmony",
@@ -602,6 +608,13 @@
     "log7": "[ERROR] BAND HARMONY CRITICAL.",
     "log8": "> AWAITING INPUT_"
   },
+  "toast.quest_complete": "[{{name}}]: COMPLETE",
+  "toast.quest_complete_fame": "[{{name}}]: COMPLETE +{{amount}} Fame",
+  "toast.quest_complete_harmony": "[{{name}}]: COMPLETE +{{amount}} Harmony",
+  "toast.quest_complete_item": "[{{name}}]: COMPLETE +Item",
+  "toast.quest_complete_money": "[{{name}}]: COMPLETE +{{amount}}€",
+  "toast.quest_complete_skill": "[{{name}}]: COMPLETE +1 Skill ({{member}})",
+  "toast.quest_failed": "[{{name}}]: FAILED",
   "toggle": {
     "on": "ON",
     "off": "OFF"

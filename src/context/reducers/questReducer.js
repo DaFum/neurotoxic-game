@@ -16,14 +16,16 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
   )
 
   // Apply generic quest rewards
-  let rewardMessage = ''
+  let rewardMessageKey = ''
+  let rewardParams = {}
 
-  if (quest.moneyReward) {
+  if (typeof quest.moneyReward === 'number' && quest.moneyReward !== 0) {
     nextState.player = {
-      ...nextState.player,
-      money: clampPlayerMoney((nextState.player.money || 0) + quest.moneyReward)
+      ...(nextState.player || {}),
+      money: clampPlayerMoney((nextState.player?.money || 0) + quest.moneyReward)
     }
-    rewardMessage += ` +${quest.moneyReward}€`
+    rewardMessageKey = 'ui:toast.quest_complete_money'
+    rewardParams = { name: quest.label, amount: quest.moneyReward }
   }
 
   if (quest.rewardType === 'item' && quest.rewardData?.item) {
@@ -34,36 +36,47 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
         [quest.rewardData.item]: true
       }
     }
-    rewardMessage += ` +Item`
-  } else if (quest.rewardType === 'fans' && quest.rewardData?.fame) {
+    rewardMessageKey = 'ui:toast.quest_complete_item'
+    rewardParams = { name: quest.label }
+  } else if (quest.rewardType === 'fame' && quest.rewardData?.fame) {
     nextState.player = {
       ...nextState.player,
       fame: (nextState.player.fame || 0) + quest.rewardData.fame,
       fameLevel: calculateFameLevel((nextState.player.fame || 0) + quest.rewardData.fame)
     }
-    rewardMessage += ` +${quest.rewardData.fame} Fans`
-  } else if (quest.rewardType === 'skill_point' && quest.rewardData?.memberIndex !== undefined) {
-    // Distribute skill point to random member
+    rewardMessageKey = 'ui:toast.quest_complete_fame'
+    rewardParams = { name: quest.label, amount: quest.rewardData.fame }
+  } else if (quest.rewardType === 'skill_point') {
     const members = [...(nextState.band?.members || [])]
     if (members.length > 0) {
-      // Use deterministic index if provided, otherwise default to first member (deterministic fallback)
-      const targetIdx = (typeof randomIdx === 'number' && randomIdx >= 0 && randomIdx < members.length)
-        ? randomIdx
-        : 0;
+      const memberIdx =
+        typeof quest.rewardData?.memberIndex === 'number'
+          ? Math.max(0, Math.min(members.length - 1, quest.rewardData.memberIndex))
+          : (typeof randomIdx === 'number'
+              ? Math.max(0, Math.min(members.length - 1, randomIdx))
+              : 0)
 
-      members[targetIdx] = {
-        ...members[targetIdx],
-        skill: (members[targetIdx].skill || 0) + 1
+      members[memberIdx] = {
+        ...members[memberIdx],
+        skill: (members[memberIdx].skill || 0) + 1
       }
+
       nextState.band = { ...nextState.band, members }
-      rewardMessage += ` +1 Skill (${members[targetIdx].name})`
+      rewardMessageKey = 'ui:toast.quest_complete_skill'
+      rewardParams = { name: quest.label, member: members[memberIdx].name }
     }
   } else if (quest.rewardType === 'harmony' && quest.rewardData?.harmony) {
     nextState.band = {
       ...nextState.band,
       harmony: clampBandHarmony((nextState.band?.harmony || 0) + quest.rewardData.harmony)
     }
-    rewardMessage += ` +${quest.rewardData.harmony} Harmony`
+    rewardMessageKey = 'ui:toast.quest_complete_harmony'
+    rewardParams = { name: quest.label, amount: quest.rewardData.harmony }
+  }
+
+  if (!rewardMessageKey) {
+    rewardMessageKey = 'ui:toast.quest_complete'
+    rewardParams = { name: quest.label }
   }
 
   // Add reward flag
@@ -79,7 +92,7 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
     ...(nextState.toasts || []),
     {
       id: `${Date.now()}-${questId}`,
-      message: `[${quest.label}]: COMPLETE${rewardMessage}`,
+      message: `${rewardMessageKey}|${JSON.stringify(rewardParams)}`,
       type: 'success'
     }
   ]
@@ -148,7 +161,7 @@ export const handleFailQuests = state => {
       ...(nextState.toasts || []),
       {
         id: `${Date.now()}-${quest.id}`,
-        message: `[${quest.label}]: FAILED`,
+        message: `ui:toast.quest_failed|${JSON.stringify({ name: quest.label })}`,
         type: 'error'
       }
     ]

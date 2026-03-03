@@ -29,8 +29,11 @@ const TOAST_STYLE_MAP = {
  *
  * @returns {JSX.Element} Toast stack overlay.
  */
+import { useTranslation } from 'react-i18next'
+
 export const ToastOverlay = () => {
   const { toasts } = useGameState()
+  const { t } = useTranslation(['ui', 'events'])
 
   return (
     <div
@@ -67,7 +70,21 @@ export const ToastOverlay = () => {
                 <p
                   className={`font-[Courier_New] text-sm leading-snug ${style.text}`}
                 >
-                  {toast.message}
+                  {toast.message && toast.message.includes('|') && toast.message.startsWith('ui:')
+                    ? (() => {
+                        const [key, contextStr] = toast.message.split('|')
+                        try {
+                          const context = JSON.parse(contextStr)
+                          // Safely translate deeply nested key refs in context
+                          if (context.name && context.name.includes(':')) {
+                            context.name = t(context.name)
+                          }
+                          return t(key, context)
+                        } catch(_e) {
+                          return t(key)
+                        }
+                      })()
+                    : toast.message}
                 </p>
               </div>
               <div className={`h-[2px] w-full ${style.border} border-t`} />

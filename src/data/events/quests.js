@@ -54,7 +54,7 @@ export const QUEST_EVENTS = [
             deadlineOffset: 5,
             progress: 0,
             required: 500,
-            rewardType: 'fans',
+            rewardType: 'fame',
             rewardData: { fame: 500 },
             moneyReward: 0
           }
