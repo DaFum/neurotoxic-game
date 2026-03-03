@@ -484,6 +484,19 @@ export const GameStateProvider = ({ children }) => {
         if (delta) {
           dispatch(createApplyEventDeltaAction(delta))
 
+          // Add Quests
+          if (delta.flags?.addQuest && Array.isArray(delta.flags.addQuest)) {
+            delta.flags.addQuest.forEach(q => {
+              // Parse relative deadlines
+              const questToAdd = { ...q }
+              if (questToAdd.deadlineOffset) {
+                questToAdd.deadline = currentState.player.day + questToAdd.deadlineOffset
+                delete questToAdd.deadlineOffset
+              }
+              dispatch(createAddQuestAction(questToAdd))
+            })
+          }
+
           // Unlocks
           if (delta.flags?.unlock) {
             const rawUnlock = String(delta.flags.unlock)
