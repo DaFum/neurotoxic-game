@@ -217,11 +217,17 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
       continue
     }
 
+    if (!Number.isFinite(excerptRelativeTimeMs)) {
+      continue
+    }
+
     gameNotes.push({
       time: leadIn + excerptRelativeTimeMs,
       laneIndex,
       hit: false,
-      missed: false,
+      visible: true,
+      songId: song.id,
+      originalNote: n,
       type: 'note'
     })
   }
