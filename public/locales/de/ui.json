@@ -646,5 +646,9 @@
   "visual_interface": "VISUELLE SCHNITTSTELLE",
   "volume": {
     "set": "Lautstärke auf {{pct}}% setzen"
-  }
+  },
+  "quests.postgig.apologyTour.title": "ENTSCHULDIGUNGS-TOUR",
+  "quests.postgig.apologyTour.description": "Spiele 3 Gigs, um dein Image nach dem Cancel-Shitstorm zu reparieren.",
+  "quests.postgig.saveTheBand.title": "RETTE DIE BAND",
+  "quests.postgig.saveTheBand.description": "Halte die Band zusammen und überstehe die aktuelle Ego-Krise."
 }

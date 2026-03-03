@@ -430,7 +430,8 @@ export const PostGig = () => {
     if (activeStoryFlags?.includes('cancel_quest_active')) {
       addQuest({
         id: 'quest_apology_tour',
-        label: 'APOLOGY TOUR',
+        label: 'ui:quests.postgig.apologyTour.title',
+        description: 'ui:quests.postgig.apologyTour.description',
         deadline: player.day + 14,
         progress: 0,
         required: 3,
@@ -445,7 +446,8 @@ export const PostGig = () => {
     if (activeStoryFlags?.includes('breakup_quest_active')) {
       addQuest({
         id: 'quest_ego_management',
-        label: 'SAVE THE BAND',
+        label: 'ui:quests.postgig.saveTheBand.title',
+        description: 'ui:quests.postgig.saveTheBand.description',
         deadline: player.day + 5,
         progress: 0,
         required: 1,

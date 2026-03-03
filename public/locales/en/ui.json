@@ -646,5 +646,9 @@
   "visual_interface": "VISUAL INTERFACE",
   "volume": {
     "set": "Set volume to {{pct}}%"
-  }
+  },
+  "quests.postgig.apologyTour.title": "APOLOGY TOUR",
+  "quests.postgig.apologyTour.description": "Play 3 gigs to repair your image after the cancellation backlash.",
+  "quests.postgig.saveTheBand.title": "SAVE THE BAND",
+  "quests.postgig.saveTheBand.description": "Keep the band together by surviving the current ego crisis."
 }
