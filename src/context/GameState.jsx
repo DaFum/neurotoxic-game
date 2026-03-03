@@ -79,8 +79,7 @@ const PERSISTED_STATE_KEYS = [
   'reputationByRegion',
   'settings',
   'npcs',
-  'gigModifiers',
-  'minigame'
+  'gigModifiers'
 ]
 
 const normalizeSetlistForSave = setlist => {
@@ -106,19 +105,6 @@ const createPersistedState = currentState => {
   return saveData
 }
 
-const hydrateLoadedState = (parsed, unlocks) => {
-  const defaultState = createInitialState()
-
-  return {
-    ...defaultState,
-    ...parsed,
-    player: { ...defaultState.player, ...parsed.player },
-    band: { ...defaultState.band, ...parsed.band },
-    social: { ...defaultState.social, ...parsed.social },
-    settings: { ...defaultState.settings, ...parsed.settings },
-    unlocks
-  }
-}
 
 /**
  * Global State Provider covering Player, Band, Inventory, and Scene Management.
@@ -423,11 +409,10 @@ export const GameStateProvider = ({ children }) => {
         if (!saved) return false
 
         const parsed = JSON.parse(saved)
-        const data = hydrateLoadedState(parsed, getUnlocks())
 
         // Validate Schema
         try {
-          validateSaveData(data)
+          validateSaveData(parsed)
         } catch (error) {
           handleError(
             new StateError('Save file is corrupt or invalid.', {
@@ -438,7 +423,7 @@ export const GameStateProvider = ({ children }) => {
           return false
         }
 
-        dispatch(createLoadGameAction(data))
+        dispatch(createLoadGameAction({ ...parsed, unlocks: getUnlocks() }))
         return true
       },
       false
