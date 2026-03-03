@@ -36,8 +36,10 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
         [quest.rewardData.item]: true
       }
     }
-    rewardMessageKey = 'ui:toast.quest_complete_item'
-    rewardParams = { name: quest.label }
+    if (!rewardMessageKey) {
+      rewardMessageKey = 'ui:toast.quest_complete_item'
+      rewardParams = { name: quest.label }
+    }
   } else if (quest.rewardType === 'fame' && quest.rewardData?.fame) {
     nextState.player = {
       ...nextState.player,

@@ -445,7 +445,7 @@ export const GameStateProvider = ({ children }) => {
 
         setActiveEvent(event)
         // Increment daily event count
-        dispatch(createUpdatePlayerAction({ eventsTriggeredToday: (currentState.player.eventsTriggeredToday || 0) + 1 }))
+        dispatch(createUpdatePlayerAction({ eventsTriggeredToday: ((currentState.player?.eventsTriggeredToday) || 0) + 1 }))
 
         // If it was a pending event, remove it from queue
         if (currentState.pendingEvents.includes(event.id)) {
