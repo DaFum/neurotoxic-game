@@ -148,6 +148,12 @@ describe('saveValidator', () => {
         message: /band.harmony must be a number/
       })
     })
+
+    it('allows missing band.harmony for legacy saves', () => {
+      const data = getValidData()
+      delete data.band.harmony
+      assert.strictEqual(validateSaveData(data), true)
+    })
   })
 
   describe('social validation', () => {

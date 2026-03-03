@@ -396,10 +396,9 @@ export const GameStateProvider = ({ children }) => {
       addToast('Practice Session Complete', 'success')
       changeScene('OVERWORLD')
     } else {
-      saveGame()
       changeScene('POSTGIG')
     }
-  }, [addToast, changeScene, saveGame])
+  }, [addToast, changeScene])
 
   const previousSceneRef = useRef(state.currentScene)
 
@@ -407,7 +406,11 @@ export const GameStateProvider = ({ children }) => {
     const previousScene = previousSceneRef.current
     previousSceneRef.current = state.currentScene
 
-    if (previousScene === 'POSTGIG' && state.currentScene === 'OVERWORLD') {
+    const shouldAutosaveOnTransition =
+      (previousScene === 'GIG' && state.currentScene === 'POSTGIG') ||
+      (previousScene === 'POSTGIG' && state.currentScene === 'OVERWORLD')
+
+    if (shouldAutosaveOnTransition) {
       saveGame()
     }
   }, [state.currentScene, saveGame])

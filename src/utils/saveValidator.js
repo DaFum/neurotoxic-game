@@ -92,7 +92,7 @@ const validateBand = band => {
     })
   }
 
-  if (typeof band.harmony !== 'number') {
+  if (band.harmony !== undefined && typeof band.harmony !== 'number') {
     throw new StateError('band.harmony must be a number')
   }
 }

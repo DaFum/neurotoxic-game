@@ -47,7 +47,6 @@ describe('PostGig Leaderboard Submission', () => {
   const mockChangeScene = vi.fn()
   const mockTriggerEvent = vi.fn()
   const mockAddToast = vi.fn()
-  const mockSaveGame = vi.fn()
   const mockUnlockTrait = vi.fn()
 
   const getBaseState = () => ({
@@ -70,7 +69,6 @@ describe('PostGig Leaderboard Submission', () => {
     updateBand: mockUpdateBand,
     updateSocial: mockUpdateSocial,
     changeScene: mockChangeScene,
-    saveGame: mockSaveGame,
     addToast: mockAddToast,
     unlockTrait: mockUnlockTrait,
     reputationByRegion: {},
