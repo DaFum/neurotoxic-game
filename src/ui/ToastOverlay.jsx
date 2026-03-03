@@ -71,7 +71,9 @@ export const ToastOverlay = () => {
                 >
                   {toast.message && toast.message.includes('|') && toast.message.startsWith('ui:')
                     ? (() => {
-                        const [key, contextStr] = toast.message.split('|')
+                        const firstPipeIdx = toast.message.indexOf('|')
+                        const key = toast.message.slice(0, firstPipeIdx)
+                        const contextStr = toast.message.slice(firstPipeIdx + 1)
                         try {
                           const context = JSON.parse(contextStr)
                           // Safely translate deeply nested key refs in context
