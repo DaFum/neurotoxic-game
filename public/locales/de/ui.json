@@ -22,6 +22,99 @@
     "random3": "BUUUUUUUUUH",
     "random4": "meine ohren bluten (im negativen sinn)",
     "random5": "sofortige rückerstattung"
+  "confirm": "BESTÄTIGEN",
+  "language": "SPRACHE",
+  "language_option_en": "ENGLISCH",
+  "language_option_de": "DEUTSCH",
+  "crowdEnergy": "PUBLIKUMSENERGIE",
+  "toxicModeActive": "TOXISCHER MODUS AKTIV",
+  "keyboardHint": "Drücke [1-{{count}}] oder klicke zur Auswahl",
+  "skillCheck": "Fähigkeitsprüfung",
+  "toggle": {
+    "on": "AN",
+    "off": "AUS"
+  },
+  "radio": {
+    "play": "Radio abspielen/fortsetzen",
+    "stop": "Radio stoppen"
+  },
+  "hazard": {
+    "toxicOverload": "TOXISCHER OVERLOAD ERKANNT // KRITISCHE SYSTEMBELASTUNG // FOKUS BEHALTEN",
+    "modifierActive": "[MODIFIKATOR AKTIV]"
+  },
+  "overload": {
+    "toxic": "TOXISCHER OVERLOAD"
+  },
+  "event": {
+    "severity": {
+      "critical": "KRITISCH"
+    }
+  },
+  "map": {
+    "nodeType": {
+      "gig": "GIG",
+      "rest": "RAST",
+      "fallback": "{{type}}"
+    }
+  },
+  "day_advance": "Tag {{day}}: Lebenshaltungskosten abgezogen.",
+  "unlocked": "FREIGESCHALTET: {{unlock}}!",
+  "game_over": "GAME OVER: {{description}}",
+  "event_error": "EVENT FEHLER: Auflösung fehlgeschlagen.",
+  "intro_play": "Tour Starten",
+  "intro_skip": "Intro Überspringen",
+  "enter_name_error": "Bitte gib einen Namen ein",
+  "identity_required": "IDENTITÄT ERFORDERLICH",
+  "enter_alias_desc": "Gib deinen Alias für das globale Untergrund-Netzwerk ein.",
+  "enter_name_placeholder": "NAME EINGEBEN...",
+  "confirm_identity": "IDENTITÄT BESTÄTIGEN",
+  "no_save_found": "Kein Speicherstand gefunden!",
+  "tabs.stats": "STATISTIK",
+  "tabs.details": "DETAILS",
+  "tabs.shop": "SHOP",
+  "tabs.upgrades": "UPGRADES",
+  "tabs.setlist": "SETLIST",
+  "tabs.leaderboard": "RANGLISTE",
+  "tabs.settings": "EINSTELLUNGEN",
+  "leaderboard.global_wealth": "GESAMTVERMÖGEN",
+  "leaderboard.song_scores": "SONG SCORES",
+  "leaderboard.select_song": "SONG WÄHLEN:",
+  "leaderboard.no_songs": "KEINE SONGS FREIGESCHALTET",
+  "leaderboard.top_100_wealth": "TOP 100 REICHSTE",
+  "leaderboard.top_100_scores": "TOP 100 SHREDDERS",
+  "leaderboard.connecting": "VERBINDE ZUM UNTERGRUND...",
+  "leaderboard.no_data": "NOCH KEINE DATEN VORHANDEN.",
+  "leaderboard.col_player": "SPIELER",
+  "leaderboard.col_net_worth": "VERMÖGEN",
+  "leaderboard.col_score": "PUNKTE",
+  "leaderboard.col_value": "WERT",
+  "leaderboard.col_value_km": "{{value}} {{unit}}",
+  "leaderboard.load_error": "Rangliste konnte nicht geladen werden.",
+  "leaderboard.top_100_fame": "TOP 100 RUHM",
+  "leaderboard.top_100_followers": "TOP 100 FOLLOWER",
+  "leaderboard.top_100_distance": "TOP 100 DISTANZ",
+  "leaderboard.top_100_conflicts": "TOP 100 KONFLIKTE",
+  "leaderboard.top_100_stage_dives": "TOP 100 STAGE DIVES",
+  "leaderboard.fame": "RUHM",
+  "leaderboard.followers": "FOLLOWER",
+  "leaderboard.distance": "DISTANZ",
+  "leaderboard.conflicts": "KONFLIKTE",
+  "leaderboard.stage_dives": "STAGE DIVES",
+  "unit.km": "km",
+  "settings.audio_mute": "Ton ausschalten",
+  "settings.audio_unmute": "Ton einschalten",
+  "settings.crt_enable": "CRT-Effekt aktivieren",
+  "settings.crt_disable": "CRT-Effekt deaktivieren",
+  "mainMenu": {
+    "subtitle": {
+      "grindTheVoid": "Grind The Void"
+    },
+    "existingSave": {
+      "title": "SPIELSTAND GEFUNDEN",
+      "desc": "Ein Spielstand existiert bereits. Möchtest du ihn laden oder eine neue Tour starten?",
+      "load": "BESTEHENDEN LADEN",
+      "startNew": "NEUE TOUR STARTEN"
+    }
   },
   "chatter_labels": {
     "INTRO": "Intro Feed",

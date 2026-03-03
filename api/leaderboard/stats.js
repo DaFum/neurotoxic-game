@@ -1,14 +1,28 @@
 import client from '../../lib/redis.js'
 
-export default async function handler(req, res) {
-  // Ensure connection
-  if (!client.isOpen) {
-    await client.connect()
-  }
+const VALID_STATS = ['balance', 'fame', 'followers', 'distance', 'conflicts', 'stage_dives']
+const MAX_STAT_VALUE = 999999999999 // reasonable max for followers/fame
 
+const clampStat = (val) => {
+  if (!Number.isFinite(val)) return 0
+  return Math.min(Math.max(0, val), MAX_STAT_VALUE)
+}
+
+export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
-      const { playerId, playerName, money, day: _day } = req.body
+      if (!client.isOpen) {
+        await client.connect()
+      }
+
+      if (!req.body || typeof req.body !== 'object') {
+        return res.status(400).json({ error: 'Missing required fields' })
+      }
+
+      const {
+        playerId, playerName, money, fame,
+        followers, distance, conflicts, stageDives
+      } = req.body
 
       // Basic Type Checks
       if (
@@ -34,27 +48,53 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Invalid playerId format' })
       }
 
+      // Safe numbers for stats (clamped 0 to MAX)
+      const safeFame = clampStat(fame)
+      const safeFollowers = clampStat(followers)
+      const safeDistance = clampStat(distance)
+      const safeConflicts = clampStat(conflicts)
+      const safeStageDives = clampStat(stageDives)
+
       // v4: hSet accepts object
       await client.hSet('players', { [playerId]: trimmedName })
 
       // v4: zAdd(key, { score, value })
-      // Balance reflects current state, so overwrite is desired (remove gt: true)
-      await client.zAdd('lb:balance', { score: money, value: playerId })
+      // Update multiple sorted sets
+      const multi = client.multi()
+      multi.zAdd('lb:balance', { score: money, value: playerId })
+      multi.zAdd('lb:fame', { score: safeFame, value: playerId })
+      multi.zAdd('lb:followers', { score: safeFollowers, value: playerId })
+      multi.zAdd('lb:distance', { score: safeDistance, value: playerId })
+      multi.zAdd('lb:conflicts', { score: safeConflicts, value: playerId })
+      multi.zAdd('lb:stage_dives', { score: safeStageDives, value: playerId })
+
+      await multi.exec()
 
       return res.status(200).json({ success: true })
     } catch (error) {
-      console.error('Balance update error:', error)
+      console.error('Stats update error:', error)
       return res.status(500).json({ error: 'Internal Server Error' })
     }
   } else if (req.method === 'GET') {
     try {
+      if (!client.isOpen) {
+        await client.connect()
+      }
+
       let limit = parseInt(req.query.limit, 10)
       if (isNaN(limit)) limit = 100
       limit = Math.min(Math.max(1, limit), 100)
 
+      const stat = req.query.stat || 'balance'
+      if (!VALID_STATS.includes(stat)) {
+        return res.status(400).json({ error: 'Invalid stat requested' })
+      }
+
+      const sortedSetKey = `lb:${stat}`
+
       // v4: zRangeWithScores returns [{ score: number, value: string }]
       // REV: true for descending
-      const range = await client.zRangeWithScores('lb:balance', 0, limit - 1, {
+      const range = await client.zRangeWithScores(sortedSetKey, 0, limit - 1, {
         REV: true
       })
 
@@ -76,7 +116,7 @@ export default async function handler(req, res) {
 
       return res.status(200).json(leaderboard)
     } catch (error) {
-      console.error('Balance fetch error:', error)
+      console.error('Stats fetch error:', error)
       return res.status(500).json({ error: 'Internal Server Error' })
     }
   }

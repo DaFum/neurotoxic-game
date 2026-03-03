@@ -11,7 +11,8 @@ import { SONGS_DB } from '../../data/songs'
  */
 export const LeaderboardTab = () => {
   const { t } = useTranslation()
-  const [view, setView] = useState('BALANCE') // 'BALANCE' or 'SONG'
+  // view can be 'BALANCE', 'SONG', 'FAME', 'FOLLOWERS', 'DISTANCE', 'CONFLICTS', 'STAGE_DIVES'
+  const [view, setView] = useState('BALANCE')
   const [selectedSongId, setSelectedSongId] = useState(SONGS_DB[0]?.leaderboardId || '')
   const [rankings, setRankings] = useState([])
   const [isLoading, setIsLoading] = useState(false)
@@ -25,11 +26,23 @@ export const LeaderboardTab = () => {
   }, [view, selectedSongId])
 
   useEffect(() => {
+    const controller = new AbortController()
+
     const fetchLeaderboard = async () => {
       setIsLoading(true)
       setError(null)
       try {
-        let url = '/api/leaderboard/balance?limit=100'
+        const viewToStat = {
+          BALANCE: 'balance',
+          FAME: 'fame',
+          FOLLOWERS: 'followers',
+          DISTANCE: 'distance',
+          CONFLICTS: 'conflicts',
+          STAGE_DIVES: 'stage_dives'
+        }
+
+        let url = `/api/leaderboard/stats?stat=${viewToStat[view] || 'balance'}&limit=100`
+
         if (view === 'SONG') {
           if (!selectedSongId) {
             setRankings([])
@@ -39,40 +52,69 @@ export const LeaderboardTab = () => {
           url = `/api/leaderboard/song?songId=${encodeURIComponent(selectedSongId)}&limit=100`
         }
 
-        const res = await fetch(url)
+        const res = await fetch(url, { signal: controller.signal })
         if (!res.ok) throw new Error('Failed to fetch data')
 
         const data = await res.json()
         setRankings(data)
       } catch (err) {
+        if (err.name === 'AbortError') return
         logger.error('Leaderboard', 'Fetch failed', err)
         setError(t('ui:leaderboard.load_error'))
       } finally {
-        setIsLoading(false)
+        if (!controller.signal.aborted) {
+          setIsLoading(false)
+        }
       }
     }
 
     fetchLeaderboard()
+
+    return () => {
+      controller.abort()
+    }
   }, [view, selectedSongId, t])
+
+  const viewTitles = {
+    BALANCE: t('ui:leaderboard.top_100_wealth'),
+    SONG: t('ui:leaderboard.top_100_scores'),
+    FAME: t('ui:leaderboard.top_100_fame', { defaultValue: 'Top 100 Fame' }),
+    FOLLOWERS: t('ui:leaderboard.top_100_followers', { defaultValue: 'Top 100 Followers' }),
+    DISTANCE: t('ui:leaderboard.top_100_distance', { defaultValue: 'Top 100 Distance' }),
+    CONFLICTS: t('ui:leaderboard.top_100_conflicts', { defaultValue: 'Top 100 Conflicts' }),
+    STAGE_DIVES: t('ui:leaderboard.top_100_stage_dives', { defaultValue: 'Top 100 Stage Dives' })
+  }
+
+  const views = [
+    { id: 'BALANCE', label: t('ui:leaderboard.global_wealth') },
+    { id: 'SONG', label: t('ui:leaderboard.song_scores') },
+    { id: 'FAME', label: t('ui:leaderboard.fame', { defaultValue: 'Fame' }) },
+    { id: 'FOLLOWERS', label: t('ui:leaderboard.followers', { defaultValue: 'Followers' }) },
+    { id: 'DISTANCE', label: t('ui:leaderboard.distance', { defaultValue: 'Distance' }) },
+    { id: 'CONFLICTS', label: t('ui:leaderboard.conflicts', { defaultValue: 'Conflicts' }) },
+    { id: 'STAGE_DIVES', label: t('ui:leaderboard.stage_dives', { defaultValue: 'Stage Dives' }) }
+  ]
 
   return (
     <div className='h-full flex flex-col gap-4'>
       {/* View Switcher */}
-      <div className='flex gap-4 mb-2'>
-        <GlitchButton
-          onClick={() => setView('BALANCE')}
-          disabled={view === 'BALANCE'}
-          className={view === 'BALANCE' ? 'opacity-50 cursor-default' : ''}
-        >
-          {t('ui:leaderboard.global_wealth')}
-        </GlitchButton>
-        <GlitchButton
-          onClick={() => setView('SONG')}
-          disabled={view === 'SONG'}
-          className={view === 'SONG' ? 'opacity-50 cursor-default' : ''}
-        >
-          {t('ui:leaderboard.song_scores')}
-        </GlitchButton>
+      <div
+        role="tablist"
+        className='flex gap-4 mb-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-(--void-black)'
+      >
+        {views.map(({ id, label }) => (
+          <GlitchButton
+            key={id}
+            role="tab"
+            aria-selected={view === id}
+            aria-controls={`panel-${id}`}
+            id={`tab-${id}`}
+            onClick={() => setView(id)}
+            className={`whitespace-nowrap ${view === id ? 'opacity-50 cursor-default' : ''}`}
+          >
+            {label}
+          </GlitchButton>
+        ))}
       </div>
 
       {/* Song Selector */}
@@ -106,12 +148,11 @@ export const LeaderboardTab = () => {
 
       {/* Leaderboard Table */}
       <Panel
+        id={`panel-${view}`}
+        role="tabpanel"
+        aria-labelledby={`tab-${view}`}
         className='flex-1 overflow-hidden flex flex-col'
-        title={
-          view === 'BALANCE'
-            ? t('ui:leaderboard.top_100_wealth')
-            : t('ui:leaderboard.top_100_scores')
-        }
+        title={viewTitles[view]}
       >
         {isLoading && (
           <div className='flex-1 flex items-center justify-center text-(--toxic-green) animate-pulse font-mono'>
@@ -143,7 +184,9 @@ export const LeaderboardTab = () => {
                   <th className='py-2 px-2 text-right'>
                     {view === 'BALANCE'
                       ? t('ui:leaderboard.col_net_worth')
-                      : t('ui:leaderboard.col_score')}
+                      : view === 'SONG'
+                        ? t('ui:leaderboard.col_score')
+                        : t('ui:leaderboard.col_value', { defaultValue: 'Value' })}
                   </th>
                 </tr>
               </thead>
@@ -166,7 +209,9 @@ export const LeaderboardTab = () => {
                       <td className='py-2 px-2 text-right text-(--toxic-green)'>
                         {view === 'BALANCE'
                           ? `€${safeScore.toLocaleString()}`
-                          : safeScore.toLocaleString()}
+                          : view === 'DISTANCE'
+                            ? t('ui:leaderboard.col_value_km', { value: safeScore.toLocaleString(), unit: t('ui:unit.km', { defaultValue: 'km' }), defaultValue: `${safeScore.toLocaleString()} km` })
+                            : safeScore.toLocaleString()}
                       </td>
                     </tr>
                   )
