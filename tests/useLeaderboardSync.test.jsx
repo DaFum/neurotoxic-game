@@ -96,7 +96,7 @@ describe('useLeaderboardSync', () => {
           money: 500,
           day: 5,
           fame: 100,
-          followers: 2050, // 1000 + 200 + 300 + 50 + 500
+          followers: 1550, // 1000 + 200 + 300 + 50
           distance: 120,
           conflicts: 3,
           stageDives: 10

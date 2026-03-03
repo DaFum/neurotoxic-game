@@ -23,6 +23,7 @@ const mockRedisClient = {
 mock.module('../../lib/redis.js', { defaultExport: mockRedisClient })
 
 const API_PATH = '../../api/leaderboard/stats.js'
+let importCounter = 0
 
 test('Leaderboard Stats API', async (t) => {
   let statsModule
@@ -35,8 +36,9 @@ test('Leaderboard Stats API', async (t) => {
     mockMulti.zAdd.mock.resetCalls()
     mockMulti.exec.mock.resetCalls()
 
-    // Dynamically import module
-    statsModule = await import(API_PATH + '?t=' + Date.now())
+    // Dynamically import module with deterministic incrementing counter
+    importCounter++
+    statsModule = await import(API_PATH + '?t=' + importCounter)
   })
 
   await t.test('POST handles valid stats update', async () => {

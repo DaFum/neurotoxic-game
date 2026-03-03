@@ -26,6 +26,8 @@ export const LeaderboardTab = () => {
   }, [view, selectedSongId])
 
   useEffect(() => {
+    const controller = new AbortController()
+
     const fetchLeaderboard = async () => {
       setIsLoading(true)
       setError(null)
@@ -50,20 +52,27 @@ export const LeaderboardTab = () => {
           url = `/api/leaderboard/song?songId=${encodeURIComponent(selectedSongId)}&limit=100`
         }
 
-        const res = await fetch(url)
+        const res = await fetch(url, { signal: controller.signal })
         if (!res.ok) throw new Error('Failed to fetch data')
 
         const data = await res.json()
         setRankings(data)
       } catch (err) {
+        if (err.name === 'AbortError') return
         logger.error('Leaderboard', 'Fetch failed', err)
         setError(t('ui:leaderboard.load_error'))
       } finally {
-        setIsLoading(false)
+        if (!controller.signal.aborted) {
+          setIsLoading(false)
+        }
       }
     }
 
     fetchLeaderboard()
+
+    return () => {
+      controller.abort()
+    }
   }, [view, selectedSongId, t])
 
   const viewTitles = {
@@ -100,9 +109,7 @@ export const LeaderboardTab = () => {
             aria-selected={view === id}
             aria-controls={`panel-${id}`}
             id={`tab-${id}`}
-            tabIndex={view === id ? 0 : -1}
             onClick={() => setView(id)}
-            disabled={view === id}
             className={`whitespace-nowrap ${view === id ? 'opacity-50 cursor-default' : ''}`}
           >
             {label}
