@@ -39,10 +39,6 @@ test('Leaderboard Stats API', async (t) => {
     statsModule = await import(API_PATH + '?t=' + Date.now())
   })
 
-  t.afterEach(() => {
-    // Reset any required state if needed
-  })
-
   await t.test('POST handles valid stats update', async () => {
     const req = {
       method: 'POST',
@@ -158,5 +154,78 @@ test('Leaderboard Stats API', async (t) => {
 
     assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
     assert.deepStrictEqual(res.json.mock.calls[0].arguments[0].error, 'Missing required fields')
+  })
+
+  await t.test('POST handles extreme and negative stat values correctly', async () => {
+    const req = {
+      method: 'POST',
+      body: {
+        playerId: 'extreme-band',
+        playerName: 'Extreme',
+        money: 500,
+        fame: -100, // Negative should clamp to 0
+        followers: 1000000000000000000, // Huge should clamp to MAX_STAT_VALUE
+        distance: NaN, // Invalid should clamp to 0
+        conflicts: -5,
+        stageDives: Infinity
+      }
+    }
+    const res = {
+      status: mock.fn(() => res),
+      json: mock.fn(() => res)
+    }
+
+    await statsModule.default(req, res)
+
+    assert.strictEqual(res.status.mock.calls[0].arguments[0], 200)
+
+    // Verify clampStat worked
+    const zAddCalls = mockMulti.zAdd.mock.calls
+    const fameCall = zAddCalls.find(call => call.arguments[0] === 'lb:fame')
+    const followersCall = zAddCalls.find(call => call.arguments[0] === 'lb:followers')
+    const distanceCall = zAddCalls.find(call => call.arguments[0] === 'lb:distance')
+
+    assert.strictEqual(fameCall.arguments[1].score, 0)
+    assert.strictEqual(followersCall.arguments[1].score, 999999999999) // MAX_STAT_VALUE
+    assert.strictEqual(distanceCall.arguments[1].score, 0)
+  })
+
+  await t.test('GET enforces limit constraints', async () => {
+    const req = {
+      method: 'GET',
+      query: {
+        stat: 'fame',
+        limit: '9999' // Should clamp to 100
+      }
+    }
+    const res = {
+      status: mock.fn(() => res),
+      json: mock.fn(() => res)
+    }
+
+    mockRedisClient.zRangeWithScores.mock.mockImplementationOnce(() => Promise.resolve([]))
+
+    await statsModule.default(req, res)
+
+    // Limit index is 99 because zRangeWithScores is inclusive (0 to limit - 1)
+    assert.strictEqual(mockRedisClient.zRangeWithScores.mock.calls[0].arguments[2], 99)
+  })
+
+  await t.test('Rejects unsupported HTTP methods', async () => {
+    const req = {
+      method: 'DELETE'
+    }
+    const res = {
+      status: mock.fn(() => res),
+      json: mock.fn(() => res),
+      setHeader: mock.fn(),
+      end: mock.fn()
+    }
+
+    await statsModule.default(req, res)
+
+    assert.strictEqual(res.setHeader.mock.calls[0].arguments[0], 'Allow')
+    assert.deepStrictEqual(res.setHeader.mock.calls[0].arguments[1], ['GET', 'POST'])
+    assert.strictEqual(res.status.mock.calls[0].arguments[0], 405)
   })
 })

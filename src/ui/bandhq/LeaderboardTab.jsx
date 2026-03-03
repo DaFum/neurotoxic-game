@@ -30,7 +30,17 @@ export const LeaderboardTab = () => {
       setIsLoading(true)
       setError(null)
       try {
-        let url = `/api/leaderboard/stats?stat=${view.toLowerCase()}&limit=100`
+        const viewToStat = {
+          BALANCE: 'balance',
+          FAME: 'fame',
+          FOLLOWERS: 'followers',
+          DISTANCE: 'distance',
+          CONFLICTS: 'conflicts',
+          STAGE_DIVES: 'stage_dives'
+        }
+
+        let url = `/api/leaderboard/stats?stat=${viewToStat[view] || 'balance'}&limit=100`
+
         if (view === 'SONG') {
           if (!selectedSongId) {
             setRankings([])
@@ -79,10 +89,18 @@ export const LeaderboardTab = () => {
   return (
     <div className='h-full flex flex-col gap-4'>
       {/* View Switcher */}
-      <div className='flex gap-4 mb-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-(--void-black)'>
+      <div
+        role="tablist"
+        className='flex gap-4 mb-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-(--void-black)'
+      >
         {views.map(({ id, label }) => (
           <GlitchButton
             key={id}
+            role="tab"
+            aria-selected={view === id}
+            aria-controls={`panel-${id}`}
+            id={`tab-${id}`}
+            tabIndex={view === id ? 0 : -1}
             onClick={() => setView(id)}
             disabled={view === id}
             className={`whitespace-nowrap ${view === id ? 'opacity-50 cursor-default' : ''}`}
@@ -123,6 +141,9 @@ export const LeaderboardTab = () => {
 
       {/* Leaderboard Table */}
       <Panel
+        id={`panel-${view}`}
+        role="tabpanel"
+        aria-labelledby={`tab-${view}`}
         className='flex-1 overflow-hidden flex flex-col'
         title={viewTitles[view]}
       >
