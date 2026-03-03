@@ -69,6 +69,7 @@ describe('useLeaderboardSync', () => {
         money: 500,
         fame: 100,
         day: 5,
+        passiveFollowers: 500,
         stats: {
           totalDistance: 120,
           conflictsResolved: 3,
@@ -76,7 +77,10 @@ describe('useLeaderboardSync', () => {
         }
       },
       social: {
-        instagram: 1000
+        instagram: 1000,
+        tiktok: 200,
+        youtube: 300,
+        newsletter: 50
       }
     }
 
@@ -92,7 +96,7 @@ describe('useLeaderboardSync', () => {
           money: 500,
           day: 5,
           fame: 100,
-          followers: 1000,
+          followers: 2050, // 1000 + 200 + 300 + 50 + 500
           distance: 120,
           conflicts: 3,
           stageDives: 10

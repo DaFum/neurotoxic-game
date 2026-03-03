@@ -145,4 +145,20 @@ test('Leaderboard Stats API', async (t) => {
     assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
     assert.deepStrictEqual(res.json.mock.calls[0].arguments[0].error, 'Invalid stat requested')
   })
+
+  await t.test('POST rejects undefined body', async () => {
+    const req = {
+      method: 'POST',
+      body: undefined
+    }
+    const res = {
+      status: mock.fn(() => res),
+      json: mock.fn(() => res)
+    }
+
+    await statsModule.default(req, res)
+
+    assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
+    assert.deepStrictEqual(res.json.mock.calls[0].arguments[0].error, 'Missing required fields')
+  })
 })

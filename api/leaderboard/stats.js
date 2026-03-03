@@ -1,13 +1,24 @@
 import client from '../../lib/redis.js'
 
-export default async function handler(req, res) {
-  // Ensure connection
-  if (!client.isOpen) {
-    await client.connect()
-  }
+const VALID_STATS = ['balance', 'fame', 'followers', 'distance', 'conflicts', 'stage_dives']
+const MAX_STAT_VALUE = 999999999999 // reasonable max for followers/fame
 
+const clampStat = (val) => {
+  if (!Number.isFinite(val)) return 0
+  return Math.min(Math.max(0, val), MAX_STAT_VALUE)
+}
+
+export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
+      if (!client.isOpen) {
+        await client.connect()
+      }
+
+      if (!req.body || typeof req.body !== 'object') {
+        return res.status(400).json({ error: 'Missing required fields' })
+      }
+
       const {
         playerId, playerName, money, fame,
         followers, distance, conflicts, stageDives
@@ -37,12 +48,12 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Invalid playerId format' })
       }
 
-      // Safe numbers for stats
-      const safeFame = Number.isFinite(fame) ? fame : 0
-      const safeFollowers = Number.isFinite(followers) ? followers : 0
-      const safeDistance = Number.isFinite(distance) ? distance : 0
-      const safeConflicts = Number.isFinite(conflicts) ? conflicts : 0
-      const safeStageDives = Number.isFinite(stageDives) ? stageDives : 0
+      // Safe numbers for stats (clamped 0 to MAX)
+      const safeFame = clampStat(fame)
+      const safeFollowers = clampStat(followers)
+      const safeDistance = clampStat(distance)
+      const safeConflicts = clampStat(conflicts)
+      const safeStageDives = clampStat(stageDives)
 
       // v4: hSet accepts object
       await client.hSet('players', { [playerId]: trimmedName })
@@ -66,13 +77,16 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'GET') {
     try {
+      if (!client.isOpen) {
+        await client.connect()
+      }
+
       let limit = parseInt(req.query.limit, 10)
       if (isNaN(limit)) limit = 100
       limit = Math.min(Math.max(1, limit), 100)
 
       const stat = req.query.stat || 'balance'
-      const validStats = ['balance', 'fame', 'followers', 'distance', 'conflicts', 'stage_dives']
-      if (!validStats.includes(stat)) {
+      if (!VALID_STATS.includes(stat)) {
         return res.status(400).json({ error: 'Invalid stat requested' })
       }
 

@@ -38,6 +38,8 @@ export const LeaderboardTab = () => {
             return
           }
           url = `/api/leaderboard/song?songId=${encodeURIComponent(selectedSongId)}&limit=100`
+        } else if (view === 'STAGE_DIVES') {
+          url = `/api/leaderboard/stats?stat=stage_dives&limit=100`
         }
 
         const res = await fetch(url)
@@ -66,59 +68,30 @@ export const LeaderboardTab = () => {
     STAGE_DIVES: t('ui:leaderboard.top_100_stage_dives', { defaultValue: 'Top 100 Stage Dives' })
   }
 
+  const views = [
+    { id: 'BALANCE', label: t('ui:leaderboard.global_wealth') },
+    { id: 'SONG', label: t('ui:leaderboard.song_scores') },
+    { id: 'FAME', label: t('ui:leaderboard.fame', { defaultValue: 'Fame' }) },
+    { id: 'FOLLOWERS', label: t('ui:leaderboard.followers', { defaultValue: 'Followers' }) },
+    { id: 'DISTANCE', label: t('ui:leaderboard.distance', { defaultValue: 'Distance' }) },
+    { id: 'CONFLICTS', label: t('ui:leaderboard.conflicts', { defaultValue: 'Conflicts' }) },
+    { id: 'STAGE_DIVES', label: t('ui:leaderboard.stage_dives', { defaultValue: 'Stage Dives' }) }
+  ]
+
   return (
     <div className='h-full flex flex-col gap-4'>
       {/* View Switcher */}
       <div className='flex gap-4 mb-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-(--void-black)'>
-        <GlitchButton
-          onClick={() => setView('BALANCE')}
-          disabled={view === 'BALANCE'}
-          className={view === 'BALANCE' ? 'opacity-50 cursor-default' : ''}
-        >
-          {t('ui:leaderboard.global_wealth')}
-        </GlitchButton>
-        <GlitchButton
-          onClick={() => setView('SONG')}
-          disabled={view === 'SONG'}
-          className={view === 'SONG' ? 'opacity-50 cursor-default' : ''}
-        >
-          {t('ui:leaderboard.song_scores')}
-        </GlitchButton>
-        <GlitchButton
-          onClick={() => setView('FAME')}
-          disabled={view === 'FAME'}
-          className={view === 'FAME' ? 'opacity-50 cursor-default whitespace-nowrap' : 'whitespace-nowrap'}
-        >
-          {t('ui:leaderboard.fame', { defaultValue: 'Fame' })}
-        </GlitchButton>
-        <GlitchButton
-          onClick={() => setView('FOLLOWERS')}
-          disabled={view === 'FOLLOWERS'}
-          className={view === 'FOLLOWERS' ? 'opacity-50 cursor-default whitespace-nowrap' : 'whitespace-nowrap'}
-        >
-          {t('ui:leaderboard.followers', { defaultValue: 'Followers' })}
-        </GlitchButton>
-        <GlitchButton
-          onClick={() => setView('DISTANCE')}
-          disabled={view === 'DISTANCE'}
-          className={view === 'DISTANCE' ? 'opacity-50 cursor-default whitespace-nowrap' : 'whitespace-nowrap'}
-        >
-          {t('ui:leaderboard.distance', { defaultValue: 'Distance' })}
-        </GlitchButton>
-        <GlitchButton
-          onClick={() => setView('CONFLICTS')}
-          disabled={view === 'CONFLICTS'}
-          className={view === 'CONFLICTS' ? 'opacity-50 cursor-default whitespace-nowrap' : 'whitespace-nowrap'}
-        >
-          {t('ui:leaderboard.conflicts', { defaultValue: 'Conflicts' })}
-        </GlitchButton>
-        <GlitchButton
-          onClick={() => setView('STAGE_DIVES')}
-          disabled={view === 'STAGE_DIVES'}
-          className={view === 'STAGE_DIVES' ? 'opacity-50 cursor-default whitespace-nowrap' : 'whitespace-nowrap'}
-        >
-          {t('ui:leaderboard.stage_dives', { defaultValue: 'Stage Dives' })}
-        </GlitchButton>
+        {views.map(({ id, label }) => (
+          <GlitchButton
+            key={id}
+            onClick={() => setView(id)}
+            disabled={view === id}
+            className={`whitespace-nowrap ${view === id ? 'opacity-50 cursor-default' : ''}`}
+          >
+            {label}
+          </GlitchButton>
+        ))}
       </div>
 
       {/* Song Selector */}
@@ -211,7 +184,7 @@ export const LeaderboardTab = () => {
                         {view === 'BALANCE'
                           ? `€${safeScore.toLocaleString()}`
                           : view === 'DISTANCE'
-                            ? `${safeScore.toLocaleString()} km`
+                            ? t('ui:leaderboard.col_value_km', { value: safeScore.toLocaleString(), unit: t('ui:unit.km', { defaultValue: 'km' }), defaultValue: `${safeScore.toLocaleString()} km` })
                             : safeScore.toLocaleString()}
                       </td>
                     </tr>

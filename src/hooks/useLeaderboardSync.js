@@ -7,15 +7,14 @@ import { logger } from '../utils/logger'
  */
 export const useLeaderboardSync = state => {
   const { player, social } = state || {}
-  const { playerId, playerName, money, day, fame, stats } = player || {}
+  const { playerId, playerName, money, day, fame, stats, passiveFollowers } = player || {}
   const { totalDistance, conflictsResolved, stageDives } = stats || {}
 
-  const totalFollowers = social ?
-    (social.instagram || 0) +
-    (social.tiktok || 0) +
-    (social.youtube || 0) +
-    (social.newsletter || 0) +
-    (player?.passiveFollowers || 0) : 0
+  const totalFollowers = (social?.instagram || 0) +
+    (social?.tiktok || 0) +
+    (social?.youtube || 0) +
+    (social?.newsletter || 0) +
+    (passiveFollowers || 0)
 
   useEffect(() => {
     // 1. Strict Validation
