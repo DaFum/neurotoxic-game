@@ -13,7 +13,9 @@ export const LeaderboardTab = () => {
   const { t } = useTranslation()
   // view can be 'BALANCE', 'SONG', 'FAME', 'FOLLOWERS', 'DISTANCE', 'CONFLICTS', 'STAGE_DIVES'
   const [view, setView] = useState('BALANCE')
-  const [selectedSongId, setSelectedSongId] = useState(SONGS_DB[0]?.leaderboardId || '')
+  const [selectedSongId, setSelectedSongId] = useState(
+    SONGS_DB[0]?.leaderboardId || ''
+  )
   const [rankings, setRankings] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -79,33 +81,53 @@ export const LeaderboardTab = () => {
     BALANCE: t('ui:leaderboard.top_100_wealth'),
     SONG: t('ui:leaderboard.top_100_scores'),
     FAME: t('ui:leaderboard.top_100_fame', { defaultValue: 'Top 100 Fame' }),
-    FOLLOWERS: t('ui:leaderboard.top_100_followers', { defaultValue: 'Top 100 Followers' }),
-    DISTANCE: t('ui:leaderboard.top_100_distance', { defaultValue: 'Top 100 Distance' }),
-    CONFLICTS: t('ui:leaderboard.top_100_conflicts', { defaultValue: 'Top 100 Conflicts' }),
-    STAGE_DIVES: t('ui:leaderboard.top_100_stage_dives', { defaultValue: 'Top 100 Stage Dives' })
+    FOLLOWERS: t('ui:leaderboard.top_100_followers', {
+      defaultValue: 'Top 100 Followers'
+    }),
+    DISTANCE: t('ui:leaderboard.top_100_distance', {
+      defaultValue: 'Top 100 Distance'
+    }),
+    CONFLICTS: t('ui:leaderboard.top_100_conflicts', {
+      defaultValue: 'Top 100 Conflicts'
+    }),
+    STAGE_DIVES: t('ui:leaderboard.top_100_stage_dives', {
+      defaultValue: 'Top 100 Stage Dives'
+    })
   }
 
   const views = [
     { id: 'BALANCE', label: t('ui:leaderboard.global_wealth') },
     { id: 'SONG', label: t('ui:leaderboard.song_scores') },
     { id: 'FAME', label: t('ui:leaderboard.fame', { defaultValue: 'Fame' }) },
-    { id: 'FOLLOWERS', label: t('ui:leaderboard.followers', { defaultValue: 'Followers' }) },
-    { id: 'DISTANCE', label: t('ui:leaderboard.distance', { defaultValue: 'Distance' }) },
-    { id: 'CONFLICTS', label: t('ui:leaderboard.conflicts', { defaultValue: 'Conflicts' }) },
-    { id: 'STAGE_DIVES', label: t('ui:leaderboard.stage_dives', { defaultValue: 'Stage Dives' }) }
+    {
+      id: 'FOLLOWERS',
+      label: t('ui:leaderboard.followers', { defaultValue: 'Followers' })
+    },
+    {
+      id: 'DISTANCE',
+      label: t('ui:leaderboard.distance', { defaultValue: 'Distance' })
+    },
+    {
+      id: 'CONFLICTS',
+      label: t('ui:leaderboard.conflicts', { defaultValue: 'Conflicts' })
+    },
+    {
+      id: 'STAGE_DIVES',
+      label: t('ui:leaderboard.stage_dives', { defaultValue: 'Stage Dives' })
+    }
   ]
 
   return (
     <div className='h-full flex flex-col gap-4'>
       {/* View Switcher */}
       <div
-        role="tablist"
+        role='tablist'
         className='flex gap-4 mb-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-(--void-black)'
       >
         {views.map(({ id, label }) => (
           <GlitchButton
             key={id}
-            role="tab"
+            role='tab'
             aria-selected={view === id}
             aria-controls={`panel-${id}`}
             id={`tab-${id}`}
@@ -149,7 +171,7 @@ export const LeaderboardTab = () => {
       {/* Leaderboard Table */}
       <Panel
         id={`panel-${view}`}
-        role="tabpanel"
+        role='tabpanel'
         aria-labelledby={`tab-${view}`}
         className='flex-1 overflow-hidden flex flex-col'
         title={viewTitles[view]}
@@ -186,7 +208,9 @@ export const LeaderboardTab = () => {
                       ? t('ui:leaderboard.col_net_worth')
                       : view === 'SONG'
                         ? t('ui:leaderboard.col_score')
-                        : t('ui:leaderboard.col_value', { defaultValue: 'Value' })}
+                        : t('ui:leaderboard.col_value', {
+                            defaultValue: 'Value'
+                          })}
                   </th>
                 </tr>
               </thead>
@@ -210,7 +234,11 @@ export const LeaderboardTab = () => {
                         {view === 'BALANCE'
                           ? `€${safeScore.toLocaleString()}`
                           : view === 'DISTANCE'
-                            ? t('ui:leaderboard.col_value_km', { value: safeScore.toLocaleString(), unit: t('ui:unit.km', { defaultValue: 'km' }), defaultValue: `${safeScore.toLocaleString()} km` })
+                            ? t('ui:leaderboard.col_value_km', {
+                                value: safeScore.toLocaleString(),
+                                unit: t('ui:unit.km', { defaultValue: 'km' }),
+                                defaultValue: `${safeScore.toLocaleString()} km`
+                              })
                             : safeScore.toLocaleString()}
                       </td>
                     </tr>

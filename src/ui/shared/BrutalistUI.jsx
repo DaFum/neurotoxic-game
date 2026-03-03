@@ -1264,8 +1264,7 @@ export const HazardTicker = ({ message }) => {
             key={pillKey}
             className='text-xs font-bold tracking-[0.3em] uppercase text-(--toxic-green)'
           >
-            {t('ui:hazard.modifierActive')}{' '}
-            {message}
+            {t('ui:hazard.modifierActive')} {message}
           </span>
         ))}
       </div>
@@ -1320,6 +1319,8 @@ export const IndustrialChecklist = () => {
           type='button'
           key={task.id}
           onClick={() => toggleTask(task.id)}
+          aria-pressed={task.completed}
+          aria-label={t(task.key)}
           className={`relative w-full text-left p-3 border transition-all duration-200 flex items-center gap-4 group
             ${task.completed ? 'border-transparent opacity-60' : 'border-(--toxic-green)/30 hover:border-(--toxic-green) hover:bg-(--toxic-green)/10'}`}
         >
@@ -1329,7 +1330,10 @@ export const IndustrialChecklist = () => {
             ${task.completed ? 'border-(--toxic-green) bg-(--toxic-green)' : 'border-(--toxic-green) bg-(--void-black)'}`}
           >
             {task.completed && (
-              <span className='text-(--void-black) font-bold text-xs leading-none'>
+              <span
+                aria-hidden='true'
+                className='text-(--void-black) font-bold text-xs leading-none'
+              >
                 X
               </span>
             )}

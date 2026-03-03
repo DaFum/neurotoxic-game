@@ -534,7 +534,10 @@ describe('gameReducer', () => {
 
       const newState = gameReducer(testState, action)
 
-      assert.deepStrictEqual(newState.unlocks, ['existing_unlock', 'new_unlock'])
+      assert.deepStrictEqual(newState.unlocks, [
+        'existing_unlock',
+        'new_unlock'
+      ])
       assert.deepStrictEqual(testState.unlocks, ['existing_unlock']) // Verify immutability
       assert.notStrictEqual(newState, testState)
     })

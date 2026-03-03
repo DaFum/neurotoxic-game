@@ -56,21 +56,27 @@ test('UnlockManager Unit Tests', async t => {
     assert.deepEqual(unlocks, ['valid', 'also_valid'])
   })
 
-  await t.test('getUnlocks returns empty array if JSON.parse returns null', () => {
-    mockStorage.setItem('neurotoxic_unlocks', 'null')
-    const unlocks = getUnlocks()
-    assert.deepEqual(unlocks, [])
-  })
+  await t.test(
+    'getUnlocks returns empty array if JSON.parse returns null',
+    () => {
+      mockStorage.setItem('neurotoxic_unlocks', 'null')
+      const unlocks = getUnlocks()
+      assert.deepEqual(unlocks, [])
+    }
+  )
 
-  await t.test('getUnlocks returns empty array if JSON.parse returns a primitive', () => {
-    mockStorage.setItem('neurotoxic_unlocks', '123')
-    const unlocksNum = getUnlocks()
-    assert.deepEqual(unlocksNum, [])
+  await t.test(
+    'getUnlocks returns empty array if JSON.parse returns a primitive',
+    () => {
+      mockStorage.setItem('neurotoxic_unlocks', '123')
+      const unlocksNum = getUnlocks()
+      assert.deepEqual(unlocksNum, [])
 
-    mockStorage.setItem('neurotoxic_unlocks', '"string"')
-    const unlocksStr = getUnlocks()
-    assert.deepEqual(unlocksStr, [])
-  })
+      mockStorage.setItem('neurotoxic_unlocks', '"string"')
+      const unlocksStr = getUnlocks()
+      assert.deepEqual(unlocksStr, [])
+    }
+  )
 
   await t.test('getUnlocks returns empty array if localStorage throws', () => {
     const originalGetItem = mockStorage.getItem

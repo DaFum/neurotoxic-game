@@ -60,16 +60,32 @@ const consequenceSpecial = CONSEQUENCE_EVENTS.filter(
 export const EVENTS_DB = {
   transport: validateEvents(TRANSPORT_EVENTS, 'transport'),
   band: validateEvents(
-    [...BAND_EVENTS, ...crisisBand, ...consequenceBand, ...questBand, ...RELATIONSHIP_EVENTS],
+    [
+      ...BAND_EVENTS,
+      ...crisisBand,
+      ...consequenceBand,
+      ...questBand,
+      ...RELATIONSHIP_EVENTS
+    ],
     'band'
   ),
   gig: validateEvents(GIG_EVENTS, 'gig'),
   financial: validateEvents(
-    [...FINANCIAL_EVENTS, ...crisisFinancial, ...consequenceFinancial, ...questFinancial],
+    [
+      ...FINANCIAL_EVENTS,
+      ...crisisFinancial,
+      ...consequenceFinancial,
+      ...questFinancial
+    ],
     'financial'
   ),
   special: validateEvents(
-    [...SPECIAL_EVENTS, ...crisisSpecial, ...consequenceSpecial, ...questSpecial],
+    [
+      ...SPECIAL_EVENTS,
+      ...crisisSpecial,
+      ...consequenceSpecial,
+      ...questSpecial
+    ],
     'special'
   )
 }

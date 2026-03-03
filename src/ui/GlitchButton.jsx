@@ -62,7 +62,8 @@ export const GlitchButton = ({
   }
 
   return (
-    <button type='button'
+    <button
+      type='button'
       onClick={onClick}
       disabled={isIntervention}
       aria-disabled={isIntervention}

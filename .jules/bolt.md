@@ -4,5 +4,6 @@
 **Action:** Prioritize mocking rendering libraries (PixiJS) in unit tests to verify optimization logic (e.g., ensuring `clear()` is not called) rather than relying on visual verification via E2E scripts.
 
 ## 2025-03-02 - React SVG Icons Optimization
+
 **Learning:** Pure UI decoration components (like SVG icons) in heavily re-rendered environments like BrutalistUI.jsx should be wrapped in `React.memo()` to prevent unnecessary re-renders across the app, as their props typically consist only of simple string class names.
 **Action:** Always use `React.memo` for static UI decorations, especially when creating custom UI component libraries.

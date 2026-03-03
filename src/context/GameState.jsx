@@ -109,7 +109,6 @@ const createPersistedState = currentState => {
 const isPlainObject = value =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
-
 /**
  * Global State Provider covering Player, Band, Inventory, and Scene Management.
  * @param {object} props
@@ -308,7 +307,8 @@ export const GameStateProvider = ({ children }) => {
    * Resets the game state to initial values.
    */
   const resetState = useCallback(() => {
-    const unlocks = safeStorageOperation('loadUnlocks', () => getUnlocks(), []) || []
+    const unlocks =
+      safeStorageOperation('loadUnlocks', () => getUnlocks(), []) || []
     dispatch(createResetStateAction({ unlocks }))
   }, [])
 
@@ -366,27 +366,30 @@ export const GameStateProvider = ({ children }) => {
   /**
    * Persists the current state to localStorage.
    */
-  const saveGame = useCallback((showToast = true) => {
-    const saveData = createPersistedState(stateRef.current)
+  const saveGame = useCallback(
+    (showToast = true) => {
+      const saveData = createPersistedState(stateRef.current)
 
-    const success = safeStorageOperation(
-      'saveGame',
-      () => {
-        localStorage.setItem(SAVE_KEY, JSON.stringify(saveData))
-        return true
-      },
-      false
-    )
+      const success = safeStorageOperation(
+        'saveGame',
+        () => {
+          localStorage.setItem(SAVE_KEY, JSON.stringify(saveData))
+          return true
+        },
+        false
+      )
 
-    if (success) {
-      if (showToast) {
-        addToast(t('ui:toast.gameSaved'), 'success')
+      if (success) {
+        if (showToast) {
+          addToast(t('ui:toast.gameSaved'), 'success')
+        }
+        logger.info('System', 'Game Saved Successfully')
+      } else {
+        handleError(new StorageError('Failed to save game'), { addToast })
       }
-      logger.info('System', 'Game Saved Successfully')
-    } else {
-      handleError(new StorageError('Failed to save game'), { addToast })
-    }
-  }, [addToast, t])
+    },
+    [addToast, t]
+  )
 
   /**
    * Completes the current gig and transitions to the appropriate post-gig scene.
@@ -489,7 +492,12 @@ export const GameStateProvider = ({ children }) => {
 
         setActiveEvent(event)
         // Increment daily event count
-        dispatch(createUpdatePlayerAction({ eventsTriggeredToday: ((currentState.player?.eventsTriggeredToday) || 0) + 1 }))
+        dispatch(
+          createUpdatePlayerAction({
+            eventsTriggeredToday:
+              (currentState.player?.eventsTriggeredToday || 0) + 1
+          })
+        )
 
         // If it was a pending event, remove it from queue
         if (currentState.pendingEvents.includes(event.id)) {
@@ -534,7 +542,8 @@ export const GameStateProvider = ({ children }) => {
               // Parse relative deadlines
               const questToAdd = { ...q }
               if (questToAdd.deadlineOffset) {
-                questToAdd.deadline = currentState.player.day + questToAdd.deadlineOffset
+                questToAdd.deadline =
+                  currentState.player.day + questToAdd.deadlineOffset
                 delete questToAdd.deadlineOffset
               }
               dispatch(createAddQuestAction(questToAdd))
@@ -544,7 +553,10 @@ export const GameStateProvider = ({ children }) => {
           // Unlocks
           if (delta.flags?.unlock) {
             const rawUnlock = String(delta.flags.unlock)
-            const safeUnlockId = rawUnlock.trim().replace(/[^a-zA-Z0-9_]/g, '').toLowerCase()
+            const safeUnlockId = rawUnlock
+              .trim()
+              .replace(/[^a-zA-Z0-9_]/g, '')
+              .toLowerCase()
 
             if (safeUnlockId) {
               // Sync in-memory state unconditionally

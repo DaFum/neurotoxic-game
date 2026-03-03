@@ -26,6 +26,7 @@ Generate `.devin/wiki.json` files that steer Devin's DeepWiki documentation gene
 ### Step 1: Determine Context
 
 Ask or infer:
+
 1. **New or existing?** — Is there already a `.devin/wiki.json` in the repo?
 2. **Standard or Enterprise?** — Default to Standard limits unless user specifies Enterprise.
 3. **Repo access** — Does the user have repo files uploaded, or are they describing the structure verbally?
@@ -34,6 +35,7 @@ Ask or infer:
 ### Step 2: Analyze the Repository
 
 If repo files or structure are available, examine them to understand:
+
 - Top-level directory structure and what each folder contains
 - Key technologies and frameworks used
 - Critical components vs. boilerplate/generated code
@@ -47,11 +49,13 @@ If no repo access, interview the user about their codebase structure, priorities
 Choose the right approach based on the situation:
 
 **repo_notes only** (recommended first pass):
+
 - Use when the repo is small-to-medium and auto-planning mostly works
 - Use when user just wants to emphasize or de-emphasize certain areas
 - Use when user is unsure what pages they need
 
 **repo_notes + explicit pages** (full control):
+
 - Use when the repo is large and hitting auto-planning limits
 - Use when user needs a specific documentation hierarchy
 - Use when previous auto-generated wiki had significant structural problems
@@ -62,6 +66,7 @@ Choose the right approach based on the situation:
 Follow these rules when generating:
 
 **For repo_notes:**
+
 - Write them as strategic guidance to the documentation generator
 - Mention priority folders/components explicitly by path
 - Explain relationships the system might miss
@@ -69,6 +74,7 @@ Follow these rules when generating:
 - Keep each note focused; consolidate related guidance into fewer, longer notes
 
 **For pages:**
+
 - Use descriptive, unique titles
 - Write specific `purpose` fields that reference actual directories, files, and concepts
 - Build logical hierarchies with `parent` fields
@@ -76,12 +82,14 @@ Follow these rules when generating:
 - Stay within limits (see Quick Reference below)
 
 **Purpose field quality matters enormously.** Compare:
+
 - Bad: `"Document the API"` — too vague, generates generic content
 - Good: `"Document REST endpoints in /api/v2/, including request/response formats, authentication requirements, rate limits, and error codes. Focus on the user and order resources."` — specific, actionable
 
 ### Step 5: Validate and Deliver
 
 Run the validation script (see `scripts/validate_wiki_json.py`) to check:
+
 - Page count within limits
 - Total notes within limits
 - Character limits per note
@@ -90,6 +98,7 @@ Run the validation script (see `scripts/validate_wiki_json.py`) to check:
 - Valid JSON structure
 
 Deliver the file and explain:
+
 - What strategy was chosen and why
 - Key decisions made in the structure
 - Suggested next steps (commit, regenerate wiki, evaluate, iterate)
@@ -98,12 +107,12 @@ Deliver the file and explain:
 
 ## Quick Reference: Limits
 
-| Limit | Standard | Enterprise |
-|-------|----------|------------|
-| Max pages | 30 | 80 |
-| Max total notes | 100 (repo_notes + all page_notes combined) | 100 |
-| Max characters per note | 10,000 | 10,000 |
-| Page titles | Must be unique and non-empty | Same |
+| Limit                   | Standard                                   | Enterprise |
+| ----------------------- | ------------------------------------------ | ---------- |
+| Max pages               | 30                                         | 80         |
+| Max total notes         | 100 (repo_notes + all page_notes combined) | 100        |
+| Max characters per note | 10,000                                     | 10,000     |
+| Page titles             | Must be unique and non-empty               | Same       |
 
 ---
 
@@ -158,7 +167,9 @@ Deliver the file and explain:
 ## Common Patterns
 
 ### Large Monorepo
+
 Use `repo_notes` to establish priorities and ignore irrelevant directories:
+
 ```json
 {
   "repo_notes": [
@@ -170,7 +181,9 @@ Use `repo_notes` to establish priorities and ignore irrelevant directories:
 ```
 
 ### Microservices
+
 Create a page per service with a shared overview:
+
 ```json
 {
   "repo_notes": [
@@ -179,25 +192,65 @@ Create a page per service with a shared overview:
     }
   ],
   "pages": [
-    { "title": "System Architecture", "purpose": "Overview of microservices topology, communication patterns, and deployment model" },
-    { "title": "User Service", "purpose": "User management in /services/user/, including auth flows, profile management, and gRPC endpoints", "parent": "System Architecture" },
-    { "title": "Order Service", "purpose": "Order processing in /services/order/, including state machine, payment integration, and event publishing", "parent": "System Architecture" },
-    { "title": "Shared Libraries", "purpose": "Common utilities in /libs/ used across services, including logging, error handling, and middleware", "parent": "System Architecture" },
-    { "title": "Proto Definitions", "purpose": "gRPC service definitions in /proto/, message types, and inter-service contracts", "parent": "System Architecture" }
+    {
+      "title": "System Architecture",
+      "purpose": "Overview of microservices topology, communication patterns, and deployment model"
+    },
+    {
+      "title": "User Service",
+      "purpose": "User management in /services/user/, including auth flows, profile management, and gRPC endpoints",
+      "parent": "System Architecture"
+    },
+    {
+      "title": "Order Service",
+      "purpose": "Order processing in /services/order/, including state machine, payment integration, and event publishing",
+      "parent": "System Architecture"
+    },
+    {
+      "title": "Shared Libraries",
+      "purpose": "Common utilities in /libs/ used across services, including logging, error handling, and middleware",
+      "parent": "System Architecture"
+    },
+    {
+      "title": "Proto Definitions",
+      "purpose": "gRPC service definitions in /proto/, message types, and inter-service contracts",
+      "parent": "System Architecture"
+    }
   ]
 }
 ```
 
 ### Frontend Application
+
 Organize around user-facing concerns:
+
 ```json
 {
   "pages": [
-    { "title": "Application Overview", "purpose": "High-level architecture of the React application in /src/, routing structure, and build configuration" },
-    { "title": "Component Library", "purpose": "Reusable UI components in /src/components/, their props interfaces, composition patterns, and Storybook usage", "parent": "Application Overview" },
-    { "title": "State Management", "purpose": "Redux store in /src/store/, slice patterns, async thunks, selectors, and data flow", "parent": "Application Overview" },
-    { "title": "API Integration", "purpose": "API client layer in /src/api/, request/response types, error handling, and caching strategy", "parent": "Application Overview" },
-    { "title": "Authentication", "purpose": "Auth flow spanning /src/auth/ and /src/api/auth/, including JWT handling, refresh tokens, and protected routes", "parent": "Application Overview" }
+    {
+      "title": "Application Overview",
+      "purpose": "High-level architecture of the React application in /src/, routing structure, and build configuration"
+    },
+    {
+      "title": "Component Library",
+      "purpose": "Reusable UI components in /src/components/, their props interfaces, composition patterns, and Storybook usage",
+      "parent": "Application Overview"
+    },
+    {
+      "title": "State Management",
+      "purpose": "Redux store in /src/store/, slice patterns, async thunks, selectors, and data flow",
+      "parent": "Application Overview"
+    },
+    {
+      "title": "API Integration",
+      "purpose": "API client layer in /src/api/, request/response types, error handling, and caching strategy",
+      "parent": "Application Overview"
+    },
+    {
+      "title": "Authentication",
+      "purpose": "Auth flow spanning /src/auth/ and /src/api/auth/, including JWT handling, refresh tokens, and protected routes",
+      "parent": "Application Overview"
+    }
   ]
 }
 ```
@@ -206,14 +259,14 @@ Organize around user-facing concerns:
 
 ## Troubleshooting
 
-| Problem | Likely Cause | Solution |
-|---------|-------------|----------|
-| Only some folders documented | Large repo hit auto-planning limits | Add `repo_notes` emphasizing missing areas; if insufficient, define explicit `pages` |
-| Important components missing | Auto-planner didn't prioritize them | Add specific pages with clear purposes; use `repo_notes` to highlight importance |
-| Wiki structure doesn't match team needs | Auto-generated structure | Define explicit `pages` array with preferred hierarchy |
-| Too much detail on unimportant areas | No guidance provided | Use `repo_notes` to explicitly deprioritize certain folders |
-| Pages exist but content is wrong | Vague `purpose` field | Rewrite `purpose` with specific directories, concepts, and scope |
-| Added pages but others disappeared | `pages` is all-or-nothing | Include ALL desired pages in the array, not just new ones |
+| Problem                                 | Likely Cause                        | Solution                                                                             |
+| --------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------ |
+| Only some folders documented            | Large repo hit auto-planning limits | Add `repo_notes` emphasizing missing areas; if insufficient, define explicit `pages` |
+| Important components missing            | Auto-planner didn't prioritize them | Add specific pages with clear purposes; use `repo_notes` to highlight importance     |
+| Wiki structure doesn't match team needs | Auto-generated structure            | Define explicit `pages` array with preferred hierarchy                               |
+| Too much detail on unimportant areas    | No guidance provided                | Use `repo_notes` to explicitly deprioritize certain folders                          |
+| Pages exist but content is wrong        | Vague `purpose` field               | Rewrite `purpose` with specific directories, concepts, and scope                     |
+| Added pages but others disappeared      | `pages` is all-or-nothing           | Include ALL desired pages in the array, not just new ones                            |
 
 ---
 

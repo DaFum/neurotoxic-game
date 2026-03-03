@@ -69,7 +69,9 @@ export const ToastOverlay = () => {
                 <p
                   className={`font-[Courier_New] text-sm leading-snug ${style.text}`}
                 >
-                  {toast.message && toast.message.includes('|') && toast.message.startsWith('ui:')
+                  {toast.message &&
+                  toast.message.includes('|') &&
+                  toast.message.startsWith('ui:')
                     ? (() => {
                         const firstPipeIdx = toast.message.indexOf('|')
                         const key = toast.message.slice(0, firstPipeIdx)
@@ -81,8 +83,13 @@ export const ToastOverlay = () => {
                             context.name = t(context.name)
                           }
                           return t(key, context)
-                        } catch(_e) {
-                          console.error('Toast message JSON parse error:', _e, contextStr, toast.message);
+                        } catch (_e) {
+                          console.error(
+                            'Toast message JSON parse error:',
+                            _e,
+                            contextStr,
+                            toast.message
+                          )
                           return t(key)
                         }
                       })()

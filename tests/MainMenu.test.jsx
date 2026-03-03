@@ -60,7 +60,7 @@ vi.mock('../src/utils/errorHandler', () => ({
 
 // Mock BandHQ component to avoid deep dependencies
 vi.mock('../src/ui/BandHQ', () => ({
-  BandHQ: () => <div data-testid="band-hq-modal">Band HQ Modal</div>
+  BandHQ: () => <div data-testid='band-hq-modal'>Band HQ Modal</div>
 }))
 
 describe('MainMenu Component', () => {
@@ -192,8 +192,8 @@ describe('MainMenu Component', () => {
 
       // Close modal - find the modal's close button
       const closeButtons = screen.getAllByRole('button')
-      const modalCloseButton = closeButtons.find(btn =>
-        btn.getAttribute('aria-label') === 'Close modal'
+      const modalCloseButton = closeButtons.find(
+        btn => btn.getAttribute('aria-label') === 'Close modal'
       )
 
       if (modalCloseButton) {
@@ -208,8 +208,12 @@ describe('MainMenu Component', () => {
 
       // Check for social link titles
       expect(screen.getByText('ui:social_links.game.title')).toBeInTheDocument()
-      expect(screen.getByText('ui:social_links.bandcamp.title')).toBeInTheDocument()
-      expect(screen.getByText('ui:social_links.instagram.title')).toBeInTheDocument()
+      expect(
+        screen.getByText('ui:social_links.bandcamp.title')
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText('ui:social_links.instagram.title')
+      ).toBeInTheDocument()
     })
   })
 
@@ -229,8 +233,8 @@ describe('MainMenu Component', () => {
       expect(screen.getByText('ui:features.title')).toBeInTheDocument()
 
       const closeButtons = screen.getAllByRole('button')
-      const modalCloseButton = closeButtons.find(btn =>
-        btn.getAttribute('aria-label') === 'Close modal'
+      const modalCloseButton = closeButtons.find(
+        btn => btn.getAttribute('aria-label') === 'Close modal'
       )
 
       if (modalCloseButton) {
@@ -270,8 +274,12 @@ describe('MainMenu Component', () => {
 
       fireEvent.click(screen.getByText('ui:start_game'))
 
-      expect(screen.getByText('ui:mainMenu.existingSave.title')).toBeInTheDocument()
-      expect(screen.getByText('ui:mainMenu.existingSave.desc')).toBeInTheDocument()
+      expect(
+        screen.getByText('ui:mainMenu.existingSave.title')
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText('ui:mainMenu.existingSave.desc')
+      ).toBeInTheDocument()
     })
 
     it('loads existing save when load button clicked in prompt', async () => {
@@ -303,11 +311,13 @@ describe('MainMenu Component', () => {
       render(<MainMenu />)
 
       fireEvent.click(screen.getByText('ui:start_game'))
-      expect(screen.getByText('ui:mainMenu.existingSave.title')).toBeInTheDocument()
+      expect(
+        screen.getByText('ui:mainMenu.existingSave.title')
+      ).toBeInTheDocument()
 
       const closeButtons = screen.getAllByRole('button')
-      const modalCloseButton = closeButtons.find(btn =>
-        btn.getAttribute('aria-label') === 'Close modal'
+      const modalCloseButton = closeButtons.find(
+        btn => btn.getAttribute('aria-label') === 'Close modal'
       )
 
       if (modalCloseButton) {
@@ -397,8 +407,8 @@ describe('MainMenu Component', () => {
       expect(screen.getByText('ui:identity_required')).toBeInTheDocument()
 
       const closeButtons = screen.getAllByRole('button')
-      const modalCloseButton = closeButtons.find(btn =>
-        btn.getAttribute('aria-label') === 'Close modal'
+      const modalCloseButton = closeButtons.find(
+        btn => btn.getAttribute('aria-label') === 'Close modal'
       )
 
       if (modalCloseButton) {
@@ -494,13 +504,17 @@ describe('MainMenu Component', () => {
     it('renders subtitle', () => {
       render(<MainMenu />)
 
-      expect(screen.getByText('ui:mainMenu.subtitle.grindTheVoid')).toBeInTheDocument()
+      expect(
+        screen.getByText('ui:mainMenu.subtitle.grindTheVoid')
+      ).toBeInTheDocument()
     })
 
     it('renders copyright notice', () => {
       const { container } = render(<MainMenu />)
 
-      expect(container.textContent).toContain('© 2026 NEUROTOXIC // DEATH GRINDCORE FROM STENDAL')
+      expect(container.textContent).toContain(
+        '© 2026 NEUROTOXIC // DEATH GRINDCORE FROM STENDAL'
+      )
     })
 
     it('renders background with image', () => {
@@ -576,7 +590,9 @@ describe('MainMenu Component', () => {
   describe('Audio error handling', () => {
     it('continues scene transition even if audio fails', async () => {
       const { audioManager } = await import('../src/utils/AudioManager')
-      audioManager.ensureAudioContext.mockRejectedValue(new Error('Audio failed'))
+      audioManager.ensureAudioContext.mockRejectedValue(
+        new Error('Audio failed')
+      )
 
       localStorage.setItem('neurotoxic_player_id', 'test-id')
       localStorage.setItem('neurotoxic_player_name', 'TestPlayer')

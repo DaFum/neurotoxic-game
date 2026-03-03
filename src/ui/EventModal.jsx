@@ -104,7 +104,12 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
             >
               <div className='p-4 border border-(--toxic-green) bg-(--toxic-green)/5'>
                 <p className='text-(--star-white) font-mono leading-relaxed'>
-                  {t(outcome.description || outcome.outcomeText || 'Event resolved.', event.context)}
+                  {t(
+                    outcome.description ||
+                      outcome.outcomeText ||
+                      'Event resolved.',
+                    event.context
+                  )}
                 </p>
               </div>
               <button
@@ -126,7 +131,9 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
                 className='flex flex-col gap-3'
                 initial='hidden'
                 animate='visible'
-                variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
+                variants={{
+                  visible: { transition: { staggerChildren: 0.08 } }
+                }}
               >
                 {event.options.map((option, index) => (
                   <motion.button
@@ -136,7 +143,9 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
                       visible: { opacity: 1, x: 0 }
                     }}
                     key={
-                      option.id || option.nextEventId || `${option.label}-${index}`
+                      option.id ||
+                      option.nextEventId ||
+                      `${option.label}-${index}`
                     }
                     onClick={() => {
                       if (option.action) {

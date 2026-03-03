@@ -209,7 +209,9 @@ test('calculateGigFinancials applies S-rank merch bonus', () => {
     gigStats: buildGigStats()
   })
 
-  const bonusItem = sRank.income.breakdown.find(b => b.labelKey === 'economy:gigIncome.hypeBonus.label')
+  const bonusItem = sRank.income.breakdown.find(
+    b => b.labelKey === 'economy:gigIncome.hypeBonus.label'
+  )
   assert.ok(bonusItem, 'S-rank should trigger hype bonus entry')
 })
 
@@ -266,7 +268,9 @@ test('calculateGigFinancials handles sold out merch gracefully', () => {
     gigStats: buildGigStats()
   })
 
-  const merchItem = result.income.breakdown.find(b => b.labelKey === 'economy:gigIncome.merchSales.label')
+  const merchItem = result.income.breakdown.find(
+    b => b.labelKey === 'economy:gigIncome.merchSales.label'
+  )
   assert.equal(
     merchItem.value,
     0,
@@ -294,7 +298,9 @@ test('calculateGigFinancials uses all inventory types for sales limit', () => {
     gigStats: buildGigStats()
   })
 
-  const merchItem = result.income.breakdown.find(b => b.labelKey === 'economy:gigIncome.merchSales.label')
+  const merchItem = result.income.breakdown.find(
+    b => b.labelKey === 'economy:gigIncome.merchSales.label'
+  )
   // Should sell something (patches/vinyls) even if shirts/hoodies/cds are 0
   assert.ok(
     merchItem.value > 0,
@@ -313,8 +319,8 @@ test('calculateGigFinancials no longer includes transport/food in gig report (ha
     gigStats: buildGigStats()
   })
 
-  const travelExpenseItems = result.expenses.breakdown.filter(
-    b => b.labelKey?.startsWith('economy:travelExpenses')
+  const travelExpenseItems = result.expenses.breakdown.filter(b =>
+    b.labelKey?.startsWith('economy:travelExpenses')
   )
   assert.equal(
     travelExpenseItems.length,

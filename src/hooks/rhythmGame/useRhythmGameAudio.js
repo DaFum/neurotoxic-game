@@ -44,7 +44,8 @@ export const useRhythmGameAudio = ({
   contextActions
 }) => {
   const { setIsAudioReady } = setters
-  const { band, gameMap, player, setlist, gigModifiers, currentGig } = contextState
+  const { band, gameMap, player, setlist, gigModifiers, currentGig } =
+    contextState
   const { addToast } = contextActions
 
   const hasInitializedRef = useRef(false)
@@ -88,10 +89,12 @@ export const useRhythmGameAudio = ({
 
       const activeModifiers = getGigModifiers(band, gigModifiers)
 
-      const setlistFirstId = typeof setlist?.[0] === 'string' ? setlist[0] : setlist?.[0]?.id
+      const setlistFirstId =
+        typeof setlist?.[0] === 'string' ? setlist[0] : setlist?.[0]?.id
       const songId = currentGig?.songId || setlistFirstId || 'neurotoxic_1'
       const DEFAULT_SONG = { id: 'default', bpm: 120 }
-      const activeSong = SONGS_DB.find(s => s.id === songId) || SONGS_DB[0] || DEFAULT_SONG
+      const activeSong =
+        SONGS_DB.find(s => s.id === songId) || SONGS_DB[0] || DEFAULT_SONG
       const physics = calculateGigPhysics(band, activeSong)
 
       const currentNode = gameMap?.nodes?.[player.currentNodeId]
