@@ -55,7 +55,8 @@ const selectEvent = (pool, gameState, triggerPoint) => {
   let eligibleEvents = []
   for (const e of pool) {
     // Trigger check — events with trigger:'random' are eligible at any trigger point
-    if (triggerPoint && e.trigger !== triggerPoint && e.trigger !== 'random') continue
+    if (triggerPoint && e.trigger !== triggerPoint && e.trigger !== 'random')
+      continue
 
     // Filter by Cooldown
     if (gameState.eventCooldowns && gameState.eventCooldowns.includes(e.id))
@@ -106,7 +107,11 @@ const selectEvent = (pool, gameState, triggerPoint) => {
     }
 
     // Dampen random band events when harmony is critically low to prevent death spirals
-    if (event.category === 'band' && event.trigger === 'random' && (gameState.band?.harmony ?? 100) < HARMONY_DEATH_SPIRAL_THRESHOLD) {
+    if (
+      event.category === 'band' &&
+      event.trigger === 'random' &&
+      (gameState.band?.harmony ?? 100) < HARMONY_DEATH_SPIRAL_THRESHOLD
+    ) {
       chance *= HARMONY_DEATH_SPIRAL_DAMPEN_FACTOR
     }
 
@@ -473,7 +478,8 @@ export const eventEngine = {
   filterEvents: (pool, trigger, state) =>
     pool.filter(e => {
       // Match exact trigger OR 'random' events (eligible at any trigger point)
-      if (trigger && e.trigger !== trigger && e.trigger !== 'random') return false
+      if (trigger && e.trigger !== trigger && e.trigger !== 'random')
+        return false
       if (!e.condition) return true
       try {
         return e.condition(state)

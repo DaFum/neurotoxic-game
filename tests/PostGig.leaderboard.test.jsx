@@ -169,7 +169,9 @@ describe('PostGig Leaderboard Submission', () => {
     })
 
     // Verify autosave and scene change order
-    await waitFor(() => expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD'))
+    await waitFor(() =>
+      expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
+    )
     expect(mockSaveGame).toHaveBeenCalled()
     expect(mockSaveGame.mock.invocationCallOrder[0]).toBeLessThan(
       mockChangeScene.mock.invocationCallOrder[0]
@@ -240,7 +242,9 @@ describe('PostGig Leaderboard Submission', () => {
     fireEvent.click(await screen.findByText(/Back to Tour/i))
 
     expect(mockFetch).not.toHaveBeenCalled()
-    await waitFor(() => expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD'))
+    await waitFor(() =>
+      expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
+    )
     expect(mockSaveGame).toHaveBeenCalled()
     expect(mockSaveGame.mock.invocationCallOrder[0]).toBeLessThan(
       mockChangeScene.mock.invocationCallOrder[0]

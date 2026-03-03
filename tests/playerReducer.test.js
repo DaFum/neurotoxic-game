@@ -5,7 +5,10 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
 
-import { playerReducer, handleUpdatePlayer } from '../src/context/reducers/playerReducer.js'
+import {
+  playerReducer,
+  handleUpdatePlayer
+} from '../src/context/reducers/playerReducer.js'
 import { ActionTypes } from '../src/context/actionTypes.js'
 
 describe('playerReducer.js', () => {
@@ -32,7 +35,7 @@ describe('playerReducer.js', () => {
       }
       const action = {
         type: ActionTypes.UPDATE_PLAYER,
-        payload: (player) => ({
+        payload: player => ({
           money: player.money + 50,
           day: player.day + 1
         })
@@ -80,7 +83,7 @@ describe('playerReducer.js', () => {
         player: { money: 100, fame: 50, day: 1 }
       }
 
-      const payload = (player) => ({
+      const payload = player => ({
         money: player.money + 50,
         day: player.day + 1
       })
@@ -108,14 +111,14 @@ describe('playerReducer.js', () => {
         player: { money: 100 }
       }
 
-      const payload = (player) => ({ money: player.money - 200 })
+      const payload = player => ({ money: player.money - 200 })
       const newState = handleUpdatePlayer(initialState, payload)
 
       assert.strictEqual(newState.player.money, 0)
     })
 
     it('should preserve properties not updated', () => {
-       const initialState = {
+      const initialState = {
         otherProp: 'test',
         player: { money: 100, otherPlayerProp: 'testPlayer' }
       }

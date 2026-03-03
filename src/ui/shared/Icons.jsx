@@ -114,7 +114,13 @@ VoidSkullIcon.propTypes = {
   className: PropTypes.string
 }
 
-const BaseIcon = ({ className = '', viewBox = '0 0 24 24', title, children, ...props }) => {
+const BaseIcon = ({
+  className = '',
+  viewBox = '0 0 24 24',
+  title,
+  children,
+  ...props
+}) => {
   const titleId = useId()
   return (
     <svg

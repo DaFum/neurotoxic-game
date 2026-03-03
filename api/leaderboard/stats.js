@@ -1,9 +1,16 @@
 import client from '../../lib/redis.js'
 
-const VALID_STATS = ['balance', 'fame', 'followers', 'distance', 'conflicts', 'stage_dives']
+const VALID_STATS = [
+  'balance',
+  'fame',
+  'followers',
+  'distance',
+  'conflicts',
+  'stage_dives'
+]
 const MAX_STAT_VALUE = 999999999999 // reasonable max for followers/fame
 
-const clampStat = (val) => {
+const clampStat = val => {
   if (!Number.isFinite(val)) return 0
   return Math.min(Math.max(0, val), MAX_STAT_VALUE)
 }
@@ -20,8 +27,14 @@ export default async function handler(req, res) {
       }
 
       const {
-        playerId, playerName, money, fame,
-        followers, distance, conflicts, stageDives
+        playerId,
+        playerName,
+        money,
+        fame,
+        followers,
+        distance,
+        conflicts,
+        stageDives
       } = req.body
 
       // Basic Type Checks

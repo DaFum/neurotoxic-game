@@ -256,7 +256,7 @@ describe('saveValidator', () => {
       it('validates influencers correctly', () => {
         const data = getValidData()
         data.social.influencers = {
-          'inf1': { tier: 'Micro', trait: 'music_snob', score: 10 }
+          inf1: { tier: 'Micro', trait: 'music_snob', score: 10 }
         }
         assert.strictEqual(validateSaveData(data), true)
       })
@@ -272,7 +272,7 @@ describe('saveValidator', () => {
 
       it('throws if an influencer is not an object', () => {
         const data = getValidData()
-        data.social.influencers = { 'inf1': 'not an object' }
+        data.social.influencers = { inf1: 'not an object' }
         assert.throws(() => validateSaveData(data), {
           name: 'StateError',
           message: /social.influencers.inf1 must be an object/
@@ -281,7 +281,7 @@ describe('saveValidator', () => {
 
       it('throws if tier is missing or invalid', () => {
         const data = getValidData()
-        data.social.influencers = { 'inf1': { trait: 'music_snob', score: 10 } }
+        data.social.influencers = { inf1: { trait: 'music_snob', score: 10 } }
         assert.throws(() => validateSaveData(data), {
           name: 'StateError',
           message: /social.influencers.inf1.tier must be a string/
@@ -290,7 +290,7 @@ describe('saveValidator', () => {
 
       it('throws if trait is missing or invalid', () => {
         const data = getValidData()
-        data.social.influencers = { 'inf1': { tier: 'Micro', score: 10 } }
+        data.social.influencers = { inf1: { tier: 'Micro', score: 10 } }
         assert.throws(() => validateSaveData(data), {
           name: 'StateError',
           message: /social.influencers.inf1.trait must be a string/
@@ -299,7 +299,9 @@ describe('saveValidator', () => {
 
       it('throws if score is missing or invalid', () => {
         const data = getValidData()
-        data.social.influencers = { 'inf1': { tier: 'Micro', trait: 'music_snob' } }
+        data.social.influencers = {
+          inf1: { tier: 'Micro', trait: 'music_snob' }
+        }
         assert.throws(() => validateSaveData(data), {
           name: 'StateError',
           message: /social.influencers.inf1.score must be a number/

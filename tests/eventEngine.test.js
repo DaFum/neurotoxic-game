@@ -90,7 +90,10 @@ test('eventEngine.filterEvents allows trigger:random events at any trigger point
   assert.equal(result.length, 2, 'Should include both travel and random events')
   assert.ok(result.some(e => e.id === 'specific'))
   assert.ok(result.some(e => e.id === 'random_one'))
-  assert.ok(!result.some(e => e.id === 'other'), 'post_gig event should be excluded')
+  assert.ok(
+    !result.some(e => e.id === 'other'),
+    'post_gig event should be excluded'
+  )
 })
 
 test('eventEngine.selectEvent dampens random band events when harmony < 30', () => {
@@ -109,7 +112,8 @@ test('eventEngine.selectEvent dampens random band events when harmony < 30', () 
   const secureRandomSequence = [0.6, 0.3, 0.3]
   let secureRandomIndex = 0
   mockSecureRandom.mock.mockImplementation(() => {
-    const value = secureRandomSequence[secureRandomIndex % secureRandomSequence.length]
+    const value =
+      secureRandomSequence[secureRandomIndex % secureRandomSequence.length]
     secureRandomIndex += 1
     return value
   })

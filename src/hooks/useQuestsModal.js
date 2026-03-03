@@ -18,11 +18,7 @@ export const useQuestsModal = () => {
       activeQuests: gameState.activeQuests || [],
       player: gameState.player
     }),
-    [
-      closeQuests,
-      gameState.activeQuests,
-      gameState.player
-    ]
+    [closeQuests, gameState.activeQuests, gameState.player]
   )
 
   return {

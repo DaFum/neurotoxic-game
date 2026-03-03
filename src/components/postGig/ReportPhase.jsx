@@ -16,9 +16,7 @@ const FinancialList = ({ items, type }) => {
           transition={{ delay: 0.3 + i * 0.1 }}
           className='flex justify-between items-center'
         >
-          <span className='text-(--star-white)/70'>
-            {t(item.labelKey)}
-          </span>
+          <span className='text-(--star-white)/70'>{t(item.labelKey)}</span>
           <span
             className={`${type === 'income' ? 'text-(--toxic-green)' : 'text-(--blood-red)'} font-bold tabular-nums`}
           >
@@ -76,7 +74,9 @@ export const ReportPhase = ({ financials, onNext }) => {
           </h3>
           <FinancialList items={financials.income.breakdown} type='income' />
           <div className='mt-4 pt-2 border-t border-(--toxic-green)/40 flex justify-between font-bold text-(--toxic-green)'>
-            <span className='text-sm tracking-wider'>{t('economy:postGig.total')}</span>
+            <span className='text-sm tracking-wider'>
+              {t('economy:postGig.total')}
+            </span>
             <span className='tabular-nums'>{financials.income.total}€</span>
           </div>
         </motion.div>
@@ -92,7 +92,9 @@ export const ReportPhase = ({ financials, onNext }) => {
           </h3>
           <FinancialList items={financials.expenses.breakdown} type='expense' />
           <div className='mt-4 pt-2 border-t border-(--blood-red)/40 flex justify-between font-bold text-(--blood-red)'>
-            <span className='text-sm tracking-wider'>{t('economy:postGig.total')}</span>
+            <span className='text-sm tracking-wider'>
+              {t('economy:postGig.total')}
+            </span>
             <span className='tabular-nums'>{financials.expenses.total}€</span>
           </div>
         </motion.div>

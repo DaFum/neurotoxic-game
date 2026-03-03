@@ -81,9 +81,15 @@ export class MapGenerator {
     const availableHard = hardVenues.filter(v => !usedVenueIds.has(v.id))
 
     // Pre-filtered static fallback pools to avoid filtering inside the loop
-    const fallbackEasy = easyVenues.filter(v => v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum')
-    const fallbackMedium = mediumVenues.filter(v => v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum')
-    const fallbackHard = hardVenues.filter(v => v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum')
+    const fallbackEasy = easyVenues.filter(
+      v => v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum'
+    )
+    const fallbackMedium = mediumVenues.filter(
+      v => v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum'
+    )
+    const fallbackHard = hardVenues.filter(
+      v => v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum'
+    )
 
     // Generate intermediate layers
     for (let i = 1; i < depth; i++) {
@@ -121,7 +127,8 @@ export class MapGenerator {
           // but exclude specialized venues.
           if (candidates.length === 0) {
             // Re-assign candidates to the pre-filtered static fallback pool
-            candidates = i < 3 ? fallbackEasy : i < 7 ? fallbackMedium : fallbackHard
+            candidates =
+              i < 3 ? fallbackEasy : i < 7 ? fallbackMedium : fallbackHard
             if (candidates == null || candidates.length === 0) {
               throw new StateError(`Empty fallback pool for difficulty ${i}`)
             }

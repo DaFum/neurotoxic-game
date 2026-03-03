@@ -160,7 +160,11 @@ describe('rhythmUtils', () => {
 
     test('should return null if hitWindow is 0', () => {
       const result = checkHit(notes, 0, noteTime, 0)
-      assert.strictEqual(result, null, 'Should return null when hit window is 0')
+      assert.strictEqual(
+        result,
+        null,
+        'Should return null when hit window is 0'
+      )
     })
   })
 

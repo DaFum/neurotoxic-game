@@ -302,7 +302,11 @@ export const createAddQuestAction = quest => ({
  * @param {number} [amount=1] - The amount to advance progress by.
  * @returns {Object} Action object
  */
-export const createAdvanceQuestAction = (questId, amount = 1, randomIdx = undefined) => ({
+export const createAdvanceQuestAction = (
+  questId,
+  amount = 1,
+  randomIdx = undefined
+) => ({
   type: ActionTypes.ADVANCE_QUEST,
   payload: { questId, amount, randomIdx }
 })

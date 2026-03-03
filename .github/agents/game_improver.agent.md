@@ -4,7 +4,7 @@ description: |
   Analyzes the NEUROTOXIC: GRIND THE VOID codebase and implements comprehensive
   improvements across gameplay balancing, feature enhancements, bug fixes,
   security hardening, performance optimizations, and content additions.
-argument-hint: "A detailed description of the improvement needed, such as \"balance the late-game economy for better progression\" or \"fix WebAudio context suspension on mobile\""
+argument-hint: 'A detailed description of the improvement needed, such as "balance the late-game economy for better progression" or "fix WebAudio context suspension on mobile"'
 tools:
   - vscode
   - execute

@@ -1,5 +1,9 @@
 import { bandHasTrait } from './traitLogic.js'
-import { clampPlayerMoney, clampBandHarmony, calculateFameLevel } from './gameStateUtils.js'
+import {
+  clampPlayerMoney,
+  clampBandHarmony,
+  calculateFameLevel
+} from './gameStateUtils.js'
 
 /**
  * Selects the primary effect payload from catalog entries during migration.

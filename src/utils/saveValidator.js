@@ -159,9 +159,13 @@ const validateSocial = social => {
         if (typeof influencer.tier !== 'string')
           throw new StateError(`social.influencers.${id}.tier must be a string`)
         if (typeof influencer.trait !== 'string')
-          throw new StateError(`social.influencers.${id}.trait must be a string`)
+          throw new StateError(
+            `social.influencers.${id}.trait must be a string`
+          )
         if (typeof influencer.score !== 'number')
-          throw new StateError(`social.influencers.${id}.score must be a number`)
+          throw new StateError(
+            `social.influencers.${id}.score must be a number`
+          )
       })
       return
     }

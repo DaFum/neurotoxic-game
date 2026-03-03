@@ -23,8 +23,17 @@ test('gameConstants - GAME_PHASES exports expected values', () => {
 
   // Verify it is an object with the expected keys
   const expectedKeys = [
-    'OVERWORLD', 'TRAVEL_MINIGAME', 'PRE_GIG', 'PRE_GIG_MINIGAME',
-    'GIG', 'POST_GIG', 'MENU', 'SETTINGS', 'CREDITS', 'GAMEOVER', 'INTRO'
+    'OVERWORLD',
+    'TRAVEL_MINIGAME',
+    'PRE_GIG',
+    'PRE_GIG_MINIGAME',
+    'GIG',
+    'POST_GIG',
+    'MENU',
+    'SETTINGS',
+    'CREDITS',
+    'GAMEOVER',
+    'INTRO'
   ]
   assert.deepEqual(Object.keys(GAME_PHASES).sort(), expectedKeys.sort())
 })
@@ -51,10 +60,18 @@ test('gameConstants - DEFAULT_MINIGAME_STATE exports expected structure', () => 
 
   // Verify it is an object with the expected keys
   const expectedKeys = [
-    'active', 'type', 'targetDestination', 'gigId',
-    'equipmentRemaining', 'accumulatedDamage', 'score'
+    'active',
+    'type',
+    'targetDestination',
+    'gigId',
+    'equipmentRemaining',
+    'accumulatedDamage',
+    'score'
   ]
-  assert.deepEqual(Object.keys(DEFAULT_MINIGAME_STATE).sort(), expectedKeys.sort())
+  assert.deepEqual(
+    Object.keys(DEFAULT_MINIGAME_STATE).sort(),
+    expectedKeys.sort()
+  )
 })
 
 test('gameConstants - DEFAULT_EQUIPMENT_COUNT exports expected value', () => {

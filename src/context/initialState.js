@@ -218,5 +218,7 @@ export const createInitialState = (persistedData = {}) => ({
   settings: { ...DEFAULT_SETTINGS, ...(persistedData.settings || {}) },
   gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
   minigame: { ...DEFAULT_MINIGAME_STATE },
-  unlocks: Array.isArray(persistedData.unlocks) ? [...persistedData.unlocks] : []
+  unlocks: Array.isArray(persistedData.unlocks)
+    ? [...persistedData.unlocks]
+    : []
 })

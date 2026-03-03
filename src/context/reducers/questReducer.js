@@ -1,4 +1,8 @@
-import { clampBandHarmony, clampPlayerMoney, calculateFameLevel } from '../../utils/gameStateUtils.js'
+import {
+  clampBandHarmony,
+  clampPlayerMoney,
+  calculateFameLevel
+} from '../../utils/gameStateUtils.js'
 
 export const handleAddQuest = (state, quest) => {
   if (state.activeQuests?.some(q => q.id === quest.id)) return state
@@ -21,7 +25,9 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
   if (typeof quest.moneyReward === 'number' && quest.moneyReward !== 0) {
     nextState.player = {
       ...(nextState.player || {}),
-      money: clampPlayerMoney((nextState.player?.money || 0) + quest.moneyReward)
+      money: clampPlayerMoney(
+        (nextState.player?.money || 0) + quest.moneyReward
+      )
     }
     generatedToasts.push({
       id: `${Date.now()}-${questId}-money`,
@@ -47,7 +53,9 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
     nextState.player = {
       ...nextState.player,
       fame: (nextState.player.fame || 0) + quest.rewardData.fame,
-      fameLevel: calculateFameLevel((nextState.player.fame || 0) + quest.rewardData.fame)
+      fameLevel: calculateFameLevel(
+        (nextState.player.fame || 0) + quest.rewardData.fame
+      )
     }
     generatedToasts.push({
       id: `${Date.now()}-${questId}-fame`,
@@ -59,10 +67,13 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
     if (members.length > 0) {
       const memberIdx =
         typeof quest.rewardData?.memberIndex === 'number'
-          ? Math.max(0, Math.min(members.length - 1, quest.rewardData.memberIndex))
-          : (typeof randomIdx === 'number'
-              ? Math.max(0, Math.min(members.length - 1, randomIdx))
-              : 0)
+          ? Math.max(
+              0,
+              Math.min(members.length - 1, quest.rewardData.memberIndex)
+            )
+          : typeof randomIdx === 'number'
+            ? Math.max(0, Math.min(members.length - 1, randomIdx))
+            : 0
 
       members[memberIdx] = {
         ...members[memberIdx],
@@ -79,7 +90,9 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
   } else if (quest.rewardType === 'harmony' && quest.rewardData?.harmony) {
     nextState.band = {
       ...nextState.band,
-      harmony: clampBandHarmony((nextState.band?.harmony || 0) + quest.rewardData.harmony)
+      harmony: clampBandHarmony(
+        (nextState.band?.harmony || 0) + quest.rewardData.harmony
+      )
     }
     generatedToasts.push({
       id: `${Date.now()}-${questId}-harmony`,
@@ -105,10 +118,7 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
   }
 
   // Toast
-  nextState.toasts = [
-    ...(nextState.toasts || []),
-    ...generatedToasts
-  ]
+  nextState.toasts = [...(nextState.toasts || []), ...generatedToasts]
 
   // Hardcoded old quest logic
   if (quest.id === 'quest_prove_yourself') {
@@ -122,7 +132,10 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
   return nextState
 }
 
-export const handleAdvanceQuest = (state, { questId, amount = 1, randomIdx }) => {
+export const handleAdvanceQuest = (
+  state,
+  { questId, amount = 1, randomIdx }
+) => {
   let nextState = { ...state }
   let questCompleted = false
   if (!nextState.activeQuests) return state

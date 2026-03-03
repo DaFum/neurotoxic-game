@@ -10,7 +10,8 @@ export const useLeaderboardSync = state => {
   const { playerId, playerName, money, day, fame, stats } = player || {}
   const { totalDistance, conflictsResolved, stageDives } = stats || {}
 
-  const totalFollowers = (social?.instagram || 0) +
+  const totalFollowers =
+    (social?.instagram || 0) +
     (social?.tiktok || 0) +
     (social?.youtube || 0) +
     (social?.newsletter || 0)
@@ -72,7 +73,14 @@ export const useLeaderboardSync = state => {
 
     syncStats()
   }, [
-    playerId, playerName, money, day,
-    fame, totalFollowers, totalDistance, conflictsResolved, stageDives
+    playerId,
+    playerName,
+    money,
+    day,
+    fame,
+    totalFollowers,
+    totalDistance,
+    conflictsResolved,
+    stageDives
   ])
 }

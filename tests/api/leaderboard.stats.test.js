@@ -25,7 +25,7 @@ mock.module('../../lib/redis.js', { defaultExport: mockRedisClient })
 const API_PATH = '../../api/leaderboard/stats.js'
 let importCounter = 0
 
-test('Leaderboard Stats API', async (t) => {
+test('Leaderboard Stats API', async t => {
   let statsModule
 
   t.beforeEach(async () => {
@@ -63,7 +63,9 @@ test('Leaderboard Stats API', async (t) => {
     await statsModule.default(req, res)
 
     assert.strictEqual(res.status.mock.calls[0].arguments[0], 200)
-    assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], { success: true })
+    assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
+      success: true
+    })
 
     // Check hSet was called
     assert.strictEqual(mockRedisClient.hSet.mock.calls.length, 1)
@@ -77,7 +79,7 @@ test('Leaderboard Stats API', async (t) => {
     const req = {
       method: 'POST',
       body: {
-        playerId: 'test-band',
+        playerId: 'test-band'
         // missing playerName and money
       }
     }
@@ -89,7 +91,10 @@ test('Leaderboard Stats API', async (t) => {
     await statsModule.default(req, res)
 
     assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
-    assert.deepStrictEqual(res.json.mock.calls[0].arguments[0].error, 'Missing required fields')
+    assert.deepStrictEqual(
+      res.json.mock.calls[0].arguments[0].error,
+      'Missing required fields'
+    )
   })
 
   await t.test('GET retrieves stat leaderboard', async () => {
@@ -105,22 +110,26 @@ test('Leaderboard Stats API', async (t) => {
       json: mock.fn(() => res)
     }
 
-    mockRedisClient.zRangeWithScores.mock.mockImplementationOnce(() => Promise.resolve([
-      { value: 'band1', score: 100 },
-      { value: 'band2', score: 50 }
-    ]))
+    mockRedisClient.zRangeWithScores.mock.mockImplementationOnce(() =>
+      Promise.resolve([
+        { value: 'band1', score: 100 },
+        { value: 'band2', score: 50 }
+      ])
+    )
 
-    mockRedisClient.hmGet.mock.mockImplementationOnce(() => Promise.resolve([
-      'Band One',
-      'Band Two'
-    ]))
+    mockRedisClient.hmGet.mock.mockImplementationOnce(() =>
+      Promise.resolve(['Band One', 'Band Two'])
+    )
 
     await statsModule.default(req, res)
 
     assert.strictEqual(res.status.mock.calls[0].arguments[0], 200)
     assert.strictEqual(res.json.mock.calls[0].arguments[0].length, 2)
     assert.strictEqual(res.json.mock.calls[0].arguments[0][0].playerId, 'band1')
-    assert.strictEqual(res.json.mock.calls[0].arguments[0][0].playerName, 'Band One')
+    assert.strictEqual(
+      res.json.mock.calls[0].arguments[0][0].playerName,
+      'Band One'
+    )
     assert.strictEqual(res.json.mock.calls[0].arguments[0][0].score, 100)
   })
 
@@ -139,7 +148,10 @@ test('Leaderboard Stats API', async (t) => {
     await statsModule.default(req, res)
 
     assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
-    assert.deepStrictEqual(res.json.mock.calls[0].arguments[0].error, 'Invalid stat requested')
+    assert.deepStrictEqual(
+      res.json.mock.calls[0].arguments[0].error,
+      'Invalid stat requested'
+    )
   })
 
   await t.test('POST rejects undefined body', async () => {
@@ -155,42 +167,52 @@ test('Leaderboard Stats API', async (t) => {
     await statsModule.default(req, res)
 
     assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
-    assert.deepStrictEqual(res.json.mock.calls[0].arguments[0].error, 'Missing required fields')
+    assert.deepStrictEqual(
+      res.json.mock.calls[0].arguments[0].error,
+      'Missing required fields'
+    )
   })
 
-  await t.test('POST handles extreme and negative stat values correctly', async () => {
-    const req = {
-      method: 'POST',
-      body: {
-        playerId: 'extreme-band',
-        playerName: 'Extreme',
-        money: 500,
-        fame: -100, // Negative should clamp to 0
-        followers: 1000000000000000000, // Huge should clamp to MAX_STAT_VALUE
-        distance: NaN, // Invalid should clamp to 0
-        conflicts: -5,
-        stageDives: Infinity
+  await t.test(
+    'POST handles extreme and negative stat values correctly',
+    async () => {
+      const req = {
+        method: 'POST',
+        body: {
+          playerId: 'extreme-band',
+          playerName: 'Extreme',
+          money: 500,
+          fame: -100, // Negative should clamp to 0
+          followers: 1000000000000000000, // Huge should clamp to MAX_STAT_VALUE
+          distance: NaN, // Invalid should clamp to 0
+          conflicts: -5,
+          stageDives: Infinity
+        }
       }
+      const res = {
+        status: mock.fn(() => res),
+        json: mock.fn(() => res)
+      }
+
+      await statsModule.default(req, res)
+
+      assert.strictEqual(res.status.mock.calls[0].arguments[0], 200)
+
+      // Verify clampStat worked
+      const zAddCalls = mockMulti.zAdd.mock.calls
+      const fameCall = zAddCalls.find(call => call.arguments[0] === 'lb:fame')
+      const followersCall = zAddCalls.find(
+        call => call.arguments[0] === 'lb:followers'
+      )
+      const distanceCall = zAddCalls.find(
+        call => call.arguments[0] === 'lb:distance'
+      )
+
+      assert.strictEqual(fameCall.arguments[1].score, 0)
+      assert.strictEqual(followersCall.arguments[1].score, 999999999999) // MAX_STAT_VALUE
+      assert.strictEqual(distanceCall.arguments[1].score, 0)
     }
-    const res = {
-      status: mock.fn(() => res),
-      json: mock.fn(() => res)
-    }
-
-    await statsModule.default(req, res)
-
-    assert.strictEqual(res.status.mock.calls[0].arguments[0], 200)
-
-    // Verify clampStat worked
-    const zAddCalls = mockMulti.zAdd.mock.calls
-    const fameCall = zAddCalls.find(call => call.arguments[0] === 'lb:fame')
-    const followersCall = zAddCalls.find(call => call.arguments[0] === 'lb:followers')
-    const distanceCall = zAddCalls.find(call => call.arguments[0] === 'lb:distance')
-
-    assert.strictEqual(fameCall.arguments[1].score, 0)
-    assert.strictEqual(followersCall.arguments[1].score, 999999999999) // MAX_STAT_VALUE
-    assert.strictEqual(distanceCall.arguments[1].score, 0)
-  })
+  )
 
   await t.test('GET enforces limit constraints', async () => {
     const req = {
@@ -205,12 +227,17 @@ test('Leaderboard Stats API', async (t) => {
       json: mock.fn(() => res)
     }
 
-    mockRedisClient.zRangeWithScores.mock.mockImplementationOnce(() => Promise.resolve([]))
+    mockRedisClient.zRangeWithScores.mock.mockImplementationOnce(() =>
+      Promise.resolve([])
+    )
 
     await statsModule.default(req, res)
 
     // Limit index is 99 because zRangeWithScores is inclusive (0 to limit - 1)
-    assert.strictEqual(mockRedisClient.zRangeWithScores.mock.calls[0].arguments[2], 99)
+    assert.strictEqual(
+      mockRedisClient.zRangeWithScores.mock.calls[0].arguments[2],
+      99
+    )
   })
 
   await t.test('Rejects unsupported HTTP methods', async () => {
@@ -227,7 +254,10 @@ test('Leaderboard Stats API', async (t) => {
     await statsModule.default(req, res)
 
     assert.strictEqual(res.setHeader.mock.calls[0].arguments[0], 'Allow')
-    assert.deepStrictEqual(res.setHeader.mock.calls[0].arguments[1], ['GET', 'POST'])
+    assert.deepStrictEqual(res.setHeader.mock.calls[0].arguments[1], [
+      'GET',
+      'POST'
+    ])
     assert.strictEqual(res.status.mock.calls[0].arguments[0], 405)
   })
 })
