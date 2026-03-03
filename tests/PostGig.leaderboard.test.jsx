@@ -47,6 +47,7 @@ describe('PostGig Leaderboard Submission', () => {
   const mockChangeScene = vi.fn()
   const mockTriggerEvent = vi.fn()
   const mockAddToast = vi.fn()
+  const mockSaveGame = vi.fn()
   const mockUnlockTrait = vi.fn()
 
   const getBaseState = () => ({
@@ -69,6 +70,7 @@ describe('PostGig Leaderboard Submission', () => {
     updateBand: mockUpdateBand,
     updateSocial: mockUpdateSocial,
     changeScene: mockChangeScene,
+    saveGame: mockSaveGame,
     addToast: mockAddToast,
     unlockTrait: mockUnlockTrait,
     reputationByRegion: {},
@@ -166,7 +168,8 @@ describe('PostGig Leaderboard Submission', () => {
       )
     })
 
-    // Verify scene change
+    // Verify autosave and scene change
+    expect(mockSaveGame).toHaveBeenCalled()
     expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
   })
 
@@ -234,6 +237,7 @@ describe('PostGig Leaderboard Submission', () => {
     fireEvent.click(await screen.findByText(/Back to Tour/i))
 
     expect(mockFetch).not.toHaveBeenCalled()
+    expect(mockSaveGame).toHaveBeenCalled()
     expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
   })
 })

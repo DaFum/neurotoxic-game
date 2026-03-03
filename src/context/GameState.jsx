@@ -60,6 +60,65 @@ import PropTypes from 'prop-types'
 
 const GameStateContext = createContext()
 const GameDispatchContext = createContext()
+const SAVE_KEY = 'neurotoxic_v3_save'
+const PERSISTED_STATE_KEYS = [
+  'currentScene',
+  'player',
+  'band',
+  'social',
+  'gameMap',
+  'currentGig',
+  'setlist',
+  'lastGigStats',
+  'activeEvent',
+  'activeStoryFlags',
+  'eventCooldowns',
+  'pendingEvents',
+  'venueBlacklist',
+  'activeQuests',
+  'reputationByRegion',
+  'settings',
+  'npcs',
+  'gigModifiers',
+  'minigame'
+]
+
+const normalizeSetlistForSave = setlist => {
+  if (!Array.isArray(setlist)) return []
+
+  const normalized = []
+  for (const song of setlist) {
+    if (typeof song === 'string') {
+      normalized.push({ id: song })
+    } else if (song && song.id) {
+      normalized.push({ id: song.id })
+    }
+  }
+  return normalized
+}
+
+const createPersistedState = currentState => {
+  const saveData = { timestamp: Date.now() }
+  for (const key of PERSISTED_STATE_KEYS) {
+    saveData[key] = currentState[key]
+  }
+  saveData.setlist = normalizeSetlistForSave(currentState.setlist)
+  return saveData
+}
+
+const hydrateLoadedState = (parsed, unlocks) => {
+  const defaultState = createInitialState()
+
+  return {
+    ...defaultState,
+    ...parsed,
+    player: { ...defaultState.player, ...parsed.player },
+    band: { ...defaultState.band, ...parsed.band },
+    social: { ...defaultState.social, ...parsed.social },
+    settings: { ...defaultState.settings, ...parsed.settings },
+    unlocks
+  }
+}
 
 /**
  * Global State Provider covering Player, Band, Inventory, and Scene Management.
@@ -312,9 +371,10 @@ export const GameStateProvider = ({ children }) => {
       addToast('Practice Session Complete', 'success')
       changeScene('OVERWORLD')
     } else {
+      saveGame()
       changeScene('POSTGIG')
     }
-  }, [addToast, changeScene])
+  }, [addToast, changeScene, saveGame])
 
   // Persistence
   /**
@@ -322,7 +382,7 @@ export const GameStateProvider = ({ children }) => {
    */
   const deleteSave = useCallback(() => {
     safeStorageOperation('deleteSave', () => {
-      localStorage.removeItem('neurotoxic_v3_save')
+      localStorage.removeItem(SAVE_KEY)
     })
     changeScene('MENU')
     window.location.reload()
@@ -332,26 +392,12 @@ export const GameStateProvider = ({ children }) => {
    * Persists the current state to localStorage.
    */
   const saveGame = useCallback(() => {
-    // Access state via ref
-    const currentState = stateRef.current
-    // Only persist minimal setlist info to avoid bloat
-    const saveData = { ...currentState, timestamp: Date.now() }
-
-    // Normalize setlist to objects with IDs
-    if (Array.isArray(saveData.setlist)) {
-      saveData.setlist = saveData.setlist
-        .map(s => {
-          if (typeof s === 'string') return { id: s }
-          if (s && s.id) return { id: s.id }
-          return null
-        })
-        .filter(Boolean)
-    }
+    const saveData = createPersistedState(stateRef.current)
 
     const success = safeStorageOperation(
       'saveGame',
       () => {
-        localStorage.setItem('neurotoxic_v3_save', JSON.stringify(saveData))
+        localStorage.setItem(SAVE_KEY, JSON.stringify(saveData))
         return true
       },
       false
@@ -373,21 +419,11 @@ export const GameStateProvider = ({ children }) => {
     return safeStorageOperation(
       'loadGame',
       () => {
-        const saved = localStorage.getItem('neurotoxic_v3_save')
+        const saved = localStorage.getItem(SAVE_KEY)
         if (!saved) return false
 
         const parsed = JSON.parse(saved)
-
-        // Merge loaded data with complete initial defaults for backwards compatibility
-        const defaultState = createInitialState()
-        const data = {
-          ...defaultState,
-          ...parsed,
-          player: { ...defaultState.player, ...parsed.player },
-          band: { ...defaultState.band, ...parsed.band },
-          social: { ...defaultState.social, ...parsed.social },
-          settings: { ...defaultState.settings, ...parsed.settings }
-        }
+        const data = hydrateLoadedState(parsed, getUnlocks())
 
         // Validate Schema
         try {
@@ -401,8 +437,6 @@ export const GameStateProvider = ({ children }) => {
           )
           return false
         }
-
-        data.unlocks = getUnlocks()
 
         dispatch(createLoadGameAction(data))
         return true
