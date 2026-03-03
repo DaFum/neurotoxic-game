@@ -456,6 +456,57 @@ describe('gameReducer', () => {
       assert.deepStrictEqual(newState.lastGigStats, action.payload)
     })
   })
+
+  describe('ADD_UNLOCK', () => {
+    it('should add a new unlock', () => {
+      const testState = {
+        ...createInitialState(),
+        unlocks: ['existing_unlock']
+      }
+
+      const action = {
+        type: ActionTypes.ADD_UNLOCK,
+        payload: 'new_unlock'
+      }
+
+      const newState = gameReducer(testState, action)
+
+      assert.deepStrictEqual(newState.unlocks, ['existing_unlock', 'new_unlock'])
+    })
+
+    it('should not add a duplicate unlock', () => {
+      const testState = {
+        ...createInitialState(),
+        unlocks: ['existing_unlock']
+      }
+
+      const action = {
+        type: ActionTypes.ADD_UNLOCK,
+        payload: 'existing_unlock'
+      }
+
+      const newState = gameReducer(testState, action)
+
+      assert.strictEqual(newState, testState) // Check reference equality for early return
+      assert.deepStrictEqual(newState.unlocks, ['existing_unlock'])
+    })
+
+    it('should handle undefined state.unlocks', () => {
+      const testState = {
+        ...createInitialState()
+      }
+      delete testState.unlocks // explicitly remove
+
+      const action = {
+        type: ActionTypes.ADD_UNLOCK,
+        payload: 'new_unlock'
+      }
+
+      const newState = gameReducer(testState, action)
+
+      assert.deepStrictEqual(newState.unlocks, ['new_unlock'])
+    })
+  })
 })
 
 describe('ActionTypes', () => {
@@ -481,7 +532,8 @@ describe('ActionTypes', () => {
       'POP_PENDING_EVENT',
       'CONSUME_ITEM',
       'ADVANCE_DAY',
-      'UNLOCK_TRAIT'
+      'UNLOCK_TRAIT',
+      'ADD_UNLOCK'
     ]
 
     expectedTypes.forEach(type => {

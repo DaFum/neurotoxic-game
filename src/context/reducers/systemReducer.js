@@ -16,6 +16,7 @@ import {
 } from '../initialState.js'
 import { DEFAULT_MINIGAME_STATE } from '../gameConstants.js'
 import { handleFailQuests } from './questReducer.js'
+import { getUnlocks } from '../../utils/unlockManager.js'
 
 /**
  * Handles game load with migration and validation
@@ -153,7 +154,8 @@ export const handleLoadGame = (state, payload) => {
     minigame: {
       ...DEFAULT_MINIGAME_STATE,
       ...(loadedState.minigame || {})
-    }
+    },
+    unlocks: getUnlocks()
   }
 
   // Security: Only allow valid gameplay scenes from save
@@ -256,4 +258,15 @@ export const handleAdvanceDay = (state, payload) => {
 
   logger.info('GameState', `Day Advanced to ${player.day}`)
   return nextState
+}
+
+/**
+ * Handles adding an unlock
+ * @param {Object} state - Current state
+ * @param {string} unlockId - Unlock ID to add
+ * @returns {Object} Updated state
+ */
+export const handleAddUnlock = (state, unlockId) => {
+  if (state.unlocks?.includes(unlockId)) return state
+  return { ...state, unlocks: [...(state.unlocks ?? []), unlockId] }
 }

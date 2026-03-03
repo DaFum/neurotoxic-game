@@ -326,3 +326,13 @@ export const createCompleteQuestAction = questId => ({
 export const createFailQuestsAction = () => ({
   type: ActionTypes.FAIL_QUESTS
 })
+
+/**
+ * Creates an action to add an unlock to the state.
+ * @param {string} unlockId - The ID of the unlock.
+ * @returns {Object} Action object
+ */
+export const createAddUnlockAction = unlockId => ({
+  type: ActionTypes.ADD_UNLOCK,
+  payload: unlockId
+})

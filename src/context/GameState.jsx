@@ -53,7 +53,8 @@ import {
   createCompleteRoadieMinigameAction,
   createUnlockTraitAction,
   createAddQuestAction,
-  createAdvanceQuestAction
+  createAdvanceQuestAction,
+  createAddUnlockAction
 } from './actionCreators'
 import PropTypes from 'prop-types'
 
@@ -466,6 +467,7 @@ export const GameStateProvider = ({ children }) => {
           if (delta.flags?.unlock) {
             const added = addUnlock(delta.flags.unlock)
             if (added) {
+              dispatch(createAddUnlockAction(delta.flags.unlock))
               const unlockKey = `unlocks:${delta.flags.unlock.toLowerCase()}`
               const unlockLabel = t(unlockKey, {
                 defaultValue: delta.flags.unlock.toUpperCase()
