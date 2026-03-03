@@ -429,6 +429,11 @@ export const GameStateProvider = ({ children }) => {
         return false
       }
 
+      // Max two events per day limit
+      if ((currentState.player?.eventsTriggeredToday || 0) >= 2) {
+        return false
+      }
+
       // Pass full state context for flags/cooldowns
       const context = currentState
 
@@ -439,6 +444,9 @@ export const GameStateProvider = ({ children }) => {
         event = eventEngine.processOptions(event, context)
 
         setActiveEvent(event)
+        // Increment daily event count
+        dispatch(createUpdatePlayerAction({ eventsTriggeredToday: (currentState.player.eventsTriggeredToday || 0) + 1 }))
+
         // If it was a pending event, remove it from queue
         if (currentState.pendingEvents.includes(event.id)) {
           dispatch(createPopPendingEventAction())
@@ -475,6 +483,19 @@ export const GameStateProvider = ({ children }) => {
         // 3. State Application
         if (delta) {
           dispatch(createApplyEventDeltaAction(delta))
+
+          // Add Quests
+          if (delta.flags?.addQuest && Array.isArray(delta.flags.addQuest)) {
+            delta.flags.addQuest.forEach(q => {
+              // Parse relative deadlines
+              const questToAdd = { ...q }
+              if (questToAdd.deadlineOffset) {
+                questToAdd.deadline = currentState.player.day + questToAdd.deadlineOffset
+                delete questToAdd.deadlineOffset
+              }
+              dispatch(createAddQuestAction(questToAdd))
+            })
+          }
 
           // Unlocks
           if (delta.flags?.unlock) {

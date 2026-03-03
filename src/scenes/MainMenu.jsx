@@ -367,27 +367,28 @@ export const MainMenu = () => {
             {t('ui:featureList', { returnObjects: true }).map(section => (
               <div key={section.title} className='flex flex-col gap-2'>
                 <h3 className='text-(--toxic-green) font-mono text-xl md:text-2xl uppercase tracking-widest border-b border-(--toxic-green)/30 pb-1'>
-                  {section.title}
+                  {t(section.title)}
                 </h3>
                 <p className='text-(--ash-gray) font-mono text-sm md:text-base leading-relaxed mb-2'>
-                  {section.description}
+                  {t(section.description)}
                 </p>
 
                 {section.type === 'bullets' && section.items && (
                   <ul className='list-none flex flex-col gap-2 pl-2 border-l border-(--toxic-green)/20'>
                     {section.items.map(item => {
-                      const splitIdx = item.indexOf(':');
+                      const translatedItem = t(item);
+                      const splitIdx = translatedItem.indexOf(':');
                       if (splitIdx > -1) {
                         return (
-                          <li key={item.substring(0, splitIdx)} className='text-(--ash-gray) font-mono text-sm md:text-base pl-2 relative before:content-["-"] before:absolute before:left-[-8px] before:text-(--toxic-green)'>
-                            <span className='text-(--toxic-green) font-bold'>{item.substring(0, splitIdx + 1)}</span>
-                            {item.substring(splitIdx + 1)}
+                          <li key={item} className='text-(--ash-gray) font-mono text-sm md:text-base pl-2 relative before:content-["-"] before:absolute before:left-[-8px] before:text-(--toxic-green)'>
+                            <span className='text-(--toxic-green) font-bold'>{translatedItem.substring(0, splitIdx + 1)}</span>
+                            {translatedItem.substring(splitIdx + 1)}
                           </li>
                         )
                       }
                       return (
                         <li key={item} className='text-(--ash-gray) font-mono text-sm md:text-base pl-2 relative before:content-["-"] before:absolute before:left-[-8px] before:text-(--toxic-green)'>
-                          {item}
+                          {translatedItem}
                         </li>
                       )
                     })}
@@ -401,7 +402,7 @@ export const MainMenu = () => {
                         <tr>
                           {section.headers.map(header => (
                             <th key={header} className='p-2 text-(--toxic-green) uppercase font-normal'>
-                              {header}
+                              {t(header)}
                             </th>
                           ))}
                         </tr>
@@ -411,7 +412,7 @@ export const MainMenu = () => {
                           <tr key={row[0]} className='border-b border-(--toxic-green)/10 last:border-0'>
                             {row.map(cell => (
                               <td key={cell} className={`p-2 ${cell === row[0] ? 'text-(--toxic-green)/90 whitespace-nowrap align-top font-bold' : 'text-(--ash-gray) align-top'}`}>
-                                {cell}
+                                {t(cell)}
                               </td>
                             ))}
                           </tr>

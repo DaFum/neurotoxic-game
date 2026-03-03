@@ -1,18 +1,9 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
-import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 import { AlertIcon } from './shared/BrutalistUI'
 import { VoidSkullIcon } from './shared/Icons'
-
-const CATEGORY_IMAGE_MAP = {
-  transport: IMG_PROMPTS.EVENT_VAN,
-  band: IMG_PROMPTS.EVENT_BAND,
-  gig: IMG_PROMPTS.EVENT_GIG,
-  financial: IMG_PROMPTS.EVENT_MONEY,
-  special: IMG_PROMPTS.EVENT_SPECIAL
-}
 
 /**
  * A modal dialog for displaying game events and capturing player choices.
@@ -22,13 +13,16 @@ const CATEGORY_IMAGE_MAP = {
  * @param {object} props.event - The active event object.
  * @param {Function} props.onOptionSelect - Callback when an option is selected.
  */
+
 export const EventModal = ({ event, onOptionSelect, className = '' }) => {
   const { t } = useTranslation(['ui', 'events'])
   const containerRef = useRef(null)
 
+  const [outcome, setOutcome] = useState(null)
+
   // Keyboard shortcut: press 1-4 to select options
   useEffect(() => {
-    if (!event) return
+    if (!event || outcome) return
 
     const handleKey = e => {
       const num = parseInt(e.key, 10)
@@ -41,7 +35,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
 
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [event, onOptionSelect])
+  }, [event, onOptionSelect, outcome])
 
   // Auto-focus container for screen readers
   useEffect(() => {
@@ -49,13 +43,6 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
   }, [event])
 
   if (!event) return null
-
-  const categoryImagePrompt = event.category
-    ? CATEGORY_IMAGE_MAP[event.category]
-    : null
-  const categoryImageUrl = categoryImagePrompt
-    ? getGenImageUrl(categoryImagePrompt)
-    : null
 
   return (
     <div
@@ -109,57 +96,82 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
             </div>
           </div>
 
-          {/* Keyboard hint */}
-          <p className='text-[10px] text-(--ash-gray) font-mono uppercase tracking-widest text-center'>
-            {t('ui:keyboardHint', { count: event.options.length })}
-          </p>
-
-          <motion.div
-            className='flex flex-col gap-3'
-            initial='hidden'
-            animate='visible'
-            variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
-          >
-            {event.options.map((option, index) => (
-              <motion.button
+          {outcome ? (
+            <motion.div
+              className='flex flex-col gap-4'
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div className='p-4 border border-(--toxic-green) bg-(--toxic-green)/5'>
+                <p className='text-(--star-white) font-mono leading-relaxed'>
+                  {t(outcome.description || outcome.outcomeText || 'Event resolved.', event.context)}
+                </p>
+              </div>
+              <button
                 type='button'
-                variants={{
-                  hidden: { opacity: 0, x: -20 },
-                  visible: { opacity: 1, x: 0 }
-                }}
-                key={
-                  option.id || option.nextEventId || `${option.label}-${index}`
-                }
-                onClick={() => {
-                  if (option.action) option.action()
-                  else onOptionSelect(option)
-                }}
-                className={`w-full p-3 border font-bold tracking-widest uppercase transition-colors text-left flex justify-between
-                  ${index === 0 ? 'border-(--toxic-green) bg-(--toxic-green)/10 hover:bg-(--toxic-green) hover:text-(--void-black) text-(--toxic-green)' : 'border-(--star-white)/50 text-(--star-white)/50 hover:border-(--star-white) hover:text-(--star-white) hover:bg-(--star-white)/10'}
-                `}
+                onClick={() => onOptionSelect(outcome.option)}
+                className='w-full p-3 border border-(--toxic-green) bg-(--toxic-green)/20 hover:bg-(--toxic-green) hover:text-(--void-black) text-(--toxic-green) font-bold tracking-widest uppercase transition-colors text-center'
               >
-                <span>
-                  <span className='opacity-50 mr-2'>[{index + 1}]</span>
-                  {t(option.label, event.context)}
-                </span>
+                [ {t('ui:continue', { defaultValue: 'CONTINUE' })} ]
+              </button>
+            </motion.div>
+          ) : (
+            <>
+              {/* Keyboard hint */}
+              <p className='text-[10px] text-(--ash-gray) font-mono uppercase tracking-widest text-center'>
+                {t('ui:keyboardHint', { count: event.options.length })}
+              </p>
 
-                <div className='flex flex-col items-end text-right'>
-                  {/* Outcome hint if available */}
-                  {option.outcomeText && (
-                    <span className={`text-[10px] mt-1 opacity-70`}>
-                      {t(option.outcomeText, event.context)}
+              <motion.div
+                className='flex flex-col gap-3'
+                initial='hidden'
+                animate='visible'
+                variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
+              >
+                {event.options.map((option, index) => (
+                  <motion.button
+                    type='button'
+                    variants={{
+                      hidden: { opacity: 0, x: -20 },
+                      visible: { opacity: 1, x: 0 }
+                    }}
+                    key={
+                      option.id || option.nextEventId || `${option.label}-${index}`
+                    }
+                    onClick={() => {
+                      if (option.action) {
+                        option.action()
+                      } else {
+                        // We set the outcome first so the user can read what happened before moving on
+                        setOutcome({
+                          option,
+                          outcomeText: option.outcomeText,
+                          description: option.description // We might not have full effect resolution description here yet, but outcomeText is good
+                        })
+                      }
+                    }}
+                    className={`w-full p-3 border font-bold tracking-widest uppercase transition-colors text-left flex justify-between
+                      ${index === 0 ? 'border-(--toxic-green) bg-(--toxic-green)/10 hover:bg-(--toxic-green) hover:text-(--void-black) text-(--toxic-green)' : 'border-(--star-white)/50 text-(--star-white)/50 hover:border-(--star-white) hover:text-(--star-white) hover:bg-(--star-white)/10'}
+                    `}
+                  >
+                    <span>
+                      <span className='opacity-50 mr-2'>[{index + 1}]</span>
+                      {t(option.label, event.context)}
                     </span>
-                  )}
-                  {/* Skill check indicator */}
-                  {option.skillCheck && (
-                    <span className='inline-block mt-1 text-[10px] text-(--warning-yellow)'>
-                      [{'\u2694'} {t('ui:skillCheck')}]
-                    </span>
-                  )}
-                </div>
-              </motion.button>
-            ))}
-          </motion.div>
+
+                    <div className='flex flex-col items-end text-right'>
+                      {/* Skill check indicator */}
+                      {option.skillCheck && (
+                        <span className='inline-block mt-1 text-[10px] text-(--warning-yellow)'>
+                          [{'\u2694'} {t('ui:skillCheck')}]
+                        </span>
+                      )}
+                    </div>
+                  </motion.button>
+                ))}
+              </motion.div>
+            </>
+          )}
         </div>
       </motion.div>
     </div>

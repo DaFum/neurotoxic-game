@@ -1,26 +1,27 @@
 {
-  "start_game": "Tour Starten",
-  "load_game": "Spiel Laden",
-  "band_hq": "Band HQ",
-  "credits": "CREDITS",
-  "settings": "Einstellungen",
   "audio_protocols": "AUDIO PROTOKOLLE",
-  "visual_interface": "VISUELLE SCHNITTSTELLE",
-  "log_protocols": "LOG PROTOKOLLE",
-  "data_purge": "DATENLÖSCHUNG",
-  "music_volume": "MUSIK LAUTSTÄRKE",
-  "sfx_volume": "SFX LAUTSTÄRKE",
-  "volume": {
-    "set": "Lautstärke auf {{pct}}% setzen"
+  "band_hq": "Band HQ",
+  "bandhq.metadata.bpm": "BPM",
+  "bandhq.metadata.diff": "SCHW",
+  "bandhq.metadata.dur": "DAUER",
+  "bandhq.setlist.selectOne": "Wähle mindestens einen Song zum Üben!",
+  "bandhq.setlist.songRemoved": "{{song}} aus {{venue}} entfernt.",
+  "bandhq.setlist.songSelected": "{{song}} für {{venue}} ausgewählt.",
+  "bandhq.venue": "Band HQ",
+  "brutalist": {
+    "glitchPlaceholder": "0x8F9A... VERSCHLÜSSELT"
   },
-  "mute_all": "ALLES STUMM",
-  "crt_effect": "CRT EFFEKT",
-  "min_log_level": "MINIMALES LOG LEVEL",
-  "delete_save": "SPEICHERSTAND LÖSCHEN",
-  "delete_warning": "WARNUNG: Diese Aktion ist unwiderruflich. Aller Fortschritt geht verloren.",
-  "confirm_delete": "LÖSCHEN BESTÄTIGEN",
-  "confirm_delete_text": "Bist du sicher, dass du deinen Spielstand löschen willst? Das kann nicht rückgängig gemacht werden.",
   "cancel": "ABBRECHEN",
+  "chatter": {
+    "header": "LIVE_CHATTER_FEED",
+    "msg1": "diese band ist tot lol",
+    "msg2": "SPIELT DEN ALTEN SCHEISS!!!",
+    "msg3": "WARNUNG: PUBLIKUMS-FEINDSELIGKEIT STEIGT",
+    "random1": "ausverkauft.",
+    "random2": "können nicht mal den takt halten",
+    "random3": "BUUUUUUUUUH",
+    "random4": "meine ohren bluten (im negativen sinn)",
+    "random5": "sofortige rückerstattung"
   "confirm": "BESTÄTIGEN",
   "language": "SPRACHE",
   "language_option_en": "ENGLISCH",
@@ -115,31 +116,6 @@
       "startNew": "NEUE TOUR STARTEN"
     }
   },
-  "tour.endedPrematurely": "Die Tour endete vorzeitig.",
-  "gameOver.soldOut": "AUSVERKAUFT",
-  "gameOver.finalStatistics": "ABSCHLUSSSTATISTIKEN",
-  "gameOver.loadLastSave": "LETZTEN SPEICHERSTAND LADEN",
-  "gameOver.returnToMenu": "ZURÜCK ZUM MENÜ",
-  "stats.daysSurvived": "ÜBERLEBTE TAGE",
-  "stats.fameReached": "ERREICHTER RUHM",
-  "stats.totalTravels": "GESAMTE REISEN",
-  "stats.totalScore": "GESAMTPUNKTZAHL",
-  "hq.start_practice": "PROBE STARTEN",
-  "hq.practice_desc": "Übung macht den Meister.",
-  "hq.song_active": "AKTIV",
-  "hq.song_select": "AUSWÄHLEN",
-  "hq.selected": "AUSGEWÄHLT",
-  "hq.buy": "KAUFEN",
-  "hq.owned": "BESITZT",
-  "hq.leave": "VERLASSEN [ESC]",
-  "hq.title": "BAND HQ",
-  "hq.sectionsLabel": "Band HQ Bereiche",
-  "ui.day": "Tag",
-  "ui.level": "Level",
-  "ui.location": "Ort",
-  "ui.time": "Zeit",
-  "ui.locked": "GESPERRT",
-  "ui.owned": "GEHÖRT",
   "chatter_labels": {
     "INTRO": "Intro Feed",
     "MENU": "Haupt-Feed",
@@ -155,89 +131,60 @@
     "default_speaker": "Band",
     "default_fallback": "Unbekannt"
   },
-  "bandhq.setlist.selectOne": "Wähle mindestens einen Song zum Üben!",
-  "bandhq.metadata.diff": "SCHW",
-  "bandhq.metadata.bpm": "BPM",
-  "bandhq.metadata.dur": "DAUER",
-  "bandhq.venue": "Band HQ",
-  "bandhq.setlist.songSelected": "{{song}} für {{venue}} ausgewählt.",
-  "bandhq.setlist.songRemoved": "{{song}} aus {{venue}} entfernt.",
-  "stats.career_overview": "KARRIERESTATUS",
-  "stats.funds": "Geld",
-  "stats.fame": "Ruhm",
-  "stats.followers": "Follower",
-  "socials": "SOCIALS",
-  "social_links": {
-    "game": {
-      "title": "Spiele Neurotoxic",
-      "subtitle": "neurotoxic-game.vercel.app"
-    },
-    "bandcamp": {
-      "title": "Bandcamp",
-      "subtitle": "neurotoxic.bandcamp.com"
-    },
-    "instagram": {
-      "title": "Instagram",
-      "subtitle": "instagram.com/neurotoxicband"
-    },
-    "tiktok": {
-      "title": "TikTok",
-      "subtitle": "tiktok.com/@neurotoxicband"
-    },
-    "neurotoxic_once": {
-      "title": "Neurotoxic Once",
-      "subtitle": "youtube.com/@neurotoxiconcechannel237"
-    },
-    "neurotoxic_3000": {
-      "title": "Neurotoxic 3000",
-      "subtitle": "youtube.com/@neurotoxic3000"
-    },
-    "blog": {
-      "title": "Neuroblogxic",
-      "subtitle": "neuroblogxic.blogspot.com"
-    },
-    "type_system_core": "SYSTEM_CORE",
-    "type_audio_vault": "AUDIO_VAULT",
-    "type_visual_feed": "VISUAL_FEED",
-    "type_viral_stream": "VIRAL_STREAM",
-    "type_broadcast_a": "BROADCAST_A",
-    "type_broadcast_b": "BROADCAST_B",
-    "type_data_log": "DATA_LOG"
+  "checklist": {
+    "header": "PRE-GIG SEQUENZ",
+    "task1": "TOURBUS AUFTANKEN",
+    "task2": "VERZERRER-PEDAL AUSRÜSTEN",
+    "task3": "TÜRSTEHER BESTECHEN",
+    "task4": "VERSTÄRKER KALIBRIEREN",
+    "done": "GIG STARTEN",
+    "waiting": "WARTE AUF SEQUENZ"
   },
-  "stats.social_reach": "Social-Media-Reichweite",
-  "stats.van_condition": "VAN-STATUS",
-  "stats.fuel": "Treibstoff",
-  "stats.condition": "Zustand",
-  "stats.breakdown_chance": "Pannenrisiko",
-  "stats.band_status": "BANDSTATUS",
-  "stats.stamina": "Ausdauer",
-  "stats.mood": "Stimmung",
-  "stats.inventory_slots": "Inventarplätze",
-  "stats.harmony": "Harmonie",
-  "stats.regional_standing": "Regionaler Ruf",
-  "stats.active_quests": "Aktive Quests",
-  "stats.band_metrics": "Band-Metriken",
-  "stats.inventory_equipment": "Inventar & Ausrüstung",
-  "stats.instagram": "Instagram",
-  "stats.tiktok": "TikTok",
-  "stats.youtube": "YouTube",
-  "stats.newsletter": "Newsletter",
-  "stats.totalReach": "Gesamt-Reichweite",
-  "stats.viralStatus": "Viral-Status",
-  "stats.viral": "VIRAL",
-  "stats.normal": "Normal",
-  "stats.socialDynamics": "SOZIALE DYNAMIK",
-  "stats.currentTrend": "Aktueller Trend",
-  "stats.repCooldown": "Ruf-Cooldown",
-  "stats.repCooldownDesc": "Tage bis Ruf-Sperren aufgehoben sind",
-  "stats.brandDeals": "Marken-Deals",
-  "stats.noContracts": "Keine aktiven Verträge",
-  "stats.advancedMetrics": "Erweiterte Metriken",
-  "stats.fanLoyalty": "Fan-Loyalität",
-  "stats.fanLoyaltyDesc": "Schützt vor schlechten Gigs",
-  "stats.controversy": "Kontroverse",
-  "stats.shadowbanned": "SHADOWBANNED (-75% Wachstum)",
-  "stats.riskOfShadowban": "Shadowban-Risiko",
+  "close": "Schließen",
+  "confirm": "BESTÄTIGEN",
+  "confirm_delete": "LÖSCHEN BESTÄTIGEN",
+  "confirm_delete_text": "Bist du sicher, dass du deinen Spielstand löschen willst? Das kann nicht rückgängig gemacht werden.",
+  "confirm_identity": "IDENTITÄT BESTÄTIGEN",
+  "continue": "WEITER",
+  "contract": {
+    "confidential": "DOKUMENT: VERTRAULICH",
+    "title": "Bindende Vereinbarung",
+    "p1": "Diese Vereinbarung bindet NEUROTOXIC an <0>MEGA_CORP_INC</0>.",
+    "p2": "Der Künstler erklärt sich bereit, bei allen Live-Auftritten in Sektor 4 <0>subliminale Werbebotschaften einzufügen</0>.",
+    "warning": "Zuwiderhandlung führt zur <0>sofortigen Beendigung der organischen Funktionen</0>.",
+    "sig": "UNTERSCHRIFT (BLUT/VOID):",
+    "sign_aria": "Vertrag unterschreiben",
+    "sealed": "VERSIEGELT"
+  },
+  "cost": "{{cost}} €",
+  "crash": {
+    "title": "SYSTEMAUSFALL",
+    "message": "Die Simulation ist abgestürzt. Neustart erforderlich.",
+    "rebootButton": "SYSTEM NEUSTARTEN"
+  },
+  "credits": "CREDITS",
+  "crisis": {
+    "title": "VAN PANNE",
+    "desc": "Das Getriebe ist auf halbem Weg nach Leipzig kaputtgegangen. Du hast in 4 Stunden einen Auftritt. Verbrennst du dein Geld für einen zwielichtigen Mechaniker oder riskierst du, zu spät zu kommen und das Gesicht zu verlieren?",
+    "opt1": "Mechaniker bezahlen (-$250)",
+    "safe": "SICHER",
+    "opt2": "Per Anhalter (-20 Ruf)",
+    "risk": "RISIKO",
+    "opt3": "Selbst reparieren (+1 Std)",
+    "risky": "RISKANT"
+  },
+  "crowdEnergy": "PUBLIKUMSENERGIE",
+  "crt_effect": "CRT EFFEKT",
+  "currency": "{{value}} €",
+  "currencyNegative": "-{{value}} €",
+  "data_purge": "DATENLÖSCHUNG",
+  "day_advance": "Tag {{day}}: Lebenshaltungskosten abgezogen.",
+  "decryptor": {
+    "unlocked": "ITEM_ENTSPERRT: 'VOID_CORE'",
+    "click": "KLICKEN ZUM ENTSCHLÜSSELN"
+  },
+  "delete_save": "SPEICHERSTAND LÖSCHEN",
+  "delete_warning": "WARNUNG: Diese Aktion ist unwiderruflich. Aller Fortschritt geht verloren.",
   "detailedStats": {
     "totalTravels": "Gesamtreisen",
     "passiveFollowers": "Passive Follower",
@@ -288,112 +235,252 @@
     "blacklistedVenues": "Gesperrte Venues",
     "noActiveQuests": "Keine aktiven Quests. Bleib toxisch, um Events auszulösen."
   },
-  "map.travel_to": "Reise nach {{name}}",
-  "map.click_to_confirm": " - Klicken zum Bestätigen",
-  "map.confirm_q": "BESTÄTIGEN?",
-  "map.click_to_travel": "KLICKEN ZUM REISEN",
-  "map.unknown": "Unbekannt",
-  "map.festival": "FESTIVAL",
-  "map.cap": "Kap",
-  "map.pay": "Gage",
-  "map.ticket": "Ticket",
-  "map.diff": "Schw",
-  "map.rest_stop_desc": "RASTPLATZ — Ausdauer & Stimmung erholen",
-  "map.mystery_desc": "MYSTERIUM — Unbekannte Begegnung",
-  "map.finale_desc": "★ FINALE — Die letzte Show ★",
-  "map.current_location": "[AKTUELLE POSITION]",
-  "map.vanAlt": "Van",
-  "map.pinAlt": "Pin",
-  "holdToOverride": "ZUM ÜBERSCHREIBEN HALTEN",
+  "enter_alias_desc": "Gib deinen Alias für das globale Untergrund-Netzwerk ein.",
+  "enter_name_error": "Bitte gib einen Namen ein",
+  "enter_name_placeholder": "NAME EINGEBEN...",
+  "errors.ambient_start_failed": "Ambient-Audio konnte nicht gestartet werden.",
+  "errors.audio_init_failed": "Audio-Initialisierung fehlgeschlagen.",
+  "event": {
+    "severity": {
+      "critical": "KRITISCH"
+    }
+  },
+  "event_error": "EVENT FEHLER: Auflösung fehlgeschlagen.",
   "executed": "AUSGEFÜHRT",
+  "featureList": [
+    {
+      "title": "ui:featureList.sec0.title",
+      "description": "ui:featureList.sec0.description",
+      "type": "bullets",
+      "items": [
+        "ui:featureList.sec0.items.0",
+        "ui:featureList.sec0.items.1",
+        "ui:featureList.sec0.items.2",
+        "ui:featureList.sec0.items.3",
+        "ui:featureList.sec0.items.4",
+        "ui:featureList.sec0.items.5"
+      ]
+    },
+    {
+      "title": "ui:featureList.sec1.title",
+      "description": "ui:featureList.sec1.description",
+      "type": "bullets",
+      "items": [
+        "ui:featureList.sec1.items.0",
+        "ui:featureList.sec1.items.1",
+        "ui:featureList.sec1.items.2",
+        "ui:featureList.sec1.items.3",
+        "ui:featureList.sec1.items.4"
+      ]
+    },
+    {
+      "title": "ui:featureList.sec2.title",
+      "description": "ui:featureList.sec2.description",
+      "type": "table",
+      "headers": [
+        "ui:featureList.sec2.headers.0",
+        "ui:featureList.sec2.headers.1"
+      ],
+      "rows": [
+        [
+          "ui:featureList.sec2.rows.0.0",
+          "ui:featureList.sec2.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.1.0",
+          "ui:featureList.sec2.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.2.0",
+          "ui:featureList.sec2.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.3.0",
+          "ui:featureList.sec2.rows.3.1"
+        ]
+      ]
+    },
+    {
+      "title": "ui:featureList.sec3.title",
+      "description": "ui:featureList.sec3.description",
+      "type": "bullets",
+      "items": [
+        "ui:featureList.sec3.items.0",
+        "ui:featureList.sec3.items.1",
+        "ui:featureList.sec3.items.2",
+        "ui:featureList.sec3.items.3"
+      ]
+    },
+    {
+      "title": "ui:featureList.sec4.title",
+      "description": "ui:featureList.sec4.description",
+      "type": "table",
+      "headers": [
+        "ui:featureList.sec4.headers.0",
+        "ui:featureList.sec4.headers.1"
+      ],
+      "rows": [
+        [
+          "ui:featureList.sec4.rows.0.0",
+          "ui:featureList.sec4.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.1.0",
+          "ui:featureList.sec4.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.2.0",
+          "ui:featureList.sec4.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.3.0",
+          "ui:featureList.sec4.rows.3.1"
+        ]
+      ]
+    }
+  ],
+  "featureList.sec0.description": "Die primäre Interaktionsschleife basiert auf einer hochoptimierten, zweistufigen Rhythmus-Engine, die klassisches Beat-Matching nahtlos mit dynamischen Survival-Mechaniken verbindet.",
+  "featureList.sec0.items.0": "Dynamische Audio-Engine-Synthese: Angetrieben von einer ausgefeilten Integration von WebAudio und Tone.js unterstützt die Engine sowohl prozedurale MIDI-Generierung als auch strukturierte OGG-Wiedergabe. Sie nutzt größenlimitierte Buffer-Caches zur Vermeidung von Memory-Leaks und bietet ein direktes Drum-Scheduling-Dispatch, das eine Synchronisation ohne Latenz zwischen der internen Spieluhr und dem Audiotransport sicherstellt.",
+  "featureList.sec0.items.1": "Kontinuierliche Multi-Song-Setlists: Spieler:innen können mehrere Tracks zu einer Marathon-Performance verketten. Die Engine berechnet dynamisch die Audio-Ausschnittfenster und lädt folgende Tracks vor, sodass „hanging gigs“, defekte Audiokontexte oder Ladebildschirm-Unterbrechungen während eines Sets vollständig vermieden werden.",
+  "featureList.sec0.items.2": "PixiJS-basierter Stage Controller: Die visuelle Rhythmus-Highway wird über eine hochperformante PixiJS-Canvas gerendert. Sie nutzt Object-Pooling für Noten-Sprites, aggressive Garbage-Collection-Steuerung und ist hart auf einen Auflösungs-Scale von 2.0 begrenzt, um butterweiche Framerates auf High-DPI- und Mobil-Displays zu gewährleisten.",
+  "featureList.sec0.items.3": "Heckler-Kampfsystem: Zur Erweiterung des Rhythmus-Genres erzeugt diese interaktive Gefahrenmechanik während eines Gigs komplexe Projektile. Spieler:innen müssen diesen Entitäten dynamisch ausweichen oder sie ablenken, gestützt auf präzise Kollisionsabfragen, um Combo-Unterbrechungen zu verhindern und die Crowd-Ekstase aufrechtzuerhalten.",
+  "featureList.sec0.items.4": "Toxic-Mode-Integration: Ein Hochrisiko-/Hochbelohnungszustand, der für Veteran:innen entworfen wurde. Die Aktivierung des Toxic Mode löst Vollbild-Randblitze und intensive CRT-Overlay-Effekte aus, verstärkt drastisch die Strafen für verfehlte Noten („Empty Hits“) und vervielfacht gleichzeitig potenzielle Ruhm- und Geld-Ausschüttungen.",
+  "featureList.sec0.items.5": "Echtzeit-Gig-Physik: Eine mathematische Hintergrund-Engine, die Performance-Deltas laufend berechnet. Sie passt Ticketeinnahmen, Ruhm-Multiplikatoren und Crowd-Verfallsstrafen basierend auf Trefferpräzision, aktiven Gear-Modifikatoren und den Echtzeit-Eingaben der Spieler:innen an.",
+  "featureList.sec0.title": "Kern-Gameplay & Architektur der Rhythmus-Mechaniken",
+  "featureList.sec1.description": "Die übergeordnete Kampagne erfordert sorgfältiges Ressourcenmanagement und balanciert die volatilen Finanzen einer tourenden Band mit tiefgreifenden RPG-Fortschrittssystemen.",
+  "featureList.sec1.items.0": "Band HQ Management Hub: Ein zentralisiertes Interface, in dem Spieler ihre Karriere verwalten. Es bietet separate Tabs zur Überwachung detaillierter Band-Statistiken, zum Konfigurieren von Setlists, zum Kauf von Upgrades und zum Durchsuchen des Shops.",
+  "featureList.sec1.items.1": "Risikofreier Übungsmodus: Direkter Zugriff über das Setlist-Tab. Diese Sandbox-Umgebung ermöglicht es, schwierige Songs zu proben und Heckler-Mechaniken zu meistern, ohne finanzielle Strafen oder Van-Verschleiß zu riskieren.",
+  "featureList.sec1.items.2": "Tiefgreifendes Charakter-Trait-System: Bandmitglieder können prägende Eigenschaften freischalten (z. B. Bandleader, Perfektionist, PartyAnimal). Diese wirken als permanente Modifikatoren.",
+  "featureList.sec1.items.3": "Dynamische Wirtschafts-Engine: Ein volatiler Finanzsimulator, der Tagesbudgets verarbeitet, Ticketumsätze berechnet und auf unvorhersehbare Ereignisse reagiert.",
+  "featureList.sec1.items.4": "Umfassendes Upgrade- & Inventarsystem: Ein datengesteuerter Shop für Instrumente, Reparaturen und HQ-Dekorationen.",
+  "featureList.sec1.title": "Fortschritt, Wirtschaft & RPG-Simulation",
+  "featureList.sec2.description": "Öffentliche Wahrnehmung ist eine Kernressource, die durch eine prozedurale narrative und soziale Simulationsebene verwaltet wird.",
+  "featureList.sec2.headers.0": "System",
+  "featureList.sec2.headers.1": "Mechaniken & Auswirkungen",
+  "featureList.sec2.rows.0.0": "Post-Gig Social Simulator",
+  "featureList.sec2.rows.0.1": "Generiert prozedural Social-Media-Feeds nach Auftritten.",
+  "featureList.sec2.rows.1.0": "Krisen- & Kontroversen-Management",
+  "featureList.sec2.rows.1.1": "Ein Event-System, in dem die Band öffentliche Skandale durch strategische PR bewältigen muss.",
+  "featureList.sec2.rows.2.0": "Abgestuftes Influencer-Netzwerk",
+  "featureList.sec2.rows.2.1": "Ein Beziehungssystem mit NPCs, das Sponsoring-Deals freischalten kann.",
+  "featureList.sec2.rows.3.0": "Globale Redis-Ranglisten",
+  "featureList.sec2.rows.3.1": "Ein kompetitives Ranking-System basierend auf Vercel KV.",
+  "featureList.sec2.title": "Meta-Spiel: Ruhm, Social Media & Influencer",
+  "featureList.sec3.description": "Die Zwischenphasen zwischen den Gigs sind gamifiziert, um die Spielerbindung aufrechtzuerhalten und führen Risikomanagement sowie Skill-Checks ein.",
+  "featureList.sec3.items.0": "Autobahn-Ausweich-Minispiel: Ein High-Speed-Arcade-Segment während der Reise. Die Gesundheit des Vans, Upgrades (z.B. Panzerung) und die Treibstoff-Effizienz wirken sich direkt auf dieses Minispiel aus.",
+  "featureList.sec3.items.1": "Roadie-Ausstattungs-Run: Ein Pac-Man-ähnliches Top-Down-Labyrinth, in dem die Crew vor dem Gig gestohlene Instrumente zurückholen oder vergessene Kabel durch eine feindliche Menge transportieren muss.",
+  "featureList.sec3.items.2": "Graphenbasierte Map-Navigation: Ein visuelles Netzwerk (Canvas/SVG), bei dem die Reise zwischen den Städten Geld, Zeit und Treibstoff kostet. Bestimmte Venues sind hinter regionalen Ruf-Schwellenwerten (Reputation) oder Fortschritten in den Story-Flags verschlossen.",
+  "featureList.sec3.items.3": "Tourbus Terror Minigame: A tense travel-survival minigame featuring dynamic spawn rates. Players must navigate highway hazards to protect the band's health pool and prevent catastrophic damage to the tour bus, directly linking arcade performance to the overarching simulation economy.",
+  "featureList.sec3.title": "Minispiele & Map-Traversierung",
+  "featureList.sec4.description": "Das Interface ist im Stil einer 90er-Jahre Grunge-Brutalist-Ästhetik gehalten, unterstützt durch moderne React-Rendering-Muster.",
+  "featureList.sec4.headers.0": "Layer",
+  "featureList.sec4.headers.1": "Technical Implementation",
+  "featureList.sec4.items.0": "Framer Motion Animationen: Komplex verschachtelte, physikbasierte SVG-Animationen, die auf In-Game-Ereignisse reagieren.",
+  "featureList.sec4.items.1": "Barrierefreie Modals: Das UI-System verwendet Focus-Traps und Escape-Key-Handler für Overlay-Menüs, um volle Zugänglichkeit bei intensiven Glitch-Kunst-Effekten zu wahren.",
+  "featureList.sec4.items.2": "Globales Toast-System: Eine Event-Schlange, die nicht blockierende Benachrichtigungen für Einnahmen, Skill-Zuwächse und prozedurale NPC-Nachrichten liefert.",
+  "featureList.sec4.rows.0.0": "Brutalist UI Design System",
+  "featureList.sec4.rows.0.1": "A custom component library (v5.0) characterized by harsh geometric shapes, UIFrameCorners, authentic GlitchButtons, and custom SVG icons strictly coded with preserved aspect ratios.",
+  "featureList.sec4.rows.1.0": "Immersive HUD & Overlays",
+  "featureList.sec4.rows.1.1": "Features scene-aware ChatterOverlays for contextual character dialogue, non-intrusive Toast notifications, and a GigHUD optimized with React memoization to prevent rendering lag during intense rhythm sections.",
+  "featureList.sec4.rows.2.0": "Comprehensive i18n & a11y",
+  "featureList.sec4.rows.2.1": "Complete English (EN) and German (DE) localization backed by strict namespace validation across all narrative events. UI elements are heavily augmented with ARIA roles for screen readers and keyboard navigation.",
+  "featureList.sec4.rows.3.0": "Robust State Safety & Telemetry",
+  "featureList.sec4.rows.3.1": "Centralized React Context utilizing deep schema validation to protect player save data against prototype pollution. Includes a production-safe crash handler boundary (masking stack traces) and Vercel Speed Insights for live telemetry.",
+  "featureList.sec4.title": "Fortgeschrittene UI/UX-Techniken",
+  "features": {
+    "button": "FUNKTIONEN",
+    "title": "FUNKTIONSLISTE"
+  },
+  "gameOver.finalStatistics": "ABSCHLUSSSTATISTIKEN",
+  "gameOver.loadLastSave": "LETZTEN SPEICHERSTAND LADEN",
+  "gameOver.returnToMenu": "ZURÜCK ZUM MENÜ",
+  "gameOver.soldOut": "AUSVERKAUFT",
+  "game_over": "GAME OVER: {{description}}",
+  "hazard": {
+    "toxicOverload": "TOXISCHER OVERLOAD ERKANNT // KRITISCHE SYSTEMBELASTUNG // FOKUS BEHALTEN",
+    "modifierActive": "[MODIFIKATOR AKTIV]"
+  },
+  "holdToOverride": "ZUM ÜBERSCHREIBEN HALTEN",
+  "hq.buy": "KAUFEN",
+  "hq.leave": "VERLASSEN [ESC]",
+  "hq.owned": "BESITZT",
+  "hq.practice_desc": "Übung macht den Meister.",
+  "hq.sectionsLabel": "Band HQ Bereiche",
+  "hq.selected": "AUSGEWÄHLT",
+  "hq.song_active": "AKTIV",
+  "hq.song_select": "AUSWÄHLEN",
+  "hq.start_practice": "PROBE STARTEN",
+  "hq.title": "BAND HQ",
+  "hqNavigation": "HQ-Navigation",
+  "identity_required": "IDENTITÄT ERFORDERLICH",
+  "intro_play": "Tour Starten",
+  "intro_skip": "Intro Überspringen",
+  "keyboardHint": "Drücke [1-{{count}}] oder klicke zur Auswahl",
+  "language": "SPRACHE",
+  "language_option_de": "DEUTSCH",
+  "language_option_en": "ENGLISCH",
+  "leaderboard.col_net_worth": "VERMÖGEN",
+  "leaderboard.col_player": "SPIELER",
+  "leaderboard.col_score": "PUNKTE",
+  "leaderboard.connecting": "VERBINDE ZUM UNTERGRUND...",
+  "leaderboard.global_wealth": "GESAMTVERMÖGEN",
+  "leaderboard.load_error": "Rangliste konnte nicht geladen werden.",
+  "leaderboard.no_data": "NOCH KEINE DATEN VORHANDEN.",
+  "leaderboard.no_songs": "KEINE SONGS FREIGESCHALTET",
+  "leaderboard.select_song": "SONG WÄHLEN:",
+  "leaderboard.song_scores": "SONG SCORES",
+  "leaderboard.top_100_scores": "TOP 100 SHREDDERS",
+  "leaderboard.top_100_wealth": "TOP 100 REICHSTE",
+  "load_game": "Spiel Laden",
   "loading": "Lade",
-  "module": "Modul",
+  "log_protocols": "LOG PROTOKOLLE",
+  "mainMenu": {
+    "subtitle": {
+      "grindTheVoid": "Grind The Void"
+    },
+    "existingSave": {
+      "title": "SPIELSTAND GEFUNDEN",
+      "desc": "Ein Spielstand existiert bereits. Möchtest du ihn laden oder eine neue Tour starten?",
+      "load": "BESTEHENDEN LADEN",
+      "startNew": "NEUE TOUR STARTEN"
+    }
+  },
+  "map": {
+    "nodeType": {
+      "gig": "GIG",
+      "rest": "RAST",
+      "fallback": "{{type}}"
+    }
+  },
+  "map.cap": "Kap",
+  "map.click_to_confirm": " - Klicken zum Bestätigen",
+  "map.click_to_travel": "KLICKEN ZUM REISEN",
+  "map.confirm_q": "BESTÄTIGEN?",
+  "map.current_location": "[AKTUELLE POSITION]",
+  "map.diff": "Schw",
+  "map.festival": "FESTIVAL",
+  "map.finale_desc": "★ FINALE — Die letzte Show ★",
+  "map.mystery_desc": "MYSTERIUM — Unbekannte Begegnung",
+  "map.pay": "Gage",
+  "map.pinAlt": "Pin",
+  "map.pinTypeAlt": "Kartenmarkierung: {{type}}",
+  "map.rest_stop_desc": "RASTPLATZ — Ausdauer & Stimmung erholen",
+  "map.ticket": "Ticket",
+  "map.travel_to": "Reise nach {{name}}",
+  "map.unknown": "Unbekannt",
+  "map.vanAlt": "Van",
   "menu": {
     "inventory": "INVENTAR",
     "upgrades": "UPGRADES"
   },
-  "setlistSelector": {
-    "track1": "SUICIDAL JESUS",
-    "track2": "SYSTEMSPRENGER",
-    "track3": "TRAVESTIE MASSAKER",
-    "diffHard": "SCHWER",
-    "diffExpert": "EXPERT",
-    "diffInsane": "WAHNSINN"
+  "min_log_level": "MINIMALES LOG LEVEL",
+  "module": "Modul",
+  "music_volume": "MUSIK LAUTSTÄRKE",
+  "mute_all": "ALLES STUMM",
+  "no_save_found": "Kein Speicherstand gefunden!",
+  "overload": {
+    "toxic": "TOXISCHER OVERLOAD"
   },
-  "crash": {
-    "title": "SYSTEMAUSFALL",
-    "message": "Die Simulation ist abgestürzt. Neustart erforderlich.",
-    "rebootButton": "SYSTEM NEUSTARTEN"
-  },
-  "crisis": {
-    "title": "VAN PANNE",
-    "desc": "Das Getriebe ist auf halbem Weg nach Leipzig kaputtgegangen. Du hast in 4 Stunden einen Auftritt. Verbrennst du dein Geld für einen zwielichtigen Mechaniker oder riskierst du, zu spät zu kommen und das Gesicht zu verlieren?",
-    "opt1": "Mechaniker bezahlen (-$250)",
-    "safe": "SICHER",
-    "opt2": "Per Anhalter (-20 Ruf)",
-    "risk": "RISIKO",
-    "opt3": "Selbst reparieren (+1 Std)",
-    "risky": "RISKANT"
-  },
-  "checklist": {
-    "header": "PRE-GIG SEQUENZ",
-    "task1": "TOURBUS AUFTANKEN",
-    "task2": "VERZERRER-PEDAL AUSRÜSTEN",
-    "task3": "TÜRSTEHER BESTECHEN",
-    "task4": "VERSTÄRKER KALIBRIEREN",
-    "done": "GIG STARTEN",
-    "waiting": "WARTE AUF SEQUENZ"
-  },
-  "terminal": {
-    "log1": "> INITIALISIERE VOID_ENGINE v3.0...",
-    "log2": "> VERBINDE MIT BÜHNENANLAGE...",
-    "log3": "[OK] AUDIO CONTEXT GESTARTET",
-    "log4": "[WARNUNG] VERSTÄRKER 3 ÜBERHITZT",
-    "log5": "> LADE LOCATION: 'THE SLAUGHTERHOUSE'",
-    "log6": "...",
-    "log7": "[FEHLER] BAND-HARMONIE KRITISCH.",
-    "log8": "> WARTE AUF EINGABE_"
-  },
-  "contract": {
-    "confidential": "DOKUMENT: VERTRAULICH",
-    "title": "Bindende Vereinbarung",
-    "p1": "Diese Vereinbarung bindet NEUROTOXIC an <0>MEGA_CORP_INC</0>.",
-    "p2": "Der Künstler erklärt sich bereit, bei allen Live-Auftritten in Sektor 4 <0>subliminale Werbebotschaften einzufügen</0>.",
-    "warning": "Zuwiderhandlung führt zur <0>sofortigen Beendigung der organischen Funktionen</0>.",
-    "sig": "UNTERSCHRIFT (BLUT/VOID):",
-    "sign_aria": "Vertrag unterschreiben",
-    "sealed": "VERSIEGELT"
-  },
-  "rhythm": {
-    "header": "RHYTHM_ENGINE_SIM",
-    "hit_lane": "Triff Spur {{lane}}",
-    "hit": "TREFFER",
-    "lane_guitar": "GITARRE",
-    "lane_drums": "SCHLAGZEUG",
-    "lane_bass": "BASS"
-  },
-  "chatter": {
-    "header": "LIVE_CHATTER_FEED",
-    "msg1": "diese band ist tot lol",
-    "msg2": "SPIELT DEN ALTEN SCHEISS!!!",
-    "msg3": "WARNUNG: PUBLIKUMS-FEINDSELIGKEIT STEIGT",
-    "random1": "ausverkauft.",
-    "random2": "können nicht mal den takt halten",
-    "random3": "BUUUUUUUUUH",
-    "random4": "meine ohren bluten (im negativen sinn)",
-    "random5": "sofortige rückerstattung"
-  },
-  "decryptor": {
-    "unlocked": "ITEM_ENTSPERRT: 'VOID_CORE'",
-    "click": "KLICKEN ZUM ENTSCHLÜSSELN"
-  },
-  "brutalist": {
-    "glitchPlaceholder": "0x8F9A... VERSCHLÜSSELT"
-  },
-  "hqNavigation": "HQ-Navigation",
-  "set_label_to_segment": "Setze {{label}} auf {{segment}}",
-  "sign_contract": "Vertrag unterschreiben",
-  "close": "Schließen",
   "pregig": {
     "title": "VORBEREITUNG",
     "budget": "BUDGET:",
@@ -445,6 +532,33 @@
       "audioFail": "Audio-Initialisierung fehlgeschlagen."
     }
   },
+  "quests.button": "QUESTS",
+  "quests.closeButton": "Quests schließen",
+  "quests.closeLabel": "[SCHLIESSEN]",
+  "quests.days.plural": "Tage übrig",
+  "quests.days.singular": "Tag übrig",
+  "quests.empty": "Keine aktiven Quests. Geh auf Tour, um welche zu finden!",
+  "quests.progress": "Fortschritt",
+  "quests.rewards": "Belohnungen:",
+  "quests.title": "AKTIVE QUESTS",
+  "radio": {
+    "play": "Radio abspielen/fortsetzen",
+    "stop": "Radio stoppen"
+  },
+  "rewards.fame": "Ruhm",
+  "rewards.fans": "Fans",
+  "rewards.freeItem": "Kostenloses Item",
+  "rewards.harmony": "Harmonie",
+  "rewards.skillPoint": "Skill-Punkt",
+  "rewards.special": "Spezial",
+  "rhythm": {
+    "header": "RHYTHM_ENGINE_SIM",
+    "hit_lane": "Triff Spur {{lane}}",
+    "hit": "TREFFER",
+    "lane_guitar": "GITARRE",
+    "lane_drums": "SCHLAGZEUG",
+    "lane_bass": "BASS"
+  },
   "roadieRun": {
     "hud": {
       "title": "ROADIE RUN",
@@ -471,107 +585,144 @@
       "unknown": "Unbekannt"
     }
   },
-  "cost": "{{cost}} €",
   "seconds": "{{count}} Sek.",
-  "currency": "{{value}} €",
-  "currencyNegative": "-{{value}} €",
-  "errors.audio_init_failed": "Audio-Initialisierung fehlgeschlagen.",
-  "errors.ambient_start_failed": "Ambient-Audio konnte nicht gestartet werden.",
-  "map.pinTypeAlt": "Kartenmarkierung: {{type}}",
-  "features": {
-    "button": "FUNKTIONEN",
-    "title": "FUNKTIONSLISTE"
+  "set_label_to_segment": "Setze {{label}} auf {{segment}}",
+  "setlistSelector": {
+    "track1": "SUICIDAL JESUS",
+    "track2": "SYSTEMSPRENGER",
+    "track3": "TRAVESTIE MASSAKER",
+    "diffHard": "SCHWER",
+    "diffExpert": "EXPERT",
+    "diffInsane": "WAHNSINN"
   },
-  "featureList": [
-    {
-      "title": "Kern-Gameplay & Architektur der Rhythmus-Mechaniken",
-      "description": "Die primäre Interaktionsschleife basiert auf einer hochoptimierten, zweistufigen Rhythmus-Engine, die klassisches Beat-Matching nahtlos mit dynamischen Survival-Mechaniken verbindet.",
-      "type": "bullets",
-      "items": [
-        "Dynamische Audio-Engine-Synthese: Angetrieben von einer ausgefeilten Integration von WebAudio und Tone.js unterstützt die Engine sowohl prozedurale MIDI-Generierung als auch strukturierte OGG-Wiedergabe. Sie nutzt größenlimitierte Buffer-Caches zur Vermeidung von Memory-Leaks und bietet ein direktes Drum-Scheduling-Dispatch, das eine Synchronisation ohne Latenz zwischen der internen Spieluhr und dem Audiotransport sicherstellt.",
-        "Kontinuierliche Multi-Song-Setlists: Spieler:innen können mehrere Tracks zu einer Marathon-Performance verketten. Die Engine berechnet dynamisch die Audio-Ausschnittfenster und lädt folgende Tracks vor, sodass „hanging gigs“, defekte Audiokontexte oder Ladebildschirm-Unterbrechungen während eines Sets vollständig vermieden werden.",
-        "PixiJS-basierter Stage Controller: Die visuelle Rhythmus-Highway wird über eine hochperformante PixiJS-Canvas gerendert. Sie nutzt Object-Pooling für Noten-Sprites, aggressive Garbage-Collection-Steuerung und ist hart auf einen Auflösungs-Scale von 2.0 begrenzt, um butterweiche Framerates auf High-DPI- und Mobil-Displays zu gewährleisten.",
-        "Heckler-Kampfsystem: Zur Erweiterung des Rhythmus-Genres erzeugt diese interaktive Gefahrenmechanik während eines Gigs komplexe Projektile. Spieler:innen müssen diesen Entitäten dynamisch ausweichen oder sie ablenken, gestützt auf präzise Kollisionsabfragen, um Combo-Unterbrechungen zu verhindern und die Crowd-Ekstase aufrechtzuerhalten.",
-        "Toxic-Mode-Integration: Ein Hochrisiko-/Hochbelohnungszustand, der für Veteran:innen entworfen wurde. Die Aktivierung des Toxic Mode löst Vollbild-Randblitze und intensive CRT-Overlay-Effekte aus, verstärkt drastisch die Strafen für verfehlte Noten („Empty Hits“) und vervielfacht gleichzeitig potenzielle Ruhm- und Geld-Ausschüttungen.",
-        "Echtzeit-Gig-Physik: Eine mathematische Hintergrund-Engine, die Performance-Deltas laufend berechnet. Sie passt Ticketeinnahmen, Ruhm-Multiplikatoren und Crowd-Verfallsstrafen basierend auf Trefferpräzision, aktiven Gear-Modifikatoren und den Echtzeit-Eingaben der Spieler:innen an."
-      ]
+  "settings": "Einstellungen",
+  "settings.audio_mute": "Ton ausschalten",
+  "settings.audio_unmute": "Ton einschalten",
+  "settings.crt_disable": "CRT-Effekt deaktivieren",
+  "settings.crt_enable": "CRT-Effekt aktivieren",
+  "sfx_volume": "SFX LAUTSTÄRKE",
+  "sign_contract": "Vertrag unterschreiben",
+  "skillCheck": "Fähigkeitsprüfung",
+  "social_links": {
+    "game": {
+      "title": "Spiele Neurotoxic",
+      "subtitle": "neurotoxic-game.vercel.app"
     },
-    {
-      "title": "Progression, Wirtschaft & RPG-Simulation",
-      "description": "The overarching campaign demands meticulous resource management, balancing the volatile finances of a touring band with deep RPG progression systems.",
-      "type": "bullets",
-      "items": [
-        "Band HQ Management Hub: A centralized, heavily state-validated interface where players manage their career. It features isolated, ARIA-accessible tabs for tracking detailed band Statistics, configuring Setlists, purchasing Upgrades, and browsing the Shop.",
-        "Risk-Free Practice Mode: Accessible directly from the Setlist Tab, this sandbox environment allows players to rehearse difficult songs and master the Heckler mechanics without triggering economy penalties, van wear-and-tear, or permanent trait unlocks.",
-        "Deep Character Trait System: Band members can unlock and equip defining traits (e.g., Bandleader, Perfektionist, PartyAnimal, SocialManager). These traits act as persistent background modifiers that subtly alter game physics, drastically shift social media algorithms, and provide specific economic multipliers.",
-        "Dynamic Economy Engine: A volatile financial simulator that processes daily budgets, negotiates venue revenue splits, and calculates merchandise production costs. It reacts to dynamic variables like fluctuating van fuel efficiency and spontaneous, run-ending events such as gear theft or vehicular breakdowns.",
-        "Unified Upgrade & Inventory Ecosystem: A heavily data-driven shop where players invest in better instruments, robust van repairs, and HQ room decorations. These purchases apply immediate, persistent gameplay effects across both the Travel and Pre-Gig phases."
-      ]
+    "bandcamp": {
+      "title": "Bandcamp",
+      "subtitle": "neurotoxic.bandcamp.com"
     },
-    {
-      "title": "Meta-Game: Fame, Social Media & Influencers",
-      "description": "Public perception is treated as a core resource, managed through a procedural narrative and social simulation layer.",
-      "type": "table",
-      "headers": [
-        "System",
-        "Mechanics & Impact"
-      ],
-      "rows": [
-        [
-          "Post-Gig Social Simulator",
-          "Generates a procedural social media feed immediately following a gig. Players must navigate audience sentiment, choosing responses that can trigger viral growth or alienate core demographics."
-        ],
-        [
-          "Crisis & Controversy Management",
-          "A high-stakes procedural event engine where the band faces public scandals. Players must employ strategic PR crisis management to mitigate catastrophic follower loss and reputation decay."
-        ],
-        [
-          "Tiered Influencer Network",
-          "A relationship tracking system where players build rapport with NPCs and industry insiders. High relationship tiers unlock an advanced brand deal negotiation minigame to secure lucrative sponsorships."
-        ],
-        [
-          "Global Redis Leaderboards",
-          "A competitive, real-time ranking system powered by a Redis/Vercel backend. It features rigorous API schema validation and player identity verification to ensure absolute competitive integrity globally."
-        ]
-      ]
+    "instagram": {
+      "title": "Instagram",
+      "subtitle": "instagram.com/neurotoxicband"
     },
-    {
-      "title": "Overworld Travel & Embedded Arcade Minigames",
-      "description": "The interstitial phases between gigs are gamified to maintain engagement, introducing risk management and skill checks.",
-      "type": "bullets",
-      "items": [
-        "Procedural Map Generation: A node-based overworld utilizing squared distance checks to mathematically prevent overlapping venues. It maps out interconnected routes featuring distinct biome and location-specific SVG icons.",
-        "Travel Hazards & \"SPECIAL\" Nodes: Randomized encounters during transit that simulate the grueling nature of touring. These narrative events directly impact band morale, alter immediate financial standings, or apply temporary debuffs to the upcoming gig.",
-        "Roadie Run Minigame: A highly polished, pre-gig arcade sequence where players control roadies setting up the stage. It features seamless responsive control schemes, instantly switching between desktop keyboard shortcuts and mobile-optimized touch D-Pads.",
-        "Tourbus Terror Minigame: A tense travel-survival minigame featuring dynamic spawn rates. Players must navigate highway hazards to protect the band's health pool and prevent catastrophic damage to the tour bus, directly linking arcade performance to the overarching simulation economy."
-      ]
+    "tiktok": {
+      "title": "TikTok",
+      "subtitle": "tiktok.com/@neurotoxicband"
     },
-    {
-      "title": "UI/UX, Localization & Technical Architecture",
-      "description": "The game's front-end is built on a custom design language that prioritizes accessibility without sacrificing its distinct, abrasive aesthetic.",
-      "type": "table",
-      "headers": [
-        "Layer",
-        "Technical Implementation"
-      ],
-      "rows": [
-        [
-          "Brutalist UI Design System",
-          "A custom component library (v5.0) characterized by harsh geometric shapes, UIFrameCorners, authentic GlitchButtons, and custom SVG icons strictly coded with preserved aspect ratios."
-        ],
-        [
-          "Immersive HUD & Overlays",
-          "Features scene-aware ChatterOverlays for contextual character dialogue, non-intrusive Toast notifications, and a GigHUD optimized with React memoization to prevent rendering lag during intense rhythm sections."
-        ],
-        [
-          "Comprehensive i18n & a11y",
-          "Complete English (EN) and German (DE) localization backed by strict namespace validation across all narrative events. UI elements are heavily augmented with ARIA roles for screen readers and keyboard navigation."
-        ],
-        [
-          "Robust State Safety & Telemetry",
-          "Centralized React Context utilizing deep schema validation to protect player save data against prototype pollution. Includes a production-safe crash handler boundary (masking stack traces) and Vercel Speed Insights for live telemetry."
-        ]
-      ]
-    }
-  ]
+    "neurotoxic_once": {
+      "title": "Neurotoxic Once",
+      "subtitle": "youtube.com/@neurotoxiconcechannel237"
+    },
+    "neurotoxic_3000": {
+      "title": "Neurotoxic 3000",
+      "subtitle": "youtube.com/@neurotoxic3000"
+    },
+    "blog": {
+      "title": "Neuroblogxic",
+      "subtitle": "neuroblogxic.blogspot.com"
+    },
+    "type_system_core": "SYSTEM_CORE",
+    "type_audio_vault": "AUDIO_VAULT",
+    "type_visual_feed": "VISUAL_FEED",
+    "type_viral_stream": "VIRAL_STREAM",
+    "type_broadcast_a": "BROADCAST_A",
+    "type_broadcast_b": "BROADCAST_B",
+    "type_data_log": "DATA_LOG"
+  },
+  "socials": "SOCIALS",
+  "start_game": "Tour Starten",
+  "stats.active_quests": "Aktive Quests",
+  "stats.advancedMetrics": "Erweiterte Metriken",
+  "stats.band_metrics": "Band-Metriken",
+  "stats.band_status": "BANDSTATUS",
+  "stats.brandDeals": "Marken-Deals",
+  "stats.breakdown_chance": "Pannenrisiko",
+  "stats.career_overview": "KARRIERESTATUS",
+  "stats.condition": "Zustand",
+  "stats.controversy": "Kontroverse",
+  "stats.currentTrend": "Aktueller Trend",
+  "stats.daysSurvived": "ÜBERLEBTE TAGE",
+  "stats.fame": "Ruhm",
+  "stats.fameReached": "ERREICHTER RUHM",
+  "stats.fanLoyalty": "Fan-Loyalität",
+  "stats.fanLoyaltyDesc": "Schützt vor schlechten Gigs",
+  "stats.followers": "Follower",
+  "stats.fuel": "Treibstoff",
+  "stats.funds": "Geld",
+  "stats.harmony": "Harmonie",
+  "stats.instagram": "Instagram",
+  "stats.inventory_equipment": "Inventar & Ausrüstung",
+  "stats.inventory_slots": "Inventarplätze",
+  "stats.mood": "Stimmung",
+  "stats.newsletter": "Newsletter",
+  "stats.noContracts": "Keine aktiven Verträge",
+  "stats.normal": "Normal",
+  "stats.regional_standing": "Regionaler Ruf",
+  "stats.repCooldown": "Ruf-Cooldown",
+  "stats.repCooldownDesc": "Tage bis Ruf-Sperren aufgehoben sind",
+  "stats.riskOfShadowban": "Shadowban-Risiko",
+  "stats.shadowbanned": "SHADOWBANNED (-75% Wachstum)",
+  "stats.socialDynamics": "SOZIALE DYNAMIK",
+  "stats.social_reach": "Social-Media-Reichweite",
+  "stats.stamina": "Ausdauer",
+  "stats.tiktok": "TikTok",
+  "stats.totalReach": "Gesamt-Reichweite",
+  "stats.totalScore": "GESAMTPUNKTZAHL",
+  "stats.totalTravels": "GESAMTE REISEN",
+  "stats.van_condition": "VAN-STATUS",
+  "stats.viral": "VIRAL",
+  "stats.viralStatus": "Viral-Status",
+  "stats.youtube": "YouTube",
+  "tabs.details": "DETAILS",
+  "tabs.leaderboard": "RANGLISTE",
+  "tabs.setlist": "SETLIST",
+  "tabs.settings": "EINSTELLUNGEN",
+  "tabs.shop": "SHOP",
+  "tabs.stats": "STATISTIK",
+  "tabs.upgrades": "UPGRADES",
+  "terminal": {
+    "log1": "> INITIALISIERE VOID_ENGINE v3.0...",
+    "log2": "> VERBINDE MIT BÜHNENANLAGE...",
+    "log3": "[OK] AUDIO CONTEXT GESTARTET",
+    "log4": "[WARNUNG] VERSTÄRKER 3 ÜBERHITZT",
+    "log5": "> LADE LOCATION: 'THE SLAUGHTERHOUSE'",
+    "log6": "...",
+    "log7": "[FEHLER] BAND-HARMONIE KRITISCH.",
+    "log8": "> WARTE AUF EINGABE_"
+  },
+  "toast.quest_complete": "[{{name}}]: ABGESCHLOSSEN",
+  "toast.quest_complete_fame": "[{{name}}]: ABGESCHLOSSEN +{{amount}} Ruhm",
+  "toast.quest_complete_harmony": "[{{name}}]: ABGESCHLOSSEN +{{amount}} Harmonie",
+  "toast.quest_complete_item": "[{{name}}]: ABGESCHLOSSEN +Item",
+  "toast.quest_complete_money": "[{{name}}]: ABGESCHLOSSEN +{{amount}}€",
+  "toast.quest_complete_skill": "[{{name}}]: ABGESCHLOSSEN +1 Skill ({{member}})",
+  "toast.quest_failed": "[{{name}}]: FEHLGESCHLAGEN",
+  "toggle": {
+    "on": "AN",
+    "off": "AUS"
+  },
+  "tour.endedPrematurely": "Die Tour endete vorzeitig.",
+  "toxicModeActive": "TOXISCHER MODUS AKTIV",
+  "ui.day": "Tag",
+  "ui.level": "Level",
+  "ui.location": "Ort",
+  "ui.locked": "GESPERRT",
+  "ui.owned": "GEHÖRT",
+  "ui.time": "Zeit",
+  "unlocked": "FREIGESCHALTET: {{unlock}}!",
+  "visual_interface": "VISUELLE SCHNITTSTELLE",
+  "volume": {
+    "set": "Lautstärke auf {{pct}}% setzen"
+  }
 }

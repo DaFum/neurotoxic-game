@@ -7,6 +7,7 @@ import { SPECIAL_EVENTS } from './special.js'
 import { CRISIS_EVENTS } from './crisis.js'
 import { CONSEQUENCE_EVENTS } from './consequences.js'
 import { RELATIONSHIP_EVENTS } from './relationshipEvents.js'
+import { QUEST_EVENTS } from './quests.js'
 import { logger } from '../../utils/logger.js'
 
 const VALID_CATEGORIES = ['transport', 'band', 'gig', 'financial', 'special']
@@ -42,6 +43,11 @@ const crisisBand = CRISIS_EVENTS.filter(e => e.category === 'band')
 const crisisFinancial = CRISIS_EVENTS.filter(e => e.category === 'financial')
 const crisisSpecial = CRISIS_EVENTS.filter(e => e.category === 'special')
 
+// Split quest events into their respective category pools
+const questBand = QUEST_EVENTS.filter(e => e.category === 'band')
+const questFinancial = QUEST_EVENTS.filter(e => e.category === 'financial')
+const questSpecial = QUEST_EVENTS.filter(e => e.category === 'special')
+
 // Split consequence events into their respective category pools
 const consequenceBand = CONSEQUENCE_EVENTS.filter(e => e.category === 'band')
 const consequenceFinancial = CONSEQUENCE_EVENTS.filter(
@@ -54,16 +60,16 @@ const consequenceSpecial = CONSEQUENCE_EVENTS.filter(
 export const EVENTS_DB = {
   transport: validateEvents(TRANSPORT_EVENTS, 'transport'),
   band: validateEvents(
-    [...BAND_EVENTS, ...crisisBand, ...consequenceBand, ...RELATIONSHIP_EVENTS],
+    [...BAND_EVENTS, ...crisisBand, ...consequenceBand, ...questBand, ...RELATIONSHIP_EVENTS],
     'band'
   ),
   gig: validateEvents(GIG_EVENTS, 'gig'),
   financial: validateEvents(
-    [...FINANCIAL_EVENTS, ...crisisFinancial, ...consequenceFinancial],
+    [...FINANCIAL_EVENTS, ...crisisFinancial, ...consequenceFinancial, ...questFinancial],
     'financial'
   ),
   special: validateEvents(
-    [...SPECIAL_EVENTS, ...crisisSpecial, ...consequenceSpecial],
+    [...SPECIAL_EVENTS, ...crisisSpecial, ...consequenceSpecial, ...questSpecial],
     'special'
   )
 }
