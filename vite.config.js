@@ -1,9 +1,15 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { visualizer } from 'rollup-plugin-visualizer'
+import viteCompression from 'vite-plugin-compression'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    viteCompression({ algorithm: 'brotliCompress', ext: '.br' }),
+    visualizer({ open: false, filename: 'dist/stats.html' })
+  ],
   base: './',
   build: {
     rollupOptions: {
@@ -26,6 +32,12 @@ export default defineConfig({
           }
           if (id.includes('node_modules/tone')) {
             return 'vendor-tone'
+          }
+          if (id.includes('src/scenes/Gig.jsx') || id.includes('src/components/stage/')) {
+            return 'scene-gig'
+          }
+          if (id.includes('src/scenes/Overworld.jsx')) {
+            return 'scene-overworld'
           }
         }
       }

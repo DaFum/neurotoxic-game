@@ -236,7 +236,7 @@ export class NoteManager {
     if (this.spritePool.length < NoteManager.MAX_POOL_SIZE) {
       this.spritePool.push(sprite)
     } else {
-      sprite.destroy()
+      sprite.destroy({ children: true, texture: false, baseTexture: false })
     }
   }
 
