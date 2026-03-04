@@ -180,7 +180,8 @@ class TourbusStageController extends BaseStageController {
       this.busSprite.y = height * ((BUS_Y_PERCENT + BUS_HEIGHT_PERCENT) / 100)
 
       // Wobble effect based on accumulated deterministic time
-      this.wobbleTime += dt
+      // Wrap at the exact period of sin(x/100) to prevent float precision loss on long sessions
+      this.wobbleTime = (this.wobbleTime + dt) % (Math.PI * 2 * 100)
       this.busSprite.rotation = Math.sin(this.wobbleTime / 100) * 0.05
     }
 
