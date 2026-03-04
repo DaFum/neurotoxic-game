@@ -299,13 +299,13 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
   )
 }
 
-DealsPhaseComponent.propTypes = {
+export const DealsPhase = memo(DealsPhaseComponent)
+
+DealsPhase.propTypes = {
   offers: PropTypes.array.isRequired,
   onAccept: PropTypes.func.isRequired,
   onSkip: PropTypes.func.isRequired
 }
-
-export const DealsPhase = memo(DealsPhaseComponent)
 
 const getAlignmentBadge = alignment => {
   switch (alignment) {
