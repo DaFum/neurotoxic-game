@@ -219,6 +219,26 @@ describe('saveValidator', () => {
         message: /band\.members\[0\]\.relationships\.constructor is a reserved key/
       })
     })
+
+    it('throws if a relationship key is __proto__', () => {
+      const data = getValidData()
+      // JSON.parse creates an own property named '__proto__' without touching the prototype chain
+      const rel = JSON.parse('{"__proto__": 75}')
+      data.band.members = [{ name: 'Matze', relationships: rel }]
+      assert.throws(() => validateSaveData(data), {
+        name: 'StateError',
+        message: /band\.members\[0\]\.relationships\.__proto__ is a reserved key/
+      })
+    })
+
+    it('throws if a relationship key is prototype', () => {
+      const data = getValidData()
+      data.band.members = [{ name: 'Matze', relationships: { prototype: 75 } }]
+      assert.throws(() => validateSaveData(data), {
+        name: 'StateError',
+        message: /band\.members\[0\]\.relationships\.prototype is a reserved key/
+      })
+    })
   })
 
   describe('social validation', () => {
