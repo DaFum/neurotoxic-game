@@ -25,9 +25,14 @@ const renderScene = () => {
       return <GameOver />
     case 'OVERWORLD':
       return <Overworld />
+    case GAME_PHASES.TRAVEL_MINIGAME:
+      return <TourbusScene />
     case 'PREGIG':
       return <PreGig />
+    case GAME_PHASES.PRE_GIG_MINIGAME:
+      return <RoadieRunScene />
     case 'GIG':
+    case 'PRACTICE':
       return <Gig />
     case 'POSTGIG':
       return <PostGig />
@@ -548,7 +553,7 @@ Returns merged object with:
     │  ┌────────────────────────────────────────────┐ │
     │  │          OVERWORLD (map)                   │ │
     │  │  - Travel between venues                   │ │
-    │  │  - Rest at HQ                              │ │
+    │  │  - Rest at HQ (Overlay)                    │ │
     │  │  - Events (travel, camp)                   │ │
     │  └─────────┬──────────────────────────────────┘ │
     │            │                                     │
