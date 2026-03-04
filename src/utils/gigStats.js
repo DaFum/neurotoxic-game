@@ -36,7 +36,8 @@ export const updateGigPerformanceStats = (stats, payload) => ({
  * @param {number} score - Final score.
  * @param {GigPerformanceStats} stats - Performance stats accumulated during the gig.
  * @param {number} toxicTimeTotal - Total time spent in toxic mode.
- * @returns {{score: number, misses: number, perfectHits: number, maxCombo: number, peakHype: number, toxicTimeTotal: number, accuracy: number}}
+ * @param {Array<{songId: string, score: number, accuracy: number, index: number}>} [songStats=[]] - Array of stats for individual songs completed in the gig.
+ * @returns {{score: number, misses: number, perfectHits: number, maxCombo: number, peakHype: number, toxicTimeTotal: number, accuracy: number, songStats: Array<{songId: string, score: number, accuracy: number, index: number}>}}
  */
 export const buildGigStatsSnapshot = (
   score,

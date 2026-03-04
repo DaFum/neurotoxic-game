@@ -236,7 +236,17 @@ export const useRhythmGameAudio = ({
 
         // Setup onEnded callback for chaining
         const onSongEnded = () => {
+          // Idempotency guard: prevent duplicate onEnded executions for the same song.
+          // This avoids duplicate leaderboard entries and double-chaining if the audio engine fires onEnded multiple times.
+          if (gameStateRef.current.lastEndedSongIndex === index) {
+            return Promise.resolve()
+          }
+          gameStateRef.current.lastEndedSongIndex = index
+
           // Guard against continuing if the game has been stopped (e.g. Quit)
+          // Design note: Returning early here intentionally drops in-progress song stats
+          // when a gig ends prematurely (e.g., band collapses or player quits).
+          // This ensures only fully completed songs are submitted to the leaderboard.
           if (
             gameStateRef.current.isGameOver ||
             gameStateRef.current.hasSubmittedResults
