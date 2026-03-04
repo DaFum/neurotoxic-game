@@ -11,11 +11,6 @@ const POST_BADGES = {
 /**
  * Registry of all available social media post options.
  * Each option defines its conditions for appearing, base effects, and RNG logic.
- *
- * TODO:
- * - Implement dynamic text generation based on recent events (e.g. using specific venue names).
- * - Add more granular trait interactions (e.g. "Clumsy" trait increasing failure chance of stunts).
- * - Support multi-platform cross-posting with diminishing returns.
  */
 export const POST_OPTIONS = [
   // --- CATEGORY: RECOVERY & CRISIS ---

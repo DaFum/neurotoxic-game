@@ -1,4 +1,4 @@
-import { useMemo, useState, Suspense } from 'react'
+import { useMemo, useState, Suspense, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog'
