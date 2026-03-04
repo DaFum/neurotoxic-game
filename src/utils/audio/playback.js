@@ -324,6 +324,7 @@ export async function startGigPlayback({
     }
   } catch (error) {
     logger.warn('AudioEngine', 'source.start() failed — context may be suspended', error)
+    stopAudioInternal()
     cleanupGigPlayback()
     return false
   }
@@ -399,7 +400,7 @@ export function pauseGigPlayback() {
 
 /**
  * Resumes gig playback from the stored offset.
- * @returns {void}
+ * @returns {boolean|undefined} False when source.start() fails (gig reverts to paused for retry); undefined on early return.
  */
 export function resumeGigPlayback() {
   if (!audioState.gigIsPaused) return
@@ -463,7 +464,14 @@ export function resumeGigPlayback() {
     }
   } catch (error) {
     logger.warn('AudioEngine', 'source.start() failed on resume — context may be suspended', error)
-    cleanupGigPlayback()
+    // Null the source that failed to start, but preserve buffer and seek offset for retry
+    try { audioState.gigSource?.stop?.() } catch { /* already stopped */ }
+    try { audioState.gigSource?.disconnect?.() } catch { /* already disconnected */ }
+    audioState.gigSource = null
+    audioState.gigStartCtxTime = null
+    audioState.gigIsPaused = true // revert to paused so caller can retry
+    try { Tone.getTransport().pause() } catch { /* ignore */ }
+    return false
   }
 }
 
