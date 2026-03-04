@@ -36,7 +36,8 @@ for (const f of files) {
 
 const normalized = clones
   .map(c => {
-    const instances = c?.instances ?? c?.duplications ?? c?.fragments ?? []
+    const rawInstances = c?.instances ?? c?.duplications ?? c?.fragments ?? []
+    const instances = Array.isArray(rawInstances) ? rawInstances : []
     const inst = instances
       .map(x => {
         const file =
@@ -74,6 +75,9 @@ const normalized = clones
     x =>
       Array.isArray(x.instances) &&
       x.instances.length >= 2 &&
+      x.instances.every(
+        inst => typeof inst.file === 'string' && inst.file.trim().length > 0
+      ) &&
       ((x.lines ?? 0) > 0 || (x.tokens ?? 0) > 0)
   )
 
