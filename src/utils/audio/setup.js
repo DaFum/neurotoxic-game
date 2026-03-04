@@ -142,6 +142,7 @@ export function disposeAudio() {
   audioState.midiDryBus = safeDispose(audioState.midiDryBus)
 
   audioState.distortion = safeDispose(audioState.distortion)
+  audioState.guitarChorus?.stop?.()
   audioState.guitarChorus = safeDispose(audioState.guitarChorus)
   audioState.guitarEq = safeDispose(audioState.guitarEq)
   audioState.widener = safeDispose(audioState.widener)
