@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 import { ControlsHint } from '../src/components/hud/ControlsHint.jsx'
-import React from 'react'
 
 test('ControlsHint renders lanes and keys', () => {
   render(<ControlsHint />)

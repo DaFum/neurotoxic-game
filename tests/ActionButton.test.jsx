@@ -1,7 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 import { ActionButton } from '../src/ui/shared/ActionButton.jsx'
-import React from 'react'
 
 test('ActionButton renders children and handles clicks', () => {
   const handleClick = vi.fn()

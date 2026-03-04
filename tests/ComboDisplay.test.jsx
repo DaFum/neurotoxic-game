@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 import { ComboDisplay } from '../src/components/hud/ComboDisplay.jsx'
-import React from 'react'
 
 test('ComboDisplay renders zero combo', () => {
   render(<ComboDisplay combo={0} accuracy={100} />)
@@ -16,20 +15,37 @@ test('ComboDisplay renders low combo', () => {
   expect(screen.getByText('10x').className).toContain('text-(--toxic-green)')
 })
 
-test('ComboDisplay renders medium combo', () => {
-  render(<ComboDisplay combo={25} accuracy={100} />)
-  expect(screen.getByText('25x')).toBeInTheDocument()
-  expect(screen.getByText('25x').className).toContain('text-(--warning-yellow)')
+test('ComboDisplay boundary tests around 20', () => {
+  const { rerender } = render(<ComboDisplay combo={19} accuracy={100} />)
+  expect(screen.getByText('19x').className).toContain('text-(--toxic-green)')
+
+  rerender(<ComboDisplay combo={20} accuracy={100} />)
+  expect(screen.getByText('20x').className).toContain('text-(--warning-yellow)')
+
+  rerender(<ComboDisplay combo={21} accuracy={100} />)
+  expect(screen.getByText('21x').className).toContain('text-(--warning-yellow)')
 })
 
-test('ComboDisplay renders high combo', () => {
-  render(<ComboDisplay combo={60} accuracy={100} />)
-  expect(screen.getByText('60x')).toBeInTheDocument()
-  expect(screen.getByText('60x').className).toContain('text-(--blood-red)')
-  expect(screen.getByText('60x').className).toContain('animate-pulse')
+test('ComboDisplay boundary tests around 50', () => {
+  const { rerender } = render(<ComboDisplay combo={49} accuracy={100} />)
+  expect(screen.getByText('49x').className).toContain('text-(--warning-yellow)')
+
+  rerender(<ComboDisplay combo={50} accuracy={100} />)
+  expect(screen.getByText('50x').className).toContain('text-(--blood-red)')
+  expect(screen.getByText('50x').className).toContain('animate-pulse')
+
+  rerender(<ComboDisplay combo={51} accuracy={100} />)
+  expect(screen.getByText('51x').className).toContain('text-(--blood-red)')
+  expect(screen.getByText('51x').className).toContain('animate-pulse')
 })
 
-test('ComboDisplay renders LOW ACC warning when accuracy is low', () => {
-  render(<ComboDisplay combo={10} accuracy={65} />)
+test('ComboDisplay LOW ACC threshold boundary tests around 70', () => {
+  const { rerender } = render(<ComboDisplay combo={10} accuracy={71} />)
+  expect(screen.queryByText('LOW ACC')).not.toBeInTheDocument()
+
+  rerender(<ComboDisplay combo={10} accuracy={70} />)
+  expect(screen.queryByText('LOW ACC')).not.toBeInTheDocument()
+
+  rerender(<ComboDisplay combo={10} accuracy={69} />)
   expect(screen.getByText('LOW ACC')).toBeInTheDocument()
 })

@@ -1,7 +1,6 @@
 import { render } from '@testing-library/react'
 import { expect, test } from 'vitest'
 import { CrosshairIcon } from '../src/ui/shared/BrutalistUI.jsx'
-import React from 'react'
 
 test('CrosshairIcon renders SVG element correctly with title', () => {
   const { container, getByText } = render(

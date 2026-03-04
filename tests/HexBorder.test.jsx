@@ -1,7 +1,6 @@
 import { render } from '@testing-library/react'
 import { expect, test } from 'vitest'
 import { HexBorder } from '../src/ui/shared/BrutalistUI.jsx'
-import React from 'react'
 
 test('HexBorder renders SVG element correctly with title', () => {
   const { container, getByText } = render(

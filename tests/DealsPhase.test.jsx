@@ -1,7 +1,6 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { expect, test, vi, beforeEach, afterEach } from 'vitest'
 import { DealsPhase } from '../src/components/postGig/DealsPhase.jsx'
-import React from 'react'
 
 vi.mock('../src/context/GameState', () => ({
   useGameState: () => ({
@@ -17,34 +16,24 @@ vi.mock('../src/utils/socialEngine', () => ({
     success: true,
     status: 'SUCCESS',
     feedback: 'Deal accepted!',
-    deal: {
-      id: 'test-deal',
-      name: 'Sponsorship',
-      alignment: 'Corp',
-      offer: { upfront: 600, duration: 3 }
-    }
+    deal: { id: 'test-deal', name: 'Sponsorship', alignment: 'Corp', offer: { upfront: 600, duration: 3 } }
   })
 }))
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: key => {
-      const map = {
+  useTranslation: () => ({ t: (key) => {
+    const map = {
         'economy:postGig.accept': 'ACCEPT',
         'economy:postGig.negotiate': 'NEGOTIATE',
         'ui:social.strategy.aggressive': 'AGGRESSIVE (High Risk)'
-      }
-      return map[key] || key
     }
-  })
+    return map[key] || key
+  } })
 }))
 
 vi.mock('../src/ui/shared', () => ({
-  Modal: ({ children, isOpen }) =>
-    isOpen ? <div data-testid='modal'>{children}</div> : null,
-  ActionButton: ({ children, onClick }) => (
-    <button onClick={onClick}>{children}</button>
-  )
+  Modal: ({ children, isOpen }) => isOpen ? <div data-testid="modal">{children}</div> : null,
+  ActionButton: ({ children, onClick }) => <button type="button" onClick={onClick}>{children}</button>
 }))
 
 beforeEach(() => {
@@ -75,9 +64,7 @@ test('DealsPhase renders offers and handles negotiation', async () => {
     }
   ]
 
-  render(
-    <DealsPhase offers={mockOffers} onSkip={vi.fn()} onAccept={handleAccept} />
-  )
+  render(<DealsPhase offers={mockOffers} onSkip={vi.fn()} onAccept={handleAccept} />)
 
   expect(screen.getByText('Test Deal')).toBeInTheDocument()
 
@@ -102,7 +89,5 @@ test('DealsPhase renders offers and handles negotiation', async () => {
   const acceptListBtn = screen.getAllByText('ACCEPT')[0]
   fireEvent.click(acceptListBtn)
 
-  expect(handleAccept).toHaveBeenCalledWith(
-    expect.objectContaining({ name: 'Sponsorship' })
-  )
+  expect(handleAccept).toHaveBeenCalledWith(expect.objectContaining({ name: 'Sponsorship' }))
 })
