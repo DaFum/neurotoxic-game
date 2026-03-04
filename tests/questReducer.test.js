@@ -72,7 +72,7 @@ test('questReducer - handleAdvanceQuest & Completion', async t => {
     }
   )
 
-  await t.test('clamps over-advance to required and still completes quest', () => {
+  await t.test('over-advance still completes quest', () => {
     const initialState = {
       activeQuests: [{ id: 'q1', progress: 0, required: 3, label: 'Over Quest' }],
       toasts: [],
