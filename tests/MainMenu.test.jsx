@@ -604,10 +604,12 @@ describe('MainMenu Component', () => {
       const loadGameIndex = buttonTexts.indexOf('ui:load_game')
       const bandHQIndex = buttonTexts.indexOf('ui:band_hq')
       const socialsIndex = buttonTexts.indexOf('ui:socials')
+      const creditsIndex = buttonTexts.indexOf('ui:credits')
 
       expect(startGameIndex).toBeGreaterThanOrEqual(0)
       expect(loadGameIndex).toBeGreaterThanOrEqual(0)
       expect(bandHQIndex).toBeGreaterThanOrEqual(0)
+      expect(creditsIndex).toBeGreaterThanOrEqual(0)
 
       // Primary buttons should come before secondary buttons
       expect(startGameIndex).toBeLessThan(socialsIndex)

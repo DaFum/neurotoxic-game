@@ -1597,25 +1597,27 @@ export const ToxicChatter = () => {
 export const VoidDecryptor = () => {
   const { t } = useTranslation(['ui'])
   const [decrypted, setDecrypted] = useState(false)
-  const [glitchText, setGlitchText] = useState(() =>
-    t('ui:brutalist.glitchPlaceholder')
-  )
+  const [glitchEffect, setGlitchEffect] = useState('')
 
   useEffect(() => {
+    let interval
     if (!decrypted) {
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*'
         let str = ''
         for (let i = 0; i < 15; i++)
           str += chars.charAt(Math.floor(Math.random() * chars.length))
-        setGlitchText(str)
+        setGlitchEffect(str)
       }, 50)
-      return () => clearInterval(interval)
-    } else {
-      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      setGlitchText(t('ui:decryptor.unlocked'))
     }
-  }, [decrypted, t])
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [decrypted])
+
+  const displayText = decrypted
+    ? t('ui:decryptor.unlocked')
+    : glitchEffect || t('ui:brutalist.glitchPlaceholder')
 
   return (
     <button
@@ -1646,7 +1648,7 @@ export const VoidDecryptor = () => {
       <div
         className={`mt-6 font-mono text-xs tracking-[0.2em] font-bold ${decrypted ? 'text-(--star-white)' : 'text-(--toxic-green)/50'}`}
       >
-        {glitchText}
+        {displayText}
       </div>
 
       {!decrypted && (

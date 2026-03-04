@@ -109,7 +109,7 @@ const calculateTicketIncome = (
     fillRate -= Math.max(0, pricePenalty - mitigation)
   }
 
-  fillRate = Math.min(1.0, Math.max(0.0, fillRate)) // Clamp 0% - 100%
+  fillRate = Math.min(1.0, Math.max(0.1, fillRate)) // Clamp 10% - 100%
 
   const ticketsSold = Math.floor(gigData.capacity * fillRate)
   const revenue = ticketsSold * gigData.price

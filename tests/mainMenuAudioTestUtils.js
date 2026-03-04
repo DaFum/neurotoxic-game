@@ -28,28 +28,30 @@ export const setupMainMenuAudioTest = async () => {
     namedExports: { audioManager: mockAudioManager }
   })
 
+  const mockUseAudioControl = () => ({
+    audioState: { isMuted: false },
+    handleAudioChange: () => {}
+  })
+
   mock.module('../src/hooks/useAudioControl', {
     namedExports: {
-      // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
-      useAudioControl: () => ({
-        audioState: { isMuted: false },
-        handleAudioChange: () => {}
-      })
+      useAudioControl: mockUseAudioControl
+    }
+  })
+
+  const mockUseTranslation = () => ({
+    t: key => {
+      if (key === 'ui:start_game') return 'Start Tour'
+      if (key === 'ui:load_game') return 'Load Game'
+      if (key === 'ui:band_hq') return 'Band HQ'
+      if (key === 'ui:credits') return 'Credits'
+      return key
     }
   })
 
   mock.module('react-i18next', {
     namedExports: {
-      // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
-      useTranslation: () => ({
-        t: key => {
-          if (key === 'ui:start_game') return 'Start Tour'
-          if (key === 'ui:load_game') return 'Load Game'
-          if (key === 'ui:band_hq') return 'Band HQ'
-          if (key === 'ui:credits') return 'Credits'
-          return key
-        }
-      }),
+      useTranslation: mockUseTranslation,
       Trans: ({ i18nKey }) => i18nKey
     }
   })
@@ -57,15 +59,15 @@ export const setupMainMenuAudioTest = async () => {
   // We need to return a mutable object for useGameState so we can update it in tests if needed,
   // but for these tests a static return is fine, or we can use a mock function.
   // Using a mock function allows for flexibility.
-  const mockUseGameState = mock.fn(() => createMockGameState({ canLoad: true }))
+  const getMockGameState = mock.fn(() => createMockGameState({ canLoad: true }))
 
   mock.module('../src/context/GameState', {
     namedExports: {
-      useGameState: mockUseGameState
+      useGameState: getMockGameState
     }
   })
 
   const { MainMenu } = await import('../src/scenes/MainMenu.jsx')
 
-  return { MainMenu, mockUseGameState }
+  return { MainMenu, mockUseGameState: getMockGameState }
 }
