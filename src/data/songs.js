@@ -4,14 +4,19 @@ import rhythmSongs from '../assets/rhythm_songs.json' with { type: 'json' }
 // Transform the JSON object into an array and map to the expected structure
 export const SONGS_DB = Object.entries(rhythmSongs).map(([key, song]) => {
   // Calculate duration based on the last note tick to ensure the song doesn't end prematurely
-  const validNotes = Array.isArray(song.notes)
-    ? song.notes.filter(n => Number.isFinite(n.t))
-    : []
-
-  const lastNoteTick =
-    validNotes.length > 0
-      ? validNotes.reduce((max, n) => Math.max(max, n.t), 0)
-      : 0
+  let lastNoteTick = 0
+  const validNotes = []
+  if (Array.isArray(song.notes)) {
+    for (let i = 0; i < song.notes.length; i++) {
+      const note = song.notes[i]
+      if (Number.isFinite(note.t)) {
+        validNotes.push(note)
+        if (note.t > lastNoteTick) {
+          lastNoteTick = note.t
+        }
+      }
+    }
+  }
 
   const tpb = Math.max(1, song.tpb || 480)
   const bpm = Math.max(1, song.bpm || 120)
@@ -61,7 +66,7 @@ export const SONGS_DB = Object.entries(rhythmSongs).map(([key, song]) => {
     energy: { peak: Math.min(100, 60 + (song.difficultyRank || 2) * 5) },
 
     // Raw data for the game engine
-    notes: song.notes || [],
+    notes: validNotes,
     tempoMap: song.tempoMap || [],
     tpb: tpb,
     sourceMid: song.sourceMid,
