@@ -60,6 +60,11 @@ const IconTrophy = ({ className = '', title }) => (
     <path d='M21 4h-3V3a1 1 0 00-1-1H7a1 1 0 00-1 1v1H3a1 1 0 00-1 1v3c0 2.2 1.8 4 4 4h1v1.6c0 1.9 1.5 3.4 3.4 3.4H9v3a1 1 0 001 1h4a1 1 0 001-1v-3h-1.4c1.9 0 3.4-1.5 3.4-3.4V12h1c2.2 0 4-1.8 4-4V5a1 1 0 00-1-1zM6 10c-1.1 0-2-.9-2-2V6h2v4zm14-2c0 1.1-.9 2-2 2h-2V6h2v2z' />
   </BaseIcon>
 )
+const IconCoin = ({ className = '', title }) => (
+  <BaseIcon className={className} title={title}>
+    <path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.26.28 2.62 1.15 2.84 2.99h-1.96c-.15-.97-.9-1.62-2.31-1.62-1.45 0-2.13.79-2.13 1.48 0 .84.53 1.36 2.88 1.9 2.5.58 3.97 1.68 3.97 3.86 0 1.76-1.12 2.89-3.24 3.53z' />
+  </BaseIcon>
+)
 const IconFire = ({ className = '', title }) => (
   <BaseIcon className={className} title={title}>
     <path d='M12 2C8 6 4 9 4 14a8 8 0 0016 0c0-5-4-8-8-12zm1 14a3 3 0 11-6 0c0-2 2-4 3-5 1 1 3 3 3 5z' />
@@ -117,7 +122,7 @@ const getRewardIcon = type => {
     case 'harmony':
       return <IconThumbUp className='w-4 h-4 text-(--toxic-green)' />
     case 'money':
-      return <IconTrophy className='w-4 h-4 text-(--fuel-yellow)' />
+      return <IconCoin className='w-4 h-4 text-(--fuel-yellow)' />
     default:
       return <IconTrophy className='w-4 h-4 text-(--fuel-yellow)' />
   }
@@ -278,8 +283,7 @@ export const QuestsModal = ({ onClose, activeQuests, player }) => {
 
                       {quest.moneyReward > 0 && (
                         <span className='inline-flex items-center gap-1 bg-(--fuel-yellow)/10 text-(--fuel-yellow) px-2 py-1 text-xs font-mono rounded'>
-                          {/* TODO: Add IconCoin or explicit currency icon later */}
-                          <IconTrophy className='w-3 h-3' />{' '}
+                          <IconCoin className='w-3 h-3' />{' '}
                           {t('ui:quests.moneyReward', {
                             amount: new Intl.NumberFormat(
                               i18n.language || undefined
