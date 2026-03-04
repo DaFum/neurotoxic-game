@@ -381,7 +381,7 @@ export const initGlobalErrorHandling = () => {
     if (reason instanceof Error) {
       errorToHandle = reason
     } else {
-      let message = 'Unhandled Promise Rejection'
+      let message
       if (typeof reason === 'string') {
         message = reason
       } else if (reason && typeof reason.message === 'string') {
@@ -449,7 +449,9 @@ export const safeStorageOperation = (operation, fn, fallbackValue = null) => {
  */
 export const withRetry = async (fn, options = {}) => {
   const { retries = 3, delay = 1000, backoff = 2 } = options
-  const safeRetries = Number.isFinite(retries) ? Math.max(0, Math.floor(retries)) : 3
+  const safeRetries = Number.isFinite(retries)
+    ? Math.max(0, Math.floor(retries))
+    : 3
   const maxAttempts = safeRetries + 1
   let attempt = 0
   let currentDelay = delay
@@ -459,7 +461,8 @@ export const withRetry = async (fn, options = {}) => {
       return await fn()
     } catch (error) {
       attempt++
-      const isRecoverable = error instanceof GameError ? error.recoverable : true
+      const isRecoverable =
+        error instanceof GameError ? error.recoverable : true
 
       if (attempt >= maxAttempts || !isRecoverable) {
         throw error

@@ -145,7 +145,11 @@ export function disposeAudio() {
   try {
     audioState.guitarChorus?.stop?.()
   } catch (error) {
-    logger.debug('AudioEngine', 'guitarChorus.stop() failed (likely benign)', error)
+    logger.debug(
+      'AudioEngine',
+      'guitarChorus.stop() failed (likely benign)',
+      error
+    )
   }
   audioState.guitarChorus = safeDispose(audioState.guitarChorus)
   audioState.guitarEq = safeDispose(audioState.guitarEq)

@@ -90,24 +90,24 @@ const IconCube = ({ className = '', title }) => (
 
 // Get translated reward text
 const getRewardText = (quest, t) => {
-  const value = quest.rewardData;
+  const value = quest.rewardData
   switch (quest.rewardType) {
     case 'item':
-      return t('ui:rewards.freeItem');
+      return t('ui:rewards.freeItem')
     case 'fame':
-      return t('ui:rewards.fameWithAmount', { count: value?.fame || 0 });
+      return t('ui:rewards.fameWithAmount', { count: value?.fame || 0 })
     case 'fans':
-      return t('ui:rewards.fansWithAmount', { count: value?.fans || 0 });
+      return t('ui:rewards.fansWithAmount', { count: value?.fans || 0 })
     case 'money':
-      return t('ui:rewards.moneyWithAmount', { count: value?.money || 0 });
+      return t('ui:rewards.moneyWithAmount', { count: value?.money || 0 })
     case 'skill_point':
-      return t('ui:rewards.skillPointWithAmount', { count: 1 });
+      return t('ui:rewards.skillPointWithAmount', { count: 1 })
     case 'harmony':
-      return t('ui:rewards.harmonyWithAmount', { count: value?.harmony || 0 });
+      return t('ui:rewards.harmonyWithAmount', { count: value?.harmony || 0 })
     default:
-      return t('ui:rewards.special');
+      return t('ui:rewards.special')
   }
-};
+}
 
 // Map a reward type to an icon
 const getRewardIcon = type => {

@@ -20,9 +20,10 @@ export const LeaderboardTab = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  const activeSongId = view === 'SONG' && !selectedSongId && SONGS_DB.length > 0
-    ? SONGS_DB[0].leaderboardId
-    : selectedSongId
+  const activeSongId =
+    view === 'SONG' && !selectedSongId && SONGS_DB.length > 0
+      ? SONGS_DB[0].leaderboardId
+      : selectedSongId
 
   useEffect(() => {
     const controller = new AbortController()

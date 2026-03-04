@@ -192,7 +192,9 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
 
   // Determine timing strategy: Tempo Map vs Constant BPM
   const useTempoMap = Array.isArray(song.tempoMap) && song.tempoMap.length > 0
-  const activeTempoMap = useTempoMap ? preprocessTempoMap(song.tempoMap, tpb) : []
+  const activeTempoMap = useTempoMap
+    ? preprocessTempoMap(song.tempoMap, tpb)
+    : []
 
   // 2. Map and filter in a single pass, processing only every 4th note
   const gameNotes = []
@@ -201,7 +203,10 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
     const laneIndex = laneMap[n.lane]
 
     if (laneIndex === undefined) {
-      if (onWarn) onWarn(`parseSongNotes: Unknown lane "${n.lane}" for note at tick ${n.t}. Skipping.`)
+      if (onWarn)
+        onWarn(
+          `parseSongNotes: Unknown lane "${n.lane}" for note at tick ${n.t}. Skipping.`
+        )
       continue
     }
 
@@ -210,10 +215,16 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
       ? calculateTimeFromTicks(n.t, tpb, activeTempoMap, 'ms')
       : fallbackTimeMs
 
-    const timeMs = Number.isFinite(calculatedTimeMs) ? calculatedTimeMs : fallbackTimeMs
+    const timeMs = Number.isFinite(calculatedTimeMs)
+      ? calculatedTimeMs
+      : fallbackTimeMs
     const excerptRelativeTimeMs = timeMs
 
-    if (excerptRelativeTimeMs < 0 || (Number.isFinite(excerptDurationMs) && excerptRelativeTimeMs > excerptDurationMs)) {
+    if (
+      excerptRelativeTimeMs < 0 ||
+      (Number.isFinite(excerptDurationMs) &&
+        excerptRelativeTimeMs > excerptDurationMs)
+    ) {
       continue
     }
 

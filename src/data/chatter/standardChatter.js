@@ -460,259 +460,300 @@ export const CHATTER_DB = [
     text: 'chatter:standard.msg_056',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_057',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_058',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME',
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME',
     speaker: 'Matze'
   },
   {
     text: 'chatter:standard.msg_059',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: "Let's stick to the setlist this time, okay?",
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME',
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME',
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_061',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_062',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_063',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME',
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME',
     speaker: 'Matze'
   },
   {
     text: 'chatter:standard.msg_064',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_065',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME',
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME',
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_066',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_067',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_068',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_069',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_070',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_071',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_072',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_073',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_074',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_075',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_076',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_077',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_078',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_079',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME',
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME',
     speaker: 'Matze'
   },
   {
     text: 'chatter:standard.msg_080',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME',
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME',
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_081',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME',
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME',
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_082',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_083',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_084',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_085',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_086',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME',
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME',
     speaker: 'Lars'
   },
   {
     text: 'chatter:standard.msg_087',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME',
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME',
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_088',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_089',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME',
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME',
     speaker: 'Matze'
   },
   {
     text: 'chatter:standard.msg_090',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_091',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_092',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME',
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME',
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_093',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME',
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME',
     speaker: 'Matze'
   },
   {
     text: 'chatter:standard.msg_094',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_095',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
     text: 'chatter:standard.msg_096',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' || state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === 'PREGIG' ||
+      state.currentScene === 'PRE_GIG_MINIGAME'
   },
 
   // --- POST-GIG (Reaction) ---

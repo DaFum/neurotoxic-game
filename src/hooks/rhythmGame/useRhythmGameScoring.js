@@ -102,7 +102,10 @@ export const useRhythmGameScoring = ({
       )
       gameStateRef.current.stats = updatedStats
 
-      const newAccuracy = calculateAccuracy(updatedStats.perfectHits, updatedStats.misses)
+      const newAccuracy = calculateAccuracy(
+        updatedStats.perfectHits,
+        updatedStats.misses
+      )
 
       setOverload(nextOverload)
       if (typeof setAccuracy === 'function') {
@@ -251,7 +254,10 @@ export const useRhythmGameScoring = ({
         // Extract calculations outside state callbacks
         const nextScore = gameStateRef.current.score + finalScore
         const nextCombo = gameStateRef.current.combo + 1
-        const nextHealth = Math.max(0, Math.min(100, gameStateRef.current.health + (toxicModeActive ? 1 : 2)))
+        const nextHealth = Math.max(
+          0,
+          Math.min(100, gameStateRef.current.health + (toxicModeActive ? 1 : 2))
+        )
 
         gameStateRef.current.score = nextScore
         gameStateRef.current.combo = nextCombo
