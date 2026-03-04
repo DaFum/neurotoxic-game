@@ -59,9 +59,18 @@ export const setupMainMenuAudioTest = async () => {
   const mockUseGameState = mock.fn(() => createMockGameState({ canLoad: true }))
   const mockUseGameDispatch = mock.fn(() => {
     const state = createMockGameState({ canLoad: true })
-    // Dispatch hooks normally only return the dispatchers, so we extract just the functions.
-    // However, our `createMockGameState` already returns an object consisting mostly of mock dispatchers.
-    return state
+    // Return only the dispatch functions, filtering out actual state values
+    return {
+      changeScene: state.changeScene,
+      loadGame: state.loadGame,
+      addToast: state.addToast,
+      updatePlayer: state.updatePlayer,
+      updateBand: state.updateBand,
+      updateSettings: state.updateSettings,
+      deleteSave: state.deleteSave,
+      setSetlist: state.setSetlist,
+      resetState: state.resetState
+    }
   })
 
   mock.module('../src/context/GameState', {
