@@ -285,10 +285,9 @@ export const useRhythmGameAudio = ({
             // Stop the OGG when bars finish falling: cap to last note time.
             // If no JSON notes are parsed yet (procedural fallback path),
             // fall back to the configured excerpt duration.
-            const maxNoteTimeSoFar = notes.reduce(
-              (max, n) => Math.max(max, n.time),
-              0
-            )
+            // ⚡ BOLT OPTIMIZATION: O(1) tail read instead of O(N) array reduction
+            // Notes are generated/parsed in strict chronological order.
+            const maxNoteTimeSoFar = notes.length > 0 ? notes[notes.length - 1].time : 0
             const oggDurationMs =
               maxNoteTimeSoFar > 0
                 ? maxNoteTimeSoFar + NOTE_TAIL_MS
@@ -317,10 +316,8 @@ export const useRhythmGameAudio = ({
             resolveSongPlaybackWindow(currentSong, { defaultDurationMs: 0 })
           const offsetSeconds = Math.max(0, excerptStartMs / 1000)
           // Same note-cap logic as OGG: stop MIDI when bars finish.
-          const maxNoteTimeSoFar = notes.reduce(
-            (max, n) => Math.max(max, n.time),
-            0
-          )
+          // ⚡ BOLT OPTIMIZATION: O(1) tail read instead of O(N) array reduction
+          const maxNoteTimeSoFar = notes.length > 0 ? notes[notes.length - 1].time : 0
           const midiDurationMs =
             maxNoteTimeSoFar > 0
               ? maxNoteTimeSoFar + NOTE_TAIL_MS
@@ -410,7 +407,8 @@ export const useRhythmGameAudio = ({
         gameStateRef.current.notesVersion =
           gameStateRef.current.notesVersion + 1
 
-        const maxNoteTime = notes.reduce((max, n) => Math.max(max, n.time), 0)
+        // ⚡ BOLT OPTIMIZATION: O(1) tail read instead of O(N) array reduction
+        const maxNoteTime = notes.length > 0 ? notes[notes.length - 1].time : 0
         const buffer = 4000
         const noteDuration = maxNoteTime + buffer
         // When JSON notes are present the audio has already been capped to
