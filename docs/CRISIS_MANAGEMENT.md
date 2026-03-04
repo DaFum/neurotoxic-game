@@ -107,7 +107,7 @@ if (deal.penalty) {
 
 ## 2. CRITICAL GAPS & MISSING FEATURES (RESOLVED)
 
-_Note: The features listed below have been resolved via updates to `crisis.js`, `simulationUtils.js`, `gameReducer.js`, and `useTravelLogic.js`._
+_Note: The features listed below have been resolved via updates to `crisis.js`, `simulationUtils.js`, `systemReducer.js`, and `useTravelLogic.js`._
 
 ### A. Explicit "Bad Review" or "Poor Performance" Events
 
@@ -434,7 +434,7 @@ Post Selection → Post Resolution → Controversy Change
 
 - `src/utils/socialEngine.js` - Crisis mechanics
 - `src/context/initialState.js` - State schema
-- `src/context/gameReducer.js` - Action types & handlers
+- `src/context/reducers/` - Action handlers
 - `src/data/postOptions.js` - Post resolution logic
 - `src/scenes/PostGig.jsx` - Crisis UI & flow
 - `src/components/postGig/CompletePhase.jsx` - Crisis display

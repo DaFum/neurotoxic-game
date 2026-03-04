@@ -317,7 +317,7 @@ After a gig, the game:
 | Event engine      | `/home/user/neurotoxic-game/src/utils/eventEngine.js`                  |
 | Event index       | `/home/user/neurotoxic-game/src/data/events/index.js`                  |
 | State schema      | `/home/user/neurotoxic-game/src/context/initialState.js`               |
-| Reducer & actions | `/home/user/neurotoxic-game/src/context/gameReducer.js`                |
+| Reducer & actions | `/home/user/neurotoxic-game/src/context/reducers/`                     |
 | Action creators   | `/home/user/neurotoxic-game/src/context/actionCreators.js`             |
 | Social mechanics  | `/home/user/neurotoxic-game/src/utils/socialEngine.js`                 |
 | Post options      | `/home/user/neurotoxic-game/src/data/postOptions.js`                   |

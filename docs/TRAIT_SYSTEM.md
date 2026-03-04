@@ -194,7 +194,7 @@ DEFAULT_BAND_STATE = {
      - Adds trait to `member.traits` array
      - Creates success toast notification
    - Returns `{ band: updatedBand, toasts: [...] }`
-4. **Reducer Integration** (`gameReducer.js` or direct dispatch)
+4. **Reducer Integration** (`bandReducer.js` or direct dispatch)
    - `handleAdvanceDay()` calls `checkTraitUnlocks()` and `applyTraitUnlocks()` for social updates
    - `handleCompleteTravelMinigame()` calls both for travel unlocks
    - `handleUnlockTrait()` explicitly handles `ActionTypes.UNLOCK_TRAIT` action
@@ -209,7 +209,7 @@ checkTraitUnlocks (unlockCheck.js)
     ↓
 applyTraitUnlocks (traitUtils.js)
     ↓
-gameReducer (gameReducer.js)
+bandReducer (bandReducer.js)
     ↓
 GameStateProvider (GameState.jsx)
     ↓

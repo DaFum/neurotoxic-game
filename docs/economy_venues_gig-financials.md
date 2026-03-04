@@ -107,7 +107,7 @@ if (performanceScore < 40) {
 }
 ```
 
-**Location 2:** `/home/user/neurotoxic-game/src/context/gameReducer.js` (line 560-562)
+**Location 2:** `/home/user/neurotoxic-game/src/context/reducers/gigReducer.js`
 
 ```javascript
 if (score < 30) {
@@ -134,7 +134,7 @@ if (score < 30) {
 
 ### 4. REPUTATION SYSTEM
 
-**File:** `/home/user/neurotoxic-game/src/context/gameReducer.js`
+**File:** `/home/user/neurotoxic-game/src/context/reducers/gigReducer.js`
 
 - **Storage:** `state.reputationByRegion` (object with region/city keys)
 - **Trigger:** When setting `lastGigStats` after gig completion

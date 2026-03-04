@@ -431,7 +431,7 @@ const handleContinue = () => {
 
 ### **8. State Reducer - Key Handlers**
 
-**File:** `/home/user/neurotoxic-game/src/context/gameReducer.js`
+**File:** `/home/user/neurotoxic-game/src/context/reducers/sceneReducer.js`
 **CHANGE_SCENE Handler:**
 
 ```javascript
