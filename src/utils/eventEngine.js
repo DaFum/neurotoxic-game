@@ -30,9 +30,12 @@ const resolveTemplateString = (str, context) => {
 
     // Fallback: case-insensitive match (as the original implementation used 'gi')
     if (!lowerKeysMap) {
-      lowerKeysMap = {}
+      lowerKeysMap = Object.create(null)
       for (const k of Object.keys(context)) {
-        lowerKeysMap[k.toLowerCase()] = k
+        const lk = k.toLowerCase()
+        if (lowerKeysMap[lk] === undefined) {
+          lowerKeysMap[lk] = k
+        }
       }
     }
 
