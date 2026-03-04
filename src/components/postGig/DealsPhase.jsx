@@ -1,12 +1,12 @@
 import PropTypes from 'prop-types'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, memo } from 'react'
 import { useGameState } from '../../context/GameState'
 import { negotiateDeal } from '../../utils/socialEngine'
 import { Modal, ActionButton } from '../../ui/shared'
 import { BRAND_ALIGNMENTS } from '../../context/initialState'
 import { handleError } from '../../utils/errorHandler.js'
 
-export const DealsPhase = ({ offers, onAccept, onSkip }) => {
+const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
   const { player, band, social, addToast } = useGameState()
   const [negotiatedDeals, setNegotiatedDeals] = useState({}) // id: { status, deal }
 
@@ -299,11 +299,13 @@ export const DealsPhase = ({ offers, onAccept, onSkip }) => {
   )
 }
 
-DealsPhase.propTypes = {
+DealsPhaseComponent.propTypes = {
   offers: PropTypes.array.isRequired,
   onAccept: PropTypes.func.isRequired,
   onSkip: PropTypes.func.isRequired
 }
+
+export const DealsPhase = memo(DealsPhaseComponent)
 
 const getAlignmentBadge = alignment => {
   switch (alignment) {
