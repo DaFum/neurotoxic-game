@@ -71,6 +71,21 @@ test('questReducer - handleAdvanceQuest & Completion', async t => {
       assert.ok(nextState.toasts[0].message.includes('Q1'))
     }
   )
+
+  await t.test('clamps over-advance to required and still completes quest', () => {
+    const initialState = {
+      activeQuests: [{ id: 'q1', progress: 0, required: 3, label: 'Over Quest' }],
+      toasts: [],
+      player: { money: 100 }
+    }
+    const nextState = gameReducer(initialState, {
+      type: ActionTypes.ADVANCE_QUEST,
+      payload: { questId: 'q1', amount: 999 }
+    })
+    // Quest completes despite amount >> required (Math.min clamps to exactly required)
+    assert.equal(nextState.activeQuests.length, 0)
+    assert.equal(nextState.toasts.length, 1)
+  })
 })
 
 test('questReducer - Rewards Logic', async t => {

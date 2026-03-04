@@ -186,6 +186,39 @@ describe('saveValidator', () => {
       delete data.band.harmony
       assert.strictEqual(validateSaveData(data), true)
     })
+
+    it('accepts a valid relationships object on a band member', () => {
+      const data = getValidData()
+      data.band.members = [{ name: 'Matze', relationships: { alex: 75, sara: 0 } }]
+      assert.strictEqual(validateSaveData(data), true)
+    })
+
+    it('throws if member relationships is not a plain object', () => {
+      const data = getValidData()
+      data.band.members = [{ name: 'Matze', relationships: [50, 75] }]
+      assert.throws(() => validateSaveData(data), {
+        name: 'StateError',
+        message: /band\.members\[0\]\.relationships must be an object/
+      })
+    })
+
+    it('throws if a relationship score is out of range', () => {
+      const data = getValidData()
+      data.band.members = [{ name: 'Matze', relationships: { sara: 150 } }]
+      assert.throws(() => validateSaveData(data), {
+        name: 'StateError',
+        message: /band\.members\[0\]\.relationships\.sara must be a finite number/
+      })
+    })
+
+    it('throws if a relationship key is a reserved prototype-polluting name', () => {
+      const data = getValidData()
+      data.band.members = [{ name: 'Matze', relationships: { constructor: 75 } }]
+      assert.throws(() => validateSaveData(data), {
+        name: 'StateError',
+        message: /band\.members\[0\]\.relationships\.constructor is a reserved key/
+      })
+    })
   })
 
   describe('social validation', () => {
