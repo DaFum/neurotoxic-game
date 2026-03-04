@@ -236,6 +236,36 @@ export const useRhythmGameAudio = ({
 
         // Setup onEnded callback for chaining
         const onSongEnded = () => {
+          // Calculate and record per-song stats delta
+          const currentState = gameStateRef.current
+          if (currentState) {
+            const currentScore = currentState.score || 0
+            const scoreDelta = Math.max(0, currentScore - (currentState.currentSongStartScore || 0))
+
+            const currentPerfects = currentState.stats?.perfectHits || 0
+            const currentMisses = currentState.stats?.misses || 0
+            const perfectsDelta = Math.max(0, currentPerfects - (currentState.currentSongStartPerfectHits || 0))
+            const missesDelta = Math.max(0, currentMisses - (currentState.currentSongStartMisses || 0))
+
+            const totalDelta = perfectsDelta + missesDelta
+            let songAccuracy = 100
+            if (totalDelta > 0) {
+              songAccuracy = Math.max(0, Math.min(100, Math.round((perfectsDelta / totalDelta) * 100)))
+            }
+
+            currentState.songStats.push({
+              songId: currentSong.id,
+              score: scoreDelta,
+              accuracy: songAccuracy,
+              index
+            })
+
+            // Reset start values for the next song
+            currentState.currentSongStartScore = currentScore
+            currentState.currentSongStartPerfectHits = currentPerfects
+            currentState.currentSongStartMisses = currentMisses
+          }
+
           // Guard against continuing if the game has been stopped (e.g. Quit)
           if (
             gameStateRef.current.isGameOver ||

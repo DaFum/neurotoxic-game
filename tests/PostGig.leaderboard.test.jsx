@@ -61,7 +61,14 @@ describe('PostGig Leaderboard Submission', () => {
     },
     band: { inventory: {}, members: [] },
     social: { instagram: 100, trend: 'NEUTRAL' },
-    lastGigStats: { score: 12345, events: [] },
+    lastGigStats: {
+      score: 12345,
+      accuracy: 95,
+      events: [],
+      songStats: [
+        { songId: 'raw_01_kranker_schrank', score: 12345, accuracy: 95 }
+      ]
+    },
     gigModifiers: {},
     activeEvent: null,
     activeStoryFlags: [],
@@ -162,7 +169,8 @@ describe('PostGig Leaderboard Submission', () => {
             playerId: 'user-uuid',
             playerName: 'TestUser',
             songId: 'slug-01',
-            score: 12345
+            score: 12345,
+            accuracy: 95
           })
         })
       )
@@ -178,11 +186,12 @@ describe('PostGig Leaderboard Submission', () => {
     )
   })
 
-  it('resolves song via setlist if currentGig.songId is missing', async () => {
+  it('resolves song via setlist if currentGig.songId is missing and songStats is empty', async () => {
     const base = getBaseState()
     useGameState.mockReturnValue({
       ...base,
       currentGig: { ...base.currentGig, songId: undefined },
+      lastGigStats: { score: 12345, accuracy: 95 },
       setlist: ['neurotoxic_1_raw']
     })
 
@@ -214,7 +223,66 @@ describe('PostGig Leaderboard Submission', () => {
             playerId: 'user-uuid',
             playerName: 'TestUser',
             songId: 'slug-neurotoxic',
-            score: 12345
+            score: 12345,
+            accuracy: 95
+          })
+        })
+      )
+    })
+  })
+
+  it('submits multiple leaderboard entries for multiple songs in songStats', async () => {
+    const base = getBaseState()
+    useGameState.mockReturnValue({
+      ...base,
+      lastGigStats: {
+        score: 20000,
+        accuracy: 90,
+        events: [],
+        songStats: [
+          { songId: 'raw_01_kranker_schrank', score: 10000, accuracy: 80 },
+          { songId: 'neurotoxic_1_raw', score: 10000, accuracy: 100 }
+        ]
+      }
+    })
+
+    render(<PostGig />)
+
+    // Phase: REPORT -> SOCIAL -> COMPLETE -> Continue
+    fireEvent.click(await screen.findByRole('button', { name: /continue|next|social/i }))
+    fireEvent.click(await screen.findByText('Selfie'))
+    fireEvent.click(await screen.findByRole('button', { name: /back to tour/i }))
+
+    // Should fetch twice, one for each song
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledTimes(2)
+
+      // Song 1
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/leaderboard/song',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            playerId: 'user-uuid',
+            playerName: 'TestUser',
+            songId: 'slug-01',
+            score: 10000,
+            accuracy: 80
+          })
+        })
+      )
+
+      // Song 2
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/leaderboard/song',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            playerId: 'user-uuid',
+            playerName: 'TestUser',
+            songId: 'slug-neurotoxic',
+            score: 10000,
+            accuracy: 100
           })
         })
       )

@@ -136,7 +136,8 @@ export const useRhythmGameScoring = ({
                 buildGigStatsSnapshot(
                   gameStateRef.current.score,
                   gameStateRef.current.stats,
-                  gameStateRef.current.toxicTimeTotal
+                  gameStateRef.current.toxicTimeTotal,
+                  gameStateRef.current.songStats || []
                 )
               )
               endGig()

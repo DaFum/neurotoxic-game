@@ -38,12 +38,18 @@ export const updateGigPerformanceStats = (stats, payload) => ({
  * @param {number} toxicTimeTotal - Total time spent in toxic mode.
  * @returns {{score: number, misses: number, perfectHits: number, maxCombo: number, peakHype: number, toxicTimeTotal: number, accuracy: number}}
  */
-export const buildGigStatsSnapshot = (score, stats, toxicTimeTotal) => ({
+export const buildGigStatsSnapshot = (
+  score,
+  stats,
+  toxicTimeTotal,
+  songStats = []
+) => ({
   score,
   misses: stats.misses,
   perfectHits: stats.perfectHits,
   maxCombo: stats.maxCombo,
   peakHype: stats.peakHype,
   toxicTimeTotal,
-  accuracy: calculateAccuracy(stats.perfectHits, stats.misses)
+  accuracy: calculateAccuracy(stats.perfectHits, stats.misses),
+  songStats
 })
