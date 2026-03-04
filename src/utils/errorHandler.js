@@ -350,6 +350,21 @@ export const handleError = (error, options = {}) => {
     addToast(errorInfo.message, toastType)
   }
 
+  // Remote Tracking (Fire and forget via beacon)
+  if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+    try {
+      const payload = JSON.stringify({
+        event: 'error',
+        error: sanitizeErrorInfo(errorInfo),
+        userAgent: navigator.userAgent
+      })
+      // Intentionally hardcoded analytics endpoint stub per requirements
+      navigator.sendBeacon('/api/analytics/error', payload)
+    } catch (e) {
+      // Ignore tracking failures to prevent recursive errors
+    }
+  }
+
   return errorInfo
 }
 
@@ -363,6 +378,23 @@ if (typeof window !== 'undefined') {
 }
 
 /**
+ * Initializes global error listeners.
+ */
+export const initGlobalErrorHandling = () => {
+  if (typeof window !== 'undefined') {
+    window.addEventListener('unhandledrejection', event => {
+      handleError(event.reason || new Error(event.reason), {
+        source: 'unhandledrejection',
+        severity: ErrorSeverity.HIGH
+      })
+    })
+  }
+}
+
+// Auto-init on load
+initGlobalErrorHandling()
+
+/**
  * Creates a safe wrapper for localStorage operations
  * @param {string} operation - Operation name for logging
  * @param {Function} fn - Function to execute
@@ -370,17 +402,25 @@ if (typeof window !== 'undefined') {
  * @returns {*} Result or fallback value
  */
 export const safeStorageOperation = (operation, fn, fallbackValue = null) => {
-  try {
-    return fn()
-  } catch (error) {
-    handleError(
-      new StorageError(`Storage operation failed: ${operation}`, {
-        originalError: error.message
-      }),
-      { silent: true }
-    )
-    return fallbackValue
+  let retries = 2
+  let lastError = null
+
+  while (retries >= 0) {
+    try {
+      return fn()
+    } catch (error) {
+      lastError = error
+      retries--
+    }
   }
+
+  handleError(
+    new StorageError(`Storage operation failed after retries: ${operation}`, {
+      originalError: lastError?.message
+    }),
+    { silent: true }
+  )
+  return fallbackValue
 }
 
 /**

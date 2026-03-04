@@ -86,24 +86,28 @@ export const useRhythmGameScoring = ({
 
       setCombo(0)
       gameStateRef.current.combo = 0
-      setOverload(o => {
-        const penalty = isEmptyHit ? 2 : 5
-        const next = Math.max(0, o - penalty * count)
-        // Side-effect: Updating ref in state setter to prevent stale closure in loop
-        gameStateRef.current.overload = next
-        const updatedStats = updateGigPerformanceStats(
-          {
-            ...gameStateRef.current.stats,
-            misses: gameStateRef.current.stats.misses + count
-          },
-          { combo: gameStateRef.current.combo, overload: next }
-        )
-        gameStateRef.current.stats = updatedStats
-        setAccuracy(
-          calculateAccuracy(updatedStats.perfectHits, updatedStats.misses)
-        )
-        return next
-      })
+
+      // Calculate new overload and stats outside the setState callback
+      const penalty = isEmptyHit ? 2 : 5
+      const currentOverload = gameStateRef.current.overload
+      const nextOverload = Math.max(0, currentOverload - penalty * count)
+
+      gameStateRef.current.overload = nextOverload
+      const updatedStats = updateGigPerformanceStats(
+        {
+          ...gameStateRef.current.stats,
+          misses: gameStateRef.current.stats.misses + count
+        },
+        { combo: 0, overload: nextOverload }
+      )
+      gameStateRef.current.stats = updatedStats
+
+      const newAccuracy = calculateAccuracy(updatedStats.perfectHits, updatedStats.misses)
+
+      setOverload(nextOverload)
+      if (typeof setAccuracy === 'function') {
+        setAccuracy(newAccuracy)
+      }
 
       // Only play miss SFX if it's a real miss
       if (!isEmptyHit) {
@@ -243,25 +247,29 @@ export const useRhythmGameScoring = ({
 
         finalScore = Math.floor(finalScore)
 
-        setScore(s => {
-          const next = s + finalScore
-          gameStateRef.current.score = next
-          return next
-        })
-        setCombo(c => {
-          const next = c + 1
-          gameStateRef.current.combo = next
+        // Extract calculations outside state callbacks
+        const nextScore = gameStateRef.current.score + finalScore
+        const nextCombo = gameStateRef.current.combo + 1
+        const nextHealth = Math.max(0, Math.min(100, gameStateRef.current.health + (toxicModeActive ? 1 : 2)))
+
+        gameStateRef.current.score = nextScore
+        gameStateRef.current.combo = nextCombo
+        gameStateRef.current.health = nextHealth
+
+        setScore(nextScore)
+        setCombo(nextCombo)
+        setHealth(nextHealth)
+
+        if (!toxicModeActive) {
+          const gain = 4 // Increased gain to make Toxic Mode reachable
+          const currentOverload = gameStateRef.current.overload
+          const nextOverloadCandidate = currentOverload + gain
+          const peakCandidate = Math.min(nextOverloadCandidate, 100)
+
           gameStateRef.current.stats = updateGigPerformanceStats(
             gameStateRef.current.stats,
-            { combo: next, overload: gameStateRef.current.overload }
+            { combo: nextCombo, overload: peakCandidate }
           )
-          return next
-        })
-        setHealth(h => {
-          const next = Math.max(0, Math.min(100, h + (toxicModeActive ? 1 : 2))) // Reduced regen in Toxic Mode
-          gameStateRef.current.health = next
-          return next
-        })
 
         if (!toxicModeActive) {
           const gain = 4 // Increased gain to make Toxic Mode reachable
@@ -283,6 +291,7 @@ export const useRhythmGameScoring = ({
             setOverload(next)
           }
         }
+
         return true
       } else {
         handleMiss(1, true) // Pass true for isEmptyHit

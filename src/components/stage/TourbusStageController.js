@@ -222,6 +222,9 @@ class TourbusStageController extends BaseStageController {
 
         this.obstacleContainer.addChild(sprite)
         this.obstacleMap.set(obs.id, sprite)
+      } else if (!obs.collided) {
+        sprite.hasExploded = false
+        sprite.alpha = 1
       }
 
       // Update position
