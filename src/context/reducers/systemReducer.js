@@ -5,6 +5,7 @@ import {
   calculateFameLevel
 } from '../../utils/gameStateUtils.js'
 import { calculateDailyUpdates } from '../../utils/simulationUtils.js'
+import { generateDailyTrend } from '../../utils/socialEngine.js'
 import { checkTraitUnlocks } from '../../utils/unlockCheck.js'
 import { applyTraitUnlocks } from '../../utils/traitUtils.js'
 import {
@@ -254,11 +255,13 @@ export const handleAdvanceDay = (state, payload) => {
     socialUnlocks
   )
 
+  const newTrend = generateDailyTrend(rng)
+
   let nextState = {
     ...state,
     player: nextPlayer,
     band: traitResult.band,
-    social,
+    social: { ...social, trend: newTrend },
     eventCooldowns: [],
     toasts: traitResult.toasts
   }

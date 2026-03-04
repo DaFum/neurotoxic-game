@@ -1,8 +1,8 @@
-import { useMemo, useState, Suspense } from 'react'
+import { useMemo, useState, Suspense, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog'
-import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
+import { fetchGenImageAsObjectUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 import { usePurchaseLogic } from '../hooks/usePurchaseLogic'
 import { handleError, GameError, StateError } from '../utils/errorHandler'
 import { StatsTab } from './bandhq/StatsTab'
@@ -58,8 +58,30 @@ export const BandHQ = ({
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('STATS')
   const [processingItemId, setProcessingItemId] = useState(null)
+  const [bgUrl, setBgUrl] = useState('')
 
   const unifiedUpgradeCatalog = useMemo(() => getUnifiedUpgradeCatalog(), [])
+
+  useEffect(() => {
+    let active = true
+    const loadBg = async () => {
+      try {
+        const url = await fetchGenImageAsObjectUrl(IMG_PROMPTS.BAND_HQ_BG)
+        if (active) {
+          setBgUrl(url)
+        } else {
+          URL.revokeObjectURL(url)
+        }
+      } catch (err) {
+        // Fallback or ignore
+      }
+    }
+    loadBg()
+    return () => {
+      active = false
+      if (bgUrl) URL.revokeObjectURL(bgUrl)
+    }
+  }, []) // Empty dependency array as IMG_PROMPTS.BAND_HQ_BG is constant
 
   const purchaseLogicParams = {
     player,
@@ -114,7 +136,7 @@ export const BandHQ = ({
       <div
         className='fixed inset-0 z-40 bg-cover bg-center opacity-20 pointer-events-none'
         style={{
-          backgroundImage: `url("${getGenImageUrl(IMG_PROMPTS.BAND_HQ_BG)}")`
+          backgroundImage: bgUrl ? `url("${bgUrl}")` : 'none'
         }}
       />
 

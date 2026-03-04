@@ -60,7 +60,8 @@ export const setupMainMenuAudioTest = async () => {
 
   mock.module('../src/context/GameState', {
     namedExports: {
-      useGameState: mockUseGameState
+      useGameState: mockUseGameState,
+      useGameDispatch: mockUseGameState
     }
   })
 
