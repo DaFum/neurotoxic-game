@@ -20,10 +20,26 @@ import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { SONGS_DB } from '../data/songs'
 
 import { lazy, Suspense } from 'react'
-const ReportPhase = lazy(() => import('../components/postGig/ReportPhase').then(m => ({ default: m.ReportPhase })))
-const SocialPhase = lazy(() => import('../components/postGig/SocialPhase').then(m => ({ default: m.SocialPhase })))
-const DealsPhase = lazy(() => import('../components/postGig/DealsPhase').then(m => ({ default: m.DealsPhase })))
-const CompletePhase = lazy(() => import('../components/postGig/CompletePhase').then(m => ({ default: m.CompletePhase })))
+const ReportPhase = lazy(() =>
+  import('../components/postGig/ReportPhase').then(m => ({
+    default: m.ReportPhase
+  }))
+)
+const SocialPhase = lazy(() =>
+  import('../components/postGig/SocialPhase').then(m => ({
+    default: m.SocialPhase
+  }))
+)
+const DealsPhase = lazy(() =>
+  import('../components/postGig/DealsPhase').then(m => ({
+    default: m.DealsPhase
+  }))
+)
+const CompletePhase = lazy(() =>
+  import('../components/postGig/CompletePhase').then(m => ({
+    default: m.CompletePhase
+  }))
+)
 
 const PERF_SCORE_MIN = 30
 const PERF_SCORE_MAX = 100
@@ -463,7 +479,7 @@ export const PostGig = () => {
     // Leaderboard Song Score Submission
     if (player.playerId && player.playerName) {
       // Create a unified list of song stats to submit
-      let songsToSubmit = []
+      let songsToSubmit
 
       if (lastGigStats?.songStats && lastGigStats.songStats.length > 0) {
         // Use the detailed per-song stats generated during the gig
@@ -476,12 +492,15 @@ export const PostGig = () => {
         // Fallback for legacy saves or early aborted gigs without per-song stats
         const setlistFirstId =
           typeof setlist?.[0] === 'string' ? setlist[0] : setlist?.[0]?.id
-        const playedSongId = currentGig?.songId || setlistFirstId || 'neurotoxic_1'
-        songsToSubmit = [{
-          songId: playedSongId,
-          score: lastGigStats?.score || 0,
-          accuracy: lastGigStats?.accuracy || 0
-        }]
+        const playedSongId =
+          currentGig?.songId || setlistFirstId || 'neurotoxic_1'
+        songsToSubmit = [
+          {
+            songId: playedSongId,
+            score: lastGigStats?.score || 0,
+            accuracy: lastGigStats?.accuracy || 0
+          }
+        ]
       }
 
       // Submit each song individually
@@ -510,7 +529,9 @@ export const PostGig = () => {
                 throw new Error(`HTTP ${res.status}: ${err}`)
               }
             })
-            .catch(err => console.error(`Score submit failed for ${leaderboardSongId}`, err))
+            .catch(err =>
+              console.error(`Score submit failed for ${leaderboardSongId}`, err)
+            )
         }
       })
     }
@@ -576,7 +597,13 @@ export const PostGig = () => {
                 : 'TOUR UPDATE'}
         </h2>
 
-        <Suspense fallback={<div className="text-(--toxic-green) font-['Metal_Mania'] text-xl animate-pulse text-center">{t('ui:loading', 'LOADING...')}</div>}>
+        <Suspense
+          fallback={
+            <div className="text-(--toxic-green) font-['Metal_Mania'] text-xl animate-pulse text-center">
+              {t('ui:loading', 'LOADING...')}
+            </div>
+          }
+        >
           {phase === 'REPORT' && (
             <ReportPhase financials={financials} onNext={handleNextPhase} />
           )}

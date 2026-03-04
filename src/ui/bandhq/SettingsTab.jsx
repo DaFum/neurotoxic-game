@@ -15,9 +15,12 @@ export const SettingsTab = ({
     updateSettings({ crtEnabled: !settings.crtEnabled })
   }, [updateSettings, settings.crtEnabled])
 
-  const handleLogLevelChange = useCallback((level) => {
-    updateSettings({ logLevel: level })
-  }, [updateSettings])
+  const handleLogLevelChange = useCallback(
+    level => {
+      updateSettings({ logLevel: level })
+    },
+    [updateSettings]
+  )
 
   return (
     <div className='max-w-3xl mx-auto'>
