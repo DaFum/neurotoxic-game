@@ -85,5 +85,5 @@ export const setupMainMenuAudioTest = async () => {
 
   const { MainMenu } = await import('../src/scenes/MainMenu.jsx')
 
-  return { MainMenu, mockUseGameState: getMockGameState }
+  return { MainMenu, mockUseGameState }
 }

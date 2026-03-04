@@ -6,7 +6,9 @@ import { ToggleSwitch } from './ToggleSwitch'
 import { LOG_LEVELS } from '../../utils/logger.js'
 import { DeadmanButton } from './BrutalistUI'
 
-export const SettingsPanel = ({
+import { memo, useCallback } from 'react'
+
+export const SettingsPanel = memo(function SettingsPanel({
   settings,
   musicVol = 0,
   sfxVol = 0,
@@ -18,8 +20,23 @@ export const SettingsPanel = ({
   onLogLevelChange = () => {},
   onDeleteSave,
   className = ''
-}) => {
+}) {
   const { t, i18n } = useTranslation()
+
+  const handleMusicChange = useCallback(
+    e => onMusicChange(parseFloat(e.target.value)),
+    [onMusicChange]
+  )
+
+  const handleSfxChange = useCallback(
+    e => onSfxChange(parseFloat(e.target.value)),
+    [onSfxChange]
+  )
+
+  const handleLogLevelSelect = useCallback(
+    e => onLogLevelChange(parseInt(e.target.value, 10)),
+    [onLogLevelChange]
+  )
 
   return (
     <div className={`space-y-8 ${className}`}>
@@ -53,12 +70,12 @@ export const SettingsPanel = ({
           <VolumeSlider
             label={t('ui:music_volume')}
             value={musicVol}
-            onChange={e => onMusicChange(parseFloat(e.target.value))}
+            onChange={handleMusicChange}
           />
           <VolumeSlider
             label={t('ui:sfx_volume')}
             value={sfxVol}
-            onChange={e => onSfxChange(parseFloat(e.target.value))}
+            onChange={handleSfxChange}
           />
           <div className='flex items-center justify-between'>
             <span className='font-[Courier_New] text-sm uppercase tracking-wide text-(--ash-gray)'>
@@ -114,7 +131,7 @@ export const SettingsPanel = ({
             <select
               id='logLevelSelect'
               value={settings?.logLevel ?? LOG_LEVELS.DEBUG}
-              onChange={e => onLogLevelChange(parseInt(e.target.value, 10))}
+              onChange={handleLogLevelSelect}
               className='bg-(--void-black) text-(--toxic-green) border-2 border-(--toxic-green) p-1 font-mono focus:outline-none'
             >
               {Object.entries(LOG_LEVELS).map(([key, value]) => (
@@ -131,7 +148,7 @@ export const SettingsPanel = ({
       <DataManagement onDeleteSave={onDeleteSave} />
     </div>
   )
-}
+})
 
 const DataManagement = ({ onDeleteSave }) => {
   const { t } = useTranslation()

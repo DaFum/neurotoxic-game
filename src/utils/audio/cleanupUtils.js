@@ -23,15 +23,19 @@ export function clearTransportEvent(id, name) {
  */
 export function stopAndDisconnectSource(source, name) {
   if (!source) return
-  try {
-    source.stop()
-  } catch (error) {
-    logger.debug('AudioEngine', `${name} source stop failed`, error)
+  if (typeof source.stop === 'function') {
+    try {
+      source.stop()
+    } catch (error) {
+      logger.debug('AudioEngine', `${name} source stop failed`, error)
+    }
   }
-  try {
-    source.disconnect()
-  } catch (error) {
-    logger.debug('AudioEngine', `${name} source disconnect failed`, error)
+  if (typeof source.disconnect === 'function') {
+    try {
+      source.disconnect()
+    } catch (error) {
+      logger.debug('AudioEngine', `${name} source disconnect failed`, error)
+    }
   }
 }
 
