@@ -6,7 +6,9 @@ import { ToggleSwitch } from './ToggleSwitch'
 import { LOG_LEVELS } from '../../utils/logger.js'
 import { DeadmanButton } from './BrutalistUI'
 
-export const SettingsPanel = ({
+import { memo } from 'react'
+
+export const SettingsPanel = memo(function SettingsPanel({
   settings,
   musicVol = 0,
   sfxVol = 0,
@@ -18,7 +20,7 @@ export const SettingsPanel = ({
   onLogLevelChange = () => {},
   onDeleteSave,
   className = ''
-}) => {
+}) {
   const { t, i18n } = useTranslation()
 
   return (
@@ -131,7 +133,7 @@ export const SettingsPanel = ({
       <DataManagement onDeleteSave={onDeleteSave} />
     </div>
   )
-}
+})
 
 const DataManagement = ({ onDeleteSave }) => {
   const { t } = useTranslation()

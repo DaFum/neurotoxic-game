@@ -21,6 +21,7 @@ const resolveTemplateString = (str, context) => {
   if (!str || typeof str !== 'string' || str.indexOf('{') === -1) return str
 
   let keys = null
+  let lowerKeys = null
 
   return str.replace(TEMPLATE_REGEX, (match, key) => {
     // Fast path: exact case match
@@ -29,12 +30,16 @@ const resolveTemplateString = (str, context) => {
     }
 
     // Fallback: case-insensitive match (as the original implementation used 'gi')
-    if (!keys) keys = Object.keys(context)
-    const lowerKey = key.toLowerCase()
-    const foundKey = keys.find(k => k.toLowerCase() === lowerKey)
+    if (!keys) {
+      keys = Object.keys(context)
+      lowerKeys = keys.map(k => k.toLowerCase())
+    }
 
-    if (foundKey && typeof context[foundKey] === 'string') {
-      return context[foundKey]
+    const lowerKey = key.toLowerCase()
+    const foundIdx = lowerKeys.findIndex(k => k === lowerKey)
+
+    if (foundIdx !== -1 && typeof context[keys[foundIdx]] === 'string') {
+      return context[keys[foundIdx]]
     }
 
     return match // Return original template if no match is found

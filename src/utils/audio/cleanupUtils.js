@@ -28,10 +28,12 @@ export function stopAndDisconnectSource(source, name) {
   } catch (error) {
     logger.debug('AudioEngine', `${name} source stop failed`, error)
   }
-  try {
-    source.disconnect()
-  } catch (error) {
-    logger.debug('AudioEngine', `${name} source disconnect failed`, error)
+  if (typeof source.disconnect === 'function') {
+    try {
+      source.disconnect()
+    } catch (error) {
+      logger.debug('AudioEngine', `${name} source disconnect failed`, error)
+    }
   }
 }
 

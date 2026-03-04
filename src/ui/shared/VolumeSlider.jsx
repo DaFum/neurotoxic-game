@@ -1,7 +1,8 @@
+import { memo } from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 
-export const VolumeSlider = ({ label, value, onChange }) => {
+export const VolumeSlider = memo(function VolumeSlider({ label, value, onChange }) {
   const { t } = useTranslation(['ui'])
   const clampedValue = Math.min(1, Math.max(0, value))
   const max = 10
@@ -59,7 +60,7 @@ export const VolumeSlider = ({ label, value, onChange }) => {
       </div>
     </div>
   )
-}
+})
 
 VolumeSlider.propTypes = {
   label: PropTypes.string.isRequired,
