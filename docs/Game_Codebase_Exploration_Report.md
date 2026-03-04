@@ -1,13 +1,13 @@
 ## NEUROTOXIC Game Codebase Exploration Report
 
 > [!NOTE]
-> This is a **point-in-time exploration archive**. Some code excerpts or logic descriptions (e.g., economy fuel vs food) may have been refactored since this report was generated. For current system truths, always consult [AGENTS.md](file:///c:/Users/andre.oswald/Code/Neuro/neurotoxic-game/AGENTS.md) or [ARCHITECTURE.md](file:///c:/Users/andre.oswald/Code/Neuro/neurotoxic-game/docs/ARCHITECTURE.md).
+> This is a **point-in-time exploration archive**. Some code excerpts or logic descriptions (e.g., economy fuel vs food) may have been refactored since this report was generated. For current system truths, always consult [AGENTS.md](../AGENTS.md) or [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ## I've completed a thorough exploration of the NEUROTOXIC game codebase, focusing on the stage system, rhythm game hooks, and economy engine. Here's the full analysis:
 
 ### 1. **LaneManager.js** — Complete Code Excerpt
 
-**Location:** `/home/user/neurotoxic-game/src/components/stage/LaneManager.js`
+**Location:** `src/components/stage/LaneManager.js`
 
 ```javascript
 import * as PIXI from 'pixi.js'
@@ -240,7 +240,7 @@ export class LaneManager {
 
 ### 2. **PixiStage.jsx Props Interface** — Complete Code
 
-**Location:** `/home/user/neurotoxic-game/src/components/PixiStage.jsx`
+**Location:** `src/components/PixiStage.jsx`
 
 ```javascript
 import { useEffect, useRef } from 'react'
@@ -348,7 +348,7 @@ props: {
 
 ### 3. **PixiStageController.js** — Lifecycle and API Overview
 
-**Location:** `/home/user/neurotoxic-game/src/components/PixiStageController.js`
+**Location:** `src/components/PixiStageController.js`
 **Key Architecture:**
 
 - **Constructor:** Takes containerRef, gameStateRef, updateRef, statsRef
@@ -380,7 +380,7 @@ if (stats?.isToxicMode) {
 
 ### 4. **src/hooks/rhythmGame/** — Sub-Hook Structure
 
-**Location:** `/home/user/neurotoxic-game/src/hooks/rhythmGame/`
+**Location:** `src/hooks/rhythmGame/`
 **Hook Dependency Graph:**
 
 ```
@@ -447,7 +447,7 @@ useRhythmGameLogic (main orchestrator)
 
 ### 5. **economyEngine.js** — Complete Exports
 
-**Location:** `/home/user/neurotoxic-game/src/utils/economyEngine.js`
+**Location:** `src/utils/economyEngine.js`
 **Exported Constants:**
 
 ```javascript
@@ -576,7 +576,7 @@ export const shouldTriggerBankruptcy = (newMoney, netIncome) => {
 
 ### 6. **gameStateUtils.js** — Utility Functions
 
-**Location:** `/home/user/neurotoxic-game/src/utils/gameStateUtils.js`
+**Location:** `src/utils/gameStateUtils.js`
 
 ```javascript
 /**

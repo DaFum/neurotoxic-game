@@ -12,106 +12,200 @@ This document is a code-aligned architecture snapshot for the current `main` app
 ## Source Layout (Current)
 
 ```text
-src/
-├── App.jsx
-├── main.jsx
-├── index.css
+src
 ├── assets/
-├── components/
-│   ├── PixiStage.jsx
-│   ├── PixiStageController.js
+├── components
+│   ├── hud
+│   │   ├── ComboDisplay.jsx
+│   │   ├── ControlsHint.jsx
+│   │   ├── GameOverOverlay.jsx
+│   │   ├── HealthBar.jsx
+│   │   ├── LaneInputArea.jsx
+│   │   ├── OverloadMeter.jsx
+│   │   ├── PauseButton.jsx
+│   │   ├── ScoreDisplay.jsx
+│   │   └── ToxicModeFlash.jsx
+│   ├── postGig
+│   │   ├── CompletePhase.jsx
+│   │   ├── DealsPhase.jsx
+│   │   ├── ReportPhase.jsx
+│   │   └── SocialPhase.jsx
+│   ├── stage
+│   │   ├── BaseStageController.js
+│   │   ├── CrowdManager.js
+│   │   ├── EffectManager.js
+│   │   ├── LaneManager.js
+│   │   ├── NoteManager.js
+│   │   ├── RoadieStageController.js
+│   │   ├── TourbusStageController.js
+│   │   └── utils.js
+│   ├── ChatterOverlay.jsx
 │   ├── GigHUD.jsx
 │   ├── HecklerOverlay.jsx
-│   ├── ChatterOverlay.jsx
+│   ├── MapConnection.jsx
+│   ├── MapNode.jsx
+│   ├── MinigameSceneFrame.jsx
+│   ├── PixiStage.jsx
+│   ├── PixiStageController.js
 │   ├── ToggleRadio.jsx
-│   ├── TutorialManager.jsx
-│   └── stage/
-│       ├── TourbusStageController.js
-│       ├── RoadieStageController.js
-│       ├── utils.js              # Stage-specific utilities
-│       └── ...                   # Pixi manager classes
-├── context/
+│   └── TutorialManager.jsx
+├── context
+│   ├── reducers
+│   │   ├── bandReducer.js
+│   │   ├── eventReducer.js
+│   │   ├── gigReducer.js
+│   │   ├── minigameReducer.js
+│   │   ├── playerReducer.js
+│   │   ├── questReducer.js
+│   │   ├── sceneReducer.js
+│   │   ├── socialReducer.js
+│   │   └── systemReducer.js
 │   ├── GameState.jsx
-│   ├── initialState.js
+│   ├── actionCreators.js
+│   ├── actionTypes.js
+│   ├── gameConstants.js
 │   ├── gameReducer.js
-│   └── actionCreators.js
-├── data/
-│   ├── venues.js
-│   ├── songs.js
-│   ├── chatter/
+│   └── initialState.js
+├── data
+│   ├── chatter
 │   │   ├── index.js
 │   │   ├── standardChatter.js
 │   │   └── venueChatter.js
-│   ├── postOptions.js
-│   ├── upgradeCatalog.js
-│   ├── hqItems.js
+│   ├── events
+│   │   ├── band.js
+│   │   ├── consequences.js
+│   │   ├── constants.js
+│   │   ├── crisis.js
+│   │   ├── financial.js
+│   │   ├── gig.js
+│   │   ├── index.js
+│   │   ├── quests.js
+│   │   ├── relationshipEvents.js
+│   │   ├── special.js
+│   │   └── transport.js
 │   ├── brandDeals.js
 │   ├── characters.js
-│   └── events/
-│       ├── index.js
-│       ├── transport.js
-│       ├── band.js
-│       ├── gig.js
-│       ├── financial.js
-│       ├── special.js
-│       ├── crisis.js
-│       └── consequences.js
-├── hooks/
-│   ├── useTravelLogic.js
-│   ├── usePurchaseLogic.js
+│   ├── chatter.js
+│   ├── hqItems.js
+│   ├── platforms.js
+│   ├── postOptions.js
+│   ├── socialTrends.js
+│   ├── songs.js
+│   ├── upgradeCatalog.js
+│   └── venues.js
+├── hooks
+│   ├── minigames
+│   │   ├── constants.js
+│   │   ├── useRoadieLogic.js
+│   │   └── useTourbusLogic.js
+│   ├── rhythmGame
+│   │   ├── useRhythmGameAudio.js
+│   │   ├── useRhythmGameInput.js
+│   │   ├── useRhythmGameLoop.js
+│   │   ├── useRhythmGameScoring.js
+│   │   └── useRhythmGameState.js
+│   ├── useArrivalLogic.js
 │   ├── useAudioControl.js
+│   ├── useBandHQModal.js
+│   ├── useGigEffects.js
+│   ├── useGigInput.js
+│   ├── useLeaderboardSync.js
+│   ├── usePurchaseLogic.js
+│   ├── useQuestsModal.js
 │   ├── useRhythmGameLogic.js
-│   ├── minigames/
-│   │   ├── useTourbusLogic.js
-│   │   └── useRoadieLogic.js
-│   └── rhythmGame/
-│       ├── useRhythmGameAudio.js
-│       ├── useRhythmGameInput.js
-│       ├── useRhythmGameLoop.js
-│       ├── useRhythmGameScoring.js
-│       └── useRhythmGameState.js
-├── scenes/
+│   └── useTravelLogic.js
+├── scenes
+│   ├── Credits.jsx
+│   ├── GameOver.jsx
+│   ├── Gig.jsx
 │   ├── IntroVideo.jsx
 │   ├── MainMenu.jsx
 │   ├── Overworld.jsx
-│   ├── TourbusScene.jsx
+│   ├── PostGig.jsx
 │   ├── PreGig.jsx
 │   ├── RoadieRunScene.jsx
-│   ├── Gig.jsx
-│   ├── PostGig.jsx
 │   ├── Settings.jsx
-│   ├── Credits.jsx
-│   └── GameOver.jsx
-├── ui/
-│   ├── HUD.jsx
-│   ├── EventModal.jsx
-│   ├── ToastOverlay.jsx
-│   ├── DebugLogViewer.jsx
+│   └── TourbusScene.jsx
+├── ui
+│   ├── bandhq
+│   │   ├── DetailedStatsTab.jsx
+│   │   ├── LeaderboardTab.jsx
+│   │   ├── SetlistTab.jsx
+│   │   ├── SettingsTab.jsx
+│   │   ├── ShopItem.jsx
+│   │   ├── ShopTab.jsx
+│   │   ├── StatsTab.jsx
+│   │   └── UpgradesTab.jsx
+│   ├── shared
+│   │   ├── ActionButton.jsx
+│   │   ├── AnimatedTypography.jsx
+│   │   ├── BrutalistUI.jsx
+│   │   ├── Icons.jsx
+│   │   ├── Modal.jsx
+│   │   ├── SettingsPanel.jsx
+│   │   ├── ToggleSwitch.jsx
+│   │   ├── Tooltip.jsx
+│   │   ├── VolumeSlider.jsx
+│   │   ├── index.jsx
+│   │   └── propTypes.js
 │   ├── BandHQ.jsx
-│   ├── GlitchButton.jsx
 │   ├── CrashHandler.jsx
-│   └── shared/
-└── utils/
-    ├── audio/
-    │   ├── assets.js
-    │   ├── constants.js
-    │   ├── playback.js
-    │   ├── procedural.js
-    │   ├── setup.js
-    │   ├── midiUtils.js
-    │   ├── playbackUtils.js
-    │   ├── selectionUtils.js
-    │   ├── songUtils.js
-    │   └── timingUtils.js
-    ├── audioEngine.js
-    ├── AudioManager.js
-    ├── eventEngine.js
-    ├── mapGenerator.js
-    ├── economyEngine.js
-    ├── simulationUtils.js
-    ├── gameStateUtils.js
-    ├── saveValidator.js
-    └── ...
+│   ├── DebugLogViewer.jsx
+│   ├── EventModal.jsx
+│   ├── GigModifierButton.jsx
+│   ├── GlitchButton.jsx
+│   ├── HUD.jsx
+│   ├── QuestsModal.jsx
+│   └── ToastOverlay.jsx
+├── utils
+│   ├── audio
+│   │   ├── ambient.js
+│   │   ├── assets.js
+│   │   ├── cleanupUtils.js
+│   │   ├── constants.js
+│   │   ├── drumMappings.js
+│   │   ├── midiPlayback.js
+│   │   ├── midiUtils.js
+│   │   ├── playback.js
+│   │   ├── playbackUtils.js
+│   │   ├── proceduralMetal.js
+│   │   ├── selectionUtils.js
+│   │   ├── setup.js
+│   │   ├── sharedBufferUtils.js
+│   │   ├── songUtils.js
+│   │   ├── state.js
+│   │   └── timingUtils.js
+│   ├── AudioManager.js
+│   ├── arrivalUtils.js
+│   ├── audioContextState.js
+│   ├── audioEngine.js
+│   ├── crypto.js
+│   ├── economyEngine.js
+│   ├── errorHandler.js
+│   ├── eventEngine.js
+│   ├── gameStateUtils.js
+│   ├── gigStats.js
+│   ├── hecklerLogic.js
+│   ├── imageGen.js
+│   ├── lazySceneLoader.js
+│   ├── locationI18n.js
+│   ├── logger.js
+│   ├── mapGenerator.js
+│   ├── mapUtils.js
+│   ├── purchaseLogicUtils.js
+│   ├── rhythmUtils.js
+│   ├── saveValidator.js
+│   ├── simulationUtils.js
+│   ├── socialEngine.js
+│   ├── traitLogic.js
+│   ├── traitUtils.js
+│   ├── unlockCheck.js
+│   ├── unlockManager.js
+│   └── upgradeUtils.js
+├── App.jsx
+├── i18n.js
+├── index.css
+└── main.jsx
 ```
 
 ## State Model

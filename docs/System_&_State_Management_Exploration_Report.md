@@ -7,7 +7,7 @@
 
 ### **1. App.jsx Scene Switch (Main Router)**
 
-**File:** `/home/user/neurotoxic-game/src/App.jsx`
+**File:** `src/App.jsx`
 The `GameContent` component uses a switch statement to route scenes based on `currentScene` state:
 
 ```jsx
@@ -25,9 +25,14 @@ const renderScene = () => {
       return <GameOver />
     case 'OVERWORLD':
       return <Overworld />
+    case GAME_PHASES.TRAVEL_MINIGAME:
+      return <TourbusScene />
     case 'PREGIG':
       return <PreGig />
+    case GAME_PHASES.PRE_GIG_MINIGAME:
+      return <RoadieRunScene />
     case 'GIG':
+    case 'PRACTICE':
       return <Gig />
     case 'POSTGIG':
       return <PostGig />
@@ -41,7 +46,7 @@ const renderScene = () => {
 
 ### **2. ActionTypes Enum (All Possible Actions)**
 
-**File:** `/home/user/neurotoxic-game/src/context/gameReducer.js`
+**File:** `src/context/actionTypes.js`
 
 ```javascript
 export const ActionTypes = {
@@ -65,7 +70,19 @@ export const ActionTypes = {
   POP_PENDING_EVENT: 'POP_PENDING_EVENT',
   CONSUME_ITEM: 'CONSUME_ITEM',
   ADVANCE_DAY: 'ADVANCE_DAY',
-  ADD_COOLDOWN: 'ADD_COOLDOWN'
+  ADD_COOLDOWN: 'ADD_COOLDOWN',
+  START_TRAVEL_MINIGAME: 'START_TRAVEL_MINIGAME',
+  COMPLETE_TRAVEL_MINIGAME: 'COMPLETE_TRAVEL_MINIGAME',
+  START_ROADIE_MINIGAME: 'START_ROADIE_MINIGAME',
+  COMPLETE_ROADIE_MINIGAME: 'COMPLETE_ROADIE_MINIGAME',
+  UNLOCK_TRAIT: 'UNLOCK_TRAIT',
+
+  ADD_VENUE_BLACKLIST: 'ADD_VENUE_BLACKLIST',
+  ADD_QUEST: 'ADD_QUEST',
+  ADVANCE_QUEST: 'ADVANCE_QUEST',
+  COMPLETE_QUEST: 'COMPLETE_QUEST',
+  FAIL_QUESTS: 'FAIL_QUESTS',
+  ADD_UNLOCK: 'ADD_UNLOCK'
 }
 ```
 
@@ -79,7 +96,7 @@ Key scene-related actions:
 
 ### **3. Action Creators (Factory Functions)**
 
-**File:** `/home/user/neurotoxic-game/src/context/actionCreators.js`
+**File:** `src/context/actionCreators.js`
 
 ```javascript
 export const createChangeSceneAction = scene => ({
@@ -113,7 +130,7 @@ export const createAddToastAction = (message, type = 'info') => ({
 
 ### **4. Initial State Configuration**
 
-**File:** `/home/user/neurotoxic-game/src/context/initialState.js`
+**File:** `src/context/initialState.js`
 
 ```javascript
 export const initialState = {
@@ -199,7 +216,7 @@ GAMEOVER
 
 ### **6. PreGig.jsx - Full Structure & Scene Transitions**
 
-**File:** `/home/user/neurotoxic-game/src/scenes/PreGig.jsx`
+**File:** `src/scenes/PreGig.jsx`
 **Key State:**
 
 ```javascript
@@ -289,7 +306,7 @@ useEffect(() => {
 
 ### **7. PostGig.jsx - Full Structure & Scene Transitions**
 
-**File:** `/home/user/neurotoxic-game/src/scenes/PostGig.jsx`
+**File:** `src/scenes/PostGig.jsx`
 **Key State:**
 
 ```javascript
@@ -419,7 +436,7 @@ const handleContinue = () => {
 
 ### **8. State Reducer - Key Handlers**
 
-**File:** `/home/user/neurotoxic-game/src/context/gameReducer.js`
+**File:** `src/context/reducers/sceneReducer.js`
 **CHANGE_SCENE Handler:**
 
 ```javascript
@@ -429,6 +446,7 @@ const handleChangeScene = (state, payload) => {
 }
 ```
 
+**File:** `src/context/reducers/gigReducer.js`
 **START_GIG Handler (Auto-transitions to PREGIG):**
 
 ```javascript
@@ -446,29 +464,37 @@ case ActionTypes.START_GIG:
 
 - Money clamped to ≥0: `mergedPlayer.money = clampPlayerMoney(mergedPlayer.money)`
 - Harmony clamped to 1-100: `mergedBand.harmony = clampBandHarmony(mergedBand.harmony)`
-- Game state loaded from localStorage is whitelisted:
+- Game state loaded from localStorage is whitelisted (Note: this validates only saveable states; non-saveable routing scenes like INTRO, MENU, SETTINGS, and CREDITS are explicitly excluded):
   ```javascript
-  const ALLOWED_SCENES = [
+  const ALLOWED_SCENES = new Set([
     'OVERWORLD',
     'PREGIG',
     'GIG',
+    'PRACTICE',
     'POSTGIG',
-    'HQ',
-    'BAND_HQ'
-  ]
+    'TRAVEL_MINIGAME',
+    'PRE_GIG_MINIGAME',
+    'GAMEOVER'
+  ])
   ```
 
 ---
 
 ### **9. State Management Hook - useGameState()**
 
-**File:** `/home/user/neurotoxic-game/src/context/GameState.jsx` (lines 518-534)
+**File:** `src/context/GameState.jsx` (lines 740-754)
 
 ```javascript
 export const useGameState = () => {
-  const state = useContext(GameStateContext)
-  const dispatch = useContext(GameDispatchContext)
+  const state = use(GameStateContext)
+  const dispatch = use(GameDispatchContext)
 
+  /**
+   * Checks if the player owns a specific van upgrade.
+   * Delegates to the pure utility in upgradeUtils.js for testability.
+   * @param {string} upgradeId - The ID of the upgrade.
+   * @returns {boolean} True if owned.
+   */
   const hasUpgrade = useCallback(
     upgradeId => checkUpgrade(state.player.van.upgrades, upgradeId),
     [state.player.van.upgrades]
@@ -527,7 +553,7 @@ Returns merged object with:
     │  ┌────────────────────────────────────────────┐ │
     │  │          OVERWORLD (map)                   │ │
     │  │  - Travel between venues                   │ │
-    │  │  - Rest at HQ                              │ │
+    │  │  - Rest at HQ (Overlay)                    │ │
     │  │  - Events (travel, camp)                   │ │
     │  └─────────┬──────────────────────────────────┘ │
     │            │                                     │

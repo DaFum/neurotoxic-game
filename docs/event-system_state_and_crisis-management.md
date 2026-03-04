@@ -172,7 +172,7 @@ All events follow this schema (defined across multiple event files):
 
 ### 4. ACTION TYPES IN REDUCER
 
-All available action types from `src/context/gameReducer.js`:
+All available action types from `src/context/actionTypes.js`:
 
 ```javascript
 export const ActionTypes = {
@@ -202,13 +202,12 @@ export const ActionTypes = {
   START_ROADIE_MINIGAME: 'START_ROADIE_MINIGAME',
   COMPLETE_ROADIE_MINIGAME: 'COMPLETE_ROADIE_MINIGAME',
   UNLOCK_TRAIT: 'UNLOCK_TRAIT',
-  RECORD_BAD_SHOW: 'RECORD_BAD_SHOW', // ← Increments bad show streak
-  RECORD_GOOD_SHOW: 'RECORD_GOOD_SHOW', // ← Resets bad show streak
   ADD_VENUE_BLACKLIST: 'ADD_VENUE_BLACKLIST', // ← Blacklists venue
   ADD_QUEST: 'ADD_QUEST', // ← Adds timed quest
   ADVANCE_QUEST: 'ADVANCE_QUEST', // ← Increments quest progress
   COMPLETE_QUEST: 'COMPLETE_QUEST', // ← Completes quest + rewards
-  FAIL_QUESTS: 'FAIL_QUESTS' // ← Expires overdue quests + penalties
+  FAIL_QUESTS: 'FAIL_QUESTS', // ← Expires overdue quests + penalties
+  ADD_UNLOCK: 'ADD_UNLOCK'
 }
 ```
 
@@ -314,16 +313,16 @@ After a gig, the game:
 
 | Purpose           | File Path                                                              |
 | ----------------- | ---------------------------------------------------------------------- |
-| Event definitions | `/home/user/neurotoxic-game/src/data/events/crisis.js` (crisis events) |
-| Event engine      | `/home/user/neurotoxic-game/src/utils/eventEngine.js`                  |
-| Event index       | `/home/user/neurotoxic-game/src/data/events/index.js`                  |
-| State schema      | `/home/user/neurotoxic-game/src/context/initialState.js`               |
-| Reducer & actions | `/home/user/neurotoxic-game/src/context/gameReducer.js`                |
-| Action creators   | `/home/user/neurotoxic-game/src/context/actionCreators.js`             |
-| Social mechanics  | `/home/user/neurotoxic-game/src/utils/socialEngine.js`                 |
-| Post options      | `/home/user/neurotoxic-game/src/data/postOptions.js`                   |
-| Daily updates     | `/home/user/neurotoxic-game/src/utils/simulationUtils.js`              |
-| Crisis docs       | `/home/user/neurotoxic-game/docs/CRISIS_MANAGEMENT.md`                 |
+| Event definitions | `src/data/events/crisis.js` (crisis events) |
+| Event engine      | `src/utils/eventEngine.js`                  |
+| Event index       | `src/data/events/index.js`                  |
+| State schema      | `src/context/initialState.js`               |
+| Reducer & actions | `src/context/reducers/`                     |
+| Action creators   | `src/context/actionCreators.js`             |
+| Social mechanics  | `src/utils/socialEngine.js`                 |
+| Post options      | `src/data/postOptions.js`                   |
+| Daily updates     | `src/utils/simulationUtils.js`              |
+| Crisis docs       | `docs/CRISIS_MANAGEMENT.md`                 |
 
 ---
 
