@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { MainMenu } from '../src/scenes/MainMenu'
 import { useGameState } from '../src/context/GameState'
@@ -609,6 +609,7 @@ describe('MainMenu Component', () => {
       expect(startGameIndex).toBeGreaterThanOrEqual(0)
       expect(loadGameIndex).toBeGreaterThanOrEqual(0)
       expect(bandHQIndex).toBeGreaterThanOrEqual(0)
+      expect(creditsIndex).toBeGreaterThanOrEqual(0)
 
       // Primary buttons should come before secondary buttons
       expect(startGameIndex).toBeLessThan(socialsIndex)
@@ -617,7 +618,7 @@ describe('MainMenu Component', () => {
     })
 
     it('renders socials and credits buttons in the same group', () => {
-      const { container } = render(<MainMenu />)
+      render(<MainMenu />)
 
       const socialsButton = screen.getByText('ui:socials')
       const creditsButton = screen.getByText('ui:credits')

@@ -14,18 +14,15 @@ export const LeaderboardTab = () => {
   // view can be 'BALANCE', 'SONG', 'FAME', 'FOLLOWERS', 'DISTANCE', 'CONFLICTS', 'STAGE_DIVES'
   const [view, setView] = useState('BALANCE')
   const [selectedSongId, setSelectedSongId] = useState(
-    SONGS_DB[0]?.leaderboardId || ''
+    () => SONGS_DB[0]?.leaderboardId || ''
   )
   const [rankings, setRankings] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  useEffect(() => {
-    // If we switch to song view and have no song selected, try to select the first one
-    if (view === 'SONG' && !selectedSongId && SONGS_DB.length > 0) {
-      setSelectedSongId(SONGS_DB[0].leaderboardId)
-    }
-  }, [view, selectedSongId])
+  const activeSongId = view === 'SONG' && !selectedSongId && SONGS_DB.length > 0
+    ? SONGS_DB[0].leaderboardId
+    : selectedSongId
 
   useEffect(() => {
     const controller = new AbortController()
@@ -46,12 +43,12 @@ export const LeaderboardTab = () => {
         let url = `/api/leaderboard/stats?stat=${viewToStat[view] || 'balance'}&limit=100`
 
         if (view === 'SONG') {
-          if (!selectedSongId) {
+          if (!activeSongId) {
             setRankings([])
             setIsLoading(false)
             return
           }
-          url = `/api/leaderboard/song?songId=${encodeURIComponent(selectedSongId)}&limit=100`
+          url = `/api/leaderboard/song?songId=${encodeURIComponent(activeSongId)}&limit=100`
         }
 
         const res = await fetch(url, { signal: controller.signal })
@@ -75,7 +72,7 @@ export const LeaderboardTab = () => {
     return () => {
       controller.abort()
     }
-  }, [view, selectedSongId, t])
+  }, [view, activeSongId, t])
 
   const viewTitles = {
     BALANCE: t('ui:leaderboard.top_100_wealth'),
@@ -151,7 +148,7 @@ export const LeaderboardTab = () => {
           <select
             id='songSelect'
             className='bg-(--void-black) border border-(--toxic-green) text-(--toxic-green) p-2 font-mono uppercase focus:outline-none'
-            value={selectedSongId}
+            value={activeSongId}
             onChange={e => setSelectedSongId(e.target.value)}
           >
             {SONGS_DB.map(song => (

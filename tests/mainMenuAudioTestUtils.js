@@ -28,27 +28,30 @@ export const setupMainMenuAudioTest = async () => {
     namedExports: { audioManager: mockAudioManager }
   })
 
+  const mockUseAudioControl = () => ({
+    audioState: { isMuted: false },
+    handleAudioChange: () => {}
+  })
+
   mock.module('../src/hooks/useAudioControl', {
     namedExports: {
-      // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
-      useAudioControl: () => ({
-        audioState: { isMuted: false },
-        handleAudioChange: () => {}
-      })
+      useAudioControl: mockUseAudioControl
+    }
+  })
+
+  const mockUseTranslation = () => ({
+    t: key => {
+      if (key === 'ui:start_game') return 'Start Tour'
+      if (key === 'ui:load_game') return 'Load Game'
+      if (key === 'ui:band_hq') return 'Band HQ'
+      if (key === 'ui:credits') return 'Credits'
+      return key
     }
   })
 
   mock.module('react-i18next', {
     namedExports: {
-      useTranslation: () => ({
-        t: key => {
-          if (key === 'ui:start_game') return 'Start Tour'
-          if (key === 'ui:load_game') return 'Load Game'
-          if (key === 'ui:band_hq') return 'Band HQ'
-          if (key === 'ui:credits') return 'Credits'
-          return key
-        }
-      }),
+      useTranslation: mockUseTranslation,
       Trans: ({ i18nKey }) => i18nKey
     }
   })
@@ -82,5 +85,5 @@ export const setupMainMenuAudioTest = async () => {
 
   const { MainMenu } = await import('../src/scenes/MainMenu.jsx')
 
-  return { MainMenu, mockUseGameState }
+  return { MainMenu, mockUseGameState: getMockGameState }
 }

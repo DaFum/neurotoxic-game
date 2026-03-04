@@ -116,7 +116,7 @@ export const useRhythmGameScoring = ({
       const decayPerMiss = basePenalty * Math.max(0.1, crowdDecay)
 
       setHealth(h => {
-        const next = Math.max(0, h - decayPerMiss * count)
+        const next = Math.max(0, Math.min(100, h - decayPerMiss * count))
         if (next <= 0 && !gameStateRef.current.isGameOver) {
           setIsGameOver(true)
           gameStateRef.current.isGameOver = true
@@ -258,7 +258,7 @@ export const useRhythmGameScoring = ({
           return next
         })
         setHealth(h => {
-          const next = Math.min(100, h + (toxicModeActive ? 1 : 2)) // Reduced regen in Toxic Mode
+          const next = Math.max(0, Math.min(100, h + (toxicModeActive ? 1 : 2))) // Reduced regen in Toxic Mode
           gameStateRef.current.health = next
           return next
         })

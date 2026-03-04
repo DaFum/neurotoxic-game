@@ -562,7 +562,7 @@ export const shouldTriggerBankruptcy = (newMoney, netIncome) => {
  */
 export const calculateTravelMinigameResult = (damageTaken, _itemsCollected) => {
   // 50% damage scaling: 100 damage -> 50 condition loss
-  const conditionLoss = Math.floor(damageTaken / 2)
+  const conditionLoss = Math.floor(Math.max(0, damageTaken) / 2)
   // Fuel bonus disabled per design: fuel only fills via Refuel button
   const fuelBonus = 0
   return { conditionLoss, fuelBonus }
