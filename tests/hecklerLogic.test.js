@@ -98,7 +98,6 @@ test('trySpawnProjectile - verifies all spawned object properties', () => {
   const screenWidth = 2000
   const values = [
     0.0001, // random() < spawnChance (spawns!)
-    0.5, // id part
     0.5, // x (0.5 * 2000 = 1000)
     0.7, // vx ((0.7 - 0.5) * 0.5 = 0.1)
     0.5, // vy (0.3 + 0.5 * 0.4 = 0.5)
@@ -120,8 +119,7 @@ test('trySpawnProjectile - verifies all spawned object properties', () => {
     const projectile = trySpawnProjectile(stats, mockRandom, screenWidth)
 
     assert.ok(projectile)
-    assert.equal(typeof projectile.id, 'number')
-    assert.equal(projectile.id, 1234567890.5)
+    assert.equal(typeof projectile.id, 'string')
     assert.equal(projectile.x, 1000)
     assert.equal(projectile.y, -100)
     // use approximate equality for floats
@@ -157,7 +155,7 @@ test('trySpawnProjectile - combo boundary (30 vs 31)', () => {
 
 test('trySpawnProjectile - screenWidth influence on x', () => {
   const stats = { health: 100, combo: 0 }
-  const values = [0, 0, 0.5, 0.5, 0.5, 0.5, 0.5] // spawn, id, x, vx, vy, vr, type
+  const values = [0, 0.5, 0.5, 0.5, 0.5, 0.5] // spawn, x, vx, vy, vr, type
   let i = 0
   const mockRandom = () => {
     if (i >= values.length) {

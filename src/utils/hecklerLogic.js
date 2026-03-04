@@ -56,7 +56,7 @@ export const trySpawnProjectile = (
 
   if (random() < spawnChance) {
     return {
-      id: Date.now() + random(),
+      id: crypto.randomUUID(),
       x: random() * screenWidth,
       y: -100, // Start above screen
       vx: (random() - 0.5) * 0.5, // Drift left/right

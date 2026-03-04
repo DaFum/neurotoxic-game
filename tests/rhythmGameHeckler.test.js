@@ -12,7 +12,7 @@ test('trySpawnProjectile respects spawn chance', () => {
   const projectile = trySpawnProjectile({ health: 100 }, alwaysSpawn, 1000)
 
   assert.ok(projectile, 'Should spawn when random value is low')
-  assert.strictEqual(typeof projectile.id, 'number')
+  assert.strictEqual(typeof projectile.id, 'string')
   assert.strictEqual(projectile.y, -100)
   assert.ok(projectile.type === 'bottle' || projectile.type === 'tomato')
 })
