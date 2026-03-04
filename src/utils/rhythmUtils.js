@@ -255,7 +255,7 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
  * @param {number} target - Target time in ms.
  * @returns {number} Index of the first note with `time >= target`.
  */
-const lowerBound = (notes, target) => {
+const _lowerBound = (notes, target) => {
   let lo = 0
   let hi = notes.length
   while (lo < hi) {

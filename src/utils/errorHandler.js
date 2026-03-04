@@ -372,10 +372,18 @@ export const handleError = (error, options = {}) => {
  * Initializes global error listeners. Idempotent — safe to call multiple times.
  */
 export const initGlobalErrorHandling = () => {
-  if (typeof window === 'undefined' || window.__initGlobalErrorHandlingDone) return
-  window.__initGlobalErrorHandlingDone = true
+  const INIT_SYMBOL = Symbol.for('initGlobalErrorHandlingDone')
+  if (typeof window === 'undefined' || window[INIT_SYMBOL]) return
+  window[INIT_SYMBOL] = true
   window.addEventListener('unhandledrejection', event => {
-    handleError(event.reason || new Error('Unhandled Promise Rejection'), {
+    const reason = event.reason
+    const errorToHandle =
+      reason instanceof Error
+        ? reason
+        : new Error(
+            typeof reason === 'string' ? reason : 'Unhandled Promise Rejection'
+          )
+    handleError(errorToHandle, {
       source: 'unhandledrejection',
       severity: ErrorSeverity.HIGH
     })
@@ -426,7 +434,8 @@ export const safeStorageOperation = (operation, fn, fallbackValue = null) => {
  */
 export const withRetry = async (fn, options = {}) => {
   const { retries = 3, delay = 1000, backoff = 2 } = options
-  const maxAttempts = Math.max(1, retries)
+  const safeRetries = Number.isFinite(retries) ? Math.max(0, retries) : 3
+  const maxAttempts = safeRetries + 1
   let attempt = 0
   let currentDelay = delay
 
