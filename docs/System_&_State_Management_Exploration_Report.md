@@ -7,7 +7,7 @@
 
 ### **1. App.jsx Scene Switch (Main Router)**
 
-**File:** `/home/user/neurotoxic-game/src/App.jsx`
+**File:** `src/App.jsx`
 The `GameContent` component uses a switch statement to route scenes based on `currentScene` state:
 
 ```jsx
@@ -41,7 +41,7 @@ const renderScene = () => {
 
 ### **2. ActionTypes Enum (All Possible Actions)**
 
-**File:** `/home/user/neurotoxic-game/src/context/actionTypes.js`
+**File:** `src/context/actionTypes.js`
 
 ```javascript
 export const ActionTypes = {
@@ -91,7 +91,7 @@ Key scene-related actions:
 
 ### **3. Action Creators (Factory Functions)**
 
-**File:** `/home/user/neurotoxic-game/src/context/actionCreators.js`
+**File:** `src/context/actionCreators.js`
 
 ```javascript
 export const createChangeSceneAction = scene => ({
@@ -125,7 +125,7 @@ export const createAddToastAction = (message, type = 'info') => ({
 
 ### **4. Initial State Configuration**
 
-**File:** `/home/user/neurotoxic-game/src/context/initialState.js`
+**File:** `src/context/initialState.js`
 
 ```javascript
 export const initialState = {
@@ -211,7 +211,7 @@ GAMEOVER
 
 ### **6. PreGig.jsx - Full Structure & Scene Transitions**
 
-**File:** `/home/user/neurotoxic-game/src/scenes/PreGig.jsx`
+**File:** `src/scenes/PreGig.jsx`
 **Key State:**
 
 ```javascript
@@ -301,7 +301,7 @@ useEffect(() => {
 
 ### **7. PostGig.jsx - Full Structure & Scene Transitions**
 
-**File:** `/home/user/neurotoxic-game/src/scenes/PostGig.jsx`
+**File:** `src/scenes/PostGig.jsx`
 **Key State:**
 
 ```javascript
@@ -431,7 +431,7 @@ const handleContinue = () => {
 
 ### **8. State Reducer - Key Handlers**
 
-**File:** `/home/user/neurotoxic-game/src/context/reducers/sceneReducer.js`
+**File:** `src/context/reducers/sceneReducer.js`
 **CHANGE_SCENE Handler:**
 
 ```javascript
@@ -441,6 +441,7 @@ const handleChangeScene = (state, payload) => {
 }
 ```
 
+**File:** `src/context/reducers/gigReducer.js`
 **START_GIG Handler (Auto-transitions to PREGIG):**
 
 ```javascript
@@ -460,21 +461,23 @@ case ActionTypes.START_GIG:
 - Harmony clamped to 1-100: `mergedBand.harmony = clampBandHarmony(mergedBand.harmony)`
 - Game state loaded from localStorage is whitelisted:
   ```javascript
-  const ALLOWED_SCENES = [
+  const ALLOWED_SCENES = new Set([
     'OVERWORLD',
     'PREGIG',
     'GIG',
+    'PRACTICE',
     'POSTGIG',
-    'HQ',
-    'BAND_HQ'
-  ]
+    'TRAVEL_MINIGAME',
+    'PRE_GIG_MINIGAME',
+    'GAMEOVER'
+  ])
   ```
 
 ---
 
 ### **9. State Management Hook - useGameState()**
 
-**File:** `/home/user/neurotoxic-game/src/context/GameState.jsx` (lines 518-534)
+**File:** `src/context/GameState.jsx` (lines 518-534)
 
 ```javascript
 export const useGameState = () => {

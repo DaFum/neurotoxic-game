@@ -1,6 +1,6 @@
 ### 1. FULL ECONOMY CALCULATION CHAIN (Input → Output)
 
-**File:** `/home/user/neurotoxic-game/src/utils/economyEngine.js`
+**File:** `src/utils/economyEngine.js`
 The gig financials calculation is driven by `calculateGigFinancials()` which processes:
 
 #### **INPUTS:**
@@ -69,7 +69,7 @@ The gig financials calculation is driven by `calculateGigFinancials()` which pro
 
 ### 2. VENUE DATA STRUCTURE
 
-**File:** `/home/user/neurotoxic-game/src/data/venues.js`
+**File:** `src/data/venues.js`
 Contains 47 venues across Germany. Each venue object:
 
 ```javascript
@@ -99,7 +99,7 @@ Contains 47 venues across Germany. Each venue object:
 
 ### 3. "BAD SHOW" DETECTION
 
-**Location 1:** `/home/user/neurotoxic-game/src/utils/economyEngine.js` (line 120)
+**Location 1:** `src/utils/economyEngine.js` (line 120)
 
 ```javascript
 if (performanceScore < 40) {
@@ -107,7 +107,7 @@ if (performanceScore < 40) {
 }
 ```
 
-**Location 2:** `/home/user/neurotoxic-game/src/context/reducers/gigReducer.js`
+**Location 2:** `src/context/reducers/gigReducer.js`
 
 ```javascript
 if (score < 30) {
@@ -134,7 +134,7 @@ if (score < 30) {
 
 ### 4. REPUTATION SYSTEM
 
-**File:** `/home/user/neurotoxic-game/src/context/reducers/gigReducer.js`
+**File:** `src/context/reducers/gigReducer.js`
 
 - **Storage:** `state.reputationByRegion` (object with region/city keys)
 - **Trigger:** When setting `lastGigStats` after gig completion
@@ -146,7 +146,7 @@ if (score < 30) {
 
 ### 5. OVERWORLD VENUE DISPLAY & BOOKING FLOW
 
-**File:** `/home/user/neurotoxic-game/src/scenes/Overworld.jsx`
+**File:** `src/scenes/Overworld.jsx`
 
 #### **Node Generation & Visibility:**
 
@@ -188,7 +188,7 @@ if (score < 30) {
 
 ### 6. POSTGIG SCENE SEQUENCE
 
-**File:** `/home/user/neurotoxic-game/src/scenes/PostGig.jsx`
+**File:** `src/scenes/PostGig.jsx`
 **Flow:**
 
 1. **REPORT Phase** - Display financials breakdown (income/expenses/net)
@@ -212,7 +212,7 @@ fameGain = 50 + Math.floor(perfScore × 1.5)
 
 ### 7. MAP GENERATOR VENUE ASSIGNMENT
 
-**File:** `/home/user/neurotoxic-game/src/utils/mapGenerator.js`
+**File:** `src/utils/mapGenerator.js`
 **Assignment Logic:**
 
 - **Layers 1-2:** Easy venues (diff ≤2)

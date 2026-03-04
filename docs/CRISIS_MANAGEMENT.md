@@ -107,7 +107,7 @@ if (deal.penalty) {
 
 ## 2. CRITICAL GAPS & MISSING FEATURES (RESOLVED)
 
-_Note: The features listed below have been resolved via updates to `crisis.js`, `simulationUtils.js`, `systemReducer.js`, and `useTravelLogic.js`._
+_Note: The features listed below have been resolved via updates to `crisis.js`, `simulationUtils.js`, `systemReducer.js`, `gigReducer.js`, `socialReducer.js`, and `useTravelLogic.js`._
 
 ### A. Explicit "Bad Review" or "Poor Performance" Events
 

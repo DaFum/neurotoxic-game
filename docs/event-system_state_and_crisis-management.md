@@ -313,16 +313,16 @@ After a gig, the game:
 
 | Purpose           | File Path                                                              |
 | ----------------- | ---------------------------------------------------------------------- |
-| Event definitions | `/home/user/neurotoxic-game/src/data/events/crisis.js` (crisis events) |
-| Event engine      | `/home/user/neurotoxic-game/src/utils/eventEngine.js`                  |
-| Event index       | `/home/user/neurotoxic-game/src/data/events/index.js`                  |
-| State schema      | `/home/user/neurotoxic-game/src/context/initialState.js`               |
-| Reducer & actions | `/home/user/neurotoxic-game/src/context/reducers/`                     |
-| Action creators   | `/home/user/neurotoxic-game/src/context/actionCreators.js`             |
-| Social mechanics  | `/home/user/neurotoxic-game/src/utils/socialEngine.js`                 |
-| Post options      | `/home/user/neurotoxic-game/src/data/postOptions.js`                   |
-| Daily updates     | `/home/user/neurotoxic-game/src/utils/simulationUtils.js`              |
-| Crisis docs       | `/home/user/neurotoxic-game/docs/CRISIS_MANAGEMENT.md`                 |
+| Event definitions | `src/data/events/crisis.js` (crisis events) |
+| Event engine      | `src/utils/eventEngine.js`                  |
+| Event index       | `src/data/events/index.js`                  |
+| State schema      | `src/context/initialState.js`               |
+| Reducer & actions | `src/context/reducers/`                     |
+| Action creators   | `src/context/actionCreators.js`             |
+| Social mechanics  | `src/utils/socialEngine.js`                 |
+| Post options      | `src/data/postOptions.js`                   |
+| Daily updates     | `src/utils/simulationUtils.js`              |
+| Crisis docs       | `docs/CRISIS_MANAGEMENT.md`                 |
 
 ---
 
