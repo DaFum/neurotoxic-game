@@ -53,8 +53,9 @@ export const useRhythmGameAudio = ({
 
   /**
    * Initializes gig physics and note data once per gig.
+   * @param {AbortSignal} [signal] - Optional abort signal to cancel async init.
    */
-  const initializeGigState = useCallback(async () => {
+  const initializeGigState = useCallback(async (signal) => {
     // Prevent double initialization
     if (hasInitializedRef.current || isInitializingRef.current) {
       return
@@ -74,6 +75,12 @@ export const useRhythmGameAudio = ({
 
     try {
       const audioUnlocked = await audioManager.ensureAudioContext()
+
+      if (signal && signal.aborted) {
+        isInitializingRef.current = false
+        return
+      }
+
       if (!audioUnlocked) {
         logger.warn(
           'RhythmGame',
@@ -425,8 +432,12 @@ export const useRhythmGameAudio = ({
       }
 
       // Start the first song
-      await playSongAtIndex(0)
+      if (signal && !signal.aborted) {
+        await playSongAtIndex(0)
+      }
     } catch (error) {
+      if (signal && signal.aborted) return
+
       handleError(error, {
         addToast,
         fallbackMessage: 'Gig initialization failed!'
@@ -447,9 +458,11 @@ export const useRhythmGameAudio = ({
   ])
 
   useEffect(() => {
-    initializeGigState()
+    const abortController = new AbortController()
+    initializeGigState(abortController.signal)
 
     return () => {
+      abortController.abort()
       hasInitializedRef.current = false
       isInitializingRef.current = false
       stopAudio()
@@ -457,6 +470,6 @@ export const useRhythmGameAudio = ({
   }, [initializeGigState])
 
   return {
-    retryAudioInitialization: initializeGigState
+    retryAudioInitialization: () => initializeGigState()
   }
 }

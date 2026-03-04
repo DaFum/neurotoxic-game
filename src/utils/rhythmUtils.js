@@ -282,22 +282,41 @@ export const checkHit = (notes, laneIndex, elapsed, hitWindow) => {
   const windowStart = elapsed - hitWindow
   const windowEnd = elapsed + hitWindow
 
+  // Extract lane-specific notes if not already grouped.
+  // In a real engine, we'd pre-partition this, but filtering here is acceptable
+  // if notes are mostly sparse or if we strictly binary search the full array
+  // (the existing lowerBound on `notes` array works O(log N)).
+
   // Binary search to find the first note that could be in range
-  let i = lowerBound(notes, windowStart)
+  let lo = 0
+  let hi = notes.length - 1
+  let firstValidIndex = notes.length
+
+  while (lo <= hi) {
+    const mid = (lo + hi) >>> 1
+    if (notes[mid].time >= windowStart) {
+      firstValidIndex = mid
+      hi = mid - 1
+    } else {
+      lo = mid + 1
+    }
+  }
 
   // Scan forward through candidates within the time window
-  while (i < notes.length && notes[i].time <= windowEnd) {
+  for (let i = firstValidIndex; i < notes.length; i++) {
     const n = notes[i]
+    if (n.time >= windowEnd) break
+
     if (
       n.visible &&
       !n.hit &&
       n.laneIndex === laneIndex &&
       n.type === 'note' &&
+      n.time > windowStart &&
       Math.abs(n.time - elapsed) < hitWindow
     ) {
       return n
     }
-    i++
   }
   return null
 }

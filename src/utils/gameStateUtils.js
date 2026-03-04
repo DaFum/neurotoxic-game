@@ -9,8 +9,10 @@ export const calculateFameLevel = fame => {
 
 /**
  * Clamps player money to a safe, non-negative integer.
+ * Prevents negative balances and ensures integer boundaries.
+ *
  * @param {number} money - Candidate money value.
- * @returns {number} Clamped money value.
+ * @returns {number} Clamped money value, bounded at 0.
  */
 export const clampPlayerMoney = money => {
   if (!Number.isFinite(money)) return 0
@@ -19,6 +21,7 @@ export const clampPlayerMoney = money => {
 
 /**
  * Clamps band harmony to the canonical gameplay range.
+ *
  * @param {number} harmony - Candidate harmony value.
  * @returns {number} Clamped harmony value in range [1, 100].
  */
@@ -48,14 +51,22 @@ export const applyInventoryItemDelta = (currentValue, deltaValue) => {
 }
 
 /**
- * Applies event delta changes to the current game state.
- * @param {object} state - Current game state.
- * @param {object} delta - Event delta payload.
- * @returns {object} Updated game state.
+ * A hardened Set of prohibited object property keys used during state-merge operations.
+ * Explicitly guards against prototype pollution vulnerabilities by blocking recursive assignment
+ * into sensitive prototype traversal chains (e.g. `__proto__`, `constructor`, `prototype`).
+ * Usage ensures event deltas cannot maliciously or accidentally mutate the global Object space.
  */
 const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
 const isForbiddenKey = key => FORBIDDEN_KEYS.has(key)
 
+/**
+ * Applies event delta changes to the current game state.
+ * Prevents prototype pollution and merges object properties.
+ *
+ * @param {object} state - Current game state.
+ * @param {object} delta - Event delta payload.
+ * @returns {object} Updated game state.
+ */
 export const applyEventDelta = (state, delta) => {
   const nextState = { ...state }
 
