@@ -10,7 +10,13 @@ import { RELATIONSHIP_EVENTS } from './relationshipEvents.js'
 import { QUEST_EVENTS } from './quests.js'
 import { logger } from '../../utils/logger.js'
 
-const VALID_CATEGORIES = ['transport', 'band', 'gig', 'financial', 'special']
+const VALID_CATEGORIES = new Set([
+  'transport',
+  'band',
+  'gig',
+  'financial',
+  'special'
+])
 
 // Validation Helper
 const validateEvents = (events, categoryName = 'unknown') => {
@@ -28,7 +34,7 @@ const validateEvents = (events, categoryName = 'unknown') => {
       return false
     }
     ids.add(e.id)
-    if (!VALID_CATEGORIES.includes(e.category)) {
+    if (!VALID_CATEGORIES.has(e.category)) {
       logger.warn(
         'EventValidation',
         `Invalid Event Category in ${categoryName}: ${e.category} for event ${e.id}`
