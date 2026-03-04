@@ -477,13 +477,19 @@ case ActionTypes.START_GIG:
 
 ### **9. State Management Hook - useGameState()**
 
-**File:** `src/context/GameState.jsx` (lines 518-534)
+**File:** `src/context/GameState.jsx` (lines 740-754)
 
 ```javascript
 export const useGameState = () => {
-  const state = useContext(GameStateContext)
-  const dispatch = useContext(GameDispatchContext)
+  const state = use(GameStateContext)
+  const dispatch = use(GameDispatchContext)
 
+  /**
+   * Checks if the player owns a specific van upgrade.
+   * Delegates to the pure utility in upgradeUtils.js for testability.
+   * @param {string} upgradeId - The ID of the upgrade.
+   * @returns {boolean} True if owned.
+   */
   const hasUpgrade = useCallback(
     upgradeId => checkUpgrade(state.player.van.upgrades, upgradeId),
     [state.player.van.upgrades]
