@@ -108,8 +108,8 @@ console.log('**Top duplicate clusters:**\n')
 top.forEach((d, idx) => {
   const size = `${d.lines ?? '?'} lines / ${d.tokens ?? '?'} tokens`
   console.log(`**${idx + 1}) ${size}**`)
-  // FIX: guard against clusters that somehow still have 0 displayable instances
-  if (d.instances.length === 0) {
+  // Guard against clusters that somehow still have 0 displayable instances
+  if (!Array.isArray(d.instances) || d.instances.length === 0) {
     console.log('- *(instance paths unavailable)*')
   } else {
     d.instances.slice(0, 6).forEach(inst => {
