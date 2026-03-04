@@ -17,6 +17,17 @@ import {
 import { DEFAULT_MINIGAME_STATE } from '../gameConstants.js'
 import { handleFailQuests } from './questReducer.js'
 
+export const ALLOWED_SCENES = new Set([
+  'OVERWORLD',
+  'PREGIG',
+  'GIG',
+  'PRACTICE',
+  'POSTGIG',
+  'TRAVEL_MINIGAME',
+  'PRE_GIG_MINIGAME',
+  'GAMEOVER'
+])
+
 /**
  * Handles game load with migration and validation
  * @param {Object} state - Current state
@@ -160,17 +171,7 @@ export const handleLoadGame = (state, payload) => {
   }
 
   // Security: Only allow valid gameplay scenes from save
-  const ALLOWED_SCENES = [
-    'OVERWORLD',
-    'PREGIG',
-    'GIG',
-    'PRACTICE',
-    'POSTGIG',
-    'TRAVEL_MINIGAME',
-    'PRE_GIG_MINIGAME',
-    'GAMEOVER'
-  ]
-  if (!ALLOWED_SCENES.includes(safeState.currentScene)) {
+  if (!ALLOWED_SCENES.has(safeState.currentScene)) {
     safeState.currentScene = state.currentScene
   }
 
