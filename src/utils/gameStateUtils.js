@@ -67,14 +67,6 @@ const isForbiddenKey = key => FORBIDDEN_KEYS.has(key)
  * @param {object} delta - Event delta payload.
  * @returns {object} Updated game state.
  */
-/**
- * Set of forbidden keys to prevent prototype pollution during state merges.
- * Used defensively to ensure malicious or unintended objects don't overwrite native JS chains.
- * @type {Set<string>}
- */
-const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
-const isForbiddenKey = key => FORBIDDEN_KEYS.has(key)
-
 export const applyEventDelta = (state, delta) => {
   const nextState = { ...state }
 

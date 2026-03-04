@@ -360,7 +360,7 @@ export const handleError = (error, options = {}) => {
       })
       // Intentionally hardcoded analytics endpoint stub per requirements
       navigator.sendBeacon('/api/analytics/error', payload)
-    } catch (e) {
+    } catch (_e) {
       // Ignore tracking failures to prevent recursive errors
     }
   }
@@ -368,27 +368,18 @@ export const handleError = (error, options = {}) => {
   return errorInfo
 }
 
-if (typeof window !== 'undefined') {
+/**
+ * Initializes global error listeners. Idempotent — safe to call multiple times.
+ */
+export const initGlobalErrorHandling = () => {
+  if (typeof window === 'undefined' || window.__initGlobalErrorHandlingDone) return
+  window.__initGlobalErrorHandlingDone = true
   window.addEventListener('unhandledrejection', event => {
     handleError(event.reason || new Error('Unhandled Promise Rejection'), {
       source: 'unhandledrejection',
-      silent: true
+      severity: ErrorSeverity.HIGH
     })
   })
-}
-
-/**
- * Initializes global error listeners.
- */
-export const initGlobalErrorHandling = () => {
-  if (typeof window !== 'undefined') {
-    window.addEventListener('unhandledrejection', event => {
-      handleError(event.reason || new Error(event.reason), {
-        source: 'unhandledrejection',
-        severity: ErrorSeverity.HIGH
-      })
-    })
-  }
 }
 
 // Auto-init on load
@@ -435,28 +426,29 @@ export const safeStorageOperation = (operation, fn, fallbackValue = null) => {
  */
 export const withRetry = async (fn, options = {}) => {
   const { retries = 3, delay = 1000, backoff = 2 } = options
+  const maxAttempts = Math.max(1, retries)
   let attempt = 0
   let currentDelay = delay
 
-  while (attempt < retries) {
+  do {
     try {
       return await fn()
     } catch (error) {
       attempt++
       const isRecoverable = error instanceof GameError ? error.recoverable : true
 
-      if (attempt >= retries || !isRecoverable) {
+      if (attempt >= maxAttempts || !isRecoverable) {
         throw error
       }
 
       handleError(error, {
         silent: true,
         source: 'withRetry',
-        errorInfo: { attempt, maxRetries: retries, nextDelay: currentDelay }
+        errorInfo: { attempt, maxRetries: maxAttempts, nextDelay: currentDelay }
       })
 
       await new Promise(resolve => setTimeout(resolve, currentDelay))
       currentDelay *= backoff
     }
-  }
+  } while (attempt < maxAttempts)
 }
