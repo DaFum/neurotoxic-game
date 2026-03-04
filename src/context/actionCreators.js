@@ -287,16 +287,6 @@ export const createAddVenueBlacklistAction = venueName => ({
 })
 
 /**
- * Creates an action to add a new quest.
- * @param {Object} quest - The quest object to add.
- * @returns {Object} Action object
- */
-export const createAddQuestAction = quest => ({
-  type: ActionTypes.ADD_QUEST,
-  payload: quest
-})
-
-/**
  * Creates an action to advance a quest's progress.
  * @param {string} questId - The ID of the quest.
  * @param {number} [amount=1] - The amount to advance progress by.

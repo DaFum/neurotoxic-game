@@ -722,18 +722,6 @@ GameStateProvider.propTypes = {
 }
 
 /**
- * Hook to access the global game dispatch functions only (stable reference).
- * TODO(Integration): Replace `useGameState()` with `useGameDispatch()` in pure UI controls
- * (e.g. `src/ui/shared/VolumeSlider.jsx` or specific sub-panels) where read-access
- * to global state isn't needed, preventing unnecessary React re-renders on every game tick.
- *
- * @returns {object} The action dispatchers.
- */
-export const useGameDispatch = () => {
-  return use(GameDispatchContext)
-}
-
-/**
  * Hook to access the global game state context.
  * @returns {object} The game state and action dispatchers.
  */

@@ -8,8 +8,6 @@ import {
   StateError,
   StorageError,
   AudioError,
-  ErrorCategory,
-  ErrorSeverity,
   handleError,
   safeStorageOperation
 } from '../src/utils/errorHandler.js'
@@ -33,8 +31,8 @@ describe('Custom Error Classes', () => {
     it('should have correct name and category', () => {
       const error = new AudioError('Missing OGG')
       assert.strictEqual(error.name, 'AudioError')
-      assert.strictEqual(error.category, ErrorCategory.AUDIO)
-      assert.strictEqual(error.severity, ErrorSeverity.MEDIUM)
+      assert.strictEqual(error.category, 'audio')
+      assert.strictEqual(error.severity, 'medium')
       assert.strictEqual(error.recoverable, true)
     })
 
@@ -53,7 +51,7 @@ describe('Custom Error Classes', () => {
       const log = error.toLogObject()
       assert.strictEqual(log.name, 'AudioError')
       assert.strictEqual(log.message, 'decode failed')
-      assert.strictEqual(log.category, ErrorCategory.AUDIO)
+      assert.strictEqual(log.category, 'audio')
       assert.strictEqual(log.context.codec, 'vorbis')
       assert.ok(typeof log.timestamp === 'number')
       assert.ok(typeof log.stack === 'string')
@@ -110,7 +108,7 @@ describe('handleError', () => {
       severity: 'critical'
     })
 
-    assert.strictEqual(result.severity, ErrorSeverity.CRITICAL)
+    assert.strictEqual(result.severity, 'critical')
   })
 
   it('should ignore invalid errorInfo payload types', () => {
@@ -201,7 +199,7 @@ describe('handleError', () => {
       assert.strictEqual(dispatchCalls[0].type, 'app:error:critical')
       assert.deepStrictEqual(dispatchCalls[0].detail, {
         message: 'Critical event',
-        code: ErrorCategory.UNKNOWN,
+        code: 'unknown',
         timestamp: result.timestamp
       })
     } finally {
@@ -233,7 +231,7 @@ describe('handleError', () => {
     })
 
     assert.strictEqual(toastCalled, false)
-    assert.strictEqual(result.category, ErrorCategory.AUDIO)
+    assert.strictEqual(result.category, 'audio')
     assert.strictEqual(result.context.songName, '01 Kranker Schrank')
   })
 })

@@ -41,7 +41,7 @@ export const handleSetGigModifiers = (state, payload) => {
   return { ...state, gigModifiers: { ...state.gigModifiers, ...updates } }
 }
 
-export const handleRecordBadShow = state => {
+const handleRecordBadShow = state => {
   let nextState = { ...state }
   const currentBadShows = (nextState.player.stats?.consecutiveBadShows || 0) + 1
 
@@ -87,7 +87,7 @@ export const handleRecordBadShow = state => {
   return nextState
 }
 
-export const handleRecordGoodShow = state => {
+const handleRecordGoodShow = state => {
   let nextState = { ...state }
 
   nextState.player = {

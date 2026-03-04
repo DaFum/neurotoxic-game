@@ -12,7 +12,7 @@ import { logger } from './logger.js'
  * @readonly
  * @enum {string}
  */
-export const ErrorSeverity = {
+const ErrorSeverity = {
   LOW: 'low',
   MEDIUM: 'medium',
   HIGH: 'high',
@@ -24,7 +24,7 @@ export const ErrorSeverity = {
  * @readonly
  * @enum {string}
  */
-export const ErrorCategory = {
+const ErrorCategory = {
   STATE: 'state',
   RENDER: 'render',
   AUDIO: 'audio',

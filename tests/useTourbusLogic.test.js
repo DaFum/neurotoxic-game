@@ -33,12 +33,13 @@ mock.module('../src/utils/upgradeUtils', {
 
 // Import hook after mocks
 const {
-  useTourbusLogic,
-  BASE_SPEED,
-  MAX_SPEED,
-  SPAWN_RATE_MS,
-  TARGET_DISTANCE
+  useTourbusLogic
 } = await import('../src/hooks/minigames/useTourbusLogic.js')
+
+const BASE_SPEED = 0.05
+const MAX_SPEED = 0.12
+const SPAWN_RATE_MS = 1500
+const TARGET_DISTANCE = 2500
 
 const { LANE_COUNT, BUS_Y_PERCENT } =
   await import('../src/hooks/minigames/constants.js')

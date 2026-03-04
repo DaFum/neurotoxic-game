@@ -78,9 +78,14 @@ export const ToastOverlay = () => {
                         const contextStr = toast.message.slice(firstPipeIdx + 1)
                         try {
                           const context = JSON.parse(contextStr)
+                          if (!context || typeof context !== 'object') {
+                            throw new TypeError('Parsed context is not an object')
+                          }
                           // Safely translate deeply nested key refs in context
-                          if (context.name && context.name.includes(':')) {
-                            context.name = t(context.name)
+                          if (context.name && typeof context.name === 'string' && context.name.includes(':')) {
+                            context.name = t(String(context.name).replace(/[^a-zA-Z0-9_\-:]/g, ''))
+                          } else if (context.name) {
+                            context.name = String(context.name).replace(/[^a-zA-Z0-9_\-:]/g, '')
                           }
                           return t(key, context)
                         } catch (_e) {
