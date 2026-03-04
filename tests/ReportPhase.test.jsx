@@ -4,7 +4,7 @@ import { ReportPhase } from '../src/components/postGig/ReportPhase.jsx'
 import React from 'react'
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key) => key })
+  useTranslation: () => ({ t: key => key })
 }))
 
 test('ReportPhase renders loading state', () => {
@@ -15,18 +15,14 @@ test('ReportPhase renders loading state', () => {
 test('ReportPhase renders financials and calls onNext', () => {
   const mockFinancials = {
     income: {
-      breakdown: [
-        { labelKey: 'Ticket Sales', value: 500 }
-      ],
+      breakdown: [{ labelKey: 'Ticket Sales', value: 500 }],
       total: 500
     },
     expenses: {
-      breakdown: [
-        { labelKey: 'Gear Repair', value: 100 }
-      ],
+      breakdown: [{ labelKey: 'Gear Repair', value: 100 }],
       total: 100
     },
-    netProfit: 400
+    net: 400
   }
   const handleNext = vi.fn()
 

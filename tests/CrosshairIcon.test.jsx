@@ -4,7 +4,9 @@ import { CrosshairIcon } from '../src/ui/shared/BrutalistUI.jsx'
 import React from 'react'
 
 test('CrosshairIcon renders SVG element correctly with title', () => {
-  const { container, getByText } = render(<CrosshairIcon className="test-class" title="crosshair" />)
+  const { container, getByText } = render(
+    <CrosshairIcon className='test-class' title='crosshair' />
+  )
   const svg = container.querySelector('svg')
   expect(svg).toBeInTheDocument()
   expect(svg).toHaveClass('test-class')
@@ -12,7 +14,7 @@ test('CrosshairIcon renders SVG element correctly with title', () => {
 })
 
 test('CrosshairIcon renders SVG element correctly without title', () => {
-  const { container } = render(<CrosshairIcon className="test-class" />)
+  const { container } = render(<CrosshairIcon className='test-class' />)
   const svg = container.querySelector('svg')
   expect(svg).toBeInTheDocument()
   expect(svg).toHaveClass('test-class')

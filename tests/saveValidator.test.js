@@ -189,7 +189,9 @@ describe('saveValidator', () => {
 
     it('accepts a valid relationships object on a band member', () => {
       const data = getValidData()
-      data.band.members = [{ name: 'Matze', relationships: { alex: 75, sara: 0 } }]
+      data.band.members = [
+        { name: 'Matze', relationships: { alex: 75, sara: 0 } }
+      ]
       assert.strictEqual(validateSaveData(data), true)
     })
 
@@ -207,16 +209,20 @@ describe('saveValidator', () => {
       data.band.members = [{ name: 'Matze', relationships: { sara: 150 } }]
       assert.throws(() => validateSaveData(data), {
         name: 'StateError',
-        message: /band\.members\[0\]\.relationships\.sara must be a finite number/
+        message:
+          /band\.members\[0\]\.relationships\.sara must be a finite number/
       })
     })
 
     it('throws if a relationship key is a reserved prototype-polluting name', () => {
       const data = getValidData()
-      data.band.members = [{ name: 'Matze', relationships: { constructor: 75 } }]
+      data.band.members = [
+        { name: 'Matze', relationships: { constructor: 75 } }
+      ]
       assert.throws(() => validateSaveData(data), {
         name: 'StateError',
-        message: /band\.members\[0\]\.relationships\.constructor is a reserved key/
+        message:
+          /band\.members\[0\]\.relationships\.constructor is a reserved key/
       })
     })
 
@@ -227,7 +233,8 @@ describe('saveValidator', () => {
       data.band.members = [{ name: 'Matze', relationships: rel }]
       assert.throws(() => validateSaveData(data), {
         name: 'StateError',
-        message: /band\.members\[0\]\.relationships\.__proto__ is a reserved key/
+        message:
+          /band\.members\[0\]\.relationships\.__proto__ is a reserved key/
       })
     })
 
@@ -236,7 +243,8 @@ describe('saveValidator', () => {
       data.band.members = [{ name: 'Matze', relationships: { prototype: 75 } }]
       assert.throws(() => validateSaveData(data), {
         name: 'StateError',
-        message: /band\.members\[0\]\.relationships\.prototype is a reserved key/
+        message:
+          /band\.members\[0\]\.relationships\.prototype is a reserved key/
       })
     })
   })

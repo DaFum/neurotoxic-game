@@ -15,7 +15,11 @@ test('ActionButton renders children and handles clicks', () => {
 })
 
 test('ActionButton applies custom classes and type', () => {
-  render(<ActionButton type="submit" className="custom-class">Submit</ActionButton>)
+  render(
+    <ActionButton type='submit' className='custom-class'>
+      Submit
+    </ActionButton>
+  )
 
   const button = screen.getByRole('button', { name: 'Submit' })
   expect(button).toHaveAttribute('type', 'submit')

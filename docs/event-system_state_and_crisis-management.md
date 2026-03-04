@@ -311,8 +311,8 @@ After a gig, the game:
 
 ### 8. KEY FILES & ABSOLUTE PATHS
 
-| Purpose           | File Path                                                              |
-| ----------------- | ---------------------------------------------------------------------- |
+| Purpose           | File Path                                   |
+| ----------------- | ------------------------------------------- |
 | Event definitions | `src/data/events/crisis.js` (crisis events) |
 | Event engine      | `src/utils/eventEngine.js`                  |
 | Event index       | `src/data/events/index.js`                  |

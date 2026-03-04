@@ -4,20 +4,27 @@ import { EventModal } from '../src/ui/EventModal.jsx'
 import React from 'react'
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key, options) => {
-      if (options && typeof options === 'object' && options.count !== undefined) {
+  useTranslation: () => ({
+    t: (key, options) => {
+      if (options && typeof options === 'object') {
+        if (options.count !== undefined) {
           return `${key} (${options.count})`
+        }
+        if (options.defaultValue !== undefined) {
+          return options.defaultValue
+        }
       }
       return key
-  } })
+    }
+  })
 }))
 
 vi.mock('../src/ui/shared/BrutalistUI', () => ({
-  AlertIcon: () => <svg data-testid="alert-icon" />
+  AlertIcon: () => <svg data-testid='alert-icon' />
 }))
 
 vi.mock('../src/ui/shared/Icons', () => ({
-  VoidSkullIcon: () => <svg data-testid="void-skull-icon" />
+  VoidSkullIcon: () => <svg data-testid='void-skull-icon' />
 }))
 
 test('EventModal renders event details and handles click flow', async () => {
@@ -50,10 +57,7 @@ test('EventModal handles keyboard selection', () => {
   const mockEvent = {
     title: 'Test Event',
     description: 'This is a test event.',
-    options: [
-      { label: 'Option 1' },
-      { label: 'Option 2' }
-    ]
+    options: [{ label: 'Option 1' }, { label: 'Option 2' }]
   }
   const handleSelect = vi.fn()
 
@@ -69,9 +73,7 @@ test('EventModal handles option with direct action callback', () => {
   const mockEvent = {
     title: 'Test Event',
     description: 'Test',
-    options: [
-      { label: 'Option 1', action: mockAction }
-    ]
+    options: [{ label: 'Option 1', action: mockAction }]
   }
   const handleSelect = vi.fn()
 

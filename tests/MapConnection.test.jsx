@@ -5,19 +5,40 @@ import React from 'react'
 
 test('MapConnection returns null if startVis or endVis is hidden', () => {
   const { container, rerender } = render(
-    <svg><MapConnection start={{ x: 10, y: 10 }} end={{ x: 20, y: 20 }} startVis="hidden" endVis="visible" /></svg>
+    <svg>
+      <MapConnection
+        start={{ x: 10, y: 10 }}
+        end={{ x: 20, y: 20 }}
+        startVis='hidden'
+        endVis='visible'
+      />
+    </svg>
   )
   expect(container.querySelector('line')).not.toBeInTheDocument()
 
   rerender(
-    <svg><MapConnection start={{ x: 10, y: 10 }} end={{ x: 20, y: 20 }} startVis="visible" endVis="hidden" /></svg>
+    <svg>
+      <MapConnection
+        start={{ x: 10, y: 10 }}
+        end={{ x: 20, y: 20 }}
+        startVis='visible'
+        endVis='hidden'
+      />
+    </svg>
   )
   expect(container.querySelector('line')).not.toBeInTheDocument()
 })
 
 test('MapConnection renders line correctly', () => {
   const { container } = render(
-    <svg><MapConnection start={{ x: 10, y: 10 }} end={{ x: 20, y: 20 }} startVis="visible" endVis="visible" /></svg>
+    <svg>
+      <MapConnection
+        start={{ x: 10, y: 10 }}
+        end={{ x: 20, y: 20 }}
+        startVis='visible'
+        endVis='visible'
+      />
+    </svg>
   )
   const line = container.querySelector('line')
   expect(line).toBeInTheDocument()
@@ -30,7 +51,14 @@ test('MapConnection renders line correctly', () => {
 
 test('MapConnection renders dimmed line', () => {
   const { container } = render(
-    <svg><MapConnection start={{ x: 10, y: 10 }} end={{ x: 20, y: 20 }} startVis="dimmed" endVis="visible" /></svg>
+    <svg>
+      <MapConnection
+        start={{ x: 10, y: 10 }}
+        end={{ x: 20, y: 20 }}
+        startVis='dimmed'
+        endVis='visible'
+      />
+    </svg>
   )
   const line = container.querySelector('line')
   expect(line).toBeInTheDocument()

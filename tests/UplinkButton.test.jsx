@@ -3,14 +3,14 @@ import { expect, test } from 'vitest'
 import { UplinkButton } from '../src/ui/shared/BrutalistUI.jsx'
 import React from 'react'
 
-test('UplinkButton renders correctly and handles hover', () => {
-  const DummyIcon = () => <svg data-testid="dummy-icon" />
-  render(
+test('UplinkButton renders correctly and handles hover states properly', () => {
+  const DummyIcon = () => <svg data-testid='dummy-icon' />
+  const { container } = render(
     <UplinkButton
-      title="Test Link"
-      url="https://example.com"
-      subtitle="Test Subtitle"
-      type="test-type"
+      title='Test Link'
+      url='https://example.com'
+      subtitle='Test Subtitle'
+      type='test-type'
       Icon={DummyIcon}
     />
   )
@@ -21,8 +21,22 @@ test('UplinkButton renders correctly and handles hover', () => {
   expect(screen.getByText('Test Subtitle')).toBeInTheDocument()
   expect(screen.getByTestId('dummy-icon')).toBeInTheDocument()
 
-  // Test hover state changes
+  // Before hover, no glitch effect div
+  expect(
+    container.querySelector('.bg-\\(--toxic-green\\)\\/10')
+  ).not.toBeInTheDocument()
+
   fireEvent.mouseEnter(link)
-  // Just ensuring it doesn't crash on hover, classes update internally
+
+  // After hover, glitch effect div appears
+  expect(
+    container.querySelector('.bg-\\(--toxic-green\\)\\/10')
+  ).toBeInTheDocument()
+
   fireEvent.mouseLeave(link)
+
+  // Gone again
+  expect(
+    container.querySelector('.bg-\\(--toxic-green\\)\\/10')
+  ).not.toBeInTheDocument()
 })

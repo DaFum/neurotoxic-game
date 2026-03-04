@@ -191,10 +191,14 @@ describe('MainMenu Component', () => {
       expect(screen.getAllByText('ui:socials').length).toBeGreaterThan(1)
 
       // Close modal - find the modal's close button
-      const modalCloseButton = screen.getByRole('button', { name: 'ui:closeModal' })
+      const modalCloseButton = screen.getByRole('button', {
+        name: 'ui:closeModal'
+      })
       expect(modalCloseButton).toBeInTheDocument()
       fireEvent.click(modalCloseButton)
-      expect(screen.queryByText('ui:social_links.game.title')).not.toBeInTheDocument()
+      expect(
+        screen.queryByText('ui:social_links.game.title')
+      ).not.toBeInTheDocument()
     })
 
     it('displays social links in socials modal', () => {
@@ -228,7 +232,9 @@ describe('MainMenu Component', () => {
       fireEvent.click(screen.getByText('ui:features.button'))
       expect(screen.getByText('ui:features.title')).toBeInTheDocument()
 
-      const modalCloseButton = screen.getByRole('button', { name: 'ui:closeModal' })
+      const modalCloseButton = screen.getByRole('button', {
+        name: 'ui:closeModal'
+      })
       expect(modalCloseButton).toBeInTheDocument()
       fireEvent.click(modalCloseButton)
       expect(screen.queryByText('ui:features.title')).not.toBeInTheDocument()
@@ -307,10 +313,14 @@ describe('MainMenu Component', () => {
         screen.getByText('ui:mainMenu.existingSave.title')
       ).toBeInTheDocument()
 
-      const modalCloseButton = screen.getByRole('button', { name: 'ui:closeModal' })
+      const modalCloseButton = screen.getByRole('button', {
+        name: 'ui:closeModal'
+      })
       expect(modalCloseButton).toBeInTheDocument()
       fireEvent.click(modalCloseButton)
-      expect(screen.queryByText('ui:mainMenu.existingSave.title')).not.toBeInTheDocument()
+      expect(
+        screen.queryByText('ui:mainMenu.existingSave.title')
+      ).not.toBeInTheDocument()
     })
   })
 
@@ -394,7 +404,9 @@ describe('MainMenu Component', () => {
       fireEvent.click(screen.getByText('ui:start_game'))
       expect(screen.getByText('ui:identity_required')).toBeInTheDocument()
 
-      const modalCloseButton = screen.getByRole('button', { name: 'ui:closeModal' })
+      const modalCloseButton = screen.getByRole('button', {
+        name: 'ui:closeModal'
+      })
       expect(modalCloseButton).toBeInTheDocument()
       fireEvent.click(modalCloseButton)
       expect(screen.queryByText('ui:identity_required')).not.toBeInTheDocument()

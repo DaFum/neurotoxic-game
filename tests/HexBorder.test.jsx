@@ -4,7 +4,9 @@ import { HexBorder } from '../src/ui/shared/BrutalistUI.jsx'
 import React from 'react'
 
 test('HexBorder renders SVG element correctly with title', () => {
-  const { container, getByText } = render(<HexBorder className="test-class" title="test-title" />)
+  const { container, getByText } = render(
+    <HexBorder className='test-class' title='test-title' />
+  )
   const svg = container.querySelector('svg')
   expect(svg).toBeInTheDocument()
   expect(svg).toHaveClass('test-class')
@@ -12,7 +14,7 @@ test('HexBorder renders SVG element correctly with title', () => {
 })
 
 test('HexBorder renders SVG element correctly without title', () => {
-  const { container } = render(<HexBorder className="test-class" />)
+  const { container } = render(<HexBorder className='test-class' />)
   const svg = container.querySelector('svg')
   expect(svg).toBeInTheDocument()
   expect(svg).toHaveClass('test-class')

@@ -4,13 +4,19 @@ import { SocialPhase } from '../src/components/postGig/SocialPhase.jsx'
 import React from 'react'
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key) => key })
+  useTranslation: () => ({ t: key => key })
 }))
 
 test('SocialPhase renders correctly and calls onSelect', () => {
   const handleSelect = vi.fn()
   const mockOptions = [
-    { id: 'insta', name: 'Post Insta', platform: 'Instagram', category: 'Social', badges: ['📱'] }
+    {
+      id: 'insta',
+      name: 'Post Insta',
+      platform: 'Instagram',
+      category: 'Social',
+      badges: ['📱']
+    }
   ]
 
   render(<SocialPhase onSelect={handleSelect} options={mockOptions} />)

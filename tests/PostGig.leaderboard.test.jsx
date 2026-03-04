@@ -249,9 +249,13 @@ describe('PostGig Leaderboard Submission', () => {
     render(<PostGig />)
 
     // Phase: REPORT -> SOCIAL -> COMPLETE -> Continue
-    fireEvent.click(await screen.findByRole('button', { name: /continue|next|social/i }))
+    fireEvent.click(
+      await screen.findByRole('button', { name: /continue|next|social/i })
+    )
     fireEvent.click(await screen.findByText('Selfie'))
-    fireEvent.click(await screen.findByRole('button', { name: /back to tour/i }))
+    fireEvent.click(
+      await screen.findByRole('button', { name: /back to tour/i })
+    )
 
     // Should fetch twice, one for each song
     await waitFor(() => {

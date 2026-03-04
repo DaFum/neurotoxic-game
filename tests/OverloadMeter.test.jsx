@@ -9,7 +9,12 @@ vi.mock('react-i18next', () => ({
 
 vi.mock('../src/ui/shared/index.jsx', () => ({
   BlockMeter: ({ label, value, max, isDanger }) => (
-    <div data-testid="block-meter" data-value={value} data-max={max} data-danger={isDanger}>
+    <div
+      data-testid='block-meter'
+      data-value={value}
+      data-max={max}
+      data-danger={isDanger}
+    >
       {label}
     </div>
   )
