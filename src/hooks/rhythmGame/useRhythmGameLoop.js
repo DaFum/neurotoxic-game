@@ -77,16 +77,19 @@ export const useRhythmGameLoop = ({
         duration > 0 ? Math.min(100, (now / duration) * 100) : 0
       stateRef.progress = Math.max(0, rawProgress)
 
+      const currentInnerHeight = window.innerHeight
+      const currentInnerWidth = window.innerWidth
+
       if (stateRef.projectiles.length > 0) {
         stateRef.projectiles = updateProjectiles(
           stateRef.projectiles,
           deltaMS,
-          window.innerHeight
+          currentInnerHeight
         )
 
         stateRef.projectiles = checkCollisions(
           stateRef.projectiles,
-          window.innerHeight,
+          currentInnerHeight,
           handleCollision
         )
       }
@@ -94,7 +97,7 @@ export const useRhythmGameLoop = ({
       const newProjectile = trySpawnProjectile(
         { health: stateRef.health },
         stateRef.rng,
-        window.innerWidth
+        currentInnerWidth
       )
       if (newProjectile) {
         stateRef.projectiles.push(newProjectile)
@@ -124,16 +127,16 @@ export const useRhythmGameLoop = ({
       while (i < notes.length) {
         const note = notes[i]
 
+        if (note.time > now + NOTE_MISS_WINDOW_MS) {
+          break
+        }
+
         if (!note.visible || note.hit) {
           if (i === stateRef.nextMissCheckIndex) {
             stateRef.nextMissCheckIndex++
           }
           i++
           continue
-        }
-
-        if (note.time > now + NOTE_MISS_WINDOW_MS) {
-          break
         }
 
         if (now > note.time + NOTE_MISS_WINDOW_MS) {

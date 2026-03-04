@@ -10,7 +10,7 @@ export const calculateFameLevel = fame => {
 /**
  * Clamps player money to a safe, non-negative integer.
  * @param {number} money - Candidate money value.
- * @returns {number} Clamped money value.
+ * @returns {number} Clamped money value ensuring non-negative integer.
  */
 export const clampPlayerMoney = money => {
   if (!Number.isFinite(money)) return 0
@@ -52,6 +52,11 @@ export const applyInventoryItemDelta = (currentValue, deltaValue) => {
  * @param {object} state - Current game state.
  * @param {object} delta - Event delta payload.
  * @returns {object} Updated game state.
+ */
+/**
+ * Set of forbidden keys to prevent prototype pollution during state merges.
+ * Used defensively to ensure malicious or unintended objects don't overwrite native JS chains.
+ * @type {Set<string>}
  */
 const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
 const isForbiddenKey = key => FORBIDDEN_KEYS.has(key)

@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 import { getTransportState } from '../../utils/audioEngine'
 
 /**
@@ -17,6 +17,7 @@ export const useRhythmGameInput = ({
 }) => {
   const { handleHit } = scoringActions
   const { activeEvent } = contextState
+  const lastInputTimesRef = useRef({})
 
   /**
    * Registers player input for a lane.
@@ -37,9 +38,16 @@ export const useRhythmGameInput = ({
       const isTransportRunning = getTransportState() === 'started'
       if (!isTransportRunning) return
 
-      if (state.lanes[laneIndex]) {
+      if (laneIndex >= 0 && laneIndex < state.lanes.length) {
+        // Toggle the visual active state (this is read by the PixiJS game loop)
         state.lanes[laneIndex].active = isDown
-        if (isDown) handleHit(laneIndex)
+
+        if (isDown) {
+          const now = Date.now()
+          if (now - (lastInputTimesRef.current[laneIndex] || 0) < 50) return
+          lastInputTimesRef.current[laneIndex] = now
+          handleHit(laneIndex)
+        }
       }
     },
     [activeEvent, gameStateRef, handleHit]

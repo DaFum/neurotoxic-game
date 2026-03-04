@@ -264,22 +264,24 @@ export const useRhythmGameScoring = ({
         })
 
         if (!toxicModeActive) {
-          setOverload(o => {
-            const gain = 4 // Increased gain to make Toxic Mode reachable
-            const next = o + gain
-            const peakCandidate = Math.min(next, 100)
-            gameStateRef.current.stats = updateGigPerformanceStats(
-              gameStateRef.current.stats,
-              { combo: gameStateRef.current.combo, overload: peakCandidate }
-            )
-            if (next >= 100) {
-              activateToxicMode()
-              gameStateRef.current.overload = 0
-              return 0
-            }
+          const gain = 4 // Increased gain to make Toxic Mode reachable
+          const currentOverload = gameStateRef.current.overload || 0
+          const next = currentOverload + gain
+          const peakCandidate = Math.min(next, 100)
+
+          gameStateRef.current.stats = updateGigPerformanceStats(
+            gameStateRef.current.stats,
+            { combo: gameStateRef.current.combo, overload: peakCandidate }
+          )
+
+          if (next >= 100) {
+            activateToxicMode()
+            gameStateRef.current.overload = 0
+            setOverload(0)
+          } else {
             gameStateRef.current.overload = next
-            return next
-          })
+            setOverload(next)
+          }
         }
         return true
       } else {

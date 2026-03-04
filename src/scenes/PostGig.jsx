@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
@@ -18,10 +19,11 @@ import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils'
 import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { SONGS_DB } from '../data/songs'
 
-import { ReportPhase } from '../components/postGig/ReportPhase'
-import { SocialPhase } from '../components/postGig/SocialPhase'
-import { DealsPhase } from '../components/postGig/DealsPhase'
-import { CompletePhase } from '../components/postGig/CompletePhase'
+import { lazy, Suspense } from 'react'
+const ReportPhase = lazy(() => import('../components/postGig/ReportPhase').then(m => ({ default: m.ReportPhase })))
+const SocialPhase = lazy(() => import('../components/postGig/SocialPhase').then(m => ({ default: m.SocialPhase })))
+const DealsPhase = lazy(() => import('../components/postGig/DealsPhase').then(m => ({ default: m.DealsPhase })))
+const CompletePhase = lazy(() => import('../components/postGig/CompletePhase').then(m => ({ default: m.CompletePhase })))
 
 const PERF_SCORE_MIN = 30
 const PERF_SCORE_MAX = 100
@@ -29,6 +31,7 @@ const PERF_SCORE_SCALER = 500
 const MAX_FAME_GAIN = 500
 
 export const PostGig = () => {
+  const { t } = useTranslation(['ui'])
   const {
     currentGig,
     player,
@@ -549,35 +552,37 @@ export const PostGig = () => {
                 : 'TOUR UPDATE'}
         </h2>
 
-        {phase === 'REPORT' && (
-          <ReportPhase financials={financials} onNext={handleNextPhase} />
-        )}
+        <Suspense fallback={<div className="text-(--toxic-green) font-['Metal_Mania'] text-xl animate-pulse text-center">{t('ui:loading', 'LOADING...')}</div>}>
+          {phase === 'REPORT' && (
+            <ReportPhase financials={financials} onNext={handleNextPhase} />
+          )}
 
-        {phase === 'SOCIAL' && (
-          <SocialPhase
-            options={postOptions}
-            onSelect={handlePostSelection}
-            trend={social.trend}
-          />
-        )}
+          {phase === 'SOCIAL' && (
+            <SocialPhase
+              options={postOptions}
+              onSelect={handlePostSelection}
+              trend={social.trend}
+            />
+          )}
 
-        {phase === 'DEALS' && (
-          <DealsPhase
-            offers={brandOffers}
-            onAccept={handleAcceptDeal}
-            onSkip={handleRejectDeals}
-          />
-        )}
+          {phase === 'DEALS' && (
+            <DealsPhase
+              offers={brandOffers}
+              onAccept={handleAcceptDeal}
+              onSkip={handleRejectDeals}
+            />
+          )}
 
-        {phase === 'COMPLETE' && (
-          <CompletePhase
-            result={postResult}
-            onContinue={handleContinue}
-            onSpinStory={handleSpinStory}
-            player={player}
-            social={social}
-          />
-        )}
+          {phase === 'COMPLETE' && (
+            <CompletePhase
+              result={postResult}
+              onContinue={handleContinue}
+              onSpinStory={handleSpinStory}
+              player={player}
+              social={social}
+            />
+          )}
+        </Suspense>
       </motion.div>
     </div>
   )
