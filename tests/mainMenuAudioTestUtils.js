@@ -57,10 +57,26 @@ export const setupMainMenuAudioTest = async () => {
   // but for these tests a static return is fine, or we can use a mock function.
   // Using a mock function allows for flexibility.
   const mockUseGameState = mock.fn(() => createMockGameState({ canLoad: true }))
+  const mockUseGameDispatch = mock.fn(() => {
+    const state = createMockGameState({ canLoad: true })
+    // Return only the dispatch functions, filtering out actual state values
+    return {
+      changeScene: state.changeScene,
+      loadGame: state.loadGame,
+      addToast: state.addToast,
+      updatePlayer: state.updatePlayer,
+      updateBand: state.updateBand,
+      updateSettings: state.updateSettings,
+      deleteSave: state.deleteSave,
+      setSetlist: state.setSetlist,
+      resetState: state.resetState
+    }
+  })
 
   mock.module('../src/context/GameState', {
     namedExports: {
-      useGameState: mockUseGameState
+      useGameState: mockUseGameState,
+      useGameDispatch: mockUseGameDispatch
     }
   })
 
