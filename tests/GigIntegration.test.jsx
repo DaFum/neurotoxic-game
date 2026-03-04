@@ -1,7 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { Gig } from '../src/scenes/Gig.jsx'
-import { GameStateProvider } from '../src/context/GameState.jsx'
 
 vi.mock('tone', () => {
   return {
@@ -26,26 +24,30 @@ vi.mock('../src/utils/imageGen.js', () => ({
   IMG_PROMPTS: {}
 }))
 
+vi.mock('../src/context/GameState.jsx', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    useGameState: () => ({
+      currentGig: { name: 'Test Gig', diff: 1, songId: 'test_song' },
+      band: { harmony: 50 },
+      player: {},
+      settings: { volume: 50 },
+      addToast: vi.fn(),
+      changeScene: vi.fn(),
+      setLastGigStats: vi.fn(),
+      endGig: vi.fn(),
+      activeEvent: null,
+      setActiveEvent: vi.fn()
+    })
+  }
+})
+
+import { Gig } from '../src/scenes/Gig.jsx'
+import { GameStateProvider } from '../src/context/GameState.jsx'
+
 describe('Gig Component Integration', () => {
   it('renders standard composition elements of the gig scene', () => {
-    // Provide a mocked game state with a valid gig
-    vi.mock('../src/context/GameState.jsx', async (importOriginal) => {
-      const actual = await importOriginal()
-      return {
-        ...actual,
-        useGameState: () => ({
-          currentGig: { name: 'Test Gig', diff: 1, songId: 'test_song' },
-          band: { harmony: 50 },
-          player: {},
-          settings: { volume: 50 },
-          addToast: vi.fn(),
-          changeScene: vi.fn(),
-          setLastGigStats: vi.fn(),
-          endGig: vi.fn()
-        })
-      }
-    })
-
     render(
       <GameStateProvider>
         <Gig />
