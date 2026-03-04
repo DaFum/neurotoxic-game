@@ -63,6 +63,7 @@ export const useRhythmGameState = () => {
     hasSubmittedResults: false,
     songTransitioning: false,
     songStats: [],
+    lastEndedSongIndex: -1,
     currentSongStartScore: 0,
     currentSongStartPerfectHits: 0,
     currentSongStartMisses: 0,

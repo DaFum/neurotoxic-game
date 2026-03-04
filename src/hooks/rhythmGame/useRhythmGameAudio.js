@@ -96,6 +96,15 @@ export const useRhythmGameAudio = ({
       hasInitializedRef.current = true
       isInitializingRef.current = false
 
+      // Reset cross-song tracking state for a new gig
+      if (gameStateRef.current) {
+        gameStateRef.current.lastEndedSongIndex = -1
+        gameStateRef.current.songStats = []
+        gameStateRef.current.currentSongStartScore = 0
+        gameStateRef.current.currentSongStartPerfectHits = 0
+        gameStateRef.current.currentSongStartMisses = 0
+      }
+
       const activeModifiers = getGigModifiers(band, gigModifiers)
 
       const setlistFirstId =
