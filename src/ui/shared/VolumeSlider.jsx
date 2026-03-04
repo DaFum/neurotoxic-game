@@ -1,9 +1,7 @@
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
-import { useGameDispatch } from '../../context/GameState'
 
 export const VolumeSlider = ({ label, value, onChange }) => {
-  const dispatch = useGameDispatch()
   const { t } = useTranslation(['ui'])
   const clampedValue = Math.min(1, Math.max(0, value))
   const max = 10

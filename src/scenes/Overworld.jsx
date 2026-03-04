@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
-import { useGameState, useGameDispatch } from '../context/GameState'
+import { useGameState } from '../context/GameState'
 import { useTravelLogic } from '../hooks/useTravelLogic'
 import { useBandHQModal } from '../hooks/useBandHQModal'
 import { useQuestsModal } from '../hooks/useQuestsModal'
@@ -41,10 +41,8 @@ export const Overworld = () => {
     advanceDay,
     changeScene,
     startTravelMinigame,
-    activeStoryFlags,
-    activeQuests
+    activeStoryFlags
   } = useGameState()
-  const dispatch = useGameDispatch()
 
   const [hoveredNode, setHoveredNode] = useState(null)
   const { showHQ, openHQ, bandHQProps } = useBandHQModal()

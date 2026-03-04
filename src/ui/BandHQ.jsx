@@ -64,9 +64,11 @@ export const BandHQ = ({
 
   useEffect(() => {
     let active = true
+    let objectUrl = null
     const loadBg = async () => {
       try {
         const url = await fetchGenImageAsObjectUrl(IMG_PROMPTS.BAND_HQ_BG)
+        objectUrl = url
         if (active) {
           setBgUrl(url)
         } else {
@@ -79,7 +81,7 @@ export const BandHQ = ({
     loadBg()
     return () => {
       active = false
-      if (bgUrl) URL.revokeObjectURL(bgUrl)
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
     }
   }, []) // Empty dependency array as IMG_PROMPTS.BAND_HQ_BG is constant
 
