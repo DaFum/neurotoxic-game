@@ -42,6 +42,24 @@ export const HARMONY_DEATH_SPIRAL_THRESHOLD = 30
 export const HARMONY_DEATH_SPIRAL_DAMPEN_FACTOR = 0.5
 
 const selectEvent = (pool, gameState, triggerPoint) => {
+  // Optimization: Pre-calculate Sets for O(1) lookups
+  // Monkey-patch .includes for compatibility with condition filters expecting arrays
+  const cooldownsSet = new Set(gameState.eventCooldowns || [])
+  cooldownsSet.includes = cooldownsSet.has
+
+  const flagsSet = new Set(gameState.activeStoryFlags || [])
+  flagsSet.includes = flagsSet.has
+
+  const pendingSet = new Set(gameState.pendingEvents || [])
+  pendingSet.includes = pendingSet.has
+
+  const optimizedState = {
+    ...gameState,
+    eventCooldowns: cooldownsSet,
+    activeStoryFlags: flagsSet,
+    pendingEvents: pendingSet
+  }
+
   // 1. Pending Events (Highest Priority)
   if (gameState.pendingEvents && gameState.pendingEvents.length > 0) {
     const nextEventId = gameState.pendingEvents[0]
@@ -59,8 +77,7 @@ const selectEvent = (pool, gameState, triggerPoint) => {
       continue
 
     // Filter by Cooldown
-    if (gameState.eventCooldowns && gameState.eventCooldowns.includes(e.id))
-      continue
+    if (cooldownsSet.has(e.id)) continue
 
     // Condition check
     if (!e.condition) {
@@ -69,7 +86,7 @@ const selectEvent = (pool, gameState, triggerPoint) => {
     }
 
     try {
-      const condResult = e.condition(gameState)
+      const condResult = e.condition(optimizedState)
       if (condResult) {
         eligibleEvents.push({
           event: e,
@@ -88,7 +105,6 @@ const selectEvent = (pool, gameState, triggerPoint) => {
   if (eligibleEvents.length === 0) return null
 
   // 4. Story Flag Weighting & Selection
-  const storyFlags = gameState.activeStoryFlags || []
   const shuffled = [...eligibleEvents]
 
   // Fisher-Yates shuffle for unbiased randomness and better performance
@@ -102,7 +118,7 @@ const selectEvent = (pool, gameState, triggerPoint) => {
     let chance = event.chance
 
     // Boost chance if flag matches
-    if (event.requiredFlag && storyFlags.includes(event.requiredFlag)) {
+    if (event.requiredFlag && flagsSet.has(event.requiredFlag)) {
       chance *= 5.0 // Huge boost
     }
 
