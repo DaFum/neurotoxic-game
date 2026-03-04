@@ -109,7 +109,7 @@ const calculateTicketIncome = (
     fillRate -= Math.max(0, pricePenalty - mitigation)
   }
 
-  fillRate = Math.min(1.0, Math.max(0.1, fillRate)) // Clamp 10% - 100%
+  fillRate = Math.min(1.0, Math.max(0.0, fillRate)) // Clamp 0% - 100%
 
   const ticketsSold = Math.floor(gigData.capacity * fillRate)
   const revenue = ticketsSold * gigData.price
@@ -562,7 +562,7 @@ export const shouldTriggerBankruptcy = (newMoney, netIncome) => {
  */
 export const calculateTravelMinigameResult = (damageTaken, _itemsCollected) => {
   // 50% damage scaling: 100 damage -> 50 condition loss
-  const conditionLoss = Math.floor(damageTaken / 2)
+  const conditionLoss = Math.floor(Math.max(0, damageTaken) / 2)
   // Fuel bonus disabled per design: fuel only fills via Refuel button
   const fuelBonus = 0
   return { conditionLoss, fuelBonus }

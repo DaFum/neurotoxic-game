@@ -23,6 +23,7 @@ export const LeaderboardTab = () => {
   useEffect(() => {
     // If we switch to song view and have no song selected, try to select the first one
     if (view === 'SONG' && !selectedSongId && SONGS_DB.length > 0) {
+      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
       setSelectedSongId(SONGS_DB[0].leaderboardId)
     }
   }, [view, selectedSongId])

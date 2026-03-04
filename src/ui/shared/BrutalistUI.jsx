@@ -1597,7 +1597,7 @@ export const ToxicChatter = () => {
 export const VoidDecryptor = () => {
   const { t } = useTranslation(['ui'])
   const [decrypted, setDecrypted] = useState(false)
-  const [glitchText, setGlitchText] = useState(
+  const [glitchText, setGlitchText] = useState(() =>
     t('ui:brutalist.glitchPlaceholder')
   )
 
@@ -1612,6 +1612,7 @@ export const VoidDecryptor = () => {
       }, 50)
       return () => clearInterval(interval)
     } else {
+      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
       setGlitchText(t('ui:decryptor.unlocked'))
     }
   }, [decrypted, t])

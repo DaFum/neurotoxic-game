@@ -16,7 +16,7 @@
 export const calculateAccuracy = (perfectHits, misses) => {
   const total = perfectHits + misses
   if (total === 0) return 100
-  return Math.round((perfectHits / total) * 100)
+  return Math.max(0, Math.min(100, Math.round((perfectHits / total) * 100)))
 }
 
 /**

@@ -1,5 +1,4 @@
 import { suite, test } from 'node:test'
-import assert from 'node:assert'
 import { isConnected } from '../src/utils/mapUtils.js'
 
 suite('MapUtils Performance Benchmark', () => {

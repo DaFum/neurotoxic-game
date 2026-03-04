@@ -40,6 +40,7 @@ export const setupMainMenuAudioTest = async () => {
 
   mock.module('react-i18next', {
     namedExports: {
+      // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
       useTranslation: () => ({
         t: key => {
           if (key === 'ui:start_game') return 'Start Tour'
