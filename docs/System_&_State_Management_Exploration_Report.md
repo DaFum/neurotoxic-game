@@ -41,7 +41,7 @@ const renderScene = () => {
 
 ### **2. ActionTypes Enum (All Possible Actions)**
 
-**File:** `/home/user/neurotoxic-game/src/context/gameReducer.js`
+**File:** `/home/user/neurotoxic-game/src/context/actionTypes.js`
 
 ```javascript
 export const ActionTypes = {
@@ -65,7 +65,19 @@ export const ActionTypes = {
   POP_PENDING_EVENT: 'POP_PENDING_EVENT',
   CONSUME_ITEM: 'CONSUME_ITEM',
   ADVANCE_DAY: 'ADVANCE_DAY',
-  ADD_COOLDOWN: 'ADD_COOLDOWN'
+  ADD_COOLDOWN: 'ADD_COOLDOWN',
+  START_TRAVEL_MINIGAME: 'START_TRAVEL_MINIGAME',
+  COMPLETE_TRAVEL_MINIGAME: 'COMPLETE_TRAVEL_MINIGAME',
+  START_ROADIE_MINIGAME: 'START_ROADIE_MINIGAME',
+  COMPLETE_ROADIE_MINIGAME: 'COMPLETE_ROADIE_MINIGAME',
+  UNLOCK_TRAIT: 'UNLOCK_TRAIT',
+
+  ADD_VENUE_BLACKLIST: 'ADD_VENUE_BLACKLIST',
+  ADD_QUEST: 'ADD_QUEST',
+  ADVANCE_QUEST: 'ADVANCE_QUEST',
+  COMPLETE_QUEST: 'COMPLETE_QUEST',
+  FAIL_QUESTS: 'FAIL_QUESTS',
+  ADD_UNLOCK: 'ADD_UNLOCK'
 }
 ```
 

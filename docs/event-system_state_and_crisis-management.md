@@ -172,7 +172,7 @@ All events follow this schema (defined across multiple event files):
 
 ### 4. ACTION TYPES IN REDUCER
 
-All available action types from `src/context/gameReducer.js`:
+All available action types from `src/context/actionTypes.js`:
 
 ```javascript
 export const ActionTypes = {
@@ -202,13 +202,12 @@ export const ActionTypes = {
   START_ROADIE_MINIGAME: 'START_ROADIE_MINIGAME',
   COMPLETE_ROADIE_MINIGAME: 'COMPLETE_ROADIE_MINIGAME',
   UNLOCK_TRAIT: 'UNLOCK_TRAIT',
-  RECORD_BAD_SHOW: 'RECORD_BAD_SHOW', // ← Increments bad show streak
-  RECORD_GOOD_SHOW: 'RECORD_GOOD_SHOW', // ← Resets bad show streak
   ADD_VENUE_BLACKLIST: 'ADD_VENUE_BLACKLIST', // ← Blacklists venue
   ADD_QUEST: 'ADD_QUEST', // ← Adds timed quest
   ADVANCE_QUEST: 'ADVANCE_QUEST', // ← Increments quest progress
   COMPLETE_QUEST: 'COMPLETE_QUEST', // ← Completes quest + rewards
-  FAIL_QUESTS: 'FAIL_QUESTS' // ← Expires overdue quests + penalties
+  FAIL_QUESTS: 'FAIL_QUESTS', // ← Expires overdue quests + penalties
+  ADD_UNLOCK: 'ADD_UNLOCK'
 }
 ```
 
