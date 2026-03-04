@@ -173,6 +173,7 @@ export const IMG_PROMPTS = {
   ITEM_HQ_COFFEE: 'pixel art espresso machine icon',
   ITEM_HQ_SOFA: 'pixel art leather sofa icon',
   ITEM_HQ_BOTNET: 'pixel art computer server rack icon',
+  ITEM_HQ_PR_CONTRACT: 'pixel art formal pr contract document with pen and handshake icon',
   ITEM_HQ_LABEL: 'pixel art record contract document icon',
   ITEM_HQ_OLD_COUCH: 'pixel art old ripped couch icon',
   ITEM_HQ_POSTERS: 'pixel art wall with band posters icon',
