@@ -236,6 +236,18 @@ export const useRhythmGameAudio = ({
 
         // Setup onEnded callback for chaining
         const onSongEnded = () => {
+          // Guard against continuing if the game has been stopped (e.g. Quit)
+          if (
+            gameStateRef.current.isGameOver ||
+            gameStateRef.current.hasSubmittedResults
+          ) {
+            logger.info(
+              'RhythmGame',
+              'Gig stopped or submitted, ignoring onSongEnded chaining.'
+            )
+            return Promise.resolve()
+          }
+
           // Calculate and record per-song stats delta
           const currentState = gameStateRef.current
           if (currentState) {
@@ -264,18 +276,6 @@ export const useRhythmGameAudio = ({
             currentState.currentSongStartScore = currentScore
             currentState.currentSongStartPerfectHits = currentPerfects
             currentState.currentSongStartMisses = currentMisses
-          }
-
-          // Guard against continuing if the game has been stopped (e.g. Quit)
-          if (
-            gameStateRef.current.isGameOver ||
-            gameStateRef.current.hasSubmittedResults
-          ) {
-            logger.info(
-              'RhythmGame',
-              'Gig stopped or submitted, ignoring onSongEnded chaining.'
-            )
-            return Promise.resolve()
           }
 
           logger.info('RhythmGame', `Song "${currentSong.name}" ended.`)

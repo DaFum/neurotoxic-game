@@ -51,5 +51,5 @@ export const buildGigStatsSnapshot = (
   peakHype: stats.peakHype,
   toxicTimeTotal,
   accuracy: calculateAccuracy(stats.perfectHits, stats.misses),
-  songStats
+  songStats: songStats.map(s => ({ ...s }))
 })

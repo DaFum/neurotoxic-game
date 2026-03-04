@@ -186,12 +186,12 @@ describe('PostGig Leaderboard Submission', () => {
     )
   })
 
-  it('resolves song via setlist if currentGig.songId is missing and songStats is empty', async () => {
+  it('resolves song via setlist if currentGig.songId is missing and songStats is undefined', async () => {
     const base = getBaseState()
     useGameState.mockReturnValue({
       ...base,
       currentGig: { ...base.currentGig, songId: undefined },
-      lastGigStats: { score: 12345, accuracy: 95 },
+      lastGigStats: { score: 12345, accuracy: 95, songStats: undefined },
       setlist: ['neurotoxic_1_raw']
     })
 
