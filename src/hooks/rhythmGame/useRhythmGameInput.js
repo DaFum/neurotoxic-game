@@ -27,12 +27,6 @@ export const useRhythmGameInput = ({
   const registerInput = useCallback(
     (laneIndex, isDown) => {
       const now = Date.now()
-      // Only check debounce here once
-      if (isDown) {
-        const lastInputTime = lastInputTimesRef.current[laneIndex] || 0
-        if (now - lastInputTime < 50) return
-        lastInputTimesRef.current[laneIndex] = now
-      }
 
       const state = gameStateRef.current
       if (
@@ -51,7 +45,10 @@ export const useRhythmGameInput = ({
         state.lanes[laneIndex].active = isDown
 
         if (isDown) {
-          // Debounce check was already done at the beginning of the function
+          const lastInputTime = lastInputTimesRef.current[laneIndex] || 0
+          if (now - lastInputTime < 50) return
+          lastInputTimesRef.current[laneIndex] = now
+
           handleHit(laneIndex)
         }
       }

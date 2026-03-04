@@ -88,7 +88,7 @@ describe('useRhythmGameLogic', () => {
 
   test('handleHit updates score', async () => {
     mockRhythmUtils.checkHit.mock.mockImplementation(() => ({
-      hit: true,
+      hit: false,
       visible: true,
       time: 1000,
       originalNote: { p: 60 }

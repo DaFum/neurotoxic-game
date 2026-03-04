@@ -249,24 +249,6 @@ export const parseSongNotes = (song, leadIn = 2000, { onWarn } = {}) => {
 }
 
 /**
- * Finds the insertion point (lower bound) for `target` in a sorted notes array.
- * Uses binary search on `note.time` for O(log n) performance.
- * @param {Array} notes - Sorted array of note objects.
- * @param {number} target - Target time in ms.
- * @returns {number} Index of the first note with `time >= target`.
- */
-const _lowerBound = (notes, target) => {
-  let lo = 0
-  let hi = notes.length
-  while (lo < hi) {
-    const mid = (lo + hi) >>> 1
-    if (notes[mid].time < target) lo = mid + 1
-    else hi = mid
-  }
-  return lo
-}
-
-/**
  * Checks if a note is hit within the window.
  * Uses binary search to narrow the candidate range (O(log n + k) where
  * k = notes inside the time window), instead of scanning every note.
@@ -284,8 +266,7 @@ export const checkHit = (notes, laneIndex, elapsed, hitWindow) => {
 
   // Extract lane-specific notes if not already grouped.
   // In a real engine, we'd pre-partition this, but filtering here is acceptable
-  // if notes are mostly sparse or if we strictly binary search the full array
-  // (the existing lowerBound on `notes` array works O(log N)).
+  // if notes are mostly sparse or if we strictly binary search the full array.
 
   // Binary search to find the first note that could be in range
   let lo = 0
