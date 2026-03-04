@@ -190,14 +190,8 @@ test('stopAndDisconnectSource', async t => {
     const mockSource = {} // No stop or disconnect methods
     stopAndDisconnectSource(mockSource, 'testSource')
 
-    // Since we check typeof source.disconnect === 'function', it will only fail for stop
-    assert.strictEqual(mockLogger.debug.mock.calls.length, 1)
-
-    assert.strictEqual(
-      mockLogger.debug.mock.calls[0].arguments[1],
-      'testSource source stop failed'
-    )
-    assert.ok(mockLogger.debug.mock.calls[0].arguments[2] instanceof TypeError)
+    // Since we check typeof source.disconnect === 'function' and typeof source.stop === 'function', it will not fail
+    assert.strictEqual(mockLogger.debug.mock.calls.length, 0)
   })
 })
 

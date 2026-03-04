@@ -2,6 +2,8 @@ import PropTypes from 'prop-types'
 import { SettingsPanel } from '../shared'
 import { AudioStatePropType, OnAudioChangePropType } from '../shared/propTypes'
 
+import { useCallback } from 'react'
+
 export const SettingsTab = ({
   settings,
   audioState,
@@ -9,6 +11,14 @@ export const SettingsTab = ({
   updateSettings,
   deleteSave
 }) => {
+  const handleToggleCRT = useCallback(() => {
+    updateSettings({ crtEnabled: !settings.crtEnabled })
+  }, [updateSettings, settings.crtEnabled])
+
+  const handleLogLevelChange = useCallback((level) => {
+    updateSettings({ logLevel: level })
+  }, [updateSettings])
+
   return (
     <div className='max-w-3xl mx-auto'>
       <SettingsPanel
@@ -19,8 +29,8 @@ export const SettingsTab = ({
         onMusicChange={onAudioChange.setMusic}
         onSfxChange={onAudioChange.setSfx}
         onToggleMute={onAudioChange.toggleMute}
-        onToggleCRT={() => updateSettings({ crtEnabled: !settings.crtEnabled })}
-        onLogLevelChange={level => updateSettings({ logLevel: level })}
+        onToggleCRT={handleToggleCRT}
+        onLogLevelChange={handleLogLevelChange}
         onDeleteSave={deleteSave}
       />
     </div>
