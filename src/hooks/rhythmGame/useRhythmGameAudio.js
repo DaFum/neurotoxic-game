@@ -56,462 +56,495 @@ export const useRhythmGameAudio = ({
    * Initializes gig physics and note data once per gig.
    * @param {AbortSignal} [signal] - Optional abort signal to cancel async init.
    */
-  const initializeGigState = useCallback(async (signal) => {
-    // Prevent double initialization
-    if (hasInitializedRef.current || isInitializingRef.current) {
-      return
-    }
-    isInitializingRef.current = true
-    abortControllerRef.current = new AbortController()
-
-    // Mute ambient radio to prevent audio overlap
-    audioManager.stopMusic()
-
-    // Harmony Guard
-    if (band.harmony <= 0) {
-      logger.warn('RhythmGame', 'Band harmony too low to start gig.')
-      setIsAudioReady(false)
-      isInitializingRef.current = false
-      return
-    }
-
-    try {
-      const audioUnlocked = await audioManager.ensureAudioContext()
-
-      if (signal && signal.aborted) {
-        isInitializingRef.current = false
+  const initializeGigState = useCallback(
+    async signal => {
+      // Prevent double initialization
+      if (hasInitializedRef.current || isInitializingRef.current) {
         return
       }
+      isInitializingRef.current = true
+      abortControllerRef.current = new AbortController()
 
-      if (!audioUnlocked) {
-        logger.warn(
-          'RhythmGame',
-          'Audio Context blocked. Waiting for user gesture.'
-        )
+      // Mute ambient radio to prevent audio overlap
+      audioManager.stopMusic()
+
+      // Harmony Guard
+      if (band.harmony <= 0) {
+        logger.warn('RhythmGame', 'Band harmony too low to start gig.')
         setIsAudioReady(false)
         isInitializingRef.current = false
         return
       }
-      setIsAudioReady(true)
-      hasInitializedRef.current = true
-      isInitializingRef.current = false
 
-      // Reset cross-song tracking state for a new gig
-      if (gameStateRef.current) {
-        gameStateRef.current.lastEndedSongIndex = -1
-        gameStateRef.current.songStats = []
-        gameStateRef.current.currentSongStartScore = 0
-        gameStateRef.current.currentSongStartPerfectHits = 0
-        gameStateRef.current.currentSongStartMisses = 0
-      }
+      try {
+        const audioUnlocked = await audioManager.ensureAudioContext()
 
-      const activeModifiers = getGigModifiers(band, gigModifiers)
-
-      const setlistFirstId =
-        typeof setlist?.[0] === 'string' ? setlist[0] : setlist?.[0]?.id
-      const songId = currentGig?.songId || setlistFirstId || 'neurotoxic_1'
-      const DEFAULT_SONG = { id: 'default', bpm: 120 }
-      const activeSong =
-        SONGS_DB.find(s => s.id === songId) || SONGS_DB[0] || DEFAULT_SONG
-      const physics = calculateGigPhysics(band, activeSong)
-
-      const currentNode = gameMap?.nodes?.[player.currentNodeId]
-
-      if (!currentNode) {
-        logger.error(
-          'RhythmGame',
-          `No map node found for ${player.currentNodeId}`
-        )
-        hasInitializedRef.current = false
-        isInitializingRef.current = false
-        return
-      }
-
-      const layer = currentNode.layer || 0
-      const speedMult = 1.0 + layer * 0.05
-
-      // Merge band-state modifiers (harmony/member effects) with physics multipliers
-      // so the scoring hook can pick up trait-based bonuses (e.g. Marius blast_machine).
-      const mergedModifiers = {
-        ...activeModifiers,
-        drumMultiplier: physics.multipliers.drums,
-        guitarScoreMult:
-          physics.multipliers.guitar * (activeModifiers.guitarScoreMult ?? 1.0),
-        bassScoreMult:
-          physics.multipliers.bass * (activeModifiers.bassScoreMult ?? 1.0),
-        hasPerfektionist: physics.hasPerfektionist
-      }
-      gameStateRef.current.modifiers = mergedModifiers
-      gameStateRef.current.speed = 500 * speedMult * physics.speedModifier
-
-      // Apply Modifiers
-      if (mergedModifiers.drumSpeedMult > 1.0)
-        gameStateRef.current.speed *= mergedModifiers.drumSpeedMult
-
-      // PreGig Modifiers
-      let hitWindowBonus = mergedModifiers.hitWindowBonus || 0
-      if (mergedModifiers.soundcheck) hitWindowBonus += 30
-
-      if (mergedModifiers.catering) {
-        gameStateRef.current.speed = 500 * speedMult
-      }
-
-      gameStateRef.current.lanes[0].hitWindow =
-        physics.hitWindows.guitar + hitWindowBonus
-      gameStateRef.current.lanes[1].hitWindow =
-        physics.hitWindows.drums + hitWindowBonus
-      gameStateRef.current.lanes[2].hitWindow =
-        physics.hitWindows.bass + hitWindowBonus
-
-      // Prepare resolved setlist
-      const activeSetlist = (
-        setlist.length > 0
-          ? setlist
-          : [{ id: 'jam', name: 'Jam', bpm: 120, duration: 60, difficulty: 2 }]
-      ).map(songRef => {
-        if (typeof songRef === 'string') {
-          return (
-            SONGS_DB.find(dbSong => dbSong.id === songRef) || {
-              id: songRef,
-              name: songRef,
-              bpm: 120,
-              duration: 60,
-              difficulty: 2
-            }
-          )
+        if (signal && signal.aborted) {
+          isInitializingRef.current = false
+          return
         }
-        if (!songRef.notes && songRef.id && songRef.id !== 'jam') {
-          return SONGS_DB.find(dbSong => dbSong.id === songRef.id) || songRef
-        }
-        return songRef
-      })
 
-      // Function to play a specific song by index
-      const playSongAtIndex = async index => {
-        // Guard against continuing if the gig has been stopped or submitted
-        if (
-          gameStateRef.current.hasSubmittedResults ||
-          gameStateRef.current.isGameOver
-        ) {
-          logger.info(
+        if (!audioUnlocked) {
+          logger.warn(
             'RhythmGame',
-            'Gig stopped or submitted, aborting playSongAtIndex.'
+            'Audio Context blocked. Waiting for user gesture.'
           )
+          setIsAudioReady(false)
+          isInitializingRef.current = false
+          return
+        }
+        setIsAudioReady(true)
+        hasInitializedRef.current = true
+        isInitializingRef.current = false
+
+        // Reset cross-song tracking state for a new gig
+        if (gameStateRef.current) {
+          gameStateRef.current.lastEndedSongIndex = -1
+          gameStateRef.current.songStats = []
+          gameStateRef.current.currentSongStartScore = 0
+          gameStateRef.current.currentSongStartPerfectHits = 0
+          gameStateRef.current.currentSongStartMisses = 0
+        }
+
+        const activeModifiers = getGigModifiers(band, gigModifiers)
+
+        const setlistFirstId =
+          typeof setlist?.[0] === 'string' ? setlist[0] : setlist?.[0]?.id
+        const songId = currentGig?.songId || setlistFirstId || 'neurotoxic_1'
+        const DEFAULT_SONG = { id: 'default', bpm: 120 }
+        const activeSong =
+          SONGS_DB.find(s => s.id === songId) || SONGS_DB[0] || DEFAULT_SONG
+        const physics = calculateGigPhysics(band, activeSong)
+
+        const currentNode = gameMap?.nodes?.[player.currentNodeId]
+
+        if (!currentNode) {
+          logger.error(
+            'RhythmGame',
+            `No map node found for ${player.currentNodeId}`
+          )
+          hasInitializedRef.current = false
+          isInitializingRef.current = false
           return
         }
 
-        if (index >= activeSetlist.length) {
-          gameStateRef.current.setlistCompleted = true
-          gameStateRef.current.songTransitioning = false
-          // After an OGG buffer ends naturally, the audio engine freezes the gig
-          // clock at the playback position and nulls gigStartCtxTime. If
-          // totalDuration includes a lookahead buffer (maxNoteTime + 4s), the
-          // frozen clock can never reach it and isNearTrackEnd stays false
-          // forever. Snapping totalDuration to the current (still-live) gig
-          // time here ensures the game loop detects completion on the next frame.
-          const nowMs = getGigTimeMs()
-          if (Number.isFinite(nowMs) && nowMs > 0) {
-            gameStateRef.current.totalDuration = nowMs
-          }
-          return
+        const layer = currentNode.layer || 0
+        const speedMult = 1.0 + layer * 0.05
+
+        // Merge band-state modifiers (harmony/member effects) with physics multipliers
+        // so the scoring hook can pick up trait-based bonuses (e.g. Marius blast_machine).
+        const mergedModifiers = {
+          ...activeModifiers,
+          drumMultiplier: physics.multipliers.drums,
+          guitarScoreMult:
+            physics.multipliers.guitar *
+            (activeModifiers.guitarScoreMult ?? 1.0),
+          bassScoreMult:
+            physics.multipliers.bass * (activeModifiers.bassScoreMult ?? 1.0),
+          hasPerfektionist: physics.hasPerfektionist
+        }
+        gameStateRef.current.modifiers = mergedModifiers
+        gameStateRef.current.speed = 500 * speedMult * physics.speedModifier
+
+        // Apply Modifiers
+        if (mergedModifiers.drumSpeedMult > 1.0)
+          gameStateRef.current.speed *= mergedModifiers.drumSpeedMult
+
+        // PreGig Modifiers
+        let hitWindowBonus = mergedModifiers.hitWindowBonus || 0
+        if (mergedModifiers.soundcheck) hitWindowBonus += 30
+
+        if (mergedModifiers.catering) {
+          gameStateRef.current.speed = 500 * speedMult
         }
 
-        const currentSong = activeSetlist[index]
-        let notes = []
-        let audioDelay
-        let bgAudioStarted = false
-        const rng = Math.random
-        gameStateRef.current.rng = rng
+        gameStateRef.current.lanes[0].hitWindow =
+          physics.hitWindows.guitar + hitWindowBonus
+        gameStateRef.current.lanes[1].hitWindow =
+          physics.hitWindows.drums + hitWindowBonus
+        gameStateRef.current.lanes[2].hitWindow =
+          physics.hitWindows.bass + hitWindowBonus
 
-        // Reset flags for new song
-        gameStateRef.current.setlistCompleted = false
-        // Mark as transitioning to prevent premature finalization
-        gameStateRef.current.songTransitioning = true
-
-        // Clear old notes immediately to prevent spurious miss processing
-        // during async transition when the gig clock may be invalid
-        gameStateRef.current.notes = []
-        gameStateRef.current.nextMissCheckIndex = 0
-
-        // Parse Notes
-        if (Array.isArray(currentSong.notes) && currentSong.notes.length > 0) {
-          const parsedNotes = parseSongNotes(currentSong, NOTE_LEAD_IN_MS, {
-            onWarn: msg => logger.warn('RhythmGame', msg)
-          })
-          if (parsedNotes.length > 0) {
-            notes = notes.concat(parsedNotes)
+        // Prepare resolved setlist
+        const activeSetlist = (
+          setlist.length > 0
+            ? setlist
+            : [
+                {
+                  id: 'jam',
+                  name: 'Jam',
+                  bpm: 120,
+                  duration: 60,
+                  difficulty: 2
+                }
+              ]
+        ).map(songRef => {
+          if (typeof songRef === 'string') {
+            return (
+              SONGS_DB.find(dbSong => dbSong.id === songRef) || {
+                id: songRef,
+                name: songRef,
+                bpm: 120,
+                duration: 60,
+                difficulty: 2
+              }
+            )
           }
-        }
-
-        // Setup onEnded callback for chaining
-        const onSongEnded = () => {
-          // Idempotency guard: prevent duplicate onEnded executions for the same song.
-          // This avoids duplicate leaderboard entries and double-chaining if the audio engine fires onEnded multiple times.
-          if (gameStateRef.current.lastEndedSongIndex === index) {
-            return Promise.resolve()
+          if (!songRef.notes && songRef.id && songRef.id !== 'jam') {
+            return SONGS_DB.find(dbSong => dbSong.id === songRef.id) || songRef
           }
-          gameStateRef.current.lastEndedSongIndex = index
+          return songRef
+        })
 
-          // Guard against continuing if the game has been stopped (e.g. Quit)
-          // Design note: Returning early here intentionally drops in-progress song stats
-          // when a gig ends prematurely (e.g., band collapses or player quits).
-          // This ensures only fully completed songs are submitted to the leaderboard.
+        // Function to play a specific song by index
+        const playSongAtIndex = async index => {
+          // Guard against continuing if the gig has been stopped or submitted
           if (
-            gameStateRef.current.isGameOver ||
-            gameStateRef.current.hasSubmittedResults
+            gameStateRef.current.hasSubmittedResults ||
+            gameStateRef.current.isGameOver
           ) {
             logger.info(
               'RhythmGame',
-              'Gig stopped or submitted, ignoring onSongEnded chaining.'
+              'Gig stopped or submitted, aborting playSongAtIndex.'
             )
-            return Promise.resolve()
+            return
           }
 
-          // Calculate and record per-song stats delta
-          const currentState = gameStateRef.current
-          if (currentState) {
-            const currentScore = currentState.score || 0
-            const scoreDelta = Math.max(0, currentScore - (currentState.currentSongStartScore || 0))
-
-            const currentPerfects = currentState.stats?.perfectHits || 0
-            const currentMisses = currentState.stats?.misses || 0
-            const perfectsDelta = Math.max(0, currentPerfects - (currentState.currentSongStartPerfectHits || 0))
-            const missesDelta = Math.max(0, currentMisses - (currentState.currentSongStartMisses || 0))
-
-            const totalDelta = perfectsDelta + missesDelta
-            let songAccuracy = 100
-            if (totalDelta > 0) {
-              songAccuracy = Math.max(0, Math.min(100, Math.round((perfectsDelta / totalDelta) * 100)))
-            }
-
-            currentState.songStats.push({
-              songId: currentSong.id,
-              score: scoreDelta,
-              accuracy: songAccuracy,
-              index
-            })
-
-            // Reset start values for the next song
-            currentState.currentSongStartScore = currentScore
-            currentState.currentSongStartPerfectHits = currentPerfects
-            currentState.currentSongStartMisses = currentMisses
-          }
-
-          logger.info('RhythmGame', `Song "${currentSong.name}" ended.`)
-          // Synchronously set transitioning flag to prevent race condition
-          gameStateRef.current.songTransitioning = true
-          return playSongAtIndex(index + 1).catch(err => {
-            handleError(err, {
-              addToast,
-              fallbackMessage: 'Failed to start next song!'
-            })
-            // If next song fails, ensure we end the gig
+          if (index >= activeSetlist.length) {
             gameStateRef.current.setlistCompleted = true
             gameStateRef.current.songTransitioning = false
-          })
-        }
-
-        // Start Audio
-        if (currentSong.sourceOgg || currentSong.sourceMid) {
-          const { excerptStartMs, excerptDurationMs } =
-            resolveSongPlaybackWindow(currentSong, { defaultDurationMs: 0 })
-          const oggFilename =
-            currentSong.sourceOgg ||
-            currentSong.sourceMid.replace(/\.mid$/i, '.ogg')
-          const assetFound = hasAudioAsset(oggFilename)
-
-          if (!assetFound) {
-            handleError(
-              new AudioError(
-                `Audio asset not found for "${currentSong.name}": looked up "${oggFilename}"`,
-                { songName: currentSong.name, oggFilename }
-              ),
-              { silent: true, fallbackMessage: 'Missing OGG audio asset' }
-            )
+            // After an OGG buffer ends naturally, the audio engine freezes the gig
+            // clock at the playback position and nulls gigStartCtxTime. If
+            // totalDuration includes a lookahead buffer (maxNoteTime + 4s), the
+            // frozen clock can never reach it and isNearTrackEnd stays false
+            // forever. Snapping totalDuration to the current (still-live) gig
+            // time here ensures the game loop detects completion on the next frame.
+            const nowMs = getGigTimeMs()
+            if (Number.isFinite(nowMs) && nowMs > 0) {
+              gameStateRef.current.totalDuration = nowMs
+            }
+            return
           }
 
-          if (assetFound) {
-            // Stop the OGG when bars finish falling: cap to last note time.
-            // If no JSON notes are parsed yet (procedural fallback path),
-            // fall back to the configured excerpt duration.
+          const currentSong = activeSetlist[index]
+          let notes = []
+          let audioDelay
+          let bgAudioStarted = false
+          const rng = Math.random
+          gameStateRef.current.rng = rng
+
+          // Reset flags for new song
+          gameStateRef.current.setlistCompleted = false
+          // Mark as transitioning to prevent premature finalization
+          gameStateRef.current.songTransitioning = true
+
+          // Clear old notes immediately to prevent spurious miss processing
+          // during async transition when the gig clock may be invalid
+          gameStateRef.current.notes = []
+          gameStateRef.current.nextMissCheckIndex = 0
+
+          // Parse Notes
+          if (
+            Array.isArray(currentSong.notes) &&
+            currentSong.notes.length > 0
+          ) {
+            const parsedNotes = parseSongNotes(currentSong, NOTE_LEAD_IN_MS, {
+              onWarn: msg => logger.warn('RhythmGame', msg)
+            })
+            if (parsedNotes.length > 0) {
+              notes = notes.concat(parsedNotes)
+            }
+          }
+
+          // Setup onEnded callback for chaining
+          const onSongEnded = () => {
+            // Idempotency guard: prevent duplicate onEnded executions for the same song.
+            // This avoids duplicate leaderboard entries and double-chaining if the audio engine fires onEnded multiple times.
+            if (gameStateRef.current.lastEndedSongIndex === index) {
+              return Promise.resolve()
+            }
+            gameStateRef.current.lastEndedSongIndex = index
+
+            // Guard against continuing if the game has been stopped (e.g. Quit)
+            // Design note: Returning early here intentionally drops in-progress song stats
+            // when a gig ends prematurely (e.g., band collapses or player quits).
+            // This ensures only fully completed songs are submitted to the leaderboard.
+            if (
+              gameStateRef.current.isGameOver ||
+              gameStateRef.current.hasSubmittedResults
+            ) {
+              logger.info(
+                'RhythmGame',
+                'Gig stopped or submitted, ignoring onSongEnded chaining.'
+              )
+              return Promise.resolve()
+            }
+
+            // Calculate and record per-song stats delta
+            const currentState = gameStateRef.current
+            if (currentState) {
+              const currentScore = currentState.score || 0
+              const scoreDelta = Math.max(
+                0,
+                currentScore - (currentState.currentSongStartScore || 0)
+              )
+
+              const currentPerfects = currentState.stats?.perfectHits || 0
+              const currentMisses = currentState.stats?.misses || 0
+              const perfectsDelta = Math.max(
+                0,
+                currentPerfects -
+                  (currentState.currentSongStartPerfectHits || 0)
+              )
+              const missesDelta = Math.max(
+                0,
+                currentMisses - (currentState.currentSongStartMisses || 0)
+              )
+
+              const totalDelta = perfectsDelta + missesDelta
+              let songAccuracy = 100
+              if (totalDelta > 0) {
+                songAccuracy = Math.max(
+                  0,
+                  Math.min(100, Math.round((perfectsDelta / totalDelta) * 100))
+                )
+              }
+
+              currentState.songStats.push({
+                songId: currentSong.id,
+                score: scoreDelta,
+                accuracy: songAccuracy,
+                index
+              })
+
+              // Reset start values for the next song
+              currentState.currentSongStartScore = currentScore
+              currentState.currentSongStartPerfectHits = currentPerfects
+              currentState.currentSongStartMisses = currentMisses
+            }
+
+            logger.info('RhythmGame', `Song "${currentSong.name}" ended.`)
+            // Synchronously set transitioning flag to prevent race condition
+            gameStateRef.current.songTransitioning = true
+            return playSongAtIndex(index + 1).catch(err => {
+              handleError(err, {
+                addToast,
+                fallbackMessage: 'Failed to start next song!'
+              })
+              // If next song fails, ensure we end the gig
+              gameStateRef.current.setlistCompleted = true
+              gameStateRef.current.songTransitioning = false
+            })
+          }
+
+          // Start Audio
+          if (currentSong.sourceOgg || currentSong.sourceMid) {
+            const { excerptStartMs, excerptDurationMs } =
+              resolveSongPlaybackWindow(currentSong, { defaultDurationMs: 0 })
+            const oggFilename =
+              currentSong.sourceOgg ||
+              currentSong.sourceMid.replace(/\.mid$/i, '.ogg')
+            const assetFound = hasAudioAsset(oggFilename)
+
+            if (!assetFound) {
+              handleError(
+                new AudioError(
+                  `Audio asset not found for "${currentSong.name}": looked up "${oggFilename}"`,
+                  { songName: currentSong.name, oggFilename }
+                ),
+                { silent: true, fallbackMessage: 'Missing OGG audio asset' }
+              )
+            }
+
+            if (assetFound) {
+              // Stop the OGG when bars finish falling: cap to last note time.
+              // If no JSON notes are parsed yet (procedural fallback path),
+              // fall back to the configured excerpt duration.
+              // ⚡ BOLT OPTIMIZATION: O(1) tail read instead of O(N) array reduction
+              // Notes are generated/parsed in strict chronological order.
+              const maxNoteTimeSoFar =
+                notes.length > 0 ? notes[notes.length - 1].time : 0
+              const oggDurationMs =
+                maxNoteTimeSoFar > 0
+                  ? maxNoteTimeSoFar + NOTE_TAIL_MS
+                  : excerptDurationMs > 0
+                    ? excerptDurationMs
+                    : null
+              const success = await startGigPlayback({
+                filename: oggFilename,
+                bufferOffsetMs: excerptStartMs,
+                delayMs: GIG_LEAD_IN_MS,
+                durationMs: oggDurationMs,
+                onEnded: onSongEnded
+              })
+              if (success) {
+                bgAudioStarted = true
+                logger.info(
+                  'RhythmGame',
+                  `Gig audio: OGG buffer playback for "${currentSong.name}"`
+                )
+              }
+            }
+          }
+
+          if (!bgAudioStarted && currentSong.sourceMid) {
+            const { excerptStartMs, excerptDurationMs } =
+              resolveSongPlaybackWindow(currentSong, { defaultDurationMs: 0 })
+            const offsetSeconds = Math.max(0, excerptStartMs / 1000)
+            // Same note-cap logic as OGG: stop MIDI when bars finish.
             // ⚡ BOLT OPTIMIZATION: O(1) tail read instead of O(N) array reduction
-            // Notes are generated/parsed in strict chronological order.
-            const maxNoteTimeSoFar = notes.length > 0 ? notes[notes.length - 1].time : 0
-            const oggDurationMs =
+            const maxNoteTimeSoFar =
+              notes.length > 0 ? notes[notes.length - 1].time : 0
+            const midiDurationMs =
               maxNoteTimeSoFar > 0
                 ? maxNoteTimeSoFar + NOTE_TAIL_MS
                 : excerptDurationMs > 0
                   ? excerptDurationMs
                   : null
-            const success = await startGigPlayback({
-              filename: oggFilename,
-              bufferOffsetMs: excerptStartMs,
-              delayMs: GIG_LEAD_IN_MS,
-              durationMs: oggDurationMs,
-              onEnded: onSongEnded
-            })
+            const gigPlaybackSeconds =
+              midiDurationMs !== null ? midiDurationMs / 1000 : null
+            const rawGigStartTimeSec =
+              getAudioContextTimeSec() + GIG_LEAD_IN_MS / 1000
+            const toneGigStartTimeSec = getToneStartTimeSec(rawGigStartTimeSec)
+            startGigClock({ offsetMs: 0, startTimeSec: toneGigStartTimeSec })
+            const success = await playMidiFile(
+              currentSong.sourceMid,
+              offsetSeconds,
+              false,
+              0,
+              {
+                startTimeSec: toneGigStartTimeSec,
+                stopAfterSeconds: gigPlaybackSeconds,
+                useCleanPlayback: false,
+                onEnded: onSongEnded
+              }
+            )
             if (success) {
               bgAudioStarted = true
               logger.info(
                 'RhythmGame',
-                `Gig audio: OGG buffer playback for "${currentSong.name}"`
+                `Gig audio: MIDI synthesis fallback for "${currentSong.name}"`
               )
             }
           }
-        }
 
-        if (!bgAudioStarted && currentSong.sourceMid) {
-          const { excerptStartMs, excerptDurationMs } =
-            resolveSongPlaybackWindow(currentSong, { defaultDurationMs: 0 })
-          const offsetSeconds = Math.max(0, excerptStartMs / 1000)
-          // Same note-cap logic as OGG: stop MIDI when bars finish.
-          // ⚡ BOLT OPTIMIZATION: O(1) tail read instead of O(N) array reduction
-          const maxNoteTimeSoFar = notes.length > 0 ? notes[notes.length - 1].time : 0
-          const midiDurationMs =
-            maxNoteTimeSoFar > 0
-              ? maxNoteTimeSoFar + NOTE_TAIL_MS
-              : excerptDurationMs > 0
-                ? excerptDurationMs
-                : null
-          const gigPlaybackSeconds =
-            midiDurationMs !== null ? midiDurationMs / 1000 : null
-          const rawGigStartTimeSec =
-            getAudioContextTimeSec() + GIG_LEAD_IN_MS / 1000
-          const toneGigStartTimeSec = getToneStartTimeSec(rawGigStartTimeSec)
-          startGigClock({ offsetMs: 0, startTimeSec: toneGigStartTimeSec })
-          const success = await playMidiFile(
-            currentSong.sourceMid,
-            offsetSeconds,
-            false,
-            0,
-            {
-              startTimeSec: toneGigStartTimeSec,
-              stopAfterSeconds: gigPlaybackSeconds,
-              useCleanPlayback: false,
-              onEnded: onSongEnded
-            }
-          )
-          if (success) {
-            bgAudioStarted = true
-            logger.info(
-              'RhythmGame',
-              `Gig audio: MIDI synthesis fallback for "${currentSong.name}"`
-            )
-          }
-        }
-
-        if (!bgAudioStarted && notes.length > 0) {
-          startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
-          const success = await playSongFromData(
-            currentSong,
-            GIG_LEAD_IN_MS / 1000,
-            {
-              onEnded: onSongEnded
-            }
-          )
-          if (success) {
-            bgAudioStarted = true
-            logger.info(
-              'RhythmGame',
-              `Gig audio: note data synthesis for "${currentSong.name}"`
-            )
-          }
-        }
-
-        // Fallback: Procedural Generation
-        if (notes.length === 0 || !bgAudioStarted) {
-          if (notes.length === 0) {
-            const songNotes = generateNotesForSong(currentSong, {
-              leadIn: NOTE_LEAD_IN_MS,
-              random: rng
-            })
-            notes = notes.concat(songNotes)
-          }
-
-          if (!bgAudioStarted) {
-            audioDelay = GIG_LEAD_IN_MS / 1000
+          if (!bgAudioStarted && notes.length > 0) {
             startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
-            const success = await startMetalGenerator(
+            const success = await playSongFromData(
               currentSong,
-              audioDelay,
+              GIG_LEAD_IN_MS / 1000,
               {
                 onEnded: onSongEnded
-              },
-              rng
+              }
             )
             if (success) {
-              // bgAudioStarted = true // useless assignment as it's never read again
+              bgAudioStarted = true
               logger.info(
                 'RhythmGame',
-                `Gig audio: procedural metal generator for "${currentSong.name}"`
+                `Gig audio: note data synthesis for "${currentSong.name}"`
               )
             }
           }
+
+          // Fallback: Procedural Generation
+          if (notes.length === 0 || !bgAudioStarted) {
+            if (notes.length === 0) {
+              const songNotes = generateNotesForSong(currentSong, {
+                leadIn: NOTE_LEAD_IN_MS,
+                random: rng
+              })
+              notes = notes.concat(songNotes)
+            }
+
+            if (!bgAudioStarted) {
+              audioDelay = GIG_LEAD_IN_MS / 1000
+              startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
+              const success = await startMetalGenerator(
+                currentSong,
+                audioDelay,
+                {
+                  onEnded: onSongEnded
+                },
+                rng
+              )
+              if (success) {
+                // bgAudioStarted = true // useless assignment as it's never read again
+                logger.info(
+                  'RhythmGame',
+                  `Gig audio: procedural metal generator for "${currentSong.name}"`
+                )
+              }
+            }
+          }
+
+          // Update Game State
+          gameStateRef.current.notes = notes
+          gameStateRef.current.nextMissCheckIndex = 0
+          // Signal NoteManager to reset its render pointer for the new song
+          gameStateRef.current.notesVersion =
+            gameStateRef.current.notesVersion + 1
+
+          // ⚡ BOLT OPTIMIZATION: O(1) tail read instead of O(N) array reduction
+          const maxNoteTime =
+            notes.length > 0 ? notes[notes.length - 1].time : 0
+          const buffer = 4000
+          const noteDuration = maxNoteTime + buffer
+          // When JSON notes are present the audio has already been capped to
+          // NOTE_TAIL_MS past the last bar, so drive totalDuration from notes
+          // only. For procedurally-generated notes (no JSON data) fall back to
+          // the larger of note-duration and audio-duration so the gig loop
+          // waits for the metal generator / synthesis to finish naturally.
+          const audioDuration = resolveSongPlaybackWindow(currentSong, {
+            defaultDurationMs: 0
+          }).excerptDurationMs
+          gameStateRef.current.totalDuration =
+            maxNoteTime > 0
+              ? noteDuration
+              : Math.max(noteDuration, audioDuration)
+
+          // Clear transitioning flag now that state is consistent
+          gameStateRef.current.songTransitioning = false
+
+          // Show Toast for song start
+          if (activeSetlist.length > 1) {
+            addToast(`Now Playing: ${currentSong.name}`, 'info')
+          }
         }
 
-        // Update Game State
-        gameStateRef.current.notes = notes
-        gameStateRef.current.nextMissCheckIndex = 0
-        // Signal NoteManager to reset its render pointer for the new song
-        gameStateRef.current.notesVersion =
-          gameStateRef.current.notesVersion + 1
-
-        // ⚡ BOLT OPTIMIZATION: O(1) tail read instead of O(N) array reduction
-        const maxNoteTime = notes.length > 0 ? notes[notes.length - 1].time : 0
-        const buffer = 4000
-        const noteDuration = maxNoteTime + buffer
-        // When JSON notes are present the audio has already been capped to
-        // NOTE_TAIL_MS past the last bar, so drive totalDuration from notes
-        // only. For procedurally-generated notes (no JSON data) fall back to
-        // the larger of note-duration and audio-duration so the gig loop
-        // waits for the metal generator / synthesis to finish naturally.
-        const audioDuration = resolveSongPlaybackWindow(currentSong, {
-          defaultDurationMs: 0
-        }).excerptDurationMs
-        gameStateRef.current.totalDuration =
-          maxNoteTime > 0 ? noteDuration : Math.max(noteDuration, audioDuration)
-
-        // Clear transitioning flag now that state is consistent
-        gameStateRef.current.songTransitioning = false
-
-        // Show Toast for song start
-        if (activeSetlist.length > 1) {
-          addToast(`Now Playing: ${currentSong.name}`, 'info')
+        // Check abort signal before starting the first song
+        if (abortControllerRef.current?.signal.aborted) {
+          setIsAudioReady(false)
+          isInitializingRef.current = false
+          return
         }
-      }
 
-      // Check abort signal before starting the first song
-      if (abortControllerRef.current?.signal.aborted) {
+        // Start the first song
+        if (signal && !signal.aborted) {
+          await playSongAtIndex(0)
+        }
+      } catch (error) {
+        if (signal && signal.aborted) return
+
+        handleError(error, {
+          addToast,
+          fallbackMessage: 'Gig initialization failed!'
+        })
         setIsAudioReady(false)
         isInitializingRef.current = false
-        return
       }
-
-      // Start the first song
-      if (signal && !signal.aborted) {
-        await playSongAtIndex(0)
-      }
-    } catch (error) {
-      if (signal && signal.aborted) return
-
-      handleError(error, {
-        addToast,
-        fallbackMessage: 'Gig initialization failed!'
-      })
-      setIsAudioReady(false)
-      isInitializingRef.current = false
-    }
-  }, [
-    band,
-    gameMap?.nodes,
-    player.currentNodeId,
-    setlist,
-    gigModifiers,
-    addToast,
-    gameStateRef,
-    setIsAudioReady,
-    currentGig?.songId
-  ])
+    },
+    [
+      band,
+      gameMap?.nodes,
+      player.currentNodeId,
+      setlist,
+      gigModifiers,
+      addToast,
+      gameStateRef,
+      setIsAudioReady,
+      currentGig?.songId
+    ]
+  )
 
   useEffect(() => {
     const abortController = new AbortController()
