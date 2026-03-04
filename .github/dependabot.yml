@@ -1,0 +1,25 @@
+version: 2
+updates:
+  # Keep npm (package.json / package-lock.json / pnpm-lock.yaml) up to date
+  - package-ecosystem: "npm"
+    directory: "/"                      # location of package.json
+    schedule:
+      interval: "weekly"                # options: "daily", "weekly", "monthly"
+    open-pull-requests-limit: 10        # max open Dependabot PRs at once
+    labels:
+      - "dependencies"
+      - "dependabot"
+    commit-message:
+      prefix: "chore(deps)"
+    # If you want Dependabot to be more conservative about major updates,
+    # we can add an "ignore" rule for major version changes here.
+
+  # Keep GitHub Actions workflow versions up to date
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "ci"
