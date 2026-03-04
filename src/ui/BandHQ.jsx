@@ -2,7 +2,8 @@ import { useMemo, useState, Suspense, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { getUnifiedUpgradeCatalog } from '../data/upgradeCatalog'
-import { fetchGenImageAsObjectUrl, IMG_PROMPTS } from '../utils/imageGen.js'
+import { IMG_PROMPTS, getGenImageUrl } from '../utils/imageGen.js'
+import { loadTexture } from '../components/stage/utils.js'
 import { usePurchaseLogic } from '../hooks/usePurchaseLogic'
 import { handleError, GameError, StateError } from '../utils/errorHandler'
 import { StatsTab } from './bandhq/StatsTab'
@@ -64,24 +65,22 @@ export const BandHQ = ({
 
   useEffect(() => {
     let active = true
-    let objectUrl = null
     const loadBg = async () => {
       try {
-        const url = await fetchGenImageAsObjectUrl(IMG_PROMPTS.BAND_HQ_BG)
-        objectUrl = url
-        if (active) {
+        const urlRequest = getGenImageUrl(IMG_PROMPTS.BAND_HQ_BG)
+        const texture = await loadTexture(urlRequest)
+        const url = texture?.baseTexture?.resource?.url || texture?.source?.src || urlRequest
+
+        if (active && url) {
           setBgUrl(url)
-        } else {
-          URL.revokeObjectURL(url)
         }
-      } catch (err) {
+      } catch (_err) {
         // Fallback or ignore
       }
     }
     loadBg()
     return () => {
       active = false
-      if (objectUrl) URL.revokeObjectURL(objectUrl)
     }
   }, []) // Empty dependency array as IMG_PROMPTS.BAND_HQ_BG is constant
 
