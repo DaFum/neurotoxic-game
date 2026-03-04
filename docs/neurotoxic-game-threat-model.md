@@ -38,7 +38,7 @@ Evidence indicates a single-page React entry point and localStorage-based persis
   - **Data:** Asset URLs (MIDI files).
   - **Channel:** HTTP(S) `fetch` from same-origin static assets.
   - **Security guarantees:** Same-origin policy; HTTPS dependent on hosting.
-  - **Validation:** MIDI duration and note scheduling guards in audio engine before playback. (Runtime skips invalid notes and validates durations.)【F:src/utils/audio/procedural.js】
+  - **Validation:** MIDI duration and note scheduling guards in audio engine before playback. (Runtime skips invalid notes and validates durations.)【F:src/utils/audio/proceduralMetal.js】
 
 #### Diagram
 
