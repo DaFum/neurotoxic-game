@@ -399,9 +399,7 @@ export const initGlobalErrorHandling = () => {
       source: 'unhandledrejection',
       severity: ErrorSeverity.HIGH,
       errorInfo: {
-        context: {
-          originalReason: reason
-        }
+        originalReason: reason
       }
     })
   })
