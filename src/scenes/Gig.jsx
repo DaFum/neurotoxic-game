@@ -107,7 +107,12 @@ export const Gig = () => {
       }
       const toxicTime = gameStateRef.current?.toxicTimeTotal || 0
 
-      const snapshot = buildGigStatsSnapshot(score, statsSnapshot, toxicTime)
+      const snapshot = buildGigStatsSnapshot(
+        score,
+        statsSnapshot,
+        toxicTime,
+        gameStateRef.current?.songStats || []
+      )
       setLastGigStats(snapshot)
       endGig()
     }

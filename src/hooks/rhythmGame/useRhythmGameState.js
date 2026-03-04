@@ -62,6 +62,11 @@ export const useRhythmGameState = () => {
     totalDuration: 0,
     hasSubmittedResults: false,
     songTransitioning: false,
+    songStats: [],
+    lastEndedSongIndex: -1,
+    currentSongStartScore: 0,
+    currentSongStartPerfectHits: 0,
+    currentSongStartMisses: 0,
     // Replaces audioPlaybackEnded; signals multi-song setlist completion
     setlistCompleted: false,
     // Incremented each time the notes array is replaced so NoteManager can

@@ -96,6 +96,15 @@ export const useRhythmGameAudio = ({
       hasInitializedRef.current = true
       isInitializingRef.current = false
 
+      // Reset cross-song tracking state for a new gig
+      if (gameStateRef.current) {
+        gameStateRef.current.lastEndedSongIndex = -1
+        gameStateRef.current.songStats = []
+        gameStateRef.current.currentSongStartScore = 0
+        gameStateRef.current.currentSongStartPerfectHits = 0
+        gameStateRef.current.currentSongStartMisses = 0
+      }
+
       const activeModifiers = getGigModifiers(band, gigModifiers)
 
       const setlistFirstId =
@@ -236,7 +245,17 @@ export const useRhythmGameAudio = ({
 
         // Setup onEnded callback for chaining
         const onSongEnded = () => {
+          // Idempotency guard: prevent duplicate onEnded executions for the same song.
+          // This avoids duplicate leaderboard entries and double-chaining if the audio engine fires onEnded multiple times.
+          if (gameStateRef.current.lastEndedSongIndex === index) {
+            return Promise.resolve()
+          }
+          gameStateRef.current.lastEndedSongIndex = index
+
           // Guard against continuing if the game has been stopped (e.g. Quit)
+          // Design note: Returning early here intentionally drops in-progress song stats
+          // when a gig ends prematurely (e.g., band collapses or player quits).
+          // This ensures only fully completed songs are submitted to the leaderboard.
           if (
             gameStateRef.current.isGameOver ||
             gameStateRef.current.hasSubmittedResults
@@ -246,6 +265,36 @@ export const useRhythmGameAudio = ({
               'Gig stopped or submitted, ignoring onSongEnded chaining.'
             )
             return Promise.resolve()
+          }
+
+          // Calculate and record per-song stats delta
+          const currentState = gameStateRef.current
+          if (currentState) {
+            const currentScore = currentState.score || 0
+            const scoreDelta = Math.max(0, currentScore - (currentState.currentSongStartScore || 0))
+
+            const currentPerfects = currentState.stats?.perfectHits || 0
+            const currentMisses = currentState.stats?.misses || 0
+            const perfectsDelta = Math.max(0, currentPerfects - (currentState.currentSongStartPerfectHits || 0))
+            const missesDelta = Math.max(0, currentMisses - (currentState.currentSongStartMisses || 0))
+
+            const totalDelta = perfectsDelta + missesDelta
+            let songAccuracy = 100
+            if (totalDelta > 0) {
+              songAccuracy = Math.max(0, Math.min(100, Math.round((perfectsDelta / totalDelta) * 100)))
+            }
+
+            currentState.songStats.push({
+              songId: currentSong.id,
+              score: scoreDelta,
+              accuracy: songAccuracy,
+              index
+            })
+
+            // Reset start values for the next song
+            currentState.currentSongStartScore = currentScore
+            currentState.currentSongStartPerfectHits = currentPerfects
+            currentState.currentSongStartMisses = currentMisses
           }
 
           logger.info('RhythmGame', `Song "${currentSong.name}" ended.`)

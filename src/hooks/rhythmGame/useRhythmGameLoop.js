@@ -37,7 +37,8 @@ export const useRhythmGameLoop = ({
         buildGigStatsSnapshot(
           stateRef.score,
           stateRef.stats,
-          stateRef.toxicTimeTotal
+          stateRef.toxicTimeTotal,
+          stateRef.songStats || []
         )
       )
       stopAudio()

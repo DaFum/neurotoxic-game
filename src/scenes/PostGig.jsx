@@ -461,34 +461,58 @@ export const PostGig = () => {
     }
 
     // Leaderboard Song Score Submission
-    // Resolve to leaderboardId (API-safe slug) — currentGig.songId is the raw
-    // JSON key which may contain spaces the API rejects (^[a-zA-Z0-9_-]+$).
-    const setlistFirstId =
-      typeof setlist?.[0] === 'string' ? setlist[0] : setlist?.[0]?.id
-    const playedSongId = currentGig?.songId || setlistFirstId || 'neurotoxic_1'
+    if (player.playerId && player.playerName) {
+      // Create a unified list of song stats to submit
+      let songsToSubmit = []
 
-    const leaderboardSongId = SONGS_DB.find(
-      s => s.id === playedSongId
-    )?.leaderboardId
+      if (lastGigStats?.songStats && lastGigStats.songStats.length > 0) {
+        // Use the detailed per-song stats generated during the gig
+        songsToSubmit = lastGigStats.songStats.map(stat => ({
+          songId: stat.songId,
+          score: stat.score,
+          accuracy: stat.accuracy
+        }))
+      } else {
+        // Fallback for legacy saves or early aborted gigs without per-song stats
+        const setlistFirstId =
+          typeof setlist?.[0] === 'string' ? setlist[0] : setlist?.[0]?.id
+        const playedSongId = currentGig?.songId || setlistFirstId || 'neurotoxic_1'
+        songsToSubmit = [{
+          songId: playedSongId,
+          score: lastGigStats?.score || 0,
+          accuracy: lastGigStats?.accuracy || 0
+        }]
+      }
 
-    if (player.playerId && player.playerName && leaderboardSongId) {
-      fetch('/api/leaderboard/song', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          playerId: player.playerId,
-          playerName: player.playerName,
-          songId: leaderboardSongId,
-          score: lastGigStats?.score || 0
-        })
+      // Submit each song individually
+      songsToSubmit.forEach(songData => {
+        // Resolve to leaderboardId (API-safe slug) — currentGig.songId is the raw
+        // JSON key which may contain spaces the API rejects (^[a-zA-Z0-9_-]+$).
+        const leaderboardSongId = SONGS_DB.find(
+          s => s.id === songData.songId
+        )?.leaderboardId
+
+        if (leaderboardSongId) {
+          fetch('/api/leaderboard/song', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              playerId: player.playerId,
+              playerName: player.playerName,
+              songId: leaderboardSongId,
+              score: songData.score,
+              accuracy: songData.accuracy
+            })
+          })
+            .then(async res => {
+              if (!res.ok) {
+                const err = await res.text()
+                throw new Error(`HTTP ${res.status}: ${err}`)
+              }
+            })
+            .catch(err => console.error(`Score submit failed for ${leaderboardSongId}`, err))
+        }
       })
-        .then(async res => {
-          if (!res.ok) {
-            const err = await res.text()
-            throw new Error(`HTTP ${res.status}: ${err}`)
-          }
-        })
-        .catch(err => console.error('Score submit failed', err))
     }
 
     if (shouldTriggerBankruptcy(newMoney, financials.net)) {
