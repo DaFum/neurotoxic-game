@@ -316,10 +316,17 @@ export async function startGigPlayback({
     logger.warn('AudioEngine', 'Failed to start Tone.Transport', error)
   }
 
-  if (safeDurationSeconds != null && safeDurationSeconds > 0) {
-    source.start(startAt, offsetSeconds, safeDurationSeconds)
-  } else {
-    source.start(startAt, offsetSeconds)
+  try {
+    if (safeDurationSeconds != null && safeDurationSeconds > 0) {
+      source.start(startAt, offsetSeconds, safeDurationSeconds)
+    } else {
+      source.start(startAt, offsetSeconds)
+    }
+  } catch (error) {
+    logger.warn('AudioEngine', 'source.start() failed — context may be suspended', error)
+    try { Tone.getTransport().stop() } catch { /* ignore */ }
+    cleanupGigPlayback()
+    return false
   }
   logger.info(
     'AudioEngine',
@@ -393,10 +400,10 @@ export function pauseGigPlayback() {
 
 /**
  * Resumes gig playback from the stored offset.
- * @returns {void}
+ * @returns {boolean} True on success or no-op, false on source.start() failure.
  */
 export function resumeGigPlayback() {
-  if (!audioState.gigIsPaused) return
+  if (!audioState.gigIsPaused) return true
   logger.debug(
     'AudioEngine',
     `Resuming gig playback from ${audioState.gigSeekOffsetMs.toFixed(0)}ms`
@@ -404,13 +411,13 @@ export function resumeGigPlayback() {
   if (!audioState.gigBuffer) {
     audioState.gigStartCtxTime = getRawAudioContext().currentTime
     audioState.gigIsPaused = false
-    return
+    return true
   }
   const source = createGigBufferSource({
     buffer: audioState.gigBuffer,
     onEnded: handleGigSourceEnded
   })
-  if (!source) return
+  if (!source) return false
 
   const startAt = getRawAudioContext().currentTime
   audioState.gigStartCtxTime = startAt
@@ -447,13 +454,26 @@ export function resumeGigPlayback() {
   if (safeDurationSeconds === 0) {
     audioState.gigStartCtxTime = null
     handleGigSourceEnded(source)
-    return
+    return true
   }
-  if (safeDurationSeconds != null && safeDurationSeconds > 0) {
-    source.start(startAt, offsetSeconds, safeDurationSeconds)
-  } else {
-    source.start(startAt, offsetSeconds)
+  try {
+    if (safeDurationSeconds != null && safeDurationSeconds > 0) {
+      source.start(startAt, offsetSeconds, safeDurationSeconds)
+    } else {
+      source.start(startAt, offsetSeconds)
+    }
+  } catch (error) {
+    logger.warn('AudioEngine', 'source.start() failed on resume — context may be suspended', error)
+    // Null the source that failed to start, but preserve buffer and seek offset for retry
+    try { audioState.gigSource?.stop?.() } catch { /* already stopped */ }
+    try { audioState.gigSource?.disconnect?.() } catch { /* already disconnected */ }
+    audioState.gigSource = null
+    audioState.gigStartCtxTime = null
+    audioState.gigIsPaused = true // revert to paused so caller can retry
+    try { Tone.getTransport().pause() } catch { /* ignore */ }
+    return false
   }
+  return true
 }
 
 /**
@@ -503,12 +523,13 @@ export function pauseAudio() {
 
 /**
  * Resumes the audio transport.
+ * @returns {boolean} Propagates resumeGigPlayback() boolean result.
  */
 export function resumeAudio() {
   if (Tone.getTransport().state === 'paused') {
     Tone.getTransport().start()
   }
-  resumeGigPlayback()
+  return resumeGigPlayback()
 }
 
 /**

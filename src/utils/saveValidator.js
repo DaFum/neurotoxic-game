@@ -82,6 +82,8 @@ const validatePlayer = player => {
   }
 }
 
+const BANNED_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
+
 const validateBand = band => {
   if (!isPlainObject(band)) throw new StateError('band must be an object')
 
@@ -96,6 +98,25 @@ const validateBand = band => {
       }
       if (typeof member.name !== 'string') {
         throw new StateError(`band.members[${index}].name must be a string`)
+      }
+      if (member.relationships !== undefined) {
+        if (!isPlainObject(member.relationships)) {
+          throw new StateError(
+            `band.members[${index}].relationships must be an object`
+          )
+        }
+        Object.entries(member.relationships).forEach(([relKey, relVal]) => {
+          if (BANNED_KEYS.has(relKey)) {
+            throw new StateError(
+              `band.members[${index}].relationships.${relKey} is a reserved key`
+            )
+          }
+          if (!Number.isFinite(relVal) || relVal < 0 || relVal > 100) {
+            throw new StateError(
+              `band.members[${index}].relationships.${relKey} must be a finite number in [0, 100]`
+            )
+          }
+        })
       }
     })
   }
