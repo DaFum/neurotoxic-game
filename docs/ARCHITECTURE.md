@@ -13,6 +13,7 @@ This document is a code-aligned architecture snapshot for the current `main` app
 
 ```text
 src
+├── assets/
 ├── components
 │   ├── hud
 │   │   ├── ComboDisplay.jsx

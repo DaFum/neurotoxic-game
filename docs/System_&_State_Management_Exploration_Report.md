@@ -459,7 +459,7 @@ case ActionTypes.START_GIG:
 
 - Money clamped to ≥0: `mergedPlayer.money = clampPlayerMoney(mergedPlayer.money)`
 - Harmony clamped to 1-100: `mergedBand.harmony = clampBandHarmony(mergedBand.harmony)`
-- Game state loaded from localStorage is whitelisted:
+- Game state loaded from localStorage is whitelisted (Note: this validates only saveable states; non-saveable routing scenes like INTRO, MENU, SETTINGS, and CREDITS are explicitly excluded):
   ```javascript
   const ALLOWED_SCENES = new Set([
     'OVERWORLD',
