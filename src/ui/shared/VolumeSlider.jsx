@@ -48,6 +48,8 @@ export const VolumeSlider = memo(function VolumeSlider({ label, value, onChange 
               className='flex-1 relative h-full flex items-end group-hover:opacity-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)'
               aria-label={t('ui:volume.set', { pct: segmentPct })}
               aria-pressed={isActive}
+              tabIndex={-1}
+              aria-hidden='true'
             >
               <div
                 style={{ height }}
