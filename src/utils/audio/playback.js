@@ -400,10 +400,10 @@ export function pauseGigPlayback() {
 
 /**
  * Resumes gig playback from the stored offset.
- * @returns {boolean|undefined} False when source.start() fails (gig reverts to paused for retry); undefined on early return.
+ * @returns {boolean} True on success or no-op, false on source.start() failure.
  */
 export function resumeGigPlayback() {
-  if (!audioState.gigIsPaused) return
+  if (!audioState.gigIsPaused) return true
   logger.debug(
     'AudioEngine',
     `Resuming gig playback from ${audioState.gigSeekOffsetMs.toFixed(0)}ms`
@@ -411,13 +411,13 @@ export function resumeGigPlayback() {
   if (!audioState.gigBuffer) {
     audioState.gigStartCtxTime = getRawAudioContext().currentTime
     audioState.gigIsPaused = false
-    return
+    return true
   }
   const source = createGigBufferSource({
     buffer: audioState.gigBuffer,
     onEnded: handleGigSourceEnded
   })
-  if (!source) return
+  if (!source) return false
 
   const startAt = getRawAudioContext().currentTime
   audioState.gigStartCtxTime = startAt
@@ -454,7 +454,7 @@ export function resumeGigPlayback() {
   if (safeDurationSeconds === 0) {
     audioState.gigStartCtxTime = null
     handleGigSourceEnded(source)
-    return
+    return true
   }
   try {
     if (safeDurationSeconds != null && safeDurationSeconds > 0) {
@@ -473,6 +473,7 @@ export function resumeGigPlayback() {
     try { Tone.getTransport().pause() } catch { /* ignore */ }
     return false
   }
+  return true
 }
 
 /**
@@ -522,7 +523,7 @@ export function pauseAudio() {
 
 /**
  * Resumes the audio transport.
- * @returns {boolean|undefined} Propagates resumeGigPlayback() result: false on source.start() failure, undefined otherwise.
+ * @returns {boolean} Propagates resumeGigPlayback() boolean result.
  */
 export function resumeAudio() {
   if (Tone.getTransport().state === 'paused') {
