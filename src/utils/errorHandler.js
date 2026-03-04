@@ -372,10 +372,23 @@ export const handleError = (error, options = {}) => {
  * Initializes global error listeners. Idempotent — safe to call multiple times.
  */
 export const initGlobalErrorHandling = () => {
-  if (typeof window === 'undefined' || window.__initGlobalErrorHandlingDone) return
-  window.__initGlobalErrorHandlingDone = true
+  const initFlag = Symbol.for('initGlobalErrorHandlingDone')
+  if (typeof window === 'undefined' || window[initFlag]) return
+  window[initFlag] = true
   window.addEventListener('unhandledrejection', event => {
-    handleError(event.reason || new Error('Unhandled Promise Rejection'), {
+    let reason = event.reason
+    if (!(reason instanceof Error)) {
+      if (typeof reason === 'string') {
+        reason = new Error(reason)
+      } else {
+        reason = new Error('Unhandled Promise Rejection')
+        if (event.reason && typeof event.reason === 'object') {
+          reason.context = event.reason
+        }
+      }
+    }
+
+    handleError(reason, {
       source: 'unhandledrejection',
       severity: ErrorSeverity.HIGH
     })
@@ -425,10 +438,13 @@ export const safeStorageOperation = (operation, fn, fallbackValue = null) => {
  * @throws {Error} The final error if all retries fail.
  */
 export const withRetry = async (fn, options = {}) => {
-  const { retries = 3, delay = 1000, backoff = 2 } = options
-  const maxAttempts = Math.max(1, retries)
+  const safeRetries = Number.isFinite(options.retries) ? options.retries : 3
+  const safeDelay = Number.isFinite(options.delay) ? options.delay : 1000
+  const safeBackoff = Number.isFinite(options.backoff) ? options.backoff : 2
+
+  const maxAttempts = Math.max(1, safeRetries + 1)
   let attempt = 0
-  let currentDelay = delay
+  let currentDelay = safeDelay
 
   do {
     try {
@@ -448,7 +464,7 @@ export const withRetry = async (fn, options = {}) => {
       })
 
       await new Promise(resolve => setTimeout(resolve, currentDelay))
-      currentDelay *= backoff
+      currentDelay *= safeBackoff
     }
   } while (attempt < maxAttempts)
 }

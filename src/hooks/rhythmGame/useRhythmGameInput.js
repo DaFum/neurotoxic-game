@@ -28,9 +28,9 @@ export const useRhythmGameInput = ({
     (laneIndex, isDown) => {
       const now = Date.now()
       if (isDown) {
-        const lastInputTime = lastInputTimeRef.current[laneIndex] || 0
+        const lastInputTime = lastInputTimesRef.current[laneIndex] || 0
         if (now - lastInputTime < 50) return
-        lastInputTimeRef.current[laneIndex] = now
+        lastInputTimesRef.current[laneIndex] = now
       }
 
       const state = gameStateRef.current

@@ -124,7 +124,8 @@ describe('App', () => {
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
-    expect(screen.getByTestId('error-boundary')).toBeTruthy()
+    const boundaries = screen.getAllByTestId('error-boundary')
+    expect(boundaries.length).toBeGreaterThanOrEqual(1)
   })
 
   test('wraps content with GameStateProvider', async () => {
