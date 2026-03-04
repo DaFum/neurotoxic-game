@@ -94,7 +94,7 @@ const CHATTER_CONTAINER_STYLE = { zIndex: 'var(--z-chatter)' }
  * @param {object} props
  * @param {object} props.gameState - Read-only game state slice.
  */
-export const ChatterOverlay = ({ gameState }) => {
+export const ChatterOverlay = memo(({ gameState }) => {
   const { t } = useTranslation(['chatter', 'ui'])
   const stateRef = useRef(gameState)
   const [messages, setMessages] = useState([])
@@ -276,7 +276,9 @@ export const ChatterOverlay = ({ gameState }) => {
       </AnimatePresence>
     </div>
   )
-}
+})
+
+ChatterOverlay.displayName = 'ChatterOverlay'
 
 ChatterOverlay.propTypes = {
   gameState: PropTypes.object.isRequired

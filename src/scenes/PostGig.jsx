@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
@@ -18,6 +19,7 @@ import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils'
 import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { SONGS_DB } from '../data/songs'
 
+import { lazy, Suspense } from 'react'
 const ReportPhase = lazy(() => import('../components/postGig/ReportPhase').then(m => ({ default: m.ReportPhase })))
 const SocialPhase = lazy(() => import('../components/postGig/SocialPhase').then(m => ({ default: m.SocialPhase })))
 const DealsPhase = lazy(() => import('../components/postGig/DealsPhase').then(m => ({ default: m.DealsPhase })))
@@ -29,6 +31,7 @@ const PERF_SCORE_SCALER = 500
 const MAX_FAME_GAIN = 500
 
 export const PostGig = () => {
+  const { t } = useTranslation(['ui'])
   const {
     currentGig,
     player,
@@ -549,7 +552,7 @@ export const PostGig = () => {
                 : 'TOUR UPDATE'}
         </h2>
 
-        <Suspense fallback={<div className="p-8 text-center text-(--ash-gray) animate-pulse">LOADING...</div>}>
+        <Suspense fallback={<div className="text-(--toxic-green) font-['Metal_Mania'] text-xl animate-pulse text-center">{t('ui:loading', 'LOADING...')}</div>}>
           {phase === 'REPORT' && (
             <ReportPhase financials={financials} onNext={handleNextPhase} />
           )}

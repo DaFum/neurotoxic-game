@@ -253,6 +253,9 @@ class TourbusStageController extends BaseStageController {
             ) // Green sparkle
           }
         }
+      } else {
+        sprite.hasExploded = false
+        sprite.alpha = 1
       }
     })
 

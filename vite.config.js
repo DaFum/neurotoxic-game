@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [
     react(),
     viteCompression({ algorithm: 'brotliCompress', ext: '.br' }),
-    visualizer({ open: false, filename: 'dist/stats.html' })
+    visualizer({ open: false, filename: 'stats.html' })
   ],
   base: './',
   build: {

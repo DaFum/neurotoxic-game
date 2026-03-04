@@ -17,7 +17,7 @@ export const useRhythmGameInput = ({
 }) => {
   const { handleHit } = scoringActions
   const { activeEvent } = contextState
-  const lastInputTimeRef = useRef({})
+  const lastInputTimesRef = useRef({})
 
   /**
    * Registers player input for a lane.
@@ -45,13 +45,17 @@ export const useRhythmGameInput = ({
       const isTransportRunning = getTransportState() === 'started'
       if (!isTransportRunning) return
 
-      if (laneIndex < 0 || laneIndex >= state.lanes.length) return
+      if (laneIndex >= 0 && laneIndex < state.lanes.length) {
+        // Toggle the visual active state (this is read by the PixiJS game loop)
+        state.lanes[laneIndex].active = isDown
 
-      const newLanes = [...state.lanes]
-      newLanes[laneIndex] = { ...newLanes[laneIndex], active: isDown }
-      state.lanes = newLanes
-
-      if (isDown) handleHit(laneIndex)
+        if (isDown) {
+          const now = Date.now()
+          if (now - (lastInputTimesRef.current[laneIndex] || 0) < 50) return
+          lastInputTimesRef.current[laneIndex] = now
+          handleHit(laneIndex)
+        }
+      }
     },
     [activeEvent, gameStateRef, handleHit]
   )

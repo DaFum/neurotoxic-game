@@ -50,6 +50,7 @@ export const useRhythmGameAudio = ({
 
   const hasInitializedRef = useRef(false)
   const isInitializingRef = useRef(false)
+  const abortControllerRef = useRef(null)
 
   /**
    * Initializes gig physics and note data once per gig.
@@ -61,6 +62,7 @@ export const useRhythmGameAudio = ({
       return
     }
     isInitializingRef.current = true
+    abortControllerRef.current = new AbortController()
 
     // Mute ambient radio to prevent audio overlap
     audioManager.stopMusic()
@@ -431,6 +433,13 @@ export const useRhythmGameAudio = ({
         }
       }
 
+      // Check abort signal before starting the first song
+      if (abortControllerRef.current?.signal.aborted) {
+        setIsAudioReady(false)
+        isInitializingRef.current = false
+        return
+      }
+
       // Start the first song
       if (signal && !signal.aborted) {
         await playSongAtIndex(0)
@@ -462,7 +471,9 @@ export const useRhythmGameAudio = ({
     initializeGigState(abortController.signal)
 
     return () => {
-      abortController.abort()
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
       hasInitializedRef.current = false
       isInitializingRef.current = false
       stopAudio()

@@ -323,6 +323,21 @@ export const handleError = (error, options = {}) => {
       logger.debug('ErrorHandler', errorInfo.message, errorInfo)
   }
 
+  // Remote tracking stub
+  if (typeof window !== 'undefined' && window.navigator?.onLine) {
+    try {
+      fetch('/api/analytics/error', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(errorInfo)
+      }).catch(() => {
+        // Silently fail if tracking is blocked or endpoint doesn't exist
+      })
+    } catch (_e) {
+      // Ignore tracking errors
+    }
+  }
+
   // Toast taxonomy mapping: high-severity failures => `error`, recoverable/medium issues => `warning`.
   // UI supports: success | error | info | warning.
   if (!silent && addToast) {
@@ -351,6 +366,15 @@ export const handleError = (error, options = {}) => {
   }
 
   return errorInfo
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('unhandledrejection', event => {
+    handleError(event.reason || new Error('Unhandled Promise Rejection'), {
+      source: 'unhandledrejection',
+      silent: true
+    })
+  })
 }
 
 /**
@@ -397,4 +421,42 @@ export const safeStorageOperation = (operation, fn, fallbackValue = null) => {
     { silent: true }
   )
   return fallbackValue
+}
+
+/**
+ * Executes a function with automatic retry logic for recoverable errors.
+ * @param {Function} fn - The async function to execute.
+ * @param {Object} [options] - Retry options.
+ * @param {number} [options.retries=3] - Maximum number of retries.
+ * @param {number} [options.delay=1000] - Base delay in milliseconds between retries.
+ * @param {number} [options.backoff=2] - Multiplier for exponential backoff.
+ * @returns {Promise<*>} The result of the function.
+ * @throws {Error} The final error if all retries fail.
+ */
+export const withRetry = async (fn, options = {}) => {
+  const { retries = 3, delay = 1000, backoff = 2 } = options
+  let attempt = 0
+  let currentDelay = delay
+
+  while (attempt < retries) {
+    try {
+      return await fn()
+    } catch (error) {
+      attempt++
+      const isRecoverable = error instanceof GameError ? error.recoverable : true
+
+      if (attempt >= retries || !isRecoverable) {
+        throw error
+      }
+
+      handleError(error, {
+        silent: true,
+        source: 'withRetry',
+        errorInfo: { attempt, maxRetries: retries, nextDelay: currentDelay }
+      })
+
+      await new Promise(resolve => setTimeout(resolve, currentDelay))
+      currentDelay *= backoff
+    }
+  }
 }

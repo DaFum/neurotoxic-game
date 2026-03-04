@@ -85,11 +85,7 @@ class AudioSystem {
       try {
         listener()
       } catch (error) {
-        logger.warn(
-          'AudioSystem',
-          'Audio subscriber callback failed, removing listener',
-          error
-        )
+        logger.warn('AudioSystem', 'Audio subscriber callback failed', error)
         this.listeners.delete(listener)
       }
     })
