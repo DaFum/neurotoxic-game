@@ -371,13 +371,24 @@ export const handleError = (error, options = {}) => {
 /**
  * Initializes global error listeners. Idempotent — safe to call multiple times.
  */
+const INIT_DONE = Symbol.for('initGlobalErrorHandlingDone')
+
 export const initGlobalErrorHandling = () => {
-  if (typeof window === 'undefined' || window.__initGlobalErrorHandlingDone) return
-  window.__initGlobalErrorHandlingDone = true
+  if (typeof window === 'undefined' || window[INIT_DONE]) return
+  window[INIT_DONE] = true
   window.addEventListener('unhandledrejection', event => {
-    handleError(event.reason || new Error('Unhandled Promise Rejection'), {
+    let normalizedError
+    if (event && event.reason instanceof Error) {
+      normalizedError = event.reason
+    } else if (event && event.reason != null) {
+      normalizedError = new Error(String(event.reason))
+    } else {
+      normalizedError = new Error('Unhandled Promise Rejection')
+    }
+    handleError(normalizedError, {
       source: 'unhandledrejection',
-      severity: ErrorSeverity.HIGH
+      severity: ErrorSeverity.HIGH,
+      silent: true
     })
   })
 }
@@ -426,7 +437,8 @@ export const safeStorageOperation = (operation, fn, fallbackValue = null) => {
  */
 export const withRetry = async (fn, options = {}) => {
   const { retries = 3, delay = 1000, backoff = 2 } = options
-  const maxAttempts = Math.max(1, retries)
+  const normalizedRetries = Number.isFinite(retries) ? Math.max(0, Math.floor(retries)) : 0
+  const maxAttempts = Math.max(1, normalizedRetries)
   let attempt = 0
   let currentDelay = delay
 
