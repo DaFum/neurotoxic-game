@@ -324,7 +324,7 @@ export async function startGigPlayback({
     }
   } catch (error) {
     logger.warn('AudioEngine', 'source.start() failed — context may be suspended', error)
-    stopAudioInternal()
+    try { Tone.getTransport().stop() } catch { /* ignore */ }
     cleanupGigPlayback()
     return false
   }
@@ -522,12 +522,13 @@ export function pauseAudio() {
 
 /**
  * Resumes the audio transport.
+ * @returns {boolean|undefined} Propagates resumeGigPlayback() result: false on source.start() failure, undefined otherwise.
  */
 export function resumeAudio() {
   if (Tone.getTransport().state === 'paused') {
     Tone.getTransport().start()
   }
-  resumeGigPlayback()
+  return resumeGigPlayback()
 }
 
 /**
