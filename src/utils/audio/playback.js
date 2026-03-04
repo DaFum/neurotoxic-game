@@ -316,10 +316,16 @@ export async function startGigPlayback({
     logger.warn('AudioEngine', 'Failed to start Tone.Transport', error)
   }
 
-  if (safeDurationSeconds != null && safeDurationSeconds > 0) {
-    source.start(startAt, offsetSeconds, safeDurationSeconds)
-  } else {
-    source.start(startAt, offsetSeconds)
+  try {
+    if (safeDurationSeconds != null && safeDurationSeconds > 0) {
+      source.start(startAt, offsetSeconds, safeDurationSeconds)
+    } else {
+      source.start(startAt, offsetSeconds)
+    }
+  } catch (error) {
+    logger.warn('AudioEngine', 'source.start() failed — context may be suspended', error)
+    cleanupGigPlayback()
+    return false
   }
   logger.info(
     'AudioEngine',
@@ -449,10 +455,15 @@ export function resumeGigPlayback() {
     handleGigSourceEnded(source)
     return
   }
-  if (safeDurationSeconds != null && safeDurationSeconds > 0) {
-    source.start(startAt, offsetSeconds, safeDurationSeconds)
-  } else {
-    source.start(startAt, offsetSeconds)
+  try {
+    if (safeDurationSeconds != null && safeDurationSeconds > 0) {
+      source.start(startAt, offsetSeconds, safeDurationSeconds)
+    } else {
+      source.start(startAt, offsetSeconds)
+    }
+  } catch (error) {
+    logger.warn('AudioEngine', 'source.start() failed on resume — context may be suspended', error)
+    cleanupGigPlayback()
   }
 }
 
