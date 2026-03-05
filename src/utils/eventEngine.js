@@ -461,7 +461,7 @@ export const eventEngine = {
         gameState.band?.inventory?.spare_tire === true)
     ) {
       const spareTireOption = {
-        label: 'events:spare_tire_option.label',
+        label: 'events:van_breakdown_tire.opt3.label',
         effect: {
           type: 'composite',
           effects: [
@@ -474,7 +474,7 @@ export const eventEngine = {
             }
           ]
         },
-        outcomeText: 'events:spare_tire_option.outcome'
+        outcomeText: 'events:van_breakdown_tire.opt3.outcome'
       }
       processedEvent.options.unshift(spareTireOption)
     }
