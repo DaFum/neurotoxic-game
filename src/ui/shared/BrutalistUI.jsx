@@ -1138,6 +1138,11 @@ export const BrutalSlot = ({ label, item = null }) => {
       <button
         type='button'
         className='relative w-20 h-20 border-2 border-(--toxic-green)/30 bg-(--shadow-black) flex items-center justify-center group cursor-pointer hover:border-(--toxic-green) transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)'
+        aria-label={
+          item
+            ? `Inventory slot: ${item.name}`
+            : `Empty inventory slot: ${label}`
+        }
       >
         {/* Corner Decals */}
         <div className='absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-(--toxic-green) opacity-0 group-hover:opacity-100 transition-opacity'></div>
