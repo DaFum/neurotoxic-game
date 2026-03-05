@@ -678,7 +678,9 @@ export const BrutalToggle = ({ label, initialState = false }) => {
 }
 
 // 2. Segmented Block Meter
-export const BlockMeter = ({ label, value, max = 10, isDanger = false }) => {
+// Optimization: Wrapped in React.memo to prevent unnecessary re-renders when parent components
+// pass frequently changing state (like overload or health) that results in the same quantized value.
+export const BlockMeter = memo(({ label, value, max = 10, isDanger = false }) => {
   const blocks = Array.from({ length: max }, (_, i) => i)
   return (
     <div className='w-full max-w-sm flex flex-col gap-2'>
@@ -707,7 +709,7 @@ export const BlockMeter = ({ label, value, max = 10, isDanger = false }) => {
       </div>
     </div>
   )
-}
+})
 
 // 3. Brutalist Tabs
 export const BrutalTabs = () => {
