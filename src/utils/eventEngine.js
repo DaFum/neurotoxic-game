@@ -278,6 +278,10 @@ const processEffect = (eff, delta, context = {}) => {
     case 'chain':
       delta.flags.queueEvent = eff.eventId
       break
+    case 'quest':
+      if (!delta.flags.addQuest) delta.flags.addQuest = []
+      delta.flags.addQuest.push(eff.quest)
+      break
   }
 }
 
@@ -452,12 +456,12 @@ export const eventEngine = {
     const processedEvent = { ...event, options: [...event.options] }
 
     if (
-      event.id.includes('van_breakdown') &&
+      event.id === 'van_breakdown_tire' &&
       (gameState.band?.inventory?.spare_tire > 0 ||
         gameState.band?.inventory?.spare_tire === true)
     ) {
       const spareTireOption = {
-        label: 'Use Spare Tire (Inventory)',
+        label: 'events:van_breakdown_tire.opt3.label',
         effect: {
           type: 'composite',
           effects: [
@@ -470,7 +474,7 @@ export const eventEngine = {
             }
           ]
         },
-        outcomeText: 'You swapped the tire in record time.'
+        outcomeText: 'events:van_breakdown_tire.opt3.outcome'
       }
       processedEvent.options.unshift(spareTireOption)
     }
