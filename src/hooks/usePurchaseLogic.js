@@ -167,7 +167,7 @@ export const usePurchaseLogic = ({
             if (result.messages) {
               result.messages.forEach(msg => {
                 const toastMsg = msg.messageKey
-                  ? t(`ui:shop.messages.${msg.messageKey}`, { defaultValue: msg.fallback || msg.message || msg.messageKey })
+                  ? t(`ui:shop.messages.${msg.messageKey}`, { ...(msg.options || {}), defaultValue: msg.fallback || msg.message || msg.messageKey })
                   : msg.message;
                 addToast(toastMsg, msg.type)
               })

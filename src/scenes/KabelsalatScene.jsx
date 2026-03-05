@@ -218,8 +218,9 @@ export const KabelsalatScene = () => {
   useEffect(() => {
     let isMounted = true
     const fetchTexture = async () => {
-      const rawUrl = getGenImageUrl(IMG_PROMPTS.MINIGAME_KABELSALAT_BG)
+      let rawUrl
       try {
+        rawUrl = getGenImageUrl(IMG_PROMPTS.MINIGAME_KABELSALAT_BG)
         const texture = await loadTexture(rawUrl)
         if (isMounted && texture && texture.source && texture.source.resource) {
           // If the texture was loaded from a blob/src, we can often just use the rawUrl,
@@ -231,7 +232,7 @@ export const KabelsalatScene = () => {
         }
       } catch (err) {
         logger.warn('Failed to load Kabelsalat background texture', err)
-        if (isMounted) {
+        if (isMounted && rawUrl) {
           setBgTextureUrl(rawUrl) // Fallback to raw URL directly without PIXI texture caching
         }
       }

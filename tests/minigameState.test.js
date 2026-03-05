@@ -112,8 +112,8 @@ test('Minigame State Transitions', async t => {
     () => {
       const activeState = {
         ...initialState,
-        player: { money: 1000 },
-        band: { harmony: 50 },
+        player: { ...initialState.player, money: 1000 },
+        band: { ...initialState.band, harmony: 50 },
         currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
         minigame: {
           active: true,
