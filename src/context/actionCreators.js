@@ -265,6 +265,26 @@ export const createCompleteRoadieMinigameAction = equipmentDamage => ({
 })
 
 /**
+ * Creates start kabelsalat minigame action
+ * @param {string} gigId
+ * @returns {Object}
+ */
+export const createStartKabelsalatMinigameAction = gigId => ({
+  type: ActionTypes.START_KABELSALAT_MINIGAME,
+  payload: { gigId }
+})
+
+/**
+ * Creates complete kabelsalat minigame action
+ * @param {Object} results
+ * @returns {Object}
+ */
+export const createCompleteKabelsalatMinigameAction = results => ({
+  type: ActionTypes.COMPLETE_KABELSALAT_MINIGAME,
+  payload: { results }
+})
+
+/**
  * Creates unlock trait action
  * @param {Object} payload - { memberId, traitId }
  * @returns {Object} Action object

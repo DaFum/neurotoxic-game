@@ -6,7 +6,8 @@ import {
 import {
   calculateTravelExpenses,
   calculateTravelMinigameResult,
-  calculateRoadieMinigameResult
+  calculateRoadieMinigameResult,
+  calculateKabelsalatMinigameResult
 } from '../../utils/economyEngine.js'
 import { checkTraitUnlocks } from '../../utils/unlockCheck.js'
 import { applyTraitUnlocks } from '../../utils/traitUtils.js'
@@ -111,6 +112,56 @@ export const handleStartRoadieMinigame = (state, payload) => {
       gigId: gigId,
       equipmentRemaining: DEFAULT_EQUIPMENT_COUNT
     }
+  }
+}
+
+export const handleStartKabelsalatMinigame = (state, payload) => {
+  const { gigId } = payload
+  logger.info('GameState', `Starting Kabelsalat Minigame for Gig ${gigId}`)
+  return {
+    ...state,
+    currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
+    minigame: {
+      ...DEFAULT_MINIGAME_STATE,
+      active: true,
+      type: MINIGAME_TYPES.KABELSALAT,
+      gigId: gigId
+    }
+  }
+}
+
+export const handleCompleteKabelsalatMinigame = (state, payload) => {
+  const { results } = payload
+  logger.info('GameState', 'Kabelsalat Minigame Complete', payload)
+
+  // Apply Results
+  const { stress, reward } = calculateKabelsalatMinigameResult(
+    results,
+    state.band
+  )
+
+  const nextBand = {
+    ...state.band,
+    harmony: clampBandHarmony(state.band.harmony - stress)
+  }
+
+  const nextPlayer = {
+    ...state.player,
+    money: clampPlayerMoney(state.player.money + reward)
+  }
+
+  const nextModifiers = { ...state.gigModifiers }
+  if (stress > 0) {
+    logger.warn('GameState', 'Kabelsalat failed: damaged_gear active')
+    nextModifiers.damaged_gear = true
+  }
+
+  return {
+    ...state,
+    band: nextBand,
+    player: nextPlayer,
+    gigModifiers: nextModifiers,
+    minigame: { ...DEFAULT_MINIGAME_STATE }
   }
 }
 

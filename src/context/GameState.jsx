@@ -51,6 +51,8 @@ import {
   createCompleteTravelMinigameAction,
   createStartRoadieMinigameAction,
   createCompleteRoadieMinigameAction,
+  createStartKabelsalatMinigameAction,
+  createCompleteKabelsalatMinigameAction,
   createUnlockTraitAction,
   createAddQuestAction,
   createAdvanceQuestAction,
@@ -332,6 +334,16 @@ export const GameStateProvider = ({ children }) => {
   const completeRoadieMinigame = useCallback(
     equipmentDamage =>
       dispatch(createCompleteRoadieMinigameAction(equipmentDamage)),
+    []
+  )
+
+  const startKabelsalatMinigame = useCallback(
+    gigId => dispatch(createStartKabelsalatMinigameAction(gigId)),
+    []
+  )
+
+  const completeKabelsalatMinigame = useCallback(
+    results => dispatch(createCompleteKabelsalatMinigameAction(results)),
     []
   )
 
@@ -651,6 +663,8 @@ export const GameStateProvider = ({ children }) => {
       completeTravelMinigame,
       startRoadieMinigame,
       completeRoadieMinigame,
+      startKabelsalatMinigame,
+      completeKabelsalatMinigame,
       unlockTrait,
       endGig,
       addQuest,
@@ -682,6 +696,8 @@ export const GameStateProvider = ({ children }) => {
       completeTravelMinigame,
       startRoadieMinigame,
       completeRoadieMinigame,
+      startKabelsalatMinigame,
+      completeKabelsalatMinigame,
       unlockTrait,
       endGig,
       addQuest,

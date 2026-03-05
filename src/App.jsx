@@ -12,7 +12,7 @@ import { ErrorBoundary } from './ui/CrashHandler'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { createNamedLazyLoader } from './utils/lazySceneLoader'
-import { GAME_PHASES } from './context/gameConstants'
+import { GAME_PHASES, MINIGAME_TYPES } from './context/gameConstants'
 
 const SCENES_WITHOUT_HUD = [
   'INTRO',
@@ -41,6 +41,12 @@ const RoadieRunScene = lazy(
   createNamedLazyLoader(
     () => import('./scenes/RoadieRunScene'),
     'RoadieRunScene'
+  )
+)
+const KabelsalatScene = lazy(
+  createNamedLazyLoader(
+    () => import('./scenes/KabelsalatScene'),
+    'KabelsalatScene'
   )
 )
 const Settings = lazy(
@@ -94,7 +100,11 @@ function GameContent() {
       case 'PREGIG':
         return <PreGig />
       case GAME_PHASES.PRE_GIG_MINIGAME:
-        return <RoadieRunScene />
+        return gameState.minigame?.type === MINIGAME_TYPES.KABELSALAT ? (
+          <KabelsalatScene />
+        ) : (
+          <RoadieRunScene />
+        )
       case 'GIG':
       case 'PRACTICE':
         return <Gig />

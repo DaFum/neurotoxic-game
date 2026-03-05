@@ -42,9 +42,10 @@ test('gameConstants - MINIGAME_TYPES exports expected values', () => {
   assert.ok(MINIGAME_TYPES, 'MINIGAME_TYPES should be exported')
   assert.equal(MINIGAME_TYPES.TOURBUS, 'TOURBUS')
   assert.equal(MINIGAME_TYPES.ROADIE, 'ROADIE')
+  assert.equal(MINIGAME_TYPES.KABELSALAT, 'KABELSALAT')
 
   // Verify it is an object with the expected keys
-  const expectedKeys = ['TOURBUS', 'ROADIE']
+  const expectedKeys = ['TOURBUS', 'ROADIE', 'KABELSALAT']
   assert.deepEqual(Object.keys(MINIGAME_TYPES).sort(), expectedKeys.sort())
 })
 

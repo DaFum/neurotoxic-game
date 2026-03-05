@@ -33,7 +33,9 @@ import {
   handleStartTravelMinigame,
   handleCompleteTravelMinigame,
   handleStartRoadieMinigame,
-  handleCompleteRoadieMinigame
+  handleCompleteRoadieMinigame,
+  handleStartKabelsalatMinigame,
+  handleCompleteKabelsalatMinigame
 } from './reducers/minigameReducer.js'
 import {
   handleAddQuest,
@@ -136,6 +138,12 @@ export const gameReducer = (state, action) => {
 
     case ActionTypes.COMPLETE_ROADIE_MINIGAME:
       return handleCompleteRoadieMinigame(state, action.payload)
+
+    case ActionTypes.START_KABELSALAT_MINIGAME:
+      return handleStartKabelsalatMinigame(state, action.payload)
+
+    case ActionTypes.COMPLETE_KABELSALAT_MINIGAME:
+      return handleCompleteKabelsalatMinigame(state, action.payload)
 
     case ActionTypes.UNLOCK_TRAIT:
       return handleUnlockTrait(state, action.payload)

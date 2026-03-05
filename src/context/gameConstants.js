@@ -14,7 +14,8 @@ export const GAME_PHASES = {
 
 export const MINIGAME_TYPES = {
   TOURBUS: 'TOURBUS',
-  ROADIE: 'ROADIE'
+  ROADIE: 'ROADIE',
+  KABELSALAT: 'KABELSALAT'
 }
 
 export const DEFAULT_MINIGAME_STATE = {
