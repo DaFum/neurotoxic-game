@@ -22,5 +22,5 @@ test('ActionButton applies custom classes and type', () => {
 
   const button = screen.getByRole('button', { name: 'Submit' })
   expect(button).toHaveAttribute('type', 'submit')
-  expect(button.className).toContain('custom-class')
+  expect(button).toHaveClass('custom-class')
 })
