@@ -13,6 +13,11 @@ import { RazorPlayIcon } from '../ui/shared/Icons'
 
 let lastMinigameFallback = null
 
+// Exported exclusively for test cleanup
+export const _resetLastMinigameFallback = () => {
+  lastMinigameFallback = null
+}
+
 const BAND_MEETING_COST = 50
 
 const SONGS_DICT = SONGS_DB.reduce((acc, song) => {

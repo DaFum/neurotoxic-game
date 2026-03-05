@@ -77,7 +77,7 @@ vi.mock('../src/context/GameState', () => ({
   useGameState: () => mockUseGameState
 }))
 // Import PreGig after mocks
-const { PreGig } = await import('../src/scenes/PreGig.jsx')
+const { PreGig, _resetLastMinigameFallback } = await import('../src/scenes/PreGig.jsx')
 
 describe('PreGig', () => {
   beforeEach(() => {
@@ -95,6 +95,11 @@ describe('PreGig', () => {
       sessionStorage.removeItem('neurotoxic_last_minigame')
     } catch (e) {
       // Ignored
+    }
+
+    // Reset fallback memory
+    if (typeof _resetLastMinigameFallback === 'function') {
+      _resetLastMinigameFallback()
     }
   })
 
@@ -133,7 +138,7 @@ describe('PreGig', () => {
       // Test Roadie Minigame (Math.random < 0.5)
       vi.spyOn(Math, 'random').mockReturnValue(0.4)
 
-      const { findByText, rerender } = render(React.createElement(PreGig))
+      const { findByText } = render(React.createElement(PreGig))
 
       const startBtn = await findByText(/ui:pregig.startShow/i)
       fireEvent.click(startBtn)
@@ -161,6 +166,56 @@ describe('PreGig', () => {
       expect(mockUseGameState.startRoadieMinigame).toHaveBeenCalledTimes(0)
     } finally {
       // Clean up spy
+      if (Math.random.mockRestore) {
+        Math.random.mockRestore()
+      }
+    }
+  })
+
+  test('applies streak breaker when roadie was played last (25% chance)', async () => {
+    mockUseGameState.setlist = [{ id: 'song1' }]
+
+    // Set sessionStorage to roadie to trigger streak breaker
+    sessionStorage.setItem('neurotoxic_last_minigame', 'roadie')
+
+    try {
+      // 0.3 is >= 0.25 threshold, so Kabelsalat should be picked
+      vi.spyOn(Math, 'random').mockReturnValue(0.3)
+
+      const { findByText } = render(React.createElement(PreGig))
+      const startBtn = await findByText(/ui:pregig.startShow/i)
+      fireEvent.click(startBtn)
+
+      await new Promise(resolve => setTimeout(resolve, 0))
+
+      expect(mockUseGameState.startKabelsalatMinigame).toHaveBeenCalledTimes(1)
+      expect(mockUseGameState.startRoadieMinigame).toHaveBeenCalledTimes(0)
+    } finally {
+      if (Math.random.mockRestore) {
+        Math.random.mockRestore()
+      }
+    }
+  })
+
+  test('applies streak breaker when kabelsalat was played last (75% chance)', async () => {
+    mockUseGameState.setlist = [{ id: 'song1' }]
+
+    // Set sessionStorage to kabelsalat to trigger streak breaker
+    sessionStorage.setItem('neurotoxic_last_minigame', 'kabelsalat')
+
+    try {
+      // 0.6 is < 0.75 threshold, so Roadie should be picked
+      vi.spyOn(Math, 'random').mockReturnValue(0.6)
+
+      const { findByText } = render(React.createElement(PreGig))
+      const startBtn = await findByText(/ui:pregig.startShow/i)
+      fireEvent.click(startBtn)
+
+      await new Promise(resolve => setTimeout(resolve, 0))
+
+      expect(mockUseGameState.startRoadieMinigame).toHaveBeenCalledTimes(1)
+      expect(mockUseGameState.startKabelsalatMinigame).toHaveBeenCalledTimes(0)
+    } finally {
       if (Math.random.mockRestore) {
         Math.random.mockRestore()
       }
