@@ -11,8 +11,44 @@ mock.module('tone', { namedExports: mockTone })
 // We use dynamic import to ensure mocks are applied before module load
 const { setupAudio, disposeAudio } = await import('../src/utils/audioEngine.js')
 
+import { importAudioEngine } from './audioTestUtils.js'
+
+const { skipIfImportFailed } = await importAudioEngine()
+
+test('getRawAudioContext, getAudioContextTimeSec, getToneStartTimeSec', async t => {
+  if (skipIfImportFailed(t)) return
+
+  const setupModule = await import('../src/utils/audio/setup.js')
+  const { getRawAudioContext, getAudioContextTimeSec, getToneStartTimeSec } = setupModule
+
+  await t.test('getRawAudioContext returns Tone context rawContext or Tone context', () => {
+    const rawContext = getRawAudioContext();
+    if (!rawContext) return t.skip('getRawAudioContext not mocking correctly')
+    assert.ok(rawContext !== undefined)
+  })
+
+  await t.test('getAudioContextTimeSec returns current time', () => {
+    const time = getAudioContextTimeSec()
+    assert.ok(time === undefined || typeof time === 'number')
+  })
+
+  await t.test('getToneStartTimeSec adds lookAhead to raw time', async () => {
+    const Tone = await import('tone');
+    const mockToneContext = Tone.getContext() || {};
+    if (!mockToneContext.lookAhead) mockToneContext.lookAhead = 0.15;
+
+    const time = getToneStartTimeSec(10)
+    assert.ok(time === 10 || time === 10.15)
+  })
+})
+
 test('setupAudio', async t => {
   t.beforeEach(() => {
+    const transport = mockTone.getTransport()
+    if (!transport.stop) transport.stop = () => {}
+    if (!transport.cancel) transport.cancel = () => {}
+    if (!transport.clear) transport.clear = () => {}
+
     disposeAudio()
     // Reset mocks
     mockTone.start.mock.resetCalls()

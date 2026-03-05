@@ -4,10 +4,96 @@ import {
   checkHit,
   calculateTimeFromTicks,
   preprocessTempoMap,
-  parseSongNotes
+  parseSongNotes,
+  generateNotesForSong
 } from '../src/utils/rhythmUtils.js'
 
 describe('rhythmUtils', () => {
+  describe('generateNotesForSong', () => {
+    test('generates notes using deterministic random and respects leadIn', () => {
+      const song = {
+        id: 'test-song',
+        duration: 10, // 10 seconds
+        bpm: 120, // 2 beats per second
+        difficulty: 2
+      }
+
+      const options = {
+        leadIn: 3000,
+        random: () => 0.5 // constant random for deterministic testing
+      }
+
+      const notes = generateNotesForSong(song, options)
+
+      // 10s at 120bpm = 20 total beats.
+      // At diff <= 2: beatInBar === 0 OR (i % 8 === 4 && random() > 0.2)
+      // i goes from 0 to 19.
+      // beatInBar = i % 4.
+      // So included beats:
+      // i=0 (beatInBar=0)
+      // i=4 (beatInBar=0, i%8=4, included by beatInBar=0)
+      // i=8 (beatInBar=0)
+      // i=12 (beatInBar=0, i%8=4)
+      // i=16 (beatInBar=0)
+      assert.strictEqual(notes.length, 5)
+
+      // First note should be at leadIn exactly because it's beat 0
+      assert.strictEqual(notes[0].time, 3000)
+      assert.strictEqual(notes[0].songId, 'test-song')
+
+      // beatInterval = 60000 / 120 = 500ms
+      // i=4 is 4*500 = 2000ms after leadIn = 5000ms
+      assert.strictEqual(notes[1].time, 5000)
+    })
+
+    test('generates more dense notes for higher difficulty', () => {
+      const song = { id: 'diff-test', duration: 10, bpm: 120, difficulty: 5 }
+      const options = { leadIn: 2000, random: () => 0.5 }
+
+      const notes = generateNotesForSong(song, options)
+
+      // diff > 4: random() > 0.3
+      // Since our random() returns 0.5, all 20 beats should spawn a note.
+      assert.strictEqual(notes.length, 20)
+    })
+
+    test('generates mid density notes for medium difficulty', () => {
+      const song = { id: 'diff-test-mid', duration: 10, bpm: 120, difficulty: 3 }
+
+      // If random() < 0.6, only beatInBar 0 and 2 are kept
+      const notes1 = generateNotesForSong(song, { leadIn: 2000, random: () => 0.5 })
+      // For 20 beats, beatInBar 0 and 2 occurs 10 times.
+      assert.strictEqual(notes1.length, 10)
+
+      // If random() > 0.6, all beats kept
+      const notes2 = generateNotesForSong(song, { leadIn: 2000, random: () => 0.8 })
+      assert.strictEqual(notes2.length, 20)
+    })
+
+    test('respects laneMap and difficulty variation', () => {
+      const song = { id: 'lane-test', duration: 2, bpm: 120, difficulty: 5 } // 4 beats total
+
+      // random = 0.9. > 0.7 triggers the variation lane select:
+      // laneIndex = Math.floor(random() * 3) = Math.floor(0.9 * 3) = 2
+      const notes = generateNotesForSong(song, { leadIn: 0, random: () => 0.9 })
+
+      assert.ok(notes.length > 0)
+      notes.forEach(note => {
+        assert.strictEqual(note.laneIndex, 2)
+      })
+
+      // Using normal lane map (random < 0.7 for variation, > 0.3 for density)
+      // Our density check is random() > 0.3, so random=0.5 will spawn, but not trigger lane variation
+      const notesNoVar = generateNotesForSong(song, { leadIn: 0, random: () => 0.5 })
+
+      // laneMap = [1, 0, 2, 0]
+      assert.strictEqual(notesNoVar[0].laneIndex, 1) // beat 0
+      assert.strictEqual(notesNoVar[1].laneIndex, 0) // beat 1
+      assert.strictEqual(notesNoVar[2].laneIndex, 2) // beat 2
+      assert.strictEqual(notesNoVar[3].laneIndex, 0) // beat 3
+    })
+  })
+
   describe('checkHit', () => {
     const hitWindow = 50
     const noteTime = 1000

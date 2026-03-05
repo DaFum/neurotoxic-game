@@ -4,8 +4,45 @@ import {
   normalizeMidiPlaybackOptions,
   buildAssetUrlMap,
   encodePublicAssetPath,
-  resolveAssetUrl
+  resolveAssetUrl,
+  getBaseAssetPath,
+  __resetBaseAssetPathCache
 } from '../src/utils/audio/playbackUtils.js'
+
+test('getBaseAssetPath and __resetBaseAssetPathCache', async t => {
+  // Save original import.meta for restoring later if present
+  // let originalImportMeta
+  t.beforeEach(() => {
+    __resetBaseAssetPathCache()
+    // It's not possible to easily mock import.meta directly in Node.js, so we'll test the output without modifying import.meta.
+    // The codebase assumes import.meta exists in the bundle or in node depending on runtime.
+  })
+
+  t.afterEach(() => {
+    __resetBaseAssetPathCache()
+  })
+
+  await t.test('getBaseAssetPath returns expected paths and caches result', () => {
+    const result1 = getBaseAssetPath()
+    assert.ok(result1.baseUrl)
+    assert.ok(result1.publicBasePath)
+    assert.strictEqual(result1.publicBasePath, `${result1.baseUrl}assets`)
+
+    const result2 = getBaseAssetPath()
+    assert.strictEqual(result1, result2) // Same object reference because it was cached
+  })
+
+  await t.test('__resetBaseAssetPathCache clears the cache', () => {
+    const result1 = getBaseAssetPath()
+    __resetBaseAssetPathCache()
+    const result2 = getBaseAssetPath()
+
+    // In our test environment, the results might have the same value,
+    // but they should be different object instances because the cache was reset
+    assert.notStrictEqual(result1, result2)
+    assert.deepStrictEqual(result1, result2)
+  })
+})
 
 test('normalizeMidiPlaybackOptions', async t => {
   await t.test('uses defaults when options are undefined', () => {

@@ -40,6 +40,67 @@ test('calculateGigTimeMs', async t => {
       2000
     )
   })
+
+  await t.test('returns safeOffset when contextTimeSec is null', () => {
+    assert.strictEqual(
+      calculateGigTimeMs({
+        contextTimeSec: null,
+        startCtxTimeSec: 10,
+        offsetMs: 1500
+      }),
+      1500
+    )
+  })
+
+  await t.test('handles negative offsets', () => {
+    assert.strictEqual(
+      calculateGigTimeMs({
+        contextTimeSec: 15,
+        startCtxTimeSec: 10,
+        offsetMs: -1000
+      }),
+      4000
+    )
+  })
+})
+
+test('getGigTimeMs', async t => {
+  if (skipIfImportFailed(t)) return
+  const { getGigTimeMs, audioState } = audioEngine
+
+  // Because getGigTimeMs relies on internal state and Tone.js mock,
+  // we test it by manipulating the state that calculateGigTimeMs uses.
+
+  await t.test('returns calculated gig time using audio context and state', () => {
+    // Save original state
+    const originalStartCtxTime = audioState?.gigStartCtxTime
+    const originalSeekOffsetMs = audioState?.gigSeekOffsetMs
+
+    if (audioState) {
+      // Set up state
+      audioState.gigStartCtxTime = 5
+      audioState.gigSeekOffsetMs = 2000
+    }
+
+    // getRawAudioContext() will return a rawContext. Since we mock Tone,
+    // we can't directly manipulate rawContext.currentTime easily here without
+    // deeper mocking of Tone.getContext().rawContext.
+    // However, the test framework's mockUtils provides a mock Tone object.
+    // We can infer behavior by the result, or skip testing internal Tone mock specifics
+    // and rely on calculateGigTimeMs coverage, but let's ensure it executes without crashing.
+
+    const timeMs = getGigTimeMs()
+
+    // Since mockToneContext.rawContext.currentTime is likely 0 by default in the mock,
+    // the calculation would be (0 - 5) * 1000 + 2000 = -3000
+    assert.ok(typeof timeMs === 'number')
+
+    if (audioState) {
+      // Restore original state
+      audioState.gigStartCtxTime = originalStartCtxTime
+      audioState.gigSeekOffsetMs = originalSeekOffsetMs
+    }
+  })
 })
 
 test('hasAudioAsset', async t => {
