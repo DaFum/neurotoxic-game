@@ -17,7 +17,11 @@ describe('useRhythmGameInput - Load Test', () => {
         lanes: [{ active: false }, { active: false }, { active: false }]
       }
     }
-    const scoringActions = { handleHit: () => { hits++ } }
+    const scoringActions = {
+      handleHit: () => {
+        hits++
+      }
+    }
     const contextState = { activeEvent: null }
 
     const { result } = renderHook(() =>
