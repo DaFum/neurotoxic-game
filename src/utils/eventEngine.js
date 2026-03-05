@@ -278,6 +278,10 @@ const processEffect = (eff, delta, context = {}) => {
     case 'chain':
       delta.flags.queueEvent = eff.eventId
       break
+    case 'quest':
+      if (!delta.flags.addQuest) delta.flags.addQuest = []
+      delta.flags.addQuest.push(eff.quest)
+      break
   }
 }
 

@@ -7,6 +7,7 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.05,
     condition: state =>
+      (!state.activeQuests || state.activeQuests.length === 0) &&
       !state.activeQuests?.some(q => q.id === 'quest_pick_of_destiny'),
     options: [
       {
@@ -42,6 +43,7 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.1,
     condition: state =>
+      (!state.activeQuests || state.activeQuests.length === 0) &&
       (state.social?.tiktok || 0) < 5000 &&
       !state.activeQuests?.some(q => q.id === 'quest_viral_dance'),
     options: [
@@ -78,6 +80,7 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.08,
     condition: state =>
+      (!state.activeQuests || state.activeQuests.length === 0) &&
       !state.activeQuests?.some(q => q.id === 'quest_sponsor_demand'),
     options: [
       {
@@ -113,6 +116,7 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.3, // High chance if condition is met, reduced to 0.3 to prevent spam
     condition: state =>
+      (!state.activeQuests || state.activeQuests.length === 0) &&
       (state.band?.harmony || 0) < 60 &&
       !state.activeQuests?.some(q => q.id === 'quest_harmony_project'),
     options: [
@@ -144,6 +148,7 @@ export const QUEST_EVENTS = [
     trigger: 'random',
     chance: 0.07,
     condition: state =>
+      (!state.activeQuests || state.activeQuests.length === 0) &&
       !state.activeQuests?.some(q => q.id === 'quest_local_legend'),
     options: [
       {
