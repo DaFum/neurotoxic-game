@@ -89,10 +89,23 @@ describe('PreGig', () => {
     // Restore default state
     mockUseGameState.player = { money: 1000 }
     mockUseGameState.gigModifiers = {}
+
+    // Clean up sessionStorage state to ensure isolated tests
+    try {
+      sessionStorage.removeItem('neurotoxic_last_minigame')
+    } catch (e) {
+      // Ignored
+    }
   })
 
   afterEach(() => {
     vi.clearAllMocks()
+    vi.restoreAllMocks()
+    try {
+      sessionStorage.removeItem('neurotoxic_last_minigame')
+    } catch (e) {
+      // Ignored
+    }
   })
 
   test('renders modifiers and toggles correctly', async () => {
@@ -116,36 +129,41 @@ describe('PreGig', () => {
     // We need to set up a valid setlist so the start button is enabled
     mockUseGameState.setlist = [{ id: 'song1' }]
 
-    // Test Roadie Minigame (Math.random < 0.5)
-    vi.spyOn(Math, 'random').mockReturnValue(0.4)
+    try {
+      // Test Roadie Minigame (Math.random < 0.5)
+      vi.spyOn(Math, 'random').mockReturnValue(0.4)
 
-    const { findByText, rerender } = render(React.createElement(PreGig))
+      const { findByText, rerender } = render(React.createElement(PreGig))
 
-    const startBtn = await findByText(/ui:pregig.startShow/i)
-    fireEvent.click(startBtn)
+      const startBtn = await findByText(/ui:pregig.startShow/i)
+      fireEvent.click(startBtn)
 
-    // Needs to wait for async click handler
-    await new Promise(resolve => setTimeout(resolve, 0))
+      // Needs to wait for async click handler
+      await new Promise(resolve => setTimeout(resolve, 0))
 
-    expect(mockUseGameState.startRoadieMinigame).toHaveBeenCalledTimes(1)
-    expect(mockUseGameState.startKabelsalatMinigame).toHaveBeenCalledTimes(0)
+      expect(mockUseGameState.startRoadieMinigame).toHaveBeenCalledTimes(1)
+      expect(mockUseGameState.startKabelsalatMinigame).toHaveBeenCalledTimes(0)
 
-    mockUseGameState.startRoadieMinigame.mockClear()
-    mockUseGameState.startKabelsalatMinigame.mockClear()
+      mockUseGameState.startRoadieMinigame.mockClear()
+      mockUseGameState.startKabelsalatMinigame.mockClear()
 
-    // Test Kabelsalat Minigame (Math.random >= 0.5)
-    vi.spyOn(Math, 'random').mockReturnValue(0.6)
+      // Test Kabelsalat Minigame (Math.random >= 0.5)
+      vi.spyOn(Math, 'random').mockReturnValue(0.6)
 
-    // Set isStarting back to false via remount, or we can just render a fresh one
-    const { findByText: findByText2 } = render(React.createElement(PreGig))
-    const startBtn2 = await findByText2(/ui:pregig.startShow/i)
-    fireEvent.click(startBtn2)
+      // Set isStarting back to false via remount, or we can just render a fresh one
+      const { findByText: findByText2 } = render(React.createElement(PreGig))
+      const startBtn2 = await findByText2(/ui:pregig.startShow/i)
+      fireEvent.click(startBtn2)
 
-    await new Promise(resolve => setTimeout(resolve, 0))
+      await new Promise(resolve => setTimeout(resolve, 0))
 
-    expect(mockUseGameState.startKabelsalatMinigame).toHaveBeenCalledTimes(1)
-    expect(mockUseGameState.startRoadieMinigame).toHaveBeenCalledTimes(0)
-
-    Math.random.mockRestore()
+      expect(mockUseGameState.startKabelsalatMinigame).toHaveBeenCalledTimes(1)
+      expect(mockUseGameState.startRoadieMinigame).toHaveBeenCalledTimes(0)
+    } finally {
+      // Clean up spy
+      if (Math.random.mockRestore) {
+        Math.random.mockRestore()
+      }
+    }
   })
 })

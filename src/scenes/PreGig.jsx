@@ -11,6 +11,8 @@ import { handleError } from '../utils/errorHandler'
 import GigModifierButton from '../ui/GigModifierButton'
 import { RazorPlayIcon } from '../ui/shared/Icons'
 
+let lastMinigameFallback = null
+
 const BAND_MEETING_COST = 50
 
 const SONGS_DICT = SONGS_DB.reduce((acc, song) => {
@@ -396,8 +398,14 @@ export const PreGig = () => {
             // Safe access for ID
             const gigId = currentGig?.id || `gig_${Date.now()}`
 
-            // Simple streak breaker using sessionStorage
-            const lastMinigame = sessionStorage.getItem('neurotoxic_last_minigame')
+            // Simple streak breaker using sessionStorage with fallback
+            let lastMinigame = lastMinigameFallback
+            try {
+              lastMinigame = sessionStorage.getItem('neurotoxic_last_minigame') || lastMinigameFallback
+            } catch (storageErr) {
+              // Ignore SecurityError or other storage errors
+            }
+
             let roadieChance = 0.5
 
             if (lastMinigame === 'roadie') {
@@ -406,11 +414,18 @@ export const PreGig = () => {
               roadieChance = 0.75 // Increase chance if Kabelsalat played last
             }
 
-            if (Math.random() < roadieChance) {
-              sessionStorage.setItem('neurotoxic_last_minigame', 'roadie')
+            const chosenGame = Math.random() < roadieChance ? 'roadie' : 'kabelsalat'
+
+            lastMinigameFallback = chosenGame
+            try {
+              sessionStorage.setItem('neurotoxic_last_minigame', chosenGame)
+            } catch (storageErr) {
+              // Ignore storage errors, relying on fallback
+            }
+
+            if (chosenGame === 'roadie') {
               startRoadieMinigame(gigId)
             } else {
-              sessionStorage.setItem('neurotoxic_last_minigame', 'kabelsalat')
               startKabelsalatMinigame(gigId)
             }
           } catch (err) {
