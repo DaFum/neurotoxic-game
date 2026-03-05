@@ -156,7 +156,7 @@ export const handleLoadGame = (state, payload) => {
       ...DEFAULT_GIG_MODIFIERS,
       ...(loadedState.gigModifiers || {})
     },
-    currentScene: loadedState.currentScene || 'OVERWORLD',
+    currentScene: 'OVERWORLD',
     currentGig: loadedState.currentGig || null,
     lastGigStats: loadedState.lastGigStats || null,
     settings: {
@@ -176,10 +176,7 @@ export const handleLoadGame = (state, payload) => {
       : state.unlocks || []
   }
 
-  // Security: Only allow valid gameplay scenes from save
-  if (!ALLOWED_SCENES.has(safeState.currentScene)) {
-    safeState.currentScene = state.currentScene
-  }
+
 
   // Migration: energy -> catering
   if (safeState.gigModifiers.energy !== undefined) {

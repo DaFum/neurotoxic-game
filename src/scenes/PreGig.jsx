@@ -229,7 +229,7 @@ export const PreGig = () => {
             ))}
 
             <div className='border-t border-(--ash-gray)/20 pt-2.5'>
-              <button
+              <button type="button"
                 onClick={handleBandMeeting}
                 className='w-full flex justify-between items-center p-3 border-2 border-(--warning-yellow)/30 hover:border-(--warning-yellow) text-(--warning-yellow)/70 hover:text-(--warning-yellow) transition-all group'
               >
