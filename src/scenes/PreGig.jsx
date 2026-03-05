@@ -13,6 +13,11 @@ import { RazorPlayIcon } from '../ui/shared/Icons'
 
 const BAND_MEETING_COST = 50
 
+const SONGS_DICT = SONGS_DB.reduce((acc, song) => {
+  acc[song.id] = song
+  return acc
+}, Object.create(null))
+
 const formatLocalizedNumber = (value, locale) => {
   return new Intl.NumberFormat(locale).format(value)
 }
@@ -348,7 +353,7 @@ export const PreGig = () => {
           <div className='mt-3 h-14 border-t border-(--ash-gray)/20 pt-2 flex items-end justify-between gap-1'>
             {setlist.map((s, i) => {
               const id = getSongId(s)
-              const songData = SONGS_DB.find(dbSong => dbSong.id === id) || {
+              const songData = SONGS_DICT[id] || {
                 energy: { peak: 50 }
               }
               return (
