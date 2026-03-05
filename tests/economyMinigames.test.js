@@ -2,7 +2,8 @@ import { test } from 'node:test'
 import assert from 'node:assert'
 import {
   calculateTravelMinigameResult,
-  calculateRoadieMinigameResult
+  calculateRoadieMinigameResult,
+  calculateKabelsalatMinigameResult
 } from '../src/utils/economyEngine.js'
 
 test('Minigame Economy Calculations', async t => {
@@ -42,5 +43,31 @@ test('Minigame Economy Calculations', async t => {
     // Undefined/Null damage
     const resultNull = calculateRoadieMinigameResult(null)
     assert.strictEqual(resultNull.stress, 0)
+  })
+
+  await t.test('Kabelsalat Minigame Results - Success', () => {
+    // 20 time left -> 4 bonus * 10 = 40 + 50 base = 90 reward, 0 stress
+    const result = calculateKabelsalatMinigameResult({ isPoweredOn: true, timeLeft: 20 }, {})
+    assert.strictEqual(result.reward, 90)
+    assert.strictEqual(result.stress, 0)
+  })
+
+  await t.test('Kabelsalat Minigame Results - Failure', () => {
+    // isPoweredOn: false -> 10 stress, 0 reward
+    const result = calculateKabelsalatMinigameResult({ isPoweredOn: false, timeLeft: 5 }, {})
+    assert.strictEqual(result.reward, 0)
+    assert.strictEqual(result.stress, 10)
+  })
+
+  await t.test('Kabelsalat Minigame Results - Trait: tech_wizard', () => {
+    // 20 time left -> 90 base reward -> tech_wizard applies 1.5x -> 135
+    const bandState = {
+      members: [
+        { name: 'Alice', traits: [{ id: 'tech_wizard' }] }
+      ]
+    }
+    const result = calculateKabelsalatMinigameResult({ isPoweredOn: true, timeLeft: 20 }, bandState)
+    assert.strictEqual(result.reward, 135)
+    assert.strictEqual(result.stress, 0)
   })
 })

@@ -35,6 +35,8 @@ export { getPrimaryEffect } // Re-export for backward compatibility if needed, t
  * @param {Function} params.addToast - Toast notification function
  * @returns {Object} Purchase handlers and utilities
  */
+import { useTranslation } from 'react-i18next'
+
 export const usePurchaseLogic = ({
   player,
   band,
@@ -43,6 +45,7 @@ export const usePurchaseLogic = ({
   updateBand,
   addToast
 }) => {
+  const { t } = useTranslation()
   /**
    * Calculates the adjusted cost of an item based on active traits.
    */
@@ -101,12 +104,13 @@ export const usePurchaseLogic = ({
         const isOwned = isItemOwned(item, player, band)
 
         if (isOwned && !isConsumable) {
-          addToast('Already owned!', 'warning')
+          addToast(t('ui:shop.messages.alreadyOwned', 'Already owned!'), 'warning')
           return false
         }
 
         if (currencyValue < finalCost) {
-          addToast(`Not enough ${payingWithFame ? 'Fame' : 'Money'}!`, 'error')
+          const res = payingWithFame ? t('ui:shop.messages.fame') : t('ui:shop.messages.money')
+          addToast(t('ui:shop.messages.notEnough', { resource: res }), 'error')
           return false
         }
 
@@ -160,7 +164,8 @@ export const usePurchaseLogic = ({
             bandPatch = result.bandPatch
             if (result.messages) {
               result.messages.forEach(msg => {
-                addToast(msg.message, msg.type)
+                const text = msg.messageKey ? t(msg.messageKey) : msg.message
+                addToast(text, msg.type)
               })
             }
             break
