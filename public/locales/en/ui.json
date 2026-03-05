@@ -655,5 +655,33 @@
     "special": "Special",
     "freeItem": "Free Item"
   },
-  "closeModal": "Close modal"
+  "closeModal": "Close modal",
+  "minigames": {
+    "kabelsalat": {
+      "title": "HARDWARE_RIGGING",
+      "status": "Status",
+      "statusConnected": "CONNECTED",
+      "statusFailed": "GIG CANCELLED",
+      "statusPending": "CABLE MESS DETECTED",
+      "systemShock": "SYSTEM SHOCK",
+      "timeUp": "TIME'S UP",
+      "managerMad": "The Stage Manager cancelled the gig.",
+      "success": "SYSTEM BOOTED",
+      "ampsReady": "Amps are glowing, mics are open.",
+      "errors": {
+        "wrongCable": "WRONG CABLE! SHORT CIRCUIT!",
+        "noPower": "MISSING GROUND! CONNECT POWER (AC) FIRST!",
+        "noAmp": "AMP IS OFF! VOLTAGE SPIKE DESTROYED SPEAKERS!"
+      },
+      "rulesTitle": "RIGGING PROTOCOL",
+      "rules": {
+        "time": "System must boot under 25 seconds!",
+        "rule1Label": "Rule 1",
+        "rule1Text": "No plugging without ground (PWR)! Danger to life!",
+        "rule2Label": "Rule 2",
+        "rule2Text": "Synths (MIDI) and mics (XLR) need an active AMP (JACK) first.",
+        "penalty": "A mistake rips out all existing connections."
+      }
+    }
+  }
 }

@@ -73,7 +73,8 @@ export const PreGig = () => {
     band,
     updateBand,
     addToast,
-    startRoadieMinigame
+    startRoadieMinigame,
+    startKabelsalatMinigame
   } = useGameState()
   const [isStarting, setIsStarting] = useState(false)
   const currentModifiers = getGigModifiers(band, gigModifiers)
@@ -389,7 +390,12 @@ export const PreGig = () => {
             await audioManager.ensureAudioContext()
             // Safe access for ID
             const gigId = currentGig?.id || `gig_${Date.now()}`
-            startRoadieMinigame(gigId)
+
+            if (Math.random() < 0.5) {
+              startRoadieMinigame(gigId)
+            } else {
+              startKabelsalatMinigame(gigId)
+            }
           } catch (err) {
             setIsStarting(false)
             handleError(err, {

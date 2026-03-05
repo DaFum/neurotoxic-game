@@ -586,3 +586,30 @@ export const calculateRoadieMinigameResult = (equipmentDamage, bandState) => {
 
   return { stress, repairCost }
 }
+
+/**
+ * Calculates outcome for Kabelsalat minigame
+ * @param {Object} results - { isPoweredOn: boolean, timeLeft: number }
+ * @param {Object} bandState
+ * @returns {Object} { stress, reward }
+ */
+export const calculateKabelsalatMinigameResult = (results, bandState) => {
+  let stress = 0
+  let reward = 0
+
+  if (!results.isPoweredOn) {
+    // Failure! Stress for everyone.
+    stress = 10
+  } else {
+    // Success! Reward based on time remaining
+    const timeBonus = Math.floor(results.timeLeft / 5)
+    reward = 50 + timeBonus * 10 // Base 50, up to +50 for speed
+
+    // Tech Wiz trait increases rewards
+    if (bandHasTrait(bandState, 'tech_wiz')) {
+      reward = Math.floor(reward * 1.5)
+    }
+  }
+
+  return { stress, reward }
+}

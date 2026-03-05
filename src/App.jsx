@@ -43,6 +43,12 @@ const RoadieRunScene = lazy(
     'RoadieRunScene'
   )
 )
+const KabelsalatScene = lazy(
+  createNamedLazyLoader(
+    () => import('./scenes/KabelsalatScene'),
+    'KabelsalatScene'
+  )
+)
 const Settings = lazy(
   createNamedLazyLoader(() => import('./scenes/Settings'), 'Settings')
 )
@@ -94,7 +100,11 @@ function GameContent() {
       case 'PREGIG':
         return <PreGig />
       case GAME_PHASES.PRE_GIG_MINIGAME:
-        return <RoadieRunScene />
+        return gameState.minigame?.type === 'KABELSALAT' ? (
+          <KabelsalatScene />
+        ) : (
+          <RoadieRunScene />
+        )
       case 'GIG':
       case 'PRACTICE':
         return <Gig />

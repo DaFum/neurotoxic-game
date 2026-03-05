@@ -655,5 +655,33 @@
     "special": "Spezial",
     "freeItem": "Kostenloses Item"
   },
-  "closeModal": "Modal schließen"
+  "closeModal": "Modal schließen",
+  "minigames": {
+    "kabelsalat": {
+      "title": "HARDWARE_RIGGING",
+      "status": "Status",
+      "statusConnected": "VERBUNDEN",
+      "statusFailed": "GIG GEPLATZT",
+      "statusPending": "KABELSALAT DETEKTIERT",
+      "systemShock": "SYSTEM SHOCK",
+      "timeUp": "ZEIT ABGELAUFEN",
+      "managerMad": "Der Stage Manager hat den Gig abgesagt.",
+      "success": "SYSTEM HOCHGEFAHREN",
+      "ampsReady": "Amps glühen vor, Mikros offen.",
+      "errors": {
+        "wrongCable": "FALSCHES KABEL! KURZSCHLUSS!",
+        "noPower": "FEHLENDE ERDUNG! ZUERST STROM (AC) ANSCHLIESSEN!",
+        "noAmp": "AMP IST AUS! SPANNUNGSSPITZE ZERSTÖRT LAUTSPRECHER!"
+      },
+      "rulesTitle": "RIGGING_PROTOKOLL",
+      "rules": {
+        "time": "System muss unter 25 Sekunden booten!",
+        "rule1Label": "Regel 1",
+        "rule1Text": "Ohne Erdung (PWR) keine Steckvorgänge! Lebensgefahr!",
+        "rule2Label": "Regel 2",
+        "rule2Text": "Synths (MIDI) und Mikrofone (XLR) benötigen zuerst einen aktiven AMP (JACK).",
+        "penalty": "Ein Fehler reißt alle bestehenden Verbindungen wieder heraus."
+      }
+    }
+  }
 }
