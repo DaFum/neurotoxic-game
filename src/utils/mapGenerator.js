@@ -251,11 +251,57 @@ export class MapGenerator {
     // Reduce movement strength over time to stabilize
     let strength = 0.5
 
+    // Optimization: Spatial partitioning to avoid O(N^2) checks
+    const cellSize = minDistance
+
     for (let i = 0; i < iterations; i++) {
       let moved = false
+
+      const grid = new Map()
       for (let j = 0; j < nodeList.length; j++) {
-        for (let k = j + 1; k < nodeList.length; k++) {
-          const n1 = nodeList[j]
+        const n = nodeList[j]
+        const cellX = Math.floor(n.x / cellSize)
+        const cellY = Math.floor(n.y / cellSize)
+        const key = cellX * 1000 + cellY
+
+        let cell = grid.get(key)
+        if (!cell) {
+          cell = []
+          grid.set(key, cell)
+        }
+        cell.push(j)
+      }
+
+      for (let j = 0; j < nodeList.length; j++) {
+        const n1 = nodeList[j]
+        const cellX = Math.floor(n1.x / cellSize)
+        const cellY = Math.floor(n1.y / cellSize)
+
+        // Gather candidates from neighboring cells
+        const candidates = []
+
+        for (let cx = cellX - 1; cx <= cellX + 1; cx++) {
+          for (let cy = cellY - 1; cy <= cellY + 1; cy++) {
+            const key = cx * 1000 + cy
+            const cell = grid.get(key)
+            if (!cell) continue
+
+            for (let c = 0; c < cell.length; c++) {
+              const k = cell[c]
+              // Check only pairs once and preserve j < k direction
+              if (k > j) {
+                candidates.push(k)
+              }
+            }
+          }
+        }
+
+        // To guarantee strict PRNG sequence parity, candidates MUST be processed
+        // in ascending order of `k`, perfectly mimicking the original `for (let k = j + 1; ...)` loop.
+        candidates.sort((a, b) => a - b)
+
+        for (let c = 0; c < candidates.length; c++) {
+          const k = candidates[c]
           const n2 = nodeList[k]
 
           let dx = n1.x - n2.x
