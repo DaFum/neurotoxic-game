@@ -128,16 +128,21 @@ export const handleLoadGame = (state, payload) => {
       : [],
     activeEvent: loadedState.activeEvent || null,
     toasts: Array.isArray(loadedState.toasts)
-      ? loadedState.toasts
-          .filter(t => t && typeof t === 'object' && t.id && t.message)
-          .map(t => ({
-            ...t,
-            message: String(t.message).trim(),
-            type: ['success', 'error', 'warning', 'info'].includes(t.type)
-              ? t.type
-              : 'info'
-          }))
-          .filter(t => t.message.length > 0)
+      ? loadedState.toasts.reduce((acc, t) => {
+          if (t && typeof t === 'object' && t.id && t.message) {
+            const message = String(t.message).trim()
+            if (message.length > 0) {
+              acc.push({
+                ...t,
+                message,
+                type: ['success', 'error', 'warning', 'info'].includes(t.type)
+                  ? t.type
+                  : 'info'
+              })
+            }
+          }
+          return acc
+        }, [])
       : [],
     reputationByRegion: loadedState.reputationByRegion || {},
     venueBlacklist: Array.isArray(loadedState.venueBlacklist)
