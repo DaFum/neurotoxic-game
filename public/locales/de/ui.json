@@ -663,6 +663,7 @@
       "statusConnected": "VERBUNDEN",
       "statusFailed": "GIG GEPLATZT",
       "statusPending": "KABELSALAT DETEKTIERT",
+      "tMinus": "T-MINUS",
       "systemShock": "SYSTEM SHOCK",
       "timeUp": "ZEIT ABGELAUFEN",
       "managerMad": "Der Stage Manager hat den Gig abgesagt.",

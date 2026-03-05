@@ -696,6 +696,8 @@ export const GameStateProvider = ({ children }) => {
       completeTravelMinigame,
       startRoadieMinigame,
       completeRoadieMinigame,
+      startKabelsalatMinigame,
+      completeKabelsalatMinigame,
       unlockTrait,
       endGig,
       addQuest,

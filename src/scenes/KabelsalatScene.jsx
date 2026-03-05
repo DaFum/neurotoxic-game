@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState.jsx'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 
@@ -79,8 +78,34 @@ const CABLES = [
 
 const SLOT_XS = [120, 260, 400, 540, 680]
 
+const SOCKET_DEFS = {
+  mic: { id: 'mic', label: 'MIC_IN', type: 'xlr', color: 'var(--toxic-green)' },
+  amp: {
+    id: 'amp',
+    label: 'AMP_IN',
+    type: 'jack',
+    color: 'var(--warning-yellow)'
+  },
+  pedal: { id: 'pedal', label: '9V_DC', type: 'dc', color: 'var(--info-blue)' },
+  power: {
+    id: 'power',
+    label: 'AC_230V',
+    type: 'iec',
+    color: 'var(--blood-red)'
+  },
+  synth: {
+    id: 'synth',
+    label: 'MIDI_IN',
+    type: 'midi',
+    color: 'var(--cosmic-purple)'
+  }
+}
+
+const INITIAL_SOCKET_ORDER = ['mic', 'amp', 'pedal', 'power', 'synth']
+const TIME_LIMIT = 25
+
 export const KabelsalatScene = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['ui'])
   const { completeKabelsalatMinigame, changeScene } = useGameState()
 
   const [selectedCable, setSelectedCable] = useState(null)
@@ -88,56 +113,32 @@ export const KabelsalatScene = () => {
   const [isShocked, setIsShocked] = useState(false)
   const [faultReason, setFaultReason] = useState('')
   const [isPoweredOn, setIsPoweredOn] = useState(false)
-
-  const TIME_LIMIT = 25
   const [timeLeft, setTimeLeft] = useState(TIME_LIMIT)
   const [isGameOver, setIsGameOver] = useState(false)
+  const [socketOrder, setSocketOrder] = useState(INITIAL_SOCKET_ORDER)
+  const [lightningSeeds, setLightningSeeds] = useState([])
 
-  const SOCKET_DEFS = {
-    mic: {
-      id: 'mic',
-      label: 'MIC_IN',
-      type: 'xlr',
-      color: 'var(--toxic-green)'
-    },
-    amp: {
-      id: 'amp',
-      label: 'AMP_IN',
-      type: 'jack',
-      color: 'var(--warning-yellow)'
-    },
-    pedal: {
-      id: 'pedal',
-      label: '9V_DC',
-      type: 'dc',
-      color: 'var(--info-blue)'
-    },
-    power: {
-      id: 'power',
-      label: 'AC_230V',
-      type: 'iec',
-      color: 'var(--blood-red)'
-    },
-    synth: {
-      id: 'synth',
-      label: 'MIDI_IN',
-      type: 'midi',
-      color: 'var(--cosmic-purple)'
+  // Generate deterministic seeds for lightning to avoid layout shift on every render
+  useEffect(() => {
+    if (isShocked && lightningSeeds.length === 0) {
+      setLightningSeeds(
+        Array.from({ length: 15 }).map(() => ({
+          startX: Math.random() * 800,
+          o1: Math.random() * 300 - 150,
+          o2: Math.random() * 300 - 150,
+          o3: Math.random() * 300 - 150,
+          w: Math.random() * 10 + 2
+        }))
+      )
+    } else if (!isShocked && lightningSeeds.length > 0) {
+      setLightningSeeds([])
     }
-  }
+  }, [isShocked, lightningSeeds.length])
 
-  const [socketOrder, setSocketOrder] = useState([
-    'mic',
-    'amp',
-    'pedal',
-    'power',
-    'synth'
-  ])
-
-  // Timer Logik
+  // Timer Logik - Fixed dependency array so it doesn't re-create interval every second
   useEffect(() => {
     let timer
-    if (!isPoweredOn && !isGameOver && timeLeft > 0) {
+    if (!isPoweredOn && !isGameOver) {
       timer = setInterval(() => {
         setTimeLeft(prev => {
           if (prev <= 1) {
@@ -149,29 +150,31 @@ export const KabelsalatScene = () => {
         })
       }, 1000)
     }
-    return () => clearInterval(timer)
-  }, [isPoweredOn, isGameOver, timeLeft])
+    return () => {
+      if (timer) clearInterval(timer)
+    }
+  }, [isPoweredOn, isGameOver])
 
   // End Game Effects
   useEffect(() => {
     if (isPoweredOn) {
-      const t = setTimeout(
-        () => completeKabelsalatMinigame({ isPoweredOn: true, timeLeft }),
-        2500
-      )
-      return () => clearTimeout(t)
+      const timer = setTimeout(() => {
+        completeKabelsalatMinigame({ isPoweredOn: true, timeLeft })
+        changeScene('GIG')
+      }, 2500)
+      return () => clearTimeout(timer)
     }
-  }, [isPoweredOn, timeLeft, completeKabelsalatMinigame])
+  }, [isPoweredOn, timeLeft, completeKabelsalatMinigame, changeScene])
 
   useEffect(() => {
     if (isGameOver) {
-      const t = setTimeout(
-        () => completeKabelsalatMinigame({ isPoweredOn: false, timeLeft: 0 }),
-        3500
-      )
-      return () => clearTimeout(t)
+      const timer = setTimeout(() => {
+        completeKabelsalatMinigame({ isPoweredOn: false, timeLeft: 0 })
+        changeScene('GIG')
+      }, 3500)
+      return () => clearTimeout(timer)
     }
-  }, [isGameOver, completeKabelsalatMinigame])
+  }, [isGameOver, completeKabelsalatMinigame, changeScene])
 
   // Shuffle sockets
   useEffect(() => {
@@ -195,62 +198,28 @@ export const KabelsalatScene = () => {
     return () => clearInterval(interval)
   }, [connections, isPoweredOn, isGameOver, isShocked])
 
-  const handleCableClick = cableId => {
-    if (isShocked || isPoweredOn || isGameOver) return
+  const handleCableClick = useCallback(
+    cableId => {
+      if (isShocked || isPoweredOn || isGameOver) return
 
-    if (Object.values(connections).includes(cableId)) {
-      const newConn = { ...connections }
-      const socketId = Object.keys(newConn).find(
-        key => newConn[key] === cableId
-      )
-      delete newConn[socketId]
-      setConnections(newConn)
-      setSelectedCable(null)
-      return
-    }
-    setSelectedCable(prev => (prev === cableId ? null : cableId))
-  }
-
-  const handleSocketClick = socketId => {
-    if (isShocked || isPoweredOn || isGameOver || !selectedCable) return
-    if (connections[socketId]) return
-
-    const targetSocket = SOCKET_DEFS[socketId]
-    const incomingCable = CABLES.find(c => c.id === selectedCable)
-
-    const hasPower = !!connections['power']
-    const hasAmp = !!connections['amp']
-
-    if (targetSocket.type !== incomingCable.type) {
-      triggerShock(t('ui:minigames.kabelsalat.errors.wrongCable'))
-      return
-    }
-
-    if (!hasPower && targetSocket.id !== 'power') {
-      triggerShock(t('ui:minigames.kabelsalat.errors.noPower'))
-      return
-    }
-
-    if (
-      hasPower &&
-      !hasAmp &&
-      (targetSocket.id === 'mic' || targetSocket.id === 'synth')
-    ) {
-      triggerShock(t('ui:minigames.kabelsalat.errors.noAmp'))
-      return
-    }
-
-    setConnections(prev => {
-      const next = { ...prev, [socketId]: selectedCable }
-      if (Object.keys(next).length === Object.keys(SOCKET_DEFS).length) {
-        setTimeout(() => setIsPoweredOn(true), 600)
+      if (Object.values(connections).includes(cableId)) {
+        setConnections(prev => {
+          const newConn = { ...prev }
+          const socketId = Object.keys(newConn).find(
+            key => newConn[key] === cableId
+          )
+          delete newConn[socketId]
+          return newConn
+        })
+        setSelectedCable(null)
+        return
       }
-      return next
-    })
-    setSelectedCable(null)
-  }
+      setSelectedCable(prev => (prev === cableId ? null : cableId))
+    },
+    [isShocked, isPoweredOn, isGameOver, connections]
+  )
 
-  const triggerShock = reason => {
+  const triggerShock = useCallback(reason => {
     setIsShocked(true)
     setFaultReason(reason)
     setSelectedCable(null)
@@ -260,21 +229,74 @@ export const KabelsalatScene = () => {
       setIsShocked(false)
       setFaultReason('')
     }, 1200)
-  }
+  }, [])
 
-  const drawMessyPath = (cableId, socketId) => {
-    const cable = CABLES.find(c => c.id === cableId)
-    const socketIndex = socketOrder.indexOf(socketId)
-    if (!cable || socketIndex === -1) return ''
+  const handleSocketClick = useCallback(
+    socketId => {
+      if (isShocked || isPoweredOn || isGameOver || !selectedCable) return
+      if (connections[socketId]) return
 
-    const socketX = SLOT_XS[socketIndex]
-    const socketY = 120
+      const targetSocket = SOCKET_DEFS[socketId]
+      const incomingCable = CABLES.find(c => c.id === selectedCable)
 
-    const midY = (cable.y + socketY) / 2
-    const offset = (socketX - cable.x) * 1.5
+      const hasPower = !!connections['power']
+      const hasAmp = !!connections['amp']
 
-    return `M ${cable.x} ${cable.y} C ${cable.x - offset} ${midY}, ${socketX + offset} ${midY}, ${socketX} ${socketY + 20}`
-  }
+      if (targetSocket.type !== incomingCable.type) {
+        triggerShock(t('ui:minigames.kabelsalat.errors.wrongCable'))
+        return
+      }
+
+      if (!hasPower && targetSocket.id !== 'power') {
+        triggerShock(t('ui:minigames.kabelsalat.errors.noPower'))
+        return
+      }
+
+      if (
+        hasPower &&
+        !hasAmp &&
+        (targetSocket.id === 'mic' || targetSocket.id === 'synth')
+      ) {
+        triggerShock(t('ui:minigames.kabelsalat.errors.noAmp'))
+        return
+      }
+
+      setConnections(prev => {
+        const next = { ...prev, [socketId]: selectedCable }
+        if (Object.keys(next).length === Object.keys(SOCKET_DEFS).length) {
+          setTimeout(() => setIsPoweredOn(true), 600)
+        }
+        return next
+      })
+      setSelectedCable(null)
+    },
+    [
+      isShocked,
+      isPoweredOn,
+      isGameOver,
+      selectedCable,
+      connections,
+      triggerShock,
+      t
+    ]
+  )
+
+  const drawMessyPath = useCallback(
+    (cableId, socketId) => {
+      const cable = CABLES.find(c => c.id === cableId)
+      const socketIndex = socketOrder.indexOf(socketId)
+      if (!cable || socketIndex === -1) return ''
+
+      const socketX = SLOT_XS[socketIndex]
+      const socketY = 120
+
+      const midY = (cable.y + socketY) / 2
+      const offset = (socketX - cable.x) * 1.5
+
+      return `M ${cable.x} ${cable.y} C ${cable.x - offset} ${midY}, ${socketX + offset} ${midY}, ${socketX} ${socketY + 20}`
+    },
+    [socketOrder]
+  )
 
   const renderPlug = type => {
     switch (type) {
@@ -496,54 +518,35 @@ export const KabelsalatScene = () => {
     }
   }
 
-  const renderLightning = () => {
-    if (!isShocked) return null
-    return Array.from({ length: 15 }).map((_, i) => {
-      const startX = Math.random() * 800
-      const path = `M ${startX} 0 L ${startX + (Math.random() * 300 - 150)} 200 L ${startX + (Math.random() * 300 - 150)} 400 L ${startX + (Math.random() * 300 - 150)} 600`
-      return (
-        <path
-          key={i}
-          d={path}
-          fill='none'
-          stroke='var(--warning-yellow)'
-          strokeWidth={Math.random() * 10 + 2}
-          className='animate-[flash_0.05s_infinite]'
-          style={{ filter: 'drop-shadow(0 0 20px var(--warning-yellow))' }}
-        />
-      )
-    })
-  }
-
   const isPowerConnected = !!connections['power']
-  const bgStyle = generateImageStyle('MINIGAME_KABELSALAT_BG')
+  const bgUrl = getGenImageUrl(IMG_PROMPTS.MINIGAME_KABELSALAT_BG)
 
   return (
     <div
       className='flex flex-col items-center justify-center w-full min-h-screen relative p-4'
-      style={bgStyle}
+      style={{ backgroundImage: `url(${bgUrl})`, backgroundSize: 'cover' }}
     >
-      <div className='absolute inset-0 bg-black/60 z-0'></div>
+      <div className='absolute inset-0 bg-(--void-black)/80 z-0'></div>
 
       <div className='flex flex-col items-center w-full max-w-4xl mx-auto z-10'>
-        <div className='w-full flex flex-col md:flex-row justify-between items-end border-b-2 border-[var(--toxic-green)] pb-2 mb-6 gap-4 bg-black/80 p-4 rounded-t-sm'>
+        <div className='w-full flex flex-col md:flex-row justify-between items-end border-b-2 border-(--toxic-green) pb-2 mb-6 gap-4 bg-(--void-black)/80 p-4 rounded-t-sm'>
           <div>
-            <h2 className='text-2xl font-bold text-[var(--toxic-green)] tracking-[0.2em] relative'>
+            <h2 className='text-2xl font-bold text-(--toxic-green) tracking-[0.2em] relative'>
               <span className='relative z-10'>
                 {t('ui:minigames.kabelsalat.title')}
               </span>
               {isShocked && (
-                <span className='absolute top-0 left-0 text-[var(--blood-red)] translate-x-[2px] opacity-70 mix-blend-screen'>
+                <span className='absolute top-0 left-0 text-(--blood-red) translate-x-[2px] opacity-70 mix-blend-screen'>
                   {t('ui:minigames.kabelsalat.title')}
                 </span>
               )}
               {isShocked && (
-                <span className='absolute top-0 left-0 text-[var(--info-blue)] -translate-x-[2px] opacity-70 mix-blend-screen'>
+                <span className='absolute top-0 left-0 text-(--info-blue) -translate-x-[2px] opacity-70 mix-blend-screen'>
                   {t('ui:minigames.kabelsalat.title')}
                 </span>
               )}
             </h2>
-            <p className='text-xs text-[var(--ash-gray)] uppercase tracking-widest mt-1'>
+            <p className='text-xs text-(--ash-gray) uppercase tracking-widest mt-1'>
               {t('ui:minigames.kabelsalat.status')}:{' '}
               {isPoweredOn
                 ? t('ui:minigames.kabelsalat.statusConnected')
@@ -554,17 +557,17 @@ export const KabelsalatScene = () => {
           </div>
 
           <div
-            className={`flex items-center gap-4 px-4 py-2 border-2 transition-colors bg-black/50
+            className={`flex items-center gap-4 px-4 py-2 border-2 transition-colors bg-(--void-black)/50
             ${
               timeLeft <= 10
-                ? 'border-[var(--error-red)] text-[var(--error-red)] animate-pulse'
+                ? 'border-(--error-red) text-(--error-red) animate-pulse'
                 : isPoweredOn
-                  ? 'border-[var(--success-green)] text-[var(--success-green)]'
-                  : 'border-[var(--warning-yellow)] text-[var(--warning-yellow)]'
+                  ? 'border-(--success-green) text-(--success-green)'
+                  : 'border-(--warning-yellow) text-(--warning-yellow)'
             }`}
           >
             <span className='text-[10px] tracking-widest uppercase'>
-              T-MINUS
+              {t('ui:minigames.kabelsalat.tMinus')}
             </span>
             <span className='text-3xl font-bold tracking-widest'>
               {timeLeft}s
@@ -573,45 +576,45 @@ export const KabelsalatScene = () => {
         </div>
 
         <div
-          className={`relative w-full aspect-[4/3] border-4 bg-[var(--void-black)] transition-all duration-100 select-none overflow-hidden shadow-[inset_0_0_50px_rgba(0,0,0,0.8)]
+          className={`relative w-full aspect-[4/3] border-4 bg-(--void-black) transition-all duration-100 select-none overflow-hidden shadow-[inset_0_0_50px_rgba(0,0,0,0.8)]
             ${
               isShocked
-                ? 'border-[var(--error-red)] animate-[shake_0.1s_infinite]'
+                ? 'border-(--error-red) animate-[shake_0.1s_infinite]'
                 : isPoweredOn
-                  ? 'border-[var(--success-green)] shadow-[0_0_30px_var(--success-green)]'
+                  ? 'border-(--success-green) shadow-[0_0_30px_var(--success-green)]'
                   : isGameOver
-                    ? 'border-[var(--blood-red)]'
-                    : 'border-[var(--concrete-gray)]'
+                    ? 'border-(--blood-red)'
+                    : 'border-(--concrete-gray)'
             }`}
         >
           {isShocked && (
-            <div className='absolute inset-0 z-40 mix-blend-color-dodge flex flex-col items-center justify-center bg-[var(--blood-red)]/50 backdrop-blur-[2px]'>
-              <div className='bg-[var(--warning-yellow)] text-black text-5xl font-bold tracking-[0.3em] px-8 py-4 skew-x-[-15deg] shadow-[0_0_50px_var(--warning-yellow)]'>
+            <div className='absolute inset-0 z-40 mix-blend-color-dodge flex flex-col items-center justify-center bg-(--blood-red)/50 backdrop-blur-[2px]'>
+              <div className='bg-(--warning-yellow) text-(--void-black) text-5xl font-bold tracking-[0.3em] px-8 py-4 skew-x-[-15deg] shadow-[0_0_50px_var(--warning-yellow)]'>
                 {t('ui:minigames.kabelsalat.systemShock')}
               </div>
-              <div className='mt-6 bg-black text-white text-xl font-bold tracking-widest uppercase px-6 py-2 border-2 border-white'>
+              <div className='mt-6 bg-(--void-black) text-(--star-white) text-xl font-bold tracking-widest uppercase px-6 py-2 border-2 border-(--star-white)'>
                 {faultReason}
               </div>
             </div>
           )}
 
           {isGameOver && !isShocked && (
-            <div className='absolute inset-0 z-40 flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm'>
-              <h3 className='text-[var(--error-red)] text-5xl font-bold tracking-[0.3em] mb-4 drop-shadow-[0_0_15px_var(--error-red)] text-center'>
+            <div className='absolute inset-0 z-40 flex flex-col items-center justify-center bg-(--void-black)/90 backdrop-blur-sm'>
+              <h3 className='text-(--error-red) text-5xl font-bold tracking-[0.3em] mb-4 drop-shadow-[0_0_15px_var(--error-red)] text-center'>
                 {t('ui:minigames.kabelsalat.timeUp')}
               </h3>
-              <p className='text-[var(--ash-gray)] tracking-widest uppercase mb-8 text-center'>
+              <p className='text-(--ash-gray) tracking-widest uppercase mb-8 text-center'>
                 {t('ui:minigames.kabelsalat.managerMad')}
               </p>
             </div>
           )}
 
           {isPoweredOn && (
-            <div className='absolute inset-0 z-40 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-1000'>
-              <h3 className='text-[var(--success-green)] text-4xl font-bold tracking-[0.3em] mb-2 drop-shadow-[0_0_15px_var(--success-green)] text-center'>
+            <div className='absolute inset-0 z-40 flex flex-col items-center justify-center bg-(--void-black)/60 backdrop-blur-sm transition-all duration-1000'>
+              <h3 className='text-(--success-green) text-4xl font-bold tracking-[0.3em] mb-2 drop-shadow-[0_0_15px_var(--success-green)] text-center'>
                 {t('ui:minigames.kabelsalat.success')}
               </h3>
-              <p className='text-[var(--ash-gray)] tracking-widest uppercase mb-8 text-center max-w-sm'>
+              <p className='text-(--ash-gray) tracking-widest uppercase mb-8 text-center max-w-sm'>
                 {t('ui:minigames.kabelsalat.ampsReady')}
               </p>
             </div>
@@ -623,7 +626,10 @@ export const KabelsalatScene = () => {
             viewBox='0 0 800 600'
             preserveAspectRatio='xMidYMid meet'
             className='absolute inset-0 z-10'
+            role='img'
+            aria-label={t('ui:minigames.kabelsalat.title')}
           >
+            <title>{t('ui:minigames.kabelsalat.title')}</title>
             <rect
               x='40'
               y='20'
@@ -667,7 +673,19 @@ export const KabelsalatScene = () => {
             >
               PWR
             </text>
-            {renderLightning()}
+            {lightningSeeds.map((seed, i) => (
+              <path
+                key={i}
+                d={`M ${seed.startX} 0 L ${seed.startX + seed.o1} 200 L ${seed.startX + seed.o2} 400 L ${seed.startX + seed.o3} 600`}
+                fill='none'
+                stroke='var(--warning-yellow)'
+                strokeWidth={seed.w}
+                className='animate-[flash_0.05s_infinite]'
+                style={{
+                  filter: 'drop-shadow(0 0 20px var(--warning-yellow))'
+                }}
+              />
+            ))}
             {Object.entries(connections).map(([sockId, cabId]) => {
               const cable = CABLES.find(c => c.id === cabId)
               const isActive = isPowerConnected || cabId === 'iec'
@@ -711,8 +729,19 @@ export const KabelsalatScene = () => {
                   key={socketId}
                   transform={`translate(${x}, ${y})`}
                   onClick={() => handleSocketClick(socketId)}
-                  className={`transition-transform duration-500 ease-in-out ${!isConnected && selectedCable && !isGameOver ? 'cursor-pointer group' : ''}`}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      handleSocketClick(socketId)
+                    }
+                  }}
+                  role='button'
+                  tabIndex={
+                    !isConnected && selectedCable && !isGameOver ? 0 : -1
+                  }
+                  className={`transition-transform duration-500 ease-in-out ${!isConnected && selectedCable && !isGameOver ? 'cursor-pointer group' : 'outline-hidden'}`}
                   style={{ color: socketDisplayColor }}
+                  aria-label={`Socket ${socket.label}`}
                 >
                   {selectedCable && !isConnected && !isGameOver && (
                     <circle
@@ -793,19 +822,28 @@ export const KabelsalatScene = () => {
                   key={cable.id}
                   transform={`translate(${cable.x}, ${isSelected ? cable.y - 40 : cable.y})`}
                   onClick={() => handleCableClick(cable.id)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      handleCableClick(cable.id)
+                    }
+                  }}
+                  role='button'
+                  tabIndex={!isConnected && !isShocked && !isGameOver ? 0 : -1}
                   className={
                     !isConnected && !isShocked && !isGameOver
                       ? 'cursor-pointer transition-transform duration-200 group'
-                      : 'transition-transform duration-200'
+                      : 'transition-transform duration-200 outline-hidden'
                   }
                   style={{ color: cable.color }}
+                  aria-label={`Cable ${cable.label}`}
                 >
                   <ellipse
                     cx='0'
                     cy='80'
                     rx='25'
                     ry='10'
-                    fill='black'
+                    fill='var(--void-black)'
                     opacity='0.8'
                   />
 
@@ -872,8 +910,8 @@ export const KabelsalatScene = () => {
           </svg>
         </div>
 
-        <div className='mt-6 border border-[var(--warning-yellow)] bg-[rgba(255,204,0,0.1)] p-4 text-sm text-[var(--warning-yellow)] max-w-4xl w-full'>
-          <h4 className='font-bold tracking-widest mb-2 border-b border-[var(--warning-yellow)]/30 pb-1'>
+        <div className='mt-6 border border-(--warning-yellow) bg-(--warning-yellow-10) p-4 text-sm text-(--warning-yellow) max-w-4xl w-full'>
+          <h4 className='font-bold tracking-widest mb-2 border-b border-(--warning-yellow)/30 pb-1'>
             == {t('ui:minigames.kabelsalat.rulesTitle')} ==
           </h4>
           <ul className='list-disc pl-4 space-y-1 opacity-80'>

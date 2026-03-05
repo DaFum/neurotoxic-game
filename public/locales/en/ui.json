@@ -663,6 +663,7 @@
       "statusConnected": "CONNECTED",
       "statusFailed": "GIG CANCELLED",
       "statusPending": "CABLE MESS DETECTED",
+      "tMinus": "T-MINUS",
       "systemShock": "SYSTEM SHOCK",
       "timeUp": "TIME'S UP",
       "managerMad": "The Stage Manager cancelled the gig.",
