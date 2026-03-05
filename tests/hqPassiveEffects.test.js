@@ -112,11 +112,11 @@ describe('HQ Passive Effects', () => {
 
     // Expected Mood: 99 (base) - 2 (drift) + 2 (coffee) = 99
     // Expected Stamina: 99 (base) - 5 (decay) + 3 (harmony boost) + 3 (sofa) = 100
-    // Expected Harmony: 99.5 (base) - 2 (drift) = 97.5 (Soundproofing NOT owned in this test case)
+    // Expected Harmony: 99.5 (base) - 2 (drift) = 97.5 -> 97 (clamped to int)
 
     assert.equal(band.members[0].mood, 99)
     assert.equal(band.members[0].stamina, 100)
-    assert.equal(band.harmony, 97.5)
+    assert.equal(band.harmony, 97)
   })
 
   test('passive boosts are clamped to 100 (properly)', () => {

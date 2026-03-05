@@ -94,6 +94,48 @@ test('Minigame State Transitions', async t => {
     assert.strictEqual(newState.minigame.gigId, 'gig_123')
   })
 
+  await t.test('START_KABELSALAT_MINIGAME updates state correctly', () => {
+    const action = {
+      type: ActionTypes.START_KABELSALAT_MINIGAME,
+      payload: { gigId: 'gig_123' }
+    }
+    const newState = gameReducer(initialState, action)
+
+    assert.strictEqual(newState.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
+    assert.strictEqual(newState.minigame.active, true)
+    assert.strictEqual(newState.minigame.type, MINIGAME_TYPES.KABELSALAT)
+    assert.strictEqual(newState.minigame.gigId, 'gig_123')
+  })
+
+  await t.test(
+    'COMPLETE_KABELSALAT_MINIGAME resets minigame state and applies economy effects',
+    () => {
+      const activeState = {
+        ...initialState,
+        player: { ...initialState.player, money: 1000 },
+        band: { ...initialState.band, harmony: 50 },
+        currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
+        minigame: {
+          active: true,
+          type: MINIGAME_TYPES.KABELSALAT
+        }
+      }
+      const action = {
+        type: ActionTypes.COMPLETE_KABELSALAT_MINIGAME,
+        payload: {
+          results: { isPoweredOn: true, timeLeft: 15 } // Base 50 + (15/5)*10 = 80 reward
+        }
+      }
+      const newState = gameReducer(activeState, action)
+
+      assert.deepStrictEqual(newState.minigame, initialState.minigame)
+
+      // Verify Economy Result applied correctly
+      assert.strictEqual(newState.player.money, 1080)
+      assert.strictEqual(newState.band.harmony, 50) // stress is 0
+    }
+  )
+
   await t.test(
     'COMPLETE_ROADIE_MINIGAME resets minigame state and applies economy effects',
     () => {

@@ -5,6 +5,7 @@
  */
 
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { handleError, StateError } from '../utils/errorHandler.js'
 import { checkTraitUnlocks } from '../utils/unlockCheck.js'
 import { applyTraitUnlocks } from '../utils/traitUtils.js'
@@ -22,6 +23,7 @@ import {
   applyUnlockHQ,
   applyPassive
 } from '../utils/purchaseLogicUtils.js'
+import { clampPlayerMoney } from '../utils/gameStateUtils.js'
 
 export { getPrimaryEffect } // Re-export for backward compatibility if needed, though we will update consumers.
 
@@ -43,6 +45,7 @@ export const usePurchaseLogic = ({
   updateBand,
   addToast
 }) => {
+  const { t } = useTranslation(['ui', 'items'])
   /**
    * Calculates the adjusted cost of an item based on active traits.
    */
@@ -84,7 +87,7 @@ export const usePurchaseLogic = ({
             }),
             {
               addToast,
-              fallbackMessage: 'Purchase failed: Invalid upgrade data.'
+              fallbackMessage: t('ui:shop.messages.invalidData', { defaultValue: 'Purchase failed: Invalid upgrade data.' })
             }
           )
           return false
@@ -101,19 +104,22 @@ export const usePurchaseLogic = ({
         const isOwned = isItemOwned(item, player, band)
 
         if (isOwned && !isConsumable) {
-          addToast('Already owned!', 'warning')
+          addToast(t('ui:shop.messages.alreadyOwned', { itemName: t(`items:${item.id}.name`, { defaultValue: item.name }) }), 'warning')
           return false
         }
 
         if (currencyValue < finalCost) {
-          addToast(`Not enough ${payingWithFame ? 'Fame' : 'Money'}!`, 'error')
+          addToast(t('ui:shop.messages.notEnough', {
+            currency: payingWithFame ? t('ui:shop.messages.fame') : t('ui:shop.messages.money'),
+            itemName: t(`items:${item.id}.name`, { defaultValue: item.name })
+          }), 'error')
           return false
         }
 
         // Build patches
         let playerPatch = payingWithFame
           ? { fame: Math.max(0, startingFame - finalCost) }
-          : { money: Math.max(0, startingMoney - finalCost) }
+          : { money: clampPlayerMoney(startingMoney - finalCost) }
 
         let bandPatch = null
 
@@ -160,7 +166,10 @@ export const usePurchaseLogic = ({
             bandPatch = result.bandPatch
             if (result.messages) {
               result.messages.forEach(msg => {
-                addToast(msg.message, msg.type)
+                const toastMsg = msg.messageKey
+                  ? t(msg.messageKey, { ...(msg.options || {}), defaultValue: msg.fallback || msg.message || msg.messageKey })
+                  : msg.message;
+                addToast(toastMsg, msg.type)
               })
             }
             break
@@ -185,7 +194,7 @@ export const usePurchaseLogic = ({
               }),
               {
                 addToast,
-                fallbackMessage: 'Purchase failed: Unknown effect type.'
+                fallbackMessage: t('ui:shop.messages.unknownEffect', { defaultValue: 'Purchase failed: Unknown effect type.' })
               }
             )
             return false
@@ -256,8 +265,11 @@ export const usePurchaseLogic = ({
           })
 
           // Show generated toasts
-          traitResult.toasts.forEach(t => {
-            addToast(t.message, t.type)
+          traitResult.toasts.forEach(toastItem => {
+            const toastMsg = toastItem.messageKey
+              ? t(toastItem.messageKey, { ...(toastItem.options || {}), defaultValue: toastItem.message })
+              : toastItem.message;
+            addToast(toastMsg, toastItem.type)
           })
         } else {
           // No unlocks — apply original bandPatch if it existed
@@ -265,15 +277,15 @@ export const usePurchaseLogic = ({
         }
 
         // Player update was already called above
-        addToast(`${item.name} purchased!`, 'success')
+        addToast(t('ui:shop.messages.purchaseSuccess', { itemName: t(`items:${item.id}.name`, { defaultValue: item.name }) }), 'success')
 
         return true
       } catch (error) {
-        handleError(error, { addToast, fallbackMessage: 'Purchase failed!' })
+        handleError(error, { addToast, fallbackMessage: t('ui:shop.messages.purchaseFailed', { defaultValue: 'Purchase failed!' }) })
         return false
       }
     },
-    [player, band, updatePlayer, updateBand, addToast]
+    [player, band, updatePlayer, updateBand, addToast, t]
   )
 
   /**

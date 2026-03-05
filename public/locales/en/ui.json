@@ -377,6 +377,12 @@
     "toxic": "TOXIC OVERLOAD"
   },
   "pregig": {
+    "effects": {
+      "telepathy": "TELEPATHY (Harmony > 80): Easier Hits",
+      "disconnect": "DISCONNECT (Harmony < 30): Notes Jitter",
+      "grumpy": "GRUMPY {{name}}: Guitar Score -50%",
+      "tired": "TIRED {{name}}: Rushing Tempo"
+    },
     "activeModifiers": "ACTIVE MODIFIERS",
     "allocation": "BUDGET ALLOCATION",
     "bandMeeting": {
@@ -579,6 +585,22 @@
   "tabs.setlist": "SETLIST",
   "tabs.settings": "SETTINGS",
   "tabs.shop": "SHOP",
+  "shop": {
+    "messages": {
+      "fame": "Fame",
+      "money": "Money",
+      "notEnough": "Not enough {{currency}} for {{itemName}}",
+      "posterWall": "Looks cool. Fame +10",
+      "soundproofing": "Less noise, more peace. Harmony +5",
+      "labelSigned": "Signed! +500€ Advance.",
+      "traitUnlocked": "Unlocked Trait: {{traitName}} ({{memberId}})",
+      "alreadyOwned": "Already owned {{itemName}}!",
+      "invalidData": "Purchase failed: Invalid upgrade data.",
+      "unknownEffect": "Purchase failed: Unknown effect type.",
+      "purchaseSuccess": "{{itemName}} purchased!",
+      "purchaseFailed": "Purchase failed!"
+    }
+  },
   "tabs.stats": "STATS",
   "tabs.upgrades": "UPGRADES",
   "terminal": {
