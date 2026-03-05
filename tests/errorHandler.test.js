@@ -5,6 +5,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import {
+  GameError,
   StateError,
   StorageError,
   AudioError,
@@ -15,6 +16,52 @@ import {
 } from '../src/utils/errorHandler.js'
 
 describe('Custom Error Classes', () => {
+  describe('GameError', () => {
+    it('should initialize with default values', () => {
+      const error = new GameError('Default error')
+      assert.strictEqual(error.name, 'GameError')
+      assert.strictEqual(error.message, 'Default error')
+      assert.strictEqual(error.category, ErrorCategory.UNKNOWN)
+      assert.strictEqual(error.severity, ErrorSeverity.MEDIUM)
+      assert.deepStrictEqual(error.context, {})
+      assert.strictEqual(error.recoverable, true)
+      assert.ok(typeof error.timestamp === 'number')
+    })
+
+    it('should initialize with custom values', () => {
+      const context = { foo: 'bar' }
+      const error = new GameError('Custom error', {
+        category: ErrorCategory.STATE,
+        severity: ErrorSeverity.HIGH,
+        context,
+        recoverable: false
+      })
+      assert.strictEqual(error.category, ErrorCategory.STATE)
+      assert.strictEqual(error.severity, ErrorSeverity.HIGH)
+      assert.deepStrictEqual(error.context, context)
+      assert.strictEqual(error.recoverable, false)
+    })
+
+    it('should produce a complete log object via toLogObject', () => {
+      const context = { data: 123 }
+      const error = new GameError('Log test', {
+        category: ErrorCategory.GAME_LOGIC,
+        severity: ErrorSeverity.CRITICAL,
+        context,
+        recoverable: true
+      })
+      const log = error.toLogObject()
+      assert.strictEqual(log.name, 'GameError')
+      assert.strictEqual(log.message, 'Log test')
+      assert.strictEqual(log.category, ErrorCategory.GAME_LOGIC)
+      assert.strictEqual(log.severity, ErrorSeverity.CRITICAL)
+      assert.deepStrictEqual(log.context, context)
+      assert.strictEqual(log.recoverable, true)
+      assert.strictEqual(log.timestamp, error.timestamp)
+      assert.strictEqual(log.stack, error.stack)
+    })
+  })
+
   describe('StateError', () => {
     it('should have correct name', () => {
       const error = new StateError('State error')
