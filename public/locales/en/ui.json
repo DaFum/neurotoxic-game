@@ -593,6 +593,7 @@
       "posterWall": "Looks cool. Fame +10",
       "soundproofing": "Less noise, more peace. Harmony +5",
       "labelSigned": "Signed! +500€ Advance.",
+      "traitUnlocked": "Unlocked Trait: {{traitName}} ({{memberId}})",
       "alreadyOwned": "Already owned {{itemName}}!",
       "invalidData": "Purchase failed: Invalid upgrade data.",
       "unknownEffect": "Purchase failed: Unknown effect type.",

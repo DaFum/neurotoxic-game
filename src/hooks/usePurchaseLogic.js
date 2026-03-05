@@ -167,7 +167,7 @@ export const usePurchaseLogic = ({
             if (result.messages) {
               result.messages.forEach(msg => {
                 const toastMsg = msg.messageKey
-                  ? t(`ui:shop.messages.${msg.messageKey}`, { defaultValue: msg.message || '' })
+                  ? t(`ui:shop.messages.${msg.messageKey}`, { defaultValue: msg.fallback || msg.message || msg.messageKey })
                   : msg.message;
                 addToast(toastMsg, msg.type)
               })
@@ -266,7 +266,10 @@ export const usePurchaseLogic = ({
 
           // Show generated toasts
           traitResult.toasts.forEach(toastItem => {
-            addToast(toastItem.message, toastItem.type)
+            const toastMsg = toastItem.messageKey
+              ? t(`ui:shop.messages.${toastItem.messageKey}`, { ...toastItem.options, defaultValue: toastItem.message })
+              : toastItem.message;
+            addToast(toastMsg, toastItem.type)
           })
         } else {
           // No unlocks — apply original bandPatch if it existed

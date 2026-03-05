@@ -128,8 +128,7 @@ test('Minigame State Transitions', async t => {
       }
       const newState = gameReducer(activeState, action)
 
-      assert.strictEqual(newState.minigame.active, false)
-      assert.strictEqual(newState.minigame.type, null)
+      assert.deepStrictEqual(newState.minigame, initialState.minigame)
 
       // Verify Economy Result applied correctly
       assert.strictEqual(newState.player.money, 1080)

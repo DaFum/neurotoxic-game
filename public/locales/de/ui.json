@@ -593,6 +593,7 @@
       "posterWall": "Sieht cool aus. Ruhm +10",
       "soundproofing": "Weniger Lärm, mehr Frieden. Harmonie +5",
       "labelSigned": "Unterschrieben! +500€ Vorschuss.",
+      "traitUnlocked": "Eigenschaft freigeschaltet: {{traitName}} ({{memberId}})",
       "alreadyOwned": "{{itemName}} bereits in Besitz!",
       "invalidData": "Kauf fehlgeschlagen: Ungültige Upgrade-Daten.",
       "unknownEffect": "Kauf fehlgeschlagen: Unbekannter Effekttyp.",
