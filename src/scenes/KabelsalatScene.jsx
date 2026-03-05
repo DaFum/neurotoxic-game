@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState.jsx'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
@@ -128,11 +128,16 @@ export const KabelsalatScene = () => {
   const [socketOrder, setSocketOrder] = useState(INITIAL_SOCKET_ORDER)
   const [lightningSeeds, setLightningSeeds] = useState([])
 
+  const timerRef = useRef(null)
+  const finishedRef = useRef(false)
+  const isWinningRef = useRef(false)
+
   // Generate deterministic seeds for lightning to avoid layout shift on every render
   useEffect(() => {
     if (isShocked && lightningSeeds.length === 0) {
       setLightningSeeds(
         Array.from({ length: 15 }).map(() => ({
+          id: Math.random().toString(36).substr(2, 9),
           startX: Math.random() * 800,
           o1: Math.random() * 300 - 150,
           o2: Math.random() * 300 - 150,
@@ -145,15 +150,17 @@ export const KabelsalatScene = () => {
     }
   }, [isShocked, lightningSeeds.length])
 
-  // Timer Logik - Fixed dependency array so it doesn't re-create interval every second
+  // Timer Logik
   useEffect(() => {
-    let timer
-    if (!isPoweredOn && !isGameOver) {
-      timer = setInterval(() => {
+    if (!isPoweredOn && !isGameOver && !isWinningRef.current && !finishedRef.current) {
+      timerRef.current = setInterval(() => {
         setTimeLeft(prev => {
           if (prev <= 1) {
-            setIsGameOver(true)
-            clearInterval(timer)
+            if (timerRef.current) clearInterval(timerRef.current)
+            if (!finishedRef.current && !isWinningRef.current) {
+              finishedRef.current = true
+              setIsGameOver(true)
+            }
             return 0
           }
           return prev - 1
@@ -161,13 +168,30 @@ export const KabelsalatScene = () => {
       }, 1000)
     }
     return () => {
-      if (timer) clearInterval(timer)
+      if (timerRef.current) clearInterval(timerRef.current)
     }
   }, [isPoweredOn, isGameOver])
 
-  // End Game Effects
+  // Process success scenario (delayed slightly for UX)
   useEffect(() => {
-    if (isPoweredOn) {
+    if (Object.keys(connections).length === Object.keys(SOCKET_DEFS).length) {
+      // Player successfully connected everything! Freeze timer instantly.
+      if (timerRef.current) clearInterval(timerRef.current)
+      isWinningRef.current = true
+
+      const animTimer = setTimeout(() => {
+        setIsPoweredOn(true)
+      }, 600)
+      return () => clearTimeout(animTimer)
+    }
+  }, [connections])
+
+  // End Game Effects
+  const transitionedRef = useRef(false)
+
+  useEffect(() => {
+    if (isPoweredOn && !transitionedRef.current) {
+      transitionedRef.current = true
       const timer = setTimeout(() => {
         completeKabelsalatMinigame({ isPoweredOn: true, timeLeft })
         changeScene('GIG')
@@ -177,7 +201,8 @@ export const KabelsalatScene = () => {
   }, [isPoweredOn, timeLeft, completeKabelsalatMinigame, changeScene])
 
   useEffect(() => {
-    if (isGameOver) {
+    if (isGameOver && !transitionedRef.current) {
+      transitionedRef.current = true
       const timer = setTimeout(() => {
         completeKabelsalatMinigame({ isPoweredOn: false, timeLeft: 0 })
         changeScene('GIG')
@@ -188,7 +213,7 @@ export const KabelsalatScene = () => {
 
   // Shuffle sockets
   useEffect(() => {
-    if (isPoweredOn || isGameOver || isShocked) return
+    if (isPoweredOn || isGameOver || isShocked || isWinningRef.current) return
 
     const interval = setInterval(() => {
       setSocketOrder(prevOrder => {
@@ -273,9 +298,6 @@ export const KabelsalatScene = () => {
 
       setConnections(prev => {
         const next = { ...prev, [socketId]: selectedCable }
-        if (Object.keys(next).length === Object.keys(SOCKET_DEFS).length) {
-          setTimeout(() => setIsPoweredOn(true), 600)
-        }
         return next
       })
       setSelectedCable(null)
@@ -683,9 +705,9 @@ export const KabelsalatScene = () => {
             >
               {t('ui:minigames.kabelsalat.pwrLabel')}
             </text>
-            {lightningSeeds.map((seed, i) => (
+            {lightningSeeds.map(seed => (
               <path
-                key={i}
+                key={seed.id}
                 d={`M ${seed.startX} 0 L ${seed.startX + seed.o1} 200 L ${seed.startX + seed.o2} 400 L ${seed.startX + seed.o3} 600`}
                 fill='none'
                 stroke='var(--warning-yellow)'
@@ -924,7 +946,7 @@ export const KabelsalatScene = () => {
           </svg>
         </div>
 
-        <div className='mt-6 border border-(--warning-yellow) bg-(--warning-yellow-10) p-4 text-sm text-(--warning-yellow) max-w-4xl w-full'>
+        <div className='mt-6 border border-(--warning-yellow) bg-(--warning-yellow)/10 p-4 text-sm text-(--warning-yellow) max-w-4xl w-full'>
           <h4 className='font-bold tracking-widest mb-2 border-b border-(--warning-yellow)/30 pb-1'>
             == {t('ui:minigames.kabelsalat.rulesTitle')} ==
           </h4>
