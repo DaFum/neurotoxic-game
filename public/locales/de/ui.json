@@ -682,6 +682,26 @@
         "rule2Label": "Regel 2",
         "rule2Text": "Synths (MIDI) und Mikrofone (XLR) benötigen zuerst einen aktiven AMP (JACK).",
         "penalty": "Ein Fehler reißt alle bestehenden Verbindungen wieder heraus."
+      },
+      "pwrLabel": "PWR",
+      "timeValue": "{{count}}s",
+      "cables": {
+        "midi": "MIDI",
+        "pwr": "PWR",
+        "jack": "JACK",
+        "xlr": "XLR",
+        "9v": "9V"
+      },
+      "sockets": {
+        "mic": "MIC_IN",
+        "amp": "AMP_IN",
+        "pedal": "9V_DC",
+        "power": "AC_230V",
+        "synth": "MIDI_IN"
+      },
+      "a11y": {
+        "socket": "Buchse {{label}}",
+        "cable": "Kabel {{label}}"
       }
     }
   }

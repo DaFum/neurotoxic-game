@@ -682,6 +682,26 @@
         "rule2Label": "Rule 2",
         "rule2Text": "Synths (MIDI) and mics (XLR) need an active AMP (JACK) first.",
         "penalty": "A mistake rips out all existing connections."
+      },
+      "pwrLabel": "PWR",
+      "timeValue": "{{count}}s",
+      "cables": {
+        "midi": "MIDI",
+        "pwr": "PWR",
+        "jack": "JACK",
+        "xlr": "XLR",
+        "9v": "9V"
+      },
+      "sockets": {
+        "mic": "MIC_IN",
+        "amp": "AMP_IN",
+        "pedal": "9V_DC",
+        "power": "AC_230V",
+        "synth": "MIDI_IN"
+      },
+      "a11y": {
+        "socket": "Socket {{label}}",
+        "cable": "Cable {{label}}"
       }
     }
   }

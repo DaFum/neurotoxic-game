@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState.jsx'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
@@ -36,7 +36,7 @@ const RackScrew = ({ x, y }) => (
 const CABLES = [
   {
     id: 'midi',
-    label: 'MIDI',
+    labelKey: 'ui:minigames.kabelsalat.cables.midi',
     type: 'midi',
     x: 120,
     y: 480,
@@ -44,7 +44,7 @@ const CABLES = [
   },
   {
     id: 'iec',
-    label: 'PWR',
+    labelKey: 'ui:minigames.kabelsalat.cables.pwr',
     type: 'iec',
     x: 260,
     y: 480,
@@ -52,7 +52,7 @@ const CABLES = [
   },
   {
     id: 'jack',
-    label: 'JACK',
+    labelKey: 'ui:minigames.kabelsalat.cables.jack',
     type: 'jack',
     x: 400,
     y: 480,
@@ -60,7 +60,7 @@ const CABLES = [
   },
   {
     id: 'xlr',
-    label: 'XLR',
+    labelKey: 'ui:minigames.kabelsalat.cables.xlr',
     type: 'xlr',
     x: 540,
     y: 480,
@@ -68,7 +68,7 @@ const CABLES = [
   },
   {
     id: 'dc',
-    label: '9V',
+    labelKey: 'ui:minigames.kabelsalat.cables.9v',
     type: 'dc',
     x: 680,
     y: 480,
@@ -79,23 +79,33 @@ const CABLES = [
 const SLOT_XS = [120, 260, 400, 540, 680]
 
 const SOCKET_DEFS = {
-  mic: { id: 'mic', label: 'MIC_IN', type: 'xlr', color: 'var(--toxic-green)' },
+  mic: {
+    id: 'mic',
+    labelKey: 'ui:minigames.kabelsalat.sockets.mic',
+    type: 'xlr',
+    color: 'var(--toxic-green)'
+  },
   amp: {
     id: 'amp',
-    label: 'AMP_IN',
+    labelKey: 'ui:minigames.kabelsalat.sockets.amp',
     type: 'jack',
     color: 'var(--warning-yellow)'
   },
-  pedal: { id: 'pedal', label: '9V_DC', type: 'dc', color: 'var(--info-blue)' },
+  pedal: {
+    id: 'pedal',
+    labelKey: 'ui:minigames.kabelsalat.sockets.pedal',
+    type: 'dc',
+    color: 'var(--info-blue)'
+  },
   power: {
     id: 'power',
-    label: 'AC_230V',
+    labelKey: 'ui:minigames.kabelsalat.sockets.power',
     type: 'iec',
     color: 'var(--blood-red)'
   },
   synth: {
     id: 'synth',
-    label: 'MIDI_IN',
+    labelKey: 'ui:minigames.kabelsalat.sockets.synth',
     type: 'midi',
     color: 'var(--cosmic-purple)'
   }
@@ -570,13 +580,13 @@ export const KabelsalatScene = () => {
               {t('ui:minigames.kabelsalat.tMinus')}
             </span>
             <span className='text-3xl font-bold tracking-widest'>
-              {timeLeft}s
+              {t('ui:minigames.kabelsalat.timeValue', { count: timeLeft })}
             </span>
           </div>
         </div>
 
         <div
-          className={`relative w-full aspect-[4/3] border-4 bg-(--void-black) transition-all duration-100 select-none overflow-hidden shadow-[inset_0_0_50px_rgba(0,0,0,0.8)]
+          className={`relative w-full aspect-[4/3] border-4 bg-(--void-black) transition-all duration-100 select-none overflow-hidden shadow-[inset_0_0_50px_var(--shadow-black)]
             ${
               isShocked
                 ? 'border-(--error-red) animate-[shake_0.1s_infinite]'
@@ -671,7 +681,7 @@ export const KabelsalatScene = () => {
               textAnchor='middle'
               className='font-mono tracking-widest'
             >
-              PWR
+              {t('ui:minigames.kabelsalat.pwrLabel')}
             </text>
             {lightningSeeds.map((seed, i) => (
               <path
@@ -705,7 +715,7 @@ export const KabelsalatScene = () => {
                   style={{
                     filter: isActive
                       ? `drop-shadow(0 5px 10px ${cable.color})`
-                      : `drop-shadow(0 10px 10px rgba(0,0,0,0.8))`
+                      : `drop-shadow(0 10px 10px var(--shadow-black))`
                   }}
                 />
               )
@@ -741,7 +751,9 @@ export const KabelsalatScene = () => {
                   }
                   className={`transition-transform duration-500 ease-in-out ${!isConnected && selectedCable && !isGameOver ? 'cursor-pointer group' : 'outline-hidden'}`}
                   style={{ color: socketDisplayColor }}
-                  aria-label={`Socket ${socket.label}`}
+                  aria-label={t('ui:minigames.kabelsalat.a11y.socket', {
+                    label: t(socket.labelKey)
+                  })}
                 >
                   {selectedCable && !isConnected && !isGameOver && (
                     <circle
@@ -796,7 +808,7 @@ export const KabelsalatScene = () => {
                     textAnchor='middle'
                     className='font-mono font-bold tracking-widest'
                   >
-                    {socket.label}
+                    {t(socket.labelKey)}
                   </text>
 
                   {isConnected && (
@@ -836,7 +848,9 @@ export const KabelsalatScene = () => {
                       : 'transition-transform duration-200 outline-hidden'
                   }
                   style={{ color: cable.color }}
-                  aria-label={`Cable ${cable.label}`}
+                  aria-label={t('ui:minigames.kabelsalat.a11y.cable', {
+                    label: t(cable.labelKey)
+                  })}
                 >
                   <ellipse
                     cx='0'
@@ -855,7 +869,7 @@ export const KabelsalatScene = () => {
                         strokeWidth='12'
                         fill='none'
                         style={{
-                          filter: `drop-shadow(0 5px 5px rgba(0,0,0,0.5))`
+                          filter: `drop-shadow(0 5px 5px var(--shadow-black))`
                         }}
                       />
 
@@ -900,7 +914,7 @@ export const KabelsalatScene = () => {
                         textAnchor='middle'
                         className='font-mono font-bold tracking-widest'
                       >
-                        {cable.label}
+                        {t(cable.labelKey)}
                       </text>
                     </>
                   )}
