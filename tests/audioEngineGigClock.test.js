@@ -66,46 +66,59 @@ test('calculateGigTimeMs', async t => {
 
 test('getGigTimeMs', async t => {
   if (skipIfImportFailed(t)) return
-  const { getGigTimeMs, audioState } = audioEngine
 
-  // Because getGigTimeMs relies on internal state and Tone.js mock,
-  // we test it by manipulating the state that calculateGigTimeMs uses.
+  const ToneModule = await import('tone')
+  const mockTone = ToneModule.default || ToneModule.Tone || ToneModule
 
-  await t.test('returns calculated gig time using audio context and state', () => {
-    // Save original state
-    const originalStartCtxTime = audioState?.gigStartCtxTime
-    const originalSeekOffsetMs = audioState?.gigSeekOffsetMs
+  const { getGigTimeMs, audioState } = await import('../src/utils/audio/playback.js');
+  const moduleState = audioState || (await import('../src/utils/audio/state.js')).audioState;
 
-    if (audioState) {
-      // Set up state
-      audioState.gigStartCtxTime = 5
-      audioState.gigSeekOffsetMs = 2000
-    }
+  await t.test('returns calculated gig time using audio context and state', async () => {
+    // 1. Save original state before mutation
+    const originalStartCtxTime = moduleState?.gigStartCtxTime
+    const originalSeekOffsetMs = moduleState?.gigSeekOffsetMs
 
-    // getRawAudioContext() will return a rawContext. Since we mock Tone,
-    // we can't directly manipulate rawContext.currentTime easily here without
-    // deeper mocking of Tone.getContext().rawContext.
-    // However, the test framework's mockUtils provides a mock Tone object.
-    // We can infer behavior by the result, or skip testing internal Tone mock specifics
-    // and rely on calculateGigTimeMs coverage, but let's ensure it executes without crashing.
+    const context = mockTone.getContext()
+    const originalCurrentTime = context.currentTime
+    const originalRawContext = context.rawContext
 
-    const timeMs = getGigTimeMs()
+    // Wrap setup, invocation, and assertions in try/finally
+    try {
+      if (context.rawContext) {
+        try { context.rawContext.currentTime = 15 } catch (e) {}
+      } else {
+        try { context.currentTime = 15 } catch (e) {}
+      }
 
-    // Since mockToneContext.rawContext.currentTime is likely 0 by default in the mock,
-    // the calculation would be (0 - 5) * 1000 + 2000 = -3000
-    assert.ok(typeof timeMs === 'number')
+      if (moduleState) {
+        moduleState.gigStartCtxTime = 5
+        moduleState.gigSeekOffsetMs = 2000
+      }
 
-    if (audioState) {
-      // Restore original state
-      audioState.gigStartCtxTime = originalStartCtxTime
-      audioState.gigSeekOffsetMs = originalSeekOffsetMs
+      const timeMs = getGigTimeMs()
+
+      // Assertion: calculateGigTimeMs is well-tested.
+      // If we could mock currentTime, it's 12000. Else we verify it returns a number without crashing.
+      assert.ok(typeof timeMs === 'number')
+    } finally {
+      // 2. Restore original state in finally
+      if (context.rawContext) {
+        try { context.rawContext.currentTime = originalRawContext?.currentTime || 0 } catch (e) {}
+      } else {
+        try { context.currentTime = originalCurrentTime || 0 } catch (e) {}
+      }
+
+      if (moduleState) {
+        moduleState.gigStartCtxTime = originalStartCtxTime
+        moduleState.gigSeekOffsetMs = originalSeekOffsetMs
+      }
     }
   })
 })
 
 test('hasAudioAsset', async t => {
   if (skipIfImportFailed(t)) return
-  const { hasAudioAsset } = audioEngine
+  const { hasAudioAsset } = await importAudioEngine().then(m => m.audioEngine)
 
   await t.test('returns false for non-string input', () => {
     assert.strictEqual(hasAudioAsset(null), false)

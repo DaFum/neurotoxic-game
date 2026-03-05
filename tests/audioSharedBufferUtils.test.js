@@ -20,6 +20,11 @@ test('createAndConnectBufferSource', async t => {
   const { audioState } = await import('../src/utils/audio/state.js')
   const { createAndConnectBufferSource } = await import('../src/utils/audio/sharedBufferUtils.js')
 
+  t.afterEach(() => {
+    audioState.musicGain = null
+    globalThis.__mockRawContext = null
+  })
+
   await t.test('creates source, connects to musicGain.input, and wires onEnded', () => {
     let connectedTo = null
     const mockSource = { connect: (node) => { connectedTo = node } }
@@ -47,9 +52,6 @@ test('createAndConnectBufferSource', async t => {
 
     result.onended()
     assert.strictEqual(onEndedCalled, true)
-
-    audioState.musicGain = null
-    globalThis.__mockRawContext = null
   })
 
   await t.test('connects directly to musicGain if no input prop', () => {
@@ -68,9 +70,6 @@ test('createAndConnectBufferSource', async t => {
     assert.strictEqual(result, mockSource)
     assert.strictEqual(connectedTo, mockGain)
     assert.strictEqual(result.onended, undefined)
-
-    audioState.musicGain = null
-    globalThis.__mockRawContext = null
   })
 
   await t.test('returns null if musicGain is missing', () => {
@@ -85,7 +84,5 @@ test('createAndConnectBufferSource', async t => {
     const result = createAndConnectBufferSource({})
 
     assert.strictEqual(result, null)
-
-    globalThis.__mockRawContext = null
   })
 })

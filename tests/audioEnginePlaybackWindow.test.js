@@ -35,17 +35,24 @@ test('playSFX', async t => {
     assert.strictEqual(calls.length, 4) // cash makes 2 calls
     assert.strictEqual(calls[2][0], 'B5')
 
-    playSFX('travel')
-    // tests drum kit kick fallback
-    assert.strictEqual(calls.length, 5)
-    assert.strictEqual(calls[4][0], 'G1') // fallback travel
+    const originalDrumKit = moduleState.drumKit
+    try {
+      // simulate no drum kit or missing kick drum
+      moduleState.drumKit = null
 
-    // Test unknown type
-    playSFX('unknown-type')
-    assert.strictEqual(calls.length, 5) // Should not increase
+      playSFX('travel')
+      // tests drum kit kick fallback
+      assert.strictEqual(calls.length, 5)
+      assert.strictEqual(calls[4][0], 'G1') // fallback travel
 
-    moduleState.isSetup = false
-    moduleState.sfxSynth = null
+      // Test unknown type
+      playSFX('unknown-type')
+      assert.strictEqual(calls.length, 5) // Should not increase
+    } finally {
+      moduleState.drumKit = originalDrumKit
+      moduleState.isSetup = false
+      moduleState.sfxSynth = null
+    }
   })
 })
 

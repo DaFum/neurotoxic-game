@@ -13,11 +13,8 @@ test('translateLocation', async t => {
 
   await t.test('translates known location keys correctly', () => {
     assert.strictEqual(translateLocation(mockT, 'club'), 'The Underground Club')
-    // Wait, the logic for translateLocation:
-    // If it starts with VENUE_NAMESPACE ('venues:'), toVenueKey just returns it as is without the suffix.
-    // So toVenueKey('venues:festival') returns 'venues:festival'.
-    // Then t('venues:festival') is not 'venues:festival.name', so it falls through.
-    // Let's adjust the test to match the function's actual behavior for pre-prefixed venues.
+    // If a location is already prefixed with VENUE_NAMESPACE, toVenueKey returns it unmodified.
+    // Thus, fully qualified keys like 'venues:festival.name' are resolved directly.
     assert.strictEqual(translateLocation(mockT, 'venues:festival.name'), 'Open Air Festival')
   })
 

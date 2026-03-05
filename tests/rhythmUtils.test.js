@@ -13,28 +13,20 @@ describe('rhythmUtils', () => {
     test('generates notes using deterministic random and respects leadIn', () => {
       const song = {
         id: 'test-song',
-        duration: 10, // 10 seconds
-        bpm: 120, // 2 beats per second
+        duration: 10,
+        bpm: 120,
         difficulty: 2
       }
 
       const options = {
         leadIn: 3000,
-        random: () => 0.5 // constant random for deterministic testing
+        random: () => 0.5
       }
 
       const notes = generateNotesForSong(song, options)
 
-      // 10s at 120bpm = 20 total beats.
-      // At diff <= 2: beatInBar === 0 OR (i % 8 === 4 && random() > 0.2)
-      // i goes from 0 to 19.
-      // beatInBar = i % 4.
-      // So included beats:
-      // i=0 (beatInBar=0)
-      // i=4 (beatInBar=0, i%8=4, included by beatInBar=0)
-      // i=8 (beatInBar=0)
-      // i=12 (beatInBar=0, i%8=4)
-      // i=16 (beatInBar=0)
+      // Notes generated based on difficulty scaling and deterministic random.
+      // At 120bpm over 10s, 20 beats are checked. Difficulty <= 2 spawns 5 notes.
       assert.strictEqual(notes.length, 5)
 
       // First note should be at leadIn exactly because it's beat 0

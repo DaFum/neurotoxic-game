@@ -290,51 +290,59 @@ describe('handleError', () => {
 describe('initGlobalErrorHandling', () => {
   it('should initialize and catch unhandled promise rejections', () => {
     const originalWindow = globalThis.window
+    const INIT_SYMBOL = Symbol.for('neurotoxic:initGlobalErrorHandlingDone')
+    const originalSymbolValue = originalWindow ? originalWindow[INIT_SYMBOL] : undefined
 
     // Simulate window and listener registration
     let addedListener = null
-    // let dispatchEvent = null
+    let registrationCount = 0
 
-    globalThis.window = {
-      addEventListener: (evt, listener) => {
-        if (evt === 'unhandledrejection') {
-          addedListener = listener
-        }
-      },
-      dispatchEvent: () => {
-        // dispatchEvent = evt
+    try {
+      globalThis.window = {
+        addEventListener: (evt, listener) => {
+          if (evt === 'unhandledrejection') {
+            addedListener = listener
+            registrationCount++
+          }
+        },
+        dispatchEvent: () => {}
+      }
+
+      // reset symbol
+      globalThis.window[INIT_SYMBOL] = undefined
+
+      initGlobalErrorHandling()
+
+      assert.ok(addedListener !== null, 'Should have registered unhandledrejection listener')
+      assert.strictEqual(globalThis.window[INIT_SYMBOL], true, 'Should mark as initialized')
+
+      // Call again to test idempotence
+      initGlobalErrorHandling()
+
+      // Verify it was only registered once
+      assert.strictEqual(registrationCount, 1, 'Should only register the listener once')
+
+      // Test the listener directly with an Error
+      const errorEvent = { reason: new Error('unhandled error test') }
+      addedListener(errorEvent) // This should call handleError internally which we can't easily spy on,
+                                // but we know it should dispatch an event if severity is high enough,
+                                // but handleError is called with severity HIGH so it won't dispatch 'app:error:critical'.
+                                // We just ensure it doesn't throw.
+      assert.ok(true)
+
+      // Test with non-Error string
+      const stringEvent = { reason: 'some string reason' }
+      addedListener(stringEvent)
+
+      // Test with generic object
+      const objEvent = { reason: { foo: 'bar' } }
+      addedListener(objEvent)
+    } finally {
+      globalThis.window = originalWindow
+      if (globalThis.window) {
+        globalThis.window[INIT_SYMBOL] = originalSymbolValue
       }
     }
-
-    // reset symbol
-    const INIT_SYMBOL = Symbol.for('neurotoxic:initGlobalErrorHandlingDone')
-    globalThis.window[INIT_SYMBOL] = undefined
-
-    initGlobalErrorHandling()
-
-    assert.ok(addedListener !== null, 'Should have registered unhandledrejection listener')
-    assert.strictEqual(globalThis.window[INIT_SYMBOL], true, 'Should mark as initialized')
-
-    // Call again to test idempotence
-    initGlobalErrorHandling()
-
-    // Test the listener directly with an Error
-    const errorEvent = { reason: new Error('unhandled error test') }
-    addedListener(errorEvent) // This should call handleError internally which we can't easily spy on,
-                              // but we know it should dispatch an event if severity is high enough,
-                              // but handleError is called with severity HIGH so it won't dispatch 'app:error:critical'.
-                              // We just ensure it doesn't throw.
-    assert.ok(true)
-
-    // Test with non-Error string
-    const stringEvent = { reason: 'some string reason' }
-    addedListener(stringEvent)
-
-    // Test with generic object
-    const objEvent = { reason: { foo: 'bar' } }
-    addedListener(objEvent)
-
-    globalThis.window = originalWindow
   })
 })
 
