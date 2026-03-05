@@ -93,7 +93,7 @@ describe('PreGig', () => {
     // Clean up sessionStorage state to ensure isolated tests
     try {
       sessionStorage.removeItem('neurotoxic_last_minigame')
-    } catch (e) {
+    } catch (_e) {
       // Ignored
     }
 
@@ -108,7 +108,7 @@ describe('PreGig', () => {
     vi.restoreAllMocks()
     try {
       sessionStorage.removeItem('neurotoxic_last_minigame')
-    } catch (e) {
+    } catch (_e) {
       // Ignored
     }
   })
@@ -149,23 +149,30 @@ describe('PreGig', () => {
       expect(mockUseGameState.startRoadieMinigame).toHaveBeenCalledTimes(1)
       expect(mockUseGameState.startKabelsalatMinigame).toHaveBeenCalledTimes(0)
 
-      mockUseGameState.startRoadieMinigame.mockClear()
-      mockUseGameState.startKabelsalatMinigame.mockClear()
+    } finally {
+      // Clean up spy
+      if (Math.random.mockRestore) {
+        Math.random.mockRestore()
+      }
+    }
+  })
 
+  test('gives kabelsalat minigame a 50% chance to start', async () => {
+    mockUseGameState.setlist = [{ id: 'song1' }]
+
+    try {
       // Test Kabelsalat Minigame (Math.random >= 0.5)
       vi.spyOn(Math, 'random').mockReturnValue(0.6)
 
-      // Set isStarting back to false via remount, or we can just render a fresh one
-      const { findByText: findByText2 } = render(React.createElement(PreGig))
-      const startBtn2 = await findByText2(/ui:pregig.startShow/i)
-      fireEvent.click(startBtn2)
+      const { findByText } = render(React.createElement(PreGig))
+      const startBtn = await findByText(/ui:pregig.startShow/i)
+      fireEvent.click(startBtn)
 
       await new Promise(resolve => setTimeout(resolve, 0))
 
       expect(mockUseGameState.startKabelsalatMinigame).toHaveBeenCalledTimes(1)
       expect(mockUseGameState.startRoadieMinigame).toHaveBeenCalledTimes(0)
     } finally {
-      // Clean up spy
       if (Math.random.mockRestore) {
         Math.random.mockRestore()
       }

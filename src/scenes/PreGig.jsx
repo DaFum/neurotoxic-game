@@ -407,7 +407,7 @@ export const PreGig = () => {
             let lastMinigame = lastMinigameFallback
             try {
               lastMinigame = sessionStorage.getItem('neurotoxic_last_minigame') || lastMinigameFallback
-            } catch (storageErr) {
+            } catch (_storageErr) {
               // Ignore SecurityError or other storage errors
             }
 
@@ -424,7 +424,7 @@ export const PreGig = () => {
             lastMinigameFallback = chosenGame
             try {
               sessionStorage.setItem('neurotoxic_last_minigame', chosenGame)
-            } catch (storageErr) {
+            } catch (_storageErr) {
               // Ignore storage errors, relying on fallback
             }
 
