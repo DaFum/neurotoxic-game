@@ -456,7 +456,7 @@ export const eventEngine = {
     const processedEvent = { ...event, options: [...event.options] }
 
     if (
-      event.id.includes('van_breakdown') &&
+      event.id === 'van_breakdown_tire' &&
       (gameState.band?.inventory?.spare_tire > 0 ||
         gameState.band?.inventory?.spare_tire === true)
     ) {
