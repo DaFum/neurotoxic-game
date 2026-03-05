@@ -39,11 +39,13 @@ describe('useRoadieLogic', () => {
     mockCompleteRoadieMinigame.mock.resetCalls()
     mockChangeScene.mock.resetCalls()
     mockPlaySFX.mock.resetCalls()
+    mock.timers.enable({ apis: ['Date', 'setTimeout'] })
   })
 
   afterEach(() => {
     cleanup()
     teardownJSDOM()
+    mock.timers.reset()
     mock.reset()
   })
 
@@ -67,6 +69,10 @@ describe('useRoadieLogic', () => {
     const { result } = renderHook(() => useRoadieLogic())
     const game = result.current.gameStateRef.current
 
+    // Wait a little before the first move so lastMoveTime (which is 0) doesn't block it
+    // if Date.now() is returning 0 or a very small number initially due to mock timers
+    mock.timers.tick(1000)
+
     // Move Right
     act(() => {
       result.current.actions.move(1, 0)
@@ -74,7 +80,7 @@ describe('useRoadieLogic', () => {
     assert.deepEqual(game.playerPos, { x: 7, y: 0 })
 
     // Move Left (wait for cooldown)
-    game.lastMoveTime = 0 // Reset cooldown hack
+    mock.timers.tick(1000)
     act(() => {
       result.current.actions.move(-1, 0)
     })
@@ -82,7 +88,7 @@ describe('useRoadieLogic', () => {
 
     // Boundary Left
     game.playerPos.x = 0
-    game.lastMoveTime = 0
+    mock.timers.tick(1000)
     act(() => {
       result.current.actions.move(-1, 0)
     })
@@ -90,7 +96,7 @@ describe('useRoadieLogic', () => {
 
     // Boundary Right
     game.playerPos.x = GRID_WIDTH - 1
-    game.lastMoveTime = 0
+    mock.timers.tick(1000)
     act(() => {
       result.current.actions.move(1, 0)
     })
@@ -98,7 +104,7 @@ describe('useRoadieLogic', () => {
 
     // Boundary Up
     game.playerPos.y = 0
-    game.lastMoveTime = 0
+    mock.timers.tick(1000)
     act(() => {
       result.current.actions.move(0, -1)
     })
@@ -106,7 +112,7 @@ describe('useRoadieLogic', () => {
 
     // Boundary Down
     game.playerPos.y = GRID_HEIGHT - 1
-    game.lastMoveTime = 0
+    mock.timers.tick(1000)
     act(() => {
       result.current.actions.move(0, 1)
     })
@@ -119,7 +125,7 @@ describe('useRoadieLogic', () => {
 
     // Teleport to venue entrance
     game.playerPos = { x: 6, y: GRID_HEIGHT - 2 }
-    game.lastMoveTime = 0
+    mock.timers.tick(1000)
 
     // Move down into venue
     act(() => {
@@ -143,7 +149,7 @@ describe('useRoadieLogic', () => {
 
     // Teleport to start entrance
     game.playerPos = { x: 6, y: 1 }
-    game.lastMoveTime = 0
+    mock.timers.tick(1000)
 
     // Move up to start
     act(() => {
@@ -210,7 +216,7 @@ describe('useRoadieLogic', () => {
     game.itemsToDeliver = []
     game.carrying = { id: 'last-item', weight: 1 }
     game.playerPos = { x: 6, y: GRID_HEIGHT - 2 }
-    game.lastMoveTime = 0
+    mock.timers.tick(1000)
 
     // Move to finish
     act(() => {
