@@ -3,7 +3,6 @@ export async function load(url, context, nextLoad) {
   const result = await nextLoad(url, context)
 
   // Only process if we have source code
-  // Fix operator precedence: check existence first, then check type
   if (
     result.source &&
     (typeof result.source === 'string' || result.source instanceof Buffer)
