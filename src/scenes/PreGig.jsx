@@ -396,9 +396,21 @@ export const PreGig = () => {
             // Safe access for ID
             const gigId = currentGig?.id || `gig_${Date.now()}`
 
-            if (Math.random() < 0.5) {
+            // Simple streak breaker using sessionStorage
+            const lastMinigame = sessionStorage.getItem('neurotoxic_last_minigame')
+            let roadieChance = 0.5
+
+            if (lastMinigame === 'roadie') {
+              roadieChance = 0.25 // Reduce chance if played last
+            } else if (lastMinigame === 'kabelsalat') {
+              roadieChance = 0.75 // Increase chance if Kabelsalat played last
+            }
+
+            if (Math.random() < roadieChance) {
+              sessionStorage.setItem('neurotoxic_last_minigame', 'roadie')
               startRoadieMinigame(gigId)
             } else {
+              sessionStorage.setItem('neurotoxic_last_minigame', 'kabelsalat')
               startKabelsalatMinigame(gigId)
             }
           } catch (err) {
