@@ -70,7 +70,7 @@ export const ToastOverlay = () => {
                   className={`font-[Courier_New] text-sm leading-snug ${style.text}`}
                 >
                   {toast.messageKey
-                    ? t(`ui:shop.messages.${toast.messageKey}`, { ...(toast.options || {}), defaultValue: toast.message })
+                    ? t(toast.messageKey, { ...(toast.options || {}), defaultValue: toast.message })
                     : toast.message && toast.message.includes('|') && toast.message.startsWith('ui:')
                     ? (() => {
                         const firstPipeIdx = toast.message.indexOf('|')

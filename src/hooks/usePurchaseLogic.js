@@ -167,7 +167,7 @@ export const usePurchaseLogic = ({
             if (result.messages) {
               result.messages.forEach(msg => {
                 const toastMsg = msg.messageKey
-                  ? t(`ui:shop.messages.${msg.messageKey}`, { ...(msg.options || {}), defaultValue: msg.fallback || msg.message || msg.messageKey })
+                  ? t(msg.messageKey, { ...(msg.options || {}), defaultValue: msg.fallback || msg.message || msg.messageKey })
                   : msg.message;
                 addToast(toastMsg, msg.type)
               })
@@ -267,7 +267,7 @@ export const usePurchaseLogic = ({
           // Show generated toasts
           traitResult.toasts.forEach(toastItem => {
             const toastMsg = toastItem.messageKey
-              ? t(`ui:shop.messages.${toastItem.messageKey}`, { ...toastItem.options, defaultValue: toastItem.message })
+              ? t(toastItem.messageKey, { ...(toastItem.options || {}), defaultValue: toastItem.message })
               : toastItem.message;
             addToast(toastMsg, toastItem.type)
           })

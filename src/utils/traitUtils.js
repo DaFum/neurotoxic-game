@@ -66,7 +66,7 @@ export const applyTraitUnlocks = (currentState, unlocks) => {
     // Add toast with deterministic monotonic ID
     nextToasts.push({
       id: `trait-${Date.now()}-${++traitToastIdCounter}`,
-      messageKey: 'traitUnlocked',
+      messageKey: 'ui:shop.messages.traitUnlocked',
       options: { traitName: traitDef.name, memberId: u.memberId },
       message: `Unlocked Trait: ${traitDef.name} (${u.memberId})`,
       type: 'success'
