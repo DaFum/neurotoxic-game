@@ -42,7 +42,7 @@ test('getGigModifiers grants telepathy bonus for high harmony', () => {
     'Should grant 20ms bonus for high harmony'
   )
   assert.ok(
-    modifiers.activeEffects.some(e => e.includes('TELEPATHY')),
+    modifiers.activeEffects.some(e => e.fallback.includes('TELEPATHY')),
     'Should describe telepathy effect'
   )
 })
@@ -57,7 +57,7 @@ test('getGigModifiers applies disconnect penalty for low harmony', () => {
     'Should enable note jitter for low harmony'
   )
   assert.ok(
-    modifiers.activeEffects.some(e => e.includes('DISCONNECT')),
+    modifiers.activeEffects.some(e => e.fallback.includes('DISCONNECT')),
     'Should describe disconnect effect'
   )
 })
@@ -88,7 +88,7 @@ test('getGigModifiers applies grumpy Matze penalty', () => {
     'Grumpy Matze should halve guitar score'
   )
   assert.ok(
-    modifiers.activeEffects.some(e => e.includes('GRUMPY MATZE')),
+    modifiers.activeEffects.some(e => e.fallback.includes('GRUMPY MATZE')),
     'Should describe Matze effect'
   )
 })
@@ -114,7 +114,7 @@ test('getGigModifiers applies tired Marius speed increase', () => {
     'Tired Marius should speed up tempo'
   )
   assert.ok(
-    modifiers.activeEffects.some(e => e.includes('TIRED MARIUS')),
+    modifiers.activeEffects.some(e => e.fallback.includes('TIRED MARIUS')),
     'Should describe Marius effect'
   )
 })

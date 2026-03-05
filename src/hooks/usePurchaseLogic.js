@@ -23,6 +23,7 @@ import {
   applyUnlockHQ,
   applyPassive
 } from '../utils/purchaseLogicUtils.js'
+import { clampPlayerMoney } from '../utils/gameStateUtils.js'
 
 export { getPrimaryEffect } // Re-export for backward compatibility if needed, though we will update consumers.
 
@@ -44,7 +45,7 @@ export const usePurchaseLogic = ({
   updateBand,
   addToast
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['ui', 'items'])
   /**
    * Calculates the adjusted cost of an item based on active traits.
    */
@@ -118,7 +119,7 @@ export const usePurchaseLogic = ({
         // Build patches
         let playerPatch = payingWithFame
           ? { fame: Math.max(0, startingFame - finalCost) }
-          : { money: Math.max(0, startingMoney - finalCost) }
+          : { money: clampPlayerMoney(startingMoney - finalCost) }
 
         let bandPatch = null
 
@@ -165,7 +166,10 @@ export const usePurchaseLogic = ({
             bandPatch = result.bandPatch
             if (result.messages) {
               result.messages.forEach(msg => {
-                addToast(msg.message, msg.type)
+                const toastMsg = msg.messageKey
+                  ? t(`ui:shop.messages.${msg.messageKey}`, { defaultValue: msg.message || '' })
+                  : msg.message;
+                addToast(toastMsg, msg.type)
               })
             }
             break

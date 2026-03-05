@@ -377,6 +377,12 @@
     "toxic": "TOXIC OVERLOAD"
   },
   "pregig": {
+    "effects": {
+      "telepathy": "TELEPATHY (Harmony > 80): Easier Hits",
+      "disconnect": "DISCONNECT (Harmony < 30): Notes Jitter",
+      "grumpy": "GRUMPY {{name}}: Guitar Score -50%",
+      "tired": "TIRED {{name}}: Rushing Tempo"
+    },
     "activeModifiers": "ACTIVE MODIFIERS",
     "allocation": "BUDGET ALLOCATION",
     "bandMeeting": {
@@ -584,9 +590,9 @@
       "fame": "Fame",
       "money": "Money",
       "notEnough": "Not enough {{currency}} for {{itemName}}",
-      "posterWall": "Poster Wall",
-      "soundproofing": "Soundproofing",
-      "labelSigned": "You have already signed a label!",
+      "posterWall": "Looks cool. Fame +10",
+      "soundproofing": "Less noise, more peace. Harmony +5",
+      "labelSigned": "Signed! +500€ Advance.",
       "alreadyOwned": "Already owned {{itemName}}!",
       "invalidData": "Purchase failed: Invalid upgrade data.",
       "unknownEffect": "Purchase failed: Unknown effect type.",

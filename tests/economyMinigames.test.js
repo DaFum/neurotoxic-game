@@ -2,7 +2,8 @@ import { test } from 'node:test'
 import assert from 'node:assert'
 import {
   calculateTravelMinigameResult,
-  calculateRoadieMinigameResult
+  calculateRoadieMinigameResult,
+  calculateKabelsalatMinigameResult
 } from '../src/utils/economyEngine.js'
 
 test('Minigame Economy Calculations', async t => {
@@ -42,5 +43,38 @@ test('Minigame Economy Calculations', async t => {
     // Undefined/Null damage
     const resultNull = calculateRoadieMinigameResult(null)
     assert.strictEqual(resultNull.stress, 0)
+  })
+
+  await t.test('Kabelsalat Minigame Results', () => {
+    // Not powered on -> high stress, no reward
+    const resultFail = calculateKabelsalatMinigameResult(
+      { isPoweredOn: false, timeLeft: 0 },
+      { members: [] }
+    )
+    assert.strictEqual(resultFail.stress, 10)
+    assert.strictEqual(resultFail.reward, 0)
+
+    // Powered on, fast clear (25 seconds left)
+    // timeBonus = 25 / 5 = 5. reward = 50 + 5 * 10 = 100
+    const resultFast = calculateKabelsalatMinigameResult(
+      { isPoweredOn: true, timeLeft: 25 },
+      { members: [] }
+    )
+    assert.strictEqual(resultFast.stress, 0)
+    assert.strictEqual(resultFast.reward, 100)
+  })
+
+  await t.test('Kabelsalat Minigame Edge Cases', () => {
+    // With Matze's Tech Wizard trait -> reward multiplied by 1.5
+    const resultTrait = calculateKabelsalatMinigameResult(
+      { isPoweredOn: true, timeLeft: 25 }, // Base 100 reward
+      {
+        members: [
+          { name: 'Matze', traits: [{ id: 'tech_wizard' }] }
+        ]
+      }
+    )
+    assert.strictEqual(resultTrait.stress, 0)
+    assert.strictEqual(resultTrait.reward, 150) // 100 * 1.5
   })
 })

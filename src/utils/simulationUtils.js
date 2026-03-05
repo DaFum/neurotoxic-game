@@ -4,6 +4,7 @@ import { EXPENSE_CONSTANTS } from './economyEngine.js'
 import { applyReputationDecay } from './socialEngine.js'
 import { calcBaseBreakdownChance } from './upgradeUtils.js'
 import { hasTrait } from './traitLogic.js'
+import { clampPlayerMoney, clampBandHarmony } from './gameStateUtils.js'
 
 /**
  * Derives dynamic game modifiers for the Gig scene based on band state and active toggles.
@@ -26,10 +27,10 @@ export const getGigModifiers = (bandState, gigModifiers = {}) => {
   // 1. Harmony Logic
   if (bandState.harmony > 80) {
     modifiers.hitWindowBonus = 20 // ms
-    modifiers.activeEffects.push('TELEPATHY (Harmony > 80): Easier Hits')
+    modifiers.activeEffects.push({ key: 'ui:pregig.effects.telepathy', fallback: 'TELEPATHY (Harmony > 80): Easier Hits' })
   } else if (bandState.harmony < 30) {
     modifiers.noteJitter = true
-    modifiers.activeEffects.push('DISCONNECT (Harmony < 30): Notes Jitter')
+    modifiers.activeEffects.push({ key: 'ui:pregig.effects.disconnect', fallback: 'DISCONNECT (Harmony < 30): Notes Jitter' })
   }
 
   // 2. Member Status
@@ -37,18 +38,22 @@ export const getGigModifiers = (bandState, gigModifiers = {}) => {
   const matze = members.find(m => m.name === CHARACTERS.MATZE.name)
   if (matze && matze.mood < 20) {
     modifiers.guitarScoreMult = 0.5
-    modifiers.activeEffects.push(
-      `GRUMPY ${CHARACTERS.MATZE.name.toUpperCase()}: Guitar Score -50%`
-    )
+    modifiers.activeEffects.push({
+      key: 'ui:pregig.effects.grumpy',
+      options: { name: CHARACTERS.MATZE.name.toUpperCase() },
+      fallback: `GRUMPY ${CHARACTERS.MATZE.name.toUpperCase()}: Guitar Score -50%`
+    })
   }
 
   // Marius (Drums)
   const Marius = members.find(m => m.name === CHARACTERS.MARIUS.name)
   if (Marius && Marius.stamina < 20) {
     modifiers.drumSpeedMult = 1.2 // 20% faster
-    modifiers.activeEffects.push(
-      `TIRED ${CHARACTERS.MARIUS.name.toUpperCase()}: Rushing Tempo`
-    )
+    modifiers.activeEffects.push({
+      key: 'ui:pregig.effects.tired',
+      options: { name: CHARACTERS.MARIUS.name.toUpperCase() },
+      fallback: `TIRED ${CHARACTERS.MARIUS.name.toUpperCase()}: Rushing Tempo`
+    })
   }
 
   return modifiers
@@ -192,7 +197,7 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
     dailyCost -= Math.floor((nextSocial.newsletter || 0) / 100) * 5
   }
 
-  nextPlayer.money = Math.max(0, nextPlayer.money - dailyCost)
+  nextPlayer.money = clampPlayerMoney(nextPlayer.money - dailyCost)
 
   // Van condition decay (wear from daily travel)
   if (nextPlayer.van) {
@@ -294,7 +299,7 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
   }
 
   // Clamp harmony to valid range after all modifications
-  nextBand.harmony = Math.max(1, Math.min(100, nextBand.harmony))
+  nextBand.harmony = clampBandHarmony(nextBand.harmony)
 
   // 3. Social Decay
   nextSocial.viral = nextSocial.viral || 0

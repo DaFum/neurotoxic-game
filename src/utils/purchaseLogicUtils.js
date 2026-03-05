@@ -236,7 +236,7 @@ export const applyUnlockHQ = (item, playerPatch, player, band) => {
         (nextPlayerPatch.fame ?? player.fame ?? 0) + 10
       )
       nextPlayerPatch.fameLevel = calculateFameLevel(nextPlayerPatch.fame)
-      messages.push({ message: 'Looks cool. Fame +10', type: 'success' })
+      messages.push({ messageKey: 'posterWall', type: 'success' })
       break
 
     case 'hq_room_diy_soundproofing':
@@ -244,7 +244,7 @@ export const applyUnlockHQ = (item, playerPatch, player, band) => {
         harmony: clampBandHarmony((band.harmony ?? 0) + 5)
       }
       messages.push({
-        message: 'Less noise, more peace. Harmony +5',
+        messageKey: 'soundproofing',
         type: 'success'
       })
       break
@@ -253,7 +253,7 @@ export const applyUnlockHQ = (item, playerPatch, player, band) => {
       nextPlayerPatch.money = clampPlayerMoney(
         (nextPlayerPatch.money ?? player.money ?? 0) + 500
       )
-      messages.push({ message: 'Signed! +500€ Advance.', type: 'success' })
+      messages.push({ messageKey: 'labelSigned', type: 'success' })
       break
 
     case 'hq_room_coffee':

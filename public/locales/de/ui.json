@@ -377,6 +377,12 @@
     "toxic": "TOXISCHER OVERLOAD"
   },
   "pregig": {
+    "effects": {
+      "telepathy": "TELEPATHIE (Harmonie > 80): Leichtere Treffer",
+      "disconnect": "DISCONNECT (Harmonie < 30): Noten zittern",
+      "grumpy": "GRUMPY {{name}}: Gitarren-Score -50%",
+      "tired": "MÜDE {{name}}: Schnelleres Tempo"
+    },
     "activeModifiers": "AKTIVE MODIFIKATOREN",
     "allocation": "BUDGETVERTEILUNG",
     "bandMeeting": {
@@ -584,9 +590,9 @@
       "fame": "Ruhm",
       "money": "Geld",
       "notEnough": "Nicht genug {{currency}} für {{itemName}}",
-      "posterWall": "Posterwand",
-      "soundproofing": "Schalldämmung",
-      "labelSigned": "Du hast bereits bei einem Label unterschrieben!",
+      "posterWall": "Sieht cool aus. Ruhm +10",
+      "soundproofing": "Weniger Lärm, mehr Frieden. Harmonie +5",
+      "labelSigned": "Unterschrieben! +500€ Vorschuss.",
       "alreadyOwned": "{{itemName}} bereits in Besitz!",
       "invalidData": "Kauf fehlgeschlagen: Ungültige Upgrade-Daten.",
       "unknownEffect": "Kauf fehlgeschlagen: Unbekannter Effekttyp.",
