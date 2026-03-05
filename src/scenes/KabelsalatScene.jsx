@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState.jsx'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
+import { loadTexture } from '../components/stage/utils.js'
 
 // --- SVG HARDWARE DEKORATIONEN ---
 const RackScrew = ({ x, y }) => (
@@ -127,10 +128,12 @@ export const KabelsalatScene = () => {
   const [isGameOver, setIsGameOver] = useState(false)
   const [socketOrder, setSocketOrder] = useState(INITIAL_SOCKET_ORDER)
   const [lightningSeeds, setLightningSeeds] = useState([])
+  const [bgTextureUrl, setBgTextureUrl] = useState(null)
 
   const timerRef = useRef(null)
   const finishedRef = useRef(false)
   const isWinningRef = useRef(false)
+  const shockTimeoutRef = useRef(null)
 
   // Generate deterministic seeds for lightning to avoid layout shift on every render
   useEffect(() => {
@@ -211,6 +214,30 @@ export const KabelsalatScene = () => {
     }
   }, [isGameOver, completeKabelsalatMinigame, changeScene])
 
+  useEffect(() => {
+    let isMounted = true
+    const fetchTexture = async () => {
+      try {
+        const rawUrl = getGenImageUrl(IMG_PROMPTS.MINIGAME_KABELSALAT_BG)
+        const texture = await loadTexture(rawUrl)
+        if (isMounted && texture && texture.source && texture.source.resource) {
+          // If the texture was loaded from a blob/src, we can often just use the rawUrl,
+          // but specifically loadTexture fetches it so it's in the cache/blob.
+          // For DOM elements, we need the src string.
+          setBgTextureUrl(texture.source.resource.src || rawUrl)
+        } else if (isMounted) {
+          setBgTextureUrl(rawUrl)
+        }
+      } catch (err) {
+        console.warn('Failed to load Kabelsalat background texture', err)
+      }
+    }
+    fetchTexture()
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
   // Shuffle sockets
   useEffect(() => {
     if (isPoweredOn || isGameOver || isShocked || isWinningRef.current) return
@@ -260,10 +287,21 @@ export const KabelsalatScene = () => {
     setSelectedCable(null)
     setConnections({})
 
-    setTimeout(() => {
+    if (shockTimeoutRef.current) {
+      clearTimeout(shockTimeoutRef.current)
+    }
+
+    shockTimeoutRef.current = setTimeout(() => {
       setIsShocked(false)
       setFaultReason('')
+      shockTimeoutRef.current = null
     }, 1200)
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (shockTimeoutRef.current) clearTimeout(shockTimeoutRef.current)
+    }
   }, [])
 
   const handleSocketClick = useCallback(
@@ -551,12 +589,11 @@ export const KabelsalatScene = () => {
   }
 
   const isPowerConnected = !!connections['power']
-  const bgUrl = getGenImageUrl(IMG_PROMPTS.MINIGAME_KABELSALAT_BG)
 
   return (
     <div
-      className='flex flex-col items-center justify-center w-full min-h-screen relative p-4'
-      style={{ backgroundImage: `url(${bgUrl})`, backgroundSize: 'cover' }}
+      className={`flex flex-col items-center justify-center w-full min-h-screen relative p-4 ${!bgTextureUrl ? 'opacity-0' : 'opacity-100 transition-opacity duration-300'}`}
+      style={bgTextureUrl ? { backgroundImage: `url(${bgTextureUrl})`, backgroundSize: 'cover' } : {}}
     >
       <div className='absolute inset-0 bg-(--void-black)/80 z-0'></div>
 
