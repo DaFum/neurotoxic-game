@@ -253,6 +253,7 @@ test('eventEngine.processOptions returns event when no processing needed', () =>
 test('eventEngine.processOptions handles van_breakdown with spare_tire', () => {
   const event = {
     ...TEST_EVENT_VAN_BREAKDOWN,
+    id: 'van_breakdown_tire',
     options: [...TEST_EVENT_VAN_BREAKDOWN.options]
   }
   const state = buildGameState({
@@ -263,7 +264,7 @@ test('eventEngine.processOptions handles van_breakdown with spare_tire', () => {
 
   assert.ok(result, 'Should return modified event')
   const spareTireOption = result.options.find(
-    opt => opt.label === 'Use Spare Tire (Inventory)'
+    opt => opt.label === 'events:van_breakdown_tire.opt3.label'
   )
   assert.ok(
     spareTireOption,
@@ -274,6 +275,7 @@ test('eventEngine.processOptions handles van_breakdown with spare_tire', () => {
 test('eventEngine.processOptions does not add spare tire option without inventory', () => {
   const event = {
     ...TEST_EVENT_VAN_BREAKDOWN,
+    id: 'van_breakdown_tire',
     options: [...TEST_EVENT_VAN_BREAKDOWN.options]
   }
   const state = buildGameState({
