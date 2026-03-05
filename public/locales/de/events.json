@@ -717,6 +717,8 @@
   "van_breakdown_tire.opt2.d_f283": "Schnelle Lösung!",
   "van_breakdown_tire.opt2.label": "Selbst wechseln [Ausdauer Check]",
   "van_breakdown_tire.opt2.outcome": "Du hast entschieden, dir die Hände schmutzig zu machen.",
+  "spare_tire_option.label": "Ersatzreifen verwenden (Inventar)",
+  "spare_tire_option.outcome": "Du hast den Reifen in Rekordzeit gewechselt.",
   "van_breakdown_tire.title": "VAN-PANNE: REIFEN",
   "van_cleaning_fee.desc": "Du gibst einen Zimmerschlüssel ab und wirst für 'übermäßige Unordnung' belastet.",
   "van_cleaning_fee.opt1.label": "Bezahlen [-40€]",

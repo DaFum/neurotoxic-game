@@ -461,7 +461,7 @@ export const eventEngine = {
         gameState.band?.inventory?.spare_tire === true)
     ) {
       const spareTireOption = {
-        label: 'Use Spare Tire (Inventory)',
+        label: 'events:spare_tire_option.label',
         effect: {
           type: 'composite',
           effects: [
@@ -474,7 +474,7 @@ export const eventEngine = {
             }
           ]
         },
-        outcomeText: 'You swapped the tire in record time.'
+        outcomeText: 'events:spare_tire_option.outcome'
       }
       processedEvent.options.unshift(spareTireOption)
     }

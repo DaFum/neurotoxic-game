@@ -717,6 +717,8 @@
   "van_breakdown_tire.opt2.d_f283": "Quick fix!",
   "van_breakdown_tire.opt2.label": "Change it yourself [Stamina Check]",
   "van_breakdown_tire.opt2.outcome": "You decided to get your hands dirty.",
+  "spare_tire_option.label": "Use Spare Tire (Inventory)",
+  "spare_tire_option.outcome": "You swapped the tire in record time.",
   "van_breakdown_tire.title": "VAN BREAKDOWN: TIRE",
   "van_cleaning_fee.desc": "You return a room key and get charged for “excessive mess”.",
   "van_cleaning_fee.opt1.label": "Pay [-40€]",
