@@ -78,6 +78,11 @@ const CABLES = [
   }
 ]
 
+const CABLE_MAP = CABLES.reduce((acc, cable) => {
+  acc[cable.id] = cable
+  return acc
+}, {})
+
 const SLOT_XS = [120, 260, 400, 540, 680]
 
 const SOCKET_DEFS = {
@@ -315,7 +320,7 @@ export const KabelsalatScene = () => {
       if (connections[socketId]) return
 
       const targetSocket = SOCKET_DEFS[socketId]
-      const incomingCable = CABLES.find(c => c.id === selectedCable)
+      const incomingCable = CABLE_MAP[selectedCable]
 
       const hasPower = !!connections['power']
       const hasAmp = !!connections['amp']
@@ -358,7 +363,7 @@ export const KabelsalatScene = () => {
 
   const drawMessyPath = useCallback(
     (cableId, socketId) => {
-      const cable = CABLES.find(c => c.id === cableId)
+      const cable = CABLE_MAP[cableId]
       const socketIndex = socketOrder.indexOf(socketId)
       if (!cable || socketIndex === -1) return ''
 
@@ -761,7 +766,7 @@ export const KabelsalatScene = () => {
               />
             ))}
             {Object.entries(connections).map(([sockId, cabId]) => {
-              const cable = CABLES.find(c => c.id === cabId)
+              const cable = CABLE_MAP[cabId]
               const isActive = isPowerConnected || cabId === 'iec'
               const cableColor = isActive ? cable.color : 'var(--concrete-gray)'
 
@@ -791,7 +796,7 @@ export const KabelsalatScene = () => {
 
               const isConnected = !!connections[socketId]
               const connectedCable = isConnected
-                ? CABLES.find(c => c.id === connections[socketId])
+                ? CABLE_MAP[connections[socketId]]
                 : null
               const showColor = isPowerConnected
               const socketDisplayColor = showColor
