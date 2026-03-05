@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState.jsx'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 import { loadTexture } from '../components/stage/utils.js'
-import { logger } from '../utils/logger.js'
 
 // --- SVG HARDWARE DEKORATIONEN ---
 const RackScrew = ({ x, y }) => (
@@ -138,23 +137,21 @@ export const KabelsalatScene = () => {
 
   // Generate deterministic seeds for lightning to avoid layout shift on every render
   useEffect(() => {
-    // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-    setLightningSeeds((currentSeeds) => {
-      if (isShocked && currentSeeds.length === 0) {
-        return Array.from({ length: 15 }).map(() => ({
-          id: Math.random().toString(36).substr(2, 9),
+    if (isShocked && lightningSeeds.length === 0) {
+      setLightningSeeds(
+        Array.from({ length: 15 }).map(() => ({
+          id: Math.random().toString(36).slice(2, 11),
           startX: Math.random() * 800,
           o1: Math.random() * 300 - 150,
           o2: Math.random() * 300 - 150,
           o3: Math.random() * 300 - 150,
           w: Math.random() * 10 + 2
         }))
-      } else if (!isShocked && currentSeeds.length > 0) {
-        return []
-      }
-      return currentSeeds
-    })
-  }, [isShocked])
+      )
+    } else if (!isShocked && lightningSeeds.length > 0) {
+      setLightningSeeds([])
+    }
+  }, [isShocked, lightningSeeds.length])
 
   // Timer Logik
   useEffect(() => {
@@ -232,7 +229,7 @@ export const KabelsalatScene = () => {
           setBgTextureUrl(rawUrl)
         }
       } catch (err) {
-        logger.warn('Kabelsalat', 'Failed to load Kabelsalat background texture', err)
+        console.warn('Failed to load Kabelsalat background texture', err)
       }
     }
     fetchTexture()

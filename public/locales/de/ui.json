@@ -579,6 +579,21 @@
   "tabs.setlist": "SETLIST",
   "tabs.settings": "EINSTELLUNGEN",
   "tabs.shop": "SHOP",
+  "shop": {
+    "messages": {
+      "fame": "Ruhm",
+      "money": "Geld",
+      "notEnough": "Nicht genug {{currency}} für {{itemName}}",
+      "posterWall": "Posterwand",
+      "soundproofing": "Schalldämmung",
+      "labelSigned": "Du hast bereits bei einem Label unterschrieben!",
+      "alreadyOwned": "{{itemName}} bereits in Besitz!",
+      "invalidData": "Kauf fehlgeschlagen: Ungültige Upgrade-Daten.",
+      "unknownEffect": "Kauf fehlgeschlagen: Unbekannter Effekttyp.",
+      "purchaseSuccess": "{{itemName}} gekauft!",
+      "purchaseFailed": "Kauf fehlgeschlagen!"
+    }
+  },
   "tabs.stats": "STATISTIK",
   "tabs.upgrades": "UPGRADES",
   "terminal": {

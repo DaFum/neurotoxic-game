@@ -4,7 +4,6 @@ import { EXPENSE_CONSTANTS } from './economyEngine.js'
 import { applyReputationDecay } from './socialEngine.js'
 import { calcBaseBreakdownChance } from './upgradeUtils.js'
 import { hasTrait } from './traitLogic.js'
-import { clampPlayerMoney, clampBandHarmony } from './gameStateUtils.js'
 
 /**
  * Derives dynamic game modifiers for the Gig scene based on band state and active toggles.
@@ -193,7 +192,7 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
     dailyCost -= Math.floor((nextSocial.newsletter || 0) / 100) * 5
   }
 
-  nextPlayer.money = clampPlayerMoney(nextPlayer.money - dailyCost)
+  nextPlayer.money = Math.max(0, nextPlayer.money - dailyCost)
 
   // Van condition decay (wear from daily travel)
   if (nextPlayer.van) {
@@ -295,7 +294,7 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
   }
 
   // Clamp harmony to valid range after all modifications
-  nextBand.harmony = clampBandHarmony(nextBand.harmony)
+  nextBand.harmony = Math.max(1, Math.min(100, nextBand.harmony))
 
   // 3. Social Decay
   nextSocial.viral = nextSocial.viral || 0
@@ -409,11 +408,11 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
 
   // Soundproofing: Harmony boost
   if (hqUpgrades.includes('hq_room_diy_soundproofing')) {
-    nextBand.harmony = clampBandHarmony(nextBand.harmony + 1)
+    nextBand.harmony = Math.min(100, nextBand.harmony + 1)
   }
 
   if (nextBand.harmonyRegenTravel) {
-    nextBand.harmony = clampBandHarmony(nextBand.harmony + 2) // Reduced from 5
+    nextBand.harmony = Math.min(100, nextBand.harmony + 2) // Reduced from 5
   }
   if (nextPlayer.passiveFollowers) {
     // Passive followers currently funnel into Instagram only

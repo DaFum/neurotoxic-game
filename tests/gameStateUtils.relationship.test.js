@@ -6,20 +6,20 @@ test('applyEventDelta applies basic relationship changes', () => {
   const state = {
     band: {
       members: [
-        { name: 'Alice', relationships: { Bob: 50 }, traits: [] },
-        { name: 'Bob', relationships: { Alice: 50 }, traits: [] }
+        { name: 'Matze', relationships: { Marius: 50 }, traits: [] },
+        { name: 'Marius', relationships: { Matze: 50 }, traits: [] }
       ]
     }
   }
   const delta = {
     band: {
-      relationshipChange: [{ member1: 'Alice', member2: 'Bob', change: 10 }]
+      relationshipChange: [{ member1: 'Matze', member2: 'Marius', change: 10 }]
     }
   }
 
   const nextState = applyEventDelta(state, delta)
-  assert.equal(nextState.band.members[0].relationships.Bob, 60)
-  assert.equal(nextState.band.members[1].relationships.Alice, 60)
+  assert.equal(nextState.band.members[0].relationships.Marius, 60)
+  assert.equal(nextState.band.members[1].relationships.Matze, 60)
 })
 
 test('applyEventDelta amplifies negative change for grudge_holder', () => {

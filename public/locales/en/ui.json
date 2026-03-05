@@ -579,6 +579,21 @@
   "tabs.setlist": "SETLIST",
   "tabs.settings": "SETTINGS",
   "tabs.shop": "SHOP",
+  "shop": {
+    "messages": {
+      "fame": "Fame",
+      "money": "Money",
+      "notEnough": "Not enough {{currency}} for {{itemName}}",
+      "posterWall": "Poster Wall",
+      "soundproofing": "Soundproofing",
+      "labelSigned": "You have already signed a label!",
+      "alreadyOwned": "Already owned {{itemName}}!",
+      "invalidData": "Purchase failed: Invalid upgrade data.",
+      "unknownEffect": "Purchase failed: Unknown effect type.",
+      "purchaseSuccess": "{{itemName}} purchased!",
+      "purchaseFailed": "Purchase failed!"
+    }
+  },
   "tabs.stats": "STATS",
   "tabs.upgrades": "UPGRADES",
   "terminal": {
