@@ -70,7 +70,7 @@ const normalized = clones
       instances: inst
     }
   })
-  // FIX: require at least 2 instances WITH files (guards against empty-instance clusters in top)
+  // Require at least 2 instances with valid files (guards against empty clusters)
   .filter(
     x =>
       Array.isArray(x.instances) &&
@@ -94,7 +94,7 @@ if (top.length === 0) {
   process.exit(0)
 }
 
-// FIX: added total cluster count to summary for better PR comment context
+// Added total cluster count to summary for better context
 const totalClusters = normalized.length
 const shown = top.length
 console.log('### Duplicate code\n')
