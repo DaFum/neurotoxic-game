@@ -53,19 +53,19 @@ export class MapGenerator {
     map.nodes[startNode.id] = startNode
 
     // Filter venues by difficulty for progression
-    const easyVenues = []
-    const mediumVenues = []
-    const hardVenues = []
-
-    for (const v of ALL_VENUES) {
-      if (v.diff <= 2) {
-        if (v.type !== 'HOME') easyVenues.push(v)
-      } else if (v.diff === 3) {
-        mediumVenues.push(v)
-      } else if (v.diff >= 4) {
-        hardVenues.push(v)
-      }
-    }
+    const { easyVenues, mediumVenues, hardVenues } = ALL_VENUES.reduce(
+      (acc, v) => {
+        if (v.diff <= 2) {
+          if (v.type !== 'HOME') acc.easyVenues.push(v)
+        } else if (v.diff === 3) {
+          acc.mediumVenues.push(v)
+        } else if (v.diff >= 4) {
+          acc.hardVenues.push(v)
+        }
+        return acc
+      },
+      { easyVenues: [], mediumVenues: [], hardVenues: [] }
+    )
 
     // Track used venues to avoid duplicates
     const usedVenueIds = new Set()
