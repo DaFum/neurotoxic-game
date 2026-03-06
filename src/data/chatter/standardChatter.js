@@ -1321,7 +1321,7 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_202',
     weight: 10,
-    condition: state => state.player.location === 'venues:stendal_proberaum.name'
+    condition: state => state.player.location?.includes('venues:stendal')
   },
   {
     text: 'chatter:standard.msg_203',
