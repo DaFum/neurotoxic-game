@@ -1,8 +1,13 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, act } from '@testing-library/react'
 
 vi.mock('tone', () => {
   return {
+    getContext: () => ({
+      rawContext: {
+        currentTime: 0
+      }
+    }),
     getTransport: () => ({
       stop: vi.fn(),
       position: 0,
@@ -11,7 +16,521 @@ vi.mock('tone', () => {
     }),
     getDestination: () => ({
       mute: false
-    })
+    }),
+    Context: class {
+      resume() {
+        return Promise.resolve()
+      }
+      state = 'running'
+    },
+    setContext: vi.fn(),
+    start: vi.fn().mockResolvedValue(),
+    context: {
+      state: 'running',
+      resume: vi.fn().mockResolvedValue()
+    },
+    Draw: {
+      schedule: vi.fn(),
+      cancel: vi.fn()
+    },
+    Limiter: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+      start() {
+        return this
+      }
+    },
+    Synth: class {
+      constructor() {
+        this.volume = { value: 0 }
+      }
+      connect() {
+        return this
+      }
+      chain() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+      start() {
+        return this
+      }
+    },
+    StereoWidener: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    Volume: class {
+      constructor() {
+        this.volume = { value: 0 }
+      }
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    NoiseSynth: class {
+      constructor() {
+        this.volume = { value: 0 }
+      }
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    Compressor: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+      start() {
+        return this
+      }
+    },
+    Reverb: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+      start() {
+        return this
+      }
+    },
+    Delay: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+      start() {
+        return this
+      }
+    },
+    EQ3: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+      start() {
+        return this
+      }
+    },
+    Channel: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    Sequence: class {
+      start() {}
+      stop() {}
+      dispose() {}
+    },
+    Player: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+      start() {}
+      stop() {}
+    },
+    Gain: class {
+      constructor() {
+        this.gain = { rampTo: vi.fn(), value: 1 }
+      }
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    PolySynth: class {
+      constructor() {
+        this.volume = { value: 0 }
+      }
+      connect() {
+        return this
+      }
+      chain() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+      start() {
+        return this
+      }
+    },
+    FMSynth: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    Sampler: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    Distortion: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    Chorus: class {
+      constructor() {
+        this.volume = { value: 0 }
+      }
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+      start() {
+        return this
+      }
+    },
+    Filter: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    AutoWah: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    Tremolo: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    Phaser: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    BitCrusher: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    PingPongDelay: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    Vibrato: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    FeedbackDelay: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    MembraneSynth: class {
+      constructor() {
+        this.volume = { value: 0 }
+      }
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    MetalSynth: class {
+      constructor() {
+        this.volume = { value: 0 }
+      }
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    PluckSynth: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    AMSynth: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    MonoSynth: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    Oscillator: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    LFO: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    Envelope: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    AmplitudeEnvelope: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    Meter: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    Analyser: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    Waveform: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    FFT: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    PitchShift: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    JCReverb: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    AutoPanner: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    Chebyshev: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    Panner: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    CrossFade: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    Merge: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    Split: class {
+      connect() {
+        return this
+      }
+      toDestination() {
+        return this
+      }
+      dispose() {}
+    },
+    Transport: {
+      start: vi.fn(),
+      stop: vi.fn(),
+      pause: vi.fn(),
+      cancel: vi.fn(),
+      position: 0,
+      state: 'stopped',
+      nextSubdivision: vi.fn()
+    },
+    TransportTime: vi.fn(),
+    Time: vi.fn(),
+    Loop: class {
+      start() {
+        return this
+      }
+      stop() {
+        return this
+      }
+      cancel() {
+        return this
+      }
+      dispose() {}
+    }
   }
 })
 
@@ -47,12 +566,14 @@ import { Gig } from '../src/scenes/Gig.jsx'
 import { GameStateProvider } from '../src/context/GameState.jsx'
 
 describe('Gig Component Integration', () => {
-  it('renders standard composition elements of the gig scene', () => {
-    render(
-      <GameStateProvider>
-        <Gig />
-      </GameStateProvider>
-    )
+  it('renders standard composition elements of the gig scene', async () => {
+    await act(async () => {
+      render(
+        <GameStateProvider>
+          <Gig />
+        </GameStateProvider>
+      )
+    })
 
     // Check if critical compositions are mounted correctly
     expect(screen.getByTestId('pixi-stage-mock')).toBeInTheDocument()

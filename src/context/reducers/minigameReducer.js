@@ -3,7 +3,6 @@ import {
   clampPlayerMoney,
   clampBandHarmony
 } from '../../utils/gameStateUtils.js'
-import { normalizeVenueId } from '../../utils/mapUtils.js'
 import {
   calculateTravelExpenses,
   calculateTravelMinigameResult,
