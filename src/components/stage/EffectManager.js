@@ -20,6 +20,9 @@ export class EffectManager {
     // Pool for Sprites (no longer need separate graphics pool)
     this.spritePool = []
 
+    // Performance: track oldest index to avoid O(N) lookup
+    this.oldestIndex = -1
+
     this.textures = { blood: null, toxic: null }
     this.genericHitTexture = null
   }
@@ -90,15 +93,18 @@ export class EffectManager {
     if (!this.container) return
 
     // Cap active effects using MAX_ACTIVE_EFFECTS
-    while (this.activeEffects.length >= EffectManager.MAX_ACTIVE_EFFECTS) {
-      // Find oldest effect (lowest life)
-      let oldestIndex = 0
-      let minLife = 2.0 // Life starts at 1.0
+    if (this.activeEffects.length >= EffectManager.MAX_ACTIVE_EFFECTS) {
+      let oldestIndex = this.oldestIndex
 
-      for (let i = 0; i < this.activeEffects.length; i++) {
-        if (this.activeEffects[i].life < minLife) {
-          minLife = this.activeEffects[i].life
-          oldestIndex = i
+      // Fallback if cached index is invalid (e.g. multiple spawns per frame)
+      if (oldestIndex === -1) {
+        let minLife = 2.0 // Life starts at 1.0
+        const len = this.activeEffects.length
+        for (let i = 0; i < len; i++) {
+          if (this.activeEffects[i].life < minLife) {
+            minLife = this.activeEffects[i].life
+            oldestIndex = i
+          }
         }
       }
 
@@ -110,6 +116,9 @@ export class EffectManager {
       if (oldestIndex < this.activeEffects.length) {
         this.activeEffects[oldestIndex] = last
       }
+
+      // Invalidate the cache since we modified the array
+      this.oldestIndex = -1
     }
 
     // Determine texture based on color (Red component dominance)
@@ -161,24 +170,42 @@ export class EffectManager {
 
   update(deltaMS) {
     const deltaSec = deltaMS / 1000
-    // Iterate backwards to allow removal
-    for (let i = this.activeEffects.length - 1; i >= 0; i--) {
-      const effect = this.activeEffects[i]
-      effect.life -= deltaSec * 3 // Fade out speed
+    let minLife = 2.0
+    let newOldestIndex = -1
+    const decay = deltaSec * 3
+    const effects = this.activeEffects
 
-      if (effect.life <= 0) {
+    // Iterate backwards to allow removal
+    for (let i = effects.length - 1; i >= 0; i--) {
+      const effect = effects[i]
+      const newLife = effect.life - decay // Fade out speed
+      effect.life = newLife
+
+      if (newLife <= 0) {
         this.releaseEffectToPool(effect)
 
         // Swap-and-pop removal
-        const last = this.activeEffects.pop()
-        if (i < this.activeEffects.length) {
-          this.activeEffects[i] = last
+        const last = effects.pop()
+        if (i < effects.length) {
+          effects[i] = last
+
+          if (last.life <= minLife) {
+            minLife = last.life
+            newOldestIndex = i
+          }
         }
       } else {
-        effect.alpha = effect.life
-        effect.scale.set(0.5 + (1.0 - effect.life) * 1.5) // Expand from 0.5 to 2.0
+        effect.alpha = newLife
+        effect.scale.set(0.5 + (1.0 - newLife) * 1.5) // Expand from 0.5 to 2.0
+
+        if (newLife <= minLife) {
+          minLife = newLife
+          newOldestIndex = i
+        }
       }
     }
+
+    this.oldestIndex = newOldestIndex
   }
 
   releaseEffectToPool(effect) {

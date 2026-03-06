@@ -40,7 +40,7 @@ test('Minigame State Transitions', async t => {
               id: 'node_1',
               x: 10,
               y: 10,
-              venue: { id: 'berlin_end_venue', name: 'End' }
+              venue: { id: 'berlin_end_venue', name: 'berlin' }
             } // dist ~90km -> 10.8L fuel
           }
         },
