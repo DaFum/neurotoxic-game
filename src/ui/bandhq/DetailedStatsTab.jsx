@@ -294,7 +294,9 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
                 })}
               </div>
               <div className='text-xs text-(--toxic-green) font-mono italic'>
-                {venueBlacklist.join(', ')}
+                {venueBlacklist
+                  .map(v => translateLocation(t, v, v))
+                  .join(', ')}
               </div>
             </div>
           )}
