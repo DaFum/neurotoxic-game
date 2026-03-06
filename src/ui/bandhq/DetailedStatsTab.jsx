@@ -273,7 +273,7 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
               {Object.entries(reputationByRegion).map(([region, rep]) => (
                 <DetailRow
                   key={region}
-                  label={region}
+                  label={translateLocation(t, region, region)}
                   value={rep}
                   subtext={
                     venueBlacklist.some(v => v.includes(region))
@@ -294,7 +294,9 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
                 })}
               </div>
               <div className='text-xs text-(--toxic-green) font-mono italic'>
-                {venueBlacklist.join(', ')}
+                {venueBlacklist
+                  .map(v => translateLocation(t, v, v))
+                  .join(', ')}
               </div>
             </div>
           )}
