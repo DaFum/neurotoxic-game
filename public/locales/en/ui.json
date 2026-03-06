@@ -146,7 +146,7 @@
   "enter_name_placeholder": "ENTER NAME...",
   "errors.ambient_start_failed": "Ambient audio failed to start.",
   "errors.audio_init_failed": "Audio initialization failed.",
-  "error.invalidVenueData": "Invalid venue data.",
+  "errors.invalidVenueData": "Invalid venue data.",
   "event": {
     "severity": {
       "critical": "CRITICAL"

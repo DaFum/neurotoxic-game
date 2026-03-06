@@ -146,7 +146,7 @@
   "enter_name_placeholder": "NAME EINGEBEN...",
   "errors.ambient_start_failed": "Ambient-Audio konnte nicht gestartet werden.",
   "errors.audio_init_failed": "Audio-Initialisierung fehlgeschlagen.",
-  "error.invalidVenueData": "Ungültige Veranstaltungsdaten.",
+  "errors.invalidVenueData": "Ungültige Veranstaltungsdaten.",
   "event": {
     "severity": {
       "critical": "KRITISCH"

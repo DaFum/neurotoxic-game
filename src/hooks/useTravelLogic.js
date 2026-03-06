@@ -368,7 +368,7 @@ export const useTravelLogic = ({
 
           if (!resolvedVenue) {
             addToast(
-              i18n.t('ui:error.invalidVenueData', {
+              i18n.t('ui:errors.invalidVenueData', {
                 defaultValue: 'Invalid venue data.'
               }),
               'error'
@@ -423,7 +423,7 @@ export const useTravelLogic = ({
 
         if (!resolvedVenue) {
           addToast(
-            i18n.t('ui:error.invalidVenueData', {
+            i18n.t('ui:errors.invalidVenueData', {
               defaultValue: 'Invalid venue data.'
             }),
             'error'
