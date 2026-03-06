@@ -33,7 +33,7 @@ const TOAST_STYLE_MAP = {
  */
 export const ToastOverlay = () => {
   const { toasts } = useGameState()
-  const { t } = useTranslation(['ui', 'events'])
+  const { t } = useTranslation(['ui', 'events', 'venues'])
 
   return (
     <div
