@@ -1321,75 +1321,75 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_202',
     weight: 10,
-    condition: state => state.player.location === 'stendal'
+    condition: state => state.player.location?.includes('venues:stendal')
   },
   {
     text: 'chatter:standard.msg_203',
     weight: 5,
     condition: state =>
-      state.player.location && state.player.location.includes('berlin')
+      state.player.location && state.player.location.includes('venues:berlin')
   },
   {
     text: 'chatter:standard.msg_204',
     weight: 10,
-    condition: state => state.player.location === 'stendal'
+    condition: state => state.player.location?.includes('venues:stendal')
   },
   {
     text: 'chatter:standard.msg_205',
     weight: 5,
     condition: state =>
-      state.player.location && state.player.location.includes('berlin')
+      state.player.location && state.player.location.includes('venues:berlin')
   },
   {
     text: 'chatter:standard.msg_206',
     weight: 10,
-    condition: state => state.player.location === 'stendal'
+    condition: state => state.player.location?.includes('venues:stendal')
   },
   {
     text: 'chatter:standard.msg_207',
     weight: 8,
-    condition: state => state.player.location === 'stendal'
+    condition: state => state.player.location?.includes('venues:stendal')
   },
   {
     text: 'chatter:standard.msg_208',
     weight: 5,
     condition: state =>
-      state.player.location && state.player.location.includes('berlin')
+      state.player.location && state.player.location.includes('venues:berlin')
   },
   {
     text: 'chatter:standard.msg_209',
     weight: 5,
     condition: state =>
-      state.player.location && state.player.location.includes('berlin')
+      state.player.location && state.player.location.includes('venues:berlin')
   },
   {
     text: 'chatter:standard.msg_210',
     weight: 4,
     condition: state =>
-      state.player.location && state.player.location.includes('berlin')
+      state.player.location && state.player.location.includes('venues:berlin')
   },
   {
     text: 'chatter:standard.msg_211',
     weight: 8,
-    condition: state => state.player.location === 'stendal',
+    condition: state => state.player.location?.includes('venues:stendal'),
     speaker: 'Lars'
   },
   {
     text: 'chatter:standard.msg_212',
     weight: 5,
     condition: state =>
-      state.player.location && state.player.location.includes('berlin')
+      state.player.location && state.player.location.includes('venues:berlin')
   },
   {
     text: 'chatter:standard.msg_213',
     weight: 8,
-    condition: state => state.player.location === 'stendal'
+    condition: state => state.player.location?.includes('venues:stendal')
   },
   {
     text: 'chatter:standard.msg_214',
     weight: 4,
     condition: state =>
-      state.player.location && state.player.location.includes('berlin')
+      state.player.location && state.player.location.includes('venues:berlin')
   },
 
   // --- GIG SPECIFIC (In-Game) ---
