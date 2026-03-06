@@ -8,7 +8,8 @@ const mockAudioEngine = {
   stopAudio: mock.fn(),
   playNoteAtTime: mock.fn(),
   getGigTimeMs: mock.fn(() => 1000),
-  getAudioTimeMs: mock.fn(() => 1000)
+  getAudioTimeMs: mock.fn(() => 1000),
+  getPlayRequestId: mock.fn(() => 1),
 }
 const mockAudioManager = {
   playSFX: mock.fn()
