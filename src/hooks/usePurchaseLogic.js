@@ -87,7 +87,9 @@ export const usePurchaseLogic = ({
             }),
             {
               addToast,
-              fallbackMessage: t('ui:shop.messages.invalidData', { defaultValue: 'Purchase failed: Invalid upgrade data.' })
+              fallbackMessage: t('ui:shop.messages.invalidData', {
+                defaultValue: 'Purchase failed: Invalid upgrade data.'
+              })
             }
           )
           return false
@@ -104,15 +106,25 @@ export const usePurchaseLogic = ({
         const isOwned = isItemOwned(item, player, band)
 
         if (isOwned && !isConsumable) {
-          addToast(t('ui:shop.messages.alreadyOwned', { itemName: t(`items:${item.id}.name`, { defaultValue: item.name }) }), 'warning')
+          addToast(
+            t('ui:shop.messages.alreadyOwned', {
+              itemName: t(`items:${item.id}.name`, { defaultValue: item.name })
+            }),
+            'warning'
+          )
           return false
         }
 
         if (currencyValue < finalCost) {
-          addToast(t('ui:shop.messages.notEnough', {
-            currency: payingWithFame ? t('ui:shop.messages.fame') : t('ui:shop.messages.money'),
-            itemName: t(`items:${item.id}.name`, { defaultValue: item.name })
-          }), 'error')
+          addToast(
+            t('ui:shop.messages.notEnough', {
+              currency: payingWithFame
+                ? t('ui:shop.messages.fame')
+                : t('ui:shop.messages.money'),
+              itemName: t(`items:${item.id}.name`, { defaultValue: item.name })
+            }),
+            'error'
+          )
           return false
         }
 
@@ -167,8 +179,12 @@ export const usePurchaseLogic = ({
             if (result.messages) {
               result.messages.forEach(msg => {
                 const toastMsg = msg.messageKey
-                  ? t(msg.messageKey, { ...(msg.options || {}), defaultValue: msg.fallback || msg.message || msg.messageKey })
-                  : msg.message;
+                  ? t(msg.messageKey, {
+                      ...(msg.options || {}),
+                      defaultValue:
+                        msg.fallback || msg.message || msg.messageKey
+                    })
+                  : msg.message
                 addToast(toastMsg, msg.type)
               })
             }
@@ -194,7 +210,9 @@ export const usePurchaseLogic = ({
               }),
               {
                 addToast,
-                fallbackMessage: t('ui:shop.messages.unknownEffect', { defaultValue: 'Purchase failed: Unknown effect type.' })
+                fallbackMessage: t('ui:shop.messages.unknownEffect', {
+                  defaultValue: 'Purchase failed: Unknown effect type.'
+                })
               }
             )
             return false
@@ -267,8 +285,11 @@ export const usePurchaseLogic = ({
           // Show generated toasts
           traitResult.toasts.forEach(toastItem => {
             const toastMsg = toastItem.messageKey
-              ? t(toastItem.messageKey, { ...(toastItem.options || {}), defaultValue: toastItem.message })
-              : toastItem.message;
+              ? t(toastItem.messageKey, {
+                  ...(toastItem.options || {}),
+                  defaultValue: toastItem.message
+                })
+              : toastItem.message
             addToast(toastMsg, toastItem.type)
           })
         } else {
@@ -277,11 +298,21 @@ export const usePurchaseLogic = ({
         }
 
         // Player update was already called above
-        addToast(t('ui:shop.messages.purchaseSuccess', { itemName: t(`items:${item.id}.name`, { defaultValue: item.name }) }), 'success')
+        addToast(
+          t('ui:shop.messages.purchaseSuccess', {
+            itemName: t(`items:${item.id}.name`, { defaultValue: item.name })
+          }),
+          'success'
+        )
 
         return true
       } catch (error) {
-        handleError(error, { addToast, fallbackMessage: t('ui:shop.messages.purchaseFailed', { defaultValue: 'Purchase failed!' }) })
+        handleError(error, {
+          addToast,
+          fallbackMessage: t('ui:shop.messages.purchaseFailed', {
+            defaultValue: 'Purchase failed!'
+          })
+        })
         return false
       }
     },

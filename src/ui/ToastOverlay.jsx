@@ -70,30 +70,37 @@ export const ToastOverlay = () => {
                   className={`font-[Courier_New] text-sm leading-snug ${style.text}`}
                 >
                   {toast.messageKey
-                    ? t(toast.messageKey, { ...(toast.options || {}), defaultValue: toast.message })
-                    : toast.message && toast.message.includes('|') && toast.message.startsWith('ui:')
-                    ? (() => {
-                        const firstPipeIdx = toast.message.indexOf('|')
-                        const key = toast.message.slice(0, firstPipeIdx)
-                        const contextStr = toast.message.slice(firstPipeIdx + 1)
-                        try {
-                          const context = JSON.parse(contextStr)
-                          // Safely translate deeply nested key refs in context
-                          if (context.name && context.name.includes(':')) {
-                            context.name = t(context.name)
-                          }
-                          return t(key, context)
-                        } catch (_e) {
-                          console.error(
-                            'Toast message JSON parse error:',
-                            _e,
-                            contextStr,
-                            toast.message
+                    ? t(toast.messageKey, {
+                        ...(toast.options || {}),
+                        defaultValue: toast.message
+                      })
+                    : toast.message &&
+                        toast.message.includes('|') &&
+                        toast.message.startsWith('ui:')
+                      ? (() => {
+                          const firstPipeIdx = toast.message.indexOf('|')
+                          const key = toast.message.slice(0, firstPipeIdx)
+                          const contextStr = toast.message.slice(
+                            firstPipeIdx + 1
                           )
-                          return t(key)
-                        }
-                      })()
-                    : toast.message}
+                          try {
+                            const context = JSON.parse(contextStr)
+                            // Safely translate deeply nested key refs in context
+                            if (context.name && context.name.includes(':')) {
+                              context.name = t(context.name)
+                            }
+                            return t(key, context)
+                          } catch (_e) {
+                            console.error(
+                              'Toast message JSON parse error:',
+                              _e,
+                              contextStr,
+                              toast.message
+                            )
+                            return t(key)
+                          }
+                        })()
+                      : toast.message}
                 </p>
               </div>
               <div className={`h-[2px] w-full ${style.border} border-t`} />

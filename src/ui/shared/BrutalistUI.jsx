@@ -680,36 +680,38 @@ export const BrutalToggle = ({ label, initialState = false }) => {
 // 2. Segmented Block Meter
 // Optimization: Wrapped in React.memo to prevent unnecessary re-renders when parent components
 // pass frequently changing state (like overload or health) that results in the same quantized value.
-export const BlockMeter = memo(({ label, value, max = 10, isDanger = false }) => {
-  const blocks = Array.from({ length: max }, (_, i) => i)
-  return (
-    <div className='w-full max-w-sm flex flex-col gap-2'>
-      <div className='flex justify-between items-end'>
-        <span className='text-xs tracking-widest uppercase opacity-80'>
-          {label}
-        </span>
-        <span
-          className={`text-sm font-bold ${isDanger ? 'text-(--blood-red) animate-fuel-warning' : 'text-(--toxic-green)'}`}
-        >
-          {value} / {max}
-        </span>
+export const BlockMeter = memo(
+  ({ label, value, max = 10, isDanger = false }) => {
+    const blocks = Array.from({ length: max }, (_, i) => i)
+    return (
+      <div className='w-full max-w-sm flex flex-col gap-2'>
+        <div className='flex justify-between items-end'>
+          <span className='text-xs tracking-widest uppercase opacity-80'>
+            {label}
+          </span>
+          <span
+            className={`text-sm font-bold ${isDanger ? 'text-(--blood-red) animate-fuel-warning' : 'text-(--toxic-green)'}`}
+          >
+            {value} / {max}
+          </span>
+        </div>
+        <div className='flex gap-1 h-6'>
+          {blocks.map(block => {
+            const isFilled = block < value
+            let blockClass =
+              'flex-1 border border-(--toxic-green)/30 transition-all duration-300'
+            if (isFilled) {
+              blockClass = isDanger
+                ? 'flex-1 bg-(--blood-red) border-(--blood-red) shadow-[0_0_10px_var(--blood-red)]'
+                : 'flex-1 bg-(--toxic-green) border-(--toxic-green) shadow-[0_0_5px_var(--toxic-green-50)]'
+            }
+            return <div key={block} className={blockClass}></div>
+          })}
+        </div>
       </div>
-      <div className='flex gap-1 h-6'>
-        {blocks.map(block => {
-          const isFilled = block < value
-          let blockClass =
-            'flex-1 border border-(--toxic-green)/30 transition-all duration-300'
-          if (isFilled) {
-            blockClass = isDanger
-              ? 'flex-1 bg-(--blood-red) border-(--blood-red) shadow-[0_0_10px_var(--blood-red)]'
-              : 'flex-1 bg-(--toxic-green) border-(--toxic-green) shadow-[0_0_5px_var(--toxic-green-50)]'
-          }
-          return <div key={block} className={blockClass}></div>
-        })}
-      </div>
-    </div>
-  )
-})
+    )
+  }
+)
 
 // 3. Brutalist Tabs
 export const BrutalTabs = () => {

@@ -77,7 +77,8 @@ vi.mock('../src/context/GameState', () => ({
   useGameState: () => mockUseGameState
 }))
 // Import PreGig after mocks
-const { PreGig, _resetLastMinigameFallback } = await import('../src/scenes/PreGig.jsx')
+const { PreGig, _resetLastMinigameFallback } =
+  await import('../src/scenes/PreGig.jsx')
 
 describe('PreGig', () => {
   beforeEach(() => {
@@ -148,7 +149,6 @@ describe('PreGig', () => {
 
       expect(mockUseGameState.startRoadieMinigame).toHaveBeenCalledTimes(1)
       expect(mockUseGameState.startKabelsalatMinigame).toHaveBeenCalledTimes(0)
-
     } finally {
       // Clean up spy
       if (Math.random.mockRestore) {

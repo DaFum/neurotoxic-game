@@ -3,7 +3,7 @@ import { expect, test, vi } from 'vitest'
 import { ReportPhase } from '../src/components/postGig/ReportPhase.jsx'
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key) => key })
+  useTranslation: () => ({ t: key => key })
 }))
 
 test('ReportPhase renders loading state', () => {
@@ -14,15 +14,11 @@ test('ReportPhase renders loading state', () => {
 test('ReportPhase renders financials and calls onNext', () => {
   const mockFinancials = {
     income: {
-      breakdown: [
-        { labelKey: 'economy:postGig.ticketSales', value: 500 }
-      ],
+      breakdown: [{ labelKey: 'economy:postGig.ticketSales', value: 500 }],
       total: 500
     },
     expenses: {
-      breakdown: [
-        { labelKey: 'economy:postGig.gearRepair', value: 100 }
-      ],
+      breakdown: [{ labelKey: 'economy:postGig.gearRepair', value: 100 }],
       total: 100
     },
     net: 400
