@@ -176,6 +176,24 @@ export const handleLoadGame = (state, payload) => {
       : state.unlocks || []
   }
 
+  // Migration: Legacy venue translation keys -> Raw IDs
+  const migrateLegacyVenueId = id => {
+    if (typeof id !== 'string') return id
+    if (id.startsWith('venues:') && id.endsWith('.name')) {
+      return id.replace('venues:', '').replace('.name', '')
+    }
+    return id
+  }
+
+  if (typeof safeState.player.location === 'string') {
+    safeState.player.location = migrateLegacyVenueId(safeState.player.location)
+  }
+
+  if (Array.isArray(safeState.venueBlacklist)) {
+    safeState.venueBlacklist =
+      safeState.venueBlacklist.map(migrateLegacyVenueId)
+  }
+
   // Migration: energy -> catering
   if (safeState.gigModifiers.energy !== undefined) {
     const { energy, ...restModifiers } = safeState.gigModifiers

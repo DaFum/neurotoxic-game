@@ -90,6 +90,12 @@ export const ToastOverlay = () => {
                             if (context.name && context.name.includes(':')) {
                               context.name = t(context.name)
                             }
+                            if (
+                              context.venueLabel &&
+                              context.venueLabel.includes(':')
+                            ) {
+                              context.venueLabel = t(context.venueLabel)
+                            }
                             return t(key, context)
                           } catch (_e) {
                             logger.error(

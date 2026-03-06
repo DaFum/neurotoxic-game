@@ -210,7 +210,7 @@ export const useTravelLogic = ({
           ...player.van,
           fuel: Math.max(0, (player.van?.fuel ?? 0) - fuelLiters)
         },
-        location: node.venue.id.split('_')[0],
+        location: node.venue?.id?.split('_')?.[0] || 'Unknown',
         currentNodeId: node.id,
         totalTravels: (player.totalTravels ?? 0) + 1
       })
@@ -388,7 +388,7 @@ export const useTravelLogic = ({
       const bList = venueBlacklistRef.current || []
 
       if (node.type !== 'START' && node.venue) {
-        if (bList.includes(node.venue.id)) {
+        if (node.venue.id && bList.includes(node.venue.id)) {
           addToast(
             `Booking refused: ${getLocationName(node.venue.name)} has permanently blacklisted you!`,
             'error'
@@ -406,7 +406,7 @@ export const useTravelLogic = ({
           return
         }
 
-        const regionId = node.venue.id.split('_')[0]
+        const regionId = node.venue?.id?.split('_')?.[0] || 'Unknown'
         if ((reputation[regionId] || 0) <= -30) {
           addToast(
             `Booking refused: The venue in ${getLocationName(node.venue.name)} blacklisted you due to poor regional reputation!`,

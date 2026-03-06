@@ -495,7 +495,12 @@ export const useRhythmGameAudio = ({
           })
         }
 
-        const finalNotes = await playAudioForSong(currentSong, notes, onSongEnded, rng)
+        const finalNotes = await playAudioForSong(
+          currentSong,
+          notes,
+          onSongEnded,
+          rng
+        )
 
         // Update Game State
         gameStateRef.current.notes = finalNotes
@@ -503,7 +508,8 @@ export const useRhythmGameAudio = ({
         gameStateRef.current.notesVersion =
           gameStateRef.current.notesVersion + 1
 
-        const maxNoteTime = finalNotes.length > 0 ? finalNotes[finalNotes.length - 1].time : 0
+        const maxNoteTime =
+          finalNotes.length > 0 ? finalNotes[finalNotes.length - 1].time : 0
         const buffer = 4000
         const noteDuration = maxNoteTime + buffer
         const audioDuration = resolveSongPlaybackWindow(currentSong, {

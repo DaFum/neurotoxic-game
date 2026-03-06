@@ -613,7 +613,7 @@
     "log7": "[FEHLER] BAND-HARMONIE KRITISCH.",
     "log8": "> WARTE AUF EINGABE_"
   },
-  "toast.blacklisted": "GESPERRT: {{venue}}",
+  "toast.blacklisted": "GESPERRT: {{venueLabel}}",
   "toast.fans_defended": "Treue Fans haben euch verteidigt — die Location gibt euch noch eine Chance!",
   "toast.three_disasters": "3 DISASTER HINTEREINANDER — Beweist euch erst in kleinen Locations.",
   "toast.quest_complete": "[{{name}}]: ABGESCHLOSSEN",
