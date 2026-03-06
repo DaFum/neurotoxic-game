@@ -100,10 +100,10 @@ export class MapGenerator {
       fallbackHard
     }
 
-    this._generateIntermediateLayers(map, depth, pools)
-    this._generateConnections(map, depth)
-    this._generateFinaleLayer(map, depth, hardVenues)
-    this._assignInitialCoordinates(map)
+    this.#generateIntermediateLayers(map, depth, pools)
+    this.#generateConnections(map, depth)
+    this.#generateFinaleLayer(map, depth, hardVenues)
+    this.#assignInitialCoordinates(map)
 
     // To ensure purity, we clone the nodes before resolving overlaps if possible,
     // but here we are mutating the map object we just created, which is local to this function.
@@ -119,9 +119,9 @@ export class MapGenerator {
 
   /**
    * Generates intermediate layers of the map.
-   * @param {object} map - The map object.
+   * @param {{layers: object[][], nodes: Object<string, object>, connections: object[]}} map - The map object.
    * @param {number} depth - The total depth of the map.
-   * @param {object} pools - The available and fallback venue pools.
+   * @param {{availableEasy: object[], availableMedium: object[], availableHard: object[], fallbackEasy: object[], fallbackMedium: object[], fallbackHard: object[]}} pools - The available and fallback venue pools.
    */
   _generateIntermediateLayers(map, depth, pools) {
     const {
