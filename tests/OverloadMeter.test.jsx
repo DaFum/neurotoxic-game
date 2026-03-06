@@ -2,9 +2,6 @@ import { render, screen } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 import { OverloadMeter } from '../src/components/hud/OverloadMeter.jsx'
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key, fallback) => fallback })
-}))
 
 vi.mock('../src/ui/shared/index.jsx', () => ({
   BlockMeter: ({ label, value, max, isDanger }) => (
@@ -22,7 +19,7 @@ vi.mock('../src/ui/shared/index.jsx', () => ({
 test('OverloadMeter renders correct value and danger state', () => {
   const { rerender } = render(<OverloadMeter overload={50} />)
 
-  expect(screen.getByText('TOXIC OVERLOAD')).toBeInTheDocument()
+  expect(screen.getByText('ui:overload.toxic')).toBeInTheDocument()
   let meter = screen.getByTestId('block-meter')
   expect(meter).toHaveAttribute('data-value', '5')
   expect(meter).toHaveAttribute('data-max', '10')

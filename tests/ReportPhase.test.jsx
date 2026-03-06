@@ -2,9 +2,6 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 import { ReportPhase } from '../src/components/postGig/ReportPhase.jsx'
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: key => key })
-}))
 
 test('ReportPhase renders loading state', () => {
   render(<ReportPhase />)

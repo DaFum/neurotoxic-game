@@ -25,18 +25,6 @@ vi.mock('../src/utils/socialEngine', () => ({
   })
 }))
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: key => {
-      const map = {
-        'economy:postGig.accept': 'ACCEPT',
-        'economy:postGig.negotiate': 'NEGOTIATE',
-        'ui:social.strategy.aggressive': 'AGGRESSIVE (High Risk)'
-      }
-      return map[key] || key
-    }
-  })
-}))
 
 vi.mock('../src/ui/shared', () => ({
   Modal: ({ children, isOpen }) =>

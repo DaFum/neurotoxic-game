@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, test, vi } from 'vitest'
-import { renderHook } from '@testing-library/react'
+import { renderHook, act } from '@testing-library/react'
 
 // Mock dependencies BEFORE import
 vi.mock('../../src/context/GameState', () => ({
@@ -47,9 +47,11 @@ describe('RoadieLogic Performance', () => {
     const iterations = 50000
 
     // Run update loop
-    for (let i = 0; i < iterations; i++) {
-      update(16) // 16ms delta
-    }
+    act(() => {
+      for (let i = 0; i < iterations; i++) {
+        update(16) // 16ms delta
+      }
+    })
 
     const end = performance.now()
     console.log(

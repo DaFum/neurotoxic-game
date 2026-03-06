@@ -2,21 +2,6 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 import { EventModal } from '../src/ui/EventModal.jsx'
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key, options) => {
-      if (options && typeof options === 'object') {
-        if (options.count !== undefined) {
-          return `${key} (${options.count})`
-        }
-        if (options.defaultValue !== undefined) {
-          return options.defaultValue
-        }
-      }
-      return key
-    }
-  })
-}))
 
 vi.mock('../src/ui/shared/BrutalistUI', () => ({
   AlertIcon: () => <svg data-testid='alert-icon' />

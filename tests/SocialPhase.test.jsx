@@ -3,9 +3,6 @@ import { userEvent } from '@testing-library/user-event'
 import { expect, test, vi } from 'vitest'
 import { SocialPhase } from '../src/components/postGig/SocialPhase.jsx'
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: key => key })
-}))
 
 vi.mock('../src/ui/shared/index.jsx', () => ({
   Panel: ({ children, title }) => (
