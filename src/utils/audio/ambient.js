@@ -145,8 +145,11 @@ export async function playRandomAmbientOgg(
     const preChainReqId = audioState.playRequestId
 
     playRandomAmbientOgg(rng, { skipStop: true }).catch(error => {
-      if (preChainReqId !== audioState.playRequestId) {
-        logger.debug('AudioEngine', 'Chain failed but reqId changed. Benign race condition.')
+      if (audioState.playRequestId !== preChainReqId + 1) {
+        logger.debug(
+          'AudioEngine',
+          'Chain failed but reqId changed. Benign race condition.'
+        )
         return
       }
       logger.error(

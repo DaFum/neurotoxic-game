@@ -77,7 +77,13 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
 
       const members = originalMembers.map((m, idx) => {
         if (idx === memberIdx) {
-          return { ...m, skill: (m.skill || 0) + 1 }
+          return {
+            ...m,
+            baseStats: {
+              ...(m.baseStats || {}),
+              skill: ((m.baseStats && m.baseStats.skill) || m.skill || 0) + 1
+            }
+          }
         }
         return m
       })

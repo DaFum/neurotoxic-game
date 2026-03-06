@@ -23,7 +23,7 @@ export const handleUpdateSocial = (state, payload) => {
   if (updates.trend !== undefined) {
     if (!ALLOWED_TRENDS.includes(updates.trend)) {
       logger.warn('GameState', `Invalid trend update: ${updates.trend}`)
-      const { trend, ...restUpdates } = updates
+      const { trend: _trend, ...restUpdates } = updates
       updates = restUpdates
     }
   }
@@ -33,14 +33,14 @@ export const handleUpdateSocial = (state, payload) => {
     typeof updates.sponsorActive !== 'boolean'
   ) {
     logger.warn('GameState', 'Invalid sponsorActive update (must be boolean)')
-    const { sponsorActive, ...restUpdates } = updates
+    const { sponsorActive: _sponsorActive, ...restUpdates } = updates
     updates = restUpdates
   }
 
   if (updates.activeDeals !== undefined) {
     if (!Array.isArray(updates.activeDeals)) {
       logger.warn('GameState', 'Invalid activeDeals update (must be array)')
-      const { activeDeals, ...restUpdates } = updates
+      const { activeDeals: _activeDeals, ...restUpdates } = updates
       updates = restUpdates
     } else {
       // Validate structure of items
@@ -77,7 +77,7 @@ export const handleAddVenueBlacklist = (state, venueName) => {
       ...(nextState.toasts || []),
       {
         id: Date.now().toString(),
-        message: `Loyal fans defended you — venue gave one more chance!`,
+        message: `ui:toast.fans_defended`,
         type: 'info'
       }
     ]
@@ -87,7 +87,7 @@ export const handleAddVenueBlacklist = (state, venueName) => {
       ...(nextState.toasts || []),
       {
         id: Date.now().toString(),
-        message: `BLACKLISTED: ${venueName}`,
+        message: `ui:toast.blacklisted|${JSON.stringify({ venue: venueName })}`,
         type: 'error'
       }
     ]

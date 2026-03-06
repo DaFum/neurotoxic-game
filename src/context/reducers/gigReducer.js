@@ -2,6 +2,7 @@ import { logger } from '../../utils/logger.js'
 import { checkTraitUnlocks } from '../../utils/unlockCheck.js'
 import { applyTraitUnlocks } from '../../utils/traitUtils.js'
 import { DEFAULT_GIG_MODIFIERS } from '../initialState.js'
+import { isForbiddenKey } from '../../utils/gameStateUtils.js'
 import { handleAddVenueBlacklist } from './socialReducer.js'
 import {
   handleAddQuest,
@@ -81,7 +82,7 @@ export const handleRecordBadShow = state => {
       ...(nextState.toasts || []),
       {
         id: Date.now().toString(),
-        message: '3 DISASTERS IN A ROW — Prove yourself in small venues first.',
+        message: 'ui:toast.three_disasters',
         type: 'error'
       }
     ]
@@ -128,31 +129,38 @@ export const handleSetLastGigStats = (state, payload) => {
   const capacity = state.currentGig?.venue?.capacity || 0
 
   if (score < 30) {
-    nextState.reputationByRegion[location] = Math.max(
-      MIN_REPUTATION,
-      (nextState.reputationByRegion[location] || 0) - 10
-    )
-    logger.warn(
-      'GameState',
-      `Regional reputation loss in ${location} due to poor gig performance (-10)`
-    )
-    nextState = handleRecordBadShow(nextState)
-    if ((nextState.reputationByRegion[location] || 0) <= -30) {
-      nextState = handleAddVenueBlacklist(
-        nextState,
-        state.currentGig?.venue?.name || 'Local Venue'
+    if (!isForbiddenKey(location)) {
+      nextState.reputationByRegion[location] = Math.max(
+        MIN_REPUTATION,
+        (nextState.reputationByRegion[location] || 0) - 10
       )
+      logger.warn(
+        'GameState',
+        `Regional reputation loss in ${location} due to poor gig performance (-10)`
+      )
+      if ((nextState.reputationByRegion[location] || 0) <= -30) {
+        nextState = handleAddVenueBlacklist(
+          nextState,
+          state.currentGig?.venue?.name || 'Local Venue'
+        )
+      }
     }
+    nextState = handleRecordBadShow(nextState)
   } else if (score >= 60) {
     // Increase reputation on good gigs up to 100 max
-    const currentRep = nextState.reputationByRegion[location] || 0
-    if (currentRep < MAX_REPUTATION) {
-      const bonus = score >= 90 ? 10 : 5
-      nextState.reputationByRegion[location] = Math.max(MIN_REPUTATION, Math.min(MAX_REPUTATION, currentRep + bonus))
-      logger.info(
-        'GameState',
-        `Regional reputation gain in ${location} (+${bonus})`
-      )
+    if (!isForbiddenKey(location)) {
+      const currentRep = nextState.reputationByRegion[location] || 0
+      if (currentRep < MAX_REPUTATION) {
+        const bonus = score >= 90 ? 10 : 5
+        nextState.reputationByRegion[location] = Math.max(
+          MIN_REPUTATION,
+          Math.min(MAX_REPUTATION, currentRep + bonus)
+        )
+        logger.info(
+          'GameState',
+          `Regional reputation gain in ${location} (+${bonus})`
+        )
+      }
     }
 
     nextState = handleRecordGoodShow(nextState)
