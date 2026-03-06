@@ -18,6 +18,7 @@ import {
 import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils'
 import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { SONGS_DB } from '../data/songs'
+import { logger } from '../utils/logger.js'
 
 import { lazy, Suspense } from 'react'
 const ReportPhase = lazy(() =>
@@ -530,7 +531,11 @@ export const PostGig = () => {
               }
             })
             .catch(err =>
-              console.error(`Score submit failed for ${leaderboardSongId}`, err)
+              logger.error(
+                'PostGig',
+                `Score submit failed for ${leaderboardSongId}`,
+                err
+              )
             )
         }
       })
