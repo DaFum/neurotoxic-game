@@ -708,7 +708,7 @@
     }
   },
   "gig": {
-    "crowdEnergy": "CROWD ENERGY",
-    "toxicModeActive": "TOXIC MODE ACTIVE"
+    "crowdEnergy": "PUBLIKUMSENERGIE",
+    "toxicModeActive": "TOXISCHER MODUS AKTIV"
   }
 }

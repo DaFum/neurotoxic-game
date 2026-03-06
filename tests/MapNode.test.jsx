@@ -293,8 +293,8 @@ describe('MapNode', () => {
     const button = screen.getByRole('button')
     await act(async () => {
       await user.hover(button)
+      await user.unhover(button)
     })
-    await user.unhover(button)
 
     expect(mockSetHoveredNode).toHaveBeenLastCalledWith(null)
   })
