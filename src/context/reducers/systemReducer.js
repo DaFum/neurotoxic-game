@@ -185,22 +185,29 @@ export const handleLoadGame = (state, payload) => {
     return id
   }
 
-  if (typeof safeState.player.location === 'string') {
-    safeState.player.location = migrateLegacyVenueId(safeState.player.location)
+  // Apply venue migrations using spreads
+  const migratedState = {
+    ...safeState,
+    player: {
+      ...safeState.player,
+      location:
+        typeof safeState.player.location === 'string'
+          ? migrateLegacyVenueId(safeState.player.location)
+          : safeState.player.location
+    },
+    venueBlacklist: safeState.venueBlacklist.map(migrateLegacyVenueId)
   }
 
-  safeState.venueBlacklist = safeState.venueBlacklist.map(migrateLegacyVenueId)
-
   // Migration: energy -> catering
-  if (safeState.gigModifiers.energy !== undefined) {
-    const { energy, ...restModifiers } = safeState.gigModifiers
+  if (migratedState.gigModifiers.energy !== undefined) {
+    const { energy, ...restModifiers } = migratedState.gigModifiers
     return {
-      ...safeState,
+      ...migratedState,
       gigModifiers: { ...restModifiers, catering: energy }
     }
   }
 
-  return safeState
+  return migratedState
 }
 
 export const handleResetState = (state, payload = {}) => {

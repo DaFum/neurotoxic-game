@@ -37,6 +37,19 @@ export const getNodeVisibility = (nodeLayer, currentLayer) => {
  * @param {object} [band=null] - The band state object.
  * @returns {boolean} True if stranded.
  */
+export const normalizeVenueId = venue => {
+  if (!venue) return null
+  let id = venue.id || venue.name || venue
+  if (
+    typeof id === 'string' &&
+    id.startsWith('venues:') &&
+    id.endsWith('.name')
+  ) {
+    id = id.replace('venues:', '').replace('.name', '')
+  }
+  return typeof id === 'string' ? id : null
+}
+
 export const checkSoftlock = (gameMap, player, band = null) => {
   if (!gameMap || !player.currentNodeId) return false
 

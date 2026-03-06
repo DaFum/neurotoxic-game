@@ -26,10 +26,17 @@ const TOAST_STYLE_MAP = {
   }
 }
 
+const VALID_NAMESPACES = ['ui:', 'events:', 'venues:', 'items:', 'economy:']
+
 const translateContextKeys = (context, t) => {
   for (const prop of Object.keys(context)) {
-    if (typeof context[prop] === 'string' && context[prop].includes(':')) {
-      context[prop] = t(context[prop])
+    if (typeof context[prop] === 'string') {
+      const isTranslationKey = VALID_NAMESPACES.some(ns =>
+        context[prop].startsWith(ns)
+      )
+      if (isTranslationKey) {
+        context[prop] = t(context[prop])
+      }
     }
   }
 }
