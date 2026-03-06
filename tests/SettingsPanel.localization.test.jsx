@@ -1,4 +1,4 @@
-import { expect, test, vi } from 'vitest'
+import { expect, test } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
 test('SettingsPanel renders localized language option labels', async () => {
