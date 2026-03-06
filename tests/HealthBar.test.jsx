@@ -15,19 +15,19 @@ describe('HealthBar', () => {
 
   test('displays CROWD ENERGY label', () => {
     const { getByText } = render(<HealthBar health={100} isToxicMode={false} />)
-    expect(getByText('CROWD ENERGY')).toBeInTheDocument()
+    expect(getByText('ui:gig.crowdEnergy')).toBeInTheDocument()
   })
 
   test('displays toxic mode indicator when active', () => {
     const { getByText } = render(<HealthBar health={80} isToxicMode={true} />)
-    expect(getByText('TOXIC MODE ACTIVE')).toBeInTheDocument()
+    expect(getByText('ui:gig.toxicModeActive')).toBeInTheDocument()
   })
 
   test('does not display toxic mode indicator when inactive', () => {
     const { queryByText } = render(
       <HealthBar health={80} isToxicMode={false} />
     )
-    expect(queryByText('TOXIC MODE ACTIVE')).toBeNull()
+    expect(queryByText('ui:gig.toxicModeActive')).toBeNull()
   })
 
   test('applies warning styling when health is low', () => {
