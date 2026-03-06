@@ -4,8 +4,21 @@ import {
   applyEventDelta,
   applyInventoryItemDelta,
   clampBandHarmony,
-  clampPlayerMoney
+  clampPlayerMoney,
+  calculateFameLevel
 } from '../src/utils/gameStateUtils.js'
+
+test('calculateFameLevel', () => {
+  assert.strictEqual(calculateFameLevel(0), 0)
+  assert.strictEqual(calculateFameLevel(500), 0)
+  assert.strictEqual(calculateFameLevel(1000), 1)
+  assert.strictEqual(calculateFameLevel(1500), 1)
+  assert.strictEqual(calculateFameLevel(2000), 2)
+  assert.strictEqual(calculateFameLevel(10500), 10)
+  assert.strictEqual(calculateFameLevel(-500), 0) // Should cap at 0
+  assert.strictEqual(calculateFameLevel(null), 0)
+  assert.strictEqual(calculateFameLevel(undefined), 0)
+})
 
 test('applyEventDelta applies player updates', () => {
   const state = {

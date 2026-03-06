@@ -4,6 +4,156 @@ import { importAudioEngine } from './audioTestUtils.js'
 
 const { audioEngine, skipIfImportFailed } = await importAudioEngine()
 
+test('playSFX', async t => {
+  if (skipIfImportFailed(t)) return
+  const { playSFX, audioState } = await import('../src/utils/audio/playback.js')
+  const moduleState = audioState || (await import('../src/utils/audio/state.js')).audioState
+
+  await t.test('does nothing if not setup or missing sfxSynth', () => {
+    moduleState.isSetup = false
+    moduleState.sfxSynth = null
+    playSFX('hit') // Should not throw
+    assert.ok(true)
+  })
+
+  await t.test('calls triggerAttackRelease for different types', () => {
+    moduleState.isSetup = true
+    const calls = []
+    moduleState.sfxSynth = {
+      triggerAttackRelease: (...args) => calls.push(args)
+    }
+
+    playSFX('hit')
+    assert.strictEqual(calls.length, 1)
+    assert.strictEqual(calls[0][0], 'A5') // hit
+
+    playSFX('miss')
+    assert.strictEqual(calls.length, 2)
+    assert.strictEqual(calls[1][0], 'D2') // miss
+
+    playSFX('cash')
+    assert.strictEqual(calls.length, 4) // cash makes 2 calls
+    assert.strictEqual(calls[2][0], 'B5')
+
+    const originalDrumKit = moduleState.drumKit
+    try {
+      // simulate no drum kit or missing kick drum
+      moduleState.drumKit = null
+
+      playSFX('travel')
+      // tests drum kit kick fallback
+      assert.strictEqual(calls.length, 5)
+      assert.strictEqual(calls[4][0], 'G1') // fallback travel
+
+      // Test unknown type
+      playSFX('unknown-type')
+      assert.strictEqual(calls.length, 5) // Should not increase
+    } finally {
+      moduleState.drumKit = originalDrumKit
+      moduleState.isSetup = false
+      moduleState.sfxSynth = null
+    }
+  })
+})
+
+test('setMusicVolume & setSFXVolume', async t => {
+  if (skipIfImportFailed(t)) return
+  // audioState may not be directly exported or might be called differently in the real module
+  // Check the export and fall back if needed
+  const { setMusicVolume, setSFXVolume, audioState } = await import('../src/utils/audio/playback.js')
+  const moduleState = audioState || (await import('../src/utils/audio/state.js')).audioState
+
+  await t.test('setMusicVolume clamps value to [0, 1] and ramps gain', () => {
+    let mockGain = { gain: { rampTo: (val) => { mockGain.val = val } } }
+    moduleState.musicGain = mockGain
+
+    // Normal
+    const resultNormal = setMusicVolume(0.5)
+    assert.strictEqual(resultNormal, true)
+    assert.strictEqual(mockGain.val, 0.5)
+
+    // Low boundary
+    setMusicVolume(-1.5)
+    assert.strictEqual(mockGain.val, 0)
+
+    // High boundary
+    setMusicVolume(2.5)
+    assert.strictEqual(mockGain.val, 1)
+
+    // Cleanup
+    moduleState.musicGain = null
+  })
+
+  await t.test('setMusicVolume returns false if musicGain is not initialized', () => {
+    moduleState.musicGain = null
+    const result = setMusicVolume(0.5)
+    assert.strictEqual(result, false)
+  })
+
+  await t.test('setSFXVolume clamps value to [0, 1] and ramps gain', () => {
+    let mockGain = { gain: { rampTo: (val) => { mockGain.val = val } } }
+    moduleState.sfxGain = mockGain
+
+    // Normal
+    const resultNormal = setSFXVolume(0.7)
+    assert.strictEqual(resultNormal, true)
+    assert.strictEqual(mockGain.val, 0.7)
+
+    // Low boundary
+    setSFXVolume(-0.1)
+    assert.strictEqual(mockGain.val, 0)
+
+    // High boundary
+    setSFXVolume(1.1)
+    assert.strictEqual(mockGain.val, 1)
+
+    // Cleanup
+    moduleState.sfxGain = null
+  })
+
+  await t.test('setSFXVolume returns false if sfxGain is not initialized', () => {
+    moduleState.sfxGain = null
+    const result = setSFXVolume(0.5)
+    assert.strictEqual(result, false)
+  })
+})
+
+test('stopGigPlayback', async t => {
+  if (skipIfImportFailed(t)) return
+
+  const { stopGigPlayback, audioState } = await import('../src/utils/audio/playback.js')
+  const moduleState = audioState || (await import('../src/utils/audio/state.js')).audioState
+
+  await t.test('calls cleanupGigPlayback and logs if source exists', async () => {
+    // Setup Tone raw context and state to track stops
+    let stopCalled = false
+    const mockSource = {
+      stop: () => { stopCalled = true },
+      disconnect: () => {}
+    }
+
+    moduleState.gigSource = mockSource
+    moduleState.gigFilename = 'test.ogg'
+
+    // since stopGigPlayback uses getGigTimeMs() in its log when gigSource is present,
+    // we need to make sure getGigTimeMs doesn't crash.
+    // getGigTimeMs needs rawContext.currentTime
+    const ToneModule = await import('tone')
+    const mockTone = ToneModule.default || ToneModule.Tone || ToneModule
+    const context = mockTone.getContext()
+    if (!context.rawContext) context.rawContext = { currentTime: 0 }
+    else context.rawContext.currentTime = 0
+
+    stopGigPlayback()
+
+    // Test that the source was stopped by cleanup (which stopGigPlayback calls)
+    assert.strictEqual(stopCalled, true)
+
+    // Check that state was cleared by cleanup
+    assert.strictEqual(moduleState.gigSource, null)
+  })
+})
+
 test('calculateGigPlaybackWindow', async t => {
   if (skipIfImportFailed(t)) return
   const { calculateGigPlaybackWindow } = audioEngine

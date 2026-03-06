@@ -12,7 +12,9 @@ import {
   ErrorCategory,
   ErrorSeverity,
   handleError,
-  safeStorageOperation
+  safeStorageOperation,
+  withRetry,
+  initGlobalErrorHandling
 } from '../src/utils/errorHandler.js'
 
 describe('Custom Error Classes', () => {
@@ -285,6 +287,63 @@ describe('handleError', () => {
   })
 })
 
+describe('initGlobalErrorHandling', () => {
+  it('should initialize and catch unhandled promise rejections', () => {
+    const originalWindow = globalThis.window
+    const INIT_SYMBOL = Symbol.for('neurotoxic:initGlobalErrorHandlingDone')
+    const originalSymbolValue = originalWindow ? originalWindow[INIT_SYMBOL] : undefined
+
+    // Simulate window and listener registration
+    let addedListener = null
+    let registrationCount = 0
+
+    try {
+      globalThis.window = {
+        addEventListener: (evt, listener) => {
+          if (evt === 'unhandledrejection') {
+            addedListener = listener
+            registrationCount++
+          }
+        },
+        dispatchEvent: () => {}
+      }
+
+      // reset symbol
+      globalThis.window[INIT_SYMBOL] = undefined
+
+      initGlobalErrorHandling()
+
+      assert.ok(addedListener !== null, 'Should have registered unhandledrejection listener')
+      assert.strictEqual(globalThis.window[INIT_SYMBOL], true, 'Should mark as initialized')
+
+      // Call again to test idempotence
+      initGlobalErrorHandling()
+
+      // Verify it was only registered once
+      assert.strictEqual(registrationCount, 1, 'Should only register the listener once')
+
+      // Test the listener directly with an Error
+      const errorEvent = { reason: new Error('unhandled error test') }
+      assert.doesNotThrow(() => {
+        addedListener(errorEvent)
+      }, 'The unhandledrejection listener should process the error without throwing')
+
+      // Test with non-Error string
+      const stringEvent = { reason: 'some string reason' }
+      addedListener(stringEvent)
+
+      // Test with generic object
+      const objEvent = { reason: { foo: 'bar' } }
+      addedListener(objEvent)
+    } finally {
+      globalThis.window = originalWindow
+      if (globalThis.window) {
+        globalThis.window[INIT_SYMBOL] = originalSymbolValue
+      }
+    }
+  })
+})
+
 describe('safeStorageOperation', () => {
   it('should return result on success', () => {
     const result = safeStorageOperation('test', () => 'success')
@@ -307,5 +366,79 @@ describe('safeStorageOperation', () => {
       throw new Error('Storage error without explicit fallback')
     })
     assert.strictEqual(result, null)
+  })
+})
+
+describe('withRetry', () => {
+  it('should resolve immediately if the function succeeds on the first try', async () => {
+    const fn = async () => 'success'
+    const result = await withRetry(fn)
+    assert.strictEqual(result, 'success')
+  })
+
+  it('should retry on failure and resolve if it eventually succeeds', async () => {
+    let attempts = 0
+    const fn = async () => {
+      attempts++
+      if (attempts < 3) throw new Error('temporary error')
+      return 'eventual success'
+    }
+    const result = await withRetry(fn, { retries: 3, delay: 10 })
+    assert.strictEqual(result, 'eventual success')
+    assert.strictEqual(attempts, 3)
+  })
+
+  it('should throw the error if the maximum number of retries is exceeded', async () => {
+    let attempts = 0
+    const fn = async () => {
+      attempts++
+      throw new Error(`error on attempt ${attempts}`)
+    }
+
+    await assert.rejects(
+      async () => await withRetry(fn, { retries: 2, delay: 10 }),
+      { message: 'error on attempt 3' }
+    )
+    assert.strictEqual(attempts, 3) // 1 initial + 2 retries
+  })
+
+  it('should not retry if the error is a non-recoverable GameError', async () => {
+    let attempts = 0
+    const fn = async () => {
+      attempts++
+      throw new GameError('fatal error', { recoverable: false })
+    }
+
+    await assert.rejects(
+      async () => await withRetry(fn, { retries: 5, delay: 10 }),
+      { message: 'fatal error' }
+    )
+    assert.strictEqual(attempts, 1) // Should fail immediately
+  })
+
+  it('should handle fractional and infinite retry values gracefully', async () => {
+    let attempts = 0
+    const fn = async () => {
+      attempts++
+      if (attempts < 2) throw new Error('temp error')
+      return 'success'
+    }
+
+    const resultFractional = await withRetry(fn, { retries: 1.5, delay: 10 })
+    assert.strictEqual(resultFractional, 'success')
+    assert.strictEqual(attempts, 2)
+
+    let attemptsInf = 0
+    const fnInf = async () => {
+      attemptsInf++
+      throw new Error('fail')
+    }
+
+    // Infinity should be handled and default to 3 safe retries (4 maxAttempts)
+    await assert.rejects(
+      async () => await withRetry(fnInf, { retries: Infinity, delay: 1 }),
+      { message: 'fail' }
+    )
+    assert.strictEqual(attemptsInf, 4)
   })
 })
