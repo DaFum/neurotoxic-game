@@ -102,7 +102,7 @@ export const useTravelLogic = ({
   }, [])
 
   // Resolves full venue for capacity checks or fallback naming from ALL_VENUES list
-  const resolveVenue = (venue, id) => {
+  const resolveVenue = useCallback((venue, id) => {
     if (typeof venue === 'string') {
       return ALL_VENUES.find(v => v.id === id) || null
     }
@@ -110,7 +110,7 @@ export const useTravelLogic = ({
       return ALL_VENUES.find(v => v.id === id) || venue
     }
     return venue
-  }
+  }, [])
 
   /**
    * Checks if a target node is connected to the current node
@@ -367,7 +367,7 @@ export const useTravelLogic = ({
           const resolvedVenue = resolveVenue(node.venue, venueId)
 
           if (!resolvedVenue) {
-            addToast('Invalid venue data.', 'error')
+            addToast(i18n.t('ui:error.invalidVenueData', { defaultValue: 'Invalid venue data.' }), 'error')
             return
           }
 
@@ -417,7 +417,7 @@ export const useTravelLogic = ({
         const resolvedVenue = resolveVenue(node.venue, venueId)
 
         if (!resolvedVenue) {
-          addToast('Invalid venue data.', 'error')
+          addToast(i18n.t('ui:error.invalidVenueData', { defaultValue: 'Invalid venue data.' }), 'error')
           if (pendingTravelNode?.id === node.id) clearPendingTravel()
           return
         }
