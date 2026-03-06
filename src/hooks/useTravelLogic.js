@@ -103,7 +103,10 @@ export const useTravelLogic = ({
 
   // Resolves full venue for capacity checks or fallback naming from ALL_VENUES list
   const resolveVenue = (venue, id) => {
-    if (typeof venue === 'string' || !('capacity' in venue)) {
+    if (typeof venue === 'string') {
+      return ALL_VENUES.find(v => v.id === id) || null
+    }
+    if (!('capacity' in venue)) {
       return ALL_VENUES.find(v => v.id === id) || venue
     }
     return venue
@@ -362,6 +365,12 @@ export const useTravelLogic = ({
           }
           const venueId = normalizeVenueId(node.venue)
           const resolvedVenue = resolveVenue(node.venue, venueId)
+
+          if (!resolvedVenue) {
+            addToast('Invalid venue data.', 'error')
+            return
+          }
+
           logger.info('TravelLogic', 'Entering current node Gig', {
             venue: getLocationName(resolvedVenue.name, venueId)
           })
@@ -406,6 +415,12 @@ export const useTravelLogic = ({
       if (node.type !== 'START' && node.venue) {
         const venueId = normalizeVenueId(node.venue)
         const resolvedVenue = resolveVenue(node.venue, venueId)
+
+        if (!resolvedVenue) {
+          addToast('Invalid venue data.', 'error')
+          if (pendingTravelNode?.id === node.id) clearPendingTravel()
+          return
+        }
 
         if (venueId && bList.includes(venueId)) {
           addToast(
