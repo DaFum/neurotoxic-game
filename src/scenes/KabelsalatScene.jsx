@@ -141,12 +141,11 @@ export const KabelsalatScene = () => {
   const isWinningRef = useRef(false)
   const shockTimeoutRef = useRef(null)
 
-  // Generate deterministic seeds for lightning to avoid layout shift on every render
+  // Generate stable seeds for lightning during the shocked period to avoid layout shift on every render
   useEffect(() => {
-    if (isShocked) {
-      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      setLightningSeeds(prev => {
-        if (prev.length === 0) {
+    setLightningSeeds(prevSeeds => {
+      if (isShocked) {
+        if (prevSeeds.length === 0) {
           return Array.from({ length: 15 }).map(() => ({
             id: Math.random().toString(36).slice(2, 11),
             startX: Math.random() * 800,
@@ -156,17 +155,13 @@ export const KabelsalatScene = () => {
             w: Math.random() * 10 + 2
           }))
         }
-        return prev
-      })
-    } else {
-      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      setLightningSeeds(prev => {
-        if (prev.length > 0) {
+      } else {
+        if (prevSeeds.length > 0) {
           return []
         }
-        return prev
-      })
-    }
+      }
+      return prevSeeds
+    })
   }, [isShocked])
 
   // Timer Logik

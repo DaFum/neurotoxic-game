@@ -83,8 +83,8 @@ test('getGigTimeMs', async t => {
       const originalSeekOffsetMs = moduleState?.gigSeekOffsetMs
 
       const context = mockTone.getContext()
-      const originalCurrentTime = context.currentTime
-      const originalRawContext = context.rawContext
+      const originalCurrentTime = context.currentTime || 0
+      const originalRawContextCurrentTime = context.rawContext?.currentTime || 0
 
       // Wrap setup, invocation, and assertions in try/finally
       try {
@@ -116,14 +116,13 @@ test('getGigTimeMs', async t => {
         // 2. Restore original state in finally
         if (context.rawContext) {
           try {
-            context.rawContext.currentTime =
-              originalRawContext?.currentTime || 0
+            context.rawContext.currentTime = originalRawContextCurrentTime
           } catch {
             /* ignore */
           }
         } else {
           try {
-            context.currentTime = originalCurrentTime || 0
+            context.currentTime = originalCurrentTime
           } catch {
             /* ignore */
           }

@@ -84,8 +84,8 @@ test('getRawAudioContext, getAudioContextTimeSec, getToneStartTimeSec', async t 
       context.lookAhead = 0.15
       const time = getToneStartTimeSec(10)
 
-      if (time !== 10.15 && typeof time === 'number') {
-        assert.ok(true)
+      if (context.lookAhead !== 0.15 || typeof time !== 'number') {
+        t.skip('mock lookAhead not applied')
       } else {
         assert.strictEqual(time, 10.15)
       }
