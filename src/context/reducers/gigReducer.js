@@ -148,7 +148,7 @@ export const handleSetLastGigStats = (state, payload) => {
     const currentRep = nextState.reputationByRegion[location] || 0
     if (currentRep < MAX_REPUTATION) {
       const bonus = score >= 90 ? 10 : 5
-      nextState.reputationByRegion[location] = Math.min(MAX_REPUTATION, currentRep + bonus)
+      nextState.reputationByRegion[location] = Math.max(MIN_REPUTATION, Math.min(MAX_REPUTATION, currentRep + bonus))
       logger.info(
         'GameState',
         `Regional reputation gain in ${location} (+${bonus})`

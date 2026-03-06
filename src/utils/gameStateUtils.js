@@ -190,15 +190,15 @@ export const applyEventDelta = (state, delta) => {
         let hasChanges = false
 
         delta.band.relationshipChange.forEach(change => {
+          const otherMember =
+            change.member1 === member.name ? change.member2 : change.member1
+
+          if (isForbiddenKey(otherMember)) return
+
           if (
             change.member1 === member.name ||
             change.member2 === member.name
           ) {
-            const otherMember =
-              change.member1 === member.name ? change.member2 : change.member1
-
-            if (isForbiddenKey(otherMember)) return
-
             let amount = change.change
             // Apply traits
             if (
