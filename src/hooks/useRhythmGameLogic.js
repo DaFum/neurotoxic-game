@@ -8,7 +8,6 @@ import { useRhythmGameInput } from './rhythmGame/useRhythmGameInput'
 
 /**
  * Provides rhythm game state, actions, and update loop for the gig scene.
- * @param {void} _unused - Hook has no direct parameters; state comes from GameState.
  * @returns {{gameStateRef: object, stats: object, actions: object, update: Function}} Rhythm game API.
  */
 export const useRhythmGameLogic = () => {
