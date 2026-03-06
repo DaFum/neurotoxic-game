@@ -36,13 +36,13 @@ describe('SetlistTab', () => {
       <SetlistTab setlist={[]} setSetlist={setSetlist} addToast={addToast} />
     )
 
-    expect(getByText(/SELECTED:/))
+    expect(getByText(/ui:hq.selected/))
     expect(getByText('0')).toBeTruthy()
     // Verify some songs are rendered.
     expect(getByText(SONGS_DB[0].name)).toBeTruthy()
 
     // Check if SELECT buttons are present
-    const selectButtons = queryAllByText('SELECT')
+    const selectButtons = queryAllByText('ui:hq.song_select')
     expect(selectButtons).toBeTruthy()
     expect(selectButtons.length).toBe(SONGS_DB.length)
   })
@@ -60,12 +60,12 @@ describe('SetlistTab', () => {
       />
     )
 
-    expect(getByText(/SELECTED:/))
+    expect(getByText(/ui:hq.selected/))
     expect(getByText('1')).toBeTruthy()
-    expect(getByText('ACTIVE')).toBeTruthy()
+    expect(getByText('ui:hq.song_active')).toBeTruthy()
 
     // Other songs should still have SELECT
-    const selectButtons = queryAllByText('SELECT')
+    const selectButtons = queryAllByText('ui:hq.song_select')
     expect(selectButtons).toBeTruthy()
     expect(selectButtons.length).toBe(SONGS_DB.length - 1)
   })
@@ -77,14 +77,14 @@ describe('SetlistTab', () => {
       <SetlistTab setlist={[]} setSetlist={setSetlist} addToast={addToast} />
     )
 
-    const selectButtons = queryAllByText('SELECT')
+    const selectButtons = queryAllByText('ui:hq.song_select')
     fireEvent.click(selectButtons[0])
 
     expect(setSetlist.mock.calls.length).toBe(1)
     expect(setSetlist.mock.calls[0][0]).toEqual([{ id: SONGS_DB[0].id }])
 
     expect(addToast.mock.calls.length).toBe(1)
-    expect(addToast.mock.calls[0][0]).toBe('Song selected for next Gig')
+    expect(addToast.mock.calls[0][0]).toBe('ui:bandhq.setlist.songSelected')
     expect(addToast.mock.calls[0][1]).toBe('success')
   })
 
@@ -101,14 +101,14 @@ describe('SetlistTab', () => {
       />
     )
 
-    const activeButton = getByText('ACTIVE')
+    const activeButton = getByText('ui:hq.song_active')
     fireEvent.click(activeButton)
 
     expect(setSetlist.mock.calls.length).toBe(1)
     expect(setSetlist.mock.calls[0][0]).toEqual([])
 
     expect(addToast.mock.calls.length).toBe(1)
-    expect(addToast.mock.calls[0][0]).toBe('Song removed from setlist')
+    expect(addToast.mock.calls[0][0]).toBe('ui:bandhq.setlist.songRemoved')
     expect(addToast.mock.calls[0][1]).toBe('info')
   })
 
@@ -125,9 +125,9 @@ describe('SetlistTab', () => {
       />
     )
 
-    expect(getByText('ACTIVE'))
+    expect(getByText('ui:hq.song_active'))
 
-    const activeButton = getByText('ACTIVE')
+    const activeButton = getByText('ui:hq.song_active')
     fireEvent.click(activeButton)
 
     expect(setSetlist.mock.calls.length).toBe(1)
@@ -147,7 +147,7 @@ describe('SetlistTab', () => {
       />
     )
 
-    const practiceButton = getByText('START PRACTICE')
+    const practiceButton = getByText('ui:hq.start_practice')
     fireEvent.click(practiceButton)
 
     expect(mockSetCurrentGig.mock.calls.length).toBe(1)
@@ -171,16 +171,14 @@ describe('SetlistTab', () => {
       />
     )
 
-    const practiceButton = getByText('START PRACTICE')
+    const practiceButton = getByText('ui:hq.start_practice')
     fireEvent.click(practiceButton)
 
     expect(mockSetCurrentGig.mock.calls.length).toBe(0)
     expect(mockChangeScene.mock.calls.length).toBe(0)
 
     expect(addToast.mock.calls.length).toBe(1)
-    expect(addToast.mock.calls[0][0]).toBe(
-      'Select at least one song to practice!'
-    )
+    expect(addToast.mock.calls[0][0]).toBe('ui:bandhq.setlist.selectOne')
     expect(addToast.mock.calls[0][1]).toBe('warning')
   })
 })

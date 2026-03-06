@@ -2,6 +2,47 @@ import '@testing-library/jest-dom'
 import { cleanup } from '@testing-library/react'
 import { afterEach, beforeEach, vi } from 'vitest'
 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key, options) => {
+      if (options?.returnObjects && key === 'ui:featureList') {
+        return [
+          {
+            title: 'Feature Section 1',
+            description: 'Description 1',
+            type: 'bullets',
+            items: ['Item 1: Detail', 'Item 2']
+          },
+          {
+            title: 'Feature Section 2',
+            description: 'Description 2',
+            type: 'table',
+            headers: ['Header 1', 'Header 2'],
+            rows: [
+              ['Row1Col1', 'Row1Col2'],
+              ['Row2Col1', 'Row2Col2']
+            ]
+          }
+        ]
+      }
+      if (options?.returnObjects) {
+        return []
+      }
+      return key
+    },
+    i18n: {
+      language: 'en',
+      changeLanguage: vi.fn(),
+      options: {}
+    }
+  }),
+  withTranslation: () => Component => {
+    Component.defaultProps = { ...Component.defaultProps, t: key => key }
+    return Component
+  },
+  Trans: ({ i18nKey }) => i18nKey || 'mock-trans'
+}))
+
 // Cleanup after each test case
 afterEach(() => {
   cleanup()

@@ -5,34 +5,6 @@ import { useGameState } from '../src/context/GameState'
 import { useBandHQModal } from '../src/hooks/useBandHQModal'
 
 // Mock dependencies
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key, options) => {
-      // Mock the featureList return to test dynamic content
-      if (key === 'ui:featureList' && options?.returnObjects) {
-        return [
-          {
-            title: 'Feature Section 1',
-            description: 'Description 1',
-            type: 'bullets',
-            items: ['Item 1: Detail', 'Item 2']
-          },
-          {
-            title: 'Feature Section 2',
-            description: 'Description 2',
-            type: 'table',
-            headers: ['Header 1', 'Header 2'],
-            rows: [
-              ['Row1Col1', 'Row1Col2'],
-              ['Row2Col1', 'Row2Col2']
-            ]
-          }
-        ]
-      }
-      return key
-    }
-  })
-}))
 
 vi.mock('../src/context/GameState', () => ({
   useGameState: vi.fn()
