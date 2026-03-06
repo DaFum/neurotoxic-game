@@ -65,8 +65,8 @@ describe('eventReducer', () => {
       const nextState = handleApplyEventDelta(baseState, payload)
 
       assert.strictEqual(nextState.band.harmony, 45)
-      // applyTraitUnlocks does not modify the original state's members traits if mocked,
-      // but we removed our applyTraitUnlocks mock, so the real one runs and picks up the tech_wizard trait returned by our checkTraitUnlocks mock!
+      // checkTraitUnlocks is mocked to return a tech_wizard trait for member m1,
+      // and the real trait application logic should add that trait to Matze and emit at least one toast.
       const matze = nextState.band.members.find(m => m.name === 'Matze')
       assert.ok(matze.traits.some(t => t.id === 'tech_wizard'))
       assert.ok(nextState.toasts.length > 0)

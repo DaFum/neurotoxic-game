@@ -70,7 +70,7 @@ describe('socialReducer', () => {
 
     it('should return unchanged state if payload is not an object/function', () => {
       const nextState = handleUpdateSocial(baseState, 'string_payload')
-      assert.deepStrictEqual(nextState, baseState)
+      assert.strictEqual(nextState, baseState)
     })
   })
 
