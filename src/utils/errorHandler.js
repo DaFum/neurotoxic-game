@@ -242,25 +242,7 @@ const sanitizeErrorInfo = errorInfo => ({
   timestamp: errorInfo?.timestamp || Date.now()
 })
 
-/**
- * Handles an error by logging and optionally showing user feedback
- * @param {Error} error - The error to handle
- * @param {Object} [options] - Handler options
- * @param {Function} [options.addToast] - Toast notification function
- * @param {boolean} [options.silent] - Whether to suppress user notifications
- * @param {string} [options.fallbackMessage] - Fallback message for unknown errors
- * @returns {Object} Processed error info
- */
-export const handleError = (error, options = {}) => {
-  const safeOptions = isPlainObject(options) ? options : {}
-  const {
-    addToast,
-    silent = false,
-    fallbackMessage = 'An error occurred'
-  } = safeOptions
-
-  const normalizedOptions = normalizeHandleErrorOptions(safeOptions)
-
+const buildErrorInfo = (error, normalizedOptions, fallbackMessage) => {
   let errorInfo
 
   if (error instanceof GameError) {
@@ -295,6 +277,10 @@ export const handleError = (error, options = {}) => {
     errorInfo.severity = normalizedOptions.severity
   }
 
+  return errorInfo
+}
+
+const logErrorLocally = errorInfo => {
   // Log to error log
   errorLog.push(errorInfo)
   if (errorLog.length > MAX_ERROR_LOG_SIZE) {
@@ -322,7 +308,9 @@ export const handleError = (error, options = {}) => {
     default:
       logger.debug('ErrorHandler', errorInfo.message, errorInfo)
   }
+}
 
+const reportErrorRemote = errorInfo => {
   // Remote tracking stub
   if (typeof window !== 'undefined' && window.navigator?.onLine) {
     try {
@@ -336,18 +324,6 @@ export const handleError = (error, options = {}) => {
     } catch (_e) {
       // Ignore tracking errors
     }
-  }
-
-  // Toast taxonomy mapping: high-severity failures => `error`, recoverable/medium issues => `warning`.
-  // UI supports: success | error | info | warning.
-  if (!silent && addToast) {
-    const toastType =
-      errorInfo.severity === ErrorSeverity.CRITICAL ||
-      errorInfo.severity === ErrorSeverity.HIGH
-        ? 'error'
-        : 'warning'
-
-    addToast(errorInfo.message, toastType)
   }
 
   // Remote Tracking (Fire and forget via beacon)
@@ -364,6 +340,45 @@ export const handleError = (error, options = {}) => {
       // Ignore tracking failures to prevent recursive errors
     }
   }
+}
+
+const showErrorToast = (errorInfo, silent, addToast) => {
+  // Toast taxonomy mapping: high-severity failures => `error`, recoverable/medium issues => `warning`.
+  // UI supports: success | error | info | warning.
+  if (!silent && addToast) {
+    const toastType =
+      errorInfo.severity === ErrorSeverity.CRITICAL ||
+      errorInfo.severity === ErrorSeverity.HIGH
+        ? 'error'
+        : 'warning'
+
+    addToast(errorInfo.message, toastType)
+  }
+}
+
+/**
+ * Handles an error by logging and optionally showing user feedback
+ * @param {Error} error - The error to handle
+ * @param {Object} [options] - Handler options
+ * @param {Function} [options.addToast] - Toast notification function
+ * @param {boolean} [options.silent] - Whether to suppress user notifications
+ * @param {string} [options.fallbackMessage] - Fallback message for unknown errors
+ * @returns {Object} Processed error info
+ */
+export const handleError = (error, options = {}) => {
+  const safeOptions = isPlainObject(options) ? options : {}
+  const {
+    addToast,
+    silent = false,
+    fallbackMessage = 'An error occurred'
+  } = safeOptions
+
+  const normalizedOptions = normalizeHandleErrorOptions(safeOptions)
+  const errorInfo = buildErrorInfo(error, normalizedOptions, fallbackMessage)
+
+  logErrorLocally(errorInfo)
+  reportErrorRemote(errorInfo)
+  showErrorToast(errorInfo, silent, addToast)
 
   return errorInfo
 }
