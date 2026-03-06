@@ -239,9 +239,7 @@ const playProceduralMetal = async (currentSong, onSongEnded, rng) => {
 
 // Helper 4: Song Playback Logic
 const playAudioForSong = async (currentSong, notes, onSongEnded, rng) => {
-  let bgAudioStarted = false
-
-  bgAudioStarted = await playOggBuffer(currentSong, notes, onSongEnded)
+  let bgAudioStarted = await playOggBuffer(currentSong, notes, onSongEnded)
 
   if (!bgAudioStarted) {
     bgAudioStarted = await playMidiSynthesis(currentSong, notes, onSongEnded)
@@ -255,22 +253,24 @@ const playAudioForSong = async (currentSong, notes, onSongEnded, rng) => {
     )
   }
 
+  let finalNotes = [...notes]
+
   // Fallback: Procedural Generation
-  if (notes.length === 0 || !bgAudioStarted) {
-    if (notes.length === 0) {
+  if (finalNotes.length === 0 || !bgAudioStarted) {
+    if (finalNotes.length === 0) {
       const songNotes = generateNotesForSong(currentSong, {
         leadIn: NOTE_LEAD_IN_MS,
         random: rng
       })
-      notes = notes.concat(songNotes)
+      finalNotes = finalNotes.concat(songNotes)
     }
 
     if (!bgAudioStarted) {
-      bgAudioStarted = await playProceduralMetal(currentSong, onSongEnded, rng)
+      await playProceduralMetal(currentSong, onSongEnded, rng)
     }
   }
 
-  return notes
+  return finalNotes
 }
 
 // Helper 4: onSongEnded stats handler
@@ -495,15 +495,15 @@ export const useRhythmGameAudio = ({
           })
         }
 
-        notes = await playAudioForSong(currentSong, notes, onSongEnded, rng)
+        const finalNotes = await playAudioForSong(currentSong, notes, onSongEnded, rng)
 
         // Update Game State
-        gameStateRef.current.notes = notes
+        gameStateRef.current.notes = finalNotes
         gameStateRef.current.nextMissCheckIndex = 0
         gameStateRef.current.notesVersion =
           gameStateRef.current.notesVersion + 1
 
-        const maxNoteTime = notes.length > 0 ? notes[notes.length - 1].time : 0
+        const maxNoteTime = finalNotes.length > 0 ? finalNotes[finalNotes.length - 1].time : 0
         const buffer = 4000
         const noteDuration = maxNoteTime + buffer
         const audioDuration = resolveSongPlaybackWindow(currentSong, {
