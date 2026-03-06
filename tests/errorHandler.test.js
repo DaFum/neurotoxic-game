@@ -324,11 +324,9 @@ describe('initGlobalErrorHandling', () => {
 
       // Test the listener directly with an Error
       const errorEvent = { reason: new Error('unhandled error test') }
-      addedListener(errorEvent) // This should call handleError internally which we can't easily spy on,
-                                // but we know it should dispatch an event if severity is high enough,
-                                // but handleError is called with severity HIGH so it won't dispatch 'app:error:critical'.
-                                // We just ensure it doesn't throw.
-      assert.ok(true)
+      assert.doesNotThrow(() => {
+        addedListener(errorEvent)
+      }, 'The unhandledrejection listener should process the error without throwing')
 
       // Test with non-Error string
       const stringEvent = { reason: 'some string reason' }

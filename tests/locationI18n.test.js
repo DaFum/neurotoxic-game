@@ -33,6 +33,11 @@ test('translateLocation', async t => {
     assert.strictEqual(translateLocation(mockT, 'venues:dive_bar'), 'dive bar')
   })
 
+  await t.test('formats raw venue string if translation explicitly returns an empty string', () => {
+    const mockTEmpty = () => ''
+    assert.strictEqual(translateLocation(mockTEmpty, 'venues:dive_bar'), 'dive bar')
+  })
+
   await t.test('returns location or fallback if not a venue key and no translation exists', () => {
     assert.strictEqual(translateLocation(mockT, 'random_place'), 'random_place')
   })
