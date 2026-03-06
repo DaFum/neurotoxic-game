@@ -142,27 +142,26 @@ export const KabelsalatScene = () => {
   const shockTimeoutRef = useRef(null)
 
   // Generate stable seeds for lightning during the shocked period to avoid layout shift on every render
+  const generateSeeds = useCallback(() => {
+    return Array.from({ length: 15 }).map(() => ({
+      id: Math.random().toString(36).slice(2, 11),
+      startX: Math.random() * 800,
+      o1: Math.random() * 300 - 150,
+      o2: Math.random() * 300 - 150,
+      o3: Math.random() * 300 - 150,
+      w: Math.random() * 10 + 2
+    }))
+  }, [])
+
   useEffect(() => {
-    setLightningSeeds(prevSeeds => {
-      if (isShocked) {
-        if (prevSeeds.length === 0) {
-          return Array.from({ length: 15 }).map(() => ({
-            id: Math.random().toString(36).slice(2, 11),
-            startX: Math.random() * 800,
-            o1: Math.random() * 300 - 150,
-            o2: Math.random() * 300 - 150,
-            o3: Math.random() * 300 - 150,
-            w: Math.random() * 10 + 2
-          }))
-        }
-      } else {
-        if (prevSeeds.length > 0) {
-          return []
-        }
-      }
-      return prevSeeds
+    // We intentionally don't update if lengths match to avoid re-renders
+    // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+    setLightningSeeds(prev => {
+      if (isShocked && prev.length === 0) return generateSeeds()
+      if (!isShocked && prev.length > 0) return []
+      return prev
     })
-  }, [isShocked])
+  }, [isShocked, generateSeeds])
 
   // Timer Logik
   useEffect(() => {
