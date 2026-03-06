@@ -35,6 +35,12 @@ const formatLocalizedNumber = (value, locale) => {
 export const PreGig = () => {
   const { t, i18n } = useTranslation(['ui', 'venues'])
 
+  /**
+   * Static options for gig modifiers.
+   * Memoized to prevent referential instability in child components.
+   * Only depends on `t` so it correctly updates when the user changes language.
+   * Modifier costs are loaded from the static `MODIFIER_COSTS` object.
+   */
   const GIG_MODIFIER_OPTIONS = useMemo(
     () => [
       {
