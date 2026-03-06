@@ -367,7 +367,12 @@ export const useTravelLogic = ({
           const resolvedVenue = resolveVenue(node.venue, venueId)
 
           if (!resolvedVenue) {
-            addToast(i18n.t('ui:error.invalidVenueData', { defaultValue: 'Invalid venue data.' }), 'error')
+            addToast(
+              i18n.t('ui:error.invalidVenueData', {
+                defaultValue: 'Invalid venue data.'
+              }),
+              'error'
+            )
             return
           }
 
@@ -417,7 +422,12 @@ export const useTravelLogic = ({
         const resolvedVenue = resolveVenue(node.venue, venueId)
 
         if (!resolvedVenue) {
-          addToast(i18n.t('ui:error.invalidVenueData', { defaultValue: 'Invalid venue data.' }), 'error')
+          addToast(
+            i18n.t('ui:error.invalidVenueData', {
+              defaultValue: 'Invalid venue data.'
+            }),
+            'error'
+          )
           if (pendingTravelNode?.id === node.id) clearPendingTravel()
           return
         }
