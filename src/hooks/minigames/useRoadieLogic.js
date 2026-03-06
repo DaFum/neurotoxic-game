@@ -113,8 +113,17 @@ export const useRoadieLogic = () => {
         spawner.timer += deltaMS
         while (spawner.timer > spawner.rate) {
           spawner.timer -= spawner.rate
+
+          const id = `${performance.now()}-${spawner.row}-${spawner.timer}`
+          let hash = 0
+          for (let i = 0; i < id.length; i++) {
+            hash = (hash << 5) - hash + id.charCodeAt(i)
+            hash |= 0
+          }
+
           game.traffic.push({
-            id: `${performance.now()}-${spawner.row}-${spawner.timer}`, // Unique ID
+            id, // Unique ID
+            textureHash: Math.abs(hash),
             row: spawner.row,
             x: spawner.speed > 0 ? -1 : GRID_WIDTH, // Start outside
             speed: spawner.speed,
