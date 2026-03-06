@@ -297,12 +297,12 @@ export const createUnlockTraitAction = (memberId, traitId) => ({
 /**
  * Creates an action to blacklist a venue.
  * The `handleAddVenueBlacklist` reducer handles it.
- * @param {string} venueName - The name of the venue to blacklist.
+ * @param {string} venueId - The ID of the venue to blacklist.
  * @returns {Object} Action object
  */
-export const createAddVenueBlacklistAction = venueName => ({
+export const createAddVenueBlacklistAction = venueId => ({
   type: ActionTypes.ADD_VENUE_BLACKLIST,
-  payload: venueName
+  payload: venueId
 })
 
 /**

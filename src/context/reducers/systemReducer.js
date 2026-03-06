@@ -189,10 +189,7 @@ export const handleLoadGame = (state, payload) => {
     safeState.player.location = migrateLegacyVenueId(safeState.player.location)
   }
 
-  if (Array.isArray(safeState.venueBlacklist)) {
-    safeState.venueBlacklist =
-      safeState.venueBlacklist.map(migrateLegacyVenueId)
-  }
+  safeState.venueBlacklist = safeState.venueBlacklist.map(migrateLegacyVenueId)
 
   // Migration: energy -> catering
   if (safeState.gigModifiers.energy !== undefined) {

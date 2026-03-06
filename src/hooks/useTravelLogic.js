@@ -31,6 +31,19 @@ import { translateLocation } from '../utils/locationI18n.js'
  */
 const TRAVEL_ANIMATION_TIMEOUT_MS = 1510
 
+const normalizeVenueId = venue => {
+  if (!venue) return null
+  let id = venue.id || venue
+  if (
+    typeof id === 'string' &&
+    id.startsWith('venues:') &&
+    id.endsWith('.name')
+  ) {
+    id = id.replace('venues:', '').replace('.name', '')
+  }
+  return typeof id === 'string' ? id : null
+}
+
 /**
  * Custom hook for managing travel state and logic
  * @param {Object} params - Hook parameters
@@ -210,7 +223,7 @@ export const useTravelLogic = ({
           ...player.van,
           fuel: Math.max(0, (player.van?.fuel ?? 0) - fuelLiters)
         },
-        location: node.venue?.id?.split('_')?.[0] || 'Unknown',
+        location: normalizeVenueId(node.venue)?.split('_')?.[0] || 'Unknown',
         currentNodeId: node.id,
         totalTravels: (player.totalTravels ?? 0) + 1
       })
@@ -388,7 +401,8 @@ export const useTravelLogic = ({
       const bList = venueBlacklistRef.current || []
 
       if (node.type !== 'START' && node.venue) {
-        if (node.venue.id && bList.includes(node.venue.id)) {
+        const venueId = normalizeVenueId(node.venue)
+        if (venueId && bList.includes(venueId)) {
           addToast(
             `Booking refused: ${getLocationName(node.venue.name)} has permanently blacklisted you!`,
             'error'
@@ -406,7 +420,7 @@ export const useTravelLogic = ({
           return
         }
 
-        const regionId = node.venue?.id?.split('_')?.[0] || 'Unknown'
+        const regionId = venueId?.split('_')?.[0] || 'Unknown'
         if ((reputation[regionId] || 0) <= -30) {
           addToast(
             `Booking refused: The venue in ${getLocationName(node.venue.name)} blacklisted you due to poor regional reputation!`,

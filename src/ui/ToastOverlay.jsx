@@ -26,6 +26,14 @@ const TOAST_STYLE_MAP = {
   }
 }
 
+const translateContextKeys = (context, t) => {
+  for (const prop of Object.keys(context)) {
+    if (typeof context[prop] === 'string' && context[prop].includes(':')) {
+      context[prop] = t(context[prop])
+    }
+  }
+}
+
 /**
  * Renders global toast notifications with consistent visual taxonomy.
  *
@@ -75,39 +83,34 @@ export const ToastOverlay = () => {
                         ...(toast.options || {}),
                         defaultValue: toast.message
                       })
-                    : toast.message &&
-                        toast.message.includes('|') &&
-                        toast.message.startsWith('ui:')
+                    : toast.message && toast.message.startsWith('ui:')
                       ? (() => {
-                          const firstPipeIdx = toast.message.indexOf('|')
-                          const key = toast.message.slice(0, firstPipeIdx)
-                          const contextStr = toast.message.slice(
-                            firstPipeIdx + 1
-                          )
-                          try {
-                            const context = JSON.parse(contextStr)
-                            // Safely translate deeply nested key refs in context
-                            if (context.name && context.name.includes(':')) {
-                              context.name = t(context.name)
-                            }
-                            if (
-                              context.venueLabel &&
-                              context.venueLabel.includes(':')
-                            ) {
-                              context.venueLabel = t(context.venueLabel)
-                            }
-                            return t(key, context)
-                          } catch (_e) {
-                            logger.error(
-                              'UI',
-                              'Toast message JSON parse error',
-                              {
-                                error: _e,
-                                contextStr,
-                                toastMessage: toast.message
-                              }
+                          if (toast.message.includes('|')) {
+                            const firstPipeIdx = toast.message.indexOf('|')
+                            const key = toast.message.slice(0, firstPipeIdx)
+                            const contextStr = toast.message.slice(
+                              firstPipeIdx + 1
                             )
-                            return t(key)
+                            try {
+                              const context = JSON.parse(contextStr)
+                              // Safely translate nested key refs in context dynamically
+                              translateContextKeys(context, t)
+                              return t(key, context)
+                            } catch (_e) {
+                              logger.error(
+                                'UI',
+                                'Toast message JSON parse error',
+                                {
+                                  error: _e,
+                                  contextStr,
+                                  toastMessage: toast.message
+                                }
+                              )
+                              return t(key)
+                            }
+                          } else {
+                            // Straight translation for parameterless keys
+                            return t(toast.message)
                           }
                         })()
                       : toast.message}
