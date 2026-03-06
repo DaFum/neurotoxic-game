@@ -24,7 +24,7 @@ import { calcBaseBreakdownChance } from '../utils/upgradeUtils.js'
 import i18n from '../i18n.js'
 import { translateLocation } from '../utils/locationI18n.js'
 import { normalizeVenueId } from '../utils/mapUtils.js'
-import { VENUES } from '../data/venues.js'
+import { ALL_VENUES } from '../data/venues.js'
 
 /**
  * Failsafe timeout duration in milliseconds
@@ -101,10 +101,10 @@ export const useTravelLogic = ({
     return translateLocation(i18n.t.bind(i18n), key, key)
   }, [])
 
-  // Resolves full venue for capacity checks or fallback naming from VENUES list
+  // Resolves full venue for capacity checks or fallback naming from ALL_VENUES list
   const resolveVenue = (venue, id) => {
     if (typeof venue === 'string' || !('capacity' in venue)) {
-      return VENUES.find(v => v.id === id) || venue
+      return ALL_VENUES.find(v => v.id === id) || venue
     }
     return venue
   }
