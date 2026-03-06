@@ -1,0 +1,147 @@
+import { describe, it, beforeEach } from 'node:test'
+import assert from 'node:assert'
+
+import {
+  handleStartTravelMinigame,
+  handleCompleteTravelMinigame,
+  handleStartRoadieMinigame,
+  handleCompleteRoadieMinigame,
+  handleStartKabelsalatMinigame,
+  handleCompleteKabelsalatMinigame
+} from '../src/context/reducers/minigameReducer.js'
+
+import { GAME_PHASES, MINIGAME_TYPES, DEFAULT_MINIGAME_STATE } from '../src/context/gameConstants.js'
+
+describe('minigameReducer', () => {
+  let baseState
+
+  beforeEach(() => {
+    baseState = {
+      player: {
+        money: 1000,
+        currentNodeId: 'node1',
+        totalTravels: 0,
+        van: { fuel: 100, condition: 100 },
+        stats: { totalDistance: 0 }
+      },
+      band: {
+        harmony: 50,
+        members: []
+      },
+      gameMap: {
+        nodes: {
+          node1: { id: 'node1', venue: { name: 'Node 1 Venue' }, x: 0, y: 0 },
+          node2: { id: 'node2', venue: { name: 'Node 2 Venue' }, x: 100, y: 0 }
+        }
+      },
+      currentScene: GAME_PHASES.OVERWORLD,
+      minigame: { ...DEFAULT_MINIGAME_STATE },
+      gigModifiers: {},
+      toasts: []
+    }
+  })
+
+  describe('handleStartTravelMinigame', () => {
+    it('should set currentScene and minigame state', () => {
+      const payload = { targetNodeId: 'node2' }
+      const nextState = handleStartTravelMinigame(baseState, payload)
+
+      assert.strictEqual(nextState.currentScene, GAME_PHASES.TRAVEL_MINIGAME)
+      assert.strictEqual(nextState.minigame.active, true)
+      assert.strictEqual(nextState.minigame.type, MINIGAME_TYPES.TOURBUS)
+      assert.strictEqual(nextState.minigame.targetDestination, 'node2')
+    })
+  })
+
+  describe('handleCompleteTravelMinigame', () => {
+    it('should update state properly on valid target', () => {
+      baseState.minigame.targetDestination = 'node2'
+      const payload = { damageTaken: 10, itemsCollected: 5 }
+      const nextState = handleCompleteTravelMinigame(baseState, payload)
+
+      assert.strictEqual(nextState.player.money, 976) // 1000 - 24
+      assert.strictEqual(nextState.player.location, 'Node 2 Venue')
+      assert.strictEqual(nextState.player.currentNodeId, 'node2')
+      assert.strictEqual(nextState.player.totalTravels, 1)
+      assert.strictEqual(nextState.player.van.fuel, 37.599999999999994) // 100 - 62.4
+      assert.strictEqual(nextState.player.van.condition, 95) // 100 - 5
+      assert.strictEqual(nextState.player.stats.totalDistance, 520)
+      assert.deepStrictEqual(nextState.minigame, { ...DEFAULT_MINIGAME_STATE })
+    })
+
+    it('should return safely if invalid targetNode', () => {
+      baseState.minigame.targetDestination = 'invalid_node'
+      const payload = { damageTaken: 10, itemsCollected: 5 }
+      const nextState = handleCompleteTravelMinigame(baseState, payload)
+      assert.strictEqual(nextState.currentScene, GAME_PHASES.OVERWORLD)
+      assert.deepStrictEqual(nextState.minigame, { ...DEFAULT_MINIGAME_STATE })
+    })
+  })
+
+  describe('handleStartKabelsalatMinigame', () => {
+    it('should set currentScene and minigame state', () => {
+      const payload = { gigId: 'gig1' }
+      const nextState = handleStartKabelsalatMinigame(baseState, payload)
+
+      assert.strictEqual(nextState.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
+      assert.strictEqual(nextState.minigame.active, true)
+      assert.strictEqual(nextState.minigame.type, MINIGAME_TYPES.KABELSALAT)
+      assert.strictEqual(nextState.minigame.gigId, 'gig1')
+    })
+  })
+
+  describe('handleCompleteKabelsalatMinigame', () => {
+    it('should update player money and band harmony', () => {
+      const payload = { results: { score: 1000, timeLimit: 60 } }
+      const nextState = handleCompleteKabelsalatMinigame(baseState, payload)
+
+      assert.strictEqual(nextState.band.harmony, 40) // 50 - 10 stress
+      assert.strictEqual(nextState.player.money, 1000) // reward is 0 for Kabelsalat currently
+      assert.strictEqual(nextState.gigModifiers.damaged_gear, true)
+      assert.deepStrictEqual(nextState.minigame, { ...DEFAULT_MINIGAME_STATE })
+    })
+
+    it('should apply penalty if performance is poor', () => {
+      const payload = { results: { score: 0, timeLimit: 60 } }
+      const nextState = handleCompleteKabelsalatMinigame(baseState, payload)
+
+      assert.strictEqual(nextState.band.harmony, 40) // 50 - 10 stress
+      assert.strictEqual(nextState.player.money, 1000)
+      assert.strictEqual(nextState.gigModifiers.damaged_gear, true)
+    })
+  })
+
+  describe('handleStartRoadieMinigame', () => {
+    it('should set currentScene and minigame state', () => {
+      const payload = { gigId: 'gig2' }
+      const nextState = handleStartRoadieMinigame(baseState, payload)
+
+      assert.strictEqual(nextState.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
+      assert.strictEqual(nextState.minigame.active, true)
+      assert.strictEqual(nextState.minigame.type, MINIGAME_TYPES.ROADIE)
+      assert.strictEqual(nextState.minigame.gigId, 'gig2')
+      assert.strictEqual(nextState.minigame.equipmentRemaining, 10)
+    })
+  })
+
+  describe('handleCompleteRoadieMinigame', () => {
+    it('should update player money and band harmony', () => {
+      const payload = { equipmentDamage: 60 }
+      const nextState = handleCompleteRoadieMinigame(baseState, payload)
+
+      // 50 - 12
+      assert.strictEqual(nextState.band.harmony, 38)
+      // 1000 - 120
+      assert.strictEqual(nextState.player.money, 880)
+      assert.strictEqual(nextState.gigModifiers.damaged_gear, true)
+      assert.deepStrictEqual(nextState.minigame, { ...DEFAULT_MINIGAME_STATE })
+    })
+
+    it('should not set damaged_gear if equipmentDamage is low', () => {
+      const payload = { equipmentDamage: 20 }
+      const nextState = handleCompleteRoadieMinigame(baseState, payload)
+
+      assert.strictEqual(nextState.gigModifiers.damaged_gear, undefined)
+    })
+  })
+})
