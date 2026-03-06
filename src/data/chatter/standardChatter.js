@@ -1332,7 +1332,7 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_204',
     weight: 10,
-    condition: state => state.player.location === 'venues:stendal_proberaum.name'
+    condition: state => state.player.location?.includes('venues:stendal')
   },
   {
     text: 'chatter:standard.msg_205',
@@ -1343,12 +1343,12 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_206',
     weight: 10,
-    condition: state => state.player.location === 'venues:stendal_proberaum.name'
+    condition: state => state.player.location?.includes('venues:stendal')
   },
   {
     text: 'chatter:standard.msg_207',
     weight: 8,
-    condition: state => state.player.location === 'venues:stendal_proberaum.name'
+    condition: state => state.player.location?.includes('venues:stendal')
   },
   {
     text: 'chatter:standard.msg_208',
@@ -1371,7 +1371,7 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_211',
     weight: 8,
-    condition: state => state.player.location === 'venues:stendal_proberaum.name',
+    condition: state => state.player.location?.includes('venues:stendal'),
     speaker: 'Lars'
   },
   {
