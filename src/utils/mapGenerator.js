@@ -91,7 +91,48 @@ export class MapGenerator {
       v => v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum'
     )
 
-    // Generate intermediate layers
+    const pools = {
+      availableEasy,
+      availableMedium,
+      availableHard,
+      fallbackEasy,
+      fallbackMedium,
+      fallbackHard
+    }
+
+    this.#generateIntermediateLayers(map, depth, pools)
+    this.#generateConnections(map, depth)
+    this.#generateFinaleLayer(map, depth, hardVenues)
+    this.#assignInitialCoordinates(map)
+
+    // To ensure purity, we clone the nodes before resolving overlaps if possible,
+    // but here we are mutating the map object we just created, which is local to this function.
+    // However, the resolveOverlaps method signature implies it works on an object.
+    // Given the context of "generating" a map, mutating the *newly created* nodes is acceptable locally,
+    // but technically the method `resolveOverlaps` mutates its input.
+    // For strict purity, we'd return new nodes, but `generateMap` owns `map`.
+    // We will keep it mutating the *internal* map structure being built.
+    this.resolveOverlaps(map.nodes)
+
+    return map
+  }
+
+  /**
+   * Generates intermediate layers of the map.
+   * @param {{layers: object[][], nodes: Object<string, object>, connections: object[]}} map - The map object.
+   * @param {number} depth - The total depth of the map.
+   * @param {{availableEasy: object[], availableMedium: object[], availableHard: object[], fallbackEasy: object[], fallbackMedium: object[], fallbackHard: object[]}} pools - The available and fallback venue pools.
+   */
+  _generateIntermediateLayers(map, depth, pools) {
+    const {
+      availableEasy,
+      availableMedium,
+      availableHard,
+      fallbackEasy,
+      fallbackMedium,
+      fallbackHard
+    } = pools
+
     for (let i = 1; i < depth; i++) {
       const layerNodes = []
       // Determine node count for this layer (2-4 branching)
@@ -165,7 +206,14 @@ export class MapGenerator {
       }
       map.layers.push(layerNodes)
     }
+  }
 
+  /**
+   * Generates connections between layers.
+   * @param {object} map - The map object.
+   * @param {number} depth - The total depth of the map.
+   */
+  _generateConnections(map, depth) {
     // Generate Connections
     // Ensure every node in layer I connects to at least one in I+1
     // Ensure every node in layer I+1 has at least one parent in I
@@ -196,7 +244,15 @@ export class MapGenerator {
         }
       })
     }
+  }
 
+  /**
+   * Generates the finale layer.
+   * @param {object} map - The map object.
+   * @param {number} depth - The total depth of the map.
+   * @param {Array} hardVenues - The hard venues array.
+   */
+  _generateFinaleLayer(map, depth, hardVenues) {
     // Finale Layer
     const finaleVenue =
       ALL_VENUES.find(v => v.id === 'leipzig_arena') || hardVenues[0]
@@ -216,7 +272,13 @@ export class MapGenerator {
     map.layers[depth - 1].forEach(node => {
       map.connections.push({ from: node.id, to: endNode.id })
     })
+  }
 
+  /**
+   * Assigns initial coordinates to map nodes.
+   * @param {object} map - The map object.
+   */
+  _assignInitialCoordinates(map) {
     // Assign initial coordinates with jitter and resolve overlaps
     // Increased jitter to +/- 5 to help initial separation
     Object.values(map.nodes).forEach(node => {
@@ -225,17 +287,6 @@ export class MapGenerator {
       node.x = baseX + (this.random() * 10 - 5)
       node.y = baseY + (this.random() * 10 - 5)
     })
-
-    // To ensure purity, we clone the nodes before resolving overlaps if possible,
-    // but here we are mutating the map object we just created, which is local to this function.
-    // However, the resolveOverlaps method signature implies it works on an object.
-    // Given the context of "generating" a map, mutating the *newly created* nodes is acceptable locally,
-    // but technically the method `resolveOverlaps` mutates its input.
-    // For strict purity, we'd return new nodes, but `generateMap` owns `map`.
-    // We will keep it mutating the *internal* map structure being built.
-    this.resolveOverlaps(map.nodes)
-
-    return map
   }
 
   /**
