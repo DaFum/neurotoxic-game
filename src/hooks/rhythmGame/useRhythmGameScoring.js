@@ -12,6 +12,7 @@ import {
   stopAudio
 } from '../../utils/audioEngine'
 import { getScheduledHitTimeMs } from '../../utils/audio/timingUtils'
+import { audioState } from '../../utils/audio/state'
 import { checkHit } from '../../utils/rhythmUtils'
 
 /**
@@ -129,11 +130,14 @@ export const useRhythmGameScoring = ({
           gameStateRef.current.isGameOver = true
           // Stop audio immediately to prevent further hit processing after collapse
           stopAudio()
+          const failReqId = audioState.playRequestId
           addToast('BAND COLLAPSED', 'error')
 
           // Schedule exit from Gig if failed (Softlock fix)
           if (!gameOverTimerRef.current) {
             gameOverTimerRef.current = setTimeout(() => {
+              // Bail if another audio session started in the 4s window (e.g. external endGig call)
+              if (audioState.playRequestId !== failReqId) return
               addToast('Gig Failed! Reviewing impact...', 'info')
               setLastGigStats(
                 buildGigStatsSnapshot(
