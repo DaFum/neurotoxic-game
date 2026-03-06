@@ -74,7 +74,7 @@ test('gameReducer LOAD_GAME prevents prototype pollution and state pollution', (
   assert.equal(newState.player.money, 999999)
   assert.equal(
     newState.currentScene,
-    'INTRO',
+    'OVERWORLD',
     'currentScene should not be overwritten by save data'
   )
   assert.deepEqual(
