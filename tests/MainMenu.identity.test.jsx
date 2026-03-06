@@ -5,9 +5,6 @@ import { useGameState } from '../src/context/GameState'
 import { useBandHQModal } from '../src/hooks/useBandHQModal'
 
 // Mock dependencies
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: key => key })
-}))
 
 vi.mock('../src/context/GameState', () => ({
   useGameState: vi.fn()

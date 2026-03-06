@@ -57,22 +57,6 @@ vi.mock('../../src/utils/AudioManager', () => ({
 vi.mock('../../src/utils/errorHandler', () => ({
   handleError: vi.fn()
 }))
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: key => {
-      if (key === 'ui:credits') return 'CREDITS'
-      if (key === 'ui:start_game') return 'Start Tour'
-      return key
-    },
-    i18n: {
-      changeLanguage: () => Promise.resolve()
-    }
-  }),
-  initReactI18next: {
-    type: '3rdParty',
-    init: () => {}
-  }
-}))
 // Dynamic import
 const { MainMenu } = await import('../../src/scenes/MainMenu.jsx')
 
@@ -88,9 +72,9 @@ describe('MainMenu Performance Stability', () => {
 
     // First render calls
     const initialCalls = [...glitchButtonRender.mock.calls]
-    const creditsCall1 = initialCalls.find(c => c[0].children === 'CREDITS')
+    const creditsCall1 = initialCalls.find(c => c[0].children === 'ui:credits' || c[0].children === 'CREDITS')
     const startTourCall1 = initialCalls.find(
-      c => c[0].children === 'Start Tour'
+      c => c[0].children === 'ui:start_game' || c[0].children === 'Start Tour'
     )
 
     expect(creditsCall1).toBeTruthy()
@@ -100,8 +84,8 @@ describe('MainMenu Performance Stability', () => {
     rerender(<MainMenu />)
 
     const secondCalls = glitchButtonRender.mock.calls.slice(initialCalls.length)
-    const creditsCall2 = secondCalls.find(c => c[0].children === 'CREDITS')
-    const startTourCall2 = secondCalls.find(c => c[0].children === 'Start Tour')
+    const creditsCall2 = secondCalls.find(c => c[0].children === 'ui:credits' || c[0].children === 'CREDITS')
+    const startTourCall2 = secondCalls.find(c => c[0].children === 'ui:start_game' || c[0].children === 'Start Tour')
 
     expect(creditsCall2).toBeDefined()
     expect(startTourCall2).toBeDefined()

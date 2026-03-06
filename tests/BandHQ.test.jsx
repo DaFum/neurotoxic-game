@@ -4,18 +4,6 @@ import React from 'react'
 import { render, cleanup } from '@testing-library/react'
 
 // Mock react-i18next
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: key => key,
-    i18n: {
-      changeLanguage: () => new Promise(() => {})
-    }
-  }),
-  initReactI18next: {
-    type: '3rdParty',
-    init: () => {}
-  }
-}))
 
 // Mock dependencies
 vi.mock('../src/data/hqItems.js', () => ({

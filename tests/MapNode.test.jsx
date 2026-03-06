@@ -1,3 +1,4 @@
+import { act } from '@testing-library/react'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { render, cleanup, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
@@ -115,7 +116,9 @@ describe('MapNode', () => {
     )
 
     const button = screen.getByRole('button')
-    await user.click(button)
+    await act(async () => {
+      await user.click(button)
+    })
 
     expect(mockHandleTravel).toHaveBeenCalledWith(mockNode)
   })
@@ -260,7 +263,9 @@ describe('MapNode', () => {
     )
 
     const button = screen.getByRole('button')
-    await user.hover(button)
+    await act(async () => {
+      await user.hover(button)
+    })
 
     expect(mockSetHoveredNode).toHaveBeenCalledWith(mockNode)
   })
@@ -286,7 +291,9 @@ describe('MapNode', () => {
     )
 
     const button = screen.getByRole('button')
-    await user.hover(button)
+    await act(async () => {
+      await user.hover(button)
+    })
     await user.unhover(button)
 
     expect(mockSetHoveredNode).toHaveBeenLastCalledWith(null)
@@ -432,8 +439,10 @@ describe('MapNode', () => {
     )
 
     const button = screen.getByRole('button')
-    button.focus()
-    await user.keyboard('{Enter}')
+    await act(async () => {
+      button.focus()
+      await user.keyboard('{Enter}')
+    })
 
     expect(mockHandleTravel).toHaveBeenCalledWith(mockNode)
   })
@@ -459,8 +468,10 @@ describe('MapNode', () => {
     )
 
     const button = screen.getByRole('button')
-    button.focus()
-    await user.keyboard(' ')
+    await act(async () => {
+      button.focus()
+      await user.keyboard(' ')
+    })
 
     expect(mockHandleTravel).toHaveBeenCalledWith(mockNode)
   })

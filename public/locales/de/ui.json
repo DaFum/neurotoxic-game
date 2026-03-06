@@ -706,5 +706,9 @@
         "cable": "Kabel {{label}}"
       }
     }
+  },
+  "gig": {
+    "crowdEnergy": "CROWD ENERGY",
+    "toxicModeActive": "TOXIC MODE ACTIVE"
   }
 }

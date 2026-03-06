@@ -6,9 +6,6 @@ import * as economyEngine from '../src/utils/economyEngine'
 import * as socialEngine from '../src/utils/socialEngine'
 
 // Mock dependencies
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: key => key })
-}))
 
 vi.mock('../src/context/GameState', () => ({
   useGameState: vi.fn()

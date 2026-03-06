@@ -2,21 +2,6 @@ import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { QuestsModal } from '../src/ui/QuestsModal.jsx'
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key, options) => {
-      if (key === 'ui:quests.postgig.apologyTour.title') return 'APOLOGY TOUR'
-      if (key === 'ui:quests.postgig.apologyTour.description') {
-        return 'Play 3 gigs to repair your image after the cancellation backlash.'
-      }
-      if (key === 'ui:quests.moneyReward') return `+€${options?.amount ?? 0}`
-      return key
-    },
-    i18n: {
-      language: 'en'
-    }
-  })
-}))
 
 describe('QuestsModal', () => {
   it('renders translated accepted quests and progress', () => {
@@ -38,10 +23,10 @@ describe('QuestsModal', () => {
       />
     )
 
-    expect(screen.getByText('APOLOGY TOUR')).toBeInTheDocument()
+    expect(screen.getByText('ui:quests.postgig.apologyTour.title')).toBeInTheDocument()
     expect(
       screen.getByText(
-        'Play 3 gigs to repair your image after the cancellation backlash.'
+        'ui:quests.postgig.apologyTour.description'
       )
     ).toBeInTheDocument()
     expect(screen.getByText('1 / 3')).toBeInTheDocument()

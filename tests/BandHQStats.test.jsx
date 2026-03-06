@@ -1,26 +1,6 @@
 import { afterEach, beforeAll, describe, expect, test, vi } from 'vitest'
 
 import { cleanup, render } from '@testing-library/react'
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key, options) => {
-      if (
-        key === 'ui:detailedStats.vanUpgrades.installed' ||
-        key === 'ui:detailedStats.hqUpgrades.installed'
-      ) {
-        return `${options.count} Installed`
-      }
-      return key
-    },
-    i18n: {
-      changeLanguage: () => new Promise(() => {})
-    }
-  }),
-  initReactI18next: {
-    type: '3rdParty',
-    init: () => {}
-  }
-}))
 
 vi.mock('../src/ui/shared/index.jsx', () => ({
   StatBox: ({ label, value }) => (
