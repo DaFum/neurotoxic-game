@@ -360,14 +360,13 @@ export const useTravelLogic = ({
             addToast("Band's harmony too low to perform!", 'warning')
             return
           }
+          const venueId = normalizeVenueId(node.venue)
+          const resolvedVenue = resolveVenue(node.venue, venueId)
           logger.info('TravelLogic', 'Entering current node Gig', {
-            venue: getLocationName(
-              node.venue.name,
-              normalizeVenueId(node.venue)
-            )
+            venue: getLocationName(resolvedVenue.name, venueId)
           })
           try {
-            startGig(node.venue)
+            startGig(resolvedVenue)
           } catch (error) {
             handleError(error, {
               addToast,
