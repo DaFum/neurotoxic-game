@@ -244,13 +244,17 @@ class RoadieStageController extends BaseStageController {
         if (!sprite) {
           // Pick stable car texture based on hash of ID
           if (this.textures.cars.length > 0) {
-            // Simple hash of ID string
-            let hash = 0
-            for (let i = 0; i < car.id.length; i++) {
-              hash = (hash << 5) - hash + car.id.charCodeAt(i)
-              hash |= 0
+            let textureHash = car.textureHash
+            if (!Number.isFinite(textureHash)) {
+              const idStr = String(car.id ?? '')
+              let hash = 0
+              for (let i = 0; i < idStr.length; i++) {
+                hash = (hash * 31 + idStr.charCodeAt(i)) | 0
+              }
+              textureHash = hash
             }
-            const texIndex = Math.abs(hash) % this.textures.cars.length
+            const texIndex =
+              Math.floor(Math.abs(textureHash)) % this.textures.cars.length
             sprite = new PIXI.Sprite(this.textures.cars[texIndex])
             sprite.anchor.set(0.5)
           } else {
