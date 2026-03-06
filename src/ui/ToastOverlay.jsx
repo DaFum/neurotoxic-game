@@ -1,6 +1,7 @@
 import { useGameState } from '../context/GameState'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
+import { logger } from '../utils/logger.js'
 
 const TOAST_STYLE_MAP = {
   success: {
@@ -91,11 +92,14 @@ export const ToastOverlay = () => {
                             }
                             return t(key, context)
                           } catch (_e) {
-                            console.error(
-                              'Toast message JSON parse error:',
-                              _e,
-                              contextStr,
-                              toast.message
+                            logger.error(
+                              'UI',
+                              'Toast message JSON parse error',
+                              {
+                                error: _e,
+                                contextStr,
+                                toastMessage: toast.message
+                              }
                             )
                             return t(key)
                           }
