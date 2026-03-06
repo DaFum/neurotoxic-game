@@ -8,6 +8,7 @@ import { calculateDailyUpdates } from '../../utils/simulationUtils.js'
 import { generateDailyTrend } from '../../utils/socialEngine.js'
 import { checkTraitUnlocks } from '../../utils/unlockCheck.js'
 import { applyTraitUnlocks } from '../../utils/traitUtils.js'
+import { normalizeVenueId } from '../../utils/mapUtils.js'
 import {
   createInitialState,
   DEFAULT_GIG_MODIFIERS,
@@ -179,10 +180,7 @@ export const handleLoadGame = (state, payload) => {
   // Migration: Legacy venue translation keys -> Raw IDs
   const migrateLegacyVenueId = id => {
     if (typeof id !== 'string') return id
-    if (id.startsWith('venues:') && id.endsWith('.name')) {
-      return id.replace('venues:', '').replace('.name', '')
-    }
-    return id
+    return normalizeVenueId(id) ?? id
   }
 
   // Apply venue migrations using spreads

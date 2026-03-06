@@ -29,26 +29,32 @@ const TOAST_STYLE_MAP = {
 const VALID_NAMESPACES = ['ui:', 'events:', 'venues:', 'items:', 'economy:']
 
 const translateContextKeys = (context, t) => {
-  for (const prop of Object.keys(context)) {
-    if (typeof context[prop] === 'string') {
+  const translatedContext = { ...context }
+  for (const prop of Object.keys(translatedContext)) {
+    if (typeof translatedContext[prop] === 'string') {
       const isTranslationKey = VALID_NAMESPACES.some(ns =>
-        context[prop].startsWith(ns)
+        translatedContext[prop].startsWith(ns)
       )
       if (isTranslationKey) {
-        context[prop] = t(context[prop])
+        translatedContext[prop] = t(translatedContext[prop])
       }
     }
   }
+  return translatedContext
 }
 
 /**
  * Renders global toast notifications with consistent visual taxonomy.
+ * Supports pipe-separated translation payload format (e.g. `ui:key|{"context":"value"}`)
+ * where `ui:key` acts as the translation template and the JSON provides context parameters.
+ * Note that some components like `usePurchaseLogic.js` pre-translate strings before calling `addToast`,
+ * which this component also correctly handles.
  *
  * @returns {JSX.Element} Toast stack overlay.
  */
 export const ToastOverlay = () => {
   const { toasts } = useGameState()
-  const { t } = useTranslation(['ui', 'events', 'venues'])
+  const { t } = useTranslation(['ui', 'events', 'venues', 'items', 'economy'])
 
   return (
     <div
@@ -99,9 +105,12 @@ export const ToastOverlay = () => {
                               firstPipeIdx + 1
                             )
                             try {
-                              const context = JSON.parse(contextStr)
-                              // Safely translate nested key refs in context dynamically
-                              translateContextKeys(context, t)
+                              const rawContext = JSON.parse(contextStr)
+                              // Safely translate nested key refs in context dynamically without mutating
+                              const context = translateContextKeys(
+                                rawContext,
+                                t
+                              )
                               return t(key, context)
                             } catch (_e) {
                               logger.error(

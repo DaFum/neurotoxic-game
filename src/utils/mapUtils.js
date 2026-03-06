@@ -31,11 +31,9 @@ export const getNodeVisibility = (nodeLayer, currentLayer) => {
 }
 
 /**
- * Checks if the player is softlocked (stranded) due to lack of fuel and money.
- * @param {object} gameMap - The game map object.
- * @param {object} player - The player state object.
- * @param {object} [band=null] - The band state object.
- * @returns {boolean} True if stranded.
+ * Normalizes a venue object or string into a raw ID string, stripping legacy namespacing.
+ * @param {object|string} venue - The venue object or string to normalize.
+ * @returns {string|null} The normalized string ID, or null.
  */
 export const normalizeVenueId = venue => {
   if (!venue) return null
@@ -50,6 +48,13 @@ export const normalizeVenueId = venue => {
   return typeof id === 'string' ? id : null
 }
 
+/**
+ * Checks if the player is softlocked (stranded) due to lack of fuel and money.
+ * @param {object} gameMap - The game map object.
+ * @param {object} player - The player state object.
+ * @param {object} [band=null] - The band state object.
+ * @returns {boolean} True if stranded.
+ */
 export const checkSoftlock = (gameMap, player, band = null) => {
   if (!gameMap || !player.currentNodeId) return false
 
