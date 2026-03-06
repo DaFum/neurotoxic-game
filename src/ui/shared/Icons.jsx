@@ -1,7 +1,7 @@
-import { useId } from 'react'
+import { useId, memo } from 'react'
 import PropTypes from 'prop-types'
 
-export function RazorPlayIcon({ className = '' }) {
+export const RazorPlayIcon = memo(function RazorPlayIcon({ className = '' }) {
   return (
     <svg
       className={`text-(--toxic-green) ${className}`}
@@ -47,13 +47,13 @@ export function RazorPlayIcon({ className = '' }) {
       </rect>
     </svg>
   )
-}
+})
 
 RazorPlayIcon.propTypes = {
   className: PropTypes.string
 }
 
-export function VoidSkullIcon({ className = '' }) {
+export const VoidSkullIcon = memo(function VoidSkullIcon({ className = '' }) {
   return (
     <svg
       className={`text-(--toxic-green) ${className}`}
@@ -108,19 +108,19 @@ export function VoidSkullIcon({ className = '' }) {
       </line>
     </svg>
   )
-}
+})
 
 VoidSkullIcon.propTypes = {
   className: PropTypes.string
 }
 
-const BaseIcon = ({
+const BaseIcon = memo(function BaseIcon({
   className = '',
   viewBox = '0 0 24 24',
   title,
   children,
   ...props
-}) => {
+}) {
   const titleId = useId()
   return (
     <svg
@@ -139,9 +139,10 @@ const BaseIcon = ({
       {children}
     </svg>
   )
-}
+})
 
-export const BandcampIcon = ({ className = '', ...props }) => (
+export const BandcampIcon = memo(function BandcampIcon({ className = '', ...props }) {
+  return (
   <BaseIcon {...props} className={className}>
     <path
       d='M2 6H22V18H2V6Z'
@@ -159,9 +160,11 @@ export const BandcampIcon = ({ className = '', ...props }) => (
     />
     <path d='M10 18L14 18' stroke='currentColor' strokeWidth='4' />
   </BaseIcon>
-)
+  )
+})
 
-export const InstaIcon = ({ className = '', ...props }) => (
+export const InstaIcon = memo(function InstaIcon({ className = '', ...props }) {
+  return (
   <BaseIcon {...props} className={className}>
     <path
       d='M3 3H21V21H3V3Z'
@@ -177,9 +180,11 @@ export const InstaIcon = ({ className = '', ...props }) => (
       strokeWidth='2'
     />
   </BaseIcon>
-)
+  )
+})
 
-export const TikTokIcon = ({ className = '', ...props }) => (
+export const TikTokIcon = memo(function TikTokIcon({ className = '', ...props }) {
+  return (
   <BaseIcon {...props} className={className} viewBox='-2 0 26 26'>
     <path d='M14 2V16H8V22H14V8H20V2H14Z' fill='currentColor' />
     <path
@@ -189,9 +194,11 @@ export const TikTokIcon = ({ className = '', ...props }) => (
       transform='translate(-2, 2)'
     />
   </BaseIcon>
-)
+  )
+})
 
-export const YouTubeIcon = ({ className = '', ...props }) => (
+export const YouTubeIcon = memo(function YouTubeIcon({ className = '', ...props }) {
+  return (
   <BaseIcon {...props} className={className}>
     <path
       d='M2 5H22V19H2V5Z'
@@ -207,9 +214,11 @@ export const YouTubeIcon = ({ className = '', ...props }) => (
       strokeLinecap='square'
     />
   </BaseIcon>
-)
+  )
+})
 
-export const BlogIcon = ({ className = '', ...props }) => (
+export const BlogIcon = memo(function BlogIcon({ className = '', ...props }) {
+  return (
   <BaseIcon {...props} className={className}>
     <path
       d='M3 4H21V20H3V4Z'
@@ -239,9 +248,11 @@ export const BlogIcon = ({ className = '', ...props }) => (
       fillOpacity='0.2'
     />
   </BaseIcon>
-)
+  )
+})
 
-export const GameIcon = ({ className = '', ...props }) => (
+export const GameIcon = memo(function GameIcon({ className = '', ...props }) {
+  return (
   <BaseIcon {...props} className={className} viewBox='0 0 32 32'>
     <path
       d='M6 22V6H9L19 18V6H22V22H19L9 10V22H6Z'
@@ -251,9 +262,10 @@ export const GameIcon = ({ className = '', ...props }) => (
     />
     <path d='M8 24V8H11L21 20V8H24V24H21L11 12V24H8Z' fill='currentColor' />
   </BaseIcon>
-)
+  )
+})
 
-export function UIFrameCorner({ className = '' }) {
+export const UIFrameCorner = memo(function UIFrameCorner({ className = '' }) {
   return (
     <svg
       className={`text-(--toxic-green) ${className}`}
@@ -280,7 +292,7 @@ export function UIFrameCorner({ className = '' }) {
       <path d='M8 18V26M4 22H12' stroke='currentColor' strokeWidth='1' />
     </svg>
   )
-}
+})
 
 UIFrameCorner.propTypes = {
   className: PropTypes.string
