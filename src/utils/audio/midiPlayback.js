@@ -269,6 +269,7 @@ async function fetchMidiArrayBuffer(url, reqId, filename) {
     } finally {
       clearTimeout(timeoutId)
     }
+    if (reqId !== audioState.playRequestId) return null
     return arrayBuffer
   } catch (err) {
     if (err.name === 'AbortError') {

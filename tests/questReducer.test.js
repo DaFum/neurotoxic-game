@@ -158,15 +158,15 @@ test('questReducer - Rewards Logic', async t => {
       ],
       band: {
         members: [
-          { name: 'Singer', skill: 10 },
-          { name: 'Drummer', skill: 10 }
+          { name: 'Singer', baseStats: { skill: 10 } },
+          { name: 'Drummer', baseStats: { skill: 10 } }
         ]
       }
     }
     const nextState = handleCompleteQuest(initialState, { questId: 'q_skill' })
 
     const totalSkill = nextState.band.members.reduce(
-      (acc, m) => acc + m.skill,
+      (acc, m) => acc + m.baseStats.skill,
       0
     )
     assert.equal(totalSkill, 21, 'One member should have gained +1 skill')

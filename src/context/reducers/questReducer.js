@@ -63,22 +63,30 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
       type: 'success'
     })
   } else if (quest.rewardType === 'skill_point') {
-    const members = [...(nextState.band?.members || [])]
-    if (members.length > 0) {
+    const originalMembers = nextState.band?.members || []
+    if (originalMembers.length > 0) {
       const memberIdx =
         typeof quest.rewardData?.memberIndex === 'number'
           ? Math.max(
               0,
-              Math.min(members.length - 1, quest.rewardData.memberIndex)
+              Math.min(originalMembers.length - 1, quest.rewardData.memberIndex)
             )
           : typeof randomIdx === 'number'
-            ? Math.max(0, Math.min(members.length - 1, randomIdx))
+            ? Math.max(0, Math.min(originalMembers.length - 1, randomIdx))
             : 0
 
-      members[memberIdx] = {
-        ...members[memberIdx],
-        skill: (members[memberIdx].skill || 0) + 1
-      }
+      const members = originalMembers.map((m, idx) => {
+        if (idx === memberIdx) {
+          return {
+            ...m,
+            baseStats: {
+              ...(m.baseStats || {}),
+              skill: ((m.baseStats && m.baseStats.skill) || m.skill || 0) + 1
+            }
+          }
+        }
+        return m
+      })
 
       nextState.band = { ...nextState.band, members }
       generatedToasts.push({

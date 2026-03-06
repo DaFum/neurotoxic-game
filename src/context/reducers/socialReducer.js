@@ -23,7 +23,8 @@ export const handleUpdateSocial = (state, payload) => {
   if (updates.trend !== undefined) {
     if (!ALLOWED_TRENDS.includes(updates.trend)) {
       logger.warn('GameState', `Invalid trend update: ${updates.trend}`)
-      delete updates.trend
+      const { trend: _trend, ...restUpdates } = updates
+      updates = restUpdates
     }
   }
 
@@ -32,13 +33,15 @@ export const handleUpdateSocial = (state, payload) => {
     typeof updates.sponsorActive !== 'boolean'
   ) {
     logger.warn('GameState', 'Invalid sponsorActive update (must be boolean)')
-    delete updates.sponsorActive
+    const { sponsorActive: _sponsorActive, ...restUpdates } = updates
+    updates = restUpdates
   }
 
   if (updates.activeDeals !== undefined) {
     if (!Array.isArray(updates.activeDeals)) {
       logger.warn('GameState', 'Invalid activeDeals update (must be array)')
-      delete updates.activeDeals
+      const { activeDeals: _activeDeals, ...restUpdates } = updates
+      updates = restUpdates
     } else {
       // Validate structure of items
       const validDeals = updates.activeDeals.filter(
@@ -63,6 +66,8 @@ export const handleUpdateSocial = (state, payload) => {
 
 export const handleAddVenueBlacklist = (state, venueName) => {
   let nextState = { ...state }
+  // Intentional design: If loyalty is high enough (>= 30), loyal fans will defend the band
+  // and prevent the venue from blacklisting them, at the cost of 15 loyalty points.
   if (nextState.social.loyalty >= 30) {
     nextState.social = {
       ...nextState.social,
@@ -72,7 +77,7 @@ export const handleAddVenueBlacklist = (state, venueName) => {
       ...(nextState.toasts || []),
       {
         id: Date.now().toString(),
-        message: `Loyal fans defended you — venue gave one more chance!`,
+        message: `ui:toast.fans_defended`,
         type: 'info'
       }
     ]
@@ -82,7 +87,7 @@ export const handleAddVenueBlacklist = (state, venueName) => {
       ...(nextState.toasts || []),
       {
         id: Date.now().toString(),
-        message: `BLACKLISTED: ${venueName}`,
+        message: `ui:toast.blacklisted|${JSON.stringify({ venue: venueName })}`,
         type: 'error'
       }
     ]

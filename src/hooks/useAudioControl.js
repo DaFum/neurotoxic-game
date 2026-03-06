@@ -61,7 +61,17 @@ export const useAudioControl = (selector, options = {}) => {
         return unsubscribe
       }
 
-      const pollId = setInterval(listener, pollMs)
+      const pollId = setInterval(() => {
+        try {
+          listener()
+        } catch (error) {
+          handleError(error, {
+            fallbackMessage: 'useAudioControl polling listener failed',
+            silent: true
+          })
+        }
+      }, pollMs)
+
       return () => {
         clearInterval(pollId)
         unsubscribe()

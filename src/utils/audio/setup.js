@@ -104,10 +104,29 @@ export function disposeAudio() {
   // stopAudioInternal() logic - we can't call it here directly if it's in playback
   // So we handle the disposal of shared resources manually
 
-  stopTransportAndClear()
-  cleanupTransportEvents()
-  cleanupGigPlayback()
-  cleanupAmbientPlayback()
+  try {
+    stopTransportAndClear()
+  } catch (error) {
+    logger.debug('AudioEngine', 'stopTransportAndClear failed', error)
+  }
+
+  try {
+    cleanupTransportEvents()
+  } catch (error) {
+    logger.debug('AudioEngine', 'cleanupTransportEvents failed', error)
+  }
+
+  try {
+    cleanupGigPlayback()
+  } catch (error) {
+    logger.debug('AudioEngine', 'cleanupGigPlayback failed', error)
+  }
+
+  try {
+    cleanupAmbientPlayback()
+  } catch (error) {
+    logger.debug('AudioEngine', 'cleanupAmbientPlayback failed', error)
+  }
 
   audioState.audioBufferCache.clear()
   audioState.currentCacheByteSize = 0
@@ -142,14 +161,18 @@ export function disposeAudio() {
   audioState.midiDryBus = safeDispose(audioState.midiDryBus)
 
   audioState.distortion = safeDispose(audioState.distortion)
-  try {
-    audioState.guitarChorus?.stop?.()
-  } catch (error) {
-    logger.debug(
-      'AudioEngine',
-      'guitarChorus.stop() failed (likely benign)',
-      error
-    )
+  if (audioState.guitarChorus && !audioState.guitarChorus.disposed) {
+    try {
+      audioState.guitarChorus.stop?.()
+    } catch (error) {
+      if (error.name !== 'InvalidStateError') {
+        logger.debug(
+          'AudioEngine',
+          'guitarChorus.stop() failed (likely benign)',
+          error
+        )
+      }
+    }
   }
   audioState.guitarChorus = safeDispose(audioState.guitarChorus)
   audioState.guitarEq = safeDispose(audioState.guitarEq)

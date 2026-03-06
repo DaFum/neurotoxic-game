@@ -268,20 +268,22 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
 
   // Harmony Decay (Drifts towards 50 like mood)
   if (nextBand.harmony > 50) {
-    nextBand.harmony -= 2
+    nextBand.harmony = clampBandHarmony(nextBand.harmony - 2)
   } else if (nextBand.harmony < 50) {
-    nextBand.harmony += 2
+    nextBand.harmony = clampBandHarmony(nextBand.harmony + 2)
   }
 
   // Bad Show Streak Penalty
   if ((nextPlayer.stats?.consecutiveBadShows || 0) > 0) {
-    nextBand.harmony -= Math.min(10, nextPlayer.stats.consecutiveBadShows * 2)
+    nextBand.harmony = clampBandHarmony(
+      nextBand.harmony - Math.min(10, nextPlayer.stats.consecutiveBadShows * 2)
+    )
   }
 
   // Ego System Drain (Lead Singer Syndrome)
   let pendingFlags = {}
   if (nextSocial.egoFocus) {
-    nextBand.harmony -= 2 // Passive drain for spotlighting a single member
+    nextBand.harmony = clampBandHarmony(nextBand.harmony - 2) // Passive drain for spotlighting a single member
     // Proactive scandal trigger (12% daily chance)
     if (rng() < 0.12) {
       pendingFlags.scandal = true
@@ -297,7 +299,7 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
   const controversy = nextSocial.controversyLevel || 0
   if (controversy >= 50) {
     // Harmony drain is worse under stress
-    nextBand.harmony -= 1
+    nextBand.harmony = clampBandHarmony(nextBand.harmony - 1)
     nextBand.members = nextBand.members.map(m => ({
       ...m,
       mood: Math.max(0, m.mood - 1)
@@ -419,11 +421,11 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
 
   // Soundproofing: Harmony boost
   if (hqUpgrades.includes('hq_room_diy_soundproofing')) {
-    nextBand.harmony = Math.min(100, nextBand.harmony + 1)
+    nextBand.harmony = clampBandHarmony(nextBand.harmony + 1)
   }
 
   if (nextBand.harmonyRegenTravel) {
-    nextBand.harmony = Math.min(100, nextBand.harmony + 2) // Reduced from 5
+    nextBand.harmony = clampBandHarmony(nextBand.harmony + 2) // Reduced from 5
   }
   if (nextPlayer.passiveFollowers) {
     // Passive followers currently funnel into Instagram only
