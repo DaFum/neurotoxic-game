@@ -15,12 +15,18 @@ test('translateLocation', async t => {
     assert.strictEqual(translateLocation(mockT, 'club'), 'The Underground Club')
     // If a location is already prefixed with VENUE_NAMESPACE, toVenueKey returns it unmodified.
     // Thus, fully qualified keys like 'venues:festival.name' are resolved directly.
-    assert.strictEqual(translateLocation(mockT, 'venues:festival.name'), 'Open Air Festival')
+    assert.strictEqual(
+      translateLocation(mockT, 'venues:festival.name'),
+      'Open Air Festival'
+    )
   })
 
   await t.test('returns fallback for missing t function', () => {
     assert.strictEqual(translateLocation(null, 'club'), 'Unknown')
-    assert.strictEqual(translateLocation(undefined, 'club', 'Fallback Location'), 'Fallback Location')
+    assert.strictEqual(
+      translateLocation(undefined, 'club', 'Fallback Location'),
+      'Fallback Location'
+    )
   })
 
   await t.test('returns fallback for missing or empty location', () => {
@@ -33,12 +39,24 @@ test('translateLocation', async t => {
     assert.strictEqual(translateLocation(mockT, 'venues:dive_bar'), 'dive bar')
   })
 
-  await t.test('formats raw venue string if translation explicitly returns an empty string', () => {
-    const mockTEmpty = () => ''
-    assert.strictEqual(translateLocation(mockTEmpty, 'venues:dive_bar'), 'dive bar')
-  })
+  await t.test(
+    'formats raw venue string if translation explicitly returns an empty string',
+    () => {
+      const mockTEmpty = () => ''
+      assert.strictEqual(
+        translateLocation(mockTEmpty, 'venues:dive_bar'),
+        'dive bar'
+      )
+    }
+  )
 
-  await t.test('returns location or fallback if not a venue key and no translation exists', () => {
-    assert.strictEqual(translateLocation(mockT, 'random_place'), 'random_place')
-  })
+  await t.test(
+    'returns location or fallback if not a venue key and no translation exists',
+    () => {
+      assert.strictEqual(
+        translateLocation(mockT, 'random_place'),
+        'random_place'
+      )
+    }
+  )
 })

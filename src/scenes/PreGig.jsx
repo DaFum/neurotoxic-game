@@ -229,7 +229,8 @@ export const PreGig = () => {
             ))}
 
             <div className='border-t border-(--ash-gray)/20 pt-2.5'>
-              <button type="button"
+              <button
+                type='button'
                 onClick={handleBandMeeting}
                 className='w-full flex justify-between items-center p-3 border-2 border-(--warning-yellow)/30 hover:border-(--warning-yellow) text-(--warning-yellow)/70 hover:text-(--warning-yellow) transition-all group'
               >
@@ -255,13 +256,18 @@ export const PreGig = () => {
             </h4>
             {currentModifiers.activeEffects.length > 0 ? (
               <ul className='text-xs space-y-1'>
-                {currentModifiers.activeEffects.map((eff, index) => (
+                {currentModifiers.activeEffects.map(eff => (
                   <li
-                    key={index}
+                    key={typeof eff === 'string' ? eff : eff.key}
                     className='text-(--star-white)/60 flex items-center gap-1.5'
                   >
                     <span className='w-1 h-1 bg-(--toxic-green) inline-block' />
-                    {typeof eff === 'string' ? eff : t(eff.key, { ...eff.options, defaultValue: eff.fallback })}
+                    {typeof eff === 'string'
+                      ? eff
+                      : t(eff.key, {
+                          ...eff.options,
+                          defaultValue: eff.fallback
+                        })}
                   </li>
                 ))}
               </ul>
@@ -406,7 +412,9 @@ export const PreGig = () => {
             // Simple streak breaker using sessionStorage with fallback
             let lastMinigame = lastMinigameFallback
             try {
-              lastMinigame = sessionStorage.getItem('neurotoxic_last_minigame') || lastMinigameFallback
+              lastMinigame =
+                sessionStorage.getItem('neurotoxic_last_minigame') ||
+                lastMinigameFallback
             } catch (_storageErr) {
               // Ignore SecurityError or other storage errors
             }
@@ -419,7 +427,8 @@ export const PreGig = () => {
               roadieChance = 0.75 // Increase chance if Kabelsalat played last
             }
 
-            const chosenGame = Math.random() < roadieChance ? 'roadie' : 'kabelsalat'
+            const chosenGame =
+              Math.random() < roadieChance ? 'roadie' : 'kabelsalat'
 
             lastMinigameFallback = chosenGame
             try {

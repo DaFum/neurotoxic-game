@@ -176,8 +176,6 @@ export const handleLoadGame = (state, payload) => {
       : state.unlocks || []
   }
 
-
-
   // Migration: energy -> catering
   if (safeState.gigModifiers.energy !== undefined) {
     const { energy, ...restModifiers } = safeState.gigModifiers

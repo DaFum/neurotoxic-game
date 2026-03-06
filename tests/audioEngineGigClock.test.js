@@ -70,50 +70,72 @@ test('getGigTimeMs', async t => {
   const ToneModule = await import('tone')
   const mockTone = ToneModule.default || ToneModule.Tone || ToneModule
 
-  const { getGigTimeMs, audioState } = await import('../src/utils/audio/playback.js');
-  const moduleState = audioState || (await import('../src/utils/audio/state.js')).audioState;
+  const { getGigTimeMs, audioState } =
+    await import('../src/utils/audio/playback.js')
+  const moduleState =
+    audioState || (await import('../src/utils/audio/state.js')).audioState
 
-  await t.test('returns calculated gig time using audio context and state', async () => {
-    // 1. Save original state before mutation
-    const originalStartCtxTime = moduleState?.gigStartCtxTime
-    const originalSeekOffsetMs = moduleState?.gigSeekOffsetMs
+  await t.test(
+    'returns calculated gig time using audio context and state',
+    async () => {
+      // 1. Save original state before mutation
+      const originalStartCtxTime = moduleState?.gigStartCtxTime
+      const originalSeekOffsetMs = moduleState?.gigSeekOffsetMs
 
-    const context = mockTone.getContext()
-    const originalCurrentTime = context.currentTime
-    const originalRawContext = context.rawContext
+      const context = mockTone.getContext()
+      const originalCurrentTime = context.currentTime
+      const originalRawContext = context.rawContext
 
-    // Wrap setup, invocation, and assertions in try/finally
-    try {
-      if (context.rawContext) {
-        try { context.rawContext.currentTime = 15 } catch (e) {}
-      } else {
-        try { context.currentTime = 15 } catch (e) {}
-      }
+      // Wrap setup, invocation, and assertions in try/finally
+      try {
+        if (context.rawContext) {
+          try {
+            context.rawContext.currentTime = 15
+          } catch {
+            /* ignore */
+          }
+        } else {
+          try {
+            context.currentTime = 15
+          } catch {
+            /* ignore */
+          }
+        }
 
-      if (moduleState) {
-        moduleState.gigStartCtxTime = 5
-        moduleState.gigSeekOffsetMs = 2000
-      }
+        if (moduleState) {
+          moduleState.gigStartCtxTime = 5
+          moduleState.gigSeekOffsetMs = 2000
+        }
 
-      const timeMs = getGigTimeMs()
+        const timeMs = getGigTimeMs()
 
-      // Assertion: calculateGigTimeMs is well-tested.
-      // If we could mock currentTime, it's 12000. Else we verify it returns a number without crashing.
-      assert.ok(typeof timeMs === 'number')
-    } finally {
-      // 2. Restore original state in finally
-      if (context.rawContext) {
-        try { context.rawContext.currentTime = originalRawContext?.currentTime || 0 } catch (e) {}
-      } else {
-        try { context.currentTime = originalCurrentTime || 0 } catch (e) {}
-      }
+        // Assertion: calculateGigTimeMs is well-tested.
+        // If we could mock currentTime, it's 12000. Else we verify it returns a number without crashing.
+        assert.ok(typeof timeMs === 'number')
+      } finally {
+        // 2. Restore original state in finally
+        if (context.rawContext) {
+          try {
+            context.rawContext.currentTime =
+              originalRawContext?.currentTime || 0
+          } catch {
+            /* ignore */
+          }
+        } else {
+          try {
+            context.currentTime = originalCurrentTime || 0
+          } catch {
+            /* ignore */
+          }
+        }
 
-      if (moduleState) {
-        moduleState.gigStartCtxTime = originalStartCtxTime
-        moduleState.gigSeekOffsetMs = originalSeekOffsetMs
+        if (moduleState) {
+          moduleState.gigStartCtxTime = originalStartCtxTime
+          moduleState.gigSeekOffsetMs = originalSeekOffsetMs
+        }
       }
     }
-  })
+  )
 })
 
 test('hasAudioAsset', async t => {

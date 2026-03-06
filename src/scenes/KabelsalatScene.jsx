@@ -144,24 +144,39 @@ export const KabelsalatScene = () => {
   // Generate deterministic seeds for lightning to avoid layout shift on every render
   useEffect(() => {
     if (isShocked) {
-      setLightningSeeds(prev =>
-        prev.length === 0 ? Array.from({ length: 15 }).map(() => ({
-          id: Math.random().toString(36).slice(2, 11),
-          startX: Math.random() * 800,
-          o1: Math.random() * 300 - 150,
-          o2: Math.random() * 300 - 150,
-          o3: Math.random() * 300 - 150,
-          w: Math.random() * 10 + 2
-        })) : prev
-      )
+      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+      setLightningSeeds(prev => {
+        if (prev.length === 0) {
+          return Array.from({ length: 15 }).map(() => ({
+            id: Math.random().toString(36).slice(2, 11),
+            startX: Math.random() * 800,
+            o1: Math.random() * 300 - 150,
+            o2: Math.random() * 300 - 150,
+            o3: Math.random() * 300 - 150,
+            w: Math.random() * 10 + 2
+          }))
+        }
+        return prev
+      })
     } else {
-      setLightningSeeds(prev => prev.length > 0 ? [] : prev)
+      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+      setLightningSeeds(prev => {
+        if (prev.length > 0) {
+          return []
+        }
+        return prev
+      })
     }
   }, [isShocked])
 
   // Timer Logik
   useEffect(() => {
-    if (!isPoweredOn && !isGameOver && !isWinningRef.current && !finishedRef.current) {
+    if (
+      !isPoweredOn &&
+      !isGameOver &&
+      !isWinningRef.current &&
+      !finishedRef.current
+    ) {
       timerRef.current = setInterval(() => {
         setTimeLeft(prev => {
           if (prev <= 1) {
@@ -603,7 +618,11 @@ export const KabelsalatScene = () => {
   return (
     <div
       className={`flex flex-col items-center justify-center w-full min-h-screen relative p-4 ${!bgTextureUrl ? 'opacity-0' : 'opacity-100 transition-opacity duration-300'}`}
-      style={bgTextureUrl ? { backgroundImage: `url(${bgTextureUrl})`, backgroundSize: 'cover' } : {}}
+      style={
+        bgTextureUrl
+          ? { backgroundImage: `url(${bgTextureUrl})`, backgroundSize: 'cover' }
+          : {}
+      }
     >
       <div className='absolute inset-0 bg-(--void-black)/80 z-0'></div>
 

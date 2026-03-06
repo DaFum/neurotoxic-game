@@ -27,10 +27,16 @@ export const getGigModifiers = (bandState, gigModifiers = {}) => {
   // 1. Harmony Logic
   if (bandState.harmony > 80) {
     modifiers.hitWindowBonus = 20 // ms
-    modifiers.activeEffects.push({ key: 'ui:pregig.effects.telepathy', fallback: 'TELEPATHY (Harmony > 80): Easier Hits' })
+    modifiers.activeEffects.push({
+      key: 'ui:pregig.effects.telepathy',
+      fallback: 'TELEPATHY (Harmony > 80): Easier Hits'
+    })
   } else if (bandState.harmony < 30) {
     modifiers.noteJitter = true
-    modifiers.activeEffects.push({ key: 'ui:pregig.effects.disconnect', fallback: 'DISCONNECT (Harmony < 30): Notes Jitter' })
+    modifiers.activeEffects.push({
+      key: 'ui:pregig.effects.disconnect',
+      fallback: 'DISCONNECT (Harmony < 30): Notes Jitter'
+    })
   }
 
   // 2. Member Status

@@ -50,15 +50,26 @@ describe('rhythmUtils', () => {
     })
 
     test('generates mid density notes for medium difficulty', () => {
-      const song = { id: 'diff-test-mid', duration: 10, bpm: 120, difficulty: 3 }
+      const song = {
+        id: 'diff-test-mid',
+        duration: 10,
+        bpm: 120,
+        difficulty: 3
+      }
 
       // If random() < 0.6, only beatInBar 0 and 2 are kept
-      const notes1 = generateNotesForSong(song, { leadIn: 2000, random: () => 0.5 })
+      const notes1 = generateNotesForSong(song, {
+        leadIn: 2000,
+        random: () => 0.5
+      })
       // For 20 beats, beatInBar 0 and 2 occurs 10 times.
       assert.strictEqual(notes1.length, 10)
 
       // If random() > 0.6, all beats kept
-      const notes2 = generateNotesForSong(song, { leadIn: 2000, random: () => 0.8 })
+      const notes2 = generateNotesForSong(song, {
+        leadIn: 2000,
+        random: () => 0.8
+      })
       assert.strictEqual(notes2.length, 20)
     })
 
@@ -76,7 +87,10 @@ describe('rhythmUtils', () => {
 
       // Using normal lane map (random < 0.7 for variation, > 0.3 for density)
       // Our density check is random() > 0.3, so random=0.5 will spawn, but not trigger lane variation
-      const notesNoVar = generateNotesForSong(song, { leadIn: 0, random: () => 0.5 })
+      const notesNoVar = generateNotesForSong(song, {
+        leadIn: 0,
+        random: () => 0.5
+      })
 
       // laneMap = [1, 0, 2, 0]
       assert.strictEqual(notesNoVar[0].laneIndex, 1) // beat 0

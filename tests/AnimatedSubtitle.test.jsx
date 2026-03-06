@@ -10,7 +10,11 @@ test('AnimatedSubtitle renders as h2 by default', () => {
 })
 
 test('AnimatedSubtitle renders as custom element', () => {
-  render(<AnimatedSubtitle as="h3" className="custom-subtitle">Test Subtitle</AnimatedSubtitle>)
+  render(
+    <AnimatedSubtitle as='h3' className='custom-subtitle'>
+      Test Subtitle
+    </AnimatedSubtitle>
+  )
   const h3 = screen.getByRole('heading', { level: 3, name: 'Test Subtitle' })
   expect(h3).toBeInTheDocument()
   expect(h3.className).toContain('custom-subtitle')

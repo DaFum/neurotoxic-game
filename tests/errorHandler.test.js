@@ -291,7 +291,9 @@ describe('initGlobalErrorHandling', () => {
   it('should initialize and catch unhandled promise rejections', () => {
     const originalWindow = globalThis.window
     const INIT_SYMBOL = Symbol.for('neurotoxic:initGlobalErrorHandlingDone')
-    const originalSymbolValue = originalWindow ? originalWindow[INIT_SYMBOL] : undefined
+    const originalSymbolValue = originalWindow
+      ? originalWindow[INIT_SYMBOL]
+      : undefined
 
     // Simulate window and listener registration
     let addedListener = null
@@ -313,14 +315,25 @@ describe('initGlobalErrorHandling', () => {
 
       initGlobalErrorHandling()
 
-      assert.ok(addedListener !== null, 'Should have registered unhandledrejection listener')
-      assert.strictEqual(globalThis.window[INIT_SYMBOL], true, 'Should mark as initialized')
+      assert.ok(
+        addedListener !== null,
+        'Should have registered unhandledrejection listener'
+      )
+      assert.strictEqual(
+        globalThis.window[INIT_SYMBOL],
+        true,
+        'Should mark as initialized'
+      )
 
       // Call again to test idempotence
       initGlobalErrorHandling()
 
       // Verify it was only registered once
-      assert.strictEqual(registrationCount, 1, 'Should only register the listener once')
+      assert.strictEqual(
+        registrationCount,
+        1,
+        'Should only register the listener once'
+      )
 
       // Test the listener directly with an Error
       const errorEvent = { reason: new Error('unhandled error test') }

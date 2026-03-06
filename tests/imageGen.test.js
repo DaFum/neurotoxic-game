@@ -54,8 +54,9 @@ test('IMG_PROMPTS contains expected keys and string values', async () => {
   }
 })
 
-test('fetchGenImage & fetchGenImageAsObjectUrl', async (t) => {
-  const { fetchGenImage, fetchGenImageAsObjectUrl } = await import('../src/utils/imageGen.js')
+test('fetchGenImage & fetchGenImageAsObjectUrl', async t => {
+  const { fetchGenImage, fetchGenImageAsObjectUrl } =
+    await import('../src/utils/imageGen.js')
 
   const originalFetch = globalThis.fetch
   const originalCreateObjectURL = globalThis.URL?.createObjectURL
@@ -67,45 +68,57 @@ test('fetchGenImage & fetchGenImageAsObjectUrl', async (t) => {
     }
   })
 
-  await t.test('fetchGenImage makes a fetch call with correct URL and headers', async () => {
-    let fetchArgs = null
-    globalThis.fetch = async (...args) => {
-      fetchArgs = args
-      return { ok: true }
+  await t.test(
+    'fetchGenImage makes a fetch call with correct URL and headers',
+    async () => {
+      let fetchArgs = null
+      globalThis.fetch = async (...args) => {
+        fetchArgs = args
+        return { ok: true }
+      }
+
+      const description = 'test image prompt'
+      await fetchGenImage(description)
+
+      assert.ok(fetchArgs)
+      assert.ok(fetchArgs[0].includes(encodeURIComponent(description)))
+      assert.ok(fetchArgs[0].includes('model=flux'))
+      assert.ok(fetchArgs[0].includes('seed=666'))
+      assert.equal(
+        fetchArgs[1].headers.Accept,
+        'image/jpeg, image/png, video/mp4'
+      )
     }
+  )
 
-    const description = 'test image prompt'
-    await fetchGenImage(description)
+  await t.test(
+    'fetchGenImageAsObjectUrl returns blob URL on success',
+    async () => {
+      globalThis.fetch = async () => ({
+        ok: true,
+        blob: async () => ({ size: 1024, type: 'image/png' })
+      })
 
-    assert.ok(fetchArgs)
-    assert.ok(fetchArgs[0].includes(encodeURIComponent(description)))
-    assert.ok(fetchArgs[0].includes('model=flux'))
-    assert.ok(fetchArgs[0].includes('seed=666'))
-    assert.equal(fetchArgs[1].headers.Accept, 'image/jpeg, image/png, video/mp4')
-  })
+      if (!globalThis.URL) globalThis.URL = {}
+      globalThis.URL.createObjectURL = blob => `blob:mock-url-${blob.type}`
 
-  await t.test('fetchGenImageAsObjectUrl returns blob URL on success', async () => {
-    globalThis.fetch = async () => ({
-      ok: true,
-      blob: async () => ({ size: 1024, type: 'image/png' })
-    })
+      const url = await fetchGenImageAsObjectUrl('test')
+      assert.strictEqual(url, 'blob:mock-url-image/png')
+    }
+  )
 
-    if (!globalThis.URL) globalThis.URL = {}
-    globalThis.URL.createObjectURL = (blob) => `blob:mock-url-${blob.type}`
+  await t.test(
+    'fetchGenImageAsObjectUrl throws error if response is not ok',
+    async () => {
+      globalThis.fetch = async () => ({
+        ok: false,
+        status: 500
+      })
 
-    const url = await fetchGenImageAsObjectUrl('test')
-    assert.strictEqual(url, 'blob:mock-url-image/png')
-  })
-
-  await t.test('fetchGenImageAsObjectUrl throws error if response is not ok', async () => {
-    globalThis.fetch = async () => ({
-      ok: false,
-      status: 500
-    })
-
-    await assert.rejects(
-      async () => await fetchGenImageAsObjectUrl('test fail'),
-      { message: 'Image fetch failed: 500' }
-    )
-  })
+      await assert.rejects(
+        async () => await fetchGenImageAsObjectUrl('test fail'),
+        { message: 'Image fetch failed: 500' }
+      )
+    }
+  )
 })

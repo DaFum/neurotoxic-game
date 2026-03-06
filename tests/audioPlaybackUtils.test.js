@@ -22,15 +22,18 @@ test('getBaseAssetPath and __resetBaseAssetPathCache', async t => {
     __resetBaseAssetPathCache()
   })
 
-  await t.test('getBaseAssetPath returns expected paths and caches result', () => {
-    const result1 = getBaseAssetPath()
-    assert.ok(result1.baseUrl)
-    assert.ok(result1.publicBasePath)
-    assert.strictEqual(result1.publicBasePath, `${result1.baseUrl}assets`)
+  await t.test(
+    'getBaseAssetPath returns expected paths and caches result',
+    () => {
+      const result1 = getBaseAssetPath()
+      assert.ok(result1.baseUrl)
+      assert.ok(result1.publicBasePath)
+      assert.strictEqual(result1.publicBasePath, `${result1.baseUrl}assets`)
 
-    const result2 = getBaseAssetPath()
-    assert.strictEqual(result1, result2) // Same object reference because it was cached
-  })
+      const result2 = getBaseAssetPath()
+      assert.strictEqual(result1, result2) // Same object reference because it was cached
+    }
+  )
 
   await t.test('__resetBaseAssetPathCache clears the cache', () => {
     const result1 = getBaseAssetPath()
