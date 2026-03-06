@@ -1,23 +1,18 @@
-let _lastMembers = null
-let _flatRelationships = []
-
 const getFlatRelationships = members => {
-  if (members === _lastMembers) return _flatRelationships
-  _lastMembers = members
-  _flatRelationships = []
+  const flat = []
   const len = members.length
   for (let i = 0; i < len; i++) {
     const m1 = members[i]
     if (!m1.relationships) continue
     for (const m2Name in m1.relationships) {
-      _flatRelationships.push({
+      flat.push({
         member1: m1.name,
         member2: m2Name,
         score: m1.relationships[m2Name]
       })
     }
   }
-  return _flatRelationships
+  return flat
 }
 
 export const RELATIONSHIP_EVENTS = [
