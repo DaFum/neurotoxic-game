@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { QuestsModal } from '../src/ui/QuestsModal.jsx'
 
-
 describe('QuestsModal', () => {
   it('renders translated accepted quests and progress', () => {
     render(
@@ -23,11 +22,11 @@ describe('QuestsModal', () => {
       />
     )
 
-    expect(screen.getByText('ui:quests.postgig.apologyTour.title')).toBeInTheDocument()
     expect(
-      screen.getByText(
-        'ui:quests.postgig.apologyTour.description'
-      )
+      screen.getByText('ui:quests.postgig.apologyTour.title')
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('ui:quests.postgig.apologyTour.description')
     ).toBeInTheDocument()
     expect(screen.getByText('1 / 3')).toBeInTheDocument()
   })

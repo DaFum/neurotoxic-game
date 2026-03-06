@@ -224,8 +224,7 @@ export const useTravelLogic = ({
           ...player.van,
           fuel: Math.max(0, (player.van?.fuel ?? 0) - fuelLiters)
         },
-        location:
-          normalizeVenueId(node.venue)?.split('_')?.[0] || 'Unknown',
+        location: normalizeVenueId(node.venue)?.split('_')?.[0] || 'Unknown',
         currentNodeId: node.id,
         totalTravels: (player.totalTravels ?? 0) + 1
       })

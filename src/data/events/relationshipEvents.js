@@ -1,3 +1,25 @@
+let _lastMembers = null
+let _flatRelationships = []
+
+const getFlatRelationships = members => {
+  if (members === _lastMembers) return _flatRelationships
+  _lastMembers = members
+  _flatRelationships = []
+  const len = members.length
+  for (let i = 0; i < len; i++) {
+    const m1 = members[i]
+    if (!m1.relationships) continue
+    for (const m2Name in m1.relationships) {
+      _flatRelationships.push({
+        member1: m1.name,
+        member2: m2Name,
+        score: m1.relationships[m2Name]
+      })
+    }
+  }
+  return _flatRelationships
+}
+
 export const RELATIONSHIP_EVENTS = [
   {
     id: 'toxic_infighting',
@@ -9,13 +31,14 @@ export const RELATIONSHIP_EVENTS = [
     chance: 0.1,
     condition: state => {
       // Find two members with relationship < 20
-      if (!state.band?.members) return false
-      for (const m1 of state.band.members) {
-        if (!m1.relationships) continue
-        for (const m2Name in m1.relationships) {
-          const score = m1.relationships[m2Name]
-          if (score < 20) return { member1: m1.name, member2: m2Name }
-        }
+      const members = state.band?.members
+      if (!members) return false
+
+      const rels = getFlatRelationships(members)
+      const len = rels.length
+      for (let i = 0; i < len; i++) {
+        if (rels[i].score < 20)
+          return { member1: rels[i].member1, member2: rels[i].member2 }
       }
       return false
     },
@@ -70,13 +93,14 @@ export const RELATIONSHIP_EVENTS = [
     chance: 0.1,
     condition: state => {
       // Find two members with relationship > 80
-      if (!state.band?.members) return false
-      for (const m1 of state.band.members) {
-        if (!m1.relationships) continue
-        for (const m2Name in m1.relationships) {
-          const score = m1.relationships[m2Name]
-          if (score > 80) return { member1: m1.name, member2: m2Name }
-        }
+      const members = state.band?.members
+      if (!members) return false
+
+      const rels = getFlatRelationships(members)
+      const len = rels.length
+      for (let i = 0; i < len; i++) {
+        if (rels[i].score > 80)
+          return { member1: rels[i].member1, member2: rels[i].member2 }
       }
       return false
     },

@@ -2,7 +2,6 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 import { ReportPhase } from '../src/components/postGig/ReportPhase.jsx'
 
-
 test('ReportPhase renders loading state', () => {
   render(<ReportPhase />)
   expect(screen.getByRole('status')).toBeInTheDocument()

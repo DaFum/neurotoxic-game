@@ -72,7 +72,9 @@ describe('MainMenu Performance Stability', () => {
 
     // First render calls
     const initialCalls = [...glitchButtonRender.mock.calls]
-    const creditsCall1 = initialCalls.find(c => c[0].children === 'ui:credits' || c[0].children === 'CREDITS')
+    const creditsCall1 = initialCalls.find(
+      c => c[0].children === 'ui:credits' || c[0].children === 'CREDITS'
+    )
     const startTourCall1 = initialCalls.find(
       c => c[0].children === 'ui:start_game' || c[0].children === 'Start Tour'
     )
@@ -84,8 +86,12 @@ describe('MainMenu Performance Stability', () => {
     rerender(<MainMenu />)
 
     const secondCalls = glitchButtonRender.mock.calls.slice(initialCalls.length)
-    const creditsCall2 = secondCalls.find(c => c[0].children === 'ui:credits' || c[0].children === 'CREDITS')
-    const startTourCall2 = secondCalls.find(c => c[0].children === 'ui:start_game' || c[0].children === 'Start Tour')
+    const creditsCall2 = secondCalls.find(
+      c => c[0].children === 'ui:credits' || c[0].children === 'CREDITS'
+    )
+    const startTourCall2 = secondCalls.find(
+      c => c[0].children === 'ui:start_game' || c[0].children === 'Start Tour'
+    )
 
     expect(creditsCall2).toBeDefined()
     expect(startTourCall2).toBeDefined()
