@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { MainMenu } from '../src/scenes/MainMenu'
 import { useGameState } from '../src/context/GameState'
@@ -104,10 +104,9 @@ describe('MainMenu Component', () => {
       mockLoadGame.mockReturnValue(true)
       render(<MainMenu />)
 
-      fireEvent.click(screen.getByText('ui:load_game'))
-
-      // Advance past the artificial delay
-      await vi.advanceTimersByTimeAsync(600)
+      await act(async () => {
+        fireEvent.click(screen.getByText('ui:load_game'))
+      })
 
       expect(mockLoadGame).toHaveBeenCalled()
       expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
@@ -117,10 +116,9 @@ describe('MainMenu Component', () => {
       mockLoadGame.mockReturnValue(false)
       render(<MainMenu />)
 
-      fireEvent.click(screen.getByText('ui:load_game'))
-
-      // Advance past the artificial delay
-      await vi.advanceTimersByTimeAsync(600)
+      await act(async () => {
+        fireEvent.click(screen.getByText('ui:load_game'))
+      })
 
       expect(mockLoadGame).toHaveBeenCalled()
       expect(mockAddToast).toHaveBeenCalledWith('ui:no_save_found', 'error')
@@ -133,8 +131,6 @@ describe('MainMenu Component', () => {
 
       fireEvent.click(screen.getByText('ui:load_game'))
 
-      // The GlitchButton should receive isLoading prop
-      // This is implicitly tested by the component rendering without error
       expect(container).toBeTruthy()
     })
   })
@@ -167,7 +163,6 @@ describe('MainMenu Component', () => {
 
       render(<MainMenu />)
 
-      // BandHQ component should be rendered when showHQ is true
       expect(screen.getByTestId('band-hq-modal')).toBeInTheDocument()
     })
   })
@@ -178,7 +173,6 @@ describe('MainMenu Component', () => {
 
       fireEvent.click(screen.getByText('ui:socials'))
 
-      // Modal title should be visible (there are multiple "ui:socials" texts)
       expect(screen.getAllByText('ui:socials').length).toBeGreaterThan(1)
       expect(screen.getByText('ui:social_links.game.title')).toBeInTheDocument()
     })
@@ -186,11 +180,9 @@ describe('MainMenu Component', () => {
     it('closes socials modal when close button clicked', () => {
       render(<MainMenu />)
 
-      // Open modal
       fireEvent.click(screen.getByText('ui:socials'))
       expect(screen.getAllByText('ui:socials').length).toBeGreaterThan(1)
 
-      // Close modal - find the modal's close button
       const modalCloseButton = screen.getByRole('button', {
         name: 'ui:closeModal'
       })
@@ -206,7 +198,6 @@ describe('MainMenu Component', () => {
 
       fireEvent.click(screen.getByText('ui:socials'))
 
-      // Check for social link titles
       expect(screen.getByText('ui:social_links.game.title')).toBeInTheDocument()
       expect(
         screen.getByText('ui:social_links.bandcamp.title')
@@ -285,9 +276,10 @@ describe('MainMenu Component', () => {
       render(<MainMenu />)
 
       fireEvent.click(screen.getByText('ui:start_game'))
-      fireEvent.click(screen.getByText('ui:mainMenu.existingSave.load'))
 
-      await vi.advanceTimersByTimeAsync(600)
+      await act(async () => {
+        fireEvent.click(screen.getByText('ui:mainMenu.existingSave.load'))
+      })
 
       expect(mockLoadGame).toHaveBeenCalled()
       expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
@@ -297,9 +289,10 @@ describe('MainMenu Component', () => {
       render(<MainMenu />)
 
       fireEvent.click(screen.getByText('ui:start_game'))
-      fireEvent.click(screen.getByText('ui:mainMenu.existingSave.startNew'))
 
-      await vi.advanceTimersByTimeAsync(600)
+      await act(async () => {
+        fireEvent.click(screen.getByText('ui:mainMenu.existingSave.startNew'))
+      })
 
       expect(mockResetState).toHaveBeenCalled()
       expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
@@ -378,11 +371,12 @@ describe('MainMenu Component', () => {
 
       const input = screen.getByPlaceholderText('ui:enter_name_placeholder')
       fireEvent.change(input, { target: { value: 'TestPlayer' } })
-      fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
+
+      await act(async () => {
+        fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
+      })
 
       expect(localStorage.getItem('neurotoxic_player_name')).toBe('TestPlayer')
-
-      await vi.advanceTimersByTimeAsync(600)
       expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
     })
 
@@ -428,7 +422,6 @@ describe('MainMenu Component', () => {
 
       const input = screen.getByPlaceholderText('ui:enter_name_placeholder')
 
-      // Simulate the useEffect focus
       input.focus()
       expect(document.activeElement).toBe(input)
     })
@@ -441,9 +434,9 @@ describe('MainMenu Component', () => {
 
       render(<MainMenu />)
 
-      fireEvent.click(screen.getByText('ui:start_game'))
-
-      await vi.advanceTimersByTimeAsync(600)
+      await act(async () => {
+        fireEvent.click(screen.getByText('ui:start_game'))
+      })
 
       expect(mockResetState).toHaveBeenCalled()
       expect(mockUpdatePlayer).toHaveBeenCalledWith({
@@ -457,10 +450,8 @@ describe('MainMenu Component', () => {
     it('sets mounted ref on mount and cleans up on unmount', () => {
       const { unmount } = render(<MainMenu />)
 
-      // Component should render without errors
       expect(screen.getByText('ui:start_game')).toBeInTheDocument()
 
-      // Unmount should not cause errors
       unmount()
     })
 
@@ -468,17 +459,12 @@ describe('MainMenu Component', () => {
       mockLoadGame.mockReturnValue(false)
       const { unmount, rerender } = render(<MainMenu />)
 
-      // Start the load game process
       fireEvent.click(screen.getByText('ui:load_game'))
 
-      // Verify component is in loading state before unmounting
       rerender(<MainMenu />)
 
-      // Unmount the component
       unmount()
 
-      // The component's isMountedRef should prevent state updates
-      // This test verifies the component doesn't crash on unmount
       expect(true).toBe(true)
     })
   })
@@ -536,7 +522,6 @@ describe('MainMenu Component', () => {
     it('handles multiple modal opens and closes', () => {
       render(<MainMenu />)
 
-      // Open and close socials modal multiple times
       fireEvent.click(screen.getByText('ui:socials'))
       expect(screen.getAllByText('ui:socials').length).toBeGreaterThan(1)
 
@@ -548,15 +533,11 @@ describe('MainMenu Component', () => {
       mockLoadGame.mockReturnValue(true)
       render(<MainMenu />)
 
-      // Click load game button multiple times rapidly
       const loadButton = screen.getByText('ui:load_game')
       fireEvent.click(loadButton)
       fireEvent.click(loadButton)
       fireEvent.click(loadButton)
 
-      await vi.advanceTimersByTimeAsync(600)
-
-      // Should handle gracefully without errors
       expect(mockLoadGame).toHaveBeenCalled()
     })
   })
@@ -567,7 +548,6 @@ describe('MainMenu Component', () => {
 
       fireEvent.click(screen.getByText('ui:features.button'))
 
-      // The mock includes "Item 1: Detail" which should be split
       const featureContent = screen.getByText('ui:features.title').parentElement
       expect(featureContent).toBeTruthy()
     })
@@ -577,7 +557,6 @@ describe('MainMenu Component', () => {
 
       fireEvent.click(screen.getByText('ui:features.button'))
 
-      // The mock includes "Item 2" which has no colon
       const featureContent = screen.getByText('ui:features.title').parentElement
       expect(featureContent).toBeTruthy()
     })
@@ -595,11 +574,10 @@ describe('MainMenu Component', () => {
 
       render(<MainMenu />)
 
-      fireEvent.click(screen.getByText('ui:start_game'))
+      await act(async () => {
+        fireEvent.click(screen.getByText('ui:start_game'))
+      })
 
-      await vi.advanceTimersByTimeAsync(600)
-
-      // Scene should still change even if audio fails
       expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
     })
   })
@@ -611,7 +589,6 @@ describe('MainMenu Component', () => {
       const buttons = screen.getAllByRole('button')
       const buttonTexts = buttons.map(btn => btn.textContent)
 
-      // Main action buttons should appear before secondary buttons
       const startGameIndex = buttonTexts.indexOf('ui:start_game')
       const loadGameIndex = buttonTexts.indexOf('ui:load_game')
       const bandHQIndex = buttonTexts.indexOf('ui:band_hq')
@@ -623,7 +600,6 @@ describe('MainMenu Component', () => {
       expect(bandHQIndex).toBeGreaterThanOrEqual(0)
       expect(creditsIndex).toBeGreaterThanOrEqual(0)
 
-      // Primary buttons should come before secondary buttons
       expect(startGameIndex).toBeLessThan(socialsIndex)
       expect(loadGameIndex).toBeLessThan(socialsIndex)
       expect(bandHQIndex).toBeLessThan(socialsIndex)
@@ -635,15 +611,12 @@ describe('MainMenu Component', () => {
       const socialsButton = screen.getByText('ui:socials')
       const creditsButton = screen.getByText('ui:credits')
 
-      // Both buttons should be in the DOM
       expect(socialsButton).toBeInTheDocument()
       expect(creditsButton).toBeInTheDocument()
 
-      // They should share a common parent container (the flex gap-4 div)
       const socialsParent = socialsButton.closest('div[class*="flex"]')
       const creditsParent = creditsButton.closest('div[class*="flex"]')
 
-      // Their immediate parents should have the same parent
       expect(socialsParent).toBeTruthy()
       expect(creditsParent).toBeTruthy()
     })
@@ -651,7 +624,6 @@ describe('MainMenu Component', () => {
     it('maintains button accessibility after layout refactor', () => {
       render(<MainMenu />)
 
-      // All buttons should be accessible and clickable
       const startButton = screen.getByText('ui:start_game')
       const loadButton = screen.getByText('ui:load_game')
       const bandHQButton = screen.getByText('ui:band_hq')
@@ -664,7 +636,6 @@ describe('MainMenu Component', () => {
       expect(socialsButton).toBeEnabled()
       expect(creditsButton).toBeEnabled()
 
-      // Buttons should respond to clicks without errors
       fireEvent.click(socialsButton)
       expect(screen.getByText('ui:social_links.game.title')).toBeInTheDocument()
     })
