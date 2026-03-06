@@ -76,8 +76,6 @@ export const MainMenu = () => {
 
   const proceedToTour = useCallback(async () => {
     setIsStarting(true)
-    // Add artificial delay for UX weight
-    await new Promise(resolve => setTimeout(resolve, 500))
 
     if (!isMountedRef.current) return
 
@@ -159,8 +157,6 @@ export const MainMenu = () => {
    */
   const handleLoad = useCallback(async () => {
     setIsLoadingGame(true)
-    // Add artificial delay for UX weight
-    await new Promise(resolve => setTimeout(resolve, 500))
 
     if (!isMountedRef.current) return
 
