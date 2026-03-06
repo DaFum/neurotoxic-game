@@ -164,124 +164,126 @@ const selectEvent = (pool, gameState, triggerPoint) => {
   return null
 }
 
+const EFFECT_HANDLERS = {
+  relationship: (eff, delta, context) => {
+    if (!delta.band.relationshipChange) delta.band.relationshipChange = []
+    const resolveName = str => resolveTemplateString(str, context)
+    delta.band.relationshipChange.push({
+      member1: resolveName(eff.member1),
+      member2: resolveName(eff.member2),
+      change: eff.value
+    })
+  },
+  resource: (eff, delta) => {
+    if (eff.resource === 'money')
+      delta.player.money = (delta.player.money || 0) + eff.value
+    if (eff.resource === 'fuel') {
+      delta.player.van = { ...(delta.player.van || {}) }
+      delta.player.van.fuel = Math.max(
+        0,
+        Math.min(100, (delta.player.van.fuel || 0) + eff.value)
+      )
+    }
+  },
+  stat: (eff, delta) => {
+    if (eff.stat === 'time')
+      delta.player.time = (delta.player.time || 0) + eff.value
+    if (eff.stat === 'fame')
+      delta.player.fame = (delta.player.fame || 0) + eff.value
+    if (eff.stat === 'harmony')
+      delta.band.harmony = (delta.band.harmony || 0) + eff.value
+    if (eff.stat === 'mood') {
+      delta.band.membersDelta = {
+        ...(delta.band.membersDelta || {}),
+        moodChange: eff.value
+      }
+    }
+    if (eff.stat === 'stamina') {
+      delta.band.membersDelta = {
+        ...(delta.band.membersDelta || {}),
+        staminaChange: eff.value
+      }
+    }
+    if (eff.stat === 'van_condition') {
+      delta.player.van = { ...(delta.player.van || {}) }
+      delta.player.van.condition = Math.max(
+        0,
+        Math.min(100, (delta.player.van.condition || 0) + eff.value)
+      )
+    }
+    if (eff.stat === 'hype' || eff.stat === 'crowd_energy')
+      delta.player.fame = (delta.player.fame || 0) + eff.value
+    if (eff.stat === 'viral')
+      delta.social.viral = (delta.social.viral || 0) + eff.value
+    if (eff.stat === 'controversyLevel')
+      delta.social.controversyLevel =
+        (delta.social.controversyLevel || 0) + eff.value
+    if (eff.stat === 'loyalty')
+      delta.social.loyalty = (delta.social.loyalty || 0) + eff.value
+    if (eff.stat === 'score') delta.score = (delta.score || 0) + eff.value
+    if (eff.stat === 'luck')
+      delta.band.luck = (delta.band.luck || 0) + eff.value
+    if (eff.stat === 'skill')
+      delta.band.skill = (delta.band.skill || 0) + eff.value
+  },
+  stat_increment: (eff, delta) => {
+    if (eff.stat === 'conflictsResolved') {
+      if (!delta.player.stats) delta.player.stats = {}
+      delta.player.stats.conflictsResolved =
+        (delta.player.stats.conflictsResolved || 0) + eff.value
+    }
+    if (eff.stat === 'stageDives') {
+      if (!delta.player.stats) delta.player.stats = {}
+      delta.player.stats.stageDives =
+        (delta.player.stats.stageDives || 0) + eff.value
+    }
+  },
+  item: (eff, delta) => {
+    if (eff.item) {
+      if (!delta.band.inventory) delta.band.inventory = {}
+      if (typeof eff.value === 'number') {
+        const current =
+          typeof delta.band.inventory[eff.item] === 'number'
+            ? delta.band.inventory[eff.item]
+            : 0
+        delta.band.inventory[eff.item] = current + eff.value
+      } else {
+        const val = eff.value !== undefined ? eff.value : true
+        delta.band.inventory[eff.item] = val
+      }
+    }
+  },
+  unlock: (eff, delta) => {
+    delta.flags.unlock = eff.unlock
+  },
+  game_over: (eff, delta) => {
+    delta.flags.gameOver = true
+  },
+  flag: (eff, delta) => {
+    delta.flags.addStoryFlag = eff.flag
+  },
+  cooldown: (eff, delta) => {
+    delta.flags.addCooldown = eff.eventId
+  },
+  social_set: (eff, delta) => {
+    delta.social[eff.stat] = eff.value
+  },
+  chain: (eff, delta) => {
+    delta.flags.queueEvent = eff.eventId
+  },
+  quest: (eff, delta) => {
+    if (!delta.flags.addQuest) delta.flags.addQuest = []
+    delta.flags.addQuest.push(eff.quest)
+  }
+}
+
 /**
  * Processes a single effect object into state delta modifications.
  */
 const processEffect = (eff, delta, context = {}) => {
-  switch (eff.type) {
-    case 'relationship': {
-      if (!delta.band.relationshipChange) delta.band.relationshipChange = []
-
-      const resolveName = str => resolveTemplateString(str, context)
-
-      delta.band.relationshipChange.push({
-        member1: resolveName(eff.member1),
-        member2: resolveName(eff.member2),
-        change: eff.value
-      })
-      break
-    }
-    case 'resource':
-      if (eff.resource === 'money')
-        delta.player.money = (delta.player.money || 0) + eff.value
-      if (eff.resource === 'fuel') {
-        delta.player.van = { ...(delta.player.van || {}) }
-        delta.player.van.fuel = Math.max(
-          0,
-          Math.min(100, (delta.player.van.fuel || 0) + eff.value)
-        )
-      }
-      break
-    case 'stat':
-      if (eff.stat === 'time')
-        delta.player.time = (delta.player.time || 0) + eff.value
-      if (eff.stat === 'fame')
-        delta.player.fame = (delta.player.fame || 0) + eff.value
-      if (eff.stat === 'harmony')
-        delta.band.harmony = (delta.band.harmony || 0) + eff.value
-      if (eff.stat === 'mood') {
-        delta.band.membersDelta = {
-          ...(delta.band.membersDelta || {}),
-          moodChange: eff.value
-        }
-      }
-      if (eff.stat === 'stamina') {
-        delta.band.membersDelta = {
-          ...(delta.band.membersDelta || {}),
-          staminaChange: eff.value
-        }
-      }
-      if (eff.stat === 'van_condition') {
-        delta.player.van = { ...(delta.player.van || {}) }
-        delta.player.van.condition = Math.max(
-          0,
-          Math.min(100, (delta.player.van.condition || 0) + eff.value)
-        )
-      }
-      if (eff.stat === 'hype' || eff.stat === 'crowd_energy')
-        delta.player.fame = (delta.player.fame || 0) + eff.value
-      if (eff.stat === 'viral')
-        delta.social.viral = (delta.social.viral || 0) + eff.value
-      if (eff.stat === 'controversyLevel')
-        delta.social.controversyLevel =
-          (delta.social.controversyLevel || 0) + eff.value
-      if (eff.stat === 'loyalty')
-        delta.social.loyalty = (delta.social.loyalty || 0) + eff.value
-      if (eff.stat === 'score') delta.score = (delta.score || 0) + eff.value
-      if (eff.stat === 'luck')
-        delta.band.luck = (delta.band.luck || 0) + eff.value
-      if (eff.stat === 'skill')
-        delta.band.skill = (delta.band.skill || 0) + eff.value
-      break
-    case 'stat_increment':
-      if (eff.stat === 'conflictsResolved') {
-        if (!delta.player.stats) delta.player.stats = {}
-        delta.player.stats.conflictsResolved =
-          (delta.player.stats.conflictsResolved || 0) + eff.value
-      }
-      if (eff.stat === 'stageDives') {
-        if (!delta.player.stats) delta.player.stats = {}
-        delta.player.stats.stageDives =
-          (delta.player.stats.stageDives || 0) + eff.value
-      }
-      break
-    case 'item':
-      if (eff.item) {
-        if (!delta.band.inventory) delta.band.inventory = {}
-        if (typeof eff.value === 'number') {
-          const current =
-            typeof delta.band.inventory[eff.item] === 'number'
-              ? delta.band.inventory[eff.item]
-              : 0
-          delta.band.inventory[eff.item] = current + eff.value
-        } else {
-          const val = eff.value !== undefined ? eff.value : true
-          delta.band.inventory[eff.item] = val
-        }
-      }
-      break
-    case 'unlock':
-      delta.flags.unlock = eff.unlock
-      break
-    case 'game_over':
-      delta.flags.gameOver = true
-      break
-    case 'flag':
-      delta.flags.addStoryFlag = eff.flag
-      break
-    case 'cooldown':
-      delta.flags.addCooldown = eff.eventId
-      break
-    case 'social_set':
-      delta.social[eff.stat] = eff.value
-      break
-    case 'chain':
-      delta.flags.queueEvent = eff.eventId
-      break
-    case 'quest':
-      if (!delta.flags.addQuest) delta.flags.addQuest = []
-      delta.flags.addQuest.push(eff.quest)
-      break
+  const handler = EFFECT_HANDLERS[eff.type]
+  if (handler) {
+    handler(eff, delta, context)
   }
 }
 
