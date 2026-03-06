@@ -126,10 +126,11 @@ export class LaneManager {
     const layoutUpdated = this.updateLaneLayout()
     const layout = this.laneLayout
 
-    state.lanes.forEach((lane, index) => {
+    for (let index = 0; index < state.lanes.length; index++) {
+      const lane = state.lanes[index]
       const graphicsSet = this.laneGraphics[index]
       if (!graphicsSet) {
-        return
+        continue
       }
 
       const {
@@ -202,7 +203,7 @@ export class LaneManager {
         activeGraphics.visible = !!lane.active
         inactiveGraphics.visible = !lane.active
       }
-    })
+    }
   }
 
   updateLaneLayout() {
