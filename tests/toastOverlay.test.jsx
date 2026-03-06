@@ -9,10 +9,20 @@ vi.mock('../src/context/GameState', () => ({
       { id: 1, type: 'success', message: 'Saved' },
       { id: 2, type: 'warning', message: 'Low harmony' },
       { id: 3, type: 'error', message: 'Crash' },
-      { id: 4, type: 'info', message: 'Traveling' }
+      { id: 4, type: 'info', message: 'Traveling' },
+      { id: 5, type: 'info', message: 'ui:test.key|{invalid:json}' }
     ]
   })
 }))
+
+const mockLogger = {
+  error: vi.fn()
+}
+
+vi.mock('../src/utils/logger.js', () => ({
+  logger: mockLogger
+}))
+
 const { ToastOverlay } = await import('../src/ui/ToastOverlay.jsx')
 
 test('ToastOverlay renders all taxonomy variants with themed classes', () => {
@@ -26,4 +36,17 @@ test('ToastOverlay renders all taxonomy variants with themed classes', () => {
   expect(html).toContain('text-(--warning-yellow)')
   expect(html).toContain('text-(--blood-red)')
   expect(html).toContain('text-(--info-blue)')
+})
+
+test('ToastOverlay logs error when message JSON parsing fails', () => {
+  renderToStaticMarkup(React.createElement(ToastOverlay))
+
+  expect(mockLogger.error).toHaveBeenCalledWith(
+    'UI',
+    'Toast message JSON parse error',
+    expect.objectContaining({
+      contextStr: '{invalid:json}',
+      toastMessage: 'ui:test.key|{invalid:json}'
+    })
+  )
 })
