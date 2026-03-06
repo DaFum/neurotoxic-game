@@ -57,7 +57,7 @@ export const applyInventoryItemDelta = (currentValue, deltaValue) => {
  * Usage ensures event deltas cannot maliciously or accidentally mutate the global Object space.
  */
 const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
-const isForbiddenKey = key => FORBIDDEN_KEYS.has(key)
+export const isForbiddenKey = key => FORBIDDEN_KEYS.has(key)
 
 /**
  * Applies event delta changes to the current game state.
