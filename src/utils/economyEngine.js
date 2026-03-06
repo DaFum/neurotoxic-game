@@ -329,6 +329,100 @@ export const calculateEffectiveTicketPrice = (gigData, context = {}) => {
 }
 
 /**
+ * Calculates venue split / promoter cut.
+ */
+const calculateVenueSplit = (ticketsRevenue, gigData) => {
+  const splitRate =
+    gigData.diff >= 5 ? 0.7 : { 3: 0.2, 4: 0.4 }[gigData.diff] || 0
+
+  if (splitRate > 0) {
+    const splitAmount = Math.floor(ticketsRevenue * splitRate)
+    return {
+      amount: splitAmount,
+      expenseItem: {
+        labelKey: 'economy:gigExpenses.venueSplit.label',
+        value: splitAmount,
+        detailKey: 'economy:gigExpenses.venueSplit.detail',
+        detailParams: { rate: splitRate * 100 }
+      }
+    }
+  }
+  return { amount: 0, expenseItem: null }
+}
+
+/**
+ * Calculates guarantee / base pay.
+ */
+const calculateGuarantee = gigData => {
+  if (gigData.pay > 0) {
+    return {
+      amount: gigData.pay,
+      incomeItem: {
+        labelKey: 'economy:gigIncome.guarantee.label',
+        value: gigData.pay,
+        detailKey: 'economy:gigIncome.guarantee.detail'
+      }
+    }
+  }
+  return { amount: 0, incomeItem: null }
+}
+
+/**
+ * Calculates bar cut revenue.
+ */
+const calculateBarCut = (ticketsSold, modifiers) => {
+  const barRate = modifiers.guestlist ? BAR_RATE_VIP : BAR_RATE_NORMAL
+  const barPercent = Math.round(barRate * 100)
+  const barRevenue = Math.floor(
+    ticketsSold * AVG_SPEND_PER_PERSON_AT_BAR * barRate
+  )
+  return {
+    revenue: barRevenue,
+    incomeItem: {
+      labelKey: modifiers.guestlist
+        ? 'economy:gigIncome.vipBarRevenue.label'
+        : 'economy:gigIncome.barCut.label',
+      value: barRevenue,
+      detailKey: modifiers.guestlist
+        ? 'economy:gigIncome.vipBarRevenue.detail'
+        : 'economy:gigIncome.barCut.detail',
+      detailParams: { percent: barPercent }
+    }
+  }
+}
+
+/**
+ * Calculates sponsorship bonuses.
+ */
+const calculateSponsorshipBonuses = gigStats => {
+  const bonuses = []
+  let totalBonus = 0
+
+  if (gigStats) {
+    if (gigStats.misses === 0) {
+      const bonus = 200
+      bonuses.push({
+        labelKey: 'economy:gigIncome.techSponsor.label',
+        value: bonus,
+        detailKey: 'economy:gigIncome.techSponsor.detail'
+      })
+      totalBonus += bonus
+    }
+    if (gigStats.peakHype >= 100) {
+      const bonus = 150
+      bonuses.push({
+        labelKey: 'economy:gigIncome.beerSponsor.label',
+        value: bonus,
+        detailKey: 'economy:gigIncome.beerSponsor.detail'
+      })
+      totalBonus += bonus
+    }
+  }
+
+  return { totalBonus, incomeItems: bonuses }
+}
+
+/**
  * Calculates expenses for the gig.
  */
 const calculateGigExpenses = modifiers => {
@@ -433,28 +527,17 @@ export const calculateGigFinancials = ({
   report.income.total += tickets.revenue
 
   // Venue Split / Promoter Cut
-  const splitRate =
-    gigData.diff >= 5 ? 0.7 : { 3: 0.2, 4: 0.4 }[gigData.diff] || 0
-
-  if (splitRate > 0) {
-    const splitAmount = Math.floor(tickets.revenue * splitRate)
-    report.expenses.breakdown.push({
-      labelKey: 'economy:gigExpenses.venueSplit.label',
-      value: splitAmount,
-      detailKey: 'economy:gigExpenses.venueSplit.detail',
-      detailParams: { rate: splitRate * 100 }
-    })
-    report.expenses.total += splitAmount
+  const venueSplit = calculateVenueSplit(tickets.revenue, gigData)
+  if (venueSplit.expenseItem) {
+    report.expenses.breakdown.push(venueSplit.expenseItem)
+    report.expenses.total += venueSplit.amount
   }
 
   // 2. Guarantee
-  if (gigData.pay > 0) {
-    report.income.breakdown.push({
-      labelKey: 'economy:gigIncome.guarantee.label',
-      value: gigData.pay,
-      detailKey: 'economy:gigIncome.guarantee.detail'
-    })
-    report.income.total += gigData.pay
+  const guarantee = calculateGuarantee(gigData)
+  if (guarantee.incomeItem) {
+    report.income.breakdown.push(guarantee.incomeItem)
+    report.income.total += guarantee.amount
   }
 
   // 3. Merch Sales
@@ -471,49 +554,21 @@ export const calculateGigFinancials = ({
   report.expenses.breakdown.push(merch.costItem)
   report.expenses.total += merch.cost
 
-  // 4. Bar Cut (Guestlist doubles rate: VIPs spend more at the bar)
-  const barRate = modifiers.guestlist ? BAR_RATE_VIP : BAR_RATE_NORMAL
-  const barPercent = Math.round(barRate * 100)
-  const barRevenue = Math.floor(
-    tickets.ticketsSold * AVG_SPEND_PER_PERSON_AT_BAR * barRate
-  )
-  report.income.breakdown.push({
-    labelKey: modifiers.guestlist
-      ? 'economy:gigIncome.vipBarRevenue.label'
-      : 'economy:gigIncome.barCut.label',
-    value: barRevenue,
-    detailKey: modifiers.guestlist
-      ? 'economy:gigIncome.vipBarRevenue.detail'
-      : 'economy:gigIncome.barCut.detail',
-    detailParams: { percent: barPercent }
-  })
-  report.income.total += barRevenue
+  // 4. Bar Cut
+  const barCut = calculateBarCut(tickets.ticketsSold, modifiers)
+  report.income.breakdown.push(barCut.incomeItem)
+  report.income.total += barCut.revenue
 
-  // 5. Expenses (Transport, Food, Modifiers)
+  // 5. Expenses (Modifiers)
   const operationalExpenses = calculateGigExpenses(modifiers)
   report.expenses.breakdown.push(...operationalExpenses.breakdown)
   report.expenses.total += operationalExpenses.total
 
   // 6. Sponsorship Bonuses
-  if (gigStats) {
-    if (gigStats.misses === 0) {
-      const bonus = 200
-      report.income.breakdown.push({
-        labelKey: 'economy:gigIncome.techSponsor.label',
-        value: bonus,
-        detailKey: 'economy:gigIncome.techSponsor.detail'
-      })
-      report.income.total += bonus
-    }
-    if (gigStats.peakHype >= 100) {
-      const bonus = 150
-      report.income.breakdown.push({
-        labelKey: 'economy:gigIncome.beerSponsor.label',
-        value: bonus,
-        detailKey: 'economy:gigIncome.beerSponsor.detail'
-      })
-      report.income.total += bonus
-    }
+  const sponsorshipBonuses = calculateSponsorshipBonuses(gigStats)
+  if (sponsorshipBonuses.incomeItems.length > 0) {
+    report.income.breakdown.push(...sponsorshipBonuses.incomeItems)
+    report.income.total += sponsorshipBonuses.totalBonus
   }
 
   report.net = report.income.total - report.expenses.total
