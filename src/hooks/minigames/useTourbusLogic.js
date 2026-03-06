@@ -106,7 +106,8 @@ export const useTourbusLogic = () => {
       // Let's say 0.05 units per ms -> 50% screen per second.
       const obstacleSpeed = game.speed
 
-      game.obstacles.forEach(obs => {
+      for (let i = 0; i < game.obstacles.length; i++) {
+        const obs = game.obstacles[i]
         obs.y += obstacleSpeed * deltaMS
 
         if (
@@ -138,7 +139,7 @@ export const useTourbusLogic = () => {
           // Keep if strictly less than 120 (buffer below screen)
           survivingObstacles.push(obs)
         }
-      })
+      }
       gameStateRef.current.obstacles = survivingObstacles
 
       // Check Win/Loss

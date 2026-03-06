@@ -28,6 +28,7 @@ export class NoteManager {
     this.onHit = onHit
     this.container = null
     this.noteSprites = new Map() // Map<note, Sprite>
+    this.activeNotes = [] // Track active notes for fast iteration
     this.nextRenderIndex = 0
     this.lastNotesVersion = null // Tracks game-state notesVersion for song-transition resets
     this.spritePool = []
@@ -87,9 +88,10 @@ export class NoteManager {
     if (notesVersion !== this.lastNotesVersion) {
       this.lastNotesVersion = notesVersion
       this.nextRenderIndex = 0
-      for (const note of this.noteSprites.keys()) {
-        this.destroyNoteSprite(note)
+      for (let i = 0; i < this.activeNotes.length; i++) {
+        this.destroyNoteSprite(this.activeNotes[i])
       }
+      this.activeNotes.length = 0
     }
 
     while (this.nextRenderIndex < notes.length) {
@@ -101,6 +103,7 @@ export class NoteManager {
           const sprite = this.acquireSpriteFromPool(lane, note.laneIndex)
           this.container.addChild(sprite)
           this.noteSprites.set(note, sprite)
+          this.activeNotes.push(note)
         }
         this.nextRenderIndex++
       } else {
@@ -108,9 +111,11 @@ export class NoteManager {
       }
     }
 
-    // Direct iteration over the Map is safe even when deleting entries during iteration.
-    // This avoids allocating a new array every frame, reducing GC pressure.
-    for (const [note, sprite] of this.noteSprites) {
+    let writeIdx = 0
+    for (let i = 0; i < this.activeNotes.length; i++) {
+      const note = this.activeNotes[i]
+      const sprite = this.noteSprites.get(note)
+
       if (note.hit) {
         const laneColor = state.lanes?.[note.laneIndex]?.color || 0xffffff
         if (this.onHit) {
@@ -136,7 +141,12 @@ export class NoteManager {
         state.lanes[note.laneIndex].renderX +
         NOTE_CENTER_OFFSET +
         (sprite.isFallback ? 0 : jitterOffset)
+
+      this.activeNotes[writeIdx++] = note
     }
+
+    // Trim the array to the actual number of active notes remaining
+    this.activeNotes.length = writeIdx
   }
 
   acquireSpriteFromPool(lane, laneIndex) {
@@ -241,16 +251,17 @@ export class NoteManager {
   }
 
   dispose() {
-    for (const note of this.noteSprites.keys()) {
-      this.destroyNoteSprite(note)
+    for (let i = 0; i < this.activeNotes.length; i++) {
+      this.destroyNoteSprite(this.activeNotes[i])
     }
+    this.activeNotes = []
     this.noteSprites.clear()
     this.nextRenderIndex = 0
     this.lastNotesVersion = null
 
     // Destroy pooled sprites
-    for (const sprite of this.spritePool) {
-      sprite.destroy()
+    for (let i = 0; i < this.spritePool.length; i++) {
+      this.spritePool[i].destroy()
     }
     this.spritePool = []
 

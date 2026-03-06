@@ -108,7 +108,8 @@ export class CrowdManager {
     const targetTexture =
       shouldMosh && this.textures.mosh ? this.textures.mosh : this.textures.idle
 
-    this.crowdMembers.forEach(member => {
+    for (let i = 0; i < this.crowdMembers.length; i++) {
+      const member = this.crowdMembers[i]
       member.y = member.baseY - yOffset
 
       // Texture swapping logic
@@ -122,7 +123,7 @@ export class CrowdManager {
         member.currentFillColor = nextColor
         member.tint = nextColor
       }
-    })
+    }
   }
 
   dispose() {
