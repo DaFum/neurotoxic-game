@@ -6,7 +6,8 @@ const GigModifierButton = memo(({ item, isActive, onClick }) => {
     <button
       type='button'
       onClick={() => onClick(item.key)}
-      className={`flex justify-between items-center p-3 border-2 transition-all group relative overflow-hidden
+      aria-pressed={isActive}
+      className={`flex justify-between items-center p-3 border-2 transition-all group relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green) focus-visible:ring-offset-2 focus-visible:ring-offset-(--void-black)
         ${
           isActive
             ? 'bg-(--toxic-green) text-black border-(--toxic-green) shadow-[0_0_10px_var(--toxic-green-20)]'
