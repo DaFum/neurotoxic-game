@@ -28,7 +28,7 @@ export const DEFAULT_PLAYER_STATE = {
   money: 500,
   day: 1,
   time: 12,
-  location: 'Stendal',
+  location: 'stendal',
   currentNodeId: 'node_0_0',
   tutorialStep: 0,
   score: 0,

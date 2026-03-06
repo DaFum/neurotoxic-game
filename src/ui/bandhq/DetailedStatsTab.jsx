@@ -276,7 +276,7 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
                   label={translateLocation(t, region, region)}
                   value={rep}
                   subtext={
-                    venueBlacklist.some(v => v.includes(region))
+                    venueBlacklist.some(v => v.split('_')[0] === region)
                       ? t('ui:detailedStats.blacklisted', {
                           defaultValue: 'BLACKLISTED VENUES'
                         })
@@ -295,7 +295,7 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
               </div>
               <div className='text-xs text-(--toxic-green) font-mono italic'>
                 {venueBlacklist
-                  .map(v => translateLocation(t, v, v))
+                  .map(v => translateLocation(t, `venues:${v}.name`, v))
                   .join(', ')}
               </div>
             </div>

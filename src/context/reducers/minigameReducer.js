@@ -65,7 +65,7 @@ export const handleCompleteTravelMinigame = (state, payload) => {
   const nextPlayer = {
     ...state.player,
     money: clampPlayerMoney(state.player.money - totalCost),
-    location: targetNode.venue?.name || 'Unknown',
+    location: targetNode.venue?.id?.split('_')[0] || 'Unknown',
     currentNodeId: targetNode.id,
     totalTravels: state.player.totalTravels + 1,
     van: {
