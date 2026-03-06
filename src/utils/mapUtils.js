@@ -31,6 +31,24 @@ export const getNodeVisibility = (nodeLayer, currentLayer) => {
 }
 
 /**
+ * Normalizes a venue object or string into a raw ID string, stripping legacy namespacing.
+ * @param {object|string} venue - The venue object or string to normalize.
+ * @returns {string|null} The normalized string ID, or null.
+ */
+export const normalizeVenueId = venue => {
+  if (!venue) return null
+  let id = venue.id || venue.name || venue
+  if (
+    typeof id === 'string' &&
+    id.startsWith('venues:') &&
+    id.endsWith('.name')
+  ) {
+    id = id.replace('venues:', '').replace('.name', '')
+  }
+  return typeof id === 'string' ? id : null
+}
+
+/**
  * Checks if the player is softlocked (stranded) due to lack of fuel and money.
  * @param {object} gameMap - The game map object.
  * @param {object} player - The player state object.

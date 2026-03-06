@@ -64,7 +64,7 @@ export const handleUpdateSocial = (state, payload) => {
   return { ...state, social: { ...state.social, ...updates } }
 }
 
-export const handleAddVenueBlacklist = (state, venueName) => {
+export const handleAddVenueBlacklist = (state, venueId) => {
   let nextState = { ...state }
   // Intentional design: If loyalty is high enough (>= 30), loyal fans will defend the band
   // and prevent the venue from blacklisting them, at the cost of 15 loyalty points.
@@ -82,12 +82,12 @@ export const handleAddVenueBlacklist = (state, venueName) => {
       }
     ]
   } else {
-    nextState.venueBlacklist = [...(nextState.venueBlacklist || []), venueName]
+    nextState.venueBlacklist = [...(nextState.venueBlacklist || []), venueId]
     nextState.toasts = [
       ...(nextState.toasts || []),
       {
         id: Date.now().toString(),
-        message: `ui:toast.blacklisted|${JSON.stringify({ venue: venueName })}`,
+        message: `ui:toast.blacklisted|${JSON.stringify({ venueLabel: `venues:${venueId}.name` })}`,
         type: 'error'
       }
     ]

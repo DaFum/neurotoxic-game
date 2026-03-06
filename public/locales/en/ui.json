@@ -146,6 +146,7 @@
   "enter_name_placeholder": "ENTER NAME...",
   "errors.ambient_start_failed": "Ambient audio failed to start.",
   "errors.audio_init_failed": "Audio initialization failed.",
+  "errors.invalidVenueData": "Invalid venue data.",
   "event": {
     "severity": {
       "critical": "CRITICAL"
@@ -613,7 +614,7 @@
     "log7": "[ERROR] BAND HARMONY CRITICAL.",
     "log8": "> AWAITING INPUT_"
   },
-  "toast.blacklisted": "BLACKLISTED: {{venue}}",
+  "toast.blacklisted": "BLACKLISTED: {{venueLabel}}",
   "toast.fans_defended": "Loyal fans defended you — venue gave one more chance!",
   "toast.three_disasters": "3 DISASTERS IN A ROW — Prove yourself in small venues first.",
   "toast.quest_complete": "[{{name}}]: COMPLETE",

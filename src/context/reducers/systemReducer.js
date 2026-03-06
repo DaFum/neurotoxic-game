@@ -8,6 +8,7 @@ import { calculateDailyUpdates } from '../../utils/simulationUtils.js'
 import { generateDailyTrend } from '../../utils/socialEngine.js'
 import { checkTraitUnlocks } from '../../utils/unlockCheck.js'
 import { applyTraitUnlocks } from '../../utils/traitUtils.js'
+import { normalizeVenueId } from '../../utils/mapUtils.js'
 import {
   createInitialState,
   DEFAULT_GIG_MODIFIERS,
@@ -176,16 +177,35 @@ export const handleLoadGame = (state, payload) => {
       : state.unlocks || []
   }
 
+  // Migration: Legacy venue translation keys -> Raw IDs
+  const migrateLegacyVenueId = id => {
+    if (typeof id !== 'string') return id
+    return normalizeVenueId(id) ?? id
+  }
+
+  // Apply venue migrations using spreads
+  const migratedState = {
+    ...safeState,
+    player: {
+      ...safeState.player,
+      location:
+        typeof safeState.player.location === 'string'
+          ? migrateLegacyVenueId(safeState.player.location)
+          : safeState.player.location
+    },
+    venueBlacklist: safeState.venueBlacklist.map(migrateLegacyVenueId)
+  }
+
   // Migration: energy -> catering
-  if (safeState.gigModifiers.energy !== undefined) {
-    const { energy, ...restModifiers } = safeState.gigModifiers
+  if (migratedState.gigModifiers.energy !== undefined) {
+    const { energy, ...restModifiers } = migratedState.gigModifiers
     return {
-      ...safeState,
+      ...migratedState,
       gigModifiers: { ...restModifiers, catering: energy }
     }
   }
 
-  return safeState
+  return migratedState
 }
 
 export const handleResetState = (state, payload = {}) => {

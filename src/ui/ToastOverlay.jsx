@@ -26,14 +26,35 @@ const TOAST_STYLE_MAP = {
   }
 }
 
+const VALID_NAMESPACES = ['ui:', 'events:', 'venues:', 'items:', 'economy:']
+
+const translateContextKeys = (context, t) => {
+  const translatedContext = { ...context }
+  for (const prop of Object.keys(translatedContext)) {
+    if (typeof translatedContext[prop] === 'string') {
+      const isTranslationKey = VALID_NAMESPACES.some(ns =>
+        translatedContext[prop].startsWith(ns)
+      )
+      if (isTranslationKey) {
+        translatedContext[prop] = t(translatedContext[prop])
+      }
+    }
+  }
+  return translatedContext
+}
+
 /**
  * Renders global toast notifications with consistent visual taxonomy.
+ * Supports pipe-separated translation payload format (e.g. `ui:key|{"context":"value"}`)
+ * where `ui:key` acts as the translation template and the JSON provides context parameters.
+ * Note that some components like `usePurchaseLogic.js` pre-translate strings before calling `addToast`,
+ * which this component also correctly handles.
  *
  * @returns {JSX.Element} Toast stack overlay.
  */
 export const ToastOverlay = () => {
   const { toasts } = useGameState()
-  const { t } = useTranslation(['ui', 'events'])
+  const { t } = useTranslation(['ui', 'events', 'venues', 'items', 'economy'])
 
   return (
     <div
@@ -75,33 +96,37 @@ export const ToastOverlay = () => {
                         ...(toast.options || {}),
                         defaultValue: toast.message
                       })
-                    : toast.message &&
-                        toast.message.includes('|') &&
-                        toast.message.startsWith('ui:')
+                    : toast.message && toast.message.startsWith('ui:')
                       ? (() => {
-                          const firstPipeIdx = toast.message.indexOf('|')
-                          const key = toast.message.slice(0, firstPipeIdx)
-                          const contextStr = toast.message.slice(
-                            firstPipeIdx + 1
-                          )
-                          try {
-                            const context = JSON.parse(contextStr)
-                            // Safely translate deeply nested key refs in context
-                            if (context.name && context.name.includes(':')) {
-                              context.name = t(context.name)
-                            }
-                            return t(key, context)
-                          } catch (_e) {
-                            logger.error(
-                              'UI',
-                              'Toast message JSON parse error',
-                              {
-                                error: _e,
-                                contextStr,
-                                toastMessage: toast.message
-                              }
+                          if (toast.message.includes('|')) {
+                            const firstPipeIdx = toast.message.indexOf('|')
+                            const key = toast.message.slice(0, firstPipeIdx)
+                            const contextStr = toast.message.slice(
+                              firstPipeIdx + 1
                             )
-                            return t(key)
+                            try {
+                              const rawContext = JSON.parse(contextStr)
+                              // Safely translate nested key refs in context dynamically without mutating
+                              const context = translateContextKeys(
+                                rawContext,
+                                t
+                              )
+                              return t(key, context)
+                            } catch (_e) {
+                              logger.error(
+                                'UI',
+                                'Toast message JSON parse error',
+                                {
+                                  error: _e,
+                                  contextStr,
+                                  toastMessage: toast.message
+                                }
+                              )
+                              return t(key)
+                            }
+                          } else {
+                            // Straight translation for parameterless keys
+                            return t(toast.message)
                           }
                         })()
                       : toast.message}

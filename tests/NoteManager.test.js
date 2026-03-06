@@ -371,6 +371,7 @@ describe('NoteManager', () => {
 
     noteManager.dispose()
 
+    assert.equal(noteManager.activeNotes.length, 0)
     assert.equal(noteManager.noteSprites.size, 0)
     assert.equal(noteManager.spritePool.length, 0)
     assert.equal(noteManager.container, null)
@@ -495,6 +496,7 @@ describe('NoteManager', () => {
     )
 
     noteManager.dispose()
+    assert.equal(noteManager.activeNotes.length, 0)
     assert.equal(
       noteManager.lastNotesVersion,
       null,
