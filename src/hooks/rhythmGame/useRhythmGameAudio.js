@@ -109,108 +109,150 @@ const resolveActiveSetlist = setlist => {
   })
 }
 
-// Helper 3: Song Playback Logic
+// Helper 3: Playback methods
+const playOggBuffer = async (currentSong, notes, onSongEnded) => {
+  if (!currentSong.sourceOgg && !currentSong.sourceMid) return false
+
+  const { excerptStartMs, excerptDurationMs } = resolveSongPlaybackWindow(
+    currentSong,
+    { defaultDurationMs: 0 }
+  )
+  const oggFilename =
+    currentSong.sourceOgg || currentSong.sourceMid.replace(/\.mid$/i, '.ogg')
+  const assetFound = hasAudioAsset(oggFilename)
+
+  if (!assetFound) {
+    handleError(
+      new AudioError(
+        `Audio asset not found for "${currentSong.name}": looked up "${oggFilename}"`,
+        { songName: currentSong.name, oggFilename }
+      ),
+      { silent: true, fallbackMessage: 'Missing OGG audio asset' }
+    )
+    return false
+  }
+
+  const maxNoteTimeSoFar = notes.length > 0 ? notes[notes.length - 1].time : 0
+  const oggDurationMs =
+    maxNoteTimeSoFar > 0
+      ? maxNoteTimeSoFar + NOTE_TAIL_MS
+      : excerptDurationMs > 0
+        ? excerptDurationMs
+        : null
+
+  const success = await startGigPlayback({
+    filename: oggFilename,
+    bufferOffsetMs: excerptStartMs,
+    delayMs: GIG_LEAD_IN_MS,
+    durationMs: oggDurationMs,
+    onEnded: onSongEnded
+  })
+
+  if (success) {
+    logger.info(
+      'RhythmGame',
+      `Gig audio: OGG buffer playback for "${currentSong.name}"`
+    )
+  }
+  return success
+}
+
+const playMidiSynthesis = async (currentSong, notes, onSongEnded) => {
+  if (!currentSong.sourceMid) return false
+
+  const { excerptStartMs, excerptDurationMs } = resolveSongPlaybackWindow(
+    currentSong,
+    { defaultDurationMs: 0 }
+  )
+  const offsetSeconds = Math.max(0, excerptStartMs / 1000)
+  const maxNoteTimeSoFar = notes.length > 0 ? notes[notes.length - 1].time : 0
+  const midiDurationMs =
+    maxNoteTimeSoFar > 0
+      ? maxNoteTimeSoFar + NOTE_TAIL_MS
+      : excerptDurationMs > 0
+        ? excerptDurationMs
+        : null
+  const gigPlaybackSeconds =
+    midiDurationMs !== null ? midiDurationMs / 1000 : null
+
+  const rawGigStartTimeSec = getAudioContextTimeSec() + GIG_LEAD_IN_MS / 1000
+  const toneGigStartTimeSec = getToneStartTimeSec(rawGigStartTimeSec)
+  startGigClock({ offsetMs: 0, startTimeSec: toneGigStartTimeSec })
+
+  const success = await playMidiFile(
+    currentSong.sourceMid,
+    offsetSeconds,
+    false,
+    0,
+    {
+      startTimeSec: toneGigStartTimeSec,
+      stopAfterSeconds: gigPlaybackSeconds,
+      useCleanPlayback: false,
+      onEnded: onSongEnded
+    }
+  )
+
+  if (success) {
+    logger.info(
+      'RhythmGame',
+      `Gig audio: MIDI synthesis fallback for "${currentSong.name}"`
+    )
+  }
+  return success
+}
+
+const playNoteDataSynthesis = async (currentSong, notes, onSongEnded) => {
+  if (notes.length === 0) return false
+
+  startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
+  const success = await playSongFromData(currentSong, GIG_LEAD_IN_MS / 1000, {
+    onEnded: onSongEnded
+  })
+
+  if (success) {
+    logger.info(
+      'RhythmGame',
+      `Gig audio: note data synthesis for "${currentSong.name}"`
+    )
+  }
+  return success
+}
+
+const playProceduralMetal = async (currentSong, onSongEnded, rng) => {
+  const audioDelay = GIG_LEAD_IN_MS / 1000
+  startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
+  const success = await startMetalGenerator(
+    currentSong,
+    audioDelay,
+    { onEnded: onSongEnded },
+    rng
+  )
+
+  if (success) {
+    logger.info(
+      'RhythmGame',
+      `Gig audio: procedural metal generator for "${currentSong.name}"`
+    )
+  }
+  return success
+}
+
+// Helper 4: Song Playback Logic
 const playAudioForSong = async (currentSong, notes, onSongEnded, rng) => {
   let bgAudioStarted = false
 
-  if (currentSong.sourceOgg || currentSong.sourceMid) {
-    const { excerptStartMs, excerptDurationMs } = resolveSongPlaybackWindow(
-      currentSong,
-      { defaultDurationMs: 0 }
-    )
-    const oggFilename =
-      currentSong.sourceOgg || currentSong.sourceMid.replace(/\.mid$/i, '.ogg')
-    const assetFound = hasAudioAsset(oggFilename)
+  bgAudioStarted = await playOggBuffer(currentSong, notes, onSongEnded)
 
-    if (!assetFound) {
-      handleError(
-        new AudioError(
-          `Audio asset not found for "${currentSong.name}": looked up "${oggFilename}"`,
-          { songName: currentSong.name, oggFilename }
-        ),
-        { silent: true, fallbackMessage: 'Missing OGG audio asset' }
-      )
-    }
-
-    if (assetFound) {
-      const maxNoteTimeSoFar =
-        notes.length > 0 ? notes[notes.length - 1].time : 0
-      const oggDurationMs =
-        maxNoteTimeSoFar > 0
-          ? maxNoteTimeSoFar + NOTE_TAIL_MS
-          : excerptDurationMs > 0
-            ? excerptDurationMs
-            : null
-      const success = await startGigPlayback({
-        filename: oggFilename,
-        bufferOffsetMs: excerptStartMs,
-        delayMs: GIG_LEAD_IN_MS,
-        durationMs: oggDurationMs,
-        onEnded: onSongEnded
-      })
-      if (success) {
-        bgAudioStarted = true
-        logger.info(
-          'RhythmGame',
-          `Gig audio: OGG buffer playback for "${currentSong.name}"`
-        )
-      }
-    }
+  if (!bgAudioStarted) {
+    bgAudioStarted = await playMidiSynthesis(currentSong, notes, onSongEnded)
   }
 
-  if (!bgAudioStarted && currentSong.sourceMid) {
-    const { excerptStartMs, excerptDurationMs } = resolveSongPlaybackWindow(
+  if (!bgAudioStarted) {
+    bgAudioStarted = await playNoteDataSynthesis(
       currentSong,
-      { defaultDurationMs: 0 }
+      notes,
+      onSongEnded
     )
-    const offsetSeconds = Math.max(0, excerptStartMs / 1000)
-    const maxNoteTimeSoFar = notes.length > 0 ? notes[notes.length - 1].time : 0
-    const midiDurationMs =
-      maxNoteTimeSoFar > 0
-        ? maxNoteTimeSoFar + NOTE_TAIL_MS
-        : excerptDurationMs > 0
-          ? excerptDurationMs
-          : null
-    const gigPlaybackSeconds =
-      midiDurationMs !== null ? midiDurationMs / 1000 : null
-
-    const rawGigStartTimeSec = getAudioContextTimeSec() + GIG_LEAD_IN_MS / 1000
-    const toneGigStartTimeSec = getToneStartTimeSec(rawGigStartTimeSec)
-    startGigClock({ offsetMs: 0, startTimeSec: toneGigStartTimeSec })
-
-    const success = await playMidiFile(
-      currentSong.sourceMid,
-      offsetSeconds,
-      false,
-      0,
-      {
-        startTimeSec: toneGigStartTimeSec,
-        stopAfterSeconds: gigPlaybackSeconds,
-        useCleanPlayback: false,
-        onEnded: onSongEnded
-      }
-    )
-    if (success) {
-      bgAudioStarted = true
-      logger.info(
-        'RhythmGame',
-        `Gig audio: MIDI synthesis fallback for "${currentSong.name}"`
-      )
-    }
-  }
-
-  if (!bgAudioStarted && notes.length > 0) {
-    startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
-    const success = await playSongFromData(currentSong, GIG_LEAD_IN_MS / 1000, {
-      onEnded: onSongEnded
-    })
-    if (success) {
-      bgAudioStarted = true
-      logger.info(
-        'RhythmGame',
-        `Gig audio: note data synthesis for "${currentSong.name}"`
-      )
-    }
   }
 
   // Fallback: Procedural Generation
@@ -224,20 +266,7 @@ const playAudioForSong = async (currentSong, notes, onSongEnded, rng) => {
     }
 
     if (!bgAudioStarted) {
-      const audioDelay = GIG_LEAD_IN_MS / 1000
-      startGigClock({ delayMs: GIG_LEAD_IN_MS, offsetMs: 0 })
-      const success = await startMetalGenerator(
-        currentSong,
-        audioDelay,
-        { onEnded: onSongEnded },
-        rng
-      )
-      if (success) {
-        logger.info(
-          'RhythmGame',
-          `Gig audio: procedural metal generator for "${currentSong.name}"`
-        )
-      }
+      bgAudioStarted = await playProceduralMetal(currentSong, onSongEnded, rng)
     }
   }
 
