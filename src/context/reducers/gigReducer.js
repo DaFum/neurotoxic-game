@@ -141,7 +141,7 @@ export const handleSetLastGigStats = (state, payload) => {
       if ((nextState.reputationByRegion[location] || 0) <= -30) {
         nextState = handleAddVenueBlacklist(
           nextState,
-          state.currentGig?.venue?.name || 'Local Venue'
+          state.currentGig?.venue?.id || 'unknown_venue'
         )
       }
     }

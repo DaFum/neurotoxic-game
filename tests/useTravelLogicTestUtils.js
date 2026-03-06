@@ -103,13 +103,13 @@ export const createTravelLogicProps = (overrides = {}) => ({
         id: 'node_start',
         layer: 0,
         type: 'START',
-        venue: { name: 'HQ' }
+        venue: { id: 'hq_club', name: 'HQ' }
       },
       node_target: {
         id: 'node_target',
         layer: 1,
         type: 'GIG',
-        venue: { name: 'Club' }
+        venue: { id: 'club_stage', name: 'Club' }
       }
     },
     connections: [{ from: 'node_start', to: 'node_target' }]

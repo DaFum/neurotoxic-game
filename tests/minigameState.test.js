@@ -30,8 +30,8 @@ test('Minigame State Transitions', async t => {
         ...initialState,
         gameMap: {
           nodes: {
-            node_0: { id: 'node_0', x: 0, y: 0, venue: { name: 'Start' } },
-            node_1: { id: 'node_1', x: 10, y: 10, venue: { name: 'End' } } // dist ~90km -> 10.8L fuel
+            node_0: { id: 'node_0', x: 0, y: 0, venue: { id: 'start_venue', name: 'Start' } },
+            node_1: { id: 'node_1', x: 10, y: 10, venue: { id: 'end_venue', name: 'End' } } // dist ~90km -> 10.8L fuel
           }
         },
         player: {
@@ -57,7 +57,7 @@ test('Minigame State Transitions', async t => {
 
       assert.deepStrictEqual(newState.minigame, DEFAULT_MINIGAME_STATE)
       assert.strictEqual(newState.player.currentNodeId, 'node_1')
-      assert.strictEqual(newState.player.location, 'End')
+      assert.strictEqual(newState.player.location, 'end')
       assert.strictEqual(newState.currentScene, GAME_PHASES.TRAVEL_MINIGAME)
 
       // Check costs
