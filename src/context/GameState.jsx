@@ -63,26 +63,6 @@ import PropTypes from 'prop-types'
 const GameStateContext = createContext()
 const GameDispatchContext = createContext()
 const SAVE_KEY = 'neurotoxic_v3_save'
-const PERSISTED_STATE_KEYS = [
-  'currentScene',
-  'player',
-  'band',
-  'social',
-  'gameMap',
-  'currentGig',
-  'lastGigStats',
-  'activeEvent',
-  'activeStoryFlags',
-  'eventCooldowns',
-  'pendingEvents',
-  'venueBlacklist',
-  'activeQuests',
-  'reputationByRegion',
-  'settings',
-  'npcs',
-  'gigModifiers'
-]
-
 const normalizeSetlistForSave = setlist => {
   if (!Array.isArray(setlist)) return []
 
@@ -100,12 +80,48 @@ const normalizeSetlistForSave = setlist => {
 }
 
 const createPersistedState = currentState => {
-  const saveData = { timestamp: Date.now() }
-  for (const key of PERSISTED_STATE_KEYS) {
-    saveData[key] = currentState[key]
+  const {
+    currentScene,
+    player,
+    band,
+    social,
+    gameMap,
+    currentGig,
+    lastGigStats,
+    activeEvent,
+    activeStoryFlags,
+    eventCooldowns,
+    pendingEvents,
+    venueBlacklist,
+    activeQuests,
+    reputationByRegion,
+    settings,
+    npcs,
+    gigModifiers,
+    setlist
+  } = currentState
+
+  return {
+    timestamp: Date.now(),
+    currentScene,
+    player,
+    band,
+    social,
+    gameMap,
+    currentGig,
+    lastGigStats,
+    activeEvent,
+    activeStoryFlags,
+    eventCooldowns,
+    pendingEvents,
+    venueBlacklist,
+    activeQuests,
+    reputationByRegion,
+    settings,
+    npcs,
+    gigModifiers,
+    setlist: normalizeSetlistForSave(setlist)
   }
-  saveData.setlist = normalizeSetlistForSave(currentState.setlist)
-  return saveData
 }
 
 const isPlainObject = value =>
