@@ -35,7 +35,8 @@ export {
   resumeAudio,
   getTransportState,
   setDestinationMute,
-  getAudioTimeMs
+  getAudioTimeMs,
+  getPlayRequestId
 } from './audio/playback.js'
 
 export { startMetalGenerator } from './audio/proceduralMetal.js'

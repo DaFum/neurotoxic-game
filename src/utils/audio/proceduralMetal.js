@@ -1,6 +1,7 @@
 import * as Tone from 'tone'
 import { audioState } from './state.js'
 import { prepareTransportPlayback } from './playbackUtils.js'
+import { logger } from '../logger.js'
 
 /**
  * Generates a procedural riff pattern.
@@ -89,10 +90,21 @@ export async function startMetalGenerator(
   audioState.loop = new Tone.Sequence(
     (time, note) => {
       if (!audioState.guitar || !audioState.drumKit) return
-
-      if (note) audioState.guitar.triggerAttackRelease(note, '16n', time)
-
-      playDrumsLegacy(time, song.difficulty ?? 2, note, random)
+      if (audioState.guitar.disposed || audioState.drumKit.kick.disposed) return
+      try {
+        if (note) audioState.guitar.triggerAttackRelease(note, '16n', time)
+        playDrumsLegacy(time, song.difficulty ?? 2, note, random)
+      } catch (err) {
+        if (err.name === 'InvalidStateError') {
+          logger.warn(
+            'AudioEngine',
+            'Sequence callback InvalidStateError (context closing?)',
+            err
+          )
+        } else {
+          throw err
+        }
+      }
     },
     pattern,
     '16n'

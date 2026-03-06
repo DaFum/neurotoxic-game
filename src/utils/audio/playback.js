@@ -602,3 +602,11 @@ export function isAmbientOggPlaying() {
 export function getAudioTimeMs() {
   return Tone.now() * 1000
 }
+
+/**
+ * Returns the current play request ID.
+ * @returns {number} The play request ID.
+ */
+export function getPlayRequestId() {
+  return audioState.playRequestId
+}

@@ -9,6 +9,9 @@ import {
   handleCompleteQuest
 } from './questReducer.js'
 
+const MIN_REPUTATION = -100
+const MAX_REPUTATION = 100
+
 export const handleSetGig = (state, payload) => {
   logger.info('GameState', 'Set Current Gig', payload?.name)
   return { ...state, currentGig: payload }
@@ -125,8 +128,10 @@ export const handleSetLastGigStats = (state, payload) => {
   const capacity = state.currentGig?.venue?.capacity || 0
 
   if (score < 30) {
-    nextState.reputationByRegion[location] =
+    nextState.reputationByRegion[location] = Math.max(
+      MIN_REPUTATION,
       (nextState.reputationByRegion[location] || 0) - 10
+    )
     logger.warn(
       'GameState',
       `Regional reputation loss in ${location} due to poor gig performance (-10)`
@@ -141,9 +146,9 @@ export const handleSetLastGigStats = (state, payload) => {
   } else if (score >= 60) {
     // Increase reputation on good gigs up to 100 max
     const currentRep = nextState.reputationByRegion[location] || 0
-    if (currentRep < 100) {
+    if (currentRep < MAX_REPUTATION) {
       const bonus = score >= 90 ? 10 : 5
-      nextState.reputationByRegion[location] = Math.min(100, currentRep + bonus)
+      nextState.reputationByRegion[location] = Math.min(MAX_REPUTATION, currentRep + bonus)
       logger.info(
         'GameState',
         `Regional reputation gain in ${location} (+${bonus})`
