@@ -125,8 +125,10 @@ export const handleSetLastGigStats = (state, payload) => {
   const capacity = state.currentGig?.venue?.capacity || 0
 
   if (score < 30) {
-    nextState.reputationByRegion[location] =
+    nextState.reputationByRegion[location] = Math.max(
+      -100,
       (nextState.reputationByRegion[location] || 0) - 10
+    )
     logger.warn(
       'GameState',
       `Regional reputation loss in ${location} due to poor gig performance (-10)`
