@@ -91,6 +91,11 @@ export const PreGig = () => {
   const [isStarting, setIsStarting] = useState(false)
   const currentModifiers = getGigModifiers(band, gigModifiers)
 
+  const selectedSongIds = useMemo(
+    () => new Set(setlist.map(s => getSongId(s))),
+    [setlist]
+  )
+
   useEffect(() => {
     if (!currentGig) {
       // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
@@ -133,7 +138,7 @@ export const PreGig = () => {
    * @param {object} song - The song to toggle.
    */
   const toggleSong = song => {
-    if (setlist.find(s => getSongId(s) === song.id)) {
+    if (selectedSongIds.has(song.id)) {
       setSetlist(setlist.filter(s => getSongId(s) !== song.id))
     } else {
       if (setlist.length < 3) {
@@ -292,7 +297,7 @@ export const PreGig = () => {
           </h3>
           <div className='flex-1 overflow-y-auto pr-2 space-y-2'>
             {SONGS_DB.map(song => {
-              const isSelected = setlist.find(s => getSongId(s) === song.id)
+              const isSelected = selectedSongIds.has(song.id)
               const isLocked =
                 player?.stats?.proveYourselfMode && song.difficulty > 2
 
