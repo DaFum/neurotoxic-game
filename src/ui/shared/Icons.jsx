@@ -141,127 +141,136 @@ const BaseIcon = memo(function BaseIcon({
   )
 })
 
-export const BandcampIcon = memo(function BandcampIcon({ className = '', ...props }) {
+export const BandcampIcon = memo(function BandcampIcon({
+  className = '',
+  ...props
+}) {
   return (
-  <BaseIcon {...props} className={className}>
-    <path
-      d='M2 6H22V18H2V6Z'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='square'
-    />
-    <circle cx='8' cy='12' r='2' fill='currentColor' />
-    <circle cx='16' cy='12' r='2' fill='currentColor' />
-    <path
-      d='M6 12H18'
-      stroke='currentColor'
-      strokeWidth='1'
-      strokeDasharray='2 2'
-    />
-    <path d='M10 18L14 18' stroke='currentColor' strokeWidth='4' />
-  </BaseIcon>
+    <BaseIcon {...props} className={className}>
+      <path
+        d='M2 6H22V18H2V6Z'
+        stroke='currentColor'
+        strokeWidth='2'
+        strokeLinecap='square'
+      />
+      <circle cx='8' cy='12' r='2' fill='currentColor' />
+      <circle cx='16' cy='12' r='2' fill='currentColor' />
+      <path
+        d='M6 12H18'
+        stroke='currentColor'
+        strokeWidth='1'
+        strokeDasharray='2 2'
+      />
+      <path d='M10 18L14 18' stroke='currentColor' strokeWidth='4' />
+    </BaseIcon>
   )
 })
 
 export const InstaIcon = memo(function InstaIcon({ className = '', ...props }) {
   return (
-  <BaseIcon {...props} className={className}>
-    <path
-      d='M3 3H21V21H3V3Z'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='square'
-    />
-    <circle cx='12' cy='12' r='4' stroke='currentColor' strokeWidth='2' />
-    <rect x='16' y='6' width='2' height='2' fill='currentColor' />
-    <path
-      d='M12 2V4M12 20V22M2 12H4M20 12H22'
-      stroke='currentColor'
-      strokeWidth='2'
-    />
-  </BaseIcon>
+    <BaseIcon {...props} className={className}>
+      <path
+        d='M3 3H21V21H3V3Z'
+        stroke='currentColor'
+        strokeWidth='2'
+        strokeLinecap='square'
+      />
+      <circle cx='12' cy='12' r='4' stroke='currentColor' strokeWidth='2' />
+      <rect x='16' y='6' width='2' height='2' fill='currentColor' />
+      <path
+        d='M12 2V4M12 20V22M2 12H4M20 12H22'
+        stroke='currentColor'
+        strokeWidth='2'
+      />
+    </BaseIcon>
   )
 })
 
-export const TikTokIcon = memo(function TikTokIcon({ className = '', ...props }) {
+export const TikTokIcon = memo(function TikTokIcon({
+  className = '',
+  ...props
+}) {
   return (
-  <BaseIcon {...props} className={className} viewBox='-2 0 26 26'>
-    <path d='M14 2V16H8V22H14V8H20V2H14Z' fill='currentColor' />
-    <path
-      d='M12 4V18H6V24H12V10H18V4H12Z'
-      fill='currentColor'
-      fillOpacity='0.3'
-      transform='translate(-2, 2)'
-    />
-  </BaseIcon>
+    <BaseIcon {...props} className={className} viewBox='-2 0 26 26'>
+      <path d='M14 2V16H8V22H14V8H20V2H14Z' fill='currentColor' />
+      <path
+        d='M12 4V18H6V24H12V10H18V4H12Z'
+        fill='currentColor'
+        fillOpacity='0.3'
+        transform='translate(-2, 2)'
+      />
+    </BaseIcon>
   )
 })
 
-export const YouTubeIcon = memo(function YouTubeIcon({ className = '', ...props }) {
+export const YouTubeIcon = memo(function YouTubeIcon({
+  className = '',
+  ...props
+}) {
   return (
-  <BaseIcon {...props} className={className}>
-    <path
-      d='M2 5H22V19H2V5Z'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='square'
-    />
-    <path d='M10 9L16 12L10 15V9Z' fill='currentColor' />
-    <path
-      d='M4 19L8 23M20 19L16 23'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='square'
-    />
-  </BaseIcon>
+    <BaseIcon {...props} className={className}>
+      <path
+        d='M2 5H22V19H2V5Z'
+        stroke='currentColor'
+        strokeWidth='2'
+        strokeLinecap='square'
+      />
+      <path d='M10 9L16 12L10 15V9Z' fill='currentColor' />
+      <path
+        d='M4 19L8 23M20 19L16 23'
+        stroke='currentColor'
+        strokeWidth='2'
+        strokeLinecap='square'
+      />
+    </BaseIcon>
   )
 })
 
 export const BlogIcon = memo(function BlogIcon({ className = '', ...props }) {
   return (
-  <BaseIcon {...props} className={className}>
-    <path
-      d='M3 4H21V20H3V4Z'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='square'
-    />
-    <path
-      d='M6 8L10 12L6 16'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='square'
-      strokeLinejoin='miter'
-    />
-    <path
-      d='M12 16H18'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='square'
-    />
-    <rect
-      x='3'
-      y='4'
-      width='18'
-      height='4'
-      fill='currentColor'
-      fillOpacity='0.2'
-    />
-  </BaseIcon>
+    <BaseIcon {...props} className={className}>
+      <path
+        d='M3 4H21V20H3V4Z'
+        stroke='currentColor'
+        strokeWidth='2'
+        strokeLinecap='square'
+      />
+      <path
+        d='M6 8L10 12L6 16'
+        stroke='currentColor'
+        strokeWidth='2'
+        strokeLinecap='square'
+        strokeLinejoin='miter'
+      />
+      <path
+        d='M12 16H18'
+        stroke='currentColor'
+        strokeWidth='2'
+        strokeLinecap='square'
+      />
+      <rect
+        x='3'
+        y='4'
+        width='18'
+        height='4'
+        fill='currentColor'
+        fillOpacity='0.2'
+      />
+    </BaseIcon>
   )
 })
 
 export const GameIcon = memo(function GameIcon({ className = '', ...props }) {
   return (
-  <BaseIcon {...props} className={className} viewBox='0 0 32 32'>
-    <path
-      d='M6 22V6H9L19 18V6H22V22H19L9 10V22H6Z'
-      fill='currentColor'
-      opacity='0.3'
-      transform='translate(-2, 0)'
-    />
-    <path d='M8 24V8H11L21 20V8H24V24H21L11 12V24H8Z' fill='currentColor' />
-  </BaseIcon>
+    <BaseIcon {...props} className={className} viewBox='0 0 32 32'>
+      <path
+        d='M6 22V6H9L19 18V6H22V22H19L9 10V22H6Z'
+        fill='currentColor'
+        opacity='0.3'
+        transform='translate(-2, 0)'
+      />
+      <path d='M8 24V8H11L21 20V8H24V24H21L11 12V24H8Z' fill='currentColor' />
+    </BaseIcon>
   )
 })
 

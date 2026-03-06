@@ -1,7 +1,6 @@
 import { expect, test, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
-
 test('SettingsPanel renders localized language option labels', async () => {
   const { SettingsPanel } = await import('../src/ui/shared/SettingsPanel.jsx')
 
@@ -14,5 +13,4 @@ test('SettingsPanel renders localized language option labels', async () => {
 
   expect(screen.getByText('ui:language_option_en')).toBeInTheDocument()
   expect(screen.getByText('ui:language_option_de')).toBeInTheDocument()
-
 })

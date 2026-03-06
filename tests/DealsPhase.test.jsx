@@ -25,7 +25,6 @@ vi.mock('../src/utils/socialEngine', () => ({
   })
 }))
 
-
 vi.mock('../src/ui/shared', () => ({
   Modal: ({ children, isOpen }) =>
     isOpen ? <div data-testid='modal'>{children}</div> : null,
