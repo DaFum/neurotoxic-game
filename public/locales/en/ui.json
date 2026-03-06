@@ -613,6 +613,9 @@
     "log7": "[ERROR] BAND HARMONY CRITICAL.",
     "log8": "> AWAITING INPUT_"
   },
+  "toast.blacklisted": "BLACKLISTED: {{venue}}",
+  "toast.fans_defended": "Loyal fans defended you — venue gave one more chance!",
+  "toast.three_disasters": "3 DISASTERS IN A ROW — Prove yourself in small venues first.",
   "toast.quest_complete": "[{{name}}]: COMPLETE",
   "toast.quest_complete_fame": "[{{name}}]: COMPLETE +{{amount}} Fame",
   "toast.quest_complete_harmony": "[{{name}}]: COMPLETE +{{amount}} Harmony",
