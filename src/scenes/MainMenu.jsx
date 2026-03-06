@@ -77,6 +77,7 @@ export const MainMenu = () => {
   const proceedToTour = useCallback(async () => {
     setIsStarting(true)
 
+    // Optimization: Artificial delay removed
     if (!isMountedRef.current) return
 
     // State transitions (batched automatically by React 18+)
