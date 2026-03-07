@@ -535,7 +535,8 @@ test('social media chatter fires when viral', () => {
 })
 
 test('social chatter handles optional chaining for undefined social', () => {
-  const state = buildState('OVERWORLD', { social: undefined })
+  const state = buildState('OVERWORLD')
+  state.social = undefined
   const matches = CHATTER_DB.filter(
     e =>
       typeof e.condition === 'function' &&
@@ -809,7 +810,8 @@ test('handles undefined player location gracefully', () => {
 })
 
 test('inventory conditions require inventory object', () => {
-  const state = buildState('OVERWORLD', { band: { inventory: undefined } })
+  const state = buildState('OVERWORLD')
+  state.band.inventory = undefined
   const inventoryEntry = CHATTER_DB.find(
     e => e.text === 'chatter:standard.msg_284'
   )
