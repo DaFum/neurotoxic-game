@@ -262,9 +262,7 @@ test('updateProjectiles - handles negative velocities', () => {
 })
 
 test('updateProjectiles - handles zero velocities', () => {
-  const projectiles = [
-    { x: 100, y: 100, vx: 0, vy: 0, vr: 0, rotation: 5 }
-  ]
+  const projectiles = [{ x: 100, y: 100, vx: 0, vy: 0, vr: 0, rotation: 5 }]
   const deltaMS = 1000
   const screenHeight = 1000
 
@@ -423,7 +421,11 @@ test('checkCollisions - boundary at hitY threshold', () => {
   checkCollisions(projectilesAtThreshold, screenHeight, p => hits.push(p.id))
 
   // Only projectiles with y <= 850 remain (condition is y > hitY for hit)
-  assert.equal(projectilesAtThreshold.length, 2, 'Projectiles at or below threshold remain')
+  assert.equal(
+    projectilesAtThreshold.length,
+    2,
+    'Projectiles at or below threshold remain'
+  )
   assert.equal(projectilesAtThreshold[0].id, 1)
   assert.equal(projectilesAtThreshold[1].id, 2)
   assert.deepEqual(hits, [3], 'Only projectile above threshold hits')
@@ -622,7 +624,7 @@ test('trySpawnProjectile - verifies rotation velocities', () => {
 
   try {
     const projectile = trySpawnProjectile(stats, mockRandom, 1920)
-    assert.ok(Math.abs(projectile.vr - (-0.08)) < 0.0001)
+    assert.ok(Math.abs(projectile.vr - -0.08) < 0.0001)
   } finally {
     Date.now = originalNow
   }

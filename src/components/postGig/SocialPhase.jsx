@@ -31,11 +31,15 @@ const SocialOptionButton = memo(({ opt, index, onSelect }) => {
         </div>
         <div className='text-xs text-(--ash-gray) font-mono space-y-1 mb-2 w-full z-10 relative'>
           <div className='flex justify-between border-b border-(--ash-gray)/20 pb-1'>
-            <span>{t('economy:social.platform', { defaultValue: 'Platform' })}</span>
+            <span>
+              {t('economy:social.platform', { defaultValue: 'Platform' })}
+            </span>
             <span className='text-(--star-white)/60'>{opt.platform}</span>
           </div>
           <div className='flex justify-between pt-1'>
-            <span>{t('economy:social.category', { defaultValue: 'Category' })}</span>
+            <span>
+              {t('economy:social.category', { defaultValue: 'Category' })}
+            </span>
             <span className='text-(--star-white)/60'>{opt.category}</span>
           </div>
         </div>
@@ -44,10 +48,18 @@ const SocialOptionButton = memo(({ opt, index, onSelect }) => {
         <div className='mt-auto pt-2 text-[10px] uppercase font-mono tracking-wider w-full z-10 relative'>
           <div className='flex flex-wrap gap-2'>
             {opt.badges?.includes('⚠️') && (
-              <span className='text-(--blood-red)'>{t('economy:social.highVariance', { defaultValue: 'High Variance Risk' })}</span>
+              <span className='text-(--blood-red)'>
+                {t('economy:social.highVariance', {
+                  defaultValue: 'High Variance Risk'
+                })}
+              </span>
             )}
             {opt.badges?.includes('🛡️') && (
-              <span className='text-(--toxic-green)'>{t('economy:social.consistentGrowth', { defaultValue: 'Consistent Growth' })}</span>
+              <span className='text-(--toxic-green)'>
+                {t('economy:social.consistentGrowth', {
+                  defaultValue: 'Consistent Growth'
+                })}
+              </span>
             )}
           </div>
         </div>
@@ -75,15 +87,22 @@ export const SocialPhase = ({ options, onSelect, trend }) => {
     <Panel className='space-y-6'>
       <div className='text-center mb-2'>
         <h3 className='text-xl font-mono tracking-widest'>
-          {t('economy:social.postToSocial', { defaultValue: 'POST TO SOCIAL MEDIA' })}
+          {t('economy:social.postToSocial', {
+            defaultValue: 'POST TO SOCIAL MEDIA'
+          })}
         </h3>
         {trend && (
           <div className='text-sm text-(--toxic-green) tracking-widest mt-1 font-bold animate-pulse'>
-            {t('economy:social.currentTrend', { defaultValue: 'CURRENT TREND:' })} {trend}
+            {t('economy:social.currentTrend', {
+              defaultValue: 'CURRENT TREND:'
+            })}{' '}
+            {trend}
           </div>
         )}
         <div className='text-[10px] text-(--ash-gray) tracking-wider mt-1'>
-          {t('economy:social.chooseStrategy', { defaultValue: 'CHOOSE YOUR STRATEGY' })}
+          {t('economy:social.chooseStrategy', {
+            defaultValue: 'CHOOSE YOUR STRATEGY'
+          })}
         </div>
       </div>
       <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>

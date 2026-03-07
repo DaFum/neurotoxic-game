@@ -684,7 +684,14 @@ export const BlockMeter = memo(
   ({ label, value, max = 10, isDanger = false }) => {
     const blocks = Array.from({ length: max }, (_, i) => i)
     return (
-      <div className='w-full max-w-sm flex flex-col gap-2'>
+      <div
+        className='w-full max-w-sm flex flex-col gap-2'
+        role='meter'
+        aria-label={label}
+        aria-valuenow={value}
+        aria-valuemin={0}
+        aria-valuemax={max}
+      >
         <div className='flex justify-between items-end'>
           <span className='text-xs tracking-widest uppercase opacity-80'>
             {label}

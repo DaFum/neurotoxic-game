@@ -245,7 +245,9 @@ describe('PixiStageController', () => {
 
   test('withTimeout resolves with null when timeout is reached', async () => {
     await controller.init()
-    const promise = new Promise(resolve => setTimeout(() => resolve('late'), 15000))
+    const promise = new Promise(resolve =>
+      setTimeout(() => resolve('late'), 15000)
+    )
     const result = await controller.withTimeout(promise, 'Test')
     assert.equal(result, null)
   })
@@ -535,7 +537,7 @@ describe('PixiStageController', () => {
       await controller.init()
       const originalHandleTicker = controller.handleTicker
       let capturedDelta = null
-      controller.handleTicker = (ticker) => {
+      controller.handleTicker = ticker => {
         capturedDelta = ticker.deltaMS
         originalHandleTicker.call(controller, ticker)
       }
@@ -590,7 +592,8 @@ describe('PixiStageController', () => {
       controller.handleTicker({ deltaMS: 16 })
 
       assert.ok(controller.colorMatrix.hue.mock.calls.length > 0)
-      const [hueValue, multiply] = controller.colorMatrix.hue.mock.calls[0].arguments
+      const [hueValue, multiply] =
+        controller.colorMatrix.hue.mock.calls[0].arguments
       assert.equal(typeof hueValue, 'number')
       assert.equal(multiply, false)
 
@@ -716,8 +719,8 @@ describe('PixiStageController', () => {
 
   describe('initialization edge cases', () => {
     test('handles asset loading failures gracefully', async () => {
-      mockCrowdManager.loadAssets.mock.mockImplementation(
-        async () => Promise.reject(new Error('Load failed'))
+      mockCrowdManager.loadAssets.mock.mockImplementation(async () =>
+        Promise.reject(new Error('Load failed'))
       )
 
       await controller.init()
@@ -742,7 +745,7 @@ describe('PixiStageController', () => {
     })
 
     test('does not initialize managers if disposed during setup', async () => {
-      const slowLoad = new Promise((resolve) => setTimeout(resolve, 100))
+      const slowLoad = new Promise(resolve => setTimeout(resolve, 100))
       mockCrowdManager.loadAssets.mock.mockImplementation(() => slowLoad)
 
       const initPromise = controller.init()

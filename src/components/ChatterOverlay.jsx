@@ -203,7 +203,8 @@ export const ChatterOverlay = memo(({ gameState }) => {
   // Scene-aware positioning:
   // OVERWORLD / TRAVEL_MINIGAME = bottom-left (near the bus), everything else = bottom-center
   const isOverworld =
-    currentScene === GAME_PHASES.OVERWORLD || currentScene === GAME_PHASES.TRAVEL_MINIGAME
+    currentScene === GAME_PHASES.OVERWORLD ||
+    currentScene === GAME_PHASES.TRAVEL_MINIGAME
   const positionClassName = isOverworld
     ? 'fixed bottom-28 left-8 pointer-events-none w-[min(22rem,85vw)]'
     : 'fixed bottom-16 left-1/2 -translate-x-1/2 pointer-events-none w-[min(24rem,90vw)]'
