@@ -47,7 +47,7 @@ const allGearItems = [
 allGearItems.forEach(item => {
   if (item.category === 'GEAR' || item.category === 'INSTRUMENT') {
     GEAR_LOOKUP.set(item.id, item)
-    const e = item.effect || item.effects?.[0]
+    const e = getPrimaryEffect(item)
     if (e?.item) {
       GEAR_LOOKUP.set(e.item, item)
     }
