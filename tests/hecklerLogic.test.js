@@ -133,24 +133,24 @@ test('trySpawnProjectile - verifies all spawned object properties', () => {
   }
 })
 
-test('trySpawnProjectile - health boundary (29 vs 30)', () => {
-  const mockRandom = () => 0.002 // Between 0.0015 and 0.0035
+test('trySpawnProjectile - health boundary (49 vs 50)', () => {
+  const mockRandom = () => 0.001 // Between 0.0005 and 0.002
 
-  // Health 29: chance 0.0035 (0.0005 + 0.003), should spawn
-  assert.ok(trySpawnProjectile({ health: 29, combo: 0 }, mockRandom))
+  // Health 49: chance 0.002, should spawn
+  assert.ok(trySpawnProjectile({ health: 49, combo: 0 }, mockRandom))
 
-  // Health 30: chance 0.0015 (0.0005 + 0.001), should not spawn
-  assert.equal(trySpawnProjectile({ health: 30, combo: 0 }, mockRandom), null)
+  // Health 50: chance 0.0005, should not spawn
+  assert.equal(trySpawnProjectile({ health: 50, combo: 0 }, mockRandom), null)
 })
 
-test('trySpawnProjectile - combo boundary (20 vs 21)', () => {
+test('trySpawnProjectile - combo boundary (30 vs 31)', () => {
   const mockRandom = () => 0.001 // Between 0.0005 and 0.0015
 
-  // Combo 21: chance 0.0015 (0.0005 + 0.001), should spawn
-  assert.ok(trySpawnProjectile({ health: 100, combo: 21 }, mockRandom))
+  // Combo 30: chance 0.0005, should not spawn
+  assert.equal(trySpawnProjectile({ health: 100, combo: 30 }, mockRandom), null)
 
-  // Combo 20: chance 0.0005, should not spawn
-  assert.equal(trySpawnProjectile({ health: 100, combo: 20 }, mockRandom), null)
+  // Combo 31: chance 0.0005 + 0.001 = 0.0015, should spawn
+  assert.ok(trySpawnProjectile({ health: 100, combo: 31 }, mockRandom))
 })
 
 test('trySpawnProjectile - screenWidth influence on x', () => {
@@ -182,13 +182,13 @@ test('trySpawnProjectile - screenWidth influence on x', () => {
 })
 
 test('trySpawnProjectile - combined chance (low health AND high combo)', () => {
-  const stats = { health: 20, combo: 60 }
-  // 0.0005 + 0.003 + 0.002 = 0.0055
-  const mockRandom = () => 0.005 // Should spawn
+  const stats = { health: 40, combo: 40 }
+  // 0.002 + 0.001 = 0.003
+  const mockRandom = () => 0.0025 // Should spawn
 
   assert.ok(trySpawnProjectile(stats, mockRandom))
 
-  const mockRandomNo = () => 0.006 // Should not spawn
+  const mockRandomNo = () => 0.0035 // Should not spawn
   assert.equal(trySpawnProjectile(stats, mockRandomNo), null)
 })
 
@@ -244,4 +244,195 @@ test('checkCollisions - handles mixed collisions order', () => {
   assert.equal(projectiles.length, 1)
   assert.equal(projectiles[0].id, 2)
   assert.deepEqual(hits, [1, 3])
+})
+
+test('updateProjectiles - handles negative velocities', () => {
+  const projectiles = [
+    { x: 100, y: 100, vx: -0.1, vy: 0.2, vr: -0.05, rotation: 0 }
+  ]
+  const deltaMS = 1000
+  const screenHeight = 1000
+
+  updateProjectiles(projectiles, deltaMS, screenHeight)
+
+  // x should move left: 100 + (-0.1 * 1000) = 0
+  assert.equal(projectiles[0].x, 0)
+  // rotation should decrease: 0 + (-0.05 * 1000) = -50
+  assert.equal(projectiles[0].rotation, -50)
+})
+
+test('updateProjectiles - handles zero velocities', () => {
+  const projectiles = [
+    { x: 100, y: 100, vx: 0, vy: 0, vr: 0, rotation: 5 }
+  ]
+  const deltaMS = 1000
+  const screenHeight = 1000
+
+  updateProjectiles(projectiles, deltaMS, screenHeight)
+
+  // Nothing should change except y stays at 100 (since vy is 0)
+  assert.equal(projectiles[0].x, 100)
+  assert.equal(projectiles[0].y, 100)
+  assert.equal(projectiles[0].rotation, 5)
+})
+
+test('updateProjectiles - handles projectile at boundary', () => {
+  const screenHeight = 1000
+  // limit = 1100
+  const projectiles = [
+    { x: 100, y: 1099, vx: 0, vy: 0, vr: 0, rotation: 0 } // Just below limit
+  ]
+
+  updateProjectiles(projectiles, 0, screenHeight)
+
+  assert.equal(projectiles.length, 1, 'Projectile at 1099 should remain')
+
+  const projectiles2 = [
+    { x: 100, y: 1100, vx: 0, vy: 0, vr: 0, rotation: 0 } // At limit
+  ]
+
+  updateProjectiles(projectiles2, 0, screenHeight)
+
+  assert.equal(projectiles2.length, 0, 'Projectile at 1100 should be removed')
+})
+
+test('updateProjectiles - handles large arrays efficiently', () => {
+  const projectiles = []
+  for (let i = 0; i < 1000; i++) {
+    projectiles.push({
+      x: i,
+      y: i,
+      vx: 0.1,
+      vy: 0.1,
+      vr: 0.01,
+      rotation: 0
+    })
+  }
+
+  const before = projectiles.length
+  updateProjectiles(projectiles, 1, 1000)
+
+  assert.ok(projectiles.length > 0, 'Some projectiles should remain')
+  assert.ok(projectiles.length <= before, 'Array should not grow')
+})
+
+test('trySpawnProjectile - type distribution', () => {
+  let bottleCount = 0
+  let tomatoCount = 0
+  const stats = { health: 100, combo: 0 }
+
+  // Simulate multiple spawns to check type distribution
+  for (let i = 0; i < 100; i++) {
+    const values = [0, 0.5, 0.5, 0.5, 0.5, i / 100] // Last value determines type
+    let idx = 0
+    const mockRandom = () => values[idx++]
+
+    const projectile = trySpawnProjectile(stats, mockRandom, 1920)
+    if (projectile) {
+      if (projectile.type === 'bottle') bottleCount++
+      else if (projectile.type === 'tomato') tomatoCount++
+    }
+  }
+
+  // With values from 0 to 99, half should be > 0.5 (bottle) and half <= 0.5 (tomato)
+  assert.ok(bottleCount > 0, 'Should have some bottles')
+  assert.ok(tomatoCount > 0, 'Should have some tomatoes')
+})
+
+test('trySpawnProjectile - spawns with exact boundary values', () => {
+  const stats = { health: 50, combo: 31 }
+  // spawnChance = 0.0005 + 0.001 = 0.0015
+  const mockRandom = () => 0.00149 // Just below chance
+
+  const projectile = trySpawnProjectile(stats, mockRandom)
+  assert.ok(projectile, 'Should spawn at boundary')
+})
+
+test('checkCollisions - handles empty projectile array', () => {
+  const projectiles = []
+  const hits = []
+  checkCollisions(projectiles, 1000, p => hits.push(p))
+
+  assert.equal(projectiles.length, 0)
+  assert.equal(hits.length, 0)
+})
+
+test('checkCollisions - handles onHit being undefined', () => {
+  const projectiles = [{ id: 1, y: 900 }]
+  // Should not crash with undefined onHit
+  checkCollisions(projectiles, 1000, undefined)
+  assert.equal(projectiles.length, 0)
+})
+
+test('checkCollisions - boundary at hitY threshold', () => {
+  const screenHeight = 1000
+  // hitY = 850, collision happens when p.y > 850
+
+  const projectilesAtThreshold = [
+    { id: 1, y: 849 }, // Below threshold - no hit
+    { id: 2, y: 850 }, // At threshold - no hit (not > 850)
+    { id: 3, y: 851 } // Above threshold - hit!
+  ]
+
+  const hits = []
+  checkCollisions(projectilesAtThreshold, screenHeight, p => hits.push(p.id))
+
+  // Only projectiles with y <= 850 remain (condition is y > hitY for hit)
+  assert.equal(projectilesAtThreshold.length, 2, 'Projectiles at or below threshold remain')
+  assert.equal(projectilesAtThreshold[0].id, 1)
+  assert.equal(projectilesAtThreshold[1].id, 2)
+  assert.deepEqual(hits, [3], 'Only projectile above threshold hits')
+})
+
+test('updateProjectiles - multiple removes in sequence', () => {
+  const screenHeight = 100
+  // limit = 200
+  const projectiles = [
+    { x: 0, y: 50, vx: 0, vy: 0, vr: 0, rotation: 0 }, // Keep
+    { x: 0, y: 200, vx: 0, vy: 0, vr: 0, rotation: 0 }, // Remove
+    { x: 0, y: 75, vx: 0, vy: 0, vr: 0, rotation: 0 }, // Keep
+    { x: 0, y: 250, vx: 0, vy: 0, vr: 0, rotation: 0 }, // Remove
+    { x: 0, y: 100, vx: 0, vy: 0, vr: 0, rotation: 0 } // Keep
+  ]
+
+  updateProjectiles(projectiles, 0, screenHeight)
+
+  assert.equal(projectiles.length, 3)
+  assert.equal(projectiles[0].y, 50)
+  assert.equal(projectiles[1].y, 75)
+  assert.equal(projectiles[2].y, 100)
+})
+
+test('trySpawnProjectile - generates unique IDs', () => {
+  const stats = { health: 100, combo: 0 }
+  const mockRandom = () => 0 // Always spawn
+
+  const p1 = trySpawnProjectile(stats, mockRandom)
+  const p2 = trySpawnProjectile(stats, mockRandom)
+
+  assert.ok(p1.id)
+  assert.ok(p2.id)
+  assert.notEqual(p1.id, p2.id, 'IDs should be unique')
+})
+
+test('updateProjectiles - preserves projectile properties not updated', () => {
+  const projectiles = [
+    {
+      id: 'test',
+      type: 'bottle',
+      x: 100,
+      y: 100,
+      vx: 0.1,
+      vy: 0.1,
+      vr: 0.01,
+      rotation: 0,
+      customProp: 'preserved'
+    }
+  ]
+
+  updateProjectiles(projectiles, 10, 1000)
+
+  assert.equal(projectiles[0].id, 'test')
+  assert.equal(projectiles[0].type, 'bottle')
+  assert.equal(projectiles[0].customProp, 'preserved')
 })
