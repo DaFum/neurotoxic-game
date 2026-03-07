@@ -13,9 +13,11 @@ mock.module('../src/utils/logger.js', { namedExports: { logger: mockLogger } })
 // Mock state
 const mockAudioState = {
   playRequestId: 1,
-  ambientSource: null,
+  ambientSource: null
 }
-mock.module('../src/utils/audio/state.js', { namedExports: { audioState: mockAudioState } })
+mock.module('../src/utils/audio/state.js', {
+  namedExports: { audioState: mockAudioState }
+})
 
 // Mock playback functions
 const capturedReqIds = []
@@ -23,7 +25,9 @@ const mockStopAudio = mock.fn(() => {
   mockAudioState.playRequestId++
   capturedReqIds.push(mockAudioState.playRequestId)
 })
-mock.module('../src/utils/audio/playback.js', { namedExports: { stopAudio: mockStopAudio } })
+mock.module('../src/utils/audio/playback.js', {
+  namedExports: { stopAudio: mockStopAudio }
+})
 
 // Mock assets
 let loadAudioDeferred = null
@@ -53,9 +57,12 @@ mock.module('../src/utils/audio/sharedBufferUtils.js', {
 })
 
 // Mock generic utils
-let currentMockSelectRandomItem = (arr, _rng) => arr && arr.length > 0 ? arr[0] : null
+let currentMockSelectRandomItem = (arr, _rng) =>
+  arr && arr.length > 0 ? arr[0] : null
 mock.module('../src/utils/audio/selectionUtils.js', {
-  namedExports: { selectRandomItem: (..._args) => currentMockSelectRandomItem(..._args) }
+  namedExports: {
+    selectRandomItem: (..._args) => currentMockSelectRandomItem(..._args)
+  }
 })
 
 let ensureAudioDeferred = null
@@ -108,9 +115,14 @@ describe('ambient.js', () => {
     mockOggCandidates.push('test1.ogg', 'test2.ogg')
 
     currentMockSelectRandomItem = (arr, _rng) => {
-        if (Array.isArray(arr) && arr.length > 0) return arr[0]
-        if (typeof arr === 'object' && arr !== null && Object.keys(arr).length > 0) return Object.keys(arr)[0]
-        return null
+      if (Array.isArray(arr) && arr.length > 0) return arr[0]
+      if (
+        typeof arr === 'object' &&
+        arr !== null &&
+        Object.keys(arr).length > 0
+      )
+        return Object.keys(arr)[0]
+      return null
     }
 
     // Load module fresh
@@ -135,7 +147,11 @@ describe('ambient.js', () => {
       const result = await playRandomAmbientMidi([], () => 0)
 
       assert.equal(result, false)
-      assert.ok(loggerHistory.some(log => log[0] === 'warn' && log[2].includes('No MIDI files found')))
+      assert.ok(
+        loggerHistory.some(
+          log => log[0] === 'warn' && log[2].includes('No MIDI files found')
+        )
+      )
     })
 
     test('warns and returns false if selection fails', async () => {
@@ -143,7 +159,13 @@ describe('ambient.js', () => {
       const result = await playRandomAmbientMidi([], () => 0)
 
       assert.equal(result, false)
-      assert.ok(loggerHistory.some(log => log[0] === 'warn' && log[2].includes('Random MIDI selection returned null')))
+      assert.ok(
+        loggerHistory.some(
+          log =>
+            log[0] === 'warn' &&
+            log[2].includes('Random MIDI selection returned null')
+        )
+      )
     })
 
     test('plays the selected MIDI file with 0 offset and correct options', async () => {
@@ -164,20 +186,26 @@ describe('ambient.js', () => {
     test('onEnded chaining bails out if playRequestId changed', async () => {
       await playRandomAmbientMidi([], () => 0)
 
-      const onEnded = mockPlayMidiFileInternal.mock.calls[0].arguments[4].onEnded
+      const onEnded =
+        mockPlayMidiFileInternal.mock.calls[0].arguments[4].onEnded
 
       // Change req id
       mockAudioState.playRequestId = 3
 
       onEnded()
 
-      assert.ok(loggerHistory.some(log => log[0] === 'debug' && log[2].includes('chain cancelled')))
+      assert.ok(
+        loggerHistory.some(
+          log => log[0] === 'debug' && log[2].includes('chain cancelled')
+        )
+      )
     })
 
     test('onEnded chaining calls next track if reqId matches', async () => {
       await playRandomAmbientMidi([], () => 0)
 
-      const onEnded = mockPlayMidiFileInternal.mock.calls[0].arguments[4].onEnded
+      const onEnded =
+        mockPlayMidiFileInternal.mock.calls[0].arguments[4].onEnded
 
       // Do not change reqId
       const prevCalls = mockPlayMidiFileInternal.mock.calls.length
@@ -187,7 +215,11 @@ describe('ambient.js', () => {
       await new Promise(r => setTimeout(r, 0))
 
       assert.equal(mockPlayMidiFileInternal.mock.calls.length, prevCalls + 1)
-      assert.ok(loggerHistory.some(log => log[0] === 'debug' && log[2].includes('chaining next track')))
+      assert.ok(
+        loggerHistory.some(
+          log => log[0] === 'debug' && log[2].includes('chaining next track')
+        )
+      )
     })
   })
 
@@ -211,7 +243,11 @@ describe('ambient.js', () => {
       const result = await playRandomAmbientOgg()
 
       assert.equal(result, false)
-      assert.ok(loggerHistory.some(log => log[0] === 'warn' && log[2].includes('No OGG files available')))
+      assert.ok(
+        loggerHistory.some(
+          log => log[0] === 'warn' && log[2].includes('No OGG files available')
+        )
+      )
     })
 
     test('warns and returns false if selection fails', async () => {
@@ -219,7 +255,13 @@ describe('ambient.js', () => {
       const result = await playRandomAmbientOgg()
 
       assert.equal(result, false)
-      assert.ok(loggerHistory.some(log => log[0] === 'warn' && log[2].includes('Random OGG selection returned null')))
+      assert.ok(
+        loggerHistory.some(
+          log =>
+            log[0] === 'warn' &&
+            log[2].includes('Random OGG selection returned null')
+        )
+      )
     })
 
     test('returns false if buffer fails to load', async () => {
@@ -252,7 +294,11 @@ describe('ambient.js', () => {
       mockAudioState.ambientSource = {} // change source
 
       if (onended) onended()
-      assert.ok(loggerHistory.some(log => log[0] === 'debug' && log[2].includes('source mismatch')))
+      assert.ok(
+        loggerHistory.some(
+          log => log[0] === 'debug' && log[2].includes('source mismatch')
+        )
+      )
     })
 
     test('onended bails out if reqId changed', async () => {
@@ -262,7 +308,11 @@ describe('ambient.js', () => {
       mockAudioState.playRequestId += 1 // change req
 
       if (onended) onended()
-      assert.ok(loggerHistory.some(log => log[0] === 'debug' && log[2].includes('chain cancelled')))
+      assert.ok(
+        loggerHistory.some(
+          log => log[0] === 'debug' && log[2].includes('chain cancelled')
+        )
+      )
     })
 
     test('onended chains next track if correct', async () => {
@@ -280,8 +330,12 @@ describe('ambient.js', () => {
     })
 
     test('bails out if playRequestId changes during async ensureAudioContext', async () => {
-      let resolveEnsure;
-      ensureAudioDeferred = { promise: new Promise(r => { resolveEnsure = r }) }
+      let resolveEnsure
+      ensureAudioDeferred = {
+        promise: new Promise(r => {
+          resolveEnsure = r
+        })
+      }
       const p = playRandomAmbientOgg()
 
       await new Promise(r => setTimeout(r, 0))
@@ -297,8 +351,12 @@ describe('ambient.js', () => {
     })
 
     test('bails out if playRequestId changes during async loadAudioBuffer', async () => {
-      let resolveLoad;
-      loadAudioDeferred = { promise: new Promise(r => { resolveLoad = r }) }
+      let resolveLoad
+      loadAudioDeferred = {
+        promise: new Promise(r => {
+          resolveLoad = r
+        })
+      }
       const p = playRandomAmbientOgg()
 
       await new Promise(r => setTimeout(r, 0))

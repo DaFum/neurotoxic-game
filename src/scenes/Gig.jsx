@@ -42,7 +42,12 @@ export const Gig = () => {
   useEffect(() => {
     if (!currentGig) {
       /* eslint-disable @eslint-react/hooks-extra/no-direct-set-state-in-use-effect */
-      addToast(tRef.current('ui:pregig.toasts.noGig', { defaultValue: 'No gig active! Returning to map.' }), 'error')
+      addToast(
+        tRef.current('ui:pregig.toasts.noGig', {
+          defaultValue: 'No gig active! Returning to map.'
+        }),
+        'error'
+      )
       changeScene(GAME_PHASES.OVERWORLD)
       /* eslint-enable @eslint-react/hooks-extra/no-direct-set-state-in-use-effect */
     }
@@ -70,7 +75,10 @@ export const Gig = () => {
       // If starts paused (unlikely) or quick toggle
       pauseAudio()
       // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      addToast(tRef.current('ui:gig.paused', { defaultValue: 'PAUSED' }), 'info')
+      addToast(
+        tRef.current('ui:gig.paused', { defaultValue: 'PAUSED' }),
+        'info'
+      )
       // Focus management delegated to Modal or done here if needed
       hasInteractedRef.current = true
       return
@@ -79,11 +87,17 @@ export const Gig = () => {
     if (isPaused) {
       pauseAudio()
       // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      addToast(tRef.current('ui:gig.paused', { defaultValue: 'PAUSED' }), 'info')
+      addToast(
+        tRef.current('ui:gig.paused', { defaultValue: 'PAUSED' }),
+        'info'
+      )
     } else {
       resumeAudio()
       // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      addToast(tRef.current('ui:gig.resumed', { defaultValue: 'RESUMED' }), 'info')
+      addToast(
+        tRef.current('ui:gig.resumed', { defaultValue: 'RESUMED' }),
+        'info'
+      )
     }
   }, [isPaused, addToast])
 
@@ -186,7 +200,9 @@ export const Gig = () => {
           {t('ui:gig.systemLocked', { defaultValue: 'SYSTEM LOCKED' })}
         </h2>
         <p className='text-(--ash-gray) mb-8 font-mono max-w-md text-center'>
-          {t('ui:gig.audioOverride', { defaultValue: 'Audio Interface requires manual override.' })}
+          {t('ui:gig.audioOverride', {
+            defaultValue: 'Audio Interface requires manual override.'
+          })}
         </p>
         <GlitchButton
           onClick={() => {
@@ -278,7 +294,9 @@ export const Gig = () => {
             {t('ui:gig.pause_title', { defaultValue: 'PAUSED' })}
           </h2>
           <div className='flex flex-col gap-6 w-64'>
-            <GlitchButton onClick={handleTogglePause}>{t('ui:gig.resume', { defaultValue: 'RESUME' })}</GlitchButton>
+            <GlitchButton onClick={handleTogglePause}>
+              {t('ui:gig.resume', { defaultValue: 'RESUME' })}
+            </GlitchButton>
             <GlitchButton onClick={handleQuitGig} variant='danger'>
               {t('ui:gig.quit', { defaultValue: 'QUIT GIG' })}
             </GlitchButton>

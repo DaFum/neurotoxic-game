@@ -29,17 +29,27 @@ export const TourbusScene = () => {
       logic={logic}
       uiState={uiState}
       onComplete={handleArrivalSequence}
-      completionTitle={t('minigame:tourbus.destination_reached', { defaultValue: 'DESTINATION REACHED' })}
+      completionTitle={t('minigame:tourbus.destination_reached', {
+        defaultValue: 'DESTINATION REACHED'
+      })}
       renderCompletionStats={state =>
         `${t('minigame:tourbus.van_condition', { defaultValue: 'Van Condition:' })} ${Math.max(0, 100 - state.damage)}%`
       }
     >
       {/* UI Overlay */}
       <div className='absolute top-4 left-4 z-30 text-(--star-white) font-mono pointer-events-none'>
-        <h2 className='text-2xl text-(--toxic-green)'>{t('minigame:tourbus.title', { defaultValue: 'TOURBUS TERROR' })}</h2>
+        <h2 className='text-2xl text-(--toxic-green)'>
+          {t('minigame:tourbus.title', { defaultValue: 'TOURBUS TERROR' })}
+        </h2>
         <div className='mt-2'>
-          <p>{t('minigame:tourbus.distance', { defaultValue: 'DISTANCE:' })} {uiState.distance}m</p>
-          <p>{t('minigame:tourbus.damage', { defaultValue: 'DAMAGE:' })} {uiState.damage}%</p>
+          <p>
+            {t('minigame:tourbus.distance', { defaultValue: 'DISTANCE:' })}{' '}
+            {uiState.distance}m
+          </p>
+          <p>
+            {t('minigame:tourbus.damage', { defaultValue: 'DAMAGE:' })}{' '}
+            {uiState.damage}%
+          </p>
         </div>
       </div>
 

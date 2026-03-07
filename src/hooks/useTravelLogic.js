@@ -625,7 +625,10 @@ export const useTravelLogic = ({
           'GAME OVER: Stranded! Cannot travel and cannot afford fuel.',
           'error'
         )
-        timeoutRef.current = setTimeout(() => changeScene(GAME_PHASES.GAMEOVER), 3000)
+        timeoutRef.current = setTimeout(
+          () => changeScene(GAME_PHASES.GAMEOVER),
+          3000
+        )
       }
     } else {
       if (timeoutRef.current) {

@@ -12,7 +12,10 @@ export const Credits = () => {
   const { t } = useTranslation()
   const { changeScene } = useGameState()
 
-  const handleReturn = useCallback(() => changeScene(GAME_PHASES.MENU), [changeScene])
+  const handleReturn = useCallback(
+    () => changeScene(GAME_PHASES.MENU),
+    [changeScene]
+  )
 
   const credits = [
     { role: 'VOCAL CODE VOMIT', name: 'Jules "Agent of Segfaults" Agent' },
@@ -84,7 +87,9 @@ export const Credits = () => {
       </div>
 
       <div className='absolute bottom-8 z-20'>
-        <GlitchButton onClick={handleReturn}>{t('ui:credits.return', { defaultValue: 'RETURN' })}</GlitchButton>
+        <GlitchButton onClick={handleReturn}>
+          {t('ui:credits.return', { defaultValue: 'RETURN' })}
+        </GlitchButton>
       </div>
     </div>
   )
