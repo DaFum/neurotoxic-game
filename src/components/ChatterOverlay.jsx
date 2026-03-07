@@ -38,6 +38,11 @@ const OVERWORLD_STYLE = {
   icon: '\uD83D\uDE90'
 }
 
+const PRE_GIG_BASE_STYLE = {
+  ...WARNING_YELLOW_BASE,
+  speakerColor: 'text-(--toxic-green)'
+}
+
 /**
  * Per-scene visual theme for the chatter box.
  * Each entry defines border color, accent color, icon, etc.
@@ -45,8 +50,7 @@ const OVERWORLD_STYLE = {
 const SCENE_STYLES = {
   [GAME_PHASES.OVERWORLD]: OVERWORLD_STYLE,
   [GAME_PHASES.PRE_GIG]: {
-    ...WARNING_YELLOW_BASE,
-    speakerColor: 'text-(--toxic-green)',
+    ...PRE_GIG_BASE_STYLE,
     icon: '\uD83C\uDFB8'
   },
   [GAME_PHASES.GIG]: {
@@ -71,8 +75,7 @@ const SCENE_STYLES = {
   },
   [GAME_PHASES.TRAVEL_MINIGAME]: OVERWORLD_STYLE,
   [GAME_PHASES.PRE_GIG_MINIGAME]: {
-    ...WARNING_YELLOW_BASE,
-    speakerColor: 'text-(--toxic-green)',
+    ...PRE_GIG_BASE_STYLE,
     icon: '\uD83D\uDCE6'
   }
 }
