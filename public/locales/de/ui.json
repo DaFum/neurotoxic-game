@@ -709,6 +709,22 @@
   },
   "gig": {
     "crowdEnergy": "PUBLIKUMSENERGIE",
-    "toxicModeActive": "TOXISCHER MODUS AKTIV"
+    "toxicModeActive": "TOXIC MODE AKTIV",
+    "paused": "PAUSIERT",
+    "resumed": "FORTGESETZT",
+    "pause_title": "PAUSIERT",
+    "resume": "WEITER",
+    "quit": "GIG BEENDEN",
+    "abandon": "GIG ABBRECHEN"
+  },
+  "credits": {
+    "return": "ZURÜCK"
+  },
+  "settings": {
+    "return": "ZURÜCK"
+  },
+  "overworld": {
+    "radio_station": "FM 66.6",
+    "event_log": "EREIGNISPROTOKOLL:"
   }
 }

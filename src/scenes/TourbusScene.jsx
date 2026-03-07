@@ -1,10 +1,12 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useTourbusLogic } from '../hooks/minigames/useTourbusLogic'
 import { useArrivalLogic } from '../hooks/useArrivalLogic'
 import { createTourbusStageController } from '../components/stage/TourbusStageController'
 import { MinigameSceneFrame } from '../components/MinigameSceneFrame'
 
 export const TourbusScene = () => {
+  const { t } = useTranslation()
   const { uiState, gameStateRef, stats, update, actions } = useTourbusLogic()
   const { handleArrivalSequence } = useArrivalLogic()
 
@@ -27,17 +29,17 @@ export const TourbusScene = () => {
       logic={logic}
       uiState={uiState}
       onComplete={handleArrivalSequence}
-      completionTitle='DESTINATION REACHED'
+      completionTitle={t('minigame:tourbus.destination_reached', { defaultValue: 'DESTINATION REACHED' })}
       renderCompletionStats={state =>
-        `Van Condition: ${Math.max(0, 100 - state.damage)}%`
+        `${t('minigame:tourbus.van_condition', { defaultValue: 'Van Condition:' })} ${Math.max(0, 100 - state.damage)}%`
       }
     >
       {/* UI Overlay */}
       <div className='absolute top-4 left-4 z-30 text-(--star-white) font-mono pointer-events-none'>
-        <h2 className='text-2xl text-(--toxic-green)'>TOURBUS TERROR</h2>
+        <h2 className='text-2xl text-(--toxic-green)'>{t('minigame:tourbus.title', { defaultValue: 'TOURBUS TERROR' })}</h2>
         <div className='mt-2'>
-          <p>DISTANCE: {uiState.distance}m</p>
-          <p>DAMAGE: {uiState.damage}%</p>
+          <p>{t('minigame:tourbus.distance', { defaultValue: 'DISTANCE:' })} {uiState.distance}m</p>
+          <p>{t('minigame:tourbus.damage', { defaultValue: 'DAMAGE:' })} {uiState.damage}%</p>
         </div>
       </div>
 

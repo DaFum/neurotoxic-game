@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { useGameState } from '../context/GameState'
+import { useTranslation } from 'react-i18next'
 import { useAudioControl } from '../hooks/useAudioControl'
 import { GlitchButton } from '../ui/GlitchButton'
 import { SettingsPanel } from '../ui/shared'
@@ -8,6 +9,7 @@ import { SettingsPanel } from '../ui/shared'
  * Settings scene for configuring audio, visuals, and data management.
  */
 export const Settings = () => {
+  const { t } = useTranslation()
   const { changeScene, settings, updateSettings, deleteSave } = useGameState()
   const { audioState, handleAudioChange } = useAudioControl()
 
@@ -46,7 +48,7 @@ export const Settings = () => {
       </div>
 
       <div className='mt-8'>
-        <GlitchButton onClick={handleReturn}>RETURN</GlitchButton>
+        <GlitchButton onClick={handleReturn}>{t('ui:settings.return', { defaultValue: 'RETURN' })}</GlitchButton>
       </div>
     </div>
   )

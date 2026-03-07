@@ -78,5 +78,15 @@
     "expenses": "EXPENSES",
     "netProfit": "NET PROFIT",
     "continueToSocials": "Continue to Socials >"
+  },
+  "social": {
+    "platform": "Platform",
+    "category": "Category",
+    "highVariance": "High Variance Risk",
+    "consistentGrowth": "Consistent Growth",
+    "postToSocial": "POST TO SOCIAL MEDIA",
+    "currentTrend": "CURRENT TREND:",
+    "chooseStrategy": "CHOOSE YOUR STRATEGY",
+    "influence": "Influence"
   }
 }

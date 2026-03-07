@@ -274,7 +274,7 @@ export const Overworld = () => {
       {/* Radio Widget */}
       <div className='fixed top-8 left-1/2 -translate-x-1/2 z-50 pointer-events-auto bg-(--void-black) border border-(--shadow-black) p-2 flex items-center gap-2 rounded shadow-[0_0_10px_var(--toxic-green-20)]'>
         <div className='w-2 h-2 rounded-full bg-(--blood-red) animate-pulse' />
-        <span className='text-xs text-(--ash-gray) font-mono'>FM 66.6</span>
+        <span className='text-xs text-(--ash-gray) font-mono'>{t('ui:overworld.radio_station', { defaultValue: 'FM 66.6' })}</span>
         <ToggleRadio />
       </div>
 
@@ -363,7 +363,7 @@ export const Overworld = () => {
       </div>
 
       <div className='absolute bottom-8 left-8 p-4 border border-(--ash-gray) bg-(--void-black)/90 max-w-sm z-20 pointer-events-none'>
-        <h3 className='text-(--toxic-green) font-bold mb-2'>EVENT LOG:</h3>
+        <h3 className='text-(--toxic-green) font-bold mb-2'>{t('ui:overworld.event_log', { defaultValue: 'EVENT LOG:' })}</h3>
         <p className='text-xs text-(--ash-gray) font-mono'>
           &gt; Locations loaded: {ALL_VENUES.length}
           <br />

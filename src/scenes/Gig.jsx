@@ -11,12 +11,14 @@ import { GlitchButton } from '../ui/GlitchButton'
 import { pauseAudio, resumeAudio, stopAudio } from '../utils/audioEngine'
 import { buildGigStatsSnapshot } from '../utils/gigStats'
 import { handleError } from '../utils/errorHandler'
+import { useTranslation } from 'react-i18next'
 
 /**
  * The core Rhythm Game scene.
  * Orchestrates audio, visualizers (PixiJS), and game logic.
  */
 export const Gig = () => {
+  const { t } = useTranslation()
   const {
     currentGig,
     changeScene,
@@ -62,7 +64,7 @@ export const Gig = () => {
       // If starts paused (unlikely) or quick toggle
       pauseAudio()
       // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      addToast('PAUSED', 'info')
+      addToast(t('ui:gig.paused', { defaultValue: 'PAUSED' }), 'info')
       // Focus management delegated to Modal or done here if needed
       hasInteractedRef.current = true
       return
@@ -71,11 +73,11 @@ export const Gig = () => {
     if (isPaused) {
       pauseAudio()
       // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      addToast('PAUSED', 'info')
+      addToast(t('ui:gig.paused', { defaultValue: 'PAUSED' }), 'info')
     } else {
       resumeAudio()
       // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      addToast('RESUMED', 'info')
+      addToast(t('ui:gig.resumed', { defaultValue: 'RESUMED' }), 'info')
     }
   }, [isPaused, addToast])
 
@@ -266,13 +268,13 @@ export const Gig = () => {
           role='dialog'
           aria-modal='true'
         >
-          <h2 className='text-6xl font-[var(--font-display)] text-(--toxic-green) mb-8 animate-pulse drop-shadow-[0_0_15px_var(--toxic-green)]'>
-            PAUSED
+          <h2 className='text-6xl font-(--font-display) text-(--toxic-green) mb-8 animate-pulse drop-shadow-[0_0_15px_var(--toxic-green)]'>
+            {t('ui:gig.pause_title', { defaultValue: 'PAUSED' })}
           </h2>
           <div className='flex flex-col gap-6 w-64'>
-            <GlitchButton onClick={handleTogglePause}>RESUME</GlitchButton>
+            <GlitchButton onClick={handleTogglePause}>{t('ui:gig.resume', { defaultValue: 'RESUME' })}</GlitchButton>
             <GlitchButton onClick={handleQuitGig} variant='danger'>
-              QUIT GIG
+              {t('ui:gig.quit', { defaultValue: 'QUIT GIG' })}
             </GlitchButton>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import { GlitchButton } from '../ui/GlitchButton'
 
@@ -7,6 +8,7 @@ import { GlitchButton } from '../ui/GlitchButton'
  * Scene displaying game credits.
  */
 export const Credits = () => {
+  const { t } = useTranslation()
   const { changeScene } = useGameState()
 
   const handleReturn = useCallback(() => changeScene('MENU'), [changeScene])
@@ -81,7 +83,7 @@ export const Credits = () => {
       </div>
 
       <div className='absolute bottom-8 z-20'>
-        <GlitchButton onClick={handleReturn}>RETURN</GlitchButton>
+        <GlitchButton onClick={handleReturn}>{t('ui:credits.return', { defaultValue: 'RETURN' })}</GlitchButton>
       </div>
     </div>
   )

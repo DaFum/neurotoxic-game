@@ -776,7 +776,7 @@ export const BrutalTabs = () => {
 export const StatBlock = ({ label, value, icon: Icon }) => (
   <div className='relative w-32 h-24 bg-(--void-black) flex flex-col items-center justify-center group overflow-hidden'>
     <HexBorder className='absolute inset-0 w-full h-full text-(--toxic-green)/50 group-hover:text-(--toxic-green) transition-colors' />
-    <div className='absolute inset-0 bg-gradient-to-b from-transparent via-[var(--toxic-green)]/10 to-transparent translate-y-[-100%] group-hover:animate-[scan_2s_linear_infinite]'></div>
+    <div className='absolute inset-0 bg-gradient-to-b from-transparent via-(--toxic-green)/10 to-transparent translate-y-[-100%] group-hover:animate-[scan_2s_linear_infinite]'></div>
     <div className='z-10 flex flex-col items-center gap-1'>
       {Icon && <Icon className='w-5 h-5 text-(--toxic-green)' />}
       <span className='text-2xl font-bold tracking-wider'>{value}</span>
@@ -1118,7 +1118,7 @@ export const TerminalReadout = () => {
   return (
     <div className='w-full h-48 border border-(--toxic-green)/30 bg-(--shadow-black) p-4 font-mono text-xs overflow-y-auto flex flex-col gap-1 custom-scrollbar relative shadow-[inset_0_0_20px_var(--void-black)]'>
       {/* Scanline overlay */}
-      <div className='absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(transparent_50%,var(--toxic-green-20)_50%)] bg-[length:100%_4px]'></div>
+      <div className='absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(transparent_50%,var(--toxic-green)_50%)] bg-[length:100%_4px]'></div>
 
       {lines.map(line => (
         <div

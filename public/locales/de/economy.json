@@ -78,5 +78,15 @@
     "expenses": "AUSGABEN",
     "netProfit": "REINGEWINN",
     "continueToSocials": "Weiter zu Socials >"
+  },
+  "social": {
+    "platform": "Plattform",
+    "category": "Kategorie",
+    "highVariance": "Hohes Varianzrisiko",
+    "consistentGrowth": "Konsistentes Wachstum",
+    "postToSocial": "AUF SOCIAL MEDIA POSTEN",
+    "currentTrend": "AKTUELLE TREND:",
+    "chooseStrategy": "WÄHLE DEINE STRATEGIE",
+    "influence": "Einfluss"
   }
 }
