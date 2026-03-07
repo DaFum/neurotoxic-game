@@ -9,12 +9,32 @@ const CHATTER_DELAY_MIN_MS = 8000
 const CHATTER_DELAY_RANGE_MS = 17000
 const MESSAGE_LIFETIME_MS = 10000
 
-const OVERWORLD_STYLE = {
+const FONT_UI_CLASS = 'font-(family-name:--font-ui)'
+
+const TOXIC_GREEN_BASE = {
   accent: 'var(--toxic-green)',
   borderColor: 'border-(--toxic-green)',
   labelColor: 'text-(--toxic-green)',
+  barColor: 'bg-(--toxic-green)'
+}
+
+const WARNING_YELLOW_BASE = {
+  accent: 'var(--warning-yellow)',
+  borderColor: 'border-(--warning-yellow)',
+  labelColor: 'text-(--warning-yellow)',
+  barColor: 'bg-(--warning-yellow)'
+}
+
+const BLOOD_RED_BASE = {
+  accent: 'var(--blood-red)',
+  borderColor: 'border-(--blood-red)',
+  labelColor: 'text-(--blood-red)',
+  barColor: 'bg-(--blood-red)'
+}
+
+const OVERWORLD_STYLE = {
+  ...TOXIC_GREEN_BASE,
   speakerColor: 'text-(--warning-yellow)',
-  barColor: 'bg-(--toxic-green)',
   icon: '\uD83D\uDE90'
 }
 
@@ -25,52 +45,34 @@ const OVERWORLD_STYLE = {
 const SCENE_STYLES = {
   [GAME_PHASES.OVERWORLD]: OVERWORLD_STYLE,
   [GAME_PHASES.PRE_GIG]: {
-    accent: 'var(--warning-yellow)',
-    borderColor: 'border-(--warning-yellow)',
-    labelColor: 'text-(--warning-yellow)',
+    ...WARNING_YELLOW_BASE,
     speakerColor: 'text-(--toxic-green)',
-    barColor: 'bg-(--warning-yellow)',
     icon: '\uD83C\uDFB8'
   },
   [GAME_PHASES.GIG]: {
-    accent: 'var(--blood-red)',
-    borderColor: 'border-(--blood-red)',
-    labelColor: 'text-(--blood-red)',
+    ...BLOOD_RED_BASE,
     speakerColor: 'text-(--star-white)',
-    barColor: 'bg-(--blood-red)',
     icon: '\uD83D\uDD25'
   },
   [GAME_PHASES.POST_GIG]: {
-    accent: 'var(--toxic-green)',
-    borderColor: 'border-(--toxic-green)',
-    labelColor: 'text-(--toxic-green)',
+    ...TOXIC_GREEN_BASE,
     speakerColor: 'text-(--star-white)',
-    barColor: 'bg-(--toxic-green)',
     icon: '\uD83C\uDF7B'
   },
   [GAME_PHASES.MENU]: {
-    accent: 'var(--toxic-green)',
-    borderColor: 'border-(--toxic-green)',
-    labelColor: 'text-(--toxic-green)',
+    ...TOXIC_GREEN_BASE,
     speakerColor: 'text-(--warning-yellow)',
-    barColor: 'bg-(--toxic-green)',
     icon: '\uD83D\uDCE1'
   },
   [GAME_PHASES.GAMEOVER]: {
-    accent: 'var(--blood-red)',
-    borderColor: 'border-(--blood-red)',
-    labelColor: 'text-(--blood-red)',
+    ...BLOOD_RED_BASE,
     speakerColor: 'text-(--ash-gray)',
-    barColor: 'bg-(--blood-red)',
     icon: '\uD83D\uDC80'
   },
   [GAME_PHASES.TRAVEL_MINIGAME]: OVERWORLD_STYLE,
   [GAME_PHASES.PRE_GIG_MINIGAME]: {
-    accent: 'var(--warning-yellow)',
-    borderColor: 'border-(--warning-yellow)',
-    labelColor: 'text-(--warning-yellow)',
+    ...WARNING_YELLOW_BASE,
     speakerColor: 'text-(--toxic-green)',
-    barColor: 'bg-(--warning-yellow)',
     icon: '\uD83D\uDCE6'
   }
 }
@@ -237,13 +239,13 @@ export const ChatterOverlay = memo(({ gameState }) => {
                 <div className='flex items-center gap-1.5'>
                   <span className='text-[10px]'>{sceneStyle.icon}</span>
                   <p
-                    className={`text-[10px] uppercase tracking-[0.18em] font-bold ${sceneStyle.labelColor} font-(family-name:--font-ui)`}
+                    className={`text-[10px] uppercase tracking-[0.18em] font-bold ${sceneStyle.labelColor} ${FONT_UI_CLASS}`}
                   >
                     {sceneLabel}
                   </p>
                 </div>
                 <p
-                  className={`text-[10px] font-bold uppercase tracking-[0.14em] ${sceneStyle.speakerColor} font-(family-name:--font-ui)`}
+                  className={`text-[10px] font-bold uppercase tracking-[0.14em] ${sceneStyle.speakerColor} ${FONT_UI_CLASS}`}
                 >
                   {msg.speaker}
                 </p>
@@ -252,7 +254,7 @@ export const ChatterOverlay = memo(({ gameState }) => {
               {/* Message body */}
               <div className='pl-3 pr-2 py-2.5'>
                 <p
-                  className={`text-xs leading-snug font-(family-name:--font-ui) ${msg.type === 'hate' || currentScene === GAME_PHASES.GAMEOVER ? 'text-(--star-white) chromatic-text' : 'text-(--star-white)'}`}
+                  className={`text-xs leading-snug ${FONT_UI_CLASS} ${msg.type === 'hate' || currentScene === GAME_PHASES.GAMEOVER ? 'text-(--star-white) chromatic-text' : 'text-(--star-white)'}`}
                 >
                   {t(msg.text)}
                 </p>
