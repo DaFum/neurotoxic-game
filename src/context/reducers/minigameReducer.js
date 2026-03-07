@@ -46,8 +46,7 @@ export const handleCompleteTravelMinigame = (state, payload) => {
     logger.error('GameState', 'Complete Travel: Invalid Target', targetId)
     return {
       ...state,
-      minigame: { ...DEFAULT_MINIGAME_STATE },
-      currentScene: GAME_PHASES.OVERWORLD
+      minigame: { ...DEFAULT_MINIGAME_STATE }
     }
   }
 
