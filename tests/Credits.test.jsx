@@ -33,7 +33,7 @@ describe('Credits Scene', () => {
     )
 
     // Initial scene might be OVERWORLD or MENU based on initial state, but let's click RETURN
-    const returnBtn = getByText('RETURN')
+    const returnBtn = getByText('ui:credits.return')
     fireEvent.click(returnBtn)
 
     // Check if the scene updated to MENU

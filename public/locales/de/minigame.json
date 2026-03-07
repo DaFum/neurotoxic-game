@@ -1,0 +1,9 @@
+{
+  "tourbus": {
+    "title": "TOURBUS TERROR",
+    "distance": "ENTFERNUNG:",
+    "damage": "SCHADEN:",
+    "destination_reached": "ZIEL ERREICHT",
+    "van_condition": "Van Zustand:"
+  }
+}
