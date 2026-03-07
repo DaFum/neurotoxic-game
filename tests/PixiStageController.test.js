@@ -223,4 +223,29 @@ describe('PixiStageController', () => {
     assert.equal(mockEffectManager.dispose.mock.calls.length, 1)
     assert.equal(mockNoteManager.dispose.mock.calls.length, 1)
   })
+
+  describe('withTimeout', () => {
+    test('resolves null when promise rejects', async () => {
+      const rejectingPromise = Promise.reject(new Error('Test rejection'))
+      const result = await controller.withTimeout(rejectingPromise, 'TestLabel')
+      assert.equal(result, null)
+    })
+
+    test('resolves null on timeout', async () => {
+      mock.timers.enable({ apis: ['setTimeout'] })
+      try {
+        const hangingPromise = new Promise(() => {}) // Never resolves
+        const timeoutPromise = controller.withTimeout(
+          hangingPromise,
+          'TestLabel',
+          100
+        )
+        mock.timers.tick(100)
+        const result = await timeoutPromise
+        assert.equal(result, null)
+      } finally {
+        mock.timers.reset()
+      }
+    })
+  })
 })

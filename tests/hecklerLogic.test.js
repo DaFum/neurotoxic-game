@@ -75,7 +75,7 @@ test('trySpawnProjectile - does not spawn if random > chance', () => {
 
 test('trySpawnProjectile - higher chance on low health', () => {
   const stats = { health: 40, combo: 0 }
-  // Base chance 0.002
+  // Health < 60 branch gives 0.0005 + 0.001 = 0.0015
   // We want to verify that 0.001 (which is > 0.0005) spawns
   const mockRandom = () => 0.001
 

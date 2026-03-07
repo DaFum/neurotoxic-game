@@ -44,7 +44,7 @@ mock.module('../src/utils/audio/sharedBufferUtils.js', {
 })
 
 // Mock generic utils
-let currentMockSelectRandomItem = (arr, rng) => arr && arr.length > 0 ? arr[0] : null
+let currentMockSelectRandomItem = (arr, _rng) => arr && arr.length > 0 ? arr[0] : null
 mock.module('../src/utils/audio/selectionUtils.js', {
   namedExports: { selectRandomItem: (...args) => currentMockSelectRandomItem(...args) }
 })
@@ -89,7 +89,7 @@ describe('ambient.js', () => {
     mockOggCandidates.length = 0
     mockOggCandidates.push('test1.ogg', 'test2.ogg')
 
-    currentMockSelectRandomItem = (arr, rng) => {
+    currentMockSelectRandomItem = (arr, _rng) => {
         if (Array.isArray(arr) && arr.length > 0) return arr[0]
         if (typeof arr === 'object' && arr !== null && Object.keys(arr).length > 0) return Object.keys(arr)[0]
         return null
