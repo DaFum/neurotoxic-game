@@ -59,11 +59,12 @@ mock.module('../src/utils/audio/selectionUtils.js', {
 })
 
 let ensureAudioDeferred = null
+const mockEnsureAudioContext = mock.fn(async () => {
+  if (ensureAudioDeferred) return ensureAudioDeferred.promise
+  return true
+})
 mock.module('../src/utils/audio/setup.js', {
-  namedExports: { ensureAudioContext: mock.fn(async () => {
-    if (ensureAudioDeferred) return ensureAudioDeferred.promise
-    return true
-  }) }
+  namedExports: { ensureAudioContext: mockEnsureAudioContext }
 })
 
 // Mock midi playback
@@ -87,6 +88,7 @@ describe('ambient.js', () => {
     capturedReqIds.length = 0
     ensureAudioDeferred = null
     loadAudioDeferred = null
+    mockEnsureAudioContext.mock.resetCalls()
     mockStopAudio.mock.resetCalls()
     mockLoadAudioBuffer.mock.resetCalls()
     mockLoadAudioBuffer.mock.mockImplementation(defaultLoadAudioBufferImpl)
@@ -284,6 +286,8 @@ describe('ambient.js', () => {
 
       await new Promise(r => setTimeout(r, 0))
 
+      assert.equal(mockEnsureAudioContext.mock.calls.length, 1)
+
       mockAudioState.playRequestId += 1 // simulate cancellation
       resolveEnsure(true)
 
@@ -298,6 +302,8 @@ describe('ambient.js', () => {
       const p = playRandomAmbientOgg()
 
       await new Promise(r => setTimeout(r, 0))
+
+      assert.equal(mockLoadAudioBuffer.mock.calls.length, 1)
 
       mockAudioState.playRequestId += 1 // simulate cancellation
       resolveLoad({ duration: 60 })
