@@ -1118,7 +1118,7 @@ export const TerminalReadout = () => {
   return (
     <div className='w-full h-48 border border-(--toxic-green)/30 bg-(--shadow-black) p-4 font-mono text-xs overflow-y-auto flex flex-col gap-1 custom-scrollbar relative shadow-[inset_0_0_20px_var(--void-black)]'>
       {/* Scanline overlay */}
-      <div className='absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(transparent_50%,var(--toxic-green)_50%)] bg-[length:100%_4px]'></div>
+      <div className='absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(transparent_50%,var(--toxic-green-20)_50%)] bg-[length:100%_4px]'></div>
 
       {lines.map(line => (
         <div

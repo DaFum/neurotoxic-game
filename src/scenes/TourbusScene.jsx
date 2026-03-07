@@ -6,7 +6,7 @@ import { createTourbusStageController } from '../components/stage/TourbusStageCo
 import { MinigameSceneFrame } from '../components/MinigameSceneFrame'
 
 export const TourbusScene = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation('minigame')
   const { uiState, gameStateRef, stats, update, actions } = useTourbusLogic()
   const { handleArrivalSequence } = useArrivalLogic()
 

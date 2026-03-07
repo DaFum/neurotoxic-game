@@ -36,11 +36,11 @@ export const Gig = () => {
   useEffect(() => {
     if (!currentGig) {
       /* eslint-disable @eslint-react/hooks-extra/no-direct-set-state-in-use-effect */
-      addToast('No gig active! Returning to map.', 'error')
+      addToast(t('ui:pregig.toasts.noGig', { defaultValue: 'No gig active! Returning to map.' }), 'error')
       changeScene('OVERWORLD')
       /* eslint-enable @eslint-react/hooks-extra/no-direct-set-state-in-use-effect */
     }
-  }, [currentGig, changeScene, addToast])
+  }, [currentGig, changeScene, addToast, t])
 
   // Use the extracted logic hook
   const logic = useRhythmGameLogic()
@@ -79,7 +79,7 @@ export const Gig = () => {
       // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
       addToast(t('ui:gig.resumed', { defaultValue: 'RESUMED' }), 'info')
     }
-  }, [isPaused, addToast])
+  }, [isPaused, addToast, t])
 
   const handleTogglePause = useCallback(() => {
     setIsPaused(prev => !prev)
@@ -92,7 +92,7 @@ export const Gig = () => {
     try {
       stopAudio()
     } catch (e) {
-      handleError(e, { addToast, fallbackMessage: 'Audio cleanup failed.' })
+      handleError(e, { addToast, fallbackMessage: t('ui:errors.audio_cleanup_failed', { defaultValue: 'Audio cleanup failed.' }) })
     } finally {
       // Use fallback stats if gameStateRef is unavailable or uninitialized
       const score = gameStateRef.current?.score || 0
@@ -177,10 +177,10 @@ export const Gig = () => {
     return (
       <div className='flex flex-col items-center justify-center w-full h-full bg-(--void-black) z-[100] relative'>
         <h2 className="text-4xl text-(--toxic-green) font-['Metal_Mania'] mb-8 animate-pulse text-center">
-          SYSTEM LOCKED
+          {t('ui:gig.systemLocked', { defaultValue: 'SYSTEM LOCKED' })}
         </h2>
         <p className='text-(--ash-gray) mb-8 font-mono max-w-md text-center'>
-          Audio Interface requires manual override.
+          {t('ui:gig.audioOverride', { defaultValue: 'Audio Interface requires manual override.' })}
         </p>
         <GlitchButton
           onClick={() => {
@@ -192,7 +192,7 @@ export const Gig = () => {
           }}
           className='scale-150'
         >
-          INITIALIZE AUDIO
+          {t('ui:gig.initializeAudio', { defaultValue: 'INITIALIZE AUDIO' })}
         </GlitchButton>
       </div>
     )
