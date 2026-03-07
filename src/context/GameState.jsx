@@ -24,6 +24,7 @@ import { useLeaderboardSync } from '../hooks/useLeaderboardSync'
 
 // Import modular state management
 import { createInitialState } from './initialState'
+import { GAME_PHASES } from './gameConstants'
 import { gameReducer } from './gameReducer'
 import {
   createChangeSceneAction,
@@ -172,7 +173,7 @@ export const GameStateProvider = ({ children }) => {
 
   /**
    * Transitions the game to a different scene.
-   * @param {string} scene - The target scene name (e.g., 'OVERWORLD').
+   * @param {string} scene - The target scene name (e.g., GAME_PHASES.OVERWORLD).
    */
   const changeScene = useCallback(
     scene => dispatch(createChangeSceneAction(scene)),
@@ -387,7 +388,7 @@ export const GameStateProvider = ({ children }) => {
     safeStorageOperation('deleteSave', () => {
       localStorage.removeItem(SAVE_KEY)
     })
-    changeScene('MENU')
+    changeScene(GAME_PHASES.MENU)
     window.location.reload()
   }, [changeScene])
 
@@ -427,9 +428,9 @@ export const GameStateProvider = ({ children }) => {
     const currentState = stateRef.current
     if (currentState.currentGig?.isPractice) {
       addToast(t('ui:gig.practiceComplete'), 'success')
-      changeScene('OVERWORLD')
+      changeScene(GAME_PHASES.OVERWORLD)
     } else {
-      changeScene('POSTGIG')
+      changeScene(GAME_PHASES.POST_GIG)
     }
   }, [addToast, changeScene, t])
 
@@ -440,7 +441,8 @@ export const GameStateProvider = ({ children }) => {
     previousSceneRef.current = state.currentScene
 
     const shouldAutosaveOnTransition =
-      previousScene === 'GIG' && state.currentScene === 'POSTGIG'
+      previousScene === GAME_PHASES.GIG &&
+      state.currentScene === GAME_PHASES.POST_GIG
 
     if (shouldAutosaveOnTransition) {
       saveGame(false)
@@ -498,7 +500,7 @@ export const GameStateProvider = ({ children }) => {
       const currentState = stateRef.current
       // Harte Regel: Events nur in Overworld/PreGig/PostGig, oder wenn explizit erlaubt (z.B. Pause)
       // "GIG" scene should not be interrupted unless critical logic allows it.
-      if (currentState.currentScene === 'GIG') {
+      if (currentState.currentScene === GAME_PHASES.GIG) {
         // Queue event instead? Or just return false.
         // For now, return false to prevent interruption.
         return false
@@ -609,7 +611,7 @@ export const GameStateProvider = ({ children }) => {
               t('ui:game_over', { description: translatedDesc }),
               'error'
             )
-            changeScene('GAMEOVER')
+            changeScene(GAME_PHASES.GAMEOVER)
             setActiveEvent(null)
             return { outcomeText, description, result }
           }

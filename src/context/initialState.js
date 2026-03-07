@@ -6,7 +6,7 @@
 
 import { CHARACTERS } from '../data/characters.js'
 import { LOG_LEVELS } from '../utils/logger.js'
-import { DEFAULT_MINIGAME_STATE } from './gameConstants.js'
+import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from './gameConstants.js'
 
 /**
  * Brand alignment constants
@@ -167,7 +167,7 @@ const DEFAULT_SETTINGS = {
  * @type {Object}
  */
 export const initialState = {
-  currentScene: 'INTRO',
+  currentScene: GAME_PHASES.INTRO,
   player: { ...DEFAULT_PLAYER_STATE },
   band: { ...DEFAULT_BAND_STATE },
   social: { ...DEFAULT_SOCIAL_STATE },

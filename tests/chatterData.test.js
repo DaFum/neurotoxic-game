@@ -1,5 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { GAME_PHASES } from '../src/context/gameConstants.js'
 import {
   ALLOWED_DEFAULT_SCENES,
   CHATTER_DB,
@@ -82,12 +83,12 @@ const getConditionDelta = ({ activeState, inactiveState }) => {
 
 test('getRandomChatter supports default chatter in all top-level scenes', () => {
   const expectedScenes = [
-    'MENU',
-    'OVERWORLD',
-    'PREGIG',
-    'POSTGIG',
-    'TRAVEL_MINIGAME',
-    'PRE_GIG_MINIGAME'
+    GAME_PHASES.MENU,
+    GAME_PHASES.OVERWORLD,
+    GAME_PHASES.PRE_GIG,
+    GAME_PHASES.POST_GIG,
+    GAME_PHASES.TRAVEL_MINIGAME,
+    GAME_PHASES.PRE_GIG_MINIGAME
   ]
 
   assert.deepEqual(
@@ -97,7 +98,7 @@ test('getRandomChatter supports default chatter in all top-level scenes', () => 
   )
 
   assert.strictEqual(
-    ALLOWED_DEFAULT_SCENES.includes('GIG'),
+    ALLOWED_DEFAULT_SCENES.includes(GAME_PHASES.GIG),
     false,
     'GIG should not be in ALLOWED_DEFAULT_SCENES'
   )
@@ -110,7 +111,12 @@ test('getRandomChatter supports default chatter in all top-level scenes', () => 
 })
 
 test('disallowed scenes are not in ALLOWED_DEFAULT_SCENES', () => {
-  const disallowedScenes = ['GIG', 'SETTINGS', 'CREDITS', 'GAMEOVER']
+  const disallowedScenes = [
+    GAME_PHASES.GIG,
+    GAME_PHASES.SETTINGS,
+    GAME_PHASES.CREDITS,
+    GAME_PHASES.GAMEOVER
+  ]
 
   disallowedScenes.forEach(scene => {
     assert.strictEqual(ALLOWED_DEFAULT_SCENES.includes(scene), false)
@@ -162,7 +168,7 @@ test('every chatter entry text must have a valid translation key in EN and DE lo
 // --- NEW: Condition-based chatter categories ---
 
 test('harmony chatter fires when band.harmony is low', () => {
-  const state = buildState('OVERWORLD', { band: { harmony: 25 } })
+  const state = buildState(GAME_PHASES.OVERWORLD, { band: { harmony: 25 } })
   const matches = CHATTER_DB.filter(
     e =>
       typeof e.condition === 'function' &&
@@ -173,7 +179,7 @@ test('harmony chatter fires when band.harmony is low', () => {
 })
 
 test('harmony chatter fires when band.harmony is high', () => {
-  const state = buildState('OVERWORLD', { band: { harmony: 92 } })
+  const state = buildState(GAME_PHASES.OVERWORLD, { band: { harmony: 92 } })
   const matches = CHATTER_DB.filter(
     e =>
       typeof e.condition === 'function' &&
@@ -184,10 +190,10 @@ test('harmony chatter fires when band.harmony is high', () => {
 })
 
 test('van chatter fires when fuel is low', () => {
-  const lowFuelState = buildState('OVERWORLD', {
+  const lowFuelState = buildState(GAME_PHASES.OVERWORLD, {
     player: { van: { fuel: 15, condition: 100 } }
   })
-  const highFuelState = buildState('OVERWORLD', {
+  const highFuelState = buildState(GAME_PHASES.OVERWORLD, {
     player: { van: { fuel: 95, condition: 100 } }
   })
   const matches = getConditionDelta({
@@ -198,7 +204,7 @@ test('van chatter fires when fuel is low', () => {
 })
 
 test('van chatter fires when condition is critical', () => {
-  const state = buildState('OVERWORLD', {
+  const state = buildState(GAME_PHASES.OVERWORLD, {
     player: { van: { fuel: 100, condition: 20 } }
   })
   const matches = CHATTER_DB.filter(
@@ -215,22 +221,24 @@ test('van chatter fires when condition is critical', () => {
 
 test('tour progression chatter fires for late tour', () => {
   const matches = getConditionDelta({
-    activeState: buildState('OVERWORLD', { player: { day: 28 } }),
-    inactiveState: buildState('OVERWORLD', { player: { day: 5 } })
+    activeState: buildState(GAME_PHASES.OVERWORLD, { player: { day: 28 } }),
+    inactiveState: buildState(GAME_PHASES.OVERWORLD, { player: { day: 5 } })
   })
   assert.ok(matches.length > 0, 'Expected late-tour chatter to activate')
 })
 
 test('tour progression chatter fires for early tour', () => {
   const matches = getConditionDelta({
-    activeState: buildState('OVERWORLD', { player: { day: 1 } }),
-    inactiveState: buildState('OVERWORLD', { player: { day: 8 } })
+    activeState: buildState(GAME_PHASES.OVERWORLD, { player: { day: 1 } }),
+    inactiveState: buildState(GAME_PHASES.OVERWORLD, { player: { day: 8 } })
   })
   assert.ok(matches.length > 0, 'Expected early-tour chatter to activate')
 })
 
 test('fame chatter fires when fameLevel >= 2', () => {
-  const state = buildState('OVERWORLD', { player: { fameLevel: 2, fame: 200 } })
+  const state = buildState(GAME_PHASES.OVERWORLD, {
+    player: { fameLevel: 2, fame: 200 }
+  })
   const matches = CHATTER_DB.filter(
     e =>
       typeof e.condition === 'function' &&
@@ -241,7 +249,9 @@ test('fame chatter fires when fameLevel >= 2', () => {
 })
 
 test('fame chatter fires when fame is low', () => {
-  const state = buildState('OVERWORLD', { player: { fame: 20, fameLevel: 0 } })
+  const state = buildState(GAME_PHASES.OVERWORLD, {
+    player: { fame: 20, fameLevel: 0 }
+  })
   const matches = CHATTER_DB.filter(
     e =>
       typeof e.condition === 'function' &&
@@ -252,7 +262,7 @@ test('fame chatter fires when fame is low', () => {
 })
 
 test('inventory chatter fires when strings are missing', () => {
-  const state = buildState('OVERWORLD', {
+  const state = buildState(GAME_PHASES.OVERWORLD, {
     band: {
       inventory: {
         strings: false,
@@ -277,7 +287,7 @@ test('inventory chatter fires when strings are missing', () => {
 })
 
 test('inventory chatter fires for golden pick', () => {
-  const state = buildState('OVERWORLD', {
+  const state = buildState(GAME_PHASES.OVERWORLD, {
     band: {
       inventory: {
         strings: true,
@@ -303,8 +313,10 @@ test('inventory chatter fires for golden pick', () => {
 
 test('gig modifier chatter fires when catering is booked', () => {
   const matches = getConditionDelta({
-    activeState: buildState('OVERWORLD', { gigModifiers: { catering: true } }),
-    inactiveState: buildState('OVERWORLD', {
+    activeState: buildState(GAME_PHASES.OVERWORLD, {
+      gigModifiers: { catering: true }
+    }),
+    inactiveState: buildState(GAME_PHASES.OVERWORLD, {
       gigModifiers: { catering: false }
     })
   })
@@ -313,7 +325,7 @@ test('gig modifier chatter fires when catering is booked', () => {
 
 test('gig modifier chatter fires when nothing is booked', () => {
   const matches = getConditionDelta({
-    activeState: buildState('OVERWORLD', {
+    activeState: buildState(GAME_PHASES.OVERWORLD, {
       gigModifiers: {
         soundcheck: false,
         promo: false,
@@ -322,7 +334,7 @@ test('gig modifier chatter fires when nothing is booked', () => {
         guestlist: false
       }
     }),
-    inactiveState: buildState('OVERWORLD', {
+    inactiveState: buildState(GAME_PHASES.OVERWORLD, {
       gigModifiers: {
         soundcheck: true,
         promo: true,
@@ -337,14 +349,14 @@ test('gig modifier chatter fires when nothing is booked', () => {
 
 test('luck chatter fires when luck is high', () => {
   const matches = getConditionDelta({
-    activeState: buildState('OVERWORLD', { band: { luck: 5 } }),
-    inactiveState: buildState('OVERWORLD', { band: { luck: 0 } })
+    activeState: buildState(GAME_PHASES.OVERWORLD, { band: { luck: 5 } }),
+    inactiveState: buildState(GAME_PHASES.OVERWORLD, { band: { luck: 0 } })
   })
   assert.ok(matches.length > 0, 'Expected high-luck chatter to activate')
 })
 
 test('luck chatter fires when luck is negative', () => {
-  const state = buildState('OVERWORLD', { band: { luck: -5 } })
+  const state = buildState(GAME_PHASES.OVERWORLD, { band: { luck: -5 } })
   const matches = CHATTER_DB.filter(
     e =>
       typeof e.condition === 'function' &&
@@ -358,7 +370,7 @@ test('luck chatter fires when luck is negative', () => {
 
 test('post-gig chatter fires when score is very high', () => {
   const state = {
-    ...buildState('POSTGIG'),
+    ...buildState(GAME_PHASES.POST_GIG),
     lastGigStats: { score: 11000, misses: 3 }
   }
   const matches = CHATTER_DB.filter(
@@ -372,7 +384,7 @@ test('post-gig chatter fires when score is very high', () => {
 
 test('post-gig chatter fires when misses are high', () => {
   const state = {
-    ...buildState('POSTGIG'),
+    ...buildState(GAME_PHASES.POST_GIG),
     lastGigStats: { score: 5000, misses: 12 }
   }
   const matches = CHATTER_DB.filter(
@@ -386,7 +398,7 @@ test('post-gig chatter fires when misses are high', () => {
 
 test('post-gig chatter with score threshold at 9000', () => {
   const state = {
-    ...buildState('POSTGIG'),
+    ...buildState(GAME_PHASES.POST_GIG),
     lastGigStats: { score: 9500, misses: 2 }
   }
   const matches = CHATTER_DB.filter(
@@ -399,7 +411,7 @@ test('post-gig chatter with score threshold at 9000', () => {
 })
 
 test('post-gig chatter handles undefined lastGigStats', () => {
-  const state = buildState('POSTGIG')
+  const state = buildState(GAME_PHASES.POST_GIG)
   const matches = CHATTER_DB.filter(
     e =>
       typeof e.condition === 'function' &&
@@ -416,7 +428,7 @@ test('post-gig chatter handles undefined lastGigStats', () => {
 // --- MONEY CONDITIONS ---
 
 test('money chatter fires when very poor', () => {
-  const state = buildState('OVERWORLD', { player: { money: 50 } })
+  const state = buildState(GAME_PHASES.OVERWORLD, { player: { money: 50 } })
   const matches = CHATTER_DB.filter(
     e =>
       typeof e.condition === 'function' &&
@@ -427,7 +439,7 @@ test('money chatter fires when very poor', () => {
 })
 
 test('money chatter fires when wealthy', () => {
-  const state = buildState('OVERWORLD', { player: { money: 2500 } })
+  const state = buildState(GAME_PHASES.OVERWORLD, { player: { money: 2500 } })
   const matches = CHATTER_DB.filter(
     e =>
       typeof e.condition === 'function' &&
@@ -438,8 +450,8 @@ test('money chatter fires when wealthy', () => {
 })
 
 test('money chatter at boundary thresholds', () => {
-  const state100 = buildState('OVERWORLD', { player: { money: 100 } })
-  const state99 = buildState('OVERWORLD', { player: { money: 99 } })
+  const state100 = buildState(GAME_PHASES.OVERWORLD, { player: { money: 100 } })
+  const state99 = buildState(GAME_PHASES.OVERWORLD, { player: { money: 99 } })
   const matches99 = CHATTER_DB.filter(
     e =>
       typeof e.condition === 'function' &&
@@ -463,7 +475,7 @@ test('money chatter at boundary thresholds', () => {
 // --- MOOD CONDITIONS ---
 
 test('mood chatter fires when member mood is very low', () => {
-  const state = buildState('OVERWORLD', {
+  const state = buildState(GAME_PHASES.OVERWORLD, {
     band: { members: [{ name: 'Matze', mood: 15, stamina: 50 }] }
   })
   const matches = CHATTER_DB.filter(
@@ -476,7 +488,7 @@ test('mood chatter fires when member mood is very low', () => {
 })
 
 test('mood chatter fires when member mood is high', () => {
-  const state = buildState('OVERWORLD', {
+  const state = buildState(GAME_PHASES.OVERWORLD, {
     band: { members: [{ name: 'Matze', mood: 96, stamina: 80 }] }
   })
   const matches = CHATTER_DB.filter(
@@ -489,7 +501,7 @@ test('mood chatter fires when member mood is high', () => {
 })
 
 test('mood chatter checks any band member', () => {
-  const state = buildState('OVERWORLD', {
+  const state = buildState(GAME_PHASES.OVERWORLD, {
     band: {
       members: [
         { name: 'Matze', mood: 85, stamina: 80 },
@@ -513,7 +525,9 @@ test('mood chatter checks any band member', () => {
 // --- SOCIAL MEDIA / VIRAL CONDITIONS ---
 
 test('social media chatter fires for high instagram followers', () => {
-  const state = buildState('OVERWORLD', { social: { instagram: 600 } })
+  const state = buildState(GAME_PHASES.OVERWORLD, {
+    social: { instagram: 600 }
+  })
   const matches = CHATTER_DB.filter(
     e =>
       typeof e.condition === 'function' &&
@@ -524,7 +538,7 @@ test('social media chatter fires for high instagram followers', () => {
 })
 
 test('social media chatter fires when viral', () => {
-  const state = buildState('OVERWORLD', { social: { viral: 1 } })
+  const state = buildState(GAME_PHASES.OVERWORLD, { social: { viral: 1 } })
   const matches = CHATTER_DB.filter(
     e =>
       typeof e.condition === 'function' &&
@@ -535,7 +549,7 @@ test('social media chatter fires when viral', () => {
 })
 
 test('social chatter handles optional chaining for undefined social', () => {
-  const state = buildState('OVERWORLD')
+  const state = buildState(GAME_PHASES.OVERWORLD)
   state.social = undefined
   const matches = CHATTER_DB.filter(
     e =>
@@ -553,7 +567,7 @@ test('social chatter handles optional chaining for undefined social', () => {
 // --- LOCATION-BASED CONDITIONS ---
 
 test('location chatter fires in Stendal', () => {
-  const state = buildState('OVERWORLD', {
+  const state = buildState(GAME_PHASES.OVERWORLD, {
     player: { location: 'venues:stendal_underground' }
   })
   const matches = CHATTER_DB.filter(
@@ -566,7 +580,7 @@ test('location chatter fires in Stendal', () => {
 })
 
 test('location chatter fires in Berlin', () => {
-  const state = buildState('OVERWORLD', {
+  const state = buildState(GAME_PHASES.OVERWORLD, {
     player: { location: 'venues:berlin_clubhouse' }
   })
   const matches = CHATTER_DB.filter(
@@ -581,7 +595,7 @@ test('location chatter fires in Berlin', () => {
 test('location chatter partial match with includes', () => {
   // It's intentional that location checks use .includes() for substring matching
   // as the game engine appends prefixes/suffixes dynamically to locations.
-  const state = buildState('OVERWORLD', {
+  const state = buildState(GAME_PHASES.OVERWORLD, {
     player: { location: 'some_prefix_venues:stendal_suffix' }
   })
   const matches = CHATTER_DB.filter(
@@ -596,7 +610,7 @@ test('location chatter partial match with includes', () => {
 // --- GIG SCENE STAMINA CONDITIONS ---
 
 test('gig stamina chatter fires when energy is high', () => {
-  const state = buildState('GIG', {
+  const state = buildState(GAME_PHASES.GIG, {
     band: { members: [{ name: 'Matze', mood: 70, stamina: 85 }] }
   })
   const matches = CHATTER_DB.filter(
@@ -609,7 +623,7 @@ test('gig stamina chatter fires when energy is high', () => {
 })
 
 test('gig stamina chatter fires when exhausted', () => {
-  const state = buildState('GIG', {
+  const state = buildState(GAME_PHASES.GIG, {
     band: { members: [{ name: 'Marius', mood: 60, stamina: 25 }] }
   })
   const matches = CHATTER_DB.filter(
@@ -622,7 +636,7 @@ test('gig stamina chatter fires when exhausted', () => {
 })
 
 test('gig stamina checks any band member during performance', () => {
-  const state = buildState('GIG', {
+  const state = buildState(GAME_PHASES.GIG, {
     band: {
       members: [
         { name: 'Matze', mood: 70, stamina: 82 },
@@ -644,7 +658,7 @@ test('gig stamina checks any band member during performance', () => {
 // --- MINIGAME-SPECIFIC CHATTER ---
 
 test('travel minigame chatter activates during travel', () => {
-  const state = buildState('TRAVEL_MINIGAME')
+  const state = buildState(GAME_PHASES.TRAVEL_MINIGAME)
   const matches = CHATTER_DB.filter(
     e =>
       typeof e.condition === 'function' &&
@@ -655,7 +669,7 @@ test('travel minigame chatter activates during travel', () => {
 })
 
 test('pre-gig minigame (roadie) chatter activates', () => {
-  const state = buildState('PRE_GIG_MINIGAME')
+  const state = buildState(GAME_PHASES.PRE_GIG_MINIGAME)
   const matches = CHATTER_DB.filter(
     e =>
       typeof e.condition === 'function' &&
@@ -668,7 +682,7 @@ test('pre-gig minigame (roadie) chatter activates', () => {
 // --- TRAVEL/OVERWORLD CATEGORY CHATTER ---
 
 test('travel category chatter activates in OVERWORLD', () => {
-  const state = buildState('OVERWORLD')
+  const state = buildState(GAME_PHASES.OVERWORLD)
   const matches = CHATTER_DB.filter(
     e =>
       e.category === 'travel' &&
@@ -680,7 +694,7 @@ test('travel category chatter activates in OVERWORLD', () => {
 })
 
 test('travel category chatter activates in TRAVEL_MINIGAME', () => {
-  const state = buildState('TRAVEL_MINIGAME')
+  const state = buildState(GAME_PHASES.TRAVEL_MINIGAME)
   const matches = CHATTER_DB.filter(
     e =>
       e.category === 'travel' &&
@@ -780,7 +794,7 @@ test('high-weight entries for critical conditions', () => {
 // --- EDGE CASES ---
 
 test('handles empty band members array', () => {
-  const state = buildState('OVERWORLD', { band: { members: [] } })
+  const state = buildState(GAME_PHASES.OVERWORLD, { band: { members: [] } })
   const moodMatches = CHATTER_DB.filter(
     e =>
       typeof e.condition === 'function' &&
@@ -795,7 +809,9 @@ test('handles empty band members array', () => {
 })
 
 test('handles undefined player location gracefully', () => {
-  const state = buildState('OVERWORLD', { player: { location: undefined } })
+  const state = buildState(GAME_PHASES.OVERWORLD, {
+    player: { location: undefined }
+  })
   const locationMatches = CHATTER_DB.filter(
     e =>
       typeof e.condition === 'function' &&
@@ -810,7 +826,7 @@ test('handles undefined player location gracefully', () => {
 })
 
 test('inventory conditions require inventory object', () => {
-  const state = buildState('OVERWORLD')
+  const state = buildState(GAME_PHASES.OVERWORLD)
   state.band.inventory = undefined
   const inventoryEntry = CHATTER_DB.find(
     e => e.text === 'chatter:standard.msg_284'
@@ -823,7 +839,7 @@ test('inventory conditions require inventory object', () => {
 })
 
 test('inventory conditions work with valid inventory object', () => {
-  const state = buildState('OVERWORLD', {
+  const state = buildState(GAME_PHASES.OVERWORLD, {
     band: {
       inventory: {
         strings: false,
@@ -855,8 +871,8 @@ test('inventory conditions work with valid inventory object', () => {
 // --- REGRESSION TESTS ---
 
 test('PREGIG and PRE_GIG_MINIGAME conditions work', () => {
-  const pregigState = buildState('PREGIG')
-  const miniState = buildState('PRE_GIG_MINIGAME')
+  const pregigState = buildState(GAME_PHASES.PRE_GIG)
+  const miniState = buildState(GAME_PHASES.PRE_GIG_MINIGAME)
 
   const pregigMatches = CHATTER_DB.filter(
     e =>
@@ -876,7 +892,7 @@ test('PREGIG and PRE_GIG_MINIGAME conditions work', () => {
 })
 
 test('combined gig modifier conditions work correctly', () => {
-  const allModsState = buildState('OVERWORLD', {
+  const allModsState = buildState(GAME_PHASES.OVERWORLD, {
     gigModifiers: {
       soundcheck: true,
       promo: true,
@@ -895,8 +911,12 @@ test('combined gig modifier conditions work correctly', () => {
 })
 
 test('multiple travel count thresholds work', () => {
-  const earlyState = buildState('OVERWORLD', { player: { totalTravels: 1 } })
-  const lateState = buildState('OVERWORLD', { player: { totalTravels: 18 } })
+  const earlyState = buildState(GAME_PHASES.OVERWORLD, {
+    player: { totalTravels: 1 }
+  })
+  const lateState = buildState(GAME_PHASES.OVERWORLD, {
+    player: { totalTravels: 18 }
+  })
 
   const earlyMatches = getActivatedConditionalEntries(earlyState).filter(
     e => e.text === 'chatter:standard.msg_268'

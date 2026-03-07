@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { render, cleanup, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
+import { GAME_PHASES } from '../src/context/gameConstants'
 
 // Mock the GameState context
 const mockUpdatePlayer = vi.fn()
@@ -9,7 +10,7 @@ const mockUpdateSettings = vi.fn()
 const mockGameStateValue = {
   player: { tutorialStep: 0 },
   updatePlayer: mockUpdatePlayer,
-  currentScene: 'MENU',
+  currentScene: GAME_PHASES.MENU,
   settings: { tutorialSeen: false },
   updateSettings: mockUpdateSettings
 }
@@ -62,7 +63,7 @@ describe('TutorialManager', () => {
 
   test('shows DONE button on last step', async () => {
     mockGameStateValue.player.tutorialStep = 3
-    mockGameStateValue.currentScene = 'GIG'
+    mockGameStateValue.currentScene = GAME_PHASES.GIG
 
     const { TutorialManager } =
       await import('../src/components/TutorialManager.jsx')
@@ -74,7 +75,7 @@ describe('TutorialManager', () => {
 
   test('marks tutorial as seen when completing last step', async () => {
     mockGameStateValue.player.tutorialStep = 3
-    mockGameStateValue.currentScene = 'GIG'
+    mockGameStateValue.currentScene = GAME_PHASES.GIG
 
     const { TutorialManager } =
       await import('../src/components/TutorialManager.jsx')
@@ -91,7 +92,7 @@ describe('TutorialManager', () => {
 
   test('calls skip functions when SKIP ALL is clicked', async () => {
     mockGameStateValue.player.tutorialStep = 0
-    mockGameStateValue.currentScene = 'MENU'
+    mockGameStateValue.currentScene = GAME_PHASES.MENU
 
     const { TutorialManager } =
       await import('../src/components/TutorialManager.jsx')
@@ -109,7 +110,7 @@ describe('TutorialManager', () => {
   test('does not render when tutorialSeen is true', async () => {
     mockGameStateValue.settings.tutorialSeen = true
     mockGameStateValue.player.tutorialStep = 0
-    mockGameStateValue.currentScene = 'MENU'
+    mockGameStateValue.currentScene = GAME_PHASES.MENU
 
     const { TutorialManager } =
       await import('../src/components/TutorialManager.jsx')
@@ -122,7 +123,7 @@ describe('TutorialManager', () => {
   test('does not render when tutorialStep is -1', async () => {
     mockGameStateValue.settings.tutorialSeen = false
     mockGameStateValue.player.tutorialStep = -1
-    mockGameStateValue.currentScene = 'MENU'
+    mockGameStateValue.currentScene = GAME_PHASES.MENU
 
     const { TutorialManager } =
       await import('../src/components/TutorialManager.jsx')
@@ -134,7 +135,7 @@ describe('TutorialManager', () => {
 
   test('shows map tutorial on OVERWORLD scene for step 1', async () => {
     mockGameStateValue.player.tutorialStep = 1
-    mockGameStateValue.currentScene = 'OVERWORLD'
+    mockGameStateValue.currentScene = GAME_PHASES.OVERWORLD
     mockGameStateValue.settings.tutorialSeen = false
 
     const { TutorialManager } =
@@ -148,7 +149,7 @@ describe('TutorialManager', () => {
 
   test('shows stats tutorial on OVERWORLD scene for step 2', async () => {
     mockGameStateValue.player.tutorialStep = 2
-    mockGameStateValue.currentScene = 'OVERWORLD'
+    mockGameStateValue.currentScene = GAME_PHASES.OVERWORLD
     mockGameStateValue.settings.tutorialSeen = false
 
     const { TutorialManager } =
@@ -164,7 +165,7 @@ describe('TutorialManager', () => {
 
   test('shows performance tutorial on GIG scene for step 3', async () => {
     mockGameStateValue.player.tutorialStep = 3
-    mockGameStateValue.currentScene = 'GIG'
+    mockGameStateValue.currentScene = GAME_PHASES.GIG
     mockGameStateValue.settings.tutorialSeen = false
 
     const { TutorialManager } =
@@ -180,7 +181,7 @@ describe('TutorialManager', () => {
 
   test('renders progress dots correctly for current step', async () => {
     mockGameStateValue.player.tutorialStep = 1
-    mockGameStateValue.currentScene = 'OVERWORLD'
+    mockGameStateValue.currentScene = GAME_PHASES.OVERWORLD
     mockGameStateValue.settings.tutorialSeen = false
 
     const { TutorialManager } =
@@ -194,7 +195,7 @@ describe('TutorialManager', () => {
 
   test('does not render content for wrong scene', async () => {
     mockGameStateValue.player.tutorialStep = 1
-    mockGameStateValue.currentScene = 'MENU' // Wrong scene for step 1
+    mockGameStateValue.currentScene = GAME_PHASES.MENU // Wrong scene for step 1
     mockGameStateValue.settings.tutorialSeen = false
 
     const { TutorialManager } =
@@ -208,7 +209,7 @@ describe('TutorialManager', () => {
 
   test('applies correct ARIA attributes for accessibility', async () => {
     mockGameStateValue.player.tutorialStep = 0
-    mockGameStateValue.currentScene = 'MENU'
+    mockGameStateValue.currentScene = GAME_PHASES.MENU
     mockGameStateValue.settings.tutorialSeen = false
 
     const { TutorialManager } =
@@ -224,7 +225,7 @@ describe('TutorialManager', () => {
 
   test('handles missing player.tutorialStep gracefully', async () => {
     mockGameStateValue.player = {} // No tutorialStep
-    mockGameStateValue.currentScene = 'MENU'
+    mockGameStateValue.currentScene = GAME_PHASES.MENU
     mockGameStateValue.settings.tutorialSeen = false
 
     const { TutorialManager } =

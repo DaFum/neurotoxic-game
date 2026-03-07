@@ -2,6 +2,7 @@ import { logger } from '../../utils/logger.js'
 import { checkTraitUnlocks } from '../../utils/unlockCheck.js'
 import { applyTraitUnlocks } from '../../utils/traitUtils.js'
 import { DEFAULT_GIG_MODIFIERS } from '../initialState.js'
+import { GAME_PHASES } from '../gameConstants.js'
 import { isForbiddenKey } from '../../utils/gameStateUtils.js'
 import { handleAddVenueBlacklist } from './socialReducer.js'
 import {
@@ -23,7 +24,7 @@ export const handleStartGig = (state, payload) => {
   return {
     ...state,
     currentGig: payload,
-    currentScene: 'PREGIG',
+    currentScene: GAME_PHASES.PRE_GIG,
     gigModifiers: { ...DEFAULT_GIG_MODIFIERS }
   }
 }

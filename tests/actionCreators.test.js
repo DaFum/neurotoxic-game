@@ -4,6 +4,7 @@
 
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
+import { GAME_PHASES } from '../src/context/gameConstants.js'
 import {
   createChangeSceneAction,
   createUpdatePlayerAction,
@@ -33,10 +34,10 @@ import { ActionTypes } from '../src/context/gameReducer.js'
 describe('Action Creators', () => {
   describe('createChangeSceneAction', () => {
     it('should create correct action', () => {
-      const action = createChangeSceneAction('OVERWORLD')
+      const action = createChangeSceneAction(GAME_PHASES.OVERWORLD)
 
       assert.strictEqual(action.type, ActionTypes.CHANGE_SCENE)
-      assert.strictEqual(action.payload, 'OVERWORLD')
+      assert.strictEqual(action.payload, GAME_PHASES.OVERWORLD)
     })
   })
 

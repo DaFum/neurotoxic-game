@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from 'vitest'
-
+import { GAME_PHASES } from '../src/context/gameConstants'
 import { render, act } from '@testing-library/react'
 
 // Setup mock before importing the component
@@ -26,7 +26,7 @@ test('ChatterOverlay passes scene state to getRandomChatter', async () => {
     await import('../src/components/ChatterOverlay.jsx')
 
   const gameState = {
-    currentScene: 'GIG',
+    currentScene: GAME_PHASES.GIG,
     band: { members: [] },
     player: { currentNodeId: 'none' },
     gameMap: { nodes: {} }
@@ -47,5 +47,5 @@ test('ChatterOverlay passes scene state to getRandomChatter', async () => {
   // check the first call's first argument
   const callArgs = getRandomChatterMock.mock.calls[0][0]
 
-  expect(callArgs.currentScene).toBe('GIG')
+  expect(callArgs.currentScene).toBe(GAME_PHASES.GIG)
 })

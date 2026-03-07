@@ -1,5 +1,6 @@
 import { test, describe, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
+import { GAME_PHASES } from '../src/context/gameConstants.js'
 import { act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
 import {
@@ -38,7 +39,7 @@ describe('useArrivalLogic', () => {
     assert.equal(mockGameState.changeScene.mock.calls.length, 1)
     assert.equal(
       mockGameState.changeScene.mock.calls[0].arguments[0],
-      'OVERWORLD'
+      GAME_PHASES.OVERWORLD
     )
   })
 
@@ -122,7 +123,7 @@ describe('useArrivalLogic', () => {
     assert.equal(mockGameState.changeScene.mock.calls.length, 1)
     assert.equal(
       mockGameState.changeScene.mock.calls[0].arguments[0],
-      'OVERWORLD'
+      GAME_PHASES.OVERWORLD
     )
     assert.ok(
       mockGameState.addToast.mock.calls.some(c =>

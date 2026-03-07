@@ -198,7 +198,7 @@ export const ChatterOverlay = memo(({ gameState }) => {
   // Scene-aware positioning:
   // OVERWORLD / TRAVEL_MINIGAME = bottom-left (near the bus), everything else = bottom-center
   const isOverworld =
-    currentScene === 'OVERWORLD' || currentScene === GAME_PHASES.TRAVEL_MINIGAME
+    currentScene === GAME_PHASES.OVERWORLD || currentScene === GAME_PHASES.TRAVEL_MINIGAME
   const positionClassName = isOverworld
     ? 'fixed bottom-28 left-8 pointer-events-none w-[min(22rem,85vw)]'
     : 'fixed bottom-16 left-1/2 -translate-x-1/2 pointer-events-none w-[min(24rem,90vw)]'
@@ -252,7 +252,7 @@ export const ChatterOverlay = memo(({ gameState }) => {
               {/* Message body */}
               <div className='pl-3 pr-2 py-2.5'>
                 <p
-                  className={`text-xs leading-snug font-(family-name:--font-ui) ${msg.type === 'hate' || currentScene === 'GAMEOVER' ? 'text-(--star-white) chromatic-text' : 'text-(--star-white)'}`}
+                  className={`text-xs leading-snug font-(family-name:--font-ui) ${msg.type === 'hate' || currentScene === GAME_PHASES.GAMEOVER ? 'text-(--star-white) chromatic-text' : 'text-(--star-white)'}`}
                 >
                   {t(msg.text)}
                 </p>

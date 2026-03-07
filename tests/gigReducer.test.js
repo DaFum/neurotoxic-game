@@ -7,6 +7,7 @@ import {
   handleSetLastGigStats
 } from '../src/context/reducers/gigReducer.js'
 import { DEFAULT_GIG_MODIFIERS } from '../src/context/initialState.js'
+import { GAME_PHASES } from '../src/context/gameConstants.js'
 
 describe('gigReducer', () => {
   let baseState
@@ -24,7 +25,7 @@ describe('gigReducer', () => {
       },
       social: { loyalty: 0 },
       currentGig: null,
-      currentScene: 'OVERWORLD',
+      currentScene: GAME_PHASES.OVERWORLD,
       gigModifiers: {},
       reputationByRegion: { 'venues:some_venue': 0 },
       activeQuests: [],
@@ -48,12 +49,12 @@ describe('gigReducer', () => {
   })
 
   describe('handleStartGig', () => {
-    it('should initialize gig state and transition to PREGIG', () => {
+    it('should initialize gig state and transition to PRE_GIG', () => {
       const payload = { id: 'gig2', name: 'Starting Gig' }
       const nextState = handleStartGig(baseState, payload)
 
       assert.deepStrictEqual(nextState.currentGig, payload)
-      assert.strictEqual(nextState.currentScene, 'PREGIG')
+      assert.strictEqual(nextState.currentScene, GAME_PHASES.PRE_GIG)
       assert.deepStrictEqual(nextState.gigModifiers, DEFAULT_GIG_MODIFIERS)
     })
   })

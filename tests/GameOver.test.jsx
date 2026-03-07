@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { render, fireEvent, waitFor } from '@testing-library/react'
 import { GameStateProvider, useGameState } from '../src/context/GameState.jsx'
 import { GameOver } from '../src/scenes/GameOver.jsx'
+import { GAME_PHASES } from '../src/context/gameConstants'
 
 // Intercepts the game state to set up conditions for the GameOver screen
 const GameOverTestHarness = ({ children }) => {
@@ -67,7 +68,7 @@ describe('GameOver Scene', () => {
 
     // We expect the scene to change to MENU
     await waitFor(() => {
-      expect(getByTestId('scene').textContent).toBe('MENU')
+      expect(getByTestId('scene').textContent).toBe(GAME_PHASES.MENU)
     })
   })
 })

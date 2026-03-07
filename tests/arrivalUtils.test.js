@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { test, mock, describe } from 'node:test'
 import { handleNodeArrival } from '../src/utils/arrivalUtils.js'
+import { GAME_PHASES } from '../src/context/gameConstants.js'
 
 describe('handleNodeArrival', () => {
   const getMocks = () => ({
@@ -135,7 +136,7 @@ describe('handleNodeArrival', () => {
       assert.strictEqual(mocks.changeScene.mock.calls.length, 1)
       assert.strictEqual(
         mocks.changeScene.mock.calls[0].arguments[0],
-        'OVERWORLD'
+        GAME_PHASES.OVERWORLD
       )
     })
   })

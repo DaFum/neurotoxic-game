@@ -475,7 +475,7 @@ describe('PixiStageController', () => {
     // Should not crash due to guard clause
     controller.handleTicker(ticker)
   })
-})
+
   describe('withTimeout', () => {
     test('resolves null when promise rejects', async () => {
       const rejectingPromise = Promise.reject(new Error('Test rejection'))

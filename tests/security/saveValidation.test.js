@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { validateSaveData } from '../../src/utils/saveValidator.js'
 import { gameReducer, ActionTypes } from '../../src/context/gameReducer.js'
+import { GAME_PHASES } from '../../src/context/gameConstants.js'
 
 test('validateSaveData rejects non-objects', () => {
   assert.throws(() => validateSaveData(null), /Save data must be an object/)
@@ -52,7 +53,7 @@ test('validateSaveData validates social values', () => {
 
 test('gameReducer LOAD_GAME prevents prototype pollution and state pollution', () => {
   const initialState = {
-    currentScene: 'INTRO',
+    currentScene: GAME_PHASES.INTRO,
     player: { money: 500 },
     band: { harmony: 80 },
     toasts: []
@@ -74,7 +75,7 @@ test('gameReducer LOAD_GAME prevents prototype pollution and state pollution', (
   assert.equal(newState.player.money, 999999)
   assert.equal(
     newState.currentScene,
-    'OVERWORLD',
+    GAME_PHASES.OVERWORLD,
     'currentScene should not be overwritten by save data'
   )
   assert.deepEqual(

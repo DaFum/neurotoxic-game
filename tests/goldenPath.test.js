@@ -11,6 +11,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { gameReducer, ActionTypes } from '../src/context/gameReducer.js'
+import { GAME_PHASES } from '../src/context/gameConstants.js'
 import { createInitialState } from '../src/context/initialState.js'
 import {
   calculateGigFinancials,
@@ -53,7 +54,7 @@ test('Golden Path: Full Tour Cycle', async t => {
   let state = createInitialState()
 
   await t.test('Phase 0: Initial state is INTRO', () => {
-    assert.equal(state.currentScene, 'INTRO')
+    assert.equal(state.currentScene, GAME_PHASES.INTRO)
     assert.equal(state.player.money, 500)
     assert.equal(state.player.day, 1)
     assert.equal(state.band.harmony, 80)
@@ -62,19 +63,23 @@ test('Golden Path: Full Tour Cycle', async t => {
   })
 
   await t.test('Phase 1: INTRO → MENU', () => {
-    state = applyAction(state, ActionTypes.CHANGE_SCENE, 'MENU')
-    assert.equal(state.currentScene, 'MENU')
+    state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.MENU)
+    assert.equal(state.currentScene, GAME_PHASES.MENU)
   })
 
   await t.test(
     'Phase 2: MENU → OVERWORLD via RESET_STATE + CHANGE_SCENE',
     () => {
       state = gameReducer(state, { type: ActionTypes.RESET_STATE })
-      assert.equal(state.currentScene, 'INTRO', 'Reset returns to INTRO')
+      assert.equal(
+        state.currentScene,
+        GAME_PHASES.INTRO,
+        'Reset returns to INTRO'
+      )
       assert.equal(state.player.money, 500, 'Reset restores starting money')
 
-      state = applyAction(state, ActionTypes.CHANGE_SCENE, 'OVERWORLD')
-      assert.equal(state.currentScene, 'OVERWORLD')
+      state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.OVERWORLD)
+      assert.equal(state.currentScene, GAME_PHASES.OVERWORLD)
     }
   )
 
@@ -132,13 +137,13 @@ test('Golden Path: Full Tour Cycle', async t => {
     )
   })
 
-  await t.test('Phase 6: OVERWORLD → PREGIG via START_GIG', () => {
+  await t.test('Phase 6: OVERWORLD → PRE_GIG via START_GIG', () => {
     const venue = buildVenue()
     state = applyAction(state, ActionTypes.START_GIG, venue)
     assert.equal(
       state.currentScene,
-      'PREGIG',
-      'START_GIG transitions to PREGIG'
+      GAME_PHASES.PRE_GIG,
+      'START_GIG transitions to PRE_GIG'
     )
     assert.deepEqual(state.currentGig, venue, 'currentGig set to venue')
   })
@@ -158,9 +163,9 @@ test('Golden Path: Full Tour Cycle', async t => {
     assert.equal(state.gigModifiers.promo, false, 'Unset modifiers stay false')
   })
 
-  await t.test('Phase 8: PREGIG → GIG', () => {
-    state = applyAction(state, ActionTypes.CHANGE_SCENE, 'GIG')
-    assert.equal(state.currentScene, 'GIG')
+  await t.test('Phase 8: PRE_GIG → GIG', () => {
+    state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.GIG)
+    assert.equal(state.currentScene, GAME_PHASES.GIG)
     assert.ok(state.currentGig, 'currentGig persists into GIG scene')
   })
 
@@ -172,9 +177,9 @@ test('Golden Path: Full Tour Cycle', async t => {
     assert.equal(state.lastGigStats.perfectHits, 50)
   })
 
-  await t.test('Phase 10: GIG → POSTGIG', () => {
-    state = applyAction(state, ActionTypes.CHANGE_SCENE, 'POSTGIG')
-    assert.equal(state.currentScene, 'POSTGIG')
+  await t.test('Phase 10: GIG → POST_GIG', () => {
+    state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.POST_GIG)
+    assert.equal(state.currentScene, GAME_PHASES.POST_GIG)
     assert.ok(state.lastGigStats, 'lastGigStats available in POSTGIG')
     assert.ok(state.currentGig, 'currentGig available in POSTGIG')
   })
@@ -223,8 +228,8 @@ test('Golden Path: Full Tour Cycle', async t => {
       merch: false
     })
 
-    state = applyAction(state, ActionTypes.CHANGE_SCENE, 'OVERWORLD')
-    assert.equal(state.currentScene, 'OVERWORLD')
+    state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.OVERWORLD)
+    assert.equal(state.currentScene, GAME_PHASES.OVERWORLD)
     assert.equal(state.currentGig, null)
     assert.equal(state.lastGigStats, null)
   })
@@ -244,13 +249,13 @@ test('Golden Path: Full Tour Cycle', async t => {
 
     // Start second gig
     state = applyAction(state, ActionTypes.START_GIG, buildVenue({ diff: 3 }))
-    assert.equal(state.currentScene, 'PREGIG')
+    assert.equal(state.currentScene, GAME_PHASES.PRE_GIG)
   })
 })
 
 test('Golden Path: Bankruptcy triggers GAMEOVER', async t => {
   let state = createInitialState()
-  state = applyAction(state, ActionTypes.CHANGE_SCENE, 'OVERWORLD')
+  state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.OVERWORLD)
 
   await t.test('Drain money to near zero', () => {
     state = applyAction(state, ActionTypes.UPDATE_PLAYER, { money: 5 })
@@ -259,14 +264,14 @@ test('Golden Path: Bankruptcy triggers GAMEOVER', async t => {
 
   await t.test('Start a gig', () => {
     state = applyAction(state, ActionTypes.START_GIG, buildVenue())
-    assert.equal(state.currentScene, 'PREGIG')
-    state = applyAction(state, ActionTypes.CHANGE_SCENE, 'GIG')
+    assert.equal(state.currentScene, GAME_PHASES.PRE_GIG)
+    state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.GIG)
     state = applyAction(
       state,
       ActionTypes.SET_LAST_GIG_STATS,
       buildGigStats({ score: 500, misses: 30, perfectHits: 5 })
     )
-    state = applyAction(state, ActionTypes.CHANGE_SCENE, 'POSTGIG')
+    state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.POST_GIG)
   })
 
   await t.test('Negative net triggers GAMEOVER path', () => {
@@ -279,14 +284,14 @@ test('Golden Path: Bankruptcy triggers GAMEOVER', async t => {
     state = applyAction(state, ActionTypes.UPDATE_PLAYER, { money: newMoney })
     assert.equal(state.player.money, 0, 'Money clamped to 0')
 
-    state = applyAction(state, ActionTypes.CHANGE_SCENE, 'GAMEOVER')
-    assert.equal(state.currentScene, 'GAMEOVER')
+    state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.GAMEOVER)
+    assert.equal(state.currentScene, GAME_PHASES.GAMEOVER)
   })
 
   await t.test('GAMEOVER → MENU via RESET_STATE', () => {
     state = gameReducer(state, { type: ActionTypes.RESET_STATE })
-    state = applyAction(state, ActionTypes.CHANGE_SCENE, 'MENU')
-    assert.equal(state.currentScene, 'MENU')
+    state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.MENU)
+    assert.equal(state.currentScene, GAME_PHASES.MENU)
     assert.equal(state.player.money, 500, 'Money restored after reset')
     assert.equal(state.player.day, 1, 'Day restored after reset')
   })
@@ -522,15 +527,23 @@ test('Golden Path: LOAD_GAME sanitizes corrupted save data', async t => {
 
 test('Golden Path: Scene sequence matches state machine', async t => {
   const validTransitions = {
-    INTRO: ['MENU'],
-    MENU: ['OVERWORLD', 'SETTINGS', 'CREDITS'],
-    OVERWORLD: ['PREGIG', 'GAMEOVER', 'MENU'],
-    PREGIG: ['GIG', 'OVERWORLD'],
-    GIG: ['POSTGIG', 'OVERWORLD'],
-    POSTGIG: ['OVERWORLD', 'GAMEOVER'],
-    GAMEOVER: ['MENU'],
-    SETTINGS: ['MENU'],
-    CREDITS: ['MENU']
+    [GAME_PHASES.INTRO]: [GAME_PHASES.MENU],
+    [GAME_PHASES.MENU]: [
+      GAME_PHASES.OVERWORLD,
+      GAME_PHASES.SETTINGS,
+      GAME_PHASES.CREDITS
+    ],
+    [GAME_PHASES.OVERWORLD]: [
+      GAME_PHASES.PRE_GIG,
+      GAME_PHASES.GAMEOVER,
+      GAME_PHASES.MENU
+    ],
+    [GAME_PHASES.PRE_GIG]: [GAME_PHASES.GIG, GAME_PHASES.OVERWORLD],
+    [GAME_PHASES.GIG]: [GAME_PHASES.POST_GIG, GAME_PHASES.OVERWORLD],
+    [GAME_PHASES.POST_GIG]: [GAME_PHASES.OVERWORLD, GAME_PHASES.GAMEOVER],
+    [GAME_PHASES.GAMEOVER]: [GAME_PHASES.MENU],
+    [GAME_PHASES.SETTINGS]: [GAME_PHASES.MENU],
+    [GAME_PHASES.CREDITS]: [GAME_PHASES.MENU]
   }
 
   await t.test('All valid transitions produce the target scene', () => {
@@ -549,12 +562,12 @@ test('Golden Path: Scene sequence matches state machine', async t => {
   })
 
   await t.test(
-    'START_GIG transitions to PREGIG regardless of current scene',
+    'START_GIG transitions to PRE_GIG regardless of current scene',
     () => {
       let state = createInitialState()
-      state = applyAction(state, ActionTypes.CHANGE_SCENE, 'OVERWORLD')
+      state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.OVERWORLD)
       state = applyAction(state, ActionTypes.START_GIG, buildVenue())
-      assert.equal(state.currentScene, 'PREGIG')
+      assert.equal(state.currentScene, GAME_PHASES.PRE_GIG)
     }
   )
 })

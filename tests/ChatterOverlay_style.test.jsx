@@ -1,5 +1,6 @@
 import { test, expect, vi } from 'vitest'
 import { render } from '@testing-library/react'
+import { GAME_PHASES } from '../src/context/gameConstants'
 
 // Mock data to prevent network or other issues
 vi.mock('../src/data/chatter.js', () => ({
@@ -15,7 +16,7 @@ test('ChatterOverlay renders with correct z-index style', async () => {
     await import('../src/components/ChatterOverlay.jsx')
 
   const gameState = {
-    currentScene: 'GIG',
+    currentScene: GAME_PHASES.GIG,
     band: { members: [] },
     player: { currentNodeId: 'none' },
     gameMap: { nodes: {} }

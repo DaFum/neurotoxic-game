@@ -1,5 +1,6 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useGameState } from '../../context/GameState'
+import { GAME_PHASES } from '../../context/gameConstants'
 import { audioManager } from '../../utils/AudioManager'
 import { GRID_WIDTH, GRID_HEIGHT } from './constants'
 
@@ -266,17 +267,17 @@ export const useRoadieLogic = () => {
 
   // Safety Fallback: Ensure scene advances if UI hangs
   useEffect(() => {
-    if (uiState.isGameOver && currentScene === 'PRE_GIG_MINIGAME') {
+    if (uiState.isGameOver && currentScene === GAME_PHASES.PRE_GIG_MINIGAME) {
       if (hasTransitionedRef.current) return
 
       const timeout = setTimeout(() => {
         // Double check scene hasn't changed
         if (
-          currentSceneRef.current === 'PRE_GIG_MINIGAME' &&
+          currentSceneRef.current === GAME_PHASES.PRE_GIG_MINIGAME &&
           !hasTransitionedRef.current
         ) {
           hasTransitionedRef.current = true
-          changeScene('GIG')
+          changeScene(GAME_PHASES.GIG)
         }
       }, 10000) // 10s fallback
       return () => clearTimeout(timeout)

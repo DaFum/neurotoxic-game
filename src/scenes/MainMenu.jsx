@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
+import { GAME_PHASES } from '../context/gameConstants'
 import { useBandHQModal } from '../hooks/useBandHQModal.js'
 import { GlitchButton } from '../ui/GlitchButton'
 import { BandHQ } from '../ui/BandHQ'
@@ -93,7 +94,7 @@ export const MainMenu = () => {
       })
     }
 
-    changeScene('OVERWORLD')
+    changeScene(GAME_PHASES.OVERWORLD)
 
     // Audio setup is fire-and-forget — never blocks scene transitions.
     void audioManager
@@ -168,7 +169,7 @@ export const MainMenu = () => {
     }
 
     // State transitions (batched automatically by React 18+)
-    changeScene('OVERWORLD')
+    changeScene(GAME_PHASES.OVERWORLD)
 
     // Audio is fire-and-forget; Overworld re-syncs audio.
     void audioManager
@@ -185,7 +186,10 @@ export const MainMenu = () => {
     t
   ])
 
-  const handleCredits = useCallback(() => changeScene('CREDITS'), [changeScene])
+  const handleCredits = useCallback(
+    () => changeScene(GAME_PHASES.CREDITS),
+    [changeScene]
+  )
   const closeNameInput = useCallback(() => setShowNameInput(false), [])
 
   const handleStartNewAnyway = useCallback(() => {

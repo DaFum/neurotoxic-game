@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { GAME_PHASES } from '../src/context/gameConstants.js'
 import { calculateDailyUpdates } from '../src/utils/simulationUtils.js'
 import {
   calculateGigFinancials,
@@ -61,7 +62,7 @@ const buildFullState = (overrides = {}) => {
       viral: 0,
       ...overrides.social
     },
-    currentScene: overrides.currentScene || 'OVERWORLD',
+    currentScene: overrides.currentScene || GAME_PHASES.OVERWORLD,
     activeStoryFlags: overrides.activeStoryFlags || [],
     eventCooldowns: overrides.eventCooldowns || [],
     pendingEvents: overrides.pendingEvents || [],

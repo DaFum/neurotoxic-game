@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react'
 import { useGameState } from '../context/GameState'
 import { clampBandHarmony } from '../utils/gameStateUtils'
 import { handleNodeArrival } from '../utils/arrivalUtils'
+import { GAME_PHASES } from '../context/gameConstants'
 
 /**
  * Hook to encapsulate reusable arrival sequence logic for both legacy travel and Minigame integration.
@@ -74,7 +75,7 @@ export const useArrivalLogic = ({ onShowHQ } = {}) => {
 
       // Ensure we route to OVERWORLD if not a Gig/Festival/Finale where action is taken
       if (!isGigNode) {
-        changeScene('OVERWORLD')
+        changeScene(GAME_PHASES.OVERWORLD)
       }
     } catch (e) {
       // If error, reset guard so user can try again

@@ -2,6 +2,7 @@ import { render, screen, fireEvent, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { MainMenu } from '../src/scenes/MainMenu'
 import { useGameState } from '../src/context/GameState'
+import { GAME_PHASES } from '../src/context/gameConstants'
 import { useBandHQModal } from '../src/hooks/useBandHQModal'
 
 // Mock dependencies
@@ -81,7 +82,7 @@ describe('MainMenu Component', () => {
       })
 
       expect(mockLoadGame).toHaveBeenCalled()
-      expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
+      expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
     })
 
     it('shows error toast when no save found', async () => {
@@ -113,7 +114,7 @@ describe('MainMenu Component', () => {
 
       fireEvent.click(screen.getByText('ui:credits'))
 
-      expect(mockChangeScene).toHaveBeenCalledWith('CREDITS')
+      expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.CREDITS)
     })
   })
 
@@ -254,7 +255,7 @@ describe('MainMenu Component', () => {
       })
 
       expect(mockLoadGame).toHaveBeenCalled()
-      expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
+      expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
     })
 
     it('starts new game when start new button clicked in prompt', async () => {
@@ -267,7 +268,7 @@ describe('MainMenu Component', () => {
       })
 
       expect(mockResetState).toHaveBeenCalled()
-      expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
+      expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
     })
 
     it('closes existing save prompt when close button clicked', () => {
@@ -349,7 +350,7 @@ describe('MainMenu Component', () => {
       })
 
       expect(localStorage.getItem('neurotoxic_player_name')).toBe('TestPlayer')
-      expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
+      expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
     })
 
     it('does not submit when non-Enter key pressed', () => {
@@ -550,7 +551,7 @@ describe('MainMenu Component', () => {
         fireEvent.click(screen.getByText('ui:start_game'))
       })
 
-      expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
+      expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
     })
   })
 

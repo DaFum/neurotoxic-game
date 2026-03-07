@@ -1,5 +1,6 @@
 import { test, describe, beforeEach, afterEach, mock } from 'node:test'
 import assert from 'node:assert/strict'
+import { GAME_PHASES } from '../src/context/gameConstants.js'
 import { renderHook, act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
 
@@ -8,7 +9,7 @@ const mockCompleteRoadieMinigame = mock.fn()
 const mockChangeScene = mock.fn()
 const mockUseGameState = mock.fn(() => ({
   completeRoadieMinigame: mockCompleteRoadieMinigame,
-  currentScene: 'PRE_GIG_MINIGAME',
+  currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
   changeScene: mockChangeScene
 }))
 

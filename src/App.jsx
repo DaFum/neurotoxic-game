@@ -15,11 +15,11 @@ import { createNamedLazyLoader } from './utils/lazySceneLoader'
 import { GAME_PHASES, MINIGAME_TYPES } from './context/gameConstants'
 
 const SCENES_WITHOUT_HUD = [
-  'INTRO',
-  'MENU',
-  'SETTINGS',
-  'CREDITS',
-  'GAMEOVER',
+  GAME_PHASES.INTRO,
+  GAME_PHASES.MENU,
+  GAME_PHASES.SETTINGS,
+  GAME_PHASES.CREDITS,
+  GAME_PHASES.GAMEOVER,
   GAME_PHASES.TRAVEL_MINIGAME,
   GAME_PHASES.PRE_GIG_MINIGAME
 ]
@@ -71,7 +71,11 @@ const SceneLoadingFallback = () => (
 )
 
 /**
- * Main game content wrapper that handles scene switching and global overlays.
+ * Wählt basierend auf dem aktuellen Spielzustand die passende Szene aus und rendert diese zusammen mit globalen Overlays und Hilfekomponenten (HUD, Toasts, ChatterOverlay, TutorialManager, EventModal) sowie Telemetrie-Komponenten.
+ *
+ * Rendert außerdem Lade-, Fehler- und Entwicklungs-Tools (SceneLoadingFallback, ErrorBoundary, DebugLogViewer) und sorgt für Übergangsanimationen zwischen Szenen.
+ *
+ * @returns {JSX.Element} Das gerenderte React-Element, das die aktive Szene und alle globalen Overlays/Hilfekomponenten enthält.
  */
 function GameContent() {
   const gameState = useGameState()
@@ -83,21 +87,21 @@ function GameContent() {
    */
   const renderScene = () => {
     switch (currentScene) {
-      case 'INTRO':
+      case GAME_PHASES.INTRO:
         return <IntroVideo />
-      case 'MENU':
+      case GAME_PHASES.MENU:
         return <MainMenu />
-      case 'SETTINGS':
+      case GAME_PHASES.SETTINGS:
         return <Settings />
-      case 'CREDITS':
+      case GAME_PHASES.CREDITS:
         return <Credits />
-      case 'GAMEOVER':
+      case GAME_PHASES.GAMEOVER:
         return <GameOver />
-      case 'OVERWORLD':
+      case GAME_PHASES.OVERWORLD:
         return <Overworld />
       case GAME_PHASES.TRAVEL_MINIGAME:
         return <TourbusScene />
-      case 'PREGIG':
+      case GAME_PHASES.PRE_GIG:
         return <PreGig />
       case GAME_PHASES.PRE_GIG_MINIGAME:
         return gameState.minigame?.type === MINIGAME_TYPES.KABELSALAT ? (
@@ -105,10 +109,10 @@ function GameContent() {
         ) : (
           <RoadieRunScene />
         )
-      case 'GIG':
-      case 'PRACTICE':
+      case GAME_PHASES.GIG:
+      case GAME_PHASES.PRACTICE:
         return <Gig />
-      case 'POSTGIG':
+      case GAME_PHASES.POST_GIG:
         return <PostGig />
       default:
         return <MainMenu />

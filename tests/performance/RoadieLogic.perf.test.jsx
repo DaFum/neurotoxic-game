@@ -1,11 +1,12 @@
 import { beforeAll, describe, expect, test, vi } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
+import { GAME_PHASES } from '../../src/context/gameConstants'
 
 // Mock dependencies BEFORE import
 vi.mock('../../src/context/GameState', () => ({
   useGameState: () => ({
     completeRoadieMinigame: vi.fn(),
-    currentScene: 'PRE_GIG_MINIGAME',
+    currentScene: GAME_PHASES.PRE_GIG_MINIGAME,
     changeScene: vi.fn()
   })
 }))

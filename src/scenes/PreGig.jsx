@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
+import { GAME_PHASES } from '../context/gameConstants'
 import { SONGS_DB } from '../data/songs'
 import { getGigModifiers } from '../utils/simulationUtils'
 import { MODIFIER_COSTS } from '../utils/economyEngine'
@@ -107,7 +108,7 @@ export const PreGig = () => {
       // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
       addToast(t('ui:pregig.toasts.noGig'), 'error')
       // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      changeScene('OVERWORLD')
+      changeScene(GAME_PHASES.OVERWORLD)
     }
   }, [currentGig, changeScene, addToast, t])
 
