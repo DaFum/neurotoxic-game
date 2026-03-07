@@ -279,16 +279,24 @@ export const applyEventDelta = (state, delta) => {
             ...safeInfluencersUpdate
           }
         }
-      } else if (
-        ['egoFocus', 'sponsorActive', 'trend', 'lastGigDay'].includes(key)
-      ) {
+      } else if (key === 'egoFocus') {
+        if (value === null || typeof value === 'string') {
+          nextSocial[key] = value
+        }
+      } else if (key === 'sponsorActive') {
+        if (typeof value === 'boolean') {
+          nextSocial[key] = value
+        }
+      } else if (key === 'trend') {
+        if (typeof value === 'string') {
+          nextSocial[key] = value
+        }
+      } else if (key === 'lastGigDay') {
         if (
           value === null ||
-          typeof value === 'string' ||
-          typeof value === 'boolean' ||
-          typeof value === 'number'
+          (typeof value === 'number' && Number.isFinite(value))
         ) {
-          nextSocial[key] = value // Explicitly allow non-numeric assignments for known keys
+          nextSocial[key] = value
         }
       } else if (typeof value === 'number') {
         const currentValue =
