@@ -1,47 +1,27 @@
-import { test, suite } from 'node:test'
+import { bench, describe } from 'vitest'
 import { getGigModifiers, calculateGigPhysics } from '../src/utils/simulationUtils.js'
 import { CHARACTERS } from '../src/data/characters.js'
 
-suite('SimulationUtils Performance Benchmark', () => {
-  test('calculateGigPhysics performance with standard band', () => {
-    const bandState = {
-      members: [
-        { name: CHARACTERS.MATZE.name, baseStats: { skill: 50 }, stamina: 80, traits: ['virtuoso'] },
-        { name: CHARACTERS.MARIUS.name, baseStats: { skill: 60 }, stamina: 70, traits: ['party_animal'] },
-        { name: CHARACTERS.LARS.name, baseStats: { skill: 40 }, stamina: 90, traits: ['bandleader'] }
-      ],
-      harmony: 80
-    }
-    const song = {
-      bpm: 140,
-      difficulty: 3
-    }
+describe('simulationUtils', () => {
+  const mockBandState = {
+    harmony: 50,
+    members: [
+      { name: CHARACTERS.MATZE.name, mood: 10, stamina: 100, skill: 50, traits: ['tech_wizard', 'gear_nerd'] },
+      { name: CHARACTERS.MARIUS.name, mood: 100, stamina: 10, skill: 60, traits: ['blast_machine', 'party_animal'] },
+      { name: CHARACTERS.LARS.name, mood: 100, stamina: 100, skill: 70, traits: ['melodic_genius', 'bandleader'] },
+    ]
+  }
 
-    const iterations = 1000000;
+  const mockSong = {
+    bpm: 180,
+    difficulty: 4
+  }
 
-    console.time(`calculateGigPhysics ${iterations} ops`);
-    for (let i = 0; i < iterations; i++) {
-      calculateGigPhysics(bandState, song)
-    }
-    console.timeEnd(`calculateGigPhysics ${iterations} ops`);
+  bench('getGigModifiers', () => {
+    getGigModifiers(mockBandState, {})
   })
 
-  test('getGigModifiers performance with standard band', () => {
-    const bandState = {
-      members: [
-        { name: CHARACTERS.MATZE.name, mood: 50 },
-        { name: CHARACTERS.MARIUS.name, stamina: 70 },
-        { name: CHARACTERS.LARS.name, mood: 40 }
-      ],
-      harmony: 80
-    }
-
-    const iterations = 1000000;
-
-    console.time(`getGigModifiers ${iterations} ops`);
-    for (let i = 0; i < iterations; i++) {
-      getGigModifiers(bandState)
-    }
-    console.timeEnd(`getGigModifiers ${iterations} ops`);
+  bench('calculateGigPhysics', () => {
+    calculateGigPhysics(mockBandState, mockSong)
   })
 })
