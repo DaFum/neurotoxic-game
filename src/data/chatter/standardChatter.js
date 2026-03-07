@@ -1806,72 +1806,72 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_284',
     weight: 10,
-    condition: state => state.band.inventory.strings === false,
+    condition: state => state.band.inventory?.strings === false,
     speaker: 'Matze'
   },
   {
     text: 'chatter:standard.msg_285',
     weight: 10,
-    condition: state => state.band.inventory.cables === false
+    condition: state => state.band.inventory?.cables === false
   },
   {
     text: 'chatter:standard.msg_286',
     weight: 10,
-    condition: state => state.band.inventory.drum_parts === false
+    condition: state => state.band.inventory?.drum_parts === false
   },
   {
     text: 'chatter:standard.msg_287',
     weight: 8,
-    condition: state => state.band.inventory.strings === false
+    condition: state => state.band.inventory?.strings === false
   },
   {
     text: 'chatter:standard.msg_288',
     weight: 8,
-    condition: state => state.band.inventory.cables === false,
+    condition: state => state.band.inventory?.cables === false,
     speaker: 'Matze'
   },
   {
     text: 'chatter:standard.msg_289',
     weight: 8,
-    condition: state => state.band.inventory.drum_parts === false,
+    condition: state => state.band.inventory?.drum_parts === false,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_290',
     weight: 3,
-    condition: state => state.band.inventory.golden_pick === true
+    condition: state => state.band.inventory?.golden_pick === true
   },
   {
     text: 'chatter:standard.msg_291',
     weight: 3,
-    condition: state => state.band.inventory.golden_pick === true,
+    condition: state => state.band.inventory?.golden_pick === true,
     speaker: 'Matze'
   },
   {
     text: 'chatter:standard.msg_292',
     weight: 2,
     condition: state =>
-      state.band.inventory.strings === true &&
-      state.band.inventory.cables === true &&
-      state.band.inventory.drum_parts === true
+      state.band.inventory?.strings === true &&
+      state.band.inventory?.cables === true &&
+      state.band.inventory?.drum_parts === true
   },
   {
     text: 'chatter:standard.msg_293',
     weight: 2,
     condition: state =>
-      state.band.inventory.strings === true &&
-      state.band.inventory.cables === true &&
-      state.band.inventory.drum_parts === true
+      state.band.inventory?.strings === true &&
+      state.band.inventory?.cables === true &&
+      state.band.inventory?.drum_parts === true
   },
   {
     text: 'chatter:standard.msg_294',
     weight: 6,
-    condition: state => state.band.inventory.shirts < 10
+    condition: state => state.band.inventory?.shirts < 10
   },
   {
     text: 'chatter:standard.msg_295',
     weight: 6,
-    condition: state => state.band.inventory.hoodies <= 0
+    condition: state => state.band.inventory?.hoodies <= 0
   },
 
   // --- CONDITION: GIG MODIFIERS ---
