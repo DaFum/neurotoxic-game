@@ -50,9 +50,22 @@ export const trySpawnProjectile = (
   random = Math.random,
   screenWidth = 1920
 ) => {
-  // Higher chance if health is low or combo is high (jealousy)
-  let spawnChance = stats.health < 50 ? 0.002 : 0.0005
-  if (stats.combo > 30) spawnChance += 0.001
+  // Adaptive difficulty AI tuning based on stats
+  let spawnChance = 0.0005
+
+  // Jealousy from high combo
+  if (stats.combo > 50) {
+    spawnChance += 0.002
+  } else if (stats.combo > 20) {
+    spawnChance += 0.001
+  }
+
+  // Desperation when health is low (piling on)
+  if (stats.health < 30) {
+    spawnChance += 0.003
+  } else if (stats.health < 60) {
+    spawnChance += 0.001
+  }
 
   if (random() < spawnChance) {
     return {

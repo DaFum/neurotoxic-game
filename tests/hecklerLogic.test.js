@@ -133,24 +133,24 @@ test('trySpawnProjectile - verifies all spawned object properties', () => {
   }
 })
 
-test('trySpawnProjectile - health boundary (49 vs 50)', () => {
-  const mockRandom = () => 0.001 // Between 0.0005 and 0.002
+test('trySpawnProjectile - health boundary (29 vs 30)', () => {
+  const mockRandom = () => 0.002 // Between 0.0015 and 0.0035
 
-  // Health 49: chance 0.002, should spawn
-  assert.ok(trySpawnProjectile({ health: 49, combo: 0 }, mockRandom))
+  // Health 29: chance 0.0035 (0.0005 + 0.003), should spawn
+  assert.ok(trySpawnProjectile({ health: 29, combo: 0 }, mockRandom))
 
-  // Health 50: chance 0.0005, should not spawn
-  assert.equal(trySpawnProjectile({ health: 50, combo: 0 }, mockRandom), null)
+  // Health 30: chance 0.0015 (0.0005 + 0.001), should not spawn
+  assert.equal(trySpawnProjectile({ health: 30, combo: 0 }, mockRandom), null)
 })
 
-test('trySpawnProjectile - combo boundary (30 vs 31)', () => {
+test('trySpawnProjectile - combo boundary (20 vs 21)', () => {
   const mockRandom = () => 0.001 // Between 0.0005 and 0.0015
 
-  // Combo 30: chance 0.0005, should not spawn
-  assert.equal(trySpawnProjectile({ health: 100, combo: 30 }, mockRandom), null)
+  // Combo 21: chance 0.0015 (0.0005 + 0.001), should spawn
+  assert.ok(trySpawnProjectile({ health: 100, combo: 21 }, mockRandom))
 
-  // Combo 31: chance 0.0005 + 0.001 = 0.0015, should spawn
-  assert.ok(trySpawnProjectile({ health: 100, combo: 31 }, mockRandom))
+  // Combo 20: chance 0.0005, should not spawn
+  assert.equal(trySpawnProjectile({ health: 100, combo: 20 }, mockRandom), null)
 })
 
 test('trySpawnProjectile - screenWidth influence on x', () => {
@@ -182,13 +182,13 @@ test('trySpawnProjectile - screenWidth influence on x', () => {
 })
 
 test('trySpawnProjectile - combined chance (low health AND high combo)', () => {
-  const stats = { health: 40, combo: 40 }
-  // 0.002 + 0.001 = 0.003
-  const mockRandom = () => 0.0025 // Should spawn
+  const stats = { health: 20, combo: 60 }
+  // 0.0005 + 0.003 + 0.002 = 0.0055
+  const mockRandom = () => 0.005 // Should spawn
 
   assert.ok(trySpawnProjectile(stats, mockRandom))
 
-  const mockRandomNo = () => 0.0035 // Should not spawn
+  const mockRandomNo = () => 0.006 // Should not spawn
   assert.equal(trySpawnProjectile(stats, mockRandomNo), null)
 })
 
