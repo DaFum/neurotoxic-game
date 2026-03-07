@@ -52,7 +52,11 @@ export const TutorialManager = () => {
         target: 'hud-stats'
       }
     }
-    if (step === 3 && currentScene === GAME_PHASES.GIG) {
+    if (
+      step === 3 &&
+      (currentScene === GAME_PHASES.GIG ||
+        currentScene === GAME_PHASES.PRACTICE)
+    ) {
       return {
         title: 'PERFORM',
         text: 'Hit the notes when they reach the bottom. Arrow Keys or Click the lanes. High Combo = More Fame.',

@@ -1,4 +1,4 @@
-export const GAME_PHASES = {
+export const GAME_PHASES = Object.freeze({
   OVERWORLD: 'OVERWORLD',
   TRAVEL_MINIGAME: 'TRAVEL_MINIGAME',
   PRE_GIG: 'PREGIG',
@@ -11,7 +11,7 @@ export const GAME_PHASES = {
   CREDITS: 'CREDITS',
   GAMEOVER: 'GAMEOVER',
   INTRO: 'INTRO'
-}
+})
 
 export const MINIGAME_TYPES = {
   TOURBUS: 'TOURBUS',

@@ -179,6 +179,22 @@ describe('TutorialManager', () => {
     ).toBeTruthy()
   })
 
+  test('shows performance tutorial on PRACTICE scene for step 3', async () => {
+    mockGameStateValue.player.tutorialStep = 3
+    mockGameStateValue.currentScene = GAME_PHASES.PRACTICE
+    mockGameStateValue.settings.tutorialSeen = false
+
+    const { TutorialManager } =
+      await import('../src/components/TutorialManager.jsx')
+
+    render(<TutorialManager />)
+
+    expect(screen.getByText('PERFORM')).toBeTruthy()
+    expect(
+      screen.getByText(/Hit the notes when they reach the bottom/i)
+    ).toBeTruthy()
+  })
+
   test('renders progress dots correctly for current step', async () => {
     mockGameStateValue.player.tutorialStep = 1
     mockGameStateValue.currentScene = GAME_PHASES.OVERWORLD
