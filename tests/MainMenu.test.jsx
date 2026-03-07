@@ -613,4 +613,146 @@ describe('MainMenu Component', () => {
       expect(screen.getByText('ui:social_links.game.title')).toBeInTheDocument()
     })
   })
+
+  describe('Additional edge cases and regressions', () => {
+    it('handles concurrent save and load operations', async () => {
+      mockLoadGame.mockReturnValue(true)
+      render(<MainMenu />)
+
+      const loadButton = screen.getByText('ui:load_game')
+      const startButton = screen.getByText('ui:start_game')
+
+      await act(async () => {
+        fireEvent.click(loadButton)
+        fireEvent.click(startButton)
+      })
+
+      expect(mockChangeScene).toHaveBeenCalled()
+    })
+
+    it('maintains player identity across multiple new game starts', async () => {
+      localStorage.setItem('neurotoxic_player_id', 'test-id')
+      localStorage.setItem('neurotoxic_player_name', 'TestPlayer')
+
+      render(<MainMenu />)
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('ui:start_game'))
+      })
+
+      expect(mockUpdatePlayer).toHaveBeenCalledWith({
+        playerId: 'test-id',
+        playerName: 'TestPlayer'
+      })
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('ui:start_game'))
+      })
+
+      expect(mockUpdatePlayer).toHaveBeenCalledTimes(2)
+    })
+
+    it('clears existing save prompt state when starting from modal', () => {
+      localStorage.setItem('neurotoxic_v3_save', 'existing')
+      localStorage.setItem('neurotoxic_player_id', 'id')
+      localStorage.setItem('neurotoxic_player_name', 'Name')
+
+      render(<MainMenu />)
+
+      fireEvent.click(screen.getByText('ui:start_game'))
+      expect(screen.getByText('ui:mainMenu.existingSave.title')).toBeInTheDocument()
+
+      const closeButton = screen.getByRole('button', { name: 'ui:closeModal' })
+      fireEvent.click(closeButton)
+
+      expect(screen.queryByText('ui:mainMenu.existingSave.title')).not.toBeInTheDocument()
+    })
+
+    it('validates player name input on blur', () => {
+      localStorage.clear()
+      render(<MainMenu />)
+
+      fireEvent.click(screen.getByText('ui:start_game'))
+
+      const input = screen.getByPlaceholderText('ui:enter_name_placeholder')
+      fireEvent.change(input, { target: { value: '   ' } })
+      fireEvent.blur(input)
+
+      expect(input.value).toBe('   ')
+    })
+
+    it('prevents starting game without player identity', () => {
+      localStorage.clear()
+      render(<MainMenu />)
+
+      fireEvent.click(screen.getByText('ui:start_game'))
+      expect(screen.getByText('ui:identity_required')).toBeInTheDocument()
+
+      expect(mockChangeScene).not.toHaveBeenCalled()
+    })
+
+    it('handles audio initialization failure on load game', async () => {
+      const { audioManager } = await import('../src/utils/AudioManager')
+      audioManager.ensureAudioContext.mockRejectedValue(new Error('Audio failed'))
+      mockLoadGame.mockReturnValue(true)
+
+      render(<MainMenu />)
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('ui:load_game'))
+      })
+
+      expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
+    })
+
+    it('disables start button while starting', async () => {
+      localStorage.setItem('neurotoxic_player_id', 'id')
+      localStorage.setItem('neurotoxic_player_name', 'Name')
+
+      render(<MainMenu />)
+
+      const startButton = screen.getByText('ui:start_game')
+
+      fireEvent.click(startButton)
+
+      expect(startButton).toBeInTheDocument()
+    })
+
+    it('handles missing crypto.randomUUID gracefully', () => {
+      const originalCrypto = global.crypto
+      global.crypto = {}
+
+      localStorage.clear()
+
+      expect(() => render(<MainMenu />)).not.toThrow()
+
+      global.crypto = originalCrypto
+    })
+
+    it('renders all social links in socials modal', () => {
+      render(<MainMenu />)
+
+      fireEvent.click(screen.getByText('ui:socials'))
+
+      expect(screen.getByText('ui:social_links.bandcamp.title')).toBeInTheDocument()
+      expect(screen.getByText('ui:social_links.tiktok.title')).toBeInTheDocument()
+      expect(screen.getByText('ui:social_links.neurotoxic_once.title')).toBeInTheDocument()
+      expect(screen.getByText('ui:social_links.neurotoxic_3000.title')).toBeInTheDocument()
+      expect(screen.getByText('ui:social_links.blog.title')).toBeInTheDocument()
+    })
+
+    it('closes features modal and reopens socials modal', () => {
+      render(<MainMenu />)
+
+      fireEvent.click(screen.getByText('ui:features.button'))
+      expect(screen.getByText('ui:features.title')).toBeInTheDocument()
+
+      const closeButton = screen.getByRole('button', { name: 'ui:closeModal' })
+      fireEvent.click(closeButton)
+      expect(screen.queryByText('ui:features.title')).not.toBeInTheDocument()
+
+      fireEvent.click(screen.getByText('ui:socials'))
+      expect(screen.getByText('ui:social_links.game.title')).toBeInTheDocument()
+    })
+  })
 })

@@ -228,4 +228,119 @@ describe('PreGig', () => {
       }
     }
   })
+
+  test('band meeting costs 50 and adds 15 harmony', async () => {
+    mockUseGameState.player.money = 500
+    mockUseGameState.band.harmony = 50
+
+    const { findByText } = render(React.createElement(PreGig))
+
+    const meetingBtn = await findByText(/ui:pregig.bandMeeting.label/i)
+    fireEvent.click(meetingBtn)
+
+    expect(mockUseGameState.updatePlayer).toHaveBeenCalledWith({ money: 450 })
+    expect(mockUseGameState.updateBand).toHaveBeenCalledWith({ harmony: 65 })
+    expect(mockUseGameState.addToast).toHaveBeenCalledWith(
+      'ui:pregig.toasts.meetingHeld',
+      'success'
+    )
+  })
+
+  test('band meeting fails when insufficient money', async () => {
+    mockUseGameState.player.money = 30
+
+    const { findByText } = render(React.createElement(PreGig))
+
+    const meetingBtn = await findByText(/ui:pregig.bandMeeting.label/i)
+    fireEvent.click(meetingBtn)
+
+    expect(mockUseGameState.updatePlayer).not.toHaveBeenCalled()
+    expect(mockUseGameState.updateBand).not.toHaveBeenCalled()
+    expect(mockUseGameState.addToast).toHaveBeenCalledWith(
+      'ui:pregig.toasts.noMoneySnacks',
+      'error'
+    )
+  })
+
+  test('band meeting caps harmony at 100', async () => {
+    mockUseGameState.player.money = 500
+    mockUseGameState.band.harmony = 92
+
+    const { findByText } = render(React.createElement(PreGig))
+
+    const meetingBtn = await findByText(/ui:pregig.bandMeeting.label/i)
+    fireEvent.click(meetingBtn)
+
+    expect(mockUseGameState.updateBand).toHaveBeenCalledWith({ harmony: 100 })
+  })
+
+  test('prevents starting gig when harmony is too low', async () => {
+    mockUseGameState.setlist = [{ id: 'song1' }]
+    mockUseGameState.band.harmony = 5
+
+    const { findByText } = render(React.createElement(PreGig))
+
+    const startBtn = await findByText(/ui:pregig.startShow/i)
+    fireEvent.click(startBtn)
+
+    await new Promise(resolve => setTimeout(resolve, 0))
+
+    expect(mockUseGameState.addToast).toHaveBeenCalledWith(
+      'ui:pregig.toasts.harmonyLow',
+      'error'
+    )
+    expect(mockUseGameState.startRoadieMinigame).not.toHaveBeenCalled()
+    expect(mockUseGameState.startKabelsalatMinigame).not.toHaveBeenCalled()
+  })
+
+  test('prevents toggling modifier when insufficient budget', async () => {
+    mockUseGameState.player.money = 40
+    mockUseGameState.gigModifiers = {}
+
+    const { findByText } = render(React.createElement(PreGig))
+
+    // Try to toggle soundcheck (costs 50)
+    const soundcheckBtn = await findByText(/Soundcheck/i)
+    fireEvent.click(soundcheckBtn)
+
+    expect(mockUseGameState.addToast).toHaveBeenCalledWith(
+      'ui:pregig.toasts.noMoneyUpgrade',
+      'error'
+    )
+    expect(mockUseGameState.setGigModifiers).not.toHaveBeenCalled()
+  })
+
+  test('allows toggling modifier off regardless of budget', async () => {
+    mockUseGameState.player.money = 10
+    mockUseGameState.gigModifiers = { soundcheck: true }
+
+    const { findByText } = render(React.createElement(PreGig))
+
+    const soundcheckBtn = await findByText(/Soundcheck/i)
+    fireEvent.click(soundcheckBtn)
+
+    expect(mockUseGameState.setGigModifiers).toHaveBeenCalledWith({ soundcheck: false })
+  })
+
+  test('handles sessionStorage errors gracefully', async () => {
+    mockUseGameState.setlist = [{ id: 'song1' }]
+
+    // Mock sessionStorage to throw
+    const originalSetItem = sessionStorage.setItem
+    sessionStorage.setItem = vi.fn(() => {
+      throw new Error('Storage error')
+    })
+
+    try {
+      const { findByText } = render(React.createElement(PreGig))
+      const startBtn = await findByText(/ui:pregig.startShow/i)
+
+      await expect(async () => {
+        fireEvent.click(startBtn)
+        await new Promise(resolve => setTimeout(resolve, 0))
+      }).not.toThrow()
+    } finally {
+      sessionStorage.setItem = originalSetItem
+    }
+  })
 })

@@ -125,8 +125,13 @@ export const MainMenu = () => {
       return
     }
 
+    updatePlayer({
+      playerId: savedPlayerId,
+      playerName: savedPlayerName
+    })
+
     void proceedToTour()
-  }, [proceedToTour])
+  }, [proceedToTour, updatePlayer])
 
   const handleStartTour = useCallback(() => {
     const savedGameExists = !!localStorage.getItem('neurotoxic_v3_save')
