@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
@@ -103,14 +103,19 @@ export const PreGig = () => {
     [setlist]
   )
 
+  const tRef = useRef(t)
+  useEffect(() => {
+    tRef.current = t
+  }, [t])
+
   useEffect(() => {
     if (!currentGig) {
       // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      addToast(t('ui:pregig.toasts.noGig'), 'error')
+      addToast(tRef.current('ui:pregig.toasts.noGig'), 'error')
       // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
       changeScene(GAME_PHASES.OVERWORLD)
     }
-  }, [currentGig, changeScene, addToast, t])
+  }, [currentGig, changeScene, addToast])
 
   /**
    * Triggers a band meeting event to boost harmony.

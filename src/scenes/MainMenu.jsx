@@ -28,6 +28,11 @@ import { handleError } from '../utils/errorHandler'
  */
 export const MainMenu = () => {
   const { t } = useTranslation()
+  const tRef = useRef(t)
+  useEffect(() => {
+    tRef.current = t
+  }, [t])
+
   const { changeScene, loadGame, addToast, resetState, updatePlayer } =
     useGameState()
   const { showHQ, openHQ, bandHQProps } = useBandHQModal()
@@ -135,7 +140,7 @@ export const MainMenu = () => {
 
   const handleNameSubmit = useCallback(() => {
     if (!playerNameInput.trim()) {
-      addToast(t('ui:enter_name_error'), 'error')
+      addToast(tRef.current('ui:enter_name_error'), 'error')
       return
     }
 
@@ -152,7 +157,7 @@ export const MainMenu = () => {
 
     setShowNameInput(false)
     void proceedToTour()
-  }, [playerNameInput, addToast, proceedToTour, updatePlayer, t])
+  }, [playerNameInput, addToast, proceedToTour, updatePlayer])
 
   /**
    * Handles loading a saved game.
@@ -163,7 +168,7 @@ export const MainMenu = () => {
     if (!isMountedRef.current) return
 
     if (!loadGame()) {
-      addToast(t('ui:no_save_found'), 'error')
+      addToast(tRef.current('ui:no_save_found'), 'error')
       if (isMountedRef.current) setIsLoadingGame(false)
       return
     }

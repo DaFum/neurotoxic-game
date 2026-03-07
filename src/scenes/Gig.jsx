@@ -112,12 +112,7 @@ export const Gig = () => {
     try {
       stopAudio()
     } catch (e) {
-      handleError(e, {
-        addToast,
-        fallbackMessage: t('ui:errors.audio_cleanup_failed', {
-          defaultValue: 'Audio cleanup failed.'
-        })
-      })
+      handleError(e, { addToast, fallbackMessage: tRef.current('ui:errors.audio_cleanup_failed', { defaultValue: 'Audio cleanup failed.' }) })
     } finally {
       // Use fallback stats if gameStateRef is unavailable or uninitialized
       const score = gameStateRef.current?.score || 0
@@ -143,7 +138,7 @@ export const Gig = () => {
       setLastGigStats(snapshot)
       endGig()
     }
-  }, [endGig, setLastGigStats, addToast, gameStateRef, t])
+  }, [endGig, setLastGigStats, addToast, gameStateRef])
 
   // Use extracted input hook
   const { handleLaneInput } = useGigInput({
