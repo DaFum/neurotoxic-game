@@ -100,10 +100,10 @@ export class MapGenerator {
       fallbackHard
     }
 
-    this.#generateIntermediateLayers(map, depth, pools)
-    this.#generateConnections(map, depth)
-    this.#generateFinaleLayer(map, depth, hardVenues)
-    this.#assignInitialCoordinates(map)
+    this._generateIntermediateLayers(map, depth, pools)
+    this._generateConnections(map, depth)
+    this._generateFinaleLayer(map, depth, hardVenues)
+    this._assignInitialCoordinates(map)
 
     // To ensure purity, we clone the nodes before resolving overlaps if possible,
     // but here we are mutating the map object we just created, which is local to this function.
