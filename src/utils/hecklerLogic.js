@@ -5,6 +5,19 @@
  * @param {number} screenHeight - Height of the screen (to determine despawn).
  * @returns {Array} Updated list of projectiles.
  */
+// Adaptive difficulty AI tuning based on stats
+const SPAWN_CHANCE_CONFIG = {
+  BASE: 0.0005,
+  COMBO_HIGH_THRESHOLD: 50,
+  COMBO_HIGH_BONUS: 0.002,
+  COMBO_MEDIUM_THRESHOLD: 20,
+  COMBO_MEDIUM_BONUS: 0.001,
+  HEALTH_LOW_THRESHOLD: 30,
+  HEALTH_LOW_BONUS: 0.003,
+  HEALTH_MEDIUM_THRESHOLD: 60,
+  HEALTH_MEDIUM_BONUS: 0.001
+}
+
 export const updateProjectiles = (
   projectiles,
   deltaMS,
@@ -51,20 +64,20 @@ export const trySpawnProjectile = (
   screenWidth = 1920
 ) => {
   // Adaptive difficulty AI tuning based on stats
-  let spawnChance = 0.0005
+  let spawnChance = SPAWN_CHANCE_CONFIG.BASE
 
   // Jealousy from high combo
-  if (stats.combo > 50) {
-    spawnChance += 0.002
-  } else if (stats.combo > 20) {
-    spawnChance += 0.001
+  if (stats.combo > SPAWN_CHANCE_CONFIG.COMBO_HIGH_THRESHOLD) {
+    spawnChance += SPAWN_CHANCE_CONFIG.COMBO_HIGH_BONUS
+  } else if (stats.combo > SPAWN_CHANCE_CONFIG.COMBO_MEDIUM_THRESHOLD) {
+    spawnChance += SPAWN_CHANCE_CONFIG.COMBO_MEDIUM_BONUS
   }
 
   // Desperation when health is low (piling on)
-  if (stats.health < 30) {
-    spawnChance += 0.003
-  } else if (stats.health < 60) {
-    spawnChance += 0.001
+  if (stats.health < SPAWN_CHANCE_CONFIG.HEALTH_LOW_THRESHOLD) {
+    spawnChance += SPAWN_CHANCE_CONFIG.HEALTH_LOW_BONUS
+  } else if (stats.health < SPAWN_CHANCE_CONFIG.HEALTH_MEDIUM_THRESHOLD) {
+    spawnChance += SPAWN_CHANCE_CONFIG.HEALTH_MEDIUM_BONUS
   }
 
   if (random() < spawnChance) {

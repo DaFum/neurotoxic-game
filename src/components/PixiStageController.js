@@ -89,9 +89,11 @@ class PixiStageController extends BaseStageController {
 
   /**
    * Wraps a promise with a timeout to prevent indefinite hanging.
+   * Errors and timeouts are swallowed, logging a warning/error and returning null.
    * @param {Promise} promise - The promise to wrap.
    * @param {string} label - Label for logging.
-   * @returns {Promise} The wrapped promise.
+   * @param {number} [timeoutMs=10000] - Timeout in milliseconds.
+   * @returns {Promise<any|null>} The resolved value or null if an error/timeout occurred.
    */
   async withTimeout(promise, label, timeoutMs = 10000) {
     let timerId
@@ -110,7 +112,12 @@ class PixiStageController extends BaseStageController {
       const result = await Promise.race([promise, timeout])
       return result
     } catch (err) {
-      logger.error('PixiStageController', `${label} load failed: ${err.message}`)
+      const errorMessage = err?.message ?? String(err)
+      logger.error(
+        'PixiStageController',
+        `${label} load failed: ${errorMessage}`,
+        err
+      )
       return null // Graceful fallback on error
     } finally {
       clearTimeout(timerId)
@@ -209,7 +216,7 @@ class PixiStageController extends BaseStageController {
     }
 
     this.toxicFilters = null
-    this.emptyFilters = null
+    this.emptyFilters = []
 
     super.dispose()
   }
