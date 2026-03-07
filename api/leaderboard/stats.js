@@ -56,7 +56,7 @@ export default async function handler(req, res) {
       }
 
       const trimmedName = playerName.trim()
-      if (trimmedName.length < 1 || trimmedName.length > 100) {
+      if (trimmedName.length < 1) {
         return res.status(400).json({ error: 'Invalid playerName length' })
       }
 

@@ -317,7 +317,7 @@ const reportErrorRemote = errorInfo => {
       fetch('/api/analytics/error', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(errorInfo)
+        body: JSON.stringify(sanitizeErrorInfo(errorInfo))
       }).catch(() => {
         // Silently fail if tracking is blocked or endpoint doesn't exist
       })
