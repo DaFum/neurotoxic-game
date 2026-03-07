@@ -125,37 +125,38 @@ export const useRhythmGameScoring = ({
       const basePenalty = isEmptyHit ? 1 : 2
       const decayPerMiss = basePenalty * Math.max(0.1, crowdDecay)
 
-      setHealth(h => {
-        const next = Math.max(0, Math.min(100, h - decayPerMiss * count))
-        if (next <= 0 && !gameStateRef.current.isGameOver) {
-          setIsGameOver(true)
-          gameStateRef.current.isGameOver = true
-          // Stop audio immediately to prevent further hit processing after collapse
-          stopAudio()
-          const failReqId = getPlayRequestId()
-          addToast(t('ui:gig.toasts.bandCollapsed', 'BAND COLLAPSED'), 'error')
+      const currentHealth = gameStateRef.current.health
+      const nextHealth = Math.max(0, Math.min(100, currentHealth - decayPerMiss * count))
 
-          // Schedule exit from Gig if failed (prevents softlock)
-          if (!gameOverTimerRef.current) {
-            gameOverTimerRef.current = setTimeout(() => {
-              // Bail if another audio session started in the 4s window (e.g. external endGig call)
-              if (getPlayRequestId() !== failReqId) return
-              addToast(t('ui:gig.toasts.gigFailed', 'Gig Failed! Reviewing impact...'), 'info')
-              setLastGigStats(
-                buildGigStatsSnapshot(
-                  gameStateRef.current.score,
-                  gameStateRef.current.stats,
-                  gameStateRef.current.toxicTimeTotal,
-                  gameStateRef.current.songStats || []
-                )
+      if (nextHealth <= 0 && !gameStateRef.current.isGameOver) {
+        setIsGameOver(true)
+        gameStateRef.current.isGameOver = true
+        // Stop audio immediately to prevent further hit processing after collapse
+        stopAudio()
+        const failReqId = getPlayRequestId()
+        addToast(t('ui:gig.toasts.bandCollapsed', 'BAND COLLAPSED'), 'error')
+
+        // Schedule exit from Gig if failed (prevents softlock)
+        if (!gameOverTimerRef.current) {
+          gameOverTimerRef.current = setTimeout(() => {
+            // Bail if another audio session started in the 4s window (e.g. external endGig call)
+            if (getPlayRequestId() !== failReqId) return
+            addToast(t('ui:gig.toasts.gigFailed', 'Gig Failed! Reviewing impact...'), 'info')
+            setLastGigStats(
+              buildGigStatsSnapshot(
+                gameStateRef.current.score,
+                gameStateRef.current.stats,
+                gameStateRef.current.toxicTimeTotal,
+                gameStateRef.current.songStats || []
               )
-              endGig()
-            }, 4000)
-          }
+            )
+            endGig()
+          }, 4000)
         }
-        gameStateRef.current.health = next
-        return next
-      })
+      }
+
+      gameStateRef.current.health = nextHealth
+      setHealth(nextHealth)
     },
     [
       addToast,
