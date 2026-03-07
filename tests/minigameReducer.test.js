@@ -70,11 +70,12 @@ describe('minigameReducer', () => {
       assert.deepStrictEqual(nextState.minigame, { ...DEFAULT_MINIGAME_STATE })
     })
 
-    it('should return safely if invalid targetNode', () => {
+    it('should return safely if invalid targetNode and preserve currentScene', () => {
+      baseState.currentScene = GAME_PHASES.TRAVEL_MINIGAME
       baseState.minigame.targetDestination = 'invalid_node'
       const payload = { damageTaken: 10, itemsCollected: 5 }
       const nextState = handleCompleteTravelMinigame(baseState, payload)
-      assert.strictEqual(nextState.currentScene, GAME_PHASES.OVERWORLD)
+      assert.strictEqual(nextState.currentScene, GAME_PHASES.TRAVEL_MINIGAME) // should preserve the initial scene without overriding it
       assert.deepStrictEqual(nextState.minigame, { ...DEFAULT_MINIGAME_STATE })
     })
   })
