@@ -37,6 +37,23 @@ export { getPrimaryEffect } // Re-export for backward compatibility if needed, t
  * @param {Function} params.addToast - Toast notification function
  * @returns {Object} Purchase handlers and utilities
  */
+// Pre-compute gear lookup for O(1) checks during purchases
+const GEAR_LOOKUP = new Map()
+const allGearItems = [
+  ...(HQ_ITEMS.gear || []),
+  ...(HQ_ITEMS.instruments || [])
+]
+
+allGearItems.forEach(item => {
+  if (item.category === 'GEAR' || item.category === 'INSTRUMENT') {
+    GEAR_LOOKUP.set(item.id, item)
+    const e = item.effect || item.effects?.[0]
+    if (e?.item) {
+      GEAR_LOOKUP.set(e.item, item)
+    }
+  }
+})
+
 export const usePurchaseLogic = ({
   player,
   band,
@@ -245,25 +262,16 @@ export const usePurchaseLogic = ({
 
         // Count ONLY gear items for gear_nerd check
         // Match inventory keys against item effect keys (e.g. 'strings' matches effect.item: 'strings')
-        const allGearItems = [
-          ...(HQ_ITEMS.gear || []),
-          ...(HQ_ITEMS.instruments || [])
-        ]
-        const gearCount = Object.entries(nextBand.inventory || {}).filter(
-          ([key, value]) => {
-            const isOwned =
-              value === true || (typeof value === 'number' && value > 0)
-            if (!isOwned) return false
-            const itemDef = allGearItems.find(i => {
-              const e = i.effect || i.effects?.[0]
-              return e?.item === key || i.id === key
-            })
-            return (
-              itemDef &&
-              (itemDef.category === 'GEAR' || itemDef.category === 'INSTRUMENT')
-            )
+        let gearCount = 0
+        const inventoryEntries = Object.entries(nextBand.inventory || {})
+        for (let i = 0; i < inventoryEntries.length; i++) {
+          const [key, value] = inventoryEntries[i]
+          const isOwned =
+            value === true || (typeof value === 'number' && value > 0)
+          if (isOwned && GEAR_LOOKUP.has(key)) {
+            gearCount++
           }
-        ).length
+        }
 
         const purchaseUnlocks = checkTraitUnlocks(
           { player: nextPlayer, band: nextBand, social: {} },
