@@ -240,6 +240,43 @@ describe('useRhythmGameScoring', async () => {
     )
   })
 
+  test('handleMiss triggers game over timeout toast', () => {
+    mock.timers.enable({ apis: ['setTimeout'] })
+
+    gameStateRef.current.health = 1
+
+    const { result } = renderHook(() =>
+      useRhythmGameScoring({
+        gameStateRef,
+        setters,
+        performance: {},
+        contextActions
+      })
+    )
+
+    act(() => {
+      result.current.handleMiss(1, false)
+    })
+
+    assert.equal(gameStateRef.current.isGameOver, true)
+
+    // Clear the initial mock calls for addToast from "BAND COLLAPSED"
+    contextActions.addToast.mock.resetCalls()
+
+    act(() => {
+      mock.timers.tick(4000)
+    })
+
+    assert.equal(
+      contextActions.addToast.mock.calls[0].arguments[0],
+      'ui:gig.toasts.gigFailed'
+    )
+    assert.equal(contextActions.setLastGigStats.mock.calls.length, 1)
+    assert.equal(contextActions.endGig.mock.calls.length, 1)
+
+    mock.timers.reset()
+  })
+
   test('activateToxicMode sets flag and toast', () => {
     const { result } = renderHook(() =>
       useRhythmGameScoring({
