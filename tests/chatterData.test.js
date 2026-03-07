@@ -925,3 +925,124 @@ test('multiple travel count thresholds work', () => {
   assert.ok(earlyMatches.length > 0, 'Early travel chatter should activate')
   assert.ok(lateMatches.length > 0, 'Late travel chatter should activate')
 })
+
+// --- ADDITIONAL STRUCTURE VALIDATION TESTS ---
+
+test('chatter.json structure is valid JSON', async () => {
+  const fs = await import('node:fs')
+  const path = await import('node:path')
+  const rawContent = fs.readFileSync(
+    path.resolve(process.cwd(), 'public/locales/en/chatter.json'),
+    'utf-8'
+  )
+  assert.doesNotThrow(() => JSON.parse(rawContent), 'chatter.json must be valid JSON')
+})
+
+test('all chatter keys in en/chatter.json have non-empty string values', async () => {
+  const fs = await import('node:fs')
+  const path = await import('node:path')
+  const chatterData = JSON.parse(
+    fs.readFileSync(
+      path.resolve(process.cwd(), 'public/locales/en/chatter.json'),
+      'utf-8'
+    )
+  )
+
+  Object.entries(chatterData).forEach(([key, value]) => {
+    assert.strictEqual(typeof value, 'string', `Key ${key} must have string value`)
+    assert.ok(value.length > 0, `Key ${key} must have non-empty value`)
+    assert.ok(value.trim() === value, `Key ${key} value should not have leading/trailing whitespace`)
+  })
+})
+
+test('chatter keys follow naming convention', async () => {
+  const fs = await import('node:fs')
+  const path = await import('node:path')
+  const chatterData = JSON.parse(
+    fs.readFileSync(
+      path.resolve(process.cwd(), 'public/locales/en/chatter.json'),
+      'utf-8'
+    )
+  )
+
+  Object.keys(chatterData).forEach(key => {
+    assert.match(
+      key,
+      /^(standard|venues)\./,
+      `Key ${key} should start with 'standard.' or 'venues.'`
+    )
+  })
+})
+
+test('venue chatter keys include scene phase suffixes', async () => {
+  const fs = await import('node:fs')
+  const path = await import('node:path')
+  const chatterData = JSON.parse(
+    fs.readFileSync(
+      path.resolve(process.cwd(), 'public/locales/en/chatter.json'),
+      'utf-8'
+    )
+  )
+
+  const venueKeys = Object.keys(chatterData).filter(k => k.startsWith('venues.'))
+  const validSuffixes = ['ANY_', 'OVERWORLD_', 'PREGIG_', 'GIG_', 'POSTGIG_']
+
+  venueKeys.forEach(key => {
+    const hasValidSuffix = validSuffixes.some(suffix => {
+      const parts = key.split('.')
+      const lastPart = parts[parts.length - 1]
+      return lastPart.startsWith(suffix)
+    })
+    assert.ok(hasValidSuffix, `Venue key ${key} should have a valid scene phase suffix`)
+  })
+})
+
+test('no duplicate chatter text content across all entries', async () => {
+  const fs = await import('node:fs')
+  const path = await import('node:path')
+  const chatterData = JSON.parse(
+    fs.readFileSync(
+      path.resolve(process.cwd(), 'public/locales/en/chatter.json'),
+      'utf-8'
+    )
+  )
+
+  const textValues = Object.values(chatterData)
+  const uniqueTexts = new Set(textValues)
+  const duplicates = textValues.filter((val, idx, arr) => arr.indexOf(val) !== idx)
+
+  if (duplicates.length > 0) {
+    assert.fail(`Found duplicate chatter texts: ${duplicates.slice(0, 3).join(', ')}`)
+  }
+  assert.ok(true, 'All chatter texts are unique')
+})
+
+test('chatter text content has reasonable length limits', async () => {
+  const fs = await import('node:fs')
+  const path = await import('node:path')
+  const chatterData = JSON.parse(
+    fs.readFileSync(
+      path.resolve(process.cwd(), 'public/locales/en/chatter.json'),
+      'utf-8'
+    )
+  )
+
+  Object.entries(chatterData).forEach(([key, value]) => {
+    assert.ok(value.length >= 10, `Chatter ${key} too short (${value.length} chars)`)
+    assert.ok(value.length <= 200, `Chatter ${key} too long (${value.length} chars)`)
+  })
+})
+
+test('getRandomChatter returns different messages on multiple calls', () => {
+  const state = buildState(GAME_PHASES.OVERWORLD)
+  const results = new Set()
+
+  for (let i = 0; i < 50; i++) {
+    const chatter = getRandomChatter(state)
+    if (chatter) {
+      results.add(chatter.text)
+    }
+  }
+
+  assert.ok(results.size > 1, 'Should return varied chatter messages')
+})
