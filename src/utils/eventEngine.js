@@ -10,6 +10,8 @@ import { bandHasTrait } from './traitLogic.js'
 
 const TEMPLATE_REGEX = /\{([^}]+)\}/gi
 
+const contextMapCache = new WeakMap()
+
 /**
  * Resolves a template string by replacing {key} with the corresponding value from the context.
  * Uses a single pre-compiled regex for performance.
@@ -30,12 +32,16 @@ const resolveTemplateString = (str, context) => {
 
     // Fallback: case-insensitive match (as the original implementation used 'gi')
     if (!lowerKeysMap) {
-      lowerKeysMap = Object.create(null)
-      for (const k of Object.keys(context)) {
-        const lk = k.toLowerCase()
-        if (lowerKeysMap[lk] === undefined) {
-          lowerKeysMap[lk] = k
+      lowerKeysMap = contextMapCache.get(context)
+      if (!lowerKeysMap) {
+        lowerKeysMap = Object.create(null)
+        for (const k of Object.keys(context)) {
+          const lk = k.toLowerCase()
+          if (lowerKeysMap[lk] === undefined) {
+            lowerKeysMap[lk] = k
+          }
         }
+        contextMapCache.set(context, lowerKeysMap)
       }
     }
 
