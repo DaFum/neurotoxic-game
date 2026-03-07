@@ -709,6 +709,12 @@
     }
   },
   "gig": {
+    "toasts": {
+      "toxicOverload": "TOXISCHER OVERLOAD!",
+      "toxicModeLost": "TOXISCHER MODUS VERLOREN!",
+      "bandCollapsed": "BAND KOLLABIERT",
+      "gigFailed": "Gig fehlgeschlagen! Überprüfe Auswirkungen..."
+    },
     "crowdEnergy": "PUBLIKUMSENERGIE",
     "toxicModeActive": "TOXISCHER MODUS AKTIV",
     "paused": "PAUSIERT",

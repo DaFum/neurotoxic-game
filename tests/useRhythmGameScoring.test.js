@@ -236,8 +236,45 @@ describe('useRhythmGameScoring', async () => {
     assert.equal(mockAudioEngine.stopAudio.mock.calls.length, 1)
     assert.equal(
       contextActions.addToast.mock.calls[0].arguments[0],
-      'BAND COLLAPSED'
+      'ui:gig.toasts.bandCollapsed'
     )
+  })
+
+  test('handleMiss triggers game over timeout toast', () => {
+    mock.timers.enable({ apis: ['setTimeout'] })
+
+    gameStateRef.current.health = 1
+
+    const { result } = renderHook(() =>
+      useRhythmGameScoring({
+        gameStateRef,
+        setters,
+        performance: {},
+        contextActions
+      })
+    )
+
+    act(() => {
+      result.current.handleMiss(1, false)
+    })
+
+    assert.equal(gameStateRef.current.isGameOver, true)
+
+    // Clear the initial mock calls for addToast from "BAND COLLAPSED"
+    contextActions.addToast.mock.resetCalls()
+
+    act(() => {
+      mock.timers.tick(4000)
+    })
+
+    assert.equal(
+      contextActions.addToast.mock.calls[0].arguments[0],
+      'ui:gig.toasts.gigFailed'
+    )
+    assert.equal(contextActions.setLastGigStats.mock.calls.length, 1)
+    assert.equal(contextActions.endGig.mock.calls.length, 1)
+
+    mock.timers.reset()
   })
 
   test('activateToxicMode sets flag and toast', () => {
@@ -257,7 +294,7 @@ describe('useRhythmGameScoring', async () => {
     assert.equal(gameStateRef.current.isToxicMode, true)
     assert.equal(
       contextActions.addToast.mock.calls[0].arguments[0],
-      'TOXIC OVERLOAD!'
+      'ui:gig.toasts.toxicOverload'
     )
   })
 
@@ -304,7 +341,7 @@ describe('useRhythmGameScoring', async () => {
     assert.equal(setters.setIsToxicMode.mock.calls[0].arguments[0], false)
     assert.equal(
       contextActions.addToast.mock.calls[0].arguments[0],
-      'TOXIC MODE LOST!'
+      'ui:gig.toasts.toxicModeLost'
     )
   })
 
@@ -416,7 +453,7 @@ describe('useRhythmGameScoring', async () => {
     assert.equal(gameStateRef.current.overload, 0) // Reset to 0
     assert.equal(
       contextActions.addToast.mock.calls[0].arguments[0],
-      'TOXIC OVERLOAD!'
+      'ui:gig.toasts.toxicOverload'
     )
   })
 })
