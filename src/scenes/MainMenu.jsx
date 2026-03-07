@@ -187,8 +187,7 @@ export const MainMenu = () => {
     changeScene,
     reportAudioIssue,
     startAmbientSafely,
-    audioInitErrorMessage,
-    t
+    audioInitErrorMessage
   ])
 
   const handleCredits = useCallback(
