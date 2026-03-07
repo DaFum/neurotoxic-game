@@ -23,8 +23,8 @@ const OVERWORLD_STYLE = {
  * Each entry defines border color, accent color, icon, etc.
  */
 const SCENE_STYLES = {
-  OVERWORLD: OVERWORLD_STYLE,
-  PREGIG: {
+  [GAME_PHASES.OVERWORLD]: OVERWORLD_STYLE,
+  [GAME_PHASES.PRE_GIG]: {
     accent: 'var(--warning-yellow)',
     borderColor: 'border-(--warning-yellow)',
     labelColor: 'text-(--warning-yellow)',
@@ -32,7 +32,7 @@ const SCENE_STYLES = {
     barColor: 'bg-(--warning-yellow)',
     icon: '\uD83C\uDFB8'
   },
-  GIG: {
+  [GAME_PHASES.GIG]: {
     accent: 'var(--blood-red)',
     borderColor: 'border-(--blood-red)',
     labelColor: 'text-(--blood-red)',
@@ -40,7 +40,7 @@ const SCENE_STYLES = {
     barColor: 'bg-(--blood-red)',
     icon: '\uD83D\uDD25'
   },
-  POSTGIG: {
+  [GAME_PHASES.POST_GIG]: {
     accent: 'var(--toxic-green)',
     borderColor: 'border-(--toxic-green)',
     labelColor: 'text-(--toxic-green)',
@@ -48,7 +48,7 @@ const SCENE_STYLES = {
     barColor: 'bg-(--toxic-green)',
     icon: '\uD83C\uDF7B'
   },
-  MENU: {
+  [GAME_PHASES.MENU]: {
     accent: 'var(--toxic-green)',
     borderColor: 'border-(--toxic-green)',
     labelColor: 'text-(--toxic-green)',
@@ -56,7 +56,7 @@ const SCENE_STYLES = {
     barColor: 'bg-(--toxic-green)',
     icon: '\uD83D\uDCE1'
   },
-  GAMEOVER: {
+  [GAME_PHASES.GAMEOVER]: {
     accent: 'var(--blood-red)',
     borderColor: 'border-(--blood-red)',
     labelColor: 'text-(--blood-red)',
@@ -75,7 +75,7 @@ const SCENE_STYLES = {
   }
 }
 
-const DEFAULT_STYLE = SCENE_STYLES.MENU
+const DEFAULT_STYLE = SCENE_STYLES[GAME_PHASES.MENU]
 
 const CHATTER_CONTAINER_STYLE = { zIndex: 'var(--z-chatter)' }
 
