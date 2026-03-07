@@ -114,7 +114,7 @@ test('Van Breakdown: NO COMPOUNDING - Breakdown chance is stable over multiple d
   // Day 2: Start 48 -> 46. Chance = 0.05 * 1.6 = 0.08.
   // Day 3: Start 46 -> 44. Chance = 0.05 * 1.6 = 0.08.
 
-  // If compounding bug existed:
+  // If incorrect compounding occurred:
   // Day 1: 0.08
   // Day 2: 0.08 * 1.6 = 0.128
   // Day 3: 0.128 * 1.6 = 0.2048
