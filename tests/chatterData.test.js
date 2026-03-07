@@ -83,6 +83,48 @@ test('disallowed scenes are not in ALLOWED_DEFAULT_SCENES', () => {
   })
 })
 
+test('every chatter entry text must have a valid translation key in EN and DE locales', async () => {
+  const fs = await import('node:fs')
+  const path = await import('node:path')
+  const enTranslations = JSON.parse(
+    fs.readFileSync(
+      path.resolve(process.cwd(), 'public/locales/en/chatter.json'),
+      'utf-8'
+    )
+  )
+  const deTranslations = JSON.parse(
+    fs.readFileSync(
+      path.resolve(process.cwd(), 'public/locales/de/chatter.json'),
+      'utf-8'
+    )
+  )
+
+  const resolveKey = (obj, keyPath) => {
+    if (obj[keyPath] !== undefined) return obj[keyPath]
+    return keyPath.split('.').reduce((acc, part) => acc && acc[part], obj)
+  }
+
+  CHATTER_DB.forEach(entry => {
+    const textKey = entry.text
+    assert.ok(
+      textKey.startsWith('chatter:'),
+      `Chatter text must be an i18n key starting with 'chatter:', got: ${textKey}`
+    )
+
+    // Extract the part after 'chatter:'
+    const jsonKey = textKey.split('chatter:')[1]
+
+    assert.ok(
+      resolveKey(enTranslations, jsonKey),
+      `Missing English translation for key: ${jsonKey}`
+    )
+    assert.ok(
+      resolveKey(deTranslations, jsonKey),
+      `Missing German translation for key: ${jsonKey}`
+    )
+  })
+})
+
 // --- NEW: Condition-based chatter categories ---
 
 test('harmony chatter fires when band.harmony is low', () => {
