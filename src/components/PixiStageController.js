@@ -93,18 +93,28 @@ class PixiStageController extends BaseStageController {
    * @param {string} label - Label for logging.
    * @returns {Promise} The wrapped promise.
    */
-  async withTimeout(promise, label) {
+  async withTimeout(promise, label, timeoutMs = 10000) {
     let timerId
-    const timeout = new Promise(resolve => {
+    const timeout = new Promise((resolve, _reject) => {
       timerId = setTimeout(() => {
         logger.warn(
           'PixiStageController',
           `${label} load timed out, proceeding with fallbacks.`
         )
+        // Explicitly resolve null on timeout to ensure non-blocking fallback
         resolve(null)
-      }, 10000)
+      }, timeoutMs)
     })
-    return Promise.race([promise, timeout]).finally(() => clearTimeout(timerId))
+
+    try {
+      const result = await Promise.race([promise, timeout])
+      return result
+    } catch (err) {
+      logger.error('PixiStageController', `${label} load failed: ${err.message}`)
+      return null // Graceful fallback on error
+    } finally {
+      clearTimeout(timerId)
+    }
   }
 
   /**
