@@ -18,11 +18,20 @@ const mockAudioState = {
 mock.module('../src/utils/audio/state.js', { namedExports: { audioState: mockAudioState } })
 
 // Mock playback functions
-const mockStopAudio = mock.fn()
+const capturedReqIds = []
+const mockStopAudio = mock.fn(() => {
+  mockAudioState.playRequestId++
+  capturedReqIds.push(mockAudioState.playRequestId)
+})
 mock.module('../src/utils/audio/playback.js', { namedExports: { stopAudio: mockStopAudio } })
 
 // Mock assets
-const mockLoadAudioBuffer = mock.fn(async () => ({ duration: 60 }))
+let loadAudioDeferred = null
+const defaultLoadAudioBufferImpl = async () => {
+  if (loadAudioDeferred) return loadAudioDeferred.promise
+  return { duration: 60 }
+}
+const mockLoadAudioBuffer = mock.fn(defaultLoadAudioBufferImpl)
 
 // Define arrays that we will empty out
 const mockMidiUrlMap = { 'test1.mid': 'url1', 'test2.mid': 'url2' }
@@ -44,13 +53,17 @@ mock.module('../src/utils/audio/sharedBufferUtils.js', {
 })
 
 // Mock generic utils
-let currentMockSelectRandomItem = (arr, rng) => arr && arr.length > 0 ? arr[0] : null
+let currentMockSelectRandomItem = (arr, _rng) => arr && arr.length > 0 ? arr[0] : null
 mock.module('../src/utils/audio/selectionUtils.js', {
-  namedExports: { selectRandomItem: (...args) => currentMockSelectRandomItem(...args) }
+  namedExports: { selectRandomItem: (..._args) => currentMockSelectRandomItem(..._args) }
 })
 
+let ensureAudioDeferred = null
 mock.module('../src/utils/audio/setup.js', {
-  namedExports: { ensureAudioContext: mock.fn(async () => true) }
+  namedExports: { ensureAudioContext: mock.fn(async () => {
+    if (ensureAudioDeferred) return ensureAudioDeferred.promise
+    return true
+  }) }
 })
 
 // Mock midi playback
@@ -71,9 +84,12 @@ describe('ambient.js', () => {
 
   beforeEach(async () => {
     loggerHistory.length = 0
+    capturedReqIds.length = 0
+    ensureAudioDeferred = null
+    loadAudioDeferred = null
     mockStopAudio.mock.resetCalls()
     mockLoadAudioBuffer.mock.resetCalls()
-    mockLoadAudioBuffer.mock.mockImplementation(async () => ({ duration: 60 }))
+    mockLoadAudioBuffer.mock.mockImplementation(defaultLoadAudioBufferImpl)
     mockCreateAndConnect.mock.resetCalls()
     mockCreateAndConnect.mock.mockImplementation(() => mockSource)
     mockPlayMidiFileInternal.mock.resetCalls()
@@ -89,7 +105,7 @@ describe('ambient.js', () => {
     mockOggCandidates.length = 0
     mockOggCandidates.push('test1.ogg', 'test2.ogg')
 
-    currentMockSelectRandomItem = (arr, rng) => {
+    currentMockSelectRandomItem = (arr, _rng) => {
         if (Array.isArray(arr) && arr.length > 0) return arr[0]
         if (typeof arr === 'object' && arr !== null && Object.keys(arr).length > 0) return Object.keys(arr)[0]
         return null
@@ -149,7 +165,7 @@ describe('ambient.js', () => {
       const onEnded = mockPlayMidiFileInternal.mock.calls[0].arguments[4].onEnded
 
       // Change req id
-      mockAudioState.playRequestId = 2
+      mockAudioState.playRequestId = 3
 
       onEnded()
 
@@ -177,10 +193,15 @@ describe('ambient.js', () => {
     test('stops current audio before starting unless skipStop is true', async () => {
       await playRandomAmbientOgg()
       assert.equal(mockStopAudio.mock.calls.length, 1)
+      assert.equal(capturedReqIds[0], 2)
+      assert.equal(mockAudioState.playRequestId, 3) // `ambient.js` internally increments reqId again in `playRandomAmbientOgg` so it's 3
 
       mockStopAudio.mock.resetCalls()
+      capturedReqIds.length = 0
+
       await playRandomAmbientOgg(() => 0, { skipStop: true })
       assert.equal(mockStopAudio.mock.calls.length, 0)
+      assert.equal(capturedReqIds.length, 0)
     })
 
     test('warns and returns false if no OGG files available', async () => {
@@ -254,6 +275,36 @@ describe('ambient.js', () => {
       await new Promise(r => setTimeout(r, 0))
 
       assert.equal(mockSource.start.mock.calls.length, 1)
+    })
+
+    test('bails out if playRequestId changes during async ensureAudioContext', async () => {
+      let resolveEnsure;
+      ensureAudioDeferred = { promise: new Promise(r => { resolveEnsure = r }) }
+      const p = playRandomAmbientOgg()
+
+      await new Promise(r => setTimeout(r, 0))
+
+      mockAudioState.playRequestId += 1 // simulate cancellation
+      resolveEnsure(true)
+
+      const result = await p
+      assert.equal(result, false)
+      assert.equal(mockLoadAudioBuffer.mock.calls.length, 0)
+    })
+
+    test('bails out if playRequestId changes during async loadAudioBuffer', async () => {
+      let resolveLoad;
+      loadAudioDeferred = { promise: new Promise(r => { resolveLoad = r }) }
+      const p = playRandomAmbientOgg()
+
+      await new Promise(r => setTimeout(r, 0))
+
+      mockAudioState.playRequestId += 1 // simulate cancellation
+      resolveLoad({ duration: 60 })
+
+      const result = await p
+      assert.equal(result, false)
+      assert.equal(mockCreateAndConnect.mock.calls.length, 0)
     })
   })
 })
