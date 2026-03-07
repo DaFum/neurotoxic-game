@@ -91,7 +91,7 @@ test('harmony chatter fires when band.harmony is low', () => {
     e =>
       typeof e.condition === 'function' &&
       e.condition(state) &&
-      e.text.includes('talk')
+      e.text === 'chatter:standard.msg_230'
   )
   assert.ok(matches.length > 0, 'Expected low-harmony chatter to activate')
 })
@@ -102,7 +102,7 @@ test('harmony chatter fires when band.harmony is high', () => {
     e =>
       typeof e.condition === 'function' &&
       e.condition(state) &&
-      e.text.includes('locked in')
+      e.text === 'chatter:standard.msg_239'
   )
   assert.ok(matches.length > 0, 'Expected high-harmony chatter to activate')
 })
@@ -129,7 +129,7 @@ test('van chatter fires when condition is critical', () => {
     e =>
       typeof e.condition === 'function' &&
       e.condition(state) &&
-      e.text.toLowerCase().includes('van')
+      e.text === 'chatter:standard.msg_249'
   )
   assert.ok(
     matches.length > 0,
@@ -159,7 +159,7 @@ test('fame chatter fires when fameLevel >= 2', () => {
     e =>
       typeof e.condition === 'function' &&
       e.condition(state) &&
-      e.text.includes('recognize')
+      e.text === 'chatter:standard.msg_275'
   )
   assert.ok(matches.length > 0, 'Expected fame-level chatter to activate')
 })
@@ -170,7 +170,7 @@ test('fame chatter fires when fame is low', () => {
     e =>
       typeof e.condition === 'function' &&
       e.condition(state) &&
-      e.text.includes('nobodies')
+      e.text === 'chatter:standard.msg_272'
   )
   assert.ok(matches.length > 0, 'Expected low-fame chatter to activate')
 })
@@ -195,7 +195,7 @@ test('inventory chatter fires when strings are missing', () => {
     e =>
       typeof e.condition === 'function' &&
       e.condition(state) &&
-      e.text.includes('strings')
+      e.text === 'chatter:standard.msg_284'
   )
   assert.ok(matches.length > 0, 'Expected missing-strings chatter to activate')
 })
@@ -220,7 +220,7 @@ test('inventory chatter fires for golden pick', () => {
     e =>
       typeof e.condition === 'function' &&
       e.condition(state) &&
-      e.text.includes('golden pick')
+      e.text === 'chatter:standard.msg_290'
   )
   assert.ok(matches.length > 0, 'Expected golden-pick chatter to activate')
 })
@@ -273,7 +273,7 @@ test('luck chatter fires when luck is negative', () => {
     e =>
       typeof e.condition === 'function' &&
       e.condition(state) &&
-      e.text.includes('cursed')
+      e.text === 'chatter:standard.msg_312'
   )
   assert.ok(matches.length > 0, 'Expected bad-luck chatter to activate')
 })

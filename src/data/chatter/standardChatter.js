@@ -18,7 +18,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: "I'm starving. Fast food again?",
+    text: 'chatter:standard.msg_003',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -84,7 +84,7 @@ export const CHATTER_DB = [
       state.currentScene === 'OVERWORLD'
   },
   {
-    text: "If the promoter ghosts us, we're playing in the parking lot.",
+    text: 'chatter:standard.msg_011',
     weight: 1,
     category: 'travel',
     condition: state =>
@@ -486,7 +486,7 @@ export const CHATTER_DB = [
       state.currentScene === 'PRE_GIG_MINIGAME'
   },
   {
-    text: "Let's stick to the setlist this time, okay?",
+    text: 'chatter:standard.msg_060',
     weight: 2,
     condition: state =>
       state.currentScene === 'PREGIG' ||
@@ -780,7 +780,7 @@ export const CHATTER_DB = [
     condition: state => state.currentScene === 'POSTGIG'
   },
   {
-    text: "Rough set. Let's practice more.",
+    text: 'chatter:standard.msg_101',
     weight: 5,
     condition: state =>
       state.currentScene === 'POSTGIG' && state.lastGigStats?.misses > 10
@@ -969,7 +969,7 @@ export const CHATTER_DB = [
     condition: state => state.band.members.some(m => m.mood < 20)
   },
   {
-    text: "Don't talk to me right now.",
+    text: 'chatter:standard.msg_136',
     weight: 8,
     condition: state => state.band.members.some(m => m.mood < 25)
   },
@@ -1509,7 +1509,7 @@ export const CHATTER_DB = [
 
   // --- CONDITION: BAND HARMONY ---
   {
-    text: "Nobody is talking. That's either zen or war.",
+    text: 'chatter:standard.msg_230',
     weight: 8,
     condition: state => state.band.harmony < 40
   },
@@ -1519,7 +1519,7 @@ export const CHATTER_DB = [
     condition: state => state.band.harmony < 35
   },
   {
-    text: "I can feel the tension and it's not the strings.",
+    text: 'chatter:standard.msg_232',
     weight: 8,
     condition: state => state.band.harmony < 40,
     speaker: 'Matze'
@@ -1541,12 +1541,12 @@ export const CHATTER_DB = [
     speaker: 'Marius'
   },
   {
-    text: "If we can't agree on pizza toppings, how are we writing songs?",
+    text: 'chatter:standard.msg_236',
     weight: 8,
     condition: state => state.band.harmony < 40
   },
   {
-    text: "We're tight right now. Like, actually communicating.",
+    text: 'chatter:standard.msg_237',
     weight: 5,
     condition: state => state.band.harmony > 85
   },
@@ -1556,12 +1556,12 @@ export const CHATTER_DB = [
     condition: state => state.band.harmony > 85
   },
   {
-    text: "We're locked in. This is what bands dream about.",
+    text: 'chatter:standard.msg_239',
     weight: 5,
     condition: state => state.band.harmony > 90
   },
   {
-    text: "Nobody's annoyed. That's basically a miracle on tour.",
+    text: 'chatter:standard.msg_240',
     weight: 4,
     condition: state => state.band.harmony > 85,
     speaker: 'Lars'
@@ -1578,7 +1578,7 @@ export const CHATTER_DB = [
     speaker: 'Marius'
   },
   {
-    text: "We're vibing so hard even the sound guy noticed.",
+    text: 'chatter:standard.msg_243',
     weight: 4,
     condition: state => state.band.harmony > 85
   },
@@ -1590,7 +1590,7 @@ export const CHATTER_DB = [
     condition: state => state.player.van.fuel < 25
   },
   {
-    text: "We're running on fumes and denial.",
+    text: 'chatter:standard.msg_245',
     weight: 10,
     condition: state => state.player.van.fuel < 20
   },
@@ -1600,7 +1600,7 @@ export const CHATTER_DB = [
     condition: state => state.player.van.fuel < 25
   },
   {
-    text: 'Fuel gauge says "pray". Got it.',
+    text: 'chatter:standard.msg_247',
     weight: 10,
     condition: state => state.player.van.fuel < 15,
     speaker: 'Marius'
@@ -1612,7 +1612,7 @@ export const CHATTER_DB = [
     speaker: 'Lars'
   },
   {
-    text: "The van is making sounds that aren't music.",
+    text: 'chatter:standard.msg_249',
     weight: 10,
     condition: state => state.player.van.condition < 30
   },
@@ -1633,12 +1633,12 @@ export const CHATTER_DB = [
     condition: state => state.player.van.condition < 30
   },
   {
-    text: "If the van dies on the Autobahn, we're a roadside attraction.",
+    text: 'chatter:standard.msg_253',
     weight: 10,
     condition: state => state.player.van.condition < 20
   },
   {
-    text: "Van's running smooth. Did someone actually fix something?",
+    text: 'chatter:standard.msg_254',
     weight: 4,
     condition: state => state.player.van.condition > 90
   },
@@ -1667,13 +1667,13 @@ export const CHATTER_DB = [
     condition: state => state.player.day <= 2
   },
   {
-    text: "First few shows. Let's not embarrass ourselves.",
+    text: 'chatter:standard.msg_259',
     weight: 8,
     condition: state => state.player.day <= 3,
     speaker: 'Lars'
   },
   {
-    text: "We're still figuring out who snores the loudest.",
+    text: 'chatter:standard.msg_260',
     weight: 6,
     condition: state => state.player.day <= 3
   },
@@ -1683,7 +1683,7 @@ export const CHATTER_DB = [
     condition: state => state.player.day <= 4
   },
   {
-    text: "We're in the thick of it now. No turning back.",
+    text: 'chatter:standard.msg_262',
     weight: 5,
     condition: state => state.player.day >= 10 && state.player.day <= 20
   },
@@ -1693,13 +1693,13 @@ export const CHATTER_DB = [
     condition: state => state.player.day >= 12
   },
   {
-    text: "I've lost track of what day it is. That's a good sign. Or terrible.",
+    text: 'chatter:standard.msg_264',
     weight: 5,
     condition: state => state.player.day >= 15,
     speaker: 'Lars'
   },
   {
-    text: "We've been out long enough that home feels fictional.",
+    text: 'chatter:standard.msg_265',
     weight: 8,
     condition: state => state.player.day >= 25
   },
@@ -1715,12 +1715,12 @@ export const CHATTER_DB = [
     condition: state => state.player.day >= 28
   },
   {
-    text: 'First road trip together. This van still has that "new drama" smell.',
+    text: 'chatter:standard.msg_268',
     weight: 6,
     condition: state => state.player.totalTravels <= 2
   },
   {
-    text: "We've driven so many routes I could navigate blindfolded.",
+    text: 'chatter:standard.msg_269',
     weight: 4,
     condition: state => state.player.totalTravels >= 15
   },
@@ -1738,12 +1738,12 @@ export const CHATTER_DB = [
 
   // --- CONDITION: FAME MILESTONES ---
   {
-    text: "We're nobodies. But nobodies with a van and a dream.",
+    text: 'chatter:standard.msg_272',
     weight: 6,
     condition: state => (state.player.fame || 0) < 50
   },
   {
-    text: "One day they'll know our name. Today is not that day.",
+    text: 'chatter:standard.msg_273',
     weight: 6,
     condition: state => (state.player.fame || 0) < 50,
     speaker: 'Lars'
@@ -1754,7 +1754,7 @@ export const CHATTER_DB = [
     condition: state => (state.player.fame || 0) < 30
   },
   {
-    text: "People are starting to recognize us. That's new.",
+    text: 'chatter:standard.msg_275',
     weight: 5,
     condition: state => (state.player.fameLevel || 0) >= 2
   },
@@ -1775,7 +1775,7 @@ export const CHATTER_DB = [
     condition: state => (state.player.fameLevel || 0) >= 3
   },
   {
-    text: "We're not underground anymore. We're ground level?",
+    text: 'chatter:standard.msg_279',
     weight: 4,
     condition: state => (state.player.fameLevel || 0) >= 3,
     speaker: 'Lars'
@@ -1791,7 +1791,7 @@ export const CHATTER_DB = [
     condition: state => (state.player.fameLevel || 0) >= 4
   },
   {
-    text: "We're headlining now. Headlining. Let that sink in.",
+    text: 'chatter:standard.msg_282',
     weight: 2,
     condition: state => (state.player.fameLevel || 0) >= 5,
     speaker: 'Marius'
@@ -1804,7 +1804,7 @@ export const CHATTER_DB = [
 
   // --- CONDITION: INVENTORY AWARENESS ---
   {
-    text: "We're out of spare strings. This is a horror movie now.",
+    text: 'chatter:standard.msg_284',
     weight: 10,
     condition: state => state.band.inventory.strings === false,
     speaker: 'Matze'
@@ -1831,13 +1831,13 @@ export const CHATTER_DB = [
     speaker: 'Matze'
   },
   {
-    text: "If a head breaks, we're done. No drum parts. Zero.",
+    text: 'chatter:standard.msg_289',
     weight: 8,
     condition: state => state.band.inventory.drum_parts === false,
     speaker: 'Marius'
   },
   {
-    text: "The golden pick is in the case. We're invincible.",
+    text: 'chatter:standard.msg_290',
     weight: 3,
     condition: state => state.band.inventory.golden_pick === true
   },
@@ -1848,7 +1848,7 @@ export const CHATTER_DB = [
     speaker: 'Matze'
   },
   {
-    text: "We're fully stocked. Strings, cables, the works.",
+    text: 'chatter:standard.msg_292',
     weight: 2,
     condition: state =>
       state.band.inventory.strings === true &&
@@ -1869,7 +1869,7 @@ export const CHATTER_DB = [
     condition: state => state.band.inventory.shirts < 10
   },
   {
-    text: "We've got zero hoodies left. That's cold. Literally.",
+    text: 'chatter:standard.msg_295',
     weight: 6,
     condition: state => state.band.inventory.hoodies <= 0
   },
@@ -1892,7 +1892,7 @@ export const CHATTER_DB = [
     condition: state => state.gigModifiers?.promo === true
   },
   {
-    text: "Posters are up, socials are posted. We're trying.",
+    text: 'chatter:standard.msg_299',
     weight: 5,
     condition: state => state.gigModifiers?.promo === true,
     speaker: 'Lars'
@@ -1903,7 +1903,7 @@ export const CHATTER_DB = [
     condition: state => state.gigModifiers?.soundcheck === true
   },
   {
-    text: "A real soundcheck? We're basically royalty.",
+    text: 'chatter:standard.msg_301',
     weight: 5,
     condition: state => state.gigModifiers?.soundcheck === true,
     speaker: 'Marius'
@@ -1914,7 +1914,7 @@ export const CHATTER_DB = [
     condition: state => state.gigModifiers?.guestlist === true
   },
   {
-    text: "Merch table is set up and looking sharp. Let's sell some patches.",
+    text: 'chatter:standard.msg_303',
     weight: 4,
     condition: state => state.gigModifiers?.merch === true
   },
@@ -1942,7 +1942,7 @@ export const CHATTER_DB = [
     condition: state => (state.band.luck || 0) > 3
   },
   {
-    text: "Lucky streak. Don't jinx it. DON'T JINX IT.",
+    text: 'chatter:standard.msg_307',
     weight: 5,
     condition: state => (state.band.luck || 0) > 3,
     speaker: 'Lars'
@@ -1969,7 +1969,7 @@ export const CHATTER_DB = [
     condition: state => (state.band.luck || 0) < -2
   },
   {
-    text: "We're cursed. That's the only explanation.",
+    text: 'chatter:standard.msg_312',
     weight: 10,
     condition: state => (state.band.luck || 0) < -4,
     speaker: 'Lars'
