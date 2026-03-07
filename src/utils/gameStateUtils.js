@@ -96,8 +96,9 @@ export const applyEventDelta = (state, delta) => {
     // Player Stats
     if (delta.player.stats) {
       nextPlayer.stats = { ...nextPlayer.stats }
-      Object.keys(delta.player.stats).forEach(key => {
-        if (isForbiddenKey(key)) return
+      for (const key in delta.player.stats) {
+        if (!Object.hasOwn(delta.player.stats, key) || isForbiddenKey(key))
+          continue
         if (typeof delta.player.stats[key] === 'number') {
           nextPlayer.stats[key] = Math.max(
             0,
@@ -109,7 +110,7 @@ export const applyEventDelta = (state, delta) => {
         ) {
           nextPlayer.stats[key] = delta.player.stats[key]
         }
-      })
+      }
     }
 
     if (delta.player.van) {
@@ -232,13 +233,15 @@ export const applyEventDelta = (state, delta) => {
 
     if (delta.band.inventory) {
       nextBand.inventory = { ...nextBand.inventory }
-      Object.entries(delta.band.inventory).forEach(([item, val]) => {
-        if (isForbiddenKey(item)) return
+      for (const item in delta.band.inventory) {
+        if (!Object.hasOwn(delta.band.inventory, item) || isForbiddenKey(item))
+          continue
+        const val = delta.band.inventory[item]
         nextBand.inventory[item] = applyInventoryItemDelta(
           nextBand.inventory[item],
           val
         )
-      })
+      }
     }
     if (typeof delta.band.luck === 'number') {
       nextBand.luck = Math.max(0, (nextBand.luck || 0) + delta.band.luck)
@@ -260,8 +263,9 @@ export const applyEventDelta = (state, delta) => {
 
   if (delta.social) {
     const nextSocial = { ...nextState.social }
-    Object.entries(delta.social).forEach(([key, value]) => {
-      if (isForbiddenKey(key)) return
+    for (const key in delta.social) {
+      if (!Object.hasOwn(delta.social, key) || isForbiddenKey(key)) continue
+      const value = delta.social[key]
 
       if (key === 'influencers') {
         if (
@@ -270,10 +274,15 @@ export const applyEventDelta = (state, delta) => {
           !Array.isArray(value)
         ) {
           const safeInfluencersUpdate = {}
-          Object.entries(value).forEach(([influencerId, influencerData]) => {
-            if (isForbiddenKey(influencerId)) return
+          for (const influencerId in value) {
+            if (
+              !Object.hasOwn(value, influencerId) ||
+              isForbiddenKey(influencerId)
+            )
+              continue
+            const influencerData = value[influencerId]
             safeInfluencersUpdate[influencerId] = influencerData
-          })
+          }
           nextSocial[key] = {
             ...(nextSocial[key] || {}),
             ...safeInfluencersUpdate
@@ -303,7 +312,7 @@ export const applyEventDelta = (state, delta) => {
           typeof nextSocial[key] === 'number' ? nextSocial[key] : 0
         nextSocial[key] = Math.max(0, currentValue + value)
       }
-    })
+    }
     nextState.social = nextSocial
   }
 
