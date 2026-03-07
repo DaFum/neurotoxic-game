@@ -11,7 +11,8 @@ export {
   ensureAudioContext,
   getAudioContextTimeSec,
   getToneStartTimeSec,
-  disposeAudio
+  disposeAudio,
+  safeDispose
 } from './audio/setup.js'
 
 export { hasAudioAsset, loadAudioBuffer } from './audio/assets.js'
