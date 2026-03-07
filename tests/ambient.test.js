@@ -22,16 +22,16 @@ const capturedReqIds = []
 const mockStopAudio = mock.fn(() => {
   mockAudioState.playRequestId++
   capturedReqIds.push(mockAudioState.playRequestId)
-  return mockAudioState.playRequestId
 })
 mock.module('../src/utils/audio/playback.js', { namedExports: { stopAudio: mockStopAudio } })
 
 // Mock assets
 let loadAudioDeferred = null
-const mockLoadAudioBuffer = mock.fn(async () => {
+const defaultLoadAudioBufferImpl = async () => {
   if (loadAudioDeferred) return loadAudioDeferred.promise
   return { duration: 60 }
-})
+}
+const mockLoadAudioBuffer = mock.fn(defaultLoadAudioBufferImpl)
 
 // Define arrays that we will empty out
 const mockMidiUrlMap = { 'test1.mid': 'url1', 'test2.mid': 'url2' }
@@ -89,10 +89,7 @@ describe('ambient.js', () => {
     loadAudioDeferred = null
     mockStopAudio.mock.resetCalls()
     mockLoadAudioBuffer.mock.resetCalls()
-    mockLoadAudioBuffer.mock.mockImplementation(async () => {
-      if (loadAudioDeferred) return loadAudioDeferred.promise
-      return { duration: 60 }
-    })
+    mockLoadAudioBuffer.mock.mockImplementation(defaultLoadAudioBufferImpl)
     mockCreateAndConnect.mock.resetCalls()
     mockCreateAndConnect.mock.mockImplementation(() => mockSource)
     mockPlayMidiFileInternal.mock.resetCalls()
@@ -282,7 +279,7 @@ describe('ambient.js', () => {
 
     test('bails out if playRequestId changes during async ensureAudioContext', async () => {
       let resolveEnsure;
-      ensureAudioDeferred = { promise: new Promise(r => resolveEnsure = r) }
+      ensureAudioDeferred = { promise: new Promise(r => { resolveEnsure = r }) }
       const p = playRandomAmbientOgg()
 
       await new Promise(r => setTimeout(r, 0))
@@ -297,7 +294,7 @@ describe('ambient.js', () => {
 
     test('bails out if playRequestId changes during async loadAudioBuffer', async () => {
       let resolveLoad;
-      loadAudioDeferred = { promise: new Promise(r => resolveLoad = r) }
+      loadAudioDeferred = { promise: new Promise(r => { resolveLoad = r }) }
       const p = playRandomAmbientOgg()
 
       await new Promise(r => setTimeout(r, 0))
