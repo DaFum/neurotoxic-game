@@ -1,5 +1,6 @@
 import { logger } from './logger.js'
 import { handleError } from './errorHandler.js'
+import { GAME_PHASES } from '../context/gameConstants.js'
 
 /**
  * Shared logic for handling arrival at a map node.
@@ -57,7 +58,7 @@ export const handleNodeArrival = ({
     case 'GIG': {
       if ((band?.harmony ?? 0) <= 0) {
         addToast("Band's harmony too low to perform!", 'warning')
-        if (changeScene) changeScene('OVERWORLD')
+        if (changeScene) changeScene(GAME_PHASES.OVERWORLD)
         return
       }
       logger.info('ArrivalLogic', 'Starting Gig at destination', {

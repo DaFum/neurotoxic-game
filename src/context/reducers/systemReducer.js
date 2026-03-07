@@ -16,18 +16,18 @@ import {
   DEFAULT_BAND_STATE,
   DEFAULT_SOCIAL_STATE
 } from '../initialState.js'
-import { DEFAULT_MINIGAME_STATE } from '../gameConstants.js'
+import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from '../gameConstants.js'
 import { handleFailQuests } from './questReducer.js'
 
 export const ALLOWED_SCENES = new Set([
-  'OVERWORLD',
-  'PREGIG',
-  'GIG',
-  'PRACTICE',
-  'POSTGIG',
-  'TRAVEL_MINIGAME',
-  'PRE_GIG_MINIGAME',
-  'GAMEOVER'
+  GAME_PHASES.OVERWORLD,
+  GAME_PHASES.PRE_GIG,
+  GAME_PHASES.GIG,
+  GAME_PHASES.PRACTICE,
+  GAME_PHASES.POST_GIG,
+  GAME_PHASES.TRAVEL_MINIGAME,
+  GAME_PHASES.PRE_GIG_MINIGAME,
+  GAME_PHASES.GAMEOVER
 ])
 
 /**
@@ -157,7 +157,7 @@ export const handleLoadGame = (state, payload) => {
       ...DEFAULT_GIG_MODIFIERS,
       ...(loadedState.gigModifiers || {})
     },
-    currentScene: 'OVERWORLD',
+    currentScene: GAME_PHASES.OVERWORLD,
     currentGig: loadedState.currentGig || null,
     lastGigStats: loadedState.lastGigStats || null,
     settings: {

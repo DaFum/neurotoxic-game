@@ -1,3 +1,5 @@
+import { GAME_PHASES } from '../../context/gameConstants.js'
+
 export const CHATTER_DB = [
   // --- GENERAL TRAVEL / OVERWORLD ---
   {
@@ -5,8 +7,8 @@ export const CHATTER_DB = [
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_002',
@@ -14,32 +16,32 @@ export const CHATTER_DB = [
     category: 'travel',
     speaker: 'Marius',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_003',
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_004',
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_005',
     weight: 0.5,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_006',
@@ -47,32 +49,32 @@ export const CHATTER_DB = [
     category: 'travel',
     speaker: 'Lars',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_007',
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_008',
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_009',
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_010',
@@ -80,32 +82,32 @@ export const CHATTER_DB = [
     category: 'travel',
     speaker: 'Marius',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_011',
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_012',
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_013',
     weight: 0.5,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_014',
@@ -113,144 +115,144 @@ export const CHATTER_DB = [
     category: 'travel',
     speaker: 'Lars',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_015',
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_016',
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_017',
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_018',
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_019',
     weight: 0.8,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_020',
     weight: 0.5,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_021',
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_022',
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_023',
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_024',
     weight: 0.8,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_025',
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_026',
     weight: 0.5,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_027',
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_028',
     weight: 0.8,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_029',
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_030',
     weight: 0.7,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_031',
     weight: 0.6,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_032',
@@ -258,8 +260,8 @@ export const CHATTER_DB = [
     category: 'travel',
     speaker: 'Matze',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_033',
@@ -267,8 +269,8 @@ export const CHATTER_DB = [
     category: 'travel',
     speaker: 'Marius',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_034',
@@ -276,8 +278,8 @@ export const CHATTER_DB = [
     category: 'travel',
     speaker: 'Lars',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_035',
@@ -285,24 +287,24 @@ export const CHATTER_DB = [
     category: 'travel',
     speaker: 'Marius',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_036',
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_037',
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_038',
@@ -310,24 +312,24 @@ export const CHATTER_DB = [
     category: 'travel',
     speaker: 'Marius',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_039',
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_040',
     weight: 0.8,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_041',
@@ -335,40 +337,40 @@ export const CHATTER_DB = [
     category: 'travel',
     speaker: 'Lars',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_042',
     weight: 0.8,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_043',
     weight: 0.7,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_044',
     weight: 0.6,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_045',
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_046',
@@ -376,24 +378,24 @@ export const CHATTER_DB = [
     category: 'travel',
     speaker: 'Lars',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_047',
     weight: 0.6,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_048',
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_049',
@@ -401,16 +403,16 @@ export const CHATTER_DB = [
     category: 'travel',
     speaker: 'Matze',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_050',
     weight: 0.6,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_051',
@@ -418,32 +420,32 @@ export const CHATTER_DB = [
     category: 'travel',
     speaker: 'Marius',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_052',
     weight: 0.8,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_053',
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_054',
     weight: 1,
     category: 'travel',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
   {
     text: 'chatter:standard.msg_055',
@@ -451,8 +453,8 @@ export const CHATTER_DB = [
     category: 'travel',
     speaker: 'Lars',
     condition: state =>
-      state.currentScene === 'TRAVEL_MINIGAME' ||
-      state.currentScene === 'OVERWORLD'
+      state.currentScene === GAME_PHASES.TRAVEL_MINIGAME ||
+      state.currentScene === GAME_PHASES.OVERWORLD
   },
 
   // --- PRE-GIG (Preparation) ---
@@ -460,300 +462,300 @@ export const CHATTER_DB = [
     text: 'chatter:standard.msg_056',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_057',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_058',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME',
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME,
     speaker: 'Matze'
   },
   {
     text: 'chatter:standard.msg_059',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_060',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME',
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_061',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_062',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_063',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME',
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME,
     speaker: 'Matze'
   },
   {
     text: 'chatter:standard.msg_064',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_065',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME',
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_066',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_067',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_068',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_069',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_070',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_071',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_072',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_073',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_074',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_075',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_076',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_077',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_078',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_079',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME',
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME,
     speaker: 'Matze'
   },
   {
     text: 'chatter:standard.msg_080',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME',
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_081',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME',
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_082',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_083',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_084',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_085',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_086',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME',
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME,
     speaker: 'Lars'
   },
   {
     text: 'chatter:standard.msg_087',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME',
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_088',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_089',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME',
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME,
     speaker: 'Matze'
   },
   {
     text: 'chatter:standard.msg_090',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_091',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_092',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME',
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_093',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME',
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME,
     speaker: 'Matze'
   },
   {
     text: 'chatter:standard.msg_094',
     weight: 2,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_095',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_096',
     weight: 1,
     condition: state =>
-      state.currentScene === 'PREGIG' ||
-      state.currentScene === 'PRE_GIG_MINIGAME'
+      state.currentScene === GAME_PHASES.PRE_GIG ||
+      state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
 
   // --- POST-GIG (Reaction) ---
@@ -761,199 +763,199 @@ export const CHATTER_DB = [
     text: 'chatter:standard.msg_097',
     weight: 5,
     condition: state =>
-      state.currentScene === 'POSTGIG' && state.lastGigStats?.score > 10000
+      state.currentScene === GAME_PHASES.POST_GIG && state.lastGigStats?.score > 10000
   },
   {
     text: 'chatter:standard.msg_098',
     weight: 2,
-    condition: state => state.currentScene === 'POSTGIG',
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_099',
     weight: 2,
-    condition: state => state.currentScene === 'POSTGIG'
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG
   },
   {
     text: 'chatter:standard.msg_100',
     weight: 2,
-    condition: state => state.currentScene === 'POSTGIG'
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG
   },
   {
     text: 'chatter:standard.msg_101',
     weight: 5,
     condition: state =>
-      state.currentScene === 'POSTGIG' && state.lastGigStats?.misses > 10
+      state.currentScene === GAME_PHASES.POST_GIG && state.lastGigStats?.misses > 10
   },
   {
     text: 'chatter:standard.msg_102',
     weight: 3,
-    condition: state => state.currentScene === 'POSTGIG'
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG
   },
   {
     text: 'chatter:standard.msg_103',
     weight: 2,
-    condition: state => state.currentScene === 'POSTGIG',
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_104',
     weight: 2,
-    condition: state => state.currentScene === 'POSTGIG'
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG
   },
   {
     text: 'chatter:standard.msg_105',
     weight: 2,
-    condition: state => state.currentScene === 'POSTGIG'
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG
   },
   {
     text: 'chatter:standard.msg_106',
     weight: 4,
-    condition: state => state.currentScene === 'POSTGIG'
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG
   },
   {
     text: 'chatter:standard.msg_107',
     weight: 3,
-    condition: state => state.currentScene === 'POSTGIG'
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG
   },
   {
     text: 'chatter:standard.msg_108',
     weight: 2,
-    condition: state => state.currentScene === 'POSTGIG'
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG
   },
   {
     text: 'chatter:standard.msg_109',
     weight: 3,
-    condition: state => state.currentScene === 'POSTGIG'
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG
   },
   {
     text: 'chatter:standard.msg_110',
     weight: 2,
-    condition: state => state.currentScene === 'POSTGIG'
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG
   },
   {
     text: 'chatter:standard.msg_111',
     weight: 2,
-    condition: state => state.currentScene === 'POSTGIG'
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG
   },
   {
     text: 'chatter:standard.msg_112',
     weight: 3,
-    condition: state => state.currentScene === 'POSTGIG'
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG
   },
   {
     text: 'chatter:standard.msg_113',
     weight: 2,
-    condition: state => state.currentScene === 'POSTGIG'
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG
   },
   {
     text: 'chatter:standard.msg_114',
     weight: 4,
-    condition: state => state.currentScene === 'POSTGIG'
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG
   },
   {
     text: 'chatter:standard.msg_115',
     weight: 2,
-    condition: state => state.currentScene === 'POSTGIG'
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG
   },
   {
     text: 'chatter:standard.msg_116',
     weight: 3,
-    condition: state => state.currentScene === 'POSTGIG',
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_117',
     weight: 2,
-    condition: state => state.currentScene === 'POSTGIG',
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG,
     speaker: 'Matze'
   },
   {
     text: 'chatter:standard.msg_118',
     weight: 3,
-    condition: state => state.currentScene === 'POSTGIG',
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG,
     speaker: 'Lars'
   },
   {
     text: 'chatter:standard.msg_119',
     weight: 5,
     condition: state =>
-      state.currentScene === 'POSTGIG' &&
+      state.currentScene === GAME_PHASES.POST_GIG &&
       (state.lastGigStats?.score || 0) > 9000
   },
   {
     text: 'chatter:standard.msg_120',
     weight: 5,
     condition: state =>
-      state.currentScene === 'POSTGIG' && (state.lastGigStats?.misses || 0) > 8
+      state.currentScene === GAME_PHASES.POST_GIG && (state.lastGigStats?.misses || 0) > 8
   },
   {
     text: 'chatter:standard.msg_121',
     weight: 2,
-    condition: state => state.currentScene === 'POSTGIG'
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG
   },
   {
     text: 'chatter:standard.msg_122',
     weight: 2,
-    condition: state => state.currentScene === 'POSTGIG',
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG,
     speaker: 'Lars'
   },
   {
     text: 'chatter:standard.msg_123',
     weight: 3,
-    condition: state => state.currentScene === 'POSTGIG'
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG
   },
   {
     text: 'chatter:standard.msg_124',
     weight: 2,
-    condition: state => state.currentScene === 'POSTGIG'
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG
   },
   {
     text: 'chatter:standard.msg_125',
     weight: 4,
-    condition: state => state.currentScene === 'POSTGIG'
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG
   },
   {
     text: 'chatter:standard.msg_126',
     weight: 2,
-    condition: state => state.currentScene === 'POSTGIG',
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG,
     speaker: 'Matze'
   },
   {
     text: 'chatter:standard.msg_127',
     weight: 2,
-    condition: state => state.currentScene === 'POSTGIG'
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG
   },
   {
     text: 'chatter:standard.msg_128',
     weight: 3,
-    condition: state => state.currentScene === 'POSTGIG'
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG
   },
   {
     text: 'chatter:standard.msg_129',
     weight: 3,
-    condition: state => state.currentScene === 'POSTGIG',
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_130',
     weight: 3,
-    condition: state => state.currentScene === 'POSTGIG'
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG
   },
   {
     text: 'chatter:standard.msg_131',
     weight: 2,
-    condition: state => state.currentScene === 'POSTGIG'
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG
   },
   {
     text: 'chatter:standard.msg_132',
     weight: 2,
-    condition: state => state.currentScene === 'POSTGIG'
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG
   },
   {
     text: 'chatter:standard.msg_133',
     weight: 2,
-    condition: state => state.currentScene === 'POSTGIG',
+    condition: state => state.currentScene === GAME_PHASES.POST_GIG,
     speaker: 'Lars'
   },
 
@@ -1397,14 +1399,14 @@ export const CHATTER_DB = [
     text: 'chatter:standard.msg_215',
     weight: 5,
     condition: state =>
-      state.currentScene === 'GIG' &&
+      state.currentScene === GAME_PHASES.GIG &&
       state.band.members.some(m => m.stamina > 80)
   },
   {
     text: 'chatter:standard.msg_216',
     weight: 5,
     condition: state =>
-      state.currentScene === 'GIG' &&
+      state.currentScene === GAME_PHASES.GIG &&
       state.band.members.some(m => m.stamina < 30),
     speaker: 'Marius'
   },
@@ -1412,14 +1414,14 @@ export const CHATTER_DB = [
     text: 'chatter:standard.msg_217',
     weight: 5,
     condition: state =>
-      state.currentScene === 'GIG' &&
+      state.currentScene === GAME_PHASES.GIG &&
       state.band.members.some(m => m.stamina > 80)
   },
   {
     text: 'chatter:standard.msg_218',
     weight: 5,
     condition: state =>
-      state.currentScene === 'GIG' &&
+      state.currentScene === GAME_PHASES.GIG &&
       state.band.members.some(m => m.stamina < 30),
     speaker: 'Marius'
   },
@@ -1427,28 +1429,28 @@ export const CHATTER_DB = [
     text: 'chatter:standard.msg_219',
     weight: 5,
     condition: state =>
-      state.currentScene === 'GIG' &&
+      state.currentScene === GAME_PHASES.GIG &&
       state.band.members.some(m => m.stamina > 80)
   },
   {
     text: 'chatter:standard.msg_220',
     weight: 5,
     condition: state =>
-      state.currentScene === 'GIG' &&
+      state.currentScene === GAME_PHASES.GIG &&
       state.band.members.some(m => m.stamina > 80)
   },
   {
     text: 'chatter:standard.msg_221',
     weight: 5,
     condition: state =>
-      state.currentScene === 'GIG' &&
+      state.currentScene === GAME_PHASES.GIG &&
       state.band.members.some(m => m.stamina > 75)
   },
   {
     text: 'chatter:standard.msg_222',
     weight: 5,
     condition: state =>
-      state.currentScene === 'GIG' &&
+      state.currentScene === GAME_PHASES.GIG &&
       state.band.members.some(m => m.stamina < 35),
     speaker: 'Matze'
   },
@@ -1456,7 +1458,7 @@ export const CHATTER_DB = [
     text: 'chatter:standard.msg_223',
     weight: 5,
     condition: state =>
-      state.currentScene === 'GIG' &&
+      state.currentScene === GAME_PHASES.GIG &&
       state.band.members.some(m => m.stamina < 30),
     speaker: 'Marius'
   },
@@ -1464,7 +1466,7 @@ export const CHATTER_DB = [
     text: 'chatter:standard.msg_224',
     weight: 4,
     condition: state =>
-      state.currentScene === 'GIG' &&
+      state.currentScene === GAME_PHASES.GIG &&
       state.band.members.some(m => m.stamina < 35),
     speaker: 'Lars'
   },
@@ -1472,7 +1474,7 @@ export const CHATTER_DB = [
     text: 'chatter:standard.msg_225',
     weight: 5,
     condition: state =>
-      state.currentScene === 'GIG' &&
+      state.currentScene === GAME_PHASES.GIG &&
       state.band.members.some(m => m.stamina > 80),
     speaker: 'Marius'
   },
@@ -1480,14 +1482,14 @@ export const CHATTER_DB = [
     text: 'chatter:standard.msg_226',
     weight: 5,
     condition: state =>
-      state.currentScene === 'GIG' &&
+      state.currentScene === GAME_PHASES.GIG &&
       state.band.members.some(m => m.stamina > 75)
   },
   {
     text: 'chatter:standard.msg_227',
     weight: 5,
     condition: state =>
-      state.currentScene === 'GIG' &&
+      state.currentScene === GAME_PHASES.GIG &&
       state.band.members.some(m => m.stamina < 30),
     speaker: 'Matze'
   },
@@ -1495,7 +1497,7 @@ export const CHATTER_DB = [
     text: 'chatter:standard.msg_228',
     weight: 4,
     condition: state =>
-      state.currentScene === 'GIG' &&
+      state.currentScene === GAME_PHASES.GIG &&
       state.band.members.some(m => m.stamina < 35),
     speaker: 'Lars'
   },
@@ -1503,7 +1505,7 @@ export const CHATTER_DB = [
     text: 'chatter:standard.msg_229',
     weight: 5,
     condition: state =>
-      state.currentScene === 'GIG' &&
+      state.currentScene === GAME_PHASES.GIG &&
       state.band.members.some(m => m.stamina > 80)
   },
 
@@ -1985,67 +1987,67 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_314',
     weight: 5,
-    condition: state => state.currentScene === 'TRAVEL_MINIGAME',
+    condition: state => state.currentScene === GAME_PHASES.TRAVEL_MINIGAME,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_315',
     weight: 5,
-    condition: state => state.currentScene === 'TRAVEL_MINIGAME'
+    condition: state => state.currentScene === GAME_PHASES.TRAVEL_MINIGAME
   },
   {
     text: 'chatter:standard.msg_316',
     weight: 3,
-    condition: state => state.currentScene === 'TRAVEL_MINIGAME'
+    condition: state => state.currentScene === GAME_PHASES.TRAVEL_MINIGAME
   },
   {
     text: 'chatter:standard.msg_317',
     weight: 3,
-    condition: state => state.currentScene === 'TRAVEL_MINIGAME',
+    condition: state => state.currentScene === GAME_PHASES.TRAVEL_MINIGAME,
     speaker: 'Lars'
   },
   {
     text: 'chatter:standard.msg_318',
     weight: 4,
-    condition: state => state.currentScene === 'TRAVEL_MINIGAME'
+    condition: state => state.currentScene === GAME_PHASES.TRAVEL_MINIGAME
   },
 
   // --- MINIGAME: ROADIE ---
   {
     text: 'chatter:standard.msg_319',
     weight: 5,
-    condition: state => state.currentScene === 'PRE_GIG_MINIGAME'
+    condition: state => state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_320',
     weight: 3,
-    condition: state => state.currentScene === 'PRE_GIG_MINIGAME',
+    condition: state => state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME,
     speaker: 'Matze'
   },
   {
     text: 'chatter:standard.msg_321',
     weight: 5,
-    condition: state => state.currentScene === 'PRE_GIG_MINIGAME',
+    condition: state => state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME,
     speaker: 'Marius'
   },
   {
     text: 'chatter:standard.msg_322',
     weight: 4,
-    condition: state => state.currentScene === 'PRE_GIG_MINIGAME'
+    condition: state => state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME
   },
   {
     text: 'chatter:standard.msg_323',
     weight: 3,
-    condition: state => state.currentScene === 'PRE_GIG_MINIGAME',
+    condition: state => state.currentScene === GAME_PHASES.PRE_GIG_MINIGAME,
     speaker: 'Lars'
   }
 ]
 
 export const ALLOWED_DEFAULT_SCENES = [
-  'MENU',
-  'OVERWORLD',
-  'PREGIG',
-  'POSTGIG',
-  'TRAVEL_MINIGAME',
-  'PRE_GIG_MINIGAME'
+  GAME_PHASES.MENU,
+  GAME_PHASES.OVERWORLD,
+  GAME_PHASES.PRE_GIG,
+  GAME_PHASES.POST_GIG,
+  GAME_PHASES.TRAVEL_MINIGAME,
+  GAME_PHASES.PRE_GIG_MINIGAME
 ]

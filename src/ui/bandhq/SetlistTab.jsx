@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { useGameState } from '../../context/GameState'
+import { GAME_PHASES } from '../../context/gameConstants'
 import { ActionButton } from '../shared'
 import { SONGS_DB } from '../../data/songs'
 
@@ -63,7 +64,7 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
               }),
               isPractice: true
             })
-            changeScene('PRACTICE')
+            changeScene(GAME_PHASES.PRACTICE)
           }}
           className='px-4 py-2 text-sm'
         >

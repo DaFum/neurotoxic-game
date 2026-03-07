@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
+import { GAME_PHASES } from '../context/gameConstants'
 import { GlitchButton } from '../ui/GlitchButton'
 
 /**
@@ -11,7 +12,7 @@ export const Credits = () => {
   const { t } = useTranslation()
   const { changeScene } = useGameState()
 
-  const handleReturn = useCallback(() => changeScene('MENU'), [changeScene])
+  const handleReturn = useCallback(() => changeScene(GAME_PHASES.MENU), [changeScene])
 
   const credits = [
     { role: 'VOCAL CODE VOMIT', name: 'Jules "Agent of Segfaults" Agent' },

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, cleanup, fireEvent } from '@testing-library/react'
+import { GAME_PHASES } from '../src/context/gameConstants'
 
 import { SONGS_DB } from '../src/data/songs'
 
@@ -156,7 +157,7 @@ describe('SetlistTab', () => {
     expect(gigData.isPractice).toBe(true)
 
     expect(mockChangeScene.mock.calls.length).toBe(1)
-    expect(mockChangeScene.mock.calls[0][0]).toBe('PRACTICE')
+    expect(mockChangeScene.mock.calls[0][0]).toBe(GAME_PHASES.PRACTICE)
   })
 
   it('shows warning when starting practice with empty setlist', () => {

@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
+import { GAME_PHASES } from '../context/gameConstants'
 import introVideo from '../assets/Neurotoxic_start.webm'
 import { GlitchButton } from '../ui/GlitchButton'
 import { logger } from '../utils/logger'
@@ -15,7 +16,7 @@ export const IntroVideo = () => {
   const [autoplayBlocked, setAutoplayBlocked] = useState(false)
 
   const handleEnd = useCallback(() => {
-    changeScene('MENU')
+    changeScene(GAME_PHASES.MENU)
   }, [changeScene])
 
   const handleManualPlay = () => {

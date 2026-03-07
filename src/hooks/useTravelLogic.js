@@ -22,6 +22,7 @@ import { logger } from '../utils/logger.js'
 import { handleError, StateError } from '../utils/errorHandler.js'
 import { calcBaseBreakdownChance } from '../utils/upgradeUtils.js'
 import i18n from '../i18n.js'
+import { GAME_PHASES } from '../context/gameConstants.js'
 import { translateLocation } from '../utils/locationI18n.js'
 import { normalizeVenueId } from '../utils/mapUtils.js'
 import { ALL_VENUES } from '../data/venues.js'
@@ -624,7 +625,7 @@ export const useTravelLogic = ({
           'GAME OVER: Stranded! Cannot travel and cannot afford fuel.',
           'error'
         )
-        timeoutRef.current = setTimeout(() => changeScene('GAMEOVER'), 3000)
+        timeoutRef.current = setTimeout(() => changeScene(GAME_PHASES.GAMEOVER), 3000)
       }
     } else {
       if (timeoutRef.current) {

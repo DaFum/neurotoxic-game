@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { PostGig } from '../src/scenes/PostGig'
 import { useGameState } from '../src/context/GameState'
+import { GAME_PHASES } from '../src/context/gameConstants'
 import * as economyEngine from '../src/utils/economyEngine'
 import * as socialEngine from '../src/utils/socialEngine'
 
@@ -175,7 +176,7 @@ describe('PostGig Leaderboard Submission', () => {
 
     // Verify autosave and scene change order
     await waitFor(() =>
-      expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
+      expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
     )
     expect(mockSaveGame).toHaveBeenCalled()
     expect(mockSaveGame.mock.invocationCallOrder[0]).toBeLessThan(
@@ -312,7 +313,7 @@ describe('PostGig Leaderboard Submission', () => {
 
     expect(mockFetch).not.toHaveBeenCalled()
     await waitFor(() =>
-      expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
+      expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
     )
     expect(mockSaveGame).toHaveBeenCalled()
     expect(mockSaveGame.mock.invocationCallOrder[0]).toBeLessThan(

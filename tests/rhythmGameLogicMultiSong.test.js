@@ -1,5 +1,6 @@
 import { test, describe, beforeEach, afterEach, mock } from 'node:test'
 import assert from 'node:assert/strict'
+import { GAME_PHASES } from '../src/context/gameConstants.js'
 import { renderHook, act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
 import {
@@ -424,7 +425,7 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     )
     assert.strictEqual(
       mockChangeScene.mock.calls[0].arguments[0],
-      'POSTGIG',
+      GAME_PHASES.POST_GIG,
       'Should transition to POSTGIG'
     )
   })

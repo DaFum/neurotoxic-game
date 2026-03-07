@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
+import { GAME_PHASES } from '../context/gameConstants'
 import { GlitchButton } from '../ui/GlitchButton'
 import { AnimatedDivider, AnimatedSubtitle } from '../ui/shared'
 import { VoidSkullIcon } from '../ui/shared/Icons'
@@ -16,7 +17,7 @@ export const GameOver = () => {
   useEffect(() => {
     if (!player || player.score === undefined) {
       // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      changeScene('MENU')
+      changeScene(GAME_PHASES.MENU)
     }
   }, [player, changeScene])
 
@@ -24,13 +25,13 @@ export const GameOver = () => {
     if (loadGame()) {
       // Already handled by loadGame logic
     } else {
-      changeScene('MENU')
+      changeScene(GAME_PHASES.MENU)
     }
   }
 
   const handleReturnToMenu = () => {
     resetState()
-    changeScene('MENU')
+    changeScene(GAME_PHASES.MENU)
   }
 
   const statRows = [

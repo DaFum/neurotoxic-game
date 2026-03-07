@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { useGameState } from '../context/GameState'
+import { GAME_PHASES } from '../context/gameConstants'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 import { secureRandom } from '../utils/crypto'
 import {
@@ -543,11 +544,11 @@ export const PostGig = () => {
 
     if (shouldTriggerBankruptcy(newMoney, financials.net)) {
       addToast('GAME OVER: BANKRUPT! The tour is over.', 'error')
-      changeScene('GAMEOVER')
+      changeScene(GAME_PHASES.GAMEOVER)
     } else {
       window.setTimeout(() => {
         saveGame(false)
-        changeScene('OVERWORLD')
+        changeScene(GAME_PHASES.OVERWORLD)
       }, 0)
     }
   }, [

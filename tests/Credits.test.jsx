@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest'
 import { render, fireEvent } from '@testing-library/react'
 import { GameStateProvider, useGameState } from '../src/context/GameState.jsx'
 import { Credits } from '../src/scenes/Credits.jsx'
+import { GAME_PHASES } from '../src/context/gameConstants'
 
 // A small harness to capture global actions if needed, though Credits just fires changeScene
 const CreditsTestHarness = () => {
@@ -38,6 +39,6 @@ describe('Credits Scene', () => {
     fireEvent.click(returnBtn)
 
     // Check if the scene updated to MENU
-    expect(getByTestId('scene').textContent).toBe('MENU')
+    expect(getByTestId('scene').textContent).toBe(GAME_PHASES.MENU)
   })
 })

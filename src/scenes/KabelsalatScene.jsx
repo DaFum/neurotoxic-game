@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState.jsx'
+import { GAME_PHASES } from '../context/gameConstants.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 import { loadTexture } from '../components/stage/utils.js'
 import { logger } from '../utils/logger.js'
@@ -212,7 +213,7 @@ export const KabelsalatScene = () => {
       transitionedRef.current = true
       const timer = setTimeout(() => {
         completeKabelsalatMinigame({ isPoweredOn: true, timeLeft })
-        changeScene('GIG')
+        changeScene(GAME_PHASES.GIG)
       }, 2500)
       return () => clearTimeout(timer)
     }
@@ -223,7 +224,7 @@ export const KabelsalatScene = () => {
       transitionedRef.current = true
       const timer = setTimeout(() => {
         completeKabelsalatMinigame({ isPoweredOn: false, timeLeft: 0 })
-        changeScene('GIG')
+        changeScene(GAME_PHASES.GIG)
       }, 3500)
       return () => clearTimeout(timer)
     }

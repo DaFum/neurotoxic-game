@@ -4,6 +4,7 @@
 
 import { describe, it, beforeEach, mock } from 'node:test'
 import assert from 'node:assert'
+import { GAME_PHASES } from '../src/context/gameConstants.js'
 
 // Mock applyTraitUnlocks with improved matching logic
 const mockApplyTraitUnlocks = mock.fn((state, unlocks) => {
@@ -55,14 +56,20 @@ describe('gameReducer', () => {
 
   describe('CHANGE_SCENE', () => {
     it('should change the current scene', () => {
-      const action = { type: ActionTypes.CHANGE_SCENE, payload: 'OVERWORLD' }
+      const action = {
+        type: ActionTypes.CHANGE_SCENE,
+        payload: GAME_PHASES.OVERWORLD
+      }
       const newState = gameReducer(testState, action)
 
-      assert.strictEqual(newState.currentScene, 'OVERWORLD')
+      assert.strictEqual(newState.currentScene, GAME_PHASES.OVERWORLD)
     })
 
     it('should preserve other state properties', () => {
-      const action = { type: ActionTypes.CHANGE_SCENE, payload: 'OVERWORLD' }
+      const action = {
+        type: ActionTypes.CHANGE_SCENE,
+        payload: GAME_PHASES.OVERWORLD
+      }
       const newState = gameReducer(testState, action)
 
       assert.strictEqual(newState.player.money, testState.player.money)
@@ -273,7 +280,7 @@ describe('gameReducer', () => {
   describe('RESET_STATE', () => {
     it('should reset to initial state', () => {
       testState.player.money = 9999
-      testState.currentScene = 'GIG'
+      testState.currentScene = GAME_PHASES.GIG
 
       const action = { type: ActionTypes.RESET_STATE }
       const newState = gameReducer(testState, action)
@@ -284,7 +291,7 @@ describe('gameReducer', () => {
 
     it('should retain unlocks on reset when payload is provided', () => {
       testState.player.money = 9999
-      testState.currentScene = 'GIG'
+      testState.currentScene = GAME_PHASES.GIG
 
       const action = {
         type: ActionTypes.RESET_STATE,

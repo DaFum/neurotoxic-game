@@ -4,6 +4,7 @@ import { useRoadieLogic } from '../hooks/minigames/useRoadieLogic'
 import { createRoadieStageController } from '../components/stage/RoadieStageController'
 import { MinigameSceneFrame } from '../components/MinigameSceneFrame'
 import { useGameState } from '../context/GameState'
+import { GAME_PHASES } from '../context/gameConstants'
 
 export const RoadieRunScene = () => {
   const { t } = useTranslation(['ui'])
@@ -22,7 +23,7 @@ export const RoadieRunScene = () => {
     [gameStateRef, stats, update]
   )
 
-  const handleComplete = useCallback(() => changeScene('GIG'), [changeScene])
+  const handleComplete = useCallback(() => changeScene(GAME_PHASES.GIG), [changeScene])
 
   const handleMoveUp = useCallback(() => actions.move(0, -1), [actions])
   const handleMoveLeft = useCallback(() => actions.move(-1, 0), [actions])

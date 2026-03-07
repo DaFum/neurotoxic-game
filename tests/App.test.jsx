@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { render, cleanup, screen } from '@testing-library/react'
+import { GAME_PHASES } from '../src/context/gameConstants'
 
 // Mock all the scene components
 vi.mock('../src/scenes/MainMenu', () => ({
@@ -89,7 +90,7 @@ vi.mock('@vercel/speed-insights/react', () => ({
 // Mock GameState context
 const mockResolveEvent = vi.fn()
 const mockGameState = {
-  currentScene: 'MENU',
+  currentScene: GAME_PHASES.MENU,
   activeEvent: null,
   resolveEvent: mockResolveEvent,
   settings: { crtEnabled: false },
@@ -135,7 +136,7 @@ describe('App', () => {
   })
 
   test('renders MainMenu scene when currentScene is MENU', async () => {
-    mockGameState.currentScene = 'MENU'
+    mockGameState.currentScene = GAME_PHASES.MENU
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
@@ -143,7 +144,7 @@ describe('App', () => {
   })
 
   test('renders Intro scene when currentScene is INTRO', async () => {
-    mockGameState.currentScene = 'INTRO'
+    mockGameState.currentScene = GAME_PHASES.INTRO
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
@@ -151,15 +152,15 @@ describe('App', () => {
   })
 
   test('renders Overworld scene when currentScene is OVERWORLD', async () => {
-    mockGameState.currentScene = 'OVERWORLD'
+    mockGameState.currentScene = GAME_PHASES.OVERWORLD
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
     expect(await screen.findByTestId('overworld-scene')).toBeTruthy()
   })
 
-  test('renders PreGig scene when currentScene is PREGIG', async () => {
-    mockGameState.currentScene = 'PREGIG'
+  test('renders PreGig scene when currentScene is PRE_GIG', async () => {
+    mockGameState.currentScene = GAME_PHASES.PRE_GIG
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
@@ -167,7 +168,7 @@ describe('App', () => {
   })
 
   test('renders Gig scene when currentScene is GIG', async () => {
-    mockGameState.currentScene = 'GIG'
+    mockGameState.currentScene = GAME_PHASES.GIG
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
@@ -175,15 +176,15 @@ describe('App', () => {
   })
 
   test('renders Gig scene when currentScene is PRACTICE', async () => {
-    mockGameState.currentScene = 'PRACTICE'
+    mockGameState.currentScene = GAME_PHASES.PRACTICE
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
     expect(await screen.findByTestId('gig-scene')).toBeTruthy()
   })
 
-  test('renders PostGig scene when currentScene is POSTGIG', async () => {
-    mockGameState.currentScene = 'POSTGIG'
+  test('renders PostGig scene when currentScene is POST_GIG', async () => {
+    mockGameState.currentScene = GAME_PHASES.POST_GIG
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
@@ -191,7 +192,7 @@ describe('App', () => {
   })
 
   test('renders Settings scene when currentScene is SETTINGS', async () => {
-    mockGameState.currentScene = 'SETTINGS'
+    mockGameState.currentScene = GAME_PHASES.SETTINGS
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
@@ -199,7 +200,7 @@ describe('App', () => {
   })
 
   test('renders Credits scene when currentScene is CREDITS', async () => {
-    mockGameState.currentScene = 'CREDITS'
+    mockGameState.currentScene = GAME_PHASES.CREDITS
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
@@ -207,7 +208,7 @@ describe('App', () => {
   })
 
   test('renders GameOver scene when currentScene is GAMEOVER', async () => {
-    mockGameState.currentScene = 'GAMEOVER'
+    mockGameState.currentScene = GAME_PHASES.GAMEOVER
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
@@ -215,7 +216,7 @@ describe('App', () => {
   })
 
   test('renders Tourbus minigame scene', async () => {
-    mockGameState.currentScene = 'TRAVEL_MINIGAME'
+    mockGameState.currentScene = GAME_PHASES.TRAVEL_MINIGAME
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
@@ -223,7 +224,7 @@ describe('App', () => {
   })
 
   test('renders Roadie minigame scene', async () => {
-    mockGameState.currentScene = 'PRE_GIG_MINIGAME'
+    mockGameState.currentScene = GAME_PHASES.PRE_GIG_MINIGAME
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
@@ -239,7 +240,7 @@ describe('App', () => {
   })
 
   test('does not render HUD in INTRO scene', async () => {
-    mockGameState.currentScene = 'INTRO'
+    mockGameState.currentScene = GAME_PHASES.INTRO
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
@@ -247,7 +248,7 @@ describe('App', () => {
   })
 
   test('does not render HUD in MENU scene', async () => {
-    mockGameState.currentScene = 'MENU'
+    mockGameState.currentScene = GAME_PHASES.MENU
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
@@ -255,7 +256,7 @@ describe('App', () => {
   })
 
   test('does not render HUD in SETTINGS scene', async () => {
-    mockGameState.currentScene = 'SETTINGS'
+    mockGameState.currentScene = GAME_PHASES.SETTINGS
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
@@ -263,7 +264,7 @@ describe('App', () => {
   })
 
   test('does not render HUD in GAMEOVER scene', async () => {
-    mockGameState.currentScene = 'GAMEOVER'
+    mockGameState.currentScene = GAME_PHASES.GAMEOVER
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
@@ -271,7 +272,7 @@ describe('App', () => {
   })
 
   test('renders HUD in OVERWORLD scene', async () => {
-    mockGameState.currentScene = 'OVERWORLD'
+    mockGameState.currentScene = GAME_PHASES.OVERWORLD
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
@@ -279,7 +280,7 @@ describe('App', () => {
   })
 
   test('renders HUD in GIG scene', async () => {
-    mockGameState.currentScene = 'GIG'
+    mockGameState.currentScene = GAME_PHASES.GIG
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
@@ -287,7 +288,7 @@ describe('App', () => {
   })
 
   test('always renders ToastOverlay', async () => {
-    mockGameState.currentScene = 'MENU'
+    mockGameState.currentScene = GAME_PHASES.MENU
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
@@ -295,7 +296,7 @@ describe('App', () => {
   })
 
   test('always renders ChatterOverlay', async () => {
-    mockGameState.currentScene = 'MENU'
+    mockGameState.currentScene = GAME_PHASES.MENU
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
@@ -303,7 +304,7 @@ describe('App', () => {
   })
 
   test('always renders TutorialManager', async () => {
-    mockGameState.currentScene = 'MENU'
+    mockGameState.currentScene = GAME_PHASES.MENU
     const App = (await import('../src/App.jsx')).default
 
     render(<App />)
@@ -328,7 +329,7 @@ describe('App', () => {
 
   test('does not render CRT overlay when crtEnabled is false', async () => {
     mockGameState.settings.crtEnabled = false
-    mockGameState.currentScene = 'MENU'
+    mockGameState.currentScene = GAME_PHASES.MENU
     const App = (await import('../src/App.jsx')).default
 
     const { container } = render(<App />)
@@ -338,7 +339,7 @@ describe('App', () => {
 
   test('renders CRT overlay when crtEnabled is true', async () => {
     mockGameState.settings.crtEnabled = true
-    mockGameState.currentScene = 'MENU'
+    mockGameState.currentScene = GAME_PHASES.MENU
     const App = (await import('../src/App.jsx')).default
 
     const { container } = render(<App />)
@@ -361,7 +362,7 @@ describe('App', () => {
   })
 
   test('passes correct gameState slice to ChatterOverlay', async () => {
-    mockGameState.currentScene = 'GIG'
+    mockGameState.currentScene = GAME_PHASES.GIG
     mockGameState.band = { members: [{ name: 'Test' }] }
     mockGameState.player = { money: 500 }
 
@@ -373,7 +374,7 @@ describe('App', () => {
   })
 
   test('has correct container styling', async () => {
-    mockGameState.currentScene = 'MENU'
+    mockGameState.currentScene = GAME_PHASES.MENU
     const App = (await import('../src/App.jsx')).default
 
     const { container } = render(<App />)

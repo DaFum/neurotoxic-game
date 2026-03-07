@@ -2,6 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { MainMenu } from '../src/scenes/MainMenu'
 import { useGameState } from '../src/context/GameState'
+import { GAME_PHASES } from '../src/context/gameConstants'
 import { useBandHQModal } from '../src/hooks/useBandHQModal'
 
 // Mock dependencies
@@ -98,7 +99,7 @@ describe('MainMenu Identity Flow', () => {
 
     // Scene change should happen after animation delay
     await vi.advanceTimersByTimeAsync(600)
-    expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
+    expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
   })
 
   it('skips modal if identity already exists', async () => {
@@ -114,6 +115,6 @@ describe('MainMenu Identity Flow', () => {
 
     // Should proceed to scene change
     await vi.advanceTimersByTimeAsync(600)
-    expect(mockChangeScene).toHaveBeenCalledWith('OVERWORLD')
+    expect(mockChangeScene).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
   })
 })

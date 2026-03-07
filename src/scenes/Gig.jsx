@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react'
 import { useGameState } from '../context/GameState'
+import { GAME_PHASES } from '../context/gameConstants'
 import { useRhythmGameLogic } from '../hooks/useRhythmGameLogic'
 import { useGigEffects } from '../hooks/useGigEffects'
 import { useGigInput } from '../hooks/useGigInput'
@@ -42,7 +43,7 @@ export const Gig = () => {
     if (!currentGig) {
       /* eslint-disable @eslint-react/hooks-extra/no-direct-set-state-in-use-effect */
       addToast(tRef.current('ui:pregig.toasts.noGig', { defaultValue: 'No gig active! Returning to map.' }), 'error')
-      changeScene('OVERWORLD')
+      changeScene(GAME_PHASES.OVERWORLD)
       /* eslint-enable @eslint-react/hooks-extra/no-direct-set-state-in-use-effect */
     }
   }, [currentGig, changeScene, addToast])

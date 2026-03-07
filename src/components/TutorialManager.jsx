@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameState } from '../context/GameState'
+import { GAME_PHASES } from '../context/gameConstants'
 
 const TUTORIAL_STEPS = [0, 1, 2, 3]
 const TOTAL_STEPS = TUTORIAL_STEPS.length
@@ -28,7 +29,8 @@ export const TutorialManager = () => {
   const getContent = () => {
     if (
       step === 0 &&
-      (currentScene === 'MENU' || currentScene === 'OVERWORLD')
+      (currentScene === GAME_PHASES.MENU ||
+        currentScene === GAME_PHASES.OVERWORLD)
     ) {
       return {
         title: 'WELCOME TO THE GRIND',
@@ -36,21 +38,21 @@ export const TutorialManager = () => {
         target: null // Centered
       }
     }
-    if (step === 1 && currentScene === 'OVERWORLD') {
+    if (step === 1 && currentScene === GAME_PHASES.OVERWORLD) {
       return {
         title: 'THE MAP',
         text: 'Travel between cities to play Gigs. Traveling costs Fuel and Time. Watch your supplies.',
         target: 'map-container'
       }
     }
-    if (step === 2 && currentScene === 'OVERWORLD') {
+    if (step === 2 && currentScene === GAME_PHASES.OVERWORLD) {
       return {
         title: 'STATS',
         text: 'Keep an eye on Health (Mood) and Money. If Money hits 0, game over. If Mood hits 0, the band breaks up.',
         target: 'hud-stats'
       }
     }
-    if (step === 3 && currentScene === 'GIG') {
+    if (step === 3 && currentScene === GAME_PHASES.GIG) {
       return {
         title: 'PERFORM',
         text: 'Hit the notes when they reach the bottom. Arrow Keys or Click the lanes. High Combo = More Fame.',

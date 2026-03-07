@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { useGameState } from '../context/GameState'
+import { GAME_PHASES } from '../context/gameConstants'
 import { useTranslation } from 'react-i18next'
 import { useAudioControl } from '../hooks/useAudioControl'
 import { GlitchButton } from '../ui/GlitchButton'
@@ -13,7 +14,7 @@ export const Settings = () => {
   const { changeScene, settings, updateSettings, deleteSave } = useGameState()
   const { audioState, handleAudioChange } = useAudioControl()
 
-  const handleReturn = useCallback(() => changeScene('MENU'), [changeScene])
+  const handleReturn = useCallback(() => changeScene(GAME_PHASES.MENU), [changeScene])
 
   const handleToggleCRT = useCallback(() => {
     updateSettings({ crtEnabled: !settings.crtEnabled })

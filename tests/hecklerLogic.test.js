@@ -279,8 +279,12 @@ test('updateProjectiles - handles zero velocities', () => {
 test('updateProjectiles - handles projectile at boundary', () => {
   const screenHeight = 1000
   // limit = 1100
-  const projectiles = [
-    { x: 100, y: 1099, vx: 0, vy: 0, vr: 0, rotation: 0 } // Just below limit
+  const projectiles = [{ x: 100, y: 1099, vx: 0, vy: 0, vr: 0, rotation: 0 }] // Just below limit
+
+  updateProjectiles(projectiles, 0, screenHeight)
+  assert.equal(projectiles.length, 1)
+})
+
 test('checkCollisions - handles empty array', () => {
   const projectiles = []
   checkCollisions(projectiles, 1000, () => {})

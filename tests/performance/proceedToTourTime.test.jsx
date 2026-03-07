@@ -1,6 +1,7 @@
 import { render, screen, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { MainMenu } from '../../src/scenes/MainMenu'
+import { GAME_PHASES } from '../../src/context/gameConstants'
 
 const changeSceneMock = vi.fn()
 const updatePlayerMock = vi.fn()
@@ -76,6 +77,6 @@ describe('proceedToTour timing test', () => {
     const endTime = performance.now()
 
     console.log(`Execution time (waiting 50ms): ${endTime - startTime}ms`)
-    expect(changeSceneMock).toHaveBeenCalledWith('OVERWORLD')
+    expect(changeSceneMock).toHaveBeenCalledWith(GAME_PHASES.OVERWORLD)
   })
 })
