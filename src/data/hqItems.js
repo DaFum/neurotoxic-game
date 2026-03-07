@@ -359,7 +359,7 @@ export const HQ_ITEMS = {
       id: 'hq_van_tyre_spare',
       name: 'items:hq_van_tyre_spare.name',
       category: 'VAN',
-      cost: 100, // Cheap fix
+      cost: 100, // Cheap repair
       currency: 'fame',
       img: 'ITEM_VAN_TIRE',
       description: 'items:hq_van_tyre_spare.description',
@@ -399,7 +399,7 @@ export const HQ_ITEMS = {
       id: 'hq_van_tape_glue',
       name: 'items:hq_van_tape_glue.name',
       category: 'VAN',
-      cost: 20, // Consumable fix
+      cost: 20, // Consumable repair
       currency: 'fame',
       img: 'ITEM_GLUE_TAPE',
       description: 'items:hq_van_tape_glue.description',
