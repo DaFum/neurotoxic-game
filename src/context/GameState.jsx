@@ -135,6 +135,10 @@ const isPlainObject = value =>
  */
 export const GameStateProvider = ({ children }) => {
   const { t } = useTranslation()
+  const tRef = useRef(t)
+  useEffect(() => {
+    tRef.current = t
+  }, [t])
 
   // Lazy initialization of state to ensure fresh data fetch on mount
   const initGameState = () => {
@@ -319,8 +323,8 @@ export const GameStateProvider = ({ children }) => {
     const currentState = stateRef.current
     const nextDay = currentState.player.day + 1
     dispatch(createAdvanceDayAction())
-    addToast(t('ui:day_advance', { day: nextDay }), 'info')
-  }, [addToast, t])
+    addToast(tRef.current('ui:day_advance', { day: nextDay }), 'info')
+  }, [addToast])
 
   /**
    * Resets the game state to initial values.
@@ -410,14 +414,14 @@ export const GameStateProvider = ({ children }) => {
 
       if (success) {
         if (showToast) {
-          addToast(t('ui:toast.gameSaved'), 'success')
+          addToast(tRef.current('ui:toast.gameSaved'), 'success')
         }
         logger.info('System', 'Game Saved Successfully')
       } else {
         handleError(new StorageError('Failed to save game'), { addToast })
       }
     },
-    [addToast, t]
+    [addToast]
   )
 
   /**
@@ -427,12 +431,12 @@ export const GameStateProvider = ({ children }) => {
   const endGig = useCallback(() => {
     const currentState = stateRef.current
     if (currentState.currentGig?.isPractice) {
-      addToast(t('ui:gig.practiceComplete'), 'success')
+      addToast(tRef.current('ui:gig.practiceComplete'), 'success')
       changeScene(GAME_PHASES.OVERWORLD)
     } else {
       changeScene(GAME_PHASES.POST_GIG)
     }
-  }, [addToast, changeScene, t])
+  }, [addToast, changeScene])
 
   const previousSceneRef = useRef(state.currentScene)
 
@@ -486,7 +490,7 @@ export const GameStateProvider = ({ children }) => {
       },
       false
     )
-  }, [addToast, t])
+  }, [addToast])
 
   // Event System Integration
   /**
@@ -595,10 +599,10 @@ export const GameStateProvider = ({ children }) => {
               const added = addUnlock(safeUnlockId)
               if (added) {
                 const unlockKey = `unlocks:${safeUnlockId}`
-                const unlockLabel = t(unlockKey, {
+                const unlockLabel = tRef.current(unlockKey, {
                   defaultValue: safeUnlockId.toUpperCase()
                 })
-                addToast(t('ui:unlocked', { unlock: unlockLabel }), 'success')
+                addToast(tRef.current('ui:unlocked', { unlock: unlockLabel }), 'success')
               }
             }
           }
@@ -606,9 +610,9 @@ export const GameStateProvider = ({ children }) => {
           // Game Over - Early Exit
           if (delta.flags?.gameOver) {
             const context = currentState.activeEvent?.context || {}
-            const translatedDesc = description ? t(description, context) : ''
+            const translatedDesc = description ? tRef.current(description, context) : ''
             addToast(
-              t('ui:game_over', { description: translatedDesc }),
+              tRef.current('ui:game_over', { description: translatedDesc }),
               'error'
             )
             changeScene(GAME_PHASES.GAMEOVER)
@@ -625,8 +629,8 @@ export const GameStateProvider = ({ children }) => {
         // 5. Feedback (Success Path)
         if (outcomeText || description) {
           const context = currentState.activeEvent?.context || {}
-          const msgOutcome = outcomeText ? t(outcomeText, context) : ''
-          const msgDesc = description ? t(description, context) : ''
+          const msgOutcome = outcomeText ? tRef.current(outcomeText, context) : ''
+          const msgDesc = description ? tRef.current(description, context) : ''
 
           const message =
             msgOutcome && msgDesc
@@ -641,16 +645,16 @@ export const GameStateProvider = ({ children }) => {
       } catch (error) {
         // 7. Error Handling
         logger.error('Event', 'Failed to resolve event choice:', error)
-        addToast(t('ui:event_error'), 'error')
+        addToast(tRef.current('ui:event_error'), 'error')
         setActiveEvent(null)
         return {
           outcomeText: choice.outcomeText ?? '',
-          description: choice.description ? t(choice.description) : '',
+          description: choice.description ? tRef.current(choice.description) : '',
           result: null
         }
       }
     },
-    [setActiveEvent, addToast, changeScene, t]
+    [setActiveEvent, addToast, changeScene]
   )
 
   const dispatchValue = useMemo(
