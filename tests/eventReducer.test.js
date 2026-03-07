@@ -4,12 +4,15 @@ import assert from 'node:assert'
 // We will mock checkTraitUnlocks using `mock.module` which works natively in newer Node versions
 mock.module('../src/utils/unlockCheck.js', {
   namedExports: {
-    checkTraitUnlocks: mock.fn(() => [{ memberId: 'm1', traitId: 'tech_wizard' }])
+    checkTraitUnlocks: mock.fn(() => [
+      { memberId: 'm1', traitId: 'tech_wizard' }
+    ])
   }
 })
 
 // Using a dynamic import so the mock applies before the module is loaded
-const { handleSetActiveEvent, handleApplyEventDelta } = await import('../src/context/reducers/eventReducer.js')
+const { handleSetActiveEvent, handleApplyEventDelta } =
+  await import('../src/context/reducers/eventReducer.js')
 
 describe('eventReducer', () => {
   let baseState

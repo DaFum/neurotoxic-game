@@ -8,6 +8,62 @@ const POST_BADGES = {
   STORY: '📖'
 }
 
+// Optimization: WeakMap to cache trait lookups for a given band.members array.
+// This prevents O(N*M) redundant array traversals during socialEngine ticks
+// where multiple post options check conditions and resolve effects against the same members array.
+const memberTraitCache = new WeakMap()
+
+/**
+ * Ensures the traits map for the given members array is built and cached.
+ * @param {Array} members - The band.members array
+ * @returns {Map} A map of traitId -> first member with that trait
+ */
+function ensureTraitCache(members) {
+  let cacheMap = memberTraitCache.get(members)
+  if (!cacheMap) {
+    cacheMap = new Map()
+    for (let i = 0; i < members.length; i++) {
+      const m = members[i]
+      if (m.traits) {
+        for (let j = 0; j < m.traits.length; j++) {
+          const tId = m.traits[j].id
+          if (!cacheMap.has(tId)) {
+            cacheMap.set(tId, m)
+          }
+        }
+      }
+    }
+    memberTraitCache.set(members, cacheMap)
+  }
+  return cacheMap
+}
+
+/**
+ * O(1) cached lookup for the first member with a specific trait.
+ * @param {Array} members - The band.members array
+ * @param {string} traitId - The ID of the trait
+ * @returns {object|undefined} The member object or undefined
+ */
+function getMemberWithTrait(members, traitId) {
+  if (!members || !members.length) return undefined
+  return ensureTraitCache(members).get(traitId)
+}
+
+/**
+ * O(1) cached check if any member has a specific trait (or one of two traits).
+ * @param {Array} members - The band.members array
+ * @param {string} traitId1 - The ID of the primary trait
+ * @param {string} [traitId2] - Optional ID of a secondary trait
+ * @returns {boolean} True if any member has the trait(s)
+ */
+function hasMemberWithTrait(members, traitId1, traitId2) {
+  if (!members || !members.length) return false
+  const cacheMap = ensureTraitCache(members)
+  if (cacheMap.has(traitId1)) return true
+  if (traitId2 && cacheMap.has(traitId2)) return true
+  return false
+}
+
 /**
  * Registry of all available social media post options.
  * Each option defines its conditions for appearing, base effects, and RNG logic.
@@ -172,8 +228,7 @@ export const POST_OPTIONS = [
     resolve: ({ band }) => {
       // Dynamically select the lead singer or fallback to index 0
       const vocalistObj =
-        band.members.find(m => m.traits?.some(t => t.id === 'lead_singer')) ||
-        band.members[0]
+        getMemberWithTrait(band.members, 'lead_singer') || band.members[0]
       const vocalist = vocalistObj.name
       return {
         type: 'FIXED',
@@ -233,9 +288,7 @@ export const POST_OPTIONS = [
     condition: ({ lastGigStats, social, band }) => {
       if (!Array.isArray(band?.members) || band.members.length === 0)
         return false
-      const isVirtuoso = band.members.some(m =>
-        m.traits?.some(t => t.id === 'virtuoso')
-      )
+      const isVirtuoso = hasMemberWithTrait(band.members, 'virtuoso')
       return (
         (lastGigStats && lastGigStats.score > 15000) ||
         social?.egoFocus ||
@@ -403,7 +456,7 @@ export const POST_OPTIONS = [
       const targetObj = band.members[Math.floor(diceRoll * band.members.length)]
       const target = targetObj.name
       let successChance = 0.5
-      if (targetObj.traits?.some(t => t.id === 'clumsy')) {
+      if (hasMemberWithTrait([targetObj], 'clumsy')) {
         successChance = 0.7 // Clumsy requires a higher roll (>0.7) to succeed
       }
 
@@ -440,8 +493,8 @@ export const POST_OPTIONS = [
       Array.isArray(band?.members) && band.members.length > 0,
     resolve: ({ band }) => {
       const gearNerd =
-        band.members.find(m => m.traits?.some(t => t.id === 'gear_nerd'))
-          ?.name || band.members[0].name
+        getMemberWithTrait(band.members, 'gear_nerd')?.name ||
+        band.members[0].name
       return {
         type: 'FIXED',
         success: true,
@@ -479,8 +532,7 @@ export const POST_OPTIONS = [
       Array.isArray(band?.members) && band.members.length > 0,
     resolve: ({ band }) => {
       const prankster =
-        band.members.find(m => m.traits?.some(t => t.id === 'party_animal'))
-          ?.name ||
+        getMemberWithTrait(band.members, 'party_animal')?.name ||
         band.members[1]?.name ||
         band.members[0].name
       return {
@@ -585,8 +637,7 @@ export const POST_OPTIONS = [
     resolve: ({ band }) => {
       // Find potential gear nerd or fallback to first member
       const member =
-        band.members.find(m => m.traits?.some(t => t.id === 'gear_nerd')) ||
-        band.members[0]
+        getMemberWithTrait(band.members, 'gear_nerd') || band.members[0]
       const target = member.name
       const memberId = member.id || member.name // Use name as fallback ID
 
@@ -693,9 +744,7 @@ export const POST_OPTIONS = [
     badges: [POST_BADGES.SAFE, POST_BADGES.STORY],
     condition: ({ band }) =>
       Array.isArray(band?.members) &&
-      band.members.some(m =>
-        m.traits?.some(t => t.id === 'gear_nerd' || t.id === 'tech_wizard')
-      ),
+      hasMemberWithTrait(band.members, 'gear_nerd', 'tech_wizard'),
     resolve: () => ({
       type: 'FIXED',
       success: true,
@@ -732,9 +781,7 @@ export const POST_OPTIONS = [
     badges: [POST_BADGES.STORY],
     condition: ({ band }) =>
       Array.isArray(band?.members) &&
-      band.members.some(m =>
-        m.traits?.some(t => t.id === 'melodic_genius' || t.id === 'virtuoso')
-      ),
+      hasMemberWithTrait(band.members, 'melodic_genius', 'virtuoso'),
     resolve: () => ({
       type: 'FIXED',
       success: true,

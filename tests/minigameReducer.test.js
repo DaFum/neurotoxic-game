@@ -10,7 +10,11 @@ import {
   handleCompleteKabelsalatMinigame
 } from '../src/context/reducers/minigameReducer.js'
 
-import { GAME_PHASES, MINIGAME_TYPES, DEFAULT_MINIGAME_STATE } from '../src/context/gameConstants.js'
+import {
+  GAME_PHASES,
+  MINIGAME_TYPES,
+  DEFAULT_MINIGAME_STATE
+} from '../src/context/gameConstants.js'
 
 describe('minigameReducer', () => {
   let baseState
@@ -66,7 +70,10 @@ describe('minigameReducer', () => {
       assert.strictEqual(nextState.player.totalTravels, 1)
       assert.ok(nextState.player.van.fuel < baseState.player.van.fuel)
       assert.ok(nextState.player.van.condition < baseState.player.van.condition)
-      assert.ok(nextState.player.stats.totalDistance > baseState.player.stats.totalDistance)
+      assert.ok(
+        nextState.player.stats.totalDistance >
+          baseState.player.stats.totalDistance
+      )
       assert.deepStrictEqual(nextState.minigame, { ...DEFAULT_MINIGAME_STATE })
     })
 
@@ -94,23 +101,23 @@ describe('minigameReducer', () => {
 
   describe('handleCompleteKabelsalatMinigame', () => {
     it('should apply penalty on failure', () => {
-      const payload = { results: { isPoweredOn: false } };
-      const nextState = handleCompleteKabelsalatMinigame(baseState, payload);
+      const payload = { results: { isPoweredOn: false } }
+      const nextState = handleCompleteKabelsalatMinigame(baseState, payload)
 
-      assert.strictEqual(nextState.band.harmony, 40); // 50 - 10 stress
-      assert.strictEqual(nextState.player.money, 1000); // No reward on failure
-      assert.strictEqual(nextState.gigModifiers.damaged_gear, true);
-      assert.deepStrictEqual(nextState.minigame, { ...DEFAULT_MINIGAME_STATE });
-    });
+      assert.strictEqual(nextState.band.harmony, 40) // 50 - 10 stress
+      assert.strictEqual(nextState.player.money, 1000) // No reward on failure
+      assert.strictEqual(nextState.gigModifiers.damaged_gear, true)
+      assert.deepStrictEqual(nextState.minigame, { ...DEFAULT_MINIGAME_STATE })
+    })
 
     it('should apply reward on success', () => {
-      const payload = { results: { isPoweredOn: true, timeLeft: 30 } };
-      const nextState = handleCompleteKabelsalatMinigame(baseState, payload);
+      const payload = { results: { isPoweredOn: true, timeLeft: 30 } }
+      const nextState = handleCompleteKabelsalatMinigame(baseState, payload)
 
-      assert.strictEqual(nextState.band.harmony, 50); // No stress on success
-      assert.strictEqual(nextState.player.money, 1110); // 50 base + (30/5)*10 = 110 reward
-      assert.strictEqual(nextState.gigModifiers.damaged_gear, undefined);
-    });
+      assert.strictEqual(nextState.band.harmony, 50) // No stress on success
+      assert.strictEqual(nextState.player.money, 1110) // 50 base + (30/5)*10 = 110 reward
+      assert.strictEqual(nextState.gigModifiers.damaged_gear, undefined)
+    })
   })
 
   describe('handleStartRoadieMinigame', () => {
