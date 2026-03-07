@@ -33,6 +33,7 @@ describe('Credits Scene', () => {
     )
 
     // Initial scene might be OVERWORLD or MENU based on initial state, but let's click RETURN
+    // (mocked as returning the i18n key)
     const returnBtn = getByText('ui:credits.return')
     fireEvent.click(returnBtn)
 

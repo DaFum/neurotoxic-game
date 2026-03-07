@@ -33,10 +33,15 @@ export const Gig = () => {
   const [isPaused, setIsPaused] = useState(false)
   const hasInteractedRef = useRef(false)
 
+  const tRef = useRef(t)
+  useEffect(() => {
+    tRef.current = t
+  }, [t])
+
   useEffect(() => {
     if (!currentGig) {
       /* eslint-disable @eslint-react/hooks-extra/no-direct-set-state-in-use-effect */
-      addToast('No gig active! Returning to map.', 'error')
+      addToast(tRef.current('ui:pregig.toasts.noGig', { defaultValue: 'No gig active! Returning to map.' }), 'error')
       changeScene('OVERWORLD')
       /* eslint-enable @eslint-react/hooks-extra/no-direct-set-state-in-use-effect */
     }
@@ -64,7 +69,7 @@ export const Gig = () => {
       // If starts paused (unlikely) or quick toggle
       pauseAudio()
       // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      addToast(t('ui:gig.paused', { defaultValue: 'PAUSED' }), 'info')
+      addToast(tRef.current('ui:gig.paused', { defaultValue: 'PAUSED' }), 'info')
       // Focus management delegated to Modal or done here if needed
       hasInteractedRef.current = true
       return
@@ -73,11 +78,11 @@ export const Gig = () => {
     if (isPaused) {
       pauseAudio()
       // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      addToast(t('ui:gig.paused', { defaultValue: 'PAUSED' }), 'info')
+      addToast(tRef.current('ui:gig.paused', { defaultValue: 'PAUSED' }), 'info')
     } else {
       resumeAudio()
       // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      addToast(t('ui:gig.resumed', { defaultValue: 'RESUMED' }), 'info')
+      addToast(tRef.current('ui:gig.resumed', { defaultValue: 'RESUMED' }), 'info')
     }
   }, [isPaused, addToast])
 
@@ -92,7 +97,7 @@ export const Gig = () => {
     try {
       stopAudio()
     } catch (e) {
-      handleError(e, { addToast, fallbackMessage: 'Audio cleanup failed.' })
+      handleError(e, { addToast, fallbackMessage: t('ui:errors.audio_cleanup_failed', { defaultValue: 'Audio cleanup failed.' }) })
     } finally {
       // Use fallback stats if gameStateRef is unavailable or uninitialized
       const score = gameStateRef.current?.score || 0
@@ -118,7 +123,7 @@ export const Gig = () => {
       setLastGigStats(snapshot)
       endGig()
     }
-  }, [endGig, setLastGigStats, addToast, gameStateRef])
+  }, [endGig, setLastGigStats, addToast, gameStateRef, t])
 
   // Use extracted input hook
   const { handleLaneInput } = useGigInput({
@@ -177,10 +182,10 @@ export const Gig = () => {
     return (
       <div className='flex flex-col items-center justify-center w-full h-full bg-(--void-black) z-[100] relative'>
         <h2 className="text-4xl text-(--toxic-green) font-['Metal_Mania'] mb-8 animate-pulse text-center">
-          SYSTEM LOCKED
+          {t('ui:gig.systemLocked', { defaultValue: 'SYSTEM LOCKED' })}
         </h2>
         <p className='text-(--ash-gray) mb-8 font-mono max-w-md text-center'>
-          Audio Interface requires manual override.
+          {t('ui:gig.audioOverride', { defaultValue: 'Audio Interface requires manual override.' })}
         </p>
         <GlitchButton
           onClick={() => {
@@ -192,7 +197,7 @@ export const Gig = () => {
           }}
           className='scale-150'
         >
-          INITIALIZE AUDIO
+          {t('ui:gig.initializeAudio', { defaultValue: 'INITIALIZE AUDIO' })}
         </GlitchButton>
       </div>
     )

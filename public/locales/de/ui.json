@@ -145,6 +145,7 @@
   "enter_name_error": "Bitte gib einen Namen ein",
   "enter_name_placeholder": "NAME EINGEBEN...",
   "errors.ambient_start_failed": "Ambient-Audio konnte nicht gestartet werden.",
+  "errors.audio_cleanup_failed": "Audio-Bereinigung fehlgeschlagen.",
   "errors.audio_init_failed": "Audio-Initialisierung fehlgeschlagen.",
   "errors.invalidVenueData": "Ungültige Veranstaltungsdaten.",
   "event": {
@@ -709,13 +710,16 @@
   },
   "gig": {
     "crowdEnergy": "PUBLIKUMSENERGIE",
-    "toxicModeActive": "TOXIC MODE AKTIV",
+    "toxicModeActive": "TOXISCHER MODUS AKTIV",
     "paused": "PAUSIERT",
     "resumed": "FORTGESETZT",
     "pause_title": "PAUSIERT",
     "resume": "WEITER",
     "quit": "GIG BEENDEN",
-    "abandon": "GIG ABBRECHEN"
+    "abandon": "GIG ABBRECHEN",
+    "systemLocked": "SYSTEM GESPERRT",
+    "audioOverride": "Audio-Interface erfordert manuelle Überschreibung.",
+    "initializeAudio": "AUDIO INITIALISIEREN"
   },
   "credits": {
     "return": "ZURÜCK"
