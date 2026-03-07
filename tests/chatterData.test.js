@@ -41,9 +41,10 @@ const buildState = (scene, overrides = {}) => {
       ...baseBand,
       ...overrides.band,
       // Deep merge members or inventory if they exist in overrides but we want defaults too
-      inventory: overrides.band?.inventory !== undefined
-        ? { ...baseBand.inventory, ...overrides.band.inventory }
-        : baseBand.inventory
+      inventory:
+        overrides.band?.inventory !== undefined
+          ? { ...baseBand.inventory, ...overrides.band.inventory }
+          : baseBand.inventory
     },
     social: {
       instagram: 228,
@@ -465,11 +466,7 @@ test('money chatter at boundary thresholds', () => {
       e.text === 'chatter:standard.msg_172'
   )
   assert.ok(matches99.length > 0, 'Expected low-money chatter at 99')
-  assert.strictEqual(
-    matches100.length,
-    0,
-    'Should not activate at exactly 100'
-  )
+  assert.strictEqual(matches100.length, 0, 'Should not activate at exactly 100')
 })
 
 // --- MOOD CONDITIONS ---

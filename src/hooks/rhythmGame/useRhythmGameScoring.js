@@ -126,7 +126,10 @@ export const useRhythmGameScoring = ({
       const decayPerMiss = basePenalty * Math.max(0.1, crowdDecay)
 
       const currentHealth = gameStateRef.current.health
-      const nextHealth = Math.max(0, Math.min(100, currentHealth - decayPerMiss * count))
+      const nextHealth = Math.max(
+        0,
+        Math.min(100, currentHealth - decayPerMiss * count)
+      )
 
       if (nextHealth <= 0 && !gameStateRef.current.isGameOver) {
         setIsGameOver(true)
@@ -141,7 +144,10 @@ export const useRhythmGameScoring = ({
           gameOverTimerRef.current = setTimeout(() => {
             // Bail if another audio session started in the 4s window (e.g. external endGig call)
             if (getPlayRequestId() !== failReqId) return
-            addToast(t('ui:gig.toasts.gigFailed', 'Gig Failed! Reviewing impact...'), 'info')
+            addToast(
+              t('ui:gig.toasts.gigFailed', 'Gig Failed! Reviewing impact...'),
+              'info'
+            )
             setLastGigStats(
               buildGigStatsSnapshot(
                 gameStateRef.current.score,

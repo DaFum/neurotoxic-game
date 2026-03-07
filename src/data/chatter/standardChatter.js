@@ -763,7 +763,8 @@ export const CHATTER_DB = [
     text: 'chatter:standard.msg_097',
     weight: 5,
     condition: state =>
-      state.currentScene === GAME_PHASES.POST_GIG && state.lastGigStats?.score > 10000
+      state.currentScene === GAME_PHASES.POST_GIG &&
+      state.lastGigStats?.score > 10000
   },
   {
     text: 'chatter:standard.msg_098',
@@ -785,7 +786,8 @@ export const CHATTER_DB = [
     text: 'chatter:standard.msg_101',
     weight: 5,
     condition: state =>
-      state.currentScene === GAME_PHASES.POST_GIG && state.lastGigStats?.misses > 10
+      state.currentScene === GAME_PHASES.POST_GIG &&
+      state.lastGigStats?.misses > 10
   },
   {
     text: 'chatter:standard.msg_102',
@@ -887,7 +889,8 @@ export const CHATTER_DB = [
     text: 'chatter:standard.msg_120',
     weight: 5,
     condition: state =>
-      state.currentScene === GAME_PHASES.POST_GIG && (state.lastGigStats?.misses || 0) > 8
+      state.currentScene === GAME_PHASES.POST_GIG &&
+      (state.lastGigStats?.misses || 0) > 8
   },
   {
     text: 'chatter:standard.msg_121',

@@ -78,7 +78,11 @@ test('Golden Path: Full Tour Cycle', async t => {
       )
       assert.equal(state.player.money, 500, 'Reset restores starting money')
 
-      state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.OVERWORLD)
+      state = applyAction(
+        state,
+        ActionTypes.CHANGE_SCENE,
+        GAME_PHASES.OVERWORLD
+      )
       assert.equal(state.currentScene, GAME_PHASES.OVERWORLD)
     }
   )
@@ -565,7 +569,11 @@ test('Golden Path: Scene sequence matches state machine', async t => {
     'START_GIG transitions to PRE_GIG regardless of current scene',
     () => {
       let state = createInitialState()
-      state = applyAction(state, ActionTypes.CHANGE_SCENE, GAME_PHASES.OVERWORLD)
+      state = applyAction(
+        state,
+        ActionTypes.CHANGE_SCENE,
+        GAME_PHASES.OVERWORLD
+      )
       state = applyAction(state, ActionTypes.START_GIG, buildVenue())
       assert.equal(state.currentScene, GAME_PHASES.PRE_GIG)
     }
