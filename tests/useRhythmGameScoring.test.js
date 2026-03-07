@@ -236,7 +236,7 @@ describe('useRhythmGameScoring', async () => {
     assert.equal(mockAudioEngine.stopAudio.mock.calls.length, 1)
     assert.equal(
       contextActions.addToast.mock.calls[0].arguments[0],
-      'BAND COLLAPSED'
+      'ui:gig.toasts.bandCollapsed'
     )
   })
 
@@ -257,7 +257,7 @@ describe('useRhythmGameScoring', async () => {
     assert.equal(gameStateRef.current.isToxicMode, true)
     assert.equal(
       contextActions.addToast.mock.calls[0].arguments[0],
-      'TOXIC OVERLOAD!'
+      'ui:gig.toasts.toxicOverload'
     )
   })
 
@@ -304,7 +304,7 @@ describe('useRhythmGameScoring', async () => {
     assert.equal(setters.setIsToxicMode.mock.calls[0].arguments[0], false)
     assert.equal(
       contextActions.addToast.mock.calls[0].arguments[0],
-      'TOXIC MODE LOST!'
+      'ui:gig.toasts.toxicModeLost'
     )
   })
 
@@ -416,7 +416,7 @@ describe('useRhythmGameScoring', async () => {
     assert.equal(gameStateRef.current.overload, 0) // Reset to 0
     assert.equal(
       contextActions.addToast.mock.calls[0].arguments[0],
-      'TOXIC OVERLOAD!'
+      'ui:gig.toasts.toxicOverload'
     )
   })
 })

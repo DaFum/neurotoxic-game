@@ -121,6 +121,12 @@ export const mockRhythmGameLogicModules = () => {
   mock.module('../src/data/songs.js', {
     namedExports: { SONGS_DB: mockSongs }
   })
+  mock.module('react-i18next', {
+    namedExports: {
+      useTranslation: () => ({ t: key => key }),
+      Trans: ({ i18nKey }) => i18nKey
+    }
+  })
 }
 
 export const setupRhythmGameLogicTest = async () => {

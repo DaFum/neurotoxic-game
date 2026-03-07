@@ -1,4 +1,5 @@
 import { useCallback, useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   updateGigPerformanceStats,
   buildGigStatsSnapshot,
@@ -31,6 +32,7 @@ export const useRhythmGameScoring = ({
   performance,
   contextActions
 }) => {
+  const { t } = useTranslation('ui')
   const {
     setScore,
     setCombo,
@@ -66,8 +68,8 @@ export const useRhythmGameScoring = ({
     setIsToxicMode(true)
     gameStateRef.current.isToxicMode = true
     gameStateRef.current.toxicModeEndTime = getGigTimeMs() + 10000
-    addToast('TOXIC OVERLOAD!', 'success')
-  }, [addToast, gameStateRef, setIsToxicMode])
+    addToast(t('ui:gig.toasts.toxicOverload', 'TOXIC OVERLOAD!'), 'success')
+  }, [addToast, gameStateRef, setIsToxicMode, t])
 
   /**
    * Applies a miss penalty and updates state/refs.
@@ -82,7 +84,7 @@ export const useRhythmGameScoring = ({
       if (gameStateRef.current.isToxicMode && !isEmptyHit) {
         setIsToxicMode(false)
         gameStateRef.current.isToxicMode = false
-        addToast('TOXIC MODE LOST!', 'error')
+        addToast(t('ui:gig.toasts.toxicModeLost', 'TOXIC MODE LOST!'), 'error')
       }
 
       setCombo(0)
@@ -131,14 +133,14 @@ export const useRhythmGameScoring = ({
           // Stop audio immediately to prevent further hit processing after collapse
           stopAudio()
           const failReqId = getPlayRequestId()
-          addToast('BAND COLLAPSED', 'error')
+          addToast(t('ui:gig.toasts.bandCollapsed', 'BAND COLLAPSED'), 'error')
 
           // Schedule exit from Gig if failed (prevents softlock)
           if (!gameOverTimerRef.current) {
             gameOverTimerRef.current = setTimeout(() => {
               // Bail if another audio session started in the 4s window (e.g. external endGig call)
               if (getPlayRequestId() !== failReqId) return
-              addToast('Gig Failed! Reviewing impact...', 'info')
+              addToast(t('ui:gig.toasts.gigFailed', 'Gig Failed! Reviewing impact...'), 'info')
               setLastGigStats(
                 buildGigStatsSnapshot(
                   gameStateRef.current.score,
@@ -166,7 +168,8 @@ export const useRhythmGameScoring = ({
       setIsToxicMode,
       setOverload,
       setAccuracy,
-      crowdDecay
+      crowdDecay,
+      t
     ]
   )
 
