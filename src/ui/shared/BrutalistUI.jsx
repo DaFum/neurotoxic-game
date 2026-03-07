@@ -15,7 +15,7 @@ export const UplinkButton = ({ title, url, subtitle, type, Icon }) => {
       {/* Glitch Background on Hover */}
       {isHovered && (
         <div className='absolute inset-0 bg-(--toxic-green)/10 z-0'>
-          <div className='absolute inset-0 bg-[linear-gradient(transparent_50%,var(--void-black-50)_50%)] bg-[length:100%_4px] opacity-50'></div>
+          <div className='absolute inset-0 bg-[linear-gradient(transparent_50%,rgb(var(--void-black-rgb) / 50%)_50%)] bg-[length:100%_4px] opacity-50'></div>
           <div className='w-full h-1 bg-(--toxic-green) absolute top-1/2 animate-[scan_0.5s_linear_infinite]'></div>
         </div>
       )}
@@ -911,7 +911,7 @@ export const CrisisModal = ({ isOpen, onClose }) => {
         aria-hidden='true'
       ></div>
       {/* Scanline FX on background */}
-      <div className='absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(transparent_50%,var(--void-black-50)_50%)] bg-[length:100%_4px]'></div>
+      <div className='absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(transparent_50%,rgb(var(--void-black-rgb) / 50%)_50%)] bg-[length:100%_4px]'></div>
 
       {/* Modal Box */}
       <div className='relative w-full max-w-lg border-2 border-(--toxic-green) bg-(--void-black) shadow-[0_0_40px_var(--toxic-green-glow)] animate-[glitch-anim_0.2s_ease-in-out]'>
@@ -980,11 +980,16 @@ export const DeadmanButton = ({ label, onConfirm }) => {
   const { t } = useTranslation()
   const [progress, setProgress] = useState(0)
   const [isHolding, setIsHolding] = useState(false)
+  const progressRef = useRef(0)
   const intervalRef = useRef(null)
   const drainIntervalRef = useRef(null)
 
+  useEffect(() => {
+    progressRef.current = progress
+  }, [progress])
+
   const startHold = () => {
-    if (progress >= 100) return
+    if (progressRef.current >= 100) return
     setIsHolding(true)
     if (drainIntervalRef.current) clearInterval(drainIntervalRef.current)
     if (intervalRef.current) clearInterval(intervalRef.current)
@@ -1008,7 +1013,7 @@ export const DeadmanButton = ({ label, onConfirm }) => {
     intervalRef.current = null
     setIsHolding(false)
 
-    if (progress < 100) {
+    if (progressRef.current < 100) {
       // Rapid drain if let go too early
       if (drainIntervalRef.current) clearInterval(drainIntervalRef.current)
       drainIntervalRef.current = setInterval(() => {
