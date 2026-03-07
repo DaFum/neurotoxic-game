@@ -40,7 +40,7 @@ export class MapGenerator {
     // Layer 0: Stendal (Home)
     const homeVenue = ALL_VENUES.find(v => v.id === 'stendal_proberaum')
     if (!homeVenue) {
-      throw new Error('Home venue "stendal_proberaum" not found in ALL_VENUES')
+      throw new StateError('Home venue "stendal_proberaum" not found in ALL_VENUES')
     }
     const startNode = {
       id: 'node_0_0',
