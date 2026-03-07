@@ -84,8 +84,12 @@ describe('gigReducer', () => {
       const nextState = handleSetLastGigStats(baseState, payload)
 
       assert.strictEqual(nextState.player.stats.consecutiveBadShows, 3)
-      assert.ok(nextState.activeQuests.some(q => q.id === 'quest_prove_yourself'))
-      assert.ok(nextState.toasts.some(t => t.message === 'ui:toast.three_disasters'))
+      assert.ok(
+        nextState.activeQuests.some(q => q.id === 'quest_prove_yourself')
+      )
+      assert.ok(
+        nextState.toasts.some(t => t.message === 'ui:toast.three_disasters')
+      )
     })
 
     it('should handle venue blacklisting on terrible reputation', () => {
@@ -119,22 +123,30 @@ describe('gigReducer', () => {
 
     it('should advance apology tour quest on good score and small capacity', () => {
       baseState.currentGig = { venue: { capacity: 250 } }
-      baseState.activeQuests = [{ id: 'quest_apology_tour', progress: 0, required: 5 }]
+      baseState.activeQuests = [
+        { id: 'quest_apology_tour', progress: 0, required: 5 }
+      ]
       const payload = { score: 70 }
       const nextState = handleSetLastGigStats(baseState, payload)
 
-      const quest = nextState.activeQuests.find(q => q.id === 'quest_apology_tour')
+      const quest = nextState.activeQuests.find(
+        q => q.id === 'quest_apology_tour'
+      )
       assert.strictEqual(quest.progress, 1)
     })
 
     it('should auto-complete ego management quest on high harmony', () => {
       baseState.band.harmony = 60
-      baseState.activeQuests = [{ id: 'quest_ego_management', completed: false }]
+      baseState.activeQuests = [
+        { id: 'quest_ego_management', completed: false }
+      ]
       const payload = { score: 50 }
       const nextState = handleSetLastGigStats(baseState, payload)
 
       // When the quest completes, it is removed from activeQuests.
-      const quest = nextState.activeQuests.find(q => q.id === 'quest_ego_management')
+      const quest = nextState.activeQuests.find(
+        q => q.id === 'quest_ego_management'
+      )
       assert.strictEqual(quest, undefined)
     })
   })

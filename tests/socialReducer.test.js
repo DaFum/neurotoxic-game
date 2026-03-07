@@ -81,7 +81,11 @@ describe('socialReducer', () => {
 
       assert.ok(nextState.venueBlacklist.includes('venue_123'))
       assert.strictEqual(nextState.social.loyalty, 10) // unchanged
-      assert.ok(nextState.toasts.some(t => t.type === 'error' && t.message.includes('ui:toast.blacklisted')))
+      assert.ok(
+        nextState.toasts.some(
+          t => t.type === 'error' && t.message.includes('ui:toast.blacklisted')
+        )
+      )
     })
 
     it('should prevent blacklisting and deduct 15 loyalty if loyalty >= 30', () => {
@@ -90,7 +94,11 @@ describe('socialReducer', () => {
 
       assert.ok(!nextState.venueBlacklist.includes('venue_123'))
       assert.strictEqual(nextState.social.loyalty, 15) // 30 - 15
-      assert.ok(nextState.toasts.some(t => t.type === 'info' && t.message === 'ui:toast.fans_defended'))
+      assert.ok(
+        nextState.toasts.some(
+          t => t.type === 'info' && t.message === 'ui:toast.fans_defended'
+        )
+      )
     })
   })
 })
