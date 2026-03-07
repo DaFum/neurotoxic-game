@@ -97,6 +97,29 @@ test('Leaderboard Stats API', async t => {
     )
   })
 
+  await t.test('POST rejects excessively long playerName', async () => {
+    const req = {
+      method: 'POST',
+      body: {
+        playerId: 'test-band',
+        playerName: 'A'.repeat(1001), // over the 1000 character limit
+        money: 100
+      }
+    }
+    const res = {
+      status: mock.fn(() => res),
+      json: mock.fn(() => res)
+    }
+
+    await statsModule.default(req, res)
+
+    assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
+    assert.deepStrictEqual(
+      res.json.mock.calls[0].arguments[0].error,
+      'Invalid playerName length'
+    )
+  })
+
   await t.test('GET retrieves stat leaderboard', async () => {
     const req = {
       method: 'GET',
