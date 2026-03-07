@@ -40,8 +40,14 @@ export const getGigModifiers = (bandState, gigModifiers = {}) => {
   }
 
   // 2. Member Status
+  let matze, Marius
+  for (let i = 0; i < members.length; i++) {
+    const m = members[i]
+    if (m.name === CHARACTERS.MATZE.name) matze = m
+    else if (m.name === CHARACTERS.MARIUS.name) Marius = m
+  }
+
   // Matze (Guitar)
-  const matze = members.find(m => m.name === CHARACTERS.MATZE.name)
   if (matze && matze.mood < 20) {
     modifiers.guitarScoreMult = 0.5
     modifiers.activeEffects.push({
@@ -52,7 +58,6 @@ export const getGigModifiers = (bandState, gigModifiers = {}) => {
   }
 
   // Marius (Drums)
-  const Marius = members.find(m => m.name === CHARACTERS.MARIUS.name)
   if (Marius && Marius.stamina < 20) {
     modifiers.drumSpeedMult = 1.2 // 20% faster
     modifiers.activeEffects.push({
@@ -79,9 +84,13 @@ export const calculateGigPhysics = (bandState, song) => {
 
   // 1. Hit Windows based on Skill
   // Formula: Base 150ms + (Skill * 5ms)
-  const matze = members.find(m => m.name === CHARACTERS.MATZE.name)
-  const Marius = members.find(m => m.name === CHARACTERS.MARIUS.name)
-  const Lars = members.find(m => m.name === CHARACTERS.LARS.name)
+  let matze, Marius, Lars
+  for (let i = 0; i < members.length; i++) {
+    const m = members[i]
+    if (m.name === CHARACTERS.MATZE.name) matze = m
+    else if (m.name === CHARACTERS.MARIUS.name) Marius = m
+    else if (m.name === CHARACTERS.LARS.name) Lars = m
+  }
 
   const getMemberSkill = member =>
     member?.baseStats?.skill ?? member?.skill ?? 0
