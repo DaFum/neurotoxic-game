@@ -41,7 +41,7 @@ const buildState = (scene, overrides = {}) => {
       ...overrides.band,
       // Deep merge members or inventory if they exist in overrides but we want defaults too
       inventory: overrides.band?.inventory !== undefined
-        ? overrides.band.inventory
+        ? { ...baseBand.inventory, ...overrides.band.inventory }
         : baseBand.inventory
     },
     social: {
@@ -81,9 +81,28 @@ const getConditionDelta = ({ activeState, inactiveState }) => {
 }
 
 test('getRandomChatter supports default chatter in all top-level scenes', () => {
-  const scenes = ALLOWED_DEFAULT_SCENES
+  const expectedScenes = [
+    'MENU',
+    'OVERWORLD',
+    'PREGIG',
+    'POSTGIG',
+    'TRAVEL_MINIGAME',
+    'PRE_GIG_MINIGAME'
+  ]
 
-  scenes.forEach(scene => {
+  assert.deepEqual(
+    [...ALLOWED_DEFAULT_SCENES].sort(),
+    [...expectedScenes].sort(),
+    'ALLOWED_DEFAULT_SCENES does not match the expected contract'
+  )
+
+  assert.strictEqual(
+    ALLOWED_DEFAULT_SCENES.includes('GIG'),
+    false,
+    'GIG should not be in ALLOWED_DEFAULT_SCENES'
+  )
+
+  expectedScenes.forEach(scene => {
     const chatter = getRandomChatter(buildState(scene))
     assert.ok(chatter, `Expected chatter for scene: ${scene}`)
     assert.strictEqual(typeof chatter.text, 'string')
@@ -716,11 +735,11 @@ test('speaker field is valid when present', () => {
 })
 
 test('category field is valid when present', () => {
-  const validCategories = [...new Set(CHATTER_DB.map(e => e.category).filter(Boolean))]
+  const ALLOWED_CATEGORIES = ['travel']
   CHATTER_DB.forEach((entry, index) => {
     if (entry.category) {
       assert.ok(
-        validCategories.includes(entry.category),
+        ALLOWED_CATEGORIES.includes(entry.category),
         `Entry ${index} has invalid category: ${entry.category}`
       )
     }
