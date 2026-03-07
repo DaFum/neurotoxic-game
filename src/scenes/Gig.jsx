@@ -33,14 +33,19 @@ export const Gig = () => {
   const [isPaused, setIsPaused] = useState(false)
   const hasInteractedRef = useRef(false)
 
+  const tRef = useRef(t)
+  useEffect(() => {
+    tRef.current = t
+  }, [t])
+
   useEffect(() => {
     if (!currentGig) {
       /* eslint-disable @eslint-react/hooks-extra/no-direct-set-state-in-use-effect */
-      addToast(t('ui:pregig.toasts.noGig', { defaultValue: 'No gig active! Returning to map.' }), 'error')
+      addToast(tRef.current('ui:pregig.toasts.noGig', { defaultValue: 'No gig active! Returning to map.' }), 'error')
       changeScene('OVERWORLD')
       /* eslint-enable @eslint-react/hooks-extra/no-direct-set-state-in-use-effect */
     }
-  }, [currentGig, changeScene, addToast, t])
+  }, [currentGig, changeScene, addToast])
 
   // Use the extracted logic hook
   const logic = useRhythmGameLogic()
@@ -64,7 +69,7 @@ export const Gig = () => {
       // If starts paused (unlikely) or quick toggle
       pauseAudio()
       // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      addToast(t('ui:gig.paused', { defaultValue: 'PAUSED' }), 'info')
+      addToast(tRef.current('ui:gig.paused', { defaultValue: 'PAUSED' }), 'info')
       // Focus management delegated to Modal or done here if needed
       hasInteractedRef.current = true
       return
@@ -73,13 +78,13 @@ export const Gig = () => {
     if (isPaused) {
       pauseAudio()
       // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      addToast(t('ui:gig.paused', { defaultValue: 'PAUSED' }), 'info')
+      addToast(tRef.current('ui:gig.paused', { defaultValue: 'PAUSED' }), 'info')
     } else {
       resumeAudio()
       // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      addToast(t('ui:gig.resumed', { defaultValue: 'RESUMED' }), 'info')
+      addToast(tRef.current('ui:gig.resumed', { defaultValue: 'RESUMED' }), 'info')
     }
-  }, [isPaused, addToast, t])
+  }, [isPaused, addToast])
 
   const handleTogglePause = useCallback(() => {
     setIsPaused(prev => !prev)
@@ -118,7 +123,7 @@ export const Gig = () => {
       setLastGigStats(snapshot)
       endGig()
     }
-  }, [endGig, setLastGigStats, addToast, gameStateRef])
+  }, [endGig, setLastGigStats, addToast, gameStateRef, t])
 
   // Use extracted input hook
   const { handleLaneInput } = useGigInput({
