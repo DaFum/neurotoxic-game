@@ -133,7 +133,7 @@ export const useRhythmGameScoring = ({
           const failReqId = getPlayRequestId()
           addToast('BAND COLLAPSED', 'error')
 
-          // Schedule exit from Gig if failed (Softlock fix)
+          // Schedule exit from Gig if failed (prevents softlock)
           if (!gameOverTimerRef.current) {
             gameOverTimerRef.current = setTimeout(() => {
               // Bail if another audio session started in the 4s window (e.g. external endGig call)
