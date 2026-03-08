@@ -180,11 +180,16 @@ export const handleLoadGame = (state, payload) => {
   // Migration: support older raw venue IDs while preserving current venues:* keys.
   const migratePlayerLocation = location => {
     if (typeof location !== 'string') return location
-    if (location.startsWith('venues:') && location.endsWith('.name')) {
-      return location
+
+    let rawId = location
+    if (rawId.startsWith('venues:')) {
+      rawId = rawId.slice(7)
+    }
+    if (rawId.endsWith('.name')) {
+      rawId = rawId.slice(0, -5)
     }
 
-    const normalizedLocation = normalizeVenueId(location)
+    const normalizedLocation = normalizeVenueId(rawId)
     if (!normalizedLocation || normalizedLocation === 'Unknown') {
       return location
     }
