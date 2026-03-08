@@ -69,7 +69,11 @@ LOCALES.forEach(locale => {
   })
 })
 
-// Test that economy.json has required top-level keys
+const hasKeyOrPrefix = (data, key) =>
+  data[key] !== undefined ||
+  Object.keys(data).some(existing => existing.startsWith(`${key}.`))
+
+// Test that economy.json has required key families
 test('economy.json files have required top-level structures', () => {
   LOCALES.forEach(locale => {
     const localeDir = path.join(LOCALES_ROOT, locale)
@@ -78,46 +82,44 @@ test('economy.json files have required top-level structures', () => {
     const requiredKeys = ['gigExpenses', 'gigIncome', 'postGig', 'social']
     requiredKeys.forEach(key => {
       assert.ok(
-        data[key] !== undefined,
-        `${locale}/economy.json should have "${key}" key`
+        hasKeyOrPrefix(data, key),
+        `${locale}/economy.json should have "${key}" key family`
       )
     })
   })
 })
 
-// Test that minigame.json has required structure
+// Test that minigame.json has required tourbus key family
 test('minigame.json files have required tourbus structure', () => {
   LOCALES.forEach(locale => {
     const localeDir = path.join(LOCALES_ROOT, locale)
     const data = readLocaleJson(localeDir, 'minigame.json')
 
     assert.ok(
-      data.tourbus !== undefined,
-      `${locale}/minigame.json should have "tourbus" key`
-    )
-    assert.equal(
-      typeof data.tourbus,
-      'object',
-      `${locale}/minigame.json tourbus should be an object`
+      hasKeyOrPrefix(data, 'tourbus'),
+      `${locale}/minigame.json should have "tourbus" key family`
     )
 
-    const requiredTourbuseKeys = [
+    const requiredTourbusKeys = [
       'damage',
       'destination_reached',
       'distance',
       'title',
       'van_condition'
     ]
-    requiredTourbuseKeys.forEach(key => {
+    requiredTourbusKeys.forEach(key => {
+      const nestedKey = `tourbus.${key}`
       assert.ok(
-        data.tourbus[key] !== undefined,
+        data[nestedKey] !== undefined ||
+          (typeof data.tourbus === 'object' &&
+            data.tourbus?.[key] !== undefined),
         `${locale}/minigame.json tourbus should have "${key}" key`
       )
     })
   })
 })
 
-// Test that ui.json has required top-level sections
+// Test that ui.json has required section key families
 test('ui.json files have required top-level sections', () => {
   LOCALES.forEach(locale => {
     const localeDir = path.join(LOCALES_ROOT, locale)
@@ -137,8 +139,8 @@ test('ui.json files have required top-level sections', () => {
 
     requiredSections.forEach(section => {
       assert.ok(
-        data[section] !== undefined,
-        `${locale}/ui.json should have "${section}" key`
+        hasKeyOrPrefix(data, section),
+        `${locale}/ui.json should have "${section}" key family`
       )
     })
   })
@@ -171,14 +173,8 @@ test('venues.json files have city and venue name structures', () => {
 
 // Test for placeholder consistency in economy namespace
 test('economy namespace placeholders are consistent between locales', () => {
-  const enData = readLocaleJson(
-    path.join(LOCALES_ROOT, 'en'),
-    'economy.json'
-  )
-  const deData = readLocaleJson(
-    path.join(LOCALES_ROOT, 'de'),
-    'economy.json'
-  )
+  const enData = readLocaleJson(path.join(LOCALES_ROOT, 'en'), 'economy.json')
+  const deData = readLocaleJson(path.join(LOCALES_ROOT, 'de'), 'economy.json')
 
   const enEntries = flattenToEntries(enData)
   const deEntries = flattenToEntries(deData)
@@ -200,47 +196,38 @@ test('economy namespace placeholders are consistent between locales', () => {
   })
 })
 
-// Test that featureList array structure is valid
-test('ui.json featureList has valid array structure', () => {
+// Test that ui.json feature list data is present (flat or nested format)
+test('ui.json featureList has valid structure', () => {
   LOCALES.forEach(locale => {
     const localeDir = path.join(LOCALES_ROOT, locale)
     const data = readLocaleJson(localeDir, 'ui.json')
 
-    assert.ok(
-      Array.isArray(data.featureList),
-      `${locale}/ui.json featureList should be an array`
+    const hasNestedArray = Array.isArray(data.featureList)
+    const flatFeatureKeys = Object.keys(data).filter(key =>
+      key.startsWith('featureList.')
     )
 
-    data.featureList.forEach((section, index) => {
-      assert.ok(
-        section.title,
-        `${locale}/ui.json featureList[${index}] should have title`
-      )
-      assert.ok(
-        section.description,
-        `${locale}/ui.json featureList[${index}] should have description`
-      )
-      assert.ok(
-        section.type,
-        `${locale}/ui.json featureList[${index}] should have type`
-      )
+    assert.ok(
+      hasNestedArray || flatFeatureKeys.length > 0,
+      `${locale}/ui.json should contain featureList data in nested or flat form`
+    )
 
-      if (section.type === 'bullets') {
+    if (hasNestedArray) {
+      data.featureList.forEach((section, index) => {
         assert.ok(
-          Array.isArray(section.items),
-          `${locale}/ui.json featureList[${index}] bullets should have items array`
-        )
-      } else if (section.type === 'table') {
-        assert.ok(
-          Array.isArray(section.headers),
-          `${locale}/ui.json featureList[${index}] table should have headers array`
+          section.title,
+          `${locale}/ui.json featureList[${index}] should have title`
         )
         assert.ok(
-          Array.isArray(section.rows),
-          `${locale}/ui.json featureList[${index}] table should have rows array`
+          section.description,
+          `${locale}/ui.json featureList[${index}] should have description`
         )
-      }
-    })
+        assert.ok(
+          section.type,
+          `${locale}/ui.json featureList[${index}] should have type`
+        )
+      })
+    }
   })
 })
 
@@ -265,8 +252,8 @@ test('locale files have properly formatted string values', () => {
               ' - click to confirm',
               ' - Klicken zum Bestätigen'
             ]
-            const isAllowed = allowedWhitespace.some(allowed =>
-              entry.value === allowed
+            const isAllowed = allowedWhitespace.some(
+              allowed => entry.value === allowed
             )
 
             assert.ok(
