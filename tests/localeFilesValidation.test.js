@@ -3,7 +3,11 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { readLocaleJson, flattenToEntries } from './utils/localeTestUtils.js'
+import {
+  readLocaleJson,
+  flattenToEntries,
+  hasKeyOrPrefix
+} from './utils/localeTestUtils.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -68,10 +72,6 @@ LOCALES.forEach(locale => {
     })
   })
 })
-
-const hasKeyOrPrefix = (data, key) =>
-  data[key] !== undefined ||
-  Object.keys(data).some(existing => existing.startsWith(`${key}.`))
 
 // Test that economy.json has required key families
 test('economy.json files have required top-level structures', () => {

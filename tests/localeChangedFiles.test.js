@@ -2,7 +2,11 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { readLocaleJson, flattenToEntries } from './utils/localeTestUtils.js'
+import {
+  readLocaleJson,
+  flattenToEntries,
+  hasKeyOrPrefix
+} from './utils/localeTestUtils.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -10,10 +14,6 @@ const __dirname = path.dirname(__filename)
 const LOCALES_ROOT = path.join(__dirname, '..', 'public', 'locales')
 const LOCALES = ['en', 'de']
 const CHANGED_NAMESPACES = ['economy', 'minigame', 'ui', 'venues']
-
-const hasKeyOrPrefix = (data, key) =>
-  data[key] !== undefined ||
-  Object.keys(data).some(existing => existing.startsWith(`${key}.`))
 
 /**
  * Comprehensive tests for the recently changed locale files.
