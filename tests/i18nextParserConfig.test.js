@@ -143,3 +143,102 @@ test('i18next-parser.config.js defines lexers', async () => {
     'lexers.jsx should include JsxLexer'
   )
 })
+
+test('i18next-parser.config.js includes TypeScript file extensions in input', async () => {
+  const config = await getConfig()
+
+  assert.ok(
+    config.input.some(pattern => pattern.includes('.ts') || pattern.includes('{js,jsx,ts,tsx}')),
+    'input should include TypeScript (.ts) files'
+  )
+  assert.ok(
+    config.input.some(pattern => pattern.includes('.tsx') || pattern.includes('{js,jsx,ts,tsx}')),
+    'input should include TypeScript React (.tsx) files'
+  )
+})
+
+test('i18next-parser.config.js has lexers for TypeScript files', async () => {
+  const config = await getConfig()
+
+  assert.ok(Array.isArray(config.lexers.ts), 'lexers.ts should be an array')
+  assert.ok(Array.isArray(config.lexers.tsx), 'lexers.tsx should be an array')
+  assert.ok(
+    config.lexers.ts.includes('JavascriptLexer'),
+    'lexers.ts should include JavascriptLexer'
+  )
+  assert.ok(
+    config.lexers.tsx.includes('JsxLexer'),
+    'lexers.tsx should include JsxLexer'
+  )
+})
+
+test('i18next-parser.config.js has default lexer', async () => {
+  const config = await getConfig()
+
+  assert.ok(
+    Array.isArray(config.lexers.default),
+    'lexers.default should be an array'
+  )
+  assert.ok(
+    config.lexers.default.includes('JavascriptLexer'),
+    'lexers.default should include JavascriptLexer'
+  )
+})
+
+test('i18next-parser.config.js keepRemoved is set to true for safety', async () => {
+  const config = await getConfig()
+
+  assert.equal(
+    config.keepRemoved,
+    true,
+    'keepRemoved should be true to prevent accidental deletion of translations'
+  )
+})
+
+test('i18next-parser.config.js sort is enabled for consistent ordering', async () => {
+  const config = await getConfig()
+
+  assert.equal(
+    config.sort,
+    true,
+    'sort should be true for consistent alphabetical ordering'
+  )
+})
+
+test('i18next-parser.config.js does not create old catalogs', async () => {
+  const config = await getConfig()
+
+  assert.equal(
+    config.createOldCatalogs,
+    false,
+    'createOldCatalogs should be false to avoid clutter'
+  )
+})
+
+test('i18next-parser.config.js uses flat key structure', async () => {
+  const config = await getConfig()
+
+  assert.equal(
+    config.keySeparator,
+    false,
+    'keySeparator should be false for flat key structure'
+  )
+  assert.equal(
+    config.useKeysAsDefaultValue,
+    false,
+    'useKeysAsDefaultValue should be false'
+  )
+})
+
+test('i18next-parser.config.js output path is correctly formatted', async () => {
+  const config = await getConfig()
+
+  assert.ok(
+    config.output.startsWith('public/locales/'),
+    'output path should start with public/locales/'
+  )
+  assert.ok(
+    config.output.includes('.json'),
+    'output path should end with .json extension'
+  )
+})
