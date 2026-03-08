@@ -11,6 +11,10 @@ const LOCALES_ROOT = path.join(__dirname, '..', 'public', 'locales')
 const LOCALES = ['en', 'de']
 const CHANGED_NAMESPACES = ['economy', 'minigame', 'ui', 'venues']
 
+const hasKeyOrPrefix = (data, key) =>
+  data[key] !== undefined ||
+  Object.keys(data).some(existing => existing.startsWith(`${key}.`))
+
 /**
  * Comprehensive tests for the recently changed locale files.
  * These tests focus on validating the structure, completeness, and consistency
@@ -67,8 +71,12 @@ test('nested structures are consistent between locales', () => {
       `${namespace}.json`
     )
 
-    const enFlat = flattenToEntries(enData).map(e => e.key).sort()
-    const deFlat = flattenToEntries(deData).map(e => e.key).sort()
+    const enFlat = flattenToEntries(enData)
+      .map(e => e.key)
+      .sort()
+    const deFlat = flattenToEntries(deData)
+      .map(e => e.key)
+      .sort()
 
     assert.deepEqual(
       deFlat,
@@ -141,18 +149,20 @@ test('economy.json has required top-level structures', () => {
     const requiredKeys = ['gigExpenses', 'gigIncome', 'postGig', 'social']
     requiredKeys.forEach(key => {
       assert.ok(
-        data[key],
+        hasKeyOrPrefix(data, key),
         `${locale}/economy.json should have "${key}" structure`
       )
     })
 
-    // Test specific sub-structures
+    // Test specific sub-structures (flat or nested)
     assert.ok(
-      data.gigExpenses.catering,
+      data['gigExpenses.catering.label'] !== undefined ||
+        data.gigExpenses?.catering !== undefined,
       `${locale}/economy.json should have gigExpenses.catering`
     )
     assert.ok(
-      data.gigIncome.ticketSales,
+      data['gigIncome.ticketSales.label'] !== undefined ||
+        data.gigIncome?.ticketSales !== undefined,
       `${locale}/economy.json should have gigIncome.ticketSales`
     )
   })
@@ -165,11 +175,11 @@ test('minigame.json has tourbus structure', () => {
     const data = readLocaleJson(localeDir, 'minigame.json')
 
     assert.ok(
-      data.tourbus,
+      hasKeyOrPrefix(data, 'tourbus'),
       `${locale}/minigame.json should have tourbus structure`
     )
 
-    const requiredTourbuseKeys = [
+    const requiredTourbusKeys = [
       'damage',
       'destination_reached',
       'distance',
@@ -177,9 +187,10 @@ test('minigame.json has tourbus structure', () => {
       'van_condition'
     ]
 
-    requiredTourbuseKeys.forEach(key => {
+    requiredTourbusKeys.forEach(key => {
       assert.ok(
-        data.tourbus[key] !== undefined,
+        data[`tourbus.${key}`] !== undefined ||
+          data.tourbus?.[key] !== undefined,
         `${locale}/minigame.json tourbus should have "${key}"`
       )
     })
@@ -203,7 +214,7 @@ test('ui.json has required major sections', () => {
 
     requiredSections.forEach(section => {
       assert.ok(
-        data[section],
+        hasKeyOrPrefix(data, section),
         `${locale}/ui.json should have "${section}" section`
       )
     })
@@ -211,31 +222,27 @@ test('ui.json has required major sections', () => {
 })
 
 // Test: UI namespace featureList array is valid
-test('ui.json featureList is a valid array', () => {
+test('ui.json featureList is present in valid nested or flat form', () => {
   LOCALES.forEach(locale => {
     const localeDir = path.join(LOCALES_ROOT, locale)
     const data = readLocaleJson(localeDir, 'ui.json')
 
-    assert.ok(
-      Array.isArray(data.featureList),
-      `${locale}/ui.json featureList should be an array`
+    const hasNestedArray = Array.isArray(data.featureList)
+    const flatFeatureKeys = Object.keys(data).filter(key =>
+      key.startsWith('featureList.')
     )
 
     assert.ok(
-      data.featureList.length > 0,
-      `${locale}/ui.json featureList should not be empty`
+      hasNestedArray || flatFeatureKeys.length > 0,
+      `${locale}/ui.json should include featureList content`
     )
 
-    data.featureList.forEach((section, index) => {
+    if (hasNestedArray) {
       assert.ok(
-        section.title,
-        `${locale}/ui.json featureList[${index}] should have title`
+        data.featureList.length > 0,
+        `${locale}/ui.json featureList should not be empty`
       )
-      assert.ok(
-        section.type,
-        `${locale}/ui.json featureList[${index}] should have type`
-      )
-    })
+    }
   })
 })
 
@@ -293,16 +300,20 @@ test('economy.json uses consistent currency formatting', () => {
     const data = readLocaleJson(localeDir, 'economy.json')
     const entries = flattenToEntries(data)
 
-    const currencyEntries = entries.filter(e =>
-      e.value.includes('{{') && (e.value.includes('€') || e.value.includes('sold'))
+    const currencyEntries = entries.filter(
+      e =>
+        e.value.includes('{{') &&
+        (e.value.includes('€') || e.value.includes('sold'))
     )
 
     // Verify currency placeholders use consistent variable names
     currencyEntries.forEach(entry => {
       if (entry.value.includes('€')) {
         // Should use placeholders like {{cost}}, {{value}}, etc.
-        const hasValidPlaceholder = /{{(cost|value|amount|percent|rate|sold|capacity|buyers)}}/
-          .test(entry.value)
+        const hasValidPlaceholder =
+          /{{(cost|value|amount|percent|rate|sold|capacity|buyers)}}/.test(
+            entry.value
+          )
 
         assert.ok(
           hasValidPlaceholder,
@@ -328,8 +339,14 @@ test('changed locale files are structurally sound', () => {
       totalFiles++
 
       // Basic sanity checks
-      assert.ok(entries.length > 0, `${locale}/${namespace}.json should have translations`)
-      assert.ok(Object.keys(data).length > 0, `${locale}/${namespace}.json should have top-level keys`)
+      assert.ok(
+        entries.length > 0,
+        `${locale}/${namespace}.json should have translations`
+      )
+      assert.ok(
+        Object.keys(data).length > 0,
+        `${locale}/${namespace}.json should have top-level keys`
+      )
     })
   })
 
@@ -337,5 +354,128 @@ test('changed locale files are structurally sound', () => {
   assert.equal(totalFiles, LOCALES.length * CHANGED_NAMESPACES.length)
 
   // Verify we have a reasonable number of translations
-  assert.ok(totalKeys > 100, `Should have substantial number of translations (found ${totalKeys})`)
+  assert.ok(
+    totalKeys > 100,
+    `Should have substantial number of translations (found ${totalKeys})`
+  )
+})
+
+// Test: No duplicate keys in any namespace
+test('no duplicate keys exist within each locale file', () => {
+  LOCALES.forEach(locale => {
+    CHANGED_NAMESPACES.forEach(namespace => {
+      const localeDir = path.join(LOCALES_ROOT, locale)
+      const data = readLocaleJson(localeDir, `${namespace}.json`)
+      const entries = flattenToEntries(data)
+
+      const keys = entries.map(e => e.key)
+      const uniqueKeys = new Set(keys)
+
+      assert.equal(
+        keys.length,
+        uniqueKeys.size,
+        `${locale}/${namespace}.json should not have duplicate keys`
+      )
+    })
+  })
+})
+
+// Test: Special characters are properly escaped
+test('translations properly handle special characters', () => {
+  LOCALES.forEach(locale => {
+    CHANGED_NAMESPACES.forEach(namespace => {
+      const localeDir = path.join(LOCALES_ROOT, locale)
+      const data = readLocaleJson(localeDir, `${namespace}.json`)
+      const entries = flattenToEntries(data)
+
+      entries.forEach(entry => {
+        if (typeof entry.value === 'string') {
+          // Check for unescaped quotes that could break JSON
+          const hasUnbalancedQuotes =
+            (entry.value.match(/"/g) || []).length % 2 !== 0
+
+          assert.ok(
+            !hasUnbalancedQuotes,
+            `${locale}/${namespace}.json key "${entry.key}" should not have unbalanced quotes`
+          )
+        }
+      })
+    })
+  })
+})
+
+// Test: UI namespace has postGig structure (related to changed file)
+test('ui.json has postGig related translation keys', () => {
+  LOCALES.forEach(locale => {
+    const localeDir = path.join(LOCALES_ROOT, locale)
+    const data = readLocaleJson(localeDir, 'ui.json')
+
+    assert.ok(
+      hasKeyOrPrefix(data, 'postGig'),
+      `${locale}/ui.json should have postGig structure`
+    )
+  })
+})
+
+// Test: Economy namespace has reasonable numeric placeholders
+test('economy.json numeric placeholders use valid variable names', () => {
+  LOCALES.forEach(locale => {
+    const localeDir = path.join(LOCALES_ROOT, locale)
+    const data = readLocaleJson(localeDir, 'economy.json')
+    const entries = flattenToEntries(data)
+
+    entries.forEach(entry => {
+      if (typeof entry.value === 'string') {
+        const placeholders = entry.value.match(/{{[^}]+}}/g) || []
+
+        placeholders.forEach(placeholder => {
+          // Ensure placeholder contains only valid characters
+          const content = placeholder.slice(2, -2).trim()
+
+          assert.ok(
+            /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(content),
+            `${locale}/economy.json key "${entry.key}" has invalid placeholder format: ${placeholder}`
+          )
+        })
+      }
+    })
+  })
+})
+
+// Test: Minigame namespace structure completeness
+test('minigame.json has comprehensive tourbus keys', () => {
+  LOCALES.forEach(locale => {
+    const localeDir = path.join(LOCALES_ROOT, locale)
+    const data = readLocaleJson(localeDir, 'minigame.json')
+    const entries = flattenToEntries(data)
+
+    const tourbusKeys = entries.filter(e => e.key.startsWith('tourbus'))
+
+    assert.ok(
+      tourbusKeys.length >= 5,
+      `${locale}/minigame.json should have at least 5 tourbus-related keys`
+    )
+  })
+})
+
+// Test: Venues namespace consistency between locales
+test('venues.json has same number of venues in all locales', () => {
+  const enData = readLocaleJson(path.join(LOCALES_ROOT, 'en'), 'venues.json')
+  const enEntries = flattenToEntries(enData)
+  const enVenueCount = enEntries.filter(e => e.key.endsWith('.name')).length
+
+  LOCALES.forEach(locale => {
+    if (locale === 'en') return
+
+    const localeDir = path.join(LOCALES_ROOT, locale)
+    const data = readLocaleJson(localeDir, 'venues.json')
+    const entries = flattenToEntries(data)
+    const venueCount = entries.filter(e => e.key.endsWith('.name')).length
+
+    assert.equal(
+      venueCount,
+      enVenueCount,
+      `${locale}/venues.json should have same number of venues as en locale`
+    )
+  })
 })

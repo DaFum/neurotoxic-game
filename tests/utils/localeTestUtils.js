@@ -85,3 +85,7 @@ export const resolveNamespaceKey = rawKey => {
 
   return { namespace, key }
 }
+
+export const hasKeyOrPrefix = (data, key) =>
+  data?.[key] !== undefined ||
+  Object.keys(data ?? {}).some(existing => existing.startsWith(`${key}.`))
