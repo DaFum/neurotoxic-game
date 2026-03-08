@@ -1,3 +1,5 @@
+import { EXPENSE_CONSTANTS } from './economyEngine.js'
+
 /**
  * Derives fame level from raw fame.
  * @param {number} fame - Raw fame amount.
@@ -29,6 +31,21 @@ export const clampBandHarmony = harmony => {
   if (!Number.isFinite(harmony)) return 1
   const safeHarmony = Math.floor(harmony)
   return Math.max(1, Math.min(100, safeHarmony))
+}
+
+/**
+ * Clamps van fuel to the allowed capacity.
+ *
+ * @param {number} fuel - Candidate fuel value.
+ * @param {number} maxFuel - Maximum capacity.
+ * @returns {number} Clamped fuel value.
+ */
+export const clampVanFuel = (
+  fuel,
+  maxFuel = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
+) => {
+  if (!Number.isFinite(fuel)) return 0
+  return Math.max(0, Math.min(maxFuel, fuel))
 }
 
 /**
@@ -116,10 +133,7 @@ export const applyEventDelta = (state, delta) => {
     if (delta.player.van) {
       const nextVan = { ...nextPlayer.van }
       if (typeof delta.player.van.fuel === 'number') {
-        nextVan.fuel = Math.max(
-          0,
-          Math.min(100, nextVan.fuel + delta.player.van.fuel)
-        )
+        nextVan.fuel = clampVanFuel(nextVan.fuel + delta.player.van.fuel)
       }
       if (typeof delta.player.van.condition === 'number') {
         nextVan.condition = Math.max(
