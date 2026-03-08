@@ -1,19 +1,6 @@
 {
   "audio_protocols": "AUDIO PROTOCOLS",
   "band_hq": "Band HQ",
-  "bandhq": {
-    "metadata": {
-      "bpm": "BPM",
-      "diff": "DIFF",
-      "dur": "DUR"
-    },
-    "setlist": {
-      "selectOne": "Select at least one song to practice!",
-      "songRemoved": "Song removed from setlist",
-      "songSelected": "Song selected for next Gig"
-    },
-    "venue": "Band HQ"
-  },
   "bandhq.metadata.bpm": "BPM",
   "bandhq.metadata.diff": "DIFF",
   "bandhq.metadata.dur": "DUR",
@@ -21,18 +8,8 @@
   "bandhq.setlist.songRemoved": "Removed {{song}} from {{venue}}.",
   "bandhq.setlist.songSelected": "Selected {{song}} for {{venue}}.",
   "bandhq.venue": "Band HQ",
-  "brutalist": {
-    "glitchPlaceholder": ""
-  },
   "brutalist.glitchPlaceholder": "0x8F9A... ENCRYPTED",
   "cancel": "CANCEL",
-  "chatter": {
-    "header": ""
-  },
-  "chatter_labels": {
-    "default_fallback": "Band Feed",
-    "default_speaker": "Band"
-  },
   "chatter_labels.CREDITS": "Crew Feed",
   "chatter_labels.default_fallback": "Unknown",
   "chatter_labels.default_speaker": "Band",
@@ -55,11 +32,6 @@
   "chatter.random3": "BOOOOOOOOO",
   "chatter.random4": "my ears are bleeding (in a bad way)",
   "chatter.random5": "refund immediately",
-  "checklist": {
-    "done": "INITIATE GIG",
-    "header": "",
-    "waiting": "AWAITING SEQUENCE"
-  },
   "checklist.done": "INITIATE GIG",
   "checklist.header": "PRE-GIG SEQUENCE",
   "checklist.task1": "REFUEL TOURVAN",
@@ -73,16 +45,6 @@
   "confirm_delete_text": "Are you sure you want to delete your save game? This cannot be undone.",
   "confirm_identity": "CONFIRM IDENTITY",
   "continue": "CONTINUE",
-  "contract": {
-    "confidential": "",
-    "p1": "",
-    "p2": "",
-    "sealed": "",
-    "sig": "",
-    "sign_aria": "",
-    "title": "",
-    "warning": ""
-  },
   "contract.confidential": "DOCUMENT: CONFIDENTIAL",
   "contract.p1": "This agreement binds NEUROTOXIC to <0>MEGA_CORP_INC</0>.",
   "contract.p2": "The Artist agrees to <0>subliminally insert corporate messaging</0> during all live performances in sector 4.",
@@ -92,29 +54,11 @@
   "contract.title": "Binding Agreement",
   "contract.warning": "Failure to comply will result in <0>immediate termination of organic functions</0>.",
   "cost": "€{{cost}}",
-  "crash": {
-    "message": "",
-    "rebootButton": "",
-    "title": ""
-  },
   "crash.message": "The simulation has crashed. Reboot required.",
   "crash.rebootButton": "REBOOT SYSTEM",
   "crash.title": "SYSTEM FAILURE",
   "credits": "CREDITS",
-  "creditsScreen": {
-    "return": "RETURN"
-  },
   "creditsScreen.return": "RETURN",
-  "crisis": {
-    "desc": "",
-    "opt1": "",
-    "opt2": "",
-    "opt3": "",
-    "risk": "",
-    "risky": "",
-    "safe": "",
-    "title": ""
-  },
   "crisis.desc": "The transmission just dropped halfway to Leipzig. You have a gig in 4 hours. Do you burn through your cash for a sketchy mechanic, or risk showing up late and losing face?",
   "crisis.opt1": "Pay mechanic (-$250)",
   "crisis.opt2": "Hitchhike (-20 Rep)",
@@ -129,67 +73,10 @@
   "currencyNegative": "-€{{value}}",
   "data_purge": "DATA PURGE",
   "day_advance": "Day {{day}}: Living Costs Deducted.",
-  "decryptor": {
-    "click": "",
-    "unlocked": ""
-  },
   "decryptor.click": "CLICK TO DECRYPT",
   "decryptor.unlocked": "ITEM_UNLOCKED: 'VOID_CORE'",
   "delete_save": "DELETE SAVE",
   "delete_warning": "WARNING: This action is irreversible. All tour progress will be lost.",
-  "detailedStats": {
-    "active": "Active",
-    "bandMembers": "BAND MEMBERS",
-    "blacklisted": "BLACKLISTED VENUES",
-    "blacklistedVenues": "Blacklisted Venues",
-    "breakdownChance": "Breakdown Chance",
-    "charisma": "Charisma",
-    "composition": "Composition",
-    "crowdDecay": "Crowd Decay",
-    "drumSpeed": "Drum Speed",
-    "egoSpotlight": "Ego Spotlight",
-    "equipment": "Equipment",
-    "guitarDiff": "Guitar Difficulty",
-    "harmonyDrain": "Harmony Drain Active",
-    "hqUpgrades": {
-      "count": "",
-      "installed_one": "",
-      "installed_other": "",
-      "none": "None"
-    },
-    "improv": "Improv",
-    "inventorySlots": "Inventory Slots",
-    "locked": "Locked",
-    "luck": "Luck",
-    "luckDesc": "Affects random events",
-    "member": "Member",
-    "mode": {
-      "label": "",
-      "proveYourself": "",
-      "restrictions": ""
-    },
-    "mood": "Mood",
-    "noActiveQuests": "No active quests. Stay toxic to trigger events.",
-    "none": "None",
-    "noRegionalData": "No regional data yet. Play gigs to build reputation.",
-    "passiveFollowers": "",
-    "passiveFollowersPerDay_one": "",
-    "passiveFollowersPerDay_other": "",
-    "perfModifiers": "Performance Modifiers",
-    "skillBase": "Skill (Base)",
-    "skills": "Skills",
-    "stamina": "Stamina",
-    "standardGear": "Standard Gear",
-    "technical": "Technical",
-    "totalTravels": "",
-    "toUnlock": "To Unlock",
-    "traits": "Traits",
-    "upgrades": "Upgrades",
-    "vanUpgrades": {
-      "installed_one": "",
-      "installed_other": ""
-    }
-  },
   "detailedStats.active": "Active",
   "detailedStats.bandMembers": "BAND MEMBERS",
   "detailedStats.blacklisted": "BLACKLISTED VENUES",
@@ -241,18 +128,10 @@
   "enter_alias_desc": "Enter your alias for the global underground network.",
   "enter_name_error": "Please enter a name",
   "enter_name_placeholder": "ENTER NAME...",
-  "errors": {
-    "invalidVenueData": "Invalid venue data."
-  },
   "errors.ambient_start_failed": "Ambient audio failed to start.",
   "errors.audio_cleanup_failed": "Audio cleanup failed.",
   "errors.audio_init_failed": "Audio initialization failed.",
   "errors.invalidVenueData": "Invalid venue data.",
-  "event": {
-    "severity": {
-      "critical": ""
-    }
-  },
   "event_error": "EVENT ERROR: Resolution failed.",
   "event.resolved": "Event resolved.",
   "event.severity.critical": "CRITICAL",
@@ -397,39 +276,13 @@
   "featureList.sec4.rows.3.0": "Robust State Safety & Telemetry",
   "featureList.sec4.rows.3.1": "Centralized React Context utilizing deep schema validation to protect player save data against prototype pollution. Includes a production-safe crash handler boundary (masking stack traces) and Vercel Speed Insights for live telemetry.",
   "featureList.sec4.title": "Advanced UI/UX Techniques",
-  "features": {
-    "button": "",
-    "title": ""
-  },
   "features.button": "FEATURES",
   "features.title": "FEATURE LIST",
   "game_over": "GAME OVER: {{description}}",
-  "gameOver": {
-    "finalStatistics": "",
-    "loadLastSave": "",
-    "returnToMenu": "",
-    "soldOut": ""
-  },
   "gameOver.finalStatistics": "FINAL STATISTICS",
   "gameOver.loadLastSave": "LOAD LAST SAVE",
   "gameOver.returnToMenu": "RETURN TO MENU",
   "gameOver.soldOut": "SOLD OUT",
-  "gig": {
-    "audioOverride": "Audio Interface requires manual override.",
-    "crowdEnergy": "CROWD ENERGY",
-    "initializeAudio": "INITIALIZE AUDIO",
-    "pause_title": "PAUSED",
-    "quit": "QUIT GIG",
-    "resume": "RESUME",
-    "systemLocked": "SYSTEM LOCKED",
-    "toasts": {
-      "bandCollapsed": "BAND COLLAPSED",
-      "gigFailed": "Gig Failed! Reviewing impact...",
-      "toxicModeLost": "TOXIC MODE LOST!",
-      "toxicOverload": "TOXIC OVERLOAD!"
-    },
-    "toxicModeActive": "TOXIC MODE ACTIVE"
-  },
   "gig.abandon": "ABANDON GIG",
   "gig.audioOverride": "Audio Interface requires manual override.",
   "gig.crowdEnergy": "CROWD ENERGY",
@@ -446,25 +299,9 @@
   "gig.toasts.toxicModeLost": "TOXIC MODE LOST!",
   "gig.toasts.toxicOverload": "TOXIC OVERLOAD!",
   "gig.toxicModeActive": "TOXIC MODE ACTIVE",
-  "hazard": {
-    "modifierActive": "",
-    "toxicOverload": "TOXIC OVERLOAD DETECTED // SEVERE SYSTEM STRESS // STAY FOCUSED"
-  },
   "hazard.modifierActive": "[MODIFIER ACTIVE]",
   "hazard.toxicOverload": "TOXIC OVERLOAD DETECTED // SEVERE SYSTEM STRESS // STAY FOCUSED",
   "holdToOverride": "HOLD TO OVERRIDE",
-  "hq": {
-    "buy": "BUY",
-    "leave": "LEAVE [ESC]",
-    "owned": "OWNED",
-    "practice_desc": "Practice makes perfect.",
-    "sectionsLabel": "Band HQ Sections",
-    "selected": "SELECTED",
-    "song_active": "ACTIVE",
-    "song_select": "SELECT",
-    "start_practice": "START PRACTICE",
-    "title": "BAND HQ"
-  },
   "hq.buy": "BUY",
   "hq.leave": "LEAVE [ESC]",
   "hq.owned": "OWNED",
@@ -480,37 +317,9 @@
   "intro_play": "Start Tour",
   "intro_skip": "Skip Intro",
   "keyboardHint": "Press [1-{{count}}] or click to choose",
-  "keyboardHint_one": "",
-  "keyboardHint_other": "",
   "language": "LANGUAGE",
   "language_option_de": "GERMAN",
   "language_option_en": "ENGLISH",
-  "leaderboard": {
-    "col_net_worth": "",
-    "col_player": "",
-    "col_score": "",
-    "col_value": "Value",
-    "col_value_km": "",
-    "conflicts": "Conflicts",
-    "connecting": "",
-    "distance": "Distance",
-    "fame": "Fame",
-    "followers": "Followers",
-    "global_wealth": "",
-    "load_error": "",
-    "no_data": "",
-    "no_songs": "",
-    "select_song": "",
-    "song_scores": "",
-    "stage_dives": "Stage Dives",
-    "top_100_conflicts": "Top 100 Conflicts",
-    "top_100_distance": "Top 100 Distance",
-    "top_100_fame": "Top 100 Fame",
-    "top_100_followers": "Top 100 Followers",
-    "top_100_scores": "",
-    "top_100_stage_dives": "Top 100 Stage Dives",
-    "top_100_wealth": ""
-  },
   "leaderboard.col_net_worth": "NET WORTH",
   "leaderboard.col_player": "PLAYER",
   "leaderboard.col_score": "SCORE",
@@ -538,44 +347,11 @@
   "load_game": "Load Game",
   "loading": "Loading",
   "log_protocols": "LOG PROTOCOLS",
-  "mainMenu": {
-    "existingSave": {
-      "desc": "",
-      "load": "",
-      "startNew": "",
-      "title": ""
-    },
-    "subtitle": {
-      "grindTheVoid": ""
-    }
-  },
   "mainMenu.existingSave.desc": "A save game already exists. Do you want to load it or start a new tour?",
   "mainMenu.existingSave.load": "LOAD EXISTING",
   "mainMenu.existingSave.startNew": "START NEW TOUR",
   "mainMenu.existingSave.title": "SAVE FILE DETECTED",
   "mainMenu.subtitle.grindTheVoid": "Grind The Void",
-  "map": {
-    "cap": "",
-    "click_to_confirm": "",
-    "confirm_q": "",
-    "current_location": "",
-    "diff": "",
-    "festival": "",
-    "finale_desc": "",
-    "mystery_desc": "",
-    "nodeType": {
-      "fallback": "",
-      "gig": "",
-      "rest": ""
-    },
-    "pay": "",
-    "pinTypeAlt": "",
-    "rest_stop_desc": "",
-    "ticket": "",
-    "travel_to": "",
-    "unknown": "",
-    "vanAlt": ""
-  },
   "map.cap": "Cap",
   "map.click_to_confirm": " - click to confirm",
   "map.click_to_travel": "CLICK TO TRAVEL",
@@ -596,49 +372,9 @@
   "map.travel_to": "Travel to {{name}}",
   "map.unknown": "Unknown",
   "map.vanAlt": "Van",
-  "menu": {
-    "inventory": "INVENTORY",
-    "upgrades": "UPGRADES"
-  },
   "menu.inventory": "INVENTORY",
   "menu.upgrades": "UPGRADES",
   "min_log_level": "MINIMUM LOG LEVEL",
-  "minigames": {
-    "kabelsalat": {
-      "a11y": {
-        "cable": "",
-        "socket": ""
-      },
-      "ampsReady": "",
-      "errors": {
-        "noAmp": "",
-        "noPower": "",
-        "wrongCable": ""
-      },
-      "managerMad": "",
-      "pwrLabel": "",
-      "rules": {
-        "penalty": "",
-        "rule1Label": "",
-        "rule1Text": "",
-        "rule2Label": "",
-        "rule2Text": "",
-        "time": ""
-      },
-      "rulesTitle": "",
-      "status": "",
-      "statusConnected": "",
-      "statusFailed": "",
-      "statusPending": "",
-      "success": "",
-      "systemShock": "",
-      "timeUp": "",
-      "timeValue_one": "",
-      "timeValue_other": "",
-      "title": "",
-      "tMinus": ""
-    }
-  },
   "minigames.kabelsalat.a11y.cable": "Cable {{label}}",
   "minigames.kabelsalat.a11y.socket": "Socket {{label}}",
   "minigames.kabelsalat.ampsReady": "Amps are glowing, mics are open.",
@@ -678,66 +414,9 @@
   "music_volume": "MUSIC VOLUME",
   "mute_all": "MUTE ALL",
   "no_save_found": "No save game found!",
-  "overload": {
-    "toxic": "TOXIC OVERLOAD"
-  },
   "overload.toxic": "TOXIC OVERLOAD",
-  "overworld": {
-    "event_log": "EVENT LOG:",
-    "radio_station": "FM 66.6"
-  },
   "overworld.event_log": "EVENT LOG:",
   "overworld.radio_station": "FM 66.6",
-  "pregig": {
-    "activeModifiers": "",
-    "allocation": "",
-    "bandMeeting": {
-      "desc": "",
-      "label": ""
-    },
-    "budget": "",
-    "costs": "",
-    "diff": "",
-    "initializing": "",
-    "locked": "",
-    "modifiers": {
-      "catering": {
-        "desc": "",
-        "label": ""
-      },
-      "guestlist": {
-        "desc": "",
-        "label": ""
-      },
-      "merch": {
-        "desc": "",
-        "label": ""
-      },
-      "promo": {
-        "desc": "",
-        "label": ""
-      },
-      "soundcheck": {
-        "desc": "",
-        "label": ""
-      }
-    },
-    "noModifiers": "",
-    "nrg": "",
-    "selected": "",
-    "selectPreview": "",
-    "selectSong": "",
-    "setlist": "",
-    "startShow": "",
-    "title": "",
-    "toasts": {
-      "audioFail": "",
-      "harmonyLow": "",
-      "meetingHeld": "",
-      "noMoneySnacks": "",
-      "noMoneyUpgrade": ""
-    }
-  },
   "pregig.activeModifiers": "ACTIVE MODIFIERS",
   "pregig.allocation": "BUDGET ALLOCATION",
   "pregig.bandMeeting.desc": "+Harmony",
@@ -775,20 +454,6 @@
   "pregig.toasts.noGig": "No gig active! Returning to map.",
   "pregig.toasts.noMoneySnacks": "Not enough money for snacks!",
   "pregig.toasts.noMoneyUpgrade": "Not enough money for this upgrade!",
-  "quests": {
-    "button": "",
-    "closeButton": "",
-    "closeLabel": "",
-    "days": {
-      "plural": "",
-      "singular": ""
-    },
-    "empty": "",
-    "moneyReward": "",
-    "progress": "",
-    "rewards": "",
-    "title": ""
-  },
   "quests.button": "QUESTS",
   "quests.closeButton": "Close Quests",
   "quests.closeLabel": "[CLOSE]",
@@ -803,26 +468,8 @@
   "quests.progress": "Progress",
   "quests.rewards": "Rewards:",
   "quests.title": "ACTIVE QUESTS",
-  "radio": {
-    "play": "Play/Resume Radio",
-    "stop": "Stop Radio"
-  },
   "radio.play": "Play/Resume Radio",
   "radio.stop": "Stop Radio",
-  "rewards": {
-    "fameWithAmount_one": "",
-    "fameWithAmount_other": "",
-    "fansWithAmount_one": "",
-    "fansWithAmount_other": "",
-    "freeItem": "",
-    "harmonyWithAmount_one": "",
-    "harmonyWithAmount_other": "",
-    "moneyWithAmount_one": "",
-    "moneyWithAmount_other": "",
-    "skillPointWithAmount_one": "",
-    "skillPointWithAmount_other": "",
-    "special": ""
-  },
   "rewards.fameWithAmount": "+{{count}} Fame",
   "rewards.fansWithAmount": "+{{count}} Fans",
   "rewards.freeItem": "Free Item",
@@ -830,40 +477,12 @@
   "rewards.moneyWithAmount": "+{{count}} Money",
   "rewards.skillPointWithAmount": "+{{count}} Skill Point",
   "rewards.special": "Special",
-  "rhythm": {
-    "header": "",
-    "hit": "",
-    "hit_lane": ""
-  },
   "rhythm.header": "RHYTHM_ENGINE_SIM",
   "rhythm.hit": "HIT",
   "rhythm.hit_lane": "Hit {{lane}} lane",
   "rhythm.lane_bass": "BASS",
   "rhythm.lane_drums": "DRUMS",
   "rhythm.lane_guitar": "GUITAR",
-  "roadieRun": {
-    "completion": {
-      "button": "",
-      "equipmentDamage": "",
-      "title": ""
-    },
-    "controls": {
-      "hide": "",
-      "movementHint": "",
-      "show": "",
-      "toggleAria": ""
-    },
-    "hud": {
-      "carrying": "",
-      "damage": "",
-      "delivered": "",
-      "itemsRemaining": "",
-      "title": ""
-    },
-    "itemTypes": {
-      "unknown": ""
-    }
-  },
   "roadieRun.completion.button": "START SHOW",
   "roadieRun.completion.equipmentDamage": "Equipment Damage: {{damage}}%",
   "roadieRun.completion.title": "SETUP COMPLETE",
@@ -881,46 +500,19 @@
   "roadieRun.itemTypes.GUITAR": "Guitar",
   "roadieRun.itemTypes.unknown": "Unknown item",
   "seconds": "{{count}}s",
-  "seconds_one": "",
-  "seconds_other": "",
   "set_label_to_segment": "Set {{label}} to {{segment}}",
-  "setlistSelector": {
-    "diffExpert": "",
-    "diffHard": "",
-    "diffInsane": "",
-    "track1": "",
-    "track2": "",
-    "track3": ""
-  },
   "setlistSelector.diffExpert": "EXPERT",
   "setlistSelector.diffHard": "HARD",
   "setlistSelector.diffInsane": "INSANE",
   "setlistSelector.track1": "SUICIDAL JESUS",
   "setlistSelector.track2": "SYSTEMSPRENGER",
   "setlistSelector.track3": "TRAVESTIE MASSAKER",
-  "settings": {
-    "audio_mute": "",
-    "audio_unmute": "",
-    "crt_disable": "",
-    "crt_enable": "",
-    "return": "RETURN"
-  },
   "settings.audio_mute": "Mute all audio",
   "settings.audio_unmute": "Unmute all audio",
   "settings.crt_disable": "Disable CRT Effect",
   "settings.crt_enable": "Enable CRT Effect",
   "settings.return": "RETURN",
   "sfx_volume": "SFX VOLUME",
-  "shop": {
-    "messages": {
-      "alreadyOwned": "",
-      "invalidData": "Purchase failed: Invalid upgrade data.",
-      "notEnough": "",
-      "purchaseFailed": "Purchase failed!",
-      "purchaseSuccess": "",
-      "unknownEffect": "Purchase failed: Unknown effect type."
-    }
-  },
   "shop.messages.alreadyOwned": "Already owned {{itemName}}!",
   "shop.messages.fame": "Fame",
   "shop.messages.invalidData": "Purchase failed: Invalid upgrade data.",
@@ -935,43 +527,6 @@
   "shop.messages.unknownEffect": "Purchase failed: Unknown effect type.",
   "sign_contract": "Sign Contract",
   "skillCheck": "Skill Check",
-  "social_links": {
-    "bandcamp": {
-      "subtitle": "",
-      "title": ""
-    },
-    "blog": {
-      "subtitle": "",
-      "title": ""
-    },
-    "game": {
-      "subtitle": "",
-      "title": ""
-    },
-    "instagram": {
-      "subtitle": "",
-      "title": ""
-    },
-    "neurotoxic_3000": {
-      "subtitle": "",
-      "title": ""
-    },
-    "neurotoxic_once": {
-      "subtitle": "",
-      "title": ""
-    },
-    "tiktok": {
-      "subtitle": "",
-      "title": ""
-    },
-    "type_audio_vault": "",
-    "type_broadcast_a": "",
-    "type_broadcast_b": "",
-    "type_data_log": "",
-    "type_system_core": "",
-    "type_viral_stream": "",
-    "type_visual_feed": ""
-  },
   "social_links.bandcamp.subtitle": "neurotoxic.bandcamp.com",
   "social_links.bandcamp.title": "Bandcamp",
   "social_links.blog.subtitle": "neuroblogxic.blogspot.com",
@@ -995,50 +550,6 @@
   "social_links.type_visual_feed": "VISUAL_FEED",
   "socials": "SOCIALS",
   "start_game": "Start Tour",
-  "stats": {
-    "active_quests": "Active Quests",
-    "advancedMetrics": "Advanced Metrics",
-    "band_metrics": "Band Metrics",
-    "band_status": "BAND STATUS",
-    "brandDeals": "Brand Deals",
-    "breakdown_chance": "Breakdown Chance",
-    "career_overview": "CAREER STATUS",
-    "condition": "Condition",
-    "controversy": "Controversy",
-    "currentTrend": "Current Trend",
-    "daysSurvived": "",
-    "fame": "Fame",
-    "fameReached": "",
-    "fanLoyalty": "Fan Loyalty",
-    "fanLoyaltyDesc": "Shields against bad gigs",
-    "followers": "Followers",
-    "fuel": "Fuel",
-    "funds": "Funds",
-    "harmony": "Harmony",
-    "instagram": "Instagram",
-    "inventory_equipment": "Inventory & Equipment",
-    "inventory_slots": "Inventory Slots",
-    "mood": "Mood",
-    "newsletter": "Newsletter",
-    "noContracts": "No active contracts",
-    "normal": "Normal",
-    "regional_standing": "Regional Standing",
-    "repCooldown": "Rep Cooldown",
-    "repCooldownDesc": "Days until rep-gated posts clear",
-    "riskOfShadowban": "Risk of Shadowban",
-    "shadowbanned": "SHADOWBANNED (-75% Growth)",
-    "social_reach": "Social Media Reach",
-    "socialDynamics": "SOCIAL DYNAMICS",
-    "stamina": "Stamina",
-    "tiktok": "TikTok",
-    "totalReach": "Total Reach",
-    "totalScore": "",
-    "totalTravels": "",
-    "van_condition": "VAN STATUS",
-    "viral": "VIRAL",
-    "viralStatus": "Viral Status",
-    "youtube": "YouTube"
-  },
   "stats.active_quests": "Active Quests",
   "stats.advancedMetrics": "Advanced Metrics",
   "stats.band_metrics": "Band Metrics",
@@ -1107,39 +618,18 @@
   "toast.quest_complete_skill": "[{{name}}]: COMPLETE +1 Skill ({{member}})",
   "toast.quest_failed": "[{{name}}]: FAILED",
   "toast.three_disasters": "3 DISASTERS IN A ROW — Prove yourself in small venues first.",
-  "toggle": {
-    "off": "OFF",
-    "on": "ON"
-  },
   "toggle.off": "OFF",
   "toggle.on": "ON",
-  "tour": {
-    "endedPrematurely": ""
-  },
   "tour.endedPrematurely": "The tour has ended prematurely.",
   "toxicModeActive": "TOXIC MODE ACTIVE",
-  "ui": {
-    "day": "Day",
-    "level": "Level",
-    "location": "Location",
-    "locked": "LOCKED",
-    "owned": "OWNED",
-    "time": "Time"
-  },
   "ui.day": "Day",
   "ui.level": "Level",
   "ui.location": "Location",
   "ui.locked": "LOCKED",
   "ui.owned": "OWNED",
   "ui.time": "Time",
-  "unit": {
-    "km": "km"
-  },
   "unit.km": "km",
   "unlocked": "UNLOCKED: {{unlock}}!",
   "visual_interface": "VISUAL INTERFACE",
-  "volume": {
-    "set": ""
-  },
   "volume.set": "Set volume to {{pct}}%"
 }
