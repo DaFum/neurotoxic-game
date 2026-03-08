@@ -1,19 +1,6 @@
 {
   "audio_protocols": "AUDIO PROTOKOLLE",
   "band_hq": "Band HQ",
-  "bandhq": {
-    "metadata": {
-      "bpm": "BPM",
-      "diff": "DIFF",
-      "dur": "DUR"
-    },
-    "setlist": {
-      "selectOne": "Select at least one song to practice!",
-      "songRemoved": "Song removed from setlist",
-      "songSelected": "Song selected for next Gig"
-    },
-    "venue": "Band HQ"
-  },
   "bandhq.metadata.bpm": "BPM",
   "bandhq.metadata.diff": "SCHW",
   "bandhq.metadata.dur": "DAUER",
@@ -29,23 +16,6 @@
   "chatter": {
     "header": ""
   },
-  "chatter_labels": {
-    "default_fallback": "Band Feed",
-    "default_speaker": "Band"
-  },
-  "chatter_labels.CREDITS": "Crew-Feed",
-  "chatter_labels.default_fallback": "Unbekannt",
-  "chatter_labels.default_speaker": "Band",
-  "chatter_labels.GAMEOVER": "Letzte Übertragung",
-  "chatter_labels.GIG": "Live-Feed",
-  "chatter_labels.INTRO": "Intro Feed",
-  "chatter_labels.MENU": "Haupt-Feed",
-  "chatter_labels.OVERWORLD": "Tour-Feed",
-  "chatter_labels.POSTGIG": "Aftershow-Feed",
-  "chatter_labels.PRE_GIG_MINIGAME": "Roadie-Feed",
-  "chatter_labels.PREGIG": "Pre-Gig-Feed",
-  "chatter_labels.SETTINGS": "System-Feed",
-  "chatter_labels.TRAVEL_MINIGAME": "Reise-Feed",
   "chatter.header": "LIVE_CHATTER_FEED",
   "chatter.msg1": "diese band ist tot lol",
   "chatter.msg2": "SPIELT DEN ALTEN SCHEISS!!!",
@@ -55,6 +25,23 @@
   "chatter.random3": "BUUUUUUUUUH",
   "chatter.random4": "meine ohren bluten (im negativen sinn)",
   "chatter.random5": "sofortige rückerstattung",
+  "chatter_labels": {
+    "default_fallback": "Band Feed",
+    "default_speaker": "Band"
+  },
+  "chatter_labels.CREDITS": "Crew-Feed",
+  "chatter_labels.GAMEOVER": "Letzte Übertragung",
+  "chatter_labels.GIG": "Live-Feed",
+  "chatter_labels.INTRO": "Intro Feed",
+  "chatter_labels.MENU": "Haupt-Feed",
+  "chatter_labels.OVERWORLD": "Tour-Feed",
+  "chatter_labels.POSTGIG": "Aftershow-Feed",
+  "chatter_labels.PREGIG": "Pre-Gig-Feed",
+  "chatter_labels.PRE_GIG_MINIGAME": "Roadie-Feed",
+  "chatter_labels.SETTINGS": "System-Feed",
+  "chatter_labels.TRAVEL_MINIGAME": "Reise-Feed",
+  "chatter_labels.default_fallback": "Unbekannt",
+  "chatter_labels.default_speaker": "Band",
   "checklist": {
     "done": "INITIATE GIG",
     "header": "",
@@ -219,8 +206,8 @@
   "detailedStats.mode.restrictions": "Venue-Einschränkungen aktiv",
   "detailedStats.mood": "Stimmung",
   "detailedStats.noActiveQuests": "Keine aktiven Quests. Bleib toxisch, um Events auszulösen.",
-  "detailedStats.none": "Keine",
   "detailedStats.noRegionalData": "Noch keine regionalen Daten. Spiele Gigs, um Ruf aufzubauen.",
+  "detailedStats.none": "Keine",
   "detailedStats.passiveFollowers": "Passive Follower",
   "detailedStats.passiveFollowersPerDay": "+{{count}}/Tag",
   "detailedStats.passiveFollowersPerDay_one": "+{{count}}/Tag",
@@ -231,8 +218,8 @@
   "detailedStats.stamina": "Ausdauer",
   "detailedStats.standardGear": "Standard-Ausrüstung",
   "detailedStats.technical": "Technik",
-  "detailedStats.totalTravels": "Gesamtreisen",
   "detailedStats.toUnlock": "Zum Freischalten",
+  "detailedStats.totalTravels": "Gesamtreisen",
   "detailedStats.traits": "Eigenschaften",
   "detailedStats.upgrades": "Upgrades",
   "detailedStats.vanUpgrades.installed": "{{count}} Installiert",
@@ -253,9 +240,9 @@
       "critical": ""
     }
   },
-  "event_error": "EVENT FEHLER: Auflösung fehlgeschlagen.",
   "event.resolved": "Ereignis beendet.",
   "event.severity.critical": "KRITISCH",
+  "event_error": "EVENT FEHLER: Auflösung fehlgeschlagen.",
   "executed": "AUSGEFÜHRT",
   "featureList": [
     {
@@ -403,7 +390,6 @@
   },
   "features.button": "FUNKTIONEN",
   "features.title": "FUNKTIONSLISTE",
-  "game_over": "GAME OVER: {{description}}",
   "gameOver": {
     "finalStatistics": "",
     "loadLastSave": "",
@@ -414,6 +400,7 @@
   "gameOver.loadLastSave": "LETZTEN SPEICHERSTAND LADEN",
   "gameOver.returnToMenu": "ZURÜCK ZUM MENÜ",
   "gameOver.soldOut": "AUSVERKAUFT",
+  "game_over": "GAME OVER: {{description}}",
   "gig": {
     "audioOverride": "Audio Interface requires manual override.",
     "crowdEnergy": "CROWD ENERGY",
@@ -670,10 +657,10 @@
   "minigames.kabelsalat.statusPending": "KABELSALAT DETEKTIERT",
   "minigames.kabelsalat.success": "SYSTEM HOCHGEFAHREN",
   "minigames.kabelsalat.systemShock": "SYSTEM SHOCK",
+  "minigames.kabelsalat.tMinus": "T-MINUS",
   "minigames.kabelsalat.timeUp": "ZEIT ABGELAUFEN",
   "minigames.kabelsalat.timeValue": "{{count}}s",
   "minigames.kabelsalat.title": "HARDWARE_RIGGING",
-  "minigames.kabelsalat.tMinus": "T-MINUS",
   "module": "Modul",
   "music_volume": "MUSIK LAUTSTÄRKE",
   "mute_all": "ALLES STUMM",
@@ -763,9 +750,9 @@
   "pregig.modifiers.soundcheck.label": "Soundcheck",
   "pregig.noModifiers": "Keine aktiven Buffs oder Debuffs",
   "pregig.nrg": "NRG",
-  "pregig.selected": "AUSGEWÄHLT",
   "pregig.selectPreview": "Songs auswählen, um Energiekurve zu sehen",
   "pregig.selectSong": "Song {{name}} auswählen",
+  "pregig.selected": "AUSGEWÄHLT",
   "pregig.setlist": "SETLIST",
   "pregig.startShow": "SHOW STARTEN",
   "pregig.title": "VORBEREITUNG",
@@ -1070,8 +1057,8 @@
   "stats.repCooldownDesc": "Tage bis Ruf-Sperren aufgehoben sind",
   "stats.riskOfShadowban": "Shadowban-Risiko",
   "stats.shadowbanned": "SHADOWBANNED (-75% Wachstum)",
-  "stats.social_reach": "Social-Media-Reichweite",
   "stats.socialDynamics": "SOZIALE DYNAMIK",
+  "stats.social_reach": "Social-Media-Reichweite",
   "stats.stamina": "Ausdauer",
   "stats.tiktok": "TikTok",
   "stats.totalReach": "Gesamt-Reichweite",
