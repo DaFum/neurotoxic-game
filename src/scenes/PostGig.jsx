@@ -83,6 +83,13 @@ export const PostGig = () => {
       DEALS: 'ui:postGig.phaseBrandOffers',
       COMPLETE: 'ui:postGig.phaseTourUpdate'
     }[phase] ?? 'ui:postGig.phaseTourUpdate'
+  const phaseTitleDefault =
+    {
+      REPORT: 'GIG REPORT',
+      SOCIAL: 'SOCIAL MEDIA STRATEGY',
+      DEALS: 'BRAND OFFERS',
+      COMPLETE: 'TOUR UPDATE'
+    }[phase] ?? 'TOUR UPDATE'
 
   const perfScore = useMemo(() => {
     const rawScore = lastGigStats?.score || 0
@@ -637,7 +644,7 @@ export const PostGig = () => {
         className='max-w-4xl w-full border-4 border-(--toxic-green) p-8 bg-(--void-black) relative z-10 shadow-[0_0_50px_var(--toxic-green-glow)] flex flex-col gap-6'
       >
         <h2 className="text-5xl text-center font-['Metal_Mania'] text-(--toxic-green) mb-2 text-shadow-[0_0_10px_var(--toxic-green)]">
-          {t(phaseTitleKey, { defaultValue: 'TOUR UPDATE' })}
+          {t(phaseTitleKey, { defaultValue: phaseTitleDefault })}
         </h2>
 
         <Suspense
