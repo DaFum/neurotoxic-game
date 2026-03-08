@@ -727,7 +727,7 @@
     "audioOverride": "Audio Interface requires manual override.",
     "initializeAudio": "INITIALIZE AUDIO"
   },
-  "credits": {
+  "creditsScreen": {
     "return": "RETURN"
   },
   "settings": {

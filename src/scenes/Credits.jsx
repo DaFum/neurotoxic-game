@@ -88,7 +88,7 @@ export const Credits = () => {
 
       <div className='absolute bottom-8 z-20'>
         <GlitchButton onClick={handleReturn}>
-          {t('ui:credits.return', { defaultValue: 'RETURN' })}
+          {t('ui:creditsScreen.return', { defaultValue: 'RETURN' })}
         </GlitchButton>
       </div>
     </div>
