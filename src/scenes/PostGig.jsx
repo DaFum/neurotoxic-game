@@ -76,6 +76,13 @@ export const PostGig = () => {
   const [postOptions, setPostOptions] = useState([])
   const [postResult, setPostResult] = useState(null)
   const [brandOffers, setBrandOffers] = useState([])
+  const phaseTitleKey =
+    {
+      REPORT: 'ui:postGig.phaseReport',
+      SOCIAL: 'ui:postGig.phaseSocialStrategy',
+      DEALS: 'ui:postGig.phaseBrandOffers',
+      COMPLETE: 'ui:postGig.phaseTourUpdate'
+    }[phase] ?? 'ui:postGig.phaseTourUpdate'
 
   const perfScore = useMemo(() => {
     const rawScore = lastGigStats?.score || 0
@@ -608,7 +615,9 @@ export const PostGig = () => {
     return (
       <div className='w-full h-full flex flex-col items-center justify-center bg-(--void-black)'>
         <div className="text-3xl text-(--toxic-green) font-['Metal_Mania'] animate-pulse tracking-widest">
-          TALLYING RECEIPTS...
+          {t('ui:postGig.tallyingReceipts', {
+            defaultValue: 'TALLYING RECEIPTS...'
+          })}
         </div>
       </div>
     )
@@ -628,13 +637,7 @@ export const PostGig = () => {
         className='max-w-4xl w-full border-4 border-(--toxic-green) p-8 bg-(--void-black) relative z-10 shadow-[0_0_50px_var(--toxic-green-glow)] flex flex-col gap-6'
       >
         <h2 className="text-5xl text-center font-['Metal_Mania'] text-(--toxic-green) mb-2 text-shadow-[0_0_10px_var(--toxic-green)]">
-          {phase === 'REPORT'
-            ? 'GIG REPORT'
-            : phase === 'SOCIAL'
-              ? 'SOCIAL MEDIA STRATEGY'
-              : phase === 'DEALS'
-                ? 'BRAND OFFERS'
-                : 'TOUR UPDATE'}
+          {t(phaseTitleKey, { defaultValue: 'TOUR UPDATE' })}
         </h2>
 
         <Suspense

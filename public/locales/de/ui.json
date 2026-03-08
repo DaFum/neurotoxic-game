@@ -663,5 +663,10 @@
   "postGig.gameOverBankrupt": "GAME OVER: BANKROTT! Die Tour ist vorbei.",
   "postGig.traitUnlocked": "Eigenschaft freigeschaltet: {{traitName}}",
   "postGig.acceptedDeal": "Deal angenommen: {{dealName}}",
-  "postGig.skippedBrandDeals": "Marken-Deals übersprungen."
+  "postGig.skippedBrandDeals": "Marken-Deals übersprungen.",
+  "postGig.tallyingReceipts": "ABRECHNUNG WIRD ERSTELLT...",
+  "postGig.phaseReport": "GIG-BERICHT",
+  "postGig.phaseSocialStrategy": "SOCIAL-MEDIA-STRATEGIE",
+  "postGig.phaseBrandOffers": "MARKENANGEBOTE",
+  "postGig.phaseTourUpdate": "TOUR-UPDATE"
 }
