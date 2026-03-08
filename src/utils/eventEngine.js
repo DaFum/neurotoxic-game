@@ -171,7 +171,7 @@ const selectEvent = (pool, gameState, triggerPoint) => {
   return null
 }
 
-const EFFECT_HANDLERS = {
+const EFFECT_HANDLERS = Object.assign(Object.create(null), {
   relationship: (eff, delta, context) => {
     if (!delta.band.relationshipChange) delta.band.relationshipChange = []
     const resolveName = str => resolveTemplateString(str, context)
@@ -186,7 +186,9 @@ const EFFECT_HANDLERS = {
       delta.player.money = (delta.player.money || 0) + eff.value
     if (eff.resource === 'fuel') {
       delta.player.van = { ...(delta.player.van || {}) }
-      delta.player.van.fuel = clampVanFuel((delta.player.van.fuel || 0) + eff.value)
+      delta.player.van.fuel = clampVanFuel(
+        (delta.player.van.fuel || 0) + eff.value
+      )
     }
   },
   stat: (eff, delta) => {
@@ -279,14 +281,14 @@ const EFFECT_HANDLERS = {
     if (!delta.flags.addQuest) delta.flags.addQuest = []
     delta.flags.addQuest.push(eff.quest)
   }
-}
+})
 
 /**
  * Processes a single effect object into state delta modifications.
  */
 const processEffect = (eff, delta, context = {}) => {
   const handler = EFFECT_HANDLERS[eff.type]
-  if (handler) {
+  if (typeof handler === 'function') {
     handler(eff, delta, context)
   }
 }

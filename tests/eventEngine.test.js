@@ -467,6 +467,22 @@ test('eventEngine.applyResult handles unlock effects', () => {
   assert.equal(delta.flags.unlock, 'new_venue', 'Should set unlock flag')
 })
 
+test('eventEngine.applyResult ignores prototype-colliding effect types', () => {
+  const result = {
+    type: 'composite',
+    effects: [{ type: 'hasOwnProperty' }, { type: 'toString' }]
+  }
+
+  assert.doesNotThrow(() => eventEngine.applyResult(result))
+  const delta = eventEngine.applyResult(result)
+  assert.ok(delta, 'Should still return delta object')
+  assert.deepEqual(
+    delta.flags,
+    {},
+    'Should not set any flags for unknown effects'
+  )
+})
+
 test('eventEngine.applyResult preserves nextEventId from result', () => {
   const result = {
     type: 'resource',
