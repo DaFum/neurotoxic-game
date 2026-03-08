@@ -686,11 +686,8 @@
   "postGig.phaseSocialStrategy": "SOCIAL-MEDIA-STRATEGIE",
   "postGig.phaseBrandOffers": "MARKENANGEBOTE",
   "postGig.phaseTourUpdate": "TOUR-UPDATE",
-  "decryptor": {
-    "unlocked_aria": "Entschlüsseler freigeschaltet",
-    "locked_aria": "Daten entschlüsseln"
-  }
-}
+  "decryptor.unlocked_aria": "Entschlüsseler freigeschaltet",
+  "decryptor.locked_aria": "Daten entschlüsseln",
   "travel.repair.vanAlreadyPerfect": "Der Van ist bereits in perfektem Zustand!",
   "ui.day": "Tag",
   "ui.level": "Level",
