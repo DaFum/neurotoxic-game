@@ -76,6 +76,13 @@ export const PostGig = () => {
   const [postOptions, setPostOptions] = useState([])
   const [postResult, setPostResult] = useState(null)
   const [brandOffers, setBrandOffers] = useState([])
+  const phaseTitleKey =
+    {
+      REPORT: 'ui:postGig.phaseReport',
+      SOCIAL: 'ui:postGig.phaseSocialStrategy',
+      DEALS: 'ui:postGig.phaseBrandOffers',
+      COMPLETE: 'ui:postGig.phaseTourUpdate'
+    }[phase] ?? 'ui:postGig.phaseTourUpdate'
 
   const perfScore = useMemo(() => {
     const rawScore = lastGigStats?.score || 0
@@ -239,7 +246,13 @@ export const PostGig = () => {
         const traitName = result.unlockTrait.traitId
           .replace(/_/g, ' ')
           .toUpperCase()
-        addToast(`Trait Unlocked: ${traitName}`, 'success')
+        addToast(
+          t('ui:postGig.traitUnlocked', {
+            traitName,
+            defaultValue: 'Trait Unlocked: {{traitName}}'
+          }),
+          'success'
+        )
       }
 
       const updatedSocial = {
@@ -334,7 +347,8 @@ export const PostGig = () => {
       updatePlayer,
       unlockTrait,
       addToast,
-      currentGig
+      currentGig,
+      t
     ]
   )
 
@@ -404,7 +418,13 @@ export const PostGig = () => {
         return updates
       })
 
-      addToast(`Accepted deal: ${deal.name}`, 'success')
+      addToast(
+        t('ui:postGig.acceptedDeal', {
+          dealName: deal.name,
+          defaultValue: 'Accepted deal: {{dealName}}'
+        }),
+        'success'
+      )
 
       // Remove processed deal and check if more remain
       setBrandOffers(prev => {
@@ -415,19 +435,29 @@ export const PostGig = () => {
         return remaining
       })
     },
-    [updatePlayer, updateBand, updateSocial, addToast]
+    [updatePlayer, updateBand, updateSocial, addToast, t]
   )
 
   const handleRejectDeals = useCallback(() => {
     // Clears all remaining offers (Reject All / Skip Phase)
     setBrandOffers([])
     setPhase('COMPLETE')
-    addToast('Skipped brand deals.', 'info')
-  }, [addToast])
+    addToast(
+      t('ui:postGig.skippedBrandDeals', {
+        defaultValue: 'Skipped brand deals.'
+      }),
+      'info'
+    )
+  }, [addToast, t])
 
   const handleSpinStory = useCallback(() => {
     if (player.money < 200) {
-      addToast('Not enough cash for PR!', 'error')
+      addToast(
+        t('ui:postGig.notEnoughCashForPr', {
+          defaultValue: 'Not enough cash for PR!'
+        }),
+        'error'
+      )
       return
     }
 
@@ -435,8 +465,13 @@ export const PostGig = () => {
     updateSocial(prev => ({
       controversyLevel: Math.max(0, (prev.controversyLevel || 0) - 25)
     }))
-    addToast('Story Spun. Controversy reduced.', 'success')
-  }, [player, updatePlayer, updateSocial, addToast])
+    addToast(
+      t('ui:postGig.storySpunControversyReduced', {
+        defaultValue: 'Story Spun. Controversy reduced.'
+      }),
+      'success'
+    )
+  }, [player, updatePlayer, updateSocial, addToast, t])
 
   const handleContinue = useCallback(() => {
     if (!financials) return
@@ -543,7 +578,12 @@ export const PostGig = () => {
     }
 
     if (shouldTriggerBankruptcy(newMoney, financials.net)) {
-      addToast('GAME OVER: BANKRUPT! The tour is over.', 'error')
+      addToast(
+        t('ui:postGig.gameOverBankrupt', {
+          defaultValue: 'GAME OVER: BANKRUPT! The tour is over.'
+        }),
+        'error'
+      )
       changeScene(GAME_PHASES.GAMEOVER)
     } else {
       window.setTimeout(() => {
@@ -563,7 +603,8 @@ export const PostGig = () => {
     changeScene,
     activeStoryFlags,
     addQuest,
-    setlist
+    setlist,
+    t
   ])
 
   const handleNextPhase = useCallback(() => {
@@ -574,7 +615,9 @@ export const PostGig = () => {
     return (
       <div className='w-full h-full flex flex-col items-center justify-center bg-(--void-black)'>
         <div className="text-3xl text-(--toxic-green) font-['Metal_Mania'] animate-pulse tracking-widest">
-          TALLYING RECEIPTS...
+          {t('ui:postGig.tallyingReceipts', {
+            defaultValue: 'TALLYING RECEIPTS...'
+          })}
         </div>
       </div>
     )
@@ -594,13 +637,7 @@ export const PostGig = () => {
         className='max-w-4xl w-full border-4 border-(--toxic-green) p-8 bg-(--void-black) relative z-10 shadow-[0_0_50px_var(--toxic-green-glow)] flex flex-col gap-6'
       >
         <h2 className="text-5xl text-center font-['Metal_Mania'] text-(--toxic-green) mb-2 text-shadow-[0_0_10px_var(--toxic-green)]">
-          {phase === 'REPORT'
-            ? 'GIG REPORT'
-            : phase === 'SOCIAL'
-              ? 'SOCIAL MEDIA STRATEGY'
-              : phase === 'DEALS'
-                ? 'BRAND OFFERS'
-                : 'TOUR UPDATE'}
+          {t(phaseTitleKey, { defaultValue: 'TOUR UPDATE' })}
         </h2>
 
         <Suspense

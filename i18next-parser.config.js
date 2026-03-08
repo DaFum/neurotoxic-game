@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   locales: ['en', 'de'],
   defaultNamespace: 'ui',
   lexers: {
@@ -17,7 +17,7 @@ module.exports = {
   sort: true,
   createOldCatalogs: false,
   keepRemoved: true,
-  keySeparator: '.',
+  keySeparator: false,
   namespaceSeparator: ':',
   ns: [
     'ui',
@@ -30,4 +30,4 @@ module.exports = {
     'unlocks'
   ],
   useKeysAsDefaultValue: false
-};
+}
