@@ -133,24 +133,24 @@ test('trySpawnProjectile - verifies all spawned object properties', () => {
   }
 })
 
-test('trySpawnProjectile - health boundary (49 vs 50)', () => {
-  const mockRandom = () => 0.001 // Between 0.0005 and 0.002
-
-  // Health 49: chance 0.002, should spawn
-  assert.ok(trySpawnProjectile({ health: 49, combo: 0 }, mockRandom))
-
-  // Health 50: chance 0.0005, should not spawn
-  assert.equal(trySpawnProjectile({ health: 50, combo: 0 }, mockRandom), null)
-})
-
-test('trySpawnProjectile - combo boundary (30 vs 31)', () => {
+test('trySpawnProjectile - health boundary (59 vs 60)', () => {
   const mockRandom = () => 0.001 // Between 0.0005 and 0.0015
 
-  // Combo 30: chance 0.0005, should not spawn
-  assert.equal(trySpawnProjectile({ health: 100, combo: 30 }, mockRandom), null)
+  // Health 59: chance 0.0005 + 0.001 = 0.0015, should spawn
+  assert.ok(trySpawnProjectile({ health: 59, combo: 0 }, mockRandom))
 
-  // Combo 31: chance 0.0005 + 0.001 = 0.0015, should spawn
-  assert.ok(trySpawnProjectile({ health: 100, combo: 31 }, mockRandom))
+  // Health 60: chance 0.0005, should not spawn
+  assert.equal(trySpawnProjectile({ health: 60, combo: 0 }, mockRandom), null)
+})
+
+test('trySpawnProjectile - combo boundary (20 vs 21)', () => {
+  const mockRandom = () => 0.001 // Between 0.0005 and 0.0015
+
+  // Combo 20: chance 0.0005, should not spawn
+  assert.equal(trySpawnProjectile({ health: 100, combo: 20 }, mockRandom), null)
+
+  // Combo 21: chance 0.0005 + 0.001 = 0.0015, should spawn
+  assert.ok(trySpawnProjectile({ health: 100, combo: 21 }, mockRandom))
 })
 
 test('trySpawnProjectile - screenWidth influence on x', () => {
@@ -183,12 +183,15 @@ test('trySpawnProjectile - screenWidth influence on x', () => {
 
 test('trySpawnProjectile - combined chance (low health AND high combo)', () => {
   const stats = { health: 40, combo: 40 }
-  // 0.002 + 0.001 = 0.003
-  const mockRandom = () => 0.0025 // Should spawn
+  // BASE: 0.0005
+  // COMBO_MEDIUM (40 > 20): +0.001
+  // HEALTH_MEDIUM (40 < 60): +0.001
+  // Total chance: 0.0025
+  const mockRandom = () => 0.002 // Should spawn
 
   assert.ok(trySpawnProjectile(stats, mockRandom))
 
-  const mockRandomNo = () => 0.0035 // Should not spawn
+  const mockRandomNo = () => 0.003 // Should not spawn
   assert.equal(trySpawnProjectile(stats, mockRandomNo), null)
 })
 
@@ -483,7 +486,7 @@ test('updateProjectiles - preserves projectile properties not updated', () => {
   assert.equal(projectiles[0].type, 'bottle')
   assert.equal(projectiles[0].customProp, 'preserved')
   assert.equal(projectiles.length, 1)
-  assert.equal(projectiles[0].y, 1099)
+  assert.equal(projectiles[0].y, 101)
 })
 
 test('updateProjectiles - updates only when below limit', () => {

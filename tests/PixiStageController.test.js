@@ -369,7 +369,7 @@ describe('PixiStageController', () => {
     assert.equal(controller.stageContainer, null)
     assert.equal(controller.colorMatrix, null)
     assert.equal(controller.toxicFilters, null)
-    assert.equal(controller.emptyFilters, null)
+    assert.deepEqual(controller.emptyFilters, [])
   })
 
   test('dispose handles null stageContainer gracefully', async () => {

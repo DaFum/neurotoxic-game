@@ -6,6 +6,7 @@ import { GAME_PHASES } from '../context/gameConstants'
 import { SONGS_DB } from '../data/songs'
 import { getGigModifiers } from '../utils/simulationUtils'
 import { MODIFIER_COSTS } from '../utils/economyEngine'
+import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils'
 import { audioManager } from '../utils/AudioManager'
 import { getSongId } from '../utils/audio/songUtils'
 import { handleError } from '../utils/errorHandler'
@@ -127,8 +128,8 @@ export const PreGig = () => {
       return
     }
 
-    updatePlayer({ money: Math.max(0, player.money - cost) })
-    updateBand({ harmony: Math.min(100, band.harmony + 15) })
+    updatePlayer({ money: clampPlayerMoney(player.money - cost) })
+    updateBand({ harmony: clampBandHarmony(band.harmony + 15) })
     addToast(t('ui:pregig.toasts.meetingHeld'), 'success')
   }
 

@@ -606,6 +606,9 @@ export const shouldTriggerBankruptcy = (newMoney, netIncome) => {
   // If netIncome is undefined (legacy), default to 0 (assume break-even/safe)
   // This restores the "survive at 0 if not losing money" behavior
   const income = netIncome ?? 0
+
+  // To avoid unfair bankruptcy when breaking even but landing exactly at 0 money,
+  // we check if netIncome strictly implies loss.
   return income < 0
 }
 
@@ -615,11 +618,16 @@ export const shouldTriggerBankruptcy = (newMoney, netIncome) => {
  * @param {string[]} _itemsCollected - Array of collected item types.
  * @returns {object} { conditionLoss, fuelBonus }
  */
-export const calculateTravelMinigameResult = (damageTaken, _itemsCollected) => {
+export const calculateTravelMinigameResult = (damageTaken, itemsCollected) => {
   // 50% damage scaling: 100 damage -> 50 condition loss
   const conditionLoss = Math.floor(Math.max(0, damageTaken) / 2)
-  // Fuel bonus disabled per design: fuel only fills via Refuel button
-  const fuelBonus = 0
+
+  // Fuel bonus re-enabled: each fuel item grants 0.5 liters of fuel bonus
+  const fuelItems = Array.isArray(itemsCollected)
+    ? itemsCollected.filter(item => item === 'fuel').length
+    : 0;
+  const fuelBonus = fuelItems * 0.5;
+
   return { conditionLoss, fuelBonus }
 }
 

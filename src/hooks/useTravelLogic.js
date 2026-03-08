@@ -23,6 +23,7 @@ import { handleError, StateError } from '../utils/errorHandler.js'
 import { calcBaseBreakdownChance } from '../utils/upgradeUtils.js'
 import i18n from '../i18n.js'
 import { GAME_PHASES } from '../context/gameConstants.js'
+import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils.js'
 import { translateLocation } from '../utils/locationI18n.js'
 import { normalizeVenueId } from '../utils/mapUtils.js'
 import { ALL_VENUES } from '../data/venues.js'
@@ -220,7 +221,7 @@ export const useTravelLogic = ({
 
       // Apply travel costs
       updatePlayer({
-        money: Math.max(0, (player.money ?? 0) - totalCost),
+        money: clampPlayerMoney((player.money ?? 0) - totalCost),
         van: {
           ...player.van,
           fuel: Math.max(0, (player.van?.fuel ?? 0) - fuelLiters)
@@ -238,7 +239,7 @@ export const useTravelLogic = ({
 
       // Harmony regen while traveling (enabled by Mobile Studio / van_sound_system)
       if (band?.harmonyRegenTravel) {
-        updateBand({ harmony: Math.min(100, (band.harmony ?? 0) + 5) })
+        updateBand({ harmony: clampBandHarmony((band.harmony ?? 0) + 5) })
       }
 
       setIsTraveling(false)
@@ -488,7 +489,7 @@ export const useTravelLogic = ({
         band
       )
 
-      if (Math.max(0, player.money ?? 0) < totalCost) {
+      if (clampPlayerMoney(player.money ?? 0) < totalCost) {
         addToast('Not enough money for gas and food!', 'error')
         if (pendingTravelNode?.id === node.id) {
           clearPendingTravel()
@@ -554,7 +555,7 @@ export const useTravelLogic = ({
     }
 
     updatePlayer({
-      money: Math.max(0, (player.money ?? 0) - cost),
+      money: clampPlayerMoney((player.money ?? 0) - cost),
       van: { ...player.van, fuel: EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL }
     })
     addToast(`Refueled: -${cost}€`, 'success')
@@ -591,7 +592,7 @@ export const useTravelLogic = ({
     )
 
     updatePlayer({
-      money: Math.max(0, (player.money ?? 0) - cost),
+      money: clampPlayerMoney((player.money ?? 0) - cost),
       van: {
         ...player.van,
         condition: 100,
