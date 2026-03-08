@@ -177,6 +177,21 @@ export const handleLoadGame = (state, payload) => {
       : state.unlocks || []
   }
 
+  // Migration: support older raw venue IDs while preserving current venues:* keys.
+  const migratePlayerLocation = location => {
+    if (typeof location !== 'string') return location
+    if (location.startsWith('venues:') && location.endsWith('.name')) {
+      return location
+    }
+
+    const normalizedLocation = normalizeVenueId(location)
+    if (!normalizedLocation || normalizedLocation === 'Unknown') {
+      return location
+    }
+
+    return `venues:${normalizedLocation}.name`
+  }
+
   // Migration: Legacy venue translation keys -> Raw IDs
   const migrateLegacyVenueId = id => {
     if (typeof id !== 'string') return id
@@ -190,7 +205,7 @@ export const handleLoadGame = (state, payload) => {
       ...safeState.player,
       location:
         typeof safeState.player.location === 'string'
-          ? migrateLegacyVenueId(safeState.player.location)
+          ? migratePlayerLocation(safeState.player.location)
           : safeState.player.location
     },
     venueBlacklist: safeState.venueBlacklist.map(migrateLegacyVenueId)
