@@ -2,11 +2,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import {
-  readLocaleJson,
-  flattenToEntries,
-  hasKeyOrPrefix
-} from './utils/localeTestUtils.js'
+import { readLocaleJson, flattenToEntries } from './utils/localeTestUtils.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -14,6 +10,10 @@ const __dirname = path.dirname(__filename)
 const LOCALES_ROOT = path.join(__dirname, '..', 'public', 'locales')
 const LOCALES = ['en', 'de']
 const CHANGED_NAMESPACES = ['economy', 'minigame', 'ui', 'venues']
+
+const hasKeyOrPrefix = (data, key) =>
+  data[key] !== undefined ||
+  Object.keys(data).some(existing => existing.startsWith(`${key}.`))
 
 /**
  * Comprehensive tests for the recently changed locale files.
@@ -358,4 +358,124 @@ test('changed locale files are structurally sound', () => {
     totalKeys > 100,
     `Should have substantial number of translations (found ${totalKeys})`
   )
+})
+
+// Test: No duplicate keys in any namespace
+test('no duplicate keys exist within each locale file', () => {
+  LOCALES.forEach(locale => {
+    CHANGED_NAMESPACES.forEach(namespace => {
+      const localeDir = path.join(LOCALES_ROOT, locale)
+      const data = readLocaleJson(localeDir, `${namespace}.json`)
+      const entries = flattenToEntries(data)
+
+      const keys = entries.map(e => e.key)
+      const uniqueKeys = new Set(keys)
+
+      assert.equal(
+        keys.length,
+        uniqueKeys.size,
+        `${locale}/${namespace}.json should not have duplicate keys`
+      )
+    })
+  })
+})
+
+// Test: Special characters are properly escaped
+test('translations properly handle special characters', () => {
+  LOCALES.forEach(locale => {
+    CHANGED_NAMESPACES.forEach(namespace => {
+      const localeDir = path.join(LOCALES_ROOT, locale)
+      const data = readLocaleJson(localeDir, `${namespace}.json`)
+      const entries = flattenToEntries(data)
+
+      entries.forEach(entry => {
+        if (typeof entry.value === 'string') {
+          // Check for unescaped quotes that could break JSON
+          const hasUnbalancedQuotes =
+            (entry.value.match(/"/g) || []).length % 2 !== 0
+
+          assert.ok(
+            !hasUnbalancedQuotes,
+            `${locale}/${namespace}.json key "${entry.key}" should not have unbalanced quotes`
+          )
+        }
+      })
+    })
+  })
+})
+
+// Test: UI namespace has postGig structure (related to changed file)
+test('ui.json has postGig related translation keys', () => {
+  LOCALES.forEach(locale => {
+    const localeDir = path.join(LOCALES_ROOT, locale)
+    const data = readLocaleJson(localeDir, 'ui.json')
+
+    assert.ok(
+      hasKeyOrPrefix(data, 'postGig'),
+      `${locale}/ui.json should have postGig structure`
+    )
+  })
+})
+
+// Test: Economy namespace has reasonable numeric placeholders
+test('economy.json numeric placeholders use valid variable names', () => {
+  LOCALES.forEach(locale => {
+    const localeDir = path.join(LOCALES_ROOT, locale)
+    const data = readLocaleJson(localeDir, 'economy.json')
+    const entries = flattenToEntries(data)
+
+    entries.forEach(entry => {
+      if (typeof entry.value === 'string') {
+        const placeholders = entry.value.match(/{{[^}]+}}/g) || []
+
+        placeholders.forEach(placeholder => {
+          // Ensure placeholder contains only valid characters
+          const content = placeholder.slice(2, -2).trim()
+
+          assert.ok(
+            /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(content),
+            `${locale}/economy.json key "${entry.key}" has invalid placeholder format: ${placeholder}`
+          )
+        })
+      }
+    })
+  })
+})
+
+// Test: Minigame namespace structure completeness
+test('minigame.json has comprehensive tourbus keys', () => {
+  LOCALES.forEach(locale => {
+    const localeDir = path.join(LOCALES_ROOT, locale)
+    const data = readLocaleJson(localeDir, 'minigame.json')
+    const entries = flattenToEntries(data)
+
+    const tourbusKeys = entries.filter(e => e.key.startsWith('tourbus'))
+
+    assert.ok(
+      tourbusKeys.length >= 5,
+      `${locale}/minigame.json should have at least 5 tourbus-related keys`
+    )
+  })
+})
+
+// Test: Venues namespace consistency between locales
+test('venues.json has same number of venues in all locales', () => {
+  const enData = readLocaleJson(path.join(LOCALES_ROOT, 'en'), 'venues.json')
+  const enEntries = flattenToEntries(enData)
+  const enVenueCount = enEntries.filter(e => e.key.endsWith('.name')).length
+
+  LOCALES.forEach(locale => {
+    if (locale === 'en') return
+
+    const localeDir = path.join(LOCALES_ROOT, locale)
+    const data = readLocaleJson(localeDir, 'venues.json')
+    const entries = flattenToEntries(data)
+    const venueCount = entries.filter(e => e.key.endsWith('.name')).length
+
+    assert.equal(
+      venueCount,
+      enVenueCount,
+      `${locale}/venues.json should have same number of venues as en locale`
+    )
+  })
 })
