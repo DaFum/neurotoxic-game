@@ -1,105 +1,67 @@
 {
-  "gigExpenses": {
-    "catering": {
-      "detail": "Vermeidet den Müdigkeits-Malus",
-      "label": "Catering / Energie"
-    },
-    "guestList": {
-      "detail": "VIP-Behandlung (+Bareinnahmen, +Punkte)",
-      "label": "Gästeliste"
-    },
-    "merchRestock": {
-      "detail": "Warenkosten",
-      "label": "Merch-Nachbestellung"
-    },
-    "merchStand": {
-      "detail": "Bessere Präsentation",
-      "label": "Merch-Stand"
-    },
-    "socialAds": {
-      "detail": "Promo-Kampagne",
-      "label": "Social-Werbung"
-    },
-    "soundcheck": {
-      "detail": "Vorbereitungszeit",
-      "label": "Soundcheck"
-    },
-    "venueSplit": {
-      "detail": "{{rate}}% vom Einlass",
-      "label": "Venue-Anteil"
-    }
-  },
-  "gigIncome": {
-    "badShow": {
-      "detail": "Publikum ist früh gegangen...",
-      "label": "SCHLECHTE SHOW"
-    },
-    "barCut": {
-      "detail": "{{percent}}% der Bar",
-      "label": "Bar-Anteil"
-    },
-    "beerSponsor": {
-      "detail": "Max. Hype erreicht",
-      "label": "Bier-Sponsor"
-    },
-    "guarantee": {
-      "detail": "Festhonorar",
-      "label": "Garantie"
-    },
-    "hypeBonus": {
-      "detail": "Merch-Wahnsinn (S-Rang)!",
-      "label": "HYPE-BONUS"
-    },
-    "loyalFans": {
-      "detail": "Unterstützen trotz schlechter PR",
-      "label": "TREUE FANS"
-    },
-    "merchSales": {
-      "detail": "{{buyers}} Käufer",
-      "label": "Merch-Verkäufe"
-    },
-    "techSponsor": {
-      "detail": "Perfektes Set (0 Fehler)",
-      "label": "Technik-Sponsor"
-    },
-    "ticketSales": {
-      "detail": "{{sold}} / {{capacity}} verkauft",
-      "label": "Ticketverkäufe"
-    },
-    "vipBarRevenue": {
-      "detail": "VIP-Publikum — {{percent}}% der Bar",
-      "label": "VIP-Bareinnahmen"
-    }
-  },
+  "gigExpenses.catering.detail": "Vermeidet den Müdigkeits-Malus",
+  "gigExpenses.catering.label": "Catering / Energie",
+  "gigExpenses.guestList.detail": "VIP-Behandlung (+Bareinnahmen, +Punkte)",
+  "gigExpenses.guestList.label": "Gästeliste",
+  "gigExpenses.merchRestock.detail": "Warenkosten",
+  "gigExpenses.merchRestock.label": "Merch-Nachbestellung",
+  "gigExpenses.merchStand.detail": "Bessere Präsentation",
+  "gigExpenses.merchStand.label": "Merch-Stand",
+  "gigExpenses.socialAds.detail": "Promo-Kampagne",
+  "gigExpenses.socialAds.label": "Social-Werbung",
+  "gigExpenses.soundcheck.detail": "Vorbereitungszeit",
+  "gigExpenses.soundcheck.label": "Soundcheck",
+  "gigExpenses.venueSplit.detail": "{{rate}}% vom Einlass",
+  "gigExpenses.venueSplit.label": "Venue-Anteil",
+  "gigIncome.badShow.detail": "Publikum ist früh gegangen...",
+  "gigIncome.badShow.label": "SCHLECHTE SHOW",
+  "gigIncome.barCut.detail": "{{percent}}% der Bar",
+  "gigIncome.barCut.label": "Bar-Anteil",
+  "gigIncome.beerSponsor.detail": "Max. Hype erreicht",
+  "gigIncome.beerSponsor.label": "Bier-Sponsor",
+  "gigIncome.guarantee.detail": "Festhonorar",
+  "gigIncome.guarantee.label": "Garantie",
+  "gigIncome.hypeBonus.detail": "Merch-Wahnsinn (S-Rang)!",
+  "gigIncome.hypeBonus.label": "HYPE-BONUS",
+  "gigIncome.loyalFans.detail": "Unterstützen trotz schlechter PR",
+  "gigIncome.loyalFans.label": "TREUE FANS",
+  "gigIncome.merchSales.detail": "{{buyers}} Käufer",
+  "gigIncome.merchSales.label": "Merch-Verkäufe",
+  "gigIncome.techSponsor.detail": "Perfektes Set (0 Fehler)",
+  "gigIncome.techSponsor.label": "Technik-Sponsor",
+  "gigIncome.ticketSales.detail": "{{sold}} / {{capacity}} verkauft",
+  "gigIncome.ticketSales.label": "Ticketverkäufe",
+  "gigIncome.vipBarRevenue.detail": "VIP-Publikum — {{percent}}% der Bar",
+  "gigIncome.vipBarRevenue.label": "VIP-Bareinnahmen",
   "postGig": {
-    "continueToSocials": "Weiter zu Socials >",
-    "expenses": "AUSGABEN",
-    "income": "EINNAHMEN",
-    "loading": "Bericht wird geladen...",
-    "netProfit": "REINGEWINN",
-    "total": "GESAMT"
+    "continueToSocials": "",
+    "expenses": "",
+    "income": "",
+    "loading": "",
+    "netProfit": "",
+    "total": ""
   },
-  "postGig.continueToSocials": "",
-  "postGig.expenses": "",
-  "postGig.income": "",
-  "postGig.loading": "",
-  "postGig.netProfit": "",
-  "postGig.total": "",
+  "postGig.continueToSocials": "Weiter zu Socials >",
+  "postGig.expenses": "AUSGABEN",
+  "postGig.income": "EINNAHMEN",
+  "postGig.loading": "Bericht wird geladen...",
+  "postGig.netProfit": "REINGEWINN",
+  "postGig.total": "GESAMT",
   "social": {
-    "category": "Kategorie",
-    "chooseStrategy": "WÄHLE DEINE STRATEGIE",
-    "consistentGrowth": "Konsistentes Wachstum",
-    "currentTrend": "AKTUELLER TREND:",
-    "highVariance": "Hohes Varianzrisiko",
-    "influence": "Einfluss",
-    "platform": "Plattform",
-    "postToSocial": "AUF SOCIAL MEDIA POSTEN"
+    "category": "Category",
+    "chooseStrategy": "CHOOSE YOUR STRATEGY",
+    "consistentGrowth": "Consistent Growth",
+    "currentTrend": "CURRENT TREND:",
+    "highVariance": "High Variance Risk",
+    "platform": "Platform",
+    "postToSocial": "POST TO SOCIAL MEDIA"
   },
-  "social.category": "Category",
-  "social.chooseStrategy": "CHOOSE YOUR STRATEGY",
-  "social.consistentGrowth": "Consistent Growth",
-  "social.currentTrend": "CURRENT TREND:",
-  "social.highVariance": "High Variance Risk",
-  "social.platform": "Platform",
-  "social.postToSocial": "POST TO SOCIAL MEDIA"
+  "social.category": "Kategorie",
+  "social.chooseStrategy": "WÄHLE DEINE STRATEGIE",
+  "social.consistentGrowth": "Konsistentes Wachstum",
+  "social.currentTrend": "AKTUELLER TREND:",
+  "social.highVariance": "Hohes Varianzrisiko",
+  "social.influence": "Einfluss",
+  "social.platform": "Plattform",
+  "social.postToSocial": "AUF SOCIAL MEDIA POSTEN"
 }
