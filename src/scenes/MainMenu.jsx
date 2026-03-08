@@ -59,9 +59,6 @@ export const MainMenu = () => {
     }
   }, [showNameInput])
 
-  const audioInitErrorMessage = t('ui:errors.audio_init_failed')
-  const ambientStartErrorMessage = t('ui:errors.ambient_start_failed')
-
   const reportAudioIssue = useCallback(
     (error, fallbackMessage) => {
       if (!isMountedRef.current) return
@@ -76,9 +73,9 @@ export const MainMenu = () => {
 
   const startAmbientSafely = useCallback(() => {
     void audioManager.startAmbient().catch(err => {
-      reportAudioIssue(err, ambientStartErrorMessage)
+      reportAudioIssue(err, tRef.current('ui:errors.ambient_start_failed'))
     })
-  }, [ambientStartErrorMessage, reportAudioIssue])
+  }, [reportAudioIssue])
 
   const proceedToTour = useCallback(async () => {
     setIsStarting(true)
@@ -104,14 +101,19 @@ export const MainMenu = () => {
     // Audio setup is fire-and-forget — never blocks scene transitions.
     void audioManager
       .ensureAudioContext()
-      .catch(err => reportAudioIssue(err, audioInitErrorMessage))
-      .then(() => startAmbientSafely())
+      .then(success => {
+        if (success) {
+          startAmbientSafely()
+        } else {
+          reportAudioIssue(new Error('Audio unlock failed'), tRef.current('ui:errors.audio_init_failed'))
+        }
+      })
+      .catch(err => reportAudioIssue(err, tRef.current('ui:errors.audio_init_failed')))
   }, [
     resetState,
     changeScene,
     reportAudioIssue,
     startAmbientSafely,
-    audioInitErrorMessage,
     updatePlayer
   ])
 
@@ -183,16 +185,20 @@ export const MainMenu = () => {
     // Audio is fire-and-forget; Overworld re-syncs audio.
     void audioManager
       .ensureAudioContext()
-      .catch(err => reportAudioIssue(err, audioInitErrorMessage))
-      .then(() => startAmbientSafely())
+      .then(success => {
+        if (success) {
+          startAmbientSafely()
+        } else {
+          reportAudioIssue(new Error('Audio unlock failed'), tRef.current('ui:errors.audio_init_failed'))
+        }
+      })
+      .catch(err => reportAudioIssue(err, tRef.current('ui:errors.audio_init_failed')))
   }, [
     loadGame,
     addToast,
     changeScene,
     reportAudioIssue,
-    startAmbientSafely,
-    audioInitErrorMessage,
-    t
+    startAmbientSafely
   ])
 
   const handleCredits = useCallback(
