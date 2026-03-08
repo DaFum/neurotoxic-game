@@ -258,6 +258,79 @@ describe('handleError', () => {
     }
   })
 
+  it('should sanitize remote telemetry payload and exclude user agent', () => {
+    const originalWindow = globalThis.window
+    const originalFetch = globalThis.fetch
+    const originalNavigatorDescriptor = Object.getOwnPropertyDescriptor(
+      globalThis,
+      'navigator'
+    )
+
+    const fetchCalls = []
+    const beaconCalls = []
+
+    globalThis.fetch = (url, options) => {
+      fetchCalls.push({ url, options })
+      return Promise.resolve({ ok: true })
+    }
+    Object.defineProperty(globalThis, 'navigator', {
+      configurable: true,
+      writable: true,
+      value: {
+        userAgent: 'sensitive-agent',
+        sendBeacon: (url, payload) => {
+          beaconCalls.push({ url, payload })
+          return true
+        }
+      }
+    })
+    globalThis.window = {
+      navigator: { onLine: true },
+      dispatchEvent: () => true
+    }
+
+    try {
+      handleError(new Error('Sensitive info: token=SECRET123'), {
+        silent: true
+      })
+
+      assert.strictEqual(fetchCalls.length, 1)
+      assert.strictEqual(fetchCalls[0].url, '/api/analytics/error')
+      const fetchPayload = JSON.parse(fetchCalls[0].options.body)
+      assert.deepStrictEqual(fetchPayload, {
+        message: 'Error captured',
+        code: ErrorCategory.UNKNOWN,
+        timestamp: fetchPayload.timestamp
+      })
+
+      assert.strictEqual(beaconCalls.length, 1)
+      assert.strictEqual(beaconCalls[0].url, '/api/analytics/error')
+      const beaconPayload = JSON.parse(beaconCalls[0].payload)
+      assert.deepStrictEqual(beaconPayload, {
+        event: 'error',
+        error: {
+          message: 'Error captured',
+          code: ErrorCategory.UNKNOWN,
+          timestamp: beaconPayload.error.timestamp
+        }
+      })
+      assert.strictEqual(beaconPayload.userAgent, undefined)
+    } finally {
+      globalThis.window = originalWindow
+      globalThis.fetch = originalFetch
+
+      if (originalNavigatorDescriptor) {
+        Object.defineProperty(
+          globalThis,
+          'navigator',
+          originalNavigatorDescriptor
+        )
+      } else {
+        delete globalThis.navigator
+      }
+    }
+  })
+
   it('should safely handle null options object', () => {
     const error = new Error('Null options')
     const result = handleError(error, null)

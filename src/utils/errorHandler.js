@@ -242,6 +242,14 @@ const sanitizeErrorInfo = errorInfo => ({
   timestamp: errorInfo?.timestamp || Date.now()
 })
 
+const sanitizeTelemetryErrorInfo = errorInfo => ({
+  // Telemetry intentionally excludes raw error messages to avoid leaking
+  // sensitive/user-controlled values.
+  message: 'Error captured',
+  code: errorInfo?.category || ErrorCategory.UNKNOWN,
+  timestamp: errorInfo?.timestamp || Date.now()
+})
+
 const buildErrorInfo = (error, normalizedOptions, fallbackMessage) => {
   let errorInfo
 
@@ -317,7 +325,7 @@ const reportErrorRemote = errorInfo => {
       fetch('/api/analytics/error', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sanitizeErrorInfo(errorInfo))
+        body: JSON.stringify(sanitizeTelemetryErrorInfo(errorInfo))
       }).catch(() => {
         // Silently fail if tracking is blocked or endpoint doesn't exist
       })
@@ -331,8 +339,7 @@ const reportErrorRemote = errorInfo => {
     try {
       const payload = JSON.stringify({
         event: 'error',
-        error: sanitizeErrorInfo(errorInfo),
-        userAgent: navigator.userAgent
+        error: sanitizeTelemetryErrorInfo(errorInfo)
       })
       // Intentionally hardcoded analytics endpoint stub per requirements
       navigator.sendBeacon('/api/analytics/error', payload)
