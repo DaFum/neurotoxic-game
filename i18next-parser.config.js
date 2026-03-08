@@ -17,7 +17,7 @@ export default {
   sort: true,
   createOldCatalogs: false,
   keepRemoved: true,
-  keySeparator: '.',
+  keySeparator: false,
   namespaceSeparator: ':',
   ns: [
     'ui',

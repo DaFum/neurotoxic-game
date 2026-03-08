@@ -1,11 +1,4 @@
 {
-  "tourbus": {
-    "damage": "DAMAGE:",
-    "destination_reached": "DESTINATION REACHED",
-    "distance": "DISTANCE:",
-    "title": "TOURBUS TERROR",
-    "van_condition": "Van Condition:"
-  },
   "tourbus.damage": "DAMAGE:",
   "tourbus.destination_reached": "DESTINATION REACHED",
   "tourbus.distance": "DISTANCE:",

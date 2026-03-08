@@ -13,6 +13,7 @@ i18n
     load: 'languageOnly', // Eliminate region-specific loads (e.g. de-DE -> de) to reduce requests
     ns: ['ui', 'items', 'venues', 'events', 'economy', 'chatter', 'minigame', 'unlocks'], // Pre-load namespaces used across scenes/modal overlays
     defaultNS: 'ui',
+    keySeparator: false,
     interpolation: { escapeValue: false },
     backend: {
       loadPath: '/locales/{{lng}}/{{ns}}.json'
