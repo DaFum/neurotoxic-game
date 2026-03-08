@@ -59,8 +59,6 @@ export const MainMenu = () => {
     }
   }, [showNameInput])
 
-  const ambientStartErrorMessage = t('ui:errors.ambient_start_failed')
-
   const reportAudioIssue = useCallback(
     (error, fallbackMessage) => {
       if (!isMountedRef.current) return
@@ -75,9 +73,9 @@ export const MainMenu = () => {
 
   const startAmbientSafely = useCallback(() => {
     void audioManager.startAmbient().catch(err => {
-      reportAudioIssue(err, ambientStartErrorMessage)
+      reportAudioIssue(err, tRef.current('ui:errors.ambient_start_failed'))
     })
-  }, [ambientStartErrorMessage, reportAudioIssue])
+  }, [reportAudioIssue])
 
   const proceedToTour = useCallback(async () => {
     setIsStarting(true)
