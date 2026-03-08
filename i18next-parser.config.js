@@ -16,8 +16,8 @@ export default {
   // additional settings to match existing application structure
   sort: true,
   createOldCatalogs: false,
-  keepRemoved: false,
-  keySeparator: false,
+  keepRemoved: true,
+  keySeparator: '.',
   namespaceSeparator: ':',
   ns: [
     'ui',

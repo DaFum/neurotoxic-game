@@ -14,19 +14,13 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
       s => (typeof s === 'string' ? s : s.id) === songId
     )
 
-    const songObj = SONGS_DB.find(s => s.id === songId)
-    const songName = songObj ? songObj.name : songId
-    const venueName = t('ui:bandhq.venue', { defaultValue: 'Band HQ' })
-
     let newSetlist
     if (currentIndex >= 0) {
       newSetlist = [...setlist]
       newSetlist.splice(currentIndex, 1)
       addToast(
         t('ui:bandhq.setlist.songRemoved', {
-          defaultValue: 'Song removed from setlist',
-          song: songName,
-          venue: venueName
+          defaultValue: 'Song removed from setlist'
         }),
         'info'
       )
@@ -35,9 +29,7 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
       newSetlist = [{ id: songId }]
       addToast(
         t('ui:bandhq.setlist.songSelected', {
-          defaultValue: 'Song selected for next Gig',
-          song: songName,
-          venue: venueName
+          defaultValue: 'Song selected for next Gig'
         }),
         'success'
       )
