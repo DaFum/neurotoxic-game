@@ -668,5 +668,9 @@
   "postGig.phaseReport": "GIG-BERICHT",
   "postGig.phaseSocialStrategy": "SOCIAL-MEDIA-STRATEGIE",
   "postGig.phaseBrandOffers": "MARKENANGEBOTE",
-  "postGig.phaseTourUpdate": "TOUR-UPDATE"
+  "postGig.phaseTourUpdate": "TOUR-UPDATE",
+  "decryptor": {
+    "unlocked_aria": "Entschlüsseler freigeschaltet",
+    "locked_aria": "Daten entschlüsseln"
+  }
 }

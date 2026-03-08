@@ -1645,6 +1645,13 @@ export const VoidDecryptor = () => {
       type='button'
       className='w-full h-64 border-2 border-(--toxic-green)/50 bg-(--void-black) flex flex-col items-center justify-center p-6 relative group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)'
       onClick={() => setDecrypted(true)}
+      aria-label={
+        decrypted
+          ? t('ui:decryptor.unlocked_aria', {
+              defaultValue: 'Decryptor Unlocked'
+            })
+          : t('ui:decryptor.locked_aria', { defaultValue: 'Decrypt Data' })
+      }
       aria-pressed={decrypted}
     >
       {/* Glitch Frame Corners */}
