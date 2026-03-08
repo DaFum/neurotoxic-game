@@ -1,5 +1,12 @@
 import { GAME_PHASES } from '../../context/gameConstants.js'
 
+const isPlayerInCity = (state, citySlug) => {
+  const location = state.player?.location
+  if (!location) return false
+
+  return location === citySlug || location.includes(`venues:${citySlug}`)
+}
+
 export const CHATTER_DB = [
   // --- GENERAL TRAVEL / OVERWORLD ---
   {
@@ -1326,75 +1333,68 @@ export const CHATTER_DB = [
   {
     text: 'chatter:standard.msg_202',
     weight: 10,
-    condition: state => state.player.location?.includes('venues:stendal')
+    condition: state => isPlayerInCity(state, 'stendal')
   },
   {
     text: 'chatter:standard.msg_203',
     weight: 5,
-    condition: state =>
-      state.player.location && state.player.location.includes('venues:berlin')
+    condition: state => isPlayerInCity(state, 'berlin')
   },
   {
     text: 'chatter:standard.msg_204',
     weight: 10,
-    condition: state => state.player.location?.includes('venues:stendal')
+    condition: state => isPlayerInCity(state, 'stendal')
   },
   {
     text: 'chatter:standard.msg_205',
     weight: 5,
-    condition: state =>
-      state.player.location && state.player.location.includes('venues:berlin')
+    condition: state => isPlayerInCity(state, 'berlin')
   },
   {
     text: 'chatter:standard.msg_206',
     weight: 10,
-    condition: state => state.player.location?.includes('venues:stendal')
+    condition: state => isPlayerInCity(state, 'stendal')
   },
   {
     text: 'chatter:standard.msg_207',
     weight: 8,
-    condition: state => state.player.location?.includes('venues:stendal')
+    condition: state => isPlayerInCity(state, 'stendal')
   },
   {
     text: 'chatter:standard.msg_208',
     weight: 5,
-    condition: state =>
-      state.player.location && state.player.location.includes('venues:berlin')
+    condition: state => isPlayerInCity(state, 'berlin')
   },
   {
     text: 'chatter:standard.msg_209',
     weight: 5,
-    condition: state =>
-      state.player.location && state.player.location.includes('venues:berlin')
+    condition: state => isPlayerInCity(state, 'berlin')
   },
   {
     text: 'chatter:standard.msg_210',
     weight: 4,
-    condition: state =>
-      state.player.location && state.player.location.includes('venues:berlin')
+    condition: state => isPlayerInCity(state, 'berlin')
   },
   {
     text: 'chatter:standard.msg_211',
     weight: 8,
-    condition: state => state.player.location?.includes('venues:stendal'),
+    condition: state => isPlayerInCity(state, 'stendal'),
     speaker: 'Lars'
   },
   {
     text: 'chatter:standard.msg_212',
     weight: 5,
-    condition: state =>
-      state.player.location && state.player.location.includes('venues:berlin')
+    condition: state => isPlayerInCity(state, 'berlin')
   },
   {
     text: 'chatter:standard.msg_213',
     weight: 8,
-    condition: state => state.player.location?.includes('venues:stendal')
+    condition: state => isPlayerInCity(state, 'stendal')
   },
   {
     text: 'chatter:standard.msg_214',
     weight: 4,
-    condition: state =>
-      state.player.location && state.player.location.includes('venues:berlin')
+    condition: state => isPlayerInCity(state, 'berlin')
   },
 
   // --- GIG SPECIFIC (In-Game) ---

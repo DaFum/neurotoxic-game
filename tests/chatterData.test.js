@@ -621,6 +621,19 @@ test('location chatter fires in Stendal', () => {
   assert.ok(matches.length > 0, 'Expected Stendal chatter')
 })
 
+test('location chatter fires in city-slug Stendal format', () => {
+  const state = buildState(GAME_PHASES.OVERWORLD, {
+    player: { location: 'stendal' }
+  })
+  const matches = CHATTER_DB.filter(
+    e =>
+      typeof e.condition === 'function' &&
+      e.condition(state) &&
+      e.text === 'chatter:standard.msg_202'
+  )
+  assert.ok(matches.length > 0, 'Expected Stendal chatter for city slug')
+})
+
 test('location chatter fires in Berlin', () => {
   const state = buildState(GAME_PHASES.OVERWORLD, {
     player: { location: 'venues:berlin_clubhouse' }
