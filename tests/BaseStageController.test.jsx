@@ -1,0 +1,121 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+
+const mocks = vi.hoisted(() => ({
+  add: vi.fn(),
+  remove: vi.fn(),
+  destroy: vi.fn(),
+  appendChild: vi.fn(),
+  stageAddChild: vi.fn(),
+  disconnect: vi.fn(),
+  observe: vi.fn(),
+  init: vi.fn(),
+  error: vi.fn(),
+  warn: vi.fn()
+}))
+
+vi.mock('pixi.js', () => {
+  class MockApplication {
+    constructor() {
+      this.canvas = { id: 'canvas' }
+      this.stage = { addChild: mocks.stageAddChild }
+      this.ticker = { add: mocks.add, remove: mocks.remove }
+      this.init = mocks.init
+      this.destroy = mocks.destroy
+    }
+  }
+
+  class MockContainer {}
+
+  return {
+    Application: MockApplication,
+    Container: MockContainer
+  }
+})
+
+vi.mock('../src/utils/logger', () => ({
+  logger: { error: mocks.error, warn: mocks.warn }
+}))
+
+vi.mock('../src/components/stage/utils', () => ({
+  getOptimalResolution: () => 2
+}))
+
+import { BaseStageController } from '../src/components/stage/BaseStageController'
+
+class TestController extends BaseStageController {
+  async setup() {
+    this.setupRan = true
+  }
+
+  draw() {
+    this.drawRan = (this.drawRan || 0) + 1
+  }
+}
+
+describe('BaseStageController', () => {
+  let containerRef
+  let controller
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    containerRef = { current: { appendChild: mocks.appendChild } }
+    global.ResizeObserver = class {
+      observe = mocks.observe
+      disconnect = mocks.disconnect
+    }
+    controller = new TestController({
+      containerRef,
+      gameStateRef: { current: {} },
+      updateRef: { current: vi.fn() }
+    })
+    mocks.init.mockResolvedValue(undefined)
+  })
+
+  afterEach(() => {
+    delete global.ResizeObserver
+  })
+
+  it('initializes app and stage container on success', async () => {
+    await controller.init()
+
+    expect(controller.app).toBeTruthy()
+    expect(controller.container).toBeTruthy()
+    expect(controller.setupRan).toBe(true)
+    expect(mocks.appendChild).toHaveBeenCalled()
+    expect(mocks.stageAddChild).toHaveBeenCalled()
+    expect(mocks.add).toHaveBeenCalledWith(controller.handleTicker)
+  })
+
+  it('handles init failures and disposes safely', async () => {
+    mocks.init.mockRejectedValueOnce(new Error('boom'))
+
+    await controller.init()
+
+    expect(mocks.error).toHaveBeenCalled()
+    expect(controller.app).toBe(null)
+    expect(controller.isDisposed).toBe(true)
+  })
+
+  it('handleResize draws when app exists and ignores without app', () => {
+    controller.handleResize()
+    expect(controller.drawRan).toBeUndefined()
+
+    controller.app = {}
+    controller.handleResize()
+    expect(controller.drawRan).toBe(1)
+  })
+
+  it('dispose destroys resources once and is idempotent', async () => {
+    await controller.init()
+
+    controller.dispose()
+    expect(mocks.remove).toHaveBeenCalledWith(controller.handleTicker)
+    expect(mocks.destroy).toHaveBeenCalledWith(
+      { removeView: true },
+      { children: true, texture: true, textureSource: true }
+    )
+    expect(mocks.disconnect).toHaveBeenCalled()
+
+    expect(() => controller.dispose()).not.toThrow()
+  })
+})
