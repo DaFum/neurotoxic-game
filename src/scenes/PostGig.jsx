@@ -239,7 +239,13 @@ export const PostGig = () => {
         const traitName = result.unlockTrait.traitId
           .replace(/_/g, ' ')
           .toUpperCase()
-        addToast(`Trait Unlocked: ${traitName}`, 'success')
+        addToast(
+          t('ui:postGig.traitUnlocked', {
+            traitName,
+            defaultValue: 'Trait Unlocked: {{traitName}}'
+          }),
+          'success'
+        )
       }
 
       const updatedSocial = {
@@ -334,7 +340,8 @@ export const PostGig = () => {
       updatePlayer,
       unlockTrait,
       addToast,
-      currentGig
+      currentGig,
+      t
     ]
   )
 
@@ -404,7 +411,13 @@ export const PostGig = () => {
         return updates
       })
 
-      addToast(`Accepted deal: ${deal.name}`, 'success')
+      addToast(
+        t('ui:postGig.acceptedDeal', {
+          dealName: deal.name,
+          defaultValue: 'Accepted deal: {{dealName}}'
+        }),
+        'success'
+      )
 
       // Remove processed deal and check if more remain
       setBrandOffers(prev => {
@@ -415,19 +428,29 @@ export const PostGig = () => {
         return remaining
       })
     },
-    [updatePlayer, updateBand, updateSocial, addToast]
+    [updatePlayer, updateBand, updateSocial, addToast, t]
   )
 
   const handleRejectDeals = useCallback(() => {
     // Clears all remaining offers (Reject All / Skip Phase)
     setBrandOffers([])
     setPhase('COMPLETE')
-    addToast('Skipped brand deals.', 'info')
-  }, [addToast])
+    addToast(
+      t('ui:postGig.skippedBrandDeals', {
+        defaultValue: 'Skipped brand deals.'
+      }),
+      'info'
+    )
+  }, [addToast, t])
 
   const handleSpinStory = useCallback(() => {
     if (player.money < 200) {
-      addToast('Not enough cash for PR!', 'error')
+      addToast(
+        t('ui:postGig.notEnoughCashForPr', {
+          defaultValue: 'Not enough cash for PR!'
+        }),
+        'error'
+      )
       return
     }
 
@@ -435,8 +458,13 @@ export const PostGig = () => {
     updateSocial(prev => ({
       controversyLevel: Math.max(0, (prev.controversyLevel || 0) - 25)
     }))
-    addToast('Story Spun. Controversy reduced.', 'success')
-  }, [player, updatePlayer, updateSocial, addToast])
+    addToast(
+      t('ui:postGig.storySpunControversyReduced', {
+        defaultValue: 'Story Spun. Controversy reduced.'
+      }),
+      'success'
+    )
+  }, [player, updatePlayer, updateSocial, addToast, t])
 
   const handleContinue = useCallback(() => {
     if (!financials) return
@@ -543,7 +571,12 @@ export const PostGig = () => {
     }
 
     if (shouldTriggerBankruptcy(newMoney, financials.net)) {
-      addToast('GAME OVER: BANKRUPT! The tour is over.', 'error')
+      addToast(
+        t('ui:postGig.gameOverBankrupt', {
+          defaultValue: 'GAME OVER: BANKRUPT! The tour is over.'
+        }),
+        'error'
+      )
       changeScene(GAME_PHASES.GAMEOVER)
     } else {
       window.setTimeout(() => {
@@ -563,7 +596,8 @@ export const PostGig = () => {
     changeScene,
     activeStoryFlags,
     addQuest,
-    setlist
+    setlist,
+    t
   ])
 
   const handleNextPhase = useCallback(() => {

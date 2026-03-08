@@ -1,6 +1,7 @@
 import { logger } from './logger.js'
 import { handleError } from './errorHandler.js'
 import { GAME_PHASES } from '../context/gameConstants.js'
+import i18n from '../i18n.js'
 
 /**
  * Shared logic for handling arrival at a map node.
@@ -36,28 +37,48 @@ export const handleNodeArrival = ({
         mood: Math.min(100, Math.max(0, m.mood + 10))
       }))
       updateBand({ members: newMembers })
-      addToast('Rested at stop. Band feels better.', 'success')
+      addToast(
+        i18n.t('ui:arrival.restedAtStop', {
+          defaultValue: 'Rested at stop. Band feels better.'
+        }),
+        'success'
+      )
       break
     }
     case 'SPECIAL': {
       if (!eventAlreadyActive) {
         const specialEvent = triggerEvent('special')
         if (!specialEvent) {
-          addToast('A mysterious place, but nothing happened.', 'info')
+          addToast(
+            i18n.t('ui:arrival.specialNothingHappened', {
+              defaultValue: 'A mysterious place, but nothing happened.'
+            }),
+            'info'
+          )
         }
       }
       break
     }
     case 'START': {
       if (onShowHQ) onShowHQ()
-      addToast('Home Sweet Home.', 'success')
+      addToast(
+        i18n.t('ui:arrival.homeSweetHome', {
+          defaultValue: 'Home Sweet Home.'
+        }),
+        'success'
+      )
       break
     }
     case 'FESTIVAL':
     case 'FINALE':
     case 'GIG': {
       if ((band?.harmony ?? 0) <= 0) {
-        addToast("Band's harmony too low to perform!", 'warning')
+        addToast(
+          i18n.t('ui:arrival.harmonyTooLowToPerform', {
+            defaultValue: "Band's harmony too low to perform!"
+          }),
+          'warning'
+        )
         if (changeScene) changeScene(GAME_PHASES.OVERWORLD)
         return
       }
@@ -69,7 +90,9 @@ export const handleNodeArrival = ({
       } catch (error) {
         handleError(error, {
           addToast,
-          fallbackMessage: 'Failed to start Gig.'
+          fallbackMessage: i18n.t('ui:arrival.failedToStartGig', {
+            defaultValue: 'Failed to start Gig.'
+          })
         })
       }
       break

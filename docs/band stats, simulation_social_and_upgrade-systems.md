@@ -342,3 +342,12 @@ Daily trend generation picks from:
 | **Van Condition** | player.van.condition (0-100)           | Daily decay (-2), breakdown risk               | Travel interruption events             |
 
 This represents the complete simulation, character, and social ecosystem of NEUROTOXIC v3.0.
+
+## Localization & Review Update
+
+- Treat all user-facing strings as localized content; use namespaced keys (`ui:*`, `events:*`, etc.) instead of hardcoded text.
+- When introducing new i18n keys, update both `public/locales/en/*.json` and `public/locales/de/*.json` in the same change.
+- Keep interpolation placeholders consistent across languages (e.g., `{{cost}}`, `{{location}}`).
+- For non-visual error/toast paths, prefer resilient fallbacks (`defaultValue`) so missing keys do not surface raw key names to players.
+- In React callbacks/hooks, keep translation usage consistent with hook dependency expectations (`t` included in callback deps when used in callback scope).
+- Before merging localization work, run the project test commands (`npm run test` and `npm run test:ui`) and include results in the PR summary.

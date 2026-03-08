@@ -66,3 +66,12 @@ Based on the NEUROTOXIC band universe.
 Built by Jules (Designer-Turned-Developer).
 
 _Documentation sync: dependency/tooling baseline reviewed on 2026-02-23._
+
+## Localization & Review Update
+
+- Treat all user-facing strings as localized content; use namespaced keys (`ui:*`, `events:*`, etc.) instead of hardcoded text.
+- When introducing new i18n keys, update both `public/locales/en/*.json` and `public/locales/de/*.json` in the same change.
+- Keep interpolation placeholders consistent across languages (e.g., `{{cost}}`, `{{location}}`).
+- For non-visual error/toast paths, prefer resilient fallbacks (`defaultValue`) so missing keys do not surface raw key names to players.
+- In React callbacks/hooks, keep translation usage consistent with hook dependency expectations (`t` included in callback deps when used in callback scope).
+- Before merging localization work, run the project test commands (`npm run test` and `npm run test:ui`) and include results in the PR summary.
