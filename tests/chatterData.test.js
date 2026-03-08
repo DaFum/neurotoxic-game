@@ -6,6 +6,7 @@ import {
   CHATTER_DB,
   getRandomChatter
 } from '../src/data/chatter.js'
+import { VENUE_CHATTER_DB } from '../src/data/chatter/venueChatter.js'
 
 const buildState = (scene, overrides = {}) => {
   const baseBand = {
@@ -163,6 +164,50 @@ test('every chatter entry text must have a valid translation key in EN and DE lo
       resolveKey(deTranslations, jsonKey),
       `Missing German translation for key: ${jsonKey}`
     )
+  })
+})
+
+test('every venue chatter line key must have a valid translation key in EN and DE locales', async () => {
+  const fs = await import('node:fs')
+  const path = await import('node:path')
+  const enTranslations = JSON.parse(
+    fs.readFileSync(
+      path.resolve(process.cwd(), 'public/locales/en/chatter.json'),
+      'utf-8'
+    )
+  )
+  const deTranslations = JSON.parse(
+    fs.readFileSync(
+      path.resolve(process.cwd(), 'public/locales/de/chatter.json'),
+      'utf-8'
+    )
+  )
+
+  const resolveKey = (obj, keyPath) => {
+    if (obj[keyPath] !== undefined) return obj[keyPath]
+    return keyPath.split('.').reduce((acc, part) => acc && acc[part], obj)
+  }
+
+  VENUE_CHATTER_DB.forEach(venueEntry => {
+    Object.values(venueEntry.linesByScene || {}).forEach(lines => {
+      lines.forEach(textKey => {
+        assert.ok(
+          textKey.startsWith('chatter:'),
+          `Venue chatter text must be an i18n key starting with 'chatter:', got: ${textKey}`
+        )
+
+        const jsonKey = textKey.split('chatter:')[1]
+
+        assert.ok(
+          resolveKey(enTranslations, jsonKey),
+          `Missing English translation for venue chatter key: ${jsonKey}`
+        )
+        assert.ok(
+          resolveKey(deTranslations, jsonKey),
+          `Missing German translation for venue chatter key: ${jsonKey}`
+        )
+      })
+    })
   })
 })
 
@@ -935,7 +980,10 @@ test('chatter.json structure is valid JSON', async () => {
     path.resolve(process.cwd(), 'public/locales/en/chatter.json'),
     'utf-8'
   )
-  assert.doesNotThrow(() => JSON.parse(rawContent), 'chatter.json must be valid JSON')
+  assert.doesNotThrow(
+    () => JSON.parse(rawContent),
+    'chatter.json must be valid JSON'
+  )
 })
 
 test('all chatter keys in en/chatter.json have non-empty string values', async () => {
@@ -949,9 +997,16 @@ test('all chatter keys in en/chatter.json have non-empty string values', async (
   )
 
   Object.entries(chatterData).forEach(([key, value]) => {
-    assert.strictEqual(typeof value, 'string', `Key ${key} must have string value`)
+    assert.strictEqual(
+      typeof value,
+      'string',
+      `Key ${key} must have string value`
+    )
     assert.ok(value.length > 0, `Key ${key} must have non-empty value`)
-    assert.ok(value.trim() === value, `Key ${key} value should not have leading/trailing whitespace`)
+    assert.ok(
+      value.trim() === value,
+      `Key ${key} value should not have leading/trailing whitespace`
+    )
   })
 })
 
@@ -984,7 +1039,9 @@ test('venue chatter keys include scene phase suffixes', async () => {
     )
   )
 
-  const venueKeys = Object.keys(chatterData).filter(k => k.startsWith('venues.'))
+  const venueKeys = Object.keys(chatterData).filter(k =>
+    k.startsWith('venues.')
+  )
   const validSuffixes = ['ANY_', 'OVERWORLD_', 'PREGIG_', 'GIG_', 'POSTGIG_']
 
   venueKeys.forEach(key => {
@@ -993,7 +1050,10 @@ test('venue chatter keys include scene phase suffixes', async () => {
       const lastPart = parts[parts.length - 1]
       return lastPart.startsWith(suffix)
     })
-    assert.ok(hasValidSuffix, `Venue key ${key} should have a valid scene phase suffix`)
+    assert.ok(
+      hasValidSuffix,
+      `Venue key ${key} should have a valid scene phase suffix`
+    )
   })
 })
 
@@ -1008,10 +1068,14 @@ test('no duplicate chatter text content across all entries', async () => {
   )
 
   const textValues = Object.values(chatterData)
-  const duplicates = textValues.filter((val, idx, arr) => arr.indexOf(val) !== idx)
+  const duplicates = textValues.filter(
+    (val, idx, arr) => arr.indexOf(val) !== idx
+  )
 
   if (duplicates.length > 0) {
-    assert.fail(`Found duplicate chatter texts: ${duplicates.slice(0, 3).join(', ')}`)
+    assert.fail(
+      `Found duplicate chatter texts: ${duplicates.slice(0, 3).join(', ')}`
+    )
   }
   assert.ok(true, 'All chatter texts are unique')
 })
@@ -1027,8 +1091,14 @@ test('chatter text content has reasonable length limits', async () => {
   )
 
   Object.entries(chatterData).forEach(([key, value]) => {
-    assert.ok(value.length >= 10, `Chatter ${key} too short (${value.length} chars)`)
-    assert.ok(value.length <= 200, `Chatter ${key} too long (${value.length} chars)`)
+    assert.ok(
+      value.length >= 10,
+      `Chatter ${key} too short (${value.length} chars)`
+    )
+    assert.ok(
+      value.length <= 200,
+      `Chatter ${key} too long (${value.length} chars)`
+    )
   })
 })
 
