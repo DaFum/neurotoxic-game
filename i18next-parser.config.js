@@ -29,6 +29,5 @@ export default {
     'minigame',
     'unlocks'
   ],
-  useKeysAsDefaultValue: false,
-  pluralSeparator: false
+  useKeysAsDefaultValue: false
 }
