@@ -133,24 +133,24 @@ test('trySpawnProjectile - verifies all spawned object properties', () => {
   }
 })
 
-test('trySpawnProjectile - health boundary (59 vs 60)', () => {
+test('trySpawnProjectile - health and combo boundaries', () => {
   const mockRandom = () => 0.001 // Between 0.0005 and 0.0015
 
-  // Health 59: chance 0.0005 + 0.001 = 0.0015, should spawn
-  assert.ok(trySpawnProjectile({ health: 59, combo: 0 }, mockRandom))
+  const cases = [
+    { health: 59, combo: 0, expectSpawn: true, desc: 'Health 59: chance 0.0015' },
+    { health: 60, combo: 0, expectSpawn: false, desc: 'Health 60: chance 0.0005' },
+    { health: 100, combo: 20, expectSpawn: false, desc: 'Combo 20: chance 0.0005' },
+    { health: 100, combo: 21, expectSpawn: true, desc: 'Combo 21: chance 0.0015' }
+  ]
 
-  // Health 60: chance 0.0005, should not spawn
-  assert.equal(trySpawnProjectile({ health: 60, combo: 0 }, mockRandom), null)
-})
-
-test('trySpawnProjectile - combo boundary (20 vs 21)', () => {
-  const mockRandom = () => 0.001 // Between 0.0005 and 0.0015
-
-  // Combo 20: chance 0.0005, should not spawn
-  assert.equal(trySpawnProjectile({ health: 100, combo: 20 }, mockRandom), null)
-
-  // Combo 21: chance 0.0005 + 0.001 = 0.0015, should spawn
-  assert.ok(trySpawnProjectile({ health: 100, combo: 21 }, mockRandom))
+  for (const { health, combo, expectSpawn, desc } of cases) {
+    const result = trySpawnProjectile({ health, combo }, mockRandom)
+    if (expectSpawn) {
+      assert.ok(result, `Should spawn for ${desc}`)
+    } else {
+      assert.equal(result, null, `Should not spawn for ${desc}`)
+    }
+  }
 })
 
 test('trySpawnProjectile - screenWidth influence on x', () => {
@@ -181,7 +181,7 @@ test('trySpawnProjectile - screenWidth influence on x', () => {
   }
 })
 
-test('trySpawnProjectile - combined chance (low health AND medium combo)', () => {
+test('trySpawnProjectile - combined chance (medium health AND medium combo)', () => {
   const stats = { health: 40, combo: 40 }
   // BASE: 0.0005
   // COMBO_MEDIUM (40 > 20): +0.001

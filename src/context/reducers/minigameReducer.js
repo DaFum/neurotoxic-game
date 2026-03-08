@@ -1,14 +1,14 @@
 import { logger } from '../../utils/logger.js'
 import {
   clampPlayerMoney,
-  clampBandHarmony
+  clampBandHarmony,
+  clampVanFuel
 } from '../../utils/gameStateUtils.js'
 import {
   calculateTravelExpenses,
   calculateTravelMinigameResult,
   calculateRoadieMinigameResult,
-  calculateKabelsalatMinigameResult,
-  EXPENSE_CONSTANTS
+  calculateKabelsalatMinigameResult
 } from '../../utils/economyEngine.js'
 import { checkTraitUnlocks } from '../../utils/unlockCheck.js'
 import { applyTraitUnlocks } from '../../utils/traitUtils.js'
@@ -70,7 +70,7 @@ export const handleCompleteTravelMinigame = (state, payload) => {
     totalTravels: state.player.totalTravels + 1,
     van: {
       ...state.player.van,
-      fuel: Math.max(0, Math.min(EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL, state.player.van.fuel - fuelLiters + fuelBonus)),
+      fuel: clampVanFuel(state.player.van.fuel - fuelLiters + fuelBonus),
       condition: Math.max(0, state.player.van.condition - conditionLoss)
     },
     stats: {
