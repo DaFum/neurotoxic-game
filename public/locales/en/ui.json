@@ -674,6 +674,23 @@
   "travel.refuel.tankAlreadyFull": "Tank is already full!",
   "travel.repair.notEnoughMoney": "Not enough money! Need {{cost}}€ to repair.",
   "travel.repair.repaired": "Repaired: -{{cost}}€",
+  "travel.errors.gameOverStranded": "GAME OVER: Stranded! Cannot travel and cannot afford fuel.",
+  "postGig.notEnoughCashForPr": "Not enough cash for PR!",
+  "postGig.storySpunControversyReduced": "Story Spun. Controversy reduced.",
+  "postGig.gameOverBankrupt": "GAME OVER: BANKRUPT! The tour is over.",
+  "postGig.traitUnlocked": "Trait Unlocked: {{traitName}}",
+  "postGig.acceptedDeal": "Accepted deal: {{dealName}}",
+  "postGig.skippedBrandDeals": "Skipped brand deals.",
+  "postGig.tallyingReceipts": "TALLYING RECEIPTS...",
+  "postGig.phaseReport": "GIG REPORT",
+  "postGig.phaseSocialStrategy": "SOCIAL MEDIA STRATEGY",
+  "postGig.phaseBrandOffers": "BRAND OFFERS",
+  "postGig.phaseTourUpdate": "TOUR UPDATE",
+  "decryptor": {
+    "unlocked_aria": "Decryptor Unlocked",
+    "locked_aria": "Decrypt Data"
+  }
+}
   "travel.repair.vanAlreadyPerfect": "Van is already in perfect condition!",
   "ui.day": "Day",
   "ui.level": "Level",
