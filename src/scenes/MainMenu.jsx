@@ -129,7 +129,6 @@ export const MainMenu = () => {
       playerId: savedPlayerId,
       playerName: savedPlayerName
     })
-
     void proceedToTour()
   }, [proceedToTour, updatePlayer])
 

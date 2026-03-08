@@ -43,13 +43,12 @@ vi.mock('../src/hooks/useRhythmGameLogic', () => ({
     stats: {
       score: 0,
       combo: 0,
-      maxCombo: 0,
-      perfectHits: 0,
-      hits: 0,
-      misses: 0,
+      health: 100,
+      overload: 0,
       isToxicMode: false,
+      isGameOver: false,
       isAudioReady: true,
-      toxicTimeTotal: 0
+      accuracy: 0
     },
     actions: {
       handleLaneHit: vi.fn(),
@@ -86,7 +85,7 @@ vi.mock('../src/components/PixiStage', () => ({
 vi.mock('../src/components/GigHUD', () => ({
   GigHUD: ({ onTogglePause }) => (
     <div data-testid="gig-hud">
-      <button onClick={onTogglePause}>Pause Button</button>
+      <button type="button" onClick={onTogglePause}>Pause Button</button>
     </div>
   )
 }))

@@ -711,11 +711,11 @@ describe('MainMenu Component', () => {
 
       render(<MainMenu />)
 
-      const startButton = screen.getByText('ui:start_game')
+      const startButton = screen.getByText('ui:start_game').closest('button')
 
       fireEvent.click(startButton)
 
-      expect(startButton).toBeInTheDocument()
+      expect(startButton).toBeDisabled()
     })
 
     it('handles missing crypto.randomUUID gracefully', () => {

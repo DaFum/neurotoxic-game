@@ -1008,7 +1008,6 @@ test('no duplicate chatter text content across all entries', async () => {
   )
 
   const textValues = Object.values(chatterData)
-  const uniqueTexts = new Set(textValues)
   const duplicates = textValues.filter((val, idx, arr) => arr.indexOf(val) !== idx)
 
   if (duplicates.length > 0) {
