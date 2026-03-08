@@ -494,7 +494,7 @@
   "rewards.fameWithAmount_one": "+{{count}} Fame",
   "rewards.fameWithAmount_other": "+{{count}} Fame",
   "rewards.fansWithAmount": "+{{count}} Fans",
-  "rewards.fansWithAmount_one": "+{{count}} Fans",
+  "rewards.fansWithAmount_one": "+{{count}} Fan",
   "rewards.fansWithAmount_other": "+{{count}} Fans",
   "rewards.freeItem": "Free Item",
   "rewards.harmonyWithAmount": "+{{count}} Harmony",
