@@ -9,10 +9,10 @@ import {
 test('Minigame Economy Calculations', async t => {
   await t.test('Travel Minigame Results', () => {
     // 20 damage -> 10% condition loss (50% scaling)
-    // 3 Fuel cans -> 0L bonus (disabled)
+    // 3 Fuel cans -> 1.5L bonus
     const result = calculateTravelMinigameResult(20, ['FUEL', 'FUEL', 'FUEL'])
     assert.strictEqual(result.conditionLoss, 10)
-    assert.strictEqual(result.fuelBonus, 0)
+    assert.strictEqual(result.fuelBonus, 1.5)
   })
 
   await t.test('Travel Minigame Edge Cases', () => {

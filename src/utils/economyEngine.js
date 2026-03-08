@@ -615,7 +615,7 @@ export const shouldTriggerBankruptcy = (newMoney, netIncome) => {
 /**
  * Calculates effects of Travel Minigame results.
  * @param {number} damageTaken - Total damage taken.
- * @param {string[]} _itemsCollected - Array of collected item types.
+ * @param {string[]} itemsCollected - Array of collected item types.
  * @returns {object} { conditionLoss, fuelBonus }
  */
 export const calculateTravelMinigameResult = (damageTaken, itemsCollected) => {
@@ -624,7 +624,7 @@ export const calculateTravelMinigameResult = (damageTaken, itemsCollected) => {
 
   // Fuel bonus re-enabled: each fuel item grants 0.5 liters of fuel bonus
   const fuelItems = Array.isArray(itemsCollected)
-    ? itemsCollected.filter(item => item === 'fuel').length
+    ? itemsCollected.reduce((count, item) => (item === 'FUEL' ? count + 1 : count), 0)
     : 0;
   const fuelBonus = fuelItems * 0.5;
 

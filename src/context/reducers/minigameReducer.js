@@ -56,7 +56,7 @@ export const handleCompleteTravelMinigame = (state, payload) => {
     state.player,
     state.band
   )
-  const { conditionLoss } = calculateTravelMinigameResult(
+  const { conditionLoss, fuelBonus } = calculateTravelMinigameResult(
     damageTaken,
     itemsCollected
   )
@@ -69,7 +69,7 @@ export const handleCompleteTravelMinigame = (state, payload) => {
     totalTravels: state.player.totalTravels + 1,
     van: {
       ...state.player.van,
-      fuel: Math.max(0, Math.min(100, state.player.van.fuel - fuelLiters)),
+      fuel: Math.max(0, Math.min(100, state.player.van.fuel - fuelLiters + fuelBonus)),
       condition: Math.max(0, state.player.van.condition - conditionLoss)
     },
     stats: {

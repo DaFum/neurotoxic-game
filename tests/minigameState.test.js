@@ -61,7 +61,7 @@ test('Minigame State Transitions', async t => {
 
       const action = {
         type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
-        payload: { damageTaken: 20, itemsCollected: ['FUEL'] } // 20 damage -> -10 condition. 1 Fuel -> +0L
+        payload: { damageTaken: 20, itemsCollected: ['FUEL'] } // 20 damage -> -10 condition. 1 Fuel -> +0.5L
       }
       const newState = gameReducer(activeState, action)
 
@@ -85,9 +85,9 @@ test('Minigame State Transitions', async t => {
       // Check fuel
       // Distance: 90km
       // Consumption: (90 / 100) * 12 = 10.8L
-      // Bonus: 0L
-      // Result: 100 - 10.8 = 89.2
-      assert.ok(Math.abs(newState.player.van.fuel - 89.2) < 1e-9)
+      // Bonus: +0.5L
+      // Result: 100 - 10.8 + 0.5 = 89.7
+      assert.ok(Math.abs(newState.player.van.fuel - 89.7) < 1e-9)
     }
   )
 
