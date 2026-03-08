@@ -7,7 +7,8 @@ import {
   calculateTravelExpenses,
   calculateTravelMinigameResult,
   calculateRoadieMinigameResult,
-  calculateKabelsalatMinigameResult
+  calculateKabelsalatMinigameResult,
+  EXPENSE_CONSTANTS
 } from '../../utils/economyEngine.js'
 import { checkTraitUnlocks } from '../../utils/unlockCheck.js'
 import { applyTraitUnlocks } from '../../utils/traitUtils.js'
@@ -69,7 +70,7 @@ export const handleCompleteTravelMinigame = (state, payload) => {
     totalTravels: state.player.totalTravels + 1,
     van: {
       ...state.player.van,
-      fuel: Math.max(0, Math.min(100, state.player.van.fuel - fuelLiters + fuelBonus)),
+      fuel: Math.max(0, Math.min(EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL, state.player.van.fuel - fuelLiters + fuelBonus)),
       condition: Math.max(0, state.player.van.condition - conditionLoss)
     },
     stats: {

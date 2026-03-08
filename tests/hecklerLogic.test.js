@@ -181,7 +181,7 @@ test('trySpawnProjectile - screenWidth influence on x', () => {
   }
 })
 
-test('trySpawnProjectile - combined chance (low health AND high combo)', () => {
+test('trySpawnProjectile - combined chance (low health AND medium combo)', () => {
   const stats = { health: 40, combo: 40 }
   // BASE: 0.0005
   // COMBO_MEDIUM (40 > 20): +0.001
