@@ -3,6 +3,7 @@ import { EVENT_STRINGS } from '../data/events/constants.js'
 import { logger } from './logger.js'
 import { secureRandom } from './crypto.js'
 import { bandHasTrait } from './traitLogic.js'
+import { clampVanFuel } from './gameStateUtils.js'
 
 /**
  * Filters and selects an event based on context, priority, and probability.
@@ -185,10 +186,7 @@ const EFFECT_HANDLERS = {
       delta.player.money = (delta.player.money || 0) + eff.value
     if (eff.resource === 'fuel') {
       delta.player.van = { ...(delta.player.van || {}) }
-      delta.player.van.fuel = Math.max(
-        0,
-        Math.min(100, (delta.player.van.fuel || 0) + eff.value)
-      )
+      delta.player.van.fuel = clampVanFuel((delta.player.van.fuel || 0) + eff.value)
     }
   },
   stat: (eff, delta) => {

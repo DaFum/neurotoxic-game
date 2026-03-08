@@ -133,10 +133,7 @@ export const applyEventDelta = (state, delta) => {
     if (delta.player.van) {
       const nextVan = { ...nextPlayer.van }
       if (typeof delta.player.van.fuel === 'number') {
-        nextVan.fuel = Math.max(
-          0,
-          Math.min(100, nextVan.fuel + delta.player.van.fuel)
-        )
+        nextVan.fuel = clampVanFuel(nextVan.fuel + delta.player.van.fuel)
       }
       if (typeof delta.player.van.condition === 'number') {
         nextVan.condition = Math.max(
