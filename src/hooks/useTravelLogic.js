@@ -182,7 +182,9 @@ export const useTravelLogic = ({
       if (!target) {
         handleError(new StateError('Travel complete but no target'), {
           addToast,
-          fallbackMessage: i18n.t('ui:travel.errors.invalidDestination')
+          fallbackMessage: i18n.t('ui:travel.errors.invalidDestination', {
+            defaultValue: 'Error: Invalid destination.'
+          })
         })
         setIsTraveling(false)
         return
@@ -191,7 +193,9 @@ export const useTravelLogic = ({
       if (!target.venue) {
         handleError(new StateError('Target node has no venue data'), {
           addToast,
-          fallbackMessage: i18n.t('ui:travel.errors.invalidDestination')
+          fallbackMessage: i18n.t('ui:travel.errors.invalidDestination', {
+            defaultValue: 'Error: Invalid destination.'
+          })
         })
         setIsTraveling(false)
         return
@@ -214,7 +218,9 @@ export const useTravelLogic = ({
         (player.van?.fuel ?? 0) < fuelLiters
       ) {
         addToast(
-          i18n.t('ui:travel.errors.insufficientResourcesOnArrival'),
+          i18n.t('ui:travel.errors.insufficientResourcesOnArrival', {
+            defaultValue: 'Error: Insufficient resources upon arrival.'
+          }),
           'error'
         )
         setIsTraveling(false)
@@ -345,7 +351,12 @@ export const useTravelLogic = ({
       const pendingTravelNode = pendingTravelNodeRef.current
 
       if (!node?.venue) {
-        addToast(i18n.t('ui:travel.errors.invalidLocation'), 'error')
+        addToast(
+          i18n.t('ui:travel.errors.invalidLocation', {
+            defaultValue: 'Error: Invalid location.'
+          }),
+          'error'
+        )
         return
       }
 
@@ -365,7 +376,12 @@ export const useTravelLogic = ({
           node.type === 'FINALE'
         ) {
           if ((band?.harmony ?? 0) <= 0) {
-            addToast(i18n.t('ui:arrival.harmonyTooLowToPerform'), 'warning')
+            addToast(
+              i18n.t('ui:arrival.harmonyTooLowToPerform', {
+                defaultValue: "Band's harmony too low to perform!"
+              }),
+              'warning'
+            )
             return
           }
           const venueId = normalizeVenueId(node.venue)
@@ -389,7 +405,9 @@ export const useTravelLogic = ({
           } catch (error) {
             handleError(error, {
               addToast,
-              fallbackMessage: i18n.t('ui:travel.errors.failedToEnterGig')
+              fallbackMessage: i18n.t('ui:travel.errors.failedToEnterGig', {
+                defaultValue: 'Failed to enter Gig.'
+              })
             })
           }
         } else if (node.type === 'START') {
@@ -398,12 +416,15 @@ export const useTravelLogic = ({
           } catch (error) {
             handleError(error, {
               addToast,
-              fallbackMessage: i18n.t('ui:travel.errors.failedToOpenHq')
+              fallbackMessage: i18n.t('ui:travel.errors.failedToOpenHq', {
+                defaultValue: 'Failed to open HQ.'
+              })
             })
           }
         } else {
           addToast(
             i18n.t('ui:travel.currentLocation', {
+              defaultValue: 'You are at {{location}}.',
               location: getLocationName(
                 node.venue.name,
                 normalizeVenueId(node.venue)
@@ -445,6 +466,8 @@ export const useTravelLogic = ({
         if (venueId && bList.includes(venueId)) {
           addToast(
             i18n.t('ui:travel.errors.bookingRefusedBlacklisted', {
+              defaultValue:
+                'Booking refused: {{location}} has permanently blacklisted you!',
               location: getLocationName(resolvedVenue.name, venueId)
             }),
             'error'
@@ -456,6 +479,8 @@ export const useTravelLogic = ({
         if (player?.stats?.proveYourselfMode && resolvedVenue.capacity > 150) {
           addToast(
             i18n.t('ui:travel.errors.proveYourselfVenueTooBig', {
+              defaultValue:
+                'PROVE YOURSELF MODE: You must rebuild your reputation in small venues (150 cap or less). {{location}} is too big!',
               location: getLocationName(resolvedVenue.name, venueId)
             }),
             'error'
@@ -468,6 +493,8 @@ export const useTravelLogic = ({
         if ((reputation[regionId] || 0) <= -30) {
           addToast(
             i18n.t('ui:travel.errors.bookingRefusedRegionalReputation', {
+              defaultValue:
+                'Booking refused: The venue in {{location}} blacklisted you due to poor regional reputation!',
               location: getLocationName(resolvedVenue.name, venueId)
             }),
             'error'
@@ -488,8 +515,12 @@ export const useTravelLogic = ({
       ) {
         addToast(
           visibility !== 'visible'
-            ? i18n.t('ui:travel.errors.locationNotVisible')
-            : i18n.t('ui:travel.errors.locationNotConnected'),
+            ? i18n.t('ui:travel.errors.locationNotVisible', {
+                defaultValue: 'Cannot travel: location not visible'
+              })
+            : i18n.t('ui:travel.errors.locationNotConnected', {
+                defaultValue: 'Cannot travel: location not connected'
+              }),
           'warning'
         )
         return
@@ -540,6 +571,8 @@ export const useTravelLogic = ({
       setPendingTravelNode(node)
       addToast(
         i18n.t('ui:travel.confirmTravelPrompt', {
+          defaultValue:
+            '{{location}} ({{distance}}km) | Food: {{totalCost}}€ | Fuel: {{fuelLiters}}L — Click again to confirm',
           location: getLocationName(
             node.venue.name,
             normalizeVenueId(node.venue)
@@ -577,12 +610,23 @@ export const useTravelLogic = ({
     const cost = calculateRefuelCost(currentFuel)
 
     if (cost <= 0) {
-      addToast(i18n.t('ui:travel.refuel.tankAlreadyFull'), 'info')
+      addToast(
+        i18n.t('ui:travel.refuel.tankAlreadyFull', {
+          defaultValue: 'Tank is already full!'
+        }),
+        'info'
+      )
       return
     }
 
     if ((player.money ?? 0) < cost) {
-      addToast(i18n.t('ui:travel.refuel.notEnoughMoney', { cost }), 'error')
+      addToast(
+        i18n.t('ui:travel.refuel.notEnoughMoney', {
+          defaultValue: 'Not enough money! Need {{cost}}€ to fill up.',
+          cost
+        }),
+        'error'
+      )
       return
     }
 
@@ -590,7 +634,13 @@ export const useTravelLogic = ({
       money: clampPlayerMoney((player.money ?? 0) - cost),
       van: { ...player.van, fuel: EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL }
     })
-    addToast(i18n.t('ui:travel.refuel.refueled', { cost }), 'success')
+    addToast(
+      i18n.t('ui:travel.refuel.refueled', {
+        defaultValue: 'Refueled: -{{cost}}€',
+        cost
+      }),
+      'success'
+    )
 
     try {
       audioManager.playSFX('cash')
@@ -609,12 +659,23 @@ export const useTravelLogic = ({
     const cost = calculateRepairCost(currentCondition)
 
     if (cost <= 0) {
-      addToast(i18n.t('ui:travel.repair.vanAlreadyPerfect'), 'info')
+      addToast(
+        i18n.t('ui:travel.repair.vanAlreadyPerfect', {
+          defaultValue: 'Van is already in perfect condition!'
+        }),
+        'info'
+      )
       return
     }
 
     if ((player.money ?? 0) < cost) {
-      addToast(i18n.t('ui:travel.repair.notEnoughMoney', { cost }), 'error')
+      addToast(
+        i18n.t('ui:travel.repair.notEnoughMoney', {
+          defaultValue: 'Not enough money! Need {{cost}}€ to repair.',
+          cost
+        }),
+        'error'
+      )
       return
     }
 
@@ -632,7 +693,13 @@ export const useTravelLogic = ({
       }
     })
 
-    addToast(i18n.t('ui:travel.repair.repaired', { cost }), 'success')
+    addToast(
+      i18n.t('ui:travel.repair.repaired', {
+        defaultValue: 'Repaired: -{{cost}}€',
+        cost
+      }),
+      'success'
+    )
 
     try {
       audioManager.playSFX('cash')
@@ -654,7 +721,13 @@ export const useTravelLogic = ({
     if (checkSoftlock(gameMap, player, band)) {
       if (!timeoutRef.current) {
         logger.error('TravelLogic', 'GAME OVER: Stranded')
-        addToast(i18n.t('ui:travel.errors.gameOverStranded'), 'error')
+        addToast(
+          i18n.t('ui:travel.errors.gameOverStranded', {
+            defaultValue:
+              'GAME OVER: Stranded! Cannot travel and cannot afford fuel.'
+          }),
+          'error'
+        )
         timeoutRef.current = setTimeout(
           () => changeScene(GAME_PHASES.GAMEOVER),
           3000
