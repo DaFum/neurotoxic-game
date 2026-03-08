@@ -1647,9 +1647,7 @@ export const VoidDecryptor = () => {
       onClick={() => setDecrypted(true)}
       aria-label={
         decrypted
-          ? t('ui:decryptor.unlocked_aria', {
-              defaultValue: 'Decryptor Unlocked'
-            })
+          ? undefined
           : t('ui:decryptor.locked_aria', { defaultValue: 'Decrypt Data' })
       }
       aria-pressed={decrypted}
