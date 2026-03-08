@@ -101,10 +101,14 @@ export const MainMenu = () => {
     // Audio setup is fire-and-forget — never blocks scene transitions.
     void audioManager
       .ensureAudioContext()
-      .then(
-        () => startAmbientSafely(),
-        err => reportAudioIssue(err, tRef.current('ui:errors.audio_init_failed'))
-      )
+      .then(success => {
+        if (success) {
+          startAmbientSafely()
+        } else {
+          reportAudioIssue(new Error('Audio unlock failed'), tRef.current('ui:errors.audio_init_failed'))
+        }
+      })
+      .catch(err => reportAudioIssue(err, tRef.current('ui:errors.audio_init_failed')))
   }, [
     resetState,
     changeScene,
@@ -177,10 +181,14 @@ export const MainMenu = () => {
     // Audio is fire-and-forget; Overworld re-syncs audio.
     void audioManager
       .ensureAudioContext()
-      .then(
-        () => startAmbientSafely(),
-        err => reportAudioIssue(err, tRef.current('ui:errors.audio_init_failed'))
-      )
+      .then(success => {
+        if (success) {
+          startAmbientSafely()
+        } else {
+          reportAudioIssue(new Error('Audio unlock failed'), tRef.current('ui:errors.audio_init_failed'))
+        }
+      })
+      .catch(err => reportAudioIssue(err, tRef.current('ui:errors.audio_init_failed')))
   }, [
     loadGame,
     addToast,
