@@ -33,9 +33,29 @@ vi.mock('../src/data/songs', () => ({
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key, options) => options?.defaultValue || key
+    t: (key, options) => {
+      const template = options?.defaultValue || key
+      if (!options) return template
+
+      return template.replace(/\{\{(\w+)\}\}/g, (_, token) =>
+        String(options[token] ?? `{{${token}}}`)
+      )
+    }
   })
 }))
+
+const proceedToSocialAndSelectPost = async (postName = 'Test Post') => {
+  fireEvent.click(
+    await screen.findByRole('button', { name: /continue|next|social/i })
+  )
+  fireEvent.click(await screen.findByText(postName))
+}
+
+const getLastFunctionalUpdate = mockFn =>
+  [...mockFn.mock.calls]
+    .map(call => call[0])
+    .reverse()
+    .find(updateArg => typeof updateArg === 'function')
 
 describe('PostGig Component - Phase Management', () => {
   const mockUpdatePlayer = vi.fn()
@@ -318,10 +338,7 @@ describe('PostGig Component - Social Post Selection', () => {
 
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
       expect(mockUpdateSocial).toHaveBeenCalledWith(
@@ -342,10 +359,7 @@ describe('PostGig Component - Social Post Selection', () => {
 
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
       expect(mockUpdateSocial).toHaveBeenCalledWith(
@@ -368,10 +382,7 @@ describe('PostGig Component - Social Post Selection', () => {
 
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
       expect(mockUpdateBand).toHaveBeenCalledWith(
@@ -394,10 +405,7 @@ describe('PostGig Component - Social Post Selection', () => {
 
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
       expect(mockUpdateBand).toHaveBeenCalledWith(
@@ -423,10 +431,7 @@ describe('PostGig Component - Social Post Selection', () => {
 
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
       expect(mockUpdateBand).toHaveBeenCalledWith(
@@ -451,10 +456,7 @@ describe('PostGig Component - Social Post Selection', () => {
 
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
       expect(mockUpdatePlayer).toHaveBeenCalledWith({
@@ -474,13 +476,13 @@ describe('PostGig Component - Social Post Selection', () => {
 
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
-      expect(mockUnlockTrait).toHaveBeenCalledWith('Member1', 'social_butterfly')
+      expect(mockUnlockTrait).toHaveBeenCalledWith(
+        'Member1',
+        'social_butterfly'
+      )
       expect(mockAddToast).toHaveBeenCalledWith(
         expect.stringContaining('SOCIAL BUTTERFLY'),
         'success'
@@ -499,10 +501,7 @@ describe('PostGig Component - Social Post Selection', () => {
 
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
       expect(mockUpdateSocial).toHaveBeenCalledWith(
@@ -525,10 +524,7 @@ describe('PostGig Component - Social Post Selection', () => {
 
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
       expect(mockUpdateSocial).toHaveBeenCalledWith(
@@ -550,10 +546,7 @@ describe('PostGig Component - Social Post Selection', () => {
 
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
       expect(mockUpdateSocial).toHaveBeenCalledWith(
@@ -660,14 +653,13 @@ describe('PostGig Component - Brand Deals', () => {
 
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     // Should now be in DEALS phase
     await waitFor(() => {
-      expect(screen.getByText(/BRAND OFFERS/i)).toBeInTheDocument()
+      expect(
+        screen.getByRole('heading', { name: /^BRAND OFFERS$/i })
+      ).toBeInTheDocument()
     })
 
     // Accept the deal
@@ -675,16 +667,16 @@ describe('PostGig Component - Brand Deals', () => {
     fireEvent.click(acceptBtn)
 
     await waitFor(() => {
-      expect(mockUpdatePlayer).toHaveBeenCalledWith(
-        expect.objectContaining({
-          money: 1500 // 500 + 1000
-        })
-      )
+      expect(mockUpdatePlayer).toHaveBeenCalledWith(expect.any(Function))
       expect(mockAddToast).toHaveBeenCalledWith(
         expect.stringContaining('Mega Corp'),
         'success'
       )
     })
+
+    const updatePlayerFn = getLastFunctionalUpdate(mockUpdatePlayer)
+    expect(updatePlayerFn).toEqual(expect.any(Function))
+    expect(updatePlayerFn({ money: 500 })).toEqual({ money: 1500 })
   })
 
   it('accepts brand deal with item reward', async () => {
@@ -700,20 +692,19 @@ describe('PostGig Component - Brand Deals', () => {
 
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     const acceptBtn = await screen.findByRole('button', { name: /accept/i })
     fireEvent.click(acceptBtn)
 
     await waitFor(() => {
-      expect(mockUpdateBand).toHaveBeenCalledWith(
-        expect.objectContaining({
-          inventory: { special_guitar: true }
-        })
-      )
+      expect(mockUpdateBand).toHaveBeenCalledWith(expect.any(Function))
+    })
+
+    const updateBandFn = getLastFunctionalUpdate(mockUpdateBand)
+    expect(updateBandFn).toEqual(expect.any(Function))
+    expect(updateBandFn({ inventory: {} })).toEqual({
+      inventory: { special_guitar: true }
     })
   })
 
@@ -730,10 +721,7 @@ describe('PostGig Component - Brand Deals', () => {
 
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     const acceptBtn = await screen.findByRole('button', { name: /accept/i })
     fireEvent.click(acceptBtn)
@@ -743,7 +731,8 @@ describe('PostGig Component - Brand Deals', () => {
     })
 
     // Get the update function and test it
-    const updateFn = mockUpdateSocial.mock.calls[0][0]
+    const updateFn = getLastFunctionalUpdate(mockUpdateSocial)
+    expect(updateFn).toEqual(expect.any(Function))
     const prevSocial = {
       loyalty: 50,
       controversyLevel: 20,
@@ -768,10 +757,7 @@ describe('PostGig Component - Brand Deals', () => {
 
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     const acceptBtn = await screen.findByRole('button', { name: /accept/i })
     fireEvent.click(acceptBtn)
@@ -780,7 +766,8 @@ describe('PostGig Component - Brand Deals', () => {
       expect(mockUpdateSocial).toHaveBeenCalled()
     })
 
-    const updateFn = mockUpdateSocial.mock.calls[0][0]
+    const updateFn = getLastFunctionalUpdate(mockUpdateSocial)
+    expect(updateFn).toEqual(expect.any(Function))
     const prevSocial = {
       brandReputation: { SUSTAINABLE: 40, EVIL: 20 }
     }
@@ -803,10 +790,7 @@ describe('PostGig Component - Brand Deals', () => {
 
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     const acceptBtn = await screen.findByRole('button', { name: /accept/i })
     fireEvent.click(acceptBtn)
@@ -815,7 +799,8 @@ describe('PostGig Component - Brand Deals', () => {
       expect(mockUpdateSocial).toHaveBeenCalled()
     })
 
-    const updateFn = mockUpdateSocial.mock.calls[0][0]
+    const updateFn = getLastFunctionalUpdate(mockUpdateSocial)
+    expect(updateFn).toEqual(expect.any(Function))
     const prevSocial = { activeDeals: [] }
     const result = updateFn(prevSocial)
 
@@ -840,13 +825,12 @@ describe('PostGig Component - Brand Deals', () => {
 
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
-      expect(screen.getByText(/BRAND OFFERS/i)).toBeInTheDocument()
+      expect(
+        screen.getByRole('heading', { name: /^BRAND OFFERS$/i })
+      ).toBeInTheDocument()
     })
 
     const rejectBtn = await screen.findByRole('button', {
@@ -855,7 +839,9 @@ describe('PostGig Component - Brand Deals', () => {
     fireEvent.click(rejectBtn)
 
     await waitFor(() => {
-      expect(screen.getByText(/TOUR UPDATE/i)).toBeInTheDocument()
+      expect(
+        screen.getByRole('heading', { name: /^TOUR UPDATE$/i })
+      ).toBeInTheDocument()
       expect(mockAddToast).toHaveBeenCalledWith(
         expect.stringContaining('Skipped'),
         'info'
@@ -944,12 +930,34 @@ describe('PostGig Component - Complete Phase', () => {
   })
 
   it('spins story to reduce controversy when player has enough money', async () => {
+    useGameState.mockReturnValue(
+      getBaseState({
+        player: {
+          money: 500,
+          fame: 100,
+          day: 5,
+          location: 'berlin',
+          hqUpgrades: ['pr_manager_contract']
+        },
+        social: {
+          instagram: 100,
+          trend: 'NEUTRAL',
+          viral: 0,
+          controversyLevel: 75,
+          loyalty: 50,
+          reputationCooldown: 0,
+          egoFocus: null,
+          sponsorActive: false,
+          activeDeals: [],
+          influencers: {},
+          brandReputation: {}
+        }
+      })
+    )
+
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     // Should be in COMPLETE phase
     await waitFor(() => {
@@ -960,32 +968,51 @@ describe('PostGig Component - Complete Phase', () => {
     fireEvent.click(spinBtn)
 
     await waitFor(() => {
-      expect(mockUpdatePlayer).toHaveBeenCalledWith({
-        money: 300 // 500 - 200
-      })
-      expect(mockUpdateSocial).toHaveBeenCalledWith(
-        expect.objectContaining({
-          controversyLevel: 25 // 50 - 25
-        })
-      )
+      expect(mockUpdatePlayer).toHaveBeenCalledWith({ money: 300 })
+      expect(mockUpdateSocial).toHaveBeenCalledWith(expect.any(Function))
       expect(mockAddToast).toHaveBeenCalledWith(
         expect.stringContaining('Controversy reduced'),
         'success'
       )
     })
+
+    const updateSocialFn = getLastFunctionalUpdate(mockUpdateSocial)
+    expect(updateSocialFn).toEqual(expect.any(Function))
+    expect(updateSocialFn({ controversyLevel: 75 })).toEqual({
+      controversyLevel: 50
+    })
   })
 
   it('rejects spin story when player does not have enough money', async () => {
     useGameState.mockReturnValue(
-      getBaseState({ player: { money: 100, fame: 100, day: 5 } })
+      getBaseState({
+        player: {
+          money: 100,
+          fame: 100,
+          day: 5,
+          hqUpgrades: ['pr_manager_contract']
+        },
+        social: {
+          instagram: 100,
+          trend: 'NEUTRAL',
+          viral: 0,
+          controversyLevel: 80,
+          loyalty: 50,
+          reputationCooldown: 0,
+          egoFocus: null,
+          sponsorActive: false,
+          activeDeals: [],
+          influencers: {},
+          brandReputation: {}
+        }
+      })
     )
 
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
+
+    const initialUpdateSocialCalls = mockUpdateSocial.mock.calls.length
 
     const spinBtn = await screen.findByRole('button', { name: /spin/i })
     fireEvent.click(spinBtn)
@@ -997,16 +1024,13 @@ describe('PostGig Component - Complete Phase', () => {
       )
     })
     expect(mockUpdatePlayer).not.toHaveBeenCalled()
-    expect(mockUpdateSocial).not.toHaveBeenCalled()
+    expect(mockUpdateSocial).toHaveBeenCalledTimes(initialUpdateSocialCalls)
   })
 
   it('updates player money and fame on continue', async () => {
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     const continueBtn = await screen.findByRole('button', {
       name: /back to tour/i
@@ -1033,10 +1057,7 @@ describe('PostGig Component - Complete Phase', () => {
 
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     const continueBtn = await screen.findByRole('button', {
       name: /back to tour/i
@@ -1059,10 +1080,7 @@ describe('PostGig Component - Complete Phase', () => {
 
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     const continueBtn = await screen.findByRole('button', {
       name: /back to tour/i
@@ -1087,10 +1105,7 @@ describe('PostGig Component - Complete Phase', () => {
 
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     const continueBtn = await screen.findByRole('button', {
       name: /back to tour/i
@@ -1112,10 +1127,7 @@ describe('PostGig Component - Complete Phase', () => {
   it('saves game and returns to overworld on successful continue', async () => {
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     const continueBtn = await screen.findByRole('button', {
       name: /back to tour/i
@@ -1219,10 +1231,7 @@ describe('PostGig Component - Edge Cases', () => {
 
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
       expect(mockUpdateBand).toHaveBeenCalledWith(
@@ -1255,10 +1264,7 @@ describe('PostGig Component - Edge Cases', () => {
 
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
       expect(mockUpdateBand).toHaveBeenCalledWith(
@@ -1283,10 +1289,7 @@ describe('PostGig Component - Edge Cases', () => {
 
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     await waitFor(() => {
       expect(mockUpdateSocial).toHaveBeenCalledWith(
@@ -1299,7 +1302,9 @@ describe('PostGig Component - Edge Cases', () => {
 
   it('calculates performance score with clamping', async () => {
     useGameState.mockReturnValue(
-      getBaseState({ lastGigStats: { score: 1000000, accuracy: 100, events: [] } })
+      getBaseState({
+        lastGigStats: { score: 1000000, accuracy: 100, events: [] }
+      })
     )
 
     render(<PostGig />)
@@ -1327,10 +1332,7 @@ describe('PostGig Component - Edge Cases', () => {
 
     render(<PostGig />)
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: /continue|next|social/i })
-    )
-    fireEvent.click(await screen.findByText('Test Post'))
+    await proceedToSocialAndSelectPost()
 
     // Should not crash and should handle undefined values
     await waitFor(() => {
