@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, act } from '@testing-library/react'
 import { KabelsalatScene } from '../src/scenes/KabelsalatScene'
 
 vi.mock('react-i18next', () => ({
@@ -18,17 +18,23 @@ vi.mock('../src/utils/imageGen.js', () => ({
   IMG_PROMPTS: { MINIGAME_KABELSALAT_BG: 'bg' }
 }))
 
-vi.mock('../src/utils/loadTexture', () => ({
-  loadTexture: vi.fn(async () => null)
-}))
+vi.mock('../src/components/stage/utils.js', async importOriginal => {
+  const original = await importOriginal()
+  return {
+    ...original,
+    loadTexture: vi.fn(async () => null)
+  }
+})
 
 vi.mock('../src/utils/logger', () => ({
   logger: { warn: vi.fn() }
 }))
 
 describe('KabelsalatScene', () => {
-  it('renders scene shell and interactive cable board', () => {
-    render(<KabelsalatScene />)
+  it('renders scene shell and interactive cable board', async () => {
+    await act(async () => {
+      render(<KabelsalatScene />)
+    })
 
     expect(
       screen.getByLabelText('ui:minigames.kabelsalat.title')
