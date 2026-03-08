@@ -205,6 +205,13 @@ export const resolvePost = (
  * @param {number} [loyalty=0] - Buffer against bad growth
  * @returns {number} Net follower growth
  */
+// ⚡ Bolt: Pre-calculate platform ID map for O(1) lookups instead of O(N) array allocation and search.
+// Expected Impact: Reduces GC overhead and CPU cycles during the hot-path calculateSocialGrowth function.
+const PLATFORMS_BY_ID = Object.values(SOCIAL_PLATFORMS).reduce((acc, p) => {
+  acc[p.id] = p
+  return acc
+}, {})
+
 export const calculateSocialGrowth = (
   platform,
   performance,
@@ -213,9 +220,7 @@ export const calculateSocialGrowth = (
   controversyLevel = 0,
   loyalty = 0
 ) => {
-  const platformData = Object.values(SOCIAL_PLATFORMS).find(
-    p => p.id === platform
-  )
+  const platformData = PLATFORMS_BY_ID[platform]
   const multiplier = platformData ? platformData.multiplier : 1.0
 
   // Loyalty shield: reduces the penalty of low performance
