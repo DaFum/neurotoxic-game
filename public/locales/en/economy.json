@@ -1,92 +1,92 @@
 {
-  "gigIncome": {
-    "ticketSales": {
-      "label": "Ticket Sales",
-      "detail": "{{sold}} / {{capacity}} sold"
-    },
-    "hypeBonus": {
-      "label": "HYPE BONUS",
-      "detail": "Merch frenzy (S-Rank)!"
-    },
-    "badShow": {
-      "label": "BAD SHOW",
-      "detail": "Crowd left early..."
-    },
-    "loyalFans": {
-      "label": "LOYAL FANS",
-      "detail": "Supporting you despite PR"
-    },
-    "merchSales": {
-      "label": "Merch Sales",
-      "detail": "{{buyers}} buyers"
-    },
-    "guarantee": {
-      "label": "Guarantee",
-      "detail": "Fixed fee"
-    },
-    "techSponsor": {
-      "label": "Tech Sponsor",
-      "detail": "Perfect Set (0 Misses)"
-    },
-    "beerSponsor": {
-      "label": "Beer Sponsor",
-      "detail": "Max Hype Reached"
-    },
-    "barCut": {
-      "label": "Bar Cut",
-      "detail": "{{percent}}% of Bar"
-    },
-    "vipBarRevenue": {
-      "label": "VIP Bar Revenue",
-      "detail": "VIP crowd — {{percent}}% of Bar"
-    }
-  },
   "gigExpenses": {
-    "venueSplit": {
-      "label": "Venue Split",
-      "detail": "{{rate}}% of Door"
-    },
-    "merchRestock": {
-      "label": "Merch Restock",
-      "detail": "COGS"
-    },
     "catering": {
-      "label": "Catering / Energy",
-      "detail": "Counters Tired Band Penalty"
-    },
-    "socialAds": {
-      "label": "Social Ads",
-      "detail": "Promo Campaign"
-    },
-    "merchStand": {
-      "label": "Merch Stand",
-      "detail": "Better Display"
-    },
-    "soundcheck": {
-      "label": "Soundcheck",
-      "detail": "Prep Time"
+      "detail": "Counters Tired Band Penalty",
+      "label": "Catering / Energy"
     },
     "guestList": {
-      "label": "Guest List",
-      "detail": "VIP Treatment (+Bar Revenue, +Score)"
+      "detail": "VIP Treatment (+Bar Revenue, +Score)",
+      "label": "Guest List"
+    },
+    "merchRestock": {
+      "detail": "COGS",
+      "label": "Merch Restock"
+    },
+    "merchStand": {
+      "detail": "Better Display",
+      "label": "Merch Stand"
+    },
+    "socialAds": {
+      "detail": "Promo Campaign",
+      "label": "Social Ads"
+    },
+    "soundcheck": {
+      "detail": "Prep Time",
+      "label": "Soundcheck"
+    },
+    "venueSplit": {
+      "detail": "{{rate}}% of Door",
+      "label": "Venue Split"
+    }
+  },
+  "gigIncome": {
+    "badShow": {
+      "detail": "Crowd left early...",
+      "label": "BAD SHOW"
+    },
+    "barCut": {
+      "detail": "{{percent}}% of Bar",
+      "label": "Bar Cut"
+    },
+    "beerSponsor": {
+      "detail": "Max Hype Reached",
+      "label": "Beer Sponsor"
+    },
+    "guarantee": {
+      "detail": "Fixed fee",
+      "label": "Guarantee"
+    },
+    "hypeBonus": {
+      "detail": "Merch frenzy (S-Rank)!",
+      "label": "HYPE BONUS"
+    },
+    "loyalFans": {
+      "detail": "Supporting you despite PR",
+      "label": "LOYAL FANS"
+    },
+    "merchSales": {
+      "detail": "{{buyers}} buyers",
+      "label": "Merch Sales"
+    },
+    "techSponsor": {
+      "detail": "Perfect Set (0 Misses)",
+      "label": "Tech Sponsor"
+    },
+    "ticketSales": {
+      "detail": "{{sold}} / {{capacity}} sold",
+      "label": "Ticket Sales"
+    },
+    "vipBarRevenue": {
+      "detail": "VIP crowd — {{percent}}% of Bar",
+      "label": "VIP Bar Revenue"
     }
   },
   "postGig": {
-    "loading": "Loading Report...",
-    "income": "INCOME",
-    "total": "TOTAL",
+    "continueToSocials": "Continue to Socials >",
     "expenses": "EXPENSES",
+    "income": "INCOME",
+    "loading": "Loading Report...",
     "netProfit": "NET PROFIT",
-    "continueToSocials": "Continue to Socials >"
+    "total": "TOTAL"
   },
   "social": {
-    "platform": "Platform",
     "category": "Category",
-    "highVariance": "High Variance Risk",
-    "consistentGrowth": "Consistent Growth",
-    "postToSocial": "POST TO SOCIAL MEDIA",
-    "currentTrend": "CURRENT TREND:",
     "chooseStrategy": "CHOOSE YOUR STRATEGY",
-    "influence": "Influence"
+    "consistentGrowth": "Consistent Growth",
+    "currentTrend": "CURRENT TREND:",
+    "highVariance": "High Variance Risk",
+    "influence": "Influence",
+    "platform": "Platform",
+    "postToSocial": "POST TO SOCIAL MEDIA"
   }
 }

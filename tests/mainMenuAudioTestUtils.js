@@ -1,8 +1,8 @@
 import { mock } from 'node:test'
 
 export const mockAudioManager = {
-  ensureAudioContext: mock.fn(async () => {}),
-  startAmbient: mock.fn(async () => {})
+  ensureAudioContext: mock.fn(async () => true),
+  startAmbient: mock.fn(async () => true)
 }
 
 export const createMockGameState = ({ canLoad } = {}) => ({
