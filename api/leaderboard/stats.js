@@ -51,7 +51,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Invalid money value' })
       }
 
-      if (playerName.length > 1000) {
+      if (playerName.length > 100) {
         return res.status(400).json({ error: 'Invalid playerName length' })
       }
 
