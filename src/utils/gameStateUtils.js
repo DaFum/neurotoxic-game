@@ -204,6 +204,9 @@ export const applyEventDelta = (state, delta) => {
         let newRelationships = { ...member.relationships }
         let hasChanges = false
 
+        const hasGrudgeHolder = member.traits?.some(t => t.id === 'grudge_holder') || false
+        const hasPeacemaker = member.traits?.some(t => t.id === 'peacemaker') || false
+
         delta.band.relationshipChange.forEach(change => {
           const otherMember =
             change.member1 === member.name ? change.member2 : change.member1
@@ -216,16 +219,13 @@ export const applyEventDelta = (state, delta) => {
           ) {
             let amount = change.change
             // Apply traits
-            if (
-              amount < 0 &&
-              member.traits?.some(t => t.id === 'grudge_holder')
-            ) {
+            if (amount < 0 && hasGrudgeHolder) {
               amount *= 1.5 // Grudge Holder amplifies negative
             }
-            if (amount > 0 && member.traits?.some(t => t.id === 'peacemaker')) {
+            if (amount > 0 && hasPeacemaker) {
               amount *= 1.5 // Peacemaker amplifies positive
             }
-            if (amount < 0 && member.traits?.some(t => t.id === 'peacemaker')) {
+            if (amount < 0 && hasPeacemaker) {
               amount *= 0.5 // Peacemaker dampens negative
             }
 
