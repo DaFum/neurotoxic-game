@@ -4,12 +4,14 @@ This checklist expands the file-level inventory in `tests/MISSING_TESTS_CODEBASE
 
 ## `src/components/stage/BaseStageController.js`
 
-- [ ] Init success path: app/stage creation and ready state.
-- [ ] Init failure path: renderer/app bootstrap error handling.
-- [ ] Resize path: valid dimensions update stage correctly.
+- [x] Init success path: app/stage creation and ready state.
+- [x] Init failure path: renderer/app bootstrap error handling.
+- [x] Init retry path after failed setup re-initializes correctly.
+- [x] Init failure cleanup path invokes subclass dispose exactly once.
+- [x] Resize path: valid dimensions update stage correctly.
 - [ ] Resize guard path: invalid/unavailable view dimensions are ignored.
-- [ ] Dispose path: destroys app/resources exactly once.
-- [ ] Dispose idempotency path: repeated dispose calls do not throw.
+- [x] Dispose path: destroys app/resources exactly once.
+- [x] Dispose idempotency path: repeated dispose calls do not throw.
 
 ## `src/context/reducers/sceneReducer.js`
 

@@ -28,4 +28,4 @@ test-results/
 test_output.txt
 
 # Playwright screenshots
-output/playwright/*.png
+output/playwright/**/*.png

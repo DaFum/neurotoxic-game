@@ -44,7 +44,7 @@ export const UplinkButton = ({ title, url, subtitle, type, Icon }) => {
               {type}
             </span>
           </div>
-          <p className='text-[9px] sm:text-xs opacity-70 mt-1 font-mono tracking-wide break-all whitespace-normal leading-[1.35] pb-[2px]'>
+          <p className='text-[9px] sm:text-xs opacity-70 mt-1 font-mono tracking-wide break-words [overflow-wrap:anywhere] whitespace-normal leading-[1.35] pb-[2px]'>
             {subtitle}
           </p>
         </div>

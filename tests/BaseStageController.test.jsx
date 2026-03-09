@@ -115,7 +115,7 @@ describe('BaseStageController', () => {
   it('handles init failures and disposes safely', async () => {
     mocks.init.mockRejectedValueOnce(new Error('boom'))
 
-    await controller.init()
+    await expect(controller.init()).rejects.toThrow('boom')
 
     expect(mocks.error).toHaveBeenCalled()
     expect(controller.app).toBe(null)
@@ -130,7 +130,7 @@ describe('BaseStageController', () => {
       updateRef: { current: vi.fn() }
     })
 
-    await controller.init()
+    await expect(controller.init()).rejects.toThrow('setup failed once')
     expect(controller.setupAttempts).toBe(1)
     expect(controller.setupRan).toBeUndefined()
     expect(controller.isDisposed).toBe(true)
@@ -149,7 +149,7 @@ describe('BaseStageController', () => {
       updateRef: { current: vi.fn() }
     })
 
-    await controller.init()
+    await expect(controller.init()).rejects.toThrow('setup boom')
 
     expect(controller.subclassDisposeCalls).toBe(1)
     expect(controller.app).toBe(null)

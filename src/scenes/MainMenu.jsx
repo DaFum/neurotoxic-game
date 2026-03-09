@@ -73,7 +73,12 @@ export const MainMenu = () => {
 
   const startAmbientSafely = useCallback(() => {
     void audioManager.startAmbient().catch(err => {
-      reportAudioIssue(err, tRef.current('ui:errors.ambient_start_failed'))
+      reportAudioIssue(
+        err,
+        tRef.current('ui:errors.ambient_start_failed', {
+          defaultValue: 'Failed to start ambient audio'
+        })
+      )
     })
   }, [reportAudioIssue])
 
@@ -107,12 +112,19 @@ export const MainMenu = () => {
         } else {
           reportAudioIssue(
             new Error('Audio unlock failed'),
-            tRef.current('ui:errors.audio_init_failed')
+            tRef.current('ui:errors.audio_init_failed', {
+              defaultValue: 'Audio initialization failed'
+            })
           )
         }
       })
       .catch(err =>
-        reportAudioIssue(err, tRef.current('ui:errors.audio_init_failed'))
+        reportAudioIssue(
+          err,
+          tRef.current('ui:errors.audio_init_failed', {
+            defaultValue: 'Audio initialization failed'
+          })
+        )
       )
   }, [
     resetState,
@@ -196,12 +208,19 @@ export const MainMenu = () => {
         } else {
           reportAudioIssue(
             new Error('Audio unlock failed'),
-            tRef.current('ui:errors.audio_init_failed')
+            tRef.current('ui:errors.audio_init_failed', {
+              defaultValue: 'Audio initialization failed'
+            })
           )
         }
       })
       .catch(err =>
-        reportAudioIssue(err, tRef.current('ui:errors.audio_init_failed'))
+        reportAudioIssue(
+          err,
+          tRef.current('ui:errors.audio_init_failed', {
+            defaultValue: 'Audio initialization failed'
+          })
+        )
       )
   }, [loadGame, addToast, changeScene, reportAudioIssue, startAmbientSafely])
 

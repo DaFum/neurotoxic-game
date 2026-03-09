@@ -10,11 +10,7 @@ This inventory lists source files with **no direct test coverage target** (no ma
   - a test file text references the source path/import.
 - Everything else is currently considered missing test coverage and listed below.
 
-## Missing test targets (21)
-
-### Stage / rendering core
-
-- `src/components/stage/BaseStageController.js`
+## Missing test targets (19)
 
 ### Context / reducers
 
@@ -36,7 +32,6 @@ This inventory lists source files with **no direct test coverage target** (no ma
 
 ### Scene components
 
-- `src/scenes/KabelsalatScene.jsx`
 - `src/scenes/Overworld.jsx`
 - `src/scenes/TourbusScene.jsx`
 

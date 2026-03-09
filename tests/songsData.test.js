@@ -224,7 +224,11 @@ describe('songs.js', () => {
         `Song ${song.id} energy should be an object`
       )
       assert.ok(
-        Number.isFinite(song.energy.peak) && song.energy.peak <= 100,
+        Number.isFinite(song.energy.peak),
+        `Song ${song.id} energy.peak should be a finite number`
+      )
+      assert.ok(
+        song.energy.peak <= 100,
         `Song ${song.id} energy.peak should be <= 100`
       )
     })

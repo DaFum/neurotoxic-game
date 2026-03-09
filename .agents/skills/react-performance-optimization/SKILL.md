@@ -40,13 +40,13 @@ Load detailed patterns and examples as needed:
 
 | Topic                                                  | Reference File                                                                   |
 | ------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| React.memo, useMemo, useCallback patterns              | `.Codex/skills/react-performance-optimization/references/memoization.md`         |
-| Code splitting with lazy/Suspense, bundle optimization | `.Codex/skills/react-performance-optimization/references/code-splitting.md`      |
-| Virtualization for large lists (react-window)          | `.Codex/skills/react-performance-optimization/references/virtualization.md`      |
-| State management strategies, context splitting         | `.Codex/skills/react-performance-optimization/references/state-management.md`    |
-| useTransition, useDeferredValue (React 18+)            | `.Codex/skills/react-performance-optimization/references/concurrent-features.md` |
-| React DevTools Profiler, performance monitoring        | `.Codex/skills/react-performance-optimization/references/profiling-debugging.md` |
-| Common pitfalls and anti-patterns                      | `.Codex/skills/react-performance-optimization/references/common-pitfalls.md`     |
+| React.memo, useMemo, useCallback patterns              | `.agents/skills/react-performance-optimization/references/memoization.md`         |
+| Code splitting with lazy/Suspense, bundle optimization | `.agents/skills/react-performance-optimization/references/code-splitting.md`      |
+| Virtualization for large lists (react-window)          | `.agents/skills/react-performance-optimization/references/virtualization.md`      |
+| State management strategies, context splitting         | `.agents/skills/react-performance-optimization/references/state-management.md`    |
+| useTransition, useDeferredValue (React 18+)            | `.agents/skills/react-performance-optimization/references/concurrent-features.md` |
+| React DevTools Profiler, performance monitoring        | `.agents/skills/react-performance-optimization/references/profiling-debugging.md` |
+| Common pitfalls and anti-patterns                      | `.agents/skills/react-performance-optimization/references/common-pitfalls.md`     |
 
 ## Optimization Workflow
 

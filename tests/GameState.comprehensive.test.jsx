@@ -86,7 +86,9 @@ describe('GameState Context - Core Actions', () => {
           <div data-testid='current-scene'>{gameState.currentScene}</div>
           <div data-testid='player-money'>{gameState.player?.money || 0}</div>
           <div data-testid='band-harmony'>{gameState.band?.harmony || 0}</div>
-          <button onClick={() => action(gameState)}>Execute</button>
+          <button type='button' onClick={() => action(gameState)}>
+            Execute
+          </button>
         </div>
       )
     }
@@ -185,15 +187,18 @@ describe('GameState Context - Event System', () => {
           <div data-testid='active-event'>
             {gameState.activeEvent?.id || 'none'}
           </div>
-          <button onClick={() => gameState.triggerEvent('test')}>
+          <button type='button' onClick={() => gameState.triggerEvent('test')}>
             Trigger
           </button>
           <button
+            type='button'
             onClick={() => gameState.setActiveEvent({ id: 'test-event' })}
           >
             Set Event
           </button>
-          <button onClick={() => gameState.setActiveEvent(null)}>Clear</button>
+          <button type='button' onClick={() => gameState.setActiveEvent(null)}>
+            Clear
+          </button>
         </div>
       )
     }
@@ -239,13 +244,17 @@ describe('GameState Context - Event System', () => {
       return (
         <div>
           <button
+            type='button'
             onClick={() => {
               gameState.changeScene(GAME_PHASES.GIG)
             }}
           >
             Go to Gig
           </button>
-          <button onClick={() => gameState.triggerEvent('travel')}>
+          <button
+            type='button'
+            onClick={() => gameState.triggerEvent('travel')}
+          >
             Trigger Event
           </button>
         </div>
@@ -279,7 +288,11 @@ describe('GameState Context - Save/Load', () => {
   test('saveGame persists state to localStorage', () => {
     const TestComponent = () => {
       const gameState = useGameState()
-      return <button onClick={() => gameState.saveGame(false)}>Save</button>
+      return (
+        <button type='button' onClick={() => gameState.saveGame(false)}>
+          Save
+        </button>
+      )
     }
 
     render(
@@ -320,7 +333,9 @@ describe('GameState Context - Save/Load', () => {
       return (
         <div>
           <div data-testid='player-money'>{gameState.player?.money || 0}</div>
-          <button onClick={() => gameState.loadGame()}>Load</button>
+          <button type='button' onClick={() => gameState.loadGame()}>
+            Load
+          </button>
         </div>
       )
     }
@@ -345,7 +360,11 @@ describe('GameState Context - Save/Load', () => {
 
     const TestComponent = () => {
       const gameState = useGameState()
-      return <button onClick={() => gameState.deleteSave()}>Delete</button>
+      return (
+        <button type='button' onClick={() => gameState.deleteSave()}>
+          Delete
+        </button>
+      )
     }
 
     render(
@@ -367,10 +386,15 @@ describe('GameState Context - Save/Load', () => {
       return (
         <div>
           <div data-testid='player-money'>{gameState.player?.money || 0}</div>
-          <button onClick={() => gameState.updatePlayer({ money: 5000 })}>
+          <button
+            type='button'
+            onClick={() => gameState.updatePlayer({ money: 5000 })}
+          >
             Set Money
           </button>
-          <button onClick={() => gameState.resetState()}>Reset</button>
+          <button type='button' onClick={() => gameState.resetState()}>
+            Reset
+          </button>
         </div>
       )
     }
@@ -404,7 +428,10 @@ describe('GameState Context - Gig Management', () => {
           <div data-testid='gig-name'>
             {gameState.currentGig?.name || 'none'}
           </div>
-          <button onClick={() => gameState.startGig({ name: 'Test Venue' })}>
+          <button
+            type='button'
+            onClick={() => gameState.startGig({ name: 'Test Venue' })}
+          >
             Start
           </button>
         </div>
@@ -433,6 +460,7 @@ describe('GameState Context - Gig Management', () => {
             {gameState.setlist?.length || 0}
           </div>
           <button
+            type='button'
             onClick={() =>
               gameState.setSetlist([{ id: 'song1' }, { id: 'song2' }])
             }
@@ -463,6 +491,7 @@ describe('GameState Context - Gig Management', () => {
         <div>
           <div data-testid='scene'>{gameState.currentScene}</div>
           <button
+            type='button'
             onClick={() => {
               gameState.setCurrentGig({ id: 'test', isPractice: false })
               gameState.endGig()
@@ -498,6 +527,7 @@ describe('GameState Context - Gig Management', () => {
             {gameState.gigModifiers?.soundcheck ? 'yes' : 'no'}
           </div>
           <button
+            type='button'
             onClick={() => gameState.setGigModifiers({ soundcheck: true })}
           >
             Toggle
@@ -525,7 +555,10 @@ describe('GameState Context - Minigames', () => {
     const TestComponent = () => {
       const gameState = useGameState()
       return (
-        <button onClick={() => gameState.startTravelMinigame('node1')}>
+        <button
+          type='button'
+          onClick={() => gameState.startTravelMinigame('node1')}
+        >
           Start Travel
         </button>
       )
@@ -548,7 +581,10 @@ describe('GameState Context - Minigames', () => {
     const TestComponent = () => {
       const gameState = useGameState()
       return (
-        <button onClick={() => gameState.completeTravelMinigame(10, [])}>
+        <button
+          type='button'
+          onClick={() => gameState.completeTravelMinigame(10, [])}
+        >
           Complete Travel
         </button>
       )
@@ -571,7 +607,10 @@ describe('GameState Context - Minigames', () => {
     const TestComponent = () => {
       const gameState = useGameState()
       return (
-        <button onClick={() => gameState.startRoadieMinigame('gig1')}>
+        <button
+          type='button'
+          onClick={() => gameState.startRoadieMinigame('gig1')}
+        >
           Start Roadie
         </button>
       )
@@ -594,7 +633,10 @@ describe('GameState Context - Minigames', () => {
     const TestComponent = () => {
       const gameState = useGameState()
       return (
-        <button onClick={() => gameState.completeRoadieMinigame(5)}>
+        <button
+          type='button'
+          onClick={() => gameState.completeRoadieMinigame(5)}
+        >
           Complete Roadie
         </button>
       )

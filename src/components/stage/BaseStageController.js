@@ -172,8 +172,9 @@ export class BaseStageController {
           this.isDisposed ||
           this.app !== app ||
           message.includes('updateLocalTransform')
+        const shouldRethrow = !isLifecycleRace
 
-        if (!isLifecycleRace) {
+        if (shouldRethrow) {
           logger.error(this.constructor.name, 'Init Failed', e)
         }
 
@@ -196,6 +197,10 @@ export class BaseStageController {
           this.destroyPixiApp(app)
         } finally {
           this.initPromise = null
+        }
+
+        if (shouldRethrow) {
+          throw e
         }
       }
     })()

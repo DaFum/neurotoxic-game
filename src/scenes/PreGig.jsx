@@ -14,10 +14,12 @@ import GigModifierButton from '../ui/GigModifierButton'
 import { RazorPlayIcon } from '../ui/shared/Icons'
 
 let lastMinigameFallback = null
+let gigIdCounter = 0
 
 // Exported exclusively for test cleanup
 export const _resetLastMinigameFallback = () => {
   lastMinigameFallback = null
+  gigIdCounter = 0
 }
 
 const BAND_MEETING_COST = 50
@@ -425,7 +427,8 @@ export const PreGig = () => {
           try {
             await audioManager.ensureAudioContext()
             // Safe access for ID
-            const gigId = currentGig?.id || `gig_${Date.now()}`
+            const gigId =
+              currentGig?.id || `gig_${Date.now()}-${++gigIdCounter}`
 
             // Simple streak breaker using sessionStorage with fallback
             let lastMinigame = lastMinigameFallback
