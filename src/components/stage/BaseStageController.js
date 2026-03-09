@@ -176,12 +176,23 @@ export class BaseStageController {
         if (!isLifecycleRace) {
           logger.error(this.constructor.name, 'Init Failed', e)
         }
+
+        // Ensure callers can retry init() after a failed attempt.
+        this.initPromise = null
         this.isDisposed = true
-        this.cleanupHostResizeListeners()
-        if (this.app === app) {
-          this.app = null
+
+        // Route teardown through dispose() so subclass cleanup always runs.
+        // This restores the previous contract where init failures trigger full disposal.
+        try {
+          this.dispose()
+        } catch (disposeError) {
+          logger.warn(this.constructor.name, 'Dispose failed during init', disposeError)
+          this.cleanupHostResizeListeners()
+          if (this.app === app) this.app = null
+          this.destroyPixiApp(app)
+        } finally {
+          this.initPromise = null
         }
-        this.destroyPixiApp(app)
       }
     })()
     return this.initPromise

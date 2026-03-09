@@ -52,6 +52,32 @@ class TestController extends BaseStageController {
   }
 }
 
+class RetrySetupController extends BaseStageController {
+  constructor(params) {
+    super(params)
+    this.setupAttempts = 0
+  }
+
+  async setup() {
+    this.setupAttempts += 1
+    if (this.setupAttempts === 1) {
+      throw new Error('setup failed once')
+    }
+    this.setupRan = true
+  }
+}
+
+class DisposeAwareController extends BaseStageController {
+  async setup() {
+    throw new Error('setup boom')
+  }
+
+  dispose() {
+    this.subclassDisposeCalls = (this.subclassDisposeCalls || 0) + 1
+    super.dispose()
+  }
+}
+
 describe('BaseStageController', () => {
   let containerRef
   let controller
@@ -94,6 +120,41 @@ describe('BaseStageController', () => {
     expect(mocks.error).toHaveBeenCalled()
     expect(controller.app).toBe(null)
     expect(controller.isDisposed).toBe(true)
+    expect(controller.initPromise).toBe(null)
+  })
+
+  it('resets initPromise and allows init retry after setup failure', async () => {
+    controller = new RetrySetupController({
+      containerRef,
+      gameStateRef: { current: {} },
+      updateRef: { current: vi.fn() }
+    })
+
+    await controller.init()
+    expect(controller.setupAttempts).toBe(1)
+    expect(controller.setupRan).toBeUndefined()
+    expect(controller.isDisposed).toBe(true)
+    expect(controller.initPromise).toBe(null)
+
+    await controller.init()
+    expect(controller.setupAttempts).toBe(2)
+    expect(controller.setupRan).toBe(true)
+    expect(controller.isDisposed).toBe(false)
+  })
+
+  it('invokes subclass dispose when setup throws', async () => {
+    controller = new DisposeAwareController({
+      containerRef,
+      gameStateRef: { current: {} },
+      updateRef: { current: vi.fn() }
+    })
+
+    await controller.init()
+
+    expect(controller.subclassDisposeCalls).toBe(1)
+    expect(controller.app).toBe(null)
+    expect(controller.isDisposed).toBe(true)
+    expect(controller.initPromise).toBe(null)
   })
 
   it('handleResize draws when app exists and ignores without app', () => {
