@@ -29,7 +29,7 @@ Based on my thorough analysis of the trait system across the codebase, here are 
   - Effect: `rel_neg_amp` (Amplifies negative relationship changes)
   - Description: Amplifies negative relationship changes
   - Unlock Hint: Have a relationship score drop below 30
-  - Implementation: Applied in `gameStateUtils.js` (applyEventDelta) when negative relationship change occurs; amount *= 1.5
+  - Implementation: Applied in `gameStateUtils.js` (applyEventDelta) when negative relationship change occurs; amount \*= 1.5
     **Marius (Drums)**
 - **blast_machine** → "Blast Beat Machine"
   - Effect: `score_bonus_fast` (+25% score on fast sections)
@@ -98,10 +98,12 @@ Traits are unlocked through the following context types defined in `src/utils/un
 - `showman` (Marius): `player.stats.stageDives >= 3`
 
   **F. RELATIONSHIP_CHANGE / HARMONY_UPDATE (Dynamic Game State)**
+
 - `grudge_holder` (Matze): Relationship < 30
 - `peacemaker` (Lars): High Band Harmony (>= 90)
 
   **Unlock Detection:**
+
 - Checked via `hasTrait(member, traitId)` - returns false if member doesn't have trait
 - Prevents duplicate unlocks by checking `member.traits.some(t => t.id === traitId)` before adding
 
@@ -135,11 +137,11 @@ Traits are unlocked through the following context types defined in `src/utils/un
 
 **D. EVENT RESOLUTION & RELATIONSHIPS**
 
-| Trait | Where Checked | Effect |
-|-------|---------------|--------|
-| `bandleader` | `eventEngine.js` (resolveEventChoice) | 50% chance to save failed conflict checks (Converts failure to success) |
-| `grudge_holder` | `gameStateUtils.js:applyEventDelta()` | Amplifies negative relationship changes (1.5x multiplier to negative relationship shifts) |
-| `peacemaker` | `gameStateUtils.js:applyEventDelta()` | Amplifies positive and dampens negative relationship changes (1.5x to positive, 0.5x to negative relationship shifts) |
+| Trait           | Where Checked                         | Effect                                                                                                                |
+| --------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `bandleader`    | `eventEngine.js` (resolveEventChoice) | 50% chance to save failed conflict checks (Converts failure to success)                                               |
+| `grudge_holder` | `gameStateUtils.js:applyEventDelta()` | Amplifies negative relationship changes (1.5x multiplier to negative relationship shifts)                             |
+| `peacemaker`    | `gameStateUtils.js:applyEventDelta()` | Amplifies positive and dampens negative relationship changes (1.5x to positive, 0.5x to negative relationship shifts) |
 
 **E. STAT TRACKING (For Future Effects)**
 
@@ -266,6 +268,7 @@ UI/Scene components can call unlockTrait() directly
 - **Bandleader** description says "+50% chance" but implementation is fixed 50% save rate, not probabilistic addition
 - **Road Warrior** effect is -15% fuel but description says "-15% Fuel Consumption" (accurate)
 - **Social Manager** / "Social Nerd" naming inconsistency
+
 ---
 
 ### 7. TRAIT IMPLEMENTATION COMPLETENESS MATRIX

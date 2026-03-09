@@ -20,7 +20,7 @@ export const UplinkButton = ({ title, url, subtitle, type, Icon }) => {
         </div>
       )}
 
-      <div className='relative z-10 flex items-start sm:items-center gap-3 sm:gap-0 p-3 sm:p-4'>
+      <div className='relative z-10 flex items-start gap-3 sm:gap-0 p-3 sm:p-4'>
         {/* Icon Block */}
         <div
           className={`w-12 h-12 sm:w-14 sm:h-14 border-2 flex items-center justify-center shrink-0 transition-colors
@@ -30,7 +30,7 @@ export const UplinkButton = ({ title, url, subtitle, type, Icon }) => {
         </div>
 
         {/* Text Block */}
-        <div className='ml-1 sm:ml-6 flex-1 min-w-0'>
+        <div className='ml-1 sm:ml-6 flex-1 min-w-0 pr-1 sm:pr-2'>
           <div className='flex flex-col gap-1 items-start justify-start'>
             <h2
               className='font-bold tracking-[0.08em] sm:tracking-[0.2em] text-sm sm:text-lg uppercase glitch-text break-words [overflow-wrap:anywhere] w-full leading-snug'
@@ -44,7 +44,7 @@ export const UplinkButton = ({ title, url, subtitle, type, Icon }) => {
               {type}
             </span>
           </div>
-          <p className='text-[10px] sm:text-xs opacity-70 mt-1 font-mono tracking-wide break-words [overflow-wrap:anywhere] whitespace-normal leading-tight'>
+          <p className='text-[9px] sm:text-xs opacity-70 mt-1 font-mono tracking-wide break-words [overflow-wrap:anywhere] whitespace-normal leading-[1.35] pb-[2px]'>
             {subtitle}
           </p>
         </div>

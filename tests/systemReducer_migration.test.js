@@ -52,43 +52,49 @@ test('systemReducer - handleLoadGame legacy venue migration', async t => {
     )
   })
 
-  await t.test('migrates partially malformed venues strings to full keys', () => {
-    const initialState = createInitialState()
+  await t.test(
+    'migrates partially malformed venues strings to full keys',
+    () => {
+      const initialState = createInitialState()
 
-    const legacyLoadedState = {
-      ...initialState,
-      player: {
-        ...initialState.player,
-        location: 'venues:berlin'
+      const legacyLoadedState = {
+        ...initialState,
+        player: {
+          ...initialState.player,
+          location: 'venues:berlin'
+        }
       }
+
+      const migratedState = handleLoadGame(initialState, legacyLoadedState)
+      assert.equal(
+        migratedState.player.location,
+        'venues:berlin.name',
+        'Partially malformed location strings missing .name suffix should be migrated'
+      )
     }
+  )
 
-    const migratedState = handleLoadGame(initialState, legacyLoadedState)
-    assert.equal(
-      migratedState.player.location,
-      'venues:berlin.name',
-      'Partially malformed location strings missing .name suffix should be migrated'
-    )
-  })
+  await t.test(
+    'migrates partially malformed strings with .name suffix only to full keys',
+    () => {
+      const initialState = createInitialState()
 
-  await t.test('migrates partially malformed strings with .name suffix only to full keys', () => {
-    const initialState = createInitialState()
-
-    const legacyLoadedState = {
-      ...initialState,
-      player: {
-        ...initialState.player,
-        location: 'berlin.name'
+      const legacyLoadedState = {
+        ...initialState,
+        player: {
+          ...initialState.player,
+          location: 'berlin.name'
+        }
       }
-    }
 
-    const migratedState = handleLoadGame(initialState, legacyLoadedState)
-    assert.equal(
-      migratedState.player.location,
-      'venues:berlin.name',
-      'Partially malformed location strings missing venues: prefix should be migrated'
-    )
-  })
+      const migratedState = handleLoadGame(initialState, legacyLoadedState)
+      assert.equal(
+        migratedState.player.location,
+        'venues:berlin.name',
+        'Partially malformed location strings missing venues: prefix should be migrated'
+      )
+    }
+  )
 
   await t.test(
     'gracefully handles missing player.location during legacy migration',

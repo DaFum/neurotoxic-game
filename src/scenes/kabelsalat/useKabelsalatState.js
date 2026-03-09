@@ -5,7 +5,12 @@ import { GAME_PHASES } from '../../context/gameConstants.js'
 import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 import { loadTexture } from '../../components/stage/utils.js'
 import { logger } from '../../utils/logger.js'
-import { CABLE_MAP, SOCKET_DEFS, INITIAL_SOCKET_ORDER, TIME_LIMIT } from './constants.js'
+import {
+  CABLE_MAP,
+  SOCKET_DEFS,
+  INITIAL_SOCKET_ORDER,
+  TIME_LIMIT
+} from './constants.js'
 import { generateLightningSeeds } from './utils.js'
 
 export const useKabelsalatState = () => {

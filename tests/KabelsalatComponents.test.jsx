@@ -27,7 +27,9 @@ describe('Kabelsalat Components', () => {
         />
       )
 
-      expect(screen.getByText('ui:minigames.kabelsalat.title')).toBeInTheDocument()
+      expect(
+        screen.getByText('ui:minigames.kabelsalat.title')
+      ).toBeInTheDocument()
     })
 
     it('renders status label', () => {
@@ -41,7 +43,9 @@ describe('Kabelsalat Components', () => {
         />
       )
 
-      expect(screen.getByText(/ui:minigames.kabelsalat.status/)).toBeInTheDocument()
+      expect(
+        screen.getByText(/ui:minigames.kabelsalat.status/)
+      ).toBeInTheDocument()
     })
 
     it('shows pending status when not powered and not game over', () => {
@@ -55,7 +59,9 @@ describe('Kabelsalat Components', () => {
         />
       )
 
-      expect(screen.getByText(/ui:minigames.kabelsalat.statusPending/)).toBeInTheDocument()
+      expect(
+        screen.getByText(/ui:minigames.kabelsalat.statusPending/)
+      ).toBeInTheDocument()
     })
 
     it('shows connected status when powered on', () => {
@@ -69,7 +75,9 @@ describe('Kabelsalat Components', () => {
         />
       )
 
-      expect(screen.getByText(/ui:minigames.kabelsalat.statusConnected/)).toBeInTheDocument()
+      expect(
+        screen.getByText(/ui:minigames.kabelsalat.statusConnected/)
+      ).toBeInTheDocument()
     })
 
     it('shows failed status when game over', () => {
@@ -83,7 +91,9 @@ describe('Kabelsalat Components', () => {
         />
       )
 
-      expect(screen.getByText(/ui:minigames.kabelsalat.statusFailed/)).toBeInTheDocument()
+      expect(
+        screen.getByText(/ui:minigames.kabelsalat.statusFailed/)
+      ).toBeInTheDocument()
     })
 
     it('renders timer with correct time', () => {
@@ -97,7 +107,9 @@ describe('Kabelsalat Components', () => {
         />
       )
 
-      expect(screen.getByText('ui:minigames.kabelsalat.timeValue:15')).toBeInTheDocument()
+      expect(
+        screen.getByText('ui:minigames.kabelsalat.timeValue:15')
+      ).toBeInTheDocument()
     })
 
     it('renders glitch effect on title when shocked', () => {
@@ -120,33 +132,47 @@ describe('Kabelsalat Components', () => {
     it('renders rules title', () => {
       render(<Rules t={mockT} />)
 
-      expect(screen.getByText(/ui:minigames.kabelsalat.rulesTitle/)).toBeInTheDocument()
+      expect(
+        screen.getByText(/ui:minigames.kabelsalat.rulesTitle/)
+      ).toBeInTheDocument()
     })
 
     it('renders time rule', () => {
       render(<Rules t={mockT} />)
 
-      expect(screen.getByText('ui:minigames.kabelsalat.rules.time')).toBeInTheDocument()
+      expect(
+        screen.getByText('ui:minigames.kabelsalat.rules.time')
+      ).toBeInTheDocument()
     })
 
     it('renders rule 1 label and text', () => {
       render(<Rules t={mockT} />)
 
-      expect(screen.getByText(/ui:minigames.kabelsalat.rules.rule1Label/)).toBeInTheDocument()
-      expect(screen.getByText(/ui:minigames.kabelsalat.rules.rule1Text/)).toBeInTheDocument()
+      expect(
+        screen.getByText(/ui:minigames.kabelsalat.rules.rule1Label/)
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText(/ui:minigames.kabelsalat.rules.rule1Text/)
+      ).toBeInTheDocument()
     })
 
     it('renders rule 2 label and text', () => {
       render(<Rules t={mockT} />)
 
-      expect(screen.getByText(/ui:minigames.kabelsalat.rules.rule2Label/)).toBeInTheDocument()
-      expect(screen.getByText(/ui:minigames.kabelsalat.rules.rule2Text/)).toBeInTheDocument()
+      expect(
+        screen.getByText(/ui:minigames.kabelsalat.rules.rule2Label/)
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText(/ui:minigames.kabelsalat.rules.rule2Text/)
+      ).toBeInTheDocument()
     })
 
     it('renders penalty text', () => {
       render(<Rules t={mockT} />)
 
-      expect(screen.getByText('ui:minigames.kabelsalat.rules.penalty')).toBeInTheDocument()
+      expect(
+        screen.getByText('ui:minigames.kabelsalat.rules.penalty')
+      ).toBeInTheDocument()
     })
 
     it('renders as a list', () => {
@@ -165,7 +191,7 @@ describe('Kabelsalat Components', () => {
           isShocked={false}
           isGameOver={false}
           isPoweredOn={false}
-          faultReason=""
+          faultReason=''
         />
       )
 
@@ -179,11 +205,13 @@ describe('Kabelsalat Components', () => {
           isShocked={true}
           isGameOver={false}
           isPoweredOn={false}
-          faultReason="Test fault"
+          faultReason='Test fault'
         />
       )
 
-      expect(screen.getByText('ui:minigames.kabelsalat.systemShock')).toBeInTheDocument()
+      expect(
+        screen.getByText('ui:minigames.kabelsalat.systemShock')
+      ).toBeInTheDocument()
       expect(screen.getByText('Test fault')).toBeInTheDocument()
     })
 
@@ -194,12 +222,16 @@ describe('Kabelsalat Components', () => {
           isShocked={false}
           isGameOver={true}
           isPoweredOn={false}
-          faultReason=""
+          faultReason=''
         />
       )
 
-      expect(screen.getByText('ui:minigames.kabelsalat.timeUp')).toBeInTheDocument()
-      expect(screen.getByText('ui:minigames.kabelsalat.managerMad')).toBeInTheDocument()
+      expect(
+        screen.getByText('ui:minigames.kabelsalat.timeUp')
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText('ui:minigames.kabelsalat.managerMad')
+      ).toBeInTheDocument()
     })
 
     it('does not show game over overlay when shocked', () => {
@@ -209,11 +241,13 @@ describe('Kabelsalat Components', () => {
           isShocked={true}
           isGameOver={true}
           isPoweredOn={false}
-          faultReason="fault"
+          faultReason='fault'
         />
       )
 
-      expect(screen.queryByText('ui:minigames.kabelsalat.timeUp')).not.toBeInTheDocument()
+      expect(
+        screen.queryByText('ui:minigames.kabelsalat.timeUp')
+      ).not.toBeInTheDocument()
     })
 
     it('renders success overlay when powered on', () => {
@@ -223,12 +257,16 @@ describe('Kabelsalat Components', () => {
           isShocked={false}
           isGameOver={false}
           isPoweredOn={true}
-          faultReason=""
+          faultReason=''
         />
       )
 
-      expect(screen.getByText('ui:minigames.kabelsalat.success')).toBeInTheDocument()
-      expect(screen.getByText('ui:minigames.kabelsalat.ampsReady')).toBeInTheDocument()
+      expect(
+        screen.getByText('ui:minigames.kabelsalat.success')
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText('ui:minigames.kabelsalat.ampsReady')
+      ).toBeInTheDocument()
     })
   })
 
@@ -272,7 +310,7 @@ describe('Kabelsalat Components', () => {
     it('renders XLR plug with 3 pins', () => {
       const { container } = render(
         <svg>
-          <PlugGraphics type="xlr" />
+          <PlugGraphics type='xlr' />
         </svg>
       )
 
@@ -283,7 +321,7 @@ describe('Kabelsalat Components', () => {
     it('renders jack plug with cylindrical body', () => {
       const { container } = render(
         <svg>
-          <PlugGraphics type="jack" />
+          <PlugGraphics type='jack' />
         </svg>
       )
 
@@ -294,7 +332,7 @@ describe('Kabelsalat Components', () => {
     it('renders DC plug', () => {
       const { container } = render(
         <svg>
-          <PlugGraphics type="dc" />
+          <PlugGraphics type='dc' />
         </svg>
       )
 
@@ -305,7 +343,7 @@ describe('Kabelsalat Components', () => {
     it('renders IEC power plug with 3 pins', () => {
       const { container } = render(
         <svg>
-          <PlugGraphics type="iec" />
+          <PlugGraphics type='iec' />
         </svg>
       )
 
@@ -316,7 +354,7 @@ describe('Kabelsalat Components', () => {
     it('renders MIDI plug with 5 pins', () => {
       const { container } = render(
         <svg>
-          <PlugGraphics type="midi" />
+          <PlugGraphics type='midi' />
         </svg>
       )
 
@@ -327,7 +365,7 @@ describe('Kabelsalat Components', () => {
     it('renders nothing for unknown type', () => {
       const { container } = render(
         <svg>
-          <PlugGraphics type="unknown" />
+          <PlugGraphics type='unknown' />
         </svg>
       )
 
@@ -340,7 +378,7 @@ describe('Kabelsalat Components', () => {
     it('renders XLR socket with 3 holes', () => {
       const { container } = render(
         <svg>
-          <SocketGraphics type="xlr" />
+          <SocketGraphics type='xlr' />
         </svg>
       )
 
@@ -351,7 +389,7 @@ describe('Kabelsalat Components', () => {
     it('renders jack socket', () => {
       const { container } = render(
         <svg>
-          <SocketGraphics type="jack" />
+          <SocketGraphics type='jack' />
         </svg>
       )
 
@@ -362,7 +400,7 @@ describe('Kabelsalat Components', () => {
     it('renders DC socket', () => {
       const { container } = render(
         <svg>
-          <SocketGraphics type="dc" />
+          <SocketGraphics type='dc' />
         </svg>
       )
 
@@ -373,7 +411,7 @@ describe('Kabelsalat Components', () => {
     it('renders IEC power socket', () => {
       const { container } = render(
         <svg>
-          <SocketGraphics type="iec" />
+          <SocketGraphics type='iec' />
         </svg>
       )
 
@@ -384,7 +422,7 @@ describe('Kabelsalat Components', () => {
     it('renders MIDI socket with circular housing', () => {
       const { container } = render(
         <svg>
-          <SocketGraphics type="midi" />
+          <SocketGraphics type='midi' />
         </svg>
       )
 
@@ -395,7 +433,7 @@ describe('Kabelsalat Components', () => {
     it('renders nothing for unknown type', () => {
       const { container } = render(
         <svg>
-          <SocketGraphics type="unknown" />
+          <SocketGraphics type='unknown' />
         </svg>
       )
 

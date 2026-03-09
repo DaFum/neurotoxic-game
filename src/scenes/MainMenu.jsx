@@ -73,7 +73,12 @@ export const MainMenu = () => {
 
   const startAmbientSafely = useCallback(() => {
     void audioManager.startAmbient().catch(err => {
-      reportAudioIssue(err, tRef.current('ui:errors.ambient_start_failed'))
+      reportAudioIssue(
+        err,
+        tRef.current('ui:errors.ambient_start_failed', {
+          defaultValue: 'Failed to start ambient audio'
+        })
+      )
     })
   }, [reportAudioIssue])
 
@@ -105,10 +110,22 @@ export const MainMenu = () => {
         if (success) {
           startAmbientSafely()
         } else {
-          reportAudioIssue(new Error('Audio unlock failed'), tRef.current('ui:errors.audio_init_failed'))
+          reportAudioIssue(
+            new Error('Audio unlock failed'),
+            tRef.current('ui:errors.audio_init_failed', {
+              defaultValue: 'Audio initialization failed'
+            })
+          )
         }
       })
-      .catch(err => reportAudioIssue(err, tRef.current('ui:errors.audio_init_failed')))
+      .catch(err =>
+        reportAudioIssue(
+          err,
+          tRef.current('ui:errors.audio_init_failed', {
+            defaultValue: 'Audio initialization failed'
+          })
+        )
+      )
   }, [
     resetState,
     changeScene,
@@ -146,7 +163,12 @@ export const MainMenu = () => {
 
   const handleNameSubmit = useCallback(() => {
     if (!playerNameInput.trim()) {
-      addToast(tRef.current('ui:enter_name_error'), 'error')
+      addToast(
+        tRef.current('ui:enter_name_error', {
+          defaultValue: 'Please enter a name'
+        }),
+        'error'
+      )
       return
     }
 
@@ -174,7 +196,12 @@ export const MainMenu = () => {
     if (!isMountedRef.current) return
 
     if (!loadGame()) {
-      addToast(tRef.current('ui:no_save_found'), 'error')
+      addToast(
+        tRef.current('ui:no_save_found', {
+          defaultValue: 'No save found'
+        }),
+        'error'
+      )
       if (isMountedRef.current) setIsLoadingGame(false)
       return
     }
@@ -189,17 +216,23 @@ export const MainMenu = () => {
         if (success) {
           startAmbientSafely()
         } else {
-          reportAudioIssue(new Error('Audio unlock failed'), tRef.current('ui:errors.audio_init_failed'))
+          reportAudioIssue(
+            new Error('Audio unlock failed'),
+            tRef.current('ui:errors.audio_init_failed', {
+              defaultValue: 'Audio initialization failed'
+            })
+          )
         }
       })
-      .catch(err => reportAudioIssue(err, tRef.current('ui:errors.audio_init_failed')))
-  }, [
-    loadGame,
-    addToast,
-    changeScene,
-    reportAudioIssue,
-    startAmbientSafely
-  ])
+      .catch(err =>
+        reportAudioIssue(
+          err,
+          tRef.current('ui:errors.audio_init_failed', {
+            defaultValue: 'Audio initialization failed'
+          })
+        )
+      )
+  }, [loadGame, addToast, changeScene, reportAudioIssue, startAmbientSafely])
 
   const handleCredits = useCallback(
     () => changeScene(GAME_PHASES.CREDITS),
@@ -470,7 +503,7 @@ export const MainMenu = () => {
           onClose={() => setShowSocials(false)}
           title={t('ui:socials')}
         >
-          <div className='flex flex-col gap-3 sm:gap-4 max-w-sm w-full mx-auto max-h-[80vh] overflow-y-auto overflow-x-hidden custom-scrollbar pr-1 sm:pr-2'>
+          <div className='flex flex-col gap-3 sm:gap-4 max-w-md w-full mx-auto max-h-[80vh] overflow-y-auto overflow-x-hidden custom-scrollbar pr-1 sm:pr-2 pb-1'>
             <UplinkButton
               title={t('ui:social_links.game.title')}
               subtitle={t('ui:social_links.game.subtitle')}

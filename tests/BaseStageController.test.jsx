@@ -52,6 +52,32 @@ class TestController extends BaseStageController {
   }
 }
 
+class RetrySetupController extends BaseStageController {
+  constructor(params) {
+    super(params)
+    this.setupAttempts = 0
+  }
+
+  async setup() {
+    this.setupAttempts += 1
+    if (this.setupAttempts === 1) {
+      throw new Error('setup failed once')
+    }
+    this.setupRan = true
+  }
+}
+
+class DisposeAwareController extends BaseStageController {
+  async setup() {
+    throw new Error('setup boom')
+  }
+
+  dispose() {
+    this.subclassDisposeCalls = (this.subclassDisposeCalls || 0) + 1
+    super.dispose()
+  }
+}
+
 describe('BaseStageController', () => {
   let containerRef
   let controller
@@ -89,11 +115,48 @@ describe('BaseStageController', () => {
   it('handles init failures and disposes safely', async () => {
     mocks.init.mockRejectedValueOnce(new Error('boom'))
 
-    await controller.init()
+    await expect(controller.init()).rejects.toThrow('boom')
 
     expect(mocks.error).toHaveBeenCalled()
     expect(controller.app).toBe(null)
     expect(controller.isDisposed).toBe(true)
+    expect(controller.initPromise).toBe(null)
+  })
+
+  it('resets initPromise and allows init retry after setup failure', async () => {
+    controller = new RetrySetupController({
+      containerRef,
+      gameStateRef: { current: {} },
+      updateRef: { current: vi.fn() }
+    })
+
+    await expect(controller.init()).rejects.toThrow('setup failed once')
+    expect(mocks.destroy).toHaveBeenCalledTimes(1)
+    expect(mocks.remove).toHaveBeenCalledTimes(1)
+    expect(controller.setupAttempts).toBe(1)
+    expect(controller.setupRan).toBeUndefined()
+    expect(controller.isDisposed).toBe(true)
+    expect(controller.initPromise).toBe(null)
+
+    await controller.init()
+    expect(controller.setupAttempts).toBe(2)
+    expect(controller.setupRan).toBe(true)
+    expect(controller.isDisposed).toBe(false)
+  })
+
+  it('invokes subclass dispose when setup throws', async () => {
+    controller = new DisposeAwareController({
+      containerRef,
+      gameStateRef: { current: {} },
+      updateRef: { current: vi.fn() }
+    })
+
+    await expect(controller.init()).rejects.toThrow('setup boom')
+
+    expect(controller.subclassDisposeCalls).toBe(1)
+    expect(controller.app).toBe(null)
+    expect(controller.isDisposed).toBe(true)
+    expect(controller.initPromise).toBe(null)
   })
 
   it('handleResize draws when app exists and ignores without app', () => {
@@ -109,6 +172,7 @@ describe('BaseStageController', () => {
     await controller.init()
 
     controller.dispose()
+    expect(controller.container).toBe(null)
     expect(mocks.remove).toHaveBeenCalledWith(controller.handleTicker)
     expect(mocks.destroy).toHaveBeenCalledWith(
       { removeView: true },

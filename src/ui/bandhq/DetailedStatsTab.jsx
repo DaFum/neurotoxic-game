@@ -534,14 +534,21 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
                           className='w-full'
                           content={
                             <div className='text-left'>
-                              <div className='font-bold mb-1'>{t(trait.name, { defaultValue: trait.name })}</div>
-                              <div className='mb-2'>{t(trait.desc, { defaultValue: trait.desc })}</div>
+                              <div className='font-bold mb-1'>
+                                {t(trait.name, { defaultValue: trait.name })}
+                              </div>
+                              <div className='mb-2'>
+                                {t(trait.desc, { defaultValue: trait.desc })}
+                              </div>
                               {!isTraitActive && (
                                 <div className='text-(--ash-gray) italic border-t border-(--ash-gray)/30 pt-1'>
                                   {t('ui:detailedStats.toUnlock', {
                                     defaultValue: 'To Unlock'
                                   })}
-                                  : {t(trait.unlockHint, { defaultValue: trait.unlockHint })}
+                                  :{' '}
+                                  {t(trait.unlockHint, {
+                                    defaultValue: trait.unlockHint
+                                  })}
                                 </div>
                               )}
                             </div>

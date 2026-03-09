@@ -496,7 +496,10 @@ describe('usePostGigLogic', () => {
         result.current.handlePostSelection(result.current.postOptions[0])
       })
 
-      expect(mockUnlockTrait).toHaveBeenCalledWith('Member1', 'social_butterfly')
+      expect(mockUnlockTrait).toHaveBeenCalledWith(
+        'Member1',
+        'social_butterfly'
+      )
       expect(mockAddToast).toHaveBeenCalledWith(
         expect.stringContaining('SOCIAL BUTTERFLY'),
         'success'

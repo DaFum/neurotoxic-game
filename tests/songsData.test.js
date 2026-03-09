@@ -73,7 +73,10 @@ describe('songs.js', () => {
       assert.ok(song.name, 'song should have name')
       assert.ok(song.title, 'song should have title')
       assert.ok(typeof song.duration === 'number', 'song should have duration')
-      assert.ok(typeof song.difficulty === 'number', 'song should have difficulty')
+      assert.ok(
+        typeof song.difficulty === 'number',
+        'song should have difficulty'
+      )
       assert.ok(song.intensity, 'song should have intensity')
       assert.ok(typeof song.bpm === 'number', 'song should have bpm')
       assert.ok(Array.isArray(song.tags), 'song should have tags array')
@@ -151,7 +154,10 @@ describe('songs.js', () => {
 
     SONGS_DB.forEach(song => {
       song.notes.forEach(note => {
-        assert.ok(Number.isFinite(note.t), `Note tick should be finite in ${song.name}`)
+        assert.ok(
+          Number.isFinite(note.t),
+          `Note tick should be finite in ${song.name}`
+        )
       })
     })
   })
@@ -181,25 +187,78 @@ describe('songs.js', () => {
     SONGS_DB = mod.SONGS_DB
 
     SONGS_DB.forEach(song => {
-      assert.ok(song.crowdAppeal >= 1, `${song.name} crowdAppeal should be >= 1`)
-      assert.ok(song.crowdAppeal <= 10, `${song.name} crowdAppeal should be <= 10`)
-      // 5. crowdAppeal validation (clamped 1-10)
-      assert.ok(song.crowdAppeal >= 1 && song.crowdAppeal <= 10, `Song ${song.id} crowdAppeal out of range: ${song.crowdAppeal}`)
+      assert.ok(
+        song.crowdAppeal >= 1,
+        `Song ${song.id} crowdAppeal should be >= 1`
+      )
+      assert.ok(
+        song.crowdAppeal <= 10,
+        `Song ${song.id} crowdAppeal should be <= 10`
+      )
+    })
+  })
 
-      // 6. duration validation (positive integer)
-      assert.ok(Number.isInteger(song.duration), `Song ${song.id} duration should be an integer`)
-      assert.ok(song.duration > 0, `Song ${song.id} duration should be positive`)
+  test('validates song duration', async () => {
+    const mod = await import('../src/data/songs.js')
+    SONGS_DB = mod.SONGS_DB
 
-      // 7. energy validation
-      assert.ok(typeof song.energy === 'object' && song.energy !== null, `Song ${song.id} energy should be an object`)
-      assert.ok(Number.isFinite(song.energy.peak) && song.energy.peak <= 100, `Song ${song.id} energy.peak should be <= 100`)
+    SONGS_DB.forEach(song => {
+      assert.ok(
+        Number.isInteger(song.duration),
+        `Song ${song.id} duration should be an integer`
+      )
+      assert.ok(
+        song.duration > 0,
+        `Song ${song.id} duration should be positive`
+      )
+    })
+  })
 
-      // 8. bpm and tpb validation
-      assert.ok(Number.isFinite(song.bpm) && song.bpm >= 1, `Song ${song.id} bpm should be at least 1`)
-      assert.ok(Number.isFinite(song.tpb) && song.tpb >= 1, `Song ${song.id} tpb should be at least 1`)
+  test('validates song energy', async () => {
+    const mod = await import('../src/data/songs.js')
+    SONGS_DB = mod.SONGS_DB
 
-      // 9. notes validation
-      assert.ok(Array.isArray(song.notes), `Song ${song.id} notes should be an array`)
+    SONGS_DB.forEach(song => {
+      assert.ok(
+        typeof song.energy === 'object' && song.energy !== null,
+        `Song ${song.id} energy should be an object`
+      )
+      assert.ok(
+        Number.isFinite(song.energy.peak),
+        `Song ${song.id} energy.peak should be a finite number`
+      )
+      assert.ok(
+        song.energy.peak <= 100,
+        `Song ${song.id} energy.peak should be <= 100`
+      )
+    })
+  })
+
+  test('validates song tempo fields', async () => {
+    const mod = await import('../src/data/songs.js')
+    SONGS_DB = mod.SONGS_DB
+
+    SONGS_DB.forEach(song => {
+      assert.ok(
+        Number.isFinite(song.bpm) && song.bpm >= 1,
+        `Song ${song.id} bpm should be at least 1`
+      )
+      assert.ok(
+        Number.isFinite(song.tpb) && song.tpb >= 1,
+        `Song ${song.id} tpb should be at least 1`
+      )
+    })
+  })
+
+  test('validates song notes', async () => {
+    const mod = await import('../src/data/songs.js')
+    SONGS_DB = mod.SONGS_DB
+
+    SONGS_DB.forEach(song => {
+      assert.ok(
+        Array.isArray(song.notes),
+        `Song ${song.id} notes should be an array`
+      )
       song.notes.forEach((note, index) => {
         assert.ok(
           Number.isFinite(note.t),
@@ -361,8 +420,10 @@ describe('songs.js', () => {
     SONGS_DB = mod.SONGS_DB
 
     SONGS_DB.forEach(song => {
-      assert.ok(/^[a-z0-9_-]+$/.test(song.leaderboardId),
-        `leaderboardId "${song.leaderboardId}" should only contain a-z, 0-9, _, -`)
+      assert.ok(
+        /^[a-z0-9_-]+$/.test(song.leaderboardId),
+        `leaderboardId "${song.leaderboardId}" should only contain a-z, 0-9, _, -`
+      )
     })
   })
 
@@ -371,8 +432,10 @@ describe('songs.js', () => {
     SONGS_DB = mod.SONGS_DB
 
     SONGS_DB.forEach(song => {
-      assert.ok(song.leaderboardId.length <= 64,
-        `leaderboardId "${song.leaderboardId}" should be <= 64 chars`)
+      assert.ok(
+        song.leaderboardId.length <= 64,
+        `leaderboardId "${song.leaderboardId}" should be <= 64 chars`
+      )
     })
   })
 })

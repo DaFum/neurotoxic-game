@@ -63,20 +63,8 @@ export const SocketGraphics = ({ type }) => {
             strokeWidth='2'
             strokeLinejoin='round'
           />
-          <rect
-            x='-9'
-            y='-4'
-            width='4'
-            height='10'
-            fill='var(--void-black)'
-          />
-          <rect
-            x='-2'
-            y='-4'
-            width='4'
-            height='10'
-            fill='var(--void-black)'
-          />
+          <rect x='-9' y='-4' width='4' height='10' fill='var(--void-black)' />
+          <rect x='-2' y='-4' width='4' height='10' fill='var(--void-black)' />
           <rect x='5' y='-4' width='4' height='10' fill='var(--void-black)' />
         </g>
       )

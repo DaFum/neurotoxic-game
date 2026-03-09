@@ -10,15 +10,14 @@ This inventory lists source files with **no direct test coverage target** (no ma
   - a test file text references the source path/import.
 - Everything else is currently considered missing test coverage and listed below.
 
-## Missing test targets (21)
-
-### Stage / rendering core
-- `src/components/stage/BaseStageController.js`
+## Missing test targets (19)
 
 ### Context / reducers
+
 - `src/context/reducers/sceneReducer.js`
 
 ### Data modules
+
 - `src/data/brandDeals.js`
 - `src/data/events/consequences.js`
 - `src/data/events/financial.js`
@@ -26,16 +25,18 @@ This inventory lists source files with **no direct test coverage target** (no ma
 - `src/data/events/special.js`
 
 ### Rhythm game hooks
+
 - `src/hooks/rhythmGame/useRhythmGameAudio.js`
 - `src/hooks/rhythmGame/useRhythmGameLoop.js`
 - `src/hooks/rhythmGame/useRhythmGameState.js`
 
 ### Scene components
-- `src/scenes/KabelsalatScene.jsx`
+
 - `src/scenes/Overworld.jsx`
 - `src/scenes/TourbusScene.jsx`
 
 ### UI components
+
 - `src/ui/DebugLogViewer.jsx`
 - `src/ui/GigModifierButton.jsx`
 - `src/ui/bandhq/SettingsTab.jsx`
