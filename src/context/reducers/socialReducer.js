@@ -23,8 +23,7 @@ export const handleUpdateSocial = (state, payload) => {
   if (updates.trend !== undefined) {
     if (!ALLOWED_TRENDS.includes(updates.trend)) {
       logger.warn('GameState', `Invalid trend update: ${updates.trend}`)
-      const { trend: _trend, ...restUpdates } = updates
-      updates = restUpdates
+      delete updates.trend
     }
   }
 
@@ -33,15 +32,13 @@ export const handleUpdateSocial = (state, payload) => {
     typeof updates.sponsorActive !== 'boolean'
   ) {
     logger.warn('GameState', 'Invalid sponsorActive update (must be boolean)')
-    const { sponsorActive: _sponsorActive, ...restUpdates } = updates
-    updates = restUpdates
+    delete updates.sponsorActive
   }
 
   if (updates.activeDeals !== undefined) {
     if (!Array.isArray(updates.activeDeals)) {
       logger.warn('GameState', 'Invalid activeDeals update (must be array)')
-      const { activeDeals: _activeDeals, ...restUpdates } = updates
-      updates = restUpdates
+      delete updates.activeDeals
     } else {
       // Validate structure of items
       const validDeals = updates.activeDeals.filter(
