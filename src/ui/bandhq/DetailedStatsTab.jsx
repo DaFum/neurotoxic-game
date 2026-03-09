@@ -526,7 +526,7 @@ export const DetailedStatsTab = ({ player, band, social, ...state }) => {
 
                     return potentialTraits.map(trait => {
                       const isTraitActive = m.traits?.some(
-                        t => t.id === trait.id
+                        traitItem => traitItem.id === trait.id
                       )
                       return (
                         <Tooltip

@@ -531,10 +531,9 @@ export const usePostGigLogic = () => {
       songsToSubmit.forEach(songData => {
         // Resolve to leaderboardId (API-safe slug) — currentGig.songId is the raw
         // JSON key which may contain spaces the API rejects (^[a-zA-Z0-9_-]+$).
-        const leaderboardSongId =
-          SONGS_DB.find(
-            s => s.id === songData.songId || s.legacyId === songData.songId
-          )?.leaderboardId || SONGS_DB[0]?.leaderboardId
+        const leaderboardSongId = SONGS_DB.find(
+          s => s.id === songData.songId
+        )?.leaderboardId
 
         if (leaderboardSongId) {
           fetch('/api/leaderboard/song', {
