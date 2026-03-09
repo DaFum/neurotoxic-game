@@ -1,4 +1,3 @@
-import { readdirSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
@@ -379,7 +378,7 @@ test('locale files with numbers use proper formatting', () => {
         if (typeof entry.value === 'string') {
           // Numbers should be in placeholders, not hardcoded (except for special cases)
           const hasHardcodedNumber = /\b\d{2,}\b/.test(entry.value)
-          const hasPlaceholder = /{{[^}]+}}/.test(entry.value)
+          const _hasPlaceholder = /{{[^}]+}}/.test(entry.value)
 
           // If there's a large hardcoded number, it should probably be in a placeholder
           // (unless it's in a currency symbol or similar context)

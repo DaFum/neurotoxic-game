@@ -224,7 +224,7 @@ describe('handleError', () => {
     let loggedChannel = ''
     let loggedMsg = ''
 
-    logger.debug = (channel, msg, data) => {
+    logger.debug = (channel, msg, _data) => {
       debugCalled = true
       loggedChannel = channel
       loggedMsg = msg
