@@ -20,7 +20,7 @@ const SocialOptionButton = memo(({ opt, index, onSelect }) => {
         className='flex flex-col h-full items-start justify-start p-4 min-h-[140px] text-left relative overflow-hidden w-full'
       >
         <div className='flex justify-between items-start mb-2 w-full z-10 relative'>
-          <div className='font-bold text-lg leading-tight pr-2 group-hover:text-(--toxic-green) transition-colors'>
+          <div className='font-bold text-lg leading-tight pr-2 transition-colors'>
             {opt.name}
           </div>
           <div className='flex gap-1 text-sm bg-(--void-black)/50 px-1 rounded backdrop-blur-sm'>
