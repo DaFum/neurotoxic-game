@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useId, memo } from 'react'
+import { secureRandom } from '../../utils/crypto.js'
 
 export const UplinkButton = ({ title, url, subtitle, type, Icon }) => {
   const [isHovered, setIsHovered] = useState(false)
@@ -1571,13 +1572,13 @@ export const ToxicChatter = () => {
         'ui:chatter.random4',
         'ui:chatter.random5'
       ]
-      const randomHate = newHate[Math.floor(Math.random() * newHate.length)]
+      const randomHate = newHate[Math.floor(secureRandom() * newHate.length)]
       setMessages(prev => {
         const updated = [
           ...prev,
           {
-            id: Date.now(),
-            user: `USER_${Math.floor(Math.random() * 999)}`,
+            id: crypto.randomUUID(),
+            user: `USER_${crypto.randomUUID().split('-')[0].toUpperCase()}`,
             text: randomHate,
             type: 'hate'
           }
