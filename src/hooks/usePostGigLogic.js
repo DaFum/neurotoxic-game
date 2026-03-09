@@ -24,6 +24,14 @@ const PERF_SCORE_MAX = 100
 const PERF_SCORE_SCALER = 500
 const MAX_FAME_GAIN = 500
 
+const CROSS_POSTING_PLATFORMS = ['instagram', 'tiktok', 'youtube']
+const OPPOSING_ALIGNMENT_MAP = {
+  [BRAND_ALIGNMENTS.EVIL]: BRAND_ALIGNMENTS.SUSTAINABLE,
+  [BRAND_ALIGNMENTS.SUSTAINABLE]: BRAND_ALIGNMENTS.EVIL,
+  [BRAND_ALIGNMENTS.CORPORATE]: BRAND_ALIGNMENTS.INDIE,
+  [BRAND_ALIGNMENTS.INDIE]: BRAND_ALIGNMENTS.CORPORATE
+}
+
 export const usePostGigLogic = () => {
   const { t } = useTranslation(['ui'])
   const {
@@ -82,15 +90,11 @@ export const usePostGigLogic = () => {
 
     if (!activeEvent) {
       // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      const financialEvent = triggerEvent('financial', 'post_gig')
-      if (!financialEvent) {
+      triggerEvent('financial', 'post_gig') ||
         // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-        const specialEvent = triggerEvent('special', 'post_gig')
-        if (!specialEvent) {
-          // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-          triggerEvent('band', 'post_gig')
-        }
-      }
+        triggerEvent('special', 'post_gig') ||
+        // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+        triggerEvent('band', 'post_gig')
     }
   }, [currentGig, activeEvent, triggerEvent])
 
@@ -193,23 +197,29 @@ export const usePostGigLogic = () => {
         result.targetMember
       ) {
         newBand.members = newBand.members.map(m => {
-          let updatedM = { ...m }
-          if (result.allMembersMoodChange || m.name === result.targetMember) {
-            if (result.moodChange)
-              updatedM.mood = Math.max(
-                0,
-                Math.min(100, updatedM.mood + result.moodChange)
-              )
+          const needsMoodUpdate =
+            result.moodChange &&
+            (result.allMembersMoodChange || m.name === result.targetMember)
+          const needsStaminaUpdate =
+            result.staminaChange &&
+            (result.allMembersStaminaChange || m.name === result.targetMember)
+
+          if (!needsMoodUpdate && !needsStaminaUpdate) {
+            return m
           }
-          if (
-            result.allMembersStaminaChange ||
-            m.name === result.targetMember
-          ) {
-            if (result.staminaChange)
-              updatedM.stamina = Math.max(
-                0,
-                Math.min(100, updatedM.stamina + result.staminaChange)
-              )
+
+          const updatedM = { ...m }
+          if (needsMoodUpdate) {
+            updatedM.mood = Math.max(
+              0,
+              Math.min(100, updatedM.mood + result.moodChange)
+            )
+          }
+          if (needsStaminaUpdate) {
+            updatedM.stamina = Math.max(
+              0,
+              Math.min(100, updatedM.stamina + result.staminaChange)
+            )
           }
           return updatedM
         })
@@ -291,7 +301,7 @@ export const usePostGigLogic = () => {
 
       // Cross-posting Logic: 25% diminishing returns across other main platforms
       if (result.success && totalFollowers > 0) {
-        const otherPlatforms = ['instagram', 'tiktok', 'youtube'].filter(
+        const otherPlatforms = CROSS_POSTING_PLATFORMS.filter(
           p => p !== result.platform
         )
         otherPlatforms.forEach(p => {
@@ -379,14 +389,7 @@ export const usePostGigLogic = () => {
           )
 
           // Opposing alignments logic
-          const opposingMap = {
-            [BRAND_ALIGNMENTS.EVIL]: BRAND_ALIGNMENTS.SUSTAINABLE,
-            [BRAND_ALIGNMENTS.SUSTAINABLE]: BRAND_ALIGNMENTS.EVIL,
-            [BRAND_ALIGNMENTS.CORPORATE]: BRAND_ALIGNMENTS.INDIE,
-            [BRAND_ALIGNMENTS.INDIE]: BRAND_ALIGNMENTS.CORPORATE
-          }
-
-          const opposing = opposingMap[deal.alignment]
+          const opposing = OPPOSING_ALIGNMENT_MAP[deal.alignment]
           if (opposing) {
             const oppRep = updates.brandReputation[opposing] || 0
             updates.brandReputation[opposing] = Math.max(0, oppRep - 3)
@@ -514,8 +517,7 @@ export const usePostGigLogic = () => {
         // Fallback for legacy saves or early aborted gigs without per-song stats
         const setlistFirstId =
           typeof setlist?.[0] === 'string' ? setlist[0] : setlist?.[0]?.id
-        const playedSongId =
-          currentGig?.songId || setlistFirstId || 'neurotoxic_1'
+        const playedSongId = currentGig?.songId || setlistFirstId
         songsToSubmit = [
           {
             songId: playedSongId,

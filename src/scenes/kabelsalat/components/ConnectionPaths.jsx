@@ -2,7 +2,10 @@ import { CABLE_MAP } from '../constants.js'
 import { getMessyPath } from '../utils.js'
 
 export const ConnectionPaths = ({ connections, isPowerConnected, socketOrder }) => {
-  return Object.entries(connections).map(([sockId, cabId]) => {
+  return (
+    <>
+      {Object.entries(connections).map(([sockId, cabId]) => {
+
     const cable = CABLE_MAP[cabId]
     const isActive = isPowerConnected || cabId === 'iec'
     const cableColor = isActive ? cable.color : 'var(--concrete-gray)'
@@ -25,5 +28,7 @@ export const ConnectionPaths = ({ connections, isPowerConnected, socketOrder }) 
         }}
       />
     )
-  })
+  })}
+    </>
+  )
 }

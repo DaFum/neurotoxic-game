@@ -1,3 +1,4 @@
+import { hasTrait } from './traitLogic.js'
 import { EXPENSE_CONSTANTS } from './economyEngine.js'
 
 /**
@@ -204,8 +205,8 @@ export const applyEventDelta = (state, delta) => {
         let newRelationships = { ...member.relationships }
         let hasChanges = false
 
-        const hasGrudgeHolder = member.traits?.some(t => t.id === 'grudge_holder') || false
-        const hasPeacemaker = member.traits?.some(t => t.id === 'peacemaker') || false
+        const hasGrudgeHolder = hasTrait(member, 'grudge_holder')
+        const hasPeacemaker = hasTrait(member, 'peacemaker')
 
         delta.band.relationshipChange.forEach(change => {
           const otherMember =

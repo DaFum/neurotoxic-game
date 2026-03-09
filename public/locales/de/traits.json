@@ -1,0 +1,12 @@
+{
+  "grudgeHolder": {
+    "name": "Nachtragend",
+    "desc": "Verstärkt negative Beziehungsänderungen",
+    "unlockHint": "Lass einen Beziehungswert unter 30 fallen."
+  },
+  "peacemaker": {
+    "name": "Friedensstifter",
+    "desc": "Verstärkt positive und dämpft negative Beziehungsänderungen",
+    "unlockHint": "Halte die Bandharmonie konstant hoch."
+  }
+}

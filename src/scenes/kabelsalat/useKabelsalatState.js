@@ -252,6 +252,7 @@ export const useKabelsalatState = () => {
     lightningSeeds,
     bgTextureUrl,
     handleCableClick,
-    handleSocketClick
+    handleSocketClick,
+    isPowerConnected: !!connections['power']
   }
 }

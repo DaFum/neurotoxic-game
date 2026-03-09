@@ -9,7 +9,10 @@ export const CableList = ({
   isGameOver,
   handleCableClick
 }) => {
-  return CABLES.map(cable => {
+  return (
+    <>
+      {CABLES.map(cable => {
+
     const isConnected = Object.values(connections).includes(cable.id)
     const isSelected = selectedCable === cable.id
 
@@ -104,5 +107,7 @@ export const CableList = ({
         )}
       </g>
     )
-  })
+  })}
+    </>
+  )
 }
