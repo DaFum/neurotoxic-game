@@ -96,6 +96,26 @@ test('eventEngine.filterEvents allows trigger:random events at any trigger point
   )
 })
 
+test('eventEngine.filterEvents handles condition errors and logs them via handleError', () => {
+  mockLogger.error.mock.resetCalls()
+  const throwingEvent = {
+    id: 'crash_event',
+    trigger: 'random',
+    condition: () => {
+      throw new Error('Filter failed')
+    }
+  }
+
+  const result = eventEngine.filterEvents([throwingEvent], 'random', {})
+
+  assert.deepEqual(result, [], 'Should filter out the event that throws an error')
+  assert.strictEqual(mockLogger.error.mock.calls.length, 1)
+  const [channel, message, error] = mockLogger.error.mock.calls[0].arguments
+  assert.equal(channel, 'EventEngine')
+  assert.ok(message.includes('Condition failed for event crash_event'))
+  assert.match(error.message, /Filter failed/)
+})
+
 test('eventEngine.selectEvent dampens random band events when harmony < 30', () => {
   const MOCK_POOL = [
     { id: 'random_one', trigger: 'random', category: 'band', chance: 0.4 },
@@ -639,39 +659,25 @@ test('eventEngine.selectEvent handles condition errors gracefully', () => {
 test('eventEngine.processEvent handles condition errors and calls handleError with invalid states', () => {
   mockLogger.error.mock.resetCalls()
 
-  let capturedError = null
-  const originalHandleError = eventEngine.handleError
-  eventEngine.handleError = function (err, eventId) {
-    capturedError = err
-    originalHandleError.call(this, err, eventId)
-  }
-
-  try {
-    const invalidEvent = {
-      id: 'crash_event',
-      condition: (state) => {
-        // Force an invalid state check that throws
-        return state.missing.data > 5
-      }
+  const invalidEvent = {
+    id: 'crash_event',
+    condition: (state) => {
+      // Force an invalid state check that throws
+      return state.missing.data > 5
     }
-
-    const state = buildGameState()
-    const result = eventEngine.processEvent(invalidEvent, state)
-
-    assert.equal(result, null)
-    assert.ok(capturedError, 'handleError should have been called')
-    assert.ok(capturedError instanceof TypeError, 'Should be a TypeError')
-
-    // Verify that the logger was ultimately called
-    assert.strictEqual(mockLogger.error.mock.calls.length, 1)
-    const [channel, message, errArg] = mockLogger.error.mock.calls[0].arguments
-    assert.equal(channel, 'EventEngine')
-    assert.ok(message.includes('Condition check failed for event crash_event'))
-    assert.equal(errArg, capturedError)
-  } finally {
-    // Restore
-    eventEngine.handleError = originalHandleError
   }
+
+  const state = buildGameState()
+  const result = eventEngine.processEvent(invalidEvent, state)
+
+  assert.equal(result, null)
+
+  // Verify that the logger was ultimately called by the unmocked handleError
+  assert.strictEqual(mockLogger.error.mock.calls.length, 1)
+  const [channel, message, errArg] = mockLogger.error.mock.calls[0].arguments
+  assert.equal(channel, 'EventEngine')
+  assert.ok(message.includes('Condition check failed for event crash_event'))
+  assert.ok(errArg instanceof TypeError, 'Should be a TypeError')
 })
 
 test('eventEngine.processEvent processes valid events successfully', () => {
