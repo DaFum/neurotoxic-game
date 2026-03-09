@@ -292,6 +292,37 @@ export class MapGenerator {
   }
 
   /**
+   * Retrieves candidate node indices from neighboring cells that have an index greater than j.
+   * @param {Map} grid - The spatial partitioning grid.
+   * @param {number} cellX - The X coordinate of the current cell.
+   * @param {number} cellY - The Y coordinate of the current cell.
+   * @param {number} j - The index of the current node to preserve directionality.
+   * @returns {number[]} Array of candidate node indices.
+   * @private
+   */
+  _getNeighborCandidates(grid, cellX, cellY, j) {
+    const candidates = []
+
+    for (let cx = cellX - 1; cx <= cellX + 1; cx++) {
+      for (let cy = cellY - 1; cy <= cellY + 1; cy++) {
+        const key = cx * 1000 + cy
+        const cell = grid.get(key)
+        if (!cell) continue
+
+        for (let c = 0; c < cell.length; c++) {
+          const k = cell[c]
+          // Check only pairs once and preserve j < k direction
+          if (k > j) {
+            candidates.push(k)
+          }
+        }
+      }
+    }
+
+    return candidates
+  }
+
+  /**
    * Iteratively pushes overlapping nodes apart to ensure visibility.
    * Note: This method mutates the node objects in the provided map.
    * @param {object} nodes - The nodes map.
@@ -331,23 +362,7 @@ export class MapGenerator {
         const cellY = Math.floor(n1.y / cellSize)
 
         // Gather candidates from neighboring cells
-        const candidates = []
-
-        for (let cx = cellX - 1; cx <= cellX + 1; cx++) {
-          for (let cy = cellY - 1; cy <= cellY + 1; cy++) {
-            const key = cx * 1000 + cy
-            const cell = grid.get(key)
-            if (!cell) continue
-
-            for (let c = 0; c < cell.length; c++) {
-              const k = cell[c]
-              // Check only pairs once and preserve j < k direction
-              if (k > j) {
-                candidates.push(k)
-              }
-            }
-          }
-        }
+        const candidates = this._getNeighborCandidates(grid, cellX, cellY, j)
 
         // To guarantee strict PRNG sequence parity, candidates MUST be processed
         // in ascending order of `k`, perfectly mimicking the original `for (let k = j + 1; ...)` loop.
