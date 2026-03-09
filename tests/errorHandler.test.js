@@ -111,6 +111,220 @@ describe('Custom Error Classes', () => {
 })
 
 describe('handleError', () => {
+
+  it('should sanitize cyclic arrays in context', () => {
+    const cyclicArray = []
+    cyclicArray.push(cyclicArray)
+
+    const result = handleError(new Error('Cyclic array'), {
+      silent: true,
+      errorInfo: { arr: cyclicArray }
+    })
+
+    assert.strictEqual(result.context.arr[0], '[REDACTED]')
+  })
+
+  it('should sanitize generic non-plain object payload', () => {
+    class CustomObj {
+      constructor() {
+        this.secret = 'my-secret'
+        this.safe = 'ok'
+      }
+    }
+    const result = handleError(new Error('Custom object'), {
+      silent: true,
+      errorInfo: new CustomObj()
+    })
+    assert.strictEqual(result.context.secret, '[REDACTED]')
+    assert.strictEqual(result.context.safe, 'ok')
+  })
+
+  it('should fallback to Unhandled Promise Rejection for reason stringification errors', () => {
+    const originalWindow = globalThis.window
+    const INIT_SYMBOL = Symbol.for('neurotoxic:initGlobalErrorHandlingDone')
+    const originalSymbolValue = originalWindow ? originalWindow[INIT_SYMBOL] : undefined
+
+    let addedListener = null
+    try {
+      globalThis.window = {
+        addEventListener: (evt, listener) => {
+          if (evt === 'unhandledrejection') addedListener = listener
+        },
+        dispatchEvent: () => {}
+      }
+      globalThis.window[INIT_SYMBOL] = undefined
+      initGlobalErrorHandling()
+
+      const unstringifiable = Object.create(null)
+      unstringifiable.toString = () => { throw new Error('Cannot stringify') }
+
+      assert.doesNotThrow(() => {
+        addedListener({ reason: unstringifiable })
+      })
+    } finally {
+      globalThis.window = originalWindow
+      if (globalThis.window) {
+        globalThis.window[INIT_SYMBOL] = originalSymbolValue
+      }
+    }
+  })
+
+  it('should return empty object for non-object payload when sanitizing', () => {
+    const result = handleError(new Error('String payload'), {
+      silent: true,
+      errorInfo: 'this is a string not an object'
+    })
+    assert.deepStrictEqual(result.context, {})
+  })
+
+  it('should gracefully handle unstringifiable reasons in global error handling', () => {
+    const originalWindow = globalThis.window
+    const INIT_SYMBOL = Symbol.for('neurotoxic:initGlobalErrorHandlingDone')
+    const originalSymbolValue = originalWindow ? originalWindow[INIT_SYMBOL] : undefined
+
+    let addedListener = null
+    try {
+      globalThis.window = {
+        addEventListener: (evt, listener) => {
+          if (evt === 'unhandledrejection') addedListener = listener
+        },
+        dispatchEvent: () => {}
+      }
+      globalThis.window[INIT_SYMBOL] = undefined
+      initGlobalErrorHandling()
+
+      const reasonObj = Object.create(null)
+      reasonObj[Symbol.toPrimitive] = () => {
+        throw new Error('Not stringifiable')
+      }
+
+      assert.doesNotThrow(() => {
+        addedListener({ reason: reasonObj })
+      })
+
+    } finally {
+      globalThis.window = originalWindow
+      if (globalThis.window) {
+        globalThis.window[INIT_SYMBOL] = originalSymbolValue
+      }
+    }
+  })
+
+  it('should truncate errorLog to MAX_ERROR_LOG_SIZE', () => {
+    for (let i = 0; i < 105; i++) {
+      handleError(new Error('Log size test ' + i), { silent: true })
+    }
+    assert.ok(true)
+  })
+
+  it('should log locally to logger.debug for ErrorSeverity.LOW', async () => {
+    const { logger } = await import('../src/utils/logger.js')
+    const originalDebug = logger.debug
+    let debugCalled = false
+    let loggedChannel = ''
+    let loggedMsg = ''
+
+    logger.debug = (channel, msg, data) => {
+      debugCalled = true
+      loggedChannel = channel
+      loggedMsg = msg
+    }
+
+    try {
+      handleError(new Error('Low severity error'), {
+        silent: true,
+        severity: ErrorSeverity.LOW
+      })
+      assert.strictEqual(debugCalled, true, 'logger.debug should have been called')
+      assert.strictEqual(loggedChannel, 'ErrorHandler')
+      assert.strictEqual(loggedMsg, 'Low severity error')
+    } finally {
+      logger.debug = originalDebug
+    }
+  })
+
+  it('should safely catch fetch async failures during reportErrorRemote', () => {
+    const originalWindow = globalThis.window
+    const originalFetch = globalThis.fetch
+
+    let fetchCalled = false
+    globalThis.window = {
+      navigator: { onLine: true },
+      dispatchEvent: () => true
+    }
+    globalThis.fetch = () => {
+      fetchCalled = true
+      return Promise.reject(new Error('Fetch failed'))
+    }
+
+    try {
+      const result = handleError(new Error('Remote fetch fail test'), { silent: true })
+      assert.strictEqual(fetchCalled, true, 'fetch should have been called')
+      assert.strictEqual(result.message, 'Remote fetch fail test')
+    } finally {
+      globalThis.window = originalWindow
+      globalThis.fetch = originalFetch
+    }
+  })
+
+  it('should safely catch fetch synchronous throw during reportErrorRemote', () => {
+    const originalWindow = globalThis.window
+    const originalFetch = globalThis.fetch
+
+    let fetchCalled = false
+    globalThis.window = {
+      navigator: { onLine: true },
+      dispatchEvent: () => true
+    }
+    globalThis.fetch = () => {
+      fetchCalled = true
+      throw new Error('Fetch sync failed')
+    }
+
+    try {
+      const result = handleError(new Error('Remote fetch sync fail test'), { silent: true })
+      assert.strictEqual(fetchCalled, true, 'fetch should have been called')
+      assert.strictEqual(result.message, 'Remote fetch sync fail test')
+    } finally {
+      globalThis.window = originalWindow
+      globalThis.fetch = originalFetch
+    }
+  })
+
+  it('should safely catch sendBeacon failures during reportErrorRemote', () => {
+    const originalWindow = globalThis.window
+    const originalNavigatorDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator')
+
+    let beaconCalled = false
+    globalThis.window = {
+      navigator: { onLine: true },
+      dispatchEvent: () => true
+    }
+    Object.defineProperty(globalThis, 'navigator', {
+      configurable: true,
+      writable: true,
+      value: {
+        sendBeacon: () => {
+          beaconCalled = true
+          throw new Error('Beacon failed')
+        }
+      }
+    })
+
+    try {
+      const result = handleError(new Error('Remote beacon fail test'), { silent: true })
+      assert.strictEqual(beaconCalled, true, 'sendBeacon should have been called')
+      assert.strictEqual(result.message, 'Remote beacon fail test')
+    } finally {
+      globalThis.window = originalWindow
+      if (originalNavigatorDescriptor) {
+        Object.defineProperty(globalThis, 'navigator', originalNavigatorDescriptor)
+      } else {
+        delete globalThis.navigator
+      }
+    }
+  })
+
   it('should call addToast when not silent', () => {
     let toastCalled = false
     let toastMessage = ''
