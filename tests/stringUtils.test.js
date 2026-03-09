@@ -20,7 +20,9 @@ test('hashString calculates correct 32-bit integer hashes', async t => {
   })
 
   await t.test('returns 32-bit integers', () => {
-    const hash1 = hashString('a very long string that might overflow 32 bits if not truncated properly')
+    const hash1 = hashString(
+      'a very long string that might overflow 32 bits if not truncated properly'
+    )
     // Should be a number, not a bigint, and within 32-bit signed integer range
     assert.equal(typeof hash1, 'number')
     assert.equal(Math.floor(hash1), hash1)

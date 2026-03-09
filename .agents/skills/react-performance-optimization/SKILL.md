@@ -38,8 +38,8 @@ React re-renders components when props or state change. Unnecessary re-renders w
 
 Load detailed patterns and examples as needed:
 
-| Topic                                                  | Reference File                                                                   |
-| ------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| Topic                                                  | Reference File                                                                    |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------- |
 | React.memo, useMemo, useCallback patterns              | `.agents/skills/react-performance-optimization/references/memoization.md`         |
 | Code splitting with lazy/Suspense, bundle optimization | `.agents/skills/react-performance-optimization/references/code-splitting.md`      |
 | Virtualization for large lists (react-window)          | `.agents/skills/react-performance-optimization/references/virtualization.md`      |

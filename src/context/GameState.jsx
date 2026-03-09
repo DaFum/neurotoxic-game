@@ -586,7 +586,11 @@ export const GameStateProvider = ({ children }) => {
 
           // Add Quests
           if (delta.flags?.addQuest) {
-            processAddQuests(delta.flags.addQuest, currentState.player.day, dispatch)
+            processAddQuests(
+              delta.flags.addQuest,
+              currentState.player.day,
+              dispatch
+            )
           }
 
           // Unlocks

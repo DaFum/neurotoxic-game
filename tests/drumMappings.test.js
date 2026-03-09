@@ -17,43 +17,37 @@ describe('drumMappings', () => {
   test('plays kick drum for MIDI note 35', () => {
     playDrumNote(35, 0, 0.8, mockKit)
     assert.equal(mockKit.kick.triggerAttackRelease.mock.calls.length, 1)
-    assert.deepEqual(mockKit.kick.triggerAttackRelease.mock.calls[0].arguments, [
-      'C1',
-      '8n',
-      0,
-      0.8
-    ])
+    assert.deepEqual(
+      mockKit.kick.triggerAttackRelease.mock.calls[0].arguments,
+      ['C1', '8n', 0, 0.8]
+    )
   })
 
   test('plays kick drum for MIDI note 36', () => {
     playDrumNote(36, 0, 0.7, mockKit)
     assert.equal(mockKit.kick.triggerAttackRelease.mock.calls.length, 1)
-    assert.deepEqual(mockKit.kick.triggerAttackRelease.mock.calls[0].arguments, [
-      'C1',
-      '8n',
-      0,
-      0.7
-    ])
+    assert.deepEqual(
+      mockKit.kick.triggerAttackRelease.mock.calls[0].arguments,
+      ['C1', '8n', 0, 0.7]
+    )
   })
 
   test('plays snare drum for MIDI note 38', () => {
     playDrumNote(38, 0, 0.9, mockKit)
     assert.equal(mockKit.snare.triggerAttackRelease.mock.calls.length, 1)
-    assert.deepEqual(mockKit.snare.triggerAttackRelease.mock.calls[0].arguments, [
-      '16n',
-      0,
-      0.9
-    ])
+    assert.deepEqual(
+      mockKit.snare.triggerAttackRelease.mock.calls[0].arguments,
+      ['16n', 0, 0.9]
+    )
   })
 
   test('plays snare drum for MIDI note 40', () => {
     playDrumNote(40, 0, 0.85, mockKit)
     assert.equal(mockKit.snare.triggerAttackRelease.mock.calls.length, 1)
-    assert.deepEqual(mockKit.snare.triggerAttackRelease.mock.calls[0].arguments, [
-      '16n',
-      0,
-      0.85
-    ])
+    assert.deepEqual(
+      mockKit.snare.triggerAttackRelease.mock.calls[0].arguments,
+      ['16n', 0, 0.85]
+    )
   })
 
   test('plays hihat for MIDI note 42', () => {
@@ -124,47 +118,39 @@ describe('drumMappings', () => {
   test('clamps velocity to valid range (0-1)', () => {
     playDrumNote(35, 0, 2.5, mockKit) // Above 1
     assert.equal(mockKit.kick.triggerAttackRelease.mock.calls.length, 1)
-    assert.deepEqual(mockKit.kick.triggerAttackRelease.mock.calls[0].arguments, [
-      'C1',
-      '8n',
-      0,
-      1
-    ])
+    assert.deepEqual(
+      mockKit.kick.triggerAttackRelease.mock.calls[0].arguments,
+      ['C1', '8n', 0, 1]
+    )
 
     mockKit.kick.triggerAttackRelease.mock.restore()
     mockKit.kick.triggerAttackRelease = mock.fn()
 
     playDrumNote(35, 0, -0.5, mockKit) // Below 0
     assert.equal(mockKit.kick.triggerAttackRelease.mock.calls.length, 1)
-    assert.deepEqual(mockKit.kick.triggerAttackRelease.mock.calls[0].arguments, [
-      'C1',
-      '8n',
-      0,
-      0
-    ])
+    assert.deepEqual(
+      mockKit.kick.triggerAttackRelease.mock.calls[0].arguments,
+      ['C1', '8n', 0, 0]
+    )
   })
 
   test('handles non-finite velocity values', () => {
     playDrumNote(35, 0, NaN, mockKit)
     assert.equal(mockKit.kick.triggerAttackRelease.mock.calls.length, 1)
-    assert.deepEqual(mockKit.kick.triggerAttackRelease.mock.calls[0].arguments, [
-      'C1',
-      '8n',
-      0,
-      0
-    ])
+    assert.deepEqual(
+      mockKit.kick.triggerAttackRelease.mock.calls[0].arguments,
+      ['C1', '8n', 0, 0]
+    )
 
     mockKit.kick.triggerAttackRelease.mock.restore()
     mockKit.kick.triggerAttackRelease = mock.fn()
 
     playDrumNote(35, 0, Infinity, mockKit)
     assert.equal(mockKit.kick.triggerAttackRelease.mock.calls.length, 1)
-    assert.deepEqual(mockKit.kick.triggerAttackRelease.mock.calls[0].arguments, [
-      'C1',
-      '8n',
-      0,
-      0
-    ])
+    assert.deepEqual(
+      mockKit.kick.triggerAttackRelease.mock.calls[0].arguments,
+      ['C1', '8n', 0, 0]
+    )
   })
 
   test('does not crash when kit is null', () => {
@@ -193,11 +179,10 @@ describe('drumMappings', () => {
     // Snare with velScale 0.4
     playDrumNote(37, 0, 1.0, mockKit)
     assert.equal(mockKit.snare.triggerAttackRelease.mock.calls.length, 1)
-    assert.deepEqual(mockKit.snare.triggerAttackRelease.mock.calls[0].arguments, [
-      '32n',
-      0,
-      0.4
-    ])
+    assert.deepEqual(
+      mockKit.snare.triggerAttackRelease.mock.calls[0].arguments,
+      ['32n', 0, 0.4]
+    )
 
     mockKit.snare.triggerAttackRelease.mock.restore()
     mockKit.snare.triggerAttackRelease = mock.fn()
@@ -205,11 +190,9 @@ describe('drumMappings', () => {
     // Hihat with velScale 0.7
     playDrumNote(42, 0, 1.0, mockKit)
     assert.equal(mockKit.hihat.triggerAttackRelease.mock.calls.length, 1)
-    assert.deepEqual(mockKit.hihat.triggerAttackRelease.mock.calls[0].arguments, [
-      8000,
-      '32n',
-      0,
-      0.7
-    ])
+    assert.deepEqual(
+      mockKit.hihat.triggerAttackRelease.mock.calls[0].arguments,
+      [8000, '32n', 0, 0.7]
+    )
   })
 })
