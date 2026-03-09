@@ -163,7 +163,12 @@ export const MainMenu = () => {
 
   const handleNameSubmit = useCallback(() => {
     if (!playerNameInput.trim()) {
-      addToast(tRef.current('ui:enter_name_error'), 'error')
+      addToast(
+        tRef.current('ui:enter_name_error', {
+          defaultValue: 'Please enter a name'
+        }),
+        'error'
+      )
       return
     }
 
@@ -191,7 +196,12 @@ export const MainMenu = () => {
     if (!isMountedRef.current) return
 
     if (!loadGame()) {
-      addToast(tRef.current('ui:no_save_found'), 'error')
+      addToast(
+        tRef.current('ui:no_save_found', {
+          defaultValue: 'No save found'
+        }),
+        'error'
+      )
       if (isMountedRef.current) setIsLoadingGame(false)
       return
     }

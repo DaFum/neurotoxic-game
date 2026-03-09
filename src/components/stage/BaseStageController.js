@@ -228,6 +228,7 @@ export class BaseStageController {
     this.isDisposed = true
     this.initPromise = null
     this.cleanupHostResizeListeners()
+    this.container = null
 
     if (this.app) {
       const app = this.app

@@ -131,6 +131,8 @@ describe('BaseStageController', () => {
     })
 
     await expect(controller.init()).rejects.toThrow('setup failed once')
+    expect(mocks.destroy).toHaveBeenCalledTimes(1)
+    expect(mocks.remove).toHaveBeenCalledTimes(1)
     expect(controller.setupAttempts).toBe(1)
     expect(controller.setupRan).toBeUndefined()
     expect(controller.isDisposed).toBe(true)
@@ -170,6 +172,7 @@ describe('BaseStageController', () => {
     await controller.init()
 
     controller.dispose()
+    expect(controller.container).toBe(null)
     expect(mocks.remove).toHaveBeenCalledWith(controller.handleTicker)
     expect(mocks.destroy).toHaveBeenCalledWith(
       { removeView: true },
