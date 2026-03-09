@@ -30,6 +30,17 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
     setNegotiationModalOpen(true)
   }
 
+  const handleAcceptDeal = async deal => {
+    try {
+      await onAccept(deal)
+    } catch (error) {
+      handleError(error, {
+        addToast,
+        fallbackMessage: 'Deal failed'
+      })
+    }
+  }
+
   const handleNegotiationSubmit = strategy => {
     if (!selectedDeal) return
 
@@ -178,7 +189,7 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
                 {!isRevoked ? (
                   <>
                     <ActionButton
-                      onClick={() => onAccept(displayDeal)}
+                      onClick={() => handleAcceptDeal(displayDeal)}
                       className='bg-(--toxic-green) text-(--void-black) font-bold uppercase hover:scale-105'
                     >
                       ACCEPT

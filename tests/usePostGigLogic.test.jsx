@@ -695,6 +695,38 @@ describe('usePostGigLogic', () => {
       expect(mockUpdateSocial).toHaveBeenCalledWith(expect.any(Function))
     })
 
+    it('handles errors gracefully in handleAcceptDeal', async () => {
+      const deal = {
+        id: 'deal_error',
+        name: 'Error Corp',
+        alignment: 'CORPORATE',
+        offer: { upfront: 1000, duration: 3 },
+        penalty: null
+      }
+
+      mockUpdatePlayer.mockImplementationOnce(() => {
+        throw new Error('Database Error')
+      })
+
+      const { result } = renderHook(() => usePostGigLogic())
+
+      await waitFor(() => {
+        expect(result.current.financials).toBeTruthy()
+      })
+
+      // The try/catch should prevent the error from bubbling up
+      expect(() => {
+        act(() => {
+          result.current.handleAcceptDeal(deal)
+        })
+      }).not.toThrow()
+
+      expect(mockAddToast).toHaveBeenCalledWith(
+        expect.stringContaining('Deal failed'),
+        'error'
+      )
+    })
+
     it('rejects all deals and advances to COMPLETE', async () => {
       socialEngine.generateBrandOffers.mockReturnValue([
         {

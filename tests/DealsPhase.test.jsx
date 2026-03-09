@@ -1,6 +1,12 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { expect, test, vi, beforeEach, afterEach } from 'vitest'
 import { DealsPhase } from '../src/components/postGig/DealsPhase.jsx'
+import { handleError } from '../src/utils/errorHandler.js'
+import { negotiateDeal } from '../src/utils/socialEngine'
+
+vi.mock('../src/utils/errorHandler.js', () => ({
+  handleError: vi.fn()
+}))
 
 vi.mock('../src/context/GameState', () => ({
   useGameState: () => ({
@@ -93,4 +99,69 @@ test('DealsPhase renders offers and handles negotiation', async () => {
   expect(handleAccept).toHaveBeenCalledWith(
     expect.objectContaining({ name: 'Sponsorship' })
   )
+})
+
+test('DealsPhase handles negotiation error gracefully', async () => {
+  const mockError = new Error('Network timeout')
+  negotiateDeal.mockImplementationOnce(() => {
+    throw mockError
+  })
+  handleError.mockClear()
+
+  const mockOffers = [
+    {
+      id: 'deal-error',
+      name: 'Error Deal',
+      alignment: 'Corp',
+      offer: { upfront: 500, duration: 3 }
+    }
+  ]
+
+  render(
+    <DealsPhase offers={mockOffers} onSkip={vi.fn()} onAccept={vi.fn()} />
+  )
+
+  const negotiateBtn = screen.getByText('NEGOTIATE')
+  fireEvent.click(negotiateBtn)
+
+  expect(screen.getByTestId('modal')).toBeInTheDocument()
+
+  const safeBtn = screen.getByText('SAFE (Low Risk)')
+  fireEvent.click(safeBtn)
+
+  expect(handleError).toHaveBeenCalledWith(mockError, expect.objectContaining({
+    fallbackMessage: 'Negotiation failed unexpectedly.'
+  }))
+
+  await waitFor(() => {
+    expect(screen.queryByTestId('modal')).not.toBeInTheDocument()
+  })
+})
+
+test('DealsPhase handles accept deal error gracefully', async () => {
+  const mockError = new Error('Deal processing failed')
+  const handleAccept = vi.fn().mockRejectedValue(mockError)
+  handleError.mockClear()
+
+  const mockOffers = [
+    {
+      id: 'deal-error',
+      name: 'Error Deal',
+      alignment: 'Corp',
+      offer: { upfront: 500, duration: 3 }
+    }
+  ]
+
+  render(
+    <DealsPhase offers={mockOffers} onSkip={vi.fn()} onAccept={handleAccept} />
+  )
+
+  const acceptBtn = screen.getByText('ACCEPT')
+  fireEvent.click(acceptBtn)
+
+  await waitFor(() => {
+    expect(handleError).toHaveBeenCalledWith(mockError, expect.objectContaining({
+      fallbackMessage: 'Deal failed'
+    }))
+  })
 })
