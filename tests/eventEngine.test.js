@@ -635,3 +635,56 @@ test('eventEngine.selectEvent handles condition errors gracefully', () => {
   assert.match(message, /Condition check failed for event throwing_event/)
   assert.match(error.message, /Condition failed/)
 })
+
+test('eventEngine.processEvent handles condition errors and calls handleError with invalid states', () => {
+  mockLogger.error.mock.resetCalls()
+
+  let capturedError = null
+  const originalHandleError = eventEngine.handleError
+  eventEngine.handleError = function (err, eventId) {
+    capturedError = err
+    originalHandleError.call(this, err, eventId)
+  }
+
+  try {
+    const invalidEvent = {
+      id: 'crash_event',
+      condition: (state) => {
+        // Force an invalid state check that throws
+        return state.missing.data > 5
+      }
+    }
+
+    const state = buildGameState()
+    const result = eventEngine.processEvent(invalidEvent, state)
+
+    assert.equal(result, null)
+    assert.ok(capturedError, 'handleError should have been called')
+    assert.ok(capturedError instanceof TypeError, 'Should be a TypeError')
+
+    // Verify that the logger was ultimately called
+    assert.strictEqual(mockLogger.error.mock.calls.length, 1)
+    const [channel, message, errArg] = mockLogger.error.mock.calls[0].arguments
+    assert.equal(channel, 'EventEngine')
+    assert.ok(message.includes('Condition check failed for event crash_event'))
+    assert.equal(errArg, capturedError)
+  } finally {
+    // Restore
+    eventEngine.handleError = originalHandleError
+  }
+})
+
+test('eventEngine.processEvent processes valid events successfully', () => {
+  mockLogger.error.mock.resetCalls()
+
+  const validEvent = {
+    id: 'good_event',
+    condition: () => true
+  }
+
+  const result = eventEngine.processEvent(validEvent, {})
+
+  assert.ok(result, 'Should return a result object')
+  assert.equal(result.event.id, 'good_event', 'Should return the event inside the result')
+  assert.strictEqual(mockLogger.error.mock.calls.length, 0, 'No errors should be logged')
+})
