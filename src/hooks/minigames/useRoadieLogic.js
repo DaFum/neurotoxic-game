@@ -3,6 +3,7 @@ import { useGameState } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { audioManager } from '../../utils/AudioManager'
 import { GRID_WIDTH, GRID_HEIGHT } from './constants'
+import { hashString } from '../../utils/stringUtils'
 
 export const MOVE_COOLDOWN_BASE = 120 // ms (Faster base movement)
 
@@ -116,15 +117,10 @@ export const useRoadieLogic = () => {
           spawner.timer -= spawner.rate
 
           const id = `${performance.now()}-${spawner.row}-${spawner.timer}`
-          let hash = 0
-          for (let i = 0; i < id.length; i++) {
-            hash = (hash << 5) - hash + id.charCodeAt(i)
-            hash |= 0
-          }
 
           game.traffic.push({
             id, // Unique ID
-            textureHash: Math.abs(hash),
+            textureHash: Math.abs(hashString(id)),
             row: spawner.row,
             x: spawner.speed > 0 ? -1 : GRID_WIDTH, // Start outside
             speed: spawner.speed,
