@@ -5,6 +5,7 @@ import { EffectManager } from './EffectManager'
 import { getPixiColorFromToken, loadTexture } from './utils'
 import { IMG_PROMPTS, getGenImageUrl } from '../../utils/imageGen.js'
 import { handleError, GameError } from '../../utils/errorHandler'
+import { hashString } from '../../utils/stringUtils'
 
 class RoadieStageController extends BaseStageController {
   constructor(params) {
@@ -246,12 +247,7 @@ class RoadieStageController extends BaseStageController {
           if (this.textures.cars.length > 0) {
             let textureHash = car.textureHash
             if (!Number.isFinite(textureHash)) {
-              const idStr = String(car.id ?? '')
-              let hash = 0
-              for (let i = 0; i < idStr.length; i++) {
-                hash = (hash * 31 + idStr.charCodeAt(i)) | 0
-              }
-              textureHash = hash
+              textureHash = hashString(String(car.id ?? ''))
             }
             const texIndex =
               Math.floor(Math.abs(textureHash)) % this.textures.cars.length
