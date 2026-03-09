@@ -210,6 +210,8 @@ describe('socialReducer', () => {
 
       assert.strictEqual(baseState.social.loyalty, originalLoyalty)
       assert.deepStrictEqual(baseState.venueBlacklist, originalBlacklist)
+    })
+
     it('should handle boundary at exactly 30 loyalty', () => {
       // At 30, should defend
       baseState.social.loyalty = 30

@@ -82,7 +82,7 @@ mock.module('../src/utils/audio/midiPlayback.js', {
 
 // Mock songs db
 mock.module('../src/data/songs.js', {
-  namedExports: { SONGS_DB: [] }
+  namedExports: { SONGS_DB: [], SONGS_BY_MID: new Map() }
 })
 
 describe('ambient.js', () => {
