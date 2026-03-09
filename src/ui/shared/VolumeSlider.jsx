@@ -37,7 +37,7 @@ export const VolumeSlider = memo(function VolumeSlider({
         className='sr-only'
       />
       <div
-        className='flex gap-1 h-8 items-end cursor-pointer group'
+        className='flex gap-1 h-8 items-end cursor-pointer group has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-(--toxic-green) has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-(--void-black) -mx-1 px-1'
         role='presentation'
       >
         {segments.map(segment => {
