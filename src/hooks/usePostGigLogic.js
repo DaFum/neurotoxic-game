@@ -25,7 +25,6 @@ const PERF_SCORE_SCALER = 500
 const MAX_FAME_GAIN = 500
 
 const CROSS_POSTING_PLATFORMS = ['instagram', 'tiktok', 'youtube']
-const DEFAULT_FALLBACK_SONG_ID = 'neurotoxic_1'
 const OPPOSING_ALIGNMENT_MAP = {
   [BRAND_ALIGNMENTS.EVIL]: BRAND_ALIGNMENTS.SUSTAINABLE,
   [BRAND_ALIGNMENTS.SUSTAINABLE]: BRAND_ALIGNMENTS.EVIL,
@@ -518,8 +517,7 @@ export const usePostGigLogic = () => {
         // Fallback for legacy saves or early aborted gigs without per-song stats
         const setlistFirstId =
           typeof setlist?.[0] === 'string' ? setlist[0] : setlist?.[0]?.id
-        const playedSongId =
-          currentGig?.songId || setlistFirstId || DEFAULT_FALLBACK_SONG_ID
+        const playedSongId = currentGig?.songId || setlistFirstId
         songsToSubmit = [
           {
             songId: playedSongId,
@@ -533,9 +531,10 @@ export const usePostGigLogic = () => {
       songsToSubmit.forEach(songData => {
         // Resolve to leaderboardId (API-safe slug) — currentGig.songId is the raw
         // JSON key which may contain spaces the API rejects (^[a-zA-Z0-9_-]+$).
-        const leaderboardSongId = SONGS_DB.find(
-          s => s.id === songData.songId
-        )?.leaderboardId
+        const leaderboardSongId =
+          SONGS_DB.find(
+            s => s.id === songData.songId || s.legacyId === songData.songId
+          )?.leaderboardId || SONGS_DB[0]?.leaderboardId
 
         if (leaderboardSongId) {
           fetch('/api/leaderboard/song', {

@@ -134,11 +134,12 @@ Traits are unlocked through the following context types defined in `src/utils/un
 | `road_warrior` | `economyEngine.js:calculateFuelCost()` | Reduces fuel consumption | 15% discount (fuelLiters _ 0.85) |
 
 **D. EVENT RESOLUTION & RELATIONSHIPS**
+
 | Trait | Where Checked | Effect |
 |-------|---------------|--------|
-| `bandleader` | `eventEngine.js` (resolveEventChoice) | 50% chance to save failed conflict checks | Converts failure to success |
-| `grudge_holder` | `gameStateUtils.js:applyEventDelta()` | Amplifies negative relationship changes | 1.5x multiplier to negative relationship shifts |
-| `peacemaker` | `gameStateUtils.js:applyEventDelta()` | Amplifies positive and dampens negative relationship changes | 1.5x to positive, 0.5x to negative relationship shifts |
+| `bandleader` | `eventEngine.js` (resolveEventChoice) | 50% chance to save failed conflict checks (Converts failure to success) |
+| `grudge_holder` | `gameStateUtils.js:applyEventDelta()` | Amplifies negative relationship changes (1.5x multiplier to negative relationship shifts) |
+| `peacemaker` | `gameStateUtils.js:applyEventDelta()` | Amplifies positive and dampens negative relationship changes (1.5x to positive, 0.5x to negative relationship shifts) |
 
 **E. STAT TRACKING (For Future Effects)**
 
