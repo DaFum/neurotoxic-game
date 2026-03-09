@@ -275,10 +275,6 @@ export const checkHit = (notes, laneIndex, elapsed, hitWindow) => {
   const windowStart = elapsed - hitWindow
   const windowEnd = elapsed + hitWindow
 
-  // Extract lane-specific notes if not already grouped.
-  // In a real engine, we'd pre-partition this, but filtering here is acceptable
-  // if notes are mostly sparse or if we strictly binary search the full array.
-
   // Binary search to find the first note that could be in range
   let lo = 0
   let hi = notes.length - 1
