@@ -104,20 +104,9 @@ const selectEvent = (pool, gameState, triggerPoint) => {
       continue
     }
 
-    try {
-      const condResult = e.condition(optimizedState)
-      if (condResult) {
-        eligibleEvents.push({
-          event: e,
-          contextvars: typeof condResult === 'object' ? condResult : {}
-        })
-      }
-    } catch (err) {
-      logger.error(
-        'EventEngine',
-        `Condition check failed for event ${e.id}`,
-        err
-      )
+    const processed = eventEngine.processEvent(e, optimizedState)
+    if (processed) {
+      eligibleEvents.push(processed)
     }
   }
 
@@ -294,6 +283,25 @@ const processEffect = (eff, delta, context = {}) => {
 }
 
 export const eventEngine = {
+  handleError(err, eventId) {
+    logger.error('EventEngine', `Condition check failed for event ${eventId || 'unknown'}`, err)
+  },
+
+  processEvent(event, optimizedState) {
+    try {
+      const condResult = event.condition(optimizedState)
+      if (condResult) {
+        return {
+          event: event,
+          contextvars: typeof condResult === 'object' ? condResult : {}
+        }
+      }
+    } catch (err) {
+      this.handleError(err, event.id)
+    }
+    return null
+  },
+
   /**
    * Checks for and selects a random event from a specific category.
    * @param {string} category - The category of events to check (e.g., 'travel', 'gig').
