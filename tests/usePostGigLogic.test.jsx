@@ -39,13 +39,18 @@ vi.mock('../src/data/songs', () => ({
   ]
 }))
 
-vi.mock('../src/utils/logger.js', () => ({
-  logger: {
-    error: vi.fn(),
-    warn: vi.fn(),
-    debug: vi.fn()
+vi.mock('../src/utils/logger.js', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    logger: {
+      error: vi.fn(),
+      warn: vi.fn(),
+      debug: vi.fn(),
+      info: vi.fn(),
+    }
   }
-}))
+})
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({

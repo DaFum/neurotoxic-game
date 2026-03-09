@@ -183,12 +183,20 @@ describe('songs.js', () => {
     SONGS_DB.forEach(song => {
       assert.ok(song.crowdAppeal >= 1, `${song.name} crowdAppeal should be >= 1`)
       assert.ok(song.crowdAppeal <= 10, `${song.name} crowdAppeal should be <= 10`)
-    // 5. crowdAppeal validation (clamped 1-10)
-    assert.ok(song.crowdAppeal >= 1 && song.crowdAppeal <= 10, `Song ${song.id} crowdAppeal out of range: ${song.crowdAppeal}`)
+    })
+  })
 
-    // 6. duration validation (positive integer)
-    assert.ok(Number.isInteger(song.duration), `Song ${song.id} duration should be an integer`)
-    assert.ok(song.duration > 0, `Song ${song.id} duration should be positive`)
+  test('validates properties', async () => {
+    const mod = await import('../src/data/songs.js')
+    SONGS_DB = mod.SONGS_DB
+
+    SONGS_DB.forEach(song => {
+      // 5. crowdAppeal validation (clamped 1-10)
+      assert.ok(song.crowdAppeal >= 1 && song.crowdAppeal <= 10, `Song ${song.id} crowdAppeal out of range: ${song.crowdAppeal}`)
+
+      // 6. duration validation (positive integer)
+      assert.ok(Number.isInteger(song.duration), `Song ${song.id} duration should be an integer`)
+      assert.ok(song.duration > 0, `Song ${song.id} duration should be positive`)
 
     // 7. energy validation
     assert.ok(typeof song.energy === 'object' && song.energy !== null, `Song ${song.id} energy should be an object`)
@@ -218,6 +226,7 @@ describe('songs.js', () => {
         Number.isFinite(note.v),
         `Song ${song.id} note ${index} missing or invalid v`
       )
+    })
     })
   })
 
