@@ -191,20 +191,20 @@ export const PreGig = () => {
   )
 
   return (
-    <div className='w-full h-full flex flex-col items-center justify-center p-8 bg-(--void-black) text-(--star-white) relative'>
+    <div className='w-full h-full overflow-y-auto flex flex-col items-center justify-start lg:justify-center px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pt-28 sm:pt-32 lg:pt-8 pb-24 lg:pb-8 bg-(--void-black) text-(--star-white) relative'>
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className='text-center mb-6'
+        className='text-center mb-4 sm:mb-6 w-full max-w-4xl'
       >
-        <h2 className="text-4xl text-(--toxic-green) font-['Metal_Mania'] mb-2">
+        <h2 className="text-3xl sm:text-4xl text-(--toxic-green) font-['Metal_Mania'] mb-2">
           {t('ui:pregig.title')}
         </h2>
         <div className='w-48 h-[1px] bg-gradient-to-r from-transparent via-(--toxic-green) to-transparent mx-auto mb-3' />
         <div className='text-lg mb-1 font-mono text-(--star-white)/80'>
           {currentGig?.name ? t(currentGig.name) : ''}
         </div>
-        <div className='font-mono text-xs text-(--ash-gray) flex items-center justify-center gap-3'>
+        <div className='font-mono text-[11px] sm:text-xs md:text-sm text-(--ash-gray) flex flex-wrap items-center justify-center gap-x-3 gap-y-1'>
           <span>
             {t('ui:pregig.budget')}{' '}
             <span className='text-(--toxic-green) font-bold tabular-nums'>
@@ -225,13 +225,13 @@ export const PreGig = () => {
         </div>
       </motion.div>
 
-      <div className='grid grid-cols-2 gap-6 w-full max-w-4xl h-[58vh]'>
+      <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 w-full max-w-5xl h-auto lg:h-[58vh] relative z-10'>
         {/* Actions */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
-          className='border-2 border-(--ash-gray)/40 p-4 bg-(--void-black)/70 backdrop-blur-sm overflow-y-auto'
+          className='border-2 border-(--ash-gray)/40 p-4 bg-(--void-black)/70 backdrop-blur-sm overflow-y-auto max-h-[38vh] sm:max-h-[42vh] lg:max-h-none'
         >
           <h3 className='text-sm text-(--toxic-green) mb-3 tracking-widest font-mono border-b border-(--toxic-green)/30 pb-2'>
             {t('ui:pregig.allocation')}
@@ -302,13 +302,13 @@ export const PreGig = () => {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
-          className='border-2 border-(--ash-gray)/40 p-4 bg-(--void-black)/70 backdrop-blur-sm flex flex-col'
+          className='border-2 border-(--ash-gray)/40 p-4 bg-(--void-black)/70 backdrop-blur-sm flex flex-col max-h-[48vh] sm:max-h-[52vh] lg:max-h-none'
         >
           <h3 className='text-sm text-(--toxic-green) mb-3 tracking-widest font-mono border-b border-(--toxic-green)/30 pb-2 flex justify-between'>
             <span>{t('ui:pregig.setlist')}</span>
             <span className='tabular-nums'>{setlist.length}/3</span>
           </h3>
-          <div className='flex-1 overflow-y-auto pr-2 space-y-2'>
+          <div className='flex-1 overflow-y-auto pr-0 sm:pr-2 space-y-2'>
             {SONGS_DB.map(song => {
               const isSelected = selectedSongIds.has(song.id)
               const isLocked =
@@ -414,7 +414,7 @@ export const PreGig = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className='mt-6 px-12 py-4 bg-(--toxic-green) text-(--void-black) font-bold text-2xl uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-[4px_4px_0px_var(--blood-red)] hover:shadow-[6px_6px_0px_var(--blood-red)] flex items-center justify-center gap-4'
+        className='relative z-30 mt-4 lg:mt-6 mb-20 lg:mb-12 w-full max-w-[20rem] sm:w-auto px-8 sm:px-12 py-3 sm:py-4 bg-(--toxic-green) text-(--void-black) font-bold text-lg sm:text-2xl uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-[4px_4px_0px_var(--blood-red)] hover:shadow-[6px_6px_0px_var(--blood-red)] flex items-center justify-center gap-3 sm:gap-4'
         disabled={setlist.length === 0 || isStarting}
         onClick={async () => {
           if (band.harmony < 10) {

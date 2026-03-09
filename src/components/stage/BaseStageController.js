@@ -17,11 +17,110 @@ export class BaseStageController {
     this.handleResize = this.handleResize.bind(this)
   }
 
+  cleanupHostResizeListeners() {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect()
+      this.resizeObserver = null
+    }
+    if (this._usingWindowResize) {
+      window.removeEventListener('resize', this.handleResize)
+      this._usingWindowResize = false
+    }
+  }
+
+  isBenignDestroyError(error) {
+    const message = String(error?.message || error || '')
+    return (
+      message.includes("reading '_cancelResize'") ||
+      message.includes("reading 'destroy'") ||
+      message.includes("reading 'canvas'") ||
+      message.includes('updateLocalTransform')
+    )
+  }
+
+  destroyPixiApp(app) {
+    if (!app) return
+
+    try {
+      app.ticker?.remove?.(this.handleTicker)
+
+      // Stop ResizePlugin loops before app teardown to prevent resize-on-destroy races.
+      try {
+        if (typeof app._cancelResize === 'function') {
+          app._cancelResize()
+        }
+      } catch (_e) {
+        // Ignore plugin teardown races
+      }
+
+      try {
+        if ('resizeTo' in app) {
+          app.resizeTo = null
+        }
+      } catch (_e) {
+        // Ignore plugin teardown races
+      }
+
+      try {
+        if (
+          typeof globalThis?.removeEventListener === 'function' &&
+          typeof app.queueResize === 'function'
+        ) {
+          globalThis.removeEventListener('resize', app.queueResize)
+        }
+      } catch (_e) {
+        // Ignore plugin teardown races
+      }
+
+      if (typeof app._cancelResize !== 'function') {
+        app._cancelResize = () => {}
+      }
+
+      // PixiJS v8 destroy signature: destroy(rendererDestroyOptions, options)
+      if (typeof app.destroy === 'function') {
+        try {
+          app.destroy(
+            { removeView: true },
+            { children: true, texture: true, textureSource: true }
+          )
+          return
+        } catch (destroyError) {
+          if (!this.isBenignDestroyError(destroyError)) {
+            throw destroyError
+          }
+          // Fall through to partial-init fallback for known races.
+        }
+      }
+
+      // Fallback for partially initialized apps.
+      app.stage?.destroy?.({
+        children: true,
+        texture: true,
+        textureSource: true
+      })
+      app.renderer?.destroy?.({ removeView: true })
+      let canvas = null
+      try {
+        canvas = app.canvas
+      } catch (_e) {
+        // Ignore - app getter can throw after failed/partial teardown.
+      }
+      if (canvas?.parentNode) {
+        canvas.parentNode.removeChild(canvas)
+      }
+    } catch (error) {
+      if (!this.isBenignDestroyError(error)) {
+        logger.warn(this.constructor.name, 'Destroy failed', error)
+      }
+    }
+  }
+
   async init(options = {}) {
     this.isDisposed = false
     if (this.initPromise) return this.initPromise
 
     this.initPromise = (async () => {
+      let app = null
       try {
         const container = this.containerRef.current
         if (!container) {
@@ -29,8 +128,9 @@ export class BaseStageController {
           return
         }
 
-        this.app = new PIXI.Application()
-        await this.app.init({
+        app = new PIXI.Application()
+        this.app = app
+        await app.init({
           backgroundAlpha: 0,
           resizeTo: container,
           antialias: true,
@@ -39,19 +139,24 @@ export class BaseStageController {
           ...options
         })
 
-        if (this.isDisposed || !this.app) {
-          this.dispose()
+        if (this.isDisposed || this.app !== app) {
+          if (this.app === app) this.app = null
+          this.destroyPixiApp(app)
           return
         }
 
-        container.appendChild(this.app.canvas)
+        container.appendChild(app.canvas)
         this.container = new PIXI.Container()
-        this.app.stage.addChild(this.container)
+        app.stage.addChild(this.container)
 
         // Subclass logic goes here
         await this.setup()
 
-        if (this.isDisposed) return
+        if (this.isDisposed || this.app !== app) {
+          if (this.app === app) this.app = null
+          this.destroyPixiApp(app)
+          return
+        }
 
         if (typeof ResizeObserver !== 'undefined') {
           this.resizeObserver = new ResizeObserver(() => this.handleResize())
@@ -60,10 +165,23 @@ export class BaseStageController {
           window.addEventListener('resize', this.handleResize)
           this._usingWindowResize = true
         }
-        this.app.ticker.add(this.handleTicker)
+        app.ticker.add(this.handleTicker)
       } catch (e) {
-        logger.error(this.constructor.name, 'Init Failed', e)
-        this.dispose()
+        const message = String(e?.message || e || '')
+        const isLifecycleRace =
+          this.isDisposed ||
+          this.app !== app ||
+          message.includes('updateLocalTransform')
+
+        if (!isLifecycleRace) {
+          logger.error(this.constructor.name, 'Init Failed', e)
+        }
+        this.isDisposed = true
+        this.cleanupHostResizeListeners()
+        if (this.app === app) {
+          this.app = null
+        }
+        this.destroyPixiApp(app)
       }
     })()
     return this.initPromise
@@ -89,27 +207,12 @@ export class BaseStageController {
   dispose() {
     this.isDisposed = true
     this.initPromise = null
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect()
-      this.resizeObserver = null
-    }
-    if (this._usingWindowResize) {
-      window.removeEventListener('resize', this.handleResize)
-      this._usingWindowResize = false
-    }
+    this.cleanupHostResizeListeners()
 
     if (this.app) {
-      try {
-        this.app.ticker?.remove(this.handleTicker)
-        // PixiJS v8 destroy signature: destroy(rendererDestroyOptions, options)
-        this.app.destroy(
-          { removeView: true },
-          { children: true, texture: true, textureSource: true }
-        )
-      } catch (e) {
-        logger.warn(this.constructor.name, 'Destroy failed', e)
-      }
+      const app = this.app
       this.app = null
+      this.destroyPixiApp(app)
     }
   }
 }
