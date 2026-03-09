@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* global process */
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { spawn } from 'node:child_process'
@@ -20,7 +21,7 @@ const findRepoRoot = async startDir => {
       if (stat.isDirectory() || stat.isFile()) {
         return currentDir
       }
-    } catch (error) {
+    } catch (_error) {
       // continue walking up
     }
     const parentDir = path.dirname(currentDir)

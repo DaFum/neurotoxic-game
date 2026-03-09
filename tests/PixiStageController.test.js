@@ -351,7 +351,7 @@ describe('PixiStageController', () => {
     await controller.init()
     gameStateRef.current.isToxicMode = true
 
-    const hueCallsBefore = controller.colorMatrix.hue.mock?.calls?.length || 0
+    const _hueCallsBefore = controller.colorMatrix.hue.mock?.calls?.length || 0
     const ticker = { deltaMS: 16 }
     controller.handleTicker(ticker)
 
@@ -361,8 +361,8 @@ describe('PixiStageController', () => {
 
   test('dispose cleans up filters and container properly', async () => {
     await controller.init()
-    const stageContainer = controller.stageContainer
-    const colorMatrix = controller.colorMatrix
+    const _stageContainer = controller.stageContainer
+    const _colorMatrix = controller.colorMatrix
 
     controller.dispose()
 
