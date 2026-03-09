@@ -44,6 +44,13 @@ vi.mock('../src/utils/logger.js', () => ({
     error: vi.fn(),
     warn: vi.fn(),
     debug: vi.fn()
+  },
+  LOG_LEVELS: {
+    DEBUG: 0,
+    INFO: 1,
+    WARN: 2,
+    ERROR: 3,
+    NONE: 4
   }
 }))
 
