@@ -349,79 +349,89 @@ export const usePostGigLogic = () => {
 
   const handleAcceptDeal = useCallback(
     deal => {
-      // Apply upfront bonuses
-      if (deal.offer.upfront) {
-        updatePlayer(prev => ({
-          money: clampPlayerMoney(prev.money + deal.offer.upfront)
-        }))
-      }
-      if (deal.offer.item) {
-        updateBand(prev => ({
-          inventory: { ...prev.inventory, [deal.offer.item]: true }
-        }))
-      }
-
-      // Use functional update to ensure fresh state access
-      updateSocial(prevSocial => {
-        const updates = {}
-
-        // Apply penalties immediately if defined
-        if (deal.penalty) {
-          if (deal.penalty.loyalty)
-            updates.loyalty = Math.max(
-              0,
-              (prevSocial.loyalty || 0) + deal.penalty.loyalty
-            )
-          if (deal.penalty.controversy)
-            updates.controversyLevel = Math.max(
-              0,
-              (prevSocial.controversyLevel || 0) + deal.penalty.controversy
-            )
+      try {
+        // Apply upfront bonuses
+        if (deal.offer.upfront) {
+          updatePlayer(prev => ({
+            money: clampPlayerMoney(prev.money + deal.offer.upfront)
+          }))
+        }
+        if (deal.offer.item) {
+          updateBand(prev => ({
+            inventory: { ...prev.inventory, [deal.offer.item]: true }
+          }))
         }
 
-        // Update Brand Reputation
-        if (deal.alignment) {
-          updates.brandReputation = { ...(prevSocial.brandReputation || {}) }
-          const currentRep = updates.brandReputation[deal.alignment] || 0
-          updates.brandReputation[deal.alignment] = Math.min(
-            100,
-            currentRep + 5
-          )
+        // Use functional update to ensure fresh state access
+        updateSocial(prevSocial => {
+          const updates = {}
 
-          // Opposing alignments logic
-          const opposing = OPPOSING_ALIGNMENT_MAP[deal.alignment]
-          if (opposing) {
-            const oppRep = updates.brandReputation[opposing] || 0
-            updates.brandReputation[opposing] = Math.max(0, oppRep - 3)
+          // Apply penalties immediately if defined
+          if (deal.penalty) {
+            if (deal.penalty.loyalty)
+              updates.loyalty = Math.max(
+                0,
+                (prevSocial.loyalty || 0) + deal.penalty.loyalty
+              )
+            if (deal.penalty.controversy)
+              updates.controversyLevel = Math.max(
+                0,
+                (prevSocial.controversyLevel || 0) + deal.penalty.controversy
+              )
           }
-        }
 
-        // Store active deal
-        const prevDeals = prevSocial.activeDeals || []
-        updates.activeDeals = [
-          ...prevDeals,
-          { ...deal, remainingGigs: deal.offer.duration }
-        ]
+          // Update Brand Reputation
+          if (deal.alignment) {
+            updates.brandReputation = { ...(prevSocial.brandReputation || {}) }
+            const currentRep = updates.brandReputation[deal.alignment] || 0
+            updates.brandReputation[deal.alignment] = Math.min(
+              100,
+              currentRep + 5
+            )
 
-        return updates
-      })
+            // Opposing alignments logic
+            const opposing = OPPOSING_ALIGNMENT_MAP[deal.alignment]
+            if (opposing) {
+              const oppRep = updates.brandReputation[opposing] || 0
+              updates.brandReputation[opposing] = Math.max(0, oppRep - 3)
+            }
+          }
 
-      addToast(
-        t('ui:postGig.acceptedDeal', {
-          dealName: deal.name,
-          defaultValue: 'Accepted deal: {{dealName}}'
-        }),
-        'success'
-      )
+          // Store active deal
+          const prevDeals = prevSocial.activeDeals || []
+          updates.activeDeals = [
+            ...prevDeals,
+            { ...deal, remainingGigs: deal.offer.duration }
+          ]
 
-      // Remove processed deal and check if more remain
-      setBrandOffers(prev => {
-        const remaining = prev.filter(o => o.id !== deal.id)
-        if (remaining.length === 0) {
-          setPhase('COMPLETE')
-        }
-        return remaining
-      })
+          return updates
+        })
+
+        addToast(
+          t('ui:postGig.acceptedDeal', {
+            dealName: deal.name,
+            defaultValue: 'Accepted deal: {{dealName}}'
+          }),
+          'success'
+        )
+
+        // Remove processed deal and check if more remain
+        setBrandOffers(prev => {
+          const remaining = prev.filter(o => o.id !== deal.id)
+          if (remaining.length === 0) {
+            setPhase('COMPLETE')
+          }
+          return remaining
+        })
+      } catch (e) {
+        logger.error('PostGig', 'Failed to accept deal', e)
+        addToast(
+          t('ui:postGig.dealFailed', {
+            defaultValue: 'Deal failed'
+          }),
+          'error'
+        )
+      }
     },
     [updatePlayer, updateBand, updateSocial, addToast, t]
   )
