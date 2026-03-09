@@ -9,16 +9,16 @@ Strictly enforce pinned versions for critical dependencies to ensure stability a
 
 ## Pinned Versions
 
-| Package       | Pinned Major  | Policy               |
-| ------------- | ------------- | -------------------- |
-| React         | 19.x          | **BLOCK** v20+       |
-| React DOM     | 19.x          | **BLOCK** v20+       |
-| Vite          | 7.x           | **BLOCK** v8+        |
-| Tailwind CSS  | 4.x           | **BLOCK** v5+        |
-| Framer Motion | 12.x          | **BLOCK** v13+       |
-| Tone.js       | 15.x          | **BLOCK** v16+       |
-| Pixi.js       | 8.x           | **BLOCK** v9+        |
-| Node.js       | >= 22.13.0    | **BLOCK** < 22.13.0  |
+| Package       | Pinned Major | Policy              |
+| ------------- | ------------ | ------------------- |
+| React         | 19.x         | **BLOCK** v20+      |
+| React DOM     | 19.x         | **BLOCK** v20+      |
+| Vite          | 7.x          | **BLOCK** v8+       |
+| Tailwind CSS  | 4.x          | **BLOCK** v5+       |
+| Framer Motion | 12.x         | **BLOCK** v13+      |
+| Tone.js       | 15.x         | **BLOCK** v16+      |
+| Pixi.js       | 8.x          | **BLOCK** v9+       |
+| Node.js       | >= 22.13.0   | **BLOCK** < 22.13.0 |
 
 ## Workflow
 

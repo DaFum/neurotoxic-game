@@ -148,11 +148,15 @@ test('i18next-parser.config.js includes TypeScript file extensions in input', as
   const config = await getConfig()
 
   assert.ok(
-    config.input.some(pattern => pattern.includes('.ts') || pattern.includes('{js,jsx,ts,tsx}')),
+    config.input.some(
+      pattern => pattern.includes('.ts') || pattern.includes('{js,jsx,ts,tsx}')
+    ),
     'input should include TypeScript (.ts) files'
   )
   assert.ok(
-    config.input.some(pattern => pattern.includes('.tsx') || pattern.includes('{js,jsx,ts,tsx}')),
+    config.input.some(
+      pattern => pattern.includes('.tsx') || pattern.includes('{js,jsx,ts,tsx}')
+    ),
     'input should include TypeScript React (.tsx) files'
   )
 })

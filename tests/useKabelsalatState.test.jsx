@@ -4,7 +4,7 @@ import { useKabelsalatState } from '../src/scenes/kabelsalat/useKabelsalatState'
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key, options) => (options?.defaultValue || key)
+    t: (key, options) => options?.defaultValue || key
   })
 }))
 
@@ -168,9 +168,12 @@ describe('useKabelsalatState', () => {
       resultRef = result
     })
 
-    await waitFor(() => {
-      expect(resultRef.current.bgTextureUrl).toBeTruthy()
-    }, { timeout: 1000 })
+    await waitFor(
+      () => {
+        expect(resultRef.current.bgTextureUrl).toBeTruthy()
+      },
+      { timeout: 1000 }
+    )
 
     vi.useFakeTimers()
   })

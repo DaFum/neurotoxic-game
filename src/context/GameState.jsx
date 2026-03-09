@@ -602,7 +602,10 @@ export const GameStateProvider = ({ children }) => {
                 const unlockLabel = tRef.current(unlockKey, {
                   defaultValue: safeUnlockId.toUpperCase()
                 })
-                addToast(tRef.current('ui:unlocked', { unlock: unlockLabel }), 'success')
+                addToast(
+                  tRef.current('ui:unlocked', { unlock: unlockLabel }),
+                  'success'
+                )
               }
             }
           }
@@ -610,7 +613,9 @@ export const GameStateProvider = ({ children }) => {
           // Game Over - Early Exit
           if (delta.flags?.gameOver) {
             const context = currentState.activeEvent?.context || {}
-            const translatedDesc = description ? tRef.current(description, context) : ''
+            const translatedDesc = description
+              ? tRef.current(description, context)
+              : ''
             addToast(
               tRef.current('ui:game_over', { description: translatedDesc }),
               'error'
@@ -629,7 +634,9 @@ export const GameStateProvider = ({ children }) => {
         // 5. Feedback (Success Path)
         if (outcomeText || description) {
           const context = currentState.activeEvent?.context || {}
-          const msgOutcome = outcomeText ? tRef.current(outcomeText, context) : ''
+          const msgOutcome = outcomeText
+            ? tRef.current(outcomeText, context)
+            : ''
           const msgDesc = description ? tRef.current(description, context) : ''
 
           const message =
@@ -649,7 +656,9 @@ export const GameStateProvider = ({ children }) => {
         setActiveEvent(null)
         return {
           outcomeText: choice.outcomeText ?? '',
-          description: choice.description ? tRef.current(choice.description) : '',
+          description: choice.description
+            ? tRef.current(choice.description)
+            : '',
           result: null
         }
       }

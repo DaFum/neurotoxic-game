@@ -319,7 +319,9 @@ describe('PreGig', () => {
     const soundcheckBtn = await findByText(/Soundcheck/i)
     fireEvent.click(soundcheckBtn)
 
-    expect(mockUseGameState.setGigModifiers).toHaveBeenCalledWith({ soundcheck: false })
+    expect(mockUseGameState.setGigModifiers).toHaveBeenCalledWith({
+      soundcheck: false
+    })
   })
 
   test('handles sessionStorage errors gracefully', async () => {

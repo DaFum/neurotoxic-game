@@ -660,12 +660,16 @@ describe('MainMenu Component', () => {
       render(<MainMenu />)
 
       fireEvent.click(screen.getByText('ui:start_game'))
-      expect(screen.getByText('ui:mainMenu.existingSave.title')).toBeInTheDocument()
+      expect(
+        screen.getByText('ui:mainMenu.existingSave.title')
+      ).toBeInTheDocument()
 
       const closeButton = screen.getByRole('button', { name: 'ui:closeModal' })
       fireEvent.click(closeButton)
 
-      expect(screen.queryByText('ui:mainMenu.existingSave.title')).not.toBeInTheDocument()
+      expect(
+        screen.queryByText('ui:mainMenu.existingSave.title')
+      ).not.toBeInTheDocument()
     })
 
     it('validates player name input on blur', () => {
@@ -693,7 +697,9 @@ describe('MainMenu Component', () => {
 
     it('handles audio initialization failure on load game', async () => {
       const { audioManager } = await import('../src/utils/AudioManager')
-      audioManager.ensureAudioContext.mockRejectedValue(new Error('Audio failed'))
+      audioManager.ensureAudioContext.mockRejectedValue(
+        new Error('Audio failed')
+      )
       mockLoadGame.mockReturnValue(true)
 
       render(<MainMenu />)
@@ -734,10 +740,18 @@ describe('MainMenu Component', () => {
 
       fireEvent.click(screen.getByText('ui:socials'))
 
-      expect(screen.getByText('ui:social_links.bandcamp.title')).toBeInTheDocument()
-      expect(screen.getByText('ui:social_links.tiktok.title')).toBeInTheDocument()
-      expect(screen.getByText('ui:social_links.neurotoxic_once.title')).toBeInTheDocument()
-      expect(screen.getByText('ui:social_links.neurotoxic_3000.title')).toBeInTheDocument()
+      expect(
+        screen.getByText('ui:social_links.bandcamp.title')
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText('ui:social_links.tiktok.title')
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText('ui:social_links.neurotoxic_once.title')
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText('ui:social_links.neurotoxic_3000.title')
+      ).toBeInTheDocument()
       expect(screen.getByText('ui:social_links.blog.title')).toBeInTheDocument()
     })
 

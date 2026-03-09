@@ -11,7 +11,17 @@ i18n
     fallbackLng: 'en',
     supportedLngs: ['en', 'de'],
     load: 'languageOnly', // Eliminate region-specific loads (e.g. de-DE -> de) to reduce requests
-    ns: ['ui', 'items', 'venues', 'events', 'economy', 'chatter', 'minigame', 'unlocks', 'traits'], // Pre-load namespaces used across scenes/modal overlays
+    ns: [
+      'ui',
+      'items',
+      'venues',
+      'events',
+      'economy',
+      'chatter',
+      'minigame',
+      'unlocks',
+      'traits'
+    ], // Pre-load namespaces used across scenes/modal overlays
     defaultNS: 'ui',
     keySeparator: false,
     interpolation: { escapeValue: false },

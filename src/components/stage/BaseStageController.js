@@ -186,7 +186,11 @@ export class BaseStageController {
         try {
           this.dispose()
         } catch (disposeError) {
-          logger.warn(this.constructor.name, 'Dispose failed during init', disposeError)
+          logger.warn(
+            this.constructor.name,
+            'Dispose failed during init',
+            disposeError
+          )
           this.cleanupHostResizeListeners()
           if (this.app === app) this.app = null
           this.destroyPixiApp(app)

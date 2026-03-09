@@ -60,7 +60,10 @@ describe('kabelsalat utils', () => {
     const seeds = generateLightningSeeds()
 
     seeds.forEach(seed => {
-      assert.ok(seed.startX >= 0 && seed.startX <= 800, 'startX should be 0-800')
+      assert.ok(
+        seed.startX >= 0 && seed.startX <= 800,
+        'startX should be 0-800'
+      )
       assert.ok(seed.o1 >= -150 && seed.o1 <= 150, 'o1 should be -150 to 150')
       assert.ok(seed.o2 >= -150 && seed.o2 <= 150, 'o2 should be -150 to 150')
       assert.ok(seed.o3 >= -150 && seed.o3 <= 150, 'o3 should be -150 to 150')
@@ -89,7 +92,10 @@ describe('kabelsalat utils', () => {
 
     assert.ok(typeof path === 'string')
     assert.ok(path.startsWith('M '), 'path should start with M command')
-    assert.ok(path.includes(' C '), 'path should include cubic bezier C command')
+    assert.ok(
+      path.includes(' C '),
+      'path should include cubic bezier C command'
+    )
   })
 
   test('getMessyPath returns empty string for invalid cable', async () => {
@@ -205,7 +211,7 @@ describe('kabelsalat utils', () => {
 
     // Different socket positions should create different offsets
     const path1 = getMessyPath('iec', 'power', socketOrder) // index 0
-    const path2 = getMessyPath('iec', 'amp', socketOrder)   // index 2
+    const path2 = getMessyPath('iec', 'amp', socketOrder) // index 2
 
     // Paths should differ significantly
     assert.notEqual(path1, path2)

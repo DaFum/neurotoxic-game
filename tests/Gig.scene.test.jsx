@@ -80,12 +80,14 @@ vi.mock('../src/hooks/useGigInput', () => ({
   }))
 }))
 vi.mock('../src/components/PixiStage', () => ({
-  PixiStage: () => <div data-testid="pixi-stage">Pixi Stage</div>
+  PixiStage: () => <div data-testid='pixi-stage'>Pixi Stage</div>
 }))
 vi.mock('../src/components/GigHUD', () => ({
   GigHUD: ({ onTogglePause }) => (
-    <div data-testid="gig-hud">
-      <button type="button" onClick={onTogglePause}>Pause Button</button>
+    <div data-testid='gig-hud'>
+      <button type='button' onClick={onTogglePause}>
+        Pause Button
+      </button>
     </div>
   )
 }))
@@ -335,7 +337,8 @@ describe('Gig Scene Component', () => {
     })
 
     test('quit handles undefined gameStateRef gracefully', async () => {
-      const { useRhythmGameLogic } = await import('../src/hooks/useRhythmGameLogic')
+      const { useRhythmGameLogic } =
+        await import('../src/hooks/useRhythmGameLogic')
       useRhythmGameLogic.mockReturnValue({
         stats: { isAudioReady: true, isToxicMode: false },
         actions: { retryAudioInitialization: vi.fn() },
@@ -392,7 +395,8 @@ describe('Gig Scene Component', () => {
         }
       }
 
-      const { useRhythmGameLogic } = await import('../src/hooks/useRhythmGameLogic')
+      const { useRhythmGameLogic } =
+        await import('../src/hooks/useRhythmGameLogic')
       useRhythmGameLogic.mockReturnValue({
         stats: { isAudioReady: true, isToxicMode: false },
         actions: { retryAudioInitialization: vi.fn() },
@@ -418,7 +422,8 @@ describe('Gig Scene Component', () => {
 
   describe('Audio Lock Screen', () => {
     test('shows audio lock screen when audio not ready', async () => {
-      const { useRhythmGameLogic } = await import('../src/hooks/useRhythmGameLogic')
+      const { useRhythmGameLogic } =
+        await import('../src/hooks/useRhythmGameLogic')
       useRhythmGameLogic.mockReturnValue({
         stats: {
           isAudioReady: false,
@@ -440,7 +445,8 @@ describe('Gig Scene Component', () => {
 
     test('initialize audio button calls ensureAudioContext', async () => {
       const mockRetry = vi.fn()
-      const { useRhythmGameLogic } = await import('../src/hooks/useRhythmGameLogic')
+      const { useRhythmGameLogic } =
+        await import('../src/hooks/useRhythmGameLogic')
       useRhythmGameLogic.mockReturnValue({
         stats: { isAudioReady: false },
         actions: { retryAudioInitialization: mockRetry },
@@ -464,7 +470,8 @@ describe('Gig Scene Component', () => {
     })
 
     test('does not render main gig UI when audio locked', async () => {
-      const { useRhythmGameLogic } = await import('../src/hooks/useRhythmGameLogic')
+      const { useRhythmGameLogic } =
+        await import('../src/hooks/useRhythmGameLogic')
       useRhythmGameLogic.mockReturnValue({
         stats: { isAudioReady: false },
         actions: { retryAudioInitialization: vi.fn() },
@@ -481,7 +488,8 @@ describe('Gig Scene Component', () => {
 
   describe('Toxic Mode Visual Effects', () => {
     test('applies toxic mode border when isToxicMode is true', async () => {
-      const { useRhythmGameLogic } = await import('../src/hooks/useRhythmGameLogic')
+      const { useRhythmGameLogic } =
+        await import('../src/hooks/useRhythmGameLogic')
       useRhythmGameLogic.mockReturnValue({
         stats: {
           isAudioReady: true,
@@ -499,7 +507,8 @@ describe('Gig Scene Component', () => {
     })
 
     test('no toxic border when isToxicMode is false', async () => {
-      const { useRhythmGameLogic } = await import('../src/hooks/useRhythmGameLogic')
+      const { useRhythmGameLogic } =
+        await import('../src/hooks/useRhythmGameLogic')
       useRhythmGameLogic.mockReturnValue({
         stats: {
           isAudioReady: true,

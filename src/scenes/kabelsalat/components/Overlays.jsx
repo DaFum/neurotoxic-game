@@ -1,4 +1,10 @@
-export const Overlays = ({ t, isShocked, isGameOver, isPoweredOn, faultReason }) => {
+export const Overlays = ({
+  t,
+  isShocked,
+  isGameOver,
+  isPoweredOn,
+  faultReason
+}) => {
   return (
     <>
       {isShocked && (

@@ -45,9 +45,9 @@ vi.mock('../src/hooks/useLeaderboardSync', () => ({
 vi.mock('../src/utils/eventEngine', () => ({
   eventEngine: {
     checkEvent: vi.fn(),
-    processOptions: vi.fn((event) => event)
+    processOptions: vi.fn(event => event)
   },
-  resolveEventChoice: vi.fn((choice) => ({
+  resolveEventChoice: vi.fn(choice => ({
     result: 'success',
     delta: choice.delta || {},
     outcomeText: choice.outcomeText || '',
@@ -83,9 +83,9 @@ describe('GameState Context - Core Actions', () => {
       const gameState = useGameState()
       return (
         <div>
-          <div data-testid="current-scene">{gameState.currentScene}</div>
-          <div data-testid="player-money">{gameState.player?.money || 0}</div>
-          <div data-testid="band-harmony">{gameState.band?.harmony || 0}</div>
+          <div data-testid='current-scene'>{gameState.currentScene}</div>
+          <div data-testid='player-money'>{gameState.player?.money || 0}</div>
+          <div data-testid='band-harmony'>{gameState.band?.harmony || 0}</div>
           <button onClick={() => action(gameState)}>Execute</button>
         </div>
       )
@@ -97,7 +97,7 @@ describe('GameState Context - Core Actions', () => {
   })
 
   test('changeScene updates current scene', () => {
-    const action = (gs) => gs.changeScene(GAME_PHASES.GIG)
+    const action = gs => gs.changeScene(GAME_PHASES.GIG)
 
     render(
       <GameStateProvider>
@@ -110,11 +110,13 @@ describe('GameState Context - Core Actions', () => {
       button.click()
     })
 
-    expect(screen.getByTestId('current-scene')).toHaveTextContent(GAME_PHASES.GIG)
+    expect(screen.getByTestId('current-scene')).toHaveTextContent(
+      GAME_PHASES.GIG
+    )
   })
 
   test('updatePlayer modifies player state', () => {
-    const action = (gs) => gs.updatePlayer({ money: 1500 })
+    const action = gs => gs.updatePlayer({ money: 1500 })
 
     render(
       <GameStateProvider>
@@ -131,7 +133,7 @@ describe('GameState Context - Core Actions', () => {
   })
 
   test('updateBand modifies band state', () => {
-    const action = (gs) => gs.updateBand({ harmony: 85 })
+    const action = gs => gs.updateBand({ harmony: 85 })
 
     render(
       <GameStateProvider>
@@ -148,7 +150,7 @@ describe('GameState Context - Core Actions', () => {
   })
 
   test('updatePlayer with function callback works', () => {
-    const action = (gs) => gs.updatePlayer(prev => ({ money: prev.money + 500 }))
+    const action = gs => gs.updatePlayer(prev => ({ money: prev.money + 500 }))
 
     render(
       <GameStateProvider>
@@ -156,7 +158,9 @@ describe('GameState Context - Core Actions', () => {
       </GameStateProvider>
     )
 
-    const initialMoney = parseInt(screen.getByTestId('player-money').textContent)
+    const initialMoney = parseInt(
+      screen.getByTestId('player-money').textContent
+    )
 
     const button = screen.getByText('Execute')
     act(() => {
@@ -178,9 +182,17 @@ describe('GameState Context - Event System', () => {
       const gameState = useGameState()
       return (
         <div>
-          <div data-testid="active-event">{gameState.activeEvent?.id || 'none'}</div>
-          <button onClick={() => gameState.triggerEvent('test')}>Trigger</button>
-          <button onClick={() => gameState.setActiveEvent({ id: 'test-event' })}>Set Event</button>
+          <div data-testid='active-event'>
+            {gameState.activeEvent?.id || 'none'}
+          </div>
+          <button onClick={() => gameState.triggerEvent('test')}>
+            Trigger
+          </button>
+          <button
+            onClick={() => gameState.setActiveEvent({ id: 'test-event' })}
+          >
+            Set Event
+          </button>
           <button onClick={() => gameState.setActiveEvent(null)}>Clear</button>
         </div>
       )
@@ -226,10 +238,16 @@ describe('GameState Context - Event System', () => {
       const gameState = useGameState()
       return (
         <div>
-          <button onClick={() => {
-            gameState.changeScene(GAME_PHASES.GIG)
-          }}>Go to Gig</button>
-          <button onClick={() => gameState.triggerEvent('travel')}>Trigger Event</button>
+          <button
+            onClick={() => {
+              gameState.changeScene(GAME_PHASES.GIG)
+            }}
+          >
+            Go to Gig
+          </button>
+          <button onClick={() => gameState.triggerEvent('travel')}>
+            Trigger Event
+          </button>
         </div>
       )
     }
@@ -261,9 +279,7 @@ describe('GameState Context - Save/Load', () => {
   test('saveGame persists state to localStorage', () => {
     const TestComponent = () => {
       const gameState = useGameState()
-      return (
-        <button onClick={() => gameState.saveGame(false)}>Save</button>
-      )
+      return <button onClick={() => gameState.saveGame(false)}>Save</button>
     }
 
     render(
@@ -303,7 +319,7 @@ describe('GameState Context - Save/Load', () => {
       const gameState = useGameState()
       return (
         <div>
-          <div data-testid="player-money">{gameState.player?.money || 0}</div>
+          <div data-testid='player-money'>{gameState.player?.money || 0}</div>
           <button onClick={() => gameState.loadGame()}>Load</button>
         </div>
       )
@@ -329,9 +345,7 @@ describe('GameState Context - Save/Load', () => {
 
     const TestComponent = () => {
       const gameState = useGameState()
-      return (
-        <button onClick={() => gameState.deleteSave()}>Delete</button>
-      )
+      return <button onClick={() => gameState.deleteSave()}>Delete</button>
     }
 
     render(
@@ -352,8 +366,10 @@ describe('GameState Context - Save/Load', () => {
       const gameState = useGameState()
       return (
         <div>
-          <div data-testid="player-money">{gameState.player?.money || 0}</div>
-          <button onClick={() => gameState.updatePlayer({ money: 5000 })}>Set Money</button>
+          <div data-testid='player-money'>{gameState.player?.money || 0}</div>
+          <button onClick={() => gameState.updatePlayer({ money: 5000 })}>
+            Set Money
+          </button>
           <button onClick={() => gameState.resetState()}>Reset</button>
         </div>
       )
@@ -385,8 +401,12 @@ describe('GameState Context - Gig Management', () => {
       const gameState = useGameState()
       return (
         <div>
-          <div data-testid="gig-name">{gameState.currentGig?.name || 'none'}</div>
-          <button onClick={() => gameState.startGig({ name: 'Test Venue' })}>Start</button>
+          <div data-testid='gig-name'>
+            {gameState.currentGig?.name || 'none'}
+          </div>
+          <button onClick={() => gameState.startGig({ name: 'Test Venue' })}>
+            Start
+          </button>
         </div>
       )
     }
@@ -409,8 +429,16 @@ describe('GameState Context - Gig Management', () => {
       const gameState = useGameState()
       return (
         <div>
-          <div data-testid="setlist-count">{gameState.setlist?.length || 0}</div>
-          <button onClick={() => gameState.setSetlist([{ id: 'song1' }, { id: 'song2' }])}>Set</button>
+          <div data-testid='setlist-count'>
+            {gameState.setlist?.length || 0}
+          </div>
+          <button
+            onClick={() =>
+              gameState.setSetlist([{ id: 'song1' }, { id: 'song2' }])
+            }
+          >
+            Set
+          </button>
         </div>
       )
     }
@@ -433,11 +461,15 @@ describe('GameState Context - Gig Management', () => {
       const gameState = useGameState()
       return (
         <div>
-          <div data-testid="scene">{gameState.currentScene}</div>
-          <button onClick={() => {
-            gameState.setCurrentGig({ id: 'test', isPractice: false })
-            gameState.endGig()
-          }}>End Gig</button>
+          <div data-testid='scene'>{gameState.currentScene}</div>
+          <button
+            onClick={() => {
+              gameState.setCurrentGig({ id: 'test', isPractice: false })
+              gameState.endGig()
+            }}
+          >
+            End Gig
+          </button>
         </div>
       )
     }
@@ -462,8 +494,14 @@ describe('GameState Context - Gig Management', () => {
       const gameState = useGameState()
       return (
         <div>
-          <div data-testid="soundcheck">{gameState.gigModifiers?.soundcheck ? 'yes' : 'no'}</div>
-          <button onClick={() => gameState.setGigModifiers({ soundcheck: true })}>Toggle</button>
+          <div data-testid='soundcheck'>
+            {gameState.gigModifiers?.soundcheck ? 'yes' : 'no'}
+          </div>
+          <button
+            onClick={() => gameState.setGigModifiers({ soundcheck: true })}
+          >
+            Toggle
+          </button>
         </div>
       )
     }
@@ -487,7 +525,9 @@ describe('GameState Context - Minigames', () => {
     const TestComponent = () => {
       const gameState = useGameState()
       return (
-        <button onClick={() => gameState.startTravelMinigame('node1')}>Start Travel</button>
+        <button onClick={() => gameState.startTravelMinigame('node1')}>
+          Start Travel
+        </button>
       )
     }
 
@@ -508,7 +548,9 @@ describe('GameState Context - Minigames', () => {
     const TestComponent = () => {
       const gameState = useGameState()
       return (
-        <button onClick={() => gameState.completeTravelMinigame(10, [])}>Complete Travel</button>
+        <button onClick={() => gameState.completeTravelMinigame(10, [])}>
+          Complete Travel
+        </button>
       )
     }
 
@@ -529,7 +571,9 @@ describe('GameState Context - Minigames', () => {
     const TestComponent = () => {
       const gameState = useGameState()
       return (
-        <button onClick={() => gameState.startRoadieMinigame('gig1')}>Start Roadie</button>
+        <button onClick={() => gameState.startRoadieMinigame('gig1')}>
+          Start Roadie
+        </button>
       )
     }
 
@@ -550,7 +594,9 @@ describe('GameState Context - Minigames', () => {
     const TestComponent = () => {
       const gameState = useGameState()
       return (
-        <button onClick={() => gameState.completeRoadieMinigame(5)}>Complete Roadie</button>
+        <button onClick={() => gameState.completeRoadieMinigame(5)}>
+          Complete Roadie
+        </button>
       )
     }
 
@@ -575,8 +621,19 @@ describe('GameState Context - hasUpgrade utility', () => {
 
       return (
         <div>
-          <button type="button" onClick={() => gameState.updatePlayer({ van: { upgrades: ['upgrade1', 'upgrade2'] } })}>Add Upgrades</button>
-          <div data-testid="has-upgrade">{gameState.hasUpgrade('upgrade1') ? 'yes' : 'no'}</div>
+          <button
+            type='button'
+            onClick={() =>
+              gameState.updatePlayer({
+                van: { upgrades: ['upgrade1', 'upgrade2'] }
+              })
+            }
+          >
+            Add Upgrades
+          </button>
+          <div data-testid='has-upgrade'>
+            {gameState.hasUpgrade('upgrade1') ? 'yes' : 'no'}
+          </div>
         </div>
       )
     }

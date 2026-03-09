@@ -39,10 +39,7 @@ export { getPrimaryEffect } // Re-export for backward compatibility if needed, t
  */
 // Pre-compute gear lookup for O(1) checks during purchases
 const GEAR_LOOKUP = new Map()
-const allGearItems = [
-  ...(HQ_ITEMS.gear || []),
-  ...(HQ_ITEMS.instruments || [])
-]
+const allGearItems = [...(HQ_ITEMS.gear || []), ...(HQ_ITEMS.instruments || [])]
 
 allGearItems.forEach(item => {
   if (item.category === 'GEAR' || item.category === 'INSTRUMENT') {

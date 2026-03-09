@@ -160,7 +160,7 @@ When writing or reviewing a skill, check for these failure modes:
 | Anti-Pattern           | Symptom                                            | Fix                                                                                       |
 | ---------------------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | **Overfitter**         | Works on test cases, fails on everything else      | Generalize from feedback — the skill serves millions of prompts, not just your 3 examples |
-| **Undertrigger**       | Codex doesn't use the skill when it should        | Make the description pushy — enumerate contexts, keywords, edge cases                     |
+| **Undertrigger**       | Codex doesn't use the skill when it should         | Make the description pushy — enumerate contexts, keywords, edge cases                     |
 | **Wall of Text**       | 800+ line SKILL.md, model ignores parts            | Use progressive disclosure — core workflow in SKILL.md, details in `references/`          |
 | **Micromanager**       | MUST/ALWAYS/NEVER everywhere, no room for judgment | Explain why things matter; trust the model's intelligence                                 |
 | **Missing Example**    | Describes what to do but never shows good output   | Include 1–2 concrete input→output examples                                                |

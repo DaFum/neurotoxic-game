@@ -105,10 +105,15 @@ export const MainMenu = () => {
         if (success) {
           startAmbientSafely()
         } else {
-          reportAudioIssue(new Error('Audio unlock failed'), tRef.current('ui:errors.audio_init_failed'))
+          reportAudioIssue(
+            new Error('Audio unlock failed'),
+            tRef.current('ui:errors.audio_init_failed')
+          )
         }
       })
-      .catch(err => reportAudioIssue(err, tRef.current('ui:errors.audio_init_failed')))
+      .catch(err =>
+        reportAudioIssue(err, tRef.current('ui:errors.audio_init_failed'))
+      )
   }, [
     resetState,
     changeScene,
@@ -189,17 +194,16 @@ export const MainMenu = () => {
         if (success) {
           startAmbientSafely()
         } else {
-          reportAudioIssue(new Error('Audio unlock failed'), tRef.current('ui:errors.audio_init_failed'))
+          reportAudioIssue(
+            new Error('Audio unlock failed'),
+            tRef.current('ui:errors.audio_init_failed')
+          )
         }
       })
-      .catch(err => reportAudioIssue(err, tRef.current('ui:errors.audio_init_failed')))
-  }, [
-    loadGame,
-    addToast,
-    changeScene,
-    reportAudioIssue,
-    startAmbientSafely
-  ])
+      .catch(err =>
+        reportAudioIssue(err, tRef.current('ui:errors.audio_init_failed'))
+      )
+  }, [loadGame, addToast, changeScene, reportAudioIssue, startAmbientSafely])
 
   const handleCredits = useCallback(
     () => changeScene(GAME_PHASES.CREDITS),

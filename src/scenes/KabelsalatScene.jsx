@@ -118,7 +118,6 @@ export const KabelsalatScene = () => {
             >
               {t('ui:minigames.kabelsalat.pwrLabel')}
             </text>
-
             {lightningSeeds.map(seed => (
               <path
                 key={seed.id}
@@ -132,13 +131,11 @@ export const KabelsalatScene = () => {
                 }}
               />
             ))}
-
             <ConnectionPaths
               connections={connections}
               isPowerConnected={isPowerConnected}
               socketOrder={socketOrder}
             />
-
             <SocketList
               t={t}
               socketOrder={socketOrder}
@@ -148,7 +145,6 @@ export const KabelsalatScene = () => {
               isGameOver={isGameOver}
               handleSocketClick={handleSocketClick}
             />
-
             <CableList
               t={t}
               connections={connections}

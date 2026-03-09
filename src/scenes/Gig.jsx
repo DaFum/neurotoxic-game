@@ -112,7 +112,12 @@ export const Gig = () => {
     try {
       stopAudio()
     } catch (e) {
-      handleError(e, { addToast, fallbackMessage: tRef.current('ui:errors.audio_cleanup_failed', { defaultValue: 'Audio cleanup failed.' }) })
+      handleError(e, {
+        addToast,
+        fallbackMessage: tRef.current('ui:errors.audio_cleanup_failed', {
+          defaultValue: 'Audio cleanup failed.'
+        })
+      })
     } finally {
       // Use fallback stats if gameStateRef is unavailable or uninitialized
       const score = gameStateRef.current?.score || 0

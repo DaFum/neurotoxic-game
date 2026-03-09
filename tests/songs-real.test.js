@@ -73,8 +73,14 @@ describe('songs.js - SONGS_DB structure', () => {
   describe('difficulty and intensity mapping', () => {
     it('clamps difficulty to 1-7 range', () => {
       SONGS_DB.forEach(song => {
-        assert.ok(song.difficulty >= 1, `Difficulty too low: ${song.difficulty}`)
-        assert.ok(song.difficulty <= 7, `Difficulty too high: ${song.difficulty}`)
+        assert.ok(
+          song.difficulty >= 1,
+          `Difficulty too low: ${song.difficulty}`
+        )
+        assert.ok(
+          song.difficulty <= 7,
+          `Difficulty too high: ${song.difficulty}`
+        )
       })
     })
 
@@ -207,10 +213,7 @@ describe('songs.js - SONGS_DB structure', () => {
     it('energy object exists', () => {
       SONGS_DB.forEach(song => {
         assert.ok(song.energy, 'Song must have energy object')
-        assert.ok(
-          'peak' in song.energy,
-          'Energy must have peak property'
-        )
+        assert.ok('peak' in song.energy, 'Energy must have peak property')
       })
     })
 
@@ -232,11 +235,7 @@ describe('songs.js - SONGS_DB structure', () => {
     it('all song IDs are unique', () => {
       const ids = SONGS_DB.map(s => s.id)
       const uniqueIds = new Set(ids)
-      assert.strictEqual(
-        uniqueIds.size,
-        ids.length,
-        'Song IDs must be unique'
-      )
+      assert.strictEqual(uniqueIds.size, ids.length, 'Song IDs must be unique')
     })
 
     it('all songs have required fields', () => {

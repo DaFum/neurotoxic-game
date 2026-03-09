@@ -137,10 +137,30 @@ test('trySpawnProjectile - health and combo boundaries', () => {
   const mockRandom = () => 0.001 // Between 0.0005 and 0.0015
 
   const cases = [
-    { health: 59, combo: 0, expectSpawn: true, desc: 'Health 59: chance 0.0015' },
-    { health: 60, combo: 0, expectSpawn: false, desc: 'Health 60: chance 0.0005' },
-    { health: 100, combo: 20, expectSpawn: false, desc: 'Combo 20: chance 0.0005' },
-    { health: 100, combo: 21, expectSpawn: true, desc: 'Combo 21: chance 0.0015' }
+    {
+      health: 59,
+      combo: 0,
+      expectSpawn: true,
+      desc: 'Health 59: chance 0.0015'
+    },
+    {
+      health: 60,
+      combo: 0,
+      expectSpawn: false,
+      desc: 'Health 60: chance 0.0005'
+    },
+    {
+      health: 100,
+      combo: 20,
+      expectSpawn: false,
+      desc: 'Combo 20: chance 0.0005'
+    },
+    {
+      health: 100,
+      combo: 21,
+      expectSpawn: true,
+      desc: 'Combo 21: chance 0.0015'
+    }
   ]
 
   for (const { health, combo, expectSpawn, desc } of cases) {
