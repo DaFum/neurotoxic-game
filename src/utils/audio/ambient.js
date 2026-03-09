@@ -6,7 +6,7 @@ import { createAndConnectBufferSource } from './sharedBufferUtils.js'
 import { selectRandomItem } from './selectionUtils.js'
 import { ensureAudioContext } from './setup.js'
 import { playMidiFileInternal } from './midiPlayback.js'
-import { SONGS_DB } from '../../data/songs.js'
+import { SONGS_DB, SONGS_BY_MID } from '../../data/songs.js'
 
 /**
  * Plays a random MIDI file from the available set for ambient music.
@@ -37,7 +37,10 @@ export async function playRandomAmbientMidi(
   }
 
   // If the MIDI is known in SONGS_DB, we might use metadata, but for Ambient we always start from 0
-  const meta = songs.find(s => s.sourceMid === filename)
+  const meta =
+    songs === SONGS_DB
+      ? SONGS_BY_MID.get(filename)
+      : songs.find(s => s.sourceMid === filename)
   // Requirement: Ambient always plays from the beginning (0s)
   const offsetSeconds = 0
 
