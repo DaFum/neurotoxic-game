@@ -37,14 +37,22 @@ export const getNodeVisibility = (nodeLayer, currentLayer) => {
  */
 export const normalizeVenueId = venue => {
   if (!venue) return null
-  let id = venue.id || venue.name || venue
-  if (
-    typeof id === 'string' &&
-    id.startsWith('venues:') &&
-    id.endsWith('.name')
-  ) {
-    id = id.replace('venues:', '').replace('.name', '')
+  let id = typeof venue === 'object' ? venue.id || venue.name : venue
+
+  if (typeof id === 'string') {
+    let isVenues = id.startsWith('venues:')
+    let hasName = id.endsWith('.name')
+    if (isVenues && hasName) {
+      id = id.slice(7, -5)
+    } else if (isVenues) {
+      id = id.slice(7)
+    } else if (hasName) {
+      if (!id.includes(':')) {
+        id = id.slice(0, -5)
+      }
+    }
   }
+
   return typeof id === 'string' ? id : null
 }
 

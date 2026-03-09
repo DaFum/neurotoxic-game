@@ -72,6 +72,79 @@ describe('socialReducer', () => {
       const nextState = handleUpdateSocial(baseState, 'string_payload')
       assert.strictEqual(nextState, baseState)
     })
+
+    it('should merge multiple valid updates correctly', () => {
+      baseState.social = {
+        trend: 'none',
+        loyalty: 10,
+        sponsorActive: false,
+        activeDeals: []
+      }
+      const payload = {
+        trend: ALLOWED_TRENDS[1],
+        loyalty: 50,
+        sponsorActive: true,
+        activeDeals: [{ id: 'deal1', remainingGigs: 5 }]
+      }
+      const nextState = handleUpdateSocial(baseState, payload)
+
+      assert.strictEqual(nextState.social.trend, ALLOWED_TRENDS[1])
+      assert.strictEqual(nextState.social.loyalty, 50)
+      assert.strictEqual(nextState.social.sponsorActive, true)
+      assert.strictEqual(nextState.social.activeDeals.length, 1)
+      assert.strictEqual(nextState.social.activeDeals[0].id, 'deal1')
+    })
+
+    it('should not mutate original state', () => {
+      const originalSocial = { ...baseState.social }
+      const payload = { loyalty: 100 }
+
+      handleUpdateSocial(baseState, payload)
+
+      assert.deepStrictEqual(baseState.social, originalSocial)
+    })
+
+    it('should handle null payload gracefully', () => {
+      const nextState = handleUpdateSocial(baseState, null)
+      assert.strictEqual(nextState, baseState)
+    })
+
+    it('should handle undefined payload gracefully', () => {
+      const nextState = handleUpdateSocial(baseState, undefined)
+      assert.strictEqual(nextState, baseState)
+    })
+
+    it('should validate activeDeals is array and filter invalid entries', () => {
+      const payload = {
+        activeDeals: [
+          { id: 'valid1', remainingGigs: 3 },
+          { id: 'valid2', remainingGigs: 1 },
+          { id: 'invalid', remainingGigs: 'not-a-number' }, // invalid
+          { remainingGigs: 2 }, // missing id
+          null // invalid
+        ]
+      }
+      const nextState = handleUpdateSocial(baseState, payload)
+
+      assert.strictEqual(nextState.social.activeDeals.length, 2)
+      assert.strictEqual(nextState.social.activeDeals[0].id, 'valid1')
+      assert.strictEqual(nextState.social.activeDeals[1].id, 'valid2')
+    })
+
+    it('should reject non-array activeDeals', () => {
+      const payload = { activeDeals: 'not-an-array' }
+      const nextState = handleUpdateSocial(baseState, payload)
+
+      assert.deepStrictEqual(nextState.social.activeDeals, [])
+    })
+
+    it('should accept valid sponsorActive boolean values', () => {
+      const nextState1 = handleUpdateSocial(baseState, { sponsorActive: true })
+      assert.strictEqual(nextState1.social.sponsorActive, true)
+
+      const nextState2 = handleUpdateSocial(baseState, { sponsorActive: false })
+      assert.strictEqual(nextState2.social.sponsorActive, false)
+    })
   })
 
   describe('handleAddVenueBlacklist', () => {
@@ -101,6 +174,42 @@ describe('socialReducer', () => {
       )
     })
 
+    it('should blacklist at loyalty exactly 29', () => {
+      baseState.social.loyalty = 29
+      const nextState = handleAddVenueBlacklist(baseState, 'venue_edge')
+
+      assert.ok(nextState.venueBlacklist.includes('venue_edge'))
+      assert.strictEqual(nextState.social.loyalty, 29)
+    })
+
+    it('should preserve existing blacklist entries', () => {
+      baseState.venueBlacklist = ['existing_venue']
+      baseState.social.loyalty = 10
+      const nextState = handleAddVenueBlacklist(baseState, 'new_venue')
+
+      assert.strictEqual(nextState.venueBlacklist.length, 2)
+      assert.ok(nextState.venueBlacklist.includes('existing_venue'))
+      assert.ok(nextState.venueBlacklist.includes('new_venue'))
+    })
+
+    it('should handle undefined venueBlacklist gracefully', () => {
+      delete baseState.venueBlacklist
+      baseState.social.loyalty = 10
+      const nextState = handleAddVenueBlacklist(baseState, 'venue_123')
+
+      assert.ok(Array.isArray(nextState.venueBlacklist))
+      assert.ok(nextState.venueBlacklist.includes('venue_123'))
+    })
+
+    it('should not mutate original state', () => {
+      baseState.social.loyalty = 50
+      const originalLoyalty = baseState.social.loyalty
+      const originalBlacklist = [...baseState.venueBlacklist]
+
+      handleAddVenueBlacklist(baseState, 'venue_test')
+
+      assert.strictEqual(baseState.social.loyalty, originalLoyalty)
+      assert.deepStrictEqual(baseState.venueBlacklist, originalBlacklist)
     it('should handle boundary at exactly 30 loyalty', () => {
       // At 30, should defend
       baseState.social.loyalty = 30
