@@ -1,0 +1,17 @@
+[
+  {
+    "skill": "convention-keeper-brutalist-ui",
+    "prompt": "Check all UI components for design system violations.",
+    "expectIncludes": ["src/ui/", "CSS variables"]
+  },
+  {
+    "skill": "pixi-lifecycle-memory-leak-sentinel",
+    "prompt": "Audit PixiStage for memory leaks.",
+    "expectIncludes": ["PixiStage.jsx", "PixiStageController.js"]
+  },
+  {
+    "skill": "dependency-pin-upgrade-blocker",
+    "prompt": "Someone wants to upgrade React to v19.",
+    "expectIncludes": ["React", "18"]
+  }
+]
