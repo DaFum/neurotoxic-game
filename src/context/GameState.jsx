@@ -128,6 +128,20 @@ const createPersistedState = currentState => {
 const isPlainObject = value =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
+const processAddQuests = (quests, currentDay, dispatch) => {
+  if (!Array.isArray(quests)) return
+
+  quests.forEach(q => {
+    // Parse relative deadlines
+    const questToAdd = { ...q }
+    if (questToAdd.deadlineOffset) {
+      questToAdd.deadline = currentDay + questToAdd.deadlineOffset
+      delete questToAdd.deadlineOffset
+    }
+    dispatch(createAddQuestAction(questToAdd))
+  })
+}
+
 /**
  * Global State Provider covering Player, Band, Inventory, and Scene Management.
  * @param {object} props
@@ -571,17 +585,8 @@ export const GameStateProvider = ({ children }) => {
           dispatch(createApplyEventDeltaAction(delta))
 
           // Add Quests
-          if (delta.flags?.addQuest && Array.isArray(delta.flags.addQuest)) {
-            delta.flags.addQuest.forEach(q => {
-              // Parse relative deadlines
-              const questToAdd = { ...q }
-              if (questToAdd.deadlineOffset) {
-                questToAdd.deadline =
-                  currentState.player.day + questToAdd.deadlineOffset
-                delete questToAdd.deadlineOffset
-              }
-              dispatch(createAddQuestAction(questToAdd))
-            })
+          if (delta.flags?.addQuest) {
+            processAddQuests(delta.flags.addQuest, currentState.player.day, dispatch)
           }
 
           // Unlocks
