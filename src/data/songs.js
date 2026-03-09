@@ -81,3 +81,12 @@ export const SONGS_DB = Object.entries(rhythmSongs).map(([key, song]) => {
         : null
   }
 })
+
+// Pre-computed map for O(1) lookups by sourceMid
+export const SONGS_BY_MID = new Map()
+for (let i = 0; i < SONGS_DB.length; i++) {
+  const song = SONGS_DB[i]
+  if (song.sourceMid) {
+    SONGS_BY_MID.set(song.sourceMid, song)
+  }
+}
