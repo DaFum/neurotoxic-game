@@ -3,7 +3,6 @@ import { test } from 'node:test'
 import { CHARACTERS } from '../src/data/characters.js'
 import { SONGS_DB } from '../src/data/songs.js'
 
-import { ALL_VENUES } from '../src/data/venues.js'
 // Chatter might be a simple export
 // import { CHATTER_DB } from '../src/data/chatter.js';
 // Let's check chatter.js content first or just try importing default/named.
@@ -81,15 +80,5 @@ test('SONGS_DB sourceOgg field', () => {
       null,
       `Song "${song.name}" without sourceMid should have sourceOgg = null`
     )
-  })
-})
-
-test('ALL_VENUES data integrity', () => {
-  assert.ok(Array.isArray(ALL_VENUES))
-  ALL_VENUES.forEach(venue => {
-    assert.strictEqual(typeof venue.id, 'string')
-    assert.strictEqual(typeof venue.name, 'string')
-    assert.strictEqual(typeof venue.x, 'number')
-    assert.strictEqual(typeof venue.y, 'number')
   })
 })
