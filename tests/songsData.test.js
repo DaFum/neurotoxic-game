@@ -53,11 +53,11 @@ test('Every song in SONGS_DB has the correct structure and valid derived fields'
 
     // 7. energy validation
     assert.ok(typeof song.energy === 'object' && song.energy !== null, `Song ${song.id} energy should be an object`)
-    assert.ok(song.energy.peak <= 100, `Song ${song.id} energy.peak should be <= 100`)
+    assert.ok(Number.isFinite(song.energy.peak) && song.energy.peak <= 100, `Song ${song.id} energy.peak should be <= 100`)
 
     // 8. bpm and tpb validation
-    assert.ok(song.bpm >= 1, `Song ${song.id} bpm should be at least 1`)
-    assert.ok(song.tpb >= 1, `Song ${song.id} tpb should be at least 1`)
+    assert.ok(Number.isFinite(song.bpm) && song.bpm >= 1, `Song ${song.id} bpm should be at least 1`)
+    assert.ok(Number.isFinite(song.tpb) && song.tpb >= 1, `Song ${song.id} tpb should be at least 1`)
 
     // 9. notes validation
     assert.ok(Array.isArray(song.notes), `Song ${song.id} notes should be an array`)

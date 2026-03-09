@@ -11,7 +11,10 @@ export const SocketList = ({
   isGameOver,
   handleSocketClick
 }) => {
-  return socketOrder.map((socketId, index) => {
+  return (
+    <>
+      {socketOrder.map((socketId, index) => {
+
     const socket = SOCKET_DEFS[socketId]
     const x = SLOT_XS[index]
     const y = 120
@@ -113,5 +116,7 @@ export const SocketList = ({
         )}
       </g>
     )
-  })
+  })}
+    </>
+  )
 }
