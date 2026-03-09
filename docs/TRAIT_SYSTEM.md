@@ -25,6 +25,11 @@ Based on my thorough analysis of the trait system across the codebase, here are 
   - Description: +10% Score on Technical Songs
   - Unlock Hint: Get 100% Accuracy on a Technical song
   - Implementation: Applied in `simulationUtils.js` (calculateGigPhysics) when difficulty > 3; multipliers.guitar \*= 1.15
+- **grudge_holder** → "Grudge Holder"
+  - Effect: `rel_neg_amp` (Amplifies negative relationship changes)
+  - Description: Amplifies negative relationship changes
+  - Unlock Hint: Have a relationship score drop below 30
+  - Implementation: Applied in `gameStateUtils.js` (applyEventDelta) when negative relationship change occurs; amount *= 1.5
     **Marius (Drums)**
 - **blast_machine** → "Blast Beat Machine"
   - Effect: `score_bonus_fast` (+25% score on fast sections)
@@ -62,6 +67,11 @@ Based on my thorough analysis of the trait system across the codebase, here are 
   - Description: +10% Max Combo on Slow Songs
   - Unlock Hint: Maintain a 30+ combo in a slow song (<120 BPM)
   - Implementation: Applied in `simulationUtils.js` when BPM < 120; hitWindows.bass \*= 1.15
+- **peacemaker** → "Peacemaker"
+  - Effect: `rel_pos_amp` (Amplifies positive relationship changes and dampens negative)
+  - Description: Amplifies positive relationship changes
+  - Unlock Hint: Consistently maintain high band harmony (>90)
+  - Implementation: Applied in `gameStateUtils.js` (applyEventDelta) when relationship change occurs; amount \*= 1.5 (positive) or 0.5 (negative)
 
 ---
 
@@ -86,6 +96,11 @@ Traits are unlocked through the following context types defined in `src/utils/un
   **E. EVENT_RESOLVED (When Events Are Resolved)**
 - `bandleader` (Lars): `player.stats.conflictsResolved >= 3`
 - `showman` (Marius): `player.stats.stageDives >= 3`
+
+  **F. RELATIONSHIP_CHANGE / HARMONY_UPDATE (Dynamic Game State)**
+- `grudge_holder` (Matze): Relationship < 30
+- `peacemaker` (Lars): High Band Harmony (>= 90)
+
   **Unlock Detection:**
 - Checked via `hasTrait(member, traitId)` - returns false if member doesn't have trait
 - Prevents duplicate unlocks by checking `member.traits.some(t => t.id === traitId)` before adding
@@ -117,10 +132,13 @@ Traits are unlocked through the following context types defined in `src/utils/un
 |-------|---------------|--------|
 | `gear_nerd` | `usePurchaseLogic.js:getAdjustedCost()` | Reduces GEAR category purchase costs | 20% discount (cost _ 0.8) |
 | `road_warrior` | `economyEngine.js:calculateFuelCost()` | Reduces fuel consumption | 15% discount (fuelLiters _ 0.85) |
-**D. EVENT RESOLUTION**
+**D. EVENT RESOLUTION & RELATIONSHIPS**
 | Trait | Where Checked | Effect |
 |-------|---------------|--------|
 | `bandleader` | `eventEngine.js` (resolveEventChoice) | 50% chance to save failed conflict checks | Converts failure to success |
+| `grudge_holder` | `gameStateUtils.js:applyEventDelta()` | Amplifies negative relationship changes | 1.5x multiplier to negative relationship shifts |
+| `peacemaker` | `gameStateUtils.js:applyEventDelta()` | Amplifies positive relationship changes, dampens negative | 1.5x to positive, 0.5x to negative relationship shifts |
+
 **E. STAT TRACKING (For Future Effects)**
 
 - `party_animal` mentioned in `simulationUtils.js:337` for daily stamina calculation context but effect not currently implemented
@@ -246,16 +264,6 @@ UI/Scene components can call unlockTrait() directly
 - **Bandleader** description says "+50% chance" but implementation is fixed 50% save rate, not probabilistic addition
 - **Road Warrior** effect is -15% fuel but description says "-15% Fuel Consumption" (accurate)
 - **Social Manager** / "Social Nerd" naming inconsistency
-  **F. TODO ITEMS IN CODE:**
-  From characters.js:
-
-```javascript
-// TODO: Relationship Mechanics
-// - Add `relationships` object to each character: { [otherMemberId]: score }
-// - Add dynamic events that trigger based on low/high relationship scores
-// - Traits like 'Grudge Holder' or 'Peacemaker' could affect these scores
-```
-
 ---
 
 ### 7. TRAIT IMPLEMENTATION COMPLETENESS MATRIX
@@ -273,6 +281,8 @@ UI/Scene components can call unlockTrait() directly
 | social_manager | ✅           | ✅             | ✅ (bass mult)        | —                 | ✅ (virality)      | **COMPLETE** |
 | road_warrior   | ✅           | ✅             | —                     | ✅ (fuel -15%)    | —                  | **COMPLETE** |
 | melodic_genius | ✅           | ✅             | ✅ (hit window)       | —                 | —                  | **COMPLETE** |
+| grudge_holder  | ✅           | ✅             | —                     | —                 | ✅ (relationships) | **COMPLETE** |
+| peacemaker     | ✅           | ✅             | —                     | —                 | ✅ (relationships) | **COMPLETE** |
 
 ---
 

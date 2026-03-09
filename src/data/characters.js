@@ -12,6 +12,8 @@
 // - tech_wizard (Matze): Implemented
 // - showman (Marius): Implemented
 // - melodic_genius (Lars): Implemented
+// - grudge_holder (Matze): Implemented
+// - peacemaker (Lars): Implemented
 //
 export const CHARACTERS = {
   MATZE: {
