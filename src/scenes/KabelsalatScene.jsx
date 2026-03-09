@@ -21,10 +21,9 @@ export const KabelsalatScene = () => {
     lightningSeeds,
     bgTextureUrl,
     handleCableClick,
-    handleSocketClick
+    handleSocketClick,
+    isPowerConnected
   } = useKabelsalatState()
-
-  const isPowerConnected = !!connections['power']
 
   return (
     <div

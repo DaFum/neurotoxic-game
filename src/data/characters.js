@@ -52,10 +52,10 @@ export const CHARACTERS = {
       },
       {
         id: 'grudge_holder',
-        name: 'Grudge Holder',
-        desc: 'Amplifies negative relationship changes',
+        name: 'traits:grudgeHolder.name',
+        desc: 'traits:grudgeHolder.desc',
         effect: 'rel_neg_amp',
-        unlockHint: 'Have a relationship score drop below 30.'
+        unlockHint: 'traits:grudgeHolder.unlockHint'
       }
     ],
     equipment: {
@@ -142,10 +142,10 @@ export const CHARACTERS = {
       },
       {
         id: 'peacemaker',
-        name: 'Peacemaker',
-        desc: 'Amplifies positive relationship changes',
+        name: 'traits:peacemaker.name',
+        desc: 'traits:peacemaker.desc',
         effect: 'rel_pos_amp',
-        unlockHint: 'Consistently maintain high band harmony.'
+        unlockHint: 'traits:peacemaker.unlockHint'
       }
     ],
     equipment: { bass: 'Ibanez SR505', amp: 'Ampeg SVT-3 Pro' }

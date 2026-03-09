@@ -183,6 +183,41 @@ describe('songs.js', () => {
     SONGS_DB.forEach(song => {
       assert.ok(song.crowdAppeal >= 1, `${song.name} crowdAppeal should be >= 1`)
       assert.ok(song.crowdAppeal <= 10, `${song.name} crowdAppeal should be <= 10`)
+    // 5. crowdAppeal validation (clamped 1-10)
+    assert.ok(song.crowdAppeal >= 1 && song.crowdAppeal <= 10, `Song ${song.id} crowdAppeal out of range: ${song.crowdAppeal}`)
+
+    // 6. duration validation (positive integer)
+    assert.ok(Number.isInteger(song.duration), `Song ${song.id} duration should be an integer`)
+    assert.ok(song.duration > 0, `Song ${song.id} duration should be positive`)
+
+    // 7. energy validation
+    assert.ok(typeof song.energy === 'object' && song.energy !== null, `Song ${song.id} energy should be an object`)
+    assert.ok(Number.isFinite(song.energy.peak) && song.energy.peak <= 100, `Song ${song.id} energy.peak should be <= 100`)
+
+    // 8. bpm and tpb validation
+    assert.ok(Number.isFinite(song.bpm) && song.bpm >= 1, `Song ${song.id} bpm should be at least 1`)
+    assert.ok(Number.isFinite(song.tpb) && song.tpb >= 1, `Song ${song.id} tpb should be at least 1`)
+
+    // 9. notes validation
+    assert.ok(Array.isArray(song.notes), `Song ${song.id} notes should be an array`)
+    song.notes.forEach((note, index) => {
+      assert.ok(
+        Number.isFinite(note.t),
+        `Song ${song.id} note ${index} missing or invalid t`
+      )
+      assert.strictEqual(
+        typeof note.lane,
+        'string',
+        `Song ${song.id} note ${index} missing or invalid lane`
+      )
+      assert.ok(
+        Number.isFinite(note.p),
+        `Song ${song.id} note ${index} missing or invalid p`
+      )
+      assert.ok(
+        Number.isFinite(note.v),
+        `Song ${song.id} note ${index} missing or invalid v`
+      )
     })
   })
 

@@ -1,0 +1,12 @@
+{
+  "grudgeHolder": {
+    "name": "Grudge Holder",
+    "desc": "Amplifies negative relationship changes",
+    "unlockHint": "Have a relationship score drop below 30."
+  },
+  "peacemaker": {
+    "name": "Peacemaker",
+    "desc": "Amplifies positive and dampens negative relationship changes",
+    "unlockHint": "Consistently maintain high band harmony."
+  }
+}
