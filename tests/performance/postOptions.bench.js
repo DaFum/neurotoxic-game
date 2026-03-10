@@ -37,9 +37,14 @@ function hasMemberWithTrait(members, traitId1, traitId2) {
   return false
 }
 
-function getMemberWithTrait(members, traitId) {
-  if (!members || !members.length) return undefined
-  return ensureTraitCache(members).get(traitId)
+console.log(
+  `Running benchmark with band size ${BAND_SIZE} over ${RUNS} iterations...`
+)
+
+// Baseline
+const startBaseline = performance.now()
+for (let i = 0; i < RUNS; i++) {
+  currentImplementation(band, diceRoll)
 }
 
 // Simulate Redux updates: new array reference, same objects
@@ -53,5 +58,12 @@ for (let i = 0; i < iters; i++) {
   if (hasMemberWithTrait(newMembers, 'missing_trait')) found++
   if (getMemberWithTrait(newMembers, 'virtuoso')) found++
 }
-const end = performance.now()
-console.log(`Baseline: ${end - start} ms, found: ${found}`)
+const endOptimized = performance.now()
+const timeOptimized = endOptimized - startOptimized
+
+console.log(
+  `Optimized Implementation Total time: ${timeOptimized.toFixed(2)}ms`
+)
+
+const improvement = ((timeBaseline - timeOptimized) / timeBaseline) * 100
+console.log(`Improvement: ${improvement.toFixed(2)}%`)
