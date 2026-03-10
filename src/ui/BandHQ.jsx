@@ -145,7 +145,7 @@ export const BandHQ = ({
           aria-label={t('ui:hq.sectionsLabel', {
             defaultValue: 'Band HQ Sections'
           })}
-          className='flex border-b-2 border-(--toxic-green) overflow-x-auto'
+          className='flex border-b-2 border-(--toxic-green) overflow-x-auto touch-pan-x'
         >
           {/* Tabs */}
           {[
@@ -187,7 +187,7 @@ export const BandHQ = ({
           id={`panel-${activeTab}`}
           aria-labelledby={`tab-${activeTab}`}
           tabIndex={0}
-          className='flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-(--void-black) focus-visible:outline-none'
+          className='flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-(--void-black) focus-visible:outline-none touch-pan-y'
         >
           <Suspense
             fallback={
