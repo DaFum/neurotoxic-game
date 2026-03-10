@@ -18,7 +18,7 @@ const SPAWN_CHANCE_CONFIG = {
   HEALTH_MEDIUM_BONUS: 0.001
 }
 
-export const processProjectiles = (projectiles, deltaMS, screenHeight, onHit) => {
+export const processProjectiles = (projectiles, deltaMS, screenHeight = 1080, onHit) => {
   const despawnY = screenHeight + 100;
   const hitY = screenHeight - 150;
   let writeIdx = 0;
@@ -34,8 +34,8 @@ export const processProjectiles = (projectiles, deltaMS, screenHeight, onHit) =>
     // 2. Check Collision & Despawn
     let hit = false;
     // We check if the projectile crossed the hitY threshold in this tick.
-    if (onHit && p.y > hitY) {
-      onHit(p);
+    if (p.y > hitY) {
+      if (onHit) onHit(p);
       hit = true;
     }
 
@@ -44,7 +44,7 @@ export const processProjectiles = (projectiles, deltaMS, screenHeight, onHit) =>
       if (i !== writeIdx) projectiles[writeIdx] = p;
       writeIdx++;
     } else {
-      if (projectilePool.length < 64) projectilePool.push(p);
+      if (projectilePool.length < MAX_PROJECTILE_POOL_SIZE) projectilePool.push(p);
     }
   }
 
@@ -59,8 +59,9 @@ export const processProjectiles = (projectiles, deltaMS, screenHeight, onHit) =>
  * @param {number} [screenWidth=1920] - Width of screen for random X position.
  * @returns {object|null} New projectile object or null.
  */
-const projectilePool = [];
+let projectilePool = [];
 let nextProjectileId = 0;
+const MAX_PROJECTILE_POOL_SIZE = 64;
 
 export const trySpawnProjectile = (
   stats,
@@ -114,3 +115,9 @@ export const trySpawnProjectile = (
 }
 
 
+
+
+export const resetHecklerState = () => {
+  projectilePool = [];
+  nextProjectileId = 0;
+};

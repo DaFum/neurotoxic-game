@@ -1,9 +1,12 @@
 import assert from 'assert'
-import { test } from 'node:test'
+import { test, beforeEach } from 'node:test'
 import {
   processProjectiles,
+  resetHecklerState,
   trySpawnProjectile
 } from '../src/utils/hecklerLogic.js'
+
+beforeEach(() => { resetHecklerState() })
 
 test('trySpawnProjectile respects spawn chance', () => {
   // Force spawn
@@ -89,14 +92,14 @@ test('processProjectiles moves items correctly', () => {
 test('processProjectiles removes off-screen items', () => {
   const screenHeight = 500
   const projectiles = [
-    { x: 100, y: 400, vx: 0, vy: 0, rotation: 0, vr: 0 }, // On screen
+    { x: 100, y: 100, vx: 0, vy: 0, rotation: 0, vr: 0 }, // Safely < hitY (350)
     { x: 100, y: 700, vx: 0, vy: 0, rotation: 0, vr: 0 } // Off screen (500 + 100 buffer = 600 max)
   ]
 
   const updated = processProjectiles(projectiles, 0, screenHeight)
 
   assert.strictEqual(updated.length, 1)
-  assert.strictEqual(updated[0].y, 400)
+  assert.strictEqual(updated[0].y, 100)
 })
 
 test('processProjectiles handles empty input', () => {
@@ -201,7 +204,7 @@ test('processProjectiles handles empty input', () => {
   let hits = 0
   const onHit = () => hits++
 
-  processProjectiles(projectiles, 1000, onHit)
+  processProjectiles(projectiles, 0, 1000, onHit)
 
   assert.strictEqual(hits, 0)
   assert.strictEqual(projectiles.length, 0)
@@ -214,8 +217,9 @@ test('processProjectiles handles missing onHit callback', () => {
     { id: 2, y: 800 } // No hit
   ]
 
-  // Should not throw, keeps both if no onHit provided and y < despawnLimit
+  // Should not throw, removes hit one
   processProjectiles(projectiles, 0, screenHeight)
 
-  assert.strictEqual(projectiles.length, 2)
+  assert.strictEqual(projectiles.length, 1)
+  assert.strictEqual(projectiles[0].id, 2)
 })

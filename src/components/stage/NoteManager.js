@@ -27,7 +27,7 @@ export class NoteManager {
     this.gameStateRef = gameStateRef
     this.onHit = onHit
     this.container = null
-        this.activeEntities = [] // Track active {note, sprite} pairs for fast iteration
+    this.activeEntities = [] // Track active {note, sprite} pairs for fast iteration
     this.nextRenderIndex = 0
     this.lastNotesVersion = null // Tracks game-state notesVersion for song-transition resets
     this.spritePool = []

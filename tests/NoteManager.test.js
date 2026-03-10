@@ -372,7 +372,6 @@ describe('NoteManager', () => {
     noteManager.dispose()
 
     assert.equal(noteManager.activeEntities.length, 0)
-    assert.equal(noteManager.activeEntities.length, 0)
     assert.equal(noteManager.spritePool.length, 0)
     assert.equal(noteManager.container, null)
     assert.equal(mockSprite.destroy.mock.calls.length, 1)

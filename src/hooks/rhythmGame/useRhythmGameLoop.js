@@ -26,7 +26,10 @@ export const useRhythmGameLoop = ({
   const { activeEvent } = contextState
   const { setLastGigStats, endGig } = contextActions
 
-  const dimensionsRef = useRef({ width: window.innerWidth, height: window.innerHeight })
+  const dimensionsRef = useRef({
+    width: typeof window !== 'undefined' ? window.innerWidth : 1920,
+    height: typeof window !== 'undefined' ? window.innerHeight : 1080
+  })
   useEffect(() => {
     const handleResize = () => {
       dimensionsRef.current = { width: window.innerWidth, height: window.innerHeight }

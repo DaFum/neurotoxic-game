@@ -14,8 +14,8 @@ describe('BRAND_DEALS data integrity', () => {
       expect(typeof deal.name).toBe('string')
 
       // These are required based on the issue description
-      expect(typeof deal.offer.upfront).toBe('number')
-      expect(typeof deal.offer.duration).toBe('number')
+      expect(typeof deal.offer?.upfront).toBe('number')
+      expect(typeof deal.offer?.duration).toBe('number')
 
       expect(deal.requirements).toBeDefined()
       expect(typeof deal.requirements).toBe('object')
