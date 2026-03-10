@@ -120,7 +120,7 @@ export const LeaderboardTab = () => {
       {/* View Switcher */}
       <div
         role='tablist'
-        className='flex gap-4 mb-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-(--void-black)'
+        className='flex gap-4 mb-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-(--void-black) touch-pan-x'
       >
         {views.map(({ id, label }) => (
           <GlitchButton
@@ -193,7 +193,7 @@ export const LeaderboardTab = () => {
         )}
 
         {!isLoading && !error && rankings.length > 0 && (
-          <div className='overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-(--void-black)'>
+          <div className='overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-(--void-black) touch-pan-y touch-pinch-zoom'>
             <table className='w-full text-left font-mono'>
               <thead className='text-(--ash-gray) border-b border-(--ash-gray)/30 text-xs uppercase sticky top-0 bg-(--void-black)'>
                 <tr>
