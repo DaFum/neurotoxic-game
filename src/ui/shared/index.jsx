@@ -203,13 +203,15 @@ export const Panel = memo(function Panel({ title, children, className = '' }) {
       <UIFrameCorner className='absolute bottom-0 right-0 w-6 h-6 text-(--ash-gray) rotate-180 opacity-30 transition-opacity group-hover:opacity-60' />
       <UIFrameCorner className='absolute bottom-0 left-0 w-6 h-6 text-(--ash-gray) -rotate-90 opacity-30 transition-opacity group-hover:opacity-60' />
 
-      <div className='relative z-10'>
+      <div className='relative z-10 flex-1 min-h-0 flex flex-col'>
         {title && (
           <h3 className='text-(--toxic-green) text-sm font-bold mb-3 border-b border-(--ash-gray)/40 pb-1 font-mono uppercase tracking-wider'>
             {title}
           </h3>
         )}
-        <div className='space-y-1'>{children}</div>
+        <div className='space-y-1 flex-1 min-h-0 flex flex-col'>
+          {children}
+        </div>
       </div>
     </div>
   )
