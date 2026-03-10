@@ -16,7 +16,8 @@ const mocks = vi.hoisted(() => ({
 vi.mock('../src/utils/hecklerLogic', () => ({
   trySpawnProjectile: mocks.trySpawnProjectile,
   updateProjectiles: mocks.updateProjectiles,
-  checkCollisions: mocks.checkCollisions
+  checkCollisions: mocks.checkCollisions,
+  createHecklerSession: vi.fn(() => ({}))
 }))
 
 vi.mock('../src/utils/audioEngine', () => ({
