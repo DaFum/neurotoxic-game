@@ -24,3 +24,8 @@
 
 **Learning:** When using visually hidden native inputs (like `<input type="range" className="sr-only">`) to drive custom UI (like volume slider segments), keyboard users lose all focus indicators because the focused element is invisible. Tabbing through the UI leaves the user lost.
 **Action:** When hiding a native interactive element (`sr-only`), always use a CSS pseudo-class selector (e.g. Tailwind's `has-[:focus-visible]:ring-2`) on the visible container to act as a proxy focus indicator.
+
+## 2025-05-18 - Invisible Context for Icon-Only Buttons
+
+**Learning:** Icon-only navigation and control buttons (like the Mute or Help buttons in the HUD) can be ambiguous or completely inaccessible to visually impaired users if they lack aria-labels or visual tooltips, violating WCAG principles.
+**Action:** When adding or maintaining icon-only buttons, always wrap them in existing `Tooltip` components (if available) for sighted users and explicitly define descriptive `aria-label`s for screen-reader accessibility.

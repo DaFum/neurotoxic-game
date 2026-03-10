@@ -11,7 +11,7 @@ import {
   HelpCircle
 } from 'lucide-react'
 import { useAudioControl } from '../hooks/useAudioControl'
-import { ProgressBar } from './shared'
+import { ProgressBar, Tooltip } from './shared'
 import { translateLocation } from '../utils/locationI18n'
 
 const SHORTCUTS = [
@@ -128,26 +128,30 @@ export const HUD = () => {
         </div>
 
         <div className='flex gap-1.5'>
-          <button
-            type='button'
-            onClick={handleAudioChange.toggleMute}
-            aria-label={audioState.isMuted ? 'Unmute system' : 'Mute system'}
-            className='pointer-events-auto bg-(--void-black)/90 border border-(--toxic-green)/60 p-2 text-(--toxic-green) w-fit hover:bg-(--toxic-green) hover:text-(--void-black) transition-colors'
-          >
-            {audioState.isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-          </button>
-          <button
-            type='button'
-            onClick={() => setShowHelp(prev => !prev)}
-            aria-label='Toggle keyboard shortcuts help'
-            className={`pointer-events-auto bg-(--void-black)/90 border p-2 w-fit transition-colors ${
-              showHelp
-                ? 'border-(--warning-yellow) text-(--warning-yellow)'
-                : 'border-(--toxic-green)/60 text-(--toxic-green) hover:bg-(--toxic-green) hover:text-(--void-black)'
-            }`}
-          >
-            <HelpCircle size={14} />
-          </button>
+          <Tooltip content={audioState.isMuted ? 'Unmute (M)' : 'Mute (M)'}>
+            <button
+              type='button'
+              onClick={handleAudioChange.toggleMute}
+              aria-label={audioState.isMuted ? 'Unmute system' : 'Mute system'}
+              className='pointer-events-auto bg-(--void-black)/90 border border-(--toxic-green)/60 p-2 text-(--toxic-green) w-fit hover:bg-(--toxic-green) hover:text-(--void-black) transition-colors block'
+            >
+              {audioState.isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+            </button>
+          </Tooltip>
+          <Tooltip content="Shortcuts (?)">
+            <button
+              type='button'
+              onClick={() => setShowHelp(prev => !prev)}
+              aria-label='Toggle keyboard shortcuts help'
+              className={`pointer-events-auto bg-(--void-black)/90 border p-2 w-fit transition-colors block ${
+                showHelp
+                  ? 'border-(--warning-yellow) text-(--warning-yellow)'
+                  : 'border-(--toxic-green)/60 text-(--toxic-green) hover:bg-(--toxic-green) hover:text-(--void-black)'
+              }`}
+            >
+              <HelpCircle size={14} />
+            </button>
+          </Tooltip>
         </div>
 
         {/* Keyboard Shortcuts Overlay */}
