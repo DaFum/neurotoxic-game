@@ -30,9 +30,13 @@ vi.mock('../../src/utils/logger.js', () => ({
 
 vi.mock('../../src/utils/errorHandler.js', () => {
   class StateError extends Error {
-    constructor(message) {
+    constructor(message, context = {}) {
       super(message)
       this.name = 'StateError'
+      this.category = 'state'
+      this.severity = 'high'
+      this.context = context
+      this.recoverable = true
     }
   }
   return {

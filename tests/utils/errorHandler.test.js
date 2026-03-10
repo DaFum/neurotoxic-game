@@ -57,8 +57,9 @@ describe('errorHandler', () => {
       }
 
       try {
-        handleError(new Error('Test error'), {})
-        expect(true).toBe(true)
+        const result = handleError(new Error('Test error'), {})
+        expect(result).toBeDefined()
+        expect(result.message).toBe('Test error')
       } catch (err) {
         throw new Error(`handleError threw an unexpected error: ${err.message}`)
       } finally {

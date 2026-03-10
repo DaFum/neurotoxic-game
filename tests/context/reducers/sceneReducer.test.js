@@ -5,7 +5,7 @@ import { GAME_PHASES } from '../../../src/context/gameConstants.js'
 describe('sceneReducer', () => {
   describe('handleChangeScene', () => {
     it('should change scene when a valid scene is provided', () => {
-      const initialState = { currentScene: GAME_PHASES.MAIN_MENU }
+      const initialState = { currentScene: GAME_PHASES.MENU }
       const targetScene = GAME_PHASES.OVERWORLD
       const newState = handleChangeScene(initialState, targetScene)
 
@@ -13,7 +13,7 @@ describe('sceneReducer', () => {
     })
 
     it('should ignore scene change when an invalid scene is provided', () => {
-      const initialState = { currentScene: GAME_PHASES.MAIN_MENU }
+      const initialState = { currentScene: GAME_PHASES.MENU }
       const targetScene = 'INVALID_SCENE'
       const newState = handleChangeScene(initialState, targetScene)
 

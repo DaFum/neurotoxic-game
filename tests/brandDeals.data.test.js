@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { BRAND_DEALS } from '../../src/data/brandDeals.js'
+import { BRAND_DEALS } from '../src/data/brandDeals.js'
 
 describe('Brand Deals Data', () => {
   it('should be an array of deal objects', () => {
@@ -17,7 +17,7 @@ describe('Brand Deals Data', () => {
       expect(deal.type.length).toBeGreaterThan(0)
 
       const hasDuration =
-        typeof deal.duration === 'number' || deal.offer.duration > 0
+        typeof deal.duration === 'number' || deal.offer?.duration > 0
       expect(hasDuration).toBe(true)
 
       expect(typeof deal.requirements).toBe('object')

@@ -24,7 +24,7 @@ describe('Financial Events Data', () => {
 
   it('each option should have a label and either an effect or a skillCheck', () => {
     FINANCIAL_EVENTS.forEach(event => {
-      event.options.forEach((option, index) => {
+      event.options.forEach((option) => {
         expect(typeof option.label).toBe('string')
         expect(option.label.length).toBeGreaterThan(0)
         const hasEffect =
