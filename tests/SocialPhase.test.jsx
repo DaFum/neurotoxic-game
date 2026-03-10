@@ -7,7 +7,7 @@ vi.mock('../src/ui/shared/index.jsx', () => ({
   Panel: ({ children, title, className, contentClassName }) => (
     <div data-testid='panel' className={className}>
       {title}
-      <div className={contentClassName}>
+      <div data-testid='panel-content' className={contentClassName}>
         {children}
       </div>
     </div>
@@ -44,6 +44,10 @@ test('SocialPhase renders correctly and calls onSelect', async () => {
   render(<SocialPhase onSelect={handleSelect} options={mockOptions} />)
 
   expect(screen.getByText('Post Insta')).toBeInTheDocument()
+
+  // Verify that SocialPhase correctly wires contentClassName='space-y-6' to the Panel mock
+  const panelContent = screen.getByTestId('panel-content')
+  expect(panelContent).toHaveClass('space-y-6')
 
   const button = screen.getByRole('button', { name: /Post Insta/i })
   await user.click(button)
