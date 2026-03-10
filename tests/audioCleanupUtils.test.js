@@ -58,6 +58,28 @@ test('clearTransportEvent', async t => {
     assert.strictEqual(mockLogger.warn.mock.calls.length, 0)
   })
 
+  await t.test('calls transport clear if id is 0', () => {
+    const id = 0
+    clearTransportEvent(id, 'zeroEvent')
+    assert.strictEqual(mockTone.getTransport().clear.mock.calls.length, 1)
+    assert.strictEqual(
+      mockTone.getTransport().clear.mock.calls[0].arguments[0],
+      id
+    )
+    assert.strictEqual(mockLogger.warn.mock.calls.length, 0)
+  })
+
+  await t.test('calls transport clear if id is a string', () => {
+    const id = 'event-id-string'
+    clearTransportEvent(id, 'stringEvent')
+    assert.strictEqual(mockTone.getTransport().clear.mock.calls.length, 1)
+    assert.strictEqual(
+      mockTone.getTransport().clear.mock.calls[0].arguments[0],
+      id
+    )
+    assert.strictEqual(mockLogger.warn.mock.calls.length, 0)
+  })
+
   await t.test('returns early if id is undefined', () => {
     clearTransportEvent(undefined, 'testEvent')
     assert.strictEqual(mockTone.getTransport().clear.mock.calls.length, 0)
