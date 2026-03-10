@@ -468,14 +468,15 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
 
   const pool = [...eligibleDeals]
 
-  // Shuffle pool first to avoid bias if we just iterate
-  for (let i = pool.length - 1; i > 0; i--) {
+  // Partial Fisher-Yates inline to lazily yield random items without a full array shuffle.
+  // We only swap elements as we evaluate them, stopping as soon as 2 offers are found.
+  let found = 0
+  const n = pool.length
+
+  for (let i = n - 1; i >= 0 && found < 2; i--) {
     const j = Math.floor(rng() * (i + 1))
     ;[pool[i], pool[j]] = [pool[j], pool[i]]
-  }
-
-  for (const deal of pool) {
-    if (offers.length >= 2) break
+    const deal = pool[i]
 
     const align = deal.alignment
     const rep = reputation[align] || 0
@@ -491,6 +492,7 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
       // Generate dynamic name
       const dynamicName = generateBrandName(deal.name, align, rng)
       offers.push({ ...deal, name: dynamicName })
+      found++
     }
   }
 

@@ -524,7 +524,9 @@ export const loadSkillCases = async () => {
     try {
       cases.push(...JSON.parse(contents))
     } catch (_error) {
-      throw new Error(`Failed to parse ${file}: ${_error.message}`, { cause: _error })
+      throw new Error(`Failed to parse ${file}: ${_error.message}`, {
+        cause: _error
+      })
     }
   }
   return cases

@@ -2,7 +2,9 @@ import { describe, it, expect } from 'vitest'
 import { BRAND_DEALS } from '../src/data/brandDeals'
 
 describe('BRAND_DEALS data integrity', () => {
-  const deals = Array.isArray(BRAND_DEALS) ? BRAND_DEALS : Object.values(BRAND_DEALS)
+  const deals = Array.isArray(BRAND_DEALS)
+    ? BRAND_DEALS
+    : Object.values(BRAND_DEALS)
 
   it('contains non-empty set', () => {
     expect(deals.length).toBeGreaterThan(0)
