@@ -169,8 +169,17 @@ describe('useKabelsalatState', () => {
 
     expect(result.current.lightningSeeds).toEqual([])
 
-    // Cannot directly set isShocked, but it's set through triggerShock in the implementation
-    // This test verifies the initial state
+    await act(async () => {
+      result.current.handleCableClick('iec') // Select a power cable
+    })
+
+    await act(async () => {
+      // Connecting to mic without power/amp and wrong cable type will cause a shock
+      result.current.handleSocketClick('mic')
+    })
+
+    expect(result.current.isShocked).toBe(true)
+    expect(result.current.lightningSeeds.length).toBeGreaterThan(0)
   })
 
   it('shuffles socket order periodically', async () => {
@@ -229,14 +238,28 @@ describe('useKabelsalatState', () => {
       result = hook.result
     })
 
-    // Set up shocked state indirectly by observing behavior
-    // The implementation prevents clicks when isShocked is true
+    // 1. Select a cable
     await act(async () => {
       result.current.handleCableClick('iec')
     })
 
-    const cableAfterFirstClick = result.current.selectedCable
-    expect(cableAfterFirstClick).toBe('iec')
+    // 2. Click wrong socket to cause a shock
+    await act(async () => {
+      result.current.handleSocketClick('mic')
+    })
+
+    expect(result.current.isShocked).toBe(true)
+
+    // 3. The shock clears the selected cable automatically,
+    // so let's try to select it again while shocked.
+    expect(result.current.selectedCable).toBeNull()
+
+    await act(async () => {
+      result.current.handleCableClick('iec')
+    })
+
+    // 4. Because we are shocked, the cable should not be selected
+    expect(result.current.selectedCable).toBeNull()
   })
 
   it('ignores cable clicks when game over', async () => {
