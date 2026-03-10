@@ -8,11 +8,11 @@ import {
   calculateCrowdOffset,
   buildRhythmLayout,
   loadTexture,
-  getOptimalResolution,
+  getOptimalResolution
 } from '../src/components/stage/utils.js'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
 
-test('stage utils', async (t) => {
+test('stage utils', async t => {
   await t.test('calculateNoteY', () => {
     assert.equal(calculateNoteY(0, 1000, 500, 100), 400)
     assert.equal(calculateNoteY(500, 1000, 500, 100), 450)
@@ -62,7 +62,7 @@ test('stage utils', async (t) => {
     globalThis.window = originalWindow
   })
 
-  await t.test('getPixiColorFromToken', async (sub) => {
+  await t.test('getPixiColorFromToken', async sub => {
     // Tests when JSDOM isn't present
     await sub.test('fallback when no DOM', () => {
       // Mock missing window
@@ -84,7 +84,7 @@ test('stage utils', async (t) => {
       const originalGetComputedStyle = globalThis.window.getComputedStyle
 
       globalThis.window.getComputedStyle = () => ({
-        getPropertyValue: (prop) => {
+        getPropertyValue: prop => {
           if (prop === '--my-red') return '#ff0000'
           if (prop === '--my-blue') return '#0000ff'
           return ''
@@ -108,7 +108,7 @@ test('stage utils', async (t) => {
       globalThis.window.getComputedStyle = () => {
         callCount++
         return {
-          getPropertyValue: (_prop) => '#123456'
+          getPropertyValue: _prop => '#123456'
         }
       }
 
@@ -126,38 +126,41 @@ test('stage utils', async (t) => {
     })
   })
 
-  await t.test('loadTexture', async (sub) => {
-    await sub.test('handles non-extension URLs with image fallback', async () => {
-      const OriginalImage = globalThis.Image
+  await t.test('loadTexture', async sub => {
+    await sub.test(
+      'handles non-extension URLs with image fallback',
+      async () => {
+        const OriginalImage = globalThis.Image
 
-      let createdImage = null
-      globalThis.Image = class {
-        constructor() {
-          this.crossOrigin = ''
-          this.src = ''
-          createdImage = this
-          setTimeout(() => {
-            if (this.onload) this.onload()
-          }, 0)
+        let createdImage = null
+        globalThis.Image = class {
+          constructor() {
+            this.crossOrigin = ''
+            this.src = ''
+            createdImage = this
+            setTimeout(() => {
+              if (this.onload) this.onload()
+            }, 0)
+          }
         }
+
+        // To avoid mocking PIXI directly (since it fails under ESM with read-only exported properties),
+        // we'll rely on the real PIXI.ImageSource and PIXI.Texture. Since we override globalThis.Image,
+        // it should be able to create a real PIXI ImageSource with our mock image!
+
+        const texture = await loadTexture('https://example.com/api/image')
+
+        assert.ok(texture)
+        assert.ok(createdImage)
+        assert.equal(createdImage.src, 'https://example.com/api/image')
+
+        // Second call hits our internal fallback cache since it's the exact same URL
+        const texture2 = await loadTexture('https://example.com/api/image')
+        assert.equal(texture2, texture)
+
+        globalThis.Image = OriginalImage
       }
-
-      // To avoid mocking PIXI directly (since it fails under ESM with read-only exported properties),
-      // we'll rely on the real PIXI.ImageSource and PIXI.Texture. Since we override globalThis.Image,
-      // it should be able to create a real PIXI ImageSource with our mock image!
-
-      const texture = await loadTexture('https://example.com/api/image')
-
-      assert.ok(texture)
-      assert.ok(createdImage)
-      assert.equal(createdImage.src, 'https://example.com/api/image')
-
-      // Second call hits our internal fallback cache since it's the exact same URL
-      const texture2 = await loadTexture('https://example.com/api/image')
-      assert.equal(texture2, texture)
-
-      globalThis.Image = OriginalImage
-    })
+    )
 
     await sub.test('handles non-extension URL image load error', async () => {
       const OriginalImage = globalThis.Image
@@ -178,46 +181,57 @@ test('stage utils', async (t) => {
       globalThis.Image = OriginalImage
     })
 
-    await sub.test('handles PIXI.Assets.load for URLs with extensions', async () => {
-      const mockAssetsLoad = t.mock.method(PIXI.Assets, 'load', async (url) => {
-        return { isPixiTexture: true, url }
-      })
+    await sub.test(
+      'handles PIXI.Assets.load for URLs with extensions',
+      async () => {
+        const mockAssetsLoad = t.mock.method(PIXI.Assets, 'load', async url => {
+          return { isPixiTexture: true, url }
+        })
 
-      const texture = await loadTexture('https://example.com/image.png')
+        const texture = await loadTexture('https://example.com/image.png')
 
-      assert.equal(mockAssetsLoad.mock.calls.length, 1)
-      assert.ok(texture.isPixiTexture)
-      assert.equal(texture.url, 'https://example.com/image.png')
+        assert.equal(mockAssetsLoad.mock.calls.length, 1)
+        assert.ok(texture.isPixiTexture)
+        assert.equal(texture.url, 'https://example.com/image.png')
 
-      mockAssetsLoad.mock.restore()
-    })
-
-    await sub.test('handles PIXI.Assets.load error by falling back to Image', async () => {
-      const mockAssetsLoad = t.mock.method(PIXI.Assets, 'load', async () => {
-        throw new Error('Assets load failed')
-      })
-
-      const OriginalImage = globalThis.Image
-
-      let createdImage = null
-      globalThis.Image = class {
-        constructor() {
-          createdImage = this
-          setTimeout(() => {
-            if (this.onload) this.onload()
-          }, 0)
-        }
+        mockAssetsLoad.mock.restore()
       }
+    )
 
-      const texture = await loadTexture('https://example.com/image_error_fallback.png')
+    await sub.test(
+      'handles PIXI.Assets.load error by falling back to Image',
+      async () => {
+        const mockAssetsLoad = t.mock.method(PIXI.Assets, 'load', async () => {
+          throw new Error('Assets load failed')
+        })
 
-      assert.equal(mockAssetsLoad.mock.calls.length, 1)
-      assert.ok(texture)
-      assert.ok(createdImage)
-      assert.equal(createdImage.src, 'https://example.com/image_error_fallback.png')
+        const OriginalImage = globalThis.Image
 
-      mockAssetsLoad.mock.restore()
-      globalThis.Image = OriginalImage
-    })
+        let createdImage = null
+        globalThis.Image = class {
+          constructor() {
+            createdImage = this
+            setTimeout(() => {
+              if (this.onload) this.onload()
+            }, 0)
+          }
+        }
+
+        const texture = await loadTexture(
+          'https://example.com/image_error_fallback.png'
+        )
+
+        assert.equal(mockAssetsLoad.mock.calls.length, 1)
+        assert.ok(texture)
+        assert.ok(createdImage)
+        assert.equal(
+          createdImage.src,
+          'https://example.com/image_error_fallback.png'
+        )
+
+        mockAssetsLoad.mock.restore()
+        globalThis.Image = OriginalImage
+      }
+    )
   })
 })

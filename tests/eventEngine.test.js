@@ -108,7 +108,11 @@ test('eventEngine.filterEvents handles condition errors and logs them via handle
 
   const result = eventEngine.filterEvents([throwingEvent], 'random', {})
 
-  assert.deepEqual(result, [], 'Should filter out the event that throws an error')
+  assert.deepEqual(
+    result,
+    [],
+    'Should filter out the event that throws an error'
+  )
   assert.strictEqual(mockLogger.error.mock.calls.length, 1)
   const [channel, message, error] = mockLogger.error.mock.calls[0].arguments
   assert.equal(channel, 'EventEngine')
@@ -661,7 +665,7 @@ test('eventEngine.processEvent handles condition errors and calls handleError wi
 
   const invalidEvent = {
     id: 'crash_event',
-    condition: (state) => {
+    condition: state => {
       // Force an invalid state check that throws
       return state.missing.data > 5
     }
@@ -691,6 +695,14 @@ test('eventEngine.processEvent processes valid events successfully', () => {
   const result = eventEngine.processEvent(validEvent, {})
 
   assert.ok(result, 'Should return a result object')
-  assert.equal(result.event.id, 'good_event', 'Should return the event inside the result')
-  assert.strictEqual(mockLogger.error.mock.calls.length, 0, 'No errors should be logged')
+  assert.equal(
+    result.event.id,
+    'good_event',
+    'Should return the event inside the result'
+  )
+  assert.strictEqual(
+    mockLogger.error.mock.calls.length,
+    0,
+    'No errors should be logged'
+  )
 })

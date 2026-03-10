@@ -182,7 +182,8 @@ export const POST_OPTIONS = [
       band.members.length > 0,
     resolve: ({ band, diceRoll }) => {
       // Pick a random member directly from band.members to avoid O(N) allocation
-      const target = band.members[Math.floor(diceRoll * band.members.length)].name
+      const target =
+        band.members[Math.floor(diceRoll * band.members.length)].name
       return {
         type: 'FIXED',
         success: true,

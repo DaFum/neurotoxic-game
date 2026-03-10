@@ -125,7 +125,12 @@ test('trySpawnProjectile - verifies all spawned object properties', () => {
   Date.now = () => 1234567890
 
   try {
-    const projectile = trySpawnProjectile(session, stats, mockRandom, screenWidth)
+    const projectile = trySpawnProjectile(
+      session,
+      stats,
+      mockRandom,
+      screenWidth
+    )
 
     assert.ok(projectile)
     assert.equal(typeof projectile.id, 'number')
@@ -278,7 +283,9 @@ test('processProjectiles - handles mixed collisions order', () => {
     { id: 3, y: 950 } // Hit
   ]
   const hits = []
-  processProjectiles(session, projectiles, 0, screenHeight, p => hits.push(p.id))
+  processProjectiles(session, projectiles, 0, screenHeight, p =>
+    hits.push(p.id)
+  )
 
   assert.equal(projectiles.length, 1)
   assert.equal(projectiles[0].id, 2)
@@ -334,7 +341,13 @@ test('processProjectiles - mutates array in-place', () => {
   const session = createHecklerSession()
   const screenHeight = 1000
   const projectiles = [{ id: 1, y: 800 }]
-  const result = processProjectiles(session, projectiles, 0, screenHeight, () => {})
+  const result = processProjectiles(
+    session,
+    projectiles,
+    0,
+    screenHeight,
+    () => {}
+  )
   assert.equal(result, projectiles)
 })
 
@@ -355,7 +368,9 @@ test('processProjectiles - exact hitY boundary', () => {
     { id: 2, y: 851 } // Just past boundary, should hit
   ]
   const hits = []
-  processProjectiles(session, projectiles, 0, screenHeight, p => hits.push(p.id))
+  processProjectiles(session, projectiles, 0, screenHeight, p =>
+    hits.push(p.id)
+  )
 
   assert.equal(projectiles.length, 1)
   assert.equal(projectiles[0].id, 1)
@@ -466,7 +481,9 @@ test('processProjectiles - boundary at hitY threshold', () => {
   ]
 
   const hits = []
-  processProjectiles(session, projectilesAtThreshold, 0, screenHeight, p => hits.push(p.id))
+  processProjectiles(session, projectilesAtThreshold, 0, screenHeight, p =>
+    hits.push(p.id)
+  )
 
   // Only projectiles with y <= 850 remain (condition is y > hitY for hit)
   assert.equal(
@@ -573,11 +590,19 @@ test('trySpawnProjectile - health exactly at low threshold', () => {
   const mockRandom = () => 0.0034 // Between 0.0005 + 0.003 = 0.0035
 
   // Health exactly at 30 (HEALTH_LOW_THRESHOLD), should use MEDIUM bonus
-  const result30 = trySpawnProjectile(session, { health: 30, combo: 0 }, mockRandom)
+  const result30 = trySpawnProjectile(
+    session,
+    { health: 30, combo: 0 },
+    mockRandom
+  )
   assert.equal(result30, null) // Chance is 0.0015, random is 0.0034
 
   // Health at 29 (below threshold), should use LOW bonus
-  const result29 = trySpawnProjectile(session, { health: 29, combo: 0 }, mockRandom)
+  const result29 = trySpawnProjectile(
+    session,
+    { health: 29, combo: 0 },
+    mockRandom
+  )
   assert.ok(result29) // Chance is 0.0035, random is 0.0034
 })
 
@@ -586,11 +611,19 @@ test('trySpawnProjectile - health exactly at medium threshold', () => {
   const mockRandom = () => 0.0014 // Between 0.0005 and 0.0015
 
   // Health exactly at 60 (HEALTH_MEDIUM_THRESHOLD), should not get bonus
-  const result60 = trySpawnProjectile(session, { health: 60, combo: 0 }, mockRandom)
+  const result60 = trySpawnProjectile(
+    session,
+    { health: 60, combo: 0 },
+    mockRandom
+  )
   assert.equal(result60, null) // Chance is 0.0005, random is 0.0014
 
   // Health at 59 (below threshold), should get MEDIUM bonus
-  const result59 = trySpawnProjectile(session, { health: 59, combo: 0 }, mockRandom)
+  const result59 = trySpawnProjectile(
+    session,
+    { health: 59, combo: 0 },
+    mockRandom
+  )
   assert.ok(result59) // Chance is 0.0015, random is 0.0014
 })
 
@@ -599,11 +632,19 @@ test('trySpawnProjectile - combo exactly at medium threshold', () => {
   const mockRandom = () => 0.0014 // Between 0.0005 and 0.0015
 
   // Combo exactly at 20 (COMBO_MEDIUM_THRESHOLD), should not get bonus
-  const result20 = trySpawnProjectile(session, { health: 100, combo: 20 }, mockRandom)
+  const result20 = trySpawnProjectile(
+    session,
+    { health: 100, combo: 20 },
+    mockRandom
+  )
   assert.equal(result20, null) // Chance is 0.0005, random is 0.0014
 
   // Combo at 21 (above threshold), should get MEDIUM bonus
-  const result21 = trySpawnProjectile(session, { health: 100, combo: 21 }, mockRandom)
+  const result21 = trySpawnProjectile(
+    session,
+    { health: 100, combo: 21 },
+    mockRandom
+  )
   assert.ok(result21) // Chance is 0.0015, random is 0.0014
 })
 
@@ -612,11 +653,19 @@ test('trySpawnProjectile - combo exactly at high threshold', () => {
   const mockRandom = () => 0.0024 // Between 0.0015 and 0.0025
 
   // Combo exactly at 50 (COMBO_HIGH_THRESHOLD), should not get HIGH bonus
-  const result50 = trySpawnProjectile(session, { health: 100, combo: 50 }, mockRandom)
+  const result50 = trySpawnProjectile(
+    session,
+    { health: 100, combo: 50 },
+    mockRandom
+  )
   assert.equal(result50, null) // Chance is 0.0015, random is 0.0024
 
   // Combo at 51 (above threshold), should get HIGH bonus
-  const result51 = trySpawnProjectile(session, { health: 100, combo: 51 }, mockRandom)
+  const result51 = trySpawnProjectile(
+    session,
+    { health: 100, combo: 51 },
+    mockRandom
+  )
   assert.ok(result51) // Chance is 0.0025, random is 0.0024
 })
 

@@ -354,7 +354,10 @@ describe('NoteManager', () => {
       sprite.y,
       0xff0000
     ])
-    assert.equal(noteManager.activeEntities.some(e => e.note === note), false)
+    assert.equal(
+      noteManager.activeEntities.some(e => e.note === note),
+      false
+    )
     assert.equal(noteManager.spritePool.length, 1) // Returned to pool
   })
 

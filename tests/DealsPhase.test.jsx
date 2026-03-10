@@ -117,9 +117,7 @@ test('DealsPhase handles negotiation error gracefully', async () => {
     }
   ]
 
-  render(
-    <DealsPhase offers={mockOffers} onSkip={vi.fn()} onAccept={vi.fn()} />
-  )
+  render(<DealsPhase offers={mockOffers} onSkip={vi.fn()} onAccept={vi.fn()} />)
 
   const negotiateBtn = screen.getByText('NEGOTIATE')
   fireEvent.click(negotiateBtn)
@@ -129,9 +127,12 @@ test('DealsPhase handles negotiation error gracefully', async () => {
   const safeBtn = screen.getByText('SAFE (Low Risk)')
   fireEvent.click(safeBtn)
 
-  expect(handleError).toHaveBeenCalledWith(mockError, expect.objectContaining({
-    fallbackMessage: 'Negotiation failed unexpectedly.'
-  }))
+  expect(handleError).toHaveBeenCalledWith(
+    mockError,
+    expect.objectContaining({
+      fallbackMessage: 'Negotiation failed unexpectedly.'
+    })
+  )
 
   await waitFor(() => {
     expect(screen.queryByTestId('modal')).not.toBeInTheDocument()
@@ -160,8 +161,11 @@ test('DealsPhase handles accept deal error gracefully', async () => {
   fireEvent.click(acceptBtn)
 
   await waitFor(() => {
-    expect(handleError).toHaveBeenCalledWith(mockError, expect.objectContaining({
-      fallbackMessage: 'Deal failed'
-    }))
+    expect(handleError).toHaveBeenCalledWith(
+      mockError,
+      expect.objectContaining({
+        fallbackMessage: 'Deal failed'
+      })
+    )
   })
 })
