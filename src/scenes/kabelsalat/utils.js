@@ -1,13 +1,14 @@
 import { CABLE_MAP, SLOT_XS } from './constants.js'
+import { secureRandom } from '../../utils/crypto.js'
 
 export const generateLightningSeeds = () => {
   return Array.from({ length: 15 }).map(() => ({
-    id: Math.random().toString(36).slice(2, 11),
-    startX: Math.random() * 800,
-    o1: Math.random() * 300 - 150,
-    o2: Math.random() * 300 - 150,
-    o3: Math.random() * 300 - 150,
-    w: Math.random() * 10 + 2
+    id: crypto.randomUUID(),
+    startX: secureRandom() * 800,
+    o1: secureRandom() * 300 - 150,
+    o2: secureRandom() * 300 - 150,
+    o3: secureRandom() * 300 - 150,
+    w: secureRandom() * 10 + 2
   }))
 }
 
