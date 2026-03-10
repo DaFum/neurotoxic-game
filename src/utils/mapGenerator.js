@@ -431,11 +431,15 @@ export class MapGenerator {
    * @returns {Array} A new array with the selected items.
    */
   pickRandomSubset(arr, count) {
+    const n = arr.length
+    const k = Math.min(count, n)
+    // For small k relative to n, a partial Fisher-Yates shuffle is faster
+    // as it only requires O(k) swaps instead of O(n) swaps.
     const shuffled = [...arr]
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(this.random() * (i + 1))
+    for (let i = 0; i < k; i++) {
+      const j = i + Math.floor(this.random() * (n - i))
       ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
     }
-    return shuffled.slice(0, count)
+    return shuffled.slice(0, k)
   }
 }
