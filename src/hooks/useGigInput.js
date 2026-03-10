@@ -36,6 +36,26 @@ export const useGigInput = ({
 
   // Keyboard Event Handling
   useEffect(() => {
+    // ⚡ Optimization: Pre-compute key-to-lane mapping to change O(N) array lookups
+    // into O(1) Map lookups during the high-frequency keydown/keyup events.
+    let cachedLanesArray = null
+    let keyToLaneMap = new Map()
+
+    const getLaneIndex = (key) => {
+      const currentLanes = gameStateRef.current?.lanes
+      // Invalidate cache if the array reference changes or doesn't match
+      if (currentLanes && currentLanes !== cachedLanesArray) {
+        cachedLanesArray = currentLanes
+        keyToLaneMap.clear()
+        currentLanes.forEach((lane, index) => {
+          if (lane.key) {
+            keyToLaneMap.set(lane.key, index)
+          }
+        })
+      }
+      return keyToLaneMap.get(key)
+    }
+
     /**
      * Handles key press events for rhythm inputs and pause menu.
      * @param {KeyboardEvent} e
@@ -50,10 +70,8 @@ export const useGigInput = ({
         return
       }
 
-      const laneIndex = gameStateRef.current.lanes.findIndex(
-        l => l.key === e.key
-      )
-      if (laneIndex !== -1) {
+      const laneIndex = getLaneIndex(e.key)
+      if (laneIndex !== undefined) {
         actions.registerInput(laneIndex, true)
         triggerBandAnimation(laneIndex)
       }
@@ -64,10 +82,8 @@ export const useGigInput = ({
      * @param {KeyboardEvent} e
      */
     const handleKeyUp = e => {
-      const laneIndex = gameStateRef.current.lanes.findIndex(
-        l => l.key === e.key
-      )
-      if (laneIndex !== -1) {
+      const laneIndex = getLaneIndex(e.key)
+      if (laneIndex !== undefined) {
         actions.registerInput(laneIndex, false)
       }
     }
@@ -88,7 +104,8 @@ export const useGigInput = ({
     addToast,
     setLastGigStats,
     ensureAudioFromGesture,
-    triggerBandAnimation
+    triggerBandAnimation,
+    onTogglePause
   ])
 
   // Touch/Mouse Input Handlers for Columns
