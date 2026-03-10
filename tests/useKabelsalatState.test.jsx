@@ -44,8 +44,12 @@ describe('useKabelsalatState', () => {
     vi.useFakeTimers()
   })
 
-  it('initializes with default state', () => {
-    const { result } = renderHook(() => useKabelsalatState())
+  it('initializes with default state', async () => {
+    let result
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      result = hook.result
+    })
 
     expect(result.current.selectedCable).toBeNull()
     expect(result.current.connections).toEqual({})
@@ -56,80 +60,112 @@ describe('useKabelsalatState', () => {
     expect(result.current.lightningSeeds).toEqual([])
   })
 
-  it('provides translation function', () => {
-    const { result } = renderHook(() => useKabelsalatState())
+  it('provides translation function', async () => {
+    let result
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      result = hook.result
+    })
 
     expect(typeof result.current.t).toBe('function')
   })
 
-  it('provides cable click handler', () => {
-    const { result } = renderHook(() => useKabelsalatState())
+  it('provides cable click handler', async () => {
+    let result
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      result = hook.result
+    })
 
     expect(typeof result.current.handleCableClick).toBe('function')
   })
 
-  it('provides socket click handler', () => {
-    const { result } = renderHook(() => useKabelsalatState())
+  it('provides socket click handler', async () => {
+    let result
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      result = hook.result
+    })
 
     expect(typeof result.current.handleSocketClick).toBe('function')
   })
 
-  it('selects cable when clicked', () => {
-    const { result } = renderHook(() => useKabelsalatState())
+  it('selects cable when clicked', async () => {
+    let result
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      result = hook.result
+    })
 
-    act(() => {
+    await act(async () => {
       result.current.handleCableClick('iec')
     })
 
     expect(result.current.selectedCable).toBe('iec')
   })
 
-  it('deselects cable when clicked again', () => {
-    const { result } = renderHook(() => useKabelsalatState())
+  it('deselects cable when clicked again', async () => {
+    let result
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      result = hook.result
+    })
 
-    act(() => {
+    await act(async () => {
       result.current.handleCableClick('iec')
     })
 
     expect(result.current.selectedCable).toBe('iec')
 
-    act(() => {
+    await act(async () => {
       result.current.handleCableClick('iec')
     })
 
     expect(result.current.selectedCable).toBeNull()
   })
 
-  it('decrements timer every second', () => {
-    const { result } = renderHook(() => useKabelsalatState())
+  it('decrements timer every second', async () => {
+    let result
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      result = hook.result
+    })
 
     expect(result.current.timeLeft).toBe(25)
 
-    act(() => {
+    await act(async () => {
       vi.advanceTimersByTime(1000)
     })
 
     expect(result.current.timeLeft).toBe(24)
 
-    act(() => {
+    await act(async () => {
       vi.advanceTimersByTime(1000)
     })
 
     expect(result.current.timeLeft).toBe(23)
   })
 
-  it('sets game over when timer reaches zero', () => {
-    const { result } = renderHook(() => useKabelsalatState())
+  it('sets game over when timer reaches zero', async () => {
+    let result
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      result = hook.result
+    })
 
-    act(() => {
+    await act(async () => {
       vi.advanceTimersByTime(25000)
     })
 
     expect(result.current.isGameOver).toBe(true)
   })
 
-  it('generates lightning seeds when shocked', () => {
-    const { result } = renderHook(() => useKabelsalatState())
+  it('generates lightning seeds when shocked', async () => {
+    let result
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      result = hook.result
+    })
 
     expect(result.current.lightningSeeds).toEqual([])
 
@@ -137,12 +173,16 @@ describe('useKabelsalatState', () => {
     // This test verifies the initial state
   })
 
-  it('shuffles socket order periodically', () => {
-    const { result } = renderHook(() => useKabelsalatState())
+  it('shuffles socket order periodically', async () => {
+    let result
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      result = hook.result
+    })
 
     const initialOrder = [...result.current.socketOrder]
 
-    act(() => {
+    await act(async () => {
       vi.advanceTimersByTime(2000)
     })
 
@@ -152,7 +192,11 @@ describe('useKabelsalatState', () => {
   })
 
   it('does not shuffle once powered on', async () => {
-    const { result } = renderHook(() => useKabelsalatState())
+    let result
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      result = hook.result
+    })
 
     // Manually setting up connections to power on would require implementation details
     // This test verifies the hook structure
@@ -178,12 +222,16 @@ describe('useKabelsalatState', () => {
     vi.useFakeTimers()
   })
 
-  it('ignores cable clicks when shocked', () => {
-    const { result } = renderHook(() => useKabelsalatState())
+  it('ignores cable clicks when shocked', async () => {
+    let result
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      result = hook.result
+    })
 
     // Set up shocked state indirectly by observing behavior
     // The implementation prevents clicks when isShocked is true
-    act(() => {
+    await act(async () => {
       result.current.handleCableClick('iec')
     })
 
@@ -191,17 +239,21 @@ describe('useKabelsalatState', () => {
     expect(cableAfterFirstClick).toBe('iec')
   })
 
-  it('ignores cable clicks when game over', () => {
-    const { result } = renderHook(() => useKabelsalatState())
+  it('ignores cable clicks when game over', async () => {
+    let result
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      result = hook.result
+    })
 
     // Advance timer to game over
-    act(() => {
+    await act(async () => {
       vi.advanceTimersByTime(26000)
     })
 
     expect(result.current.isGameOver).toBe(true)
 
-    act(() => {
+    await act(async () => {
       result.current.handleCableClick('iec')
     })
 
@@ -209,12 +261,16 @@ describe('useKabelsalatState', () => {
     expect(result.current.selectedCable).toBeNull()
   })
 
-  it('ignores socket clicks when no cable selected', () => {
-    const { result } = renderHook(() => useKabelsalatState())
+  it('ignores socket clicks when no cable selected', async () => {
+    let result
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      result = hook.result
+    })
 
     expect(result.current.selectedCable).toBeNull()
 
-    act(() => {
+    await act(async () => {
       result.current.handleSocketClick('power')
     })
 
@@ -222,15 +278,23 @@ describe('useKabelsalatState', () => {
     expect(result.current.connections).toEqual({})
   })
 
-  it('socketOrder is initialized correctly', () => {
-    const { result } = renderHook(() => useKabelsalatState())
+  it('socketOrder is initialized correctly', async () => {
+    let result
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      result = hook.result
+    })
 
     expect(Array.isArray(result.current.socketOrder)).toBe(true)
     expect(result.current.socketOrder.length).toBe(5)
   })
 
-  it('cleans up timers on unmount', () => {
-    const { unmount } = renderHook(() => useKabelsalatState())
+  it('cleans up timers on unmount', async () => {
+    let unmount
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      unmount = hook.unmount
+    })
 
     unmount()
 
@@ -238,14 +302,22 @@ describe('useKabelsalatState', () => {
     expect(vi.getTimerCount()).toBe(0)
   })
 
-  it('has faultReason empty initially', () => {
-    const { result } = renderHook(() => useKabelsalatState())
+  it('has faultReason empty initially', async () => {
+    let result
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      result = hook.result
+    })
 
     expect(result.current.faultReason).toBe('')
   })
 
-  it('returns all required state values', () => {
-    const { result } = renderHook(() => useKabelsalatState())
+  it('returns all required state values', async () => {
+    let result
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      result = hook.result
+    })
 
     const requiredKeys = [
       't',
@@ -268,21 +340,29 @@ describe('useKabelsalatState', () => {
     })
   })
 
-  it('timer stops when powered on', () => {
-    const { result } = renderHook(() => useKabelsalatState())
+  it('timer stops when powered on', async () => {
+    let result
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      result = hook.result
+    })
 
     const initialTime = result.current.timeLeft
 
     // Timer should be running
-    act(() => {
+    await act(async () => {
       vi.advanceTimersByTime(1000)
     })
 
     expect(result.current.timeLeft).toBeLessThan(initialTime)
   })
 
-  it('initializes connections as empty object', () => {
-    const { result } = renderHook(() => useKabelsalatState())
+  it('initializes connections as empty object', async () => {
+    let result
+    await act(async () => {
+      const hook = renderHook(() => useKabelsalatState())
+      result = hook.result
+    })
 
     expect(result.current.connections).toEqual({})
     expect(Object.keys(result.current.connections).length).toBe(0)
