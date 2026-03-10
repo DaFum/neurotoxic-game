@@ -1,24 +1,25 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it } from 'node:test'
+import assert from 'node:assert'
 import { isClosedAudioContextState } from '../../src/utils/audioContextState.js'
 
 describe('isClosedAudioContextState', () => {
   it('returns true when state is closed', () => {
-    expect(isClosedAudioContextState('closed')).toBe(true)
+    assert.strictEqual(isClosedAudioContextState('closed'), true)
   })
 
   it('returns false when state is running', () => {
-    expect(isClosedAudioContextState('running')).toBe(false)
+    assert.strictEqual(isClosedAudioContextState('running'), false)
   })
 
   it('returns false when state is suspended', () => {
-    expect(isClosedAudioContextState('suspended')).toBe(false)
+    assert.strictEqual(isClosedAudioContextState('suspended'), false)
   })
 
   it('returns false when state is interrupted', () => {
-    expect(isClosedAudioContextState('interrupted')).toBe(false)
+    assert.strictEqual(isClosedAudioContextState('interrupted'), false)
   })
 
   it('returns false for unknown state', () => {
-    expect(isClosedAudioContextState('unknown')).toBe(false)
+    assert.strictEqual(isClosedAudioContextState('unknown'), false)
   })
 })

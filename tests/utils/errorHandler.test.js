@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it } from 'node:test'
+import assert from 'node:assert'
 import { handleError, StateError } from '../../src/utils/errorHandler.js'
 
 describe('errorHandler', () => {
@@ -13,8 +14,8 @@ describe('errorHandler', () => {
 
       handleError(new StateError('Test error'), { addToast: mockAddToast })
 
-      expect(addToastCalled).toBe(true)
-      expect(toastType).toBe('error')
+      assert.strictEqual(addToastCalled, true)
+      assert.strictEqual(toastType, 'error')
     })
 
     it('suppresses toast when silent option is true', () => {
@@ -28,7 +29,7 @@ describe('errorHandler', () => {
         silent: true
       })
 
-      expect(addToastCalled).toBe(false)
+      assert.strictEqual(addToastCalled, false)
     })
 
     it('uses fallbackMessage for non-Error instances without a message property', () => {
@@ -43,8 +44,8 @@ describe('errorHandler', () => {
         { someOtherProp: 'weird object' },
         { addToast: mockAddToast, fallbackMessage: 'Fallback message used' }
       )
-      expect(addToastCalled).toBe(true)
-      expect(toastMessage).toBe('Fallback message used')
+      assert.strictEqual(addToastCalled, true)
+      assert.strictEqual(toastMessage, 'Fallback message used')
     })
 
     it('catches and falls back when internal mechanisms throw an error', () => {
@@ -58,10 +59,10 @@ describe('errorHandler', () => {
 
       try {
         const result = handleError(new Error('Test error'), {})
-        expect(result).toBeDefined()
-        expect(result.message).toBe('Test error')
+        assert.ok(result !== undefined)
+        assert.strictEqual(result.message, 'Test error')
       } catch (err) {
-        throw new Error(`handleError threw an unexpected error: ${err.message}`)
+        assert.fail(`handleError threw an unexpected error: ${err.message}`)
       } finally {
         global.fetch = originalFetch
         global.window = originalWindow

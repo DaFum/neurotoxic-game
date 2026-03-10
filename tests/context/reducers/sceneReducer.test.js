@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it } from 'node:test'
+import assert from 'node:assert'
 import { handleChangeScene } from '../../../src/context/reducers/sceneReducer.js'
 import { GAME_PHASES } from '../../../src/context/gameConstants.js'
 
@@ -9,7 +10,7 @@ describe('sceneReducer', () => {
       const targetScene = GAME_PHASES.OVERWORLD
       const newState = handleChangeScene(initialState, targetScene)
 
-      expect(newState.currentScene).toBe(targetScene)
+      assert.strictEqual(newState.currentScene, targetScene)
     })
 
     it('should ignore scene change when an invalid scene is provided', () => {
@@ -17,8 +18,8 @@ describe('sceneReducer', () => {
       const targetScene = 'INVALID_SCENE'
       const newState = handleChangeScene(initialState, targetScene)
 
-      expect(newState.currentScene).toBe(initialState.currentScene)
-      expect(newState).toEqual(initialState)
+      assert.strictEqual(newState.currentScene, initialState.currentScene)
+      assert.deepStrictEqual(newState, initialState)
     })
   })
 })
