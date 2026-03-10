@@ -190,9 +190,10 @@ ProgressBar.propTypes = {
  * @param {Object} props
  * @param {string} [props.title] - Optional title for the panel header.
  * @param {React.ReactNode} props.children - Panel content.
- * @param {string} [props.className] - Additional CSS classes.
+ * @param {string} [props.className] - Additional CSS classes applied to the outer container.
+ * @param {string} [props.contentClassName] - Additional CSS classes applied to the inner content wrapper.
  */
-export const Panel = memo(function Panel({ title, children, className = '' }) {
+export const Panel = memo(function Panel({ title, children, className = '', contentClassName = 'space-y-1' }) {
   return (
     <div
       className={`relative bg-(--void-black)/40 border-2 border-(--ash-gray)/40 p-4 group overflow-hidden ${className}`}
@@ -209,7 +210,7 @@ export const Panel = memo(function Panel({ title, children, className = '' }) {
             {title}
           </h3>
         )}
-        <div className='space-y-1 flex-1 min-h-0 flex flex-col'>
+        <div className={`flex-1 min-h-0 flex flex-col ${contentClassName}`}>
           {children}
         </div>
       </div>
@@ -220,5 +221,6 @@ export const Panel = memo(function Panel({ title, children, className = '' }) {
 Panel.propTypes = {
   title: PropTypes.string,
   children: PropTypes.node.isRequired,
-  className: PropTypes.string
+  className: PropTypes.string,
+  contentClassName: PropTypes.string
 }
