@@ -314,9 +314,6 @@ describe('EffectManager', () => {
       effectManager.activeEffects[i].id = `effect-${i}`
     }
 
-    // The oldest effect is at headIndex 0
-    const oldestEffectId = effectManager.activeEffects[0].id
-
     // Spawn 51st effect. This should remove the oldest effect (index 0) and insert
     // the new one at index 0 because tail wrapped around to 0.
     // We expect effect.id to change or not exist as 'effect-0' anymore since it's released.
