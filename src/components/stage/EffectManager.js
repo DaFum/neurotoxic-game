@@ -15,13 +15,16 @@ export class EffectManager {
     this.app = app
     this.parentContainer = parentContainer
     this.container = null
-    this.activeEffects = []
+
+    // Use an array with index tracking to implement a fast Circular Buffer
+    // This allows O(1) removals of the oldest effect without shifting.
+    this.activeEffects = new Array(EffectManager.MAX_ACTIVE_EFFECTS)
+    this.effectCount = 0
+    this.headIndex = 0
+    this.tailIndex = 0
 
     // Pool for Sprites (no longer need separate graphics pool)
     this.spritePool = []
-
-    // Performance: track oldest index to avoid O(N) lookup
-    this.oldestIndex = -1
 
     this.textures = { blood: null, toxic: null }
     this.genericHitTexture = null
@@ -93,32 +96,14 @@ export class EffectManager {
     if (!this.container) return
 
     // Cap active effects using MAX_ACTIVE_EFFECTS
-    if (this.activeEffects.length >= EffectManager.MAX_ACTIVE_EFFECTS) {
-      let oldestIndex = this.oldestIndex
-
-      // Fallback if cached index is invalid (e.g. multiple spawns per frame)
-      if (oldestIndex === -1) {
-        let minLife = 2.0 // Life starts at 1.0
-        const len = this.activeEffects.length
-        for (let i = 0; i < len; i++) {
-          if (this.activeEffects[i].life < minLife) {
-            minLife = this.activeEffects[i].life
-            oldestIndex = i
-          }
-        }
-      }
-
-      const oldest = this.activeEffects[oldestIndex]
+    if (this.effectCount >= EffectManager.MAX_ACTIVE_EFFECTS) {
+      // O(1) removal of the oldest effect (which is always at headIndex)
+      const oldest = this.activeEffects[this.headIndex]
       this.releaseEffectToPool(oldest)
+      this.activeEffects[this.headIndex] = null
 
-      // Swap-and-pop removal
-      const last = this.activeEffects.pop()
-      if (oldestIndex < this.activeEffects.length) {
-        this.activeEffects[oldestIndex] = last
-      }
-
-      // Invalidate the cache since we modified the array
-      this.oldestIndex = -1
+      this.headIndex = (this.headIndex + 1) % EffectManager.MAX_ACTIVE_EFFECTS
+      this.effectCount--
     }
 
     // Determine texture based on color (Red component dominance)
@@ -165,47 +150,64 @@ export class EffectManager {
     effect.life = 1.0 // 1.0 to 0.0
 
     this.container.addChild(effect)
-    this.activeEffects.push(effect)
+
+    // Add to circular buffer
+    this.activeEffects[this.tailIndex] = effect
+    this.tailIndex = (this.tailIndex + 1) % EffectManager.MAX_ACTIVE_EFFECTS
+    this.effectCount++
   }
 
   update(deltaMS) {
     const deltaSec = deltaMS / 1000
-    let minLife = 2.0
-    let newOldestIndex = -1
     const decay = deltaSec * 3
-    const effects = this.activeEffects
 
-    // Iterate backwards to allow removal
-    for (let i = effects.length - 1; i >= 0; i--) {
-      const effect = effects[i]
+    // Iterate through the circular buffer
+    let i = 0
+    let count = this.effectCount
+
+    while (i < count) {
+      // Index relative to head
+      const idx = (this.headIndex + i) % EffectManager.MAX_ACTIVE_EFFECTS
+      const effect = this.activeEffects[idx]
+
       const newLife = effect.life - decay // Fade out speed
       effect.life = newLife
 
       if (newLife <= 0) {
         this.releaseEffectToPool(effect)
+        this.activeEffects[idx] = null
 
-        // Swap-and-pop removal
-        const last = effects.pop()
-        if (i < effects.length) {
-          effects[i] = last
+        // If it's the head (oldest), we can easily advance head
+        if (i === 0) {
+          this.headIndex =
+            (this.headIndex + 1) % EffectManager.MAX_ACTIVE_EFFECTS
+          this.effectCount--
+          count--
+          // Don't increment i because the new head is now at "relative index 0"
+        } else {
+          // It died naturally but isn't the head. This shouldn't happen
+          // because they decay uniformly, but if it does (e.g. edge case),
+          // use swap-and-pop with the tail element to maintain density.
 
-          if (last.life <= minLife) {
-            minLife = last.life
-            newOldestIndex = i
-          }
+          // The actual tail index of the last valid element:
+          const lastValidIdx =
+            (this.headIndex + count - 1) % EffectManager.MAX_ACTIVE_EFFECTS
+          const lastEffect = this.activeEffects[lastValidIdx]
+
+          this.activeEffects[idx] = lastEffect
+          this.activeEffects[lastValidIdx] = null
+
+          this.tailIndex = lastValidIdx
+          this.effectCount--
+          count--
+          // Don't increment i, we need to process the swapped element
         }
       } else {
         effect.alpha = newLife
         effect.scale.set(0.5 + (1.0 - newLife) * 1.5) // Expand from 0.5 to 2.0
-
-        if (newLife <= minLife) {
-          minLife = newLife
-          newOldestIndex = i
-        }
+        i++
       }
     }
-
-    this.oldestIndex = newOldestIndex
   }
 
   releaseEffectToPool(effect) {
@@ -230,7 +232,10 @@ export class EffectManager {
   }
 
   dispose() {
-    this.activeEffects = []
+    this.activeEffects = new Array(EffectManager.MAX_ACTIVE_EFFECTS)
+    this.effectCount = 0
+    this.headIndex = 0
+    this.tailIndex = 0
 
     // Destroy pool
     for (const sprite of this.spritePool) {

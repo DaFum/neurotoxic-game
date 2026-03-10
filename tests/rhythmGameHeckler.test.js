@@ -10,7 +10,12 @@ test('trySpawnProjectile respects spawn chance', () => {
   const session = createHecklerSession()
   // Force spawn
   const alwaysSpawn = () => 0.0
-  const projectile = trySpawnProjectile(session, { health: 100 }, alwaysSpawn, 1000)
+  const projectile = trySpawnProjectile(
+    session,
+    { health: 100 },
+    alwaysSpawn,
+    1000
+  )
 
   assert.ok(projectile, 'Should spawn when random value is low')
   assert.strictEqual(typeof projectile.id, 'number')
@@ -22,7 +27,12 @@ test('trySpawnProjectile respects no spawn', () => {
   const session = createHecklerSession()
   // Force no spawn
   const neverSpawn = () => 0.99
-  const projectile = trySpawnProjectile(session, { health: 100 }, neverSpawn, 1000)
+  const projectile = trySpawnProjectile(
+    session,
+    { health: 100 },
+    neverSpawn,
+    1000
+  )
 
   assert.strictEqual(
     projectile,
@@ -38,7 +48,11 @@ test('trySpawnProjectile increases chance on low health', () => {
 
   const marginalRandom = () => 0.001 // Between 0.0005 and 0.002
 
-  const normalHealth = trySpawnProjectile(session, { health: 80 }, marginalRandom)
+  const normalHealth = trySpawnProjectile(
+    session,
+    { health: 80 },
+    marginalRandom
+  )
   assert.strictEqual(
     normalHealth,
     null,
@@ -56,7 +70,8 @@ test('trySpawnProjectile increases chance on high combo', () => {
 
   const marginalRandom = () => 0.001 // Between 0.0005 and 0.0015
 
-  const normalCombo = trySpawnProjectile(session,
+  const normalCombo = trySpawnProjectile(
+    session,
     { health: 100, combo: 10 },
     marginalRandom
   )
@@ -66,7 +81,8 @@ test('trySpawnProjectile increases chance on high combo', () => {
     'Should NOT spawn at 10 combo with 0.001 roll'
   )
 
-  const highCombo = trySpawnProjectile(session,
+  const highCombo = trySpawnProjectile(
+    session,
     { health: 100, combo: 50 },
     marginalRandom
   )

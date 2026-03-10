@@ -22,7 +22,9 @@ function optimizedImplementation(band, diceRoll) {
   return target
 }
 
-console.log(`Running benchmark with band size ${BAND_SIZE} over ${RUNS} iterations...`)
+console.log(
+  `Running benchmark with band size ${BAND_SIZE} over ${RUNS} iterations...`
+)
 
 // Baseline
 const startBaseline = performance.now()
@@ -42,7 +44,9 @@ for (let i = 0; i < RUNS; i++) {
 const endOptimized = performance.now()
 const timeOptimized = endOptimized - startOptimized
 
-console.log(`Optimized Implementation Total time: ${timeOptimized.toFixed(2)}ms`)
+console.log(
+  `Optimized Implementation Total time: ${timeOptimized.toFixed(2)}ms`
+)
 
 const improvement = ((timeBaseline - timeOptimized) / timeBaseline) * 100
 console.log(`Improvement: ${improvement.toFixed(2)}%`)

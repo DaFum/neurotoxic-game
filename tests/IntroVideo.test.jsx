@@ -8,13 +8,13 @@ import { logger } from '../src/utils/logger'
 // Mock react-i18next
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key) => key,
-  }),
+    t: key => key
+  })
 }))
 
 // Mock GameState context
 vi.mock('../src/context/GameState', () => ({
-  useGameState: vi.fn(),
+  useGameState: vi.fn()
 }))
 
 // Mock logger
@@ -23,22 +23,22 @@ vi.mock('../src/utils/logger', () => ({
     error: vi.fn(),
     warn: vi.fn(),
     info: vi.fn(),
-    debug: vi.fn(),
-  },
+    debug: vi.fn()
+  }
 }))
 
 // Mock GlitchButton to simplify testing
 vi.mock('../src/ui/GlitchButton', () => ({
   GlitchButton: ({ children, onClick, className }) => (
-    <button onClick={onClick} className={className} data-testid="glitch-button">
+    <button onClick={onClick} className={className} data-testid='glitch-button'>
       {children}
     </button>
-  ),
+  )
 }))
 
 // Mock video import
 vi.mock('../src/assets/Neurotoxic_start.webm', () => ({
-  default: 'mock-video-url.webm',
+  default: 'mock-video-url.webm'
 }))
 
 describe('IntroVideo Component', () => {
@@ -49,7 +49,7 @@ describe('IntroVideo Component', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     useGameState.mockReturnValue({
-      changeScene: mockChangeScene,
+      changeScene: mockChangeScene
     })
 
     // Setup HTMLMediaElement mock
@@ -60,7 +60,7 @@ describe('IntroVideo Component', () => {
           playPromiseResolve = resolve
           playPromiseReject = reject
         })
-      }),
+      })
     })
   })
 
@@ -111,7 +111,11 @@ describe('IntroVideo Component', () => {
     expect(screen.getByText('ui:intro_skip')).toBeInTheDocument()
 
     // Logger should have warned
-    expect(logger.warn).toHaveBeenCalledWith('IntroVideo', 'Intro video autoplay blocked', expect.any(Error))
+    expect(logger.warn).toHaveBeenCalledWith(
+      'IntroVideo',
+      'Intro video autoplay blocked',
+      expect.any(Error)
+    )
   })
 
   it('allows manual play when fallback UI is clicked', async () => {
@@ -166,7 +170,11 @@ describe('IntroVideo Component', () => {
     expect(screen.getByText('ui:intro_play')).toBeInTheDocument()
 
     // Logger should have recorded error
-    expect(logger.error).toHaveBeenCalledWith('IntroVideo', 'Manual play failed', expect.any(Error))
+    expect(logger.error).toHaveBeenCalledWith(
+      'IntroVideo',
+      'Manual play failed',
+      expect.any(Error)
+    )
   })
 
   it('changes scene to menu when skip button is clicked', () => {
