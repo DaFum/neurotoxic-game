@@ -1,4 +1,4 @@
-# [NEUROTOXIC: GRIND THE VOID v3.0](https://www.instagram.com/neurotoxicband/)
+# [NEUROTOXIC: GRIND THE VOID v3.0.99](https://www.instagram.com/neurotoxicband/)
 
 This is the **designer‑driven** incarnation of the NEUROTOXIC game concept, carved out like a blastbeat across the void.
 
