@@ -229,14 +229,19 @@ describe('kabelsalat utils', () => {
     assert.ok(path.includes(' C '))
   })
 
-  test('lightning seed IDs are alphanumeric', async () => {
+  test('lightning seed IDs are valid UUIDs', async () => {
     const mod = await import('../src/scenes/kabelsalat/utils.js')
     generateLightningSeeds = mod.generateLightningSeeds
 
     const seeds = generateLightningSeeds()
 
     seeds.forEach(seed => {
-      assert.ok(/^[a-z0-9]+$/.test(seed.id), 'seed ID should be alphanumeric')
+      assert.ok(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+          seed.id
+        ),
+        'seed ID should be a valid UUID v4'
+      )
     })
   })
 
