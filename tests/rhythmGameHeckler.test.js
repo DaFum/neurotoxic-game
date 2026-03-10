@@ -1,17 +1,16 @@
-import assert from 'assert'
-import { test, beforeEach } from 'node:test'
+import assert from 'node:assert'
+import { test } from 'node:test'
 import {
   processProjectiles,
-  resetHecklerState,
-  trySpawnProjectile
+  trySpawnProjectile,
+  createHecklerSession
 } from '../src/utils/hecklerLogic.js'
 
-beforeEach(() => { resetHecklerState() })
-
 test('trySpawnProjectile respects spawn chance', () => {
+  const session = createHecklerSession()
   // Force spawn
   const alwaysSpawn = () => 0.0
-  const projectile = trySpawnProjectile({ health: 100 }, alwaysSpawn, 1000)
+  const projectile = trySpawnProjectile(session, { health: 100 }, alwaysSpawn, 1000)
 
   assert.ok(projectile, 'Should spawn when random value is low')
   assert.strictEqual(typeof projectile.id, 'number')
@@ -20,9 +19,10 @@ test('trySpawnProjectile respects spawn chance', () => {
 })
 
 test('trySpawnProjectile respects no spawn', () => {
+  const session = createHecklerSession()
   // Force no spawn
   const neverSpawn = () => 0.99
-  const projectile = trySpawnProjectile({ health: 100 }, neverSpawn, 1000)
+  const projectile = trySpawnProjectile(session, { health: 100 }, neverSpawn, 1000)
 
   assert.strictEqual(
     projectile,
@@ -32,29 +32,31 @@ test('trySpawnProjectile respects no spawn', () => {
 })
 
 test('trySpawnProjectile increases chance on low health', () => {
+  const session = createHecklerSession()
   // Threshold for normal health is 0.0005
   // Threshold for low health (<50) is 0.002
 
   const marginalRandom = () => 0.001 // Between 0.0005 and 0.002
 
-  const normalHealth = trySpawnProjectile({ health: 80 }, marginalRandom)
+  const normalHealth = trySpawnProjectile(session, { health: 80 }, marginalRandom)
   assert.strictEqual(
     normalHealth,
     null,
     'Should NOT spawn at 80 health with 0.001 roll'
   )
 
-  const lowHealth = trySpawnProjectile({ health: 40 }, marginalRandom)
+  const lowHealth = trySpawnProjectile(session, { health: 40 }, marginalRandom)
   assert.ok(lowHealth, 'Should spawn at 40 health with 0.001 roll')
 })
 
 test('trySpawnProjectile increases chance on high combo', () => {
+  const session = createHecklerSession()
   // Threshold for normal health/combo is 0.0005
   // Threshold for high combo (>30) is 0.0015 (0.0005 + 0.001)
 
   const marginalRandom = () => 0.001 // Between 0.0005 and 0.0015
 
-  const normalCombo = trySpawnProjectile(
+  const normalCombo = trySpawnProjectile(session,
     { health: 100, combo: 10 },
     marginalRandom
   )
@@ -64,7 +66,7 @@ test('trySpawnProjectile increases chance on high combo', () => {
     'Should NOT spawn at 10 combo with 0.001 roll'
   )
 
-  const highCombo = trySpawnProjectile(
+  const highCombo = trySpawnProjectile(session,
     { health: 100, combo: 50 },
     marginalRandom
   )
@@ -72,12 +74,13 @@ test('trySpawnProjectile increases chance on high combo', () => {
 })
 
 test('processProjectiles moves items correctly', () => {
+  const session = createHecklerSession()
   const projectiles = [
     { x: 100, y: 100, vx: 0.1, vy: 0.2, rotation: 0, vr: 0.01 }
   ]
   const deltaMS = 100
 
-  const updated = processProjectiles(projectiles, deltaMS, 1000)
+  const updated = processProjectiles(session, projectiles, deltaMS, 1000)
 
   assert.strictEqual(updated.length, 1)
   const p = updated[0]
@@ -90,34 +93,38 @@ test('processProjectiles moves items correctly', () => {
 })
 
 test('processProjectiles removes off-screen items', () => {
+  const session = createHecklerSession()
   const screenHeight = 500
   const projectiles = [
     { x: 100, y: 100, vx: 0, vy: 0, rotation: 0, vr: 0 }, // Safely < hitY (350)
     { x: 100, y: 700, vx: 0, vy: 0, rotation: 0, vr: 0 } // Off screen (500 + 100 buffer = 600 max)
   ]
 
-  const updated = processProjectiles(projectiles, 0, screenHeight)
+  const updated = processProjectiles(session, projectiles, 0, screenHeight)
 
   assert.strictEqual(updated.length, 1)
   assert.strictEqual(updated[0].y, 100)
 })
 
 test('processProjectiles handles empty input', () => {
-  const updated = processProjectiles([], 16, 1000)
+  const session = createHecklerSession()
+  const updated = processProjectiles(session, [], 16, 1000)
   assert.deepStrictEqual(updated, [])
 })
 
 test('processProjectiles handles large delta (lag spike)', () => {
+  const session = createHecklerSession()
   const projectiles = [
     { x: 100, y: 100, vx: 0, vy: 1.0, rotation: 0, vr: 0 } // Falling fast
   ]
   // 5 seconds lag
-  const updated = processProjectiles(projectiles, 5000, 1000)
+  const updated = processProjectiles(session, projectiles, 5000, 1000)
   // y = 100 + 1.0 * 5000 = 5100 -> Off screen
   assert.strictEqual(updated.length, 0)
 })
 
 test('processProjectiles detects hits and removes items', () => {
+  const session = createHecklerSession()
   const screenHeight = 1000
   const projectiles = [
     { id: 1, y: 800 }, // No hit (800 < 850)
@@ -132,7 +139,7 @@ test('processProjectiles detects hits and removes items', () => {
     assert.strictEqual(p.id, 2)
   }
 
-  processProjectiles(projectiles, 0, screenHeight, onHit)
+  processProjectiles(session, projectiles, 0, screenHeight, onHit)
 
   assert.strictEqual(hits, 1, 'Should trigger callback once')
   assert.strictEqual(
@@ -146,6 +153,7 @@ test('processProjectiles detects hits and removes items', () => {
 })
 
 test('processProjectiles handles multiple simultaneous hits', () => {
+  const session = createHecklerSession()
   const screenHeight = 1000
   const projectiles = [
     { id: 1, y: 900 }, // Hit
@@ -156,7 +164,7 @@ test('processProjectiles handles multiple simultaneous hits', () => {
   const hitIds = []
   const onHit = p => hitIds.push(p.id)
 
-  processProjectiles(projectiles, 0, screenHeight, onHit)
+  processProjectiles(session, projectiles, 0, screenHeight, onHit)
 
   assert.strictEqual(hitIds.length, 2)
   assert.ok(hitIds.includes(1))
@@ -166,6 +174,7 @@ test('processProjectiles handles multiple simultaneous hits', () => {
 })
 
 test('processProjectiles handles all items hitting', () => {
+  const session = createHecklerSession()
   const screenHeight = 1000
   const projectiles = [
     { id: 1, y: 900 },
@@ -175,13 +184,14 @@ test('processProjectiles handles all items hitting', () => {
   let hits = 0
   const onHit = () => hits++
 
-  processProjectiles(projectiles, 0, screenHeight, onHit)
+  processProjectiles(session, projectiles, 0, screenHeight, onHit)
 
   assert.strictEqual(hits, 2)
   assert.strictEqual(projectiles.length, 0)
 })
 
 test('processProjectiles handles no hits', () => {
+  const session = createHecklerSession()
   const screenHeight = 1000
   const projectiles = [
     { id: 1, y: 800 },
@@ -191,7 +201,7 @@ test('processProjectiles handles no hits', () => {
   let hits = 0
   const onHit = () => hits++
 
-  processProjectiles(projectiles, 0, screenHeight, onHit)
+  processProjectiles(session, projectiles, 0, screenHeight, onHit)
 
   assert.strictEqual(hits, 0)
   assert.strictEqual(projectiles.length, 2)
@@ -200,17 +210,19 @@ test('processProjectiles handles no hits', () => {
 })
 
 test('processProjectiles handles empty input', () => {
+  const session = createHecklerSession()
   const projectiles = []
   let hits = 0
   const onHit = () => hits++
 
-  processProjectiles(projectiles, 0, 1000, onHit)
+  processProjectiles(session, projectiles, 0, 1000, onHit)
 
   assert.strictEqual(hits, 0)
   assert.strictEqual(projectiles.length, 0)
 })
 
 test('processProjectiles handles missing onHit callback', () => {
+  const session = createHecklerSession()
   const screenHeight = 1000
   const projectiles = [
     { id: 1, y: 900 }, // Hit
@@ -218,7 +230,7 @@ test('processProjectiles handles missing onHit callback', () => {
   ]
 
   // Should not throw, keeps both if no onHit provided and y < despawnLimit
-  processProjectiles(projectiles, 0, screenHeight)
+  processProjectiles(session, projectiles, 0, screenHeight)
 
   assert.strictEqual(projectiles.length, 2)
 })

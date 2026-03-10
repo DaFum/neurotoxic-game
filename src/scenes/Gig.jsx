@@ -12,7 +12,6 @@ import { GlitchButton } from '../ui/GlitchButton'
 import { pauseAudio, resumeAudio, stopAudio } from '../utils/audioEngine'
 import { buildGigStatsSnapshot } from '../utils/gigStats'
 import { handleError } from '../utils/errorHandler'
-import { resetHecklerState } from '../utils/hecklerLogic'
 import { useTranslation } from 'react-i18next'
 
 /**
@@ -142,7 +141,6 @@ export const Gig = () => {
         gameStateRef.current?.songStats || []
       )
       setLastGigStats(snapshot)
-      resetHecklerState()
       endGig()
     }
   }, [endGig, setLastGigStats, addToast, gameStateRef])

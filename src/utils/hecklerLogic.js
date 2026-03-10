@@ -6,6 +6,11 @@
  * @returns {Array} Updated list of projectiles.
  */
 // Adaptive difficulty AI tuning based on stats
+export const createHecklerSession = () => ({
+  pool: [],
+  nextId: 0
+});
+
 const SPAWN_CHANCE_CONFIG = {
   BASE: 0.0005,
   COMBO_HIGH_THRESHOLD: 50,
@@ -18,7 +23,7 @@ const SPAWN_CHANCE_CONFIG = {
   HEALTH_MEDIUM_BONUS: 0.001
 }
 
-export const processProjectiles = (projectiles, deltaMS, screenHeight = 1080, onHit) => {
+export const processProjectiles = (session, projectiles, deltaMS, screenHeight = 1080, onHit) => {
   const despawnY = screenHeight + 100;
   const hitY = screenHeight - 150;
   let writeIdx = 0;
@@ -48,7 +53,20 @@ export const processProjectiles = (projectiles, deltaMS, screenHeight = 1080, on
       if (i !== writeIdx) projectiles[writeIdx] = p;
       writeIdx++;
     } else {
-      if (projectilePool.length < MAX_PROJECTILE_POOL_SIZE) projectilePool.push(p);
+      if (session.pool.length < MAX_PROJECTILE_POOL_SIZE) {
+        // Strip custom properties to prevent leaks
+        const cleanP = {
+          id: p.id,
+          x: p.x,
+          y: p.y,
+          vx: p.vx,
+          vy: p.vy,
+          rotation: p.rotation,
+          vr: p.vr,
+          type: p.type
+        };
+        session.pool.push(cleanP);
+      }
     }
   }
 
@@ -63,11 +81,10 @@ export const processProjectiles = (projectiles, deltaMS, screenHeight = 1080, on
  * @param {number} [screenWidth=1920] - Width of screen for random X position.
  * @returns {object|null} New projectile object or null.
  */
-let projectilePool = [];
-let nextProjectileId = 0;
 const MAX_PROJECTILE_POOL_SIZE = 64;
 
 export const trySpawnProjectile = (
+  session,
   stats,
   random = Math.random,
   screenWidth = 1920
@@ -91,9 +108,9 @@ export const trySpawnProjectile = (
 
   if (random() < spawnChance) {
     let p;
-    if (projectilePool.length > 0) {
-      p = projectilePool.pop();
-      p.id = nextProjectileId++;
+    if (session.pool.length > 0) {
+      p = session.pool.pop();
+      p.id = session.nextId++;
       p.x = random() * screenWidth;
       p.y = -100;
       p.vx = (random() - 0.5) * 0.5;
@@ -103,7 +120,7 @@ export const trySpawnProjectile = (
       p.type = random() > 0.5 ? 'bottle' : 'tomato';
     } else {
       p = {
-        id: nextProjectileId++,
+        id: session.nextId++,
         x: random() * screenWidth,
         y: -100, // Start above screen
         vx: (random() - 0.5) * 0.5, // Drift left/right
@@ -121,7 +138,3 @@ export const trySpawnProjectile = (
 
 
 
-export const resetHecklerState = () => {
-  projectilePool = [];
-  nextProjectileId = 0;
-};

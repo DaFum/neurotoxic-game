@@ -73,9 +73,9 @@ mock.module('../src/utils/simulationUtils.js', {
 })
 mock.module('../src/utils/hecklerLogic.js', {
   namedExports: {
-    processProjectiles: mock.fn(p => p),
-    trySpawnProjectile: mock.fn(() => null),
-    resetHecklerState: mock.fn()
+    createHecklerSession: mock.fn(() => ({ pool: [], nextId: 0 })),
+    processProjectiles: mock.fn((_s, p) => p),
+    trySpawnProjectile: mock.fn(() => null)
   }
 })
 mock.module('../src/utils/errorHandler.js', {

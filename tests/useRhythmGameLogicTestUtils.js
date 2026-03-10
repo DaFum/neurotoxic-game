@@ -46,9 +46,18 @@ const mockRhythmUtils = {
   checkHit: mock.fn(() => null)
 }
 const mockHecklerLogic = {
-  processProjectiles: mock.fn(p => p),
-  trySpawnProjectile: mock.fn(() => null),
-  resetHecklerState: mock.fn()
+  createHecklerSession: mock.fn(() => ({ pool: [], nextId: 0 })),
+  processProjectiles: mock.fn((session, projectiles, deltaMS, screenHeight, onHit) => {
+    // If we want to simulate hits during tests, we can just return the projectiles as they are,
+    // or simulate an onHit if there is a specific projectile y > screenHeight - 150
+    if (onHit) {
+      projectiles.forEach(p => {
+        if (p.y > (screenHeight - 150)) onHit(p)
+      })
+    }
+    return projectiles
+  }),
+  trySpawnProjectile: mock.fn(() => null)
 }
 const mockErrorHandler = {
   handleError: mock.fn(),

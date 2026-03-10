@@ -2,7 +2,7 @@ import { useCallback, useRef, useEffect } from 'react'
 import {
   trySpawnProjectile,
   processProjectiles,
-  resetHecklerState
+  createHecklerSession
 } from '../../utils/hecklerLogic'
 import {
   getGigTimeMs,
@@ -27,6 +27,7 @@ export const useRhythmGameLoop = ({
   const { activeEvent } = contextState
   const { setLastGigStats, endGig } = contextActions
 
+  const hecklerSessionRef = useRef(createHecklerSession())
   const dimensionsRef = useRef({
     width: typeof window !== 'undefined' ? window.innerWidth : 1920,
     height: typeof window !== 'undefined' ? window.innerHeight : 1080
@@ -59,7 +60,6 @@ export const useRhythmGameLoop = ({
           stateRef.songStats || []
         )
       )
-      resetHecklerState()
       stopAudio()
       endGig()
     },
@@ -102,6 +102,7 @@ export const useRhythmGameLoop = ({
 
       if (stateRef.projectiles.length > 0) {
         stateRef.projectiles = processProjectiles(
+          hecklerSessionRef.current,
           stateRef.projectiles,
           deltaMS,
           currentInnerHeight,
@@ -110,6 +111,7 @@ export const useRhythmGameLoop = ({
       }
 
       const newProjectile = trySpawnProjectile(
+        hecklerSessionRef.current,
         { health: stateRef.health },
         stateRef.rng,
         currentInnerWidth
