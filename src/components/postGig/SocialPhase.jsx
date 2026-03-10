@@ -84,7 +84,7 @@ SocialOptionButton.propTypes = {
 export const SocialPhase = ({ options, onSelect, trend }) => {
   const { t } = useTranslation()
   return (
-    <Panel className='' contentClassName='space-y-6'>
+    <Panel contentClassName='space-y-6'>
       <div className='text-center mb-2'>
         <h3 className='text-xl font-mono tracking-widest'>
           {t('economy:social.postToSocial', {

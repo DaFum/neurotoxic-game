@@ -4,10 +4,12 @@ import { expect, test, vi } from 'vitest'
 import { SocialPhase } from '../src/components/postGig/SocialPhase.jsx'
 
 vi.mock('../src/ui/shared/index.jsx', () => ({
-  Panel: ({ children, title }) => (
-    <div data-testid='panel'>
+  Panel: ({ children, title, className, contentClassName }) => (
+    <div data-testid='panel' className={className}>
       {title}
-      {children}
+      <div className={contentClassName}>
+        {children}
+      </div>
     </div>
   ),
   AnimatedSubtitle: ({ children }) => <div>{children}</div>,
