@@ -37,33 +37,32 @@ function hasMemberWithTrait(members, traitId1, traitId2) {
   return false
 }
 
+function getMemberWithTrait(members, traitId) {
+  if (!members || !members.length) return null
+  const cacheMap = ensureTraitCache(members)
+  return cacheMap.get(traitId) || null
+}
+
+const BAND_SIZE = members.length
+const RUNS = 1000000
+
 console.log(
   `Running benchmark with band size ${BAND_SIZE} over ${RUNS} iterations...`
 )
 
-// Baseline
-const startBaseline = performance.now()
-for (let i = 0; i < RUNS; i++) {
-  currentImplementation(band, diceRoll)
-}
-
 // Simulate Redux updates: new array reference, same objects
-const iters = 1000000
-const start = performance.now()
-let found = 0
-for (let i = 0; i < iters; i++) {
+const startOptimized = performance.now()
+let foundCount = 0
+for (let i = 0; i < RUNS; i++) {
   const newMembers = [...members] // New array ref
-  if (hasMemberWithTrait(newMembers, 'gear_nerd')) found++
-  if (hasMemberWithTrait(newMembers, 'clumsy')) found++
-  if (hasMemberWithTrait(newMembers, 'missing_trait')) found++
-  if (getMemberWithTrait(newMembers, 'virtuoso')) found++
+  if (hasMemberWithTrait(newMembers, 'gear_nerd')) foundCount++
+  if (hasMemberWithTrait(newMembers, 'clumsy')) foundCount++
+  if (hasMemberWithTrait(newMembers, 'missing_trait')) foundCount++
+  if (getMemberWithTrait(newMembers, 'virtuoso')) foundCount++
 }
 const endOptimized = performance.now()
 const timeOptimized = endOptimized - startOptimized
 
 console.log(
-  `Optimized Implementation Total time: ${timeOptimized.toFixed(2)}ms`
+  `Optimized Implementation Total time: ${timeOptimized.toFixed(2)}ms, found: ${foundCount}`
 )
-
-const improvement = ((timeBaseline - timeOptimized) / timeBaseline) * 100
-console.log(`Improvement: ${improvement.toFixed(2)}%`)

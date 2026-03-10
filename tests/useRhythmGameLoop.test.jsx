@@ -14,11 +14,10 @@ const mocks = vi.hoisted(() => ({
 }))
 
 vi.mock('../src/utils/hecklerLogic', () => ({
-  createHecklerSession: vi.fn(() => ({ projectiles: [] })),
+  createHecklerSession: vi.fn(() => ({ pool: [], nextId: 0, projectiles: [] })),
   trySpawnProjectile: mocks.trySpawnProjectile,
   updateProjectiles: mocks.updateProjectiles,
-  checkCollisions: mocks.checkCollisions,
-  createHecklerSession: () => ({ pool: [], nextId: 0 })
+  checkCollisions: mocks.checkCollisions
 }))
 
 vi.mock('../src/utils/audioEngine', () => ({
