@@ -111,7 +111,6 @@ describe('Custom Error Classes', () => {
 })
 
 describe('handleError', () => {
-
   it('should sanitize cyclic arrays in context', () => {
     const cyclicArray = []
     cyclicArray.push(cyclicArray)
@@ -142,7 +141,9 @@ describe('handleError', () => {
   it('should fallback to Unhandled Promise Rejection for reason stringification errors', () => {
     const originalWindow = globalThis.window
     const INIT_SYMBOL = Symbol.for('neurotoxic:initGlobalErrorHandlingDone')
-    const originalSymbolValue = originalWindow ? originalWindow[INIT_SYMBOL] : undefined
+    const originalSymbolValue = originalWindow
+      ? originalWindow[INIT_SYMBOL]
+      : undefined
 
     let addedListener = null
     try {
@@ -156,7 +157,9 @@ describe('handleError', () => {
       initGlobalErrorHandling()
 
       const unstringifiable = Object.create(null)
-      unstringifiable.toString = () => { throw new Error('Cannot stringify') }
+      unstringifiable.toString = () => {
+        throw new Error('Cannot stringify')
+      }
 
       assert.doesNotThrow(() => {
         addedListener({ reason: unstringifiable })
@@ -180,7 +183,9 @@ describe('handleError', () => {
   it('should gracefully handle unstringifiable reasons in global error handling', () => {
     const originalWindow = globalThis.window
     const INIT_SYMBOL = Symbol.for('neurotoxic:initGlobalErrorHandlingDone')
-    const originalSymbolValue = originalWindow ? originalWindow[INIT_SYMBOL] : undefined
+    const originalSymbolValue = originalWindow
+      ? originalWindow[INIT_SYMBOL]
+      : undefined
 
     let addedListener = null
     try {
@@ -201,7 +206,6 @@ describe('handleError', () => {
       assert.doesNotThrow(() => {
         addedListener({ reason: reasonObj })
       })
-
     } finally {
       globalThis.window = originalWindow
       if (globalThis.window) {
@@ -235,7 +239,11 @@ describe('handleError', () => {
         silent: true,
         severity: ErrorSeverity.LOW
       })
-      assert.strictEqual(debugCalled, true, 'logger.debug should have been called')
+      assert.strictEqual(
+        debugCalled,
+        true,
+        'logger.debug should have been called'
+      )
       assert.strictEqual(loggedChannel, 'ErrorHandler')
       assert.strictEqual(loggedMsg, 'Low severity error')
     } finally {
@@ -258,7 +266,9 @@ describe('handleError', () => {
     }
 
     try {
-      const result = handleError(new Error('Remote fetch fail test'), { silent: true })
+      const result = handleError(new Error('Remote fetch fail test'), {
+        silent: true
+      })
       assert.strictEqual(fetchCalled, true, 'fetch should have been called')
       assert.strictEqual(result.message, 'Remote fetch fail test')
     } finally {
@@ -282,7 +292,9 @@ describe('handleError', () => {
     }
 
     try {
-      const result = handleError(new Error('Remote fetch sync fail test'), { silent: true })
+      const result = handleError(new Error('Remote fetch sync fail test'), {
+        silent: true
+      })
       assert.strictEqual(fetchCalled, true, 'fetch should have been called')
       assert.strictEqual(result.message, 'Remote fetch sync fail test')
     } finally {
@@ -293,7 +305,10 @@ describe('handleError', () => {
 
   it('should safely catch sendBeacon failures during reportErrorRemote', () => {
     const originalWindow = globalThis.window
-    const originalNavigatorDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator')
+    const originalNavigatorDescriptor = Object.getOwnPropertyDescriptor(
+      globalThis,
+      'navigator'
+    )
 
     let beaconCalled = false
     globalThis.window = {
@@ -312,13 +327,23 @@ describe('handleError', () => {
     })
 
     try {
-      const result = handleError(new Error('Remote beacon fail test'), { silent: true })
-      assert.strictEqual(beaconCalled, true, 'sendBeacon should have been called')
+      const result = handleError(new Error('Remote beacon fail test'), {
+        silent: true
+      })
+      assert.strictEqual(
+        beaconCalled,
+        true,
+        'sendBeacon should have been called'
+      )
       assert.strictEqual(result.message, 'Remote beacon fail test')
     } finally {
       globalThis.window = originalWindow
       if (originalNavigatorDescriptor) {
-        Object.defineProperty(globalThis, 'navigator', originalNavigatorDescriptor)
+        Object.defineProperty(
+          globalThis,
+          'navigator',
+          originalNavigatorDescriptor
+        )
       } else {
         delete globalThis.navigator
       }
