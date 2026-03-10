@@ -11,6 +11,8 @@ export const HecklerOverlay = memo(function HecklerOverlay({ gameStateRef }) {
   const containerRef = useRef(null)
   // Cache for created DOM nodes, keyed by projectile ID
   const nodeCacheRef = useRef(new Map())
+  // Persistent Set to avoid GC allocations during O(1) lookups
+  const seenIdsRef = useRef(new Set())
 
   useEffect(() => {
     let rAF
@@ -19,19 +21,18 @@ export const HecklerOverlay = memo(function HecklerOverlay({ gameStateRef }) {
         const projectiles = gameStateRef.current.projectiles
         const container = containerRef.current
         const nodeCache = nodeCacheRef.current
+        const seenIds = seenIdsRef.current
+
+        // Populate seen IDs for O(1) lookups
+        seenIds.clear()
+        for (let i = 0; i < projectiles.length; i++) {
+          seenIds.add(projectiles[i].id)
+        }
 
         // Remove old nodes that are no longer in the state
-        // Optimization: Avoid allocating a new Set on every frame.
-        // The projectiles array is small enough that an inner loop is faster than GC overhead.
+        // Optimization: Use a persistent Set to avoid GC overhead while maintaining O(1) lookups
         for (const [id, node] of nodeCache.entries()) {
-          let found = false
-          for (let i = 0; i < projectiles.length; i++) {
-            if (projectiles[i].id === id) {
-              found = true
-              break
-            }
-          }
-          if (!found) {
+          if (!seenIds.has(id)) {
             container.removeChild(node)
             nodeCache.delete(id)
           }
