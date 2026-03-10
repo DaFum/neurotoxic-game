@@ -139,9 +139,10 @@ export const mockRhythmGameLogicModules = () => {
   mock.module('../src/data/songs.js', {
     namedExports: { SONGS_DB: mockSongs }
   })
+  const mockUseTranslation = () => ({ t: key => key })
   mock.module('react-i18next', {
     namedExports: {
-      useTranslation: () => ({ t: key => key }),
+      useTranslation: mockUseTranslation,
       Trans: ({ i18nKey }) => i18nKey
     }
   })

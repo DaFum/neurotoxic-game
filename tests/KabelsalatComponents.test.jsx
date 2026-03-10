@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { Header } from '../src/scenes/kabelsalat/components/Header'
 import { Rules } from '../src/scenes/kabelsalat/components/Rules'

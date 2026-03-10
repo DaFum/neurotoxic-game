@@ -9,8 +9,6 @@ import {
   buildRhythmLayout,
   loadTexture,
   getOptimalResolution,
-  RHYTHM_LAYOUT,
-  CROWD_LAYOUT
 } from '../src/components/stage/utils.js'
 import { setupJSDOM, teardownJSDOM } from './testUtils.js'
 
@@ -110,7 +108,7 @@ test('stage utils', async (t) => {
       globalThis.window.getComputedStyle = () => {
         callCount++
         return {
-          getPropertyValue: (prop) => '#123456'
+          getPropertyValue: (_prop) => '#123456'
         }
       }
 

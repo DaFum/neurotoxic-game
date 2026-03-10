@@ -102,6 +102,8 @@ export const handleLoadGame = (state, payload) => {
         Math.min(100, typeof m.stamina === 'number' ? m.stamina : 100)
       )
     }))
+  } else {
+    mergedBand.members = []
   }
   mergedBand.harmony = clampBandHarmony(mergedBand.harmony)
 

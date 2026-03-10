@@ -403,6 +403,7 @@
   "overworld.event_log": "EREIGNISPROTOKOLL:",
   "overworld.radio_station": "FM 66.6",
   "postGig.acceptedDeal": "Deal angenommen: {{dealName}}",
+  "postGig.dealFailed": "Deal abgelehnt.",
   "postGig.gameOverBankrupt": "GAME OVER: BANKROTT! Die Tour ist vorbei.",
   "postGig.notEnoughCashForPr": "Nicht genug Geld für PR!",
   "postGig.phaseBrandOffers": "MARKENANGEBOTE",
