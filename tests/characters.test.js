@@ -233,21 +233,53 @@ describe('characters.js', () => {
     it('each character has necessary properties', () => {
       Object.entries(CHARACTERS).forEach(([key, character]) => {
         assert.ok(character.name, `Character ${key} is missing 'name'`)
-        assert.strictEqual(typeof character.name, 'string', `Character ${key} 'name' should be a string`)
+        assert.strictEqual(
+          typeof character.name,
+          'string',
+          `Character ${key} 'name' should be a string`
+        )
 
         assert.ok(character.role, `Character ${key} is missing 'role'`)
-        assert.strictEqual(typeof character.role, 'string', `Character ${key} 'role' should be a string`)
+        assert.strictEqual(
+          typeof character.role,
+          'string',
+          `Character ${key} 'role' should be a string`
+        )
 
-        assert.ok(character.baseStats, `Character ${key} is missing 'baseStats'`)
-        assert.strictEqual(typeof character.baseStats, 'object', `Character ${key} 'baseStats' should be an object`)
+        assert.ok(
+          character.baseStats,
+          `Character ${key} is missing 'baseStats'`
+        )
+        assert.strictEqual(
+          typeof character.baseStats,
+          'object',
+          `Character ${key} 'baseStats' should be an object`
+        )
 
-        assert.ok(character.relationships, `Character ${key} is missing 'relationships'`)
-        assert.strictEqual(typeof character.relationships, 'object', `Character ${key} 'relationships' should be an object`)
+        assert.ok(
+          character.relationships,
+          `Character ${key} is missing 'relationships'`
+        )
+        assert.strictEqual(
+          typeof character.relationships,
+          'object',
+          `Character ${key} 'relationships' should be an object`
+        )
 
-        assert.ok(Array.isArray(character.traits), `Character ${key} 'traits' should be an array`)
+        assert.ok(
+          Array.isArray(character.traits),
+          `Character ${key} 'traits' should be an array`
+        )
 
-        assert.ok(character.equipment, `Character ${key} is missing 'equipment'`)
-        assert.strictEqual(typeof character.equipment, 'object', `Character ${key} 'equipment' should be an object`)
+        assert.ok(
+          character.equipment,
+          `Character ${key} is missing 'equipment'`
+        )
+        assert.strictEqual(
+          typeof character.equipment,
+          'object',
+          `Character ${key} 'equipment' should be an object`
+        )
       })
     })
 

@@ -33,10 +33,13 @@ export const useRhythmGameLoop = ({
     height: typeof window !== 'undefined' ? window.innerHeight : 1080
   })
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') return
 
     const handleResize = () => {
-      dimensionsRef.current = { width: window.innerWidth, height: window.innerHeight }
+      dimensionsRef.current = {
+        width: window.innerWidth,
+        height: window.innerHeight
+      }
     }
     window.addEventListener('resize', handleResize)
     return () => {
