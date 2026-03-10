@@ -23,7 +23,7 @@ describe('Brand Deals Data', () => {
         `Deal ${deal.id} missing type`
       )
 
-      const hasDuration = deal.offer?.duration > 0
+      const hasDuration = typeof deal.offer?.duration === 'number' && deal.offer.duration > 0
       assert.ok(hasDuration, `Deal ${deal.id} missing duration in offer`)
 
       assert.ok(
