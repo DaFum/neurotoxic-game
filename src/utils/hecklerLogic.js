@@ -9,7 +9,7 @@
 export const createHecklerSession = () => ({
   pool: [],
   nextId: 0
-});
+})
 
 const SPAWN_CHANCE_CONFIG = {
   BASE: 0.0005,
@@ -23,35 +23,41 @@ const SPAWN_CHANCE_CONFIG = {
   HEALTH_MEDIUM_BONUS: 0.001
 }
 
-export const processProjectiles = (session, projectiles, deltaMS, screenHeight = 1080, onHit) => {
-  const despawnY = screenHeight + 100;
-  const hitY = screenHeight - 150;
-  let writeIdx = 0;
+export const processProjectiles = (
+  session,
+  projectiles,
+  deltaMS,
+  screenHeight = 1080,
+  onHit
+) => {
+  const despawnY = screenHeight + 100
+  const hitY = screenHeight - 150
+  let writeIdx = 0
 
   for (let i = 0; i < projectiles.length; i++) {
-    const p = projectiles[i];
+    const p = projectiles[i]
 
-    if (p.x === undefined) p.x = 0;
-    if (p.rotation === undefined) p.rotation = 0;
+    if (p.x === undefined) p.x = 0
+    if (p.rotation === undefined) p.rotation = 0
 
     // 1. Apply Physics
-    if (p.vy !== undefined) p.y += p.vy * deltaMS;
-    if (p.vx !== undefined) p.x += p.vx * deltaMS;
-    if (p.vr !== undefined) p.rotation += p.vr * deltaMS;
+    if (p.vy !== undefined) p.y += p.vy * deltaMS
+    if (p.vx !== undefined) p.x += p.vx * deltaMS
+    if (p.vr !== undefined) p.rotation += p.vr * deltaMS
 
     // 2. Check Collision & Despawn
-    let hit = false;
+    let hit = false
     // We check if the projectile crossed the hitY threshold in this tick.
     // If it also crossed despawnY due to a lag spike, it skips the hit penalty.
     if (onHit && p.y > hitY && p.y < despawnY) {
-      onHit(p);
-      hit = true;
+      onHit(p)
+      hit = true
     }
 
     // 3. Keep if not hit AND above despawn limit
     if (!hit && p.y < despawnY) {
-      if (i !== writeIdx) projectiles[writeIdx] = p;
-      writeIdx++;
+      if (i !== writeIdx) projectiles[writeIdx] = p
+      writeIdx++
     } else {
       if (session.pool.length < MAX_PROJECTILE_POOL_SIZE) {
         // Remove any dynamically added properties to prevent leaks without allocating a new object
@@ -66,16 +72,16 @@ export const processProjectiles = (session, projectiles, deltaMS, screenHeight =
             key !== 'vr' &&
             key !== 'type'
           ) {
-            delete p[key];
+            delete p[key]
           }
         }
-        session.pool.push(p);
+        session.pool.push(p)
       }
     }
   }
 
-  if (writeIdx < projectiles.length) projectiles.length = writeIdx;
-  return projectiles;
+  if (writeIdx < projectiles.length) projectiles.length = writeIdx
+  return projectiles
 }
 
 /**
@@ -85,7 +91,7 @@ export const processProjectiles = (session, projectiles, deltaMS, screenHeight =
  * @param {number} [screenWidth=1920] - Width of screen for random X position.
  * @returns {object|null} New projectile object or null.
  */
-const MAX_PROJECTILE_POOL_SIZE = 64;
+const MAX_PROJECTILE_POOL_SIZE = 64
 
 export const trySpawnProjectile = (
   session,
@@ -111,17 +117,17 @@ export const trySpawnProjectile = (
   }
 
   if (random() < spawnChance) {
-    let p;
+    let p
     if (session.pool.length > 0) {
-      p = session.pool.pop();
-      p.id = session.nextId++;
-      p.x = random() * screenWidth;
-      p.y = -100;
-      p.vx = (random() - 0.5) * 0.5;
-      p.vy = 0.3 + random() * 0.4;
-      p.rotation = 0;
-      p.vr = (random() - 0.5) * 0.2;
-      p.type = random() > 0.5 ? 'bottle' : 'tomato';
+      p = session.pool.pop()
+      p.id = session.nextId++
+      p.x = random() * screenWidth
+      p.y = -100
+      p.vx = (random() - 0.5) * 0.5
+      p.vy = 0.3 + random() * 0.4
+      p.rotation = 0
+      p.vr = (random() - 0.5) * 0.2
+      p.type = random() > 0.5 ? 'bottle' : 'tomato'
     } else {
       p = {
         id: session.nextId++,
@@ -132,13 +138,9 @@ export const trySpawnProjectile = (
         rotation: 0,
         vr: (random() - 0.5) * 0.2, // Rotation speed
         type: random() > 0.5 ? 'bottle' : 'tomato'
-      };
+      }
     }
-    return p;
+    return p
   }
   return null
 }
-
-
-
-

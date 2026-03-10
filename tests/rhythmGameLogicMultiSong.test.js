@@ -74,25 +74,27 @@ mock.module('../src/utils/simulationUtils.js', {
 mock.module('../src/utils/hecklerLogic.js', {
   namedExports: {
     createHecklerSession: mock.fn(() => ({ pool: [], nextId: 0 })),
-    processProjectiles: mock.fn((session, projectiles, deltaMS, screenHeight, onHit) => {
-      const hitY = screenHeight - 150
-      const despawnY = screenHeight + 100
-      let writeIdx = 0
+    processProjectiles: mock.fn(
+      (session, projectiles, deltaMS, screenHeight, onHit) => {
+        const hitY = screenHeight - 150
+        const despawnY = screenHeight + 100
+        let writeIdx = 0
 
-      projectiles.forEach(p => {
-        if (p.vy !== undefined) p.y += p.vy * deltaMS
+        projectiles.forEach(p => {
+          if (p.vy !== undefined) p.y += p.vy * deltaMS
 
-        const hit = Boolean(onHit && p.y > hitY && p.y < despawnY)
-        if (hit) onHit(p)
+          const hit = Boolean(onHit && p.y > hitY && p.y < despawnY)
+          if (hit) onHit(p)
 
-        if (!hit && p.y < despawnY) {
-          projectiles[writeIdx++] = p
-        }
-      })
+          if (!hit && p.y < despawnY) {
+            projectiles[writeIdx++] = p
+          }
+        })
 
-      projectiles.length = writeIdx
-      return projectiles
-    }),
+        projectiles.length = writeIdx
+        return projectiles
+      }
+    ),
     trySpawnProjectile: mock.fn(() => null)
   }
 })

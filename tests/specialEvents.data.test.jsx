@@ -2,7 +2,9 @@ import { describe, it, expect } from 'vitest'
 import { SPECIAL_EVENTS } from '../src/data/events/special'
 
 describe('SPECIAL_EVENTS structural integrity', () => {
-  const events = Array.isArray(SPECIAL_EVENTS) ? SPECIAL_EVENTS : Object.values(SPECIAL_EVENTS)
+  const events = Array.isArray(SPECIAL_EVENTS)
+    ? SPECIAL_EVENTS
+    : Object.values(SPECIAL_EVENTS)
 
   it('contains a non-empty list of special events', () => {
     expect(events.length).toBeGreaterThan(0)
@@ -14,7 +16,7 @@ describe('SPECIAL_EVENTS structural integrity', () => {
     expect(uniqueIds.size).toBe(ids.length)
   })
 
-  const validateEffect = (effect) => {
+  const validateEffect = effect => {
     expect(effect).toBeDefined()
     expect(typeof effect.type).toBe('string')
 
@@ -40,7 +42,7 @@ describe('SPECIAL_EVENTS structural integrity', () => {
     }
   }
 
-  const validateSkillCheck = (sc) => {
+  const validateSkillCheck = sc => {
     expect(sc).toBeDefined()
     expect(typeof sc.stat).toBe('string')
     expect(Number.isFinite(sc.threshold)).toBe(true)

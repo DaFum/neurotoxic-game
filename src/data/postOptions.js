@@ -8,49 +8,49 @@ const POST_BADGES = {
   STORY: '📖'
 }
 
-// Optimization: WeakMap to cache trait lookups for a given band.members array.
-// This prevents O(N*M) redundant array traversals during socialEngine ticks
-// where multiple post options check conditions and resolve effects against the same members array.
+// Optimization: WeakMap to cache trait lookups for individual member objects.
+// Since band.members array references change frequently (e.g. Redux updates) but
+// the member objects themselves persist, caching per-member prevents O(N*M) redundant
+// trait traversals when the array reference changes but the members do not.
 const memberTraitCache = new WeakMap()
 
 /**
- * Ensures the traits map for the given members array is built and cached.
- * @param {Array} members - The band.members array
- * @returns {Map} A map of traitId -> first member with that trait
+ * Ensures the traits Set for a given member is built and cached.
+ * @param {object} member - A band member object
+ * @returns {Set} A Set of trait IDs
  */
-function ensureTraitCache(members) {
-  let cacheMap = memberTraitCache.get(members)
-  if (!cacheMap) {
-    cacheMap = new Map()
-    for (let i = 0; i < members.length; i++) {
-      const m = members[i]
-      if (m.traits) {
-        for (let j = 0; j < m.traits.length; j++) {
-          const tId = m.traits[j].id
-          if (!cacheMap.has(tId)) {
-            cacheMap.set(tId, m)
-          }
-        }
+function ensureMemberTraitSet(member) {
+  let traitsSet = memberTraitCache.get(member)
+  if (!traitsSet) {
+    traitsSet = new Set()
+    if (member.traits) {
+      for (let i = 0; i < member.traits.length; i++) {
+        traitsSet.add(member.traits[i].id)
       }
     }
-    memberTraitCache.set(members, cacheMap)
+    memberTraitCache.set(member, traitsSet)
   }
-  return cacheMap
+  return traitsSet
 }
 
 /**
- * O(1) cached lookup for the first member with a specific trait.
+ * O(N) over members array with O(1) cached lookups per member for the first member with a specific trait.
+ * N is typically very small (~4).
  * @param {Array} members - The band.members array
  * @param {string} traitId - The ID of the trait
  * @returns {object|undefined} The member object or undefined
  */
 function getMemberWithTrait(members, traitId) {
   if (!members || !members.length) return undefined
-  return ensureTraitCache(members).get(traitId)
+  for (let i = 0; i < members.length; i++) {
+    const m = members[i]
+    if (ensureMemberTraitSet(m).has(traitId)) return m
+  }
+  return undefined
 }
 
 /**
- * O(1) cached check if any member has a specific trait (or one of two traits).
+ * O(N) over members array with O(1) cached check if any member has a specific trait (or one of two traits).
  * @param {Array} members - The band.members array
  * @param {string} traitId1 - The ID of the primary trait
  * @param {string} [traitId2] - Optional ID of a secondary trait
@@ -58,9 +58,11 @@ function getMemberWithTrait(members, traitId) {
  */
 function hasMemberWithTrait(members, traitId1, traitId2) {
   if (!members || !members.length) return false
-  const cacheMap = ensureTraitCache(members)
-  if (cacheMap.has(traitId1)) return true
-  if (traitId2 && cacheMap.has(traitId2)) return true
+  for (let i = 0; i < members.length; i++) {
+    const traitsSet = ensureMemberTraitSet(members[i])
+    if (traitsSet.has(traitId1)) return true
+    if (traitId2 && traitsSet.has(traitId2)) return true
+  }
   return false
 }
 
@@ -182,7 +184,8 @@ export const POST_OPTIONS = [
       band.members.length > 0,
     resolve: ({ band, diceRoll }) => {
       // Pick a random member directly from band.members to avoid O(N) allocation
-      const target = band.members[Math.floor(diceRoll * band.members.length)].name
+      const target =
+        band.members[Math.floor(diceRoll * band.members.length)].name
       return {
         type: 'FIXED',
         success: true,

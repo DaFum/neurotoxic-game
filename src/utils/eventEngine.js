@@ -284,7 +284,11 @@ const processEffect = (eff, delta, context = {}) => {
 
 export const eventEngine = {
   handleError(err, eventId) {
-    logger.error('EventEngine', `Condition check failed for event ${eventId || 'unknown'}`, err)
+    logger.error(
+      'EventEngine',
+      `Condition check failed for event ${eventId || 'unknown'}`,
+      err
+    )
   },
 
   processEvent(event, optimizedState) {
