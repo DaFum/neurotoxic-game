@@ -1,7 +1,8 @@
 import { useCallback, useRef, useEffect } from 'react'
 import {
   trySpawnProjectile,
-  processProjectiles
+  processProjectiles,
+  resetHecklerState
 } from '../../utils/hecklerLogic'
 import {
   getGigTimeMs,
@@ -31,11 +32,17 @@ export const useRhythmGameLoop = ({
     height: typeof window !== 'undefined' ? window.innerHeight : 1080
   })
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     const handleResize = () => {
       dimensionsRef.current = { width: window.innerWidth, height: window.innerHeight }
     }
     window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', handleResize)
+      }
+    }
   }, [])
 
   const handleCollision = useCallback(() => handleMiss(1, false), [handleMiss])
@@ -52,6 +59,7 @@ export const useRhythmGameLoop = ({
           stateRef.songStats || []
         )
       )
+      resetHecklerState()
       stopAudio()
       endGig()
     },

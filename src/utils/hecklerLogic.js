@@ -26,6 +26,9 @@ export const processProjectiles = (projectiles, deltaMS, screenHeight = 1080, on
   for (let i = 0; i < projectiles.length; i++) {
     const p = projectiles[i];
 
+    if (p.x === undefined) p.x = 0;
+    if (p.rotation === undefined) p.rotation = 0;
+
     // 1. Apply Physics
     if (p.vy !== undefined) p.y += p.vy * deltaMS;
     if (p.vx !== undefined) p.x += p.vx * deltaMS;
@@ -34,8 +37,8 @@ export const processProjectiles = (projectiles, deltaMS, screenHeight = 1080, on
     // 2. Check Collision & Despawn
     let hit = false;
     // We check if the projectile crossed the hitY threshold in this tick.
-    if (p.y > hitY) {
-      if (onHit) onHit(p);
+    if (onHit && p.y > hitY) {
+      onHit(p);
       hit = true;
     }
 

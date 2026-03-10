@@ -217,9 +217,8 @@ test('processProjectiles handles missing onHit callback', () => {
     { id: 2, y: 800 } // No hit
   ]
 
-  // Should not throw, removes hit one
+  // Should not throw, keeps both if no onHit provided and y < despawnLimit
   processProjectiles(projectiles, 0, screenHeight)
 
-  assert.strictEqual(projectiles.length, 1)
-  assert.strictEqual(projectiles[0].id, 2)
+  assert.strictEqual(projectiles.length, 2)
 })

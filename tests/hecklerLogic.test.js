@@ -324,7 +324,7 @@ test('processProjectiles - handles missing onHit callback', () => {
   const screenHeight = 1000
   const projectiles = [{ id: 1, y: 900 }]
   processProjectiles(projectiles, 0, screenHeight)
-  assert.equal(projectiles.length, 0) // Should remove hit projectile even if there is no onHit callback
+  assert.equal(projectiles.length, 1) // Should NOT remove hit projectile if there is no onHit callback
 })
 
 test('processProjectiles - exact hitY boundary', () => {
@@ -409,7 +409,10 @@ test('processProjectiles - handles onHit being undefined', () => {
   const projectiles = [{ id: 1, y: 900 }]
   // Should not crash with undefined onHit
   processProjectiles(projectiles, 0, 1000, undefined)
-  assert.equal(projectiles.length, 0)
+  // despawnY = 1100. hitY = 850.
+  // 900 > 850, but without onHit, hit = false.
+  // 900 < 1100, so it is KEPT.
+  assert.equal(projectiles.length, 1)
 })
 
 test('processProjectiles - boundary at hitY threshold', () => {
