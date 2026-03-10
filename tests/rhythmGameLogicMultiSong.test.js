@@ -73,9 +73,8 @@ mock.module('../src/utils/simulationUtils.js', {
 })
 mock.module('../src/utils/hecklerLogic.js', {
   namedExports: {
-    updateProjectiles: mock.fn(p => p),
-    trySpawnProjectile: mock.fn(() => null),
-    checkCollisions: mock.fn(p => p)
+    processProjectiles: mock.fn(p => p),
+    trySpawnProjectile: mock.fn(() => null)
   }
 })
 mock.module('../src/utils/errorHandler.js', {

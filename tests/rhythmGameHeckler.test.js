@@ -1,9 +1,8 @@
 import assert from 'assert'
 import { test } from 'node:test'
 import {
-  updateProjectiles,
-  trySpawnProjectile,
-  checkCollisions
+  processProjectiles,
+  trySpawnProjectile
 } from '../src/utils/hecklerLogic.js'
 
 test('trySpawnProjectile respects spawn chance', () => {
@@ -12,7 +11,7 @@ test('trySpawnProjectile respects spawn chance', () => {
   const projectile = trySpawnProjectile({ health: 100 }, alwaysSpawn, 1000)
 
   assert.ok(projectile, 'Should spawn when random value is low')
-  assert.strictEqual(typeof projectile.id, 'string')
+  assert.strictEqual(typeof projectile.id, 'number')
   assert.strictEqual(projectile.y, -100)
   assert.ok(projectile.type === 'bottle' || projectile.type === 'tomato')
 })
@@ -69,13 +68,13 @@ test('trySpawnProjectile increases chance on high combo', () => {
   assert.ok(highCombo, 'Should spawn at 50 combo with 0.001 roll')
 })
 
-test('updateProjectiles moves items correctly', () => {
+test('processProjectiles moves items correctly', () => {
   const projectiles = [
     { x: 100, y: 100, vx: 0.1, vy: 0.2, rotation: 0, vr: 0.01 }
   ]
   const deltaMS = 100
 
-  const updated = updateProjectiles(projectiles, deltaMS, 1000)
+  const updated = processProjectiles(projectiles, deltaMS, 1000)
 
   assert.strictEqual(updated.length, 1)
   const p = updated[0]
@@ -87,35 +86,35 @@ test('updateProjectiles moves items correctly', () => {
   assert.strictEqual(p.rotation, 1) // 0 + 0.01 * 100
 })
 
-test('updateProjectiles removes off-screen items', () => {
+test('processProjectiles removes off-screen items', () => {
   const screenHeight = 500
   const projectiles = [
     { x: 100, y: 400, vx: 0, vy: 0, rotation: 0, vr: 0 }, // On screen
     { x: 100, y: 700, vx: 0, vy: 0, rotation: 0, vr: 0 } // Off screen (500 + 100 buffer = 600 max)
   ]
 
-  const updated = updateProjectiles(projectiles, 0, screenHeight)
+  const updated = processProjectiles(projectiles, 0, screenHeight)
 
   assert.strictEqual(updated.length, 1)
   assert.strictEqual(updated[0].y, 400)
 })
 
-test('updateProjectiles handles empty input', () => {
-  const updated = updateProjectiles([], 16, 1000)
+test('processProjectiles handles empty input', () => {
+  const updated = processProjectiles([], 16, 1000)
   assert.deepStrictEqual(updated, [])
 })
 
-test('updateProjectiles handles large delta (lag spike)', () => {
+test('processProjectiles handles large delta (lag spike)', () => {
   const projectiles = [
     { x: 100, y: 100, vx: 0, vy: 1.0, rotation: 0, vr: 0 } // Falling fast
   ]
   // 5 seconds lag
-  const updated = updateProjectiles(projectiles, 5000, 1000)
+  const updated = processProjectiles(projectiles, 5000, 1000)
   // y = 100 + 1.0 * 5000 = 5100 -> Off screen
   assert.strictEqual(updated.length, 0)
 })
 
-test('checkCollisions detects hits and removes items', () => {
+test('processProjectiles detects hits and removes items', () => {
   const screenHeight = 1000
   const projectiles = [
     { id: 1, y: 800 }, // No hit (800 < 850)
@@ -130,7 +129,7 @@ test('checkCollisions detects hits and removes items', () => {
     assert.strictEqual(p.id, 2)
   }
 
-  checkCollisions(projectiles, screenHeight, onHit)
+  processProjectiles(projectiles, 0, screenHeight, onHit)
 
   assert.strictEqual(hits, 1, 'Should trigger callback once')
   assert.strictEqual(
@@ -143,7 +142,7 @@ test('checkCollisions detects hits and removes items', () => {
   assert.strictEqual(projectiles[2].id, 4)
 })
 
-test('checkCollisions handles multiple simultaneous hits', () => {
+test('processProjectiles handles multiple simultaneous hits', () => {
   const screenHeight = 1000
   const projectiles = [
     { id: 1, y: 900 }, // Hit
@@ -154,7 +153,7 @@ test('checkCollisions handles multiple simultaneous hits', () => {
   const hitIds = []
   const onHit = p => hitIds.push(p.id)
 
-  checkCollisions(projectiles, screenHeight, onHit)
+  processProjectiles(projectiles, 0, screenHeight, onHit)
 
   assert.strictEqual(hitIds.length, 2)
   assert.ok(hitIds.includes(1))
@@ -163,7 +162,7 @@ test('checkCollisions handles multiple simultaneous hits', () => {
   assert.strictEqual(projectiles[0].id, 2)
 })
 
-test('checkCollisions handles all items hitting', () => {
+test('processProjectiles handles all items hitting', () => {
   const screenHeight = 1000
   const projectiles = [
     { id: 1, y: 900 },
@@ -173,13 +172,13 @@ test('checkCollisions handles all items hitting', () => {
   let hits = 0
   const onHit = () => hits++
 
-  checkCollisions(projectiles, screenHeight, onHit)
+  processProjectiles(projectiles, 0, screenHeight, onHit)
 
   assert.strictEqual(hits, 2)
   assert.strictEqual(projectiles.length, 0)
 })
 
-test('checkCollisions handles no hits', () => {
+test('processProjectiles handles no hits', () => {
   const screenHeight = 1000
   const projectiles = [
     { id: 1, y: 800 },
@@ -189,7 +188,7 @@ test('checkCollisions handles no hits', () => {
   let hits = 0
   const onHit = () => hits++
 
-  checkCollisions(projectiles, screenHeight, onHit)
+  processProjectiles(projectiles, 0, screenHeight, onHit)
 
   assert.strictEqual(hits, 0)
   assert.strictEqual(projectiles.length, 2)
@@ -197,27 +196,26 @@ test('checkCollisions handles no hits', () => {
   assert.strictEqual(projectiles[1].id, 2)
 })
 
-test('checkCollisions handles empty input', () => {
+test('processProjectiles handles empty input', () => {
   const projectiles = []
   let hits = 0
   const onHit = () => hits++
 
-  checkCollisions(projectiles, 1000, onHit)
+  processProjectiles(projectiles, 1000, onHit)
 
   assert.strictEqual(hits, 0)
   assert.strictEqual(projectiles.length, 0)
 })
 
-test('checkCollisions handles missing onHit callback', () => {
+test('processProjectiles handles missing onHit callback', () => {
   const screenHeight = 1000
   const projectiles = [
     { id: 1, y: 900 }, // Hit
     { id: 2, y: 800 } // No hit
   ]
 
-  // Should not throw
-  checkCollisions(projectiles, screenHeight)
+  // Should not throw, keeps both if no onHit provided and y < despawnLimit
+  processProjectiles(projectiles, 0, screenHeight)
 
-  assert.strictEqual(projectiles.length, 1)
-  assert.strictEqual(projectiles[0].id, 2)
+  assert.strictEqual(projectiles.length, 2)
 })

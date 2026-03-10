@@ -1,12 +1,11 @@
 import { test } from 'node:test'
 import { strict as assert } from 'node:assert'
 import {
-  updateProjectiles,
-  trySpawnProjectile,
-  checkCollisions
+  processProjectiles,
+  trySpawnProjectile
 } from '../src/utils/hecklerLogic.js'
 
-test('updateProjectiles - updates position and rotation', () => {
+test('processProjectiles - updates position and rotation', () => {
   const projectiles = [
     { x: 100, y: 100, vx: 0.1, vy: 0.2, vr: 0.05, rotation: 0 }
   ]
@@ -14,7 +13,7 @@ test('updateProjectiles - updates position and rotation', () => {
   const screenHeight = 1000
   // limit = 1100
 
-  updateProjectiles(projectiles, deltaMS, screenHeight)
+  processProjectiles(projectiles, deltaMS, screenHeight)
 
   // y += vy * deltaMS -> 100 + 0.2 * 1000 = 300
   assert.equal(projectiles[0].y, 300)
@@ -24,7 +23,7 @@ test('updateProjectiles - updates position and rotation', () => {
   assert.equal(projectiles[0].rotation, 50)
 })
 
-test('updateProjectiles - removes projectiles below limit', () => {
+test('processProjectiles - removes projectiles below limit', () => {
   const screenHeight = 1000
   // limit = 1100
   const projectiles = [
@@ -34,21 +33,21 @@ test('updateProjectiles - removes projectiles below limit', () => {
 
   // deltaMS = 0 so position doesn't change before check, but check happens after update
   // update adds vy*delta. If delta is 0, y stays same.
-  updateProjectiles(projectiles, 0, screenHeight)
+  processProjectiles(projectiles, 0, screenHeight)
 
   assert.equal(projectiles.length, 1)
   assert.equal(projectiles[0].y, 100)
 })
 
-test('updateProjectiles - handles empty array', () => {
+test('processProjectiles - handles empty array', () => {
   const projectiles = []
-  updateProjectiles(projectiles, 10, 1000)
+  processProjectiles(projectiles, 10, 1000)
   assert.equal(projectiles.length, 0)
 })
 
-test('updateProjectiles - mutates array in-place', () => {
+test('processProjectiles - mutates array in-place', () => {
   const projectiles = [{ x: 0, y: 0, vx: 0, vy: 0, vr: 0, rotation: 0 }]
-  const result = updateProjectiles(projectiles, 10, 1000)
+  const result = processProjectiles(projectiles, 10, 1000)
   assert.equal(result, projectiles)
 })
 
@@ -119,7 +118,7 @@ test('trySpawnProjectile - verifies all spawned object properties', () => {
     const projectile = trySpawnProjectile(stats, mockRandom, screenWidth)
 
     assert.ok(projectile)
-    assert.equal(typeof projectile.id, 'string')
+    assert.equal(typeof projectile.id, 'number')
     assert.equal(projectile.x, 1000)
     assert.equal(projectile.y, -100)
     // use approximate equality for floats
@@ -215,7 +214,7 @@ test('trySpawnProjectile - combined chance (medium health AND medium combo)', ()
   assert.equal(trySpawnProjectile(stats, mockRandomNo), null)
 })
 
-test('checkCollisions - detects collision and calls onHit', () => {
+test('processProjectiles - detects collision and calls onHit', () => {
   const screenHeight = 1000
   // hitY = 1000 - 150 = 850
   const projectiles = [
@@ -229,31 +228,31 @@ test('checkCollisions - detects collision and calls onHit', () => {
     assert.equal(p.id, 2)
   }
 
-  checkCollisions(projectiles, screenHeight, onHit)
+  processProjectiles(projectiles, 0, screenHeight, onHit)
 
   assert.equal(hitCount, 1)
   assert.equal(projectiles.length, 1)
   assert.equal(projectiles[0].id, 1)
 })
 
-test('checkCollisions - handles no collisions', () => {
+test('processProjectiles - handles no collisions', () => {
   const screenHeight = 1000
   const projectiles = [{ id: 1, y: 800 }]
-  checkCollisions(projectiles, screenHeight, () => {})
+  processProjectiles(projectiles, 0, screenHeight, () => {})
   assert.equal(projectiles.length, 1)
 })
 
-test('checkCollisions - handles all collisions', () => {
+test('processProjectiles - handles all collisions', () => {
   const screenHeight = 1000
   const projectiles = [
     { id: 1, y: 900 },
     { id: 2, y: 950 }
   ]
-  checkCollisions(projectiles, screenHeight, () => {})
+  processProjectiles(projectiles, 0, screenHeight, () => {})
   assert.equal(projectiles.length, 0)
 })
 
-test('checkCollisions - handles mixed collisions order', () => {
+test('processProjectiles - handles mixed collisions order', () => {
   const screenHeight = 1000
   // hitY = 850
   const projectiles = [
@@ -262,21 +261,21 @@ test('checkCollisions - handles mixed collisions order', () => {
     { id: 3, y: 950 } // Hit
   ]
   const hits = []
-  checkCollisions(projectiles, screenHeight, p => hits.push(p.id))
+  processProjectiles(projectiles, 0, screenHeight, p => hits.push(p.id))
 
   assert.equal(projectiles.length, 1)
   assert.equal(projectiles[0].id, 2)
   assert.deepEqual(hits, [1, 3])
 })
 
-test('updateProjectiles - handles negative velocities', () => {
+test('processProjectiles - handles negative velocities', () => {
   const projectiles = [
     { x: 100, y: 100, vx: -0.1, vy: 0.2, vr: -0.05, rotation: 0 }
   ]
   const deltaMS = 1000
   const screenHeight = 1000
 
-  updateProjectiles(projectiles, deltaMS, screenHeight)
+  processProjectiles(projectiles, deltaMS, screenHeight)
 
   // x should move left: 100 + (-0.1 * 1000) = 0
   assert.equal(projectiles[0].x, 0)
@@ -284,12 +283,12 @@ test('updateProjectiles - handles negative velocities', () => {
   assert.equal(projectiles[0].rotation, -50)
 })
 
-test('updateProjectiles - handles zero velocities', () => {
+test('processProjectiles - handles zero velocities', () => {
   const projectiles = [{ x: 100, y: 100, vx: 0, vy: 0, vr: 0, rotation: 5 }]
   const deltaMS = 1000
   const screenHeight = 1000
 
-  updateProjectiles(projectiles, deltaMS, screenHeight)
+  processProjectiles(projectiles, deltaMS, screenHeight)
 
   // Nothing should change except y stays at 100 (since vy is 0)
   assert.equal(projectiles[0].x, 100)
@@ -297,36 +296,36 @@ test('updateProjectiles - handles zero velocities', () => {
   assert.equal(projectiles[0].rotation, 5)
 })
 
-test('updateProjectiles - handles projectile at boundary', () => {
+test('processProjectiles - handles projectile at boundary', () => {
   const screenHeight = 1000
   // limit = 1100
   const projectiles = [{ x: 100, y: 1099, vx: 0, vy: 0, vr: 0, rotation: 0 }] // Just below limit
 
-  updateProjectiles(projectiles, 0, screenHeight)
+  processProjectiles(projectiles, 0, screenHeight)
   assert.equal(projectiles.length, 1)
 })
 
-test('checkCollisions - handles empty array', () => {
+test('processProjectiles - handles empty array', () => {
   const projectiles = []
-  checkCollisions(projectiles, 1000, () => {})
+  processProjectiles(projectiles, 0, 1000, () => {})
   assert.equal(projectiles.length, 0)
 })
 
-test('checkCollisions - mutates array in-place', () => {
+test('processProjectiles - mutates array in-place', () => {
   const screenHeight = 1000
   const projectiles = [{ id: 1, y: 800 }]
-  const result = checkCollisions(projectiles, screenHeight, () => {})
+  const result = processProjectiles(projectiles, 0, screenHeight, () => {})
   assert.equal(result, projectiles)
 })
 
-test('checkCollisions - handles missing onHit callback', () => {
+test('processProjectiles - handles missing onHit callback', () => {
   const screenHeight = 1000
   const projectiles = [{ id: 1, y: 900 }]
-  checkCollisions(projectiles, screenHeight)
-  assert.equal(projectiles.length, 0) // Should still remove hit projectile
+  processProjectiles(projectiles, 0, screenHeight)
+  assert.equal(projectiles.length, 1) // Should NOT remove hit projectile if there is no onHit callback
 })
 
-test('checkCollisions - exact hitY boundary', () => {
+test('processProjectiles - exact hitY boundary', () => {
   const screenHeight = 1000
   // hitY = 850
   const projectiles = [
@@ -334,14 +333,14 @@ test('checkCollisions - exact hitY boundary', () => {
     { id: 2, y: 851 } // Just past boundary, should hit
   ]
   const hits = []
-  checkCollisions(projectiles, screenHeight, p => hits.push(p.id))
+  processProjectiles(projectiles, 0, screenHeight, p => hits.push(p.id))
 
   assert.equal(projectiles.length, 1)
   assert.equal(projectiles[0].id, 1)
   assert.deepEqual(hits, [2])
 })
 
-test('updateProjectiles - exact limit boundary', () => {
+test('processProjectiles - exact limit boundary', () => {
   const screenHeight = 1000
   // limit = 1100
   const projectiles = [
@@ -349,7 +348,7 @@ test('updateProjectiles - exact limit boundary', () => {
     { x: 0, y: 1100, vx: 0, vy: 0, vr: 0, rotation: 0 } // Should be removed (y >= limit)
   ]
 
-  updateProjectiles(projectiles, 0, screenHeight)
+  processProjectiles(projectiles, 0, screenHeight)
 
   assert.equal(projectiles.length, 1, 'Projectile at 1099 should remain')
 
@@ -357,12 +356,12 @@ test('updateProjectiles - exact limit boundary', () => {
     { x: 100, y: 1100, vx: 0, vy: 0, vr: 0, rotation: 0 } // At limit
   ]
 
-  updateProjectiles(projectiles2, 0, screenHeight)
+  processProjectiles(projectiles2, 0, screenHeight)
 
   assert.equal(projectiles2.length, 0, 'Projectile at 1100 should be removed')
 })
 
-test('updateProjectiles - handles large arrays efficiently', () => {
+test('processProjectiles - handles large arrays efficiently', () => {
   const projectiles = []
   for (let i = 0; i < 1000; i++) {
     projectiles.push({
@@ -376,7 +375,7 @@ test('updateProjectiles - handles large arrays efficiently', () => {
   }
 
   const before = projectiles.length
-  updateProjectiles(projectiles, 1, 1000)
+  processProjectiles(projectiles, 1, 1000)
 
   assert.ok(projectiles.length > 0, 'Some projectiles should remain')
   assert.ok(projectiles.length <= before, 'Array should not grow')
@@ -414,23 +413,23 @@ test('trySpawnProjectile - spawns with exact boundary values', () => {
   assert.ok(projectile, 'Should spawn at boundary')
 })
 
-test('checkCollisions - handles empty projectile array', () => {
+test('processProjectiles - handles empty projectile array', () => {
   const projectiles = []
   const hits = []
-  checkCollisions(projectiles, 1000, p => hits.push(p))
+  processProjectiles(projectiles, 0, 1000, p => hits.push(p))
 
   assert.equal(projectiles.length, 0)
   assert.equal(hits.length, 0)
 })
 
-test('checkCollisions - handles onHit being undefined', () => {
+test('processProjectiles - handles onHit being undefined', () => {
   const projectiles = [{ id: 1, y: 900 }]
   // Should not crash with undefined onHit
-  checkCollisions(projectiles, 1000, undefined)
+  processProjectiles(projectiles, 1000, undefined)
   assert.equal(projectiles.length, 0)
 })
 
-test('checkCollisions - boundary at hitY threshold', () => {
+test('processProjectiles - boundary at hitY threshold', () => {
   const screenHeight = 1000
   // hitY = 850, collision happens when p.y > 850
 
@@ -441,7 +440,7 @@ test('checkCollisions - boundary at hitY threshold', () => {
   ]
 
   const hits = []
-  checkCollisions(projectilesAtThreshold, screenHeight, p => hits.push(p.id))
+  processProjectiles(projectilesAtThreshold, 0, screenHeight, p => hits.push(p.id))
 
   // Only projectiles with y <= 850 remain (condition is y > hitY for hit)
   assert.equal(
@@ -454,7 +453,7 @@ test('checkCollisions - boundary at hitY threshold', () => {
   assert.deepEqual(hits, [3], 'Only projectile above threshold hits')
 })
 
-test('updateProjectiles - multiple removes in sequence', () => {
+test('processProjectiles - multiple removes in sequence', () => {
   const screenHeight = 100
   // limit = 200
   const projectiles = [
@@ -465,7 +464,7 @@ test('updateProjectiles - multiple removes in sequence', () => {
     { x: 0, y: 100, vx: 0, vy: 0, vr: 0, rotation: 0 } // Keep
   ]
 
-  updateProjectiles(projectiles, 0, screenHeight)
+  processProjectiles(projectiles, 0, screenHeight)
 
   assert.equal(projectiles.length, 3)
   assert.equal(projectiles[0].y, 50)
@@ -485,7 +484,7 @@ test('trySpawnProjectile - generates unique IDs', () => {
   assert.notEqual(p1.id, p2.id, 'IDs should be unique')
 })
 
-test('updateProjectiles - preserves projectile properties not updated', () => {
+test('processProjectiles - preserves projectile properties not updated', () => {
   const projectiles = [
     {
       id: 'test',
@@ -500,7 +499,7 @@ test('updateProjectiles - preserves projectile properties not updated', () => {
     }
   ]
 
-  updateProjectiles(projectiles, 10, 1000)
+  processProjectiles(projectiles, 10, 1000)
 
   assert.equal(projectiles[0].id, 'test')
   assert.equal(projectiles[0].type, 'bottle')
@@ -509,25 +508,25 @@ test('updateProjectiles - preserves projectile properties not updated', () => {
   assert.equal(projectiles[0].y, 101)
 })
 
-test('updateProjectiles - updates only when below limit', () => {
+test('processProjectiles - updates only when below limit', () => {
   const screenHeight = 1000
   const projectiles = [
     { x: 0, y: 1200, vx: 1, vy: 1, vr: 1, rotation: 0 } // Above limit
   ]
 
-  updateProjectiles(projectiles, 100, screenHeight)
+  processProjectiles(projectiles, 100, screenHeight)
 
   // Projectile is removed before x, rotation update happens
   assert.equal(projectiles.length, 0)
 })
 
-test('updateProjectiles - large deltaMS values', () => {
+test('processProjectiles - large deltaMS values', () => {
   const projectiles = [
     { x: 100, y: 100, vx: 0.1, vy: 0.2, vr: 0.05, rotation: 0 }
   ]
   const deltaMS = 10000 // 10 seconds
 
-  updateProjectiles(projectiles, deltaMS, 10000)
+  processProjectiles(projectiles, deltaMS, 10000)
 
   // Should handle large time deltas without issues
   assert.equal(projectiles[0].y, 2100) // 100 + 0.2 * 10000
@@ -535,13 +534,13 @@ test('updateProjectiles - large deltaMS values', () => {
   assert.equal(projectiles[0].rotation, 500) // 0 + 0.05 * 10000
 })
 
-test('updateProjectiles - negative velocity values', () => {
+test('processProjectiles - negative velocity values', () => {
   const projectiles = [
     { x: 1000, y: 500, vx: -0.1, vy: 0.2, vr: -0.05, rotation: 10 }
   ]
   const deltaMS = 1000
 
-  updateProjectiles(projectiles, deltaMS, 1000)
+  processProjectiles(projectiles, deltaMS, 1000)
 
   assert.equal(projectiles[0].y, 700) // 500 + 0.2 * 1000
   assert.equal(projectiles[0].x, 900) // 1000 + (-0.1) * 1000
@@ -670,7 +669,7 @@ test('trySpawnProjectile - no spawn with perfect stats', () => {
   assert.equal(projectile, null)
 })
 
-test('checkCollisions - large number of projectiles', () => {
+test('processProjectiles - large number of projectiles', () => {
   const screenHeight = 1000
   const projectiles = []
   for (let i = 0; i < 100; i++) {
@@ -678,7 +677,7 @@ test('checkCollisions - large number of projectiles', () => {
   }
 
   let hitCount = 0
-  checkCollisions(projectiles, screenHeight, () => hitCount++)
+  processProjectiles(projectiles, 0, screenHeight, () => hitCount++)
 
   // hitY = 850, so projectiles with y > 850 should hit
   // y ranges from 800 to 998, so roughly 26-50 should hit
@@ -687,7 +686,7 @@ test('checkCollisions - large number of projectiles', () => {
   assert.equal(projectiles.length + hitCount, 100)
 })
 
-test('updateProjectiles - maintains correct order after removal', () => {
+test('processProjectiles - maintains correct order after removal', () => {
   const screenHeight = 1000
   const projectiles = [
     { id: 1, x: 0, y: 100, vx: 0, vy: 0, vr: 0, rotation: 0 },
@@ -695,7 +694,7 @@ test('updateProjectiles - maintains correct order after removal', () => {
     { id: 3, x: 0, y: 200, vx: 0, vy: 0, vr: 0, rotation: 0 }
   ]
 
-  updateProjectiles(projectiles, 0, screenHeight)
+  processProjectiles(projectiles, 0, screenHeight)
 
   assert.equal(projectiles.length, 2)
   assert.equal(projectiles[0].id, 1)

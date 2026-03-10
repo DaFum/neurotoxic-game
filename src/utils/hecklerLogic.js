@@ -18,37 +18,38 @@ const SPAWN_CHANCE_CONFIG = {
   HEALTH_MEDIUM_BONUS: 0.001
 }
 
-export const updateProjectiles = (
-  projectiles,
-  deltaMS,
-  screenHeight = 1080
-) => {
-  const limit = screenHeight + 100
-  let writeIdx = 0
+export const processProjectiles = (projectiles, deltaMS, screenHeight, onHit) => {
+  const despawnY = screenHeight + 100;
+  const hitY = screenHeight - 150;
+  let writeIdx = 0;
 
-  // Optimization: Mutate in-place to avoid GC pressure in tight loop
   for (let i = 0; i < projectiles.length; i++) {
-    const p = projectiles[i]
-    p.y += p.vy * deltaMS
+    const p = projectiles[i];
 
-    if (p.y < limit) {
-      p.x += p.vx * deltaMS
-      p.rotation += p.vr * deltaMS
+    // 1. Apply Physics
+    if (p.vy !== undefined) p.y += p.vy * deltaMS;
+    if (p.vx !== undefined) p.x += p.vx * deltaMS;
+    if (p.vr !== undefined) p.rotation += p.vr * deltaMS;
 
-      // Compact array if needed
-      if (i !== writeIdx) {
-        projectiles[writeIdx] = p
-      }
-      writeIdx++
+    // 2. Check Collision & Despawn
+    let hit = false;
+    // We check if the projectile crossed the hitY threshold in this tick.
+    if (onHit && p.y > hitY) {
+      onHit(p);
+      hit = true;
+    }
+
+    // 3. Keep if not hit AND above despawn limit
+    if (!hit && p.y < despawnY) {
+      if (i !== writeIdx) projectiles[writeIdx] = p;
+      writeIdx++;
+    } else {
+      if (projectilePool.length < 64) projectilePool.push(p);
     }
   }
 
-  // Truncate array to remove dead projectiles
-  if (writeIdx < projectiles.length) {
-    projectiles.length = writeIdx
-  }
-
-  return projectiles
+  if (writeIdx < projectiles.length) projectiles.length = writeIdx;
+  return projectiles;
 }
 
 /**
@@ -58,6 +59,9 @@ export const updateProjectiles = (
  * @param {number} [screenWidth=1920] - Width of screen for random X position.
  * @returns {object|null} New projectile object or null.
  */
+const projectilePool = [];
+let nextProjectileId = 0;
+
 export const trySpawnProjectile = (
   stats,
   random = Math.random,
@@ -81,47 +85,32 @@ export const trySpawnProjectile = (
   }
 
   if (random() < spawnChance) {
-    return {
-      id: crypto.randomUUID(),
-      x: random() * screenWidth,
-      y: -100, // Start above screen
-      vx: (random() - 0.5) * 0.5, // Drift left/right
-      vy: 0.3 + random() * 0.4, // Fall speed
-      rotation: 0,
-      vr: (random() - 0.5) * 0.2, // Rotation speed
-      type: random() > 0.5 ? 'bottle' : 'tomato'
+    let p;
+    if (projectilePool.length > 0) {
+      p = projectilePool.pop();
+      p.id = nextProjectileId++;
+      p.x = random() * screenWidth;
+      p.y = -100;
+      p.vx = (random() - 0.5) * 0.5;
+      p.vy = 0.3 + random() * 0.4;
+      p.rotation = 0;
+      p.vr = (random() - 0.5) * 0.2;
+      p.type = random() > 0.5 ? 'bottle' : 'tomato';
+    } else {
+      p = {
+        id: nextProjectileId++,
+        x: random() * screenWidth,
+        y: -100, // Start above screen
+        vx: (random() - 0.5) * 0.5, // Drift left/right
+        vy: 0.3 + random() * 0.4, // Fall speed
+        rotation: 0,
+        vr: (random() - 0.5) * 0.2, // Rotation speed
+        type: random() > 0.5 ? 'bottle' : 'tomato'
+      };
     }
+    return p;
   }
   return null
 }
 
-/**
- * Checks for projectile collisions with the hit zone.
- * @param {Array} projectiles - List of projectiles.
- * @param {number} screenHeight - Screen height to determine hit zone.
- * @param {Function} onHit - Callback when a hit occurs.
- */
-export const checkCollisions = (projectiles, screenHeight, onHit) => {
-  const hitY = screenHeight - 150
-  let writeIdx = 0
 
-  // Optimization: Mutate in-place to avoid GC pressure in tight loop
-  for (let i = 0; i < projectiles.length; i++) {
-    const p = projectiles[i]
-    if (p.y > hitY) {
-      if (onHit) onHit(p)
-      // Do not increment writeIdx -> remove from array
-    } else {
-      if (i !== writeIdx) {
-        projectiles[writeIdx] = p
-      }
-      writeIdx++
-    }
-  }
-
-  if (writeIdx < projectiles.length) {
-    projectiles.length = writeIdx
-  }
-
-  return projectiles
-}

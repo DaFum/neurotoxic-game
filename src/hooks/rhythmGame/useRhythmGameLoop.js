@@ -1,8 +1,7 @@
-import { useCallback } from 'react'
+import { useCallback, useRef, useEffect } from 'react'
 import {
   trySpawnProjectile,
-  updateProjectiles,
-  checkCollisions
+  processProjectiles
 } from '../../utils/hecklerLogic'
 import {
   getGigTimeMs,
@@ -26,6 +25,15 @@ export const useRhythmGameLoop = ({
   const { setIsToxicMode } = setters
   const { activeEvent } = contextState
   const { setLastGigStats, endGig } = contextActions
+
+  const dimensionsRef = useRef({ width: window.innerWidth, height: window.innerHeight })
+  useEffect(() => {
+    const handleResize = () => {
+      dimensionsRef.current = { width: window.innerWidth, height: window.innerHeight }
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const handleCollision = useCallback(() => handleMiss(1, false), [handleMiss])
 
@@ -78,18 +86,13 @@ export const useRhythmGameLoop = ({
         duration > 0 ? Math.min(100, (now / duration) * 100) : 0
       stateRef.progress = Math.max(0, rawProgress)
 
-      const currentInnerHeight = window.innerHeight
-      const currentInnerWidth = window.innerWidth
+      const currentInnerHeight = dimensionsRef.current.height
+      const currentInnerWidth = dimensionsRef.current.width
 
       if (stateRef.projectiles.length > 0) {
-        stateRef.projectiles = updateProjectiles(
+        stateRef.projectiles = processProjectiles(
           stateRef.projectiles,
           deltaMS,
-          currentInnerHeight
-        )
-
-        stateRef.projectiles = checkCollisions(
-          stateRef.projectiles,
           currentInnerHeight,
           handleCollision
         )
