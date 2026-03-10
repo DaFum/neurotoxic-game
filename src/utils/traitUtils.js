@@ -1,6 +1,20 @@
 import { CHARACTERS } from '../data/characters.js'
 
 /**
+ * Pre-calculated lookup for character trait definitions.
+ * Maps: charKey -> { traitId -> traitDef }
+ * Provides O(1) lookup for trait definitions instead of O(N) searching.
+ */
+const TRAIT_DEFS_BY_CHAR = Object.keys(CHARACTERS).reduce((acc, charKey) => {
+  const traits = CHARACTERS[charKey].traits || []
+  acc[charKey] = traits.reduce((traitAcc, trait) => {
+    traitAcc[trait.id] = trait
+    return traitAcc
+  }, {})
+  return acc
+}, {})
+
+/**
  * Monotonic counter for generating unique trait toast IDs.
  * Mirrors the pattern used by createAddToastAction in actionCreators.js.
  * @type {number}
@@ -31,17 +45,28 @@ export const applyTraitUnlocks = (currentState, unlocks) => {
   }
   const nextToasts = [...(currentState.toasts ?? [])]
 
+  // Create a map for O(1) member lookup by ID and lowercase name
+  const memberLookup = new Map()
+  nextBand.members.forEach((m, idx) => {
+    if (m.id && !memberLookup.has(m.id)) {
+      memberLookup.set(m.id, idx)
+    }
+    if (m.name && typeof m.name === 'string') {
+      const lowerName = m.name.toLowerCase()
+      if (!memberLookup.has(lowerName)) {
+        memberLookup.set(lowerName, idx)
+      }
+    }
+  })
+
   unlocks.forEach(u => {
     // Find member by ID or case-insensitive name
-    const memberIndex = nextBand.members.findIndex(
-      m =>
-        (m.id && m.id === u.memberId) ||
-        (m.name &&
-          typeof m.name === 'string' &&
-          typeof u.memberId === 'string' &&
-          m.name.toLowerCase() === u.memberId.toLowerCase())
-    )
-    if (memberIndex === -1) return
+    let memberIndex = memberLookup.get(u.memberId)
+    if (memberIndex === undefined && typeof u.memberId === 'string') {
+      memberIndex = memberLookup.get(u.memberId.toLowerCase())
+    }
+
+    if (memberIndex === undefined) return
 
     const member = nextBand.members[memberIndex]
 
@@ -54,9 +79,7 @@ export const applyTraitUnlocks = (currentState, unlocks) => {
       typeof member.name === 'string' && member.name
         ? member.name.toUpperCase()
         : null
-    const traitDef = charKey
-      ? CHARACTERS[charKey]?.traits?.find(t => t.id === u.traitId)
-      : null
+    const traitDef = charKey ? TRAIT_DEFS_BY_CHAR[charKey]?.[u.traitId] : null
 
     if (!traitDef) return
 
