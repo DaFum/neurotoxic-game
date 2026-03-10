@@ -112,7 +112,7 @@ export const useRhythmGameLoop = ({
 
       const newProjectile = trySpawnProjectile(
         hecklerSessionRef.current,
-        { health: stateRef.health },
+        { health: stateRef.health, combo: stateRef.combo },
         stateRef.rng,
         currentInnerWidth
       )

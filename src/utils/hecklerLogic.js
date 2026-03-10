@@ -54,18 +54,22 @@ export const processProjectiles = (session, projectiles, deltaMS, screenHeight =
       writeIdx++;
     } else {
       if (session.pool.length < MAX_PROJECTILE_POOL_SIZE) {
-        // Strip custom properties to prevent leaks
-        const cleanP = {
-          id: p.id,
-          x: p.x,
-          y: p.y,
-          vx: p.vx,
-          vy: p.vy,
-          rotation: p.rotation,
-          vr: p.vr,
-          type: p.type
-        };
-        session.pool.push(cleanP);
+        // Remove any dynamically added properties to prevent leaks without allocating a new object
+        for (const key in p) {
+          if (
+            key !== 'id' &&
+            key !== 'x' &&
+            key !== 'y' &&
+            key !== 'vx' &&
+            key !== 'vy' &&
+            key !== 'rotation' &&
+            key !== 'vr' &&
+            key !== 'type'
+          ) {
+            delete p[key];
+          }
+        }
+        session.pool.push(p);
       }
     }
   }
