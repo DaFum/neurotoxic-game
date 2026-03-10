@@ -27,8 +27,7 @@ export class NoteManager {
     this.gameStateRef = gameStateRef
     this.onHit = onHit
     this.container = null
-    this.noteSprites = new Map() // Map<note, Sprite>
-    this.activeNotes = [] // Track active notes for fast iteration
+    this.activeEntities = [] // Track active {note, sprite} pairs for fast iteration
     this.nextRenderIndex = 0
     this.lastNotesVersion = null // Tracks game-state notesVersion for song-transition resets
     this.spritePool = []
@@ -88,10 +87,10 @@ export class NoteManager {
     if (notesVersion !== this.lastNotesVersion) {
       this.lastNotesVersion = notesVersion
       this.nextRenderIndex = 0
-      for (let i = 0; i < this.activeNotes.length; i++) {
-        this.destroyNoteSprite(this.activeNotes[i])
+      for (let i = 0; i < this.activeEntities.length; i++) {
+        this.destroyNoteSprite(this.activeEntities[i].sprite)
       }
-      this.activeNotes.length = 0
+      this.activeEntities.length = 0
     }
 
     while (this.nextRenderIndex < notes.length) {
@@ -102,8 +101,7 @@ export class NoteManager {
           const lane = state.lanes[note.laneIndex]
           const sprite = this.acquireSpriteFromPool(lane, note.laneIndex)
           this.container.addChild(sprite)
-          this.noteSprites.set(note, sprite)
-          this.activeNotes.push(note)
+          this.activeEntities.push({ note, sprite })
         }
         this.nextRenderIndex++
       } else {
@@ -112,21 +110,22 @@ export class NoteManager {
     }
 
     let writeIdx = 0
-    for (let i = 0; i < this.activeNotes.length; i++) {
-      const note = this.activeNotes[i]
-      const sprite = this.noteSprites.get(note)
+    for (let i = 0; i < this.activeEntities.length; i++) {
+      const entity = this.activeEntities[i]
+      const note = entity.note
+      const sprite = entity.sprite
 
       if (note.hit) {
         const laneColor = state.lanes?.[note.laneIndex]?.color || 0xffffff
         if (this.onHit) {
           this.onHit(sprite.x, sprite.y, laneColor)
         }
-        this.destroyNoteSprite(note)
+        this.destroyNoteSprite(sprite)
         continue
       }
 
       if (!note.visible) {
-        this.destroyNoteSprite(note)
+        this.destroyNoteSprite(sprite)
         continue
       }
 
@@ -142,11 +141,11 @@ export class NoteManager {
         NOTE_CENTER_OFFSET +
         (sprite.isFallback ? 0 : jitterOffset)
 
-      this.activeNotes[writeIdx++] = note
+      this.activeEntities[writeIdx++] = entity
     }
 
     // Trim the array to the actual number of active notes remaining
-    this.activeNotes.length = writeIdx
+    this.activeEntities.length = writeIdx
   }
 
   acquireSpriteFromPool(lane, laneIndex) {
@@ -228,8 +227,7 @@ export class NoteManager {
     }
   }
 
-  destroyNoteSprite(note) {
-    const sprite = this.noteSprites.get(note)
+  destroyNoteSprite(sprite) {
     if (!sprite) return
 
     if (this.container) {
@@ -238,7 +236,6 @@ export class NoteManager {
 
     // Release to pool instead of destroying
     this.releaseSpriteToPool(sprite)
-    this.noteSprites.delete(note)
   }
 
   releaseSpriteToPool(sprite) {
@@ -251,11 +248,10 @@ export class NoteManager {
   }
 
   dispose() {
-    for (let i = 0; i < this.activeNotes.length; i++) {
-      this.destroyNoteSprite(this.activeNotes[i])
+    for (let i = 0; i < this.activeEntities.length; i++) {
+      this.destroyNoteSprite(this.activeEntities[i].sprite)
     }
-    this.activeNotes = []
-    this.noteSprites.clear()
+    this.activeEntities = []
     this.nextRenderIndex = 0
     this.lastNotesVersion = null
 

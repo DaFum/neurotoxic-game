@@ -302,12 +302,12 @@ describe('NoteManager', () => {
 
     // Before spawn time
     noteManager.update(state, 900, {})
-    assert.equal(noteManager.noteSprites.size, 0)
+    assert.equal(noteManager.activeEntities.length, 0)
 
     // At spawn time
     noteManager.update(state, 1000, {})
-    assert.equal(noteManager.noteSprites.size, 1)
-    assert.ok(noteManager.noteSprites.has(note))
+    assert.equal(noteManager.activeEntities.length, 1)
+    assert.ok(noteManager.activeEntities.some(e => e.note === note))
   })
 
   test('update positions visible notes', () => {
@@ -317,7 +317,7 @@ describe('NoteManager', () => {
 
     // Spawn first
     noteManager.update(state, 1000, {})
-    const sprite = noteManager.noteSprites.get(note)
+    const sprite = noteManager.activeEntities.find(e => e.note === note)?.sprite
 
     // Update again
     noteManager.update(state, 1100, { hitLineY: 800 })
@@ -342,7 +342,7 @@ describe('NoteManager', () => {
 
     // Spawn
     noteManager.update(state, 1000, {})
-    const sprite = noteManager.noteSprites.get(note)
+    const sprite = noteManager.activeEntities.find(e => e.note === note)?.sprite
 
     // Mark as hit
     note.hit = true
@@ -354,7 +354,7 @@ describe('NoteManager', () => {
       sprite.y,
       0xff0000
     ])
-    assert.equal(noteManager.noteSprites.has(note), false)
+    assert.equal(noteManager.activeEntities.some(e => e.note === note), false)
     assert.equal(noteManager.spritePool.length, 1) // Returned to pool
   })
 
@@ -371,8 +371,7 @@ describe('NoteManager', () => {
 
     noteManager.dispose()
 
-    assert.equal(noteManager.activeNotes.length, 0)
-    assert.equal(noteManager.noteSprites.size, 0)
+    assert.equal(noteManager.activeEntities.length, 0)
     assert.equal(noteManager.spritePool.length, 0)
     assert.equal(noteManager.container, null)
     assert.equal(mockSprite.destroy.mock.calls.length, 1)
@@ -405,7 +404,7 @@ describe('NoteManager', () => {
       0,
       'nextRenderIndex stays 0 (note not yet due)'
     )
-    assert.equal(noteManager.noteSprites.size, 0, 'no sprites created yet')
+    assert.equal(noteManager.activeEntities.length, 0, 'no sprites created yet')
   })
 
   test('notesVersion: same version on subsequent calls does not reset render index', () => {
@@ -445,7 +444,7 @@ describe('NoteManager', () => {
     noteManager.update(state, 900, {}) // reset null→0
     noteManager.update(state, 1000, {}) // spawn sprite
     assert.equal(
-      noteManager.noteSprites.size,
+      noteManager.activeEntities.length,
       1,
       'sprite exists before transition'
     )
@@ -472,7 +471,7 @@ describe('NoteManager', () => {
     )
     assert.equal(noteManager.nextRenderIndex, 0, 'nextRenderIndex reset to 0')
     assert.equal(
-      noteManager.noteSprites.size,
+      noteManager.activeEntities.length,
       0,
       'old sprites cleared on version change'
     )
@@ -496,7 +495,7 @@ describe('NoteManager', () => {
     )
 
     noteManager.dispose()
-    assert.equal(noteManager.activeNotes.length, 0)
+    assert.equal(noteManager.activeEntities.length, 0)
     assert.equal(
       noteManager.lastNotesVersion,
       null,

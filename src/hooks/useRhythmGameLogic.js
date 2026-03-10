@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useGameState } from '../context/GameState'
+import { useGameState } from '../context/GameState.jsx'
 import { useRhythmGameState } from './rhythmGame/useRhythmGameState'
 import { useRhythmGameScoring } from './rhythmGame/useRhythmGameScoring'
 import { useRhythmGameAudio } from './rhythmGame/useRhythmGameAudio'

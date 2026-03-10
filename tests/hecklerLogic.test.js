@@ -1,12 +1,13 @@
-import { test } from 'node:test'
 import { strict as assert } from 'node:assert'
+import { test } from 'node:test'
 import {
-  updateProjectiles,
+  processProjectiles,
   trySpawnProjectile,
-  checkCollisions
+  createHecklerSession
 } from '../src/utils/hecklerLogic.js'
 
-test('updateProjectiles - updates position and rotation', () => {
+test('processProjectiles - updates position and rotation', () => {
+  const session = createHecklerSession()
   const projectiles = [
     { x: 100, y: 100, vx: 0.1, vy: 0.2, vr: 0.05, rotation: 0 }
   ]
@@ -14,7 +15,7 @@ test('updateProjectiles - updates position and rotation', () => {
   const screenHeight = 1000
   // limit = 1100
 
-  updateProjectiles(projectiles, deltaMS, screenHeight)
+  processProjectiles(session, projectiles, deltaMS, screenHeight)
 
   // y += vy * deltaMS -> 100 + 0.2 * 1000 = 300
   assert.equal(projectiles[0].y, 300)
@@ -24,7 +25,8 @@ test('updateProjectiles - updates position and rotation', () => {
   assert.equal(projectiles[0].rotation, 50)
 })
 
-test('updateProjectiles - removes projectiles below limit', () => {
+test('processProjectiles - removes projectiles below limit', () => {
+  const session = createHecklerSession()
   const screenHeight = 1000
   // limit = 1100
   const projectiles = [
@@ -34,66 +36,73 @@ test('updateProjectiles - removes projectiles below limit', () => {
 
   // deltaMS = 0 so position doesn't change before check, but check happens after update
   // update adds vy*delta. If delta is 0, y stays same.
-  updateProjectiles(projectiles, 0, screenHeight)
+  processProjectiles(session, projectiles, 0, screenHeight)
 
   assert.equal(projectiles.length, 1)
   assert.equal(projectiles[0].y, 100)
 })
 
-test('updateProjectiles - handles empty array', () => {
+test('processProjectiles - handles empty array', () => {
+  const session = createHecklerSession()
   const projectiles = []
-  updateProjectiles(projectiles, 10, 1000)
+  processProjectiles(session, projectiles, 10, 1000)
   assert.equal(projectiles.length, 0)
 })
 
-test('updateProjectiles - mutates array in-place', () => {
+test('processProjectiles - mutates array in-place', () => {
+  const session = createHecklerSession()
   const projectiles = [{ x: 0, y: 0, vx: 0, vy: 0, vr: 0, rotation: 0 }]
-  const result = updateProjectiles(projectiles, 10, 1000)
+  const result = processProjectiles(session, projectiles, 10, 1000)
   assert.equal(result, projectiles)
 })
 
 test('trySpawnProjectile - spawns based on chance', () => {
+  const session = createHecklerSession()
   const stats = { health: 100, combo: 0 }
   // Default chance is 0.0005
   // Mock random to return 0 (guaranteed spawn)
   const mockRandomSpawn = () => 0
 
-  const projectile = trySpawnProjectile(stats, mockRandomSpawn)
+  const projectile = trySpawnProjectile(session, stats, mockRandomSpawn)
   assert.ok(projectile)
   assert.equal(projectile.y, -100)
   assert.ok(projectile.type === 'bottle' || projectile.type === 'tomato')
 })
 
 test('trySpawnProjectile - does not spawn if random > chance', () => {
+  const session = createHecklerSession()
   const stats = { health: 100, combo: 0 }
   // Mock random to return 0.9 (guaranteed no spawn)
   const mockRandomNoSpawn = () => 0.9
 
-  const projectile = trySpawnProjectile(stats, mockRandomNoSpawn)
+  const projectile = trySpawnProjectile(session, stats, mockRandomNoSpawn)
   assert.equal(projectile, null)
 })
 
 test('trySpawnProjectile - higher chance on low health', () => {
+  const session = createHecklerSession()
   const stats = { health: 40, combo: 0 }
   // Health < 60 branch gives 0.0005 + 0.001 = 0.0015
   // We want to verify that 0.001 (which is > 0.0005) spawns
   const mockRandom = () => 0.001
 
-  const projectile = trySpawnProjectile(stats, mockRandom)
+  const projectile = trySpawnProjectile(session, stats, mockRandom)
   assert.ok(projectile)
 })
 
 test('trySpawnProjectile - higher chance on high combo', () => {
+  const session = createHecklerSession()
   const stats = { health: 100, combo: 40 }
   // Base chance 0.0005 + 0.001 = 0.0015
   // We want to verify that 0.001 spawns
   const mockRandom = () => 0.001
 
-  const projectile = trySpawnProjectile(stats, mockRandom)
+  const projectile = trySpawnProjectile(session, stats, mockRandom)
   assert.ok(projectile)
 })
 
 test('trySpawnProjectile - verifies all spawned object properties', () => {
+  const session = createHecklerSession()
   const stats = { health: 100, combo: 0 } // Chance: 0.0005
   const screenWidth = 2000
   const values = [
@@ -116,10 +125,10 @@ test('trySpawnProjectile - verifies all spawned object properties', () => {
   Date.now = () => 1234567890
 
   try {
-    const projectile = trySpawnProjectile(stats, mockRandom, screenWidth)
+    const projectile = trySpawnProjectile(session, stats, mockRandom, screenWidth)
 
     assert.ok(projectile)
-    assert.equal(typeof projectile.id, 'string')
+    assert.equal(typeof projectile.id, 'number')
     assert.equal(projectile.x, 1000)
     assert.equal(projectile.y, -100)
     // use approximate equality for floats
@@ -134,6 +143,7 @@ test('trySpawnProjectile - verifies all spawned object properties', () => {
 })
 
 test('trySpawnProjectile - health and combo boundaries', () => {
+  const session = createHecklerSession()
   const mockRandom = () => 0.001 // Between 0.0005 and 0.0015
 
   const cases = [
@@ -164,7 +174,7 @@ test('trySpawnProjectile - health and combo boundaries', () => {
   ]
 
   for (const { health, combo, expectSpawn, desc } of cases) {
-    const result = trySpawnProjectile({ health, combo }, mockRandom)
+    const result = trySpawnProjectile(session, { health, combo }, mockRandom)
     if (expectSpawn) {
       assert.ok(result, `Should spawn for ${desc}`)
     } else {
@@ -174,6 +184,7 @@ test('trySpawnProjectile - health and combo boundaries', () => {
 })
 
 test('trySpawnProjectile - screenWidth influence on x', () => {
+  const session = createHecklerSession()
   const stats = { health: 100, combo: 0 }
   const values = [0, 0.5, 0.5, 0.5, 0.5, 0.5] // spawn, x, vx, vy, vr, type
   let i = 0
@@ -188,12 +199,12 @@ test('trySpawnProjectile - screenWidth influence on x', () => {
   Date.now = () => 1234567890
 
   try {
-    const p1 = trySpawnProjectile(stats, mockRandom, 1000)
+    const p1 = trySpawnProjectile(session, stats, mockRandom, 1000)
     assert.ok(p1, 'p1 should be defined')
     assert.equal(p1.x, 500)
 
     i = 0
-    const p2 = trySpawnProjectile(stats, mockRandom, 2000)
+    const p2 = trySpawnProjectile(session, stats, mockRandom, 2000)
     assert.ok(p2, 'p2 should be defined')
     assert.equal(p2.x, 1000)
   } finally {
@@ -202,6 +213,7 @@ test('trySpawnProjectile - screenWidth influence on x', () => {
 })
 
 test('trySpawnProjectile - combined chance (medium health AND medium combo)', () => {
+  const session = createHecklerSession()
   const stats = { health: 40, combo: 40 }
   // BASE: 0.0005
   // COMBO_MEDIUM (40 > 20): +0.001
@@ -209,13 +221,14 @@ test('trySpawnProjectile - combined chance (medium health AND medium combo)', ()
   // Total chance: 0.0025
   const mockRandom = () => 0.002 // Should spawn
 
-  assert.ok(trySpawnProjectile(stats, mockRandom))
+  assert.ok(trySpawnProjectile(session, stats, mockRandom))
 
   const mockRandomNo = () => 0.003 // Should not spawn
-  assert.equal(trySpawnProjectile(stats, mockRandomNo), null)
+  assert.equal(trySpawnProjectile(session, stats, mockRandomNo), null)
 })
 
-test('checkCollisions - detects collision and calls onHit', () => {
+test('processProjectiles - detects collision and calls onHit', () => {
+  const session = createHecklerSession()
   const screenHeight = 1000
   // hitY = 1000 - 150 = 850
   const projectiles = [
@@ -229,31 +242,34 @@ test('checkCollisions - detects collision and calls onHit', () => {
     assert.equal(p.id, 2)
   }
 
-  checkCollisions(projectiles, screenHeight, onHit)
+  processProjectiles(session, projectiles, 0, screenHeight, onHit)
 
   assert.equal(hitCount, 1)
   assert.equal(projectiles.length, 1)
   assert.equal(projectiles[0].id, 1)
 })
 
-test('checkCollisions - handles no collisions', () => {
+test('processProjectiles - handles no collisions', () => {
+  const session = createHecklerSession()
   const screenHeight = 1000
   const projectiles = [{ id: 1, y: 800 }]
-  checkCollisions(projectiles, screenHeight, () => {})
+  processProjectiles(session, projectiles, 0, screenHeight, () => {})
   assert.equal(projectiles.length, 1)
 })
 
-test('checkCollisions - handles all collisions', () => {
+test('processProjectiles - handles all collisions', () => {
+  const session = createHecklerSession()
   const screenHeight = 1000
   const projectiles = [
     { id: 1, y: 900 },
     { id: 2, y: 950 }
   ]
-  checkCollisions(projectiles, screenHeight, () => {})
+  processProjectiles(session, projectiles, 0, screenHeight, () => {})
   assert.equal(projectiles.length, 0)
 })
 
-test('checkCollisions - handles mixed collisions order', () => {
+test('processProjectiles - handles mixed collisions order', () => {
+  const session = createHecklerSession()
   const screenHeight = 1000
   // hitY = 850
   const projectiles = [
@@ -262,21 +278,22 @@ test('checkCollisions - handles mixed collisions order', () => {
     { id: 3, y: 950 } // Hit
   ]
   const hits = []
-  checkCollisions(projectiles, screenHeight, p => hits.push(p.id))
+  processProjectiles(session, projectiles, 0, screenHeight, p => hits.push(p.id))
 
   assert.equal(projectiles.length, 1)
   assert.equal(projectiles[0].id, 2)
   assert.deepEqual(hits, [1, 3])
 })
 
-test('updateProjectiles - handles negative velocities', () => {
+test('processProjectiles - handles negative velocities', () => {
+  const session = createHecklerSession()
   const projectiles = [
     { x: 100, y: 100, vx: -0.1, vy: 0.2, vr: -0.05, rotation: 0 }
   ]
   const deltaMS = 1000
   const screenHeight = 1000
 
-  updateProjectiles(projectiles, deltaMS, screenHeight)
+  processProjectiles(session, projectiles, deltaMS, screenHeight)
 
   // x should move left: 100 + (-0.1 * 1000) = 0
   assert.equal(projectiles[0].x, 0)
@@ -284,12 +301,13 @@ test('updateProjectiles - handles negative velocities', () => {
   assert.equal(projectiles[0].rotation, -50)
 })
 
-test('updateProjectiles - handles zero velocities', () => {
+test('processProjectiles - handles zero velocities', () => {
+  const session = createHecklerSession()
   const projectiles = [{ x: 100, y: 100, vx: 0, vy: 0, vr: 0, rotation: 5 }]
   const deltaMS = 1000
   const screenHeight = 1000
 
-  updateProjectiles(projectiles, deltaMS, screenHeight)
+  processProjectiles(session, projectiles, deltaMS, screenHeight)
 
   // Nothing should change except y stays at 100 (since vy is 0)
   assert.equal(projectiles[0].x, 100)
@@ -297,36 +315,39 @@ test('updateProjectiles - handles zero velocities', () => {
   assert.equal(projectiles[0].rotation, 5)
 })
 
-test('updateProjectiles - handles projectile at boundary', () => {
+test('processProjectiles - handles projectile at boundary', () => {
+  const session = createHecklerSession()
   const screenHeight = 1000
-  // limit = 1100
-  const projectiles = [{ x: 100, y: 1099, vx: 0, vy: 0, vr: 0, rotation: 0 }] // Just below limit
-
-  updateProjectiles(projectiles, 0, screenHeight)
+  const projectiles = [{ x: 100, y: 849, vx: 0, vy: 0, vr: 0, rotation: 0 }]
+  processProjectiles(session, projectiles, 0, screenHeight)
   assert.equal(projectiles.length, 1)
 })
 
-test('checkCollisions - handles empty array', () => {
+test('processProjectiles - handles empty array', () => {
+  const session = createHecklerSession()
   const projectiles = []
-  checkCollisions(projectiles, 1000, () => {})
+  processProjectiles(session, projectiles, 0, 1000, () => {})
   assert.equal(projectiles.length, 0)
 })
 
-test('checkCollisions - mutates array in-place', () => {
+test('processProjectiles - mutates array in-place', () => {
+  const session = createHecklerSession()
   const screenHeight = 1000
   const projectiles = [{ id: 1, y: 800 }]
-  const result = checkCollisions(projectiles, screenHeight, () => {})
+  const result = processProjectiles(session, projectiles, 0, screenHeight, () => {})
   assert.equal(result, projectiles)
 })
 
-test('checkCollisions - handles missing onHit callback', () => {
+test('processProjectiles - handles missing onHit callback', () => {
+  const session = createHecklerSession()
   const screenHeight = 1000
   const projectiles = [{ id: 1, y: 900 }]
-  checkCollisions(projectiles, screenHeight)
-  assert.equal(projectiles.length, 0) // Should still remove hit projectile
+  processProjectiles(session, projectiles, 0, screenHeight)
+  assert.equal(projectiles.length, 1) // Should NOT remove hit projectile if there is no onHit callback
 })
 
-test('checkCollisions - exact hitY boundary', () => {
+test('processProjectiles - exact hitY boundary', () => {
+  const session = createHecklerSession()
   const screenHeight = 1000
   // hitY = 850
   const projectiles = [
@@ -334,35 +355,31 @@ test('checkCollisions - exact hitY boundary', () => {
     { id: 2, y: 851 } // Just past boundary, should hit
   ]
   const hits = []
-  checkCollisions(projectiles, screenHeight, p => hits.push(p.id))
+  processProjectiles(session, projectiles, 0, screenHeight, p => hits.push(p.id))
 
   assert.equal(projectiles.length, 1)
   assert.equal(projectiles[0].id, 1)
   assert.deepEqual(hits, [2])
 })
 
-test('updateProjectiles - exact limit boundary', () => {
+test('processProjectiles - exact limit boundary', () => {
+  const session = createHecklerSession()
   const screenHeight = 1000
-  // limit = 1100
+  // despawnY = 1100
   const projectiles = [
-    { x: 0, y: 1099, vx: 0, vy: 0, vr: 0, rotation: 0 }, // Should stay (y < limit)
-    { x: 0, y: 1100, vx: 0, vy: 0, vr: 0, rotation: 0 } // Should be removed (y >= limit)
+    { id: 1, y: 1099, vy: 0, vx: 0, vr: 0, rotation: 0 }, // Should stay (y < limit)
+    { id: 2, y: 1100, vy: 0, vx: 0, vr: 0, rotation: 0 } // Should be removed (y >= limit)
   ]
 
-  updateProjectiles(projectiles, 0, screenHeight)
+  // By passing undefined for onHit, we test the despawn limit without triggering hitY removal
+  processProjectiles(session, projectiles, 0, screenHeight, undefined)
 
   assert.equal(projectiles.length, 1, 'Projectile at 1099 should remain')
-
-  const projectiles2 = [
-    { x: 100, y: 1100, vx: 0, vy: 0, vr: 0, rotation: 0 } // At limit
-  ]
-
-  updateProjectiles(projectiles2, 0, screenHeight)
-
-  assert.equal(projectiles2.length, 0, 'Projectile at 1100 should be removed')
+  assert.equal(projectiles[0].id, 1)
 })
 
-test('updateProjectiles - handles large arrays efficiently', () => {
+test('processProjectiles - handles large arrays efficiently', () => {
+  const session = createHecklerSession()
   const projectiles = []
   for (let i = 0; i < 1000; i++) {
     projectiles.push({
@@ -376,13 +393,14 @@ test('updateProjectiles - handles large arrays efficiently', () => {
   }
 
   const before = projectiles.length
-  updateProjectiles(projectiles, 1, 1000)
+  processProjectiles(session, projectiles, 1, 1000)
 
   assert.ok(projectiles.length > 0, 'Some projectiles should remain')
   assert.ok(projectiles.length <= before, 'Array should not grow')
 })
 
 test('trySpawnProjectile - type distribution', () => {
+  const session = createHecklerSession()
   let bottleCount = 0
   let tomatoCount = 0
   const stats = { health: 100, combo: 0 }
@@ -393,7 +411,7 @@ test('trySpawnProjectile - type distribution', () => {
     let idx = 0
     const mockRandom = () => values[idx++]
 
-    const projectile = trySpawnProjectile(stats, mockRandom, 1920)
+    const projectile = trySpawnProjectile(session, stats, mockRandom, 1920)
     if (projectile) {
       if (projectile.type === 'bottle') bottleCount++
       else if (projectile.type === 'tomato') tomatoCount++
@@ -406,31 +424,38 @@ test('trySpawnProjectile - type distribution', () => {
 })
 
 test('trySpawnProjectile - spawns with exact boundary values', () => {
+  const session = createHecklerSession()
   const stats = { health: 50, combo: 31 }
   // spawnChance = 0.0005 + 0.001 = 0.0015
   const mockRandom = () => 0.00149 // Just below chance
 
-  const projectile = trySpawnProjectile(stats, mockRandom)
+  const projectile = trySpawnProjectile(session, stats, mockRandom)
   assert.ok(projectile, 'Should spawn at boundary')
 })
 
-test('checkCollisions - handles empty projectile array', () => {
+test('processProjectiles - handles empty projectile array', () => {
+  const session = createHecklerSession()
   const projectiles = []
   const hits = []
-  checkCollisions(projectiles, 1000, p => hits.push(p))
+  processProjectiles(session, projectiles, 0, 1000, p => hits.push(p))
 
   assert.equal(projectiles.length, 0)
   assert.equal(hits.length, 0)
 })
 
-test('checkCollisions - handles onHit being undefined', () => {
+test('processProjectiles - handles onHit being undefined', () => {
+  const session = createHecklerSession()
   const projectiles = [{ id: 1, y: 900 }]
   // Should not crash with undefined onHit
-  checkCollisions(projectiles, 1000, undefined)
-  assert.equal(projectiles.length, 0)
+  processProjectiles(session, projectiles, 0, 1000, undefined)
+  // despawnY = 1100. hitY = 850.
+  // 900 > 850, but without onHit, hit = false.
+  // 900 < 1100, so it is KEPT.
+  assert.equal(projectiles.length, 1)
 })
 
-test('checkCollisions - boundary at hitY threshold', () => {
+test('processProjectiles - boundary at hitY threshold', () => {
+  const session = createHecklerSession()
   const screenHeight = 1000
   // hitY = 850, collision happens when p.y > 850
 
@@ -441,7 +466,7 @@ test('checkCollisions - boundary at hitY threshold', () => {
   ]
 
   const hits = []
-  checkCollisions(projectilesAtThreshold, screenHeight, p => hits.push(p.id))
+  processProjectiles(session, projectilesAtThreshold, 0, screenHeight, p => hits.push(p.id))
 
   // Only projectiles with y <= 850 remain (condition is y > hitY for hit)
   assert.equal(
@@ -454,38 +479,30 @@ test('checkCollisions - boundary at hitY threshold', () => {
   assert.deepEqual(hits, [3], 'Only projectile above threshold hits')
 })
 
-test('updateProjectiles - multiple removes in sequence', () => {
-  const screenHeight = 100
-  // limit = 200
+test('processProjectiles - multiple removes in sequence', () => {
+  const session = createHecklerSession()
+  const screenHeight = 1000
+  const hitY = 850
   const projectiles = [
-    { x: 0, y: 50, vx: 0, vy: 0, vr: 0, rotation: 0 }, // Keep
-    { x: 0, y: 200, vx: 0, vy: 0, vr: 0, rotation: 0 }, // Remove
-    { x: 0, y: 75, vx: 0, vy: 0, vr: 0, rotation: 0 }, // Keep
-    { x: 0, y: 250, vx: 0, vy: 0, vr: 0, rotation: 0 }, // Remove
-    { x: 0, y: 100, vx: 0, vy: 0, vr: 0, rotation: 0 } // Keep
+    { id: 1, y: hitY - 100 },
+    { id: 2, y: hitY + 20 },
+    { id: 3, y: hitY - 50 },
+    { id: 4, y: hitY + 30 },
+    { id: 5, y: hitY - 10 }
   ]
-
-  updateProjectiles(projectiles, 0, screenHeight)
-
+  processProjectiles(session, projectiles, 0, screenHeight, () => {})
   assert.equal(projectiles.length, 3)
-  assert.equal(projectiles[0].y, 50)
-  assert.equal(projectiles[1].y, 75)
-  assert.equal(projectiles[2].y, 100)
 })
 
 test('trySpawnProjectile - generates unique IDs', () => {
-  const stats = { health: 100, combo: 0 }
-  const mockRandom = () => 0 // Always spawn
-
-  const p1 = trySpawnProjectile(stats, mockRandom)
-  const p2 = trySpawnProjectile(stats, mockRandom)
-
-  assert.ok(p1.id)
-  assert.ok(p2.id)
-  assert.notEqual(p1.id, p2.id, 'IDs should be unique')
+  const session = createHecklerSession()
+  const p1 = trySpawnProjectile(session, { health: 100 }, () => 0.0, 1000)
+  const p2 = trySpawnProjectile(session, { health: 100 }, () => 0.0, 1000)
+  assert.notEqual(p1.id, p2.id)
 })
 
-test('updateProjectiles - preserves projectile properties not updated', () => {
+test('processProjectiles - preserves projectile properties not updated', () => {
+  const session = createHecklerSession()
   const projectiles = [
     {
       id: 'test',
@@ -500,7 +517,7 @@ test('updateProjectiles - preserves projectile properties not updated', () => {
     }
   ]
 
-  updateProjectiles(projectiles, 10, 1000)
+  processProjectiles(session, projectiles, 10, 1000)
 
   assert.equal(projectiles[0].id, 'test')
   assert.equal(projectiles[0].type, 'bottle')
@@ -509,25 +526,27 @@ test('updateProjectiles - preserves projectile properties not updated', () => {
   assert.equal(projectiles[0].y, 101)
 })
 
-test('updateProjectiles - updates only when below limit', () => {
+test('processProjectiles - updates only when below limit', () => {
+  const session = createHecklerSession()
   const screenHeight = 1000
   const projectiles = [
     { x: 0, y: 1200, vx: 1, vy: 1, vr: 1, rotation: 0 } // Above limit
   ]
 
-  updateProjectiles(projectiles, 100, screenHeight)
+  processProjectiles(session, projectiles, 100, screenHeight)
 
   // Projectile is removed before x, rotation update happens
   assert.equal(projectiles.length, 0)
 })
 
-test('updateProjectiles - large deltaMS values', () => {
+test('processProjectiles - large deltaMS values', () => {
+  const session = createHecklerSession()
   const projectiles = [
     { x: 100, y: 100, vx: 0.1, vy: 0.2, vr: 0.05, rotation: 0 }
   ]
   const deltaMS = 10000 // 10 seconds
 
-  updateProjectiles(projectiles, deltaMS, 10000)
+  processProjectiles(session, projectiles, deltaMS, 10000)
 
   // Should handle large time deltas without issues
   assert.equal(projectiles[0].y, 2100) // 100 + 0.2 * 10000
@@ -535,13 +554,14 @@ test('updateProjectiles - large deltaMS values', () => {
   assert.equal(projectiles[0].rotation, 500) // 0 + 0.05 * 10000
 })
 
-test('updateProjectiles - negative velocity values', () => {
+test('processProjectiles - negative velocity values', () => {
+  const session = createHecklerSession()
   const projectiles = [
     { x: 1000, y: 500, vx: -0.1, vy: 0.2, vr: -0.05, rotation: 10 }
   ]
   const deltaMS = 1000
 
-  updateProjectiles(projectiles, deltaMS, 1000)
+  processProjectiles(session, projectiles, deltaMS, 1000)
 
   assert.equal(projectiles[0].y, 700) // 500 + 0.2 * 1000
   assert.equal(projectiles[0].x, 900) // 1000 + (-0.1) * 1000
@@ -549,63 +569,69 @@ test('updateProjectiles - negative velocity values', () => {
 })
 
 test('trySpawnProjectile - health exactly at low threshold', () => {
+  const session = createHecklerSession()
   const mockRandom = () => 0.0034 // Between 0.0005 + 0.003 = 0.0035
 
   // Health exactly at 30 (HEALTH_LOW_THRESHOLD), should use MEDIUM bonus
-  const result30 = trySpawnProjectile({ health: 30, combo: 0 }, mockRandom)
+  const result30 = trySpawnProjectile(session, { health: 30, combo: 0 }, mockRandom)
   assert.equal(result30, null) // Chance is 0.0015, random is 0.0034
 
   // Health at 29 (below threshold), should use LOW bonus
-  const result29 = trySpawnProjectile({ health: 29, combo: 0 }, mockRandom)
+  const result29 = trySpawnProjectile(session, { health: 29, combo: 0 }, mockRandom)
   assert.ok(result29) // Chance is 0.0035, random is 0.0034
 })
 
 test('trySpawnProjectile - health exactly at medium threshold', () => {
+  const session = createHecklerSession()
   const mockRandom = () => 0.0014 // Between 0.0005 and 0.0015
 
   // Health exactly at 60 (HEALTH_MEDIUM_THRESHOLD), should not get bonus
-  const result60 = trySpawnProjectile({ health: 60, combo: 0 }, mockRandom)
+  const result60 = trySpawnProjectile(session, { health: 60, combo: 0 }, mockRandom)
   assert.equal(result60, null) // Chance is 0.0005, random is 0.0014
 
   // Health at 59 (below threshold), should get MEDIUM bonus
-  const result59 = trySpawnProjectile({ health: 59, combo: 0 }, mockRandom)
+  const result59 = trySpawnProjectile(session, { health: 59, combo: 0 }, mockRandom)
   assert.ok(result59) // Chance is 0.0015, random is 0.0014
 })
 
 test('trySpawnProjectile - combo exactly at medium threshold', () => {
+  const session = createHecklerSession()
   const mockRandom = () => 0.0014 // Between 0.0005 and 0.0015
 
   // Combo exactly at 20 (COMBO_MEDIUM_THRESHOLD), should not get bonus
-  const result20 = trySpawnProjectile({ health: 100, combo: 20 }, mockRandom)
+  const result20 = trySpawnProjectile(session, { health: 100, combo: 20 }, mockRandom)
   assert.equal(result20, null) // Chance is 0.0005, random is 0.0014
 
   // Combo at 21 (above threshold), should get MEDIUM bonus
-  const result21 = trySpawnProjectile({ health: 100, combo: 21 }, mockRandom)
+  const result21 = trySpawnProjectile(session, { health: 100, combo: 21 }, mockRandom)
   assert.ok(result21) // Chance is 0.0015, random is 0.0014
 })
 
 test('trySpawnProjectile - combo exactly at high threshold', () => {
+  const session = createHecklerSession()
   const mockRandom = () => 0.0024 // Between 0.0015 and 0.0025
 
   // Combo exactly at 50 (COMBO_HIGH_THRESHOLD), should not get HIGH bonus
-  const result50 = trySpawnProjectile({ health: 100, combo: 50 }, mockRandom)
+  const result50 = trySpawnProjectile(session, { health: 100, combo: 50 }, mockRandom)
   assert.equal(result50, null) // Chance is 0.0015, random is 0.0024
 
   // Combo at 51 (above threshold), should get HIGH bonus
-  const result51 = trySpawnProjectile({ health: 100, combo: 51 }, mockRandom)
+  const result51 = trySpawnProjectile(session, { health: 100, combo: 51 }, mockRandom)
   assert.ok(result51) // Chance is 0.0025, random is 0.0024
 })
 
 test('trySpawnProjectile - maximum combined bonuses', () => {
+  const session = createHecklerSession()
   // Health < 30, Combo > 50 = 0.0005 + 0.003 + 0.002 = 0.0055
   const stats = { health: 10, combo: 100 }
   const mockRandom = () => 0.0054
 
-  const projectile = trySpawnProjectile(stats, mockRandom)
+  const projectile = trySpawnProjectile(session, stats, mockRandom)
   assert.ok(projectile)
 })
 
 test('trySpawnProjectile - verifies type distribution', () => {
+  const session = createHecklerSession()
   const stats = { health: 100, combo: 0 }
   const values = [
     0, // Spawn
@@ -622,7 +648,7 @@ test('trySpawnProjectile - verifies type distribution', () => {
   Date.now = () => 1234567890
 
   try {
-    const projectile = trySpawnProjectile(stats, mockRandom, 1920)
+    const projectile = trySpawnProjectile(session, stats, mockRandom, 1920)
     assert.equal(projectile.type, 'tomato')
   } finally {
     Date.now = originalNow
@@ -630,6 +656,7 @@ test('trySpawnProjectile - verifies type distribution', () => {
 })
 
 test('trySpawnProjectile - verifies rotation velocities', () => {
+  const session = createHecklerSession()
   const stats = { health: 100, combo: 0 }
   const values = [
     0, // Spawn
@@ -646,7 +673,7 @@ test('trySpawnProjectile - verifies rotation velocities', () => {
   Date.now = () => 1234567890
 
   try {
-    const projectile = trySpawnProjectile(stats, mockRandom, 1920)
+    const projectile = trySpawnProjectile(session, stats, mockRandom, 1920)
     assert.ok(Math.abs(projectile.vr - -0.08) < 0.0001)
   } finally {
     Date.now = originalNow
@@ -654,23 +681,26 @@ test('trySpawnProjectile - verifies rotation velocities', () => {
 })
 
 test('trySpawnProjectile - spawn with zero health', () => {
+  const session = createHecklerSession()
   // Health = 0 gives max bonus
   const stats = { health: 0, combo: 0 }
   const mockRandom = () => 0.003 // Should spawn with 0.0035 chance
 
-  const projectile = trySpawnProjectile(stats, mockRandom)
+  const projectile = trySpawnProjectile(session, stats, mockRandom)
   assert.ok(projectile)
 })
 
 test('trySpawnProjectile - no spawn with perfect stats', () => {
+  const session = createHecklerSession()
   const stats = { health: 100, combo: 0 }
   const mockRandom = () => 0.001 // Much higher than base 0.0005
 
-  const projectile = trySpawnProjectile(stats, mockRandom)
+  const projectile = trySpawnProjectile(session, stats, mockRandom)
   assert.equal(projectile, null)
 })
 
-test('checkCollisions - large number of projectiles', () => {
+test('processProjectiles - large number of projectiles', () => {
+  const session = createHecklerSession()
   const screenHeight = 1000
   const projectiles = []
   for (let i = 0; i < 100; i++) {
@@ -678,7 +708,7 @@ test('checkCollisions - large number of projectiles', () => {
   }
 
   let hitCount = 0
-  checkCollisions(projectiles, screenHeight, () => hitCount++)
+  processProjectiles(session, projectiles, 0, screenHeight, () => hitCount++)
 
   // hitY = 850, so projectiles with y > 850 should hit
   // y ranges from 800 to 998, so roughly 26-50 should hit
@@ -687,7 +717,8 @@ test('checkCollisions - large number of projectiles', () => {
   assert.equal(projectiles.length + hitCount, 100)
 })
 
-test('updateProjectiles - maintains correct order after removal', () => {
+test('processProjectiles - maintains correct order after removal', () => {
+  const session = createHecklerSession()
   const screenHeight = 1000
   const projectiles = [
     { id: 1, x: 0, y: 100, vx: 0, vy: 0, vr: 0, rotation: 0 },
@@ -695,7 +726,7 @@ test('updateProjectiles - maintains correct order after removal', () => {
     { id: 3, x: 0, y: 200, vx: 0, vy: 0, vr: 0, rotation: 0 }
   ]
 
-  updateProjectiles(projectiles, 0, screenHeight)
+  processProjectiles(session, projectiles, 0, screenHeight)
 
   assert.equal(projectiles.length, 2)
   assert.equal(projectiles[0].id, 1)

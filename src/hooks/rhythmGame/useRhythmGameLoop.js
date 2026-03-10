@@ -1,8 +1,8 @@
-import { useCallback } from 'react'
+import { useCallback, useRef, useEffect } from 'react'
 import {
   trySpawnProjectile,
-  updateProjectiles,
-  checkCollisions
+  processProjectiles,
+  createHecklerSession
 } from '../../utils/hecklerLogic'
 import {
   getGigTimeMs,
@@ -26,6 +26,25 @@ export const useRhythmGameLoop = ({
   const { setIsToxicMode } = setters
   const { activeEvent } = contextState
   const { setLastGigStats, endGig } = contextActions
+
+  const hecklerSessionRef = useRef(createHecklerSession())
+  const dimensionsRef = useRef({
+    width: typeof window !== 'undefined' ? window.innerWidth : 1920,
+    height: typeof window !== 'undefined' ? window.innerHeight : 1080
+  })
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleResize = () => {
+      dimensionsRef.current = { width: window.innerWidth, height: window.innerHeight }
+    }
+    window.addEventListener('resize', handleResize)
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', handleResize)
+      }
+    }
+  }, [])
 
   const handleCollision = useCallback(() => handleMiss(1, false), [handleMiss])
 
@@ -78,25 +97,22 @@ export const useRhythmGameLoop = ({
         duration > 0 ? Math.min(100, (now / duration) * 100) : 0
       stateRef.progress = Math.max(0, rawProgress)
 
-      const currentInnerHeight = window.innerHeight
-      const currentInnerWidth = window.innerWidth
+      const currentInnerHeight = dimensionsRef.current.height
+      const currentInnerWidth = dimensionsRef.current.width
 
       if (stateRef.projectiles.length > 0) {
-        stateRef.projectiles = updateProjectiles(
+        stateRef.projectiles = processProjectiles(
+          hecklerSessionRef.current,
           stateRef.projectiles,
           deltaMS,
-          currentInnerHeight
-        )
-
-        stateRef.projectiles = checkCollisions(
-          stateRef.projectiles,
           currentInnerHeight,
           handleCollision
         )
       }
 
       const newProjectile = trySpawnProjectile(
-        { health: stateRef.health },
+        hecklerSessionRef.current,
+        { health: stateRef.health, combo: stateRef.combo },
         stateRef.rng,
         currentInnerWidth
       )
