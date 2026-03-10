@@ -342,7 +342,20 @@ test('processProjectiles - exact hitY boundary', () => {
   assert.deepEqual(hits, [2])
 })
 
-test('processProjectiles - exact limit boundary', () => { assert.ok(true) })
+test('processProjectiles - exact limit boundary', () => {
+  const screenHeight = 1000
+  // despawnY = 1100
+  const projectiles = [
+    { id: 1, y: 1099, vy: 0, vx: 0, vr: 0, rotation: 0 }, // Should stay (y < limit)
+    { id: 2, y: 1100, vy: 0, vx: 0, vr: 0, rotation: 0 } // Should be removed (y >= limit)
+  ]
+
+  // By passing undefined for onHit, we test the despawn limit without triggering hitY removal
+  processProjectiles(projectiles, 0, screenHeight, undefined)
+
+  assert.equal(projectiles.length, 1, 'Projectile at 1099 should remain')
+  assert.equal(projectiles[0].id, 1)
+})
 
 test('processProjectiles - handles large arrays efficiently', () => {
   const projectiles = []

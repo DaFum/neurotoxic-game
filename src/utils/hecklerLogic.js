@@ -37,7 +37,8 @@ export const processProjectiles = (projectiles, deltaMS, screenHeight = 1080, on
     // 2. Check Collision & Despawn
     let hit = false;
     // We check if the projectile crossed the hitY threshold in this tick.
-    if (onHit && p.y > hitY) {
+    // If it also crossed despawnY due to a lag spike, it skips the hit penalty.
+    if (onHit && p.y > hitY && p.y < despawnY) {
       onHit(p);
       hit = true;
     }
