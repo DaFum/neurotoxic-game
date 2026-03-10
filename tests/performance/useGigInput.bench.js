@@ -32,7 +32,7 @@ function runBenchmark(lanesCount) {
   let cachedLanesArray = null
   let keyToLaneMap = new Map()
 
-  const getLaneIndex = (key) => {
+  const getLaneIndex = key => {
     const currentLanes = gameStateRef.current?.lanes
     if (currentLanes && currentLanes !== cachedLanesArray) {
       cachedLanesArray = currentLanes
@@ -61,7 +61,9 @@ function runBenchmark(lanesCount) {
   console.log(`\n--- N = ${lanesCount} ---`)
   console.log(`Current O(N): ${timeCurrent.toFixed(2)}ms`)
   console.log(`Optimized O(1): ${timeMap.toFixed(2)}ms`)
-  console.log(`Improvement: ${(((timeCurrent - timeMap) / timeCurrent) * 100).toFixed(2)}%`)
+  console.log(
+    `Improvement: ${(((timeCurrent - timeMap) / timeCurrent) * 100).toFixed(2)}%`
+  )
 }
 
 runBenchmark(3)

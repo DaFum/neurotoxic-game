@@ -327,7 +327,11 @@ describe('EffectManager', () => {
 
     // Verify oldest victim is replaced
     const newEffectAtZero = effectManager.activeEffects[0]
-    assert.equal(newEffectAtZero.x, 100, 'The oldest effect should have been replaced with the new one at x=100')
+    assert.equal(
+      newEffectAtZero.x,
+      100,
+      'The oldest effect should have been replaced with the new one at x=100'
+    )
 
     // Verify length is still 50
     assert.equal(effectManager.effectCount, 50)
