@@ -16,20 +16,22 @@ import PropTypes from 'prop-types'
  * @param {React.Ref} [props.ref] - Forwarded ref.
  */
 export const ActionButton = memo(
-  forwardRef(({ children, onClick, type = 'button', className = '', ...rest }, ref) => (
-    <button
-      ref={ref}
-      type={type}
-      onClick={onClick}
-      className={`px-8 py-4 bg-(--toxic-green) text-(--void-black) font-bold uppercase
+  forwardRef(
+    ({ children, onClick, type = 'button', className = '', ...rest }, ref) => (
+      <button
+        ref={ref}
+        type={type}
+        onClick={onClick}
+        className={`px-8 py-4 bg-(--toxic-green) text-(--void-black) font-bold uppercase
                 hover:scale-105 transition-transform
                 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-(--toxic-green-20)
                 ${className}`}
-      {...rest}
-    >
-      {children}
-    </button>
-  ))
+        {...rest}
+      >
+        {children}
+      </button>
+    )
+  )
 )
 
 ActionButton.propTypes = {

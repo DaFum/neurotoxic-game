@@ -135,10 +135,14 @@ export const HUD = () => {
               aria-label={audioState.isMuted ? 'Unmute system' : 'Mute system'}
               className='pointer-events-auto bg-(--void-black)/90 border border-(--toxic-green)/60 p-2 text-(--toxic-green) w-fit hover:bg-(--toxic-green) hover:text-(--void-black) transition-colors block'
             >
-              {audioState.isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+              {audioState.isMuted ? (
+                <VolumeX size={14} />
+              ) : (
+                <Volume2 size={14} />
+              )}
             </button>
           </Tooltip>
-          <Tooltip content="Shortcuts (?)">
+          <Tooltip content='Shortcuts (?)'>
             <button
               type='button'
               onClick={() => setShowHelp(prev => !prev)}
