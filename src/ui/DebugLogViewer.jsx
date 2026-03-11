@@ -79,14 +79,14 @@ export const DebugLogViewer = ({ className = '' }) => {
             <button
               type='button'
               onClick={() => logger.clear()}
-              className='text-(--ash-gray) hover:text-(--star-white) hover:bg-(--void-black) px-2 border-2 border-(--ash-gray) uppercase shadow-[4px_4px_0px_var(--ash-gray)] transition-all duration-150'
+              className='text-(--ash-gray) hover:text-(--star-white) hover:bg-(--void-black) px-2 border-2 border-(--ash-gray) uppercase shadow-[4px_4px_0px_--ash-gray] transition-all duration-150'
             >
               CLEAR
             </button>
             <button
               type='button'
               onClick={() => console.log(logger.dump())}
-              className='text-(--ash-gray) hover:text-(--star-white) hover:bg-(--void-black) px-2 border-2 border-(--ash-gray) uppercase shadow-[4px_4px_0px_var(--ash-gray)] transition-all duration-150'
+              className='text-(--ash-gray) hover:text-(--star-white) hover:bg-(--void-black) px-2 border-2 border-(--ash-gray) uppercase shadow-[4px_4px_0px_--ash-gray] transition-all duration-150'
             >
               DUMP TO CONSOLE
             </button>
@@ -95,7 +95,7 @@ export const DebugLogViewer = ({ className = '' }) => {
             type='button'
             onClick={() => setVisible(false)}
             aria-label='Close log'
-            className='border-2 border-(--blood-red) bg-(--void-black) text-(--blood-red) px-2 py-1 shadow-[4px_4px_0px_var(--blood-red)] hover:bg-(--blood-red) hover:text-(--void-black) uppercase font-bold transition-all duration-150'
+            className='border-2 border-(--blood-red) bg-(--void-black) text-(--blood-red) px-2 py-1 shadow-[4px_4px_0px_--blood-red] hover:bg-(--blood-red) hover:text-(--void-black) uppercase font-bold transition-all duration-150'
           >
             CLOSE
           </button>

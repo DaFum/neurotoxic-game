@@ -475,11 +475,11 @@ export const usePostGigLogic = () => {
     if (!financials) return
 
     const fameGain = Math.min(MAX_FAME_GAIN, 50 + Math.floor(perfScore * 1.5))
-    const newMoney = Math.max(0, player.money + financials.net)
+    const newMoney = clampPlayerMoney(player.money + financials.net)
 
     updatePlayer({
       money: newMoney,
-      fame: player.fame + fameGain
+      fame: Math.max(0, player.fame + fameGain)
     })
 
     if (activeStoryFlags?.includes('cancel_quest_active')) {

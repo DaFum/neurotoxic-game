@@ -118,11 +118,11 @@ export const BandHQ = ({
         }}
       />
 
-      <div className='relative z-50 w-full max-w-5xl h-[90vh] border-2 border-(--toxic-green) bg-(--void-black) flex flex-col shadow-[0_0_50px_var(--toxic-green)]'>
+      <div className='relative z-50 w-full max-w-5xl h-[90vh] border-2 border-(--toxic-green) bg-(--void-black) flex flex-col shadow-[0_0_50px_--toxic-green]'>
         {/* Header */}
         <div className='flex justify-between items-center p-6 border-b-2 border-(--toxic-green) bg-(--void-black)/50'>
           <div>
-            <h2 className="text-4xl text-(--toxic-green) font-['Metal_Mania'] drop-shadow-[0_0_5px_var(--toxic-green)]">
+            <h2 className="text-4xl text-(--toxic-green) font-['Metal_Mania'] drop-shadow-[0_0_5px_--toxic-green]">
               {t('ui:hq.title', { defaultValue: 'BAND HQ' })}
             </h2>
             <p className='text-(--ash-gray) text-sm font-mono uppercase tracking-widest'>
@@ -170,7 +170,7 @@ export const BandHQ = ({
                 className={`flex-1 min-w-[120px] py-3 px-4 text-center text-sm font-bold tracking-[0.1em] uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2
                   ${
                     isActive
-                      ? 'bg-(--toxic-green) text-(--void-black) shadow-[0_-2px_10px_var(--toxic-green)]'
+                      ? 'bg-(--toxic-green) text-(--void-black) shadow-[0_-2px_10px_--toxic-green]'
                       : 'bg-(--void-black) text-(--toxic-green) hover:bg-(--toxic-green)/10'
                   }`}
               >
