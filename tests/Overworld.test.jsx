@@ -4,10 +4,6 @@ import { Overworld } from '../src/scenes/Overworld.jsx'
 import { GameStateProvider } from '../src/context/GameState'
 
 // Mocks
-vi.mock('react-i18next', () => ({
-  initReactI18next: { type: '3rdParty', init: () => {} },
-  useTranslation: () => ({ t: key => key })
-}))
 
 vi.mock('../src/hooks/useTravelLogic', () => ({
   useTravelLogic: () => ({

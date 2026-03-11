@@ -19,7 +19,7 @@ describe('Tooltip Component', () => {
       </Tooltip>
     )
 
-    const trigger = getByText('Hover Me').parentElement
+    const trigger = getByText('Hover Me')
     fireEvent.mouseEnter(trigger)
     expect(getByText('Tooltip Content')).toBeInTheDocument()
 
@@ -34,7 +34,7 @@ describe('Tooltip Component', () => {
       </Tooltip>
     )
 
-    const trigger = getByText('Hover Me').parentElement
+    const trigger = getByText('Hover Me')
     fireEvent.focus(trigger)
     expect(getByText('Tooltip Content')).toBeInTheDocument()
 

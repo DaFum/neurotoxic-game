@@ -144,6 +144,7 @@ export const usePostGigLogic = () => {
         const fallbackMsg = t('ui:postGig.socialOptionsUnavailable', {
           defaultValue: DEFAULT_SOCIAL_UNAVAILABLE_MSG
         })
+        // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
         setPostResult({
           type: 'ERROR',
           success: false,
@@ -152,7 +153,9 @@ export const usePostGigLogic = () => {
           moneyChange: 0,
           message: fallbackMsg
         })
+        // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
         setPhase('COMPLETE')
+        // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
         addToast(fallbackMsg, 'error')
       }
     }

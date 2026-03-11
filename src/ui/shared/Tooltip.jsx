@@ -1,10 +1,10 @@
-import { useState, useId } from 'react'
+import { useState, useId, cloneElement, isValidElement } from 'react'
 import PropTypes from 'prop-types'
 
 /**
  * Tooltip - Displays a floating tooltip on hover.
  * @param {Object} props
- * @param {React.ReactNode} props.children - The trigger element.
+ * @param {React.ReactElement} props.children - The trigger element. Must be a valid React element.
  * @param {React.ReactNode} props.content - The tooltip content.
  * @param {string} [props.className] - Additional CSS classes for the container.
  */
@@ -12,18 +12,35 @@ export const Tooltip = ({ children, content, className = '' }) => {
   const [isVisible, setIsVisible] = useState(false)
   const tooltipId = useId()
 
+  if (!isValidElement(children)) {
+    console.warn('Tooltip children must be a single valid React element.')
+    return children
+  }
+
+  // eslint-disable-next-line @eslint-react/no-clone-element
+  const trigger = cloneElement(children, {
+    onMouseEnter: (e) => {
+      setIsVisible(true)
+      if (children.props.onMouseEnter) children.props.onMouseEnter(e)
+    },
+    onMouseLeave: (e) => {
+      setIsVisible(false)
+      if (children.props.onMouseLeave) children.props.onMouseLeave(e)
+    },
+    onFocus: (e) => {
+      setIsVisible(true)
+      if (children.props.onFocus) children.props.onFocus(e)
+    },
+    onBlur: (e) => {
+      setIsVisible(false)
+      if (children.props.onBlur) children.props.onBlur(e)
+    },
+    'aria-describedby': isVisible ? tooltipId : children.props['aria-describedby']
+  })
+
   return (
     <div className={`inline-block relative ${className}`}>
-      <span
-        tabIndex={0}
-        onMouseEnter={() => setIsVisible(true)}
-        onMouseLeave={() => setIsVisible(false)}
-        onFocus={() => setIsVisible(true)}
-        onBlur={() => setIsVisible(false)}
-        aria-describedby={isVisible ? tooltipId : undefined}
-      >
-        {children}
-      </span>
+      {trigger}
       {isVisible && (
         <div
           id={tooltipId}
