@@ -29,3 +29,4 @@ test_output.txt
 
 # Playwright screenshots
 output/playwright/**/*.png
+coverage/

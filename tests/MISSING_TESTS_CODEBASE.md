@@ -10,7 +10,7 @@ This inventory lists source files with **no direct test coverage target** (no ma
   - a test file text references the source path/import.
 - Everything else is currently considered missing test coverage and listed below.
 
-## Missing test targets (19)
+## Missing test targets (15)
 
 ### Context / reducers
 
@@ -19,9 +19,6 @@ This inventory lists source files with **no direct test coverage target** (no ma
 ### Data modules
 
 - `src/data/brandDeals.js`
-- `src/data/events/consequences.js`
-- `src/data/events/financial.js`
-- `src/data/events/relationshipEvents.js`
 - `src/data/events/special.js`
 
 ### Rhythm game hooks
@@ -32,7 +29,6 @@ This inventory lists source files with **no direct test coverage target** (no ma
 
 ### Scene components
 
-- `src/scenes/Overworld.jsx`
 - `src/scenes/TourbusScene.jsx`
 
 ### UI components
