@@ -68,7 +68,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
       <motion.div
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        className='relative w-full max-w-lg border-2 border-(--toxic-green) bg-(--void-black) shadow-[0_0_40px_--toxic-green-glow] animate-[glitch-anim_0.2s_ease-in-out]'
+        className='relative w-full max-w-lg border-2 border-(--toxic-green) bg-(--void-black) shadow-[0_0_40px_var(--toxic-green-glow)] animate-[glitch-anim_0.2s_ease-in-out]'
       >
         {/* Hardware details */}
         <div className='absolute top-0 left-0 w-full h-1 bg-(--toxic-green)'></div>

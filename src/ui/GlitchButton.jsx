@@ -38,20 +38,20 @@ export const GlitchButton = ({
         return `border-2 border-(--blood-red) text-(--star-white)
                 hover:bg-(--blood-red) hover:text-(--void-black)
                 hover:translate-x-1 hover:-translate-y-1
-                hover:shadow-[4px_4px_0px_--toxic-green]
+                hover:shadow-[4px_4px_0px_var(--toxic-green)]
                 active:translate-x-0 active:translate-y-0 active:shadow-none`
       case 'warning':
         return `border-2 border-(--warning-yellow) text-(--warning-yellow)
                 hover:bg-(--warning-yellow) hover:text-(--void-black)
                 hover:translate-x-1 hover:-translate-y-1
-                hover:shadow-[4px_4px_0px_--toxic-green]
+                hover:shadow-[4px_4px_0px_var(--toxic-green)]
                 active:translate-x-0 active:translate-y-0 active:shadow-none`
       case 'primary':
       default:
         return `border-2 border-(--toxic-green) text-(--toxic-green)
                 hover:bg-(--toxic-green) hover:text-(--void-black)
                 hover:translate-x-1 hover:-translate-y-1
-                hover:shadow-[4px_4px_0px_--blood-red]
+                hover:shadow-[4px_4px_0px_var(--blood-red)]
                 active:translate-x-0 active:translate-y-0 active:shadow-none`
     }
   }

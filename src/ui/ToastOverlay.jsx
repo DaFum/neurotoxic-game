@@ -99,7 +99,7 @@ export const ToastOverlay = () => {
               transition={{ duration: 0.2, ease: 'easeOut' }}
               className={`
                 w-[min(34rem,94vw)] border-2 ${style.border} bg-(--void-black)/90 backdrop-blur-md
-                shadow-[0_0_0_1px_--void-black,0_10px_24px_--shadow-overlay]
+                shadow-[0_0_0_1px_var(--void-black),0_10px_24px_var(--shadow-overlay)]
               `}
               aria-atomic='true'
             >

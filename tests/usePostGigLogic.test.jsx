@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
-import { usePostGigLogic } from '../src/hooks/usePostGigLogic'
+import {
+  usePostGigLogic,
+  DEFAULT_SOCIAL_UNAVAILABLE_MSG,
+  DEFAULT_POST_FAILED_MSG
+} from '../src/hooks/usePostGigLogic'
 import * as GameState from '../src/context/GameState'
 import * as economyEngine from '../src/utils/economyEngine'
 import * as socialEngine from '../src/utils/socialEngine'
@@ -215,10 +219,15 @@ describe('usePostGigLogic', () => {
 
       await waitFor(() => {
         expect(result.current.postOptions).toEqual([])
+        expect(result.current.phase).toBe('COMPLETE')
+        expect(result.current.postResult).toMatchObject({
+          type: 'ERROR',
+          success: false
+        })
       })
 
       expect(mockAddToast).toHaveBeenCalledWith(
-        'Social options are unavailable right now.',
+        DEFAULT_SOCIAL_UNAVAILABLE_MSG,
         'error'
       )
     })
@@ -323,7 +332,7 @@ describe('usePostGigLogic', () => {
       })
 
       expect(mockAddToast).toHaveBeenCalledWith(
-        'Post failed. Try another option.',
+        DEFAULT_POST_FAILED_MSG,
         'error'
       )
       expect(mockUpdateSocial).not.toHaveBeenCalled()

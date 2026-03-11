@@ -1,4 +1,5 @@
 import { SOCIAL_PLATFORMS } from './platforms.js'
+import i18n from '../i18n.js'
 
 const POST_BADGES = {
   RISK: '⚠️',
@@ -13,6 +14,29 @@ const POST_BADGES = {
 // the member objects themselves persist, caching per-member prevents O(N*M) redundant
 // trait traversals when the array reference changes but the members do not.
 const memberTraitCache = new WeakMap()
+
+const getCost = inf => {
+  if (
+    !inf ||
+    typeof inf !== 'object' ||
+    Array.isArray(inf) ||
+    typeof inf.score !== 'number' ||
+    !['Micro', 'Macro', 'Mega'].includes(inf.tier)
+  ) {
+    return Number.POSITIVE_INFINITY
+  }
+
+  let base = 100
+  if (inf.tier === 'Macro') base = 300
+  if (inf.tier === 'Mega') base = 800
+  const discount = Math.min(0.5, (inf.score || 0) * 0.005)
+  return Math.floor(base * (1 - discount))
+}
+
+const isValidAndAffordableInfluencer = (inf, money) => {
+  const cost = getCost(inf)
+  return cost <= money
+}
 
 /**
  * Ensures the traits Set for a given member is built and cached.
@@ -662,33 +686,20 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Commercial',
     badges: [POST_BADGES.VIRAL, POST_BADGES.COMMERCIAL],
-    condition: ({ social, player }) =>
-      player &&
-      typeof player.money === 'number' &&
-      player.money >= 100 &&
-      Object.keys(social?.influencers || {}).length > 0,
+    condition: ({ social, player }) => {
+      const influencers = social?.influencers || {}
+      if (!player || typeof player.money !== 'number') return false
+      return Object.values(influencers).some(inf =>
+        isValidAndAffordableInfluencer(inf, player.money)
+      )
+    },
     resolve: ({ social, player, diceRoll }) => {
       const influencers = social?.influencers || {}
-
-      const isValidInfluencer = inf => inf && typeof inf === 'object'
-
-      // helper to get cost
-      const getCost = inf => {
-        if (!isValidInfluencer(inf)) return Number.POSITIVE_INFINITY
-        let base = 100
-        if (inf.tier === 'Macro') base = 300
-        if (inf.tier === 'Mega') base = 800
-        // Relationship discount: 0.5% per point, max 50%
-        const discount = Math.min(0.5, (inf.score || 0) * 0.005)
-        return Math.floor(base * (1 - discount))
-      }
 
       // Filter by affordability
       const affordableIds = Object.keys(influencers).filter(id => {
         const influencer = influencers[id]
-        return (
-          isValidInfluencer(influencer) && getCost(influencer) <= player.money
-        )
+        return isValidAndAffordableInfluencer(influencer, player.money)
       })
 
       if (affordableIds.length === 0) {
@@ -696,7 +707,9 @@ export const POST_OPTIONS = [
           type: 'FIXED',
           success: false,
           platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
-          message: 'You cannot afford any available influencers right now.',
+          message: i18n.t('ui:postOptions.noAffordableInfluencers', {
+            defaultValue: 'You cannot afford any available influencers right now.'
+          }),
           moneyChange: 0
         }
       }
@@ -721,12 +734,16 @@ export const POST_OPTIONS = [
 
       if (influencer.trait === 'tech_savvy') {
         platform = SOCIAL_PLATFORMS.YOUTUBE.id
-        traitBonusText = ' The gear nerds loved the technical breakdown.'
+        traitBonusText = ' ' + i18n.t('ui:postOptions.influencerTraitTechSavvy', {
+          defaultValue: 'The gear nerds loved the technical breakdown.'
+        })
       } else if (influencer.trait === 'drama_magnet') {
         platform = SOCIAL_PLATFORMS.TIKTOK.id
         controversyChange = 20
         followersGain = Math.floor(followersGain * 1.5)
-        traitBonusText = ' Massive reach, but it came with some toxic drama.'
+        traitBonusText = ' ' + i18n.t('ui:postOptions.influencerTraitDramaMagnet', {
+          defaultValue: 'Massive reach, but it came with some toxic drama.'
+        })
       }
 
       return {
@@ -737,7 +754,12 @@ export const POST_OPTIONS = [
         moneyChange: -cost,
         controversyChange,
         influencerUpdate: { id: selectedId, scoreChange: 10 },
-        message: `Collaborated with ${selectedId}. Cost ${cost}€.${traitBonusText}`
+        message: i18n.t('ui:postOptions.influencerSuccess', {
+          selectedId,
+          cost,
+          traitBonusText,
+          defaultValue: `Collaborated with {{selectedId}}. Cost {{cost}}€{{traitBonusText}}`
+        }).replace('€.', '€.') // fallback resolution
       }
     }
   },
