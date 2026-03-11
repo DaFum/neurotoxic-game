@@ -19,10 +19,6 @@ import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { SONGS_DB } from '../data/songs'
 import { logger } from '../utils/logger.js'
 
-export const DEFAULT_SOCIAL_UNAVAILABLE_MSG =
-  'Social options are unavailable right now.'
-export const DEFAULT_POST_FAILED_MSG = 'Post failed. Try another option.'
-
 const PERF_SCORE_MIN = 30
 const PERF_SCORE_MAX = 100
 const PERF_SCORE_SCALER = 500
@@ -141,10 +137,9 @@ export const usePostGigLogic = () => {
         logger.error('PostGig', 'Failed to generate post options', e)
         // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
         setPostOptions([])
-        setPhase('COMPLETE')
         addToast(
           t('ui:postGig.socialOptionsUnavailable', {
-            defaultValue: DEFAULT_SOCIAL_UNAVAILABLE_MSG
+            defaultValue: 'Social options are unavailable right now.'
           }),
           'error'
         )
@@ -161,9 +156,7 @@ export const usePostGigLogic = () => {
     band,
     player,
     social,
-    reputationByRegion,
-    addToast,
-    t
+    reputationByRegion
   ])
 
   const handlePostSelection = useCallback(
@@ -177,7 +170,7 @@ export const usePostGigLogic = () => {
         logger.error('PostGig', 'Failed to resolve selected post', e)
         addToast(
           t('ui:postGig.postResolutionFailed', {
-            defaultValue: DEFAULT_POST_FAILED_MSG
+            defaultValue: 'Post failed. Try another option.'
           }),
           'error'
         )

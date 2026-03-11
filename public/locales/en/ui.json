@@ -176,10 +176,22 @@
         "ui:featureList.sec2.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec2.rows.0.0", "ui:featureList.sec2.rows.0.1"],
-        ["ui:featureList.sec2.rows.1.0", "ui:featureList.sec2.rows.1.1"],
-        ["ui:featureList.sec2.rows.2.0", "ui:featureList.sec2.rows.2.1"],
-        ["ui:featureList.sec2.rows.3.0", "ui:featureList.sec2.rows.3.1"]
+        [
+          "ui:featureList.sec2.rows.0.0",
+          "ui:featureList.sec2.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.1.0",
+          "ui:featureList.sec2.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.2.0",
+          "ui:featureList.sec2.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.3.0",
+          "ui:featureList.sec2.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec2.title",
       "type": "table"
@@ -202,10 +214,22 @@
         "ui:featureList.sec4.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec4.rows.0.0", "ui:featureList.sec4.rows.0.1"],
-        ["ui:featureList.sec4.rows.1.0", "ui:featureList.sec4.rows.1.1"],
-        ["ui:featureList.sec4.rows.2.0", "ui:featureList.sec4.rows.2.1"],
-        ["ui:featureList.sec4.rows.3.0", "ui:featureList.sec4.rows.3.1"]
+        [
+          "ui:featureList.sec4.rows.0.0",
+          "ui:featureList.sec4.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.1.0",
+          "ui:featureList.sec4.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.2.0",
+          "ui:featureList.sec4.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.3.0",
+          "ui:featureList.sec4.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec4.title",
       "type": "table"
@@ -667,19 +691,5 @@
   "unit.km": "km",
   "unlocked": "UNLOCKED: {{unlock}}!",
   "visual_interface": "VISUAL INTERFACE",
-  "volume.set": "Set volume to {{pct}}%",
-  "button.shortcuts": "Shortcuts (?)",
-  "aria.shortcutsHelp": "Toggle keyboard shortcuts help",
-  "keyboardShortcuts": "Keyboard Shortcuts",
-  "shortcuts.toggleHelp": "Toggle this help",
-  "shortcuts.mute": "Mute / Unmute",
-  "shortcuts.selectEvent": "Select event option",
-  "shortcuts.hitNotes": "Hit notes (Gig)",
-  "shortcuts.closeOverlays": "Close overlays",
-  "button.unmute": "Unmute (M)",
-  "button.mute": "Mute (M)",
-  "aria.unmuteSystem": "Unmute system",
-  "aria.muteSystem": "Mute system",
-  "bandStatus": "BAND STATUS",
-  "harmony": "HARMONY"
+  "volume.set": "Set volume to {{pct}}%"
 }

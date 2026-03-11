@@ -176,10 +176,22 @@
         "ui:featureList.sec2.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec2.rows.0.0", "ui:featureList.sec2.rows.0.1"],
-        ["ui:featureList.sec2.rows.1.0", "ui:featureList.sec2.rows.1.1"],
-        ["ui:featureList.sec2.rows.2.0", "ui:featureList.sec2.rows.2.1"],
-        ["ui:featureList.sec2.rows.3.0", "ui:featureList.sec2.rows.3.1"]
+        [
+          "ui:featureList.sec2.rows.0.0",
+          "ui:featureList.sec2.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.1.0",
+          "ui:featureList.sec2.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.2.0",
+          "ui:featureList.sec2.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.3.0",
+          "ui:featureList.sec2.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec2.title",
       "type": "table"
@@ -202,10 +214,22 @@
         "ui:featureList.sec4.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec4.rows.0.0", "ui:featureList.sec4.rows.0.1"],
-        ["ui:featureList.sec4.rows.1.0", "ui:featureList.sec4.rows.1.1"],
-        ["ui:featureList.sec4.rows.2.0", "ui:featureList.sec4.rows.2.1"],
-        ["ui:featureList.sec4.rows.3.0", "ui:featureList.sec4.rows.3.1"]
+        [
+          "ui:featureList.sec4.rows.0.0",
+          "ui:featureList.sec4.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.1.0",
+          "ui:featureList.sec4.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.2.0",
+          "ui:featureList.sec4.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.3.0",
+          "ui:featureList.sec4.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec4.title",
       "type": "table"
@@ -667,19 +691,5 @@
   "unit.km": "km",
   "unlocked": "FREIGESCHALTET: {{unlock}}!",
   "visual_interface": "VISUELLE SCHNITTSTELLE",
-  "volume.set": "Lautstärke auf {{pct}}% setzen",
-  "button.shortcuts": "Tastenkürzel (?)",
-  "aria.shortcutsHelp": "Tastenkürzel-Hilfe umschalten",
-  "keyboardShortcuts": "Tastenkürzel",
-  "shortcuts.toggleHelp": "Diese Hilfe umschalten",
-  "shortcuts.mute": "Stumm / Ton an",
-  "shortcuts.selectEvent": "Event-Option wählen",
-  "shortcuts.hitNotes": "Noten treffen (Gig)",
-  "shortcuts.closeOverlays": "Overlays schließen",
-  "button.unmute": "Ton an (M)",
-  "button.mute": "Stumm (M)",
-  "aria.unmuteSystem": "Systemton an",
-  "aria.muteSystem": "Systemton stumm",
-  "bandStatus": "BAND-STATUS",
-  "harmony": "HARMONIE"
+  "volume.set": "Lautstärke auf {{pct}}% setzen"
 }

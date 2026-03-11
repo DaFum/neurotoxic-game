@@ -14,6 +14,26 @@ const POST_BADGES = {
 // trait traversals when the array reference changes but the members do not.
 const memberTraitCache = new WeakMap()
 
+const isValidAndAffordableInfluencer = (inf, money) => {
+  if (
+    !inf ||
+    typeof inf !== 'object' ||
+    Array.isArray(inf) ||
+    typeof inf.score !== 'number' ||
+    !['Micro', 'Macro', 'Mega'].includes(inf.tier)
+  ) {
+    return false
+  }
+
+  let base = 100
+  if (inf.tier === 'Macro') base = 300
+  if (inf.tier === 'Mega') base = 800
+  const discount = Math.min(0.5, (inf.score || 0) * 0.005)
+  const cost = Math.floor(base * (1 - discount))
+
+  return cost <= money
+}
+
 /**
  * Ensures the traits Set for a given member is built and cached.
  * @param {object} member - A band member object
@@ -664,47 +684,17 @@ export const POST_OPTIONS = [
     badges: [POST_BADGES.VIRAL, POST_BADGES.COMMERCIAL],
     condition: ({ social, player }) => {
       const influencers = social?.influencers || {}
-      return (
-        player &&
-        typeof player.money === 'number' &&
-        player.money >= 100 &&
-        Object.values(influencers).some(
-          inf =>
-            inf &&
-            typeof inf === 'object' &&
-            !Array.isArray(inf) &&
-            typeof inf.score === 'number' &&
-            ['Micro', 'Macro', 'Mega'].includes(inf.tier)
-        )
-      )
+      if (!player || typeof player.money !== 'number' || player.money < 100) return false
+
+      return Object.values(influencers).some(inf => isValidAndAffordableInfluencer(inf, player.money))
     },
     resolve: ({ social, player, diceRoll }) => {
       const influencers = social?.influencers || {}
 
-      const isValidInfluencer = inf =>
-        inf &&
-        typeof inf === 'object' &&
-        !Array.isArray(inf) &&
-        typeof inf.score === 'number' &&
-        ['Micro', 'Macro', 'Mega'].includes(inf.tier)
-
-      // helper to get cost
-      const getCost = inf => {
-        if (!isValidInfluencer(inf)) return Number.POSITIVE_INFINITY
-        let base = 100
-        if (inf.tier === 'Macro') base = 300
-        if (inf.tier === 'Mega') base = 800
-        // Relationship discount: 0.5% per point, max 50%
-        const discount = Math.min(0.5, (inf.score || 0) * 0.005)
-        return Math.floor(base * (1 - discount))
-      }
-
       // Filter by affordability
       const affordableIds = Object.keys(influencers).filter(id => {
         const influencer = influencers[id]
-        return (
-          isValidInfluencer(influencer) && getCost(influencer) <= player.money
-        )
+        return isValidAndAffordableInfluencer(influencer, player.money)
       })
 
       if (affordableIds.length === 0) {

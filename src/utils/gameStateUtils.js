@@ -268,7 +268,7 @@ export const applyEventDelta = (state, delta) => {
           ...member.baseStats,
           skill: Math.max(
             1,
-            Math.min(10, (member.baseStats?.skill ?? 5) + delta.band.skill)
+            Math.min(10, (member.baseStats?.skill || 5) + delta.band.skill)
           )
         }
       }))
