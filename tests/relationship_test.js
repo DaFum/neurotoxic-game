@@ -33,6 +33,30 @@ test('Relationship Mechanics', async t => {
     assert.strictEqual(nextMember2.relationships.Matze, 40)
   })
 
+  await t.test('Relationship update preserves zero baseline', () => {
+    const state = createInitialState()
+    const matze = state.band.members.find(m => m.name === 'Matze')
+    const marius = state.band.members.find(m => m.name === 'Marius')
+
+    matze.relationships.Marius = 0
+    marius.relationships.Matze = 0
+
+    const delta = {
+      band: {
+        relationshipChange: [
+          { member1: 'Matze', member2: 'Marius', change: -10 }
+        ]
+      }
+    }
+
+    const nextState = applyEventDelta(state, delta)
+    const nextMatze = nextState.band.members.find(m => m.name === 'Matze')
+    const nextMarius = nextState.band.members.find(m => m.name === 'Marius')
+
+    assert.strictEqual(nextMatze.relationships.Marius, 0)
+    assert.strictEqual(nextMarius.relationships.Matze, 0)
+  })
+
   await t.test('Grudge Holder Trait amplifies negative change', () => {
     const state = createInitialState()
     const matze = state.band.members.find(m => m.name === 'Matze')
