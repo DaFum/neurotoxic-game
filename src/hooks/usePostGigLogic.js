@@ -130,8 +130,20 @@ export const usePostGigLogic = () => {
         currentGig,
         gigEvents: lastGigStats?.events || []
       }
-      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      setPostOptions(generatePostOptions(currentGig, gameStateForPosts))
+      try {
+        // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+        setPostOptions(generatePostOptions(currentGig, gameStateForPosts))
+      } catch (e) {
+        logger.error('PostGig', 'Failed to generate post options', e)
+        // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+        setPostOptions([])
+        addToast(
+          t('ui:postGig.socialOptionsUnavailable', {
+            defaultValue: 'Social options are unavailable right now.'
+          }),
+          'error'
+        )
+      }
     }
   }, [
     financials,
@@ -151,7 +163,19 @@ export const usePostGigLogic = () => {
     option => {
       // We pass gameState into resolvePost to allow for complex RNG derivations if needed
       const gameState = { player, band, social }
-      const result = resolvePost(option, gameState, secureRandom())
+      let result
+      try {
+        result = resolvePost(option, gameState, secureRandom())
+      } catch (e) {
+        logger.error('PostGig', 'Failed to resolve selected post', e)
+        addToast(
+          t('ui:postGig.postResolutionFailed', {
+            defaultValue: 'Post failed. Try another option.'
+          }),
+          'error'
+        )
+        return
+      }
 
       // Use checkViralEvent for bonus viral flag based on actual gig stats
       // Pass context so trait bonuses (e.g. social_manager) are applied via calculateViralityScore
