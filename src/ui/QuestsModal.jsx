@@ -164,13 +164,13 @@ export const QuestsModal = ({ onClose, activeQuests, player }) => {
         onClick={onClose}
       >
         <motion.div
-          className='relative w-full max-w-2xl bg-(--void-black) border-4 border-(--toxic-green) shadow-[0_0_30px_--toxic-green-20] p-6 max-h-[90vh] overflow-y-auto'
+          className='relative w-full max-w-2xl bg-(--void-black) border-4 border-(--toxic-green) shadow-[0_0_30px_var(--toxic-green-20)] p-6 max-h-[90vh] overflow-y-auto'
           variants={modalVariants}
           onClick={e => e.stopPropagation()}
         >
           {/* Header */}
           <div className='flex justify-between items-center mb-6 border-b border-(--toxic-green) pb-2'>
-            <h2 className='text-3xl font-[Metal_Mania] text-(--toxic-green) tracking-wider drop-shadow-[0_0_8px_--toxic-green]'>
+            <h2 className='text-3xl font-[Metal_Mania] text-(--toxic-green) tracking-wider drop-shadow-[0_0_8px_var(--toxic-green)]'>
               {t('ui:quests.title')}
             </h2>
             <button

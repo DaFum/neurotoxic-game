@@ -685,16 +685,19 @@ export const POST_OPTIONS = [
     condition: ({ social, player }) => {
       const influencers = social?.influencers || {}
       if (!player || typeof player.money !== 'number' || player.money < 100) return false
-
       return Object.values(influencers).some(inf => isValidAndAffordableInfluencer(inf, player.money))
     },
     resolve: ({ social, player, diceRoll }) => {
       const influencers = social?.influencers || {}
 
+
+
       // Filter by affordability
       const affordableIds = Object.keys(influencers).filter(id => {
         const influencer = influencers[id]
-        return isValidAndAffordableInfluencer(influencer, player.money)
+        return (
+          isValidAndAffordableInfluencer(influencer, player.money)
+        )
       })
 
       if (affordableIds.length === 0) {
@@ -715,7 +718,11 @@ export const POST_OPTIONS = [
         ]
       const influencer = influencers[selectedId]
 
-      const cost = getCost(influencer)
+      let base = 100
+      if (influencer.tier === 'Macro') base = 300
+      if (influencer.tier === 'Mega') base = 800
+      const discount = Math.min(0.5, (influencer.score || 0) * 0.005)
+      const cost = Math.floor(base * (1 - discount))
       let followersGain = 1000
       if (influencer.tier === 'Macro') followersGain = 3000
       if (influencer.tier === 'Mega') followersGain = 10000

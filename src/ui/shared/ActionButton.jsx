@@ -3,7 +3,7 @@
  * @module ActionButton
  */
 
-import { memo, forwardRef } from 'react'
+import { memo } from 'react'
 import PropTypes from 'prop-types'
 
 /**
@@ -16,7 +16,7 @@ import PropTypes from 'prop-types'
  * @param {React.Ref} [props.ref] - Forwarded ref.
  */
 export const ActionButton = memo(
-  forwardRef(({ children, onClick, type = 'button', className = '', ...rest }, ref) => (
+  ({ children, onClick, type = 'button', className = '', ref, ...rest }) => (
     <button
       ref={ref}
       type={type}
@@ -29,7 +29,7 @@ export const ActionButton = memo(
     >
       {children}
     </button>
-  ))
+  )
 )
 
 ActionButton.propTypes = {

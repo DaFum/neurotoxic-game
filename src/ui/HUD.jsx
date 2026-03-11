@@ -15,11 +15,11 @@ import { ProgressBar, Tooltip } from './shared'
 import { translateLocation } from '../utils/locationI18n'
 
 const SHORTCUTS = [
-  { key: '?', desc: 'Toggle this help' },
-  { key: 'M', desc: 'Mute / Unmute' },
-  { key: '1-4', desc: 'Select event option' },
-  { key: '\u2190\u2191\u2192', desc: 'Hit notes (Gig)' },
-  { key: 'ESC', desc: 'Close overlays' }
+  { key: '?', desc: 'Toggle this help', descKey: 'ui:shortcuts.toggleHelp' },
+  { key: 'M', desc: 'Mute / Unmute', descKey: 'ui:shortcuts.mute' },
+  { key: '1-4', desc: 'Select event option', descKey: 'ui:shortcuts.selectEvent' },
+  { key: '\u2190\u2191\u2192', desc: 'Hit notes (Gig)', descKey: 'ui:shortcuts.hitNotes' },
+  { key: 'ESC', desc: 'Close overlays', descKey: 'ui:shortcuts.closeOverlays' }
 ]
 
 /**
@@ -70,7 +70,7 @@ export const HUD = () => {
     <div className='absolute top-0 left-0 w-full p-3 flex justify-between items-start pointer-events-none z-40 text-xs font-mono'>
       {/* Left Panel - Player Info */}
       <div className='flex flex-col gap-2'>
-        <div className='bg-(--void-black)/90 border border-(--toxic-green)/60 backdrop-blur-sm p-2.5 text-(--toxic-green) shadow-[0_0_8px_--toxic-green-20] animate-pulse-glow'>
+        <div className='bg-(--void-black)/90 border border-(--toxic-green)/60 backdrop-blur-sm p-2.5 text-(--toxic-green) shadow-[0_0_8px_var(--toxic-green-20)] animate-pulse-glow'>
           <div className='flex items-center gap-2 mb-1.5'>
             <DollarSign
               size={14}
@@ -83,14 +83,13 @@ export const HUD = () => {
             <span
               className={`text-sm font-bold tabular-nums ${player.money < 40 ? 'text-(--blood-red)' : ''}`}
             >
-              {player.money}
-              {'\u20AC'}
+              {t('ui:currency', { value: player.money, defaultValue: `${player.money} \u20AC` })}
             </span>
           </div>
           <div className='flex items-center gap-2 mb-2'>
             <MapIcon size={14} />
             <span className='text-(--star-white)/80'>
-              Day {player.day} — {locationName}
+              {t('ui:hud.day', { defaultValue: 'Day' })} {player.day} — {locationName}
             </span>
           </div>
 
@@ -104,7 +103,7 @@ export const HUD = () => {
                 color='bg-(--fuel-yellow)'
                 warn={fuel < 20}
                 size='mini'
-                aria-label='Fuel Level'
+                aria-label={t('ui:hud.fuelLevel', { defaultValue: 'Fuel Level' })}
               />
               <span className='text-[10px] text-(--ash-gray) w-8 text-right tabular-nums'>
                 {Math.round(fuel)}
@@ -118,7 +117,7 @@ export const HUD = () => {
                 color='bg-(--condition-blue)'
                 warn={condition < 25}
                 size='mini'
-                aria-label='Van Condition'
+                aria-label={t('ui:hud.vanCondition', { defaultValue: 'Van Condition' })}
               />
               <span className='text-[10px] text-(--ash-gray) w-8 text-right tabular-nums'>
                 {Math.round(condition)}
@@ -128,21 +127,21 @@ export const HUD = () => {
         </div>
 
         <div className='flex gap-1.5'>
-          <Tooltip content={audioState.isMuted ? 'Unmute (M)' : 'Mute (M)'}>
+          <Tooltip content={audioState.isMuted ? t('ui:button.unmute', { defaultValue: 'Unmute (M)' }) : t('ui:button.mute', { defaultValue: 'Mute (M)' })}>
             <button
               type='button'
               onClick={handleAudioChange.toggleMute}
-              aria-label={audioState.isMuted ? 'Unmute system' : 'Mute system'}
+              aria-label={audioState.isMuted ? t('ui:aria.unmuteSystem', { defaultValue: 'Unmute system' }) : t('ui:aria.muteSystem', { defaultValue: 'Mute system' })}
               className='pointer-events-auto bg-(--void-black)/90 border border-(--toxic-green)/60 p-2 text-(--toxic-green) w-fit hover:bg-(--toxic-green) hover:text-(--void-black) transition-colors block'
             >
               {audioState.isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
             </button>
           </Tooltip>
-          <Tooltip content="Shortcuts (?)">
+          <Tooltip content={t('ui:button.shortcuts', { defaultValue: 'Shortcuts (?)' })}>
             <button
               type='button'
               onClick={() => setShowHelp(prev => !prev)}
-              aria-label='Toggle keyboard shortcuts help'
+              aria-label={t('ui:aria.shortcutsHelp', { defaultValue: 'Toggle keyboard shortcuts help' })}
               className={`pointer-events-auto bg-(--void-black)/90 border p-2 w-fit transition-colors block ${
                 showHelp
                   ? 'border-(--warning-yellow) text-(--warning-yellow)'
@@ -156,9 +155,9 @@ export const HUD = () => {
 
         {/* Keyboard Shortcuts Overlay */}
         {showHelp && (
-          <div className='pointer-events-auto bg-(--void-black)/95 border border-(--toxic-green) p-3 shadow-[0_0_12px_--toxic-green-20] w-52'>
+          <div className='pointer-events-auto bg-(--void-black)/95 border border-(--toxic-green) p-3 shadow-[0_0_12px_var(--toxic-green-20)] w-52'>
             <div className='text-[10px] text-(--toxic-green) tracking-widest uppercase mb-2 border-b border-(--toxic-green)/30 pb-1'>
-              Keyboard Shortcuts
+              {t('ui:keyboardShortcuts', { defaultValue: 'Keyboard Shortcuts' })}
             </div>
             {SHORTCUTS.map(s => (
               <div
@@ -168,7 +167,7 @@ export const HUD = () => {
                 <kbd className='text-[10px] bg-(--ash-gray)/20 border border-(--ash-gray)/40 px-1.5 py-0.5 text-(--star-white) font-mono'>
                   {s.key}
                 </kbd>
-                <span className='text-[10px] text-(--ash-gray)'>{s.desc}</span>
+                <span className='text-[10px] text-(--ash-gray)'>{t(s.descKey, { defaultValue: s.desc })}</span>
               </div>
             ))}
           </div>
@@ -177,9 +176,9 @@ export const HUD = () => {
 
       {/* Right Panel - Band Status */}
       <div className='flex flex-col gap-2 items-end'>
-        <div className='bg-(--void-black)/90 border border-(--toxic-green)/60 backdrop-blur-sm p-2.5 text-(--toxic-green) shadow-[0_0_8px_--toxic-green-20]'>
+        <div className='bg-(--void-black)/90 border border-(--toxic-green)/60 backdrop-blur-sm p-2.5 text-(--toxic-green) shadow-[0_0_8px_var(--toxic-green-20)]'>
           <div className='text-right border-b border-(--toxic-green)/30 mb-2 pb-1 text-[10px] tracking-widest text-(--ash-gray)'>
-            BAND STATUS
+            {t('ui:bandStatus', { defaultValue: 'BAND STATUS' })}
           </div>
           {band.members.map(m => (
             <div
@@ -190,28 +189,28 @@ export const HUD = () => {
                 {m.name}
               </span>
               <div className='flex items-center gap-1.5'>
-                <div className='flex items-center gap-1' title='Mood'>
+                <div className='flex items-center gap-1' title={t('ui:hud.mood', { defaultValue: 'Mood' })}>
                   <div className='w-12'>
                     <ProgressBar
                       value={m.mood}
                       max={100}
                       color='bg-(--mood-pink)'
                       size='mini'
-                      aria-label={`${m.name} Mood`}
+                      aria-label={t('ui:hud.memberMood', { name: m.name, defaultValue: `${m.name} Mood` })}
                     />
                   </div>
                   <span className='text-[9px] text-(--mood-pink) w-7 text-right tabular-nums'>
                     {m.mood}%
                   </span>
                 </div>
-                <div className='flex items-center gap-1' title='Stamina'>
+                <div className='flex items-center gap-1' title={t('ui:hud.stamina', { defaultValue: 'Stamina' })}>
                   <div className='w-12'>
                     <ProgressBar
                       value={m.stamina}
                       max={100}
                       color='bg-(--stamina-green)'
                       size='mini'
-                      aria-label={`${m.name} Stamina`}
+                      aria-label={t('ui:hud.memberStamina', { name: m.name, defaultValue: `${m.name} Stamina` })}
                     />
                   </div>
                   <span className='text-[9px] text-(--stamina-green) w-7 text-right tabular-nums'>
@@ -222,7 +221,9 @@ export const HUD = () => {
             </div>
           ))}
           <div className='mt-2 pt-1.5 border-t border-(--toxic-green)/20 flex items-center justify-between'>
-            <span className='text-[10px] text-(--ash-gray)'>HARMONY</span>
+            <span className='text-[10px] text-(--ash-gray)'>
+              {t('ui:harmony', { defaultValue: 'HARMONY' })}
+            </span>
             <div className='flex items-center gap-2'>
               <div className='w-20'>
                 <ProgressBar
@@ -234,7 +235,7 @@ export const HUD = () => {
                       : 'bg-(--toxic-green)'
                   }
                   size='mini'
-                  aria-label='Band Harmony'
+                  aria-label={t('ui:hud.bandHarmony', { defaultValue: 'Band Harmony' })}
                 />
               </div>
               <span
