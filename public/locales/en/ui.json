@@ -75,7 +75,7 @@
   "crowdEnergy": "CROWD ENERGY",
   "crt_effect": "CRT EFFECT",
   "currency": "€{{value}}",
-  "currencyNegative": "-{{value}} €",
+  "currencyNegative": "-€{{value}}",
   "data_purge": "DATA PURGE",
   "day_advance": "Day {{day}}: Living Costs Deducted.",
   "decryptor.click": "CLICK TO DECRYPT",
@@ -713,5 +713,9 @@
   "hud.memberStamina": "{{name}} Stamina",
   "hud.bandHarmony": "Band Harmony",
   "bandStatus": "BAND STATUS",
-  "harmony": "HARMONY"
+  "harmony": "HARMONY",
+  "postOptions.noAffordableInfluencers": "You cannot afford any available influencers right now.",
+  "postOptions.influencerTraitTechSavvy": "The gear nerds loved the technical breakdown.",
+  "postOptions.influencerTraitDramaMagnet": "Massive reach, but it came with some toxic drama.",
+  "postOptions.influencerSuccess": "Collaborated with {{selectedId}}. Cost {{cost}}€{{traitBonusText}}"
 }

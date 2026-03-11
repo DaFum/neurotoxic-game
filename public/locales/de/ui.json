@@ -713,5 +713,9 @@
   "hud.memberStamina": "{{name}} Ausdauer",
   "hud.bandHarmony": "Band Harmonie",
   "bandStatus": "BAND STATUS",
-  "harmony": "HARMONIE"
+  "harmony": "HARMONIE",
+  "postOptions.noAffordableInfluencers": "Du kannst dir derzeit keine verfügbaren Influencer leisten.",
+  "postOptions.influencerTraitTechSavvy": "Die Gear-Nerds liebten die technischen Details.",
+  "postOptions.influencerTraitDramaMagnet": "Massive Reichweite, aber mit toxischem Drama.",
+  "postOptions.influencerSuccess": "Kollaboriert mit {{selectedId}}. Kosten {{cost}}€{{traitBonusText}}"
 }
