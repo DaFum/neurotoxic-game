@@ -662,15 +662,31 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Commercial',
     badges: [POST_BADGES.VIRAL, POST_BADGES.COMMERCIAL],
-    condition: ({ social, player }) =>
-      player &&
-      typeof player.money === 'number' &&
-      player.money >= 100 &&
-      Object.keys(social?.influencers || {}).length > 0,
+    condition: ({ social, player }) => {
+      const influencers = social?.influencers || {}
+      return (
+        player &&
+        typeof player.money === 'number' &&
+        player.money >= 100 &&
+        Object.values(influencers).some(
+          inf =>
+            inf &&
+            typeof inf === 'object' &&
+            !Array.isArray(inf) &&
+            typeof inf.score === 'number' &&
+            ['Micro', 'Macro', 'Mega'].includes(inf.tier)
+        )
+      )
+    },
     resolve: ({ social, player, diceRoll }) => {
       const influencers = social?.influencers || {}
 
-      const isValidInfluencer = inf => inf && typeof inf === 'object'
+      const isValidInfluencer = inf =>
+        inf &&
+        typeof inf === 'object' &&
+        !Array.isArray(inf) &&
+        typeof inf.score === 'number' &&
+        ['Micro', 'Macro', 'Mega'].includes(inf.tier)
 
       // helper to get cost
       const getCost = inf => {

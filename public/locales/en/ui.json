@@ -670,5 +670,16 @@
   "volume.set": "Set volume to {{pct}}%",
   "button.shortcuts": "Shortcuts (?)",
   "aria.shortcutsHelp": "Toggle keyboard shortcuts help",
-  "keyboardShortcuts": "Keyboard Shortcuts"
+  "keyboardShortcuts": "Keyboard Shortcuts",
+  "shortcuts.toggleHelp": "Toggle this help",
+  "shortcuts.mute": "Mute / Unmute",
+  "shortcuts.selectEvent": "Select event option",
+  "shortcuts.hitNotes": "Hit notes (Gig)",
+  "shortcuts.closeOverlays": "Close overlays",
+  "button.unmute": "Unmute (M)",
+  "button.mute": "Mute (M)",
+  "aria.unmuteSystem": "Unmute system",
+  "aria.muteSystem": "Mute system",
+  "bandStatus": "BAND STATUS",
+  "harmony": "HARMONY"
 }

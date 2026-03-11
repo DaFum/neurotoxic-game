@@ -670,5 +670,16 @@
   "volume.set": "Lautstärke auf {{pct}}% setzen",
   "button.shortcuts": "Tastenkürzel (?)",
   "aria.shortcutsHelp": "Tastenkürzel-Hilfe umschalten",
-  "keyboardShortcuts": "Tastenkürzel"
+  "keyboardShortcuts": "Tastenkürzel",
+  "shortcuts.toggleHelp": "Diese Hilfe umschalten",
+  "shortcuts.mute": "Stumm / Ton an",
+  "shortcuts.selectEvent": "Event-Option wählen",
+  "shortcuts.hitNotes": "Noten treffen (Gig)",
+  "shortcuts.closeOverlays": "Overlays schließen",
+  "button.unmute": "Ton an (M)",
+  "button.mute": "Stumm (M)",
+  "aria.unmuteSystem": "Systemton an",
+  "aria.muteSystem": "Systemton stumm",
+  "bandStatus": "BAND-STATUS",
+  "harmony": "HARMONIE"
 }

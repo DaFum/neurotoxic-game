@@ -15,11 +15,19 @@ import { ProgressBar, Tooltip } from './shared'
 import { translateLocation } from '../utils/locationI18n'
 
 const SHORTCUTS = [
-  { key: '?', desc: 'Toggle this help' },
-  { key: 'M', desc: 'Mute / Unmute' },
-  { key: '1-4', desc: 'Select event option' },
-  { key: '\u2190\u2191\u2192', desc: 'Hit notes (Gig)' },
-  { key: 'ESC', desc: 'Close overlays' }
+  { key: '?', desc: 'Toggle this help', descKey: 'ui:shortcuts.toggleHelp' },
+  { key: 'M', desc: 'Mute / Unmute', descKey: 'ui:shortcuts.mute' },
+  {
+    key: '1-4',
+    desc: 'Select event option',
+    descKey: 'ui:shortcuts.selectEvent'
+  },
+  {
+    key: '\u2190\u2191\u2192',
+    desc: 'Hit notes (Gig)',
+    descKey: 'ui:shortcuts.hitNotes'
+  },
+  { key: 'ESC', desc: 'Close overlays', descKey: 'ui:shortcuts.closeOverlays' }
 ]
 
 /**
@@ -128,11 +136,21 @@ export const HUD = () => {
         </div>
 
         <div className='flex gap-1.5'>
-          <Tooltip content={audioState.isMuted ? 'Unmute (M)' : 'Mute (M)'}>
+          <Tooltip
+            content={
+              audioState.isMuted
+                ? t('ui:button.unmute', { defaultValue: 'Unmute (M)' })
+                : t('ui:button.mute', { defaultValue: 'Mute (M)' })
+            }
+          >
             <button
               type='button'
               onClick={handleAudioChange.toggleMute}
-              aria-label={audioState.isMuted ? 'Unmute system' : 'Mute system'}
+              aria-label={
+                audioState.isMuted
+                  ? t('ui:aria.unmuteSystem', { defaultValue: 'Unmute system' })
+                  : t('ui:aria.muteSystem', { defaultValue: 'Mute system' })
+              }
               className='pointer-events-auto bg-(--void-black)/90 border border-(--toxic-green)/60 p-2 text-(--toxic-green) w-fit hover:bg-(--toxic-green) hover:text-(--void-black) transition-colors block'
             >
               {audioState.isMuted ? (
@@ -180,7 +198,9 @@ export const HUD = () => {
                 <kbd className='text-[10px] bg-(--ash-gray)/20 border border-(--ash-gray)/40 px-1.5 py-0.5 text-(--star-white) font-mono'>
                   {s.key}
                 </kbd>
-                <span className='text-[10px] text-(--ash-gray)'>{s.desc}</span>
+                <span className='text-[10px] text-(--ash-gray)'>
+                  {t(s.descKey, { defaultValue: s.desc })}
+                </span>
               </div>
             ))}
           </div>
@@ -191,7 +211,7 @@ export const HUD = () => {
       <div className='flex flex-col gap-2 items-end'>
         <div className='bg-(--void-black)/90 border border-(--toxic-green)/60 backdrop-blur-sm p-2.5 text-(--toxic-green) shadow-[0_0_8px_var(--toxic-green-20)]'>
           <div className='text-right border-b border-(--toxic-green)/30 mb-2 pb-1 text-[10px] tracking-widest text-(--ash-gray)'>
-            BAND STATUS
+            {t('ui:bandStatus', { defaultValue: 'BAND STATUS' })}
           </div>
           {band.members.map(m => (
             <div
@@ -234,7 +254,9 @@ export const HUD = () => {
             </div>
           ))}
           <div className='mt-2 pt-1.5 border-t border-(--toxic-green)/20 flex items-center justify-between'>
-            <span className='text-[10px] text-(--ash-gray)'>HARMONY</span>
+            <span className='text-[10px] text-(--ash-gray)'>
+              {t('ui:harmony', { defaultValue: 'HARMONY' })}
+            </span>
             <div className='flex items-center gap-2'>
               <div className='w-20'>
                 <ProgressBar
