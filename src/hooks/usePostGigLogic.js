@@ -19,7 +19,8 @@ import { BRAND_ALIGNMENTS } from '../context/initialState'
 import { SONGS_DB } from '../data/songs'
 import { logger } from '../utils/logger.js'
 
-export const DEFAULT_SOCIAL_UNAVAILABLE_MSG = 'Social options are unavailable right now.'
+export const DEFAULT_SOCIAL_UNAVAILABLE_MSG =
+  'Social options are unavailable right now.'
 export const DEFAULT_POST_FAILED_MSG = 'Post failed. Try another option.'
 
 const PERF_SCORE_MIN = 30
@@ -181,7 +182,9 @@ export const usePostGigLogic = () => {
       } catch (e) {
         logger.error('PostGig', 'Failed to resolve selected post', e)
         addToast(
-          t('ui:postGig.postResolutionFailed', { defaultValue: DEFAULT_POST_FAILED_MSG }),
+          t('ui:postGig.postResolutionFailed', {
+            defaultValue: DEFAULT_POST_FAILED_MSG
+          }),
           'error'
         )
         return

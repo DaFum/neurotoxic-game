@@ -263,7 +263,10 @@ export const applyEventDelta = (state, delta) => {
     }
     if (typeof delta.band.skill === 'number') {
       nextBand.members = nextBand.members.map(member => {
-        const currentSkill = member.baseStats && typeof member.baseStats.skill === 'number' ? member.baseStats.skill : 5
+        const currentSkill =
+          member.baseStats && typeof member.baseStats.skill === 'number'
+            ? member.baseStats.skill
+            : 5
         return {
           ...member,
           baseStats: {

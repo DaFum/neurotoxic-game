@@ -688,19 +688,17 @@ export const POST_OPTIONS = [
     condition: ({ social, player }) => {
       const influencers = social?.influencers || {}
       if (!player || typeof player.money !== 'number') return false
-      return Object.values(influencers).some(inf => isValidAndAffordableInfluencer(inf, player.money))
+      return Object.values(influencers).some(inf =>
+        isValidAndAffordableInfluencer(inf, player.money)
+      )
     },
     resolve: ({ social, player, diceRoll }) => {
       const influencers = social?.influencers || {}
 
-
-
       // Filter by affordability
       const affordableIds = Object.keys(influencers).filter(id => {
         const influencer = influencers[id]
-        return (
-          isValidAndAffordableInfluencer(influencer, player.money)
-        )
+        return isValidAndAffordableInfluencer(influencer, player.money)
       })
 
       if (affordableIds.length === 0) {
