@@ -1159,16 +1159,14 @@ export const BrutalSlot = memo(({ label, item = null }) => {
         className='relative w-20 h-20 border-2 border-(--toxic-green)/30 bg-(--shadow-black) flex items-center justify-center group cursor-pointer hover:border-(--toxic-green) transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)'
         aria-label={
           item
-            ? t(
-                'ui:inventory.slot',
-                { name: item.name },
-                `Inventory slot: ${item.name}`
-              )
-            : t(
-                'ui:inventory.emptySlot',
-                { label },
-                `Empty inventory slot: ${label}`
-              )
+            ? t('ui:inventory.slot', {
+                name: item.name,
+                defaultValue: `Inventory slot: ${item.name}`
+              })
+            : t('ui:inventory.emptySlot', {
+                label,
+                defaultValue: `Empty inventory slot: ${label}`
+              })
         }
       >
         {/* Corner Decals */}

@@ -667,5 +667,8 @@
   "unit.km": "km",
   "unlocked": "FREIGESCHALTET: {{unlock}}!",
   "visual_interface": "VISUELLE SCHNITTSTELLE",
-  "volume.set": "Lautstärke auf {{pct}}% setzen"
+  "volume.set": "Lautstärke auf {{pct}}% setzen",
+  "button.shortcuts": "Tastenkürzel (?)",
+  "aria.shortcutsHelp": "Tastenkürzel-Hilfe umschalten",
+  "keyboardShortcuts": "Tastenkürzel"
 }

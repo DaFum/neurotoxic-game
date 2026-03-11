@@ -70,7 +70,7 @@ export const HUD = () => {
     <div className='absolute top-0 left-0 w-full p-3 flex justify-between items-start pointer-events-none z-40 text-xs font-mono'>
       {/* Left Panel - Player Info */}
       <div className='flex flex-col gap-2'>
-        <div className='bg-(--void-black)/90 border border-(--toxic-green)/60 backdrop-blur-sm p-2.5 text-(--toxic-green) shadow-[0_0_8px_--toxic-green-20] animate-pulse-glow'>
+        <div className='bg-(--void-black)/90 border border-(--toxic-green)/60 backdrop-blur-sm p-2.5 text-(--toxic-green) shadow-[0_0_8px_var(--toxic-green-20)] animate-pulse-glow'>
           <div className='flex items-center gap-2 mb-1.5'>
             <DollarSign
               size={14}
@@ -142,11 +142,17 @@ export const HUD = () => {
               )}
             </button>
           </Tooltip>
-          <Tooltip content='Shortcuts (?)'>
+          <Tooltip
+            content={t('ui:button.shortcuts', {
+              defaultValue: 'Shortcuts (?)'
+            })}
+          >
             <button
               type='button'
               onClick={() => setShowHelp(prev => !prev)}
-              aria-label='Toggle keyboard shortcuts help'
+              aria-label={t('ui:aria.shortcutsHelp', {
+                defaultValue: 'Toggle keyboard shortcuts help'
+              })}
               className={`pointer-events-auto bg-(--void-black)/90 border p-2 w-fit transition-colors block ${
                 showHelp
                   ? 'border-(--warning-yellow) text-(--warning-yellow)'
@@ -160,9 +166,11 @@ export const HUD = () => {
 
         {/* Keyboard Shortcuts Overlay */}
         {showHelp && (
-          <div className='pointer-events-auto bg-(--void-black)/95 border border-(--toxic-green) p-3 shadow-[0_0_12px_--toxic-green-20] w-52'>
+          <div className='pointer-events-auto bg-(--void-black)/95 border border-(--toxic-green) p-3 shadow-[0_0_12px_var(--toxic-green-20)] w-52'>
             <div className='text-[10px] text-(--toxic-green) tracking-widest uppercase mb-2 border-b border-(--toxic-green)/30 pb-1'>
-              Keyboard Shortcuts
+              {t('ui:keyboardShortcuts', {
+                defaultValue: 'Keyboard Shortcuts'
+              })}
             </div>
             {SHORTCUTS.map(s => (
               <div
@@ -181,7 +189,7 @@ export const HUD = () => {
 
       {/* Right Panel - Band Status */}
       <div className='flex flex-col gap-2 items-end'>
-        <div className='bg-(--void-black)/90 border border-(--toxic-green)/60 backdrop-blur-sm p-2.5 text-(--toxic-green) shadow-[0_0_8px_--toxic-green-20]'>
+        <div className='bg-(--void-black)/90 border border-(--toxic-green)/60 backdrop-blur-sm p-2.5 text-(--toxic-green) shadow-[0_0_8px_var(--toxic-green-20)]'>
           <div className='text-right border-b border-(--toxic-green)/30 mb-2 pb-1 text-[10px] tracking-widest text-(--ash-gray)'>
             BAND STATUS
           </div>
