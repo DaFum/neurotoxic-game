@@ -93,26 +93,28 @@ describe('Overworld Component', () => {
     vi.useFakeTimers()
     const setItemSpy = vi.spyOn(window.localStorage, 'setItem')
 
-    render(
-      <GameStateProvider>
-        <Overworld />
-      </GameStateProvider>
-    )
+    try {
+      render(
+        <GameStateProvider>
+          <Overworld />
+        </GameStateProvider>
+      )
 
-    const saveButton = screen.getByText(/\[SAVE GAME\]/i)
+      const saveButton = screen.getByText(/\[SAVE GAME\]/i)
 
-    await act(async () => {
-      fireEvent.click(saveButton)
-    })
+      await act(async () => {
+        fireEvent.click(saveButton)
+      })
 
-    // Fast-forward the setTimeout delay
-    await act(async () => {
-      vi.runAllTimers()
-    })
+      // Fast-forward the setTimeout delay
+      await act(async () => {
+        vi.runAllTimers()
+      })
 
-    expect(setItemSpy).toHaveBeenCalledWith('neurotoxic_v3_save', expect.any(String))
-
-    vi.useRealTimers()
-    setItemSpy.mockRestore()
+      expect(setItemSpy).toHaveBeenCalledWith('neurotoxic_v3_save', expect.any(String))
+    } finally {
+      vi.useRealTimers()
+      setItemSpy.mockRestore()
+    }
   })
 })
