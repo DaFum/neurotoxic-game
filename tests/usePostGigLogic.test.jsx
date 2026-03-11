@@ -206,6 +206,23 @@ describe('usePostGigLogic', () => {
       })
     })
 
+    it('falls back gracefully when post options generation throws', async () => {
+      socialEngine.generatePostOptions.mockImplementation(() => {
+        throw new Error('bad state')
+      })
+
+      const { result } = renderHook(() => usePostGigLogic())
+
+      await waitFor(() => {
+        expect(result.current.postOptions).toEqual([])
+      })
+
+      expect(mockAddToast).toHaveBeenCalledWith(
+        'Social options are unavailable right now.',
+        'error'
+      )
+    })
+
     it('calculates performance score correctly', async () => {
       const { result } = renderHook(() => usePostGigLogic())
 
@@ -290,6 +307,28 @@ describe('usePostGigLogic', () => {
   })
 
   describe('post selection', () => {
+    it('shows an error toast and aborts when post resolution throws', async () => {
+      socialEngine.resolvePost.mockImplementation(() => {
+        throw new Error('broken resolver')
+      })
+
+      const { result } = renderHook(() => usePostGigLogic())
+
+      await waitFor(() => {
+        expect(result.current.postOptions).toHaveLength(1)
+      })
+
+      act(() => {
+        result.current.handlePostSelection(result.current.postOptions[0])
+      })
+
+      expect(mockAddToast).toHaveBeenCalledWith(
+        'Post failed. Try another option.',
+        'error'
+      )
+      expect(mockUpdateSocial).not.toHaveBeenCalled()
+    })
+
     it('updates social followers when post is selected', async () => {
       const { result } = renderHook(() => usePostGigLogic())
 

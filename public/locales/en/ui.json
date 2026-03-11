@@ -438,6 +438,8 @@
   "postGig.phaseReport": "GIG REPORT",
   "postGig.phaseSocialStrategy": "SOCIAL MEDIA STRATEGY",
   "postGig.phaseTourUpdate": "TOUR UPDATE",
+  "postGig.socialOptionsUnavailable": "Social options are unavailable right now.",
+  "postGig.postResolutionFailed": "Post failed. Try another option.",
   "postGig.skippedBrandDeals": "Skipped brand deals.",
   "postGig.storySpunControversyReduced": "Story Spun. Controversy reduced.",
   "postGig.tallyingReceipts": "TALLYING RECEIPTS...",
