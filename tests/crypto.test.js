@@ -1,6 +1,6 @@
 import { test, describe, beforeEach, afterEach } from 'node:test'
 import { strict as assert } from 'node:assert'
-import { secureRandom } from '../src/utils/crypto.js'
+import { secureRandom, resetSecureRandomBatchForTesting } from '../src/utils/crypto.js'
 
 describe('secureRandom', () => {
   let originalCryptoDescriptor
@@ -18,6 +18,7 @@ describe('secureRandom', () => {
       'window'
     )
     originalRandom = Math.random
+    resetSecureRandomBatchForTesting()
 
     // Polyfill window if not present to avoid ReferenceError in tests
     // In Node.js, accessing an undeclared 'window' variable throws ReferenceError
