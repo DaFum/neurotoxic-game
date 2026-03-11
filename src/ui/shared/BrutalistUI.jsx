@@ -16,7 +16,7 @@ export const UplinkButton = memo(({ title, url, subtitle, type, Icon }) => {
       {/* Glitch Background on Hover */}
       {isHovered && (
         <div className='absolute inset-0 bg-(--toxic-green)/10 z-0'>
-          <div className='absolute inset-0 bg-[linear-gradient(transparent_50%,rgb(var(--void-black-rgb) / 50%)_50%)] bg-[length:100%_4px] opacity-50'></div>
+          <div className='absolute inset-0 bg-[linear-gradient(transparent_50%,rgb(--void-black-rgb / 50%)_50%)] bg-[length:100%_4px] opacity-50'></div>
           <div className='w-full h-1 bg-(--toxic-green) absolute top-1/2 animate-[scan_0.5s_linear_infinite]'></div>
         </div>
       )}
@@ -25,7 +25,7 @@ export const UplinkButton = memo(({ title, url, subtitle, type, Icon }) => {
         {/* Icon Block */}
         <div
           className={`w-12 h-12 sm:w-14 sm:h-14 border-2 flex items-center justify-center shrink-0 transition-colors
-          ${isHovered ? 'border-(--toxic-green) bg-(--toxic-green) text-(--void-black) shadow-[0_0_15px_var(--toxic-green)]' : 'border-(--toxic-green)/50 text-(--toxic-green)'}`}
+          ${isHovered ? 'border-(--toxic-green) bg-(--toxic-green) text-(--void-black) shadow-[0_0_15px_--toxic-green]' : 'border-(--toxic-green)/50 text-(--toxic-green)'}`}
         >
           {Icon && <Icon className='w-6 h-6 sm:w-8 sm:h-8 shrink-0' />}
         </div>
@@ -710,8 +710,8 @@ export const BlockMeter = memo(
               'flex-1 border border-(--toxic-green)/30 transition-all duration-300'
             if (isFilled) {
               blockClass = isDanger
-                ? 'flex-1 bg-(--blood-red) border-(--blood-red) shadow-[0_0_10px_var(--blood-red)]'
-                : 'flex-1 bg-(--toxic-green) border-(--toxic-green) shadow-[0_0_5px_var(--toxic-green-50)]'
+                ? 'flex-1 bg-(--blood-red) border-(--blood-red) shadow-[0_0_10px_--blood-red]'
+                : 'flex-1 bg-(--toxic-green) border-(--toxic-green) shadow-[0_0_5px_--toxic-green-50]'
             }
             return <div key={block} className={blockClass}></div>
           })}
@@ -747,7 +747,7 @@ export const BrutalTabs = memo(() => {
               aria-selected={isActive}
               onClick={() => setActiveTab(tab.id)}
               className={`flex-1 py-2 px-4 text-xs font-bold tracking-[0.1em] uppercase transition-all
-                ${isActive ? 'bg-(--toxic-green) text-(--void-black) shadow-[0_-2px_10px_var(--toxic-green)]' : 'bg-(--void-black) text-(--toxic-green) hover:bg-(--toxic-green)/10'}`}
+                ${isActive ? 'bg-(--toxic-green) text-(--void-black) shadow-[0_-2px_10px_--toxic-green]' : 'bg-(--void-black) text-(--toxic-green) hover:bg-(--toxic-green)/10'}`}
             >
               {isActive && <span className='mr-2'>▶</span>}
               {tab.label}
@@ -838,7 +838,7 @@ export const BrutalFader = memo(({ label, initialValue = 7, max = 10 }) => {
               <div
                 style={{ height }}
                 className={`w-full transition-colors duration-75 border-b-2 border-transparent hover:border-(--void-black)
-                  ${isActive ? 'bg-(--toxic-green) shadow-[0_0_8px_var(--toxic-green)]' : 'bg-(--toxic-green)/20'}`}
+                  ${isActive ? 'bg-(--toxic-green) shadow-[0_0_8px_--toxic-green]' : 'bg-(--toxic-green)/20'}`}
               ></div>
             </button>
           )
@@ -880,7 +880,7 @@ export const SetlistSelector = memo(() => {
             key={track.id}
             onClick={() => setSelected(track.id)}
             className={`w-full text-left p-3 border-2 transition-all duration-100 flex justify-between items-center group
-              ${isSelected ? 'border-(--toxic-green) bg-(--toxic-green)/10 shadow-[inset_0_0_15px_var(--toxic-green-20)]' : 'border-(--toxic-green)/30 bg-(--void-black) hover:border-(--toxic-green)/70'}`}
+              ${isSelected ? 'border-(--toxic-green) bg-(--toxic-green)/10 shadow-[inset_0_0_15px_--toxic-green-20]' : 'border-(--toxic-green)/30 bg-(--void-black) hover:border-(--toxic-green)/70'}`}
           >
             <div className='flex items-center gap-3'>
               <span
@@ -919,10 +919,10 @@ export const CrisisModal = memo(({ isOpen, onClose }) => {
         aria-hidden='true'
       ></div>
       {/* Scanline FX on background */}
-      <div className='absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(transparent_50%,rgb(var(--void-black-rgb) / 50%)_50%)] bg-[length:100%_4px]'></div>
+      <div className='absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(transparent_50%,rgb(--void-black-rgb / 50%)_50%)] bg-[length:100%_4px]'></div>
 
       {/* Modal Box */}
-      <div className='relative w-full max-w-lg border-2 border-(--toxic-green) bg-(--void-black) shadow-[0_0_40px_var(--toxic-green-glow)] animate-[glitch-anim_0.2s_ease-in-out]'>
+      <div className='relative w-full max-w-lg border-2 border-(--toxic-green) bg-(--void-black) shadow-[0_0_40px_--toxic-green-glow] animate-[glitch-anim_0.2s_ease-in-out]'>
         {/* Hardware details */}
         <div className='absolute top-0 left-0 w-full h-1 bg-(--toxic-green)'></div>
         <div className='absolute top-0 left-2 w-16 h-4 bg-(--toxic-green) text-(--void-black) text-[10px] font-bold text-center leading-4 uppercase'>
@@ -1129,9 +1129,9 @@ export const TerminalReadout = memo(() => {
   }, [currentIndex])
 
   return (
-    <div className='w-full h-48 border border-(--toxic-green)/30 bg-(--shadow-black) p-4 font-mono text-xs overflow-y-auto flex flex-col gap-1 custom-scrollbar relative shadow-[inset_0_0_20px_var(--void-black)]'>
+    <div className='w-full h-48 border border-(--toxic-green)/30 bg-(--shadow-black) p-4 font-mono text-xs overflow-y-auto flex flex-col gap-1 custom-scrollbar relative shadow-[inset_0_0_20px_--void-black]'>
       {/* Scanline overlay */}
-      <div className='absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(transparent_50%,var(--toxic-green-20)_50%)] bg-[length:100%_4px]'></div>
+      <div className='absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(transparent_50%,--toxic-green-20_50%)] bg-[length:100%_4px]'></div>
 
       {lines.map(line => (
         <div
@@ -1221,7 +1221,7 @@ export const VoidLoader = memo(({ size = 'w-16 h-16' }) => {
         />
       </svg>
       {/* Core Dot - Pulsing */}
-      <div className='w-2 h-2 bg-(--star-white) rounded-full animate-pulse shadow-[0_0_10px_var(--star-white)]'></div>
+      <div className='w-2 h-2 bg-(--star-white) rounded-full animate-pulse shadow-[0_0_10px_--star-white]'></div>
     </div>
   )
 })
@@ -1382,7 +1382,7 @@ export const IndustrialChecklist = memo(() => {
         type='button'
         disabled={!allDone}
         className={`mt-4 p-4 font-bold tracking-[0.2em] uppercase transition-all duration-300 border-2
-          ${allDone ? 'border-(--toxic-green) bg-(--toxic-green) text-(--void-black) shadow-[0_0_20px_var(--toxic-green)] hover:bg-(--star-white) hover:border-(--star-white) animate-pulse' : 'border-(--toxic-green)/20 text-(--toxic-green)/20 cursor-not-allowed'}`}
+          ${allDone ? 'border-(--toxic-green) bg-(--toxic-green) text-(--void-black) shadow-[0_0_20px_--toxic-green] hover:bg-(--star-white) hover:border-(--star-white) animate-pulse' : 'border-(--toxic-green)/20 text-(--toxic-green)/20 cursor-not-allowed'}`}
       >
         {allDone
           ? t('ui:checklist.done', 'INITIATE GIG')
@@ -1437,7 +1437,7 @@ export const RhythmMatrix = memo(() => {
               <button
                 type='button'
                 className={`w-14 h-8 mx-auto border-2 transition-all duration-75 flex items-center justify-center cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)
-                  ${hits[i] ? 'bg-(--toxic-green) border-(--toxic-green) shadow-[0_0_20px_var(--toxic-green)] scale-110' : 'bg-(--void-black) border-(--toxic-green)/50 hover:border-(--toxic-green)'}`}
+                  ${hits[i] ? 'bg-(--toxic-green) border-(--toxic-green) shadow-[0_0_20px_--toxic-green] scale-110' : 'bg-(--void-black) border-(--toxic-green)/50 hover:border-(--toxic-green)'}`}
                 onMouseDown={() => triggerHit(i)}
                 onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -1592,7 +1592,7 @@ export const ToxicChatter = memo(() => {
   }, [])
 
   return (
-    <div className='w-full h-64 border border-(--toxic-green)/30 bg-(--void-black) p-4 flex flex-col justify-end relative shadow-[inset_0_0_20px_var(--toxic-green-5)]'>
+    <div className='w-full h-64 border border-(--toxic-green)/30 bg-(--void-black) p-4 flex flex-col justify-end relative shadow-[inset_0_0_20px_--toxic-green-5]'>
       <div className='absolute top-2 left-2 text-[10px] tracking-widest opacity-50'>
         {t('ui:chatter.header')}
       </div>
@@ -1663,7 +1663,7 @@ export const VoidDecryptor = memo(() => {
         className={`relative transition-all duration-700 ${decrypted ? 'scale-125' : 'scale-100 animate-[pulse_0.1s_infinite]'}`}
       >
         <BiohazardIcon
-          className={`w-20 h-20 ${decrypted ? 'text-(--toxic-green) drop-shadow-[0_0_20px_var(--toxic-green)]' : 'text-(--toxic-green)/30'}`}
+          className={`w-20 h-20 ${decrypted ? 'text-(--toxic-green) drop-shadow-[0_0_20px_--toxic-green]' : 'text-(--toxic-green)/30'}`}
         />
 
         {/* Scrambler Overlay */}
