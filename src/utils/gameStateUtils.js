@@ -230,7 +230,7 @@ export const applyEventDelta = (state, delta) => {
               amount *= 0.5 // Peacemaker dampens negative
             }
 
-            const currentScore = newRelationships[otherMember] || 50
+            const currentScore = newRelationships[otherMember] ?? 50
             newRelationships[otherMember] = Math.max(
               0,
               Math.min(100, Math.round(currentScore + amount))
