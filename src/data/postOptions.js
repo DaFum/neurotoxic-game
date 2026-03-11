@@ -746,6 +746,9 @@ export const POST_OPTIONS = [
         })
       }
 
+      const displayName =
+        influencer.name ?? selectedId.replace(/_/g, ' ')
+
       return {
         type: 'FIXED',
         success: true,
@@ -755,11 +758,11 @@ export const POST_OPTIONS = [
         controversyChange,
         influencerUpdate: { id: selectedId, scoreChange: 10 },
         message: i18n.t('ui:postOptions.influencerSuccess', {
-          selectedId,
+          selectedId: displayName,
           cost,
           traitBonusText,
           defaultValue: `Collaborated with {{selectedId}}. Cost {{cost}}€{{traitBonusText}}`
-        }).replace('€.', '€.') // fallback resolution
+        })
       }
     }
   },
