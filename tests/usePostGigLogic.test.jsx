@@ -216,6 +216,10 @@ describe('usePostGigLogic', () => {
       await waitFor(() => {
         expect(result.current.postOptions).toEqual([])
         expect(result.current.phase).toBe('COMPLETE')
+        expect(result.current.postResult).toMatchObject({
+          type: 'ERROR',
+          success: false
+        })
       })
 
       expect(mockAddToast).toHaveBeenCalledWith(

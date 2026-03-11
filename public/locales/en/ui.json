@@ -75,7 +75,7 @@
   "crowdEnergy": "CROWD ENERGY",
   "crt_effect": "CRT EFFECT",
   "currency": "{{value}} €",
-  "currencyNegative": "-€{{value}}",
+  "currencyNegative": "-{{value}} €",
   "data_purge": "DATA PURGE",
   "day_advance": "Day {{day}}: Living Costs Deducted.",
   "decryptor.click": "CLICK TO DECRYPT",

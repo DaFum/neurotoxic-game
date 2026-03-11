@@ -14,7 +14,7 @@ const POST_BADGES = {
 // trait traversals when the array reference changes but the members do not.
 const memberTraitCache = new WeakMap()
 
-const isValidAndAffordableInfluencer = (inf, money) => {
+const getCost = inf => {
   if (
     !inf ||
     typeof inf !== 'object' ||
@@ -22,15 +22,18 @@ const isValidAndAffordableInfluencer = (inf, money) => {
     typeof inf.score !== 'number' ||
     !['Micro', 'Macro', 'Mega'].includes(inf.tier)
   ) {
-    return false
+    return Number.POSITIVE_INFINITY
   }
 
   let base = 100
   if (inf.tier === 'Macro') base = 300
   if (inf.tier === 'Mega') base = 800
   const discount = Math.min(0.5, (inf.score || 0) * 0.005)
-  const cost = Math.floor(base * (1 - discount))
+  return Math.floor(base * (1 - discount))
+}
 
+const isValidAndAffordableInfluencer = (inf, money) => {
+  const cost = getCost(inf)
   return cost <= money
 }
 
@@ -684,7 +687,7 @@ export const POST_OPTIONS = [
     badges: [POST_BADGES.VIRAL, POST_BADGES.COMMERCIAL],
     condition: ({ social, player }) => {
       const influencers = social?.influencers || {}
-      if (!player || typeof player.money !== 'number' || player.money < 100) return false
+      if (!player || typeof player.money !== 'number') return false
       return Object.values(influencers).some(inf => isValidAndAffordableInfluencer(inf, player.money))
     },
     resolve: ({ social, player, diceRoll }) => {
@@ -718,11 +721,7 @@ export const POST_OPTIONS = [
         ]
       const influencer = influencers[selectedId]
 
-      let base = 100
-      if (influencer.tier === 'Macro') base = 300
-      if (influencer.tier === 'Mega') base = 800
-      const discount = Math.min(0.5, (influencer.score || 0) * 0.005)
-      const cost = Math.floor(base * (1 - discount))
+      const cost = getCost(influencer)
       let followersGain = 1000
       if (influencer.tier === 'Macro') followersGain = 3000
       if (influencer.tier === 'Mega') followersGain = 10000

@@ -15,7 +15,7 @@ import { ProgressBar, Tooltip } from './shared'
 import { translateLocation } from '../utils/locationI18n'
 
 const SHORTCUTS = [
-  { key: '?', desc: 'Toggle this help', descKey: 'ui:shortcuts.toggleHelp' },
+  { key: '?, h', desc: 'Toggle this help', descKey: 'ui:shortcuts.toggleHelp' },
   { key: 'M', desc: 'Mute / Unmute', descKey: 'ui:shortcuts.mute' },
   { key: '1-4', desc: 'Select event option', descKey: 'ui:shortcuts.selectEvent' },
   { key: '\u2190\u2191\u2192', desc: 'Hit notes (Gig)', descKey: 'ui:shortcuts.hitNotes' },
