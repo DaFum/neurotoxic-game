@@ -1149,6 +1149,10 @@ export const TerminalReadout = memo(() => {
 })
 
 // 10. Hardware Inventory Slot
+const areSlotPropsEqual = (prev, next) => {
+  return prev.label === next.label && prev.item?.id === next.item?.id && prev.item?.name === next.item?.name
+}
+
 export const BrutalSlot = memo(({ label, item = null }) => {
   return (
     <div className='flex flex-col gap-2 items-center'>
@@ -1179,7 +1183,7 @@ export const BrutalSlot = memo(({ label, item = null }) => {
       </span>
     </div>
   )
-})
+}, areSlotPropsEqual)
 
 // 11. Void Loader (Geometric Spinner)
 export const VoidLoader = memo(({ size = 'w-16 h-16' }) => {
