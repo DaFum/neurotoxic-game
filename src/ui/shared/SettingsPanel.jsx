@@ -150,7 +150,7 @@ export const SettingsPanel = memo(function SettingsPanel({
   )
 })
 
-const DataManagement = ({ onDeleteSave }) => {
+const DataManagement = memo(({ onDeleteSave }) => {
   const { t } = useTranslation()
 
   return (
@@ -168,7 +168,7 @@ const DataManagement = ({ onDeleteSave }) => {
       </div>
     </div>
   )
-}
+})
 
 DataManagement.propTypes = {
   onDeleteSave: PropTypes.func.isRequired

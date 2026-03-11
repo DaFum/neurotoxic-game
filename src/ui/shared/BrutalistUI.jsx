@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useId, memo } from 'react'
 import { secureRandom } from '../../utils/crypto.js'
 
-export const UplinkButton = ({ title, url, subtitle, type, Icon }) => {
+export const UplinkButton = memo(({ title, url, subtitle, type, Icon }) => {
   const [isHovered, setIsHovered] = useState(false)
 
   return (
@@ -72,7 +72,7 @@ export const UplinkButton = ({ title, url, subtitle, type, Icon }) => {
       </div>
     </a>
   )
-}
+})
 
 // --- SVG DECORATIONS ---
 
@@ -630,7 +630,7 @@ export const CorporateSeal = memo(({ className, title }) => {
 import { useTranslation, Trans } from 'react-i18next'
 
 // 1. Industrial Toggle
-export const BrutalToggle = ({ label, initialState = false }) => {
+export const BrutalToggle = memo(({ label, initialState = false }) => {
   const { t } = useTranslation()
   const [isOn, setIsOn] = useState(initialState)
   const [isGlitching, setIsGlitching] = useState(false)
@@ -676,7 +676,7 @@ export const BrutalToggle = ({ label, initialState = false }) => {
       </button>
     </div>
   )
-}
+})
 
 // 2. Segmented Block Meter
 // Optimization: Wrapped in React.memo to prevent unnecessary re-renders when parent components
@@ -722,7 +722,7 @@ export const BlockMeter = memo(
 )
 
 // 3. Brutalist Tabs
-export const BrutalTabs = () => {
+export const BrutalTabs = memo(() => {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('inventory')
   const tabs = [
@@ -778,10 +778,10 @@ export const BrutalTabs = () => {
       </div>
     </div>
   )
-}
+})
 
 // 4. Data/Stat Block
-export const StatBlock = ({ label, value, icon: Icon }) => (
+export const StatBlock = memo(({ label, value, icon: Icon }) => (
   <div className='relative w-32 h-24 bg-(--void-black) flex flex-col items-center justify-center group overflow-hidden'>
     <HexBorder className='absolute inset-0 w-full h-full text-(--toxic-green)/50 group-hover:text-(--toxic-green) transition-colors' />
     <div className='absolute inset-0 bg-gradient-to-b from-transparent via-(--toxic-green)/10 to-transparent translate-y-[-100%] group-hover:animate-[scan_2s_linear_infinite]'></div>
@@ -793,10 +793,10 @@ export const StatBlock = ({ label, value, icon: Icon }) => (
       </span>
     </div>
   </div>
-)
+))
 
 // 5. Brutal Amp Fader (Custom Slider)
-export const BrutalFader = ({ label, initialValue = 7, max = 10 }) => {
+export const BrutalFader = memo(({ label, initialValue = 7, max = 10 }) => {
   const { t } = useTranslation(['ui'])
   const [val, setVal] = useState(initialValue)
   const segments = Array.from({ length: max }, (_, i) => i + 1)
@@ -846,10 +846,10 @@ export const BrutalFader = ({ label, initialValue = 7, max = 10 }) => {
       </div>
     </div>
   )
-}
+})
 
 // 6. Setlist / Track Selector
-export const SetlistSelector = () => {
+export const SetlistSelector = memo(() => {
   const { t } = useTranslation(['ui'])
   const [selected, setSelected] = useState(1)
   const tracks = [
@@ -904,10 +904,10 @@ export const SetlistSelector = () => {
       })}
     </div>
   )
-}
+})
 
 // 7. Crisis Modal Overlay
-export const CrisisModal = ({ isOpen, onClose }) => {
+export const CrisisModal = memo(({ isOpen, onClose }) => {
   const { t } = useTranslation(['ui'])
   if (!isOpen) return null
   return (
@@ -981,10 +981,10 @@ export const CrisisModal = ({ isOpen, onClose }) => {
       </div>
     </div>
   )
-}
+})
 
 // 8. Deadman Button (Hold to Confirm)
-export const DeadmanButton = ({ label, onConfirm }) => {
+export const DeadmanButton = memo(({ label, onConfirm }) => {
   const { t } = useTranslation()
   const [progress, setProgress] = useState(0)
   const [isHolding, setIsHolding] = useState(false)
@@ -1096,7 +1096,7 @@ export const DeadmanButton = ({ label, onConfirm }) => {
       </button>
     </div>
   )
-}
+})
 
 // 9. Terminal Readout (Log)
 const FULL_LOG_KEYS = [
@@ -1110,7 +1110,7 @@ const FULL_LOG_KEYS = [
   { id: 'log_8', key: 'ui:terminal.log8', type: 'info' }
 ]
 
-export const TerminalReadout = () => {
+export const TerminalReadout = memo(() => {
   const { t } = useTranslation(['ui'])
   const [lines, setLines] = useState([])
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -1146,10 +1146,12 @@ export const TerminalReadout = () => {
       )}
     </div>
   )
-}
+})
 
 // 10. Hardware Inventory Slot
-export const BrutalSlot = ({ label, item = null }) => {
+export const BrutalSlot = memo(({ label, item = null }) => {
+  const { t } = useTranslation(['ui'])
+
   return (
     <div className='flex flex-col gap-2 items-center'>
       <button
@@ -1157,8 +1159,8 @@ export const BrutalSlot = ({ label, item = null }) => {
         className='relative w-20 h-20 border-2 border-(--toxic-green)/30 bg-(--shadow-black) flex items-center justify-center group cursor-pointer hover:border-(--toxic-green) transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)'
         aria-label={
           item
-            ? `Inventory slot: ${item.name}`
-            : `Empty inventory slot: ${label}`
+            ? t('ui:inventory.slot', { name: item.name }, `Inventory slot: ${item.name}`)
+            : t('ui:inventory.emptySlot', { label }, `Empty inventory slot: ${label}`)
         }
       >
         {/* Corner Decals */}
@@ -1179,10 +1181,10 @@ export const BrutalSlot = ({ label, item = null }) => {
       </span>
     </div>
   )
-}
+})
 
 // 11. Void Loader (Geometric Spinner)
-export const VoidLoader = ({ size = 'w-16 h-16' }) => {
+export const VoidLoader = memo(({ size = 'w-16 h-16' }) => {
   return (
     <div className={`relative ${size} flex items-center justify-center`}>
       {/* Outer Hex - Slow counter-clockwise */}
@@ -1222,10 +1224,10 @@ export const VoidLoader = ({ size = 'w-16 h-16' }) => {
       <div className='w-2 h-2 bg-(--star-white) rounded-full animate-pulse shadow-[0_0_10px_var(--star-white)]'></div>
     </div>
   )
-}
+})
 
 // 13. Corrupted Data Stream (Text Reveal Effect)
-export const CorruptedText = ({ text, delay = 0 }) => {
+export const CorruptedText = memo(({ text, delay = 0 }) => {
   const [displayedText, setDisplayedText] = useState('')
   const chars = '!<>-_\\/[]{}—=+*^?#________'
 
@@ -1263,10 +1265,10 @@ export const CorruptedText = ({ text, delay = 0 }) => {
   }, [text, delay])
 
   return <span className='font-mono'>{displayedText}</span>
-}
+})
 
 // 14. Hazard Ticker Tape (For Gig Modifiers)
-export const HazardTicker = ({ message }) => {
+export const HazardTicker = memo(({ message }) => {
   const { t } = useTranslation(['ui'])
   return (
     <div className='relative w-full h-8 bg-(--void-black) border-y-2 border-(--toxic-green) flex items-center overflow-hidden'>
@@ -1292,10 +1294,10 @@ export const HazardTicker = ({ message }) => {
       </div>
     </div>
   )
-}
+})
 
 // 15. Industrial Checklist (Pre-Gig Setup)
-export const IndustrialChecklist = () => {
+export const IndustrialChecklist = memo(() => {
   const { t } = useTranslation(['ui'])
   const [tasks, setTasks] = useState(() => [
     {
@@ -1388,10 +1390,10 @@ export const IndustrialChecklist = () => {
       </button>
     </div>
   )
-}
+})
 
 // 16. Rhythm Lane Matrix (Simulation of the Rhythm Engine)
-export const RhythmMatrix = () => {
+export const RhythmMatrix = memo(() => {
   const { t } = useTranslation(['ui'])
   const [hits, setHits] = useState([false, false, false])
 
@@ -1462,10 +1464,10 @@ export const RhythmMatrix = () => {
       </div>
     </div>
   )
-}
+})
 
 // 17. Corporate Sellout Contract (Brand Deals)
-export const SelloutContract = () => {
+export const SelloutContract = memo(() => {
   const { t } = useTranslation(['ui'])
   const [signed, setSigned] = useState(false)
 
@@ -1547,10 +1549,10 @@ export const SelloutContract = () => {
       </div>
     </div>
   )
-}
+})
 
 // 18. Toxic Hate Feed (Chatter Overlay)
-export const ToxicChatter = () => {
+export const ToxicChatter = memo(() => {
   const { t } = useTranslation(['ui'])
   const [messages, setMessages] = useState([
     { id: 1, user: 'VOID_WALKER', text: 'ui:chatter.msg1', type: 'hate' },
@@ -1613,10 +1615,10 @@ export const ToxicChatter = () => {
       </div>
     </div>
   )
-}
+})
 
 // 19. Void Decryptor (Unlocks/Lore)
-export const VoidDecryptor = () => {
+export const VoidDecryptor = memo(() => {
   const { t } = useTranslation(['ui'])
   const [decrypted, setDecrypted] = useState(false)
   const [glitchEffect, setGlitchEffect] = useState('')
@@ -1685,4 +1687,4 @@ export const VoidDecryptor = () => {
       )}
     </button>
   )
-}
+})

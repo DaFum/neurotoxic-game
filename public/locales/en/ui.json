@@ -15,19 +15,6 @@
   "bandhq.venue": "Band HQ",
   "brutalist.glitchPlaceholder": "0x8F9A... ENCRYPTED",
   "cancel": "CANCEL",
-  "chatter_labels.CREDITS": "Crew Feed",
-  "chatter_labels.default_fallback": "Unknown",
-  "chatter_labels.default_speaker": "Band",
-  "chatter_labels.GAMEOVER": "Last Broadcast",
-  "chatter_labels.GIG": "Live Feed",
-  "chatter_labels.INTRO": "Intro Feed",
-  "chatter_labels.MENU": "Main Feed",
-  "chatter_labels.OVERWORLD": "Tour Feed",
-  "chatter_labels.POSTGIG": "Aftershow Feed",
-  "chatter_labels.PRE_GIG_MINIGAME": "Roadie Feed",
-  "chatter_labels.PREGIG": "Pre-Gig Feed",
-  "chatter_labels.SETTINGS": "System Feed",
-  "chatter_labels.TRAVEL_MINIGAME": "Travel Feed",
   "chatter.header": "LIVE_CHATTER_FEED",
   "chatter.msg1": "this band is dead lol",
   "chatter.msg2": "PLAY THE OLD SHIT!!!",
@@ -37,6 +24,19 @@
   "chatter.random3": "BOOOOOOOOO",
   "chatter.random4": "my ears are bleeding (in a bad way)",
   "chatter.random5": "refund immediately",
+  "chatter_labels.CREDITS": "Crew Feed",
+  "chatter_labels.GAMEOVER": "Last Broadcast",
+  "chatter_labels.GIG": "Live Feed",
+  "chatter_labels.INTRO": "Intro Feed",
+  "chatter_labels.MENU": "Main Feed",
+  "chatter_labels.OVERWORLD": "Tour Feed",
+  "chatter_labels.POSTGIG": "Aftershow Feed",
+  "chatter_labels.PREGIG": "Pre-Gig Feed",
+  "chatter_labels.PRE_GIG_MINIGAME": "Roadie Feed",
+  "chatter_labels.SETTINGS": "System Feed",
+  "chatter_labels.TRAVEL_MINIGAME": "Travel Feed",
+  "chatter_labels.default_fallback": "Unknown",
+  "chatter_labels.default_speaker": "Band",
   "checklist.done": "INITIATE GIG",
   "checklist.header": "PRE-GIG SEQUENCE",
   "checklist.task1": "REFUEL TOURVAN",
@@ -79,7 +79,9 @@
   "data_purge": "DATA PURGE",
   "day_advance": "Day {{day}}: Living Costs Deducted.",
   "decryptor.click": "CLICK TO DECRYPT",
+  "decryptor.locked_aria": "Decrypt Data",
   "decryptor.unlocked": "ITEM_UNLOCKED: 'VOID_CORE'",
+  "decryptor.unlocked_aria": "Decryptor Unlocked",
   "delete_save": "DELETE SAVE",
   "delete_warning": "WARNING: This action is irreversible. All tour progress will be lost.",
   "detailedStats.active": "Active",
@@ -111,8 +113,8 @@
   "detailedStats.mode.restrictions": "Venue restrictions active",
   "detailedStats.mood": "Mood",
   "detailedStats.noActiveQuests": "No active quests. Stay toxic to trigger events.",
-  "detailedStats.none": "None",
   "detailedStats.noRegionalData": "No regional data yet. Play gigs to build reputation.",
+  "detailedStats.none": "None",
   "detailedStats.passiveFollowers": "Passive Followers",
   "detailedStats.passiveFollowersPerDay": "+{{count}}/day",
   "detailedStats.passiveFollowersPerDay_one": "+{{count}}/day",
@@ -123,8 +125,8 @@
   "detailedStats.stamina": "Stamina",
   "detailedStats.standardGear": "Standard Gear",
   "detailedStats.technical": "Technical",
-  "detailedStats.totalTravels": "Total Travels",
   "detailedStats.toUnlock": "To Unlock",
+  "detailedStats.totalTravels": "Total Travels",
   "detailedStats.traits": "Traits",
   "detailedStats.upgrades": "Upgrades",
   "detailedStats.vanUpgrades.installed": "{{count}} Installed",
@@ -137,9 +139,9 @@
   "errors.audio_cleanup_failed": "Audio cleanup failed.",
   "errors.audio_init_failed": "Audio initialization failed.",
   "errors.invalidVenueData": "Invalid venue data.",
-  "event_error": "EVENT ERROR: Resolution failed.",
   "event.resolved": "Event resolved.",
   "event.severity.critical": "CRITICAL",
+  "event_error": "EVENT ERROR: Resolution failed.",
   "executed": "EXECUTED",
   "featureList": [
     {
@@ -174,10 +176,22 @@
         "ui:featureList.sec2.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec2.rows.0.0", "ui:featureList.sec2.rows.0.1"],
-        ["ui:featureList.sec2.rows.1.0", "ui:featureList.sec2.rows.1.1"],
-        ["ui:featureList.sec2.rows.2.0", "ui:featureList.sec2.rows.2.1"],
-        ["ui:featureList.sec2.rows.3.0", "ui:featureList.sec2.rows.3.1"]
+        [
+          "ui:featureList.sec2.rows.0.0",
+          "ui:featureList.sec2.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.1.0",
+          "ui:featureList.sec2.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.2.0",
+          "ui:featureList.sec2.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.3.0",
+          "ui:featureList.sec2.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec2.title",
       "type": "table"
@@ -200,10 +214,22 @@
         "ui:featureList.sec4.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec4.rows.0.0", "ui:featureList.sec4.rows.0.1"],
-        ["ui:featureList.sec4.rows.1.0", "ui:featureList.sec4.rows.1.1"],
-        ["ui:featureList.sec4.rows.2.0", "ui:featureList.sec4.rows.2.1"],
-        ["ui:featureList.sec4.rows.3.0", "ui:featureList.sec4.rows.3.1"]
+        [
+          "ui:featureList.sec4.rows.0.0",
+          "ui:featureList.sec4.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.1.0",
+          "ui:featureList.sec4.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.2.0",
+          "ui:featureList.sec4.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.3.0",
+          "ui:featureList.sec4.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec4.title",
       "type": "table"
@@ -259,11 +285,11 @@
   "featureList.sec4.title": "Advanced UI/UX Techniques",
   "features.button": "FEATURES",
   "features.title": "FEATURE LIST",
-  "game_over": "GAME OVER: {{description}}",
   "gameOver.finalStatistics": "FINAL STATISTICS",
   "gameOver.loadLastSave": "LOAD LAST SAVE",
   "gameOver.returnToMenu": "RETURN TO MENU",
   "gameOver.soldOut": "SOLD OUT",
+  "game_over": "GAME OVER: {{description}}",
   "gig.abandon": "ABANDON GIG",
   "gig.audioOverride": "Audio Interface requires manual override.",
   "gig.crowdEnergy": "CROWD ENERGY",
@@ -297,6 +323,8 @@
   "identity_required": "IDENTITY REQUIRED",
   "intro_play": "Start Tour",
   "intro_skip": "Skip Intro",
+  "inventory.emptySlot": "Empty inventory slot: {{label}}",
+  "inventory.slot": "Inventory slot: {{name}}",
   "keyboardHint": "Press [1-{{count}}] or click to choose",
   "keyboardHint_one": "Press [1] or click to choose",
   "keyboardHint_other": "Press [1-{{count}}] or click to choose",
@@ -389,12 +417,12 @@
   "minigames.kabelsalat.statusPending": "CABLE MESS DETECTED",
   "minigames.kabelsalat.success": "SYSTEM BOOTED",
   "minigames.kabelsalat.systemShock": "SYSTEM SHOCK",
+  "minigames.kabelsalat.tMinus": "T-MINUS",
   "minigames.kabelsalat.timeUp": "TIME'S UP",
   "minigames.kabelsalat.timeValue": "{{count}}s",
   "minigames.kabelsalat.timeValue_one": "{{count}}s",
   "minigames.kabelsalat.timeValue_other": "{{count}}s",
   "minigames.kabelsalat.title": "HARDWARE_RIGGING",
-  "minigames.kabelsalat.tMinus": "T-MINUS",
   "module": "module",
   "music_volume": "MUSIC VOLUME",
   "mute_all": "MUTE ALL",
@@ -439,9 +467,9 @@
   "pregig.modifiers.soundcheck.label": "Soundcheck",
   "pregig.noModifiers": "No active buffs or debuffs",
   "pregig.nrg": "NRG",
-  "pregig.selected": "SELECTED",
   "pregig.selectPreview": "Select songs to preview energy curve",
   "pregig.selectSong": "Select song {{name}}",
+  "pregig.selected": "SELECTED",
   "pregig.setlist": "SETLIST",
   "pregig.startShow": "START SHOW",
   "pregig.title": "PREPARATION",
@@ -590,8 +618,8 @@
   "stats.repCooldownDesc": "Days until rep-gated posts clear",
   "stats.riskOfShadowban": "Risk of Shadowban",
   "stats.shadowbanned": "SHADOWBANNED (-75% Growth)",
-  "stats.social_reach": "Social Media Reach",
   "stats.socialDynamics": "SOCIAL DYNAMICS",
+  "stats.social_reach": "Social Media Reach",
   "stats.stamina": "Stamina",
   "stats.tiktok": "TikTok",
   "stats.totalReach": "Total Reach",
@@ -651,20 +679,6 @@
   "travel.refuel.tankAlreadyFull": "Tank is already full!",
   "travel.repair.notEnoughMoney": "Not enough money! Need {{cost}}€ to repair.",
   "travel.repair.repaired": "Repaired: -{{cost}}€",
-  "travel.errors.gameOverStranded": "GAME OVER: Stranded! Cannot travel and cannot afford fuel.",
-  "postGig.notEnoughCashForPr": "Not enough cash for PR!",
-  "postGig.storySpunControversyReduced": "Story Spun. Controversy reduced.",
-  "postGig.gameOverBankrupt": "GAME OVER: BANKRUPT! The tour is over.",
-  "postGig.traitUnlocked": "Trait Unlocked: {{traitName}}",
-  "postGig.acceptedDeal": "Accepted deal: {{dealName}}",
-  "postGig.skippedBrandDeals": "Skipped brand deals.",
-  "postGig.tallyingReceipts": "TALLYING RECEIPTS...",
-  "postGig.phaseReport": "GIG REPORT",
-  "postGig.phaseSocialStrategy": "SOCIAL MEDIA STRATEGY",
-  "postGig.phaseBrandOffers": "BRAND OFFERS",
-  "postGig.phaseTourUpdate": "TOUR UPDATE",
-  "decryptor.unlocked_aria": "Decryptor Unlocked",
-  "decryptor.locked_aria": "Decrypt Data",
   "travel.repair.vanAlreadyPerfect": "Van is already in perfect condition!",
   "ui.day": "Day",
   "ui.level": "Level",
