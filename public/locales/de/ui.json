@@ -15,19 +15,6 @@
   "bandhq.venue": "Band HQ",
   "brutalist.glitchPlaceholder": "0x8F9A... VERSCHLÜSSELT",
   "cancel": "ABBRECHEN",
-  "chatter_labels.CREDITS": "Crew-Feed",
-  "chatter_labels.default_fallback": "Unbekannt",
-  "chatter_labels.default_speaker": "Band",
-  "chatter_labels.GAMEOVER": "Letzte Übertragung",
-  "chatter_labels.GIG": "Live-Feed",
-  "chatter_labels.INTRO": "Intro Feed",
-  "chatter_labels.MENU": "Haupt-Feed",
-  "chatter_labels.OVERWORLD": "Tour-Feed",
-  "chatter_labels.POSTGIG": "Aftershow-Feed",
-  "chatter_labels.PRE_GIG_MINIGAME": "Roadie-Feed",
-  "chatter_labels.PREGIG": "Pre-Gig-Feed",
-  "chatter_labels.SETTINGS": "System-Feed",
-  "chatter_labels.TRAVEL_MINIGAME": "Reise-Feed",
   "chatter.header": "LIVE_CHATTER_FEED",
   "chatter.msg1": "diese band ist tot lol",
   "chatter.msg2": "SPIELT DEN ALTEN SCHEISS!!!",
@@ -37,6 +24,19 @@
   "chatter.random3": "BUUUUUUUUUH",
   "chatter.random4": "meine ohren bluten (im negativen sinn)",
   "chatter.random5": "sofortige rückerstattung",
+  "chatter_labels.CREDITS": "Crew-Feed",
+  "chatter_labels.GAMEOVER": "Letzte Übertragung",
+  "chatter_labels.GIG": "Live-Feed",
+  "chatter_labels.INTRO": "Intro Feed",
+  "chatter_labels.MENU": "Haupt-Feed",
+  "chatter_labels.OVERWORLD": "Tour-Feed",
+  "chatter_labels.POSTGIG": "Aftershow-Feed",
+  "chatter_labels.PREGIG": "Pre-Gig-Feed",
+  "chatter_labels.PRE_GIG_MINIGAME": "Roadie-Feed",
+  "chatter_labels.SETTINGS": "System-Feed",
+  "chatter_labels.TRAVEL_MINIGAME": "Reise-Feed",
+  "chatter_labels.default_fallback": "Unbekannt",
+  "chatter_labels.default_speaker": "Band",
   "checklist.done": "GIG STARTEN",
   "checklist.header": "PRE-GIG SEQUENZ",
   "checklist.task1": "TOURBUS AUFTANKEN",
@@ -79,7 +79,9 @@
   "data_purge": "DATENLÖSCHUNG",
   "day_advance": "Tag {{day}}: Lebenshaltungskosten abgezogen.",
   "decryptor.click": "KLICKEN ZUM ENTSCHLÜSSELN",
+  "decryptor.locked_aria": "Daten entschlüsseln",
   "decryptor.unlocked": "ITEM_ENTSPERRT: 'VOID_CORE'",
+  "decryptor.unlocked_aria": "Entschlüsseler freigeschaltet",
   "delete_save": "SPEICHERSTAND LÖSCHEN",
   "delete_warning": "WARNUNG: Diese Aktion ist unwiderruflich. Aller Fortschritt geht verloren.",
   "detailedStats.active": "Aktiv",
@@ -111,8 +113,8 @@
   "detailedStats.mode.restrictions": "Venue-Einschränkungen aktiv",
   "detailedStats.mood": "Stimmung",
   "detailedStats.noActiveQuests": "Keine aktiven Quests. Bleib toxisch, um Events auszulösen.",
-  "detailedStats.none": "Keine",
   "detailedStats.noRegionalData": "Noch keine regionalen Daten. Spiele Gigs, um Ruf aufzubauen.",
+  "detailedStats.none": "Keine",
   "detailedStats.passiveFollowers": "Passive Follower",
   "detailedStats.passiveFollowersPerDay": "+{{count}}/Tag",
   "detailedStats.passiveFollowersPerDay_one": "+{{count}}/Tag",
@@ -123,8 +125,8 @@
   "detailedStats.stamina": "Ausdauer",
   "detailedStats.standardGear": "Standard-Ausrüstung",
   "detailedStats.technical": "Technik",
-  "detailedStats.totalTravels": "Gesamtreisen",
   "detailedStats.toUnlock": "Zum Freischalten",
+  "detailedStats.totalTravels": "Gesamtreisen",
   "detailedStats.traits": "Eigenschaften",
   "detailedStats.upgrades": "Upgrades",
   "detailedStats.vanUpgrades.installed": "{{count}} Installiert",
@@ -137,9 +139,9 @@
   "errors.audio_cleanup_failed": "Audio-Bereinigung fehlgeschlagen.",
   "errors.audio_init_failed": "Audio-Initialisierung fehlgeschlagen.",
   "errors.invalidVenueData": "Ungültige Veranstaltungsdaten.",
-  "event_error": "EVENT FEHLER: Auflösung fehlgeschlagen.",
   "event.resolved": "Ereignis beendet.",
   "event.severity.critical": "KRITISCH",
+  "event_error": "EVENT FEHLER: Auflösung fehlgeschlagen.",
   "executed": "AUSGEFÜHRT",
   "featureList": [
     {
@@ -174,10 +176,22 @@
         "ui:featureList.sec2.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec2.rows.0.0", "ui:featureList.sec2.rows.0.1"],
-        ["ui:featureList.sec2.rows.1.0", "ui:featureList.sec2.rows.1.1"],
-        ["ui:featureList.sec2.rows.2.0", "ui:featureList.sec2.rows.2.1"],
-        ["ui:featureList.sec2.rows.3.0", "ui:featureList.sec2.rows.3.1"]
+        [
+          "ui:featureList.sec2.rows.0.0",
+          "ui:featureList.sec2.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.1.0",
+          "ui:featureList.sec2.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.2.0",
+          "ui:featureList.sec2.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.3.0",
+          "ui:featureList.sec2.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec2.title",
       "type": "table"
@@ -200,10 +214,22 @@
         "ui:featureList.sec4.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec4.rows.0.0", "ui:featureList.sec4.rows.0.1"],
-        ["ui:featureList.sec4.rows.1.0", "ui:featureList.sec4.rows.1.1"],
-        ["ui:featureList.sec4.rows.2.0", "ui:featureList.sec4.rows.2.1"],
-        ["ui:featureList.sec4.rows.3.0", "ui:featureList.sec4.rows.3.1"]
+        [
+          "ui:featureList.sec4.rows.0.0",
+          "ui:featureList.sec4.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.1.0",
+          "ui:featureList.sec4.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.2.0",
+          "ui:featureList.sec4.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.3.0",
+          "ui:featureList.sec4.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec4.title",
       "type": "table"
@@ -259,11 +285,11 @@
   "featureList.sec4.title": "Fortgeschrittene UI/UX-Techniken",
   "features.button": "FUNKTIONEN",
   "features.title": "FUNKTIONSLISTE",
-  "game_over": "GAME OVER: {{description}}",
   "gameOver.finalStatistics": "ABSCHLUSSSTATISTIKEN",
   "gameOver.loadLastSave": "LETZTEN SPEICHERSTAND LADEN",
   "gameOver.returnToMenu": "ZURÜCK ZUM MENÜ",
   "gameOver.soldOut": "AUSVERKAUFT",
+  "game_over": "GAME OVER: {{description}}",
   "gig.abandon": "GIG ABBRECHEN",
   "gig.audioOverride": "Audio-Interface erfordert manuelle Überschreibung.",
   "gig.crowdEnergy": "PUBLIKUMSENERGIE",
@@ -297,6 +323,8 @@
   "identity_required": "IDENTITÄT ERFORDERLICH",
   "intro_play": "Tour Starten",
   "intro_skip": "Intro Überspringen",
+  "inventory.emptySlot": "Leerer Inventarplatz: {{label}}",
+  "inventory.slot": "Inventarplatz: {{name}}",
   "keyboardHint": "Drücke [1-{{count}}] oder klicke zur Auswahl",
   "keyboardHint_one": "Drücke [1] oder klicke zur Auswahl",
   "keyboardHint_other": "Drücke [1-{{count}}] oder klicke zur Auswahl",
@@ -389,12 +417,12 @@
   "minigames.kabelsalat.statusPending": "KABELSALAT DETEKTIERT",
   "minigames.kabelsalat.success": "SYSTEM HOCHGEFAHREN",
   "minigames.kabelsalat.systemShock": "SYSTEM SHOCK",
+  "minigames.kabelsalat.tMinus": "T-MINUS",
   "minigames.kabelsalat.timeUp": "ZEIT ABGELAUFEN",
   "minigames.kabelsalat.timeValue": "{{count}}s",
   "minigames.kabelsalat.timeValue_one": "{{count}}s",
   "minigames.kabelsalat.timeValue_other": "{{count}}s",
   "minigames.kabelsalat.title": "HARDWARE_RIGGING",
-  "minigames.kabelsalat.tMinus": "T-MINUS",
   "module": "Modul",
   "music_volume": "MUSIK LAUTSTÄRKE",
   "mute_all": "ALLES STUMM",
@@ -439,9 +467,9 @@
   "pregig.modifiers.soundcheck.label": "Soundcheck",
   "pregig.noModifiers": "Keine aktiven Buffs oder Debuffs",
   "pregig.nrg": "NRG",
-  "pregig.selected": "AUSGEWÄHLT",
   "pregig.selectPreview": "Songs auswählen, um Energiekurve zu sehen",
   "pregig.selectSong": "Song {{name}} auswählen",
+  "pregig.selected": "AUSGEWÄHLT",
   "pregig.setlist": "SETLIST",
   "pregig.startShow": "SHOW STARTEN",
   "pregig.title": "VORBEREITUNG",
@@ -590,8 +618,8 @@
   "stats.repCooldownDesc": "Tage bis Ruf-Sperren aufgehoben sind",
   "stats.riskOfShadowban": "Shadowban-Risiko",
   "stats.shadowbanned": "SHADOWBANNED (-75% Wachstum)",
-  "stats.social_reach": "Social-Media-Reichweite",
   "stats.socialDynamics": "SOZIALE DYNAMIK",
+  "stats.social_reach": "Social-Media-Reichweite",
   "stats.stamina": "Ausdauer",
   "stats.tiktok": "TikTok",
   "stats.totalReach": "Gesamt-Reichweite",
@@ -651,20 +679,6 @@
   "travel.refuel.tankAlreadyFull": "Der Tank ist bereits voll!",
   "travel.repair.notEnoughMoney": "Nicht genug Geld! Du brauchst {{cost}}€ für die Reparatur.",
   "travel.repair.repaired": "Repariert: -{{cost}}€",
-  "travel.errors.gameOverStranded": "GAME OVER: Gestrandet! Du kannst nicht reisen und dir keinen Treibstoff leisten.",
-  "postGig.notEnoughCashForPr": "Nicht genug Geld für PR!",
-  "postGig.storySpunControversyReduced": "Story gedreht. Kontroverse reduziert.",
-  "postGig.gameOverBankrupt": "GAME OVER: BANKROTT! Die Tour ist vorbei.",
-  "postGig.traitUnlocked": "Eigenschaft freigeschaltet: {{traitName}}",
-  "postGig.acceptedDeal": "Deal angenommen: {{dealName}}",
-  "postGig.skippedBrandDeals": "Marken-Deals übersprungen.",
-  "postGig.tallyingReceipts": "ABRECHNUNG WIRD ERSTELLT...",
-  "postGig.phaseReport": "GIG-BERICHT",
-  "postGig.phaseSocialStrategy": "SOCIAL-MEDIA-STRATEGIE",
-  "postGig.phaseBrandOffers": "MARKENANGEBOTE",
-  "postGig.phaseTourUpdate": "TOUR-UPDATE",
-  "decryptor.unlocked_aria": "Entschlüsseler freigeschaltet",
-  "decryptor.locked_aria": "Daten entschlüsseln",
   "travel.repair.vanAlreadyPerfect": "Der Van ist bereits in perfektem Zustand!",
   "ui.day": "Tag",
   "ui.level": "Level",
