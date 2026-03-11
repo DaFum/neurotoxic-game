@@ -670,8 +670,11 @@ export const POST_OPTIONS = [
     resolve: ({ social, player, diceRoll }) => {
       const influencers = social?.influencers || {}
 
+      const isValidInfluencer = inf => inf && typeof inf === 'object'
+
       // helper to get cost
       const getCost = inf => {
+        if (!isValidInfluencer(inf)) return Number.POSITIVE_INFINITY
         let base = 100
         if (inf.tier === 'Macro') base = 300
         if (inf.tier === 'Mega') base = 800
@@ -682,7 +685,10 @@ export const POST_OPTIONS = [
 
       // Filter by affordability
       const affordableIds = Object.keys(influencers).filter(id => {
-        return getCost(influencers[id]) <= player.money
+        const influencer = influencers[id]
+        return (
+          isValidInfluencer(influencer) && getCost(influencer) <= player.money
+        )
       })
 
       if (affordableIds.length === 0) {

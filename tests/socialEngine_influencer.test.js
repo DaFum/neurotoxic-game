@@ -151,6 +151,31 @@ test('collab_influencer applies trait: drama_magnet', () => {
   assert.equal(result.followers, 1500, 'Should boost followers by 1.5x')
 })
 
+test('collab_influencer ignores invalid influencer entries', () => {
+  const state = {
+    player: { money: 500 },
+    social: {
+      influencers: {
+        broken: null,
+        macro: { tier: 'Macro', score: 0 }
+      }
+    }
+  }
+
+  const result = resolvePost(collabOption, state, 0)
+
+  assert.equal(result.success, true)
+  assert.ok(
+    result.message.includes('macro'),
+    'Should skip null influencer entries'
+  )
+  assert.equal(
+    result.moneyChange,
+    -300,
+    'Should charge the valid influencer cost'
+  )
+})
+
 test('collab_influencer tier followers', () => {
   const state = {
     player: { money: 2000 },
