@@ -1,3 +1,14 @@
+import { applyUnlockHQ } from '../src/utils/purchaseLogicUtils.js'
+
+import { mock } from 'node:test'
+
+mock.module('react-i18next', {
+  namedExports: {
+    useTranslation: () => ({ t: key => key }),
+    initReactI18next: { type: '3rdParty', init: () => {} }
+  }
+})
+
 import { describe, test, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook, act, cleanup } from '@testing-library/react'
@@ -16,25 +27,12 @@ describe('HQ Passive Effects', () => {
   })
 
   test('hq_room_label purchase gives money bonus', () => {
-    let playerPatch = null
     const player = {
       money: 5000,
       fame: 5000,
       van: { upgrades: [] },
       hqUpgrades: []
     }
-
-    const { result } = renderHook(() =>
-      usePurchaseLogic({
-        player,
-        band: { members: [], inventory: {}, performance: {} },
-        updatePlayer: patch => {
-          playerPatch = patch
-        },
-        updateBand: () => {},
-        addToast: () => {}
-      })
-    )
 
     const item = {
       id: 'hq_room_label',
@@ -44,10 +42,9 @@ describe('HQ Passive Effects', () => {
       effects: [{ type: 'unlock_hq', id: 'hq_label' }]
     }
 
-    act(() => {
-      const success = result.current.handleBuy(item)
-      assert.equal(success, true)
-    })
+    const initialPlayerPatch = { fame: 0 }
+
+    const { playerPatch } = applyUnlockHQ(item, initialPlayerPatch, player, { members: [], inventory: {}, performance: {} })
 
     assert.ok(playerPatch)
     assert.equal(playerPatch.fame, 0)

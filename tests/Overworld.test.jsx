@@ -5,6 +5,7 @@ import { GameStateProvider } from '../src/context/GameState'
 
 // Mocks
 vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({ t: key => key })
 }))
 

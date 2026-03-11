@@ -3,6 +3,7 @@ import { renderHook, act, waitFor } from '@testing-library/react'
 import { useKabelsalatState } from '../src/scenes/kabelsalat/useKabelsalatState'
 
 vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
     t: (key, options) => options?.defaultValue || key
   })

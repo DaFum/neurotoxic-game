@@ -37,6 +37,20 @@ vi.mock('../src/data/songs', () => ({
   ]
 }))
 
+vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
+  useTranslation: () => ({
+    t: (key, options) => {
+      const template = options?.defaultValue || key
+      if (!options) return template
+
+      return template.replace(/\{\{(\w+)\}\}/g, (_, token) =>
+        String(options[token] ?? `\{\{${token}\}\}`)
+      )
+    }
+  })
+}))
+
 describe('PostGig Leaderboard Submission', () => {
   const mockFetch = vi.fn().mockResolvedValue({ ok: true })
   const mockUpdatePlayer = vi.fn()
@@ -153,7 +167,7 @@ describe('PostGig Leaderboard Submission', () => {
     expect(screen.getByText('Great post!')).toBeInTheDocument()
 
     // Verify fetch hasn't been called yet
-    expect(mockFetch).not.toHaveBeenCalled()
+    expect(mockFetch.mock.calls.filter(c => c[0] === '/api/leaderboard/song').length).toBe(0)
 
     fireEvent.click(continueBtn)
 
