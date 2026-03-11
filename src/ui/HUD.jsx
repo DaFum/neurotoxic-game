@@ -169,7 +169,7 @@ export const HUD = () => {
           </Tooltip>
           <Tooltip
             content={t('ui:button.shortcuts', {
-              defaultValue: 'Shortcuts (?)'
+              defaultValue: 'Shortcuts (?, h)'
             })}
           >
             <button

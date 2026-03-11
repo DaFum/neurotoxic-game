@@ -692,7 +692,7 @@
   "unlocked": "FREIGESCHALTET: {{unlock}}!",
   "visual_interface": "VISUELLE SCHNITTSTELLE",
   "volume.set": "Lautstärke auf {{pct}}% setzen",
-  "button.shortcuts": "Tastenkürzel (?)",
+  "button.shortcuts": "Tastenkürzel (?, h)",
   "aria.shortcutsHelp": "Tastenkürzel-Hilfe umschalten",
   "keyboardShortcuts": "Tastenkürzel",
   "shortcuts.toggleHelp": "Diese Hilfe umschalten",
