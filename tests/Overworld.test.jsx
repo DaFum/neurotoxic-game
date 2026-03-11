@@ -91,6 +91,8 @@ describe('Overworld Component', () => {
 
   it('triggers save game action when save button is clicked', async () => {
     vi.useFakeTimers()
+    const setItemSpy = vi.spyOn(window.localStorage, 'setItem')
+
     render(
       <GameStateProvider>
         <Overworld />
@@ -108,10 +110,9 @@ describe('Overworld Component', () => {
       vi.runAllTimers()
     })
 
-    vi.useRealTimers()
+    expect(setItemSpy).toHaveBeenCalledWith('neurotoxic_v3_save', expect.any(String))
 
-    // Basic verification it doesn't crash; real verification would check saveGame is called
-    // but we are using the real GameStateProvider so it triggers real save logic.
-    expect(saveButton).toBeInTheDocument()
+    vi.useRealTimers()
+    setItemSpy.mockRestore()
   })
 })
