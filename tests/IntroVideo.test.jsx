@@ -7,6 +7,7 @@ import { logger } from '../src/utils/logger'
 
 // Mock react-i18next
 vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
     t: key => key
   })

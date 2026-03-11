@@ -7,6 +7,7 @@ const moveRight = vi.fn()
 const handleArrivalSequence = vi.fn()
 
 vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({ t: (_k, o) => o?.defaultValue || _k })
 }))
 
