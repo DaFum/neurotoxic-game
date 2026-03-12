@@ -290,6 +290,14 @@ export const Overworld = () => {
           [{t('ui:quests.button')}]
         </GlitchButton>
         <GlitchButton
+          onClick={openHQ}
+          disabled={isTraveling}
+          variant='primary'
+          size='sm'
+        >
+          [{t('ui:overworld.band_hq_button', { defaultValue: 'BAND HQ' })}]
+        </GlitchButton>
+        <GlitchButton
           onClick={handleRefuel}
           disabled={
             isTraveling ||

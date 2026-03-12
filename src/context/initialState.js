@@ -30,6 +30,7 @@ export const DEFAULT_PLAYER_STATE = {
   time: 12,
   location: 'stendal',
   currentNodeId: 'node_0_0',
+  lastGigNodeId: null,
   tutorialStep: 0,
   score: 0,
   fame: 0,

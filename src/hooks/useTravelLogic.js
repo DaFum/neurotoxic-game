@@ -375,6 +375,16 @@ export const useTravelLogic = ({
           node.type === 'FESTIVAL' ||
           node.type === 'FINALE'
         ) {
+          if (node.id === player.lastGigNodeId) {
+            addToast(
+              i18n.t('ui:travel.errors.alreadyPlayedHere', {
+                defaultValue: 'You just played a gig here! Hit the road and find a new crowd.'
+              }),
+              'warning'
+            )
+            return
+          }
+
           if ((band?.harmony ?? 0) <= 0) {
             addToast(
               i18n.t('ui:arrival.harmonyTooLowToPerform', {

@@ -695,5 +695,7 @@
   "unit.km": "km",
   "unlocked": "FREIGESCHALTET: {{unlock}}!",
   "visual_interface": "VISUELLE SCHNITTSTELLE",
-  "volume.set": "Lautstärke auf {{pct}}% setzen"
+  "volume.set": "Lautstärke auf {{pct}}% setzen",
+  "travel.errors.alreadyPlayedHere": "Du hast hier gerade erst gespielt! Fahr weiter und finde neues Publikum.",
+  "overworld.band_hq_button": "BAND HQ"
 }
