@@ -260,10 +260,10 @@ test('resolveEventChoice catches and handles errors gracefully', () => {
   const { result, delta, outcomeText, description } = resolveEventChoice(badOption, {})
 
   assert.equal(result.type, 'error')
-  assert.equal(result.message, 'Choice resolution error')
+  assert.equal(result.message, 'events:internalError')
   assert.equal(delta, null)
-  assert.equal(outcomeText, 'An error occurred.')
-  assert.equal(description, 'Choice resolution error')
+  assert.equal(outcomeText, 'events:errorOutcome')
+  assert.equal(description, 'events:internalError')
 })
 
 test('eventEngine.resolveChoice sets nextEventId', () => {

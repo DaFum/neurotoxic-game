@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, within } from '@testing-library/react'
 import GigModifierButton from '../src/ui/GigModifierButton'
 import { SettingsTab } from '../src/ui/bandhq/SettingsTab'
 import { ShopItem } from '../src/ui/bandhq/ShopItem'
@@ -176,7 +176,7 @@ describe('UI missing-target smoke/branch tests', () => {
     // g1 should be owned, i1 disabled.
     expect(screen.getByRole('button', { name: /OWNED/ })).toBeInTheDocument()
 
-    render(
+    const { container } = render(
       <UpgradesTab
         player={{ money: 100, fame: 5 }}
         upgrades={[
@@ -190,7 +190,7 @@ describe('UI missing-target smoke/branch tests', () => {
       />
     )
     expect(screen.getByText('FAME:')).toBeInTheDocument()
-    expect(screen.getAllByRole('button', { name: /OWNED/ })[0]).toBeInTheDocument()
+    expect(within(container).getByRole('button', { name: /OWNED/ })).toBeInTheDocument()
   })
 
   it('DebugLogViewer shows logs after keyboard toggle and allows close/clear', async () => {

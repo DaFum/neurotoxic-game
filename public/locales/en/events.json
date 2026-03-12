@@ -779,5 +779,7 @@
   "wrong_turn.opt2.d_d549": "Found a hidden record store! +Rare Vinyl",
   "wrong_turn.opt2.label": "Explore the area",
   "wrong_turn.opt2.outcome": "You decided to look around.",
-  "wrong_turn.title": "WRONG TURN"
+  "wrong_turn.title": "WRONG TURN",
+  "errorOutcome": "An error occurred.",
+  "internalError": "An internal error occurred while resolving this choice."
 }

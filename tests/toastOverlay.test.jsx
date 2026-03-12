@@ -28,18 +28,20 @@ const { ToastOverlay, translateContextKeys } = await import('../src/ui/ToastOver
 test('translateContextKeys securely translates and filters deep properties', () => {
   const t = vi.fn((key) => key.toUpperCase())
 
-  const ctx = {
-    normalKey: 'ui:hello',
-    num: 123,
-    nullVal: null,
-    arr: [1, 2, 3],
-    nested: {
-      deepKey: 'events:boom'
+  // Use JSON.parse to ensure __proto__ is created as an own property,
+  // not as setting the actual object prototype, mimicking a malicious JSON payload.
+  const ctx = JSON.parse(`{
+    "normalKey": "ui:hello",
+    "num": 123,
+    "nullVal": null,
+    "arr": [1, 2, 3],
+    "nested": {
+      "deepKey": "events:boom"
     },
-    __proto__: { injected: 'bad' },
-    constructor: { prototype: { injected: 'bad' } },
-    normalStr: 'hello'
-  }
+    "__proto__": { "injected": "bad" },
+    "constructor": { "prototype": { "injected": "bad" } },
+    "normalStr": "hello"
+  }`)
 
   const result = translateContextKeys(ctx, t)
 
