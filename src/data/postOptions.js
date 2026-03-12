@@ -699,7 +699,7 @@ export const POST_OPTIONS = [
       // Filter by affordability
       const affordableIds = []
       for (const id in influencers) {
-        if (Object.prototype.hasOwnProperty.call(influencers, id)) {
+        if (Object.hasOwn(influencers, id)) {
           if (isValidAndAffordableInfluencer(influencers[id], player.money)) {
             affordableIds.push(id)
           }
