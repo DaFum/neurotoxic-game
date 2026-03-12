@@ -230,10 +230,16 @@ export const usePostGigLogic = () => {
       let hasBandUpdates = false
 
       if (result.harmonyChange) {
-        newBand.harmony = clampBandHarmony(
-          newBand.harmony + result.harmonyChange
-        )
+        const prevHarmony = newBand.harmony ?? 1
+        const nextHarmony = clampBandHarmony(prevHarmony + result.harmonyChange)
+        const appliedDelta = nextHarmony - prevHarmony
+        newBand.harmony = nextHarmony
         hasBandUpdates = true
+
+        if (appliedDelta !== 0) {
+          const sign = appliedDelta > 0 ? '+' : ''
+          addToast(`Harmony ${sign}${appliedDelta}`, appliedDelta > 0 ? 'success' : 'error')
+        }
       }
       if (
         result.allMembersMoodChange ||
@@ -275,9 +281,16 @@ export const usePostGigLogic = () => {
       }
 
       if (result.moneyChange) {
-        updatePlayer({
-          money: clampPlayerMoney(player.money + result.moneyChange)
-        })
+        const prevMoney = player.money ?? 0
+        const nextMoney = clampPlayerMoney(prevMoney + result.moneyChange)
+        const appliedDelta = nextMoney - prevMoney
+
+        updatePlayer({ money: nextMoney })
+
+        if (appliedDelta !== 0) {
+          const sign = appliedDelta > 0 ? '+' : ''
+          addToast(`Money ${sign}${appliedDelta}€`, appliedDelta > 0 ? 'success' : 'error')
+        }
       }
 
       if (result.unlockTrait) {
@@ -394,11 +407,13 @@ export const usePostGigLogic = () => {
   const handleAcceptDeal = useCallback(
     deal => {
       try {
+        let appliedMoneyDelta = 0
         // Apply upfront bonuses
         if (deal.offer.upfront) {
-          updatePlayer(prev => ({
-            money: clampPlayerMoney(prev.money + deal.offer.upfront)
-          }))
+          const prevMoney = player.money ?? 0
+          const nextMoney = clampPlayerMoney(prevMoney + deal.offer.upfront)
+          appliedMoneyDelta = nextMoney - prevMoney
+          updatePlayer({ money: nextMoney })
         }
         if (deal.offer.item) {
           updateBand(prev => ({
@@ -451,11 +466,12 @@ export const usePostGigLogic = () => {
           return updates
         })
 
+        const moneyText = appliedMoneyDelta !== 0 ? ` (+${appliedMoneyDelta}€)` : ''
         addToast(
           t('ui:postGig.acceptedDeal', {
             dealName: deal.name,
             defaultValue: 'Accepted deal: {{dealName}}'
-          }),
+          }) + moneyText,
           'success'
         )
 
@@ -503,14 +519,17 @@ export const usePostGigLogic = () => {
       return
     }
 
-    updatePlayer({ money: clampPlayerMoney(player.money - 200) })
+    const prevMoney = player.money ?? 0
+    const nextMoney = clampPlayerMoney(prevMoney - 200)
+
+    updatePlayer({ money: nextMoney })
     updateSocial(prev => ({
       controversyLevel: Math.max(0, (prev.controversyLevel || 0) - 25)
     }))
     addToast(
       t('ui:postGig.storySpunControversyReduced', {
         defaultValue: 'Story Spun. Controversy reduced.'
-      }),
+      }) + ` (-200€)`,
       'success'
     )
   }, [player, updatePlayer, updateSocial, addToast, t])
@@ -519,11 +538,16 @@ export const usePostGigLogic = () => {
     if (!financials) return
 
     const fameGain = Math.min(MAX_FAME_GAIN, 50 + Math.floor(perfScore * 1.5))
-    const newMoney = clampPlayerMoney(player.money + financials.net)
+
+    const prevMoney = player.money ?? 0
+    const newMoney = clampPlayerMoney(prevMoney + financials.net)
+
+    const prevFame = player.fame ?? 0
+    const newFame = Math.max(0, prevFame + fameGain)
 
     updatePlayer({
       money: newMoney,
-      fame: Math.max(0, player.fame + fameGain),
+      fame: newFame,
       lastGigNodeId: player.currentNodeId
     })
 

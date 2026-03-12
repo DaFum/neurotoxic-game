@@ -357,6 +357,52 @@ describe('usePostGigLogic', () => {
       )
     })
 
+    it('calculates and displays mathematical deltas in toasts for money and harmony', async () => {
+      socialEngine.resolvePost.mockReturnValue({
+        success: true,
+        platform: 'instagram',
+        followers: 100,
+        moneyChange: 200, // Should trigger money toast
+        harmonyChange: 15 // Should trigger harmony toast
+      })
+
+      const { result } = renderHook(() => usePostGigLogic())
+
+      await waitFor(() => {
+        expect(result.current.postOptions).toHaveLength(1)
+      })
+
+      act(() => {
+        result.current.handlePostSelection(result.current.postOptions[0])
+      })
+
+      expect(mockAddToast).toHaveBeenCalledWith('Money +200€', 'success')
+      expect(mockAddToast).toHaveBeenCalledWith('Harmony +15', 'success')
+    })
+
+    it('displays clamped mathematical delta in toasts when bounds are reached', async () => {
+      socialEngine.resolvePost.mockReturnValue({
+        success: true,
+        platform: 'instagram',
+        followers: 100,
+        moneyChange: -600, // player money is 500, so real delta is -500
+        harmonyChange: 60 // band harmony is 50, so real delta is +50
+      })
+
+      const { result } = renderHook(() => usePostGigLogic())
+
+      await waitFor(() => {
+        expect(result.current.postOptions).toHaveLength(1)
+      })
+
+      act(() => {
+        result.current.handlePostSelection(result.current.postOptions[0])
+      })
+
+      expect(mockAddToast).toHaveBeenCalledWith('Money -500€', 'error')
+      expect(mockAddToast).toHaveBeenCalledWith('Harmony +50', 'success')
+    })
+
     it('applies cross-posting to other platforms on successful post', async () => {
       socialEngine.resolvePost.mockReturnValue({
         success: true,
@@ -694,7 +740,9 @@ describe('usePostGigLogic', () => {
         result.current.handleAcceptDeal(deal)
       })
 
-      expect(mockUpdatePlayer).toHaveBeenCalledWith(expect.any(Function))
+      expect(mockUpdatePlayer).toHaveBeenCalledWith(expect.objectContaining({
+        money: 1500
+      }))
       expect(mockAddToast).toHaveBeenCalledWith(
         expect.stringContaining('Mega Corp'),
         'success'
