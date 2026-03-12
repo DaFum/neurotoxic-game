@@ -15,6 +15,7 @@ vi.mock('../src/utils/purchaseLogicUtils', () => ({
 vi.mock('../src/ui/GlitchButton', () => ({
   GlitchButton: ({ children, onClick, disabled, isLoading }) => (
     <button
+      type='button'
       onClick={onClick}
       disabled={disabled || isLoading}
       data-loading={isLoading}

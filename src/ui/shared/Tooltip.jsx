@@ -18,6 +18,38 @@ export const Tooltip = ({ children, content, className = '' }) => {
   const [isVisible, setIsVisible] = useState(false)
   const tooltipId = useId()
 
+  const handleMouseEnter = useCallback(
+    e => {
+      setIsVisible(true)
+      if (children?.props?.onMouseEnter) children.props.onMouseEnter(e)
+    },
+    [children?.props]
+  )
+
+  const handleMouseLeave = useCallback(
+    e => {
+      setIsVisible(false)
+      if (children?.props?.onMouseLeave) children.props.onMouseLeave(e)
+    },
+    [children?.props]
+  )
+
+  const handleFocus = useCallback(
+    e => {
+      setIsVisible(true)
+      if (children?.props?.onFocus) children.props.onFocus(e)
+    },
+    [children?.props]
+  )
+
+  const handleBlur = useCallback(
+    e => {
+      setIsVisible(false)
+      if (children?.props?.onBlur) children.props.onBlur(e)
+    },
+    [children?.props]
+  )
+
   if (!isValidElement(children)) {
     console.warn('Tooltip children must be a single valid React element.')
     return children
@@ -38,38 +70,6 @@ export const Tooltip = ({ children, content, className = '' }) => {
     if (!ids.includes(tooltipId)) ids.push(tooltipId)
     return ids.join(' ')
   })()
-
-  const handleMouseEnter = useCallback(
-    e => {
-      setIsVisible(true)
-      if (children.props.onMouseEnter) children.props.onMouseEnter(e)
-    },
-    [children.props]
-  )
-
-  const handleMouseLeave = useCallback(
-    e => {
-      setIsVisible(false)
-      if (children.props.onMouseLeave) children.props.onMouseLeave(e)
-    },
-    [children.props]
-  )
-
-  const handleFocus = useCallback(
-    e => {
-      setIsVisible(true)
-      if (children.props.onFocus) children.props.onFocus(e)
-    },
-    [children.props]
-  )
-
-  const handleBlur = useCallback(
-    e => {
-      setIsVisible(false)
-      if (children.props.onBlur) children.props.onBlur(e)
-    },
-    [children.props]
-  )
 
   const isDisabled =
     children.props.disabled ||
