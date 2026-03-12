@@ -91,7 +91,8 @@ export const applyEventDelta = (state, delta) => {
   if (delta.player) {
     const nextPlayer = { ...nextState.player }
     if (typeof delta.player.money === 'number') {
-      nextPlayer.money = clampPlayerMoney(nextPlayer.money + delta.player.money)
+      const nextMoney = clampPlayerMoney(nextPlayer.money + delta.player.money)
+      nextPlayer.money = nextMoney
     }
     if (typeof delta.player.time === 'number') {
       nextPlayer.time = nextPlayer.time + delta.player.time
@@ -156,7 +157,8 @@ export const applyEventDelta = (state, delta) => {
   if (delta.band) {
     const nextBand = { ...nextState.band }
     if (typeof delta.band.harmony === 'number') {
-      nextBand.harmony = clampBandHarmony(nextBand.harmony + delta.band.harmony)
+      const nextHarmony = clampBandHarmony(nextBand.harmony + delta.band.harmony)
+      nextBand.harmony = nextHarmony
     }
 
     const membersDelta =

@@ -26,6 +26,15 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Missing required fields' })
       }
 
+      // Anti-Tamper / Prototype Pollution Check
+      if (
+        Object.hasOwn(req.body, '__proto__') ||
+        Object.hasOwn(req.body, 'constructor') ||
+        Object.hasOwn(req.body, 'prototype')
+      ) {
+        return res.status(400).json({ error: 'Invalid payload structure' })
+      }
+
       const {
         playerId,
         playerName,

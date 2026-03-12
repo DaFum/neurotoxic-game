@@ -131,8 +131,17 @@ export const PreGig = () => {
     }
 
     updatePlayer({ money: clampPlayerMoney(player.money - cost) })
-    updateBand({ harmony: clampBandHarmony(band.harmony + 15) })
-    addToast(t('ui:pregig.toasts.meetingHeld'), 'success')
+    const prevHarmony = band.harmony || 1
+    const newHarmony = clampBandHarmony(prevHarmony + 15)
+    const appliedDelta = newHarmony - prevHarmony
+
+    updateBand({ harmony: newHarmony })
+
+    if (appliedDelta > 0) {
+      addToast(t('ui:pregig.toasts.meetingHeld', { amount: appliedDelta }), 'success')
+    } else {
+      addToast(t('ui:pregig.toasts.meetingHeld', { amount: 0 }), 'success')
+    }
   }
 
   useEffect(() => {

@@ -15,11 +15,16 @@ import { applyTraitUnlocks } from '../../utils/traitUtils.js'
 export const handleUpdateBand = (state, payload) => {
   logger.debug('GameState', 'Update Band', payload)
   const updates = typeof payload === 'function' ? payload(state.band) : payload
-  const mergedBand = { ...state.band, ...updates }
 
-  // Clamp harmony to valid range 1-100
-  if (typeof mergedBand.harmony === 'number') {
-    mergedBand.harmony = clampBandHarmony(mergedBand.harmony)
+  let nextHarmony = state.band.harmony
+  if ('harmony' in updates) {
+    nextHarmony = clampBandHarmony(updates.harmony)
+  }
+
+  const mergedBand = {
+    ...state.band,
+    ...updates,
+    harmony: nextHarmony
   }
 
   return { ...state, band: mergedBand }

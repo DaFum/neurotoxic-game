@@ -212,7 +212,8 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
     dailyCost -= Math.floor((nextSocial.newsletter || 0) / 100) * 5
   }
 
-  nextPlayer.money = clampPlayerMoney(nextPlayer.money - dailyCost)
+  const nextMoney = clampPlayerMoney(nextPlayer.money - dailyCost)
+  nextPlayer.money = nextMoney
 
   // Van condition decay (wear from daily travel)
   if (nextPlayer.van) {
@@ -277,22 +278,26 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
 
   // Harmony Decay (Drifts towards 50 like mood)
   if (nextBand.harmony > 50) {
-    nextBand.harmony = clampBandHarmony(nextBand.harmony - 2)
+    const nextHarmonyDecay = clampBandHarmony(nextBand.harmony - 2)
+    nextBand.harmony = nextHarmonyDecay
   } else if (nextBand.harmony < 50) {
-    nextBand.harmony = clampBandHarmony(nextBand.harmony + 2)
+    const nextHarmonyRegen = clampBandHarmony(nextBand.harmony + 2)
+    nextBand.harmony = nextHarmonyRegen
   }
 
   // Bad Show Streak Penalty
   if ((nextPlayer.stats?.consecutiveBadShows || 0) > 0) {
-    nextBand.harmony = clampBandHarmony(
+    const nextHarmonyBadShows = clampBandHarmony(
       nextBand.harmony - Math.min(10, nextPlayer.stats.consecutiveBadShows * 2)
     )
+    nextBand.harmony = nextHarmonyBadShows
   }
 
   // Ego System Drain (Lead Singer Syndrome)
   let pendingFlags = {}
   if (nextSocial.egoFocus) {
-    nextBand.harmony = clampBandHarmony(nextBand.harmony - 2) // Passive drain for spotlighting a single member
+    const nextHarmonyEgo = clampBandHarmony(nextBand.harmony - 2) // Passive drain for spotlighting a single member
+    nextBand.harmony = nextHarmonyEgo
     // Proactive scandal trigger (12% daily chance)
     if (rng() < 0.12) {
       pendingFlags.scandal = true
@@ -308,7 +313,8 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
   const controversy = nextSocial.controversyLevel || 0
   if (controversy >= 50) {
     // Harmony drain is worse under stress
-    nextBand.harmony = clampBandHarmony(nextBand.harmony - 1)
+    const nextHarmonyControversy = clampBandHarmony(nextBand.harmony - 1)
+    nextBand.harmony = nextHarmonyControversy
     nextBand.members = nextBand.members.map(m => ({
       ...m,
       mood: Math.max(0, m.mood - 1)
@@ -316,7 +322,8 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
   }
 
   // Clamp harmony to valid range after all modifications
-  nextBand.harmony = clampBandHarmony(nextBand.harmony)
+  const nextHarmonySafeguard = clampBandHarmony(nextBand.harmony)
+  nextBand.harmony = nextHarmonySafeguard
 
   // 3. Social Decay
   nextSocial.viral = nextSocial.viral || 0
@@ -430,11 +437,13 @@ export const calculateDailyUpdates = (currentState, rng = Math.random) => {
 
   // Soundproofing: Harmony boost
   if (hqUpgrades.includes('hq_room_diy_soundproofing')) {
-    nextBand.harmony = clampBandHarmony(nextBand.harmony + 1)
+    const nextHarmonySoundproofing = clampBandHarmony(nextBand.harmony + 1)
+    nextBand.harmony = nextHarmonySoundproofing
   }
 
   if (nextBand.harmonyRegenTravel) {
-    nextBand.harmony = clampBandHarmony(nextBand.harmony + 2) // Reduced from 5
+    const nextHarmonyTravel = clampBandHarmony(nextBand.harmony + 2) // Reduced from 5
+    nextBand.harmony = nextHarmonyTravel
   }
   if (nextPlayer.passiveFollowers) {
     // Passive followers currently funnel into Instagram only

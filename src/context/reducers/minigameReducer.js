@@ -62,16 +62,20 @@ export const handleCompleteTravelMinigame = (state, payload) => {
     itemsCollected
   )
 
+  const nextMoney = clampPlayerMoney(state.player.money - totalCost)
+  const nextFuel = clampVanFuel(state.player.van.fuel - fuelLiters + fuelBonus)
+  const nextCondition = Math.max(0, state.player.van.condition - conditionLoss)
+
   const nextPlayer = {
     ...state.player,
-    money: clampPlayerMoney(state.player.money - totalCost),
+    money: nextMoney,
     location: targetNode.venue?.name || 'Unknown',
     currentNodeId: targetNode.id,
     totalTravels: state.player.totalTravels + 1,
     van: {
       ...state.player.van,
-      fuel: clampVanFuel(state.player.van.fuel - fuelLiters + fuelBonus),
-      condition: Math.max(0, state.player.van.condition - conditionLoss)
+      fuel: nextFuel,
+      condition: nextCondition
     },
     stats: {
       ...state.player.stats,
@@ -140,14 +144,17 @@ export const handleCompleteKabelsalatMinigame = (state, payload) => {
     state.band
   )
 
+  const nextHarmony = clampBandHarmony(state.band.harmony - stress)
+  const nextMoney = clampPlayerMoney(state.player.money + reward)
+
   const nextBand = {
     ...state.band,
-    harmony: clampBandHarmony(state.band.harmony - stress)
+    harmony: nextHarmony
   }
 
   const nextPlayer = {
     ...state.player,
-    money: clampPlayerMoney(state.player.money + reward)
+    money: nextMoney
   }
 
   const nextModifiers = { ...state.gigModifiers }
@@ -175,14 +182,17 @@ export const handleCompleteRoadieMinigame = (state, payload) => {
     state.band
   )
 
+  const nextHarmony = clampBandHarmony(state.band.harmony - stress)
+  const nextMoney = clampPlayerMoney(state.player.money - repairCost)
+
   const nextBand = {
     ...state.band,
-    harmony: clampBandHarmony(state.band.harmony - stress)
+    harmony: nextHarmony
   }
 
   const nextPlayer = {
     ...state.player,
-    money: clampPlayerMoney(state.player.money - repairCost)
+    money: nextMoney
   }
 
   // Pass damage to gig modifiers or stats?
