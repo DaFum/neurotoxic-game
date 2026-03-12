@@ -5,14 +5,16 @@ import { CHARACTERS } from '../data/characters.js'
  * Maps: charKey -> { traitId -> traitDef }
  * Provides O(1) lookup for trait definitions instead of O(N) searching.
  */
-const TRAIT_DEFS_BY_CHAR = Object.keys(CHARACTERS).reduce((acc, charKey) => {
-  const traits = CHARACTERS[charKey].traits || []
-  acc[charKey] = traits.reduce((traitAcc, trait) => {
-    traitAcc[trait.id] = trait
-    return traitAcc
-  }, {})
-  return acc
-}, {})
+const TRAIT_DEFS_BY_CHAR = {}
+for (const charKey in CHARACTERS) {
+  if (Object.hasOwn(CHARACTERS, charKey)) {
+    const traits = CHARACTERS[charKey].traits || []
+    TRAIT_DEFS_BY_CHAR[charKey] = {}
+    for (const trait of traits) {
+      TRAIT_DEFS_BY_CHAR[charKey][trait.id] = trait
+    }
+  }
+}
 
 /**
  * Monotonic counter for generating unique trait toast IDs.

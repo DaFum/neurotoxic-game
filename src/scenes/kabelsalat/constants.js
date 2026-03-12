@@ -41,10 +41,11 @@ export const CABLES = [
   }
 ]
 
-export const CABLE_MAP = CABLES.reduce((acc, cable) => {
-  acc[cable.id] = cable
-  return acc
-}, {})
+export const CABLE_MAP = {};
+for (let i = 0; i < CABLES.length; i++) {
+  const cable = CABLES[i];
+  CABLE_MAP[cable.id] = cable;
+}
 
 export const SLOT_XS = [120, 260, 400, 540, 680]
 

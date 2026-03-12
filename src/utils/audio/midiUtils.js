@@ -34,10 +34,12 @@ export const isValidMidiNote = note => normalizeMidiPitch(note) !== null
 export const buildMidiTrackEvents = (notes, percussionTrack) => {
   if (!Array.isArray(notes)) return []
 
-  return notes.reduce((events, note) => {
-    if (!Number.isFinite(note?.time) || note.time < 0) return events
-    const midiPitch = normalizeMidiPitch(note)
-    if (midiPitch == null) return events
+  const events = [];
+  for (let i = 0; i < notes.length; i++) {
+    const note = notes[i];
+    if (!Number.isFinite(note?.time) || note.time < 0) continue;
+    const midiPitch = normalizeMidiPitch(note);
+    if (midiPitch == null) continue;
 
     events.push({
       time: note.time,
@@ -45,10 +47,9 @@ export const buildMidiTrackEvents = (notes, percussionTrack) => {
       duration: note.duration,
       velocity: note.velocity,
       percussionTrack
-    })
-
-    return events
-  }, [])
+    });
+  }
+  return events;
 }
 
 const NOTE_NAMES = [
