@@ -414,9 +414,9 @@ export const GameStateProvider = ({ children }) => {
     safeStorageOperation('deleteSave', () => {
       localStorage.removeItem(SAVE_KEY)
     })
-    changeScene(GAME_PHASES.MENU)
+    // No need to changeScene as location.reload will wipe state anyway
     window.location.reload()
-  }, [changeScene])
+  }, [])
 
   /**
    * Persists the current state to localStorage.

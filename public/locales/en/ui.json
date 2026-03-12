@@ -476,7 +476,7 @@
   "pregig.title": "PREPARATION",
   "pregig.toasts.audioFail": "Audio initialization failed.",
   "pregig.toasts.harmonyLow": "Band harmony too low to perform!",
-  "pregig.toasts.meetingHeld": "Meeting held. Vibes are better.",
+  "pregig.toasts.meetingHeld": "Meeting held. Vibes +{{amount}}.",
   "pregig.toasts.meetingHeldMax": "Meeting held. Harmony already maxed out.",
   "pregig.toasts.noGig": "No gig active! Returning to map.",
   "pregig.toasts.noMoneySnacks": "Not enough money for snacks!",

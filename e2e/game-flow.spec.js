@@ -243,7 +243,7 @@ test.describe('Game Flow', () => {
       // Assert that we have actually advanced past the minigame if continue wasn't visible
       const gigReport = page.getByRole('heading', { name: /gig report/i })
       const isGigReportVisible = await gigReport.isVisible()
-      const isStillInMinigame = await page.locator('.crt-overlay').isVisible() // Or some other minigame indicator
+      const isStillInMinigame = await page.locator('canvas').isVisible() // PixiStage canvas
       if (!isGigReportVisible && isStillInMinigame) {
         throw new Error(
           'Minigame did not complete successfully after Shift+P backdoor.'

@@ -45,6 +45,22 @@ describe('Leaderboard API - Song', () => {
   }
 
   describe('POST requests', () => {
+    test('missing or invalid body returns 400', async () => {
+      const bodies = [null, undefined, []]
+
+      for (const body of bodies) {
+        const req = { method: 'POST', body }
+        const res = createRes()
+
+        await handler(req, res)
+
+        assert.strictEqual(res.status.mock.calls[0].arguments[0], 400)
+        assert.deepStrictEqual(res.json.mock.calls[0].arguments[0], {
+          error: 'Invalid payload structure: expected object'
+        })
+      }
+    })
+
     test('missing required fields returns 400', async () => {
       const req = {
         method: 'POST',
