@@ -359,3 +359,24 @@ export const createAddUnlockAction = unlockId => ({
   type: ActionTypes.ADD_UNLOCK,
   payload: unlockId
 })
+
+/**
+ * Creates an action to add a contraband item to the stash.
+ * @param {string} contrabandId - The ID of the contraband item.
+ * @returns {Object} Action object
+ */
+export const createAddContrabandAction = contrabandId => ({
+  type: ActionTypes.ADD_CONTRABAND,
+  payload: contrabandId
+})
+
+/**
+ * Creates an action to use a contraband item from the stash.
+ * @param {string} instanceId - The unique instance ID of the contraband item in the stash.
+ * @param {string} [memberId] - Optional. The ID of the band member to apply the effect to.
+ * @returns {Object} Action object
+ */
+export const createUseContrabandAction = (instanceId, memberId) => ({
+  type: ActionTypes.USE_CONTRABAND,
+  payload: { instanceId, memberId }
+})

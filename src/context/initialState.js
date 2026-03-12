@@ -86,6 +86,7 @@ export const DEFAULT_BAND_STATE = {
   harmonyRegenTravel: false,
   inventorySlots: 0,
   luck: 0,
+  stash: [],
   performance: {
     guitarDifficulty: 1.0,
     drumMultiplier: 1.0,
@@ -209,7 +210,8 @@ export const createInitialState = (persistedData = {}) => ({
       relationships: { ...m.relationships }
     })),
     performance: { ...DEFAULT_BAND_STATE.performance },
-    inventory: { ...DEFAULT_BAND_STATE.inventory }
+    inventory: { ...DEFAULT_BAND_STATE.inventory },
+    stash: [...DEFAULT_BAND_STATE.stash]
   },
   social: {
     ...DEFAULT_SOCIAL_STATE,
