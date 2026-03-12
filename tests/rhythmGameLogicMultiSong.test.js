@@ -110,7 +110,7 @@ mock.module('../src/utils/logger.js', {
   }
 })
 mock.module('../src/data/songs.js', {
-  namedExports: { SONGS_DB: [] }
+  namedExports: { SONGS_BY_ID: new Map([].map(s => [s.id, s])), SONGS_DB: [] }
 })
 
 describe('useRhythmGameLogic Multi-Song Support', () => {

@@ -11,7 +11,9 @@ export const PauseButton = memo(function PauseButton({
 
   return (
     <div className='absolute top-4 right-4 z-50 pointer-events-auto'>
-      <Tooltip content={t('ui:gig.pause', { defaultValue: 'Pause Game (ESC)' })}>
+      <Tooltip
+        content={t('ui:gig.pause', { defaultValue: 'Pause Game (ESC)' })}
+      >
         <button
           type='button'
           onClick={onTogglePause}

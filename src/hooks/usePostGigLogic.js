@@ -16,7 +16,7 @@ import {
 } from '../utils/socialEngine'
 import { clampPlayerMoney, clampBandHarmony } from '../utils/gameStateUtils'
 import { BRAND_ALIGNMENTS } from '../context/initialState'
-import { SONGS_DB } from '../data/songs'
+import { SONGS_BY_ID } from '../data/songs'
 import { logger } from '../utils/logger.js'
 
 export const DEFAULT_SOCIAL_UNAVAILABLE_MSG =
@@ -144,21 +144,21 @@ export const usePostGigLogic = () => {
           logger.error('PostGig', 'Failed to generate post options', e)
           // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
           setPostOptions([])
-        const fallbackMsg = t('ui:postGig.socialOptionsUnavailable', {
-          defaultValue: DEFAULT_SOCIAL_UNAVAILABLE_MSG
-        })
-        // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-        setPostResult({
-          type: 'ERROR',
-          success: false,
-          platform: 'none',
-          followers: 0,
-          moneyChange: 0,
-          message: fallbackMsg
-        })
-        // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-        setPhase('COMPLETE')
-        // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+          const fallbackMsg = t('ui:postGig.socialOptionsUnavailable', {
+            defaultValue: DEFAULT_SOCIAL_UNAVAILABLE_MSG
+          })
+          // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+          setPostResult({
+            type: 'ERROR',
+            success: false,
+            platform: 'none',
+            followers: 0,
+            moneyChange: 0,
+            message: fallbackMsg
+          })
+          // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+          setPhase('COMPLETE')
+          // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
           addToast(fallbackMsg, 'error')
         }
       }
@@ -585,8 +585,8 @@ export const usePostGigLogic = () => {
       songsToSubmit.forEach(songData => {
         // Resolve to leaderboardId (API-safe slug) — currentGig.songId is the raw
         // JSON key which may contain spaces the API rejects (^[a-zA-Z0-9_-]+$).
-        const leaderboardSongId = SONGS_DB.find(
-          s => s.id === songData.songId
+        const leaderboardSongId = SONGS_BY_ID.get(
+          songData.songId
         )?.leaderboardId
 
         if (leaderboardSongId) {

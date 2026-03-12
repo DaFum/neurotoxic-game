@@ -708,7 +708,8 @@ export const POST_OPTIONS = [
           success: false,
           platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
           message: i18n.t('ui:postOptions.noAffordableInfluencers', {
-            defaultValue: 'You cannot afford any available influencers right now.'
+            defaultValue:
+              'You cannot afford any available influencers right now.'
           }),
           moneyChange: 0
         }
@@ -734,20 +735,23 @@ export const POST_OPTIONS = [
 
       if (influencer.trait === 'tech_savvy') {
         platform = SOCIAL_PLATFORMS.YOUTUBE.id
-        traitBonusText = ' ' + i18n.t('ui:postOptions.influencerTraitTechSavvy', {
-          defaultValue: 'The gear nerds loved the technical breakdown.'
-        })
+        traitBonusText =
+          ' ' +
+          i18n.t('ui:postOptions.influencerTraitTechSavvy', {
+            defaultValue: 'The gear nerds loved the technical breakdown.'
+          })
       } else if (influencer.trait === 'drama_magnet') {
         platform = SOCIAL_PLATFORMS.TIKTOK.id
         controversyChange = 20
         followersGain = Math.floor(followersGain * 1.5)
-        traitBonusText = ' ' + i18n.t('ui:postOptions.influencerTraitDramaMagnet', {
-          defaultValue: 'Massive reach, but it came with some toxic drama.'
-        })
+        traitBonusText =
+          ' ' +
+          i18n.t('ui:postOptions.influencerTraitDramaMagnet', {
+            defaultValue: 'Massive reach, but it came with some toxic drama.'
+          })
       }
 
-      const displayName =
-        influencer.name ?? selectedId.replace(/_/g, ' ')
+      const displayName = influencer.name ?? selectedId.replace(/_/g, ' ')
 
       return {
         type: 'FIXED',
