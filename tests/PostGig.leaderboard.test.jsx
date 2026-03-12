@@ -22,8 +22,8 @@ vi.mock('../src/utils/crypto', () => ({
   secureRandom: () => 0.5
 }))
 
-vi.mock('../src/data/songs', () => ({
-  SONGS_DB: [
+vi.mock('../src/data/songs', () => {
+  const songs = [
     {
       id: 'raw_01_kranker_schrank',
       leaderboardId: 'slug-01',
@@ -35,7 +35,11 @@ vi.mock('../src/data/songs', () => ({
       name: 'Neurotoxic 1'
     }
   ]
-}))
+  return {
+    SONGS_DB: songs,
+    SONGS_BY_ID: new Map(songs.map(s => [s.id, s]))
+  }
+})
 
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
@@ -167,7 +171,9 @@ describe('PostGig Leaderboard Submission', () => {
     expect(screen.getByText('Great post!')).toBeInTheDocument()
 
     // Verify fetch hasn't been called yet
-    expect(mockFetch.mock.calls.filter(c => c[0] === '/api/leaderboard/song').length).toBe(0)
+    expect(
+      mockFetch.mock.calls.filter(c => c[0] === '/api/leaderboard/song').length
+    ).toBe(0)
 
     fireEvent.click(continueBtn)
 

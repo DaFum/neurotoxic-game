@@ -37,7 +37,7 @@ vi.mock('../src/hooks/useQuestsModal', () => ({
 }))
 
 vi.mock('../src/components/ToggleRadio', () => ({
-  ToggleRadio: () => <div data-testid="toggle-radio" />
+  ToggleRadio: () => <div data-testid='toggle-radio' />
 }))
 
 vi.mock('../src/utils/imageGen.js', () => ({
@@ -52,19 +52,19 @@ vi.mock('../src/utils/AudioManager', () => ({
 }))
 
 vi.mock('../src/ui/BandHQ', () => ({
-  BandHQ: () => <div data-testid="band-hq" />
+  BandHQ: () => <div data-testid='band-hq' />
 }))
 
 vi.mock('../src/ui/QuestsModal', () => ({
-  QuestsModal: () => <div data-testid="quests-modal" />
+  QuestsModal: () => <div data-testid='quests-modal' />
 }))
 
 vi.mock('../src/components/MapConnection', () => ({
-  MapConnection: () => <g data-testid="map-connection" />
+  MapConnection: () => <g data-testid='map-connection' />
 }))
 
 vi.mock('../src/components/MapNode', () => ({
-  MapNode: () => <div data-testid="map-node" />
+  MapNode: () => <div data-testid='map-node' />
 }))
 
 describe('Overworld Component', () => {
@@ -108,7 +108,10 @@ describe('Overworld Component', () => {
         vi.runAllTimers()
       })
 
-      expect(setItemSpy).toHaveBeenCalledWith('neurotoxic_v3_save', expect.any(String))
+      expect(setItemSpy).toHaveBeenCalledWith(
+        'neurotoxic_v3_save',
+        expect.any(String)
+      )
     } finally {
       vi.useRealTimers()
       setItemSpy.mockRestore()

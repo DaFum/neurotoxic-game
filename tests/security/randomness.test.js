@@ -2,7 +2,10 @@ import test, { mock } from 'node:test'
 import assert from 'node:assert/strict'
 
 // Import secureRandom
-import { secureRandom, resetSecureRandomBatchForTesting } from '../../src/utils/crypto.js'
+import {
+  secureRandom,
+  resetSecureRandomBatchForTesting
+} from '../../src/utils/crypto.js'
 
 test('secureRandom returns values in [0, 1)', () => {
   for (let i = 0; i < 1000; i++) {

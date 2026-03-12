@@ -14,7 +14,7 @@ import {
 } from '../../utils/audioEngine'
 import { handleError, AudioError } from '../../utils/errorHandler'
 import { logger } from '../../utils/logger'
-import { SONGS_DB } from '../../data/songs.js'
+import { SONGS_DB, SONGS_BY_ID } from '../../data/songs.js'
 import {
   calculateGigPhysics,
   getGigModifiers
@@ -41,8 +41,7 @@ const setupGigPhysics = (
 
   const songId = currentGigId || setlistFirstId || 'neurotoxic_1'
   const DEFAULT_SONG = { id: 'default', bpm: 120 }
-  const activeSong =
-    SONGS_DB.find(s => s.id === songId) || SONGS_DB[0] || DEFAULT_SONG
+  const activeSong = SONGS_BY_ID.get(songId) || SONGS_DB[0] || DEFAULT_SONG
   const physics = calculateGigPhysics(band, activeSong)
 
   const currentNode = gameMap?.nodes?.[playerNodeId]
@@ -93,7 +92,7 @@ const resolveActiveSetlist = setlist => {
   ).map(songRef => {
     if (typeof songRef === 'string') {
       return (
-        SONGS_DB.find(dbSong => dbSong.id === songRef) || {
+        SONGS_BY_ID.get(songRef) || {
           id: songRef,
           name: songRef,
           bpm: 120,
@@ -103,7 +102,7 @@ const resolveActiveSetlist = setlist => {
       )
     }
     if (!songRef.notes && songRef.id && songRef.id !== 'jam') {
-      return SONGS_DB.find(dbSong => dbSong.id === songRef.id) || songRef
+      return SONGS_BY_ID.get(songRef.id) || songRef
     }
     return songRef
   })

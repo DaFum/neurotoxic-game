@@ -18,25 +18,27 @@ export const Tooltip = ({ children, content, className = '' }) => {
   }
 
   if (children.type === React.Fragment) {
-    console.warn('Tooltip children must be a single valid React element and not a Fragment.')
+    console.warn(
+      'Tooltip children must be a single valid React element and not a Fragment.'
+    )
     return children
   }
 
   // eslint-disable-next-line @eslint-react/no-clone-element
   const trigger = cloneElement(children, {
-    onMouseEnter: (e) => {
+    onMouseEnter: e => {
       setIsVisible(true)
       if (children.props.onMouseEnter) children.props.onMouseEnter(e)
     },
-    onMouseLeave: (e) => {
+    onMouseLeave: e => {
       setIsVisible(false)
       if (children.props.onMouseLeave) children.props.onMouseLeave(e)
     },
-    onFocus: (e) => {
+    onFocus: e => {
       setIsVisible(true)
       if (children.props.onFocus) children.props.onFocus(e)
     },
-    onBlur: (e) => {
+    onBlur: e => {
       setIsVisible(false)
       if (children.props.onBlur) children.props.onBlur(e)
     },
