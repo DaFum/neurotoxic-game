@@ -269,4 +269,4 @@ _Last updated: 2026-02-25. Consequence system, quest system, and source tree cor
 - Keep interpolation placeholders consistent across languages (e.g., `{{cost}}`, `{{location}}`).
 - For non-visual error/toast paths, prefer resilient fallbacks (`defaultValue`) so missing keys do not surface raw key names to players.
 - In React callbacks/hooks, keep translation usage consistent with hook dependency expectations (`t` included in callback deps when used in callback scope).
-- Before merging localization work, run the project test commands (`npm run test` and `npm run test:ui`) and include results in the PR summary.
+- Before merging localization work, run the project test commands (`pnpm run test` and `pnpm run test:ui`) and include results in the PR summary.
