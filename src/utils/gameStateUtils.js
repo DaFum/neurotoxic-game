@@ -157,7 +157,9 @@ export const applyEventDelta = (state, delta) => {
   if (delta.band) {
     const nextBand = { ...nextState.band }
     if (typeof delta.band.harmony === 'number') {
-      const nextHarmony = clampBandHarmony(nextBand.harmony + delta.band.harmony)
+      const nextHarmony = clampBandHarmony(
+        nextBand.harmony + delta.band.harmony
+      )
       nextBand.harmony = nextHarmony
     }
 

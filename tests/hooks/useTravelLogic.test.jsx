@@ -78,7 +78,12 @@ describe('useTravelLogic', () => {
   })
 
   it('prevents playing a gig at the same location consecutively', async () => {
-    const player = { currentNodeId: 'node_1', lastGigNodeId: 'node_1', money: 100, van: { fuel: 50 } }
+    const player = {
+      currentNodeId: 'node_1',
+      lastGigNodeId: 'node_1',
+      money: 100,
+      van: { fuel: 50 }
+    }
     const band = { harmony: 10 }
     const gameMap = { nodes: { node_1: { id: 'node_1' } } }
     const updatePlayer = vi.fn()

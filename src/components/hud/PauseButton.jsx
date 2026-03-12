@@ -20,7 +20,6 @@ export const PauseButton = memo(function PauseButton({
           className={`bg-(--void-black)/80 border border-(--toxic-green) text-(--toxic-green) p-2 transition-all ${isGameOver ? 'opacity-50 pointer-events-none cursor-not-allowed' : 'hover:bg-(--toxic-green) hover:text-(--void-black)'}`}
           aria-label={t('ui:gig.pauseAria', { defaultValue: 'Pause Game' })}
           disabled={isGameOver}
-          tabIndex={isGameOver ? 0 : undefined}
         >
           <svg
             xmlns='http://www.w3.org/2000/svg'

@@ -108,9 +108,9 @@ export const calculateGigPhysics = (bandState, song) => {
   // 2. Scroll Speed based on Global Stamina
   // Avg Stamina:
   // members array is already guarded above
-  let totalStamina = 0;
+  let totalStamina = 0
   for (let i = 0; i < members.length; i++) {
-    totalStamina += (members[i].stamina || 0);
+    totalStamina += members[i].stamina || 0
   }
   const avgStamina = members.length ? totalStamina / members.length : 0
 

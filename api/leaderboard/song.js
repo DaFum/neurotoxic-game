@@ -18,8 +18,8 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
       // Anti-Tamper / Prototype Pollution Check
-      if (!req.body || typeof req.body !== 'object') {
-        return res.status(400).json({ error: 'Invalid payload structure' })
+      if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
+        return res.status(400).json({ error: 'Invalid payload structure: expected object' })
       }
       if (
         Object.hasOwn(req.body, '__proto__') ||

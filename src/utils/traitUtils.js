@@ -5,11 +5,11 @@ import { CHARACTERS } from '../data/characters.js'
  * Maps: charKey -> { traitId -> traitDef }
  * Provides O(1) lookup for trait definitions instead of O(N) searching.
  */
-const TRAIT_DEFS_BY_CHAR = {}
+const TRAIT_DEFS_BY_CHAR = Object.create(null)
 for (const charKey in CHARACTERS) {
   if (Object.hasOwn(CHARACTERS, charKey)) {
     const traits = CHARACTERS[charKey].traits || []
-    TRAIT_DEFS_BY_CHAR[charKey] = {}
+    TRAIT_DEFS_BY_CHAR[charKey] = Object.create(null)
     for (const trait of traits) {
       TRAIT_DEFS_BY_CHAR[charKey][trait.id] = trait
     }
