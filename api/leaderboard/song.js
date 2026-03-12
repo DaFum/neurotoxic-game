@@ -2,6 +2,13 @@ import client from '../../lib/redis.js'
 
 const MAX_SONG_ID_LENGTH = 64
 
+/**
+ * Verarbeitet HTTP-Requests zum Speichern von Spieler-Scores (POST) und zum Abrufen der Highscore-Liste eines Songs (GET).
+ *
+ * POST: Validiert Nutzlast gegen Prototype-Pollution, prüft Felder (playerId, playerName, songId, score), aktualisiert den Spielernamen in der Hash-Map und fügt den Score in die Song-Zeitreihe ein (nur wenn der neue Score größer ist). Gibt bei Erfolg HTTP 200 mit { success: true } zurück; bei Validierungsfehlern entsprechende 400-Antworten; bei internen Fehlern 500.
+ *
+ * GET: Validiert query.songId und optionales query.limit, liest die Top-N-Einträge der Song-Leaderboard-Zeile und die zugehörigen Spielernamen und liefert ein Array mit Einträgen { rank, playerId, playerName, score }. Gibt 400 für fehlerhafte Abfragen, 200 mit dem Leaderboard oder einem leeren Array bei keinem Eintrag, und 500 bei internen Fehlern.
+ */
 export default async function handler(req, res) {
   // Ensure connection
   if (!client.isOpen) {
@@ -11,6 +18,9 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
       // Anti-Tamper / Prototype Pollution Check
+      if (!req.body || typeof req.body !== 'object') {
+        return res.status(400).json({ error: 'Invalid payload structure' })
+      }
       if (
         Object.hasOwn(req.body, '__proto__') ||
         Object.hasOwn(req.body, 'constructor') ||
