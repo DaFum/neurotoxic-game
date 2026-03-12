@@ -57,8 +57,10 @@ export const Tooltip = ({ children, content, className = '' }) => {
     children.props.style?.pointerEvents === 'none'
 
   const trigger = isDisabled ? (
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
     <span
       className='inline-block'
+      tabIndex={0}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onFocus={handleFocus}
