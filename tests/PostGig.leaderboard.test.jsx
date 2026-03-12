@@ -45,7 +45,7 @@ vi.mock('react-i18next', () => ({
       if (!options) return template
 
       return template.replace(/\{\{(\w+)\}\}/g, (_, token) =>
-        String(options[token] ?? `\{\{${token}\}\}`)
+        String(options[token] ?? `{{${token}}}`)
       )
     }
   })

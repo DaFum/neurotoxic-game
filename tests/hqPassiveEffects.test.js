@@ -1,32 +1,11 @@
-import { applyUnlockHQ } from '../src/utils/purchaseLogicUtils.js'
-
-import { mock } from 'node:test'
-
-mock.module('react-i18next', {
-  namedExports: {
-    useTranslation: () => ({ t: key => key }),
-    initReactI18next: { type: '3rdParty', init: () => {} }
-  }
-})
-
-import { describe, test, beforeEach, afterEach } from 'node:test'
+import { describe, test } from 'node:test'
 import assert from 'node:assert/strict'
-import { renderHook, act, cleanup } from '@testing-library/react'
-import { setupJSDOM, teardownJSDOM } from './testUtils.js'
-import { usePurchaseLogic } from '../src/hooks/usePurchaseLogic.js'
+
+import { applyUnlockHQ } from '../src/utils/purchaseLogicUtils.js'
 import { calculateDailyUpdates } from '../src/utils/simulationUtils.js'
 
 describe('HQ Passive Effects', () => {
-  beforeEach(() => {
-    setupJSDOM()
-  })
-
-  afterEach(() => {
-    cleanup()
-    teardownJSDOM()
-  })
-
-  test('hq_room_label purchase gives money bonus', () => {
+  test('applyUnlockHQ utility hq_room_label purchase gives money bonus', () => {
     const player = {
       money: 5000,
       fame: 5000,
@@ -39,7 +18,7 @@ describe('HQ Passive Effects', () => {
       name: 'Label',
       cost: 5000,
       currency: 'fame',
-      effects: [{ type: 'unlock_hq', id: 'hq_label' }]
+      effects: [{ type: 'unlock_hq', id: 'hq_room_label' }]
     }
 
     const initialPlayerPatch = { fame: 0 }

@@ -22,7 +22,7 @@ export const secureRandom = () => {
   }
 
   // Refill the batch when it's exhausted
-  if (batchIndex >= BATCH_SIZE || crypto.getRandomValues.name === 'mockGetRandomValues' || crypto.getRandomValues.name === 'mockFn' || crypto.getRandomValues.isMockFunction) {
+  if (batchIndex >= BATCH_SIZE) {
     crypto.getRandomValues(batchArray)
     batchIndex = 0
   }

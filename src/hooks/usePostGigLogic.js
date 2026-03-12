@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
@@ -65,6 +65,7 @@ export const usePostGigLogic = () => {
   const [postOptions, setPostOptions] = useState([])
   const [postResult, setPostResult] = useState(null)
   const [brandOffers, setBrandOffers] = useState([])
+  const errorHandledRef = useRef(false)
 
   const phaseTitleKey =
     {
@@ -138,12 +139,15 @@ export const usePostGigLogic = () => {
         // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
         setPostOptions(generatePostOptions(currentGig, gameStateForPosts))
       } catch (e) {
-        logger.error('PostGig', 'Failed to generate post options', e)
-        // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-        setPostOptions([])
+        if (!errorHandledRef.current) {
+          errorHandledRef.current = true
+          logger.error('PostGig', 'Failed to generate post options', e)
+          // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+          setPostOptions([])
         const fallbackMsg = t('ui:postGig.socialOptionsUnavailable', {
           defaultValue: DEFAULT_SOCIAL_UNAVAILABLE_MSG
         })
+        // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
         setPostResult({
           type: 'ERROR',
           success: false,
@@ -152,8 +156,11 @@ export const usePostGigLogic = () => {
           moneyChange: 0,
           message: fallbackMsg
         })
+        // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
         setPhase('COMPLETE')
-        addToast(fallbackMsg, 'error')
+        // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+          addToast(fallbackMsg, 'error')
+        }
       }
     }
   }, [
