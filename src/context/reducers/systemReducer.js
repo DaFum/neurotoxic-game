@@ -55,16 +55,16 @@ export const handleLoadGame = (state, payload) => {
     }
   }
 
-  const rawFame = typeof rawPlayer.fame === 'number' ? rawPlayer.fame : 0
+  const validatedFame = Math.max(0, typeof rawPlayer.fame === 'number' ? rawPlayer.fame : 0)
 
   // Validate Player
   const mergedPlayer = {
     ...rawPlayer,
     money: clampPlayerMoney(rawPlayer.money),
-    fame: Math.max(0, rawFame),
-    fameLevel: calculateFameLevel(Math.max(0, rawFame)),
+    fame: validatedFame,
+    fameLevel: calculateFameLevel(validatedFame),
     day: Math.max(1, typeof rawPlayer.day === 'number' ? rawPlayer.day : 1),
-    van: rawPlayer.van ? {
+    van: {
       ...rawPlayer.van,
       fuel: Math.max(
         0,
@@ -73,7 +73,7 @@ export const handleLoadGame = (state, payload) => {
           typeof rawPlayer.van.fuel === 'number' ? rawPlayer.van.fuel : 100
         )
       )
-    } : undefined
+    }
   }
 
   // 2. Sanitize Band

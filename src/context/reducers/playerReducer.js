@@ -14,13 +14,12 @@ export const handleUpdatePlayer = (state, payload) => {
   const updates =
     typeof payload === 'function' ? payload(state.player) : payload
 
-  const moneyToApply = updates.money !== undefined ? updates.money : state.player.money
-  const clampedMoney = typeof moneyToApply === 'number' ? clampPlayerMoney(moneyToApply) : moneyToApply
-
   const mergedPlayer = {
     ...state.player,
     ...updates,
-    money: clampedMoney
+    money: clampPlayerMoney(
+      'money' in updates ? updates.money : state.player.money
+    )
   }
 
   return { ...state, player: mergedPlayer }
