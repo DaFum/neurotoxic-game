@@ -32,7 +32,7 @@ mock.module('../src/utils/crypto.js', {
 })
 
 // Import module under test after mocking
-const { eventEngine } = await import('../src/utils/eventEngine.js')
+const { eventEngine, resolveEventChoice } = await import('../src/utils/eventEngine.js')
 
 const TEST_EVENT_VAN_BREAKDOWN = {
   id: 'van_breakdown',
@@ -248,6 +248,18 @@ test('eventEngine.resolveChoice handles luck checks', () => {
   const result = eventEngine.resolveChoice(option, {})
   assert.equal(result.value, 5)
   assert.strictEqual(mockSecureRandom.mock.calls.length, initialCalls + 2)
+})
+
+test('resolveEventChoice throws on error during resolution', () => {
+  const badOption = {
+    get effect() {
+      throw new Error('Choice resolution error')
+    }
+  }
+
+  assert.throws(() => {
+    resolveEventChoice(badOption, {})
+  }, /Choice resolution error/)
 })
 
 test('eventEngine.resolveChoice sets nextEventId', () => {

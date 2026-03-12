@@ -31,6 +31,11 @@ export class MapGenerator {
    * @returns {object} The generated map object containing layers, nodes, and connections.
    */
   generateMap(depth = 10) {
+    const validDepth = Math.floor(depth)
+    if (!Number.isFinite(validDepth) || validDepth < 1) {
+      return { layers: [], nodes: {}, connections: [] }
+    }
+
     const map = {
       layers: [],
       nodes: {}, // Map ID to Node Object
@@ -102,9 +107,9 @@ export class MapGenerator {
       fallbackHard
     }
 
-    this._generateIntermediateLayers(map, depth, pools)
-    this._generateConnections(map, depth)
-    this._generateFinaleLayer(map, depth, hardVenues)
+    this._generateIntermediateLayers(map, validDepth, pools)
+    this._generateConnections(map, validDepth)
+    this._generateFinaleLayer(map, validDepth, hardVenues)
     this._assignInitialCoordinates(map)
 
     // To ensure purity, we clone the nodes before resolving overlaps if possible,

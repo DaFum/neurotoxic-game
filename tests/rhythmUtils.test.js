@@ -218,6 +218,11 @@ describe('rhythmUtils', () => {
       assert.strictEqual(result2, null)
     })
 
+    test('should return null for negative elapsed time', () => {
+      const result = checkHit(notes, 0, -100, hitWindow)
+      assert.strictEqual(result, null, 'Should handle negative elapsed time')
+    })
+
     test('should return null for empty notes array', () => {
       const result = checkHit([], 0, noteTime, hitWindow)
       assert.strictEqual(result, null, 'Should handle empty array')
