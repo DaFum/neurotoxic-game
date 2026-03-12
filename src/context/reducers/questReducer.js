@@ -50,10 +50,9 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
       type: 'success'
     })
   } else if (quest.rewardType === 'fame' && quest.rewardData?.fame) {
-    const newFame = Math.max(
-      0,
-      (nextState.player.fame || 0) + quest.rewardData.fame
-    )
+    const previousFame = nextState.player.fame || 0
+    const newFame = Math.max(0, previousFame + quest.rewardData.fame)
+    const appliedDelta = newFame - previousFame
     nextState.player = {
       ...nextState.player,
       fame: newFame,
@@ -61,7 +60,7 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
     }
     generatedToasts.push({
       id: `${Date.now()}-${questId}-fame`,
-      message: `ui:toast.quest_complete_fame|${JSON.stringify({ name: quest.label, amount: quest.rewardData.fame })}`,
+      message: `ui:toast.quest_complete_fame|${JSON.stringify({ name: quest.label, amount: appliedDelta })}`,
       type: 'success'
     })
   } else if (quest.rewardType === 'skill_point') {
