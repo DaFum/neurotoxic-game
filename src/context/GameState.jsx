@@ -450,7 +450,7 @@ export const GameStateProvider = ({ children }) => {
     } else {
       changeScene(GAME_PHASES.POST_GIG)
     }
-  }, [addToast, changeScene])
+  }, [addToast, changeScene, stateRef])
 
   const previousSceneRef = useRef(state.currentScene)
 
