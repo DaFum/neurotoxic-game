@@ -18,36 +18,46 @@ export const Tooltip = ({ children, content, className = '' }) => {
   const [isVisible, setIsVisible] = useState(false)
   const tooltipId = useId()
 
+  const isDisabled =
+    children?.props?.disabled ||
+    children?.props?.['aria-disabled'] === true ||
+    children?.props?.['aria-disabled'] === 'true' ||
+    (typeof children?.props?.className === 'string' &&
+      children.props.className.split(' ').includes('pointer-events-none')) ||
+    children?.props?.style?.pointerEvents === 'none'
+
   const handleMouseEnter = useCallback(
     e => {
       setIsVisible(true)
-      if (children?.props?.onMouseEnter) children.props.onMouseEnter(e)
+      if (!isDisabled && children?.props?.onMouseEnter)
+        children.props.onMouseEnter(e)
     },
-    [children?.props]
+    [children?.props, isDisabled]
   )
 
   const handleMouseLeave = useCallback(
     e => {
       setIsVisible(false)
-      if (children?.props?.onMouseLeave) children.props.onMouseLeave(e)
+      if (!isDisabled && children?.props?.onMouseLeave)
+        children.props.onMouseLeave(e)
     },
-    [children?.props]
+    [children?.props, isDisabled]
   )
 
   const handleFocus = useCallback(
     e => {
       setIsVisible(true)
-      if (children?.props?.onFocus) children.props.onFocus(e)
+      if (!isDisabled && children?.props?.onFocus) children.props.onFocus(e)
     },
-    [children?.props]
+    [children?.props, isDisabled]
   )
 
   const handleBlur = useCallback(
     e => {
       setIsVisible(false)
-      if (children?.props?.onBlur) children.props.onBlur(e)
+      if (!isDisabled && children?.props?.onBlur) children.props.onBlur(e)
     },
-    [children?.props]
+    [children?.props, isDisabled]
   )
 
   if (!isValidElement(children)) {
@@ -70,14 +80,6 @@ export const Tooltip = ({ children, content, className = '' }) => {
     if (!ids.includes(tooltipId)) ids.push(tooltipId)
     return ids.join(' ')
   })()
-
-  const isDisabled =
-    children.props.disabled ||
-    children.props['aria-disabled'] === true ||
-    children.props['aria-disabled'] === 'true' ||
-    (typeof children.props.className === 'string' &&
-      children.props.className.split(' ').includes('pointer-events-none')) ||
-    children.props.style?.pointerEvents === 'none'
 
   const trigger = isDisabled ? (
     <span
