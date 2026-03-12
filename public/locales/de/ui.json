@@ -183,10 +183,22 @@
         "ui:featureList.sec2.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec2.rows.0.0", "ui:featureList.sec2.rows.0.1"],
-        ["ui:featureList.sec2.rows.1.0", "ui:featureList.sec2.rows.1.1"],
-        ["ui:featureList.sec2.rows.2.0", "ui:featureList.sec2.rows.2.1"],
-        ["ui:featureList.sec2.rows.3.0", "ui:featureList.sec2.rows.3.1"]
+        [
+          "ui:featureList.sec2.rows.0.0",
+          "ui:featureList.sec2.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.1.0",
+          "ui:featureList.sec2.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.2.0",
+          "ui:featureList.sec2.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec2.rows.3.0",
+          "ui:featureList.sec2.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec2.title",
       "type": "table"
@@ -209,10 +221,22 @@
         "ui:featureList.sec4.headers.1"
       ],
       "rows": [
-        ["ui:featureList.sec4.rows.0.0", "ui:featureList.sec4.rows.0.1"],
-        ["ui:featureList.sec4.rows.1.0", "ui:featureList.sec4.rows.1.1"],
-        ["ui:featureList.sec4.rows.2.0", "ui:featureList.sec4.rows.2.1"],
-        ["ui:featureList.sec4.rows.3.0", "ui:featureList.sec4.rows.3.1"]
+        [
+          "ui:featureList.sec4.rows.0.0",
+          "ui:featureList.sec4.rows.0.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.1.0",
+          "ui:featureList.sec4.rows.1.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.2.0",
+          "ui:featureList.sec4.rows.2.1"
+        ],
+        [
+          "ui:featureList.sec4.rows.3.0",
+          "ui:featureList.sec4.rows.3.1"
+        ]
       ],
       "title": "ui:featureList.sec4.title",
       "type": "table"
@@ -698,5 +722,34 @@
   "visual_interface": "VISUELLE SCHNITTSTELLE",
   "volume.set": "Lautstärke auf {{pct}}% setzen",
   "travel.errors.alreadyPlayedHere": "Du hast hier gerade erst gespielt! Fahr weiter und finde neues Publikum.",
-  "overworld.band_hq_button": "BAND HQ"
+  "overworld.band_hq_button": "BAND HQ",
+  "stash": {
+    "selectMemberFirst": "Wähle zuerst ein Bandmitglied aus!",
+    "itemUsed": "{{itemName}} benutzt!"
+  },
+  "contraband": {
+    "title": "SCHMUGGELWAREN VERSTECK",
+    "description": "Artefakte und seltsame Überreste, gesammelt aus der Leere. Mit Vorsicht verwenden.",
+    "targetMemberLabel": "Zielmitglied:",
+    "noItems": "Noch keine Schmuggelware gesammelt.",
+    "useItem": "GEGENSTAND VERWENDEN",
+    "passiveActive": "PASSIVER EFFEKT AKTIV",
+    "close": "VERSTECK SCHLIESSEN",
+    "button": "VERSTECK",
+    "requiresTarget": "Erfordert Zielmitglied."
+  },
+  "member": {
+    "unknown": "Unbekannt"
+  },
+  "item": {
+    "unknown": "Unbekannter Gegenstand",
+    "typeUnknown": "Unbekannter Typ",
+    "descriptionUnknown": "Unbekannte Beschreibung",
+    "type_consumable": "Verbrauchsmaterial",
+    "type_equipment": "Ausrüstung"
+  },
+  "postGig": {
+    "harmony": "Harmonie",
+    "money": "Geld"
+  }
 }

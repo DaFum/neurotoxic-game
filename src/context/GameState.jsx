@@ -58,7 +58,8 @@ import {
   createUnlockTraitAction,
   createAddQuestAction,
   createAdvanceQuestAction,
-  createAddUnlockAction
+  createAddUnlockAction,
+  createUseContrabandAction
 } from './actionCreators'
 import PropTypes from 'prop-types'
 
@@ -327,6 +328,16 @@ export const GameStateProvider = ({ children }) => {
    */
   const consumeItem = useCallback(
     itemType => dispatch(createConsumeItemAction(itemType)),
+    []
+  )
+
+  /**
+   * Uses a contraband item.
+   * @param {string} instanceId - The unique instance ID of the contraband item.
+   * @param {string} [memberId] - Optional. The ID of the band member.
+   */
+  const useContraband = useCallback(
+    (instanceId, memberId) => dispatch(createUseContrabandAction(instanceId, memberId)),
     []
   )
 
@@ -716,7 +727,8 @@ export const GameStateProvider = ({ children }) => {
       unlockTrait,
       endGig,
       addQuest,
-      advanceQuest
+      advanceQuest,
+      useContraband
     }),
     [
       changeScene,
@@ -749,7 +761,8 @@ export const GameStateProvider = ({ children }) => {
       unlockTrait,
       endGig,
       addQuest,
-      advanceQuest
+      advanceQuest,
+      useContraband
     ]
   )
 

@@ -75,16 +75,17 @@ export const handleConsumeItem = (state, payload) => {
 /**
  * Handles adding contraband to the stash.
  * @param {Object} state - Current state
- * @param {string} contrabandId - ID of the item to add
+ * @param {Object} payload - { contrabandId, instanceId }
  * @returns {Object} Updated state
  */
-export const handleAddContraband = (state, contrabandId) => {
+export const handleAddContraband = (state, payload) => {
+  const { contrabandId, instanceId } = payload
   const item = CONTRABAND_BY_ID.get(contrabandId)
   if (!item) return state
 
   const newInstance = {
     ...item,
-    instanceId: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    instanceId
   }
 
   return {
@@ -110,6 +111,7 @@ export const handleUseContraband = (state, payload) => {
   if (itemIndex === -1) return state
 
   const item = stash[itemIndex]
+  if (item.type !== 'consumable') return state // prevent passive effect stacking
   let newBand = { ...state.band }
   let newStash = [...stash]
 

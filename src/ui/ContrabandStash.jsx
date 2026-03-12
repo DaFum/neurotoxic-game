@@ -1,4 +1,5 @@
 import { Modal, Panel, AnimatedDivider, ActionButton, HexBorder } from './shared/index.jsx'
+import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
 
 /**
@@ -13,27 +14,29 @@ export const ContrabandStash = ({
   useItem,
   onClose
 }) => {
+  const { t } = useTranslation(['ui'])
   return (
     <Modal onClose={onClose}>
       <Panel
-        title="CONTRABAND STASH"
+        title={t('ui:contraband.title', { defaultValue: 'CONTRABAND STASH' })}
         className="max-w-4xl max-h-[90vh] flex flex-col"
         contentClassName="flex-1 min-h-0 flex flex-col p-6 overflow-y-auto"
       >
         <p className="text-(--ash-gray) text-sm mb-4">
-          Artifacts and strange detritus gathered from the void. Use with caution.
+          {t('ui:contraband.description', { defaultValue: 'Artifacts and strange detritus gathered from the void. Use with caution.' })}
         </p>
         <AnimatedDivider className="mb-6" />
 
         {/* Member Selection for targeted items */}
         <div className="mb-6 bg-(--shadow-black) border border-(--toxic-green-20) p-4 rounded-sm">
           <h3 className="text-(--toxic-green) text-sm font-bold mb-3 uppercase tracking-wider">
-            Target Member:
+            {t('ui:contraband.targetMemberLabel', { defaultValue: 'Target Member:' })}
           </h3>
           <div className="flex flex-wrap gap-2">
             {members.map(m => (
               <button
                 key={m.id}
+                type="button"
                 onClick={() => setSelectedMember(m.id)}
                 className={`px-4 py-2 border font-mono text-sm transition-colors ${
                   selectedMember === m.id
@@ -41,7 +44,7 @@ export const ContrabandStash = ({
                     : 'border-(--ash-gray) bg-transparent text-(--ash-gray) hover:border-(--toxic-green) hover:text-(--toxic-green)'
                 }`}
               >
-                {m.name}
+                {m.name ?? t('ui:member.unknown', { defaultValue: 'Unknown' })}
               </button>
             ))}
           </div>
@@ -51,7 +54,7 @@ export const ContrabandStash = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {stash.length === 0 ? (
             <div className="col-span-full text-center py-10 text-(--ash-gray) italic border border-dashed border-(--toxic-green-20)">
-              No contraband collected yet.
+              {t('ui:contraband.noItems', { defaultValue: 'No contraband collected yet.' })}
             </div>
           ) : (
             stash.map(item => {
@@ -66,7 +69,7 @@ export const ContrabandStash = ({
                   <div>
                     <div className="flex justify-between items-start mb-2">
                       <h4 className="text-(--toxic-green) font-bold text-lg font-[Metal_Mania] tracking-wider uppercase drop-shadow-[0_0_5px_var(--toxic-green-20)]">
-                        {item.name}
+                        {t(item.name) ?? t('ui:item.unknown', { defaultValue: 'Unknown Item' })}
                       </h4>
                       <span
                         className={`text-xs px-2 py-1 rounded border font-mono ${
@@ -75,17 +78,19 @@ export const ContrabandStash = ({
                             : 'border-(--electric-blue) text-(--electric-blue) bg-(--electric-blue-20)'
                         }`}
                       >
-                        {item.type}
+                        {item.type ? t(`ui:item.type_${item.type}`, { defaultValue: item.type }) : t('ui:item.typeUnknown', { defaultValue: 'Unknown Type' })}
                       </span>
                     </div>
                     <p className="text-(--ash-gray) text-xs mb-4 min-h-[40px] leading-relaxed">
-                      {item.description}
+                      {item.description ? t(item.description) : t('ui:item.descriptionUnknown', { defaultValue: 'Unknown Description' })}
                     </p>
                   </div>
 
                   <div className="mt-auto">
-                    {requiresTarget && !selectedMember && item.type === 'consumable' ? (
-                      <p className="text-(--blood-red) text-xs mb-2 italic">Requires target member.</p>
+                    {requiresTarget && !selectedMember ? (
+                      <p className="text-(--blood-red) text-xs mb-2 italic">
+                        {t('ui:contraband.requiresTarget', { defaultValue: 'Requires target member.' })}
+                      </p>
                     ) : null}
 
                     {item.type === 'consumable' ? (
@@ -95,11 +100,11 @@ export const ContrabandStash = ({
                         variant="primary"
                         className="w-full text-sm font-bold"
                       >
-                        USE ITEM
+                        {t('ui:contraband.useItem', { defaultValue: 'USE ITEM' })}
                       </ActionButton>
                     ) : (
                       <div className="w-full text-center text-xs text-(--electric-blue) border border-(--electric-blue-20) py-2 bg-(--electric-blue-10)">
-                        PASSIVE EFFECT ACTIVE
+                        {t('ui:contraband.passiveActive', { defaultValue: 'PASSIVE EFFECT ACTIVE' })}
                       </div>
                     )}
                   </div>
@@ -111,7 +116,7 @@ export const ContrabandStash = ({
 
         <div className="mt-8 flex justify-end shrink-0">
           <GlitchButton onClick={onClose} variant="secondary">
-            CLOSE STASH
+            {t('ui:contraband.close', { defaultValue: 'CLOSE STASH' })}
           </GlitchButton>
         </div>
       </Panel>

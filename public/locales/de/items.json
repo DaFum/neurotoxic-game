@@ -120,5 +120,27 @@
   "van_sound_system.name": "Soundsystem",
   "van_sound_system.description": "Bass, der den Van zum Wackeln bringt.",
   "van_tuning.name": "Motor Tuning",
-  "van_tuning.description": "Macht den Van schneller."
+  "van_tuning.description": "Macht den Van schneller.",
+  "contraband": {
+    "c_void_energy": {
+      "name": "Void Energy Drink",
+      "description": "Eine schwarze Flüssigkeit, die wie Batteriesäure schmeckt. Stellt sofort 50 Ausdauer für ein Bandmitglied wieder her."
+    },
+    "c_rusty_strings": {
+      "name": "Rostige Saiten",
+      "description": "Sie schneiden in die Finger, aber das Blut beschwört bessere Gig-Modifikatoren (+5 Glück)."
+    },
+    "c_cursed_pick": {
+      "name": "Verfluchtes Schicksalsplektrum",
+      "description": "Ein leuchtendes Plektrum, das flüstert. Senkt die Gitarrenschwierigkeit für einen Auftritt um 0.2."
+    },
+    "c_mystery_pills": {
+      "name": "Mysteriöse Tankstellen-Pillen",
+      "description": "Fragwürdige Herkunft. Steigert die Stimmung eines Mitglieds um 30."
+    },
+    "c_blood_pact": {
+      "name": "Blutpakt-Vertrag",
+      "description": "Bindet die Band in dunkler Synergie zusammen. +15 Harmonie."
+    }
+  }
 }

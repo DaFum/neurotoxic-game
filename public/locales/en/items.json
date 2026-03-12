@@ -120,5 +120,27 @@
   "van_sound_system.name": "Sound System",
   "van_sound_system.description": "Bass that shakes the van.",
   "van_tuning.name": "Engine Tuning",
-  "van_tuning.description": "Makes the van go faster."
+  "van_tuning.description": "Makes the van go faster.",
+  "contraband": {
+    "c_void_energy": {
+      "name": "Void Energy Drink",
+      "description": "A black liquid that tastes like battery acid. Instantly restores 50 Stamina to a band member."
+    },
+    "c_rusty_strings": {
+      "name": "Rusty Strings",
+      "description": "They cut your fingers, but the blood summons better gig modifiers (+5 Luck)."
+    },
+    "c_cursed_pick": {
+      "name": "Cursed Pick of Destiny",
+      "description": "A glowing pick that whispers. Lowers Guitar Difficulty by 0.2 for one gig."
+    },
+    "c_mystery_pills": {
+      "name": "Mystery Gas Station Pills",
+      "description": "Questionable origin. Boosts a member's Mood by 30."
+    },
+    "c_blood_pact": {
+      "name": "Blood Pact Contract",
+      "description": "Binds the band together in dark synergy. +15 Harmony."
+    }
+  }
 }

@@ -290,7 +290,7 @@ export const Overworld = () => {
           variant='primary'
           size='sm'
         >
-          [STASH]
+          [{t('ui:contraband.button', { defaultValue: 'STASH' })}]
         </GlitchButton>
         <GlitchButton
           onClick={openQuests}
