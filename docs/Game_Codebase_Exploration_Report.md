@@ -21,6 +21,7 @@ const HIT_BAR_INACTIVE_ALPHA = 0.45
 const HIT_BAR_ACTIVE_ALPHA = 0.95
 const HIT_BAR_BORDER_COLOR = getPixiColorFromToken('--star-white')
 const LANE_GUIDE_ALPHA = 0.16
+
 export class LaneManager {
   /**
    * @param {PIXI.Application} app
@@ -38,6 +39,7 @@ export class LaneManager {
     this.lastScreenWidth = -1
     this.lastScreenHeight = -1
   }
+
   init() {
     this.rhythmContainer = new PIXI.Container()
     const width = this.app.screen.width
@@ -58,10 +60,12 @@ export class LaneManager {
     const hitLineY = this.laneLayout.hitLineY
     const hitLineHeight = this.laneLayout.hitLineHeight
     const hitLineStrokeWidth = this.laneLayout.hitLineStrokeWidth
+
     this.gameStateRef.current.lanes.forEach((lane, index) => {
       const laneX = startX + index * (laneWidth + LANE_GAP)
       // Side-effect: Mutating gameState lanes with render position for NoteManager
       lane.renderX = laneX
+
       // Create separate graphics for static background and dynamic elements
       const staticGraphics = new PIXI.Graphics()
       staticGraphics.__laneIndex = index
@@ -74,6 +78,7 @@ export class LaneManager {
       inactiveGraphics.__laneIndex = index
       inactiveGraphics.__layer = 'inactive'
       inactiveGraphics.visible = true
+
       // Draw static background once
       staticGraphics.rect(laneX, 0, laneWidth, laneHeight)
       staticGraphics.fill({ color: LANE_BASE_FILL, alpha: LANE_BASE_ALPHA })
@@ -89,6 +94,7 @@ export class LaneManager {
         color: LANE_BORDER_COLOR,
         alpha: LANE_BORDER_ALPHA
       })
+
       // Draw active/inactive states initially
       activeGraphics.rect(laneX, hitLineY, laneWidth, hitLineHeight)
       activeGraphics.fill({ color: lane.color, alpha: HIT_BAR_ACTIVE_ALPHA })
@@ -105,6 +111,7 @@ export class LaneManager {
         width: hitLineStrokeWidth,
         color: lane.color
       })
+
       this.rhythmContainer.addChild(staticGraphics)
       this.rhythmContainer.addChild(inactiveGraphics)
       this.rhythmContainer.addChild(activeGraphics)
@@ -115,6 +122,7 @@ export class LaneManager {
       }
     })
   }
+
   update(state) {
     const layoutUpdated = this.updateLaneLayout()
     const layout = this.laneLayout
@@ -128,6 +136,7 @@ export class LaneManager {
         active: activeGraphics,
         inactive: inactiveGraphics
       } = graphicsSet
+
       // Redraw graphics only if layout updated
       if (layoutUpdated) {
         staticGraphics.clear()
@@ -178,6 +187,7 @@ export class LaneManager {
           color: lane.color
         })
       }
+
       const wasActive = this.lastLaneActive[index]
       // Update visibility if layout changed OR activity changed
       if (layoutUpdated || wasActive !== lane.active) {
@@ -187,6 +197,7 @@ export class LaneManager {
       }
     })
   }
+
   updateLaneLayout() {
     const width = this.app.screen.width
     const height = this.app.screen.height
@@ -208,6 +219,7 @@ export class LaneManager {
     })
     return true
   }
+
   dispose() {
     this.laneGraphics = []
     if (this.rhythmContainer) {
@@ -215,9 +227,11 @@ export class LaneManager {
       this.rhythmContainer = null
     }
   }
+
   get container() {
     return this.rhythmContainer
   }
+
   get layout() {
     return this.laneLayout
   }
@@ -247,6 +261,7 @@ import { useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import { createPixiStageController } from './PixiStageController'
 import { logger } from '../utils/logger'
+
 /**
  * Renders the Pixi.js stage for the rhythm game.
  * @param {{ logic: { gameStateRef: object, stats: object, update: Function } }} props - Component props.
@@ -258,12 +273,15 @@ export const PixiStage = ({ logic }) => {
   const updateRef = useRef(update)
   const statsRef = useRef(logic.stats)
   const controllerRef = useRef(null)
+
   useEffect(() => {
     updateRef.current = update
   }, [update])
+
   useEffect(() => {
     statsRef.current = logic.stats
   }, [logic.stats])
+
   useEffect(() => {
     controllerRef.current = createPixiStageController({
       containerRef,
@@ -282,6 +300,7 @@ export const PixiStage = ({ logic }) => {
     }
     // gameStateRef is a stable useRef – dependency is constant
   }, [gameStateRef])
+
   return (
     <div
       className='absolute inset-0 z-20 pointer-events-none'
@@ -289,6 +308,7 @@ export const PixiStage = ({ logic }) => {
     />
   )
 }
+
 PixiStage.propTypes = {
   logic: PropTypes.shape({
     gameStateRef: PropTypes.object.isRequired,
@@ -381,15 +401,14 @@ if (stats?.isToxicMode) {
 ### 4. **src/hooks/rhythmGame/** — Sub-Hook Structure
 
 **Location:** `src/hooks/rhythmGame/`
-**Hook Dependency Graph:**
 
-```
-useRhythmGameLogic (main orchestrator)
-├── useRhythmGameState (React state + Ref)
-├── useRhythmGameScoring (hits/misses/toxic mode)
-├── useRhythmGameAudio (audio init + playback)
-├── useRhythmGameLoop (frame update)
-└── useRhythmGameInput (keyboard mapping)
+```mermaid
+graph TD
+    A[useRhythmGameLogic] --> B[useRhythmGameState]
+    A --> C[useRhythmGameScoring]
+    A --> D[useRhythmGameAudio]
+    A --> E[useRhythmGameLoop]
+    A --> F[useRhythmGameInput]
 ```
 
 **Hook Contracts:**
@@ -427,7 +446,9 @@ useRhythmGameLogic (main orchestrator)
 - Calls `setAccuracy(calculateAccuracy(...))` after every hit/miss
 - Exports `activateToxicMode()` action
 - Handles miss penalties and combo tracking
-  **useRhythmGameAudio** contract:
+
+**useRhythmGameAudio** contract:
+
 - **Critical:** Merges `calculateGigPhysics()` result into `gameStateRef.current.modifiers`:
   ```javascript
   const mergedModifiers = {
@@ -440,8 +461,9 @@ useRhythmGameLogic (main orchestrator)
   ```
 - Caps audio duration to `maxNoteTime + NOTE_TAIL_MS` (1000ms) for JSON-based songs
 - Returns `{ retryAudioInitialization }` only
-  **useRhythmGameLoop** — Frame update orchestrator
-  **useRhythmGameInput** — Keyboard event handling
+
+**useRhythmGameLoop** — Frame update orchestrator
+**useRhythmGameInput** — Keyboard event handling
 
 ---
 
@@ -458,6 +480,7 @@ export const MODIFIER_COSTS = {
   soundcheck: 50,
   guestlist: 60
 }
+
 export const EXPENSE_CONSTANTS = {
   DAILY: { BASE_COST: 25 },
   TRANSPORT: {
@@ -501,6 +524,7 @@ export const calculateFuelCost = (dist, playerState = null) => {
   // Returns { fuelLiters, fuelCost }
   // Applies 0.8x multiplier if playerState.van.upgrades includes 'van_tuning'
 }
+
 /**
  * Calculates travel expenses including fuel + food.
  */
@@ -511,6 +535,7 @@ export const calculateTravelExpenses = (
 ) => {
   // Returns { dist, fuelLiters, totalCost }
 }
+
 /**
  * Calculates cost to refuel van from current to MAX_FUEL.
  */
@@ -518,6 +543,7 @@ export const calculateRefuelCost = currentFuel => {
   // Returns cost in euros
   // Cost = Math.ceil((MAX_FUEL - currentFuel) * FUEL_PRICE)
 }
+
 /**
  * Calculates cost to repair van from current condition to 100%.
  */
@@ -526,6 +552,7 @@ export const calculateRepairCost = currentCondition => {
   // Cost = Math.ceil((100 - currentCondition) * REPAIR_COST_PER_UNIT)
   // Example: 50% condition → 50 * 3 = 150 euros
 }
+
 /**
  * Main gig financials calculator with income/expense breakdown.
  */
@@ -556,6 +583,7 @@ export const calculateGigFinancials = ({
   //   - Modifier costs (catering/promo/merch/soundcheck/guestlist)
   //   - Merch restock (COGS)
 }
+
 /**
  * Determines bankruptcy when money <= 0 AND losing money.
  */
@@ -586,6 +614,7 @@ export const clampPlayerMoney = money => {
   if (!Number.isFinite(money)) return 0
   return Math.floor(Math.max(0, money))
 }
+
 /**
  * Clamps band harmony to [1, 100] range.
  */
@@ -594,6 +623,7 @@ export const clampBandHarmony = harmony => {
   const safeHarmony = Math.floor(harmony)
   return Math.max(1, Math.min(100, safeHarmony))
 }
+
 /**
  * Applies delta to a single inventory item (boolean or numeric).
  */
@@ -605,6 +635,7 @@ export const applyInventoryItemDelta = (currentValue, deltaValue) => {
   }
   return currentValue
 }
+
 /**
  * Applies event delta to game state (player, band, social, flags).
  */
@@ -622,12 +653,14 @@ export const applyEventDelta = (state, delta) => {
 ### 7. **Stage Managers Overview**
 
 **src/components/stage/** contains 4 parallel managers:
-| Manager | Purpose | Key Methods |
-|---------|---------|-------------|
-| **LaneManager** | Draws 3-lane rhythm grid with active/inactive states | `init()`, `update(state)`, `dispose()`, `get container/layout` |
-| **NoteManager** | Spawns/animates note sprites, pools for GC efficiency | `update(state, elapsed, laneLayout)`, `dispose()` |
-| **CrowdManager** | Renders 50 crowd members, animates on combo/hype | `update(combo, isToxicMode, elapsed)`, `dispose()` |
-| **EffectManager** | Spawns hit/blood effect particles, pools sprites | `spawnHitEffect(x, y, color)`, `update(deltaMS)`, `dispose()` |
+
+| Manager           | Purpose                                               | Key Methods                                                    |
+| ----------------- | ----------------------------------------------------- | -------------------------------------------------------------- |
+| **LaneManager**   | Draws 3-lane rhythm grid with active/inactive states  | `init()`, `update(state)`, `dispose()`, `get container/layout` |
+| **NoteManager**   | Spawns/animates note sprites, pools for GC efficiency | `update(state, elapsed, laneLayout)`, `dispose()`              |
+| **CrowdManager**  | Renders 50 crowd members, animates on combo/hype      | `update(combo, isToxicMode, elapsed)`, `dispose()`             |
+| **EffectManager** | Spawns hit/blood effect particles, pools sprites      | `spawnHitEffect(x, y, color)`, `update(deltaMS)`, `dispose()`  |
+
 **utils.js exports:**
 
 ```javascript
@@ -655,7 +688,8 @@ export const CROWD_LAYOUT // Constants for crowd rendering
    - `noteManager.update(state, elapsed, laneManager.layout)` — note animation
    - `crowdManager.update(combo, isToxicMode, elapsed)` — crowd animation
    - `effectManager.update(deltaMS)` — particle fade-out
-     **Audio hook merges modifiers:**
+
+**Audio hook merges modifiers:**
 
 ```javascript
 gameStateRef.current.modifiers = {

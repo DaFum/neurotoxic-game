@@ -236,17 +236,24 @@ Global state lives in `GameStateProvider` and is mutated only through reducer ac
 
 ## Core Flow
 
-1. **Intro/Menu**
-   - `INTRO` auto/transitions into `MENU`.
-2. **Overworld loop**
-   - Map travel triggers `TRAVEL_MINIGAME`.
-   - Completion triggers `useArrivalLogic`, which routes directly to `PREGIG` for GIG/FESTIVAL/FINALE nodes, or returns to `OVERWORLD` otherwise.
-3. **Gig loop**
-   - `START_GIG` sets the venue and transitions to `PREGIG`.
-   - `PREGIG` confirms setlist and starts `PRE_GIG_MINIGAME` (Roadie Run).
-   - Minigame completion transitions to `GIG`, then `POSTGIG`.
-4. **Post-gig resolution**
-   - Payout/stats/effects applied, then return to `OVERWORLD` or go to `GAMEOVER` if fail conditions are met.
+The core game loop adheres to the following sequence:
+
+```mermaid
+graph TD
+    A[INTRO] --> B[MENU]
+    B --> C[OVERWORLD]
+
+    C -- Travel --> D[TRAVEL_MINIGAME]
+    D -- GIG/FESTIVAL/FINALE --> E[PREGIG]
+    D -- Other Node --> C
+
+    E -- Confirm Setlist --> F[PRE_GIG_MINIGAME]
+    F -- Equipment Delivered --> G[GIG]
+    G -- Song Complete --> H[POSTGIG]
+    H -- Payout & Stats --> C
+    H -- Fail Condition --> I[GAMEOVER]
+```
+
 5. **Economy Model**
    - Travel consumes **Fuel Liters** and **Money for Food**.
    - **Refuel** action (at Overworld/Gas Stations) is the only place gas money is deducted.

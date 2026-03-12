@@ -32,7 +32,8 @@ mock.module('../src/utils/crypto.js', {
 })
 
 // Import module under test after mocking
-const { eventEngine, resolveEventChoice } = await import('../src/utils/eventEngine.js')
+const { eventEngine, resolveEventChoice } =
+  await import('../src/utils/eventEngine.js')
 
 const TEST_EVENT_VAN_BREAKDOWN = {
   id: 'van_breakdown',

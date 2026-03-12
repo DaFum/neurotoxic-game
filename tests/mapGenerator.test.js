@@ -52,11 +52,19 @@ test('MapGenerator handles invalid parameters gracefully', () => {
 
   // Negative depth
   const mapNegative = generator.generateMap(-1)
-  assert.equal(mapNegative.layers.length, 0, 'Should not generate layers for negative depth')
+  assert.equal(
+    mapNegative.layers.length,
+    0,
+    'Should not generate layers for negative depth'
+  )
 
   // Zero depth
   const mapZero = generator.generateMap(0)
-  assert.equal(mapZero.layers.length, 0, 'Should not generate layers for zero depth')
+  assert.equal(
+    mapZero.layers.length,
+    0,
+    'Should not generate layers for zero depth'
+  )
 })
 
 test('MapGenerator handles empty venues array by throwing StateError', async () => {

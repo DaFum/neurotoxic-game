@@ -167,9 +167,9 @@ describe('UI missing-target smoke/branch tests', () => {
       <ShopTab
         player={{ money: 100 }}
         handleBuy={handleBuy}
-        isItemOwned={(item) => item.id === 'g1'}
-        isItemDisabled={(item) => item.id === 'i1'}
-        getAdjustedCost={(item) => item.cost - 5}
+        isItemOwned={item => item.id === 'g1'}
+        isItemDisabled={item => item.id === 'i1'}
+        getAdjustedCost={item => item.cost - 5}
       />
     )
     expect(screen.getByText('FUNDS:')).toBeInTheDocument()
@@ -184,13 +184,15 @@ describe('UI missing-target smoke/branch tests', () => {
           { id: 'u2', name: 'u2', cost: 2, currency: 'fame', effects: [] }
         ]}
         handleBuy={handleBuy}
-        isItemOwned={(item) => item.id === 'u1'}
-        isItemDisabled={(item) => item.id === 'u2'}
-        getAdjustedCost={(item) => item.cost + 10}
+        isItemOwned={item => item.id === 'u1'}
+        isItemDisabled={item => item.id === 'u2'}
+        getAdjustedCost={item => item.cost + 10}
       />
     )
     expect(screen.getByText('FAME:')).toBeInTheDocument()
-    expect(within(container).getByRole('button', { name: /OWNED/ })).toBeInTheDocument()
+    expect(
+      within(container).getByRole('button', { name: /OWNED/ })
+    ).toBeInTheDocument()
   })
 
   it('DebugLogViewer shows logs after keyboard toggle and allows close/clear', async () => {

@@ -1,6 +1,6 @@
 # Coding Standards
 
-This document outlines the coding standards and best practices for the Neurotoxic game project.
+This document outlines the coding standards and best practices for the Neurotoxic game project. The architecture is brutalist, strictly enforced, and unforgiving. Read it. Obey it.
 
 ## Table of Contents
 
@@ -155,9 +155,27 @@ const fuel = player.van && player.van.fuel ? player.van.fuel : 0
 
 ## React Patterns
 
+### Component Anatomy & Lifecycle
+
+The following `mermaid` diagram illustrates the strict sequence components must follow during render.
+
+```mermaid
+graph TD
+    A[Component Render] --> B(1. Hooks Initialization)
+    B --> C(2. Refs Setup)
+    C --> D(3. Computed Values useMemo)
+    D --> E(4. Callbacks useCallback)
+    E --> F(5. Effects useEffect)
+    F --> G{6. Early Returns}
+    G -- Data Missing --> H[Return Null/Loading]
+    G -- Data Present --> I[7. Render JSX]
+```
+
 ### Component Structure
 
 ```jsx
+import { useState, useRef, useMemo, useCallback, useEffect } from 'react'
+
 /**
  * Component description
  * @param {Object} props - Component props
@@ -470,8 +488,8 @@ it('handles edge case', () => {})
 ### Import Order
 
 ```javascript
-// 1. React and core libraries
-import React, { useState, useEffect } from 'react'
+// 1. React 19 Core Hooks
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import PropTypes from 'prop-types'
 
 // 2. Third-party libraries

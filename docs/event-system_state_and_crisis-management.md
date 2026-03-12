@@ -286,14 +286,20 @@ Each post has:
 
 ### 7. POST-GIG SOCIAL FLOW
 
-After a gig, the game:
+The post-gig sequence enforces consequences of the performance and triggers algorithmic/social backlash.
 
-1. Selects 3 random post options (weighted by trend + eligibility)
-2. Player chooses one to post
-3. `resolvePost()` executes and returns follower changes + side effects
-4. Side effects apply via `APPLY_EVENT_DELTA`
-5. Crisis events check trigger (`crisis_*` filters activate based on controversy level)
-   **Post Options Schema** (also in `src/data/postOptions.js`):
+```mermaid
+graph TD
+    A[Gig Complete] --> B(Select 3 random post options)
+    B --> C{Player Selection}
+    C --> D[resolvePost]
+    D --> E(Apply Follower/Stats Change via APPLY_EVENT_DELTA)
+    E --> F{Evaluate Crisis Triggers}
+    F -- Controversy Threshold Met --> G[Trigger Crisis Event]
+    F -- Safe --> H[Continue]
+```
+
+**Post Options Schema** (also in `src/data/postOptions.js`):
 
 ```javascript
 {

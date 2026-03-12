@@ -55,7 +55,10 @@ export const handleLoadGame = (state, payload) => {
     }
   }
 
-  const validatedFame = Math.max(0, typeof rawPlayer.fame === 'number' ? rawPlayer.fame : 0)
+  const validatedFame = Math.max(
+    0,
+    typeof rawPlayer.fame === 'number' ? rawPlayer.fame : 0
+  )
 
   // Validate Player
   const mergedPlayer = {
