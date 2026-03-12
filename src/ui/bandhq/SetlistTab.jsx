@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { useGameState } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { ActionButton } from '../shared'
-import { SONGS_DB } from '../../data/songs'
+import { SONGS_DB, SONGS_BY_ID } from '../../data/songs'
 
 export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
   const { t } = useTranslation(['ui', 'venues'])
@@ -14,7 +14,7 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
       s => (typeof s === 'string' ? s : s.id) === songId
     )
 
-    const songObj = SONGS_DB.find(s => s.id === songId)
+    const songObj = SONGS_BY_ID.get(songId)
     const songName = songObj ? songObj.name : songId
     const venueName = t('ui:bandhq.venue', { defaultValue: 'Band HQ' })
 

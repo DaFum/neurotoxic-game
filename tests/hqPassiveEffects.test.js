@@ -23,7 +23,11 @@ describe('HQ Passive Effects', () => {
 
     const initialPlayerPatch = { fame: 0 }
 
-    const { playerPatch } = applyUnlockHQ(item, initialPlayerPatch, player, { members: [], inventory: {}, performance: {} })
+    const { playerPatch } = applyUnlockHQ(item, initialPlayerPatch, player, {
+      members: [],
+      inventory: {},
+      performance: {}
+    })
 
     assert.ok(playerPatch)
     assert.equal(playerPatch.fame, 0)

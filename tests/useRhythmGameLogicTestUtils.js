@@ -139,7 +139,10 @@ export const mockRhythmGameLogicModules = () => {
     namedExports: { logger: mockLogger }
   })
   mock.module('../src/data/songs.js', {
-    namedExports: { SONGS_DB: mockSongs }
+    namedExports: {
+      SONGS_BY_ID: new Map(mockSongs.map(s => [s.id, s])),
+      SONGS_DB: mockSongs
+    }
   })
   const mockUseTranslation = () => ({ t: key => key })
   mock.module('react-i18next', {

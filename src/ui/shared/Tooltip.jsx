@@ -18,7 +18,9 @@ export const Tooltip = ({ children, content, className = '' }) => {
   }
 
   if (children.type === React.Fragment) {
-    console.warn('Tooltip children must be a single valid React element and not a Fragment.')
+    console.warn(
+      'Tooltip children must be a single valid React element and not a Fragment.'
+    )
     return children
   }
 

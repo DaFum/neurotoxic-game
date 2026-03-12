@@ -26,18 +26,20 @@ describe('usePurchaseLogic Integration', () => {
     const quests = {}
     const updateSocial = vi.fn()
 
-    const { result } = renderHook(() => usePurchaseLogic({
-      player,
-      band,
-      updatePlayer,
-      updateBand,
-      addToast,
-      inventory,
-      performance,
-      social,
-      updateSocial,
-      quests
-    }))
+    const { result } = renderHook(() =>
+      usePurchaseLogic({
+        player,
+        band,
+        updatePlayer,
+        updateBand,
+        addToast,
+        inventory,
+        performance,
+        social,
+        updateSocial,
+        quests
+      })
+    )
 
     const item = {
       id: 'hq_room_label',

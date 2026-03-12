@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { SONGS_DB } from '../src/data/songs.js'
+import { SONGS_DB, SONGS_BY_ID } from '../src/data/songs.js'
 
 describe('songs.js - SONGS_DB structure', () => {
   describe('SONGS_DB transformation', () => {
@@ -236,6 +236,13 @@ describe('songs.js - SONGS_DB structure', () => {
       const ids = SONGS_DB.map(s => s.id)
       const uniqueIds = new Set(ids)
       assert.strictEqual(uniqueIds.size, ids.length, 'Song IDs must be unique')
+    })
+
+    it('SONGS_BY_ID contains all songs from SONGS_DB', () => {
+      assert.strictEqual(SONGS_BY_ID.size, SONGS_DB.length)
+      SONGS_DB.forEach(song => {
+        assert.strictEqual(SONGS_BY_ID.get(song.id), song)
+      })
     })
 
     it('all songs have required fields', () => {

@@ -193,7 +193,12 @@ ProgressBar.propTypes = {
  * @param {string} [props.className] - Additional CSS classes applied to the outer container.
  * @param {string} [props.contentClassName] - Additional CSS classes applied to the inner content wrapper.
  */
-export const Panel = memo(function Panel({ title, children, className = '', contentClassName = 'space-y-1' }) {
+export const Panel = memo(function Panel({
+  title,
+  children,
+  className = '',
+  contentClassName = 'space-y-1'
+}) {
   return (
     <div
       className={`relative bg-(--void-black)/40 border-2 border-(--ash-gray)/40 p-4 group overflow-hidden ${className}`}
