@@ -39,7 +39,9 @@ export const MinigameSceneFrame = ({
       } else if (e.shiftKey && e.key.toUpperCase() === 'P') {
         // Only trigger backdoor if minigame is not already finished to avoid duplicate calls
         if (!uiState?.isGameOver) {
-           logic?.finishMinigame?.() || logic?.dispatch?.({ type: 'COMPLETE_MINIGAME' }) || onComplete()
+          logic?.finishMinigame?.() ||
+            logic?.dispatch?.({ type: 'COMPLETE_MINIGAME' }) ||
+            onComplete()
         }
       }
     }
