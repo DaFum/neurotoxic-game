@@ -5,7 +5,8 @@ import {
   useEffect,
   useCallback,
   useMemo,
-  useRef
+  useRef,
+  startTransition
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import { eventEngine, resolveEventChoice } from '../utils/eventEngine'
@@ -194,7 +195,7 @@ export const GameStateProvider = ({ children }) => {
    * @param {string} scene - The target scene name (e.g., GAME_PHASES.OVERWORLD).
    */
   const changeScene = useCallback(
-    scene => dispatch(createChangeSceneAction(scene)),
+    scene => startTransition(() => dispatch(createChangeSceneAction(scene))),
     []
   )
 
@@ -267,7 +268,7 @@ export const GameStateProvider = ({ children }) => {
    * @param {object} venue - The venue object.
    */
   const startGig = useCallback(
-    venue => dispatch(createStartGigAction(venue)),
+    venue => startTransition(() => dispatch(createStartGigAction(venue))),
     []
   )
 
@@ -351,7 +352,7 @@ export const GameStateProvider = ({ children }) => {
 
   // Minigame Actions
   const startTravelMinigame = useCallback(
-    targetNodeId => dispatch(createStartTravelMinigameAction(targetNodeId)),
+    targetNodeId => startTransition(() => dispatch(createStartTravelMinigameAction(targetNodeId))),
     []
   )
 
@@ -362,7 +363,7 @@ export const GameStateProvider = ({ children }) => {
   )
 
   const startRoadieMinigame = useCallback(
-    gigId => dispatch(createStartRoadieMinigameAction(gigId)),
+    gigId => startTransition(() => dispatch(createStartRoadieMinigameAction(gigId))),
     []
   )
 
@@ -373,7 +374,7 @@ export const GameStateProvider = ({ children }) => {
   )
 
   const startKabelsalatMinigame = useCallback(
-    gigId => dispatch(createStartKabelsalatMinigameAction(gigId)),
+    gigId => startTransition(() => dispatch(createStartKabelsalatMinigameAction(gigId))),
     []
   )
 
@@ -406,7 +407,9 @@ export const GameStateProvider = ({ children }) => {
     safeStorageOperation('deleteSave', () => {
       localStorage.removeItem(SAVE_KEY)
     })
-    changeScene(GAME_PHASES.MENU)
+    startTransition(() => {
+      changeScene(GAME_PHASES.MENU)
+    })
     window.location.reload()
   }, [changeScene])
 
