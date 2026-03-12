@@ -36,6 +36,8 @@ const DeeplyNestedThrower = () => {
 }
 
 test('CrashHandler catches error from deeply nested component and displays fallback UI', async () => {
+  const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
   const { ErrorBoundary } = await import('../src/ui/CrashHandler.jsx')
 
   const { getByText } = render(
@@ -47,6 +49,8 @@ test('CrashHandler catches error from deeply nested component and displays fallb
   expect(getByText('ui:crash.title')).toBeInTheDocument()
   expect(getByText('ui:crash.message')).toBeInTheDocument()
   expect(getByText('ui:crash.rebootButton')).toBeInTheDocument()
+
+  consoleSpy.mockRestore()
 })
 
 test('CrashHandler exposes stack trace in DEV mode', async () => {

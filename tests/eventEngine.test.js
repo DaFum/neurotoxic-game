@@ -250,7 +250,7 @@ test('eventEngine.resolveChoice handles luck checks', () => {
   assert.strictEqual(mockSecureRandom.mock.calls.length, initialCalls + 2)
 })
 
-test('resolveEventChoice catches and logs error, then re-throws to caller', () => {
+test('resolveEventChoice throws on error during resolution', () => {
   const badOption = {
     get effect() {
       throw new Error('Choice resolution error')
