@@ -32,20 +32,20 @@ This is the **designer‑driven** incarnation of the NEUROTOXIC game concept, ca
 - Node.js >= 22.13.0 is required. (Run `nvm use` to align with `.nvmrc`)
 
 - **Run**
-  1. `npm install`
-  2. `npm run dev`
+  1. `pnpm install`
+  2. `pnpm run dev`
 
 - **Testing**  
   Game logic (economy, simulation, rhythm math) is wired into an automated test gauntlet.
 
   ```bash
-  npm run test
+  pnpm run test
   ```
 
 - **Production Build**
 
   ```bash
-  npm run build
+  pnpm run build
   ```
 
   Output is emitted into the `dist/` directory, ready to be served to the void.
@@ -74,4 +74,4 @@ _Documentation sync: dependency/tooling baseline reviewed on 2026-02-23._
 - Keep interpolation placeholders consistent across languages (e.g., `{{cost}}`, `{{location}}`).
 - For non-visual error/toast paths, prefer resilient fallbacks (`defaultValue`) so missing keys do not surface raw key names to players.
 - In React callbacks/hooks, keep translation usage consistent with hook dependency expectations (`t` included in callback deps when used in callback scope).
-- Before merging localization work, run the project test commands (`npm run test` and `npm run test:ui`) and include results in the PR summary.
+- Before merging localization work, run the project test commands (`pnpm run test` and `pnpm run test:ui`) and include results in the PR summary.
