@@ -198,10 +198,10 @@ export const handleSetLastGigStats = (state, payload) => {
   }
 
   // Ego management quest auto-complete
-  const egoQuest = nextState.activeQuests?.find(
+  const hasEgoQuest = nextState.activeQuests?.some(
     q => q.id === 'quest_ego_management'
   )
-  if (egoQuest && nextState.band.harmony >= 50) {
+  if (hasEgoQuest && nextState.band.harmony >= 50) {
     nextState = handleCompleteQuest(nextState, {
       questId: 'quest_ego_management'
     })
