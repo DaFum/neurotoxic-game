@@ -23,17 +23,20 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
   let generatedToasts = []
 
   if (typeof quest.moneyReward === 'number' && quest.moneyReward !== 0) {
+    const previousMoney = nextState.player?.money || 0
+    const newMoney = clampPlayerMoney(previousMoney + quest.moneyReward)
+    const appliedDelta = newMoney - previousMoney
     nextState.player = {
       ...(nextState.player || {}),
-      money: clampPlayerMoney(
-        (nextState.player?.money || 0) + quest.moneyReward
-      )
+      money: newMoney
     }
-    generatedToasts.push({
-      id: `${Date.now()}-${questId}-money`,
-      message: `ui:toast.quest_complete_money|${JSON.stringify({ name: quest.label, amount: quest.moneyReward })}`,
-      type: 'success'
-    })
+    if (appliedDelta !== 0) {
+      generatedToasts.push({
+        id: `${Date.now()}-${questId}-money`,
+        message: `ui:toast.quest_complete_money|${JSON.stringify({ name: quest.label, amount: appliedDelta })}`,
+        type: 'success'
+      })
+    }
   }
 
   if (quest.rewardType === 'item' && quest.rewardData?.item) {
@@ -50,18 +53,23 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
       type: 'success'
     })
   } else if (quest.rewardType === 'fame' && quest.rewardData?.fame) {
+    let rawFameReward = Number(quest.rewardData.fame)
+    if (!Number.isFinite(rawFameReward)) rawFameReward = 0
+    const previousFame = nextState.player.fame || 0
+    const newFame = Math.max(0, previousFame + rawFameReward)
+    const appliedDelta = newFame - previousFame
     nextState.player = {
       ...nextState.player,
-      fame: (nextState.player.fame || 0) + quest.rewardData.fame,
-      fameLevel: calculateFameLevel(
-        (nextState.player.fame || 0) + quest.rewardData.fame
-      )
+      fame: newFame,
+      fameLevel: calculateFameLevel(newFame)
     }
-    generatedToasts.push({
-      id: `${Date.now()}-${questId}-fame`,
-      message: `ui:toast.quest_complete_fame|${JSON.stringify({ name: quest.label, amount: quest.rewardData.fame })}`,
-      type: 'success'
-    })
+    if (appliedDelta !== 0) {
+      generatedToasts.push({
+        id: `${Date.now()}-${questId}-fame`,
+        message: `ui:toast.quest_complete_fame|${JSON.stringify({ name: quest.label, amount: appliedDelta })}`,
+        type: 'success'
+      })
+    }
   } else if (quest.rewardType === 'skill_point') {
     const originalMembers = nextState.band?.members || []
     if (originalMembers.length > 0) {
@@ -96,17 +104,24 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
       })
     }
   } else if (quest.rewardType === 'harmony' && quest.rewardData?.harmony) {
+    let rawHarmonyReward = Number(quest.rewardData.harmony)
+    if (!Number.isFinite(rawHarmonyReward)) rawHarmonyReward = 0
+    const previousHarmony = nextState.band?.harmony ?? 1
+    const newHarmony = clampBandHarmony(
+      previousHarmony + rawHarmonyReward
+    )
+    const appliedDelta = newHarmony - previousHarmony
     nextState.band = {
       ...nextState.band,
-      harmony: clampBandHarmony(
-        (nextState.band?.harmony || 0) + quest.rewardData.harmony
-      )
+      harmony: newHarmony
     }
-    generatedToasts.push({
-      id: `${Date.now()}-${questId}-harmony`,
-      message: `ui:toast.quest_complete_harmony|${JSON.stringify({ name: quest.label, amount: quest.rewardData.harmony })}`,
-      type: 'success'
-    })
+    if (appliedDelta !== 0) {
+      generatedToasts.push({
+        id: `${Date.now()}-${questId}-harmony`,
+        message: `ui:toast.quest_complete_harmony|${JSON.stringify({ name: quest.label, amount: appliedDelta })}`,
+        type: 'success'
+      })
+    }
   }
 
   if (generatedToasts.length === 0) {
