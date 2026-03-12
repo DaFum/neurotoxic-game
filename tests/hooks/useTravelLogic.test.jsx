@@ -77,6 +77,51 @@ describe('useTravelLogic', () => {
     vi.clearAllMocks()
   })
 
+  it('prevents playing a gig at the same location consecutively', async () => {
+    const player = { currentNodeId: 'node_1', lastGigNodeId: 'node_1', money: 100, van: { fuel: 50 } }
+    const band = { harmony: 10 }
+    const gameMap = { nodes: { node_1: { id: 'node_1' } } }
+    const updatePlayer = vi.fn()
+    const updateBand = vi.fn()
+    const saveGame = vi.fn()
+    const advanceDay = vi.fn()
+    const triggerEvent = vi.fn()
+    const addToast = vi.fn()
+    const changeScene = vi.fn()
+    const startGig = vi.fn()
+
+    const { result } = renderHook(() =>
+      useTravelLogic({
+        player,
+        band,
+        gameMap,
+        updatePlayer,
+        updateBand,
+        saveGame,
+        advanceDay,
+        triggerEvent,
+        startGig,
+        addToast,
+        changeScene
+      })
+    )
+
+    act(() => {
+      // Simulate clicking on the current node which is a GIG
+      result.current.handleTravel({
+        id: 'node_1',
+        type: 'GIG',
+        venue: { id: 'venue_1', capacity: 100, name: 'Venue 1' }
+      })
+    })
+
+    expect(startGig).not.toHaveBeenCalled()
+    expect(addToast).toHaveBeenCalledWith(
+      'You just played a gig here! Hit the road and find a new crowd.',
+      'warning'
+    )
+  })
+
   it('tests error handling fallback in startGig for current node travel', async () => {
     const player = { currentNodeId: 'node_1', money: 100, van: { fuel: 50 } }
     const band = { harmony: 10 }

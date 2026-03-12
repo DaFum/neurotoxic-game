@@ -523,7 +523,8 @@ export const usePostGigLogic = () => {
 
     updatePlayer({
       money: newMoney,
-      fame: Math.max(0, player.fame + fameGain)
+      fame: Math.max(0, player.fame + fameGain),
+      lastGigNodeId: player.currentNodeId
     })
 
     if (activeStoryFlags?.includes('cancel_quest_active')) {
