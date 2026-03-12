@@ -153,6 +153,7 @@ export const usePostGigLogic = () => {
           success: false,
           platform: 'none',
           followers: 0,
+          totalFollowers: 0,
           moneyChange: 0,
           message: fallbackMsg
         })

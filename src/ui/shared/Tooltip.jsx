@@ -22,33 +22,61 @@ export const Tooltip = ({ children, content, className = '' }) => {
     return children
   }
 
-  // eslint-disable-next-line @eslint-react/no-clone-element
-  const trigger = cloneElement(children, {
-    onMouseEnter: (e) => {
-      setIsVisible(true)
-      if (children.props.onMouseEnter) children.props.onMouseEnter(e)
-    },
-    onMouseLeave: (e) => {
-      setIsVisible(false)
-      if (children.props.onMouseLeave) children.props.onMouseLeave(e)
-    },
-    onFocus: (e) => {
-      setIsVisible(true)
-      if (children.props.onFocus) children.props.onFocus(e)
-    },
-    onBlur: (e) => {
-      setIsVisible(false)
-      if (children.props.onBlur) children.props.onBlur(e)
-    },
-    'aria-describedby': (() => {
-      const existing = children.props['aria-describedby']
-      if (!isVisible) return existing
-      if (!existing) return tooltipId
-      const ids = existing.split(' ').filter(Boolean)
-      if (!ids.includes(tooltipId)) ids.push(tooltipId)
-      return ids.join(' ')
-    })()
-  })
+  const computedAriaDescribedBy = (() => {
+    const existing = children.props['aria-describedby']
+    if (!isVisible) return existing
+    if (!existing) return tooltipId
+    const ids = existing.split(' ').filter(Boolean)
+    if (!ids.includes(tooltipId)) ids.push(tooltipId)
+    return ids.join(' ')
+  })()
+
+  const handleMouseEnter = (e) => {
+    setIsVisible(true)
+    if (children.props.onMouseEnter) children.props.onMouseEnter(e)
+  }
+  const handleMouseLeave = (e) => {
+    setIsVisible(false)
+    if (children.props.onMouseLeave) children.props.onMouseLeave(e)
+  }
+  const handleFocus = (e) => {
+    setIsVisible(true)
+    if (children.props.onFocus) children.props.onFocus(e)
+  }
+  const handleBlur = (e) => {
+    setIsVisible(false)
+    if (children.props.onBlur) children.props.onBlur(e)
+  }
+
+  const isDisabled =
+    children.props.disabled ||
+    children.props['aria-disabled'] === true ||
+    children.props['aria-disabled'] === 'true' ||
+    (typeof children.props.className === 'string' &&
+      children.props.className.includes('pointer-events-none')) ||
+    children.props.style?.pointerEvents === 'none'
+
+  const trigger = isDisabled ? (
+    <span
+      className='inline-block'
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      aria-describedby={computedAriaDescribedBy}
+    >
+      {children}
+    </span>
+  ) : (
+    // eslint-disable-next-line @eslint-react/no-clone-element
+    cloneElement(children, {
+      onMouseEnter: handleMouseEnter,
+      onMouseLeave: handleMouseLeave,
+      onFocus: handleFocus,
+      onBlur: handleBlur,
+      'aria-describedby': computedAriaDescribedBy
+    })
+  )
 
   return (
     <div className={`inline-block relative ${className}`}>
