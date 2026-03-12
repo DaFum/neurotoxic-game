@@ -5,6 +5,9 @@ import { logger } from '../utils/logger'
 
 /**
  * Renders the Pixi.js stage for the rhythm game.
+ * [STATE SAFETY BOUNDARY]: The Pixi.js renderer is initialized once per unmount cycle.
+ * `gameStateRef` ensures access to mutating game state without triggering React re-renders.
+ * [CLEANUP BOUNDARY]: The internal app instance destroys textures and tickers recursively upon unmount via `dispose()`.
  * @param {{ gameStateRef: object, update: Function, controllerFactory: Function }} props - Component props.
  * @returns {JSX.Element} Pixi canvas wrapper.
  */
@@ -30,9 +33,7 @@ export const PixiStage = memo(
       controller
         .init()
         .then(() => {
-          if (mounted && controllerRef.current === controller) {
-            // Init success
-          } else {
+          if (!mounted || controllerRef.current !== controller) {
             controller.dispose()
           }
         })
