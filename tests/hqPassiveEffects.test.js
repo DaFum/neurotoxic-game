@@ -1,27 +1,10 @@
-import { mock, describe, test, beforeEach, afterEach } from 'node:test'
+import { describe, test } from 'node:test'
 import assert from 'node:assert/strict'
 
-mock.module('react-i18next', {
-  namedExports: {
-    // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
-    useTranslation: () => ({ t: key => key }),
-    initReactI18next: { type: '3rdParty', init: () => {} }
-  }
-})
-
 import { applyUnlockHQ } from '../src/utils/purchaseLogicUtils.js'
-import { setupJSDOM, teardownJSDOM } from './testUtils.js'
 import { calculateDailyUpdates } from '../src/utils/simulationUtils.js'
 
 describe('HQ Passive Effects', () => {
-  beforeEach(() => {
-    setupJSDOM()
-  })
-
-  afterEach(() => {
-    teardownJSDOM()
-  })
-
   test('applyUnlockHQ utility hq_room_label purchase gives money bonus', () => {
     const player = {
       money: 5000,
@@ -35,7 +18,7 @@ describe('HQ Passive Effects', () => {
       name: 'Label',
       cost: 5000,
       currency: 'fame',
-      effects: [{ type: 'unlock_hq', id: 'hq_label' }]
+      effects: [{ type: 'unlock_hq', id: 'hq_room_label' }]
     }
 
     const initialPlayerPatch = { fame: 0 }

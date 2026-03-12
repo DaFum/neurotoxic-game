@@ -1,4 +1,4 @@
-import { useState, useId, cloneElement, isValidElement } from 'react'
+import React, { useState, useId, cloneElement, isValidElement } from 'react'
 import PropTypes from 'prop-types'
 
 /**
@@ -14,6 +14,11 @@ export const Tooltip = ({ children, content, className = '' }) => {
 
   if (!isValidElement(children)) {
     console.warn('Tooltip children must be a single valid React element.')
+    return children
+  }
+
+  if (children.type === React.Fragment) {
+    console.warn('Tooltip children must be a single valid React element and not a Fragment.')
     return children
   }
 
@@ -35,7 +40,14 @@ export const Tooltip = ({ children, content, className = '' }) => {
       setIsVisible(false)
       if (children.props.onBlur) children.props.onBlur(e)
     },
-    'aria-describedby': isVisible ? tooltipId : children.props['aria-describedby']
+    'aria-describedby': (() => {
+      const existing = children.props['aria-describedby']
+      if (!isVisible) return existing
+      if (!existing) return tooltipId
+      const ids = existing.split(' ').filter(Boolean)
+      if (!ids.includes(tooltipId)) ids.push(tooltipId)
+      return ids.join(' ')
+    })()
   })
 
   return (
