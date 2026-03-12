@@ -24,10 +24,10 @@ export const _resetLastMinigameFallback = () => {
 
 const BAND_MEETING_COST = 50
 
-const SONGS_DICT = Object.create(null);
+const SONGS_DICT = Object.create(null)
 for (let i = 0; i < SONGS_DB.length; i++) {
-  const song = SONGS_DB[i];
-  SONGS_DICT[song.id] = song;
+  const song = SONGS_DB[i]
+  SONGS_DICT[song.id] = song
 }
 
 const formatLocalizedNumber = (value, locale) => {
@@ -139,9 +139,17 @@ export const PreGig = () => {
     updateBand({ harmony: newHarmony })
 
     if (appliedDelta > 0) {
-      addToast(t('ui:pregig.toasts.meetingHeld', { amount: appliedDelta }), 'success')
+      addToast(
+        t('ui:pregig.toasts.meetingHeld', { amount: appliedDelta }),
+        'success'
+      )
     } else {
-      addToast(t('ui:pregig.toasts.meetingHeld', { amount: 0 }), 'success')
+      addToast(
+        t('ui:pregig.toasts.meetingHeldMax', {
+          defaultValue: 'Harmony already maxed out.'
+        }),
+        'info'
+      )
     }
   }
 
@@ -174,13 +182,13 @@ export const PreGig = () => {
   }
 
   const calculatedBudget = useMemo(() => {
-    let acc = 0;
+    let acc = 0
     for (const key in gigModifiers) {
       if (Object.hasOwn(gigModifiers, key) && gigModifiers[key]) {
-        acc += (MODIFIER_COSTS[key] || 0);
+        acc += MODIFIER_COSTS[key] || 0
       }
     }
-    return acc;
+    return acc
   }, [gigModifiers])
 
   /**

@@ -50,9 +50,9 @@ export const getRandomChatter = state => {
   if (pool.length === 0) return null
 
   // Weighted Random Selection
-  let totalWeight = 0;
+  let totalWeight = 0
   for (let i = 0; i < pool.length; i++) {
-    totalWeight += (pool[i].weight || 1);
+    totalWeight += pool[i].weight || 1
   }
   let roll = Math.random() * totalWeight
   let item = pool[pool.length - 1]

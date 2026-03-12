@@ -56,10 +56,8 @@ test('translateContextKeys securely translates and filters deep properties', () 
 
   // check forbidden keys
   // Note: the test runner creates object prototype anyway so checking undefined on __proto__ directly fails in some envs
-  expect(Object.prototype.hasOwnProperty.call(result, '__proto__')).toBe(false)
-  expect(Object.prototype.hasOwnProperty.call(result, 'constructor')).toBe(
-    false
-  )
+  expect(Object.hasOwn(result, '__proto__')).toBe(false)
+  expect(Object.hasOwn(result, 'constructor')).toBe(false)
 })
 
 test('ToastOverlay renders all taxonomy variants with themed classes', () => {

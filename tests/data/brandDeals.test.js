@@ -34,6 +34,13 @@ describe('BRAND_DEALS data module', () => {
         `Deal ${deal.id} trend requirement should be an array`
       )
 
+      if (deal.requirements.trait !== undefined) {
+        assert(
+          typeof deal.requirements.trait === 'string',
+          `Deal ${deal.id} trait requirement should be a string when present`
+        )
+      }
+
       assert(deal.offer, `Deal ${deal.id} is missing an offer`)
       assert(
         typeof deal.offer.upfront === 'number',
@@ -46,13 +53,48 @@ describe('BRAND_DEALS data module', () => {
     }
   })
 
-  it('each brand deal should have either a penalty or a benefit, or well-defined stats', () => {
+  it('each brand deal should have at least one of penalty or benefit with well-defined stats', () => {
     for (const deal of BRAND_DEALS) {
+      assert(
+        deal.penalty || deal.benefit,
+        `Deal ${deal.id} must have at least one of penalty or benefit`
+      )
+
       if (deal.penalty) {
-        assert(typeof deal.penalty === 'object', `Deal ${deal.id} penalty should be an object`)
+        assert(
+          typeof deal.penalty === 'object',
+          `Deal ${deal.id} penalty should be an object`
+        )
+        if (deal.penalty.loyalty !== undefined) {
+          assert(
+            typeof deal.penalty.loyalty === 'number',
+            `Deal ${deal.id} penalty.loyalty should be a number`
+          )
+        }
+        if (deal.penalty.controversy !== undefined) {
+          assert(
+            typeof deal.penalty.controversy === 'number',
+            `Deal ${deal.id} penalty.controversy should be a number`
+          )
+        }
       }
       if (deal.benefit) {
-        assert(typeof deal.benefit === 'object', `Deal ${deal.id} benefit should be an object`)
+        assert(
+          typeof deal.benefit === 'object',
+          `Deal ${deal.id} benefit should be an object`
+        )
+        if (deal.benefit.loyalty !== undefined) {
+          assert(
+            typeof deal.benefit.loyalty === 'number',
+            `Deal ${deal.id} benefit.loyalty should be a number`
+          )
+        }
+        if (deal.benefit.controversy !== undefined) {
+          assert(
+            typeof deal.benefit.controversy === 'number',
+            `Deal ${deal.id} benefit.controversy should be a number`
+          )
+        }
       }
     }
   })

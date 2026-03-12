@@ -352,7 +352,10 @@ export const GameStateProvider = ({ children }) => {
 
   // Minigame Actions
   const startTravelMinigame = useCallback(
-    targetNodeId => startTransition(() => dispatch(createStartTravelMinigameAction(targetNodeId))),
+    targetNodeId =>
+      startTransition(() =>
+        dispatch(createStartTravelMinigameAction(targetNodeId))
+      ),
     []
   )
 
@@ -363,7 +366,8 @@ export const GameStateProvider = ({ children }) => {
   )
 
   const startRoadieMinigame = useCallback(
-    gigId => startTransition(() => dispatch(createStartRoadieMinigameAction(gigId))),
+    gigId =>
+      startTransition(() => dispatch(createStartRoadieMinigameAction(gigId))),
     []
   )
 
@@ -374,7 +378,10 @@ export const GameStateProvider = ({ children }) => {
   )
 
   const startKabelsalatMinigame = useCallback(
-    gigId => startTransition(() => dispatch(createStartKabelsalatMinigameAction(gigId))),
+    gigId =>
+      startTransition(() =>
+        dispatch(createStartKabelsalatMinigameAction(gigId))
+      ),
     []
   )
 
@@ -407,9 +414,7 @@ export const GameStateProvider = ({ children }) => {
     safeStorageOperation('deleteSave', () => {
       localStorage.removeItem(SAVE_KEY)
     })
-    startTransition(() => {
-      changeScene(GAME_PHASES.MENU)
-    })
+    changeScene(GAME_PHASES.MENU)
     window.location.reload()
   }, [changeScene])
 

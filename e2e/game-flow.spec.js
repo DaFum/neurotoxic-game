@@ -233,9 +233,22 @@ test.describe('Game Flow', () => {
     await page.waitForTimeout(2000)
 
     // Handle minigame specific continue buttons if any
-    const continueBtn = page.getByRole('button', { name: /continue/i, exact: true })
+    const continueBtn = page.getByRole('button', {
+      name: /continue/i,
+      exact: true
+    })
     if (await continueBtn.isVisible()) {
       await continueBtn.click()
+    } else {
+      // Assert that we have actually advanced past the minigame if continue wasn't visible
+      const gigReport = page.getByRole('heading', { name: /gig report/i })
+      const isGigReportVisible = await gigReport.isVisible()
+      const isStillInMinigame = await page.locator('.crt-overlay').isVisible() // Or some other minigame indicator
+      if (!isGigReportVisible && isStillInMinigame) {
+        throw new Error(
+          'Minigame did not complete successfully after Shift+P backdoor.'
+        )
+      }
     }
 
     // Roadie/Kabelsalat Minigame completion leads directly to Gig.

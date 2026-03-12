@@ -11,6 +11,9 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
       // Anti-Tamper / Prototype Pollution Check
+      if (!req.body || typeof req.body !== 'object') {
+        return res.status(400).json({ error: 'Invalid payload structure' })
+      }
       if (
         Object.hasOwn(req.body, '__proto__') ||
         Object.hasOwn(req.body, 'constructor') ||

@@ -477,6 +477,7 @@
   "pregig.toasts.audioFail": "Audio-Initialisierung fehlgeschlagen.",
   "pregig.toasts.harmonyLow": "Band-Harmonie zu niedrig für einen Auftritt!",
   "pregig.toasts.meetingHeld": "Meeting abgehalten. Stimmung ist besser.",
+  "pregig.toasts.meetingHeldMax": "Meeting abgehalten. Harmonie bereits am Maximum.",
   "pregig.toasts.noGig": "Kein Gig aktiv! Zurück zur Karte.",
   "pregig.toasts.noMoneySnacks": "Nicht genug Geld für Snacks!",
   "pregig.toasts.noMoneyUpgrade": "Nicht genug Geld für dieses Upgrade!",

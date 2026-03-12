@@ -254,10 +254,11 @@ graph TD
     H -- Fail Condition --> I[GAMEOVER]
 ```
 
-5. **Economy Model**
-   - Travel consumes **Fuel Liters** and **Money for Food**.
-   - **Refuel** action (at Overworld/Gas Stations) is the only place gas money is deducted.
-   - Post-Gig P&L reports only track performance-related income/expense, excluding travel overhead to ensure net profit matches wallet changes.
+### Economy Model
+
+- Travel consumes **Fuel Liters** and **Money for Food**.
+- **Refuel** action (at Overworld/Gas Stations) is the only place gas money is deducted.
+- Post-Gig P&L reports only track performance-related income/expense, excluding travel overhead to ensure net profit matches wallet changes.
 
 ## Diagnostics and Reliability
 

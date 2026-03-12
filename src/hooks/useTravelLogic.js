@@ -378,7 +378,8 @@ export const useTravelLogic = ({
           if (node.id === player.lastGigNodeId) {
             addToast(
               i18n.t('ui:travel.errors.alreadyPlayedHere', {
-                defaultValue: 'You just played a gig here! Hit the road and find a new crowd.'
+                defaultValue:
+                  'You just played a gig here! Hit the road and find a new crowd.'
               }),
               'warning'
             )

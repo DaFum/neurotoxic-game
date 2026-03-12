@@ -36,6 +36,8 @@ export const MinigameSceneFrame = ({
     const handleKeyDown = e => {
       if (uiState?.isGameOver && e.key === 'Escape') {
         onComplete()
+      } else if (e.shiftKey && e.key.toUpperCase() === 'P') {
+        onComplete()
       }
     }
     window.addEventListener('keydown', handleKeyDown)
