@@ -555,13 +555,23 @@ export const resolveEventChoice = (choice, gameState, rng = secureRandom) => {
     return { result: null, delta: null, outcomeText: '', description: '' }
   }
 
-  const result = eventEngine.resolveChoice(choice, gameState, rng)
-  const delta = eventEngine.applyResult(result, gameState.activeEvent?.context)
+  try {
+    const result = eventEngine.resolveChoice(choice, gameState, rng)
+    const delta = eventEngine.applyResult(result, gameState.activeEvent?.context)
 
-  return {
-    result,
-    delta,
-    outcomeText: choice.outcomeText ?? '',
-    description: result.description ?? ''
+    return {
+      result,
+      delta,
+      outcomeText: choice.outcomeText ?? '',
+      description: result.description ?? ''
+    }
+  } catch (err) {
+    logger.error('EventEngine', 'Error resolving choice', err)
+    return {
+      result: { type: 'error', message: err.message },
+      delta: null,
+      outcomeText: 'An error occurred.',
+      description: err.message
+    }
   }
 }

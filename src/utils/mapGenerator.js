@@ -31,6 +31,10 @@ export class MapGenerator {
    * @returns {object} The generated map object containing layers, nodes, and connections.
    */
   generateMap(depth = 10) {
+    if (depth <= 0) {
+      return { layers: [], nodes: {}, connections: [] }
+    }
+
     const map = {
       layers: [],
       nodes: {}, // Map ID to Node Object

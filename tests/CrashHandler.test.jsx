@@ -25,6 +25,30 @@ const ThrowingComponent = () => {
   throw new Error('Test Error')
 }
 
+const DeeplyNestedThrower = () => {
+  return (
+    <div>
+      <div>
+        <ThrowingComponent />
+      </div>
+    </div>
+  )
+}
+
+test('CrashHandler catches error from deeply nested component and displays fallback UI', async () => {
+  const { ErrorBoundary } = await import('../src/ui/CrashHandler.jsx')
+
+  const { getByText } = render(
+    <ErrorBoundary>
+      <DeeplyNestedThrower />
+    </ErrorBoundary>
+  )
+
+  expect(getByText('ui:crash.title')).toBeInTheDocument()
+  expect(getByText('ui:crash.message')).toBeInTheDocument()
+  expect(getByText('ui:crash.rebootButton')).toBeInTheDocument()
+})
+
 test('CrashHandler exposes stack trace in DEV mode', async () => {
   //  removed (handled by vitest env)
 

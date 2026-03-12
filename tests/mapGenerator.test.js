@@ -47,6 +47,41 @@ test('MapGenerator connections are valid', () => {
   })
 })
 
+test('MapGenerator handles invalid parameters gracefully', () => {
+  const generator = new MapGenerator()
+
+  // Negative depth
+  const mapNegative = generator.generateMap(-1)
+  assert.equal(mapNegative.layers.length, 0, 'Should not generate layers for negative depth')
+
+  // Zero depth
+  const mapZero = generator.generateMap(0)
+  assert.equal(mapZero.layers.length, 0, 'Should not generate layers for zero depth')
+})
+
+test('MapGenerator handles empty venues array by throwing StateError', async () => {
+  // It's tricky to mock ES modules dynamically in node:test after they've been loaded,
+  // since MapGenerator was already imported at the top of the file without mocking.
+  // Instead, we will clear the array directly for this test and restore it after.
+  const { ALL_VENUES } = await import('../src/data/venues.js')
+  const originalVenues = [...ALL_VENUES]
+  ALL_VENUES.length = 0 // clear array
+
+  try {
+    const { StateError } = await import('../src/utils/errorHandler.js')
+    const generator = new MapGenerator()
+    assert.throws(
+      () => {
+        generator.generateMap(5)
+      },
+      StateError,
+      'Should throw StateError when home venue is missing'
+    )
+  } finally {
+    ALL_VENUES.push(...originalVenues) // restore
+  }
+})
+
 test('MapGenerator ensures nodes do not overlap', () => {
   const generator = new MapGenerator(12345) // Seeded for consistency
   const map = generator.generateMap(5)

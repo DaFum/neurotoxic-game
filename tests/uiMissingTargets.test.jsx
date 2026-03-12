@@ -78,7 +78,7 @@ vi.mock('../src/utils/logger', () => {
 describe('UI missing-target smoke/branch tests', () => {
   it('GigModifierButton triggers callback and active state', () => {
     const onClick = vi.fn()
-    render(
+    const { rerender } = render(
       <GigModifierButton
         item={{ key: 'm1', label: 'Mod', desc: 'desc', cost: 20 }}
         isActive={false}
@@ -88,6 +88,17 @@ describe('UI missing-target smoke/branch tests', () => {
 
     fireEvent.click(screen.getByRole('button'))
     expect(onClick).toHaveBeenCalledWith('m1')
+    expect(screen.getByRole('button')).toHaveClass('text-(--ash-gray)')
+
+    // test active state branches
+    rerender(
+      <GigModifierButton
+        item={{ key: 'm1', label: 'Mod', desc: 'desc', cost: 20 }}
+        isActive={true}
+        onClick={onClick}
+      />
+    )
+    expect(screen.getByRole('button')).toHaveClass('bg-(--toxic-green)')
   })
 
   it('SettingsTab delegates settings interactions', () => {
@@ -151,28 +162,35 @@ describe('UI missing-target smoke/branch tests', () => {
   })
 
   it('ShopTab and UpgradesTab render item lists', () => {
+    const handleBuy = vi.fn()
     render(
       <ShopTab
         player={{ money: 100 }}
-        handleBuy={vi.fn()}
-        isItemOwned={() => false}
-        isItemDisabled={() => false}
+        handleBuy={handleBuy}
+        isItemOwned={(item) => item.id === 'g1'}
+        isItemDisabled={(item) => item.id === 'i1'}
+        getAdjustedCost={(item) => item.cost - 5}
       />
     )
     expect(screen.getByText('FUNDS:')).toBeInTheDocument()
+    // g1 should be owned, i1 disabled.
+    expect(screen.getByRole('button', { name: /OWNED/ })).toBeInTheDocument()
 
     render(
       <UpgradesTab
         player={{ money: 100, fame: 5 }}
         upgrades={[
-          { id: 'u1', name: 'u1', cost: 1, currency: 'fame', effects: [] }
+          { id: 'u1', name: 'u1', cost: 1, currency: 'fame', effects: [] },
+          { id: 'u2', name: 'u2', cost: 2, currency: 'fame', effects: [] }
         ]}
-        handleBuy={vi.fn()}
-        isItemOwned={() => false}
-        isItemDisabled={() => false}
+        handleBuy={handleBuy}
+        isItemOwned={(item) => item.id === 'u1'}
+        isItemDisabled={(item) => item.id === 'u2'}
+        getAdjustedCost={(item) => item.cost + 10}
       />
     )
     expect(screen.getByText('FAME:')).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: /OWNED/ })[0]).toBeInTheDocument()
   })
 
   it('DebugLogViewer shows logs after keyboard toggle and allows close/clear', async () => {
