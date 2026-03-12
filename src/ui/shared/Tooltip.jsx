@@ -1,4 +1,4 @@
-import React, { useState, useId, cloneElement, isValidElement } from 'react'
+import React, { useState, useId, cloneElement, isValidElement, useCallback } from 'react'
 import PropTypes from 'prop-types'
 
 /**
@@ -31,22 +31,25 @@ export const Tooltip = ({ children, content, className = '' }) => {
     return ids.join(' ')
   })()
 
-  const handleMouseEnter = (e) => {
+  const handleMouseEnter = useCallback((e) => {
     setIsVisible(true)
     if (children.props.onMouseEnter) children.props.onMouseEnter(e)
-  }
-  const handleMouseLeave = (e) => {
+  }, [children.props])
+
+  const handleMouseLeave = useCallback((e) => {
     setIsVisible(false)
     if (children.props.onMouseLeave) children.props.onMouseLeave(e)
-  }
-  const handleFocus = (e) => {
+  }, [children.props])
+
+  const handleFocus = useCallback((e) => {
     setIsVisible(true)
     if (children.props.onFocus) children.props.onFocus(e)
-  }
-  const handleBlur = (e) => {
+  }, [children.props])
+
+  const handleBlur = useCallback((e) => {
     setIsVisible(false)
     if (children.props.onBlur) children.props.onBlur(e)
-  }
+  }, [children.props])
 
   const isDisabled =
     children.props.disabled ||
