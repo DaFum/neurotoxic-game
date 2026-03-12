@@ -23,10 +23,7 @@ describe('kabelsalat/constants', () => {
           typeof cable.labelKey === 'string',
           `Cable ${cable.id} missing labelKey`
         )
-        assert(
-          typeof cable.type === 'string',
-          `Cable ${cable.id} missing type`
-        )
+        assert(typeof cable.type === 'string', `Cable ${cable.id} missing type`)
         assert(
           typeof cable.x === 'number',
           `Cable ${cable.id} missing x position`
@@ -66,10 +63,7 @@ describe('kabelsalat/constants', () => {
 
     it('should contain all cables from CABLES array', () => {
       for (const cable of CABLES) {
-        assert(
-          CABLE_MAP[cable.id],
-          `CABLE_MAP missing cable: ${cable.id}`
-        )
+        assert(CABLE_MAP[cable.id], `CABLE_MAP missing cable: ${cable.id}`)
       }
     })
   })

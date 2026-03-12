@@ -12,11 +12,14 @@ export const checkTraitUnlocks = (state, context = {}) => {
   const { band, player, social } = state
   const members = band?.members || []
 
-  // Helpers to find members
-  const getMember = name => members.find(m => m.name === name)
-  const Matze = getMember(CHARACTERS.MATZE.name)
-  const Marius = getMember(CHARACTERS.MARIUS.name)
-  const Lars = getMember(CHARACTERS.LARS.name)
+  // Helpers to find members in a single pass (O(N) instead of O(3N))
+  let Matze, Marius, Lars
+  for (let i = 0; i < members.length; i++) {
+    const m = members[i]
+    if (m.name === CHARACTERS.MATZE.name) Matze = m
+    else if (m.name === CHARACTERS.MARIUS.name) Marius = m
+    else if (m.name === CHARACTERS.LARS.name) Lars = m
+  }
 
   // 1. Performance Unlocks (Post-Gig)
   if (context.type === 'GIG_COMPLETE' && context.gigStats) {

@@ -7,3 +7,7 @@
 
 **Learning:** Pure UI decoration components (like SVG icons) in heavily re-rendered environments like BrutalistUI.jsx should be wrapped in `React.memo()` to prevent unnecessary re-renders across the app, as their props typically consist only of simple string class names.
 **Action:** Always use `React.memo` for static UI decorations, especially when creating custom UI component libraries.
+
+## 2025-05-20 - Object.keys vs Object.entries
+**Learning:** In hot loops, iterating over an array once is faster than using multiple `.find()` calls to retrieve distinct elements from the same array.
+**Action:** Always favor a single `for` loop pass when looking up multiple distinct elements from the same array to reduce overhead.
