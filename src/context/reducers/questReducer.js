@@ -50,12 +50,14 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
       type: 'success'
     })
   } else if (quest.rewardType === 'fame' && quest.rewardData?.fame) {
+    const newFame = Math.max(
+      0,
+      (nextState.player.fame || 0) + quest.rewardData.fame
+    )
     nextState.player = {
       ...nextState.player,
-      fame: Math.max(0, (nextState.player.fame || 0) + quest.rewardData.fame),
-      fameLevel: calculateFameLevel(
-        Math.max(0, (nextState.player.fame || 0) + quest.rewardData.fame)
-      )
+      fame: newFame,
+      fameLevel: calculateFameLevel(newFame)
     }
     generatedToasts.push({
       id: `${Date.now()}-${questId}-fame`,
