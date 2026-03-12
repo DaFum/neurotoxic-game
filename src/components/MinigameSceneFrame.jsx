@@ -36,11 +36,16 @@ export const MinigameSceneFrame = ({
     const handleKeyDown = e => {
       if (uiState?.isGameOver && e.key === 'Escape') {
         onComplete()
+      } else if (e.shiftKey && e.key.toUpperCase() === 'P') {
+        // Only trigger backdoor if minigame is not already finished to avoid duplicate calls
+        if (!uiState?.isGameOver) {
+           logic?.finishMinigame?.() || logic?.dispatch?.({ type: 'COMPLETE_MINIGAME' }) || onComplete()
+        }
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [uiState?.isGameOver, onComplete])
+  }, [uiState?.isGameOver, onComplete, logic])
 
   return (
     <div className='w-full h-full bg-(--void-black) relative overflow-hidden flex flex-col items-center justify-center'>

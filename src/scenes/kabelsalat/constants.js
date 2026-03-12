@@ -41,10 +41,10 @@ export const CABLES = [
   }
 ]
 
-export const CABLE_MAP = {};
+export const CABLE_MAP = Object.create(null)
 for (let i = 0; i < CABLES.length; i++) {
-  const cable = CABLES[i];
-  CABLE_MAP[cable.id] = cable;
+  const cable = CABLES[i]
+  CABLE_MAP[cable.id] = cable
 }
 
 export const SLOT_XS = [120, 260, 400, 540, 680]

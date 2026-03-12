@@ -86,7 +86,7 @@
 - **Dependencies (LOCKED):** React 19.2.4, Vite 7.3.1, Tailwind 4.2.1, Framer Motion 12.35.1, Tone.js 15.5.6. Node.js 22.13+. Do NOT use Howler.js.
 - **Node.js Scripts:** Ad-hoc scripts using `require()` must end in `.cjs`. Use CLI tools (`sed`, `awk`) for JSX refactoring instead of `@babel/core`.
 - **Environment Variables:** Maintain `.env.example`. Use `process.env.VITE_VAR` for Vite/node:test dual compatibility.
-- **Linting / Coverage:** Use `@eslint-react/eslint-plugin`. Ignore `Songs.js` in ESLint. Add `coverage/` to `.gitignore`.
+- **Linting / Coverage:** Use `@eslint-react/eslint-plugin`. Ignore `songs.js` in ESLint. Add `coverage/` to `.gitignore`.
 - **Pollinations API:** The key is safe to publish.
 
 ### 📋 Workflow, PRs, & Planning Constraints
