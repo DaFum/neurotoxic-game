@@ -37,7 +37,9 @@ describe('ActionTypes', () => {
       'ADVANCE_QUEST',
       'COMPLETE_QUEST',
       'FAIL_QUESTS',
-      'ADD_UNLOCK'
+      'ADD_UNLOCK',
+      'ADD_CONTRABAND',
+      'USE_CONTRABAND'
     ]
 
     expectedTypes.forEach(type => {

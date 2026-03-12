@@ -5,11 +5,13 @@ import { useGameState } from '../context/GameState'
 import { useTravelLogic } from '../hooks/useTravelLogic'
 import { useBandHQModal } from '../hooks/useBandHQModal'
 import { useQuestsModal } from '../hooks/useQuestsModal'
+import { useContrabandStash } from '../hooks/useContrabandStash'
 import { ToggleRadio } from '../components/ToggleRadio'
 import { MapConnection } from '../components/MapConnection'
 import { MapNode } from '../components/MapNode'
 import { BandHQ } from '../ui/BandHQ'
 import { QuestsModal } from '../ui/QuestsModal'
+import { ContrabandStash } from '../ui/ContrabandStash'
 import { GlitchButton } from '../ui/GlitchButton'
 import { ALL_VENUES } from '../data/venues'
 import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
@@ -47,6 +49,7 @@ export const Overworld = () => {
   const [hoveredNode, setHoveredNode] = useState(null)
   const { showHQ, openHQ, bandHQProps } = useBandHQModal()
   const { showQuests, openQuests, questsProps } = useQuestsModal()
+  const { showStash, openStash, stashProps } = useContrabandStash()
 
   const {
     isTraveling,
@@ -282,6 +285,14 @@ export const Overworld = () => {
 
       <div className='absolute bottom-8 right-8 z-50 pointer-events-auto flex flex-col gap-2 items-end'>
         <GlitchButton
+          onClick={openStash}
+          disabled={isTraveling}
+          variant='primary'
+          size='sm'
+        >
+          [STASH]
+        </GlitchButton>
+        <GlitchButton
           onClick={openQuests}
           disabled={isTraveling}
           variant='primary'
@@ -387,6 +398,7 @@ export const Overworld = () => {
 
       {showHQ && <BandHQ {...bandHQProps} />}
       {showQuests && <QuestsModal {...questsProps} />}
+      {showStash && <ContrabandStash {...stashProps} />}
     </div>
   )
 }

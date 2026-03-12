@@ -4,6 +4,7 @@ import {
   applyInventoryItemDelta
 } from '../../utils/gameStateUtils.js'
 import { applyTraitUnlocks } from '../../utils/traitUtils.js'
+import { CONTRABAND_BY_ID } from '../../data/contraband.js'
 
 /**
  * Handles band update actions
@@ -69,4 +70,78 @@ export const handleConsumeItem = (state, payload) => {
   }
 
   return { ...state, band: nextBand }
+}
+
+/**
+ * Handles adding contraband to the stash.
+ * @param {Object} state - Current state
+ * @param {string} contrabandId - ID of the item to add
+ * @returns {Object} Updated state
+ */
+export const handleAddContraband = (state, contrabandId) => {
+  const item = CONTRABAND_BY_ID.get(contrabandId)
+  if (!item) return state
+
+  const newInstance = {
+    ...item,
+    instanceId: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  }
+
+  return {
+    ...state,
+    band: {
+      ...state.band,
+      stash: [...(state.band.stash || []), newInstance]
+    }
+  }
+}
+
+/**
+ * Handles using a contraband item.
+ * @param {Object} state - Current state
+ * @param {Object} payload - { instanceId, memberId }
+ * @returns {Object} Updated state
+ */
+export const handleUseContraband = (state, payload) => {
+  const { instanceId, memberId } = payload
+  const stash = state.band.stash || []
+  const itemIndex = stash.findIndex(i => i.instanceId === instanceId)
+
+  if (itemIndex === -1) return state
+
+  const item = stash[itemIndex]
+  let newBand = { ...state.band }
+  let newStash = [...stash]
+
+  // Apply effect
+  if (item.effectType === 'stamina' || item.effectType === 'mood') {
+    if (memberId) {
+      newBand.members = newBand.members.map(m => {
+        if (m.id === memberId) {
+          return {
+            ...m,
+            [item.effectType]: Math.min(100, Math.max(0, m[item.effectType] + item.value))
+          }
+        }
+        return m
+      })
+    }
+  } else if (item.effectType === 'harmony') {
+    newBand.harmony = clampBandHarmony(newBand.harmony + item.value)
+  } else if (item.effectType === 'luck') {
+    newBand.luck = (newBand.luck || 0) + item.value
+  } else if (item.effectType === 'guitar_difficulty') {
+    newBand.performance = {
+      ...newBand.performance,
+      guitarDifficulty: Math.max(0.1, newBand.performance.guitarDifficulty + item.value)
+    }
+  }
+
+  // If consumable, remove from stash
+  if (item.type === 'consumable') {
+    newStash.splice(itemIndex, 1)
+  }
+
+  newBand.stash = newStash
+  return { ...state, band: newBand }
 }

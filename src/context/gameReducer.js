@@ -10,7 +10,9 @@ import { handleUpdatePlayer } from './reducers/playerReducer.js'
 import {
   handleUpdateBand,
   handleConsumeItem,
-  handleUnlockTrait
+  handleUnlockTrait,
+  handleAddContraband,
+  handleUseContraband
 } from './reducers/bandReducer.js'
 import {
   handleUpdateSocial,
@@ -72,6 +74,12 @@ export const gameReducer = (state, action) => {
 
     case ActionTypes.UPDATE_BAND:
       return handleUpdateBand(state, action.payload)
+
+    case ActionTypes.ADD_CONTRABAND:
+      return handleAddContraband(state, action.payload)
+
+    case ActionTypes.USE_CONTRABAND:
+      return handleUseContraband(state, action.payload)
 
     case ActionTypes.UPDATE_SOCIAL:
       return handleUpdateSocial(state, action.payload)
