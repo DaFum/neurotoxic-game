@@ -222,20 +222,23 @@ test.describe('Game Flow', () => {
     await expect(startShowBtn).toBeEnabled()
     await startShowBtn.click()
 
-    // 4. Roadie Minigame
-    // We arrive at Roadie Run screen. We need to move the character down to deliver, then up to fetch next item, 3 times.
-    await expect(
-      page.getByRole('heading', { name: /roadie run/i })
-    ).toBeVisible({ timeout: 10000 })
-    await page.waitForTimeout(1000)
+    // 4. Pre-Gig Minigame (Roadie or Kabelsalat)
+    // We arrive at either Roadie Run or Kabelsalat screen randomly.
+
+    // We can just use Shift+P backdoor for both.
+    await page.waitForTimeout(2000)
 
     // Simulate keyboard presses to complete the minigame quickly using DEV backdoor
     await page.keyboard.press('Shift+P')
-    await page.waitForTimeout(1000)
+    await page.waitForTimeout(2000)
 
-    // Wait for button to be visible again (reusing same selector logic/text)
-    await startShowBtn.waitFor({ state: 'visible', timeout: 10000 })
-    await startShowBtn.click()
+    // Handle minigame specific continue buttons if any
+    const continueBtn = page.getByRole('button', { name: /continue/i, exact: true })
+    if (await continueBtn.isVisible()) {
+      await continueBtn.click()
+    }
+
+    // Roadie/Kabelsalat Minigame completion leads directly to Gig.
 
     // 5. Gig (Rhythm Game)
     // The song plays automatically. Since we don't click, health fails but scene still advances.
