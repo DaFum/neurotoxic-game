@@ -30,7 +30,7 @@
 - `MODIFIER_COSTS` in `economyEngine.js` is the single source of truth for PreGig modifier costs — never re-declare inline.
 - Default chatter is limited to `MENU`, `OVERWORLD`, `PREGIG`, `POSTGIG` — `GIG` requires explicit conditional entries.
 - **Image Loading**: Always use the `loadTexture` utility for dynamic images (especially `gen.pollinations.ai` URLs) to prevent PixiJS parsing errors and test failures.
-- **Leaderboards API**: Always resolve song IDs via `SONGS_DB.find().leaderboardId` (API-safe slug) before submitting to `/api/leaderboard/song`. Never submit the raw `currentGig.songId` directly.
+- **Leaderboards API**: Always resolve song IDs via `SONGS_BY_ID.get().leaderboardId` (API-safe slug) before submitting to `/api/leaderboard/song`. Never submit the raw `currentGig.songId` directly.
 
 ## Style & Conventions
 
@@ -76,11 +76,10 @@
   * Mock `window.localStorage.setItem` in Vitest, wrapped in `try/finally` for cleanup.
   * For `react-i18next`, include `initReactI18next: { type: '3rdParty', init: () => {} }`.
 * **Security & Prototypes:** Use `Object.hasOwn(obj, '__proto__')` to check for stripped forbidden keys.
-* **CLI Execution:** Single logic test: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs <filepath>`.
 
 ### 🌍 Environment, Setup, & Tooling
 * **Package Management:** Use `pnpm` exclusively (`dev`, `build`, `test`, `test:ui`, `test:all`, `lint`, `format`).
-* **Dependencies (LOCKED):** React 19.2.4, Vite 7.3.1, Tailwind 4.2.0, Framer Motion 12.35.1, Tone.js 15.5.6. Node.js 22.13+. Do NOT use Howler.js.
+* **Dependencies (LOCKED):** React 19.2.4, Vite 7.3.1, Tailwind 4.2.1, Framer Motion 12.35.1, Tone.js 15.5.6. Node.js 22.13+. Do NOT use Howler.js.
 * **Node.js Scripts:** Ad-hoc scripts using `require()` must end in `.cjs`. Use CLI tools (`sed`, `awk`) for JSX refactoring instead of `@babel/core`.
 * **Environment Variables:** Maintain `.env.example`. Use `process.env.VITE_VAR` for Vite/node:test dual compatibility.
 * **Linting / Coverage:** Use `@eslint-react/eslint-plugin`. Ignore `Songs.js` in ESLint. Add `coverage/` to `.gitignore`.
