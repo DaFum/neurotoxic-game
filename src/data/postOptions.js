@@ -697,10 +697,15 @@ export const POST_OPTIONS = [
       const influencers = social?.influencers || {}
 
       // Filter by affordability
-      const affordableIds = Object.keys(influencers).filter(id => {
-        const influencer = influencers[id]
-        return isValidAndAffordableInfluencer(influencer, player.money)
-      })
+      const affordableIds = []
+      for (const id in influencers) {
+        if (
+          Object.hasOwn(influencers, id) &&
+          isValidAndAffordableInfluencer(influencers[id], player.money)
+        ) {
+          affordableIds.push(id)
+        }
+      }
 
       if (affordableIds.length === 0) {
         return {
