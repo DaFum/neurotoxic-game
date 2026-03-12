@@ -2,11 +2,12 @@
 import { secureRandom } from './crypto.js'
 import { POST_OPTIONS } from '../data/postOptions.js'
 import { SOCIAL_PLATFORMS } from '../data/platforms.js'
-import { BRAND_DEALS } from '../data/brandDeals.js'
+import { BRAND_DEALS_BY_ID } from '../data/brandDeals.js'
 import { bandHasTrait } from './traitLogic.js'
 import { StateError } from './errorHandler.js'
-import { ALLOWED_TRENDS } from '../data/socialTrends.js'
+import { ALLOWED_TRENDS, ALLOWED_TRENDS_SET } from '../data/socialTrends.js'
 import { BRAND_ALIGNMENTS } from '../context/initialState.js'
+import { clampPlayerMoney, clampBandHarmony } from './gameStateUtils.js'
 
 /**
  * Calculates viral potential based on performance and events.
@@ -159,15 +160,31 @@ export const resolvePost = (
 
   try {
     const result = postOption.resolve({ ...gameState, diceRoll })
+
+    // Safety bounds enforcement for resolved deltas
+    let moneyChange = result.moneyChange
+    if (moneyChange !== undefined && gameState.player?.money !== undefined) {
+      const prevMoney = gameState.player.money
+      const nextMoney = clampPlayerMoney(prevMoney + moneyChange)
+      moneyChange = nextMoney - prevMoney
+    }
+
+    let harmonyChange = result.harmonyChange
+    if (harmonyChange !== undefined && gameState.band?.harmony !== undefined) {
+      const prevHarmony = gameState.band.harmony
+      const nextHarmony = clampBandHarmony(prevHarmony + harmonyChange)
+      harmonyChange = nextHarmony - prevHarmony
+    }
+
     return {
       success: result.success ?? true,
       followers: result.followers ?? 0,
       platform: result.platform || postOption.platform,
       message: result.message || 'Post completed.',
       // Side effects (optional, will be undefined if not provided)
-      moneyChange: result.moneyChange,
+      moneyChange,
       moodChange: result.moodChange,
-      harmonyChange: result.harmonyChange,
+      harmonyChange,
       staminaChange: result.staminaChange,
       controversyChange: result.controversyChange,
       loyaltyChange: result.loyaltyChange,
@@ -439,26 +456,38 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
   const band = gameState?.band || {}
   const reputation = social.brandReputation || {}
 
-  // Filter available deals
-  const eligibleDeals = BRAND_DEALS.filter(deal => {
-    // Check followers
-    const totalFollowers =
-      (social.instagram || 0) + (social.tiktok || 0) + (social.youtube || 0)
-    if (totalFollowers < deal.requirements.followers) return false
+  // Pre-calculate common checks to avoid redundant computations
+  const totalFollowers = (social.instagram || 0) + (social.tiktok || 0) + (social.youtube || 0)
 
-    // Check trend match
-    if (social.trend && !deal.requirements.trend.includes(social.trend))
-      return false
+  // Create an O(1) set of active deal IDs
+  const activeDealIds = new Set()
+  if (social.activeDeals) {
+    for (const d of social.activeDeals) {
+      activeDealIds.add(d.id)
+    }
+  }
+
+  // Filter available deals
+  const eligibleDeals = []
+  for (const deal of BRAND_DEALS_BY_ID.values()) {
+    // Check followers
+    if (totalFollowers < deal.requirements.followers) continue
+
+    // Check trend match using O(1) loop or Set check if available
+    if (social.trend && deal.requirements.trend) {
+      // If the trend isn't in the allowed global set, we might skip it
+      if (ALLOWED_TRENDS_SET && !ALLOWED_TRENDS_SET.has(social.trend)) continue
+      if (!deal.requirements.trend.includes(social.trend)) continue
+    }
 
     // Check trait match (if required trait exists in band)
-    if (deal.requirements.trait && !bandHasTrait(band, deal.requirements.trait))
-      return false
+    if (deal.requirements.trait && !bandHasTrait(band, deal.requirements.trait)) continue
 
     // Check if already active
-    if (social.activeDeals?.some(d => d.id === deal.id)) return false
+    if (activeDealIds.has(deal.id)) continue
 
-    return true
-  })
+    eligibleDeals.push(deal)
+  }
 
   // Pick up to 2 random offers, weighted by reputation
   const offers = []

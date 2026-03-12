@@ -208,6 +208,45 @@ test('resolvePost returns consistent structure', () => {
   assert.ok(typeof result.message === 'string', 'Should have string message')
 })
 
+test('resolvePost clamps harmony bounds between 1-100', () => {
+  const gameState = {
+    player: { money: 100 },
+    band: { harmony: 90 }
+  }
+  const postOption = {
+    id: 'harmony_test',
+    resolve: () => ({ harmonyChange: 20 })
+  }
+
+  const result = resolvePost(postOption, gameState)
+  assert.strictEqual(result.harmonyChange, 10, 'Harmony should be clamped to 100, delta 10')
+
+  const gameState2 = {
+    player: { money: 100 },
+    band: { harmony: 10 }
+  }
+  const postOption2 = {
+    id: 'harmony_test_low',
+    resolve: () => ({ harmonyChange: -20 })
+  }
+  const result2 = resolvePost(postOption2, gameState2)
+  assert.strictEqual(result2.harmonyChange, -9, 'Harmony should be clamped to 1, delta -9')
+})
+
+test('resolvePost clamps money bounds >= 0', () => {
+  const gameState = {
+    player: { money: 100 },
+    band: { harmony: 50 }
+  }
+  const postOption = {
+    id: 'money_test',
+    resolve: () => ({ moneyChange: -200 })
+  }
+
+  const result = resolvePost(postOption, gameState)
+  assert.strictEqual(result.moneyChange, -100, 'Money drop should be clamped to 0, delta -100')
+})
+
 test('calculateViralityScore handles low performance', () => {
   const venue = { name: 'Test Venue' }
   const score = calculateViralityScore(30, [], venue)

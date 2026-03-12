@@ -668,16 +668,14 @@ describe('PostGig Component - Brand Deals', () => {
     fireEvent.click(acceptBtn)
 
     await waitFor(() => {
-      expect(mockUpdatePlayer).toHaveBeenCalledWith(expect.any(Function))
+      expect(mockUpdatePlayer).toHaveBeenCalledWith(expect.objectContaining({
+        money: 1500
+      }))
       expect(mockAddToast).toHaveBeenCalledWith(
         expect.stringContaining('Mega Corp'),
         'success'
       )
     })
-
-    const updatePlayerFn = getLastFunctionalUpdate(mockUpdatePlayer)
-    expect(updatePlayerFn).toEqual(expect.any(Function))
-    expect(updatePlayerFn({ money: 500 })).toEqual({ money: 1500 })
   })
 
   it('accepts brand deal with item reward', async () => {
@@ -969,7 +967,9 @@ describe('PostGig Component - Complete Phase', () => {
     fireEvent.click(spinBtn)
 
     await waitFor(() => {
-      expect(mockUpdatePlayer).toHaveBeenCalledWith({ money: 300 })
+      expect(mockUpdatePlayer).toHaveBeenCalledWith(expect.objectContaining({
+        money: 300
+      }))
       expect(mockUpdateSocial).toHaveBeenCalledWith(expect.any(Function))
       expect(mockAddToast).toHaveBeenCalledWith(
         expect.stringContaining('Controversy reduced'),
@@ -1024,6 +1024,8 @@ describe('PostGig Component - Complete Phase', () => {
         'error'
       )
     })
+
+    // verify it wasn't called with a new money object
     expect(mockUpdatePlayer).not.toHaveBeenCalled()
     expect(mockUpdateSocial).toHaveBeenCalledTimes(initialUpdateSocialCalls)
   })

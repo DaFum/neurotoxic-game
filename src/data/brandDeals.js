@@ -85,3 +85,5 @@ export const BRAND_DEALS = [
     }
   }
 ]
+
+export const BRAND_DEALS_BY_ID = new Map(BRAND_DEALS.map(deal => [deal.id, deal]))
