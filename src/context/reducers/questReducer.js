@@ -23,15 +23,16 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
   let generatedToasts = []
 
   if (typeof quest.moneyReward === 'number' && quest.moneyReward !== 0) {
+    const previousMoney = nextState.player?.money || 0
+    const newMoney = clampPlayerMoney(previousMoney + quest.moneyReward)
+    const appliedDelta = newMoney - previousMoney
     nextState.player = {
       ...(nextState.player || {}),
-      money: clampPlayerMoney(
-        (nextState.player?.money || 0) + quest.moneyReward
-      )
+      money: newMoney
     }
     generatedToasts.push({
       id: `${Date.now()}-${questId}-money`,
-      message: `ui:toast.quest_complete_money|${JSON.stringify({ name: quest.label, amount: quest.moneyReward })}`,
+      message: `ui:toast.quest_complete_money|${JSON.stringify({ name: quest.label, amount: appliedDelta })}`,
       type: 'success'
     })
   }
@@ -97,15 +98,18 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
       })
     }
   } else if (quest.rewardType === 'harmony' && quest.rewardData?.harmony) {
+    const previousHarmony = nextState.band?.harmony || 0
+    const newHarmony = clampBandHarmony(
+      previousHarmony + quest.rewardData.harmony
+    )
+    const appliedDelta = newHarmony - previousHarmony
     nextState.band = {
       ...nextState.band,
-      harmony: clampBandHarmony(
-        (nextState.band?.harmony || 0) + quest.rewardData.harmony
-      )
+      harmony: newHarmony
     }
     generatedToasts.push({
       id: `${Date.now()}-${questId}-harmony`,
-      message: `ui:toast.quest_complete_harmony|${JSON.stringify({ name: quest.label, amount: quest.rewardData.harmony })}`,
+      message: `ui:toast.quest_complete_harmony|${JSON.stringify({ name: quest.label, amount: appliedDelta })}`,
       type: 'success'
     })
   }
