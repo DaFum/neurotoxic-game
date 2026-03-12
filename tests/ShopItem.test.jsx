@@ -1,7 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { render, fireEvent, cleanup } from '@testing-library/react'
+import { render, fireEvent } from '@testing-library/react'
 import { ShopItem } from '../src/ui/bandhq/ShopItem.jsx'
-import React from 'react'
 import * as purchaseLogicUtils from '../src/utils/purchaseLogicUtils'
 
 vi.mock('../src/utils/imageGen.js', () => ({
@@ -15,9 +14,13 @@ vi.mock('../src/utils/purchaseLogicUtils', () => ({
 
 vi.mock('../src/ui/GlitchButton', () => ({
   GlitchButton: ({ children, onClick, disabled, isLoading }) => (
-    <button onClick={onClick} disabled={disabled || isLoading} data-loading={isLoading}>
+    <button
+      onClick={onClick}
+      disabled={disabled || isLoading}
+      data-loading={isLoading}
+    >
       {children}
-      {isLoading && <span data-testid="loader">Loading</span>}
+      {isLoading && <span data-testid='loader'>Loading</span>}
     </button>
   )
 }))
@@ -61,7 +64,9 @@ describe('ShopItem', () => {
   })
 
   it('renders adjusted cost when provided', () => {
-    const { getByText } = render(<ShopItem {...defaultProps} adjustedCost={80} />)
+    const { getByText } = render(
+      <ShopItem {...defaultProps} adjustedCost={80} />
+    )
     expect(getByText('80')).toBeInTheDocument()
     expect(getByText('100')).toHaveClass('line-through')
   })
@@ -75,7 +80,9 @@ describe('ShopItem', () => {
 
   it('is disabled when isDisabled prop is true', () => {
     const onBuy = vi.fn()
-    const { getByText } = render(<ShopItem {...defaultProps} isDisabled={true} onBuy={onBuy} />)
+    const { getByText } = render(
+      <ShopItem {...defaultProps} isDisabled={true} onBuy={onBuy} />
+    )
     const button = getByText('ui:hq.buy').closest('button')
     expect(button).toBeDisabled()
     fireEvent.click(button)
@@ -83,25 +90,33 @@ describe('ShopItem', () => {
   })
 
   it('shows OWNED when isOwned is true and item is not consumable', () => {
-    purchaseLogicUtils.getPrimaryEffect.mockReturnValue({ type: 'inventory_set' })
+    purchaseLogicUtils.getPrimaryEffect.mockReturnValue({
+      type: 'inventory_set'
+    })
     const { getByText } = render(<ShopItem {...defaultProps} isOwned={true} />)
     expect(getByText('ui:hq.owned')).toBeInTheDocument()
   })
 
   it('shows BUY when isOwned is true but item is consumable', () => {
-    purchaseLogicUtils.getPrimaryEffect.mockReturnValue({ type: 'inventory_add' })
+    purchaseLogicUtils.getPrimaryEffect.mockReturnValue({
+      type: 'inventory_add'
+    })
     const { getByText } = render(<ShopItem {...defaultProps} isOwned={true} />)
     expect(getByText('ui:hq.buy')).toBeInTheDocument()
   })
 
   it('shows loading state on button when processingItemId matches', () => {
-    const { getByTestId } = render(<ShopItem {...defaultProps} processingItemId="test-item" />)
+    const { getByTestId } = render(
+      <ShopItem {...defaultProps} processingItemId='test-item' />
+    )
     expect(getByTestId('loader')).toBeInTheDocument()
   })
 
   it('does not call onBuy when another item is processing', () => {
     const onBuy = vi.fn()
-    const { getByText } = render(<ShopItem {...defaultProps} onBuy={onBuy} processingItemId="other-item" />)
+    const { getByText } = render(
+      <ShopItem {...defaultProps} onBuy={onBuy} processingItemId='other-item' />
+    )
     const button = getByText('ui:hq.buy').closest('button')
     expect(button).toBeDisabled()
     fireEvent.click(button)
