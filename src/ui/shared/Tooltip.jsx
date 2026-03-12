@@ -53,7 +53,7 @@ export const Tooltip = ({ children, content, className = '' }) => {
     children.props['aria-disabled'] === true ||
     children.props['aria-disabled'] === 'true' ||
     (typeof children.props.className === 'string' &&
-      children.props.className.includes('pointer-events-none')) ||
+      children.props.className.split(' ').includes('pointer-events-none')) ||
     children.props.style?.pointerEvents === 'none'
 
   const trigger = isDisabled ? (
