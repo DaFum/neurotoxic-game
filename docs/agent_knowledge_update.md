@@ -27,7 +27,7 @@ Successfully updated knowledge of the 'NEUROTOXIC: GRIND THE VOID v3.0' codebase
 
 ### Verification
 
-- Ran `npm run test` successfully (571 tests passed).
+- Ran `pnpm run test` successfully (571 tests passed).
 - Codebase is confirmed healthy.
 
 ## Next Steps
@@ -41,4 +41,4 @@ Ready to assist with specific tasks such as bug fixes, feature implementation, o
 - Keep interpolation placeholders consistent across languages (e.g., `{{cost}}`, `{{location}}`).
 - For non-visual error/toast paths, prefer resilient fallbacks (`defaultValue`) so missing keys do not surface raw key names to players.
 - In React callbacks/hooks, keep translation usage consistent with hook dependency expectations (`t` included in callback deps when used in callback scope).
-- Before merging localization work, run the project test commands (`npm run test` and `npm run test:ui`) and include results in the PR summary.
+- Before merging localization work, run the project test commands (`pnpm run test` and `pnpm run test:ui`) and include results in the PR summary.

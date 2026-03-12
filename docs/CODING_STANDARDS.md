@@ -527,13 +527,13 @@ The project uses ESLint with these key rules:
 Run linting with:
 
 ```bash
-npm run lint
+pnpm run lint
 ```
 
 Run formatting with:
 
 ```bash
-npm run format
+pnpm run format
 ```
 
 _Documentation sync: dependency/tooling baseline reviewed on 2026-02-23._
@@ -545,4 +545,4 @@ _Documentation sync: dependency/tooling baseline reviewed on 2026-02-23._
 - Keep interpolation placeholders consistent across languages (e.g., `{{cost}}`, `{{location}}`).
 - For non-visual error/toast paths, prefer resilient fallbacks (`defaultValue`) so missing keys do not surface raw key names to players.
 - In React callbacks/hooks, keep translation usage consistent with hook dependency expectations (`t` included in callback deps when used in callback scope).
-- Before merging localization work, run the project test commands (`npm run test` and `npm run test:ui`) and include results in the PR summary.
+- Before merging localization work, run the project test commands (`pnpm run test` and `pnpm run test:ui`) and include results in the PR summary.
