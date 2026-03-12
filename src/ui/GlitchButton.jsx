@@ -71,7 +71,7 @@ export const GlitchButton = ({
       className={`
         relative ${sizeClasses[size] || sizeClasses.lg} bg-(--void-black)
         font-[Metal_Mania] font-bold uppercase tracking-widest
-        transition-all duration-100
+        transition-all duration-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-(--toxic-green-20)
         group
         ${getVariantClasses()}
         ${className}
