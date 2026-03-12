@@ -494,6 +494,13 @@ describe('GameState Context - Gig Management', () => {
             type='button'
             onClick={() => {
               gameState.setCurrentGig({ id: 'test', isPractice: false })
+            }}
+          >
+            Set Gig
+          </button>
+          <button
+            type='button'
+            onClick={() => {
               gameState.endGig()
             }}
           >
@@ -508,6 +515,10 @@ describe('GameState Context - Gig Management', () => {
         <TestComponent />
       </GameStateProvider>
     )
+
+    act(() => {
+      screen.getByText('Set Gig').click()
+    })
 
     act(() => {
       screen.getByText('End Gig').click()
