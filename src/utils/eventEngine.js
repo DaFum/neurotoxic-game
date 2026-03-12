@@ -567,11 +567,6 @@ export const resolveEventChoice = (choice, gameState, rng = secureRandom) => {
     }
   } catch (err) {
     logger.error('EventEngine', 'Error resolving choice', err)
-    return {
-      result: { type: 'error', message: 'events:internalError' },
-      delta: null,
-      outcomeText: 'events:errorOutcome',
-      description: 'events:internalError'
-    }
+    throw err
   }
 }

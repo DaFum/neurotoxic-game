@@ -779,7 +779,5 @@
   "wrong_turn.opt2.d_d549": "Versteckten Plattenladen gefunden! +Seltene Vinyl",
   "wrong_turn.opt2.label": "Gegend erkunden",
   "wrong_turn.opt2.outcome": "Du hast dich entschieden, dich umzusehen.",
-  "wrong_turn.title": "FALSCH ABGEBOGEN",
-  "errorOutcome": "Ein Fehler ist aufgetreten.",
-  "internalError": "Bei der Verarbeitung dieser Auswahl ist ein interner Fehler aufgetreten."
+  "wrong_turn.title": "FALSCH ABGEBOGEN"
 }
