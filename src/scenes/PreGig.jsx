@@ -24,10 +24,11 @@ export const _resetLastMinigameFallback = () => {
 
 const BAND_MEETING_COST = 50
 
-const SONGS_DICT = SONGS_DB.reduce((acc, song) => {
-  acc[song.id] = song
-  return acc
-}, Object.create(null))
+const SONGS_DICT = Object.create(null);
+for (let i = 0; i < SONGS_DB.length; i++) {
+  const song = SONGS_DB[i];
+  SONGS_DICT[song.id] = song;
+}
 
 const formatLocalizedNumber = (value, locale) => {
   return new Intl.NumberFormat(locale).format(value)
@@ -173,10 +174,13 @@ export const PreGig = () => {
   }
 
   const calculatedBudget = useMemo(() => {
-    return Object.entries(gigModifiers).reduce((acc, [key, active]) => {
-      if (!active) return acc
-      return acc + (MODIFIER_COSTS[key] || 0)
-    }, 0)
+    let acc = 0;
+    for (const key in gigModifiers) {
+      if (Object.hasOwn(gigModifiers, key) && gigModifiers[key]) {
+        acc += (MODIFIER_COSTS[key] || 0);
+      }
+    }
+    return acc;
   }, [gigModifiers])
 
   /**

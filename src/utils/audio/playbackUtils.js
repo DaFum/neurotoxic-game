@@ -159,31 +159,31 @@ export const buildAssetUrlMap = (
   warn = console.warn,
   label = 'Asset'
 ) => {
-  const entries = Object.entries(assetGlob ?? {})
-  return entries.reduce((accumulator, [path, url]) => {
-    const relativePath = path.replace('../assets/', '')
-    if (!accumulator[relativePath]) {
-      accumulator[relativePath] = url
-    }
+  const accumulator = {}
+  for (const path in assetGlob || {}) {
+    if (Object.hasOwn(assetGlob, path)) {
+      const url = assetGlob[path]
+      const relativePath = path.replace('../assets/', '')
+      if (!accumulator[relativePath]) {
+        accumulator[relativePath] = url
+      }
 
-    const baseName = relativePath.split('/').pop()
-    if (!baseName) {
-      return accumulator
-    }
+      const baseName = relativePath.split('/').pop()
+      if (!baseName) continue
 
-    const existingBasenameUrl = accumulator[baseName]
-    if (!existingBasenameUrl) {
-      accumulator[baseName] = url
-      return accumulator
-    }
+      const existingBasenameUrl = accumulator[baseName]
+      if (!existingBasenameUrl) {
+        accumulator[baseName] = url
+        continue
+      }
 
-    if (existingBasenameUrl !== url) {
-      warn(
-        `[audioEngine] ${label} basename conflict for "${baseName}". ` +
-          `Keeping "${existingBasenameUrl}" and ignoring "${url}".`
-      )
+      if (existingBasenameUrl !== url) {
+        warn(
+          `[audioEngine] ${label} basename conflict for "${baseName}". ` +
+            `Keeping "${existingBasenameUrl}" and ignoring "${url}".`
+        )
+      }
     }
-
-    return accumulator
-  }, {})
+  }
+  return accumulator
 }

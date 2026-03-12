@@ -207,10 +207,13 @@ export const resolvePost = (
  */
 // ⚡ Bolt: Pre-calculate platform ID map for O(1) lookups instead of O(N) array allocation and search.
 // Expected Impact: Reduces GC overhead and CPU cycles during the hot-path calculateSocialGrowth function.
-const PLATFORMS_BY_ID = Object.values(SOCIAL_PLATFORMS).reduce((acc, p) => {
-  acc[p.id] = p
-  return acc
-}, {})
+const PLATFORMS_BY_ID = {}
+for (const key in SOCIAL_PLATFORMS) {
+  if (Object.hasOwn(SOCIAL_PLATFORMS, key)) {
+    const p = SOCIAL_PLATFORMS[key]
+    PLATFORMS_BY_ID[p.id] = p
+  }
+}
 
 export const calculateSocialGrowth = (
   platform,

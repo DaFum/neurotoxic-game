@@ -108,7 +108,10 @@ export const calculateGigPhysics = (bandState, song) => {
   // 2. Scroll Speed based on Global Stamina
   // Avg Stamina:
   // members array is already guarded above
-  const totalStamina = members.reduce((sum, m) => sum + (m.stamina || 0), 0)
+  let totalStamina = 0;
+  for (let i = 0; i < members.length; i++) {
+    totalStamina += (members[i].stamina || 0);
+  }
   const avgStamina = members.length ? totalStamina / members.length : 0
 
   // Normal Speed = 500 (pixels per second approx or whatever engine uses)
