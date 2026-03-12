@@ -107,9 +107,7 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
     let rawHarmonyReward = Number(quest.rewardData.harmony)
     if (!Number.isFinite(rawHarmonyReward)) rawHarmonyReward = 0
     const previousHarmony = nextState.band?.harmony ?? 1
-    const newHarmony = clampBandHarmony(
-      previousHarmony + rawHarmonyReward
-    )
+    const newHarmony = clampBandHarmony(previousHarmony + rawHarmonyReward)
     const appliedDelta = newHarmony - previousHarmony
     nextState.band = {
       ...nextState.band,

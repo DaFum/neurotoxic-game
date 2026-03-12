@@ -23,10 +23,11 @@ vi.mock('../src/utils/logger.js', () => ({
   logger: mockLogger
 }))
 
-const { ToastOverlay, translateContextKeys } = await import('../src/ui/ToastOverlay.jsx')
+const { ToastOverlay, translateContextKeys } =
+  await import('../src/ui/ToastOverlay.jsx')
 
 test('translateContextKeys securely translates and filters deep properties', () => {
-  const t = vi.fn((key) => key.toUpperCase())
+  const t = vi.fn(key => key.toUpperCase())
 
   // Use JSON.parse to ensure __proto__ is created as an own property,
   // not as setting the actual object prototype, mimicking a malicious JSON payload.
@@ -56,7 +57,9 @@ test('translateContextKeys securely translates and filters deep properties', () 
   // check forbidden keys
   // Note: the test runner creates object prototype anyway so checking undefined on __proto__ directly fails in some envs
   expect(Object.prototype.hasOwnProperty.call(result, '__proto__')).toBe(false)
-  expect(Object.prototype.hasOwnProperty.call(result, 'constructor')).toBe(false)
+  expect(Object.prototype.hasOwnProperty.call(result, 'constructor')).toBe(
+    false
+  )
 })
 
 test('ToastOverlay renders all taxonomy variants with themed classes', () => {
