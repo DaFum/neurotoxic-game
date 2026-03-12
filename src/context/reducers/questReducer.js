@@ -52,9 +52,9 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
   } else if (quest.rewardType === 'fame' && quest.rewardData?.fame) {
     nextState.player = {
       ...nextState.player,
-      fame: (nextState.player.fame || 0) + quest.rewardData.fame,
+      fame: Math.max(0, (nextState.player.fame || 0) + quest.rewardData.fame),
       fameLevel: calculateFameLevel(
-        (nextState.player.fame || 0) + quest.rewardData.fame
+        Math.max(0, (nextState.player.fame || 0) + quest.rewardData.fame)
       )
     }
     generatedToasts.push({
