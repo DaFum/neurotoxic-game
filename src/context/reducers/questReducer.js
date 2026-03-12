@@ -53,8 +53,10 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
       type: 'success'
     })
   } else if (quest.rewardType === 'fame' && quest.rewardData?.fame) {
+    let rawFameReward = Number(quest.rewardData.fame)
+    if (!Number.isFinite(rawFameReward)) rawFameReward = 0
     const previousFame = nextState.player.fame || 0
-    const newFame = Math.max(0, previousFame + quest.rewardData.fame)
+    const newFame = Math.max(0, previousFame + rawFameReward)
     const appliedDelta = newFame - previousFame
     nextState.player = {
       ...nextState.player,
@@ -102,9 +104,11 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
       })
     }
   } else if (quest.rewardType === 'harmony' && quest.rewardData?.harmony) {
+    let rawHarmonyReward = Number(quest.rewardData.harmony)
+    if (!Number.isFinite(rawHarmonyReward)) rawHarmonyReward = 0
     const previousHarmony = nextState.band?.harmony ?? 1
     const newHarmony = clampBandHarmony(
-      previousHarmony + quest.rewardData.harmony
+      previousHarmony + rawHarmonyReward
     )
     const appliedDelta = newHarmony - previousHarmony
     nextState.band = {
