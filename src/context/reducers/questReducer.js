@@ -30,11 +30,13 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
       ...(nextState.player || {}),
       money: newMoney
     }
-    generatedToasts.push({
-      id: `${Date.now()}-${questId}-money`,
-      message: `ui:toast.quest_complete_money|${JSON.stringify({ name: quest.label, amount: appliedDelta })}`,
-      type: 'success'
-    })
+    if (appliedDelta !== 0) {
+      generatedToasts.push({
+        id: `${Date.now()}-${questId}-money`,
+        message: `ui:toast.quest_complete_money|${JSON.stringify({ name: quest.label, amount: appliedDelta })}`,
+        type: 'success'
+      })
+    }
   }
 
   if (quest.rewardType === 'item' && quest.rewardData?.item) {
@@ -59,11 +61,13 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
       fame: newFame,
       fameLevel: calculateFameLevel(newFame)
     }
-    generatedToasts.push({
-      id: `${Date.now()}-${questId}-fame`,
-      message: `ui:toast.quest_complete_fame|${JSON.stringify({ name: quest.label, amount: appliedDelta })}`,
-      type: 'success'
-    })
+    if (appliedDelta !== 0) {
+      generatedToasts.push({
+        id: `${Date.now()}-${questId}-fame`,
+        message: `ui:toast.quest_complete_fame|${JSON.stringify({ name: quest.label, amount: appliedDelta })}`,
+        type: 'success'
+      })
+    }
   } else if (quest.rewardType === 'skill_point') {
     const originalMembers = nextState.band?.members || []
     if (originalMembers.length > 0) {
@@ -98,7 +102,7 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
       })
     }
   } else if (quest.rewardType === 'harmony' && quest.rewardData?.harmony) {
-    const previousHarmony = nextState.band?.harmony || 0
+    const previousHarmony = nextState.band?.harmony ?? 1
     const newHarmony = clampBandHarmony(
       previousHarmony + quest.rewardData.harmony
     )
@@ -107,11 +111,13 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
       ...nextState.band,
       harmony: newHarmony
     }
-    generatedToasts.push({
-      id: `${Date.now()}-${questId}-harmony`,
-      message: `ui:toast.quest_complete_harmony|${JSON.stringify({ name: quest.label, amount: appliedDelta })}`,
-      type: 'success'
-    })
+    if (appliedDelta !== 0) {
+      generatedToasts.push({
+        id: `${Date.now()}-${questId}-harmony`,
+        message: `ui:toast.quest_complete_harmony|${JSON.stringify({ name: quest.label, amount: appliedDelta })}`,
+        type: 'success'
+      })
+    }
   }
 
   if (generatedToasts.length === 0) {
