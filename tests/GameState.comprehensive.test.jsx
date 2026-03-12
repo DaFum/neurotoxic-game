@@ -516,7 +516,48 @@ describe('GameState Context - Gig Management', () => {
     expect(screen.getByTestId('scene')).toHaveTextContent(GAME_PHASES.POST_GIG)
   })
 
-  test.skip('endGig with practice mode goes to OVERWORLD', () => {})
+  test('endGig with practice mode goes to OVERWORLD', () => {
+    const TestComponent = () => {
+      const gameState = useGameState()
+      return (
+        <div>
+          <div data-testid='scene'>{gameState.currentScene}</div>
+          <button
+            type='button'
+            onClick={() => {
+              gameState.setCurrentGig({ id: 'test', isPractice: true })
+            }}
+          >
+            Set Gig
+          </button>
+          <button
+            type='button'
+            onClick={() => {
+              gameState.endGig()
+            }}
+          >
+            End Gig
+          </button>
+        </div>
+      )
+    }
+
+    render(
+      <GameStateProvider>
+        <TestComponent />
+      </GameStateProvider>
+    )
+
+    act(() => {
+      screen.getByText('Set Gig').click()
+    })
+
+    act(() => {
+      screen.getByText('End Gig').click()
+    })
+
+    expect(screen.getByTestId('scene')).toHaveTextContent(GAME_PHASES.OVERWORLD)
+  })
 
   test('setGigModifiers updates modifiers', () => {
     const TestComponent = () => {
