@@ -13,11 +13,14 @@ export const handleUpdatePlayer = (state, payload) => {
   logger.debug('GameState', 'Update Player', payload)
   const updates =
     typeof payload === 'function' ? payload(state.player) : payload
-  const mergedPlayer = { ...state.player, ...updates }
 
-  // Clamp money to prevent negative values
-  if (typeof mergedPlayer.money === 'number') {
-    mergedPlayer.money = clampPlayerMoney(mergedPlayer.money)
+  const moneyToApply = updates.money !== undefined ? updates.money : state.player.money
+  const clampedMoney = typeof moneyToApply === 'number' ? clampPlayerMoney(moneyToApply) : moneyToApply
+
+  const mergedPlayer = {
+    ...state.player,
+    ...updates,
+    money: clampedMoney
   }
 
   return { ...state, player: mergedPlayer }

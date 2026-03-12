@@ -1,5 +1,6 @@
-import { useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 import { useGameState } from '../context/GameState.jsx'
+import { stopAudio } from '../utils/audioEngine'
 import { useRhythmGameState } from './rhythmGame/useRhythmGameState'
 import { useRhythmGameScoring } from './rhythmGame/useRhythmGameScoring'
 import { useRhythmGameAudio } from './rhythmGame/useRhythmGameAudio'
@@ -70,6 +71,16 @@ export const useRhythmGameLogic = () => {
     scoringActions,
     contextState: { activeEvent }
   })
+
+  // Cleanup hook to prevent memory leaks and sync audio state on unmount
+  useEffect(() => {
+    return () => {
+      if (gameStateRef.current) {
+        gameStateRef.current.isGameOver = true
+      }
+      stopAudio()
+    }
+  }, [gameStateRef])
 
   const stats = useMemo(
     () => ({

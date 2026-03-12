@@ -42,7 +42,7 @@ export const handleLoadGame = (state, payload) => {
   const loadedState = payload || {}
 
   // 1. Sanitize Player
-  const mergedPlayer = {
+  const rawPlayer = {
     ...DEFAULT_PLAYER_STATE,
     ...loadedState.player,
     van: {
@@ -54,29 +54,30 @@ export const handleLoadGame = (state, payload) => {
       ...(loadedState.player?.stats || {})
     }
   }
+
+  const rawFame = typeof rawPlayer.fame === 'number' ? rawPlayer.fame : 0
+
   // Validate Player
-  mergedPlayer.money = clampPlayerMoney(mergedPlayer.money)
-  mergedPlayer.fame = Math.max(
-    0,
-    typeof mergedPlayer.fame === 'number' ? mergedPlayer.fame : 0
-  )
-  mergedPlayer.fameLevel = calculateFameLevel(mergedPlayer.fame)
-  mergedPlayer.day = Math.max(
-    1,
-    typeof mergedPlayer.day === 'number' ? mergedPlayer.day : 1
-  )
-  if (mergedPlayer.van) {
-    mergedPlayer.van.fuel = Math.max(
-      0,
-      Math.min(
-        100,
-        typeof mergedPlayer.van.fuel === 'number' ? mergedPlayer.van.fuel : 100
+  const mergedPlayer = {
+    ...rawPlayer,
+    money: clampPlayerMoney(rawPlayer.money),
+    fame: Math.max(0, rawFame),
+    fameLevel: calculateFameLevel(Math.max(0, rawFame)),
+    day: Math.max(1, typeof rawPlayer.day === 'number' ? rawPlayer.day : 1),
+    van: rawPlayer.van ? {
+      ...rawPlayer.van,
+      fuel: Math.max(
+        0,
+        Math.min(
+          100,
+          typeof rawPlayer.van.fuel === 'number' ? rawPlayer.van.fuel : 100
+        )
       )
-    )
+    } : undefined
   }
 
   // 2. Sanitize Band
-  const mergedBand = {
+  const rawBand = {
     ...DEFAULT_BAND_STATE,
     ...loadedState.band,
     performance: {
@@ -89,23 +90,26 @@ export const handleLoadGame = (state, payload) => {
     }
   }
   // Validate Band Members
-  if (Array.isArray(mergedBand.members)) {
-    mergedBand.members = mergedBand.members.map(m => ({
-      ...m,
-      traits: Array.isArray(m.traits) ? m.traits : [],
-      mood: Math.max(
-        0,
-        Math.min(100, typeof m.mood === 'number' ? m.mood : 50)
-      ),
-      stamina: Math.max(
-        0,
-        Math.min(100, typeof m.stamina === 'number' ? m.stamina : 100)
-      )
-    }))
-  } else {
-    mergedBand.members = []
+  const validatedMembers = Array.isArray(rawBand.members)
+    ? rawBand.members.map(m => ({
+        ...m,
+        traits: Array.isArray(m.traits) ? m.traits : [],
+        mood: Math.max(
+          0,
+          Math.min(100, typeof m.mood === 'number' ? m.mood : 50)
+        ),
+        stamina: Math.max(
+          0,
+          Math.min(100, typeof m.stamina === 'number' ? m.stamina : 100)
+        )
+      }))
+    : []
+
+  const validatedBand = {
+    ...rawBand,
+    members: validatedMembers,
+    harmony: clampBandHarmony(rawBand.harmony)
   }
-  mergedBand.harmony = clampBandHarmony(mergedBand.harmony)
 
   // 3. Sanitize Social
   const mergedSocial = { ...DEFAULT_SOCIAL_STATE, ...loadedState.social }
@@ -114,7 +118,7 @@ export const handleLoadGame = (state, payload) => {
   const safeState = {
     ...state,
     player: mergedPlayer,
-    band: mergedBand,
+    band: validatedBand,
     social: mergedSocial,
     gameMap: loadedState.gameMap || state.gameMap,
     setlist: Array.isArray(loadedState.setlist) ? loadedState.setlist : [],

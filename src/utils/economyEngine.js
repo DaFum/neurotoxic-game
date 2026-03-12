@@ -287,7 +287,10 @@ export const calculateTravelExpenses = (
   const foodCost = 3 * EXPENSE_CONSTANTS.FOOD.FAST_FOOD // Band of 3
   const totalCost = foodCost
 
-  return { dist, fuelLiters, totalCost }
+  // Ensure passive travel expenses do not exceed available funds
+  const cappedCost = Math.min(totalCost, playerState?.money ?? totalCost)
+
+  return { dist, fuelLiters, totalCost: cappedCost }
 }
 
 /**
@@ -571,7 +574,9 @@ export const calculateGigFinancials = ({
     report.income.total += sponsorshipBonuses.totalBonus
   }
 
-  report.net = report.income.total - report.expenses.total
+  const rawNet = report.income.total - report.expenses.total
+  // Ensure player money cannot drop below 0 during gig payouts
+  report.net = Math.max(-(playerState?.money || 0), rawNet)
 
   logger.info('Economy', 'Gig Report Generated', {
     net: report.net,
