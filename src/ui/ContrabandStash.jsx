@@ -148,7 +148,7 @@ export const ContrabandStash = ({
                     </div>
                     <div className='flex flex-row gap-4 items-start mb-4'>
                       {item.imagePrompt && (
-                        <div className='w-20 h-20 shrink-0 border border-(--toxic-green-20) bg-black flex items-center justify-center p-1 rounded overflow-hidden shadow-[0_0_10px_var(--toxic-green-10)]'>
+                        <div className='w-20 h-20 shrink-0 border border-toxic-green-20 bg-black flex items-center justify-center p-1 rounded overflow-hidden shadow-[0_0_10px_var(--color-toxic-green-10)]'>
                           <img
                             src={getGenImageUrl(IMG_PROMPTS[item.imagePrompt])}
                             alt={t(`items:contraband.${item.id}.name`)}
@@ -157,7 +157,7 @@ export const ContrabandStash = ({
                           />
                         </div>
                       )}
-                      <p className='text-(--ash-gray) text-xs min-h-[40px] leading-relaxed flex-1'>
+                      <p className='text-ash-gray text-xs min-h-[40px] leading-relaxed flex-1'>
                         {item.description
                           ? t(item.description, {
                               defaultValue: t('ui:item.descriptionUnknown', {
