@@ -207,5 +207,34 @@ export const IMG_PROMPTS = {
   MINIGAME_ITEM_GUITAR:
     'pixel art guitar hard case isolated on solid black background no shadow flat icon small',
   MINIGAME_KABELSALAT_BG:
-    'pixel art tangled audio cables on a stage floor, dark gritty aesthetic, moody lighting'
+    'pixel art tangled audio cables on a stage floor, dark gritty aesthetic, moody lighting',
+
+  // Items - Contraband
+  ITEM_VOID_ENERGY: 'pixel art black energy drink can glowing green liquid skull logo grunge icon',
+  ITEM_RUSTY_STRINGS: 'pixel art coiled rusty guitar strings with drops of blood grunge icon',
+  ITEM_CURSED_PICK: 'pixel art glowing purple guitar pick with a demonic face dark aura icon',
+  ITEM_MYSTERY_PILLS: 'pixel art dirty plastic pill bottle with glowing neon pills grunge icon',
+  ITEM_BLOOD_PACT: 'pixel art old parchment scroll contract signed in red blood dark ritual icon',
+  ITEM_PHASE_METRONOME: 'pixel art antique wooden metronome glowing with blue cosmic energy icon',
+  ITEM_SHATTERED_EAR: 'pixel art jagged crystal talisman shaped like a human ear dark magic icon',
+  ITEM_AMPED_SYNTH: 'pixel art cyberpunk synthesizer module glowing cables neon green icon',
+  ITEM_GIG_PROGRAM: 'pixel art crumpled tour schedule paper with coffee stains and pentagrams icon',
+  ITEM_STICKY_PLECTRUM: 'pixel art guitar pick covered in sticky green slime grunge icon',
+  ITEM_NIGHT_VISION_GLASSES: 'pixel art tactical night vision goggles glowing green lenses cyberpunk icon',
+  ITEM_SONIC_RESONATOR: 'pixel art ancient metallic tuning fork glowing with strange energy relic icon',
+  ITEM_WEEKENDER_COFFEE: 'pixel art dirty styrofoam coffee cup black sludge liquid grunge icon',
+  ITEM_BLACKOUT_MASK: 'pixel art black executioner hood mask blank eyes dark icon',
+  ITEM_PHANTOM_STRINGS: 'pixel art glowing ghostly blue guitar strings ethereal aura icon',
+  ITEM_MERCH_MANIFEST: 'pixel art clipboard with shady shipping manifest bloody fingerprint icon',
+  ITEM_MOTIVATIONAL_GRAMOPHONE: 'pixel art rusty antique gramophone emitting green ghost notes icon',
+  ITEM_WARPED_TAPE: 'pixel art melted twisted audio cassette tape dark magic icon',
+  ITEM_GUTTER_AMULET: 'pixel art dirty necklace made of bottle caps and rat bones grunge icon',
+  ITEM_LUCKY_COIN: 'pixel art tarnished silver coin with a skull engraved glowing edge icon',
+  ITEM_RADIANT_PICK: 'pixel art bright glowing golden guitar pick holy light icon',
+  ITEM_FORGOTTEN_ROAD_MAP: 'pixel art torn old road map with glowing red routes occult icon',
+  ITEM_STICKY_LOGO_STICKER: 'pixel art peeling band logo sticker toxic green grunge icon',
+  ITEM_NEON_PATCH: 'pixel art glowing neon punk jacket patch bright colors icon',
+  ITEM_ABYSSAL_MICROPHONE: 'pixel art vintage microphone made of black bone and glowing purple runes icon',
+  ITEM_SILVER_TONGUE: 'pixel art literal silver metallic tongue dripping black liquid dark icon',
+  ITEM_BROKEN_COMPASS: 'pixel art shattered compass with a wildly spinning needle glowing icon'
 }
