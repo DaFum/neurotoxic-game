@@ -88,7 +88,7 @@ export const PostGig = () => {
               options={postOptions}
               onSelect={handlePostSelection}
               trend={social.trend}
-              zealotryLevel={gameState.social?.zealotry || 0}
+              zealotryLevel={social?.zealotry || 0}
             />
           )}
 

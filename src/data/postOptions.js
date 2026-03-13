@@ -111,7 +111,9 @@ export const POST_OPTIONS = [
       controversyChange: 5,
       loyaltyChange: 2,
       zealotryChange: 8,
-      message: 'Your hardcore fans loved it. Casuals were disturbed.'
+      message: i18n.t('ui:postOptions.radicalizeFansResult', {
+        defaultValue: 'Your hardcore fans loved it. Casuals were disturbed.'
+      })
     })
   },
   // --- CATEGORY: RECOVERY & CRISIS ---
