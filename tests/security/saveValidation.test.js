@@ -125,3 +125,67 @@ test('validateSaveData validates gameMap field type', () => {
   }
   assert.throws(() => validateSaveData(data), /gameMap must be an object/)
 })
+
+test('validateSaveData rejects prototype pollution vectors', () => {
+  const maliciousData = {
+    player: { money: 100 },
+    band: { harmony: 80 },
+    social: {},
+    gameMap: {},
+  }
+
+  // Need to bypass Object.assign or spread limits to truly pollute a structure
+  // without node crashing, we can explicitly add a key to the object string.
+  // When parsed from JSON, an attacker could try to include __proto__
+  const parsedMalicious = JSON.parse('{"__proto__":{"polluted":"yes"},"player":{"money":100},"band":{"harmony":80},"social":{},"gameMap":{}}');
+
+  // We expect our validateSaveData to spot the __proto__ key when checking hasOwn
+  // Actually, JSON.parse in modern JS will assign __proto__ as a prototype, NOT an own property.
+  // A true prototype pollution attack happens during merge operations,
+  // but if the JSON literally has a key '__proto__' that makes it past parse,
+  // our checkPrototypePollution will catch it if it is an own property.
+
+  // Let's create an object where '__proto__' is explicitly an own property.
+  const ownProtoObj = Object.defineProperty({
+    player: { money: 100 },
+    band: { harmony: 80 },
+    social: {},
+    gameMap: {},
+  }, '__proto__', {
+    value: { pollutions: 'poison' },
+    enumerable: true
+  });
+
+  assert.throws(() => validateSaveData(ownProtoObj), /Prototype pollution detected: __proto__/)
+
+  const nestedProtoObj = {
+    player: { money: 100, nested: Object.defineProperty({}, '__proto__', { value: 1, enumerable: true }) },
+    band: { harmony: 80 },
+    social: {},
+    gameMap: {},
+  };
+  assert.throws(() => validateSaveData(nestedProtoObj), /Prototype pollution detected: __proto__/)
+})
+
+test('validateSaveData clamps wildly out-of-bounds metrics', () => {
+  const data = {
+    player: { money: -1000, fame: -500, score: -100 },
+    band: {
+      harmony: 999,
+      members: [
+        { name: 'Alex', mood: 999, stamina: -50 }
+      ]
+    },
+    social: {},
+    gameMap: {}
+  }
+
+  validateSaveData(data)
+
+  assert.equal(data.player.fame, 0, 'Negative fame should be clamped to 0')
+  assert.equal(data.player.score, 0, 'Negative score should be clamped to 0')
+  assert.equal(data.player.money, 0, 'Negative money should be clamped to 0')
+  assert.equal(data.band.harmony, 100, 'Harmony > 100 should be clamped to 100')
+  assert.equal(data.band.members[0].mood, 100, 'Mood > 100 should be clamped to 100')
+  assert.equal(data.band.members[0].stamina, 0, 'Negative stamina should be clamped to 0')
+})

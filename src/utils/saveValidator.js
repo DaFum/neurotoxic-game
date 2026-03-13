@@ -17,6 +17,8 @@ const isPlainObject = value =>
  * @returns {boolean} True if valid, throws error if invalid.
  */
 export const validateSaveData = data => {
+  checkPrototypePollution(data);
+
   if (!isPlainObject(data)) {
     throw new StateError('Save data must be an object')
   }
@@ -53,6 +55,12 @@ const validatePlayer = player => {
     if (player[field] !== undefined && typeof player[field] !== 'number') {
       throw new StateError(`player.${field} must be a number`)
     }
+    if (field === 'fame' && player[field] !== undefined) {
+      player[field] = Math.max(0, player[field])
+    }
+    if (field === 'score' && player[field] !== undefined) {
+      player[field] = Math.max(0, player[field])
+    }
   }
 
   if (player.money !== undefined) {
@@ -82,7 +90,24 @@ const validatePlayer = player => {
   }
 }
 
+
 const BANNED_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
+
+const checkPrototypePollution = (obj) => {
+  if (typeof obj !== 'object' || obj === null) return;
+
+  for (const key in obj) {
+    if (Object.hasOwn(obj, key)) {
+      if (BANNED_KEYS.has(key)) {
+        throw new StateError(`Prototype pollution detected: ${key}`);
+      }
+      if (typeof obj[key] === 'object' && obj[key] !== null) {
+        checkPrototypePollution(obj[key]);
+      }
+    }
+  }
+}
+
 
 const validateBand = band => {
   if (!isPlainObject(band)) throw new StateError('band must be an object')
@@ -98,6 +123,18 @@ const validateBand = band => {
       }
       if (typeof member.name !== 'string') {
         throw new StateError(`band.members[${index}].name must be a string`)
+      }
+      if (member.mood !== undefined) {
+        if (typeof member.mood !== 'number' || !Number.isFinite(member.mood)) {
+          throw new StateError(`band.members[${index}].mood must be a finite number`)
+        }
+        member.mood = Math.min(100, Math.max(0, member.mood))
+      }
+      if (member.stamina !== undefined) {
+        if (typeof member.stamina !== 'number' || !Number.isFinite(member.stamina)) {
+          throw new StateError(`band.members[${index}].stamina must be a finite number`)
+        }
+        member.stamina = Math.min(100, Math.max(0, member.stamina))
       }
       if (member.relationships !== undefined) {
         if (!isPlainObject(member.relationships)) {
