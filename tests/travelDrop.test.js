@@ -55,6 +55,6 @@ describe('minigameReducer - Travel Complete Drops', () => {
 
     assert.equal(newState.band.stash.length, 1)
     assert.equal(newState.toasts.length, 1)
-    assert.equal(newState.toasts[0].message, 'items:contraband_drop')
+    assert.equal(newState.toasts[0].message, 'ui:contraband.dropped')
   })
 })
