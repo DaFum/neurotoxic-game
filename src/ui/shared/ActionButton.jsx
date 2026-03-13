@@ -22,7 +22,7 @@ export const ActionButton = memo(
       type={type}
       onClick={onClick}
       className={`px-8 py-4 bg-toxic-green text-void-black font-bold uppercase
-                hover:scale-105 hover:bg-toxic-green-bright transition-all
+                hover:scale-105 hover:bg-toxic-green-bright transition-transform transition-colors
                 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-toxic-green-20
                 ${className}`}
       {...rest}
