@@ -8,47 +8,47 @@
 export const CONTRABAND_DB = [
   {
     id: 'c_void_energy',
-    name: 'Void Energy Drink',
+    name: 'items:contraband.c_void_energy.name',
     type: 'consumable',
     effectType: 'stamina',
     value: 50,
-    description: 'A black liquid that tastes like battery acid. Instantly restores 50 Stamina to a band member.',
+    description: 'items:contraband.c_void_energy.description',
     rarity: 'common'
   },
   {
     id: 'c_rusty_strings',
-    name: 'Rusty Strings',
+    name: 'items:contraband.c_rusty_strings.name',
     type: 'equipment',
     effectType: 'luck',
     value: 5,
-    description: 'They cut your fingers, but the blood summons better gig modifiers (+5 Luck).',
+    description: 'items:contraband.c_rusty_strings.description',
     rarity: 'uncommon'
   },
   {
     id: 'c_cursed_pick',
-    name: 'Cursed Pick of Destiny',
+    name: 'items:contraband.c_cursed_pick.name',
     type: 'consumable',
     effectType: 'guitar_difficulty',
     value: -0.2, // Lowers difficulty
-    description: 'A glowing pick that whispers. Lowers Guitar Difficulty by 0.2 for one gig.',
+    description: 'items:contraband.c_cursed_pick.description',
     rarity: 'rare'
   },
   {
     id: 'c_mystery_pills',
-    name: 'Mystery Gas Station Pills',
+    name: 'items:contraband.c_mystery_pills.name',
     type: 'consumable',
     effectType: 'mood',
     value: 30,
-    description: 'Questionable origin. Boosts a member\'s Mood by 30.',
+    description: 'items:contraband.c_mystery_pills.description',
     rarity: 'common'
   },
   {
     id: 'c_blood_pact',
-    name: 'Blood Pact Contract',
+    name: 'items:contraband.c_blood_pact.name',
     type: 'consumable',
     effectType: 'harmony',
     value: 15,
-    description: 'Binds the band together in dark synergy. +15 Harmony.',
+    description: 'items:contraband.c_blood_pact.description',
     rarity: 'rare'
   }
 ]

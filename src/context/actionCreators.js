@@ -367,7 +367,10 @@ export const createAddUnlockAction = unlockId => ({
  */
 export const createAddContrabandAction = contrabandId => ({
   type: ActionTypes.ADD_CONTRABAND,
-  payload: contrabandId
+  payload: {
+    contrabandId,
+    instanceId: crypto.randomUUID()
+  }
 })
 
 /**

@@ -162,6 +162,8 @@ export const resolvePost = (
     const result = postOption.resolve({ ...gameState, diceRoll })
 
     // Safety bounds enforcement for resolved deltas
+    // Note: Double-clamping occurs here and in hooks for defense-in-depth, ensuring
+    // resolved deltas stay within bounds before applying and displaying correctly.
     let moneyChange = result.moneyChange
     if (moneyChange !== undefined && gameState.player?.money !== undefined) {
       const prevMoney = gameState.player.money
@@ -475,7 +477,8 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
 
     // Check trend match using O(1) loop or Set check if available
     if (social.trend && deal.requirements.trend) {
-      // If the trend isn't in the allowed global set, we might skip it
+      // Defend against unknown/invalid trend values and avoid runtime errors.
+      // We first check if social.trend is valid globally via ALLOWED_TRENDS_SET.
       if (ALLOWED_TRENDS_SET && !ALLOWED_TRENDS_SET.has(social.trend)) continue
       if (!deal.requirements.trend.includes(social.trend)) continue
     }

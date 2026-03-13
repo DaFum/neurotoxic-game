@@ -238,7 +238,7 @@ export const usePostGigLogic = () => {
 
         if (appliedDelta !== 0) {
           const sign = appliedDelta > 0 ? '+' : ''
-          addToast(`Harmony ${sign}${appliedDelta}`, appliedDelta > 0 ? 'success' : 'error')
+          addToast(`${t('ui:postGig.harmony', { defaultValue: 'Harmony' })} ${sign}${appliedDelta}`, appliedDelta > 0 ? 'success' : 'error')
         }
       }
       if (
@@ -289,7 +289,7 @@ export const usePostGigLogic = () => {
 
         if (appliedDelta !== 0) {
           const sign = appliedDelta > 0 ? '+' : ''
-          addToast(`Money ${sign}${appliedDelta}€`, appliedDelta > 0 ? 'success' : 'error')
+          addToast(`${t('ui:postGig.money', { defaultValue: 'Money' })} ${sign}${appliedDelta}€`, appliedDelta > 0 ? 'success' : 'error')
         }
       }
 
@@ -470,8 +470,9 @@ export const usePostGigLogic = () => {
         addToast(
           t('ui:postGig.acceptedDeal', {
             dealName: deal.name,
-            defaultValue: 'Accepted deal: {{dealName}}'
-          }) + moneyText,
+            moneyText,
+            defaultValue: 'Accepted deal: {{dealName}}{{moneyText}}'
+          }),
           'success'
         )
 
@@ -493,7 +494,7 @@ export const usePostGigLogic = () => {
         )
       }
     },
-    [updatePlayer, updateBand, updateSocial, addToast, t]
+    [player, updatePlayer, updateBand, updateSocial, addToast, t]
   )
 
   const handleRejectDeals = useCallback(() => {
@@ -521,15 +522,19 @@ export const usePostGigLogic = () => {
 
     const prevMoney = player.money ?? 0
     const nextMoney = clampPlayerMoney(prevMoney - 200)
+    const appliedDelta = nextMoney - prevMoney
 
     updatePlayer({ money: nextMoney })
     updateSocial(prev => ({
       controversyLevel: Math.max(0, (prev.controversyLevel || 0) - 25)
     }))
+
+    const moneyText = appliedDelta !== 0 ? ` (${appliedDelta}€)` : ''
     addToast(
       t('ui:postGig.storySpunControversyReduced', {
-        defaultValue: 'Story Spun. Controversy reduced.'
-      }) + ` (-200€)`,
+        moneyText,
+        defaultValue: `Story Spun. Controversy reduced.${moneyText}`
+      }),
       'success'
     )
   }, [player, updatePlayer, updateSocial, addToast, t])
