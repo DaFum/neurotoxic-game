@@ -95,6 +95,27 @@ function hasMemberWithTrait(members, traitId1, traitId2) {
  * Each option defines its conditions for appearing, base effects, and RNG logic.
  */
 export const POST_OPTIONS = [
+  // --- CATEGORY: CULT OF THE SCHRANK ---
+  {
+    id: 'radicalize_fans',
+    name: 'Radicalize Fans',
+    platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
+    category: 'Drama',
+    badges: [POST_BADGES.RISK, POST_BADGES.VIRAL],
+    condition: ({ social }) => (social?.instagram || 0) > 2000,
+    resolve: () => ({
+      type: 'FIXED',
+      success: true,
+      platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
+      followers: -50,
+      controversyChange: 5,
+      loyaltyChange: 2,
+      zealotryChange: 8,
+      message: i18n.t('ui:postOptions.radicalizeFansResult', {
+        defaultValue: 'Your hardcore fans loved it. Casuals were disturbed.'
+      })
+    })
+  },
   // --- CATEGORY: RECOVERY & CRISIS ---
   {
     id: 'recovery_apology_tour_promo',

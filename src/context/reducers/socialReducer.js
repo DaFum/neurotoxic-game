@@ -27,6 +27,10 @@ export const handleUpdateSocial = (state, payload) => {
     }
   }
 
+  if (updates.zealotry !== undefined) {
+    updates.zealotry = Math.max(0, Math.min(100, Number(updates.zealotry) || 0))
+  }
+
   if (
     updates.sponsorActive !== undefined &&
     typeof updates.sponsorActive !== 'boolean'

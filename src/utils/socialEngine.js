@@ -220,6 +220,7 @@ export const resolvePost = (
       staminaChange: result.staminaChange,
       controversyChange: result.controversyChange,
       loyaltyChange: result.loyaltyChange,
+      zealotryChange: result.zealotryChange,
       targetMember: result.targetMember,
       allMembersMoodChange: result.allMembersMoodChange,
       allMembersStaminaChange: result.allMembersStaminaChange,
@@ -483,6 +484,11 @@ export const generateBrandName = (baseName, alignment, rng = secureRandom) => {
  * @param {Function} rng - Random number generator.
  * @returns {Array} List of offer objects.
  */
+export const calculateZealotryEffects = (zealotry) => ({
+  passiveIncome: Math.floor((zealotry || 0) * 1.2),
+  raidProbability: ((zealotry || 0) / 100) * 0.08
+})
+
 export const generateBrandOffers = (gameState, rng = secureRandom) => {
   const social = gameState?.social || {}
   const band = gameState?.band || {}
@@ -516,6 +522,13 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
 
     // Check trait match (if required trait exists in band)
     if (deal.requirements.trait && !bandHasTrait(band, deal.requirements.trait))
+      continue
+
+    // Check zealotry limits
+    if (
+      deal.requirements.requiresZealotry &&
+      (social.zealotry || 0) >= deal.requirements.requiresZealotry
+    )
       continue
 
     // Check if already active

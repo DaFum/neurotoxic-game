@@ -119,6 +119,7 @@ export const DEFAULT_SOCIAL_STATE = {
   lastGigDay: null,
   controversyLevel: 0,
   loyalty: 0,
+  zealotry: 0,
   reputationCooldown: 0,
   egoFocus: null,
   sponsorActive: false,
