@@ -376,7 +376,7 @@ export const GameStateProvider = ({ children }) => {
   const completeTravelMinigame = useCallback(
     (damageTaken, itemsCollected) => {
       const rngValue = secureRandom()
-      const contrabandId = pickRandomContraband(() => rngValue)
+      const contrabandId = pickRandomContraband(secureRandom)
       const instanceId = crypto.randomUUID()
       dispatch(
         createCompleteTravelMinigameAction(
