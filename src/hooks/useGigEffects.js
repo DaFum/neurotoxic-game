@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback, useMemo } from 'react'
+import { secureRandom } from '../utils/crypto.js'
 
 /**
  * Manages visual effects for the Gig scene, including Chaos Mode jitter and band animations.
@@ -62,8 +63,8 @@ export const useGigEffects = stats => {
     let rAF
     const animateChaos = () => {
       if (stats.isToxicMode && chaosContainerRef.current) {
-        const x = Math.random() * 4 - 2
-        const y = Math.random() * 4 - 2
+        const x = secureRandom() * 4 - 2
+        const y = secureRandom() * 4 - 2
         chaosContainerRef.current.style.transform = `translate(${x}px, ${y}px)`
       } else if (chaosContainerRef.current) {
         chaosContainerRef.current.style.transform = 'none'
