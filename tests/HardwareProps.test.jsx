@@ -59,20 +59,26 @@ describe('RackScrew', () => {
     expect(lines[1].getAttribute('stroke-width')).toBe('1.5')
   })
 
-  it('handles zero and negative coordinates', () => {
-    const { container: zeroContainer } = render(
+  it('handles zero coordinates', () => {
+    const { container } = render(
       <svg>
         <RackScrew x={0} y={0} />
       </svg>
     )
-    expect(zeroContainer.querySelector('g').getAttribute('transform')).toBe('translate(0, 0)')
+    expect(container.querySelector('g').getAttribute('transform')).toBe(
+      'translate(0, 0)'
+    )
+  })
 
-    const { container: negContainer } = render(
+  it('handles negative coordinates', () => {
+    const { container } = render(
       <svg>
         <RackScrew x={-10} y={-20} />
       </svg>
     )
-    expect(negContainer.querySelector('g').getAttribute('transform')).toBe('translate(-10, -20)')
+    expect(container.querySelector('g').getAttribute('transform')).toBe(
+      'translate(-10, -20)'
+    )
   })
 
   it('handles non-integer coordinates', () => {
@@ -81,6 +87,8 @@ describe('RackScrew', () => {
         <RackScrew x={10.5} y={20.75} />
       </svg>
     )
-    expect(container.querySelector('g').getAttribute('transform')).toBe('translate(10.5, 20.75)')
+    expect(container.querySelector('g').getAttribute('transform')).toBe(
+      'translate(10.5, 20.75)'
+    )
   })
 })

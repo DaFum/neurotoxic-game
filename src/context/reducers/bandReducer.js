@@ -188,8 +188,7 @@ export const handleUseContraband = (state, payload) => {
     }
     newBand.members = newBand.members.map(m => {
       if (m.id === memberId) {
-        const maxVal =
-          item.effectType === 'stamina' ? m.staminaMax || 100 : 100
+        const maxVal = item.effectType === 'stamina' ? m.staminaMax || 100 : 100
         return {
           ...m,
           [item.effectType]: Math.min(

@@ -25,7 +25,13 @@ describe('minigameReducer - Travel Complete Drops', () => {
       },
       toasts: []
     }
-    const payload = { damageTaken: 0, itemsCollected: 0, rngValue: 0.99, contrabandId: 'energy_drink', instanceId: 'test_inst_1' } // High roll, no drop
+    const payload = {
+      damageTaken: 0,
+      itemsCollected: 0,
+      rngValue: 0.99,
+      contrabandId: 'c_void_energy',
+      instanceId: 'test_inst_1'
+    } // High roll, no drop
     const newState = handleCompleteTravelMinigame(state, payload)
 
     assert.equal(newState.band.stash.length, 0)
@@ -50,7 +56,13 @@ describe('minigameReducer - Travel Complete Drops', () => {
       },
       toasts: []
     }
-    const payload = { damageTaken: 0, itemsCollected: 0, rngValue: 0.01, contrabandId: 'energy_drink', instanceId: 'test_inst_2' } // Low roll, drop
+    const payload = {
+      damageTaken: 0,
+      itemsCollected: 0,
+      rngValue: 0.01,
+      contrabandId: 'c_void_energy',
+      instanceId: 'test_inst_2'
+    } // Low roll, drop
     const newState = handleCompleteTravelMinigame(state, payload)
 
     assert.equal(newState.band.stash.length, 1)

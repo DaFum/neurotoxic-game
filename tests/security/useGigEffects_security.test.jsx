@@ -1,5 +1,4 @@
-import { test, describe, beforeEach, afterEach, mock } from 'node:test'
-import assert from 'node:assert/strict'
+import { test, describe, beforeEach, afterEach, vi, expect } from 'vitest'
 import { renderHook, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from '../testUtils.js'
 import { useGigEffects } from '../../src/hooks/useGigEffects.js'
@@ -7,36 +6,32 @@ import { useGigEffects } from '../../src/hooks/useGigEffects.js'
 describe('useGigEffects Security', () => {
   beforeEach(() => {
     setupJSDOM()
-    // Mock RAF to NOT trigger immediately to avoid loop in tests if not handled
-    global.requestAnimationFrame = mock.fn(() => {
-      // Just store the callback but don't call it automatically if we want to control timing
-      return 1
-    })
-    global.cancelAnimationFrame = mock.fn()
+    global.cancelAnimationFrame = vi.fn()
   })
 
   afterEach(() => {
     cleanup()
     teardownJSDOM()
-    mock.restoreAll()
+    vi.restoreAllMocks()
+    if (global.requestAnimationFrame?.mockRestore) {
+      global.requestAnimationFrame.mockRestore()
+    }
   })
 
   test('Chaos Mode should NOT use Math.random', async () => {
     const stats = { isToxicMode: true, overload: 0 }
 
     // Spy on Math.random
-    const randomSpy = mock.method(Math, 'random')
+    const randomSpy = vi.spyOn(Math, 'random')
 
     // We need to capture the RAF callback
     let rafCallback
-    global.requestAnimationFrame = mock.fn(cb => {
+    global.requestAnimationFrame = vi.fn(cb => {
       rafCallback = cb
       return 1
     })
 
-    const { result } = renderHook(() => useGigEffects(stats), {
-      initialProps: stats
-    })
+    const { result } = renderHook(() => useGigEffects(stats))
 
     // Set the ref so the code path is reached
     result.current.chaosContainerRef.current = { style: {} }
@@ -47,10 +42,6 @@ describe('useGigEffects Security', () => {
     }
 
     // Assert Math.random was NOT called
-    assert.equal(
-      randomSpy.mock.callCount(),
-      0,
-      'Math.random() should not be used for Chaos Mode visuals'
-    )
+    expect(randomSpy).not.toHaveBeenCalled()
   })
 })

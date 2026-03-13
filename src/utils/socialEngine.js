@@ -45,6 +45,11 @@ export const calculateViralityScore = (
   return Math.min(0.9, baseChance)
 }
 
+const COOLDOWN_BLOCKED_IDS = new Set([
+  'recovery_apology_tour_promo',
+  'recovery_leaked_good_deed'
+])
+
 /**
  * Generates options for the "Post-Gig Social Media Strategy" phase.
  * It evaluates conditions from POST_OPTIONS, assigns weights, and selects exactly 3.
@@ -56,17 +61,13 @@ export const generatePostOptions = (
 ) => {
   // 1. Evaluate and collect eligible options
   const isCooldownActive = (gameState.social?.reputationCooldown || 0) > 0
-  const cooldownBlockedIds = [
-    'recovery_apology_tour_promo',
-    'recovery_leaked_good_deed'
-  ]
 
   let eligibleOptions = []
   for (let i = 0; i < POST_OPTIONS.length; i++) {
     const opt = POST_OPTIONS[i]
 
     // Filter by cooldown if active
-    if (isCooldownActive && cooldownBlockedIds.includes(opt.id)) {
+    if (isCooldownActive && COOLDOWN_BLOCKED_IDS.has(opt.id)) {
       continue
     }
 
@@ -98,7 +99,9 @@ export const generatePostOptions = (
     gameState.social.activeDeals.some(d => d.type === 'SPONSORSHIP')
   if (gameState.social?.sponsorActive || hasActiveSponsor) {
     // Force a specific commercial post or synthesize one
-    const sponsorIdx = eligibleOptions.findIndex(o => o.id === 'comm_sellout_ad')
+    const sponsorIdx = eligibleOptions.findIndex(
+      o => o.id === 'comm_sellout_ad'
+    )
     if (sponsorIdx !== -1) {
       const sponsorOpt = eligibleOptions[sponsorIdx]
       results.push({ ...sponsorOpt, _force: true })

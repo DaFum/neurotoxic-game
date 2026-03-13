@@ -165,7 +165,10 @@ const SocialReachSection = ({ social, t }) => {
           label={t('ui:stats.currentTrend', {
             defaultValue: 'Current Trend'
           })}
-          value={social.trend || 'NEUTRAL'}
+          value={
+            social.trend ||
+            t('ui:stats.trendNeutral', { defaultValue: 'NEUTRAL' })
+          }
         />
         <DetailRow
           label={t('ui:stats.repCooldown', {
@@ -503,22 +506,23 @@ const MemberEquipment = ({ member, t }) => {
   }
 
   return Object.entries(member.equipment).map(([k, v]) => (
-    <div key={k} className='text-xs text-(--star-white)/80 flex justify-between'>
+    <div
+      key={k}
+      className='text-xs text-(--star-white)/80 flex justify-between'
+    >
       <span className='capitalize text-(--ash-gray)'>{k}:</span>
       <span>{String(v)}</span>
     </div>
   ))
 }
 
-const MemberCard = ({ m, t }) => (
-  <div
-    key={m.name}
-    className='bg-(--void-black)/60 border border-(--ash-gray) p-4'
-  >
+const MemberCard = ({ member, t }) => (
+  <div className='bg-(--void-black)/60 border border-(--ash-gray) p-4'>
     <div className='flex justify-between items-baseline mb-4'>
-      <h4 className='text-lg font-bold text-(--toxic-green)'>{m.name}</h4>
+      <h4 className='text-lg font-bold text-(--toxic-green)'>{member.name}</h4>
       <span className='text-xs text-(--ash-gray) uppercase'>
-        {m.role || t('ui:detailedStats.member', { defaultValue: 'Member' })}
+        {member.role ||
+          t('ui:detailedStats.member', { defaultValue: 'Member' })}
       </span>
     </div>
 
@@ -527,14 +531,14 @@ const MemberCard = ({ m, t }) => (
         label={t('ui:detailedStats.stamina', {
           defaultValue: 'Stamina'
         })}
-        value={m.stamina}
+        value={member.stamina}
         max={100}
         color='bg-(--stamina-green)'
         size='sm'
       />
       <ProgressBar
         label={t('ui:detailedStats.mood', { defaultValue: 'Mood' })}
-        value={m.mood}
+        value={member.mood}
         max={100}
         color='bg-(--mood-pink)'
         size='sm'
@@ -549,33 +553,35 @@ const MemberCard = ({ m, t }) => (
         label={t('ui:detailedStats.skillBase', {
           defaultValue: 'Skill (Base)'
         })}
-        value={m.baseStats?.skill ?? m.skill ?? 0}
+        value={member.baseStats?.skill ?? member.skill ?? 0}
       />
       <DetailRow
         label={t('ui:detailedStats.charisma', {
           defaultValue: 'Charisma'
         })}
-        value={m.baseStats?.charisma ?? m.charisma ?? 0}
+        value={member.baseStats?.charisma ?? member.charisma ?? 0}
       />
       <DetailRow
         label={t('ui:detailedStats.technical', {
           defaultValue: 'Technical'
         })}
-        value={m.baseStats?.technical ?? m.technical ?? 0}
+        value={member.baseStats?.technical ?? member.technical ?? 0}
       />
       <DetailRow
         label={t('ui:detailedStats.improv', {
           defaultValue: 'Improv'
         })}
-        value={m.baseStats?.improv ?? m.improv ?? 0}
-        locked={!isUnlocked(m.baseStats?.improv ?? m.improv ?? 0)}
+        value={member.baseStats?.improv ?? member.improv ?? 0}
+        locked={!isUnlocked(member.baseStats?.improv ?? member.improv ?? 0)}
       />
       <DetailRow
         label={t('ui:detailedStats.composition', {
           defaultValue: 'Composition'
         })}
-        value={m.baseStats?.composition ?? m.composition ?? 0}
-        locked={!isUnlocked(m.baseStats?.composition ?? m.composition ?? 0)}
+        value={member.baseStats?.composition ?? member.composition ?? 0}
+        locked={
+          !isUnlocked(member.baseStats?.composition ?? member.composition ?? 0)
+        }
       />
     </div>
 
@@ -584,7 +590,7 @@ const MemberCard = ({ m, t }) => (
         {t('ui:detailedStats.traits', { defaultValue: 'Traits' })}
       </div>
       <div className='space-y-1'>
-        <MemberTraits member={m} t={t} />
+        <MemberTraits member={member} t={t} />
       </div>
     </div>
 
@@ -594,7 +600,7 @@ const MemberCard = ({ m, t }) => (
           defaultValue: 'Equipment'
         })}
       </div>
-      <MemberEquipment member={m} t={t} />
+      <MemberEquipment member={member} t={t} />
     </div>
   </div>
 )
@@ -605,8 +611,8 @@ const BandMembersSection = ({ members, t }) => (
       {t('ui:detailedStats.bandMembers', { defaultValue: 'BAND MEMBERS' })}
     </h3>
     <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-      {(members || []).map(m => (
-        <MemberCard key={m.name} m={m} t={t} />
+      {(members || []).map(member => (
+        <MemberCard key={member.name} member={member} t={t} />
       ))}
     </div>
   </div>
@@ -660,12 +666,37 @@ MemberEquipment.propTypes = {
 }
 
 MemberCard.propTypes = {
-  m: PropTypes.object.isRequired,
+  member: PropTypes.object.isRequired,
   t: PropTypes.func.isRequired
 }
 
 BandMembersSection.propTypes = {
-  members: PropTypes.array,
+  members: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      role: PropTypes.string,
+      stamina: PropTypes.number,
+      mood: PropTypes.number,
+      skill: PropTypes.number,
+      charisma: PropTypes.number,
+      technical: PropTypes.number,
+      improv: PropTypes.number,
+      composition: PropTypes.number,
+      baseStats: PropTypes.shape({
+        skill: PropTypes.number,
+        charisma: PropTypes.number,
+        technical: PropTypes.number,
+        improv: PropTypes.number,
+        composition: PropTypes.number
+      }),
+      traits: PropTypes.arrayOf(
+        PropTypes.shape({
+          id: PropTypes.string.isRequired
+        })
+      ),
+      equipment: PropTypes.object
+    })
+  ),
   t: PropTypes.func.isRequired
 }
 
