@@ -140,6 +140,27 @@ export const generatePostOptions = (
     results.push(eligibleOptions[i])
   }
 
+  // 3a. Validate that exactly 3 options are available
+  if (results.length !== 3) {
+    throw new StateError(
+      `Insufficient post options: expected 3, got ${results.length}`,
+      {
+        meta: {
+          needed,
+          eligibleOptionsCount: eligibleOptions.length,
+          resultsCount: results.length,
+          isCooldownActive,
+          currentTrend,
+          snapshot: {
+            day: gameState.player?.day,
+            money: gameState.player?.money,
+            currentGigId: gameState.currentGig?.id
+          }
+        }
+      }
+    )
+  }
+
   // 4. Clean up output directly on the pushed objects (they are already cloned)
   for (let i = 0; i < results.length; i++) {
     delete results[i]._weight
