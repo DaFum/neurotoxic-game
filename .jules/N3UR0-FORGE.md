@@ -1,5 +1,20 @@
-## 2026-02-24 - N3UR0-FORGE INITIALIZED\n**Feature:** Boot sequence\n**Description:** Initialized N3UR0-FORGE journal.
-\n## 2026-02-24 - SOCIAL EXPANSION ARCHITECTURE\n**Feature:** Social & Brand Deal Image Integration\n**Description:** Grafted the existing imageGen utility into the social events, brand deals, zealotry system, and post Gig complete events. Added specific IMG_PROMPTS for different social categories (viral, drama, tech, music, commercial, lifestyle) and brand alignments (evil, corporate, indie, sustainable).
+## 2026-03-12 - contraband
+**Feature:** contraband ui, logic and items
+
+**Description:**
+After travel the band can get an item with specials to use.
+
+## 2026-03-14 - THE CULT OF THE SCHRANK
+**Feature:** "Ego Death" Zealotry System (Social Expansion)
+
+**Description:**
+  - Lore Integration:
+    Fame is fleeting; cults are forever. As your social following grows, you can choose to radicalize your fans. This generates a new resource: "Zealotry". High Zealotry automates gig promotion and generates passive income via "donations", but it permanently locks you out of mainstream Corporate Brand Deals and drastically increases the chance of Police Raids.
+  - State Impact:
+    socialReducer.js: zealotry metric (clamped 0-100).
+    socialEngine.js: Pure mathematical utilities calculating passive income vs. raid probability.
+    data/brandDeals.js: O(1) Map lookups enforcing requiresZealotry < 20 to filter available deals.
+
 
 ## 2026-03-13 - THE AWAKENING OF N3UR0-FORGE
 **Feature:** N3UR0-FORGE Personality Matrix Integration
