@@ -20,10 +20,10 @@ Ensure all styles use the correct Tailwind v4 syntax and design tokens.
 ## Workflow
 
 1.  **Scan for Violations**
-    - Grep for `#` (hex codes) in className strings.
-    - Grep for `rgb(`, `hsl(` in className strings.
-    - Grep for `bg-[var(` (old bracket syntax).
-    - Grep for `bg-(--color-` or `text-(--color-` (should be native tokens, not arbitrary values).
+    - Search for `#` (hex codes) in className strings.
+    - Look for `rgb(`, `hsl(` in className strings.
+    - Check for `bg-[var(` (old bracket syntax).
+    - Detect `bg-(--color-` or `text-(--color-` patterns (should be native tokens, not arbitrary values).
 
 2.  **Map to Tokens**
     - `#000000` -> `bg-void-black` / `var(--color-void-black)`

@@ -352,6 +352,7 @@
   "leaderboard.top_100_wealth": "TOP 100 REICHSTE",
   "load_game": "Spiel Laden",
   "loading": "Lade",
+  "scene.loading": "Szene wird geladen...",
   "log_protocols": "LOG PROTOKOLLE",
   "mainMenu.existingSave.desc": "Ein Spielstand existiert bereits. Möchtest du ihn laden oder eine neue Tour starten?",
   "mainMenu.existingSave.load": "BESTEHENDEN LADEN",

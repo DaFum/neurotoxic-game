@@ -352,6 +352,7 @@
   "leaderboard.top_100_wealth": "TOP 100 WEALTHIEST",
   "load_game": "Load Game",
   "loading": "Loading",
+  "scene.loading": "Loading Scene...",
   "log_protocols": "LOG PROTOCOLS",
   "mainMenu.existingSave.desc": "A save game already exists. Do you want to load it or start a new tour?",
   "mainMenu.existingSave.load": "LOAD EXISTING",

@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { useGameState } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 
@@ -6,6 +7,7 @@ const TUTORIAL_STEPS = [0, 1, 2, 3]
 const TOTAL_STEPS = TUTORIAL_STEPS.length
 
 export const TutorialManager = () => {
+  const { t } = useTranslation()
   const { player, updatePlayer, currentScene, settings, updateSettings } =
     useGameState()
   const step = player.tutorialStep ?? 0
@@ -78,13 +80,13 @@ export const TutorialManager = () => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
           role='dialog'
-          aria-label='Tutorial'
+          aria-label={t('ui:tutorial.ariaLabel', { defaultValue: 'Tutorial' })}
           aria-modal='true'
           className='fixed bottom-20 left-1/2 transform -translate-x-1/2 z-(--z-tutorial) w-full max-w-md'
         >
           <div className='bg-void-black/95 border-2 border-toxic-green p-6 shadow-[0_0_20px_var(--color-toxic-green)] relative'>
             <div className='absolute -top-3 left-4 bg-void-black px-2 text-toxic-green font-bold text-xs border border-toxic-green'>
-              TUTORIAL {step + 1}/{TOTAL_STEPS}
+              {t('ui:tutorial.header', { current: step + 1, total: TOTAL_STEPS, defaultValue: `TUTORIAL ${step + 1}/${TOTAL_STEPS}` })}
             </div>
 
             <h3 className='text-xl text-star-white font-[Metal_Mania] mb-2'>
@@ -116,14 +118,14 @@ export const TutorialManager = () => {
                 onClick={skipTutorial}
                 className='text-xs text-ash-gray hover:text-star-white underline'
               >
-                SKIP ALL
+                {t('ui:tutorial.skipAll', { defaultValue: 'SKIP ALL' })}
               </button>
               <button
                 type='button'
                 onClick={completeStep}
                 className='bg-toxic-green text-void-black px-6 py-1.5 font-bold hover:bg-star-white transition-colors'
               >
-                {step < TOTAL_STEPS - 1 ? 'NEXT' : 'DONE'}
+                {step < TOTAL_STEPS - 1 ? t('ui:tutorial.next', { defaultValue: 'NEXT' }) : t('ui:tutorial.done', { defaultValue: 'DONE' })}
               </button>
             </div>
           </div>

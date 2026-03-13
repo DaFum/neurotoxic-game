@@ -85,8 +85,8 @@ test('stage utils', async t => {
 
       globalThis.window.getComputedStyle = () => ({
         getPropertyValue: prop => {
-          if (prop === '--my-red') return '#ff0000'
-          if (prop === '--my-blue') return '#0000ff'
+          if (prop === '--color-my-red') return '#ff0000'
+          if (prop === '--color-my-blue') return '#0000ff'
           return ''
         }
       })

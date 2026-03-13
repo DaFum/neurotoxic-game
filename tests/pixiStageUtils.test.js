@@ -43,7 +43,7 @@ test('getPixiColorFromToken resolves css variable color values', () => {
   globalThis.window = {
     getComputedStyle: () => ({
       getPropertyValue: tokenName =>
-        tokenName === '--toxic-green' ? ' #00ff41 ' : ''
+        tokenName === '--color-toxic-green' ? ' #00ff41 ' : ''
     })
   }
 
