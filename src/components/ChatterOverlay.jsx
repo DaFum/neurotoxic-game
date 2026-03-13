@@ -13,6 +13,7 @@ const FONT_UI_CLASS = 'font-ui'
 
 const TOXIC_GREEN_BASE = {
   accent: 'var(--color-toxic-green)',
+  accentGlow: 'var(--color-toxic-green-20)',
   borderColor: 'border-toxic-green',
   labelColor: 'text-toxic-green',
   barColor: 'bg-toxic-green'
@@ -20,6 +21,7 @@ const TOXIC_GREEN_BASE = {
 
 const WARNING_YELLOW_BASE = {
   accent: 'var(--color-warning-yellow)',
+  accentGlow: 'var(--color-warning-yellow-20)',
   borderColor: 'border-warning-yellow',
   labelColor: 'text-warning-yellow',
   barColor: 'bg-warning-yellow'
@@ -27,6 +29,7 @@ const WARNING_YELLOW_BASE = {
 
 const BLOOD_RED_BASE = {
   accent: 'var(--color-blood-red)',
+  accentGlow: 'var(--color-blood-red-20)',
   borderColor: 'border-blood-red',
   labelColor: 'text-blood-red',
   barColor: 'bg-blood-red'
@@ -115,7 +118,7 @@ const ChatterMessage = memo(
         <div
           className={`relative overflow-hidden border-2 ${sceneStyle.borderColor} bg-void-black backdrop-blur-md`}
           style={{
-            boxShadow: `0 0 24px rgb(var(--color-void-black-rgb) / 90%), 0 0 10px ${sceneStyle.accent}33`
+            boxShadow: `0 0 24px rgb(var(--color-void-black-rgb) / 90%), 0 0 10px ${sceneStyle.accentGlow}`
           }}
         >
           {/* Left accent bar */}

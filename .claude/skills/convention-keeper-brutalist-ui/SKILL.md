@@ -36,7 +36,7 @@ Enforce the strict "Brutalist" design system across the application.
 ## Tailwind v4 Syntax
 
 - **Color Tokens**: Colors registered in `@theme` use native utilities: `bg-void-black`, `text-toxic-green`. Do NOT use `bg-[var(--var-name)]`.
-- **Non-Color Tokens**: For variables not in `@theme` (z-index, etc.), use arbitrary value syntax: `z-(--z-crt)`.
+- **Non-Color Tokens**: Non-color tokens in `@theme` that don't match a Tailwind namespace (z-index `--z-*`, etc.) still require arbitrary value syntax: `z-(--z-crt)`.
 - **Arbitrary Values**: `w-[500px]` is allowed but prefer spacing scale.
 
 ## Example

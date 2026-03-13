@@ -9,7 +9,7 @@ Ensure all styles use the correct Tailwind v4 syntax and design tokens.
 
 ## Rules
 
-1.  **Syntax**: Colors are registered in `src/index.css` inside `@theme` with the `--color-` prefix and consumed as native Tailwind utilities (`bg-void-black`, `text-toxic-green`, `border-blood-red/60`). Do NOT use `bg-[var(--variable)]`. For non-color tokens not in `@theme` (e.g., z-index), use the arbitrary value syntax `z-(--z-crt)`.
+1.  **Syntax**: Colors are registered in `src/index.css` inside `@theme` with the `--color-` prefix and consumed as native Tailwind utilities (`bg-void-black`, `text-toxic-green`, `border-blood-red/60`). Do NOT use `bg-[var(--variable)]`. Non-color tokens in `@theme` that don't match a Tailwind namespace (z-index `--z-*`, etc.) still require the arbitrary value syntax: `z-(--z-crt)`.
 2.  **Colors**:
     - **NEVER** use hex codes (`#000`, `#ff00ff`).
     - **NEVER** use default palette (`bg-red-500`, `text-blue-200`).
