@@ -142,7 +142,7 @@ export const handleLoadGame = (state, payload) => {
   // 4. Construct Safe State (Whitelist)
   const safeState = {
     ...state,
-    version: loadedState.version,
+    version: Number.isFinite(parseInt(loadedState.version, 10)) ? parseInt(loadedState.version, 10) : 0,
     player: mergedPlayer,
     band: validatedBand,
     social: mergedSocial,

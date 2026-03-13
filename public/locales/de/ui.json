@@ -826,5 +826,6 @@
   "stash.actionUsed": "Benutzt",
   "stash.actionApplied": "Angewendet",
   "contraband.dropped": "Schmuggelware gefunden!",
-  "save.parseFailed": "Speicherstand-Parsing fehlgeschlagen. Greife auf Anfangszustand zurück."
+  "save.parseFailed": "Speicherstand-Parsing fehlgeschlagen. Greife auf Anfangszustand zurück.",
+  "save.corruptFailed": "Speicherstand ist beschädigt oder ungültig."
 }
