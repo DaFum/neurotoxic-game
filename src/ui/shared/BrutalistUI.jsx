@@ -950,7 +950,7 @@ export const CrisisModal = memo(({ isOpen, onClose }) => {
             <button
               type='button'
               onClick={onClose}
-              className='w-full p-3 border border-toxic-green bg-toxic-green/10 hover:bg-toxic-green hover:text-void-black font-bold tracking-widest uppercase transition-colors text-left flex justify-between'
+              className='w-full p-3 border border-toxic-green bg-toxic-green/10 hover:bg-toxic-green hover:text-void-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green font-bold tracking-widest uppercase transition-colors text-left flex justify-between'
             >
               <span>{t('ui:crisis.opt1')}</span>
               <span className='opacity-50 text-xs mt-1'>
@@ -960,7 +960,7 @@ export const CrisisModal = memo(({ isOpen, onClose }) => {
             <button
               type='button'
               onClick={onClose}
-              className='w-full p-3 border border-warning-yellow/50 text-warning-yellow/80 hover:border-warning-yellow hover:text-void-black hover:bg-warning-yellow font-bold tracking-widest uppercase transition-colors text-left flex justify-between'
+              className='w-full p-3 border border-warning-yellow/50 text-warning-yellow/80 hover:border-warning-yellow hover:text-void-black hover:bg-warning-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning-yellow font-bold tracking-widest uppercase transition-colors text-left flex justify-between'
             >
               <span>{t('ui:crisis.opt2')}</span>
               <span className='opacity-50 text-xs mt-1'>
@@ -970,7 +970,7 @@ export const CrisisModal = memo(({ isOpen, onClose }) => {
             <button
               type='button'
               onClick={onClose}
-              className='w-full p-3 border border-blood-red/50 text-blood-red/80 hover:border-blood-red hover:text-void-black hover:bg-blood-red font-bold tracking-widest uppercase transition-colors text-left flex justify-between'
+              className='w-full p-3 border border-blood-red/50 text-blood-red/80 hover:border-blood-red hover:text-void-black hover:bg-blood-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red font-bold tracking-widest uppercase transition-colors text-left flex justify-between'
             >
               <span>{t('ui:crisis.opt3')}</span>
               <span className='opacity-50 text-xs mt-1'>
@@ -1074,11 +1074,11 @@ export const DeadmanButton = memo(({ label, onConfirm }) => {
         }}
         onBlur={stopHold}
         className={`relative w-full h-14 border-2 overflow-hidden flex items-center justify-center select-none transition-colors
-          ${isComplete ? 'border-blood-red bg-blood-red/20' : 'border-toxic-green bg-void-black hover:border-star-white'}`}
+          ${isComplete ? 'border-blood-red bg-blood-red-dark' : 'border-toxic-green bg-void-black hover:border-star-white'}`}
       >
         {/* Progress Fill Background */}
         <div
-          className={`absolute left-0 top-0 h-full transition-none ${isComplete ? 'bg-blood-red' : 'bg-toxic-green'}`}
+          className={`absolute left-0 top-0 h-full transition-none ${isComplete ? 'bg-blood-red' : 'bg-toxic-green-bright'}`}
           style={{ width: `${progress}%` }}
         ></div>
 
@@ -1090,7 +1090,7 @@ export const DeadmanButton = memo(({ label, onConfirm }) => {
         {/* Text */}
         <span
           className={`relative z-20 font-bold tracking-[0.2em] uppercase mix-blend-difference
-          ${isComplete ? 'text-void-black' : 'text-toxic-green'}`}
+          ${isComplete ? 'text-void-black' : 'text-toxic-green-bright'}`}
         >
           {isComplete ? t('ui:executed', 'EXECUTED') : label}
         </span>
@@ -1654,7 +1654,7 @@ export const VoidDecryptor = memo(() => {
   return (
     <button
       type='button'
-      className='w-full h-64 border-2 border-toxic-green/50 bg-void-black flex flex-col items-center justify-center p-6 relative group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
+      className='w-full h-64 border-2 border-toxic-green/50 bg-abyss-black flex flex-col items-center justify-center p-6 relative group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan'
       onClick={() => setDecrypted(true)}
       aria-label={
         decrypted
@@ -1671,7 +1671,7 @@ export const VoidDecryptor = memo(() => {
         className={`relative transition-all duration-700 ${decrypted ? 'scale-125' : 'scale-100 animate-[pulse_0.1s_infinite]'}`}
       >
         <BiohazardIcon
-          className={`w-20 h-20 ${decrypted ? 'text-toxic-green drop-shadow-[0_0_20px_var(--color-toxic-green)]' : 'text-toxic-green/30'}`}
+          className={`w-20 h-20 ${decrypted ? 'text-neon-cyan drop-shadow-[0_0_20px_var(--color-neon-cyan)]' : 'text-toxic-green-mutated'}`}
         />
 
         {/* Scrambler Overlay */}
@@ -1689,7 +1689,7 @@ export const VoidDecryptor = memo(() => {
       </div>
 
       {!decrypted && (
-        <div className='absolute bottom-4 text-[8px] opacity-50 animate-bounce'>
+        <div className='absolute bottom-4 text-[8px] opacity-50 animate-bounce text-neon-cyan'>
           {t('ui:decryptor.click')}
         </div>
       )}
