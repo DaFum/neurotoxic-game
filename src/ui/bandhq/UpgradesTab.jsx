@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
 import { ShopItem } from './ShopItem'
 
 export const UpgradesTab = ({
@@ -10,14 +11,17 @@ export const UpgradesTab = ({
   getAdjustedCost,
   processingItemId
 }) => {
+  const { t } = useTranslation()
   return (
     <div>
-      <div className='mb-4 flex justify-end gap-4 font-mono text-(--star-white)'>
+      <div className='mb-4 flex justify-end gap-4 font-mono text-star-white'>
         <span>
-          FAME: <span className='text-(--warning-yellow)'>{player.fame}★</span>
+          {t('ui:bandhq.fame', { defaultValue: 'FAME' })}:{' '}
+          <span className='text-warning-yellow'>{player.fame}★</span>
         </span>
         <span>
-          MONEY: <span className='text-(--toxic-green)'>{player.money}€</span>
+          {t('ui:bandhq.money', { defaultValue: 'MONEY' })}:{' '}
+          <span className='text-toxic-green'>{player.money}€</span>
         </span>
       </div>
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4'>

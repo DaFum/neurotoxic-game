@@ -91,13 +91,13 @@ describe('BlockMeter (via HealthBar)', () => {
 
   test('applies correct fill color based on health', () => {
     const { container } = render(<HealthBar health={50} isToxicMode={false} />)
-    const filledSegments = container.querySelectorAll('.bg-\\(--toxic-green\\)')
+    const filledSegments = container.querySelectorAll('.bg-toxic-green')
     expect(filledSegments.length).toBe(10)
   })
 
   test('applies warning color when health is below threshold', () => {
     const { container } = render(<HealthBar health={15} isToxicMode={false} />)
-    const warningSegments = container.querySelectorAll('.bg-\\(--blood-red\\)')
+    const warningSegments = container.querySelectorAll('.bg-blood-red')
     expect(warningSegments.length).toBeGreaterThan(0)
   })
 })

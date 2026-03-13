@@ -4,8 +4,8 @@ export const RackScrew = ({ x, y }) => (
       cx='0'
       cy='0'
       r='4'
-      fill='var(--concrete-gray)'
-      stroke='var(--void-black)'
+      fill='var(--color-concrete-gray)'
+      stroke='var(--color-void-black)'
       strokeWidth='1'
     />
     <line
@@ -13,7 +13,7 @@ export const RackScrew = ({ x, y }) => (
       y1='-2'
       x2='2'
       y2='2'
-      stroke='var(--void-black)'
+      stroke='var(--color-void-black)'
       strokeWidth='1.5'
     />
     <line
@@ -21,7 +21,7 @@ export const RackScrew = ({ x, y }) => (
       y1='2'
       x2='2'
       y2='-2'
-      stroke='var(--void-black)'
+      stroke='var(--color-void-black)'
       strokeWidth='1.5'
     />
   </g>

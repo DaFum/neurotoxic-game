@@ -126,7 +126,7 @@ describe('Pixi Resolution Capping', () => {
       addEventListener: mock.fn(),
       removeEventListener: mock.fn(),
       getComputedStyle: () => ({
-        getPropertyValue: () => 'var(--toxic-green)'
+        getPropertyValue: () => 'var(--color-toxic-green)'
       })
     }
     globalThis.document = {

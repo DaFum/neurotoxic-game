@@ -4,7 +4,12 @@ import { logger } from '../../utils/logger'
 const PIXI_TOKEN_FALLBACKS = Object.freeze({
   '--void-black': '#0a0a0a',
   '--toxic-green': '#00ff41',
-  '--star-white': '#ffffff'
+  '--star-white': '#ffffff',
+  '--ash-gray': '#888888',
+  '--warning-yellow': '#ffcc00',
+  '--blood-red': '#cc0000',
+  '--roadie-grass': '#1a4d1a',
+  '--cosmic-purple': '#6600cc'
 })
 
 const HEX_COLOR_PATTERN = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i
@@ -49,9 +54,16 @@ export const getPixiColorFromToken = tokenName => {
   }
 
   const fallbackColor = PIXI_TOKEN_FALLBACKS[tokenName] ?? '#ffffff'
+  // @theme tokens use --color- prefix (e.g. --toxic-green → --color-toxic-green).
+  // Guard against double-prefix if caller already passes --color-* directly.
+  const cssPropertyName = tokenName.startsWith('--color-')
+    ? tokenName
+    : tokenName.startsWith('--')
+      ? `--color-${tokenName.slice(2)}`
+      : tokenName
   const resolvedCssValue = window
     .getComputedStyle(document.documentElement)
-    .getPropertyValue(tokenName)
+    .getPropertyValue(cssPropertyName)
   const normalizedHexColor =
     normalizeHexColor(resolvedCssValue) ?? normalizeHexColor(fallbackColor)
 

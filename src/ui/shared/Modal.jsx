@@ -51,28 +51,29 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
 
   return (
     <div
-      className='fixed inset-0 z-50 flex items-center justify-center bg-(--void-black)/90 cursor-pointer p-4'
-      onClick={onClose}
+      className='fixed inset-0 z-50 flex items-center justify-center bg-void-black/90 cursor-pointer p-4'
+      onClick={e => {
+        if (e.target === e.currentTarget) onClose()
+      }}
     >
       <div
         ref={dialogRef}
-        className='relative w-full max-w-md border-2 border-(--toxic-green)/50 p-6 bg-(--void-black) shadow-[0_0_25px_var(--toxic-green-glow)] cursor-auto focus:outline-none group'
+        className='relative w-full max-w-md border-2 border-toxic-green/50 p-6 bg-void-black shadow-[0_0_25px_var(--color-toxic-green-glow)] cursor-auto focus:outline-none group'
         role='dialog'
         aria-modal='true'
         tabIndex={-1}
-        onClick={e => e.stopPropagation()}
       >
         {/* Brutalist Frame Corners */}
-        <UIFrameCorner className='absolute -top-1 -left-1 w-8 h-8 text-(--toxic-green) opacity-50 transition-opacity group-hover:opacity-100' />
-        <UIFrameCorner className='absolute -top-1 -right-1 w-8 h-8 text-(--toxic-green) rotate-90 opacity-50 transition-opacity group-hover:opacity-100' />
-        <UIFrameCorner className='absolute -bottom-1 -right-1 w-8 h-8 text-(--toxic-green) rotate-180 opacity-50 transition-opacity group-hover:opacity-100' />
-        <UIFrameCorner className='absolute -bottom-1 -left-1 w-8 h-8 text-(--toxic-green) -rotate-90 opacity-50 transition-opacity group-hover:opacity-100' />
+        <UIFrameCorner className='absolute -top-1 -left-1 w-8 h-8 text-toxic-green opacity-50 transition-opacity group-hover:opacity-100' />
+        <UIFrameCorner className='absolute -top-1 -right-1 w-8 h-8 text-toxic-green rotate-90 opacity-50 transition-opacity group-hover:opacity-100' />
+        <UIFrameCorner className='absolute -bottom-1 -right-1 w-8 h-8 text-toxic-green rotate-180 opacity-50 transition-opacity group-hover:opacity-100' />
+        <UIFrameCorner className='absolute -bottom-1 -left-1 w-8 h-8 text-toxic-green -rotate-90 opacity-50 transition-opacity group-hover:opacity-100' />
 
         <button
           type='button'
           onClick={onClose}
           aria-label={t('ui:closeModal')}
-          className='absolute -top-3 -right-3 w-8 h-8 flex items-center justify-center bg-(--void-black) border-2 border-(--toxic-green) text-(--toxic-green) hover:bg-(--toxic-green) hover:text-(--void-black) transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green) z-20 group-hover:shadow-[0_0_10px_var(--toxic-green-glow)]'
+          className='absolute -top-3 -right-3 w-8 h-8 flex items-center justify-center bg-void-black border-2 border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green z-20 group-hover:shadow-[0_0_10px_var(--color-toxic-green-glow)]'
         >
           <span
             aria-hidden='true'
@@ -84,7 +85,7 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
 
         <div className='relative z-10'>
           {title && (
-            <h2 className='text-3xl font-(--font-display) text-(--toxic-green) mb-4 uppercase tracking-widest text-center'>
+            <h2 className='text-3xl font-display text-toxic-green mb-4 uppercase tracking-widest text-center'>
               {title}
             </h2>
           )}

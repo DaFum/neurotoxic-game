@@ -105,7 +105,7 @@ export const BandHQ = ({
     >
       {/* Backdrop */}
       <div
-        className='fixed inset-0 z-30 bg-(--void-black)/90 backdrop-blur-sm'
+        className='fixed inset-0 z-30 bg-void-black/90 backdrop-blur-sm'
         onClick={onClose}
         aria-hidden='true'
       />
@@ -118,14 +118,14 @@ export const BandHQ = ({
         }}
       />
 
-      <div className='relative z-50 w-full max-w-5xl h-[90vh] border-2 border-(--toxic-green) bg-(--void-black) flex flex-col shadow-[0_0_50px_var(--toxic-green)]'>
+      <div className='relative z-50 w-full max-w-5xl h-[90vh] border-2 border-toxic-green bg-void-black flex flex-col shadow-[0_0_50px_var(--color-toxic-green)]'>
         {/* Header */}
-        <div className='flex justify-between items-center p-6 border-b-2 border-(--toxic-green) bg-(--void-black)/50'>
+        <div className='flex justify-between items-center p-6 border-b-2 border-toxic-green bg-void-black/50'>
           <div>
-            <h2 className="text-4xl text-(--toxic-green) font-['Metal_Mania'] drop-shadow-[0_0_5px_var(--toxic-green)]">
+            <h2 className="text-4xl text-toxic-green font-['Metal_Mania'] drop-shadow-[0_0_5px_var(--color-toxic-green)]">
               {t('ui:hq.title', { defaultValue: 'BAND HQ' })}
             </h2>
-            <p className='text-(--ash-gray) text-sm font-mono uppercase tracking-widest'>
+            <p className='text-ash-gray text-sm font-mono uppercase tracking-widest'>
               {t('venues:stendal_proberaum.name')} |{' '}
               {t('ui:ui.day', { defaultValue: 'Day' })} {player.day}
             </p>
@@ -133,7 +133,7 @@ export const BandHQ = ({
           <button
             type='button'
             onClick={onClose}
-            className='px-6 py-2 border-2 border-(--blood-red) text-(--blood-red) font-bold hover:bg-(--blood-red) hover:text-(--void-black) transition-colors duration-200 uppercase font-mono'
+            className='px-6 py-2 border-2 border-blood-red text-blood-red font-bold hover:bg-blood-red hover:text-void-black transition-colors duration-200 uppercase font-mono'
           >
             {t('ui:hq.leave', { defaultValue: 'LEAVE [ESC]' })}
           </button>
@@ -145,7 +145,7 @@ export const BandHQ = ({
           aria-label={t('ui:hq.sectionsLabel', {
             defaultValue: 'Band HQ Sections'
           })}
-          className='flex border-b-2 border-(--toxic-green) overflow-x-auto touch-pan-x'
+          className='flex border-b-2 border-toxic-green overflow-x-auto touch-pan-x'
         >
           {/* Tabs */}
           {[
@@ -170,8 +170,8 @@ export const BandHQ = ({
                 className={`flex-1 min-w-[120px] py-3 px-4 text-center text-sm font-bold tracking-[0.1em] uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2
                   ${
                     isActive
-                      ? 'bg-(--toxic-green) text-(--void-black) shadow-[0_-2px_10px_var(--toxic-green)]'
-                      : 'bg-(--void-black) text-(--toxic-green) hover:bg-(--toxic-green)/10'
+                      ? 'bg-toxic-green text-void-black shadow-[0_-2px_10px_var(--color-toxic-green)]'
+                      : 'bg-void-black text-toxic-green hover:bg-toxic-green/10'
                   }`}
               >
                 {isActive && <span className='text-xs'>▶</span>}
@@ -187,11 +187,11 @@ export const BandHQ = ({
           id={`panel-${activeTab}`}
           aria-labelledby={`tab-${activeTab}`}
           tabIndex={0}
-          className='flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-(--void-black) focus-visible:outline-none touch-pan-y'
+          className='flex-1 min-h-0 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-toxic-green scrollbar-track-void-black focus-visible:outline-none touch-pan-y'
         >
           <Suspense
             fallback={
-              <div className='flex items-center justify-center h-32 text-(--toxic-green) font-mono animate-pulse uppercase tracking-widest'>
+              <div className='flex items-center justify-center h-32 text-toxic-green font-mono animate-pulse uppercase tracking-widest'>
                 {t('ui:loading', { defaultValue: 'Loading...' })}
               </div>
             }

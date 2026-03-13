@@ -50,7 +50,7 @@ export const MinigameSceneFrame = ({
   }, [uiState?.isGameOver, onComplete, logic])
 
   return (
-    <div className='w-full h-full bg-(--void-black) relative overflow-hidden flex flex-col items-center justify-center'>
+    <div className='w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center'>
       <div className='absolute inset-0 pointer-events-none'>
         <PixiStage
           gameStateRef={logic.gameStateRef}
@@ -71,18 +71,18 @@ export const MinigameSceneFrame = ({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className='absolute inset-0 z-50 flex flex-col items-center justify-center bg-(--void-black)/80 backdrop-blur-sm pointer-events-auto'
+          className='absolute inset-0 z-50 flex flex-col items-center justify-center bg-void-black/80 backdrop-blur-sm pointer-events-auto'
           role='dialog'
           aria-modal='true'
           aria-labelledby='completion-title'
         >
           <h1
             id='completion-title'
-            className='text-4xl text-(--toxic-green) font-bold mb-4'
+            className='text-4xl text-toxic-green font-bold mb-4'
           >
             {completionTitle}
           </h1>
-          <div className='text-(--star-white) mb-8'>
+          <div className='text-star-white mb-8'>
             {renderCompletionStats ? renderCompletionStats(uiState) : null}
           </div>
           <ActionButton ref={continueButtonRef} onClick={onComplete}>

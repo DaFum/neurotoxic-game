@@ -11,7 +11,7 @@ export const MapConnection = memo(
         y1={`${start.y}%`}
         x2={`${end.x}%`}
         y2={`${end.y}%`}
-        stroke='var(--toxic-green)'
+        stroke='var(--color-toxic-green)'
         strokeWidth='1'
         opacity={startVis === 'dimmed' || endVis === 'dimmed' ? 0.2 : 0.5}
       />

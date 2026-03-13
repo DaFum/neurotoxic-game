@@ -200,11 +200,11 @@ export const Gig = () => {
   // Render blocking overlay if audio is locked (moved here to avoid hook violations)
   if (stats.isAudioReady === false) {
     return (
-      <div className='flex flex-col items-center justify-center w-full h-full bg-(--void-black) z-[100] relative'>
-        <h2 className="text-4xl text-(--toxic-green) font-['Metal_Mania'] mb-8 animate-pulse text-center">
+      <div className='flex flex-col items-center justify-center w-full h-full bg-void-black z-[100] relative'>
+        <h2 className="text-4xl text-toxic-green font-['Metal_Mania'] mb-8 animate-pulse text-center">
           {t('ui:gig.systemLocked', { defaultValue: 'SYSTEM LOCKED' })}
         </h2>
-        <p className='text-(--ash-gray) mb-8 font-mono max-w-md text-center'>
+        <p className='text-ash-gray mb-8 font-mono max-w-md text-center'>
           {t('ui:gig.audioOverride', {
             defaultValue: 'Audio Interface requires manual override.'
           })}
@@ -228,7 +228,7 @@ export const Gig = () => {
   return (
     <div
       ref={chaosContainerRef}
-      className={`w-full h-full relative bg-(--void-black) flex flex-col overflow-hidden ${stats.isToxicMode ? 'border-4 border-(--toxic-green)' : ''}`}
+      className={`w-full h-full relative bg-void-black flex flex-col overflow-hidden ${stats.isToxicMode ? 'border-4 border-toxic-green' : ''}`}
       style={chaosStyle}
     >
       {/* Layer 0: Background */}
@@ -248,7 +248,7 @@ export const Gig = () => {
           <img
             src={matzeUrl}
             alt='Matze'
-            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--blood-red)]'
+            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--color-blood-red)]'
           />
         </div>
         {/* Marius (Drums) - Center Back */}
@@ -260,7 +260,7 @@ export const Gig = () => {
           <img
             src={MariusUrl}
             alt='Marius'
-            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--toxic-green-glow)]'
+            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--color-toxic-green-glow)]'
           />
         </div>
         {/* Lars (Bass) - Right */}
@@ -272,7 +272,7 @@ export const Gig = () => {
           <img
             src={LarsUrl}
             alt='Lars'
-            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--toxic-green)]'
+            className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--color-toxic-green)]'
           />
         </div>
       </div>
@@ -291,11 +291,11 @@ export const Gig = () => {
       {/* Pause Overlay */}
       {isPaused && (
         <div
-          className='absolute inset-0 z-[100] bg-(--void-black)/90 flex flex-col items-center justify-center pointer-events-auto'
+          className='absolute inset-0 z-[100] bg-void-black/90 flex flex-col items-center justify-center pointer-events-auto'
           role='dialog'
           aria-modal='true'
         >
-          <h2 className='text-6xl font-(--font-display) text-(--toxic-green) mb-8 animate-pulse drop-shadow-[0_0_15px_var(--toxic-green)]'>
+          <h2 className='text-6xl font-display text-toxic-green mb-8 animate-pulse drop-shadow-[0_0_15px_var(--color-toxic-green)]'>
             {t('ui:gig.pause_title', { defaultValue: 'PAUSED' })}
           </h2>
           <div className='flex flex-col gap-6 w-64'>

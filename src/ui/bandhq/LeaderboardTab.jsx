@@ -120,7 +120,7 @@ export const LeaderboardTab = () => {
       {/* View Switcher */}
       <div
         role='tablist'
-        className='flex gap-4 mb-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-(--void-black) touch-pan-x'
+        className='flex gap-4 mb-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-toxic-green scrollbar-track-void-black touch-pan-x'
       >
         {views.map(({ id, label }) => (
           <GlitchButton
@@ -142,13 +142,13 @@ export const LeaderboardTab = () => {
         <div className='flex flex-col gap-2'>
           <label
             htmlFor='songSelect'
-            className='text-(--toxic-green) font-mono text-sm uppercase'
+            className='text-toxic-green font-mono text-sm uppercase'
           >
             {t('ui:leaderboard.select_song')}
           </label>
           <select
             id='songSelect'
-            className='bg-(--void-black) border border-(--toxic-green) text-(--toxic-green) p-2 font-mono uppercase focus:outline-none'
+            className='bg-void-black border border-toxic-green text-toxic-green p-2 font-mono uppercase focus:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
             value={activeSongId}
             onChange={e => setSelectedSongId(e.target.value)}
           >
@@ -175,27 +175,27 @@ export const LeaderboardTab = () => {
         title={viewTitles[view]}
       >
         {isLoading && (
-          <div className='flex-1 flex items-center justify-center text-(--toxic-green) animate-pulse font-mono'>
+          <div className='flex-1 flex items-center justify-center text-toxic-green animate-pulse font-mono'>
             {t('ui:leaderboard.connecting')}
           </div>
         )}
 
         {error && (
-          <div className='flex-1 flex items-center justify-center text-(--blood-red) font-mono'>
+          <div className='flex-1 flex items-center justify-center text-blood-red font-mono'>
             {error}
           </div>
         )}
 
         {!isLoading && !error && rankings.length === 0 && (
-          <div className='flex-1 flex items-center justify-center text-(--ash-gray) font-mono'>
+          <div className='flex-1 flex items-center justify-center text-ash-gray font-mono'>
             {t('ui:leaderboard.no_data')}
           </div>
         )}
 
         {!isLoading && !error && rankings.length > 0 && (
-          <div className='flex-1 min-h-0 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-(--toxic-green) scrollbar-track-(--void-black) touch-pan-y touch-pinch-zoom'>
+          <div className='flex-1 min-h-0 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-toxic-green scrollbar-track-void-black touch-pan-y touch-pinch-zoom'>
             <table className='w-full text-left font-mono'>
-              <thead className='text-(--ash-gray) border-b border-(--ash-gray)/30 text-xs uppercase sticky top-0 bg-(--void-black)'>
+              <thead className='text-ash-gray border-b border-ash-gray/30 text-xs uppercase sticky top-0 bg-void-black'>
                 <tr>
                   <th className='py-2 px-2'>#</th>
                   <th className='py-2 px-2'>
@@ -220,15 +220,15 @@ export const LeaderboardTab = () => {
                   return (
                     <tr
                       key={entry.playerId}
-                      className='border-b border-(--ash-gray)/10 hover:bg-(--toxic-green)/10 transition-colors'
+                      className='border-b border-ash-gray/10 hover:bg-toxic-green/10 transition-colors'
                     >
-                      <td className='py-2 px-2 text-(--toxic-green)'>
+                      <td className='py-2 px-2 text-toxic-green'>
                         {entry.rank}
                       </td>
-                      <td className='py-2 px-2 text-(--star-white)'>
+                      <td className='py-2 px-2 text-star-white'>
                         {entry.playerName}
                       </td>
-                      <td className='py-2 px-2 text-right text-(--toxic-green)'>
+                      <td className='py-2 px-2 text-right text-toxic-green'>
                         {view === 'BALANCE'
                           ? `€${safeScore.toLocaleString()}`
                           : view === 'DISTANCE'

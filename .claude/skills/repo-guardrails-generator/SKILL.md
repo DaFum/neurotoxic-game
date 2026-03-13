@@ -34,7 +34,7 @@ Create concise, actionable rules for the repository.
 ```markdown
 # UI Component Guardrails
 
-- [ ] **Styles**: Use `bg-(--void-black)` variables (Tailwind v4).
+- [ ] **Styles**: Use `@theme` native token utilities (`bg-void-black`, `text-toxic-green`) — not `bg-(--void-black)` or `bg-[var(--void-black)]`.
 - [ ] **Structure**: One component per file.
 - [ ] **Props**: Define `propTypes` or use TypeScript interfaces.
 - [ ] **Testing**: Storybook story exists.

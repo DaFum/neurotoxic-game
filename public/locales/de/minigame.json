@@ -2,6 +2,8 @@
   "tourbus.damage": "SCHADEN:",
   "tourbus.destination_reached": "ZIEL ERREICHT",
   "tourbus.distance": "ENTFERNUNG:",
+  "tourbus.moveLeft": "Nach links",
+  "tourbus.moveRight": "Nach rechts",
   "tourbus.title": "TOURBUS TERROR",
   "tourbus.van_condition": "Van Zustand:"
 }

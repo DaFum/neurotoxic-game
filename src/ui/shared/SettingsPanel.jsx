@@ -42,19 +42,19 @@ export const SettingsPanel = memo(function SettingsPanel({
     <div className={`space-y-8 ${className}`}>
       {/* Language Settings */}
       <div>
-        <h2 className='font-[Metal_Mania] text-4xl uppercase text-(--toxic-green) mb-6 border-b border-(--ash-gray) pb-2'>
+        <h2 className='font-[Metal_Mania] text-4xl uppercase text-toxic-green mb-6 border-b border-ash-gray pb-2'>
           {t('ui:language')}
         </h2>
         <div className='flex gap-4'>
           <ActionButton
             onClick={() => i18n.changeLanguage('en')}
-            className={`flex-1 ${i18n.language.startsWith('en') ? 'bg-(--toxic-green) text-(--void-black)' : 'bg-(--void-black) text-(--ash-gray)'}`}
+            className={`flex-1 ${i18n.language.startsWith('en') ? 'bg-toxic-green text-void-black' : 'bg-void-black text-ash-gray'}`}
           >
             {t('ui:language_option_en')}
           </ActionButton>
           <ActionButton
             onClick={() => i18n.changeLanguage('de')}
-            className={`flex-1 ${i18n.language.startsWith('de') ? 'bg-(--toxic-green) text-(--void-black)' : 'bg-(--void-black) text-(--ash-gray)'}`}
+            className={`flex-1 ${i18n.language.startsWith('de') ? 'bg-toxic-green text-void-black' : 'bg-void-black text-ash-gray'}`}
           >
             {t('ui:language_option_de')}
           </ActionButton>
@@ -63,7 +63,7 @@ export const SettingsPanel = memo(function SettingsPanel({
 
       {/* Audio Settings */}
       <div>
-        <h2 className='font-[Metal_Mania] text-4xl uppercase text-(--toxic-green) mb-6 border-b border-(--ash-gray) pb-2'>
+        <h2 className='font-[Metal_Mania] text-4xl uppercase text-toxic-green mb-6 border-b border-ash-gray pb-2'>
           {t('ui:audio_protocols')}
         </h2>
         <div className='space-y-6'>
@@ -78,7 +78,7 @@ export const SettingsPanel = memo(function SettingsPanel({
             onChange={handleSfxChange}
           />
           <div className='flex items-center justify-between'>
-            <span className='font-[Courier_New] text-sm uppercase tracking-wide text-(--ash-gray)'>
+            <span className='font-[Courier_New] text-sm uppercase tracking-wide text-ash-gray'>
               {t('ui:mute_all')}
             </span>
             <ToggleSwitch
@@ -96,11 +96,11 @@ export const SettingsPanel = memo(function SettingsPanel({
 
       {/* Visual Settings */}
       <div>
-        <h2 className='font-[Metal_Mania] text-4xl uppercase text-(--toxic-green) mb-6 border-b border-(--ash-gray) pb-2'>
+        <h2 className='font-[Metal_Mania] text-4xl uppercase text-toxic-green mb-6 border-b border-ash-gray pb-2'>
           {t('ui:visual_interface')}
         </h2>
         <div className='flex items-center justify-between'>
-          <span className='font-[Courier_New] text-sm uppercase tracking-wide text-(--ash-gray)'>
+          <span className='font-[Courier_New] text-sm uppercase tracking-wide text-ash-gray'>
             {t('ui:crt_effect')}
           </span>
           <ToggleSwitch
@@ -118,13 +118,13 @@ export const SettingsPanel = memo(function SettingsPanel({
       {/* Log Settings */}
       {import.meta.env.DEV && (
         <div>
-          <h2 className='font-[Metal_Mania] text-4xl uppercase text-(--toxic-green) mb-6 border-b border-(--ash-gray) pb-2'>
+          <h2 className='font-[Metal_Mania] text-4xl uppercase text-toxic-green mb-6 border-b border-ash-gray pb-2'>
             {t('ui:log_protocols')}
           </h2>
           <div className='flex items-center justify-between'>
             <label
               htmlFor='logLevelSelect'
-              className='font-[Courier_New] text-sm uppercase tracking-wide text-(--ash-gray)'
+              className='font-[Courier_New] text-sm uppercase tracking-wide text-ash-gray'
             >
               {t('ui:min_log_level')}
             </label>
@@ -132,7 +132,7 @@ export const SettingsPanel = memo(function SettingsPanel({
               id='logLevelSelect'
               value={settings?.logLevel ?? LOG_LEVELS.DEBUG}
               onChange={handleLogLevelSelect}
-              className='bg-(--void-black) text-(--toxic-green) border-2 border-(--toxic-green) p-1 font-mono focus:outline-none'
+              className='bg-void-black text-toxic-green border-2 border-toxic-green p-1 font-mono focus:outline-none'
             >
               {Object.entries(LOG_LEVELS).map(([key, value]) => (
                 <option key={key} value={value}>
@@ -155,11 +155,11 @@ const DataManagement = memo(({ onDeleteSave }) => {
 
   return (
     <div>
-      <h2 className='font-(--font-display) text-4xl uppercase text-(--blood-red) mb-6 border-b border-(--ash-gray) pb-2'>
+      <h2 className='font-display text-4xl uppercase text-blood-red mb-6 border-b border-ash-gray pb-2'>
         {t('ui:data_purge')}
       </h2>
       <div className='flex justify-between items-center gap-8'>
-        <p className='font-(--font-ui) text-sm text-(--ash-gray) max-w-xs'>
+        <p className='font-ui text-sm text-ash-gray max-w-xs'>
           {t('ui:delete_warning')}
         </p>
         <div className='flex-1 max-w-sm'>

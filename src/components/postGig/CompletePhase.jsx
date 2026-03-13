@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
 
 export const CompletePhase = ({
@@ -9,6 +10,7 @@ export const CompletePhase = ({
   player,
   social
 }) => {
+  const { t } = useTranslation()
   const hasPR = player?.hqUpgrades?.includes('pr_manager_contract')
   const isHighControversy = (social?.controversyLevel || 0) > 50
 
@@ -22,19 +24,21 @@ export const CompletePhase = ({
         initial={{ scale: 0.5, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
-        className={`text-4xl font-(--font-display) mb-4 ${
+        className={`text-4xl font-display mb-4 ${
           result.success
-            ? 'text-(--toxic-green) drop-shadow-[0_0_20px_var(--toxic-green)] animate-neon-flicker'
-            : 'text-(--blood-red)'
+            ? 'text-toxic-green drop-shadow-[0_0_20px_var(--color-toxic-green)] animate-neon-flicker'
+            : 'text-blood-red'
         }`}
       >
-        {result.success ? 'VIRAL HIT!' : 'FLOPOCOLYPSE'}
+        {result.success
+          ? t('ui:postGig.viralHit', { defaultValue: 'VIRAL HIT!' })
+          : t('ui:postGig.flop', { defaultValue: 'FLOPOCOLYPSE' })}
       </motion.h3>
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
-        className='mb-6 text-(--ash-gray) font-mono max-w-md mx-auto'
+        className='mb-6 text-ash-gray font-mono max-w-md mx-auto'
       >
         {result.message}
       </motion.p>
@@ -43,14 +47,13 @@ export const CompletePhase = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
         className={`text-3xl font-bold mb-8 tabular-nums font-mono ${
-          result.totalFollowers > 0
-            ? 'text-(--toxic-green)'
-            : 'text-(--blood-red)'
+          result.totalFollowers > 0 ? 'text-toxic-green' : 'text-blood-red'
         }`}
       >
         {result.totalFollowers > 0 ? '+' : ''}
-        {result.totalFollowers} Followers
-        <div className='text-sm text-(--ash-gray)/60 mt-1 font-normal tracking-wider'>
+        {result.totalFollowers}{' '}
+        {t('ui:postGig.followers', { defaultValue: 'Followers' })}
+        <div className='text-sm text-ash-gray/60 mt-1 font-normal tracking-wider'>
           {result.platform}
         </div>
       </motion.div>
@@ -65,9 +68,7 @@ export const CompletePhase = ({
         {result.moneyChange ? (
           <div
             className={
-              result.moneyChange > 0
-                ? 'text-(--toxic-green)'
-                : 'text-(--blood-red)'
+              result.moneyChange > 0 ? 'text-toxic-green' : 'text-blood-red'
             }
           >
             💰 {result.moneyChange > 0 ? '+' : ''}
@@ -78,12 +79,11 @@ export const CompletePhase = ({
         {result.harmonyChange ? (
           <div
             className={
-              result.harmonyChange > 0
-                ? 'text-(--toxic-green)'
-                : 'text-(--blood-red)'
+              result.harmonyChange > 0 ? 'text-toxic-green' : 'text-blood-red'
             }
           >
-            🎸 Harmony {result.harmonyChange > 0 ? '+' : ''}
+            🎸 {t('ui:postGig.harmony', { defaultValue: 'Harmony' })}{' '}
+            {result.harmonyChange > 0 ? '+' : ''}
             {result.harmonyChange}
           </div>
         ) : null}
@@ -92,11 +92,12 @@ export const CompletePhase = ({
           <div
             className={
               result.controversyChange > 0
-                ? 'text-(--blood-red)'
-                : 'text-(--toxic-green)'
+                ? 'text-blood-red'
+                : 'text-toxic-green'
             }
           >
-            {result.controversyChange > 0 ? '⚠️' : '🛡️'} Controversy{' '}
+            {result.controversyChange > 0 ? '⚠️' : '🛡️'}{' '}
+            {t('ui:postGig.controversy', { defaultValue: 'Controversy' })}{' '}
             {result.controversyChange > 0 ? '+' : ''}
             {result.controversyChange}
           </div>
@@ -105,22 +106,26 @@ export const CompletePhase = ({
         {result.loyaltyChange ? (
           <div
             className={
-              result.loyaltyChange > 0
-                ? 'text-(--toxic-green)'
-                : 'text-(--blood-red)'
+              result.loyaltyChange > 0 ? 'text-toxic-green' : 'text-blood-red'
             }
           >
-            🛡️ Loyalty {result.loyaltyChange > 0 ? '+' : ''}
+            🛡️ {t('ui:postGig.loyalty', { defaultValue: 'Loyalty' })}{' '}
+            {result.loyaltyChange > 0 ? '+' : ''}
             {result.loyaltyChange}
           </div>
         ) : null}
 
         {result.staminaChange || result.moodChange ? (
-          <div className='text-(--ash-gray)'>
+          <div className='text-ash-gray'>
             👥{' '}
             {result.targetMember
-              ? `${result.targetMember} Affected`
-              : 'Band Affected'}
+              ? t('ui:postGig.memberAffected', {
+                  member: result.targetMember,
+                  defaultValue: `${result.targetMember} Affected`
+                })
+              : t('ui:postGig.bandAffected', {
+                  defaultValue: 'Band Affected'
+                })}
           </div>
         ) : null}
       </motion.div>
@@ -134,18 +139,20 @@ export const CompletePhase = ({
         {hasPR && isHighControversy && onSpinStory && (
           <ActionButton
             onClick={onSpinStory}
-            className='bg-(--blood-red) text-(--star-white) px-6 py-2 border-2 border-(--blood-red) hover:bg-(--star-white) hover:text-(--blood-red)'
+            className='bg-blood-red text-star-white px-6 py-2 border-2 border-blood-red hover:bg-star-white hover:text-blood-red'
           >
-            Spin Story (-200€, -25 Controversy)
+            {t('ui:postGig.spinStory', {
+              defaultValue: 'Spin Story (-200€, -25 Controversy)'
+            })}
           </ActionButton>
         )}
 
         <ActionButton
           onClick={onContinue}
           variant='primary'
-          className='px-8 py-3 text-(--void-black)'
+          className='px-8 py-3 text-void-black'
         >
-          Back to Tour &gt;
+          {t('ui:postGig.backToTour', { defaultValue: 'Back to Tour >' })}
         </ActionButton>
       </motion.div>
     </motion.div>

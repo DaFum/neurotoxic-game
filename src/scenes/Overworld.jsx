@@ -248,7 +248,7 @@ export const Overworld = () => {
         y1={`${currentNode.y}%`}
         x2={`${hoveredNode.x}%`}
         y2={`${hoveredNode.y}%`}
-        stroke='var(--toxic-green)'
+        stroke='var(--color-toxic-green)'
         strokeWidth='2'
         strokeDasharray='5,5'
         opacity='0.8'
@@ -258,26 +258,30 @@ export const Overworld = () => {
 
   return (
     <div
-      className={`w-full h-full bg-(--void-black) relative overflow-hidden flex flex-col items-center justify-center p-8 ${isTraveling ? 'pointer-events-none' : ''}`}
+      className={`w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center p-8 ${isTraveling ? 'pointer-events-none' : ''}`}
     >
-      <h2 className='absolute top-20 text-4xl text-(--toxic-green) font-[Metal_Mania] z-10 text-shadow-[0_0_10px_var(--toxic-green)] pointer-events-none'>
-        TOUR PLAN: {locationName}
+      <h2 className='absolute top-20 text-4xl text-toxic-green font-[Metal_Mania] z-10 text-shadow-[0_0_10px_var(--color-toxic-green)] pointer-events-none'>
+        {t('ui:overworld.header.tourPlan', { defaultValue: 'TOUR PLAN' })}: {locationName}
       </h2>
 
       {/* Instructions / Status */}
-      <div className='absolute top-32 z-20 bg-(--void-black)/80 border border-(--toxic-green) p-2 text-center pointer-events-none'>
-        <div className='text-(--toxic-green) font-bold text-sm uppercase'>
-          {isTraveling ? 'TRAVELING...' : 'Next Stop'}
+      <div className='absolute top-32 z-20 bg-void-black/80 border border-toxic-green p-2 text-center pointer-events-none'>
+        <div className='text-toxic-green font-bold text-sm uppercase'>
+          {isTraveling
+            ? t('ui:overworld.status.traveling', { defaultValue: 'TRAVELING...' })
+            : t('ui:overworld.status.nextStop', { defaultValue: 'Next Stop' })}
         </div>
-        <div className='text-(--star-white) text-xs'>
-          {isTraveling ? 'On the road' : 'Select a highlighted location'}
+        <div className='text-star-white text-xs'>
+          {isTraveling
+            ? t('ui:overworld.status.onRoad', { defaultValue: 'On the road' })
+            : t('ui:overworld.status.selectLocation', { defaultValue: 'Select a highlighted location' })}
         </div>
       </div>
 
       {/* Radio Widget */}
-      <div className='fixed top-8 left-1/2 -translate-x-1/2 z-50 pointer-events-auto bg-(--void-black) border border-(--shadow-black) p-2 flex items-center gap-2 rounded shadow-[0_0_10px_var(--toxic-green-20)]'>
-        <div className='w-2 h-2 rounded-full bg-(--blood-red) animate-pulse' />
-        <span className='text-xs text-(--ash-gray) font-mono'>
+      <div className='fixed top-8 left-1/2 -translate-x-1/2 z-50 pointer-events-auto bg-void-black border border-shadow-black p-2 flex items-center gap-2 rounded shadow-[0_0_10px_var(--color-toxic-green-20)]'>
+        <div className='w-2 h-2 rounded-full bg-blood-red animate-pulse' />
+        <span className='text-xs text-ash-gray font-mono'>
           {t('ui:overworld.radio_station', { defaultValue: 'FM 66.6' })}
         </span>
         <ToggleRadio />
@@ -338,7 +342,7 @@ export const Overworld = () => {
         </GlitchButton>
       </div>
 
-      <div className='relative w-full h-full max-w-6xl max-h-[80vh] border-4 border-(--toxic-green) bg-(--void-black)/80 rounded-lg shadow-[0_0_50px_var(--toxic-green-20)] overflow-hidden'>
+      <div className='relative w-full h-full max-w-6xl max-h-[80vh] border-4 border-toxic-green bg-void-black/80 rounded-lg shadow-[0_0_50px_var(--color-toxic-green-20)] overflow-hidden'>
         <div
           className='absolute inset-0 opacity-30 bg-cover bg-center grayscale invert pointer-events-none'
           style={{
@@ -376,23 +380,35 @@ export const Overworld = () => {
             <img
               src={vanUrl}
               alt='Traveling Van'
-              className='w-12 h-8 object-contain drop-shadow-[0_0_10px_var(--toxic-green)]'
+              className='w-12 h-8 object-contain drop-shadow-[0_0_10px_var(--color-toxic-green)]'
               style={{ transform: 'translate(0, -50%)' }}
             />
           </motion.div>
         )}
       </div>
 
-      <div className='absolute bottom-8 left-8 p-4 border border-(--ash-gray) bg-(--void-black)/90 max-w-sm z-20 pointer-events-none'>
-        <h3 className='text-(--toxic-green) font-bold mb-2'>
+      <div className='absolute bottom-8 left-8 p-4 border border-ash-gray bg-void-black/90 max-w-sm z-20 pointer-events-none'>
+        <h3 className='text-toxic-green font-bold mb-2'>
           {t('ui:overworld.event_log', { defaultValue: 'EVENT LOG:' })}
         </h3>
-        <p className='text-xs text-(--ash-gray) font-mono'>
-          &gt; Locations loaded: {ALL_VENUES.length}
+        <p className='text-xs text-ash-gray font-mono'>
+          &gt;{' '}
+          {t('ui:overworld.locations_loaded', {
+            count: ALL_VENUES.length,
+            defaultValue: `Locations loaded: ${ALL_VENUES.length}`
+          })}
           <br />
-          &gt; {player.day}.01.2026: Tour active.
+          &gt;{' '}
+          {t('ui:overworld.tour_active', {
+            date: `${player.day}.01.2026`,
+            defaultValue: `${player.day}.01.2026: Tour active.`
+          })}
           <br />
-          &gt; {locationName} secured.
+          &gt;{' '}
+          {t('ui:overworld.location_secured', {
+            location: locationName,
+            defaultValue: `${locationName} secured.`
+          })}
         </p>
       </div>
 

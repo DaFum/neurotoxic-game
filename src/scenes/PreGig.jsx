@@ -214,32 +214,32 @@ export const PreGig = () => {
   )
 
   return (
-    <div className='w-full h-full overflow-y-auto flex flex-col items-center justify-start lg:justify-center px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pt-28 sm:pt-32 lg:pt-8 pb-24 lg:pb-8 bg-(--void-black) text-(--star-white) relative'>
+    <div className='w-full h-full overflow-y-auto flex flex-col items-center justify-start lg:justify-center px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pt-28 sm:pt-32 lg:pt-8 pb-24 lg:pb-8 bg-void-black text-star-white relative'>
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         className='text-center mb-4 sm:mb-6 w-full max-w-4xl'
       >
-        <h2 className="text-3xl sm:text-4xl text-(--toxic-green) font-['Metal_Mania'] mb-2">
+        <h2 className="text-3xl sm:text-4xl text-toxic-green font-['Metal_Mania'] mb-2">
           {t('ui:pregig.title')}
         </h2>
-        <div className='w-48 h-[1px] bg-gradient-to-r from-transparent via-(--toxic-green) to-transparent mx-auto mb-3' />
-        <div className='text-lg mb-1 font-mono text-(--star-white)/80'>
+        <div className='w-48 h-[1px] bg-gradient-to-r from-transparent via-toxic-green to-transparent mx-auto mb-3' />
+        <div className='text-lg mb-1 font-mono text-star-white/80'>
           {currentGig?.name ? t(currentGig.name) : ''}
         </div>
-        <div className='font-mono text-[11px] sm:text-xs md:text-sm text-(--ash-gray) flex flex-wrap items-center justify-center gap-x-3 gap-y-1'>
+        <div className='font-mono text-[11px] sm:text-xs md:text-sm text-ash-gray flex flex-wrap items-center justify-center gap-x-3 gap-y-1'>
           <span>
             {t('ui:pregig.budget')}{' '}
-            <span className='text-(--toxic-green) font-bold tabular-nums'>
+            <span className='text-toxic-green font-bold tabular-nums'>
               {t('ui:currency', {
                 value: formatLocalizedNumber(player.money, i18n.language)
               })}
             </span>
           </span>
-          <span className='text-(--ash-gray)/30'>|</span>
+          <span className='text-ash-gray/30'>|</span>
           <span>
             {t('ui:pregig.costs')}{' '}
-            <span className='text-(--blood-red) font-bold tabular-nums'>
+            <span className='text-blood-red font-bold tabular-nums'>
               {t('ui:currencyNegative', {
                 value: formatLocalizedNumber(calculatedBudget, i18n.language)
               })}
@@ -254,9 +254,9 @@ export const PreGig = () => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
-          className='border-2 border-(--ash-gray)/40 p-4 bg-(--void-black)/70 backdrop-blur-sm overflow-y-auto max-h-[38vh] sm:max-h-[42vh] lg:max-h-none'
+          className='border-2 border-ash-gray/40 p-4 bg-void-black/70 backdrop-blur-sm overflow-y-auto max-h-[38vh] sm:max-h-[42vh] lg:max-h-none'
         >
-          <h3 className='text-sm text-(--toxic-green) mb-3 tracking-widest font-mono border-b border-(--toxic-green)/30 pb-2'>
+          <h3 className='text-sm text-toxic-green mb-3 tracking-widest font-mono border-b border-toxic-green/30 pb-2'>
             {t('ui:pregig.allocation')}
           </h3>
           <div className='flex flex-col gap-2.5'>
@@ -269,11 +269,11 @@ export const PreGig = () => {
               />
             ))}
 
-            <div className='border-t border-(--ash-gray)/20 pt-2.5'>
+            <div className='border-t border-ash-gray/20 pt-2.5'>
               <button
                 type='button'
                 onClick={handleBandMeeting}
-                className='w-full flex justify-between items-center p-3 border-2 border-(--warning-yellow)/30 hover:border-(--warning-yellow) text-(--warning-yellow)/70 hover:text-(--warning-yellow) transition-all group'
+                className='w-full flex justify-between items-center p-3 border-2 border-warning-yellow/30 hover:border-warning-yellow text-warning-yellow/70 hover:text-warning-yellow transition-all group'
               >
                 <span className='flex flex-col text-left'>
                   <span className='font-bold text-sm'>
@@ -291,8 +291,8 @@ export const PreGig = () => {
           </div>
 
           {/* Active Modifiers Display */}
-          <div className='mt-3 p-3 bg-(--toxic-green)/5 border border-(--toxic-green)/30'>
-            <h4 className='text-[10px] font-bold text-(--toxic-green) mb-2 tracking-widest'>
+          <div className='mt-3 p-3 bg-toxic-green/5 border border-toxic-green/30'>
+            <h4 className='text-[10px] font-bold text-toxic-green mb-2 tracking-widest'>
               {t('ui:pregig.activeModifiers')}
             </h4>
             {currentModifiers.activeEffects.length > 0 ? (
@@ -300,9 +300,9 @@ export const PreGig = () => {
                 {currentModifiers.activeEffects.map(eff => (
                   <li
                     key={typeof eff === 'string' ? eff : eff.key}
-                    className='text-(--star-white)/60 flex items-center gap-1.5'
+                    className='text-star-white/60 flex items-center gap-1.5'
                   >
-                    <span className='w-1 h-1 bg-(--toxic-green) inline-block' />
+                    <span className='w-1 h-1 bg-toxic-green inline-block' />
                     {typeof eff === 'string'
                       ? eff
                       : t(eff.key, {
@@ -313,7 +313,7 @@ export const PreGig = () => {
                 ))}
               </ul>
             ) : (
-              <div className='text-[10px] text-(--ash-gray)/50 italic'>
+              <div className='text-[10px] text-ash-gray/50 italic'>
                 {t('ui:pregig.noModifiers')}
               </div>
             )}
@@ -325,9 +325,9 @@ export const PreGig = () => {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
-          className='border-2 border-(--ash-gray)/40 p-4 bg-(--void-black)/70 backdrop-blur-sm flex flex-col max-h-[48vh] sm:max-h-[52vh] lg:max-h-none'
+          className='border-2 border-ash-gray/40 p-4 bg-void-black/70 backdrop-blur-sm flex flex-col max-h-[48vh] sm:max-h-[52vh] lg:max-h-none'
         >
-          <h3 className='text-sm text-(--toxic-green) mb-3 tracking-widest font-mono border-b border-(--toxic-green)/30 pb-2 flex justify-between'>
+          <h3 className='text-sm text-toxic-green mb-3 tracking-widest font-mono border-b border-toxic-green/30 pb-2 flex justify-between'>
             <span>{t('ui:pregig.setlist')}</span>
             <span className='tabular-nums'>{setlist.length}/3</span>
           </h3>
@@ -357,24 +357,24 @@ export const PreGig = () => {
                   className={`p-3 border-2 flex justify-between items-center transition-all ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}
                     ${
                       isSelected
-                        ? 'border-(--toxic-green) bg-(--toxic-green)/10 text-(--toxic-green) shadow-[0_0_8px_var(--toxic-green-20)]'
+                        ? 'border-toxic-green bg-toxic-green/10 text-toxic-green shadow-[0_0_8px_var(--color-toxic-green-20)]'
                         : isLocked
-                          ? 'border-(--blood-red)/30 bg-(--blood-red)/10 text-(--blood-red)/50'
-                          : 'border-(--ash-gray)/20 hover:border-(--star-white)/40 text-(--ash-gray)'
+                          ? 'border-blood-red/30 bg-blood-red/10 text-blood-red/50'
+                          : 'border-ash-gray/20 hover:border-star-white/40 text-ash-gray'
                     }`}
                 >
                   <div>
                     <div className='font-bold text-sm'>
                       {song.name}{' '}
                       {isLocked && (
-                        <span className='text-[10px] text-(--blood-red) ml-2 border border-(--blood-red)/50 px-1'>
+                        <span className='text-[10px] text-blood-red ml-2 border border-blood-red/50 px-1'>
                           {t('ui:pregig.locked')}
                         </span>
                       )}
                     </div>
                     <div className='text-[10px] font-mono mt-0.5 flex gap-2'>
                       <span>{t('ui:seconds', { count: song.duration })}</span>
-                      <span className='text-(--ash-gray)/40'>|</span>
+                      <span className='text-ash-gray/40'>|</span>
                       <span>
                         {t('ui:pregig.diff')} {'*'.repeat(song.difficulty)}
                       </span>
@@ -382,18 +382,18 @@ export const PreGig = () => {
                   </div>
                   <div className='flex flex-col items-end gap-1'>
                     <div className='flex items-center gap-1.5'>
-                      <span className='text-[9px] text-(--ash-gray)/50 uppercase tracking-wider'>
+                      <span className='text-[9px] text-ash-gray/50 uppercase tracking-wider'>
                         {t('ui:pregig.nrg')}
                       </span>
-                      <div className='w-14 h-1.5 bg-(--shadow-black) overflow-hidden border border-(--ash-gray)/20'>
+                      <div className='w-14 h-1.5 bg-shadow-black overflow-hidden border border-ash-gray/20'>
                         <div
-                          className={`h-full transition-all ${isSelected ? 'bg-(--toxic-green)' : 'bg-(--blood-red)/60'}`}
+                          className={`h-full transition-all ${isSelected ? 'bg-toxic-green' : 'bg-blood-red/60'}`}
                           style={{ width: `${song.energy.peak}%` }}
                         />
                       </div>
                     </div>
                     {isSelected && (
-                      <span className='text-[9px] text-(--toxic-green) tracking-wider'>
+                      <span className='text-[9px] text-toxic-green tracking-wider'>
                         {t('ui:pregig.selected')}
                       </span>
                     )}
@@ -404,7 +404,7 @@ export const PreGig = () => {
           </div>
 
           {/* Curve Visualization */}
-          <div className='mt-3 h-14 border-t border-(--ash-gray)/20 pt-2 flex items-end justify-between gap-1'>
+          <div className='mt-3 h-14 border-t border-ash-gray/20 pt-2 flex items-end justify-between gap-1'>
             {setlist.map((s, i) => {
               const id = getSongId(s)
               const songData = SONGS_DICT[id] || {
@@ -416,16 +416,16 @@ export const PreGig = () => {
                   initial={{ height: 0 }}
                   animate={{ height: `${songData.energy?.peak || 50}%` }}
                   transition={{ duration: 0.4, delay: i * 0.1 }}
-                  className='flex-1 bg-gradient-to-t from-(--toxic-green) to-(--toxic-green)/40 relative group cursor-default'
+                  className='flex-1 bg-gradient-to-t from-toxic-green to-toxic-green/40 relative group cursor-default'
                 >
-                  <div className='absolute -top-4 left-0 text-[10px] w-full text-center opacity-0 group-hover:opacity-100 transition-opacity text-(--star-white) tabular-nums'>
+                  <div className='absolute -top-4 left-0 text-[10px] w-full text-center opacity-0 group-hover:opacity-100 transition-opacity text-star-white tabular-nums'>
                     {songData.energy?.peak}%
                   </div>
                 </motion.div>
               )
             })}
             {setlist.length === 0 && (
-              <div className='text-(--ash-gray)/30 text-[10px] w-full text-center font-mono'>
+              <div className='text-ash-gray/30 text-[10px] w-full text-center font-mono'>
                 {t('ui:pregig.selectPreview')}
               </div>
             )}
@@ -437,7 +437,7 @@ export const PreGig = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className='relative z-30 mt-4 lg:mt-6 mb-20 lg:mb-12 w-full max-w-[20rem] sm:w-auto px-8 sm:px-12 py-3 sm:py-4 bg-(--toxic-green) text-(--void-black) font-bold text-lg sm:text-2xl uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-[4px_4px_0px_var(--blood-red)] hover:shadow-[6px_6px_0px_var(--blood-red)] flex items-center justify-center gap-3 sm:gap-4'
+        className='relative z-30 mt-4 lg:mt-6 mb-20 lg:mb-12 w-full max-w-[20rem] sm:w-auto px-8 sm:px-12 py-3 sm:py-4 bg-toxic-green text-void-black font-bold text-lg sm:text-2xl uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-[4px_4px_0px_var(--color-blood-red)] hover:shadow-[6px_6px_0px_var(--color-blood-red)] flex items-center justify-center gap-3 sm:gap-4'
         disabled={setlist.length === 0 || isStarting}
         onClick={async () => {
           if (band.harmony < 10) {
@@ -493,9 +493,7 @@ export const PreGig = () => {
           }
         }}
       >
-        {!isStarting && (
-          <RazorPlayIcon className='w-8 h-8 text-(--void-black)' />
-        )}
+        {!isStarting && <RazorPlayIcon className='w-8 h-8 text-void-black' />}
         {isStarting ? t('ui:pregig.initializing') : t('ui:pregig.startShow')}
       </motion.button>
     </div>

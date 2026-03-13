@@ -109,7 +109,7 @@ describe('GlitchButton', () => {
       </GlitchButton>
     )
     const button = container.querySelector('button')
-    expect(button.className).toContain('border-(--warning-yellow)')
-    expect(button.className).toContain('text-(--warning-yellow)')
+    expect(button.className).toContain('border-warning-yellow')
+    expect(button.className).toContain('text-warning-yellow')
   })
 })

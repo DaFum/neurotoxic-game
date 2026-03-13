@@ -27,31 +27,31 @@ export const GlitchButton = ({
   const getVariantClasses = () => {
     // Owned variant takes precedence over generic disabled state to maintain visibility
     if (variant === 'owned') {
-      return 'border-2 border-(--ash-gray) text-(--ash-gray) cursor-default opacity-100'
+      return 'border-2 border-ash-gray text-ash-gray cursor-default opacity-100'
     }
 
     if (isIntervention)
-      return 'border-2 border-(--ash-gray) text-(--ash-gray) cursor-not-allowed opacity-60'
+      return 'border-2 border-ash-gray text-ash-gray cursor-not-allowed opacity-60'
 
     switch (variant) {
       case 'danger':
-        return `border-2 border-(--blood-red) text-(--star-white)
-                hover:bg-(--blood-red) hover:text-(--void-black)
+        return `border-2 border-blood-red text-star-white
+                hover:bg-blood-red hover:text-void-black
                 hover:translate-x-1 hover:-translate-y-1
-                hover:shadow-[4px_4px_0px_var(--toxic-green)]
+                hover:shadow-[4px_4px_0px_var(--color-toxic-green)]
                 active:translate-x-0 active:translate-y-0 active:shadow-none`
       case 'warning':
-        return `border-2 border-(--warning-yellow) text-(--warning-yellow)
-                hover:bg-(--warning-yellow) hover:text-(--void-black)
+        return `border-2 border-warning-yellow text-warning-yellow
+                hover:bg-warning-yellow hover:text-void-black
                 hover:translate-x-1 hover:-translate-y-1
-                hover:shadow-[4px_4px_0px_var(--toxic-green)]
+                hover:shadow-[4px_4px_0px_var(--color-toxic-green)]
                 active:translate-x-0 active:translate-y-0 active:shadow-none`
       case 'primary':
       default:
-        return `border-2 border-(--toxic-green) text-(--toxic-green)
-                hover:bg-(--toxic-green) hover:text-(--void-black)
+        return `border-2 border-toxic-green text-toxic-green
+                hover:bg-toxic-green hover:text-void-black
                 hover:translate-x-1 hover:-translate-y-1
-                hover:shadow-[4px_4px_0px_var(--blood-red)]
+                hover:shadow-[4px_4px_0px_var(--color-blood-red)]
                 active:translate-x-0 active:translate-y-0 active:shadow-none`
     }
   }
@@ -69,9 +69,9 @@ export const GlitchButton = ({
       aria-disabled={isIntervention}
       aria-busy={isLoading}
       className={`
-        relative ${sizeClasses[size] || sizeClasses.lg} bg-(--void-black)
+        relative ${sizeClasses[size] || sizeClasses.lg} bg-void-black
         font-[Metal_Mania] font-bold uppercase tracking-widest
-        transition-all duration-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-(--toxic-green-20)
+        transition-all duration-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-toxic-green-20
         group
         ${getVariantClasses()}
         ${className}
@@ -103,13 +103,13 @@ export const GlitchButton = ({
           className='absolute inset-0 pointer-events-none opacity-10'
           style={{
             backgroundImage:
-              'repeating-linear-gradient(45deg, transparent, transparent 4px, var(--ash-gray) 4px, var(--ash-gray) 6px)'
+              'repeating-linear-gradient(45deg, transparent, transparent 4px, var(--color-ash-gray) 4px, var(--color-ash-gray) 6px)'
           }}
         />
       )}
       {/* Glitch Overlay Effect on Hover */}
       {!isIntervention && (
-        <span className='absolute inset-0 bg-(--star-white) opacity-0 group-hover:opacity-10 mix-blend-difference pointer-events-none' />
+        <span className='absolute inset-0 bg-star-white opacity-0 group-hover:opacity-10 mix-blend-difference pointer-events-none' />
       )}
     </button>
   )

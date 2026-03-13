@@ -23,24 +23,24 @@ const SocialOptionButton = memo(({ opt, index, onSelect }) => {
           <div className='font-bold text-lg leading-tight pr-2 transition-colors'>
             {opt.name}
           </div>
-          <div className='flex gap-1 text-sm bg-(--void-black)/50 px-1 rounded backdrop-blur-sm'>
+          <div className='flex gap-1 text-sm bg-void-black/50 px-1 rounded backdrop-blur-sm'>
             {opt.badges?.map(b => (
               <span key={b}>{b}</span>
             ))}
           </div>
         </div>
-        <div className='text-xs text-(--ash-gray) font-mono space-y-1 mb-2 w-full z-10 relative'>
-          <div className='flex justify-between border-b border-(--ash-gray)/20 pb-1'>
+        <div className='text-xs text-ash-gray font-mono space-y-1 mb-2 w-full z-10 relative'>
+          <div className='flex justify-between border-b border-ash-gray/20 pb-1'>
             <span>
               {t('economy:social.platform', { defaultValue: 'Platform' })}
             </span>
-            <span className='text-(--star-white)/60'>{opt.platform}</span>
+            <span className='text-star-white/60'>{opt.platform}</span>
           </div>
           <div className='flex justify-between pt-1'>
             <span>
               {t('economy:social.category', { defaultValue: 'Category' })}
             </span>
-            <span className='text-(--star-white)/60'>{opt.category}</span>
+            <span className='text-star-white/60'>{opt.category}</span>
           </div>
         </div>
 
@@ -48,14 +48,14 @@ const SocialOptionButton = memo(({ opt, index, onSelect }) => {
         <div className='mt-auto pt-2 text-[10px] uppercase font-mono tracking-wider w-full z-10 relative'>
           <div className='flex flex-wrap gap-2'>
             {opt.badges?.includes('⚠️') && (
-              <span className='text-(--blood-red)'>
+              <span className='text-blood-red'>
                 {t('economy:social.highVariance', {
                   defaultValue: 'High Variance Risk'
                 })}
               </span>
             )}
             {opt.badges?.includes('🛡️') && (
-              <span className='text-(--toxic-green)'>
+              <span className='text-toxic-green'>
                 {t('economy:social.consistentGrowth', {
                   defaultValue: 'Consistent Growth'
                 })}
@@ -92,14 +92,14 @@ export const SocialPhase = ({ options, onSelect, trend }) => {
           })}
         </h3>
         {trend && (
-          <div className='text-sm text-(--toxic-green) tracking-widest mt-1 font-bold animate-pulse'>
+          <div className='text-sm text-toxic-green tracking-widest mt-1 font-bold animate-pulse'>
             {t('economy:social.currentTrend', {
               defaultValue: 'CURRENT TREND:'
             })}{' '}
             {trend}
           </div>
         )}
-        <div className='text-[10px] text-(--ash-gray) tracking-wider mt-1'>
+        <div className='text-[10px] text-ash-gray tracking-wider mt-1'>
           {t('economy:social.chooseStrategy', {
             defaultValue: 'CHOOSE YOUR STRATEGY'
           })}

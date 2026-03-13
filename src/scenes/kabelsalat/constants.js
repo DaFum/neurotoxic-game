@@ -5,7 +5,7 @@ export const CABLES = [
     type: 'midi',
     x: 120,
     y: 480,
-    color: 'var(--cosmic-purple)'
+    color: 'var(--color-cosmic-purple)'
   },
   {
     id: 'iec',
@@ -13,7 +13,7 @@ export const CABLES = [
     type: 'iec',
     x: 260,
     y: 480,
-    color: 'var(--blood-red)'
+    color: 'var(--color-blood-red)'
   },
   {
     id: 'jack',
@@ -21,7 +21,7 @@ export const CABLES = [
     type: 'jack',
     x: 400,
     y: 480,
-    color: 'var(--warning-yellow)'
+    color: 'var(--color-warning-yellow)'
   },
   {
     id: 'xlr',
@@ -29,7 +29,7 @@ export const CABLES = [
     type: 'xlr',
     x: 540,
     y: 480,
-    color: 'var(--toxic-green)'
+    color: 'var(--color-toxic-green)'
   },
   {
     id: 'dc',
@@ -37,7 +37,7 @@ export const CABLES = [
     type: 'dc',
     x: 680,
     y: 480,
-    color: 'var(--info-blue)'
+    color: 'var(--color-info-blue)'
   }
 ]
 
@@ -54,31 +54,31 @@ export const SOCKET_DEFS = {
     id: 'mic',
     labelKey: 'ui:minigames.kabelsalat.sockets.mic',
     type: 'xlr',
-    color: 'var(--toxic-green)'
+    color: 'var(--color-toxic-green)'
   },
   amp: {
     id: 'amp',
     labelKey: 'ui:minigames.kabelsalat.sockets.amp',
     type: 'jack',
-    color: 'var(--warning-yellow)'
+    color: 'var(--color-warning-yellow)'
   },
   pedal: {
     id: 'pedal',
     labelKey: 'ui:minigames.kabelsalat.sockets.pedal',
     type: 'dc',
-    color: 'var(--info-blue)'
+    color: 'var(--color-info-blue)'
   },
   power: {
     id: 'power',
     labelKey: 'ui:minigames.kabelsalat.sockets.power',
     type: 'iec',
-    color: 'var(--blood-red)'
+    color: 'var(--color-blood-red)'
   },
   synth: {
     id: 'synth',
     labelKey: 'ui:minigames.kabelsalat.sockets.synth',
     type: 'midi',
-    color: 'var(--cosmic-purple)'
+    color: 'var(--color-cosmic-purple)'
   }
 }
 

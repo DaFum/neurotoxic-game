@@ -42,7 +42,7 @@ export const MapNode = memo(
     if (visibility === 'hidden' && node.type !== 'START') {
       return (
         <div
-          className='absolute w-6 h-6 flex items-center justify-center text-(--ash-gray) pointer-events-none'
+          className='absolute w-6 h-6 flex items-center justify-center text-ash-gray pointer-events-none'
           style={positionStyle}
         >
           ?
@@ -101,12 +101,12 @@ export const MapNode = memo(
       >
         {/* Target Crosshairs (appear on hover/focus) */}
         <div
-          className={`absolute inset-0 border border-(--toxic-green)/30 transition-all duration-300 pointer-events-none z-0 ${isHoveredLocal || isPendingConfirm ? 'scale-100 opacity-100' : 'scale-90 opacity-0'}`}
+          className={`absolute inset-0 border border-toxic-green/30 transition-all duration-300 pointer-events-none z-0 ${isHoveredLocal || isPendingConfirm ? 'scale-100 opacity-100' : 'scale-90 opacity-0'}`}
         >
-          <div className='absolute top-0 left-1/2 w-[1px] h-4 bg-(--toxic-green) -translate-x-1/2 -translate-y-2'></div>
-          <div className='absolute bottom-0 left-1/2 w-[1px] h-4 bg-(--toxic-green) -translate-x-1/2 translate-y-2'></div>
-          <div className='absolute left-0 top-1/2 w-4 h-[1px] bg-(--toxic-green) -translate-y-1/2 -translate-x-2'></div>
-          <div className='absolute right-0 top-1/2 w-4 h-[1px] bg-(--toxic-green) -translate-y-1/2 translate-x-2'></div>
+          <div className='absolute top-0 left-1/2 w-[1px] h-4 bg-toxic-green -translate-x-1/2 -translate-y-2'></div>
+          <div className='absolute bottom-0 left-1/2 w-[1px] h-4 bg-toxic-green -translate-x-1/2 translate-y-2'></div>
+          <div className='absolute left-0 top-1/2 w-4 h-[1px] bg-toxic-green -translate-y-1/2 -translate-x-2'></div>
+          <div className='absolute right-0 top-1/2 w-4 h-[1px] bg-toxic-green -translate-y-1/2 translate-x-2'></div>
         </div>
 
         {isCurrent && !isTraveling && (
@@ -114,7 +114,7 @@ export const MapNode = memo(
             <img
               src={vanUrl}
               alt={t('ui:map.vanAlt')}
-              className='w-12 h-8 object-contain drop-shadow-[0_0_10px_var(--toxic-green)]'
+              className='w-12 h-8 object-contain drop-shadow-[0_0_10px_var(--color-toxic-green)]'
             />
           </div>
         )}
@@ -127,7 +127,7 @@ export const MapNode = memo(
           className='relative z-10 flex items-center justify-center'
         >
           <HexNode
-            className={`w-12 h-12 transition-all duration-200 ${isHoveredLocal || isPendingConfirm ? 'text-(--star-white) drop-shadow-[0_0_15px_var(--toxic-green)]' : 'text-(--toxic-green)'}`}
+            className={`w-12 h-12 transition-all duration-200 ${isHoveredLocal || isPendingConfirm ? 'text-star-white drop-shadow-[0_0_15px_var(--color-toxic-green)]' : 'text-toxic-green'}`}
           />
 
           <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
@@ -138,12 +138,12 @@ export const MapNode = memo(
                   type: node.type.replace('_', ' ')
                 })
               })}
-              className='w-6 h-6 object-contain drop-shadow-[0_0_8px_var(--void-black)]'
+              className='w-6 h-6 object-contain drop-shadow-[0_0_8px_var(--color-void-black)]'
             />
           </div>
         </motion.div>
 
-        <div className='text-[9px] font-bold uppercase tracking-wide text-(--ash-gray) mt-1 pointer-events-none'>
+        <div className='text-[9px] font-bold uppercase tracking-wide text-ash-gray mt-1 pointer-events-none'>
           {node.type === 'GIG'
             ? t('ui:map.nodeType.gig')
             : node.type === 'REST_STOP'
@@ -155,7 +155,7 @@ export const MapNode = memo(
 
         {/* Pending confirmation label */}
         {isPendingConfirm && (
-          <div className='absolute top-0 left-1/2 -translate-x-1/2 text-(--warning-yellow) text-[10px] font-bold whitespace-nowrap pointer-events-none animate-pulse bg-(--void-black)/80 px-1.5 py-0.5 border border-(--warning-yellow) z-20'>
+          <div className='absolute top-0 left-1/2 -translate-x-1/2 text-warning-yellow text-[10px] font-bold whitespace-nowrap pointer-events-none animate-pulse bg-void-black/80 px-1.5 py-0.5 border border-warning-yellow z-20'>
             {t('ui:map.confirm_q')}
           </div>
         )}
@@ -163,22 +163,20 @@ export const MapNode = memo(
         {/* Node Label (Always visible, matching BrutalistUI style) */}
         <div className='mt-2 flex flex-col items-center z-10 pointer-events-none'>
           <span
-            className={`text-[10px] font-bold tracking-widest uppercase text-center transition-colors ${isHoveredLocal || isPendingConfirm ? 'text-(--star-white)' : 'text-(--toxic-green)'}`}
+            className={`text-[10px] font-bold tracking-widest uppercase text-center transition-colors ${isHoveredLocal || isPendingConfirm ? 'text-star-white' : 'text-toxic-green'}`}
           >
             {nodeLocationName}
           </span>
         </div>
 
-        <div className='hidden group-hover:block group-focus:block absolute top-full mt-2 bg-(--void-black)/90 border border-(--toxic-green) p-2 z-50 whitespace-nowrap pointer-events-none'>
-          <div className='font-bold text-(--toxic-green)'>
-            {nodeLocationName}
-          </div>
+        <div className='hidden group-hover:block group-focus:block absolute top-full mt-2 bg-void-black/90 border border-toxic-green p-2 z-50 whitespace-nowrap pointer-events-none'>
+          <div className='font-bold text-toxic-green'>{nodeLocationName}</div>
           {(node.type === 'GIG' ||
             node.type === 'FESTIVAL' ||
             node.type === 'FINALE') && (
-            <div className='text-[10px] text-(--ash-gray) font-mono'>
+            <div className='text-[10px] text-ash-gray font-mono'>
               {node.type === 'FESTIVAL' && (
-                <div className='text-(--warning-yellow) font-bold mb-1'>
+                <div className='text-warning-yellow font-bold mb-1'>
                   {t('ui:map.festival')}
                 </div>
               )}
@@ -192,22 +190,22 @@ export const MapNode = memo(
             </div>
           )}
           {node.type === 'REST_STOP' && (
-            <div className='text-[10px] text-(--warning-yellow) font-mono'>
+            <div className='text-[10px] text-warning-yellow font-mono'>
               {t('ui:map.rest_stop_desc')}
             </div>
           )}
           {node.type === 'SPECIAL' && (
-            <div className='text-[10px] text-(--purple-glow) font-mono'>
+            <div className='text-[10px] text-purple-glow font-mono'>
               {t('ui:map.mystery_desc')}
             </div>
           )}
           {node.type === 'FINALE' && (
-            <div className='text-[10px] text-(--warning-yellow) font-mono font-bold'>
+            <div className='text-[10px] text-warning-yellow font-mono font-bold'>
               {t('ui:map.finale_desc')}
             </div>
           )}
           {isCurrent && (
-            <div className='text-(--blood-red) text-xs font-bold'>
+            <div className='text-blood-red text-xs font-bold'>
               {t('ui:map.current_location')}
             </div>
           )}
