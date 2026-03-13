@@ -90,7 +90,13 @@ export const handleLoadGame = (state, payload) => {
     inventory: {
       ...DEFAULT_BAND_STATE.inventory,
       ...(loadedState.band?.inventory || {})
-    }
+    },
+    stash: Array.isArray(loadedState.band?.stash)
+      ? [...loadedState.band.stash]
+      : [...DEFAULT_BAND_STATE.stash],
+    activeContrabandEffects: Array.isArray(loadedState.band?.activeContrabandEffects)
+      ? [...loadedState.band.activeContrabandEffects]
+      : [...DEFAULT_BAND_STATE.activeContrabandEffects]
   }
   // Validate Band Members
   const validatedMembers = Array.isArray(rawBand.members)
@@ -308,6 +314,36 @@ export const handleAdvanceDay = (state, payload) => {
   )
 
   const newTrend = generateDailyTrend(rng)
+
+  // --- Contraband expiry ---
+  let activeEffects = nextBand.activeContrabandEffects || []
+  activeEffects = activeEffects.map(e => ({ ...e, remainingDuration: e.remainingDuration - 1 }))
+
+  const stillActive = activeEffects.filter(e => e.remainingDuration > 0)
+  const expired = activeEffects.filter(e => e.remainingDuration <= 0)
+
+  // Revert expired effects if needed
+  expired.forEach(e => {
+    // Revert the temporary state applied in bandReducer.js
+    if (e.effectType === 'guitar_difficulty') {
+      nextBand.performance = {
+        ...nextBand.performance,
+        guitarDifficulty: Math.max(0.1, (nextBand.performance.guitarDifficulty || 1) - e.value)
+      }
+    } else if (e.effectType === 'luck') {
+      nextBand.luck = (nextBand.luck || 0) - e.value
+    } else if (e.effectType === 'stamina_max') {
+      nextBand.members = nextBand.members.map(m => ({
+        ...m,
+        staminaMax: Math.max(0, (m.staminaMax || 100) - e.value)
+      }))
+    } else if (e.effectType === 'style') {
+      nextBand.style = (nextBand.style || 0) - e.value
+    }
+  })
+
+  nextBand.activeContrabandEffects = stillActive
+  // -------------------------
 
   let nextState = {
     ...state,

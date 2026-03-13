@@ -736,7 +736,10 @@
     "passiveActive": "PASSIVE EFFECT ACTIVE",
     "close": "CLOSE STASH",
     "button": "STASH",
-    "requiresTarget": "Requires target member."
+    "requiresTarget": "Requires target member.",
+    "gigs": "GIGS",
+    "applied": "APPLIED",
+    "applyItem": "APPLY EFFECT"
   },
   "member": {
     "unknown": "Unknown"

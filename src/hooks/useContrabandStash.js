@@ -26,7 +26,8 @@ export const useContrabandStash = () => {
       useContraband(instanceId, selectedMember)
 
       const translatedName = t(item.name, { defaultValue: item.name })
-      addToast(t('ui:stash.itemUsed', { itemName: translatedName, defaultValue: `Used ${translatedName}!` }), 'success')
+      const messageAction = item.type === 'consumable' ? 'Used' : 'Applied'
+      addToast(t('ui:stash.itemUsed', { itemName: translatedName, defaultValue: `${messageAction} ${translatedName}!` }), 'success')
     },
     [useContraband, selectedMember, addToast, t]
   )

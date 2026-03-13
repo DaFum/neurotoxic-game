@@ -736,7 +736,10 @@
     "passiveActive": "PASSIVER EFFEKT AKTIV",
     "close": "VERSTECK SCHLIESSEN",
     "button": "VERSTECK",
-    "requiresTarget": "Erfordert Zielmitglied."
+    "requiresTarget": "Erfordert Ziel-Mitglied.",
+    "gigs": "GIGS",
+    "applied": "ANGEWENDET",
+    "applyItem": "EFFEKT ANWENDEN"
   },
   "member": {
     "unknown": "Unbekannt"

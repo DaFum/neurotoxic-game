@@ -85,15 +85,28 @@ export const handleAddContraband = (state, payload) => {
 
   const newInstance = {
     ...item,
-    instanceId
+    instanceId,
+    remainingDuration: item.duration || null,
+    applied: !!item.applyOnAdd
+  }
+
+  const newBand = { ...state.band }
+  newBand.stash = [...(newBand.stash || []), newInstance]
+
+  if (item.applyOnAdd && item.type === 'equipment') {
+    if (item.effectType === 'luck') {
+      newBand.luck = (newBand.luck || 0) + item.value
+    } else if (item.effectType === 'stamina_max') {
+      newBand.members = newBand.members.map(m => ({
+        ...m,
+        staminaMax: (m.staminaMax || 100) + item.value
+      }))
+    }
   }
 
   return {
     ...state,
-    band: {
-      ...state.band,
-      stash: [...(state.band.stash || []), newInstance]
-    }
+    band: newBand
   }
 }
 
@@ -111,7 +124,6 @@ export const handleUseContraband = (state, payload) => {
   if (itemIndex === -1) return state
 
   const item = stash[itemIndex]
-  if (item.type !== 'consumable') return state // prevent passive effect stacking
   let newBand = { ...state.band }
   let newStash = [...stash]
 
@@ -122,25 +134,73 @@ export const handleUseContraband = (state, payload) => {
         if (m.id === memberId) {
           return {
             ...m,
-            [item.effectType]: Math.min(100, Math.max(0, m[item.effectType] + item.value))
+            [item.effectType]: Math.min(100, Math.max(0, (m[item.effectType] || 0) + item.value))
           }
         }
         return m
       })
     }
   } else if (item.effectType === 'harmony') {
-    newBand.harmony = clampBandHarmony(newBand.harmony + item.value)
+    newBand.harmony = clampBandHarmony((newBand.harmony || 0) + item.value)
   } else if (item.effectType === 'luck') {
     newBand.luck = (newBand.luck || 0) + item.value
   } else if (item.effectType === 'guitar_difficulty') {
     newBand.performance = {
       ...newBand.performance,
-      guitarDifficulty: Math.max(0.1, newBand.performance.guitarDifficulty + item.value)
+      guitarDifficulty: Math.max(0.1, (newBand.performance.guitarDifficulty || 1) + item.value)
+    }
+    if (item.duration) {
+      newBand.activeContrabandEffects = [
+        ...(newBand.activeContrabandEffects || []),
+        {
+          instanceId: item.instanceId,
+          effectType: item.effectType,
+          value: item.value,
+          remainingDuration: item.duration
+        }
+      ]
+    }
+  } else if (
+    item.effectType === 'tour_success' ||
+    item.effectType === 'gig_modifier' ||
+    item.effectType === 'tempo' ||
+    item.effectType === 'practice_gain' ||
+    item.effectType === 'stamina_max' ||
+    item.effectType === 'crit' ||
+    item.effectType === 'affinity' ||
+    item.effectType === 'style' ||
+    item.effectType === 'crowd_control'
+  ) {
+    if (item.effectType === 'stamina_max') {
+      newBand.members = newBand.members.map(m => ({
+        ...m,
+        staminaMax: (m.staminaMax || 100) + item.value
+      }))
+    } else if (item.effectType === 'luck') {
+      newBand.luck = (newBand.luck || 0) + item.value
+    } else if (item.effectType === 'style') {
+      // Assume style isn't fully implemented yet, store as style field if not there
+      newBand.style = (newBand.style || 0) + item.value
+    }
+
+    if (item.duration) {
+      newBand.activeContrabandEffects = [
+        ...(newBand.activeContrabandEffects || []),
+        {
+          instanceId: item.instanceId,
+          effectType: item.effectType,
+          value: item.value,
+          remainingDuration: item.duration
+        }
+      ]
     }
   }
 
-  // Remove the consumable item from stash
-  newStash.splice(itemIndex, 1)
+  if (item.type === 'consumable') {
+    newStash.splice(itemIndex, 1)
+  } else {
+    newStash[itemIndex] = { ...newStash[itemIndex], applied: true }
+  }
 
   newBand.stash = newStash
   return { ...state, band: newBand }

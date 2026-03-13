@@ -68,18 +68,37 @@ export const ContrabandStash = ({
                 >
                   <div>
                     <div className="flex justify-between items-start mb-2">
-                      <h4 className="text-(--toxic-green) font-bold text-lg font-[Metal_Mania] tracking-wider uppercase drop-shadow-[0_0_5px_var(--toxic-green-20)]">
-                        {t(item.name, { defaultValue: t('ui:item.unknown', { defaultValue: 'Unknown Item' }) })}
-                      </h4>
-                      <span
-                        className={`text-xs px-2 py-1 rounded border font-mono ${
-                          item.type === 'consumable'
-                            ? 'border-(--blood-red) text-(--blood-red) bg-(--blood-red-20)'
-                            : 'border-(--electric-blue) text-(--electric-blue) bg-(--electric-blue-20)'
-                        }`}
-                      >
-                        {item.type ? t(`ui:item.type_${item.type}`, { defaultValue: item.type }) : t('ui:item.typeUnknown', { defaultValue: 'Unknown Type' })}
-                      </span>
+                      <div className="flex flex-col gap-1">
+                        <h4 className="text-(--toxic-green) font-bold text-lg font-[Metal_Mania] tracking-wider uppercase drop-shadow-[0_0_5px_var(--toxic-green-20)]">
+                          {t(item.name, { defaultValue: t('ui:item.unknown', { defaultValue: 'Unknown Item' }) })}
+                        </h4>
+                        <div className="flex gap-2 text-xs font-mono">
+                          <span className={
+                            item.rarity === 'common' ? 'text-(--ash-gray)' :
+                            item.rarity === 'uncommon' ? 'text-(--electric-blue)' :
+                            item.rarity === 'rare' ? 'text-(--toxic-green)' :
+                            'text-[var(--alert-amber)]' // epic
+                          }>
+                            {t(`ui:rarity.${item.rarity}`, { defaultValue: item.rarity?.toUpperCase() })}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1 items-end">
+                        <span
+                          className={`text-xs px-2 py-1 rounded border font-mono ${
+                            item.type === 'consumable'
+                              ? 'border-(--blood-red) text-(--blood-red) bg-(--blood-red-20)'
+                              : 'border-(--electric-blue) text-(--electric-blue) bg-(--electric-blue-20)'
+                          }`}
+                        >
+                          {item.type ? t(`ui:item.type_${item.type}`, { defaultValue: item.type }) : t('ui:item.typeUnknown', { defaultValue: 'Unknown Type' })}
+                        </span>
+                        {item.duration && (
+                          <span className="text-xs text-(--ash-gray) italic">
+                            {item.duration} {t('ui:contraband.gigs', { defaultValue: 'GIGS' })}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <p className="text-(--ash-gray) text-xs mb-4 min-h-[40px] leading-relaxed">
                       {item.description ? t(item.description, { defaultValue: t('ui:item.descriptionUnknown', { defaultValue: 'Unknown Description' }) }) : t('ui:item.descriptionUnknown', { defaultValue: 'Unknown Description' })}
@@ -87,20 +106,26 @@ export const ContrabandStash = ({
                   </div>
 
                   <div className="mt-auto">
-                    {requiresTarget && !selectedMember ? (
+                    {requiresTarget && !selectedMember && !item.applied && item.type === 'consumable' ? (
                       <p className="text-(--blood-red) text-xs mb-2 italic">
                         {t('ui:contraband.requiresTarget', { defaultValue: 'Requires target member.' })}
                       </p>
                     ) : null}
 
-                    {item.type === 'consumable' ? (
+                    {item.applied ? (
+                      <div className="w-full text-center text-xs text-(--electric-blue) border border-(--electric-blue-20) py-2 bg-(--electric-blue-10)">
+                        {t('ui:contraband.applied', { defaultValue: 'APPLIED' })}
+                      </div>
+                    ) : item.type === 'consumable' || !item.applyOnAdd ? (
                       <ActionButton
                         onClick={() => useItem(item.instanceId, item)}
                         disabled={requiresTarget && !selectedMember}
                         variant="primary"
                         className="w-full text-sm font-bold"
                       >
-                        {t('ui:contraband.useItem', { defaultValue: 'USE ITEM' })}
+                        {item.type === 'consumable'
+                          ? t('ui:contraband.useItem', { defaultValue: 'USE ITEM' })
+                          : t('ui:contraband.applyItem', { defaultValue: 'APPLY EFFECT' })}
                       </ActionButton>
                     ) : (
                       <div className="w-full text-center text-xs text-(--electric-blue) border border-(--electric-blue-20) py-2 bg-(--electric-blue-10)">
