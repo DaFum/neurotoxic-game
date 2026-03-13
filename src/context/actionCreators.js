@@ -238,10 +238,13 @@ export const createStartTravelMinigameAction = targetNodeId => ({
  */
 export const createCompleteTravelMinigameAction = (
   damageTaken,
-  itemsCollected
+  itemsCollected,
+  rngValue,
+  contrabandId,
+  instanceId
 ) => ({
   type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
-  payload: { damageTaken, itemsCollected }
+  payload: { damageTaken, itemsCollected, rngValue, contrabandId, instanceId }
 })
 
 /**
