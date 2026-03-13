@@ -24,3 +24,16 @@ test('ActionButton applies custom classes and type', () => {
   expect(button).toHaveAttribute('type', 'submit')
   expect(button).toHaveClass('custom-class')
 })
+
+test('ActionButton passes through additional props and uses ref', () => {
+  const mockRef = vi.fn()
+  render(
+    <ActionButton ref={mockRef} aria-label='custom-aria'>
+      Custom Props
+    </ActionButton>
+  )
+
+  const button = screen.getByRole('button', { name: 'custom-aria' })
+  expect(button).toBeInTheDocument()
+  expect(mockRef).toHaveBeenCalled()
+})
