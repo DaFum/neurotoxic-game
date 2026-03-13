@@ -30,13 +30,13 @@ export const HecklerOverlay = memo(function HecklerOverlay({ gameStateRef }) {
         }
 
         // Remove old nodes that are no longer in the state
-        // Optimization: Use a persistent Set to avoid GC overhead while maintaining O(1) lookups
-        for (const [id, node] of nodeCache.entries()) {
+        // Optimization: Use forEach to avoid iterator allocation and GC churn in hot loop
+        nodeCache.forEach((node, id) => {
           if (!seenIds.has(id)) {
             container.removeChild(node)
             nodeCache.delete(id)
           }
-        }
+        })
 
         // Add new nodes and update existing ones
         for (let i = 0; i < projectiles.length; i++) {
