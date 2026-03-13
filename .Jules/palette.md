@@ -29,3 +29,8 @@
 
 **Learning:** Icon-only navigation and control buttons (like the Mute or Help buttons in the HUD) can be ambiguous or completely inaccessible to visually impaired users if they lack aria-labels or visual tooltips, violating WCAG principles.
 **Action:** When adding or maintaining icon-only buttons, always wrap them in existing `Tooltip` components (if available) for sighted users and explicitly define descriptive `aria-label`s for screen-reader accessibility.
+
+## 2025-05-19 - Explicit Focus Indicators for Custom Hover States
+
+**Learning:** Relying solely on `hover:` utilities to indicate interactivity can make components completely inaccessible to keyboard users, especially if the default browser focus ring is disabled or insufficient against the background.
+**Action:** Whenever introducing custom `hover:` states (like changing background color or border), always explicitly pair them with `focus-visible:` utilities (like `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-color`) to ensure keyboard navigability.

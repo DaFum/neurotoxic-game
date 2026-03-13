@@ -156,7 +156,7 @@ export const HUD = () => {
                   ? t('ui:aria.unmuteSystem', { defaultValue: 'Unmute system' })
                   : t('ui:aria.muteSystem', { defaultValue: 'Mute system' })
               }
-              className='pointer-events-auto bg-void-black/90 border border-toxic-green/60 p-2 text-toxic-green w-fit hover:bg-toxic-green hover:text-void-black transition-colors block'
+              className='pointer-events-auto bg-void-black/90 border border-toxic-green/60 p-2 text-toxic-green w-fit hover:bg-toxic-green hover:text-void-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green transition-colors block'
             >
               {audioState.isMuted ? (
                 <VolumeX size={14} />
@@ -176,10 +176,10 @@ export const HUD = () => {
               aria-label={t('ui:aria.shortcutsHelp', {
                 defaultValue: 'Toggle keyboard shortcuts help'
               })}
-              className={`pointer-events-auto bg-void-black/90 border p-2 w-fit transition-colors block ${
+              className={`pointer-events-auto bg-void-black/90 border p-2 w-fit transition-colors block focus-visible:outline-none focus-visible:ring-2 ${
                 showHelp
-                  ? 'border-warning-yellow text-warning-yellow'
-                  : 'border-toxic-green/60 text-toxic-green hover:bg-toxic-green hover:text-void-black'
+                  ? 'border-warning-yellow text-warning-yellow focus-visible:ring-warning-yellow'
+                  : 'border-toxic-green/60 text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green'
               }`}
             >
               <HelpCircle size={14} />
