@@ -170,6 +170,7 @@ const DEFAULT_SETTINGS = {
  * @type {Object}
  */
 export const initialState = {
+  version: 1.1,
   currentScene: GAME_PHASES.INTRO,
   player: { ...DEFAULT_PLAYER_STATE },
   band: { ...DEFAULT_BAND_STATE },
@@ -200,6 +201,7 @@ export const initialState = {
  */
 export const createInitialState = (persistedData = {}) => ({
   ...initialState,
+  version: 1.1,
   player: structuredClone(DEFAULT_PLAYER_STATE),
   venueBlacklist: [],
   activeQuests: [],

@@ -86,6 +86,7 @@ const normalizeSetlistForSave = setlist => {
 
 const createPersistedState = currentState => {
   const {
+    version,
     currentScene,
     player,
     band,
@@ -107,6 +108,7 @@ const createPersistedState = currentState => {
   } = currentState
 
   return {
+    version,
     timestamp: Date.now(),
     currentScene,
     player,
@@ -512,9 +514,14 @@ export const GameStateProvider = ({ children }) => {
           if (!saved) return false
           parsed = JSON.parse(saved)
         } catch (error) {
-          handleError(new StateError('Save file parsing failed. Falling back to initial state.'), {
-            addToast
-          })
+          handleError(
+            new StateError(
+              tRef.current('ui:save.parseFailed', {
+                defaultValue: 'Save file parsing failed. Falling back to initial state.'
+              })
+            ),
+            { addToast }
+          )
           return false
         }
 
