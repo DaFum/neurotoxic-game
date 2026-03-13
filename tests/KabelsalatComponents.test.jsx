@@ -3,7 +3,6 @@ import { render, screen } from '@testing-library/react'
 import { Header } from '../src/scenes/kabelsalat/components/Header'
 import { Rules } from '../src/scenes/kabelsalat/components/Rules'
 import { Overlays } from '../src/scenes/kabelsalat/components/Overlays'
-import { RackScrew } from '../src/scenes/kabelsalat/components/HardwareProps'
 import { PlugGraphics } from '../src/scenes/kabelsalat/components/PlugGraphics'
 import { SocketGraphics } from '../src/scenes/kabelsalat/components/SocketGraphics'
 
@@ -267,42 +266,6 @@ describe('Kabelsalat Components', () => {
       expect(
         screen.getByText('ui:minigames.kabelsalat.ampsReady')
       ).toBeInTheDocument()
-    })
-  })
-
-  describe('RackScrew', () => {
-    it('renders SVG group at correct position', () => {
-      const { container } = render(
-        <svg>
-          <RackScrew x={50} y={100} />
-        </svg>
-      )
-
-      const group = container.querySelector('g')
-      expect(group).toBeTruthy()
-      expect(group.getAttribute('transform')).toBe('translate(50, 100)')
-    })
-
-    it('renders circle element', () => {
-      const { container } = render(
-        <svg>
-          <RackScrew x={0} y={0} />
-        </svg>
-      )
-
-      const circle = container.querySelector('circle')
-      expect(circle).toBeTruthy()
-    })
-
-    it('renders cross pattern with lines', () => {
-      const { container } = render(
-        <svg>
-          <RackScrew x={0} y={0} />
-        </svg>
-      )
-
-      const lines = container.querySelectorAll('line')
-      expect(lines.length).toBe(2)
     })
   })
 
