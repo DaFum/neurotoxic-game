@@ -171,7 +171,7 @@ test('validateSaveData clamps wildly out-of-bounds metrics', () => {
   const data = {
     player: { money: -1000, fame: -500, score: -100 },
     band: {
-      harmony: 999,
+      harmony: -50,
       members: [
         { name: 'Alex', mood: 999, stamina: -50 }
       ]
@@ -185,7 +185,7 @@ test('validateSaveData clamps wildly out-of-bounds metrics', () => {
   assert.equal(data.player.fame, 0, 'Negative fame should be clamped to 0')
   assert.equal(data.player.score, 0, 'Negative score should be clamped to 0')
   assert.equal(data.player.money, 0, 'Negative money should be clamped to 0')
-  assert.equal(data.band.harmony, 100, 'Harmony > 100 should be clamped to 100')
+  assert.equal(data.band.harmony, 1, 'Negative harmony should be clamped to 1')
   assert.equal(data.band.members[0].mood, 100, 'Mood > 100 should be clamped to 100')
   assert.equal(data.band.members[0].stamina, 0, 'Negative stamina should be clamped to 0')
 })

@@ -2,6 +2,14 @@ import { hasTrait } from './traitLogic.js'
 import { EXPENSE_CONSTANTS } from './economyEngine.js'
 
 /**
+ * Clamps a value to be at least 0.
+ *
+ * @param {number} value - Candidate value.
+ * @returns {number} Clamped value ensuring non-negative.
+ */
+export const clampNonNegative = value => Math.max(0, value)
+
+/**
  * Derives fame level from raw fame.
  * @param {number} fame - Raw fame amount.
  * @returns {number} Derived fame level.

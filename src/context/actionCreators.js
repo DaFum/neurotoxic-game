@@ -7,13 +7,6 @@
 import { ActionTypes } from './actionTypes.js'
 
 /**
- * Monotonic counter for generating unique toast IDs
- * Combines with timestamp to ensure uniqueness even for back-to-back toasts
- * @type {number}
- */
-let toastIdCounter = 0
-
-/**
  * Creates a scene change action
  * @param {string} scene - Target scene name
  * @returns {Object} Action object
