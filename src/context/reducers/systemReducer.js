@@ -140,9 +140,10 @@ export const handleLoadGame = (state, payload) => {
   const mergedSocial = { ...DEFAULT_SOCIAL_STATE, ...loadedState.social }
 
   // 4. Construct Safe State (Whitelist)
+  const parsedVersion = parseInt(loadedState.version, 10)
   const safeState = {
     ...state,
-    version: Number.isFinite(parseInt(loadedState.version, 10)) ? parseInt(loadedState.version, 10) : 0,
+    version: Number.isFinite(parsedVersion) ? parsedVersion : 0,
     player: mergedPlayer,
     band: validatedBand,
     social: mergedSocial,
@@ -258,7 +259,7 @@ export const handleLoadGame = (state, payload) => {
   }
 
   // Version Migration Map
-  if (migratedState.version === undefined || migratedState.version < 2) {
+  if (migratedState.version < 2) {
     // 1.0 -> 2 additions (if any structured layout changes need applying)
     migratedState.version = 2
   }

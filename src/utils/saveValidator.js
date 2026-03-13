@@ -30,7 +30,7 @@ export const validateSaveData = data => {
     }
   }
 
-  if (data.version !== undefined && !Number.isInteger(data.version)) {
+  if (data.version !== undefined && !/^\d+$/.test(String(data.version))) {
     throw new StateError('Save version must be an integer')
   }
 
