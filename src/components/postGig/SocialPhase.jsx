@@ -102,7 +102,7 @@ export const SocialPhase = ({ options, onSelect, trend, zealotryLevel = 0 }) => 
               style={{ width: `${Math.min(100, Math.max(0, zealotryLevel))}%` }}
             />
           </div>
-          {zealotryLevel >= 50 && (
+          {zealotryLevel >= 80 && (
             <div className='text-[10px] text-blood-red/80 mt-1 uppercase animate-pulse'>
               {t('economy:social.zealotryWarning', { defaultValue: 'WARNING: FANS ARE BECOMING RADICALIZED. POLICE RAID RISK INCREASED.' })}
             </div>

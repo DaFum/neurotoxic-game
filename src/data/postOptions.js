@@ -107,10 +107,11 @@ export const POST_OPTIONS = [
       type: 'FIXED',
       success: true,
       platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
-      followers: 100,
-      loyaltyChange: 5,
-      zealotryChange: 15,
-      message: 'Your fans have embraced the cult.'
+      followers: -50,
+      controversyChange: 5,
+      loyaltyChange: 2,
+      zealotryChange: 8,
+      message: 'Your hardcore fans loved it. Casuals were disturbed.'
     })
   },
   // --- CATEGORY: RECOVERY & CRISIS ---

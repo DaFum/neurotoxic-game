@@ -465,8 +465,8 @@ export const generateBrandName = (baseName, alignment, rng = secureRandom) => {
  * @returns {Array} List of offer objects.
  */
 export const calculateZealotryEffects = (zealotry) => ({
-  passiveIncome: Math.floor((zealotry || 0) * 0.5),
-  raidProbability: ((zealotry || 0) / 100) * 0.15
+  passiveIncome: Math.floor((zealotry || 0) * 1.2),
+  raidProbability: ((zealotry || 0) / 100) * 0.08
 })
 
 export const generateBrandOffers = (gameState, rng = secureRandom) => {

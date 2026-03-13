@@ -5,16 +5,16 @@ import { calculateZealotryEffects, generateBrandOffers } from '../src/utils/soci
 describe('calculateZealotryEffects', () => {
   it('should calculate passive income properly', () => {
     assert.strictEqual(calculateZealotryEffects(0).passiveIncome, 0)
-    assert.strictEqual(calculateZealotryEffects(10).passiveIncome, 5)
-    assert.strictEqual(calculateZealotryEffects(50).passiveIncome, 25)
-    assert.strictEqual(calculateZealotryEffects(100).passiveIncome, 50)
+    assert.strictEqual(calculateZealotryEffects(10).passiveIncome, 12)
+    assert.strictEqual(calculateZealotryEffects(50).passiveIncome, 60)
+    assert.strictEqual(calculateZealotryEffects(100).passiveIncome, 120)
   })
 
   it('should calculate raid probability properly', () => {
     assert.strictEqual(calculateZealotryEffects(0).raidProbability, 0)
-    assert.strictEqual(calculateZealotryEffects(10).raidProbability, 0.015)
-    assert.strictEqual(calculateZealotryEffects(50).raidProbability, 0.075)
-    assert.strictEqual(calculateZealotryEffects(100).raidProbability, 0.15)
+    assert.strictEqual(calculateZealotryEffects(10).raidProbability, 0.008)
+    assert.strictEqual(calculateZealotryEffects(50).raidProbability, 0.04)
+    assert.strictEqual(calculateZealotryEffects(100).raidProbability, 0.08)
   })
 })
 

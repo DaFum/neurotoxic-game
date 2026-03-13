@@ -521,7 +521,7 @@ export const calculateGigFinancials = ({
   // Apply automated promo from zealotry to tickets
   const zealotry = context.zealotry || 0
   const effectiveModifiers = { ...modifiers }
-  if (zealotry > 50) {
+  if (zealotry >= 80) {
     effectiveModifiers.promo = true
   }
 
@@ -577,7 +577,7 @@ export const calculateGigFinancials = ({
   // 6. Expenses (Modifiers)
   const costModifiers = { ...modifiers }
   // If zealotry is high, player does not pay for promo even if they explicitly checked it
-  if (zealotry > 50) {
+  if (zealotry >= 80) {
     costModifiers.promo = false
   }
 
