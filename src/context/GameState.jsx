@@ -526,7 +526,11 @@ export const GameStateProvider = ({ children }) => {
         }
 
         if (!isPlainObject(parsed)) {
-          handleError(new StateError('Save file is corrupt or invalid.'), {
+          handleError(new StateError(
+            tRef.current('ui:save.corruptFailed', {
+              defaultValue: 'Save file is corrupt or invalid.'
+            })
+          ), {
             addToast
           })
           return false
@@ -537,7 +541,10 @@ export const GameStateProvider = ({ children }) => {
           validateSaveData(parsed)
         } catch (error) {
           handleError(
-            new StateError('Save file is corrupt or invalid.', {
+            new StateError(
+              tRef.current('ui:save.corruptFailed', {
+                defaultValue: 'Save file is corrupt or invalid.'
+              }), {
               reason: error.message
             }),
             { addToast }
