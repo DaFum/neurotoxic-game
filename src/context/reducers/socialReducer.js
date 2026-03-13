@@ -73,7 +73,7 @@ export const handleAddVenueBlacklist = (state, venueId) => {
     nextState.toasts = [
       ...(nextState.toasts || []),
       {
-        id: Date.now().toString(),
+        id: crypto.randomUUID(),
         message: `ui:toast.fans_defended`,
         type: 'info'
       }
@@ -83,7 +83,7 @@ export const handleAddVenueBlacklist = (state, venueId) => {
     nextState.toasts = [
       ...(nextState.toasts || []),
       {
-        id: Date.now().toString(),
+        id: crypto.randomUUID(),
         message: `ui:toast.blacklisted|${JSON.stringify({ venueLabel: `venues:${venueId}.name` })}`,
         type: 'error'
       }

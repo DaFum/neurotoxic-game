@@ -244,7 +244,7 @@ export const ChatterOverlay = memo(({ gameState }) => {
               ? memberNames[Math.floor(Math.random() * memberNames.length)]
               : t('ui:chatter_labels.default_speaker', { defaultValue: 'Band' })
 
-          const newMessage = { id: Date.now(), text, speaker, type }
+          const newMessage = { id: crypto.randomUUID(), text, speaker, type }
 
           setMessages(prev => [
             ...prev.slice(-4), // Keep max 5 (4 old + 1 new)

@@ -253,10 +253,13 @@ export const handleLoadGame = (state, payload) => {
   // Migration: energy -> catering
   if (migratedState.gigModifiers.energy !== undefined) {
     const { energy, ...restModifiers } = migratedState.gigModifiers
-    return {
-      ...migratedState,
-      gigModifiers: { ...restModifiers, catering: energy }
-    }
+    migratedState.gigModifiers = { ...restModifiers, catering: energy }
+  }
+
+  // Version Migration Map
+  if (migratedState.version === undefined || migratedState.version < 1.1) {
+    // 1.0 -> 1.1 additions (if any structured layout changes need applying)
+    migratedState.version = 1.1
   }
 
   return migratedState
