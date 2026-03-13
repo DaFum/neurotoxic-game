@@ -2,6 +2,8 @@
 
 Tailwind CSS v4 treats CSS variables as first-class citizens, enabling powerful integrations with animation and rendering libraries.
 
+> **Convention:** All color tokens are defined in `src/index.css` inside `@theme` with the `--color-` prefix (e.g., `--color-toxic-green`). In Tailwind class names, use native token utilities (`bg-void-black`, `text-toxic-green`). In inline `style` / Framer Motion `animate` props, use `var(--color-toxic-green)`.
+
 ## Framer Motion Integration
 
 Since Tailwind v4 defines variables in the CSS layer (e.g., `@theme`), you can animate them directly using Framer Motion.
@@ -15,10 +17,10 @@ import { motion } from 'framer-motion'
 
 export const ToxicButton = () => (
   <motion.button
-    className='px-4 py-2 bg-(--void-black) text-(--toxic-green) border border-(--toxic-green)'
+    className='px-4 py-2 bg-void-black text-toxic-green border border-toxic-green'
     whileHover={{
-      backgroundColor: 'var(--toxic-green)',
-      color: 'var(--void-black)'
+      backgroundColor: 'var(--color-toxic-green)',
+      color: 'var(--color-void-black)'
     }}
     transition={{ duration: 0.3 }}
   >
@@ -33,14 +35,14 @@ For complex effects (e.g., a glow shared by multiple children), animate the vari
 
 ```jsx
 <motion.div
-  className='p-10 border-(--toxic-green) border'
+  className='p-10 border-toxic-green border'
   initial={{ '--glow-opacity': 0 }}
   animate={{ '--glow-opacity': 1 }}
   style={{
     boxShadow: '0 0 20px rgba(57, 255, 20, var(--glow-opacity))'
   }}
 >
-  <p className='text-(--toxic-green)'>Glow Effect</p>
+  <p className='text-toxic-green'>Glow Effect</p>
 </motion.div>
 ```
 
@@ -51,7 +53,7 @@ Use Tailwind variants to set different variable values per breakpoint, which Fra
 ```jsx
 <motion.div
   // Tailwind v4 sets different values for --move-x based on screen size
-  className='[--move-x:50px] md:[--move-x:200px] w-10 h-10 bg-(--toxic-green)'
+  className='[--move-x:50px] md:[--move-x:200px] w-10 h-10 bg-toxic-green'
   animate={{ x: 'var(--move-x)' }}
   transition={{ repeat: Infinity, repeatType: 'mirror', duration: 2 }}
 />

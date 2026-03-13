@@ -1,5 +1,6 @@
 import { lazy, Suspense, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { MainMenu } from './scenes/MainMenu'
 import { HUD } from './ui/HUD'
 import { EventModal } from './ui/EventModal'
@@ -62,13 +63,16 @@ const IntroVideo = lazy(
   createNamedLazyLoader(() => import('./scenes/IntroVideo'), 'IntroVideo')
 )
 
-const SceneLoadingFallback = () => (
-  <div className='absolute inset-0 z-30 flex items-center justify-center pointer-events-none'>
-    <div className='border-2 border-toxic-green bg-void-black/90 px-6 py-3 font-mono text-toxic-green tracking-widest uppercase'>
-      Loading Scene...
+const SceneLoadingFallback = () => {
+  const { t } = useTranslation()
+  return (
+    <div className='absolute inset-0 z-30 flex items-center justify-center pointer-events-none'>
+      <div className='border-2 border-toxic-green bg-void-black/90 px-6 py-3 font-mono text-toxic-green tracking-widest uppercase'>
+        {t('ui:scene.loading', { defaultValue: 'Loading Scene...' })}
+      </div>
     </div>
-  </div>
-)
+  )
+}
 
 /**
  * Wählt basierend auf dem aktuellen Spielzustand die passende Szene aus und rendert diese zusammen mit globalen Overlays und Hilfekomponenten (HUD, Toasts, ChatterOverlay, TutorialManager, EventModal) sowie Telemetrie-Komponenten.

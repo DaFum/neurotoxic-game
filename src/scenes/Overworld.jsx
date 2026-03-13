@@ -392,11 +392,23 @@ export const Overworld = () => {
           {t('ui:overworld.event_log', { defaultValue: 'EVENT LOG:' })}
         </h3>
         <p className='text-xs text-ash-gray font-mono'>
-          &gt; Locations loaded: {ALL_VENUES.length}
+          &gt;{' '}
+          {t('ui:overworld.locations_loaded', {
+            count: ALL_VENUES.length,
+            defaultValue: `Locations loaded: ${ALL_VENUES.length}`
+          })}
           <br />
-          &gt; {player.day}.01.2026: Tour active.
+          &gt;{' '}
+          {t('ui:overworld.tour_active', {
+            date: `${player.day}.01.2026`,
+            defaultValue: `${player.day}.01.2026: Tour active.`
+          })}
           <br />
-          &gt; {locationName} secured.
+          &gt;{' '}
+          {t('ui:overworld.location_secured', {
+            location: locationName,
+            defaultValue: `${locationName} secured.`
+          })}
         </p>
       </div>
 

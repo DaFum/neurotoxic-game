@@ -179,11 +179,10 @@ body {
   display: block;
   position: absolute;
   inset: 0;
-  background-color: rgb(0 0 0 / 0%);
   opacity: 0;
   pointer-events: none;
   /* Breitere, langsamere Scanline für das "VHS-Tracking"-Gefühl */
-  background: linear-gradient(
+  background-image: linear-gradient(
     to bottom,
     transparent 50%,
     var(--color-toxic-green-5) 51%,
@@ -236,12 +235,12 @@ button {
 }
 
 @keyframes scene-fade-in {
-  from {
+  0% {
     opacity: 0;
     transform: scale(0.98);
   }
 
-  to {
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -253,7 +252,7 @@ button {
 }
 
 @keyframes credits-scroll {
-  from {
+  0% {
     transform: translateY(60vh);
     opacity: 0;
   }
@@ -266,7 +265,7 @@ button {
     opacity: 1;
   }
 
-  to {
+  100% {
     transform: translateY(-100%);
     opacity: 0;
   }
@@ -274,11 +273,11 @@ button {
 
 /* Shimmer scan effect for buttons */
 @keyframes shimmer {
-  from {
+  0% {
     transform: translateX(-100%) skewX(-12deg);
   }
 
-  to {
+  100% {
     transform: translateX(200%) skewX(-12deg);
   }
 }
@@ -293,8 +292,8 @@ button {
 
 /* ── Pulse Glow (Standard-Fokus & Interaktion) ── */
 @keyframes pulse-glow {
-  from,
-  to {
+  0%,
+  100% {
     box-shadow: 0 0 8px var(--color-toxic-green-20);
     border-color: var(--color-toxic-green-50);
   }
@@ -340,7 +339,7 @@ button {
 
 /* Stat bar fill */
 @keyframes bar-fill {
-  from {
+  0% {
     width: 0%;
   }
 }
@@ -375,12 +374,12 @@ button {
 
 /* Stagger children fade in */
 @keyframes stagger-in {
-  from {
+  0% {
     opacity: 0;
     transform: translateY(10px);
   }
 
-  to {
+  100% {
     opacity: 1;
     transform: translateY(0);
   }
@@ -505,8 +504,8 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
 
 /* ── UX: Confirm pulse for travel nodes ── */
 @keyframes confirm-pulse {
-  from,
-  to {
+  0%,
+  100% {
     box-shadow:
       0 0 8px var(--color-warning-yellow),
       0 0 16px var(--color-warning-yellow-30);
@@ -573,10 +572,10 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
 }
 
 @keyframes typing {
-  from {
+  0% {
     width: 0;
   }
-  to {
+  100% {
     width: 100%;
   }
 }
@@ -680,11 +679,11 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
 }
 
 @keyframes slide-in {
-  from {
+  0% {
     transform: translateX(-10px);
     opacity: 0;
   }
-  to {
+  100% {
     transform: translateX(0);
     opacity: 1;
   }
