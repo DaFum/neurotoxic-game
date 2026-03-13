@@ -263,5 +263,31 @@ export const IMG_PROMPTS = {
   ITEM_SILVER_TONGUE:
     'pixel art literal silver metallic tongue dripping black liquid dark icon',
   ITEM_BROKEN_COMPASS:
-    'pixel art shattered compass with a wildly spinning needle glowing icon'
+    'pixel art shattered compass with a wildly spinning needle glowing icon',
+
+  // Social & Brand Deals
+  SOCIAL_POST_VIRAL:
+    'pixel art smartphone screen glowing toxic green fire trending viral icon',
+  SOCIAL_POST_DRAMA:
+    'pixel art cracked phone screen angry emoji notification drama icon',
+  SOCIAL_POST_TECH:
+    'pixel art cybernetic smartphone interface circuit board green glowing icon',
+  SOCIAL_POST_MUSIC:
+    'pixel art smartphone playing heavy metal music notes equalizer icon',
+  SOCIAL_POST_WHOLESOME:
+    'pixel art smartphone with heart icons peaceful green glow icon',
+  SOCIAL_POST_COMMERCIAL:
+    'pixel art smartphone screen displaying stack of euro bills money icon',
+  SOCIAL_POST_LIFESTYLE:
+    'pixel art polaroid photo of band on tour gritty lifestyle icon',
+  BRAND_DEAL_EVIL:
+    'pixel art glowing green toxic contract document dark corporate icon',
+  BRAND_DEAL_CORPORATE:
+    'pixel art sterile metallic briefcase full of money corporate deal icon',
+  BRAND_DEAL_INDIE:
+    'pixel art grunge cassette tape indie label contract document icon',
+  BRAND_DEAL_SUSTAINABLE:
+    'pixel art recycled paper contract with leaf stamp green icon',
+  ZEALOTRY_CULT:
+    'pixel art hooded cultist playing guitar toxic green fire dark ritual icon'
 }

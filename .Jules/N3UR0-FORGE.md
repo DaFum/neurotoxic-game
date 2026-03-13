@@ -1,0 +1,2 @@
+## 2026-02-24 - N3UR0-FORGE INITIALIZED\n**Feature:** Boot sequence\n**Description:** Initialized N3UR0-FORGE journal.
+\n## 2026-02-24 - SOCIAL EXPANSION ARCHITECTURE\n**Feature:** Social & Brand Deal Image Integration\n**Description:** Grafted the existing imageGen utility into the social events, brand deals, zealotry system, and post Gig complete events. Added specific IMG_PROMPTS for different social categories (viral, drama, tech, music, commercial, lifestyle) and brand alignments (evil, corporate, indie, sustainable).

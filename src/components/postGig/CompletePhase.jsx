@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
+import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 
 export const CompletePhase = ({
   result,
@@ -14,13 +15,29 @@ export const CompletePhase = ({
   const hasPR = player?.hqUpgrades?.includes('pr_manager_contract')
   const isHighControversy = (social?.controversyLevel || 0) > 50
 
+  const getOutcomeImagePrompt = () => {
+    if (!result.success) return IMG_PROMPTS.SOCIAL_POST_DRAMA
+    if (result.platform === 'tiktok' || result.platform === 'instagram') return IMG_PROMPTS.SOCIAL_POST_VIRAL
+    if (result.platform === 'youtube') return IMG_PROMPTS.SOCIAL_POST_MUSIC
+    return IMG_PROMPTS.SOCIAL_POST_LIFESTYLE
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className='text-center py-4'
+      className='text-center py-4 relative'
     >
-      <motion.h3
+      {/* Background visual summary */}
+      <div
+        className='absolute inset-0 opacity-10 bg-cover bg-center mix-blend-screen pointer-events-none rounded'
+        style={{
+          backgroundImage: `url("${getGenImageUrl(getOutcomeImagePrompt())}")`
+        }}
+      />
+
+      <div className='relative z-10'>
+        <motion.h3
         initial={{ scale: 0.5, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
@@ -152,9 +169,10 @@ export const CompletePhase = ({
           variant='primary'
           className='px-8 py-3 text-void-black'
         >
-          {t('ui:postGig.backToTour', { defaultValue: 'Back to Tour >' })}
-        </ActionButton>
-      </motion.div>
+            {t('ui:postGig.backToTour', { defaultValue: 'Back to Tour >' })}
+          </ActionButton>
+        </motion.div>
+      </div>
     </motion.div>
   )
 }

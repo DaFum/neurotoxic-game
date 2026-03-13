@@ -6,6 +6,7 @@ import { negotiateDeal } from '../../utils/socialEngine'
 import { Modal, ActionButton } from '../../ui/shared'
 import { BRAND_ALIGNMENTS } from '../../context/initialState'
 import { handleError } from '../../utils/errorHandler.js'
+import { getGenImageUrl, IMG_PROMPTS } from '../../utils/imageGen.js'
 
 const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
   const { t } = useTranslation()
@@ -131,60 +132,71 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
                 {displayDeal.alignment?.[0]}
               </div>
 
-              <div className='flex-1 z-10'>
-                <div className='flex items-baseline gap-3'>
-                  <div
-                    className={`font-bold text-lg ${isRevoked ? 'text-blood-red line-through' : 'text-toxic-green'}`}
-                  >
-                    {displayDeal.name}
+              <div className='flex-1 z-10 flex gap-4'>
+                {displayDeal.alignment && (
+                  <div className='shrink-0'>
+                    <img
+                      src={getGenImageUrl(getAlignmentImagePrompt(displayDeal.alignment))}
+                      alt={displayDeal.alignment}
+                      className={`w-16 h-16 object-contain border-2 ${isRevoked ? 'border-blood-red opacity-50 grayscale' : 'border-toxic-green/50'}`}
+                    />
                   </div>
-                  {displayDeal.alignment && (
-                    <span
-                      className={`text-[10px] font-mono border border-current px-1 rounded ${getAlignmentColor(displayDeal.alignment)}`}
+                )}
+                <div className='flex-1'>
+                  <div className='flex items-baseline gap-3'>
+                    <div
+                      className={`font-bold text-lg ${isRevoked ? 'text-blood-red line-through' : 'text-toxic-green'}`}
                     >
-                      {getAlignmentBadge(displayDeal.alignment)}
-                    </span>
-                  )}
-                </div>
+                      {displayDeal.name}
+                    </div>
+                    {displayDeal.alignment && (
+                      <span
+                        className={`text-[10px] font-mono border border-current px-1 rounded ${getAlignmentColor(displayDeal.alignment)}`}
+                      >
+                        {getAlignmentBadge(displayDeal.alignment)}
+                      </span>
+                    )}
+                  </div>
 
-                <div className='text-xs text-ash-gray italic mb-2'>
-                  {displayDeal.description}
-                </div>
-                <div className='text-xs font-mono grid grid-cols-2 gap-x-4 gap-y-1 text-star-white/80'>
-                  <div>💰 {t('ui:deals.upfront', { defaultValue: 'Upfront' })}: {displayDeal.offer.upfront}€</div>
-                  <div>📅 {t('ui:deals.duration', { defaultValue: 'Duration' })}: {displayDeal.offer.duration} {t('ui:deals.gigs', { defaultValue: 'Gigs' })}</div>
-                  {displayDeal.offer.perGig && (
-                    <div>💵 {t('ui:deals.perGig', { defaultValue: 'Per Gig' })}: {displayDeal.offer.perGig}€</div>
-                  )}
-                  {displayDeal.offer.item && (
-                    <div>🎁 {t('ui:deals.item', { defaultValue: 'Item' })}: {displayDeal.offer.item}</div>
-                  )}
-                  {displayDeal.penalty && (
-                    <div className='text-blood-red'>
-                      ⚠️ {t('ui:deals.risk', { defaultValue: 'Risk' })}:{' '}
-                      {Object.entries(displayDeal.penalty)
-                        .map(([k, v]) => `${k}: ${v}`)
-                        .join(', ')}
+                  <div className='text-xs text-ash-gray italic mb-2'>
+                    {displayDeal.description}
+                  </div>
+                  <div className='text-xs font-mono grid grid-cols-2 gap-x-4 gap-y-1 text-star-white/80'>
+                    <div>💰 {t('ui:deals.upfront', { defaultValue: 'Upfront' })}: {displayDeal.offer.upfront}€</div>
+                    <div>📅 {t('ui:deals.duration', { defaultValue: 'Duration' })}: {displayDeal.offer.duration} {t('ui:deals.gigs', { defaultValue: 'Gigs' })}</div>
+                    {displayDeal.offer.perGig && (
+                      <div>💵 {t('ui:deals.perGig', { defaultValue: 'Per Gig' })}: {displayDeal.offer.perGig}€</div>
+                    )}
+                    {displayDeal.offer.item && (
+                      <div>🎁 {t('ui:deals.item', { defaultValue: 'Item' })}: {displayDeal.offer.item}</div>
+                    )}
+                    {displayDeal.penalty && (
+                      <div className='text-blood-red'>
+                        ⚠️ {t('ui:deals.risk', { defaultValue: 'Risk' })}:{' '}
+                        {Object.entries(displayDeal.penalty)
+                          .map(([k, v]) => `${k}: ${v}`)
+                          .join(', ')}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Reputation Status */}
+                  {social.brandReputation?.[displayDeal.alignment] !==
+                    undefined && (
+                    <div className='mt-2 text-[10px] text-ash-gray'>
+                      {t('ui:deals.reputation', { defaultValue: 'Reputation' })}:{' '}
+                      <span
+                        className={
+                          social.brandReputation[displayDeal.alignment] > 0
+                            ? 'text-toxic-green'
+                            : 'text-blood-red'
+                        }
+                      >
+                        {social.brandReputation[displayDeal.alignment]}
+                      </span>
                     </div>
                   )}
                 </div>
-
-                {/* Reputation Status */}
-                {social.brandReputation?.[displayDeal.alignment] !==
-                  undefined && (
-                  <div className='mt-2 text-[10px] text-ash-gray'>
-                    {t('ui:deals.reputation', { defaultValue: 'Reputation' })}:{' '}
-                    <span
-                      className={
-                        social.brandReputation[displayDeal.alignment] > 0
-                          ? 'text-toxic-green'
-                          : 'text-blood-red'
-                      }
-                    >
-                      {social.brandReputation[displayDeal.alignment]}
-                    </span>
-                  </div>
-                )}
               </div>
 
               <div className='flex flex-col gap-2 ml-4 z-10 min-w-[140px]'>
@@ -338,6 +350,21 @@ const getAlignmentBadge = alignment => {
       return '🌱 ECO'
     default:
       return '❓ UNKNOWN'
+  }
+}
+
+const getAlignmentImagePrompt = alignment => {
+  switch (alignment) {
+    case BRAND_ALIGNMENTS.EVIL:
+      return IMG_PROMPTS.BRAND_DEAL_EVIL
+    case BRAND_ALIGNMENTS.CORPORATE:
+      return IMG_PROMPTS.BRAND_DEAL_CORPORATE
+    case BRAND_ALIGNMENTS.INDIE:
+      return IMG_PROMPTS.BRAND_DEAL_INDIE
+    case BRAND_ALIGNMENTS.SUSTAINABLE:
+      return IMG_PROMPTS.BRAND_DEAL_SUSTAINABLE
+    default:
+      return IMG_PROMPTS.SOCIAL_POST_COMMERCIAL
   }
 }
 
