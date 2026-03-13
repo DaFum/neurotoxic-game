@@ -148,7 +148,7 @@ export const LeaderboardTab = () => {
           </label>
           <select
             id='songSelect'
-            className='bg-void-black border border-toxic-green text-toxic-green p-2 font-mono uppercase focus:outline-none'
+            className='bg-void-black border border-toxic-green text-toxic-green p-2 font-mono uppercase focus:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
             value={activeSongId}
             onChange={e => setSelectedSongId(e.target.value)}
           >

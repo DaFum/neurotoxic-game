@@ -33,7 +33,7 @@ export const Settings = () => {
   return (
     <div className='flex flex-col items-center justify-center h-full w-full bg-void-black z-50 p-8'>
       <h1 className="text-6xl text-toxic-green font-['Metal_Mania'] mb-12">
-        SYSTEM CONFIG
+        {t('ui:settings.systemConfig', { defaultValue: 'SYSTEM CONFIG' })}
       </h1>
 
       <div className='w-full max-w-2xl border-2 border-toxic-green p-8 bg-void-black/80'>

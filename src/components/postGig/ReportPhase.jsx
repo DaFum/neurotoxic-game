@@ -111,7 +111,7 @@ export const ReportPhase = ({ financials, onNext }) => {
           {t('economy:postGig.netProfit')}
         </div>
         <div
-          className={`text-5xl font-bold font-font-display tabular-nums ${
+          className={`text-5xl font-bold font-display tabular-nums ${
             financials.net >= 0
               ? 'text-toxic-green drop-shadow-[0_0_20px_var(--color-toxic-green)]'
               : 'text-blood-red drop-shadow-[0_0_20px_var(--color-blood-red)]'

@@ -60,7 +60,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
         className='absolute inset-0 pointer-events-none opacity-20'
         style={{
           backgroundImage:
-            'linear-gradient(transparent 50%, rgba(var(--void-black-rgb), 0.5) 50%)',
+            'linear-gradient(transparent 50%, rgb(var(--color-void-black-rgb) / 50%) 50%)',
           backgroundSize: '100% 4px'
         }}
       ></div>

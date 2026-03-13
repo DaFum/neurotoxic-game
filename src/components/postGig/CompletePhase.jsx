@@ -22,7 +22,7 @@ export const CompletePhase = ({
         initial={{ scale: 0.5, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
-        className={`text-4xl font-font-display mb-4 ${
+        className={`text-4xl font-display mb-4 ${
           result.success
             ? 'text-toxic-green drop-shadow-[0_0_20px_var(--color-toxic-green)] animate-neon-flicker'
             : 'text-blood-red'

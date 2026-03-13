@@ -295,7 +295,7 @@ export const Gig = () => {
           role='dialog'
           aria-modal='true'
         >
-          <h2 className='text-6xl font-font-display text-toxic-green mb-8 animate-pulse drop-shadow-[0_0_15px_var(--color-toxic-green)]'>
+          <h2 className='text-6xl font-display text-toxic-green mb-8 animate-pulse drop-shadow-[0_0_15px_var(--color-toxic-green)]'>
             {t('ui:gig.pause_title', { defaultValue: 'PAUSED' })}
           </h2>
           <div className='flex flex-col gap-6 w-64'>

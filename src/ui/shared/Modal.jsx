@@ -52,7 +52,9 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
   return (
     <div
       className='fixed inset-0 z-50 flex items-center justify-center bg-void-black/90 cursor-pointer p-4'
-      onClick={onClose}
+      onClick={e => {
+        if (e.target === e.currentTarget) onClose()
+      }}
     >
       <div
         ref={dialogRef}
@@ -60,7 +62,6 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
         role='dialog'
         aria-modal='true'
         tabIndex={-1}
-        onClick={e => e.stopPropagation()}
       >
         {/* Brutalist Frame Corners */}
         <UIFrameCorner className='absolute -top-1 -left-1 w-8 h-8 text-toxic-green opacity-50 transition-opacity group-hover:opacity-100' />
@@ -84,7 +85,7 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
 
         <div className='relative z-10'>
           {title && (
-            <h2 className='text-3xl font-font-display text-toxic-green mb-4 uppercase tracking-widest text-center'>
+            <h2 className='text-3xl font-display text-toxic-green mb-4 uppercase tracking-widest text-center'>
               {title}
             </h2>
           )}

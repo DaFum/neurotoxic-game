@@ -28,6 +28,8 @@
      ========================================= */
   --color-void-black: #0a0a0a;
   --color-void-black-50: rgb(10 10 10 / 50%);
+  /* RGB-Triplet für inline rgb()-Nutzung in JS/CSS */
+  --color-void-black-rgb: 10 10 10;
   --color-shadow-black: #1a1a1a;
   --color-concrete-gray: #2a2a2a;
   --color-ash-gray: #888888;
@@ -44,6 +46,7 @@
   /* Neu: Getrocknetes Blut und Neon-Glow für Glitches */
   --color-blood-red-dark: #660000;
   --color-blood-red-glow: rgb(255 0 0 / 60%);
+  --color-blood-red-20: rgb(204 0 0 / 20%);
 
   --color-rust-orange: #cc5500;
   /* Neu: Hellerer Rost für Buttons/Interaktionen */
@@ -62,6 +65,16 @@
   /* Neu: Cyanspäher für den perfekten Chromatic Aberration/Glitch Effekt */
   --color-neon-cyan: #00ffff;
   --color-cosmic-purple-glow: rgb(102 0 204 / 50%);
+  --color-purple-glow: rgb(102 0 204 / 50%);
+
+  /* =========================================
+     ERWEITERTE AKZENTFARBEN (UI & Contraband)
+     ========================================= */
+  --color-electric-blue: #3b82f6;
+  --color-electric-blue-20: rgb(59 130 246 / 20%);
+  --color-electric-blue-10: rgb(59 130 246 / 10%);
+  --color-hot-pink: #ec4899;
+  --color-alert-amber: #f59e0b;
 
   /* =========================================
      UI FUNKTIONEN & STATS
@@ -603,18 +616,6 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
   text-shadow:
     -2px 0 var(--color-neon-cyan),
     -1px -1px var(--color-toxic-green);
-  clip-path: inset(85px 0 140px 0);
-  animation: glitch-anim 2.5s infinite linear alternate-reverse;
-}
-.glitch-text::before {
-  left: 2px;
-  text-shadow: -1px 0 var(--color-blood-red);
-  clip-path: inset(24px 0 90px 0);
-  animation: glitch-anim-2 3s infinite linear alternate-reverse;
-}
-.glitch-text::after {
-  left: -2px;
-  text-shadow: -1px 0 var(--color-void-blue);
   clip-path: inset(85px 0 140px 0);
   animation: glitch-anim 2.5s infinite linear alternate-reverse;
 }
