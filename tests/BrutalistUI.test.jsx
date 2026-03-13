@@ -33,9 +33,11 @@ test('BrutalToggle renders and toggles state', () => {
 })
 
 test('BlockMeter renders correct number of blocks', () => {
-  render(<BlockMeter value={3} max={5} />)
-  const container = document.querySelector('.flex.gap-1')
-  expect(container.children.length).toBe(5)
+  render(<BlockMeter label='Test Meter' value={3} max={5} />)
+  const meter = screen.getByRole('meter', { name: 'Test Meter' })
+  // The blocks container is the second child of the meter container
+  const blocksContainer = meter.querySelector('.flex.gap-1')
+  expect(blocksContainer.children.length).toBe(5)
 })
 
 test('StatBlock renders label, value and icon', () => {
