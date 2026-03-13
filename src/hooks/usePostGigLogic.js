@@ -522,14 +522,18 @@ export const usePostGigLogic = () => {
 
     const prevMoney = player.money ?? 0
     const nextMoney = clampPlayerMoney(prevMoney - 200)
+    const appliedDelta = nextMoney - prevMoney
 
     updatePlayer({ money: nextMoney })
     updateSocial(prev => ({
       controversyLevel: Math.max(0, (prev.controversyLevel || 0) - 25)
     }))
+
+    const moneyText = appliedDelta !== 0 ? ` (${appliedDelta}€)` : ''
     addToast(
       t('ui:postGig.storySpunControversyReduced', {
-        defaultValue: 'Story Spun. Controversy reduced. (-200€)'
+        moneyText,
+        defaultValue: `Story Spun. Controversy reduced.${moneyText}`
       }),
       'success'
     )

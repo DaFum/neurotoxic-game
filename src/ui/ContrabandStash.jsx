@@ -69,7 +69,7 @@ export const ContrabandStash = ({
                   <div>
                     <div className="flex justify-between items-start mb-2">
                       <h4 className="text-(--toxic-green) font-bold text-lg font-[Metal_Mania] tracking-wider uppercase drop-shadow-[0_0_5px_var(--toxic-green-20)]">
-                        {t(item.name) ?? t('ui:item.unknown', { defaultValue: 'Unknown Item' })}
+                        {t(item.name, { defaultValue: t('ui:item.unknown', { defaultValue: 'Unknown Item' }) })}
                       </h4>
                       <span
                         className={`text-xs px-2 py-1 rounded border font-mono ${
@@ -82,7 +82,7 @@ export const ContrabandStash = ({
                       </span>
                     </div>
                     <p className="text-(--ash-gray) text-xs mb-4 min-h-[40px] leading-relaxed">
-                      {item.description ? t(item.description) : t('ui:item.descriptionUnknown', { defaultValue: 'Unknown Description' })}
+                      {item.description ? t(item.description, { defaultValue: t('ui:item.descriptionUnknown', { defaultValue: 'Unknown Description' }) }) : t('ui:item.descriptionUnknown', { defaultValue: 'Unknown Description' })}
                     </p>
                   </div>
 

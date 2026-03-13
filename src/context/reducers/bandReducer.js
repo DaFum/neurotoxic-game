@@ -139,10 +139,8 @@ export const handleUseContraband = (state, payload) => {
     }
   }
 
-  // If consumable, remove from stash
-  if (item.type === 'consumable') {
-    newStash.splice(itemIndex, 1)
-  }
+  // Remove the consumable item from stash
+  newStash.splice(itemIndex, 1)
 
   newBand.stash = newStash
   return { ...state, band: newBand }
