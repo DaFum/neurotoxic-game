@@ -725,7 +725,7 @@
   "overworld.band_hq_button": "BAND HQ",
   "stash": {
     "selectMemberFirst": "Wähle zuerst ein Bandmitglied aus!",
-    "itemUsed": "{{itemName}} benutzt!"
+    "itemUsed": "{{itemName}} {{action}}!"
   },
   "contraband": {
     "title": "SCHMUGGELWAREN VERSTECK",
@@ -736,7 +736,10 @@
     "passiveActive": "PASSIVER EFFEKT AKTIV",
     "close": "VERSTECK SCHLIESSEN",
     "button": "VERSTECK",
-    "requiresTarget": "Erfordert Zielmitglied."
+    "requiresTarget": "Erfordert Ziel-Mitglied.",
+    "gigs": "GIGS",
+    "applied": "ANGEWENDET",
+    "applyItem": "EFFEKT ANWENDEN"
   },
   "member": {
     "unknown": "Unbekannt"
@@ -746,10 +749,20 @@
     "typeUnknown": "Unbekannter Typ",
     "descriptionUnknown": "Unbekannte Beschreibung",
     "type_consumable": "Verbrauchsmaterial",
-    "type_equipment": "Ausrüstung"
+    "type_equipment": "Ausrüstung",
+    "type_relic": "Relikt"
   },
   "postGig": {
     "harmony": "Harmonie",
     "money": "Geld"
-  }
+  },
+  "rarity": {
+    "common": "GEWÖHNLICH",
+    "uncommon": "UNGEWÖHNLICH",
+    "rare": "SELTEN",
+    "epic": "EPISCH"
+  },
+  "stash.actionUsed": "Benutzt",
+  "stash.actionApplied": "Angewendet",
+  "contraband.dropped": "Schmuggelware gefunden!"
 }

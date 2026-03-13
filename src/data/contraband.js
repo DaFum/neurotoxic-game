@@ -6,6 +6,7 @@
  */
 
 export const CONTRABAND_DB = [
+  // ursprüngliche Items (bewahrt)
   {
     id: 'c_void_energy',
     name: 'items:contraband.c_void_energy.name',
@@ -13,7 +14,10 @@ export const CONTRABAND_DB = [
     effectType: 'stamina',
     value: 50,
     description: 'items:contraband.c_void_energy.description',
-    rarity: 'common'
+    rarity: 'common',
+    icon: 'icon_void_energy',
+    stackable: true,
+    maxStacks: 5
   },
   {
     id: 'c_rusty_strings',
@@ -22,16 +26,23 @@ export const CONTRABAND_DB = [
     effectType: 'luck',
     value: 5,
     description: 'items:contraband.c_rusty_strings.description',
-    rarity: 'uncommon'
+    rarity: 'uncommon',
+    icon: 'icon_rusty_strings',
+    applyOnAdd: true,
+    stackable: false
   },
   {
     id: 'c_cursed_pick',
     name: 'items:contraband.c_cursed_pick.name',
     type: 'consumable',
     effectType: 'guitar_difficulty',
-    value: -0.2, // Lowers difficulty
+    value: -0.2,
     description: 'items:contraband.c_cursed_pick.description',
-    rarity: 'rare'
+    rarity: 'rare',
+    duration: 1,
+    icon: 'icon_cursed_pick',
+    stackable: true,
+    maxStacks: 3
   },
   {
     id: 'c_mystery_pills',
@@ -40,7 +51,10 @@ export const CONTRABAND_DB = [
     effectType: 'mood',
     value: 30,
     description: 'items:contraband.c_mystery_pills.description',
-    rarity: 'common'
+    rarity: 'common',
+    icon: 'icon_pills',
+    stackable: true,
+    maxStacks: 10
   },
   {
     id: 'c_blood_pact',
@@ -49,9 +63,289 @@ export const CONTRABAND_DB = [
     effectType: 'harmony',
     value: 15,
     description: 'items:contraband.c_blood_pact.description',
-    rarity: 'rare'
+    rarity: 'rare',
+    icon: 'icon_blood_pact',
+    stackable: false
+  },
+
+  // viele neue Items
+  {
+    id: 'c_phase_metronome',
+    name: 'items:contraband.c_phase_metronome.name',
+    type: 'consumable',
+    effectType: 'tempo',
+    value: 0.15,
+    duration: 1,
+    description: 'items:contraband.c_phase_metronome.description',
+    rarity: 'uncommon',
+    icon: 'icon_metronome',
+    stackable: true,
+    maxStacks: 2
+  },
+  {
+    id: 'c_shattered_ear',
+    name: 'items:contraband.c_shattered_ear.name',
+    type: 'equipment',
+    effectType: 'crit',
+    value: 0.05,
+    description: 'items:contraband.c_shattered_ear.description',
+    rarity: 'rare',
+    icon: 'icon_talisman',
+    applyOnAdd: true,
+    stackable: false
+  },
+  {
+    id: 'c_amped_synth',
+    name: 'items:contraband.c_amped_synth.name',
+    type: 'equipment',
+    effectType: 'stamina_max',
+    value: 10,
+    description: 'items:contraband.c_amped_synth.description',
+    rarity: 'uncommon',
+    icon: 'icon_synth',
+    applyOnAdd: true,
+    stackable: false
+  },
+  {
+    id: 'c_gig_program',
+    name: 'items:contraband.c_gig_program.name',
+    type: 'consumable',
+    effectType: 'tour_success',
+    value: 0.2,
+    duration: 1,
+    description: 'items:contraband.c_gig_program.description',
+    rarity: 'rare',
+    icon: 'icon_program',
+    stackable: true,
+    maxStacks: 1
+  },
+  {
+    id: 'c_sticky_plectrum',
+    name: 'items:contraband.c_sticky_plectrum.name',
+    type: 'consumable',
+    effectType: 'guitar_difficulty',
+    value: -0.1,
+    duration: 1,
+    description: 'items:contraband.c_sticky_plectrum.description',
+    rarity: 'common',
+    icon: 'icon_plectrum',
+    stackable: true,
+    maxStacks: 8
+  },
+  {
+    id: 'c_night_vision_glasses',
+    name: 'items:contraband.c_night_vision_glasses.name',
+    type: 'equipment',
+    effectType: 'crowd_control',
+    value: 0.08,
+    description: 'items:contraband.c_night_vision_glasses.description',
+    rarity: 'uncommon',
+    icon: 'icon_glasses',
+    applyOnAdd: true,
+    stackable: false
+  },
+  {
+    id: 'c_sonic_resonator',
+    name: 'items:contraband.c_sonic_resonator.name',
+    type: 'relic',
+    effectType: 'gig_modifier',
+    value: 0.12,
+    duration: 2,
+    description: 'items:contraband.c_sonic_resonator.description',
+    rarity: 'rare',
+    icon: 'icon_resonator',
+    stackable: false
+  },
+  {
+    id: 'c_weekender_coffee',
+    name: 'items:contraband.c_weekender_coffee.name',
+    type: 'consumable',
+    effectType: 'stamina',
+    value: 25,
+    description: 'items:contraband.c_weekender_coffee.description',
+    rarity: 'common',
+    icon: 'icon_coffee',
+    stackable: true,
+    maxStacks: 5
+  },
+  {
+    id: 'c_blackout_mask',
+    name: 'items:contraband.c_blackout_mask.name',
+    type: 'consumable',
+    effectType: 'mood',
+    value: 50,
+    description: 'items:contraband.c_blackout_mask.description',
+    rarity: 'rare',
+    icon: 'icon_mask',
+    stackable: false
+  },
+  {
+    id: 'c_phantom_strings',
+    name: 'items:contraband.c_phantom_strings.name',
+    type: 'equipment',
+    effectType: 'guitar_difficulty',
+    value: -0.35,
+    description: 'items:contraband.c_phantom_strings.description',
+    rarity: 'epic',
+    icon: 'icon_phantom_strings',
+    applyOnAdd: true,
+    stackable: false
+  },
+  {
+    id: 'c_merch_manifest',
+    name: 'items:contraband.c_merch_manifest.name',
+    type: 'consumable',
+    effectType: 'tour_success',
+    value: 0.1,
+    duration: 1,
+    description: 'items:contraband.c_merch_manifest.description',
+    rarity: 'uncommon',
+    icon: 'icon_manifest',
+    stackable: true,
+    maxStacks: 2
+  },
+  {
+    id: 'c_motivational_gramophone',
+    name: 'items:contraband.c_motivational_gramophone.name',
+    type: 'relic',
+    effectType: 'practice_gain',
+    value: 10,
+    duration: 3,
+    description: 'items:contraband.c_motivational_gramophone.description',
+    rarity: 'rare',
+    icon: 'icon_gramophone',
+    stackable: false
+  },
+  {
+    id: 'c_warped_tape',
+    name: 'items:contraband.c_warped_tape.name',
+    type: 'consumable',
+    effectType: 'luck',
+    value: 10,
+    description: 'items:contraband.c_warped_tape.description',
+    rarity: 'uncommon',
+    icon: 'icon_tape',
+    stackable: true,
+    maxStacks: 3
+  },
+  {
+    id: 'c_gutter_amulet',
+    name: 'items:contraband.c_gutter_amulet.name',
+    type: 'equipment',
+    effectType: 'affinity',
+    value: 5,
+    description: 'items:contraband.c_gutter_amulet.description',
+    rarity: 'uncommon',
+    icon: 'icon_amulet',
+    applyOnAdd: true,
+    stackable: false
+  },
+  {
+    id: 'c_lucky_coin',
+    name: 'items:contraband.c_lucky_coin.name',
+    type: 'consumable',
+    effectType: 'luck',
+    value: 20,
+    description: 'items:contraband.c_lucky_coin.description',
+    rarity: 'rare',
+    icon: 'icon_coin',
+    stackable: true,
+    maxStacks: 2
+  },
+  {
+    id: 'c_radiant_pick',
+    name: 'items:contraband.c_radiant_pick.name',
+    type: 'equipment',
+    effectType: 'guitar_difficulty',
+    value: -0.15,
+    description: 'items:contraband.c_radiant_pick.description',
+    rarity: 'uncommon',
+    icon: 'icon_radiant_pick',
+    applyOnAdd: true,
+    stackable: false
+  },
+  {
+    id: 'c_forgotten_road_map',
+    name: 'items:contraband.c_forgotten_road_map.name',
+    type: 'consumable',
+    effectType: 'tour_success',
+    value: 0.3,
+    duration: 1,
+    description: 'items:contraband.c_forgotten_road_map.description',
+    rarity: 'epic',
+    icon: 'icon_map',
+    stackable: false
+  },
+  {
+    id: 'c_sticky_logo_sticker',
+    name: 'items:contraband.c_sticky_logo_sticker.name',
+    type: 'consumable',
+    effectType: 'crowd_control',
+    value: 0.05,
+    duration: 1,
+    description: 'items:contraband.c_sticky_logo_sticker.description',
+    rarity: 'common',
+    icon: 'icon_sticker',
+    stackable: true,
+    maxStacks: 6
+  },
+  {
+    id: 'c_neon_patch',
+    name: 'items:contraband.c_neon_patch.name',
+    type: 'equipment',
+    effectType: 'style',
+    value: 3,
+    description: 'items:contraband.c_neon_patch.description',
+    rarity: 'common',
+    icon: 'icon_patch',
+    applyOnAdd: true,
+    stackable: true,
+    maxStacks: 4
+  },
+  {
+    id: 'c_abyssal_microphone',
+    name: 'items:contraband.c_abyssal_microphone.name',
+    type: 'relic',
+    effectType: 'gig_modifier',
+    value: 0.2,
+    duration: 2,
+    description: 'items:contraband.c_abyssal_microphone.description',
+    rarity: 'epic',
+    icon: 'icon_mic',
+    stackable: false
+  },
+  {
+    id: 'c_silver_tongue',
+    name: 'items:contraband.c_silver_tongue.name',
+    type: 'consumable',
+    effectType: 'mood',
+    value: 20,
+    description: 'items:contraband.c_silver_tongue.description',
+    rarity: 'uncommon',
+    icon: 'icon_tongue',
+    stackable: true,
+    maxStacks: 3
+  },
+  {
+    id: 'c_broken_compass',
+    name: 'items:contraband.c_broken_compass.name',
+    type: 'equipment',
+    effectType: 'tour_success',
+    value: 0.05,
+    description: 'items:contraband.c_broken_compass.description',
+    rarity: 'rare',
+    icon: 'icon_compass',
+    applyOnAdd: true,
+    stackable: false
   }
 ]
+
+export const CONTRABAND_RARITY_WEIGHTS = {
+  common: 70,
+  uncommon: 25,
+  rare: 4,
+  epic: 1
+}
 
 /**
  * O(1) Lookup Map for Contraband Items
@@ -60,3 +354,10 @@ export const CONTRABAND_DB = [
 export const CONTRABAND_BY_ID = new Map(
   CONTRABAND_DB.map(item => [item.id, item])
 )
+
+export const CONTRABAND_BY_RARITY = {
+  common: CONTRABAND_DB.filter(i => i.rarity === 'common'),
+  uncommon: CONTRABAND_DB.filter(i => i.rarity === 'uncommon'),
+  rare: CONTRABAND_DB.filter(i => i.rarity === 'rare'),
+  epic: CONTRABAND_DB.filter(i => i.rarity === 'epic')
+}

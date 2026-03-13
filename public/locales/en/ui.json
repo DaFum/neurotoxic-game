@@ -725,7 +725,7 @@
   "overworld.band_hq_button": "BAND HQ",
   "stash": {
     "selectMemberFirst": "Select a band member first!",
-    "itemUsed": "Used {{itemName}}!"
+    "itemUsed": "{{action}} {{itemName}}!"
   },
   "contraband": {
     "title": "CONTRABAND STASH",
@@ -736,7 +736,10 @@
     "passiveActive": "PASSIVE EFFECT ACTIVE",
     "close": "CLOSE STASH",
     "button": "STASH",
-    "requiresTarget": "Requires target member."
+    "requiresTarget": "Requires target member.",
+    "gigs": "GIGS",
+    "applied": "APPLIED",
+    "applyItem": "APPLY EFFECT"
   },
   "member": {
     "unknown": "Unknown"
@@ -746,10 +749,20 @@
     "typeUnknown": "Unknown Type",
     "descriptionUnknown": "Unknown Description",
     "type_consumable": "consumable",
-    "type_equipment": "equipment"
+    "type_equipment": "equipment",
+    "type_relic": "Relic"
   },
   "postGig": {
     "harmony": "Harmony",
     "money": "Money"
-  }
+  },
+  "rarity": {
+    "common": "COMMON",
+    "uncommon": "UNCOMMON",
+    "rare": "RARE",
+    "epic": "EPIC"
+  },
+  "stash.actionUsed": "Used",
+  "stash.actionApplied": "Applied",
+  "contraband.dropped": "Found contraband!"
 }

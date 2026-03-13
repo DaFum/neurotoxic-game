@@ -90,7 +90,31 @@ export const handleLoadGame = (state, payload) => {
     inventory: {
       ...DEFAULT_BAND_STATE.inventory,
       ...(loadedState.band?.inventory || {})
-    }
+    },
+    stash: Array.isArray(loadedState.band?.stash)
+      ? loadedState.band.stash.map(item => ({
+          ...item,
+          remainingDuration:
+            typeof item.remainingDuration === 'number' &&
+            Number.isFinite(item.remainingDuration) &&
+            item.remainingDuration >= 0
+              ? item.remainingDuration
+              : item.duration || null
+        }))
+      : [...DEFAULT_BAND_STATE.stash],
+    activeContrabandEffects: Array.isArray(
+      loadedState.band?.activeContrabandEffects
+    )
+      ? loadedState.band.activeContrabandEffects.map(effect => ({
+          ...effect,
+          remainingDuration:
+            typeof effect.remainingDuration === 'number' &&
+            Number.isFinite(effect.remainingDuration) &&
+            effect.remainingDuration >= 0
+              ? effect.remainingDuration
+              : 0
+        }))
+      : [...DEFAULT_BAND_STATE.activeContrabandEffects]
   }
   // Validate Band Members
   const validatedMembers = Array.isArray(rawBand.members)
@@ -306,6 +330,106 @@ export const handleAdvanceDay = (state, payload) => {
     { band: nextBand, toasts: state.toasts },
     socialUnlocks
   )
+
+  // --- Contraband expiry ---
+  let activeEffects = traitResult.band.activeContrabandEffects || []
+  activeEffects = activeEffects.map(e => ({
+    ...e,
+    remainingDuration: e.remainingDuration - 1
+  }))
+
+  const stillActive = activeEffects.filter(e => e.remainingDuration > 0)
+  const expired = activeEffects.filter(e => e.remainingDuration <= 0)
+
+  let stashCloned = false
+
+  // Revert expired effects if needed
+  expired.forEach(e => {
+    // Revert the temporary state applied in bandReducer.js
+    if (e.effectType === 'harmony') {
+      traitResult.band.harmony = clampBandHarmony(
+        (traitResult.band.harmony || 0) - e.value
+      )
+    } else if (e.effectType === 'guitar_difficulty') {
+      traitResult.band.performance = {
+        ...traitResult.band.performance,
+        guitarDifficulty: Math.max(
+          0.1,
+          (traitResult.band.performance.guitarDifficulty || 1) - e.value
+        )
+      }
+    } else if (e.effectType === 'luck') {
+      traitResult.band.luck = Math.max(
+        0,
+        (traitResult.band.luck || 0) - e.value
+      )
+    } else if (e.effectType === 'stamina_max') {
+      traitResult.band.members = traitResult.band.members.map(m => ({
+        ...m,
+        staminaMax: Math.max(0, (m.staminaMax || 100) - e.value)
+      }))
+    } else if (e.effectType === 'style') {
+      traitResult.band.style = Math.max(
+        0,
+        (traitResult.band.style || 0) - e.value
+      )
+    } else if (e.effectType === 'tour_success') {
+      traitResult.band.tourSuccess = Math.max(
+        0,
+        (traitResult.band.tourSuccess || 0) - e.value
+      )
+    } else if (e.effectType === 'gig_modifier') {
+      traitResult.band.gigModifier = Math.max(
+        0,
+        (traitResult.band.gigModifier || 0) - e.value
+      )
+    } else if (e.effectType === 'tempo') {
+      traitResult.band.tempo = Math.max(
+        0,
+        (traitResult.band.tempo || 0) - e.value
+      )
+    } else if (e.effectType === 'practice_gain') {
+      traitResult.band.practiceGain = Math.max(
+        0,
+        (traitResult.band.practiceGain || 0) - e.value
+      )
+    } else if (e.effectType === 'crit') {
+      traitResult.band.crit = Math.max(
+        0,
+        (traitResult.band.crit || 0) - e.value
+      )
+    } else if (e.effectType === 'affinity') {
+      traitResult.band.affinity = Math.max(
+        0,
+        (traitResult.band.affinity || 0) - e.value
+      )
+    } else if (e.effectType === 'crowd_control') {
+      traitResult.band.crowdControl = Math.max(
+        0,
+        (traitResult.band.crowdControl || 0) - e.value
+      )
+    }
+
+    // Unmark applied status in stash so relics can be used again
+    if (traitResult.band.stash) {
+      if (!stashCloned) {
+        traitResult.band.stash = [...traitResult.band.stash]
+        stashCloned = true
+      }
+      const itemIndex = traitResult.band.stash.findIndex(
+        i => i.instanceId === e.instanceId
+      )
+      if (itemIndex !== -1) {
+        traitResult.band.stash[itemIndex] = {
+          ...traitResult.band.stash[itemIndex],
+          applied: false
+        }
+      }
+    }
+  })
+
+  traitResult.band.activeContrabandEffects = stillActive
+  // -------------------------
 
   const newTrend = generateDailyTrend(rng)
 

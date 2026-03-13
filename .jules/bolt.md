@@ -9,5 +9,6 @@
 **Action:** Always use `React.memo` for static UI decorations, especially when creating custom UI component libraries.
 
 ## 2025-05-20 - Object.keys vs Object.entries
+
 **Learning:** In hot loops, iterating over an array once is faster than using multiple `.find()` calls to retrieve distinct elements from the same array.
 **Action:** Always favor a single `for` loop pass when looking up multiple distinct elements from the same array to reduce overhead.

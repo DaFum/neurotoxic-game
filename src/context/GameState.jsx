@@ -12,6 +12,8 @@ import { useTranslation } from 'react-i18next'
 import { eventEngine, resolveEventChoice } from '../utils/eventEngine'
 import { MapGenerator } from '../utils/mapGenerator'
 import { logger } from '../utils/logger'
+import { secureRandom } from '../utils/crypto'
+import { pickRandomContraband } from '../utils/contrabandUtils'
 import {
   handleError,
   StorageError,
@@ -337,7 +339,8 @@ export const GameStateProvider = ({ children }) => {
    * @param {string} [memberId] - Optional. The ID of the band member.
    */
   const useContraband = useCallback(
-    (instanceId, memberId) => dispatch(createUseContrabandAction(instanceId, memberId)),
+    (instanceId, memberId) =>
+      dispatch(createUseContrabandAction(instanceId, memberId)),
     []
   )
 
@@ -371,8 +374,20 @@ export const GameStateProvider = ({ children }) => {
   )
 
   const completeTravelMinigame = useCallback(
-    (damageTaken, itemsCollected) =>
-      dispatch(createCompleteTravelMinigameAction(damageTaken, itemsCollected)),
+    (damageTaken, itemsCollected) => {
+      const rngValue = secureRandom()
+      const contrabandId = pickRandomContraband(secureRandom)
+      const instanceId = crypto.randomUUID()
+      dispatch(
+        createCompleteTravelMinigameAction(
+          damageTaken,
+          itemsCollected,
+          rngValue,
+          contrabandId,
+          instanceId
+        )
+      )
+    },
     []
   )
 

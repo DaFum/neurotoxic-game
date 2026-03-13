@@ -124,23 +124,111 @@
   "contraband": {
     "c_void_energy": {
       "name": "Void Energy Drink",
-      "description": "Eine schwarze Flüssigkeit, die wie Batteriesäure schmeckt. Stellt sofort 50 Ausdauer für ein Bandmitglied wieder her."
+      "description": "Eine schwarze Flüssigkeit, die wie Batteriesäure schmeckt. Stellt sofort 50 Ausdauer bei einem Bandmitglied wieder her."
     },
     "c_rusty_strings": {
       "name": "Rostige Saiten",
-      "description": "Sie schneiden in die Finger, aber das Blut beschwört bessere Gig-Modifikatoren (+5 Glück)."
+      "description": "Sie schneiden dir in die Finger, aber das Blut beschwört bessere Gig-Modifikatoren (+5 Luck)."
     },
     "c_cursed_pick": {
-      "name": "Verfluchtes Schicksalsplektrum",
-      "description": "Ein leuchtendes Plektrum, das flüstert. Senkt die Gitarrenschwierigkeit für einen Auftritt um 0.2."
+      "name": "Verfluchtes Plektrum des Schicksals",
+      "description": "Ein leuchtendes Plektrum, das flüstert. Senkt die Gitarren-Schwierigkeit für einen Gig um 0.2."
     },
     "c_mystery_pills": {
       "name": "Mysteriöse Tankstellen-Pillen",
-      "description": "Fragwürdige Herkunft. Steigert die Stimmung eines Mitglieds um 30."
+      "description": "Fragwürdige Herkunft. Erhöht die Stimmung eines Mitglieds um 30."
     },
     "c_blood_pact": {
       "name": "Blutpakt-Vertrag",
       "description": "Bindet die Band in dunkler Synergie zusammen. +15 Harmonie."
+    },
+    "c_phase_metronome": {
+      "name": "Phasen-Metronom",
+      "description": "Verschiebt das interne Tempo der Band. Tempo-bedingte Schwierigkeiten beim nächsten Gig um 15% reduziert."
+    },
+    "c_shattered_ear": {
+      "name": "Zerschmetterter Ohr-Talisman",
+      "description": "Ein Splitter, der die Wahrnehmung schärft. +5% kritische Performance-Würfe, wenn ausgerüstet."
+    },
+    "c_amped_synth": {
+      "name": "Verstärktes Synth-Modul",
+      "description": "Ein arkanes Modul, das das maximale Ausdauer-Limit der Mitglieder um +10 erhöht, während es aktiv ist."
+    },
+    "c_gig_program": {
+      "name": "Gig-Programm",
+      "description": "Optimiert das Routing & PR für den nächsten Tour-Abschnitt (+20% Chance auf ein positives Tour-Ergebnis)."
+    },
+    "c_sticky_plectrum": {
+      "name": "Klebriges Plektrum",
+      "description": "Verbessert die Plektrum-Kontrolle und erleichtert die Gitarren-Schwierigkeit für einen Gig leicht."
+    },
+    "c_night_vision_glasses": {
+      "name": "Nachtsichtbrille",
+      "description": "Lass dich die Stimmung der Crowd klarer sehen; leichter passiver Bonus auf Crowd-Control/Effekte."
+    },
+    "c_sonic_resonator": {
+      "name": "Schall-Resonator",
+      "description": "Ein Relikt, das die Gig-Ergebnisse für eine begrenzte Zeit verbessert."
+    },
+    "c_weekender_coffee": {
+      "name": "Weekender-Kaffee",
+      "description": "Schneller Koffein-Kick. Stellt 25 Ausdauer bei einem Mitglied wieder her."
+    },
+    "c_blackout_mask": {
+      "name": "Blackout-Maske",
+      "description": "Vorübergehendes Selbstvertrauen durch Anonymität. Stellt 50 Stimmung wieder her, aber Nebenwirkungen möglich."
+    },
+    "c_phantom_strings": {
+      "name": "Phantom-Saiten",
+      "description": "Ätherische Saiten; senken die Gitarren-Schwierigkeit erheblich, wenn sie ausgerüstet sind."
+    },
+    "c_merch_manifest": {
+      "name": "Merch-Manifest",
+      "description": "Ein zwielichtiges Manifest, das den Merch-Verkauf und die Tour-Einnahmen kurzzeitig verbessert."
+    },
+    "c_motivational_gramophone": {
+      "name": "Motivierendes Grammophon",
+      "description": "Spielt eine Melodie, die die Übungszuwächse für einige Tage beschleunigt."
+    },
+    "c_warped_tape": {
+      "name": "Verzerrtes Tape",
+      "description": "Ein gelooptes Tape, das Wahrscheinlichkeiten beugt. +10 Glück bei einmaliger Nutzung."
+    },
+    "c_gutter_amulet": {
+      "name": "Gossen-Amulett",
+      "description": "Seltsamer Glücksbringer, der die soziale Affinität bei Nischen-Crowds erhöht."
+    },
+    "c_lucky_coin": {
+      "name": "Glücksmünze",
+      "description": "Wirf diese Münze vor einem Gig — großer Glücks-Boost für ein Event."
+    },
+    "c_radiant_pick": {
+      "name": "Strahlendes Plektrum",
+      "description": "Ein strahlendes Plektrum, das das Spielen erleichtert und eine stetige Performance gewährt."
+    },
+    "c_forgotten_road_map": {
+      "name": "Vergessene Straßenkarte",
+      "description": "Karten zu verborgenen Routen. Erhöht einmalig stark die Chance auf reibungslose Tour-Logistik."
+    },
+    "c_sticky_logo_sticker": {
+      "name": "Klebriger Logo-Sticker",
+      "description": "Kleb ihn auf einen Amp oder ein Bühnenelement — leichter Crowd-Control-Buff für den nächsten Gig."
+    },
+    "c_neon_patch": {
+      "name": "Neon-Patch",
+      "description": "Ein Patch, das die Style-Bewertung der Band anheizt. Ästhetisch, aber effektiv."
+    },
+    "c_abyssal_microphone": {
+      "name": "Abgründiges Mikrofon",
+      "description": "Ein mächtiges Relikt-Mikrofon, das die Gig-Ergebnisse für kurze Zeit stark verbessert."
+    },
+    "c_silver_tongue": {
+      "name": "Silberzunge",
+      "description": "Steigert Charisma für Interviews; +20 Stimmung für das Mitglied bei Verwendung."
+    },
+    "c_broken_compass": {
+      "name": "Kaputter Kompass",
+      "description": "Zeigt seltsamerweise auf profitable Entscheidungen; kleiner, aber beständiger Tour-Vorteil."
     }
   }
 }

@@ -18,15 +18,34 @@ export const useContrabandStash = () => {
   const useItem = useCallback(
     (instanceId, item) => {
       // If it's a member-targeted effect but no member selected, error
-      if ((item.effectType === 'stamina' || item.effectType === 'mood') && !selectedMember) {
-        addToast(t('ui:stash.selectMemberFirst', { defaultValue: 'Select a band member first!' }), 'warning')
+      if (
+        (item.effectType === 'stamina' || item.effectType === 'mood') &&
+        !selectedMember
+      ) {
+        addToast(
+          t('ui:stash.selectMemberFirst', {
+            defaultValue: 'Select a band member first!'
+          }),
+          'warning'
+        )
         return
       }
 
       useContraband(instanceId, selectedMember)
 
       const translatedName = t(item.name, { defaultValue: item.name })
-      addToast(t('ui:stash.itemUsed', { itemName: translatedName, defaultValue: `Used ${translatedName}!` }), 'success')
+      const messageAction =
+        item.type === 'consumable'
+          ? t('ui:stash.actionUsed', { defaultValue: 'Used' })
+          : t('ui:stash.actionApplied', { defaultValue: 'Applied' })
+      addToast(
+        t('ui:stash.itemUsed', {
+          itemName: translatedName,
+          action: messageAction,
+          defaultValue: `${messageAction} ${translatedName}!`
+        }),
+        'success'
+      )
     },
     [useContraband, selectedMember, addToast, t]
   )

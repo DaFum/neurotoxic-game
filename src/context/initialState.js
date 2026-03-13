@@ -87,6 +87,7 @@ export const DEFAULT_BAND_STATE = {
   inventorySlots: 0,
   luck: 0,
   stash: [],
+  activeContrabandEffects: [],
   performance: {
     guitarDifficulty: 1.0,
     drumMultiplier: 1.0,
@@ -211,7 +212,8 @@ export const createInitialState = (persistedData = {}) => ({
     })),
     performance: { ...DEFAULT_BAND_STATE.performance },
     inventory: { ...DEFAULT_BAND_STATE.inventory },
-    stash: [...DEFAULT_BAND_STATE.stash]
+    stash: [...DEFAULT_BAND_STATE.stash],
+    activeContrabandEffects: [...DEFAULT_BAND_STATE.activeContrabandEffects]
   },
   social: {
     ...DEFAULT_SOCIAL_STATE,

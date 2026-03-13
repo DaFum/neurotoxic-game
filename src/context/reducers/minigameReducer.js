@@ -12,6 +12,8 @@ import {
 } from '../../utils/economyEngine.js'
 import { checkTraitUnlocks } from '../../utils/unlockCheck.js'
 import { applyTraitUnlocks } from '../../utils/traitUtils.js'
+import { computeDropChance } from '../../utils/contrabandUtils.js'
+import { addContrabandHelper } from './bandReducer.js'
 import {
   GAME_PHASES,
   MINIGAME_TYPES,
@@ -35,7 +37,8 @@ export const handleStartTravelMinigame = (state, payload) => {
 }
 
 export const handleCompleteTravelMinigame = (state, payload) => {
-  const { damageTaken, itemsCollected } = payload
+  const { damageTaken, itemsCollected, rngValue, contrabandId, instanceId } =
+    payload
   logger.info('GameState', 'Travel Minigame Complete', payload)
 
   // Apply Travel Results
@@ -94,13 +97,55 @@ export const handleCompleteTravelMinigame = (state, payload) => {
     travelUnlocks
   )
 
-  return {
+  let newState = {
     ...state,
     player: nextPlayer,
     band: traitResult.band,
     toasts: traitResult.toasts,
     minigame: { ...DEFAULT_MINIGAME_STATE }
   }
+
+  // --- Contraband drop logic ---
+  const luck = newState.band?.luck || 0
+  const chance = computeDropChance(undefined, luck)
+
+  if (
+    rngValue !== undefined &&
+    rngValue < chance &&
+    contrabandId &&
+    instanceId
+  ) {
+    // Call addContrabandHelper directly to leverage its logic
+    const preStashLength = newState.band.stash ? newState.band.stash.length : 0
+    const preStacks = newState.band.stash
+      ? newState.band.stash.find(i => i.id === contrabandId)?.stacks || 0
+      : 0
+
+    newState = addContrabandHelper(newState, { contrabandId, instanceId })
+
+    // Determine if item was actually added (length increased, or stacks increased)
+    const postItem = newState.band.stash.find(i => i.id === contrabandId)
+    const postStacks = postItem ? postItem.stacks || 0 : 0
+    const postStashLength = newState.band.stash.length
+
+    const wasAdded = postStashLength > preStashLength || postStacks > preStacks
+
+    if (wasAdded) {
+      // We reuse the existing toasts array and append our new toast
+      // For deterministic action tests we could rely on a better ID generation strategy
+      // but keeping it simple as it was for now. Toasts are often tricky.
+      newState.toasts = [
+        ...newState.toasts,
+        {
+          id: `toast-${instanceId}`,
+          message: `ui:contraband.dropped`, // Use an i18n key or simple text
+          type: 'info' // Could be 'success'
+        }
+      ]
+    }
+  }
+
+  return newState
 }
 
 export const handleStartRoadieMinigame = (state, payload) => {
