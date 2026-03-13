@@ -62,7 +62,9 @@ export const generatePostOptions = (
   // 1. Evaluate and collect eligible options
   const isCooldownActive = (gameState.social?.reputationCooldown || 0) > 0
 
-  let eligibleOptions = []
+  const eligibleOptions = []
+  const currentTrend = gameState.social?.trend
+
   for (let i = 0; i < POST_OPTIONS.length; i++) {
     const opt = POST_OPTIONS[i]
 
@@ -73,7 +75,25 @@ export const generatePostOptions = (
 
     try {
       if (opt.condition(gameState)) {
-        eligibleOptions.push(opt)
+        let weight = 1.0
+
+        // Example: If very low money, boost crowdfund weight
+        if (opt.id === 'comm_crowdfund' && gameState.player.money < 100)
+          weight += 50
+
+        // Trend Matching Bonus
+        if (currentTrend && opt.category) {
+          const isMatch =
+            (currentTrend === 'DRAMA' && opt.category === 'Drama') ||
+            (currentTrend === 'TECH' && opt.category === 'Commercial') ||
+            (currentTrend === 'MUSIC' && opt.category === 'Performance') ||
+            (currentTrend === 'WHOLESOME' &&
+              (opt.category === 'Lifestyle' || opt.badges?.includes('🛡️')))
+
+          if (isMatch) weight += 10.0
+        }
+
+        eligibleOptions.push({ ...opt, _weight: weight * rng() })
       }
     } catch (e) {
       throw new StateError(`Condition failed for post option ${opt.id}`, {
@@ -104,50 +124,29 @@ export const generatePostOptions = (
     )
     if (sponsorIdx !== -1) {
       const sponsorOpt = eligibleOptions[sponsorIdx]
-      results.push({ ...sponsorOpt, _force: true })
+      sponsorOpt._force = true
+      results.push(sponsorOpt)
       // Remove in-place to avoid full array re-allocation
       eligibleOptions.splice(sponsorIdx, 1)
     }
   }
 
-  // 2. Assign weights (optional logic based on game state, basic for now)
-  const weightedOptions = eligibleOptions.map(opt => {
-    let weight = 1.0
-    // Example: If very low money, boost crowdfund weight
-    if (opt.id === 'comm_crowdfund' && gameState.player.money < 100)
-      weight += 50
+  // 2. Sort by weight descending
+  eligibleOptions.sort((a, b) => b._weight - a._weight)
 
-    // Trend Matching Bonus
-    const currentTrend = gameState.social?.trend
-    if (currentTrend && opt.category) {
-      // Map categories to trends if needed, or exact match
-      const isMatch =
-        (currentTrend === 'DRAMA' && opt.category === 'Drama') ||
-        (currentTrend === 'TECH' && opt.category === 'Commercial') || // Tech usually commercial/gear
-        (currentTrend === 'MUSIC' && opt.category === 'Performance') ||
-        (currentTrend === 'WHOLESOME' &&
-          (opt.category === 'Lifestyle' || opt.badges?.includes('🛡️'))) // Wholesome logic
-
-      if (isMatch) weight += 10.0
-    }
-
-    return { ...opt, _weight: weight * rng() }
-  })
-
-  // 3. Sort by weight descending
-  weightedOptions.sort((a, b) => b._weight - a._weight)
-
-  // 4. Fill remaining slots to reach 3 total
+  // 3. Fill remaining slots to reach 3 total
   const needed = 3 - results.length
-  const selectedRandom = weightedOptions.slice(0, needed)
-  results.push(...selectedRandom)
+  for (let i = 0; i < needed && i < eligibleOptions.length; i++) {
+    results.push(eligibleOptions[i])
+  }
 
-  // 5. Clean up output
-  return results.map(opt => {
-    // Strip internal properties before sending to UI
-    const { _weight, _force, ...cleanOpt } = opt
-    return cleanOpt
-  })
+  // 4. Clean up output directly on the pushed objects (they are already cloned)
+  for (let i = 0; i < results.length; i++) {
+    delete results[i]._weight
+    delete results[i]._force
+  }
+
+  return results
 }
 
 /**
