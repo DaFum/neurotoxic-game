@@ -117,6 +117,7 @@ export const usePostGigLogic = () => {
           controversyLevel: social?.controversyLevel || 0,
           regionRep: reputationByRegion?.[player?.location] || 0,
           loyalty: social?.loyalty || 0,
+          zealotry: social?.zealotry || 0,
           discountedTickets: activeStoryFlags?.includes(
             'discounted_tickets_active'
           )
@@ -327,6 +328,10 @@ export const usePostGigLogic = () => {
         loyalty: Math.max(
           0,
           (social.loyalty || 0) + (result.loyaltyChange || 0)
+        ),
+        zealotry: Math.max(
+          0,
+          Math.min(100, (social.zealotry || 0) + (result.zealotryChange || 0))
         ),
         reputationCooldown:
           result.reputationCooldownSet !== undefined

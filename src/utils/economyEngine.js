@@ -1,5 +1,6 @@
 import { logger } from './logger.js'
 import { bandHasTrait } from './traitLogic.js'
+import { calculateZealotryEffects } from './socialEngine.js'
 
 /**
  * Per-modifier costs used both in the PreGig UI preview and the PostGig expense calculation.
@@ -517,10 +518,17 @@ export const calculateGigFinancials = ({
   }
 
   // 1. Ticket Sales
+  // Apply automated promo from zealotry to tickets
+  const zealotry = context.zealotry || 0
+  const effectiveModifiers = { ...modifiers }
+  if (zealotry > 50) {
+    effectiveModifiers.promo = true
+  }
+
   const tickets = calculateTicketIncome(
     effectiveGigData,
     playerFame,
-    modifiers,
+    effectiveModifiers,
     context
   )
   report.income.breakdown.push(tickets.breakdownItem)
@@ -540,7 +548,14 @@ export const calculateGigFinancials = ({
     report.income.total += guarantee.amount
   }
 
-  // 3. Merch Sales
+  // 3. Cult Donations (Zealotry)
+  const { passiveIncome } = calculateZealotryEffects(zealotry)
+  if (passiveIncome > 0) {
+    report.income.breakdown.push({ label: 'Cult Donations', amount: passiveIncome })
+    report.income.total += passiveIncome
+  }
+
+  // 4. Merch Sales
   const merch = calculateMerchIncome(
     tickets.ticketsSold,
     performanceScore,
@@ -554,13 +569,19 @@ export const calculateGigFinancials = ({
   report.expenses.breakdown.push(merch.costItem)
   report.expenses.total += merch.cost
 
-  // 4. Bar Cut
+  // 5. Bar Cut
   const barCut = calculateBarCut(tickets.ticketsSold, modifiers)
   report.income.breakdown.push(barCut.incomeItem)
   report.income.total += barCut.revenue
 
-  // 5. Expenses (Modifiers)
-  const operationalExpenses = calculateGigExpenses(modifiers)
+  // 6. Expenses (Modifiers)
+  const costModifiers = { ...modifiers }
+  // If zealotry is high, player does not pay for promo even if they explicitly checked it
+  if (zealotry > 50) {
+    costModifiers.promo = false
+  }
+
+  const operationalExpenses = calculateGigExpenses(costModifiers)
   report.expenses.breakdown.push(...operationalExpenses.breakdown)
   report.expenses.total += operationalExpenses.total
 

@@ -1,3 +1,5 @@
+import { calculateZealotryEffects } from '../../utils/socialEngine.js'
+
 // Crisis Events — reputation damage, recovery arcs, and social fallout
 // These fire when controversyLevel crosses key thresholds.
 // Triggers: 'post_gig' (band/financial pool), 'travel' (band/special pool via arrivalUtils)
@@ -547,6 +549,35 @@ export const CRISIS_EVENTS = [
         label: 'events:crisis_notice_100.opt1.label',
         effect: { type: 'flag', flag: 'saw_crisis_100' },
         outcomeText: 'events:crisis_notice_100.opt1.outcome'
+      }
+    ]
+  },
+  {
+    id: 'crisis_police_raid_zealotry',
+    category: 'special',
+    tags: ['crisis', 'raid', 'cult'],
+    title: 'events:crisis_police_raid_zealotry.title',
+    description: 'events:crisis_police_raid_zealotry.desc',
+    trigger: 'post_gig',
+    // The chance is explicitly set to the computed raidProbability from our new feature
+    chance: 1.0,
+    condition: gs => {
+      if ((gs.social?.zealotry ?? 0) === 0) return false
+      const { raidProbability } = calculateZealotryEffects(gs.social.zealotry)
+      // Return true only if Math.random() < raidProbability
+      // eventEngine checks `condition` before `chance`.
+      return Math.random() < raidProbability
+    },
+    options: [
+      {
+        label: 'events:crisis_police_raid_zealotry.opt1.label',
+        effect: { type: 'stat', stat: 'money', value: -500 },
+        outcomeText: 'events:crisis_police_raid_zealotry.opt1.outcome'
+      },
+      {
+        label: 'events:crisis_police_raid_zealotry.opt2.label',
+        effect: { type: 'stat', stat: 'controversyLevel', value: 30 },
+        outcomeText: 'events:crisis_police_raid_zealotry.opt2.outcome'
       }
     ]
   }

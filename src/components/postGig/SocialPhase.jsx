@@ -81,10 +81,35 @@ SocialOptionButton.propTypes = {
   onSelect: PropTypes.func.isRequired
 }
 
-export const SocialPhase = ({ options, onSelect, trend }) => {
+export const SocialPhase = ({ options, onSelect, trend, zealotryLevel = 0 }) => {
   const { t } = useTranslation()
   return (
     <Panel contentClassName='space-y-6'>
+      {/* Zealotry Gauge UI */}
+      {zealotryLevel > 0 && (
+        <div className='flex flex-col mb-4 p-3 bg-blood-red/10 border border-blood-red/30 rounded'>
+          <div className='flex justify-between items-center mb-1'>
+            <span className='text-xs font-bold text-blood-red uppercase tracking-widest'>
+              {t('economy:social.cultZealotry', { defaultValue: 'CULT ZEALOTRY' })}
+            </span>
+            <span className='text-xs font-mono text-blood-red/80'>
+              {zealotryLevel}%
+            </span>
+          </div>
+          <div className='w-full bg-void-black/50 h-2 rounded overflow-hidden'>
+            <div
+              className='bg-blood-red h-full transition-all duration-500'
+              style={{ width: `${Math.min(100, Math.max(0, zealotryLevel))}%` }}
+            />
+          </div>
+          {zealotryLevel >= 50 && (
+            <div className='text-[10px] text-blood-red/80 mt-1 uppercase animate-pulse'>
+              {t('economy:social.zealotryWarning', { defaultValue: 'WARNING: FANS ARE BECOMING RADICALIZED. POLICE RAID RISK INCREASED.' })}
+            </div>
+          )}
+        </div>
+      )}
+
       <div className='text-center mb-2'>
         <h3 className='text-xl font-mono tracking-widest'>
           {t('economy:social.postToSocial', {
@@ -128,5 +153,6 @@ SocialPhase.propTypes = {
     })
   ).isRequired,
   onSelect: PropTypes.func.isRequired,
-  trend: PropTypes.string
+  trend: PropTypes.string,
+  zealotryLevel: PropTypes.number
 }
