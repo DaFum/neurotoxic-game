@@ -11,7 +11,7 @@
 
 - **Version Pinning**: Pinned to exact versions: React 19.2.4, Vite 7.3.1, Tailwind 4.2.1, Framer Motion 12.35.1, Tone.js 15.5.6. Node.js 22.13+ required. Do NOT introduce Howler.js.
 - **Tailwind v4**: Colors are registered in `@theme` with `--color-` prefix (e.g., `--color-toxic-green`) and consumed as native utilities (`bg-void-black`, `text-toxic-green`, `border-blood-red/60`). Use `@import "tailwindcss"` NOT `@tailwind base`. For tokens NOT in `@theme` (e.g., z-index), use the arbitrary value syntax `z-(--z-crt)`.
-- **Colors**: Never hardcode colors. Use CSS vars (e.g., `var(--color-toxic-green)`). In PixiJS, use `getPixiColorFromToken('--color-token-name')`.
+- **Colors**: Never hardcode colors. Use CSS vars (e.g., `var(--color-toxic-green)`). In PixiJS, use `getPixiColorFromToken('--token-name')` (e.g., `getPixiColorFromToken('--toxic-green')`). The utility auto-maps `--token-name` → `--color-token-name` internally; do NOT pass the `--color-` prefix.
 - **State Updates**: Adding actions requires updating `ActionTypes`, the reducer case, and `actionCreators.js` together.
 - **State Limits**: Clamp `player.money` >= 0 and `band.harmony` 1–100 via `gameStateUtils.js` helpers.
 - **Audio**: The single runtime clock source is `audioEngine.getGigTimeMs()`. Do not access Tone.js directly.

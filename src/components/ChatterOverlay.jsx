@@ -9,7 +9,7 @@ const CHATTER_DELAY_MIN_MS = 8000
 const CHATTER_DELAY_RANGE_MS = 17000
 const MESSAGE_LIFETIME_MS = 10000
 
-const FONT_UI_CLASS = 'font-(family-name:--font-ui)'
+const FONT_UI_CLASS = 'font-ui'
 
 const TOXIC_GREEN_BASE = {
   accent: 'var(--color-toxic-green)',
