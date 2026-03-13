@@ -1,0 +1,638 @@
+
+> neurotoxic-game@0.0.0 test:ui
+> vitest run --coverage
+
+
+[1m[46m RUN [49m[22m [36mv4.1.0 [39m[90m/app[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+[90mstdout[2m | tests/PostGig.component.test.jsx
+[22m[39m🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+
+ [32m✓[39m tests/App.test.jsx [2m([22m[2m33 tests[22m[2m)[22m[33m 3995[2mms[22m[39m
+     [33m[2m✓[22m[39m renders without crashing [33m 596[2mms[22m[39m
+     [33m[2m✓[22m[39m renders Intro scene when currentScene is INTRO [33m 326[2mms[22m[39m
+     [33m[2m✓[22m[39m renders Overworld scene when currentScene is OVERWORLD [33m 319[2mms[22m[39m
+     [33m[2m✓[22m[39m renders PreGig scene when currentScene is PRE_GIG [33m 323[2mms[22m[39m
+     [33m[2m✓[22m[39m renders Gig scene when currentScene is GIG [33m 322[2mms[22m[39m
+     [33m[2m✓[22m[39m renders PostGig scene when currentScene is POST_GIG [33m 315[2mms[22m[39m
+     [33m[2m✓[22m[39m renders Settings scene when currentScene is SETTINGS [33m 316[2mms[22m[39m
+     [33m[2m✓[22m[39m renders Credits scene when currentScene is CREDITS [33m 316[2mms[22m[39m
+     [33m[2m✓[22m[39m renders GameOver scene when currentScene is GAMEOVER [33m 316[2mms[22m[39m
+     [33m[2m✓[22m[39m renders Tourbus minigame scene [33m 317[2mms[22m[39m
+     [33m[2m✓[22m[39m renders Roadie minigame scene [33m 309[2mms[22m[39m
+ [32m✓[39m tests/MainMenu.test.jsx [2m([22m[2m52 tests[22m[2m)[22m[33m 5136[2mms[22m[39m
+       [33m[2m✓[22m[39m closes socials modal when close button clicked [33m 1433[2mms[22m[39m
+       [33m[2m✓[22m[39m closes existing save prompt when close button clicked [33m 361[2mms[22m[39m
+       [33m[2m✓[22m[39m closes name input modal when close button clicked [33m 317[2mms[22m[39m
+       [33m[2m✓[22m[39m clears existing save prompt state when starting from modal [33m 356[2mms[22m[39m
+       [33m[2m✓[22m[39m closes features modal and reopens socials modal [33m 332[2mms[22m[39m
+ [32m✓[39m tests/PostGig.component.test.jsx [2m([22m[2m34 tests[22m[2m)[22m[33m 6682[2mms[22m[39m
+     [33m[2m✓[22m[39m advances from REPORT to SOCIAL phase [33m 1036[2mms[22m[39m
+     [33m[2m✓[22m[39m skips DEALS phase when no brand offers [33m 347[2mms[22m[39m
+     [33m[2m✓[22m[39m shows DEALS phase when brand offers are available [33m 310[2mms[22m[39m
+     [33m[2m✓[22m[39m accepts brand deal with upfront payment [33m 316[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects all deals and advances to COMPLETE phase [33m 338[2mms[22m[39m
+[90mstdout[2m | tests/PostGig.leaderboard.test.jsx
+[22m[39m🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+
+ [32m✓[39m tests/KabelsalatScene.test.jsx [2m([22m[2m26 tests[22m[2m)[22m[33m 2423[2mms[22m[39m
+     [33m[2m✓[22m[39m renders scene shell and interactive cable board [33m 536[2mms[22m[39m
+ [32m✓[39m tests/CompletePhase.test.jsx [2m([22m[2m15 tests[22m[2m)[22m[33m 1104[2mms[22m[39m
+     [33m[2m✓[22m[39m calls onContinue when continue button is clicked [33m 359[2mms[22m[39m
+ [32m✓[39m tests/PostGig.leaderboard.test.jsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1926[2mms[22m[39m
+     [33m[2m✓[22m[39m submits song score to leaderboard on continue [33m 1400[2mms[22m[39m
+ [32m✓[39m tests/TutorialManager.test.jsx [2m([22m[2m16 tests[22m[2m)[22m[33m 1059[2mms[22m[39m
+     [33m[2m✓[22m[39m calls updatePlayer when NEXT button is clicked [33m 432[2mms[22m[39m
+[90mstdout[2m | tests/PixiStage.test.jsx[2m > [22m[2mPixiStage[2m > [22m[2mrenders canvas container with correct styling
+[22m[39m[AudioEngine] Bundled 7 OGG asset(s): ../01 Kranker Schrank.ogg, ../02 THE LOST SCRIPTURES OF THE ELDER GODS AKOASMA AND GOLGATHA.ogg, ../03 Travestie Massaker.ogg, ../04 New Millenium.ogg, ../05 Suicidal Jesus.ogg, ../08 Systemsprenger.ogg, ../09 Galactic Love Bazooka.ogg
+
+[90mstderr[2m | tests/PixiStage.test.jsx[2m > [22m[2mPixiStage[2m > [22m[2mhandles controller init failure gracefully
+[22m[39m[PixiStage] Pixi Stage Init Failed Error: Init failed
+    at [90m/app/[39mtests/PixiStage.test.jsx:101:53
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1258:20
+
+[90mstderr[2m | tests/PixiStage.test.jsx[2m > [22m[2mPixiStage[2m > [22m[2muses default controller factory when not provided
+[22m[39m[PixiStageController] Init Failed TypeError: context.setTransform is not a function
+    at CanvasRenderTargetAdaptor.clear [90m(file:///app/[39mnode_modules/[4mpixi.js[24m/lib/rendering/renderers/canvas/renderTarget/CanvasRenderTargetAdaptor.mjs:71:13[90m)[39m
+    at CanvasRenderTargetAdaptor.startRenderPass [90m(file:///app/[39mnode_modules/[4mpixi.js[24m/lib/rendering/renderers/canvas/renderTarget/CanvasRenderTargetAdaptor.mjs:56:12[90m)[39m
+    at CanvasRenderTargetSystem.bind [90m(file:///app/[39mnode_modules/[4mpixi.js[24m/lib/rendering/renderers/shared/renderTarget/RenderTargetSystem.mjs:174:18[90m)[39m
+    at CanvasRenderTargetSystem.push [90m(file:///app/[39mnode_modules/[4mpixi.js[24m/lib/rendering/renderers/shared/renderTarget/RenderTargetSystem.mjs:208:31[90m)[39m
+    at CanvasRenderTargetSystem.renderStart [90m(file:///app/[39mnode_modules/[4mpixi.js[24m/lib/rendering/renderers/shared/renderTarget/RenderTargetSystem.mjs:73:10[90m)[39m
+    at SystemRunner.emit [90m(file:///app/[39mnode_modules/[4mpixi.js[24m/lib/rendering/renderers/shared/system/SystemRunner.mjs:19:21[90m)[39m
+    at CanvasRenderer.render [90m(file:///app/[39mnode_modules/[4mpixi.js[24m/lib/rendering/renderers/shared/system/AbstractRenderer.mjs:102:30[90m)[39m
+    at _Application.render [90m(file:///app/[39mnode_modules/[4mpixi.js[24m/lib/app/Application.mjs:84:19[90m)[39m
+    at _Application.resize [90m(file:///app/[39mnode_modules/[4mpixi.js[24m/lib/app/ResizePlugin.mjs:58:12[90m)[39m
+    at _Application.set [90m(file:///app/[39mnode_modules/[4mpixi.js[24m/lib/app/ResizePlugin.mjs:21:18[90m)[39m
+
+[90mstderr[2m | tests/PixiStage.test.jsx[2m > [22m[2mPixiStage[2m > [22m[2muses default controller factory when not provided
+[22m[39m[PixiStage] Pixi Stage Init Failed TypeError: context.setTransform is not a function
+    at CanvasRenderTargetAdaptor.clear [90m(file:///app/[39mnode_modules/[4mpixi.js[24m/lib/rendering/renderers/canvas/renderTarget/CanvasRenderTargetAdaptor.mjs:71:13[90m)[39m
+    at CanvasRenderTargetAdaptor.startRenderPass [90m(file:///app/[39mnode_modules/[4mpixi.js[24m/lib/rendering/renderers/canvas/renderTarget/CanvasRenderTargetAdaptor.mjs:56:12[90m)[39m
+    at CanvasRenderTargetSystem.bind [90m(file:///app/[39mnode_modules/[4mpixi.js[24m/lib/rendering/renderers/shared/renderTarget/RenderTargetSystem.mjs:174:18[90m)[39m
+    at CanvasRenderTargetSystem.push [90m(file:///app/[39mnode_modules/[4mpixi.js[24m/lib/rendering/renderers/shared/renderTarget/RenderTargetSystem.mjs:208:31[90m)[39m
+    at CanvasRenderTargetSystem.renderStart [90m(file:///app/[39mnode_modules/[4mpixi.js[24m/lib/rendering/renderers/shared/renderTarget/RenderTargetSystem.mjs:73:10[90m)[39m
+    at SystemRunner.emit [90m(file:///app/[39mnode_modules/[4mpixi.js[24m/lib/rendering/renderers/shared/system/SystemRunner.mjs:19:21[90m)[39m
+    at CanvasRenderer.render [90m(file:///app/[39mnode_modules/[4mpixi.js[24m/lib/rendering/renderers/shared/system/AbstractRenderer.mjs:102:30[90m)[39m
+    at _Application.render [90m(file:///app/[39mnode_modules/[4mpixi.js[24m/lib/app/Application.mjs:84:19[90m)[39m
+    at _Application.resize [90m(file:///app/[39mnode_modules/[4mpixi.js[24m/lib/app/ResizePlugin.mjs:58:12[90m)[39m
+    at _Application.set [90m(file:///app/[39mnode_modules/[4mpixi.js[24m/lib/app/ResizePlugin.mjs:21:18[90m)[39m
+
+ [32m✓[39m tests/MinigameSceneFrame.test.jsx [2m([22m[2m19 tests[22m[2m)[22m[33m 1004[2mms[22m[39m
+     [33m[2m✓[22m[39m renders PixiStage with correct props [33m 325[2mms[22m[39m
+     [33m[2m✓[22m[39m calls onComplete when continue button is clicked [33m 314[2mms[22m[39m
+ [32m✓[39m tests/PixiStage.test.jsx [2m([22m[2m12 tests[22m[2m)[22m[33m 1216[2mms[22m[39m
+     [33m[2m✓[22m[39m renders canvas container with correct styling [33m 1096[2mms[22m[39m
+ [32m✓[39m tests/MapNode.test.jsx [2m([22m[2m20 tests[22m[2m)[22m[33m 1076[2mms[22m[39m
+     [33m[2m✓[22m[39m renders node at correct position [33m 305[2mms[22m[39m
+     [33m[2m✓[22m[39m calls handleTravel when clicked and isReachable [33m 382[2mms[22m[39m
+ [32m✓[39m tests/PauseButton.test.jsx [2m([22m[2m7 tests[22m[2m)[22m[33m 982[2mms[22m[39m
+     [33m[2m✓[22m[39m renders pause button with correct icon [33m 613[2mms[22m[39m
+ [32m✓[39m tests/uiMissingTargets.test.jsx [2m([22m[2m7 tests[22m[2m)[22m[33m 959[2mms[22m[39m
+     [33m[2m✓[22m[39m GigModifierButton triggers callback and active state [33m 402[2mms[22m[39m
+ [32m✓[39m tests/performance/GigHUD.perf.test.jsx [2m([22m[2m1 test[22m[2m)[22m[33m 880[2mms[22m[39m
+   [33m[2m✓[22m[39m GigHUD: renders lane inputs and handles interactions [33m 875[2mms[22m[39m
+[90mstdout[2m | tests/BandHQ.test.jsx[2m > [22m[2mBandHQ
+[22m[39m🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+
+ [32m✓[39m tests/BandHQ.test.jsx [2m([22m[2m1 test[22m[2m)[22m[33m 812[2mms[22m[39m
+ [32m✓[39m tests/ToggleRadio.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[33m 833[2mms[22m[39m
+   [33m[2m✓[22m[39m ToggleRadio reacts to external playback changes and user toggles [33m 697[2mms[22m[39m
+ [32m✓[39m tests/SocialPhase.test.jsx [2m([22m[2m1 test[22m[2m)[22m[33m 636[2mms[22m[39m
+   [33m[2m✓[22m[39m SocialPhase renders correctly and calls onSelect [33m 631[2mms[22m[39m
+ [32m✓[39m tests/ToggleSwitch.test.jsx [2m([22m[2m5 tests[22m[2m)[22m[33m 701[2mms[22m[39m
+     [33m[2m✓[22m[39m renders correctly with ON state [33m 387[2mms[22m[39m
+ [32m✓[39m tests/PreGig.test.jsx [2m([22m[2m12 tests[22m[2m)[22m[33m 684[2mms[22m[39m
+[90mstdout[2m | tests/Gig.scene.test.jsx
+[22m[39m🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+
+ [32m✓[39m tests/Gig.scene.test.jsx [2m([22m[2m27 tests[22m[2m)[22m[33m 626[2mms[22m[39m
+       [33m[2m✓[22m[39m pause modal has proper ARIA attributes [33m 305[2mms[22m[39m
+ [32m✓[39m tests/Modal.test.jsx [2m([22m[2m6 tests[22m[2m)[22m[33m 561[2mms[22m[39m
+     [33m[2m✓[22m[39m calls onClose when clicking outside [33m 313[2mms[22m[39m
+[90mstdout[2m | tests/GigIntegration.test.jsx
+[22m[39m🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+
+[90mstdout[2m | tests/GigIntegration.test.jsx
+[22m[39m[AudioEngine] Bundled 7 OGG asset(s): ../01 Kranker Schrank.ogg, ../02 THE LOST SCRIPTURES OF THE ELDER GODS AKOASMA AND GOLGATHA.ogg, ../03 Travestie Massaker.ogg, ../04 New Millenium.ogg, ../05 Suicidal Jesus.ogg, ../08 Systemsprenger.ogg, ../09 Galactic Love Bazooka.ogg
+
+[90mstdout[2m | tests/GigIntegration.test.jsx[2m > [22m[2mGig Component Integration[2m > [22m[2mrenders standard composition elements of the gig scene
+[22m[39m[AudioSystem] stopMusic called (was playing: nothing).
+[AudioEngine] stopAudio called. Invalidating reqs. New reqId: 1
+[GameState] Map Generated
+
+[90mstderr[2m | tests/GigIntegration.test.jsx[2m > [22m[2mGig Component Integration[2m > [22m[2mrenders standard composition elements of the gig scene
+[22m[39m[RhythmGame] No map node found for undefined
+
+[90mstdout[2m | tests/GigIntegration.test.jsx[2m > [22m[2mGig Component Integration[2m > [22m[2mrenders standard composition elements of the gig scene
+[22m[39m[AudioEngine] stopAudio called. Invalidating reqs. New reqId: 2
+[AudioSystem] stopMusic called (was playing: nothing).
+[AudioEngine] stopAudio called. Invalidating reqs. New reqId: 3
+
+[90mstderr[2m | tests/GigIntegration.test.jsx[2m > [22m[2mGig Component Integration[2m > [22m[2mrenders standard composition elements of the gig scene
+[22m[39m[RhythmGame] No map node found for undefined
+
+[90mstdout[2m | tests/GigIntegration.test.jsx[2m > [22m[2mGig Component Integration[2m > [22m[2mrenders standard composition elements of the gig scene
+[22m[39m[AudioEngine] stopAudio called. Invalidating reqs. New reqId: 4
+[AudioEngine] stopAudio called. Invalidating reqs. New reqId: 5
+
+ [32m✓[39m tests/GigIntegration.test.jsx [2m([22m[2m1 test[22m[2m)[22m[33m 503[2mms[22m[39m
+     [33m[2m✓[22m[39m renders standard composition elements of the gig scene [33m 498[2mms[22m[39m
+ [32m✓[39m tests/ChatterOverlay_style.test.jsx [2m([22m[2m1 test[22m[2m)[22m[33m 512[2mms[22m[39m
+   [33m[2m✓[22m[39m ChatterOverlay renders with correct z-index style [33m 508[2mms[22m[39m
+ [32m✓[39m tests/ReportPhase.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[33m 450[2mms[22m[39m
+   [33m[2m✓[22m[39m ReportPhase renders loading state [33m 309[2mms[22m[39m
+[90mstdout[2m | tests/performance/contextBenchmark.test.jsx[2m > [22m[2mGameStateProvider Re-render Benchmark
+[22m[39m🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+
+[90mstdout[2m | tests/performance/contextBenchmark.test.jsx[2m > [22m[2mGameStateProvider Re-render Benchmark
+[22m[39m[GameState] Map Generated
+[GameState] Update Player { money: [33m200[39m }
+
+ [32m✓[39m tests/performance/contextBenchmark.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 254[2mms[22m[39m
+ [32m✓[39m tests/Panel.test.jsx [2m([22m[2m4 tests[22m[2m)[22m[33m 462[2mms[22m[39m
+   [33m[2m✓[22m[39m Panel renders children and optional title [33m 411[2mms[22m[39m
+ [32m✓[39m tests/GlitchButton.test.jsx [2m([22m[2m8 tests[22m[2m)[22m[33m 467[2mms[22m[39m
+     [33m[2m✓[22m[39m shows loading state correctly [33m 304[2mms[22m[39m
+ [32m✓[39m tests/ActionButton.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[33m 395[2mms[22m[39m
+   [33m[2m✓[22m[39m ActionButton renders children and handles clicks [33m 325[2mms[22m[39m
+ [32m✓[39m tests/KabelsalatComponents.test.jsx [2m([22m[2m30 tests[22m[2m)[22m[32m 205[2mms[22m[39m
+ [32m✓[39m tests/AnimatedSubtitle.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[33m 413[2mms[22m[39m
+   [33m[2m✓[22m[39m AnimatedSubtitle renders as h2 by default [33m 334[2mms[22m[39m
+ [32m✓[39m tests/LaneInputArea.test.jsx [2m([22m[2m1 test[22m[2m)[22m[33m 402[2mms[22m[39m
+   [33m[2m✓[22m[39m LaneInputArea registers clicks and touch events on lanes [33m 398[2mms[22m[39m
+ [32m✓[39m tests/GigHUD.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[33m 392[2mms[22m[39m
+   [33m[2m✓[22m[39m GigHUD: renders toxic border flash element when isToxicMode is true [33m 362[2mms[22m[39m
+ [32m✓[39m tests/DealsPhase.test.jsx [2m([22m[2m4 tests[22m[2m)[22m[32m 238[2mms[22m[39m
+ [32m✓[39m tests/usePostGigLogic.test.jsx [2m([22m[2m45 tests[22m[2m)[22m[33m 341[2mms[22m[39m
+ [32m✓[39m tests/UplinkButton.test.jsx [2m([22m[2m1 test[22m[2m)[22m[33m 366[2mms[22m[39m
+   [33m[2m✓[22m[39m UplinkButton renders correctly and handles hover states properly [33m 361[2mms[22m[39m
+ [32m✓[39m tests/ProgressBar.test.jsx [2m([22m[2m4 tests[22m[2m)[22m[33m 389[2mms[22m[39m
+[90mstdout[2m | tests/GameState.comprehensive.test.jsx
+[22m[39m🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+
+Not implemented: navigation to another Document
+[90mstdout[2m | tests/performance/contextStability.test.jsx[2m > [22m[2mGameState context functions stability
+[22m[39m🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+
+ [32m✓[39m tests/GameState.comprehensive.test.jsx [2m([22m[2m21 tests[22m[2m)[22m[32m 255[2mms[22m[39m
+[90mstdout[2m | tests/performance/contextStability.test.jsx[2m > [22m[2mGameState context functions stability
+[22m[39m[GameState] Map Generated
+
+[90mstdout[2m | tests/performance/contextStability.test.jsx[2m > [22m[2mGameState context functions stability
+[22m[39m[GameState] Update Player { money: [33m510[39m }
+
+[90mstdout[2m | tests/performance/contextStability.test.jsx[2m > [22m[2mGameState context functions stability
+[22m[39mSuccess: changeScene is STABLE!
+
+ [32m✓[39m tests/performance/contextStability.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 270[2mms[22m[39m
+ [32m✓[39m tests/ChatterOverlay.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 268[2mms[22m[39m
+ [32m✓[39m tests/performance/GigHUD.optimization.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 282[2mms[22m[39m
+[90mstderr[2m | tests/MainMenu.identity.test.jsx[2m > [22m[2mMainMenu Identity Flow[2m > [22m[2mgenerates ID and saves to localStorage on submit
+[22m[39m[ErrorHandler] Audio unlock failed {
+  name: [32m'Error'[39m,
+  message: [32m'Audio unlock failed'[39m,
+  category: [32m'unknown'[39m,
+  severity: [32m'medium'[39m,
+  context: {},
+  recoverable: [33mtrue[39m,
+  timestamp: [33m1773404545774[39m,
+  stack: [32m'Error: Audio unlock failed\n'[39m +
+    [32m'    at /app/src/scenes/MainMenu.jsx:114:13\n'[39m +
+    [32m'    at processTicksAndRejections (node:internal/process/task_queues:103:5)'[39m
+}
+
+[90mstderr[2m | tests/MainMenu.identity.test.jsx[2m > [22m[2mMainMenu Identity Flow[2m > [22m[2mskips modal if identity already exists
+[22m[39m[ErrorHandler] Audio unlock failed {
+  name: [32m'Error'[39m,
+  message: [32m'Audio unlock failed'[39m,
+  category: [32m'unknown'[39m,
+  severity: [32m'medium'[39m,
+  context: {},
+  recoverable: [33mtrue[39m,
+  timestamp: [33m1773404545853[39m,
+  stack: [32m'Error: Audio unlock failed\n    at /app/src/scenes/MainMenu.jsx:114:13'[39m
+}
+
+ [32m✓[39m tests/MainMenu.identity.test.jsx [2m([22m[2m3 tests[22m[2m)[22m[32m 271[2mms[22m[39m
+[90mstdout[2m | tests/Overworld.test.jsx
+[22m[39m🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+
+[90mstdout[2m | tests/Overworld.test.jsx[2m > [22m[2mOverworld Component[2m > [22m[2mrenders the Overworld and its UI elements correctly
+[22m[39m[GameState] Map Generated
+
+[90mstdout[2m | tests/Overworld.test.jsx[2m > [22m[2mOverworld Component[2m > [22m[2mtriggers save game action when save button is clicked
+[22m[39m[GameState] Map Generated
+
+[90mstdout[2m | tests/Overworld.test.jsx[2m > [22m[2mOverworld Component[2m > [22m[2mtriggers save game action when save button is clicked
+[22m[39m[System] Game Saved Successfully
+
+[90mstdout[2m | tests/GameOver.test.jsx
+[22m[39m🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+
+ [32m✓[39m tests/Overworld.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[32m 253[2mms[22m[39m
+[90mstdout[2m | tests/GameOver.test.jsx[2m > [22m[2mGameOver Scene[2m > [22m[2mrenders game over stats correctly with context
+[22m[39m[GameState] Update Player { score: [33m100[39m, day: [33m5[39m, fame: [33m50[39m, totalTravels: [33m2[39m }
+[GameState] Map Generated
+
+[90mstdout[2m | tests/GameOver.test.jsx[2m > [22m[2mGameOver Scene[2m > [22m[2mhandles RETURN TO MENU
+[22m[39m[GameState] Update Player { score: [33m100[39m, day: [33m5[39m, fame: [33m50[39m, totalTravels: [33m2[39m }
+[GameState] Map Generated
+
+[90mstdout[2m | tests/GameOver.test.jsx[2m > [22m[2mGameOver Scene[2m > [22m[2mhandles RETURN TO MENU
+[22m[39m[GameState] State Reset (Debug)
+[GameState] Update Player { score: [33m100[39m, day: [33m5[39m, fame: [33m50[39m, totalTravels: [33m2[39m }
+[GameState] Map Generated
+[GameState] Scene Change: INTRO -> MENU
+[GameState] Update Player { score: [33m100[39m, day: [33m5[39m, fame: [33m50[39m, totalTravels: [33m2[39m }
+[GameState] Map Generated
+
+ [32m✓[39m tests/GameOver.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[32m 248[2mms[22m[39m
+ [32m✓[39m tests/SetlistTab.test.jsx [2m([22m[2m7 tests[22m[2m)[22m[32m 244[2mms[22m[39m
+ [32m✓[39m tests/HealthBar.test.jsx [2m([22m[2m16 tests[22m[2m)[22m[32m 188[2mms[22m[39m
+[90mstdout[2m | tests/Credits.test.jsx
+[22m[39m🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+
+[90mstdout[2m | tests/Credits.test.jsx[2m > [22m[2mCredits Scene[2m > [22m[2mrenders credits content
+[22m[39m[GameState] Map Generated
+
+[90mstdout[2m | tests/Credits.test.jsx[2m > [22m[2mCredits Scene[2m > [22m[2mcalls changeScene("MENU") when RETURN is clicked
+[22m[39m[GameState] Map Generated
+[GameState] Scene Change: INTRO -> MENU
+
+ [32m✓[39m tests/QuestsModal.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 128[2mms[22m[39m
+ [32m✓[39m tests/Credits.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[32m 173[2mms[22m[39m
+ [32m✓[39m tests/EventModal.test.jsx [2m([22m[2m3 tests[22m[2m)[22m[32m 162[2mms[22m[39m
+[90mstderr[2m | tests/CrashHandler.test.jsx[2m > [22m[2mCrashHandler catches error from deeply nested component and displays fallback UI
+[22m[39m[ErrorHandler] Test Error {
+  name: [32m'Error'[39m,
+  message: [32m'Test Error'[39m,
+  category: [32m'unknown'[39m,
+  severity: [32m'medium'[39m,
+  context: {
+    componentStack: [32m'\n'[39m +
+      [32m'    at ThrowingComponent (/app/tests/CrashHandler.test.jsx:22:9)\n'[39m +
+      [32m'    at div (<anonymous>)\n'[39m +
+      [32m'    at div (<anonymous>)\n'[39m +
+      [32m'    at DeeplyNestedThrower (<anonymous>)\n'[39m +
+      [32m'    at ErrorBoundaryComponent (/app/src/ui/CrashHandler.jsx:18:5)'[39m
+  },
+  recoverable: [33mtrue[39m,
+  timestamp: [33m1773404551520[39m,
+  stack: [32m'Error: Test Error\n'[39m +
+    [32m'    at ThrowingComponent (/app/tests/CrashHandler.test.jsx:25:9)\n'[39m +
+    [32m'    at Object.react_stack_bottom_frame (/app/node_modules/react-dom/cjs/react-dom-client.development.js:25904:20)\n'[39m +
+    [32m'    at renderWithHooks (/app/node_modules/react-dom/cjs/react-dom-client.development.js:7662:22)\n'[39m +
+    [32m'    at updateFunctionComponent (/app/node_modules/react-dom/cjs/react-dom-client.development.js:10166:19)\n'[39m +
+    [32m'    at beginWork (/app/node_modules/react-dom/cjs/react-dom-client.development.js:11778:18)\n'[39m +
+    [32m'    at runWithFiberInDEV (/app/node_modules/react-dom/cjs/react-dom-client.development.js:874:13)\n'[39m +
+    [32m'    at performUnitOfWork (/app/node_modules/react-dom/cjs/react-dom-client.development.js:17641:22)\n'[39m +
+    [32m'    at workLoopSync (/app/node_modules/react-dom/cjs/react-dom-client.development.js:17469:41)\n'[39m +
+    [32m'    at renderRootSync (/app/node_modules/react-dom/cjs/react-dom-client.development.js:17450:11)\n'[39m +
+    [32m'    at performWorkOnRoot (/app/node_modules/react-dom/cjs/react-dom-client.development.js:16583:35)'[39m,
+  source: [32m'CrashHandler'[39m
+}
+
+[90mstderr[2m | tests/CrashHandler.test.jsx[2m > [22m[2mCrashHandler exposes stack trace in DEV mode
+[22m[39m[ErrorHandler] Test Error {
+  name: [32m'Error'[39m,
+  message: [32m'Test Error'[39m,
+  category: [32m'unknown'[39m,
+  severity: [32m'medium'[39m,
+  context: {
+    componentStack: [32m'\n'[39m +
+      [32m'    at ThrowingComponent (/app/tests/CrashHandler.test.jsx:22:9)\n'[39m +
+      [32m'    at ErrorBoundaryComponent (/app/src/ui/CrashHandler.jsx:18:5)'[39m
+  },
+  recoverable: [33mtrue[39m,
+  timestamp: [33m1773404551564[39m,
+  stack: [32m'Error: Test Error\n'[39m +
+    [32m'    at ThrowingComponent (/app/tests/CrashHandler.test.jsx:25:9)\n'[39m +
+    [32m'    at Object.react_stack_bottom_frame (/app/node_modules/react-dom/cjs/react-dom-client.development.js:25904:20)\n'[39m +
+    [32m'    at renderWithHooks (/app/node_modules/react-dom/cjs/react-dom-client.development.js:7662:22)\n'[39m +
+    [32m'    at updateFunctionComponent (/app/node_modules/react-dom/cjs/react-dom-client.development.js:10166:19)\n'[39m +
+    [32m'    at beginWork (/app/node_modules/react-dom/cjs/react-dom-client.development.js:11778:18)\n'[39m +
+    [32m'    at runWithFiberInDEV (/app/node_modules/react-dom/cjs/react-dom-client.development.js:874:13)\n'[39m +
+    [32m'    at performUnitOfWork (/app/node_modules/react-dom/cjs/react-dom-client.development.js:17641:22)\n'[39m +
+    [32m'    at workLoopSync (/app/node_modules/react-dom/cjs/react-dom-client.development.js:17469:41)\n'[39m +
+    [32m'    at renderRootSync (/app/node_modules/react-dom/cjs/react-dom-client.development.js:17450:11)\n'[39m +
+    [32m'    at performWorkOnRoot (/app/node_modules/react-dom/cjs/react-dom-client.development.js:16583:35)'[39m,
+  source: [32m'CrashHandler'[39m
+}
+
+[90mstderr[2m | tests/CrashHandler.test.jsx[2m > [22m[2mCrashHandler HIDES stack trace in PROD mode
+[22m[39m[ErrorHandler] Test Error {
+  name: [32m'Error'[39m,
+  message: [32m'Test Error'[39m,
+  category: [32m'unknown'[39m,
+  severity: [32m'medium'[39m,
+  context: {
+    componentStack: [32m'\n'[39m +
+      [32m'    at ThrowingComponent (/app/tests/CrashHandler.test.jsx:22:9)\n'[39m +
+      [32m'    at ErrorBoundaryComponent (/app/src/ui/CrashHandler.jsx:18:5)'[39m
+  },
+  recoverable: [33mtrue[39m,
+  timestamp: [33m1773404551579[39m,
+  stack: [32m'Error: Test Error\n'[39m +
+    [32m'    at ThrowingComponent (/app/tests/CrashHandler.test.jsx:25:9)\n'[39m +
+    [32m'    at Object.react_stack_bottom_frame (/app/node_modules/react-dom/cjs/react-dom-client.development.js:25904:20)\n'[39m +
+    [32m'    at renderWithHooks (/app/node_modules/react-dom/cjs/react-dom-client.development.js:7662:22)\n'[39m +
+    [32m'    at updateFunctionComponent (/app/node_modules/react-dom/cjs/react-dom-client.development.js:10166:19)\n'[39m +
+    [32m'    at beginWork (/app/node_modules/react-dom/cjs/react-dom-client.development.js:11778:18)\n'[39m +
+    [32m'    at runWithFiberInDEV (/app/node_modules/react-dom/cjs/react-dom-client.development.js:874:13)\n'[39m +
+    [32m'    at performUnitOfWork (/app/node_modules/react-dom/cjs/react-dom-client.development.js:17641:22)\n'[39m +
+    [32m'    at workLoopSync (/app/node_modules/react-dom/cjs/react-dom-client.development.js:17469:41)\n'[39m +
+    [32m'    at renderRootSync (/app/node_modules/react-dom/cjs/react-dom-client.development.js:17450:11)\n'[39m +
+    [32m'    at performWorkOnRoot (/app/node_modules/react-dom/cjs/react-dom-client.development.js:16583:35)'[39m,
+  source: [32m'CrashHandler'[39m
+}
+
+ [32m✓[39m tests/CrashHandler.test.jsx [2m([22m[2m3 tests[22m[2m)[22m[32m 161[2mms[22m[39m
+[90mstdout[2m | tests/performance/proceedToTourTime.test.jsx[2m > [22m[2mproceedToTour timing test[2m > [22m[2mmeasures execution time of handleStartTour without extra delay
+[22m[39mExecution time (waiting 50ms): 56.92608100000007ms
+
+ [32m✓[39m tests/performance/proceedToTourTime.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 157[2mms[22m[39m
+ [32m✓[39m tests/BandHQStats.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 148[2mms[22m[39m
+ [32m✓[39m tests/SettingsPanel.localization.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 144[2mms[22m[39m
+ [32m✓[39m tests/useKabelsalatState.test.jsx [2m([22m[2m21 tests[22m[2m)[22m[32m 121[2mms[22m[39m
+ [32m✓[39m tests/IntroVideo.test.jsx [2m([22m[2m9 tests[22m[2m)[22m[32m 127[2mms[22m[39m
+ [32m✓[39m tests/HecklerOverlay.test.jsx [2m([22m[2m12 tests[22m[2m)[22m[32m 111[2mms[22m[39m
+ [32m✓[39m tests/ShopItem.test.jsx [2m([22m[2m9 tests[22m[2m)[22m[32m 123[2mms[22m[39m
+[90mstdout[2m | tests/performance/RoadieLogic.perf.test.jsx[2m > [22m[2mRoadieLogic Performance[2m > [22m[2mupdate loop performance
+[22m[39m[Perf] 50k updates with 100 cars took: 7.89ms
+
+ [32m✓[39m tests/performance/RoadieLogic.perf.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 68[2mms[22m[39m
+[90mstdout[2m | tests/GameStateProvider.smoke.test.jsx
+[22m[39m🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+
+[90mstdout[2m | tests/GameStateProvider.smoke.test.jsx[2m > [22m[2mGameStateProvider smoke[2m > [22m[2mrenders provider context actions without initialization crashes
+[22m[39m[GameState] Map Generated
+
+ [32m✓[39m tests/GameStateProvider.smoke.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 94[2mms[22m[39m
+ [32m✓[39m tests/Tooltip.test.jsx [2m([22m[2m4 tests[22m[2m)[22m[32m 98[2mms[22m[39m
+ [32m✓[39m tests/HardwareProps.test.jsx [2m([22m[2m5 tests[22m[2m)[22m[32m 73[2mms[22m[39m
+ [32m✓[39m tests/MoneyIcon.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[32m 69[2mms[22m[39m
+ [32m✓[39m tests/ComboDisplay.test.jsx [2m([22m[2m5 tests[22m[2m)[22m[32m 80[2mms[22m[39m
+ [32m✓[39m tests/hooks/useRhythmGameInput.test.jsx [2m([22m[2m9 tests[22m[2m)[22m[32m 63[2mms[22m[39m
+ [32m✓[39m tests/StatBox.test.jsx [2m([22m[2m3 tests[22m[2m)[22m[32m 85[2mms[22m[39m
+ [32m✓[39m tests/TourbusScene.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 80[2mms[22m[39m
+ [32m✓[39m tests/performance/MapNode.optimization.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 79[2mms[22m[39m
+ [32m✓[39m tests/VolumeSlider.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 81[2mms[22m[39m
+ [32m✓[39m tests/performance/RoadieRunScene.perf.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 73[2mms[22m[39m
+ [32m✓[39m tests/performance/PostGig.optimization.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 81[2mms[22m[39m
+ [32m✓[39m tests/AnimatedDivider.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[32m 66[2mms[22m[39m
+ [32m✓[39m tests/HexBorder.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[32m 67[2mms[22m[39m
+ [32m✓[39m tests/CrosshairIcon.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[32m 69[2mms[22m[39m
+ [32m✓[39m tests/ControlsHint.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 71[2mms[22m[39m
+ [32m✓[39m tests/GameOverOverlay.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[32m 60[2mms[22m[39m
+ [32m✓[39m tests/performance/MainMenuStability.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 62[2mms[22m[39m
+ [32m✓[39m tests/OverloadMeter.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 71[2mms[22m[39m
+ [32m✓[39m tests/performance/SettingsStability.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 65[2mms[22m[39m
+ [32m✓[39m tests/MapConnection.test.jsx [2m([22m[2m3 tests[22m[2m)[22m[32m 62[2mms[22m[39m
+ [32m✓[39m tests/Gig.optimization.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 65[2mms[22m[39m
+ [32m✓[39m tests/useRhythmGameLoop.test.jsx [2m([22m[2m4 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+Warning: A vi.mock("../../src/components/PixiStageController") call in "/app/tests/performance/PixiStage.perf.test.jsx" is not at the top level of the module. Although it appears nested, it will be hoisted and executed before any tests run. Move it to the top level to reflect its actual execution order. This will become an error in a future version.
+See: https://vitest.dev/guide/mocking/modules#how-it-works
+ [32m✓[39m tests/performance/PixiStage.perf.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m tests/useLeaderboardSync.test.jsx [2m([22m[2m4 tests[22m[2m)[22m[32m 46[2mms[22m[39m
+ [32m✓[39m tests/toastOverlay.test.jsx [2m([22m[2m3 tests[22m[2m)[22m[32m 39[2mms[22m[39m
+ [32m✓[39m tests/hooks/useTravelLogic.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m tests/useRhythmGameAudio.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[32m 43[2mms[22m[39m
+ [32m✓[39m tests/loadTest.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 36[2mms[22m[39m
+ [32m✓[39m tests/useQuestsModal.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[32m 35[2mms[22m[39m
+ [32m✓[39m tests/hqPassiveEffects.integration.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 36[2mms[22m[39m
+ [32m✓[39m tests/useRhythmGameState.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 39[2mms[22m[39m
+ [32m✓[39m tests/hooks/rhythmGame/useRhythmGameLoop.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m tests/BaseStageController.test.jsx [2m([22m[2m6 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m tests/specialEvents.data.test.jsx [2m([22m[2m3 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m tests/events.data.test.jsx [2m([22m[2m4 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m tests/sceneReducer.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/brandDeals.data.test.jsx [2m([22m[2m3 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/actionTypes.test.jsx [2m([22m[2m1 test[22m[2m)[22m[32m 9[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m95 passed[39m[22m[90m (95)[39m
+[2m      Tests [22m [1m[32m618 passed[39m[22m[90m (618)[39m
+[2m   Start at [22m 12:21:50
+[2m   Duration [22m 65.88s[2m (transform 5.30s, setup 21.79s, import 15.48s, tests 45.11s, environment 80.11s)[22m
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   44.17 |    31.82 |   51.01 |    45.1 |
+ src               |   97.82 |    95.65 |   93.75 |   97.77 |
+  App.jsx          |   97.77 |    95.65 |   93.75 |   97.72 | 48
+  i18n.js          |     100 |      100 |     100 |     100 |
+ src/assets        |       0 |        0 |       0 |       0 |
+  ...r Schrank.mid |       0 |        0 |       0 |       0 |
+  ...r Schrank.ogg |       0 |        0 |       0 |       0 |
+  ... GOLGATHA.mid |       0 |        0 |       0 |       0 |
+  ... GOLGATHA.ogg |       0 |        0 |       0 |       0 |
+  ... Massaker.mid |       0 |        0 |       0 |       0 |
+  ... Massaker.ogg |       0 |        0 |       0 |       0 |
+  ...Millenium.mid |       0 |        0 |       0 |       0 |
+  ...Millenium.ogg |       0 |        0 |       0 |       0 |
+  ...dal Jesus.mid |       0 |        0 |       0 |       0 |
+  ...dal Jesus.ogg |       0 |        0 |       0 |       0 |
+  ...msprenger.mid |       0 |        0 |       0 |       0 |
+  ...msprenger.ogg |       0 |        0 |       0 |       0 |
+  ...e Bazooka.mid |       0 |        0 |       0 |       0 |
+  ...e Bazooka.ogg |       0 |        0 |       0 |       0 |
+  ...hm_songs.json |       0 |        0 |       0 |       0 |
+ src/components    |   74.84 |    67.92 |   75.75 |   76.03 |
+  ...erOverlay.jsx |   80.51 |    46.15 |   63.15 |   85.71 | ...31-232,254-260
+  GigHUD.jsx       |     100 |      100 |     100 |     100 |
+  ...erOverlay.jsx |    92.1 |       60 |      80 |   91.66 | 35-37
+  ...onnection.jsx |     100 |    92.85 |     100 |     100 | 22
+  MapNode.jsx      |   90.32 |    79.34 |   88.88 |   90.32 | 77-80
+  ...ceneFrame.jsx |    91.3 |       72 |     100 |    90.9 | 41-42
+  PixiStage.jsx    |     100 |    81.81 |     100 |     100 | 41-48
+  ...Controller.js |   29.76 |     5.12 |      30 |   30.48 | ...06-209,214-215
+  ToggleRadio.jsx  |     100 |      100 |     100 |     100 |
+  ...alManager.jsx |     100 |    96.96 |     100 |     100 | 31
+ ...components/hud |     100 |      100 |     100 |     100 |
+  ComboDisplay.jsx |     100 |      100 |     100 |     100 |
+  ControlsHint.jsx |     100 |      100 |     100 |     100 |
+  ...erOverlay.jsx |     100 |      100 |     100 |     100 |
+  HealthBar.jsx    |     100 |      100 |     100 |     100 |
+  ...InputArea.jsx |     100 |      100 |     100 |     100 |
+  ...loadMeter.jsx |     100 |      100 |     100 |     100 |
+  PauseButton.jsx  |     100 |      100 |     100 |     100 |
+  ScoreDisplay.jsx |     100 |      100 |     100 |     100 |
+  ...ModeFlash.jsx |     100 |      100 |     100 |     100 |
+ ...onents/postGig |   87.96 |    77.77 |   83.33 |   91.17 |
+  ...letePhase.jsx |     100 |    84.78 |     100 |     100 | ...94-100,108-113
+  DealsPhase.jsx   |   83.33 |    69.35 |   76.19 |   87.67 | ...-77,85,242,266
+  ReportPhase.jsx  |     100 |      100 |     100 |     100 |
+  SocialPhase.jsx  |     100 |    66.66 |     100 |     100 | 50-57
+ ...mponents/stage |   23.06 |    20.43 |   20.68 |   23.74 |
+  ...Controller.js |   73.04 |       60 |   64.28 |    78.3 | ...90-197,221-224
+  CrowdManager.js  |       0 |        0 |       0 |       0 | 17-134
+  EffectManager.js |    1.66 |        0 |       0 |     1.7 | 15-253
+  LaneManager.js   |    8.18 |        0 |       0 |    8.25 | 21-248
+  NoteManager.js   |    6.71 |        0 |       0 |    6.97 | 25-266
+  utils.js         |   46.98 |    35.89 |      25 |   48.14 | ...34-139,168-219
+ src/context       |   62.87 |    34.41 |    63.1 |   64.93 |
+  GameState.jsx    |   59.24 |    25.74 |   69.84 |   59.91 | ...75,588-685,782
+  ...onCreators.js |   73.97 |       40 |   47.22 |   97.43 | 328
+  actionTypes.js   |     100 |      100 |     100 |     100 |
+  gameConstants.js |     100 |      100 |     100 |     100 |
+  gameReducer.js   |   48.71 |    45.94 |     100 |   48.71 | ...24-136,151-178
+  initialState.js  |   92.85 |    72.72 |     100 |    92.3 | 156
+ ...ntext/reducers |    30.8 |    18.98 |   35.59 |   32.16 |
+  bandReducer.js   |   21.81 |     5.88 |   14.28 |   23.52 | ...,82-91,107-146
+  eventReducer.js  |   43.75 |    33.33 |      25 |   43.75 | 14-25,33,37-43
+  gigReducer.js    |   24.61 |     3.07 |   36.36 |   24.61 | ...96-103,108-210
+  ...ameReducer.js |   58.92 |       30 |   66.66 |   58.92 | ...38-166,202-206
+  playerReducer.js |      70 |    66.66 |      50 |      70 | 38-42
+  questReducer.js  |    4.08 |        0 |       0 |    4.49 | ...60-178,182-220
+  sceneReducer.js  |     100 |      100 |     100 |     100 |
+  socialReducer.js |    6.25 |        0 |       0 |    6.45 | 11-61,65-92
+  systemReducer.js |    50.6 |    48.27 |   69.23 |   53.94 | ...85-331,341-343
+ src/data          |   21.15 |    16.35 |    5.33 |   20.94 |
+  brandDeals.js    |     100 |      100 |     100 |     100 |
+  characters.js    |     100 |      100 |     100 |     100 |
+  contraband.js    |     100 |      100 |     100 |     100 |
+  hqItems.js       |     100 |      100 |     100 |     100 |
+  platforms.js     |     100 |      100 |     100 |     100 |
+  postOptions.js   |    2.99 |        0 |       0 |    3.24 | ...,37-90,106-856
+  socialTrends.js  |     100 |      100 |     100 |     100 |
+  songs.js         |     100 |     62.5 |     100 |     100 | ...52,58-73,75-91
+  ...adeCatalog.js |      60 |        0 |       0 |      60 | 143,161
+  venues.js        |     100 |      100 |     100 |     100 |
+ src/data/events   |   54.54 |       12 |   35.89 |   51.54 |
+  band.js          |     100 |      100 |     100 |     100 |
+  consequences.js  |   15.78 |    13.04 |   14.28 |   15.78 | 81-277
+  constants.js     |     100 |      100 |     100 |     100 |
+  crisis.js        |    7.14 |        0 |       0 |    7.14 | 14-543
+  financial.js     |     100 |      100 |     100 |     100 |
+  gig.js           |     100 |      100 |     100 |     100 |
+  index.js         |   84.84 |    57.14 |     100 |   80.76 | 26-27,30-34,38
+  quests.js        |   16.66 |        0 |       0 |   16.66 | 9-144
+  ...shipEvents.js |   65.62 |       50 |   66.66 |   69.23 | 91-100
+  special.js       |     100 |      100 |     100 |     100 |
+  transport.js     |     100 |      100 |     100 |     100 |
+ src/hooks         |   60.86 |    48.38 |   64.42 |   61.45 |
+  ...dioControl.js |   69.49 |    81.48 |   64.28 |   68.96 | ...30,141,152-156
+  ...abandStash.js |   52.94 |    14.28 |      25 |      60 | 21-29
+  useGigEffects.js |   55.55 |    24.13 |      75 |   54.54 | ...73,78,90,94,99
+  useGigInput.js   |    37.5 |        0 |   27.27 |   39.13 | ...18-120,131,138
+  ...rboardSync.js |     100 |    81.57 |     100 |     100 | 9-10,37,48-52
+  ...stGigLogic.js |   98.52 |    82.72 |   95.65 |   98.47 | 636-641
+  ...chaseLogic.js |   50.46 |    37.63 |   44.44 |   50.96 | ...15-321,334-340
+  ...uestsModal.js |     100 |       50 |     100 |     100 | 18
+  ...mGameLogic.js |     100 |       50 |     100 |     100 | 78
+  ...ravelLogic.js |   30.95 |    15.93 |    40.9 |   32.09 | ...70-771,774-775
+ ...ooks/minigames |   56.71 |    28.75 |   70.58 |   57.02 |
+  constants.js     |     100 |      100 |     100 |     100 |
+  ...oadieLogic.js |   55.03 |    28.75 |   70.58 |   55.17 | ...10-234,271-276
+ ...oks/rhythmGame |   40.25 |    28.61 |   47.22 |    41.4 |
+  ...mGameAudio.js |   32.47 |    16.55 |   31.57 |   33.33 | ...83,415-547,575
+  ...mGameInput.js |     100 |      100 |     100 |     100 |
+  ...hmGameLoop.js |    81.7 |    64.91 |   71.42 |   84.81 | ...31,151,155-159
+  ...ameScoring.js |   12.09 |     8.97 |   42.85 |   12.82 | ...81-165,190-308
+  ...mGameState.js |     100 |      100 |     100 |     100 |
+ src/scenes        |    90.1 |    72.27 |   84.32 |   91.72 |
+  Credits.jsx      |     100 |      100 |     100 |     100 |
+  GameOver.jsx     |      80 |       50 |      80 |      80 | 20,25-28
+  Gig.jsx          |   94.73 |    96.29 |     100 |   94.44 | 76-84
+  IntroVideo.jsx   |     100 |    66.66 |     100 |     100 | 23-33
+  ...alatScene.jsx |      75 |    64.28 |      50 |      75 | 122
+  MainMenu.jsx     |    93.8 |    86.27 |   93.93 |   96.29 | 75-76,111,217
+  Overworld.jsx    |   90.21 |    62.68 |    87.5 |    92.5 | ...27,245,371-372
+  PostGig.jsx      |     100 |      100 |     100 |     100 |
+  PreGig.jsx       |   85.04 |    58.82 |   76.19 |    86.4 | ...49-354,488-489
+  ...eRunScene.jsx |      75 |       50 |   45.45 |   83.33 | 27,38,84
+  Settings.jsx     |   72.72 |      100 |      25 |   72.72 | 18,23,28
+  TourbusScene.jsx |     100 |      100 |     100 |     100 |
+ ...nes/kabelsalat |   69.94 |    64.94 |   74.35 |   71.33 |
+  constants.js     |     100 |      100 |     100 |     100 |
+  ...salatState.js |   71.33 |    67.74 |      75 |   73.07 | ...87-196,219-234
+  utils.js         |   30.76 |        0 |   66.66 |   27.27 | 16-26
+ ...lat/components |   77.35 |    63.26 |   68.75 |   77.35 |
+  CableList.jsx    |   55.55 |    65.21 |      50 |   55.55 | 22-26
+  ...tionPaths.jsx |   33.33 |        0 |      50 |   33.33 | 12-16
+  ...wareProps.jsx |     100 |      100 |     100 |     100 |
+  Header.jsx       |     100 |      100 |     100 |     100 |
+  Overlays.jsx     |     100 |      100 |     100 |     100 |
+  PlugGraphics.jsx |     100 |      100 |     100 |     100 |
+  Rules.jsx        |     100 |      100 |     100 |     100 |
+  ...tGraphics.jsx |     100 |      100 |     100 |     100 |
+  SocketList.jsx   |   71.42 |     42.1 |      50 |   71.42 | 32-36
+ src/ui            |   74.88 |    59.16 |   67.21 |   75.96 |
+  BandHQ.jsx       |      52 |       52 |      50 |   54.54 | 77-98,169
+  ...bandStash.jsx |    12.5 |        0 |       0 |    12.5 | 17-98
+  CrashHandler.jsx |   78.57 |      100 |      80 |   78.57 | 23-25
+  ...LogViewer.jsx |   79.06 |    59.09 |      80 |   81.08 | 29,43,47-51,71,88
+  EventModal.jsx   |   92.85 |    79.31 |     100 |     100 | 29-81,108,173
+  ...ierButton.jsx |     100 |      100 |     100 |     100 |
+  GlitchButton.jsx |     100 |      100 |     100 |     100 |
+  QuestsModal.jsx  |   56.86 |       40 |   38.46 |   56.86 | ...08,114-127,169
+  ToastOverlay.jsx |   97.14 |    81.48 |     100 |   96.96 | 151
+ src/ui/bandhq     |    66.1 |    63.09 |   64.81 |   67.64 |
+  ...dStatsTab.jsx |   79.71 |    74.78 |      64 |   81.81 | ...46-450,505-506
+  ...rboardTab.jsx |    2.17 |        0 |       0 |    2.27 | 13-220
+  SetlistTab.jsx   |     100 |    94.44 |     100 |     100 | 18
+  SettingsTab.jsx  |     100 |      100 |     100 |     100 |
+  ShopItem.jsx     |    92.3 |    96.77 |     100 |     100 | 24
+  ShopTab.jsx      |     100 |       50 |     100 |     100 | 25
+  StatsTab.jsx     |     100 |       75 |     100 |     100 | 34-35,80
+  UpgradesTab.jsx  |     100 |       50 |     100 |     100 | 30
+ src/ui/shared     |   49.22 |    44.12 |   39.43 |   51.78 |
+  ActionButton.jsx |     100 |      100 |     100 |     100 |
+  ...ypography.jsx |     100 |    83.33 |     100 |     100 | 31
+  BrutalistUI.jsx  |   27.49 |    15.76 |   18.68 |   29.69 | ...1608,1628-1656
+  Icons.jsx        |     100 |      100 |     100 |     100 |
+  Modal.jsx        |     100 |      100 |     100 |     100 |
+  ...ingsPanel.jsx |   70.58 |    52.17 |   23.07 |   70.58 | 27,32,37,50-56
+  ToggleSwitch.jsx |   94.73 |      100 |      80 |     100 |
+  Tooltip.jsx      |   69.23 |    75.67 |     100 |   73.52 | ...65,69-72,79-81
+  VolumeSlider.jsx |   93.33 |      100 |      75 |   92.85 | 51
+  index.jsx        |     100 |    89.28 |     100 |     100 | 136-137,166
+  propTypes.js     |     100 |      100 |     100 |     100 |
+ src/utils         |   28.85 |    14.41 |    38.7 |   29.34 |
+  AudioManager.js  |   23.49 |    13.33 |      30 |   24.37 | ...25-246,267-413
+  ...ntextState.js |   71.42 |    66.66 |     100 |      80 | 14
+  audioEngine.js   |       0 |        0 |       0 |       0 |
+  crypto.js        |   81.25 |       75 |      50 |   81.25 | 14,36-37
+  economyEngine.js |   17.75 |     5.92 |   16.66 |   18.04 | ...34,650,663-680
+  errorHandler.js  |   53.01 |    41.66 |   62.96 |   53.84 | ...48-453,473-500
+  eventEngine.js   |    4.32 |        0 |       0 |    4.67 | ...87-540,554-561
+  ...StateUtils.js |     9.2 |     2.25 |   33.33 |    8.97 | ...9,59-68,89-366
+  gigStats.js      |      70 |    66.66 |      50 |      75 | 19,55
+  hecklerLogic.js  |    9.83 |        0 |   33.33 |    9.61 | 33-84,103-145
+  imageGen.js      |   43.75 |        0 |       0 |   46.66 | 13-14,23-24,41-44
+  ...ceneLoader.js |      75 |       25 |     100 |      75 | 14-15
+  locationI18n.js  |      80 |    76.19 |     100 |   93.33 | 20
+  logger.js        |   68.88 |     62.5 |      60 |   79.48 | ...,63,75,156-165
+  mapGenerator.js  |   93.42 |    66.29 |     100 |   93.92 | ...78-183,390-392
+  mapUtils.js      |   29.54 |    17.77 |   16.66 |   35.13 | ...48,50-51,67-95
+  ...LogicUtils.js |   35.63 |    16.66 |   41.66 |   37.34 | ...72-297,312-323
+  rhythmUtils.js   |    5.38 |        0 |       0 |    5.98 | ...65-259,273-309
+  saveValidator.js |    5.71 |        0 |       0 |    6.12 | ...88-131,136-195
+  ...ationUtils.js |   21.76 |    14.08 |   42.85 |   22.15 | ...67-169,195-457
+  socialEngine.js  |   15.35 |    12.06 |    12.5 |   17.15 | ...64-541,558-629
+  stringUtils.js   |   16.66 |      100 |       0 |      20 | 10-14
+  traitLogic.js    |      80 |       90 |      75 |    87.5 | 27
+  traitUtils.js    |    22.5 |        5 |       0 |      25 | 35-101
+  unlockCheck.js   |    23.8 |     9.16 |      50 |   23.72 | ...04-111,119-145
+  unlockManager.js |   30.43 |     12.5 |      40 |   33.33 | 17-26,38-52
+  upgradeUtils.js  |      25 |        0 |       0 |   27.27 | 11,27-38
+ src/utils/audio   |   21.52 |     6.53 |   26.27 |   21.97 |
+  ambient.js       |       0 |        0 |       0 |       0 | 21-171
+  assets.js        |   13.18 |     4.25 |   16.66 |   11.76 | 34,40,61-258
+  cleanupUtils.js  |      50 |    35.71 |   85.71 |   48.48 | ...50,53-54,57-58
+  constants.js     |     100 |      100 |     100 |     100 |
+  drumMappings.js  |   58.33 |        0 |       0 |      60 | 15-24,157-175
+  midiPlayback.js  |     0.5 |     0.55 |       0 |    0.55 | 35-577
+  midiUtils.js     |   33.33 |        0 |       0 |   39.28 | ...18,35-52,86-89
+  playback.js      |   15.45 |     7.75 |   39.13 |   14.83 | ...54,564,578-611
+  playbackUtils.js |   33.84 |    13.72 |    12.5 |   34.92 | ...23-144,180-181
+  ...duralMetal.js |       0 |        0 |       0 |       0 | 13-140
+  ...ctionUtils.js |   16.66 |        0 |       0 |   16.66 | 9-15
+  setup.js         |   42.12 |    27.53 |   57.14 |    42.3 | ...42-544,549-565
+  ...ufferUtils.js |       0 |        0 |       0 |       0 | 13-30
+  songUtils.js     |   18.18 |        0 |       0 |      20 | 23-54
+  state.js         |     100 |      100 |     100 |     100 |
+  timingUtils.js   |    9.09 |        0 |       0 |    9.09 | 16-29
+-------------------|---------|----------|---------|---------|-------------------
