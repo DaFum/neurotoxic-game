@@ -12,7 +12,10 @@ import {
 } from '../../utils/economyEngine.js'
 import { checkTraitUnlocks } from '../../utils/unlockCheck.js'
 import { applyTraitUnlocks } from '../../utils/traitUtils.js'
-import { pickRandomContraband, computeDropChance } from '../../utils/contrabandUtils.js'
+import {
+  pickRandomContraband,
+  computeDropChance
+} from '../../utils/contrabandUtils.js'
 import { handleAddContraband } from './bandReducer.js'
 import {
   GAME_PHASES,
@@ -112,11 +115,13 @@ export const handleCompleteTravelMinigame = (state, payload) => {
   if (rng() < chance) {
     const contrabandId = pickRandomContraband(rng)
     if (contrabandId) {
-      const instanceId = `${Date.now()}-${rng().toString(36).substr(2,9)}`
+      const instanceId = crypto.randomUUID()
       // Call handleAddContraband directly to leverage its logic
       newState = handleAddContraband(newState, { contrabandId, instanceId })
 
-      const addedItem = newState.band.stash.find(i => i.instanceId === instanceId)
+      const addedItem = newState.band.stash.find(
+        i => i.instanceId === instanceId
+      )
       if (addedItem) {
         // We reuse the existing toasts array and append our new toast
         newState.toasts = [

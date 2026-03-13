@@ -1,7 +1,10 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { handleCompleteTravelMinigame } from '../src/context/reducers/minigameReducer.js'
-import { DEFAULT_BAND_STATE, DEFAULT_PLAYER_STATE } from '../src/context/initialState.js'
+import {
+  DEFAULT_BAND_STATE,
+  DEFAULT_PLAYER_STATE
+} from '../src/context/initialState.js'
 
 describe('minigameReducer - Travel Complete Drops', () => {
   it('does not drop contraband when rng rolls high', () => {

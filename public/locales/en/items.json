@@ -123,110 +123,111 @@
   "van_tuning.description": "Makes the van go faster.",
   "contraband": {
     "c_void_energy": {
-      "name": "Rusty Strings",
+      "name": "Void Energy Drink",
       "description": "A black liquid that tastes like battery acid. Instantly restores 50 Stamina to a band member."
     },
     "c_rusty_strings": {
-      "name": "Cursed Pick of Destiny",
+      "name": "Rusty Strings",
       "description": "They cut your fingers, but the blood summons better gig modifiers (+5 Luck)."
     },
     "c_cursed_pick": {
-      "name": "Mystery Gas Station Pills",
+      "name": "Cursed Pick of Destiny",
       "description": "A glowing pick that whispers. Lowers Guitar Difficulty by 0.2 for one gig."
     },
     "c_mystery_pills": {
-      "name": "Blood Pact Contract",
+      "name": "Mystery Gas Station Pills",
       "description": "Questionable origin. Boosts a member's Mood by 30."
     },
     "c_blood_pact": {
-      "name": "Phase Metronome",
+      "name": "Blood Pact Contract",
       "description": "Binds the band together in dark synergy. +15 Harmony."
     },
     "c_phase_metronome": {
-      "description": "Shifts the band\\",
-      "name": "Shattered Ear Talisman"
+      "name": "Phase Metronome",
+      "description": "Shifts the band's internal tempo. Next gig tempo-related difficulties reduced by 15%."
     },
     "c_shattered_ear": {
-      "description": "A shard that sharpens perception. +5% critical performance rolls while equipped.",
-      "name": "Amped Synth Module"
+      "name": "Shattered Ear Talisman",
+      "description": "A shard that sharpens perception. +5% critical performance rolls while equipped."
     },
     "c_amped_synth": {
-      "description": "An arcane module that increases member stamina cap by +10 while active.",
-      "name": "Gig Program"
+      "name": "Amped Synth Module",
+      "description": "An arcane module that increases member stamina cap by +10 while active."
     },
     "c_gig_program": {
-      "description": "Optimizes routing & PR for the next tour leg (+20% chance of positive tour outcome).",
-      "name": "Sticky Plectrum"
+      "name": "Gig Program",
+      "description": "Optimizes routing & PR for the next tour leg (+20% chance of positive tour outcome)."
     },
     "c_sticky_plectrum": {
-      "description": "Improves pick control, slightly easing guitar difficulty for one gig.",
-      "name": "Night Vision Glasses"
+      "name": "Sticky Plectrum",
+      "description": "Improves pick control, slightly easing guitar difficulty for one gig."
     },
     "c_night_vision_glasses": {
-      "description": "See the crowd\\",
-      "name": "Sonic Resonator"
+      "name": "Night Vision Glasses",
+      "description": "See the crowd's mood more clearly; slight passive boost to crowd control/effects."
     },
     "c_sonic_resonator": {
-      "description": "A relic that improves overall gig outcomes for a limited time.",
-      "name": "Weekender Coffee"
+      "name": "Sonic Resonator",
+      "description": "A relic that improves overall gig outcomes for a limited time."
     },
     "c_weekender_coffee": {
-      "description": "Quick caffeine hit. Restores 25 Stamina to a member.",
-      "name": "Blackout Mask"
+      "name": "Weekender Coffee",
+      "description": "Quick caffeine hit. Restores 25 Stamina to a member."
     },
     "c_blackout_mask": {
-      "description": "Temporary confidence from anonymity. Restores 50 Mood, but side-effects possible.",
-      "name": "Phantom Strings"
+      "name": "Blackout Mask",
+      "description": "Temporary confidence from anonymity. Restores 50 Mood, but side-effects possible."
     },
     "c_phantom_strings": {
-      "description": "Ethereal strings; significantly lower guitar difficulty while equipped.",
-      "name": "Merch Manifest"
+      "name": "Phantom Strings",
+      "description": "Ethereal strings; significantly lower guitar difficulty while equipped."
     },
     "c_merch_manifest": {
-      "description": "A shady manifest that improves merch sales and tour income briefly.",
-      "name": "Motivational Gramophone"
+      "name": "Merch Manifest",
+      "description": "A shady manifest that improves merch sales and tour income briefly."
     },
     "c_motivational_gramophone": {
-      "description": "Plays a tune that accelerates practice gains for several days.",
-      "name": "Warped Tape"
+      "name": "Motivational Gramophone",
+      "description": "Plays a tune that accelerates practice gains for several days."
     },
     "c_warped_tape": {
-      "description": "A looped tape that bends probabilities. +10 Luck when used once.",
-      "name": "Gutter Amulet"
+      "name": "Warped Tape",
+      "description": "A looped tape that bends probabilities. +10 Luck when used once."
     },
     "c_gutter_amulet": {
-      "description": "Weird charm increasing social affinity with niche crowds.",
-      "name": "Lucky Coin"
+      "name": "Gutter Amulet",
+      "description": "Weird charm increasing social affinity with niche crowds."
     },
     "c_lucky_coin": {
-      "description": "Flip this coin before a gig — big luck boost for one event.",
-      "name": "Radiant Pick"
+      "name": "Lucky Coin",
+      "description": "Flip this coin before a gig — big luck boost for one event."
     },
     "c_radiant_pick": {
-      "description": "A radiant pick that eases playing and grants steady performance.",
-      "name": "Forgotten Road Map"
+      "name": "Radiant Pick",
+      "description": "A radiant pick that eases playing and grants steady performance."
     },
     "c_forgotten_road_map": {
-      "description": "Maps to hidden routes. Greatly increases chance of smooth tour logistics once.",
-      "name": "Sticky Logo Sticker"
+      "name": "Forgotten Road Map",
+      "description": "Maps to hidden routes. Greatly increases chance of smooth tour logistics once."
     },
     "c_sticky_logo_sticker": {
-      "description": "Stick on an amp or stage fixture — slight crowd control buff for next gig.",
-      "name": "Neon Patch"
+      "name": "Sticky Logo Sticker",
+      "description": "Stick on an amp or stage fixture — slight crowd control buff for next gig."
     },
     "c_neon_patch": {
-      "description": "A patch that pumps up band style rating. Aesthetic but effective.",
-      "name": "Abyssal Microphone"
+      "name": "Neon Patch",
+      "description": "A patch that pumps up band style rating. Aesthetic but effective."
     },
     "c_abyssal_microphone": {
-      "description": "A powerful relic mic that heavily improves gig outcomes for a short time.",
-      "name": "Silver Tongue"
+      "name": "Abyssal Microphone",
+      "description": "A powerful relic mic that heavily improves gig outcomes for a short time."
     },
     "c_silver_tongue": {
-      "description": "Boosts charisma for interviews; +20 Mood for member when used.",
-      "name": "Broken Compass"
+      "name": "Silver Tongue",
+      "description": "Boosts charisma for interviews; +20 Mood for member when used."
     },
     "c_broken_compass": {
+      "name": "Broken Compass",
       "description": "Strangely points to profitable choices; small persistent tour benefit."
     }
   }

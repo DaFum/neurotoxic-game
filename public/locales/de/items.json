@@ -123,111 +123,112 @@
   "van_tuning.description": "Macht den Van schneller.",
   "contraband": {
     "c_void_energy": {
-      "name": "Rusty Strings",
-      "description": "A black liquid that tastes like battery acid. Instantly restores 50 Stamina to a band member."
+      "name": "Void Energy Drink",
+      "description": "Eine schwarze Flüssigkeit, die wie Batteriesäure schmeckt. Stellt sofort 50 Ausdauer bei einem Bandmitglied wieder her."
     },
     "c_rusty_strings": {
-      "name": "Cursed Pick of Destiny",
-      "description": "They cut your fingers, but the blood summons better gig modifiers (+5 Luck)."
+      "name": "Rostige Saiten",
+      "description": "Sie schneiden dir in die Finger, aber das Blut beschwört bessere Gig-Modifikatoren (+5 Luck)."
     },
     "c_cursed_pick": {
-      "name": "Mystery Gas Station Pills",
-      "description": "A glowing pick that whispers. Lowers Guitar Difficulty by 0.2 for one gig."
+      "name": "Verfluchtes Plektrum des Schicksals",
+      "description": "Ein leuchtendes Plektrum, das flüstert. Senkt die Gitarren-Schwierigkeit für einen Gig um 0.2."
     },
     "c_mystery_pills": {
-      "name": "Blood Pact Contract",
-      "description": "Questionable origin. Boosts a member's Mood by 30."
+      "name": "Mysteriöse Tankstellen-Pillen",
+      "description": "Fragwürdige Herkunft. Erhöht die Stimmung eines Mitglieds um 30."
     },
     "c_blood_pact": {
-      "name": "Phase Metronome",
-      "description": "Binds the band together in dark synergy. +15 Harmony."
+      "name": "Blutpakt-Vertrag",
+      "description": "Bindet die Band in dunkler Synergie zusammen. +15 Harmonie."
     },
     "c_phase_metronome": {
-      "description": "Shifts the band\\",
-      "name": "Shattered Ear Talisman"
+      "name": "Phasen-Metronom",
+      "description": "Verschiebt das interne Tempo der Band. Tempo-bedingte Schwierigkeiten beim nächsten Gig um 15% reduziert."
     },
     "c_shattered_ear": {
-      "description": "A shard that sharpens perception. +5% critical performance rolls while equipped.",
-      "name": "Amped Synth Module"
+      "name": "Zerschmetterter Ohr-Talisman",
+      "description": "Ein Splitter, der die Wahrnehmung schärft. +5% kritische Performance-Würfe, wenn ausgerüstet."
     },
     "c_amped_synth": {
-      "description": "An arcane module that increases member stamina cap by +10 while active.",
-      "name": "Gig Program"
+      "name": "Verstärktes Synth-Modul",
+      "description": "Ein arkanes Modul, das das maximale Ausdauer-Limit der Mitglieder um +10 erhöht, während es aktiv ist."
     },
     "c_gig_program": {
-      "description": "Optimizes routing & PR for the next tour leg (+20% chance of positive tour outcome).",
-      "name": "Sticky Plectrum"
+      "name": "Gig-Programm",
+      "description": "Optimiert das Routing & PR für den nächsten Tour-Abschnitt (+20% Chance auf ein positives Tour-Ergebnis)."
     },
     "c_sticky_plectrum": {
-      "description": "Improves pick control, slightly easing guitar difficulty for one gig.",
-      "name": "Night Vision Glasses"
+      "name": "Klebriges Plektrum",
+      "description": "Verbessert die Plektrum-Kontrolle und erleichtert die Gitarren-Schwierigkeit für einen Gig leicht."
     },
     "c_night_vision_glasses": {
-      "description": "See the crowd\\",
-      "name": "Sonic Resonator"
+      "name": "Nachtsichtbrille",
+      "description": "Lass dich die Stimmung der Crowd klarer sehen; leichter passiver Bonus auf Crowd-Control/Effekte."
     },
     "c_sonic_resonator": {
-      "description": "A relic that improves overall gig outcomes for a limited time.",
-      "name": "Weekender Coffee"
+      "name": "Schall-Resonator",
+      "description": "Ein Relikt, das die Gig-Ergebnisse für eine begrenzte Zeit verbessert."
     },
     "c_weekender_coffee": {
-      "description": "Quick caffeine hit. Restores 25 Stamina to a member.",
-      "name": "Blackout Mask"
+      "name": "Weekender-Kaffee",
+      "description": "Schneller Koffein-Kick. Stellt 25 Ausdauer bei einem Mitglied wieder her."
     },
     "c_blackout_mask": {
-      "description": "Temporary confidence from anonymity. Restores 50 Mood, but side-effects possible.",
-      "name": "Phantom Strings"
+      "name": "Blackout-Maske",
+      "description": "Vorübergehendes Selbstvertrauen durch Anonymität. Stellt 50 Stimmung wieder her, aber Nebenwirkungen möglich."
     },
     "c_phantom_strings": {
-      "description": "Ethereal strings; significantly lower guitar difficulty while equipped.",
-      "name": "Merch Manifest"
+      "name": "Phantom-Saiten",
+      "description": "Ätherische Saiten; senken die Gitarren-Schwierigkeit erheblich, wenn sie ausgerüstet sind."
     },
     "c_merch_manifest": {
-      "description": "A shady manifest that improves merch sales and tour income briefly.",
-      "name": "Motivational Gramophone"
+      "name": "Merch-Manifest",
+      "description": "Ein zwielichtiges Manifest, das den Merch-Verkauf und die Tour-Einnahmen kurzzeitig verbessert."
     },
     "c_motivational_gramophone": {
-      "description": "Plays a tune that accelerates practice gains for several days.",
-      "name": "Warped Tape"
+      "name": "Motivierendes Grammophon",
+      "description": "Spielt eine Melodie, die die Übungszuwächse für einige Tage beschleunigt."
     },
     "c_warped_tape": {
-      "description": "A looped tape that bends probabilities. +10 Luck when used once.",
-      "name": "Gutter Amulet"
+      "name": "Verzerrtes Tape",
+      "description": "Ein gelooptes Tape, das Wahrscheinlichkeiten beugt. +10 Glück bei einmaliger Nutzung."
     },
     "c_gutter_amulet": {
-      "description": "Weird charm increasing social affinity with niche crowds.",
-      "name": "Lucky Coin"
+      "name": "Gossen-Amulett",
+      "description": "Seltsamer Glücksbringer, der die soziale Affinität bei Nischen-Crowds erhöht."
     },
     "c_lucky_coin": {
-      "description": "Flip this coin before a gig — big luck boost for one event.",
-      "name": "Radiant Pick"
+      "name": "Glücksmünze",
+      "description": "Wirf diese Münze vor einem Gig — großer Glücks-Boost für ein Event."
     },
     "c_radiant_pick": {
-      "description": "A radiant pick that eases playing and grants steady performance.",
-      "name": "Forgotten Road Map"
+      "name": "Strahlendes Plektrum",
+      "description": "Ein strahlendes Plektrum, das das Spielen erleichtert und eine stetige Performance gewährt."
     },
     "c_forgotten_road_map": {
-      "description": "Maps to hidden routes. Greatly increases chance of smooth tour logistics once.",
-      "name": "Sticky Logo Sticker"
+      "name": "Vergessene Straßenkarte",
+      "description": "Karten zu verborgenen Routen. Erhöht einmalig stark die Chance auf reibungslose Tour-Logistik."
     },
     "c_sticky_logo_sticker": {
-      "description": "Stick on an amp or stage fixture — slight crowd control buff for next gig.",
-      "name": "Neon Patch"
+      "name": "Klebriger Logo-Sticker",
+      "description": "Kleb ihn auf einen Amp oder ein Bühnenelement — leichter Crowd-Control-Buff für den nächsten Gig."
     },
     "c_neon_patch": {
-      "description": "A patch that pumps up band style rating. Aesthetic but effective.",
-      "name": "Abyssal Microphone"
+      "name": "Neon-Patch",
+      "description": "Ein Patch, das die Style-Bewertung der Band anheizt. Ästhetisch, aber effektiv."
     },
     "c_abyssal_microphone": {
-      "description": "A powerful relic mic that heavily improves gig outcomes for a short time.",
-      "name": "Silver Tongue"
+      "name": "Abgründiges Mikrofon",
+      "description": "Ein mächtiges Relikt-Mikrofon, das die Gig-Ergebnisse für kurze Zeit stark verbessert."
     },
     "c_silver_tongue": {
-      "description": "Boosts charisma for interviews; +20 Mood for member when used.",
-      "name": "Broken Compass"
+      "name": "Silberzunge",
+      "description": "Steigert Charisma für Interviews; +20 Stimmung für das Mitglied bei Verwendung."
     },
     "c_broken_compass": {
-      "description": "Strangely points to profitable choices; small persistent tour benefit."
+      "name": "Kaputter Kompass",
+      "description": "Zeigt seltsamerweise auf profitable Entscheidungen; kleiner, aber beständiger Tour-Vorteil."
     }
   }
 }

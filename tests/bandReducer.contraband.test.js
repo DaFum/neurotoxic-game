@@ -1,6 +1,9 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { handleAddContraband, handleUseContraband } from '../src/context/reducers/bandReducer.js'
+import {
+  handleAddContraband,
+  handleUseContraband
+} from '../src/context/reducers/bandReducer.js'
 import { DEFAULT_BAND_STATE } from '../src/context/initialState.js'
 
 describe('bandReducer - Contraband', () => {
@@ -16,15 +19,27 @@ describe('bandReducer - Contraband', () => {
 
     it('applies immediate effects for applyOnAdd equipment (luck)', () => {
       const state = { band: { ...DEFAULT_BAND_STATE, stash: [], luck: 0 } }
-      const payload = { contrabandId: 'c_rusty_strings', instanceId: 'test-456' } // luck +5
+      const payload = {
+        contrabandId: 'c_rusty_strings',
+        instanceId: 'test-456'
+      } // luck +5
       const newState = handleAddContraband(state, payload)
       assert.equal(newState.band.luck, 5)
       assert.equal(newState.band.stash[0].applied, true)
     })
 
     it('applies immediate effects for applyOnAdd equipment (stamina_max)', () => {
-      const state = { band: { ...DEFAULT_BAND_STATE, stash: [], members: [{ id: 'm1', staminaMax: 100 }] } }
-      const payload = { contrabandId: 'c_amped_synth', instanceId: 'test-synth' } // staminaMax +10
+      const state = {
+        band: {
+          ...DEFAULT_BAND_STATE,
+          stash: [],
+          members: [{ id: 'm1', staminaMax: 100 }]
+        }
+      }
+      const payload = {
+        contrabandId: 'c_amped_synth',
+        instanceId: 'test-synth'
+      } // staminaMax +10
       const newState = handleAddContraband(state, payload)
       assert.equal(newState.band.members[0].staminaMax, 110)
       assert.equal(newState.band.stash[0].applied, true)
@@ -36,7 +51,15 @@ describe('bandReducer - Contraband', () => {
       const state = {
         band: {
           ...DEFAULT_BAND_STATE,
-          stash: [{ id: 'c_void_energy', instanceId: 'test-123', type: 'consumable', effectType: 'stamina', value: 50 }],
+          stash: [
+            {
+              id: 'c_void_energy',
+              instanceId: 'test-123',
+              type: 'consumable',
+              effectType: 'stamina',
+              value: 50
+            }
+          ],
           members: [{ id: 'm1', stamina: 20 }]
         }
       }
@@ -51,7 +74,16 @@ describe('bandReducer - Contraband', () => {
       const state = {
         band: {
           ...DEFAULT_BAND_STATE,
-          stash: [{ id: 'c_cursed_pick', instanceId: 'test-789', type: 'consumable', effectType: 'guitar_difficulty', value: -0.2, duration: 1 }],
+          stash: [
+            {
+              id: 'c_cursed_pick',
+              instanceId: 'test-789',
+              type: 'consumable',
+              effectType: 'guitar_difficulty',
+              value: -0.2,
+              duration: 1
+            }
+          ],
           activeContrabandEffects: [],
           performance: { guitarDifficulty: 1.0 }
         }
@@ -61,15 +93,29 @@ describe('bandReducer - Contraband', () => {
 
       assert.equal(newState.band.stash.length, 0)
       assert.equal(newState.band.activeContrabandEffects.length, 1)
-      assert.equal(newState.band.activeContrabandEffects[0].remainingDuration, 1)
-      assert.equal(newState.band.activeContrabandEffects[0].effectType, 'guitar_difficulty')
+      assert.equal(
+        newState.band.activeContrabandEffects[0].remainingDuration,
+        1
+      )
+      assert.equal(
+        newState.band.activeContrabandEffects[0].effectType,
+        'guitar_difficulty'
+      )
     })
 
     it('applies persistent untargeted effects directly if duration is not set', () => {
       const state = {
         band: {
           ...DEFAULT_BAND_STATE,
-          stash: [{ id: 'c_neon_patch', instanceId: 'test-patch', type: 'equipment', effectType: 'style', value: 3 }],
+          stash: [
+            {
+              id: 'c_neon_patch',
+              instanceId: 'test-patch',
+              type: 'equipment',
+              effectType: 'style',
+              value: 3
+            }
+          ],
           style: 0
         }
       }

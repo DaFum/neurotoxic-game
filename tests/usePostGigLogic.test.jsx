@@ -740,9 +740,11 @@ describe('usePostGigLogic', () => {
         result.current.handleAcceptDeal(deal)
       })
 
-      expect(mockUpdatePlayer).toHaveBeenCalledWith(expect.objectContaining({
-        money: 1500
-      }))
+      expect(mockUpdatePlayer).toHaveBeenCalledWith(
+        expect.objectContaining({
+          money: 1500
+        })
+      )
       expect(mockAddToast).toHaveBeenCalledWith(
         expect.stringContaining('Mega Corp'),
         'success'

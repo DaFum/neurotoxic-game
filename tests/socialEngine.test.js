@@ -219,7 +219,11 @@ test('resolvePost clamps harmony bounds between 1-100', () => {
   }
 
   const result = resolvePost(postOption, gameState)
-  assert.strictEqual(result.harmonyChange, 10, 'Harmony should be clamped to 100, delta 10')
+  assert.strictEqual(
+    result.harmonyChange,
+    10,
+    'Harmony should be clamped to 100, delta 10'
+  )
 
   const gameState2 = {
     player: { money: 100 },
@@ -230,7 +234,11 @@ test('resolvePost clamps harmony bounds between 1-100', () => {
     resolve: () => ({ harmonyChange: -20 })
   }
   const result2 = resolvePost(postOption2, gameState2)
-  assert.strictEqual(result2.harmonyChange, -9, 'Harmony should be clamped to 1, delta -9')
+  assert.strictEqual(
+    result2.harmonyChange,
+    -9,
+    'Harmony should be clamped to 1, delta -9'
+  )
 })
 
 test('resolvePost clamps money bounds >= 0', () => {
@@ -244,7 +252,11 @@ test('resolvePost clamps money bounds >= 0', () => {
   }
 
   const result = resolvePost(postOption, gameState)
-  assert.strictEqual(result.moneyChange, -100, 'Money drop should be clamped to 0, delta -100')
+  assert.strictEqual(
+    result.moneyChange,
+    -100,
+    'Money drop should be clamped to 0, delta -100'
+  )
 })
 
 test('calculateViralityScore handles low performance', () => {
