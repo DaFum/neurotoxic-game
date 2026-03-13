@@ -17,13 +17,6 @@ for (const charKey in CHARACTERS) {
 }
 
 /**
- * Monotonic counter for generating unique trait toast IDs.
- * Mirrors the pattern used by createAddToastAction in actionCreators.js.
- * @type {number}
- */
-let traitToastIdCounter = 0
-
-/**
  * Applies unlocked traits to the band state immutably and generates toasts.
  * Handles multiple unlocks per member and avoids duplicates.
  *
@@ -88,9 +81,9 @@ export const applyTraitUnlocks = (currentState, unlocks) => {
     // Apply trait
     member.traits.push(traitDef)
 
-    // Add toast with deterministic monotonic ID
+    // Add toast with a unique ID
     nextToasts.push({
-      id: `trait-${crypto.randomUUID()}-${++traitToastIdCounter}`,
+      id: `trait-${crypto.randomUUID()}`,
       messageKey: 'ui:shop.messages.traitUnlocked',
       options: { traitName: traitDef.name, memberId: u.memberId },
       message: `Unlocked Trait: ${traitDef.name} (${u.memberId})`,

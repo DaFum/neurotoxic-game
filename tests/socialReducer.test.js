@@ -239,7 +239,7 @@ describe('socialReducer', () => {
       baseState.social.loyalty = 10
       const nextState1 = handleAddVenueBlacklist(baseState, 'venue_1')
 
-      // Toast ID should be a string representation of a timestamp
+      // Toast ID should be a UUID string
       assert.strictEqual(typeof nextState1.toasts[0].id, 'string')
       assert.ok(nextState1.toasts[0].id.length > 0)
     })
