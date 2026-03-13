@@ -330,7 +330,11 @@ export const handleAdvanceDay = (state, payload) => {
   // Revert expired effects if needed
   expired.forEach(e => {
     // Revert the temporary state applied in bandReducer.js
-    if (e.effectType === 'guitar_difficulty') {
+    if (e.effectType === 'harmony') {
+      traitResult.band.harmony = clampBandHarmony(
+        (traitResult.band.harmony || 0) - e.value
+      )
+    } else if (e.effectType === 'guitar_difficulty') {
       traitResult.band.performance = {
         ...traitResult.band.performance,
         guitarDifficulty: Math.max(

@@ -173,6 +173,9 @@ export const handleUseContraband = (state, payload) => {
 
   // Apply effect
   if (item.effectType === 'stamina' || item.effectType === 'mood') {
+    if (!memberId || !newBand.members.some(m => m.id === memberId)) {
+      return state
+    }
     if (memberId) {
       newBand.members = newBand.members.map(m => {
         if (m.id === memberId) {
@@ -220,7 +223,7 @@ export const handleUseContraband = (state, payload) => {
       ...newBand.performance,
       guitarDifficulty: Math.max(
         0.1,
-        (newBand.performance.guitarDifficulty || 1) + item.value
+        (newBand.performance?.guitarDifficulty ?? 1) + item.value
       )
     }
     if (item.duration) {
@@ -282,7 +285,11 @@ export const handleUseContraband = (state, payload) => {
   }
 
   if (item.type === 'consumable') {
-    newStash.splice(itemIndex, 1)
+    if (item.stacks > 1) {
+      newStash[itemIndex] = { ...item, stacks: item.stacks - 1 }
+    } else {
+      newStash.splice(itemIndex, 1)
+    }
   } else {
     newStash[itemIndex] = { ...newStash[itemIndex], applied: true }
   }
