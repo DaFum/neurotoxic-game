@@ -29,7 +29,6 @@ test('Panel renders title and children', () => {
 
 test('ProgressBar renders differently when mini', () => {
   render(<ProgressBar value={50} max={100} color='bg-red-500' size="mini" />)
-  const bar = screen.getByRole('progressbar')
   // Should not show labels when mini
   expect(screen.queryByText('50/100')).not.toBeInTheDocument()
 })
