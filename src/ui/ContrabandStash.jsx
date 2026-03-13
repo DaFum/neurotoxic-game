@@ -7,6 +7,7 @@ import {
 } from './shared/index.jsx'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
+import { getGenImageUrl, IMG_PROMPTS } from '../utils/imageGen.js'
 
 /**
  * Contraband Stash Modal Component
@@ -145,17 +146,29 @@ export const ContrabandStash = ({
                         )}
                       </div>
                     </div>
-                    <p className='text-ash-gray text-xs mb-4 min-h-[40px] leading-relaxed'>
-                      {item.description
-                        ? t(item.description, {
-                            defaultValue: t('ui:item.descriptionUnknown', {
-                              defaultValue: 'Unknown Description'
+                    <div className='flex flex-row gap-4 items-start mb-4'>
+                      {item.imagePrompt && (
+                        <div className='w-20 h-20 shrink-0 border border-(--toxic-green-20) bg-black flex items-center justify-center p-1 rounded overflow-hidden shadow-[0_0_10px_var(--toxic-green-10)]'>
+                          <img
+                            src={getGenImageUrl(IMG_PROMPTS[item.imagePrompt])}
+                            alt={t(`items:contraband.${item.id}.name`)}
+                            className='w-full h-full object-contain'
+                            loading='lazy'
+                          />
+                        </div>
+                      )}
+                      <p className='text-(--ash-gray) text-xs min-h-[40px] leading-relaxed flex-1'>
+                        {item.description
+                          ? t(item.description, {
+                              defaultValue: t('ui:item.descriptionUnknown', {
+                                defaultValue: 'Unknown Description'
+                              })
                             })
-                          })
-                        : t('ui:item.descriptionUnknown', {
-                            defaultValue: 'Unknown Description'
-                          })}
-                    </p>
+                          : t('ui:item.descriptionUnknown', {
+                              defaultValue: 'Unknown Description'
+                            })}
+                      </p>
+                    </div>
                   </div>
 
                   <div className='mt-auto'>
