@@ -449,7 +449,7 @@ export const PreGig = () => {
             await audioManager.ensureAudioContext()
             // Safe access for ID
             const gigId =
-              currentGig?.id || `gig_${Date.now()}-${++gigIdCounter}`
+              currentGig?.id || `gig_${crypto.randomUUID()}-${++gigIdCounter}`
 
             // Simple streak breaker using sessionStorage with fallback
             let lastMinigame = lastMinigameFallback

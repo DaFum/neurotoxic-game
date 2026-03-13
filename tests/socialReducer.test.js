@@ -235,14 +235,13 @@ describe('socialReducer', () => {
       assert.ok(nextState.venueBlacklist.includes('venue_3'))
     })
 
-    it('should generate toast IDs based on timestamp', () => {
+    it('should generate string toast IDs', () => {
       baseState.social.loyalty = 10
       const nextState1 = handleAddVenueBlacklist(baseState, 'venue_1')
 
       // Toast ID should be a string representation of a timestamp
       assert.strictEqual(typeof nextState1.toasts[0].id, 'string')
       assert.ok(nextState1.toasts[0].id.length > 0)
-      assert.ok(/^\d+$/.test(nextState1.toasts[0].id)) // Should be numeric string
     })
 
     it('should include venue label in blacklist toast message', () => {

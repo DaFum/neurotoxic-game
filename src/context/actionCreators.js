@@ -131,7 +131,7 @@ export const createSetActiveEventAction = event => ({
  */
 export const createAddToastAction = (message, type = 'info') => ({
   type: ActionTypes.ADD_TOAST,
-  payload: { id: `${Date.now()}-${++toastIdCounter}`, message, type }
+  payload: { id: crypto.randomUUID(), message, type }
 })
 
 /**
