@@ -82,7 +82,7 @@ const handleRecordBadShow = state => {
     nextState.toasts = [
       ...(nextState.toasts || []),
       {
-        id: Date.now().toString(),
+        id: crypto.randomUUID(),
         message: 'ui:toast.three_disasters',
         type: 'error'
       }

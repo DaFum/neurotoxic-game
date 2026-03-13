@@ -32,7 +32,7 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
     }
     if (appliedDelta !== 0) {
       generatedToasts.push({
-        id: `${Date.now()}-${questId}-money`,
+        id: `${crypto.randomUUID()}-${questId}-money`,
         message: `ui:toast.quest_complete_money|${JSON.stringify({ name: quest.label, amount: appliedDelta })}`,
         type: 'success'
       })
@@ -48,7 +48,7 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
       }
     }
     generatedToasts.push({
-      id: `${Date.now()}-${questId}-item`,
+      id: `${crypto.randomUUID()}-${questId}-item`,
       message: `ui:toast.quest_complete_item|${JSON.stringify({ name: quest.label })}`,
       type: 'success'
     })
@@ -65,7 +65,7 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
     }
     if (appliedDelta !== 0) {
       generatedToasts.push({
-        id: `${Date.now()}-${questId}-fame`,
+        id: `${crypto.randomUUID()}-${questId}-fame`,
         message: `ui:toast.quest_complete_fame|${JSON.stringify({ name: quest.label, amount: appliedDelta })}`,
         type: 'success'
       })
@@ -98,7 +98,7 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
 
       nextState.band = { ...nextState.band, members }
       generatedToasts.push({
-        id: `${Date.now()}-${questId}-skill`,
+        id: `${crypto.randomUUID()}-${questId}-skill`,
         message: `ui:toast.quest_complete_skill|${JSON.stringify({ name: quest.label, member: members[memberIdx].name })}`,
         type: 'success'
       })
@@ -115,7 +115,7 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
     }
     if (appliedDelta !== 0) {
       generatedToasts.push({
-        id: `${Date.now()}-${questId}-harmony`,
+        id: `${crypto.randomUUID()}-${questId}-harmony`,
         message: `ui:toast.quest_complete_harmony|${JSON.stringify({ name: quest.label, amount: appliedDelta })}`,
         type: 'success'
       })
@@ -124,7 +124,7 @@ export const handleCompleteQuest = (state, { questId, randomIdx }) => {
 
   if (generatedToasts.length === 0) {
     generatedToasts.push({
-      id: `${Date.now()}-${questId}-generic`,
+      id: `${crypto.randomUUID()}-${questId}-generic`,
       message: `ui:toast.quest_complete|${JSON.stringify({ name: quest.label })}`,
       type: 'success'
     })
@@ -207,7 +207,7 @@ export const handleFailQuests = state => {
     nextState.toasts = [
       ...(nextState.toasts || []),
       {
-        id: `${Date.now()}-${quest.id}`,
+        id: `${crypto.randomUUID()}-${quest.id}`,
         message: `ui:toast.quest_failed|${JSON.stringify({ name: quest.label })}`,
         type: 'error'
       }

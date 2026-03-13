@@ -6,7 +6,7 @@
 
 import { ALLOWED_TRENDS } from '../data/socialTrends.js'
 import { StateError } from './errorHandler.js'
-import { clampBandHarmony, clampPlayerMoney } from './gameStateUtils.js'
+import { clampBandHarmony, clampPlayerMoney, clampNonNegative } from './gameStateUtils.js'
 
 const isPlainObject = value =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -17,7 +17,7 @@ const isPlainObject = value =>
  * @returns {boolean} True if valid, throws error if invalid.
  */
 export const validateSaveData = data => {
-  checkPrototypePollution(data);
+  checkPrototypePollution(data)
 
   if (!isPlainObject(data)) {
     throw new StateError('Save data must be an object')
@@ -55,11 +55,8 @@ const validatePlayer = player => {
     if (player[field] !== undefined && typeof player[field] !== 'number') {
       throw new StateError(`player.${field} must be a number`)
     }
-    if (field === 'fame' && player[field] !== undefined) {
-      player[field] = Math.max(0, player[field])
-    }
-    if (field === 'score' && player[field] !== undefined) {
-      player[field] = Math.max(0, player[field])
+    if ((field === 'fame' || field === 'score') && player[field] !== undefined) {
+      player[field] = clampNonNegative(player[field])
     }
   }
 
@@ -93,16 +90,16 @@ const validatePlayer = player => {
 
 const BANNED_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
 
-const checkPrototypePollution = (obj) => {
-  if (typeof obj !== 'object' || obj === null) return;
+const checkPrototypePollution = obj => {
+  if (typeof obj !== 'object' || obj === null) return
 
   for (const key in obj) {
     if (Object.hasOwn(obj, key)) {
       if (BANNED_KEYS.has(key)) {
-        throw new StateError(`Prototype pollution detected: ${key}`);
+        throw new StateError(`Prototype pollution detected: ${key}`)
       }
       if (typeof obj[key] === 'object' && obj[key] !== null) {
-        checkPrototypePollution(obj[key]);
+        checkPrototypePollution(obj[key])
       }
     }
   }
@@ -124,17 +121,13 @@ const validateBand = band => {
       if (typeof member.name !== 'string') {
         throw new StateError(`band.members[${index}].name must be a string`)
       }
-      if (member.mood !== undefined) {
-        if (typeof member.mood !== 'number' || !Number.isFinite(member.mood)) {
-          throw new StateError(`band.members[${index}].mood must be a finite number`)
+      for (const stat of ['mood', 'stamina']) {
+        if (member[stat] !== undefined) {
+          if (typeof member[stat] !== 'number' || !Number.isFinite(member[stat])) {
+            throw new StateError(`band.members[${index}].${stat} must be a finite number`)
+          }
+          member[stat] = Math.min(100, clampNonNegative(member[stat]))
         }
-        member.mood = Math.min(100, Math.max(0, member.mood))
-      }
-      if (member.stamina !== undefined) {
-        if (typeof member.stamina !== 'number' || !Number.isFinite(member.stamina)) {
-          throw new StateError(`band.members[${index}].stamina must be a finite number`)
-        }
-        member.stamina = Math.min(100, Math.max(0, member.stamina))
       }
       if (member.relationships !== undefined) {
         if (!isPlainObject(member.relationships)) {
