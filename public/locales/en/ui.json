@@ -826,5 +826,6 @@
   "stash.actionUsed": "Used",
   "stash.actionApplied": "Applied",
   "contraband.dropped": "Found contraband!",
-  "save.parseFailed": "Save file parsing failed. Falling back to initial state."
+  "save.parseFailed": "Save file parsing failed. Falling back to initial state.",
+  "save.corruptFailed": "Save file is corrupt or invalid."
 }

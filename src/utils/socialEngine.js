@@ -63,6 +63,7 @@ export const generatePostOptions = (
   const isCooldownActive = (gameState.social?.reputationCooldown || 0) > 0
 
   const eligibleOptions = []
+  let sponsorIdx = -1
   const currentTrend = gameState.social?.trend
 
   for (let i = 0; i < POST_OPTIONS.length; i++) {
@@ -94,6 +95,9 @@ export const generatePostOptions = (
         }
 
         eligibleOptions.push({ ...opt, _weight: weight * rng() })
+        if (opt.id === 'comm_sellout_ad') {
+          sponsorIdx = eligibleOptions.length - 1
+        }
       }
     } catch (e) {
       throw new StateError(`Condition failed for post option ${opt.id}`, {
@@ -119,9 +123,6 @@ export const generatePostOptions = (
     gameState.social.activeDeals.some(d => d.type === 'SPONSORSHIP')
   if (gameState.social?.sponsorActive || hasActiveSponsor) {
     // Force a specific commercial post or synthesize one
-    const sponsorIdx = eligibleOptions.findIndex(
-      o => o.id === 'comm_sellout_ad'
-    )
     if (sponsorIdx !== -1) {
       const sponsorOpt = eligibleOptions[sponsorIdx]
       sponsorOpt._force = true
@@ -161,13 +162,14 @@ export const generatePostOptions = (
     )
   }
 
-  // 4. Clean up output directly on the pushed objects (they are already cloned)
+  // 4. Return new array and objects without _weight and _force
+  const finalResults = []
   for (let i = 0; i < results.length; i++) {
-    delete results[i]._weight
-    delete results[i]._force
+    const { _weight, _force, ...rest } = results[i]
+    finalResults.push(rest)
   }
 
-  return results
+  return finalResults
 }
 
 /**
