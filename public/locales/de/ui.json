@@ -874,5 +874,18 @@
   "stash.actionApplied": "Angewendet",
   "contraband.dropped": "Schmuggelware gefunden!",
   "save.parseFailed": "Speicherstand-Parsing fehlgeschlagen. Greife auf Anfangszustand zurück.",
-  "save.corruptFailed": "Speicherstand ist beschädigt oder ungültig."
+  "save.corruptFailed": "Spielstand ist beschädigt oder ungültig.",
+  "clinic.title": "DIE LEEREN-KLINIK",
+  "clinic.lore": "Opfere Geld und Ruhm für sofortige kybernetische Verbesserungen oder synthetische Heilung.",
+  "clinic.funds": "GELD:",
+  "clinic.fame": "RUHM:",
+  "clinic.stamina": "Ausdauer:",
+  "clinic.mood": "Stimmung:",
+  "clinic.heal_button": "HEILEN",
+  "clinic.enhance_button": "IMPLANTAT: CYBERLUNGE",
+  "clinic.leave": "KLINIK VERLASSEN",
+  "clinic.not_enough_money": "Nicht genug Geld.",
+  "clinic.heal_success": "Ausdauer wiederhergestellt. Die Leere umarmt dich.",
+  "clinic.not_enough_fame": "Nicht genug Ruhm. Die Leere fordert ein Opfer.",
+  "clinic.enhance_success": "Fleisch verbessert."
 }

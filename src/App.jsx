@@ -22,9 +22,13 @@ const SCENES_WITHOUT_HUD = [
   GAME_PHASES.CREDITS,
   GAME_PHASES.GAMEOVER,
   GAME_PHASES.TRAVEL_MINIGAME,
-  GAME_PHASES.PRE_GIG_MINIGAME
+  GAME_PHASES.PRE_GIG_MINIGAME,
+  GAME_PHASES.CLINIC
 ]
 
+const ClinicScene = lazy(
+  createNamedLazyLoader(() => import('./scenes/ClinicScene'), 'ClinicScene')
+)
 const Overworld = lazy(
   createNamedLazyLoader(() => import('./scenes/Overworld'), 'Overworld')
 )
@@ -103,6 +107,8 @@ function GameContent() {
         return <GameOver />
       case GAME_PHASES.OVERWORLD:
         return <Overworld />
+      case GAME_PHASES.CLINIC:
+        return <ClinicScene />
       case GAME_PHASES.TRAVEL_MINIGAME:
         return <TourbusScene />
       case GAME_PHASES.PRE_GIG:

@@ -40,6 +40,10 @@ import {
   handleCompleteKabelsalatMinigame
 } from './reducers/minigameReducer.js'
 import {
+  handleClinicHeal,
+  handleClinicEnhance
+} from './reducers/clinicReducer.js'
+import {
   handleAddQuest,
   handleAdvanceQuest,
   handleCompleteQuest,
@@ -173,6 +177,12 @@ export const gameReducer = (state, action) => {
 
     case ActionTypes.ADD_UNLOCK:
       return handleAddUnlock(state, action.payload)
+
+    case ActionTypes.CLINIC_HEAL:
+      return handleClinicHeal(state, action.payload)
+
+    case ActionTypes.CLINIC_ENHANCE:
+      return handleClinicEnhance(state, action.payload)
 
     default:
       return state

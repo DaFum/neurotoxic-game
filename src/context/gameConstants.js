@@ -10,7 +10,8 @@ export const GAME_PHASES = Object.freeze({
   SETTINGS: 'SETTINGS',
   CREDITS: 'CREDITS',
   GAMEOVER: 'GAMEOVER',
-  INTRO: 'INTRO'
+  INTRO: 'INTRO',
+  CLINIC: 'CLINIC'
 })
 
 export const MINIGAME_TYPES = {

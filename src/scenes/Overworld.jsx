@@ -324,6 +324,14 @@ export const Overworld = () => {
           [REFUEL]
         </GlitchButton>
         <GlitchButton
+          onClick={() => changeScene('CLINIC')}
+          disabled={isTraveling}
+          variant='warning'
+          size='sm'
+        >
+          [VOID CLINIC]
+        </GlitchButton>
+        <GlitchButton
           onClick={handleRepair}
           disabled={isTraveling || (player.van?.condition ?? 100) >= 100}
           variant='primary'

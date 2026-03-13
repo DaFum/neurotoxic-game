@@ -39,7 +39,9 @@ describe('ActionTypes', () => {
       'FAIL_QUESTS',
       'ADD_UNLOCK',
       'ADD_CONTRABAND',
-      'USE_CONTRABAND'
+      'USE_CONTRABAND',
+      'CLINIC_HEAL',
+      'CLINIC_ENHANCE'
     ]
 
     expectedTypes.forEach(type => {

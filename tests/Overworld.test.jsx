@@ -76,7 +76,7 @@ describe('Overworld Component', () => {
     )
 
     // Check for standard UI elements
-    expect(screen.getByText(/TOUR PLAN:/i)).toBeInTheDocument()
+    expect(screen.getByText(/ui:overworld.header.tourPlan/i)).toBeInTheDocument()
     expect(screen.getByTestId('toggle-radio')).toBeInTheDocument()
 
     // Check buttons

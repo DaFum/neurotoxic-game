@@ -382,3 +382,13 @@ export const createUseContrabandAction = (instanceId, memberId) => ({
   type: ActionTypes.USE_CONTRABAND,
   payload: { instanceId, memberId }
 })
+
+export const createClinicHealAction = payload => ({
+  type: ActionTypes.CLINIC_HEAL,
+  payload
+})
+
+export const createClinicEnhanceAction = payload => ({
+  type: ActionTypes.CLINIC_ENHANCE,
+  payload
+})
