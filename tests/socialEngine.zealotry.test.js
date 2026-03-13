@@ -45,7 +45,7 @@ describe('generateBrandOffers with Zealotry', () => {
         members: [{ traits: [{ id: 'virtuoso' }] }]
       }
     }
-    const offersHigh = generateBrandOffers(gameStateHighZealotry, () => 1)
+    const offersHigh = generateBrandOffers(gameStateHighZealotry, () => 0.01)
 
     const shredDealHigh = offersHigh.find(o => o.id === 'guitar_brand_shred')
     assert.strictEqual(shredDealHigh, undefined, 'Should NOT find ShredMaster deal when zealotry is high (>= 20)')

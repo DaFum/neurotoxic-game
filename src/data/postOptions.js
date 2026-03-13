@@ -98,7 +98,7 @@ export const POST_OPTIONS = [
   // --- CATEGORY: CULT OF THE SCHRANK ---
   {
     id: 'radicalize_fans',
-    name: 'Radicalize Fans',
+    name: i18n.t('ui:postOptions.radicalize_fans.name', { defaultValue: 'Radicalize Fans' }),
     platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Drama',
     badges: [POST_BADGES.RISK, POST_BADGES.VIRAL],
@@ -111,7 +111,7 @@ export const POST_OPTIONS = [
       controversyChange: 5,
       loyaltyChange: 2,
       zealotryChange: 8,
-      message: i18n.t('ui:postOptions.radicalizeFansResult', {
+      message: i18n.t('ui:postOptions.radicalize_fans.message', {
         defaultValue: 'Your hardcore fans loved it. Casuals were disturbed.'
       })
     })

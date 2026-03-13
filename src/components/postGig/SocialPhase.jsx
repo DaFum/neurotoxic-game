@@ -90,7 +90,7 @@ export const SocialPhase = ({ options, onSelect, trend, zealotryLevel = 0 }) => 
         <div className='flex flex-col mb-4 p-3 bg-blood-red/10 border border-blood-red/30 rounded'>
           <div className='flex justify-between items-center mb-1'>
             <span className='text-xs font-bold text-blood-red uppercase tracking-widest'>
-              {t('ui:social.cultZealotry', { defaultValue: 'CULT ZEALOTRY' })}
+              {t('economy:social.cultZealotry', { defaultValue: 'CULT ZEALOTRY' })}
             </span>
             <span className='text-xs font-mono text-blood-red/80'>
               {zealotryLevel}%
@@ -104,7 +104,7 @@ export const SocialPhase = ({ options, onSelect, trend, zealotryLevel = 0 }) => 
           </div>
           {zealotryLevel >= 80 && (
             <div className='text-[10px] text-blood-red/80 mt-1 uppercase animate-pulse'>
-              {t('ui:social.zealotryWarning', { defaultValue: 'WARNING: FANS ARE BECOMING RADICALIZED. POLICE RAID RISK INCREASED.' })}
+              {t('economy:social.zealotryWarning', { defaultValue: 'WARNING: FANS ARE BECOMING RADICALIZED. POLICE RAID RISK INCREASED.' })}
             </div>
           )}
         </div>

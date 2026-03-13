@@ -17,6 +17,7 @@ export const MODIFIER_COSTS = {
 export const BAR_RATE_VIP = 0.3
 export const BAR_RATE_NORMAL = 0.15
 export const AVG_SPEND_PER_PERSON_AT_BAR = 5
+export const ZEALOTRY_PROMO_THRESHOLD = 80
 
 export const EXPENSE_CONSTANTS = {
   DAILY: {
@@ -521,7 +522,7 @@ export const calculateGigFinancials = ({
   // Apply automated promo from zealotry to tickets
   const zealotry = context.zealotry || 0
   const effectiveModifiers = { ...modifiers }
-  if (zealotry >= 80) {
+  if (zealotry >= ZEALOTRY_PROMO_THRESHOLD) {
     effectiveModifiers.promo = true
   }
 
@@ -551,7 +552,7 @@ export const calculateGigFinancials = ({
   // 3. Cult Donations (Zealotry)
   const { passiveIncome } = calculateZealotryEffects(zealotry)
   if (passiveIncome > 0) {
-    report.income.breakdown.push({ label: 'Cult Donations', amount: passiveIncome })
+    report.income.breakdown.push({ labelKey: 'economy.cultDonations', value: passiveIncome })
     report.income.total += passiveIncome
   }
 
@@ -577,7 +578,7 @@ export const calculateGigFinancials = ({
   // 6. Expenses (Modifiers)
   const costModifiers = { ...modifiers }
   // If zealotry is high, player does not pay for promo even if they explicitly checked it
-  if (zealotry >= 80) {
+  if (zealotry >= ZEALOTRY_PROMO_THRESHOLD) {
     costModifiers.promo = false
   }
 
