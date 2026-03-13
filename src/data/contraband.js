@@ -9,6 +9,7 @@ export const CONTRABAND_DB = [
   // ursprüngliche Items (bewahrt)
   {
     id: 'c_void_energy',
+    imagePrompt: 'ITEM_VOID_ENERGY',
     name: 'items:contraband.c_void_energy.name',
     type: 'consumable',
     effectType: 'stamina',
@@ -21,6 +22,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_rusty_strings',
+    imagePrompt: 'ITEM_RUSTY_STRINGS',
     name: 'items:contraband.c_rusty_strings.name',
     type: 'equipment',
     effectType: 'luck',
@@ -33,6 +35,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_cursed_pick',
+    imagePrompt: 'ITEM_CURSED_PICK',
     name: 'items:contraband.c_cursed_pick.name',
     type: 'consumable',
     effectType: 'guitar_difficulty',
@@ -46,6 +49,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_mystery_pills',
+    imagePrompt: 'ITEM_MYSTERY_PILLS',
     name: 'items:contraband.c_mystery_pills.name',
     type: 'consumable',
     effectType: 'mood',
@@ -58,6 +62,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_blood_pact',
+    imagePrompt: 'ITEM_BLOOD_PACT',
     name: 'items:contraband.c_blood_pact.name',
     type: 'consumable',
     effectType: 'harmony',
@@ -71,6 +76,7 @@ export const CONTRABAND_DB = [
   // viele neue Items
   {
     id: 'c_phase_metronome',
+    imagePrompt: 'ITEM_PHASE_METRONOME',
     name: 'items:contraband.c_phase_metronome.name',
     type: 'consumable',
     effectType: 'tempo',
@@ -84,6 +90,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_shattered_ear',
+    imagePrompt: 'ITEM_SHATTERED_EAR',
     name: 'items:contraband.c_shattered_ear.name',
     type: 'equipment',
     effectType: 'crit',
@@ -96,6 +103,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_amped_synth',
+    imagePrompt: 'ITEM_AMPED_SYNTH',
     name: 'items:contraband.c_amped_synth.name',
     type: 'equipment',
     effectType: 'stamina_max',
@@ -108,6 +116,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_gig_program',
+    imagePrompt: 'ITEM_GIG_PROGRAM',
     name: 'items:contraband.c_gig_program.name',
     type: 'consumable',
     effectType: 'tour_success',
@@ -121,6 +130,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_sticky_plectrum',
+    imagePrompt: 'ITEM_STICKY_PLECTRUM',
     name: 'items:contraband.c_sticky_plectrum.name',
     type: 'consumable',
     effectType: 'guitar_difficulty',
@@ -134,6 +144,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_night_vision_glasses',
+    imagePrompt: 'ITEM_NIGHT_VISION_GLASSES',
     name: 'items:contraband.c_night_vision_glasses.name',
     type: 'equipment',
     effectType: 'crowd_control',
@@ -146,6 +157,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_sonic_resonator',
+    imagePrompt: 'ITEM_SONIC_RESONATOR',
     name: 'items:contraband.c_sonic_resonator.name',
     type: 'relic',
     effectType: 'gig_modifier',
@@ -158,6 +170,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_weekender_coffee',
+    imagePrompt: 'ITEM_WEEKENDER_COFFEE',
     name: 'items:contraband.c_weekender_coffee.name',
     type: 'consumable',
     effectType: 'stamina',
@@ -170,6 +183,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_blackout_mask',
+    imagePrompt: 'ITEM_BLACKOUT_MASK',
     name: 'items:contraband.c_blackout_mask.name',
     type: 'consumable',
     effectType: 'mood',
@@ -181,6 +195,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_phantom_strings',
+    imagePrompt: 'ITEM_PHANTOM_STRINGS',
     name: 'items:contraband.c_phantom_strings.name',
     type: 'equipment',
     effectType: 'guitar_difficulty',
@@ -193,6 +208,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_merch_manifest',
+    imagePrompt: 'ITEM_MERCH_MANIFEST',
     name: 'items:contraband.c_merch_manifest.name',
     type: 'consumable',
     effectType: 'tour_success',
@@ -206,6 +222,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_motivational_gramophone',
+    imagePrompt: 'ITEM_MOTIVATIONAL_GRAMOPHONE',
     name: 'items:contraband.c_motivational_gramophone.name',
     type: 'relic',
     effectType: 'practice_gain',
@@ -218,6 +235,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_warped_tape',
+    imagePrompt: 'ITEM_WARPED_TAPE',
     name: 'items:contraband.c_warped_tape.name',
     type: 'consumable',
     effectType: 'luck',
@@ -230,6 +248,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_gutter_amulet',
+    imagePrompt: 'ITEM_GUTTER_AMULET',
     name: 'items:contraband.c_gutter_amulet.name',
     type: 'equipment',
     effectType: 'affinity',
@@ -242,6 +261,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_lucky_coin',
+    imagePrompt: 'ITEM_LUCKY_COIN',
     name: 'items:contraband.c_lucky_coin.name',
     type: 'consumable',
     effectType: 'luck',
@@ -254,6 +274,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_radiant_pick',
+    imagePrompt: 'ITEM_RADIANT_PICK',
     name: 'items:contraband.c_radiant_pick.name',
     type: 'equipment',
     effectType: 'guitar_difficulty',
@@ -266,6 +287,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_forgotten_road_map',
+    imagePrompt: 'ITEM_FORGOTTEN_ROAD_MAP',
     name: 'items:contraband.c_forgotten_road_map.name',
     type: 'consumable',
     effectType: 'tour_success',
@@ -278,6 +300,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_sticky_logo_sticker',
+    imagePrompt: 'ITEM_STICKY_LOGO_STICKER',
     name: 'items:contraband.c_sticky_logo_sticker.name',
     type: 'consumable',
     effectType: 'crowd_control',
@@ -291,6 +314,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_neon_patch',
+    imagePrompt: 'ITEM_NEON_PATCH',
     name: 'items:contraband.c_neon_patch.name',
     type: 'equipment',
     effectType: 'style',
@@ -304,6 +328,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_abyssal_microphone',
+    imagePrompt: 'ITEM_ABYSSAL_MICROPHONE',
     name: 'items:contraband.c_abyssal_microphone.name',
     type: 'relic',
     effectType: 'gig_modifier',
@@ -316,6 +341,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_silver_tongue',
+    imagePrompt: 'ITEM_SILVER_TONGUE',
     name: 'items:contraband.c_silver_tongue.name',
     type: 'consumable',
     effectType: 'mood',
@@ -328,6 +354,7 @@ export const CONTRABAND_DB = [
   },
   {
     id: 'c_broken_compass',
+    imagePrompt: 'ITEM_BROKEN_COMPASS',
     name: 'items:contraband.c_broken_compass.name',
     type: 'equipment',
     effectType: 'tour_success',
