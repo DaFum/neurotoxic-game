@@ -571,7 +571,7 @@ export const CRISIS_EVENTS = [
     options: [
       {
         label: 'events:crisis_police_raid_zealotry.opt1.label',
-        effect: { type: 'stat', stat: 'money', value: -500 },
+        effect: { type: 'resource', resource: 'money', value: -500 },
         outcomeText: 'events:crisis_police_raid_zealotry.opt1.outcome'
       },
       {

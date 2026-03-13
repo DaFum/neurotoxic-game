@@ -111,7 +111,7 @@ export const POST_OPTIONS = [
       controversyChange: 5,
       loyaltyChange: 2,
       zealotryChange: 8,
-      message: i18n.t('ui:postOptions.radicalizeFansResult', {
+      message: i18n.t('ui:postOptions.radicalize_fans.message', {
         defaultValue: 'Your hardcore fans loved it. Casuals were disturbed.'
       })
     })

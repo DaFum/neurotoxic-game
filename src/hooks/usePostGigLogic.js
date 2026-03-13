@@ -314,6 +314,8 @@ export const usePostGigLogic = () => {
         )
       }
 
+      const boundedZealotry = Math.max(0, Math.min(100, (social.zealotry || 0) + (result.zealotryChange || 0)))
+
       const updatedSocial = {
         [result.platform]: Math.max(
           0,
@@ -329,10 +331,7 @@ export const usePostGigLogic = () => {
           0,
           (social.loyalty || 0) + (result.loyaltyChange || 0)
         ),
-        zealotry: Math.max(
-          0,
-          Math.min(100, (social.zealotry || 0) + (result.zealotryChange || 0))
-        ),
+        zealotry: boundedZealotry,
         reputationCooldown:
           result.reputationCooldownSet !== undefined
             ? result.reputationCooldownSet

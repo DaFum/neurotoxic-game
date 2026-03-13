@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 import { Panel, ActionButton } from '../../ui/shared'
+import { ZEALOTRY_PROMO_THRESHOLD } from '../../utils/economyEngine'
 
 const SocialOptionButton = memo(({ opt, index, onSelect }) => {
   const { t } = useTranslation()
@@ -21,7 +22,7 @@ const SocialOptionButton = memo(({ opt, index, onSelect }) => {
       >
         <div className='flex justify-between items-start mb-2 w-full z-10 relative'>
           <div className='font-bold text-lg leading-tight pr-2 transition-colors'>
-            {opt.name}
+            {t(`ui:postOptions.${opt.id}.name`, { defaultValue: opt.name })}
           </div>
           <div className='flex gap-1 text-sm bg-void-black/50 px-1 rounded backdrop-blur-sm'>
             {opt.badges?.map(b => (
@@ -90,7 +91,7 @@ export const SocialPhase = ({ options, onSelect, trend, zealotryLevel = 0 }) => 
         <div className='flex flex-col mb-4 p-3 bg-blood-red/10 border border-blood-red/30 rounded'>
           <div className='flex justify-between items-center mb-1'>
             <span className='text-xs font-bold text-blood-red uppercase tracking-widest'>
-              {t('ui:social.cultZealotry', { defaultValue: 'CULT ZEALOTRY' })}
+              {t('economy:social.cultZealotry', { defaultValue: 'CULT ZEALOTRY' })}
             </span>
             <span className='text-xs font-mono text-blood-red/80'>
               {zealotryLevel}%
@@ -102,9 +103,9 @@ export const SocialPhase = ({ options, onSelect, trend, zealotryLevel = 0 }) => 
               style={{ width: `${Math.min(100, Math.max(0, zealotryLevel))}%` }}
             />
           </div>
-          {zealotryLevel >= 80 && (
+          {zealotryLevel >= ZEALOTRY_PROMO_THRESHOLD && (
             <div className='text-[10px] text-blood-red/80 mt-1 uppercase animate-pulse'>
-              {t('ui:social.zealotryWarning', { defaultValue: 'WARNING: FANS ARE BECOMING RADICALIZED. POLICE RAID RISK INCREASED.' })}
+              {t('economy:social.zealotryWarning', { defaultValue: 'WARNING: FANS ARE BECOMING RADICALIZED. POLICE RAID RISK INCREASED.' })}
             </div>
           )}
         </div>

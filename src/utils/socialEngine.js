@@ -486,10 +486,13 @@ export const generateBrandName = (baseName, alignment, rng = secureRandom) => {
  * @param {Function} rng - Random number generator.
  * @returns {Array} List of offer objects.
  */
-export const calculateZealotryEffects = (zealotry) => ({
-  passiveIncome: Math.floor((zealotry || 0) * 1.2),
-  raidProbability: ((zealotry || 0) / 100) * 0.08
-})
+export const calculateZealotryEffects = (zealotry) => {
+  const z = Math.max(0, Math.min(100, Number(zealotry) || 0))
+  return {
+    passiveIncome: Math.floor(z * 1.2),
+    raidProbability: (z / 100) * 0.08
+  }
+}
 
 export const generateBrandOffers = (gameState, rng = secureRandom) => {
   const social = gameState?.social || {}
@@ -528,8 +531,8 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
 
     // Check zealotry limits
     if (
-      deal.requirements.requiresZealotry &&
-      (social.zealotry || 0) >= deal.requirements.requiresZealotry
+      deal.requirements.maxZealotry &&
+      (social.zealotry || 0) >= deal.requirements.maxZealotry
     )
       continue
 

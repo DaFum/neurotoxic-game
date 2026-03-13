@@ -1,4 +1,5 @@
 {
+  "cultDonations": "Kultspenden",
   "gigExpenses.catering.detail": "Vermeidet den Müdigkeits-Malus",
   "gigExpenses.catering.label": "Catering / Energie",
   "gigExpenses.guestList.detail": "VIP-Behandlung (+Bareinnahmen, +Punkte)",
@@ -42,9 +43,11 @@
   "social.category": "Kategorie",
   "social.chooseStrategy": "WÄHLE DEINE STRATEGIE",
   "social.consistentGrowth": "Konsistentes Wachstum",
+  "social.cultZealotry": "KULTFANATISMUS",
   "social.currentTrend": "AKTUELLER TREND:",
   "social.highVariance": "Hohes Varianzrisiko",
   "social.influence": "Einfluss",
   "social.platform": "Plattform",
-  "social.postToSocial": "AUF SOCIAL MEDIA POSTEN"
+  "social.postToSocial": "AUF SOCIAL MEDIA POSTEN",
+  "social.zealotryWarning": "WARNUNG: FANS WERDEN FANATISCH. POLIZEIEINSATZ WAHRSCHEINLICH."
 }

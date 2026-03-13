@@ -13,7 +13,7 @@ export const BRAND_DEALS = [
       followers: 2000,
       trend: ['TECH', 'NEUTRAL'],
       trait: 'party_animal', // Marius helps
-      requiresZealotry: 20
+      maxZealotry: 20
     },
     offer: {
       upfront: 500,
@@ -35,7 +35,7 @@ export const BRAND_DEALS = [
       followers: 5000,
       trend: ['MUSIC', 'TECH'],
       trait: 'virtuoso', // Matze helps
-      requiresZealotry: 20
+      maxZealotry: 20
     },
     offer: {
       upfront: 1000,
