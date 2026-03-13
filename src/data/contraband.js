@@ -261,7 +261,8 @@ export const CONTRABAND_DB = [
     description: 'items:contraband.c_radiant_pick.description',
     rarity: 'uncommon',
     icon: 'icon_radiant_pick',
-    applyOnAdd: true
+    applyOnAdd: true,
+    stackable: false
   },
   {
     id: 'c_forgotten_road_map',
@@ -281,6 +282,7 @@ export const CONTRABAND_DB = [
     type: 'consumable',
     effectType: 'crowd_control',
     value: 0.05,
+    duration: 1,
     description: 'items:contraband.c_sticky_logo_sticker.description',
     rarity: 'common',
     icon: 'icon_sticker',

@@ -12,6 +12,8 @@ import { GlitchButton } from './GlitchButton'
  * Contraband Stash Modal Component
  * Displays acquired relics and consumables.
  */
+import { useCallback } from 'react'
+
 export const ContrabandStash = ({
   stash = [],
   members = [],
@@ -21,6 +23,17 @@ export const ContrabandStash = ({
   onClose
 }) => {
   const { t } = useTranslation(['ui', 'items'])
+
+  const makeSelectMember = useCallback(
+    id => () => setSelectedMember(id),
+    [setSelectedMember]
+  )
+
+  const makeUseItem = useCallback(
+    (instanceId, item) => () => useItem(instanceId, item),
+    [useItem]
+  )
+
   return (
     <Modal onClose={onClose}>
       <Panel
@@ -48,7 +61,7 @@ export const ContrabandStash = ({
               <button
                 key={m.id}
                 type='button'
-                onClick={() => setSelectedMember(m.id)}
+                onClick={makeSelectMember(m.id)}
                 className={`px-4 py-2 border font-mono text-sm transition-colors ${
                   selectedMember === m.id
                     ? 'border-(--toxic-green) bg-(--toxic-green-20) text-(--star-white)'
@@ -165,7 +178,7 @@ export const ContrabandStash = ({
                       </div>
                     ) : item.type === 'consumable' || !item.applyOnAdd ? (
                       <ActionButton
-                        onClick={() => useItem(item.instanceId, item)}
+                        onClick={makeUseItem(item.instanceId, item)}
                         disabled={requiresTarget && !selectedMember}
                         variant='primary'
                         className='w-full text-sm font-bold'

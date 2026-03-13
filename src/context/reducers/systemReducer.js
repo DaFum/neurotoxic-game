@@ -325,6 +325,8 @@ export const handleAdvanceDay = (state, payload) => {
   const stillActive = activeEffects.filter(e => e.remainingDuration > 0)
   const expired = activeEffects.filter(e => e.remainingDuration <= 0)
 
+  let stashCloned = false
+
   // Revert expired effects if needed
   expired.forEach(e => {
     // Revert the temporary state applied in bandReducer.js
@@ -337,36 +339,63 @@ export const handleAdvanceDay = (state, payload) => {
         )
       }
     } else if (e.effectType === 'luck') {
-      traitResult.band.luck = (traitResult.band.luck || 0) - e.value
+      traitResult.band.luck = Math.max(
+        0,
+        (traitResult.band.luck || 0) - e.value
+      )
     } else if (e.effectType === 'stamina_max') {
       traitResult.band.members = traitResult.band.members.map(m => ({
         ...m,
         staminaMax: Math.max(0, (m.staminaMax || 100) - e.value)
       }))
     } else if (e.effectType === 'style') {
-      traitResult.band.style = (traitResult.band.style || 0) - e.value
+      traitResult.band.style = Math.max(
+        0,
+        (traitResult.band.style || 0) - e.value
+      )
     } else if (e.effectType === 'tour_success') {
-      traitResult.band.tourSuccess =
+      traitResult.band.tourSuccess = Math.max(
+        0,
         (traitResult.band.tourSuccess || 0) - e.value
+      )
     } else if (e.effectType === 'gig_modifier') {
-      traitResult.band.gigModifier =
+      traitResult.band.gigModifier = Math.max(
+        0,
         (traitResult.band.gigModifier || 0) - e.value
+      )
     } else if (e.effectType === 'tempo') {
-      traitResult.band.tempo = (traitResult.band.tempo || 0) - e.value
+      traitResult.band.tempo = Math.max(
+        0,
+        (traitResult.band.tempo || 0) - e.value
+      )
     } else if (e.effectType === 'practice_gain') {
-      traitResult.band.practiceGain =
+      traitResult.band.practiceGain = Math.max(
+        0,
         (traitResult.band.practiceGain || 0) - e.value
+      )
     } else if (e.effectType === 'crit') {
-      traitResult.band.crit = (traitResult.band.crit || 0) - e.value
+      traitResult.band.crit = Math.max(
+        0,
+        (traitResult.band.crit || 0) - e.value
+      )
     } else if (e.effectType === 'affinity') {
-      traitResult.band.affinity = (traitResult.band.affinity || 0) - e.value
+      traitResult.band.affinity = Math.max(
+        0,
+        (traitResult.band.affinity || 0) - e.value
+      )
     } else if (e.effectType === 'crowd_control') {
-      traitResult.band.crowdControl =
+      traitResult.band.crowdControl = Math.max(
+        0,
         (traitResult.band.crowdControl || 0) - e.value
+      )
     }
 
     // Unmark applied status in stash so relics can be used again
     if (traitResult.band.stash) {
+      if (!stashCloned) {
+        traitResult.band.stash = [...traitResult.band.stash]
+        stashCloned = true
+      }
       const itemIndex = traitResult.band.stash.findIndex(
         i => i.instanceId === e.instanceId
       )
