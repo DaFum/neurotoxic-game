@@ -88,7 +88,7 @@ describe('UI missing-target smoke/branch tests', () => {
 
     fireEvent.click(screen.getByRole('button'))
     expect(onClick).toHaveBeenCalledWith('m1')
-    expect(screen.getByRole('button')).toHaveClass('text-(--ash-gray)')
+    expect(screen.getByRole('button')).toHaveClass('text-ash-gray')
 
     // test active state branches
     rerender(
@@ -98,7 +98,7 @@ describe('UI missing-target smoke/branch tests', () => {
         onClick={onClick}
       />
     )
-    expect(screen.getByRole('button')).toHaveClass('bg-(--toxic-green)')
+    expect(screen.getByRole('button')).toHaveClass('bg-toxic-green')
   })
 
   it('SettingsTab delegates settings interactions', () => {

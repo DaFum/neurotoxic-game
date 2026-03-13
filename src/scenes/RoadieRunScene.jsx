@@ -52,8 +52,8 @@ export const RoadieRunScene = () => {
       renderCompletionStats={renderCompletionStats}
     >
       {/* HUD */}
-      <div className='absolute top-4 left-4 z-30 text-(--star-white) font-mono pointer-events-none bg-(--void-black)/50 p-2 border border-(--star-white)/20'>
-        <h2 className='text-xl text-(--toxic-green)'>
+      <div className='absolute top-4 left-4 z-30 text-star-white font-mono pointer-events-none bg-void-black/50 p-2 border border-star-white/20'>
+        <h2 className='text-xl text-toxic-green'>
           {t('ui:roadieRun.hud.title')}
         </h2>
         <div>
@@ -66,7 +66,7 @@ export const RoadieRunScene = () => {
           {t('ui:roadieRun.hud.damage')} {uiState.currentDamage}%
         </div>
         {uiState.carrying && (
-          <div className='text-(--warning-yellow)'>
+          <div className='text-warning-yellow'>
             {t('ui:roadieRun.hud.carrying')}{' '}
             {t(`ui:roadieRun.itemTypes.${uiState.carrying.type}`, {
               defaultValue: t('ui:roadieRun.itemTypes.unknown', {
@@ -80,7 +80,7 @@ export const RoadieRunScene = () => {
       {/* Controls Toggle (Desktop Mode Support) */}
       <button
         type='button'
-        className='absolute top-4 right-4 z-50 p-2 bg-(--void-black)/50 text-(--toxic-green) border border-(--toxic-green) rounded hover:bg-(--toxic-green)/20 pointer-events-auto text-xs font-mono hidden md:block'
+        className='absolute top-4 right-4 z-50 p-2 bg-void-black/50 text-toxic-green border border-toxic-green rounded hover:bg-toxic-green/20 pointer-events-auto text-xs font-mono hidden md:block'
         onClick={() => setShowControls(prev => !prev)}
         aria-label={t('ui:roadieRun.controls.toggleAria')}
       >
@@ -90,7 +90,7 @@ export const RoadieRunScene = () => {
       </button>
 
       {/* Controls Hint */}
-      <div className='absolute bottom-4 left-8 text-(--star-white)/50 text-sm font-mono pointer-events-none hidden md:block'>
+      <div className='absolute bottom-4 left-8 text-star-white/50 text-sm font-mono pointer-events-none hidden md:block'>
         {t('ui:roadieRun.controls.movementHint')}
       </div>
 
@@ -101,7 +101,7 @@ export const RoadieRunScene = () => {
         <div />
         <button
           type='button'
-          className='w-14 h-14 bg-(--star-white)/10 active:bg-(--toxic-green)/50 border border-(--star-white)/30 rounded flex items-center justify-center text-(--star-white)'
+          className='w-14 h-14 bg-star-white/10 active:bg-toxic-green/50 border border-star-white/30 rounded flex items-center justify-center text-star-white'
           onClick={handleMoveUp}
           aria-label='Move Up'
         >
@@ -110,7 +110,7 @@ export const RoadieRunScene = () => {
         <div />
         <button
           type='button'
-          className='w-14 h-14 bg-(--star-white)/10 active:bg-(--toxic-green)/50 border border-(--star-white)/30 rounded flex items-center justify-center text-(--star-white)'
+          className='w-14 h-14 bg-star-white/10 active:bg-toxic-green/50 border border-star-white/30 rounded flex items-center justify-center text-star-white'
           onClick={handleMoveLeft}
           aria-label='Move Left'
         >
@@ -118,7 +118,7 @@ export const RoadieRunScene = () => {
         </button>
         <button
           type='button'
-          className='w-14 h-14 bg-(--star-white)/10 active:bg-(--toxic-green)/50 border border-(--star-white)/30 rounded flex items-center justify-center text-(--star-white)'
+          className='w-14 h-14 bg-star-white/10 active:bg-toxic-green/50 border border-star-white/30 rounded flex items-center justify-center text-star-white'
           onClick={handleMoveDown}
           aria-label='Move Down'
         >
@@ -126,7 +126,7 @@ export const RoadieRunScene = () => {
         </button>
         <button
           type='button'
-          className='w-14 h-14 bg-(--star-white)/10 active:bg-(--toxic-green)/50 border border-(--star-white)/30 rounded flex items-center justify-center text-(--star-white)'
+          className='w-14 h-14 bg-star-white/10 active:bg-toxic-green/50 border border-star-white/30 rounded flex items-center justify-center text-star-white'
           onClick={handleMoveRight}
           aria-label='Move Right'
         >

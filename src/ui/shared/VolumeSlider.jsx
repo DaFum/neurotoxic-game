@@ -23,7 +23,7 @@ export const VolumeSlider = memo(function VolumeSlider({
         >
           {label}
         </span>
-        <span className='text-sm font-bold text-(--toxic-green)'>{pct}%</span>
+        <span className='text-sm font-bold text-toxic-green'>{pct}%</span>
       </div>
       {/* Expose actual input for accessibility and standard event handling while visually hiding it */}
       <input
@@ -37,7 +37,7 @@ export const VolumeSlider = memo(function VolumeSlider({
         className='sr-only'
       />
       <div
-        className='flex gap-1 h-8 items-end cursor-pointer group has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-(--toxic-green) has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-(--void-black) -mx-1 px-1'
+        className='flex gap-1 h-8 items-end cursor-pointer group has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-toxic-green has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-void-black -mx-1 px-1'
         role='presentation'
       >
         {segments.map(segment => {
@@ -49,7 +49,7 @@ export const VolumeSlider = memo(function VolumeSlider({
               type='button'
               key={segment}
               onClick={() => onChange({ target: { value: segment / max } })}
-              className='flex-1 relative h-full flex items-end group-hover:opacity-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)'
+              className='flex-1 relative h-full flex items-end group-hover:opacity-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
               aria-label={t('ui:volume.set', { pct: segmentPct })}
               aria-pressed={isActive}
               tabIndex={-1}
@@ -57,8 +57,8 @@ export const VolumeSlider = memo(function VolumeSlider({
             >
               <div
                 style={{ height }}
-                className={`w-full transition-colors duration-75 border-b-2 border-transparent hover:border-(--void-black)
-                  ${isActive ? 'bg-(--toxic-green) shadow-[0_0_8px_var(--toxic-green)]' : 'bg-(--toxic-green)/20'}`}
+                className={`w-full transition-colors duration-75 border-b-2 border-transparent hover:border-void-black
+                  ${isActive ? 'bg-toxic-green shadow-[0_0_8px_var(--color-toxic-green)]' : 'bg-toxic-green/20'}`}
               ></div>
             </button>
           )

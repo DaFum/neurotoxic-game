@@ -51,7 +51,7 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
 
   return (
     <div>
-      <div className='flex justify-between items-center mb-4 font-mono text-(--star-white)'>
+      <div className='flex justify-between items-center mb-4 font-mono text-star-white'>
         <ActionButton
           onClick={() => {
             if (setlist.length === 0) {
@@ -80,7 +80,7 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
         </ActionButton>
         <div>
           {t('ui:hq.selected', { defaultValue: 'SELECTED' })}:{' '}
-          <span className='text-(--toxic-green)'>{setlist.length}</span>
+          <span className='text-toxic-green'>{setlist.length}</span>
         </div>
       </div>
       <div className='space-y-2 pb-4'>
@@ -92,17 +92,17 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
               className={`flex items-center justify-between p-4 border-2 transition-colors
                 ${
                   selected
-                    ? 'border-(--toxic-green) bg-(--toxic-green)/20'
-                    : 'border-(--ash-gray) bg-(--void-black)/60'
+                    ? 'border-toxic-green bg-toxic-green/20'
+                    : 'border-ash-gray bg-void-black/60'
                 }`}
             >
               <div className='flex-1'>
                 <h4
-                  className={`font-bold font-mono text-lg uppercase ${selected ? 'text-(--toxic-green)' : 'text-(--star-white)'}`}
+                  className={`font-bold font-mono text-lg uppercase ${selected ? 'text-toxic-green' : 'text-star-white'}`}
                 >
                   {song.name}
                 </h4>
-                <div className='flex gap-4 text-xs font-mono text-(--ash-gray) mt-1'>
+                <div className='flex gap-4 text-xs font-mono text-ash-gray mt-1'>
                   <span>
                     {t('ui:bandhq.metadata.diff', { defaultValue: 'DIFF' })}:{' '}
                     {song.difficulty}/7
@@ -124,8 +124,8 @@ export const SetlistTab = ({ setlist, setSetlist, addToast }) => {
                 className={`px-4 py-2 font-bold uppercase border-2 text-sm transition-all
                   ${
                     selected
-                      ? 'border-(--toxic-green) text-(--toxic-green) hover:bg-(--toxic-green) hover:text-(--void-black)'
-                      : 'border-(--ash-gray) text-(--ash-gray) hover:border-(--star-white) hover:text-(--star-white)'
+                      ? 'border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black'
+                      : 'border-ash-gray text-ash-gray hover:border-star-white hover:text-star-white'
                   }`}
               >
                 {selected

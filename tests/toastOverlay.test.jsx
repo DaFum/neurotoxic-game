@@ -67,10 +67,10 @@ test('ToastOverlay renders all taxonomy variants with themed classes', () => {
   expect(html).toContain('Low harmony')
   expect(html).toContain('Crash')
   expect(html).toContain('Traveling')
-  expect(html).toContain('text-(--toxic-green)')
-  expect(html).toContain('text-(--warning-yellow)')
-  expect(html).toContain('text-(--blood-red)')
-  expect(html).toContain('text-(--info-blue)')
+  expect(html).toContain('text-toxic-green')
+  expect(html).toContain('text-warning-yellow')
+  expect(html).toContain('text-blood-red')
+  expect(html).toContain('text-info-blue')
 })
 
 test('ToastOverlay logs error when message JSON parsing fails', () => {

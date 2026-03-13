@@ -9,9 +9,9 @@ export const ControlsHint = memo(function ControlsHint() {
       {LANE_NAMES.map((name, i) => (
         <div
           key={name}
-          className='flex items-center gap-1.5 text-(--ash-gray)/60 font-mono text-xs'
+          className='flex items-center gap-1.5 text-ash-gray/60 font-mono text-xs'
         >
-          <span className='border border-(--ash-gray)/30 px-1.5 py-0.5 text-[10px]'>
+          <span className='border border-ash-gray/30 px-1.5 py-0.5 text-[10px]'>
             {LANE_KEYS[i]}
           </span>
           <span className='uppercase tracking-wider'>{name}</span>

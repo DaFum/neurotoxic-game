@@ -12,35 +12,35 @@ const MESSAGE_LIFETIME_MS = 10000
 const FONT_UI_CLASS = 'font-(family-name:--font-ui)'
 
 const TOXIC_GREEN_BASE = {
-  accent: 'var(--toxic-green)',
-  borderColor: 'border-(--toxic-green)',
-  labelColor: 'text-(--toxic-green)',
-  barColor: 'bg-(--toxic-green)'
+  accent: 'var(--color-toxic-green)',
+  borderColor: 'border-toxic-green',
+  labelColor: 'text-toxic-green',
+  barColor: 'bg-toxic-green'
 }
 
 const WARNING_YELLOW_BASE = {
-  accent: 'var(--warning-yellow)',
-  borderColor: 'border-(--warning-yellow)',
-  labelColor: 'text-(--warning-yellow)',
-  barColor: 'bg-(--warning-yellow)'
+  accent: 'var(--color-warning-yellow)',
+  borderColor: 'border-warning-yellow',
+  labelColor: 'text-warning-yellow',
+  barColor: 'bg-warning-yellow'
 }
 
 const BLOOD_RED_BASE = {
-  accent: 'var(--blood-red)',
-  borderColor: 'border-(--blood-red)',
-  labelColor: 'text-(--blood-red)',
-  barColor: 'bg-(--blood-red)'
+  accent: 'var(--color-blood-red)',
+  borderColor: 'border-blood-red',
+  labelColor: 'text-blood-red',
+  barColor: 'bg-blood-red'
 }
 
 const OVERWORLD_STYLE = {
   ...TOXIC_GREEN_BASE,
-  speakerColor: 'text-(--warning-yellow)',
+  speakerColor: 'text-warning-yellow',
   icon: '\uD83D\uDE90'
 }
 
 const PRE_GIG_BASE_STYLE = {
   ...WARNING_YELLOW_BASE,
-  speakerColor: 'text-(--toxic-green)'
+  speakerColor: 'text-toxic-green'
 }
 
 /**
@@ -55,22 +55,22 @@ const SCENE_STYLES = {
   },
   [GAME_PHASES.GIG]: {
     ...BLOOD_RED_BASE,
-    speakerColor: 'text-(--star-white)',
+    speakerColor: 'text-star-white',
     icon: '\uD83D\uDD25'
   },
   [GAME_PHASES.POST_GIG]: {
     ...TOXIC_GREEN_BASE,
-    speakerColor: 'text-(--star-white)',
+    speakerColor: 'text-star-white',
     icon: '\uD83C\uDF7B'
   },
   [GAME_PHASES.MENU]: {
     ...TOXIC_GREEN_BASE,
-    speakerColor: 'text-(--warning-yellow)',
+    speakerColor: 'text-warning-yellow',
     icon: '\uD83D\uDCE1'
   },
   [GAME_PHASES.GAMEOVER]: {
     ...BLOOD_RED_BASE,
-    speakerColor: 'text-(--ash-gray)',
+    speakerColor: 'text-ash-gray',
     icon: '\uD83D\uDC80'
   },
   [GAME_PHASES.TRAVEL_MINIGAME]: OVERWORLD_STYLE,
@@ -113,7 +113,7 @@ const ChatterMessage = memo(
         className='mb-2 last:mb-0'
       >
         <div
-          className={`relative overflow-hidden border-2 ${sceneStyle.borderColor} bg-(--void-black) backdrop-blur-md`}
+          className={`relative overflow-hidden border-2 ${sceneStyle.borderColor} bg-void-black backdrop-blur-md`}
           style={{
             boxShadow: `0 0 24px rgb(var(--void-black-rgb) / 90%), 0 0 10px ${sceneStyle.accent}33`
           }}
@@ -124,7 +124,7 @@ const ChatterMessage = memo(
           />
 
           {/* Header: scene label + speaker */}
-          <div className='pl-3 pr-2 py-1.5 border-b border-(--ash-gray)/20 flex items-center justify-between gap-2'>
+          <div className='pl-3 pr-2 py-1.5 border-b border-ash-gray/20 flex items-center justify-between gap-2'>
             <div className='flex items-center gap-1.5'>
               <span className='text-[10px]'>{sceneStyle.icon}</span>
               <p
@@ -143,14 +143,14 @@ const ChatterMessage = memo(
           {/* Message body */}
           <div className='pl-3 pr-2 py-2.5'>
             <p
-              className={`text-xs leading-snug ${FONT_UI_CLASS} ${msg.type === 'hate' || currentScene === GAME_PHASES.GAMEOVER ? 'text-(--star-white) chromatic-text' : 'text-(--star-white)'}`}
+              className={`text-xs leading-snug ${FONT_UI_CLASS} ${msg.type === 'hate' || currentScene === GAME_PHASES.GAMEOVER ? 'text-star-white chromatic-text' : 'text-star-white'}`}
             >
               {t(msg.text)}
             </p>
           </div>
 
           {/* Lifetime countdown bar */}
-          <div className='h-[2px] w-full bg-(--ash-gray)/10'>
+          <div className='h-[2px] w-full bg-ash-gray/10'>
             <motion.div
               className={`h-full ${sceneStyle.barColor} opacity-40`}
               initial={{ width: '100%' }}

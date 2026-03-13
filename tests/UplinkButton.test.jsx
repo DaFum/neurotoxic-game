@@ -25,20 +25,18 @@ test('UplinkButton renders correctly and handles hover states properly', () => {
 
   // Before hover, no glitch effect div
   expect(
-    container.querySelector('.bg-\\(--toxic-green\\)\\/10')
+    container.querySelector('.bg-toxic-green\\/10')
   ).not.toBeInTheDocument()
 
   fireEvent.mouseEnter(link)
 
   // After hover, glitch effect div appears
-  expect(
-    container.querySelector('.bg-\\(--toxic-green\\)\\/10')
-  ).toBeInTheDocument()
+  expect(container.querySelector('.bg-toxic-green\\/10')).toBeInTheDocument()
 
   fireEvent.mouseLeave(link)
 
   // Gone again
   expect(
-    container.querySelector('.bg-\\(--toxic-green\\)\\/10')
+    container.querySelector('.bg-toxic-green\\/10')
   ).not.toBeInTheDocument()
 })

@@ -12,8 +12,8 @@ export const ShopTab = ({
 }) => {
   return (
     <div>
-      <div className='mb-4 text-right font-mono text-(--star-white)'>
-        FUNDS: <span className='text-(--toxic-green)'>{player.money}€</span>
+      <div className='mb-4 text-right font-mono text-star-white'>
+        FUNDS: <span className='text-toxic-green'>{player.money}€</span>
       </div>
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4'>
         {[...HQ_ITEMS.gear, ...HQ_ITEMS.instruments].map(item => (

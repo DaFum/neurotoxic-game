@@ -7,80 +7,96 @@
 /* stylelint-disable-next-line at-rule-no-unknown */
 @source './**/*.{js,ts,jsx,tsx}';
 
-:root {
-  /* Neurotoxic-Grün (aus Logo) */
-  --toxic-green: #00ff41;
-  --toxic-green-dark: #0c3;
-  --toxic-green-light: #3f6;
-  --toxic-green-glow: rgb(0 255 65 / 60%);
-  --toxic-green-20: rgb(0 255 65 / 20%);
-  --toxic-green-10: rgb(0 255 65 / 10%);
-  --toxic-green-5: rgb(0 255 65 / 5%);
-  --toxic-green-50: rgb(0 255 65 / 50%);
+@theme {
+  /* =========================================
+     NEUROTOXIC GRÜN (Base & Erweiterung)
+     ========================================= */
+  --color-toxic-green: #00ff41;
+  --color-toxic-green-dark: #00cc33;
+  --color-toxic-green-light: #33ff66;
+  /* Neu: Für extreme Highlights und düstere Schatten */
+  --color-toxic-green-bright: #66ff8c;
+  --color-toxic-green-mutated: #0a290a;
+  --color-toxic-green-glow: rgb(0 255 65 / 60%);
+  --color-toxic-green-50: rgb(0 255 65 / 50%);
+  --color-toxic-green-20: rgb(0 255 65 / 20%);
+  --color-toxic-green-10: rgb(0 255 65 / 10%);
+  --color-toxic-green-5: rgb(0 255 65 / 5%);
 
-  /* Death-Metal-Schwarz */
-  --void-black: #0a0a0a;
-  --void-black-rgb: 10 10 10;
-  --void-black-50: rgb(var(--void-black-rgb) / 50%);
-  --shadow-black: #1a1a1a;
-  --concrete-gray: #2a2a2a;
-  --ash-gray: #888;
+  /* =========================================
+     DEATH-METAL SCHWARZ (Base & Erweiterung)
+     ========================================= */
+  --color-void-black: #0a0a0a;
+  --color-void-black-50: rgb(10 10 10 / 50%);
+  --color-shadow-black: #1a1a1a;
+  --color-concrete-gray: #2a2a2a;
+  --color-ash-gray: #888888;
+  /* Neu: Für tiefere Abgründe und subtile UI-Rahmen */
+  --color-abyss-black: #000000;
+  --color-charcoal-gray: #151515;
+  --color-steel-gray: #4d4d4d;
 
-  /* Akzentfarben */
-  --blood-red: #c00;
-  --blood-red-bright: #f00;
-  --rust-orange: #c50;
-  --warning-yellow: #fc0;
-  --warning-yellow-30: rgb(255 204 0 / 30%);
-  --warning-yellow-50: rgb(255 204 0 / 50%);
+  /* =========================================
+     AKZENTFARBEN (Blut, Rost & Warnung)
+     ========================================= */
+  --color-blood-red: #cc0000;
+  --color-blood-red-bright: #ff0000;
+  /* Neu: Getrocknetes Blut und Neon-Glow für Glitches */
+  --color-blood-red-dark: #660000;
+  --color-blood-red-glow: rgb(255 0 0 / 60%);
 
-  /* Kosmische Farben (für "Lost Scriptures"-Thema) */
-  --cosmic-purple: #60c;
-  --void-blue: #03c;
-  --star-white: #fff;
+  --color-rust-orange: #cc5500;
+  /* Neu: Hellerer Rost für Buttons/Interaktionen */
+  --color-rust-orange-bright: #ff6a00;
 
-  /* UI-Funktionen */
-  --success-green: #00ff41;
-  --error-red: #f03;
-  --warning-orange: #f90;
-  --info-blue: #09f;
+  --color-warning-yellow: #ffcc00;
+  --color-warning-yellow-50: rgb(255 204 0 / 50%);
+  --color-warning-yellow-30: rgb(255 204 0 / 30%);
 
-  /* Stat Colors */
-  --fuel-yellow: #eab308;
-  --condition-blue: #3b82f6;
-  --stamina-green: #16a34a;
-  --mood-pink: #db2777;
+  /* =========================================
+     KOSMISCH / GLITCH (Base & Erweiterung)
+     ========================================= */
+  --color-cosmic-purple: #6600cc;
+  --color-void-blue: #0033cc;
+  --color-star-white: #ffffff;
+  /* Neu: Cyanspäher für den perfekten Chromatic Aberration/Glitch Effekt */
+  --color-neon-cyan: #00ffff;
+  --color-cosmic-purple-glow: rgb(102 0 204 / 50%);
 
-  /* Minigame Colors */
-  --roadie-grass: #1a4d1a;
-  --roadie-venue-blue: #0044cc;
+  /* =========================================
+     UI FUNKTIONEN & STATS
+     ========================================= */
+  --color-success-green: var(--color-toxic-green);
+  --color-error-red: #ff0033;
+  --color-warning-orange: #ff9900;
+  --color-info-blue: #0099ff;
 
-  /* UI Components */
-  --panel-bg: rgb(var(--void-black-rgb) / 40%);
-  --disabled-bg: var(--concrete-gray);
-  --disabled-text: var(--ash-gray);
-  --disabled-border: var(--ash-gray);
+  --color-fuel-yellow: #eab308;
+  --color-condition-blue: #3b82f6;
+  --color-stamina-green: #16a34a;
+  --color-mood-pink: #db2777;
 
+  --color-roadie-grass: #1a4d1a;
+  --color-roadie-venue-blue: #0044cc;
+
+  /* =========================================
+     UI KOMPONENTEN
+     ========================================= */
+  --color-panel-bg: rgb(10 10 10 / 40%);
+  --color-disabled-bg: var(--color-concrete-gray);
+  --color-disabled-text: var(--color-ash-gray);
+  --color-disabled-border: var(--color-ash-gray);
+  --color-shadow-overlay: rgb(10 10 10 / 40%);
+  --color-shadow-overlay-strong: rgb(10 10 10 / 70%);
+
+  /* =========================================
+     TYPOGRAFIE & Z-INDEX (Nativer T4 Support)
+     ========================================= */
   --font-display: 'Metal Mania', cursive;
   --font-ui: 'Courier New', monospace;
   --font-code: 'Courier New', monospace;
+  --font-script: 'Brush Script MT', 'Lucida Handwriting', cursive;
 
-  /* Shadow Overlay */
-  --shadow-overlay: rgb(var(--void-black-rgb) / 40%);
-  --shadow-overlay-strong: rgb(var(--void-black-rgb) / 70%);
-
-  /* CRT Overlay */
-  --crt-overlay-bg:
-    linear-gradient(rgb(18 16 16 / 0%) 50%, rgb(0 0 0 / 25%) 50%),
-    linear-gradient(
-      90deg,
-      rgb(255 0 0 / 6%),
-      rgb(0 255 0 / 2%),
-      rgb(0 0 255 / 6%)
-    );
-  --crt-overlay-size: 100% 2px, 3px 100%;
-
-  /* Z-Index Hierarchy (Strict Stacking) */
   --z-hud: 50;
   --z-modal: 100;
   --z-tutorial: 150;
@@ -94,8 +110,8 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: var(--void-black);
-  color: var(--toxic-green);
+  background-color: var(--color-void-black);
+  color: var(--color-toxic-green);
   font-family: var(--font-ui);
   overflow: hidden;
   user-select: none;
@@ -111,76 +127,57 @@ body {
 
 /* Global Utility Classes */
 .text-toxic {
-  color: var(--toxic-green);
+  color: var(--color-toxic-green);
 }
 
 .text-blood {
-  color: var(--blood-red-bright);
+  color: var(--color-blood-red-bright);
 }
 
 .bg-void {
-  background-color: var(--void-black);
+  background-color: var(--color-void-black);
 }
-
-.glitch-text {
-  position: relative;
-  animation: glitch 3s infinite;
-}
-
-@keyframes glitch {
-  0% {
-    transform: translate(0);
-    text-shadow: 2px 2px 0 var(--blood-red);
-  }
-
-  20% {
-    transform: translate(-2px, 2px);
-    text-shadow: -2px -2px 0 var(--cosmic-purple);
-  }
-
-  40% {
-    transform: translate(-2px, -2px);
-    text-shadow: 2px -2px 0 var(--blood-red);
-  }
-
-  60% {
-    transform: translate(2px, 2px);
-    text-shadow: -2px 2px 0 var(--cosmic-purple);
-  }
-
-  80% {
-    transform: translate(2px, -2px);
-    text-shadow: 2px 2px 0 var(--blood-red);
-  }
-
-  100% {
-    transform: translate(0);
-    text-shadow: -2px -2px 0 var(--cosmic-purple);
-  }
-}
-
+/* ── Dreckiges CRT Overlay mit Vignette ── */
 .crt-overlay {
-  background: var(--crt-overlay-bg);
-  background-size: var(--crt-overlay-size);
+  background:
+    /* Horizontale Scanlines */
+    linear-gradient(rgb(10 10 10 / 0%) 50%, rgb(0 0 0 / 30%) 50%),
+    /* Vertikale RGB-Subpixel (angepasst an Toxic Green & Neon Cyan) */
+    linear-gradient(
+        90deg,
+        rgb(255 0 0 / 6%),
+        rgb(0 255 65 / 5%),
+        /* Toxic Green Subpixel */ rgb(0 255 255 / 6%) /* Cyan Subpixel */
+      );
+  background-size:
+    100% 2px,
+    3px 100%;
   pointer-events: none;
   position: absolute;
   inset: 0;
   z-index: var(--z-crt);
   animation: crt-flicker 0.15s infinite;
+  /* Neu: Vignette für den Röhrenmonitor-Look */
+  box-shadow: inset 0 0 120px rgb(0 0 0 / 95%);
 }
 
 .crt-overlay::after {
-  content: ' ';
+  content: '';
   display: block;
   position: absolute;
   inset: 0;
-  background: var(--crt-overlay-bg);
-  background-size: var(--crt-overlay-size);
-  z-index: 2;
   background-color: rgb(0 0 0 / 0%);
   opacity: 0;
   pointer-events: none;
-  animation: scanline 10s linear infinite;
+  /* Breitere, langsamere Scanline für das "VHS-Tracking"-Gefühl */
+  background: linear-gradient(
+    to bottom,
+    transparent 50%,
+    var(--color-toxic-green-5) 51%,
+    var(--color-toxic-green-10) 55%,
+    transparent 56%
+  );
+  animation: scanline 8s linear infinite;
 }
 
 @keyframes scanline {
@@ -273,24 +270,29 @@ button {
   }
 }
 
-/* Chromatic Aberration Effect for Toxic Comments */
+/* ── Chromatic Aberration Effect ── */
 .chromatic-text {
+  /* Harter RGB-Split mit unseren neuen Variablen */
   text-shadow:
-    1px 0 0 rgb(from var(--blood-red) r g b / 0.8),
-    -1px 0 0 rgb(from var(--void-blue) r g b / 0.8);
+    2px 0 0 var(--color-blood-red-bright),
+    -2px 0 0 var(--color-neon-cyan);
 }
 
-/* Pulse glow for borders */
+/* ── Pulse Glow (Standard-Fokus & Interaktion) ── */
 @keyframes pulse-glow {
   from,
   to {
-    box-shadow: 0 0 5px var(--toxic-green-20);
+    box-shadow: 0 0 8px var(--color-toxic-green-20);
+    border-color: var(--color-toxic-green-50);
   }
 
   50% {
+    /* Multi-Layer Glow für extreme Tiefe */
     box-shadow:
-      0 0 20px var(--toxic-green-20),
-      0 0 40px var(--toxic-green-10);
+      0 0 20px var(--color-toxic-green-glow),
+      0 0 40px var(--color-toxic-green),
+      0 0 60px var(--color-toxic-green-10);
+    border-color: var(--color-toxic-green-bright);
   }
 }
 
@@ -302,7 +304,7 @@ button {
 @keyframes type-cursor {
   0%,
   100% {
-    border-color: var(--toxic-green);
+    border-color: var(--color-toxic-green);
   }
 
   50% {
@@ -313,13 +315,13 @@ button {
 /* Score count-up flash */
 @keyframes score-flash {
   0% {
-    color: var(--star-white);
-    text-shadow: 0 0 20px var(--star-white);
+    color: var(--color-star-white);
+    text-shadow: 0 0 20px var(--color-star-white);
   }
 
   100% {
-    color: var(--toxic-green);
-    text-shadow: 0 0 10px var(--toxic-green);
+    color: var(--color-toxic-green);
+    text-shadow: 0 0 10px var(--color-toxic-green);
   }
 }
 
@@ -383,9 +385,9 @@ button {
   100% {
     opacity: 1;
     text-shadow:
-      0 0 4px var(--toxic-green),
-      0 0 20px var(--toxic-green),
-      0 0 40px var(--toxic-green);
+      0 0 4px var(--color-toxic-green),
+      0 0 20px var(--color-toxic-green),
+      0 0 40px var(--color-toxic-green);
   }
 
   20%,
@@ -433,14 +435,14 @@ button {
 
 /* ── UX: Focus ring for keyboard navigation ── */
 :focus-visible {
-  outline: 2px solid var(--toxic-green);
+  outline: 2px solid var(--color-toxic-green);
   outline-offset: 2px;
 }
 
 button:focus-visible {
-  outline: 2px solid var(--toxic-green);
+  outline: 2px solid var(--color-toxic-green);
   outline-offset: 2px;
-  box-shadow: 0 0 12px var(--toxic-green-20);
+  box-shadow: 0 0 12px var(--color-toxic-green-20);
 }
 
 /* ── UX: Custom range slider (VolumeSlider) ── */
@@ -448,13 +450,13 @@ input[type='range'].vol-slider {
   appearance: none;
   width: 100%;
   height: 6px;
-  background: var(--ash-gray);
+  background: var(--color-ash-gray);
   border-radius: 0;
   outline: none;
 }
 
 input[type='range'].vol-slider:focus-visible {
-  outline: 2px solid var(--toxic-green);
+  outline: 2px solid var(--color-toxic-green);
   outline-offset: 4px;
 }
 
@@ -462,30 +464,30 @@ input[type='range'].vol-slider::-webkit-slider-thumb {
   appearance: none;
   width: 20px;
   height: 20px;
-  background: var(--toxic-green);
-  border: 2px solid var(--void-black);
+  background: var(--color-toxic-green);
+  border: 2px solid var(--color-void-black);
   cursor: pointer;
-  box-shadow: 0 0 8px var(--toxic-green-20);
+  box-shadow: 0 0 8px var(--color-toxic-green-20);
 }
 
 input[type='range'].vol-slider::-moz-range-thumb {
   width: 20px;
   height: 20px;
-  background: var(--toxic-green);
-  border: 2px solid var(--void-black);
+  background: var(--color-toxic-green);
+  border: 2px solid var(--color-void-black);
   border-radius: 0;
   cursor: pointer;
-  box-shadow: 0 0 8px var(--toxic-green-20);
+  box-shadow: 0 0 8px var(--color-toxic-green-20);
 }
 
 input[type='range'].vol-slider::-webkit-slider-thumb:hover {
-  background: var(--star-white);
-  box-shadow: 0 0 12px var(--toxic-green);
+  background: var(--color-star-white);
+  box-shadow: 0 0 12px var(--color-toxic-green);
 }
 
 input[type='range'].vol-slider::-moz-range-thumb:hover {
-  background: var(--star-white);
-  box-shadow: 0 0 12px var(--toxic-green);
+  background: var(--color-star-white);
+  box-shadow: 0 0 12px var(--color-toxic-green);
 }
 
 /* ── UX: Confirm pulse for travel nodes ── */
@@ -493,14 +495,14 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
   from,
   to {
     box-shadow:
-      0 0 8px var(--warning-yellow),
-      0 0 16px var(--warning-yellow-30);
+      0 0 8px var(--color-warning-yellow),
+      0 0 16px var(--color-warning-yellow-30);
   }
 
   50% {
     box-shadow:
-      0 0 16px var(--warning-yellow),
-      0 0 32px var(--warning-yellow-50);
+      0 0 16px var(--color-warning-yellow),
+      0 0 32px var(--color-warning-yellow-50);
   }
 }
 
@@ -508,29 +510,37 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
   animation: confirm-pulse 0.8s ease-in-out infinite;
 }
 
-/* ── Toxic Mode Flash ── */
+/* ── Toxic Mode Flash (Ultimativer Neon-Overdrive) ── */
 @keyframes toxic-border-flash-anim {
   0%,
   100% {
+    /* Ruhiger, brodelnder Zustand */
     box-shadow:
-      inset 0 0 20px var(--toxic-green-20),
-      inset 0 0 10px var(--toxic-green-20);
-    border-color: var(--toxic-green-20);
-    opacity: 0.8;
+      inset 0 0 20px var(--color-toxic-green-20),
+      0 0 10px var(--color-toxic-green-10);
+    border-color: var(--color-toxic-green-50);
+    opacity: 0.85;
+    transform: scale(1);
   }
 
   50% {
+    /* Aggressiver Ausbruch nach Innen und Außen */
     box-shadow:
-      inset 0 0 50px var(--toxic-green),
-      inset 0 0 20px var(--toxic-green-light);
-    border-color: var(--toxic-green);
+      inset 0 0 60px var(--color-toxic-green),
+      inset 0 0 30px var(--color-toxic-green-bright),
+      0 0 40px var(--color-toxic-green-glow),
+      0 0 80px var(--color-toxic-green-20);
+    border-color: var(--color-toxic-green-bright);
     opacity: 1;
+    /* Lässt das UI bedrohlich "atmen" */
+    transform: scale(1.02);
   }
 }
 
 .toxic-border-flash {
-  border: 4px solid var(--toxic-green);
-  animation: toxic-border-flash-anim 1s infinite alternate;
+  border: 4px solid var(--color-toxic-green);
+  /* Etwas schneller (0.8s statt 1s) für mehr Stress-Gefühl */
+  animation: toxic-border-flash-anim 0.8s infinite alternate ease-in-out;
 }
 
 /* Brutalist UI Custom Animations & Utilities */
@@ -558,32 +568,53 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
   }
 }
 
-/* Specifically overriding the older generic glitch text to use the multi-layer effect */
+/* ── Verbessertes Multi-Layer Glitch ── */
 .glitch-text {
   position: relative;
   animation: none;
   text-shadow: none;
   transform: none;
 }
+
 .glitch-text::before,
 .glitch-text::after {
-  content: attr(data-text); /* Fallback */
+  content: attr(data-text);
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: var(--void-black);
+  background: var(--color-void-black);
+}
+
+.glitch-text::before {
+  left: 3px;
+  /* Mix aus hellem Blutrot und einem leichten Cosmic Purple Glow */
+  text-shadow:
+    -2px 0 var(--color-blood-red-bright),
+    2px 2px var(--color-cosmic-purple-glow);
+  clip-path: inset(24px 0 90px 0);
+  animation: glitch-anim-2 3s infinite linear alternate-reverse;
+}
+
+.glitch-text::after {
+  left: -3px;
+  /* Harter Cyan-Riss kombiniert mit Toxischem Grün */
+  text-shadow:
+    -2px 0 var(--color-neon-cyan),
+    -1px -1px var(--color-toxic-green);
+  clip-path: inset(85px 0 140px 0);
+  animation: glitch-anim 2.5s infinite linear alternate-reverse;
 }
 .glitch-text::before {
   left: 2px;
-  text-shadow: -1px 0 var(--blood-red);
+  text-shadow: -1px 0 var(--color-blood-red);
   clip-path: inset(24px 0 90px 0);
   animation: glitch-anim-2 3s infinite linear alternate-reverse;
 }
 .glitch-text::after {
   left: -2px;
-  text-shadow: -1px 0 var(--void-blue);
+  text-shadow: -1px 0 var(--color-void-blue);
   clip-path: inset(85px 0 140px 0);
   animation: glitch-anim 2.5s infinite linear alternate-reverse;
 }
@@ -671,8 +702,8 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
   background-image: repeating-linear-gradient(
     transparent,
     transparent 3px,
-    var(--void-black) 3px,
-    var(--void-black) 4px
+    var(--color-void-black) 3px,
+    var(--color-void-black) 4px
   );
 }
 
@@ -680,11 +711,11 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
   width: 6px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: var(--void-black);
-  border-left: 1px solid var(--toxic-green-20);
+  background: var(--color-void-black);
+  border-left: 1px solid var(--color-toxic-green-20);
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--toxic-green);
+  background: var(--color-toxic-green);
 }
 
 .font-script {

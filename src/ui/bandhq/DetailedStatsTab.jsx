@@ -19,18 +19,16 @@ const CHAR_MAP = Object.fromEntries(
 
 const DetailRow = ({ label, value, subtext, locked, className = '' }) => (
   <div
-    className={`flex justify-between items-center py-1 border-b border-(--ash-gray)/20 font-mono text-sm ${locked ? 'opacity-40 grayscale' : ''} ${className}`}
+    className={`flex justify-between items-center py-1 border-b border-ash-gray/20 font-mono text-sm ${locked ? 'opacity-40 grayscale' : ''} ${className}`}
   >
-    <span className='text-(--ash-gray)'>{label}</span>
+    <span className='text-ash-gray'>{label}</span>
     <div className='text-right'>
       <div
-        className={`font-bold ${locked ? 'text-(--ash-gray)' : 'text-(--star-white)'}`}
+        className={`font-bold ${locked ? 'text-ash-gray' : 'text-star-white'}`}
       >
         {value}
       </div>
-      {subtext && (
-        <div className='text-[10px] text-(--ash-gray)/60'>{subtext}</div>
-      )}
+      {subtext && <div className='text-[10px] text-ash-gray/60'>{subtext}</div>}
     </div>
   </div>
 )
@@ -101,7 +99,7 @@ const CareerOverviewSection = ({ player, t }) => {
           label={t('ui:detailedStats.mode.label')}
           value={t('ui:detailedStats.mode.proveYourself')}
           subtext={t('ui:detailedStats.mode.restrictions')}
-          className='bg-(--toxic-green)/10'
+          className='bg-toxic-green/10'
         />
       )}
     </Panel>
@@ -155,8 +153,8 @@ const SocialReachSection = ({ social, t }) => {
         locked={!social.viral}
       />
 
-      <div className='mt-2 border-t border-(--ash-gray)/20 pt-2'>
-        <div className='text-xs text-(--ash-gray) mb-1 font-bold italic tracking-tighter'>
+      <div className='mt-2 border-t border-ash-gray/20 pt-2'>
+        <div className='text-xs text-ash-gray mb-1 font-bold italic tracking-tighter'>
           {t('ui:stats.socialDynamics', {
             defaultValue: 'SOCIAL DYNAMICS'
           })}
@@ -193,8 +191,8 @@ const SocialReachSection = ({ social, t }) => {
         />
       </div>
 
-      <div className='mt-2 border-t border-(--ash-gray)/20 pt-2'>
-        <div className='text-xs text-(--ash-gray) mb-1 font-bold'>
+      <div className='mt-2 border-t border-ash-gray/20 pt-2'>
+        <div className='text-xs text-ash-gray mb-1 font-bold'>
           {t('ui:stats.advancedMetrics', {
             defaultValue: 'Advanced Metrics'
           })}
@@ -234,14 +232,14 @@ const VanConditionSection = ({ player, t }) => (
         label={t('ui:stats.fuel', { defaultValue: 'Fuel' })}
         value={player.van?.fuel}
         max={100}
-        color='bg-(--fuel-yellow)'
+        color='bg-fuel-yellow'
         size='sm'
       />
       <ProgressBar
         label={t('ui:stats.condition', { defaultValue: 'Condition' })}
         value={player.van?.condition}
         max={100}
-        color='bg-(--condition-blue)'
+        color='bg-condition-blue'
         size='sm'
       />
     </div>
@@ -273,7 +271,7 @@ const RegionalStandingSection = ({ reputationByRegion, venueBlacklist, t }) => (
     })}
   >
     {Object.keys(reputationByRegion).length === 0 ? (
-      <div className='text-xs text-(--ash-gray) italic py-4 text-center'>
+      <div className='text-xs text-ash-gray italic py-4 text-center'>
         {t('ui:detailedStats.noRegionalData', {
           defaultValue: 'No regional data yet. Play gigs to build reputation.'
         })}
@@ -297,13 +295,13 @@ const RegionalStandingSection = ({ reputationByRegion, venueBlacklist, t }) => (
       </div>
     )}
     {venueBlacklist.length > 0 && (
-      <div className='mt-2 pt-2 border-t border-(--ash-gray)/20'>
-        <div className='text-[10px] text-(--ash-gray) mb-1 uppercase tracking-widest'>
+      <div className='mt-2 pt-2 border-t border-ash-gray/20'>
+        <div className='text-[10px] text-ash-gray mb-1 uppercase tracking-widest'>
           {t('ui:detailedStats.blacklistedVenues', {
             defaultValue: 'Blacklisted Venues'
           })}
         </div>
-        <div className='text-xs text-(--toxic-green) font-mono italic'>
+        <div className='text-xs text-toxic-green font-mono italic'>
           {venueBlacklist.map(v => translateLocation(t, v, v)).join(', ')}
         </div>
       </div>
@@ -314,7 +312,7 @@ const RegionalStandingSection = ({ reputationByRegion, venueBlacklist, t }) => (
 const ActiveQuestsSection = ({ activeQuests, t }) => (
   <Panel title={t('ui:stats.active_quests', { defaultValue: 'Active Quests' })}>
     {activeQuests.length === 0 ? (
-      <div className='text-xs text-(--ash-gray) italic py-4 text-center'>
+      <div className='text-xs text-ash-gray italic py-4 text-center'>
         {t('ui:detailedStats.noActiveQuests', {
           defaultValue: 'No active quests. Stay toxic to trigger events.'
         })}
@@ -324,18 +322,18 @@ const ActiveQuestsSection = ({ activeQuests, t }) => (
         {activeQuests.map(q => (
           <div
             key={q.id}
-            className='space-y-1 border-b border-(--ash-gray)/10 pb-2 last:border-0'
+            className='space-y-1 border-b border-ash-gray/10 pb-2 last:border-0'
           >
             <div className='flex justify-between items-center text-xs'>
-              <span className='font-bold text-(--star-white)'>{q.label}</span>
-              <span className='text-(--ash-gray)'>
+              <span className='font-bold text-star-white'>{q.label}</span>
+              <span className='text-ash-gray'>
                 {t('ui:ui.day', { defaultValue: 'Day' })} {q.deadline}
               </span>
             </div>
             <ProgressBar
               value={q.progress}
               max={q.required}
-              color='bg-(--toxic-green)'
+              color='bg-toxic-green'
               size='mini'
               showValue
             />
@@ -353,7 +351,7 @@ const BandMetricsSection = ({ band, social, t }) => (
         label={t('ui:stats.harmony', { defaultValue: 'Harmony' })}
         value={band.harmony}
         max={100}
-        color='bg-(--toxic-green)'
+        color='bg-toxic-green'
       />
     </div>
     <DetailRow
@@ -378,11 +376,11 @@ const BandMetricsSection = ({ band, social, t }) => (
         subtext={t('ui:detailedStats.harmonyDrain', {
           defaultValue: 'Harmony Drain Active'
         })}
-        className='bg-(--mood-pink)/10'
+        className='bg-mood-pink/10'
       />
     )}
-    <div className='mt-2 border-t border-(--ash-gray)/20 pt-2'>
-      <div className='text-xs text-(--ash-gray) mb-1 font-bold'>
+    <div className='mt-2 border-t border-ash-gray/20 pt-2'>
+      <div className='text-xs text-ash-gray mb-1 font-bold'>
         {t('ui:detailedStats.perfModifiers', {
           defaultValue: 'Performance Modifiers'
         })}
@@ -441,7 +439,7 @@ const MemberTraits = ({ member, t }) => {
   const potentialTraits = def?.traits || []
   if (potentialTraits.length === 0)
     return (
-      <div className='text-xs text-(--ash-gray)'>
+      <div className='text-xs text-ash-gray'>
         {t('ui:detailedStats.none', { defaultValue: 'None' })}
       </div>
     )
@@ -463,7 +461,7 @@ const MemberTraits = ({ member, t }) => {
               {t(trait.desc, { defaultValue: trait.desc })}
             </div>
             {!isTraitActive && (
-              <div className='text-(--ash-gray) italic border-t border-(--ash-gray)/30 pt-1'>
+              <div className='text-ash-gray italic border-t border-ash-gray/30 pt-1'>
                 {t('ui:detailedStats.toUnlock', {
                   defaultValue: 'To Unlock'
                 })}
@@ -474,13 +472,13 @@ const MemberTraits = ({ member, t }) => {
         }
       >
         <div
-          className={`w-full text-xs flex justify-between items-center ${isTraitActive ? 'text-(--toxic-green)' : 'text-(--ash-gray) opacity-50'}`}
+          className={`w-full text-xs flex justify-between items-center ${isTraitActive ? 'text-toxic-green' : 'text-ash-gray opacity-50'}`}
         >
-          <span className='underline decoration-dotted decoration-(--ash-gray)/50 cursor-help'>
+          <span className='underline decoration-dotted decoration-ash-gray/50 cursor-help'>
             {t(trait.name, { defaultValue: trait.name })}
           </span>
           {isTraitActive ? (
-            <span className='text-[10px] uppercase border border-(--toxic-green) px-1 rounded'>
+            <span className='text-[10px] uppercase border border-toxic-green px-1 rounded'>
               {t('ui:detailedStats.active', { defaultValue: 'Active' })}
             </span>
           ) : (
@@ -497,7 +495,7 @@ const MemberTraits = ({ member, t }) => {
 const MemberEquipment = ({ member, t }) => {
   if (!member.equipment) {
     return (
-      <div className='text-xs text-(--ash-gray)/50'>
+      <div className='text-xs text-ash-gray/50'>
         {t('ui:detailedStats.standardGear', {
           defaultValue: 'Standard Gear'
         })}
@@ -506,21 +504,18 @@ const MemberEquipment = ({ member, t }) => {
   }
 
   return Object.entries(member.equipment).map(([k, v]) => (
-    <div
-      key={k}
-      className='text-xs text-(--star-white)/80 flex justify-between'
-    >
-      <span className='capitalize text-(--ash-gray)'>{k}:</span>
+    <div key={k} className='text-xs text-star-white/80 flex justify-between'>
+      <span className='capitalize text-ash-gray'>{k}:</span>
       <span>{String(v)}</span>
     </div>
   ))
 }
 
 const MemberCard = ({ member, t }) => (
-  <div className='bg-(--void-black)/60 border border-(--ash-gray) p-4'>
+  <div className='bg-void-black/60 border border-ash-gray p-4'>
     <div className='flex justify-between items-baseline mb-4'>
-      <h4 className='text-lg font-bold text-(--toxic-green)'>{member.name}</h4>
-      <span className='text-xs text-(--ash-gray) uppercase'>
+      <h4 className='text-lg font-bold text-toxic-green'>{member.name}</h4>
+      <span className='text-xs text-ash-gray uppercase'>
         {member.role ||
           t('ui:detailedStats.member', { defaultValue: 'Member' })}
       </span>
@@ -533,20 +528,20 @@ const MemberCard = ({ member, t }) => (
         })}
         value={member.stamina}
         max={100}
-        color='bg-(--stamina-green)'
+        color='bg-stamina-green'
         size='sm'
       />
       <ProgressBar
         label={t('ui:detailedStats.mood', { defaultValue: 'Mood' })}
         value={member.mood}
         max={100}
-        color='bg-(--mood-pink)'
+        color='bg-mood-pink'
         size='sm'
       />
     </div>
 
     <div className='space-y-1 text-sm'>
-      <div className='font-bold text-(--ash-gray) text-xs mb-1 uppercase tracking-wider'>
+      <div className='font-bold text-ash-gray text-xs mb-1 uppercase tracking-wider'>
         {t('ui:detailedStats.skills', { defaultValue: 'Skills' })}
       </div>
       <DetailRow
@@ -585,8 +580,8 @@ const MemberCard = ({ member, t }) => (
       />
     </div>
 
-    <div className='mt-4 pt-2 border-t border-(--ash-gray)/30'>
-      <div className='font-bold text-(--ash-gray) text-xs mb-1 uppercase tracking-wider'>
+    <div className='mt-4 pt-2 border-t border-ash-gray/30'>
+      <div className='font-bold text-ash-gray text-xs mb-1 uppercase tracking-wider'>
         {t('ui:detailedStats.traits', { defaultValue: 'Traits' })}
       </div>
       <div className='space-y-1'>
@@ -594,8 +589,8 @@ const MemberCard = ({ member, t }) => (
       </div>
     </div>
 
-    <div className='mt-2 pt-2 border-t border-(--ash-gray)/30'>
-      <div className='font-bold text-(--ash-gray) text-xs mb-1 uppercase tracking-wider'>
+    <div className='mt-2 pt-2 border-t border-ash-gray/30'>
+      <div className='font-bold text-ash-gray text-xs mb-1 uppercase tracking-wider'>
         {t('ui:detailedStats.equipment', {
           defaultValue: 'Equipment'
         })}
@@ -607,7 +602,7 @@ const MemberCard = ({ member, t }) => (
 
 const BandMembersSection = ({ members, t }) => (
   <div className='space-y-4'>
-    <h3 className='text-xl text-(--star-white) font-(family-name:--font-display) border-b border-(--toxic-green) pb-2'>
+    <h3 className='text-xl text-star-white font-(family-name:--font-display) border-b border-toxic-green pb-2'>
       {t('ui:detailedStats.bandMembers', { defaultValue: 'BAND MEMBERS' })}
     </h3>
     <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>

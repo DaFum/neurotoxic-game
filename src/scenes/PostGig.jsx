@@ -45,8 +45,8 @@ export const PostGig = () => {
   } = usePostGigLogic()
   if (!financials)
     return (
-      <div className='w-full h-full flex flex-col items-center justify-center bg-(--void-black)'>
-        <div className="text-3xl text-(--toxic-green) font-['Metal_Mania'] animate-pulse tracking-widest">
+      <div className='w-full h-full flex flex-col items-center justify-center bg-void-black'>
+        <div className="text-3xl text-toxic-green font-['Metal_Mania'] animate-pulse tracking-widest">
           {t('ui:postGig.tallyingReceipts', {
             defaultValue: 'TALLYING RECEIPTS...'
           })}
@@ -55,7 +55,7 @@ export const PostGig = () => {
     )
 
   return (
-    <div className='w-full h-full flex flex-col items-center justify-center p-8 bg-(--void-black) text-(--star-white) relative'>
+    <div className='w-full h-full flex flex-col items-center justify-center p-8 bg-void-black text-star-white relative'>
       <div
         className='absolute inset-0 opacity-20 bg-cover bg-center'
         style={{
@@ -66,15 +66,15 @@ export const PostGig = () => {
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className='max-w-4xl w-full border-4 border-(--toxic-green) p-8 bg-(--void-black) relative z-10 shadow-[0_0_50px_var(--toxic-green-glow)] flex flex-col gap-6'
+        className='max-w-4xl w-full border-4 border-toxic-green p-8 bg-void-black relative z-10 shadow-[0_0_50px_var(--color-toxic-green-glow)] flex flex-col gap-6'
       >
-        <h2 className="text-5xl text-center font-['Metal_Mania'] text-(--toxic-green) mb-2 text-shadow-[0_0_10px_var(--toxic-green)]">
+        <h2 className="text-5xl text-center font-['Metal_Mania'] text-toxic-green mb-2 text-shadow-[0_0_10px_var(--color-toxic-green)]">
           {t(phaseTitleKey, { defaultValue: phaseTitleDefault })}
         </h2>
 
         <Suspense
           fallback={
-            <div className="text-(--toxic-green) font-['Metal_Mania'] text-xl animate-pulse text-center">
+            <div className="text-toxic-green font-['Metal_Mania'] text-xl animate-pulse text-center">
               {t('ui:loading', 'LOADING...')}
             </div>
           }

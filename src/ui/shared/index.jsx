@@ -77,21 +77,19 @@ export const StatBox = memo(function StatBox({
 }) {
   return (
     <div
-      className={`relative bg-(--void-black) p-3 flex flex-col items-center justify-center border border-(--ash-gray) group overflow-hidden ${className}`}
+      className={`relative bg-void-black p-3 flex flex-col items-center justify-center border border-ash-gray group overflow-hidden ${className}`}
     >
-      <UIFrameCorner className='absolute top-0 left-0 w-3 h-3 text-(--ash-gray) opacity-30 transition-opacity group-hover:opacity-60' />
-      <UIFrameCorner className='absolute top-0 right-0 w-3 h-3 text-(--ash-gray) rotate-90 opacity-30 transition-opacity group-hover:opacity-60' />
-      <UIFrameCorner className='absolute bottom-0 right-0 w-3 h-3 text-(--ash-gray) rotate-180 opacity-30 transition-opacity group-hover:opacity-60' />
-      <UIFrameCorner className='absolute bottom-0 left-0 w-3 h-3 text-(--ash-gray) -rotate-90 opacity-30 transition-opacity group-hover:opacity-60' />
+      <UIFrameCorner className='absolute top-0 left-0 w-3 h-3 text-ash-gray opacity-30 transition-opacity group-hover:opacity-60' />
+      <UIFrameCorner className='absolute top-0 right-0 w-3 h-3 text-ash-gray rotate-90 opacity-30 transition-opacity group-hover:opacity-60' />
+      <UIFrameCorner className='absolute bottom-0 right-0 w-3 h-3 text-ash-gray rotate-180 opacity-30 transition-opacity group-hover:opacity-60' />
+      <UIFrameCorner className='absolute bottom-0 left-0 w-3 h-3 text-ash-gray -rotate-90 opacity-30 transition-opacity group-hover:opacity-60' />
 
       <div className='relative z-10 flex flex-col items-center'>
-        <div className='text-2xl mb-1 text-(--toxic-green)'>{icon}</div>
-        <div className='text-xl font-bold text-(--star-white) font-mono'>
+        <div className='text-2xl mb-1 text-toxic-green'>{icon}</div>
+        <div className='text-xl font-bold text-star-white font-mono'>
           {value}
         </div>
-        <div className='text-xs text-(--ash-gray) uppercase font-mono'>
-          {label}
-        </div>
+        <div className='text-xs text-ash-gray uppercase font-mono'>{label}</div>
       </div>
     </div>
   )
@@ -150,19 +148,17 @@ export const ProgressBar = memo(function ProgressBar({
     >
       {!isMini && (label || showValue) && (
         <div className='flex justify-between text-xs mb-1 font-mono'>
-          {label && <span className='text-(--ash-gray)'>{label}</span>}
+          {label && <span className='text-ash-gray'>{label}</span>}
           {showValue && (
-            <span className='text-(--ash-gray)'>
+            <span className='text-ash-gray'>
               {Math.round(safeValue)}/{max}
             </span>
           )}
         </div>
       )}
       <div
-        className={`w-full bg-(--void-black) border ${
-          isMini
-            ? 'border-(--ash-gray)/50 overflow-hidden'
-            : 'border-(--ash-gray)'
+        className={`w-full bg-void-black border ${
+          isMini ? 'border-ash-gray/50 overflow-hidden' : 'border-ash-gray'
         } ${SIZE_CLASSES[size] || SIZE_CLASSES.mini}`}
       >
         <div
@@ -201,17 +197,17 @@ export const Panel = memo(function Panel({
 }) {
   return (
     <div
-      className={`relative bg-(--void-black)/40 border-2 border-(--ash-gray)/40 p-4 group overflow-hidden ${className}`}
+      className={`relative bg-void-black/40 border-2 border-ash-gray/40 p-4 group overflow-hidden ${className}`}
     >
       {/* Brutalist Frame Corners */}
-      <UIFrameCorner className='absolute top-0 left-0 w-6 h-6 text-(--ash-gray) opacity-30 transition-opacity group-hover:opacity-60' />
-      <UIFrameCorner className='absolute top-0 right-0 w-6 h-6 text-(--ash-gray) rotate-90 opacity-30 transition-opacity group-hover:opacity-60' />
-      <UIFrameCorner className='absolute bottom-0 right-0 w-6 h-6 text-(--ash-gray) rotate-180 opacity-30 transition-opacity group-hover:opacity-60' />
-      <UIFrameCorner className='absolute bottom-0 left-0 w-6 h-6 text-(--ash-gray) -rotate-90 opacity-30 transition-opacity group-hover:opacity-60' />
+      <UIFrameCorner className='absolute top-0 left-0 w-6 h-6 text-ash-gray opacity-30 transition-opacity group-hover:opacity-60' />
+      <UIFrameCorner className='absolute top-0 right-0 w-6 h-6 text-ash-gray rotate-90 opacity-30 transition-opacity group-hover:opacity-60' />
+      <UIFrameCorner className='absolute bottom-0 right-0 w-6 h-6 text-ash-gray rotate-180 opacity-30 transition-opacity group-hover:opacity-60' />
+      <UIFrameCorner className='absolute bottom-0 left-0 w-6 h-6 text-ash-gray -rotate-90 opacity-30 transition-opacity group-hover:opacity-60' />
 
       <div className='relative z-10 flex-1 min-h-0 flex flex-col'>
         {title && (
-          <h3 className='text-(--toxic-green) text-sm font-bold mb-3 border-b border-(--ash-gray)/40 pb-1 font-mono uppercase tracking-wider'>
+          <h3 className='text-toxic-green text-sm font-bold mb-3 border-b border-ash-gray/40 pb-1 font-mono uppercase tracking-wider'>
             {title}
           </h3>
         )}

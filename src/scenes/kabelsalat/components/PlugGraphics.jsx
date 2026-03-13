@@ -9,7 +9,7 @@ export const PlugGraphics = ({ type }) => {
             width='30'
             height='35'
             rx='3'
-            fill='var(--void-black)'
+            fill='var(--color-void-black)'
             stroke='currentColor'
             strokeWidth='2'
           />
@@ -26,7 +26,7 @@ export const PlugGraphics = ({ type }) => {
             y='-20'
             width='16'
             height='20'
-            fill='var(--void-black)'
+            fill='var(--color-void-black)'
             stroke='currentColor'
             strokeWidth='2'
           />
@@ -36,7 +36,7 @@ export const PlugGraphics = ({ type }) => {
             y1='-30'
             x2='3'
             y2='-30'
-            stroke='var(--void-black)'
+            stroke='var(--color-void-black)'
             strokeWidth='1'
           />
           <line
@@ -44,7 +44,7 @@ export const PlugGraphics = ({ type }) => {
             y1='-38'
             x2='2'
             y2='-38'
-            stroke='var(--void-black)'
+            stroke='var(--color-void-black)'
             strokeWidth='1'
           />
         </g>
@@ -58,7 +58,7 @@ export const PlugGraphics = ({ type }) => {
             width='20'
             height='15'
             rx='2'
-            fill='var(--void-black)'
+            fill='var(--color-void-black)'
             stroke='currentColor'
             strokeWidth='2'
           />
@@ -68,7 +68,7 @@ export const PlugGraphics = ({ type }) => {
             y1='-30'
             x2='2'
             y2='-30'
-            stroke='var(--void-black)'
+            stroke='var(--color-void-black)'
             strokeWidth='2'
           />
         </g>
@@ -78,7 +78,7 @@ export const PlugGraphics = ({ type }) => {
         <g>
           <path
             d='M -18 -15 L 18 -15 L 14 -35 L -14 -35 Z'
-            fill='var(--void-black)'
+            fill='var(--color-void-black)'
             stroke='currentColor'
             strokeWidth='2'
             strokeLinejoin='round'
@@ -95,7 +95,7 @@ export const PlugGraphics = ({ type }) => {
             cx='0'
             cy='-20'
             r='16'
-            fill='var(--void-black)'
+            fill='var(--color-void-black)'
             stroke='currentColor'
             strokeWidth='2'
           />

@@ -251,7 +251,7 @@ export const MainMenu = () => {
   }, [handleLoad])
 
   return (
-    <div className='flex flex-col items-center justify-center h-full w-full bg-(--void-black) z-50 relative overflow-hidden'>
+    <div className='flex flex-col items-center justify-center h-full w-full bg-void-black z-50 relative overflow-hidden'>
       {showExistingSavePrompt && (
         <Modal
           isOpen={true}
@@ -259,19 +259,19 @@ export const MainMenu = () => {
           onClose={() => setShowExistingSavePrompt(false)}
         >
           <div className='flex flex-col gap-4'>
-            <p className='text-(--ash-gray) font-mono text-sm'>
+            <p className='text-ash-gray font-mono text-sm'>
               {t('ui:mainMenu.existingSave.desc')}
             </p>
             <div className='flex gap-2 justify-end'>
               <GlitchButton
                 onClick={handleLoadExistingFromPrompt}
-                className='border-(--toxic-green) text-(--toxic-green)'
+                className='border-toxic-green text-toxic-green'
               >
                 {t('ui:mainMenu.existingSave.load')}
               </GlitchButton>
               <GlitchButton
                 onClick={handleStartNewAnyway}
-                className='border-(--blood-red) text-(--blood-red)'
+                className='border-blood-red text-blood-red'
               >
                 {t('ui:mainMenu.existingSave.startNew')}
               </GlitchButton>
@@ -289,7 +289,7 @@ export const MainMenu = () => {
           aria-label={t('ui:identity_required')}
         >
           <div className='flex flex-col gap-4'>
-            <p className='text-(--ash-gray) font-mono text-sm'>
+            <p className='text-ash-gray font-mono text-sm'>
               {t('ui:enter_alias_desc')}
             </p>
             <input
@@ -298,7 +298,7 @@ export const MainMenu = () => {
               value={playerNameInput}
               onChange={e => setPlayerNameInput(e.target.value)}
               placeholder={t('ui:enter_name_placeholder')}
-              className='bg-(--void-black) border border-(--toxic-green) p-2 text-(--toxic-green) font-mono text-lg focus:outline-none focus:ring-1 focus:ring-(--toxic-green) uppercase'
+              className='bg-void-black border border-toxic-green p-2 text-toxic-green font-mono text-lg focus:outline-none focus:ring-1 focus:ring-toxic-green uppercase'
               maxLength={20}
               onKeyDown={e => e.key === 'Enter' && handleNameSubmit()}
               aria-label={t('ui:enter_alias_desc')}
@@ -326,8 +326,8 @@ export const MainMenu = () => {
           initial={{ scale: 0.8, opacity: 0, y: -20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="text-6xl md:text-9xl text-center text-transparent bg-clip-text bg-gradient-to-b from-(--toxic-green) to-(--toxic-green-dark) font-['Metal_Mania'] animate-neon-flicker mb-2"
-          style={{ WebkitTextStroke: '2px var(--toxic-green)' }}
+          className="text-6xl md:text-9xl text-center text-transparent bg-clip-text bg-gradient-to-b from-toxic-green to-toxic-green-dark font-['Metal_Mania'] animate-neon-flicker mb-2"
+          style={{ WebkitTextStroke: '2px var(--color-toxic-green)' }}
         >
           NEUROTOXIC
         </motion.h1>
@@ -335,7 +335,7 @@ export const MainMenu = () => {
         <AnimatedDivider
           width='100%'
           transition={{ duration: 0.6, delay: 0.4 }}
-          className='bg-gradient-to-r from-transparent via-(--toxic-green) to-transparent mb-4 max-w-md'
+          className='bg-gradient-to-r from-transparent via-toxic-green to-transparent mb-4 max-w-md'
         />
 
         {/* jscpd:ignore-start */}
@@ -343,7 +343,7 @@ export const MainMenu = () => {
           initial={{ opacity: 0, letterSpacing: '0.5em' }}
           animate={{ opacity: 1, letterSpacing: '0.3em' }}
           transition={{ duration: 1, delay: 0.6 }}
-          className='text-lg md:text-2xl text-(--toxic-green)/80 mb-2 font-[Courier_New] text-center'
+          className='text-lg md:text-2xl text-toxic-green/80 mb-2 font-[Courier_New] text-center'
         >
           {t('ui:mainMenu.subtitle.grindTheVoid')}
         </AnimatedSubtitle>
@@ -352,7 +352,7 @@ export const MainMenu = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}
-          className='mb-10 px-3 py-1 border border-(--toxic-green)/30 text-[10px] font-mono text-(--toxic-green)/60 tracking-widest'
+          className='mb-10 px-3 py-1 border border-toxic-green/30 text-[10px] font-mono text-toxic-green/60 tracking-widest'
         >
           v3.0 // EARLY ACCESS
         </motion.div>
@@ -375,14 +375,14 @@ export const MainMenu = () => {
           <GlitchButton
             onClick={handleLoad}
             isLoading={isLoadingGame}
-            className='relative z-20 border-(--blood-red) text-(--blood-red) hover:bg-(--blood-red) hover:shadow-[4px_4px_0px_var(--toxic-green)]'
+            className='relative z-20 border-blood-red text-blood-red hover:bg-blood-red hover:shadow-[4px_4px_0px_var(--color-toxic-green)]'
           >
             {t('ui:load_game')}
           </GlitchButton>
 
           <GlitchButton
             onClick={openHQ}
-            className='relative z-20 border-(--warning-yellow) text-(--warning-yellow) hover:bg-(--warning-yellow) hover:shadow-[4px_4px_0px_var(--toxic-green)]'
+            className='relative z-20 border-warning-yellow text-warning-yellow hover:bg-warning-yellow hover:shadow-[4px_4px_0px_var(--color-toxic-green)]'
           >
             {t('ui:band_hq')}
           </GlitchButton>
@@ -417,15 +417,15 @@ export const MainMenu = () => {
           <div className='flex flex-col gap-6 w-full mx-auto max-h-[80vh] overflow-y-auto overflow-x-hidden custom-scrollbar pr-2 sm:pr-4 pb-4'>
             {t('ui:featureList', { returnObjects: true }).map(section => (
               <div key={section.title} className='flex flex-col gap-2'>
-                <h3 className='text-(--toxic-green) font-mono text-xl md:text-2xl uppercase tracking-widest border-b border-(--toxic-green)/30 pb-1'>
+                <h3 className='text-toxic-green font-mono text-xl md:text-2xl uppercase tracking-widest border-b border-toxic-green/30 pb-1'>
                   {t(section.title)}
                 </h3>
-                <p className='text-(--ash-gray) font-mono text-sm md:text-base leading-relaxed mb-2'>
+                <p className='text-ash-gray font-mono text-sm md:text-base leading-relaxed mb-2'>
                   {t(section.description)}
                 </p>
 
                 {section.type === 'bullets' && section.items && (
-                  <ul className='list-none flex flex-col gap-2 pl-2 border-l border-(--toxic-green)/20'>
+                  <ul className='list-none flex flex-col gap-2 pl-2 border-l border-toxic-green/20'>
                     {section.items.map(item => {
                       const translatedItem = t(item)
                       const splitIdx = translatedItem.indexOf(':')
@@ -433,9 +433,9 @@ export const MainMenu = () => {
                         return (
                           <li
                             key={item}
-                            className='text-(--ash-gray) font-mono text-sm md:text-base pl-2 relative before:content-["-"] before:absolute before:left-[-8px] before:text-(--toxic-green)'
+                            className='text-ash-gray font-mono text-sm md:text-base pl-2 relative before:content-["-"] before:absolute before:left-[-8px] before:text-toxic-green'
                           >
-                            <span className='text-(--toxic-green) font-bold'>
+                            <span className='text-toxic-green font-bold'>
                               {translatedItem.substring(0, splitIdx + 1)}
                             </span>
                             {translatedItem.substring(splitIdx + 1)}
@@ -445,7 +445,7 @@ export const MainMenu = () => {
                       return (
                         <li
                           key={item}
-                          className='text-(--ash-gray) font-mono text-sm md:text-base pl-2 relative before:content-["-"] before:absolute before:left-[-8px] before:text-(--toxic-green)'
+                          className='text-ash-gray font-mono text-sm md:text-base pl-2 relative before:content-["-"] before:absolute before:left-[-8px] before:text-toxic-green'
                         >
                           {translatedItem}
                         </li>
@@ -457,14 +457,14 @@ export const MainMenu = () => {
                 {section.type === 'table' &&
                   section.headers &&
                   section.rows && (
-                    <div className='overflow-x-auto w-full border border-(--toxic-green)/30 bg-(--void-black)/50'>
+                    <div className='overflow-x-auto w-full border border-toxic-green/30 bg-void-black/50'>
                       <table className='w-full text-left font-mono text-sm'>
-                        <thead className='bg-(--toxic-green)/10 border-b border-(--toxic-green)/30'>
+                        <thead className='bg-toxic-green/10 border-b border-toxic-green/30'>
                           <tr>
                             {section.headers.map(header => (
                               <th
                                 key={header}
-                                className='p-2 text-(--toxic-green) uppercase font-normal'
+                                className='p-2 text-toxic-green uppercase font-normal'
                               >
                                 {t(header)}
                               </th>
@@ -475,12 +475,12 @@ export const MainMenu = () => {
                           {section.rows.map(row => (
                             <tr
                               key={row[0]}
-                              className='border-b border-(--toxic-green)/10 last:border-0'
+                              className='border-b border-toxic-green/10 last:border-0'
                             >
                               {row.map(cell => (
                                 <td
                                   key={cell}
-                                  className={`p-2 ${cell === row[0] ? 'text-(--toxic-green)/90 whitespace-nowrap align-top font-bold' : 'text-(--ash-gray) align-top'}`}
+                                  className={`p-2 ${cell === row[0] ? 'text-toxic-green/90 whitespace-nowrap align-top font-bold' : 'text-ash-gray align-top'}`}
                                 >
                                   {t(cell)}
                                 </td>
@@ -563,8 +563,8 @@ export const MainMenu = () => {
         transition={{ delay: 1.5 }}
         className='absolute bottom-6 flex flex-col items-center gap-1 z-10'
       >
-        <div className='w-32 h-[1px] bg-gradient-to-r from-transparent via-(--ash-gray)/50 to-transparent' />
-        <div className='text-(--ash-gray)/60 text-[10px] font-mono tracking-widest'>
+        <div className='w-32 h-[1px] bg-gradient-to-r from-transparent via-ash-gray/50 to-transparent' />
+        <div className='text-ash-gray/60 text-[10px] font-mono tracking-widest'>
           © 2026 NEUROTOXIC // DEATH GRINDCORE FROM STENDAL
         </div>
       </motion.div>

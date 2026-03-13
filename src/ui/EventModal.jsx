@@ -54,7 +54,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
       className={`fixed inset-0 z-[100] flex items-center justify-center p-4 ${className}`}
     >
       {/* Backdrop */}
-      <div className='absolute inset-0 bg-(--void-black)/80 backdrop-blur-sm'></div>
+      <div className='absolute inset-0 bg-void-black/80 backdrop-blur-sm'></div>
       {/* Scanline FX on background */}
       <div
         className='absolute inset-0 pointer-events-none opacity-20'
@@ -68,29 +68,29 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
       <motion.div
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        className='relative w-full max-w-lg border-2 border-(--toxic-green) bg-(--void-black) shadow-[0_0_40px_var(--toxic-green-glow)] animate-[glitch-anim_0.2s_ease-in-out]'
+        className='relative w-full max-w-lg border-2 border-toxic-green bg-void-black shadow-[0_0_40px_var(--color-toxic-green-glow)] animate-[glitch-anim_0.2s_ease-in-out]'
       >
         {/* Hardware details */}
-        <div className='absolute top-0 left-0 w-full h-1 bg-(--toxic-green)'></div>
-        <div className='absolute top-0 left-2 px-2 h-4 bg-(--toxic-green) text-(--void-black) text-[10px] font-bold text-center leading-4 uppercase'>
+        <div className='absolute top-0 left-0 w-full h-1 bg-toxic-green'></div>
+        <div className='absolute top-0 left-2 px-2 h-4 bg-toxic-green text-void-black text-[10px] font-bold text-center leading-4 uppercase'>
           {t('ui:event.severity.critical')}
         </div>
 
         <div className='p-8 flex flex-col gap-6'>
-          <div className='flex items-start gap-4 border-b border-(--toxic-green)/30 pb-6'>
+          <div className='flex items-start gap-4 border-b border-toxic-green/30 pb-6'>
             {event.category === 'special' ? (
-              <VoidSkullIcon className='w-12 h-12 text-(--toxic-green) animate-pulse shrink-0 mt-1' />
+              <VoidSkullIcon className='w-12 h-12 text-toxic-green animate-pulse shrink-0 mt-1' />
             ) : (
-              <AlertIcon className='w-12 h-12 text-(--toxic-green) animate-pulse shrink-0 mt-1' />
+              <AlertIcon className='w-12 h-12 text-toxic-green animate-pulse shrink-0 mt-1' />
             )}
             <div>
               <h2
                 id='event-title'
-                className='text-2xl font-bold tracking-[0.1em] uppercase text-(--toxic-green)'
+                className='text-2xl font-bold tracking-[0.1em] uppercase text-toxic-green'
               >
                 {t(event.title, event.context)}
               </h2>
-              <p className='mt-2 text-sm opacity-80 leading-relaxed text-(--star-white) font-mono'>
+              <p className='mt-2 text-sm opacity-80 leading-relaxed text-star-white font-mono'>
                 {t(event.description, event.context)}
               </p>
             </div>
@@ -102,8 +102,8 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <div className='p-4 border border-(--toxic-green) bg-(--toxic-green)/5'>
-                <p className='text-(--star-white) font-mono leading-relaxed'>
+              <div className='p-4 border border-toxic-green bg-toxic-green/5'>
+                <p className='text-star-white font-mono leading-relaxed'>
                   {t(
                     outcome.description ||
                       outcome.outcomeText ||
@@ -115,7 +115,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
               <button
                 type='button'
                 onClick={() => onOptionSelect(outcome.option)}
-                className='w-full p-3 border border-(--toxic-green) bg-(--toxic-green)/20 hover:bg-(--toxic-green) hover:text-(--void-black) text-(--toxic-green) font-bold tracking-widest uppercase transition-colors text-center'
+                className='w-full p-3 border border-toxic-green bg-toxic-green/20 hover:bg-toxic-green hover:text-void-black text-toxic-green font-bold tracking-widest uppercase transition-colors text-center'
               >
                 [ {t('ui:continue', { defaultValue: 'CONTINUE' })} ]
               </button>
@@ -123,7 +123,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
           ) : (
             <>
               {/* Keyboard hint */}
-              <p className='text-[10px] text-(--ash-gray) font-mono uppercase tracking-widest text-center'>
+              <p className='text-[10px] text-ash-gray font-mono uppercase tracking-widest text-center'>
                 {t('ui:keyboardHint', { count: event.options.length })}
               </p>
 
@@ -160,7 +160,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
                       }
                     }}
                     className={`w-full p-3 border font-bold tracking-widest uppercase transition-colors text-left flex justify-between
-                      ${index === 0 ? 'border-(--toxic-green) bg-(--toxic-green)/10 hover:bg-(--toxic-green) hover:text-(--void-black) text-(--toxic-green)' : 'border-(--star-white)/50 text-(--star-white)/50 hover:border-(--star-white) hover:text-(--star-white) hover:bg-(--star-white)/10'}
+                      ${index === 0 ? 'border-toxic-green bg-toxic-green/10 hover:bg-toxic-green hover:text-void-black text-toxic-green' : 'border-star-white/50 text-star-white/50 hover:border-star-white hover:text-star-white hover:bg-star-white/10'}
                     `}
                   >
                     <span>
@@ -171,7 +171,7 @@ export const EventModal = ({ event, onOptionSelect, className = '' }) => {
                     <div className='flex flex-col items-end text-right'>
                       {/* Skill check indicator */}
                       {option.skillCheck && (
-                        <span className='inline-block mt-1 text-[10px] text-(--warning-yellow)'>
+                        <span className='inline-block mt-1 text-[10px] text-warning-yellow'>
                           [{'\u2694'} {t('ui:skillCheck')}]
                         </span>
                       )}

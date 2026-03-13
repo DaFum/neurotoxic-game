@@ -80,17 +80,17 @@ export const TutorialManager = () => {
           role='dialog'
           aria-label='Tutorial'
           aria-modal='true'
-          className='fixed bottom-20 left-1/2 transform -translate-x-1/2 z-(--z-tutorial) w-full max-w-md'
+          className='fixed bottom-20 left-1/2 transform -translate-x-1/2 z-z-tutorial w-full max-w-md'
         >
-          <div className='bg-(--void-black)/95 border-2 border-(--toxic-green) p-6 shadow-[0_0_20px_var(--toxic-green)] relative'>
-            <div className='absolute -top-3 left-4 bg-(--void-black) px-2 text-(--toxic-green) font-bold text-xs border border-(--toxic-green)'>
+          <div className='bg-void-black/95 border-2 border-toxic-green p-6 shadow-[0_0_20px_var(--color-toxic-green)] relative'>
+            <div className='absolute -top-3 left-4 bg-void-black px-2 text-toxic-green font-bold text-xs border border-toxic-green'>
               TUTORIAL {step + 1}/{TOTAL_STEPS}
             </div>
 
-            <h3 className='text-xl text-(--star-white) font-[Metal_Mania] mb-2'>
+            <h3 className='text-xl text-star-white font-[Metal_Mania] mb-2'>
               {content.title}
             </h3>
-            <p className='text-(--ash-gray) font-mono text-sm mb-4 leading-relaxed'>
+            <p className='text-ash-gray font-mono text-sm mb-4 leading-relaxed'>
               {content.text}
             </p>
 
@@ -101,10 +101,10 @@ export const TutorialManager = () => {
                   key={stepId}
                   className={`w-2 h-2 transition-colors ${
                     stepId === step
-                      ? 'bg-(--toxic-green)'
+                      ? 'bg-toxic-green'
                       : stepId < step
-                        ? 'bg-(--toxic-green)/40'
-                        : 'bg-(--ash-gray)/30'
+                        ? 'bg-toxic-green/40'
+                        : 'bg-ash-gray/30'
                   }`}
                 />
               ))}
@@ -114,14 +114,14 @@ export const TutorialManager = () => {
               <button
                 type='button'
                 onClick={skipTutorial}
-                className='text-xs text-(--ash-gray) hover:text-(--star-white) underline'
+                className='text-xs text-ash-gray hover:text-star-white underline'
               >
                 SKIP ALL
               </button>
               <button
                 type='button'
                 onClick={completeStep}
-                className='bg-(--toxic-green) text-(--void-black) px-6 py-1.5 font-bold hover:bg-(--star-white) transition-colors'
+                className='bg-toxic-green text-void-black px-6 py-1.5 font-bold hover:bg-star-white transition-colors'
               >
                 {step < TOTAL_STEPS - 1 ? 'NEXT' : 'DONE'}
               </button>

@@ -30,8 +30,8 @@ export const ShopItem = ({
       className={`p-4 border-2 relative flex flex-col justify-between transition-colors
         ${
           isPurchased
-            ? 'border-(--toxic-green) bg-(--toxic-green)/10'
-            : 'border-(--ash-gray) bg-(--void-black)/80'
+            ? 'border-toxic-green bg-toxic-green/10'
+            : 'border-ash-gray bg-void-black/80'
         }`}
     >
       <div>
@@ -39,28 +39,26 @@ export const ShopItem = ({
           <img
             src={getGenImageUrl(IMG_PROMPTS[item.img] || item.name)}
             alt={t(item.name)}
-            className='w-12 h-12 object-contain bg-(--void-black) border-2 border-(--ash-gray)'
+            className='w-12 h-12 object-contain bg-void-black border-2 border-ash-gray'
           />
-          <h4 className='font-bold text-(--toxic-green) leading-tight font-mono uppercase'>
+          <h4 className='font-bold text-toxic-green leading-tight font-mono uppercase'>
             {t(item.name)}
           </h4>
         </div>
-        <p className='text-xs text-(--ash-gray) mb-2 font-mono'>
+        <p className='text-xs text-ash-gray mb-2 font-mono'>
           {item.description ? t(item.description) : ''}
         </p>
       </div>
       <div className='flex justify-between items-center mt-2'>
         <span
           className={`font-mono text-sm font-bold ${
-            item.currency === 'fame'
-              ? 'text-(--warning-yellow)'
-              : 'text-(--star-white)'
+            item.currency === 'fame' ? 'text-warning-yellow' : 'text-star-white'
           }`}
         >
           {adjustedCost !== undefined && adjustedCost < item.cost ? (
             <>
               <span className='line-through opacity-50 mr-2'>{item.cost}</span>
-              <span className='text-(--toxic-green)'>{adjustedCost}</span>
+              <span className='text-toxic-green'>{adjustedCost}</span>
             </>
           ) : adjustedCost !== undefined ? (
             adjustedCost

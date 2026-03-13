@@ -64,7 +64,7 @@ const IntroVideo = lazy(
 
 const SceneLoadingFallback = () => (
   <div className='absolute inset-0 z-30 flex items-center justify-center pointer-events-none'>
-    <div className='border-2 border-(--toxic-green) bg-(--void-black)/90 px-6 py-3 font-mono text-(--toxic-green) tracking-widest uppercase'>
+    <div className='border-2 border-toxic-green bg-void-black/90 px-6 py-3 font-mono text-toxic-green tracking-widest uppercase'>
       Loading Scene...
     </div>
   </div>
@@ -141,9 +141,9 @@ function GameContent() {
   )
 
   return (
-    <div className='game-container relative w-full h-full overflow-hidden bg-(--void-black) text-(--toxic-green)'>
+    <div className='game-container relative w-full h-full overflow-hidden bg-void-black text-toxic-green'>
       {settings.crtEnabled && (
-        <div className='crt-overlay pointer-events-none fixed inset-0 z-(--z-crt) mix-blend-overlay opacity-50' />
+        <div className='crt-overlay pointer-events-none fixed inset-0 z-z-crt mix-blend-overlay opacity-50' />
       )}
 
       {/* Hide HUD in Intro/Menu/Settings/Credits/GameOver */}

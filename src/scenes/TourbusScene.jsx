@@ -37,8 +37,8 @@ export const TourbusScene = () => {
       }
     >
       {/* UI Overlay */}
-      <div className='absolute top-4 left-4 z-30 text-(--star-white) font-mono pointer-events-none'>
-        <h2 className='text-2xl text-(--toxic-green)'>
+      <div className='absolute top-4 left-4 z-30 text-star-white font-mono pointer-events-none'>
+        <h2 className='text-2xl text-toxic-green'>
           {t('minigame:tourbus.title', { defaultValue: 'TOURBUS TERROR' })}
         </h2>
         <div className='mt-2'>
@@ -58,13 +58,13 @@ export const TourbusScene = () => {
         <button
           type='button'
           aria-label='Move Left'
-          className='w-1/2 h-full active:bg-(--star-white)/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green) focus-visible:ring-inset'
+          className='w-1/2 h-full active:bg-star-white/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-inset'
           onClick={actions.moveLeft}
         />
         <button
           type='button'
           aria-label='Move Right'
-          className='w-1/2 h-full active:bg-(--star-white)/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green) focus-visible:ring-inset'
+          className='w-1/2 h-full active:bg-star-white/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-inset'
           onClick={actions.moveRight}
         />
       </div>

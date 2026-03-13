@@ -11,13 +11,13 @@ export const UplinkButton = memo(({ title, url, subtitle, type, Icon }) => {
       rel='noopener noreferrer'
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className='relative w-full block border-2 border-(--toxic-green)/30 bg-(--void-black) hover:border-(--toxic-green) transition-colors duration-100 group overflow-hidden'
+      className='relative w-full block border-2 border-toxic-green/30 bg-void-black hover:border-toxic-green transition-colors duration-100 group overflow-hidden'
     >
       {/* Glitch Background on Hover */}
       {isHovered && (
-        <div className='absolute inset-0 bg-(--toxic-green)/10 z-0'>
+        <div className='absolute inset-0 bg-toxic-green/10 z-0'>
           <div className='absolute inset-0 bg-[linear-gradient(transparent_50%,rgb(var(--void-black-rgb)_/_50%)_50%)] bg-[length:100%_4px] opacity-50'></div>
-          <div className='w-full h-1 bg-(--toxic-green) absolute top-1/2 animate-[scan_0.5s_linear_infinite]'></div>
+          <div className='w-full h-1 bg-toxic-green absolute top-1/2 animate-[scan_0.5s_linear_infinite]'></div>
         </div>
       )}
 
@@ -25,7 +25,7 @@ export const UplinkButton = memo(({ title, url, subtitle, type, Icon }) => {
         {/* Icon Block */}
         <div
           className={`w-12 h-12 sm:w-14 sm:h-14 border-2 flex items-center justify-center shrink-0 transition-colors
-          ${isHovered ? 'border-(--toxic-green) bg-(--toxic-green) text-(--void-black) shadow-[0_0_15px_var(--toxic-green)]' : 'border-(--toxic-green)/50 text-(--toxic-green)'}`}
+          ${isHovered ? 'border-toxic-green bg-toxic-green text-void-black shadow-[0_0_15px_var(--color-toxic-green)]' : 'border-toxic-green/50 text-toxic-green'}`}
         >
           {Icon && <Icon className='w-6 h-6 sm:w-8 sm:h-8 shrink-0' />}
         </div>
@@ -40,7 +40,7 @@ export const UplinkButton = memo(({ title, url, subtitle, type, Icon }) => {
               {title}
             </h2>
             <span
-              className={`text-[8px] sm:text-[9px] tracking-[0.12em] sm:tracking-widest px-2 py-1 border transition-colors whitespace-normal break-words [overflow-wrap:anywhere] max-w-full ${isHovered ? 'border-(--toxic-green) text-(--toxic-green)' : 'border-transparent text-(--toxic-green)/50'}`}
+              className={`text-[8px] sm:text-[9px] tracking-[0.12em] sm:tracking-widest px-2 py-1 border transition-colors whitespace-normal break-words [overflow-wrap:anywhere] max-w-full ${isHovered ? 'border-toxic-green text-toxic-green' : 'border-transparent text-toxic-green/50'}`}
             >
               {type}
             </span>
@@ -52,7 +52,7 @@ export const UplinkButton = memo(({ title, url, subtitle, type, Icon }) => {
 
         {/* External Link Indicator */}
         <div
-          className={`shrink-0 ml-1 sm:ml-4 mt-1 sm:mt-0 transition-transform duration-200 ${isHovered ? 'translate-x-1 text-(--star-white)' : 'text-(--toxic-green)/30'}`}
+          className={`shrink-0 ml-1 sm:ml-4 mt-1 sm:mt-0 transition-transform duration-200 ${isHovered ? 'translate-x-1 text-star-white' : 'text-toxic-green/30'}`}
         >
           <svg
             width='24'
@@ -499,7 +499,7 @@ export const WarningStripe = memo(() => {
           patternTransform='rotate(45)'
         >
           <rect width='10' height='20' fill='currentColor' />
-          <rect x='10' width='10' height='20' fill='var(--void-black)' />
+          <rect x='10' width='10' height='20' fill='var(--color-void-black)' />
         </pattern>
       </defs>
       <rect width='100%' height='100%' fill={`url(#stripes-${patternId})`} />
@@ -650,26 +650,26 @@ export const BrutalToggle = memo(({ label, initialState = false }) => {
   }, [])
 
   return (
-    <div className='flex items-center justify-between w-full max-w-sm border border-(--toxic-green)/30 p-3 bg-(--void-black)'>
+    <div className='flex items-center justify-between w-full max-w-sm border border-toxic-green/30 p-3 bg-void-black'>
       <span className='text-sm font-bold tracking-widest uppercase'>
         {label}
       </span>
       <button
         type='button'
         onClick={toggle}
-        className={`relative w-16 h-8 border-2 border-(--toxic-green) flex items-center p-1 transition-colors duration-75 ${isGlitching ? 'translate-x-[1px] translate-y-[1px]' : ''}`}
+        className={`relative w-16 h-8 border-2 border-toxic-green flex items-center p-1 transition-colors duration-75 ${isGlitching ? 'translate-x-[1px] translate-y-[1px]' : ''}`}
         aria-pressed={isOn}
       >
         <div
-          className={`w-full h-full absolute inset-0 bg-(--toxic-green) transition-opacity duration-150 ${isOn ? 'opacity-20' : 'opacity-0'}`}
+          className={`w-full h-full absolute inset-0 bg-toxic-green transition-opacity duration-150 ${isOn ? 'opacity-20' : 'opacity-0'}`}
         ></div>
         <div
-          className={`w-5 h-full bg-(--toxic-green) transition-transform duration-100 z-10 ${isOn ? 'translate-x-8' : 'translate-x-0'}`}
+          className={`w-5 h-full bg-toxic-green transition-transform duration-100 z-10 ${isOn ? 'translate-x-8' : 'translate-x-0'}`}
         >
-          <div className='w-[2px] h-full bg-(--void-black) mx-auto opacity-50'></div>
+          <div className='w-[2px] h-full bg-void-black mx-auto opacity-50'></div>
         </div>
         <span
-          className={`absolute text-[10px] font-bold z-0 ${isOn ? 'left-2 text-(--toxic-green)' : 'right-2 text-(--toxic-green)/50'}`}
+          className={`absolute text-[10px] font-bold z-0 ${isOn ? 'left-2 text-toxic-green' : 'right-2 text-toxic-green/50'}`}
         >
           {isOn ? t('ui:toggle.on', 'ON') : t('ui:toggle.off', 'OFF')}
         </span>
@@ -698,7 +698,7 @@ export const BlockMeter = memo(
             {label}
           </span>
           <span
-            className={`text-sm font-bold ${isDanger ? 'text-(--blood-red) animate-fuel-warning' : 'text-(--toxic-green)'}`}
+            className={`text-sm font-bold ${isDanger ? 'text-blood-red animate-fuel-warning' : 'text-toxic-green'}`}
           >
             {value} / {max}
           </span>
@@ -707,11 +707,11 @@ export const BlockMeter = memo(
           {blocks.map(block => {
             const isFilled = block < value
             let blockClass =
-              'flex-1 border border-(--toxic-green)/30 transition-all duration-300'
+              'flex-1 border border-toxic-green/30 transition-all duration-300'
             if (isFilled) {
               blockClass = isDanger
-                ? 'flex-1 bg-(--blood-red) border-(--blood-red) shadow-[0_0_10px_var(--blood-red)]'
-                : 'flex-1 bg-(--toxic-green) border-(--toxic-green) shadow-[0_0_5px_var(--toxic-green-50)]'
+                ? 'flex-1 bg-blood-red border-blood-red shadow-[0_0_10px_var(--color-blood-red)]'
+                : 'flex-1 bg-toxic-green border-toxic-green shadow-[0_0_5px_var(--color-toxic-green-50)]'
             }
             return <div key={block} className={blockClass}></div>
           })}
@@ -731,11 +731,11 @@ export const BrutalTabs = memo(() => {
   ]
 
   return (
-    <div className='w-full max-w-sm border border-(--toxic-green)/50 p-1'>
+    <div className='w-full max-w-sm border border-toxic-green/50 p-1'>
       <div
         role='tablist'
         aria-label={t('ui:hqNavigation', 'HQ Navigation')}
-        className='flex border-b-2 border-(--toxic-green)'
+        className='flex border-b-2 border-toxic-green'
       >
         {tabs.map(tab => {
           const isActive = activeTab === tab.id
@@ -747,7 +747,7 @@ export const BrutalTabs = memo(() => {
               aria-selected={isActive}
               onClick={() => setActiveTab(tab.id)}
               className={`flex-1 py-2 px-4 text-xs font-bold tracking-[0.1em] uppercase transition-all
-                ${isActive ? 'bg-(--toxic-green) text-(--void-black) shadow-[0_-2px_10px_var(--toxic-green)]' : 'bg-(--void-black) text-(--toxic-green) hover:bg-(--toxic-green)/10'}`}
+                ${isActive ? 'bg-toxic-green text-void-black shadow-[0_-2px_10px_var(--color-toxic-green)]' : 'bg-void-black text-toxic-green hover:bg-toxic-green/10'}`}
             >
               {isActive && <span className='mr-2'>▶</span>}
               {tab.label}
@@ -755,12 +755,12 @@ export const BrutalTabs = memo(() => {
           )
         })}
       </div>
-      <div className='p-4 bg-(--shadow-black) min-h-[100px] relative overflow-hidden'>
+      <div className='p-4 bg-shadow-black min-h-[100px] relative overflow-hidden'>
         <div
           className='absolute inset-0 opacity-5 pointer-events-none'
           style={{
             backgroundImage:
-              'radial-gradient(var(--toxic-green) 1px, transparent 1px)',
+              'radial-gradient(var(--color-toxic-green) 1px, transparent 1px)',
             backgroundSize: '10px 10px'
           }}
         ></div>
@@ -782,11 +782,11 @@ export const BrutalTabs = memo(() => {
 
 // 4. Data/Stat Block
 export const StatBlock = memo(({ label, value, icon: Icon }) => (
-  <div className='relative w-32 h-24 bg-(--void-black) flex flex-col items-center justify-center group overflow-hidden'>
-    <HexBorder className='absolute inset-0 w-full h-full text-(--toxic-green)/50 group-hover:text-(--toxic-green) transition-colors' />
-    <div className='absolute inset-0 bg-gradient-to-b from-transparent via-(--toxic-green)/10 to-transparent translate-y-[-100%] group-hover:animate-[scan_2s_linear_infinite]'></div>
+  <div className='relative w-32 h-24 bg-void-black flex flex-col items-center justify-center group overflow-hidden'>
+    <HexBorder className='absolute inset-0 w-full h-full text-toxic-green/50 group-hover:text-toxic-green transition-colors' />
+    <div className='absolute inset-0 bg-gradient-to-b from-transparent via-toxic-green/10 to-transparent translate-y-[-100%] group-hover:animate-[scan_2s_linear_infinite]'></div>
     <div className='z-10 flex flex-col items-center gap-1'>
-      {Icon && <Icon className='w-5 h-5 text-(--toxic-green)' />}
+      {Icon && <Icon className='w-5 h-5 text-toxic-green' />}
       <span className='text-2xl font-bold tracking-wider'>{value}</span>
       <span className='text-[9px] tracking-[0.2em] opacity-60 uppercase'>
         {label}
@@ -807,7 +807,7 @@ export const BrutalFader = memo(({ label, initialValue = 7, max = 10 }) => {
         <span className='text-xs tracking-widest uppercase opacity-80'>
           {label}
         </span>
-        <span className='text-sm font-bold text-(--toxic-green)'>{val}</span>
+        <span className='text-sm font-bold text-toxic-green'>{val}</span>
       </div>
       <div
         className='flex gap-1 h-8 items-end cursor-pointer group'
@@ -828,7 +828,7 @@ export const BrutalFader = memo(({ label, initialValue = 7, max = 10 }) => {
                   setVal(segment)
                 }
               }}
-              className='flex-1 relative h-full flex items-end group-hover:opacity-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)'
+              className='flex-1 relative h-full flex items-end group-hover:opacity-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
               aria-label={t('ui:set_label_to_segment', {
                 label: t(label),
                 segment
@@ -837,8 +837,8 @@ export const BrutalFader = memo(({ label, initialValue = 7, max = 10 }) => {
             >
               <div
                 style={{ height }}
-                className={`w-full transition-colors duration-75 border-b-2 border-transparent hover:border-(--void-black)
-                  ${isActive ? 'bg-(--toxic-green) shadow-[0_0_8px_var(--toxic-green)]' : 'bg-(--toxic-green)/20'}`}
+                className={`w-full transition-colors duration-75 border-b-2 border-transparent hover:border-void-black
+                  ${isActive ? 'bg-toxic-green shadow-[0_0_8px_var(--color-toxic-green)]' : 'bg-toxic-green/20'}`}
               ></div>
             </button>
           )
@@ -880,22 +880,22 @@ export const SetlistSelector = memo(() => {
             key={track.id}
             onClick={() => setSelected(track.id)}
             className={`w-full text-left p-3 border-2 transition-all duration-100 flex justify-between items-center group
-              ${isSelected ? 'border-(--toxic-green) bg-(--toxic-green)/10 shadow-[inset_0_0_15px_var(--toxic-green-20)]' : 'border-(--toxic-green)/30 bg-(--void-black) hover:border-(--toxic-green)/70'}`}
+              ${isSelected ? 'border-toxic-green bg-toxic-green/10 shadow-[inset_0_0_15px_var(--color-toxic-green-20)]' : 'border-toxic-green/30 bg-void-black hover:border-toxic-green/70'}`}
           >
             <div className='flex items-center gap-3'>
               <span
-                className={`text-xl font-bold ${isSelected ? 'text-(--toxic-green)' : 'text-(--toxic-green)/30'}`}
+                className={`text-xl font-bold ${isSelected ? 'text-toxic-green' : 'text-toxic-green/30'}`}
               >
                 {isSelected ? '[X]' : '[ ]'}
               </span>
               <span
-                className={`font-bold tracking-widest uppercase ${isSelected ? 'text-(--star-white)' : 'text-(--toxic-green)/80'}`}
+                className={`font-bold tracking-widest uppercase ${isSelected ? 'text-star-white' : 'text-toxic-green/80'}`}
               >
                 {track.name}
               </span>
             </div>
             <span
-              className={`text-[10px] tracking-widest px-2 py-1 border ${isSelected ? 'border-(--toxic-green) text-(--toxic-green)' : 'border-transparent text-(--toxic-green)/50'}`}
+              className={`text-[10px] tracking-widest px-2 py-1 border ${isSelected ? 'border-toxic-green text-toxic-green' : 'border-transparent text-toxic-green/50'}`}
             >
               {track.difficulty}
             </span>
@@ -914,7 +914,7 @@ export const CrisisModal = memo(({ isOpen, onClose }) => {
     <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
       {/* Backdrop */}
       <div
-        className='absolute inset-0 bg-(--void-black)/80 backdrop-blur-sm'
+        className='absolute inset-0 bg-void-black/80 backdrop-blur-sm'
         onClick={onClose}
         aria-hidden='true'
       ></div>
@@ -922,16 +922,16 @@ export const CrisisModal = memo(({ isOpen, onClose }) => {
       <div className='absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(transparent_50%,rgb(var(--void-black-rgb)_/_50%)_50%)] bg-[length:100%_4px]'></div>
 
       {/* Modal Box */}
-      <div className='relative w-full max-w-lg border-2 border-(--toxic-green) bg-(--void-black) shadow-[0_0_40px_var(--toxic-green-glow)] animate-[glitch-anim_0.2s_ease-in-out]'>
+      <div className='relative w-full max-w-lg border-2 border-toxic-green bg-void-black shadow-[0_0_40px_var(--color-toxic-green-glow)] animate-[glitch-anim_0.2s_ease-in-out]'>
         {/* Hardware details */}
-        <div className='absolute top-0 left-0 w-full h-1 bg-(--toxic-green)'></div>
-        <div className='absolute top-0 left-2 w-16 h-4 bg-(--toxic-green) text-(--void-black) text-[10px] font-bold text-center leading-4 uppercase'>
+        <div className='absolute top-0 left-0 w-full h-1 bg-toxic-green'></div>
+        <div className='absolute top-0 left-2 w-16 h-4 bg-toxic-green text-void-black text-[10px] font-bold text-center leading-4 uppercase'>
           {t('ui:event.severity.critical')}
         </div>
 
         <div className='p-8 flex flex-col gap-6'>
-          <div className='flex items-start gap-4 border-b border-(--toxic-green)/30 pb-6'>
-            <AlertIcon className='w-12 h-12 text-(--toxic-green) animate-pulse shrink-0 mt-1' />
+          <div className='flex items-start gap-4 border-b border-toxic-green/30 pb-6'>
+            <AlertIcon className='w-12 h-12 text-toxic-green animate-pulse shrink-0 mt-1' />
             <div>
               <h2
                 className='text-2xl font-bold tracking-[0.1em] uppercase glitch-text'
@@ -949,7 +949,7 @@ export const CrisisModal = memo(({ isOpen, onClose }) => {
             <button
               type='button'
               onClick={onClose}
-              className='w-full p-3 border border-(--toxic-green) bg-(--toxic-green)/10 hover:bg-(--toxic-green) hover:text-(--void-black) font-bold tracking-widest uppercase transition-colors text-left flex justify-between'
+              className='w-full p-3 border border-toxic-green bg-toxic-green/10 hover:bg-toxic-green hover:text-void-black font-bold tracking-widest uppercase transition-colors text-left flex justify-between'
             >
               <span>{t('ui:crisis.opt1')}</span>
               <span className='opacity-50 text-xs mt-1'>
@@ -959,7 +959,7 @@ export const CrisisModal = memo(({ isOpen, onClose }) => {
             <button
               type='button'
               onClick={onClose}
-              className='w-full p-3 border border-(--warning-yellow)/50 text-(--warning-yellow)/80 hover:border-(--warning-yellow) hover:text-(--void-black) hover:bg-(--warning-yellow) font-bold tracking-widest uppercase transition-colors text-left flex justify-between'
+              className='w-full p-3 border border-warning-yellow/50 text-warning-yellow/80 hover:border-warning-yellow hover:text-void-black hover:bg-warning-yellow font-bold tracking-widest uppercase transition-colors text-left flex justify-between'
             >
               <span>{t('ui:crisis.opt2')}</span>
               <span className='opacity-50 text-xs mt-1'>
@@ -969,7 +969,7 @@ export const CrisisModal = memo(({ isOpen, onClose }) => {
             <button
               type='button'
               onClick={onClose}
-              className='w-full p-3 border border-(--blood-red)/50 text-(--blood-red)/80 hover:border-(--blood-red) hover:text-(--void-black) hover:bg-(--blood-red) font-bold tracking-widest uppercase transition-colors text-left flex justify-between'
+              className='w-full p-3 border border-blood-red/50 text-blood-red/80 hover:border-blood-red hover:text-void-black hover:bg-blood-red font-bold tracking-widest uppercase transition-colors text-left flex justify-between'
             >
               <span>{t('ui:crisis.opt3')}</span>
               <span className='opacity-50 text-xs mt-1'>
@@ -1073,11 +1073,11 @@ export const DeadmanButton = memo(({ label, onConfirm }) => {
         }}
         onBlur={stopHold}
         className={`relative w-full h-14 border-2 overflow-hidden flex items-center justify-center select-none transition-colors
-          ${isComplete ? 'border-(--blood-red) bg-(--blood-red)/20' : 'border-(--toxic-green) bg-(--void-black) hover:border-(--star-white)'}`}
+          ${isComplete ? 'border-blood-red bg-blood-red/20' : 'border-toxic-green bg-void-black hover:border-star-white'}`}
       >
         {/* Progress Fill Background */}
         <div
-          className={`absolute left-0 top-0 h-full transition-none ${isComplete ? 'bg-(--blood-red)' : 'bg-(--toxic-green)'}`}
+          className={`absolute left-0 top-0 h-full transition-none ${isComplete ? 'bg-blood-red' : 'bg-toxic-green'}`}
           style={{ width: `${progress}%` }}
         ></div>
 
@@ -1089,7 +1089,7 @@ export const DeadmanButton = memo(({ label, onConfirm }) => {
         {/* Text */}
         <span
           className={`relative z-20 font-bold tracking-[0.2em] uppercase mix-blend-difference
-          ${isComplete ? 'text-(--void-black)' : 'text-(--toxic-green)'}`}
+          ${isComplete ? 'text-void-black' : 'text-toxic-green'}`}
         >
           {isComplete ? t('ui:executed', 'EXECUTED') : label}
         </span>
@@ -1129,20 +1129,20 @@ export const TerminalReadout = memo(() => {
   }, [currentIndex])
 
   return (
-    <div className='w-full h-48 border border-(--toxic-green)/30 bg-(--shadow-black) p-4 font-mono text-xs overflow-y-auto flex flex-col gap-1 custom-scrollbar relative shadow-[inset_0_0_20px_var(--void-black)]'>
+    <div className='w-full h-48 border border-toxic-green/30 bg-shadow-black p-4 font-mono text-xs overflow-y-auto flex flex-col gap-1 custom-scrollbar relative shadow-[inset_0_0_20px_var(--color-void-black)]'>
       {/* Scanline overlay */}
-      <div className='absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(transparent_50%,var(--toxic-green-20)_50%)] bg-[length:100%_4px]'></div>
+      <div className='absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(transparent_50%,var(--color-toxic-green-20)_50%)] bg-[length:100%_4px]'></div>
 
       {lines.map(line => (
         <div
           key={line.id}
-          className={`${line.type === 'error' ? 'text-(--blood-red) font-bold' : line.type === 'warn' ? 'text-(--warning-yellow)' : 'text-(--toxic-green)'} opacity-90 leading-relaxed`}
+          className={`${line.type === 'error' ? 'text-blood-red font-bold' : line.type === 'warn' ? 'text-warning-yellow' : 'text-toxic-green'} opacity-90 leading-relaxed`}
         >
           {t(line.key)}
         </div>
       ))}
       {currentIndex < FULL_LOG_KEYS.length && (
-        <div className='w-2 h-3 bg-(--toxic-green) animate-pulse mt-1'></div>
+        <div className='w-2 h-3 bg-toxic-green animate-pulse mt-1'></div>
       )}
     </div>
   )
@@ -1156,7 +1156,7 @@ export const BrutalSlot = memo(({ label, item = null }) => {
     <div className='flex flex-col gap-2 items-center'>
       <button
         type='button'
-        className='relative w-20 h-20 border-2 border-(--toxic-green)/30 bg-(--shadow-black) flex items-center justify-center group cursor-pointer hover:border-(--toxic-green) transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)'
+        className='relative w-20 h-20 border-2 border-toxic-green/30 bg-shadow-black flex items-center justify-center group cursor-pointer hover:border-toxic-green transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
         aria-label={
           item
             ? t('ui:inventory.slot', {
@@ -1170,16 +1170,16 @@ export const BrutalSlot = memo(({ label, item = null }) => {
         }
       >
         {/* Corner Decals */}
-        <div className='absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-(--toxic-green) opacity-0 group-hover:opacity-100 transition-opacity'></div>
-        <div className='absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-(--toxic-green) opacity-0 group-hover:opacity-100 transition-opacity'></div>
+        <div className='absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-toxic-green opacity-0 group-hover:opacity-100 transition-opacity'></div>
+        <div className='absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-toxic-green opacity-0 group-hover:opacity-100 transition-opacity'></div>
 
         {item ? (
           <>
-            <div className='absolute inset-0 bg-(--toxic-green)/10 group-hover:bg-(--toxic-green)/20 transition-colors'></div>
+            <div className='absolute inset-0 bg-toxic-green/10 group-hover:bg-toxic-green/20 transition-colors'></div>
             {item.icon}
           </>
         ) : (
-          <CrosshairIcon className='w-6 h-6 text-(--toxic-green) opacity-20 group-hover:opacity-50 transition-opacity' />
+          <CrosshairIcon className='w-6 h-6 text-toxic-green opacity-20 group-hover:opacity-50 transition-opacity' />
         )}
       </button>
       <span className='text-[9px] tracking-[0.2em] uppercase opacity-60 text-center max-w-[80px] truncate'>
@@ -1195,7 +1195,7 @@ export const VoidLoader = memo(({ size = 'w-16 h-16' }) => {
     <div className={`relative ${size} flex items-center justify-center`}>
       {/* Outer Hex - Slow counter-clockwise */}
       <svg
-        className='absolute inset-0 w-full h-full text-(--toxic-green) animate-[spin_4s_linear_infinite_reverse]'
+        className='absolute inset-0 w-full h-full text-toxic-green animate-[spin_4s_linear_infinite_reverse]'
         viewBox='0 0 100 100'
         fill='none'
         aria-hidden='true'
@@ -1210,7 +1210,7 @@ export const VoidLoader = memo(({ size = 'w-16 h-16' }) => {
       </svg>
       {/* Inner Square - Fast clockwise */}
       <svg
-        className='absolute w-[60%] h-[60%] text-(--toxic-green) animate-[spin_1.5s_linear_infinite]'
+        className='absolute w-[60%] h-[60%] text-toxic-green animate-[spin_1.5s_linear_infinite]'
         viewBox='0 0 100 100'
         fill='none'
         aria-hidden='true'
@@ -1227,7 +1227,7 @@ export const VoidLoader = memo(({ size = 'w-16 h-16' }) => {
         />
       </svg>
       {/* Core Dot - Pulsing */}
-      <div className='w-2 h-2 bg-(--star-white) rounded-full animate-pulse shadow-[0_0_10px_var(--star-white)]'></div>
+      <div className='w-2 h-2 bg-star-white rounded-full animate-pulse shadow-[0_0_10px_var(--color-star-white)]'></div>
     </div>
   )
 })
@@ -1277,7 +1277,7 @@ export const CorruptedText = memo(({ text, delay = 0 }) => {
 export const HazardTicker = memo(({ message }) => {
   const { t } = useTranslation(['ui'])
   return (
-    <div className='relative w-full h-8 bg-(--void-black) border-y-2 border-(--toxic-green) flex items-center overflow-hidden'>
+    <div className='relative w-full h-8 bg-void-black border-y-2 border-toxic-green flex items-center overflow-hidden'>
       {/* Striped Background Ends */}
       <div className='absolute left-0 top-0 bottom-0 w-8 z-10'>
         <WarningStripe />
@@ -1292,7 +1292,7 @@ export const HazardTicker = memo(({ message }) => {
         {['pill-0', 'pill-1', 'pill-2'].map(pillKey => (
           <span
             key={pillKey}
-            className='text-xs font-bold tracking-[0.3em] uppercase text-(--toxic-green)'
+            className='text-xs font-bold tracking-[0.3em] uppercase text-toxic-green'
           >
             {t('ui:hazard.modifierActive')} {message}
           </span>
@@ -1339,7 +1339,7 @@ export const IndustrialChecklist = memo(() => {
   const allDone = tasks.every(task => task.completed)
 
   return (
-    <div className='w-full border border-(--toxic-green)/30 bg-(--void-black) p-4 flex flex-col gap-3 relative'>
+    <div className='w-full border border-toxic-green/30 bg-void-black p-4 flex flex-col gap-3 relative'>
       <div className='text-[10px] opacity-50 tracking-[0.3em] mb-2'>
         {t('ui:checklist.header')}
       </div>
@@ -1352,17 +1352,17 @@ export const IndustrialChecklist = memo(() => {
           aria-pressed={task.completed}
           aria-label={t(task.key)}
           className={`relative w-full text-left p-3 border transition-all duration-200 flex items-center gap-4 group
-            ${task.completed ? 'border-transparent opacity-60' : 'border-(--toxic-green)/30 hover:border-(--toxic-green) hover:bg-(--toxic-green)/10'}`}
+            ${task.completed ? 'border-transparent opacity-60' : 'border-toxic-green/30 hover:border-toxic-green hover:bg-toxic-green/10'}`}
         >
           {/* Brutal Checkbox */}
           <div
             className={`w-5 h-5 border-2 flex items-center justify-center shrink-0 transition-colors
-            ${task.completed ? 'border-(--toxic-green) bg-(--toxic-green)' : 'border-(--toxic-green) bg-(--void-black)'}`}
+            ${task.completed ? 'border-toxic-green bg-toxic-green' : 'border-toxic-green bg-void-black'}`}
           >
             {task.completed && (
               <span
                 aria-hidden='true'
-                className='text-(--void-black) font-bold text-xs leading-none'
+                className='text-void-black font-bold text-xs leading-none'
               >
                 X
               </span>
@@ -1371,14 +1371,14 @@ export const IndustrialChecklist = memo(() => {
 
           <span
             className={`font-bold tracking-widest uppercase transition-all duration-200
-            ${task.completed ? 'text-(--toxic-green)' : 'text-(--toxic-green)'}`}
+            ${task.completed ? 'text-toxic-green' : 'text-toxic-green'}`}
           >
             {t(task.key)}
           </span>
 
           {/* Strikethrough Line Animation */}
           <div
-            className={`absolute left-10 top-1/2 h-[2px] bg-(--star-white) transition-all duration-300 ease-out z-10
+            className={`absolute left-10 top-1/2 h-[2px] bg-star-white transition-all duration-300 ease-out z-10
             ${task.completed ? 'w-[calc(100%-3rem)]' : 'w-0'}`}
           ></div>
         </button>
@@ -1388,7 +1388,7 @@ export const IndustrialChecklist = memo(() => {
         type='button'
         disabled={!allDone}
         className={`mt-4 p-4 font-bold tracking-[0.2em] uppercase transition-all duration-300 border-2
-          ${allDone ? 'border-(--toxic-green) bg-(--toxic-green) text-(--void-black) shadow-[0_0_20px_var(--toxic-green)] hover:bg-(--star-white) hover:border-(--star-white) animate-pulse' : 'border-(--toxic-green)/20 text-(--toxic-green)/20 cursor-not-allowed'}`}
+          ${allDone ? 'border-toxic-green bg-toxic-green text-void-black shadow-[0_0_20px_var(--color-toxic-green)] hover:bg-star-white hover:border-star-white animate-pulse' : 'border-toxic-green/20 text-toxic-green/20 cursor-not-allowed'}`}
       >
         {allDone
           ? t('ui:checklist.done', 'INITIATE GIG')
@@ -1419,7 +1419,7 @@ export const RhythmMatrix = memo(() => {
   }
 
   return (
-    <div className='w-full h-64 bg-(--shadow-black) border border-(--toxic-green)/30 p-4 flex flex-col relative overflow-hidden'>
+    <div className='w-full h-64 bg-shadow-black border border-toxic-green/30 p-4 flex flex-col relative overflow-hidden'>
       <div className='text-[10px] opacity-50 tracking-[0.3em] absolute top-2 left-2 z-10'>
         {t('ui:rhythm.header')}
       </div>
@@ -1431,19 +1431,19 @@ export const RhythmMatrix = memo(() => {
           return (
             <div
               key={lane}
-              className='w-16 h-full border-x border-(--toxic-green)/10 relative flex flex-col justify-end pb-2 group'
+              className='w-16 h-full border-x border-toxic-green/10 relative flex flex-col justify-end pb-2 group'
             >
               {/* Falling Note Simulation */}
               <div
-                className={`absolute top-0 left-1/2 -translate-x-1/2 w-12 h-4 border-2 border-(--toxic-green) bg-(--void-black) animate-[drop_2s_linear_infinite] opacity-50`}
+                className={`absolute top-0 left-1/2 -translate-x-1/2 w-12 h-4 border-2 border-toxic-green bg-void-black animate-[drop_2s_linear_infinite] opacity-50`}
                 style={{ animationDelay: `${i * 0.5}s` }}
               ></div>
 
               {/* Target Box */}
               <button
                 type='button'
-                className={`w-14 h-8 mx-auto border-2 transition-all duration-75 flex items-center justify-center cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)
-                  ${hits[i] ? 'bg-(--toxic-green) border-(--toxic-green) shadow-[0_0_20px_var(--toxic-green)] scale-110' : 'bg-(--void-black) border-(--toxic-green)/50 hover:border-(--toxic-green)'}`}
+                className={`w-14 h-8 mx-auto border-2 transition-all duration-75 flex items-center justify-center cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green
+                  ${hits[i] ? 'bg-toxic-green border-toxic-green shadow-[0_0_20px_var(--color-toxic-green)] scale-110' : 'bg-void-black border-toxic-green/50 hover:border-toxic-green'}`}
                 onMouseDown={() => triggerHit(i)}
                 onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -1455,7 +1455,7 @@ export const RhythmMatrix = memo(() => {
                 aria-pressed={hits[i]}
               >
                 <span
-                  className={`text-[8px] font-bold ${hits[i] ? 'text-(--void-black)' : 'text-(--toxic-green)/50'}`}
+                  className={`text-[8px] font-bold ${hits[i] ? 'text-void-black' : 'text-toxic-green/50'}`}
                 >
                   {t('ui:rhythm.hit')}
                 </span>
@@ -1479,13 +1479,13 @@ export const SelloutContract = memo(() => {
 
   return (
     <div
-      className={`w-full border-4 p-6 relative transition-all duration-500 ${signed ? 'border-(--toxic-green) bg-(--toxic-green)/5' : 'border-(--toxic-green)/30 bg-(--void-black)'}`}
+      className={`w-full border-4 p-6 relative transition-all duration-500 ${signed ? 'border-toxic-green bg-toxic-green/5' : 'border-toxic-green/30 bg-void-black'}`}
     >
-      <div className='absolute top-0 right-0 p-2 border-l border-b border-(--toxic-green)/30 text-[8px] opacity-50'>
+      <div className='absolute top-0 right-0 p-2 border-l border-b border-toxic-green/30 text-[8px] opacity-50'>
         {t('ui:contract.confidential')}
       </div>
 
-      <h3 className='text-xl font-bold tracking-[0.2em] uppercase mb-4 border-b-2 border-(--toxic-green)/30 pb-2'>
+      <h3 className='text-xl font-bold tracking-[0.2em] uppercase mb-4 border-b-2 border-toxic-green/30 pb-2'>
         {t('ui:contract.title')}
       </h3>
 
@@ -1496,7 +1496,7 @@ export const SelloutContract = memo(() => {
             components={[
               <span
                 key='0'
-                className='bg-(--toxic-green) text-(--void-black) font-bold px-1'
+                className='bg-toxic-green text-void-black font-bold px-1'
               />
             ]}
           />
@@ -1507,7 +1507,7 @@ export const SelloutContract = memo(() => {
             components={[
               <span
                 key='0'
-                className='bg-(--toxic-green) text-(--toxic-green) select-none hover:text-(--void-black) transition-colors'
+                className='bg-toxic-green text-toxic-green select-none hover:text-void-black transition-colors'
               />
             ]}
           />
@@ -1518,26 +1518,26 @@ export const SelloutContract = memo(() => {
             components={[
               <span
                 key='0'
-                className='bg-(--blood-red) text-(--blood-red) select-none'
+                className='bg-blood-red text-blood-red select-none'
               />
             ]}
           />
         </p>
 
-        <div className='mt-4 border-t border-dashed border-(--toxic-green)/50 pt-4 flex justify-between items-end'>
+        <div className='mt-4 border-t border-dashed border-toxic-green/50 pt-4 flex justify-between items-end'>
           <div className='flex flex-col gap-1 w-1/2'>
             <span className='text-[10px] opacity-50'>
               {t('ui:contract.sig')}
             </span>
             {signed ? (
-              <span className='font-script text-2xl text-(--toxic-green) -rotate-6 tracking-widest animate-pulse'>
+              <span className='font-script text-2xl text-toxic-green -rotate-6 tracking-widest animate-pulse'>
                 Neurotoxic
               </span>
             ) : (
               <button
                 type='button'
                 aria-label={t('ui:contract.sign_aria')}
-                className='h-8 border-b-2 border-(--toxic-green) w-full cursor-pointer hover:bg-(--toxic-green)/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)'
+                className='h-8 border-b-2 border-toxic-green w-full cursor-pointer hover:bg-toxic-green/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
                 onClick={() => setSigned(true)}
               ></button>
             )}
@@ -1546,7 +1546,7 @@ export const SelloutContract = memo(() => {
           <div
             className={`transition-all duration-500 ${signed ? 'opacity-100 scale-100' : 'opacity-0 scale-150'}`}
           >
-            <CorporateSeal className='w-16 h-16 text-(--toxic-green)' />
+            <CorporateSeal className='w-16 h-16 text-toxic-green' />
             <div className='text-[8px] text-center mt-1'>
               {t('ui:contract.sealed')}
             </div>
@@ -1598,7 +1598,7 @@ export const ToxicChatter = memo(() => {
   }, [])
 
   return (
-    <div className='w-full h-64 border border-(--toxic-green)/30 bg-(--void-black) p-4 flex flex-col justify-end relative shadow-[inset_0_0_20px_var(--toxic-green-5)]'>
+    <div className='w-full h-64 border border-toxic-green/30 bg-void-black p-4 flex flex-col justify-end relative shadow-[inset_0_0_20px_var(--color-toxic-green-5)]'>
       <div className='absolute top-2 left-2 text-[10px] tracking-widest opacity-50'>
         {t('ui:chatter.header')}
       </div>
@@ -1607,12 +1607,12 @@ export const ToxicChatter = memo(() => {
         {messages.map((msg, i) => (
           <div
             key={msg.id}
-            className={`text-xs p-2 animate-[slide-in_0.2s_ease-out] ${msg.type === 'system' ? 'border border-(--toxic-green) bg-(--toxic-green)/10' : 'border-l-2 border-(--toxic-green)/30'}`}
+            className={`text-xs p-2 animate-[slide-in_0.2s_ease-out] ${msg.type === 'system' ? 'border border-toxic-green bg-toxic-green/10' : 'border-l-2 border-toxic-green/30'}`}
             style={{ opacity: 0.4 + i * 0.15 }} // Fade out older messages
           >
             <span className='font-bold opacity-70'>[{msg.user}]: </span>
             <span
-              className={`${msg.type === 'hate' ? 'chromatic-text' : 'text-(--toxic-green)'}`}
+              className={`${msg.type === 'hate' ? 'chromatic-text' : 'text-toxic-green'}`}
             >
               {t(msg.text)}
             </span>
@@ -1652,7 +1652,7 @@ export const VoidDecryptor = memo(() => {
   return (
     <button
       type='button'
-      className='w-full h-64 border-2 border-(--toxic-green)/50 bg-(--void-black) flex flex-col items-center justify-center p-6 relative group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--toxic-green)'
+      className='w-full h-64 border-2 border-toxic-green/50 bg-void-black flex flex-col items-center justify-center p-6 relative group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
       onClick={() => setDecrypted(true)}
       aria-label={
         decrypted
@@ -1662,26 +1662,26 @@ export const VoidDecryptor = memo(() => {
       aria-pressed={decrypted}
     >
       {/* Glitch Frame Corners */}
-      <div className='absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-(--toxic-green) transition-all duration-300 group-hover:p-2'></div>
-      <div className='absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-(--toxic-green) transition-all duration-300 group-hover:p-2'></div>
+      <div className='absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-toxic-green transition-all duration-300 group-hover:p-2'></div>
+      <div className='absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-toxic-green transition-all duration-300 group-hover:p-2'></div>
 
       <div
         className={`relative transition-all duration-700 ${decrypted ? 'scale-125' : 'scale-100 animate-[pulse_0.1s_infinite]'}`}
       >
         <BiohazardIcon
-          className={`w-20 h-20 ${decrypted ? 'text-(--toxic-green) drop-shadow-[0_0_20px_var(--toxic-green)]' : 'text-(--toxic-green)/30'}`}
+          className={`w-20 h-20 ${decrypted ? 'text-toxic-green drop-shadow-[0_0_20px_var(--color-toxic-green)]' : 'text-toxic-green/30'}`}
         />
 
         {/* Scrambler Overlay */}
         {!decrypted && (
-          <div className='absolute inset-0 bg-(--void-black)/50 backdrop-blur-[1px] flex items-center justify-center mix-blend-overlay'>
-            <div className='w-full h-2 bg-(--toxic-green) animate-[scan_1s_linear_infinite]'></div>
+          <div className='absolute inset-0 bg-void-black/50 backdrop-blur-[1px] flex items-center justify-center mix-blend-overlay'>
+            <div className='w-full h-2 bg-toxic-green animate-[scan_1s_linear_infinite]'></div>
           </div>
         )}
       </div>
 
       <div
-        className={`mt-6 font-mono text-xs tracking-[0.2em] font-bold ${decrypted ? 'text-(--star-white)' : 'text-(--toxic-green)/50'}`}
+        className={`mt-6 font-mono text-xs tracking-[0.2em] font-bold ${decrypted ? 'text-star-white' : 'text-toxic-green/50'}`}
       >
         {displayText}
       </div>

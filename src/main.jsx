@@ -9,10 +9,10 @@ createRoot(document.getElementById('root')).render(
     <Suspense
       fallback={
         <div
-          className='flex h-screen w-full items-center justify-center bg-(--void-black) text-(--toxic-green)'
+          className='flex h-screen w-full items-center justify-center bg-void-black text-toxic-green'
           role='status'
         >
-          <div className='w-12 h-12 border-4 border-(--toxic-green) border-t-transparent rounded-full animate-spin'>
+          <div className='w-12 h-12 border-4 border-toxic-green border-t-transparent rounded-full animate-spin'>
             <span className='sr-only'>Loading...</span>
           </div>
         </div>

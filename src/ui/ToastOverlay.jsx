@@ -6,23 +6,23 @@ import { isForbiddenKey } from '../utils/gameStateUtils.js'
 
 const TOAST_STYLE_MAP = {
   success: {
-    border: 'border-(--toxic-green)',
-    text: 'text-(--toxic-green)',
+    border: 'border-toxic-green',
+    text: 'text-toxic-green',
     icon: '✔'
   },
   error: {
-    border: 'border-(--blood-red)',
-    text: 'text-(--blood-red)',
+    border: 'border-blood-red',
+    text: 'text-blood-red',
     icon: '✖'
   },
   warning: {
-    border: 'border-(--warning-yellow)',
-    text: 'text-(--warning-yellow)',
+    border: 'border-warning-yellow',
+    text: 'text-warning-yellow',
     icon: '⚠'
   },
   info: {
-    border: 'border-(--info-blue)',
-    text: 'text-(--info-blue)',
+    border: 'border-info-blue',
+    text: 'text-info-blue',
     icon: 'ℹ'
   }
 }
@@ -98,8 +98,8 @@ export const ToastOverlay = () => {
               exit={{ opacity: 0, y: -12, scale: 0.98 }}
               transition={{ duration: 0.2, ease: 'easeOut' }}
               className={`
-                w-[min(34rem,94vw)] border-2 ${style.border} bg-(--void-black)/90 backdrop-blur-md
-                shadow-[0_0_0_1px_var(--void-black),0_10px_24px_var(--shadow-overlay)]
+                w-[min(34rem,94vw)] border-2 ${style.border} bg-void-black/90 backdrop-blur-md
+                shadow-[0_0_0_1px_var(--color-void-black),0_10px_24px_var(--color-shadow-overlay)]
               `}
               aria-atomic='true'
             >

@@ -8,7 +8,7 @@ afterEach(cleanup)
 
 test('ProgressBar: renders default correctly', () => {
   const { container } = render(
-    <ProgressBar label='Test' value={50} max={100} color='bg-(--blood-red)' />
+    <ProgressBar label='Test' value={50} max={100} color='bg-blood-red' />
   )
 
   // Should have label
@@ -26,7 +26,7 @@ test('ProgressBar: renders mini variant correctly', () => {
       label='Mini'
       value={20}
       max={100}
-      color='bg-(--condition-blue)'
+      color='bg-condition-blue'
       size='mini'
     />
   )
@@ -50,7 +50,7 @@ test('ProgressBar: applies warn animation', () => {
       label='Warn'
       value={10}
       max={100}
-      color='bg-(--warning-yellow)'
+      color='bg-warning-yellow'
       warn={true}
     />
   )
@@ -65,7 +65,7 @@ test('ProgressBar: has accessibility attributes', () => {
       label='A11y Test'
       value={75}
       max={100}
-      color='bg-(--toxic-green)'
+      color='bg-toxic-green'
       aria-label='Custom Label'
     />
   )

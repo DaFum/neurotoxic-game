@@ -16,9 +16,9 @@ const FinancialList = ({ items, type }) => {
           transition={{ delay: 0.3 + i * 0.1 }}
           className='flex justify-between items-center'
         >
-          <span className='text-(--star-white)/70'>{t(item.labelKey)}</span>
+          <span className='text-star-white/70'>{t(item.labelKey)}</span>
           <span
-            className={`${type === 'income' ? 'text-(--toxic-green)' : 'text-(--blood-red)'} font-bold tabular-nums`}
+            className={`${type === 'income' ? 'text-toxic-green' : 'text-blood-red'} font-bold tabular-nums`}
           >
             {type === 'income' ? '+' : '-'}
             {item.value}€
@@ -69,11 +69,11 @@ export const ReportPhase = ({ financials, onNext }) => {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <h3 className='text-lg border-b-2 border-(--toxic-green) mb-4 pb-2 tracking-widest font-mono text-(--toxic-green)'>
+          <h3 className='text-lg border-b-2 border-toxic-green mb-4 pb-2 tracking-widest font-mono text-toxic-green'>
             {t('economy:postGig.income')}
           </h3>
           <FinancialList items={financials.income.breakdown} type='income' />
-          <div className='mt-4 pt-2 border-t border-(--toxic-green)/40 flex justify-between font-bold text-(--toxic-green)'>
+          <div className='mt-4 pt-2 border-t border-toxic-green/40 flex justify-between font-bold text-toxic-green'>
             <span className='text-sm tracking-wider'>
               {t('economy:postGig.total')}
             </span>
@@ -87,11 +87,11 @@ export const ReportPhase = ({ financials, onNext }) => {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <h3 className='text-lg border-b-2 border-(--blood-red) text-(--blood-red) mb-4 pb-2 tracking-widest font-mono'>
+          <h3 className='text-lg border-b-2 border-blood-red text-blood-red mb-4 pb-2 tracking-widest font-mono'>
             {t('economy:postGig.expenses')}
           </h3>
           <FinancialList items={financials.expenses.breakdown} type='expense' />
-          <div className='mt-4 pt-2 border-t border-(--blood-red)/40 flex justify-between font-bold text-(--blood-red)'>
+          <div className='mt-4 pt-2 border-t border-blood-red/40 flex justify-between font-bold text-blood-red'>
             <span className='text-sm tracking-wider'>
               {t('economy:postGig.total')}
             </span>
@@ -105,16 +105,16 @@ export const ReportPhase = ({ financials, onNext }) => {
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.8, type: 'spring' }}
-        className='text-center py-6 border-y-2 border-(--ash-gray)/30'
+        className='text-center py-6 border-y-2 border-ash-gray/30'
       >
-        <div className='text-[10px] text-(--ash-gray) tracking-widest mb-2'>
+        <div className='text-[10px] text-ash-gray tracking-widest mb-2'>
           {t('economy:postGig.netProfit')}
         </div>
         <div
-          className={`text-5xl font-bold font-(--font-display) tabular-nums ${
+          className={`text-5xl font-bold font-font-display tabular-nums ${
             financials.net >= 0
-              ? 'text-(--toxic-green) drop-shadow-[0_0_20px_var(--toxic-green)]'
-              : 'text-(--blood-red) drop-shadow-[0_0_20px_var(--blood-red)]'
+              ? 'text-toxic-green drop-shadow-[0_0_20px_var(--color-toxic-green)]'
+              : 'text-blood-red drop-shadow-[0_0_20px_var(--color-blood-red)]'
           }`}
         >
           {financials.net > 0 ? '+' : ''}
@@ -131,7 +131,7 @@ export const ReportPhase = ({ financials, onNext }) => {
         <ActionButton
           onClick={onNext}
           variant='primary'
-          className='px-8 py-3 text-(--void-black)'
+          className='px-8 py-3 text-void-black'
         >
           {t('economy:postGig.continueToSocials')}
         </ActionButton>

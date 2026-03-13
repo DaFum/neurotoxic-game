@@ -11,7 +11,7 @@ export const ConnectionPaths = ({
       {Object.entries(connections).map(([sockId, cabId]) => {
         const cable = CABLE_MAP[cabId]
         const isActive = isPowerConnected || cabId === 'iec'
-        const cableColor = isActive ? cable.color : 'var(--concrete-gray)'
+        const cableColor = isActive ? cable.color : 'var(--color-concrete-gray)'
 
         return (
           <path
@@ -27,7 +27,7 @@ export const ConnectionPaths = ({
             style={{
               filter: isActive
                 ? `drop-shadow(0 5px 10px ${cable.color})`
-                : `drop-shadow(0 10px 10px var(--shadow-black))`
+                : `drop-shadow(0 10px 10px var(--color-shadow-black))`
             }}
           />
         )

@@ -304,7 +304,7 @@ describe('CompletePhase', () => {
     const moneyElement = Array.from(container.querySelectorAll('div')).find(
       el =>
         el.textContent.includes('💰') &&
-        el.className.includes('text-(--toxic-green)')
+        el.className.includes('text-toxic-green')
     )
     expect(moneyElement).toBeTruthy()
   })
@@ -328,8 +328,7 @@ describe('CompletePhase', () => {
     // Find the specific div containing the money change
     const moneyElement = Array.from(container.querySelectorAll('div')).find(
       el =>
-        el.textContent.includes('💰') &&
-        el.className.includes('text-(--blood-red)')
+        el.textContent.includes('💰') && el.className.includes('text-blood-red')
     )
     expect(moneyElement).toBeTruthy()
   })

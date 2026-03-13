@@ -503,7 +503,7 @@ describe('Gig Scene Component', () => {
       const { container } = render(<Gig />)
 
       const mainContainer = container.firstChild
-      expect(mainContainer.className).toContain('border-(--toxic-green)')
+      expect(mainContainer.className).toContain('border-toxic-green')
     })
 
     test('no toxic border when isToxicMode is false', async () => {

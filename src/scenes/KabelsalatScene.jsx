@@ -34,7 +34,7 @@ export const KabelsalatScene = () => {
           : {}
       }
     >
-      <div className='absolute inset-0 bg-(--void-black)/80 z-0'></div>
+      <div className='absolute inset-0 bg-void-black/80 z-0'></div>
 
       <div className='flex flex-col items-center w-full max-w-4xl mx-auto z-10'>
         <Header
@@ -46,15 +46,15 @@ export const KabelsalatScene = () => {
         />
 
         <div
-          className={`relative w-full aspect-[4/3] border-4 bg-(--void-black) transition-all duration-100 select-none overflow-hidden shadow-[inset_0_0_50px_var(--shadow-black)]
+          className={`relative w-full aspect-[4/3] border-4 bg-void-black transition-all duration-100 select-none overflow-hidden shadow-[inset_0_0_50px_var(--color-shadow-black)]
             ${
               isShocked
-                ? 'border-(--error-red) animate-[shake_0.1s_infinite]'
+                ? 'border-error-red animate-[shake_0.1s_infinite]'
                 : isPoweredOn
-                  ? 'border-(--success-green) shadow-[0_0_30px_var(--success-green)]'
+                  ? 'border-success-green shadow-[0_0_30px_var(--color-success-green)]'
                   : isGameOver
-                    ? 'border-(--blood-red)'
-                    : 'border-(--concrete-gray)'
+                    ? 'border-blood-red'
+                    : 'border-concrete-gray'
             }`}
         >
           <Overlays
@@ -80,8 +80,8 @@ export const KabelsalatScene = () => {
               y='20'
               width='720'
               height='180'
-              fill='var(--shadow-black)'
-              stroke='var(--concrete-gray)'
+              fill='var(--color-shadow-black)'
+              stroke='var(--color-concrete-gray)'
               strokeWidth='4'
             />
             <rect
@@ -89,7 +89,7 @@ export const KabelsalatScene = () => {
               y='30'
               width='700'
               height='160'
-              fill='var(--void-black)'
+              fill='var(--color-void-black)'
             />
             <RackScrew x='60' y='40' /> <RackScrew x='760' y='40' />
             <RackScrew x='60' y='170' /> <RackScrew x='760' y='170' />
@@ -99,19 +99,19 @@ export const KabelsalatScene = () => {
               r='6'
               fill={
                 isPowerConnected
-                  ? 'var(--success-green)'
-                  : 'var(--concrete-gray)'
+                  ? 'var(--color-success-green)'
+                  : 'var(--color-concrete-gray)'
               }
               style={{
                 filter: isPowerConnected
-                  ? 'drop-shadow(0 0 10px var(--success-green))'
+                  ? 'drop-shadow(0 0 10px var(--color-success-green))'
                   : 'none'
               }}
             />
             <text
               x='80'
               y='125'
-              fill='var(--ash-gray)'
+              fill='var(--color-ash-gray)'
               fontSize='8'
               textAnchor='middle'
               className='font-mono tracking-widest'
@@ -123,11 +123,11 @@ export const KabelsalatScene = () => {
                 key={seed.id}
                 d={`M ${seed.startX} 0 L ${seed.startX + seed.o1} 200 L ${seed.startX + seed.o2} 400 L ${seed.startX + seed.o3} 600`}
                 fill='none'
-                stroke='var(--warning-yellow)'
+                stroke='var(--color-warning-yellow)'
                 strokeWidth={seed.w}
                 className='animate-[flash_0.05s_infinite]'
                 style={{
-                  filter: 'drop-shadow(0 0 20px var(--warning-yellow))'
+                  filter: 'drop-shadow(0 0 20px var(--color-warning-yellow))'
                 }}
               />
             ))}

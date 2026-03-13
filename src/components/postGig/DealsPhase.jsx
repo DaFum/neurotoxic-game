@@ -102,10 +102,10 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
   return (
     <div className='space-y-6'>
       <div className='text-center mb-4'>
-        <h3 className='text-xl font-mono tracking-widest text-(--warning-yellow)'>
+        <h3 className='text-xl font-mono tracking-widest text-warning-yellow'>
           INCOMING BRAND OFFERS
         </h3>
-        <div className='text-[10px] text-(--ash-gray) tracking-wider mt-1'>
+        <div className='text-[10px] text-ash-gray tracking-wider mt-1'>
           SELL OUT OR STAY TRUE?
         </div>
       </div>
@@ -120,7 +120,7 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
           return (
             <div
               key={deal.id}
-              className={`border-2 border-(--toxic-green) p-4 flex justify-between items-center group transition-colors relative overflow-hidden ${isRevoked ? 'bg-(--blood-red)/20 border-(--blood-red) grayscale opacity-50' : 'bg-(--void-black)/80 hover:bg-(--toxic-green)/10'}`}
+              className={`border-2 border-toxic-green p-4 flex justify-between items-center group transition-colors relative overflow-hidden ${isRevoked ? 'bg-blood-red/20 border-blood-red grayscale opacity-50' : 'bg-void-black/80 hover:bg-toxic-green/10'}`}
             >
               {/* Background Alignment Watermark */}
               <div
@@ -132,7 +132,7 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
               <div className='flex-1 z-10'>
                 <div className='flex items-baseline gap-3'>
                   <div
-                    className={`font-bold text-lg ${isRevoked ? 'text-(--blood-red) line-through' : 'text-(--toxic-green)'}`}
+                    className={`font-bold text-lg ${isRevoked ? 'text-blood-red line-through' : 'text-toxic-green'}`}
                   >
                     {displayDeal.name}
                   </div>
@@ -145,10 +145,10 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
                   )}
                 </div>
 
-                <div className='text-xs text-(--ash-gray) italic mb-2'>
+                <div className='text-xs text-ash-gray italic mb-2'>
                   {displayDeal.description}
                 </div>
-                <div className='text-xs font-mono grid grid-cols-2 gap-x-4 gap-y-1 text-(--star-white)/80'>
+                <div className='text-xs font-mono grid grid-cols-2 gap-x-4 gap-y-1 text-star-white/80'>
                   <div>💰 Upfront: {displayDeal.offer.upfront}€</div>
                   <div>📅 Duration: {displayDeal.offer.duration} Gigs</div>
                   {displayDeal.offer.perGig && (
@@ -158,7 +158,7 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
                     <div>🎁 Item: {displayDeal.offer.item}</div>
                   )}
                   {displayDeal.penalty && (
-                    <div className='text-(--blood-red)'>
+                    <div className='text-blood-red'>
                       ⚠️ Risk:{' '}
                       {Object.entries(displayDeal.penalty)
                         .map(([k, v]) => `${k}: ${v}`)
@@ -170,13 +170,13 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
                 {/* Reputation Status */}
                 {social.brandReputation?.[displayDeal.alignment] !==
                   undefined && (
-                  <div className='mt-2 text-[10px] text-(--ash-gray)'>
+                  <div className='mt-2 text-[10px] text-ash-gray'>
                     Reputation:{' '}
                     <span
                       className={
                         social.brandReputation[displayDeal.alignment] > 0
-                          ? 'text-(--toxic-green)'
-                          : 'text-(--blood-red)'
+                          ? 'text-toxic-green'
+                          : 'text-blood-red'
                       }
                     >
                       {social.brandReputation[displayDeal.alignment]}
@@ -190,7 +190,7 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
                   <>
                     <ActionButton
                       onClick={() => handleAcceptDeal(displayDeal)}
-                      className='bg-(--toxic-green) text-(--void-black) font-bold uppercase hover:scale-105'
+                      className='bg-toxic-green text-void-black font-bold uppercase hover:scale-105'
                     >
                       ACCEPT
                     </ActionButton>
@@ -198,14 +198,14 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
                       <button
                         type='button'
                         onClick={() => handleNegotiationStart(deal)}
-                        className='px-4 py-1.5 border border-(--warning-yellow) text-(--warning-yellow) text-xs font-bold uppercase hover:bg-(--warning-yellow) hover:text-(--void-black) transition-colors'
+                        className='px-4 py-1.5 border border-warning-yellow text-warning-yellow text-xs font-bold uppercase hover:bg-warning-yellow hover:text-void-black transition-colors'
                       >
                         NEGOTIATE
                       </button>
                     )}
                     {hasNegotiated && (
                       <div
-                        className={`text-center text-[10px] font-mono tracking-wider ${negotiationState.status === 'SUCCESS' ? 'text-(--toxic-green)' : 'text-(--warning-yellow)'}`}
+                        className={`text-center text-[10px] font-mono tracking-wider ${negotiationState.status === 'SUCCESS' ? 'text-toxic-green' : 'text-warning-yellow'}`}
                       >
                         {negotiationState.status === 'SUCCESS'
                           ? 'TERM IMPROVED'
@@ -216,7 +216,7 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
                     )}
                   </>
                 ) : (
-                  <div className='text-(--blood-red) font-bold font-mono text-center tracking-widest'>
+                  <div className='text-blood-red font-bold font-mono text-center tracking-widest'>
                     REVOKED
                   </div>
                 )}
@@ -230,7 +230,7 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
         <button
           type='button'
           onClick={onSkip}
-          className='text-sm text-(--ash-gray) hover:text-(--star-white) underline decoration-dotted'
+          className='text-sm text-ash-gray hover:text-star-white underline decoration-dotted'
         >
           Reject All Offers & Continue &gt;
         </button>
@@ -244,19 +244,19 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
       >
         {!negotiationResult ? (
           <div className='space-y-4'>
-            <p className='text-sm text-(--ash-gray) text-center mb-4'>
+            <p className='text-sm text-ash-gray text-center mb-4'>
               Choose your approach. Your fame and traits affect the outcome.
             </p>
 
             <button
               type='button'
               onClick={() => handleNegotiationSubmit('SAFE')}
-              className='w-full p-3 border border-(--toxic-green) hover:bg-(--toxic-green)/20 text-left group transition-all'
+              className='w-full p-3 border border-toxic-green hover:bg-toxic-green/20 text-left group transition-all'
             >
-              <div className='text-(--toxic-green) font-bold mb-1'>
+              <div className='text-toxic-green font-bold mb-1'>
                 SAFE (Low Risk)
               </div>
-              <div className='text-xs text-(--ash-gray) group-hover:text-(--star-white)'>
+              <div className='text-xs text-ash-gray group-hover:text-star-white'>
                 Attempt to get +10% upfront. High chance of success.
               </div>
             </button>
@@ -264,12 +264,12 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
             <button
               type='button'
               onClick={() => handleNegotiationSubmit('PERSUASIVE')}
-              className='w-full p-3 border border-(--electric-blue) hover:bg-(--electric-blue)/20 text-left group transition-all'
+              className='w-full p-3 border border-electric-blue hover:bg-electric-blue/20 text-left group transition-all'
             >
-              <div className='text-(--electric-blue) font-bold mb-1'>
+              <div className='text-electric-blue font-bold mb-1'>
                 PERSUASIVE (Medium Risk)
               </div>
-              <div className='text-xs text-(--ash-gray) group-hover:text-(--star-white)'>
+              <div className='text-xs text-ash-gray group-hover:text-star-white'>
                 Try for +20% upfront & +10% per gig. Failure worsens terms
                 (-10%).
               </div>
@@ -278,12 +278,12 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
             <button
               type='button'
               onClick={() => handleNegotiationSubmit('AGGRESSIVE')}
-              className='w-full p-3 border border-(--blood-red) hover:bg-(--blood-red)/20 text-left group transition-all'
+              className='w-full p-3 border border-blood-red hover:bg-blood-red/20 text-left group transition-all'
             >
-              <div className='text-(--blood-red) font-bold mb-1'>
+              <div className='text-blood-red font-bold mb-1'>
                 AGGRESSIVE (High Risk)
               </div>
-              <div className='text-xs text-(--ash-gray) group-hover:text-(--star-white)'>
+              <div className='text-xs text-ash-gray group-hover:text-star-white'>
                 Demand +50% upfront. Failure loses the deal completely.
               </div>
             </button>
@@ -291,15 +291,15 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
         ) : (
           <div className='text-center py-6'>
             <div
-              className={`text-4xl mb-4 ${negotiationResult.success ? 'text-(--toxic-green)' : 'text-(--blood-red)'}`}
+              className={`text-4xl mb-4 ${negotiationResult.success ? 'text-toxic-green' : 'text-blood-red'}`}
             >
               {negotiationResult.success ? 'SUCCESS!' : 'FAILURE'}
             </div>
-            <div className='text-lg font-bold text-(--star-white) mb-2'>
+            <div className='text-lg font-bold text-star-white mb-2'>
               {negotiationResult.feedback}
             </div>
             {negotiationResult.status === 'REVOKED' && (
-              <div className='text-(--blood-red) font-mono uppercase tracking-widest mt-4'>
+              <div className='text-blood-red font-mono uppercase tracking-widest mt-4'>
                 DEAL LOST
               </div>
             )}
@@ -336,14 +336,14 @@ const getAlignmentBadge = alignment => {
 const getAlignmentColor = alignment => {
   switch (alignment) {
     case BRAND_ALIGNMENTS.EVIL:
-      return 'text-(--toxic-green)'
+      return 'text-toxic-green'
     case BRAND_ALIGNMENTS.CORPORATE:
-      return 'text-(--electric-blue)'
+      return 'text-electric-blue'
     case BRAND_ALIGNMENTS.INDIE:
-      return 'text-(--hot-pink)'
+      return 'text-hot-pink'
     case BRAND_ALIGNMENTS.SUSTAINABLE:
-      return 'text-(--warning-yellow)'
+      return 'text-warning-yellow'
     default:
-      return 'text-(--ash-gray)'
+      return 'text-ash-gray'
   }
 }

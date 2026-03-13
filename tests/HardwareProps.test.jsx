@@ -27,8 +27,8 @@ describe('RackScrew', () => {
     expect(circle.getAttribute('cx')).toBe('0')
     expect(circle.getAttribute('cy')).toBe('0')
     expect(circle.getAttribute('r')).toBe('4')
-    expect(circle.getAttribute('fill')).toBe('var(--concrete-gray)')
-    expect(circle.getAttribute('stroke')).toBe('var(--void-black)')
+    expect(circle.getAttribute('fill')).toBe('var(--color-concrete-gray)')
+    expect(circle.getAttribute('stroke')).toBe('var(--color-void-black)')
     expect(circle.getAttribute('stroke-width')).toBe('1')
   })
 
@@ -47,7 +47,7 @@ describe('RackScrew', () => {
     expect(lines[0].getAttribute('y1')).toBe('-2')
     expect(lines[0].getAttribute('x2')).toBe('2')
     expect(lines[0].getAttribute('y2')).toBe('2')
-    expect(lines[0].getAttribute('stroke')).toBe('var(--void-black)')
+    expect(lines[0].getAttribute('stroke')).toBe('var(--color-void-black)')
     expect(lines[0].getAttribute('stroke-width')).toBe('1.5')
 
     // Check second line
@@ -55,7 +55,7 @@ describe('RackScrew', () => {
     expect(lines[1].getAttribute('y1')).toBe('2')
     expect(lines[1].getAttribute('x2')).toBe('2')
     expect(lines[1].getAttribute('y2')).toBe('-2')
-    expect(lines[1].getAttribute('stroke')).toBe('var(--void-black)')
+    expect(lines[1].getAttribute('stroke')).toBe('var(--color-void-black)')
     expect(lines[1].getAttribute('stroke-width')).toBe('1.5')
   })
 

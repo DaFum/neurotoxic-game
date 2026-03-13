@@ -43,7 +43,7 @@ export const CableList = ({
               cy='80'
               rx='25'
               ry='10'
-              fill='var(--void-black)'
+              fill='var(--color-void-black)'
               opacity='0.8'
             />
 
@@ -55,7 +55,7 @@ export const CableList = ({
                   strokeWidth='12'
                   fill='none'
                   style={{
-                    filter: `drop-shadow(0 5px 5px var(--shadow-black))`
+                    filter: `drop-shadow(0 5px 5px var(--color-shadow-black))`
                   }}
                 />
 
@@ -88,7 +88,7 @@ export const CableList = ({
                   y='-68'
                   width='50'
                   height='18'
-                  fill='var(--void-black)'
+                  fill='var(--color-void-black)'
                   stroke='currentColor'
                   strokeWidth='1'
                 />

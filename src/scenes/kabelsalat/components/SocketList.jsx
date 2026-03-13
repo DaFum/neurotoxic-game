@@ -23,7 +23,9 @@ export const SocketList = ({
           ? CABLE_MAP[connections[socketId]]
           : null
         const showColor = isPowerConnected
-        const socketDisplayColor = showColor ? socket.color : 'var(--ash-gray)'
+        const socketDisplayColor = showColor
+          ? socket.color
+          : 'var(--color-ash-gray)'
 
         return (
           <g
@@ -63,8 +65,8 @@ export const SocketList = ({
               y='-35'
               width='70'
               height='70'
-              fill='var(--void-black)'
-              stroke='var(--concrete-gray)'
+              fill='var(--color-void-black)'
+              stroke='var(--color-concrete-gray)'
               strokeWidth='1'
               rx='4'
             />
@@ -77,13 +79,13 @@ export const SocketList = ({
               r='4'
               fill={
                 isConnected && showColor
-                  ? 'var(--success-green)'
-                  : 'var(--shadow-black)'
+                  ? 'var(--color-success-green)'
+                  : 'var(--color-shadow-black)'
               }
               style={{
                 filter:
                   isConnected && showColor
-                    ? 'drop-shadow(0 0 5px var(--success-green))'
+                    ? 'drop-shadow(0 0 5px var(--color-success-green))'
                     : 'none'
               }}
             />
@@ -91,7 +93,7 @@ export const SocketList = ({
             <text
               x='0'
               y='-45'
-              fill={showColor ? 'currentColor' : 'var(--ash-gray)'}
+              fill={showColor ? 'currentColor' : 'var(--color-ash-gray)'}
               opacity={showColor ? 1 : 0.5}
               fontSize='12'
               textAnchor='middle'
@@ -105,7 +107,7 @@ export const SocketList = ({
                 style={{
                   color: showColor
                     ? connectedCable.color
-                    : 'var(--concrete-gray)'
+                    : 'var(--color-concrete-gray)'
                 }}
               >
                 <PlugGraphics type={connectedCable.type} />

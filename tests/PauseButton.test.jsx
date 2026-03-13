@@ -81,7 +81,7 @@ describe('PauseButton', () => {
 
     const button = container.querySelector('button')
     // Should have hover styles, not disabled styles
-    expect(button.className).toContain('hover:bg-(--toxic-green)')
+    expect(button.className).toContain('hover:bg-toxic-green')
   })
 
   test('renders without onTogglePause prop (should not crash)', async () => {

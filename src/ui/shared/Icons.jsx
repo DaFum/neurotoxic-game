@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 export const RazorPlayIcon = memo(function RazorPlayIcon({ className = '' }) {
   return (
     <svg
-      className={`text-(--toxic-green) ${className}`}
+      className={`text-toxic-green ${className}`}
       viewBox='0 0 24 24'
       fill='none'
       xmlns='http://www.w3.org/2000/svg'
@@ -26,7 +26,7 @@ export const RazorPlayIcon = memo(function RazorPlayIcon({ className = '' }) {
         y='11'
         width='24'
         height='2'
-        fill='var(--void-black)'
+        fill='var(--color-void-black)'
         opacity='0.8'
       >
         <animate
@@ -56,7 +56,7 @@ RazorPlayIcon.propTypes = {
 export const VoidSkullIcon = memo(function VoidSkullIcon({ className = '' }) {
   return (
     <svg
-      className={`text-(--toxic-green) ${className}`}
+      className={`text-toxic-green ${className}`}
       viewBox='0 0 32 32'
       fill='none'
       xmlns='http://www.w3.org/2000/svg'
@@ -277,7 +277,7 @@ export const GameIcon = memo(function GameIcon({ className = '', ...props }) {
 export const UIFrameCorner = memo(function UIFrameCorner({ className = '' }) {
   return (
     <svg
-      className={`text-(--toxic-green) ${className}`}
+      className={`text-toxic-green ${className}`}
       viewBox='0 0 48 48'
       fill='none'
       xmlns='http://www.w3.org/2000/svg'

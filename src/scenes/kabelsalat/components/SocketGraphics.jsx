@@ -7,13 +7,13 @@ export const SocketGraphics = ({ type }) => {
             cx='0'
             cy='0'
             r='22'
-            fill='var(--shadow-black)'
+            fill='var(--color-shadow-black)'
             stroke='currentColor'
             strokeWidth='2'
           />
-          <circle cx='-6' cy='-5' r='4' fill='var(--void-black)' />
-          <circle cx='6' cy='-5' r='4' fill='var(--void-black)' />
-          <circle cx='0' cy='8' r='4' fill='var(--void-black)' />
+          <circle cx='-6' cy='-5' r='4' fill='var(--color-void-black)' />
+          <circle cx='6' cy='-5' r='4' fill='var(--color-void-black)' />
+          <circle cx='0' cy='8' r='4' fill='var(--color-void-black)' />
         </g>
       )
     case 'jack':
@@ -21,7 +21,7 @@ export const SocketGraphics = ({ type }) => {
         <g>
           <polygon
             points='-18,-10 0,-22 18,-10 18,10 0,22 -18,10'
-            fill='var(--shadow-black)'
+            fill='var(--color-shadow-black)'
             stroke='currentColor'
             strokeWidth='2'
           />
@@ -29,7 +29,7 @@ export const SocketGraphics = ({ type }) => {
             cx='0'
             cy='0'
             r='8'
-            fill='var(--void-black)'
+            fill='var(--color-void-black)'
             stroke='currentColor'
             strokeWidth='1'
             strokeDasharray='2 2'
@@ -45,11 +45,11 @@ export const SocketGraphics = ({ type }) => {
             width='28'
             height='28'
             rx='4'
-            fill='var(--shadow-black)'
+            fill='var(--color-shadow-black)'
             stroke='currentColor'
             strokeWidth='2'
           />
-          <circle cx='0' cy='0' r='7' fill='var(--void-black)' />
+          <circle cx='0' cy='0' r='7' fill='var(--color-void-black)' />
           <circle cx='0' cy='0' r='2' fill='currentColor' />
         </g>
       )
@@ -58,14 +58,32 @@ export const SocketGraphics = ({ type }) => {
         <g>
           <path
             d='M -22 -12 L 22 -12 L 18 18 L -18 18 Z'
-            fill='var(--shadow-black)'
+            fill='var(--color-shadow-black)'
             stroke='currentColor'
             strokeWidth='2'
             strokeLinejoin='round'
           />
-          <rect x='-9' y='-4' width='4' height='10' fill='var(--void-black)' />
-          <rect x='-2' y='-4' width='4' height='10' fill='var(--void-black)' />
-          <rect x='5' y='-4' width='4' height='10' fill='var(--void-black)' />
+          <rect
+            x='-9'
+            y='-4'
+            width='4'
+            height='10'
+            fill='var(--color-void-black)'
+          />
+          <rect
+            x='-2'
+            y='-4'
+            width='4'
+            height='10'
+            fill='var(--color-void-black)'
+          />
+          <rect
+            x='5'
+            y='-4'
+            width='4'
+            height='10'
+            fill='var(--color-void-black)'
+          />
         </g>
       )
     case 'midi':
@@ -75,14 +93,14 @@ export const SocketGraphics = ({ type }) => {
             cx='0'
             cy='0'
             r='20'
-            fill='var(--shadow-black)'
+            fill='var(--color-shadow-black)'
             stroke='currentColor'
             strokeWidth='2'
           />
           <path
             d='M -15 0 A 15 15 0 0 1 15 0'
             fill='none'
-            stroke='var(--void-black)'
+            stroke='var(--color-void-black)'
             strokeWidth='6'
             strokeLinecap='round'
           />
