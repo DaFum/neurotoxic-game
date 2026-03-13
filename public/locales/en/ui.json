@@ -725,7 +725,7 @@
   "overworld.band_hq_button": "BAND HQ",
   "stash": {
     "selectMemberFirst": "Select a band member first!",
-    "itemUsed": "Used {{itemName}}!"
+    "itemUsed": "{{action}} {{itemName}}!"
   },
   "contraband": {
     "title": "CONTRABAND STASH",

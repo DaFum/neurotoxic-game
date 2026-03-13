@@ -117,12 +117,19 @@ export const handleCompleteTravelMinigame = (state, payload) => {
     if (contrabandId) {
       const instanceId = crypto.randomUUID()
       // Call handleAddContraband directly to leverage its logic
+      const preStashLength = newState.band.stash ? newState.band.stash.length : 0
+      const preStacks = newState.band.stash ? newState.band.stash.find(i => i.id === contrabandId)?.stacks || 0 : 0
+
       newState = handleAddContraband(newState, { contrabandId, instanceId })
 
-      const addedItem = newState.band.stash.find(
-        i => i.instanceId === instanceId
-      )
-      if (addedItem) {
+      // Determine if item was actually added (length increased, or stacks increased)
+      const postItem = newState.band.stash.find(i => i.id === contrabandId)
+      const postStacks = postItem ? postItem.stacks || 0 : 0
+      const postStashLength = newState.band.stash.length
+
+      const wasAdded = postStashLength > preStashLength || postStacks > preStacks
+
+      if (wasAdded) {
         // We reuse the existing toasts array and append our new toast
         newState.toasts = [
           ...newState.toasts,
