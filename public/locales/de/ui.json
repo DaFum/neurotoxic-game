@@ -725,7 +725,7 @@
   "overworld.band_hq_button": "BAND HQ",
   "stash": {
     "selectMemberFirst": "Wähle zuerst ein Bandmitglied aus!",
-    "itemUsed": "{{itemName}} benutzt!"
+    "itemUsed": "{{itemName}} {{action}}!"
   },
   "contraband": {
     "title": "SCHMUGGELWAREN VERSTECK",

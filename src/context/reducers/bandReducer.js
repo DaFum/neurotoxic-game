@@ -83,15 +83,41 @@ export const handleAddContraband = (state, payload) => {
   const item = CONTRABAND_BY_ID.get(contrabandId)
   if (!item) return state
 
+  const newBand = { ...state.band }
+  const currentStash = newBand.stash || []
+
+  // Handle stackable logic and uniqueness
+  const existingIndex = currentStash.findIndex(i => i.id === item.id)
+  if (existingIndex !== -1) {
+    const existingItem = currentStash[existingIndex]
+    if (!item.stackable) {
+      return state // Don't add duplicate non-stackable items
+    } else {
+      const currentStacks = existingItem.stacks || 1
+      const max = item.maxStacks || Infinity
+      if (currentStacks < max) {
+        const updatedStash = [...currentStash]
+        updatedStash[existingIndex] = {
+          ...existingItem,
+          stacks: currentStacks + 1
+        }
+        newBand.stash = updatedStash
+        return { ...state, band: newBand }
+      } else {
+        return state // Reached max stacks
+      }
+    }
+  }
+
   const newInstance = {
     ...item,
     instanceId,
     remainingDuration: item.duration || null,
-    applied: !!item.applyOnAdd
+    applied: !!item.applyOnAdd,
+    stacks: item.stackable ? 1 : undefined
   }
 
-  const newBand = { ...state.band }
-  newBand.stash = [...(newBand.stash || []), newInstance]
+  newBand.stash = [...currentStash, newInstance]
 
   if (item.applyOnAdd && item.type === 'equipment') {
     if (item.effectType === 'luck') {
@@ -165,8 +191,30 @@ export const handleUseContraband = (state, payload) => {
     }
   } else if (item.effectType === 'harmony') {
     newBand.harmony = clampBandHarmony((newBand.harmony || 0) + item.value)
+    if (item.duration) {
+      newBand.activeContrabandEffects = [
+        ...(newBand.activeContrabandEffects || []),
+        {
+          instanceId: item.instanceId,
+          effectType: item.effectType,
+          value: item.value,
+          remainingDuration: item.duration
+        }
+      ]
+    }
   } else if (item.effectType === 'luck') {
     newBand.luck = (newBand.luck || 0) + item.value
+    if (item.duration) {
+      newBand.activeContrabandEffects = [
+        ...(newBand.activeContrabandEffects || []),
+        {
+          instanceId: item.instanceId,
+          effectType: item.effectType,
+          value: item.value,
+          remainingDuration: item.duration
+        }
+      ]
+    }
   } else if (item.effectType === 'guitar_difficulty') {
     newBand.performance = {
       ...newBand.performance,

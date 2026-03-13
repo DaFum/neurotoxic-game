@@ -41,6 +41,7 @@ export const useContrabandStash = () => {
       addToast(
         t('ui:stash.itemUsed', {
           itemName: translatedName,
+          action: messageAction,
           defaultValue: `${messageAction} ${translatedName}!`
         }),
         'success'
