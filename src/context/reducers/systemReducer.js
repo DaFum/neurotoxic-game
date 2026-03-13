@@ -95,7 +95,6 @@ export const handleLoadGame = (state, payload) => {
       ? loadedState.band.stash.map(item => ({
           ...item,
           remainingDuration:
-            typeof item.remainingDuration === 'number' &&
             Number.isFinite(item.remainingDuration) &&
             item.remainingDuration >= 0
               ? item.remainingDuration
@@ -108,7 +107,6 @@ export const handleLoadGame = (state, payload) => {
       ? loadedState.band.activeContrabandEffects.map(effect => ({
           ...effect,
           remainingDuration:
-            typeof effect.remainingDuration === 'number' &&
             Number.isFinite(effect.remainingDuration) &&
             effect.remainingDuration >= 0
               ? effect.remainingDuration

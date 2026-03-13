@@ -373,23 +373,20 @@ export const GameStateProvider = ({ children }) => {
     []
   )
 
-  const completeTravelMinigame = useCallback(
-    (damageTaken, itemsCollected) => {
-      const rngValue = secureRandom()
-      const contrabandId = pickRandomContraband(secureRandom)
-      const instanceId = crypto.randomUUID()
-      dispatch(
-        createCompleteTravelMinigameAction(
-          damageTaken,
-          itemsCollected,
-          rngValue,
-          contrabandId,
-          instanceId
-        )
+  const completeTravelMinigame = useCallback((damageTaken, itemsCollected) => {
+    const rngValue = secureRandom()
+    const contrabandId = pickRandomContraband(secureRandom)
+    const instanceId = crypto.randomUUID()
+    dispatch(
+      createCompleteTravelMinigameAction(
+        damageTaken,
+        itemsCollected,
+        rngValue,
+        contrabandId,
+        instanceId
       )
-    },
-    []
-  )
+    )
+  }, [])
 
   const startRoadieMinigame = useCallback(
     gigId =>

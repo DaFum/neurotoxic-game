@@ -62,13 +62,24 @@ export const useGigEffects = stats => {
   useEffect(() => {
     let rAF
     const animateChaos = () => {
-      if (stats.isToxicMode && chaosContainerRef.current) {
-        const x = secureRandom() * 4 - 2
-        const y = secureRandom() * 4 - 2
-        chaosContainerRef.current.style.transform = `translate(${x}px, ${y}px)`
-      } else if (chaosContainerRef.current) {
-        chaosContainerRef.current.style.transform = 'none'
+      try {
+        if (stats.isToxicMode && chaosContainerRef.current) {
+          const x = secureRandom() * 4 - 2
+          const y = secureRandom() * 4 - 2
+          chaosContainerRef.current.style.transform = `translate(${x}px, ${y}px)`
+        } else if (chaosContainerRef.current) {
+          chaosContainerRef.current.style.transform = 'none'
+        }
+      } catch (e) {
+        cancelAnimationFrame(rAF)
+        if (chaosContainerRef.current) {
+          const fallbackX = Math.random() * 4 - 2
+          const fallbackY = Math.random() * 4 - 2
+          chaosContainerRef.current.style.transform = `translate(${fallbackX}px, ${fallbackY}px)`
+        }
+        return // Cancel next frame request
       }
+
       if (stats.isToxicMode) {
         rAF = requestAnimationFrame(animateChaos)
       }

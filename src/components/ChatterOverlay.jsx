@@ -93,11 +93,15 @@ const ChatterMessage = memo(
       return () => clearTimeout(timer)
     }, [msg.id, onRemove])
 
-    const sceneLabel = t(`ui:chatter_labels.${currentScene}`, {
-      defaultValue: t('ui:chatter_labels.default_fallback', {
-        defaultValue: 'Band Feed'
-      })
-    })
+    const sceneLabel = useMemo(
+      () =>
+        t(`ui:chatter_labels.${currentScene}`, {
+          defaultValue: t('ui:chatter_labels.default_fallback', {
+            defaultValue: 'Band Feed'
+          })
+        }),
+      [currentScene, t]
+    )
 
     return (
       <motion.div
