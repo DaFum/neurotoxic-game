@@ -38,7 +38,7 @@ describe('Contraband Utils', () => {
       const base = 0.15
       const luck = 10
       const chance = computeDropChance(base, luck)
-      assert.equal(chance, 0.20)
+      assert.equal(chance, 0.2)
     })
 
     it('clamps the chance to the max drop chance', () => {

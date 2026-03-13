@@ -668,9 +668,11 @@ describe('PostGig Component - Brand Deals', () => {
     fireEvent.click(acceptBtn)
 
     await waitFor(() => {
-      expect(mockUpdatePlayer).toHaveBeenCalledWith(expect.objectContaining({
-        money: 1500
-      }))
+      expect(mockUpdatePlayer).toHaveBeenCalledWith(
+        expect.objectContaining({
+          money: 1500
+        })
+      )
       expect(mockAddToast).toHaveBeenCalledWith(
         expect.stringContaining('Mega Corp'),
         'success'
@@ -967,9 +969,11 @@ describe('PostGig Component - Complete Phase', () => {
     fireEvent.click(spinBtn)
 
     await waitFor(() => {
-      expect(mockUpdatePlayer).toHaveBeenCalledWith(expect.objectContaining({
-        money: 300
-      }))
+      expect(mockUpdatePlayer).toHaveBeenCalledWith(
+        expect.objectContaining({
+          money: 300
+        })
+      )
       expect(mockUpdateSocial).toHaveBeenCalledWith(expect.any(Function))
       expect(mockAddToast).toHaveBeenCalledWith(
         expect.stringContaining('Controversy reduced'),

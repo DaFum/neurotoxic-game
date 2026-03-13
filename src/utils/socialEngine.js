@@ -459,7 +459,8 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
   const reputation = social.brandReputation || {}
 
   // Pre-calculate common checks to avoid redundant computations
-  const totalFollowers = (social.instagram || 0) + (social.tiktok || 0) + (social.youtube || 0)
+  const totalFollowers =
+    (social.instagram || 0) + (social.tiktok || 0) + (social.youtube || 0)
 
   // Create an O(1) set of active deal IDs
   const activeDealIds = new Set()
@@ -484,7 +485,8 @@ export const generateBrandOffers = (gameState, rng = secureRandom) => {
     }
 
     // Check trait match (if required trait exists in band)
-    if (deal.requirements.trait && !bandHasTrait(band, deal.requirements.trait)) continue
+    if (deal.requirements.trait && !bandHasTrait(band, deal.requirements.trait))
+      continue
 
     // Check if already active
     if (activeDealIds.has(deal.id)) continue

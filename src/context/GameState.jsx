@@ -337,7 +337,8 @@ export const GameStateProvider = ({ children }) => {
    * @param {string} [memberId] - Optional. The ID of the band member.
    */
   const useContraband = useCallback(
-    (instanceId, memberId) => dispatch(createUseContrabandAction(instanceId, memberId)),
+    (instanceId, memberId) =>
+      dispatch(createUseContrabandAction(instanceId, memberId)),
     []
   )
 

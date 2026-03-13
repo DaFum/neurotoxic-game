@@ -238,7 +238,10 @@ export const usePostGigLogic = () => {
 
         if (appliedDelta !== 0) {
           const sign = appliedDelta > 0 ? '+' : ''
-          addToast(`${t('ui:postGig.harmony', { defaultValue: 'Harmony' })} ${sign}${appliedDelta}`, appliedDelta > 0 ? 'success' : 'error')
+          addToast(
+            `${t('ui:postGig.harmony', { defaultValue: 'Harmony' })} ${sign}${appliedDelta}`,
+            appliedDelta > 0 ? 'success' : 'error'
+          )
         }
       }
       if (
@@ -289,7 +292,10 @@ export const usePostGigLogic = () => {
 
         if (appliedDelta !== 0) {
           const sign = appliedDelta > 0 ? '+' : ''
-          addToast(`${t('ui:postGig.money', { defaultValue: 'Money' })} ${sign}${appliedDelta}€`, appliedDelta > 0 ? 'success' : 'error')
+          addToast(
+            `${t('ui:postGig.money', { defaultValue: 'Money' })} ${sign}${appliedDelta}€`,
+            appliedDelta > 0 ? 'success' : 'error'
+          )
         }
       }
 
@@ -466,7 +472,8 @@ export const usePostGigLogic = () => {
           return updates
         })
 
-        const moneyText = appliedMoneyDelta !== 0 ? ` (+${appliedMoneyDelta}€)` : ''
+        const moneyText =
+          appliedMoneyDelta !== 0 ? ` (+${appliedMoneyDelta}€)` : ''
         addToast(
           t('ui:postGig.acceptedDeal', {
             dealName: deal.name,

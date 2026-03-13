@@ -94,7 +94,9 @@ export const handleLoadGame = (state, payload) => {
     stash: Array.isArray(loadedState.band?.stash)
       ? [...loadedState.band.stash]
       : [...DEFAULT_BAND_STATE.stash],
-    activeContrabandEffects: Array.isArray(loadedState.band?.activeContrabandEffects)
+    activeContrabandEffects: Array.isArray(
+      loadedState.band?.activeContrabandEffects
+    )
       ? [...loadedState.band.activeContrabandEffects]
       : [...DEFAULT_BAND_STATE.activeContrabandEffects]
   }
@@ -313,11 +315,12 @@ export const handleAdvanceDay = (state, payload) => {
     socialUnlocks
   )
 
-  const newTrend = generateDailyTrend(rng)
-
   // --- Contraband expiry ---
-  let activeEffects = nextBand.activeContrabandEffects || []
-  activeEffects = activeEffects.map(e => ({ ...e, remainingDuration: e.remainingDuration - 1 }))
+  let activeEffects = traitResult.band.activeContrabandEffects || []
+  activeEffects = activeEffects.map(e => ({
+    ...e,
+    remainingDuration: e.remainingDuration - 1
+  }))
 
   const stillActive = activeEffects.filter(e => e.remainingDuration > 0)
   const expired = activeEffects.filter(e => e.remainingDuration <= 0)
@@ -326,24 +329,60 @@ export const handleAdvanceDay = (state, payload) => {
   expired.forEach(e => {
     // Revert the temporary state applied in bandReducer.js
     if (e.effectType === 'guitar_difficulty') {
-      nextBand.performance = {
-        ...nextBand.performance,
-        guitarDifficulty: Math.max(0.1, (nextBand.performance.guitarDifficulty || 1) - e.value)
+      traitResult.band.performance = {
+        ...traitResult.band.performance,
+        guitarDifficulty: Math.max(
+          0.1,
+          (traitResult.band.performance.guitarDifficulty || 1) - e.value
+        )
       }
     } else if (e.effectType === 'luck') {
-      nextBand.luck = (nextBand.luck || 0) - e.value
+      traitResult.band.luck = (traitResult.band.luck || 0) - e.value
     } else if (e.effectType === 'stamina_max') {
-      nextBand.members = nextBand.members.map(m => ({
+      traitResult.band.members = traitResult.band.members.map(m => ({
         ...m,
         staminaMax: Math.max(0, (m.staminaMax || 100) - e.value)
       }))
     } else if (e.effectType === 'style') {
-      nextBand.style = (nextBand.style || 0) - e.value
+      traitResult.band.style = (traitResult.band.style || 0) - e.value
+    } else if (e.effectType === 'tour_success') {
+      traitResult.band.tourSuccess =
+        (traitResult.band.tourSuccess || 0) - e.value
+    } else if (e.effectType === 'gig_modifier') {
+      traitResult.band.gigModifier =
+        (traitResult.band.gigModifier || 0) - e.value
+    } else if (e.effectType === 'tempo') {
+      traitResult.band.tempo = (traitResult.band.tempo || 0) - e.value
+    } else if (e.effectType === 'practice_gain') {
+      traitResult.band.practiceGain =
+        (traitResult.band.practiceGain || 0) - e.value
+    } else if (e.effectType === 'crit') {
+      traitResult.band.crit = (traitResult.band.crit || 0) - e.value
+    } else if (e.effectType === 'affinity') {
+      traitResult.band.affinity = (traitResult.band.affinity || 0) - e.value
+    } else if (e.effectType === 'crowd_control') {
+      traitResult.band.crowdControl =
+        (traitResult.band.crowdControl || 0) - e.value
+    }
+
+    // Unmark applied status in stash so relics can be used again
+    if (traitResult.band.stash) {
+      const itemIndex = traitResult.band.stash.findIndex(
+        i => i.instanceId === e.instanceId
+      )
+      if (itemIndex !== -1) {
+        traitResult.band.stash[itemIndex] = {
+          ...traitResult.band.stash[itemIndex],
+          applied: false
+        }
+      }
     }
   })
 
-  nextBand.activeContrabandEffects = stillActive
+  traitResult.band.activeContrabandEffects = stillActive
   // -------------------------
+
+  const newTrend = generateDailyTrend(rng)
 
   let nextState = {
     ...state,

@@ -1,4 +1,7 @@
-import { CONTRABAND_RARITY_WEIGHTS, CONTRABAND_BY_RARITY } from '../data/contraband.js'
+import {
+  CONTRABAND_RARITY_WEIGHTS,
+  CONTRABAND_BY_RARITY
+} from '../data/contraband.js'
 
 export const DROP_BASE_CHANCE = 0.15
 export const LUCK_MOD_PER_POINT = 0.005
@@ -11,11 +14,20 @@ export const MAX_DROP_CHANCE = 0.5
  */
 export function pickRarity(rng = Math.random) {
   const weights = CONTRABAND_RARITY_WEIGHTS
-  const total = Object.values(weights).reduce((s, w) => s + w, 0)
+  let total = 0
+  for (const rarity in weights) {
+    if (Object.hasOwn(weights, rarity)) {
+      total += weights[rarity]
+    }
+  }
+
   let r = rng() * total
-  for (const [rarity, w] of Object.entries(weights)) {
-    if (r < w) return rarity
-    r -= w
+  for (const rarity in weights) {
+    if (Object.hasOwn(weights, rarity)) {
+      const w = weights[rarity]
+      if (r < w) return rarity
+      r -= w
+    }
   }
   return 'common'
 }

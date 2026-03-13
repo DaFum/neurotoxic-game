@@ -101,6 +101,24 @@ export const handleAddContraband = (state, payload) => {
         ...m,
         staminaMax: (m.staminaMax || 100) + item.value
       }))
+    } else if (item.effectType === 'guitar_difficulty') {
+      newBand.performance = {
+        ...newBand.performance,
+        guitarDifficulty: Math.max(
+          0.1,
+          (newBand.performance?.guitarDifficulty || 1) + item.value
+        )
+      }
+    } else if (item.effectType === 'crit') {
+      newBand.crit = (newBand.crit || 0) + item.value
+    } else if (item.effectType === 'crowd_control') {
+      newBand.crowdControl = (newBand.crowdControl || 0) + item.value
+    } else if (item.effectType === 'affinity') {
+      newBand.affinity = (newBand.affinity || 0) + item.value
+    } else if (item.effectType === 'style') {
+      newBand.style = (newBand.style || 0) + item.value
+    } else if (item.effectType === 'tour_success') {
+      newBand.tourSuccess = (newBand.tourSuccess || 0) + item.value
     }
   }
 
@@ -132,9 +150,14 @@ export const handleUseContraband = (state, payload) => {
     if (memberId) {
       newBand.members = newBand.members.map(m => {
         if (m.id === memberId) {
+          const maxVal =
+            item.effectType === 'stamina' ? m.staminaMax || 100 : 100
           return {
             ...m,
-            [item.effectType]: Math.min(100, Math.max(0, (m[item.effectType] || 0) + item.value))
+            [item.effectType]: Math.min(
+              maxVal,
+              Math.max(0, (m[item.effectType] || 0) + item.value)
+            )
           }
         }
         return m
@@ -147,7 +170,10 @@ export const handleUseContraband = (state, payload) => {
   } else if (item.effectType === 'guitar_difficulty') {
     newBand.performance = {
       ...newBand.performance,
-      guitarDifficulty: Math.max(0.1, (newBand.performance.guitarDifficulty || 1) + item.value)
+      guitarDifficulty: Math.max(
+        0.1,
+        (newBand.performance.guitarDifficulty || 1) + item.value
+      )
     }
     if (item.duration) {
       newBand.activeContrabandEffects = [
@@ -176,11 +202,22 @@ export const handleUseContraband = (state, payload) => {
         ...m,
         staminaMax: (m.staminaMax || 100) + item.value
       }))
-    } else if (item.effectType === 'luck') {
-      newBand.luck = (newBand.luck || 0) + item.value
     } else if (item.effectType === 'style') {
-      // Assume style isn't fully implemented yet, store as style field if not there
       newBand.style = (newBand.style || 0) + item.value
+    } else if (item.effectType === 'tour_success') {
+      newBand.tourSuccess = (newBand.tourSuccess || 0) + item.value
+    } else if (item.effectType === 'gig_modifier') {
+      newBand.gigModifier = (newBand.gigModifier || 0) + item.value
+    } else if (item.effectType === 'tempo') {
+      newBand.tempo = (newBand.tempo || 0) + item.value
+    } else if (item.effectType === 'practice_gain') {
+      newBand.practiceGain = (newBand.practiceGain || 0) + item.value
+    } else if (item.effectType === 'crit') {
+      newBand.crit = (newBand.crit || 0) + item.value
+    } else if (item.effectType === 'affinity') {
+      newBand.affinity = (newBand.affinity || 0) + item.value
+    } else if (item.effectType === 'crowd_control') {
+      newBand.crowdControl = (newBand.crowdControl || 0) + item.value
     }
 
     if (item.duration) {
