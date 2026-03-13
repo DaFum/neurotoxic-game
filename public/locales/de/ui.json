@@ -714,8 +714,8 @@
   "socials": "SOCIALS",
   "start_game": "Tour Starten",
   "stash": {
-    "selectMemberFirst": "Wähle zuerst ein Bandmitglied aus!",
-    "itemUsed": "{{itemName}} {{action}}!"
+    "itemUsed": "{{action}} {{itemName}}!",
+    "selectMemberFirst": "Wähle zuerst ein Bandmitglied aus!"
   },
   "stash.actionApplied": "Angewendet",
   "stash.actionUsed": "Benutzt",

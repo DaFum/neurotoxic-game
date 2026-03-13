@@ -552,7 +552,7 @@ export const calculateGigFinancials = ({
   // 3. Cult Donations (Zealotry)
   const { passiveIncome } = calculateZealotryEffects(zealotry)
   if (passiveIncome > 0) {
-    report.income.breakdown.push({ labelKey: 'economy.cultDonations', value: passiveIncome })
+    report.income.breakdown.push({ labelKey: 'economy:cultDonations', value: passiveIncome })
     report.income.total += passiveIncome
   }
 
