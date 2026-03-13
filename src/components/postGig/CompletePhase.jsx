@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
 
 export const CompletePhase = ({
@@ -9,6 +10,7 @@ export const CompletePhase = ({
   player,
   social
 }) => {
+  const { t } = useTranslation()
   const hasPR = player?.hqUpgrades?.includes('pr_manager_contract')
   const isHighControversy = (social?.controversyLevel || 0) > 50
 
@@ -28,7 +30,9 @@ export const CompletePhase = ({
             : 'text-blood-red'
         }`}
       >
-        {result.success ? 'VIRAL HIT!' : 'FLOPOCOLYPSE'}
+        {result.success
+          ? t('ui:postGig.viralHit', { defaultValue: 'VIRAL HIT!' })
+          : t('ui:postGig.flop', { defaultValue: 'FLOPOCOLYPSE' })}
       </motion.h3>
       <motion.p
         initial={{ opacity: 0 }}
@@ -47,7 +51,8 @@ export const CompletePhase = ({
         }`}
       >
         {result.totalFollowers > 0 ? '+' : ''}
-        {result.totalFollowers} Followers
+        {result.totalFollowers}{' '}
+        {t('ui:postGig.followers', { defaultValue: 'Followers' })}
         <div className='text-sm text-ash-gray/60 mt-1 font-normal tracking-wider'>
           {result.platform}
         </div>
@@ -77,7 +82,8 @@ export const CompletePhase = ({
               result.harmonyChange > 0 ? 'text-toxic-green' : 'text-blood-red'
             }
           >
-            🎸 Harmony {result.harmonyChange > 0 ? '+' : ''}
+            🎸 {t('ui:postGig.harmony', { defaultValue: 'Harmony' })}{' '}
+            {result.harmonyChange > 0 ? '+' : ''}
             {result.harmonyChange}
           </div>
         ) : null}
@@ -90,7 +96,8 @@ export const CompletePhase = ({
                 : 'text-toxic-green'
             }
           >
-            {result.controversyChange > 0 ? '⚠️' : '🛡️'} Controversy{' '}
+            {result.controversyChange > 0 ? '⚠️' : '🛡️'}{' '}
+            {t('ui:postGig.controversy', { defaultValue: 'Controversy' })}{' '}
             {result.controversyChange > 0 ? '+' : ''}
             {result.controversyChange}
           </div>
@@ -102,7 +109,8 @@ export const CompletePhase = ({
               result.loyaltyChange > 0 ? 'text-toxic-green' : 'text-blood-red'
             }
           >
-            🛡️ Loyalty {result.loyaltyChange > 0 ? '+' : ''}
+            🛡️ {t('ui:postGig.loyalty', { defaultValue: 'Loyalty' })}{' '}
+            {result.loyaltyChange > 0 ? '+' : ''}
             {result.loyaltyChange}
           </div>
         ) : null}
@@ -111,8 +119,13 @@ export const CompletePhase = ({
           <div className='text-ash-gray'>
             👥{' '}
             {result.targetMember
-              ? `${result.targetMember} Affected`
-              : 'Band Affected'}
+              ? t('ui:postGig.memberAffected', {
+                  member: result.targetMember,
+                  defaultValue: `${result.targetMember} Affected`
+                })
+              : t('ui:postGig.bandAffected', {
+                  defaultValue: 'Band Affected'
+                })}
           </div>
         ) : null}
       </motion.div>
@@ -128,7 +141,9 @@ export const CompletePhase = ({
             onClick={onSpinStory}
             className='bg-blood-red text-star-white px-6 py-2 border-2 border-blood-red hover:bg-star-white hover:text-blood-red'
           >
-            Spin Story (-200€, -25 Controversy)
+            {t('ui:postGig.spinStory', {
+              defaultValue: 'Spin Story (-200€, -25 Controversy)'
+            })}
           </ActionButton>
         )}
 
@@ -137,7 +152,7 @@ export const CompletePhase = ({
           variant='primary'
           className='px-8 py-3 text-void-black'
         >
-          Back to Tour &gt;
+          {t('ui:postGig.backToTour', { defaultValue: 'Back to Tour >' })}
         </ActionButton>
       </motion.div>
     </motion.div>

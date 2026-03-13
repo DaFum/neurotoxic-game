@@ -628,6 +628,7 @@ export const CorporateSeal = memo(({ className, title }) => {
 // --- UI COMPONENTS ---
 
 import { useTranslation, Trans } from 'react-i18next'
+import { Tooltip } from './Tooltip'
 
 // 1. Industrial Toggle
 export const BrutalToggle = memo(({ label, initialState = false }) => {
@@ -1152,36 +1153,38 @@ export const TerminalReadout = memo(() => {
 export const BrutalSlot = memo(({ label, item = null }) => {
   const { t } = useTranslation(['ui'])
 
+  const tooltipText = item
+    ? t('ui:inventory.slot', {
+        name: item.name,
+        defaultValue: `Inventory slot: ${item.name}`
+      })
+    : t('ui:inventory.emptySlot', {
+        label,
+        defaultValue: `Empty inventory slot: ${label}`
+      })
+
   return (
     <div className='flex flex-col gap-2 items-center'>
-      <button
-        type='button'
-        className='relative w-20 h-20 border-2 border-toxic-green/30 bg-shadow-black flex items-center justify-center group cursor-pointer hover:border-toxic-green transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
-        aria-label={
-          item
-            ? t('ui:inventory.slot', {
-                name: item.name,
-                defaultValue: `Inventory slot: ${item.name}`
-              })
-            : t('ui:inventory.emptySlot', {
-                label,
-                defaultValue: `Empty inventory slot: ${label}`
-              })
-        }
-      >
-        {/* Corner Decals */}
-        <div className='absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-toxic-green opacity-0 group-hover:opacity-100 transition-opacity'></div>
-        <div className='absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-toxic-green opacity-0 group-hover:opacity-100 transition-opacity'></div>
+      <Tooltip content={tooltipText}>
+        <button
+          type='button'
+          className='relative w-20 h-20 border-2 border-toxic-green/30 bg-shadow-black flex items-center justify-center group cursor-pointer hover:border-toxic-green transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
+          aria-label={tooltipText}
+        >
+          {/* Corner Decals */}
+          <div className='absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-toxic-green opacity-0 group-hover:opacity-100 transition-opacity'></div>
+          <div className='absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-toxic-green opacity-0 group-hover:opacity-100 transition-opacity'></div>
 
-        {item ? (
-          <>
-            <div className='absolute inset-0 bg-toxic-green/10 group-hover:bg-toxic-green/20 transition-colors'></div>
-            {item.icon}
-          </>
-        ) : (
-          <CrosshairIcon className='w-6 h-6 text-toxic-green opacity-20 group-hover:opacity-50 transition-opacity' />
-        )}
-      </button>
+          {item ? (
+            <>
+              <div className='absolute inset-0 bg-toxic-green/10 group-hover:bg-toxic-green/20 transition-colors'></div>
+              {item.icon}
+            </>
+          ) : (
+            <CrosshairIcon className='w-6 h-6 text-toxic-green opacity-20 group-hover:opacity-50 transition-opacity' />
+          )}
+        </button>
+      </Tooltip>
       <span className='text-[9px] tracking-[0.2em] uppercase opacity-60 text-center max-w-[80px] truncate'>
         {item ? item.name : label}
       </span>

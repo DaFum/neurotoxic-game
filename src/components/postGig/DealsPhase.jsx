@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types'
 import { useState, useEffect, useRef, memo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useGameState } from '../../context/GameState'
 import { negotiateDeal } from '../../utils/socialEngine'
 import { Modal, ActionButton } from '../../ui/shared'
@@ -7,6 +8,7 @@ import { BRAND_ALIGNMENTS } from '../../context/initialState'
 import { handleError } from '../../utils/errorHandler.js'
 
 const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
+  const { t } = useTranslation()
   const { player, band, social, addToast } = useGameState()
   const [negotiatedDeals, setNegotiatedDeals] = useState({}) // id: { status, deal }
 
@@ -103,10 +105,10 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
     <div className='space-y-6'>
       <div className='text-center mb-4'>
         <h3 className='text-xl font-mono tracking-widest text-warning-yellow'>
-          INCOMING BRAND OFFERS
+          {t('ui:deals.incomingOffers', { defaultValue: 'INCOMING BRAND OFFERS' })}
         </h3>
         <div className='text-[10px] text-ash-gray tracking-wider mt-1'>
-          SELL OUT OR STAY TRUE?
+          {t('ui:deals.sellOutOrStayTrue', { defaultValue: 'SELL OUT OR STAY TRUE?' })}
         </div>
       </div>
 
@@ -149,17 +151,17 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
                   {displayDeal.description}
                 </div>
                 <div className='text-xs font-mono grid grid-cols-2 gap-x-4 gap-y-1 text-star-white/80'>
-                  <div>💰 Upfront: {displayDeal.offer.upfront}€</div>
-                  <div>📅 Duration: {displayDeal.offer.duration} Gigs</div>
+                  <div>💰 {t('ui:deals.upfront', { defaultValue: 'Upfront' })}: {displayDeal.offer.upfront}€</div>
+                  <div>📅 {t('ui:deals.duration', { defaultValue: 'Duration' })}: {displayDeal.offer.duration} {t('ui:deals.gigs', { defaultValue: 'Gigs' })}</div>
                   {displayDeal.offer.perGig && (
-                    <div>💵 Per Gig: {displayDeal.offer.perGig}€</div>
+                    <div>💵 {t('ui:deals.perGig', { defaultValue: 'Per Gig' })}: {displayDeal.offer.perGig}€</div>
                   )}
                   {displayDeal.offer.item && (
-                    <div>🎁 Item: {displayDeal.offer.item}</div>
+                    <div>🎁 {t('ui:deals.item', { defaultValue: 'Item' })}: {displayDeal.offer.item}</div>
                   )}
                   {displayDeal.penalty && (
                     <div className='text-blood-red'>
-                      ⚠️ Risk:{' '}
+                      ⚠️ {t('ui:deals.risk', { defaultValue: 'Risk' })}:{' '}
                       {Object.entries(displayDeal.penalty)
                         .map(([k, v]) => `${k}: ${v}`)
                         .join(', ')}
@@ -171,7 +173,7 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
                 {social.brandReputation?.[displayDeal.alignment] !==
                   undefined && (
                   <div className='mt-2 text-[10px] text-ash-gray'>
-                    Reputation:{' '}
+                    {t('ui:deals.reputation', { defaultValue: 'Reputation' })}:{' '}
                     <span
                       className={
                         social.brandReputation[displayDeal.alignment] > 0
@@ -192,7 +194,7 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
                       onClick={() => handleAcceptDeal(displayDeal)}
                       className='bg-toxic-green text-void-black font-bold uppercase hover:scale-105'
                     >
-                      ACCEPT
+                      {t('ui:deals.accept', { defaultValue: 'ACCEPT' })}
                     </ActionButton>
                     {!hasNegotiated && (
                       <button
@@ -200,7 +202,7 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
                         onClick={() => handleNegotiationStart(deal)}
                         className='px-4 py-1.5 border border-warning-yellow text-warning-yellow text-xs font-bold uppercase hover:bg-warning-yellow hover:text-void-black transition-colors'
                       >
-                        NEGOTIATE
+                        {t('ui:deals.negotiate', { defaultValue: 'NEGOTIATE' })}
                       </button>
                     )}
                     {hasNegotiated && (
@@ -208,16 +210,16 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
                         className={`text-center text-[10px] font-mono tracking-wider ${negotiationState.status === 'SUCCESS' ? 'text-toxic-green' : 'text-warning-yellow'}`}
                       >
                         {negotiationState.status === 'SUCCESS'
-                          ? 'TERM IMPROVED'
+                          ? t('ui:deals.termImproved', { defaultValue: 'TERM IMPROVED' })
                           : negotiationState.status === 'WORSENED'
-                            ? 'TERMS WORSENED'
-                            : 'NEGOTIATION FAILED'}
+                            ? t('ui:deals.termsWorsened', { defaultValue: 'TERMS WORSENED' })
+                            : t('ui:deals.negotiationFailed', { defaultValue: 'NEGOTIATION FAILED' })}
                       </div>
                     )}
                   </>
                 ) : (
                   <div className='text-blood-red font-bold font-mono text-center tracking-widest'>
-                    REVOKED
+                    {t('ui:deals.revoked', { defaultValue: 'REVOKED' })}
                   </div>
                 )}
               </div>
@@ -232,7 +234,7 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
           onClick={onSkip}
           className='text-sm text-ash-gray hover:text-star-white underline decoration-dotted'
         >
-          Reject All Offers & Continue &gt;
+          {t('ui:deals.rejectAll', { defaultValue: 'Reject All Offers & Continue >' })}
         </button>
       </div>
 
@@ -240,12 +242,12 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
       <Modal
         isOpen={negotiationModalOpen}
         onClose={() => !negotiationResult && setNegotiationModalOpen(false)} // Prevent closing if showing result
-        title='NEGOTIATION TACTICS'
+        title={t('ui:deals.negotiationTactics', { defaultValue: 'NEGOTIATION TACTICS' })}
       >
         {!negotiationResult ? (
           <div className='space-y-4'>
             <p className='text-sm text-ash-gray text-center mb-4'>
-              Choose your approach. Your fame and traits affect the outcome.
+              {t('ui:deals.chooseApproach', { defaultValue: 'Choose your approach. Your fame and traits affect the outcome.' })}
             </p>
 
             <button
@@ -254,10 +256,10 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
               className='w-full p-3 border border-toxic-green hover:bg-toxic-green/20 text-left group transition-all'
             >
               <div className='text-toxic-green font-bold mb-1'>
-                SAFE (Low Risk)
+                {t('ui:deals.safe', { defaultValue: 'SAFE (Low Risk)' })}
               </div>
               <div className='text-xs text-ash-gray group-hover:text-star-white'>
-                Attempt to get +10% upfront. High chance of success.
+                {t('ui:deals.safeDesc', { defaultValue: 'Attempt to get +10% upfront. High chance of success.' })}
               </div>
             </button>
 
@@ -267,11 +269,10 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
               className='w-full p-3 border border-electric-blue hover:bg-electric-blue/20 text-left group transition-all'
             >
               <div className='text-electric-blue font-bold mb-1'>
-                PERSUASIVE (Medium Risk)
+                {t('ui:deals.persuasive', { defaultValue: 'PERSUASIVE (Medium Risk)' })}
               </div>
               <div className='text-xs text-ash-gray group-hover:text-star-white'>
-                Try for +20% upfront & +10% per gig. Failure worsens terms
-                (-10%).
+                {t('ui:deals.persuasiveDesc', { defaultValue: 'Try for +20% upfront & +10% per gig. Failure worsens terms (-10%).' })}
               </div>
             </button>
 
@@ -281,10 +282,10 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
               className='w-full p-3 border border-blood-red hover:bg-blood-red/20 text-left group transition-all'
             >
               <div className='text-blood-red font-bold mb-1'>
-                AGGRESSIVE (High Risk)
+                {t('ui:deals.aggressive', { defaultValue: 'AGGRESSIVE (High Risk)' })}
               </div>
               <div className='text-xs text-ash-gray group-hover:text-star-white'>
-                Demand +50% upfront. Failure loses the deal completely.
+                {t('ui:deals.aggressiveDesc', { defaultValue: 'Demand +50% upfront. Failure loses the deal completely.' })}
               </div>
             </button>
           </div>
@@ -293,14 +294,16 @@ const DealsPhaseComponent = ({ offers, onAccept, onSkip }) => {
             <div
               className={`text-4xl mb-4 ${negotiationResult.success ? 'text-toxic-green' : 'text-blood-red'}`}
             >
-              {negotiationResult.success ? 'SUCCESS!' : 'FAILURE'}
+              {negotiationResult.success
+                ? t('ui:deals.success', { defaultValue: 'SUCCESS!' })
+                : t('ui:deals.failure', { defaultValue: 'FAILURE' })}
             </div>
             <div className='text-lg font-bold text-star-white mb-2'>
               {negotiationResult.feedback}
             </div>
             {negotiationResult.status === 'REVOKED' && (
               <div className='text-blood-red font-mono uppercase tracking-widest mt-4'>
-                DEAL LOST
+                {t('ui:deals.dealLost', { defaultValue: 'DEAL LOST' })}
               </div>
             )}
           </div>
@@ -318,6 +321,11 @@ DealsPhase.propTypes = {
   onSkip: PropTypes.func.isRequired
 }
 
+// Note: alignment badges are not localized via t() here because
+// getAlignmentBadge is defined outside the component scope and has no
+// access to the hook. The emoji prefixes keep them recognisable across
+// locales; full localisation can be added by converting to a component
+// or accepting t as a parameter in a follow-up.
 const getAlignmentBadge = alignment => {
   switch (alignment) {
     case BRAND_ALIGNMENTS.EVIL:
