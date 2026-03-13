@@ -55,9 +55,25 @@ export const generatePostOptions = (
   rng = secureRandom
 ) => {
   // 1. Evaluate and collect eligible options
-  let eligibleOptions = POST_OPTIONS.filter(opt => {
+  const isCooldownActive = (gameState.social?.reputationCooldown || 0) > 0
+  const cooldownBlockedIds = [
+    'recovery_apology_tour_promo',
+    'recovery_leaked_good_deed'
+  ]
+
+  let eligibleOptions = []
+  for (let i = 0; i < POST_OPTIONS.length; i++) {
+    const opt = POST_OPTIONS[i]
+
+    // Filter by cooldown if active
+    if (isCooldownActive && cooldownBlockedIds.includes(opt.id)) {
+      continue
+    }
+
     try {
-      return opt.condition(gameState)
+      if (opt.condition(gameState)) {
+        eligibleOptions.push(opt)
+      }
     } catch (e) {
       throw new StateError(`Condition failed for post option ${opt.id}`, {
         cause: e,
@@ -71,16 +87,6 @@ export const generatePostOptions = (
         }
       })
     }
-  })
-
-  const cooldownBlockedIds = [
-    'recovery_apology_tour_promo',
-    'recovery_leaked_good_deed'
-  ]
-  if ((gameState.social?.reputationCooldown || 0) > 0) {
-    eligibleOptions = eligibleOptions.filter(
-      opt => !cooldownBlockedIds.includes(opt.id)
-    )
   }
 
   const results = []
@@ -92,11 +98,12 @@ export const generatePostOptions = (
     gameState.social.activeDeals.some(d => d.type === 'SPONSORSHIP')
   if (gameState.social?.sponsorActive || hasActiveSponsor) {
     // Force a specific commercial post or synthesize one
-    const sponsorOpt = eligibleOptions.find(o => o.id === 'comm_sellout_ad')
-    if (sponsorOpt) {
+    const sponsorIdx = eligibleOptions.findIndex(o => o.id === 'comm_sellout_ad')
+    if (sponsorIdx !== -1) {
+      const sponsorOpt = eligibleOptions[sponsorIdx]
       results.push({ ...sponsorOpt, _force: true })
-      // Remove from pool so it's not selected again
-      eligibleOptions = eligibleOptions.filter(o => o.id !== 'comm_sellout_ad')
+      // Remove in-place to avoid full array re-allocation
+      eligibleOptions.splice(sponsorIdx, 1)
     }
   }
 
