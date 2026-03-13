@@ -92,12 +92,28 @@ export const handleLoadGame = (state, payload) => {
       ...(loadedState.band?.inventory || {})
     },
     stash: Array.isArray(loadedState.band?.stash)
-      ? [...loadedState.band.stash]
+      ? loadedState.band.stash.map(item => ({
+          ...item,
+          remainingDuration:
+            typeof item.remainingDuration === 'number' &&
+            Number.isFinite(item.remainingDuration) &&
+            item.remainingDuration >= 0
+              ? item.remainingDuration
+              : item.duration || null
+        }))
       : [...DEFAULT_BAND_STATE.stash],
     activeContrabandEffects: Array.isArray(
       loadedState.band?.activeContrabandEffects
     )
-      ? [...loadedState.band.activeContrabandEffects]
+      ? loadedState.band.activeContrabandEffects.map(effect => ({
+          ...effect,
+          remainingDuration:
+            typeof effect.remainingDuration === 'number' &&
+            Number.isFinite(effect.remainingDuration) &&
+            effect.remainingDuration >= 0
+              ? effect.remainingDuration
+              : 0
+        }))
       : [...DEFAULT_BAND_STATE.activeContrabandEffects]
   }
   // Validate Band Members

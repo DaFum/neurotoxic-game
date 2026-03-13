@@ -73,12 +73,10 @@ export const handleConsumeItem = (state, payload) => {
 }
 
 /**
- * Handles adding contraband to the stash.
- * @param {Object} state - Current state
- * @param {Object} payload - { contrabandId, instanceId }
- * @returns {Object} Updated state
+ * Pure helper function to handle adding contraband.
+ * Extracted to avoid tight coupling between reducers.
  */
-export const handleAddContraband = (state, payload) => {
+export const addContrabandHelper = (state, payload) => {
   const { contrabandId, instanceId } = payload
   const item = CONTRABAND_BY_ID.get(contrabandId)
   if (!item) return state
@@ -155,6 +153,16 @@ export const handleAddContraband = (state, payload) => {
 }
 
 /**
+ * Handles adding contraband to the stash.
+ * @param {Object} state - Current state
+ * @param {Object} payload - { contrabandId, instanceId }
+ * @returns {Object} Updated state
+ */
+export const handleAddContraband = (state, payload) => {
+  return addContrabandHelper(state, payload)
+}
+
+/**
  * Handles using a contraband item.
  * @param {Object} state - Current state
  * @param {Object} payload - { instanceId, memberId }
@@ -168,6 +176,8 @@ export const handleUseContraband = (state, payload) => {
   if (itemIndex === -1) return state
 
   const item = stash[itemIndex]
+  if (item.applied === true) return state
+
   let newBand = { ...state.band }
   let newStash = [...stash]
 
@@ -176,22 +186,20 @@ export const handleUseContraband = (state, payload) => {
     if (!memberId || !newBand.members.some(m => m.id === memberId)) {
       return state
     }
-    if (memberId) {
-      newBand.members = newBand.members.map(m => {
-        if (m.id === memberId) {
-          const maxVal =
-            item.effectType === 'stamina' ? m.staminaMax || 100 : 100
-          return {
-            ...m,
-            [item.effectType]: Math.min(
-              maxVal,
-              Math.max(0, (m[item.effectType] || 0) + item.value)
-            )
-          }
+    newBand.members = newBand.members.map(m => {
+      if (m.id === memberId) {
+        const maxVal =
+          item.effectType === 'stamina' ? m.staminaMax || 100 : 100
+        return {
+          ...m,
+          [item.effectType]: Math.min(
+            maxVal,
+            Math.max(0, (m[item.effectType] || 0) + item.value)
+          )
         }
-        return m
-      })
-    }
+      }
+      return m
+    })
   } else if (item.effectType === 'harmony') {
     newBand.harmony = clampBandHarmony((newBand.harmony || 0) + item.value)
     if (item.duration) {

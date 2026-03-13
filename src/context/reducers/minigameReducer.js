@@ -13,7 +13,7 @@ import {
 import { checkTraitUnlocks } from '../../utils/unlockCheck.js'
 import { applyTraitUnlocks } from '../../utils/traitUtils.js'
 import { computeDropChance } from '../../utils/contrabandUtils.js'
-import { handleAddContraband } from './bandReducer.js'
+import { addContrabandHelper } from './bandReducer.js'
 import {
   GAME_PHASES,
   MINIGAME_TYPES,
@@ -115,13 +115,13 @@ export const handleCompleteTravelMinigame = (state, payload) => {
     contrabandId &&
     instanceId
   ) {
-    // Call handleAddContraband directly to leverage its logic
+    // Call addContrabandHelper directly to leverage its logic
     const preStashLength = newState.band.stash ? newState.band.stash.length : 0
     const preStacks = newState.band.stash
       ? newState.band.stash.find(i => i.id === contrabandId)?.stacks || 0
       : 0
 
-    newState = handleAddContraband(newState, { contrabandId, instanceId })
+    newState = addContrabandHelper(newState, { contrabandId, instanceId })
 
     // Determine if item was actually added (length increased, or stacks increased)
     const postItem = newState.band.stash.find(i => i.id === contrabandId)

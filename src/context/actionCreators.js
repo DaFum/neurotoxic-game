@@ -234,7 +234,10 @@ export const createStartTravelMinigameAction = targetNodeId => ({
  * Creates complete travel minigame action
  * @param {number} damageTaken - Amount of damage taken
  * @param {Array} itemsCollected - Array of collected items
- * @returns {Object} Action object
+ * @param {number} [rngValue] - The secure random value used for drops
+ * @param {string} [contrabandId] - The ID of the contraband item dropped
+ * @param {string} [instanceId] - The unique instance ID of the dropped item
+ * @returns {Object} Action object with payload { damageTaken, itemsCollected, rngValue, contrabandId, instanceId }
  */
 export const createCompleteTravelMinigameAction = (
   damageTaken,
